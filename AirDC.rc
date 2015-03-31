@@ -1657,7 +1657,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,00,0,0
+ FILEVERSION 3,0,0,0
  PRODUCTVERSION 3,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -2039,9 +2039,9 @@ BEGIN
     RTEXT           "Description",IDC_SETTINGS_DESCRIPTION,5,72,74,8
     EDITTEXT        IDC_USERDESC,85,69,164,14,ES_AUTOHSCROLL
     LTEXT           "Please enter some general information that you want to be displayed to other users",IDC_GENERAL_INTRO,7,7,297,21
-    RTEXT           "(required)",IDC_REQUIRED,252,56,34,8
-    RTEXT           "(optional)",IDC_OPTIONAL,251,72,34,8
-    RTEXT           "(optional)",IDC_OPTIONAL2,251,88,34,8
+    LTEXT           "(required)",IDC_REQUIRED,251,56,53,8
+    LTEXT           "(optional)",IDC_OPTIONAL,251,72,53,8
+    LTEXT           "(optional)",IDC_OPTIONAL2,251,88,53,8
 END
 
 IDD_WIZARD_CONNSPEED DIALOGEX 0, 0, 311, 254
@@ -2049,12 +2049,12 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    COMBOBOX        IDC_CONNECTION,214,42,48,30,CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Upload speed",IDC_SETTINGS_UPLOAD_LINE_SPEED,163,45,48,8,0,WS_EX_RIGHT
-    LTEXT           "Mbits/s",IDC_SETTINGS_MEBIBITS2,267,45,24,8
+    COMBOBOX        IDC_CONNECTION,222,41,48,30,CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Upload speed",IDC_SETTINGS_UPLOAD_LINE_SPEED,161,43,58,8,0,WS_EX_RIGHT
+    LTEXT           "Mbits/s",IDC_SETTINGS_MEBIBITS2,275,43,24,8
     COMBOBOX        IDC_DOWN_SPEED,75,42,48,30,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Mbits/s",IDC_SETTINGS_MEBIBITS,128,45,24,8
-    LTEXT           "Download Speed",IDC_SETTINGS_DOWNLOAD_LINE_SPEED,13,45,58,8,0,WS_EX_RIGHT
+    LTEXT           "Download Speed",IDC_SETTINGS_DOWNLOAD_LINE_SPEED,7,44,65,8,0,WS_EX_RIGHT
     EDITTEXT        IDC_MAX_DOWNLOAD_SP,220,137,46,14,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_DOWN_SPEED_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,256,137,11,14
     RTEXT           "No new downloads if speed is over:",IDC_SETTINGS_DOWNLOADS_SPEED_PAUSE,15,140,199,8
@@ -2064,18 +2064,18 @@ BEGIN
     RTEXT           "Maximum simultaneous downloads:",IDC_SETTINGS_DOWNLOADS_MAX,11,124,201,8
     EDITTEXT        IDC_UPLOAD_SLOTS,220,192,48,14,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_UPLOAD_S_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,257,192,11,14
-    RTEXT           "Upload slots:",IDC_SETTINGS_UPLOADS_SLOTS,15,195,199,8
+    RTEXT           "Upload slots:",IDC_SETTINGS_UPLOADS_SLOTS,7,195,207,8
     CONTROL         "Detect download limits from the line speed",IDC_DL_AUTODETECT,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,101,202,10
     CONTROL         "Detect upload limits from the line speed",IDC_UL_AUTODETECT,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,178,202,10
     EDITTEXT        IDC_MAX_UPLOAD_SP,220,208,48,14,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_UP_SPEED_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,257,208,11,14
-    RTEXT           "Open an extra slot if speed is below",IDC_SETTINGS_UPLOADS_MIN_SPEED,16,211,201,8
+    RTEXT           "Open an extra slot if speed is below",IDC_SETTINGS_UPLOADS_MIN_SPEED,7,211,210,8
     LTEXT           "KB/s",IDC_SETTINGS_KBPS,272,211,15,8
     EDITTEXT        IDC_MAX_AUTO_OPENED,220,224,48,14,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_AUTO_SLOTS_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,257,223,11,14
-    RTEXT           "Maximum auto opened",IDC_SETTINGS_AUTO_SLOTS,14,226,203,8
+    RTEXT           "Maximum auto opened",IDC_SETTINGS_AUTO_SLOTS,7,226,210,8
     GROUPBOX        "Upload slots and limits",IDC_SLOTS_GROUP,7,165,297,82
     GROUPBOX        "Download slots and limits",IDC_SETTINGS_DOWNLOAD_LIMITS,7,88,297,71
     PUSHBUTTON      "Test your speed online",IDC_SPEEDTEST,75,64,151,14
@@ -2112,7 +2112,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "Configure the network settings so transfers will work.",IDC_MANUALCONN_INTRO,7,6,297,21
+    LTEXT           "Configure the network settings so transfers will work.",IDC_MANUALCONN_INTRO,7,6,297,14
 END
 
 IDD_WIZARD_PROFILE DIALOGEX 0, 0, 319, 252
@@ -2548,8 +2548,8 @@ IDI_RELOAD              ICON                    "res\\reload.ico"
 IDI_PAUSED              ICON                    "res\\paused.ico"
 IDI_STEPBACK            ICON                    "res\\Stepback.ico"
 IDI_SECURE              ICON                    "res\\Secure.ico"
-IDI_TYPING				ICON                    "res\\Typing.ico"
-IDI_SEEN				ICON                    "res\\Seen.ico"
+IDI_TYPING              ICON                    "res\\Typing.ico"
+IDI_SEEN                ICON                    "res\\Seen.ico"
 #endif    // Finnish (Finland) resources
 /////////////////////////////////////////////////////////////////////////////
 

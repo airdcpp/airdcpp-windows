@@ -855,6 +855,7 @@
     <Image Include="res\searchTypes\tth.ico" />
     <Image Include="res\searchTypes\Video.ico" />
     <Image Include="res\Secure.ico" />
+    <Image Include="res\Seen.ico" />
     <Image Include="res\send_file.ico" />
     <Image Include="res\SettingsTree\Hashing.ico" />
     <Image Include="res\SettingsTree\Limiter.ico" />
@@ -870,6 +871,7 @@
     <Image Include="res\TotalDown.ico" />
     <Image Include="res\TotalUp.ico" />
     <Image Include="res\types.bmp" />
+    <Image Include="res\Typing.ico" />
     <Image Include="res\up.ico" />
     <Image Include="res\upload_user.ico" />
     <Image Include="res\UserlistImages\UserNoconnect.ico" />

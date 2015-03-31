@@ -1403,5 +1403,11 @@
     <Image Include="res\Secure.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\Typing.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Seen.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
