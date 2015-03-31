@@ -11,6 +11,7 @@
 !include "Sections.nsh"
 !include "x64.nsh"
 !include "FileFunc.nsh"   ; for ${GetSize}
+!include "WinVer.nsh"
 
 !ifndef NSIS_UNICODE
 	!error "An Unicode version of NSIS is required, see <http://code.google.com/p/unsis/>"
@@ -282,8 +283,6 @@ Function .onSelChange
   end:
   ${EndIf}
   
-  Call UpdateAppSize
-  
 ; Show the warning only once
   StrCmp $R9 "1" skip
   SectionGetFlags ${loc} $0
@@ -292,20 +291,6 @@ Function .onSelChange
   StrCpy $R9 "1"
   MessageBox MB_OK|MB_ICONEXCLAMATION $(XPOrOlder)
 skip:
-FunctionEnd
-
-Function UpdateAppSize 
-  ; The size of the application itself must be counted manually because of separate x64/x86 versions
-  ${If} $TargetArch64 == "1"
-    StrCpy $8 "..\compiled\x64"
-  ${Else}
-    StrCpy $8 "..\compiled\Win32"
-  ${EndIf}
-  
-  ${GetSize} $8 "/S=0K /M=AirDC.pdb" $0 $1 $2
-  ${GetSize} $8 "/S=0K /M=AirDC.exe" $3 $1 $2
-  IntOp $0 $0 + $3
-  SectionSetSize "$(SecAirDC)" $0
 FunctionEnd
 
 Function .onInit
@@ -318,27 +303,15 @@ Function .onInit
 		StrCpy $TargetArch64 "0"
 	${EndIf}
   
-  Call UpdateAppSize
-  
   IfFileExists "$EXEDIR\AirDC.exe" 0 checkos
   StrCpy $INSTDIR $EXEDIR
 checkos:
-; Check for Vista+
-  ReadRegStr $R8 HKLM "SOFTWARE\Microsoft\Windows NT\CurrentVersion" CurrentVersion
-  IfErrors xp_or_below nt
-nt:
-  StrCmp $R8 '6.0' vistaplus
-  StrCmp $R8 '6.1' vistaplus
-  StrCmp $R8 '6.2' vistaplus
-  StrCmp $R8 '6.3' 0 xp_or_below
-vistaplus:
-  StrCpy $R8 "1"
-  goto end
-xp_or_below:
-	MessageBox MB_OK|MB_ICONEXCLAMATION $(XPOrBelow)
-	Exec '"$WINDIR\explorer.exe" "http://www.airdcpp.net/download"'
-	Quit
-end:
+	${IfNot} ${AtLeastWinXP}
+		MessageBox MB_OK|MB_ICONEXCLAMATION $(XPOrBelow)
+		Exec '"$WINDIR\explorer.exe" "http://www.airdcpp.net/download"'
+		Quit
+	${EndIf}
+	
 ; Set the program component really required (read only)
   IntOp $0 ${SF_SELECTED} | ${SF_RO}
   SectionSetFlags ${dcpp} $0
