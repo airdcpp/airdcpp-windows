@@ -306,7 +306,7 @@ Function .onInit
   IfFileExists "$EXEDIR\AirDC.exe" 0 checkos
   StrCpy $INSTDIR $EXEDIR
 checkos:
-	${IfNot} ${AtLeastWinXP}
+	${IfNot} ${AtLeastWinVista}
 		MessageBox MB_OK|MB_ICONEXCLAMATION $(XPOrBelow)
 		Exec '"$WINDIR\explorer.exe" "http://www.airdcpp.net/download"'
 		Quit
