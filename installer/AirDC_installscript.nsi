@@ -17,7 +17,6 @@
 	!error "An Unicode version of NSIS is required, see <http://code.google.com/p/unsis/>"
 !endif
 
-
 Var VERSION ; will be filled in onInit
 Var TargetArch64 ; target architecture depending on the system and user's choice
 Var OldInstDir ; existing install dir (in case of reinstall)
@@ -46,7 +45,7 @@ ShowInstDetails show
 ShowUninstDetails show
 
 !define MUI_ICON "Install.ico"
-; !define MUI_UNICON "Uninstall.ico" we don't have any uninstall icon yet
+; !define MUI_UNICON "Uninstall.ico" ; we don't have any uninstall icon yet
 
 !define MUI_HEADERIMAGE
 !define MUI_HEADERIMAGE_BITMAP "airheader.bmp" ; optional
@@ -61,8 +60,6 @@ ShowUninstDetails show
 !define MUI_FINISHPAGE_RUN
 !define MUI_FINISHPAGE_RUN_TEXT "$(RunAtFinish)"
 !define MUI_FINISHPAGE_RUN_FUNCTION "LaunchLink"
-
-!define INSTALLSIZE 93696 ; Size of the installation in KB
 
 ;Page components
 ;Page directory
@@ -219,7 +216,9 @@ no_backup:
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AirDC++" "URLInfoAbout" "http://www.airdcpp.net"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AirDC++" "URLUpdateInfo" "http://www.airdcpp.net/download"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AirDC++" "HelpLink" "http://www.airdcpp.net/guides"
-  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AirDC++" "EstimatedSize" ${INSTALLSIZE}
+   ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
+   IntFmt $0 "0x%08X" $0
+  WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AirDC++" "EstimatedSize" "$0"
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AirDC++" "NoModify" "1"
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AirDC++" "NoRepair" "1"
   
