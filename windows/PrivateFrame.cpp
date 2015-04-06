@@ -31,6 +31,7 @@
 #include "../client/FavoriteManager.h"
 #include "../client/StringTokenizer.h"
 #include "../client/ResourceManager.h"
+#include "../client/MessageManager.h"
 #include "../client/Adchub.h"
 
 bool PrivateFrame::gotMessage(const ChatMessage& aMessage, Client* c) {
@@ -119,7 +120,6 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	WinUtil::SetIcon(m_hWnd, userBot ? IDI_BOT : IDR_PRIVATE);
 
 	//add the updateonlinestatus in the wnd message queue so the frame and tab can finish creating first.
-	chat->checkAlwaysCCPM();
 	callAsync([this] { updateOnlineStatus(); });
 	::SetTimer(m_hWnd, 0, 1000, 0);
 
@@ -173,25 +173,51 @@ void PrivateFrame::updatePMInfo(uint8_t aType) {
 	}
 
 	switch (aType) {
-	case PrivateChat::MSG_SEEN:
+	case PrivateChat::MSG_SEEN: {
+		tstring msg = _T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + _T("*** Message seen ***");
 		if (!userTyping)
-			addStatus(_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + _T("*** Message seen ***"), ResourceLoader::loadIcon(IDI_SEEN, 16));
+			addStatus(msg, ResourceLoader::loadIcon(IDI_SEEN, 16));
 		else
-			lastStatus = { _T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + _T("*** Message seen ***"), ResourceLoader::loadIcon(IDI_SEEN, 16) };
+			lastStatus = { msg, ResourceLoader::loadIcon(IDI_SEEN, 16) };
 		break;
+	}
 	case PrivateChat::TYPING_ON:
 		//setStatusText to prevent saving lastStatus
 		userTyping = true;
 		setStatusText(_T("*** User is typing...***"), ResourceLoader::loadIcon(IDI_TYPING, 16));
 		break;
+
 	case PrivateChat::TYPING_OFF:
 		//Restore the previous status
 		userTyping = false;
 		addStatus(lastStatus.first, lastStatus.second);
 		break;
+
 	case PrivateChat::QUIT:
 		userTyping = false;
 		setStatusText(_T("*** User closed the window ***"), ResourceLoader::getSeverityIcon(LogManager::LOG_INFO));
+		break;
+
+	case PrivateChat::CCPM_ESTABLISHED:
+		addStatusLine(TSTRING(CCPM_ESTABLISHED), LogManager::LOG_INFO);
+		updateOnlineStatus(true);
+		break;
+
+	case PrivateChat::CCPM_ESTABLISHING:
+		addStatusLine(TSTRING(CCPM_ESTABLISHING), LogManager::LOG_INFO);
+		break;
+
+	case PrivateChat::CCPM_DISCONNECTED:
+		addStatusLine(TSTRING(CCPM_DISCONNECTED), LogManager::LOG_INFO);
+		updateOnlineStatus(true);
+		break;
+
+	case PrivateChat::CCPM_CONNECTION_TIMEOUT:
+		addStatusLine(TSTRING(CCPM_TIMEOUT), LogManager::LOG_INFO);
+		break;
+
+	case PrivateChat::CCPM_ERROR:
+		addStatusLine(Text::toT(chat->getLastCCPMError()), LogManager::LOG_INFO);
 		break;
 	default:
 		break;
@@ -823,19 +849,6 @@ void PrivateFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcep
 
 void PrivateFrame::on(PrivateChatListener::UserUpdated) noexcept{
 	callAsync([this] { updateOnlineStatus(); });
-}
-
-void PrivateFrame::on(PrivateChatListener::CCPMStatusChanged, const string& aMessage) noexcept{
-	callAsync([this, aMessage] {
-		addStatusLine(Text::toT(aMessage), LogManager::LOG_INFO);
-		updateOnlineStatus(true);
-	});
-}
-
-void PrivateFrame::on(PrivateChatListener::StatusMessage, const string& aMessage, uint8_t sev) noexcept{
-	callAsync([this, aMessage, sev] {
-		addStatusLine(Text::toT(aMessage), sev);
-	});
 }
 
 void PrivateFrame::on(PrivateChatListener::PMStatus, uint8_t aType) noexcept{

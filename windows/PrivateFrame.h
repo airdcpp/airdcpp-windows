@@ -25,8 +25,7 @@
 
 #include "../client/User.h"
 #include "../client/UserInfoBase.h"
-#include "../client/MessageManager.h"
-#include "../client/PrivateChatListener.h"
+#include "../client/PrivateChat.h"
 
 #include "UserInfoBaseHandler.h"
 #include "ChatFrameBase.h"
@@ -211,12 +210,10 @@ private:
 	tstring currentCommand;
 	TStringList::size_type curCommandPosition;
 	
-	virtual void on(PrivateChatListener::StatusMessage, const string& aMessage, uint8_t sev) noexcept;
 	virtual void on(PrivateChatListener::PrivateMessage, const ChatMessage& aMessage) noexcept;
 	virtual void on(PrivateChatListener::Activate, const string& msg, Client* c) noexcept;
 	virtual void on(PrivateChatListener::UserUpdated) noexcept;
 	virtual void on(PrivateChatListener::PMStatus, uint8_t aType) noexcept;
-	virtual void on(PrivateChatListener::CCPMStatusChanged, const string& aMessage) noexcept;
 	virtual void on(PrivateChatListener::Close) noexcept {
 		PostMessage(WM_CLOSE);
 	}
