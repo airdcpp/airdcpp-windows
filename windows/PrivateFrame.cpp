@@ -182,12 +182,18 @@ void PrivateFrame::updatePMInfo(uint8_t aType) {
 	case PrivateChat::TYPING_ON:
 		//setStatusText to prevent saving lastStatus
 		userTyping = true;
-		setStatusText(_T("*** The user is typing...***"), ResourceLoader::loadIcon(IDI_TYPING, 16));
+		setStatusText(_T("*** User is typing...***"), ResourceLoader::loadIcon(IDI_TYPING, 16));
 		break;
 	case PrivateChat::TYPING_OFF:
 		//Restore the previous status
 		userTyping = false;
 		addStatus(lastStatus.first, lastStatus.second);
+		break;
+	case PrivateChat::QUIT:
+		userTyping = false;
+		setStatusText(_T("*** User closed the window ***"), ResourceLoader::getSeverityIcon(LogManager::LOG_INFO));
+		break;
+	default:
 		break;
 	}
 
@@ -502,7 +508,7 @@ LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 void PrivateFrame::closeCC(bool silent) {
 	if (ccReady()) {
 		if (!silent) { addStatusLine(TSTRING(CCPM_DISCONNECTING),LogManager::LOG_INFO); }
-		chat->Disconnect(true);
+		chat->CloseCC(false, true);
 	}
 }
 
