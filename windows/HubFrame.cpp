@@ -933,16 +933,7 @@ void HubFrame::addLine(const tstring& aLine, CHARFORMAT2& cf, bool bUseEmo/* = t
 }
 
 void HubFrame::addLine(const Identity& i, const tstring& aLine, CHARFORMAT2& cf, bool bUseEmo/* = true*/) {
-//	ctrlClient.AdjustTextSize();
-
-	if(client->get(HubSettings::LogMainChat)) {
-		ParamMap params;
-		params["message"] = Text::fromT(aLine);
-		client->getHubIdentity().getParams(params, "hub", false);
-		params["hubURL"] = client->getHubUrl();
-		client->getMyIdentity().getParams(params, "my", true);
-		LOG(LogManager::CHAT, params);
-	}
+	client->logChatMessage(Text::fromT(aLine));
 
 	bool notify = ctrlClient.AppendChat(i, Text::toT(client->get(HubSettings::Nick)), timeStamps ? Text::toT("[" + Util::getShortTimeString() + "] ") : Util::emptyStringT, aLine + _T('\n'), cf, bUseEmo);
 	if(notify)
@@ -1290,14 +1281,8 @@ void HubFrame::addStatus(const tstring& aLine, uint8_t sev, CHARFORMAT2& cf, boo
 	if(SETTING(STATUS_IN_CHAT) && inChat) {
 		addLine(_T("*** ") + aLine, cf, SETTING(HUB_BOLD_TABS));
 	}
-	if(SETTING(LOG_STATUS_MESSAGES)) {
-		ParamMap params;
-		client->getHubIdentity().getParams(params, "hub", false);
-		params["hubURL"] = client->getHubUrl();
-		client->getMyIdentity().getParams(params, "my", true);
-		params["message"] = Text::fromT(aLine);
-		LOG(LogManager::STATUS, params);
-	}
+
+	client->logStatusMessage(Text::fromT(aLine));
 }
 
 void HubFrame::resortUsers() {
@@ -1514,10 +1499,7 @@ void HubFrame::on(HubUpdated, const Client*) noexcept {
 	});
 }
 void HubFrame::on(Message, const Client*, const ChatMessage& message) noexcept {
-	if (message.to && message.replyTo) 
-		MessageManager::getInstance()->onPrivateMessage(message);
-	else
-		callAsync([=] { onChatMessage(message); });
+	callAsync([=] { onChatMessage(message); });
 }	
 
 void HubFrame::on(StatusMessage, const Client*, const string& line, int statusFlags) {

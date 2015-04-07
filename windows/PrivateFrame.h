@@ -107,8 +107,6 @@ public:
 	LRESULT onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onFocusMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 
-
-	void fillLogParams(ParamMap& params) const;
 	void addLine(const tstring& aLine, CHARFORMAT2& cf);
 	void addLine(const Identity&, const tstring& aLine);
 	void addLine(const Identity&, const tstring& aLine, CHARFORMAT2& cf);
@@ -158,7 +156,6 @@ private:
 	bool nmdcUser;
 	bool created;
 
-	string getLogPath() const;
 	CComboBoxEx ctrlHubSel;
 
 	void fillHubSelection();

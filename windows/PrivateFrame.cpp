@@ -490,7 +490,7 @@ bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& /*param*/, tstring& 
 	} else if(stricmp(cmd.c_str(), _T("getlist")) == 0) {
 		handleGetList();
 	} else if(stricmp(cmd.c_str(), _T("log")) == 0) {
-		WinUtil::openFile(Text::toT(getLogPath()));
+		WinUtil::openFile(Text::toT(chat->getLogPath()));
 	}
 	else if (Util::stricmp(cmd.c_str(), _T("direct")) == 0 || Util::stricmp(cmd.c_str(), _T("encrypted")) == 0) {
 		chat->StartCC();
@@ -551,15 +551,6 @@ void PrivateFrame::addLine(const Identity& from, const tstring& aLine) {
 	addLine(from, aLine, WinUtil::m_ChatTextGeneral );
 }
 
-void PrivateFrame::fillLogParams(ParamMap& params) const {
-	const CID& cid = getUser()->getCID();;
-	params["hubNI"] = [&] { return Text::fromT(hubNames); };
-	params["hubURL"] = [&] { return getHubUrl(); };
-	params["userCID"] = [&cid] { return cid.toBase32(); };
-	params["userNI"] = [&] { return ClientManager::getInstance()->getNick(getUser(), getHubUrl()); };
-	params["myCID"] = [] { return ClientManager::getInstance()->getMe()->getCID().toBase32(); };
-}
-
 void PrivateFrame::addLine(const Identity& from, const tstring& aLine, CHARFORMAT2& cf) {
 	if(!created) {
 		if(SETTING(POPUNDER_PM))
@@ -571,12 +562,7 @@ void PrivateFrame::addLine(const Identity& from, const tstring& aLine, CHARFORMA
 	CRect r;
 	ctrlClient.GetClientRect(r);
 
-	if(SETTING(LOG_PRIVATE_CHAT)) {
-		ParamMap params;
-		params["message"] = [&aLine] { return Text::fromT(aLine); };
-		fillLogParams(params);
-		LogManager::getInstance()->log(getUser(), params);
-	}
+	chat->logMessage(Text::fromT(aLine));
 
 	auto myNick = Text::toT(ctrlClient.getClient() ? ctrlClient.getClient()->get(HubSettings::Nick) : SETTING(NICK));
 	bool notify = ctrlClient.AppendChat(from, myNick, SETTING(TIME_STAMPS) ? Text::toT("[" + Util::getShortTimeString() + "] ") : _T(""), aLine + _T('\n'), cf);
@@ -755,16 +741,10 @@ void PrivateFrame::updateTabIcon(bool offline) {
 	}
 }
 
-string PrivateFrame::getLogPath() const {
-	ParamMap params;
-	fillLogParams(params);
-	return LogManager::getInstance()->getPath(getUser(), params);
-}
-
 void PrivateFrame::readLog() {
 	if (SETTING(SHOW_LAST_LINES_LOG) == 0) return;
 	try {
-		File f(getLogPath(), File::READ, File::OPEN);
+		File f(chat->getLogPath(), File::READ, File::OPEN);
 		
 		int64_t size = f.getSize();
 
@@ -804,7 +784,7 @@ void PrivateFrame::sendTyping(bool off) {
 
 
 LRESULT PrivateFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {	
-	string file = getLogPath();
+	string file = chat->getLogPath();
 	if(Util::fileExists(file)) {
 		WinUtil::viewLog(file, wID == IDC_USER_HISTORY);
 	} else {
