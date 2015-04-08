@@ -159,12 +159,9 @@ private:
 	CComboBoxEx ctrlHubSel;
 
 	void fillHubSelection();
-
-	void updateOnlineStatus(bool ownChange = false);
 	StringPairList hubs;
-	bool online;
-	void changeClient();
 	void showHubSelection(bool show);
+	void updateOnlineStatus();
 
 
 	const UserPtr& getUser() const { return chat->getUser(); }
@@ -176,8 +173,6 @@ private:
 	CContainedWindow ctrlStatusContainer;
 
 	bool closed;
-	tstring nicks;
-	tstring hubNames;
 	ParamMap ucLineParams;
 	
 	CIcon tabIcon;
@@ -201,12 +196,12 @@ private:
 
 	pair<tstring, CIcon> lastStatus;
 
-	void checkClientChanged(Client* c, bool ownChange);
 	void updateTabIcon(bool offline);
 	TStringList prevCommands;
 	tstring currentCommand;
 	TStringList::size_type curCommandPosition;
 	
+	virtual void on(PrivateChatListener::StatusMessage, const string& aMessage, uint8_t sev) noexcept;
 	virtual void on(PrivateChatListener::PrivateMessage, const ChatMessage& aMessage) noexcept;
 	virtual void on(PrivateChatListener::Activate, const string& msg, Client* c) noexcept;
 	virtual void on(PrivateChatListener::UserUpdated) noexcept;

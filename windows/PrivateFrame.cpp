@@ -40,7 +40,7 @@ bool PrivateFrame::gotMessage(const ChatMessage& aMessage, Client* c) {
 
 	auto chat = MessageManager::getInstance()->getChat(user);
 	if (chat) {
-		chat->Message(aMessage);
+		chat->handleMessage(aMessage);
 		return true;
 	}
 
@@ -59,7 +59,7 @@ void PrivateFrame::openWindow(const HintedUser& replyTo, const tstring& msg, Cli
 	auto chat = MessageManager::getInstance()->getChat(replyTo.user);
 	
 	if (chat) {
-		chat->Activate(Text::fromT(msg), c);
+		chat->activate(Text::fromT(msg), c);
 	} else {
 		PrivateFrame* p = new PrivateFrame(replyTo, c);
 		p->CreateEx(WinUtil::mdiClient);
@@ -69,7 +69,7 @@ void PrivateFrame::openWindow(const HintedUser& replyTo, const tstring& msg, Cli
 
 
 PrivateFrame::PrivateFrame(const HintedUser& replyTo_, Client* c) :
-created(false), closed(false), online(replyTo_.user->isOnline()), curCommandPosition(0),
+created(false), closed(false), curCommandPosition(0),
 	ctrlHubSelContainer(WC_COMBOBOXEX, this, HUB_SEL_MAP),
 	ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 	ctrlClientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
@@ -200,7 +200,7 @@ void PrivateFrame::updatePMInfo(uint8_t aType) {
 
 	case PrivateChat::CCPM_ESTABLISHED:
 		addStatusLine(TSTRING(CCPM_ESTABLISHED), LogManager::LOG_INFO);
-		updateOnlineStatus(true);
+		updateOnlineStatus();
 		break;
 
 	case PrivateChat::CCPM_ESTABLISHING:
@@ -209,7 +209,7 @@ void PrivateFrame::updatePMInfo(uint8_t aType) {
 
 	case PrivateChat::CCPM_DISCONNECTED:
 		addStatusLine(TSTRING(CCPM_DISCONNECTED), LogManager::LOG_INFO);
-		updateOnlineStatus(true);
+		updateOnlineStatus();
 		break;
 
 	case PrivateChat::CCPM_CONNECTION_TIMEOUT:
@@ -239,7 +239,7 @@ LRESULT PrivateFrame::onStatusBarClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 		if (ccReady())
 			closeCC();
 		else
-			chat->StartCC();
+			chat->startCC();
 	}
 	bHandled = TRUE;
 	return 0;
@@ -282,9 +282,10 @@ LRESULT PrivateFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 }
 
 LRESULT PrivateFrame::onHubChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled) {
-	changeClient();
-	updateOnlineStatus(true);
+	chat->setHubUrl(hubs[ctrlHubSel.GetCurSel()].first);
+	updateOnlineStatus();
 
+	addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)), LogManager::LOG_INFO);
 	bHandled = FALSE;
 	return 0;
 }
@@ -298,11 +299,6 @@ void PrivateFrame::addStatusLine(const tstring& aLine, uint8_t severity) {
 	
 }
 
-void PrivateFrame::changeClient() {
-	chat->setHubUrl(hubs[ctrlHubSel.GetCurSel()].first);
-	ctrlClient.setClient(chat->getClient());
-}
-
 void PrivateFrame::checkTyping(){
 	if (!isTyping && ctrlMessage.GetWindowTextLength() > 0) {
 		isTyping = true;
@@ -314,95 +310,32 @@ void PrivateFrame::checkTyping(){
 	}
 }
 
-void PrivateFrame::updateOnlineStatus(bool ownChange) {
-	const CID& cid = getUser()->getCID();
-
-	//get the hub and online status
-	auto hubsInfoNew = move(WinUtil::getHubNames(cid));
-	bool UserOnline = hubsInfoNew.second;
-	if (!UserOnline && !online) {
-		//nothing to update... probably a delayed event or we are opening the tab for the first time
-		if (nicks.empty())
-			nicks = WinUtil::getNicks(chat->getHintedUser());
-		if (hubNames.empty())
-			hubNames = TSTRING(OFFLINE);
-		
-		ctrlClient.setClient(nullptr);
+void PrivateFrame::updateOnlineStatus() {
+	if (!chat->isOnline()) {
 		setDisconnected(true);
 		showHubSelection(false);
 		updateTabIcon(true);
 	} else {
-		auto oldSel = ctrlHubSel.GetStyle() & WS_VISIBLE ? ctrlHubSel.GetCurSel() : 0;
-		StringPair oldHubPair;
-		if (!hubs.empty() && oldSel != -1)
-			oldHubPair = hubs[oldSel]; // cache the old hub name
+		setDisconnected(false);
+		updateTabIcon(false);
 
-		hubs = ClientManager::getInstance()->getHubs(cid);
-		while (ctrlHubSel.GetCount()) {
-			ctrlHubSel.DeleteString(0);
-		}
-
-		//General things
-		if (UserOnline) {
-			//the user is online
-			hubNames = WinUtil::getHubNames(chat->getHintedUser());
-			nicks = WinUtil::getNicks(chat->getHintedUser());
-			setDisconnected(false);
-			updateTabIcon(false);
-
-			if (!online) {
-				addStatusLine(TSTRING(USER_WENT_ONLINE) + _T(" [") + nicks + _T(" - ") + hubNames + _T("]"), LogManager::LOG_INFO);
-			}
-		} else {
-			if (nicks.empty())
-				nicks = WinUtil::getNicks(chat->getHintedUser());
-
-			updateTabIcon(true);
-			setDisconnected(true);
-			ctrlClient.setClient(nullptr);
-			addStatusLine(TSTRING(USER_WENT_OFFLINE) + _T(" [") + hubNames + _T("]"), LogManager::LOG_INFO);
-		}
-
-		//ADC related changes
-		if (!ccReady() && UserOnline && !getUser()->isNMDC() && !hubs.empty()) {
-			if (!(ctrlHubSel.GetStyle() & WS_VISIBLE)) {
-				showHubSelection(true);
+		if (!ccReady() && !getUser()->isNMDC()) {
+			hubs = ClientManager::getInstance()->getHubs(getUser()->getCID());
+			while (ctrlHubSel.GetCount()) {
+				ctrlHubSel.DeleteString(0);
 			}
 
 			fillHubSelection();
-
-			if (ownChange && ctrlHubSel.GetCurSel() != -1) {
-				addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)), LogManager::LOG_INFO);
-			} else if (ctrlHubSel.GetCurSel() == -1) {
-				//the hub was not found
-				ctrlHubSel.SetCurSel(0);
-				changeClient();
-				if (!online) //the user came online but not in the previous hub
-					addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)), LogManager::LOG_WARNING);
-				else
-					addStatusLine(CTSTRING_F(USER_OFFLINE_PM_CHANGE, Text::toT(oldHubPair.second) % Text::toT(hubs[0].second)), LogManager::LOG_WARNING);
-			}
-			else if (!oldHubPair.first.empty() && oldHubPair.first != getHubUrl()) {
-				addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH_REMOTE, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)), LogManager::LOG_WARNING);
-			} else if (!ctrlClient.getClient()) {
-				changeClient();
-			}
-		} else if (ccReady() && UserOnline) {
-			fillHubSelection();
-			//Must be a better way to detect hub changes than using the Combobox.
-			if (ctrlHubSel.GetCurSel() == -1) {
-				//the hub was not found
-				ctrlHubSel.SetCurSel(0);
-				changeClient();
-			}
-			if(ctrlHubSel.GetStyle() & WS_VISIBLE)
-				showHubSelection(false);
+			showHubSelection(true);
 		} else {
 			showHubSelection(false);
 		}
-
-		online = UserOnline;
 	}
+
+	auto nicks = WinUtil::getNicks(chat->getHintedUser());
+	auto hubNames = chat->isOnline() ? WinUtil::getHubNames(chat->getHintedUser()) : TSTRING(OFFLINE);
+
+	ctrlClient.setClient(chat->getClient());
 	updateStatusBar();
 
 	SetWindowText((nicks + _T(" - ") + hubNames).c_str());
@@ -452,7 +385,8 @@ void PrivateFrame::handleNotifications(bool newWindow, const tstring& aMessage, 
 			tstring message = aMessage.substr(0, 250);
 			WinUtil::showPopup(message.c_str(), CTSTRING(PRIVATE_MESSAGE));
 		} else {
-			WinUtil::showPopup(WinUtil::getNicks(chat->getHintedUser()) + _T(" - ") + hubNames, TSTRING(PRIVATE_MESSAGE));
+			WinUtil::showPopup(WinUtil::getNicks(chat->getHintedUser()) + 
+				_T(" - ") + WinUtil::getHubNames(chat->getHintedUser()), TSTRING(PRIVATE_MESSAGE));
 		}
 	}
 
@@ -462,19 +396,6 @@ void PrivateFrame::handleNotifications(bool newWindow, const tstring& aMessage, 
 		} else {
 			WinUtil::playSound(Text::toT(SETTING(BEEPFILE)));
 		}
-	}
-}
-
-/*
- update the re used frame to the correct hub, 
- so it doesnt appear offline while user is sending us messages with another hub :P
-*/
-void PrivateFrame::checkClientChanged(Client* c, bool ownChange) {
-
-	if(!getUser()->isNMDC() && getHubUrl() != c->getHubUrl()) {
-		chat->setHubUrl(c->getHubUrl());
-		ctrlClient.setClient(c);
-		updateOnlineStatus(ownChange);
 	}
 }
 
@@ -493,7 +414,7 @@ bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& /*param*/, tstring& 
 		WinUtil::openFile(Text::toT(chat->getLogPath()));
 	}
 	else if (Util::stricmp(cmd.c_str(), _T("direct")) == 0 || Util::stricmp(cmd.c_str(), _T("encrypted")) == 0) {
-		chat->StartCC();
+		chat->startCC();
 	}
 	else if (Util::stricmp(cmd.c_str(), _T("disconnect")) == 0) {
 		closeCC();
@@ -534,7 +455,7 @@ LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 void PrivateFrame::closeCC(bool silent) {
 	if (ccReady()) {
 		if (!silent) { addStatusLine(TSTRING(CCPM_DISCONNECTING),LogManager::LOG_INFO); }
-		chat->CloseCC(false, true);
+		chat->closeCC(false, true);
 	}
 }
 
@@ -796,7 +717,7 @@ LRESULT PrivateFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndC
 
 LRESULT PrivateFrame::onPublicMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 
-	if(!online)
+	if(!chat->isOnline())
 		return 0;
 
 	tstring sUsers = ctrlClient.getSelectedUser();
@@ -846,7 +767,6 @@ void PrivateFrame::on(PrivateChatListener::PrivateMessage, const ChatMessage& aM
 
 		if (!myPM) {
 			handleNotifications(false, text, aMessage.from->getIdentity());
-			checkClientChanged(&aMessage.from->getClient(), false);
 		} else if (!userTyping) {
 			addStatus(_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + _T("Last message sent"), ResourceLoader::getSeverityIcon(LogManager::LOG_INFO));
 		}
@@ -856,10 +776,16 @@ void PrivateFrame::on(PrivateChatListener::PrivateMessage, const ChatMessage& aM
 
 void PrivateFrame::on(PrivateChatListener::Activate, const string& msg, Client* c) noexcept{
 	callAsync([this, msg, c] {
-		checkClientChanged(c, true);
+		//checkClientChanged(c, true);
 		if (::IsIconic(m_hWnd))
 			::ShowWindow(m_hWnd, SW_RESTORE);
 		MDIActivate(m_hWnd);
 		sendFrameMessage(Text::toT(msg));
+	});
+}
+
+void PrivateFrame::on(PrivateChatListener::StatusMessage, const string& aMessage, uint8_t sev) noexcept{
+	callAsync([=] {
+		addStatusLine(Text::toT(aMessage), sev);
 	});
 }
