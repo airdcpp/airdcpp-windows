@@ -195,7 +195,7 @@ void PrivateFrame::updatePMInfo(uint8_t aType) {
 
 	case PrivateChat::QUIT:
 		userTyping = false;
-		setStatusText(_T("*** User closed the window ***"), ResourceLoader::getSeverityIcon(LogManager::LOG_INFO));
+		setStatusText(_T("*** User closed the window ***"), LogManager::LOG_INFO);
 		break;
 
 	case PrivateChat::CCPM_ESTABLISHED:
@@ -223,7 +223,7 @@ void PrivateFrame::updatePMInfo(uint8_t aType) {
 		break;
 	}
 
-	if (SETTING(BOLD_PM)) {
+	if (SETTING(BOLD_PM) && aType != PrivateChat::TYPING_ON && aType != PrivateChat::TYPING_OFF ) {
 		setDirty();
 	}
 }
@@ -276,7 +276,21 @@ LRESULT PrivateFrame::onEditChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWnd
 }
 
 LRESULT PrivateFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
-	checkTyping();
+
+	//Check if the user left text in the output but is idle or is looking at other windows and paused writing.
+	LASTINPUTINFO info = { sizeof(LASTINPUTINFO) };
+	bool inactive = GetLastInputInfo(&info) && (::GetTickCount() - info.dwTime) > 1 * 60 * 1000;
+	inactive = inactive || GetFocus() != ctrlMessage.m_hWnd && GetFocus() != ctrlClient.m_hWnd;
+	
+	if (!inactive && !isTyping && ctrlMessage.GetWindowTextLength() > 0) {
+		isTyping = true;
+		chat->sendPMInfo(PrivateChat::TYPING_ON);
+	}
+	else if ((inactive && isTyping) || isTyping && ctrlMessage.GetWindowTextLength() == 0) {
+		isTyping = false;
+		chat->sendPMInfo(PrivateChat::TYPING_OFF);
+	}
+
 	bHandled = TRUE;
 	return 0;
 }
@@ -297,17 +311,6 @@ void PrivateFrame::addStatusLine(const tstring& aLine, uint8_t severity) {
 	}
 	addClientLine(status, severity);
 	
-}
-
-void PrivateFrame::checkTyping(){
-	if (!isTyping && ctrlMessage.GetWindowTextLength() > 0) {
-		isTyping = true;
-		sendTyping(false);
-	}
-	else if (isTyping && ctrlMessage.GetWindowTextLength() == 0) {
-		isTyping = false;
-		sendTyping(true);
-	}
 }
 
 void PrivateFrame::updateOnlineStatus() {
@@ -577,7 +580,7 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		if (desclen2 < 190) //Make sure the HubSel Combo will fit too.
 			desclen2 = 190;
 
-		w[STATUS_TEXT] = sr.right - desclen - desclen2 - 30;
+		w[STATUS_TEXT] = sr.right - desclen - desclen2 - 22;
 		w[STATUS_CC] = w[STATUS_TEXT] + 22;
 		w[STATUS_HUBSEL] = w[STATUS_CC] + desclen + desclen2 +8;
 		ctrlStatus.SetParts(STATUS_LAST, w);
@@ -698,11 +701,6 @@ void PrivateFrame::sendSeen() {
 
 	hasUnSeenMessages = false;
 }
-
-void PrivateFrame::sendTyping(bool off) {
-	chat->sendPMInfo(off ? PrivateChat::TYPING_OFF : PrivateChat::TYPING_ON);
-}
-
 
 LRESULT PrivateFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {	
 	string file = chat->getLogPath();

@@ -148,6 +148,7 @@ private:
 		STATUS_LAST
 	};
 
+
 	PrivateFrame(const HintedUser& replyTo_, Client* c);
 	~PrivateFrame() { }
 
@@ -189,8 +190,8 @@ private:
 	bool hasUnSeenMessages;
 	bool isTyping;
 	bool userTyping;
+
 	void sendSeen();
-	void checkTyping();
 	void updatePMInfo(uint8_t aType);
 	void addStatus(const tstring& aLine, const CIcon& aIcon);
 
@@ -214,7 +215,6 @@ private:
 
 	void handleNotifications(bool newWindow, const tstring& aMessage, const Identity& from);
 	void updateStatusBar();
-	void sendTyping(bool off);
 };
 
 #endif // !defined(PRIVATE_FRAME_H)
