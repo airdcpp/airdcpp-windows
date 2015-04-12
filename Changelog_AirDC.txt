@@ -1,4 +1,9 @@
-x.xx
+3.00
+
+Added:
+- Direct encrypted private messages (CCPM feature)
+- "Message seen" and "User typing" notifications in direct encrypted PM channels
+- Multilingual installer 
 
 Fixed:
 
@@ -7,7 +12,14 @@ Fixed:
 - The installer will count the required disk space correctly
 - Don't use old language files when the settings directory location has been changed 
 - Fix a bug with matching download skiplist for folders
+- Fix bundle alternative searches interval adding an extra minute 
 
+Changed:
+- Enable TLS v1.1 and TLS v1.2 based connections (DC++)
+- Updated Openssl
+- Verify keyprints in Client-Client and Client-Hub connections
+- Apply scanning skiplist option for checking share excludes as well
+  
 
 2.91
 

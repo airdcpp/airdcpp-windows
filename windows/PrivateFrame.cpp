@@ -174,7 +174,7 @@ void PrivateFrame::updatePMInfo(uint8_t aType) {
 
 	switch (aType) {
 	case PrivateChat::MSG_SEEN: {
-		tstring msg = _T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + _T("*** Message seen ***");
+		tstring msg = _T("[") + Text::toT(Util::getShortTimeString()) + _T("] *** ") + TSTRING(MESSAGE_SEEN) + _T(" ***");
 		if (!userTyping)
 			addStatus(msg, ResourceLoader::loadIcon(IDI_SEEN, 16));
 		else
@@ -184,7 +184,7 @@ void PrivateFrame::updatePMInfo(uint8_t aType) {
 	case PrivateChat::TYPING_ON:
 		//setStatusText to prevent saving lastStatus
 		userTyping = true;
-		setStatusText(_T("*** User is typing...***"), ResourceLoader::loadIcon(IDI_TYPING, 16));
+		setStatusText(_T(" *** ") + TSTRING(USER_TYPING) + _T(" ***"), ResourceLoader::loadIcon(IDI_TYPING, 16));
 		break;
 
 	case PrivateChat::TYPING_OFF:
@@ -195,7 +195,7 @@ void PrivateFrame::updatePMInfo(uint8_t aType) {
 
 	case PrivateChat::QUIT:
 		userTyping = false;
-		setStatusText(_T("*** User closed the window ***"), LogManager::LOG_INFO);
+		setStatusText(_T(" *** ") + TSTRING(USER_CLOSED_WINDOW) + _T(" ***"), LogManager::LOG_INFO);
 		break;
 
 	case PrivateChat::CCPM_ESTABLISHED:
@@ -364,7 +364,7 @@ void PrivateFrame::showHubSelection(bool show) {
 
 void PrivateFrame::handleNotifications(bool newWindow, const tstring& aMessage, const Identity& from) {
 	hasUnSeenMessages = true;
-	addStatus(_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + _T("Last message received"), ResourceLoader::getSeverityIcon(LogManager::LOG_INFO));
+	addStatus(_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + TSTRING(LAST_MESSAGE_RECEIVED), ResourceLoader::getSeverityIcon(LogManager::LOG_INFO));
 	
 	if (!getUser()->isSet(User::BOT))
 		MainFrame::getMainFrame()->onChatMessage(true);
@@ -766,7 +766,7 @@ void PrivateFrame::on(PrivateChatListener::PrivateMessage, const ChatMessage& aM
 		if (!myPM) {
 			handleNotifications(false, text, aMessage.from->getIdentity());
 		} else if (!userTyping) {
-			addStatus(_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + _T("Last message sent"), ResourceLoader::getSeverityIcon(LogManager::LOG_INFO));
+			addStatus(_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + TSTRING(LAST_MESSAGE_SENT), ResourceLoader::getSeverityIcon(LogManager::LOG_INFO));
 		}
 
 	});
