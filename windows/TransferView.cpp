@@ -917,7 +917,7 @@ void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bun
 					partial = true;
 				}
 				if(d->getUserConnection().isSecure()) {
-					if(d->getUserConnection().isTrusted()) {
+					if(d->getUserConnection().isSet(UserConnection::FLAG_TRUSTED)) {
 						trusted = true;
 					} else {
 						untrusted = true;
@@ -1022,7 +1022,7 @@ void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) {
 			statusString += _T("[P]");
 		}
 		if(d->getUserConnection().isSecure()) {
-			if(d->getUserConnection().isTrusted()) {
+			if (d->getUserConnection().isSet(UserConnection::FLAG_TRUSTED)) {
 				statusString += _T("[S]");
 			} else {
 				statusString += _T("[U]");
@@ -1133,7 +1133,7 @@ void TransferView::on(UploadManagerListener::BundleTick, const UploadBundleList&
 					partial = true;
 				}
 				if(u->getUserConnection().isSecure()) {
-					if(u->getUserConnection().isTrusted()) {
+					if (u->getUserConnection().isSet(UserConnection::FLAG_TRUSTED)) {
 						trusted = true;
 					} else {
 						untrusted = true;
@@ -1237,7 +1237,7 @@ void TransferView::on(UploadManagerListener::Tick, const UploadList& ul) {
 			statusString += _T("[P]");
 		}
 		if(u->getUserConnection().isSecure()) {
-			if(u->getUserConnection().isTrusted()) {
+			if (u->getUserConnection().isSet(UserConnection::FLAG_TRUSTED)) {
 				statusString += _T("[S]");
 			} else {
 				statusString += _T("[U]");
