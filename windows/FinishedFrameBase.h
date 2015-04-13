@@ -56,15 +56,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_VIEW_AS_TEXT, onViewAsText)
 		COMMAND_ID_HANDLER(IDC_GETLIST, onGetList)
 		COMMAND_ID_HANDLER(IDC_GRANTSLOT, onGrant)		
-		COMMAND_ID_HANDLER(IDC_COPY_NICK, onCopy);
-		COMMAND_ID_HANDLER(IDC_COPY_FILENAME, onCopy);
-		COMMAND_ID_HANDLER(IDC_COPY_SIZE, onCopy);
-		COMMAND_ID_HANDLER(IDC_COPY_PATH, onCopy);
-		COMMAND_ID_HANDLER(IDC_COPY_TIME, onCopy);
-		COMMAND_ID_HANDLER(IDC_COPY_HUB, onCopy);
-		COMMAND_ID_HANDLER(IDC_COPY_SPEED, onCopy);
-		COMMAND_ID_HANDLER(IDC_COPY_TYPE, onCopy);
-		COMMAND_ID_HANDLER(IDC_COPY_ALL, onCopy);
+		COMMAND_RANGE_HANDLER(IDC_COPY, IDC_COPY + FinishedItem::COLUMN_LAST, onCopy)
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
 		NOTIFY_HANDLER(id, LVN_GETDISPINFO, ctrlList.onGetDispInfo)
 		NOTIFY_HANDLER(id, LVN_COLUMNCLICK, ctrlList.onColumnClick)
@@ -78,7 +70,7 @@ public:
 		ctrlStatus.Attach(m_hWndStatusBar);
 
 		ctrlList.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
-			WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS | LVS_SINGLESEL, WS_EX_CLIENTEDGE, id);
+			WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS, WS_EX_CLIENTEDGE, id);
 		ctrlList.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_HEADERDRAGDROP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
 
 		ctrlList.SetImageList(ResourceLoader::getFileImages(), LVSIL_SMALL);
@@ -106,17 +98,6 @@ public:
 		updateList(FinishedManager::getInstance()->lockList());
 		FinishedManager::getInstance()->unlockList();
 
-		copyMenu.CreatePopupMenu();
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_NICK, CTSTRING(NICK));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_FILENAME, CTSTRING(FILENAME));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_SIZE, CTSTRING(SIZE));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_PATH, CTSTRING(PATH));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_TIME, CTSTRING(TIME));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_HUB, CTSTRING(HUB));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_SPEED, CTSTRING(SPEED));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_TYPE, CTSTRING(TYPE));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_ALL, CTSTRING(ALL));
-
 		CRect rc(SETTING(FINISHED_LEFT), SETTING(FINISHED_TOP), SETTING(FINISHED_RIGHT), SETTING(FINISHED_BOTTOM));
 		if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
 			MoveWindow(rc, TRUE);
@@ -130,65 +111,27 @@ LRESULT onCloseWindow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL
 		PostMessage(WM_CLOSE);
 		return 0;
 	}
+
 LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	string sCopy;
-	int i;
-	if((i = ctrlList.GetNextItem(-1, LVNI_SELECTED)) != -1){
-			FinishedItem *ii = ctrlList.getItemData(i);
-//	if(ctrlList.GetSelectedCount() == 1) {
-//		const ItemInfo* ii = ctrlList.getSelectedItem();
-		tstring buf;
+	tstring sCopy;
+	int i = -1;
+	while ((i = ctrlList.GetNextItem(i, LVNI_SELECTED)) != -1) {
+		FinishedItem *ii = ctrlList.getItemData(i);
 
-		switch (wID) {
-			case IDC_COPY_NICK:
-				buf = ii->getText(FinishedItem::COLUMN_NICK);
-				sCopy = Text::fromT(buf);
-				break;
-			case IDC_COPY_FILENAME:
-				buf = ii->getText(FinishedItem::COLUMN_FILE);
-				sCopy = Text::fromT(buf);
-				break;
-			case IDC_COPY_SIZE:
-				buf = ii->getText(FinishedItem::COLUMN_SIZE);
-				sCopy = Text::fromT(buf);
-				break;
-			case IDC_COPY_PATH:
-				buf = ii->getText(FinishedItem::COLUMN_PATH);
-				sCopy = Text::fromT(buf);
-				break;
-			case IDC_COPY_TIME:
-				buf = ii->getText(FinishedItem::COLUMN_DONE);
-				sCopy = Text::fromT(buf);
-				break;
-			case IDC_COPY_HUB:
-				buf = ii->getText(FinishedItem::COLUMN_HUB);
-				sCopy = Text::fromT(buf);
-				break;
-			case IDC_COPY_SPEED:
-				buf = ii->getText(FinishedItem::COLUMN_SPEED);
-				sCopy = Text::fromT(buf);
-				break;
-			case IDC_COPY_TYPE:
-				buf = ii->getText(FinishedItem::COLUMN_TYPE);
-				sCopy = Text::fromT(buf);
-				break;
-			case IDC_COPY_ALL:
-				buf = (ii->getText(FinishedItem::COLUMN_NICK) + _T("   ") + ii->getText(FinishedItem::COLUMN_HUB) + _T("   ") + ii->getText(FinishedItem::COLUMN_FILE) + _T("   ") + ii->getText(FinishedItem::COLUMN_SIZE) + _T("   ") + ii->getText(FinishedItem::COLUMN_PATH)  + _T("   ") + ii->getText(FinishedItem::COLUMN_SPEED)+  _T("  ") + ii->getText(FinishedItem::COLUMN_TYPE));
-				sCopy = Text::fromT(buf);
-				break;
-
-			default:
-				dcdebug("FINISHEDFRAME DON'T GO HERE\n");
-				return 0;
-		}
-		
 		if (!sCopy.empty())
-			WinUtil::setClipboard(Text::toT(sCopy));
+			sCopy += _T("\r\n");
+
+		sCopy += ii->getText(static_cast<uint8_t>(wID - IDC_COPY));
 	}
+
+	if (!sCopy.empty())
+		WinUtil::setClipboard(sCopy);
+
+
 	return S_OK;
 }
 
-	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 		if(!closed) {
 			FinishedManager::getInstance()->removeListener(this);
 			SettingsManager::getInstance()->removeListener(this);
@@ -246,25 +189,34 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 	}
 
 	LRESULT onRemove(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		
 		switch(wID)
 		{
 		case IDC_REMOVE:
 			{
+				vector<FinishedItem*> removeList;
+				ctrlList.SetRedraw(FALSE);
 				int i = -1;
-				while((i = ctrlList.GetNextItem(-1, LVNI_SELECTED)) != -1) {
-					FinishedItem *ii = ctrlList.getItemData(i);
+				while((i = ctrlList.GetNextItem(i, LVNI_SELECTED)) != -1) {
+					removeList.push_back(ctrlList.getItemData(i));
+				}
+
+				for (auto ii : removeList) {
 					FinishedManager::getInstance()->remove(ii);
-					ctrlList.DeleteItem(i);
-					
+					ctrlList.deleteItem(ii);
+
 					totalBytes -= ii->getSize();
 					totalSpeed -= ii->getAvgSpeed();
-					
+
 					delete ii;
 				}
 				updateStatus();
+				ctrlList.SetRedraw(TRUE);
 				break;
+
 			}
 		case IDC_TOTAL:
+			ctrlList.SetRedraw(FALSE);
 			FinishedManager::getInstance()->removeAll();
 			
 			ctrlList.DeleteAllItems();
@@ -276,8 +228,10 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 			totalBytes = 0;
 			totalSpeed = 0;
 			updateStatus();
+			ctrlList.SetRedraw(TRUE);
 			break;
 		}
+
 		return 0;
 	}
 
@@ -300,18 +254,17 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 				WinUtil::getContextMenuPos(ctrlList, pt);
 			}
 
-
 			ShellMenu shellMenu;
 			shellMenu.CreatePopupMenu();
 			if(ctrlList.GetSelectedCount() == 1) {
 				shellMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
 				shellMenu.AppendMenu(MF_STRING, IDC_GRANTSLOT, CTSTRING(GRANT_EXTRA_SLOT));
 				shellMenu.AppendMenu(MF_SEPARATOR);
-				shellMenu.AppendMenu(MF_POPUP, (UINT) (HMENU) copyMenu, CTSTRING(COPY));
 
 				auto path = ctrlList.getItemData(ctrlList.GetSelectedIndex())->getTarget();
 				shellMenu.appendShellMenu({ path });
-			}			
+			}		
+			ctrlList.appendCopyMenu(shellMenu);
 
 			shellMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
 			shellMenu.AppendMenu(MF_STRING, IDC_TOTAL, CTSTRING(REMOVE_ALL));
@@ -396,8 +349,7 @@ protected:
 	};
 
 	CStatusBarCtrl ctrlStatus;
-	CMenu copyMenu;
-
+	
 	TypedListViewCtrl<FinishedItem, id> ctrlList;
 
 	int64_t totalBytes;
