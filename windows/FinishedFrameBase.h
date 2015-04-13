@@ -56,7 +56,6 @@ public:
 		COMMAND_ID_HANDLER(IDC_VIEW_AS_TEXT, onViewAsText)
 		COMMAND_ID_HANDLER(IDC_GETLIST, onGetList)
 		COMMAND_ID_HANDLER(IDC_GRANTSLOT, onGrant)		
-		COMMAND_RANGE_HANDLER(IDC_COPY, IDC_COPY + FinishedItem::COLUMN_LAST, onCopy)
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
 		NOTIFY_HANDLER(id, LVN_GETDISPINFO, ctrlList.onGetDispInfo)
 		NOTIFY_HANDLER(id, LVN_COLUMNCLICK, ctrlList.onColumnClick)
@@ -111,25 +110,6 @@ LRESULT onCloseWindow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL
 		PostMessage(WM_CLOSE);
 		return 0;
 	}
-
-LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	tstring sCopy;
-	int i = -1;
-	while ((i = ctrlList.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		FinishedItem *ii = ctrlList.getItemData(i);
-
-		if (!sCopy.empty())
-			sCopy += _T("\r\n");
-
-		sCopy += ii->getText(static_cast<uint8_t>(wID - IDC_COPY));
-	}
-
-	if (!sCopy.empty())
-		WinUtil::setClipboard(sCopy);
-
-
-	return S_OK;
-}
 
 LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 		if(!closed) {
