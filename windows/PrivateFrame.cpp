@@ -338,7 +338,7 @@ void PrivateFrame::updateOnlineStatus() {
 	auto nicks = WinUtil::getNicks(chat->getHintedUser());
 	auto hubNames = chat->isOnline() ? WinUtil::getHubNames(chat->getHintedUser()) : TSTRING(OFFLINE);
 
-	ctrlClient.setClient(!chat->isOnline() ? chat->getClient() : nullptr);
+	ctrlClient.setClient(chat->isOnline() ? chat->getClient() : nullptr);
 	updateStatusBar();
 
 	SetWindowText((nicks + _T(" - ") + hubNames).c_str());
