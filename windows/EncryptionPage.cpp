@@ -36,6 +36,7 @@ PropPage::TextItem EncryptionPage::texts[] = {
 	{ IDC_TRANSFER_ENCRYPTION_LBL, ResourceManager::TRANSFER_ENCRYPTION },
 	{ IDC_TRUSTED_CERT_NOTE, ResourceManager::TRUSTED_CERT_NOTE },
 	{ IDC_TRUSTED_CERTS, ResourceManager::TRUSTED_CERTIFICATES },
+	{ IDC_GENERATE_CERTS_NOTE, ResourceManager::GENERATE_CERTS_NOTE },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

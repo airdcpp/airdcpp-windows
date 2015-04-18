@@ -363,6 +363,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,18,175,10
     LTEXT           "WARNING: Don't change the trusted certificate settings unless you know what you are doing",IDC_TRUSTED_CERT_NOTE,9,113,273,20,0,WS_EX_TRANSPARENT
     CONTROL         "",IDC_ENCRYPTION_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | WS_BORDER | WS_TABSTOP,6,193,285,57
+    LTEXT           "Note: you need to restart the client to load the new certificates",IDC_GENERATE_CERTS_NOTE,9,65,175,20,0,WS_EX_TRANSPARENT
 END
 
 IDD_DOWNLOADPAGE DIALOGEX 0, 0, 298, 318

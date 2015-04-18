@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airgit\AirDC.rc
+// Used by C:\Projects\airdc-git\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -386,6 +386,7 @@
 #define IDC_SELWINCOLOR                 1031
 #define IDC_SELTEXT                     1032
 #define IDC_GETBROWSELIST               1033
+#define IDC_GENERATE_CERT_NOTE          1033
 #define IDC_SHAREHIDDEN                 1035
 #define IDC_SHARE_SFV                   1036
 #define IDC_SHAREHIDDEN2                1036
@@ -803,6 +804,8 @@
 #define IDC_MAPPER                      1288
 #define IDC_PRIV_KEY_LBL2               1288
 #define IDC_TRUSTED_CERT_NOTE           1288
+#define IDC_TRUSTED_CERT_NOTE2          1289
+#define IDC_GENERATE_CERTS_NOTE         1289
 #define IDC_S                           1290
 #define IDC_FLAT                        1291
 #define IDC_S2                          1291
