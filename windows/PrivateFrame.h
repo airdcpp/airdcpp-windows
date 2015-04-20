@@ -211,6 +211,10 @@ private:
 		PostMessage(WM_CLOSE);
 	}
 
+	virtual void on(PrivateChatListener::CCPMStatusUpdated) noexcept{
+		on(UserUpdated());
+	}
+
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
 	void handleNotifications(bool newWindow, const tstring& aMessage, const Identity& from);

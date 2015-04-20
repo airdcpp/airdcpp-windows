@@ -896,14 +896,6 @@ bool WinUtil::getUCParams(HWND parent, const UserCommand& uc, ParamMap& params) 
 	return true;
 }
 
-void WinUtil::bitziLink(const TTHValue& aHash) {
-	// to use this free service by bitzi, we must not hammer or request information from bitzi
-	// except when the user requests it (a mass lookup isn't acceptable), and (if we ever fetch
-	// this data within DC++, we must identify the client/mod in the user agent, so abuse can be 
-	// tracked down and the code can be fixed
-	openLink(_T("http://bitzi.com/lookup/tree:tiger:") + Text::toT(aHash.toBase32()));
-}
-
 void WinUtil::copyMagnet(const TTHValue& aHash, const string& aFile, int64_t aSize) {
 	if(!aFile.empty()) {
 		setClipboard(Text::toT(makeMagnet(aHash, aFile, aSize)));

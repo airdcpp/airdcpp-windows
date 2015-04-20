@@ -197,30 +197,6 @@ void PrivateFrame::updatePMInfo(uint8_t aType) {
 		userTyping = false;
 		setStatusText(_T(" *** ") + TSTRING(USER_CLOSED_WINDOW) + _T(" ***"), LogManager::LOG_INFO);
 		break;
-
-	case PrivateChat::CCPM_ESTABLISHED:
-		addStatusLine(TSTRING(CCPM_ESTABLISHED), LogManager::LOG_INFO);
-		updateOnlineStatus();
-		break;
-
-	case PrivateChat::CCPM_ESTABLISHING:
-		addStatusLine(TSTRING(CCPM_ESTABLISHING), LogManager::LOG_INFO);
-		break;
-
-	case PrivateChat::CCPM_DISCONNECTED:
-		addStatusLine(TSTRING(CCPM_DISCONNECTED), LogManager::LOG_INFO);
-		updateOnlineStatus();
-		break;
-
-	case PrivateChat::CCPM_CONNECTION_TIMEOUT:
-		addStatusLine(TSTRING(CCPM_TIMEOUT), LogManager::LOG_INFO);
-		break;
-
-	case PrivateChat::CCPM_ERROR:
-		addStatusLine(Text::toT(chat->getLastCCPMError()), LogManager::LOG_INFO);
-		break;
-	default:
-		break;
 	}
 
 	if (SETTING(BOLD_PM) && aType != PrivateChat::TYPING_ON && aType != PrivateChat::TYPING_OFF ) {
