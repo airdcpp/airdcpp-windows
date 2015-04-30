@@ -243,13 +243,6 @@ public:
         rhs.top_element = NULL;
     }
 
-    fibonacci_heap(fibonacci_heap & rhs):
-        super_t(rhs), top_element(rhs.top_element)
-    {
-        roots.splice(roots.begin(), rhs.roots);
-        rhs.top_element = NULL;
-    }
-
     /// \copydoc boost::heap::priority_queue::operator=(priority_queue &&)
     fibonacci_heap & operator=(fibonacci_heap && rhs)
     {

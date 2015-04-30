@@ -67,9 +67,9 @@ private:
    exponent_type m_exponent;
    bool m_sign;
 public:
-   cpp_bin_float() : m_data(), m_exponent(exponent_nan), m_sign(false) {}
+   cpp_bin_float() BOOST_NOEXCEPT_IF(noexcept(rep_type())) : m_data(), m_exponent(exponent_nan), m_sign(false) {}
 
-   cpp_bin_float(const cpp_bin_float &o)
+   cpp_bin_float(const cpp_bin_float &o) BOOST_NOEXCEPT_IF(noexcept(rep_type(std::declval<const rep_type&>())))
       : m_data(o.m_data), m_exponent(o.m_exponent), m_sign(o.m_sign) {}
 
    template <unsigned D, digit_base_type B, class A, class E, E MinE, E MaxE>
@@ -104,7 +104,7 @@ public:
       this->assign_float(f);
    }
 
-   cpp_bin_float& operator=(const cpp_bin_float &o)
+   cpp_bin_float& operator=(const cpp_bin_float &o) BOOST_NOEXCEPT_IF(noexcept(std::declval<rep_type&>() = std::declval<const rep_type&>()))
    {
       m_data = o.m_data;
       m_exponent = o.m_exponent;
@@ -136,6 +136,7 @@ public:
    {
       BOOST_MATH_STD_USING
       using default_ops::eval_add;
+      typedef typename boost::multiprecision::detail::canonical<int, cpp_bin_float>::type bf_int_type;
 
       switch((boost::math::fpclassify)(f))
       {
@@ -174,10 +175,16 @@ public:
       {
          f = ldexp(f, bits);
          e -= bits;
+#ifndef BOOST_MATH_NO_LONG_DOUBLE_MATH_FUNCTIONS
          int ipart = itrunc(f);
+#else
+         int ipart = static_cast<int>(f);
+#endif
          f -= ipart;
          m_exponent += bits;
-         eval_add(*this, ipart);
+         cpp_bin_float t;
+         t = static_cast<bf_int_type>(ipart);
+         eval_add(*this, t);
       }
       m_exponent += static_cast<Exponent>(e);
       return *this;
