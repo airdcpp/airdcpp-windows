@@ -56,10 +56,10 @@ CriticalSection cs;
 enum { DEBUG_BUFSIZE = 8192 };
 static char guard[DEBUG_BUFSIZE];
 static int recursion = 0;
-static char tth[192*8/(5*8)+2];
+static char exeTTH[192*8/(5*8)+2];
 static bool firstException = true;
 
-static char buf[DEBUG_BUFSIZE];
+static char debugBuf[DEBUG_BUFSIZE];
 
 
 #ifndef _DEBUG
@@ -164,30 +164,30 @@ LONG __stdcall DCUnhandledExceptionFilter( LPEXCEPTION_POINTERS e )
 	archStr = "x64";
 #endif
 
-	sprintf(buf, "Code: %x ( %s )\r\nVersion: %s %s\r\n", 
+	sprintf(debugBuf, "Code: %x ( %s )\r\nVersion: %s %s\r\n",
 		exceptionCode, getExceptionName(exceptionCode).c_str(), shortVersionString.c_str(), archStr.c_str());
 
-	f.write(buf, strlen(buf));
-	sprintf(buf, "Build: %s\r\n", 
+	f.write(debugBuf, strlen(debugBuf));
+	sprintf(debugBuf, "Build: %s\r\n",
 		BUILD_NUMBER_STR);	
-	f.write(buf, strlen(buf));
+	f.write(debugBuf, strlen(debugBuf));
 	
 	OSVERSIONINFOEX ver;
 	WinUtil::getVersionInfo(ver);
 
-	sprintf(buf, "Major: %d\r\nMinor: %d\r\nBuild: %d\r\nSP: %d\r\nType: %d\r\n",
+	sprintf(debugBuf, "Major: %d\r\nMinor: %d\r\nBuild: %d\r\nSP: %d\r\nType: %d\r\n",
 		(DWORD)ver.dwMajorVersion, (DWORD)ver.dwMinorVersion, (DWORD)ver.dwBuildNumber,
 		(DWORD)ver.wServicePackMajor, (DWORD)ver.wProductType);
 
-	f.write(buf, strlen(buf));
+	f.write(debugBuf, strlen(debugBuf));
 	time_t now;
 	time(&now);
-	strftime(buf, DEBUG_BUFSIZE, "Time: %Y-%m-%d %H:%M:%S\r\n", localtime(&now));
+	strftime(debugBuf, DEBUG_BUFSIZE, "Time: %Y-%m-%d %H:%M:%S\r\n", localtime(&now));
 
-	f.write(buf, strlen(buf));
+	f.write(debugBuf, strlen(debugBuf));
 
 	f.write(LIT("TTH: "));
-	f.write(tth, strlen(tth));
+	f.write(exeTTH, strlen(exeTTH));
 	f.write(LIT("\r\n"));
 
     f.write(LIT("\r\n"));
@@ -411,7 +411,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 
 	auto checkParams = [&argc, &argv] () -> void {
 		while (argc > 0) {
-			Util::addParam(Text::fromT(*argv));
+			Util::addStartupParam(Text::fromT(*argv));
 			argc--;
 			argv++;
 		}
@@ -469,8 +469,8 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 				SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
 
 				//add new startup params
-				Util::addParam(success ? "/updated" : "/updatefailed");
-				Util::addParam("/silent");
+				Util::addStartupParam(success ? "/updated" : "/updatefailed");
+				Util::addStartupParam("/silent");
 
 				//append the passed params (but leave out the update commands...)
 				argv++;
@@ -478,9 +478,9 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 
 				//start the updated instance
 				if (!startElevated) {
-					ShellExecAsUser(NULL, Text::toT(installPath + Util::getFileName(Util::getAppName())).c_str(), Text::toT(Util::getParams(true)).c_str(), NULL);
+					ShellExecAsUser(NULL, Text::toT(installPath + Util::getFileName(Util::getAppName())).c_str(), Text::toT(Util::getStartupParams(true)).c_str(), NULL);
 				} else {
-					ShellExecute(NULL, NULL, Text::toT(installPath + Util::getFileName(Util::getAppName())).c_str(), Text::toT(Util::getParams(true)).c_str(), NULL, SW_SHOWNORMAL);
+					ShellExecute(NULL, NULL, Text::toT(installPath + Util::getFileName(Util::getAppName())).c_str(), Text::toT(Util::getStartupParams(true)).c_str(), NULL, SW_SHOWNORMAL);
 				}
 
 				WinUtil::splash->destroy();
@@ -493,14 +493,14 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	}
 
 	string updaterFile;
-	auto updated = Util::hasParam("/updated") || Util::hasParam("/updatefailed");
+	auto updated = Util::hasStartupParam("/updated") || Util::hasStartupParam("/updatefailed");
 	if (UpdateManager::checkPendingUpdates(Util::getFilePath(Util::getAppName()), updaterFile, updated)) {
 		WinUtil::addUpdate(updaterFile);
 		WinUtil::runPendingUpdate();
 		return FALSE;
 	}
 
-	bool multiple = Util::hasParam("/silent");
+	bool multiple = Util::hasStartupParam("/silent");
 
 	if(dcapp.IsAnotherInstanceRunning()) {
 		// Allow for more than one instance...
@@ -549,13 +549,13 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 		TigerTree tth(TigerTree::calcBlockSize(f.getSize(), 1));
 		size_t n = 0;
 		size_t n2 = DEBUG_BUFSIZE;
-		while( (n = f.read(buf, n2)) > 0) {
-			tth.update(buf, n);
+		while( (n = f.read(debugBuf, n2)) > 0) {
+			tth.update(debugBuf, n);
 			n2 = DEBUG_BUFSIZE;
 		}
 		tth.finalize();
-		strcpy(::tth, tth.getRoot().toBase32().c_str());
-		WinUtil::tth = Text::toT(::tth);
+		strcpy(exeTTH, tth.getRoot().toBase32().c_str());
+		WinUtil::tth = Text::toT(exeTTH);
 	} catch(const FileException&) {
 		dcdebug("Failed reading exe\n");
 	}	

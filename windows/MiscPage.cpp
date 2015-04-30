@@ -147,10 +147,11 @@ LRESULT MiscPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 void MiscPage::write() {
 	PropPage::write((HWND)*this, items);
 
-	TCHAR buf[256];
-	GetDlgItemText(IDC_WINAMP_PATH, buf, 256);
-	settings->set(SettingsManager::WINAMP_PATH, Text::fromT(buf));
-	
+	{
+		TCHAR buf[256];
+		GetDlgItemText(IDC_WINAMP_PATH, buf, 256);
+		settings->set(SettingsManager::WINAMP_PATH, Text::fromT(buf));
+	}
 
 	ctrlFormat.Attach(GetDlgItem(IDC_WINAMP));
 	if(CurSel == 0) {

@@ -436,8 +436,6 @@ private:
 	int lastUpload;
 
 	int statusSizes[10];
-	
-	void loadCmdBarImageList(CImageList& images);
 
 	CIcon awayIconOFF;
 	CIcon awayIconON;

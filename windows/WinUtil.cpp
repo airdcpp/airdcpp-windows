@@ -756,15 +756,15 @@ bool WinUtil::browseApplication(tstring& target, HWND aOwner) {
 	return dlg.show(target);
 }
 
-tstring WinUtil::encodeFont(LOGFONT const& font)
+tstring WinUtil::encodeFont(LOGFONT const& aFont)
 {
-	tstring res(font.lfFaceName);
+	tstring res(aFont.lfFaceName);
 	res += L',';
-	res += Util::toStringW(font.lfHeight);
+	res += Util::toStringW(aFont.lfHeight);
 	res += L',';
-	res += Util::toStringW(font.lfWeight);
+	res += Util::toStringW(aFont.lfWeight);
 	res += L',';
-	res += Util::toStringW(font.lfItalic);
+	res += Util::toStringW(aFont.lfItalic);
 	return res;
 }
 
@@ -1925,7 +1925,7 @@ void WinUtil::addUpdate(const string& aUpdater) {
 
 void WinUtil::runPendingUpdate() {
 	if(updated && !updateCommand.first.empty()) {
-		auto cmd = updateCommand.second + Text::toT(Util::getParams(false));
+		auto cmd = updateCommand.second + Text::toT(Util::getStartupParams(false));
 		ShellExecute(NULL, _T("runas"), updateCommand.first.c_str(), cmd.c_str(), NULL, SW_SHOWNORMAL);
 	}
 }

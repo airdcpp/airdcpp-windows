@@ -1502,7 +1502,7 @@ void HubFrame::on(Message, const Client*, const ChatMessage& message) noexcept {
 	callAsync([=] { onChatMessage(message); });
 }	
 
-void HubFrame::on(StatusMessage, const Client*, const string& line, int statusFlags) {
+void HubFrame::on(StatusMessage, const Client*, const string& line, int statusFlags) noexcept {
 	callAsync([=] { 
 		if(SETTING(BOLD_HUB_TABS_ON_KICK) && (statusFlags & ClientListener::FLAG_IS_SPAM)){
 			setDirty();
@@ -1553,43 +1553,44 @@ void HubFrame::openLinksInTopic() {
 	}
 }
 
-void HubFrame::updateUserList(OnlineUserPtr ui) {
+void HubFrame::updateUserList(OnlineUserPtr aUser) {
 	
 	//single update?
 	//avoid refreshing the whole list and just update the current item
 	//instead
-	auto filterInfoF = [this, &ui](int column) { return Text::fromT(ui->getText(column)); };
+	auto filterInfoF = [this, &aUser](int column) { return Text::fromT(aUser->getText(column)); };
 	auto filterNumericF = [&](int column) -> double {
 		switch (column) {
 		case OnlineUser::COLUMN_EXACT_SHARED:
-		case OnlineUser::COLUMN_SHARED: return ui->getIdentity().getBytesShared();
-		case OnlineUser::COLUMN_SLOTS: return ui->getIdentity().getSlots();
-		case OnlineUser::COLUMN_DLSPEED: return ui->getIdentity().getAdcConnectionSpeed(true);
-		case OnlineUser::COLUMN_ULSPEED: return ui->getUser()->isNMDC() ? Util::toFloat(ui->getIdentity().getConnectionString()) : ui->getIdentity().getAdcConnectionSpeed(false);
-		case OnlineUser::COLUMN_FILES: return Util::toFloat(ui->getIdentity().getSharedFiles());
-		case OnlineUser::COLUMN_HUBS: return ui->getIdentity().getTotalHubCount();
+		case OnlineUser::COLUMN_SHARED: return aUser->getIdentity().getBytesShared();
+		case OnlineUser::COLUMN_SLOTS: return aUser->getIdentity().getSlots();
+		case OnlineUser::COLUMN_DLSPEED: return aUser->getIdentity().getAdcConnectionSpeed(true);
+		case OnlineUser::COLUMN_ULSPEED: return aUser->getUser()->isNMDC() ? 
+			Util::toFloat(aUser->getIdentity().getConnectionString()) : aUser->getIdentity().getAdcConnectionSpeed(false);
+		case OnlineUser::COLUMN_FILES: return Util::toFloat(aUser->getIdentity().getSharedFiles());
+		case OnlineUser::COLUMN_HUBS: return aUser->getIdentity().getTotalHubCount();
 		default: dcassert(0); return 0;
 		}
 	};
 
 	auto filterPrep = filter.prepare(filterInfoF, filterNumericF);
 
-	if(ui) {
-		if(ui->isHidden()) {
+	if(aUser) {
+		if(aUser->isHidden()) {
 			return;
 		}
 
 
 		if (filter.empty() || filter.match(filterPrep)) {
-			if (ctrlUsers.findItem(ui.get()) == -1) {
-				ui->inc();
-				ctrlUsers.insertItem(ui.get(), UserInfoBase::getImage(ui->getIdentity(), client));
+			if (ctrlUsers.findItem(aUser.get()) == -1) {
+				aUser->inc();
+				ctrlUsers.insertItem(aUser.get(), UserInfoBase::getImage(aUser->getIdentity(), client));
 			}
 		} else {
-			int i = ctrlUsers.findItem(ui.get());
+			int i = ctrlUsers.findItem(aUser.get());
 			if (i != -1) {
 				ctrlUsers.DeleteItem(i);
-				ui->dec();
+				aUser->dec();
 			}
 		}
 	} else {
@@ -1609,7 +1610,7 @@ void HubFrame::updateUserList(OnlineUserPtr ui) {
 		} else {
 			auto i = l.begin();
 			for(; i != l.end(); ++i){
-				ui = *i;
+				auto ui = *i;
 				if (!ui->isHidden() && (filter.empty() || filter.match(filterPrep))) {
 					ui->inc();
 					ctrlUsers.insertItem(ui.get(), UserInfoBase::getImage(ui->getIdentity(), client));

@@ -690,8 +690,7 @@ bool ShareDirectories::addDirectory(const tstring& aPath){
 		path += PATH_SEPARATOR;
 
 	/* Check if we are trying to share a directory which exists already in this profile */
-	auto& dirs = shareDirs[curProfile];
-	for(const auto& sdi: dirs) {
+	for(const auto& sdi: shareDirs[curProfile]) {
 		if (!sdi->isCurItem())
 			continue;
 

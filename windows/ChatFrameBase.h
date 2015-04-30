@@ -104,7 +104,7 @@ protected:
 	TStringList::size_type curCommandPosition;		//can't use an iterator because StringList is a vector, and vector iterators become invalid after resizing
 
 	void addMagnet(const StringList& aPaths);
-	void init(HWND aHWND, RECT rcDefault);
+	void init(HWND aHWND, RECT aRcDefault);
 
 	void appendTextLine(const tstring& aText, bool addSpace);
 

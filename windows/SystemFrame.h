@@ -171,7 +171,7 @@ private:
 
 	CRichEditCtrl ctrlPad;
 	CMenu tabMenu;
-	virtual void on(Message, time_t t, const string& message, uint8_t sev);
+	virtual void on(Message, time_t t, const string& message, uint8_t sev) noexcept;
 	virtual void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 	void addLine(LogManager::MessageData, const tstring& msg);
 

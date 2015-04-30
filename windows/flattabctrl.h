@@ -311,10 +311,10 @@ public:
 				if(!::SendMessage(t->hWnd, FTM_CONTEXTMENU, 0, lParam)) {
 					closing = t->hWnd;
 					ClientToScreen(&pt);
-					OMenu mnu;
-					mnu.CreatePopupMenu();
-					mnu.AppendMenu(MF_STRING, IDC_CLOSE_WINDOW, CTSTRING(CLOSE));
-					mnu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_BOTTOMALIGN, pt.x, pt.y, m_hWnd);
+					OMenu contextMnu;
+					contextMnu.CreatePopupMenu();
+					contextMnu.AppendMenu(MF_STRING, IDC_CLOSE_WINDOW, CTSTRING(CLOSE));
+					contextMnu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_BOTTOMALIGN, pt.x, pt.y, m_hWnd);
 				}
 				break;
 			}

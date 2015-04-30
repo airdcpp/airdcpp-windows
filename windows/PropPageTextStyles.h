@@ -110,11 +110,11 @@ private:
 
 };
 	
-	virtual void on(SettingsManagerListener::ReloadPages, int) {
+	virtual void on(SettingsManagerListener::ReloadPages, int) noexcept {
 		SendMessage(WM_DESTROY,0,0);
 		SendMessage(WM_INITDIALOG,0,0);
 	}
-	virtual void on(SettingsManagerListener::Cancel, int) {
+	virtual void on(SettingsManagerListener::Cancel, int) noexcept {
 		if(!initial)
 			LoadTheme(Util::getPath(Util::PATH_THEMES) + "backup.dctheme", true);
 	}

@@ -297,7 +297,7 @@ void SystemFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept
     PostMessage(WM_REFRESH_SETTINGS);
 }
 
-void SystemFrame::on(Message, time_t t, const string& message, uint8_t sev) {
+void SystemFrame::on(Message, time_t t, const string& message, uint8_t sev) noexcept {
 	speak(ADD_LINE, message, LogManager::MessageData(t, (LogManager::Severity)sev));
 	//PostMessage(WM_SPEAKER, (WPARAM)(new pair<LogManager::MessageData, tstring>(LogManager::MessageData(t, (LogManager::Severity)sev), Text::toT(message))));
 }

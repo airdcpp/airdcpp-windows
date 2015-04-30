@@ -133,7 +133,7 @@ void PopupManager::Show(const tstring &aMsg, const tstring &aTitle, int Icon, HI
 	popups.push_back(p);
 }
 
-void PopupManager::on(TimerManagerListener::Second /*type*/, uint64_t /*tick*/) {
+void PopupManager::on(TimerManagerListener::Second /*type*/, uint64_t /*tick*/) noexcept {
 	//let the main thread take care of the window
 	MainFrame::getMainFrame()->callAsync([=] { AutoRemove(); });
 }

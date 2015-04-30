@@ -474,7 +474,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	WinUtil::splash->destroy();
 
-	if (!WinUtil::isShift() && !Util::hasParam("/noautoconnect")) {
+	if (!WinUtil::isShift() && !Util::hasStartupParam("/noautoconnect")) {
 		if (!SETTING(NICK).empty())
 			addThreadedTask([=] { FavoriteManager::getInstance()->autoConnect(); });
 		else

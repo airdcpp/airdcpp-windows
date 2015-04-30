@@ -1718,7 +1718,7 @@ uint64_t QueueFrame::QueueItemInfo::getSecondsLeft() const {
 }
 
 time_t QueueFrame::QueueItemInfo::getTimeAdded() const {
-	return bundle ? bundle->getAdded() : qi ? qi->getAdded() : 0;
+	return bundle ? bundle->getTimeAdded() : qi ? qi->getTimeAdded() : 0;
 }
 
 time_t QueueFrame::QueueItemInfo::getTimeFinished() const {

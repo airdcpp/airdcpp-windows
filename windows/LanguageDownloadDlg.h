@@ -82,7 +82,7 @@ public:
 		delete this;
 	}
 
-	void on(TimerManagerListener::Second, uint64_t /*aTick*/) {
+	void on(TimerManagerListener::Second, uint64_t /*aTick*/) noexcept {
 		callAsync(m_hwnd, [this] { 
 			if (pProgressDlg->HasUserCancelled() > 0) { 
 				close();

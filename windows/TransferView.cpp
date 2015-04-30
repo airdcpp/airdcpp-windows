@@ -678,7 +678,7 @@ void TransferView::on(ConnectionManagerListener::UserUpdated, const ConnectionQu
 	speak(UPDATE_ITEM, ui);
 }
 
-void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueItem* aCqi) {
+void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueItem* aCqi) noexcept {
 	if (aCqi->getConnType() == CONNECTION_TYPE_PM)
 		return;
 
@@ -737,14 +737,14 @@ void TransferView::onUpdateFileInfo(const HintedUser& aUser, const string& aToke
 	}
 }
 
-void TransferView::on(ConnectionManagerListener::Removed, const ConnectionQueueItem* aCqi) {
+void TransferView::on(ConnectionManagerListener::Removed, const ConnectionQueueItem* aCqi) noexcept {
 	if (aCqi->getConnType() == CONNECTION_TYPE_PM)
 		return;
 
 	speak(REMOVE_ITEM, new UpdateInfo(aCqi->getToken(), aCqi->getConnType() == CONNECTION_TYPE_DOWNLOAD));
 }
 
-void TransferView::on(ConnectionManagerListener::Failed, const ConnectionQueueItem* aCqi, const string& aReason) {
+void TransferView::on(ConnectionManagerListener::Failed, const ConnectionQueueItem* aCqi, const string& aReason) noexcept {
 	if (aCqi->getConnType() == CONNECTION_TYPE_PM)
 		return;
 
@@ -891,7 +891,7 @@ void TransferView::on(DownloadManagerListener::Requesting, const Download* d, bo
 	speak(UPDATE_ITEM, ui);
 }
 
-void TransferView::on(DownloadManagerListener::Starting, const Download* aDownload) {
+void TransferView::on(DownloadManagerListener::Starting, const Download* aDownload) noexcept {
 	//LogManager::getInstance()->message("Starting " + aDownload->getToken());
 	auto ui = new UpdateInfo(aDownload->getToken(), true);
 
@@ -904,7 +904,7 @@ void TransferView::on(DownloadManagerListener::Starting, const Download* aDownlo
 	speak(UPDATE_ITEM, ui);
 }
 
-void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bundles, uint64_t /*aTick*/) {
+void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bundles, uint64_t /*aTick*/) noexcept {
 	for(const auto& b: bundles) {
 		double ratio = 0;
 		int64_t totalSpeed = 0;
@@ -998,7 +998,7 @@ void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bun
 	}
 }
 
-void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) {
+void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) noexcept {
 	for(const auto& d: dl) {
 		auto ui = new UpdateInfo(d->getToken(), true);
 		ui->setStatus(ItemInfo::STATUS_RUNNING);
@@ -1052,7 +1052,7 @@ void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) {
 	PostMessage(WM_SPEAKER);
 }
 
-void TransferView::on(DownloadManagerListener::Failed, const Download* aDownload, const string& aReason) {
+void TransferView::on(DownloadManagerListener::Failed, const Download* aDownload, const string& aReason) noexcept {
 	//LogManager::getInstance()->message("Failed " + aDownload->getToken());
 	auto ui = new UpdateInfo(aDownload->getToken(), true, true);
 	ui->setStatus(ItemInfo::STATUS_WAITING);
@@ -1081,7 +1081,7 @@ void TransferView::on(DownloadManagerListener::Failed, const Download* aDownload
 	speak(UPDATE_ITEM, ui);
 }
 
-void TransferView::on(DownloadManagerListener::Status, const UserConnection* uc, const string& aReason) {
+void TransferView::on(DownloadManagerListener::Status, const UserConnection* uc, const string& aReason) noexcept {
 	//LogManager::getInstance()->message("Status " + uc->getToken());
 	dcassert(!uc->getToken().empty());
 	auto ui = new UpdateInfo(uc->getToken(), true);
@@ -1100,7 +1100,7 @@ void TransferView::on(DownloadManagerListener::TargetChanged, const string& aTar
 	speak(UPDATE_ITEM, ui);
 }
 
-void TransferView::on(UploadManagerListener::Starting, const Upload* aUpload) {
+void TransferView::on(UploadManagerListener::Starting, const Upload* aUpload) noexcept {
 	UpdateInfo* ui = new UpdateInfo(aUpload->getToken(), false);
 	starting(ui, aUpload);
 	
@@ -1117,7 +1117,7 @@ void TransferView::on(UploadManagerListener::Starting, const Upload* aUpload) {
 	speak(UPDATE_ITEM, ui);
 }
 
-void TransferView::on(UploadManagerListener::BundleTick, const UploadBundleList& bundles) {
+void TransferView::on(UploadManagerListener::BundleTick, const UploadBundleList& bundles) noexcept {
 	for(const auto& b: bundles) {
 		auto ui = new UpdateInfo(b->getToken(), false);
 
@@ -1213,7 +1213,7 @@ void TransferView::on(UploadManagerListener::BundleTick, const UploadBundleList&
 	}
 }
 
-void TransferView::on(UploadManagerListener::Tick, const UploadList& ul) {
+void TransferView::on(UploadManagerListener::Tick, const UploadList& ul) noexcept {
 	for(const auto& u: ul) {
 		if (u->getPos() == 0) continue;
 		if (u->getToken().empty()) {
@@ -1321,7 +1321,7 @@ void TransferView::onBundleStatus(const BundlePtr& aBundle, bool removed) {
 	speak(UPDATE_BUNDLE, ui);
 }
 
-void TransferView::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept{
+void TransferView::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept {
 	if (aBundle->getStatus() < Bundle::STATUS_DOWNLOADED)
 		onBundleStatus(aBundle, true); 
 }

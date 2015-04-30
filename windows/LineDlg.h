@@ -143,7 +143,6 @@ public:
 	}
 
 	bool isAdcHub() {
-		tstring address;
 		address.resize(1024);
 		address.resize(GetDlgItemText(IDC_LINE, &address[0], 1024));
 		if(AirUtil::isAdcHub(Text::fromT(address)) && !hideShare) {

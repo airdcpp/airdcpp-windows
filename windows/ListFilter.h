@@ -45,8 +45,8 @@ class ListFilter : boost::noncopyable {
 		InfoFunction infoF;
 		const StringMatch& matcher;
 
-		bool matchNumeric(int column) const;
-		bool matchText(int column) const;
+		bool matchNumeric(int aColumn) const;
+		bool matchText(int aColumn) const;
 	};
 
 

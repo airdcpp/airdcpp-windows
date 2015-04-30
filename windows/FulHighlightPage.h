@@ -109,7 +109,7 @@ protected:
 
 	TCHAR* title;
 	
-	virtual void on(SettingsManagerListener::ReloadPages, int) {
+	virtual void on(SettingsManagerListener::ReloadPages, int) noexcept {
 		SendMessage(WM_DESTROY,0,0);
 		SendMessage(WM_INITDIALOG,0,0);
 	}

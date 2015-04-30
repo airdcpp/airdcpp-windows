@@ -210,15 +210,15 @@ void AutoSearchDlg::switchMode() {
 	//users shouldn't be able to change the hidden options with the keyboard command
 	fixControls();
 
-	auto adjustWindowSize = [](HWND m_hWnd, int exceptedCurX, int exceptedCurY, int& newX, int& newY) -> void {
+	auto adjustWindowSize = [](HWND aM_hWnd, int exceptedCurX, int exceptedCurY, int& newX, int& newY) -> void {
 		//get the border widths so it's being sized correctly on different operating systems
 		CRect rc;
-		DWORD dwStyle = ::GetWindowLongPtr(m_hWnd, GWL_STYLE);
+		DWORD dwStyle = ::GetWindowLongPtr(aM_hWnd, GWL_STYLE);
 		AdjustWindowRect(rc, dwStyle, FALSE);
 
 		//get the current window rect (it varies depending on the font size)
 		CRect rcCur;
-		::GetClientRect(m_hWnd, &rcCur);
+		::GetClientRect(aM_hWnd, &rcCur);
 
 		//get the conversion factors
 		auto dpiFactorX = static_cast<float>(rcCur.right) / exceptedCurX;
@@ -248,7 +248,7 @@ LRESULT AutoSearchDlg::onClickLocation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 	targetMenu.CreatePopupMenu();
 	targetMenu.InsertSeparatorFirst(CTSTRING(DOWNLOAD_TO));
 	//appendDownloadMenu(targetMenu, false, true);
-	appendDownloadTo(targetMenu, false, true, nullptr, nullptr);
+	appendDownloadTo(targetMenu, false, true, boost::none, boost::none);
 
 	targetMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_VERPOSANIMATION, pt);
 	return 0;

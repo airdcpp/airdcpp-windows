@@ -67,8 +67,8 @@ LRESULT ChatFrameBase::OnForwardMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPa
 	return 0;
 }
 
-void ChatFrameBase::init(HWND m_hWnd, RECT rcDefault) {
-	ctrlClient.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
+void ChatFrameBase::init(HWND m_hWnd, RECT aRcDefault) {
+	ctrlClient.Create(m_hWnd, aRcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 		WS_VSCROLL | ES_MULTILINE | ES_NOHIDESEL | ES_READONLY, WS_EX_CLIENTEDGE | WS_EX_ACCEPTFILES, IDC_CLIENT);
 
 
@@ -85,31 +85,31 @@ void ChatFrameBase::init(HWND m_hWnd, RECT rcDefault) {
 	ctrlClient.SetBackgroundColor(WinUtil::bgColor);
 	//ctrlClient.setClient(aClient);
 
-	ctrlTooltips.Create(m_hWnd, rcDefault, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);	
+	ctrlTooltips.Create(m_hWnd, aRcDefault, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);
 	ctrlTooltips.SetDelayTime(TTDT_AUTOMATIC, 600);
 	ctrlTooltips.Activate(TRUE);
 
 	if(SETTING(SHOW_MULTILINE)){
-		ctrlResize.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_ICON | BS_CENTER, 0, IDC_RESIZE);
+		ctrlResize.Create(m_hWnd, aRcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_ICON | BS_CENTER, 0, IDC_RESIZE);
 		ctrlResize.SetIcon(ResourceLoader::loadIcon(IDI_EXPAND_UP, 16));
 		ctrlResize.SetFont(WinUtil::font);
 		ctrlTooltips.AddTool(ctrlResize.m_hWnd, CTSTRING(MULTILINE_INPUT));
 	}
 
-	ctrlMessage.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VSCROLL |
+	ctrlMessage.Create(m_hWnd, aRcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VSCROLL |
 		ES_AUTOHSCROLL | ES_MULTILINE | ES_AUTOVSCROLL, WS_EX_CLIENTEDGE);
 	ctrlMessage.SetFont(WinUtil::font);
 	ctrlMessage.SetLimitText(9999);
 	lineCount = 1; //ApexDC
 
 	if(SETTING(SHOW_EMOTICON)){
-		ctrlEmoticons.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_BITMAP | BS_CENTER, 0, IDC_EMOT);
+		ctrlEmoticons.Create(m_hWnd, aRcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_BITMAP | BS_CENTER, 0, IDC_EMOT);
 		ctrlEmoticons.SetIcon(ResourceLoader::loadIcon(IDR_EMOTICON, 16));
 		ctrlTooltips.AddTool(ctrlEmoticons.m_hWnd, CTSTRING(INSERT_EMOTICON));
 	}
 
 	if(SETTING(SHOW_MAGNET)) {
-		ctrlMagnet.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_ICON | BS_CENTER, 0, IDC_BMAGNET);
+		ctrlMagnet.Create(m_hWnd, aRcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_ICON | BS_CENTER, 0, IDC_BMAGNET);
 		ctrlMagnet.SetIcon(ResourceLoader::loadIcon(IDI_SEND_FILE, 16));
 		ctrlTooltips.AddTool(ctrlMagnet.m_hWnd, getSendFileTitle().c_str());
 	}
@@ -279,7 +279,7 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 					if(lptstr != NULL) {
 						string tmp(lptstr);
 						// why I have to do this this way?
-						for(string::size_type i = 0; i < tmp.size(); ++i) {
+						for(i = 0; i < tmp.size(); ++i) {
 							if(tmp[i] == '\n') {
 								newLineCount++;
 								if(newLineCount >= SETTING(MAX_RESIZE_LINES))

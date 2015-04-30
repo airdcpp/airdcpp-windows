@@ -816,7 +816,7 @@ UsersFrame::UserInfo::UserInfo(const UserPtr& u, const string& aUrl, bool update
 }
 
 void UsersFrame::UserInfo::update(const UserPtr& u) {
-	auto fu = !u->isSet(User::FAVORITE) ? nullptr : FavoriteManager::getInstance()->getFavoriteUser(u);
+	auto fu = !u->isSet(User::FAVORITE) ? boost::none : FavoriteManager::getInstance()->getFavoriteUser(u);
 	if (fu) {
 		isFavorite = true;
 		noLimiter = fu->isSet(FavoriteUser::FLAG_SUPERUSER);

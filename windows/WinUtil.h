@@ -361,7 +361,7 @@ public:
 		return x*percent/100;
 	}
 
-	static tstring encodeFont(LOGFONT const& font);
+	static tstring encodeFont(LOGFONT const& aFont);
 
 	static bool browseList(tstring& target, HWND aOwner);
 	static bool browseApplication(tstring& target, HWND aOwner);
@@ -406,7 +406,7 @@ public:
 
 		// did we click on a scrollbar?
 		if (WinUtil::isOnScrollbar(aWindow.m_hWnd, pt)) {
-			return nullptr;
+			return boost::none;
 		}
 
 		// get the current one instead of the pos where we clicked

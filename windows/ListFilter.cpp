@@ -198,8 +198,8 @@ bool ListFilter::match(const Preparation& prep) const {
 	return inverse ? !hasMatch : hasMatch;
 }
 
-bool ListFilter::Preparation::matchNumeric(int column) const {
-	auto toCompare = numericF(column);
+bool ListFilter::Preparation::matchNumeric(int aColumn) const {
+	auto toCompare = numericF(aColumn);
 	switch (method - StringMatch::METHOD_LAST) {
 		case EQUAL: return toCompare == num;
 		case NOT_EQUAL: return toCompare != num;
@@ -215,8 +215,8 @@ bool ListFilter::Preparation::matchNumeric(int column) const {
 	return false;
 }
 
-bool ListFilter::Preparation::matchText(int column) const {
-	return matcher.match(infoF(column));
+bool ListFilter::Preparation::matchText(int aColumn) const {
+	return matcher.match(infoF(aColumn));
 }
 
 bool ListFilter::empty() const {

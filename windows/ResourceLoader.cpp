@@ -85,13 +85,13 @@ CImageList& ResourceLoader::getUserImages() {
 					if(i & (1i64 << iMod))
 						icons.AddIcon(modifiers[iMod]);
 
-				const size_t n = icons.GetImageCount();
-				if(n > 1) {
+				const size_t imageCount = icons.GetImageCount();
+				if(imageCount > 1) {
 					CImageList  tmp;
 					tmp.Create(16, 16, ILC_COLOR32 | ILC_MASK, 3, 3);
 					tmp.AddIcon(MergeImages(icons, 0, icons, 1));
 
-					for(size_t i = 2; i < n; ++i)
+					for(size_t i = 2; i < imageCount; ++i)
 						tmp.ReplaceIcon(0, MergeImages(tmp, 0, icons, i));
 			
 					userImages.AddIcon(tmp.GetIcon(0, ILD_TRANSPARENT));

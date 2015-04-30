@@ -880,7 +880,7 @@ void DirectoryListingFrame::filterList() {
 	updating = true;
 	ctrlFiles.list.SetRedraw(FALSE);
 
-	insertItems(nullptr);
+	insertItems(boost::none);
 
 	ctrlFiles.list.SetRedraw(TRUE);
 	updating = false;
@@ -1354,7 +1354,7 @@ void DirectoryListingFrame::appendTreeContextMenu(CPoint& pt, DirectoryListing::
 	directoryMenu.CreatePopupMenu();
 
 	if (!dl->getIsOwnList()) {
-		appendDownloadMenu(directoryMenu, DownloadBaseHandler::TYPE_SECONDARY, false, nullptr, dir->getPath());
+		appendDownloadMenu(directoryMenu, DownloadBaseHandler::TYPE_SECONDARY, false, boost::none, dir->getPath());
 		directoryMenu.appendSeparator();
 	}
 

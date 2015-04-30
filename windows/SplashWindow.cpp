@@ -110,15 +110,15 @@ void SplashWindow::destroy() {
 	PostMessage(WM_CLOSE, 0, 0);
 }
 
-void SplashWindow::update(const string& status) {
-	this->status = Text::toT(status);
+void SplashWindow::update(const string& aNewStatus) {
+	status = Text::toT(aNewStatus);
 	progress = 0;
 	callAsync([this] { RedrawWindow(); });
 }
 
-void SplashWindow::update(float progress) {
-	if (this->progress == 0.00 || progress - this->progress >= 0.01) {
-		this->progress = progress;
+void SplashWindow::update(float aNewProgress) {
+	if (progress == 0.00 || aNewProgress - progress >= 0.01) {
+		progress = aNewProgress;
 		callAsync([this] { RedrawWindow(); });
 	}
 }

@@ -363,9 +363,6 @@ private:
 
 	BrowserBar<DirectoryListingFrame> browserBar;
 
-	//string currentDir;
-	tstring error;
-
 	int skipHits;
 
 	size_t files;

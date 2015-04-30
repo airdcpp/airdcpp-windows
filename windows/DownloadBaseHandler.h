@@ -121,7 +121,7 @@ public:
 			if (aPath && !(*aPath).empty() && (*aPath).back() != PATH_SEPARATOR)
 				pathWhole = Util::getFilePath(*aPath);
 
-			appendDownloadTo(*targetMenuWhole, true, true, nullptr, pathWhole);
+			appendDownloadTo(*targetMenuWhole, true, true, boost::none, pathWhole);
 		}
 	}
 

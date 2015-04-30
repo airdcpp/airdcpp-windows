@@ -256,7 +256,7 @@ private:
 	HCURSOR		handCursor;
 	HCURSOR		arrowCursor;
 
-	void formatLink(DupeType aDupeType, bool isRelease);
+	void formatLink(DupeType aDupeType, bool aIsRelease);
 	DupeType updateDupeType(ChatLink* aChatLink);
 	LinkList::const_reverse_iterator getLink(POINT& pt);
 	void openLink(const ChatLink* link);
