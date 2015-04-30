@@ -1071,9 +1071,9 @@ BEGIN
     LTEXT           "IP",IDC_SETTINGS_IP,339,123,10,8,NOT WS_GROUP
     EDITTEXT        IDC_SERVER4,352,121,86,12,ES_AUTOHSCROLL
     CONTROL         "Hide AirDC++ and use DC++ instead (TAG)",IDC_STEALTH,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,146,175,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,146,190,10
     CONTROL         "Hide share in this hub",IDC_HIDE_SHARE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,131,237,98,10
-    CONTROL         "Ignore private messages",IDC_FAV_NO_PM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,156,172,10
+    CONTROL         "Ignore private messages",IDC_FAV_NO_PM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,156,190,10
     GROUPBOX        "",IDC_OTHER_BORDER,7,176,220,93
     LTEXT           "Minimum search interval",IDC_FAV_SEARCH_INTERVAL,244,81,96,8
     EDITTEXT        IDC_FAV_SEARCH_INTERVAL_BOX,343,79,37,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
@@ -1081,18 +1081,18 @@ BEGIN
     COMBOBOX        IDC_FAVGROUP_BOX,67,184,150,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     RTEXT           "Group:",IDC_FAVGROUP,13,186,52,8
     CONTROL         "Show users joins / parts in mainchat",IDC_SHOW_JOIN,
-                    "Button",BS_AUTO3STATE | WS_TABSTOP,243,32,166,10
+                    "Button",BS_AUTO3STATE | WS_TABSTOP,243,32,214,10
     RTEXT           "Hub encoding:",IDC_ENCODINGTEXT,9,202,57,8
     COMBOBOX        IDC_ENCODING,67,200,150,30,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Log mainchat",IDC_LOGMAINCHAT,"Button",BS_AUTO3STATE | WS_TABSTOP,243,52,70,10
+    CONTROL         "Log mainchat",IDC_LOGMAINCHAT,"Button",BS_AUTO3STATE | WS_TABSTOP,243,52,214,10
     CONTROL         "Show notify icon on chat messages",IDC_CHAT_NOTIFY,
-                    "Button",BS_AUTO3STATE | WS_TABSTOP,243,22,124,10
+                    "Button",BS_AUTO3STATE | WS_TABSTOP,243,22,214,10
     COMBOBOX        IDC_FAV_SHAREPROFILE,67,218,150,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     RTEXT           "Share profile:",IDC_FAV_SHAREPROFILE_CAPTION,13,221,52,8
     LTEXT           "Custom share profiles can only be set for ADC hubs",IDC_PROFILES_NOTE,36,252,174,8
     PUSHBUTTON      "Edit profiles...",IDC_EDIT_PROFILES,67,234,59,14
     GROUPBOX        "Overrides for global settings",IDC_HUBSETTINGS,234,7,235,228
-    CONTROL         "Use default",IDC_SEARCH_INTERVAL_DEFAULT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,389,81,66,10
+    CONTROL         "Use default",IDC_SEARCH_INTERVAL_DEFAULT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,389,81,70,10
     CONTROL         "Show users joins / parts in mainchat for favorite users",IDC_SHOW_JOIN_FAV,
                     "Button",BS_AUTO3STATE | WS_TABSTOP,243,42,214,10
     LTEXT           "IP",IDC_SETTINGS_IP2,339,155,10,8,NOT WS_GROUP
@@ -1105,7 +1105,7 @@ BEGIN
     EDITTEXT        IDC_EMAIL,54,130,131,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_AWAY_MSG,240,201,214,12,ES_MULTILINE | ES_AUTOHSCROLL | WS_VSCROLL
     LTEXT           "Custom away message",IDC_AWAY_MSG_LBL,241,188,113,8
-    CONTROL         "Accept failover addresses",IDC_FAILOVER,"Button",BS_AUTO3STATE | WS_TABSTOP,243,63,165,10
+    CONTROL         "Accept failover addresses",IDC_FAILOVER,"Button",BS_AUTO3STATE | WS_TABSTOP,243,63,214,10
 END
 
 IDD_TEXT_STYLES DIALOGEX 0, 0, 290, 315
