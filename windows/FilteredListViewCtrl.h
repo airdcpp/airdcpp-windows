@@ -342,9 +342,9 @@ public:
 	}
 
 	void changeFilterState(bool enable) {
-		filter.text.EnableWindow(enable);
-		filter.column.EnableWindow(enable);
-		filter.method.EnableWindow(enable);
+		filter.textEdit.EnableWindow(enable);
+		filter.columnCombo.EnableWindow(enable);
+		filter.methodCombo.EnableWindow(enable);
 	}
 
 	ListFilter filter;

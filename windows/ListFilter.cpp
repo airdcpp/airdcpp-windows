@@ -36,42 +36,42 @@ ListFilter::ListFilter(size_t colCount, UpdateFunction updateF) :
 }
 void ListFilter::addFilterBox(HWND parent) {
 	RECT rc = { 0, 0, 100, 120 };
-	text.Create(parent, rc, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | ES_AUTOHSCROLL, WS_EX_CLIENTEDGE);
-	text.SetFont(WinUtil::systemFont);
-	WinUtil::addCue(text.m_hWnd, CTSTRING(FILTER_DOTS), TRUE);
+	textEdit.Create(parent, rc, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | ES_AUTOHSCROLL, WS_EX_CLIENTEDGE);
+	textEdit.SetFont(WinUtil::systemFont);
+	WinUtil::addCue(textEdit.m_hWnd, CTSTRING(FILTER_DOTS), TRUE);
 
 }
 
 void ListFilter::addColumnBox(HWND parent, vector<ColumnInfo*>& aColumns, int initialSel /*-1*/, HWND async /*NULL*/) {
 	RECT rc = { 0, 0, 100, 110 };
-	column.Create(parent, rc, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_HSCROLL |
+	columnCombo.Create(parent, rc, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_HSCROLL |
 		WS_VSCROLL | CBS_DROPDOWNLIST, WS_EX_CLIENTEDGE);
-	column.SetFont(WinUtil::systemFont);
+	columnCombo.SetFont(WinUtil::systemFont);
 	columns = aColumns;
 	for(auto& col : columns)
-		column.AddString(((*col).name).c_str());
+		columnCombo.AddString(((*col).name).c_str());
 
-	column.AddString(CTSTRING(ANY));
-	column.SetCurSel(initialSel != -1 ? initialSel : colCount);
+	columnCombo.AddString(CTSTRING(ANY));
+	columnCombo.SetCurSel(initialSel != -1 ? initialSel : colCount);
 	callAsync(async ? async : parent, [this] { columnChanged(false); });
 }
 
 
 void ListFilter::addMethodBox(HWND parent){
 	RECT rc = { 0, 0, 100, 110 };
-	method.Create(parent, rc, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_HSCROLL |
+	methodCombo.Create(parent, rc, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_HSCROLL |
 		WS_VSCROLL | CBS_DROPDOWNLIST, WS_EX_CLIENTEDGE);
-	method.SetFont(WinUtil::systemFont);
+	methodCombo.SetFont(WinUtil::systemFont);
 	tstring methods[StringMatch::METHOD_LAST] = { TSTRING(PARTIAL_MATCH), TSTRING(REGULAR_EXPRESSION), TSTRING(WILDCARD), TSTRING(EXACT_MATCH)  };
 	for(auto& str : methods) 
-		method.AddString(str.c_str());
+		methodCombo.AddString(str.c_str());
 
-	method.SetCurSel(defMethod); 
+	methodCombo.SetCurSel(defMethod);
 }
 
 void ListFilter::clear() {
 	if (!matcher.pattern.empty()) {
-		text.SetWindowText(_T(""));
+		textEdit.SetWindowText(_T(""));
 		//textUpdated(Util::emptyString);
 		matcher.pattern = Util::emptyString;
 	}
@@ -79,20 +79,20 @@ void ListFilter::clear() {
 
 void ListFilter::setInverse(bool aInverse) {
 	inverse = aInverse;
-	WinUtil::addCue(text.m_hWnd, inverse ? CTSTRING(EXCLUDE_DOTS) : CTSTRING(FILTER_DOTS), FALSE);
+	WinUtil::addCue(textEdit.m_hWnd, inverse ? CTSTRING(EXCLUDE_DOTS) : CTSTRING(FILTER_DOTS), FALSE);
 }
 
 string ListFilter::getText() const {
 	string ret;
-	TCHAR *buf = new TCHAR[text.GetWindowTextLength() + 1];
-	text.GetWindowText(buf, text.GetWindowTextLength() + 1);
+	TCHAR *buf = new TCHAR[textEdit.GetWindowTextLength() + 1];
+	textEdit.GetWindowText(buf, textEdit.GetWindowTextLength() + 1);
 	ret = Text::fromT(buf);
 	delete [] buf;
 	return ret;
 }
 
 LRESULT ListFilter::onFilterChar(WORD /*wNotifyCode*/, WORD, HWND hWndCtl, BOOL & bHandled) {
-	if (hWndCtl == text.m_hWnd) {
+	if (hWndCtl == textEdit.m_hWnd) {
 		textUpdated(false);
 	}
 
@@ -102,17 +102,17 @@ LRESULT ListFilter::onFilterChar(WORD /*wNotifyCode*/, WORD, HWND hWndCtl, BOOL 
 
 
 size_t ListFilter::getMethod() const {
-	if(!method.IsWindow()) 
+	if(!methodCombo.IsWindow()) 
 		return defMethod;
 
-	return method.GetCurSel();
+	return methodCombo.GetCurSel();
 }
 
 size_t ListFilter::getColumn() const {
-	if(!column.IsWindow()) 
+	if(!columnCombo.IsWindow()) 
 		return defMatchColumn;
 
-	return column.GetCurSel();
+	return columnCombo.GetCurSel();
 }
 
 
@@ -254,11 +254,11 @@ void ListFilter::textUpdated(bool alwaysUpdate) {
 	}
 
 	if (start != string::npos) {
-		method.SetCurSel(StringMatch::METHOD_LAST + mode);
+		methodCombo.SetCurSel(StringMatch::METHOD_LAST + mode);
 		filter = filter.substr(start, filter.length()-start);
 		usingTypedMethod = true;
 	} else if (usingTypedMethod) {
-		method.SetCurSel(0);
+		methodCombo.SetCurSel(0);
 	}
 
 	if (alwaysUpdate || filter != matcher.pattern) {
@@ -268,25 +268,25 @@ void ListFilter::textUpdated(bool alwaysUpdate) {
 }
 
 void ListFilter::columnChanged(bool doFilter) {
-	if(column.IsWindow() && method.IsWindow()) {
-		auto n = method.GetCount();
+	if(columnCombo.IsWindow() && methodCombo.IsWindow()) {
+		auto n = methodCombo.GetCount();
 		size_t col = getColumn();
 
 		for (int i = StringMatch::METHOD_LAST; i < n; ++i) {
-			method.DeleteString(StringMatch::METHOD_LAST);
+			methodCombo.DeleteString(StringMatch::METHOD_LAST);
 		}
 
 		if (getMethod() == -1) {
-			method.SetCurSel(StringMatch::PARTIAL);
+			methodCombo.SetCurSel(StringMatch::PARTIAL);
 		}
 
 		if (col >= colCount || columns[col]->isNumericType()) {
-			method.AddString(_T("="));
-			method.AddString(_T(">="));
-			method.AddString(_T("<="));
-			method.AddString(_T(">"));
-			method.AddString(_T("<"));
-			method.AddString(_T("!="));
+			methodCombo.AddString(_T("="));
+			methodCombo.AddString(_T(">="));
+			methodCombo.AddString(_T("<="));
+			methodCombo.AddString(_T(">"));
+			methodCombo.AddString(_T("<"));
+			methodCombo.AddString(_T("!="));
 		}
 
 		if (doFilter)
@@ -296,10 +296,10 @@ void ListFilter::columnChanged(bool doFilter) {
 }
 
 LRESULT ListFilter::onSelChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl, BOOL& bHandled) {
-	if (hWndCtl == column.m_hWnd || hWndCtl == method.m_hWnd) {
-		if (hWndCtl == column.m_hWnd)
+	if (hWndCtl == columnCombo.m_hWnd || hWndCtl == methodCombo.m_hWnd) {
+		if (hWndCtl == columnCombo.m_hWnd)
 			columnChanged(true);
-		if (hWndCtl == method.m_hWnd)
+		if (hWndCtl == methodCombo.m_hWnd)
 			usingTypedMethod = false;
 
 		updateFunction();

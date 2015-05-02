@@ -66,18 +66,18 @@ public:
 	void addColumnBox(HWND parent, vector<ColumnInfo*>& columns, int initialSel = -1, HWND async = NULL);
 	void addMethodBox(HWND parent);
 
-	CComboBox& getFilterColumnBox() { return column; } 
-	CComboBox& getFilterMethodBox() { return method; } 
-	CEdit& getFilterBox() { return text; } 
+	CComboBox& getFilterColumnBox() { return columnCombo; } 
+	CComboBox& getFilterMethodBox() { return methodCombo; } 
+	CEdit& getFilterBox() { return textEdit; } 
 
 	Preparation prepare(InfoFunction infoF, NumericFunction numericF);
 	bool match(const Preparation& prep) const;
 
 	bool empty() const;
 
-	CEdit text;
-	CComboBox column;
-	CComboBox method;
+	CEdit textEdit;
+	CComboBox columnCombo;
+	CComboBox methodCombo;
 
 	void SetDefaultMatchColumn(int i) { defMatchColumn = i; } //for setting the match column without column box
 	void clear();

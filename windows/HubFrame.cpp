@@ -1610,10 +1610,11 @@ void HubFrame::updateUserList(OnlineUserPtr aUser) {
 		} else {
 			auto i = l.begin();
 			for(; i != l.end(); ++i){
-				auto ui = *i;
-				if (!ui->isHidden() && (filter.empty() || filter.match(filterPrep))) {
-					ui->inc();
-					ctrlUsers.insertItem(ui.get(), UserInfoBase::getImage(ui->getIdentity(), client));
+				// really hacky because of the filter
+				aUser = *i;
+				if (!aUser->isHidden() && (filter.empty() || filter.match(filterPrep))) {
+					aUser->inc();
+					ctrlUsers.insertItem(aUser.get(), UserInfoBase::getImage(aUser->getIdentity(), client));
 				}
 			}
 		}
