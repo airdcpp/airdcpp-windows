@@ -732,6 +732,8 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 
 	if (b)
 		bundleMenu.appendShellMenu({ b->getTarget() });
+
+	//bundleMenu.appendItem(TSTRING(RECHECK_FILE), [=] { handleRecheckBundles(bl); });
 }
 
 /*QueueItem Menu*/
@@ -1050,6 +1052,13 @@ tstring QueueFrame::handleCopyTTH(const QueueItemInfo* aII) {
 		return Text::toT(aII->qi->getTTH().toBase32());
 
 	return Util::emptyStringT;
+}
+
+void QueueFrame::handleRecheckBundles(BundleList bl) {
+	MainFrame::getMainFrame()->addThreadedTask([=] {
+		for (auto& b : bl)
+			QueueManager::getInstance()->recheckBundle(b->getToken());
+	});
 }
 
 void QueueFrame::handleMoveBundles(BundleList bundles) {
@@ -1501,6 +1510,10 @@ void QueueFrame::on(QueueManagerListener::StatusUpdated, const QueueItemPtr& aQI
 	addGuiTask(TASK_QI_UPDATE, [=] { onQueueItemUpdated(aQI); });
 }
 
+void QueueFrame::on(FileRecheckFailed, const QueueItemPtr& qi, const string& aError) noexcept {
+	callAsync([=]{ ctrlStatus.SetText(1, Text::toT(aError).c_str()); });
+}
+
 void QueueFrame::on(DownloadManagerListener::BundleTick, const BundleList& tickBundles, uint64_t /*aTick*/) noexcept{
 	for (auto& b : tickBundles) {
 		addGuiTask(TASK_BUNDLE_UPDATE, [=] { onBundleUpdated(b); });
@@ -1766,6 +1779,7 @@ tstring QueueFrame::QueueItemInfo::getStatusString() const {
 				return TSTRING_F(WAITING_PCT, getPercentage());
 			}
 		}
+		case Bundle::STATUS_RECHECK: return TSTRING(RECHECKING);
 		case Bundle::STATUS_DOWNLOADED: return TSTRING(MOVING);
 		case Bundle::STATUS_MOVED: return TSTRING(DOWNLOADED);
 		case Bundle::STATUS_FAILED_MISSING:

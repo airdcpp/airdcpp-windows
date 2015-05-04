@@ -257,6 +257,7 @@ private:
 	static tstring handleCopyMagnet(const QueueItemInfo* ii);
 	static tstring handleCopyTTH(const QueueItemInfo* ii);
 
+	void handleRecheckBundles(BundleList bl);
 	void handleMoveBundles(BundleList bl);
 	void handleRemoveBundles(BundleList bl, bool removeFinished, bool finishedOnly = false);
 	void handleRemoveFiles(QueueItemList ql, bool removeFinished);
@@ -354,6 +355,7 @@ private:
 	void on(QueueManagerListener::BundlePriority, const BundlePtr& aBundle) noexcept;
 	void on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept;
 	void on(QueueManagerListener::BundleSources, const BundlePtr& aBundle) noexcept;
+	void on(FileRecheckFailed, const QueueItemPtr&, const string&) noexcept;
 
 	void on(DownloadManagerListener::BundleTick, const BundleList& tickBundles, uint64_t aTick) noexcept;
 	void on(DownloadManagerListener::BundleWaiting, const BundlePtr aBundle) noexcept;
