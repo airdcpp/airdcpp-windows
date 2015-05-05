@@ -518,11 +518,6 @@ void QueueFrame::AppendDirectoryMenu(QueueItemInfoList& dirs, QueueItemList& ql,
 	dirMenu.AppendMenu(MF_STRING, IDC_READD_ALL, CTSTRING(READD_ALL));
 	dirMenu.appendSeparator();
 
-	if (hasBundleItems) {
-		dirMenu.appendItem(TSTRING(RUN_SFV_CHECK), [=] { handleCheckSFV(false); });
-	}
-	dirMenu.appendSeparator();
-
 	dirMenu.appendItem(TSTRING(REMOVE), [=] { handleRemoveFiles(ql, false); });
 
 	//remove created files and directories (only the ones associated with the current bundle in queue, not sure if we should just delete the existing directory and all files recursively regardless if its items from current bundle?)
@@ -596,8 +591,6 @@ void QueueFrame::AppendTreeMenu(BundleList& bl, QueueItemList& ql, OMenu& aMenu)
 		aMenu.InsertSeparatorFirst(CTSTRING_F(X_BUNDLES, bl.size()));
 
 		WinUtil::appendBundlePrioMenu(aMenu, bl);
-		if (hasFinished)
-			aMenu.appendItem(TSTRING(RUN_SFV_CHECK), [=] { handleCheckSFV(true); });
 
 		if (curSel == TREE_FAILED) {
 			aMenu.appendItem(TSTRING(RETRY_SHARING), [=] {
@@ -719,7 +712,6 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 	}
 	
 	bundleMenu.appendSeparator();
-	bundleMenu.appendItem(TSTRING(RUN_SFV_CHECK), [=] { handleCheckSFV(false); });
 	if (b) {
 		bundleMenu.appendItem(TSTRING(RENAME), [=] { onRenameBundle(b); });
 	}
@@ -837,6 +829,7 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 			fileMenu.appendSeparator();
 		}
 		else if (hasBundleItems) {
+			fileMenu.appendSeparator();
 			fileMenu.appendItem(TSTRING(OPEN), [=] { handleOpenFile(qi); }, OMenu::FLAG_DEFAULT);
 		}
 		else {
@@ -860,7 +853,7 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 	}
 
 	if (hasBundleItems) {
-		fileMenu.appendItem(TSTRING(RUN_SFV_CHECK), [=] { handleCheckSFV(false); });
+		fileMenu.appendItem(TSTRING(RECHECK_INTEGRITY), [=] { handleRecheckFiles(ql); });
 		fileMenu.appendSeparator();
 	}
 
@@ -871,18 +864,6 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 	if (qi && !qi->isSet(QueueItem::FLAG_USER_LIST)) {
 		fileMenu.appendShellMenu({ qi->getTarget() });
 	}
-}
-
-void QueueFrame::handleCheckSFV(bool treeMenu) {
-	StringList paths;
-	int i = -1;
-	while ((i = ctrlQueue.list.GetNextItem(i, treeMenu ? LVNI_ALL : LVNI_SELECTED)) != -1) {
-		const QueueItemInfoPtr qii = ctrlQueue.list.getItemData(i);
-		if (!qii->isTempItem() && qii->isFinished() && (!treeMenu || qii->bundle))
-			paths.push_back(qii->getTarget());
-	}
-
-	ShareScannerManager::getInstance()->checkSfv(paths);
 }
 
 void QueueFrame::handleOpenFile(const QueueItemPtr& aQI) {
@@ -1058,6 +1039,12 @@ void QueueFrame::handleRecheckBundles(BundleList bl) {
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		for (auto& b : bl)
 			QueueManager::getInstance()->recheckBundle(b->getToken());
+	});
+}
+
+void QueueFrame::handleRecheckFiles(QueueItemList ql) {
+	MainFrame::getMainFrame()->addThreadedTask([=] {
+		QueueManager::getInstance()->recheckFiles(ql);
 	});
 }
 
@@ -1767,12 +1754,12 @@ double QueueFrame::QueueItemInfo::getPercentage() const {
 tstring QueueFrame::QueueItemInfo::getStatusString() const {
 	//Yeah, think about these a little more...
 	if (bundle) {
-		if (bundle->isPausedPrio()) 
-			return TSTRING_F(PAUSED_PCT, getPercentage());
-	
 		switch (bundle->getStatus()) {
 		case Bundle::STATUS_NEW:
 		case Bundle::STATUS_QUEUED: {
+			if (bundle->isPausedPrio())
+				return TSTRING_F(PAUSED_PCT, getPercentage());
+
 			if (bundle->getSpeed() > 0) { // Bundle->isRunning() ?
 				return TSTRING_F(RUNNING_PCT, getPercentage());
 			} else {

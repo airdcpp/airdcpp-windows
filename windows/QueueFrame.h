@@ -257,12 +257,12 @@ private:
 	static tstring handleCopyMagnet(const QueueItemInfo* ii);
 	static tstring handleCopyTTH(const QueueItemInfo* ii);
 
+	void handleRecheckFiles(QueueItemList ql);
 	void handleRecheckBundles(BundleList bl);
 	void handleMoveBundles(BundleList bl);
 	void handleRemoveBundles(BundleList bl, bool removeFinished, bool finishedOnly = false);
 	void handleRemoveFiles(QueueItemList ql, bool removeFinished);
 	void handleSearchQI(const QueueItemPtr& aQI, bool byName);
-	void handleCheckSFV(bool treeMenu);
 	void handleOpenFile(const QueueItemPtr& aQI);
 	void handleOpenFolder();
 	void handleSearchDirectory();
