@@ -733,7 +733,7 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 	if (b)
 		bundleMenu.appendShellMenu({ b->getTarget() });
 
-	//bundleMenu.appendItem(TSTRING(RECHECK_FILE), [=] { handleRecheckBundles(bl); });
+	bundleMenu.appendItem(TSTRING(RECHECK_INTEGRITY), [=] { handleRecheckBundles(bl); });
 }
 
 /*QueueItem Menu*/
