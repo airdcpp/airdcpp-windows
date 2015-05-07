@@ -75,6 +75,7 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlQueue.list.SetTextBkColor(WinUtil::bgColor);
 	ctrlQueue.list.SetTextColor(WinUtil::textColor);
 	ctrlQueue.list.setFlickerFree(WinUtil::bgBrush);
+	ctrlQueue.list.SetFont(WinUtil::listViewFont);
 
 	ctrlTree.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS |
 		TVS_HASBUTTONS | TVS_LINESATROOT | TVS_HASLINES | TVS_SHOWSELALWAYS | TVS_DISABLEDRAGDROP | TVS_TRACKSELECT,
@@ -120,6 +121,7 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		}
 	}
 
+	SettingsManager::getInstance()->addListener(this);
 	QueueManager::getInstance()->addListener(this);
 	DownloadManager::getInstance()->addListener(this);
 
@@ -199,6 +201,7 @@ void QueueFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 LRESULT QueueFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if (!closed) {
 		::KillTimer(m_hWnd, 0);
+		SettingsManager::getInstance()->removeListener(this);
 		QueueManager::getInstance()->removeListener(this);
 		DownloadManager::getInstance()->removeListener(this);
 		closed = true;
@@ -1509,6 +1512,29 @@ void QueueFrame::on(DownloadManagerListener::BundleTick, const BundleList& tickB
 
 void QueueFrame::on(DownloadManagerListener::BundleWaiting, const BundlePtr aBundle) noexcept { 
 	addGuiTask(TASK_BUNDLE_STATUS, [=] { onBundleUpdated(aBundle); });
+}
+
+void QueueFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept{
+	bool refresh = false;
+	if (ctrlQueue.list.GetBkColor() != WinUtil::bgColor) {
+		ctrlQueue.list.SetBkColor(WinUtil::bgColor);
+		ctrlQueue.list.SetTextBkColor(WinUtil::bgColor);
+		ctrlQueue.list.setFlickerFree(WinUtil::bgBrush);
+		refresh = true;
+	}
+	if (ctrlQueue.list.GetTextColor() != WinUtil::textColor) {
+		ctrlQueue.list.SetTextColor(WinUtil::textColor);
+		refresh = true;
+	}
+
+	if (ctrlQueue.list.GetFont() != WinUtil::listViewFont){
+		ctrlQueue.list.SetFont(WinUtil::listViewFont);
+		refresh = true;
+	}
+
+	if (refresh == true) {
+		RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
+	}
 }
 
 /*QueueItemInfo functions*/

@@ -585,9 +585,6 @@
     <ClCompile Include="windows\UpdateDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\UserListColours.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="windows\UsersFrame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -754,6 +751,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="windows\BrowseDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="windows\ListViewColours.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -968,9 +968,6 @@
     <ClInclude Include="windows\UpdateDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="windows\UserListColours.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="windows\UsersFrame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1164,6 +1161,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\BrowserBar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\ListViewColours.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

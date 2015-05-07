@@ -33,7 +33,7 @@
 
 class QueueFrame : public MDITabChildWindowImpl<QueueFrame>, public StaticFrame<QueueFrame, ResourceManager::DOWNLOAD_QUEUE, IDC_QUEUE>,
 	public CSplitterImpl<QueueFrame>,
-	private QueueManagerListener, private DownloadManagerListener, private Async<QueueFrame>
+	private QueueManagerListener, private DownloadManagerListener, private SettingsManagerListener, private Async<QueueFrame>
 {
 public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("QueueFrame"), IDR_QUEUE2, 0, COLOR_3DFACE);
@@ -345,6 +345,8 @@ private:
 	HTREEITEM bundleParent;
 	HTREEITEM locationParent;
 	HTREEITEM curItem;
+
+	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
 	//bundle update listeners
 	void on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle) noexcept;

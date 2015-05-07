@@ -42,6 +42,7 @@ LRESULT FavoriteHubsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	ctrlHubs.SetBkColor(WinUtil::bgColor);
 	ctrlHubs.SetTextBkColor(WinUtil::bgColor);
 	ctrlHubs.SetTextColor(WinUtil::textColor);
+	ctrlHubs.SetFont(WinUtil::listViewFont);
 	ctrlHubs.EnableGroupView(TRUE);
 
 	LVGROUPMETRICS metrics = {0};
@@ -609,6 +610,11 @@ void FavoriteHubsFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) no
 		ctrlHubs.SetTextColor(WinUtil::textColor);
 		refresh = true;
 	}
+	if (ctrlHubs.GetFont() != WinUtil::listViewFont){
+		ctrlHubs.SetFont(WinUtil::listViewFont);
+		refresh = true;
+	}
+
 	if(refresh == true) {
 		RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	}

@@ -68,11 +68,11 @@ LRESULT UploadQueueFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 		
 	ctrlList.setColumnOrderArray(UploadQueueItem::COLUMN_LAST, columnIndexes);
 	ctrlList.setSortColumn(UploadQueueItem::COLUMN_NICK);
-	
 	// colors
 	ctrlList.SetBkColor(WinUtil::bgColor);
 	ctrlList.SetTextBkColor(WinUtil::bgColor);
 	ctrlList.SetTextColor(WinUtil::textColor);
+	ctrlList.SetFont(WinUtil::listViewFont);
 
 	ctrlQueued.SetBkColor(WinUtil::bgColor);
 	ctrlQueued.SetTextColor(WinUtil::textColor);
@@ -453,6 +453,11 @@ void UploadQueueFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noe
 	if(ctrlList.GetTextColor() != WinUtil::textColor) {
 		ctrlList.SetTextColor(WinUtil::textColor);
 		ctrlQueued.SetTextColor(WinUtil::textColor);
+		refresh = true;
+	}
+
+	if (ctrlList.GetFont() != WinUtil::listViewFont){
+		ctrlList.SetFont(WinUtil::listViewFont);
 		refresh = true;
 	}
 	if(refresh == true) {

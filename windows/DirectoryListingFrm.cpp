@@ -342,6 +342,7 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	ctrlFiles.list.SetBkColor(WinUtil::bgColor);
 	ctrlFiles.list.SetTextBkColor(WinUtil::bgColor);
 	ctrlFiles.list.SetTextColor(WinUtil::textColor);
+	ctrlFiles.list.SetFont(WinUtil::listViewFont);
 	
 	ctrlTree.SetBkColor(WinUtil::bgColor);
 	ctrlTree.SetTextColor(WinUtil::textColor);
@@ -1976,6 +1977,11 @@ void DirectoryListingFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/
 		ctrlTree.SetTextColor(WinUtil::textColor);
 		refresh = true;
 	}
+	if (ctrlFiles.list.GetFont() != WinUtil::listViewFont){
+		ctrlFiles.list.SetFont(WinUtil::listViewFont);
+		refresh = true;
+	}
+
 	if(refresh == true) {
 		RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	}

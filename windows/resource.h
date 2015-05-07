@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airdc-git\AirDC.rc
+// Used by N:\projects\airgit\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -128,7 +128,7 @@
 #define IDD_HASH_PROGRESS               284
 #define IDD_POPUPS                      287
 #define IDD_SDCPAGE                     288
-#define IDD_USERLIST_COLOURS            289
+#define IDD_LISTVIEW_COLOURS            289
 #define IDD_HUB_LIST                    290
 #define IDB_FLAGS                       291
 #define IDD_WINDOWSPAGE                 292
@@ -1603,6 +1603,7 @@
 #define IDC_BLOOM_MODE                  10197
 #define IDC_PROGRESS_SLIDER             10198
 #define IDC_LIGHTEN_TXT                 10199
+#define IDC_LIST_GENERAL                10200
 #define IDC_REFRESH_WINAMP              11011
 #define IDC_WINAMP_LIST                 11012
 #define IDC_POSITION                    11013
@@ -1821,7 +1822,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        362
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         10200
+#define _APS_NEXT_CONTROL_VALUE         10201
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

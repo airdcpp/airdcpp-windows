@@ -89,6 +89,7 @@ LRESULT ADLSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	ctrlList.SetBkColor(WinUtil::bgColor);
 	ctrlList.SetTextBkColor(WinUtil::bgColor);
 	ctrlList.SetTextColor(WinUtil::textColor);
+	ctrlList.SetFont(WinUtil::listViewFont);
 
 	// Create listview columns
 	WinUtil::splitTokens(columnIndexes, SETTING(ADLSEARCHFRAME_ORDER), COLUMN_LAST);
@@ -633,6 +634,11 @@ void ADLSearchFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexc
 		ctrlList.SetTextColor(WinUtil::textColor);
 		refresh = true;
 	}
+	if (ctrlList.GetFont() != WinUtil::listViewFont){
+		ctrlList.SetFont(WinUtil::listViewFont);
+		refresh = true;
+	}
+
 	if(refresh == true) {
 		RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	}

@@ -82,6 +82,7 @@ LRESULT TransferView::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ctrlTransfers.SetTextBkColor(WinUtil::bgColor);
 	ctrlTransfers.SetTextColor(WinUtil::textColor);
 	ctrlTransfers.setFlickerFree(WinUtil::bgBrush);
+	ctrlTransfers.SetFont(WinUtil::listViewFont);
 
 	ctrlTransfers.SetImageList(arrows, LVSIL_SMALL);
 	ctrlTransfers.setSortColumn(COLUMN_USER);
@@ -1495,6 +1496,11 @@ void TransferView::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcep
 	}
 	if(ctrlTransfers.GetTextColor() != WinUtil::textColor) {
 		ctrlTransfers.SetTextColor(WinUtil::textColor);
+		refresh = true;
+	}
+
+	if (ctrlTransfers.GetFont() != WinUtil::listViewFont){
+		ctrlTransfers.SetFont(WinUtil::listViewFont);
 		refresh = true;
 	}
 

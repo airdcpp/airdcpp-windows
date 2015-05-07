@@ -76,6 +76,7 @@ public:
 		ctrlList.SetBkColor(WinUtil::bgColor);
 		ctrlList.SetTextBkColor(WinUtil::bgColor);
 		ctrlList.SetTextColor(WinUtil::textColor);
+		ctrlList.SetFont(WinUtil::listViewFont);
 
 		// Create listview columns
 		WinUtil::splitTokens(columnIndexes, SettingsManager::getInstance()->get(columnOrder), FinishedItem::COLUMN_LAST);
@@ -389,6 +390,12 @@ protected:
 			ctrlList.SetTextColor(WinUtil::textColor);
 			refresh = true;
 		}
+
+		if (ctrlList.GetFont() != WinUtil::listViewFont){
+			ctrlList.SetFont(WinUtil::listViewFont);
+			refresh = true;
+		}
+
 		if(refresh == true) {
 			RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 		}

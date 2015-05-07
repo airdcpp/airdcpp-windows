@@ -39,7 +39,7 @@
 #include "ToolbarPage.h"
 #include "LocationsPage.h"
 #include "SDCPage.h"
-#include "UserListColours.h"
+#include "ListViewColours.h"
 #include "NetworkPage.h"
 #include "ProxyPage.h"
 #include "WindowsPage.h"
@@ -81,7 +81,7 @@ PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPa
 	pages[n++] = make_unique<AppearancePage>(s);
 	pages[n++] = make_unique<PropPageTextStyles>(s);
 	pages[n++] = make_unique<OperaColorsPage>(s);
-	pages[n++] = make_unique<UserListColours>(s);
+	pages[n++] = make_unique<ListViewColours>(s);
 	pages[n++] = make_unique<Sounds>(s);
 	pages[n++] = make_unique<ToolbarPage>(s);
 	pages[n++] = make_unique<WindowsPage>(s);

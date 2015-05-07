@@ -37,6 +37,7 @@ LRESULT RecentHubsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	ctrlHubs.SetBkColor(WinUtil::bgColor);
 	ctrlHubs.SetTextBkColor(WinUtil::bgColor);
 	ctrlHubs.SetTextColor(WinUtil::textColor);
+	ctrlHubs.SetFont(WinUtil::listViewFont);
 	
 	// Create listview columns
 	WinUtil::splitTokens(columnIndexes, SETTING(RECENTFRAME_ORDER), COLUMN_LAST);
@@ -288,6 +289,12 @@ void RecentHubsFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noex
 		ctrlHubs.SetTextColor(WinUtil::textColor);
 		refresh = true;
 	}
+
+	if (ctrlHubs.GetFont() != WinUtil::listViewFont){
+		ctrlHubs.SetFont(WinUtil::listViewFont);
+		refresh = true;
+	}
+
 	if(refresh == true) {
 		RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	}

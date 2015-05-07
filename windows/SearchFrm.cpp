@@ -295,7 +295,7 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlResults.list.SetBkColor(WinUtil::bgColor);
 	ctrlResults.list.SetTextBkColor(WinUtil::bgColor);
 	ctrlResults.list.SetTextColor(WinUtil::textColor);
-	ctrlResults.list.SetFont(WinUtil::systemFont, FALSE);	// use WinUtil::font instead to obey Appearace settings
+	ctrlResults.list.SetFont(WinUtil::listViewFont, FALSE);
 	ctrlResults.list.setFlickerFree(WinUtil::bgBrush);
 	ctrlResults.list.addCopyHandler(COLUMN_IP, &ColumnInfo::filterCountry);
 	
@@ -1890,6 +1890,12 @@ void SearchFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept
 		ctrlHubs.SetTextColor(WinUtil::textColor);
 		refresh = true;
 	}
+
+	if (ctrlResults.list.GetFont() != WinUtil::listViewFont){
+		ctrlResults.list.SetFont(WinUtil::listViewFont);
+		refresh = true;
+	}
+
 	if(refresh == true) {
 		RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	}
