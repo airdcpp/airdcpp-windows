@@ -40,12 +40,12 @@
 
 #include "BarShader.h"
 
-int TransferView::columnIndexes[] = { COLUMN_USER, COLUMN_FILE, COLUMN_HUB, COLUMN_STATUS, COLUMN_TIMELEFT, COLUMN_SPEED, COLUMN_SIZE, COLUMN_PATH, COLUMN_CIPHER, COLUMN_IP, COLUMN_RATIO };
-int TransferView::columnSizes[] = { 150, 250, 150, 275, 75, 75, 75, 200, 100, 175, 50 };
+int TransferView::columnIndexes[] = { COLUMN_USER, COLUMN_FILE, COLUMN_HUB, COLUMN_STATUS, COLUMN_TIMELEFT, COLUMN_SPEED, COLUMN_SIZE, COLUMN_PATH, COLUMN_IP, COLUMN_RATIO };
+int TransferView::columnSizes[] = { 150, 250, 150, 275, 75, 75, 75, 200, 175, 50 };
 
 static ResourceManager::Strings columnNames[] = { ResourceManager::USER, ResourceManager::BUNDLE_FILENAME, ResourceManager::HUB_SEGMENTS, ResourceManager::STATUS,
 	ResourceManager::TIME_LEFT, ResourceManager::SPEED, ResourceManager::SIZE, ResourceManager::PATH,
-	ResourceManager::CIPHER, ResourceManager::IP_BARE, ResourceManager::RATIO};
+	ResourceManager::IP_BARE, ResourceManager::RATIO};
 
 TransferView::~TransferView() {
 	arrows.Destroy();
@@ -659,9 +659,6 @@ void TransferView::updateItem(int ii, uint32_t updateMask) {
 	if(updateMask & UpdateInfo::MASK_SEGMENT) {
 		ctrlTransfers.updateItem(ii, COLUMN_HUB);
 	}
-	if(updateMask & UpdateInfo::MASK_CIPHER) {
-		ctrlTransfers.updateItem(ii, COLUMN_CIPHER);
-	}
 	if(updateMask & UpdateInfo::MASK_USERS) {
 		ctrlTransfers.updateItem(ii, COLUMN_USER);
 	}
@@ -854,7 +851,6 @@ const tstring TransferView::ItemInfo::getText(uint8_t col) const {
 		case COLUMN_PATH: return Util::getFilePath(target);
 		case COLUMN_IP: return ip;
 		case COLUMN_RATIO: return (status == STATUS_RUNNING) ? Util::toStringW(getRatio()) : Util::emptyStringT;
-		case COLUMN_CIPHER: return cipher;
 		default: return Util::emptyStringT;
 	}
 }
