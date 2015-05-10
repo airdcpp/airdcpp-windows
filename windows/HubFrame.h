@@ -262,6 +262,7 @@ private:
 	deque<tstring> lastLinesList;
 	tstring lastLines;
 	CToolTipCtrl ctrlTooltips;
+	CIcon iSecure;
 	
 	static int columnIndexes[OnlineUser::COLUMN_LAST];
 	static int columnSizes[OnlineUser::COLUMN_LAST];

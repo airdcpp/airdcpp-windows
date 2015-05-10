@@ -99,6 +99,8 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	ctrlTooltips.SetDelayTime(TTDT_AUTOPOP, 15000);
 	ctrlTooltips.Activate(TRUE);
 
+	iSecure = ResourceLoader::loadIcon(IDI_SECURE, 16);
+
 	auto fhe = FavoriteManager::getInstance()->getFavoriteHubEntry(Text::fromT(server));
 	if(fhe) {
 		WinUtil::splitTokens(columnIndexes, fhe->getHeaderOrder(), OnlineUser::COLUMN_LAST);
@@ -513,9 +515,14 @@ void HubFrame::onConnected() {
 	setDisconnected(false);
 	setTabIcons();
 
-	tstring text = Text::toT(client->getCipherName());
-	ctrlStatus.SetText(1, text.c_str());
-	statusSizes[0] = WinUtil::getTextWidth(text, ctrlStatus.m_hWnd);
+	//tstring text = Text::toT(client->getCipherName());
+	//ctrlStatus.SetText(1, text.c_str());
+
+	if (client->isSecure()) {
+		ctrlStatus.SetIcon(1, iSecure);
+		statusSizes[0] = 16 + 8;
+	}
+	//statusSizes[0] = WinUtil::getTextWidth(text, ctrlStatus.m_hWnd);
 
 	if(SETTING(POPUP_HUB_CONNECTED)) {
 		WinUtil::showPopup(Text::toT(client->getAddress()), TSTRING(CONNECTED));
