@@ -1,22 +1,24 @@
 3.00
 
 Added:
+
 - Direct encrypted private messages (CCPM feature)
 - "Message seen" and "User typing" notifications in direct encrypted PM channels
-- Multilingual installer 
+- Multilingual installer
+- Recheck integrity (queue): re-adds corrupted file segments for downloading, detects already downloaded segments/files and performs a SFV check
 
 Fixed:
 
 - Fix an issue with the remaining hashing bytes when reading of files being hashed fails
 - Retry hashing of failed bundles correctly
-- The installer will count the required disk space correctly
 - Don't use old language files when the settings directory location has been changed 
 - Fix a bug with matching download skiplist for folders
 - Fix bundle alternative searches interval adding an extra minute 
+- Ensure that there are no path separators in the formated log file parameters
 
 Changed:
+
 - Enable TLS v1.1 and TLS v1.2 based connections (DC++)
-- Updated Openssl
 - Verify keyprints in Client-Client and Client-Hub connections
 - Apply scanning skiplist option for checking share excludes as well
   
