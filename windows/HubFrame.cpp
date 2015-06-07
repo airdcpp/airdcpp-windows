@@ -86,11 +86,13 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	ctrlShowUsers.SetFont(WinUtil::systemFont);
 	ctrlShowUsers.SetCheck(showUsers ? BST_CHECKED : BST_UNCHECKED);
 	ctrlShowUsersContainer.SubclassWindow(ctrlShowUsers.m_hWnd);
-	
-	CToolInfo ti(TTF_SUBCLASS, ctrlStatus.m_hWnd);
+
+
 	ctrlTooltips.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);	 
-	ctrlTooltips.SetWindowPos(HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);	 
+	ctrlTooltips.SetWindowPos(HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+	CToolInfo ti(TTF_SUBCLASS, ctrlStatus.m_hWnd);
 	ctrlTooltips.AddTool(&ti);	 
+
 
 	CToolInfo ti2(TTF_SUBCLASS, ctrlShowUsers.m_hWnd);
 	ti2.cbSize = sizeof(CToolInfo);
@@ -521,7 +523,10 @@ void HubFrame::onConnected() {
 	if (client->isSecure()) {
 		ctrlStatus.SetIcon(1, iSecure);
 		statusSizes[0] = 16 + 8;
-	}
+		tstring cipherName = Text::toT(client->getCipherName());
+		if (!cipherName.empty())
+			cipherPopupTxt = (client->isTrusted() ? _T("[S] ") : _T("[U] ")) + cipherName;
+	}	
 	//statusSizes[0] = WinUtil::getTextWidth(text, ctrlStatus.m_hWnd);
 
 	if(SETTING(POPUP_HUB_CONNECTED)) {
@@ -644,7 +649,6 @@ void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		w[5] = w[4] + 16;
 		
 		ctrlStatus.SetParts(6, w);
-
 		ctrlTooltips.SetMaxTipWidth(w[0]);
 
 		// Strange, can't get the correct width of the last field...
@@ -1247,6 +1251,24 @@ LRESULT HubFrame::onEnterUsers(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHand
 
 LRESULT HubFrame::onGetToolTip(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 	NMTTDISPINFO* nm = (NMTTDISPINFO*)pnmh;
+	POINT pt;
+	GetCursorPos(&pt);
+	::ScreenToClient(ctrlStatus.m_hWnd, &pt);
+	CRect rc;
+	ctrlStatus.GetRect(1, rc);
+	if (!cipherPopupTxt.empty() && PtInRect(rc, pt)) {
+		nm->lpszText = const_cast<TCHAR*>(cipherPopupTxt.c_str());
+		bHandled = FALSE;
+		return 0;
+	}
+
+	ctrlStatus.GetRect(0, rc);
+	if (!PtInRect(rc, pt)){
+		bHandled = FALSE;
+		return 0;
+	}
+
+
 	lastLines.clear();
 	for(auto& i: lastLinesList) {
 		lastLines += i;

@@ -1520,10 +1520,12 @@ void QueueFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept{
 		ctrlQueue.list.SetBkColor(WinUtil::bgColor);
 		ctrlQueue.list.SetTextBkColor(WinUtil::bgColor);
 		ctrlQueue.list.setFlickerFree(WinUtil::bgBrush);
+		ctrlTree.SetBkColor(WinUtil::bgColor);
 		refresh = true;
 	}
 	if (ctrlQueue.list.GetTextColor() != WinUtil::textColor) {
 		ctrlQueue.list.SetTextColor(WinUtil::textColor);
+		ctrlTree.SetTextColor(WinUtil::textColor);
 		refresh = true;
 	}
 

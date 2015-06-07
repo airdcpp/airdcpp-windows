@@ -263,6 +263,7 @@ private:
 	tstring lastLines;
 	CToolTipCtrl ctrlTooltips;
 	CIcon iSecure;
+	tstring cipherPopupTxt;
 	
 	static int columnIndexes[OnlineUser::COLUMN_LAST];
 	static int columnSizes[OnlineUser::COLUMN_LAST];

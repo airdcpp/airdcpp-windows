@@ -417,9 +417,9 @@ bool PrivateFrame::sendMessage(const tstring& msg, string& error_, bool thirdPer
 
 LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closed) {
+		chat->removeListener(this);
 		LogManager::getInstance()->removePmCache(getUser());
 		SettingsManager::getInstance()->removeListener(this);
-		chat->removeListener(this);
 		MessageManager::getInstance()->removeChat(getUser());
 
 		closed = true;
