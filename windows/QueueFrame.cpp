@@ -517,8 +517,8 @@ void QueueFrame::AppendDirectoryMenu(QueueItemInfoList& dirs, QueueItemList& ql,
 		WinUtil::appendSearchMenu(dirMenu, Text::fromT(dirs.front()->name));
 
 	dirMenu.AppendMenu(MF_SEPARATOR);
-	dirMenu.AppendMenu(MF_STRING, IDC_REMOVE_OFFLINE, CTSTRING(REMOVE_OFFLINE));
-	dirMenu.AppendMenu(MF_STRING, IDC_READD_ALL, CTSTRING(READD_ALL));
+	dirMenu.appendItem(TSTRING(REMOVE_OFFLINE), [=] { handleRemoveOffline(ql); });
+	dirMenu.appendItem(TSTRING(READD_ALL), [=] { handleReaddAll(ql); });
 	dirMenu.appendSeparator();
 
 	dirMenu.appendItem(TSTRING(REMOVE), [=] { handleRemoveFiles(ql, false); });
@@ -850,8 +850,8 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 		//	WinUtil::appendFilePrioMenu(fileMenu, ql);
 
 		fileMenu.AppendMenu(MF_SEPARATOR);
-		fileMenu.AppendMenu(MF_STRING, IDC_REMOVE_OFFLINE, CTSTRING(REMOVE_OFFLINE));
-		fileMenu.AppendMenu(MF_STRING, IDC_READD_ALL, CTSTRING(READD_ALL));
+		fileMenu.appendItem(TSTRING(REMOVE_OFFLINE), [=] { handleRemoveOffline(ql); });
+		fileMenu.appendItem(TSTRING(READD_ALL), [=] { handleReaddAll(ql); });
 		fileMenu.appendSeparator();
 	}
 
@@ -889,35 +889,32 @@ void QueueFrame::handleSearchDirectory() {
 	});
 }
 
-LRESULT QueueFrame::onRemoveOffline(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int i = -1;
-	while ((i = ctrlQueue.list.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		const QueueItemInfoPtr ii = ctrlQueue.list.getItemData(i);
 
-		const auto sources = QueueManager::getInstance()->getSources(ii->qi);
-		for (const auto& s : sources) {
-			if (!s.getUser().user->isOnline()) {
-				QueueManager::getInstance()->removeFileSource(ii->qi->getTarget(), s.getUser().user, QueueItem::Source::FLAG_REMOVED);
+void QueueFrame::handleReaddAll(QueueItemList ql) {
+	MainFrame::getMainFrame()->addThreadedTask([=] {
+		for (auto q: ql) {
+			// re-add all sources
+			const auto badSources = QueueManager::getInstance()->getBadSources(q);
+			for (const auto& bs : badSources) {
+				QueueManager::getInstance()->readdQISource(q->getTarget(), bs.getUser());
 			}
 		}
-	}
-	return 0;
+	});
 }
-LRESULT QueueFrame::onReaddAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int i = -1;
-	while ((i = ctrlQueue.list.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		const QueueItemInfoPtr ii = ctrlQueue.list.getItemData(i);
-		if (ii->bundle)
-			continue;
 
-		// re-add all sources
-		const auto badSources = QueueManager::getInstance()->getBadSources(ii->qi);
-		for (const auto& bs : badSources) {
-			QueueManager::getInstance()->readdQISource(ii->qi->getTarget(), bs.getUser());
+void QueueFrame::handleRemoveOffline(QueueItemList ql) {
+	MainFrame::getMainFrame()->addThreadedTask([=] {
+		for (auto q : ql) {
+			const auto sources = QueueManager::getInstance()->getSources(q);
+			for (const auto& s : sources) {
+				if (!s.getUser().user->isOnline()) {
+					QueueManager::getInstance()->removeFileSource(q->getTarget(), s.getUser().user, QueueItem::Source::FLAG_REMOVED);
+				}
+			}
 		}
-	}
-	return 0;
+	});
 }
+
 
 LRESULT QueueFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	executeGuiTasks();

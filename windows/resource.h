@@ -341,7 +341,6 @@
 #define IDC_EMAIL                       1002
 #define IDC_DESCRIPTION                 1003
 #define IDC_EMAIL2                      1003
-#define IDC_READD_ALL                   1004
 #define IDC_DESCRIPTION2                1004
 #define IDC_PROFILES_DESC               1004
 #define IDC_CONNECTIONTYPE              1005

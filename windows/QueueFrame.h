@@ -61,8 +61,6 @@ public:
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		MESSAGE_HANDLER(WM_TIMER, onTimer)
-		COMMAND_ID_HANDLER(IDC_REMOVE_OFFLINE, onRemoveOffline)
-		COMMAND_ID_HANDLER(IDC_READD_ALL, onReaddAll)
 		CHAIN_MSG_MAP_MEMBER(browserBar)
 		CHAIN_MSG_MAP(baseClass)
 		CHAIN_MSG_MAP(CSplitterImpl<QueueFrame>)
@@ -78,9 +76,6 @@ public:
 	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
-
-	LRESULT onReaddAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onRemoveOffline(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 
 	LRESULT onSetFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) {
@@ -267,6 +262,9 @@ private:
 	void handleOpenFolder();
 	void handleSearchDirectory();
 	void handleItemClick(const QueueItemInfoPtr& aII, bool byHistory = false);
+	void handleReaddAll(QueueItemList ql);
+	void handleRemoveOffline(QueueItemList ql);
+
 	void handleTab();
 
 	const QueueItemInfoPtr findItemByPath(const string& aPath);
