@@ -67,6 +67,7 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	init(m_hWnd, rcDefault);
 	ctrlMessageContainer.SubclassWindow(ctrlMessage.m_hWnd);
 	ctrlClientContainer.SubclassWindow(ctrlClient.m_hWnd);
+	ctrlStatusContainer.SubclassWindow(ctrlStatus.m_hWnd);
 
 	ctrlUsers.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS, WS_EX_CLIENTEDGE, IDC_USERS);
@@ -86,20 +87,6 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	ctrlShowUsers.SetFont(WinUtil::systemFont);
 	ctrlShowUsers.SetCheck(showUsers ? BST_CHECKED : BST_UNCHECKED);
 	ctrlShowUsersContainer.SubclassWindow(ctrlShowUsers.m_hWnd);
-
-
-	ctrlTooltips.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);	 
-	ctrlTooltips.SetWindowPos(HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-	CToolInfo ti(TTF_SUBCLASS, ctrlStatus.m_hWnd);
-	ctrlTooltips.AddTool(&ti);	 
-
-
-	CToolInfo ti2(TTF_SUBCLASS, ctrlShowUsers.m_hWnd);
-	ti2.cbSize = sizeof(CToolInfo);
-	ti2.lpszText = (LPWSTR)CTSTRING(SHOW_USERLIST);
-	ctrlTooltips.AddTool(&ti2);
-	ctrlTooltips.SetDelayTime(TTDT_AUTOPOP, 15000);
-	ctrlTooltips.Activate(TRUE);
 
 	iSecure = ResourceLoader::loadIcon(IDI_SECURE, 16);
 
@@ -139,6 +126,19 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	ctrlUsers.setFlickerFree(WinUtil::bgBrush);
 	ctrlUsers.setSortColumn(OnlineUser::COLUMN_NICK);
 	ctrlUsers.SetImageList(ResourceLoader::getUserImages(), LVSIL_SMALL);
+
+	CToolInfo ti_1(TTF_SUBCLASS, ctrlStatus.m_hWnd, 0 + POPUP_UID, 0, LPSTR_TEXTCALLBACK);
+	CToolInfo ti_2(TTF_SUBCLASS, ctrlStatus.m_hWnd, 1 + POPUP_UID, 0, LPSTR_TEXTCALLBACK);
+	ctrlTooltips.AddTool(&ti_1);
+	ctrlTooltips.AddTool(&ti_2);
+
+	CToolInfo ti_3(TTF_SUBCLASS, ctrlShowUsers.m_hWnd);
+	ti_3.cbSize = sizeof(CToolInfo);
+	ti_3.lpszText = (LPWSTR)CTSTRING(SHOW_USERLIST);
+	ctrlTooltips.AddTool(&ti_3);
+	ctrlTooltips.SetDelayTime(TTDT_AUTOPOP, 15000);
+	ctrlTooltips.Activate(TRUE);
+
 
 	WinUtil::SetIcon(m_hWnd, IDI_HUB);
 
@@ -188,6 +188,7 @@ HubFrame::HubFrame(const tstring& aServer) :
 		ctrlShowUsersContainer(WC_BUTTON, this, SHOW_USERS),
 		ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 		ctrlClientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
+		ctrlStatusContainer(STATUSCLASSNAME, this, STATUS_MSG),
 		filter(OnlineUser::COLUMN_LAST, [this] { updateUserList(); updateUsers = true;}),
 		statusDirty(true)
 {
@@ -656,6 +657,12 @@ void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		sr.left = sr.right;
 		sr.right = sr.left + 16;
 		ctrlShowUsers.MoveWindow(sr);
+
+		CRect r;
+		ctrlStatus.GetRect(0, r);
+		ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, 0 + POPUP_UID, r);
+		ctrlStatus.GetRect(1, r);
+		ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, 1 + POPUP_UID, r);
 	}
 		
 	int h = WinUtil::fontHeight + 4;
@@ -1249,39 +1256,29 @@ LRESULT HubFrame::onEnterUsers(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHand
 	return 0;
 }
 
-LRESULT HubFrame::onGetToolTip(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
+LRESULT HubFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 	NMTTDISPINFO* nm = (NMTTDISPINFO*)pnmh;
-	POINT pt;
-	GetCursorPos(&pt);
-	::ScreenToClient(ctrlStatus.m_hWnd, &pt);
-	CRect rc;
-	ctrlStatus.GetRect(1, rc);
-	if (!cipherPopupTxt.empty() && PtInRect(rc, pt)) {
+	LPNMTTDISPINFO pDispInfo = (LPNMTTDISPINFO)pnmh;
+	pDispInfo->szText[0] = 0;
+
+	if (idCtrl == 1 + POPUP_UID && !cipherPopupTxt.empty()) {
 		nm->lpszText = const_cast<TCHAR*>(cipherPopupTxt.c_str());
-		bHandled = FALSE;
 		return 0;
 	}
 
-	ctrlStatus.GetRect(0, rc);
-	if (!PtInRect(rc, pt)){
-		bHandled = FALSE;
-		return 0;
+	if (idCtrl == 0 + POPUP_UID) {
+		lastLines.clear();
+		for (auto& i : lastLinesList) {
+			lastLines += i;
+			lastLines += _T("\r\n");
+		}
+
+		if (lastLines.size() > 2) {
+			lastLines.erase(lastLines.size() - 2);
+		}
+
+		nm->lpszText = const_cast<TCHAR*>(lastLines.c_str());
 	}
-
-
-	lastLines.clear();
-	for(auto& i: lastLinesList) {
-		lastLines += i;
-		lastLines += _T("\r\n");
-	}
-
-	if(lastLines.size() > 2) {
-		lastLines.erase(lastLines.size() - 2);
-	}
-
-	nm->lpszText = const_cast<TCHAR*>(lastLines.c_str());
-
-	bHandled = FALSE;
 	return 0;
 }
 

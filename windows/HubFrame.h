@@ -41,6 +41,7 @@
 #include "ListFilter.h"
 
 #define SHOW_USERS 9
+#define STATUS_MSG 52
 struct CompareItems;
 class ChatFrameBase;
 
@@ -64,7 +65,6 @@ public:
 		NOTIFY_HANDLER(IDC_USERS, NM_DBLCLK, onDoubleClickUsers)
 		NOTIFY_HANDLER(IDC_USERS, NM_RETURN, onEnterUsers)
 		NOTIFY_HANDLER(IDC_USERS, NM_CUSTOMDRAW, onCustomDraw)
-		NOTIFY_CODE_HANDLER(TTN_GETDISPINFO, onGetToolTip)
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
@@ -74,6 +74,7 @@ public:
 		MESSAGE_HANDLER(FTM_CONTEXTMENU, onTabContextMenu)
 		MESSAGE_HANDLER(WM_MOUSEMOVE, onStyleChange)
 		MESSAGE_HANDLER(WM_CAPTURECHANGED, onStyleChanged)
+		MESSAGE_HANDLER(WM_FORWARDMSG, OnRelayMsg)
 		MESSAGE_HANDLER(WM_TIMER, onTimer)
 		COMMAND_ID_HANDLER(ID_FILE_RECONNECT, onFileReconnect)
 		COMMAND_ID_HANDLER(IDC_FOLLOW, onFollow)
@@ -109,6 +110,8 @@ public:
 		MESSAGE_HANDLER(WM_LBUTTONDBLCLK, onLButton)
 	ALT_MSG_MAP(SHOW_USERS)
 		MESSAGE_HANDLER(BM_SETCHECK, onShowUsers)
+	ALT_MSG_MAP(STATUS_MSG)
+		NOTIFY_CODE_HANDLER(TTN_GETDISPINFO, onGetToolTip)
 	END_MSG_MAP()
 
 	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
@@ -123,7 +126,7 @@ public:
 	LRESULT onShowUsers(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onFollow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onEnterUsers(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
-	LRESULT onGetToolTip(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
+	LRESULT onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/);
 	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT onFileReconnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClientEnLink(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) { return ctrlClient.onClientEnLink(uMsg, wParam, lParam, bHandled); }
@@ -138,6 +141,13 @@ public:
 	LRESULT onEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSetNotify(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onLButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
+	
+	LRESULT OnRelayMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
+		LPMSG pMsg = (LPMSG)lParam;
+		if (ctrlTooltips.m_hWnd != NULL && pMsg->message >= WM_MOUSEFIRST && pMsg->message <= WM_MOUSELAST)
+			ctrlTooltips.RelayEvent(pMsg);
+		return 0;
+	}
 
 	void handleOpenOwnList();
 
@@ -233,6 +243,7 @@ private:
 	CContainedWindow ctrlShowUsersContainer;
 	CContainedWindow ctrlMessageContainer;
 	CContainedWindow ctrlClientContainer;
+	CContainedWindow ctrlStatusContainer;
 
 	CButton ctrlShowUsers;
 
@@ -261,7 +272,7 @@ private:
 	enum { MAX_CLIENT_LINES = 5 };
 	deque<tstring> lastLinesList;
 	tstring lastLines;
-	CToolTipCtrl ctrlTooltips;
+	//CToolTipCtrl ctrlTooltip;
 	CIcon iSecure;
 	tstring cipherPopupTxt;
 	
