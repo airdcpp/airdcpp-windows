@@ -692,9 +692,16 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 
 		if (b->isFailed()) {
 			bundleMenu.appendSeparator();
-			bundleMenu.appendItem(TSTRING(RETRY_SHARING), [=] { QueueManager::getInstance()->shareBundle(b, false); }, OMenu::FLAG_THREADED);
-			if (b->getStatus() == Bundle::STATUS_SHARING_FAILED || b->getStatus() == Bundle::STATUS_FAILED_MISSING) {
-				bundleMenu.appendItem(TSTRING(FORCE_SHARING), [=] { QueueManager::getInstance()->shareBundle(b, true); }, OMenu::FLAG_THREADED);
+			if (ShareManager::getInstance()->allowAddDir(b->getTarget())) {
+				bundleMenu.appendItem(TSTRING(RETRY_SHARING), [=] { QueueManager::getInstance()->shareBundle(b, false); }, OMenu::FLAG_THREADED);
+				if (b->getStatus() == Bundle::STATUS_SHARING_FAILED || b->getStatus() == Bundle::STATUS_FAILED_MISSING) {
+					bundleMenu.appendItem(TSTRING(FORCE_SHARING), [=] { QueueManager::getInstance()->shareBundle(b, true); }, OMenu::FLAG_THREADED);
+				}
+			} else {
+				bundleMenu.appendItem(TSTRING(RESCAN_BUNDLE), [=] {
+					auto bundle = b;
+					QueueManager::getInstance()->scanBundle(bundle);
+				}, OMenu::FLAG_THREADED);
 			}
 		}
 
@@ -705,8 +712,8 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 
 			bundleMenu.appendSeparator();
 			appendUserMenu<Bundle::BundleSource>(bundleMenu, bundleSources);
-			bundleMenu.appendSeparator();
 
+			bundleMenu.appendSeparator();
 			bundleMenu.appendItem(TSTRING(USE_SEQ_ORDER), [=] {
 				auto bundle = b;
 				QueueManager::getInstance()->onUseSeqOrder(bundle);
@@ -838,10 +845,6 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 		else {
 			fileMenu.appendSeparator();
 		}
-
-		//TODO: rechecker
-		//fileMenu.AppendMenu(MF_SEPARATOR);
-		//fileMenu.AppendMenu(MF_STRING, IDC_RECHECK, CTSTRING(RECHECK_FILE));
 	} else {
 		fileMenu.InsertSeparatorFirst(TSTRING(FILES));
 		//fileMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)segmentsMenu, CTSTRING(MAX_SEGMENTS_NUMBER));
