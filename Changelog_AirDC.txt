@@ -6,6 +6,13 @@ Added:
 - "Message seen" and "User typing" notifications in direct encrypted PM channels
 - Multilingual installer
 - Recheck integrity (queue): re-adds corrupted file segments for downloading, detects already downloaded segments/files and performs a SFV check
+- Allow rescanning failed bundles that are not in a shared directory
+
+Changed:
+
+- Enable TLS v1.1 and TLS v1.2 based connections (DC++)
+- Verify keyprints in Client-Client and Client-Hub connections
+- Apply scanning skiplist option for checking share excludes as well
 
 Fixed:
 
@@ -15,12 +22,8 @@ Fixed:
 - Fix a bug with matching download skiplist for folders
 - Fix bundle alternative searches interval adding an extra minute 
 - Ensure that there are no path separators in the formated log file parameters
-
-Changed:
-
-- Enable TLS v1.1 and TLS v1.2 based connections (DC++)
-- Verify keyprints in Client-Client and Client-Hub connections
-- Apply scanning skiplist option for checking share excludes as well
+- Fix issues when moving finished bundles
+- Set bundles as finished if applicable when removing files from them
   
 
 2.91

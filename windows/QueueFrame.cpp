@@ -1500,7 +1500,7 @@ void QueueFrame::on(QueueManagerListener::StatusUpdated, const QueueItemPtr& aQI
 	addGuiTask(TASK_QI_UPDATE, [=] { onQueueItemUpdated(aQI); });
 }
 
-void QueueFrame::on(FileRecheckFailed, const QueueItemPtr& qi, const string& aError) noexcept {
+void QueueFrame::on(FileRecheckFailed, const QueueItemPtr&, const string& aError) noexcept {
 	callAsync([=]{ ctrlStatus.SetText(1, Text::toT(aError).c_str()); });
 }
 
