@@ -7,6 +7,7 @@ Added:
 - Multilingual installer
 - Recheck integrity (queue): re-adds corrupted file segments for downloading, detects already downloaded segments/files and performs a SFV check
 - Allow rescanning failed bundles that are not in a shared directory
+- Connect in parallel via IPv4 and IPv6 if the remote user has hybrid connectivity
 
 Changed:
 
