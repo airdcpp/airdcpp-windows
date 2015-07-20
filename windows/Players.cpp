@@ -667,7 +667,6 @@ string Players::getWinAmpSpam() {
 		int listlength = SendMessage(hwndWinamp, WM_WA_IPC, 0, IPC_GETLISTLENGTH);
 		int waListPosition = SendMessage(hwndWinamp,WM_WA_IPC,0,IPC_GETLISTPOS);
 
-		string fpath;
 		if(waListPosition >= 0) {
 			/*Need to read the filepath from the process memory*/
 			DWORD dw_handle = 0;

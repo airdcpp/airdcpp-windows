@@ -322,7 +322,6 @@ LRESULT TransferView::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled)
 			}
 			return CDRF_SKIPDEFAULT;
 		} else if(SETTING(GET_USER_COUNTRY) && (colIndex == COLUMN_IP)) {
-			auto ii = (ItemInfo*)cd->nmcd.lItemlParam;
 			CRect rc;
 			ctrlTransfers.GetSubItemRect((int)cd->nmcd.dwItemSpec, cd->iSubItem, LVIR_BOUNDS, rc);
 

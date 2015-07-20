@@ -718,7 +718,7 @@ tstring RichTextBox::LineFromPos(const POINT& p) const {
 	return tmp;
 }
 
-void RichTextBox::formatLink(DupeType aDupeType, bool isRelease) {
+void RichTextBox::formatLink(DupeType aDupeType, bool aIsRelease) {
 	if (SETTING(DUPES_IN_CHAT) && aDupeType == DUPE_SHARE) {
 		SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
 	} else if (SETTING(DUPES_IN_CHAT) && aDupeType == DUPE_QUEUE) {
@@ -727,7 +727,7 @@ void RichTextBox::formatLink(DupeType aDupeType, bool isRelease) {
 		CHARFORMAT2 newFormat = WinUtil::m_TextStyleQueue;
 		newFormat.crTextColor = WinUtil::getDupeColors(aDupeType).first;
 		SetSelectionCharFormat(newFormat);
-	} else if (!isRelease || (SETTING(FORMAT_RELEASE)) && aDupeType == DUPE_NONE) {
+	} else if (!aIsRelease || (SETTING(FORMAT_RELEASE)) && aDupeType == DUPE_NONE) {
 		SetSelectionCharFormat(WinUtil::m_TextStyleURL);
 	}
 }
