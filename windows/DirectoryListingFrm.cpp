@@ -84,7 +84,7 @@ DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) :
 	treeContainer(WC_TREEVIEW, this, CONTROL_MESSAGE_MAP),
 	listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP),
 	browserBar(this, [this](const string& a, bool b) { handleHistoryClick(a, b); }, [this] { up(); }),
-		treeRoot(nullptr), skipHits(0), files(0), updating(false), dl(aList), 
+		treeRoot(nullptr), skipHits(0), updating(false), dl(aList), 
 		UserInfoBaseHandler(true, false), changeType(CHANGE_LIST), windowState(STATE_ENABLED), 
 		ctrlTree(this), statusDirty(false), selComboContainer(WC_COMBOBOX, this, COMBO_SEL_MAP), 
 		ctrlFiles(this, COLUMN_LAST, [this] { callAsync([this] { filterList(); }); }, filterSettings, COLUMN_LAST)
@@ -1248,10 +1248,10 @@ void DirectoryListingFrame::appendListContextMenu(CPoint& pt) {
 	int i = -1;
 	bool allComplete = true, hasFiles = false;
 	while ((i = ctrlFiles.list.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		const ItemInfo* ii = ctrlFiles.list.getItemData(i);
-		if (ii->type == ItemInfo::DIRECTORY && !ii->dir->isComplete() && ii->dir->getPartialSize() == 0) {
+		const ItemInfo* iiFiles = ctrlFiles.list.getItemData(i);
+		if (iiFiles->type == ItemInfo::DIRECTORY && !iiFiles->dir->isComplete() && iiFiles->dir->getPartialSize() == 0) {
 			allComplete = false;
-		} else if (ii->type == ItemInfo::FILE) {
+		} else if (iiFiles->type == ItemInfo::FILE) {
 			hasFiles = true;
 		}
 	}
@@ -2193,8 +2193,8 @@ void DirectoryListingFrame::updateSelCombo(bool init) {
 		if (hubsInfoNew.second) {
 			//the user is online
 
-			hubNames = WinUtil::getHubNames(dl->getHintedUser());
-			nicks = WinUtil::getNicks(dl->getHintedUser());
+			onlineHubNames = WinUtil::getHubNames(dl->getHintedUser());
+			onlineNicks = WinUtil::getNicks(dl->getHintedUser());
 			setDisconnected(false);
 
 			if (!online) {
@@ -2243,10 +2243,10 @@ void DirectoryListingFrame::updateSelCombo(bool init) {
 		showSelCombo(false, init);
 	}
 
-	if (nicks.empty())
-		nicks = Text::toT(dl->getNick(false));
+	if (onlineNicks.empty())
+		onlineNicks = Text::toT(dl->getNick(false));
 
-	SetWindowText((nicks + (hubNames.empty() ? Util::emptyStringT : _T(" - ") + hubNames)).c_str());
+	SetWindowText((onlineNicks + (onlineHubNames.empty() ? Util::emptyStringT : _T(" - ") + onlineHubNames)).c_str());
 }
 
 void DirectoryListingFrame::showSelCombo(bool show, bool init) {

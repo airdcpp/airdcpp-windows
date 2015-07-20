@@ -847,15 +847,15 @@ void SearchFrame::handleViewNfo() {
 }
 
 void SearchFrame::handleDownload(const string& aTarget, QueueItemBase::Priority p, bool useWhole, TargetUtil::TargetType aTargetType, bool isSizeUnknown) {
-	ctrlResults.list.filteredForEachSelectedT([&](const SearchInfo* si) {
-		bool fileDownload = si->sr->getType() == SearchResult::TYPE_FILE && !useWhole;
+	ctrlResults.list.filteredForEachSelectedT([&](const SearchInfo* aSI) {
+		bool fileDownload = aSI->sr->getType() == SearchResult::TYPE_FILE && !useWhole;
 
 		// names/case sizes may differ for grouped results
 		optional<string> path;
 		auto download = [&](const SearchResultPtr& aSR) {
 			if (fileDownload) {
 				if (!path) {
-					path = aTarget.back() == '\\' ? aTarget + si->sr->getFileName() : aTarget;
+					path = aTarget.back() == '\\' ? aTarget + aSI->sr->getFileName() : aTarget;
 				}
 				WinUtil::addFileDownload(*path, aSR->getSize(), aSR->getTTH(), aSR->getUser(), aSR->getDate(), 0, p);
 			} else {
@@ -869,10 +869,10 @@ void SearchFrame::handleDownload(const string& aTarget, QueueItemBase::Priority 
 			}
 		};
 
-		if (si->hits >= 1) {
+		if (aSI->hits >= 1) {
 			//perform also for the children
-			SearchResultList results = { si->sr };
-			const auto& children = ctrlResults.list.findChildren(si->getGroupCond());
+			SearchResultList results = { aSI->sr };
+			const auto& children = ctrlResults.list.findChildren(aSI->getGroupCond());
 			for (auto si: children)
 				results.push_back(si->sr);
 
@@ -881,7 +881,7 @@ void SearchFrame::handleDownload(const string& aTarget, QueueItemBase::Priority 
 			boost::for_each(results, download);
 		} else {
 			//perform for the parent
-			download(si->sr);
+			download(aSI->sr);
 		}
 	});
 }
@@ -1533,7 +1533,7 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			}
 
 			ShellMenu resultsMenu;
-			SearchInfo::CheckTTH cs = ctrlResults.list.forEachSelectedT(SearchInfo::CheckTTH());
+			SearchInfo::CheckTTH tthInfo = ctrlResults.list.forEachSelectedT(SearchInfo::CheckTTH());
 
 			resultsMenu.CreatePopupMenu();
 
@@ -1542,7 +1542,7 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			else
 				resultsMenu.InsertSeparatorFirst(TSTRING_F(X_USERS, (((SearchInfo*)ctrlResults.list.getSelectedItem())->hits + 1)));
 
-			appendDownloadMenu(resultsMenu, hasFiles ? DownloadBaseHandler::TYPE_BOTH : DownloadBaseHandler::TYPE_PRIMARY, hasNmdcDirsOnly, hasFiles ? cs.tth : boost::none, cs.path);
+			appendDownloadMenu(resultsMenu, hasFiles ? DownloadBaseHandler::TYPE_BOTH : DownloadBaseHandler::TYPE_PRIMARY, hasNmdcDirsOnly, hasFiles ? tthInfo.tth : boost::none, tthInfo.path);
 
 			if (hasFiles && (!hasDupes || ctrlResults.list.GetSelectedCount() == 1)) {
 				resultsMenu.appendSeparator();
@@ -1574,7 +1574,7 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			resultsMenu.appendSeparator();
 
 			appendUserItems(resultsMenu, false);
-			prepareMenu(resultsMenu, UserCommand::CONTEXT_SEARCH, cs.hubs);
+			prepareMenu(resultsMenu, UserCommand::CONTEXT_SEARCH, tthInfo.hubs);
 			resultsMenu.appendSeparator();
 
 			resultsMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
@@ -1735,7 +1735,6 @@ tstring SearchFrame::handleCopyDirectory(const SearchInfo* si) {
 }
 
 LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
-	CRect rc;
 	LPNMLVCUSTOMDRAW cd = (LPNMLVCUSTOMDRAW)pnmh;
 
 	switch(cd->nmcd.dwDrawStage) {
@@ -1756,23 +1755,23 @@ LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled
 
 			ColorList *cList = HighlightManager::getInstance()->getList();
 			for (ColorIter i = cList->begin(); i != cList->end(); ++i) {
-				ColorSettings* cs = &(*i);
-				if (cs->getContext() == HighlightManager::CONTEXT_SEARCH) {
-					if (cs->usingRegexp()) {
+				ColorSettings* colorSetting = &(*i);
+				if (colorSetting->getContext() == HighlightManager::CONTEXT_SEARCH) {
+					if (colorSetting->usingRegexp()) {
 						try {
 							//have to have $Re:
-							if (boost::regex_search(si->sr->getFileName().begin(), si->sr->getFileName().end(), cs->regexp)) {
-								if (cs->getHasFgColor()) { cd->clrText = cs->getFgColor(); }
-								if (cs->getHasBgColor()) { cd->clrTextBk = cs->getBgColor(); }
+							if (boost::regex_search(si->sr->getFileName().begin(), si->sr->getFileName().end(), colorSetting->regexp)) {
+								if (colorSetting->getHasFgColor()) { cd->clrText = colorSetting->getFgColor(); }
+								if (colorSetting->getHasBgColor()) { cd->clrTextBk = colorSetting->getBgColor(); }
 								break;
 							}
 						}
 						catch (...) {}
 					}
 					else {
-						if (Wildcard::patternMatch(Text::utf8ToAcp(si->sr->getFileName()), Text::utf8ToAcp(Text::fromT(cs->getMatch())), '|')){
-							if (cs->getHasFgColor()) { cd->clrText = cs->getFgColor(); }
-							if (cs->getHasBgColor()) { cd->clrTextBk = cs->getBgColor(); }
+						if (Wildcard::patternMatch(Text::utf8ToAcp(si->sr->getFileName()), Text::utf8ToAcp(Text::fromT(colorSetting->getMatch())), '|')){
+							if (colorSetting->getHasFgColor()) { cd->clrText = colorSetting->getFgColor(); }
+							if (colorSetting->getHasBgColor()) { cd->clrTextBk = colorSetting->getBgColor(); }
 							break;
 						}
 					}

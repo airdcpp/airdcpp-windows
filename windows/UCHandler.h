@@ -113,9 +113,9 @@ public:
 								}
 							}
 							if(!found) {
-								HMENU m = CreatePopupMenu();
-								cur.AppendMenu(MF_POPUP, (UINT_PTR)m, name.c_str());
-								cur = m;
+								HMENU newMenu = CreatePopupMenu();
+								cur.AppendMenu(MF_POPUP, (UINT_PTR)newMenu, name.c_str());
+								cur = newMenu;
 							}
 						}
 					}

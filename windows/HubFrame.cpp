@@ -889,10 +889,10 @@ LRESULT HubFrame::onLButton(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& b
 						int items = ctrlUsers.GetItemCount();
 						int pos = -1;
 						ctrlUsers.SetRedraw(FALSE);
-						for(int i = 0; i < items; ++i) {
-							if(ctrlUsers.getItemData(i) == ui)
-								pos = i;
-							ctrlUsers.SetItemState(i, (i == pos) ? LVIS_SELECTED | LVIS_FOCUSED : 0, LVIS_SELECTED | LVIS_FOCUSED);
+						for(int t = 0; t < items; ++t) {
+							if(ctrlUsers.getItemData(t) == ui)
+								pos = t;
+							ctrlUsers.SetItemState(t, (t == pos) ? LVIS_SELECTED | LVIS_FOCUSED : 0, LVIS_SELECTED | LVIS_FOCUSED);
 						}
 						ctrlUsers.SetRedraw(TRUE);
 						ctrlUsers.EnsureVisible(pos, FALSE);

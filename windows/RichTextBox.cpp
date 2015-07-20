@@ -125,7 +125,7 @@ void RichTextBox::AppendText(tstring& sMsg) {
 	SetRedraw(TRUE);
 }
 
-bool RichTextBox::AppendChat(const Identity& i, const tstring& sMyNick, const tstring& sTime, tstring sMsg, CHARFORMAT2& cf, bool bUseEmo/* = true*/) {
+bool RichTextBox::AppendChat(const Identity& identity, const tstring& sMyNick, const tstring& sTime, tstring sMsg, CHARFORMAT2& cf, bool bUseEmo/* = true*/) {
 	SetRedraw(FALSE);
 	matchedTab = false;
 
@@ -146,7 +146,7 @@ bool RichTextBox::AppendChat(const Identity& i, const tstring& sMyNick, const ts
 	GetSel(lSelBeginSaved, lSelEndSaved);
 	lSelEnd = lSelBegin = GetTextLengthEx(GTL_NUMCHARS);
 
-	bool isMyMessage = i.getUser() == ClientManager::getInstance()->getMe();
+	bool isMyMessage = identity.getUser() == ClientManager::getInstance()->getMe();
 	tstring sLine = sTime + sMsg;
 
 	// Remove old chat if size exceeds
@@ -207,9 +207,9 @@ bool RichTextBox::AppendChat(const Identity& i, const tstring& sMyNick, const ts
 	SetSelectionCharFormat(enc);
 
 	bool isFavorite = false, isOp = false;
-	if (i.getUser()) {
-		isFavorite = i.getUser()->isFavorite();
-		isOp = i.isOp();
+	if (identity.getUser()) {
+		isFavorite = identity.getUser()->isFavorite();
+		isOp = identity.isOp();
 	}
 
 	// Format TimeStamp
@@ -226,7 +226,7 @@ bool RichTextBox::AppendChat(const Identity& i, const tstring& sMyNick, const ts
 	}
 
 	// Authors nick
-	tstring sAuthor = Text::toT(i.getNick());
+	tstring sAuthor = Text::toT(identity.getNick());
 	if(!sAuthor.empty()) {
 		LONG iLen = (sMsg[0] == _T('*')) ? 1 : 0;
 		LONG iAuthorLen = sAuthor.size() + 1;
@@ -248,7 +248,7 @@ bool RichTextBox::AppendChat(const Identity& i, const tstring& sMyNick, const ts
 				SetSel(lSelBegin + iLen + 1, lSelEnd);
 				if(isFavorite){
 					SetSelectionCharFormat(WinUtil::m_TextStyleFavUsers);
-				} else if(i.isOp()) {
+				} else if(identity.isOp()) {
 					SetSelectionCharFormat(WinUtil::m_TextStyleOPs);
 				} else {
 					SetSelectionCharFormat(WinUtil::m_TextStyleNormUsers);
@@ -1622,12 +1622,12 @@ size_t RichTextBox::FullTextMatch(ColorSettings* cs, CHARFORMAT2 &hlcf, const ts
 	begin = lineIndex;
 	
 	if( cs->getTimestamps() ) {
-		tstring::size_type pos = line.find(_T("]"));
-		if( pos == tstring::npos ) 
+		tstring::size_type endPos = line.find(_T("]"));
+		if(endPos == tstring::npos )
 			return tstring::npos;  //hmm no ]? this can't be right, return
 		
 		begin += index;
-		end = begin + pos +1;
+		end = begin + endPos +1;
 	} else if( cs->getUsers() ) {
 		
 		end = begin + line.find(_T(">")) +1;

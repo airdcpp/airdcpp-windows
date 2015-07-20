@@ -365,8 +365,6 @@ private:
 
 	int skipHits;
 
-	size_t files;
-
 	bool updating;
 	bool statusDirty;
 
@@ -426,8 +424,8 @@ private:
 	void showSelCombo(bool show, bool init);
 	tstring getComboDesc();
 
-	tstring nicks;
-	tstring hubNames;
+	tstring onlineNicks;
+	tstring onlineHubNames;
 
 	CContainedWindow selComboContainer;
 

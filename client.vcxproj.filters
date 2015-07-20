@@ -580,9 +580,6 @@
     <ClInclude Include="client\SharedFileStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="client\noexcept.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="client\typedefs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -647,9 +644,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\FileQueue.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="client\atomic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\WebShortcuts.h">

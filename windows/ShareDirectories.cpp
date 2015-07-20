@@ -741,12 +741,12 @@ bool ShareDirectories::addDirectory(const tstring& aPath){
 		for(const auto pt: profileTokens) {
 			//does it exist already? maybe a deleted directory
 			auto& items = shareDirs[pt];
-			auto p = find_if(items, ShareDirInfo::PathCompare(rPath));
+			auto dupeProfile = find_if(items, ShareDirInfo::PathCompare(rPath));
 
 			ShareDirInfoPtr dir = nullptr;
-			if (p != items.end()) {
+			if (dupeProfile != items.end()) {
 				//check if the virtual name is different...
-				dir = *p;
+				dir = *dupeProfile;
 				if (dir->vname != vPath) {
 					dir->vname = vPath;
 					dir->state = ShareDirInfo::STATE_CHANGED;

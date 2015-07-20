@@ -348,7 +348,6 @@
     <ClInclude Include="client\SearchQuery.h" />
     <ClInclude Include="client\ADLSearch.h" />
     <ClInclude Include="client\AirUtil.h" />
-    <ClInclude Include="client\atomic.h" />
     <ClInclude Include="client\AutoSearch.h" />
     <ClInclude Include="client\AutoSearchManager.h" />
     <ClInclude Include="client\AutosearchManagerListener.h" />
@@ -432,7 +431,6 @@
     <ClInclude Include="client\MerkleTree.h" />
     <ClInclude Include="client\MerkleTreeOutputStream.h" />
     <ClInclude Include="client\NmdcHub.h" />
-    <ClInclude Include="client\noexcept.h" />
     <ClInclude Include="client\OfflineUser.h" />
     <ClInclude Include="client\OnlineUser.h" />
     <ClInclude Include="client\Pointer.h" />
