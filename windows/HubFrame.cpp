@@ -998,7 +998,7 @@ LRESULT HubFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 	tabMenu.appendItem(CTSTRING_F(OPEN_HUB_FILELIST, Text::toT(p->getPlainName())), [this] { 
 		handleOpenOwnList(); 
 	}, p->getToken() == SP_HIDDEN ? OMenu::FLAG_DISABLED : 0);
-	tabMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyHubMenu, CTSTRING(COPY));
+	tabMenu.AppendMenu(MF_POPUP, (HMENU)copyHubMenu, CTSTRING(COPY));
 	prepareMenu(tabMenu, ::UserCommand::CONTEXT_HUB, client->getHubUrl());
 	tabMenu.AppendMenu(MF_SEPARATOR);
 	tabMenu.AppendMenu(MF_STRING, IDC_CLOSE_WINDOW, CTSTRING(CLOSE));

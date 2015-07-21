@@ -213,7 +213,7 @@ public:
 			menu.appendSeparator();
 		}
 		menu.appendItem(TSTRING(REMOVE_FROM_ALL), [=] { handleRemoveAll(); });
-		menu.AppendMenu(MF_POPUP, (UINT)(HMENU)WinUtil::grantMenu, CTSTRING(GRANT_SLOTS_MENU));
+		menu.AppendMenu(MF_POPUP, (HMENU)WinUtil::grantMenu, CTSTRING(GRANT_SLOTS_MENU));
 	}	
 };
 

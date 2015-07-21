@@ -16,8 +16,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <atlctrlx.h>
-
 #if !defined(ABOUT_DLG_H)
 #define ABOUT_DLG_H
 

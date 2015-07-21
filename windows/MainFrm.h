@@ -412,9 +412,6 @@ private:
 	void onTrayMenu();
 	void fillLimiterMenu(OMenu* menu, bool upload);
 
-	CMenu tbMenu;
-	CMenu dropMenu;
-
 	typedef BOOL (CALLBACK* LPFUNC)(UINT message, DWORD dwFlag);
 	LPFUNC _d_ChangeWindowMessageFilter;
 	HMODULE user32lib;

@@ -23,9 +23,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include <atlcrack.h>
 #include "PropPage.h"
-#include <atlctrlx.h>
 
 #include "ExListViewCtrl.h"
 #include "../client/MessageManager.h"

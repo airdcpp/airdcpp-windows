@@ -428,9 +428,9 @@ TransferView::ItemInfo* TransferView::findItem(const UpdateInfo& ui, int& pos) c
 			return ii;
 		} else if(ii->isBundle) {
 			const auto& children = ctrlTransfers.findChildren(ii->getGroupCond());
-			for(const auto& ii: children) {
-				if(compare(ui.token, ii->token) == 0) {
-					return ii;
+			for(const auto& iiFile: children) {
+				if(compare(ui.token, iiFile->token) == 0) {
+					return iiFile;
 				}
 			}
 		}

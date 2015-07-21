@@ -91,8 +91,8 @@ CImageList& ResourceLoader::getUserImages() {
 					tmp.Create(16, 16, ILC_COLOR32 | ILC_MASK, 3, 3);
 					tmp.AddIcon(MergeImages(icons, 0, icons, 1));
 
-					for(size_t i = 2; i < imageCount; ++i)
-						tmp.ReplaceIcon(0, MergeImages(tmp, 0, icons, i));
+					for(size_t k = 2; k < imageCount; ++k)
+						tmp.ReplaceIcon(0, MergeImages(tmp, 0, icons, k));
 			
 					userImages.AddIcon(tmp.GetIcon(0, ILD_TRANSPARENT));
 					tmp.Destroy();

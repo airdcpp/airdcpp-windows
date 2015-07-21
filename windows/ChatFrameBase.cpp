@@ -67,7 +67,7 @@ LRESULT ChatFrameBase::OnForwardMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPa
 	return 0;
 }
 
-void ChatFrameBase::init(HWND m_hWnd, RECT aRcDefault) {
+void ChatFrameBase::init(HWND /*m_hWnd*/, RECT aRcDefault) {
 	ctrlClient.Create(m_hWnd, aRcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 		WS_VSCROLL | ES_MULTILINE | ES_NOHIDESEL | ES_READONLY, WS_EX_CLIENTEDGE | WS_EX_ACCEPTFILES, IDC_CLIENT);
 

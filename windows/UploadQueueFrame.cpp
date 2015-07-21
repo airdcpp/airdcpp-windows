@@ -165,8 +165,8 @@ LRESULT UploadQueueFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 		while((i = ctrlList.GetNextItem(i, LVNI_SELECTED)) != -1) {
 			RemoveUsers.push_back(((UploadQueueItem*)ctrlList.getItemData(i))->getUser());
 		}
-		for(UserList::const_iterator i = RemoveUsers.begin(); i != RemoveUsers.end(); ++i) {
-			UploadManager::getInstance()->clearUserFiles(*i, true);
+		for(UserList::const_iterator u = RemoveUsers.begin(); u != RemoveUsers.end(); ++u) {
+			UploadManager::getInstance()->clearUserFiles(*u, true);
 		}
 	}
 	updateStatus();
@@ -180,8 +180,8 @@ void UploadQueueFrame::removeSelected() {
 		// Ok let's cheat here, if you try to remove more users here is not working :(
 		RemoveUsers.push_back(((UploadQueueItem*)ctrlList.getItemData(i))->getUser());
 	}
-	for(auto i = RemoveUsers.begin(); i != RemoveUsers.end(); ++i) {
-		UploadManager::getInstance()->clearUserFiles(*i, true);
+	for(auto u = RemoveUsers.begin(); u != RemoveUsers.end(); ++u) {
+		UploadManager::getInstance()->clearUserFiles(*u, true);
 	}
 	updateStatus();
 }

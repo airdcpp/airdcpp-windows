@@ -19,7 +19,6 @@
 #ifndef __UPDATE_DLG
 #define __UPDATE_DLG
 
-#include <atlctrlx.h>
 #include "RichTextBox.h"
 
 #if _MSC_VER > 1000

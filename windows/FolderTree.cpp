@@ -514,18 +514,18 @@ void FolderTree::DisplayPath(const tstring &sPath, HTREEITEM hParent, bool bUseS
 				(filename != _T(".")) && (filename != _T("..")))
 			{
 				++nDirectories;
-				tstring sPath = sFile + filename;
+				tstring path = sFile + filename;
 
 				TCHAR szPath[_MAX_PATH];
 				TCHAR szFname[_MAX_FNAME];
 				TCHAR szExt[_MAX_EXT];
-				_tsplitpath(sPath.c_str(), NULL, NULL, szFname, szExt);
+				_tsplitpath(path.c_str(), NULL, NULL, szFname, szExt);
 				_tmakepath(szPath, NULL, NULL, szFname, szExt);
 
 				FolderTreeItemInfo* pItem = new FolderTreeItemInfo;
-				pItem->m_sFQPath = sPath;
+				pItem->m_sFQPath = path;
 				pItem->m_sRelativePath = szPath;
-				InsertFileItem(hParent, pItem, m_bShowSharedUsingDifferentIcon && IsShared(sPath), GetIconIndex(sPath), GetSelIconIndex(sPath), true);
+				InsertFileItem(hParent, pItem, m_bShowSharedUsingDifferentIcon && IsShared(path), GetIconIndex(path), GetSelIconIndex(path), true);
 			}
 		} while (FindNextFile(hFind, &fData));
 	}
@@ -1122,7 +1122,7 @@ bool FolderTree::EnumNetwork(HTREEITEM hParent)
 				sNameRemote = sNameRemote.substr(1);
 
 			//Setup the item data for the new item
-			FolderTreeItemInfo* pItem = new FolderTreeItemInfo;
+			pItem = new FolderTreeItemInfo;
 			pItem->m_pNetResource = new NETRESOURCE;
 			memzero(pItem->m_pNetResource, sizeof(NETRESOURCE));
 			*pItem->m_pNetResource = lpnrDrv[i];
@@ -1526,7 +1526,7 @@ void FolderTree::ShareParentButNotSiblings(HTREEITEM hItem)
 			{
 				pItem = (FolderTreeItemInfo*) GetItemData(hChild);
 				if(hChild != hItem) {
-					string path = Text::fromT(pItem->m_sFQPath);
+					path = Text::fromT(pItem->m_sFQPath);
 					if( path[ path.length() -1 ] != PATH_SEPARATOR )
 						path += PATH_SEPARATOR;
 					//m_nShareSizeDiff -= ShareManager::getInstance()->addExcludeFolder(path);

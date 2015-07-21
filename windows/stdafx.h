@@ -44,6 +44,11 @@ using namespace dcpp;
 // Fix nt4 startup
 #include <multimon.h>
 
+#pragma warning( push )
+#pragma warning( disable: 4302 ) // 'type cast': truncation from 'LPCTSTR' to 'WORD'
+#pragma warning( disable: 4838 ) // conversion from 'int' to 'UINT' requires a narrowing conversion
+#pragma warning( disable: 4458 ) // declaration of 'nDefaultButton' hides class member
+
 #include <atlbase.h>
 #include <atlapp.h>
 
@@ -53,6 +58,7 @@ extern CAppModule _Module;
 //#define _WTL_CMDBAR_VISTA_MENUS 0
 //#define _WTL_NO_AUTO_THEME 1
 #define _WTL_TASKDIALOG_DIRECT
+
 #include <atlwin.h>
 #include <atlframe.h>
 #include <atlctrls.h>
@@ -61,7 +67,13 @@ extern CAppModule _Module;
 #include <atlmisc.h>
 #include <atlsplit.h>
 #include <atltheme.h>
+
 #include <Shellapi.h>
+
+#include <atlctrlx.h>
+
+#pragma warning( pop ) 
+
 #endif // _WIN32
 #define WM_SPEAKER (WM_APP + 500)
 #define WM_REFRESH_SETTINGS (WM_APP + 501)

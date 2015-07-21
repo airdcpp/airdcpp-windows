@@ -60,15 +60,15 @@ LRESULT SearchTypesPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 void SearchTypesPage::fillList() {
 	ctrlTypes.DeleteAllItems();
 
-	auto lst = SearchManager::getInstance()->getSearchTypes();
+	auto typeList = SearchManager::getInstance()->getSearchTypes();
 
 	int pos = 0;
-	for(auto i = lst.begin(); i != lst.end(); ++i) {
-		auto isDefault = SearchManager::isDefaultTypeStr(i->first);
+	for(const auto& i: typeList) {
+		auto isDefault = SearchManager::isDefaultTypeStr(i.first);
 
 		TStringList lst;
-		lst.push_back(Text::toT(isDefault ? SearchManager::getTypeStr(i->first[0] - '0') : i->first));
-		lst.push_back(Text::toT(Util::toString(";", i->second)));
+		lst.push_back(Text::toT(isDefault ? SearchManager::getTypeStr(i.first[0] - '0') : i.first));
+		lst.push_back(Text::toT(Util::toString(";", i.second)));
 		lst.push_back(isDefault ? CTSTRING(YES) : CTSTRING(NO));
 		ctrlTypes.insert(pos++, lst, 0);
 	}

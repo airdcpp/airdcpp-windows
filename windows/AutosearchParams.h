@@ -19,8 +19,6 @@
 #ifndef SEARCH_AUTOSEARCH_PARAMS_H
 #define SEARCH_AUTOSEARCH_PARAMS_H
 
-#include <atlcrack.h>
-#include <atlctrlx.h>
 #include "AutosearchDlg.h"
 
 class AutoSearchParams : public CDialogImpl<AutoSearchParams>

@@ -1008,7 +1008,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 			}
 		}
 		
-		menu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
+		menu.AppendMenu(MF_POPUP, (HMENU)copyMenu, CTSTRING(COPY));
 		
 		// add user commands
 		prepareMenu(menu, ::UserCommand::CONTEXT_USER, client->getHubUrl());
@@ -1253,8 +1253,8 @@ void RichTextBox::handleOpenFolder() {
 		WinUtil::openFolder(Text::toT(paths.front()));
 }
 
-void RichTextBox::handleDownload(const string& aTarget, QueueItemBase::Priority p, bool isRelease, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
-	if (!isRelease) {
+void RichTextBox::handleDownload(const string& aTarget, QueueItemBase::Priority p, bool aIsRelease, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
+	if (!aIsRelease) {
 		auto u = move(getMagnetSource());
 		Magnet m = Magnet(Text::fromT(selectedWord));
 		if (pmUser && ShareManager::getInstance()->isDirShared(aTarget, m.fsize) > 0 &&
