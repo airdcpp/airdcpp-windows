@@ -218,9 +218,9 @@ LRESULT OperaColorsPage::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHan
 		COLORREF clr = getCheckbox(IDC_PROGRESS_OVERRIDE) ? 
 			(odcStyle ? ODCcolours[(int)cd->nmcd.dwItemSpec].value : colours[(int)cd->nmcd.dwItemSpec].value) : GetSysColor(COLOR_HIGHLIGHT);
 	
-		COLORREF textclr = (int)cd->nmcd.dwItemSpec != 1 ? crProgressTextDown : crProgressTextUp;
+		COLORREF color = (int)cd->nmcd.dwItemSpec != 1 ? crProgressTextDown : crProgressTextUp;
 
-		WinUtil::drawProgressBar(cd->nmcd.hdc, rc, clr, textclr, colours[0].value, sampleText,
+		WinUtil::drawProgressBar(cd->nmcd.hdc, rc, clr, color, colours[0].value, sampleText,
 			16, 16, odcStyle, getCheckbox(IDC_PROGRESS_OVERRIDE2), BarDepth, BarBlend, DT_CENTER);
 
 		return CDRF_SKIPDEFAULT;

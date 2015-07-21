@@ -159,7 +159,6 @@ LRESULT CALLBACK CheckMessageBoxProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 			{
 				if (current == check) continue;
 					
-				RECT rc;
 				GetWindowRect(current, &rc);
 				ScreenToClient(hWnd, &rc);
 				MoveWindow(current, rc.left + iCheckboxWidth, rc.top, rc.right - rc.left, rc.bottom - rc.top, FALSE);

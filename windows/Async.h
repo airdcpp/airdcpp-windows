@@ -27,7 +27,7 @@
 
 namespace dcpp {
 
-static void callAsync(HWND m_hWnd, std::function<void ()> f) {
+static inline void callAsync(HWND m_hWnd, std::function<void ()> f) {
 	PostMessage(m_hWnd, WM_SPEAKER, NULL, (LPARAM)new Dispatcher::F(f));
 }
 

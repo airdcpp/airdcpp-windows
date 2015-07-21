@@ -17,36 +17,7 @@ namespace dcpp {
 
 #undef ShellExecute
 
-
-static wchar_t *ansi_to_utf16(const char *input)
-{
-	wchar_t *Buffer;
-	int BuffSize, Result;
-	BuffSize = MultiByteToWideChar(CP_ACP, 0, input, -1, NULL, 0);
-	if(BuffSize > 0)
-	{
-		Buffer = new wchar_t[BuffSize];
-		Result = MultiByteToWideChar(CP_UTF8, 0, input, -1, Buffer, BuffSize);
-		return ((Result > 0) && (Result <= BuffSize)) ? Buffer : NULL;
-	}
-	return NULL;
-}
-
-#ifdef _UNICODE
-	#define ALLOC_STRING(STR) SysAllocString(STR)
-#else
-	static inline BSTR ALLOC_STRING(const char *STR)
-	{
-		BSTR result = NULL;
-		wchar_t *temp = ansi_to_utf16(STR);
-		if(temp)
-		{
-			result = SysAllocString(temp);
-			delete [] temp;
-		}
-		return result;
-	}
-#endif
+#define ALLOC_STRING(STR) SysAllocString(STR)
 
 class variant_t
 {
@@ -132,19 +103,19 @@ int ShellExecAsUser(const TCHAR *pcOperation, const TCHAR *pcFileName, const TCH
 						if(SUCCEEDED(hr))
 						{
 							IDispatch *pdispBackground = NULL;
-							HRESULT hr = psv->GetItemObject(SVGIO_BACKGROUND, IID_PPV_ARGS(&pdispBackground));
+							hr = psv->GetItemObject(SVGIO_BACKGROUND, IID_PPV_ARGS(&pdispBackground));
 							if (SUCCEEDED(hr))
 							{
 								IShellFolderViewDual *psfvd = NULL;
 								hr = pdispBackground->QueryInterface(IID_PPV_ARGS(&psfvd));
 								if (SUCCEEDED(hr))
 								{
-									IDispatch *pdisp = NULL;
-									hr = psfvd->get_Application(&pdisp);
+									IDispatch *pdisp2 = NULL;
+									hr = psfvd->get_Application(&pdisp2);
 									if (SUCCEEDED(hr))
 									{
 										IShellDispatch2 *psd;
-										hr = pdisp->QueryInterface(IID_PPV_ARGS(&psd));
+										hr = pdisp2->QueryInterface(IID_PPV_ARGS(&psd));
 										if(SUCCEEDED(hr))
 										{
 											variant_t verb(pcOperation);
@@ -156,8 +127,8 @@ int ShellExecAsUser(const TCHAR *pcOperation, const TCHAR *pcFileName, const TCH
 											psd->Release();
 											psd = NULL;
 										}
-										pdisp->Release();
-										pdisp = NULL;
+										pdisp2->Release();
+										pdisp2 = NULL;
 									}
 								}
 								pdispBackground->Release();
