@@ -858,7 +858,7 @@ void UsersFrame::UserInfo::update(const UserPtr& u) {
 }
 
 
-UsersFrame::UserInfo::userData UsersFrame::UserInfo::getUserInfo(const UserPtr& user, string& hint) {
+UsersFrame::UserInfo::userData UsersFrame::UserInfo::getUserInfo(const UserPtr& aUser, string& hint_) {
 	OnlineUserList ouList;
 	string nick = Util::emptyString;
 	string hubs = Util::emptyString;
@@ -870,12 +870,12 @@ UsersFrame::UserInfo::userData UsersFrame::UserInfo::getUserInfo(const UserPtr& 
 
 	if(user->isOnline()) {
 		RLock l(ClientManager::getInstance()->getCS());
-		auto hinted = ClientManager::getInstance()->getUsers(HintedUser(user, hint), ouList);
+		auto hinted = ClientManager::getInstance()->getUsers(HintedUser(aUser, hint_), ouList);
 		if (!ouList.empty() && !hinted) { //set the hint to match the first nick
 			auto i = ouList.begin();
 			hinted = *i;
 			ouList.erase(i);
-			hint = hinted->getHubUrl();
+			hint_ = hinted->getHubUrl();
 		}
 
 		hubs = hinted ? OnlineUser::HubName()(hinted)+" " : Util::emptyString;
@@ -931,12 +931,12 @@ UsersFrame::UserInfo::userData UsersFrame::UserInfo::getUserInfo(const UserPtr& 
 
 	if (nick.empty()) {
 		//offline
-		auto ofu = ClientManager::getInstance()->getOfflineUser(user->getCID());
+		auto ofu = ClientManager::getInstance()->getOfflineUser(aUser->getCID());
 		if (ofu) {
 			nick = ofu->getNick();
 			hubs = ofu->getUrl();
 			seen = ofu->getLastSeen() ? Util::formatTime("%Y-%m-%d %H:%M", ofu->getLastSeen()) : STRING(UNKNOWN);
-			hint = ofu->getUrl();
+			hint_ = ofu->getUrl();
 		}
 	}
 

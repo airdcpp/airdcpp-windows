@@ -44,9 +44,11 @@ using namespace dcpp;
 // Fix nt4 startup
 #include <multimon.h>
 
-#pragma warning( push )
 #pragma warning( disable: 4302 ) // 'type cast': truncation from 'LPCTSTR' to 'WORD'
 #pragma warning( disable: 4838 ) // conversion from 'int' to 'UINT' requires a narrowing conversion
+#pragma warning( disable: 4312 ) // 'type cast': conversion from 'HFILE' to 'HANDLE' of greater size
+
+#pragma warning( push )
 #pragma warning( disable: 4458 ) // declaration of 'nDefaultButton' hides class member
 
 #include <atlbase.h>
