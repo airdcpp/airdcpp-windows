@@ -1004,9 +1004,9 @@ LRESULT HubFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 	tabMenu.AppendMenu(MF_STRING, IDC_CLOSE_WINDOW, CTSTRING(CLOSE));
 	
 	if(!client->isConnected())
-		tabMenu.EnableMenuItem((UINT)(HMENU)copyHubMenu, MF_GRAYED);
+		tabMenu.EnableMenuItem((UINT_PTR)(HMENU)copyHubMenu, MF_GRAYED);
 	else
-		tabMenu.EnableMenuItem((UINT)(HMENU)copyHubMenu, MF_ENABLED);
+		tabMenu.EnableMenuItem((UINT_PTR)(HMENU)copyHubMenu, MF_ENABLED);
 	
 	tabMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_BOTTOMALIGN | TPM_RIGHTBUTTON, pt);
 	return TRUE;
