@@ -241,13 +241,11 @@
     <ClInclude Include="include\leveldb\table.h" />
     <ClInclude Include="include\leveldb\table_builder.h" />
     <ClInclude Include="include\leveldb\write_batch.h" />
-    <ClInclude Include="old\targetver.h" />
     <ClInclude Include="port\atomic_pointer.h" />
     <ClInclude Include="port\port.h" />
     <ClInclude Include="port\port_example.h" />
     <ClInclude Include="port\port_win.h" />
     <ClInclude Include="port\thread_annotations.h" />
-    <ClInclude Include="port\win\stdint.h" />
     <ClInclude Include="port\win\unistd.h" />
     <ClInclude Include="table\block.h" />
     <ClInclude Include="table\block_builder.h" />

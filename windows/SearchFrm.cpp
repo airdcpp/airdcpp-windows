@@ -1398,7 +1398,7 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 			for(auto c: pp->children){	 	
 				if ((sr->getUser() == c->getUser()) && (sr->getPath() == c->sr->getPath())) {
 					delete si;
-					return;	 	
+					return;
 				} 	
 			}	 	
 		}

@@ -224,9 +224,6 @@
     <ClInclude Include="include\leveldb\write_batch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="old\targetver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="port\atomic_pointer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -240,9 +237,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="port\thread_annotations.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="port\win\stdint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="table\block.h">

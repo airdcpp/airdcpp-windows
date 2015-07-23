@@ -172,13 +172,13 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <WarningLevel>Level4</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessorDefinitions>_WTL_NEW_PAGE_NOTIFY_HANDLERS;HAVE_NATUPNP_H;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Cpp0xSupport>true</Cpp0xSupport>
       <ShowIncludes>false</ShowIncludes>
-      <AdditionalOptions>-Zm112 /bigobj</AdditionalOptions>
+      <AdditionalOptions>-Zm132 /bigobj</AdditionalOptions>
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -369,7 +369,6 @@
     <None Include="res\Directory.ico" />
     <None Include="res\Download.ico" />
     <None Include="res\emoticon.bmp" />
-    <None Include="res\emoticon.png" />
     <None Include="res\eng.ico" />
     <None Include="res\error.ico" />
     <None Include="res\Exec.ico" />
