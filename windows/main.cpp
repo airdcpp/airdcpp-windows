@@ -54,7 +54,6 @@ CAppModule _Module;
 
 CriticalSection cs;
 enum { DEBUG_BUFSIZE = 8192 };
-static char guard[DEBUG_BUFSIZE];
 static int recursion = 0;
 static char exeTTH[192*8/(5*8)+2];
 static bool firstException = true;

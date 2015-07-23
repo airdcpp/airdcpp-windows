@@ -95,13 +95,13 @@ private:
 	static CImageList filelistTbImages;
 	static CImageList autoSearchStatuses;
 	static CImageList hubImages;
-	static CImageList QueueTreeImages;
+	static CImageList queueTreeImages;
 	
 	static tstring m_IconPath;
 
-	static CIcon iconInfo;
-	static CIcon iconWarning;
-	static CIcon iconError;
+	static CIcon infoIcon;
+	static CIcon warningIcon;
+	static CIcon errorIcon;
 
 };
 

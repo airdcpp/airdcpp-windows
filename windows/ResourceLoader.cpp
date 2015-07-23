@@ -34,11 +34,11 @@ CImageList ResourceLoader::flagImages;
 CImageList ResourceLoader::arrowImages;
 CImageList ResourceLoader::filelistTbImages;
 CImageList ResourceLoader::hubImages;
-CImageList ResourceLoader::QueueTreeImages;
+CImageList ResourceLoader::queueTreeImages;
 COLORREF ResourceLoader::GrayPalette[256];
-CIcon ResourceLoader::iconInfo = NULL;
-CIcon ResourceLoader::iconWarning = NULL;
-CIcon ResourceLoader::iconError = NULL;
+CIcon ResourceLoader::infoIcon = NULL;
+CIcon ResourceLoader::warningIcon = NULL;
+CIcon ResourceLoader::errorIcon = NULL;
 
 
 void ResourceLoader::load() {
@@ -60,7 +60,7 @@ void ResourceLoader::unload() {
 	hubImages.Destroy();
 	arrowImages.Destroy();
 	filelistTbImages.Destroy();
-	QueueTreeImages.Destroy();
+	queueTreeImages.Destroy();
 	
 }
 
@@ -332,20 +332,20 @@ HICON ResourceLoader::mergeIcons(HICON tmp1, HICON tmp2, int size){
 }
 
 CImageList& ResourceLoader::getQueueTreeImages() {
-	if (QueueTreeImages.IsNull()){
+	if (queueTreeImages.IsNull()){
 		const int size = 16;
-		QueueTreeImages.Create(size, size, ILC_COLOR32 | ILC_MASK, 0, 3);
-		QueueTreeImages.AddIcon(loadIcon(IDI_DOWNLOAD, size));
-		QueueTreeImages.AddIcon(loadIcon(IDI_FINISHED_DL, size));
-		QueueTreeImages.AddIcon(loadIcon(IDI_QUEUE, size));
-		QueueTreeImages.AddIcon(loadIcon(IDI_QUEUED_ERROR, size));
-		QueueTreeImages.AddIcon(loadIcon(IDI_PAUSED, size));
-		QueueTreeImages.AddIcon(loadIcon(IDI_AUTOSEARCH, size));
-		QueueTreeImages.AddIcon(getFileImages().GetIcon(DIR_NORMAL));
-		QueueTreeImages.AddIcon(loadIcon(IDI_OPEN_LIST, size)); 
-		QueueTreeImages.AddIcon(loadIcon(IDI_SEND_FILE, size));
+		queueTreeImages.Create(size, size, ILC_COLOR32 | ILC_MASK, 0, 3);
+		queueTreeImages.AddIcon(loadIcon(IDI_DOWNLOAD, size));
+		queueTreeImages.AddIcon(loadIcon(IDI_FINISHED_DL, size));
+		queueTreeImages.AddIcon(loadIcon(IDI_QUEUE, size));
+		queueTreeImages.AddIcon(loadIcon(IDI_QUEUED_ERROR, size));
+		queueTreeImages.AddIcon(loadIcon(IDI_PAUSED, size));
+		queueTreeImages.AddIcon(loadIcon(IDI_AUTOSEARCH, size));
+		queueTreeImages.AddIcon(getFileImages().GetIcon(DIR_NORMAL));
+		queueTreeImages.AddIcon(loadIcon(IDI_OPEN_LIST, size)); 
+		queueTreeImages.AddIcon(loadIcon(IDI_SEND_FILE, size));
 	}
-	return QueueTreeImages;
+	return queueTreeImages;
 }
 
 CImageList& ResourceLoader::getArrowImages() {
@@ -587,21 +587,21 @@ void ResourceLoader::loadFlagImages() {
 const CIcon& ResourceLoader::getSeverityIcon(uint8_t sev) {
 	switch (sev) {
 		case LogManager::LOG_INFO : 
-			if (!iconInfo)
-				iconInfo = loadIcon(IDI_INFO, 16);
-			return iconInfo;
+			if (!infoIcon)
+				infoIcon = loadIcon(IDI_INFO, 16);
+			return infoIcon;
 		case LogManager::LOG_WARNING:
-			if (!iconWarning)
-				iconWarning = loadIcon(IDI_IWARNING, 16);
-			return iconWarning;
+			if (!warningIcon)
+				warningIcon = loadIcon(IDI_IWARNING, 16);
+			return warningIcon;
 		case LogManager::LOG_ERROR:
-			if (!iconError)
-				iconError = loadIcon(IDI_IERROR, 16);
-			return iconError;
+			if (!errorIcon)
+				errorIcon = loadIcon(IDI_IERROR, 16);
+			return errorIcon;
 		default :
 			break;
 	}
-	return iconInfo;
+	return infoIcon;
 }
 
 //try to keep the icon smoothness but copy it as grayscale.

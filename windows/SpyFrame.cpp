@@ -227,23 +227,23 @@ void SpyFrame::on(ClientManagerListener::IncomingSearch, const string& s) noexce
 }
 
 void SpyFrame::on(ClientManagerListener::IncomingADCSearch, const AdcCommand& adc) noexcept {
-	string searchString;
-	if (adc.getParam("TR", 0, searchString)) {
+	string searchStr;
+	if (adc.getParam("TR", 0, searchStr)) {
 		if (ignoreTth)
 			return;
 
 		//make it consistent with the nmdc format...
-		searchString = "TTH:" + searchString;
+		searchStr = "TTH:" + searchStr;
 	} else {
 		StringList tmp;
 		if (adc.getParam("AN", 0, tmp)) {
-			searchString = Util::toString(" ", tmp);
+			searchStr = Util::toString(" ", tmp);
 		} else {
 			return;
 		}
 	}
 
-	tstring* x = new tstring(Text::toT(searchString));
+	tstring* x = new tstring(Text::toT(searchStr));
 	PostMessage(WM_SPEAKER, SEARCH, (LPARAM)x);
 }
 
