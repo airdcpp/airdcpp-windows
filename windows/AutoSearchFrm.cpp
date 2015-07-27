@@ -265,8 +265,6 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 		asMenu.AppendMenu(MF_STRING, IDC_ADD, CTSTRING(ADD));
 		asMenu.AppendMenu(MF_STRING, IDC_CHANGE, CTSTRING(SETTINGS_CHANGE));
 		asMenu.AppendMenu(MF_STRING, IDC_DUPLICATE, CTSTRING(DUPLICATE));
-		asMenu.AppendMenu(MF_STRING, IDC_MOVE_UP, CTSTRING(MOVE_UP));
-		asMenu.AppendMenu(MF_STRING, IDC_MOVE_DOWN, CTSTRING(MOVE_DOWN));
 
 		tstring title;
 		if (ctrlAutoSearch.GetSelectedCount() == 1) {
