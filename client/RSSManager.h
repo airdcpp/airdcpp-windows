@@ -36,13 +36,16 @@ public:
 	typedef vector<AutoSearchRSS> List;
 	typedef List::iterator Iter;
 	AutoSearchRSS(){}
-	AutoSearchRSS(string ftype, uint32_t fsettings, string ffolder, string ffilter) throw() : type(ftype), settings(fsettings), downloadfolder(ffolder), filter(ffilter){}
+	AutoSearchRSS(string ftype, uint32_t fsettings, string ffolder, string ffilter, uint32_t faction, uint32_t ftargettype) throw() : type(ftype), settings(fsettings), downloadfolder(ffolder), filter(ffilter), action(faction), targettype(ftargettype){}
 	virtual ~AutoSearchRSS(){};
 
 	GETSET(string, type, Type);
 	GETSET(uint32_t, settings, Settings);
 	GETSET(string, downloadfolder, DownloadFolder);
 	GETSET(string, filter, Filter);
+	GETSET(uint32_t, action, Action);
+	GETSET(uint32_t, targettype, TargetType);
+	GETSET(uint32_t, method, Method);
 
 	friend class AutoSearchRSSManager;
 	enum SettingsFlags {
