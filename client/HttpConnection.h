@@ -38,6 +38,7 @@ public:
 	void postData(const string& aUrl, const StringMap& aData);
 
 	const string& getMimeType() const { return mimeType; }
+	const string& getCurrentUrl() const { return currentUrl; }
 
 	int64_t getSize() const { return size; }
 	int64_t getDone() const { return done; }
