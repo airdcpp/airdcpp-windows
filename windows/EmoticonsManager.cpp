@@ -35,7 +35,7 @@ Emoticon::Emoticon(const tstring& _emoticonText, const string& _imagePath) :
 		emoticonBitmap.Destroy();
 	
 	if(emoticonBitmap.Load(Text::toT(_imagePath).c_str()) != S_OK) {
-		dcdebug("Emoticon load Error: %s \n", Util::translateError(GetLastError()));
+		dcdebug("Emoticon load Error: %s \n", Util::translateError(GetLastError()).c_str());
 		return;
 	}
 		
