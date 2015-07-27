@@ -168,7 +168,7 @@ LONG __stdcall DCUnhandledExceptionFilter( LPEXCEPTION_POINTERS e )
 
 	f.write(debugBuf, strlen(debugBuf));
 	sprintf(debugBuf, "Build: %s\r\n",
-		BUILD_NUMBER_STR);	
+		BUILD_NUMBER_STR.c_str());	
 	f.write(debugBuf, strlen(debugBuf));
 	
 	OSVERSIONINFOEX ver;
