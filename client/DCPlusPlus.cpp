@@ -51,6 +51,10 @@
 #include "AutoSearchManager.h"
 #include "ShareScannerManager.h"
 
+#ifdef RSSMANAGER
+#include "RSSManager.h"
+#endif
+
 #include "format.h"
 namespace dcpp {
 
@@ -105,6 +109,11 @@ void startup(function<void(const string&)> stepF, function<bool(const string& /*
 	HighlightManager::newInstance();
 
 	SettingsManager::getInstance()->load(messageF);
+
+#ifdef RSSMANAGER
+	RSSManager::newInstance();
+	RSSManager::getInstance()->load();
+#endif
 
 	UploadManager::getInstance()->setFreeSlotMatcher();
 	Localization::init();
@@ -179,7 +188,9 @@ void shutdown(function<void (const string&)> stepF, function<void (float)> progr
 	AutoSearchManager::getInstance()->AutoSearchSave();
 	QueueManager::getInstance()->shutdown();
 	SettingsManager::getInstance()->save();
-
+#ifdef RSSMANAGER
+	RSSManager::getInstance()->savedatabase();
+#endif
 	announce(STRING(SHUTTING_DOWN));
 
 	HighlightManager::deleteInstance();
@@ -207,6 +218,11 @@ void shutdown(function<void (const string&)> stepF, function<void (float)> progr
 	HashManager::deleteInstance();
 	LogManager::deleteInstance();
 	SettingsManager::deleteInstance();
+
+#ifdef RSSMANAGER
+	RSSManager::deleteInstance();
+#endif
+
 	TimerManager::deleteInstance();
 	ResourceManager::deleteInstance();
 
