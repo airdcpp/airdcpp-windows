@@ -774,4 +774,639 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\apply.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\AutoSearch\Collecting.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\AutoSearch\Disabled.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\AutoSearch\Expired.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\AutoSearch\Manual.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\AutoSearch\PostSearch.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\AutoSearch\QueuedError.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\AutoSearch\QueuedOK.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\AutoSearch\SearchError.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\AutoSearch\Searching.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\AutoSearch\Waiting.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\back.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Bot.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Botoff.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\cancel.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\down.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\download_user.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\emoticon.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ExecMasked.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\expand_down.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\expand_up.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\FavUser.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\file.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Find.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\folder.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\folder_incomplete.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\forward.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\HubMessage.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MediaToolbar\back.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MediaToolbar\down.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MediaToolbar\next.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MediaToolbar\pause.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MediaToolbar\play.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MediaToolbar\spam.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MediaToolbar\start.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MediaToolbar\stop.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MediaToolbar\up.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MediaToolbar\volume50.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\message_overlay.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\next.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\overlay.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\paused.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\previous.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\reload.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\searchTypes\Any.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\searchTypes\Audio.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\searchTypes\Compressed.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\searchTypes\Directory.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\searchTypes\Document.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\searchTypes\Exec.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\searchTypes\file.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\searchTypes\Pic.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\searchTypes\tth.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\searchTypes\Video.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Secure.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Seen.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\send_file.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\SettingsTree\Hashing.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\SettingsTree\Limiter.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\SettingsTree\Proxy.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\SettingsTree\SearchTypes.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Shared.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Slots.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\SlotsFull.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\splash.png" />
+    <Image Include="res\Stepback.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\text.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ToolbarImages\LogDir.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\TotalDown.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\TotalUp.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\types.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Typing.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\up.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\upload_user.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\UserlistImages\UserNoconnect.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\UsersFrame\FavUser.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\UsersFrame\FavUserOff.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\UsersFrame\grant.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\UsersFrame\grantOff.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\UsersFrame\offline.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\UsersFrame\online.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\AirDCPlusPlus.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\arrows.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\bitmap1.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\bra.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\CDM.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\dan.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\Directory.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\Download.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\emoticon.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\eng.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\error.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\Exec.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\fav.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\fin.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\flags.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\folders.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\fr.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\GERM.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\getTTH.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\holland.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\Hub.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\HubOff.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\HubOp.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\HubReg.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\hun.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\Indexing.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\info.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ita.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\magnet.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\matchlists.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\message.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\nor.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\Offline.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\Online.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ownlist.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\o_otools.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\o_settings_dlg.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\PM.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\pol.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\QConnect.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ro.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\rus.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\searchTypes\Custom.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\search_icons.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Advanced.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\AirAppearance.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Appearance.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Certificates.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Connections.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Downloads.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Experts.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Fonts.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\General.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Highlights.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Ignore.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Locations.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Misc.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Popups.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Preview.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Priorities.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\ProgressbarColors.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\ShareOptions.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Sharing.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Sounds.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\SpeedLimits.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Tabs.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Toolbar.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\UserCommands.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\UserlistColors.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Windows.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\settings_dlg.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\sounds.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\speeds.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\state.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\stop.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\stop_ikona.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\StrongDC.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\swe.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\toolbar.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\toolbar20-highlight.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\toolbar20.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\ADLSearch.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\AutoSearch.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\Away.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\Clock.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\Exit.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\Favorites.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\UsersFrame.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\FinishedDL.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\FinishedUL.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\Follow.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\NetStats.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\Notepad.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\OpenDLDir.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\OpenFileList.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\PublicHubs.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\Queue.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\Recents.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\Reconnect.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\Refresh.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\ScanMissing.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\Search.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\SearchSpy.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\Settings.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\SystemLog.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\uQueue.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\transfer_compressed.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\transfer_segmented.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\transfer_tree.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\TreeNo.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\TreeYes.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\Update.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\Upload.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\User.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\UserlistImages\UserAirDC.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\UserlistImages\UserAway.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\UserlistImages\UserBase.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\UserlistImages\UserBot.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\UserlistImages\UserNoCon.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\UserlistImages\UserOP.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\UserOff.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\users.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\warning.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\Winamp_logo.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\WinampControl.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="changelog.txt">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="Compile.txt">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="Extensions.txt">
+      <Filter>Documentation</Filter>
+    </None>
+    <None Include="res\WindowOptions.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\Wizard.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>
