@@ -248,7 +248,7 @@
     </ResourceCompile>
     <PreLinkEvent>
       <Message>Deleting old pdb file...</Message>
-      <Command>cmd.exe /c del "$(SolutionDir)compiled\$(Platform)\$(ProjectName).pdb"</Command>
+      <Command>$(ComSpec) /c del "$(SolutionDir)compiled\$(Platform)\$(ProjectName).pdb"</Command>
     </PreLinkEvent>
     <Link>
       <AdditionalOptions>/FIXED:NO /SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
@@ -319,7 +319,7 @@
     </ResourceCompile>
     <PreLinkEvent>
       <Message>Deleting old pdb file...</Message>
-      <Command>cmd.exe /c del "$(SolutionDir)compiled\$(Platform)\$(ProjectName).pdb"</Command>
+      <Command>$(ComSpec) /c del "$(SolutionDir)compiled\$(Platform)\$(ProjectName).pdb"</Command>
     </PreLinkEvent>
     <Link>
       <AdditionalOptions>/FIXED:NO /SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
