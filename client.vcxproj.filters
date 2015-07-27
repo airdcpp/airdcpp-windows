@@ -9,6 +9,12 @@
       <UniqueIdentifier>{f99f14c5-0c4b-4660-86f4-9495d819089b}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl</Extensions>
     </Filter>
+    <Filter Include="Header Files\Rss">
+      <UniqueIdentifier>{6795a96e-f02d-4e73-99cb-0287bbd2a202}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Rss">
+      <UniqueIdentifier>{2005f17f-cd03-41b8-acd1-8c855c5b9536}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="client\AdcCommand.cpp">
@@ -313,6 +319,9 @@
     </ClCompile>
     <ClCompile Include="client\PrivateChat.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="client\RSSManager.cpp">
+      <Filter>Source Files\Rss</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -813,6 +822,9 @@
     </ClInclude>
     <ClInclude Include="client\PrivateChatListener.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\RSSManager.h">
+      <Filter>Header Files\Rss</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
