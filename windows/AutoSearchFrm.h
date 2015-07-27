@@ -25,7 +25,7 @@
 #endif // _MSC_VER > 1000
 
 #include "FlatTabCtrl.h"
-#include "ExListViewCtrl.h"
+#include "TypedListViewCtrl.h"
 
 #include "AutoSearchDlg.h"
 #include "Async.h"
@@ -54,14 +54,14 @@ public:
 		COMMAND_ID_HANDLER(IDC_REMOVE, onRemove)
 		COMMAND_ID_HANDLER(IDC_CHANGE, onChange)
 		COMMAND_ID_HANDLER(IDC_DUPLICATE, onDuplicate)
-		COMMAND_ID_HANDLER(IDC_MOVE_UP, onMoveUp)
-		COMMAND_ID_HANDLER(IDC_MOVE_DOWN, onMoveDown)
 		NOTIFY_HANDLER(IDC_AUTOSEARCH, LVN_ITEMCHANGED, onItemChanged)
 		NOTIFY_HANDLER(IDC_AUTOSEARCH, NM_DBLCLK, onDoubleClick)
 		NOTIFY_HANDLER(IDC_AUTOSEARCH, LVN_KEYDOWN, onKeyDown)
 		NOTIFY_HANDLER(IDC_AUTOSEARCH, NM_CUSTOMDRAW, onCustomDraw)
-		COMMAND_HANDLER(IDC_AUTOSEARCH_ENABLE_TIME, EN_CHANGE, onAsTime)
-		COMMAND_HANDLER(IDC_AUTOSEARCH_RECHECK_TIME, EN_KILLFOCUS, onAsRTime)
+		NOTIFY_HANDLER(IDC_AUTOSEARCH, LVN_GETDISPINFO, ctrlAutoSearch.onGetDispInfo)
+		NOTIFY_HANDLER(IDC_AUTOSEARCH, LVN_COLUMNCLICK, ctrlAutoSearch.onColumnClick)
+		NOTIFY_HANDLER(IDC_AUTOSEARCH, LVN_GETINFOTIP, ctrlAutoSearch.onInfoTip)
+		COMMAND_HANDLER(IDC_AUTOSEARCH_ENABLE_TIME, EN_CHANGE, onAsTime)		
 		CHAIN_MSG_MAP(baseClass)
 	END_MSG_MAP()
 
@@ -71,8 +71,6 @@ public:
 	LRESULT onChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onDuplicate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onMoveUp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onMoveDown(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
@@ -80,12 +78,15 @@ public:
 	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bHandled*/);
 	LRESULT onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/);
 	LRESULT onAsTime(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
-	LRESULT onAsRTime(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
-
 	void handleSearch(bool onBackground);
 	void handleState(bool disabled);
 
 	void UpdateLayout(BOOL bResizeBars = TRUE);
+
+private:
+	class ItemInfo;
+public:
+	TypedListViewCtrl<ItemInfo, IDC_AUTOSEARCH>& getList() { return ctrlAutoSearch; }
 
 private:
 	enum {
@@ -104,9 +105,35 @@ private:
 		COLUMN_LAST
 	};
 
+	class ItemInfo {
+	public:
+		ItemInfo(const AutoSearchPtr& aAutosearch) : asItem(aAutosearch) {
+			update(aAutosearch);
+		}
+		~ItemInfo() { }
+
+		inline const tstring& getText(int col) const { return columns[col]; }
+
+		static int compareItems(const ItemInfo* a, const ItemInfo* b, int col) {
+			return Util::DefaultSort(a->columns[col].c_str(), b->columns[col].c_str());
+		}
+
+		int getImageIndex() const { return asItem->getStatus(); }
+
+		//int getImage(int col) const;
+		void update(const AutoSearchPtr& u);
+
+		tstring formatSearchDate(const time_t aTime);
+
+		AutoSearchPtr asItem;
+
+		tstring columns[COLUMN_LAST];
+
+	};
+
 	static int columnSizes[COLUMN_LAST];
 	static int columnIndexes[COLUMN_LAST];
-	ExListViewCtrl ctrlAutoSearch;
+	TypedListViewCtrl<ItemInfo, IDC_AUTOSEARCH> ctrlAutoSearch;
 
 	void appendDialogParams(const AutoSearchPtr& as, AutoSearchDlg& dlg);
 	void setItemProperties(AutoSearchPtr& as, const AutoSearchDlg& dlg, const string& aSearchString);
@@ -118,24 +145,19 @@ private:
 		AutoSearchManager::getInstance()->AutoSearchSave();
 	}
 
-	void addEntry(const AutoSearchPtr as, int pos);
+	void addEntry(const AutoSearchPtr as);
 	void updateItem(const AutoSearchPtr as);
-	tstring formatSearchDate(const time_t aTime);
 
-	int findItem(const AutoSearchPtr& aToken);
 	void removeItem(const AutoSearchPtr as);
 
-	CButton ctrlAdd, ctrlRemove, ctrlChange, ctrlDown, ctrlUp, ctrlDuplicate;
+	CButton ctrlAdd, ctrlRemove, ctrlChange, ctrlDuplicate;
 	CEdit ctrlAsTime;
 	CStatic ctrlAsTimeLabel;
 	CUpDownCtrl Timespin;
-
-	CEdit ctrlAsRTime;
-	CStatic ctrlAsRTimeLabel;
-	CUpDownCtrl RTimespin;
-
 	bool closed;
 	bool loading;
+	std::unordered_map<ProfileToken, ItemInfo> itemInfos;
+
 
 	virtual void on(AutoSearchManagerListener::RemoveItem, const AutoSearchPtr& aToken) noexcept;
 	virtual void on(AutoSearchManagerListener::AddItem, const AutoSearchPtr& as) noexcept;
