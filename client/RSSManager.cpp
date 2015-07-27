@@ -56,9 +56,11 @@ void RSSManager::load(SimpleXML& aXml) {
 	while (aXml.findChild("AutoSearch")) {
 		rssautosearch.push_back(
 			AutoSearchRSS(aXml.getChildAttrib("Type"),
-			aXml.getLongLongChildAttrib("Settings"),
-			aXml.getChildAttrib("Folder"),
-			aXml.getChildAttrib("Filter")
+					aXml.getLongLongChildAttrib("Settings"),
+					aXml.getChildAttrib("Folder"),
+					aXml.getChildAttrib("Filter"),
+					aXml.getLongLongChildAttrib("Action"),
+					aXml.getLongLongChildAttrib("TargetType")
 				)
 			);
 	}
@@ -232,15 +234,15 @@ RSSdata RSSManager::nextup(RSSdata url, string ftype) {
 				(m->getSettings() & m->SETTINGS_CheckAlreadyShared) ? as->setCheckAlreadyShared(true) : as->setCheckAlreadyShared(false);
 				(m->getSettings() & m->SETTINGS_Remove) ? as->setRemove(true) : as->setRemove(false);
 
+				as->setAction(static_cast<AutoSearch::ActionType>(m->getAction()));
+				as->setTargetType(static_cast<TargetUtil::TargetType>(m->getTargetType()));
+				as->setMethod(StringMatch::Method::EXACT);
 
 				as->setExpireTime(0);
-			//	as->setDisable(true);
-
-				as->setAction(AutoSearch::ActionType::ACTION_DOWNLOAD);
-				as->setTargetType(TargetUtil::TargetType::TARGET_PATH);
-				as->setMethod(StringMatch::Method::EXACT);
 				as->setFileType(SEARCH_TYPE_DIRECTORY);
 				as->setTarget(Util::formatParams(m->getDownloadFolder(), ucParams).c_str());
+
+				//	as->setDisable(true);
 
 				/*
 
