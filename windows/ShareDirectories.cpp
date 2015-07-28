@@ -629,7 +629,7 @@ bool ShareDirectories::showShareDlg(const ShareProfileInfo::List& spList, Profil
 
 		newName = virt.line;
 	}
-	newName = Text::toT(ShareManager::getInstance()->validateVirtual(Text::fromT(newName)));
+	newName = Text::toT(ShareManager::getInstance()->validateVirtualName(Text::fromT(newName)));
 	return true;
 }
 
@@ -728,7 +728,7 @@ bool ShareDirectories::addDirectory(const tstring& aPath){
 		}
 	}
 
-	if(showShareDlg(spList, curProfile, Text::toT(ShareManager::getInstance()->validateVirtual(Util::getLastDir(Text::fromT(path)))), profileTokens, newName, false)) {
+	if(showShareDlg(spList, curProfile, Text::toT(ShareManager::getInstance()->validateVirtualName(Util::getLastDir(Text::fromT(path)))), profileTokens, newName, false)) {
 		string vPath = Text::fromT(newName), rPath = Text::fromT(path);
 		try {
 			ShareManager::getInstance()->validatePath(rPath, vPath);
