@@ -1404,7 +1404,7 @@ void TransferView::handleExpandAll() {
 
 void TransferView::handleSlowDisconnect() {
 	auto slowDisconnect = [=](const ItemInfo* ii) {
-		QueueManager::getInstance()->onSlowDisconnect(ii->bundle);
+		QueueManager::getInstance()->toggleSlowDisconnectBundle(ii->bundle);
 	};
 
 	performActionBundles(slowDisconnect);

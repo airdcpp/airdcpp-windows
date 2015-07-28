@@ -682,7 +682,7 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 		// search
 		bundleMenu.appendItem(TSTRING(SEARCH_BUNDLE_ALT), [=] {
 			auto bundle = b;
-			QueueManager::getInstance()->searchBundle(bundle, true);
+			QueueManager::getInstance()->searchBundleAlternates(bundle, true);
 		}, OMenu::FLAG_THREADED);
 
 		bundleMenu.appendSeparator();
