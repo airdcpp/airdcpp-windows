@@ -342,11 +342,12 @@ LRESULT AutoSearchFrame::onChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		int sel = ctrlAutoSearch.GetNextItem(-1, LVNI_SELECTED);
 		auto ii = ctrlAutoSearch.getItemData(sel);
 
-		AutoSearchDlg dlg(ii->asItem);
-		appendDialogParams(ii->asItem, dlg);
+		ItemSettings options = { ii->asItem };
+		appendDialogParams(ii->asItem, options);
+		AutoSearchOptionsDlg dlg(options);
 
 		if (dlg.DoModal() == IDOK) {
-			setItemProperties(ii->asItem, dlg, dlg.searchString);
+			setItemProperties(ii->asItem, options, options.searchString);
 			AutoSearchManager::getInstance()->updateAutoSearch(ii->asItem);
 		}
 	}
@@ -411,12 +412,13 @@ LRESULT AutoSearchFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandle
 }
 
 LRESULT AutoSearchFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	AutoSearchDlg dlg;
-	dlg.expireTime = SETTING(AUTOSEARCH_EXPIRE_DAYS) > 0 ? GET_TIME() + (SETTING(AUTOSEARCH_EXPIRE_DAYS) * 24 * 60 * 60) : 0;
-	dlg.fileTypeStr = SETTING(LAST_AS_FILETYPE);
+	ItemSettings options{ nullptr };
+	AutoSearchOptionsDlg dlg(options);
+	options.expireTime = SETTING(AUTOSEARCH_EXPIRE_DAYS) > 0 ? GET_TIME() + (SETTING(AUTOSEARCH_EXPIRE_DAYS) * 24 * 60 * 60) : 0;
+	options.fileTypeStr = SETTING(LAST_AS_FILETYPE);
 	if (dlg.DoModal() == IDOK) {
-		SettingsManager::getInstance()->set(SettingsManager::LAST_AS_FILETYPE, dlg.fileTypeStr);
-		addFromDialog(dlg);
+		SettingsManager::getInstance()->set(SettingsManager::LAST_AS_FILETYPE, options.fileTypeStr);
+		addFromDialog(options);
 	}
 	return 0;
 }
@@ -426,11 +428,12 @@ LRESULT AutoSearchFrame::onDuplicate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 		int sel = ctrlAutoSearch.GetNextItem(-1, LVNI_SELECTED);
 		AutoSearchPtr as = ctrlAutoSearch.getItemData(sel)->asItem;
 
-		AutoSearchDlg dlg;
-		appendDialogParams(as, dlg);
+		ItemSettings options{ as };
+		appendDialogParams(as, options);
+		AutoSearchOptionsDlg dlg(options);
 
 		if (dlg.DoModal() == IDOK) {
-			addFromDialog(dlg);
+			addFromDialog(options);
 		}
 	}
 	return 0;
@@ -450,7 +453,7 @@ void AutoSearchFrame::updateList() {
 	ctrlAutoSearch.Invalidate();
 }
 
-void AutoSearchFrame::appendDialogParams(const AutoSearchPtr& as, AutoSearchDlg& dlg) {
+void AutoSearchFrame::appendDialogParams(const AutoSearchPtr& as, ItemSettings& dlg) {
 	dlg.searchString = as->getSearchString();
 	dlg.excludedWords = as->getExcludedString();
 	dlg.fileTypeStr = as->getFileType();
@@ -475,7 +478,7 @@ void AutoSearchFrame::appendDialogParams(const AutoSearchPtr& as, AutoSearchDlg&
 	dlg.useParams = as->getUseParams();
 }
 
-void AutoSearchFrame::setItemProperties(AutoSearchPtr& as, const AutoSearchDlg& dlg, const string& aSearchString) {
+void AutoSearchFrame::setItemProperties(AutoSearchPtr& as, const ItemSettings& dlg, const string& aSearchString) {
 	as->setSearchString(aSearchString);
 	as->setExcludedString(dlg.excludedWords);
 	as->setFileType(dlg.fileTypeStr);
@@ -504,7 +507,7 @@ void AutoSearchFrame::setItemProperties(AutoSearchPtr& as, const AutoSearchDlg& 
 	as->setUseParams(dlg.useParams);
 }
 
-void AutoSearchFrame::addFromDialog(const AutoSearchDlg& dlg) {
+void AutoSearchFrame::addFromDialog(const ItemSettings& dlg) {
 	string search = dlg.searchString + "\r\n";
 	string::size_type j = 0;
 	string::size_type i = 0;

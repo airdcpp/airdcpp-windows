@@ -500,6 +500,7 @@
     <ClCompile Include="windows\ADLSProperties.cpp" />
     <ClCompile Include="windows\AdvancedPage.cpp" />
     <ClCompile Include="windows\AutoSearchFrm.cpp" />
+    <ClCompile Include="windows\AutosearchOptionsDlg.cpp" />
     <ClCompile Include="windows\BrowseDlg.cpp" />
     <ClCompile Include="windows\ChatCommands.cpp" />
     <ClCompile Include="windows\DirectoryListingDlg.cpp" />
@@ -628,6 +629,7 @@
     <ClInclude Include="windows\AdvancedPage.h" />
     <ClInclude Include="windows\Async.h" />
     <ClInclude Include="windows\AutoSearchFrm.h" />
+    <ClInclude Include="windows\AutosearchOptionsDlg.h" />
     <ClInclude Include="windows\AutosearchParams.h" />
     <ClInclude Include="windows\BrowseDlg.h" />
     <ClInclude Include="windows\BrowserBar.h" />

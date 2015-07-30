@@ -27,7 +27,7 @@
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"
 
-#include "AutoSearchDlg.h"
+#include "AutoSearchOptionsDlg.h"
 #include "Async.h"
 
 #include "../client/AutoSearchManager.h"
@@ -135,11 +135,11 @@ private:
 	static int columnIndexes[COLUMN_LAST];
 	TypedListViewCtrl<ItemInfo, IDC_AUTOSEARCH> ctrlAutoSearch;
 
-	void appendDialogParams(const AutoSearchPtr& as, AutoSearchDlg& dlg);
-	void setItemProperties(AutoSearchPtr& as, const AutoSearchDlg& dlg, const string& aSearchString);
+	void appendDialogParams(const AutoSearchPtr& as, ItemSettings& dlg);
+	void setItemProperties(AutoSearchPtr& as, const ItemSettings& dlg, const string& aSearchString);
 
 	void updateList();
-	void addFromDialog(const AutoSearchDlg& dlg);
+	void addFromDialog(const ItemSettings& dlg);
 
 	void save() {
 		AutoSearchManager::getInstance()->AutoSearchSave();
