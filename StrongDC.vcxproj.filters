@@ -39,9 +39,6 @@
     <ClCompile Include="windows\AppearancePage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\AutosearchDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="windows\AVIPreview.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -366,6 +363,12 @@
     <ClCompile Include="windows\AutosearchOptionsDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\AutoSearchGeneralPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="windows\AutosearchAdvancedPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -384,9 +387,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\AppearancePage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\AutosearchDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\AVIPreview.h">
@@ -777,6 +777,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\AutosearchOptionsDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\AutosearchGeneralPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\AutosearchAdvancedPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

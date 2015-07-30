@@ -1,4 +1,4 @@
-#pragma once
+
 /*
 * Copyright (C) 2011-2015 AirDC++ Project
 *
@@ -17,63 +17,53 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef AS_SEARCH_DLG_H
-#define AS_SEARCH__DLG_H
+#ifndef AS_SEARCH_ADVANCEDPAGE_H
+#define AS_SEARCH_ADVANCEDPAGE_H
 
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
 #include <atlcrack.h>
+#include "../client/Util.h"
 #include "../client/AutoSearchManager.h"
-#include "AutosearchGeneralPage.h"
-#include "AutosearchAdvancedPage.h"
 
-
-#define ATTACH(id, var) var.Attach(GetDlgItem(id))
-
-class AutoSearchOptionsDlg : public CDialogImpl<AutoSearchOptionsDlg> {
+class AutoSearchAdvancedPage : public CDialogImpl<AutoSearchAdvancedPage> {
 public:
 
-	enum {
-		IDD = IDD_AS_DIALOG
-	};
+	ItemSettings& options;
 
-	enum Page {
-		GENERAL = 0,
-		ADVANCED = 1
-	};
+	enum { IDD = IDD_AS_ADVANCED };
 
-	AutoSearchOptionsDlg(ItemSettings& aSettings);
-	~AutoSearchOptionsDlg();
+	AutoSearchAdvancedPage(ItemSettings& aSettings);
+	~AutoSearchAdvancedPage();
 
-	BEGIN_MSG_MAP_EX(AutoSearchOptionsDlg)
+	BEGIN_MSG_MAP_EX(AutoSearchAdvancedPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
-		NOTIFY_HANDLER(IDC_TAB1, TCN_SELCHANGE, onTabChanged)
-		MESSAGE_HANDLER(WM_SETFOCUS, onFocus)
-		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
-		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
+		COMMAND_ID_HANDLER(IDC_USE_MATCHER, onCheckMatcher)
+		COMMAND_ID_HANDLER(IDC_CUSTOM_SEARCH_TIMES, onCheckTimes)
+		COMMAND_ID_HANDLER(IDC_EXACT_MATCH, onExactMatch)
 		END_MSG_MAP()
 
 
-	LRESULT onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-		return FALSE;
-	}
+	bool write();
+	LRESULT onCheckMatcher(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onCheckTimes(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onExactMatch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-	
-	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& bHandled);
-	LRESULT onTabChanged(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHandled*/);
-
-	ItemSettings& settings;
 
 private:
 
-	unique_ptr<AutoSearchGeneralPage> AsGeneral;
-	unique_ptr<AutoSearchAdvancedPage> AsAdvanced;
+	CEdit  ctrlCheatingDescription, ctrlUserMatch, ctrlMatcherString;
+	CComboBox cMatcherType;
+	CComboBox cExcludedWords;
 
-	void showPage(int aPage);
-	CTabCtrl cTab;
+	CDateTimePickerCtrl ctrlSearchStart, ctrlSearchEnd;
+
+	void fixControls();
+	bool loading;
 
 };
+
 
 #endif
