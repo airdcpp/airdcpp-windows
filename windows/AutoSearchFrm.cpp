@@ -192,20 +192,6 @@ LRESULT AutoSearchFrame::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bH
 	return 0;
 }
 
-void AutoSearchFrame::updateList() {
-	ctrlAutoSearch.SetRedraw(FALSE);
-
-	RLock l(AutoSearchManager::getInstance()->getCS());
-	auto& lst = AutoSearchManager::getInstance()->getSearchItems();
-
-	for (auto as : lst | map_values) {
-		addEntry(as);
-	}
-
-	ctrlAutoSearch.SetRedraw(TRUE);
-	ctrlAutoSearch.Invalidate();
-}
-
 LRESULT AutoSearchFrame::onAsTime(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/) {
 	if (loading)
 		return 0;
@@ -217,7 +203,8 @@ LRESULT AutoSearchFrame::onAsTime(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	}
 	SettingsManager::getInstance()->set(SettingsManager::AUTOSEARCH_EVERY, value);
 	return 0;
-}LRESULT AutoSearchFrame::onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/) {
+}
+LRESULT AutoSearchFrame::onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/) {
 	ctrlAutoSearch.SetFocus();
 	return 0;
 }
@@ -350,7 +337,118 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 	return FALSE; 
 }
 
+LRESULT AutoSearchFrame::onChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if (ctrlAutoSearch.GetSelectedCount() == 1) {
+		int sel = ctrlAutoSearch.GetNextItem(-1, LVNI_SELECTED);
+		auto ii = ctrlAutoSearch.getItemData(sel);
 
+		AutoSearchDlg dlg(ii->asItem);
+		appendDialogParams(ii->asItem, dlg);
+
+		if (dlg.DoModal() == IDOK) {
+			setItemProperties(ii->asItem, dlg, dlg.searchString);
+			AutoSearchManager::getInstance()->updateAutoSearch(ii->asItem);
+		}
+	}
+	return 0;
+}
+
+LRESULT AutoSearchFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	//use a removelist, the selection position will change when removing multiple.
+	AutoSearchList removelist;
+
+	int i = -1;
+	while ((i = ctrlAutoSearch.GetNextItem(i, LVNI_SELECTED)) != -1) {
+		removelist.push_back(ctrlAutoSearch.getItemData(i)->asItem);
+	}
+
+	if (WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_AS_REMOVAL, TSTRING(REALLY_REMOVE))) {
+		for (auto a = removelist.begin(); a != removelist.end(); ++a)
+			AutoSearchManager::getInstance()->removeAutoSearch(*a);
+	}
+	return 0;
+}
+
+LRESULT AutoSearchFrame::onItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
+	NMITEMACTIVATE* l = (NMITEMACTIVATE*)pnmh;
+
+	::EnableWindow(GetDlgItem(IDC_REMOVE), (ctrlAutoSearch.GetSelectedCount() >= 1));
+	::EnableWindow(GetDlgItem(IDC_CHANGE), (ctrlAutoSearch.GetSelectedCount() == 1));
+	::EnableWindow(GetDlgItem(IDC_DUPLICATE), (ctrlAutoSearch.GetSelectedCount() == 1));
+
+	if (!loading && l->iItem != -1 && ((l->uNewState & LVIS_STATEIMAGEMASK) != (l->uOldState & LVIS_STATEIMAGEMASK))) {
+		AutoSearchPtr as = ctrlAutoSearch.getItemData(l->iItem)->asItem;
+		if (as) {
+			AutoSearchManager::getInstance()->setItemActive(as, Util::toBool(ctrlAutoSearch.GetCheckState(l->iItem)));
+		}
+		bHandled = TRUE;
+		return 1;
+	}
+	return 0;
+}
+
+LRESULT AutoSearchFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+	NMLVKEYDOWN* kd = (NMLVKEYDOWN*)pnmh;
+	switch (kd->wVKey) {
+	case VK_DELETE:
+		if (ctrlAutoSearch.GetSelectedCount() >= 1) {
+			PostMessage(WM_COMMAND, IDC_REMOVE, 0);
+		}
+		break;
+	case VK_RETURN:
+		if (WinUtil::isShift() || WinUtil::isCtrl() || WinUtil::isAlt()) {
+		}
+		else {
+			if (ctrlAutoSearch.GetSelectedCount() == 1) {
+				PostMessage(WM_COMMAND, IDC_CHANGE, 0);
+			}
+		}
+		break;
+	default:
+		break;
+	}
+	return 0;
+}
+
+LRESULT AutoSearchFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	AutoSearchDlg dlg;
+	dlg.expireTime = SETTING(AUTOSEARCH_EXPIRE_DAYS) > 0 ? GET_TIME() + (SETTING(AUTOSEARCH_EXPIRE_DAYS) * 24 * 60 * 60) : 0;
+	dlg.fileTypeStr = SETTING(LAST_AS_FILETYPE);
+	if (dlg.DoModal() == IDOK) {
+		SettingsManager::getInstance()->set(SettingsManager::LAST_AS_FILETYPE, dlg.fileTypeStr);
+		addFromDialog(dlg);
+	}
+	return 0;
+}
+
+LRESULT AutoSearchFrame::onDuplicate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if (ctrlAutoSearch.GetSelectedCount() == 1) {
+		int sel = ctrlAutoSearch.GetNextItem(-1, LVNI_SELECTED);
+		AutoSearchPtr as = ctrlAutoSearch.getItemData(sel)->asItem;
+
+		AutoSearchDlg dlg;
+		appendDialogParams(as, dlg);
+
+		if (dlg.DoModal() == IDOK) {
+			addFromDialog(dlg);
+		}
+	}
+	return 0;
+}
+
+void AutoSearchFrame::updateList() {
+	ctrlAutoSearch.SetRedraw(FALSE);
+
+	RLock l(AutoSearchManager::getInstance()->getCS());
+	auto& lst = AutoSearchManager::getInstance()->getSearchItems();
+
+	for (auto as : lst | map_values) {
+		addEntry(as);
+	}
+
+	ctrlAutoSearch.SetRedraw(TRUE);
+	ctrlAutoSearch.Invalidate();
+}
 
 void AutoSearchFrame::appendDialogParams(const AutoSearchPtr& as, AutoSearchDlg& dlg) {
 	dlg.searchString = as->getSearchString();
@@ -406,32 +504,6 @@ void AutoSearchFrame::setItemProperties(AutoSearchPtr& as, const AutoSearchDlg& 
 	as->setUseParams(dlg.useParams);
 }
 
-LRESULT AutoSearchFrame::onAdd(WORD , WORD , HWND , BOOL& ) {
-	AutoSearchDlg dlg;
-	dlg.expireTime = SETTING(AUTOSEARCH_EXPIRE_DAYS) > 0 ? GET_TIME() + (SETTING(AUTOSEARCH_EXPIRE_DAYS)*24*60*60) : 0;
-	dlg.fileTypeStr = SETTING(LAST_AS_FILETYPE);
-	if(dlg.DoModal() == IDOK) {
-		SettingsManager::getInstance()->set(SettingsManager::LAST_AS_FILETYPE, dlg.fileTypeStr);
-		addFromDialog(dlg);
-	}
-	return 0;
-}
-
-LRESULT AutoSearchFrame::onDuplicate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if(ctrlAutoSearch.GetSelectedCount() == 1) {
-		int sel = ctrlAutoSearch.GetNextItem(-1, LVNI_SELECTED);
-		AutoSearchPtr as = ctrlAutoSearch.getItemData(sel)->asItem;
-
-		AutoSearchDlg dlg;
-		appendDialogParams(as, dlg);
-
-		if(dlg.DoModal() == IDOK) {
-			addFromDialog(dlg);
-		}
-	}
-	return 0;
-}
-
 void AutoSearchFrame::addFromDialog(const AutoSearchDlg& dlg) {
 	string search = dlg.searchString + "\r\n";
 	string::size_type j = 0;
@@ -451,37 +523,6 @@ void AutoSearchFrame::addFromDialog(const AutoSearchDlg& dlg) {
 	}
 }
 
-LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
-	if(ctrlAutoSearch.GetSelectedCount() == 1) {
-		int sel = ctrlAutoSearch.GetNextItem(-1, LVNI_SELECTED);
-		auto ii = ctrlAutoSearch.getItemData(sel);
-
-		AutoSearchDlg dlg(ii->asItem);
-		appendDialogParams(ii->asItem, dlg);
-
-		if(dlg.DoModal() == IDOK) {
-			setItemProperties(ii->asItem, dlg, dlg.searchString);
-			AutoSearchManager::getInstance()->updateAutoSearch(ii->asItem);
-		}
-	}
-	return 0;
-}
-
-LRESULT AutoSearchFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	//use a removelist, the selection position will change when removing multiple.
-	AutoSearchList removelist;
-
-	int i = -1;
-	while( (i = ctrlAutoSearch.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		removelist.push_back(ctrlAutoSearch.getItemData(i)->asItem);
-	}
-
-	if(WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_AS_REMOVAL, TSTRING(REALLY_REMOVE))) {
-		for(auto a = removelist.begin(); a !=removelist.end(); ++a )
-			AutoSearchManager::getInstance()->removeAutoSearch(*a);
-	}
-	return 0;
-}
 
 void AutoSearchFrame::handleSearch(bool onBackground) {
 	if(ctrlAutoSearch.GetSelectedCount() == 1) {
@@ -507,47 +548,6 @@ void AutoSearchFrame::handleState(bool disabled) {
 	}
 }
 
-LRESULT AutoSearchFrame::onItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
-	NMITEMACTIVATE* l = (NMITEMACTIVATE*)pnmh;
-	
-	::EnableWindow(GetDlgItem(IDC_REMOVE), (ctrlAutoSearch.GetSelectedCount() >= 1));
-	::EnableWindow(GetDlgItem(IDC_CHANGE), (ctrlAutoSearch.GetSelectedCount() == 1));
-	::EnableWindow(GetDlgItem(IDC_DUPLICATE), (ctrlAutoSearch.GetSelectedCount() == 1));
-	
-	if(!loading && l->iItem != -1 && ((l->uNewState & LVIS_STATEIMAGEMASK) != (l->uOldState & LVIS_STATEIMAGEMASK))) {
-		AutoSearchPtr as = ctrlAutoSearch.getItemData(l->iItem)->asItem;
-		if (as) {
-			AutoSearchManager::getInstance()->setItemActive(as, Util::toBool(ctrlAutoSearch.GetCheckState(l->iItem)));
-		}
-		bHandled = TRUE;
-		return 1;
-	}
-	return 0;		
-}
-
-LRESULT AutoSearchFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
-	NMLVKEYDOWN* kd = (NMLVKEYDOWN*) pnmh;
-	switch(kd->wVKey) {
-		case VK_DELETE:
-			if(ctrlAutoSearch.GetSelectedCount() >= 1) {
-				PostMessage(WM_COMMAND, IDC_REMOVE, 0);
-			}
-			break;
-		case VK_RETURN:
-			if( WinUtil::isShift() || WinUtil::isCtrl() || WinUtil::isAlt() ) {
-			} else {
-				if(ctrlAutoSearch.GetSelectedCount() == 1) {
-					PostMessage(WM_COMMAND, IDC_CHANGE, 0);
-				}
-			}
-			break;
-		default:
-			break;
-	}
-	return 0;
-}
-
-
 void AutoSearchFrame::addEntry(const AutoSearchPtr as) {
 	if(!as)
 		return;
@@ -564,7 +564,26 @@ void AutoSearchFrame::addEntry(const AutoSearchPtr as) {
 	loading = false;
 }
 
+void AutoSearchFrame::updateItem(const AutoSearchPtr as) {
+	auto i = itemInfos.find(as->getToken());
+	if (i != itemInfos.end()) {
+		(&i->second)->update(as);
+		int pos = ctrlAutoSearch.findItem(&i->second);
+		if (pos >= 0) {
+			ctrlAutoSearch.SetCheckState(pos, as->getEnabled());
+			ctrlAutoSearch.SetItem(pos, 0, LVIF_IMAGE, NULL, as->getStatus(), 0, 0, NULL);
+			ctrlAutoSearch.updateItem(pos);
+		}
+	}
+}
 
+void AutoSearchFrame::removeItem(const AutoSearchPtr as) {
+	auto i = itemInfos.find(as->getToken());
+	if (i != itemInfos.end()) {
+		ctrlAutoSearch.deleteItem(&i->second);
+		itemInfos.erase(i);
+	}
+}
 
 void AutoSearchFrame::ItemInfo::update(const AutoSearchPtr& as) {
 	string target = as->getTarget();
@@ -593,26 +612,16 @@ void AutoSearchFrame::ItemInfo::update(const AutoSearchPtr& as) {
 
 }
 
-void AutoSearchFrame::updateItem(const AutoSearchPtr as) {
-	auto i = itemInfos.find(as->getToken());
-	if (i != itemInfos.end()) {
-		(&i->second)->update(as);
-		int pos = ctrlAutoSearch.findItem(&i->second);
-		if (pos >= 0) {
-			ctrlAutoSearch.SetCheckState(pos, as->getEnabled());
-			ctrlAutoSearch.SetItem(pos, 0, LVIF_IMAGE, NULL, as->getStatus(), 0, 0, NULL);
-			ctrlAutoSearch.updateItem(pos);
-		}
+
+tstring AutoSearchFrame::ItemInfo::formatSearchDate(const time_t aTime) {
+	char buf[20];
+	if (strftime(buf, 20, "%x %X", localtime(&aTime))) {
+		return Text::toT(string(buf));
+	} else {
+		return _T("-");
 	}
 }
 
-void AutoSearchFrame::removeItem(const AutoSearchPtr as) {
-	auto i = itemInfos.find(as->getToken());
-	if (i != itemInfos.end()) {
-		ctrlAutoSearch.deleteItem(&i->second);
-		itemInfos.erase(i);
-	}
-}
 
 void AutoSearchFrame::on(AutoSearchManagerListener::RemoveItem, const AutoSearchPtr& as) noexcept { 
 	callAsync([=] { removeItem(as); if(SETTING(AUTOSEARCH_BOLD)) setDirty(); }); 
@@ -624,15 +633,6 @@ void AutoSearchFrame::on(AutoSearchManagerListener::AddItem, const AutoSearchPtr
 
 void AutoSearchFrame::on(AutoSearchManagerListener::UpdateItem, const AutoSearchPtr& as, bool aSetDirty) noexcept {
 	callAsync([=] { updateItem(as); if (aSetDirty && SETTING(AUTOSEARCH_BOLD)) setDirty();  }); 
-}
-
-tstring AutoSearchFrame::ItemInfo::formatSearchDate(const time_t aTime) {
-	char buf[20];
-	if (strftime(buf, 20, "%x %X", localtime(&aTime))) {
-		return Text::toT(string(buf));
-	} else {
-		return _T("-");
-	}
 }
 
 LRESULT AutoSearchFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
