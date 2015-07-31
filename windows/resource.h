@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airdc-git\AirDC.rc
+// Used by X:\Projects\C++\AirDC\airgit\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -9,6 +9,7 @@
 #define IDC_FILETYPES                   101
 #define IDC_COPY_SPEED                  102
 #define IDC_TRAY_SHOW                   103
+#define IDD_SETTINGS_RSSMANAGER         103
 #define IDC_COPY_HUB                    104
 #define IDC_REMOVE_OFFLINE              104
 #define IDC_DISABLE_SOUNDS              105
@@ -1007,6 +1008,7 @@
 #define IDC_MISC_OPTIONS                1347
 #define IDC_LIST1                       1348
 #define IDC_ENCRYPTION_LIST             1348
+#define IDC_RSS_SETTINGS                1348
 #define IDC_CONNECTION2                 1349
 #define IDC_RAR                         1350
 #define IDC_PRIVATE_HUB                 1351
@@ -1603,6 +1605,8 @@
 #define IDC_PROGRESS_SLIDER             10198
 #define IDC_LIGHTEN_TXT                 10199
 #define IDC_LIST_GENERAL                10200
+#define IDC_RSS_AUTOSEARCH_SETTINGS     10201
+#define IDC_LIST3                       10202
 #define IDC_REFRESH_WINAMP              11011
 #define IDC_WINAMP_LIST                 11012
 #define IDC_POSITION                    11013
@@ -1819,9 +1823,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        363
+#define _APS_NEXT_RESOURCE_VALUE        364
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         10201
+#define _APS_NEXT_CONTROL_VALUE         10203
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

@@ -1445,6 +1445,16 @@ BEGIN
     LTEXT           "Note: All languages may not be fully translated. If you want to help with translating the client, please visit the home page for more infromation.",IDC_LANGUAGE_NOTE,13,111,283,26
 END
 
+IDD_SETTINGS_RSSMANAGER DIALOGEX 0, 0, 362, 347
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    LTEXT           "RSS Settings",IDC_STATIC,12,6,77,8
+    CONTROL         "",IDC_RSS_SETTINGS,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,12,18,336,133
+    CONTROL         "",IDC_RSS_AUTOSEARCH_SETTINGS,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,10,179,338,155
+    LTEXT           "Autosearch settings for RSS",IDC_STATIC,10,164,151,8
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1610,6 +1620,17 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 245
     END
+
+    IDD_SETTINGS_RSSMANAGER, DIALOG
+    BEGIN
+        LEFTMARGIN, 6
+        RIGHTMARGIN, 355
+        VERTGUIDE, 10
+        VERTGUIDE, 344
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 340
+        HORZGUIDE, 334
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -1747,6 +1768,22 @@ BEGIN
     "U",            IDC_MOVE_UP,            VIRTKEY, ALT, NOINVERT
     "D",            IDC_MOVE_DOWN,          VIRTKEY, ALT, NOINVERT
     "C",            IDC_CONNECT,            VIRTKEY, ALT, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_SETTINGS_RSSMANAGER AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_UCPAGE AFX_DIALOG_LAYOUT
+BEGIN
+    0
 END
 
 #endif    // English (United States) resources
