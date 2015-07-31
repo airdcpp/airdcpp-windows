@@ -49,7 +49,7 @@ PropPage::TextItem SpeedPage::texts[] = {
 	{ IDC_SETTINGS_MAX_MCN_DL, ResourceManager::SETTINGS_MAX_MCN_DL },
 	{ IDC_SETTINGS_MAX_MCN_UL, ResourceManager::SETTINGS_MAX_MCN_UL },
 	{ IDC_SETTINGS_MCN_NOTE, ResourceManager::SETTINGS_MCN_NOTE },
-
+	{ IDC_LINE_SPEED_NOTE, ResourceManager::LINE_SPEED_NOTE },
 	{ IDC_MAX_RUNNING_BUNDLES_LBL, ResourceManager::MAX_RUNNING_BUNDLES },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY },
 };
