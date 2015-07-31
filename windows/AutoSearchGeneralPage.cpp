@@ -24,7 +24,7 @@
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
-AutoSearchGeneralPage::AutoSearchGeneralPage(ItemSettings& aSettings) : options(aSettings) {}
+AutoSearchGeneralPage::AutoSearchGeneralPage(AutoSearchItemSettings& aSettings) : options(aSettings) {}
 
 AutoSearchGeneralPage::~AutoSearchGeneralPage() { }
 
@@ -167,7 +167,7 @@ void AutoSearchGeneralPage::insertNumber() {
 
 bool AutoSearchGeneralPage::write() {
 	TCHAR bufPath[MAX_PATH];
-	if (ctrlSearch.GetWindowTextLength() <= 5) {
+	if (ctrlSearch.GetWindowTextLength() < 5) {
 		MessageBox(CTSTRING(LINE_EMPTY_OR_TOO_SHORT));
 		return false;
 	}
@@ -250,11 +250,6 @@ void AutoSearchGeneralPage::fixControls() {
 	/* Param config */
 	bool usingParams = IsDlgButtonChecked(IDC_USE_PARAMS) == BST_CHECKED;
 	::EnableWindow(GetDlgItem(IDC_CONF_PARAMS), usingParams);
-
-	/* Result matcher
-	bool exactMatch = IsDlgButtonChecked(IDC_EXACT_MATCH) == BST_CHECKED;
-	::EnableWindow(GetDlgItem(IDC_USE_MATCHER), searchType != SearchManager::TYPE_TTH && !exactMatch);
-	*/
 
 	/* Expiry date */
 	::EnableWindow(GetDlgItem(IDC_DATETIMEPICKER), IsDlgButtonChecked(IDC_USE_EXPIRY) == BST_CHECKED);

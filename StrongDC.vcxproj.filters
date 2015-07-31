@@ -785,6 +785,9 @@
     <ClInclude Include="windows\AutosearchAdvancedPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="windows\AutoSearchItemSettings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\apply.ico">

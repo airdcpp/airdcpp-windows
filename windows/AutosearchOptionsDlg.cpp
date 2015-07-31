@@ -21,7 +21,9 @@
 #include "Resource.h"
 #include "AutoSearchOptionsDlg.h"
 
-AutoSearchOptionsDlg::AutoSearchOptionsDlg(ItemSettings& aSettings) : settings(aSettings) {}
+AutoSearchOptionsDlg::AutoSearchOptionsDlg(const AutoSearchPtr& as) : options(as) {
+}
+AutoSearchOptionsDlg::AutoSearchOptionsDlg() { }
 
 AutoSearchOptionsDlg::~AutoSearchOptionsDlg() { }
 
@@ -34,10 +36,10 @@ LRESULT AutoSearchOptionsDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPA
 	cTab.SetCurSel(0);
 
 	//Create the pages
-	AsGeneral.reset(new AutoSearchGeneralPage(settings));
+	AsGeneral.reset(new AutoSearchGeneralPage(options));
 	AsGeneral->Create(cTab.m_hWnd);
 
-	AsAdvanced.reset(new AutoSearchAdvancedPage(settings));
+	AsAdvanced.reset(new AutoSearchAdvancedPage(options));
 	AsAdvanced->Create(cTab.m_hWnd);
 
 	CenterWindow(GetParent());

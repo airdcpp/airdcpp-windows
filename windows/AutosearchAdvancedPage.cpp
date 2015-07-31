@@ -20,10 +20,11 @@
 #include "Resource.h"
 #include "WinUtil.h"
 #include "AutosearchAdvancedPage.h"
+#include "../client/SearchManager.h"
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
-AutoSearchAdvancedPage::AutoSearchAdvancedPage(ItemSettings& aSettings) : options(aSettings) {}
+AutoSearchAdvancedPage::AutoSearchAdvancedPage(AutoSearchItemSettings& aSettings) : options(aSettings) {}
 
 AutoSearchAdvancedPage::~AutoSearchAdvancedPage() { }
 
@@ -209,6 +210,10 @@ void AutoSearchAdvancedPage::fixControls() {
 	if (options.searchType == SearchManager::TYPE_TTH)
 		CheckDlgButton(IDC_USE_MATCHER, false);
 
+	/* Result matcher */
+	bool exactMatch = IsDlgButtonChecked(IDC_EXACT_MATCH) == BST_CHECKED;
+	::EnableWindow(GetDlgItem(IDC_USE_MATCHER), options.searchType != SearchManager::TYPE_TTH && !exactMatch);
+	
 	/* Misc advanced */
 	::EnableWindow(GetDlgItem(IDC_CHECK_QUEUED), options.searchType == SearchManager::TYPE_DIRECTORY);
 	::EnableWindow(GetDlgItem(IDC_CHECK_SHARED), options.searchType == SearchManager::TYPE_DIRECTORY);

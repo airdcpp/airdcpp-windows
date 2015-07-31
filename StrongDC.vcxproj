@@ -632,6 +632,7 @@
     <ClInclude Include="windows\AutosearchAdvancedPage.h" />
     <ClInclude Include="windows\AutoSearchFrm.h" />
     <ClInclude Include="windows\AutosearchGeneralPage.h" />
+    <ClInclude Include="windows\AutoSearchItemSettings.h" />
     <ClInclude Include="windows\AutosearchOptionsDlg.h" />
     <ClInclude Include="windows\AutosearchParams.h" />
     <ClInclude Include="windows\BrowseDlg.h" />

@@ -26,6 +26,7 @@
 #include "../client/Util.h"
 #include "../client/TargetUtil.h"
 #include "../client/AutoSearchManager.h"
+#include "AutoSearchItemSettings.h"
 #include "DownloadBaseHandler.h"
 #include "SearchTypeCombo.h"
 
@@ -33,11 +34,11 @@
 class AutoSearchGeneralPage : public CDialogImpl<AutoSearchGeneralPage>, public DownloadBaseHandler<AutoSearchGeneralPage> {
 public:
 
-	ItemSettings& options;
+	AutoSearchItemSettings& options;
 
 	enum { IDD = IDD_AS_GENERAL };
 
-	AutoSearchGeneralPage(ItemSettings& aSettings);
+	AutoSearchGeneralPage(AutoSearchItemSettings& aSettings);
 	~AutoSearchGeneralPage();
 
 	BEGIN_MSG_MAP_EX(AutoSearchGeneralPage)

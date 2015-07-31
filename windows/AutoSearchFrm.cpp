@@ -342,12 +342,10 @@ LRESULT AutoSearchFrame::onChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		int sel = ctrlAutoSearch.GetNextItem(-1, LVNI_SELECTED);
 		auto ii = ctrlAutoSearch.getItemData(sel);
 
-		ItemSettings options = { ii->asItem };
-		appendDialogParams(ii->asItem, options);
-		AutoSearchOptionsDlg dlg(options);
+		AutoSearchOptionsDlg dlg(ii->asItem);
 
 		if (dlg.DoModal() == IDOK) {
-			setItemProperties(ii->asItem, options, options.searchString);
+			dlg.options.setItemProperties(ii->asItem, dlg.options.searchString);
 			AutoSearchManager::getInstance()->updateAutoSearch(ii->asItem);
 		}
 	}
@@ -412,13 +410,11 @@ LRESULT AutoSearchFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandle
 }
 
 LRESULT AutoSearchFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	ItemSettings options{ nullptr };
-	AutoSearchOptionsDlg dlg(options);
-	options.expireTime = SETTING(AUTOSEARCH_EXPIRE_DAYS) > 0 ? GET_TIME() + (SETTING(AUTOSEARCH_EXPIRE_DAYS) * 24 * 60 * 60) : 0;
-	options.fileTypeStr = SETTING(LAST_AS_FILETYPE);
+	AutoSearchOptionsDlg dlg;
+
 	if (dlg.DoModal() == IDOK) {
-		SettingsManager::getInstance()->set(SettingsManager::LAST_AS_FILETYPE, options.fileTypeStr);
-		addFromDialog(options);
+		SettingsManager::getInstance()->set(SettingsManager::LAST_AS_FILETYPE, dlg.options.fileTypeStr);
+		addFromDialog(dlg.options);
 	}
 	return 0;
 }
@@ -428,12 +424,10 @@ LRESULT AutoSearchFrame::onDuplicate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 		int sel = ctrlAutoSearch.GetNextItem(-1, LVNI_SELECTED);
 		AutoSearchPtr as = ctrlAutoSearch.getItemData(sel)->asItem;
 
-		ItemSettings options{ as };
-		appendDialogParams(as, options);
-		AutoSearchOptionsDlg dlg(options);
+		AutoSearchOptionsDlg dlg(as);
 
 		if (dlg.DoModal() == IDOK) {
-			addFromDialog(options);
+			addFromDialog(dlg.options);
 		}
 	}
 	return 0;
@@ -453,61 +447,8 @@ void AutoSearchFrame::updateList() {
 	ctrlAutoSearch.Invalidate();
 }
 
-void AutoSearchFrame::appendDialogParams(const AutoSearchPtr& as, ItemSettings& dlg) {
-	dlg.searchString = as->getSearchString();
-	dlg.excludedWords = as->getExcludedString();
-	dlg.fileTypeStr = as->getFileType();
-	dlg.action = as->getAction();
-	dlg.remove = as->getRemove();
-	dlg.target = as->getTarget();
-	dlg.userMatch = as->getNickPattern();
-	dlg.matcherString = as->getMatcherString();
-	dlg.matcherType = as->getMethod();
-	dlg.expireTime = as->getExpireTime();
-	dlg.searchDays = as->searchDays;
-	dlg.startTime = as->startTime;
-	dlg.endTime = as->endTime;
-	dlg.targetType = as->getTargetType();
-	dlg.checkQueued = as->getCheckAlreadyQueued();
-	dlg.checkShared = as->getCheckAlreadyShared();
-	dlg.matchFullPath = as->getMatchFullPath();
 
-	dlg.curNumber = as->getCurNumber();
-	dlg.numberLen = as->getNumberLen();
-	dlg.maxNumber = as->getMaxNumber();
-	dlg.useParams = as->getUseParams();
-}
-
-void AutoSearchFrame::setItemProperties(AutoSearchPtr& as, const ItemSettings& dlg, const string& aSearchString) {
-	as->setSearchString(aSearchString);
-	as->setExcludedString(dlg.excludedWords);
-	as->setFileType(dlg.fileTypeStr);
-	as->setAction((AutoSearch::ActionType)dlg.action);
-	as->setRemove(dlg.remove);
-	as->setTargetType(dlg.targetType);
-	as->setTarget(dlg.target);
-	as->setMethod((StringMatch::Method)dlg.matcherType);
-	as->setMatcherString(dlg.matcherString);
-	as->setUserMatcher(dlg.userMatch);
-	as->setExpireTime(dlg.expireTime);
-	as->setCheckAlreadyQueued(dlg.checkQueued);
-	as->setCheckAlreadyShared(dlg.checkShared);
-	as->setMatchFullPath(dlg.matchFullPath);
-
-	if (as->getCurNumber() != dlg.curNumber)
-		as->setLastIncFinish(0);
-
-	as->startTime = dlg.startTime;
-	as->endTime = dlg.endTime;
-	as->searchDays = dlg.searchDays;
-
-	as->setCurNumber(dlg.curNumber);
-	as->setMaxNumber(dlg.maxNumber);
-	as->setNumberLen(dlg.numberLen);
-	as->setUseParams(dlg.useParams);
-}
-
-void AutoSearchFrame::addFromDialog(const ItemSettings& dlg) {
+void AutoSearchFrame::addFromDialog(AutoSearchItemSettings& dlg) {
 	string search = dlg.searchString + "\r\n";
 	string::size_type j = 0;
 	string::size_type i = 0;
@@ -518,7 +459,7 @@ void AutoSearchFrame::addFromDialog(const ItemSettings& dlg) {
 		if(str.size() >= 5) { //dont accept shorter search strings than 5 chars
 			AutoSearchPtr as = new AutoSearch;
 
-			setItemProperties(as, dlg, str);
+			dlg.setItemProperties(as, str);
 			AutoSearchManager::getInstance()->addAutoSearch(as, false);
 		} else if(search.size() < 5) { // dont report if empty line between/end when adding multiple
 			MessageBox(CTSTRING(LINE_EMPTY_OR_TOO_SHORT));

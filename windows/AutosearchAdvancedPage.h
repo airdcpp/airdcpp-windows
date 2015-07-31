@@ -26,15 +26,16 @@
 #include <atlcrack.h>
 #include "../client/Util.h"
 #include "../client/AutoSearchManager.h"
+#include "AutoSearchItemSettings.h"
 
 class AutoSearchAdvancedPage : public CDialogImpl<AutoSearchAdvancedPage> {
 public:
 
-	ItemSettings& options;
+	AutoSearchItemSettings& options;
 
 	enum { IDD = IDD_AS_ADVANCED };
 
-	AutoSearchAdvancedPage(ItemSettings& aSettings);
+	AutoSearchAdvancedPage(AutoSearchItemSettings& aSettings);
 	~AutoSearchAdvancedPage();
 
 	BEGIN_MSG_MAP_EX(AutoSearchAdvancedPage)

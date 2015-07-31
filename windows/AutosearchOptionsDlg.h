@@ -27,7 +27,7 @@
 #include "../client/AutoSearchManager.h"
 #include "AutosearchGeneralPage.h"
 #include "AutosearchAdvancedPage.h"
-
+#include "AutoSearchItemSettings.h"
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
@@ -43,7 +43,8 @@ public:
 		ADVANCED = 1
 	};
 
-	AutoSearchOptionsDlg(ItemSettings& aSettings);
+	AutoSearchOptionsDlg(const AutoSearchPtr& as);
+	AutoSearchOptionsDlg();
 	~AutoSearchOptionsDlg();
 
 	BEGIN_MSG_MAP_EX(AutoSearchOptionsDlg)
@@ -64,7 +65,7 @@ public:
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& bHandled);
 	LRESULT onTabChanged(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHandled*/);
 
-	ItemSettings& settings;
+	AutoSearchItemSettings options;
 
 private:
 
