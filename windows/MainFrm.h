@@ -422,8 +422,6 @@ private:
 	bool maximized;
 	uint64_t lastMove;
 	uint64_t lastUpdate;
-	int64_t lastUp;
-	int64_t lastDown;
 
 	bool oldshutdown;
 

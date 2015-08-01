@@ -1420,8 +1420,7 @@ void TransferView::handleRemoveFile() {
 
 void TransferView::handleSearchDir() {
 	auto search = [=](const ItemInfo* ii) {
-		size_t pos = ii->target.rfind(' ');
-		WinUtil::searchAny(Util::getLastDir(ii->target.substr(0, pos != string::npos ? pos : ii->target.length())));
+		WinUtil::searchAny(Util::getLastDir(ii->target));
 	};
 
 	performActionBundles(search);
