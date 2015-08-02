@@ -192,13 +192,21 @@ LRESULT AutoSearchFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 
 void AutoSearchFrame::updateStatus() {
 	auto aTime = AutoSearchManager::getInstance()->getNextSearch();
-	if (aTime == 0 || aTime < GET_TIME())
-		return;
-	
-	bool u = false;
-	auto time_left = (aTime - GET_TIME());
-	tstring tmp = _T("Next Search in: ") + Text::toT(Util::formatTime(time_left, false, false));
+	tstring tmp;
+	if (aTime == 0) {
+		tmp = Util::emptyStringT;
+	//} else if (aTime < GET_TIME() || (aTime - GET_TIME()) < 60) {
+		//tmp = _T("Next search in less than 1 minute");
+	} else {
+		/*
+		Showing by second is not 100% accurate, we don't know the next minute tick,
+		so might just consider showing the time by minute...
+		*/
+		auto time_left = (aTime - GET_TIME());
+		tmp = _T("Next search in ") + Text::toT(Util::formatTime(time_left, false, false));
+	}
 
+	bool u = false;
 	int w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
 	if (statusSizes[3] < w) {
 		statusSizes[3] = w;

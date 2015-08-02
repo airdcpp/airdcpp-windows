@@ -67,7 +67,7 @@ public:
 		return FALSE;
 	}
 	
-	LRESULT onCtlColor(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+	LRESULT onCtlColor(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		HDC hdc = (HDC)wParam;
 		SetBkMode(hdc, TRANSPARENT);
 		if (uMsg != WM_CTLCOLORDLG) {
