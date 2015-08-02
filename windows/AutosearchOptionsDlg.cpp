@@ -71,7 +71,7 @@ void AutoSearchOptionsDlg::showPage(int aPage) {
 		AsAdvanced->MoveWindow(rc);
 		AsAdvanced->ShowWindow(SW_SHOW);
 	}
-
+	//cTab.SetWindowPos(HWND_BOTTOM, 0, 0, 0, 0, SWP_NOSIZE);
 }
 
 LRESULT AutoSearchOptionsDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& bHandled) {

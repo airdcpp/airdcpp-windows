@@ -796,6 +796,7 @@
 #define IDC_FD                          1285
 #define IDC_FDPATH                      1285
 #define IDC_TEXT_MATCH_TYPE             1285
+#define IDC_SEARCH_INT                  1285
 #define IDC_EDIT3                       1286
 #define IDC_BIND_ADDRESS                1286
 #define IDC_SKIPLIST_PRESET3            1286
@@ -1046,6 +1047,8 @@
 #define IDC_AWAY_SPIN                   1369
 #define IDC_LOG_LINES_SPIN2             1369
 #define IDC_DB_BUFFER_SPIN              1369
+#define IDC_IDC_SEARCH_INT_SPIN         1369
+#define IDC_SEARCH_INT_SPIN             1369
 #define IDC_SORT_DIRS                   1370
 #define IDC_CONNECTION_DETECTION        1371
 #define IDC_DONT_SHARE_BIGGER_THAN      1371
@@ -1607,6 +1610,8 @@
 #define IDC_PROGRESS_SLIDER             10198
 #define IDC_LIGHTEN_TXT                 10199
 #define IDC_LIST_GENERAL                10200
+#define IDC_SEARCH_INT_MIN              10201
+#define IDC_SEARCH_INT_LABEL            10202
 #define IDC_REFRESH_WINAMP              11011
 #define IDC_WINAMP_LIST                 11012
 #define IDC_POSITION                    11013
@@ -1825,7 +1830,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        370
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         10201
+#define _APS_NEXT_CONTROL_VALUE         10203
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

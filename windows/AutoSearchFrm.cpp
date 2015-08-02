@@ -37,6 +37,9 @@ ResourceManager::BUNDLES, ResourceManager::ACTION, ResourceManager::EXPIRATION, 
 
 LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	
+	CreateSimpleStatusBar(ATL_IDS_IDLEMESSAGE, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | SBARS_SIZEGRIP);
+	ctrlStatus.Attach(m_hWndStatusBar);
+
 	ctrlAutoSearch.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS, WS_EX_CLIENTEDGE, IDC_AUTOSEARCH);
 	ctrlAutoSearch.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_FULLROWSELECT | LVS_EX_CHECKBOXES | LVS_EX_HEADERDRAGDROP | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP);	
@@ -95,6 +98,12 @@ LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	callAsync([=] { updateList(); });
 
 	WinUtil::SetIcon(m_hWnd, IDI_AUTOSEARCH);
+	::SetTimer(m_hWnd, 0, 1000, 0);
+
+	memzero(statusSizes, sizeof(statusSizes));
+	statusSizes[0] = 16;
+	ctrlStatus.SetParts(5, statusSizes);
+
 	loading = false;
 	bHandled = FALSE;
 	return TRUE;
@@ -111,8 +120,24 @@ void AutoSearchFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	GetClientRect(&rect);
 	UpdateBarsPosition(rect, bResizeBars);
 
+
+	CRect sr;
+	int w[5];
+	ctrlStatus.GetClientRect(sr);
+
+	w[4] = sr.right - 16;
+#define setw(x) w[x] = max(w[x+1] - statusSizes[x], 0)
+	setw(3); setw(2); setw(1);
+
+	w[0] = 16;
+
+	ctrlStatus.SetParts(5, w);
+
+	ctrlStatus.GetRect(1, sr);
+
 	CRect rc = rect;
-	rc.bottom -=30;
+	int tmp = sr.top + 32;
+	rc.bottom -= tmp;
 	ctrlAutoSearch.MoveWindow(rc);
 
 	rc = rect;
@@ -144,7 +169,7 @@ void AutoSearchFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	rc.left = rc.right + 5;
 	rc.bottom -= 2;
 	rc.top = rc.bottom - WinUtil::getTextHeight(m_hWnd, WinUtil::systemFont) - 2;
-	rc.right = rc.left + (ctrlAsTimeLabel.GetWindowTextLength() * WinUtil::getTextWidth(m_hWnd, WinUtil::systemFont)) + 2;
+	rc.right = rc.left + (ctrlAsTimeLabel.GetWindowTextLength() * WinUtil::getTextWidth(m_hWnd, WinUtil::systemFont)) + 10;
 	ctrlAsTimeLabel.MoveWindow(rc);
 	//setting box
 	rc.bottom = bottom;
@@ -156,6 +181,33 @@ void AutoSearchFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	rc.left = rc.right;
 	rc.right = rc.left + 20;
 	Timespin.MoveWindow(rc);
+
+}
+
+LRESULT AutoSearchFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+	updateStatus();
+	bHandled = TRUE;
+	return 0;
+}
+
+void AutoSearchFrame::updateStatus() {
+	auto aTime = AutoSearchManager::getInstance()->getNextSearch();
+	if (aTime == 0 || aTime < GET_TIME())
+		return;
+	
+	bool u = false;
+	auto time_left = (aTime - GET_TIME());
+	tstring tmp = _T("Next Search in: ") + Text::toT(Util::formatTime(time_left, false, false));
+
+	int w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
+	if (statusSizes[3] < w) {
+		statusSizes[3] = w;
+		u = true;
+	}
+	ctrlStatus.SetText(4, tmp.c_str());
+
+	if (u)
+		UpdateLayout(TRUE);
 
 }
 

@@ -46,6 +46,8 @@ public:
 		MESSAGE_HANDLER(WM_SETFOCUS, onFocus)
 		MESSAGE_HANDLER(WM_DRAWITEM, SearchTypeCombo::onDrawItem)
 		MESSAGE_HANDLER(WM_MEASUREITEM, SearchTypeCombo::onMeasureItem)
+		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)
+		MESSAGE_HANDLER(WM_CTLCOLORDLG, onCtlColor)
 		COMMAND_ID_HANDLER(IDC_AS_ACTION, onAction)
 		COMMAND_ID_HANDLER(IDC_AS_FILETYPE, onTypeChanged)
 		COMMAND_ID_HANDLER(IDC_USE_EXPIRY, onCheckExpiry)
@@ -64,6 +66,17 @@ public:
 		ctrlSearch.SetFocus();
 		return FALSE;
 	}
+	
+	LRESULT onCtlColor(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+		HDC hdc = (HDC)wParam;
+		SetBkMode(hdc, TRANSPARENT);
+		if (uMsg != WM_CTLCOLORDLG) {
+			SetBkColor(hdc, ::GetSysColor(COLOR_3DFACE));
+			return (LRESULT)GetStockObject(COLOR_3DFACE);
+		}
+		return (LRESULT)GetStockObject(NULL_BRUSH);
+	}
+
 
 	LRESULT onConfigParams(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCheckParams(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);

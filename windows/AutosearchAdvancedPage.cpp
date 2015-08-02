@@ -23,6 +23,10 @@
 #include "../client/SearchManager.h"
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
+#define setMinMax(x, y, z) \
+	updown.Attach(GetDlgItem(x)); \
+	updown.SetRange32(y, z); \
+	updown.Detach();
 
 AutoSearchAdvancedPage::AutoSearchAdvancedPage(AutoSearchItemSettings& aSettings) : options(aSettings) {}
 
@@ -56,10 +60,10 @@ LRESULT AutoSearchAdvancedPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, L
 	::SetWindowText(GetDlgItem(IDC_CHECK_SHARED), CTSTRING(AUTOSEARCH_CHECK_SHARED));
 	::SetWindowText(GetDlgItem(IDC_MATCH_FULL_PATH), CTSTRING(MATCH_FULL_PATH));
 	::SetWindowText(GetDlgItem(IDC_AS_EXCLUDED_LABEL), CTSTRING(EXCLUDED_WORDS_DESC));
-
 	::SetWindowText(GetDlgItem(IDC_SEARCH_TIMES_LABEL), CTSTRING(SEARCH_TIMES));
-
 	::SetWindowText(GetDlgItem(IDC_EXACT_MATCH), CTSTRING(REQUIRE_EXACT_MATCH));
+	::SetWindowText(GetDlgItem(IDC_SEARCH_INT_LABEL), CTSTRING(MINIMUM_SEARCH_INTERVAL));
+
 
 	ATTACH(IDC_MATCHER_TYPE, cMatcherType);
 	cMatcherType.AddString(CTSTRING(PLAIN_TEXT));
@@ -119,6 +123,10 @@ LRESULT AutoSearchAdvancedPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, L
 	e.wHour = options.endTime.hour;
 	e.wMinute = options.endTime.minute;
 	ctrlSearchEnd.SetSystemTime(0, &e);
+
+	setMinMax(IDC_SEARCH_INT_SPIN, 60, 999);
+	ATTACH(IDC_SEARCH_INT, ctrlSearchInterval);
+	ctrlSearchInterval.SetWindowText(Util::toStringW(options.searchInterval).c_str());
 
 	fixControls();
 	loading = false; //loading done.
@@ -180,6 +188,8 @@ bool AutoSearchAdvancedPage::write() {
 			return false;
 		}
 	}
+	int i = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlSearchInterval)));
+	options.searchInterval = i < 60 ? 60 : i;
 
 	GetDlgItemText(IDC_U_MATCH, buf, 512);
 	options.userMatch = Text::fromT(buf);
@@ -200,6 +210,18 @@ LRESULT AutoSearchAdvancedPage::onCheckTimes(WORD /*wNotifyCode*/, WORD /*wID*/,
 
 LRESULT AutoSearchAdvancedPage::onExactMatch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	fixControls();
+	return 0;
+}
+
+LRESULT AutoSearchAdvancedPage::onTimeChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/) {
+	if (loading)
+		return 0;
+
+	int value = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlSearchInterval)));
+	if (value < 60) {
+		value = 60;
+		ctrlSearchInterval.SetWindowText(Text::toT(Util::toString(value)).c_str());
+	}
 	return 0;
 }
 

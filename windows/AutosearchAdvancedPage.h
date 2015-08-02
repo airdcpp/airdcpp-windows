@@ -28,6 +28,7 @@
 #include "../client/AutoSearchManager.h"
 #include "AutoSearchItemSettings.h"
 
+
 class AutoSearchAdvancedPage : public CDialogImpl<AutoSearchAdvancedPage> {
 public:
 
@@ -43,6 +44,9 @@ public:
 		COMMAND_ID_HANDLER(IDC_USE_MATCHER, onCheckMatcher)
 		COMMAND_ID_HANDLER(IDC_CUSTOM_SEARCH_TIMES, onCheckTimes)
 		COMMAND_ID_HANDLER(IDC_EXACT_MATCH, onExactMatch)
+		COMMAND_HANDLER(IDC_SEARCH_INT, EN_KILLFOCUS, onTimeChange)
+		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)
+		MESSAGE_HANDLER(WM_CTLCOLORDLG, onCtlColor)
 		END_MSG_MAP()
 
 
@@ -50,15 +54,28 @@ public:
 	LRESULT onCheckMatcher(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCheckTimes(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onExactMatch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onTimeChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
+	LRESULT onCtlColor(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+		HDC hdc = (HDC)wParam;
+		SetBkMode(hdc, TRANSPARENT);
+		if (uMsg != WM_CTLCOLORDLG) {
+			SetBkColor(hdc, ::GetSysColor(COLOR_3DFACE));
+			return (LRESULT)GetStockObject(COLOR_3DFACE);
+		}
+		return (LRESULT)GetStockObject(NULL_BRUSH);
+	}
+
 private:
 
-	CEdit  ctrlCheatingDescription, ctrlUserMatch, ctrlMatcherString;
+	CEdit  ctrlCheatingDescription, ctrlUserMatch, ctrlMatcherString, ctrlSearchInterval;
 	CComboBox cMatcherType;
 	CComboBox cExcludedWords;
+	CUpDownCtrl updown;
 
+	
 	CDateTimePickerCtrl ctrlSearchStart, ctrlSearchEnd;
 
 	void fixControls();

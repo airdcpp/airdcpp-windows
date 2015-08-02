@@ -50,15 +50,10 @@ public:
 	BEGIN_MSG_MAP_EX(AutoSearchOptionsDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		NOTIFY_HANDLER(IDC_TAB1, TCN_SELCHANGE, onTabChanged)
-		MESSAGE_HANDLER(WM_SETFOCUS, onFocus)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
 		END_MSG_MAP()
 
-
-	LRESULT onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-		return FALSE;
-	}
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	
