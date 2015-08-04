@@ -299,12 +299,12 @@ private:
 	BrowserBar<QueueFrame> browserBar;
 
 	/*map of parent items (bundles and queue items without bundle)*/
-	unordered_map<string, QueueItemInfoPtr> parents;
+	unordered_map<QueueToken, QueueItemInfoPtr> parents;
 
 	QueueItemInfo* curDirectory; // currently viewed Directory
 	static QueueItemInfoPtr iBack; // dummy item for step back ( Directory .. );
 
-	QueueItemInfoPtr findParent(const string& aKey);
+	QueueItemInfoPtr findParent(QueueToken aToken);
 
 	TaskQueue tasks;
 
