@@ -1612,6 +1612,7 @@
 #define IDC_LIST_GENERAL                10200
 #define IDC_SEARCH_INT_MIN              10201
 #define IDC_SEARCH_INT_LABEL            10202
+#define IDC_GROUP_LABEL                 10203
 #define IDC_REFRESH_WINAMP              11011
 #define IDC_WINAMP_LIST                 11012
 #define IDC_POSITION                    11013
@@ -1830,7 +1831,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        370
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         10203
+#define _APS_NEXT_CONTROL_VALUE         10204
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

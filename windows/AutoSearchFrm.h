@@ -57,6 +57,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_REMOVE, onRemove)
 		COMMAND_ID_HANDLER(IDC_CHANGE, onChange)
 		COMMAND_ID_HANDLER(IDC_DUPLICATE, onDuplicate)
+		COMMAND_ID_HANDLER(IDC_MANAGE_GROUPS, onManageGroups)
 		NOTIFY_HANDLER(IDC_AUTOSEARCH, LVN_ITEMCHANGED, onItemChanged)
 		NOTIFY_HANDLER(IDC_AUTOSEARCH, NM_DBLCLK, onDoubleClick)
 		NOTIFY_HANDLER(IDC_AUTOSEARCH, LVN_KEYDOWN, onKeyDown)
@@ -75,6 +76,7 @@ public:
 	LRESULT onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onDuplicate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onManageGroups(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
@@ -86,12 +88,13 @@ public:
 	void handleSearch(bool onBackground);
 	void handleState(bool disabled);
 
+	void addItem(const AutoSearchPtr& as);
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 
 private:
 	class ItemInfo;
 public:
-	TypedListViewCtrl<ItemInfo, IDC_AUTOSEARCH>& getList() { return ctrlAutoSearch; }
+	TypedListViewCtrl<ItemInfo, IDC_AUTOSEARCH, LVITEM_GROUPING>& getList() { return ctrlAutoSearch; }
 
 private:
 	enum {
@@ -112,8 +115,9 @@ private:
 
 	class ItemInfo {
 	public:
-		ItemInfo(const AutoSearchPtr& aAutosearch) : asItem(aAutosearch) {
-			update(aAutosearch);
+		ItemInfo(const AutoSearchPtr& aAutosearch, bool aupdate = true) : asItem(aAutosearch) {
+			if(aupdate)
+				update(aAutosearch);
 		}
 		~ItemInfo() { }
 
@@ -130,6 +134,7 @@ private:
 
 		tstring formatSearchDate(const time_t aTime);
 
+		GETSET(int, groupId, GroupId);
 		AutoSearchPtr asItem;
 
 		tstring columns[COLUMN_LAST];
@@ -138,7 +143,7 @@ private:
 
 	static int columnSizes[COLUMN_LAST];
 	static int columnIndexes[COLUMN_LAST];
-	TypedListViewCtrl<ItemInfo, IDC_AUTOSEARCH> ctrlAutoSearch;
+	TypedListViewCtrl<ItemInfo, IDC_AUTOSEARCH, LVITEM_GROUPING> ctrlAutoSearch;
 
 	void updateList();
 	void addFromDialog(AutoSearchItemSettings& dlg);
@@ -147,12 +152,12 @@ private:
 		AutoSearchManager::getInstance()->AutoSearchSave();
 	}
 
-	void addEntry(const AutoSearchPtr as);
+	void addListEntry(ItemInfo* ii);
 	void updateItem(const AutoSearchPtr as);
 
 	void removeItem(const AutoSearchPtr as);
 
-	CButton ctrlAdd, ctrlRemove, ctrlChange, ctrlDuplicate;
+	CButton ctrlAdd, ctrlRemove, ctrlChange, ctrlDuplicate, ctrlManageGroups;
 	CEdit ctrlAsTime;
 	CStatic ctrlAsTimeLabel;
 	CUpDownCtrl Timespin;

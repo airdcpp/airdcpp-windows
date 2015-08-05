@@ -33,7 +33,7 @@ struct AutoSearchItemSettings {
 		as(nullptr), fileTypeStr(SETTING(LAST_AS_FILETYPE)), action(0), matcherType(0), remove(false),
 		targetType(TargetUtil::TARGET_PATH), curNumber(1), maxNumber(0), startTime(0, 0),
 		endTime(23, 59), searchDays("1111111"), checkQueued(true), checkShared(true), matchFullPath(false),
-		numberLen(2), useParams(false), searchInterval(180)
+		numberLen(2), useParams(false), searchInterval(180), groupName(Util::emptyString)
 	{
 		expireTime = SETTING(AUTOSEARCH_EXPIRE_DAYS) > 0 ? GET_TIME() + (SETTING(AUTOSEARCH_EXPIRE_DAYS) * 24 * 60 * 60) : 0;
 	}
@@ -58,6 +58,7 @@ struct AutoSearchItemSettings {
 		checkShared(aAutoSearch->getCheckAlreadyShared()),
 		matchFullPath(aAutoSearch->getMatchFullPath()),
 		searchInterval(aAutoSearch->getSearchInterval()),
+		groupName(aAutoSearch->getGroup()),
 
 		curNumber(aAutoSearch->getCurNumber()),
 		numberLen(aAutoSearch->getNumberLen()),
@@ -84,6 +85,7 @@ public:
 		aAutoSearch->setCheckAlreadyShared(checkShared);
 		aAutoSearch->setMatchFullPath(matchFullPath);
 		aAutoSearch->setSearchInterval(searchInterval);
+		aAutoSearch->setGroup(groupName);
 
 		if (aAutoSearch->getCurNumber() != curNumber)
 			aAutoSearch->setLastIncFinish(0);
@@ -119,6 +121,7 @@ public:
 	bitset<7> searchDays;
 	time_t expireTime;
 	int searchType;
+	string groupName;
 	AutoSearchPtr as;
 
 }; 

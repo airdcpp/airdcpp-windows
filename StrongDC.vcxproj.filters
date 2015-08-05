@@ -369,6 +369,9 @@
     <ClCompile Include="windows\AutosearchAdvancedPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\AutoSearchGroupDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -786,6 +789,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\AutoSearchItemSettings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\AutoSearchGroupDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

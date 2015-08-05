@@ -240,7 +240,7 @@ void AutoSearchAdvancedPage::fixControls() {
 	::EnableWindow(GetDlgItem(IDC_CHECK_QUEUED), options.searchType == SearchManager::TYPE_DIRECTORY);
 	::EnableWindow(GetDlgItem(IDC_CHECK_SHARED), options.searchType == SearchManager::TYPE_DIRECTORY);
 
-	BOOL matcherEnabled = (IsDlgButtonChecked(IDC_USE_MATCHER) == BST_CHECKED);
+	BOOL matcherEnabled = (IsDlgButtonChecked(IDC_USE_MATCHER) == BST_CHECKED) && !exactMatch;
 	::EnableWindow(GetDlgItem(IDC_PATTERN), matcherEnabled);
 	::EnableWindow(GetDlgItem(IDC_MATCHER_PATTERN), matcherEnabled);
 	::EnableWindow(GetDlgItem(IDC_TYPE), matcherEnabled);

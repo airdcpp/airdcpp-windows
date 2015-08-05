@@ -103,7 +103,7 @@ private:
 
 	CEdit ctrlSearch, ctrlCheatingDescription, ctrlTarget;
 	SearchTypeCombo ctrlFileType;
-	CComboBox cAction;
+	CComboBox cAction, cGroups;
 	CButton cSelectDir;
 	CStatic cTargetType;
 

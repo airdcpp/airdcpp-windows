@@ -502,6 +502,7 @@
     <ClCompile Include="windows\AutosearchAdvancedPage.cpp" />
     <ClCompile Include="windows\AutoSearchFrm.cpp" />
     <ClCompile Include="windows\AutoSearchGeneralPage.cpp" />
+    <ClCompile Include="windows\AutoSearchGroupDlg.cpp" />
     <ClCompile Include="windows\AutosearchOptionsDlg.cpp" />
     <ClCompile Include="windows\BrowseDlg.cpp" />
     <ClCompile Include="windows\ChatCommands.cpp" />
@@ -632,6 +633,7 @@
     <ClInclude Include="windows\AutosearchAdvancedPage.h" />
     <ClInclude Include="windows\AutoSearchFrm.h" />
     <ClInclude Include="windows\AutosearchGeneralPage.h" />
+    <ClInclude Include="windows\AutoSearchGroupDlg.h" />
     <ClInclude Include="windows\AutoSearchItemSettings.h" />
     <ClInclude Include="windows\AutosearchOptionsDlg.h" />
     <ClInclude Include="windows\AutosearchParams.h" />

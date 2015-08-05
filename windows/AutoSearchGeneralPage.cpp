@@ -51,6 +51,7 @@ LRESULT AutoSearchGeneralPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LP
 
 	::SetWindowText(GetDlgItem(IDC_CONF_PARAMS), Text::toT(STRING(CONFIGURE) + "...").c_str());
 	::SetWindowText(GetDlgItem(IDC_USE_PARAMS), CTSTRING(ENABLE_PARAMETERS));
+	::SetWindowText(GetDlgItem(IDC_GROUP_LABEL), CTSTRING(GROUP));
 
 	//get the search type so that we can set the initial control states correctly in fixControls
 	StringList ext;
@@ -83,6 +84,17 @@ LRESULT AutoSearchGeneralPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LP
 	}
 
 	ATTACH(IDC_SELECT_DIR, cSelectDir);
+
+	cGroups.Attach(GetDlgItem(IDC_FAVGROUP_BOX));
+	cGroups.AddString(_T("---"));
+	cGroups.SetCurSel(0);
+
+	auto groups = AutoSearchManager::getInstance()->getGroups();
+	for (const auto& i : groups) {
+		int pos = cGroups.AddString(Text::toT(i).c_str());
+		if (i == options.groupName)
+			cGroups.SetCurSel(pos);
+	}
 
 	fixControls();
 	loading = false; //loading done.
@@ -194,7 +206,6 @@ bool AutoSearchGeneralPage::write() {
 		options.target = Text::fromT(bufPath);
 	}
 
-
 	if (IsDlgButtonChecked(IDC_USE_EXPIRY) == BST_CHECKED) {
 		SYSTEMTIME exp;
 		ctrlExpire.GetSystemTime(&exp);
@@ -203,6 +214,16 @@ bool AutoSearchGeneralPage::write() {
 	else {
 		options.expireTime = 0;
 	}
+
+	if (cGroups.GetCurSel() == 0) {
+		options.groupName = Util::emptyString;
+	}else{
+		tstring tmp;
+		tmp.resize(cGroups.GetWindowTextLength());
+		tmp.resize(cGroups.GetWindowText(&tmp[0], tmp.size() + 1));
+		options.groupName = Text::fromT(tmp);
+	}
+
 	return true;
 }
 

@@ -23,6 +23,7 @@
 #include "AutoSearchFrm.h"
 #include "ResourceLoader.h"
 #include "SearchFrm.h"
+#include "AutoSearchGroupDlg.h"
 
 #include "../client/SettingsManager.h"
 
@@ -46,7 +47,7 @@ LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	ctrlAutoSearch.SetBkColor(WinUtil::bgColor);
 	ctrlAutoSearch.SetTextBkColor(WinUtil::bgColor);
 	ctrlAutoSearch.SetTextColor(WinUtil::textColor);
-	
+
 	// Insert columns
 	WinUtil::splitTokens(columnIndexes, SETTING(AUTOSEARCHFRAME_ORDER), COLUMN_LAST);
 	WinUtil::splitTokens(columnSizes, SETTING(AUTOSEARCHFRAME_WIDTHS), COLUMN_LAST);
@@ -91,9 +92,22 @@ LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	ctrlDuplicate.SetWindowText(CTSTRING(DUPLICATE));
 	ctrlDuplicate.SetFont(WinUtil::systemFont);
 
+	ctrlManageGroups.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
+		BS_PUSHBUTTON, 0, IDC_MANAGE_GROUPS);
+	ctrlManageGroups.SetWindowText(CTSTRING(MANAGE_GROUPS));
+	ctrlManageGroups.SetFont(WinUtil::systemFont);
+
 	AutoSearchManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
 
+	{
+		//Create itemInfos
+		RLock l(AutoSearchManager::getInstance()->getCS());
+		auto& lst = AutoSearchManager::getInstance()->getSearchItems();
+		for (auto as : lst | map_values) {
+			itemInfos.emplace(as->getToken(), ItemInfo(as, false));
+		}
+	}
 	//fill the list
 	callAsync([=] { updateList(); });
 
@@ -111,15 +125,10 @@ LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 }
 
 void AutoSearchFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
-	/*
-	Counting Text lengths for the items according to Font,
-	so translations should fit nicely Automatically 
-	*/
 	
 	RECT rect;
 	GetClientRect(&rect);
 	UpdateBarsPosition(rect, bResizeBars);
-
 
 	CRect sr;
 	int w[5];
@@ -163,6 +172,10 @@ void AutoSearchFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 
 	rc.OffsetRect(button_width+2, 0);
 	ctrlDuplicate.MoveWindow(rc);
+
+	rc.OffsetRect(button_width + 4, 0);
+	rc.right = rc.left + button_width + 40;
+	ctrlManageGroups.MoveWindow(rc);
 
 	/*AutoSearch time settings*/
 	//text
@@ -428,6 +441,14 @@ LRESULT AutoSearchFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	return 0;
 }
 
+LRESULT AutoSearchFrame::onManageGroups(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	AsGroupsDlg dlg;
+	dlg.DoModal();
+
+	updateList();
+	return 0;
+}
+
 LRESULT AutoSearchFrame::onItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 	NMITEMACTIVATE* l = (NMITEMACTIVATE*)pnmh;
 
@@ -495,12 +516,19 @@ LRESULT AutoSearchFrame::onDuplicate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 
 void AutoSearchFrame::updateList() {
 	ctrlAutoSearch.SetRedraw(FALSE);
+	ctrlAutoSearch.DeleteAllItems();
 
-	RLock l(AutoSearchManager::getInstance()->getCS());
-	auto& lst = AutoSearchManager::getInstance()->getSearchItems();
+	auto groups = AutoSearchManager::getInstance()->getGroups();
+	int groupid = 0;
+	ctrlAutoSearch.insertGroup(groupid, Util::emptyStringT, LVGA_HEADER_LEFT);
+	for (auto i : groups) {
+		groupid++;
+		ctrlAutoSearch.insertGroup(groupid, Text::toT(i), LVGA_HEADER_LEFT);
+	}
 
-	for (auto as : lst | map_values) {
-		addEntry(as);
+	for (auto &ii : itemInfos) {
+		(&ii.second)->update((&ii.second)->asItem);
+		addListEntry(&ii.second);
 	}
 
 	ctrlAutoSearch.SetRedraw(TRUE);
@@ -552,30 +580,44 @@ void AutoSearchFrame::handleState(bool disabled) {
 	}
 }
 
-void AutoSearchFrame::addEntry(const AutoSearchPtr as) {
-	if(!as)
+void AutoSearchFrame::addItem(const AutoSearchPtr& as) {
+	if (!as)
 		return;
-
-	loading = true;
 	auto ui = itemInfos.find(as->getToken());
 	if (ui == itemInfos.end()) {
 		auto x = itemInfos.emplace(as->getToken(), ItemInfo(as)).first;
-		int i = ctrlAutoSearch.insertItem(&x->second, 0);
-		ctrlAutoSearch.SetItem(i, 0, LVIF_IMAGE, NULL, as->getStatus(), 0, 0, NULL);
-		ctrlAutoSearch.updateItem(i);
-		ctrlAutoSearch.SetCheckState(i, as->getEnabled());
+		addListEntry(&x->second);
 	}
+}
+
+
+void AutoSearchFrame::addListEntry(ItemInfo* ii) {
+	loading = true;
+	int i = ctrlAutoSearch.insertItem(ctrlAutoSearch.getSortPos(ii), ii, 0, ii->getGroupId()/*I_GROUPIDCALLBACK*/);
+	ctrlAutoSearch.SetItem(i, 0, LVIF_IMAGE, NULL, ii->asItem->getStatus(), 0, 0, NULL);
+	ctrlAutoSearch.updateItem(i);
+	ctrlAutoSearch.SetCheckState(i, ii->asItem->getEnabled());
 	loading = false;
 }
 
 void AutoSearchFrame::updateItem(const AutoSearchPtr as) {
 	auto i = itemInfos.find(as->getToken());
 	if (i != itemInfos.end()) {
-		(&i->second)->update(as);
-		int pos = ctrlAutoSearch.findItem(&i->second);
+		auto ii = &i->second;
+		ii->update(as);
+		int pos = ctrlAutoSearch.findItem(ii);
 		if (pos >= 0) {
 			ctrlAutoSearch.SetCheckState(pos, as->getEnabled());
-			ctrlAutoSearch.SetItem(pos, 0, LVIF_IMAGE, NULL, as->getStatus(), 0, 0, NULL);
+			LVITEM lvi = { 0 };
+			lvi.mask = LVIF_IMAGE | LVIF_GROUPID;
+			lvi.iItem = pos;
+			lvi.iSubItem = 0;
+			lvi.stateMask = 0;
+			lvi.state = 0;
+			lvi.iGroupId = ii->getGroupId();
+			lvi.iImage = as->getStatus();
+			ctrlAutoSearch.SetItem(&lvi);
+			//ctrlAutoSearch.SetItem(pos, 0, LVIF_IMAGE, NULL, as->getStatus(), 0, 0, NULL);
 			ctrlAutoSearch.updateItem(pos);
 		}
 	}
@@ -614,6 +656,8 @@ void AutoSearchFrame::ItemInfo::update(const AutoSearchPtr& as) {
 	columns[COLUMN_PATH] = Text::toT(target);
 	columns[COLUMN_USERMATCH] = Text::toT(as->getNickPattern());
 
+	setGroupId(AutoSearchManager::getInstance()->getGroupIndex(as));
+
 }
 
 
@@ -632,7 +676,7 @@ void AutoSearchFrame::on(AutoSearchManagerListener::RemoveItem, const AutoSearch
 }
 
 void AutoSearchFrame::on(AutoSearchManagerListener::AddItem, const AutoSearchPtr& as) noexcept { 
-	callAsync([=] { addEntry(as); if(SETTING(AUTOSEARCH_BOLD)) setDirty();  });
+	callAsync([=] { addItem(as); if(SETTING(AUTOSEARCH_BOLD)) setDirty();  });
 }
 
 void AutoSearchFrame::on(AutoSearchManagerListener::UpdateItem, const AutoSearchPtr& as, bool aSetDirty) noexcept {
