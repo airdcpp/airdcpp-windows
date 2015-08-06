@@ -308,6 +308,7 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 		if(ctrlAutoSearch.GetSelectedCount() > 1) {
 			asMenu.appendItem(TSTRING(ENABLE_AUTOSEARCH), [=] { handleState(false); });
 			asMenu.appendItem(TSTRING(DISABLE_AUTOSEARCH), [=] { handleState(true); });
+			asMenu.appendSeparator();
 		} else if(ctrlAutoSearch.GetSelectedCount() == 1) {
 			asMenu.appendItem(TSTRING(SEARCH), [=] { handleSearch(true); });
 			asMenu.appendItem(TSTRING(SEARCH_FOREGROUND), [=] { handleSearch(false); });
@@ -400,6 +401,7 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 		asMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
 
 		asMenu.EnableMenuItem(IDC_CHANGE, enable);
+		asMenu.EnableMenuItem(IDC_DUPLICATE, enable);
 		asMenu.SetMenuDefaultItem(IDC_CHANGE);
 
 		//make a menu title from the search string, its probobly too long to fit but atleast it shows something.
