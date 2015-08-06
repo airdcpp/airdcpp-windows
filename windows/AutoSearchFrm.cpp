@@ -30,7 +30,7 @@
 //static ColumnType columnTypes [] = { COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_NUMERIC_OTHER, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TIME, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT };
 
 int AutoSearchFrame::columnIndexes[] = { COLUMN_VALUE, COLUMN_TYPE, COLUMN_SEARCH_STATUS, COLUMN_LASTSEARCH, COLUMN_BUNDLES, COLUMN_ACTION, COLUMN_EXPIRATION,
-	COLUMN_PATH, COLUMN_REMOVE, COLUMN_USERMATCH, COLUMN_ERROR };
+COLUMN_PATH, COLUMN_REMOVE, COLUMN_USERMATCH, COLUMN_ERROR };
 
 int AutoSearchFrame::columnSizes[] = { 300, 125, 150, 125, 500, 100, 100, 300, 100, 200, 300 };
 static ResourceManager::Strings columnNames[] = { ResourceManager::SETTINGS_VALUE, ResourceManager::TYPE, ResourceManager::SEARCHING_STATUS, ResourceManager::LAST_SEARCH, 
@@ -208,8 +208,6 @@ void AutoSearchFrame::updateStatus() {
 	tstring tmp;
 	if (aTime == 0) {
 		tmp = Util::emptyStringT;
-	//} else if (aTime < GET_TIME() || (aTime - GET_TIME()) < 60) {
-		//tmp = _T("Next search in less than 1 minute");
 	} else {
 		/*
 		Showing by second is not 100% accurate, we don't know the next minute tick,
@@ -307,8 +305,6 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 		if(ctrlAutoSearch.GetSelectedCount() > 1) {
 			asMenu.appendItem(TSTRING(ENABLE_AUTOSEARCH), [=] { handleState(false); });
 			asMenu.appendItem(TSTRING(DISABLE_AUTOSEARCH), [=] { handleState(true); });
-			asMenu.appendSeparator();
-			//only remove and add is enabled
 		} else if(ctrlAutoSearch.GetSelectedCount() == 1) {
 			asMenu.appendItem(TSTRING(SEARCH), [=] { handleSearch(true); });
 			asMenu.appendItem(TSTRING(SEARCH_FOREGROUND), [=] { handleSearch(false); });
@@ -320,6 +316,18 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 				asMenu.appendItem(TSTRING(ENABLE_AUTOSEARCH), [=] { handleState(false); });
 			}
 			asMenu.appendSeparator();
+		}
+
+		if (ctrlAutoSearch.GetSelectedCount() > 0) {
+			auto groups = AutoSearchManager::getInstance()->getGroups();
+			if (!groups.empty()) {
+				OMenu* groupsMenu = asMenu.createSubMenu(_T("Move to group"));
+				groupsMenu->appendItem(_T("---"), [=] { handleMoveToGroup(Util::emptyString); });
+				for (auto grp : groups) {
+					groupsMenu->appendItem(Text::toT(grp), [=] { handleMoveToGroup(grp); });
+				}
+				asMenu.appendSeparator();
+			}
 		}
 		
 		asMenu.AppendMenu(MF_STRING, IDC_ADD, CTSTRING(ADD));
@@ -389,9 +397,6 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 		asMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
 
 		asMenu.EnableMenuItem(IDC_CHANGE, enable);
-		asMenu.EnableMenuItem(IDC_MOVE_UP, enable);
-		asMenu.EnableMenuItem(IDC_MOVE_DOWN, enable);
-		
 		asMenu.SetMenuDefaultItem(IDC_CHANGE);
 
 		//make a menu title from the search string, its probobly too long to fit but atleast it shows something.
@@ -567,6 +572,13 @@ void AutoSearchFrame::handleSearch(bool onBackground) {
 		});
 	}
 }
+void AutoSearchFrame::handleMoveToGroup(const string& aGroupName) {
+	int i = -1;
+	while ((i = ctrlAutoSearch.GetNextItem(i, LVNI_SELECTED)) != -1) {
+		AutoSearchManager::getInstance()->moveItemToGroup(ctrlAutoSearch.getItemData(i)->asItem, aGroupName);
+	}
+}
+
 
 void AutoSearchFrame::on(AutoSearchManagerListener::SearchForeground, const AutoSearchPtr& as, const string& searchString) noexcept {
 	callAsync([=] { SearchFrame::openWindow(Text::toT(searchString), 0, SearchManager::SIZE_DONTCARE, as->getFileType()); });
@@ -609,15 +621,12 @@ void AutoSearchFrame::updateItem(const AutoSearchPtr as) {
 		if (pos >= 0) {
 			ctrlAutoSearch.SetCheckState(pos, as->getEnabled());
 			LVITEM lvi = { 0 };
-			lvi.mask = LVIF_IMAGE | LVIF_GROUPID;
+			lvi.mask = LVIF_GROUPID | LVIF_IMAGE;
 			lvi.iItem = pos;
-			lvi.iSubItem = 0;
-			lvi.stateMask = 0;
-			lvi.state = 0;
 			lvi.iGroupId = ii->getGroupId();
 			lvi.iImage = as->getStatus();
+			lvi.iSubItem = 0;
 			ctrlAutoSearch.SetItem(&lvi);
-			//ctrlAutoSearch.SetItem(pos, 0, LVIF_IMAGE, NULL, as->getStatus(), 0, 0, NULL);
 			ctrlAutoSearch.updateItem(pos);
 		}
 	}

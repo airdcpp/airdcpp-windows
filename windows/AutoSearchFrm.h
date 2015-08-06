@@ -87,6 +87,7 @@ public:
 	LRESULT onAsTime(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
 	void handleSearch(bool onBackground);
 	void handleState(bool disabled);
+	void handleMoveToGroup(const string& aGroupName);
 
 	void addItem(const AutoSearchPtr& as);
 	void UpdateLayout(BOOL bResizeBars = TRUE);
@@ -106,8 +107,8 @@ private:
 		COLUMN_BUNDLES,
 		COLUMN_ACTION,
 		COLUMN_EXPIRATION,
-		COLUMN_REMOVE,
 		COLUMN_PATH,
+		COLUMN_REMOVE,
 		COLUMN_USERMATCH,
 		COLUMN_ERROR,
 		COLUMN_LAST
