@@ -208,12 +208,15 @@ void AutoSearchFrame::updateStatus() {
 	tstring tmp;
 	if (aTime == 0) {
 		tmp = Util::emptyStringT;
+	} else if(!ClientManager::getInstance()->getMe()->isOnline()) {
+		tmp = _T("No hubs to search from");
 	} else {
 		/*
 		Showing by second is not 100% accurate, we don't know the next minute tick,
 		so might just consider showing the time by minute...
 		*/
-		auto time_left = (aTime - GET_TIME());
+
+		auto time_left = aTime < GET_TIME() ? 0 : (aTime - GET_TIME());
 		tmp = _T("Next search in ") + Text::toT(Util::formatTime(time_left, false, false));
 	}
 
@@ -509,8 +512,7 @@ LRESULT AutoSearchFrame::onDuplicate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	if (ctrlAutoSearch.GetSelectedCount() == 1) {
 		int sel = ctrlAutoSearch.GetNextItem(-1, LVNI_SELECTED);
 		AutoSearchPtr as = ctrlAutoSearch.getItemData(sel)->asItem;
-
-		AutoSearchOptionsDlg dlg(as);
+		AutoSearchOptionsDlg dlg(as, true);
 
 		if (dlg.DoModal() == IDOK) {
 			addFromDialog(dlg.options);

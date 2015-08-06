@@ -39,7 +39,7 @@ struct AutoSearchItemSettings {
 	}
 
 	//Construct with auto search item, for changing or duplicate.
-	AutoSearchItemSettings(const AutoSearchPtr& aAutoSearch) : as(aAutoSearch),
+	AutoSearchItemSettings(const AutoSearchPtr& aAutoSearch, bool isDuplicate) : as(isDuplicate ? nullptr : aAutoSearch),
 		searchString(aAutoSearch->getSearchString()),
 		excludedWords(aAutoSearch->getExcludedString()),
 		fileTypeStr(aAutoSearch->getFileType()),
@@ -65,6 +65,8 @@ struct AutoSearchItemSettings {
 		maxNumber(aAutoSearch->getMaxNumber()),
 		useParams(aAutoSearch->getUseParams())
 	{ }
+
+
 
 public:
 

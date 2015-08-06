@@ -21,7 +21,7 @@
 #include "Resource.h"
 #include "AutoSearchOptionsDlg.h"
 
-AutoSearchOptionsDlg::AutoSearchOptionsDlg(const AutoSearchPtr& as) : options(as) {
+AutoSearchOptionsDlg::AutoSearchOptionsDlg(const AutoSearchPtr& as, bool isDuplicate) : options(as, isDuplicate) {
 }
 AutoSearchOptionsDlg::AutoSearchOptionsDlg() { }
 

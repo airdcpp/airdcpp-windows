@@ -43,7 +43,7 @@ public:
 		ADVANCED = 1
 	};
 
-	AutoSearchOptionsDlg(const AutoSearchPtr& as);
+	AutoSearchOptionsDlg(const AutoSearchPtr& as, bool isDuplicate = false);
 	AutoSearchOptionsDlg();
 	~AutoSearchOptionsDlg();
 
