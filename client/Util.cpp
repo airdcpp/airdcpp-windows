@@ -1625,7 +1625,7 @@ string Util::getOsVersion(bool http /*false*/) {
 	typedef void (WINAPI *PGNSI)(LPSYSTEM_INFO);
 	typedef BOOL(WINAPI *PGPI)(DWORD, DWORD, DWORD, DWORD, PDWORD);
 	string os;
-
+	string product;
 	SYSTEM_INFO si;
 	PGNSI pGNSI;
 	DWORD dwType;
@@ -1699,6 +1699,12 @@ string Util::getOsVersion(bool http /*false*/) {
 		case PRODUCT_WEB_SERVER:
 			os += " Web Server Edition";
 			break;
+		default:
+			if (product.length() > 0) {
+				os += " ";				
+				os += product;
+			}
+				
 		}
 
 		if (major >= 6) {
@@ -1729,12 +1735,36 @@ string Util::getOsVersion(bool http /*false*/) {
 		return os;
 	};
 
+
 	if (IsWindows8Point1OrGreater()) {
 		if (http) return formatHttp(6, 3, os);
-		if (IsWindowsServer())
-			os = "Windows Server 2012 R2";
-		else
-			os = "Windows 8.1";
+
+		HKEY hk;
+		TCHAR Buf[512];
+		Buf[0] = 0;
+
+		string regkey = "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion";
+
+		auto err = ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, Text::toT(regkey).c_str(), 0, KEY_READ, &hk);
+		if (err == ERROR_SUCCESS) {
+			DWORD bufLen = sizeof(Buf);
+			DWORD type;
+			if (ERROR_SUCCESS == ::RegQueryValueEx(hk, _T("ProductName"), 0, &type, (LPBYTE)Buf, &bufLen)) {
+				os = Text::fromT(Buf);
+			}
+			else {
+						if (IsWindowsServer())
+							os = "Windows Server 2012 R2";
+						else
+							os = "Windows 8.1";
+			}
+			ZeroMemory(&Buf, sizeof(Buf));
+			if (ERROR_SUCCESS == ::RegQueryValueEx(hk, _T("EditionID"), 0, &type, (LPBYTE)Buf, &bufLen)) {
+				product = Text::fromT(Buf);
+			}
+
+			::RegCloseKey(hk);
+		}
 
 		getProduct(6, 3, os);
 	}
