@@ -1742,7 +1742,7 @@ string Util::getOsVersion(bool http /*false*/) {
 		HKEY hk;
 		TCHAR Buf[512];
 		Buf[0] = 0;
-
+		bool error = true;
 		string regkey = "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion";
 
 		auto err = ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, Text::toT(regkey).c_str(), 0, KEY_READ, &hk);
@@ -1753,10 +1753,7 @@ string Util::getOsVersion(bool http /*false*/) {
 				os = Text::fromT(Buf);
 			}
 			else {
-						if (IsWindowsServer())
-							os = "Windows Server 2012 R2";
-						else
-							os = "Windows 8.1";
+				error = false;
 			}
 			ZeroMemory(&Buf, sizeof(Buf));
 			if (ERROR_SUCCESS == ::RegQueryValueEx(hk, _T("EditionID"), 0, &type, (LPBYTE)Buf, &bufLen)) {
@@ -1764,6 +1761,13 @@ string Util::getOsVersion(bool http /*false*/) {
 			}
 
 			::RegCloseKey(hk);
+		}
+
+		if (error) {
+			if (IsWindowsServer())
+				os = "Windows Server 2012 R2";
+			else
+				os = "Windows 8.1";		
 		}
 
 		getProduct(6, 3, os);
