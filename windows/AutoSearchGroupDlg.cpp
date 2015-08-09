@@ -39,6 +39,8 @@ LRESULT AsGroupsDlg::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	SetDlgItemText(IDC_REMOVE, CTSTRING(REMOVE));
 	SetDlgItemText(IDC_UPDATE, CTSTRING(UPDATE));
 	SetDlgItemText(IDCANCEL, CTSTRING(CLOSE));
+	SetDlgItemText(IDC_MOVE_UP, CTSTRING(MOVE_UP));
+	SetDlgItemText(IDC_MOVE_DOWN, CTSTRING(MOVE_DOWN));
 	SetDlgItemText(IDC_NAME_STATIC, CTSTRING(NAME));
 
 	ctrlGroups.InsertColumn(0, CTSTRING(NAME), LVCFMT_LEFT, WinUtil::percent(width, 100), 0);
@@ -54,6 +56,7 @@ LRESULT AsGroupsDlg::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 
 LRESULT AsGroupsDlg::onClose(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	save();
+	ctrlGroups.Detach();
 	EndDialog(FALSE);
 	return 0;
 }
@@ -141,6 +144,14 @@ void AsGroupsDlg::updateSelectedGroup(bool forceClean /*= false*/) {
 		wnd.Attach(GetDlgItem(IDC_UPDATE));
 		wnd.EnableWindow(enableButtons);
 		wnd.Detach();
+
+		wnd.Attach(GetDlgItem(IDC_MOVE_DOWN));
+		wnd.EnableWindow(enableButtons);
+		wnd.Detach();
+
+		wnd.Attach(GetDlgItem(IDC_MOVE_UP));
+		wnd.EnableWindow(enableButtons);
+		wnd.Detach();
 	}
 	{
 		CEdit wnd;
@@ -169,8 +180,7 @@ LRESULT AsGroupsDlg::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 		tstring name = getText(0, pos);
 		WLock l(AutoSearchManager::getInstance()->getCS());
 		auto lst = AutoSearchManager::getInstance()->getSearchItems();
-		tstring msg = _T("Remove all items in the group aswell?");
-		bool remove = MessageBox(msg.c_str(), _T("Remove Group"), MB_ICONQUESTION | MB_YESNO) == IDYES;
+		bool remove = MessageBox(CTSTRING(GROUP_REMOVE_ITEMS), CTSTRING(REMOVE_GROUP), MB_ICONQUESTION | MB_YESNO) == IDYES;
 
 		for (auto as : lst | map_values) {
 			if (as->getGroup() != Text::fromT(name))
@@ -187,6 +197,28 @@ LRESULT AsGroupsDlg::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 	for_each(removeLst, [&](AutoSearchPtr a) { AutoSearchManager::getInstance()->removeAutoSearch(a); });
 	return 0;
 }
+
+LRESULT AsGroupsDlg::onMove(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int id = ctrlGroups.GetSelectedIndex();
+	if (id != -1) {
+		switch (wID) {
+		case IDC_MOVE_UP:
+			if (id != 0) {
+				ctrlGroups.moveItem(id, id - 1);
+				ctrlGroups.SelectItem(id - 1);
+			}
+			break;
+		case IDC_MOVE_DOWN:
+			if (id != ctrlGroups.GetItemCount() - 1) {
+				ctrlGroups.moveItem(id, id + 1);
+				ctrlGroups.SelectItem(id + 1);
+			}
+			break;
+		}
+	}
+	return 0;
+}
+
 
 LRESULT AsGroupsDlg::onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	int32_t item = ctrlGroups.GetSelectedIndex();

@@ -504,6 +504,7 @@
     <ClCompile Include="windows\AutoSearchGeneralPage.cpp" />
     <ClCompile Include="windows\AutoSearchGroupDlg.cpp" />
     <ClCompile Include="windows\AutosearchOptionsDlg.cpp" />
+    <ClCompile Include="windows\AutosearchSearchTimesPage.cpp" />
     <ClCompile Include="windows\BrowseDlg.cpp" />
     <ClCompile Include="windows\ChatCommands.cpp" />
     <ClCompile Include="windows\DirectoryListingDlg.cpp" />
@@ -637,6 +638,7 @@
     <ClInclude Include="windows\AutoSearchItemSettings.h" />
     <ClInclude Include="windows\AutosearchOptionsDlg.h" />
     <ClInclude Include="windows\AutosearchParams.h" />
+    <ClInclude Include="windows\AutosearchSearchTimesPage.h" />
     <ClInclude Include="windows\BrowseDlg.h" />
     <ClInclude Include="windows\BrowserBar.h" />
     <ClInclude Include="windows\ChatCommands.h" />

@@ -32,12 +32,16 @@ LRESULT AutoSearchOptionsDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPA
 	ATTACH(IDC_TAB1, cTab);
 
 	cTab.InsertItem(GENERAL, TCIF_TEXT, _T("General"), -1, NULL);
+	cTab.InsertItem(TIMES, TCIF_TEXT, _T("Search times"), -1, NULL);
 	cTab.InsertItem(ADVANCED, TCIF_TEXT, _T("Advanced"), -1, NULL);
 	cTab.SetCurSel(0);
 
 	//Create the pages
 	AsGeneral.reset(new AutoSearchGeneralPage(options));
 	AsGeneral->Create(cTab.m_hWnd);
+
+	AsSearchTimes.reset(new AutosearchSearchTimesPage(options));
+	AsSearchTimes->Create(cTab.m_hWnd);
 
 	AsAdvanced.reset(new AutoSearchAdvancedPage(options));
 	AsAdvanced->Create(cTab.m_hWnd);
@@ -63,20 +67,29 @@ void AutoSearchOptionsDlg::showPage(int aPage) {
 	switch (aPage) {
 	case GENERAL:
 		AsAdvanced->ShowWindow(SW_HIDE);
+		AsSearchTimes->ShowWindow(SW_HIDE);
 		AsGeneral->MoveWindow(rc);
 		AsGeneral->ShowWindow(SW_SHOW);
 		break;
+	case TIMES:
+		AsGeneral->ShowWindow(SW_HIDE);
+		AsAdvanced->ShowWindow(SW_HIDE);
+		AsSearchTimes->MoveWindow(rc);
+		AsSearchTimes->ShowWindow(SW_SHOW);
+		break;
 	case ADVANCED:
 		AsGeneral->ShowWindow(SW_HIDE);
+		AsSearchTimes->ShowWindow(SW_HIDE);
 		AsAdvanced->MoveWindow(rc);
 		AsAdvanced->ShowWindow(SW_SHOW);
+		break;
 	}
 	//cTab.SetWindowPos(HWND_BOTTOM, 0, 0, 0, 0, SWP_NOSIZE);
 }
 
 LRESULT AutoSearchOptionsDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& bHandled) {
 	if (wID == IDOK) {
-		if (!AsGeneral->write() || !AsAdvanced->write()) {
+		if (!AsGeneral->write() || !AsAdvanced->write() || !AsSearchTimes->write()) {
 			bHandled = FALSE;
 			return 0;
 		}

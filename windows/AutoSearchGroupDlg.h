@@ -21,6 +21,7 @@
 #define AS_GROUPS_DLG
 
 #include "resource.h"
+#include "ExListViewCtrl.h"
 
 class AsGroupsDlg : public CDialogImpl<AsGroupsDlg> {
 public:
@@ -33,6 +34,8 @@ public:
 		COMMAND_ID_HANDLER(IDC_ADD, onAdd)
 		COMMAND_ID_HANDLER(IDC_REMOVE, onRemove)
 		COMMAND_ID_HANDLER(IDC_UPDATE, onUpdate)
+		COMMAND_ID_HANDLER(IDC_MOVE_DOWN, onMove)
+		COMMAND_ID_HANDLER(IDC_MOVE_UP, onMove)
 	END_MSG_MAP()
 
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
@@ -41,6 +44,7 @@ public:
 	LRESULT onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onMove(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 private:
 	void addItem(const dcpp::tstring& name, bool select = false);
@@ -50,6 +54,6 @@ private:
 	void updateSelectedGroup(bool forceClean = false);
 	void save();
 
-	CListViewCtrl ctrlGroups;
+	ExListViewCtrl ctrlGroups;
 };
 #endif

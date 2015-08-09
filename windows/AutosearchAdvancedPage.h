@@ -42,9 +42,7 @@ public:
 	BEGIN_MSG_MAP_EX(AutoSearchAdvancedPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		COMMAND_ID_HANDLER(IDC_USE_MATCHER, onCheckMatcher)
-		COMMAND_ID_HANDLER(IDC_CUSTOM_SEARCH_TIMES, onCheckTimes)
 		COMMAND_ID_HANDLER(IDC_EXACT_MATCH, onExactMatch)
-		COMMAND_HANDLER(IDC_SEARCH_INT, EN_KILLFOCUS, onTimeChange)
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)
 		MESSAGE_HANDLER(WM_CTLCOLORDLG, onCtlColor)
 		END_MSG_MAP()
@@ -52,9 +50,7 @@ public:
 
 	bool write();
 	LRESULT onCheckMatcher(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onCheckTimes(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onExactMatch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onTimeChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
@@ -70,13 +66,9 @@ public:
 
 private:
 
-	CEdit  ctrlCheatingDescription, ctrlUserMatch, ctrlMatcherString, ctrlSearchInterval;
+	CEdit  ctrlCheatingDescription, ctrlUserMatch, ctrlMatcherString;
 	CComboBox cMatcherType;
 	CComboBox cExcludedWords;
-	CUpDownCtrl updown;
-
-	
-	CDateTimePickerCtrl ctrlSearchStart, ctrlSearchEnd;
 
 	void fixControls();
 	bool loading;

@@ -27,6 +27,7 @@
 #include "../client/AutoSearchManager.h"
 #include "AutosearchGeneralPage.h"
 #include "AutosearchAdvancedPage.h"
+#include "AutosearchSearchTimesPage.h"
 #include "AutoSearchItemSettings.h"
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
@@ -40,7 +41,8 @@ public:
 
 	enum Page {
 		GENERAL = 0,
-		ADVANCED = 1
+		TIMES = 1,
+		ADVANCED = 2
 	};
 
 	AutoSearchOptionsDlg(const AutoSearchPtr& as, bool isDuplicate = false);
@@ -65,6 +67,7 @@ public:
 private:
 
 	unique_ptr<AutoSearchGeneralPage> AsGeneral;
+	unique_ptr<AutosearchSearchTimesPage> AsSearchTimes;
 	unique_ptr<AutoSearchAdvancedPage> AsAdvanced;
 
 	void showPage(int aPage);

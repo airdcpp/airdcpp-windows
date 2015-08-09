@@ -40,6 +40,9 @@ LRESULT FavHubGroupsDlg::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 	SetDlgItemText(IDCANCEL, CTSTRING(CLOSE));
 	SetDlgItemText(IDC_NAME_STATIC, CTSTRING(NAME));
 
+	GetDlgItem(IDC_MOVE_DOWN).ShowWindow(FALSE);
+	GetDlgItem(IDC_MOVE_UP).ShowWindow(FALSE);
+
 	ctrlGroups.InsertColumn(0, CTSTRING(NAME), LVCFMT_LEFT, WinUtil::percent(width, 100), 0);
 	ctrlGroups.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
 

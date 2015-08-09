@@ -210,6 +210,8 @@
 #define IDD_AS_ADVANCED                 368
 #define IDI_UPLOAD_QUEUE                369
 #define IDI_SCAN                        370
+#define IDD_DIALOG5                     370
+#define IDD_AS_SEARCH_TIMES             370
 #define IDI_AUTOSEARCH                  371
 #define IDI_IERROR                      372
 #define IDI_IWARNING                    373
@@ -1829,7 +1831,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        370
+#define _APS_NEXT_RESOURCE_VALUE        372
 #define _APS_NEXT_COMMAND_VALUE         32795
 #define _APS_NEXT_CONTROL_VALUE         10204
 #define _APS_NEXT_SYMED_VALUE           136

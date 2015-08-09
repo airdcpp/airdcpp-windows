@@ -209,7 +209,7 @@ void AutoSearchFrame::updateStatus() {
 	if (aTime == 0) {
 		tmp = Util::emptyStringT;
 	} else if(!ClientManager::getInstance()->getMe()->isOnline()) {
-		tmp = _T("No hubs to search from");
+		tmp = TSTRING(NO_HUBS_TO_SEARCH_FROM);
 	} else {
 		/*
 		Showing by second is not 100% accurate, we don't know the next minute tick,
@@ -217,7 +217,7 @@ void AutoSearchFrame::updateStatus() {
 		*/
 
 		auto time_left = aTime < GET_TIME() ? 0 : (aTime - GET_TIME());
-		tmp = _T("Next search in ") + Text::toT(Util::formatTime(time_left, false, false));
+		tmp = TSTRING(AS_NEXT_SEARCH_IN) + _T(" ") + Text::toT(Util::formatTime(time_left, false, false));
 	}
 
 	bool u = false;
