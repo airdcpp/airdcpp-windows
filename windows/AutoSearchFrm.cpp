@@ -211,11 +211,6 @@ void AutoSearchFrame::updateStatus() {
 	} else if(!ClientManager::getInstance()->getMe()->isOnline()) {
 		tmp = TSTRING(NO_HUBS_TO_SEARCH_FROM);
 	} else {
-		/*
-		Showing by second is not 100% accurate, we don't know the next minute tick,
-		so might just consider showing the time by minute...
-		*/
-
 		auto time_left = aTime < GET_TIME() ? 0 : (aTime - GET_TIME());
 		tmp = TSTRING(AS_NEXT_SEARCH_IN) + _T(" ") + Text::toT(Util::formatTime(time_left, false, false));
 	}
