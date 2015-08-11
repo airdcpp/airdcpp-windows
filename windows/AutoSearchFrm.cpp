@@ -59,6 +59,7 @@ LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	
 	ctrlAutoSearch.SetColumnOrderArray(COLUMN_LAST, columnIndexes);
 	ctrlAutoSearch.SetImageList(ResourceLoader::getAutoSearchStatuses(), LVSIL_SMALL);
+	ctrlAutoSearch.setSortColumn(COLUMN_VALUE);
 
 	/*AutoSearch every time */
 	ctrlAsTime.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | ES_RIGHT | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
@@ -534,7 +535,7 @@ void AutoSearchFrame::updateList() {
 		(&ii.second)->update((&ii.second)->asItem);
 		addListEntry(&ii.second);
 	}
-
+	ctrlAutoSearch.resort();
 	ctrlAutoSearch.SetRedraw(TRUE);
 	ctrlAutoSearch.Invalidate();
 }
@@ -597,14 +598,17 @@ void AutoSearchFrame::addItem(const AutoSearchPtr& as) {
 	auto ui = itemInfos.find(as->getToken());
 	if (ui == itemInfos.end()) {
 		auto x = itemInfos.emplace(as->getToken(), ItemInfo(as)).first;
+		ctrlAutoSearch.SetRedraw(FALSE);
 		addListEntry(&x->second);
+		ctrlAutoSearch.resort();
+		ctrlAutoSearch.SetRedraw(TRUE);
 	}
 }
 
 
 void AutoSearchFrame::addListEntry(ItemInfo* ii) {
 	loading = true;
-	int i = ctrlAutoSearch.insertItem(ctrlAutoSearch.getSortPos(ii), ii, 0, ii->getGroupId()/*I_GROUPIDCALLBACK*/);
+	int i = ctrlAutoSearch.insertItem(ctrlAutoSearch.GetItemCount(), ii, 0, ii->getGroupId()/*I_GROUPIDCALLBACK*/);
 	ctrlAutoSearch.SetItem(i, 0, LVIF_IMAGE, NULL, ii->asItem->getStatus(), 0, 0, NULL);
 	ctrlAutoSearch.updateItem(i);
 	ctrlAutoSearch.SetCheckState(i, ii->asItem->getEnabled());
