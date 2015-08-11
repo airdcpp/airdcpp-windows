@@ -190,7 +190,11 @@ bool AutoSearchGeneralPage::write() {
 	options.searchString = Text::fromT(str);
 
 	auto lst = AutoSearchManager::getInstance()->getSearchesByString(options.searchString, options.as);
-	if (!lst.empty()) {
+	/*
+	if the dupe already exists don't confirm when edit the dupe item. 
+	(we can assume it does if the search string was not changed)
+	*/
+	if (!lst.empty() && (!options.as || (options.searchString != options.as->getSearchString()))) { 
 		auto msg = str + _T(": ") + TSTRING(ITEM_NAME_EXISTS) + _T("\r\n\r\n") + TSTRING(AS_ADD_DUPE_CONFIRM);
 		if (!WinUtil::showQuestionBox(msg, MB_ICONQUESTION))
 			return false;
