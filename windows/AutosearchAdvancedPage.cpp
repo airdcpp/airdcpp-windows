@@ -28,7 +28,7 @@
 	updown.SetRange32(y, z); \
 	updown.Detach();
 
-AutoSearchAdvancedPage::AutoSearchAdvancedPage(AutoSearchItemSettings& aSettings) : options(aSettings) {}
+AutoSearchAdvancedPage::AutoSearchAdvancedPage(AutoSearchItemSettings& aSettings) : options(aSettings), loading(true) {}
 
 AutoSearchAdvancedPage::~AutoSearchAdvancedPage() { }
 

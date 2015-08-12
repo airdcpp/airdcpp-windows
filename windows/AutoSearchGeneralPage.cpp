@@ -24,7 +24,7 @@
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
-AutoSearchGeneralPage::AutoSearchGeneralPage(AutoSearchItemSettings& aSettings) : options(aSettings) {}
+AutoSearchGeneralPage::AutoSearchGeneralPage(AutoSearchItemSettings& aSettings) : options(aSettings), loading(true) {}
 
 AutoSearchGeneralPage::~AutoSearchGeneralPage() { }
 
@@ -32,6 +32,7 @@ LRESULT AutoSearchGeneralPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LP
 	ATTACH(IDC_AS_SEARCH_STRING, ctrlSearch);
 	ATTACH(IDC_TARGET_PATH, ctrlTarget);
 	ATTACH(IDC_TARGET_TYPE, cTargetType);
+	
 
 	ctrlSearch.SetWindowText(Text::toT(options.searchString).c_str());
 
