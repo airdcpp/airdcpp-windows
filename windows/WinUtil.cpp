@@ -1755,7 +1755,7 @@ void WinUtil::drawProgressBar(HDC& drawDC, CRect& rc, COLORREF clr, COLORREF tex
 
 }
 
-void WinUtil::removeBundle(const string& aBundleToken) {
+void WinUtil::removeBundle(QueueToken aBundleToken) {
 	BundlePtr aBundle = QueueManager::getInstance()->findBundle(aBundleToken);
 	if (aBundle) {
 		if(::MessageBox(0, CTSTRING_F(CONFIRM_REMOVE_DIR_BUNDLE, Text::toT(aBundle->getName())), Text::toT(shortVersionString).c_str(), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {

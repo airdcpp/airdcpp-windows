@@ -682,7 +682,7 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 		// search
 		bundleMenu.appendItem(TSTRING(SEARCH_BUNDLE_ALT), [=] {
 			auto bundle = b;
-			QueueManager::getInstance()->searchBundle(bundle, true);
+			QueueManager::getInstance()->searchBundleAlternates(bundle, true);
 		}, OMenu::FLAG_THREADED);
 
 		bundleMenu.appendSeparator();
@@ -1111,7 +1111,7 @@ void QueueFrame::handleRemoveFiles(QueueItemList queueitems, bool removeFinished
 	if (queueitems.size() >= 1) {
 		if (WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_QUEUE_REMOVAL, TSTRING(REALLY_REMOVE))) {
 			for (auto& qi : queueitems)
-				QueueManager::getInstance()->removeFile(qi->getTarget(), removeFinished);
+				QueueManager::getInstance()->removeFile(qi->getToken(), removeFinished);
 		}
 	}
 }
@@ -1178,12 +1178,9 @@ void QueueFrame::insertItems(QueueItemInfoPtr Qii) {
 	}
 }
 
-QueueFrame::QueueItemInfoPtr QueueFrame::findParent(const string& aKey) {
-	auto i = parents.find(aKey);
-	if (i != parents.end())
-		return i->second;
-
-	return nullptr;
+QueueFrame::QueueItemInfoPtr QueueFrame::findParent(QueueToken aToken) {
+	auto i = parents.find(aToken);
+	return i != parents.end() ? i->second : nullptr;
 }
 
 const QueueFrame::QueueItemInfoPtr QueueFrame::findItemByPath(const string& aPath) {
@@ -1200,7 +1197,7 @@ const QueueFrame::QueueItemInfoPtr QueueFrame::findItemByPath(const string& aPat
 }
 
 QueueFrame::QueueItemInfoPtr QueueFrame::findQueueItem(const QueueItemPtr& aQI) {
-	auto parent = findParent(aQI->getBundle() ? aQI->getBundle()->getToken() : aQI->getTarget());
+	auto parent = findParent(aQI->getBundle() ? aQI->getBundle()->getToken() : aQI->getToken());
 	if (parent && aQI->getBundle() && !aQI->getBundle()->isFileBundle()) {
 		return parent->childrenCreated ? parent->findChild(aQI->getTarget()) : nullptr;
 	}
@@ -1242,7 +1239,7 @@ void QueueFrame::onQueueItemRemoved(const QueueItemPtr& aQI) {
 
 	if (!item->getParent()){ //temp or file list
 		ctrlQueue.list.deleteItem(item.get());
-		parents.erase(aQI->getTarget());
+		parents.erase(aQI->getToken());
 		return;
 	}
 
@@ -1294,10 +1291,10 @@ void QueueFrame::onQueueItemAdded(const QueueItemPtr& aQI) {
 		updateParentDirectories(item);
 
 	} else { // File list or a Temp item
-		auto item = findParent(aQI->getTarget());
+		auto item = findParent(aQI->getToken());
 		if (!item) {
 			item = new QueueItemInfo(aQI, nullptr);
-			parents.emplace(aQI->getTarget(), item);
+			parents.emplace(aQI->getToken(), item);
 			if (show(item))
 				ctrlQueue.list.insertItem(item.get(), item->getImageIndex());
 		}
