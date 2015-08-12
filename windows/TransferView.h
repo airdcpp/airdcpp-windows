@@ -174,6 +174,8 @@ private:
 		tstring target;
 		tstring cipher;
 
+		QueueToken getLocalBundleToken() const noexcept { return Util::toUInt32(bundle); }
+		bool hasBundle() const noexcept { return !bundle.empty(); }
 		void update(const UpdateInfo& ui);
 
 		const UserPtr& getUser() const { return user.user; }
@@ -302,7 +304,7 @@ private:
 
 	void on(DownloadManagerListener::Requesting, const Download* aDownload, bool hubChanged) noexcept;	
 	void on(DownloadManagerListener::Complete, const Download* aDownload, bool isTree) noexcept { 
-		onTransferComplete(aDownload, false, Util::getFileName(aDownload->getPath()), isTree, (aDownload->getBundle() ? aDownload->getBundle()->getToken() : Util::emptyString));
+		onTransferComplete(aDownload, false, Util::getFileName(aDownload->getPath()), isTree, (aDownload->getBundle() ? Util::toString(aDownload->getBundle()->getToken()) : Util::emptyString));
 	}
 	void on(DownloadManagerListener::Failed, const Download* aDownload, const string& aReason) noexcept;
 	void on(DownloadManagerListener::Starting, const Download* aDownload) noexcept;

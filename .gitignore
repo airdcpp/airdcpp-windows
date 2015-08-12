@@ -1,5 +1,5 @@
 *.sdf
-/vc12
+/vc1*
 /compiled
 /packages
 *.user

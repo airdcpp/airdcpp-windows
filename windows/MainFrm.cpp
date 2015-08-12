@@ -83,7 +83,7 @@ bool MainFrame::isShutdownStatus = false;
 //static HICON mainSmallIcon(ResourceLoader::loadIcon(IDR_MAINFRAME, ::GetSystemMetrics(SM_CXSMICON)));
 
 MainFrame::MainFrame() : CSplitterImpl(false), trayMessage(0), maximized(false), lastUpload(-1), lastUpdate(0), 
-lastUp(0), lastDown(0), oldshutdown(false), stopperThread(NULL),
+oldshutdown(false), stopperThread(NULL),
 closing(false), awaybyminimize(false), missedAutoConnect(false), tabsontop(false),
 bTrayIcon(false), bAppMinimized(false), bHasPM(false), bHasMC(false), hashProgress(false), trayUID(0), fMenuShutdown(false),
 statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP), settingsWindowOpen(false)
@@ -1801,20 +1801,14 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 
 	Util::increaseUptime();
 	uint64_t queueSize = QueueManager::getInstance()->getTotalQueueSize();
-	int64_t totalDown = Socket::getTotalDown();
-	int64_t totalUp = Socket::getTotalUp();
-
-	int64_t diff = (int64_t)((lastUpdate == 0) ? aTick - 1000 : aTick - lastUpdate);
-	int64_t updiff = totalUp - lastUp;
-	int64_t downdiff = totalDown - lastDown;
 
 	TStringList* str = new TStringList();
 	str->push_back(Util::formatBytesW(ShareManager::getInstance()->getSharedSize()));
 	str->push_back(Text::toT(Client::getCounts()));
 	str->push_back(Util::toStringW(UploadManager::getInstance()->getFreeSlots()) + _T('/') + Util::toStringW(UploadManager::getInstance()->getSlots()) + _T(" (") + Util::toStringW(UploadManager::getInstance()->getFreeExtraSlots()) + _T('/') + Util::toStringW(SETTING(EXTRA_SLOTS)) + _T(")"));
 
-	str->push_back(Util::formatBytesW(totalDown));
-	str->push_back(Util::formatBytesW(totalUp));
+	str->push_back(Util::formatBytesW(Socket::getTotalDown()));
+	str->push_back(Util::formatBytesW(Socket::getTotalUp()));
 
 	tstring down = _T("[") + Util::toStringW(DownloadManager::getInstance()->getDownloadCount()) + _T("][");
 	tstring up = _T("[") + Util::toStringW(UploadManager::getInstance()->getUploadCount()) + _T("][");
@@ -1831,16 +1825,12 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	else
 		up += _T("-");
 
-	str->push_back(down + _T("] ") + Util::formatBytesW(downdiff*1000I64/diff) + _T("/s"));
-	str->push_back(up + _T("] ") + Util::formatBytesW(updiff*1000I64/diff) + _T("/s"));
+	str->push_back(down + _T("] ") + Util::formatBytesW(DownloadManager::getInstance()->getLastDownSpeed()) + _T("/s"));
+	str->push_back(up + _T("] ") + Util::formatBytesW(DownloadManager::getInstance()->getLastUpSpeed()) + _T("/s"));
 	str->push_back(Util::formatBytesW(queueSize < 0 ? 0 : queueSize));
 
 	callAsync([=] { updateStatus(str); });
-	SettingsManager::getInstance()->set(SettingsManager::TOTAL_UPLOAD, SETTING(TOTAL_UPLOAD) + updiff);
-	SettingsManager::getInstance()->set(SettingsManager::TOTAL_DOWNLOAD, SETTING(TOTAL_DOWNLOAD) + downdiff);
 	lastUpdate = aTick;
-	lastUp = totalUp;
-	lastDown = totalDown;
 
 	if(TBStatusCtrl.IsWindowVisible()){
 		if(ShareManager::getInstance()->isRefreshing()){

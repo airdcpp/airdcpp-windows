@@ -25,6 +25,7 @@ Fixed:
 - Ensure that there are no path separators in the formated log file parameters
 - Fix issues when moving finished bundles
 - Set bundles as finished if applicable when removing files from them
+- Fix "Search directory" in transfer tab
   
 
 2.91

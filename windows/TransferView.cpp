@@ -209,7 +209,7 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 		BundleList bundles;
 		performActionBundles([&](const ItemInfo* ii) {
 			if (ii->download) {
-				auto b = QueueManager::getInstance()->findBundle(ii->bundle);
+				auto b = QueueManager::getInstance()->findBundle(ii->getLocalBundleToken());
 				if (b)
 					bundles.push_back(b);
 			}
@@ -451,7 +451,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			//LogManager::getInstance()->message("Transferview, ADD_ITEM: " + ui.token);
 			auto ii = new ItemInfo(ui.user, ui.token, ui.download);
 			ii->update(ui);
-			if (!ii->bundle.empty()) {
+			if (ii->hasBundle()) {
 				ctrlTransfers.insertGroupedItem(ii, SETTING(EXPAND_BUNDLES));
 			} else {
 				ctrlTransfers.insertItem(ii, ii->download ? IMAGE_DOWNLOAD : IMAGE_UPLOAD);
@@ -463,7 +463,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			int pos = -1;
 			auto ii = findItem(ui, pos);
 			if(ii) {
-				if (!ii->bundle.empty()) {
+				if (ii->hasBundle()) {
 					auto parent = ii->parent;
 					if (ctrlTransfers.removeGroupedItem(ii, true))
 						parent->updateUser(ctrlTransfers.findChildren(parent->getGroupCond()));
@@ -479,7 +479,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			int pos = -1;
 			auto ii = findItem(ui, pos);
 			if(ii) {
-				if(!ii->bundle.empty() || !ui.bundle.empty())  {
+				if(ii->hasBundle() || !ui.bundle.empty())  {
 					auto parent = ii->parent ? ii->parent : ii;
 
 					/* if bundle has changed, regroup the item */
@@ -500,7 +500,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 					if(changeParent) {
 						//LogManager::getInstance()->message("CHANGEPARENT, REMOVE");
-						if (ii->bundle.empty()) {
+						if (!ii->hasBundle()) {
 							ctrlTransfers.DeleteItem(pos);
 						} else if (ctrlTransfers.removeGroupedItem(ii, false)) {
 							parent->updateUser(ctrlTransfers.findChildren(parent->getGroupCond()));
@@ -509,7 +509,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 					ii->update(ui);
 
 					if(changeParent) {
-						if (ii->bundle.empty()) {
+						if (!ii->hasBundle()) {
 							ii->parent = nullptr;
 							ctrlTransfers.insertItem(ii, ii->download ? IMAGE_DOWNLOAD : IMAGE_UPLOAD);
 						} else {
@@ -781,7 +781,7 @@ TransferView::ItemInfo* TransferView::ItemInfo::createParent() {
 	ii->bundle = bundle;
 
 	if (download) {
-		auto b = QueueManager::getInstance()->findBundle(bundle);
+		auto b = QueueManager::getInstance()->findBundle(getLocalBundleToken());
 		if (b) {
 			ii->target = Text::toT(b->getTarget());
 			ii->size = b->getSize();
@@ -882,7 +882,7 @@ void TransferView::on(DownloadManagerListener::Requesting, const Download* d, bo
 	ui->setSize(d->getSegmentSize());
 	ui->setStatus(ItemInfo::STATUS_RUNNING);	ui->updateMask &= ~UpdateInfo::MASK_STATUS; // hack to avoid changing item status
 	ui->setStatusString(TSTRING(REQUESTING) + _T(" ") + getFile(d->getType(), Text::toT(Util::getFileName(d->getPath()))) + _T("..."));
-	ui->setBundle(d->getBundle() ? d->getBundle()->getToken() : Util::emptyString);
+	ui->setBundle(d->getBundleStringToken());
 
 	speak(UPDATE_ITEM, ui);
 }
@@ -896,7 +896,7 @@ void TransferView::on(DownloadManagerListener::Starting, const Download* aDownlo
 	ui->setTarget(Text::toT(aDownload->getPath()));
 	ui->setType(aDownload->getType());
 
-	ui->setBundle(aDownload->getBundle() ? aDownload->getBundle()->getToken() : Util::emptyString);
+	ui->setBundle(aDownload->getBundleStringToken());
 	speak(UPDATE_ITEM, ui);
 }
 
@@ -906,7 +906,7 @@ void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bun
 		int64_t totalSpeed = 0;
 		bool partial=false, trusted=false, untrusted=false, tthcheck=false, zdownload=false, chunked=false, mcn=false;
 
-		auto ui = new UpdateInfo(b->getToken(), true);
+		auto ui = new UpdateInfo(b->getStringToken(), true);
 		for(const auto& d: b->getDownloads()) {
 			if(d->getStart() > 0) {
 				if(d->isSet(Download::FLAG_PARTIAL)) {
@@ -1002,7 +1002,7 @@ void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) noe
 		ui->setPos(d->getPos());
 		ui->setSize(d->getSegmentSize());
 		ui->setTimeLeft(d->getSecondsLeft());
-		ui->setBundle(d->getBundle() ? d->getBundle()->getToken() : Util::emptyString);
+		ui->setBundle(d->getBundleStringToken());
 		
 		
 		ui->setSpeed(static_cast<int64_t>(d->getAverageSpeed()));
@@ -1056,7 +1056,7 @@ void TransferView::on(DownloadManagerListener::Failed, const Download* aDownload
 	ui->setSize(aDownload->getSegmentSize());
 	ui->setTarget(Text::toT(aDownload->getPath()));
 	ui->setType(aDownload->getType());
-	ui->setBundle(aDownload->getBundle() ? aDownload->getBundle()->getToken() : Util::emptyString);
+	ui->setBundle(aDownload->getBundleStringToken());
 
 	tstring tmpReason = Text::toT(aReason);
 	if(aDownload->isSet(Download::FLAG_SLOWUSER)) {
@@ -1304,7 +1304,7 @@ void TransferView::onBundleComplete(const string& bundleToken, const string& bun
 }
 
 void TransferView::onBundleStatus(const BundlePtr& aBundle, bool removed) {
-	auto ui = new UpdateInfo(aBundle->getToken(), true);
+	auto ui = new UpdateInfo(aBundle->getStringToken(), true);
 	ui->setStatus(ItemInfo::STATUS_WAITING);
 	if (removed) {
 		ui->setStatusString(TSTRING(BUNDLE_REMOVED));
@@ -1323,7 +1323,7 @@ void TransferView::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBun
 }
 
 void TransferView::on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) noexcept {
-	auto ui = new UpdateInfo(aBundle->getToken(), true);
+	auto ui = new UpdateInfo(aBundle->getStringToken(), true);
 	ui->setSize(aBundle->getSize());
 	speak(UPDATE_BUNDLE, ui);
 }
@@ -1337,11 +1337,11 @@ void TransferView::on(UploadManagerListener::BundleSizeName, const string& bundl
 
 void TransferView::on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept {
 	if (aBundle->getStatus() == Bundle::STATUS_DOWNLOADED)
-		onBundleComplete(aBundle->getToken(), aBundle->getName(), false); 
+		onBundleComplete(aBundle->getStringToken(), aBundle->getName(), false);
 }
 
 void TransferView::onBundleName(const BundlePtr& aBundle) {
-	auto ui = new UpdateInfo(aBundle->getToken(), true);
+	auto ui = new UpdateInfo(aBundle->getStringToken(), true);
 	ui->setTarget(Text::toT(aBundle->getTarget()));
 	speak(UPDATE_BUNDLE, ui);
 }
@@ -1404,7 +1404,7 @@ void TransferView::handleExpandAll() {
 
 void TransferView::handleSlowDisconnect() {
 	auto slowDisconnect = [=](const ItemInfo* ii) {
-		QueueManager::getInstance()->toggleSlowDisconnectBundle(ii->bundle);
+		QueueManager::getInstance()->toggleSlowDisconnectBundle(ii->getLocalBundleToken());
 	};
 
 	performActionBundles(slowDisconnect);
@@ -1420,8 +1420,7 @@ void TransferView::handleRemoveFile() {
 
 void TransferView::handleSearchDir() {
 	auto search = [=](const ItemInfo* ii) {
-		size_t pos = ii->target.rfind(' ');
-		WinUtil::searchAny(Util::getLastDir(ii->target.substr(0, pos != string::npos ? pos : ii->target.length())));
+		WinUtil::searchAny(Util::getLastDir(ii->target));
 	};
 
 	performActionBundles(search);
@@ -1450,7 +1449,7 @@ void TransferView::handleForced() {
 
 void TransferView::handleRemoveBundle() {
 	auto removeBundle = [=](const ItemInfo* ii) {
-		WinUtil::removeBundle(ii->bundle);
+		WinUtil::removeBundle(ii->getLocalBundleToken());
 	};
 
 	performActionBundles(removeBundle);
@@ -1458,7 +1457,7 @@ void TransferView::handleRemoveBundle() {
 
 void TransferView::handleRemoveBundleSource() {
 	auto removeSource = [=](const ItemInfo* ii) {
-		QueueManager::getInstance()->removeBundleSource(ii->bundle, ii->user, QueueItem::Source::FLAG_REMOVED);
+		QueueManager::getInstance()->removeBundleSource(ii->getLocalBundleToken(), ii->user, QueueItem::Source::FLAG_REMOVED);
 	};
 
 	performActionBundles(removeSource);

@@ -355,7 +355,7 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 				if (!bundles.empty()) {
 					auto bundleMenu = asMenu.createSubMenu(CTSTRING(REMOVE_BUNDLE), true);
 					for(auto& b: bundles) {
-						string token = b->getToken();
+						auto token = b->getToken();
 						bundleMenu->appendItem(Text::toT(b->getName()), [=] { WinUtil::removeBundle(token); });
 					}
 				}

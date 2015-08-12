@@ -33,6 +33,7 @@
 #include "../client/TargetUtil.h"
 #include "../client/AirUtil.h"
 #include "../client/SettingItem.h"
+#include "../client/QueueItemBase.h"
 
 /* Work around DBTYPE name conflict with Berkeley DB */
 #define DBTYPE MS_DBTYPE
@@ -485,8 +486,6 @@ public:
 	static void appendHistory(CComboBox& ctrlExcluded, SettingsManager::HistoryType aType);
 	static string addHistory(CComboBox& ctrlExcluded, SettingsManager::HistoryType aType);
 
-	static string getReport(const Identity& identity, HWND hwnd);
-
 	static void viewLog(const string& path, bool aHistory=false);
 
 	static string getCompileDate() {
@@ -499,7 +498,7 @@ public:
 	static void toSystemTime(const time_t aTime, SYSTEMTIME* sysTime);
 	static void addCue(HWND hwnd, LPCWSTR text, BOOL drawFocus);
 
-	static void removeBundle(const string& aBundleToken);
+	static void removeBundle(QueueToken aBundleToken);
 
 	static HWND findDialog;
 	static LRESULT onUserFieldChar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
