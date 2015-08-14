@@ -349,7 +349,7 @@ class stable_vector_iterator
       return tmp;
    }
 
-   friend difference_type operator-(const stable_vector_iterator& left, const stable_vector_iterator& right) BOOST_NOEXCEPT_OR_NOTHROW
+   friend difference_type operator-(const stable_vector_iterator &left, const stable_vector_iterator &right) BOOST_NOEXCEPT_OR_NOTHROW
    {  return left.m_pn->up - right.m_pn->up;  }
 
    //Comparison operators
@@ -493,7 +493,7 @@ class stable_vector
       , false>                                           iterator_impl;
    typedef stable_vector_iterator
       < typename allocator_traits<Allocator>::pointer
-      , false>                                           const_iterator_impl;
+      , true>                                            const_iterator_impl;
    #endif   //#ifndef BOOST_CONTAINER_DOXYGEN_INVOKED
    public:
 
@@ -687,7 +687,7 @@ class stable_vector
       : internal_data(l), index(l)
    {
       stable_vector_detail::clear_on_destroy<stable_vector> cod(*this);
-      insert(cend(), il.begin(), il.end())
+      insert(cend(), il.begin(), il.end());
       STABLE_VECTOR_CHECK_INVARIANT;
       cod.release();
    }
@@ -804,6 +804,7 @@ class stable_vector
       //Resources can be transferred if both allocators are
       //going to be equal after this function (either propagated or already equal)
       if(propagate_alloc || allocators_equal){
+         STABLE_VECTOR_CHECK_INVARIANT
          //Destroy objects but retain memory in case x reuses it in the future
          this->clear();
          //Move allocator if needed
@@ -850,13 +851,12 @@ class stable_vector
    //!
    //! <b>Complexity</b>: Linear to n.
    template<typename InputIterator>
-   void assign(InputIterator first,InputIterator last
-      #if !defined(BOOST_CONTAINER_DOXYGEN_INVOKED)
-      , typename container_detail::enable_if_c
-         < !container_detail::is_convertible<InputIterator, size_type>::value
-         >::type * = 0
-      #endif
-      )
+   #if !defined(BOOST_CONTAINER_DOXYGEN_INVOKED)
+   typename container_detail::disable_if_convertible<InputIterator, size_type>::type
+   #else
+   void
+   #endif
+      assign(InputIterator first,InputIterator last)
    {
       STABLE_VECTOR_CHECK_INVARIANT;
       iterator first1   = this->begin();
@@ -1112,13 +1112,12 @@ class stable_vector
    {
       const size_type index_size             = this->index.size();
       BOOST_ASSERT(!index_size || index_size >= ExtraPointers);
-      const size_type bucket_extra_capacity = this->index.capacity()- index_size;
       const size_type node_extra_capacity   = this->internal_data.pool_size;
-      const size_type extra_capacity        = (bucket_extra_capacity < node_extra_capacity)
-         ? bucket_extra_capacity : node_extra_capacity;
+      //Pool count must be less than index capacity, as index is a vector
+      BOOST_ASSERT(node_extra_capacity <= (this->index.capacity()- index_size));
       const size_type index_offset =
-         (ExtraPointers + extra_capacity) & (size_type(0u) - size_type(index_size != 0));
-      return index_size - index_offset;
+         (node_extra_capacity - ExtraPointers) & (size_type(0u) - size_type(index_size != 0));
+      return index_size + index_offset;
    }
 
    //! <b>Effects</b>: If n is less than or equal to capacity(), this call has no
@@ -1294,11 +1293,10 @@ class stable_vector
       return (this->index.empty()) ? this->cend() : iterator(node_ptr_traits::static_cast_from(this->index[n]));
    }
 
-   //! <b>Requires</b>: size() >= n.
+   //! <b>Requires</b>: begin() <= p <= end().
    //!
-   //! <b>Effects</b>: Returns an iterator to the nth element
-   //!   from the beginning of the container. Returns end()
-   //!   if n == size().
+   //! <b>Effects</b>: Returns the index of the element pointed by p
+   //!   and size() if p == end().
    //!
    //! <b>Throws</b>: Nothing.
    //!
@@ -1517,14 +1515,16 @@ class stable_vector
    //!
    //! <b>Complexity</b>: Linear to distance [first, last).
    template <class InputIterator>
-   iterator insert(const_iterator p, InputIterator first, InputIterator last
-      #if !defined(BOOST_CONTAINER_DOXYGEN_INVOKED)
-      , typename container_detail::enable_if_c
-         < !container_detail::is_convertible<InputIterator, size_type>::value
-            && container_detail::is_input_iterator<InputIterator>::value
-         >::type * = 0
-      #endif
-      )
+   #if !defined(BOOST_CONTAINER_DOXYGEN_INVOKED)
+   typename container_detail::disable_if_or
+      < iterator
+      , container_detail::is_convertible<InputIterator, size_type>
+      , container_detail::is_not_input_iterator<InputIterator>
+      >::type
+   #else
+   iterator
+   #endif
+      insert(const_iterator p, InputIterator first, InputIterator last)
    {
       STABLE_VECTOR_CHECK_INVARIANT;
       const size_type pos_n = p - this->cbegin();
@@ -1536,12 +1536,12 @@ class stable_vector
 
    #if !defined(BOOST_CONTAINER_DOXYGEN_INVOKED)
    template <class FwdIt>
-   iterator insert(const_iterator p, FwdIt first, FwdIt last
-      , typename container_detail::enable_if_c
-         < !container_detail::is_convertible<FwdIt, size_type>::value
-            && !container_detail::is_input_iterator<FwdIt>::value
-         >::type * = 0
-      )
+   typename container_detail::disable_if_or
+      < iterator
+      , container_detail::is_convertible<FwdIt, size_type>
+      , container_detail::is_input_iterator<FwdIt>
+      >::type
+      insert(const_iterator p, FwdIt first, FwdIt last)
    {
       const size_type num_new = static_cast<size_type>(boost::container::iterator_distance(first, last));
       const size_type idx     = static_cast<size_type>(p - this->cbegin());
@@ -1786,7 +1786,7 @@ class stable_vector
    template <class U>
    void priv_push_back(BOOST_MOVE_CATCH_FWD(U) x)
    {
-      if(this->priv_capacity_bigger_than_size()){
+      if(BOOST_LIKELY(this->priv_capacity_bigger_than_size())){
          //Enough memory in the pool and in the index
          const node_ptr p = this->priv_get_from_pool();
          BOOST_ASSERT(!!p);
@@ -1961,8 +1961,19 @@ class stable_vector
    {
       index_type & index_ref =  const_cast<index_type&>(this->index);
 
-      if(index.empty())
+      const size_type index_size = this->index.size();
+      if(!index_size)
          return !this->capacity() && !this->size();
+
+      if(index_size < ExtraPointers)
+         return false;
+
+      const size_type bucket_extra_capacity = this->index.capacity()- index_size;
+      const size_type node_extra_capacity   = this->internal_data.pool_size;
+      if(bucket_extra_capacity < node_extra_capacity){
+         return false;
+      }
+
       if(this->priv_get_end_node() != *(index.end() - ExtraPointers)){
          return false;
       }

@@ -26,12 +26,11 @@
 #include <boost/core/ignore_unused.hpp>
 
 #include <boost/math/constants/constants.hpp>
-#ifdef BOOST_GEOMETRY_SQRT_CHECK_FINITENESS
 #include <boost/math/special_functions/fpclassify.hpp>
-#endif // BOOST_GEOMETRY_SQRT_CHECK_FINITENESS
-#include <boost/math/special_functions/round.hpp>
+//#include <boost/math/special_functions/round.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/type_traits/is_fundamental.hpp>
+#include <boost/type_traits/is_integral.hpp>
 
 #include <boost/geometry/util/select_most_precise.hpp>
 
@@ -86,6 +85,9 @@ struct abs<T, true>
 {
     static inline T apply(T const& value)
     {
+        using ::fabs;
+        using std::fabs; // for long double
+
         return fabs(value);
     }
 };
@@ -161,7 +163,17 @@ struct equals<Type, true>
             return true;
         }
 
-        return abs<Type>::apply(a - b) <= std::numeric_limits<Type>::epsilon() * policy.apply(a, b);
+        if (boost::math::isfinite(a) && boost::math::isfinite(b))
+        {
+            // If a is INF and b is e.g. 0, the expression below returns true
+            // but the values are obviously not equal, hence the condition
+            return abs<Type>::apply(a - b)
+                <= std::numeric_limits<Type>::epsilon() * policy.apply(a, b);
+        }
+        else
+        {
+            return a == b;
+        }
     }
 };
 
@@ -295,8 +307,66 @@ struct square_root<T, true>
 };
 
 
+
+template
+<
+    typename T,
+    bool IsFundemantal = boost::is_fundamental<T>::value /* false */
+>
+struct modulo
+{
+    typedef T return_type;
+
+    static inline T apply(T const& value1, T const& value2)
+    {
+        // for non-fundamental number types assume that a free
+        // function mod() is defined either:
+        // 1) at T's scope, or
+        // 2) at global scope
+        return mod(value1, value2);
+    }
+};
+
+template
+<
+    typename Fundamental,
+    bool IsIntegral = boost::is_integral<Fundamental>::value
+>
+struct modulo_for_fundamental
+{
+    typedef Fundamental return_type;
+
+    static inline Fundamental apply(Fundamental const& value1,
+                                    Fundamental const& value2)
+    {
+        return value1 % value2;
+    }
+};
+
+// specialization for floating-point numbers
+template <typename Fundamental>
+struct modulo_for_fundamental<Fundamental, false>
+{
+    typedef Fundamental return_type;
+
+    static inline Fundamental apply(Fundamental const& value1,
+                                    Fundamental const& value2)
+    {
+        return std::fmod(value1, value2);
+    }
+};
+
+// specialization for fundamental number type
+template <typename Fundamental>
+struct modulo<Fundamental, true>
+    : modulo_for_fundamental<Fundamental>
+{};
+
+
+
 /*!
-\brief Short construct to enable partial specialization for PI, currently not possible in Math.
+\brief Short constructs to enable partial specialization for PI, 2*PI
+       and PI/2, currently not possible in Math.
 */
 template <typename T>
 struct define_pi
@@ -305,6 +375,26 @@ struct define_pi
     {
         // Default calls Boost.Math
         return boost::math::constants::pi<T>();
+    }
+};
+
+template <typename T>
+struct define_two_pi
+{
+    static inline T apply()
+    {
+        // Default calls Boost.Math
+        return boost::math::constants::two_pi<T>();
+    }
+};
+
+template <typename T>
+struct define_half_pi
+{
+    static inline T apply()
+    {
+        // Default calls Boost.Math
+        return boost::math::constants::half_pi<T>();
     }
 };
 
@@ -321,7 +411,7 @@ struct relaxed_epsilon
 template <typename Result, typename Source,
           bool ResultIsInteger = std::numeric_limits<Result>::is_integer,
           bool SourceIsInteger = std::numeric_limits<Source>::is_integer>
-struct round
+struct rounding_cast
 {
     static inline Result apply(Source const& v)
     {
@@ -329,16 +419,25 @@ struct round
     }
 };
 
+// TtoT
+template <typename Source, bool ResultIsInteger, bool SourceIsInteger>
+struct rounding_cast<Source, Source, ResultIsInteger, SourceIsInteger>
+{
+    static inline Source apply(Source const& v)
+    {
+        return v;
+    }
+};
+
 // FtoI
 template <typename Result, typename Source>
-struct round<Result, Source, true, false>
+struct rounding_cast<Result, Source, true, false>
 {
     static inline Result apply(Source const& v)
     {
-        namespace bmp = boost::math::policies;
-        // ignore rounding errors for backward compatibility
-        typedef bmp::policy< bmp::rounding_error<bmp::ignore_error> > policy;
-        return boost::numeric_cast<Result>(boost::math::round(v, policy()));
+        return boost::numeric_cast<Result>(v < Source(0) ?
+                                            v - Source(0.5) :
+                                            v + Source(0.5));
     }
 };
 
@@ -348,6 +447,12 @@ struct round<Result, Source, true, false>
 
 template <typename T>
 inline T pi() { return detail::define_pi<T>::apply(); }
+
+template <typename T>
+inline T two_pi() { return detail::define_two_pi<T>::apply(); }
+
+template <typename T>
+inline T half_pi() { return detail::define_half_pi<T>::apply(); }
 
 template <typename T>
 inline T relaxed_epsilon(T const& factor)
@@ -408,9 +513,20 @@ inline bool larger(T1 const& a, T2 const& b)
 }
 
 
+template <typename T>
+inline T d2r()
+{
+    static T const conversion_coefficient = geometry::math::pi<T>() / T(180.0);
+    return conversion_coefficient;
+}
 
-double const d2r = geometry::math::pi<double>() / 180.0;
-double const r2d = 1.0 / d2r;
+template <typename T>
+inline T r2d()
+{
+    static T const conversion_coefficient = T(180.0) / geometry::math::pi<T>();
+    return conversion_coefficient;
+}
+
 
 /*!
     \brief Calculates the haversine of an angle
@@ -455,6 +571,24 @@ sqrt(T const& value)
 }
 
 /*!
+\brief Short utility to return the modulo of two values
+\ingroup utility
+\param value1 First value
+\param value2 Second value
+\return The result of the modulo operation on the (ordered) pair
+(value1, value2)
+*/
+template <typename T>
+inline typename detail::modulo<T>::return_type
+mod(T const& value1, T const& value2)
+{
+    return detail::modulo
+        <
+            T, boost::is_fundamental<T>::value
+        >::apply(value1, value2);
+}
+
+/*!
 \brief Short utility to workaround gcc/clang problem that abs is converting to integer
        and that older versions of MSVC does not support abs of long long...
 \ingroup utility
@@ -470,23 +604,24 @@ inline T abs(T const& value)
 \ingroup utility
 */
 template <typename T>
-static inline int sign(T const& value)
+inline int sign(T const& value)
 {
     T const zero = T();
     return value > zero ? 1 : value < zero ? -1 : 0;
 }
 
 /*!
-\brief Short utility to calculate the rounded value of a number.
+\brief Short utility to cast a value possibly rounding it to the nearest
+       integral value.
 \ingroup utility
 \note If the source T is NOT an integral type and Result is an integral type
       the value is rounded towards the closest integral value. Otherwise it's
-      casted.
+      casted without rounding.
 */
 template <typename Result, typename T>
-inline Result round(T const& v)
+inline Result rounding_cast(T const& v)
 {
-    return detail::round<Result, T>::apply(v);
+    return detail::rounding_cast<Result, T>::apply(v);
 }
 
 } // namespace math

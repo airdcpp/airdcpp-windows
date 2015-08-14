@@ -195,12 +195,12 @@ deque(T_0 && t0 , T_1 && t1 , T_2 && t2 , T_3 && t3 , T_4 && t4 , T_5 && t5 , T_
             : base(rhs)
             {}
         template<typename U0 , typename U1 , typename U2 , typename U3 , typename U4 , typename U5 , typename U6 , typename U7 , typename U8 , typename U9>
-        BOOST_CONSTEXPR BOOST_FUSION_GPU_ENABLED
+        BOOST_FUSION_GPU_ENABLED
         deque(deque<U0 , U1 , U2 , U3 , U4 , U5 , U6 , U7 , U8 , U9> const& seq)
             : base(seq)
             {}
         template<typename Sequence>
-        BOOST_CONSTEXPR BOOST_FUSION_GPU_ENABLED
+        BOOST_FUSION_GPU_ENABLED
         deque(Sequence const& seq, typename disable_if<is_convertible<Sequence, T0> >::type* = 0)
             : base(base::from_iterator(fusion::begin(seq)))
             {}
@@ -222,7 +222,7 @@ deque(T_0 && t0 , T_1 && t1 , T_2 && t2 , T_3 && t3 , T_4 && t4 , T_5 && t5 , T_
         }
 # if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
         template <typename T0_>
-        BOOST_CXX14_CONSTEXPR BOOST_FUSION_GPU_ENABLED
+        BOOST_FUSION_GPU_ENABLED
         explicit deque(T0_&& t0
           , typename enable_if<is_convertible<T0_, T0> >::type* = 0
          )
@@ -233,7 +233,7 @@ deque(T_0 && t0 , T_1 && t1 , T_2 && t2 , T_3 && t3 , T_4 && t4 , T_5 && t5 , T_
             : base(std::forward<deque>(rhs))
             {}
         template<typename U0 , typename U1 , typename U2 , typename U3 , typename U4 , typename U5 , typename U6 , typename U7 , typename U8 , typename U9>
-        BOOST_CXX14_CONSTEXPR BOOST_FUSION_GPU_ENABLED
+        BOOST_FUSION_GPU_ENABLED
         deque(deque<U0 , U1 , U2 , U3 , U4 , U5 , U6 , U7 , U8 , U9>&& seq
             , typename disable_if<
                   is_convertible<deque<U0 , U1 , U2 , U3 , U4 , U5 , U6 , U7 , U8 , U9>, T0>
