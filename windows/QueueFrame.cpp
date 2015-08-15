@@ -1747,7 +1747,7 @@ time_t QueueFrame::QueueItemInfo::getTimeAdded() const {
 }
 
 time_t QueueFrame::QueueItemInfo::getTimeFinished() const {
-	return bundle ? bundle->getBundleFinished() : qi ? qi->getFileFinished() : 0;
+	return bundle ? bundle->getTimeFinished() : qi ? qi->getTimeFinished() : 0;
 }
 
 int QueueFrame::QueueItemInfo::getPriority() const {
