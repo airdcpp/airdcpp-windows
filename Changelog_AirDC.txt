@@ -8,12 +8,14 @@ Added:
 - Recheck integrity (queue): re-adds corrupted file segments for downloading, detects already downloaded segments/files and performs a SFV check
 - Allow rescanning failed bundles that are not in a shared directory
 - Connect in parallel via IPv4 and IPv6 if the remote user has hybrid connectivity
+- Font setting for list views
 
 Changed:
 
 - Enable TLS v1.1 and TLS v1.2 based connections (DC++)
 - Verify keyprints in Client-Client and Client-Hub connections
 - Apply scanning skiplist option for checking share excludes as well
+- Enable multi selection in Finished uploads
 
 Fixed:
 
@@ -26,6 +28,8 @@ Fixed:
 - Fix issues when moving finished bundles
 - Set bundles as finished if applicable when removing files from them
 - Fix "Search directory" in transfer tab
+- Fix minimum search interval setting
+- Fix readd all and remove offline sources for subdirectories in queue
   
 
 2.91

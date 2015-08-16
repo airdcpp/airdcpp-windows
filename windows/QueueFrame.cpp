@@ -1707,7 +1707,7 @@ tstring QueueFrame::QueueItemInfo::getType() const {
 			return WinUtil::formatFileType(bundle->getTarget());
 		} else {
 			RLock l(QueueManager::getInstance()->getCS());
-			return WinUtil::formatFolderContent(bundle->getQueueItems().size() + bundle->getFinishedFiles().size(), bundle->getBundleDirs().size() - 1);
+			return WinUtil::formatFolderContent(bundle->getQueueItems().size() + bundle->getFinishedFiles().size(), bundle->getDirectories().size() - 1);
 		}
 	} else if (isFilelist()) {
 		return TSTRING(FILE_LIST);
@@ -1747,7 +1747,7 @@ time_t QueueFrame::QueueItemInfo::getTimeAdded() const {
 }
 
 time_t QueueFrame::QueueItemInfo::getTimeFinished() const {
-	return bundle ? bundle->getBundleFinished() : qi ? qi->getFileFinished() : 0;
+	return bundle ? bundle->getTimeFinished() : qi ? qi->getTimeFinished() : 0;
 }
 
 int QueueFrame::QueueItemInfo::getPriority() const {
@@ -1889,8 +1889,8 @@ int QueueFrame::QueueItemInfo::compareItems(const QueueItemInfo* a, const QueueI
 				return a->bundle->isFileBundle();
 			} else if (!a->bundle->isFileBundle()) {
 				RLock l(QueueManager::getInstance()->getCS());
-				auto dirsA = a->bundle->getBundleDirs().size() - 1;
-				auto dirsB = a->bundle->getBundleDirs().size() - 1;
+				auto dirsA = a->bundle->getDirectories().size() - 1;
+				auto dirsB = a->bundle->getDirectories().size() - 1;
 				if (dirsA != dirsB) {
 					return dirsA < dirsB ? 1 : -1;
 				}

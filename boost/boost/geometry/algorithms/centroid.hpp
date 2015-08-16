@@ -1,14 +1,15 @@
 // Boost.Geometry (aka GGL, Generic Geometry Library)
 
-// Copyright (c) 2007-2012 Barend Gehrels, Amsterdam, the Netherlands.
-// Copyright (c) 2008-2012 Bruno Lalande, Paris, France.
-// Copyright (c) 2009-2012 Mateusz Loskot, London, UK.
-// Copyright (c) 2014 Adam Wulkiewicz, Lodz, Poland.
+// Copyright (c) 2007-2015 Barend Gehrels, Amsterdam, the Netherlands.
+// Copyright (c) 2008-2015 Bruno Lalande, Paris, France.
+// Copyright (c) 2009-2015 Mateusz Loskot, London, UK.
+// Copyright (c) 2014-2015 Adam Wulkiewicz, Lodz, Poland.
 
 // This file was modified by Oracle on 2014, 2015.
 // Modifications copyright (c) 2014-2015 Oracle and/or its affiliates.
 
 // Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
+// Contributed and/or modified by Menelaos Karavelas, on behalf of Oracle
 
 // Parts of Boost.Geometry are redesigned from Geodan's Geographic Library
 // (geolib/GGL), copyright (c) 1995-2010 Geodan, Amsterdam, the Netherlands.
@@ -55,8 +56,7 @@
 #include <boost/geometry/util/for_each_coordinate.hpp>
 #include <boost/geometry/util/select_coordinate_type.hpp>
 
-#include <boost/geometry/algorithms/num_points.hpp>
-#include <boost/geometry/multi/algorithms/num_points.hpp>
+#include <boost/geometry/algorithms/is_empty.hpp>
 
 #include <boost/geometry/algorithms/detail/centroid/translating_transformer.hpp>
 
@@ -361,7 +361,7 @@ struct centroid_multi
 #if ! defined(BOOST_GEOMETRY_CENTROID_NO_THROW)
         // If there is nothing in any of the ranges, it is not possible
         // to calculate the centroid
-        if (geometry::num_points(multi) == 0)
+        if (geometry::is_empty(multi))
         {
             throw centroid_exception();
         }
@@ -624,7 +624,7 @@ inline void centroid(Geometry const& geometry, Point& c,
 template<typename Geometry, typename Point>
 inline void centroid(Geometry const& geometry, Point& c)
 {
-    centroid(geometry, c, default_strategy());
+    geometry::centroid(geometry, c, default_strategy());
 }
 
 
@@ -643,7 +643,7 @@ template<typename Point, typename Geometry>
 inline Point return_centroid(Geometry const& geometry)
 {
     Point c;
-    centroid(geometry, c);
+    geometry::centroid(geometry, c);
     return c;
 }
 
@@ -666,7 +666,7 @@ template<typename Point, typename Geometry, typename Strategy>
 inline Point return_centroid(Geometry const& geometry, Strategy const& strategy)
 {
     Point c;
-    centroid(geometry, c, strategy);
+    geometry::centroid(geometry, c, strategy);
     return c;
 }
 

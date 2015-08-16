@@ -937,8 +937,9 @@ void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bun
 			}
 		}
 
-		if(b->getRunning() > 0) {
-			ratio = ratio / b->getRunning();
+		auto connections = b->countConnections();
+		if(connections > 0) {
+			ratio = ratio / connections;
 
 			ui->setStatus(ItemInfo::STATUS_RUNNING);
 			ui->setSize(b->getSize());
@@ -947,7 +948,7 @@ void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bun
 			ui->setTimeLeft(b->getSecondsLeft());
 			ui->setSpeed(totalSpeed);
 			ui->setUsers(b->getRunningUsers().size());
-			ui->setRunning(b->getRunning());
+			ui->setRunning(connections);
 
 			uint64_t timeSinceStarted = GET_TICK() - b->getStart();
 			if (timeSinceStarted < 1000) {
