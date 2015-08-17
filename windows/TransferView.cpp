@@ -681,7 +681,8 @@ void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueIte
 
 	auto ui = new UpdateInfo(aCqi->getToken(), aCqi->getConnType() == CONNECTION_TYPE_DOWNLOAD);
 	if(ui->download) {
-		string aTarget, bundleToken; int64_t aSize; int aFlags;
+		QueueToken bundleToken = 0;
+		string aTarget; int64_t aSize; int aFlags;
 		if(QueueManager::getInstance()->getQueueInfo(aCqi->getHintedUser(), aTarget, aSize, aFlags, bundleToken)) {
 			auto type = Transfer::TYPE_FILE;
 			if(aFlags & QueueItem::FLAG_USER_LIST)
@@ -692,7 +693,7 @@ void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueIte
 			ui->setType(type);
 			ui->setTarget(Text::toT(aTarget));
 			ui->setSize(aSize);
-			ui->setBundle(bundleToken);
+			ui->setBundle(Util::toString(bundleToken));
 		}
 	}
 
@@ -713,7 +714,9 @@ void TransferView::on(ConnectionManagerListener::Forced, const ConnectionQueueIt
 }
 
 void TransferView::onUpdateFileInfo(const HintedUser& aUser, const string& aToken, bool updateStatus) {
-	string aTarget, bundleToken;	int64_t aSize; int aFlags = 0;
+	QueueToken bundleToken = 0;
+	string aTarget;
+	int64_t aSize; int aFlags = 0;
 	if(QueueManager::getInstance()->getQueueInfo(aUser, aTarget, aSize, aFlags, bundleToken)) {
 		auto ui = new UpdateInfo(aToken, true);
 		auto type = Transfer::TYPE_FILE;
@@ -725,7 +728,7 @@ void TransferView::onUpdateFileInfo(const HintedUser& aUser, const string& aToke
 		ui->setType(type);
 		ui->setTarget(Text::toT(aTarget));
 		ui->setSize(aSize);
-		ui->setBundle(bundleToken);
+		ui->setBundle(Util::toString(bundleToken));
 		if (updateStatus) {
 			ui->setStatusString(TSTRING(CONNECTING));
 			ui->setStatus(ItemInfo::STATUS_WAITING);
