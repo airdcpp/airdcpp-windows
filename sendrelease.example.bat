@@ -1,7 +1,7 @@
 @echo off
 
 set send=true
-set ftpaddress=builds.airdcpp.net
+set ftpaddress=ftp.airdcpp.net
 set ftpuser=username
 set ftppass=password
 set ftpdir=nightly
