@@ -45,7 +45,7 @@ ShowInstDetails show
 ShowUninstDetails show
 
 !define MUI_ICON "Install.ico"
-; !define MUI_UNICON "Uninstall.ico" ; we don't have any uninstall icon yet
+!define MUI_UNICON "Uninstall.ico"
 
 !define MUI_HEADERIMAGE
 !define MUI_HEADERIMAGE_BITMAP "airheader.bmp" ; optional
