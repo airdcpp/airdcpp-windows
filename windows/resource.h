@@ -1574,6 +1574,7 @@
 #define IDC_CZDC_PROGRESS_TEXT          10117
 #define IDC_INTERVAL_TEXT               10118
 #define IDC_MATCH_QUEUE_TEXT            10119
+#define IDC_INTERVAL_TEXT_SEC           10119
 #define IDC_SET_PM_HISTORY_LINES        10121
 #define IDC_CZDC_PREVIEW                10123
 #define IDC_STRONGDC_DW_SPEED1          10124
