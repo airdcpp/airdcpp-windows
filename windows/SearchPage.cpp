@@ -69,15 +69,12 @@ void SearchPage::write() {
 	PropPage::write((HWND)*this, items);
 
 	string selectedGroup;
-	if (failedGroup.GetCurSel() == 0) {
-		selectedGroup = Util::emptyString;
-	} else {
-		tstring tmp;
-		tmp.resize(failedGroup.GetWindowTextLength());
-		tmp.resize(failedGroup.GetWindowText(&tmp[0], tmp.size() + 1));
-		selectedGroup = Text::fromT(tmp);
-	}
-
+	tstring tmp;
+	tmp.resize(failedGroup.GetWindowTextLength());
+	tmp.resize(failedGroup.GetWindowText(&tmp[0], tmp.size() + 1));
+	selectedGroup = Text::fromT(tmp);
+	
+	//Set empty group ---, settingsmanager empty is default
 	SettingsManager::getInstance()->set(SettingsManager::AS_FAILED_DEFAULT_GROUP, selectedGroup);
 }
 

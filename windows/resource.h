@@ -1723,7 +1723,6 @@
 #define IDC_AUTOSEARCH_ENABLE           15061
 #define IDC_CUR_NUMBER_LBL              15061
 #define IDC_AS_EXCLUDED                 15061
-#define IDC_AUTOSEARCH_RECHECK_TIME     15062
 #define IDC_MAX_NUMBER_LBL              15062
 #define IDC_AUTOSEARCH_RECHECK_SPIN     15063
 #define IDC_NUMBER_LEN_LBL              15063

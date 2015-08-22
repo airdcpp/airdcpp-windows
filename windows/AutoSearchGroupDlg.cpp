@@ -237,6 +237,10 @@ LRESULT AsGroupsDlg::onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 						as->setGroup(Text::fromT(name));
 				}
 			}
+
+			if (Text::fromT(oldName) == SETTING(AS_FAILED_DEFAULT_GROUP))
+				SettingsManager::getInstance()->set(SettingsManager::AS_FAILED_DEFAULT_GROUP, Text::fromT(name));
+
 			ctrlGroups.DeleteItem(item);
 			addItem(name, true);
 			updateSelectedGroup();
