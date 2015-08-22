@@ -64,8 +64,7 @@ public:
 		NOTIFY_HANDLER(IDC_AUTOSEARCH, NM_CUSTOMDRAW, onCustomDraw)
 		NOTIFY_HANDLER(IDC_AUTOSEARCH, LVN_GETDISPINFO, ctrlAutoSearch.onGetDispInfo)
 		NOTIFY_HANDLER(IDC_AUTOSEARCH, LVN_COLUMNCLICK, ctrlAutoSearch.onColumnClick)
-		NOTIFY_HANDLER(IDC_AUTOSEARCH, LVN_GETINFOTIP, ctrlAutoSearch.onInfoTip)
-		COMMAND_HANDLER(IDC_AUTOSEARCH_ENABLE_TIME, EN_CHANGE, onAsTime)		
+		NOTIFY_HANDLER(IDC_AUTOSEARCH, LVN_GETINFOTIP, ctrlAutoSearch.onInfoTip)		
 		CHAIN_MSG_MAP(baseClass)
 	END_MSG_MAP()
 
@@ -84,7 +83,7 @@ public:
 	LRESULT onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bHandled*/);
 	LRESULT onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/);
-	LRESULT onAsTime(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
+
 	void handleSearch(bool onBackground);
 	void handleState(bool disabled);
 	void handleMoveToGroup(const string& aGroupName);
@@ -159,9 +158,6 @@ private:
 	void removeItem(const AutoSearchPtr as);
 
 	CButton ctrlAdd, ctrlRemove, ctrlChange, ctrlDuplicate, ctrlManageGroups;
-	CEdit ctrlAsTime;
-	CStatic ctrlAsTimeLabel;
-	CUpDownCtrl Timespin;
 	CStatusBarCtrl ctrlStatus;
 	int statusSizes[5];
 	bool closed;

@@ -341,7 +341,7 @@
 #define IDI_HASHING                     520
 #define IDI_LOGDIR                      521
 #define IDI_SEND_FILE                   522
-#define IDI_WEB_SHORTCUTS				523
+#define IDI_WEB_SHORTCUTS               523
 #define IDC_BACK                        997
 #define IDC_FORWARD                     998
 #define IDC_UP                          999
@@ -513,6 +513,7 @@
 #define IDC_IS_ACTIVE                   1120
 #define IDC_DELAY_HOURS                 1120
 #define IDC_MIN_FILE_SIZE               1121
+#define IDC_AS_MIN_INTERVAL             1121
 #define IDC_MAX_FILE_SIZE               1122
 #define IDC_AUTOQUEUE                   1123
 #define IDC_OPEN_FOLDER                 1124
@@ -586,6 +587,8 @@
 #define IDC_EXPIRY_DAYS_LABEL           1179
 #define IDC_AS_DELAY_HOURS_LABEL        1180
 #define IDC_DELAY_HOURS_LABEL           1180
+#define IDC_EXPIRY_DAYS_LABEL2          1181
+#define IDC_AS_MIN_INTERVAL_LABEL       1181
 #define IDC_ADLSP_SEARCH                1184
 #define IDC_ADLSP_TYPE                  1185
 #define IDC_ADLSP_SIZE_MIN              1186
@@ -794,6 +797,7 @@
 #define IDC_POPUPLIST                   1283
 #define IDC_DELAY_SPIN                  1283
 #define IDC_COMBO1                      1284
+#define IDC_AS_MIN_INTERVAL_SPIN        1284
 #define IDC_SB_HIGHLIGHT                1285
 #define IDC_EDIT2                       1285
 #define IDC_AIRDC_SLOT                  1285

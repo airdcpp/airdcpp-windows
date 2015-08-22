@@ -872,6 +872,7 @@
     <Image Include="res\SettingsTree\Limiter.ico" />
     <Image Include="res\SettingsTree\Proxy.ico" />
     <Image Include="res\SettingsTree\SearchTypes.ico" />
+    <Image Include="res\SettingsTree\Webshortcuts.ico" />
     <Image Include="res\Shared.ico" />
     <Image Include="res\Slots.ico" />
     <Image Include="res\SlotsFull.ico" />

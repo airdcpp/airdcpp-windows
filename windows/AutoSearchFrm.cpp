@@ -61,17 +61,6 @@ LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	ctrlAutoSearch.SetImageList(ResourceLoader::getAutoSearchStatuses(), LVSIL_SMALL);
 	ctrlAutoSearch.setSortColumn(COLUMN_VALUE);
 
-	/*AutoSearch every time */
-	ctrlAsTime.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | ES_RIGHT | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
-		ES_AUTOHSCROLL | ES_NUMBER, WS_EX_CLIENTEDGE,IDC_AUTOSEARCH_ENABLE_TIME );
-	ctrlAsTime.SetFont(WinUtil::systemFont);
-
-	Timespin.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
-	Timespin.SetRange(1, 999);
-	ctrlAsTimeLabel.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | SS_RIGHT | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
-	ctrlAsTimeLabel.SetFont(WinUtil::systemFont, FALSE);
-	ctrlAsTimeLabel.SetWindowText(CTSTRING(MINIMUM_SEARCH_INTERVAL));
-	ctrlAsTime.SetWindowText(Text::toT(Util::toString(SETTING(AUTOSEARCH_EVERY))).c_str());
 		//create buttons
 	ctrlAdd.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 		BS_PUSHBUTTON , 0, IDC_ADD);
@@ -178,24 +167,6 @@ void AutoSearchFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	rc.right = rc.left + button_width + 40;
 	ctrlManageGroups.MoveWindow(rc);
 
-	/*AutoSearch time settings*/
-	//text
-	rc.left = rc.right + 5;
-	rc.bottom -= 2;
-	rc.top = rc.bottom - WinUtil::getTextHeight(m_hWnd, WinUtil::systemFont) - 2;
-	rc.right = rc.left + (ctrlAsTimeLabel.GetWindowTextLength() * WinUtil::getTextWidth(m_hWnd, WinUtil::systemFont)) + 10;
-	ctrlAsTimeLabel.MoveWindow(rc);
-	//setting box
-	rc.bottom = bottom;
-	rc.top = rc.bottom - 22;
-	rc.left = rc.right + 4;
-	rc.right = rc.left + textbox_width;
-	ctrlAsTime.MoveWindow(rc);
-	//the spin
-	rc.left = rc.right;
-	rc.right = rc.left + 20;
-	Timespin.MoveWindow(rc);
-
 }
 
 LRESULT AutoSearchFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
@@ -262,18 +233,6 @@ LRESULT AutoSearchFrame::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bH
 	return 0;
 }
 
-LRESULT AutoSearchFrame::onAsTime(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/) {
-	if (loading)
-		return 0;
-
-	int value = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlAsTime)));
-	if (value < 1) {
-		value = 1;
-		ctrlAsTime.SetWindowText(Text::toT(Util::toString(value)).c_str());
-	}
-	SettingsManager::getInstance()->set(SettingsManager::AUTOSEARCH_EVERY, value);
-	return 0;
-}
 LRESULT AutoSearchFrame::onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/) {
 	ctrlAutoSearch.SetFocus();
 	return 0;
