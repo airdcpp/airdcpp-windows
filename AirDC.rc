@@ -1335,7 +1335,6 @@ EXSTYLE WS_EX_STATICEDGE
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     LTEXT           "Minimum search interval",IDC_INTERVAL_TEXT,15,23,223,8
-    LTEXT           "s",IDC_S,288,23,8,8
     GROUPBOX        "Seaching options",IDC_SEARCHING_OPTIONS,2,9,298,35
     GROUPBOX        "Auto search",IDC_AUTO_SEARCH,2,54,298,123
     LTEXT           "The default expiry days (0 = won't expire)",IDC_EXPIRY_DAYS_LABEL,11,91,223,8
