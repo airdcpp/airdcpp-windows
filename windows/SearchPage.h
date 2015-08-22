@@ -55,6 +55,8 @@ protected:
 	static TextItem texts[];
 	TCHAR* title;
 
+	CComboBox failedGroup;
+
 };
 
 #endif //AUTOSEARCH_PAGE_H

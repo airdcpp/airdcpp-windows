@@ -18,7 +18,7 @@
 #include "Resource.h"
 
 #include "SearchPage.h"
-#include "WebShortcutsProperties.h"
+#include "../client/AutoSearchManager.h"
 
 PropPage::TextItem SearchPage::texts[] = {
 	{ IDC_INTERVAL_TEXT,						ResourceManager::MINIMUM_SEARCH_INTERVAL },
@@ -28,6 +28,7 @@ PropPage::TextItem SearchPage::texts[] = {
 	{ IDC_REMOVE_EXPIRED_AS,					ResourceManager::REMOVE_EXPIRED_AS },
 	{ IDC_AUTO_SEARCH,							ResourceManager::AUTO_SEARCH },
 	{ IDC_AS_MIN_INTERVAL_LABEL,				ResourceManager::AUTOSEARCH_EVERY_INTERVAL },
+	{ IDC_GROUP_FAILED_LABEL,					ResourceManager::AUTOSEARCH_DEFAULT_FAILED_GROUP },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -49,12 +50,35 @@ LRESULT SearchPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	setMinMax(IDC_DELAY_SPIN, 0, 999);
 	setMinMax(IDC_AS_MIN_INTERVAL_SPIN, 1, 999);
 
+	failedGroup.Attach(GetDlgItem(IDC_FAILED_GROUP));
+	auto curSetting = SETTING(AS_FAILED_DEFAULT_GROUP);
+	failedGroup.AddString(_T("---"));
+	failedGroup.SetCurSel(0);
+	auto groups = AutoSearchManager::getInstance()->getGroups();
+	for (const auto& i : groups) {
+		int pos = failedGroup.AddString(Text::toT(i).c_str());
+		if (i == curSetting)
+			failedGroup.SetCurSel(pos);
+	}
+
 	return TRUE;
 }
 
 
 void SearchPage::write() {
 	PropPage::write((HWND)*this, items);
+
+	string selectedGroup;
+	if (failedGroup.GetCurSel() == 0) {
+		selectedGroup = Util::emptyString;
+	} else {
+		tstring tmp;
+		tmp.resize(failedGroup.GetWindowTextLength());
+		tmp.resize(failedGroup.GetWindowText(&tmp[0], tmp.size() + 1));
+		selectedGroup = Text::fromT(tmp);
+	}
+
+	SettingsManager::getInstance()->set(SettingsManager::AS_FAILED_DEFAULT_GROUP, selectedGroup);
 }
 
 SearchPage::~SearchPage() {

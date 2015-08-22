@@ -587,7 +587,6 @@
 #define IDC_EXPIRY_DAYS_LABEL           1179
 #define IDC_AS_DELAY_HOURS_LABEL        1180
 #define IDC_DELAY_HOURS_LABEL           1180
-#define IDC_EXPIRY_DAYS_LABEL2          1181
 #define IDC_AS_MIN_INTERVAL_LABEL       1181
 #define IDC_ADLSP_SEARCH                1184
 #define IDC_ADLSP_TYPE                  1185
@@ -1623,6 +1622,8 @@
 #define IDC_SEARCH_INT_MIN              10201
 #define IDC_SEARCH_INT_LABEL            10202
 #define IDC_GROUP_LABEL                 10203
+#define IDC_GROUP_FAILED_LABEL          10204
+#define IDC_FAILED_GROUP                10205
 #define IDC_REFRESH_WINAMP              11011
 #define IDC_WINAMP_LIST                 11012
 #define IDC_POSITION                    11013
@@ -1841,7 +1842,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        366
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         10204
+#define _APS_NEXT_CONTROL_VALUE         10206
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif
