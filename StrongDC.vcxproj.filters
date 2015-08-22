@@ -375,6 +375,9 @@
     <ClCompile Include="windows\AutosearchSearchTimesPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\WebShortcutsPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -798,6 +801,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\AutosearchSearchTimesPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\WebShortcutsPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

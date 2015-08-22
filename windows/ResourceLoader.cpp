@@ -460,6 +460,7 @@ CImageList& ResourceLoader::getSettingsTreeIcons() {
 		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_EXPERTS, size));
 		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_LOGS, size));
 		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_UC, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_WEB_SHORTCUTS, size));
 		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_CERTIFICATES, size));
 		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_MISC, size));
 		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_IGNORE, size));

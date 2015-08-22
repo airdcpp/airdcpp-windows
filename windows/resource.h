@@ -201,6 +201,8 @@
 #define IDI_FOLLOW                      363
 #define IDD_AS_DIALOG                   363
 #define IDI_USERS                       364
+#define IDD_DIALOG6                     364
+#define IDD_WEB_SHORTCUTS_PAGE          364
 #define IDI_OPEN_LIST                   365
 #define IDI_NOTEPAD                     366
 #define IDD_AS_GENERAL                  366
@@ -339,6 +341,7 @@
 #define IDI_HASHING                     520
 #define IDI_LOGDIR                      521
 #define IDI_SEND_FILE                   522
+#define IDI_WEB_SHORTCUTS				523
 #define IDC_BACK                        997
 #define IDC_FORWARD                     998
 #define IDC_UP                          999
@@ -1832,8 +1835,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        372
-#define _APS_NEXT_RESOURCE_VALUE        364
+#define _APS_NEXT_RESOURCE_VALUE        366
 #define _APS_NEXT_COMMAND_VALUE         32795
 #define _APS_NEXT_CONTROL_VALUE         10204
 #define _APS_NEXT_SYMED_VALUE           136

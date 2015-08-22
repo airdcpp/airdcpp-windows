@@ -1334,15 +1334,10 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_CAPTIO
 EXSTYLE WS_EX_STATICEDGE
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "Web Shortcuts",IDC_SB_WEB_SHORTCUTS,2,110,298,193
-    CONTROL         "",IDC_WEB_SHORTCUTS_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,11,125,283,150
-    PUSHBUTTON      "Add",IDC_WEB_SHORTCUTS_ADD,9,281,50,14
-    PUSHBUTTON      "Remove",IDC_WEB_SHORTCUTS_REMOVE,63,281,50,14
-    PUSHBUTTON      "Properties",IDC_WEB_SHORTCUTS_PROPERTIES,117,281,50,14
     RTEXT           "Minimum search interval",IDC_INTERVAL_TEXT,15,19,88,8
     LTEXT           "s",IDC_S,145,19,8,8
     GROUPBOX        "Seaching options",IDC_SEARCHING_OPTIONS,2,5,298,35
-    GROUPBOX        "Auto search",IDC_AUTO_SEARCH,2,48,298,57
+    GROUPBOX        "Auto search",IDC_AUTO_SEARCH,2,48,298,68
     LTEXT           "The default expiry days (0 = won't expire)",IDC_EXPIRY_DAYS_LABEL,11,61,223,8
     EDITTEXT        IDC_EXPIRY_DAYS,247,58,30,13,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_EXPIRY_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,269,57,11,14
@@ -1665,13 +1660,12 @@ BEGIN
     0
 END
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// AFX_DIALOG_LAYOUT
-//
-
 IDD_FAVORITEHUB AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_SEARCHPAGE AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
@@ -2340,6 +2334,18 @@ BEGIN
     GROUPBOX        "Minimum search interval until the item will be searched again",IDC_SEARCH_INT_LABEL,14,155,260,34
 END
 
+IDD_WEB_SHORTCUTS_PAGE DIALOGEX 0, 0, 310, 295
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_CAPTION
+EXSTYLE WS_EX_STATICEDGE
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Web Shortcuts",IDC_SB_WEB_SHORTCUTS,2,8,300,194
+    CONTROL         "",IDC_WEB_SHORTCUTS_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,9,23,287,150
+    PUSHBUTTON      "Add",IDC_WEB_SHORTCUTS_ADD,12,179,50,14
+    PUSHBUTTON      "Remove",IDC_WEB_SHORTCUTS_REMOVE,66,179,50,14
+    PUSHBUTTON      "Properties",IDC_WEB_SHORTCUTS_PROPERTIES,120,179,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2557,6 +2563,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 209
     END
+
+    IDD_WEB_SHORTCUTS_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 2
+        RIGHTMARGIN, 306
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 288
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -2654,6 +2668,7 @@ IDI_AIRAPPEARANCE       ICON                    "res\\SettingsTree\\AirAppearanc
 IDI_ADVANCED            ICON                    "res\\SettingsTree\\Advanced.ico"
 IDI_EXPERTS             ICON                    "res\\SettingsTree\\Experts.ico"
 IDI_UC                  ICON                    "res\\SettingsTree\\UserCommands.ico"
+IDI_WEB_SHORTCUTS       ICON                    "res\\SettingsTree\\Webshortcuts.ico"
 IDI_CERTIFICATES        ICON                    "res\\SettingsTree\\Certificates.ico"
 IDI_LIMITS              ICON                    "res\\SettingsTree\\Limiter.ico"
 IDI_MISC                ICON                    "res\\SettingsTree\\Misc.ico"
@@ -2737,6 +2752,11 @@ BEGIN
 END
 
 IDD_AS_SEARCH_TIMES AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_WEB_SHORTCUTS_PAGE AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
