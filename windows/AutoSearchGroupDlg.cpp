@@ -48,7 +48,7 @@ LRESULT AsGroupsDlg::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 
 	const auto groups = AutoSearchManager::getInstance()->getGroups();
 	for (auto i : groups) {
-		addItem(Text::toT(i));
+		addItem(Text::toT(i),ctrlGroups.GetItemCount());
 	}
 	updateSelectedGroup(true);
 	return 0;
@@ -87,8 +87,8 @@ int AsGroupsDlg::findGroup(LPCTSTR name) {
 	return -1;
 }
 
-void AsGroupsDlg::addItem(const tstring& name, bool select /*= false*/) {
-	int32_t item = ctrlGroups.InsertItem(ctrlGroups.GetItemCount(), name.c_str());
+void AsGroupsDlg::addItem(const tstring& name, int pos, bool select /*= false*/) {
+	int32_t item = ctrlGroups.InsertItem(pos, name.c_str());
 	if (select)
 		ctrlGroups.SelectItem(item);
 }
@@ -164,7 +164,7 @@ void AsGroupsDlg::updateSelectedGroup(bool forceClean /*= false*/) {
 LRESULT AsGroupsDlg::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring name;
 	if (getItem(name, false)) {
-		addItem(name, true);
+		addItem(name, ctrlGroups.GetItemCount(), true);
 		updateSelectedGroup(true);
 	}
 	return 0;
@@ -221,7 +221,7 @@ LRESULT AsGroupsDlg::onMove(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BO
 
 
 LRESULT AsGroupsDlg::onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int32_t item = ctrlGroups.GetSelectedIndex();
+	auto item = ctrlGroups.GetSelectedIndex();
 	if (item >= 0) {
 		tstring name;
 		tstring oldName = getText(0);
@@ -242,7 +242,7 @@ LRESULT AsGroupsDlg::onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 				SettingsManager::getInstance()->set(SettingsManager::AS_FAILED_DEFAULT_GROUP, Text::fromT(name));
 
 			ctrlGroups.DeleteItem(item);
-			addItem(name, true);
+			addItem(name, item, true);
 			updateSelectedGroup();
 		}
 	}

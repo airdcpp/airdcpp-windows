@@ -47,7 +47,7 @@ public:
 	LRESULT onMove(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 private:
-	void addItem(const dcpp::tstring& name, bool select = false);
+	void addItem(const dcpp::tstring& name, int pos, bool select = false);
 	bool getItem(dcpp::tstring& name, bool checkSel);
 	int findGroup(LPCTSTR name);
 	dcpp::tstring getText(int column, int item = -1) const;
