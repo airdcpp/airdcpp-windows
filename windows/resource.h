@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airdc-git-auto_search\AirDC.rc
+// Used by N:\projects\airgit\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -1574,7 +1574,6 @@
 #define IDC_CZDC_PROGRESS_TEXT          10117
 #define IDC_INTERVAL_TEXT               10118
 #define IDC_MATCH_QUEUE_TEXT            10119
-#define IDC_INTERVAL_TEXT_SEC           10119
 #define IDC_SET_PM_HISTORY_LINES        10121
 #define IDC_CZDC_PREVIEW                10123
 #define IDC_STRONGDC_DW_SPEED1          10124
@@ -1840,7 +1839,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        366
+#define _APS_NEXT_RESOURCE_VALUE        368
 #define _APS_NEXT_COMMAND_VALUE         32795
 #define _APS_NEXT_CONTROL_VALUE         10206
 #define _APS_NEXT_SYMED_VALUE           136
