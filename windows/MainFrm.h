@@ -350,7 +350,7 @@ public:
 	
 private:
 	void updateStatus(TStringList* aItems);
-	void addStatus(const string& aMsg, time_t aTime, uint8_t severity);
+	void addStatus(const LogMessage& aMessage);
 
 	NOTIFYICONDATA pmicon;
 	NOTIFYICONDATA hubicon;
@@ -465,7 +465,7 @@ private:
 	void showPortsError(const string& port);
 
 	// LogManagerListener
-	virtual void on(LogManagerListener::Message, time_t t, const string& m, uint8_t sev) noexcept;
+	virtual void on(LogManagerListener::Message, const LogMessage& aMessage) noexcept;
 
 	// TimerManagerListener
 	void on(TimerManagerListener::Second, uint64_t aTick) noexcept;

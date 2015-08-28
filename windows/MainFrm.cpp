@@ -888,27 +888,28 @@ void MainFrame::updateStatus(TStringList* aList) {
 	delete aList;
 }
 
-void MainFrame::on(LogManagerListener::Message, time_t t, const string& m, uint8_t sev) noexcept {
-	callAsync([=] { addStatus(m, t, sev); });
+void MainFrame::on(LogManagerListener::Message, const LogMessage& aMessage) noexcept {
+	callAsync([=] { addStatus(aMessage); });
 }
 
-void MainFrame::addStatus(const string& aMsg, time_t aTime, uint8_t severity) {
-	if(ctrlStatus.IsWindow()) {
-		tstring line = Text::toT("[" + Util::getTimeStamp(aTime) + "] " + aMsg);
-
-		ctrlStatus.SetText(STATUS_LASTLINES, line.c_str(), SBT_NOTABPARSING);
-		while(lastLinesList.size() + 1 > MAX_CLIENT_LINES)
-			lastLinesList.pop_front();
-
-		if (_tcschr(line.c_str(), _T('\r')) == NULL) {
-			lastLinesList.push_back(line);
-		} else {
-			lastLinesList.push_back(line.substr(0, line.find(_T('\r'))));
-		}
-
-	ctrlStatus.SetIcon(STATUS_LASTLINES, ResourceLoader::getSeverityIcon(severity));
-
+void MainFrame::addStatus(const LogMessage& aMessage) {
+	if (!ctrlStatus.IsWindow()) {
+		return;
 	}
+
+	tstring line = Text::toT("[" + Util::getTimeStamp(aMessage.time) + "] " + aMessage.message);
+
+	ctrlStatus.SetText(STATUS_LASTLINES, line.c_str(), SBT_NOTABPARSING);
+	while(lastLinesList.size() + 1 > MAX_CLIENT_LINES)
+		lastLinesList.pop_front();
+
+	if (_tcschr(line.c_str(), _T('\r')) == NULL) {
+		lastLinesList.push_back(line);
+	} else {
+		lastLinesList.push_back(line.substr(0, line.find(_T('\r'))));
+	}
+
+	ctrlStatus.SetIcon(STATUS_LASTLINES, ResourceLoader::getSeverityIcon(aMessage.severity));
 }
 
 void MainFrame::onChatMessage(bool pm) {

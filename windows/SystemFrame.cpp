@@ -63,8 +63,8 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	auto oldMessages = LogManager::getInstance()->getLastLogs();
 	LogManager::getInstance()->addListener(this);
 
-	for(auto i = oldMessages.begin(); i != oldMessages.end(); ++i) {
-		addLine(i->second, Text::toT(i->first));
+	for (const auto& i: oldMessages) {
+		addLine(i);
 	}
 
 	tabMenu = CreatePopupMenu();
@@ -149,14 +149,14 @@ LRESULT SystemFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	for(auto& t: tl) {
 		if(t.first == ADD_LINE) {
 			MessageTask& msg = static_cast<MessageTask&>(*t.second);
-			addLine(msg.data, Text::toT(msg.str));
+			addLine(msg.data);
 		}
 	}
 	setDirty();
 	return 0;
 }
 
-void SystemFrame::addLine(LogManager::MessageData md, const tstring& msg) {
+void SystemFrame::addLine(const LogMessage& aMessageData) {
 	ctrlPad.SetRedraw(FALSE);
 	
 	POINT pt = { 0 };
@@ -173,8 +173,8 @@ void SystemFrame::addLine(LogManager::MessageData md, const tstring& msg) {
 	End = Begin = ctrlPad.GetTextLengthEx(GTL_NUMCHARS);
 
 
-	tstring Text = msg + _T(" \r\n"); 
-	tstring time = Text::toT(" [" + Util::getTimeStamp(md.time) + "] ");
+	tstring Text = Text::toT(aMessageData.message) + _T(" \r\n");
+	tstring time = Text::toT(" [" + Util::getTimeStamp(aMessageData.time) + "] ");
 	tstring line = time + Text;
 
 	LONG limitText = ctrlPad.GetLimitText();
@@ -204,7 +204,7 @@ void SystemFrame::addLine(LogManager::MessageData md, const tstring& msg) {
 	ctrlPad.SetSel(Begin, End);
 	ctrlPad.SetSelectionCharFormat(WinUtil::m_TextStyleTimestamp);
 
-	if (md.severity == LogManager::LOG_ERROR) {
+	if (aMessageData.severity == LogManager::LOG_ERROR) {
 		ctrlPad.SetSel(End, End+Text.length()-1);
 		CHARFORMAT2 ec = WinUtil::m_ChatTextGeneral;
 		ec.crTextColor = SETTING(ERROR_COLOR);
@@ -215,7 +215,7 @@ void SystemFrame::addLine(LogManager::MessageData md, const tstring& msg) {
 
 	ctrlPad.SetSel(Begin, Begin);
 
-	switch(md.severity) {
+	switch(aMessageData.severity) {
 
 	case LogManager::LOG_INFO:
 		CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(),hbInfo, false);
@@ -297,9 +297,8 @@ void SystemFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept
     PostMessage(WM_REFRESH_SETTINGS);
 }
 
-void SystemFrame::on(Message, time_t t, const string& message, uint8_t sev) noexcept {
-	speak(ADD_LINE, message, LogManager::MessageData(t, (LogManager::Severity)sev));
-	//PostMessage(WM_SPEAKER, (WPARAM)(new pair<LogManager::MessageData, tstring>(LogManager::MessageData(t, (LogManager::Severity)sev), Text::toT(message))));
+void SystemFrame::on(Message, const LogMessage& aMessageData) noexcept {
+	speak(ADD_LINE, aMessageData);
 }
 
 LRESULT SystemFrame::onRefreshSettings(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {

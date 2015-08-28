@@ -160,10 +160,10 @@ public:
 
 private:
 	
-	struct MessageTask : public StringTask {
-		MessageTask(const string& msg, LogManager::MessageData _data) : StringTask(msg), data(_data) { }
+	struct MessageTask : public Task {
+		MessageTask(LogMessage _data) : data(move(_data)) { }
 
-		LogManager::MessageData data;
+		LogMessage data;
 	};
 
 
@@ -171,9 +171,9 @@ private:
 
 	CRichEditCtrl ctrlPad;
 	CMenu tabMenu;
-	virtual void on(Message, time_t t, const string& message, uint8_t sev) noexcept;
+	virtual void on(Message, const LogMessage& aMessageData) noexcept;
 	virtual void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
-	void addLine(LogManager::MessageData, const tstring& msg);
+	void addLine(const LogMessage& aMessageData);
 
 	void scrollToEnd();
 
@@ -199,8 +199,8 @@ private:
 
 	/* add the messages as tasks, if the user is currently making a selection don't add text to the window
 	before mouse button is up and selection is complete */
-	void speak(Tasks s, const string& msg, LogManager::MessageData mdata) { 
-		messages.add(static_cast<uint8_t>(s), unique_ptr<Task>(new MessageTask(msg, mdata)));
+	void speak(Tasks s, LogMessage mdata) {
+		messages.add(s, unique_ptr<Task>(new MessageTask(move(mdata))));
 		if(!lButtonDown)
 			PostMessage(WM_SPEAKER); 
 		else
