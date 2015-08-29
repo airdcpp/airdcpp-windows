@@ -449,7 +449,7 @@ LRESULT SystemFrame::onAddAutoSearchFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 		targetPath = Util::getFilePath(Text::fromT(selWord));
 	auto fileName = Util::getFileName(Text::fromT(selWord));
 
-	AutoSearchManager::getInstance()->addAutoSearch(fileName, targetPath, TargetUtil::TARGET_PATH, false);
+	AutoSearchManager::getInstance()->addAutoSearch(fileName, targetPath, TargetUtil::TARGET_PATH, false, AutoSearch::CHAT_DOWNLOAD);
 
 	ctrlPad.SetSelNone();
 	return 0;
@@ -459,7 +459,7 @@ LRESULT SystemFrame::onAddAutoSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 	auto targetPath = Util::getParentDir(Text::fromT(selWord), PATH_SEPARATOR, true);
 	auto dirName = Util::getLastDir(selWord[selWord.length() - 1] != PATH_SEPARATOR ? Util::getFilePath(Text::fromT(selWord)) : Text::fromT(selWord));
 
-	AutoSearchManager::getInstance()->addAutoSearch(dirName, targetPath, TargetUtil::TARGET_PATH, true, false);
+	AutoSearchManager::getInstance()->addAutoSearch(dirName, targetPath, TargetUtil::TARGET_PATH, true, AutoSearch::CHAT_DOWNLOAD, true);
 
 	ctrlPad.SetSelNone();
 	return 0;
