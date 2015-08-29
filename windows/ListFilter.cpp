@@ -341,7 +341,7 @@ pair<double, bool> ListFilter::prepareTime() const {
 	}
 
 	time_t ret = Util::toInt64(matcher.pattern.substr(0, end)) * multiplier;
-	return make_pair(ret > 0 ? GET_TIME() - ret : ret, hasMatch);
+	return make_pair(static_cast<double>(ret > 0 ? GET_TIME() - ret : ret), hasMatch);
 }
 
 pair<double, bool> ListFilter::prepareSize() const {

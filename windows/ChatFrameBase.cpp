@@ -533,7 +533,7 @@ void ChatFrameBase::appendTextLine(const tstring& aText, bool addSpace) {
 	if (addSpace && s.length() > 0){
 		if (start > 0 && !isspace(s[start - 1]))
 			startSpace = _T(" ");
-		if (start != s.length() && !isspace(s[start]))
+		if (start != static_cast<int>(s.length()) && !isspace(s[start]))
 			endSpace = _T(" ");
 	}
 
