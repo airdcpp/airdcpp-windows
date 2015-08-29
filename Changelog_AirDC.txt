@@ -16,6 +16,7 @@ Changed:
 - Verify keyprints in Client-Client and Client-Hub connections
 - Apply scanning skiplist option for checking share excludes as well
 - Enable multi selection in Finished uploads
+- Don't write non-changed settings to the settings file that are using the default value 
 
 Fixed:
 

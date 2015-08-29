@@ -178,7 +178,7 @@ void SettingTab::write(HWND page, Item const* items, ListItem* listItems /* = NU
 				}
 				buf.resize(SETTING_STR_MAXLEN);
 				buf.resize(::GetDlgItemText(page, i->itemID, &buf[0], SETTING_STR_MAXLEN));
-				settings->set((SettingsManager::IntSetting)i->setting, Util::toInt(Text::fromT(buf)));
+				settings->set((SettingsManager::IntSetting)i->setting, Text::fromT(buf));
 				break;
 			}
 		case T_INT64:
