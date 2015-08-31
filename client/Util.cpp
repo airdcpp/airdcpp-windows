@@ -1735,14 +1735,15 @@ string Util::getOsVersion(bool http /*false*/) {
 		return os;
 	};
 
-
-	if (IsWindows8Point1OrGreater()) {
-		if (http) return formatHttp(6, 3, os);
+	
+	if (IsWindows8OrGreater()) {
+		if (http) return formatHttp(6, 2, os);
 
 		HKEY hk;
 		TCHAR Buf[512];
 		Buf[0] = 0;
 		bool error = true;
+		string osv= "";
 		string regkey = "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion";
 
 		auto err = ::RegOpenKeyEx(HKEY_LOCAL_MACHINE, Text::toT(regkey).c_str(), 0, KEY_READ, &hk);
@@ -1751,34 +1752,35 @@ string Util::getOsVersion(bool http /*false*/) {
 			DWORD type;
 			if (ERROR_SUCCESS == ::RegQueryValueEx(hk, _T("ProductName"), 0, &type, (LPBYTE)Buf, &bufLen)) {
 				os = Text::fromT(Buf);
-			}
-			else {
 				error = false;
 			}
 			ZeroMemory(&Buf, sizeof(Buf));
 			if (ERROR_SUCCESS == ::RegQueryValueEx(hk, _T("EditionID"), 0, &type, (LPBYTE)Buf, &bufLen)) {
 				product = Text::fromT(Buf);
+			}			
+			ZeroMemory(&Buf, sizeof(Buf));
+			if (ERROR_SUCCESS == ::RegQueryValueEx(hk, _T("CurrentVersion"), 0, &type, (LPBYTE)Buf, &bufLen)) {
+				osv = Text::fromT(Buf);
+				boost::regex expr{ "(\\d+)\\.(\\d+)" };
+				boost::smatch osver;
+				if (boost::regex_search(osv, osver, expr)) {
+					getProduct(Util::toInt(osver[1]), Util::toInt(osver[2]), os);					
+					error = false;
+				}else error = true;
 			}
 
 			::RegCloseKey(hk);
 		}
 
+
 		if (error) {
 			if (IsWindowsServer())
-				os = "Windows Server 2012 R2";
+				os = "Windows Server 2012";
 			else
-				os = "Windows 8.1";		
-		}
+				os = "Windows 8";
 
-		getProduct(6, 3, os);
-	}
-	else if (IsWindows8OrGreater()) {
-		if (http) return formatHttp(6, 2, os);
-		if (IsWindowsServer())
-			os = "Windows Server 2012";
-		else
-			os = "Windows 8";
-		getProduct(6, 2, os);
+			getProduct(6, 2, os);
+		}		
 	}
 	else if (IsWindows7OrGreater()) {
 		if (http) return formatHttp(6, 1, os);
