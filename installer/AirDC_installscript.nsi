@@ -14,7 +14,7 @@
 !include "WinVer.nsh"
 
 !ifndef NSIS_UNICODE
-	!error "An Unicode version of NSIS is required, see <http://code.google.com/p/unsis/>"
+  !error "An Unicode version of NSIS is required, see <http://code.google.com/p/unsis/>"
 !endif
 
 Var VERSION ; will be filled in onInit
@@ -25,12 +25,12 @@ Var INSTBACKUPDIR ; Replaces the backup path for the program folder
 
 !macro GetAirDCVersion
 ; Get the AirDC++ version and store it in $VERSION
-	GetDllVersionLocal "..\compiled\x64\AirDC.exe" $R0 $R1
-	IntOp $R2 $R0 / 0x00010000
-	IntOp $R3 $R0 & 0x0000FFFF
-	IntOp $R4 $R1 / 0x00010000
-	IntOp $R5 $R1 & 0x0000FFFF
-	StrCpy $VERSION "$R2.$R3"
+  GetDllVersionLocal "..\compiled\x64\AirDC.exe" $R0 $R1
+  IntOp $R2 $R0 / 0x00010000
+  IntOp $R3 $R0 & 0x0000FFFF
+  IntOp $R4 $R1 / 0x00010000
+  IntOp $R5 $R1 & 0x0000FFFF
+  StrCpy $VERSION "$R2.$R3"
 !macroend
 
 ; To install in userprofile
@@ -154,7 +154,7 @@ check_dcpp:
   CopyFiles "$APPDATA\DC++\*.dat" "$DOCUMENTS\AirDC++\"
   CopyFiles "$APPDATA\DC++\*.txt" "$DOCUMENTS\AirDC++\"
   goto no_backup
-  
+
 check_apex:
   IfFileExists "$APPDATA\ApexDC++\*.xml" 0 check_strong
   MessageBox MB_YESNO|MB_ICONQUESTION $(Apex) IDNO check_strong
@@ -163,7 +163,7 @@ check_apex:
   CopyFiles "$APPDATA\ApexDC++\*.dat" "$DOCUMENTS\AirDC++\"
   CopyFiles "$APPDATA\ApexDC++\*.txt" "$DOCUMENTS\AirDC++\"
   goto no_backup
-  
+
 check_strong:
   IfFileExists "$DOCUMENTS\StrongDC++\*.xml" 0 no_backup
   MessageBox MB_YESNO|MB_ICONQUESTION $(Strong) IDNO no_backup
@@ -176,13 +176,14 @@ check_strong:
 no_backup:
 ; Put the files there
   File "dcppboot.xml"
-  
+  File "popup.bmp"
+
   ${If} $TargetArch64 == "1"
     File "..\compiled\x64\AirDC.pdb"
     File "..\compiled\x64\AirDC.exe"
   ${Else}
-	File "..\compiled\Win32\AirDC.pdb"
-	File "..\compiled\Win32\AirDC.exe"
+  File "..\compiled\Win32\AirDC.pdb"
+  File "..\compiled\Win32\AirDC.exe"
   ${EndIf}
   ; Uncomment to get DCPP core version from AirDC.exe we just installed and store in $1
   ;Function GetDCPlusPlusVersion
@@ -203,7 +204,7 @@ no_backup:
 ; Get AirDC version we just installed and store in $2
   MoreInfo::GetProductVersion "$INSTDIR\AirDC.exe"
   Pop $2
-  
+
 ; Write the installation path into the registry
   WriteRegStr HKLM SOFTWARE\AirDC++ "Install_Dir" "$INSTDIR"
 ; Write the uninstall keys for Windows
@@ -221,7 +222,7 @@ no_backup:
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AirDC++" "EstimatedSize" "$0"
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AirDC++" "NoModify" "1"
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AirDC++" "NoRepair" "1"
-  
+
   WriteUninstaller "uninstall.exe"
 
 ; Add AirDC.exe to registry 'App Path'
@@ -265,23 +266,23 @@ SectionEnd
 Function .onSelChange
 ; Alter default value for $INSTDIR according to the arch selection
 ; but only if it's the first install and we're on an x64 system
-  ${If} ${RunningX64}
-    SectionGetFlags ${arch} $0
-    IntOp $0 $0 & ${SF_SELECTED}
-    StrCmp $0 ${SF_SELECTED} x86
-    ${If} $OldInstDir == ""
-      StrCpy $INSTDIR "$PROGRAMFILES64\AirDC++"
-    ${EndIf}
-    StrCpy $TargetArch64 "1"
-    goto end
-  x86:
-    ${If} $OldInstDir == ""
-      StrCpy $INSTDIR "$PROGRAMFILES\AirDC++"
-    ${EndIf}
-    StrCpy $TargetArch64 "0"
-  end:
+${If} ${RunningX64}
+  SectionGetFlags ${arch} $0
+  IntOp $0 $0 & ${SF_SELECTED}
+  StrCmp $0 ${SF_SELECTED} x86
+  ${If} $OldInstDir == ""
+    StrCpy $INSTDIR "$PROGRAMFILES64\AirDC++"
   ${EndIf}
-  
+  StrCpy $TargetArch64 "1"
+  goto end
+x86:
+  ${If} $OldInstDir == ""
+    StrCpy $INSTDIR "$PROGRAMFILES\AirDC++"
+  ${EndIf}
+  StrCpy $TargetArch64 "0"
+end:
+${EndIf}
+
 ; Show the warning only once
   StrCmp $R9 "1" skip
   SectionGetFlags ${loc} $0
@@ -293,52 +294,51 @@ skip:
 FunctionEnd
 
 Function .onInit
-	!insertmacro MUI_LANGDLL_DISPLAY
+  !insertmacro MUI_LANGDLL_DISPLAY
 
 ; Set the system arch as default
-	${If} ${RunningX64}
-		StrCpy $TargetArch64 "1"
-	${Else}
-		StrCpy $TargetArch64 "0"
-	${EndIf}
-  
+  ${If} ${RunningX64}
+    StrCpy $TargetArch64 "1"
+  ${Else}
+    StrCpy $TargetArch64 "0"
+  ${EndIf}
+
   IfFileExists "$EXEDIR\AirDC.exe" 0 checkos
   StrCpy $INSTDIR $EXEDIR
 checkos:
-	${IfNot} ${AtLeastWinVista}
-		MessageBox MB_OK|MB_ICONEXCLAMATION $(XPOrBelow)
-		Exec '"$WINDIR\explorer.exe" "http://www.airdcpp.net/download"'
-		Quit
-	${EndIf}
-	
+  ${IfNot} ${AtLeastWinVista}
+    MessageBox MB_OK|MB_ICONEXCLAMATION $(XPOrBelow)
+    Exec '"$WINDIR\explorer.exe" "http://www.airdcpp.net/download"'
+    Quit
+  ${EndIf}
+
 ; Set the program component really required (read only)
   IntOp $0 ${SF_SELECTED} | ${SF_RO}
   SectionSetFlags ${dcpp} $0
-  
 
 ; Require the 32 bit arch option on x86 systems, deselect on x64
-	${If} $TargetArch64 == "0"
-		SectionSetFlags ${arch} $0
-	${Else}
-		SectionGetFlags ${arch} $0
-		IntOp $0 $0 & ${SECTION_OFF}
-		SectionSetFlags ${arch} $0
-	${EndIf}
+  ${If} $TargetArch64 == "0"
+    SectionSetFlags ${arch} $0
+  ${Else}
+    SectionGetFlags ${arch} $0
+    IntOp $0 $0 & ${SECTION_OFF}
+    SectionSetFlags ${arch} $0
+  ${EndIf}
 
 ; Save existing install dir to be able to compare later
-	StrCpy $OldInstDir $INSTDIR
-	
+  StrCpy $OldInstDir $INSTDIR
+
 ; When there is no install dir (ie when this is the first install), default to
 ; "Program Files/AirDC++".
-	${If} $INSTDIR == ""
-		${If} $TargetArch64 == "1"
-			StrCpy $INSTDIR "$PROGRAMFILES64\AirDC++"
-		${Else}
-			StrCpy $INSTDIR "$PROGRAMFILES\AirDC++"
-		${EndIf}
-	${EndIf}
-	
-	!insertmacro GetAirDCVersion
+  ${If} $INSTDIR == ""
+    ${If} $TargetArch64 == "1"
+      StrCpy $INSTDIR "$PROGRAMFILES64\AirDC++"
+    ${Else}
+      StrCpy $INSTDIR "$PROGRAMFILES\AirDC++"
+    ${EndIf}
+  ${EndIf}
+
+  !insertmacro GetAirDCVersion
 FunctionEnd
 
 Function LaunchLink
@@ -393,7 +393,7 @@ Section "un.Uninstall"
 ; remove EmoPacks dir
   RMDir /r "$INSTDIR\EmoPacks"
   RMDir /r "$INSTDIR\icons"
-  
+
 ; Remove registry entries
 ; Assume they are all registered to us
   DeleteRegKey HKCU "Software\Classes\dchub"
@@ -408,7 +408,7 @@ Section "un.Uninstall"
   Delete "$SMPROGRAMS\AirDC++\AirDC++.lnk" 
   Delete "$SMPROGRAMS\AirDC++\$(SM_UNINSTALL).lnk" 
   RMDir /r "$SMPROGRAMS\AirDC++"
-  
+
 ; Desktop Shortcut
   Delete "$DESKTOP\AirDC++.lnk"
 
@@ -437,7 +437,7 @@ Section "un.Uninstall"
   goto end_uninstall
 
 kill_whole_dir:
-	RMDir /r "$INSTDIR"
+  RMDir /r "$INSTDIR"
 
 end_uninstall:
   RMDir "$INSTDIR"
