@@ -57,9 +57,10 @@ ShowUninstDetails show
 
 !define MUI_COMPONENTSPAGE_NODESC
 
-!define MUI_FINISHPAGE_RUN
-!define MUI_FINISHPAGE_RUN_TEXT "$(RunAtFinish)"
-!define MUI_FINISHPAGE_RUN_FUNCTION "LaunchLink"
+; Admin rights will still be enabled if running from installer
+;!define MUI_FINISHPAGE_RUN
+;!define MUI_FINISHPAGE_RUN_TEXT "$(RunAtFinish)"
+;!define MUI_FINISHPAGE_RUN_FUNCTION "LaunchLink"
 
 ;Page components
 ;Page directory
@@ -71,7 +72,7 @@ ShowUninstDetails show
   !define MUI_FINISHPAGE_NOAUTOCLOSE ; Pause after installation
   !insertmacro MUI_PAGE_INSTFILES
   !insertmacro MUI_PAGE_FINISH
-  
+
   !insertmacro MUI_UNPAGE_CONFIRM
   !insertmacro MUI_UNPAGE_INSTFILES
   !insertmacro MUI_UNPAGE_FINISH
@@ -341,9 +342,9 @@ checkos:
   !insertmacro GetAirDCVersion
 FunctionEnd
 
-Function LaunchLink
-Exec '"$WINDIR\explorer.exe" "$INSTDIR\AirDC.exe"'
-FunctionEnd
+;Function LaunchLink
+;Exec '"$WINDIR\explorer.exe" "$INSTDIR\AirDC.exe"'
+;FunctionEnd
 
 ; uninstall stuff
 Function un.isEmptyDir
