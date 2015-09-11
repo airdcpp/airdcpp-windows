@@ -54,13 +54,13 @@ ShowUninstDetails show
 !define MUI_LANGDLL_REGISTRY_ROOT "HKLM"
 !define MUI_LANGDLL_REGISTRY_KEY "SOFTWARE\AirDC++"
 !define MUI_LANGDLL_REGISTRY_VALUENAME "Install_Language"
+!define MUI_FINISHPAGE_NOAUTOCLOSE ; Pause after installation
 
 !define MUI_COMPONENTSPAGE_NODESC
 
-; Admin rights will still be enabled if running from installer
-;!define MUI_FINISHPAGE_RUN
-;!define MUI_FINISHPAGE_RUN_TEXT "$(RunAtFinish)"
-;!define MUI_FINISHPAGE_RUN_FUNCTION "LaunchLink"
+!define MUI_FINISHPAGE_RUN
+!define MUI_FINISHPAGE_RUN_TEXT "$(RunAtFinish)"
+!define MUI_FINISHPAGE_RUN_FUNCTION "LaunchLink"
 
 ;Page components
 ;Page directory
@@ -69,7 +69,6 @@ ShowUninstDetails show
 ;UninstPage instfiles
   !insertmacro MUI_PAGE_COMPONENTS
   !insertmacro MUI_PAGE_DIRECTORY
-  !define MUI_FINISHPAGE_NOAUTOCLOSE ; Pause after installation
   !insertmacro MUI_PAGE_INSTFILES
   !insertmacro MUI_PAGE_FINISH
 
@@ -342,9 +341,9 @@ checkos:
   !insertmacro GetAirDCVersion
 FunctionEnd
 
-;Function LaunchLink
-;Exec '"$WINDIR\explorer.exe" "$INSTDIR\AirDC.exe"'
-;FunctionEnd
+Function LaunchLink
+Exec '"$WINDIR\explorer.exe" "$INSTDIR\AirDC.exe"'
+FunctionEnd
 
 ; uninstall stuff
 Function un.isEmptyDir
