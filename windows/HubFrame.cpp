@@ -499,10 +499,11 @@ void HubFrame::onChatMessage(const ChatMessage& msg) {
 void HubFrame::onDisconnected(const string& aReason) {
 	addStatus(Text::toT(aReason), LogManager::LOG_WARNING, WinUtil::m_ChatTextServer); //Error?
 
-	clearUserList();
 	setDisconnected(true);
 	wentoffline = true;
 	setTabIcons();
+	clearTaskList();
+	clearUserList();
 
 	if ((!SETTING(SOUND_HUBDISCON).empty()) && (!SETTING(SOUNDS_DISABLED)))
 		WinUtil::playSound(Text::toT(SETTING(SOUND_HUBDISCON)));
