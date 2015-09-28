@@ -53,21 +53,21 @@
 #include "iTunesCOMInterface.h"
 #include "SystemFrame.h"
 
-#include "../client/ConnectivityManager.h"
-#include "../client/DownloadManager.h"
-#include "../client/UploadManager.h"
-#include "../client/StringTokenizer.h"
-#include "../client/ShareManager.h"
-#include "../client/LogManager.h"
-#include "../client/FavoriteManager.h"
-#include "../client/MappingManager.h"
-#include "../client/AirUtil.h"
-#include "../client/DirectoryListingManager.h"
-#include "../client/UpdateManager.h"
-#include "../client/GeoManager.h"
-#include "../client/ThrottleManager.h"
-#include "../client/version.h"
-#include "../client/SettingHolder.h"
+#include <airdcpp/ConnectivityManager.h>
+#include <airdcpp/DownloadManager.h>
+#include <airdcpp/UploadManager.h>
+#include <airdcpp/StringTokenizer.h>
+#include <airdcpp/ShareManager.h>
+#include <airdcpp/LogManager.h>
+#include <airdcpp/FavoriteManager.h>
+#include <airdcpp/MappingManager.h>
+#include <airdcpp/AirUtil.h>
+#include <airdcpp/DirectoryListingManager.h>
+#include <airdcpp/UpdateManager.h>
+#include <airdcpp/GeoManager.h>
+#include <airdcpp/ThrottleManager.h>
+#include <airdcpp/version.h>
+#include <airdcpp/SettingHolder.h>
 
 #include <VersionHelpers.h>
 #include <dbt.h>

@@ -25,17 +25,17 @@
 #include "BarShader.h"
 #include "ResourceLoader.h"
 
-#include "../client/QueueManager.h"
-#include "../client/StringTokenizer.h"
-#include "../client/ClientManager.h"
-#include "../client/TimerManager.h"
-#include "../client/SearchManager.h"
-#include "../client/Localization.h"
-#include "../client/DirectoryListingManager.h"
-#include "../client/GeoManager.h"
-#include "../client/ScopedFunctor.h"
-#include "../client/HighlightManager.h"
-#include "../client/WildCards.h"
+#include <airdcpp/QueueManager.h>
+#include <airdcpp/StringTokenizer.h>
+#include <airdcpp/ClientManager.h>
+#include <airdcpp/TimerManager.h>
+#include <airdcpp/SearchManager.h>
+#include <airdcpp/Localization.h>
+#include <airdcpp/DirectoryListingManager.h>
+#include <airdcpp/GeoManager.h>
+#include <airdcpp/ScopedFunctor.h>
+#include <airdcpp/HighlightManager.h>
+#include <airdcpp/WildCards.h>
 
 #include <boost/range/numeric.hpp>
 

@@ -21,8 +21,8 @@
 #include "WizardLanguage.h"
 #include "WinUtil.h"
 
-#include "../client/AirUtil.h"
-#include "../client/Localization.h"
+#include <airdcpp/AirUtil.h>
+#include <airdcpp/Localization.h>
 
 
 LRESULT WizardLanguage::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) { 

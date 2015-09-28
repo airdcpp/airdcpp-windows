@@ -17,9 +17,9 @@
  */
 
 #include "stdafx.h"
-#include "../client/SettingsManager.h"
-#include "../client/StringTokenizer.h"
-#include "../client/Util.h"
+#include <airdcpp/SettingsManager.h>
+#include <airdcpp/StringTokenizer.h>
+#include <airdcpp/Util.h>
 
 #include "BrowseDlg.h"
 #include "Resource.h"

@@ -20,10 +20,10 @@
 
 #include <boost/range/algorithm.hpp>
 
-#include "../client/Util.h"
-#include "../client/SettingsManager.h"
-#include "../client/FavoriteManager.h"
-#include "../client/AirUtil.h"
+#include <airdcpp/Util.h>
+#include <airdcpp/SettingsManager.h>
+#include <airdcpp/FavoriteManager.h>
+#include <airdcpp/AirUtil.h>
 
 #include "BrowseDlg.h"
 #include "Resource.h"

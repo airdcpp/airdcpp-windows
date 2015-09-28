@@ -19,8 +19,8 @@
 #include "stdafx.h"
 #include "Resource.h"
 
-#include "../client/ResourceManager.h"
-#include "../client/UserCommand.h"
+#include <airdcpp/ResourceManager.h>
+#include <airdcpp/UserCommand.h>
 
 #include "WinUtil.h"
 #include "CommandDlg.h"

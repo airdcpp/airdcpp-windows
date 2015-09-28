@@ -18,8 +18,8 @@
 
 #include "stdafx.h"
 
-#include "../client/AirUtil.h"
-#include "../client/SettingsManager.h"
+#include <airdcpp/AirUtil.h>
+#include <airdcpp/SettingsManager.h>
 
 #include "Resource.h"
 #include "SpeedPage.h"

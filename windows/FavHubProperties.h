@@ -22,7 +22,7 @@
 #include "stdafx.h"
 #include <atlcrack.h>
 
-#include "../client/HubEntry.h"
+#include <airdcpp/HubEntry.h>
 #include "WinUtil.h"
 
 class FavHubProperties : public CDialogImpl<FavHubProperties>

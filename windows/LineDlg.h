@@ -22,8 +22,8 @@
 #include "resource.h"
 #include "WinUtil.h"
 
-#include "../client/ShareManager.h"
-#include "../client/AirUtil.h"
+#include <airdcpp/ShareManager.h>
+#include <airdcpp/AirUtil.h>
 
 class LineDlg : public CDialogImpl<LineDlg>
 {

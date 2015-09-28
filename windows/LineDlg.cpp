@@ -17,7 +17,7 @@
  */
 
 #include "stdafx.h"
-#include "../client/SettingsManager.h"
+#include <airdcpp/SettingsManager.h>
 #include "Resource.h"
 #include "LineDlg.h"
 #include "atlstr.h"

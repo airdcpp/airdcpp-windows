@@ -18,8 +18,8 @@
 
 #include "stdafx.h"
 
-#include "../client/AirUtil.h"
-#include "../client/Localization.h"
+#include <airdcpp/AirUtil.h>
+#include <airdcpp/Localization.h>
 #include "Resource.h"
 
 #include "GeneralPage.h"

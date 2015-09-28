@@ -23,7 +23,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include "../client/HttpConnection.h"
+#include <airdcpp/HttpConnection.h>
 
 
 class AboutDlg : public CDialogImpl<AboutDlg>, private HttpConnectionListener

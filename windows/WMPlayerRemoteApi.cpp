@@ -1,7 +1,7 @@
 
 #include "stdafx.h"
 #include "WMPlayerRemoteApi.h"
-#include "../client/version.h"
+#include <airdcpp/version.h>
 
 WMPlayerRemoteApi::WMPlayerRemoteApi() { }
 WMPlayerRemoteApi::~WMPlayerRemoteApi() { }

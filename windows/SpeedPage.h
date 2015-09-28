@@ -26,7 +26,7 @@
 #include <atlcrack.h>
 #include "PropPage.h"
 
-#include "../client/SettingsManager.h"
+#include <airdcpp/SettingsManager.h>
 
 class SpeedPage : public CPropertyPage<IDD_SPEEDPAGE>, public PropPage
 {

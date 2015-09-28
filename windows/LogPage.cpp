@@ -18,8 +18,8 @@
 
 #include "stdafx.h"
 
-#include "../client/LogManager.h"
-#include "../client/File.h"
+#include <airdcpp/LogManager.h>
+#include <airdcpp/File.h>
 
 #include "BrowseDlg.h"
 #include "Resource.h"

@@ -17,8 +17,8 @@
  */
 
 #include "stdafx.h"
-#include "../client/UserInfoBase.h"
-#include "../client/LogManager.h"
+#include <airdcpp/UserInfoBase.h>
+#include <airdcpp/LogManager.h>
 
 #include "ResourceLoader.h"
 

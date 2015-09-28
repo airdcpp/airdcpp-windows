@@ -18,9 +18,9 @@
 
 #include "stdafx.h"
 
-#include "../client/SettingsManager.h"
-#include "../client/AirUtil.h"
-#include "../client/Socket.h"
+#include <airdcpp/SettingsManager.h>
+#include <airdcpp/AirUtil.h>
+#include <airdcpp/Socket.h>
 
 #include "Resource.h"
 #include "ProxyPage.h"

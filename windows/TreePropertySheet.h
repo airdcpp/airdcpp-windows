@@ -24,7 +24,7 @@
 #endif // _MSC_VER > 1000
 
 #include "resource.h"
-#include "../client/typedefs.h"
+#include <airdcpp/typedefs.h>
 
 class TreePropertySheet : public CPropertySheetImpl<TreePropertySheet> {
 public:

@@ -23,8 +23,8 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include "../Client/SettingsManager.h"
-#include "../client/StringTokenizer.h"
+#include <airdcpp/SettingsManager.h>
+#include <airdcpp/StringTokenizer.h>
 #include "ListViewArrows.h"
 #include "OMenu.h"
 

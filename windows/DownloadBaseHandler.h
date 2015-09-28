@@ -21,11 +21,11 @@
 
 #include "OMenu.h"
 
-#include "../client/FavoriteManager.h"
-#include "../client/ShareManager.h"
-#include "../client/QueueManager.h"
-#include "../client/TargetUtil.h"
-#include "../client/Util.h"
+#include <airdcpp/FavoriteManager.h>
+#include <airdcpp/ShareManager.h>
+#include <airdcpp/QueueManager.h>
+#include <airdcpp/TargetUtil.h>
+#include <airdcpp/Util.h>
 
 #include "BrowseDlg.h"
 #include "WinUtil.h"

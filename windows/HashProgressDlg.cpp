@@ -19,12 +19,12 @@
 #include "stdafx.h"
 #include "HashProgressDlg.h"
 
-#include "../client/HashManager.h"
-#include "../client/Util.h"
-#include "../client/Text.h"
-#include "../client/SettingsManager.h"
-#include "../client/Thread.h"
-#include "../client/TimerManager.h"
+#include <airdcpp/HashManager.h>
+#include <airdcpp/Util.h>
+#include <airdcpp/Text.h>
+#include <airdcpp/SettingsManager.h>
+#include <airdcpp/Thread.h>
+#include <airdcpp/TimerManager.h>
 
 
 HashProgressDlg::HashProgressDlg(bool aAutoClose /*false*/) : autoClose(aAutoClose), startBytes(0), startFiles(0), init(false), hashers(0), startTime(0), stopped(false) { }

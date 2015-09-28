@@ -27,7 +27,7 @@
 #include "PropPage.h"
 #include "Wizard.h"
 
-#include "../client/SettingItem.h"
+#include <airdcpp/SettingItem.h>
 
 class SetupWizard;
 class WizardProfile : public PropPage, public CAeroWizardPageImpl<WizardProfile> { 

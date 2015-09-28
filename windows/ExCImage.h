@@ -27,8 +27,8 @@
 #define __ATLTYPES_H__
 #endif
 
-#include "../client/Pointer.h"
-#include "../client/FastAlloc.h"
+#include <airdcpp/Pointer.h>
+#include <airdcpp/FastAlloc.h>
 #include <atlimage.h>
 
 class ExCImage : public CImage, public FastAlloc<ExCImage>, public intrusive_ptr_base<ExCImage>, boost::noncopyable

@@ -28,8 +28,8 @@
 #define SETTINGS_BUF_LEN 1024
 #define DIM_EDIT_EXPERIMENT 0
 
-#include "../client/SettingsManager.h"
-#include "../client/ResourceManager.h"
+#include <airdcpp/SettingsManager.h>
+#include <airdcpp/ResourceManager.h>
 
 #include "Dispatchers.h"
 

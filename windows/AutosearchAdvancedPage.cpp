@@ -20,7 +20,7 @@
 #include "Resource.h"
 #include "WinUtil.h"
 #include "AutosearchAdvancedPage.h"
-#include "../client/SearchManager.h"
+#include <airdcpp/SearchManager.h>
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 #define setMinMax(x, y, z) \

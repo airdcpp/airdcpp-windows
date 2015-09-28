@@ -28,7 +28,7 @@
 #include "ExListViewCtrl.h"
 #include "Resource.h"
 
-#include "../client/FavoriteManager.h"
+#include <airdcpp/FavoriteManager.h>
 
 #define FILTER_MESSAGE_MAP 8
 class PublicHubsFrame : public MDITabChildWindowImpl<PublicHubsFrame>, public StaticFrame<PublicHubsFrame, ResourceManager::PUBLIC_HUBS, ID_FILE_CONNECT>, 

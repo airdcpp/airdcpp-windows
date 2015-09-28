@@ -17,14 +17,14 @@
  */
 
 #include "stdafx.h"
-#include "../client/version.h"
+#include <airdcpp/version.h>
 
 #include "Resource.h"
 #include "ResourceLoader.h"
 #include "UpdateDlg.h"
 
-#include "../client/Util.h"
-#include "../client/UpdateManager.h"
+#include <airdcpp/Util.h>
+#include <airdcpp/UpdateManager.h>
 #include "WinUtil.h"
 #include "MainFrm.h"
 

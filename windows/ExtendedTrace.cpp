@@ -19,7 +19,7 @@
 
 #if defined(_WIN32)
 
-#include "../client/File.h"
+#include <airdcpp/File.h>
 #include "WinUtil.h"
 
 #include <tchar.h>

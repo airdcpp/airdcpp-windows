@@ -19,8 +19,8 @@
 #include "stdafx.h"
 #include "SplashWindow.h"
 
-#include <../client/Text.h>
-#include <../client/version.h>
+#include <airdcpp/Text.h>
+#include <airdcpp/version.h>
 
 #include "resource.h"
 #include "WinUtil.h"

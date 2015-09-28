@@ -21,8 +21,8 @@
 
 #include "TextFrame.h"
 #include "WinUtil.h"
-#include "../client/File.h"
-#include "../client/StringTokenizer.h"
+#include <airdcpp/File.h>
+#include <airdcpp/StringTokenizer.h>
 
 //#define MAX_TEXT_LEN 32768
 

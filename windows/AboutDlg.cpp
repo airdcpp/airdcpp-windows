@@ -22,11 +22,11 @@
 #include "WinUtil.h"
 #include "AboutDlg.h"
 
-#include "../client/format.h"
-#include "../client/HttpDownload.h"
-#include "../client/SimpleXML.h"
-#include "../client/version.h"
-#include "../client/UpdateManager.h"
+#include <airdcpp/format.h>
+#include <airdcpp/HttpDownload.h>
+#include <airdcpp/SimpleXML.h>
+#include <airdcpp/version.h>
+#include <airdcpp/UpdateManager.h>
 
 static const TCHAR Airthanks[] = 
 _T("Thanks to Absolon, Alehk, en_dator, Charlie, Freebow, Herman, Juckpuck, Mad, Peken, PeTaKe, Sepenoob, Skalman, Sopor, steve72, Toans, whinner and Zoolut1oN for testing the client and helping to make it better.\r\n")

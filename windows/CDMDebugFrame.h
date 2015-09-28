@@ -15,8 +15,8 @@
 
 #include "FlatTabCtrl.h"
 
-#include "../client/DebugManager.h"
-#include "../client/Semaphore.h"
+#include <airdcpp/DebugManager.h>
+#include <airdcpp/Semaphore.h>
 
 #include <boost/lockfree/queue.hpp>
 

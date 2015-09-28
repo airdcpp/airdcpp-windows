@@ -19,7 +19,7 @@
 #pragma once
 
 #include <atlcrack.h>
-#include "../client/Util.h"
+#include <airdcpp/Util.h>
 #include "WinUtil.h"
 
 class PreviewDlg : public CDialogImpl<PreviewDlg> {

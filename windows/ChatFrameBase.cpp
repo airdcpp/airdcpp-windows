@@ -17,7 +17,7 @@
  */
 
 #include "stdafx.h"
-#include "../client/stdinc.h"
+#include <airdcpp/stdinc.h>
 #include "ChatFrameBase.h"
 #include "BrowseDlg.h"
 #include "WinUtil.h"
@@ -29,20 +29,20 @@
 #include "ExMessageBox.h"
 #include "ChatCommands.h"
 
-//#include "../client/AutoSearchManager.h"
-#include "../client/HashManager.h"
-#include "../client/SettingsManager.h"
-#include "../client/Util.h"
-#include "../client/ShareManager.h"
-#include "../client/LogManager.h"
-#include "../client/ShareScannerManager.h"
-#include "../client/QueueManager.h"
-#include "../client/ShareManager.h"
-#include "../client/ClientManager.h"
-#include "../client/ConnectivityManager.h"
-#include "../client/ThrottleManager.h"
-#include "../client/UpdateManager.h"
-#include "../client/version.h"
+//#include <airdcpp/AutoSearchManager.h>
+#include <airdcpp/HashManager.h>
+#include <airdcpp/SettingsManager.h>
+#include <airdcpp/Util.h>
+#include <airdcpp/ShareManager.h>
+#include <airdcpp/LogManager.h>
+#include <airdcpp/ShareScannerManager.h>
+#include <airdcpp/QueueManager.h>
+#include <airdcpp/ShareManager.h>
+#include <airdcpp/ClientManager.h>
+#include <airdcpp/ConnectivityManager.h>
+#include <airdcpp/ThrottleManager.h>
+#include <airdcpp/UpdateManager.h>
+#include <airdcpp/version.h>
 
 extern EmoticonsManager* emoticonsManager;
 

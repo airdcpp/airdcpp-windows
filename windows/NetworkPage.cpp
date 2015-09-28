@@ -22,7 +22,7 @@
 #include "NetworkPage.h"
 #include "WinUtil.h"
 
-#include "../client/ConnectivityManager.h"
+#include <airdcpp/ConnectivityManager.h>
 
 NetworkPage::NetworkPage(SettingsManager *s) : PropPage(s), protocols(new ProtocolBase(s)) {
 	SetTitle(CTSTRING(SETTINGS_NETWORK));

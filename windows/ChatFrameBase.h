@@ -23,7 +23,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include "../client/concurrency.h"
+#include <airdcpp/concurrency.h>
 
 #include "Async.h"
 #include "OMenu.h"

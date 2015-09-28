@@ -3,13 +3,13 @@
 
 #include "stdafx.h"
 
-#include "../client/DCPlusPlus.h"
+#include <airdcpp/DCPlusPlus.h>
 
-#include "../client/SimpleXML.h"
-#include "../client/File.h"
-#include "../client/StringTokenizer.h"
-#include "../client/ResourceManager.h"
-#include "../client/version.h"
+#include <airdcpp/SimpleXML.h>
+#include <airdcpp/File.h>
+#include <airdcpp/StringTokenizer.h>
+#include <airdcpp/ResourceManager.h>
+#include <airdcpp/version.h>
 
 SettingsManager* Singleton<SettingsManager>::instance = 0;
 

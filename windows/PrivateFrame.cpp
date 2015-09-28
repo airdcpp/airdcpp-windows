@@ -23,16 +23,16 @@
 #include "WinUtil.h"
 #include "MainFrm.h"
 
-#include "../client/Client.h"
-#include "../client/ClientManager.h"
-#include "../client/Util.h"
-#include "../client/LogManager.h"
-#include "../client/UploadManager.h"
-#include "../client/FavoriteManager.h"
-#include "../client/StringTokenizer.h"
-#include "../client/ResourceManager.h"
-#include "../client/MessageManager.h"
-#include "../client/Adchub.h"
+#include <airdcpp/Client.h>
+#include <airdcpp/ClientManager.h>
+#include <airdcpp/Util.h>
+#include <airdcpp/LogManager.h>
+#include <airdcpp/UploadManager.h>
+#include <airdcpp/FavoriteManager.h>
+#include <airdcpp/StringTokenizer.h>
+#include <airdcpp/ResourceManager.h>
+#include <airdcpp/MessageManager.h>
+#include <airdcpp/Adchub.h>
 
 bool PrivateFrame::gotMessage(const ChatMessage& aMessage, const ClientPtr& c) {
 	bool myPM = aMessage.replyTo->getUser() == ClientManager::getInstance()->getMe();

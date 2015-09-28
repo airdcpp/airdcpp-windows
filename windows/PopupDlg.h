@@ -24,7 +24,7 @@
 #endif // _MSC_VER > 1000
 
 #include "stdafx.h"
-#include "../client/typedefs.h"
+#include <airdcpp/typedefs.h>
 
 class PopupWnd : public CWindowImpl<PopupWnd, CWindow>
 {

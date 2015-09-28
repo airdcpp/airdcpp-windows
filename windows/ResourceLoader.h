@@ -27,9 +27,9 @@
 #define __ATLTYPES_H__
 #endif
 
-#include "../client/Util.h"
-#include "../client/SettingsManager.h"
-#include "../client/Singleton.h"
+#include <airdcpp/Util.h>
+#include <airdcpp/SettingsManager.h>
+#include <airdcpp/Singleton.h>
 
 #include "resource.h"
 #include "ExCImage.h"

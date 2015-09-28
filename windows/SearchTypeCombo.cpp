@@ -21,7 +21,7 @@
 #include "WinUtil.h"
 #include "SearchTypeCombo.h"
 #include "ResourceLoader.h"
-#include "../client/SearchManager.h"
+#include <airdcpp/SearchManager.h>
 
 
 namespace dcpp {

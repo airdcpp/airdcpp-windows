@@ -24,9 +24,9 @@
 #include "Async.h"
 #include "PropPage.h"
 
-#include "../client/AirUtil.h"
-#include "../client/ConnectivityManager.h"
-#include "../client/UpdateManagerListener.h"
+#include <airdcpp/AirUtil.h>
+#include <airdcpp/ConnectivityManager.h>
+#include <airdcpp/UpdateManagerListener.h>
 
 class ProtocolPage : public SettingTab, public CDialogImpl<ProtocolPage>, private UpdateManagerListener, private ConnectivityManagerListener, private Async<ProtocolPage>
 {

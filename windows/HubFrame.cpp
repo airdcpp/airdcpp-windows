@@ -27,20 +27,20 @@
 #include "ResourceLoader.h"
 #include "MainFrm.h"
 
-#include "../client/ColorSettings.h"
-#include "../client/HighlightManager.h"
-#include "../client/DirectoryListingManager.h"
-#include "../client/ChatMessage.h"
-#include "../client/QueueManager.h"
-#include "../client/ShareManager.h"
-#include "../client/UploadManager.h"
-#include "../client/Util.h"
-#include "../client/FavoriteManager.h"
-#include "../client/LogManager.h"
-#include "../client/SettingsManager.h"
-#include "../client/Wildcards.h"
-#include "../client/Localization.h"
-#include "../client/GeoManager.h"
+#include <airdcpp/ColorSettings.h>
+#include <airdcpp/HighlightManager.h>
+#include <airdcpp/DirectoryListingManager.h>
+#include <airdcpp/ChatMessage.h>
+#include <airdcpp/QueueManager.h>
+#include <airdcpp/ShareManager.h>
+#include <airdcpp/UploadManager.h>
+#include <airdcpp/Util.h>
+#include <airdcpp/FavoriteManager.h>
+#include <airdcpp/LogManager.h>
+#include <airdcpp/SettingsManager.h>
+#include <airdcpp/Wildcards.h>
+#include <airdcpp/Localization.h>
+#include <airdcpp/GeoManager.h>
 
 HubFrame::FrameMap HubFrame::frames;
 bool HubFrame::shutdown = false;

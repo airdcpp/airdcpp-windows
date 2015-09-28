@@ -17,8 +17,8 @@
  */
 
 #include "stdafx.h"
-#include "../client/ResourceManager.h"
-#include "../client/WebShortcuts.h"
+#include <airdcpp/ResourceManager.h>
+#include <airdcpp/WebShortcuts.h>
 #include "Resource.h"
 
 #include "WebShortcutsProperties.h"

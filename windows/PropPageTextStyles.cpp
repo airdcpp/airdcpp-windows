@@ -15,10 +15,10 @@
  */
 
 #include "stdafx.h"
-#include "../client/HighlightManager.h"
-#include "../client/SettingsManager.h"
-#include "../client/SimpleXML.h"
-#include "../client/version.h"
+#include <airdcpp/HighlightManager.h>
+#include <airdcpp/SettingsManager.h>
+#include <airdcpp/SimpleXML.h>
+#include <airdcpp/version.h>
 
 #include "BrowseDlg.h"
 #include "Resource.h"

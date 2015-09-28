@@ -28,8 +28,8 @@
 
 #define OEMRESOURCE
 
-#include "../client/stdinc.h"
-#include "../client/ResourceManager.h"
+#include <airdcpp/stdinc.h>
+#include <airdcpp/ResourceManager.h>
 
 using namespace dcpp;
 

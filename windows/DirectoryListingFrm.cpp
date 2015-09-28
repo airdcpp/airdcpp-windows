@@ -29,16 +29,16 @@
 #include "ShellContextMenu.h"
 #include "ListFilter.h"
 
-#include "../client/HighlightManager.h"
-#include "../client/File.h"
-#include "../client/QueueManager.h"
-#include "../client/StringTokenizer.h"
-#include "../client/ADLSearch.h"
-#include "../client/User.h"
-#include "../client/ClientManager.h"
-#include "../client/ShareScannerManager.h"
-#include "../client/Wildcards.h"
-#include "../client/DirectoryListingManager.h"
+#include <airdcpp/HighlightManager.h>
+#include <airdcpp/File.h>
+#include <airdcpp/QueueManager.h>
+#include <airdcpp/StringTokenizer.h>
+#include <airdcpp/ADLSearch.h>
+#include <airdcpp/User.h>
+#include <airdcpp/ClientManager.h>
+#include <airdcpp/ShareScannerManager.h>
+#include <airdcpp/Wildcards.h>
+#include <airdcpp/DirectoryListingManager.h>
 #include "TextFrame.h"
 
 #include <boost/move/algorithm.hpp>

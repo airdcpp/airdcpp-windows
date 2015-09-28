@@ -24,7 +24,7 @@
 #include "WinUtil.h"
 #include "PublicHubsListDlg.h"
 
-#include "../client/Localization.h"
+#include <airdcpp/Localization.h>
 
 int PublicHubsFrame::columnIndexes[] = { 
 	COLUMN_NAME,

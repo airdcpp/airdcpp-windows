@@ -25,8 +25,8 @@
 #include "FilteredListViewCtrl.h"
 #include "BrowserBar.h"
 
-#include "../client/QueueManager.h"
-#include "../client/TaskQueue.h"
+#include <airdcpp/QueueManager.h>
+#include <airdcpp/TaskQueue.h>
 
 #define STATUS_MSG_MAP 19
 //#define CONTROL_MSG_MAP 22

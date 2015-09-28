@@ -29,19 +29,19 @@
 #include "LineDlg.h"
 #include "MainFrm.h"
 
-#include "../client/ScopedFunctor.h"
-#include "../client/Util.h"
-#include "../client/Localization.h"
-#include "../client/StringTokenizer.h"
-#include "../client/ClientManager.h"
-#include "../client/TimerManager.h"
-#include "../client/FavoriteManager.h"
-#include "../client/ResourceManager.h"
-#include "../client/QueueManager.h"
-#include "../client/UploadManager.h"
-#include "../client/LogManager.h"
-#include "../client/version.h"
-#include "../client/Magnet.h"
+#include <airdcpp/ScopedFunctor.h>
+#include <airdcpp/Util.h>
+#include <airdcpp/Localization.h>
+#include <airdcpp/StringTokenizer.h>
+#include <airdcpp/ClientManager.h>
+#include <airdcpp/TimerManager.h>
+#include <airdcpp/FavoriteManager.h>
+#include <airdcpp/ResourceManager.h>
+#include <airdcpp/QueueManager.h>
+#include <airdcpp/UploadManager.h>
+#include <airdcpp/LogManager.h>
+#include <airdcpp/version.h>
+#include <airdcpp/Magnet.h>
 
 #include <boost/format.hpp>
 

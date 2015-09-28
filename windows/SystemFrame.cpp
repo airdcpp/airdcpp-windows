@@ -25,13 +25,13 @@
 #include "MainFrm.h"
 #include "ResourceLoader.h"
 
-#include "../client/File.h"
-#include "../client/LogManager.h"
-#include "../client/ShareManager.h"
+#include <airdcpp/File.h>
+#include <airdcpp/LogManager.h>
+#include <airdcpp/ShareManager.h>
 
-#include "../client/version.h"
-#include "../client/format.h"
-#include "../client/AutoSearchManager.h"
+#include <airdcpp/version.h>
+#include <airdcpp/format.h>
+#include <airdcpp/AutoSearchManager.h>
 
 #define ICON_SIZE 16
 

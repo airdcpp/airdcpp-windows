@@ -21,7 +21,7 @@
 #include "WizardConnspeed.h"
 #include "WinUtil.h"
 
-#include "../client/AirUtil.h"
+#include <airdcpp/AirUtil.h>
 
 
 PropPage::TextItem WizardConnspeed::texts[] = {

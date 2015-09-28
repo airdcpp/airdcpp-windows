@@ -18,7 +18,7 @@
 */
 
 #include "stdafx.h"
-#include "../client/AutoSearchManager.h"
+#include <airdcpp/AutoSearchManager.h>
 
 #include "WinUtil.h"
 #include "AutoSearchGroupDlg.h"

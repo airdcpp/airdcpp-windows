@@ -24,8 +24,8 @@
 #endif // _MSC_VER > 1000
 
 #include "FlatTabCtrl.h"
-#include "../client/LogManager.h"
-#include "../client/TaskQueue.h"
+#include <airdcpp/LogManager.h>
+#include <airdcpp/TaskQueue.h>
 
 #define SYSTEM_LOG_MESSAGE_MAP 42
 

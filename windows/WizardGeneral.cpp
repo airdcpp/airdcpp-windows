@@ -20,8 +20,8 @@
 
 #include "WizardGeneral.h"
 
-#include "../client/AirUtil.h"
-#include "../client/Localization.h"
+#include <airdcpp/AirUtil.h>
+#include <airdcpp/Localization.h>
 
 PropPage::TextItem WizardGeneral::texts[] = {
 	{ IDC_SETTINGS_NICK, ResourceManager::NICK },

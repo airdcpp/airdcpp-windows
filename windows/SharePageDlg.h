@@ -25,8 +25,8 @@
 
 #include <atlcrack.h>
 
-#include "../client/ResourceManager.h"
-#include "../client/Text.h"
+#include <airdcpp/ResourceManager.h>
+#include <airdcpp/Text.h>
 
 class SharePageDlg : public CDialogImpl<SharePageDlg>
 {

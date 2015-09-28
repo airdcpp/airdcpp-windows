@@ -18,11 +18,11 @@
 
 #include "stdafx.h"
 
-#include "../client/SettingsManager.h"
-#include "../client/SimpleXML.h"
-#include "../client/Pointer.h"
-#include "../client/File.h"
-#include "../client/LogManager.h"
+#include <airdcpp/SettingsManager.h>
+#include <airdcpp/SimpleXML.h>
+#include <airdcpp/Pointer.h>
+#include <airdcpp/File.h>
+#include <airdcpp/LogManager.h>
 #include "boost/algorithm/string/replace.hpp"
 
 #include "EmoticonsManager.h"

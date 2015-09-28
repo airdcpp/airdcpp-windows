@@ -28,7 +28,7 @@
 
 #include <atldlgs.h>
 
-//#include "../client/UpdateManagerListener.h"
+//#include <airdcpp/UpdateManagerListener.h>
 
 class SetupWizard;
 class WizardLanguage : public PropPage, public CAeroWizardPageImpl<WizardLanguage> { 

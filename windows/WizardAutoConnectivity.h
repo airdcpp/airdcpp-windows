@@ -25,7 +25,7 @@
 #include "Wizard.h"
 #include "RichTextBox.h"
 
-#include "../client/ConnectivityManager.h"
+#include <airdcpp/ConnectivityManager.h>
 
 #include <atldlgs.h>
 

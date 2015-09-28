@@ -28,12 +28,12 @@
 #include "UserInfoBaseHandler.h"
 #include "ChatFrameBase.h"
 
-#include "../client/Client.h"
-#include "../client/User.h"
-#include "../client/ClientManager.h"
-#include "../client/FastAlloc.h"
-#include "../client/TaskQueue.h"
-#include "../client/MessageManager.h"
+#include <airdcpp/Client.h>
+#include <airdcpp/User.h>
+#include <airdcpp/ClientManager.h>
+#include <airdcpp/FastAlloc.h>
+#include <airdcpp/TaskQueue.h>
+#include <airdcpp/MessageManager.h>
 
 #include "atlstr.h"
 #include "WinUtil.h"

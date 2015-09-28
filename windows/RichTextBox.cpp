@@ -17,15 +17,15 @@
 #include "stdafx.h"
 #include "Resource.h"
 
-#include "../client/AutoSearchManager.h"
-#include "../client/FavoriteManager.h"
-#include "../client/HighlightManager.h"
-#include "../client/MessageManager.h"
-#include "../client/Magnet.h"
-#include "../client/UploadManager.h"
-#include "../client/QueueManager.h"
-#include "../client/Util.h"
-#include "../client/version.h"
+#include <airdcpp/AutoSearchManager.h>
+#include <airdcpp/FavoriteManager.h>
+#include <airdcpp/HighlightManager.h>
+#include <airdcpp/MessageManager.h>
+#include <airdcpp/Magnet.h>
+#include <airdcpp/UploadManager.h>
+#include <airdcpp/QueueManager.h>
+#include <airdcpp/Util.h>
+#include <airdcpp/version.h>
 
 #include <algorithm>
 #include <boost/lambda/lambda.hpp>

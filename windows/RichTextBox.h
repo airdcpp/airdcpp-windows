@@ -23,16 +23,16 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include "../client/AirUtil.h"
-#include "../client/Client.h"
-#include "../client/TargetUtil.h"
-#include "../client/ChatMessage.h"
-#include "../client/UserInfoBase.h"
-#include "../client/SortedVector.h"
+#include <airdcpp/AirUtil.h>
+#include <airdcpp/Client.h>
+#include <airdcpp/TargetUtil.h>
+#include <airdcpp/ChatMessage.h>
+#include <airdcpp/UserInfoBase.h>
+#include <airdcpp/SortedVector.h>
 
 #include <boost/algorithm/string.hpp>
 
-#include "../client/ColorSettings.h"
+#include <airdcpp/ColorSettings.h>
 
 #include "ShellContextMenu.h"
 #include "TypedListViewCtrl.h"

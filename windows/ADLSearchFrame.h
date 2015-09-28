@@ -31,7 +31,7 @@
 #include "FlatTabCtrl.h"
 #include "ExListViewCtrl.h"
 
-#include "../client/ADLSearch.h"
+#include <airdcpp/ADLSearch.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 //

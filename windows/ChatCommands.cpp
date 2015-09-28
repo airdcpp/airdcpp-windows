@@ -28,12 +28,12 @@
 #include <WinInet.h>
 #include <atlwin.h>
 
-#include "../client/Util.h"
-#include "../client/SettingsManager.h"
-#include "../client/UploadManager.h"
-#include "../client/DownloadManager.h"
-#include "../client/version.h"
-#include "../client/Socket.h"
+#include <airdcpp/Util.h>
+#include <airdcpp/SettingsManager.h>
+#include <airdcpp/UploadManager.h>
+#include <airdcpp/DownloadManager.h>
+#include <airdcpp/version.h>
+#include <airdcpp/Socket.h>
 
 #include "boost/format.hpp"
 

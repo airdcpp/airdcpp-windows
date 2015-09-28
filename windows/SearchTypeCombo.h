@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "../client/typedefs.h"
+#include <airdcpp/typedefs.h>
 #include <atlctrls.h>
 
 namespace dcpp {

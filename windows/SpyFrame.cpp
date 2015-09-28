@@ -23,8 +23,8 @@
 #include "SearchFrm.h"
 #include "WinUtil.h"
 
-#include "../client/ShareManager.h"
-#include "../client/ResourceManager.h"
+#include <airdcpp/ShareManager.h>
+#include <airdcpp/ResourceManager.h>
 
 int SpyFrame::columnSizes[] = { 305, 70, 85 };
 int SpyFrame::columnIndexes[] = { COLUMN_STRING, COLUMN_COUNT, COLUMN_TIME };

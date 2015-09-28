@@ -26,7 +26,7 @@
 #include "OMenu.h"
 #include "resource.h"
 
-#include "../client/FavoriteManager.h"
+#include <airdcpp/FavoriteManager.h>
 
 template<class T>
 class UCHandler {

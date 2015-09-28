@@ -20,9 +20,9 @@
 #define AS_SETTINGS_H
 
 #include "stdafx.h"
-#include "../client/SettingsManager.h"
-#include "../client/AutoSearchManager.h"
-#include "../client/TargetUtil.h"
+#include <airdcpp/SettingsManager.h>
+#include <airdcpp/AutoSearchManager.h>
+#include <airdcpp/TargetUtil.h>
 
 
 //Item settings to be feed into dialog... yeah, open for cleaner methods.. at least rename some of them.

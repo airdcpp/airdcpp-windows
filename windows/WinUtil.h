@@ -24,16 +24,16 @@
 #include "OMenu.h"
 #include "SplashWindow.h"
 
-#include "../client/Util.h"
-#include "../client/SettingsManager.h"
-#include "../client/User.h"
-#include "../client/MerkleTree.h"
-#include "../client/HintedUser.h"
-#include "../client/WebShortcuts.h"
-#include "../client/TargetUtil.h"
-#include "../client/AirUtil.h"
-#include "../client/SettingItem.h"
-#include "../client/QueueItemBase.h"
+#include <airdcpp/Util.h>
+#include <airdcpp/SettingsManager.h>
+#include <airdcpp/User.h>
+#include <airdcpp/MerkleTree.h>
+#include <airdcpp/HintedUser.h>
+#include <airdcpp/WebShortcuts.h>
+#include <airdcpp/TargetUtil.h>
+#include <airdcpp/AirUtil.h>
+#include <airdcpp/SettingItem.h>
+#include <airdcpp/QueueItemBase.h>
 
 /* Work around DBTYPE name conflict with Berkeley DB */
 #define DBTYPE MS_DBTYPE

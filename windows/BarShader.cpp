@@ -3,7 +3,7 @@
 
 #include <cmath>
 
-#include "../client/StringTokenizer.h"
+#include <airdcpp/StringTokenizer.h>
 #include "MainFrm.h"
 
 #ifndef PI

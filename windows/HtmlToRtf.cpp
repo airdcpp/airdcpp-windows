@@ -23,13 +23,13 @@
 
 #include <boost/algorithm/string/trim.hpp>
 
-#include "../client/debug.h"
-#include "../client/Flags.h"
-#include "../client/ScopedFunctor.h"
-#include "../client/SettingsManager.h"
-#include "../client/SimpleXML.h"
-#include "../client/StringTokenizer.h"
-#include "../client/Text.h"
+#include <airdcpp/debug.h>
+#include <airdcpp/Flags.h>
+#include <airdcpp/ScopedFunctor.h>
+#include <airdcpp/SettingsManager.h>
+#include <airdcpp/SimpleXML.h>
+#include <airdcpp/StringTokenizer.h>
+#include <airdcpp/Text.h>
 
 struct Parser : SimpleXMLReader::CallBack {
 	Parser(RichTextBox* box);

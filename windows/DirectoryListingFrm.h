@@ -23,8 +23,8 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 
-#include "../client/User.h"
-#include "../client/FastAlloc.h"
+#include <airdcpp/User.h>
+#include <airdcpp/FastAlloc.h>
 
 #include "FlatTabCtrl.h"
 #include "FilteredListViewCtrl.h"
@@ -36,11 +36,11 @@
 
 #include "Async.h"
 
-#include "../client/concurrency.h"
-#include "../client/ClientManagerListener.h"
-#include "../client/DirectoryListing.h"
-#include "../client/DirectoryListingListener.h"
-#include "../client/TargetUtil.h"
+#include <airdcpp/concurrency.h>
+#include <airdcpp/ClientManagerListener.h>
+#include <airdcpp/DirectoryListing.h>
+#include <airdcpp/DirectoryListingListener.h>
+#include <airdcpp/TargetUtil.h>
 
 #define CONTROL_MESSAGE_MAP 10
 #define COMBO_SEL_MAP 11

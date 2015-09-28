@@ -19,7 +19,7 @@
 #include "stdafx.h"
 #include "Resource.h"
 #include "ExListViewCtrl.h"
-#include "../client/ShareManager.h"
+#include <airdcpp/ShareManager.h>
 #include "TempShare_dlg.h"
 #include "WinUtil.h"
 

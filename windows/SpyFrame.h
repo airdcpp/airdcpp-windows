@@ -23,8 +23,8 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include "../client/ClientManager.h"
-#include "../client/TimerManager.h"
+#include <airdcpp/ClientManager.h>
+#include <airdcpp/TimerManager.h>
 
 #include "FlatTabCtrl.h"
 #include "ExListViewCtrl.h"

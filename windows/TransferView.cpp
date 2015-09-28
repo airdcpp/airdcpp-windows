@@ -19,16 +19,16 @@
 #include "stdafx.h"
 #include "Resource.h"
 
-#include "../client/ResourceManager.h"
-#include "../client/SettingsManager.h"
-#include "../client/DownloadManager.h"
-#include "../client/UploadManager.h"
-#include "../client/QueueManager.h"
-#include "../client/QueueItem.h"
-#include "../client/GeoManager.h"
-#include "../client/AirUtil.h"
-#include "../client/Localization.h"
-#include "../client/version.h"
+#include <airdcpp/ResourceManager.h>
+#include <airdcpp/SettingsManager.h>
+#include <airdcpp/DownloadManager.h>
+#include <airdcpp/UploadManager.h>
+#include <airdcpp/QueueManager.h>
+#include <airdcpp/QueueItem.h>
+#include <airdcpp/GeoManager.h>
+#include <airdcpp/AirUtil.h>
+#include <airdcpp/Localization.h>
+#include <airdcpp/version.h>
 
 #include <boost/range/algorithm/for_each.hpp>
 #include <boost/range/algorithm_ext/for_each.hpp>

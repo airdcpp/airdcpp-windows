@@ -19,12 +19,12 @@
 
 #include "stdafx.h"
 
-#include "../client/AirUtil.h"
-#include "../client/SettingsManager.h"
-#include "../client/StringTokenizer.h"
+#include <airdcpp/AirUtil.h>
+#include <airdcpp/SettingsManager.h>
+#include <airdcpp/StringTokenizer.h>
 
-#include "../client/ColorSettings.h"
-#include "../client/HighlightManager.h"
+#include <airdcpp/ColorSettings.h>
+#include <airdcpp/HighlightManager.h>
 #include "Resource.h"
 #include "FulHighlightPage.h"
 #include "FulHighlightDialog.h"

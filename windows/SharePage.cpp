@@ -18,9 +18,9 @@
 
 #include "stdafx.h"
 
-#include "../client/Util.h"
-#include "../client/ClientManager.h"
-#include "../client/FavoriteManager.h"
+#include <airdcpp/Util.h>
+#include <airdcpp/ClientManager.h>
+#include <airdcpp/FavoriteManager.h>
 
 #include "Resource.h"
 #include "SharePage.h"

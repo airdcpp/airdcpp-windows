@@ -24,7 +24,7 @@
 #include "WinUtil.h"
 #include "PropertiesDlg.h"
 
-#include "../client/ShareManager.h"
+#include <airdcpp/ShareManager.h>
 
 
 PropPage::ListItem SharingOptionsPage::listItems[] = {

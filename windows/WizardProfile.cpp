@@ -20,7 +20,7 @@
 
 #include "WizardProfile.h"
 
-#include "../client/AirUtil.h"
+#include <airdcpp/AirUtil.h>
 
 PropPage::TextItem WizardProfile::texts[] = {
 	{ IDC_USER_PROFILE_BOX, ResourceManager::USER_PROFILE_PLAIN },

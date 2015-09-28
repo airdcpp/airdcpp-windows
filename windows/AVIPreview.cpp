@@ -18,7 +18,7 @@
 
 #include "stdafx.h"
 
-#include "../Client/FavoriteManager.h"
+#include <airdcpp/FavoriteManager.h>
 
 #include "AVIPreview.h"
 #include "PreviewDlg.h"

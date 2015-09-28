@@ -23,7 +23,7 @@
 
 #include <atlcrack.h>
 
-#include "../client/StringMatch.h"
+#include <airdcpp/StringMatch.h>
 
 class ChatFilterDlg : public CDialogImpl<ChatFilterDlg> {
 public:

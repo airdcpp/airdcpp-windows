@@ -22,10 +22,10 @@
 #include "resource.h"
 #include "OMenu.h"
 
-#include "../client/ClientManager.h"
-#include "../client/FavoriteManager.h"
-#include "../client/UserInfoBase.h"
-#include "../client/Util.h"
+#include <airdcpp/ClientManager.h>
+#include <airdcpp/FavoriteManager.h>
+#include <airdcpp/UserInfoBase.h>
+#include <airdcpp/Util.h>
 
 #include "WinUtil.h"
 #include <boost/bind.hpp>

@@ -18,7 +18,7 @@
 
 #include "stdafx.h"
 
-#include "../client/SearchManager.h"
+#include <airdcpp/SearchManager.h>
 
 #include "Resource.h"
 #include "SearchTypesPage.h"

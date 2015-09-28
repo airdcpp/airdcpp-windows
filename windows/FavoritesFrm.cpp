@@ -24,9 +24,9 @@
 #include "FavHubProperties.h"
 #include "FavHubGroupsDlg.h"
 
-#include "../client/ConnectivityManager.h"
-#include "../client/ClientManager.h"
-#include "../client/version.h"
+#include <airdcpp/ConnectivityManager.h>
+#include <airdcpp/ClientManager.h>
+#include <airdcpp/version.h>
 
 int FavoriteHubsFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_DESCRIPTION, COLUMN_NICK, COLUMN_PASSWORD, COLUMN_SERVER, COLUMN_USERDESCRIPTION, 
 	COLUMN_SHAREPROFILE };

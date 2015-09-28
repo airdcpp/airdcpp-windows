@@ -25,8 +25,8 @@
 #include "TypedListViewCtrl.h"
 #include "OMenu.h"
 
-#include "../client/AirUtil.h"
-#include "../client/SettingsManager.h"
+#include <airdcpp/AirUtil.h>
+#include <airdcpp/SettingsManager.h>
 
 #define KEY_MESSAGE_MAP 7
 

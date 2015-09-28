@@ -29,9 +29,9 @@
 
 #include "stdafx.h"
 
-#include "../client/GetSet.h"
-#include "../client/Singleton.h"
-#include "../client/TimerManager.h"
+#include <airdcpp/GetSet.h>
+#include <airdcpp/Singleton.h>
+#include <airdcpp/TimerManager.h>
 
 #include "PopupDlg.h"
 

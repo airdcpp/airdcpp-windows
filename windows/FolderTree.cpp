@@ -10,10 +10,10 @@ Copyright (c) 1999 - 2003 by PJ Naughter.  (Web: www.naughter.com, Email: pjna@n
 */
 
 #include "stdafx.h"
-#include "../client/Util.h"
+#include <airdcpp/Util.h>
 #include "Resource.h"
-#include "../client/ResourceManager.h"
-#include "../client/version.h"
+#include <airdcpp/ResourceManager.h>
+#include <airdcpp/version.h>
 #include "LineDlg.h"
 #include "WinUtil.h"
 #include "foldertree.h"

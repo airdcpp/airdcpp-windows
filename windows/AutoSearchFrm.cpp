@@ -25,7 +25,7 @@
 #include "SearchFrm.h"
 #include "AutoSearchGroupDlg.h"
 
-#include "../client/SettingsManager.h"
+#include <airdcpp/SettingsManager.h>
 
 //static ColumnType columnTypes [] = { COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_NUMERIC_OTHER, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TIME, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT };
 

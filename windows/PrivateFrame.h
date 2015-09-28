@@ -23,9 +23,9 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include "../client/User.h"
-#include "../client/UserInfoBase.h"
-#include "../client/PrivateChat.h"
+#include <airdcpp/User.h>
+#include <airdcpp/UserInfoBase.h>
+#include <airdcpp/PrivateChat.h>
 
 #include "UserInfoBaseHandler.h"
 #include "ChatFrameBase.h"

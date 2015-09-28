@@ -17,8 +17,8 @@
 */
 
 #include "stdafx.h"
-#include "../client/SettingsManager.h"
-#include "../client/AirUtil.h"
+#include <airdcpp/SettingsManager.h>
+#include <airdcpp/AirUtil.h>
 
 #include "WinUtil.h"
 #include "PopupManager.h"

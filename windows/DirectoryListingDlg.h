@@ -25,7 +25,7 @@
 #include <atlcrack.h>
 
 #include "SearchTypeCombo.h"
-#include "../client/DirectoryListing.h"
+#include <airdcpp/DirectoryListing.h>
 
 class DirectoryListingDlg : public CDialogImpl<DirectoryListingDlg> {
 public:

@@ -24,10 +24,10 @@
 #include "FavHubProperties.h"
 #include "PropertiesDlg.h"
 
-#include "../client/FavoriteManager.h"
-#include "../client/ResourceManager.h"
-#include "../client/tribool.h"
-#include "../client/ShareManager.h"
+#include <airdcpp/FavoriteManager.h>
+#include <airdcpp/ResourceManager.h>
+#include <airdcpp/tribool.h>
+#include <airdcpp/ShareManager.h>
 
 
 FavHubProperties::FavHubProperties(FavoriteHubEntry *_entry) : entry(_entry), loaded(false) { }

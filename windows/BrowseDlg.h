@@ -22,9 +22,9 @@
 #include "stdafx.h"
 #include "WinUtil.h"
 
-#include "../client/UpdateManagerListener.h"
-#include "../client/UpdateManager.h"
-#include "../client/TimerManager.h"
+#include <airdcpp/UpdateManagerListener.h>
+#include <airdcpp/UpdateManager.h>
+#include <airdcpp/TimerManager.h>
 
 class BrowseDlg {
 public:

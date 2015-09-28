@@ -30,10 +30,10 @@
 #include "RichTextBox.h"
 #include "ListFilter.h"
 
-#include "../client/FavoriteManager.h"
-#include "../client/UploadManager.h"
-#include "../client/QueueManagerListener.h"
-#include "../client/MessageManager.h"
+#include <airdcpp/FavoriteManager.h>
+#include <airdcpp/UploadManager.h>
+#include <airdcpp/QueueManagerListener.h>
+#include <airdcpp/MessageManager.h>
 
 #define STATUS_MAP 10
 

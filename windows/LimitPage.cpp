@@ -19,7 +19,7 @@
 #include "stdafx.h"
 #include "Resource.h"
 
-#include "../client/SettingsManager.h"
+#include <airdcpp/SettingsManager.h>
 
 #include "LimitPage.h"
 #include "WinUtil.h"

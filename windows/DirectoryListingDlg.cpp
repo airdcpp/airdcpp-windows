@@ -21,8 +21,8 @@
 #include "WinUtil.h"
 #include "DirectoryListingDlg.h"
 
-#include "../client/SearchManager.h"
-#include "../client/ResourceManager.h"
+#include <airdcpp/SearchManager.h>
+#include <airdcpp/ResourceManager.h>
 
 #define GET_TEXT(id, var) \
 	GetDlgItemText(id, buf, 1024); \

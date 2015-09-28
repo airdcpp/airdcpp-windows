@@ -23,19 +23,19 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 
-#include "../client/concurrency.h"
+#include <airdcpp/concurrency.h>
 
-#include "../client/AutoSearchManagerListener.h"
-#include "../client/ClientManagerListener.h"
-#include "../client/TimerManager.h"
-#include "../client/FavoriteManager.h"
-#include "../client/QueueManagerListener.h"
-#include "../client/LogManagerListener.h"
-#include "../client/SettingsManager.h"
-#include "../client/DirectoryListingManagerListener.h"
-#include "../client/UpdateManagerListener.h"
-#include "../client/ShareScannerManager.h"
-#include "../client/MessageManager.h"
+#include <airdcpp/AutoSearchManagerListener.h>
+#include <airdcpp/ClientManagerListener.h>
+#include <airdcpp/TimerManager.h>
+#include <airdcpp/FavoriteManager.h>
+#include <airdcpp/QueueManagerListener.h>
+#include <airdcpp/LogManagerListener.h>
+#include <airdcpp/SettingsManager.h>
+#include <airdcpp/DirectoryListingManagerListener.h>
+#include <airdcpp/UpdateManagerListener.h>
+#include <airdcpp/ShareScannerManager.h>
+#include <airdcpp/MessageManager.h>
 
 #include "PopupManager.h"
 #include "Dispatchers.h"

@@ -31,7 +31,7 @@
 #include "AutoSearchItemSettings.h"
 #include "Async.h"
 
-#include "../client/AutoSearchManager.h"
+#include <airdcpp/AutoSearchManager.h>
 
 
 class AutoSearchFrame : public MDITabChildWindowImpl<AutoSearchFrame>, public StaticFrame<AutoSearchFrame, ResourceManager::AUTO_SEARCH, IDC_AUTOSEARCH>,

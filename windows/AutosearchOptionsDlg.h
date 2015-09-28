@@ -24,7 +24,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 #include <atlcrack.h>
-#include "../client/AutoSearchManager.h"
+#include <airdcpp/AutoSearchManager.h>
 #include "AutosearchGeneralPage.h"
 #include "AutosearchAdvancedPage.h"
 #include "AutosearchSearchTimesPage.h"

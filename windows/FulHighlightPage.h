@@ -27,8 +27,8 @@
 #include "PropPage.h"
 #include "ExListViewCtrl.h"
 
-#include "../client/HighlightManager.h"
-#include "../client/SettingsManager.h"
+#include <airdcpp/HighlightManager.h>
+#include <airdcpp/SettingsManager.h>
 
 class FulHighlightPage: public CPropertyPage<IDD_HIGHLIGHTPAGE>, public PropPage, private SettingsManagerListener
 {

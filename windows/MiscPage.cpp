@@ -17,7 +17,7 @@
  */
 
 #include "stdafx.h"
-#include "../client/version.h"
+#include <airdcpp/version.h>
 #include "Resource.h"
 
 
@@ -26,7 +26,7 @@
 #include "LineDlg.h"
 #include "PropertiesDlg.h"
 
-#include "../client/ResourceManager.h"
+#include <airdcpp/ResourceManager.h>
 
 PropPage::TextItem MiscPage::texts[] = {
 	{ IDC_CZDC_WINAMP, ResourceManager::SETCZDC_WINAMP },

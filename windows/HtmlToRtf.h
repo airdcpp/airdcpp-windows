@@ -19,7 +19,7 @@
 #ifndef DCPLUSPLUS_WIN32_HTML_TO_RTF_H
 #define DCPLUSPLUS_WIN32_HTML_TO_RTF_H
 
-#include "../client/typedefs.h"
+#include <airdcpp/typedefs.h>
 
 #include "RichTextBox.h"
 

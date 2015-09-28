@@ -26,10 +26,10 @@
 #include <atlcrack.h>
 #include "PropPage.h"
 #include "ExListViewCtrl.h"
-#include "../client/ColorSettings.h"
+#include <airdcpp/ColorSettings.h>
 
-#include "../client/SettingsManager.h"
-#include "../client/User.h"
+#include <airdcpp/SettingsManager.h>
+#include <airdcpp/User.h>
 
 class FulHighlightDialog: public CDialogImpl<FulHighlightDialog>
 {

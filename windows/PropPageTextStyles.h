@@ -3,9 +3,9 @@
 
 #include <atlcrack.h>
 #include "PropPage.h"
-#include "../client/ConnectionManager.h"
+#include <airdcpp/ConnectionManager.h>
 #include "RichTextBox.h"
-#include "../client/SettingsManager.h"
+#include <airdcpp/SettingsManager.h>
 
 class PropPageTextStyles: public CPropertyPage<IDD_TEXT_STYLES>, public PropPage, private SettingsManagerListener
 {

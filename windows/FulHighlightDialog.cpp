@@ -20,11 +20,11 @@
 #include "stdafx.h"
 #include "Resource.h"
 
-#include "../client/SettingsManager.h"
-#include "../client/StringTokenizer.h"
-#include "../client/version.h"
+#include <airdcpp/SettingsManager.h>
+#include <airdcpp/StringTokenizer.h>
+#include <airdcpp/version.h>
 
-#include "../client/HighlightManager.h"
+#include <airdcpp/HighlightManager.h>
 #include "FulHighlightDialog.h"
 #include "WinUtil.h"
 

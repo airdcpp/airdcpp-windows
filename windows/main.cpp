@@ -40,12 +40,12 @@
 #include "WinUtil.h"
 #include "Wizard.h"
 
-#include "../client/DCPlusPlus.h"
-#include "../client/MappingManager.h"
-#include "../client/MerkleTree.h"
-#include "../client/UpdateManager.h"
-#include "../client/Updater.h"
-#include "../client/version.h"
+#include <airdcpp/DCPlusPlus.h>
+#include <airdcpp/MappingManager.h>
+#include <airdcpp/MerkleTree.h>
+#include <airdcpp/UpdateManager.h>
+#include <airdcpp/Updater.h>
+#include <airdcpp/version.h>
 
 #include <delayimp.h>
 #include <future>
@@ -72,7 +72,7 @@ FARPROC WINAPI FailHook(unsigned /* dliNotify */, PDelayLoadInfo  pdli) {
 
 #endif
 
-#include "../client/SSLSocket.h"
+#include <airdcpp/SSLSocket.h>
 
 string getExceptionName(DWORD code) {
 	switch(code)
@@ -168,7 +168,7 @@ LONG __stdcall DCUnhandledExceptionFilter( LPEXCEPTION_POINTERS e )
 
 	f.write(debugBuf, strlen(debugBuf));
 	sprintf(debugBuf, "Build: %s\r\n",
-		BUILD_NUMBER_STR);	
+		BUILD_NUMBER_STR.c_str());	
 	f.write(debugBuf, strlen(debugBuf));
 	
 	OSVERSIONINFOEX ver;

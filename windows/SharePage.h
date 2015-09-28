@@ -28,8 +28,8 @@
 #include "ShareDirectories.h"
 #include "PropPage.h"
 
-#include "../client/SettingsManager.h"
-#include "../client/ShareManager.h"
+#include <airdcpp/SettingsManager.h>
+#include <airdcpp/ShareManager.h>
 
 class SharePage : public CPropertyPage<IDD_SHAREPAGE>, public PropPage, public SharePageBase
 {

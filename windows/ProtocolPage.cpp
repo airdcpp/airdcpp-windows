@@ -18,12 +18,12 @@
 
 #include "stdafx.h"
 
-#include "../client/SettingsManager.h"
-#include "../client/Socket.h"
-#include "../client/AirUtil.h"
-#include "../client/UpdateManager.h"
-#include "../client/ConnectivityManager.h"
-#include "../client/version.h"
+#include <airdcpp/SettingsManager.h>
+#include <airdcpp/Socket.h>
+#include <airdcpp/AirUtil.h>
+#include <airdcpp/UpdateManager.h>
+#include <airdcpp/ConnectivityManager.h>
+#include <airdcpp/version.h>
 
 #include "Resource.h"
 #include "ProtocolPage.h"

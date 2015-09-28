@@ -26,9 +26,9 @@
 #include "FlatTabCtrl.h"
 #include "ExListViewCtrl.h"
 
-#include "../client/FavoriteManager.h"
-#include "../client/ClientManagerListener.h"
-#include "../client/Client.h"
+#include <airdcpp/FavoriteManager.h>
+#include <airdcpp/ClientManagerListener.h>
+#include <airdcpp/Client.h>
 
 #define SERVER_MESSAGE_MAP 7
 

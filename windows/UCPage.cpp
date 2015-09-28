@@ -18,7 +18,7 @@
 
 #include "stdafx.h"
 
-#include "../client/FavoriteManager.h"
+#include <airdcpp/FavoriteManager.h>
 
 #include "Resource.h"
 #include "UCPage.h"

@@ -21,7 +21,7 @@
 
 #include "stdafx.h"
 #include "TypedListViewCtrl.h"
-#include "../client/StringMatch.h"
+#include <airdcpp/StringMatch.h>
 
 /*
 a helper class for adding and handling list filters, any of the objects can be added to any parent 

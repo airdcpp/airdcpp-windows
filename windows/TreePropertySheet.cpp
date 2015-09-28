@@ -19,7 +19,7 @@
 #include "stdafx.h"
 
 #include "TreePropertySheet.h"
-#include "../client/ResourceManager.h"
+#include <airdcpp/ResourceManager.h>
 #include "WinUtil.h"
 #include "ResourceLoader.h"
 
