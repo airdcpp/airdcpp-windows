@@ -31,6 +31,8 @@ Fixed:
 - Fix "Search directory" in transfer tab
 - Fix minimum search interval setting
 - Fix readd all and remove offline sources for subdirectories in queue
+- Fix user list showing ghost users in some cases
+- Fix a possible crash with client stats
   
 
 2.91

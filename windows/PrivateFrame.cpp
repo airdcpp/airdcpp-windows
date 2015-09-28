@@ -199,9 +199,9 @@ void PrivateFrame::updatePMInfo(uint8_t aType) {
 		break;
 	}
 
-	if (SETTING(BOLD_PM) && aType != PrivateChat::TYPING_ON && aType != PrivateChat::TYPING_OFF ) {
-		setDirty();
-	}
+	//if (SETTING(BOLD_PM) && aType != PrivateChat::TYPING_ON && aType != PrivateChat::TYPING_OFF ) {
+		//setDirty();
+	//}
 }
 
 LRESULT PrivateFrame::onStatusBarClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
