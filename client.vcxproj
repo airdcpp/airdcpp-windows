@@ -339,6 +339,7 @@
   <ItemGroup>
     <ClInclude Include="client\AdcCommand.h" />
     <ClInclude Include="client\AdcHub.h" />
+    <ClInclude Include="client\AutoSearchQueue.h" />
     <ClInclude Include="client\ConnectionType.h" />
     <ClInclude Include="client\MessageManager.h" />
     <ClInclude Include="client\MessageManagerListener.h" />

@@ -25,12 +25,14 @@
 #endif // _MSC_VER > 1000
 
 #include "FlatTabCtrl.h"
-#include "ExListViewCtrl.h"
+#include "TypedListViewCtrl.h"
 
-#include "AutoSearchDlg.h"
+#include "AutoSearchOptionsDlg.h"
+#include "AutoSearchItemSettings.h"
 #include "Async.h"
 
 #include "../client/AutoSearchManager.h"
+
 
 class AutoSearchFrame : public MDITabChildWindowImpl<AutoSearchFrame>, public StaticFrame<AutoSearchFrame, ResourceManager::AUTO_SEARCH, IDC_AUTOSEARCH>,
 	private AutoSearchManagerListener, private SettingsManagerListener, public Async<AutoSearchFrame>
@@ -50,42 +52,49 @@ public:
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
+		MESSAGE_HANDLER(WM_TIMER, onTimer)
 		COMMAND_ID_HANDLER(IDC_ADD, onAdd)
 		COMMAND_ID_HANDLER(IDC_REMOVE, onRemove)
 		COMMAND_ID_HANDLER(IDC_CHANGE, onChange)
 		COMMAND_ID_HANDLER(IDC_DUPLICATE, onDuplicate)
-		COMMAND_ID_HANDLER(IDC_MOVE_UP, onMoveUp)
-		COMMAND_ID_HANDLER(IDC_MOVE_DOWN, onMoveDown)
+		COMMAND_ID_HANDLER(IDC_MANAGE_GROUPS, onManageGroups)
 		NOTIFY_HANDLER(IDC_AUTOSEARCH, LVN_ITEMCHANGED, onItemChanged)
 		NOTIFY_HANDLER(IDC_AUTOSEARCH, NM_DBLCLK, onDoubleClick)
 		NOTIFY_HANDLER(IDC_AUTOSEARCH, LVN_KEYDOWN, onKeyDown)
 		NOTIFY_HANDLER(IDC_AUTOSEARCH, NM_CUSTOMDRAW, onCustomDraw)
-		COMMAND_HANDLER(IDC_AUTOSEARCH_ENABLE_TIME, EN_CHANGE, onAsTime)
-		COMMAND_HANDLER(IDC_AUTOSEARCH_RECHECK_TIME, EN_KILLFOCUS, onAsRTime)
+		NOTIFY_HANDLER(IDC_AUTOSEARCH, LVN_GETDISPINFO, ctrlAutoSearch.onGetDispInfo)
+		NOTIFY_HANDLER(IDC_AUTOSEARCH, LVN_COLUMNCLICK, ctrlAutoSearch.onColumnClick)
+		NOTIFY_HANDLER(IDC_AUTOSEARCH, LVN_GETINFOTIP, ctrlAutoSearch.onInfoTip)		
 		CHAIN_MSG_MAP(baseClass)
 	END_MSG_MAP()
 
 	LRESULT onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
+	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	void updateStatus();
 	LRESULT onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onDuplicate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onManageGroups(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onMoveUp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onMoveDown(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 	LRESULT onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bHandled*/);
 	LRESULT onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/);
-	LRESULT onAsTime(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
-	LRESULT onAsRTime(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
 
 	void handleSearch(bool onBackground);
 	void handleState(bool disabled);
+	void handleMoveToGroup(const string& aGroupName);
 
+	void addItem(const AutoSearchPtr& as);
 	void UpdateLayout(BOOL bResizeBars = TRUE);
+
+private:
+	class ItemInfo;
+public:
+	TypedListViewCtrl<ItemInfo, IDC_AUTOSEARCH, LVITEM_GROUPING>& getList() { return ctrlAutoSearch; }
 
 private:
 	enum {
@@ -97,45 +106,64 @@ private:
 		COLUMN_BUNDLES,
 		COLUMN_ACTION,
 		COLUMN_EXPIRATION,
-		COLUMN_REMOVE,
 		COLUMN_PATH,
+		COLUMN_REMOVE,
 		COLUMN_USERMATCH,
 		COLUMN_ERROR,
 		COLUMN_LAST
 	};
 
+	class ItemInfo {
+	public:
+		ItemInfo(const AutoSearchPtr& aAutosearch, bool aupdate = true) : asItem(aAutosearch) {
+			if(aupdate)
+				update(aAutosearch);
+		}
+		~ItemInfo() { }
+
+		inline const tstring& getText(int col) const { return columns[col]; }
+
+		static int compareItems(const ItemInfo* a, const ItemInfo* b, int col) {
+			return Util::DefaultSort(a->columns[col].c_str(), b->columns[col].c_str());
+		}
+
+		int getImageIndex() const { return asItem->getStatus(); }
+
+		//int getImage(int col) const;
+		void update(const AutoSearchPtr& u);
+
+		tstring formatSearchDate(const time_t aTime);
+
+		GETSET(int, groupId, GroupId);
+		AutoSearchPtr asItem;
+
+		tstring columns[COLUMN_LAST];
+
+	};
+
 	static int columnSizes[COLUMN_LAST];
 	static int columnIndexes[COLUMN_LAST];
-	ExListViewCtrl ctrlAutoSearch;
-
-	void appendDialogParams(const AutoSearchPtr& as, AutoSearchDlg& dlg);
-	void setItemProperties(AutoSearchPtr& as, const AutoSearchDlg& dlg, const string& aSearchString);
+	TypedListViewCtrl<ItemInfo, IDC_AUTOSEARCH, LVITEM_GROUPING> ctrlAutoSearch;
 
 	void updateList();
-	void addFromDialog(const AutoSearchDlg& dlg);
+	void addFromDialog(AutoSearchItemSettings& dlg);
 
 	void save() {
 		AutoSearchManager::getInstance()->AutoSearchSave();
 	}
 
-	void addEntry(const AutoSearchPtr as, int pos);
+	void addListEntry(ItemInfo* ii);
 	void updateItem(const AutoSearchPtr as);
-	tstring formatSearchDate(const time_t aTime);
 
-	int findItem(const AutoSearchPtr& aToken);
 	void removeItem(const AutoSearchPtr as);
 
-	CButton ctrlAdd, ctrlRemove, ctrlChange, ctrlDown, ctrlUp, ctrlDuplicate;
-	CEdit ctrlAsTime;
-	CStatic ctrlAsTimeLabel;
-	CUpDownCtrl Timespin;
-
-	CEdit ctrlAsRTime;
-	CStatic ctrlAsRTimeLabel;
-	CUpDownCtrl RTimespin;
-
+	CButton ctrlAdd, ctrlRemove, ctrlChange, ctrlDuplicate, ctrlManageGroups;
+	CStatusBarCtrl ctrlStatus;
+	int statusSizes[5];
 	bool closed;
 	bool loading;
+	std::unordered_map<ProfileToken, ItemInfo> itemInfos;
+
 
 	virtual void on(AutoSearchManagerListener::RemoveItem, const AutoSearchPtr& aToken) noexcept;
 	virtual void on(AutoSearchManagerListener::AddItem, const AutoSearchPtr& as) noexcept;

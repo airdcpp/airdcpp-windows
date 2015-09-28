@@ -19,12 +19,12 @@
 #ifndef SEARCH_AUTOSEARCH_PARAMS_H
 #define SEARCH_AUTOSEARCH_PARAMS_H
 
-#include "AutosearchDlg.h"
+#include "AutoSearchOptionsDlg.h"
 
 class AutoSearchParams : public CDialogImpl<AutoSearchParams>
 {
 public:
-	AutoSearchDlg* p;
+	AutoSearchGeneralPage* p;
 	enum { IDD = IDD_AUTOSEARCH_PARAMS };
 
 	CEdit ctrlMaxNumber, ctrlCurNumber, ctrlNumberLen;
@@ -38,7 +38,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_INSERT_NUMBER, OnInsertNumber)
 	END_MSG_MAP()
 	
-	AutoSearchParams(AutoSearchDlg* asd) : p(asd) { }
+	AutoSearchParams(AutoSearchGeneralPage* asd) : p(asd) { }
 	
 	LRESULT onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		return FALSE;
@@ -76,9 +76,9 @@ public:
 		updown.SetRange32(0, 999);
 		updown.Detach();
 
-		ctrlCurNumber.SetWindowText(Util::toStringW(p->curNumber).c_str());
-		ctrlMaxNumber.SetWindowText(Util::toStringW(p->maxNumber).c_str());
-		ctrlNumberLen.SetWindowText(Util::toStringW(p->numberLen).c_str());
+		ctrlCurNumber.SetWindowText(Util::toStringW(p->options.curNumber).c_str());
+		ctrlMaxNumber.SetWindowText(Util::toStringW(p->options.maxNumber).c_str());
+		ctrlNumberLen.SetWindowText(Util::toStringW(p->options.numberLen).c_str());
 
 		url.SubclassWindow(GetDlgItem(IDC_TIMEVAR_LINK));
 		url.SetHyperLinkExtendedStyle(HLINK_UNDERLINEHOVER);
@@ -110,11 +110,11 @@ public:
 				return 0;
 			}
 
-			p->curNumber = curNumber;
-			p->maxNumber = maxNumber;
+			p->options.curNumber = curNumber;
+			p->options.maxNumber = maxNumber;
 
 			ctrlNumberLen.GetWindowText(buf, 512);
-			p->numberLen = Util::toInt(Text::fromT(buf));
+			p->options.numberLen = Util::toInt(Text::fromT(buf));
 		}
 		EndDialog(wID);
 		return 0;

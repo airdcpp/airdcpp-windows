@@ -499,7 +499,12 @@
     <ClCompile Include="windows\ADLSearchFrame.cpp" />
     <ClCompile Include="windows\ADLSProperties.cpp" />
     <ClCompile Include="windows\AdvancedPage.cpp" />
+    <ClCompile Include="windows\AutosearchAdvancedPage.cpp" />
     <ClCompile Include="windows\AutoSearchFrm.cpp" />
+    <ClCompile Include="windows\AutoSearchGeneralPage.cpp" />
+    <ClCompile Include="windows\AutoSearchGroupDlg.cpp" />
+    <ClCompile Include="windows\AutosearchOptionsDlg.cpp" />
+    <ClCompile Include="windows\AutosearchSearchTimesPage.cpp" />
     <ClCompile Include="windows\BrowseDlg.cpp" />
     <ClCompile Include="windows\ChatCommands.cpp" />
     <ClCompile Include="windows\DirectoryListingDlg.cpp" />
@@ -525,7 +530,6 @@
     <ClCompile Include="windows\ShareDirectories.cpp" />
     <ClCompile Include="windows\SharingOptionsPage.cpp" />
     <ClCompile Include="windows\AppearancePage.cpp" />
-    <ClCompile Include="windows\AutosearchDlg.cpp" />
     <ClCompile Include="windows\FavoriteDirDlg.cpp" />
     <ClCompile Include="windows\Players.cpp" />
     <ClCompile Include="windows\SearchPage.cpp" />
@@ -607,6 +611,7 @@
     <ClCompile Include="windows\UploadQueueFrame.cpp" />
     <ClCompile Include="windows\ListViewColours.cpp" />
     <ClCompile Include="windows\UsersFrame.cpp" />
+    <ClCompile Include="windows\WebShortcutsPage.cpp" />
     <ClCompile Include="windows\WebShortcutsProperties.cpp" />
     <ClCompile Include="windows\WindowsPage.cpp" />
     <ClCompile Include="windows\WinUtil.cpp" />
@@ -627,8 +632,14 @@
     <ClInclude Include="windows\ADLSProperties.h" />
     <ClInclude Include="windows\AdvancedPage.h" />
     <ClInclude Include="windows\Async.h" />
+    <ClInclude Include="windows\AutosearchAdvancedPage.h" />
     <ClInclude Include="windows\AutoSearchFrm.h" />
+    <ClInclude Include="windows\AutosearchGeneralPage.h" />
+    <ClInclude Include="windows\AutoSearchGroupDlg.h" />
+    <ClInclude Include="windows\AutoSearchItemSettings.h" />
+    <ClInclude Include="windows\AutosearchOptionsDlg.h" />
     <ClInclude Include="windows\AutosearchParams.h" />
+    <ClInclude Include="windows\AutosearchSearchTimesPage.h" />
     <ClInclude Include="windows\BrowseDlg.h" />
     <ClInclude Include="windows\BrowserBar.h" />
     <ClInclude Include="windows\ChatCommands.h" />
@@ -662,7 +673,6 @@
     <ClInclude Include="windows\SharePageDlg.h" />
     <ClInclude Include="windows\SharingOptionsPage.h" />
     <ClInclude Include="windows\AppearancePage.h" />
-    <ClInclude Include="windows\AutosearchDlg.h" />
     <ClInclude Include="windows\FavoriteDirDlg.h" />
     <ClInclude Include="windows\UserInfoBaseHandler.h" />
     <ClInclude Include="windows\SearchPage.h" />
@@ -744,6 +754,7 @@
     <ClInclude Include="windows\UploadQueueFrame.h" />
     <ClInclude Include="windows\ListViewColours.h" />
     <ClInclude Include="windows\UsersFrame.h" />
+    <ClInclude Include="windows\WebShortcutsPage.h" />
     <ClInclude Include="windows\WebShortcutsProperties.h" />
     <ClInclude Include="windows\Winamp.h" />
     <ClInclude Include="windows\WindowsPage.h" />
@@ -861,6 +872,7 @@
     <Image Include="res\SettingsTree\Limiter.ico" />
     <Image Include="res\SettingsTree\Proxy.ico" />
     <Image Include="res\SettingsTree\SearchTypes.ico" />
+    <Image Include="res\SettingsTree\Webshortcuts.ico" />
     <Image Include="res\Shared.ico" />
     <Image Include="res\Slots.ico" />
     <Image Include="res\SlotsFull.ico" />

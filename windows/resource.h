@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airdc-git\AirDC.rc
+// Used by N:\projects\airgit\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -199,13 +199,21 @@
 #define IDI_SHUTDOWN                    361
 #define IDD_CHATFILTERITEM_DLG          361
 #define IDI_FOLLOW                      363
+#define IDD_AS_DIALOG                   363
 #define IDI_USERS                       364
+#define IDD_DIALOG6                     364
+#define IDD_WEB_SHORTCUTS_PAGE          364
 #define IDI_OPEN_LIST                   365
 #define IDI_NOTEPAD                     366
+#define IDD_AS_GENERAL                  366
 #define IDI_OPEN_DOWNLOADS              367
 #define IDI_LOGS                        368
+#define IDD_DIALOG4                     368
+#define IDD_AS_ADVANCED                 368
 #define IDI_UPLOAD_QUEUE                369
 #define IDI_SCAN                        370
+#define IDD_DIALOG5                     370
+#define IDD_AS_SEARCH_TIMES             370
 #define IDI_AUTOSEARCH                  371
 #define IDI_IERROR                      372
 #define IDI_IWARNING                    373
@@ -333,6 +341,7 @@
 #define IDI_HASHING                     520
 #define IDI_LOGDIR                      521
 #define IDI_SEND_FILE                   522
+#define IDI_WEB_SHORTCUTS               523
 #define IDC_BACK                        997
 #define IDC_FORWARD                     998
 #define IDC_UP                          999
@@ -504,6 +513,7 @@
 #define IDC_IS_ACTIVE                   1120
 #define IDC_DELAY_HOURS                 1120
 #define IDC_MIN_FILE_SIZE               1121
+#define IDC_AS_MIN_INTERVAL             1121
 #define IDC_MAX_FILE_SIZE               1122
 #define IDC_AUTOQUEUE                   1123
 #define IDC_OPEN_FOLDER                 1124
@@ -577,6 +587,7 @@
 #define IDC_EXPIRY_DAYS_LABEL           1179
 #define IDC_AS_DELAY_HOURS_LABEL        1180
 #define IDC_DELAY_HOURS_LABEL           1180
+#define IDC_AS_MIN_INTERVAL_LABEL       1181
 #define IDC_ADLSP_SEARCH                1184
 #define IDC_ADLSP_TYPE                  1185
 #define IDC_ADLSP_SIZE_MIN              1186
@@ -785,6 +796,7 @@
 #define IDC_POPUPLIST                   1283
 #define IDC_DELAY_SPIN                  1283
 #define IDC_COMBO1                      1284
+#define IDC_AS_MIN_INTERVAL_SPIN        1284
 #define IDC_SB_HIGHLIGHT                1285
 #define IDC_EDIT2                       1285
 #define IDC_AIRDC_SLOT                  1285
@@ -793,6 +805,7 @@
 #define IDC_FD                          1285
 #define IDC_FDPATH                      1285
 #define IDC_TEXT_MATCH_TYPE             1285
+#define IDC_SEARCH_INT                  1285
 #define IDC_EDIT3                       1286
 #define IDC_BIND_ADDRESS                1286
 #define IDC_SKIPLIST_PRESET3            1286
@@ -1043,6 +1056,8 @@
 #define IDC_AWAY_SPIN                   1369
 #define IDC_LOG_LINES_SPIN2             1369
 #define IDC_DB_BUFFER_SPIN              1369
+#define IDC_IDC_SEARCH_INT_SPIN         1369
+#define IDC_SEARCH_INT_SPIN             1369
 #define IDC_SORT_DIRS                   1370
 #define IDC_CONNECTION_DETECTION        1371
 #define IDC_DONT_SHARE_BIGGER_THAN      1371
@@ -1604,6 +1619,11 @@
 #define IDC_PROGRESS_SLIDER             10198
 #define IDC_LIGHTEN_TXT                 10199
 #define IDC_LIST_GENERAL                10200
+#define IDC_SEARCH_INT_MIN              10201
+#define IDC_SEARCH_INT_LABEL            10202
+#define IDC_GROUP_LABEL                 10203
+#define IDC_GROUP_FAILED_LABEL          10204
+#define IDC_FAILED_GROUP                10205
 #define IDC_REFRESH_WINAMP              11011
 #define IDC_WINAMP_LIST                 11012
 #define IDC_POSITION                    11013
@@ -1703,7 +1723,6 @@
 #define IDC_AUTOSEARCH_ENABLE           15061
 #define IDC_CUR_NUMBER_LBL              15061
 #define IDC_AS_EXCLUDED                 15061
-#define IDC_AUTOSEARCH_RECHECK_TIME     15062
 #define IDC_MAX_NUMBER_LBL              15062
 #define IDC_AUTOSEARCH_RECHECK_SPIN     15063
 #define IDC_NUMBER_LEN_LBL              15063
@@ -1820,9 +1839,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        364
+#define _APS_NEXT_RESOURCE_VALUE        368
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         10201
+#define _APS_NEXT_CONTROL_VALUE         10206
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

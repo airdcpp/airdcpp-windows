@@ -29,7 +29,7 @@
 #include "ExMessageBox.h"
 #include "ChatCommands.h"
 
-#include "../client/AutoSearchManager.h"
+//#include "../client/AutoSearchManager.h"
 #include "../client/HashManager.h"
 #include "../client/SettingsManager.h"
 #include "../client/Util.h"
@@ -818,7 +818,7 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 	} else if(stricmp(cmd.c_str(), _T("generatelist")) == 0) {
 		ShareManager::getInstance()->generateOwnList(0);
 	} else if(stricmp(cmd.c_str(), _T("as")) == 0) {
-		AutoSearchManager::getInstance()->runSearches();
+		//AutoSearchManager::getInstance()->runSearches();
 	} else if(stricmp(cmd.c_str(), _T("clientstats")) == 0) {
 		status = Text::toT(ClientManager::getInstance()->getClientStats());
 	} else if(stricmp(cmd.c_str(), _T("monitordebug")) == 0) {

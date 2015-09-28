@@ -814,6 +814,9 @@
     <ClInclude Include="client\PrivateChatListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="client\AutoSearchQueue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="client\StringDefs.h">
