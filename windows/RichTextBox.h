@@ -166,7 +166,7 @@ public:
 	string getTempShareKey() const;
 
 	void FormatEmoticonsAndLinks(tstring& sText, /*tstring& sTextLower,*/ LONG lSelBegin, bool bUseEmo);
-	GETSET(Client*, client, Client);
+	GETSET(ClientPtr, client, Client);
 	GETSET(UserPtr, pmUser, PmUser);
 
 	GETSET(bool, autoScrollToEnd, AutoScrollToEnd);

@@ -165,11 +165,11 @@ private:
 	void fillList();
 	void openSelected();
 
-	void on(FavoriteAdded, const FavoriteHubEntryPtr& /*e*/)  noexcept { StateKeeper keeper(ctrlHubs); fillList(); }
-	void on(FavoriteRemoved, const FavoriteHubEntryPtr& e) noexcept { ctrlHubs.DeleteItem(ctrlHubs.find((LPARAM)e.get())); }
-	void on(FavoritesUpdated) noexcept { fillList(); }
+	void on(FavoriteHubAdded, const FavoriteHubEntryPtr& /*e*/)  noexcept { StateKeeper keeper(ctrlHubs); fillList(); }
+	void on(FavoriteHubRemoved, const FavoriteHubEntryPtr& e) noexcept { ctrlHubs.DeleteItem(ctrlHubs.find((LPARAM)e.get())); }
+	void on(FavoriteHubsUpdated) noexcept { fillList(); }
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
-	void on(ClientConnected, const Client* c) noexcept { 
+	void on(ClientConnected, const ClientPtr& c) noexcept {
 		PostMessage(WM_SPEAKER, (WPARAM)HUB_CONNECTED,  (LPARAM)new string(c->getHubUrl())); 
 	}
 	void on(ClientDisconnected, const string& aHubUrl) noexcept { 

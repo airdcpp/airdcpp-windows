@@ -437,8 +437,8 @@ private:
 	void on(TimerManagerListener::Second, uint64_t aTick) noexcept;
 
 	// ClientManagerListener
-	void on(ClientConnected, const Client* c) noexcept;
-	void on(ClientUpdated, const Client* c) noexcept;
+	void on(ClientConnected, const ClientPtr& c) noexcept;
+	void on(ClientUpdated, const ClientPtr& c) noexcept;
 	void on(ClientDisconnected, const string& aHubUrl) noexcept;
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;

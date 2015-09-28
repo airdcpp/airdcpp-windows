@@ -356,7 +356,7 @@ LRESULT MiscPage::OnClearButton(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/
 		SettingsManager::getInstance()->clearHistory(SettingsManager::HISTORY_EXCLUDE);
 		break;
 	case IDC_CLEAR_DL_H:
-		SettingsManager::getInstance()->clearHistory(SettingsManager::HISTORY_DIR);
+		SettingsManager::getInstance()->clearHistory(SettingsManager::HISTORY_DOWNLOAD_DIR);
 		break;
 	default:
 		break;

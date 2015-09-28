@@ -76,7 +76,7 @@ public:
 			return;
 
 		auto target = Text::fromT(targetT);
-		SettingsManager::getInstance()->addToHistory(dirDlg ? target : Util::getFilePath(target), SettingsManager::HISTORY_DIR);
+		SettingsManager::getInstance()->addToHistory(dirDlg ? target : Util::getFilePath(target), SettingsManager::HISTORY_DOWNLOAD_DIR);
 		onDownload(target, useWhole, isSizeUnknown, QueueItemBase::DEFAULT);
 	}
 
@@ -137,7 +137,7 @@ public:
 		appendTargets(targetMenu, wholeDir, isSizeUnknown, aTTH, aPath);
 
 		//Append dir history
-		const auto& ldl = SettingsManager::getInstance()->getHistory(SettingsManager::HISTORY_DIR);
+		const auto& ldl = SettingsManager::getInstance()->getHistory(SettingsManager::HISTORY_DOWNLOAD_DIR);
 		if(!ldl.empty()) {
 			targetMenu.InsertSeparatorLast(TSTRING(PREVIOUS_FOLDERS));
 			for(auto& path: ldl) {
@@ -145,7 +145,7 @@ public:
 			}
 
 			targetMenu.appendSeparator();
-			targetMenu.appendItem(TSTRING(CLEAR_HISTORY), [] { SettingsManager::getInstance()->clearHistory(SettingsManager::HISTORY_DIR); });
+			targetMenu.appendItem(TSTRING(CLEAR_HISTORY), [] { SettingsManager::getInstance()->clearHistory(SettingsManager::HISTORY_DOWNLOAD_DIR); });
 		}
 	}
 

@@ -236,7 +236,7 @@ private:
 	bool waitingForPW;
 	bool extraSort;
 
-	Client* client;
+	ClientPtr client;
 	tstring server;
 	string cachedHubname;
 	bool wentoffline;
@@ -301,7 +301,6 @@ private:
 	CIcon tabIcon;
 
 	void updateStatusBar();
-	void onPrivateMessage(const ChatMessage& message);
 	void onChatMessage(const ChatMessage& message);
 	void onUpdateTabIcons();
 	void setTabIcons();
@@ -339,6 +338,7 @@ private:
 	void on(HubTopic, const Client*, const string&) noexcept;
 	void on(AddLine, const Client*, const string&) noexcept;
 	void on(SetActive, const Client*) noexcept;
+	void on(Disconnecting, const Client*) noexcept;
 
 	void on(MessageManagerListener::IgnoreAdded, const UserPtr& aUser) noexcept;
 	void on(MessageManagerListener::IgnoreRemoved, const UserPtr& aUser) noexcept;

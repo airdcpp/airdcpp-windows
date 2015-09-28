@@ -195,7 +195,7 @@ LRESULT RecentHubsFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 		ctrlHubs.GetItemText(i, COLUMN_SERVER, buf, 256);
 		e->setServerStr(Text::fromT(buf));
 
-		FavoriteManager::getInstance()->addFavorite(e);
+		FavoriteManager::getInstance()->addFavoriteHub(e);
 	}
 	return 0;
 }

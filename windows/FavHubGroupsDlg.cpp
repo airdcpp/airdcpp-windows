@@ -178,7 +178,7 @@ LRESULT FavHubGroupsDlg::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 			bool remove = MessageBox(msg.c_str(), _T("Remove Group"), MB_ICONQUESTION | MB_YESNO) == IDYES;
 			for(FavoriteHubEntryList::iterator i = l.begin(); i != l.end(); ++i) {
 				if(remove)
-					FavoriteManager::getInstance()->removeFavorite(*i);
+					FavoriteManager::getInstance()->removeFavoriteHub((*i)->getToken());
 				else
 					(*i)->setGroup(Util::emptyString);
 			}

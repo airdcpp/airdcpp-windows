@@ -1495,11 +1495,11 @@ void SearchFrame::onResultFiltered() {
 	ctrlStatus.SetText(4, (Util::toStringW(droppedResults) + _T(" ") + TSTRING(FILTERED)).c_str());
 }
 
-void SearchFrame::on(ClientConnected, const Client* c) noexcept { 
+void SearchFrame::on(ClientConnected, const ClientPtr& c) noexcept {
 	callAsync([=] { onHubAdded(new HubInfo(Text::toT(c->getHubUrl()), Text::toT(c->getHubName()), c->getMyIdentity().isOp())); });
 }
 
-void SearchFrame::on(ClientUpdated, const Client* c) noexcept { 
+void SearchFrame::on(ClientUpdated, const ClientPtr& c) noexcept {
 	callAsync([=] { onHubChanged(new HubInfo(Text::toT(c->getHubUrl()), Text::toT(c->getHubName()), c->getMyIdentity().isOp())); });
 }
 

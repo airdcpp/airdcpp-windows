@@ -34,7 +34,7 @@
 #include "../client/MessageManager.h"
 #include "../client/Adchub.h"
 
-bool PrivateFrame::gotMessage(const ChatMessage& aMessage, Client* c) {
+bool PrivateFrame::gotMessage(const ChatMessage& aMessage, const ClientPtr& c) {
 	bool myPM = aMessage.replyTo->getUser() == ClientManager::getInstance()->getMe();
 	const UserPtr& user = myPM ? aMessage.to->getUser() : aMessage.replyTo->getUser();
 
@@ -55,7 +55,7 @@ bool PrivateFrame::gotMessage(const ChatMessage& aMessage, Client* c) {
 	return true;
 }
 
-void PrivateFrame::openWindow(const HintedUser& replyTo, const tstring& msg, Client* c) {
+void PrivateFrame::openWindow(const HintedUser& replyTo, const tstring& msg, const ClientPtr& c) {
 	auto chat = MessageManager::getInstance()->getChat(replyTo.user);
 	
 	if (chat) {
@@ -68,7 +68,7 @@ void PrivateFrame::openWindow(const HintedUser& replyTo, const tstring& msg, Cli
 }
 
 
-PrivateFrame::PrivateFrame(const HintedUser& replyTo_, Client* c) :
+PrivateFrame::PrivateFrame(const HintedUser& replyTo_, const ClientPtr& c) :
 created(false), closed(false), curCommandPosition(0),
 	ctrlHubSelContainer(WC_COMBOBOXEX, this, HUB_SEL_MAP),
 	ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
@@ -748,7 +748,7 @@ void PrivateFrame::on(PrivateChatListener::PrivateMessage, const ChatMessage& aM
 	});
 }
 
-void PrivateFrame::on(PrivateChatListener::Activate, const string& msg, Client* c) noexcept{
+void PrivateFrame::on(PrivateChatListener::Activate, const string& msg, ClientPtr& c) noexcept{
 	callAsync([this, msg, c] {
 		//checkClientChanged(c, true);
 		if (::IsIconic(m_hWnd))

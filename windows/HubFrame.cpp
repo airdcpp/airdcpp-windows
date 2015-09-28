@@ -172,12 +172,6 @@ void HubFrame::openWindow(const tstring& aServer) {
 }
 
 HubFrame::~HubFrame() {
-	ClientManager::getInstance()->putClient(client);
-
-	dcassert(frames.find(server) != frames.end());
-	dcassert(frames[server] == this);
-	frames.erase(server);
-	clearTaskList();
 }
 
 HubFrame::HubFrame(const tstring& aServer) : 
@@ -313,12 +307,12 @@ void HubFrame::addAsFavorite() {
 		e->setServerStr(Text::fromT(server));
 		e->setName(Text::fromT(buf));
 		e->setDescription(Text::fromT(buf));
-		e->setConnect(true);
+		e->setAutoConnect(true);
 		e->setShareProfile(ShareManager::getInstance()->getShareProfile(client->getShareProfile(), true));
 		if(!client->getPassword().empty()) {
 			e->setPassword(client->getPassword());
 		}
-		FavoriteManager::getInstance()->addFavorite(e);
+		FavoriteManager::getInstance()->addFavoriteHub(e);
 		addStatus(TSTRING(FAVORITE_HUB_ADDED), LogManager::LOG_INFO, WinUtil::m_ChatTextSystem );
 	} else {
 		addStatus(TSTRING(FAVORITE_HUB_ALREADY_EXISTS), LogManager::LOG_ERROR, WinUtil::m_ChatTextSystem);
@@ -328,7 +322,7 @@ void HubFrame::addAsFavorite() {
 void HubFrame::removeFavoriteHub() {
 	auto removeHub = FavoriteManager::getInstance()->getFavoriteHubEntry(client->getHubUrl());
 	if(removeHub) {
-		FavoriteManager::getInstance()->removeFavorite(removeHub);
+		FavoriteManager::getInstance()->removeFavoriteHub(removeHub->getToken());
 		addStatus(TSTRING(FAVORITE_HUB_REMOVED), LogManager::LOG_INFO, WinUtil::m_ChatTextSystem);
 	} else {
 		addStatus(TSTRING(FAVORITE_HUB_DOES_NOT_EXIST), LogManager::LOG_ERROR, WinUtil::m_ChatTextSystem);
@@ -444,7 +438,7 @@ bool HubFrame::updateUser(const UserTask& u) {
 
 		if(!u.onlineUser->isHidden()) {
 			u.onlineUser->inc();
-			ctrlUsers.insertItem(u.onlineUser.get(), UserInfoBase::getImage(u.onlineUser->getIdentity(), client));
+			ctrlUsers.insertItem(u.onlineUser.get(), u.onlineUser->getImageIndex());
 		}
 
 		if(!filter.empty())
@@ -463,7 +457,7 @@ bool HubFrame::updateUser(const UserTask& u) {
 				u.onlineUser->dec();				
 			} else {
 				ctrlUsers.updateItem(pos);
-				ctrlUsers.SetItem(pos, 0, LVIF_IMAGE, NULL, UserInfoBase::getImage(u.onlineUser->getIdentity(), client), 0, 0, NULL);
+				ctrlUsers.SetItem(pos, 0, LVIF_IMAGE, NULL, u.onlineUser->getImageIndex(), 0, 0, NULL);
 			}
 		}
 
@@ -499,11 +493,10 @@ void HubFrame::onChatMessage(const ChatMessage& msg) {
 void HubFrame::onDisconnected(const string& aReason) {
 	addStatus(Text::toT(aReason), LogManager::LOG_WARNING, WinUtil::m_ChatTextServer); //Error?
 
+	clearUserList();
 	setDisconnected(true);
 	wentoffline = true;
 	setTabIcons();
-	clearTaskList();
-	clearUserList();
 
 	if ((!SETTING(SOUND_HUBDISCON).empty()) && (!SETTING(SOUNDS_DISABLED)))
 		WinUtil::playSound(Text::toT(SETTING(SOUND_HUBDISCON)));
@@ -759,6 +752,25 @@ void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	}
 }
 
+// Redirect calls won't come here... needs more refactoring
+void HubFrame::on(Disconnecting, const Client*) noexcept {
+	SettingsManager::getInstance()->removeListener(this);
+	FavoriteManager::getInstance()->removeListener(this);
+	MessageManager::getInstance()->removeListener(this);
+
+	client->removeListener(this);
+	callAsync([this] {
+		dcassert(frames.find(server) != frames.end());
+		dcassert(frames[server] == this);
+		frames.erase(server);
+		clearTaskList();
+
+		closed = true;
+
+		PostMessage(WM_CLOSE);
+	});
+}
+
 LRESULT HubFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closed) {
 		if(shutdown || forceClose ||  WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_HUB_CLOSING, TSTRING(REALLY_CLOSE))) {
@@ -770,12 +782,8 @@ LRESULT HubFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 				r->setUsers(Util::toString(client->getUserCount()));
 				r->setShared(Util::toString(client->getAvailable()));
 			}
-
-			SettingsManager::getInstance()->removeListener(this);
-			FavoriteManager::getInstance()->removeListener(this);
-			MessageManager::getInstance()->removeListener(this);
-			client->removeListener(this);
-			client->disconnect(true);
+			
+			ClientManager::getInstance()->putClient(client);
 
 			closed = true;
 			PostMessage(WM_CLOSE);
@@ -1611,7 +1619,7 @@ void HubFrame::updateUserList(OnlineUserPtr aUser) {
 		if (filter.empty() || filter.match(filterPrep)) {
 			if (ctrlUsers.findItem(aUser.get()) == -1) {
 				aUser->inc();
-				ctrlUsers.insertItem(aUser.get(), UserInfoBase::getImage(aUser->getIdentity(), client));
+				ctrlUsers.insertItem(aUser.get(), aUser->getImageIndex());
 			}
 		} else {
 			int i = ctrlUsers.findItem(aUser.get());
@@ -1631,7 +1639,7 @@ void HubFrame::updateUserList(OnlineUserPtr aUser) {
 			for(const auto& ui: l){
 				if(!ui->isHidden()) {
 					ui->inc();
-					ctrlUsers.insertItem(ui.get(), UserInfoBase::getImage(ui->getIdentity(), client));
+					ctrlUsers.insertItem(ui.get(), ui->getImageIndex());
 				}
 			}
 		} else {
@@ -1641,7 +1649,7 @@ void HubFrame::updateUserList(OnlineUserPtr aUser) {
 				aUser = *i;
 				if (!aUser->isHidden() && (filter.empty() || filter.match(filterPrep))) {
 					aUser->inc();
-					ctrlUsers.insertItem(aUser.get(), UserInfoBase::getImage(aUser->getIdentity(), client));
+					ctrlUsers.insertItem(aUser.get(), aUser->getImageIndex());
 				}
 			}
 		}
@@ -1840,7 +1848,7 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 				cd->clrText = SETTING(IGNORED_COLOR);
 			} else if(ui->getIdentity().isOp()) {
 				cd->clrText = SETTING(OP_COLOR);
-			} else if(!ui->getIdentity().isTcpActive(client)) {
+			} else if(!ui->getIdentity().isTcpActive(client.get())) {
 				cd->clrText = SETTING(PASIVE_COLOR);
 			} else {
 				cd->clrText = SETTING(NORMAL_COLOUR);

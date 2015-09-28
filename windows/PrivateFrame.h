@@ -38,8 +38,8 @@ class PrivateFrame : public UserInfoBaseHandler<PrivateFrame>, public UserInfoBa
 private PrivateChatListener, public UCHandler<PrivateFrame>, private SettingsManagerListener, public ChatFrameBase
 {
 public:
-	static bool gotMessage(const ChatMessage& aMessage , Client* c);
-	static void openWindow(const HintedUser& replyTo, const tstring& aMessage = Util::emptyStringT, Client* c = NULL);
+	static bool gotMessage(const ChatMessage& aMessage , const ClientPtr& c);
+	static void openWindow(const HintedUser& replyTo, const tstring& aMessage = Util::emptyStringT, const ClientPtr& c = nullptr);
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("PrivateFrame"), IDR_PRIVATE, 0, COLOR_3DFACE);
 
@@ -149,7 +149,7 @@ private:
 	};
 
 
-	PrivateFrame(const HintedUser& replyTo_, Client* c);
+	PrivateFrame(const HintedUser& replyTo_, const ClientPtr& c);
 	~PrivateFrame() { }
 
 	PrivateChat* chat;
@@ -204,7 +204,7 @@ private:
 	
 	virtual void on(PrivateChatListener::StatusMessage, const string& aMessage, uint8_t sev) noexcept;
 	virtual void on(PrivateChatListener::PrivateMessage, const ChatMessage& aMessage) noexcept;
-	virtual void on(PrivateChatListener::Activate, const string& msg, Client* c) noexcept;
+	virtual void on(PrivateChatListener::Activate, const string& msg, ClientPtr& c) noexcept;
 	virtual void on(PrivateChatListener::UserUpdated) noexcept;
 	virtual void on(PrivateChatListener::PMStatus, uint8_t aType) noexcept;
 	virtual void on(PrivateChatListener::Close) noexcept {

@@ -200,7 +200,7 @@ void FavoriteHubsFrame::addEntry(const FavoriteHubEntryPtr& entry, int pos, int 
 	l.push_back(Text::toT(entry->getServers()[0].first));
 	l.push_back(Text::toT(entry->get(HubSettings::Description)));
 	l.push_back(Text::toT(entry->getShareProfile()->getDisplayName()));
-	bool b = entry->getConnect();
+	bool b = entry->getAutoConnect();
 	int i = ctrlHubs.insert(pos, l, 0, (LPARAM)entry.get());
 	ctrlHubs.SetCheckState(i, b);
 
@@ -323,7 +323,7 @@ LRESULT FavoriteHubsFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	
 	if(WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_HUB_REMOVAL, TSTRING(REALLY_REMOVE))) {
 		while( (i = ctrlHubs.GetNextItem(-1, LVNI_SELECTED)) != -1) {
-			FavoriteManager::getInstance()->removeFavorite((FavoriteHubEntry*)ctrlHubs.GetItemData(i));
+			FavoriteManager::getInstance()->removeFavoriteHub(((FavoriteHubEntry*)ctrlHubs.GetItemData(i))->getToken());
 		}
 	}
 	return 0;
@@ -344,6 +344,7 @@ LRESULT FavoriteHubsFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 				ConnectivityManager::getInstance()->setup(true, true);
 			}
 
+			FavoriteManager::getInstance()->onFavoriteHubUpdated(e);
 
 			StateKeeper keeper(ctrlHubs);
 			fillList();
@@ -358,7 +359,7 @@ LRESULT FavoriteHubsFrame::onNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	FavHubProperties dlg(e.get());
 
 	if(dlg.DoModal((HWND)*this) == IDOK) {
-		FavoriteManager::getInstance()->addFavorite(e);
+		FavoriteManager::getInstance()->addFavoriteHub(e);
 	}
 	return 0;
 }
@@ -489,7 +490,7 @@ LRESULT FavoriteHubsFrame::onItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*b
 	::EnableWindow(GetDlgItem(IDC_EDIT), ctrlHubs.GetItemState(l->iItem, LVIS_SELECTED));
 	if(!nosave && l->iItem != -1 && ((l->uNewState & LVIS_STATEIMAGEMASK) != (l->uOldState & LVIS_STATEIMAGEMASK))) {
 		FavoriteHubEntry* f = (FavoriteHubEntry*)ctrlHubs.GetItemData(l->iItem);
-		f->setConnect(ctrlHubs.GetCheckState(l->iItem) != FALSE);
+		f->setAutoConnect(ctrlHubs.GetCheckState(l->iItem) != FALSE);
 		FavoriteManager::getInstance()->save();
 	}
 	return 0;

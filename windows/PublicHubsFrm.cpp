@@ -310,7 +310,7 @@ LRESULT PublicHubsFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 			e->setServerStr(Text::fromT(buf));
 
 			e->setShareProfile(ShareManager::getInstance()->getShareProfile(SETTING(DEFAULT_SP)));
-			FavoriteManager::getInstance()->addFavorite(e);
+			FavoriteManager::getInstance()->addFavoriteHub(e);
 		}
 	}
 	return 0;

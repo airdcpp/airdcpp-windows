@@ -134,7 +134,7 @@ private:
 	 */
 	bool checkCommand(tstring& cmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson);
 	UserPtr getUser() { return ctrlClient.getPmUser(); }
-	Client* getClient() { return ctrlClient.getClient(); }
+	ClientPtr getClient() { return ctrlClient.getClient(); }
 	const tstring& getSendFileTitle();
 };
 
