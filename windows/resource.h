@@ -1724,10 +1724,8 @@
 #define IDC_CUR_NUMBER_LBL              15061
 #define IDC_AS_EXCLUDED                 15061
 #define IDC_MAX_NUMBER_LBL              15062
-#define IDC_AUTOSEARCH_RECHECK_SPIN     15063
 #define IDC_NUMBER_LEN_LBL              15063
 #define IDC_MINUTES2                    15064
-#define IDC_AUTOSEARCH_RECHECK_TEXT     15065
 #define IDC_DUPES                       15066
 #define IDC_DUPE_COLOR                  15067
 #define IDC_DUPE_DESCRIPTION            15068
