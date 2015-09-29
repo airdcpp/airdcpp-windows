@@ -1,6 +1,6 @@
 @echo off
-set file=%1client\version.inc
-set tmpfile=%1client\version.inc.tmp
+set file=%1airdcpp\airdcpp\version.inc
+set tmpfile=%1airdcpp\airdcpp\version.inc.tmp
 
 for /F "tokens=*" %%a in ('git describe --abbrev"="4  --dirty"="-d') do echo #define GIT_TAG "%%a" >> %tmpfile%
 

@@ -1,13 +1,7 @@
 # Set the default behavior, in case people don't have core.autocrlf set.
-* text=auto
+* text=crlf
 
 # Explicitly declare text files you want to always be normalized and converted
 # to native line endings on checkout.
-airdcpp/*.h text
-airdcpp/*.cpp text
-
-/windows/* text eol=crlf
-/windows/* text eol=crlf
-
-# Declare files that will always have CRLF line endings on checkout.
-*.sln text eol=crlf
+/airdcpp/*.h text
+/airdcpp/*.cpp text
