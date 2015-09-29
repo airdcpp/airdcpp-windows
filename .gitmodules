@@ -1,0 +1,3 @@
+[submodule "airdcpp"]
+	path = airdcpp
+	url = https://github.com/airdcpp/airdcpp-core.git
