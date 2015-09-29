@@ -2,6 +2,8 @@
 set file=%1airdcpp\airdcpp\version.inc
 set tmpfile=%1airdcpp\airdcpp\version.inc.tmp
 
+cd %1
+
 for /F "tokens=*" %%a in ('git describe --abbrev"="4  --dirty"="-d') do echo #define GIT_TAG "%%a" >> %tmpfile%
 
 for /F "tokens=*" %%a in ('git rev-list HEAD --count') do echo #define GIT_COMMIT_COUNT %%a >> %tmpfile%
