@@ -301,7 +301,7 @@ private:
 	CIcon tabIcon;
 
 	void updateStatusBar();
-	void onChatMessage(const ChatMessage& message);
+	void onChatMessage(const ChatMessagePtr& message);
 	void onUpdateTabIcons();
 	void setTabIcons();
 	void onPassword();
@@ -331,7 +331,7 @@ private:
 	void on(Failed, const string&, const string&) noexcept;
 	void on(GetPassword, const Client*) noexcept;
 	void on(HubUpdated, const Client*) noexcept;
-	void on(Message, const Client*, const ChatMessage&) noexcept;
+	void on(Message, const Client*, const ChatMessagePtr&) noexcept;
 	void on(StatusMessage, const Client*, const string&, int = ClientListener::FLAG_NORMAL) noexcept;
 	void on(NickTaken, const Client*) noexcept;
 	void on(SearchFlood, const Client*, const string&) noexcept;	

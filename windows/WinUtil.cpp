@@ -188,7 +188,7 @@ void WinUtil::playSound(const tstring& sound) {
 
 void WinUtil::PM::operator()(UserPtr aUser, const string& aUrl) const {
 	if (aUser)
-		PrivateFrame::openWindow(HintedUser(aUser, aUrl), Util::emptyStringT, ClientManager::getInstance()->getClient(aUrl));
+		PrivateFrame::openWindow(HintedUser(aUser, aUrl));
 }
 
 void WinUtil::MatchQueue::operator()(UserPtr aUser, const string& aUrl) const {

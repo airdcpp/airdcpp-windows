@@ -865,7 +865,7 @@ void SearchFrame::handleDownload(const string& aTarget, QueueItemBase::Priority 
 				}
 
 				DirectoryListingManager::getInstance()->addDirectoryDownload(aSR->getFilePath(), *path, aSR->getUser(), aTarget, aTargetType,
-					isSizeUnknown ? ASK_USER : NO_CHECK, p, false, 0, false, false);
+					isSizeUnknown, p, false, 0, false, false);
 			}
 		};
 

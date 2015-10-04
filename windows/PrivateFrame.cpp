@@ -34,41 +34,31 @@
 #include <airdcpp/MessageManager.h>
 #include <airdcpp/Adchub.h>
 
-bool PrivateFrame::gotMessage(const ChatMessage& aMessage, const ClientPtr& c) {
-	bool myPM = aMessage.replyTo->getUser() == ClientManager::getInstance()->getMe();
-	const UserPtr& user = myPM ? aMessage.to->getUser() : aMessage.replyTo->getUser();
+PrivateFrame::FrameMap PrivateFrame::frames;
 
-	auto chat = MessageManager::getInstance()->getChat(user);
-	if (chat) {
-		chat->handleMessage(aMessage);
-		return true;
+void PrivateFrame::openWindow(const HintedUser& aReplyTo, bool aMessageReceived) {
+	auto chat = MessageManager::getInstance()->getChat(aReplyTo);
+	if (!MessageManager::getInstance()->getChat(aReplyTo)) {
+		MessageManager::getInstance()->addChat(aReplyTo, false);
+		return;
 	}
 
-	auto hintedUser = HintedUser(user, c->getHubUrl());
-	PrivateFrame* p = new PrivateFrame(hintedUser, c);
-	auto text = Text::toT(aMessage.format());
-	p->addLine(aMessage.from->getIdentity(), text);
-
-	if (!myPM) {
-		p->handleNotifications(true, text, aMessage.from->getIdentity());
-	}
-	return true;
-}
-
-void PrivateFrame::openWindow(const HintedUser& replyTo, const tstring& msg, const ClientPtr& c) {
-	auto chat = MessageManager::getInstance()->getChat(replyTo.user);
-	
-	if (chat) {
-		chat->activate(Text::fromT(msg), c);
-	} else {
-		PrivateFrame* p = new PrivateFrame(replyTo, c);
+	auto frame = frames.find(aReplyTo.user);
+	if (frame == frames.cend()) {
+		auto p = new PrivateFrame(aReplyTo);
 		p->CreateEx(WinUtil::mdiClient);
-		p->sendFrameMessage(msg);
+		frame = frames.emplace(aReplyTo.user, p).first;
+	} else {
+		frame->second->activate();
+	}
+
+	if (!aMessageReceived) {
+		frame->second->activate();
 	}
 }
 
 
-PrivateFrame::PrivateFrame(const HintedUser& replyTo_, const ClientPtr& c) :
+PrivateFrame::PrivateFrame(const HintedUser& replyTo_) :
 created(false), closed(false), curCommandPosition(0),
 	ctrlHubSelContainer(WC_COMBOBOXEX, this, HUB_SEL_MAP),
 	ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
@@ -76,8 +66,8 @@ created(false), closed(false), curCommandPosition(0),
 	ctrlStatusContainer(STATUSCLASSNAME, this, STATUS_MSG_MAP),
 	UserInfoBaseHandler(false, true), hasUnSeenMessages(false), isTyping(false), userTyping(false)
 {
-	chat = MessageManager::getInstance()->addChat(replyTo_);
-	ctrlClient.setClient(c);
+	chat = MessageManager::getInstance()->getChat(replyTo_);
+	ctrlClient.setClient(chat->getClient());
 	ctrlClient.setPmUser(replyTo_.user);
 }
 
@@ -112,10 +102,17 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 
 	created = true;
 
+	readLog();
+
 	SettingsManager::getInstance()->addListener(this);
 	chat->addListener(this);
 
-	readLog();
+	callAsync([this] {
+		// Append messages that were received while the frame was being created
+		for (const auto& message : chat->getCache().getMessages()) {
+			onMessage(message);
+		}
+	});
 
 	WinUtil::SetIcon(m_hWnd, userBot ? IDI_BOT : IDR_PRIVATE);
 
@@ -422,6 +419,8 @@ LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		SettingsManager::getInstance()->removeListener(this);
 		MessageManager::getInstance()->removeChat(getUser());
 
+		frames.erase(getUser());
+
 		closed = true;
 		PostMessage(WM_CLOSE);
 		return 0;
@@ -722,43 +721,47 @@ void PrivateFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcep
 	RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 }
 
-void PrivateFrame::on(PrivateChatListener::UserUpdated) noexcept{
+void PrivateFrame::on(PrivateChatListener::UserUpdated, PrivateChat*) noexcept{
 	callAsync([this] { updateOnlineStatus(); });
 }
 
-void PrivateFrame::on(PrivateChatListener::PMStatus, uint8_t aType) noexcept{
+void PrivateFrame::on(PrivateChatListener::PMStatus, PrivateChat*, uint8_t aType) noexcept{
 	callAsync([this, aType] {
 		updatePMInfo(aType);
 	});
 }
 
-void PrivateFrame::on(PrivateChatListener::PrivateMessage, const ChatMessage& aMessage) noexcept{
-	callAsync([this, aMessage] {
-		bool myPM = aMessage.replyTo->getUser() == ClientManager::getInstance()->getMe();
-
-		auto text = Text::toT(aMessage.format());
-		addLine(aMessage.from->getIdentity(), text);
-
-		if (!myPM) {
-			handleNotifications(false, text, aMessage.from->getIdentity());
-		} else if (!userTyping) {
-			addStatus(_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + TSTRING(LAST_MESSAGE_SENT), ResourceLoader::getSeverityIcon(LogManager::LOG_INFO));
-		}
-
+void PrivateFrame::on(PrivateChatListener::PrivateMessage, PrivateChat*, const ChatMessagePtr& aMessage) noexcept{
+	callAsync([=] {
+		onMessage(aMessage);
 	});
 }
 
-void PrivateFrame::on(PrivateChatListener::Activate, const string& msg, ClientPtr& c) noexcept{
-	callAsync([this, msg, c] {
+void PrivateFrame::onMessage(const ChatMessagePtr& aMessage) noexcept {
+	bool myPM = aMessage->getReplyTo()->getUser() == ClientManager::getInstance()->getMe();
+
+	auto text = Text::toT(aMessage->format());
+	addLine(aMessage->getFrom()->getIdentity(), text);
+
+	if (!myPM) {
+		handleNotifications(false, text, aMessage->getFrom()->getIdentity());
+	}
+	else if (!userTyping) {
+		addStatus(_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + TSTRING(LAST_MESSAGE_SENT), ResourceLoader::getSeverityIcon(LogManager::LOG_INFO));
+	}
+}
+
+void PrivateFrame::activate() noexcept {
+	callAsync([this] {
 		//checkClientChanged(c, true);
 		if (::IsIconic(m_hWnd))
 			::ShowWindow(m_hWnd, SW_RESTORE);
 		MDIActivate(m_hWnd);
-		sendFrameMessage(Text::toT(msg));
+		//sendFrameMessage(Text::toT(msg));
 	});
 }
 
-void PrivateFrame::on(PrivateChatListener::StatusMessage, const string& aMessage, uint8_t sev) noexcept{
+void PrivateFrame::on(PrivateChatListener::StatusMessage, PrivateChat*, const string& aMessage, uint8_t sev) noexcept{
 	callAsync([=] {
 		addStatusLine(Text::toT(aMessage), sev);
 	});

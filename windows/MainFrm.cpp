@@ -1903,20 +1903,16 @@ void MainFrame::on(DirectoryListingManagerListener::OpenListing, DirectoryListin
 	callAsync([=] { DirectoryListingFrame::openWindow(aList, aDir, aXML); });
 }
 
-void MainFrame::on(DirectoryListingManagerListener::PromptAction, completionF aF, const string& aMessage) noexcept {
-	bool accept = !SETTING(FREE_SPACE_WARN) || WinUtil::showQuestionBox(Text::toT(aMessage).c_str(), MB_ICONQUESTION);
-	aF(accept);
-}
-
 void MainFrame::on(ClientManagerListener::ClientCreated, const ClientPtr& c) noexcept {
 	auto url = Text::toT(c->getHubUrl());
 	callAsync([=] { HubFrame::openWindow(url); });
 }
 
-void MainFrame::on(MessageManagerListener::PrivateMessage, const ChatMessage& aMessage) noexcept{
-	callAsync([=] { PrivateFrame::gotMessage(aMessage, &aMessage.from->getClient()); });
+void MainFrame::on(MessageManagerListener::ChatCreated, const PrivateChatPtr& aChat, bool aMessageReceived) noexcept{
+	callAsync([=] { 
+		PrivateFrame::openWindow(aChat->getHintedUser(), aMessageReceived);
+	});
 }
-
 
 LRESULT MainFrame::onActivateApp(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
 	bHandled = FALSE;

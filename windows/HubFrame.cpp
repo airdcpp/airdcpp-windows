@@ -268,15 +268,12 @@ bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*messag
 			const OnlineUserPtr ui = client->findUser(Text::fromT(nick));
 
 			if(ui) {
-				if(param.size() > j + 1)
-					PrivateFrame::openWindow(HintedUser(ui->getUser(), client->getHubUrl()), param.substr(j+1), client);
-				else
-					PrivateFrame::openWindow(HintedUser(ui->getUser(), client->getHubUrl()), Util::emptyStringT, client);
+				PrivateFrame::openWindow(HintedUser(ui->getUser(), client->getHubUrl()));
 			}
 		} else if(!param.empty()) {
 			const OnlineUserPtr ui = client->findUser(Text::fromT(param));
 			if(ui) {
-				PrivateFrame::openWindow(HintedUser(ui->getUser(), client->getHubUrl()), Util::emptyStringT, client);
+				PrivateFrame::openWindow(HintedUser(ui->getUser(), client->getHubUrl()));
 			}
 		}
 	} else if(stricmp(cmd.c_str(), _T("topic")) == 0) {
@@ -479,12 +476,12 @@ void HubFrame::removeUser(const OnlineUserPtr& aUser) {
 	}
 }
 
-void HubFrame::onChatMessage(const ChatMessage& msg) {
+void HubFrame::onChatMessage(const ChatMessagePtr& msg) {
 
 	if (MessageManager::getInstance()->isIgnoredOrFiltered(msg, client, false))
 		return;
 
-	addLine(msg.from->getIdentity(), Text::toT(msg.format()), WinUtil::m_ChatTextGeneral);
+	addLine(msg->getFrom()->getIdentity(), Text::toT(msg->format()), WinUtil::m_ChatTextGeneral);
 	if (client->get(HubSettings::ChatNotify)) {
 		MainFrame::getMainFrame()->onChatMessage(false);
 	}
@@ -885,7 +882,7 @@ LRESULT HubFrame::onLButton(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& b
 			if(ui) {
 				bHandled = true;
 				if (wParam & MK_CONTROL) { // MK_CONTROL = 0x0008
-					PrivateFrame::openWindow(HintedUser(ui->getUser(), client->getHubUrl()), Util::emptyStringT, client);
+					PrivateFrame::openWindow(HintedUser(ui->getUser(), client->getHubUrl()));
 				} else if (wParam & MK_SHIFT) {
 					try {
 						QueueManager::getInstance()->addList(HintedUser(ui->getUser(), client->getHubUrl()), QueueItem::FLAG_CLIENT_VIEW);
@@ -1533,7 +1530,7 @@ void HubFrame::on(HubUpdated, const Client*) noexcept {
 		setWindowTitle(hubName);
 	});
 }
-void HubFrame::on(Message, const Client*, const ChatMessage& message) noexcept {
+void HubFrame::on(Message, const Client*, const ChatMessagePtr& message) noexcept {
 	callAsync([=] { onChatMessage(message); });
 }	
 

@@ -1416,7 +1416,7 @@ void DirectoryListingFrame::handleDownload(const string& aTarget, QueueItemBase:
 		} else {
 			tasks.run([=] {
 				DirectoryListingManager::getInstance()->addDirectoryDownload(ii->getPath(), ii->getName(), dl->getHintedUser(),
-					aTarget, aTargetType, isSizeUnknown ? ASK_USER : NO_CHECK, WinUtil::isShift() ? QueueItemBase::HIGHEST : prio, false);
+					aTarget, aTargetType, isSizeUnknown, WinUtil::isShift() ? QueueItemBase::HIGHEST : prio, false);
 			});
 		}
 	});

@@ -19,9 +19,7 @@
 #ifndef PRIVATE_FRAME_H
 #define PRIVATE_FRAME_H
 
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
+#include <airdcpp/typedefs.h>
 
 #include <airdcpp/User.h>
 #include <airdcpp/UserInfoBase.h>
@@ -38,8 +36,7 @@ class PrivateFrame : public UserInfoBaseHandler<PrivateFrame>, public UserInfoBa
 private PrivateChatListener, public UCHandler<PrivateFrame>, private SettingsManagerListener, public ChatFrameBase
 {
 public:
-	static bool gotMessage(const ChatMessage& aMessage , const ClientPtr& c);
-	static void openWindow(const HintedUser& replyTo, const tstring& aMessage = Util::emptyStringT, const ClientPtr& c = nullptr);
+	static void openWindow(const HintedUser& replyTo, bool aMessageReceived = false);
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("PrivateFrame"), IDR_PRIVATE, 0, COLOR_3DFACE);
 
@@ -141,6 +138,9 @@ public:
 	UserListHandler getUserList() { return UserListHandler(this); }
 
 private:
+	typedef unordered_map<UserPtr, PrivateFrame*, User::Hash> FrameMap;
+	static FrameMap frames;
+
 	enum {
 		STATUS_TEXT,
 		STATUS_CC,
@@ -149,10 +149,10 @@ private:
 	};
 
 
-	PrivateFrame(const HintedUser& replyTo_, const ClientPtr& c);
+	PrivateFrame(const HintedUser& replyTo_);
 	~PrivateFrame() { }
 
-	PrivateChat* chat;
+	PrivateChatPtr chat;
 	
 	bool nmdcUser;
 	bool created;
@@ -201,24 +201,27 @@ private:
 	TStringList prevCommands;
 	tstring currentCommand;
 	TStringList::size_type curCommandPosition;
+
+	void activate() noexcept;
 	
-	virtual void on(PrivateChatListener::StatusMessage, const string& aMessage, uint8_t sev) noexcept;
-	virtual void on(PrivateChatListener::PrivateMessage, const ChatMessage& aMessage) noexcept;
-	virtual void on(PrivateChatListener::Activate, const string& msg, ClientPtr& c) noexcept;
-	virtual void on(PrivateChatListener::UserUpdated) noexcept;
-	virtual void on(PrivateChatListener::PMStatus, uint8_t aType) noexcept;
-	virtual void on(PrivateChatListener::Close) noexcept {
+	virtual void on(PrivateChatListener::StatusMessage, PrivateChat*, const string& aMessage, uint8_t sev) noexcept;
+	virtual void on(PrivateChatListener::PrivateMessage, PrivateChat*, const ChatMessagePtr& aMessage) noexcept;
+	virtual void on(PrivateChatListener::UserUpdated, PrivateChat*) noexcept;
+	virtual void on(PrivateChatListener::PMStatus, PrivateChat*, uint8_t aType) noexcept;
+	virtual void on(PrivateChatListener::Close, PrivateChat*) noexcept {
 		PostMessage(WM_CLOSE);
 	}
 
-	virtual void on(PrivateChatListener::CCPMStatusUpdated) noexcept{
-		on(UserUpdated());
+	virtual void on(PrivateChatListener::CCPMStatusUpdated, PrivateChat* aChat) noexcept{
+		on(UserUpdated(), aChat);
 	}
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
 	void handleNotifications(bool newWindow, const tstring& aMessage, const Identity& from);
 	void updateStatusBar();
+
+	void onMessage(const ChatMessagePtr& aMessage) noexcept;
 };
 
 #endif // !defined(PRIVATE_FRAME_H)
