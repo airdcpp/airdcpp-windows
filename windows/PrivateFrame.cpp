@@ -33,6 +33,8 @@
 #include <airdcpp/ResourceManager.h>
 #include <airdcpp/MessageManager.h>
 #include <airdcpp/Adchub.h>
+#include <airdcpp/GeoManager.h>
+#include <airdcpp/Localization.h>
 
 PrivateFrame::FrameMap PrivateFrame::frames;
 
@@ -89,17 +91,26 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	CToolInfo ti_tool(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_CC + POPUP_UID, 0, LPSTR_TEXTCALLBACK);
 	ctrlTooltips.AddTool(&ti_tool);
 
+	CToolInfo ti_tool2(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_AWAY + POPUP_UID, 0, LPSTR_TEXTCALLBACK);
+	ctrlTooltips.AddTool(&ti_tool2);
+	
+	CToolInfo ti_tool3(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_COUNTRY + POPUP_UID, 0, LPSTR_TEXTCALLBACK);
+	ctrlTooltips.AddTool(&ti_tool3);
+
 	ctrlClientContainer.SubclassWindow(ctrlClient.m_hWnd);
 	ctrlMessageContainer.SubclassWindow(ctrlMessage.m_hWnd);
 	ctrlStatusContainer.SubclassWindow(ctrlStatus.m_hWnd);
 	
 	bool userBot = getUser() && getUser()->isSet(User::BOT);
-	userOffline = userBot ? ResourceLoader::loadIcon(IDI_BOT_OFF) : ResourceLoader::loadIcon(IDR_PRIVATE_OFF);
+	userOfflineIcon = userBot ? ResourceLoader::loadIcon(IDI_BOT_OFF) : ResourceLoader::loadIcon(IDR_PRIVATE_OFF);
 
-	iCCReady = ResourceLoader::loadIcon(IDI_SECURE, 16);
-	iStartCC = ResourceLoader::convertGrayscaleIcon(ResourceLoader::loadIcon(IDI_SECURE, 16));
-	iNoCCPM = ResourceLoader::mergeIcons(iStartCC, ResourceLoader::loadIcon(IDI_USER_NOCONNECT, 16), 16); //Temp, Todo: find own icon for this!
-
+	CCReadyIcon = ResourceLoader::loadIcon(IDI_SECURE, 16);
+	startCCIcon = ResourceLoader::convertGrayscaleIcon(ResourceLoader::loadIcon(IDI_SECURE, 16));
+	noCCPMIcon = ResourceLoader::mergeIcons(startCCIcon, ResourceLoader::loadIcon(IDI_USER_NOCONNECT, 16), 16); //Temp, Todo: find own icon for this!
+	const int i = UserInfoBase::USER_ICON_AWAY * (UserInfoBase::USER_ICON_LAST - UserInfoBase::USER_ICON_MOD_START) * (UserInfoBase::USER_ICON_LAST - UserInfoBase::USER_ICON_MOD_START);
+	awayIconON = ResourceLoader::getUserImages().GetIcon(i);
+	awayIconOFF = ResourceLoader::getUserImages().GetIcon(0);
+	
 	created = true;
 
 	readLog();
@@ -160,8 +171,8 @@ void PrivateFrame::addClientLine(const tstring& aLine, uint8_t severity) {
 
 void PrivateFrame::addStatus(const tstring& aLine, const CIcon& aIcon) {
 	lastStatus = { aLine, aIcon };
-	ctrlStatus.SetText(0, aLine.c_str(), SBT_NOTABPARSING);
-	ctrlStatus.SetIcon(0, aIcon);
+	ctrlStatus.SetText(STATUS_TEXT, aLine.c_str(), SBT_NOTABPARSING);
+	ctrlStatus.SetIcon(STATUS_TEXT, aIcon);
 }
 
 void PrivateFrame::updatePMInfo(uint8_t aType) {
@@ -229,6 +240,13 @@ LRESULT PrivateFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/)
 		pDispInfo->lpszText = !chat->getSupportsCCPM() ? const_cast<TCHAR*>(lastCCPMError.c_str()):
 			ccReady() ? (LPWSTR)CTSTRING(DISCONNECT_CCPM) : (LPWSTR)CTSTRING(START_CCPM);
 	}
+	else if (idCtrl == STATUS_AWAY + POPUP_UID) {
+		pDispInfo->lpszText = !chat->isOnline() ? (LPWSTR)CTSTRING(USER_OFFLINE) : userAway ? (LPWSTR)CTSTRING(AWAY) : (LPWSTR)CTSTRING(ONLINE);
+	}
+	else if (idCtrl == STATUS_COUNTRY + POPUP_UID) {
+		pDispInfo->lpszText = const_cast<TCHAR*>(countryPopup.c_str());
+	}
+
 	return 0;
 }
 
@@ -520,14 +538,14 @@ void PrivateFrame::updateStatusBar() {
 	tstring tmp = Util::emptyStringT;
 	if(ctrlHubSel.GetStyle() & WS_VISIBLE) {
 		tmp = _T(" ") + TSTRING(SEND_PM_VIA);
-		ctrlStatus.SetIcon(STATUS_CC, chat->getSupportsCCPM() ? iStartCC : iNoCCPM);
+		ctrlStatus.SetIcon(STATUS_CC, chat->getSupportsCCPM() ? startCCIcon : noCCPMIcon);
 	} else if(ccReady()){
 		tmp = _T(" ") + TSTRING(SEND_PM_VIA) +_T(": ") + TSTRING(DIRECT_ENCRYPTED_CHANNEL);
-		ctrlStatus.SetIcon(STATUS_CC, iCCReady);
+		ctrlStatus.SetIcon(STATUS_CC, CCReadyIcon);
 	} else {
 		ctrlStatus.SetIcon(STATUS_CC, NULL);
 	}
-
+	setCountryFlag();
 	ctrlStatus.SetText(STATUS_HUBSEL, tmp.c_str());
 }
 
@@ -543,6 +561,12 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 			CRect r;
 			ctrlStatus.GetRect(STATUS_CC, r);
 			ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, STATUS_CC + POPUP_UID, r);
+
+			ctrlStatus.GetRect(STATUS_AWAY, r);
+			ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, STATUS_AWAY + POPUP_UID, r);
+
+			ctrlStatus.GetRect(STATUS_COUNTRY, r);
+			ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, STATUS_COUNTRY + POPUP_UID, r);
 		};
 
 		CRect sr;
@@ -551,10 +575,14 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		int w[STATUS_LAST];
 		int desclen = WinUtil::getTextWidth(TSTRING(SEND_PM_VIA), ctrlStatus.m_hWnd) +2;
 		int desclen2 = WinUtil::getTextWidth(TSTRING(DIRECT_ENCRYPTED_CHANNEL), ctrlStatus.m_hWnd) +2;
+		const int status_away_size = 22;
+		const int status_country_size = 32;
 
 		if (desclen2 < 190) //Make sure the HubSel Combo will fit too.
 			desclen2 = 190;
 
+		w[STATUS_AWAY] = sr.left + status_away_size;
+		w[STATUS_COUNTRY] = w[STATUS_AWAY] + status_country_size;
 		w[STATUS_TEXT] = sr.right - desclen - desclen2 - 22;
 		w[STATUS_CC] = w[STATUS_TEXT] + 22;
 		w[STATUS_HUBSEL] = w[STATUS_CC] + desclen + desclen2 +8;
@@ -630,14 +658,40 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 
 void PrivateFrame::updateTabIcon(bool offline) {
 	if (offline) {
-		setIcon(userOffline);
+		setIcon(userOfflineIcon);
+		setAway();
 		return;
 	}
 	OnlineUserPtr ou = ClientManager::getInstance()->findOnlineUser(chat->getHintedUser());
 	if (ou) {
 		tabIcon = ResourceLoader::getUserImages().GetIcon(ou->getImageIndex());
 		setIcon(tabIcon);
+		userAway = !getUser()->isSet(User::BOT) && ou->getIdentity().isAway();
 	}
+	setAway();
+}
+
+void PrivateFrame::setCountryFlag() {
+	OnlineUserPtr ou = ClientManager::getInstance()->findOnlineUser(chat->getHintedUser());
+	if (ou && getUser() && !getUser()->isSet(User::BOT)) {
+		string ip = ou->getIdentity().getIp();
+		uint8_t flagIndex = 0;
+		if (!ip.empty()) {
+			string tmpCountry = GeoManager::getInstance()->getCountry(ip);
+			if (!tmpCountry.empty()) {
+				countryPopup = Text::toT(tmpCountry) + _T(" (") + Text::toT(ip) + _T(")");
+				flagIndex = Localization::getFlagIndexByCode(tmpCountry.c_str());
+				ctrlStatus.SetIcon(STATUS_COUNTRY, ResourceLoader::flagImages.GetIcon(flagIndex));
+			}
+		}
+	}
+}
+
+void PrivateFrame::setAway() {
+	if (!getUser()->isOnline()) {
+		ctrlStatus.SetIcon(STATUS_AWAY, userOfflineIcon);
+	} else
+		ctrlStatus.SetIcon(STATUS_AWAY, userAway ? awayIconON : awayIconOFF);
 }
 
 void PrivateFrame::readLog() {

@@ -142,6 +142,8 @@ private:
 	static FrameMap frames;
 
 	enum {
+		STATUS_AWAY,
+		STATUS_COUNTRY,
 		STATUS_TEXT,
 		STATUS_CC,
 		STATUS_HUBSEL,
@@ -177,12 +179,15 @@ private:
 	ParamMap ucLineParams;
 	
 	CIcon tabIcon;
-	CIcon userOffline;
-	CIcon iCCReady;
-	CIcon iStartCC;
-	CIcon iNoCCPM;
+	CIcon userOfflineIcon;
+	CIcon CCReadyIcon;
+	CIcon startCCIcon;
+	CIcon noCCPMIcon;
+	CIcon awayIconON;
+	CIcon awayIconOFF;
 
 	tstring lastCCPMError;
+	tstring countryPopup;
 
 	void closeCC(bool silent = false);
 	bool ccReady() const;
@@ -190,6 +195,7 @@ private:
 	bool hasUnSeenMessages;
 	bool isTyping;
 	bool userTyping;
+	bool userAway;
 
 	void sendSeen();
 	void updatePMInfo(uint8_t aType);
@@ -198,6 +204,9 @@ private:
 	pair<tstring, CIcon> lastStatus;
 
 	void updateTabIcon(bool offline);
+	void setCountryFlag();
+	void setAway();
+
 	TStringList prevCommands;
 	tstring currentCommand;
 	TStringList::size_type curCommandPosition;
