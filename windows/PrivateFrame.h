@@ -204,15 +204,13 @@ private:
 
 	void activate() noexcept;
 	
-	virtual void on(PrivateChatListener::StatusMessage, PrivateChat*, const string& aMessage, uint8_t sev) noexcept;
-	virtual void on(PrivateChatListener::PrivateMessage, PrivateChat*, const ChatMessagePtr& aMessage) noexcept;
-	virtual void on(PrivateChatListener::UserUpdated, PrivateChat*) noexcept;
-	virtual void on(PrivateChatListener::PMStatus, PrivateChat*, uint8_t aType) noexcept;
-	virtual void on(PrivateChatListener::Close, PrivateChat*) noexcept {
-		PostMessage(WM_CLOSE);
-	}
+	void on(PrivateChatListener::StatusMessage, PrivateChat*, const LogMessagePtr& aMessage) noexcept;
+	void on(PrivateChatListener::PrivateMessage, PrivateChat*, const ChatMessagePtr& aMessage) noexcept;
+	void on(PrivateChatListener::UserUpdated, PrivateChat*) noexcept;
+	void on(PrivateChatListener::PMStatus, PrivateChat*, uint8_t aType) noexcept;
+	void on(PrivateChatListener::Close, PrivateChat*) noexcept;
 
-	virtual void on(PrivateChatListener::CCPMStatusUpdated, PrivateChat* aChat) noexcept{
+	void on(PrivateChatListener::CCPMStatusUpdated, PrivateChat* aChat) noexcept{
 		on(UserUpdated(), aChat);
 	}
 
@@ -221,7 +219,8 @@ private:
 	void handleNotifications(bool newWindow, const tstring& aMessage, const Identity& from);
 	void updateStatusBar();
 
-	void onMessage(const ChatMessagePtr& aMessage) noexcept;
+	void onChatMessage(const ChatMessagePtr& aMessage) noexcept;
+	void onStatusMessage(const LogMessagePtr& aMessage) noexcept;
 };
 
 #endif // !defined(PRIVATE_FRAME_H)

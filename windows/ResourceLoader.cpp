@@ -587,15 +587,15 @@ void ResourceLoader::loadFlagImages() {
 
 const CIcon& ResourceLoader::getSeverityIcon(uint8_t sev) {
 	switch (sev) {
-		case LogManager::LOG_INFO : 
+		case LogMessage::SEV_INFO : 
 			if (!infoIcon)
 				infoIcon = loadIcon(IDI_INFO, 16);
 			return infoIcon;
-		case LogManager::LOG_WARNING:
+		case LogMessage::SEV_WARNING:
 			if (!warningIcon)
 				warningIcon = loadIcon(IDI_IWARNING, 16);
 			return warningIcon;
-		case LogManager::LOG_ERROR:
+		case LogMessage::SEV_ERROR:
 			if (!errorIcon)
 				errorIcon = loadIcon(IDI_IERROR, 16);
 			return errorIcon;

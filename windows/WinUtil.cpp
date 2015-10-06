@@ -199,7 +199,7 @@ void WinUtil::MatchQueue::operator()(UserPtr aUser, const string& aUrl) const {
 		try {
 			QueueManager::getInstance()->addList(HintedUser(aUser, aUrl), QueueItem::FLAG_MATCH_QUEUE);
 		} catch(const Exception& e) {
-			LogManager::getInstance()->message(e.getError(), LogManager::LOG_ERROR);
+			LogManager::getInstance()->message(e.getError(), LogMessage::SEV_ERROR);
 		}
 	});
 }
@@ -212,7 +212,7 @@ void WinUtil::GetList::operator()(UserPtr aUser, const string& aUrl) const {
 		try {
 			QueueManager::getInstance()->addList(HintedUser(aUser, aUrl), QueueItem::FLAG_CLIENT_VIEW);
 		} catch(const Exception& e) {
-			LogManager::getInstance()->message(e.getError(), LogManager::LOG_ERROR);		
+			LogManager::getInstance()->message(e.getError(), LogMessage::SEV_ERROR);		
 		}
 	});
 }
@@ -225,7 +225,7 @@ void WinUtil::BrowseList::operator()(UserPtr aUser, const string& aUrl) const {
 		try {
 			QueueManager::getInstance()->addList(HintedUser(aUser, aUrl), QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
 		} catch (const Exception& e) {
-			LogManager::getInstance()->message(e.getError(), LogManager::LOG_ERROR);
+			LogManager::getInstance()->message(e.getError(), LogMessage::SEV_ERROR);
 		}
 	});
 }
@@ -931,7 +931,7 @@ string WinUtil::makeMagnet(const TTHValue& aHash, const string& aFile, int64_t s
 
 	if(stricmp(app.c_str(), Buf) != 0) {
 		if (::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\dchub"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL))  {
-			LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_DCHUB), LogManager::LOG_ERROR);
+			LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_DCHUB), LogMessage::SEV_ERROR);
 			return;
 		}
 	
@@ -970,7 +970,7 @@ string WinUtil::makeMagnet(const TTHValue& aHash, const string& aFile, int64_t s
 
 	 if(stricmp(app.c_str(), Buf) != 0) {
 		 if (::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\adc"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL))  {
-			 LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_ADC), LogManager::LOG_ERROR);
+			 LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_ADC), LogMessage::SEV_ERROR);
 			 return;
 		 }
 
@@ -1013,7 +1013,7 @@ void WinUtil::registerADCShubHandler() {
 	
 	if(stricmp(app.c_str(), Buf) != 0) {
 		if(::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\adcs"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL))  {
-			 LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_ADC), LogManager::LOG_ERROR);
+			 LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_ADC), LogMessage::SEV_ERROR);
 			return;
 			}
 
@@ -1058,7 +1058,7 @@ void WinUtil::registerMagnetHandler() {
 	if(SETTING(MAGNET_REGISTER) && (strnicmp(openCmd, appName, appName.size()) != 0)) {
 		SHDeleteKey(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\magnet"));
 		if (::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\magnet"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL))  {
-			LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_MAGNET), LogManager::LOG_ERROR);
+			LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_MAGNET), LogMessage::SEV_ERROR);
 			return;
 		}
 		::RegSetValueEx(hk, NULL, NULL, REG_SZ, (LPBYTE)CTSTRING(MAGNET_SHELL_DESC), sizeof(TCHAR)*(TSTRING(MAGNET_SHELL_DESC).length()+1));
@@ -1192,7 +1192,7 @@ void WinUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aUser, RichT
 					QueueManager::getInstance()->addOpenedItem(m.fname, m.fsize, m.getTTH(), aUser, false);
 				}
 			} catch(const Exception& e) {
-				LogManager::getInstance()->message(e.getError(), LogManager::LOG_ERROR);
+				LogManager::getInstance()->message(e.getError(), LogMessage::SEV_ERROR);
 			}
 		} else {
 			MessageBox(mainWnd, CTSTRING(MAGNET_DLG_TEXT_BAD), CTSTRING(MAGNET_DLG_TITLE), MB_OK | MB_ICONEXCLAMATION);
@@ -2203,7 +2203,7 @@ void WinUtil::addFileDownload(const string& aTarget, int64_t aSize, const TTHVal
 			QueueManager::getInstance()->createFileBundle(aTarget, aSize, aTTH, aUser, aDate, aFlags, (QueueItemBase::Priority)prio);
 		} catch (const Exception& e) {
 			auto nick = aUser ? Text::fromT(getNicks(aUser)) : STRING(UNKNOWN);
-			LogManager::getInstance()->message(STRING_F(ADD_FILE_ERROR, aTarget % nick % e.getError()), LogManager::LOG_ERROR);
+			LogManager::getInstance()->message(STRING_F(ADD_FILE_ERROR, aTarget % nick % e.getError()), LogMessage::SEV_ERROR);
 		}
 	});
 }

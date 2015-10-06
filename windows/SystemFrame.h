@@ -161,9 +161,9 @@ public:
 private:
 	
 	struct MessageTask : public Task {
-		MessageTask(LogMessage _data) : data(move(_data)) { }
+		MessageTask(const LogMessagePtr& _data) : data(_data) { }
 
-		LogMessage data;
+		LogMessagePtr data;
 	};
 
 
@@ -171,9 +171,9 @@ private:
 
 	CRichEditCtrl ctrlPad;
 	CMenu tabMenu;
-	virtual void on(Message, const LogMessage& aMessageData) noexcept;
+	virtual void on(Message, const LogMessagePtr& aMessageData) noexcept;
 	virtual void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
-	void addLine(const LogMessage& aMessageData);
+	void addLine(const LogMessagePtr& aMessageData);
 
 	void scrollToEnd();
 
@@ -199,8 +199,8 @@ private:
 
 	/* add the messages as tasks, if the user is currently making a selection don't add text to the window
 	before mouse button is up and selection is complete */
-	void speak(Tasks s, LogMessage mdata) {
-		messages.add(s, unique_ptr<Task>(new MessageTask(move(mdata))));
+	void speak(Tasks s, const LogMessagePtr& mdata) {
+		messages.add(s, unique_ptr<Task>(new MessageTask(mdata)));
 		if(!lButtonDown)
 			PostMessage(WM_SPEAKER); 
 		else

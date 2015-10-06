@@ -110,7 +110,11 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	callAsync([this] {
 		// Append messages that were received while the frame was being created
 		for (const auto& message : chat->getCache().getMessages()) {
-			onMessage(message);
+			if (message.type == Message::TYPE_CHAT) {
+				onChatMessage(message.chatMessage);
+			} else {
+				onStatusMessage(message.logMessage);
+			}
 		}
 	});
 
@@ -192,7 +196,7 @@ void PrivateFrame::updatePMInfo(uint8_t aType) {
 
 	case PrivateChat::QUIT:
 		userTyping = false;
-		setStatusText(_T(" *** ") + TSTRING(USER_CLOSED_WINDOW) + _T(" ***"), LogManager::LOG_INFO);
+		setStatusText(_T(" *** ") + TSTRING(USER_CLOSED_WINDOW) + _T(" ***"), LogMessage::SEV_INFO);
 		break;
 	}
 
@@ -272,7 +276,7 @@ LRESULT PrivateFrame::onHubChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	chat->setHubUrl(hubs[ctrlHubSel.GetCurSel()].first);
 	updateOnlineStatus();
 
-	addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)), LogManager::LOG_INFO);
+	addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)), LogMessage::SEV_INFO);
 	bHandled = FALSE;
 	return 0;
 }
@@ -337,7 +341,7 @@ void PrivateFrame::showHubSelection(bool show) {
 
 void PrivateFrame::handleNotifications(bool newWindow, const tstring& aMessage, const Identity& from) {
 	hasUnSeenMessages = true;
-	addStatus(_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + TSTRING(LAST_MESSAGE_RECEIVED), ResourceLoader::getSeverityIcon(LogManager::LOG_INFO));
+	addStatus(_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + TSTRING(LAST_MESSAGE_RECEIVED), ResourceLoader::getSeverityIcon(LogMessage::SEV_INFO));
 	
 	if (!getUser()->isSet(User::BOT))
 		MainFrame::getMainFrame()->onChatMessage(true);
@@ -378,12 +382,12 @@ void PrivateFrame::handleNotifications(bool newWindow, const tstring& aMessage, 
 bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& /*param*/, tstring& /*message*/, tstring& status, bool& /*thirdPerson*/) { 
 	if(stricmp(cmd.c_str(), _T("grant")) == 0) {
 		UploadManager::getInstance()->reserveSlot(HintedUser(chat->getHintedUser()), 600);
-		addClientLine(TSTRING(SLOT_GRANTED), LogManager::LOG_INFO);
+		addClientLine(TSTRING(SLOT_GRANTED), LogMessage::SEV_INFO);
 	} else if(stricmp(cmd.c_str(), _T("close")) == 0) {
 		PostMessage(WM_CLOSE);
 	} else if((stricmp(cmd.c_str(), _T("favorite")) == 0) || (stricmp(cmd.c_str(), _T("fav")) == 0)) {
 		FavoriteManager::getInstance()->addFavoriteUser(chat->getHintedUser());
-		addClientLine(TSTRING(FAVORITE_USER_ADDED), LogManager::LOG_INFO);
+		addClientLine(TSTRING(FAVORITE_USER_ADDED), LogMessage::SEV_INFO);
 	} else if(stricmp(cmd.c_str(), _T("getlist")) == 0) {
 		handleGetList();
 	} else if(stricmp(cmd.c_str(), _T("log")) == 0) {
@@ -404,27 +408,26 @@ bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& /*param*/, tstring& 
 }
 
 bool PrivateFrame::sendMessage(const tstring& msg, string& error_, bool thirdPerson) {
+	return chat->sendPrivateMessage(Text::fromT(msg), error_, thirdPerson);
+}
 
-	if (getUser()->isOnline()) {
-		return chat->sendPrivateMessage(chat->getHintedUser(), Text::fromT(msg), error_, thirdPerson);
-	}
-	error_ = STRING(USER_OFFLINE);
-	return false;
+void PrivateFrame::on(PrivateChatListener::Close, PrivateChat*) noexcept {
+	callAsync([&]{
+		closed = true;
+		PostMessage(WM_CLOSE);
+	});
 }
 
 LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closed) {
-		chat->removeListener(this);
-		LogManager::getInstance()->removePmCache(getUser());
-		SettingsManager::getInstance()->removeListener(this);
 		MessageManager::getInstance()->removeChat(getUser());
+		return 0;
+	} else {
+		chat->removeListener(this);
+		SettingsManager::getInstance()->removeListener(this);
 
 		frames.erase(getUser());
 
-		closed = true;
-		PostMessage(WM_CLOSE);
-		return 0;
-	} else {
 		bHandled = FALSE;
 		return 0;
 	}
@@ -432,7 +435,7 @@ LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 void PrivateFrame::closeCC(bool silent) {
 	if (ccReady()) {
-		if (!silent) { addStatusLine(TSTRING(CCPM_DISCONNECTING),LogManager::LOG_INFO); }
+		if (!silent) { addStatusLine(TSTRING(CCPM_DISCONNECTING),LogMessage::SEV_INFO); }
 		chat->closeCC(false, true);
 	}
 }
@@ -465,7 +468,7 @@ void PrivateFrame::addLine(const Identity& from, const tstring& aLine, CHARFORMA
 
 	auto myNick = Text::toT(ctrlClient.getClient() ? ctrlClient.getClient()->get(HubSettings::Nick) : SETTING(NICK));
 	bool notify = ctrlClient.AppendChat(from, myNick, SETTING(TIME_STAMPS) ? Text::toT("[" + Util::getShortTimeString() + "] ") : _T(""), aLine + _T('\n'), cf);
-	//addClientLine(TSTRING(LAST_CHANGE) + _T(" ") + Text::toT(Util::getTimeString()), LogManager::LOG_INFO);
+	//addClientLine(TSTRING(LAST_CHANGE) + _T(" ") + Text::toT(Util::getTimeString()), LogMessage::SEV_INFO);
 
 	if(notify)
 		setNotify();
@@ -733,11 +736,11 @@ void PrivateFrame::on(PrivateChatListener::PMStatus, PrivateChat*, uint8_t aType
 
 void PrivateFrame::on(PrivateChatListener::PrivateMessage, PrivateChat*, const ChatMessagePtr& aMessage) noexcept{
 	callAsync([=] {
-		onMessage(aMessage);
+		onChatMessage(aMessage);
 	});
 }
 
-void PrivateFrame::onMessage(const ChatMessagePtr& aMessage) noexcept {
+void PrivateFrame::onChatMessage(const ChatMessagePtr& aMessage) noexcept {
 	bool myPM = aMessage->getReplyTo()->getUser() == ClientManager::getInstance()->getMe();
 
 	auto text = Text::toT(aMessage->format());
@@ -747,8 +750,12 @@ void PrivateFrame::onMessage(const ChatMessagePtr& aMessage) noexcept {
 		handleNotifications(false, text, aMessage->getFrom()->getIdentity());
 	}
 	else if (!userTyping) {
-		addStatus(_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + TSTRING(LAST_MESSAGE_SENT), ResourceLoader::getSeverityIcon(LogManager::LOG_INFO));
+		addStatus(_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + TSTRING(LAST_MESSAGE_SENT), ResourceLoader::getSeverityIcon(LogMessage::SEV_INFO));
 	}
+}
+
+void PrivateFrame::onStatusMessage(const LogMessagePtr& aMessage) noexcept {
+	addStatusLine(Text::toT(aMessage->getText()), aMessage->getSeverity());
 }
 
 void PrivateFrame::activate() noexcept {
@@ -757,12 +764,13 @@ void PrivateFrame::activate() noexcept {
 		if (::IsIconic(m_hWnd))
 			::ShowWindow(m_hWnd, SW_RESTORE);
 		MDIActivate(m_hWnd);
+		chat->setRead();
 		//sendFrameMessage(Text::toT(msg));
 	});
 }
 
-void PrivateFrame::on(PrivateChatListener::StatusMessage, PrivateChat*, const string& aMessage, uint8_t sev) noexcept{
+void PrivateFrame::on(PrivateChatListener::StatusMessage, PrivateChat*, const LogMessagePtr& aMessage) noexcept{
 	callAsync([=] {
-		addStatusLine(Text::toT(aMessage), sev);
+		onStatusMessage(aMessage);
 	});
 }

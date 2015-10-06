@@ -425,7 +425,7 @@ void ChatFrameBase::addMagnet(const StringList& aPaths) {
 		WinUtil::ShowMessageBox(SettingsManager::NMDC_MAGNET_WARN, CTSTRING(NMDC_MAGNET_WARNING));
 	}
 
-	setStatusText(aPaths.size() > 1 ? TSTRING_F(CREATING_MAGNET_FOR_X, aPaths.size()) : TSTRING_F(CREATING_MAGNET_FOR, Text::toT(aPaths.front())), LogManager::LOG_INFO);
+	setStatusText(aPaths.size() > 1 ? TSTRING_F(CREATING_MAGNET_FOR_X, aPaths.size()) : TSTRING_F(CREATING_MAGNET_FOR, Text::toT(aPaths.front())), LogMessage::SEV_INFO);
 	tasks.run([=] {
 		int64_t sizeLeft = 0;
 		for(auto& path: aPaths)
@@ -446,11 +446,11 @@ void ChatFrameBase::addMagnet(const StringList& aPaths) {
 						tstring status = TSTRING_F(HASHING_X_LEFT, Text::toT(aFileName) % Text::toT(Util::formatTime(aTimeLeft, true)));
 						if (aPaths.size() > 1) 
 							status += _T(" (") + Text::toLower(TSTRING(FILE)) + _T(" ") + Util::toStringW(pos) + _T("/") + Util::toStringW(aPaths.size()) + _T(")");
-						setStatusText(status, LogManager::LOG_INFO);
+						setStatusText(status, LogMessage::SEV_INFO);
 					});
 				});
 			} catch (const Exception& e) {
-				callAsync([=] { setStatusText(TSTRING_F(HASHING_FAILED_X, Text::toT(e.getError())), LogManager::LOG_ERROR); });
+				callAsync([=] { setStatusText(TSTRING_F(HASHING_FAILED_X, Text::toT(e.getError())), LogMessage::SEV_ERROR); });
 				return;
 			}
 
@@ -465,7 +465,7 @@ void ChatFrameBase::addMagnet(const StringList& aPaths) {
 
 		callAsync([=] {
 			if (!cancelHashing) {
-				setStatusText(aPaths.size() > 1 ? TSTRING_F(MAGNET_CREATED_FOR_X, aPaths.size()) : TSTRING_F(MAGNET_CREATED_FOR, Text::toT(aPaths.front())), LogManager::LOG_INFO);
+				setStatusText(aPaths.size() > 1 ? TSTRING_F(MAGNET_CREATED_FOR_X, aPaths.size()) : TSTRING_F(MAGNET_CREATED_FOR, Text::toT(aPaths.front())), LogMessage::SEV_INFO);
 				appendTextLine(ret, true);
 			}
 		});
@@ -498,7 +498,7 @@ LRESULT ChatFrameBase::onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	} else if(SETTING(MEDIA_PLAYER) == 4) {
 		cmd = _T("/spotify");
 	} else {
-		addStatusLine(CTSTRING(NO_MEDIA_SPAM), LogManager::LOG_INFO);
+		addStatusLine(CTSTRING(NO_MEDIA_SPAM), LogMessage::SEV_INFO);
 		return 0;
 	}
 	if(checkCommand(cmd, param, message, status, thirdPerson)){
@@ -506,7 +506,7 @@ LRESULT ChatFrameBase::onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 			sendFrameMessage(message, thirdPerson);
 		}
 		if(!status.empty()) {
-			addStatusLine(status, LogManager::LOG_INFO);
+			addStatusLine(status, LogMessage::SEV_INFO);
 		}
 	}
 	return 0;
@@ -518,7 +518,7 @@ bool ChatFrameBase::sendFrameMessage(const tstring& aMsg, bool thirdPerson /*fal
 		if (sendMessage(aMsg, error, thirdPerson)) {
 			return true;
 		} else {
-			addStatusLine(Text::toT(error),  LogManager::LOG_ERROR);
+			addStatusLine(Text::toT(error),  LogMessage::SEV_ERROR);
 		}
 	}
 	return false;
@@ -634,7 +634,7 @@ void ChatFrameBase::onEnter() {
 			tstring cmd = s;
 			tstring param;
 			if(SETTING(CLIENT_COMMANDS)) {
-				addStatusLine(_T("Client command: ") + s, LogManager::LOG_INFO);
+				addStatusLine(_T("Client command: ") + s, LogMessage::SEV_INFO);
 			}
 			isCommand = checkCommand(cmd, param, message, status, thirdPerson);
 			if(!isCommand) {
@@ -662,7 +662,7 @@ void ChatFrameBase::onEnter() {
 		if (isCommand)
 			addPrivateLine(status, WinUtil::m_ChatTextPrivate);
 		else
-			addStatusLine(status, LogManager::LOG_INFO);
+			addStatusLine(status, LogMessage::SEV_INFO);
 	}
 
 	if (!message.empty()) {
@@ -875,7 +875,7 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 		status = _T("Collecing statistics, please wait... (this may take a few minutes with large databases)");
 		tasks.run([this] { 
 			auto text = Text::toT(HashManager::getInstance()->getDbStats());
-			callAsync([=] { addStatusLine(text, LogManager::LOG_INFO); });
+			callAsync([=] { addStatusLine(text, LogMessage::SEV_INFO); });
 		});
 	} else if(stricmp(cmd.c_str(), _T("sharestats")) == 0) {
 		status = Text::toT(ShareManager::getInstance()->printStats());

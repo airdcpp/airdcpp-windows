@@ -281,7 +281,7 @@ LRESULT ADLSearchFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 {
 	// Invoke edit dialog with fresh search
 	if (ADLSearchManager::getInstance()->getRunning() > 0) {
-		LogManager::getInstance()->message(CSTRING(ADLSEARCH_IN_PROGRESS), LogManager::LOG_ERROR);
+		LogManager::getInstance()->message(CSTRING(ADLSEARCH_IN_PROGRESS), LogMessage::SEV_ERROR);
 		return 0;
 	}
 
