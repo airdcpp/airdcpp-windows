@@ -102,7 +102,7 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ctrlStatusContainer.SubclassWindow(ctrlStatus.m_hWnd);
 	
 	bool userBot = getUser() && getUser()->isSet(User::BOT);
-	userOfflineIcon = userBot ? ResourceLoader::loadIcon(IDI_BOT_OFF) : ResourceLoader::loadIcon(IDR_PRIVATE_OFF);
+	userOfflineIcon = userBot ? ResourceLoader::loadIcon(IDI_BOT_OFF, 16) : ResourceLoader::loadIcon(IDR_PRIVATE_OFF, 16);
 
 	CCReadyIcon = ResourceLoader::loadIcon(IDI_SECURE, 16);
 	startCCIcon = ResourceLoader::convertGrayscaleIcon(ResourceLoader::loadIcon(IDI_SECURE, 16));
@@ -230,7 +230,7 @@ LRESULT PrivateFrame::onStatusBarClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 }
 
 LRESULT PrivateFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/) {
-	if (getUser()->isNMDC())
+	if (getUser()->isNMDC() || getUser()->isSet(User::BOT))
 		return 0;
 	
 	LPNMTTDISPINFO pDispInfo = (LPNMTTDISPINFO)pnmh;
@@ -690,7 +690,7 @@ void PrivateFrame::setCountryFlag() {
 void PrivateFrame::setAway() {
 	if (!getUser()->isOnline()) {
 		ctrlStatus.SetIcon(STATUS_AWAY, userOfflineIcon);
-	} else
+	} else if(!getUser()->isSet(User::BOT))
 		ctrlStatus.SetIcon(STATUS_AWAY, userAway ? awayIconON : awayIconOFF);
 }
 
