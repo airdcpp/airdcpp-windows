@@ -1450,7 +1450,7 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 LRESULT SearchFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	if (collecting) {
 		auto tick = GET_TICK();
-		//LogManager::getInstance()->message(Util::toString((cycleTicks / cycleResults)) + " " + Util::toString(cycleTicks) + " " + Util::toString(cycleResults), LogManager::LOG_INFO);
+		//LogManager::getInstance()->message(Util::toString((cycleTicks / cycleResults)) + " " + Util::toString(cycleTicks) + " " + Util::toString(cycleResults), LogMessage::SEV_INFO);
 		if (cycleResults > 0 && ((tick - resultCycleStart) / cycleResults) <= 4) { // 250 results per second
 			// keep on collecting...
 			ctrlStatus.SetText(3, CTSTRING(COLLECTING_RESULTS));

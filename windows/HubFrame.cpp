@@ -30,7 +30,7 @@
 #include <airdcpp/ColorSettings.h>
 #include <airdcpp/HighlightManager.h>
 #include <airdcpp/DirectoryListingManager.h>
-#include <airdcpp/ChatMessage.h>
+#include <airdcpp/Message.h>
 #include <airdcpp/QueueManager.h>
 #include <airdcpp/ShareManager.h>
 #include <airdcpp/UploadManager.h>
@@ -310,9 +310,9 @@ void HubFrame::addAsFavorite() {
 			e->setPassword(client->getPassword());
 		}
 		FavoriteManager::getInstance()->addFavoriteHub(e);
-		addStatus(TSTRING(FAVORITE_HUB_ADDED), LogManager::LOG_INFO, WinUtil::m_ChatTextSystem );
+		addStatus(TSTRING(FAVORITE_HUB_ADDED), LogMessage::SEV_INFO, WinUtil::m_ChatTextSystem );
 	} else {
-		addStatus(TSTRING(FAVORITE_HUB_ALREADY_EXISTS), LogManager::LOG_ERROR, WinUtil::m_ChatTextSystem);
+		addStatus(TSTRING(FAVORITE_HUB_ALREADY_EXISTS), LogMessage::SEV_ERROR, WinUtil::m_ChatTextSystem);
 	}
 }
 
@@ -320,9 +320,9 @@ void HubFrame::removeFavoriteHub() {
 	auto removeHub = FavoriteManager::getInstance()->getFavoriteHubEntry(client->getHubUrl());
 	if(removeHub) {
 		FavoriteManager::getInstance()->removeFavoriteHub(removeHub->getToken());
-		addStatus(TSTRING(FAVORITE_HUB_REMOVED), LogManager::LOG_INFO, WinUtil::m_ChatTextSystem);
+		addStatus(TSTRING(FAVORITE_HUB_REMOVED), LogMessage::SEV_INFO, WinUtil::m_ChatTextSystem);
 	} else {
-		addStatus(TSTRING(FAVORITE_HUB_DOES_NOT_EXIST), LogManager::LOG_ERROR, WinUtil::m_ChatTextSystem);
+		addStatus(TSTRING(FAVORITE_HUB_DOES_NOT_EXIST), LogMessage::SEV_ERROR, WinUtil::m_ChatTextSystem);
 	}
 }
 
@@ -488,7 +488,7 @@ void HubFrame::onChatMessage(const ChatMessagePtr& msg) {
 }
 
 void HubFrame::onDisconnected(const string& aReason) {
-	addStatus(Text::toT(aReason), LogManager::LOG_WARNING, WinUtil::m_ChatTextServer); //Error?
+	addStatus(Text::toT(aReason), LogMessage::SEV_WARNING, WinUtil::m_ChatTextServer); //Error?
 
 	clearUserList();
 	setDisconnected(true);
@@ -504,7 +504,7 @@ void HubFrame::onDisconnected(const string& aReason) {
 }
 
 void HubFrame::onConnected() {
-	addStatus(TSTRING(CONNECTED), LogManager::LOG_INFO, WinUtil::m_ChatTextServer);
+	addStatus(TSTRING(CONNECTED), LogMessage::SEV_INFO, WinUtil::m_ChatTextServer);
 	wentoffline = false;
 	setDisconnected(false);
 	setTabIcons();
@@ -579,7 +579,7 @@ void HubFrame::execTasks() {
 void HubFrame::onPassword() {
 	if(client->getPassword().size() > 0) {
 		client->password(client->getPassword());
-		addStatus(TSTRING(STORED_PASSWORD_SENT), LogManager::LOG_INFO, WinUtil::m_ChatTextSystem);
+		addStatus(TSTRING(STORED_PASSWORD_SENT), LogMessage::SEV_INFO, WinUtil::m_ChatTextSystem);
 	} else {
 		if(!SETTING(PROMPT_PASSWORD)) {
 			ctrlMessage.SetWindowText(_T("/password "));
@@ -887,7 +887,7 @@ LRESULT HubFrame::onLButton(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& b
 					try {
 						QueueManager::getInstance()->addList(HintedUser(ui->getUser(), client->getHubUrl()), QueueItem::FLAG_CLIENT_VIEW);
 					} catch(const Exception& e) {
-						addStatus(Text::toT(e.getError()), LogManager::LOG_ERROR, WinUtil::m_ChatTextSystem);
+						addStatus(Text::toT(e.getError()), LogMessage::SEV_ERROR, WinUtil::m_ChatTextSystem);
 					}
 				} else if(ui->getUser() != ClientManager::getInstance()->getMe()) {
 					switch(SETTING(CHAT_DBLCLICK)) {
@@ -1223,7 +1223,7 @@ LRESULT HubFrame::onShowUsers(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, B
 LRESULT HubFrame::onFollow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(!redirect.empty()) {
 		if (ClientManager::getInstance()->hasClient(Text::fromT(redirect))) {
-			addStatus(TSTRING(REDIRECT_ALREADY_CONNECTED), LogManager::LOG_ERROR, WinUtil::m_ChatTextServer);
+			addStatus(TSTRING(REDIRECT_ALREADY_CONNECTED), LogMessage::SEV_ERROR, WinUtil::m_ChatTextServer);
 			return 0;
 		}
 		
@@ -1256,7 +1256,7 @@ LRESULT HubFrame::onEnterUsers(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHand
 		try {
 			QueueManager::getInstance()->addList(HintedUser((ctrlUsers.getItemData(item))->getUser(), client->getHubUrl()), QueueItem::FLAG_CLIENT_VIEW);
 		} catch(const Exception& e) {
-			addStatus(Text::toT(e.getError()), LogManager::LOG_ERROR);
+			addStatus(Text::toT(e.getError()), LogMessage::SEV_ERROR);
 		}
 	}
 	return 0;
@@ -1426,7 +1426,7 @@ void HubFrame::on(Connecting, const Client*) noexcept {
 			addLine(TSTRING(ANTI_PASSIVE_SEARCH), WinUtil::m_ChatTextSystem);
 		}
 
-		addStatus(Text::toT(STRING(CONNECTING_TO) + " " + client->getHubUrl() + " ..."), LogManager::LOG_INFO, WinUtil::m_ChatTextServer);
+		addStatus(Text::toT(STRING(CONNECTING_TO) + " " + client->getHubUrl() + " ..."), LogMessage::SEV_INFO, WinUtil::m_ChatTextServer);
 		setWindowTitle(client->getHubUrl());
 	});
 }
@@ -1470,7 +1470,7 @@ void HubFrame::on(ClientListener::UserRemoved, const Client*, const OnlineUserPt
 void HubFrame::on(Redirect, const Client*, const string& line) noexcept { 
 	if(ClientManager::getInstance()->hasClient(line)) {
 		callAsync([=] { 
-			addStatus(TSTRING(REDIRECT_ALREADY_CONNECTED), LogManager::LOG_INFO, WinUtil::m_ChatTextServer);
+			addStatus(TSTRING(REDIRECT_ALREADY_CONNECTED), LogMessage::SEV_INFO, WinUtil::m_ChatTextServer);
 		});
 		return;
 	}
@@ -1488,7 +1488,7 @@ void HubFrame::on(Redirect, const Client*, const string& line) noexcept {
 			msg = STRING(PRESS_FOLLOW) + " " + line;
 		}
 
-		callAsync([=] { addStatus(Text::toT(msg), LogManager::LOG_INFO, WinUtil::m_ChatTextServer); });
+		callAsync([=] { addStatus(Text::toT(msg), LogMessage::SEV_INFO, WinUtil::m_ChatTextServer); });
 	}
 }
 void HubFrame::on(Failed, const string&, const string& line) noexcept {
@@ -1539,22 +1539,22 @@ void HubFrame::on(StatusMessage, const Client*, const string& line, int statusFl
 		if(SETTING(BOLD_HUB_TABS_ON_KICK) && (statusFlags & ClientListener::FLAG_IS_SPAM)){
 			setDirty();
 		}
-		addStatus(Text::toT(Text::toDOS(line)), LogManager::LOG_INFO, WinUtil::m_ChatTextServer, !SETTING(FILTER_MESSAGES) || !(statusFlags & ClientListener::FLAG_IS_SPAM));
+		addStatus(Text::toT(Text::toDOS(line)), LogMessage::SEV_INFO, WinUtil::m_ChatTextServer, !SETTING(FILTER_MESSAGES) || !(statusFlags & ClientListener::FLAG_IS_SPAM));
 	});
 
 }
 void HubFrame::on(NickTaken, const Client*) noexcept {
-	callAsync([=] { addStatus(TSTRING(NICK_TAKEN), LogManager::LOG_ERROR, WinUtil::m_ChatTextServer); });
+	callAsync([=] { addStatus(TSTRING(NICK_TAKEN), LogMessage::SEV_ERROR, WinUtil::m_ChatTextServer); });
 }
 void HubFrame::on(SearchFlood, const Client*, const string& line) noexcept {
-	callAsync([=] { addStatus(TSTRING(SEARCH_SPAM_FROM) + _T(" ") + Text::toT(line), LogManager::LOG_INFO, WinUtil::m_ChatTextServer); });
+	callAsync([=] { addStatus(TSTRING(SEARCH_SPAM_FROM) + _T(" ") + Text::toT(line), LogMessage::SEV_INFO, WinUtil::m_ChatTextServer); });
 }
 
 void HubFrame::on(HubTopic, const Client*, const string& line) noexcept {
-	callAsync([=] { addStatus(TSTRING(HUB_TOPIC) + _T("\t") + Text::toT(line), LogManager::LOG_INFO, WinUtil::m_ChatTextServer); });
+	callAsync([=] { addStatus(TSTRING(HUB_TOPIC) + _T("\t") + Text::toT(line), LogMessage::SEV_INFO, WinUtil::m_ChatTextServer); });
 }
 void HubFrame::on(AddLine, const Client*, const string& line) noexcept {
-	callAsync([=] { addStatus(Text::toT(line), LogManager::LOG_INFO, WinUtil::m_ChatTextServer); });
+	callAsync([=] { addStatus(Text::toT(line), LogMessage::SEV_INFO, WinUtil::m_ChatTextServer); });
 }
 
 void HubFrame::on(SetActive, const Client*) noexcept {
@@ -1966,7 +1966,7 @@ void HubFrame::setFonts() {
 	ctrlClient.SetSelNone();
 	ctrlClient.SetRedraw(TRUE);
 
-	addStatus(TSTRING(NEW_TEXT_STYLE_APPLIED), LogManager::LOG_INFO, WinUtil::m_ChatTextSystem);
+	addStatus(TSTRING(NEW_TEXT_STYLE_APPLIED), LogMessage::SEV_INFO, WinUtil::m_ChatTextSystem);
 }
 
 LRESULT HubFrame::onIgnore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/) {

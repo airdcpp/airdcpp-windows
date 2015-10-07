@@ -26,7 +26,7 @@
 #include <airdcpp/AirUtil.h>
 #include <airdcpp/Client.h>
 #include <airdcpp/TargetUtil.h>
-#include <airdcpp/ChatMessage.h>
+#include <airdcpp/Message.h>
 #include <airdcpp/UserInfoBase.h>
 #include <airdcpp/SortedVector.h>
 
@@ -187,6 +187,28 @@ protected:
 	const UserPtr& getUser() const;
 	const string& getHubUrl() const;
 private:
+	class ChatLink {
+
+	public:
+		enum LinkType {
+			TYPE_URL,
+			TYPE_MAGNET,
+			TYPE_RELEASE,
+			TYPE_SPOTIFY,
+			TYPE_PATH,
+		};
+
+		explicit ChatLink(const string& aLink, LinkType aLinkType, const UserPtr& aUser);
+		explicit ChatLink() { }
+
+		string url;
+		string getDisplayText();
+		DupeType updateDupeType(const UserPtr& aUser);
+
+		GETSET(LinkType, type, Type);
+		GETSET(DupeType, dupe, Dupe);
+	};
+
 	void clearSelInfo();
 	void updateSelectedText(POINT pt, bool selectLink);
 	static UINT	WM_FINDREPLACE;

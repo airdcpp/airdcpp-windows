@@ -156,7 +156,7 @@ LRESULT SystemFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	return 0;
 }
 
-void SystemFrame::addLine(const LogMessage& aMessageData) {
+void SystemFrame::addLine(const LogMessagePtr& aMessageData) {
 	ctrlPad.SetRedraw(FALSE);
 	
 	POINT pt = { 0 };
@@ -173,8 +173,8 @@ void SystemFrame::addLine(const LogMessage& aMessageData) {
 	End = Begin = ctrlPad.GetTextLengthEx(GTL_NUMCHARS);
 
 
-	tstring Text = Text::toT(aMessageData.message) + _T(" \r\n");
-	tstring time = Text::toT(" [" + Util::getTimeStamp(aMessageData.time) + "] ");
+	tstring Text = Text::toT(aMessageData->getText()) + _T(" \r\n");
+	tstring time = Text::toT(" [" + Util::getTimeStamp(aMessageData->getTime()) + "] ");
 	tstring line = time + Text;
 
 	LONG limitText = ctrlPad.GetLimitText();
@@ -204,7 +204,7 @@ void SystemFrame::addLine(const LogMessage& aMessageData) {
 	ctrlPad.SetSel(Begin, End);
 	ctrlPad.SetSelectionCharFormat(WinUtil::m_TextStyleTimestamp);
 
-	if (aMessageData.severity == LogManager::LOG_ERROR) {
+	if (aMessageData->getSeverity() == LogMessage::SEV_ERROR) {
 		ctrlPad.SetSel(End, End+Text.length()-1);
 		CHARFORMAT2 ec = WinUtil::m_ChatTextGeneral;
 		ec.crTextColor = SETTING(ERROR_COLOR);
@@ -215,15 +215,15 @@ void SystemFrame::addLine(const LogMessage& aMessageData) {
 
 	ctrlPad.SetSel(Begin, Begin);
 
-	switch(aMessageData.severity) {
+	switch(aMessageData->getSeverity()) {
 
-	case LogManager::LOG_INFO:
+	case LogMessage::SEV_INFO:
 		CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(),hbInfo, false);
 		break;
-	case LogManager::LOG_WARNING:
+	case LogMessage::SEV_WARNING:
 		CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(), hbWarning, false);
 		break;
-	case LogManager::LOG_ERROR:
+	case LogMessage::SEV_ERROR:
 		CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(), hbError, false);
 		if(!errorNotified && !getActive()) { 
 			setIcon(tabError);
@@ -297,7 +297,7 @@ void SystemFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept
     PostMessage(WM_REFRESH_SETTINGS);
 }
 
-void SystemFrame::on(Message, const LogMessage& aMessageData) noexcept {
+void SystemFrame::on(Message, const LogMessagePtr& aMessageData) noexcept {
 	speak(ADD_LINE, aMessageData);
 }
 

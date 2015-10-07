@@ -202,7 +202,7 @@ public:
 				int matches=0, newFiles=0;
 				BundleList bundles;
 				QueueManager::getInstance()->matchListing(*dl, matches, newFiles, bundles);
-				LogManager::getInstance()->message(dl->getNick(false) + ": " + AirUtil::formatMatchResults(matches, newFiles, bundles, false), LogManager::LOG_INFO);
+				LogManager::getInstance()->message(dl->getNick(false) + ": " + AirUtil::formatMatchResults(matches, newFiles, bundles, false), LogMessage::SEV_INFO);
 			} catch(const Exception&) {
 
 			}
@@ -869,7 +869,7 @@ void MainFrame::updateStatus(TStringList* aList) {
 						// Should we go faster here and force termination?
 						// We "could" do a manual shutdown of this app...
 					} else {
-						LogManager::getInstance()->message(STRING(FAILED_TO_SHUTDOWN), LogManager::LOG_ERROR);
+						LogManager::getInstance()->message(STRING(FAILED_TO_SHUTDOWN), LogMessage::SEV_ERROR);
 						ctrlStatus.SetText(STATUS_SHUTDOWN, _T(""));
 					}
 					// We better not try again. It WON'T work...
@@ -888,16 +888,16 @@ void MainFrame::updateStatus(TStringList* aList) {
 	delete aList;
 }
 
-void MainFrame::on(LogManagerListener::Message, const LogMessage& aMessage) noexcept {
+void MainFrame::on(LogManagerListener::Message, const LogMessagePtr& aMessage) noexcept {
 	callAsync([=] { addStatus(aMessage); });
 }
 
-void MainFrame::addStatus(const LogMessage& aMessage) {
+void MainFrame::addStatus(const LogMessagePtr& aMessage) {
 	if (!ctrlStatus.IsWindow()) {
 		return;
 	}
 
-	tstring line = Text::toT("[" + Util::getTimeStamp(aMessage.time) + "] " + aMessage.message);
+	tstring line = Text::toT("[" + Util::getTimeStamp(aMessage->getTime()) + "] " + aMessage->getText());
 
 	ctrlStatus.SetText(STATUS_LASTLINES, line.c_str(), SBT_NOTABPARSING);
 	while(lastLinesList.size() + 1 > MAX_CLIENT_LINES)
@@ -909,7 +909,7 @@ void MainFrame::addStatus(const LogMessage& aMessage) {
 		lastLinesList.push_back(line.substr(0, line.find(_T('\r'))));
 	}
 
-	ctrlStatus.SetIcon(STATUS_LASTLINES, ResourceLoader::getSeverityIcon(aMessage.severity));
+	ctrlStatus.SetIcon(STATUS_LASTLINES, ResourceLoader::getSeverityIcon(aMessage->getSeverity()));
 }
 
 void MainFrame::onChatMessage(bool pm) {
