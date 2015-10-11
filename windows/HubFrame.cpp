@@ -1268,8 +1268,6 @@ void HubFrame::addStatus(const tstring& aLine, uint8_t sev, CHARFORMAT2& cf, boo
 	if(SETTING(STATUS_IN_CHAT) && inChat) {
 		addLine(_T("*** ") + aLine, cf, SETTING(HUB_BOLD_TABS));
 	}
-
-	client->logStatusMessage(Text::fromT(aLine));
 }
 
 void HubFrame::resortUsers() {
@@ -1330,13 +1328,6 @@ LRESULT HubFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 		callAsync([this] { execTasks(); });
 	}
 
-	/*auto prevSelCount = selCount;
-	selCount = users->countSelected();
-	if(statusDirty || selCount != prevSelCount) {
-		statusDirty = false;
-		updateStatus();
-	}*/
-
 	if(statusDirty) {
 		statusDirty = false;
 		updateStatusBar();
@@ -1381,7 +1372,6 @@ void HubFrame::on(Connecting, const Client*) noexcept {
 			addLine(TSTRING(ANTI_PASSIVE_SEARCH), WinUtil::m_ChatTextSystem);
 		}
 
-		//addStatus(Text::toT(STRING(CONNECTING_TO) + " " + client->getHubUrl() + " ..."), LogMessage::SEV_INFO, WinUtil::m_ChatTextServer);
 		setWindowTitle(client->getHubUrl());
 	});
 }
