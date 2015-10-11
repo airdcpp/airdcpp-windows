@@ -142,9 +142,9 @@ private:
 	static FrameMap frames;
 
 	enum {
+		STATUS_TEXT,
 		STATUS_AWAY,
 		STATUS_COUNTRY,
-		STATUS_TEXT,
 		STATUS_CC,
 		STATUS_HUBSEL,
 		STATUS_LAST
