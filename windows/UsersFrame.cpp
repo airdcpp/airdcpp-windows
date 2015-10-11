@@ -869,8 +869,7 @@ UsersFrame::UserInfo::userData UsersFrame::UserInfo::getUserInfo(const UserPtr& 
 	string seen = STRING(ONLINE);
 
 	if(user->isOnline()) {
-		RLock l(ClientManager::getInstance()->getCS());
-		auto hinted = ClientManager::getInstance()->getUsers(HintedUser(aUser, hint_), ouList);
+		auto hinted = ClientManager::getInstance()->getOnlineUsers(HintedUser(aUser, hint_), ouList);
 		if (!ouList.empty() && !hinted) { //set the hint to match the first nick
 			auto i = ouList.begin();
 			hinted = *i;

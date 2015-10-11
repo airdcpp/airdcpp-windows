@@ -58,7 +58,6 @@ AdvancedPage::ListItem AdvancedPage::listItems[] = {
 	{ SettingsManager::SEARCH_SAVE_HUBS_STATE, ResourceManager::SAVE_HUBS_STATE },
 	{ SettingsManager::FREE_SPACE_WARN, ResourceManager::SETTINGS_USE_SPACE_WARNING },
 	{ SettingsManager::NMDC_MAGNET_WARN, ResourceManager::SETTINGS_NMDC_MAGNET_WARNING },
-	{ SettingsManager::ACCEPT_FAILOVERS, ResourceManager::ACCEPT_FAILOVERS_GLOBAL },
 	{ SettingsManager::NFO_EXTERNAL, ResourceManager::OPEN_NFO_EXTERNAL },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
