@@ -152,6 +152,8 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	}
 	
 	bHandled = FALSE;
+
+	client->addListener(this);
 	client->connect();
 
 	FavoriteManager::getInstance()->addListener(this);
@@ -188,7 +190,6 @@ HubFrame::HubFrame(const tstring& aServer) :
 {
 	client = ClientManager::getInstance()->getClient(Text::fromT(server));
 	dcassert(client);
-	client->addListener(this);
 
 	auto fhe = FavoriteManager::getInstance()->getFavoriteHubEntry(Text::fromT(server));
 	if(fhe) {
@@ -208,7 +209,6 @@ bool HubFrame::sendMessage(const tstring& aMessage, string& error_, bool isThird
 bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*message*/, tstring& status, bool& /*thirdPerson*/) {	
 	if(stricmp(cmd.c_str(), _T("join"))==0) {
 		if(!param.empty()) {
-			redirect = param;
 			if(SETTING(JOIN_OPEN_NEW_WINDOW)) {
 				RecentHubEntryPtr r = new RecentHubEntry(Text::fromT(param));
 				WinUtil::connectHub(r, SETTING(DEFAULT_SP));
@@ -296,21 +296,8 @@ struct CompareItems {
 };
 
 void HubFrame::addAsFavorite() {
-	auto existingHub = FavoriteManager::getInstance()->getFavoriteHubEntry(client->getHubUrl());
-	if(!existingHub) {
-		FavoriteHubEntryPtr e = new FavoriteHubEntry();
-		TCHAR buf[256];
-		this->GetWindowText(buf, 255);
-		e->setServerStr(Text::fromT(server));
-		e->setName(Text::fromT(buf));
-		e->setDescription(Text::fromT(buf));
-		e->setAutoConnect(true);
-		e->setShareProfile(ShareManager::getInstance()->getShareProfile(client->getShareProfile(), true));
-		if(!client->getPassword().empty()) {
-			e->setPassword(client->getPassword());
-		}
-		FavoriteManager::getInstance()->addFavoriteHub(e);
-		addStatus(TSTRING(FAVORITE_HUB_ADDED), LogMessage::SEV_INFO, WinUtil::m_ChatTextSystem );
+	if (client->saveFavorite()) {
+		addStatus(TSTRING(FAVORITE_HUB_ADDED), LogMessage::SEV_INFO, WinUtil::m_ChatTextSystem);
 	} else {
 		addStatus(TSTRING(FAVORITE_HUB_ALREADY_EXISTS), LogMessage::SEV_ERROR, WinUtil::m_ChatTextSystem);
 	}
@@ -477,10 +464,6 @@ void HubFrame::removeUser(const OnlineUserPtr& aUser) {
 }
 
 void HubFrame::onChatMessage(const ChatMessagePtr& msg) {
-
-	if (MessageManager::getInstance()->isIgnoredOrFiltered(msg, client, false))
-		return;
-
 	addLine(msg->getFrom()->getIdentity(), Text::toT(msg->format()), WinUtil::m_ChatTextGeneral);
 	if (client->get(HubSettings::ChatNotify)) {
 		MainFrame::getMainFrame()->onChatMessage(false);
@@ -504,13 +487,9 @@ void HubFrame::onDisconnected(const string& aReason) {
 }
 
 void HubFrame::onConnected() {
-	addStatus(TSTRING(CONNECTED), LogMessage::SEV_INFO, WinUtil::m_ChatTextServer);
 	wentoffline = false;
 	setDisconnected(false);
 	setTabIcons();
-
-	//tstring text = Text::toT(client->getCipherName());
-	//ctrlStatus.SetText(1, text.c_str());
 
 	if (client->isSecure()) {
 		ctrlStatus.SetIcon(1, iSecure);
@@ -519,7 +498,6 @@ void HubFrame::onConnected() {
 		if (!cipherName.empty())
 			cipherPopupTxt = (client->isTrusted() ? _T("[S] ") : _T("[U] ")) + cipherName;
 	}	
-	//statusSizes[0] = WinUtil::getTextWidth(text, ctrlStatus.m_hWnd);
 
 	if(SETTING(POPUP_HUB_CONNECTED)) {
 		WinUtil::showPopup(Text::toT(client->getAddress()), TSTRING(CONNECTED));
@@ -577,27 +555,22 @@ void HubFrame::execTasks() {
 }
 
 void HubFrame::onPassword() {
-	if(client->getPassword().size() > 0) {
-		client->password(client->getPassword());
-		addStatus(TSTRING(STORED_PASSWORD_SENT), LogMessage::SEV_INFO, WinUtil::m_ChatTextSystem);
+	if(!SETTING(PROMPT_PASSWORD)) {
+		ctrlMessage.SetWindowText(_T("/password "));
+		ctrlMessage.SetFocus();
+		ctrlMessage.SetSel(10, 10);
+		waitingForPW = true;
 	} else {
-		if(!SETTING(PROMPT_PASSWORD)) {
-			ctrlMessage.SetWindowText(_T("/password "));
-			ctrlMessage.SetFocus();
-			ctrlMessage.SetSel(10, 10);
-			waitingForPW = true;
+		LineDlg linePwd;
+		linePwd.title = CTSTRING(ENTER_PASSWORD);
+		linePwd.description = CTSTRING(ENTER_PASSWORD);
+		linePwd.password = true;
+		if(linePwd.DoModal(m_hWnd) == IDOK) {
+			client->setPassword(Text::fromT(linePwd.line));
+			client->password(Text::fromT(linePwd.line));
+			waitingForPW = false;
 		} else {
-			LineDlg linePwd;
-			linePwd.title = CTSTRING(ENTER_PASSWORD);
-			linePwd.description = CTSTRING(ENTER_PASSWORD);
-			linePwd.password = true;
-			if(linePwd.DoModal(m_hWnd) == IDOK) {
-				client->setPassword(Text::fromT(linePwd.line));
-				client->password(Text::fromT(linePwd.line));
-				waitingForPW = false;
-			} else {
-				client->disconnect(true);
-			}
+			client->disconnect(true);
 		}
 	}
 }
@@ -749,7 +722,6 @@ void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	}
 }
 
-// Redirect calls won't come here... needs more refactoring
 void HubFrame::on(Disconnecting, const Client*) noexcept {
 	SettingsManager::getInstance()->removeListener(this);
 	FavoriteManager::getInstance()->removeListener(this);
@@ -771,15 +743,6 @@ void HubFrame::on(Disconnecting, const Client*) noexcept {
 LRESULT HubFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closed) {
 		if(shutdown || forceClose ||  WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_HUB_CLOSING, TSTRING(REALLY_CLOSE))) {
-			auto r = FavoriteManager::getInstance()->getRecentHubEntry(client->getHubUrl());
-			if(r) {
-				TCHAR buf[256];
-				this->GetWindowText(buf, 255);
-				r->setName(Text::fromT(buf));
-				r->setUsers(Util::toString(client->getUserCount()));
-				r->setShared(Util::toString(client->getAvailable()));
-			}
-			
 			ClientManager::getInstance()->putClient(client);
 
 			closed = true;
@@ -957,8 +920,6 @@ void HubFrame::addLine(const tstring& aLine, CHARFORMAT2& cf, bool bUseEmo/* = t
 }
 
 void HubFrame::addLine(const Identity& i, const tstring& aLine, CHARFORMAT2& cf, bool bUseEmo/* = true*/) {
-	client->logChatMessage(Text::fromT(aLine));
-
 	bool notify = ctrlClient.AppendChat(i, Text::toT(client->get(HubSettings::Nick)), timeStamps ? Text::toT("[" + Util::getShortTimeString() + "] ") : Util::emptyStringT, aLine + _T('\n'), cf, bUseEmo);
 	if(notify)
 		setNotify();
@@ -1221,33 +1182,27 @@ LRESULT HubFrame::onShowUsers(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, B
 }
 
 LRESULT HubFrame::onFollow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if(!redirect.empty()) {
-		if (ClientManager::getInstance()->hasClient(Text::fromT(redirect))) {
-			addStatus(TSTRING(REDIRECT_ALREADY_CONNECTED), LogMessage::SEV_ERROR, WinUtil::m_ChatTextServer);
-			return 0;
-		}
-		
-		dcassert(frames.find(server) != frames.end());
-		dcassert(frames[server] == this);
+	client->doRedirect();
+	return 0;
+}
+
+void HubFrame::on(Redirected, const string&, const ClientPtr& aNewClient) noexcept {
+	callAsync([=] {
+		client->removeListener(this);
 		frames.erase(server);
-		server = redirect;
+		server = Text::toT(aNewClient->getHubUrl());
 		frames[server] = this;
 
-		// the client is dead, long live the client!
-		client->removeListener(this);
 		clearUserList();
 		ClientManager::getInstance()->putClient(client);
 		clearTaskList();
 
-		RecentHubEntryPtr r = new RecentHubEntry(Text::fromT(redirect));
-		client = ClientManager::getInstance()->createClient(r, SETTING(DEFAULT_SP));
-		dcassert(client);
-		client->addListener(this);
-		ctrlClient.setClient(client);
+		client = aNewClient;
+		aNewClient->addListener(this);
+		ctrlClient.setClient(aNewClient);
 
-		client->connect();
-	}
-	return 0;
+		aNewClient->connect();
+	});
 }
 
 LRESULT HubFrame::onEnterUsers(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHandled*/) {
@@ -1400,7 +1355,7 @@ void HubFrame::updateStatusBar() {
 	} else {
 		text[0] = TSTRING_F(X_USERS, AllUsers);
 	}
-	int64_t available = client->getAvailable();
+	int64_t available = client->getTotalShare();
 	text[1] = Util::formatBytesW(available);
 
 	if(AllUsers > 0)
@@ -1426,7 +1381,7 @@ void HubFrame::on(Connecting, const Client*) noexcept {
 			addLine(TSTRING(ANTI_PASSIVE_SEARCH), WinUtil::m_ChatTextSystem);
 		}
 
-		addStatus(Text::toT(STRING(CONNECTING_TO) + " " + client->getHubUrl() + " ..."), LogMessage::SEV_INFO, WinUtil::m_ChatTextServer);
+		//addStatus(Text::toT(STRING(CONNECTING_TO) + " " + client->getHubUrl() + " ..."), LogMessage::SEV_INFO, WinUtil::m_ChatTextServer);
 		setWindowTitle(client->getHubUrl());
 	});
 }
@@ -1468,29 +1423,11 @@ void HubFrame::on(ClientListener::UserRemoved, const Client*, const OnlineUserPt
 }
 
 void HubFrame::on(Redirect, const Client*, const string& line) noexcept { 
-	if(ClientManager::getInstance()->hasClient(line)) {
-		callAsync([=] { 
-			addStatus(TSTRING(REDIRECT_ALREADY_CONNECTED), LogMessage::SEV_INFO, WinUtil::m_ChatTextServer);
-		});
-		return;
-	}
-
-	redirect = Text::toT(line);
-	bool isFO = FavoriteManager::getInstance()->isFailOverUrl(client->getFavToken(), client->getHubUrl());
-
-	if(SETTING(AUTO_FOLLOW) && !isFO) {
-		PostMessage(WM_COMMAND, IDC_FOLLOW, 0);
-	} else {
-		string msg;
-		if (isFO) {
-			msg = STRING_F(REDIRECT_FAILOVER, line);
-		} else {
-			msg = STRING(PRESS_FOLLOW) + " " + line;
-		}
-
-		callAsync([=] { addStatus(Text::toT(msg), LogMessage::SEV_INFO, WinUtil::m_ChatTextServer); });
-	}
+	callAsync([=] { 
+		addStatus(Text::toT(STRING(PRESS_FOLLOW) + " " + line), LogMessage::SEV_INFO, WinUtil::m_ChatTextServer); 
+	});
 }
+
 void HubFrame::on(Failed, const string&, const string& line) noexcept {
 	callAsync([=] {
 		onDisconnected(line);
@@ -1530,19 +1467,29 @@ void HubFrame::on(HubUpdated, const Client*) noexcept {
 		setWindowTitle(hubName);
 	});
 }
-void HubFrame::on(Message, const Client*, const ChatMessagePtr& message) noexcept {
+void HubFrame::on(ChatMessage, const Client*, const ChatMessagePtr& message) noexcept {
 	callAsync([=] { onChatMessage(message); });
 }	
 
-void HubFrame::on(StatusMessage, const Client*, const string& line, int statusFlags) noexcept {
+void HubFrame::on(StatusMessage, const Client*, const LogMessagePtr& aMessage, int statusFlags) noexcept {
 	callAsync([=] { 
 		if(SETTING(BOLD_HUB_TABS_ON_KICK) && (statusFlags & ClientListener::FLAG_IS_SPAM)){
 			setDirty();
 		}
-		addStatus(Text::toT(Text::toDOS(line)), LogMessage::SEV_INFO, WinUtil::m_ChatTextServer, !SETTING(FILTER_MESSAGES) || !(statusFlags & ClientListener::FLAG_IS_SPAM));
+
+		onStatusMessage(aMessage, statusFlags & ClientListener::FLAG_IS_SPAM);
 	});
 
 }
+void HubFrame::onStatusMessage(const LogMessagePtr& aMessage, bool isSpam) noexcept {
+	addStatus(Text::toT(Text::toDOS(aMessage->getText())), aMessage->getSeverity(), WinUtil::m_ChatTextServer, !SETTING(FILTER_MESSAGES) || !isSpam);
+}
+
+
+void HubFrame::on(MessagesRead) noexcept {
+
+}
+
 void HubFrame::on(NickTaken, const Client*) noexcept {
 	callAsync([=] { addStatus(TSTRING(NICK_TAKEN), LogMessage::SEV_ERROR, WinUtil::m_ChatTextServer); });
 }

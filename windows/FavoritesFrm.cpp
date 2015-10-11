@@ -183,7 +183,7 @@ void FavoriteHubsFrame::openSelected() {
 	while( (i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1) {
 		FavoriteHubEntry* entry = (FavoriteHubEntry*)ctrlHubs.GetItemData(i);
 
-		RecentHubEntryPtr r = new RecentHubEntry(entry->getServers()[0].first);
+		RecentHubEntryPtr r = new RecentHubEntry(entry->getServer());
 		r->setName(entry->getName());
 		r->setDescription(entry->getDescription());
 		ClientManager::getInstance()->createClient(r, entry->getShareProfile()->getToken()); // no multithreading because of disorder!
@@ -197,7 +197,7 @@ void FavoriteHubsFrame::addEntry(const FavoriteHubEntryPtr& entry, int pos, int 
 	l.push_back(Text::toT(entry->getDescription()));
 	l.push_back(Text::toT(entry->get(HubSettings::Nick)));
 	l.push_back(tstring(entry->getPassword().size(), '*'));
-	l.push_back(Text::toT(entry->getServers()[0].first));
+	l.push_back(Text::toT(entry->getServer()));
 	l.push_back(Text::toT(entry->get(HubSettings::Description)));
 	l.push_back(Text::toT(entry->getShareProfile()->getDisplayName()));
 	bool b = entry->getAutoConnect();
@@ -207,7 +207,7 @@ void FavoriteHubsFrame::addEntry(const FavoriteHubEntryPtr& entry, int pos, int 
     LVITEM lvItem = { 0 };
     lvItem.mask = LVIF_GROUPID | LVIF_IMAGE;
     lvItem.iItem = i;
-	lvItem.iImage = isOnline(entry->getServers()[0].first) ? 0 : 1;
+	lvItem.iImage = isOnline(entry->getServer()) ? 0 : 1;
     lvItem.iSubItem = 0;
     lvItem.iGroupId = groupIndex;
     ctrlHubs.SetItem( &lvItem );
@@ -220,7 +220,7 @@ LRESULT FavoriteHubsFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam
 		
 		for(int i = 0; i < ctrlHubs.GetItemCount(); ++i) {
 			FavoriteHubEntry* e = (FavoriteHubEntry*)ctrlHubs.GetItemData(i);
-			if(e->getServers()[0].first == *hub) {
+			if(e->getServer() == *hub) {
 				ctrlHubs.SetItem(i,0,LVIF_IMAGE, NULL, 0, 0, 0, NULL);
 				ctrlHubs.Update(i);
 				return 0;
@@ -232,7 +232,7 @@ LRESULT FavoriteHubsFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam
 
 		for(int i = 0; i < ctrlHubs.GetItemCount(); ++i) {
 			FavoriteHubEntry* e = (FavoriteHubEntry*)ctrlHubs.GetItemData(i);
-			if(e->getServers()[0].first == *hub) {
+			if(e->getServer() == *hub) {
 				ctrlHubs.SetItem(i,0,LVIF_IMAGE, NULL, 1, 0, 0, NULL);
 				ctrlHubs.Update(i);
 				return 0;
@@ -579,7 +579,7 @@ LRESULT FavoriteHubsFrame::onOpenHubLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 		FavoriteHubEntry* entry = (FavoriteHubEntry*)ctrlHubs.GetItemData(i);
 		ParamMap params;
 		params["hubNI"] = entry->getName();
-		params["hubURL"] = entry->getServers()[0].first;
+		params["hubURL"] = entry->getServer();
 		params["myNI"] = entry->get(HubSettings::Nick); 
 		string file = LogManager::getInstance()->getPath(LogManager::CHAT, params);
 		if(Util::fileExists(file)){

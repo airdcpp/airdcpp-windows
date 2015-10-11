@@ -229,7 +229,6 @@ private:
 	typedef FrameMap::const_iterator FrameIter;
 	static FrameMap frames;
 
-	tstring redirect;
 	bool timeStamps;
 	static bool shutdown;
 
@@ -239,7 +238,7 @@ private:
 	ClientPtr client;
 	tstring server;
 	string cachedHubname;
-	bool wentoffline;
+	bool wentoffline = true;
 	CContainedWindow ctrlShowUsersContainer;
 	CContainedWindow ctrlMessageContainer;
 	CContainedWindow ctrlClientContainer;
@@ -331,20 +330,24 @@ private:
 	void on(Failed, const string&, const string&) noexcept;
 	void on(GetPassword, const Client*) noexcept;
 	void on(HubUpdated, const Client*) noexcept;
-	void on(Message, const Client*, const ChatMessagePtr&) noexcept;
-	void on(StatusMessage, const Client*, const string&, int = ClientListener::FLAG_NORMAL) noexcept;
+	void on(ChatMessage, const Client*, const ChatMessagePtr&) noexcept;
+	void on(StatusMessage, const Client*, const LogMessagePtr&, int = ClientListener::FLAG_NORMAL) noexcept;
 	void on(NickTaken, const Client*) noexcept;
 	void on(SearchFlood, const Client*, const string&) noexcept;	
 	void on(HubTopic, const Client*, const string&) noexcept;
 	void on(AddLine, const Client*, const string&) noexcept;
 	void on(SetActive, const Client*) noexcept;
 	void on(Disconnecting, const Client*) noexcept;
+	void on(Redirected, const string&, const ClientPtr& aNewClient) noexcept;
+	void on(MessagesRead) noexcept;
 
 	void on(MessageManagerListener::IgnoreAdded, const UserPtr& aUser) noexcept;
 	void on(MessageManagerListener::IgnoreRemoved, const UserPtr& aUser) noexcept;
 
 	void speak(Tasks s, const OnlineUserPtr& u) { tasks.add(static_cast<uint8_t>(s), unique_ptr<Task>(new UserTask(u))); updateUsers = true; }
 	void openLinksInTopic();
+
+	void onStatusMessage(const LogMessagePtr& aMessage, bool isSpam) noexcept;
 };
 
 #endif // !defined(HUB_FRAME_H)

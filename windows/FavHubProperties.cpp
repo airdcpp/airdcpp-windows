@@ -54,7 +54,6 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	SetDlgItemText(IDC_FAVGROUP, CTSTRING(GROUP));
 	SetDlgItemText(IDC_LOGMAINCHAT, CTSTRING(FAV_LOG_CHAT));
 	SetDlgItemText(IDC_CHAT_NOTIFY, CTSTRING(CHAT_NOTIFY));
-	SetDlgItemText(IDC_FAILOVER, CTSTRING(ACCEPT_FAILOVERS_FAV));
 	SetDlgItemText(IDC_AWAY_MSG_LBL, CTSTRING(CUSTOM_AWAY_MESSAGE));
 
 	SetDlgItemText(IDC_LOGMAINCHAT, CTSTRING(FAV_LOG_CHAT));
@@ -68,7 +67,7 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	// Fill in values
 	SetDlgItemText(IDC_HUBNAME, Text::toT(entry->getName()).c_str());
 	SetDlgItemText(IDC_HUBDESCR, Text::toT(entry->getDescription()).c_str());
-	SetDlgItemText(IDC_HUBADDR, Text::toT(entry->getServerStr()).c_str());
+	SetDlgItemText(IDC_HUBADDR, Text::toT(entry->getServer()).c_str());
 	SetDlgItemText(IDC_NICK, Text::toT(entry->get(HubSettings::Nick)).c_str());
 	SetDlgItemText(IDC_HUBPASS, Text::toT(entry->getPassword()).c_str());
 	SetDlgItemText(IDC_USERDESC, Text::toT(entry->get(HubSettings::Description)).c_str());
@@ -83,7 +82,6 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	CheckDlgButton(IDC_SHOW_JOIN_FAV, toInt(entry->get(HubSettings::FavShowJoins)));
 	CheckDlgButton(IDC_LOGMAINCHAT, toInt(entry->get(HubSettings::LogMainChat)));
 	CheckDlgButton(IDC_CHAT_NOTIFY, toInt(entry->get(HubSettings::ChatNotify)));
-	CheckDlgButton(IDC_FAILOVER, toInt(entry->get(HubSettings::AcceptFailovers)));
 
 	CheckDlgButton(IDC_FAV_NO_PM, entry->getFavNoPM() ? BST_CHECKED : BST_UNCHECKED);
 
@@ -272,7 +270,7 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 
 		//set the values
 		entry->get(HubSettings::NmdcEncoding) = ctrlEncoding.GetCurSel() > 0 ? Text::fromT(buf) : Util::emptyString;
-		entry->setServerStr(addresses);
+		entry->setServer(addresses);
 
 		GetDlgItemText(IDC_HUBNAME, buf, 256);
 		entry->setName(Text::fromT(buf));
@@ -300,7 +298,6 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 		entry->get(HubSettings::FavShowJoins) = to3bool(IsDlgButtonChecked(IDC_SHOW_JOIN));
 		entry->get(HubSettings::LogMainChat) = to3bool(IsDlgButtonChecked(IDC_LOGMAINCHAT));
 		entry->get(HubSettings::ChatNotify) = to3bool(IsDlgButtonChecked(IDC_CHAT_NOTIFY));
-		entry->get(HubSettings::AcceptFailovers) = to3bool(IsDlgButtonChecked(IDC_FAILOVER));
 
 		auto val = HubSettings::getMinInt();
 		if (!IsDlgButtonChecked(IDC_SEARCH_INTERVAL_DEFAULT)) {
