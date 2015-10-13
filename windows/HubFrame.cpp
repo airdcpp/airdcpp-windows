@@ -470,9 +470,7 @@ void HubFrame::onChatMessage(const ChatMessagePtr& msg) {
 	}
 }
 
-void HubFrame::onDisconnected(const string& aReason) {
-	addStatus(Text::toT(aReason), LogMessage::SEV_WARNING, WinUtil::m_ChatTextServer); //Error?
-
+void HubFrame::onDisconnected(const string&) {
 	clearUserList();
 	setDisconnected(true);
 	wentoffline = true;
@@ -744,9 +742,6 @@ LRESULT HubFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 	if(!closed) {
 		if(shutdown || forceClose ||  WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_HUB_CLOSING, TSTRING(REALLY_CLOSE))) {
 			ClientManager::getInstance()->putClient(client);
-
-			closed = true;
-			PostMessage(WM_CLOSE);
 			return 0;
 		}
 	} else {
@@ -1189,13 +1184,12 @@ LRESULT HubFrame::onFollow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/,
 void HubFrame::on(Redirected, const string&, const ClientPtr& aNewClient) noexcept {
 	callAsync([=] {
 		client->removeListener(this);
+		clearUserList();
+		clearTaskList();
 		frames.erase(server);
+
 		server = Text::toT(aNewClient->getHubUrl());
 		frames[server] = this;
-
-		clearUserList();
-		ClientManager::getInstance()->putClient(client);
-		clearTaskList();
 
 		client = aNewClient;
 		aNewClient->addListener(this);
