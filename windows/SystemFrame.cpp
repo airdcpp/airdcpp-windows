@@ -60,7 +60,7 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	reg.assign(_T("((?<=\\s)(([A-Za-z0-9]:)|(\\\\))(\\\\[^\\\\:]+)(\\\\([^\\s:])([^\\\\:])*)*((\\.[a-z0-9]{2,10})|(\\\\))(?=(\\s|$|:|,)))"));
 
 	//might miss some messages
-	auto oldMessages = LogManager::getInstance()->getLastLogs();
+	auto oldMessages = LogManager::getInstance()->getCache().getLogMessages();
 	LogManager::getInstance()->addListener(this);
 
 	for (const auto& i: oldMessages) {
@@ -301,6 +301,10 @@ void SystemFrame::on(Message, const LogMessagePtr& aMessageData) noexcept {
 	speak(ADD_LINE, aMessageData);
 }
 
+void SystemFrame::on(LogManagerListener::MessagesRead) noexcept {
+
+}
+
 LRESULT SystemFrame::onRefreshSettings(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
     RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	return 0;
@@ -480,7 +484,7 @@ LRESULT SystemFrame::onEditSelectAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 }
 
 LRESULT SystemFrame::onEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	LogManager::getInstance()->clearLastLogs();
+	LogManager::getInstance()->clearCache();
 	ctrlPad.SetWindowText(_T(""));
 	return 0;
 }

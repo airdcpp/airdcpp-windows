@@ -171,8 +171,12 @@ private:
 
 	CRichEditCtrl ctrlPad;
 	CMenu tabMenu;
-	virtual void on(Message, const LogMessagePtr& aMessageData) noexcept;
-	virtual void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
+
+	void on(LogManagerListener::Message, const LogMessagePtr& aMessageData) noexcept;
+	void on(LogManagerListener::MessagesRead) noexcept;
+
+	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
+
 	void addLine(const LogMessagePtr& aMessageData);
 
 	void scrollToEnd();
