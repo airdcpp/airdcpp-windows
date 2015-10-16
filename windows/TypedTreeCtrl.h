@@ -116,7 +116,7 @@ public:
 			ChildrenState state = parent->getChildrenState(curDir);
 			/* now create the children */
 			if (state == CHILDREN_CREATED || state == CHILDREN_PART_PENDING) {
-				parent->insertTreeItems(curDir, pNMTreeView->itemNew.hItem);
+				parent->insertTreeItems(curDir->getPath(), pNMTreeView->itemNew.hItem);
 			} else if (state == CHILDREN_ALL_PENDING) {
 				//items aren't ready, tell the parent to load them
 				parent->expandDir(curDir, false);

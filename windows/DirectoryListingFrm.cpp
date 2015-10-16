@@ -28,6 +28,7 @@
 #include "LineDlg.h"
 #include "ShellContextMenu.h"
 #include "ListFilter.h"
+#include "MainFrm.h"
 
 #include <airdcpp/HighlightManager.h>
 #include <airdcpp/File.h>
@@ -54,7 +55,7 @@ static SettingsManager::BoolSetting filterSettings [] = { SettingsManager::FILTE
 
 static ColumnType columnTypes [] = { COLUMN_TEXT, COLUMN_TEXT, COLUMN_SIZE, COLUMN_SIZE, COLUMN_TEXT, COLUMN_TIME };
 
-void DirectoryListingFrame::openWindow(DirectoryListing* aList, const string& aDir, const string& aXML) {
+void DirectoryListingFrame::openWindow(const DirectoryListingPtr& aList, const string& aDir, const string& aXML) {
 
 	HWND aHWND = NULL;
 	DirectoryListingFrame* frame = new DirectoryListingFrame(aList);
@@ -65,7 +66,7 @@ void DirectoryListingFrame::openWindow(DirectoryListing* aList, const string& aD
 	}
 	if(aHWND != 0) {
 		if (aList->getPartialList()) {
-			aList->addPartialListTask(aDir, aXML, false);
+			aList->addPartialListTask(aXML, aDir, false);
 		} else {
 			frame->ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
 			aList->addFullListTask(aDir);
@@ -80,12 +81,12 @@ bool DirectoryListingFrame::allowPopup() const {
 	return dl->getIsOwnList() || (!SETTING(POPUNDER_FILELIST) && !dl->getPartialList()) || (!SETTING(POPUNDER_PARTIAL_LIST) && dl->getPartialList());
 }
 
-DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) :
+DirectoryListingFrame::DirectoryListingFrame(const DirectoryListingPtr& aList) :
 	treeContainer(WC_TREEVIEW, this, CONTROL_MESSAGE_MAP),
 	listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP),
 	browserBar(this, [this](const string& a, bool b) { handleHistoryClick(a, b); }, [this] { up(); }),
 		treeRoot(nullptr), skipHits(0), updating(false), dl(aList), 
-		UserInfoBaseHandler(true, false), changeType(CHANGE_LIST), windowState(STATE_ENABLED), 
+		UserInfoBaseHandler(true, false), changeType(CHANGE_LIST), 
 		ctrlTree(this), statusDirty(false), selComboContainer(WC_COMBOBOX, this, COMBO_SEL_MAP), 
 		ctrlFiles(this, COLUMN_LAST, [this] { callAsync([this] { filterList(); }); }, filterSettings, COLUMN_LAST)
 {
@@ -97,17 +98,17 @@ DirectoryListingFrame::~DirectoryListingFrame() {
 	DirectoryListingManager::getInstance()->removeList(dl->getUser());
 }
 
-void DirectoryListingFrame::updateItemCache(const string& aPath) {
+void DirectoryListingFrame::updateItemCache(const string& aPath, std::function<void()> completionF) {
+	dl->addAsyncTask([=] { updateItemCacheImpl(aPath, completionF); });
+}
+
+void DirectoryListingFrame::updateItemCacheImpl(const string& aPath, std::function<void()> completionF) {
 	auto curDir = dl->findDirectory(aPath);
 	if (!curDir) {
 		return;
 	}
 
-	auto& iic = itemInfos[aPath];
-	if (!iic) {
-		iic = make_unique<ItemInfoCache>();
-	}
-
+	auto iic = new ItemInfoCache();
 	for (auto& d : curDir->directories) {
 		iic->directories.emplace(d);
 	}
@@ -116,67 +117,47 @@ void DirectoryListingFrame::updateItemCache(const string& aPath) {
 		iic->files.emplace(f);
 	}
 
-	//check that this directory exists in all parents
-	if (!aPath.empty()) {
-		auto parent = Util::getNmdcParentDir(aPath);
-		auto p = itemInfos.find(parent);
-		if (p != itemInfos.end()) {
-			auto p2 = p->second->directories.find(ItemInfo(curDir));
-			if (p2 != p->second->directories.end()) {
-				// no need to update anything
-				return;
+	callAsync([=]() mutable {
+		itemInfos[aPath] = unique_ptr<ItemInfoCache>(iic);
+
+		// check that item infos exist also for the parents (in case we are directly opening a non-root path)
+		if (!aPath.empty()) {
+			auto parent = Util::getNmdcParentDir(aPath);
+			auto p = itemInfos.find(parent);
+			if (p != itemInfos.end()) {
+				auto p2 = p->second->directories.find(ItemInfo(curDir));
+				if (p2 != p->second->directories.end()) {
+					if (completionF) {
+						completionF();
+					}
+
+					return;
+				}
 			}
+
+			updateItemCache(parent, completionF);
+			return;
 		}
 
-		updateItemCache(parent);
-	}
+		if (completionF) {
+			completionF();
+		}
+	});
 }
 
-void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool reloadList, bool changeDir, bool loadInGUIThread) noexcept {
-	// cache all item infos so that they won't be deleted before we finish loading
-	vector<unique_ptr<ItemInfoCache>> removedInfos;
-	if (!reloadList) {
-		for (auto i = itemInfos.begin(); i != itemInfos.end();) {
-			if (AirUtil::isParentOrExact(aDir, i->first)) {
-				removedInfos.push_back(move(i->second));
-				i = itemInfos.erase(i);
-			} else {
-				i++;
-			}
-		}
-	} else {
-		boost::copy(itemInfos | map_values, boost::back_move_inserter(removedInfos));
-		itemInfos.clear();
-	}
-
-
-	updateItemCache(aDir);
-
-	if (!dl->getIsOwnList() && SETTING(DUPES_IN_FILELIST))
-		dl->checkShareDupes();
-
-	auto f = [=] { onLoadingFinished(aStart, aDir, reloadList, changeDir, loadInGUIThread); };
-	if (loadInGUIThread) {
-		callAsync(f);
-	} else {
-		f();
-	}
+void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool reloadList, bool changeDir) noexcept {
+	callAsync([=] { 
+		updateItemCache(aDir, [=] {
+			onLoadingFinished(aStart, aDir, reloadList, changeDir);
+		});
+	});
 }
 
-void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir, bool reloadList, bool changeDir, bool usingGuiThread) {
-	//keep the messages in right order...
-	auto runF = [=](std::function<void ()> aF) {
-		if (!usingGuiThread) {
-			callAsync(aF);
-		} else {
-			aF();
-		}
-	};
-
+void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir, bool reloadList, bool changeDir) {
 	bool searching = dl->isCurrentSearchPath(aDir);
 
 	if (!dl->getPartialList())
-		runF([=] { updateStatus(CTSTRING(UPDATING_VIEW)); });
+		updateStatus(CTSTRING(UPDATING_VIEW));
 
 	if (searching)
 		ctrlFiles.filter.clear();
@@ -189,31 +170,20 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir
 		if (dl->getPartialList()) {
 			if (aDir.empty()) {
 				msg = STRING(PARTIAL_LIST_LOADED);
-			} /*else if (!usingGuiThread) {
-				//msg = STRING_F(DIRECTORY_LOADED, Util::getLastDir(aDir));
-				msg = Util::emptyString;
-			}*/
+			}
 		} else {
 			msg = STRING_F(FILELIST_LOADED_IN, Util::formatSeconds(loadTime, true));
 		}
 
-		changeWindowState(true);
+		initStatus();
+		//if (!msg.empty())
+		updateStatus(Text::toT(msg));
 
-		runF([=] {
-			initStatus();
-			//if (!msg.empty())
-			updateStatus(Text::toT(msg));
-
-			//notify the user that we've loaded the list
-			setDirty();
-		});
+		//notify the user that we've loaded the list
+		setDirty();
 	} else {
 		findSearchHit(true);
-		changeWindowState(true);
-		runF([=] { 
-			updateStatus(TSTRING_F(X_RESULTS_FOUND, dl->getResultCount()));
-			dl->setWaiting(false);
-		});
+		updateStatus(TSTRING_F(X_RESULTS_FOUND, dl->getResultCount()));
 	}
 
 	if (changeType == CHANGE_LIST) {
@@ -222,8 +192,6 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir
 		ctrlTree.SetFocus();
 	}
 	changeType = CHANGE_LAST;
-
-	dl->setWaiting(false);
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::LoadingFailed, const string& aReason) noexcept {
@@ -232,8 +200,6 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingFailed, const st
 			updateStatus(Text::toT(aReason));
 			if (!dl->getPartialList()) {
 				PostMessage(WM_CLOSE, 0, 0);
-			} else {
-				changeWindowState(true);
 			}
 		});
 	}
@@ -241,20 +207,15 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingFailed, const st
 
 void DirectoryListingFrame::on(DirectoryListingListener::LoadingStarted, bool changeDir) noexcept {
 	callAsync([=] { 
-		if (changeDir) {
-			DisableWindow(false);
-		} else {
-			changeWindowState(false);
+		if (!changeDir) {
 			ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
 		}
-		dl->setWaiting(false);
 	});
 	
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::QueueMatched, const string& aMessage) noexcept {
 	callAsync([=] { updateStatus(Text::toT(aMessage)); });
-	changeWindowState(true);
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::Close) noexcept {
@@ -263,7 +224,6 @@ void DirectoryListingFrame::on(DirectoryListingListener::Close) noexcept {
 
 void DirectoryListingFrame::on(DirectoryListingListener::SearchStarted) noexcept {
 	callAsync([=] { updateStatus(TSTRING(SEARCHING)); });
-	changeWindowState(false);
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::SearchFailed, bool timedOut) noexcept {
@@ -276,7 +236,6 @@ void DirectoryListingFrame::on(DirectoryListingListener::SearchFailed, bool time
 		}
 		updateStatus(msg); 
 	});
-	changeWindowState(true);
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::ChangeDirectory, const string& aDir, bool isSearchChange) noexcept {
@@ -288,8 +247,6 @@ void DirectoryListingFrame::on(DirectoryListingListener::ChangeDirectory, const 
 		callAsync([=] { updateStatus(TSTRING_F(X_RESULTS_FOUND, dl->getResultCount())); });
 		findSearchHit(true);
 	}
-
-	changeWindowState(true);
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::UpdateStatusMessage, const string& aMessage) noexcept {
@@ -301,7 +258,7 @@ void DirectoryListingFrame::on(DirectoryListingListener::SetActive) noexcept {
 		callAsync([this] { MDIActivate(m_hWnd); });
 }
 
-void DirectoryListingFrame::on(DirectoryListingListener::HubChanged) noexcept {
+void DirectoryListingFrame::on(DirectoryListingListener::UserUpdated) noexcept {
 	callAsync([this] { updateSelCombo(); });
 }
 
@@ -381,8 +338,6 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	statusSizes[STATUS_HUB] = 150 + desclen;
 
 	ctrlStatus.SetParts(STATUS_LAST, statusSizes);
-
-	changeWindowState(false);
 	
 	SettingsManager::getInstance()->addListener(this);
 
@@ -394,9 +349,6 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	bHandled = FALSE;
 
 	::SetTimer(m_hWnd, 0, 500, 0);
-
-	if (!dl->getIsOwnList())
-		ClientManager::getInstance()->addListener(this);
 
 	callAsync([this] { browserBar.updateHistoryCombo(); updateSelCombo(true); });
 	return 1;
@@ -440,29 +392,6 @@ LRESULT DirectoryListingFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	return 0;
 }
 
-void DirectoryListingFrame::changeWindowState(bool enable, bool redraw) {
-	ctrlToolbar.EnableButton(IDC_MATCH_QUEUE, enable && !dl->isMyCID());
-	ctrlToolbar.EnableButton(IDC_MATCH_ADL, enable);
-	ctrlToolbar.EnableButton(IDC_FIND, enable);
-	ctrlToolbar.EnableButton(IDC_NEXT, enable && dl->curSearch ? TRUE : FALSE);
-	ctrlToolbar.EnableButton(IDC_PREV, enable && dl->curSearch ? TRUE : FALSE);
-	ctrlToolbar.EnableButton(IDC_FILELIST_DIFF, enable && dl->getPartialList() && !dl->getIsOwnList() ? false : enable);
-	
-	browserBar.changeWindowState(enable);
-	ctrlFiles.changeFilterState(enable);
-	selCombo.EnableWindow(enable);
-
-	if (enable) {
-		EnableWindow(redraw);
-		ctrlToolbar.EnableButton(IDC_GETLIST, dl->getPartialList() && !dl->isMyCID());
-		ctrlToolbar.EnableButton(IDC_RELOAD_DIR, dl->getPartialList());
-	} else {
-		DisableWindow(redraw);
-		ctrlToolbar.EnableButton(IDC_RELOAD_DIR, FALSE);
-		ctrlToolbar.EnableButton(IDC_GETLIST, FALSE);
-	}
-}
-
 LRESULT DirectoryListingFrame::onGetFullList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	convertToFull();
 	return 1;
@@ -472,7 +401,7 @@ void DirectoryListingFrame::convertToFull() {
 	if (dl->getIsOwnList()) {
 		dl->addFullListTask(curPath);
 	} else {
-		tasks.run([=] {
+		MainFrame::getMainFrame()->threadedTasks.run([=] {
 			try {
 				QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_CLIENT_VIEW, curPath);
 			} catch (...) {}
@@ -503,8 +432,8 @@ void DirectoryListingFrame::expandDir(ItemInfo* ii, bool collapsing) {
 	}
 }
 
-void DirectoryListingFrame::insertTreeItems(const ItemInfo* ii, HTREEITEM aParent) {
-	auto p = itemInfos.find(ii->getPath());
+void DirectoryListingFrame::insertTreeItems(const string& aPath, HTREEITEM aParent) {
+	auto p = itemInfos.find(aPath);
 	//dcassert(p != itemInfos.end());
 	if (p != itemInfos.end()) {
 		const auto& dirs = p->second->directories;
@@ -513,8 +442,7 @@ void DirectoryListingFrame::insertTreeItems(const ItemInfo* ii, HTREEITEM aParen
 		}
 	} else {
 		// We haven't been there before... Fill the cache and try again.
-		updateItemCache(ii->getPath());
-		insertTreeItems(ii, aParent);
+		updateItemCache(aPath, [=] { insertTreeItems(aPath, aParent); });
 	}
 }
 
@@ -530,7 +458,7 @@ void DirectoryListingFrame::createRoot() {
 }
 
 void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aReloadList, bool aChangeDir) {
-	ctrlTree.SetRedraw(FALSE);
+	//ctrlTree.SetRedraw(FALSE);
 
 	if (aReloadList) {
 		ctrlTree.DeleteAllItems();
@@ -588,7 +516,7 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aReloadLi
 		selectItem(d->getPath());
 	}
 
-	ctrlTree.SetRedraw(TRUE);
+	//ctrlTree.SetRedraw(TRUE);
 }
 
 LRESULT DirectoryListingFrame::onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
@@ -701,111 +629,86 @@ size_t DirectoryListingFrame::getTotalListItemCount() const {
 
 void DirectoryListingFrame::updateStatus() {
 	if (!updating && ctrlStatus.IsWindow()) {
-		int selectedCount = ctrlFiles.list.GetSelectedCount();
-		int totalCount = 0;
-		int displayCount = 0;
-		int64_t total = 0;
-		auto d = dl->findDirectory(curPath);
-		if (selectedCount == 0) {
-			displayCount = ctrlFiles.list.GetItemCount();
-			if (d) {
-				totalCount = getTotalListItemCount();
-				total = d->getTotalSize(d != dl->getRoot());
+		dl->addAsyncTask([this] {
+			int totalCount = 0;
+			int64_t totalSize = 0;
+			int selectedCount = ctrlFiles.list.GetSelectedCount();
+			int displayCount = 0;
+
+			auto d = dl->findDirectory(curPath);
+			if (selectedCount == 0) {
+				if (d) {
+					totalCount = getTotalListItemCount();
+					totalSize = d->getTotalSize(d != dl->getRoot());
+				}
+			} else {
+				totalSize = ctrlFiles.list.forEachSelectedT(ItemInfo::TotalSize()).total;
 			}
-		} else {
-			total = ctrlFiles.list.forEachSelectedT(ItemInfo::TotalSize()).total;
-		}
 
-		tstring tmp = TSTRING(ITEMS) + _T(": ");
-
-		if (selectedCount != 0) {
-			tmp += Util::toStringW(selectedCount);
-		} else if (displayCount != totalCount) {
-			tmp += Util::toStringW(displayCount) + _T("/") + Util::toStringW(totalCount);
-		} else {
-			tmp += Util::toStringW(displayCount);
-		}
-		bool u = false;
-
-		int w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
-		if (statusSizes[STATUS_SELECTED_FILES] < w) {
-			statusSizes[STATUS_SELECTED_FILES] = w;
-			u = true;
-		}
-		ctrlStatus.SetText(STATUS_SELECTED_FILES, tmp.c_str());
-
-		tmp = TSTRING(SIZE) + _T(": ") + Util::formatBytesW(total);
-		w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
-		if (statusSizes[STATUS_SELECTED_SIZE] < w) {
-			statusSizes[STATUS_SELECTED_SIZE] = w;
-			u = true;
-		}
-		ctrlStatus.SetText(STATUS_SELECTED_SIZE, tmp.c_str());
-
-		tmp = TSTRING_F(UPDATED_ON_X, Text::toT(Util::formatTime("%c", d ? d->getUpdateDate() : 0)));
-		w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
-		if (statusSizes[STATUS_UPDATED] < w) {
-			statusSizes[STATUS_UPDATED] = w;
-			u = true;
-		}
-		ctrlStatus.SetText(STATUS_UPDATED, tmp.c_str());
-
-		if (selCombo.GetStyle() & WS_VISIBLE) {
-			tmp = getComboDesc();
-		} else if (dl->isMyCID()) {
-			tmp = TSTRING(OWN_FILELIST);
-		} else if (!dl->getUser()->isNMDC() || !dl->getUser()->isOnline()) {
-			tmp = TSTRING(USER_OFFLINE);
-		} else {
-			tmp = TSTRING(USER_ONLINE);
-		}
-
-		ctrlStatus.SetText(STATUS_HUB, tmp.c_str());
-		if(u)
-			UpdateLayout(TRUE);
+			callAsync([=] {
+				updateStatusText(totalCount, totalSize, selectedCount, displayCount, d ? d->getUpdateDate() : 0);
+			});
+		});
 	}
+}
+
+void DirectoryListingFrame::updateStatusText(int aTotalCount, int64_t aTotalSize, int aSelectedCount, int aDisplayCount, time_t aUpdateDate) {
+	tstring tmp = TSTRING(ITEMS) + _T(": ");
+
+	if (aSelectedCount != 0) {
+		tmp += Util::toStringW(aSelectedCount);
+	}
+	else if (aDisplayCount != aTotalCount) {
+		tmp += Util::toStringW(aDisplayCount) + _T("/") + Util::toStringW(aTotalCount);
+	}
+	else {
+		tmp += Util::toStringW(aDisplayCount);
+	}
+	bool u = false;
+
+	int w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
+	if (statusSizes[STATUS_SELECTED_FILES] < w) {
+		statusSizes[STATUS_SELECTED_FILES] = w;
+		u = true;
+	}
+	ctrlStatus.SetText(STATUS_SELECTED_FILES, tmp.c_str());
+
+	tmp = TSTRING(SIZE) + _T(": ") + Util::formatBytesW(aTotalSize);
+	w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
+	if (statusSizes[STATUS_SELECTED_SIZE] < w) {
+		statusSizes[STATUS_SELECTED_SIZE] = w;
+		u = true;
+	}
+	ctrlStatus.SetText(STATUS_SELECTED_SIZE, tmp.c_str());
+
+	tmp = TSTRING_F(UPDATED_ON_X, Text::toT(Util::formatTime("%c", aUpdateDate)));
+	w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
+	if (statusSizes[STATUS_UPDATED] < w) {
+		statusSizes[STATUS_UPDATED] = w;
+		u = true;
+	}
+	ctrlStatus.SetText(STATUS_UPDATED, tmp.c_str());
+
+	if (selCombo.GetStyle() & WS_VISIBLE) {
+		tmp = getComboDesc();
+	}
+	else if (dl->isMyCID()) {
+		tmp = TSTRING(OWN_FILELIST);
+	}
+	else if (!dl->getUser()->isNMDC() || !dl->getUser()->isOnline()) {
+		tmp = TSTRING(USER_OFFLINE);
+	}
+	else {
+		tmp = TSTRING(USER_ONLINE);
+	}
+
+	ctrlStatus.SetText(STATUS_HUB, tmp.c_str());
+	if (u)
+		UpdateLayout(TRUE);
 }
 
 tstring DirectoryListingFrame::getComboDesc() {
 	return (dl->getIsOwnList() ? TSTRING(SHARE_PROFILE) : TSTRING(BROWSE_VIA));
-}
-
-void DirectoryListingFrame::DisableWindow(bool redraw){
-	windowState = STATE_DISABLED;
-	if (redraw) {
-		ctrlFiles.list.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
-		ctrlTree.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
-	}
-
-	tasks.wait();
-	// can't use EnableWindow as that message seems the get queued for the list view...
-	ctrlFiles.SetWindowLongPtr(GWL_STYLE, ctrlFiles.list.GetWindowLongPtr(GWL_STYLE) | WS_DISABLED);
-	ctrlTree.SetWindowLongPtr(GWL_STYLE, ctrlTree.GetWindowLongPtr(GWL_STYLE) | WS_DISABLED);
-	//SetWindowLongPtr(GWL_STYLE, GetWindowLongPtr(GWL_STYLE) | WS_DISABLED);
-
-	// clear the message queue
-	/*MSG uMsg;
-	while (PeekMessage(&uMsg, NULL, 0, 0, PM_REMOVE) > 0) {
-		TranslateMessage(&uMsg);
-		DispatchMessage(&uMsg);
-	}*/
-}
-
-void DirectoryListingFrame::EnableWindow(bool redraw){
-	/*MSG uMsg;
-	while (PeekMessage(&uMsg, NULL, 0, 0, PM_REMOVE) > 0) {
-		TranslateMessage(&uMsg);
-		DispatchMessage(&uMsg);
-	}*/
-	windowState = STATE_ENABLED;
-	ctrlFiles.SetWindowLongPtr(GWL_STYLE, ctrlFiles.list.GetWindowLongPtr(GWL_STYLE) & ~ WS_DISABLED);
-	ctrlTree.SetWindowLongPtr(GWL_STYLE, ctrlTree.GetWindowLongPtr(GWL_STYLE) & ~ WS_DISABLED);
-	//SetWindowLongPtr(GWL_STYLE, GetWindowLongPtr(GWL_STYLE) & ~WS_DISABLED);
-	//ctrlTree.SetFocus();
-	if (redraw) {
-		ctrlFiles.list.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
-		ctrlTree.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
-	}
 }
 
 void DirectoryListingFrame::initStatus() {
@@ -875,9 +778,6 @@ void DirectoryListingFrame::on(DirectoryListingListener::RemovedQueue, const str
 
 void DirectoryListingFrame::filterList() {
 	// in case it's a timed event
-	if (windowState != STATE_ENABLED)
-		return;
-
 	updating = true;
 	ctrlFiles.list.SetRedraw(FALSE);
 
@@ -937,35 +837,49 @@ void DirectoryListingFrame::insertItems(const optional<string>& selectedName) {
 }
 
 void DirectoryListingFrame::updateItems(const DirectoryListing::Directory::Ptr& d) {
+	auto f = [this, d] {
+		optional<string> selectedName;
+		if (changeType == CHANGE_HISTORY) {
+			auto historyPath = browserBar.getCurSel();
+			if (!historyPath.empty() && (!d->getParent() || Util::getNmdcParentDir(historyPath) == d->getPath())) {
+				selectedName = Util::getLastDir(historyPath);
+			}
+
+			changeType = CHANGE_LIST; //reset
+		}
+
+		ctrlFiles.onListChanged(false);
+		insertItems(selectedName);
+
+		ctrlFiles.list.SetRedraw(TRUE);
+		updating = false;
+		updateStatus();
+	};
+
 	ctrlFiles.list.SetRedraw(FALSE);
 	updating = true;
 	if (itemInfos.find(d->getPath()) == itemInfos.end()) {
-		updateItemCache(d->getPath());
+		updateItemCache(d->getPath(), f);
+		return;
 	}
 
-	optional<string> selectedName;
-	if (changeType == CHANGE_HISTORY) {
-		auto historyPath = browserBar.getCurSel();
-		if (!historyPath.empty() && (!d->getParent() || Util::getNmdcParentDir(historyPath) == d->getPath())) {
-			selectedName = Util::getLastDir(historyPath);
-		}
-
-		changeType = CHANGE_LIST; //reset
-	}
-
-	ctrlFiles.onListChanged(false);
-	insertItems(selectedName);
-
-	ctrlFiles.list.SetRedraw(TRUE);
-	updating = false;
-	updateStatus();
+	f();
 }
 
 void DirectoryListingFrame::changeDir(const ItemInfo* ii, ReloadMode aReload /*RELOAD_NONE*/) {
 	if (!ii)
 		return;
 
-	auto d = ii->dir;
+	if (aReload == RELOAD_NONE)
+		updateItems(ii->dir);
+
+	auto path = ii->getPath();
+	dl->addAsyncTask([=] {
+		dl->changeDirectory(path, aReload != RELOAD_NONE);
+	});
+
+
+	/*auto d = ii->dir;
 	if (aReload == RELOAD_NONE)
 		updateItems(d);
 
@@ -975,12 +889,10 @@ void DirectoryListingFrame::changeDir(const ItemInfo* ii, ReloadMode aReload /*R
 			d->setLoading(true);
 			dl->addPartialListTask(Util::emptyString, d->getPath(), aReload == RELOAD_ALL);
 		} else if(dl->getUser()->isOnline()) {
-			tasks.run([=] {
+			dl->addAsyncTask([=] {
 				try {
 					QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_CLIENT_VIEW, d->getPath());
 					d->setLoading(true);
-					//callAsync([]= ctrlTree.updateItemImage(ii);
-					//ctrlStatus.SetText(STATUS_TEXT, CTSTRING(DOWNLOADING_LIST));
 				} catch (const QueueException& e) {
 					updateStatus(Text::toT(e.getError()));
 				}
@@ -988,7 +900,7 @@ void DirectoryListingFrame::changeDir(const ItemInfo* ii, ReloadMode aReload /*R
 		} else {
 			updateStatus(CTSTRING(USER_OFFLINE));
 		}
-	}
+	}*/
 }
 
 void DirectoryListingFrame::up() {
@@ -1103,7 +1015,6 @@ LRESULT DirectoryListingFrame::onSetFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPAR
 }
 
 LRESULT DirectoryListingFrame::onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	changeWindowState(false);
 	dl->addQueueMatchTask();
 	return 0;
 }
@@ -1118,7 +1029,6 @@ LRESULT DirectoryListingFrame::onListDiff(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*
 	sMenu.appendItem(TSTRING(BROWSE), [this] { 	
 		tstring file;
 		if (WinUtil::browseList(file, m_hWnd)) {
-			changeWindowState(false);
 			ctrlStatus.SetText(0, CTSTRING(MATCHING_FILE_LIST));
 			dl->addListDiffTask(Text::fromT(file), false);
 		}; 
@@ -1130,7 +1040,6 @@ LRESULT DirectoryListingFrame::onListDiff(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*
 		if (sp->getToken() != SP_HIDDEN) {
 			string profile = Util::toString(sp->getToken());
 			sMenu.appendItem(Text::toT(sp->getDisplayName()), [this, profile] {
-				changeWindowState(false);
 				ctrlStatus.SetText(0, CTSTRING(MATCHING_FILE_LIST));
 				dl->addListDiffTask(profile, true);
 			}, !dl->getIsOwnList() || profile != dl->getFileName());
@@ -1160,7 +1069,6 @@ LRESULT DirectoryListingFrame::onMatchADL(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 		dl->setMatchADL(true);
 		convertToFull();
 	} else {
-		changeWindowState(false);
 		ctrlStatus.SetText(0, CTSTRING(MATCHING_ADL));
 		dl->addMatchADLTask();
 	}
@@ -1414,7 +1322,7 @@ void DirectoryListingFrame::handleDownload(const string& aTarget, QueueItemBase:
 			WinUtil::addFileDownload(aTarget + (aTarget[aTarget.length() - 1] != PATH_SEPARATOR ? Util::emptyString : ii->getName()), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), ii->file->getRemoteDate(),
 				0, WinUtil::isShift() ? QueueItemBase::HIGHEST : prio);
 		} else {
-			tasks.run([=] {
+			dl->addAsyncTask([=] {
 				DirectoryListingManager::getInstance()->addDirectoryDownload(ii->getPath(), ii->getName(), dl->getHintedUser(),
 					aTarget, aTargetType, isSizeUnknown, WinUtil::isShift() ? QueueItemBase::HIGHEST : prio, false);
 			});
@@ -1470,7 +1378,7 @@ void DirectoryListingFrame::handleGoToDirectory(bool usingTree) {
 
 void DirectoryListingFrame::handleViewNFO(bool usingTree) {
 	handleItemAction(usingTree, [this](const ItemInfo* ii) {
-		tasks.run([=] {
+		dl->addAsyncTask([=] {
 			if (ii->type == ItemInfo::DIRECTORY) {
 				if (dl->getIsOwnList()) {
 					try {
@@ -1887,8 +1795,6 @@ LRESULT DirectoryListingFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	if(!dl->getClosing()) {
 		dl->setClosing(true);
 		SettingsManager::getInstance()->removeListener(this);
-		if (!dl->getIsOwnList())
-			ClientManager::getInstance()->removeListener(this);
 
 		ctrlFiles.list.SetRedraw(FALSE);
 		frames.erase(m_hWnd);
@@ -1898,16 +1804,7 @@ LRESULT DirectoryListingFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 
 		updateStatus(TSTRING(CLOSING_WAIT));
 
-		// avoid locking the main thread because the loading thread may need it
-		tasks.run([this] {
-			dl->join();
-			dl->removeListener(this);
-
-			callAsync([this] {
-				PostMessage(WM_CLOSE);
-				tasks.wait();
-			});
-		});
+		dl->close();
 		return 0;
 	} else {
 		CRect rc;
@@ -2005,12 +1902,6 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 		return CDRF_NOTIFYITEMDRAW;
 
 	case CDDS_ITEMPREPAINT: {
-		if (windowState != STATE_ENABLED) {
-			cd->clrTextBk = WinUtil::bgColor;
-			cd->clrText = GetSysColor(COLOR_3DDKSHADOW);
-			return CDRF_NEWFONT | CDRF_NOTIFYPOSTPAINT;
-		}
-
 		ItemInfo *ii = reinterpret_cast<ItemInfo*>(cd->nmcd.lItemlParam);
 		//dupe colors have higher priority than highlights.
 		if (SETTING(DUPES_IN_FILELIST) && !dl->getIsOwnList() && ii) {
@@ -2049,26 +1940,6 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 		return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
 	}
 
-    case CDDS_ITEMPOSTPAINT: {
-		if (windowState != STATE_ENABLED && ctrlFiles.list.findColumn(cd->iSubItem) == COLUMN_FILENAME) {
-           LVITEM rItem;
-           int nItem = static_cast<int>(cd->nmcd.dwItemSpec);
-
-           ZeroMemory (&rItem, sizeof(LVITEM) );
-           rItem.mask  = LVIF_IMAGE | LVIF_STATE;
-           rItem.iItem = nItem;
-           ctrlFiles.list.GetItem ( &rItem );
-
-           // Get the rect that holds the item's icon.
-           CRect rcIcon;
-           ctrlFiles.list.GetItemRect(nItem, &rcIcon, LVIR_ICON);
-
-           // Draw the icon.
-           ResourceLoader::getFileImages().DrawEx(rItem.iImage, cd->nmcd.hdc, rcIcon, WinUtil::bgColor, GetSysColor(COLOR_3DDKSHADOW), ILD_BLEND50);
-           return CDRF_SKIPDEFAULT;
-        }
-    }
-
 	default:
 		return CDRF_DODEFAULT;
 	}
@@ -2084,12 +1955,6 @@ LRESULT DirectoryListingFrame::onCustomDrawTree(int /*idCtrl*/, LPNMHDR pnmh, BO
 		return CDRF_NOTIFYITEMDRAW;
 
 	case CDDS_ITEMPREPAINT: {
-		if(windowState != STATE_ENABLED) {
-			cd->clrTextBk = WinUtil::bgColor;
-			cd->clrText = GetSysColor(COLOR_3DDKSHADOW);
-			return CDRF_NEWFONT;
-		}
-
 		if (SETTING(DUPES_IN_FILELIST) && !dl->getIsOwnList() && !(cd->nmcd.uItemState & CDIS_SELECTED)) {
 			auto dir = (reinterpret_cast<ItemInfo*>(cd->nmcd.lItemlParam))->dir;
 			if(dir) {
@@ -2127,7 +1992,7 @@ void DirectoryListingFrame::onComboSelChanged(bool manual) {
 				if (diff < 0.95 || diff > 1.05) {
 					auto msg = TSTRING_F(LIST_SIZE_DIFF_NOTE, Text::toT(newHub.hubName) % Util::formatBytesW(newHub.shared) % Text::toT(oldHub.hubName) % Util::formatBytesW(oldHub.shared));
 					if (WinUtil::showQuestionBox(msg, MB_ICONQUESTION)) {
-						tasks.run([=] {
+						MainFrame::getMainFrame()->threadedTasks.run([=] {
 							try {
 								QueueManager::getInstance()->addList(HintedUser(dl->getUser(), newHub.hubUrl), (dl->getPartialList() ? QueueItem::FLAG_PARTIAL_LIST : 0) | QueueItem::FLAG_CLIENT_VIEW, Util::emptyString);
 							} catch (...) {}
@@ -2267,19 +2132,4 @@ LRESULT DirectoryListingFrame::onComboSelChanged(WORD /*wNotifyCode*/, WORD /*wI
 
 	bHandled = FALSE;
 	return 0;
-}
-
-void DirectoryListingFrame::on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool /*wasOffline*/) noexcept {
-	if (aUser.getUser() == dl->getUser())
-		callAsync([this] { updateSelCombo(); });
-}
-
-void DirectoryListingFrame::on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool /*wentOffline*/) noexcept {
-	if (aUser == dl->getUser())
-		callAsync([this] { updateSelCombo(); });
-}
-
-void DirectoryListingFrame::on(ClientManagerListener::UserUpdated, const UserPtr& aUser) noexcept {
-	if (aUser == dl->getUser())
-		callAsync([this] { updateSelCombo(); });
 }

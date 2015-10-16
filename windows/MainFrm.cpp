@@ -1899,7 +1899,7 @@ void MainFrame::on(ScannerManagerListener::ScanFinished, const string& aText, co
 	callAsync([=] { TextFrame::openWindow(Text::toT(aTitle), Text::toT(aText), TextFrame::REPORT); });
 }
 
-void MainFrame::on(DirectoryListingManagerListener::OpenListing, DirectoryListing* aList, const string& aDir, const string& aXML) noexcept {
+void MainFrame::on(DirectoryListingManagerListener::OpenListing, const DirectoryListingPtr& aList, const string& aDir, const string& aXML) noexcept {
 	callAsync([=] { DirectoryListingFrame::openWindow(aList, aDir, aXML); });
 }
 

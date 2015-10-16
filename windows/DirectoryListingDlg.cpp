@@ -30,7 +30,7 @@
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
-DirectoryListingDlg::DirectoryListingDlg(DirectoryListing* aDl) : fileTypeStr(SEARCH_TYPE_ANY), fileType(0), size(0), sizeMode(0), useCurDir(false), dl(aDl) { }
+DirectoryListingDlg::DirectoryListingDlg(const DirectoryListingPtr& aDl) : fileTypeStr(SEARCH_TYPE_ANY), fileType(0), size(0), sizeMode(0), useCurDir(false), dl(aDl) { }
 
 DirectoryListingDlg::~DirectoryListingDlg() {
 	//ctrlSearch.Detach();

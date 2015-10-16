@@ -38,7 +38,7 @@ public:
 
 	enum { IDD = IDD_DIRLIST_DLG };
 
-	DirectoryListingDlg(DirectoryListing* aDl);
+	DirectoryListingDlg(const DirectoryListingPtr& aDl);
 	~DirectoryListingDlg();
 
 	BEGIN_MSG_MAP_EX(DirectoryListingDlg)
@@ -61,6 +61,6 @@ private:
 	CEdit ctrlSize;
 	CComboBox ctrlSizeMode;
 	CComboBox ctrlSizeUnit;
-	DirectoryListing* dl;
+	DirectoryListingPtr dl;
 };
 #endif

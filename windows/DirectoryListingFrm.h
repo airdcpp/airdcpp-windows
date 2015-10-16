@@ -37,7 +37,6 @@
 #include "Async.h"
 
 #include <airdcpp/concurrency.h>
-#include <airdcpp/ClientManagerListener.h>
 #include <airdcpp/DirectoryListing.h>
 #include <airdcpp/DirectoryListingListener.h>
 #include <airdcpp/TargetUtil.h>
@@ -63,10 +62,9 @@ static const cmdBarButton cmdBarButtons[] = {
 
 class DirectoryListingFrame : public MDITabChildWindowImpl<DirectoryListingFrame>, public CSplitterImpl<DirectoryListingFrame>,
 	public UCHandler<DirectoryListingFrame>, private SettingsManagerListener, public UserInfoBaseHandler<DirectoryListingFrame>,
-	public DownloadBaseHandler<DirectoryListingFrame>, private DirectoryListingListener, private Async<DirectoryListingFrame>,
-	private ClientManagerListener {
+	public DownloadBaseHandler<DirectoryListingFrame>, private DirectoryListingListener, private Async<DirectoryListingFrame> {
 public:
-	static void openWindow(DirectoryListing* aList, const string& aDir, const string& aXML);
+	static void openWindow(const DirectoryListingPtr& aList, const string& aDir, const string& aXML);
 	static void closeAll();
 
 	typedef MDITabChildWindowImpl<DirectoryListingFrame> baseClass;
@@ -95,7 +93,7 @@ public:
 		STATUS_LAST
 	};
 
-	DirectoryListingFrame(DirectoryListing* aList);
+	DirectoryListingFrame(const DirectoryListingPtr& aList);
 	~DirectoryListingFrame();
 
 
@@ -124,31 +122,29 @@ public:
 		NOTIFY_HANDLER(IDC_FILES, NM_CUSTOMDRAW, onCustomDrawList)
 		NOTIFY_HANDLER(IDC_DIRECTORIES, NM_CUSTOMDRAW, onCustomDrawTree)
 
-		if (windowState == STATE_ENABLED) {
-			NOTIFY_HANDLER(IDC_FILES, LVN_KEYDOWN, onKeyDown)
-			NOTIFY_HANDLER(IDC_FILES, NM_DBLCLK, onDoubleClickFiles)
+		NOTIFY_HANDLER(IDC_FILES, LVN_KEYDOWN, onKeyDown)
+		NOTIFY_HANDLER(IDC_FILES, NM_DBLCLK, onDoubleClickFiles)
 
-			NOTIFY_HANDLER(IDC_DIRECTORIES, NM_DBLCLK, onDoubleClickDirs)
-			NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_KEYDOWN, onKeyDownDirs)
-			NOTIFY_HANDLER(IDC_DIRECTORIES, NM_CLICK, onClickTree)
+		NOTIFY_HANDLER(IDC_DIRECTORIES, NM_DBLCLK, onDoubleClickDirs)
+		NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_KEYDOWN, onKeyDownDirs)
+		NOTIFY_HANDLER(IDC_DIRECTORIES, NM_CLICK, onClickTree)
 
-			COMMAND_ID_HANDLER(ID_FILE_RECONNECT, onFileReconnect)
+		COMMAND_ID_HANDLER(ID_FILE_RECONNECT, onFileReconnect)
 
-			COMMAND_ID_HANDLER(IDC_FIND, onFind)
-			COMMAND_ID_HANDLER(IDC_NEXT, onNext)
-			COMMAND_ID_HANDLER(IDC_PREV, onPrev)
+		COMMAND_ID_HANDLER(IDC_FIND, onFind)
+		COMMAND_ID_HANDLER(IDC_NEXT, onNext)
+		COMMAND_ID_HANDLER(IDC_PREV, onPrev)
 
-			COMMAND_ID_HANDLER(IDC_RELOAD, onReloadList)
-			COMMAND_ID_HANDLER(IDC_RELOAD_DIR, onReloadDir)
-			COMMAND_ID_HANDLER(IDC_MATCH_QUEUE, onMatchQueue)
-			COMMAND_ID_HANDLER(IDC_MATCH_ADL, onMatchADL)
-			COMMAND_ID_HANDLER(IDC_GETLIST, onGetFullList)
-			NOTIFY_CODE_HANDLER(TBN_DROPDOWN, onListDiff)
+		COMMAND_ID_HANDLER(IDC_RELOAD, onReloadList)
+		COMMAND_ID_HANDLER(IDC_RELOAD_DIR, onReloadDir)
+		COMMAND_ID_HANDLER(IDC_MATCH_QUEUE, onMatchQueue)
+		COMMAND_ID_HANDLER(IDC_MATCH_ADL, onMatchADL)
+		COMMAND_ID_HANDLER(IDC_GETLIST, onGetFullList)
+		NOTIFY_CODE_HANDLER(TBN_DROPDOWN, onListDiff)
 
-			MESSAGE_HANDLER(WM_EXITMENULOOP, onExitMenuLoop)
-			MESSAGE_HANDLER(WM_TIMER, onTimer)
-			CHAIN_MSG_MAP_MEMBER(browserBar)
-		}
+		MESSAGE_HANDLER(WM_EXITMENULOOP, onExitMenuLoop)
+		MESSAGE_HANDLER(WM_TIMER, onTimer)
+		CHAIN_MSG_MAP_MEMBER(browserBar)
 
 		CHAIN_COMMANDS(ucBase)
 		CHAIN_COMMANDS(uibBase)
@@ -235,7 +231,6 @@ private:
 	void appendListContextMenu(CPoint& pt);
 
 	bool checkCommonKey(int key);
-	task_group tasks;
 	bool allowPopup() const;
 	bool getLocalPaths(StringList& paths_, bool usingTree, bool dirsOnly);
 	void openDupe(const DirectoryListing::Directory::Ptr& d);
@@ -243,8 +238,9 @@ private:
 
 	// safe to be called from any thread
 	void updateStatus(const tstring& aMsg);
+	void updateStatusText(int aTotalCount, int64_t totalSize, int selectedCount, int displayCount, time_t aUpdateDate);
+
 	string curPath;
-	void changeWindowState(bool enable, bool redraw = true);
 	
 	void updateItems(const DirectoryListing::Directory::Ptr& d);
 	void insertItems(const optional<string>& selectedName);
@@ -370,7 +366,7 @@ private:
 
 	int statusSizes[STATUS_LAST];
 	
-	DirectoryListing* dl;
+	DirectoryListingPtr dl;
 
 	ParamMap ucLineParams;
 
@@ -380,18 +376,9 @@ private:
 	typedef map<HWND, DirectoryListingFrame*> FrameMap;
 	static FrameMap frames;
 
-	void DisableWindow(bool redraw = true);
-	void EnableWindow(bool redraw = true);
-
-	enum WindowState {
-		STATE_ENABLED,
-		STATE_DISABLED,
-	};
-
-	WindowState windowState;
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
-	void on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool reloadList, bool changeDir, bool loadInGUIThread) noexcept;
+	void on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool reloadList, bool changeDir) noexcept;
 	void on(DirectoryListingListener::LoadingFailed, const string& aReason) noexcept;
 	void on(DirectoryListingListener::LoadingStarted, bool changeDir) noexcept;
 	void on(DirectoryListingListener::QueueMatched, const string& aMessage) noexcept;
@@ -402,17 +389,12 @@ private:
 	void on(DirectoryListingListener::UpdateStatusMessage, const string& aMessage) noexcept;
 	void on(DirectoryListingListener::RemovedQueue, const string& aDir) noexcept;
 	void on(DirectoryListingListener::SetActive) noexcept;
-	void on(DirectoryListingListener::HubChanged) noexcept;
-
-	// ClientManagerListener
-	void on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool wasOffline) noexcept;
-	void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool wentOffline) noexcept;
-	void on(ClientManagerListener::UserUpdated, const UserPtr& aUser) noexcept;
+	void on(DirectoryListingListener::UserUpdated) noexcept;
 
 	void filterList();
 	void createRoot();
 	void convertToFull();
-	void onLoadingFinished(int64_t aStart, const string& aDir, bool reloadList, bool changeDir, bool usingGuiThread);
+	void onLoadingFinished(int64_t aStart, const string& aDir, bool reloadList, bool changeDir);
 
 
 	CComboBox selCombo;
@@ -436,17 +418,20 @@ private:
 	};
 
 	unordered_map<string, unique_ptr<ItemInfoCache>, noCaseStringHash, noCaseStringEq> itemInfos;
-	void updateItemCache(const string& aPath);
+	void updateItemCache(const string& aPath, std::function<void()> completionF = nullptr);
 protected:
 	/* TypedTreeViewCtrl */
 	TreeType::ChildrenState DirectoryListingFrame::getChildrenState(const ItemInfo* d) const;
 	int getIconIndex(const ItemInfo* d) const;
 	void expandDir(ItemInfo* d, bool /*collapsing*/);
-	void insertTreeItems(const ItemInfo* d, HTREEITEM aParent);
+	void insertTreeItems(const string& aPath, HTREEITEM aParent);
 
 	/* FilteredListViewCtrl */
 	void createColumns();
 	size_t getTotalListItemCount() const;
+
+private:
+	void updateItemCacheImpl(const string& aPath, std::function<void()> completionF);
 };
 
 #endif // !defined(DIRECTORY_LISTING_FRM_H)
