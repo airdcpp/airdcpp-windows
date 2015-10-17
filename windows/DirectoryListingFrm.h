@@ -245,12 +245,6 @@ private:
 	void updateItems(const DirectoryListing::Directory::Ptr& d);
 	void insertItems(const optional<string>& selectedName);
 
-	enum ReloadMode {
-		RELOAD_NONE,
-		RELOAD_DIR,
-		RELOAD_ALL
-	};
-
 	void findSearchHit(bool newDir = false);
 	int searchPos;
 	bool gotoPrev;
@@ -280,22 +274,22 @@ private:
 		} type;
 		
 		//union {
-			DirectoryListing::File* file;
-			DirectoryListing::Directory::Ptr dir;
+			const DirectoryListing::File* file;
+			const DirectoryListing::Directory::Ptr dir;
 		//};
 
-		ItemInfo(DirectoryListing::File* f) : type(FILE), file(f), name(Text::toT(f->getName())) { }
-		ItemInfo(DirectoryListing::Directory::Ptr& d) : type(DIRECTORY), dir(d), name(Text::toT(d->getName())) {}
+		ItemInfo(const DirectoryListing::File* f) : type(FILE), file(f), name(Text::toT(f->getName())) { }
+		ItemInfo(const DirectoryListing::Directory::Ptr& d) : type(DIRECTORY), dir(d), name(Text::toT(d->getName())) {}
 		~ItemInfo() { }
 
 		const tstring getText(uint8_t col) const;
 		const string getTextNormal(uint8_t col) const;
 		
-		struct TotalSize {
+		/*struct TotalSize {
 			TotalSize() : total(0) { }
 			void operator()(ItemInfo* a) { total += a->type == DIRECTORY ? a->dir->getTotalSize(true) : a->file->getSize(); }
 			int64_t total;
-		};
+		};*/
 
 		static int compareItems(const ItemInfo* a, const ItemInfo* b, uint8_t col);
 
@@ -311,6 +305,7 @@ private:
 
 		const tstring& getNameW() const { return name; }
 	private:
+		//int64_t aTotalSize
 		const tstring name;
 	};
 
@@ -318,7 +313,7 @@ private:
 
 	void handleItemAction(bool usingTree, std::function<void (const ItemInfo* ii)> aF, bool firstOnly = false);
 	void onListItemAction();
-	void changeDir(const ItemInfo* d, ReloadMode aReload = RELOAD_NONE);
+	void changeDir(const ItemInfo* d, DirectoryListing::ReloadMode aReload = DirectoryListing::RELOAD_NONE);
 
 	static tstring handleCopyMagnet(const ItemInfo* ii);
 	static tstring handleCopyPath(const ItemInfo* ii);
@@ -413,12 +408,16 @@ private:
 
 	typedef set<ItemInfo, ItemInfo::NameSort> ItemInfoSet;
 	struct ItemInfoCache {
+		ItemInfoCache(const DirectoryListing::Directory::Ptr& aDir) : dir(aDir) {}
+
+		const DirectoryListing::Directory::Ptr dir;
+
 		ItemInfoSet files;
 		ItemInfoSet directories;
 	};
 
 	unordered_map<string, unique_ptr<ItemInfoCache>, noCaseStringHash, noCaseStringEq> itemInfos;
-	void updateItemCache(const string& aPath, std::function<void()> completionF = nullptr);
+	void updateItemCache(const string& aPath, std::function<void()> completionF, bool aReload = false);
 protected:
 	/* TypedTreeViewCtrl */
 	TreeType::ChildrenState DirectoryListingFrame::getChildrenState(const ItemInfo* d) const;
@@ -431,7 +430,9 @@ protected:
 	size_t getTotalListItemCount() const;
 
 private:
-	void updateItemCacheImpl(const string& aPath, std::function<void()> completionF);
+	typedef std::set<string, Util::PathSortOrderBool> PathSet;
+
+	void updateItemCacheImpl(const string& aPath, std::function<void()> completionF, const PathSet& paths);
 };
 
 #endif // !defined(DIRECTORY_LISTING_FRM_H)

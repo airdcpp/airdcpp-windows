@@ -28,7 +28,6 @@
 #include "LineDlg.h"
 #include "ShellContextMenu.h"
 #include "ListFilter.h"
-#include "MainFrm.h"
 
 #include <airdcpp/HighlightManager.h>
 #include <airdcpp/File.h>
@@ -94,49 +93,76 @@ DirectoryListingFrame::DirectoryListingFrame(const DirectoryListingPtr& aList) :
 }
 
 DirectoryListingFrame::~DirectoryListingFrame() {
-	// dl will be automatically deleted by DirectoryListingManager
-	DirectoryListingManager::getInstance()->removeList(dl->getUser());
 }
 
-void DirectoryListingFrame::updateItemCache(const string& aPath, std::function<void()> completionF) {
-	dl->addAsyncTask([=] { updateItemCacheImpl(aPath, completionF); });
+void DirectoryListingFrame::updateItemCache(const string& aPath, std::function<void()> completionF, bool aReload) {
+
+	// List paths that are missing from iteminfos (if we are loading a non-root directory directly)
+	PathSet paths;
+	paths.insert(aPath);
+
+	auto path = aPath;
+	while (true) {
+		path = Util::getNmdcParentDir(path);
+		auto p = itemInfos.find(path);
+		if (p == itemInfos.end()) {
+			paths.emplace(path);
+		}
+
+		if (path.empty()) {
+			break;
+		}
+	}
+
+	dl->addAsyncTask([=] { updateItemCacheImpl(aPath, completionF, paths); });
 }
 
-void DirectoryListingFrame::updateItemCacheImpl(const string& aPath, std::function<void()> completionF) {
-	auto curDir = dl->findDirectory(aPath);
-	if (!curDir) {
-		return;
+void DirectoryListingFrame::updateItemCacheImpl(const string& aPath, std::function<void()> completionF, const PathSet& aPaths) {
+	// The order matters in parent check phase
+	std::map<string, ItemInfoCache*, Util::PathSortOrderBool> newCacheDirectories;
+
+	for (const auto& path : aPaths) {
+		auto curDir = dl->findDirectory(path);
+		if (!curDir) {
+			return;
+		}
+
+		auto iic = new ItemInfoCache(curDir);
+		for (auto& d : curDir->directories) {
+			iic->directories.emplace(d);
+		}
+
+		for (auto& f : curDir->files) {
+			iic->files.emplace(f);
+		}
+
+		newCacheDirectories.emplace(path, iic);
 	}
 
-	auto iic = new ItemInfoCache();
-	for (auto& d : curDir->directories) {
-		iic->directories.emplace(d);
-	}
+	callAsync([=] {
+		// Remove itemInfos from subdirectories
+		for (auto i = itemInfos.begin(); i != itemInfos.end();) {
+			if (AirUtil::isParentOrExact(aPath, i->first)) {
+				i = itemInfos.erase(i);
+			} else {
+				i++;
+			}
+		}
 
-	for (auto& f : curDir->files) {
-		iic->files.emplace(f);
-	}
+		for (auto c : newCacheDirectories) {
+			itemInfos[c.first] = unique_ptr<ItemInfoCache>(c.second);
 
-	callAsync([=]() mutable {
-		itemInfos[aPath] = unique_ptr<ItemInfoCache>(iic);
-
-		// check that item infos exist also for the parents (in case we are directly opening a non-root path)
-		if (!aPath.empty()) {
-			auto parent = Util::getNmdcParentDir(aPath);
-			auto p = itemInfos.find(parent);
-			if (p != itemInfos.end()) {
-				auto p2 = p->second->directories.find(ItemInfo(curDir));
-				if (p2 != p->second->directories.end()) {
-					if (completionF) {
-						completionF();
+			// Ensure that the parent has this directory listed as well (in case we are loading a directory that was just added in to the list)
+			if (!c.first.empty()) {
+				auto parent = Util::getNmdcParentDir(c.first);
+				if (aPaths.find(parent) == aPaths.end()) {
+					auto ii = itemInfos.find(parent);
+					dcassert(ii != itemInfos.end());
+					if (ii != itemInfos.end()) {
+						ii->second->directories.emplace(c.second->dir);
 					}
-
-					return;
 				}
 			}
-
-			updateItemCache(parent, completionF);
-			return;
 		}
 
 		if (completionF) {
@@ -145,11 +171,11 @@ void DirectoryListingFrame::updateItemCacheImpl(const string& aPath, std::functi
 	});
 }
 
-void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool reloadList, bool changeDir) noexcept {
+void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool aReload, bool aChangeDir) noexcept {
 	callAsync([=] { 
 		updateItemCache(aDir, [=] {
-			onLoadingFinished(aStart, aDir, reloadList, changeDir);
-		});
+			onLoadingFinished(aStart, aDir, aReload, aChangeDir);
+		}, aReload);
 	});
 }
 
@@ -239,14 +265,16 @@ void DirectoryListingFrame::on(DirectoryListingListener::SearchFailed, bool time
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::ChangeDirectory, const string& aDir, bool isSearchChange) noexcept {
-	if (isSearchChange)
-		ctrlFiles.filter.clear();
+	callAsync([=] {
+		if (isSearchChange)
+			ctrlFiles.filter.clear();
 
-	selectItem(aDir);
-	if (isSearchChange) {
-		callAsync([=] { updateStatus(TSTRING_F(X_RESULTS_FOUND, dl->getResultCount())); });
-		findSearchHit(true);
-	}
+		selectItem(aDir);
+		if (isSearchChange) {
+			callAsync([=] { updateStatus(TSTRING_F(X_RESULTS_FOUND, dl->getResultCount())); });
+			findSearchHit(true);
+		}
+	});
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::UpdateStatusMessage, const string& aMessage) noexcept {
@@ -399,11 +427,11 @@ LRESULT DirectoryListingFrame::onGetFullList(WORD /*wNotifyCode*/, WORD /*wID*/,
 
 void DirectoryListingFrame::convertToFull() {
 	if (dl->getIsOwnList()) {
-		dl->addFullListTask(curPath);
+		dl->addFullListTask(Util::emptyString);
 	} else {
-		MainFrame::getMainFrame()->threadedTasks.run([=] {
+		dl->addAsyncTask([=] {
 			try {
-				QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_CLIENT_VIEW, curPath);
+				QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_CLIENT_VIEW, Util::emptyString);
 			} catch (...) {}
 		});
 	}
@@ -458,7 +486,7 @@ void DirectoryListingFrame::createRoot() {
 }
 
 void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aReloadList, bool aChangeDir) {
-	//ctrlTree.SetRedraw(FALSE);
+	ctrlTree.SetRedraw(FALSE);
 
 	if (aReloadList) {
 		ctrlTree.DeleteAllItems();
@@ -468,6 +496,7 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aReloadLi
 		}
 
 		createRoot();
+		//dcassert(!root->dir->directories.empty());
 		//browserBar.updateHistoryCombo();
 	}
 
@@ -478,7 +507,7 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aReloadLi
 	}
 
 	//get the item for our new dir
-	HTREEITEM ht = aReloadList ? treeRoot : ctrlTree.findItem(treeRoot, Text::toT(aLoadedDir));
+	HTREEITEM ht = aLoadedDir.empty() ? treeRoot : ctrlTree.findItem(treeRoot, Text::toT(aLoadedDir));
 	if(!ht) {
 		ht = treeRoot;
 	}
@@ -516,7 +545,7 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aReloadLi
 		selectItem(d->getPath());
 	}
 
-	//ctrlTree.SetRedraw(TRUE);
+	ctrlTree.SetRedraw(TRUE);
 }
 
 LRESULT DirectoryListingFrame::onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
@@ -628,28 +657,47 @@ size_t DirectoryListingFrame::getTotalListItemCount() const {
 }
 
 void DirectoryListingFrame::updateStatus() {
-	if (!updating && ctrlStatus.IsWindow()) {
-		dl->addAsyncTask([this] {
-			int totalCount = 0;
-			int64_t totalSize = 0;
-			int selectedCount = ctrlFiles.list.GetSelectedCount();
-			int displayCount = 0;
-
-			auto d = dl->findDirectory(curPath);
-			if (selectedCount == 0) {
-				if (d) {
-					totalCount = getTotalListItemCount();
-					totalSize = d->getTotalSize(d != dl->getRoot());
-				}
-			} else {
-				totalSize = ctrlFiles.list.forEachSelectedT(ItemInfo::TotalSize()).total;
-			}
-
-			callAsync([=] {
-				updateStatusText(totalCount, totalSize, selectedCount, displayCount, d ? d->getUpdateDate() : 0);
-			});
-		});
+	if (updating || !ctrlStatus.IsWindow()) {
+		return;
 	}
+
+	int selectedCount = ctrlFiles.list.GetSelectedCount();
+	int64_t totalFileSize = 0;
+	int totalCount = 0;
+	auto displayCount = ctrlFiles.list.GetItemCount();
+
+	DirectoryListing::Directory::List directories;
+	if (selectedCount > 0) {
+		ctrlFiles.list.forEachSelectedT([&](const ItemInfo* ii) {
+			if (ii->type == ItemInfo::FILE) {
+				totalFileSize += ii->file->getSize();
+			} else {
+				directories.push_back(ii->dir);
+			}
+		});
+	} else {
+		totalCount = getTotalListItemCount();
+	}
+
+	dl->addAsyncTask([=] {
+		auto totalSize = totalFileSize;
+		auto currentDir = dl->findDirectory(curPath);
+		if (!currentDir) {
+			return;
+		}
+
+		if (selectedCount == 0) {
+			totalSize = currentDir->getTotalSize(currentDir != dl->getRoot());
+		} else {
+			for (const auto& d : directories) {
+				totalSize += d->getTotalSize(false);
+			}
+		}
+
+		callAsync([=] {
+			updateStatusText(totalCount, totalSize, selectedCount, displayCount, currentDir->getUpdateDate());
+		});
+	});
 }
 
 void DirectoryListingFrame::updateStatusText(int aTotalCount, int64_t aTotalSize, int aSelectedCount, int aDisplayCount, time_t aUpdateDate) {
@@ -712,30 +760,35 @@ tstring DirectoryListingFrame::getComboDesc() {
 }
 
 void DirectoryListingFrame::initStatus() {
-	size_t totalFiles = 0;
-	int64_t totalSize = 0;
-	if (dl->getPartialList() && !dl->getHintedUser().user->isNMDC()) {
-		if (!dl->getIsOwnList()) {
-			auto si = ClientManager::getInstance()->getShareInfo(dl->getHintedUser());
-			totalSize = si.first;
-			totalFiles = si.second;
+	dl->addAsyncTask([=] {
+		size_t totalFiles = 0;
+		int64_t totalSize = 0;
+		if (dl->getPartialList() && !dl->getHintedUser().user->isNMDC()) {
+			if (!dl->getIsOwnList()) {
+				auto si = ClientManager::getInstance()->getShareInfo(dl->getHintedUser());
+				totalSize = si.first;
+				totalFiles = si.second;
+			}
+			else {
+				ShareManager::getInstance()->getProfileInfo(Util::toInt(dl->getFileName()), totalSize, totalFiles);
+			}
 		} else {
-			ShareManager::getInstance()->getProfileInfo(Util::toInt(dl->getFileName()), totalSize, totalFiles);
+			totalSize = dl->getTotalListSize();
+			totalFiles = dl->getTotalFileCount();
 		}
-	} else {
-		totalSize = dl->getTotalListSize();
-		totalFiles = dl->getTotalFileCount();
-	}
 
-	tstring tmp = TSTRING_F(TOTAL_SIZE, Util::formatBytesW(totalSize));
-	statusSizes[STATUS_TOTAL_SIZE] = WinUtil::getTextWidth(tmp, m_hWnd);
-	ctrlStatus.SetText(STATUS_TOTAL_SIZE, tmp.c_str());
+		callAsync([=] {
+			tstring tmp = TSTRING_F(TOTAL_SIZE, Util::formatBytesW(totalSize));
+			statusSizes[STATUS_TOTAL_SIZE] = WinUtil::getTextWidth(tmp, m_hWnd);
+			ctrlStatus.SetText(STATUS_TOTAL_SIZE, tmp.c_str());
 
-	tmp = TSTRING_F(TOTAL_FILES, totalFiles);
-	statusSizes[STATUS_TOTAL_FILES] = WinUtil::getTextWidth(tmp, m_hWnd);
-	ctrlStatus.SetText(STATUS_TOTAL_FILES, tmp.c_str());
+			tmp = TSTRING_F(TOTAL_FILES, totalFiles);
+			statusSizes[STATUS_TOTAL_FILES] = WinUtil::getTextWidth(tmp, m_hWnd);
+			ctrlStatus.SetText(STATUS_TOTAL_FILES, tmp.c_str());
 
-	UpdateLayout(FALSE);
+			UpdateLayout(FALSE);
+		});
+	});
 }
 
 LRESULT DirectoryListingFrame::onSelChangedDirectories(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
@@ -866,41 +919,22 @@ void DirectoryListingFrame::updateItems(const DirectoryListing::Directory::Ptr& 
 	f();
 }
 
-void DirectoryListingFrame::changeDir(const ItemInfo* ii, ReloadMode aReload /*RELOAD_NONE*/) {
+void DirectoryListingFrame::changeDir(const ItemInfo* ii, DirectoryListing::ReloadMode aReload /*RELOAD_NONE*/) {
 	if (!ii)
 		return;
 
-	if (aReload == RELOAD_NONE)
+	if (aReload == DirectoryListing::RELOAD_NONE)
 		updateItems(ii->dir);
 
-	auto path = ii->getPath();
-	dl->addAsyncTask([=] {
-		dl->changeDirectory(path, aReload != RELOAD_NONE);
-	});
-
-
-	/*auto d = ii->dir;
-	if (aReload == RELOAD_NONE)
-		updateItems(d);
-
-
-	if((!d->isComplete() || aReload != RELOAD_NONE) && !d->getLoading()) {
-		if (dl->getIsOwnList()) {
-			d->setLoading(true);
-			dl->addPartialListTask(Util::emptyString, d->getPath(), aReload == RELOAD_ALL);
-		} else if(dl->getUser()->isOnline()) {
-			dl->addAsyncTask([=] {
-				try {
-					QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_CLIENT_VIEW, d->getPath());
-					d->setLoading(true);
-				} catch (const QueueException& e) {
-					updateStatus(Text::toT(e.getError()));
-				}
-			});
-		} else {
-			updateStatus(CTSTRING(USER_OFFLINE));
-		}
-	}*/
+	const auto d = ii->dir;
+	if ((!d->isComplete() || aReload != DirectoryListing::RELOAD_NONE) && !d->getLoading()) {
+		auto path = ii->getPath();
+		dl->addAsyncTask([=] {
+			dl->changeDirectory(path, aReload);
+		});
+	} else {
+		on(ChangeDirectory(), ii->getPath(), false);
+	}
 }
 
 void DirectoryListingFrame::up() {
@@ -1378,31 +1412,11 @@ void DirectoryListingFrame::handleGoToDirectory(bool usingTree) {
 
 void DirectoryListingFrame::handleViewNFO(bool usingTree) {
 	handleItemAction(usingTree, [this](const ItemInfo* ii) {
-		dl->addAsyncTask([=] {
-			if (ii->type == ItemInfo::DIRECTORY) {
-				if (dl->getIsOwnList()) {
-					try {
-						SearchResultList results;
-						auto s = unique_ptr<SearchQuery>(SearchQuery::getSearch(Util::emptyString, Util::emptyString, 0, SearchManager::TYPE_ANY, SearchManager::SIZE_DONTCARE, { ".nfo" }, SearchQuery::MATCH_NAME, false, 10));
-						ShareManager::getInstance()->search(results, *s.get(), Util::toInt(dl->getFileName()), ClientManager::getInstance()->getMyCID(), Util::toAdcFile(ii->dir->getPath()));
-
-						if (!results.empty()) {
-							auto paths = AirUtil::getDupePaths(DUPE_SHARE, results.front()->getTTH());
-							if (!paths.empty())
-								callAsync([=] { TextFrame::openWindow(Text::toT(paths.front()), TextFrame::NORMAL); });
-						} else {
-							updateStatus(Text::toT(ii->dir->getName()) + _T(": ") + TSTRING(NO_NFO_FOUND));
-						}
-					} catch (...) {}
-				} else if (!ii->dir->isComplete() || ii->dir->findIncomplete()) {
-					try {
-						QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_VIEW_NFO | QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_RECURSIVE_LIST, ii->dir->getPath());
-					} catch (const Exception&) {}
-				} else if (!dl->findNfo(ii->dir->getPath())) {
-					//ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
-				}
-			}
-		});
+		if (ii->type == ItemInfo::DIRECTORY) {
+			dl->addViewNfoTask(ii->dir->getPath(), true, [this](const string& aPath) {
+				callAsync([=] { TextFrame::openWindow(Text::toT(aPath), TextFrame::NORMAL); });
+			});
+		}
 	});
 }
 
@@ -1457,7 +1471,7 @@ void DirectoryListingFrame::openDupe(const DirectoryListing::File* f, bool openD
 void DirectoryListingFrame::handleReloadPartial(bool dirOnly) {
 	handleItemAction(true, [=](const ItemInfo* ii) {
 		if (ii && !ii->dir->getAdls())
-			changeDir(ii, dirOnly ? RELOAD_DIR : RELOAD_ALL);
+			changeDir(ii, dirOnly ? DirectoryListing::RELOAD_DIR : DirectoryListing::RELOAD_ALL);
 	});
 }
 
@@ -1793,20 +1807,19 @@ void DirectoryListingFrame::closeAll(){
 
 LRESULT DirectoryListingFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!dl->getClosing()) {
-		dl->setClosing(true);
-		SettingsManager::getInstance()->removeListener(this);
-
 		ctrlFiles.list.SetRedraw(FALSE);
+
+		updateStatus(TSTRING(CLOSING_WAIT));
+
+		DirectoryListingManager::getInstance()->removeList(dl->getUser());
+		return 0;
+	} else {
+		SettingsManager::getInstance()->removeListener(this);
 		frames.erase(m_hWnd);
 
 		ctrlFiles.list.saveHeaderOrder(SettingsManager::DIRECTORYLISTINGFRAME_ORDER, SettingsManager::DIRECTORYLISTINGFRAME_WIDTHS,
 			SettingsManager::DIRECTORYLISTINGFRAME_VISIBLE);
 
-		updateStatus(TSTRING(CLOSING_WAIT));
-
-		dl->close();
-		return 0;
-	} else {
 		CRect rc;
 		if(!IsIconic()){
 			//Get position of window
@@ -1992,7 +2005,7 @@ void DirectoryListingFrame::onComboSelChanged(bool manual) {
 				if (diff < 0.95 || diff > 1.05) {
 					auto msg = TSTRING_F(LIST_SIZE_DIFF_NOTE, Text::toT(newHub.hubName) % Util::formatBytesW(newHub.shared) % Text::toT(oldHub.hubName) % Util::formatBytesW(oldHub.shared));
 					if (WinUtil::showQuestionBox(msg, MB_ICONQUESTION)) {
-						MainFrame::getMainFrame()->threadedTasks.run([=] {
+						dl->addAsyncTask([=] {
 							try {
 								QueueManager::getInstance()->addList(HintedUser(dl->getUser(), newHub.hubUrl), (dl->getPartialList() ? QueueItem::FLAG_PARTIAL_LIST : 0) | QueueItem::FLAG_CLIENT_VIEW, Util::emptyString);
 							} catch (...) {}
