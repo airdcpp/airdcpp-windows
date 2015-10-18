@@ -170,15 +170,7 @@ LRESULT FavHubGroupsDlg::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		tstring name = getText(0, pos);
 		FavoriteHubEntryList l = FavoriteManager::getInstance()->getFavoriteHubs(Text::fromT(name));
 		if(l.size() > 0) {
-			tstring msg;
-			msg += _T("The group ");
-			msg += name;
-			msg += _T(" contains ");
-			msg += Util::toStringW(l.size());
-			msg += _T(" hubs; remove all of the hubs as well?\n\n"
-				_T("If you select 'Yes', all of these hubs are going to be deleted!\n\n")
-				_T("If you select 'No', these hubs will simply be moved to the main default group."));
-			bool remove = MessageBox(msg.c_str(), _T("Remove Group"), MB_ICONQUESTION | MB_YESNO) == IDYES;
+			bool remove = MessageBox(CTSTRING_F(CONFIRM_REMOVE_HUBS_FAV_GROUP, name % l.size()), CTSTRING(REMOVE), MB_ICONQUESTION | MB_YESNO) == IDYES;
 			for(FavoriteHubEntryList::iterator i = l.begin(); i != l.end(); ++i) {
 				if(remove)
 					FavoriteManager::getInstance()->removeFavoriteHub((*i)->getToken());
