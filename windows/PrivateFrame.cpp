@@ -691,10 +691,14 @@ void PrivateFrame::setCountryFlag() {
 }
 
 void PrivateFrame::setAway() {
+	if (getUser()->isSet(User::BOT))
+		return;
+
 	if (!getUser()->isOnline()) {
 		ctrlStatus.SetIcon(STATUS_AWAY, userOfflineIcon);
-	} else if(!getUser()->isSet(User::BOT))
+	} else {
 		ctrlStatus.SetIcon(STATUS_AWAY, userAway ? awayIconON : awayIconOFF);
+	}
 }
 
 void PrivateFrame::readLog() {
