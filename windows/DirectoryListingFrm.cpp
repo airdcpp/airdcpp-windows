@@ -926,15 +926,10 @@ void DirectoryListingFrame::changeDir(const ItemInfo* ii, DirectoryListing::Relo
 	if (aReload == DirectoryListing::RELOAD_NONE)
 		updateItems(ii->dir);
 
-	const auto d = ii->dir;
-	if ((!d->isComplete() || aReload != DirectoryListing::RELOAD_NONE) && !d->getLoading()) {
-		auto path = ii->getPath();
-		dl->addAsyncTask([=] {
-			dl->changeDirectory(path, aReload);
-		});
-	} else {
-		on(ChangeDirectory(), ii->getPath(), false);
-	}
+	auto path = ii->getPath();
+	dl->addAsyncTask([=] {
+		dl->changeDirectory(path, aReload);
+	});
 }
 
 void DirectoryListingFrame::up() {

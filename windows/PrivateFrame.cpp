@@ -48,7 +48,12 @@ void PrivateFrame::openWindow(const HintedUser& aReplyTo, bool aMessageReceived)
 	auto frame = frames.find(aReplyTo.user);
 	if (frame == frames.cend()) {
 		auto p = new PrivateFrame(aReplyTo);
-		p->CreateEx(WinUtil::mdiClient);
+		if (aMessageReceived && SETTING(POPUNDER_PM)) {
+			WinUtil::hiddenCreateEx(p);
+		} else {
+			p->CreateEx(WinUtil::mdiClient);
+		}
+
 		frame = frames.emplace(aReplyTo.user, p).first;
 	} else {
 		frame->second->activate();
@@ -472,13 +477,6 @@ void PrivateFrame::addLine(const Identity& from, const tstring& aLine) {
 }
 
 void PrivateFrame::addLine(const Identity& from, const tstring& aLine, CHARFORMAT2& cf) {
-	if(!created) {
-		if(SETTING(POPUNDER_PM))
-			WinUtil::hiddenCreateEx(this);
-		else
-			CreateEx(WinUtil::mdiClient);
-	}
-
 	CRect r;
 	ctrlClient.GetClientRect(r);
 
