@@ -692,16 +692,22 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 
 		if (b->isFailed()) {
 			bundleMenu.appendSeparator();
-			if (ShareManager::getInstance()->allowAddDir(b->getTarget())) {
-				bundleMenu.appendItem(TSTRING(RETRY_SHARING), [=] { QueueManager::getInstance()->shareBundle(b, false); }, OMenu::FLAG_THREADED);
-				if (b->getStatus() == Bundle::STATUS_SHARING_FAILED || b->getStatus() == Bundle::STATUS_FAILED_MISSING) {
-					bundleMenu.appendItem(TSTRING(FORCE_SHARING), [=] { QueueManager::getInstance()->shareBundle(b, true); }, OMenu::FLAG_THREADED);
+			if (b->getStatus() == Bundle::STATUS_DOWNLOAD_FAILED) {
+				bundleMenu.appendItem(TSTRING(RESUME), [=] { QueueManager::getInstance()->setBundleAutoPriority(b->getToken()); });
+			}
+			else {
+				if (ShareManager::getInstance()->allowAddDir(b->getTarget())) {
+					bundleMenu.appendItem(TSTRING(RETRY_SHARING), [=] { QueueManager::getInstance()->shareBundle(b, false); }, OMenu::FLAG_THREADED);
+					if (b->getStatus() == Bundle::STATUS_SHARING_FAILED || b->getStatus() == Bundle::STATUS_FAILED_MISSING) {
+						bundleMenu.appendItem(TSTRING(FORCE_SHARING), [=] { QueueManager::getInstance()->shareBundle(b, true); }, OMenu::FLAG_THREADED);
+					}
 				}
-			} else {
-				bundleMenu.appendItem(TSTRING(RESCAN_BUNDLE), [=] {
-					auto bundle = b;
-					QueueManager::getInstance()->scanBundle(bundle);
-				}, OMenu::FLAG_THREADED);
+				else {
+					bundleMenu.appendItem(TSTRING(RESCAN_BUNDLE), [=] {
+						auto bundle = b;
+						QueueManager::getInstance()->scanBundle(bundle);
+					}, OMenu::FLAG_THREADED);
+				}
 			}
 		}
 
@@ -1791,6 +1797,7 @@ tstring QueueFrame::QueueItemInfo::getStatusString() const {
 				return TSTRING_F(WAITING_PCT, getPercentage());
 			}
 		}
+		case Bundle::STATUS_DOWNLOAD_FAILED: return TSTRING_F(PAUSED_PCT, getPercentage()) + _T(": ") + Text::toT(bundle->getLastError());
 		case Bundle::STATUS_RECHECK: return TSTRING(RECHECKING);
 		case Bundle::STATUS_DOWNLOADED: return TSTRING(MOVING);
 		case Bundle::STATUS_MOVED: return TSTRING(DOWNLOADED);
