@@ -159,7 +159,7 @@ void SharePage::handleAddProfile(bool copy) {
 
 	//create the profile
 	string name = Text::fromT(virt.line);
-	ShareProfileInfoPtr newProfile = new ShareProfileInfo(name);
+	auto newProfile = make_shared<ShareProfileInfo>(name);
 	newProfile->state = ShareProfileInfo::STATE_ADDED;
 	if (copy) {
 		dirPage->onCopyProfile(newProfile->token);

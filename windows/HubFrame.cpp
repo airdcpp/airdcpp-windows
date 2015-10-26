@@ -1776,7 +1776,7 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 				cd->clrText = SETTING(IGNORED_COLOR);
 			} else if(ui->getIdentity().isOp()) {
 				cd->clrText = SETTING(OP_COLOR);
-			} else if(!ui->getIdentity().isTcpActive(client.get())) {
+			} else if(!ui->getIdentity().isTcpActive(client)) {
 				cd->clrText = SETTING(PASIVE_COLOR);
 			} else {
 				cd->clrText = SETTING(NORMAL_COLOUR);

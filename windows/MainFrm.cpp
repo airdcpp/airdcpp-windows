@@ -1428,7 +1428,7 @@ LRESULT MainFrame::onOpenOwnList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 	addThreadedTask([=] {
 		ProfileToken profile = SETTING(LAST_LIST_PROFILE);
 		auto profiles = ShareManager::getInstance()->getProfiles();
-		if (find_if(profiles, [profile](const ShareProfilePtr& aProfile) { return aProfile->getToken() == profile; }) == profiles.end())
+		if (find_if(profiles.begin(), profiles.end(), [profile](const ShareProfilePtr& aProfile) { return aProfile->getToken() == profile; }) == profiles.end())
 			profile = SETTING(DEFAULT_SP);
 
 		DirectoryListingManager::getInstance()->openOwnList(profile, wID == IDC_OWN_LIST_ADL);

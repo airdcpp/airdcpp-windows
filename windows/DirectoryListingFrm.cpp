@@ -1133,7 +1133,7 @@ LRESULT DirectoryListingFrame::onFileReconnect(WORD /*wNotifyCode*/, WORD /*wID*
 
 void DirectoryListingFrame::selectItem(const string& name) {
 	HTREEITEM ht = ctrlTree.findItem(treeRoot, Text::toT(name));
-	if(ht) {
+	if(ht && ctrlTree.GetSelectedItem() != ht) {
 		if (changeType == CHANGE_LIST)
 			ctrlTree.EnsureVisible(ht);
 		ctrlTree.SelectItem(ht);
