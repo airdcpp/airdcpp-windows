@@ -98,7 +98,7 @@ void AboutDlg::on(HttpConnectionListener::Complete, HttpConnection* conn, const 
 				string versionString;
 				int remoteBuild = 0;
 
-				if(UpdateManager::getVersionInfo(xml, versionString, remoteBuild)) {
+				if(Updater::getUpdateVersionInfo(xml, versionString, remoteBuild)) {
 					tstring* x = new tstring(Text::toT(versionString));
 					PostMessage(WM_VERSIONDATA, (WPARAM) x);
 					return;

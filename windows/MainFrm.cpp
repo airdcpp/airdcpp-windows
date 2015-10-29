@@ -1266,7 +1266,7 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	fMenuShutdown = false;
 
 	if(!closing) {
-		if(UpdateManager::getInstance()->isUpdating()) {
+		if(UpdateManager::getInstance()->getUpdater().isUpdating()) {
 			showMessageBox(CTSTRING(UPDATER_IN_PROGRESS), MB_OK | MB_ICONINFORMATION);
 			bHandled = TRUE;
 			return 0;
@@ -2144,7 +2144,7 @@ void MainFrame::on(UpdateManagerListener::UpdateComplete, const string& aUpdater
 void MainFrame::onUpdateAvailable(const string& title, const string& message, const string& version, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept {
 	UpdateDlg dlg(title, message, version, infoUrl, autoUpdate, build, autoUpdateUrl);
 	if (dlg.DoModal(m_hWnd)  == IDC_UPDATE_DOWNLOAD) {
-		addThreadedTask([=] { UpdateManager::getInstance()->downloadUpdate(autoUpdateUrl, build, true); });
+		addThreadedTask([=] { UpdateManager::getInstance()->getUpdater().downloadUpdate(autoUpdateUrl, build, true); });
 		ShowPopup(CTSTRING(UPDATER_START), CTSTRING(UPDATER), NIIF_INFO, true);
 	}
 }
@@ -2162,8 +2162,8 @@ void MainFrame::onBadVersion(const string& message, const string& infoUrl, const
 		oldshutdown = true;
 		PostMessage(WM_CLOSE);
 	} else {
-		if(!UpdateManager::getInstance()->isUpdating()) {
-			addThreadedTask([=] { UpdateManager::getInstance()->downloadUpdate(updateUrl, buildID, true); });
+		if(!UpdateManager::getInstance()->getUpdater().isUpdating()) {
+			addThreadedTask([=] { UpdateManager::getInstance()->getUpdater().downloadUpdate(updateUrl, buildID, true); });
 			ShowPopup(CTSTRING(UPDATER_START), CTSTRING(UPDATER), NIIF_INFO, true);
 		} else {
 			showMessageBox(CTSTRING(UPDATER_IN_PROGRESS), MB_OK | MB_ICONINFORMATION);

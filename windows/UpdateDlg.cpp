@@ -71,7 +71,7 @@ LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	ctrlDownload.SetWindowText(CTSTRING(DOWNLOAD));
 	
 	versionAvailable = BUILD_NUMBER < buildID;
-	bool versionDownloaded = UpdateManager::getInstance()->getInstalledUpdate() == buildID;
+	bool versionDownloaded = UpdateManager::getInstance()->getUpdater().getInstalledUpdate() == buildID;
 	ctrlDownload.EnableWindow(!versionDownloaded && versionAvailable);
 	//ctrlDownload.EnableWindow(!versionDownloaded);
 

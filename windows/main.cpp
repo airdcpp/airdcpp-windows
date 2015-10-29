@@ -41,9 +41,7 @@
 #include "Wizard.h"
 
 #include <airdcpp/DCPlusPlus.h>
-#include <airdcpp/MappingManager.h>
 #include <airdcpp/MerkleTree.h>
-#include <airdcpp/UpdateManager.h>
 #include <airdcpp/Updater.h>
 #include <airdcpp/version.h>
 
@@ -493,7 +491,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 
 	string updaterFile;
 	auto updated = Util::hasStartupParam("/updated") || Util::hasStartupParam("/updatefailed");
-	if (UpdateManager::checkPendingUpdates(Util::getFilePath(Util::getAppName()), updaterFile, updated)) {
+	if (Updater::checkPendingUpdates(Util::getFilePath(Util::getAppName()), updaterFile, updated)) {
 		WinUtil::addUpdate(updaterFile);
 		WinUtil::runPendingUpdate();
 		return FALSE;
