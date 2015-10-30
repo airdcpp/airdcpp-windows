@@ -873,7 +873,7 @@ void AutoSearchManager::handleAction(const SearchResultPtr& sr, AutoSearchPtr& a
 			OnlineUser* u = cm->findOnlineUser(sr->getUser());
 
 			if (u) {
-				Client* client = &u->getClient();
+				auto client = u->getClient();
 				if (client && client->isConnected()) {
 					//TODO: use magnet link
 					client->Message(STRING(AUTO_SEARCH) + ": " + 
@@ -991,8 +991,6 @@ AutoSearchPtr AutoSearchManager::loadItemFromXml(SimpleXML& aXml) {
 	as->setGroup(aXml.getChildAttrib("Group"));
 	as->setExpireTime(aXml.getIntChildAttrib("ExpireTime"));
 	as->setTimeAdded(aXml.getIntChildAttrib("TimeAdded"));
-
-	dcdebug("ItemType: %s \n", Util::toString(as->getAsType()).c_str());
 
 	auto searchDays = aXml.getChildAttrib("SearchDays");
 	if (!searchDays.empty()) {

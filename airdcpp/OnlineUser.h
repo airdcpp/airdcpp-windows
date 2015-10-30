@@ -29,14 +29,12 @@
 #include "Flags.h"
 #include "FastAlloc.h"
 #include "GetSet.h"
+#include "Pointer.h"
 #include "Util.h"
 #include "User.h"
 #include "UserInfoBase.h"
 
 namespace dcpp {
-
-class ClientBase;
-class NmdcHub;
 
 /** One of possibly many identities of a user, mainly for UI purposes */
 class Identity : public Flags {
@@ -115,8 +113,8 @@ public:
 	bool isHidden() const { return isClientType(CT_HIDDEN) || isSet("HI"); }
 	bool isBot() const { return isClientType(CT_BOT) || isSet("BO"); }
 	bool isAway() const { return (getStatus() & AWAY) || isSet("AW"); }
-	bool isTcpActive(const Client* = nullptr) const;
-	bool isTcp4Active(const Client* = nullptr) const;
+	bool isTcpActive(const ClientPtr& = nullptr) const;
+	bool isTcp4Active(const ClientPtr& = nullptr) const;
 	bool isTcp6Active() const;
 	bool isUdpActive() const;
 	bool isUdp4Active() const;
@@ -136,14 +134,6 @@ public:
 	string getSIDString() const { return string((const char*)&sid, 4); }
 	
 	bool isClientType(ClientType ct) const;
-		
-	string setCheat(const ClientBase& c, const string& aCheatDescription, bool aBadClient);
-	map<string, string> getReport() const;
-	string updateClientType(const OnlineUser& ou);
-	bool matchProfile(const string& aString, ProfileToken aProfile) const;
-
-	static string getVersion(const string& aExp, string aTag);
-	static string splitVersion(const string& aExp, string aTag, size_t part);
 	
 	void getParams(ParamMap& map, const string& prefix, bool compatibility) const;
 	const UserPtr& getUser() const { return user; }
@@ -210,13 +200,14 @@ public:
 	public:
 		UrlCompare(const string& aUrl) : url(aUrl) { }
 		bool operator()(const OnlineUserPtr& ou) { return ou->getHubUrl() == url; }
+
+		UrlCompare& operator=(const UrlCompare&) = delete;
 	private:
-		UrlCompare& operator=(const UrlCompare&);
 		const string& url;
 	};
 
-	OnlineUser(const UserPtr& ptr, ClientBase& client_, uint32_t sid_);
-	virtual ~OnlineUser() noexcept { }
+	OnlineUser(const UserPtr& ptr, const ClientPtr& client_, uint32_t sid_);
+	~OnlineUser() noexcept;
 
 	operator UserPtr&() { return getUser(); }
 	operator const UserPtr&() const { return getUser(); }
@@ -225,16 +216,12 @@ public:
 	const UserPtr& getUser() const { return getIdentity().getUser(); }
 	const string& getHubUrl() const;
 	Identity& getIdentity() { return identity; }
-	Client& getClient() { return (Client&)client; }
-	const Client& getClient() const { return (const Client&)client; }
-	
-	ClientBase& getClientBase() { return client; }	
-	const ClientBase& getClientBase() const { return client; }
 
 	/* UserInfo */
-	uint8_t getImageIndex() const { return UserInfoBase::getImage(identity, identity.isTcpActive(&getClient())); }
+	uint8_t getImageIndex() const noexcept;
 	bool isHidden() const { return identity.isHidden(); }
 
+	const ClientPtr& getClient() const { return client; }
 #ifdef _WIN32
 	static int compareItems(const OnlineUser* a, const OnlineUser* b, uint8_t col);
 	bool update(int sortCol, const tstring& oldText = Util::emptyStringT);
@@ -248,7 +235,7 @@ public:
 	GETSET(Identity, identity, Identity);
 private:
 
-	ClientBase& client;
+	ClientPtr client;
 };
 
 }

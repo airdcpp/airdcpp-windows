@@ -167,7 +167,7 @@ public:
 		GETSET(string, fullPath, FullPath);
 	};
 
-	DirectoryListing(const HintedUser& aUser, bool aPartial, const string& aFileName, bool isClientView, bool aIsOwnList=false);
+	DirectoryListing(const HintedUser& aUser, bool aPartial, const string& aFileName, bool isClientView, const string& aDirectory, bool aIsOwnList=false);
 	~DirectoryListing();
 	
 	void loadFile() throw(Exception, AbortException);
@@ -218,7 +218,7 @@ public:
 	void addFullListTask(const string& aDir) noexcept;
 	void addQueueMatchTask() noexcept;
 
-	void addAsyncTask(std::function<void()>&& f) noexcept;
+	void addAsyncTask(DispatcherQueue::Callback&& f) noexcept;
 	void close() noexcept;
 
 	void addSearchTask(const string& aSearchString, int64_t aSize, int aTypeMode, int aSizeMode, const StringList& aExtList, const string& aDir) noexcept;
@@ -263,7 +263,13 @@ public:
 
 	// Returns false if the directory was not found from the list
 	bool changeDirectory(const string& aPath, ReloadMode aReloadMode, bool aIsSearchChange = false) noexcept;
+
+	const string& getCurrentPath() const noexcept {
+		return currentPath;
+	}
 private:
+	string currentPath;
+
 	friend class ListLoader;
 
 	Directory::Ptr root;
@@ -272,7 +278,7 @@ private:
 	typedef unordered_map<string, pair<Directory::Ptr, bool>> DirMap;
 	DirMap baseDirs;
 
-	void dispatch(DispatcherQueue::Callback* aCallback) noexcept;
+	void dispatch(DispatcherQueue::Callback& aCallback) noexcept;
 
 	bool open = false;
 	State state = STATE_DOWNLOAD_PENDING;
@@ -285,7 +291,7 @@ private:
 	// ClientManagerListener
 	void on(ClientManagerListener::DirectSearchEnd, const string& aToken, int resultCount) noexcept;
 	void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool wentOffline) noexcept;
-	void on(ClientManagerListener::UserUpdated, const UserPtr& aUser) noexcept;
+	void on(ClientManagerListener::UserUpdated, const OnlineUser& aUser) noexcept;
 
 	void on(TimerManagerListener::Second, uint64_t aTick) noexcept;
 
@@ -319,7 +325,7 @@ private:
 	HintedUser hintedUser;
 
 	void checkShareDupes() noexcept;
-	void onLoadingFinished() noexcept;
+	void onLoadingFinished(int64_t aStartTime, const string& aDir, bool aReloadList, bool aChangeDir) noexcept;
 
 	void statusMessage(const string& aText, LogMessage::Severity aSeverity) noexcept;
 
