@@ -280,6 +280,8 @@ bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*messag
 		addLine(_T("*** ") + Text::toT(client->getHubDescription()));
 	} else if(stricmp(cmd.c_str(), _T("ctopic")) == 0) {
 		openLinksInTopic();
+	} else if (stricmp(cmd.c_str(), _T("allow")) == 0) {
+		client->allowUntrustedConnect();
 	} else {
 		return false;
 	}
