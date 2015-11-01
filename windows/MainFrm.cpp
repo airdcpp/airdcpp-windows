@@ -426,7 +426,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		showPortsError(e.getError());
 	}
 
-	UpdateManager::getInstance()->init(Util::getAppName());
+	UpdateManager::getInstance()->init();
 		
 	WinUtil::SetIcon(m_hWnd, IDR_MAINFRAME, true);
 	WinUtil::SetIcon(m_hWnd, IDR_MAINFRAME);
@@ -981,7 +981,7 @@ void MainFrame::parseCommandLine(const tstring& cmdLine)
 
 LRESULT MainFrame::onCopyData(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	tstring cmdLine = (LPCTSTR) (((COPYDATASTRUCT *)lParam)->lpData);
-	parseCommandLine(Text::toT(Util::getAppName() + " ") + cmdLine);
+	parseCommandLine(Text::toT(Util::getAppPath() + " ") + cmdLine);
 	return true;
 }
 

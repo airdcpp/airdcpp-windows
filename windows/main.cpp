@@ -430,7 +430,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 			if(--argc >= 1) {
 				SplashWindow::create();
 				WinUtil::splash->update("Updating");
-				string sourcePath = Util::getFilePath(Util::getAppName());
+				string sourcePath = Util::getAppFilePath();
 				string installPath = Text::fromT(*++argv); argc--;
 
 				bool startElevated = false;
@@ -474,10 +474,12 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 				checkParams();
 
 				//start the updated instance
+				auto path = Text::toT(installPath + Util::getAppFileName());
+				auto startupParams = Text::toT(Util::getStartupParams(true));
 				if (!startElevated) {
-					ShellExecAsUser(NULL, Text::toT(installPath + Util::getFileName(Util::getAppName())).c_str(), Text::toT(Util::getStartupParams(true)).c_str(), NULL);
+					ShellExecAsUser(NULL, path.c_str(), startupParams.c_str(), NULL);
 				} else {
-					ShellExecute(NULL, NULL, Text::toT(installPath + Util::getFileName(Util::getAppName())).c_str(), Text::toT(Util::getStartupParams(true)).c_str(), NULL, SW_SHOWNORMAL);
+					ShellExecute(NULL, NULL, path.c_str(), startupParams.c_str(), NULL, SW_SHOWNORMAL);
 				}
 
 				WinUtil::splash->destroy();
@@ -491,7 +493,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 
 	string updaterFile;
 	auto updated = Util::hasStartupParam("/updated") || Util::hasStartupParam("/updatefailed");
-	if (Updater::checkPendingUpdates(Util::getFilePath(Util::getAppName()), updaterFile, updated)) {
+	if (Updater::checkPendingUpdates(Util::getAppFilePath(), updaterFile, updated)) {
 		WinUtil::addUpdate(updaterFile);
 		WinUtil::runPendingUpdate();
 		return FALSE;
@@ -542,7 +544,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	ATLASSERT(SUCCEEDED(hRes));
 	
 	try {		
-		File f(Util::getAppName(), File::READ, File::OPEN);
+		File f(Util::getAppPath(), File::READ, File::OPEN);
 		TigerTree tth(TigerTree::calcBlockSize(f.getSize(), 1));
 		size_t n = 0;
 		size_t n2 = DEBUG_BUFSIZE;
