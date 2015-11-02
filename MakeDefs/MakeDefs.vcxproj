@@ -278,7 +278,6 @@
     <ClCompile Include="..\airdcpp\airdcpp\SimpleXML.cpp" />
     <ClCompile Include="..\airdcpp\airdcpp\SimpleXMLReader.cpp" />
     <ClCompile Include="StdAfx.cpp" />
-    <ClCompile Include="..\airdcpp\airdcpp\StringTokenizer.cpp" />
     <ClCompile Include="..\airdcpp\airdcpp\Text.cpp" />
     <ClCompile Include="..\airdcpp\airdcpp\Util.cpp" />
   </ItemGroup>
