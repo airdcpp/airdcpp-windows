@@ -137,7 +137,7 @@ LRESULT UpdateDlg::OnDownload(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, 
 bool UpdateDlg::canAutoUpdate(const string& url) {
 	if(Util::getFileExt(url) == ".zip") {
 		tstring buf(256, _T('\0'));
-		tstring sDrive = Text::toT(Util::getAppName().substr(0, 3));
+		tstring sDrive = Text::toT(Util::getAppPath().substr(0, 3));
 		GetVolumeInformation(sDrive.c_str(), NULL, 0, NULL, NULL, NULL, &buf[0], 256);
 		return (buf.find(_T("FAT")) == string::npos);
 	}

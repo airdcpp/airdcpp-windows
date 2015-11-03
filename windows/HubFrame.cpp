@@ -473,10 +473,12 @@ void HubFrame::onChatMessage(const ChatMessagePtr& msg) {
 }
 
 void HubFrame::onDisconnected(const string&) {
-	clearUserList();
 	setDisconnected(true);
 	wentoffline = true;
 	setTabIcons();
+
+	clearTaskList();
+	clearUserList();
 
 	if ((!SETTING(SOUND_HUBDISCON).empty()) && (!SETTING(SOUNDS_DISABLED)))
 		WinUtil::playSound(Text::toT(SETTING(SOUND_HUBDISCON)));

@@ -26,9 +26,6 @@
     <ClCompile Include="..\airdcpp\airdcpp\SimpleXMLReader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\airdcpp\airdcpp\StringTokenizer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\airdcpp\airdcpp\Text.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
