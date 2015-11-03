@@ -693,7 +693,9 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 		if (b->isFailed()) {
 			bundleMenu.appendSeparator();
 			if (b->getStatus() == Bundle::STATUS_DOWNLOAD_FAILED) {
-				bundleMenu.appendItem(TSTRING(RESUME), [=] { QueueManager::getInstance()->setBundleAutoPriority(b->getToken()); });
+				bundleMenu.appendItem(TSTRING(RESUME), [=] { 
+					auto bundle = b;
+					QueueManager::getInstance()->setBundleStatus(bundle, Bundle::STATUS_QUEUED); });
 			}
 			else {
 				if (ShareManager::getInstance()->allowAddDir(b->getTarget())) {
@@ -1797,7 +1799,7 @@ tstring QueueFrame::QueueItemInfo::getStatusString() const {
 				return TSTRING_F(WAITING_PCT, getPercentage());
 			}
 		}
-		case Bundle::STATUS_DOWNLOAD_FAILED: return TSTRING_F(PAUSED_PCT, getPercentage()) + _T(": ") + Text::toT(bundle->getLastError());
+		case Bundle::STATUS_DOWNLOAD_FAILED: return Text::toT(bundle->getLastError());
 		case Bundle::STATUS_RECHECK: return TSTRING(RECHECKING);
 		case Bundle::STATUS_DOWNLOADED: return TSTRING(MOVING);
 		case Bundle::STATUS_MOVED: return TSTRING(DOWNLOADED);
