@@ -692,12 +692,7 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 
 		if (b->isFailed()) {
 			bundleMenu.appendSeparator();
-			if (b->getStatus() == Bundle::STATUS_DOWNLOAD_FAILED) {
-				bundleMenu.appendItem(TSTRING(RESUME), [=] { 
-					auto bundle = b;
-					QueueManager::getInstance()->setBundleStatus(bundle, Bundle::STATUS_QUEUED); });
-			}
-			else {
+			if (b->getStatus() != Bundle::STATUS_DOWNLOAD_FAILED) {
 				if (ShareManager::getInstance()->allowAddDir(b->getTarget())) {
 					bundleMenu.appendItem(TSTRING(RETRY_SHARING), [=] { QueueManager::getInstance()->shareBundle(b, false); }, OMenu::FLAG_THREADED);
 					if (b->getStatus() == Bundle::STATUS_SHARING_FAILED || b->getStatus() == Bundle::STATUS_FAILED_MISSING) {

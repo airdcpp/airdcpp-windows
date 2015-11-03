@@ -1168,7 +1168,7 @@ bool QueueManager::allowStartQI(const QueueItemPtr& aQI, const QueueTokenSet& ru
 
 	//Download was failed for writing errors, check if we have enough free space to continue the downloading now...
 	if (aQI->getBundle() && aQI->getBundle()->getStatus() == Bundle::STATUS_DOWNLOAD_FAILED) {
-		if (File::getFreeSpace(aQI->getTarget()) >= static_cast<int64_t>(aQI->getSize() - aQI->getDownloadedBytes())) {
+		if (File::getFreeSpace(aQI->getBundle()->getTarget()) >= static_cast<int64_t>(aQI->getSize() - aQI->getDownloadedBytes())) {
 			setBundleStatus(aQI->getBundle(), Bundle::STATUS_QUEUED);
 		} else {
 			lastError_ = aQI->getBundle()->getLastError();
