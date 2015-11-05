@@ -60,6 +60,7 @@
 #include "SearchTypesPage.h"
 #include "ScanPage.h"
 #include "HashingPage.h"
+#include "WebServerPage.h"
 
 
 PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPage) : TreePropertySheet(CTSTRING(SETTINGS), initialPage, parent), saved(false)
@@ -101,6 +102,7 @@ PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPa
 	pages[n++] = make_unique<SearchPage>(s);
 	pages[n++] = make_unique<SearchTypesPage>(s);
 	pages[n++] = make_unique<ScanPage>(s);
+	pages[n++] = make_unique<WebServerPage>(s);
 	
 	for(int i=0; i < n; i++) {
 		AddPage(pages[i]->getPSP());

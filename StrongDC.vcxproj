@@ -120,7 +120,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)\airdcpp;$(SolutionDir)\zlib;$(SolutionDir)\bzip2;$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\airdcpp;$(SolutionDir)\airdcpp-webapi\;$(SolutionDir)\zlib;$(SolutionDir)\bzip2;$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -164,7 +164,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)\leveldb\include;$(SolutionDir)\zlib;$(SolutionDir)\airdcpp;$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\leveldb\include;$(SolutionDir)\zlib;$(SolutionDir)\airdcpp;$(SolutionDir)\airdcpp-webapi\;$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -219,7 +219,7 @@
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <AdditionalIncludeDirectories>$(SolutionDir)\airdcpp;$(SolutionDir)\zlib;$(SolutionDir)\bzip2;$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\airdcpp;$(SolutionDir)\airdcpp-webapi\;$(SolutionDir)\zlib;$(SolutionDir)\bzip2;$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -290,7 +290,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <AdditionalIncludeDirectories>$(SolutionDir)\airdcpp;$(SolutionDir)\leveldb\include;$(SolutionDir)\zlib;$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\airdcpp;$(SolutionDir)\airdcpp-webapi\;$(SolutionDir)\leveldb\include;$(SolutionDir)\zlib;$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -611,6 +611,7 @@
     <ClCompile Include="windows\UploadQueueFrame.cpp" />
     <ClCompile Include="windows\ListViewColours.cpp" />
     <ClCompile Include="windows\UsersFrame.cpp" />
+    <ClCompile Include="windows\WebserverPage.cpp" />
     <ClCompile Include="windows\WebShortcutsPage.cpp" />
     <ClCompile Include="windows\WebShortcutsProperties.cpp" />
     <ClCompile Include="windows\WindowsPage.cpp" />
@@ -754,8 +755,10 @@
     <ClInclude Include="windows\UploadQueueFrame.h" />
     <ClInclude Include="windows\ListViewColours.h" />
     <ClInclude Include="windows\UsersFrame.h" />
+    <ClInclude Include="windows\WebserverPage.h" />
     <ClInclude Include="windows\WebShortcutsPage.h" />
     <ClInclude Include="windows\WebShortcutsProperties.h" />
+    <ClInclude Include="windows\WebUserDlg.h" />
     <ClInclude Include="windows\Winamp.h" />
     <ClInclude Include="windows\WindowsPage.h" />
     <ClInclude Include="windows\WinUtil.h" />
@@ -771,6 +774,9 @@
     <ClInclude Include="windows\WMPlayerRemoteApi.h" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="airdcpp-webapi\webapi.vcxproj">
+      <Project>{df45f1d3-1a07-4f40-99d2-ba59dac925b1}</Project>
+    </ProjectReference>
     <ProjectReference Include="boost\boost.vcxproj">
       <Project>{d1095e8a-63a5-4592-ae93-2d638f20f66a}</Project>
       <Private>true</Private>

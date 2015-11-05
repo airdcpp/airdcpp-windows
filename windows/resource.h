@@ -216,8 +216,10 @@
 #define IDI_AUTOSEARCH                  371
 #define IDI_IERROR                      372
 #define IDI_IWARNING                    373
+#define IDD_WEB_SERVER_PAGE             373
 #define IDI_INFO                        374
 #define IDI_CDM                         375
+#define IDD_WEB_USER_DLG                375
 #define IDI_OWNLIST                     376
 #define IDI_MATCHLIST                   377
 #define IDI_QCONNECT                    378
@@ -640,11 +642,14 @@
 #define IDC_FDNAME                      1218
 #define IDC_AWAY_IDLE_TIME              1218
 #define IDC_NICK_MATCH                  1218
+#define IDC_WEBUSER_NAME                1218
 #define IDC_CLIENT_VERSION              1219
 #define IDC_HIGH_PRIO_FILES             1219
 #define IDC_MAX_UPLOAD_SP               1219
 #define IDC_AUTO_ADD_SOURCES            1219
 #define IDC_TEXT_MATCH                  1219
+#define IDC_WEBSERVER_TLSPORT           1219
+#define IDC_WEBUSER_PWD                 1219
 #define IDC_CLIENT_TAG                  1220
 #define IDC_REFRESH_DELAY3              1220
 #define IDC_DONT_SHARE_BIGGER_VALUE     1220
@@ -805,6 +810,7 @@
 #define IDC_FDPATH                      1285
 #define IDC_TEXT_MATCH_TYPE             1285
 #define IDC_SEARCH_INT                  1285
+#define IDC_WEBSERVER_PORT              1285
 #define IDC_EDIT3                       1286
 #define IDC_BIND_ADDRESS                1286
 #define IDC_SKIPLIST_PRESET3            1286
@@ -919,6 +925,7 @@
 #define IDC_TMP_REMOVE                  1313
 #define IDC_TB_PROG_STYLE               1313
 #define IDC_LIST_VIEW_FONT              1313
+#define IDC_WEBSERVER_ADD_USER          1313
 #define IDC_SETTINGS_BOLD_CONTENTS      1314
 #define IDC_SHARE_SKIPLIST_USE_REGEXP   1314
 #define IDC_UPDATE_CLIENTS              1314
@@ -929,6 +936,7 @@
 #define IDC_CALC_PRIO_EVERY             1314
 #define IDC_VERIFY_DB                   1314
 #define IDC_CLEAR_EXCLUDE_H             1314
+#define IDC_WEBSERVER_CHANGE            1314
 #define IDC_SETTINGS_CONFIRM_OPTIONS    1315
 #define IDC_FAV_DL                      1315
 #define IDC_LINE_SPEED                  1315
@@ -1020,6 +1028,7 @@
 #define IDC_MISC_OPTIONS                1347
 #define IDC_LIST1                       1348
 #define IDC_ENCRYPTION_LIST             1348
+#define IDC_WEBSERVER_USERS             1348
 #define IDC_CONNECTION2                 1349
 #define IDC_RAR                         1350
 #define IDC_PRIVATE_HUB                 1351
@@ -1409,6 +1418,7 @@
 #define IDC_UPDATE_ICON                 1734
 #define IDC_BUTTON2                     1735
 #define IDC_TMP_REMOVE_ALL              1735
+#define IDC_WEBSERVER_REMOVE_USER       1735
 #define IDC_NICK_MATCH_LABEL            1736
 #define IDC_TEXT_MATCH_LABEL            1737
 #define IDC_NICK_MATCH_TYPE             1738
@@ -1623,6 +1633,11 @@
 #define IDC_GROUP_LABEL                 10203
 #define IDC_GROUP_FAILED_LABEL          10204
 #define IDC_FAILED_GROUP                10205
+#define IDC_WEBSERVER_PORT_LABEL        10206
+#define IDC_WEBSERVER_TLSPORT_LABEL     10207
+#define IDC_WEBUSER_NAME_LABEL          10209
+#define IDC_WEBUSER_PWND_LABEL          10210
+#define IDC_WEBUSER_PWD_LABEL           10210
 #define IDC_REFRESH_WINAMP              11011
 #define IDC_WINAMP_LIST                 11012
 #define IDC_POSITION                    11013
@@ -1836,9 +1851,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        368
+#define _APS_NEXT_RESOURCE_VALUE        377
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         10206
+#define _APS_NEXT_CONTROL_VALUE         10211
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

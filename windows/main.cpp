@@ -45,6 +45,8 @@
 #include <airdcpp/Updater.h>
 #include <airdcpp/version.h>
 
+#include <web-server/WebServerManager.h>
+
 #include <delayimp.h>
 #include <future>
 
@@ -302,6 +304,19 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 			},
 				[=](float progress) { WinUtil::splash->update(progress); }
 			);
+
+			webserver::WebServerManager::newInstance();
+			if (webserver::WebServerManager::getInstance()->load()) {
+				
+				auto started = webserver::WebServerManager::getInstance()->start(Util::getPath(Util::PATH_WEB_UI), [](const string& aError) {
+					LogManager::getInstance()->message(aError, LogMessage::SEV_ERROR);
+				});
+				
+				if (started) {
+					LogManager::getInstance()->message("Web server started", LogMessage::SEV_INFO);
+				}
+			}
+
 			WinUtil::splash->update(STRING(LOADING_GUI));
 		} catch (...) {
 			ExitProcess(1);
@@ -368,11 +383,15 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	dcassert(WinUtil::splash);
 	loader = std::async(std::launch::async, [=] {
 		PopupManager::deleteInstance();
+		webserver::WebServerManager::getInstance()->stop();
 
 		shutdown(
 			[&](const string& str) { WinUtil::splash->update(str); },
 			[=](float progress) { WinUtil::splash->update(progress); }
 		);
+
+		webserver::WebServerManager::getInstance()->save();
+		webserver::WebServerManager::deleteInstance();
 
 		WinUtil::splash->callAsync([=] { PostQuitMessage(0); });
 	});

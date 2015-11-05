@@ -1,12 +1,13 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 12.0.31101.0
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AirDC", "StrongDC.vcxproj", "{E82610AA-B6FD-4813-B5B9-E717CBD0F23B}"
 	ProjectSection(ProjectDependencies) = postProject
 		{51015502-C27C-43CF-9FA4-12AB9DB5D36E} = {51015502-C27C-43CF-9FA4-12AB9DB5D36E}
 		{CCE1D62B-CF3B-4705-A24E-75BE18963C99} = {CCE1D62B-CF3B-4705-A24E-75BE18963C99}
 		{6BD1D0B7-EC0C-4473-533B-5EC961138415} = {6BD1D0B7-EC0C-4473-533B-5EC961138415}
+		{DF45F1D3-1A07-4F40-99D2-BA59DAC925B1} = {DF45F1D3-1A07-4F40-99D2-BA59DAC925B1}
 		{F8D0E5FE-BABD-4FC8-B3FE-B48978D23FEB} = {F8D0E5FE-BABD-4FC8-B3FE-B48978D23FEB}
 	EndProjectSection
 EndProject
@@ -50,6 +51,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LevelDB", "leveldb\LevelDB.
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0F61B2E2-092F-4EB2-AA11-D02C77164D9B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "webapi", "airdcpp-webapi\webapi.vcxproj", "{DF45F1D3-1A07-4F40-99D2-BA59DAC925B1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -155,6 +158,14 @@ Global
 		{A7FF59D3-EAFD-43A1-8AA7-5087229C75D1}.Release|Win32.Build.0 = Release|Win32
 		{A7FF59D3-EAFD-43A1-8AA7-5087229C75D1}.Release|x64.ActiveCfg = Release|x64
 		{A7FF59D3-EAFD-43A1-8AA7-5087229C75D1}.Release|x64.Build.0 = Release|x64
+		{DF45F1D3-1A07-4F40-99D2-BA59DAC925B1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DF45F1D3-1A07-4F40-99D2-BA59DAC925B1}.Debug|Win32.Build.0 = Debug|Win32
+		{DF45F1D3-1A07-4F40-99D2-BA59DAC925B1}.Debug|x64.ActiveCfg = Debug|x64
+		{DF45F1D3-1A07-4F40-99D2-BA59DAC925B1}.Debug|x64.Build.0 = Debug|x64
+		{DF45F1D3-1A07-4F40-99D2-BA59DAC925B1}.Release|Win32.ActiveCfg = Release|Win32
+		{DF45F1D3-1A07-4F40-99D2-BA59DAC925B1}.Release|Win32.Build.0 = Release|Win32
+		{DF45F1D3-1A07-4F40-99D2-BA59DAC925B1}.Release|x64.ActiveCfg = Release|x64
+		{DF45F1D3-1A07-4F40-99D2-BA59DAC925B1}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

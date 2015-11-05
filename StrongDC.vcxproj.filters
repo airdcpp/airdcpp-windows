@@ -378,6 +378,9 @@
     <ClCompile Include="windows\WebShortcutsPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\WebserverPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -804,6 +807,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\WebShortcutsPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\WebserverPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\WebUserDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
