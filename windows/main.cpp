@@ -308,7 +308,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 			webserver::WebServerManager::newInstance();
 			if (webserver::WebServerManager::getInstance()->load()) {
 				
-				auto started = webserver::WebServerManager::getInstance()->start(Util::getPath(Util::PATH_WEB_UI), [](const string& aError) {
+				auto started = webserver::WebServerManager::getInstance()->start([](const string& aError) {
 					LogManager::getInstance()->message(aError, LogMessage::SEV_ERROR);
 				});
 				

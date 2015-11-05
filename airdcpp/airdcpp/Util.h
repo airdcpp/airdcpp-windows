@@ -147,8 +147,6 @@ public:
 		PATH_SHARECACHE,
 		/** Path to Theme Files*/
 		PATH_THEMES,
-		/** Path to webUi Files*/
-		PATH_WEB_UI,
 		PATH_LAST
 	};
 
