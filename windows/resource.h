@@ -648,8 +648,8 @@
 #define IDC_MAX_UPLOAD_SP               1219
 #define IDC_AUTO_ADD_SOURCES            1219
 #define IDC_TEXT_MATCH                  1219
-#define IDC_WEBSERVER_TLSPORT           1219
 #define IDC_WEBUSER_PWD                 1219
+#define IDC_WEBSERVER_TLSPORT           1219
 #define IDC_CLIENT_TAG                  1220
 #define IDC_REFRESH_DELAY3              1220
 #define IDC_DONT_SHARE_BIGGER_VALUE     1220
@@ -814,6 +814,7 @@
 #define IDC_EDIT3                       1286
 #define IDC_BIND_ADDRESS                1286
 #define IDC_SKIPLIST_PRESET3            1286
+#define IDC_WEBSERVER_PORT2             1286
 #define IDC_STATIC1                     1287
 #define IDC_SETTINGS_BIND_ADDRESS_HELP  1287
 #define IDC_PRIV_KEY_LBL                1287
@@ -1636,8 +1637,10 @@
 #define IDC_WEBSERVER_PORT_LABEL        10206
 #define IDC_WEBSERVER_TLSPORT_LABEL     10207
 #define IDC_WEBUSER_NAME_LABEL          10209
-#define IDC_WEBUSER_PWND_LABEL          10210
 #define IDC_WEBUSER_PWD_LABEL           10210
+#define IDC_WEBSERVER_LABEL             10211
+#define IDC_WEBSERVER_STATUS            10212
+#define IDC_WEBSERVER_START             10213
 #define IDC_REFRESH_WINAMP              11011
 #define IDC_WINAMP_LIST                 11012
 #define IDC_POSITION                    11013
@@ -1853,7 +1856,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        377
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         10211
+#define _APS_NEXT_CONTROL_VALUE         10214
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

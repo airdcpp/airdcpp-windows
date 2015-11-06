@@ -48,6 +48,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_WEBSERVER_ADD_USER, onButton)
 		COMMAND_ID_HANDLER(IDC_WEBSERVER_CHANGE, onButton)
 		COMMAND_ID_HANDLER(IDC_WEBSERVER_REMOVE_USER, onButton)
+		COMMAND_ID_HANDLER(IDC_WEBSERVER_START, onButton)
 		NOTIFY_HANDLER(IDC_WEBSERVER_USERS, LVN_ITEMCHANGED, onSelChange)
 		NOTIFY_HANDLER(IDC_WEBSERVER_USERS, NM_DBLCLK, onDoubleClick)
 		NOTIFY_HANDLER(IDC_WEBSERVER_USERS, LVN_KEYDOWN, onKeyDown)
@@ -75,9 +76,14 @@ protected:
 	CButton ctrlRemove;
 	CButton ctrlAdd;
 	CButton ctrlChange;
+	CButton ctrlStart;
+
+	CStatic ctrlStatus;
 	CEdit ctrlPort;
 	CEdit ctrlTlsPort;
 	ExListViewCtrl ctrlWebUsers;
+
+	void updateStatus(const string& aError = Util::emptyString);
 
 	webserver::WebServerManager* webMgr;
 	vector<webserver::WebUserPtr> webUserList;

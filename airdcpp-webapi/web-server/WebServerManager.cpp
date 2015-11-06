@@ -47,7 +47,7 @@ namespace webserver {
 	}
 
 	bool WebServerManager::isRunning() const noexcept {
-		return ios.stopped();
+		return !ios.stopped();
 	}
 
 	bool WebServerManager::start(ErrorF&& errorF, const string& aWebResourcePath) {

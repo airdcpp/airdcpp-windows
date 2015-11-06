@@ -22,6 +22,7 @@
 
 #include "WebServerPage.h"
 #include "WebUserDlg.h"
+#include <airdcpp/LogManager.h>
 
 PropPage::TextItem WebServerPage::texts[] = {
 	{ IDC_WEBSERVER_ADD_USER,					ResourceManager::ADD },
@@ -49,6 +50,10 @@ LRESULT WebServerPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	ctrlRemove.Attach(GetDlgItem(IDC_WEBSERVER_REMOVE_USER));
 	ctrlAdd.Attach(GetDlgItem(IDC_WEBSERVER_ADD_USER));
 	ctrlChange.Attach(GetDlgItem(IDC_WEBSERVER_CHANGE));
+	ctrlStart.Attach(GetDlgItem(IDC_WEBSERVER_START));
+	ctrlStatus.Attach(GetDlgItem(IDC_WEBSERVER_STATUS));
+
+	updateStatus();
 
 	webUserList = webMgr->getUserManager().getWebUsers();
 	for (auto u : webUserList) {
@@ -58,6 +63,7 @@ LRESULT WebServerPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	return TRUE;
 }
 LRESULT WebServerPage::onButton(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	
 	if (wID == IDC_WEBSERVER_ADD_USER) {
 		WebUserDlg dlg;
 		if (dlg.DoModal() == IDOK) {
@@ -85,6 +91,27 @@ LRESULT WebServerPage::onButton(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/
 			ctrlWebUsers.DeleteItem(sel);
 		}
 	}
+	else if (wID == IDC_WEBSERVER_START) {
+		if (!webMgr->isRunning()) {
+			auto plainserverPort = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlPort)));
+			auto tlsServerPort = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlTlsPort)));
+
+			if (webMgr->getPlainServerConfig().getPort() != plainserverPort) {
+				webMgr->getPlainServerConfig().setPort(plainserverPort);
+			}
+			if (webMgr->getTlsServerConfig().getPort() != tlsServerPort) {
+				webMgr->getPlainServerConfig().setPort(tlsServerPort);
+			}
+
+			ctrlStart.EnableWindow(FALSE);
+			webMgr->start([=](const string& aError) { updateStatus(aError); });
+		} else {
+			ctrlStart.EnableWindow(FALSE);
+			webserver::WebServerManager::getInstance()->stop();
+			updateStatus();
+		}
+	}
+
 	return 0;
 }
 LRESULT WebServerPage::onSelChange(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
@@ -126,11 +153,43 @@ LRESULT WebServerPage::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 	return 0;
 }
 
+void WebServerPage::updateStatus(const string& aError /*= Util::emptyString*/) {
+	ctrlStart.EnableWindow(TRUE);
+
+	if (webMgr->isRunning()) {
+		ctrlStart.SetWindowText(CTSTRING(STOP));
+		ctrlStatus.SetWindowText(CTSTRING_F(WEBSERVER_RUNNING, webMgr->getPlainServerConfig().getPort() % webMgr->getTlsServerConfig().getPort()));
+	} else {
+		ctrlStart.SetWindowText(CTSTRING(START));
+		ctrlStatus.SetWindowText((TSTRING(WEBSERVER_STOPPED) + (aError.empty() ? _T("") :  _T(" : ") + Text::toT(aError))).c_str());
+	}
+}
+
 void WebServerPage::write() {
-	webMgr->getPlainServerConfig().setPort(Util::toInt(Text::fromT(WinUtil::getEditText(ctrlPort))));
-	webMgr->getTlsServerConfig().setPort(Util::toInt(Text::fromT(WinUtil::getEditText(ctrlTlsPort))));
+	bool needServerRestart = false;
+
+	auto plainserverPort = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlPort)));
+	auto tlsServerPort = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlTlsPort)));
+
+	if(webMgr->getPlainServerConfig().getPort() != plainserverPort) {
+		webMgr->getPlainServerConfig().setPort(plainserverPort);
+		needServerRestart = true;
+	}
+	if (webMgr->getTlsServerConfig().getPort() != tlsServerPort) {
+		webMgr->getPlainServerConfig().setPort(tlsServerPort);
+		needServerRestart = true;
+	}
+
 	webMgr->getUserManager().replaceWebUsers(webUserList);
 	webMgr->save();
+
+	if (needServerRestart) {
+		if (webMgr->isRunning())
+			webMgr->getInstance()->stop();
+		webMgr->getInstance()->start([](const string& aError) {
+			LogManager::getInstance()->message(aError, LogMessage::SEV_ERROR);
+		});
+	}
 }
 
 void WebServerPage::addListItem(const string& aUserName, const string& aPassword) {
