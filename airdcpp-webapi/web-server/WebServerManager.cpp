@@ -50,10 +50,49 @@ namespace webserver {
 		return !ios.stopped();
 	}
 
-	bool WebServerManager::start(ErrorF&& errorF, const string& aWebResourcePath) {
+#if defined _MSC_VER && defined _DEBUG
+	class DebugOutputStream : public std::ostream {
+	public:
+		DebugOutputStream() : std::ostream(&buf) {}
+	private:
+		class dbgview_buffer : public std::stringbuf {
+		public:
+			~dbgview_buffer() {
+				sync(); // can be avoided
+			}
+
+			int sync() {
+				//WLock l(cs);
+				OutputDebugString(Text::toT(str()).c_str());
+				str("");
+				return 0;
+			}
+
+			//SharedMutex cs;
+		};
+
+		dbgview_buffer buf;
+	};
+
+	DebugOutputStream debugStreamPlain;
+	DebugOutputStream debugStreamTls;
+#else
+#define debugStreamPlain std::cout
+#define debugStreamTls std::cout
+#endif
+
+	template<class T>
+	void setEndpointLogSettings(T& aEndpoint, std::ostream& aStream) {
+		aEndpoint.set_access_channels(websocketpp::log::alevel::all);
+		aEndpoint.clear_access_channels(websocketpp::log::alevel::frame_payload);
+
+		aEndpoint.set_access_channels(websocketpp::log::elevel::all);
+		aEndpoint.get_elog().set_ostream(&aStream);
+	}
+
+	bool WebServerManager::start(ErrorF errorF, const string& aWebResourcePath) {
 		SettingsManager::getInstance()->setDefault(SettingsManager::PM_MESSAGE_CACHE, 200);
 		SettingsManager::getInstance()->setDefault(SettingsManager::HUB_MESSAGE_CACHE, 200);
-
 		{
 			auto resourcePath = aWebResourcePath;
 			if (resourcePath.empty()) {
@@ -63,38 +102,48 @@ namespace webserver {
 			fileServer.setResourcePath(resourcePath);
 		}
 
-		// initialize asio with our external io_service rather than an internal one
-		endpoint_plain.init_asio(&ios);
+		try {
+			// initialize asio with our external io_service rather than an internal one
+			endpoint_plain.init_asio(&ios);
 
-		endpoint_plain.set_http_handler(
-			std::bind(&WebServerManager::on_http<server_plain>, this, &endpoint_plain, _1, false));
-		endpoint_plain.set_message_handler(
-			std::bind(&WebServerManager::on_message<server_plain>, this, &endpoint_plain, _1, _2, false));
-		endpoint_plain.set_close_handler(std::bind(&WebServerManager::on_close_socket, this, _1));
-		endpoint_plain.set_open_handler(std::bind(&WebServerManager::on_open_socket<server_plain>, this, &endpoint_plain, _1, false));
+			endpoint_plain.set_http_handler(
+				std::bind(&WebServerManager::on_http<server_plain>, this, &endpoint_plain, _1, false));
+			endpoint_plain.set_message_handler(
+				std::bind(&WebServerManager::on_message<server_plain>, this, &endpoint_plain, _1, _2, false));
+			endpoint_plain.set_close_handler(std::bind(&WebServerManager::on_close_socket, this, _1));
+			endpoint_plain.set_open_handler(std::bind(&WebServerManager::on_open_socket<server_plain>, this, &endpoint_plain, _1, false));
 
 
-		// Failures (plain)
-		endpoint_plain.set_interrupt_handler([](websocketpp::connection_hdl hdl) { dcdebug("Connection interrupted\n"); });
-		endpoint_plain.set_fail_handler(std::bind(&WebServerManager::on_failed<server_plain>, this, &endpoint_plain, _1));
-		endpoint_plain.set_open_handshake_timeout(HANDSHAKE_TIMEOUT);
+			// Failures (plain)
+			endpoint_plain.set_open_handshake_timeout(HANDSHAKE_TIMEOUT);
 
-		// set up tls endpoint
-		endpoint_tls.init_asio(&ios);
-		endpoint_tls.set_message_handler(
-			std::bind(&WebServerManager::on_message<server_tls>, this, &endpoint_tls, _1, _2, true));
+			// set up tls endpoint
+			endpoint_tls.init_asio(&ios);
+			endpoint_tls.set_message_handler(
+				std::bind(&WebServerManager::on_message<server_tls>, this, &endpoint_tls, _1, _2, true));
 
-		endpoint_tls.set_close_handler(std::bind(&WebServerManager::on_close_socket, this, _1));
-		endpoint_tls.set_open_handler(std::bind(&WebServerManager::on_open_socket<server_tls>, this, &endpoint_tls, _1, true));
-		endpoint_tls.set_http_handler(std::bind(&WebServerManager::on_http<server_tls>, this, &endpoint_tls, _1, true));
+			endpoint_tls.set_close_handler(std::bind(&WebServerManager::on_close_socket, this, _1));
+			endpoint_tls.set_open_handler(std::bind(&WebServerManager::on_open_socket<server_tls>, this, &endpoint_tls, _1, true));
+			endpoint_tls.set_http_handler(std::bind(&WebServerManager::on_http<server_tls>, this, &endpoint_tls, _1, true));
 
-		// Failures (TLS)
-		endpoint_tls.set_fail_handler(std::bind(&WebServerManager::on_failed<server_tls>, this, &endpoint_tls, _1));
-		endpoint_tls.set_open_handshake_timeout(HANDSHAKE_TIMEOUT);
+			// Failures (TLS)
+			endpoint_tls.set_open_handshake_timeout(HANDSHAKE_TIMEOUT);
 
-		// TLS endpoint has an extra handler for the tls init
-		endpoint_tls.set_tls_init_handler(std::bind(&WebServerManager::on_tls_init, this, _1));
+			// TLS endpoint has an extra handler for the tls init
+			endpoint_tls.set_tls_init_handler(std::bind(&WebServerManager::on_tls_init, this, _1));
 
+			// Logging
+			setEndpointLogSettings(endpoint_plain, debugStreamPlain);
+			setEndpointLogSettings(endpoint_tls, debugStreamTls);
+		} catch (const std::exception& e) {
+			errorF(e.what());
+			return false;
+		}
+
+		return listen(errorF);
+	}
+
+	bool WebServerManager::listen(ErrorF& errorF) {
 		bool hasServer = false;
 		if (plainServerConfig.hasValidConfig()) {
 			try {
@@ -159,8 +208,8 @@ namespace webserver {
 	void WebServerManager::stop() {
 		fire(WebServerManagerListener::Stopping());
 
-		// we have an issue otherwise if a socket connects instantly after getting disconnected
-		shuttingDown = true;
+		endpoint_plain.stop_listening();
+		endpoint_tls.stop_listening();
 
 		disconnectSockets("Shutting down");
 
@@ -181,8 +230,7 @@ namespace webserver {
 
 		ios.stop();
 
-		while (!ios.stopped())
-			Thread::sleep(50);
+		worker_threads.join_all();
 
 		fire(WebServerManagerListener::Stopped());
 	}
@@ -214,8 +262,12 @@ namespace webserver {
 		return i.base() == sockets.end() ? nullptr : *i;
 	}
 
-	TimerPtr WebServerManager::addTimer(Timer::CallBack&& aCallBack, time_t aIntervalMillis) noexcept {
+	TimerPtr WebServerManager::addTimer(CallBack&& aCallBack, time_t aIntervalMillis) noexcept {
 		return make_shared<Timer>(move(aCallBack), ios, aIntervalMillis);
+	}
+
+	void WebServerManager::addAsyncTask(CallBack&& aCallBack) noexcept {
+		ios.post(aCallBack);
 	}
 
 	void WebServerManager::on_close_socket(websocketpp::connection_hdl hdl) {
@@ -274,7 +326,7 @@ namespace webserver {
 		}
 	}
 
-	bool WebServerManager::save(SettingsManager::CustomErrorF aCustomErrorF) noexcept {
+	bool WebServerManager::save(std::function<void(const string&)> aCustomErrorF) noexcept {
 		SimpleXML xml;
 
 		xml.addTag("WebServer");
