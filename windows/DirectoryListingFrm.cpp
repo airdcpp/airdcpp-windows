@@ -470,7 +470,13 @@ void DirectoryListingFrame::insertTreeItems(const string& aPath, HTREEITEM aPare
 		}
 	} else {
 		// We haven't been there before... Fill the cache and try again.
-		updateItemCache(aPath, [=] { insertTreeItems(aPath, aParent); });
+		updateItemCache(aPath, [=] {
+			// Expand again
+			auto parent = ctrlTree.findItem(treeRoot, Text::toT(aPath));
+			if (parent) {
+				ctrlTree.Expand(parent);
+			}
+		});
 	}
 }
 
