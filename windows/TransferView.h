@@ -256,6 +256,7 @@ private:
 		void setType(const Transfer::Type& aType) { type = aType; }
 		Transfer::Type type;
 		void setBundle(const string& aBundle) { bundle = aBundle; updateMask |= MASK_BUNDLE; }
+		void setBundle(QueueToken aBundle) { if (aBundle == 0) return; bundle = Util::toString(aBundle); updateMask |= MASK_BUNDLE; }
 		string bundle;
 		void setUsers(const int16_t aUsers) { users = aUsers; updateMask |= MASK_USERS; }
 		int16_t users;
@@ -304,7 +305,7 @@ private:
 
 	void on(DownloadManagerListener::Requesting, const Download* aDownload, bool hubChanged) noexcept;	
 	void on(DownloadManagerListener::Complete, const Download* aDownload, bool isTree) noexcept { 
-		onTransferComplete(aDownload, false, Util::getFileName(aDownload->getPath()), isTree, (aDownload->getBundle() ? Util::toString(aDownload->getBundle()->getToken()) : Util::emptyString));
+		onTransferComplete(aDownload, false, Util::getFileName(aDownload->getPath()), isTree, aDownload->getBundleStringToken());
 	}
 	void on(DownloadManagerListener::Failed, const Download* aDownload, const string& aReason) noexcept;
 	void on(DownloadManagerListener::Starting, const Download* aDownload) noexcept;
@@ -312,7 +313,7 @@ private:
 	void on(DownloadManagerListener::BundleTick, const BundleList& bundles, uint64_t aTick) noexcept;
 	void on(DownloadManagerListener::Status, const UserConnection*, const string&) noexcept;
 	void on(DownloadManagerListener::BundleWaiting, const BundlePtr aBundle) noexcept { onBundleStatus(aBundle, false); }
-	void on(DownloadManagerListener::TargetChanged, const string& aTarget, const string& aToken, const string& bundleToken) noexcept;
+	void on(DownloadManagerListener::TargetChanged, const string& aTarget, const string& aToken, QueueToken aBundleToken) noexcept;
 
 	void on(UploadManagerListener::Starting, const Upload* aUpload) noexcept;
 	void on(UploadManagerListener::Tick, const UploadList& aUpload) noexcept;

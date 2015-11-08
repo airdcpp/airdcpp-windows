@@ -693,7 +693,7 @@ void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueIte
 			ui->setType(type);
 			ui->setTarget(Text::toT(aTarget));
 			ui->setSize(aSize);
-			ui->setBundle(Util::toString(bundleToken));
+			ui->setBundle(bundleToken);
 		}
 	}
 
@@ -728,7 +728,7 @@ void TransferView::onUpdateFileInfo(const HintedUser& aUser, const string& aToke
 		ui->setType(type);
 		ui->setTarget(Text::toT(aTarget));
 		ui->setSize(aSize);
-		ui->setBundle(Util::toString(bundleToken));
+		ui->setBundle(bundleToken);
 		if (updateStatus) {
 			ui->setStatusString(TSTRING(CONNECTING));
 			ui->setStatus(ItemInfo::STATUS_WAITING);
@@ -1088,15 +1088,15 @@ void TransferView::on(DownloadManagerListener::Status, const UserConnection* uc,
 	ui->setStatus(ItemInfo::STATUS_WAITING);
 	ui->setPos(0);
 	ui->setStatusString(Text::toT(aReason));
-	ui->setBundle(!uc->getLastBundle().empty() ? uc->getLastBundle() : Util::emptyString);
+	ui->setBundle(uc->getLastBundle());
 
 	speak(UPDATE_ITEM, ui);
 }
 
-void TransferView::on(DownloadManagerListener::TargetChanged, const string& aTarget, const string& aToken, const string& bundleToken) noexcept {
+void TransferView::on(DownloadManagerListener::TargetChanged, const string& aTarget, const string& aToken, QueueToken aBundleToken) noexcept {
 	auto ui = new UpdateInfo(aToken, true);
 	ui->setTarget(Text::toT(aTarget));
-	ui->setBundle(bundleToken);
+	ui->setBundle(aBundleToken);
 	speak(UPDATE_ITEM, ui);
 }
 
