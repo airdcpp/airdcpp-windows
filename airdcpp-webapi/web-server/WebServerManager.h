@@ -177,6 +177,8 @@ namespace webserver {
 	private:
 		bool listen(ErrorF& errorF);
 
+		bool InitializeIO(ErrorF& errorF);
+
 		ServerConfig plainServerConfig;
 		ServerConfig tlsServerConfig;
 
@@ -196,6 +198,8 @@ namespace webserver {
 		FileServer fileServer;
 
 		unique_ptr<WebUserManager> userManager;
+
+		bool has_io_service;
 
 		server_plain endpoint_plain;
 		server_tls endpoint_tls;

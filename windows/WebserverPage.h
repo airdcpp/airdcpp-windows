@@ -32,7 +32,7 @@
 
 #include <web-server/WebServerManager.h>
 
-class WebServerPage : public CPropertyPage<IDD_WEB_SERVER_PAGE>, public PropPage
+class WebServerPage : public CPropertyPage<IDD_WEB_SERVER_PAGE>, public PropPage, private webserver::WebServerManagerListener, private Async<WebServerPage>
 {
 public:
 	WebServerPage(SettingsManager *s) : PropPage(s), webMgr(webserver::WebServerManager::getInstance()) {
@@ -45,6 +45,7 @@ public:
 
 	BEGIN_MSG_MAP_EX(WebServerPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
+		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		COMMAND_ID_HANDLER(IDC_WEBSERVER_ADD_USER, onButton)
 		COMMAND_ID_HANDLER(IDC_WEBSERVER_CHANGE, onButton)
 		COMMAND_ID_HANDLER(IDC_WEBSERVER_REMOVE_USER, onButton)
@@ -69,9 +70,17 @@ public:
 
 protected:
 
+	enum States {
+		STATE_STARTED,
+		STATE_STOPPING,
+		STATE_STOPPED
+	};
+
 	static Item items[];
 	static TextItem texts[];
 	TCHAR* title;
+
+	string lastError;
 
 	CButton ctrlRemove;
 	CButton ctrlAdd;
@@ -83,10 +92,34 @@ protected:
 	CEdit ctrlTlsPort;
 	ExListViewCtrl ctrlWebUsers;
 
-	void updateStatus(const string& aError = Util::emptyString);
+	void updateStatus();
+	States currentState;
 
 	webserver::WebServerManager* webMgr;
 	vector<webserver::WebUserPtr> webUserList;
+
+
+	void on(webserver::WebServerManagerListener::Started) noexcept {
+		callAsync([=] {
+			ctrlStart.EnableWindow(TRUE);
+			currentState = webMgr->isRunning() ? STATE_STARTED : STATE_STOPPED;
+			updateStatus();
+		});
+	}
+	void on(webserver::WebServerManagerListener::Stopped) noexcept {
+		callAsync([=] {
+			currentState = STATE_STOPPED;
+			ctrlStart.EnableWindow(TRUE);
+			updateStatus();
+		});
+	}
+	void on(webserver::WebServerManagerListener::Stopping) noexcept {
+		callAsync([=] {
+			currentState = STATE_STOPPING;
+			ctrlStart.EnableWindow(FALSE);
+			updateStatus();
+		});
+	}
 
 };
 

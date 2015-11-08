@@ -1817,7 +1817,7 @@ enum Strings { // @DontAdd
 	WAITING_PCT, // "Waiting (%.01f%%)"
 	WAITING_TIME, // "Waiting time"
 	WANT_CONTINUE, // "Do you want to continue?"
-	WEBSERVER_RUNNING, // "Web server running on ports: %1%, %2%"
+	WEBSERVER_RUNNING, // "Web server running"
 	WEBSERVER_STOPPED, // "Web server stopped"
 	WEBSHORTCUTS, // "Web shortcuts"
 	WEDNESDAY, // "Wednesday"

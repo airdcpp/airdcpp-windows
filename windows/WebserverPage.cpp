@@ -53,13 +53,14 @@ LRESULT WebServerPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	ctrlStart.Attach(GetDlgItem(IDC_WEBSERVER_START));
 	ctrlStatus.Attach(GetDlgItem(IDC_WEBSERVER_STATUS));
 
+	currentState = webMgr->isRunning() ? STATE_STARTED : STATE_STOPPED;
 	updateStatus();
 
 	webUserList = webMgr->getUserManager().getWebUsers();
 	for (auto u : webUserList) {
 		addListItem(u->getUserName(), u->getPassword());
 	}
-
+	webMgr->addListener(this);
 	return TRUE;
 }
 LRESULT WebServerPage::onButton(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -100,15 +101,15 @@ LRESULT WebServerPage::onButton(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/
 				webMgr->getPlainServerConfig().setPort(plainserverPort);
 			}
 			if (webMgr->getTlsServerConfig().getPort() != tlsServerPort) {
-				webMgr->getPlainServerConfig().setPort(tlsServerPort);
+				webMgr->getTlsServerConfig().setPort(tlsServerPort);
 			}
 
 			ctrlStart.EnableWindow(FALSE);
-			webMgr->start([=](const string& aError) { updateStatus(aError); });
+			lastError.clear();
+			webMgr->start([&](const string& aError) { lastError += aError + "\n"; });
 		} else {
-			ctrlStart.EnableWindow(FALSE);
+			lastError.clear();
 			webserver::WebServerManager::getInstance()->stop();
-			updateStatus();
 		}
 	}
 
@@ -153,19 +154,21 @@ LRESULT WebServerPage::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 	return 0;
 }
 
-void WebServerPage::updateStatus(const string& aError /*= Util::emptyString*/) {
-	ctrlStart.EnableWindow(TRUE);
+void WebServerPage::updateStatus() {
 
-	if (webMgr->isRunning()) {
+	if (currentState == STATE_STARTED) {
 		ctrlStart.SetWindowText(CTSTRING(STOP));
-		ctrlStatus.SetWindowText(CTSTRING_F(WEBSERVER_RUNNING, webMgr->getPlainServerConfig().getPort() % webMgr->getTlsServerConfig().getPort()));
-	} else {
-		ctrlStart.SetWindowText(CTSTRING(START));
-		ctrlStatus.SetWindowText((TSTRING(WEBSERVER_STOPPED) + (aError.empty() ? _T("") :  _T(" : ") + Text::toT(aError))).c_str());
+		ctrlStatus.SetWindowText((TSTRING(WEBSERVER_RUNNING) + (lastError.empty() ? _T("") : _T(" : ") + Text::toT(lastError))).c_str());
+	} else if(currentState == STATE_STOPPING) {
+		ctrlStatus.SetWindowText(_T("Stopping..."));
+	} else if (currentState == STATE_STOPPED) {
+	 ctrlStart.SetWindowText(CTSTRING(START));
+	 ctrlStatus.SetWindowText(CTSTRING(WEBSERVER_STOPPED));
 	}
 }
 
 void WebServerPage::write() {
+
 	bool needServerRestart = false;
 
 	auto plainserverPort = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlPort)));
@@ -198,6 +201,7 @@ void WebServerPage::addListItem(const string& aUserName, const string& aPassword
 }
 
 WebServerPage::~WebServerPage() {
+	webMgr->removeListener(this);
 	webUserList.clear();
 	ctrlWebUsers.Detach();
 	free(title);

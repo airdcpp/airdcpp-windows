@@ -33,7 +33,7 @@
 
 namespace webserver {
 	using namespace dcpp;
-	WebServerManager::WebServerManager() : ios(2) {
+	WebServerManager::WebServerManager() : has_io_service(false), ios(2) {
 		userManager = unique_ptr<WebUserManager>(new WebUserManager(this));
 	}
 
@@ -102,6 +102,18 @@ namespace webserver {
 			fileServer.setResourcePath(resourcePath);
 		}
 
+		ios.reset();
+		if (!has_io_service) {
+			has_io_service = InitializeIO(errorF);
+		}
+		// Logging
+		setEndpointLogSettings(endpoint_plain, debugStreamPlain);
+		setEndpointLogSettings(endpoint_tls, debugStreamTls);
+
+		return listen(errorF);
+	}
+
+	bool WebServerManager::InitializeIO(ErrorF& errorF) {
 		try {
 			// initialize asio with our external io_service rather than an internal one
 			endpoint_plain.init_asio(&ios);
@@ -112,7 +124,6 @@ namespace webserver {
 				std::bind(&WebServerManager::on_message<server_plain>, this, &endpoint_plain, _1, _2, false));
 			endpoint_plain.set_close_handler(std::bind(&WebServerManager::on_close_socket, this, _1));
 			endpoint_plain.set_open_handler(std::bind(&WebServerManager::on_open_socket<server_plain>, this, &endpoint_plain, _1, false));
-
 
 			// Failures (plain)
 			endpoint_plain.set_open_handshake_timeout(HANDSHAKE_TIMEOUT);
@@ -132,15 +143,12 @@ namespace webserver {
 			// TLS endpoint has an extra handler for the tls init
 			endpoint_tls.set_tls_init_handler(std::bind(&WebServerManager::on_tls_init, this, _1));
 
-			// Logging
-			setEndpointLogSettings(endpoint_plain, debugStreamPlain);
-			setEndpointLogSettings(endpoint_tls, debugStreamTls);
-		} catch (const std::exception& e) {
+		}
+		catch (const std::exception& e) {
 			errorF(e.what());
 			return false;
 		}
-
-		return listen(errorF);
+		return true;
 	}
 
 	bool WebServerManager::listen(ErrorF& errorF) {
@@ -208,8 +216,10 @@ namespace webserver {
 	void WebServerManager::stop() {
 		fire(WebServerManagerListener::Stopping());
 
-		endpoint_plain.stop_listening();
-		endpoint_tls.stop_listening();
+		if(endpoint_plain.is_listening())
+			endpoint_plain.stop_listening();
+		if(endpoint_tls.is_listening())
+			endpoint_tls.stop_listening();
 
 		disconnectSockets("Shutting down");
 
