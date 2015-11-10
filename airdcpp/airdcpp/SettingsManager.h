@@ -235,6 +235,9 @@ public:
 	static const ResourceManager::Strings dropStrings[QUEUE_LAST];
 	static const ResourceManager::Strings updateStrings[VERSION_LAST];
 
+	typedef map<int, ResourceManager::Strings> EnumStringMap;
+	static EnumStringMap getEnumStrings(int aKey, bool aValidateCurrentValue) noexcept;
+
 	const string& get(StrSetting key, bool useDefault = true) const noexcept {
 		return (isSet[key] || !useDefault) ? strSettings[key - STR_FIRST] : strDefaults[key - STR_FIRST];
 	}

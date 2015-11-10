@@ -52,6 +52,57 @@ const ResourceManager::Strings SettingsManager::monitoringStrings[MONITORING_LAS
 const ResourceManager::Strings SettingsManager::dropStrings[QUEUE_LAST] { ResourceManager::FILE, ResourceManager::BUNDLE, ResourceManager::ALL };
 const ResourceManager::Strings SettingsManager::updateStrings[VERSION_LAST] { ResourceManager::CHANNEL_STABLE, ResourceManager::CHANNEL_BETA, ResourceManager::CHANNEL_NIGHTLY };
 
+SettingsManager::EnumStringMap SettingsManager::getEnumStrings(int aKey, bool aValidateCurrentValue) noexcept {
+	EnumStringMap ret;
+
+	auto insertStrings = [&](const ResourceManager::Strings* aStrings, int aMax, int aMin = 0) {
+		auto cur = SettingsManager::getInstance()->get(static_cast<SettingsManager::IntSetting>(aKey));
+		if (!aValidateCurrentValue || (cur >= aMin && cur < aMax)) {
+			for (int i = aMin; i < aMax; i++) {
+				ret.emplace(i, aStrings[i]);
+			}
+		}
+	};
+
+	if ((aKey == INCOMING_CONNECTIONS || aKey == INCOMING_CONNECTIONS6)) {
+		insertStrings(incomingStrings, INCOMING_LAST, -1);
+	}
+
+	if (aKey == MONITORING_MODE) {
+		insertStrings(monitoringStrings, MONITORING_LAST);
+	}
+
+	if (aKey == SettingsManager::TLS_MODE) {
+		insertStrings(encryptionStrings, TLS_LAST);
+	}
+
+	if (aKey == OUTGOING_CONNECTIONS) {
+		insertStrings(outgoingStrings, TLS_LAST);
+	}
+
+	if (aKey == DL_AUTO_DISCONNECT_MODE) {
+		insertStrings(dropStrings, QUEUE_LAST);
+	}
+
+	if (aKey == BLOOM_MODE) {
+		insertStrings(bloomStrings, BLOOM_LAST);
+	}
+
+	if (aKey == DELAY_COUNT_MODE) {
+		insertStrings(delayStrings, DELAY_LAST);
+	}
+
+	if (aKey == AUTOPRIO_TYPE) {
+		insertStrings(prioStrings, PRIO_LAST);
+	}
+
+	if (aKey == SETTINGS_PROFILE) {
+		insertStrings(profileStrings, PROFILE_LAST);
+	}
+
+	return ret;
+}
+
 const ProfileSettingItem SettingsManager::profileSettings[SettingsManager::PROFILE_LAST][10] = {
 
 { 
