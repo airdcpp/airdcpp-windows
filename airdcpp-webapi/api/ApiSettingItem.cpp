@@ -23,6 +23,7 @@
 #include <airdcpp/AirUtil.h>
 #include <airdcpp/ConnectionManager.h>
 #include <airdcpp/ConnectivityManager.h>
+#include <airdcpp/ResourceManager.h>
 #include <airdcpp/SearchManager.h>
 #include <airdcpp/SettingHolder.h>
 #include <airdcpp/SettingItem.h>
@@ -112,7 +113,18 @@ namespace webserver {
 		auto enumStrings = SettingsManager::getEnumStrings(key, false);
 		if (!enumStrings.empty()) {
 			for (const auto& i : enumStrings) {
-				ret["values"][Util::toString(i.first)] = i.second;
+				ret["values"].push_back({
+					{ "text", ResourceManager::getInstance()->getString(i.second) },
+					{ "value", i.first }
+				});
+			}
+		} else if (key == SettingsManager::BIND_ADDRESS || key == SettingsManager::BIND_ADDRESS6) {
+			auto bindAddresses = AirUtil::getDisplayAdapters(key == SettingsManager::BIND_ADDRESS6);
+			for (const auto& adapter : bindAddresses) {
+				ret["values"].push_back({
+					{ "text", adapter.ip + (!adapter.adapterName.empty() ? " (" + adapter.adapterName + ")" : Util::emptyString) },
+					{ "value", adapter.ip }
+				});
 			}
 		}
 

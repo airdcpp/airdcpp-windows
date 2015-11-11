@@ -27,7 +27,7 @@
 namespace webserver {
 	static const vector<ApiSettingItem> coreSettings = {
 		//{ ResourceManager::SETTINGS_GENERAL },
-		{ "profile", SettingsManager::SETTINGS_PROFILE, ResourceManager::SETTINGS_PROFILE },
+		{ "setting_profile", SettingsManager::SETTINGS_PROFILE, ResourceManager::SETTINGS_PROFILE },
 		{ "nick", SettingsManager::NICK, ResourceManager::NICK },
 		{ "description", SettingsManager::DESCRIPTION, ResourceManager::DESCRIPTION },
 		{ "email", SettingsManager::EMAIL, ResourceManager::EMAIL },
@@ -72,16 +72,16 @@ namespace webserver {
 		{ "socks_resolve", SettingsManager::SOCKS_RESOLVE, ResourceManager::SETTINGS_SOCKS5_RESOLVE },
 
 		//{ ResourceManager::IP_V4 },
-		{ "connection4_auto", SettingsManager::AUTO_DETECT_CONNECTION, ResourceManager::ALLOW_AUTO_DETECT_V4 },
-		{ "connection4_bind", SettingsManager::BIND_ADDRESS, ResourceManager::SETTINGS_BIND_ADDRESS, ApiSettingItem::TYPE_CONN_V4 },
-		{ "connection4_mode", SettingsManager::INCOMING_CONNECTIONS, ResourceManager::CONNECTIVITY, ApiSettingItem::TYPE_CONN_V4 },
-		{ "connection4_ip", SettingsManager::EXTERNAL_IP, ResourceManager::SETTINGS_EXTERNAL_IP, ApiSettingItem::TYPE_CONN_V4 },
+		{ "connection_auto_v4", SettingsManager::AUTO_DETECT_CONNECTION, ResourceManager::ALLOW_AUTO_DETECT_V4 },
+		{ "connection_bind_v4", SettingsManager::BIND_ADDRESS, ResourceManager::SETTINGS_BIND_ADDRESS, ApiSettingItem::TYPE_CONN_V4 },
+		{ "connection_mode_v4", SettingsManager::INCOMING_CONNECTIONS, ResourceManager::CONNECTIVITY, ApiSettingItem::TYPE_CONN_V4 },
+		{ "connection_ip_v4", SettingsManager::EXTERNAL_IP, ResourceManager::SETTINGS_EXTERNAL_IP, ApiSettingItem::TYPE_CONN_V4 },
 
 		//{ ResourceManager::IP_V6 },
-		{ "connection6_auto", SettingsManager::AUTO_DETECT_CONNECTION6, ResourceManager::ALLOW_AUTO_DETECT_V6 },
-		{ "connection6_bind", SettingsManager::BIND_ADDRESS6, ResourceManager::SETTINGS_BIND_ADDRESS, ApiSettingItem::TYPE_CONN_V6 },
-		{ "connection6_mode", SettingsManager::INCOMING_CONNECTIONS6, ResourceManager::CONNECTIVITY, ApiSettingItem::TYPE_CONN_V6 },
-		{ "connection6_ip", SettingsManager::EXTERNAL_IP6, ResourceManager::SETTINGS_EXTERNAL_IP, ApiSettingItem::TYPE_CONN_V6 },
+		{ "connection_auto_v6", SettingsManager::AUTO_DETECT_CONNECTION6, ResourceManager::ALLOW_AUTO_DETECT_V6 },
+		{ "connection_bind_v6", SettingsManager::BIND_ADDRESS6, ResourceManager::SETTINGS_BIND_ADDRESS, ApiSettingItem::TYPE_CONN_V6 },
+		{ "connection_mode_v6", SettingsManager::INCOMING_CONNECTIONS6, ResourceManager::CONNECTIVITY, ApiSettingItem::TYPE_CONN_V6 },
+		{ "connection_ip_v6", SettingsManager::EXTERNAL_IP6, ResourceManager::SETTINGS_EXTERNAL_IP, ApiSettingItem::TYPE_CONN_V6 },
 
 		//{ ResourceManager::SETTINGS_PORTS },
 		{ "tcp_port", SettingsManager::TCP_PORT, ResourceManager::SETTINGS_TCP_PORT, ApiSettingItem::TYPE_CONN_GEN },

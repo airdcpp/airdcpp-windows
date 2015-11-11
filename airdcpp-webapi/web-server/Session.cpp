@@ -20,6 +20,7 @@
 #include <web-server/Session.h>
 #include <web-server/ApiRequest.h>
 
+#include <api/ConnectivityApi.h>
 #include <api/FavoriteDirectoryApi.h>
 #include <api/FavoriteHubApi.h>
 #include <api/FilelistApi.h>
@@ -43,6 +44,7 @@ namespace webserver {
 	Session::Session(WebUserPtr& aUser, const string& aToken, bool aIsSecure, WebServerManager* aServer) : 
 		user(aUser), token(aToken), started(GET_TICK()), lastActivity(lastActivity), secure(aIsSecure), server(aServer) {
 
+		ADD_MODULE("connectivity", ConnectivityApi);
 		ADD_MODULE("favorite_directories", FavoriteDirectoryApi);
 		ADD_MODULE("favorite_hubs", FavoriteHubApi);
 		ADD_MODULE("filelists", FilelistApi);

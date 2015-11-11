@@ -265,28 +265,14 @@ void ProtocolPage::fixControls() {
 }
 
 void ProtocolPage::getAddresses() {
-	//get the addresses and sort them
-	AirUtil::getIpAddresses(bindAddresses, v6);
-	sort(bindAddresses.begin(), bindAddresses.end(), [](const AirUtil::AddressInfo& lhs, const AirUtil::AddressInfo& rhs) { 
-		/*return compare(lhs.ip, rhs.ip) < 0;*/ 
-		return stricmp(lhs.adapterName, rhs.adapterName) < 0; 
-	});
-
-	//fill the combo
-	bindAddresses.emplace(bindAddresses.begin(), "Any", v6 ? "::" : "0.0.0.0", 0);
-	for(auto& addr: bindAddresses)
-		//BindCombo.AddString(Text::toT(addr.ip + (!addr.adapterName.empty() ? " (" + addr.adapterName + ")" : Util::emptyString)).c_str());
+	// fill the combo
+	bindAddresses = AirUtil::getDisplayAdapters(v6);
+	for (auto& addr : bindAddresses)
 		BindCombo.AddString(Text::toT(addr.adapterName + " (" + addr.ip + ")").c_str());
 
-
-	//select the address
+	// select the current address
 	const auto& setting = v6 ? SETTING(BIND_ADDRESS6) : SETTING(BIND_ADDRESS);
 	auto cur = boost::find_if(bindAddresses, [&setting](const AirUtil::AddressInfo& aInfo) { return aInfo.ip == setting; });
-	if (cur == bindAddresses.end()) {
-		BindCombo.AddString(Text::toT(setting).c_str());
-		bindAddresses.emplace_back(STRING(UNKNOWN), setting, 0);
-		cur = bindAddresses.end()-1;
-	}
 	BindCombo.SetCurSel(distance(bindAddresses.begin(), cur));
 }
 
