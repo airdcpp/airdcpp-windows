@@ -37,7 +37,12 @@ namespace webserver {
 			TYPE_LIMITS_MCN
 		};
 
-		ApiSettingItem(const string& aName, int aKey, ResourceManager::Strings aDesc, Type aType = TYPE_GENERAL);
+		struct Unit {
+			const ResourceManager::Strings str;
+			const bool isSpeed;
+		};
+
+		ApiSettingItem(const string& aName, int aKey, ResourceManager::Strings aDesc, Type aType = TYPE_GENERAL, Unit&& aUnit = { ResourceManager::Strings::LAST, false });
 		//NamedSettingItem(ResourceManager::Strings aDesc);
 
 		json toJson() const noexcept;
@@ -45,8 +50,10 @@ namespace webserver {
 		bool setCurValue(const json& aJson) const;
 
 		bool isTitle = false;
-		string name;
-		Type type;
+		const string name;
+		const Type type;
+
+		Unit unit;
 	};
 }
 

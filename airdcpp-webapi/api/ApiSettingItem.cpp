@@ -31,8 +31,8 @@
 #include <airdcpp/StringTokenizer.h>
 
 namespace webserver {
-	ApiSettingItem::ApiSettingItem(const string& aName, int aKey, ResourceManager::Strings aDesc, Type aType) :
-		name(aName), type(aType), SettingItem({ aKey, aDesc }) {
+	ApiSettingItem::ApiSettingItem(const string& aName, int aKey, ResourceManager::Strings aDesc, Type aType, Unit&& aUnit) :
+		name(aName), type(aType), unit(move(aUnit)), SettingItem({ aKey, aDesc }) {
 
 	}
 
@@ -110,6 +110,10 @@ namespace webserver {
 			ret["auto"] = true;
 		}
 
+		if (unit.str != ResourceManager::LAST) {
+			ret["unit"] = ResourceManager::getInstance()->getString(unit.str) + (unit.isSpeed ? "/s" : "");
+		}
+
 		auto enumStrings = SettingsManager::getEnumStrings(key, false);
 		if (!enumStrings.empty()) {
 			for (const auto& i : enumStrings) {
@@ -145,14 +149,11 @@ namespace webserver {
 		}
 
 		if (key >= SettingsManager::STR_FIRST && key < SettingsManager::STR_LAST) {
-			const string value = aJson;
-			SettingsManager::getInstance()->set(static_cast<SettingsManager::StrSetting>(key), value);
+			SettingsManager::getInstance()->set(static_cast<SettingsManager::StrSetting>(key), JsonUtil::parseValue<string>(name, aJson));
 		} else if (key >= SettingsManager::INT_FIRST && key < SettingsManager::INT_LAST) {
-			int value = aJson;
-			SettingsManager::getInstance()->set(static_cast<SettingsManager::IntSetting>(key), value);
+			SettingsManager::getInstance()->set(static_cast<SettingsManager::IntSetting>(key), JsonUtil::parseValue<int>(name, aJson));
 		} else if (key >= SettingsManager::BOOL_FIRST && key < SettingsManager::BOOL_LAST) {
-			bool value = aJson;
-			SettingsManager::getInstance()->set(static_cast<SettingsManager::BoolSetting>(key), value);
+			SettingsManager::getInstance()->set(static_cast<SettingsManager::BoolSetting>(key), JsonUtil::parseValue<bool>(name, aJson));
 		} else {
 			dcassert(0);
 			return false;

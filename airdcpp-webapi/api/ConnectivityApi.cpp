@@ -69,12 +69,13 @@ namespace webserver {
 		});
 	}
 
-	void ConnectivityApi::on(ConnectivityManagerListener::Finished, bool v6, bool /*failed*/) noexcept {
+	void ConnectivityApi::on(ConnectivityManagerListener::Finished, bool v6, bool failed) noexcept {
 		if (!subscriptionActive("connectivity_finished"))
 			return;
 
 		send("connectivity_finished", {
-			{ "v6", v6 }
+			{ "v6", v6 },
+			{ "failed", failed }
 		});
 	}
 }

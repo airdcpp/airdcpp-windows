@@ -59,7 +59,7 @@ SettingsManager::EnumStringMap SettingsManager::getEnumStrings(int aKey, bool aV
 		auto cur = SettingsManager::getInstance()->get(static_cast<SettingsManager::IntSetting>(aKey));
 		if (!aValidateCurrentValue || (cur >= aMin && cur < aMax)) {
 			for (int i = aMin; i < aMax; i++) {
-				ret.emplace(i, aStrings[i]);
+				ret.emplace(i, aStrings[i - aMin]);
 			}
 		}
 	};

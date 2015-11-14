@@ -38,14 +38,14 @@ namespace webserver {
 	api_return SettingApi::handleGetSettings(ApiRequest& aRequest) {
 		 const auto& requestJson = aRequest.getRequestBody();
 
-		json retJson = json::array();
+		json retJson;
 		for (const auto& key : requestJson) {
 			auto setting = getSettingItem(key);
 			if (!setting) {
 				JsonUtil::throwError(key, JsonUtil::ERROR_INVALID, "Setting not found");
 			}
 
-			retJson.push_back(setting->toJson());
+			retJson[setting->name] = setting->toJson();
 		}
 
 		aRequest.setResponseBody(retJson);
