@@ -36,6 +36,7 @@ PropPage::TextItem SpeedPage::texts[] = {
 	{ IDC_SETTINGS_UPLOADS_SLOTS, ResourceManager::SETTINGS_UPLOADS_SLOTS },
 	{ IDC_SETTINGS_UPLOADS_MIN_SPEED, ResourceManager::SETTINGS_UPLOADS_MIN_SPEED },
 	{ IDC_SETTINGS_KBPS, ResourceManager::KiBS },
+	{ IDC_SETTINGS_KBPS2, ResourceManager::KiBS },
 	{ IDC_SETTINGS_AUTO_SLOTS, ResourceManager::SETTINGS_AUTO_SLOTS	},
 	{ IDC_SLOTS_GROUP2, ResourceManager::UPLOAD_LIMITS_ADD },
 	{ IDC_DL_AUTODETECT, ResourceManager::AUTODETECT },
