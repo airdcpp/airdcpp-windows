@@ -51,7 +51,7 @@ namespace webserver {
 
 		retJson["network_type"] = Util::isPrivateIp(ip, v6) ? "local" : "internet";
 
-		auto started = TimerManager::getInstance()->getTime() - (TimerManager::getInstance()->getTick() / 1000);
+		auto started = TimerManager::getStartTime();
 		retJson["client_started"] = started;
 		retJson["client_version"] = fullVersionString;
 #ifdef WIN32

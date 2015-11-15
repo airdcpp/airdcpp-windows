@@ -341,7 +341,7 @@ string ChatCommands::generateStats() {
 \t-=[ CPU: %s ]=-")
 
 		% fullVersionString
-		% Util::formatTime(Util::getUptime(), false)
+		% Util::formatTime(TimerManager::getUptime(), false)
 		% Util::formatSeconds((kernelTime + userTime) / (10I64 * 1000I64 * 1000I64))
 		% Util::formatBytes(pmc.WorkingSetSize)
 		% Util::formatBytes(pmc.PeakWorkingSetSize)
@@ -383,7 +383,7 @@ string ChatCommands::CPUInfo() {
 string ChatCommands::uptimeInfo() {
 	char buf[512]; 
 	snprintf(buf, sizeof(buf), "\n-=[ Uptime: %s]=-\r\n-=[ System Uptime: %s]=-\r\n", 
-	Util::formatTime(Util::getUptime(), false).c_str(), 
+	Util::formatTime(TimerManager::getUptime(), false).c_str(), 
 	getSysUptime().c_str());
 	return buf;
 }

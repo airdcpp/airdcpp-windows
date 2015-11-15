@@ -1477,7 +1477,7 @@ LRESULT MainFrame::onTrayIcon(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 			Util::toStringW(DownloadManager::getInstance()->getDownloadCount()) + _T(")\r\nU: ") +
 			Util::formatBytesW(UploadManager::getInstance()->getRunningAverage()) + _T("/s (") + 
 			Util::toStringW(UploadManager::getInstance()->getUploadCount()) + _T(")")
-			+ _T("\r\nUptime: ") + Util::formatSecondsW(Util::getUptime())
+			+ _T("\r\nUptime: ") + Util::formatSecondsW(TimerManager::getUptime())
 			).c_str(), 64);
 		
 		::Shell_NotifyIcon(NIM_MODIFY, &nid);
@@ -1800,7 +1800,6 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	if(aTick == lastUpdate)	// FIXME: temp fix for new TimerManager
 		return;
 
-	Util::increaseUptime();
 	uint64_t queueSize = QueueManager::getInstance()->getTotalQueueSize();
 
 	TStringList* str = new TStringList();
