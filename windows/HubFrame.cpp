@@ -750,7 +750,6 @@ LRESULT HubFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 		}
 	} else {
 		SettingsManager::getInstance()->set(SettingsManager::GET_USER_INFO, showUsers);
-		FavoriteManager::getInstance()->removeUserCommand(Text::fromT(server));
 
 		clearUserList();
 		clearTaskList();
