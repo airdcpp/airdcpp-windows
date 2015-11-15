@@ -36,15 +36,11 @@ namespace webserver {
 
 	}
 
-	//NamedSettingItem::NamedSettingItem(ResourceManager::Strings aDesc) : isTitle(true), SettingItem({ 0, aDesc }) {
 
-	//}
-
-	json ApiSettingItem::toJson() const noexcept {
+	#define USE_AUTO(aType, aSetting) (type == aType && (aForceAutoValues || SETTING(aSetting)))
+	json ApiSettingItem::autoValueToJson(bool aForceAutoValues) const noexcept {
 		json v;
-		bool autoValue = false;
-
-		if ((type == TYPE_CONN_V4 && SETTING(AUTO_DETECT_CONNECTION)) || (type == TYPE_CONN_V6 && SETTING(AUTO_DETECT_CONNECTION6)) ||
+		if (USE_AUTO(TYPE_CONN_V4, AUTO_DETECT_CONNECTION) || USE_AUTO(TYPE_CONN_V6, AUTO_DETECT_CONNECTION6) ||
 			(type == TYPE_CONN_GEN && (SETTING(AUTO_DETECT_CONNECTION) || SETTING(AUTO_DETECT_CONNECTION6)))) {
 
 			if (key == SettingsManager::TCP_PORT) {
@@ -64,33 +60,35 @@ namespace webserver {
 					dcassert(0);
 				}
 			}
-
-			autoValue = true;
-		} else if (type == TYPE_LIMITS_DL && SETTING(DL_AUTODETECT)) {
-			if (key == SettingsManager::DOWNLOAD_SLOTS)
+		} else if (USE_AUTO(TYPE_LIMITS_DL, DL_AUTODETECT)) {
+			if (key == SettingsManager::DOWNLOAD_SLOTS) {
 				v = AirUtil::getSlots(true);
-			else if (key == SettingsManager::MAX_DOWNLOAD_SPEED)
+			} else if (key == SettingsManager::MAX_DOWNLOAD_SPEED) {
 				v = AirUtil::getSpeedLimit(true);
-			//else
-			//	v = AirUtil::getMaxAutoOpened();
-
-			autoValue = true;
-		} else if (type == TYPE_LIMITS_UL && SETTING(UL_AUTODETECT)) {
-			if (key == SettingsManager::SLOTS)
+			}
+		} else if (USE_AUTO(TYPE_LIMITS_UL, UL_AUTODETECT)) {
+			if (key == SettingsManager::SLOTS) {
 				v = AirUtil::getSlots(false);
-			else if (key == SettingsManager::MIN_UPLOAD_SPEED)
+			} else if (key == SettingsManager::MIN_UPLOAD_SPEED) {
 				v = AirUtil::getSpeedLimit(false);
-			else if (key == SettingsManager::AUTO_SLOTS)
+			} else if (key == SettingsManager::AUTO_SLOTS) {
 				v = AirUtil::getMaxAutoOpened();
-
-			autoValue = true;
-		} else if (type == TYPE_LIMITS_MCN && SETTING(MCN_AUTODETECT)) {
+			}
+		} else if (USE_AUTO(TYPE_LIMITS_MCN, MCN_AUTODETECT)) {
 			v = AirUtil::getSlotsPerUser(key == SettingsManager::MAX_MCN_DOWNLOADS);
-			autoValue = true;
 		}
 
-		string value;
-		if (v.is_null()) {
+		return v;
+	}
+
+	json ApiSettingItem::toJson(bool aForceAutoValues) const noexcept {
+		bool autoValue = false;
+
+		// Get the current value
+		auto v = autoValueToJson(aForceAutoValues);
+		if (!v.is_null()) {
+			autoValue = true;
+		} else {
 			if (key >= SettingsManager::STR_FIRST && key < SettingsManager::STR_LAST) {
 				v = SettingsManager::getInstance()->get(static_cast<SettingsManager::StrSetting>(key), true);
 			} else if (key >= SettingsManager::INT_FIRST && key < SettingsManager::INT_LAST) {
@@ -102,6 +100,7 @@ namespace webserver {
 			}
 		}
 
+		// Serialize the setting
 		json ret;
 		ret["value"] = v;
 		ret["key"] = name;
@@ -114,6 +113,7 @@ namespace webserver {
 			ret["unit"] = ResourceManager::getInstance()->getString(unit.str) + (unit.isSpeed ? "/s" : "");
 		}
 
+		// Serialize possible enum values
 		auto enumStrings = SettingsManager::getEnumStrings(key, false);
 		if (!enumStrings.empty()) {
 			for (const auto& i : enumStrings) {

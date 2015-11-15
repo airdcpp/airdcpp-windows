@@ -36,6 +36,7 @@ namespace webserver {
 			return 0;
 		}
 	private:
+		api_return handleGetStats(ApiRequest& aRequest);
 		api_return handleGetProfiles(ApiRequest& aRequest);
 		api_return handleGetRoots(ApiRequest& aRequest);
 		api_return handleFindDupePaths(ApiRequest& aRequest);

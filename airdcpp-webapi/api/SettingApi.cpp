@@ -36,24 +36,36 @@ namespace webserver {
 	}
 
 	api_return SettingApi::handleGetSettings(ApiRequest& aRequest) {
-		 const auto& requestJson = aRequest.getRequestBody();
+		const auto& requestJson = aRequest.getRequestBody();
+
+		auto autoValues = JsonUtil::getOptionalField<bool>("force_auto_values", requestJson);
 
 		json retJson;
-		for (const auto& key : requestJson) {
-			auto setting = getSettingItem(key);
-			if (!setting) {
-				JsonUtil::throwError(key, JsonUtil::ERROR_INVALID, "Setting not found");
-			}
-
-			retJson[setting->name] = setting->toJson();
-		}
+		parseSettingKeys(requestJson, [&](const ApiSettingItem* aItem) {
+			retJson[aItem->name] = aItem->toJson(autoValues ? *autoValues : false);
+		});
 
 		aRequest.setResponseBody(retJson);
 		return websocketpp::http::status_code::ok;
 	}
 
-	api_return SettingApi::handleResetSettings(ApiRequest& aRequest) {
+	void SettingApi::parseSettingKeys(const json& aJson, function<void(const ApiSettingItem*)> aHandler) {
+		for (const auto& key : aJson["keys"]) {
+			auto setting = getSettingItem(key);
+			if (!setting) {
+				JsonUtil::throwError(key, JsonUtil::ERROR_INVALID, "Setting not found");
+			}
 
+			aHandler(setting);
+		}
+	}
+
+	api_return SettingApi::handleResetSettings(ApiRequest& aRequest) {
+		const auto& requestJson = aRequest.getRequestBody();
+
+		parseSettingKeys(requestJson, [&](const ApiSettingItem* aItem) {
+			aItem->unset();
+		});
 
 		return websocketpp::http::status_code::no_content;
 	}

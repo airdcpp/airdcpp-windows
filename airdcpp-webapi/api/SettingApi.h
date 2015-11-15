@@ -40,6 +40,7 @@ namespace webserver {
 		api_return handleSetSettings(ApiRequest& aRequest);
 		api_return handleResetSettings(ApiRequest& aRequest);
 
+		void parseSettingKeys(const json& aJson, function<void(const ApiSettingItem*)> aHandler);
 		const ApiSettingItem* getSettingItem(const string& aKey) const noexcept;
 	};
 }
