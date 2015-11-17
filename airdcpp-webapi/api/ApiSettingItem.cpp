@@ -113,6 +113,12 @@ namespace webserver {
 			ret["unit"] = ResourceManager::getInstance()->getString(unit.str) + (unit.isSpeed ? "/s" : "");
 		}
 
+		if (type == TYPE_FILE_PATH) {
+			ret["type"] = "file_path";
+		} else if (type == TYPE_DIRECTORY_PATH) {
+			ret["type"] = "directory_path";
+		}
+
 		// Serialize possible enum values
 		auto enumStrings = SettingsManager::getEnumStrings(key, false);
 		if (!enumStrings.empty()) {
@@ -128,6 +134,14 @@ namespace webserver {
 				ret["values"].push_back({
 					{ "text", adapter.ip + (!adapter.adapterName.empty() ? " (" + adapter.adapterName + ")" : Util::emptyString) },
 					{ "value", adapter.ip }
+				});
+			}
+		} else if (key == SettingsManager::MAPPER) {
+			auto mappers = ConnectivityManager::getInstance()->getMappers(false);
+			for (const auto& name : mappers) {
+				ret["values"].push_back({
+					{ "text", name },
+					{ "value", name }
 				});
 			}
 		}
