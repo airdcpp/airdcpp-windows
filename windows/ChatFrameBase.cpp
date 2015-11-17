@@ -820,7 +820,7 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 	} else if(stricmp(cmd.c_str(), _T("as")) == 0) {
 		//AutoSearchManager::getInstance()->runSearches();
 	} else if(stricmp(cmd.c_str(), _T("clientstats")) == 0) {
-		status = Text::toT(ClientManager::getInstance()->getClientStats());
+		status = Text::toT(ClientManager::getInstance()->printClientStats());
 	} else if(stricmp(cmd.c_str(), _T("monitordebug")) == 0) {
 		auto cur = ShareManager::getInstance()->getMonitorDebug();
 		ShareManager::getInstance()->setMonitorDebug(!cur);
