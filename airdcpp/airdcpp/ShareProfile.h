@@ -97,6 +97,8 @@ public:
 	GETSET(ProfileToken, token, Token);
 	GETSET(string, plainName, PlainName);
 	IGETSET(bool, profileInfoDirty, ProfileInfoDirty, true);
+
+	// For caching the last information (these should only be accessed from ShareManager, use ShareManager::getProfileInfo for up-to-date information)
 	IGETSET(int64_t, shareSize, ShareSize, 0);
 	IGETSET(size_t, sharedFiles, SharedFiles, 0);
 

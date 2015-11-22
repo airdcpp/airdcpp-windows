@@ -32,6 +32,7 @@ namespace webserver {
 		METHOD_HANDLER("profile", ApiRequest::METHOD_POST, (), true, ShareApi::handleAddProfile);
 		METHOD_HANDLER("profile", ApiRequest::METHOD_PATCH, (TOKEN_PARAM), true, ShareApi::handleUpdateProfile);
 		METHOD_HANDLER("profile", ApiRequest::METHOD_DELETE, (TOKEN_PARAM), false, ShareApi::handleRemoveProfile);
+		METHOD_HANDLER("profile", ApiRequest::METHOD_POST, (TOKEN_PARAM, EXACT_PARAM("default")), false, ShareApi::handleDefaultProfile);
 
 		METHOD_HANDLER("roots", ApiRequest::METHOD_GET, (), false, ShareApi::handleGetRoots);
 		METHOD_HANDLER("root", ApiRequest::METHOD_POST, (EXACT_PARAM("add")), true, ShareApi::handleAddRoot);
@@ -76,12 +77,17 @@ namespace webserver {
 	}
 
 	json ShareApi::serializeShareProfile(const ShareProfilePtr& aProfile) noexcept {
+		size_t totalFiles = 0;
+		int64_t totalSize = 0;
+		ShareManager::getInstance()->getProfileInfo(aProfile->getToken(), totalSize, totalFiles);
+
 		return {
 			{ "id", aProfile->getToken() },
 			{ "name", aProfile->getDisplayName() },
+			{ "plain_name", aProfile->getPlainName() },
 			{ "default", aProfile->isDefault() },
-			{ "size", aProfile->getShareSize() },
-			{ "files", aProfile->getSharedFiles() },
+			{ "size", totalSize },
+			{ "files", totalFiles },
 		};
 	}
 
@@ -106,6 +112,18 @@ namespace webserver {
 	}
 
 	api_return ShareApi::handleRemoveRoot(ApiRequest& aRequest) {
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return ShareApi::handleDefaultProfile(ApiRequest& aRequest) {
+		auto token = aRequest.getTokenParam(0);
+		auto profile = ShareManager::getInstance()->getShareProfile(token);
+		if (!profile) {
+			aRequest.setResponseErrorStr("Profile not found");
+			return websocketpp::http::status_code::not_found;
+		}
+
+		ShareManager::getInstance()->setDefaultProfile(token);
 		return websocketpp::http::status_code::ok;
 	}
 
@@ -137,7 +155,6 @@ namespace webserver {
 
 	void ShareApi::parseProfile(ShareProfilePtr& aProfile, const json& j) {
 		auto name = JsonUtil::getField<string>("name", j, false);
-		//auto isDefault = JsonUtil::getOptionalField<string>("path", reqJson, false, false);
 
 		auto token = ShareManager::getInstance()->getProfileByName(name);
 		if (token && token != aProfile->getToken()) {

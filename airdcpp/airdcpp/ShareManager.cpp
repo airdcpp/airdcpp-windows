@@ -2202,6 +2202,8 @@ void ShareManager::setDefaultProfile(ProfileToken aNewDefault) noexcept {
 	SettingsManager::getInstance()->set(SettingsManager::DEFAULT_SP, aNewDefault);
 
 	fire(ShareManagerListener::DefaultProfileChanged(), oldDefault, aNewDefault);
+	fire(ShareManagerListener::ProfileUpdated(), aNewDefault);
+	fire(ShareManagerListener::ProfileUpdated(), oldDefault);
 }
 
 void ShareManager::addProfiles(const ShareProfileInfo::List& aProfiles) noexcept {
