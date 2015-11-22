@@ -32,7 +32,7 @@ namespace webserver {
 		static json serializeHub(const FavoriteHubEntryPtr& aEntry, int aPropertyName) noexcept;
 
 		static int compareEntries(const FavoriteHubEntryPtr& a, const FavoriteHubEntryPtr& b, int aPropertyName) noexcept;
-		static std::string  getStringInfo(const FavoriteHubEntryPtr& a, int aPropertyName) noexcept;
+		static std::string getStringInfo(const FavoriteHubEntryPtr& a, int aPropertyName) noexcept;
 		static double getNumericInfo(const FavoriteHubEntryPtr& a, int aPropertyName) noexcept;
 
 		static optional<int> deserializeIntHubSetting(const string& aFieldName, const json& aJson);

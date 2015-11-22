@@ -39,10 +39,26 @@ namespace webserver {
 		static json serializeShareProfile(const ShareProfilePtr& aProfile) noexcept;
 		//static json serializeShareRoot(const ShareDirInfo& aRoot) noexcept;
 
-		api_return handleGetStats(ApiRequest& aRequest);
 		api_return handleGetProfiles(ApiRequest& aRequest);
+		api_return handleAddProfile(ApiRequest& aRequest);
+		api_return handleUpdateProfile(ApiRequest& aRequest);
+		api_return handleRemoveProfile(ApiRequest& aRequest);
+
 		api_return handleGetRoots(ApiRequest& aRequest);
+		api_return handleAddRoot(ApiRequest& aRequest);
+		api_return handleUpdateRoot(ApiRequest& aRequest);
+		api_return handleRemoveRoot(ApiRequest& aRequest);
+
+		void parseProfile(ShareProfilePtr& aProfile, const json& j);
+
+		api_return handleGetStats(ApiRequest& aRequest);
+
+		api_return handleGetGroupedRootPaths(ApiRequest& aRequest);
 		api_return handleFindDupePaths(ApiRequest& aRequest);
+
+		void on(ShareManagerListener::ProfileAdded, ProfileToken aProfile) noexcept;
+		void on(ShareManagerListener::ProfileUpdated, ProfileToken aProfile) noexcept;
+		void on(ShareManagerListener::ProfileRemoved, ProfileToken aProfile) noexcept;
 	};
 }
 

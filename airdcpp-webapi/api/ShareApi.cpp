@@ -29,10 +29,23 @@ namespace webserver {
 		ShareManager::getInstance()->addListener(this);
 
 		METHOD_HANDLER("profiles", ApiRequest::METHOD_GET, (), false, ShareApi::handleGetProfiles);
-		METHOD_HANDLER("roots", ApiRequest::METHOD_GET, (), false, ShareApi::handleGetRoots);
-		METHOD_HANDLER("stats", ApiRequest::METHOD_GET, (), false, ShareApi::handleGetStats);
+		METHOD_HANDLER("profile", ApiRequest::METHOD_POST, (), true, ShareApi::handleAddProfile);
+		METHOD_HANDLER("profile", ApiRequest::METHOD_PATCH, (TOKEN_PARAM), true, ShareApi::handleUpdateProfile);
+		METHOD_HANDLER("profile", ApiRequest::METHOD_DELETE, (TOKEN_PARAM), false, ShareApi::handleRemoveProfile);
 
+		METHOD_HANDLER("roots", ApiRequest::METHOD_GET, (), false, ShareApi::handleGetRoots);
+		METHOD_HANDLER("root", ApiRequest::METHOD_POST, (EXACT_PARAM("add")), true, ShareApi::handleAddRoot);
+		METHOD_HANDLER("root", ApiRequest::METHOD_POST, (EXACT_PARAM("update")), true, ShareApi::handleUpdateRoot);
+		METHOD_HANDLER("root", ApiRequest::METHOD_POST, (EXACT_PARAM("remove")), true, ShareApi::handleRemoveRoot);
+
+		METHOD_HANDLER("grouped_root_paths", ApiRequest::METHOD_GET, (), false, ShareApi::handleGetGroupedRootPaths);
+		METHOD_HANDLER("stats", ApiRequest::METHOD_GET, (), false, ShareApi::handleGetStats);
 		METHOD_HANDLER("find_dupe_paths", ApiRequest::METHOD_POST, (), true, ShareApi::handleFindDupePaths);
+
+
+		createSubscription("share_profile_added");
+		createSubscription("share_profile_updated");
+		createSubscription("share_profile_removed");
 	}
 
 	ShareApi::~ShareApi() {
@@ -65,8 +78,10 @@ namespace webserver {
 	json ShareApi::serializeShareProfile(const ShareProfilePtr& aProfile) noexcept {
 		return {
 			{ "id", aProfile->getToken() },
-			{ "str", aProfile->getDisplayName() },
-			{ "default", aProfile->isDefault() }
+			{ "name", aProfile->getDisplayName() },
+			{ "default", aProfile->isDefault() },
+			{ "size", aProfile->getShareSize() },
+			{ "files", aProfile->getSharedFiles() },
 		};
 	}
 
@@ -77,6 +92,97 @@ namespace webserver {
 			{ "size", aRoot.size },
 		};
 	}*/
+
+	api_return ShareApi::handleGetRoots(ApiRequest& aRequest) {
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return ShareApi::handleAddRoot(ApiRequest& aRequest) {
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return ShareApi::handleUpdateRoot(ApiRequest& aRequest) {
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return ShareApi::handleRemoveRoot(ApiRequest& aRequest) {
+		return websocketpp::http::status_code::ok;
+	}
+
+	void ShareApi::on(ShareManagerListener::ProfileAdded, ProfileToken aProfile) noexcept {
+		if (!subscriptionActive("share_profile_added")) {
+			return;
+		}
+
+		send("share_profile_added", serializeShareProfile(ShareManager::getInstance()->getShareProfile(aProfile)));
+	}
+
+	void ShareApi::on(ShareManagerListener::ProfileUpdated, ProfileToken aProfile) noexcept {
+		if (!subscriptionActive("share_profile_updated")) {
+			return;
+		}
+
+		send("share_profile_updated", serializeShareProfile(ShareManager::getInstance()->getShareProfile(aProfile)));
+	}
+
+	void ShareApi::on(ShareManagerListener::ProfileRemoved, ProfileToken aProfile) noexcept {
+		if (!subscriptionActive("share_profile_removed")) {
+			return;
+		}
+
+		send("share_profile_removed", { 
+			{ "id", aProfile } 
+		});
+	}
+
+	void ShareApi::parseProfile(ShareProfilePtr& aProfile, const json& j) {
+		auto name = JsonUtil::getField<string>("name", j, false);
+		//auto isDefault = JsonUtil::getOptionalField<string>("path", reqJson, false, false);
+
+		auto token = ShareManager::getInstance()->getProfileByName(name);
+		if (token && token != aProfile->getToken()) {
+			JsonUtil::throwError("name", JsonUtil::ERROR_EXISTS, "Profile with the same name exists");
+		}
+
+		aProfile->setPlainName(name);
+	}
+
+	api_return ShareApi::handleAddProfile(ApiRequest& aRequest) {
+		const auto& reqJson = aRequest.getRequestBody();
+
+		auto profile = make_shared<ShareProfile>();
+		parseProfile(profile, reqJson);
+
+		ShareManager::getInstance()->addProfile(profile);
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return ShareApi::handleUpdateProfile(ApiRequest& aRequest) {
+		const auto& reqJson = aRequest.getRequestBody();
+
+		auto profile = ShareManager::getInstance()->getShareProfile(aRequest.getTokenParam(0));
+		if (!profile) {
+			aRequest.setResponseErrorStr("Profile not found");
+			return websocketpp::http::status_code::not_found;
+		}
+
+		parseProfile(profile, reqJson);
+		ShareManager::getInstance()->updateProfile(profile);
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return ShareApi::handleRemoveProfile(ApiRequest& aRequest) {
+		auto token = aRequest.getTokenParam(0);
+
+		if (!ShareManager::getInstance()->getShareProfile(token)) {
+			aRequest.setResponseErrorStr("Profile not found");
+			return websocketpp::http::status_code::not_found;
+		}
+
+		ShareManager::getInstance()->removeProfiles({ make_shared<ShareProfileInfo>(Util::emptyString, token) });
+
+		return websocketpp::http::status_code::ok;
+	}
 
 	api_return ShareApi::handleGetProfiles(ApiRequest& aRequest) {
 		json j;
@@ -92,7 +198,7 @@ namespace webserver {
 		return websocketpp::http::status_code::ok;
 	}
 
-	api_return ShareApi::handleGetRoots(ApiRequest& aRequest) {
+	api_return ShareApi::handleGetGroupedRootPaths(ApiRequest& aRequest) {
 		json ret;
 
 		auto roots = ShareManager::getInstance()->getGroupedDirectories();
