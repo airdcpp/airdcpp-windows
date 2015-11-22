@@ -2196,19 +2196,6 @@ ShareManager::ProfileDirMap ShareManager::getSubProfileDirs(const string& aPath)
 	return aRoots;
 }
 
-void ShareManager::addProfiles(const ShareProfileInfo::List& aProfiles) noexcept{
-	{
-		WLock l(cs);
-		for (auto& sp : aProfiles) {
-			shareProfiles.emplace(shareProfiles.end() - 1, make_shared<ShareProfile>(sp->name, sp->token));
-		}
-	}
-
-	for (auto& sp : aProfiles) {
-		fire(ShareManagerListener::ProfileAdded(), sp->token);
-	}
-}
-
 void ShareManager::setDefaultProfile(ProfileToken aNewDefault) noexcept {
 	auto oldDefault = SETTING(DEFAULT_SP);
 
@@ -2217,33 +2204,54 @@ void ShareManager::setDefaultProfile(ProfileToken aNewDefault) noexcept {
 	fire(ShareManagerListener::DefaultProfileChanged(), oldDefault, aNewDefault);
 }
 
+void ShareManager::addProfiles(const ShareProfileInfo::List& aProfiles) noexcept {
+	for (auto& sp : aProfiles) {
+		addProfile(make_shared<ShareProfile>(sp->name, sp->token));
+	}
+}
+
 void ShareManager::removeProfiles(const ShareProfileInfo::List& aProfiles) noexcept{
 	for (auto& sp : aProfiles) {
-		fire(ShareManagerListener::ProfileRemoved(), sp->token);
-	}
-
-	{
-		WLock l(cs);
-		for (auto& sp : aProfiles) {
-			shareProfiles.erase(remove(shareProfiles.begin(), shareProfiles.end(), sp->token), shareProfiles.end());
-		}
+		removeProfile(sp->token);
 	}
 }
 
 void ShareManager::renameProfiles(const ShareProfileInfo::List& aProfiles) noexcept {
-	{
-		WLock l(cs);
-		for (auto& sp : aProfiles) {
-			auto p = find(shareProfiles.begin(), shareProfiles.end(), sp->token);
-			if (p != shareProfiles.end()) {
-				(*p)->setPlainName(sp->name);
-			}
+	for (auto& sp : aProfiles) {
+		auto p = getShareProfile(sp->token);
+		if (p) {
+			p->setPlainName(sp->name);
+			updateProfile(p);
 		}
 	}
+}
 
-	for (auto& sp : aProfiles) {
-		fire(ShareManagerListener::ProfileUpdated(), sp->token);
+void ShareManager::addProfile(const ShareProfilePtr& aProfile) noexcept {
+	{
+		WLock l(cs);
+		shareProfiles.push_back(aProfile);
 	}
+
+	fire(ShareManagerListener::ProfileAdded(), aProfile->getToken());
+}
+
+void ShareManager::updateProfile(const ShareProfilePtr& aProfile) noexcept {
+	fire(ShareManagerListener::ProfileUpdated(), aProfile->getToken());
+}
+
+bool ShareManager::removeProfile(ProfileToken aToken) noexcept {
+	{
+		WLock l(cs);
+		auto i = find(shareProfiles.begin(), shareProfiles.end(), aToken);
+		if (i == shareProfiles.end()) {
+			return false;
+		}
+
+		shareProfiles.erase(remove(shareProfiles.begin(), shareProfiles.end(), aToken), shareProfiles.end());
+	}
+
+	fire(ShareManagerListener::ProfileRemoved(), aToken);
+	return true;
 }
 
 void ShareManager::addDirectories(const ShareDirInfo::List& aNewDirs) noexcept {

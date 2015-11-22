@@ -310,6 +310,10 @@ public:
 	void removeProfiles(const ShareProfileInfo::List& aProfiles) noexcept;
 	void renameProfiles(const ShareProfileInfo::List& aProfiles) noexcept;
 
+	void addProfile(const ShareProfilePtr& aProfile) noexcept;
+	void updateProfile(const ShareProfilePtr& aProfile) noexcept;
+	bool removeProfile(ProfileToken aToken) noexcept;
+
 	void changeExcludedDirs(const ProfileTokenStringList& aAdd, const ProfileTokenStringList& aRemove) noexcept;
 	void rebuildTotalExcludes() noexcept;
 

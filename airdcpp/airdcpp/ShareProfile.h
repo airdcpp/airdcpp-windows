@@ -100,7 +100,7 @@ public:
 	IGETSET(int64_t, shareSize, ShareSize, 0);
 	IGETSET(size_t, sharedFiles, SharedFiles, 0);
 
-	ShareProfile(const string& aName, ProfileToken aToken = Util::randInt(100));
+	ShareProfile(const string& aName = Util::emptyString, ProfileToken aToken = Util::randInt(100));
 	~ShareProfile();
 
 	FileList* getProfileList() noexcept;
