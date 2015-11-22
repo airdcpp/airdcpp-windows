@@ -36,6 +36,9 @@ namespace webserver {
 			return 0;
 		}
 	private:
+		static json serializeShareProfile(const ShareProfilePtr& aProfile) noexcept;
+		//static json serializeShareRoot(const ShareDirInfo& aRoot) noexcept;
+
 		api_return handleGetStats(ApiRequest& aRequest);
 		api_return handleGetProfiles(ApiRequest& aRequest);
 		api_return handleGetRoots(ApiRequest& aRequest);

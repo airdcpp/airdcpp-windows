@@ -62,6 +62,22 @@ namespace webserver {
 		return websocketpp::http::status_code::ok;
 	}
 
+	json ShareApi::serializeShareProfile(const ShareProfilePtr& aProfile) noexcept {
+		return {
+			{ "id", aProfile->getToken() },
+			{ "str", aProfile->getDisplayName() },
+			{ "default", aProfile->isDefault() }
+		};
+	}
+
+	/*json ShareApi::serializeShareRoot(const ShareDirInfo& aRoot) noexcept {
+		return{
+			{ "path", aRoot.path },
+			{ "virtual_name", aRoot.vname },
+			{ "size", aRoot.size },
+		};
+	}*/
+
 	api_return ShareApi::handleGetProfiles(ApiRequest& aRequest) {
 		json j;
 
@@ -69,11 +85,7 @@ namespace webserver {
 
 		// Profiles can't be empty
 		for (const auto& p : profiles) {
-			j.push_back({
-				{ "id", p->getToken() },
-				{ "str", p->getDisplayName() },
-				{ "default", p->isDefault() }
-			});
+			j.push_back(serializeShareProfile(p));
 		}
 
 		aRequest.setResponseBody(j);
