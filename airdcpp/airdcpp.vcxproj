@@ -136,6 +136,10 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Lib>
+    <PreBuildEvent>
+      <Message>Generating revision number...</Message>
+      <Command>$(SolutionDir)generate-version.bat $(SolutionDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <PreBuildEvent>

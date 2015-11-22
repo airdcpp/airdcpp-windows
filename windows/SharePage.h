@@ -83,7 +83,7 @@ protected:
 	CComboBox ctrlProfile;
 	CButton ctrlAddProfile;
 
-	void applyChanges(bool isQuit, bool resetAdcHubs);
+	void applyChanges(bool isQuit);
 
 	bool hasChanged();
 };

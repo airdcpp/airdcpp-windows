@@ -40,8 +40,6 @@
 
 namespace dcpp {
 
-typedef uint32_t ClientToken;
-
 class ClientBase
 {
 public:

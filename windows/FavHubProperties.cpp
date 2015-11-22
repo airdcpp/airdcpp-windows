@@ -86,7 +86,7 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	CheckDlgButton(IDC_FAV_NO_PM, entry->getFavNoPM() ? BST_CHECKED : BST_UNCHECKED);
 
 	auto searchInterval = entry->get(HubSettings::SearchInterval);
-	CheckDlgButton(IDC_SEARCH_INTERVAL_DEFAULT, searchInterval == HubSettings::getMinInt() ? BST_CHECKED : BST_UNCHECKED);
+	CheckDlgButton(IDC_SEARCH_INTERVAL_DEFAULT, searchInterval == HUB_SETTING_DEFAULT_INT ? BST_CHECKED : BST_UNCHECKED);
 	SetDlgItemText(IDC_FAV_SEARCH_INTERVAL_BOX, Util::toStringW(searchInterval).c_str());
 
 	bool isAdcHub = entry->isAdcHub();
@@ -117,7 +117,7 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 
 	ctrlProfile.Attach(GetDlgItem(IDC_FAV_SHAREPROFILE));
 	appendProfiles();
-	hideShare = entry->getShareProfile() && entry->getShareProfile()->getToken() == SP_HIDDEN;
+	hideShare = entry->get(HubSettings::ShareProfile) == SP_HIDDEN;
 	CheckDlgButton(IDC_HIDE_SHARE, hideShare ? BST_CHECKED : BST_UNCHECKED);
 
 
@@ -142,7 +142,7 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 		combo.InsertString(2, CTSTRING(ACTIVE_MODE));
 		combo.InsertString(3, CTSTRING(PASSIVE_MODE));
 
-		if(curMode == HubSettings::getMinInt())
+		if(curMode == HUB_SETTING_DEFAULT_INT)
 			combo.SetCurSel(0);
 		else if(curMode == SettingsManager::INCOMING_DISABLED)
 			combo.SetCurSel(1);
@@ -222,10 +222,13 @@ void FavHubProperties::fixControls() {
 void FavHubProperties::appendProfiles() {
 	auto profiles = ShareManager::getInstance()->getProfiles();
 
-	int counter = 0;
+	ctrlProfile.InsertString(0, CTSTRING(USE_DEFAULT));
+	ctrlProfile.SetCurSel(0);
+
+	int counter = 1;
 	for(auto j = profiles.begin(); j != profiles.end()-1; j++) {
 		ctrlProfile.InsertString(counter, Text::toT((*j)->getDisplayName()).c_str());
-		if (counter == 0 || *j == entry->getShareProfile())
+		if (*j == entry->get(HubSettings::ShareProfile))
 			ctrlProfile.SetCurSel(counter);
 		counter++;
 	}
@@ -299,7 +302,7 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 		entry->get(HubSettings::LogMainChat) = to3bool(IsDlgButtonChecked(IDC_LOGMAINCHAT));
 		entry->get(HubSettings::ChatNotify) = to3bool(IsDlgButtonChecked(IDC_CHAT_NOTIFY));
 
-		auto val = HubSettings::getMinInt();
+		auto val = HUB_SETTING_DEFAULT_INT;
 		if (!IsDlgButtonChecked(IDC_SEARCH_INTERVAL_DEFAULT)) {
 			GetDlgItemText(IDC_FAV_SEARCH_INTERVAL_BOX, buf, 512);
 			val = Util::toInt(Text::fromT(buf));
@@ -333,7 +336,7 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 			else if (combo.GetCurSel() == 3)
 				return SettingsManager::INCOMING_PASSIVE;
 
-			return HubSettings::getMinInt();
+			return HUB_SETTING_DEFAULT_INT;
 		};
 
 		entry->get(HubSettings::Connection) = getConnMode(modeCombo4);
@@ -348,15 +351,14 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 
 		auto p = ShareManager::getInstance()->getProfiles();
 
+		ProfileToken token = HUB_SETTING_DEFAULT_INT;
 		if(hideShare) {
-			entry->setShareProfile(*(p.end()-1));
-		} else {
-			if(entry->isAdcHub()) {
-				entry->setShareProfile(p[ctrlProfile.GetCurSel()]);
-			} else {
-				entry->setShareProfile(p[0]);
-			}
+			token = SP_HIDDEN;
+		} else if(entry->isAdcHub() && ctrlProfile.GetCurSel() != 0) {
+			token = p[ctrlProfile.GetCurSel()-1]->getToken();
 		}
+
+		entry->get(HubSettings::ShareProfile) = token;
 
 		FavoriteManager::getInstance()->save();
 	}

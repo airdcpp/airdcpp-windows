@@ -186,7 +186,7 @@ void FavoriteHubsFrame::openSelected() {
 		RecentHubEntryPtr r = new RecentHubEntry(entry->getServer());
 		r->setName(entry->getName());
 		r->setDescription(entry->getDescription());
-		ClientManager::getInstance()->createClient(r, entry->getShareProfile()->getToken()); // no multithreading because of disorder!
+		ClientManager::getInstance()->createClient(r, entry->get(HubSettings::ShareProfile)); // no multithreading because of disorder!
 	}
 	return;
 }
@@ -199,7 +199,7 @@ void FavoriteHubsFrame::addEntry(const FavoriteHubEntryPtr& entry, int pos, int 
 	l.push_back(tstring(entry->getPassword().size(), '*'));
 	l.push_back(Text::toT(entry->getServer()));
 	l.push_back(Text::toT(entry->get(HubSettings::Description)));
-	l.push_back(Text::toT(entry->getShareProfile()->getDisplayName()));
+	l.push_back(Text::toT(entry->getShareProfileName()));
 	bool b = entry->getAutoConnect();
 	int i = ctrlHubs.insert(pos, l, 0, (LPARAM)entry.get());
 	ctrlHubs.SetCheckState(i, b);

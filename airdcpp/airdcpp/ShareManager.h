@@ -347,6 +347,8 @@ public:
 
 	// Handle monitoring changes (being called regularly from TimerManager so manual calls aren't mandatory)
 	void handleChangedFiles() noexcept;
+
+	void setDefaultProfile(ProfileToken aNewDefault) noexcept;
 private:
 	void countStats(uint64_t& totalAge_, size_t& totalDirs_, int64_t& totalSize_, size_t& totalFiles, size_t& lowerCaseFiles, size_t& totalStrLen_, size_t& roots_) const noexcept;
 

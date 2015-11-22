@@ -248,15 +248,8 @@ void SharePage::write() { }
 
 Dispatcher::F SharePage::getThreadedTask() {
 	if (hasChanged()) {
-		bool resetAdcHubs = false;
-		if (defaultProfile != SETTING(DEFAULT_SP) && (ClientManager::getInstance()->hasAdcHubs() || FavoriteManager::getInstance()->hasAdcHubs())) {
-			tstring oldName = Text::toT(getProfile(SETTING(DEFAULT_SP))->name);
-			tstring newName = Text::toT(getProfile(defaultProfile)->name);
-			resetAdcHubs = WinUtil::showQuestionBox(TSTRING_F(CHANGE_SP_ASK_HUBS, oldName.c_str() % newName.c_str()), MB_ICONQUESTION);
-		}
-
 		return Dispatcher::F([=] { 
-			applyChanges(true, resetAdcHubs);
+			applyChanges(true);
 		});
 	}
 
@@ -273,7 +266,7 @@ bool SharePage::hasChanged() {
 	return defaultProfile != SETTING(DEFAULT_SP) || any_of(profiles.begin(), profiles.end(), [](const ShareProfileInfoPtr& aProfile) { return aProfile->state != ShareProfileInfo::STATE_NORMAL; }) || dirPage->hasChanged();
 }
 
-void SharePage::applyChanges(bool isQuit, bool resetAdcHubs) {
+void SharePage::applyChanges(bool isQuit) {
 	ShareProfileInfo::List handledProfiles;
 	auto getHandled = [&](ShareProfileInfo::State aState) {
 		handledProfiles.clear();
@@ -286,31 +279,17 @@ void SharePage::applyChanges(bool isQuit, bool resetAdcHubs) {
 	}
 
 	if (defaultProfile != SETTING(DEFAULT_SP)) {
-		auto oldDefault = SETTING(DEFAULT_SP);
-		ClientManager::getInstance()->resetProfile(oldDefault, defaultProfile, !resetAdcHubs);
-
-		//ensure that favorite hubs get the correct display name in the tab
-		SettingsManager::getInstance()->set(SettingsManager::DEFAULT_SP, defaultProfile);
-		FavoriteManager::getInstance()->resetProfile(oldDefault, defaultProfile, !resetAdcHubs);
+		ShareManager::getInstance()->setDefaultProfile(defaultProfile);
 	}
 
 	getHandled(ShareProfileInfo::STATE_REMOVED);
 	if (!handledProfiles.empty()) {
-		int favReset = 0;
-		ClientManager::getInstance()->resetProfiles(handledProfiles, defaultProfile); //reset for currently connected hubs
-		favReset += FavoriteManager::getInstance()->resetProfiles(handledProfiles, defaultProfile); //reset for favorite hubs
-
 		ShareManager::getInstance()->removeProfiles(handledProfiles); //remove from profiles
-
-		if (favReset > 0)
-			MainFrame::getMainFrame()->callAsync([=] { WinUtil::showMessageBox(TSTRING_F(X_FAV_PROFILES_RESET, favReset), MB_ICONINFORMATION); });
-
 	}
 
 	getHandled(ShareProfileInfo::STATE_RENAMED);
 	if (!handledProfiles.empty()) {
 		ShareManager::getInstance()->renameProfiles(handledProfiles);
-		FavoriteManager::getInstance()->onProfilesRenamed();
 	}
 
 	dirPage->applyChanges(isQuit);

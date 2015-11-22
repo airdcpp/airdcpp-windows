@@ -32,13 +32,19 @@ namespace dcpp {
 		typedef X<1> ShareRefreshed;
 		typedef X<2> DirectoriesRefreshed;
 
-		//typedef X<3> DefaultProfileChanged;
+		typedef X<4> ProfileAdded;
+		typedef X<5> ProfileUpdated;
+		typedef X<6> ProfileRemoved;
+		typedef X<7> DefaultProfileChanged;
 
 		virtual void on(ShareLoaded) noexcept{}
 		virtual void on(ShareRefreshed, uint8_t /*tasktype*/) noexcept{}
 		virtual void on(DirectoriesRefreshed, uint8_t /*tasktype*/, const StringList&) noexcept{}
 
-		//virtual void on(DefaultProfileChanged, ProfileToken aOldDefault, ShareProfilePtr& aNewDefault) noexcept {}
+		virtual void on(ProfileAdded, ProfileToken) noexcept {}
+		virtual void on(ProfileUpdated, ProfileToken) noexcept {}
+		virtual void on(ProfileRemoved, ProfileToken) noexcept {}
+		virtual void on(DefaultProfileChanged, ProfileToken /*aOldDefault*/, ProfileToken /*aNewDefault*/) noexcept {}
 	};
 
 } // namespace dcpp

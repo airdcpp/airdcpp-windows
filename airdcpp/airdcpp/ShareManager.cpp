@@ -77,7 +77,6 @@ ShareDirInfo::ShareDirInfo(const string& aVname, ProfileToken aProfile, const st
 ShareManager::ShareManager() : bloom(new ShareBloom(1 << 20)), monitor(1, false)
 { 
 	SettingsManager::getInstance()->addListener(this);
-	QueueManager::getInstance()->addListener(this);
 #ifdef _WIN32
 	// don't share Windows directory
 	TCHAR path[MAX_PATH];
@@ -90,8 +89,6 @@ ShareManager::ShareManager() : bloom(new ShareBloom(1 << 20)), monitor(1, false)
 
 ShareManager::~ShareManager() {
 	SettingsManager::getInstance()->removeListener(this);
-	TimerManager::getInstance()->removeListener(this);
-	QueueManager::getInstance()->removeListener(this);
 
 	join();
 }
@@ -100,14 +97,14 @@ void ShareManager::startup(function<void(const string&)> splashF, function<void(
 	AirUtil::updateCachedSettings();
 	if (!getShareProfile(SETTING(DEFAULT_SP))) {
 		if (shareProfiles.empty()) {
-			auto sp = ShareProfilePtr(new ShareProfile(STRING(DEFAULT), 0));
+			auto sp = make_shared<ShareProfile>(STRING(DEFAULT), SETTING(DEFAULT_SP));
 			shareProfiles.push_back(sp);
 		} else {
 			SettingsManager::getInstance()->set(SettingsManager::DEFAULT_SP, shareProfiles.front()->getToken());
 		}
 	}
 
-	ShareProfilePtr hidden = ShareProfilePtr(new ShareProfile(STRING(SHARE_HIDDEN), SP_HIDDEN));
+	ShareProfilePtr hidden = make_shared<ShareProfile>(STRING(SHARE_HIDDEN), SP_HIDDEN);
 	shareProfiles.push_back(hidden);
 
 	setSkipList();
@@ -140,6 +137,7 @@ void ShareManager::startup(function<void(const string&)> splashF, function<void(
 
 		addMonitoring(monitorPaths);
 		TimerManager::getInstance()->addListener(this);
+		QueueManager::getInstance()->addListener(this);
 
 		if (SETTING(STARTUP_REFRESH) && !refreshed)
 			refresh(false, TYPE_STARTUP_DELAYED);
@@ -747,6 +745,9 @@ void ShareManager::shutdown(function<void(float)> progressF) noexcept {
 
 		for_each(lists, File::deleteFile);
 	} catch(...) { }
+
+	TimerManager::getInstance()->removeListener(this);
+	QueueManager::getInstance()->removeListener(this);
 }
 
 void ShareManager::setProfilesDirty(ProfileTokenSet aProfiles, bool forceXmlRefresh /*false*/) noexcept {
@@ -1246,7 +1247,7 @@ ShareManager::DirMap::const_iterator ShareManager::findRoot(const string& aPath)
 }
 
 void ShareManager::loadProfile(SimpleXML& aXml, const string& aName, ProfileToken aToken) {
-	ShareProfilePtr sp = ShareProfilePtr(new ShareProfile(aName, aToken));
+	auto sp = make_shared<ShareProfile>(aName, aToken);
 	shareProfiles.push_back(sp);
 
 	aXml.stepIn();
@@ -2196,26 +2197,52 @@ ShareManager::ProfileDirMap ShareManager::getSubProfileDirs(const string& aPath)
 }
 
 void ShareManager::addProfiles(const ShareProfileInfo::List& aProfiles) noexcept{
-	WLock l(cs);
+	{
+		WLock l(cs);
+		for (auto& sp : aProfiles) {
+			shareProfiles.emplace(shareProfiles.end() - 1, make_shared<ShareProfile>(sp->name, sp->token));
+		}
+	}
+
 	for (auto& sp : aProfiles) {
-		shareProfiles.emplace(shareProfiles.end()-1, new ShareProfile(sp->name, sp->token));
+		fire(ShareManagerListener::ProfileAdded(), sp->token);
 	}
 }
 
+void ShareManager::setDefaultProfile(ProfileToken aNewDefault) noexcept {
+	auto oldDefault = SETTING(DEFAULT_SP);
+
+	SettingsManager::getInstance()->set(SettingsManager::DEFAULT_SP, aNewDefault);
+
+	fire(ShareManagerListener::DefaultProfileChanged(), oldDefault, aNewDefault);
+}
+
 void ShareManager::removeProfiles(const ShareProfileInfo::List& aProfiles) noexcept{
-	WLock l(cs);
 	for (auto& sp : aProfiles) {
-		shareProfiles.erase(remove(shareProfiles.begin(), shareProfiles.end(), sp->token), shareProfiles.end());
+		fire(ShareManagerListener::ProfileRemoved(), sp->token);
+	}
+
+	{
+		WLock l(cs);
+		for (auto& sp : aProfiles) {
+			shareProfiles.erase(remove(shareProfiles.begin(), shareProfiles.end(), sp->token), shareProfiles.end());
+		}
 	}
 }
 
 void ShareManager::renameProfiles(const ShareProfileInfo::List& aProfiles) noexcept {
-	WLock l(cs);
-	for (auto& sp : aProfiles) {
-		auto p = find(shareProfiles.begin(), shareProfiles.end(), sp->token);
-		if (p != shareProfiles.end()) {
-			(*p)->setPlainName(sp->name);
+	{
+		WLock l(cs);
+		for (auto& sp : aProfiles) {
+			auto p = find(shareProfiles.begin(), shareProfiles.end(), sp->token);
+			if (p != shareProfiles.end()) {
+				(*p)->setPlainName(sp->name);
+			}
 		}
+	}
+
+	for (auto& sp : aProfiles) {
+		fire(ShareManagerListener::ProfileUpdated(), sp->token);
 	}
 }
 
@@ -3579,7 +3606,7 @@ ShareProfileInfo::List ShareManager::getProfileInfos() const noexcept {
 	ShareProfileInfo::List ret;
 	for (const auto& sp : shareProfiles) {
 		if (sp->getToken() != SP_HIDDEN) {
-			auto p = new ShareProfileInfo(sp->getPlainName(), sp->getToken());
+			auto p = make_shared<ShareProfileInfo>(sp->getPlainName(), sp->getToken());
 			if (p->token == SETTING(DEFAULT_SP)) {
 				p->isDefault = true;
 				ret.emplace(ret.begin(), p);

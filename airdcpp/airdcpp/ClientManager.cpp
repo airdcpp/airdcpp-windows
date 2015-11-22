@@ -48,10 +48,12 @@ using boost::find_if;
 
 ClientManager::ClientManager() : udp(Socket::TYPE_UDP), lastOfflineUserCleanup(GET_TICK()) {
 	TimerManager::getInstance()->addListener(this);
+	ShareManager::getInstance()->addListener(this);
 }
 
 ClientManager::~ClientManager() {
 	TimerManager::getInstance()->removeListener(this);
+	ShareManager::getInstance()->removeListener(this);
 }
 
 ClientPtr ClientManager::createClient(const string& aHubURL, const ClientPtr& aOldClient) noexcept {
@@ -907,21 +909,12 @@ void ClientManager::resetProfile(ProfileToken oldProfile, ProfileToken newProfil
 	}
 }
 
-void ClientManager::resetProfiles(const ShareProfileInfo::List& aProfiles, ProfileToken aDefaultProfile) noexcept {
-	RLock l(cs);
-	for(auto sp: aProfiles) {
-		for(auto c: clients | map_values) {
-			if (c->getShareProfile() == sp->token) {
-				c->setShareProfile(aDefaultProfile);
-				c->info();
-			}
-		}
-	}
+void ClientManager::on(ShareManagerListener::DefaultProfileChanged, ProfileToken aOldDefault, ProfileToken aNewDefault) noexcept {
+	resetProfile(aOldDefault, aNewDefault, true);
 }
 
-bool ClientManager::hasAdcHubs() const noexcept {
-	RLock l(cs);
-	return find_if(clients | map_values, [](const ClientPtr& c) { return AirUtil::isAdcHub(c->getHubUrl()); }).base() != clients.end();
+void ClientManager::on(ShareManagerListener::ProfileRemoved, ProfileToken aProfile) noexcept {
+	resetProfile(aProfile, SETTING(DEFAULT_SP), false);
 }
 
 pair<size_t, size_t> ClientManager::countAschSupport(const OrderedStringSet& hubs) const noexcept {

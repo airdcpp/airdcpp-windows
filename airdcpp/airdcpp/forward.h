@@ -48,6 +48,7 @@ typedef std::vector<uint16_t> PartsInfo;
 
 class Client;
 typedef std::shared_ptr<Client> ClientPtr;
+typedef uint32_t ClientToken;
 
 class ClientManager;
 

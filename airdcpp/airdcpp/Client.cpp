@@ -123,9 +123,10 @@ void Client::reloadSettings(bool updateNick) {
 		favToken = fav->getToken();
 
 		if (isAdcHub) {
-			setShareProfile(fav->getShareProfile()->getToken());
+			setShareProfile(fav->get(HubSettings::ShareProfile));
 		} else {
-			setShareProfile(fav->getShareProfile()->getToken() == SP_HIDDEN ? SP_HIDDEN : SETTING(DEFAULT_SP));
+			// Make sure that it won't be overridden...
+			setShareProfile(fav->get(HubSettings::ShareProfile) == SP_HIDDEN ? SP_HIDDEN : SETTING(DEFAULT_SP));
 		}
 		
 	} else {
