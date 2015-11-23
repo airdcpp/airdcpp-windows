@@ -50,7 +50,7 @@ class ClientManager : public Speaker<ClientManagerListener>,
 public:
 	// Returns the new ClientPtr
 	// NOTE: the main app should perform connecting to the new hub
-	ClientPtr createClient(const RecentHubEntryPtr& aEntry, ProfileToken aProfile) noexcept;
+	ClientPtr createClient(const RecentHubEntryPtr& aEntry, ProfileToken aProfile = SETTING(DEFAULT_SP)) noexcept;
 	ClientPtr getClient(const string& aHubURL) noexcept;
 	ClientPtr getClient(ClientToken aClientId) noexcept;
 

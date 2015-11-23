@@ -121,21 +121,10 @@ void Client::reloadSettings(bool updateNick) {
 		setFavNoPM(fav->getFavNoPM());
 
 		favToken = fav->getToken();
-
-		if (isAdcHub) {
-			setShareProfile(fav->get(HubSettings::ShareProfile));
-		} else {
-			// Make sure that it won't be overridden...
-			setShareProfile(fav->get(HubSettings::ShareProfile) == SP_HIDDEN ? SP_HIDDEN : SETTING(DEFAULT_SP));
-		}
-		
 	} else {
 		setStealth(false);
 		setFavNoPM(false);
 		setPassword(Util::emptyString);
-
-		if (!isAdcHub)
-			setShareProfile(shareProfile == SP_HIDDEN ? SP_HIDDEN : SETTING(DEFAULT_SP));
 	}
 
 	searchQueue.minInterval = get(HubSettings::SearchInterval) * 1000; //convert from seconds
@@ -305,6 +294,14 @@ void Client::onRedirect(const string& aRedirectUrl) noexcept {
 	} else {
 		fire(ClientListener::Redirect(), this, redirectUrl);
 	}
+}
+
+ProfileToken Client::getShareProfile() const noexcept {
+	if (favToken > 0) {
+		return get(HubSettings::ShareProfile);
+	}
+
+	return customShareProfile;
 }
 
 void Client::allowUntrustedConnect() noexcept {

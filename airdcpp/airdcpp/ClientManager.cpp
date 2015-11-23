@@ -66,7 +66,7 @@ ClientPtr ClientManager::createClient(const string& aHubURL, const ClientPtr& aO
 
 ClientPtr ClientManager::createClient(const RecentHubEntryPtr& aEntry, ProfileToken aProfile) noexcept {
 	auto c = ClientManager::createClient(aEntry->getServer());
-	c->setShareProfile(aProfile);
+	c->setCustomShareProfile(aProfile);
 	bool added = true;
 
 	{
@@ -903,7 +903,7 @@ void ClientManager::resetProfile(ProfileToken oldProfile, ProfileToken newProfil
 	RLock l(cs);
 	for (auto c : clients | map_values) {
 		if (c->getShareProfile() == oldProfile && (!nmdcOnly || !AirUtil::isAdcHub(c->getHubUrl()))) {
-			c->setShareProfile(newProfile);
+			c->setCustomShareProfile(newProfile);
 			c->info();
 		}
 	}

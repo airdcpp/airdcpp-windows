@@ -121,7 +121,6 @@ void ShareManager::startup(function<void(const string&)> splashF, function<void(
 		if (!refreshed)
 			fire(ShareManagerListener::ShareLoaded());
 
-		rebuildTotalExcludes();
 		monitor.addListener(this);
 
 		//this requires disk access
@@ -782,12 +781,9 @@ void ShareManager::Directory::updateModifyDate() {
 	lastWrite = dcpp::File::getLastModified(getRealPath());
 }
 
-void ShareManager::Directory::getResultInfo(ProfileToken aProfile, int64_t& size_, size_t& files_, size_t& folders_) const noexcept {
+void ShareManager::Directory::getResultInfo(int64_t& size_, size_t& files_, size_t& folders_) const noexcept {
 	for(const auto& d: directories) {
-		if (d->isLevelExcluded(aProfile))
-			continue;
-		
-		d->getResultInfo(aProfile, size_, files_, folders_);
+		d->getResultInfo(size_, files_, folders_);
 	}
 
 	folders_ += directories.size();
@@ -795,12 +791,10 @@ void ShareManager::Directory::getResultInfo(ProfileToken aProfile, int64_t& size
 	files_ += files.size();
 }
 
-int64_t ShareManager::Directory::getSize(ProfileToken aProfile) const noexcept {
+int64_t ShareManager::Directory::getSize() const noexcept {
 	int64_t tmp = size;
 	for(const auto& d: directories) {
-		if (d->isLevelExcluded(aProfile))
-			continue;
-		tmp += d->getSize(aProfile);
+		tmp += d->getSize();
 	}
 	return tmp;
 }
@@ -815,25 +809,25 @@ int64_t ShareManager::Directory::getTotalSize() const noexcept {
 
 string ShareManager::Directory::getADCPath(ProfileToken aProfile) const noexcept {
 	if(profileDir && profileDir->hasRootProfile(aProfile))
-		return '/' + profileDir->getName(aProfile) + '/';
+		return '/' + profileDir->getName() + '/';
 	return parent->getADCPath(aProfile) + realName.getNormal() + '/';
 }
 
 string ShareManager::Directory::getVirtualName(ProfileToken aProfile) const noexcept {
 	if(profileDir && profileDir->hasRootProfile(aProfile))
-		return profileDir->getName(aProfile);
+		return profileDir->getName();
 	return realName.getNormal();
 }
 
 const string& ShareManager::Directory::getVirtualNameLower(ProfileToken aProfile) const noexcept{
 	if (profileDir && profileDir->hasRootProfile(aProfile))
-		return profileDir->getNameLower(aProfile);
+		return profileDir->getNameLower();
 	return realName.getLower();
 }
 
 string ShareManager::Directory::getFullName(ProfileToken aProfile) const noexcept {
 	if(profileDir && profileDir->hasRootProfile(aProfile))
-		return profileDir->getName(aProfile) + '\\';
+		return profileDir->getName() + '\\';
 	dcassert(parent);
 	return parent->getFullName(aProfile) + realName.getNormal() + '\\';
 }
@@ -874,11 +868,8 @@ bool ShareManager::Directory::isRootLevel(ProfileToken aProfile) const noexcept 
 }
 
 bool ShareManager::Directory::hasProfile(ProfileTokenSet& aProfiles) const noexcept {
-	if (profileDir) {
-		if (profileDir->hasRootProfile(aProfiles))
-			return true;
-		if (profileDir->isExcluded(aProfiles))
-			return false;
+	if (profileDir && profileDir->hasRootProfile(aProfiles)) {
+		return true;
 	}
 
 	if (parent)
@@ -889,7 +880,7 @@ bool ShareManager::Directory::hasProfile(ProfileTokenSet& aProfiles) const noexc
 
 void ShareManager::Directory::copyRootProfiles(ProfileTokenSet& aProfiles, bool setCacheDirty) const noexcept {
 	if (profileDir) {
-		boost::copy(profileDir->getRootProfiles() | map_keys, inserter(aProfiles, aProfiles.begin()));
+		boost::copy(profileDir->getRootProfiles(), inserter(aProfiles, aProfiles.begin()));
 		if (setCacheDirty)
 			profileDir->setCacheDirty(true);
 	}
@@ -908,8 +899,6 @@ bool ShareManager::ProfileDirectory::hasRootProfile(const ProfileTokenSet& aProf
 
 bool ShareManager::Directory::hasProfile(ProfileToken aProfile) const noexcept {
 	if(profileDir) {
-		if (isLevelExcluded(aProfile))
-			return false;
 		if (profileDir->hasRootProfile(aProfile))
 			return true;
 	} 
@@ -924,53 +913,23 @@ bool ShareManager::ProfileDirectory::hasRootProfile(ProfileToken aProfile) const
 	return rootProfiles.find(aProfile) != rootProfiles.end();
 }
 
-bool ShareManager::ProfileDirectory::isExcluded(ProfileTokenSet& aProfiles) const noexcept {
-	for (auto t : excludedProfiles) {
-		aProfiles.erase(t);
-	}
+ShareManager::ProfileDirectory::ProfileDirectory(const string& aRootPath, const string& aVname, ProfileToken aProfile, bool incoming /*false*/) : 
+	path(aRootPath), cacheDirty(false), virtualName(unique_ptr<DualString>(new DualString(aVname))) {
 
-	return aProfiles.empty();
-}
-
-bool ShareManager::Directory::isLevelExcluded(ProfileTokenSet& aProfiles) const noexcept {
-	return profileDir && profileDir->isExcluded(aProfiles);
-}
-
-bool ShareManager::ProfileDirectory::isExcluded(ProfileToken aProfile) const noexcept {
-	return excludedProfiles.find(aProfile) != excludedProfiles.end();
-}
-
-ShareManager::ProfileDirectory::ProfileDirectory(const string& aRootPath, const string& aVname, ProfileToken aProfile, bool incoming /*false*/) : path(aRootPath), cacheDirty(false) { 
-	rootProfiles.emplace(aProfile, aVname);
+	rootProfiles.emplace(aProfile);
 	setFlag(FLAG_ROOT);
 	if (incoming)
 		setFlag(FLAG_INCOMING);
 }
 
-ShareManager::ProfileDirectory::ProfileDirectory(const string& aRootPath, ProfileToken aProfile) : path(aRootPath), cacheDirty(false) {
-	excludedProfiles.insert(aProfile);
-	setFlag(FLAG_EXCLUDE_PROFILE);
-}
-
-void ShareManager::ProfileDirectory::addRootProfile(const string& aName, ProfileToken aProfile) noexcept {
-	rootProfiles.erase(aProfile);
-	rootProfiles.emplace(aProfile, aName);
+void ShareManager::ProfileDirectory::addRootProfile(ProfileToken aProfile) noexcept {
+	rootProfiles.emplace(aProfile);
 	setFlag(FLAG_ROOT);
-}
-
-void ShareManager::ProfileDirectory::addExclude(ProfileToken aProfile) noexcept {
-	setFlag(FLAG_EXCLUDE_PROFILE);
-	excludedProfiles.insert(aProfile);
 }
 
 bool ShareManager::ProfileDirectory::removeRootProfile(ProfileToken aProfile) noexcept {
 	rootProfiles.erase(aProfile);
 	return rootProfiles.empty();
-}
-
-bool ShareManager::ProfileDirectory::removeExcludedProfile(ProfileToken aProfile) noexcept {
-	excludedProfiles.erase(aProfile);
-	return excludedProfiles.empty();
 }
 
 string ShareManager::toVirtual(const TTHValue& tth, ProfileToken aProfile) const throw(ShareException) {
@@ -1268,7 +1227,7 @@ void ShareManager::loadProfile(SimpleXML& aXml, const string& aName, ProfileToke
 		auto p = profileDirs.find(realPath);
 		if (p != profileDirs.end()) {
 			pd = p->second;
-			pd->addRootProfile(virtualName, aToken);
+			pd->addRootProfile(aToken);
 		} else {
 			pd = ProfileDirectory::Ptr(new ProfileDirectory(realPath, virtualName, aToken, aXml.getBoolChildAttrib("Incoming")));
 			profileDirs[realPath] = pd;
@@ -1287,14 +1246,7 @@ void ShareManager::loadProfile(SimpleXML& aXml, const string& aName, ProfileToke
 		while(aXml.findChild("Directory")) {
 			auto path = aXml.getChildData();
 
-			const auto p = profileDirs.find(path);
-			if (p != profileDirs.end()) {
-				auto pd = p->second;
-				pd->addExclude(aToken);
-			} else {
-				auto pd = ProfileDirectory::Ptr(new ProfileDirectory(path, aToken));
-				profileDirs[path] = pd;
-			}
+			excludedPaths.insert(path);
 		}
 		aXml.stepOut();
 	}
@@ -1575,16 +1527,15 @@ void ShareManager::save(SimpleXML& aXml) {
 			if (!d->getProfileDir()->hasRootProfile(sp->getToken()))
 				continue;
 			aXml.addTag("Directory", d->getRealPath());
-			aXml.addChildAttrib("Virtual", d->getProfileDir()->getName(sp->getToken()));
+			aXml.addChildAttrib("Virtual", d->getProfileDir()->getName());
 			//if (p->second->getRoot()->hasFlag(ProfileDirectory::FLAG_INCOMING))
 			aXml.addChildAttrib("Incoming", d->getProfileDir()->isSet(ProfileDirectory::FLAG_INCOMING));
 		}
 
 		aXml.addTag("NoShare");
 		aXml.stepIn();
-		for(const auto& pd: profileDirs | map_values) {
-			if (pd->isExcluded(sp->getToken()))
-				aXml.addTag("Directory", pd->getPath());
+		for(const auto& path: excludedPaths) {
+			aXml.addTag("Directory", path);
 		}
 		aXml.stepOut();
 		aXml.stepOut();
@@ -1746,20 +1697,26 @@ void ShareManager::validatePath(const string& realPath, const string& virtualNam
 	}
 }
 
-void ShareManager::getByVirtual(const string& virtualName, ProfileToken aProfile, Directory::List& dirs) const noexcept {
-	for(const auto& d: rootPaths | map_values) {
-		if(d->getProfileDir()->hasRootProfile(aProfile) && Util::stricmp(d->getProfileDir()->getName(aProfile), virtualName) == 0) {
+void ShareManager::getRootsByVirtual(const string& virtualName, ProfileToken aProfile, Directory::List& dirs) const noexcept {
+	for(const auto& d: rootPaths | map_values | filtered(Directory::HasRootProfile(aProfile))) {
+		if(Util::stricmp(d->getProfileDir()->getName(), virtualName) == 0) {
 			dirs.push_back(d);
 		}
 	}
 }
 
-void ShareManager::getByVirtual(const string& virtualName, const ProfileTokenSet& aProfiles, Directory::List& dirs) const noexcept {
-	auto virtualLower = Text::toLower(virtualName);
+void ShareManager::getRootsByVirtual(const string& virtualName, const ProfileTokenSet& aProfiles, Directory::List& dirs) const noexcept {
 	for(const auto& d: rootPaths | map_values) {
-		for(auto& k: d->getProfileDir()->getRootProfiles()) {
-			if (aProfiles.find(k.first) != aProfiles.end() && compare(k.second.getLower(), virtualLower) == 0) {
+		// Compare name
+		if (Util::stricmp(d->getProfileDir()->getNameLower(), virtualName) != 0) {
+			continue;
+		}
+
+		// Find any matching profile
+		for (auto profileToken: d->getProfileDir()->getRootProfiles()) {
+			if (aProfiles.find(profileToken) != aProfiles.end()) {
 				dirs.push_back(d);
+				break;
 			}
 		}
 	}
@@ -1770,8 +1727,6 @@ void ShareManager::Directory::getProfileInfo(ProfileToken aProfile, int64_t& tot
 	filesCount += files.size();
 
 	for(const auto& d: directories) {
-		if (d->isLevelExcluded(aProfile))
-			continue;
 		d->getProfileInfo(aProfile, totalSize, filesCount);
 	}
 }
@@ -1806,7 +1761,7 @@ int64_t ShareManager::getTotalShareSize(ProfileToken aProfile) const noexcept {
 	RLock l(cs);
 	for(const auto& d: rootPaths | map_values) {
 		if(d->getProfileDir()->hasRootProfile(aProfile)) {
-			ret += d->getSize(aProfile);
+			ret += d->getSize();
 		}
 	}
 	return ret;
@@ -1929,6 +1884,10 @@ void ShareManager::buildTree(string& aPath, string& aPathLower, const Directory:
 				if(binary_search(bundleDirs.begin(), bundleDirs.end(), curPathLower)) {
 					continue;
 				}
+
+				if (excludedPaths.find(aPath) != excludedPaths.end()) {
+					continue;
+				}
 			}
 
 			ProfileDirectory::Ptr profileDir = nullptr;
@@ -1936,10 +1895,8 @@ void ShareManager::buildTree(string& aPath, string& aPathLower, const Directory:
 				//add excluded dirs and sub roots in our new maps
 				auto p = aSubRoots.find(curPathLower);
 				if (p != aSubRoots.end()) {
-					if (p->second->isSet(ProfileDirectory::FLAG_ROOT) || p->second->isSet(ProfileDirectory::FLAG_EXCLUDE_PROFILE))
+					if (p->second->isSet(ProfileDirectory::FLAG_ROOT))
 						profileDir = p->second;
-					if (p->second->isSet(ProfileDirectory::FLAG_EXCLUDE_TOTAL))
-						continue;
 				}
 			}
 
@@ -1982,13 +1939,11 @@ void ShareManager::buildTree(string& aPath, string& aPathLower, const Directory:
 }
 
 void ShareManager::Directory::addBloom(ShareBloom& aBloom) const noexcept {
-	if (profileDir && profileDir->hasRoots()) {
-		for(const auto& vName: profileDir->getRootProfiles() | map_values) {
-			aBloom.add(vName.getLower());
-		}
-	} else {
-		aBloom.add(realName.getLower());
+	if (profileDir) {
+		aBloom.add(profileDir->getNameLower());
 	}
+
+	aBloom.add(realName.getLower());
 }
 
 void ShareManager::updateIndices(Directory::Ptr& dir, ShareBloom& aBloom, int64_t& sharedSize, HashFileMap& tthIndex, DirMultiMap& aDirNames) noexcept {
@@ -2020,7 +1975,7 @@ void ShareManager::updateIndices(Directory& dir, const Directory::File* f, Share
 	aBloom.add(f->name.getLower());
 }
 
-int ShareManager::refresh(const string& aDir) noexcept {
+ShareManager::RefreshResult ShareManager::refresh(const string& aDir) noexcept {
 	string path = Util::validatePath(aDir, true);
 
 	StringList refreshPaths;
@@ -2034,12 +1989,9 @@ int ShareManager::refresh(const string& aDir) noexcept {
 
 			OrderedStringSet vNames;
 			for(const auto& d: rootPaths | map_values) {
-				// compare all virtual names for real paths
-				for(const auto& vName: d->getProfileDir()->getRootProfiles() | map_values) {
-					if(Util::stricmp(vName.getLower(), aDir ) == 0) {
-						refreshPaths.push_back(d->getRealPath());
-						vNames.insert(vName.getNormal());
-					}
+				if (Util::stricmp(d->getProfileDir()->getNameLower(), aDir) == 0) {
+					refreshPaths.push_back(d->getRealPath());
+					vNames.insert(d->getProfileDir()->getName());
 				}
 			}
 
@@ -2050,7 +2002,7 @@ int ShareManager::refresh(const string& aDir) noexcept {
 				if (!vNames.empty())
 					displayName = Util::listToString(vNames);
 			} else {
-				auto d = findDirectory(aDir, false, false, false);
+				auto d = findDirectory(aDir, false, false);
 				if (d) {
 					refreshPaths.push_back(path);
 				}
@@ -2064,7 +2016,7 @@ int ShareManager::refresh(const string& aDir) noexcept {
 }
 
 
-int ShareManager::refresh(bool incoming, RefreshType aType, function<void(float)> progressF /*nullptr*/) noexcept {
+ShareManager::RefreshResult ShareManager::refresh(bool incoming, RefreshType aType, function<void(float)> progressF /*nullptr*/) noexcept {
 	StringList dirs;
 
 	{
@@ -2093,7 +2045,7 @@ void ShareManager::addAsyncTask(AsyncF aF) noexcept {
 	}
 }
 
-int ShareManager::addRefreshTask(TaskType aTaskType, StringList& dirs, RefreshType aRefreshType, const string& displayName /*Util::emptyString*/, function<void(float)> progressF /*nullptr*/) noexcept{
+ShareManager::RefreshResult ShareManager::addRefreshTask(TaskType aTaskType, StringList& dirs, RefreshType aRefreshType, const string& displayName /*Util::emptyString*/, function<void(float)> progressF /*nullptr*/) noexcept{
 	if (dirs.empty()) {
 		return REFRESH_PATH_NOT_FOUND;
 	}
@@ -2199,6 +2151,13 @@ ShareManager::ProfileDirMap ShareManager::getSubProfileDirs(const string& aPath)
 void ShareManager::setDefaultProfile(ProfileToken aNewDefault) noexcept {
 	auto oldDefault = SETTING(DEFAULT_SP);
 
+	{
+		WLock l(cs);
+		// Put the default profile on top
+		auto p = find(shareProfiles, aNewDefault);
+		rotate(shareProfiles.begin(), p, shareProfiles.end());
+	}
+
 	SettingsManager::getInstance()->set(SettingsManager::DEFAULT_SP, aNewDefault);
 
 	fire(ShareManagerListener::DefaultProfileChanged(), oldDefault, aNewDefault);
@@ -2267,7 +2226,7 @@ void ShareManager::addDirectories(const ShareDirInfo::List& aNewDirs) noexcept {
 			auto i = findRoot(sdiPath);
 			if (i != rootPaths.end()) {
 				// Trying to share an already shared root
-				i->second->getProfileDir()->addRootProfile(d->vname, d->profile);
+				i->second->getProfileDir()->addRootProfile(d->profile);
 				dirtyProfiles.insert(d->profile);
 			} else {
 				auto p = find_if(rootPaths | map_keys, [&sdiPath](const string& path) { return AirUtil::isSub(sdiPath, path); });
@@ -2277,8 +2236,7 @@ void ShareManager::addDirectories(const ShareDirInfo::List& aNewDirs) noexcept {
 					if (dir) {
 						if (dir->getProfileDir()) {
 							//an existing subroot exists
-							dcassert(dir->getProfileDir()->hasExcludes());
-							dir->getProfileDir()->addRootProfile(d->vname, d->profile);
+							dir->getProfileDir()->addRootProfile(d->profile);
 						} else {
 							auto root = ProfileDirectory::Ptr(new ProfileDirectory(sdiPath, d->vname, d->profile, d->incoming));
 							dir->setProfileDir(root);
@@ -2286,17 +2244,6 @@ void ShareManager::addDirectories(const ShareDirInfo::List& aNewDirs) noexcept {
 						}
 						addRoot(sdiPath, dir);
 						dirtyProfiles.insert(d->profile);
-					} else {
-						//this is probably in an excluded dirs of an existing root, add it
-						dir = findDirectory(sdiPath, true, true, false);
-						if (dir) {
-							auto root = ProfileDirectory::Ptr(new ProfileDirectory(sdiPath, d->vname, d->profile, d->incoming));
-							dir->setProfileDir(root);
-							profileDirs[sdiPath] = root;
-							addRoot(sdiPath, dir);
-							if (find_if(aNewDirs, [p](const ShareDirInfoPtr& aSDI) { return Util::stricmp(aSDI->path, *p) == 0; }) == aNewDirs.end())
-								refresh.push_back(*p); //refresh the top directory unless it's also added now.....
-						}
 					}
 				} else {
 					// It's a new parent, will be handled in the task thread
@@ -2312,7 +2259,6 @@ void ShareManager::addDirectories(const ShareDirInfo::List& aNewDirs) noexcept {
 		}
 	}
 
-	rebuildTotalExcludes();
 	if (!refresh.empty())
 		addRefreshTask(REFRESH_DIRS, refresh, TYPE_MANUAL);
 
@@ -2339,10 +2285,7 @@ void ShareManager::removeDirectories(const ShareDirInfo::List& aRemoveDirs) noex
 
 				auto sd = k->second;
 				if (sd->getProfileDir()->removeRootProfile(rd->profile)) {
-					//can we remove the profile dir?
-					if (!sd->getProfileDir()->hasExcludes()) {
-						profileDirs.erase(rd->path);
-					}
+					profileDirs.erase(rd->path);
 
 					stopHashing.push_back(rd->path);
 					rootPaths.erase(k);
@@ -2397,7 +2340,6 @@ void ShareManager::removeDirectories(const ShareDirInfo::List& aRemoveDirs) noex
 
 	removeMonitoring(removeMonitors);
 
-	rebuildTotalExcludes();
 	setProfilesDirty(dirtyProfiles, true);
 }
 
@@ -2416,7 +2358,7 @@ void ShareManager::changeDirectories(const ShareDirInfo::List& changedDirs) noex
 
 			auto p = findRoot(cd->path);
 			if (p != rootPaths.end()) {
-				p->second->getProfileDir()->addRootProfile(vName, cd->profile); //renames it really
+				p->second->getProfileDir()->addRootProfile(cd->profile);
 
 				// change the incoming state
 				if (!cd->incoming) {
@@ -2764,10 +2706,10 @@ void ShareManager::getShares(ShareDirInfo::Map& aDirs) const noexcept {
 	RLock l (cs);
 	for(const auto& d: rootPaths | map_values) {
 		const auto& profiles = d->getProfileDir()->getRootProfiles();
-		for(const auto& pd: profiles) {
-			auto sdi = new ShareDirInfo(pd.second.getNormal(), pd.first, d->getRealPath(), d->getProfileDir()->isSet(ProfileDirectory::FLAG_INCOMING));
-			sdi->size = d->getSize(pd.first);
-			aDirs[pd.first].push_back(sdi);
+		for(const auto& profileToken: profiles) {
+			auto sdi = new ShareDirInfo(d->getProfileDir()->getName(), profileToken, d->getRealPath(), d->getProfileDir()->isSet(ProfileDirectory::FLAG_INCOMING));
+			sdi->size = d->getSize();
+			aDirs[profileToken].push_back(sdi);
 		}
 	}
 
@@ -2899,10 +2841,10 @@ MemoryInputStream* ShareManager::generatePartialList(const string& dir, bool rec
 
 					//add the subdirs
 					for(const auto& it: result) {
-						for(const auto& d: it->directories) { 
-							if (!d->isLevelExcluded(aProfile))
-								d->toFileList(root.get(), aProfile, recurse); 
+						for(const auto& d: it->directories) {
+							d->toFileList(root.get(), aProfile, recurse); 
 						}
+
 						root->date = max(root->date, it->getLastWrite());
 					}
 				}
@@ -2943,10 +2885,10 @@ void ShareManager::Directory::toFileList(FileListDir* aListDir, ProfileToken aPr
 	if (pos != aListDir->listDirs.end()) {
 		newListDir = pos->second;
 		if (!isFullList)
-			newListDir->size += getSize(aProfile);
+			newListDir->size += getSize();
 		newListDir->date = max(newListDir->date, lastWrite);
 	} else {
-		newListDir = new FileListDir(n, isFullList ? 0 : getSize(aProfile), lastWrite);
+		newListDir = new FileListDir(n, isFullList ? 0 : getSize(), lastWrite);
 		aListDir->listDirs.emplace(const_cast<string*>(&newListDir->name), newListDir);
 	}
 
@@ -2954,8 +2896,7 @@ void ShareManager::Directory::toFileList(FileListDir* aListDir, ProfileToken aPr
 
 	if (isFullList) {
 		for(auto& d: directories) {
-			if (!d->isLevelExcluded(aProfile)) 
-				d->toFileList(newListDir, aProfile, isFullList);
+			d->toFileList(newListDir, aProfile, isFullList);
 		}
 	}
 }
@@ -3228,10 +3169,8 @@ bool ShareManager::addDirResult(const string& aPath, SearchResultList& aResults,
 	int64_t size = 0;
 	size_t files = 0, folders = 0;
 	for(const auto& d: result) {
-		if (!d->isLevelExcluded(aProfile)) {
-			d->getResultInfo(aProfile, size, files, folders);
-			date = max(date, d->getLastWrite());
-		}
+		d->getResultInfo(size, files, folders);
+		date = max(date, d->getLastWrite());
 	}
 
 	if (srch.matchesDate(date)) {
@@ -3331,8 +3270,6 @@ void ShareManager::Directory::search(SearchResultInfo::Set& results_, SearchQuer
 
 	// Match directories
 	for(const auto& d: directories) {
-		if (d->isLevelExcluded(aProfile))
-			continue;
 		d->search(results_, aStrings, aProfile, level);
 	}
 
@@ -3531,7 +3468,7 @@ bool ShareManager::allowAddDir(const string& aPath) const noexcept {
 				}
 
 				auto m = profileDirs.find(fullPathLower);
-				if (m != profileDirs.end() && m->second->isSet(ProfileDirectory::FLAG_EXCLUDE_TOTAL)) {
+				if (m != profileDirs.end()) {
 					return false;
 				}
 			}
@@ -3541,7 +3478,7 @@ bool ShareManager::allowAddDir(const string& aPath) const noexcept {
 	return false;
 }
 
-ShareManager::Directory::Ptr ShareManager::findDirectory(const string& fname, bool allowAdd, bool report, bool checkExcludes /*true*/) noexcept {
+ShareManager::Directory::Ptr ShareManager::findDirectory(const string& fname, bool allowAdd, bool report, bool aCheckExcluded /*true*/) noexcept {
 	auto mi = find_if(rootPaths | map_keys, IsParentOrExact(fname)).base();
 	if (mi != rootPaths.end()) {
 		auto curDir = mi->second;
@@ -3560,8 +3497,11 @@ ShareManager::Directory::Ptr ShareManager::findDirectory(const string& fname, bo
 				return nullptr;
 			} else {
 				auto m = profileDirs.find(fullPathLower);
-				if (checkExcludes && m != profileDirs.end() && m->second->isSet(ProfileDirectory::FLAG_EXCLUDE_TOTAL)) {
-					return nullptr;
+				if (aCheckExcluded) {
+					RLock l(dirNames);
+					if (excludedPaths.find(fullPathLower) != excludedPaths.end()) {
+						return nullptr;
+					}
 				}
 
 				curDir->updateModifyDate();
@@ -3579,7 +3519,7 @@ void ShareManager::onFileHashed(const string& fname, HashedFile& fileInfo) noexc
 	ProfileTokenSet dirtyProfiles;
 	{
 		WLock l(cs);
-		Directory::Ptr d = findDirectory(Util::getFilePath(fname), true, false);
+		auto d = findDirectory(Util::getFilePath(fname), true, false);
 		if (!d) {
 			return;
 		}
@@ -3605,11 +3545,8 @@ void ShareManager::addFile(const string& aName, Directory::Ptr& aDir, const Hash
 	aDir->copyRootProfiles(dirtyProfiles_, true);
 }
 
-void ShareManager::getExcludes(ProfileToken aProfile, StringList& excludes) const noexcept {
-	for(const auto& i: profileDirs) {
-		if (i.second->isExcluded(aProfile))
-			excludes.push_back(i.first);
-	}
+StringSet ShareManager::getExcludedPaths() const noexcept {
+	return excludedPaths;
 }
 
 ShareProfileInfo::List ShareManager::getProfileInfos() const noexcept {
@@ -3629,79 +3566,9 @@ ShareProfileInfo::List ShareManager::getProfileInfos() const noexcept {
 	return ret;
 }
 
-void ShareManager::changeExcludedDirs(const ProfileTokenStringList& aAdd, const ProfileTokenStringList& aRemove) noexcept {
-	ProfileTokenSet dirtyProfiles;
-
-	{
-		WLock l (cs);
-
-		//add new exludes
-		for(const auto i: aAdd) {
-			auto dir = findDirectory(i.second, false, false);
-			if (dir) {
-				dirtyProfiles.insert(i.first);
-				if (dir->getProfileDir()) {
-					dir->getProfileDir()->addExclude(i.first);
-					continue;
-				}
-			}
-
-			auto pd = ProfileDirectory::Ptr(new ProfileDirectory(i.second, i.first));
-			if (dir)
-				dir->setProfileDir(pd);
-			profileDirs[i.second] = pd;
-		}
-
-		//remove existing excludes
-		for(const auto i: aRemove) {
-			dirtyProfiles.insert(i.first);
-			auto pdPos = profileDirs.find(i.second);
-			if (pdPos != profileDirs.end() && pdPos->second->removeExcludedProfile(i.first) && !pdPos->second->hasRoots()) {
-				profileDirs.erase(pdPos);
-			}
-		}
-	}
-
-	setProfilesDirty(dirtyProfiles, true);
-	rebuildTotalExcludes();
-}
-
-void ShareManager::rebuildTotalExcludes() noexcept {
-	RLock l (cs);
-	for(auto& pdPos: profileDirs) {
-		auto pd = pdPos.second;
-
-		//profileDirs also include all shared roots...
-		if (!pd->hasExcludes() || pd->hasRoots())
-			continue;
-
-		pd->unsetFlag(ProfileDirectory::FLAG_EXCLUDE_TOTAL);
-
-		ProfileTokenSet sharedProfiles;
-
-		//List all profiles where this dir is shared in
-		for(const auto& s: rootPaths) {
-			if (AirUtil::isParentOrExact(s.first, pdPos.first)) {
-				s.second->copyRootProfiles(sharedProfiles, false);
-			}
-		}
-
-
-		//Is the directory excluded in all profiles?
-		if (any_of(sharedProfiles.begin(), sharedProfiles.end(), [&pd](const ProfileToken aToken) { return pd->getExcludedProfiles().find(aToken) == pd->getExcludedProfiles().end(); }))
-			continue;
-
-
-		//Are there shared roots in subdirs?
-		auto subDirs = find_if(profileDirs | map_values, [pdPos](const ProfileDirectory::Ptr& spd) { 
-			return spd->hasRoots() && AirUtil::isSub(spd->getPath(), pdPos.first); 
-		});
-
-		if (subDirs.base() == profileDirs.end()) {
-			//LogManager::getInstance()->message(pdPos->first + " is a total exclude", LogMessage::SEV_INFO);
-			pdPos.second->setFlag(ProfileDirectory::FLAG_EXCLUDE_TOTAL);
-		}
-	}
+void ShareManager::setExcludedPaths(const StringSet& aPaths) noexcept {
+	WLock l(cs);
+	excludedPaths = aPaths;
 }
 
 vector<pair<string, StringList>> ShareManager::getGroupedDirectories() const noexcept {
@@ -3710,19 +3577,17 @@ vector<pair<string, StringList>> ShareManager::getGroupedDirectories() const noe
 	{
 		RLock l (cs);
 		for(const auto& d: rootPaths | map_values | filtered(Directory::IsParent())) {
-			for(const auto& vName: d->getProfileDir()->getRootProfiles() | map_values) {
-				auto name = vName.getNormal();
-				auto retVirtual = find_if(ret, CompareFirst<string, StringList>(name));
+			const auto& currentPath = d->getProfileDir()->getPath();
 
-				const auto& rp = d->getProfileDir()->getPath();
-				if (retVirtual != ret.end()) {
-					//insert under an old virtual node if the real path doesn't exist there already
-					if (find(retVirtual->second, rp) == retVirtual->second.end()) {
-						retVirtual->second.push_back(rp); //sorted
-					}
-				} else {
-					ret.emplace_back(name, StringList{ rp });
+			auto virtualName = d->getProfileDir()->getName();
+			auto retVirtualPos = find_if(ret, CompareFirst<string, StringList>(virtualName));
+			if (retVirtualPos != ret.end()) {
+				//insert under an old virtual node if the real path doesn't exist there already
+				if (find(retVirtualPos->second, currentPath) == retVirtualPos->second.end()) {
+					retVirtualPos->second.push_back(currentPath); //sorted
 				}
+			} else {
+				ret.emplace_back(virtualName, StringList{ currentPath });
 			}
 		}
 	}

@@ -80,6 +80,8 @@ LRESULT ShareDirectories::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	}
 
 	ShareManager::getInstance()->getShares(shareDirs);
+	excludedPaths = ShareManager::getInstance()->getExcludedPaths();
+
 	rebuildDiffs();
 	showProfile();
 
@@ -175,26 +177,6 @@ void ShareDirectories::rebuildDiffs() {
 	}
 
 	//sort(ret.begin(), ret.end(), ShareDirInfo::Sort());
-}
-
-StringSet ShareDirectories::getExcludedDirs() {
-	StringList tmp;
-	ShareManager::getInstance()->getExcludes(curProfile, tmp);
-
-	//don't list removed items
-	StringSet ret;
-	for (const auto& j: tmp) {
-		if (boost::find_if(excludedRemove, [this, j](pair<ProfileToken, string>& pp) { return pp.first == curProfile && pp.second == j; }) == excludedRemove.end()) {
-			ret.insert(j);
-		}
-	}
-
-	//add new items
-	for (const auto& j: excludedAdd) {
-		if (j.first == curProfile)
-			ret.insert(j.second);
-	}
-	return ret;
 }
 
 static int sort(LPARAM lParam1, LPARAM lParam2, int column) {
@@ -443,15 +425,6 @@ void ShareDirectories::onRemoveProfile() {
 			i++;
 		}
 	}
-
-	excludedAdd.erase(boost::remove_if(excludedAdd, CompareFirst<ProfileToken, string>(curProfile)), excludedAdd.end());
-	excludedRemove.erase(boost::remove_if(excludedRemove, CompareFirst<ProfileToken, string>(curProfile)), excludedRemove.end());
-
-	/* List excludes */
-	StringList excluded;
-	ShareManager::getInstance()->getExcludes(curProfile, excluded);
-	for(auto& path: excluded)
-		excludedRemove.emplace_back(curProfile, path);
 }
 
 LRESULT ShareDirectories::onClickedAddDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
@@ -801,33 +774,10 @@ bool ShareDirectories::addDirectory(const tstring& aPath){
 void ShareDirectories::write() { }
 
 Dispatcher::F ShareDirectories::getThreadedTask() {
-	if (hasChanged()) {
-		return Dispatcher::F([=] { 
-			applyChanges(true); 
-		});
-	}
-
-	return nullptr;
+	return Dispatcher::F([=] { 
+		applyChanges(true); 
+	});
 }
-
-/*void ShareDirectories::fixControls() {
-	//::EnableWindow(GetDlgItem(IDC_APPLY_CHANGES), hasChanged());
-	::EnableWindow(GetDlgItem(IDC_REMOVE_PROFILE), curProfile != SP_DEFAULT);
-}*/
-
-bool ShareDirectories::hasChanged() {
-	if (!excludedAdd.empty() || !excludedRemove.empty())
-		return true;
-
-	for (auto l : shareDirs | map_values) {
-		for (const auto& sd : l) {
-			if (sd->state != ShareDirInfo::STATE_NORMAL)
-				return true;
-		}
-	}
-	return false;
-}
-
 void ShareDirectories::applyChanges(bool /*isQuit*/) {
 	ShareDirInfo::List dirs;
 	auto getDirs = [&](ShareDirInfo::State aState) {
@@ -856,22 +806,10 @@ void ShareDirectories::applyChanges(bool /*isQuit*/) {
 		ShareManager::getInstance()->changeDirectories(dirs);
 	}
 
-	if (!excludedRemove.empty() || !excludedAdd.empty()) {
-		ShareManager::getInstance()->changeExcludedDirs(excludedAdd, excludedRemove);
-		//aExcludedAdd.clear();
-		//aExcludedRemove.clear();
-	}
-
-	/*if (!isQuit) {
-		deleteDirectoryInfoItems();
-		ShareManager::getInstance()->getShares(shareDirs);
-		showProfile();
-		::EnableWindow(GetDlgItem(IDC_APPLY_CHANGES), false);
-	}*/
+	ShareManager::getInstance()->setExcludedPaths(excludedPaths);
 }
 
 bool ShareDirectories::addExcludeFolder(const string& path) {
-	auto excludes = getExcludedDirs();
 	auto& shares = shareDirs[curProfile];
 	
 	// make sure this is a sub folder of a shared folder
@@ -879,36 +817,30 @@ bool ShareDirectories::addExcludeFolder(const string& path) {
 		return false;
 
 	// Make sure this not a subfolder of an already excluded folder
-	if (boost::find_if(excludes, [&path](const string& aDir) { return AirUtil::isParentOrExact(aDir, path); } ) != excludes.end())
+	if (boost::find_if(excludedPaths, [&path](const string& aDir) { return AirUtil::isParentOrExact(aDir, path); } ) != excludedPaths.end())
 		return false;
 
 	// remove all sub folder excludes
-	for(auto& j: excludes) {
+	for(auto& j: excludedPaths) {
 		if (AirUtil::isSub(j, path))
 			removeExcludeFolder(j);
 	}
 
 	// add it to the list
-	excludedAdd.emplace_back(curProfile, path);
-	//fixControls();
+	excludedPaths.emplace(path);
 	return true;
 }
 
-bool ShareDirectories::removeExcludeFolder(const string& path) {
-	auto add = boost::find_if(excludedAdd, CompareSecond<ProfileToken, string>(path));
-	if (add != excludedAdd.end()) {
-		excludedAdd.erase(add);
-		return true;
+bool ShareDirectories::removeExcludeFolder(const string& aPath) {
+	if (excludedPaths.find(aPath) != excludedPaths.end()) {
+		return false;
 	}
 
-	excludedRemove.emplace_back(curProfile, path);
-	//fixControls();
+	excludedPaths.erase(aPath);
 	return true;
 }
 
 bool ShareDirectories::shareFolder(const string& path) {
-	auto excludes = getExcludedDirs();
-
 	// check if it's part of the share before checking if it's in the exclusions
 	bool result = false;
 	auto& shared = shareDirs[curProfile];
@@ -935,7 +867,7 @@ bool ShareDirectories::shareFolder(const string& path) {
 		return false;
 
 	// check if it's an excluded folder or a sub folder of an excluded folder
-	if (boost::find_if(excludes, [&path](const string& aDir) { return AirUtil::isParentOrExact(aDir, path); } ) != excludes.end())
+	if (boost::find_if(excludedPaths, [&path](const string& aDir) { return AirUtil::isParentOrExact(aDir, path); } ) != excludedPaths.end())
 		return false;
 
 	(*i)->found = true;

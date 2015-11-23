@@ -433,7 +433,8 @@ void FavoriteManager::onFavoriteHubUpdated(const FavoriteHubEntryPtr& aEntry) {
 }
 
 void FavoriteManager::autoConnect() {
-	vector<pair<RecentHubEntryPtr, ProfileToken>> hubs;
+	RecentHubEntryList hubs;
+
 	{
 
 		RLock l(cs);
@@ -442,13 +443,13 @@ void FavoriteManager::autoConnect() {
 				RecentHubEntryPtr r = new RecentHubEntry(entry->getServer());
 				r->setName(entry->getName());
 				r->setDescription(entry->getDescription());
-				hubs.emplace_back(r, entry->get(HubSettings::ShareProfile));
+				hubs.emplace_back(r);
 			}
 		}
 	}
 
 	for (const auto& h : hubs) {
-		ClientManager::getInstance()->createClient(h.first, h.second);
+		ClientManager::getInstance()->createClient(h);
 	}
 }
 

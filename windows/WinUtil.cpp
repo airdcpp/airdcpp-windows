@@ -1093,7 +1093,7 @@ bool WinUtil::parseDBLClick(const tstring& str) {
 	{
 		if(!host.empty()) {
 			RecentHubEntryPtr r = new RecentHubEntry(url);
-			MainFrame::getMainFrame()->addThreadedTask([=] { ClientManager::getInstance()->createClient(r, SETTING(DEFAULT_SP)); });
+			connectHub(r, SETTING(DEFAULT_SP));
 		}
 
 		if(!file.empty()) {

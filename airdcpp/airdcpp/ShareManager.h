@@ -171,16 +171,21 @@ public:
 		ADD_BUNDLE
 	};
 
+	enum RefreshResult { 
+		REFRESH_STARTED = 0,
+		REFRESH_PATH_NOT_FOUND = 1,
+		REFRESH_IN_PROGRESS = 2,
+		REFRESH_ALREADY_QUEUED = 3
+	};
+
 	// Refresh the whole share or in
-	// Returns RefreshValue (or 0 if started immediately)
-	int refresh(bool incoming, RefreshType aType, function<void(float)> progressF = nullptr) noexcept;
+	RefreshResult refresh(bool incoming, RefreshType aType, function<void(float)> progressF = nullptr) noexcept;
 
 	// Refresh a single single path or all paths under a virtual name
-	// Returns RefreshValue (or 0 if started immediately)
-	int refresh(const string& aDir) noexcept;
+	RefreshResult refresh(const string& aDir) noexcept;
 
-
-	int addRefreshTask(TaskType aTaskType, StringList& dirs, RefreshType aRefreshType, const string& displayName = Util::emptyString, function<void(float)> progressF = nullptr) noexcept;
+	// Refresh the specific directories
+	RefreshResult addRefreshTask(TaskType aTaskType, StringList& dirs, RefreshType aRefreshType, const string& displayName = Util::emptyString, function<void(float)> progressF = nullptr) noexcept;
 
 	bool isRefreshing() const noexcept { return refreshRunning; }
 	
@@ -242,13 +247,6 @@ public:
 	void getRealPaths(const string& path, StringList& ret, ProfileToken aProfile) const throw(ShareException);
 
 	StringList getRealPaths(const TTHValue& root) const noexcept;
-
-	enum RefreshValue { 
-		REFRESH_STARTED = 0,
-		REFRESH_PATH_NOT_FOUND = 1,
-		REFRESH_IN_PROGRESS = 2,
-		REFRESH_ALREADY_QUEUED = 3
-	};
 
 	IGETSET(bool, monitorDebug, MonitorDebug, false);
 	IGETSET(size_t, hits, Hits, 0);
@@ -314,9 +312,6 @@ public:
 	void updateProfile(const ShareProfilePtr& aProfile) noexcept;
 	bool removeProfile(ProfileToken aToken) noexcept;
 
-	void changeExcludedDirs(const ProfileTokenStringList& aAdd, const ProfileTokenStringList& aRemove) noexcept;
-	void rebuildTotalExcludes() noexcept;
-
 	// Convert real path to virtual path. Returns an empty string if not shared.
 	string realToVirtual(const string& aPath, ProfileToken aProfile) noexcept;
 
@@ -334,8 +329,9 @@ public:
 	ShareProfileInfo::List getProfileInfos() const noexcept;
 
 	// Get a list of excluded real paths
-	// Only for gui use purposes, no locking
-	void getExcludes(ProfileToken aProfile, StringList& excludes) const noexcept;
+	StringSet getExcludedPaths() const noexcept;
+
+	void setExcludedPaths(const StringSet& aPaths) noexcept;
 
 	// Get a profile token by its display name
 	// Only for gui use purposes, no locking
@@ -372,46 +368,35 @@ private:
 	class ProfileDirectory : public intrusive_ptr_base<ProfileDirectory>, boost::noncopyable, public Flags {
 		public:
 			typedef boost::intrusive_ptr<ProfileDirectory> Ptr;
-			typedef unordered_map<ProfileToken, DualString> ProfileNameMap;
 
 			ProfileDirectory(const string& aRootPath, const string& aVname, ProfileToken aProfile, bool incoming = false);
-			ProfileDirectory(const string& aRootPath, ProfileToken aProfile);
 
 			GETSET(string, path, Path);
 
-			//lists the profiles where this directory is set as root and virtual names
-			GETSET(ProfileNameMap, rootProfiles, RootProfiles);
-			GETSET(ProfileTokenSet, excludedProfiles, ExcludedProfiles);
+			GETSET(ProfileTokenSet, rootProfiles, RootProfiles);
 			GETSET(bool, cacheDirty, CacheDirty);
 
 			~ProfileDirectory() { }
 
 			enum InfoFlags {
 				FLAG_ROOT				= 0x01,
-				FLAG_EXCLUDE_TOTAL		= 0x02,
-				FLAG_EXCLUDE_PROFILE	= 0x04,
 				FLAG_INCOMING			= 0x08
 			};
 
-			inline bool hasExcludes() const noexcept { return !excludedProfiles.empty(); }
-			inline bool hasRoots() const noexcept{ return !rootProfiles.empty(); }
-
 			bool hasRootProfile(ProfileToken aProfile) const noexcept;
 			bool hasRootProfile(const ProfileTokenSet& aProfiles) const noexcept;
-			bool isExcluded(ProfileToken aProfile) const noexcept;
-			bool isExcluded(ProfileTokenSet& aProfiles) const noexcept;
-			void addRootProfile(const string& aName, ProfileToken aProfile) noexcept;
-			void addExclude(ProfileToken aProfile) noexcept;
+			void addRootProfile(ProfileToken aProfile) noexcept;
 			bool removeRootProfile(ProfileToken aProfile) noexcept;
-			bool removeExcludedProfile(ProfileToken aProfile) noexcept;
-			inline string getName(ProfileToken aProfile) const noexcept{
-				return rootProfiles.at(aProfile).getNormal();
+			inline string getName() const noexcept{
+				return virtualName->getNormal();
 			}
-			inline const string& getNameLower(ProfileToken aProfile) const noexcept{
-				return rootProfiles.at(aProfile).getLower();
+			inline const string& getNameLower() const noexcept{
+				return virtualName->getLower();
 			}
 
 			string getCacheXmlPath() const noexcept;
+		private:
+			unique_ptr<DualString> virtualName;
 	};
 
 	unique_ptr<ShareBloom> bloom;
@@ -524,8 +509,8 @@ private:
 		bool hasProfile(ProfileTokenSet& aProfiles) const noexcept;
 		bool hasProfile(ProfileToken aProfiles) const noexcept;
 
-		void getResultInfo(ProfileToken aProfile, int64_t& size_, size_t& files_, size_t& folders_) const noexcept;
-		int64_t getSize(ProfileToken aProfile) const noexcept;
+		void getResultInfo(int64_t& size_, size_t& files_, size_t& folders_) const noexcept;
+		int64_t getSize() const noexcept;
 		int64_t getTotalSize() const noexcept;
 		void getProfileInfo(ProfileToken aProfile, int64_t& totalSize, size_t& filesCount) const noexcept;
 
@@ -547,8 +532,6 @@ private:
 
 		void copyRootProfiles(ProfileTokenSet& aProfiles, bool setCacheDirty) const noexcept;
 		bool isRootLevel(ProfileToken aProfile) const noexcept;
-		inline bool isLevelExcluded(ProfileToken aProfile) const noexcept{ return profileDir && profileDir->isExcluded(aProfile); }
-		bool isLevelExcluded(ProfileTokenSet& aProfiles) const noexcept;
 		int64_t size;
 
 		void addBloom(ShareBloom& aBloom) const noexcept;
@@ -640,6 +623,8 @@ private:
 
 	mutable SharedMutex dirNames; // Bundledirs, releasedirs and excluded dirs
 
+	StringSet excludedPaths;
+
 	/*
 	multimap to allow multiple same key values, needed to return from some functions.
 	*/
@@ -701,9 +686,16 @@ private:
 	
 	StringList bundleDirs;
 
-	void getByVirtual(const string& virtualName, ProfileToken aProfiles, Directory::List& dirs) const noexcept;
-	void getByVirtual(const string& virtualName, const ProfileTokenSet& aProfiles, Directory::List& dirs) const noexcept;
+	// Get root directories matching the provided token
+	// Unsafe
+	void getRootsByVirtual(const string& virtualName, ProfileToken aProfiles, Directory::List& dirs) const noexcept;
 
+	// Get root directories matching any of the provided tokens
+	// Unsafe
+	void getRootsByVirtual(const string& virtualName, const ProfileTokenSet& aProfiles, Directory::List& dirs) const noexcept;
+
+	// Get directories matching the virtual path
+	// Can be used with a single profile token or a set of them
 	template<class T>
 	void findVirtuals(const string& virtualPath, const T& aProfile, Directory::List& dirs) const throw(ShareException) {
 
@@ -717,7 +709,7 @@ private:
 			throw ShareException(UserConnection::FILE_NOT_AVAILABLE);
 		}
 
-		getByVirtual( virtualPath.substr(1, start-1), aProfile, virtuals);
+		getRootsByVirtual( virtualPath.substr(1, start-1), aProfile, virtuals);
 		if(virtuals.empty()) {
 			throw ShareException(UserConnection::FILE_NOT_AVAILABLE);
 		}
@@ -728,11 +720,10 @@ private:
 			string::size_type j = i + 1;
 			d = *k;
 
-			auto profiles = aProfile; // copy in case we are comparing a set from where we may need to remove items while looping
 			while((i = virtualPath.find('/', j)) != string::npos) {
 				auto mi = d->directories.find(Text::toLower(virtualPath.substr(j, i - j)));
 				j = i + 1;
-				if (mi != d->directories.end() && !(*mi)->isLevelExcluded(profiles)) {   //if we found something, look for more.
+				if (mi != d->directories.end()) {   //if we found something, look for more.
 					d = *mi;
 				} else {
 					d = nullptr;   //make the pointer null so we can check if found something or not.
@@ -750,7 +741,7 @@ private:
 		}
 	}
 
-	Directory::Ptr findDirectory(const string& fname, bool allowAdd, bool report, bool checkExcludes=true) noexcept;
+	Directory::Ptr findDirectory(const string& fname, bool allowAdd, bool report, bool aCheckExcluded = true) noexcept;
 
 	virtual int run();
 

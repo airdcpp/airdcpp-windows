@@ -92,7 +92,6 @@ public:
 	void onCopyProfile(ProfileToken aNewProfile);
 	void onRemoveProfile();
 
-	bool hasChanged();
 	void applyChanges(bool isQuit);
 	void showProfile();
 	void rebuildDiffs();
@@ -121,11 +120,10 @@ protected:
 
 	//ShareDirInfo::List getViewItems(ProfileToken aProfile, bool getDiffItems=false);
 	ShareDirInfo::List& getCurItems() { return shareDirs[parent->getCurProfile()]; }
-	StringSet getExcludedDirs();
 
-	ProfileTokenStringList excludedAdd, excludedRemove;
+	SharePageBase* parent;
 
-	SharePageBase* parent; 
+	StringSet excludedPaths;
 };
 
 #endif // !defined(SHARE_PAGE_H)

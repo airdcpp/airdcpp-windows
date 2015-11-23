@@ -84,8 +84,6 @@ protected:
 	CButton ctrlAddProfile;
 
 	void applyChanges(bool isQuit);
-
-	bool hasChanged();
 };
 
 #endif // !defined(SHARE_PAGE_H)

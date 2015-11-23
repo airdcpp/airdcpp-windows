@@ -247,23 +247,15 @@ LRESULT SharePage::onApplyChanges(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 void SharePage::write() { }
 
 Dispatcher::F SharePage::getThreadedTask() {
-	if (hasChanged()) {
-		return Dispatcher::F([=] { 
-			applyChanges(true);
-		});
-	}
-
-	return nullptr;
+	return Dispatcher::F([=] { 
+		applyChanges(true);
+	});
 }
 
 void SharePage::fixControls() {
 	//::EnableWindow(GetDlgItem(IDC_APPLY_CHANGES), hasChanged());
 	::EnableWindow(GetDlgItem(IDC_REMOVE_PROFILE), curProfile != defaultProfile);
 	::EnableWindow(GetDlgItem(IDC_SET_DEFAULT), curProfile != defaultProfile);
-}
-
-bool SharePage::hasChanged() {
-	return defaultProfile != SETTING(DEFAULT_SP) || any_of(profiles.begin(), profiles.end(), [](const ShareProfileInfoPtr& aProfile) { return aProfile->state != ShareProfileInfo::STATE_NORMAL; }) || dirPage->hasChanged();
 }
 
 void SharePage::applyChanges(bool isQuit) {
