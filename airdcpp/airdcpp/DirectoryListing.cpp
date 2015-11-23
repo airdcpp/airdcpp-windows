@@ -1064,7 +1064,7 @@ void DirectoryListing::matchQueueImpl() noexcept {
 	fire(DirectoryListingListener::QueueMatched(), AirUtil::formatMatchResults(matches, newFiles, bundles, false));
 }
 
-void DirectoryListing::on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool wentOffline) noexcept {
+void DirectoryListing::on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool /*wentOffline*/) noexcept {
 	if (aUser != hintedUser.user) {
 		return;
 	}
