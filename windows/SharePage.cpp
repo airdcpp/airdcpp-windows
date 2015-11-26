@@ -114,7 +114,6 @@ LRESULT SharePage::onClickedDefault(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	(*old)->isDefault = false;
 
 	defaultProfile = curProfile;
-	dirPage->rebuildDiffs();
 
 	//rebuild the list
 	auto p = find(profiles, curProfile);
@@ -199,7 +198,7 @@ LRESULT SharePage::onClickedRemoveProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 		profiles.push_back(profile);
 	}
 
-	dirPage->onRemoveProfile();
+	dirPage->onRemoveProfile(curProfile);
 
 	/* Switch to default profile */
 	ctrlProfile.DeleteString(ctrlProfile.GetCurSel());

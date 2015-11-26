@@ -27,6 +27,7 @@
 
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/ShareManager.h>
+#include <airdcpp/ShareDirectoryInfo.h>
 
 class SharePageBase {
 public:
@@ -37,6 +38,58 @@ public:
 	virtual ShareProfileInfoPtr getProfile(ProfileToken aProfile);
 protected:
 	ShareProfileInfo::List profiles;
+};
+
+class ProfileDirectoryInfo;
+typedef shared_ptr<ProfileDirectoryInfo> ProfileDirectoryInfoPtr;
+
+class ProfileDirectoryInfo {
+public:
+	enum State {
+		STATE_NORMAL,
+		STATE_ADDED,
+		STATE_REMOVED
+	};
+
+	//ProfileDirectoryInfo(const ShareDirInfoPtr& aInfo, ProfileToken aNewProfile);
+	ProfileDirectoryInfo(ShareDirectoryInfoPtr& aDirectoryInfo, State aState = STATE_NORMAL);
+
+	// item currently exists in the profile
+	bool isCurItem() const {
+		return state != STATE_REMOVED;
+	}
+
+	bool hasProfile(ProfileToken aToken) {
+		return dir->profiles.find(aToken) != dir->profiles.end();
+	}
+
+	//ProfileToken profile;
+	bool found; //used when detecting removed dirs with using dir tree
+
+	State state;
+
+	typedef vector<ProfileDirectoryInfoPtr> List;
+	typedef unordered_map<int, List> Map;
+
+	ShareDirectoryInfoPtr dir;
+
+	class PathCompare {
+	public:
+		PathCompare(const string& compareTo) : a(compareTo) { }
+		bool operator()(const ProfileDirectoryInfoPtr& p) const { return Util::stricmp(p->dir->path.c_str(), a.c_str()) == 0; }
+		PathCompare& operator=(const PathCompare&) = delete;
+	private:
+		const string& a;
+	};
+
+	class HasProfile {
+	public:
+		HasProfile(ProfileToken compareTo) : a(compareTo) { }
+		bool operator()(const ProfileDirectoryInfoPtr& p) const { return p->dir->profiles.find(a) != p->dir->profiles.end(); }
+		HasProfile& operator=(const HasProfile&) = delete;
+	private:
+		const ProfileToken a;
+	};
 };
 
 class ShareDirectories : public SettingTab, public CDialogImpl<ShareDirectories>
@@ -83,18 +136,17 @@ public:
 	void write();
 	Dispatcher::F getThreadedTask();
 
-	enum ConfirmOption {
+	enum ConfirmOption: uint8_t {
 		CONFIRM_REMOVE,
 		CONFIRM_LEAVE,
 		CONFIRM_ASK
 	};
 
 	void onCopyProfile(ProfileToken aNewProfile);
-	void onRemoveProfile();
+	void onRemoveProfile(ProfileToken aProfile);
 
 	void applyChanges(bool isQuit);
 	void showProfile();
-	void rebuildDiffs();
 protected:
 	//ProfileToken curProfile;
 	friend class FolderTree;
@@ -103,23 +155,19 @@ protected:
 
 	unique_ptr<FolderTree> ft;
 
-	bool showShareDlg(const ShareProfileInfo::List& spList, ProfileToken aCurProfile, const tstring& curName, ProfileTokenList& profiles, tstring& newName, bool rename);
-	void removeDir(const string& aPath, ProfileToken aProfile, int8_t& autoRemove, bool checkDupes=true, int remainingItems=0);
+	bool showShareDlg(const ShareProfileInfo::List& spList, ProfileToken aCurProfile, const tstring& curName, ProfileTokenSet& profiles, tstring& newName, bool rename);
+	void removeDir(const string& aPath, ProfileToken aToken, ConfirmOption& autoRemove, bool checkDupes=true, int remainingItems=0);
 	bool addDirectory(const tstring& aPath);
-
-	//ShareDirInfo::List removeDirs, changedDirs, tempViewItems;
-	//ShareDirInfo::List newDirs;
 
 	bool addExcludeFolder(const string& aPath);
 	bool removeExcludeFolder(const string& path);
 	bool shareFolder(const string& path);
 
-	ShareDirInfo::List getItemsByPath(const string& aPath, bool listRemoved, bool listDiffs);
+	ProfileDirectoryInfoPtr getItemByPath(const string& aPath, bool listRemoved);
 
-	ShareDirInfo::Map shareDirs;
+	ProfileDirectoryInfo::List shareDirs;
 
-	//ShareDirInfo::List getViewItems(ProfileToken aProfile, bool getDiffItems=false);
-	ShareDirInfo::List& getCurItems() { return shareDirs[parent->getCurProfile()]; }
+	ProfileDirectoryInfo::List getCurItems();
 
 	SharePageBase* parent;
 

@@ -39,8 +39,8 @@ public:
 	//tstring description;
 	//tstring title;
 
-	ProfileTokenList selectedProfiles;
-
+	ProfileTokenSet selectedProfiles;
+	ProfileToken selectedProfile;
 	CListViewCtrl ctrlList;
 
 
@@ -99,19 +99,12 @@ public:
 		lvi.iSubItem = 0;
 
 		int counter = 0;
-		for(auto i = profiles.begin(); i != profiles.end(); i++) {
-			ctrlList.InsertItem(counter++, Text::toT((*i)->getDisplayName()).c_str());
-			/*lvi.iItem = counter++;
-			auto text = const_cast<TCHAR*>(Text::toT((*i)->getDisplayName()).c_str());
-			auto text2 = Text::toT((*i)->getDisplayName()).c_str();
-			auto text3 = (*i)->getDisplayName();
-			auto text4 = Text::toT((*i)->getDisplayName());
-			lvi.pszText = const_cast<TCHAR*>(Text::toT((*i)->getDisplayName()).c_str());
-			ctrlList.InsertItem(&lvi);*/
-			//ctrl.SetCheckState(i, false);
+		for(const auto& p: profiles) {
+			auto pos = ctrlList.InsertItem(counter++, Text::toT(p->getDisplayName()).c_str());
+			ctrlList.SetCheckState(pos, selectedProfile == p->token);
 		}
+
 		ctrlList.SetColumnWidth(0, LVSCW_AUTOSIZE);
-		//ctrlList.Detach();
 
 		CenterWindow(GetParent());
 		return FALSE;
@@ -123,9 +116,10 @@ public:
 			int pos = 0;
 			while(pos < ctrlList.GetItemCount()) {
 				if (ctrlList.GetCheckState(pos++)) {
-					selectedProfiles.push_back(profiles[pos-1]->token);
+					selectedProfiles.insert(profiles[pos-1]->token);
 				}
 			}
+
 			line.resize(ctrlLine.GetWindowTextLength() + 1);
 			line.resize(GetDlgItemText(IDC_LINE, &line[0], line.size()));
 		}

@@ -553,17 +553,16 @@ void FolderTree::DisplayPath(const tstring &sPath, HTREEITEM hParent, bool bUseS
 
 void FolderTree::checkRemovedDirs(const tstring& aParentPath, HTREEITEM hParent) {
 	string parentPath = Text::fromT(aParentPath);
-	auto& sharedDirs = sp->getCurItems();
-	for(auto sd: sharedDirs) {
+	for(auto& sd: sp->getCurItems()) {
 		if (sd->found || !sd->isCurItem())
 			continue;
 
-		auto dir = Util::getParentDir(sd->path);
+		auto dir = Util::getParentDir(sd->dir->path);
 		if (dir == parentPath) {
 			//this should have been inserted
 			FolderTreeItemInfo* pItem = new FolderTreeItemInfo;
-			pItem->m_sFQPath = Text::toT(sd->path);
-			pItem->m_sRelativePath = Text::toT(Util::getLastDir(sd->path));
+			pItem->m_sFQPath = Text::toT(sd->dir->path);
+			pItem->m_sRelativePath = Text::toT(Util::getLastDir(sd->dir->path));
 			pItem->m_removed = true;
 
 			tstring sLabel;
@@ -1397,8 +1396,8 @@ LRESULT FolderTree::OnUnChecked(HTREEITEM hItem, BOOL& /*bHandled*/)
 			path += PATH_SEPARATOR;
 
 		sp->removeExcludeFolder(path);
-		int8_t confirmOption = ShareDirectories::CONFIRM_ASK;
-		sp->removeDir(path, sp->curProfile, confirmOption);
+		auto confirmOption = ShareDirectories::CONFIRM_ASK;
+		sp->removeDir(path, sp->parent->getCurProfile(), confirmOption);
 		UpdateParentItems(hItem);
 	} else if(GetChecked(GetParentItem(hItem))) {
 		// if the parent is checked add this folder to excludes
@@ -1437,15 +1436,14 @@ bool FolderTree::GetHasSharedChildren(HTREEITEM hItem)
 	else
         return false;
 
-	auto& sharedDirs = sp->getCurItems();
-	for(auto& sd: sharedDirs) {
-		if(sd->state != ShareDirInfo::DIFF_REMOVED && (sd->diffState == ShareDirInfo::DIFF_NORMAL || sd->diffState == ShareDirInfo::DIFF_ADDED) && sd->path.size() > searchStr.size() + startPos) {
-			if(stricmp(sd->path.substr(startPos, searchStr.size()), searchStr) == 0) {
+	for(auto& sd: sp->getCurItems()) {
+		if(sd->dir->path.size() > searchStr.size() + startPos) {
+			if(stricmp(sd->dir->path.substr(startPos, searchStr.size()), searchStr) == 0) {
 				if(searchStr.size() <= 3) {
 					return true;
 				} else {
 					//check that we have path separator next
-					return sd->path[searchStr.size()] == '\\';
+					return sd->dir->path[searchStr.size()] == '\\';
 				}
 			}
 		}

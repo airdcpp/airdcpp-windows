@@ -37,7 +37,7 @@ namespace dcpp {
 		typedef X<6> ProfileRemoved;
 		typedef X<7> DefaultProfileChanged;
 
-		typedef X<8> RootAdded;
+		typedef X<8> RootCreated;
 		typedef X<9> RootRemoved;
 		typedef X<10> RootUpdated;
 
@@ -50,7 +50,7 @@ namespace dcpp {
 		virtual void on(ProfileRemoved, ProfileToken) noexcept {}
 		virtual void on(DefaultProfileChanged, ProfileToken /*aOldDefault*/, ProfileToken /*aNewDefault*/) noexcept {}
 
-		virtual void on(RootAdded, const string&) noexcept {}
+		virtual void on(RootCreated, const string&) noexcept {}
 		virtual void on(RootRemoved, const string&) noexcept {}
 		virtual void on(RootUpdated, const string&) noexcept {}
 	};

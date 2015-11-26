@@ -137,6 +137,7 @@ class ServerSocket;
 
 class ShareProfile;
 typedef std::shared_ptr<ShareProfile> ShareProfilePtr;
+typedef vector<ShareProfilePtr> ShareProfileList;
 
 class SimpleXML;
 

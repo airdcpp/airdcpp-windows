@@ -48,6 +48,7 @@
 #include "DirectoryMonitor.h"
 #include "DirectoryMonitorListener.h"
 #include "DualString.h"
+#include "ShareDirectoryInfo.h"
 
 namespace dcpp {
 
@@ -55,65 +56,7 @@ class File;
 class OutputStream;
 class MemoryInputStream;
 class SearchQuery;
-class Worker;
 
-class ShareDirInfo;
-typedef boost::intrusive_ptr<ShareDirInfo> ShareDirInfoPtr;
-
-class ShareDirInfo : public FastAlloc<ShareDirInfo>, public intrusive_ptr_base<ShareDirInfo> {
-public:
-	enum DiffState { 
-		DIFF_NORMAL,
-		DIFF_ADDED,
-		DIFF_REMOVED
-	};
-
-	enum State { 
-		STATE_NORMAL,
-		STATE_ADDED,
-		STATE_REMOVED,
-		STATE_CHANGED
-	};
-
-	ShareDirInfo(const ShareDirInfoPtr& aInfo, ProfileToken aNewProfile);
-	ShareDirInfo(const string& aVname, ProfileToken aProfile, const string& aPath, bool aIncoming = false, State aState = STATE_NORMAL);
-
-	~ShareDirInfo() {}
-
-	// item currently exists in the profile
-	bool isCurItem() const {
-		return diffState != DIFF_REMOVED && state != STATE_REMOVED;
-	}
-
-	string vname;
-	ProfileToken profile;
-	string path;
-	bool incoming;
-	bool found; //used when detecting removed dirs with using dir tree
-	int64_t size;
-
-	DiffState diffState;
-	State state;
-
-	/*struct Hash {
-		size_t operator()(const ShareDirInfo* x) const { return hash<string>()(x->path) + x->profile; }
-	};
-
-	typedef unordered_set<ShareDirInfoPtr, Hash> set;*/
-	typedef vector<ShareDirInfoPtr> List;
-	typedef unordered_map<int, List> Map;
-
-	class PathCompare {
-	public:
-		PathCompare(const string& compareTo) : a(compareTo) { }
-		bool operator()(const ShareDirInfoPtr& p) { return Util::stricmp(p->path.c_str(), a.c_str()) == 0; }
-		PathCompare& operator=(const PathCompare&) = delete;
-	private:
-		const string& a;
-	};
-};
-
-class ShareProfile;
 class FileList;
 
 class ShareManager : public Singleton<ShareManager>, public Speaker<ShareManagerListener>, private Thread, private SettingsManagerListener, 
@@ -134,9 +77,13 @@ public:
 	// Use validatePath for new root directories instead
 	bool checkSharedName(const string& fullPath, const string& fullPathLower, bool dir, bool report = true, int64_t size = 0) const noexcept;
 
+	// Validate that the profiles are valid for the supplied path (sub/parent directory matching)
+	// Existing profiles shouldn't be supplied
+	void validateNewRootProfiles(const string& realPath, const ProfileTokenSet& aProfiles) const throw(ShareException);
+
 	// Check that the root path is valid to be added in share
 	// Use checkSharedName for non-root directories
-	void validatePath(const string& realPath, const string& virtualName) const throw(ShareException);
+	void validateRootPath(const string& realPath) const throw(ShareException);
 
 	// Returns virtual path of a TTH
 	string toVirtual(const TTHValue& aTTH, ProfileToken aProfile) const throw(ShareException);
@@ -300,9 +247,14 @@ public:
 	};
 	optional<ShareStats> getShareStats() const noexcept;
 
-	void addDirectories(const ShareDirInfo::List& aNewDirs) noexcept;
-	void removeDirectories(const ShareDirInfo::List& removeDirs) noexcept;
-	void changeDirectories(const ShareDirInfo::List& renameDirs) noexcept;
+	void addDirectories(const ShareDirectoryInfoList& aNewDirs) noexcept;
+	void changeDirectories(const ShareDirectoryInfoList& renameDirs) noexcept;
+	//void removeDirectories(const ShareDirectoryInfoList& removeDirs) noexcept;
+	void removeDirectories(const StringList& removeDirs) noexcept;
+
+	bool addDirectory(const ShareDirectoryInfoPtr& aDirectoryInfo) noexcept;
+	bool changeDirectory(const ShareDirectoryInfoPtr& aDirectoryInfo) noexcept;
+	bool removeDirectory(const string& aPath) noexcept;
 
 	void addProfiles(const ShareProfileInfo::List& aProfiles) noexcept;
 	void removeProfiles(const ShareProfileInfo::List& aProfiles) noexcept;
@@ -319,9 +271,9 @@ public:
 	ShareProfilePtr getShareProfile(ProfileToken aProfile, bool allowFallback = false) const noexcept;
 
 	// Get information of all shared directories grouped by profile tokens
-	void getShares(ShareDirInfo::Map& aDirs) const noexcept;
+	ShareDirectoryInfoList getRootInfos() const noexcept;
+	ShareDirectoryInfoPtr getRootInfo(const string& aPath) const noexcept;
 
-	typedef vector<ShareProfilePtr> ShareProfileList;
 	// Only for gui use purposes, no locking
 	const ShareProfileList& getProfiles() { return shareProfiles; }
 
@@ -365,23 +317,19 @@ private:
 	uint64_t autoSearches = 0;
 	typedef BloomFilter<5> ShareBloom;
 
-	class ProfileDirectory : public intrusive_ptr_base<ProfileDirectory>, boost::noncopyable, public Flags {
+	class ProfileDirectory : public intrusive_ptr_base<ProfileDirectory>, boost::noncopyable {
 		public:
 			typedef boost::intrusive_ptr<ProfileDirectory> Ptr;
 
-			ProfileDirectory(const string& aRootPath, const string& aVname, ProfileToken aProfile, bool incoming = false);
+			ProfileDirectory(const string& aRootPath, const string& aVname, const ProfileTokenSet& aProfiles, bool incoming = false);
 
 			GETSET(string, path, Path);
 
 			GETSET(ProfileTokenSet, rootProfiles, RootProfiles);
-			GETSET(bool, cacheDirty, CacheDirty);
+			IGETSET(bool, cacheDirty, CacheDirty, false);
+			IGETSET(bool, incoming, Incoming, false);
 
 			~ProfileDirectory() { }
-
-			enum InfoFlags {
-				FLAG_ROOT				= 0x01,
-				FLAG_INCOMING			= 0x08
-			};
 
 			bool hasRootProfile(ProfileToken aProfile) const noexcept;
 			bool hasRootProfile(const ProfileTokenSet& aProfiles) const noexcept;
@@ -394,6 +342,9 @@ private:
 				return virtualName->getLower();
 			}
 
+			bool useMonitoring() const noexcept;
+
+			void setName(const string& aName) noexcept;
 			string getCacheXmlPath() const noexcept;
 		private:
 			unique_ptr<DualString> virtualName;

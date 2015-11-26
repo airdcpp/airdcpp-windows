@@ -461,6 +461,7 @@
     <ClInclude Include="airdcpp\SettingsManager.h" />
     <ClInclude Include="airdcpp\SFVReader.h" />
     <ClInclude Include="airdcpp\SharedFileStream.h" />
+    <ClInclude Include="airdcpp\ShareDirectoryInfo.h" />
     <ClInclude Include="airdcpp\ShareManager.h" />
     <ClInclude Include="airdcpp\ShareManagerListener.h" />
     <ClInclude Include="airdcpp\ShareProfile.h" />
