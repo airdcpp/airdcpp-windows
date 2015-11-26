@@ -22,8 +22,10 @@
 #include <web-server/stdinc.h>
 
 #include <api/ApiModule.h>
+#include <api/common/ListViewController.h>
 
 #include <airdcpp/typedefs.h>
+#include <airdcpp/ShareDirectoryInfo.h>
 #include <airdcpp/ShareManagerListener.h>
 
 namespace webserver {
@@ -35,9 +37,26 @@ namespace webserver {
 		int getVersion() const noexcept {
 			return 0;
 		}
+
+		const PropertyList properties = {
+			{ PROP_PATH, "path", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
+			{ PROP_VIRTUAL_NAME, "virtual_name", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
+			{ PROP_SIZE, "size", TYPE_SIZE, SERIALIZE_NUMERIC, SORT_NUMERIC },
+			{ PROP_PROFILES, "profiles", TYPE_LIST, SERIALIZE_CUSTOM, SORT_CUSTOM },
+			{ PROP_INCOMING, "incoming", TYPE_NUMERIC_OTHER, SERIALIZE_BOOL, SORT_NUMERIC },
+		};
+
+		enum Properties {
+			PROP_TOKEN = -1,
+			PROP_PATH,
+			PROP_VIRTUAL_NAME,
+			PROP_SIZE,
+			PROP_PROFILES,
+			PROP_INCOMING,
+			PROP_LAST
+		};
 	private:
 		static json serializeShareProfile(const ShareProfilePtr& aProfile) noexcept;
-		//static json serializeShareRoot(const ShareDirInfo& aRoot) noexcept;
 
 		api_return handleGetProfiles(ApiRequest& aRequest);
 		api_return handleAddProfile(ApiRequest& aRequest);
@@ -51,6 +70,7 @@ namespace webserver {
 		api_return handleRemoveRoot(ApiRequest& aRequest);
 
 		void parseProfile(ShareProfilePtr& aProfile, const json& j);
+		void parseRoot(ShareDirectoryInfoPtr& aInfo, const json& j, bool aIsNew);
 
 		api_return handleGetStats(ApiRequest& aRequest);
 
@@ -60,6 +80,15 @@ namespace webserver {
 		void on(ShareManagerListener::ProfileAdded, ProfileToken aProfile) noexcept;
 		void on(ShareManagerListener::ProfileUpdated, ProfileToken aProfile) noexcept;
 		void on(ShareManagerListener::ProfileRemoved, ProfileToken aProfile) noexcept;
+
+		void on(ShareManagerListener::RootCreated, const string& aPath) noexcept;
+		void on(ShareManagerListener::RootRemoved, const string& aPath) noexcept;
+		void on(ShareManagerListener::RootUpdated, const string& aPath) noexcept;
+
+		PropertyItemHandler<ShareDirectoryInfoPtr> itemHandler;
+
+		typedef ListViewController<ShareDirectoryInfoPtr, PROP_LAST> RootView;
+		RootView rootView;
 	};
 }
 

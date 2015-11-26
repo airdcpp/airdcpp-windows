@@ -84,7 +84,7 @@ namespace webserver {
 					throwError(aFieldName, ERROR_INVALID, e.what());
 				}
 
-				if (!aAllowEmpty && isEmpty<T>(ret)) {
+				if (!aAllowEmpty && (isEmpty<T>(ret) || aJson.empty())) {
 					throwError(aFieldName, ERROR_INVALID, "Field can't be empty");
 				}
 

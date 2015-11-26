@@ -153,6 +153,10 @@ namespace webserver {
 
 			onFilterUpdated();
 		}
+
+		bool isActive() const noexcept {
+			return active;
+		}
 	private:
 		api_return handlePostFilter(ApiRequest& aRequest) {
 			const auto& reqJson = aRequest.getRequestBody();

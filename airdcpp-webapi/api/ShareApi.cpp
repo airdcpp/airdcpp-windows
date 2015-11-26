@@ -19,13 +19,18 @@
 #include <api/ShareApi.h>
 #include <api/common/Serializer.h>
 #include <api/common/Deserializer.h>
+#include <api/ShareUtils.h>
+
 #include <web-server/JsonUtil.h>
 
 #include <airdcpp/ShareManager.h>
 #include <airdcpp/HubEntry.h>
 
 namespace webserver {
-	ShareApi::ShareApi(Session* aSession) : ApiModule(aSession) {
+	ShareApi::ShareApi(Session* aSession) : ApiModule(aSession), itemHandler(properties,
+		ShareUtils::getStringInfo, ShareUtils::getNumericInfo, ShareUtils::compareItems, ShareUtils::serializeItem),
+		rootView("share_root_view", this, itemHandler, ShareUtils::getItemList) {
+
 		ShareManager::getInstance()->addListener(this);
 
 		METHOD_HANDLER("profiles", ApiRequest::METHOD_GET, (), false, ShareApi::handleGetProfiles);
@@ -47,6 +52,10 @@ namespace webserver {
 		createSubscription("share_profile_added");
 		createSubscription("share_profile_updated");
 		createSubscription("share_profile_removed");
+
+		createSubscription("share_root_created");
+		createSubscription("share_root_updated");
+		createSubscription("share_root_removed");
 	}
 
 	ShareApi::~ShareApi() {
@@ -91,27 +100,59 @@ namespace webserver {
 		};
 	}
 
-	/*json ShareApi::serializeShareRoot(const ShareDirInfo& aRoot) noexcept {
-		return{
-			{ "path", aRoot.path },
-			{ "virtual_name", aRoot.vname },
-			{ "size", aRoot.size },
-		};
-	}*/
-
 	api_return ShareApi::handleGetRoots(ApiRequest& aRequest) {
+		auto j = Serializer::serializeItemList(itemHandler, ShareUtils::getItemList());
+		aRequest.setResponseBody(j);
 		return websocketpp::http::status_code::ok;
 	}
 
 	api_return ShareApi::handleAddRoot(ApiRequest& aRequest) {
+		const auto& reqJson = aRequest.getRequestBody();
+
+		auto path = JsonUtil::getField<string>("path", reqJson, false);
+
+		// Validate the path
+		try {
+			ShareManager::getInstance()->validateRootPath(path);
+		} catch (ShareException& e) {
+			JsonUtil::throwError("path", JsonUtil::ERROR_INVALID, e.what());
+		}
+
+		auto info = make_shared<ShareDirectoryInfo>(path);
+
+		parseRoot(info, reqJson, true);
+
+		ShareManager::getInstance()->addDirectory(info);
 		return websocketpp::http::status_code::ok;
 	}
 
 	api_return ShareApi::handleUpdateRoot(ApiRequest& aRequest) {
+		const auto& reqJson = aRequest.getRequestBody();
+
+		auto path = JsonUtil::getField<string>("path", reqJson, false);
+
+		auto info = ShareManager::getInstance()->getRootInfo(path);
+		if (!info) {
+			aRequest.setResponseErrorStr("Path not found");
+			return websocketpp::http::status_code::not_found;
+		}
+
+		parseRoot(info, reqJson, false);
+
+		ShareManager::getInstance()->changeDirectory(info);
 		return websocketpp::http::status_code::ok;
 	}
 
 	api_return ShareApi::handleRemoveRoot(ApiRequest& aRequest) {
+		const auto& reqJson = aRequest.getRequestBody();
+
+		auto path = JsonUtil::getField<string>("path", reqJson, false);
+		if (!ShareManager::getInstance()->removeDirectory(path)) {
+			aRequest.setResponseErrorStr("Path not found");
+			return websocketpp::http::status_code::not_found;
+		}
+
+
 		return websocketpp::http::status_code::ok;
 	}
 
@@ -151,6 +192,71 @@ namespace webserver {
 		send("share_profile_removed", { 
 			{ "id", aProfile } 
 		});
+	}
+
+	void ShareApi::on(ShareManagerListener::RootCreated, const string& aPath) noexcept {
+		if (!subscriptionActive("share_root_created") && !rootView.isActive()) {
+			return;
+		}
+
+		auto info = ShareManager::getInstance()->getRootInfo(aPath);
+		rootView.onItemAdded(info);
+
+		send("share_root_created", Serializer::serializeItem(info, itemHandler));
+	}
+
+	void ShareApi::on(ShareManagerListener::RootRemoved, const string& aPath) noexcept {
+		if (!subscriptionActive("share_root_removed") && !rootView.isActive()) {
+			return;
+		}
+
+		auto info = ShareManager::getInstance()->getRootInfo(aPath);
+		rootView.onItemRemoved(info);
+
+		send("share_root_removed", {
+			{ "path", aPath }
+		});
+	}
+
+	void ShareApi::on(ShareManagerListener::RootUpdated, const string& aPath) noexcept {
+		if (!subscriptionActive("share_root_updated") && !rootView.isActive()) {
+			return;
+		}
+
+		auto info = ShareManager::getInstance()->getRootInfo(aPath);
+		rootView.onItemUpdated(info, toPropertyIdSet(properties));
+
+		send("share_root_updated", Serializer::serializeItem(info, itemHandler));
+	}
+
+	void ShareApi::parseRoot(ShareDirectoryInfoPtr& aInfo, const json& j, bool aIsNew) {
+		auto virtualName = JsonUtil::getOptionalField<string>("virtual_name", j, false, aIsNew);
+		if (virtualName) {
+			aInfo->virtualName = *virtualName;
+		}
+
+		auto profiles = JsonUtil::getOptionalField<ProfileTokenSet>("profiles", j, false, aIsNew);
+		if (profiles) {
+			// Only validate added profiles profiles
+			ProfileTokenSet diff;
+
+			auto newProfiles = *profiles;
+			std::set_difference(newProfiles.begin(), newProfiles.end(), 
+				aInfo->profiles.begin(), aInfo->profiles.end(), std::inserter(diff, diff.begin()));
+
+			try {
+				ShareManager::getInstance()->validateNewRootProfiles(aInfo->path, diff);
+			} catch (ShareException& e) {
+				JsonUtil::throwError(aIsNew ? "path" : "profiles", JsonUtil::ERROR_INVALID, e.what());
+			}
+
+			aInfo->profiles = newProfiles;
+		}
+
+		auto incoming = JsonUtil::getOptionalField<bool>("incoming", j, false, false);
+		if (incoming) {
+			aInfo->incoming = *incoming;
+		}
 	}
 
 	void ShareApi::parseProfile(ShareProfilePtr& aProfile, const json& j) {
@@ -196,7 +302,7 @@ namespace webserver {
 			return websocketpp::http::status_code::not_found;
 		}
 
-		ShareManager::getInstance()->removeProfiles({ make_shared<ShareProfileInfo>(Util::emptyString, token) });
+		ShareManager::getInstance()->removeProfile(token);
 
 		return websocketpp::http::status_code::ok;
 	}
