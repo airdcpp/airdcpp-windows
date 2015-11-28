@@ -241,6 +241,8 @@ private:
 	void updateStatusText(int aTotalCount, int64_t totalSize, int selectedCount, int displayCount, time_t aUpdateDate);
 
 	string curPath;
+
+	void updateToolbarState();
 	
 	void updateItems(const DirectoryListing::Directory::Ptr& d);
 	void insertItems(const optional<string>& selectedName);

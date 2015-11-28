@@ -217,6 +217,7 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir
 	} else {
 		ctrlTree.SetFocus();
 	}
+	updateToolbarState();
 	changeType = CHANGE_LAST;
 }
 
@@ -1666,6 +1667,15 @@ int64_t DirectoryListingFrame::getDownloadSize(bool isWhole) {
 	});
 
 	return size;
+}
+
+void DirectoryListingFrame::updateToolbarState() {
+	ctrlToolbar.EnableButton(IDC_MATCH_QUEUE, !dl->isMyCID());
+	ctrlToolbar.EnableButton(IDC_NEXT, dl->curSearch ? TRUE : FALSE);
+	ctrlToolbar.EnableButton(IDC_PREV, dl->curSearch ? TRUE : FALSE);
+	ctrlToolbar.EnableButton(IDC_FILELIST_DIFF, !dl->getPartialList() || dl->getIsOwnList());
+	ctrlToolbar.EnableButton(IDC_GETLIST, dl->getPartialList() && !dl->isMyCID());
+	ctrlToolbar.EnableButton(IDC_RELOAD_DIR, dl->getPartialList());
 }
 
 void DirectoryListingFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
