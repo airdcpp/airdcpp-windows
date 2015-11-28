@@ -19,35 +19,6 @@
 #ifndef DCPLUSPLUS_DCPP_SHAREDIR_INFO_H
 #define DCPLUSPLUS_DCPP_SHAREDIR_INFO_H
 
-/*#include "TimerManager.h"
-#include "SettingsManager.h"
-#include "QueueManagerListener.h"
-#include "ShareManagerListener.h"
-
-#include "SearchQuery.h"
-#include "BloomFilter.h"
-#include "CriticalSection.h"
-#include "Exception.h"
-#include "Flags.h"
-#include "HashBloom.h"
-#include "HashedFile.h"
-#include "LogManager.h"
-#include "MerkleTree.h"
-#include "Pointer.h"
-#include "SearchManager.h"
-#include "Singleton.h"
-#include "ShareProfile.h"
-#include "SortedVector.h"
-#include "StringMatch.h"
-#include "StringSearch.h"
-#include "TaskQueue.h"
-#include "Thread.h"
-#include "UserConnection.h"
-
-#include "DirectoryMonitor.h"
-#include "DirectoryMonitorListener.h"
-#include "DualString.h"*/
-
 #include <string>
 
 #include "forward.h"
@@ -58,17 +29,9 @@ namespace dcpp {
 	class ShareDirectoryInfo;
 	typedef std::shared_ptr<ShareDirectoryInfo> ShareDirectoryInfoPtr;
 	typedef vector<ShareDirectoryInfoPtr> ShareDirectoryInfoList;
-	//typedef unordered_map<int, List> Map;
 
 	class ShareDirectoryInfo {
 	public:
-		//ShareDirInfo(const ShareDirInfoPtr& aInfo, ProfileToken aNewProfile);
-		//ShareDirInfo(const string& aVname, ProfileToken aProfile, const string& aPath, bool aIncoming = false, State aState = STATE_NORMAL);
-
-		//ShareDirectoryInfo::ShareDirectoryInfo(const ShareDirectoryInfoPtr& aInfo, ProfileToken aNewProfile) : vname(aInfo->vname), profile(aNewProfile), path(aInfo->path), incoming(aInfo->incoming),
-		//	size(aInfo->size) {
-
-		//}
 
 		ShareDirectoryInfo::ShareDirectoryInfo(const string& aPath, const string& aVname = Util::emptyString, bool aIncoming = false, const ProfileTokenSet& aProfiles = ProfileTokenSet()) :
 			virtualName(aVname), path(aPath), incoming(aIncoming), profiles(aProfiles) {
@@ -82,6 +45,13 @@ namespace dcpp {
 
 		const string& getToken() const noexcept {
 			return path;
+		}
+
+		void merge(const ShareDirectoryInfoPtr& aInfo) noexcept {
+			virtualName = aInfo->virtualName;
+			profiles = aInfo->profiles;
+			incoming = aInfo->incoming;
+			size = aInfo->size;
 		}
 
 		string virtualName;

@@ -61,15 +61,21 @@ namespace webserver {
 			return parseValue<T>(aFieldName, *p, aAllowEmpty);
 		}
 
-		// Find and parse the given field. Throws if not found.
-		template <typename T, typename JsonT>
-		static T getField(const string& aFieldName, const JsonT& aJson, bool aAllowEmpty = true) {
+		// Returns raw JSON value and throws if the field is missng
+		template <typename JsonT>
+		static json getRawValue(const string& aFieldName, const JsonT& aJson) {
 			auto p = aJson.find(aFieldName);
 			if (p == aJson.end()) {
 				throwError(aFieldName, ERROR_MISSING, "Field missing");
 			}
 
-			return parseValue<T>(aFieldName, *p, aAllowEmpty);
+			return *p;
+		}
+
+		// Find and parse the given field. Throws if not found.
+		template <typename T, typename JsonT>
+		static T getField(const string& aFieldName, const JsonT& aJson, bool aAllowEmpty = true) {
+			return parseValue<T>(aFieldName, getRawValue(aFieldName, aJson), aAllowEmpty);
 		}
 
 		// Get value from the given JSON element

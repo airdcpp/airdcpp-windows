@@ -24,10 +24,6 @@
 #include <airdcpp/ShareManager.h>
 
 namespace webserver {
-	ShareDirectoryInfoList ShareUtils::getItemList() noexcept {
-		return ShareManager::getInstance()->getRootInfos();
-	}
-
 	json ShareUtils::serializeItem(const ShareDirectoryInfoPtr& aItem, int aPropertyName) noexcept {
 		json j;
 
@@ -40,6 +36,17 @@ namespace webserver {
 
 
 		return j;
+	}
+
+	bool ShareUtils::filterItem(const ShareDirectoryInfoPtr& aItem, int aPropertyName, const StringMatch&, double aNumericMatcher) noexcept {
+		switch (aPropertyName) {
+		case ShareApi::PROP_PROFILES:
+		{
+			return aItem->profiles.find(static_cast<int>(aNumericMatcher)) != aItem->profiles.end();
+		}
+		}
+
+		return false;
 	}
 
 	int ShareUtils::compareItems(const ShareDirectoryInfoPtr& a, const ShareDirectoryInfoPtr& b, int aPropertyName) noexcept {

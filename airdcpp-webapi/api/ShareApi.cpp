@@ -28,10 +28,12 @@
 
 namespace webserver {
 	ShareApi::ShareApi(Session* aSession) : ApiModule(aSession), itemHandler(properties,
-		ShareUtils::getStringInfo, ShareUtils::getNumericInfo, ShareUtils::compareItems, ShareUtils::serializeItem),
-		rootView("share_root_view", this, itemHandler, ShareUtils::getItemList) {
+		ShareUtils::getStringInfo, ShareUtils::getNumericInfo, ShareUtils::compareItems, ShareUtils::serializeItem, ShareUtils::filterItem),
+		rootView("share_root_view", this, itemHandler, std::bind(&ShareApi::getRoots, this)) {
 
 		ShareManager::getInstance()->addListener(this);
+
+		roots = ShareManager::getInstance()->getRootInfos();
 
 		METHOD_HANDLER("profiles", ApiRequest::METHOD_GET, (), false, ShareApi::handleGetProfiles);
 		METHOD_HANDLER("profile", ApiRequest::METHOD_POST, (), true, ShareApi::handleAddProfile);
@@ -101,7 +103,7 @@ namespace webserver {
 	}
 
 	api_return ShareApi::handleGetRoots(ApiRequest& aRequest) {
-		auto j = Serializer::serializeItemList(itemHandler, ShareUtils::getItemList());
+		auto j = Serializer::serializeItemList(itemHandler, getRoots());
 		aRequest.setResponseBody(j);
 		return websocketpp::http::status_code::ok;
 	}
@@ -169,28 +171,20 @@ namespace webserver {
 	}
 
 	void ShareApi::on(ShareManagerListener::ProfileAdded, ProfileToken aProfile) noexcept {
-		if (!subscriptionActive("share_profile_added")) {
-			return;
-		}
-
-		send("share_profile_added", serializeShareProfile(ShareManager::getInstance()->getShareProfile(aProfile)));
+		maybeSend("share_profile_added", [&] {
+			return serializeShareProfile(ShareManager::getInstance()->getShareProfile(aProfile));
+		});
 	}
 
 	void ShareApi::on(ShareManagerListener::ProfileUpdated, ProfileToken aProfile) noexcept {
-		if (!subscriptionActive("share_profile_updated")) {
-			return;
-		}
-
-		send("share_profile_updated", serializeShareProfile(ShareManager::getInstance()->getShareProfile(aProfile)));
+		maybeSend("share_profile_updated", [&] { 
+			return serializeShareProfile(ShareManager::getInstance()->getShareProfile(aProfile)); 
+		});
 	}
 
 	void ShareApi::on(ShareManagerListener::ProfileRemoved, ProfileToken aProfile) noexcept {
-		if (!subscriptionActive("share_profile_removed")) {
-			return;
-		}
-
-		send("share_profile_removed", { 
-			{ "id", aProfile } 
+		maybeSend("share_profile_removed", [&] { 
+			return json({ "id", aProfile }); 
 		});
 	}
 
@@ -200,22 +194,15 @@ namespace webserver {
 		}
 
 		auto info = ShareManager::getInstance()->getRootInfo(aPath);
-		rootView.onItemAdded(info);
 
-		send("share_root_created", Serializer::serializeItem(info, itemHandler));
-	}
-
-	void ShareApi::on(ShareManagerListener::RootRemoved, const string& aPath) noexcept {
-		if (!subscriptionActive("share_root_removed") && !rootView.isActive()) {
-			return;
+		{
+			WLock l(rootCS);
+			roots.push_back(info);
 		}
 
-		auto info = ShareManager::getInstance()->getRootInfo(aPath);
-		rootView.onItemRemoved(info);
+		rootView.onItemAdded(info);
 
-		send("share_root_removed", {
-			{ "path", aPath }
-		});
+		maybeSend("share_root_created", [&] { return Serializer::serializeItem(info, itemHandler); });
 	}
 
 	void ShareApi::on(ShareManagerListener::RootUpdated, const string& aPath) noexcept {
@@ -224,9 +211,31 @@ namespace webserver {
 		}
 
 		auto info = ShareManager::getInstance()->getRootInfo(aPath);
-		rootView.onItemUpdated(info, toPropertyIdSet(properties));
+		if (rootView.isActive()) {
+			RLock l(rootCS);
+			auto i = find_if(roots.begin(), roots.end(), ShareDirectoryInfo::PathCompare(aPath));
+			if (i != roots.end()) {
+				(*i)->merge(info);
+				rootView.onItemUpdated(*i, toPropertyIdSet(properties));
+			}
+		}
 
-		send("share_root_updated", Serializer::serializeItem(info, itemHandler));
+		maybeSend("share_root_updated", [&] { return Serializer::serializeItem(info, itemHandler); });
+	}
+
+	void ShareApi::on(ShareManagerListener::RootRemoved, const string& aPath) noexcept {
+		if (rootView.isActive()) {
+			WLock l(rootCS);
+			auto i = find_if(roots.begin(), roots.end(), ShareDirectoryInfo::PathCompare(aPath));
+			if (i != roots.end()) {
+				rootView.onItemRemoved(*i);
+				roots.erase(i);
+			}
+		}
+
+		maybeSend("share_root_removed", [&] {
+			return json({ "path", aPath });
+		});
 	}
 
 	void ShareApi::parseRoot(ShareDirectoryInfoPtr& aInfo, const json& j, bool aIsNew) {

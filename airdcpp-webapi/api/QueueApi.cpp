@@ -375,7 +375,7 @@ namespace webserver {
 		onBundleUpdated(aBundle, { PROP_SIZE });
 	}
 	void QueueApi::on(QueueManagerListener::BundlePriority, const BundlePtr& aBundle) noexcept {
-		onBundleUpdated(aBundle, { PROP_PRIORITY });
+		onBundleUpdated(aBundle, { PROP_PRIORITY, PROP_STATUS });
 	}
 	void QueueApi::on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept {
 		onBundleUpdated(aBundle, { PROP_STATUS }, "bundle_status");

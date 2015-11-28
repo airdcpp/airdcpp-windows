@@ -42,7 +42,7 @@ namespace webserver {
 			{ PROP_PATH, "path", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
 			{ PROP_VIRTUAL_NAME, "virtual_name", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
 			{ PROP_SIZE, "size", TYPE_SIZE, SERIALIZE_NUMERIC, SORT_NUMERIC },
-			{ PROP_PROFILES, "profiles", TYPE_LIST, SERIALIZE_CUSTOM, SORT_CUSTOM },
+			{ PROP_PROFILES, "profiles", TYPE_LIST_NUMERIC, SERIALIZE_CUSTOM, SORT_CUSTOM },
 			{ PROP_INCOMING, "incoming", TYPE_NUMERIC_OTHER, SERIALIZE_BOOL, SORT_NUMERIC },
 		};
 
@@ -89,6 +89,15 @@ namespace webserver {
 
 		typedef ListViewController<ShareDirectoryInfoPtr, PROP_LAST> RootView;
 		RootView rootView;
+
+		ShareDirectoryInfoList getRoots() const noexcept {
+			RLock l(rootCS);
+			return roots;
+		}
+
+		// ListViewController compares items by memory address so we need to store the list here 
+		ShareDirectoryInfoList roots;
+		mutable SharedMutex rootCS;
 	};
 }
 

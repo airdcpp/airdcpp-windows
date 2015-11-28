@@ -24,13 +24,14 @@
 #include <web-server/stdinc.h>
 
 #include <airdcpp/typedefs.h>
+#include <airdcpp/StringMatch.h>
 #include <airdcpp/ShareDirectoryInfo.h>
 
 namespace webserver {
 	class ShareUtils {
 	public:
-		static ShareDirectoryInfoList getItemList() noexcept;
-		static json serializeItem(const ShareDirectoryInfoPtr& aResult, int aPropertyName) noexcept;
+		static json serializeItem(const ShareDirectoryInfoPtr& aItem, int aPropertyName) noexcept;
+		static bool filterItem(const ShareDirectoryInfoPtr& aItem, int aPropertyName, const StringMatch& aTextMatcher, double aNumericMatcher) noexcept;
 
 		static int compareItems(const ShareDirectoryInfoPtr& a, const ShareDirectoryInfoPtr& b, int aPropertyName) noexcept;
 		static std::string getStringInfo(const ShareDirectoryInfoPtr& a, int aPropertyName) noexcept;
