@@ -33,8 +33,6 @@ namespace webserver {
 
 		ShareManager::getInstance()->addListener(this);
 
-		roots = ShareManager::getInstance()->getRootInfos();
-
 		METHOD_HANDLER("profiles", ApiRequest::METHOD_GET, (), false, ShareApi::handleGetProfiles);
 		METHOD_HANDLER("profile", ApiRequest::METHOD_POST, (), true, ShareApi::handleAddProfile);
 		METHOD_HANDLER("profile", ApiRequest::METHOD_PATCH, (TOKEN_PARAM), true, ShareApi::handleUpdateProfile);
@@ -50,6 +48,8 @@ namespace webserver {
 		METHOD_HANDLER("stats", ApiRequest::METHOD_GET, (), false, ShareApi::handleGetStats);
 		METHOD_HANDLER("find_dupe_paths", ApiRequest::METHOD_POST, (), true, ShareApi::handleFindDupePaths);
 
+		METHOD_HANDLER("refresh", ApiRequest::METHOD_POST, (), false, ShareApi::handleRefreshShare);
+		METHOD_HANDLER("refresh", ApiRequest::METHOD_POST, (EXACT_PARAM("paths")), true, ShareApi::handleRefreshPaths);
 
 		createSubscription("share_profile_added");
 		createSubscription("share_profile_updated");
@@ -62,6 +62,31 @@ namespace webserver {
 
 	ShareApi::~ShareApi() {
 		ShareManager::getInstance()->removeListener(this);
+	}
+
+	ShareDirectoryInfoList ShareApi::getRoots() noexcept {
+		WLock l(rootCS);
+		if (roots.empty()) {
+			roots = ShareManager::getInstance()->getRootInfos();
+		}
+
+		return roots;
+	}
+
+	api_return ShareApi::handleRefreshShare(ApiRequest& aRequest) {
+		auto incomingOptional = JsonUtil::getOptionalField<bool>("incoming", aRequest.getRequestBody());
+		auto ret = ShareManager::getInstance()->refresh(incomingOptional ? *incomingOptional : false);
+
+		//aRequest.setResponseBody(j);
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return ShareApi::handleRefreshPaths(ApiRequest& aRequest) {
+		auto paths = JsonUtil::getField<StringList>("paths", aRequest.getRequestBody(), false);
+		auto ret = ShareManager::getInstance()->refreshPaths(paths);
+
+		//aRequest.setResponseBody(j);
+		return websocketpp::http::status_code::ok;
 	}
 
 	api_return ShareApi::handleGetStats(ApiRequest& aRequest) {

@@ -44,6 +44,8 @@ namespace webserver {
 			{ PROP_SIZE, "size", TYPE_SIZE, SERIALIZE_NUMERIC, SORT_NUMERIC },
 			{ PROP_PROFILES, "profiles", TYPE_LIST_NUMERIC, SERIALIZE_CUSTOM, SORT_CUSTOM },
 			{ PROP_INCOMING, "incoming", TYPE_NUMERIC_OTHER, SERIALIZE_BOOL, SORT_NUMERIC },
+			{ PROP_LAST_REFRESH_TIME, "last_refresh_time", TYPE_TIME, SERIALIZE_NUMERIC, SORT_NUMERIC },
+			{ PROP_REFRESH_STATE, "refresh_state", TYPE_NUMERIC_OTHER, SERIALIZE_TEXT_NUMERIC, SORT_NUMERIC },
 		};
 
 		enum Properties {
@@ -53,10 +55,15 @@ namespace webserver {
 			PROP_SIZE,
 			PROP_PROFILES,
 			PROP_INCOMING,
+			PROP_LAST_REFRESH_TIME,
+			PROP_REFRESH_STATE,
 			PROP_LAST
 		};
 	private:
 		static json serializeShareProfile(const ShareProfilePtr& aProfile) noexcept;
+
+		api_return handleRefreshShare(ApiRequest& aRequest);
+		api_return handleRefreshPaths(ApiRequest& aRequest);
 
 		api_return handleGetProfiles(ApiRequest& aRequest);
 		api_return handleAddProfile(ApiRequest& aRequest);
@@ -90,10 +97,7 @@ namespace webserver {
 		typedef ListViewController<ShareDirectoryInfoPtr, PROP_LAST> RootView;
 		RootView rootView;
 
-		ShareDirectoryInfoList getRoots() const noexcept {
-			RLock l(rootCS);
-			return roots;
-		}
+		ShareDirectoryInfoList getRoots() noexcept;
 
 		// ListViewController compares items by memory address so we need to store the list here 
 		ShareDirectoryInfoList roots;

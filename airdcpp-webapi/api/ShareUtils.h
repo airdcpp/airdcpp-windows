@@ -30,6 +30,8 @@
 namespace webserver {
 	class ShareUtils {
 	public:
+		static string formatRefreshState(const ShareDirectoryInfoPtr& aItem) noexcept;
+
 		static json serializeItem(const ShareDirectoryInfoPtr& aItem, int aPropertyName) noexcept;
 		static bool filterItem(const ShareDirectoryInfoPtr& aItem, int aPropertyName, const StringMatch& aTextMatcher, double aNumericMatcher) noexcept;
 

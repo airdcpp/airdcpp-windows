@@ -38,6 +38,16 @@ namespace webserver {
 		return j;
 	}
 
+	string ShareUtils::formatRefreshState(const ShareDirectoryInfoPtr& aItem) noexcept {
+		switch (static_cast<ShareManager::RefreshState>(aItem->refreshState)) {
+			case ShareManager::RefreshState::STATE_NORMAL: return STRING(NORMAL);
+			case ShareManager::RefreshState::STATE_PENDING: return "Refresh pending";
+			case ShareManager::RefreshState::STATE_RUNNING: return "Refreshing";
+		}
+
+		return Util::emptyString;
+	}
+
 	bool ShareUtils::filterItem(const ShareDirectoryInfoPtr& aItem, int aPropertyName, const StringMatch&, double aNumericMatcher) noexcept {
 		switch (aPropertyName) {
 		case ShareApi::PROP_PROFILES:
@@ -71,6 +81,7 @@ namespace webserver {
 		switch (aPropertyName) {
 		case ShareApi::PROP_VIRTUAL_NAME: return aItem->virtualName;
 		case ShareApi::PROP_PATH: return aItem->path;
+		case ShareApi::PROP_REFRESH_STATE: return formatRefreshState(aItem);
 		default: dcassert(0); return 0;
 		}
 	}
@@ -78,6 +89,8 @@ namespace webserver {
 		switch (aPropertyName) {
 		case ShareApi::PROP_SIZE: return (double)aItem->size;
 		case ShareApi::PROP_INCOMING: return (double)aItem->incoming;
+		case ShareApi::PROP_LAST_REFRESH_TIME: return (double)aItem->lastRefreshTime;
+		case ShareApi::PROP_REFRESH_STATE: return (double)aItem->refreshState;
 		default: dcassert(0); return 0;
 		}
 	}

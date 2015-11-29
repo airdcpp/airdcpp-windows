@@ -53,6 +53,10 @@ namespace webserver {
 				return getField<T>(aFieldName, aJson, aAllowEmpty);
 			}
 
+			if (aJson.is_null()) {
+				return boost::none;
+			}
+
 			auto p = aJson.find(aFieldName);
 			if (p == aJson.end()) {
 				return boost::none;
@@ -61,9 +65,13 @@ namespace webserver {
 			return parseValue<T>(aFieldName, *p, aAllowEmpty);
 		}
 
-		// Returns raw JSON value and throws if the field is missng
+		// Returns raw JSON value and throws if the field is missing
 		template <typename JsonT>
 		static json getRawValue(const string& aFieldName, const JsonT& aJson) {
+			if (aJson.is_null()) {
+				throwError(aFieldName, ERROR_MISSING, "JSON null");
+			}
+
 			auto p = aJson.find(aFieldName);
 			if (p == aJson.end()) {
 				throwError(aFieldName, ERROR_MISSING, "Field missing");
