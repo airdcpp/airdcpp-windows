@@ -75,7 +75,7 @@ namespace webserver {
 		typedef ListViewController<ShareDirectoryInfoPtr, PROP_LAST> RootView;
 		RootView rootView;
 
-		ShareDirectoryInfoList getRoots() noexcept;
+		ShareDirectoryInfoList getRoots() const noexcept;
 
 		// ListViewController compares items by memory address so we need to store the list here 
 		ShareDirectoryInfoList roots;

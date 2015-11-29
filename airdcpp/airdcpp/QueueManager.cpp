@@ -3187,9 +3187,8 @@ void QueueManager::checkRefreshPaths(StringList& retBundles_, RefreshPathList& r
 			//check the path just to avoid hashing/scanning bundles from dirs that aren't being refreshed
 
 			{
-				auto refreshPathIter = find_if(refreshPaths_.begin(), refreshPaths_.end(), [&](const string& p) {
-					return AirUtil::isParentOrExact(p, b->getTarget());
-				});
+				// Find parent refresh directories of this bundle path
+				auto refreshPathIter = find_if(refreshPaths_.begin(), refreshPaths_.end(), IsParentOrExact(b->getTarget()));
 
 				if (refreshPathIter == refreshPaths_.end()) {
 					continue;

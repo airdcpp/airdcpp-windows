@@ -115,7 +115,7 @@ LRESULT ShareDirectories::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPa
 			int i = -1;
 			bool hasRemoved=false, hasAdded=false;
 			while((i = ctrlDirectories.GetNextItem(i, LVNI_SELECTED)) != -1) {
-				auto sdi = (ProfileDirectoryInfo*)ctrlDirectories.GetItemData(i);
+				//auto sdi = (ProfileDirectoryInfo*)ctrlDirectories.GetItemData(i);
 				hasAdded = true;
 			}
 

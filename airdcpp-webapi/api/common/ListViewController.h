@@ -37,6 +37,7 @@ namespace webserver {
 	public:
 		typedef typename PropertyItemHandler<T>::ItemList ItemList;
 		typedef typename PropertyItemHandler<T>::ItemListFunction ItemListF;
+		typedef std::function<void(bool aActive)> StateChangeFunction;
 
 		ListViewController(const string& aViewName, ApiModule* aModule, const PropertyItemHandler<T>& aItemHandler, ItemListF aItemListF) :
 			module(aModule), viewName(aViewName), itemHandler(aItemHandler), itemListF(aItemListF),
@@ -63,8 +64,12 @@ namespace webserver {
 			timer->stop(true);
 		}
 
+		void setActiveStateChangeHandler(StateChangeFunction aF) {
+			stateChangeF = aF;
+		}
+
 		void stop() noexcept {
-			active = false;
+			setActive(false);
 			timer->stop(true);
 
 			clearItems();
@@ -148,6 +153,13 @@ namespace webserver {
 			return active;
 		}
 	private:
+		void setActive(bool aActive) {
+			active = aActive;
+			if (stateChangeF) {
+				stateChangeF(aActive);
+			}
+		}
+
 		// FILTERS START
 		PropertyFilter::Matcher::List getFilterMatchers() {
 			PropertyFilter::Matcher::List ret;
@@ -286,7 +298,7 @@ namespace webserver {
 			parseProperties(aRequest.getRequestBody());
 
 			if (!active) {
-				active = true;
+				setActive(true);
 				updateList();
 				timer->start();
 			}
@@ -778,6 +790,8 @@ namespace webserver {
 			bool changed = true;
 			ValueMap values;
 		};
+
+		StateChangeFunction stateChangeF = nullptr;
 
 		bool itemListChanged = false;
 		IntCollector currentValues;

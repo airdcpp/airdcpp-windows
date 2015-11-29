@@ -642,9 +642,9 @@ private:
 	// Remove directories that have already been queued for refresh
 	void validateRefreshTask(Directory::List& dirs_) noexcept;
 
-	// Change the refresh status for a directory
+	// Change the refresh status for a directory and its subroots
 	// Safe to call with non-root directories
-	void setRefreshState(Directory::Ptr& aDir, RefreshState aState) noexcept;
+	void setRefreshState(Directory::Ptr& aDir, const ProfileDirMap& aSubRoots, RefreshState aState, bool aUpdateRefreshTime) noexcept;
 
 	// Recursive function for building a new share tree from a path
 	void buildTree(string& aPath, string& aPathLower, const Directory::Ptr& aDir, const ProfileDirMap& aSubRoots, DirMultiMap& aDirs, DirMap& newShares, int64_t& hashSize, int64_t& addedSize, HashFileMap& tthIndexNew, ShareBloom& aBloom);

@@ -30,6 +30,16 @@ namespace webserver {
 		ShareUtils::getStringInfo, ShareUtils::getNumericInfo, ShareUtils::compareItems, ShareUtils::serializeItem, ShareUtils::filterItem),
 		rootView("share_root_view", this, itemHandler, std::bind(&ShareRootApi::getRoots, this)) {
 
+		// Maintain the view item listing only when it's needed
+		rootView.setActiveStateChangeHandler([&](bool aActive) {
+			WLock l(cs);
+			if (aActive) {
+				roots = ShareManager::getInstance()->getRootInfos();
+			} else {
+				roots.clear();
+			}
+		});
+
 		ShareManager::getInstance()->addListener(this);
 
 		METHOD_HANDLER("roots", ApiRequest::METHOD_GET, (), false, ShareRootApi::handleGetRoots);
@@ -46,12 +56,8 @@ namespace webserver {
 		ShareManager::getInstance()->removeListener(this);
 	}
 
-	ShareDirectoryInfoList ShareRootApi::getRoots() noexcept {
-		WLock l(cs);
-		if (roots.empty()) {
-			roots = ShareManager::getInstance()->getRootInfos();
-		}
-
+	ShareDirectoryInfoList ShareRootApi::getRoots() const noexcept {
+		RLock l(cs);
 		return roots;
 	}
 

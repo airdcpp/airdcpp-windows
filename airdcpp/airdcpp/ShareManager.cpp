@@ -2109,8 +2109,10 @@ ShareManager::RefreshResult ShareManager::addRefreshTask(TaskType aTaskType, con
 
 	RefreshPathList paths;
 	for (auto& d : dirs) {
-		setRefreshState(d, RefreshState::STATE_PENDING);
-		paths.insert(d->getProfileDir()->getPath());
+		auto path = d->getRealPath();
+
+		setRefreshState(d, getSubProfileDirs(d->getRealPath()), RefreshState::STATE_PENDING, false);
+		paths.insert(path);
 	}
 
 	tasks.add(aTaskType, unique_ptr<Task>(new ShareTask(paths, aDisplayName, aRefreshType)));
@@ -2252,7 +2254,7 @@ bool ShareManager::addDirectory(const ShareDirectoryInfoPtr& aDirectoryInfo) noe
 		if (i != rootPaths.end()) {
 			return false;
 		} else {
-			auto p = find_if(rootPaths | map_keys, IsSub(path));
+			auto p = find_if(rootPaths | map_keys, IsParentOrExact(path));
 			if (p.base() != rootPaths.end()) {
 				// It's a subdir
 				auto dir = findDirectory(path, false, false);
@@ -2278,6 +2280,7 @@ bool ShareManager::addDirectory(const ShareDirectoryInfoPtr& aDirectoryInfo) noe
 		//we are only modifying existing trees
 		setProfilesDirty(aDirectoryInfo->profiles, true);
 	} else {
+		fire(ShareManagerListener::RootCreated(), path);
 		addRefreshTask(ADD_DIR, { newRoot }, TYPE_MANUAL);
 	}
 
@@ -2368,6 +2371,8 @@ void ShareManager::removeDirectories(const StringList& aRemoveDirs) noexcept{
 bool ShareManager::changeDirectory(const ShareDirectoryInfoPtr& aDirectoryInfo) noexcept {
 	dcassert(!aDirectoryInfo->profiles.empty());
 	ProfileDirectory::Ptr profileDir;
+	ProfileTokenSet dirtyProfiles = aDirectoryInfo->profiles;
+
 	{
 		WLock l(cs);
 		auto vName = validateVirtualName(aDirectoryInfo->virtualName);
@@ -2375,6 +2380,10 @@ bool ShareManager::changeDirectory(const ShareDirectoryInfoPtr& aDirectoryInfo) 
 		auto p = findRoot(aDirectoryInfo->path);
 		if (p != rootPaths.end()) {
 			profileDir = p->second->getProfileDir();
+
+			// Make sure that all removed profiles are set dirty as well
+			dirtyProfiles.insert(profileDir->getRootProfiles().begin(), profileDir->getRootProfiles().end());
+
 			profileDir->setName(vName);
 			profileDir->setIncoming(aDirectoryInfo->incoming);
 			profileDir->setRootProfiles(aDirectoryInfo->profiles);
@@ -2389,7 +2398,7 @@ bool ShareManager::changeDirectory(const ShareDirectoryInfoPtr& aDirectoryInfo) 
 		removeMonitoring({ aDirectoryInfo->path });
 	}
 
-	setProfilesDirty(aDirectoryInfo->profiles);
+	setProfilesDirty(dirtyProfiles);
 
 	fire(ShareManagerListener::RootUpdated(), aDirectoryInfo->path);
 	return true;
@@ -2517,7 +2526,7 @@ void ShareManager::runTasks(function<void (float)> progressF /*nullptr*/) noexce
 		StringList monitoring;
 		vector<shared_ptr<RefreshInfo>> refreshDirs;
 
-		//find excluded dirs and sub-roots for each directory being refreshed (they will be passed on to buildTree for matching)
+		//find sub-roots for each directory being refreshed (they will be passed on to buildTree for matching)
 		{
 			RLock l (cs);
 			for(auto& i: task->dirs) {
@@ -2559,7 +2568,7 @@ void ShareManager::runTasks(function<void (float)> progressF /*nullptr*/) noexce
 			auto path = ri.path;
 			ri.root->addBloom(*refreshBloom);
 
-			setRefreshState(ri.root, RefreshState::STATE_RUNNING);
+			setRefreshState(ri.root, ri.subProfiles, RefreshState::STATE_RUNNING, false);
 
 			bool succeed = false;
 			try {
@@ -2577,11 +2586,7 @@ void ShareManager::runTasks(function<void (float)> progressF /*nullptr*/) noexce
 				progressF(static_cast<float>(progressCounter++) / static_cast<float>(dirCount));
 			}
 
-			if (succeed) {
-				ri.root->getProfileDir()->setLastRefreshTime(GET_TIME());
-			}
-
-			setRefreshState(ri.root, RefreshState::STATE_NORMAL);
+			setRefreshState(ri.root, ri.subProfiles, RefreshState::STATE_NORMAL, succeed);
 		};
 
 		try {
@@ -2649,14 +2654,23 @@ void ShareManager::runTasks(function<void (float)> progressF /*nullptr*/) noexce
 	refreshing.clear();
 }
 
-void ShareManager::setRefreshState(Directory::Ptr& aDir, RefreshState aState) noexcept {
-	if (aDir->getParent()) {
-		return;
+void ShareManager::setRefreshState(Directory::Ptr& aDir, const ProfileDirMap& aSubRoots, RefreshState aState, bool aUpdateRefreshTime) noexcept {
+	auto setState = [&](const ProfileDirectory::Ptr& aProfileDir) {
+		aProfileDir->setRefreshState(aState);
+		if (aUpdateRefreshTime) {
+			aProfileDir->setLastRefreshTime(GET_TIME());
+		}
+
+		fire(ShareManagerListener::RootUpdated(), aProfileDir->getPath());
+	};
+
+	if (aDir->getProfileDir()) {
+		setState(aDir->getProfileDir());
 	}
 
-	auto& pd = aDir->getProfileDir();
-	pd->setRefreshState(aState);
-	fire(ShareManagerListener::RootUpdated(), pd->getPath());
+	for (auto& pd : aSubRoots | map_values) {
+		setState(pd);
+	}
 }
 
 bool ShareManager::handleRefreshedDirectory(RefreshInfoPtr& ri, TaskType aTaskType) {
