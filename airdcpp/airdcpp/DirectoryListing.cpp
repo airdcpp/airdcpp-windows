@@ -1212,7 +1212,7 @@ void DirectoryListing::removedQueueImpl(const string& aDir) noexcept {
 	setState(STATE_LOADED);
 }
 
-void DirectoryListing::on(ShareManagerListener::DirectoriesRefreshed, uint8_t, const StringList& aPaths) noexcept{
+void DirectoryListing::on(ShareManagerListener::DirectoriesRefreshed, uint8_t, const RefreshPathList& aPaths) noexcept{
 	if (!partialList)
 		return;
 

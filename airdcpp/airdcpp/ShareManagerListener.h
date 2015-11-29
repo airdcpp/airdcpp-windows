@@ -43,7 +43,7 @@ namespace dcpp {
 
 		virtual void on(ShareLoaded) noexcept{}
 		virtual void on(ShareRefreshed, uint8_t /*tasktype*/) noexcept{}
-		virtual void on(DirectoriesRefreshed, uint8_t /*tasktype*/, const StringList&) noexcept{}
+		virtual void on(DirectoriesRefreshed, uint8_t /*tasktype*/, const RefreshPathList&) noexcept{}
 
 		virtual void on(ProfileAdded, ProfileToken) noexcept {}
 		virtual void on(ProfileUpdated, ProfileToken) noexcept {}

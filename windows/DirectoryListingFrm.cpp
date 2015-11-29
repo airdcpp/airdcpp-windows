@@ -1511,7 +1511,7 @@ void DirectoryListingFrame::handleCopyDir() {
 void DirectoryListingFrame::handleRefreshShare(bool usingTree) {
 	StringList refresh;
 	if (getLocalPaths(refresh, usingTree, true)) {
-		ShareManager::getInstance()->addRefreshTask(ShareManager::REFRESH_DIRS, refresh, ShareManager::TYPE_MANUAL);
+		ShareManager::getInstance()->refreshPaths(refresh);
 	}
 }
 

@@ -118,7 +118,7 @@ public:
 		ADD_BUNDLE
 	};
 
-	enum RefreshResult { 
+	enum class RefreshResult {
 		REFRESH_STARTED = 0,
 		REFRESH_PATH_NOT_FOUND = 1,
 		REFRESH_IN_PROGRESS = 2,
@@ -126,13 +126,13 @@ public:
 	};
 
 	// Refresh the whole share or in
-	RefreshResult refresh(bool incoming, RefreshType aType, function<void(float)> progressF = nullptr) noexcept;
+	RefreshResult refresh(bool incoming, RefreshType aType = RefreshType::TYPE_MANUAL, function<void(float)> progressF = nullptr) noexcept;
 
 	// Refresh a single single path or all paths under a virtual name
-	RefreshResult refresh(const string& aDir) noexcept;
+	RefreshResult refreshVirtual(const string& aDir) noexcept;
 
 	// Refresh the specific directories
-	RefreshResult addRefreshTask(TaskType aTaskType, StringList& dirs, RefreshType aRefreshType, const string& displayName = Util::emptyString, function<void(float)> progressF = nullptr) noexcept;
+	RefreshResult refreshPaths(const StringList& aPaths, RefreshType aRefreshType = RefreshType::TYPE_MANUAL, TaskType aTaskType = REFRESH_DIRS, const string& displayName = Util::emptyString, function<void(float)> progressF = nullptr) noexcept;
 
 	bool isRefreshing() const noexcept { return refreshRunning; }
 	
@@ -301,6 +301,12 @@ public:
 	void handleChangedFiles() noexcept;
 
 	void setDefaultProfile(ProfileToken aNewDefault) noexcept;
+
+	enum class RefreshState : uint8_t {
+		STATE_NORMAL,
+		STATE_PENDING,
+		STATE_RUNNING,
+	};
 private:
 	void countStats(uint64_t& totalAge_, size_t& totalDirs_, int64_t& totalSize_, size_t& totalFiles, size_t& lowerCaseFiles, size_t& totalStrLen_, size_t& roots_) const noexcept;
 
@@ -328,6 +334,8 @@ private:
 			GETSET(ProfileTokenSet, rootProfiles, RootProfiles);
 			IGETSET(bool, cacheDirty, CacheDirty, false);
 			IGETSET(bool, incoming, Incoming, false);
+			IGETSET(RefreshState, refreshState, RefreshState, RefreshState::STATE_NORMAL);
+			IGETSET(time_t, lastRefreshTime, LastRefreshTime, 0);
 
 			~ProfileDirectory() { }
 
@@ -519,6 +527,8 @@ private:
 		void filesToXml(OutputStream& xmlFile, string& indent, string& tmp2, bool addDate) const;
 	};
 
+	ShareDirectoryInfoPtr getRootInfo(const Directory::Ptr& aDir) const noexcept;
+
 	void addAsyncTask(AsyncF aF) noexcept;
 
 	// Returns the dupe directories by directory name/NMDC path
@@ -623,7 +633,22 @@ private:
 		}
 	}
 
+	// Display a log message if the refresh can't be started immediately
+	void reportPendingRefresh(TaskType aTask, const RefreshPathList& aDirectories, const string& displayName) const noexcept;
+
+	// Add directories for refresh
+	RefreshResult addRefreshTask(TaskType aTaskType, const Directory::List& aDirs, RefreshType aRefreshType, const string& displayName = Util::emptyString, function<void(float)> progressF = nullptr) noexcept;
+
+	// Remove directories that have already been queued for refresh
+	void validateRefreshTask(Directory::List& dirs_) noexcept;
+
+	// Change the refresh status for a directory
+	// Safe to call with non-root directories
+	void setRefreshState(Directory::Ptr& aDir, RefreshState aState) noexcept;
+
+	// Recursive function for building a new share tree from a path
 	void buildTree(string& aPath, string& aPathLower, const Directory::Ptr& aDir, const ProfileDirMap& aSubRoots, DirMultiMap& aDirs, DirMap& newShares, int64_t& hashSize, int64_t& addedSize, HashFileMap& tthIndexNew, ShareBloom& aBloom);
+
 	void addFile(const string& aName, Directory::Ptr& aDir, const HashedFile& fi, ProfileTokenSet& dirtyProfiles_) noexcept;
 
 	static void updateIndices(Directory::Ptr& aDirectory, ShareBloom& aBloom, int64_t& sharedSize, HashFileMap& tthIndex, DirMultiMap& aDirNames) noexcept;
@@ -728,7 +753,7 @@ private:
 	void loadProfile(SimpleXML& aXml, const string& aName, ProfileToken aToken);
 	void save(SimpleXML& aXml);
 
-	void reportTaskStatus(uint8_t aTask, const StringList& aDirectories, bool finished, int64_t aHashSize, const string& displayName, RefreshType aRefreshType) const noexcept;
+	void reportTaskStatus(uint8_t aTask, const RefreshPathList& aDirectories, bool finished, int64_t aHashSize, const string& displayName, RefreshType aRefreshType) const noexcept;
 	
 	ShareProfileList shareProfiles;
 

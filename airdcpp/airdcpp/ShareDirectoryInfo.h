@@ -52,6 +52,8 @@ namespace dcpp {
 			profiles = aInfo->profiles;
 			incoming = aInfo->incoming;
 			size = aInfo->size;
+			lastRefreshTime = aInfo->lastRefreshTime;
+			refreshState = aInfo->refreshState;
 		}
 
 		string virtualName;
@@ -62,6 +64,9 @@ namespace dcpp {
 		bool incoming = false;
 
 		int64_t size = 0;
+
+		uint8_t refreshState = 0;
+		time_t lastRefreshTime = 0;
 
 		class PathCompare {
 		public:

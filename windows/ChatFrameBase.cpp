@@ -786,12 +786,12 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 		try {
 			if(!param.empty()) {
 				if(stricmp(param.c_str(), _T("incoming"))==0) {
-					ShareManager::getInstance()->refresh(true, ShareManager::TYPE_MANUAL);
-				} else if( ShareManager::REFRESH_PATH_NOT_FOUND == ShareManager::getInstance()->refresh( Text::fromT(param) ) ) {
+					ShareManager::getInstance()->refresh(true);
+				} else if( ShareManager::RefreshResult::REFRESH_PATH_NOT_FOUND == ShareManager::getInstance()->refreshVirtual( Text::fromT(param) ) ) {
 					status = TSTRING(DIRECTORY_NOT_FOUND);
 				}
 			} else {
-				ShareManager::getInstance()->refresh(false, ShareManager::TYPE_MANUAL);
+				ShareManager::getInstance()->refresh(false);
 			}
 		} catch(const ShareException& e) {
 			status = Text::toT(e.getError());
