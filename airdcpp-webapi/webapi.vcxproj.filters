@@ -198,6 +198,12 @@
     <ClInclude Include="api\ShareUtils.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
+    <ClInclude Include="api\ShareProfileApi.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="api\ShareRootApi.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="api\QueueApi.cpp">
@@ -324,6 +330,12 @@
       <Filter>Source Files\api</Filter>
     </ClCompile>
     <ClCompile Include="api\ShareUtils.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="api\ShareProfileApi.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="api\ShareRootApi.cpp">
       <Filter>Source Files\api</Filter>
     </ClCompile>
   </ItemGroup>

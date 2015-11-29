@@ -17,7 +17,7 @@
 */
 
 #include <api/ShareUtils.h>
-#include <api/ShareApi.h>
+#include <api/ShareRootApi.h>
 
 #include <api/common/Format.h>
 
@@ -28,7 +28,7 @@ namespace webserver {
 		json j;
 
 		switch (aPropertyName) {
-		case ShareApi::PROP_PROFILES:
+		case ShareRootApi::PROP_PROFILES:
 		{
 			return aItem->profiles;
 		}
@@ -50,7 +50,7 @@ namespace webserver {
 
 	bool ShareUtils::filterItem(const ShareDirectoryInfoPtr& aItem, int aPropertyName, const StringMatch&, double aNumericMatcher) noexcept {
 		switch (aPropertyName) {
-		case ShareApi::PROP_PROFILES:
+		case ShareRootApi::PROP_PROFILES:
 		{
 			return aItem->profiles.find(static_cast<int>(aNumericMatcher)) != aItem->profiles.end();
 		}
@@ -67,7 +67,7 @@ namespace webserver {
 			//else
 			//	return (a->getType() == FilelistItemInfo::DIRECTORY) ? -1 : 1;
 		//}
-		case ShareApi::PROP_PROFILES: {
+		case ShareRootApi::PROP_PROFILES: {
 			return compare(a->profiles.size(), b->profiles.size());
 		}
 		default:
@@ -79,18 +79,18 @@ namespace webserver {
 
 	std::string ShareUtils::getStringInfo(const ShareDirectoryInfoPtr& aItem, int aPropertyName) noexcept {
 		switch (aPropertyName) {
-		case ShareApi::PROP_VIRTUAL_NAME: return aItem->virtualName;
-		case ShareApi::PROP_PATH: return aItem->path;
-		case ShareApi::PROP_REFRESH_STATE: return formatRefreshState(aItem);
+		case ShareRootApi::PROP_VIRTUAL_NAME: return aItem->virtualName;
+		case ShareRootApi::PROP_PATH: return aItem->path;
+		case ShareRootApi::PROP_REFRESH_STATE: return formatRefreshState(aItem);
 		default: dcassert(0); return 0;
 		}
 	}
 	double ShareUtils::getNumericInfo(const ShareDirectoryInfoPtr& aItem, int aPropertyName) noexcept {
 		switch (aPropertyName) {
-		case ShareApi::PROP_SIZE: return (double)aItem->size;
-		case ShareApi::PROP_INCOMING: return (double)aItem->incoming;
-		case ShareApi::PROP_LAST_REFRESH_TIME: return (double)aItem->lastRefreshTime;
-		case ShareApi::PROP_REFRESH_STATE: return (double)aItem->refreshState;
+		case ShareRootApi::PROP_SIZE: return (double)aItem->size;
+		case ShareRootApi::PROP_INCOMING: return (double)aItem->incoming;
+		case ShareRootApi::PROP_LAST_REFRESH_TIME: return (double)aItem->lastRefreshTime;
+		case ShareRootApi::PROP_REFRESH_STATE: return (double)aItem->refreshState;
 		default: dcassert(0); return 0;
 		}
 	}
