@@ -362,21 +362,12 @@ void PrivateFrame::showHubSelection(bool show) {
 	ctrlHubSel.EnableWindow(show);
 }
 
-void PrivateFrame::handleNotifications(bool newWindow, const tstring& aMessage, const Identity& from) {
+void PrivateFrame::handleNotifications(bool newWindow, const tstring& aMessage) {
 	hasUnSeenMessages = true;
 	addStatus(_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + TSTRING(LAST_MESSAGE_RECEIVED), ResourceLoader::getSeverityIcon(LogMessage::SEV_INFO));
 	
 	if (!getUser()->isSet(User::BOT))
 		MainFrame::getMainFrame()->onChatMessage(true);
-
-	if (newWindow && AirUtil::getAway() && (!(SETTING(NO_AWAYMSG_TO_BOTS) && getUser()->isSet(User::BOT))))
-		{
-			ParamMap params;
-			from.getParams(params, "user", false);
-
-			string error;
-			sendMessage(Text::toT(AirUtil::getAwayMessage(getAwayMessage(), params)), error);
-		}
 
 	if ((SETTING(FLASH_WINDOW_ON_PM) && !SETTING(FLASH_WINDOW_ON_NEW_PM)) || 
 		(newWindow && SETTING(FLASH_WINDOW_ON_NEW_PM))) {
@@ -803,7 +794,7 @@ void PrivateFrame::onChatMessage(const ChatMessagePtr& aMessage) noexcept {
 	addLine(aMessage->getFrom()->getIdentity(), text);
 
 	if (!myPM) {
-		handleNotifications(false, text, aMessage->getFrom()->getIdentity());
+		handleNotifications(false, text);
 	}
 	else if (!userTyping) {
 		addStatus(_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + TSTRING(LAST_MESSAGE_SENT), ResourceLoader::getSeverityIcon(LogMessage::SEV_INFO));

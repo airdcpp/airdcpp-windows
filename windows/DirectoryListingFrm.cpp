@@ -1407,8 +1407,9 @@ void DirectoryListingFrame::handleGoToDirectory(bool usingTree) {
 			path = ((DirectoryListing::AdlDirectory*)ii->dir.get())->getFullPath();
 		}
 
-		if (!path.empty())
-			selectItem(path);
+		if (!path.empty()) {
+			updateItemCache(Util::getFilePath(path), [=] { selectItem(path); });
+		}
 	}, true);
 }
 

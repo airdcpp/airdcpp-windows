@@ -225,7 +225,7 @@ private:
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
-	void handleNotifications(bool newWindow, const tstring& aMessage, const Identity& from);
+	void handleNotifications(bool newWindow, const tstring& aMessage);
 	void updateStatusBar();
 
 	void onChatMessage(const ChatMessagePtr& aMessage) noexcept;
