@@ -3612,6 +3612,8 @@ ShareManager::Directory::Ptr ShareManager::getDirectory(const string& aRealPath,
 			curDir->addBloom(*bloom.get());
 		}
 	}
+
+	return curDir;
 }
 
 ShareManager::Directory::Ptr ShareManager::findDirectory(const string& aRealPath) const noexcept {
