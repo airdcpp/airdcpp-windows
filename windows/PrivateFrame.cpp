@@ -55,6 +55,10 @@ void PrivateFrame::openWindow(const HintedUser& aReplyTo, bool aMessageReceived)
 		}
 
 		frame = frames.emplace(aReplyTo.user, p).first;
+
+		if (aMessageReceived)
+			p->handleNotifications(true, Util::emptyStringT);
+
 	} else {
 		frame->second->activate();
 	}
@@ -362,34 +366,46 @@ void PrivateFrame::showHubSelection(bool show) {
 	ctrlHubSel.EnableWindow(show);
 }
 
-void PrivateFrame::handleNotifications(bool newWindow, const tstring& aMessage) {
-	hasUnSeenMessages = true;
-	addStatus(_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + TSTRING(LAST_MESSAGE_RECEIVED), ResourceLoader::getSeverityIcon(LogMessage::SEV_INFO));
+void PrivateFrame::handleNotifications(bool windowOpened, const tstring& aMessage) {
 	
-	if (!getUser()->isSet(User::BOT))
-		MainFrame::getMainFrame()->onChatMessage(true);
-
-	if ((SETTING(FLASH_WINDOW_ON_PM) && !SETTING(FLASH_WINDOW_ON_NEW_PM)) || 
-		(newWindow && SETTING(FLASH_WINDOW_ON_NEW_PM))) {
-		WinUtil::FlashWindow();
-	}
-
-	if ((newWindow && SETTING(POPUP_NEW_PM)) || SETTING(POPUP_PM)) {
-		if (SETTING(PM_PREVIEW)) {
-			tstring message = aMessage.substr(0, 250);
-			WinUtil::showPopup(message.c_str(), CTSTRING(PRIVATE_MESSAGE));
-		} else {
-			WinUtil::showPopup(WinUtil::getNicks(chat->getHintedUser()) + 
-				_T(" - ") + WinUtil::getHubNames(chat->getHintedUser()), TSTRING(PRIVATE_MESSAGE));
+	auto handleBeep = [=] {
+		if (!SETTING(SOUNDS_DISABLED)) {
+			if (SETTING(BEEPFILE).empty()) {
+				MessageBeep(MB_OK);
+			} else {
+				WinUtil::playSound(Text::toT(SETTING(BEEPFILE)));
+			}
 		}
-	}
+	};
+	
+	if (windowOpened) {
+		//Don't notify if we're going to display the same notification when handling the incoming message (prevents doing it twice)
+		if(!SETTING(FLASH_WINDOW_ON_PM) && SETTING(FLASH_WINDOW_ON_NEW_PM))
+			WinUtil::FlashWindow();
 
-	if ((SETTING(PRIVATE_MESSAGE_BEEP) || (newWindow && SETTING(PRIVATE_MESSAGE_BEEP_OPEN))) && (!SETTING(SOUNDS_DISABLED))) {
-		if (SETTING(BEEPFILE).empty()) {
-			MessageBeep(MB_OK);
-		} else {
-			WinUtil::playSound(Text::toT(SETTING(BEEPFILE)));
+		if (!SETTING(POPUP_PM) && SETTING(POPUP_NEW_PM))
+			WinUtil::showPopup(WinUtil::getNicks(chat->getHintedUser()) + _T(" - ") + WinUtil::getHubNames(chat->getHintedUser()), TSTRING(PRIVATE_MESSAGE));
+
+		if (!SETTING(PRIVATE_MESSAGE_BEEP) && SETTING(PRIVATE_MESSAGE_BEEP_OPEN))
+			handleBeep();
+
+	} else {
+
+		if (SETTING(FLASH_WINDOW_ON_PM)) 
+			WinUtil::FlashWindow();
+		
+		if (SETTING(POPUP_PM)) {
+			if (!aMessage.empty() && SETTING(PM_PREVIEW)) {
+				tstring message = aMessage.substr(0, 250);
+				WinUtil::showPopup(message.c_str(), CTSTRING(PRIVATE_MESSAGE));
+			} else {
+				WinUtil::showPopup(WinUtil::getNicks(chat->getHintedUser()) +
+					_T(" - ") + WinUtil::getHubNames(chat->getHintedUser()), TSTRING(PRIVATE_MESSAGE));
+			}
 		}
+
+		if (SETTING(PRIVATE_MESSAGE_BEEP)) 
+			handleBeep();
 	}
 }
 
@@ -794,7 +810,13 @@ void PrivateFrame::onChatMessage(const ChatMessagePtr& aMessage) noexcept {
 	addLine(aMessage->getFrom()->getIdentity(), text);
 
 	if (!myPM) {
+		hasUnSeenMessages = true;
+		addStatus(_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + TSTRING(LAST_MESSAGE_RECEIVED), ResourceLoader::getSeverityIcon(LogMessage::SEV_INFO));
+
 		handleNotifications(false, text);
+
+		if (!getUser()->isSet(User::BOT))
+			MainFrame::getMainFrame()->onChatMessage(true);
 	}
 	else if (!userTyping) {
 		addStatus(_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + TSTRING(LAST_MESSAGE_SENT), ResourceLoader::getSeverityIcon(LogMessage::SEV_INFO));
