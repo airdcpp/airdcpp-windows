@@ -231,7 +231,8 @@ namespace webserver {
 	}
 
 	api_return QueueApi::handleRemoveBundle(ApiRequest& aRequest) {
-		auto success = QueueManager::getInstance()->removeBundle(aRequest.getTokenParam(0), false);
+		auto removeFinished = JsonUtil::getOptionalField<bool>("remove_finished", aRequest.getRequestBody());
+		auto success = QueueManager::getInstance()->removeBundle(aRequest.getTokenParam(0), removeFinished ? *removeFinished : false);
 		return success ? websocketpp::http::status_code::ok : websocketpp::http::status_code::not_found;
 	}
 
