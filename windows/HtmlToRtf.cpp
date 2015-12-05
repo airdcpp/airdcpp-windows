@@ -215,24 +215,24 @@ Parser::Context::Context(RichTextBox* /*box*/, Parser& parser) {
 }
 
 tstring Parser::Context::getBegin() const {
-	string ret = "{";
+	string retLocal = "{";
 
 	if(!link.empty()) {
-		ret += "\\field{\\*\\fldinst HYPERLINK \"" + link + "\"}{\\fldrslt";
+		retLocal += "\\field{\\*\\fldinst HYPERLINK \"" + link + "\"}{\\fldrslt";
 	}
 
-	ret += "\\f" + Util::toString(font) + "\\fs" + Util::toString(fontSize) +
+	retLocal += "\\f" + Util::toString(font) + "\\fs" + Util::toString(fontSize) +
 		"\\cf" + Util::toString(textColor) + "\\highlight" + Util::toString(bgColor);
-	if(isSet(Bold)) { ret += "\\b"; }
-	if(isSet(Italic)) { ret += "\\i"; }
-	if(isSet(Underlined)) { ret += "\\ul"; }
+	if(isSet(Bold)) { retLocal += "\\b"; }
+	if(isSet(Italic)) { retLocal += "\\i"; }
+	if(isSet(Underlined)) { retLocal += "\\ul"; }
 
-	ret += " ";
+	retLocal += " ";
 
 	// add an invisible space; otherwise link formatting may get lost...
-	if(!link.empty()) { ret += "{\\v  }"; }
+	if(!link.empty()) { retLocal += "{\\v  }"; }
 
-	return Text::toT(ret);
+	return Text::toT(retLocal);
 }
 
 tstring Parser::Context::getEnd() const {
@@ -240,9 +240,9 @@ tstring Parser::Context::getEnd() const {
 }
 
 size_t Parser::addFont(string&& font) {
-	auto ret = fonts.size();
-	fonts.push_back("{\\f" + Util::toString(ret) + move(font) + ";}");
-	return ret;
+	auto retLocal = fonts.size();
+	fonts.push_back("{\\f" + Util::toString(retLocal) + move(font) + ";}");
+	return retLocal;
 }
 
 int Parser::rtfFontSize(float px) {
@@ -253,11 +253,11 @@ int Parser::rtfFontSize(float px) {
 }
 
 size_t Parser::addColor(COLORREF color) {
-	auto ret = colors.size();
+	auto retLocal = colors.size();
 	colors.push_back("\\red" + Util::toString(GetRValue(color)) +
 		"\\green" + Util::toString(GetGValue(color)) +
 		"\\blue" + Util::toString(GetBValue(color)) + ";");
-	return ret;
+	return retLocal;
 }
 
 void Parser::parseFont(const string& s) {
