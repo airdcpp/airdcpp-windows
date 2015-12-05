@@ -39,7 +39,7 @@ public:
 	typedef MDITabChildWindowImpl<FavoriteHubsFrame> baseClass;
 
 	FavoriteHubsFrame() : nosave(true), closed(false) { }
-	~FavoriteHubsFrame() { onlineStatusImg.Destroy();  }
+	~FavoriteHubsFrame() {  }
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("FavoriteHubsFrame"), IDR_FAVORITES, 0, COLOR_3DFACE);
 		
@@ -145,7 +145,7 @@ private:
 	CButton ctrlManageGroups;
 	OMenu hubsMenu;
 
-	CImageList onlineStatusImg;
+	CImageListManaged onlineStatusImg;
 	StringList onlineHubs;
 	bool isOnline(const string& hubUrl) {
 		return find(onlineHubs.begin(), onlineHubs.end(), hubUrl) != onlineHubs.end();

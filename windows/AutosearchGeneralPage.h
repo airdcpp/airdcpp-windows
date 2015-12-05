@@ -99,7 +99,7 @@ public:
 
 private:
 	//	enum { BUF_LEN = 1024 };
-	CImageList ftImage;
+	CImageListManaged ftImage;
 
 	CEdit ctrlSearch, ctrlCheatingDescription, ctrlTarget;
 	SearchTypeCombo ctrlFileType;

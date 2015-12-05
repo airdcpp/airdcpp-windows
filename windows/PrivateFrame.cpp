@@ -589,11 +589,11 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		if (desclen2 < 190) //Make sure the HubSel Combo will fit too.
 			desclen2 = 190;
 
-		w[STATUS_TEXT] = sr.right - desclen - desclen2 - 22 - status_away_size - status_country_size;
-		w[STATUS_AWAY] = w[STATUS_TEXT] + status_away_size;
-		w[STATUS_COUNTRY] = w[STATUS_AWAY] + status_country_size;
-		w[STATUS_CC] = w[STATUS_COUNTRY] + 22;
-		w[STATUS_HUBSEL] = w[STATUS_CC] + desclen + desclen2 +8;
+		w[STATUS_TEXT] = sr.right - desclen - desclen2 - 22 - status_away_size - status_country_size -8;
+		w[STATUS_CC] = w[STATUS_TEXT] + 22;
+		w[STATUS_HUBSEL] = w[STATUS_CC] + desclen + desclen2;
+		w[STATUS_AWAY] = w[STATUS_HUBSEL] + status_away_size;
+		w[STATUS_COUNTRY] = w[STATUS_AWAY] + status_country_size +8;
 		ctrlStatus.SetParts(STATUS_LAST, w);
 		setToolRect();
 

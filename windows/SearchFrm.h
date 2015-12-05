@@ -104,7 +104,6 @@ public:
 
 	SearchFrame();
 	~SearchFrame() {
-		images.Destroy();
 	}
 
 	LRESULT onEditChange(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
@@ -375,7 +374,7 @@ private:
 	CButton ctrlSlots, ctrlShowUI, ctrlCollapsed, ctrlExcludedBool, ctrlRequireAsch;
 	bool showUI;
 
-	CImageList images;
+	CImageListManaged images;
 	FilteredList ctrlResults;
 	TypedListViewCtrl<HubInfo, IDC_HUB> ctrlHubs;
 

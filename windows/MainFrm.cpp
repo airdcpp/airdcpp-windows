@@ -79,9 +79,6 @@ bool MainFrame::isShutdownStatus = false;
 
 #define ICON_SPACE 24
 
-//static HICON mainIcon(ResourceLoader::loadIcon(IDR_MAINFRAME, ::GetSystemMetrics(SM_CXICON)));
-//static HICON mainSmallIcon(ResourceLoader::loadIcon(IDR_MAINFRAME, ::GetSystemMetrics(SM_CXSMICON)));
-
 MainFrame::MainFrame() : CSplitterImpl(false), trayMessage(0), maximized(false), lastUpload(-1), lastUpdate(0), 
 oldshutdown(false), stopperThread(NULL),
 closing(false), awaybyminimize(false), missedAutoConnect(false), tabsontop(false),

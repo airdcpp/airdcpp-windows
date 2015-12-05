@@ -270,7 +270,7 @@ private:
 	static int columnIndexes[];
 	static int columnSizes[];
 
-	CImageList arrows;
+	CImageListManaged arrows;
 
 	TaskQueue tasks;
 

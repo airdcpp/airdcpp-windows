@@ -76,7 +76,7 @@ CImageList& ResourceLoader::getUserImages() {
 
 		for(size_t iBase = 0; iBase < baseCount; ++iBase) {
 			for(size_t i = 0, n = modifierCount * modifierCount; i < n; ++i) {
-				CImageList icons;
+				CImageListManaged icons;
 				icons.Create(16, 16, ILC_COLOR32 | ILC_MASK, 3, 3);
 
 				icons.AddIcon(bases[iBase]);
@@ -87,7 +87,7 @@ CImageList& ResourceLoader::getUserImages() {
 
 				const size_t imageCount = icons.GetImageCount();
 				if(imageCount > 1) {
-					CImageList  tmp;
+					CImageListManaged  tmp;
 					tmp.Create(16, 16, ILC_COLOR32 | ILC_MASK, 3, 3);
 					tmp.AddIcon(MergeImages(icons, 0, icons, 1));
 
@@ -95,11 +95,9 @@ CImageList& ResourceLoader::getUserImages() {
 						tmp.ReplaceIcon(0, MergeImages(tmp, 0, icons, k));
 			
 					userImages.AddIcon(tmp.GetIcon(0, ILD_TRANSPARENT));
-					tmp.Destroy();
 				} else {
 					userImages.AddIcon(icons.GetIcon(0, ILD_TRANSPARENT));
 				}
-				icons.Destroy();
 			}
 		}
 	}
@@ -107,22 +105,20 @@ CImageList& ResourceLoader::getUserImages() {
 }
 HICON ResourceLoader::MergeImages(HIMAGELIST hImglst1, int pos, HIMAGELIST hImglst2, int pos2) {
 	/* Adding the merge images to a same Imagelist before merging makes the transparency work on xp */
-	CImageList tmp;
+	CImageListManaged tmp;
 	tmp.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 0);
 	tmp.AddIcon(ImageList_GetIcon(hImglst1, pos, ILD_TRANSPARENT));
 	tmp.AddIcon(ImageList_GetIcon(hImglst2, pos2, ILD_TRANSPARENT));
-	CImageList mergelist;
+	CImageListManaged mergelist;
 	mergelist.Merge(tmp, 0, tmp, 1, 0, 0);
 
 	HICON merged = CopyIcon(mergelist.GetIcon(0, ILD_TRANSPARENT));
-	tmp.Destroy();
-	mergelist.Destroy();
 	return merged;
 }
 
 
 HBITMAP ResourceLoader::getBitmapFromIcon(long defaultIcon, COLORREF crBgColor, int xSize /*= 0*/, int ySize /*= 0*/) {
-	HICON hIcon = loadIcon(defaultIcon, xSize);
+	CIcon hIcon = loadIcon(defaultIcon, xSize);
 	if(!hIcon)
 		return NULL;
 
@@ -160,7 +156,6 @@ HBITMAP ResourceLoader::getBitmapFromIcon(long defaultIcon, COLORREF crBgColor, 
 
 	DeleteDC(crtdc);
 	DeleteDC(memdc);
-	DeleteObject(hIcon);
 	DeleteObject(hBrush);
 	DeleteObject(hOldBitmap);
 
@@ -318,16 +313,14 @@ tstring ResourceLoader::getIconName(int aDefault) {
 }
 
 HICON ResourceLoader::mergeIcons(HICON tmp1, HICON tmp2, int size){
-	CImageList tmp;
+	CImageListManaged tmp;
 	tmp.Create(size, size, ILC_COLOR32 | ILC_MASK, 0, 0);
 	tmp.AddIcon(tmp1);
 	tmp.AddIcon(tmp2);
-	CImageList mergelist;
+	CImageListManaged mergelist;
 	mergelist.Merge(tmp, 0, tmp, 1, 0, 0);
 
 	HICON merged = mergelist.GetIcon(0, ILD_TRANSPARENT);
-	tmp.Destroy();
-	mergelist.Destroy();
 	return merged;
 }
 
@@ -399,22 +392,17 @@ CImageList& ResourceLoader::getFileImages() {
 				fileImages.ReplaceIcon(DIR_NORMAL, fi.hIcon);
 
 				auto mergeIcon = [&] (int resourceID, int8_t iconIndex) -> void {
-					HICON overlayIcon = loadIcon(resourceID);
+					CIcon overlayIcon = loadIcon(resourceID);
 
-					CImageList tmpIcons;
+					CImageListManaged tmpIcons;
 					tmpIcons.Create(16, 16, ILC_COLOR32 | ILC_MASK, 2, 1);
 					tmpIcons.AddIcon(fi.hIcon);
 					tmpIcons.AddIcon(overlayIcon);
 
-					CImageList mergeList(ImageList_Merge(tmpIcons, 0, tmpIcons, 1, 0, 0));
-					HICON icDirIcon = mergeList.GetIcon(0);
+					CImageListManaged mergeList(ImageList_Merge(tmpIcons, 0, tmpIcons, 1, 0, 0));
+					CIcon icDirIcon = mergeList.GetIcon(0);
 					fileImages.ReplaceIcon(iconIndex, icDirIcon);
 
-					mergeList.Destroy();
-					tmpIcons.Destroy();
-
-					::DestroyIcon(icDirIcon);
-					::DestroyIcon(overlayIcon);
 				};
 
 				mergeIcon(IDI_DIR_INC_OL, DIR_INCOMPLETE);

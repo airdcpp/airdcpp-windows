@@ -43,7 +43,7 @@ class UsersFrame : public MDITabChildWindowImpl<UsersFrame>, public StaticFrame<
 public:
 	
 	UsersFrame();
-	~UsersFrame() { images.Destroy(); }
+	~UsersFrame() { }
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("UsersFrame"), IDR_USERS, 0, COLOR_3DFACE);
 		
@@ -184,7 +184,7 @@ private:
 	CStatusBarCtrl ctrlStatus;
 		
 	TypedListViewCtrl<UserInfo, IDC_USERS> ctrlUsers;
-	CImageList images;
+	CImageListManaged images;
 	RichTextBox ctrlInfo;
 	CContainedWindow ctrlShowInfoContainer;
 	CButton ctrlShowInfo;

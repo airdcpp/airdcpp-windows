@@ -1010,7 +1010,6 @@ LRESULT UsersFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	
 		ctrlUsers.DeleteAllItems();
 		userInfos.clear();
-		images.Destroy();
 
 		bHandled = FALSE;
 		return 0;

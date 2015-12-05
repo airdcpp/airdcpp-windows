@@ -816,7 +816,7 @@ class TypedTreeListViewCtrl : public TypedListViewCtrl<T, ctrlId, style>
 public:
 
 	TypedTreeListViewCtrl() { }
-	~TypedTreeListViewCtrl() { states.Destroy(); }
+	~TypedTreeListViewCtrl() { }
 
 	typedef TypedTreeListViewCtrl<T, ctrlId, K, hashFunc, equalKey, style> thisClass;
 	typedef TypedListViewCtrl<T, ctrlId, style> baseClass;
@@ -1245,10 +1245,10 @@ public:
 private:
 
    	/** map of all parent items with their associated children */
-	ParentMap	parents;
+	ParentMap parents;
 
 	/** +/- images */
-	CImageList	states;
+	CImageListManaged states;
 
 	/** is extra item needed for parent items? */
 	bool		uniqueParent;
