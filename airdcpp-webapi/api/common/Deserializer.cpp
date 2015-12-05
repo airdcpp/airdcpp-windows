@@ -37,8 +37,9 @@ namespace webserver {
 		return ClientManager::getInstance()->findUser(deserializeCID(cidStr));
 	}
 
-	HintedUser Deserializer::deserializeHintedUser(const json& aJson) {
-		return HintedUser(deserializeUser(aJson), JsonUtil::getField<string>("hub_url", aJson, false));
+	HintedUser Deserializer::deserializeHintedUser(const json& aJson, const string& aFieldName) {
+		auto user = JsonUtil::getRawValue(aFieldName, aJson);
+		return HintedUser(deserializeUser(user), JsonUtil::getField<string>("hub_url", user, false));
 	}
 
 	TTHValue Deserializer::deserializeTTH(const json& aJson) {

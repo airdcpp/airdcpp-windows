@@ -32,7 +32,7 @@ namespace webserver {
 	public:
 		static CID deserializeCID(const string& aCID);
 		static UserPtr deserializeUser(const json& aJson);
-		static HintedUser deserializeHintedUser(const json& aJson);
+		static HintedUser deserializeHintedUser(const json& aJson, const string& aFieldName = "user");
 		static TTHValue deserializeTTH(const json& aJson);
 		static QueueItemBase::Priority deserializePriority(const json& aJson, bool allowDefault);
 
