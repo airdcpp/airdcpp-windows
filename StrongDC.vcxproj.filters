@@ -1061,15 +1061,15 @@
     <Image Include="res\SettingsTree\Webshortcuts.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\webserver.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\AirDCPlusPlus.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\arrows.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\bitmap1.bmp">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\bra.ico">
