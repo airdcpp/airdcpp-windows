@@ -362,7 +362,6 @@
   <ItemGroup>
     <None Include="res\AirDCPlusPlus.ico" />
     <None Include="res\arrows.bmp" />
-    <None Include="res\bitmap1.bmp" />
     <None Include="res\bra.ico" />
     <None Include="res\CDM.ico" />
     <None Include="res\dan.ico" />
@@ -899,6 +898,7 @@
     <Image Include="res\UsersFrame\grantOff.ico" />
     <Image Include="res\UsersFrame\offline.ico" />
     <Image Include="res\UsersFrame\online.ico" />
+    <Image Include="res\webserver.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

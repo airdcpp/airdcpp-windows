@@ -95,7 +95,7 @@ DirectoryListingFrame::DirectoryListingFrame(const DirectoryListingPtr& aList) :
 DirectoryListingFrame::~DirectoryListingFrame() {
 }
 
-void DirectoryListingFrame::updateItemCache(const string& aPath, std::function<void()> completionF, bool aReload) {
+void DirectoryListingFrame::updateItemCache(const string& aPath, std::function<void()> completionF) {
 
 	// List paths that are missing from iteminfos (if we are loading a non-root directory directly)
 	PathSet paths;
@@ -175,7 +175,7 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_
 	callAsync([=] { 
 		updateItemCache(aDir, [=] {
 			onLoadingFinished(aStart, aDir, aReload, aChangeDir);
-		}, aReload);
+		});
 	});
 }
 

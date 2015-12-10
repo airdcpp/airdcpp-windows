@@ -419,7 +419,7 @@ private:
 	};
 
 	unordered_map<string, unique_ptr<ItemInfoCache>, noCaseStringHash, noCaseStringEq> itemInfos;
-	void updateItemCache(const string& aPath, std::function<void()> completionF, bool aReload = false);
+	void updateItemCache(const string& aPath, std::function<void()> completionF);
 protected:
 	/* TypedTreeViewCtrl */
 	TreeType::ChildrenState DirectoryListingFrame::getChildrenState(const ItemInfo* d) const;

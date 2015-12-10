@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airdc-git\AirDC.rc
+// Used by Z:\airdc\master\airgit\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -311,6 +311,7 @@
 #define IDI_HUBOFF                      464
 #define IDI_TYPING                      465
 #define IDI_SEEN                        466
+#define IDI_WEBSERVER                   467
 #define IDI_SLOTS                       480
 #define IDI_SLOTSFULL                   481
 #define IDI_TOTAL_UP                    482
@@ -1854,7 +1855,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        377
+#define _APS_NEXT_RESOURCE_VALUE        468
 #define _APS_NEXT_COMMAND_VALUE         32795
 #define _APS_NEXT_CONTROL_VALUE         10214
 #define _APS_NEXT_SYMED_VALUE           136
