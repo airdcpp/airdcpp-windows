@@ -57,7 +57,7 @@ public:
 	BEGIN_MSG_MAP(TransferView)
 		NOTIFY_HANDLER(IDC_TRANSFERS, LVN_GETDISPINFO, ctrlTransfers.onGetDispInfo)
 		NOTIFY_HANDLER(IDC_TRANSFERS, LVN_COLUMNCLICK, ctrlTransfers.onColumnClick)
-		NOTIFY_HANDLER(IDC_TRANSFERS, LVN_GETINFOTIP, ctrlTransfers.onInfoTip)
+		NOTIFY_HANDLER(IDC_TRANSFERS, LVN_GETINFOTIP, onInfoTip)
 		NOTIFY_HANDLER(IDC_TRANSFERS, LVN_KEYDOWN, onKeyDownTransfers)
 		NOTIFY_HANDLER(IDC_TRANSFERS, NM_CUSTOMDRAW, onCustomDraw)
 		NOTIFY_HANDLER(IDC_TRANSFERS, NM_DBLCLK, onDoubleClickTransfers)
@@ -79,6 +79,7 @@ public:
 	LRESULT onSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 	LRESULT onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onDoubleClickTransfers(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
+	LRESULT onInfoTip(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 
 	void runUserCommand(UserCommand& uc);
 	void prepareClose();
@@ -122,7 +123,7 @@ private:
 		COLUMN_SIZE,
 		COLUMN_PATH,
 		COLUMN_IP,
-		COLUMN_RATIO,
+		//COLUMN_ENCRYPTION,
 		COLUMN_LAST
 	};
 
@@ -172,7 +173,7 @@ private:
 		tstring ip;
 		tstring statusString;
 		tstring target;
-		tstring cipher;
+		tstring Encryption;
 
 		QueueToken getLocalBundleToken() const noexcept { return Util::toUInt32(bundle); }
 		bool hasBundle() const noexcept { return !bundle.empty(); }
@@ -207,7 +208,7 @@ private:
 			MASK_IP				= 0x80,
 			MASK_STATUS_STRING	= 0x100,
 			MASK_SEGMENT		= 0x200,
-			MASK_CIPHER			= 0x400,
+			MASK_ENCRYPTION		= 0x400,
 			MASK_TOTALSPEED		= 0x800,
 			MASK_BUNDLE         = 0x1000,
 			MASK_USERS          = 0x2000,
@@ -251,8 +252,8 @@ private:
 		tstring target;
 		void setIP(const tstring& aIP, uint8_t aFlagIndex) { IP = aIP; flagIndex = aFlagIndex, updateMask |= MASK_IP; }
 		tstring IP;
-		void setCipher(const tstring& aCipher) { cipher = aCipher; updateMask |= MASK_CIPHER; }
-		tstring cipher;
+		void setEncryptionInfo(const tstring& aInfo) { Encryption = aInfo; updateMask |= MASK_ENCRYPTION; }
+		tstring Encryption;
 		void setType(const Transfer::Type& aType) { type = aType; }
 		Transfer::Type type;
 		void setBundle(const string& aBundle) { bundle = aBundle; updateMask |= MASK_BUNDLE; }
@@ -340,7 +341,7 @@ private:
 	void starting(UpdateInfo* ui, const Transfer* t);
 
 	ItemInfo* findItem(const UpdateInfo& ui, int& pos) const;
-	void updateItem(int ii, uint32_t updateMask);
+	void updateItem(const ItemInfo* aII, uint32_t updateMask);
 	void setDefaultItem(OMenu& aMenu);
 };
 

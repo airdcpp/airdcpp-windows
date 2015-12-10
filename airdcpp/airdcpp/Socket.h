@@ -228,6 +228,7 @@ public:
 	virtual bool isTrusted() const noexcept { return false; }
 	virtual bool isKeyprintMatch() const noexcept { return true; }
 	virtual std::string getCipherName() const noexcept { return Util::emptyString; }
+	virtual std::string getEncryptionInfo() const noexcept { return Util::emptyString; }
 	virtual ByteVector getKeyprint() const noexcept{ return ByteVector(); }
 	virtual bool verifyKeyprint(const string&, bool) noexcept{ return true; };
 

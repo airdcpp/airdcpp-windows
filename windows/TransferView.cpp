@@ -40,12 +40,12 @@
 
 #include "BarShader.h"
 
-int TransferView::columnIndexes[] = { COLUMN_USER, COLUMN_FILE, COLUMN_HUB, COLUMN_STATUS, COLUMN_TIMELEFT, COLUMN_SPEED, COLUMN_SIZE, COLUMN_PATH, COLUMN_IP, COLUMN_RATIO };
-int TransferView::columnSizes[] = { 150, 250, 150, 275, 75, 75, 75, 200, 175, 50 };
+int TransferView::columnIndexes[] = { COLUMN_USER, COLUMN_FILE, COLUMN_HUB, COLUMN_STATUS, COLUMN_TIMELEFT, COLUMN_SPEED, COLUMN_SIZE, COLUMN_PATH, COLUMN_IP/*, COLUMN_ENCRYPTION*/ };
+int TransferView::columnSizes[] = { 150, 250, 150, 275, 75, 75, 75, 200, 175/*, 50*/ };
 
 static ResourceManager::Strings columnNames[] = { ResourceManager::USER, ResourceManager::BUNDLE_FILENAME, ResourceManager::HUB_SEGMENTS, ResourceManager::STATUS,
 	ResourceManager::TIME_LEFT, ResourceManager::SPEED, ResourceManager::SIZE, ResourceManager::PATH,
-	ResourceManager::IP_BARE, ResourceManager::RATIO};
+	ResourceManager::IP_BARE/*, ResourceManager::ENCRYPTION*/};
 
 TransferView::~TransferView() {
 	arrows.Destroy();
@@ -355,6 +355,23 @@ LRESULT TransferView::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled)
 	}
 }
 
+
+LRESULT TransferView::onInfoTip(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+	if (!SETTING(SHOW_INFOTIPS)) return 0;
+
+	NMLVGETINFOTIP* pInfoTip = (NMLVGETINFOTIP*)pnmh;
+	tstring InfoTip = ctrlTransfers.GetColumnTexts(pInfoTip->iItem);
+	auto aItem = ctrlTransfers.getItemData(pInfoTip->iItem);
+	if (aItem && !aItem->Encryption.empty())
+		InfoTip += _T("\r\n") + TSTRING(ENCRYPTION) + _T(": ") + aItem->Encryption;
+
+	pInfoTip->cchTextMax = InfoTip.size();
+	_tcsncpy(pInfoTip->pszText, InfoTip.c_str(), INFOTIPSIZE);
+	pInfoTip->pszText[INFOTIPSIZE - 1] = NULL;
+
+	return 0;
+}
+
 LRESULT TransferView::onDoubleClickTransfers(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
     NMITEMACTIVATE* item = (NMITEMACTIVATE*)pnmh;
 	if (item->iItem != -1 ) {
@@ -415,7 +432,6 @@ int TransferView::ItemInfo::compareItems(const ItemInfo* a, const ItemInfo* b, u
 		case COLUMN_TIMELEFT: return compare(a->timeLeft, b->timeLeft);
 		case COLUMN_SPEED: return compare(a->speed, b->speed);
 		case COLUMN_SIZE: return compare(a->size, b->size);
-		case COLUMN_RATIO: return compare(a->getRatio(), b->getRatio());
 		default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str());
 	}
 }
@@ -486,15 +502,15 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 					bool changeParent = (ui.bundle != ii->bundle);
 					if (parent->isBundle) {
 						if (!ui.IP.empty() && parent->users == 1) {
-							parent->cipher = ui.cipher;
+							parent->Encryption = ui.Encryption;
 							parent->ip = ui.IP;
 							parent->flagIndex = ui.flagIndex;
-							updateItem(ctrlTransfers.findItem(parent), UpdateInfo::MASK_CIPHER | UpdateInfo::MASK_IP);
+							updateItem(parent, UpdateInfo::MASK_ENCRYPTION | UpdateInfo::MASK_IP);
 						} else if (parent->users > 1 && !parent->ip.empty()) {
-							parent->cipher = Util::emptyStringT;
+							parent->Encryption = Util::emptyStringT;
 							parent->ip = Util::emptyStringT;
 							parent->flagIndex = 0;
-							updateItem(ctrlTransfers.findItem(parent), UpdateInfo::MASK_CIPHER | UpdateInfo::MASK_IP);
+							updateItem(parent, UpdateInfo::MASK_ENCRYPTION | UpdateInfo::MASK_IP);
 						}
 					}
 
@@ -516,14 +532,13 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 							ctrlTransfers.insertGroupedItem(ii, ii->parent ? !ii->parent->collapsed : SETTING(EXPAND_BUNDLES));
 						}
 					} else if(ii == parent || !parent->collapsed) {
-						updateItem(ctrlTransfers.findItem(ii), ui.updateMask);
+						updateItem(ii, ui.updateMask);
 					}
 
 					continue;
 				}
 				ii->update(ui);
-				dcassert(pos != -1);
-				updateItem(pos, ui.updateMask);
+				updateItem(ii, ui.updateMask);
 			}
 		} else if(i.first == UPDATE_BUNDLE) {
 			auto &ui = static_cast<UpdateInfo&>(*i.second);
@@ -547,7 +562,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			} */
 
 			pp->parent->update(ui);
-			updateItem(ctrlTransfers.findItem(pp->parent), ui.updateMask);
+			updateItem(pp->parent, ui.updateMask);
 		}
 	}
 	
@@ -614,8 +629,8 @@ void TransferView::ItemInfo::update(const UpdateInfo& ui) {
 		flagIndex = ui.flagIndex;
 		ip = ui.IP;
 	}
-	if(ui.updateMask & UpdateInfo::MASK_CIPHER) {
-		cipher = ui.cipher;
+	if(ui.updateMask & UpdateInfo::MASK_ENCRYPTION) {
+		Encryption = ui.Encryption;
 	}	
 	if(ui.updateMask & UpdateInfo::MASK_SEGMENT) {
 		running = ui.running;
@@ -631,14 +646,20 @@ void TransferView::ItemInfo::update(const UpdateInfo& ui) {
 	}
 }
 
-void TransferView::updateItem(int ii, uint32_t updateMask) {
+void TransferView::updateItem(const ItemInfo* aII, uint32_t updateMask) {
+	int ii = ctrlTransfers.findItem(aII);
+	if (ii == -1)
+		return;
+
 	if(	updateMask & UpdateInfo::MASK_STATUS || updateMask & UpdateInfo::MASK_STATUS_STRING ||
 		updateMask & UpdateInfo::MASK_POS || updateMask & UpdateInfo::MASK_ACTUAL) {
 		ctrlTransfers.updateItem(ii, COLUMN_STATUS);
 	}
-	if(updateMask & UpdateInfo::MASK_POS || updateMask & UpdateInfo::MASK_ACTUAL) {
-		ctrlTransfers.updateItem(ii, COLUMN_RATIO);
-	}
+
+	//if(updateMask & UpdateInfo::MASK_ENCRYPTION) {
+		//ctrlTransfers.updateItem(ii, COLUMN_ENCRYPTION);
+	//}
+
 	if(updateMask & UpdateInfo::MASK_SIZE) {
 		ctrlTransfers.updateItem(ii, COLUMN_SIZE);
 	}
@@ -794,7 +815,7 @@ TransferView::ItemInfo* TransferView::ItemInfo::createParent() {
 		if (b) {
 			ii->target = Text::toT(b->getTarget());
 			ii->size = b->getSize();
-			ii->cipher = cipher;
+			ii->Encryption = Encryption;
 			ii->ip = ip;
 			ii->flagIndex = flagIndex;
 		}
@@ -852,7 +873,7 @@ const tstring TransferView::ItemInfo::getText(uint8_t col) const {
 		case COLUMN_SIZE: return Util::formatBytesW(size); 
 		case COLUMN_PATH: return Util::getFilePath(target);
 		case COLUMN_IP: return ip;
-		case COLUMN_RATIO: return (status == STATUS_RUNNING) ? Util::toStringW(getRatio()) : Util::emptyStringT;
+		//case COLUMN_ENCRYPTION: return Encryption;
 		default: return Util::emptyStringT;
 	}
 }
@@ -862,7 +883,7 @@ void TransferView::starting(UpdateInfo* ui, const Transfer* t) {
 	ui->setTarget(Text::toT(t->getPath()));
 	ui->setType(t->getType());
 	const auto& uc = t->getUserConnection();
-	ui->setCipher(Text::toT(uc.getCipherName()));
+	ui->setEncryptionInfo(Text::toT(uc.getEncryptionInfo()));
 
 	const auto& ip = uc.getRemoteIp();
 	const auto& country = GeoManager::getInstance()->getCountry(uc.getRemoteIp());

@@ -62,6 +62,7 @@ public:
 	virtual bool isTrusted() const noexcept;
 	virtual bool isKeyprintMatch() const noexcept;
 	virtual string getCipherName() const noexcept;
+	virtual string getEncryptionInfo() const noexcept;
 	virtual ByteVector getKeyprint() const noexcept;
 	virtual bool verifyKeyprint(const string& expKeyp, bool allowUntrusted) noexcept;
 
