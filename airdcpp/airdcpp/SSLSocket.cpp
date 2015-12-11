@@ -23,6 +23,7 @@
 #include "SettingsManager.h"
 #include "ResourceManager.h"
 #include "format.h"
+#include "StringTokenizer.h"
 
 #include <openssl/err.h>
 
@@ -241,6 +242,16 @@ std::string SSLSocket::getCipherName() const noexcept {
 		return Util::emptyString;
 
 	return SSL_get_cipher_name(ssl);
+}
+
+std::string SSLSocket::getEncryptionInfo() const noexcept {
+	if (!ssl)
+		return Util::emptyString;
+	char* buf = SSL_CIPHER_description(SSL_get_current_cipher(ssl), NULL, NULL);
+	StringTokenizer<std::string> st(buf, ' ');
+	std::string ret = st.getTokens()[1] + " / " + st.getTokens()[0];
+	delete[] buf;
+	return ret;
 }
 
 ByteVector SSLSocket::getKeyprint() const noexcept {
