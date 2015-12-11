@@ -399,8 +399,8 @@ bool Client::isTrusted() const {
 	return isConnected() && sock->isTrusted();
 }
 
-std::string Client::getCipherName() const {
-	return isConnected() ? sock->getCipherName() : Util::emptyString;
+std::string Client::getEncryptionInfo() const {
+	return isConnected() ? sock->getEncryptionInfo() : Util::emptyString;
 }
 
 vector<uint8_t> Client::getKeyprint() const {

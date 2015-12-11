@@ -496,9 +496,9 @@ void HubFrame::onConnected() {
 	if (client->isSecure()) {
 		ctrlStatus.SetIcon(1, iSecure);
 		statusSizes[0] = 16 + 8;
-		tstring cipherName = Text::toT(client->getCipherName());
-		if (!cipherName.empty())
-			cipherPopupTxt = (client->isTrusted() ? _T("[S] ") : _T("[U] ")) + cipherName;
+		tstring sslInfo = Text::toT(client->getEncryptionInfo());
+		if (!sslInfo.empty())
+			cipherPopupTxt = (client->isTrusted() ? _T("[S] ") : _T("[U] ")) + sslInfo;
 	}	
 
 	if(SETTING(POPUP_HUB_CONNECTED)) {

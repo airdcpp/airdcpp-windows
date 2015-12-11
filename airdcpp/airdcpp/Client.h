@@ -87,7 +87,7 @@ public:
 	bool isConnected() const;
 	bool isSecure() const;
 	bool isTrusted() const;
-	std::string getCipherName() const;
+	std::string getEncryptionInfo() const;
 	ByteVector getKeyprint() const;
 
 	bool isOp() const { return getMyIdentity().isOp(); }
