@@ -49,7 +49,10 @@ namespace webserver {
 
 			// Regular handler
 			RequestHandler(ApiRequest::Method aMethod, bool aRequireJson, ParamList&& aParams, HandlerFunction aFunction) :
-				method(aMethod), requireJson(aRequireJson), params(move(aParams)), f(aFunction) { }
+				method(aMethod), requireJson(aRequireJson), params(move(aParams)), f(aFunction) { 
+			
+				dcassert((aMethod != ApiRequest::METHOD_DELETE && aMethod != ApiRequest::METHOD_GET) || !aRequireJson);
+			}
 
 			// Sub handler
 			RequestHandler(const StringMatch& aMatch, HandlerFunction aFunction) :
