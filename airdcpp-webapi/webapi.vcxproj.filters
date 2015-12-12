@@ -204,6 +204,15 @@
     <ClInclude Include="api\ShareRootApi.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
+    <ClInclude Include="api\WebUserApi.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="web-server\WebUserManagerListener.h">
+      <Filter>Header Files\web-server</Filter>
+    </ClInclude>
+    <ClInclude Include="api\WebUserUtils.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="api\QueueApi.cpp">
@@ -336,6 +345,12 @@
       <Filter>Source Files\api</Filter>
     </ClCompile>
     <ClCompile Include="api\ShareRootApi.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="api\WebUserApi.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="api\WebUserUtils.cpp">
       <Filter>Source Files\api</Filter>
     </ClCompile>
   </ItemGroup>

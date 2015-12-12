@@ -56,7 +56,7 @@ LRESULT WebServerPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	currentState = webMgr->isRunning() ? STATE_STARTED : STATE_STOPPED;
 	updateStatus();
 
-	webUserList = webMgr->getUserManager().getWebUsers();
+	webUserList = webMgr->getUserManager().getUsers();
 	for (auto u : webUserList) {
 		addListItem(u->getUserName(), u->getPassword());
 	}

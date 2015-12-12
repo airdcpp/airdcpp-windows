@@ -25,6 +25,7 @@
 namespace webserver {
 	class WebUser;
 	typedef std::shared_ptr<WebUser> WebUserPtr;
+	typedef vector<WebUserPtr> WebUserList;
 
 	class WebUser {
 	public:
@@ -32,13 +33,30 @@ namespace webserver {
 
 		}
 
+		const string& getToken() const noexcept {
+			return userName;
+		}
+
 		GETSET(std::string, userName, UserName);
 		GETSET(std::string , password, Password);
+		IGETSET(time_t, lastLogin, LastLogin, 0);
 
 		WebUser(WebUser&) = delete;
 		WebUser& operator=(WebUser&) = delete;
-	private:
 
+		int getActiveSessions() const noexcept {
+			return activeSessions;
+		}
+
+		void addSession() noexcept {
+			activeSessions++;
+		}
+
+		void removeSession() noexcept {
+			activeSessions--;
+		}
+	private:
+		int activeSessions = 0;
 	};
 
 }

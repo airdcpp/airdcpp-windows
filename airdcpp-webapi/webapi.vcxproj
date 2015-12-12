@@ -205,6 +205,8 @@
     <ClInclude Include="api\ShareUtils.h" />
     <ClInclude Include="api\SystemApi.h" />
     <ClInclude Include="api\TransferApi.h" />
+    <ClInclude Include="api\WebUserApi.h" />
+    <ClInclude Include="api\WebUserUtils.h" />
     <ClInclude Include="web-server\ApiRequest.h" />
     <ClInclude Include="web-server\ApiRouter.h" />
     <ClInclude Include="web-server\Exception.h" />
@@ -220,6 +222,7 @@
     <ClInclude Include="web-server\WebSocket.h" />
     <ClInclude Include="web-server\WebUser.h" />
     <ClInclude Include="web-server\WebUserManager.h" />
+    <ClInclude Include="web-server\WebUserManagerListener.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="api\ApiModule.cpp" />
@@ -257,6 +260,8 @@
     <ClCompile Include="api\ShareUtils.cpp" />
     <ClCompile Include="api\SystemApi.cpp" />
     <ClCompile Include="api\TransferApi.cpp" />
+    <ClCompile Include="api\WebUserApi.cpp" />
+    <ClCompile Include="api\WebUserUtils.cpp" />
     <ClCompile Include="web-server\ApiRequest.cpp" />
     <ClCompile Include="web-server\ApiRouter.cpp" />
     <ClCompile Include="web-server\FileServer.cpp" />

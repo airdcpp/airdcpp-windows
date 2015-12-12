@@ -38,6 +38,7 @@
 #include <api/ShareRootApi.h>
 #include <api/SystemApi.h>
 #include <api/TransferApi.h>
+#include <api/WebUserApi.h>
 
 #include <airdcpp/TimerManager.h>
 
@@ -65,6 +66,7 @@ namespace webserver {
 		ADD_MODULE("share_roots", ShareRootApi);
 		ADD_MODULE("system", SystemApi);
 		ADD_MODULE("transfers", TransferApi);
+		ADD_MODULE("web_users", WebUserApi);
 	}
 
 	Session::~Session() {
