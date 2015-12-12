@@ -25,16 +25,16 @@
 #include <airdcpp/LogManager.h>
 
 namespace webserver {
-	LogApi::LogApi(Session* aSession) : ApiModule(aSession) {
+	LogApi::LogApi(Session* aSession) : ApiModule(aSession, Access::EVENTS) {
 		LogManager::getInstance()->addListener(this);
 
 		createSubscription("log_message");
 		createSubscription("log_cleared");
 		createSubscription("log_read");
 
-		METHOD_HANDLER("clear", ApiRequest::METHOD_POST, (), false, LogApi::handleClear);
-		METHOD_HANDLER("read", ApiRequest::METHOD_POST, (), false, LogApi::handleRead);
-		METHOD_HANDLER("messages", ApiRequest::METHOD_GET, (NUM_PARAM), false, LogApi::handleGetLog);
+		METHOD_HANDLER("clear", Access::EVENTS, ApiRequest::METHOD_POST, (), false, LogApi::handleClear);
+		METHOD_HANDLER("read", Access::EVENTS, ApiRequest::METHOD_POST, (), false, LogApi::handleRead);
+		METHOD_HANDLER("messages", Access::EVENTS, ApiRequest::METHOD_GET, (NUM_PARAM), false, LogApi::handleGetLog);
 	}
 
 	LogApi::~LogApi() {

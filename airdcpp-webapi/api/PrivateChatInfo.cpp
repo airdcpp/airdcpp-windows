@@ -36,16 +36,16 @@ namespace webserver {
 
 		chat->addListener(this);
 
-		METHOD_HANDLER("messages", ApiRequest::METHOD_GET, (NUM_PARAM), false, PrivateChatInfo::handleGetMessages);
-		METHOD_HANDLER("message", ApiRequest::METHOD_POST, (), true, PrivateChatInfo::handlePostMessage);
+		METHOD_HANDLER("messages", Access::PRIVATE_CHAT_VIEW, ApiRequest::METHOD_GET, (NUM_PARAM), false, PrivateChatInfo::handleGetMessages);
+		METHOD_HANDLER("message", Access::PRIVATE_CHAT_SEND, ApiRequest::METHOD_POST, (), true, PrivateChatInfo::handlePostMessage);
 
-		METHOD_HANDLER("ccpm", ApiRequest::METHOD_POST, (), false, PrivateChatInfo::handlePostMessage);
-		METHOD_HANDLER("ccpm", ApiRequest::METHOD_DELETE, (), false, PrivateChatInfo::handlePostMessage);
+		METHOD_HANDLER("ccpm", Access::PRIVATE_CHAT_EDIT, ApiRequest::METHOD_POST, (), false, PrivateChatInfo::handlePostMessage);
+		METHOD_HANDLER("ccpm", Access::PRIVATE_CHAT_EDIT, ApiRequest::METHOD_DELETE, (), false, PrivateChatInfo::handlePostMessage);
 
-		METHOD_HANDLER("typing", ApiRequest::METHOD_POST, (), false, PrivateChatInfo::handlePostMessage);
-		METHOD_HANDLER("typing", ApiRequest::METHOD_DELETE, (), false, PrivateChatInfo::handlePostMessage);
+		METHOD_HANDLER("typing", Access::PRIVATE_CHAT_SEND, ApiRequest::METHOD_POST, (), false, PrivateChatInfo::handlePostMessage);
+		METHOD_HANDLER("typing", Access::PRIVATE_CHAT_SEND, ApiRequest::METHOD_DELETE, (), false, PrivateChatInfo::handlePostMessage);
 
-		METHOD_HANDLER("read", ApiRequest::METHOD_POST, (), false, PrivateChatInfo::handleSetRead);
+		METHOD_HANDLER("read", Access::PRIVATE_CHAT_VIEW, ApiRequest::METHOD_POST, (), false, PrivateChatInfo::handleSetRead);
 	}
 
 	PrivateChatInfo::~PrivateChatInfo() {

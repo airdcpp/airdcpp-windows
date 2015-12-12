@@ -29,8 +29,11 @@ namespace webserver {
 		switch (aPropertyName) {
 		case WebUserApi::PROP_PERMISSIONS:
 		{
-			//return aItem->profiles;
-			return nullptr;
+			auto permissions = aItem->getPermissions();
+			return {
+				{ "ids", permissions },
+				{ "str", aItem->isAdmin() ? "Admin" : Util::toString(permissions.size()) + " permissions" },
+			};
 		}
 		}
 
@@ -38,12 +41,14 @@ namespace webserver {
 		return j;
 	}
 
-	bool WebUserUtils::filterItem(const WebUserPtr& aItem, int aPropertyName, const StringMatch&, double aNumericMatcher) noexcept {
+	bool WebUserUtils::filterItem(const WebUserPtr& aItem, int aPropertyName, const StringMatch& aStringMatch, double aNumericMatcher) noexcept {
 		switch (aPropertyName) {
 		case WebUserApi::PROP_PERMISSIONS:
 		{
-			//return aItem->profiles.find(static_cast<int>(aNumericMatcher)) != aItem->profiles.end();
-			return true;
+			auto i = WebUser::toAccess(aStringMatch.pattern);
+			if (i != Access::LAST) {
+				return aItem->hasPermission(i);
+			}
 		}
 		}
 
@@ -53,8 +58,11 @@ namespace webserver {
 	int WebUserUtils::compareItems(const WebUserPtr& a, const WebUserPtr& b, int aPropertyName) noexcept {
 		switch (aPropertyName) {
 		case WebUserApi::PROP_PERMISSIONS: {
-			//return compare(a.size(), b->profiles.size());
-			return 0;
+			if (a->isAdmin() != b->isAdmin()) {
+				return a->isAdmin() ? 1 : -1;
+			}
+
+			return compare(a->countPermissions(), b->countPermissions());
 		}
 		default:
 			dcassert(0);

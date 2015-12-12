@@ -20,6 +20,9 @@
 #define DCPLUSPLUS_DCPP_WEBUSER_H
 
 #include <web-server/stdinc.h>
+#include <web-server/Access.h>
+
+#include <airdcpp/typedefs.h>
 #include <airdcpp/GetSet.h>
 
 namespace webserver {
@@ -29,9 +32,7 @@ namespace webserver {
 
 	class WebUser {
 	public:
-		WebUser(const std::string& aUserName, const std::string& aPassword) : userName(aUserName), password(aPassword) {
-
-		}
+		WebUser(const std::string& aUserName, const std::string& aPassword, bool aIsAdmin = false);
 
 		const string& getToken() const noexcept {
 			return userName;
@@ -44,6 +45,7 @@ namespace webserver {
 		WebUser(WebUser&) = delete;
 		WebUser& operator=(WebUser&) = delete;
 
+		// Sesszions
 		int getActiveSessions() const noexcept {
 			return activeSessions;
 		}
@@ -55,8 +57,26 @@ namespace webserver {
 		void removeSession() noexcept {
 			activeSessions--;
 		}
+
+		// Access
+		bool hasPermission(Access aAccess) const noexcept;
+
+		void setPermissions(const string& aStr) noexcept;
+		void setPermissions(const StringList& aPermissions) noexcept;
+
+		string getPermissionsStr() const noexcept;
+		StringList getPermissions() const noexcept;
+		bool isAdmin() const noexcept;
+
+		const static StringList accessStrings;
+		static Access toAccess(const string& aStr) noexcept;
+
+		int countPermissions() const noexcept;
 	private:
+		void clearPermissions() noexcept;
 		int activeSessions = 0;
+
+		AccessMap permissions;
 	};
 
 }

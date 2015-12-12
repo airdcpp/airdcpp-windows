@@ -122,15 +122,23 @@ namespace webserver {
 		if (xml_.findChild("WebUsers")) {
 			xml_.stepIn();
 			while (xml_.findChild("WebUser")) {
-				const string& username = xml_.getChildAttrib("Username");
-				const string& password = xml_.getChildAttrib("Password");
+				const auto& username = xml_.getChildAttrib("Username");
+				const auto& password = xml_.getChildAttrib("Password");
 
 				if (username.empty() || password.empty()) {
 					continue;
 				}
 
-				auto user = make_shared<WebUser>(username, password);
+				const auto& permissions = xml_.getChildAttrib("Permissions");
+
+				// Set as admin mainly for compatibility with old accounts if no permissions were found
+				auto user = make_shared<WebUser>(username, password, permissions.empty());
+
 				user->setLastLogin(xml_.getIntChildAttrib("LastLogin"));
+				if (!permissions.empty()) {
+					user->setPermissions(permissions);
+				}
+
 				users.emplace(username, user);
 
 			}
@@ -145,11 +153,12 @@ namespace webserver {
 		xml_.stepIn();
 		{
 			RLock l(cs);
-			for (auto& u : users | map_values) {
+			for (const auto& u : users | map_values) {
 				xml_.addTag("WebUser");
 				xml_.addChildAttrib("Username", u->getUserName());
 				xml_.addChildAttrib("Password", u->getPassword());
 				xml_.addChildAttrib("LastLogin", u->getLastLogin());
+				xml_.addChildAttrib("Permissions", u->getPermissionsStr());
 			}
 		}
 		xml_.stepOut();

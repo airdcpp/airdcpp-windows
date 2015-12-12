@@ -16,34 +16,48 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <web-server/stdinc.h>
-#include <web-server/WebServerManager.h>
+#ifndef DCPLUSPLUS_DCPP_ACCESS_H
+#define DCPLUSPLUS_DCPP_ACCESS_H
 
-#include <api/SystemApi.h>
-
-#include <api/common/Serializer.h>
-
-#include <airdcpp/TimerManager.h>
 
 namespace webserver {
-	SystemApi::SystemApi(Session* aSession) : ApiModule(aSession) {
+	typedef int8_t AccessType;
+	enum class Access: AccessType {
+		NONE = -2,
+		ANY = -1,
+		ADMIN = 0,
 
-		METHOD_HANDLER("stats", Access::ANY, ApiRequest::METHOD_GET, (), false, SystemApi::handleGetStats);
-	}
+		SEARCH,
+		DOWNLOAD,
+		EVENTS,
 
-	SystemApi::~SystemApi() {
+		QUEUE_VIEW,
+		QUEUE_EDIT,
 
-	}
+		FAVORITE_HUBS_VIEW,
+		FAVORITE_HUBS_EDIT,
 
-	api_return SystemApi::handleGetStats(ApiRequest& aRequest) {
-		json j;
+		SETTINGS_VIEW,
+		SETTINGS_EDIT,
 
-		auto started = TimerManager::getStartTime();
-		j["client_started"] = started;
-		j["client_version"] = fullVersionString;
-		j["active_sessions"] = session->getServer()->getUserManager().getSessionCount();
+		FILESYSTEM_VIEW,
+		FILESYSTEM_EDIT,
 
-		aRequest.setResponseBody(j);
-		return websocketpp::http::status_code::ok;
-	}
+		HUBS_VIEW,
+		HUBS_EDIT,
+		HUBS_SEND,
+
+		PRIVATE_CHAT_VIEW,
+		PRIVATE_CHAT_EDIT,
+		PRIVATE_CHAT_SEND,
+
+		FILELISTS_VIEW,
+		FILELISTS_EDIT,
+
+		LAST,
+	};
+
+	typedef map<Access, bool> AccessMap;
 }
+
+#endif

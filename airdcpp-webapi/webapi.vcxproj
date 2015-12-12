@@ -213,6 +213,7 @@
     <ClInclude Include="web-server\FileServer.h" />
     <ClInclude Include="web-server\JsonUtil.h" />
     <ClInclude Include="web-server\LazyInitWrapper.h" />
+    <ClInclude Include="web-server\Access.h" />
     <ClInclude Include="web-server\Session.h" />
     <ClInclude Include="web-server\SessionListener.h" />
     <ClInclude Include="web-server\stdinc.h" />
@@ -270,6 +271,7 @@
     <ClCompile Include="web-server\stdinc.cpp" />
     <ClCompile Include="web-server\WebServerManager.cpp" />
     <ClCompile Include="web-server\WebSocket.cpp" />
+    <ClCompile Include="web-server\WebUser.cpp" />
     <ClCompile Include="web-server\WebUserManager.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -27,10 +27,10 @@
 
 namespace webserver {
 	SettingApi::SettingApi(Session* aSession) : ApiModule(aSession) {
-		METHOD_HANDLER("items", ApiRequest::METHOD_POST, (EXACT_PARAM("info")), true, SettingApi::handleGetSettingInfos);
-		METHOD_HANDLER("items", ApiRequest::METHOD_POST, (EXACT_PARAM("get")), true, SettingApi::handleGetSettingValues);
-		METHOD_HANDLER("items", ApiRequest::METHOD_POST, (EXACT_PARAM("set")), true, SettingApi::handleSetSettings);
-		METHOD_HANDLER("items", ApiRequest::METHOD_POST, (EXACT_PARAM("reset")), true, SettingApi::handleResetSettings);
+		METHOD_HANDLER("items", Access::SETTINGS_VIEW, ApiRequest::METHOD_POST, (EXACT_PARAM("info")), true, SettingApi::handleGetSettingInfos);
+		METHOD_HANDLER("items", Access::ANY, ApiRequest::METHOD_POST, (EXACT_PARAM("get")), true, SettingApi::handleGetSettingValues);
+		METHOD_HANDLER("items", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("set")), true, SettingApi::handleSetSettings);
+		METHOD_HANDLER("items", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("reset")), true, SettingApi::handleResetSettings);
 	}
 
 	SettingApi::~SettingApi() {

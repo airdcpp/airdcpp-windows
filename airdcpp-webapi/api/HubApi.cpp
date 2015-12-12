@@ -31,17 +31,17 @@ namespace webserver {
 		"hub_removed"
 	};
 
-	HubApi::HubApi(Session* aSession) : ParentApiModule("session", TOKEN_PARAM, aSession, subscriptionList, HubInfo::subscriptionList, [](const string& aId) { return Util::toUInt32(aId); }) {
+	HubApi::HubApi(Session* aSession) : ParentApiModule("session", TOKEN_PARAM, Access::HUBS_VIEW, aSession, subscriptionList, HubInfo::subscriptionList, [](const string& aId) { return Util::toUInt32(aId); }) {
 		ClientManager::getInstance()->addListener(this);
 
-		METHOD_HANDLER("sessions", ApiRequest::METHOD_GET, (), false, HubApi::handleGetHubs);
+		METHOD_HANDLER("sessions", Access::HUBS_VIEW, ApiRequest::METHOD_GET, (), false, HubApi::handleGetHubs);
 
-		METHOD_HANDLER("session", ApiRequest::METHOD_POST, (), true, HubApi::handleConnect);
-		METHOD_HANDLER("session", ApiRequest::METHOD_DELETE, (TOKEN_PARAM), false, HubApi::handleDisconnect);
+		METHOD_HANDLER("session", Access::HUBS_EDIT, ApiRequest::METHOD_POST, (), true, HubApi::handleConnect);
+		METHOD_HANDLER("session", Access::HUBS_EDIT, ApiRequest::METHOD_DELETE, (TOKEN_PARAM), false, HubApi::handleDisconnect);
 
-		METHOD_HANDLER("search_nicks", ApiRequest::METHOD_POST, (), true, HubApi::handleSearchNicks);
+		METHOD_HANDLER("search_nicks", Access::ANY, ApiRequest::METHOD_POST, (), true, HubApi::handleSearchNicks);
 
-		METHOD_HANDLER("stats", ApiRequest::METHOD_GET, (), false, HubApi::handleGetStats);
+		METHOD_HANDLER("stats", Access::ANY, ApiRequest::METHOD_GET, (), false, HubApi::handleGetStats);
 
 		auto rawHubs = ClientManager::getInstance()->getClients();
 		for (const auto& c : rawHubs | map_values) {

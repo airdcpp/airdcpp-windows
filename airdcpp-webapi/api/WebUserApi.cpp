@@ -27,16 +27,16 @@
 #include <web-server/WebUserManager.h>
 
 namespace webserver {
-	WebUserApi::WebUserApi(Session* aSession) : ApiModule(aSession), um(aSession->getServer()->getUserManager()), itemHandler(properties,
+	WebUserApi::WebUserApi(Session* aSession) : ApiModule(aSession, Access::ADMIN), um(aSession->getServer()->getUserManager()), itemHandler(properties,
 		WebUserUtils::getStringInfo, WebUserUtils::getNumericInfo, WebUserUtils::compareItems, WebUserUtils::serializeItem, WebUserUtils::filterItem),
 		view("web_user_view", this, itemHandler, std::bind(&WebUserApi::getUsers, this)) {
 
 		um.addListener(this);
 
-		METHOD_HANDLER("users", ApiRequest::METHOD_GET, (), false, WebUserApi::handleGetUsers);
-		METHOD_HANDLER("user", ApiRequest::METHOD_POST, (EXACT_PARAM("add")), true, WebUserApi::handleAddUser);
-		METHOD_HANDLER("user", ApiRequest::METHOD_POST, (EXACT_PARAM("update")), true, WebUserApi::handleUpdateUser);
-		METHOD_HANDLER("user", ApiRequest::METHOD_POST, (EXACT_PARAM("remove")), true, WebUserApi::handleRemoveUser);
+		METHOD_HANDLER("users", Access::ADMIN, ApiRequest::METHOD_GET, (), false, WebUserApi::handleGetUsers);
+		METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_POST, (EXACT_PARAM("add")), true, WebUserApi::handleAddUser);
+		METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_POST, (EXACT_PARAM("update")), true, WebUserApi::handleUpdateUser);
+		METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_POST, (EXACT_PARAM("remove")), true, WebUserApi::handleRemoveUser);
 
 		createSubscription("web_user_added");
 		createSubscription("web_user_updated");
@@ -128,22 +128,10 @@ namespace webserver {
 			aUser->setPassword(*password);
 		}
 
-		auto permissions = JsonUtil::getOptionalField<ProfileTokenSet>("permissions", j, false, aIsNew);
+		auto permissions = JsonUtil::getOptionalField<StringList>("permissions", j, false, false);
 		if (permissions) {
 			// Only validate added profiles profiles
-			/*ProfileTokenSet diff;
-
-			auto newProfiles = *profiles;
-			std::set_difference(newProfiles.begin(), newProfiles.end(),
-				aInfo->profiles.begin(), aInfo->profiles.end(), std::inserter(diff, diff.begin()));
-
-			try {
-				ShareManager::getInstance()->validateNewRootProfiles(aInfo->path, diff);
-			} catch (ShareException& e) {
-				JsonUtil::throwError(aIsNew ? "path" : "profiles", JsonUtil::ERROR_INVALID, e.what());
-			}
-
-			aInfo->profiles = newProfiles;*/
+			aUser->setPermissions(*permissions);
 		}
 	}
 }
