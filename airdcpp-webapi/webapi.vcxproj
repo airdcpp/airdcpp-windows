@@ -182,6 +182,7 @@
     <ClInclude Include="api\FilelistApi.h" />
     <ClInclude Include="api\FilelistUtils.h" />
     <ClInclude Include="api\FilesystemApi.h" />
+    <ClInclude Include="api\HashApi.h" />
     <ClInclude Include="api\HierarchicalApiModule.h" />
     <ClInclude Include="api\HistoryApi.h" />
     <ClInclude Include="api\HubApi.h" />
@@ -240,6 +241,7 @@
     <ClCompile Include="api\FilelistApi.cpp" />
     <ClCompile Include="api\FilelistUtils.cpp" />
     <ClCompile Include="api\FilesystemApi.cpp" />
+    <ClCompile Include="api\HashApi.cpp" />
     <ClCompile Include="api\HistoryApi.cpp" />
     <ClCompile Include="api\HubApi.cpp" />
     <ClCompile Include="api\HubInfo.cpp" />

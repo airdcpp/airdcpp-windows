@@ -216,6 +216,9 @@
     <ClInclude Include="web-server\Access.h">
       <Filter>Header Files\web-server</Filter>
     </ClInclude>
+    <ClInclude Include="api\HashApi.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="api\QueueApi.cpp">
@@ -358,6 +361,9 @@
     </ClCompile>
     <ClCompile Include="web-server\WebUser.cpp">
       <Filter>Source Files\web-server</Filter>
+    </ClCompile>
+    <ClCompile Include="api\HashApi.cpp">
+      <Filter>Source Files\api</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

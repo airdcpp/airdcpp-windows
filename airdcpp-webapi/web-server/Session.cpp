@@ -25,6 +25,7 @@
 #include <api/FavoriteHubApi.h>
 #include <api/FilelistApi.h>
 #include <api/FilesystemApi.h>
+#include <api/HashApi.h>
 #include <api/HistoryApi.h>
 #include <api/HubApi.h>
 #include <api/LogApi.h>
@@ -53,6 +54,7 @@ namespace webserver {
 		ADD_MODULE("favorite_hubs", FavoriteHubApi);
 		ADD_MODULE("filelists", FilelistApi);
 		ADD_MODULE("filesystem", FilesystemApi);
+		ADD_MODULE("hash", HashApi);
 		ADD_MODULE("histories", HistoryApi);
 		ADD_MODULE("hubs", HubApi);
 		ADD_MODULE("log", LogApi);
