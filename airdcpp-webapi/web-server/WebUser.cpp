@@ -48,8 +48,8 @@ namespace webserver {
 		"hubs_edit",
 		"hubs_send",
 
-		"private_chat_send",
-		"private_chat_send",
+		"private_chat_view",
+		"private_chat_edit",
 		"private_chat_send",
 
 		"filelists_view",

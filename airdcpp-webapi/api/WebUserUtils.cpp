@@ -29,11 +29,7 @@ namespace webserver {
 		switch (aPropertyName) {
 		case WebUserApi::PROP_PERMISSIONS:
 		{
-			auto permissions = aItem->getPermissions();
-			return {
-				{ "ids", permissions },
-				{ "str", aItem->isAdmin() ? "Admin" : Util::toString(permissions.size()) + " permissions" },
-			};
+			return aItem->getPermissions();
 		}
 		}
 

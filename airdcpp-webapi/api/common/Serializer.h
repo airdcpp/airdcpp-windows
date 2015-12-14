@@ -57,13 +57,13 @@ namespace webserver {
 				return json::array();
 			}
 
-			if (aCount <= 0) {
+			if (aCount < 0) {
 				throw std::domain_error("Invalid range");
 			}
 
 			auto listSize = static_cast<int>(std::distance(aList.begin(), aList.end()));
 			auto beginIter = aList.begin();
-			if (listSize > aCount) {
+			if (aCount > 0 && listSize > aCount) {
 				std::advance(beginIter, listSize - aCount);
 			}
 

@@ -67,7 +67,7 @@ namespace webserver {
 		parseUser(user, reqJson, true);
 
 		if (!um.addUser(user)) {
-			aRequest.setResponseErrorStr("User with the same name exists");
+			JsonUtil::throwError("username", JsonUtil::ERROR_EXISTS, "User with the same name exists");
 			return websocketpp::http::status_code::bad_request;
 		}
 
