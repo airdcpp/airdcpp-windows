@@ -32,8 +32,8 @@ namespace webserver {
 		void setResourcePath(const string& aPath) noexcept;
 		const string& getResourcePath() const noexcept;
 
-		websocketpp::http::status_code::value handleRequest(const std::string& aRequestPath, const SessionPtr& aSession, 
-			const std::string& aRequestBody, std::string& output_, std::string& contentType) noexcept;
+		websocketpp::http::status_code::value handleRequest(const string& aResource, const websocketpp::http::parser::request& aRequest, const SessionPtr& aSession, 
+			std::string& output_, StringPairList& headers_) noexcept;
 	private:
 		string resourcePath;
 	};
