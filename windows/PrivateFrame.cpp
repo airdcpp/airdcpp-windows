@@ -438,7 +438,7 @@ bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& /*param*/, tstring& 
 }
 
 bool PrivateFrame::sendMessage(const tstring& msg, string& error_, bool thirdPerson) {
-	return chat->sendPrivateMessage(Text::fromT(msg), error_, thirdPerson);
+	return chat->sendMessage(Text::fromT(msg), error_, thirdPerson);
 }
 
 void PrivateFrame::on(PrivateChatListener::Close, PrivateChat*) noexcept {

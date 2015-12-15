@@ -269,7 +269,12 @@ void Client::setRead() noexcept {
 }
 
 int Client::clearCache() noexcept {
-	return cache.clear();
+	auto ret = cache.clear();
+	if (ret > 0) {
+		fire(ClientListener::MessagesCleared(), this);
+	}
+
+	return ret;
 }
 
 void Client::onPassword() {
