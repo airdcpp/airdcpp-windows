@@ -25,8 +25,8 @@
 
 namespace webserver {
 	StringList PrivateChatApi::subscriptionList = {
-		"chat_session_created",
-		"chat_session_removed"
+		"private_chat_created",
+		"private_chat_removed"
 	};
 
 	PrivateChatApi::PrivateChatApi(Session* aSession) : ParentApiModule("session", CID_PARAM, Access::PRIVATE_CHAT_VIEW, aSession, subscriptionList, PrivateChatInfo::subscriptionList, [](const string& aId) { return Deserializer::deserializeCID(aId); }) {
@@ -98,11 +98,11 @@ namespace webserver {
 			subModules.erase(aChat->getUser()->getCID());
 		}
 
-		if (!subscriptionActive("chat_session_removed")) {
+		if (!subscriptionActive("private_chat_removed")) {
 			return;
 		}
 
-		send("chat_session_removed", {
+		send("private_chat_removed", {
 			{ "id", aChat->getUser()->getCID().toBase32() }
 		});
 	}
@@ -118,19 +118,21 @@ namespace webserver {
 
 	void PrivateChatApi::on(MessageManagerListener::ChatCreated, const PrivateChatPtr& aChat, bool aReceivedMessage) noexcept {
 		addChat(aChat);
-		if (!subscriptionActive("chat_session_created")) {
+		if (!subscriptionActive("private_chat_created")) {
 			return;
 		}
 
-		send("chat_session_created", serializeChat(aChat));
+		send("private_chat_created", serializeChat(aChat));
 	}
 
 	json PrivateChatApi::serializeChat(const PrivateChatPtr& aChat) noexcept {
-		return {
+		json j = {
 			{ "id", aChat->getUser()->getCID().toBase32() },
 			{ "user", Serializer::serializeHintedUser(aChat->getHintedUser()) },
 			{ "ccpm_state", PrivateChatInfo::serializeCCPMState(aChat->getCCPMState()) },
-			{ "unread_messages", Serializer::serializeUnread(aChat->getCache()) }
 		};
+
+		Serializer::serializeCacheInfo(j, aChat->getCache(), Serializer::serializeUnreadChat);
+		return j;
 	}
 }

@@ -32,11 +32,16 @@ namespace webserver {
 	public:
 		static StringSet getUserFlags(const UserPtr& aUser) noexcept;
 		static StringSet getOnlineUserFlags(const OnlineUserPtr& aUser) noexcept;
+		static string getSeverity(LogMessage::Severity aSeverity) noexcept;
 
 		static json serializeMessage(const Message& aMessage) noexcept;
 		static json serializeChatMessage(const ChatMessagePtr& aMessage) noexcept;
 		static json serializeLogMessage(const LogMessagePtr& aMessageData) noexcept;
-		static json serializeUnread(const MessageCache& aCache) noexcept;
+
+		typedef std::function<json(const MessageCache& aCache)> UnreadSerializerF;
+		static void serializeCacheInfo(json& json_, const MessageCache& aCache, UnreadSerializerF unreadF) noexcept;
+		static json serializeUnreadChat(const MessageCache& aCache) noexcept;
+		static json serializeUnreadLog(const MessageCache& aCache) noexcept;
 
 		static json serializeUser(const UserPtr& aUser) noexcept;
 		static json serializeHintedUser(const HintedUser& aUser) noexcept;

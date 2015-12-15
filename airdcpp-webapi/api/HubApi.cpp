@@ -88,16 +88,18 @@ namespace webserver {
 	}
 
 	json HubApi::serializeClient(const ClientPtr& aClient) noexcept {
-		return{
+		json j = {
 			{ "identity", HubInfo::serializeIdentity(aClient) },
 			{ "connect_state", HubInfo::serializeConnectState(aClient) },
-			{ "unread_messages", Serializer::serializeUnread(aClient->getCache()) },
 			{ "hub_url", aClient->getHubUrl() },
 			{ "id", aClient->getClientId() },
 			{ "favorite_hub", aClient->getFavToken() },
 			{ "share_profile", aClient->getShareProfile() }
 			//{ "share_profile", Serializer::serializeShare aClient->getShareProfile() },
 		};
+
+		Serializer::serializeCacheInfo(j, aClient->getCache(), Serializer::serializeUnreadChat);
+		return j;
 	}
 
 	void HubApi::addHub(const ClientPtr& aClient) noexcept {

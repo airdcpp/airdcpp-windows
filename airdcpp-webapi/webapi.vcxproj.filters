@@ -219,6 +219,9 @@
     <ClInclude Include="api\HashApi.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
+    <ClInclude Include="api\common\ChatController.h">
+      <Filter>Header Files\api\common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="api\QueueApi.cpp">

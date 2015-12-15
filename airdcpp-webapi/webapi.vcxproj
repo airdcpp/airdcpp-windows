@@ -169,6 +169,7 @@
     <ClInclude Include="api\common\Deserializer.h" />
     <ClInclude Include="api\common\Format.h" />
     <ClInclude Include="api\common\ListViewController.h" />
+    <ClInclude Include="api\common\ChatController.h" />
     <ClInclude Include="api\common\Property.h" />
     <ClInclude Include="api\common\PropertyFilter.h" />
     <ClInclude Include="api\common\Serializer.h" />
