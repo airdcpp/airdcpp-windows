@@ -610,7 +610,7 @@ namespace webserver {
 			decltype(currentViewItems) viewItemsNew, oldViewItems;
 			{
 				RLock l(cs);
-				if (newStart_ >= allItems.size()) {
+				if (newStart_ >= static_cast<int>(allItems.size())) {
 					newStart_ = 0;
 				}
 
