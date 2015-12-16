@@ -428,6 +428,16 @@ bool FavoriteManager::addFavoriteHub(const FavoriteHubEntryPtr& aEntry) {
 }
 
 void FavoriteManager::onFavoriteHubUpdated(const FavoriteHubEntryPtr& aEntry) {
+	// Update the connect state in case the address was changed
+	auto client = ClientManager::getInstance()->getClient(aEntry->getServer());
+	if (client) {
+		aEntry->setConnectState(client->isConnected() ? FavoriteHubEntry::STATE_CONNECTED : FavoriteHubEntry::STATE_CONNECTING);
+		aEntry->setCurrentHubToken(client->getClientId());
+	} else {
+		aEntry->setCurrentHubToken(0);
+		aEntry->setConnectState(FavoriteHubEntry::STATE_DISCONNECTED);
+	}
+
 	save();
 	fire(FavoriteManagerListener::FavoriteHubUpdated(), aEntry);
 }
