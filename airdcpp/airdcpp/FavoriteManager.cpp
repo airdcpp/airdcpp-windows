@@ -495,7 +495,7 @@ void FavoriteManager::on(ShareManagerListener::DefaultProfileChanged, ProfileTok
 }
 
 void FavoriteManager::on(ShareManagerListener::ProfileRemoved, ProfileToken aProfile) noexcept {
-	resetProfile(aProfile, SETTING(DEFAULT_SP), false);
+	resetProfile(aProfile, HUB_SETTING_DEFAULT_INT, false);
 }
 
 int FavoriteManager::resetProfile(ProfileToken aResetToken, ProfileToken aDefaultProfile, bool nmdcOnly) {
