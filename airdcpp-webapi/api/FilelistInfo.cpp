@@ -119,7 +119,7 @@ namespace webserver {
 				}
 			}
 
-			directoryView.setResetItems();
+			directoryView.resetItems();
 
 			json j;
 			onSessionUpdated({
