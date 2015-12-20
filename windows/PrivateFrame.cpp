@@ -326,7 +326,7 @@ void PrivateFrame::updateOnlineStatus() {
 		setDisconnected(false);
 		updateTabIcon(false);
 
-		if (!ccReady() && !getUser()->isNMDC()) {
+		if (!ccReady() && !getUser()->isNMDC() && !getUser()->isSet(User::BOT)) {
 			hubs = ClientManager::getInstance()->getHubs(getUser()->getCID());
 			while (ctrlHubSel.GetCount()) {
 				ctrlHubSel.DeleteString(0);

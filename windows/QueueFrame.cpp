@@ -535,19 +535,12 @@ void QueueFrame::AppendDirectoryMenu(QueueItemInfoList& dirs, QueueItemList& ql,
 tstring QueueFrame::formatUser(const Bundle::BundleSource& bs) const {
 	auto& u = bs.getUser();
 	tstring nick = WinUtil::escapeMenu(WinUtil::getNicks(u));
-	// add hub hint to menu
-	bool addHint = !u.hint.empty(), addSpeed = u.user->getSpeed() > 0;
+	bool addSpeed = u.user->getSpeed() > 0;
 	nick += _T(" (") + TSTRING(FILES) + _T(": ") + Util::toStringW(bs.files);
-	if (addHint || addSpeed) {
+	if (addSpeed) {
 		nick += _T(", ");
 		if (addSpeed) {
 			nick += TSTRING(SPEED) + _T(": ") + Util::formatBytesW(u.user->getSpeed()) + _T("/s)");
-		}
-		if (addHint) {
-			if (addSpeed) {
-				nick += _T(", ");
-			}
-			nick += TSTRING(HUB) + _T(": ") + Text::toT(u.hint);
 		}
 	}
 	nick += _T(")");
@@ -556,10 +549,6 @@ tstring QueueFrame::formatUser(const Bundle::BundleSource& bs) const {
 
 tstring QueueFrame::formatUser(const QueueItem::Source& s) const {
 	tstring nick = WinUtil::escapeMenu(WinUtil::getNicks(s.getUser()));
-	// add hub hint to menu
-	if (!s.getUser().hint.empty())
-		nick += _T(" (") + Text::toT(s.getUser().hint) + _T(")");
-
 	return nick;
 }
 
