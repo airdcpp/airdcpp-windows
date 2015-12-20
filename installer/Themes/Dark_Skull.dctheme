@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<DCPlusPlus>
+	<Settings>
+		<Font type="string">Microsoft Sans Serif,-11,400,0</Font>
+		<BackgroundColor type="int">0</BackgroundColor>
+		<TextColor type="int">16744448</TextColor>
+		<DownloadBarColor type="int">5614135</DownloadBarColor>
+		<UploadBarColor type="int">16639</UploadBarColor>
+		<TextGeneralBackColor type="int">0</TextGeneralBackColor>
+		<TextGeneralForeColor type="int">16744448</TextGeneralForeColor>
+		<TextGeneralBold type="int">0</TextGeneralBold>
+		<TextGeneralItalic type="int">0</TextGeneralItalic>
+		<TextMyOwnBackColor type="int">0</TextMyOwnBackColor>
+		<TextMyOwnForeColor type="int">16744576</TextMyOwnForeColor>
+		<TextMyOwnBold type="int">0</TextMyOwnBold>
+		<TextMyOwnItalic type="int">0</TextMyOwnItalic>
+		<TextPrivateBackColor type="int">0</TextPrivateBackColor>
+		<TextPrivateForeColor type="int">16744448</TextPrivateForeColor>
+		<TextPrivateBold type="int">0</TextPrivateBold>
+		<TextPrivateItalic type="int">0</TextPrivateItalic>
+		<TextSystemBackColor type="int">0</TextSystemBackColor>
+		<TextSystemForeColor type="int">65535</TextSystemForeColor>
+		<TextSystemBold type="int">1</TextSystemBold>
+		<TextSystemItalic type="int">0</TextSystemItalic>
+		<TextServerBackColor type="int">0</TextServerBackColor>
+		<TextServerForeColor type="int">65280</TextServerForeColor>
+		<TextServerBold type="int">1</TextServerBold>
+		<TextServerItalic type="int">0</TextServerItalic>
+		<TextTimestampBackColor type="int">0</TextTimestampBackColor>
+		<TextTimestampForeColor type="int">255</TextTimestampForeColor>
+		<TextTimestampBold type="int">0</TextTimestampBold>
+		<TextTimestampItalic type="int">0</TextTimestampItalic>
+		<TextMyNickBackColor type="int">0</TextMyNickBackColor>
+		<TextMyNickForeColor type="int">33023</TextMyNickForeColor>
+		<TextMyNickBold type="int">1</TextMyNickBold>
+		<TextMyNickItalic type="int">0</TextMyNickItalic>
+		<TextFavBackColor type="int">0</TextFavBackColor>
+		<TextFavForeColor type="int">16744448</TextFavForeColor>
+		<TextFavBold type="int">0</TextFavBold>
+		<TextFavItalic type="int">0</TextFavItalic>
+		<TextURLBackColor type="int">12615680</TextURLBackColor>
+		<TextURLForeColor type="int">16777215</TextURLForeColor>
+		<TextURLBold type="int">0</TextURLBold>
+		<TextURLItalic type="int">0</TextURLItalic>
+		<ProgressTextDown type="int">16777215</ProgressTextDown>
+		<ProgressTextUp type="int">16777215</ProgressTextUp>
+		<ErrorColor type="int">255</ErrorColor>
+		<ProgressOverrideColors type="int">1</ProgressOverrideColors>
+		<MenubarTwoColors type="int">1</MenubarTwoColors>
+		<MenubarLeftColor type="int">8388608</MenubarLeftColor>
+		<MenubarRightColor type="int">11556864</MenubarRightColor>
+		<MenubarBumped type="int">1</MenubarBumped>
+		<Progress3DDepth type="int">4</Progress3DDepth>
+		<ProgressOverrideColors2 type="int">1</ProgressOverrideColors2>
+		<TextOPBackColor type="int">0</TextOPBackColor>
+		<TextOPForeColor type="int">16744448</TextOPForeColor>
+		<TextOPBold type="int">0</TextOPBold>
+		<TextOPItalic type="int">0</TextOPItalic>
+		<TextNormBackColor type="int">0</TextNormBackColor>
+		<TextNormForeColor type="int">16744448</TextNormForeColor>
+		<TextNormBold type="int">0</TextNormBold>
+		<TextNormItalic type="int">0</TextNormItalic>
+		<SearchAlternateColour type="int">51455</SearchAlternateColour>
+		<ProgressBackColor type="int">6250335</ProgressBackColor>
+		<ProgressSegmentColor type="int">12937777</ProgressSegmentColor>
+		<ColorDone type="int">41182</ColorDone>
+		<ReservedSlotColor type="int">16772335</ReservedSlotColor>
+		<IgnoredColor type="int">16772335</IgnoredColor>
+		<FavoriteColor type="int">16772335</FavoriteColor>
+		<NormalColour type="int">16772335</NormalColour>
+		<PasiveColor type="int">16772335</PasiveColor>
+		<OpColor type="int">16772335</OpColor>
+		<ProgressbaroDCStyle type="int">1</ProgressbaroDCStyle>
+		<UnderlineLinks type="int">1</UnderlineLinks>
+		<UnderlineDupes type="int">1</UnderlineDupes>
+		<TextDupeBackColor type="int">12615680</TextDupeBackColor>
+		<TextDupeColor type="int">0</TextDupeColor>
+		<TextDupeBold type="int">0</TextDupeBold>
+		<TextDupeItalic type="int">0</TextDupeItalic>
+		<TextQueueBackColor type="int">2960685</TextQueueBackColor>
+		<QueueColor type="int">33023</QueueColor>
+		<TextQueueBold type="int">0</TextQueueBold>
+		<TextQueueItalic type="int">0</TextQueueItalic>
+		<UnderlineQueue type="int">1</UnderlineQueue>
+		<tabactivebg type="int">11753728</tabactivebg>
+		<TabActiveText type="int">0</TabActiveText>
+		<TabActiveBorder type="int">0</TabActiveBorder>
+		<TabInactiveBg type="int">16769476</TabInactiveBg>
+		<TabInactiveBgDisconnected type="int">5592573</TabInactiveBgDisconnected>
+		<TabInactiveText type="int">0</TabInactiveText>
+		<TabInactiveBorder type="int">11753728</TabInactiveBorder>
+		<TabInactiveBgNotify type="int">2271316</TabInactiveBgNotify>
+		<TabDirtyBlend type="int">30</TabDirtyBlend>
+		<BlendTabs type="int">1</BlendTabs>
+		<TabSize type="int">20</TabSize>
+	</Settings>
+	<Highlights>
+		<Highlight Context="0" Match="YourNick" Bold="0" Italic="0" Underline="0" Strikeout="0" CaseSensitive="0" WholeLine="0" WholeWord="1" Popup="0" Tab="0" PlaySound="0" FlashWindow="0" MatchType="1" HasFgColor="1" HasBgColor="0" FgColor="33023" BgColor="0" SoundFile="" MatchColumn="0"/>
+	</Highlights>
+	<Icons>
+		<IconPath type="string">Themes\Dark_Skull_IconPack\Icons</IconPath>
+	</Icons>
+</DCPlusPlus>
