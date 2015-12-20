@@ -825,7 +825,7 @@ TransferView::ItemInfo* TransferView::ItemInfo::createParent() {
 	return ii;
 }
 
-inline const string& TransferView::ItemInfo::getGroupCond() const {
+const string& TransferView::ItemInfo::getGroupCond() const {
 	//dcassert(!bundle.empty());
 	if (!bundle.empty()) {
 		return bundle;

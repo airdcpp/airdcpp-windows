@@ -192,7 +192,7 @@ private:
 		ItemInfo* createParent();
 		void updateUser(const vector<ItemInfo*>& aChildren);
 
-		inline const string& getGroupCond() const;
+		const string& getGroupCond() const;
 		//const tstring& getIpText() const { return ip; }
 	};
 
