@@ -168,9 +168,7 @@ namespace webserver {
 	}
 
 	void HubInfo::on(ClientListener::HubUpdated, const Client*) noexcept {
-		onHubUpdated({
-			{ "identity", serializeIdentity(client) }
-		});
+		onHubIdentityUpdated();
 	}
 
 	void HubInfo::on(ClientListener::HubTopic, const Client*, const string&) noexcept {
@@ -180,6 +178,22 @@ namespace webserver {
 	void HubInfo::sendConnectState() noexcept {
 		onHubUpdated({
 			{ "connect_state", serializeConnectState(client) }
+		});
+	}
+
+	void HubInfo::onHubIdentityUpdated() noexcept {
+		if (!subscriptionActive("hub_updated")) {
+			return;
+		}
+
+		auto newIdentity = serializeIdentity(client);
+		if (newIdentity == previousIdentity) {
+			return;
+		}
+
+		previousIdentity = newIdentity;
+		onHubUpdated({
+			{ "identity", newIdentity }
 		});
 	}
 
@@ -202,10 +216,15 @@ namespace webserver {
 			view.onItemAdded(aUser);
 		}
 
+		// Don't spam with updates while the userlist is being loaded
+		if (client->getConnectState() == Client::STATE_NORMAL) {
+			onHubIdentityUpdated();
+		}
+
 		maybeSend("hub_user_connected", [&] { return Serializer::serializeItem(aUser, onlineUserPropertyHandler); });
 	}
 
-	void HubInfo::on(ClientListener::UserUpdated, const Client*, const OnlineUserPtr& aUser) noexcept {
+	void HubInfo::onUserUpdated(const OnlineUserPtr& aUser) noexcept {
 		if (!aUser->isHidden()) {
 			view.onItemUpdated(aUser, toPropertyIdSet(onlineUserPropertyHandler.properties));
 		}
@@ -213,10 +232,18 @@ namespace webserver {
 		maybeSend("hub_user_updated", [&] { return Serializer::serializeItem(aUser, onlineUserPropertyHandler); });
 	}
 
+	void HubInfo::on(ClientListener::UserUpdated, const Client*, const OnlineUserPtr& aUser) noexcept {
+		onUserUpdated(aUser);
+
+		// Don't update the identity for now (especially Flexhub causes lots of spam after connecting)
+	}
+
 	void HubInfo::on(ClientListener::UsersUpdated, const Client* c, const OnlineUserList& aUsers) noexcept {
 		for (auto& u : aUsers) {
-			on(ClientListener::UserUpdated(), c, u);
+			onUserUpdated(u);
 		}
+
+		onHubIdentityUpdated();
 	}
 
 	void HubInfo::on(ClientListener::UserRemoved, const Client*, const OnlineUserPtr& aUser) noexcept {
@@ -224,6 +251,7 @@ namespace webserver {
 			view.onItemRemoved(aUser);
 		}
 
+		onHubIdentityUpdated();
 		maybeSend("hub_user_disconnected", [&] { return Serializer::serializeItem(aUser, onlineUserPropertyHandler); });
 	}
 }

@@ -110,6 +110,11 @@ namespace webserver {
 		}
 
 		OnlineUserList getUsers() noexcept;
+		void onUserUpdated(const OnlineUserPtr& ou) noexcept;
+
+		json previousIdentity;
+		void onHubIdentityUpdated() noexcept;
+
 		void onHubUpdated(const json& aData) noexcept;
 		void sendConnectState() noexcept;
 
