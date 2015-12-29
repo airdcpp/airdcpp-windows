@@ -134,12 +134,18 @@ OnlineUser* AdcHub::findUser(const CID& aCID) const {
 	return 0;
 }
 
-void AdcHub::getUserList(OnlineUserList& list) const {
+void AdcHub::getUserList(OnlineUserList& list, bool aListHidden) const {
 	RLock l(cs);
 	for(const auto& i: users) {
-		if(i.first != AdcCommand::HUB_SID) {
-			list.push_back(i.second);
+		if (i.first == AdcCommand::HUB_SID) {
+			continue;
 		}
+
+		if (!aListHidden && i.second->isHidden()) {
+			continue;
+		}
+
+		list.push_back(i.second);
 	}
 }
 

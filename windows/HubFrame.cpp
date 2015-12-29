@@ -1564,21 +1564,19 @@ void HubFrame::updateUserList(OnlineUserPtr aUser) {
 		clearUserList();
 
 		OnlineUserList l;
-		client->getUserList(l);
+		client->getUserList(l, false);
 
 		if(filter.empty()) {
-			for(const auto& ui: l){
-				if(!ui->isHidden()) {
-					ui->inc();
-					ctrlUsers.insertItem(ui.get(), ui->getImageIndex());
-				}
+			for(const auto& ui: l) {
+				ui->inc();
+				ctrlUsers.insertItem(ui.get(), ui->getImageIndex());
 			}
 		} else {
 			auto i = l.begin();
 			for(; i != l.end(); ++i){
 				// really hacky because of the filter
 				aUser = *i;
-				if (!aUser->isHidden() && (filter.empty() || filter.match(filterPrep))) {
+				if (filter.empty() || filter.match(filterPrep)) {
 					aUser->inc();
 					ctrlUsers.insertItem(aUser.get(), aUser->getImageIndex());
 				}

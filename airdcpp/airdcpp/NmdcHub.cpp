@@ -1175,9 +1175,13 @@ void NmdcHub::on(Minute, uint64_t /*aTick*/) noexcept {
 	refreshLocalIp();
 }
 
-void NmdcHub::getUserList(OnlineUserList& list) const {
+void NmdcHub::getUserList(OnlineUserList& list, bool aListHidden) const {
 	Lock l(cs);
 	for(auto& u: users | map_values) {
+		if (!aListHidden && u->isHidden()) {
+			continue;
+		}
+
 		list.push_back(u);
 	}
 }
