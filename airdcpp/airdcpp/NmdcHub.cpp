@@ -131,7 +131,7 @@ OnlineUser& NmdcHub::getUser(const string& aNick) {
 
 	{
 		Lock l(cs);
-		u = users.emplace(aNick, new OnlineUser(p, client, 0)).first->second;
+		u = users.emplace(aNick, new OnlineUser(p, client, Util::rand())).first->second;
 		u->inc();
 		u->getIdentity().setNick(aNick);
 		if(u->getUser() == getMyIdentity().getUser()) {
