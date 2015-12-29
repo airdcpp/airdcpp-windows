@@ -27,7 +27,11 @@ namespace webserver {
 	const StringList HubInfo::subscriptionList = {
 		"hub_updated",
 		"hub_message",
-		"hub_status"
+		"hub_status",
+
+		"hub_user_connected",
+		"hub_user_updated",
+		"hub_user_disconnected",
 	};
 
 	const PropertyList HubInfo::properties = {
@@ -46,6 +50,7 @@ namespace webserver {
 		{ PROP_HUB_URL, "hub_url", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
 		{ PROP_HUB_NAME , "hub_name", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
 		{ PROP_FLAGS, "flags", TYPE_LIST_TEXT, SERIALIZE_CUSTOM, SORT_NONE },
+		{ PROP_CID, "cid", TYPE_TEXT, SERIALIZE_CUSTOM, SORT_NONE },
 	};
 
 	PropertyItemHandler<OnlineUserPtr> HubInfo::onlineUserPropertyHandler = {
@@ -55,7 +60,7 @@ namespace webserver {
 
 	HubInfo::HubInfo(ParentType* aParentModule, const ClientPtr& aClient) :
 		SubApiModule(aParentModule, aClient->getClientId(), subscriptionList), client(aClient),
-		chatHandler(this, aClient, "hub") {
+		chatHandler(this, aClient, "hub"), view("hub_user_view", this, onlineUserPropertyHandler, std::bind(&HubInfo::getUsers, this)) {
 
 		client->addListener(this);
 
@@ -141,6 +146,8 @@ namespace webserver {
 
 	void HubInfo::on(Failed, const string&, const string&) noexcept {
 		sendConnectState();
+
+		view.resetItems();
 	}
 
 	void HubInfo::on(ClientListener::Redirect, const Client*, const string&) noexcept {
@@ -182,5 +189,41 @@ namespace webserver {
 		}
 
 		send("hub_updated", aData);
+	}
+
+	OnlineUserList HubInfo::getUsers() noexcept {
+		OnlineUserList ret;
+		client->getUserList(ret, false);
+		return ret;
+	}
+
+	void HubInfo::on(ClientListener::UserConnected, const Client*, const OnlineUserPtr& aUser) noexcept {
+		if (!aUser->isHidden()) {
+			view.onItemAdded(aUser);
+		}
+
+		maybeSend("hub_user_connected", [&] { return Serializer::serializeItem(aUser, onlineUserPropertyHandler); });
+	}
+
+	void HubInfo::on(ClientListener::UserUpdated, const Client*, const OnlineUserPtr& aUser) noexcept {
+		if (!aUser->isHidden()) {
+			view.onItemUpdated(aUser, toPropertyIdSet(onlineUserPropertyHandler.properties));
+		}
+
+		maybeSend("hub_user_updated", [&] { return Serializer::serializeItem(aUser, onlineUserPropertyHandler); });
+	}
+
+	void HubInfo::on(ClientListener::UsersUpdated, const Client* c, const OnlineUserList& aUsers) noexcept {
+		for (auto& u : aUsers) {
+			on(ClientListener::UserUpdated(), c, u);
+		}
+	}
+
+	void HubInfo::on(ClientListener::UserRemoved, const Client*, const OnlineUserPtr& aUser) noexcept {
+		if (!aUser->isHidden()) {
+			view.onItemRemoved(aUser);
+		}
+
+		maybeSend("hub_user_disconnected", [&] { return Serializer::serializeItem(aUser, onlineUserPropertyHandler); });
 	}
 }

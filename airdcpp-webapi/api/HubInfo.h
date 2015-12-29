@@ -29,6 +29,7 @@
 
 #include <api/HierarchicalApiModule.h>
 #include <api/common/ChatController.h>
+#include <api/common/ListViewController.h>
 #include <api/common/Property.h>
 
 namespace webserver {
@@ -67,6 +68,7 @@ namespace webserver {
 			PROP_HUB_URL,
 			PROP_HUB_NAME,
 			PROP_FLAGS,
+			PROP_CID,
 			PROP_LAST
 		};
 
@@ -86,6 +88,11 @@ namespace webserver {
 		void on(HubTopic, const Client*, const string&) noexcept;
 		void on(ConnectStateChanged, const Client*, uint8_t) noexcept;
 
+		void on(UserConnected, const Client*, const OnlineUserPtr&) noexcept;
+		void on(UserUpdated, const Client*, const OnlineUserPtr&) noexcept;
+		void on(UsersUpdated, const Client*, const OnlineUserList&) noexcept;
+		void on(UserRemoved, const Client*, const OnlineUserPtr&) noexcept;
+
 		void on(Disconnecting, const Client*) noexcept;
 		void on(Redirected, const string&, const ClientPtr& aNewClient) noexcept;
 
@@ -102,11 +109,15 @@ namespace webserver {
 			chatHandler.onMessagesUpdated();
 		}
 
+		OnlineUserList getUsers() noexcept;
 		void onHubUpdated(const json& aData) noexcept;
 		void sendConnectState() noexcept;
 
 		ChatController<ClientPtr> chatHandler;
 		ClientPtr client;
+
+		typedef ListViewController<OnlineUserPtr, PROP_LAST> UserView;
+		UserView view;
 	};
 
 	typedef HubInfo::Ptr HubInfoPtr;

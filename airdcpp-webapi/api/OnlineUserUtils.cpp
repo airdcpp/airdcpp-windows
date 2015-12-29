@@ -28,6 +28,7 @@ namespace webserver {
 			case HubInfo::PROP_IP4: return Serializer::serializeIp(aUser->getIdentity().getIp4());
 			case HubInfo::PROP_IP6: return Serializer::serializeIp(aUser->getIdentity().getIp6());
 			case HubInfo::PROP_FLAGS: return Serializer::getOnlineUserFlags(aUser);
+			case HubInfo::PROP_CID: return aUser->getUser()->getCID().toBase32();
 		}
 
 		return nullptr;
