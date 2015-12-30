@@ -25,6 +25,7 @@
 #include <web-server/WebServerManager.h>
 
 #include <airdcpp/TaskQueue.h>
+#include <airdcpp/TimerManager.h>
 
 #include <api/ApiModule.h>
 #include <api/common/PropertyFilter.h>
@@ -665,6 +666,8 @@ namespace webserver {
 			itemListChanged = false;
 
 			if (needSort) {
+				auto start = GET_TICK();
+
 				WLock l(cs);
 				std::sort(matchingItems.begin(), matchingItems.end(),
 					std::bind(&ListViewController::itemSort,
@@ -674,6 +677,8 @@ namespace webserver {
 						aSortProperty,
 						aSortAscending
 						));
+
+				dcdebug("Table %s sorted in " U64_FMT " ms\n", viewName.c_str(), GET_TICK() - start);
 			}
 		}
 
