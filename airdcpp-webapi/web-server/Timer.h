@@ -34,20 +34,25 @@ namespace webserver {
 			stop(true);
 		}
 
-		void start(bool aInstantStart = true) {
+		bool start(bool aInstantStart = true) {
+			if (stopping) {
+				return false;
+			}
+
 			running = true;
 			timer.expires_from_now(aInstantStart ? boost::posix_time::milliseconds(0) : interval);
 			timer.async_wait(bind(&Timer::tick, this, std::placeholders::_1));
+			return true;
 		}
 
 		void stop(bool aWaitShutdown) {
-			auto cancelled = timer.cancel();
+			stopping = true;
 
-			if (cancelled > 0 && aWaitShutdown) {
-				std::this_thread::sleep_for(std::chrono::milliseconds(30));
-				if (running && !timer.get_io_service().stopped()) {
-					// cancel again in case someone starts the timer meanwhile.....
-					stop(true);
+			timer.cancel();
+
+			if (aWaitShutdown) {
+				while (running && !timer.get_io_service().stopped()) {
+					std::this_thread::sleep_for(std::chrono::milliseconds(30));
 				}
 			}
 		}
@@ -63,13 +68,17 @@ namespace webserver {
 			}
 
 			cb();
-			start(false);
+
+			if (!start(false)) {
+				running = false;
+			}
 		}
 
 		CallBack cb;
 		boost::asio::deadline_timer timer;
 		boost::posix_time::milliseconds interval;
 		bool running = false;
+		bool stopping = false;
 	};
 
 	typedef shared_ptr<Timer> TimerPtr;
