@@ -39,9 +39,11 @@ namespace webserver {
 		typedef typename PropertyItemHandler<T>::ItemListFunction ItemListF;
 		typedef std::function<void(bool aActive)> StateChangeFunction;
 
-		ListViewController(const string& aViewName, ApiModule* aModule, const PropertyItemHandler<T>& aItemHandler, ItemListF aItemListF) :
+		// Use the short default update interval for lists that can be edited by the users
+		// Larger lists with lots of updates and non-critical response times should specify a longer interval
+		ListViewController(const string& aViewName, ApiModule* aModule, const PropertyItemHandler<T>& aItemHandler, ItemListF aItemListF, time_t aUpdateInterval = 200) :
 			module(aModule), viewName(aViewName), itemHandler(aItemHandler), itemListF(aItemListF),
-			timer(WebServerManager::getInstance()->addTimer([this] { runTasks(); }, 200))
+			timer(WebServerManager::getInstance()->addTimer([this] { runTasks(); }, aUpdateInterval))
 		{
 			aModule->getSession()->addListener(this);
 

@@ -20,6 +20,7 @@
 #define DCPLUSPLUS_DCPP_HUBINFO_H
 
 #include <web-server/stdinc.h>
+#include <web-server/Timer.h>
 
 #include <airdcpp/typedefs.h>
 #include <airdcpp/GetSet.h>
@@ -31,6 +32,7 @@
 #include <api/common/ChatController.h>
 #include <api/common/ListViewController.h>
 #include <api/common/Property.h>
+
 
 namespace webserver {
 	class HubInfo;
@@ -113,16 +115,19 @@ namespace webserver {
 		void onUserUpdated(const OnlineUserPtr& ou) noexcept;
 
 		json previousIdentity;
-		void onHubIdentityUpdated() noexcept;
 
 		void onHubUpdated(const json& aData) noexcept;
 		void sendConnectState() noexcept;
+
+		void onTimer() noexcept;
 
 		ChatController<ClientPtr> chatHandler;
 		ClientPtr client;
 
 		typedef ListViewController<OnlineUserPtr, PROP_LAST> UserView;
 		UserView view;
+
+		TimerPtr timer;
 	};
 
 	typedef HubInfo::Ptr HubInfoPtr;

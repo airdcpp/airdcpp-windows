@@ -50,7 +50,7 @@ namespace webserver {
 		{ PROP_HUB_URL, "hub_url", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
 		{ PROP_HUB_NAME , "hub_name", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
 		{ PROP_FLAGS, "flags", TYPE_LIST_TEXT, SERIALIZE_CUSTOM, SORT_NONE },
-		{ PROP_CID, "cid", TYPE_TEXT, SERIALIZE_CUSTOM, SORT_NONE },
+		{ PROP_CID, "cid", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
 	};
 
 	PropertyItemHandler<OnlineUserPtr> HubInfo::onlineUserPropertyHandler = {
@@ -60,9 +60,12 @@ namespace webserver {
 
 	HubInfo::HubInfo(ParentType* aParentModule, const ClientPtr& aClient) :
 		SubApiModule(aParentModule, aClient->getClientId(), subscriptionList), client(aClient),
-		chatHandler(this, aClient, "hub"), view("hub_user_view", this, onlineUserPropertyHandler, std::bind(&HubInfo::getUsers, this)) {
+		chatHandler(this, aClient, "hub"), 
+		view("hub_user_view", this, onlineUserPropertyHandler, std::bind(&HubInfo::getUsers, this), 1000), 
+		timer(aParentModule->getSession()->getServer()->addTimer([this] { onTimer(); }, 1000)) {
 
 		client->addListener(this);
+		timer->start();
 
 		METHOD_HANDLER("reconnect", Access::HUBS_EDIT, ApiRequest::METHOD_POST, (), false, HubInfo::handleReconnect);
 		METHOD_HANDLER("favorite", Access::HUBS_EDIT, ApiRequest::METHOD_POST, (), false, HubInfo::handleFavorite);
@@ -71,6 +74,8 @@ namespace webserver {
 	}
 
 	HubInfo::~HubInfo() {
+		timer->stop(true);
+
 		client->removeListener(this);
 	}
 
@@ -168,7 +173,7 @@ namespace webserver {
 	}
 
 	void HubInfo::on(ClientListener::HubUpdated, const Client*) noexcept {
-		onHubIdentityUpdated();
+		// Handled by the timer
 	}
 
 	void HubInfo::on(ClientListener::HubTopic, const Client*, const string&) noexcept {
@@ -181,7 +186,7 @@ namespace webserver {
 		});
 	}
 
-	void HubInfo::onHubIdentityUpdated() noexcept {
+	void HubInfo::onTimer() noexcept {
 		if (!subscriptionActive("hub_updated")) {
 			return;
 		}
@@ -216,17 +221,17 @@ namespace webserver {
 			view.onItemAdded(aUser);
 		}
 
-		// Don't spam with updates while the userlist is being loaded
-		if (client->getConnectState() == Client::STATE_NORMAL) {
-			onHubIdentityUpdated();
-		}
-
 		maybeSend("hub_user_connected", [&] { return Serializer::serializeItem(aUser, onlineUserPropertyHandler); });
 	}
 
 	void HubInfo::onUserUpdated(const OnlineUserPtr& aUser) noexcept {
 		if (!aUser->isHidden()) {
-			view.onItemUpdated(aUser, toPropertyIdSet(onlineUserPropertyHandler.properties));
+			// Don't update all properties to avoid unneeded sorting
+			PropertyIdSet props = { PROP_SHARED, PROP_DESCRIPTION, PROP_TAG, 
+				PROP_UPLOAD_SPEED, PROP_DOWNLOAD_SPEED,
+				PROP_EMAIL, PROP_FILES, PROP_FLAGS 
+			};
+			view.onItemUpdated(aUser, props);
 		}
 
 		maybeSend("hub_user_updated", [&] { return Serializer::serializeItem(aUser, onlineUserPropertyHandler); });
@@ -234,16 +239,12 @@ namespace webserver {
 
 	void HubInfo::on(ClientListener::UserUpdated, const Client*, const OnlineUserPtr& aUser) noexcept {
 		onUserUpdated(aUser);
-
-		// Don't update the identity for now (especially Flexhub causes lots of spam after connecting)
 	}
 
 	void HubInfo::on(ClientListener::UsersUpdated, const Client* c, const OnlineUserList& aUsers) noexcept {
 		for (auto& u : aUsers) {
 			onUserUpdated(u);
 		}
-
-		onHubIdentityUpdated();
 	}
 
 	void HubInfo::on(ClientListener::UserRemoved, const Client*, const OnlineUserPtr& aUser) noexcept {
@@ -251,7 +252,6 @@ namespace webserver {
 			view.onItemRemoved(aUser);
 		}
 
-		onHubIdentityUpdated();
 		maybeSend("hub_user_disconnected", [&] { return Serializer::serializeItem(aUser, onlineUserPropertyHandler); });
 	}
 }
