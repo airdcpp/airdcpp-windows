@@ -35,7 +35,7 @@ namespace webserver {
 		}
 
 		bool start(bool aInstantStart = true) {
-			if (stopping) {
+			if (shutdown) {
 				return false;
 			}
 
@@ -45,15 +45,20 @@ namespace webserver {
 			return true;
 		}
 
-		void stop(bool aWaitShutdown) {
-			stopping = true;
-
+		// Use aShutdown if the timer will be stopped permanently (e.g. the owner is being deleted)
+		// It will also make the thread block until the timer has been stopped
+		void stop(bool aShutdown) noexcept {
+			shutdown = aShutdown;
 			timer.cancel();
 
-			if (aWaitShutdown) {
-				while (running && !timer.get_io_service().stopped()) {
-					std::this_thread::sleep_for(std::chrono::milliseconds(30));
-				}
+			if (aShutdown) {
+				join();
+			}
+		}
+
+		void join() noexcept {
+			while (running && !timer.get_io_service().stopped()) {
+				std::this_thread::sleep_for(std::chrono::milliseconds(30));
 			}
 		}
 
@@ -63,7 +68,6 @@ namespace webserver {
 	private:
 		void tick(const boost::system::error_code& error) {
 			if (error == boost::asio::error::operation_aborted) {
-				stopping = false;
 				running = false;
 				return;
 			}
@@ -71,7 +75,6 @@ namespace webserver {
 			cb();
 
 			if (!start(false)) {
-				stopping = false;
 				running = false;
 			}
 		}
@@ -80,7 +83,7 @@ namespace webserver {
 		boost::asio::deadline_timer timer;
 		boost::posix_time::milliseconds interval;
 		bool running = false;
-		bool stopping = false;
+		bool shutdown = false;
 	};
 
 	typedef shared_ptr<Timer> TimerPtr;

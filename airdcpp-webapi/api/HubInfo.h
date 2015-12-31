@@ -52,6 +52,7 @@ namespace webserver {
 
 		static json serializeConnectState(const ClientPtr& aClient) noexcept;
 		static json serializeIdentity(const ClientPtr& aClient) noexcept;
+		static json serializeCounts(const ClientPtr& aClient) noexcept;
 
 		enum {
 			PROP_TOKEN = -1,
@@ -82,6 +83,8 @@ namespace webserver {
 		api_return handleFavorite(ApiRequest& aRequest);
 		api_return handlePassword(ApiRequest& aRequest);
 		api_return handleRedirect(ApiRequest& aRequest);
+
+		api_return handleGetCounts(ApiRequest& aRequest);
 
 		void on(Redirect, const Client*, const string&) noexcept;
 		void on(Failed, const string&, const string&) noexcept;
@@ -114,7 +117,7 @@ namespace webserver {
 		OnlineUserList getUsers() noexcept;
 		void onUserUpdated(const OnlineUserPtr& ou) noexcept;
 
-		json previousIdentity;
+		json previousCounts;
 
 		void onHubUpdated(const json& aData) noexcept;
 		void sendConnectState() noexcept;

@@ -74,7 +74,7 @@ namespace webserver {
 
 		void stop() noexcept {
 			setActive(false);
-			timer->stop(true);
+			timer->stop(false);
 
 			clear();
 			currentValues.reset();

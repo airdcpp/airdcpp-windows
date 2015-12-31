@@ -26,6 +26,7 @@
 namespace webserver {
 	const StringList HubInfo::subscriptionList = {
 		"hub_updated",
+		"hub_counts_updated",
 		"hub_message",
 		"hub_status",
 
@@ -71,12 +72,19 @@ namespace webserver {
 		METHOD_HANDLER("favorite", Access::HUBS_EDIT, ApiRequest::METHOD_POST, (), false, HubInfo::handleFavorite);
 		METHOD_HANDLER("password", Access::HUBS_EDIT, ApiRequest::METHOD_POST, (), true, HubInfo::handlePassword);
 		METHOD_HANDLER("redirect", Access::HUBS_EDIT, ApiRequest::METHOD_POST, (), false, HubInfo::handleRedirect);
+
+		METHOD_HANDLER("counts", Access::HUBS_VIEW, ApiRequest::METHOD_GET, (), false, HubInfo::handleGetCounts);
 	}
 
 	HubInfo::~HubInfo() {
 		timer->stop(true);
 
 		client->removeListener(this);
+	}
+
+	api_return HubInfo::handleGetCounts(ApiRequest& aRequest) {
+		aRequest.setResponseBody(serializeCounts(client));
+		return websocketpp::http::status_code::ok;
 	}
 
 	api_return HubInfo::handleReconnect(ApiRequest& aRequest) {
@@ -106,9 +114,14 @@ namespace webserver {
 	}
 
 	json HubInfo::serializeIdentity(const ClientPtr& aClient) noexcept {
-		return{
+		return {
 			{ "name", aClient->getHubName() },
 			{ "description", aClient->getHubDescription() },
+		};
+	}
+
+	json HubInfo::serializeCounts(const ClientPtr& aClient) noexcept {
+		return {
 			{ "user_count", aClient->getUserCount() },
 			{ "share_size", aClient->getTotalShare() },
 		};
@@ -173,7 +186,9 @@ namespace webserver {
 	}
 
 	void HubInfo::on(ClientListener::HubUpdated, const Client*) noexcept {
-		// Handled by the timer
+		onHubUpdated({
+			{ "identity", serializeIdentity(client) }
+		});
 	}
 
 	void HubInfo::on(ClientListener::HubTopic, const Client*, const string&) noexcept {
@@ -187,19 +202,17 @@ namespace webserver {
 	}
 
 	void HubInfo::onTimer() noexcept {
-		if (!subscriptionActive("hub_updated")) {
+		if (!subscriptionActive("hub_counts_updated")) {
 			return;
 		}
 
-		auto newIdentity = serializeIdentity(client);
-		if (newIdentity == previousIdentity) {
+		auto newCounts = serializeCounts(client);
+		if (newCounts == previousCounts) {
 			return;
 		}
 
-		previousIdentity = newIdentity;
-		onHubUpdated({
-			{ "identity", newIdentity }
-		});
+		previousCounts = newCounts;
+		send("hub_counts_updated", newCounts);
 	}
 
 	void HubInfo::onHubUpdated(const json& aData) noexcept {
