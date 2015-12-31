@@ -77,6 +77,7 @@ namespace webserver {
 		{ "connection_mode_v4", SettingsManager::INCOMING_CONNECTIONS, ResourceManager::CONNECTIVITY, ApiSettingItem::TYPE_CONN_V4 },
 		{ "connection_ip_v4", SettingsManager::EXTERNAL_IP, ResourceManager::SETTINGS_EXTERNAL_IP, ApiSettingItem::TYPE_CONN_V4 },
 		{ "connection_update_ip_v4", SettingsManager::IP_UPDATE, ResourceManager::UPDATE_IP, ApiSettingItem::TYPE_CONN_V4 },
+		{ "connection_ip_override_v4", SettingsManager::NO_IP_OVERRIDE, ResourceManager::SETTINGS_OVERRIDE, ApiSettingItem::TYPE_CONN_V4 },
 
 		//{ ResourceManager::IP_V6 },
 		{ "connection_auto_v6", SettingsManager::AUTO_DETECT_CONNECTION6, ResourceManager::ALLOW_AUTO_DETECT_V6 },
@@ -84,6 +85,7 @@ namespace webserver {
 		{ "connection_mode_v6", SettingsManager::INCOMING_CONNECTIONS6, ResourceManager::CONNECTIVITY, ApiSettingItem::TYPE_CONN_V6 },
 		{ "connection_ip_v6", SettingsManager::EXTERNAL_IP6, ResourceManager::SETTINGS_EXTERNAL_IP, ApiSettingItem::TYPE_CONN_V6 },
 		{ "connection_update_ip_v6", SettingsManager::IP_UPDATE6, ResourceManager::UPDATE_IP, ApiSettingItem::TYPE_CONN_V6 },
+		{ "connection_ip_override_v6", SettingsManager::NO_IP_OVERRIDE6, ResourceManager::SETTINGS_OVERRIDE, ApiSettingItem::TYPE_CONN_V6 },
 
 		//{ ResourceManager::SETTINGS_PORTS },
 		{ "tcp_port", SettingsManager::TCP_PORT, ResourceManager::SETTINGS_TCP_PORT, ApiSettingItem::TYPE_CONN_GEN },
@@ -188,10 +190,11 @@ namespace webserver {
 		{ "buffer_size", SettingsManager::BUFFER_SIZE, ResourceManager::SETTINGS_WRITE_BUFFER },
 		{ "compress_transfers", SettingsManager::COMPRESS_TRANSFERS, ResourceManager::SETTINGS_COMPRESS_TRANSFERS },
 		{ "max_compression", SettingsManager::MAX_COMPRESSION, ResourceManager::SETTINGS_MAX_COMPRESS },
-		{ "tls_mode", SettingsManager::TLS_MODE, ResourceManager::TRANSFER_ENCRYPTION },
 		{ "bloom_mode", SettingsManager::BLOOM_MODE, ResourceManager::BLOOM_MODE },
 		{ "disconnect_offline_users", SettingsManager::AUTO_KICK, ResourceManager::SETTINGS_AUTO_KICK },
+
 		{ "always_ccpm", SettingsManager::ALWAYS_CCPM, ResourceManager::ALWAYS_CCPM },
+		{ "tls_mode", SettingsManager::TLS_MODE, ResourceManager::TRANSFER_ENCRYPTION },
 	};
 }
 
