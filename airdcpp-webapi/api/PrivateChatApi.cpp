@@ -113,7 +113,7 @@ namespace webserver {
 		json j = {
 			{ "id", aChat->getUser()->getCID().toBase32() },
 			{ "user", Serializer::serializeHintedUser(aChat->getHintedUser()) },
-			{ "ccpm_state", PrivateChatInfo::serializeCCPMState(aChat->getCCPMState()) },
+			{ "ccpm_state", PrivateChatInfo::serializeCCPMState(aChat) },
 		};
 
 		Serializer::serializeCacheInfo(j, aChat->getCache(), Serializer::serializeUnreadChat);

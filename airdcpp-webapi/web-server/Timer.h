@@ -63,6 +63,7 @@ namespace webserver {
 	private:
 		void tick(const boost::system::error_code& error) {
 			if (error == boost::asio::error::operation_aborted) {
+				stopping = false;
 				running = false;
 				return;
 			}
@@ -70,6 +71,7 @@ namespace webserver {
 			cb();
 
 			if (!start(false)) {
+				stopping = false;
 				running = false;
 			}
 		}
