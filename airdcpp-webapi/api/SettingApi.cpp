@@ -39,11 +39,11 @@ namespace webserver {
 	api_return SettingApi::handleGetSettingInfos(ApiRequest& aRequest) {
 		const auto& requestJson = aRequest.getRequestBody();
 
-		auto forceAutoValues = JsonUtil::getOptionalField<bool>("force_auto_values", requestJson);
+		auto forceAutoValues = JsonUtil::getOptionalFieldDefault<bool>("force_auto_values", requestJson, false);
 
 		json retJson;
 		parseSettingKeys(requestJson, [&](const ApiSettingItem* aItem) {
-			retJson[aItem->name] = aItem->infoToJson(forceAutoValues ? *forceAutoValues : false);
+			retJson[aItem->name] = aItem->infoToJson(forceAutoValues);
 		});
 
 		aRequest.setResponseBody(retJson);
