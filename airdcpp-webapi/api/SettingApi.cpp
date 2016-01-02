@@ -84,11 +84,9 @@ namespace webserver {
 	}
 
 	api_return SettingApi::handleSetSettings(ApiRequest& aRequest) {
-		auto& requestJson = aRequest.getIterableRequestBody();
-
 		SettingHolder h(nullptr);
 
-		for (auto elem : json::iterator_wrapper(requestJson)) {
+		for (auto elem : json::iterator_wrapper(aRequest.getRequestBody())) {
 			auto setting = getSettingItem(elem.key());
 			if (!setting) {
 				JsonUtil::throwError(elem.key(), JsonUtil::ERROR_INVALID, "Setting not found");
