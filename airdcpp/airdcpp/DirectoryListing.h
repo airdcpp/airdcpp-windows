@@ -54,10 +54,12 @@ class DirectoryListing : public intrusive_ptr_base<DirectoryListing>, public Use
 {
 public:
 	class Directory;
-	class File {
+	class File : boost::noncopyable, public intrusive_ptr_base<File> {
 
 	public:
-		typedef File* Ptr;
+		//typedef File* Ptr;
+		typedef boost::intrusive_ptr<File> Ptr;
+
 		struct Sort { bool operator()(const Ptr& a, const Ptr& b) const; };
 
 		typedef std::vector<Ptr> List;
@@ -179,7 +181,7 @@ public:
 	bool downloadDir(const string& aRemoteDir, const string& aTarget, QueueItemBase::Priority prio = QueueItem::DEFAULT, ProfileToken aAutoSearch = 0) noexcept;
 	bool createBundle(Directory::Ptr& aDir, const string& aTarget, QueueItemBase::Priority prio, ProfileToken aAutoSearch) noexcept;
 
-	void openFile(const File* aFile, bool isClientView) const throw(QueueException, FileException);
+	void openFile(const File::Ptr& aFile, bool isClientView) const throw(QueueException, FileException);
 
 	int64_t getTotalListSize(bool adls = false) const noexcept { return root->getTotalSize(adls); }
 	int64_t getDirSize(const string& aDir) const noexcept;
@@ -188,7 +190,7 @@ public:
 	const Directory::Ptr getRoot() const noexcept { return root; }
 	Directory::Ptr getRoot() noexcept { return root; }
 	void getLocalPaths(const Directory::Ptr& d, StringList& ret) const throw(ShareException);
-	void getLocalPaths(const File* f, StringList& ret) const throw(ShareException);
+	void getLocalPaths(const File::Ptr& f, StringList& ret) const throw(ShareException);
 
 	bool isMyCID() const noexcept;
 	string getNick(bool firstOnly) const noexcept;

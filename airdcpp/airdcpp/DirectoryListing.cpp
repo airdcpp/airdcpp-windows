@@ -268,7 +268,7 @@ void ListLoader::startTag(const string& name, StringPairList& attribs, bool simp
 				return;		
 			TTHValue tth(h); /// @todo verify validity?
 
-			DirectoryListing::File* f = new DirectoryListing::File(cur, n, size, tth, checkDupe, Util::toUInt32(getAttrib(attribs, sDate, 3)));
+			auto f = new DirectoryListing::File(cur, n, size, tth, checkDupe, Util::toUInt32(getAttrib(attribs, sDate, 3)));
 			cur->files.push_back(f);
 		} else if(name == sDirectory) {
 			const string& n = getAttrib(attribs, sName, 0);
@@ -515,7 +515,7 @@ int64_t DirectoryListing::getDirSize(const string& aDir) const noexcept {
 	return 0;
 }
 
-void DirectoryListing::openFile(const File* aFile, bool aIsClientView) const throw(QueueException, FileException) {
+void DirectoryListing::openFile(const File::Ptr& aFile, bool aIsClientView) const throw(QueueException, FileException) {
 	QueueManager::getInstance()->addOpenedItem(aFile->getName(), aFile->getSize(), aFile->getTTH(), hintedUser, aIsClientView);
 }
 
@@ -538,7 +538,7 @@ DirectoryListing::Directory::Ptr DirectoryListing::findDirectory(const string& a
 }
 
 void DirectoryListing::Directory::findFiles(const boost::regex& aReg, File::List& aResults) const noexcept {
-	copy_if(files.begin(), files.end(), back_inserter(aResults), [&aReg](const File* df) { return boost::regex_match(df->getName(), aReg); });
+	copy_if(files.begin(), files.end(), back_inserter(aResults), [&aReg](const File::Ptr& df) { return boost::regex_match(df->getName(), aReg); });
 
 	for(auto d: directories)
 		d->findFiles(aReg, aResults); 
@@ -612,7 +612,7 @@ struct HashContained {
 	HashContained(const DirectoryListing::Directory::TTHSet& l) : tl(l) { }
 	const DirectoryListing::Directory::TTHSet& tl;
 	bool operator()(const DirectoryListing::File::Ptr& i) const {
-		return tl.count((i->getTTH())) && (DeleteFunction()(i), true);
+		return tl.count(i->getTTH()) > 0;
 	}
 };
 
@@ -630,11 +630,11 @@ struct SizeLess {
 };
 
 DirectoryListing::Directory::~Directory() {
-	for_each(files, DeleteFunction());
+	//for_each(files, DeleteFunction());
 }
 
 void DirectoryListing::Directory::clearAll() noexcept {
-	for_each(files, DeleteFunction());
+	//for_each(files, DeleteFunction());
 	directories.clear();
 	files.clear();
 }
@@ -667,7 +667,7 @@ void DirectoryListing::Directory::getHashList(DirectoryListing::Directory::TTHSe
 		l.insert(f->getTTH());
 }
 	
-void DirectoryListing::getLocalPaths(const File* f, StringList& ret) const throw(ShareException) {
+void DirectoryListing::getLocalPaths(const File::Ptr& f, StringList& ret) const throw(ShareException) {
 	if(f->getParent()->getAdls() && (f->getParent()->getParent() == root || !isOwnList))
 		return;
 

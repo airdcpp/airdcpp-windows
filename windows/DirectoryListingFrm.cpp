@@ -1450,7 +1450,7 @@ void DirectoryListingFrame::openDupe(const DirectoryListing::Directory::Ptr& d) 
 	}
 }
 
-void DirectoryListingFrame::openDupe(const DirectoryListing::File* f, bool openDir) {
+void DirectoryListingFrame::openDupe(const DirectoryListing::File::Ptr& f, bool openDir) {
 	try {
 		StringList paths;
 		dl->getLocalPaths(f, paths);

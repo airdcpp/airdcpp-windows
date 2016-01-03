@@ -43,10 +43,12 @@ namespace webserver {
 			DIRECTORY
 		};
 
-		const DirectoryListing::File* file;
-		const DirectoryListing::Directory::Ptr dir;
+		union {
+			const DirectoryListing::File::Ptr file;
+			const DirectoryListing::Directory::Ptr dir;
+		};
 
-		FilelistItemInfo(const DirectoryListing::File* f) : type(FILE), file(f) { }
+		FilelistItemInfo(const DirectoryListing::File::Ptr& f) : type(FILE), file(f) { }
 		FilelistItemInfo(const DirectoryListing::Directory::Ptr& d) : type(DIRECTORY), dir(d) {}
 		~FilelistItemInfo() { }
 

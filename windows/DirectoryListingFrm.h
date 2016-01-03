@@ -234,7 +234,7 @@ private:
 	bool allowPopup() const;
 	bool getLocalPaths(StringList& paths_, bool usingTree, bool dirsOnly);
 	void openDupe(const DirectoryListing::Directory::Ptr& d);
-	void openDupe(const DirectoryListing::File* f, bool openDir);
+	void openDupe(const DirectoryListing::File::Ptr& f, bool openDir);
 
 	// safe to be called from any thread
 	void updateStatus(const tstring& aMsg);
@@ -275,12 +275,12 @@ private:
 			DIRECTORY
 		} type;
 		
-		//union {
-			const DirectoryListing::File* file;
+		union {
+			const DirectoryListing::File::Ptr file;
 			const DirectoryListing::Directory::Ptr dir;
-		//};
+		};
 
-		ItemInfo(const DirectoryListing::File* f) : type(FILE), file(f), name(Text::toT(f->getName())) { }
+		ItemInfo(const DirectoryListing::File::Ptr& f) : type(FILE), file(f), name(Text::toT(f->getName())) { }
 		ItemInfo(const DirectoryListing::Directory::Ptr& d) : type(DIRECTORY), dir(d), name(Text::toT(d->getName())) {}
 		~ItemInfo() { }
 
