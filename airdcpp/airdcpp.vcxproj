@@ -324,6 +324,7 @@
     <ClCompile Include="airdcpp\ThrottleManager.cpp" />
     <ClCompile Include="airdcpp\TigerHash.cpp" />
     <ClCompile Include="airdcpp\TimerManager.cpp" />
+    <ClCompile Include="airdcpp\TrackableDownloadItem.cpp" />
     <ClCompile Include="airdcpp\Transfer.cpp" />
     <ClCompile Include="airdcpp\UDPServer.cpp" />
     <ClCompile Include="airdcpp\UpdateManager.cpp" />
@@ -481,6 +482,7 @@
     <ClInclude Include="airdcpp\StringMatch.h" />
     <ClInclude Include="airdcpp\TargetUtil.h" />
     <ClInclude Include="airdcpp\ThrottleManager.h" />
+    <ClInclude Include="airdcpp\TrackableDownloadItem.h" />
     <ClInclude Include="airdcpp\tribool.h" />
     <ClInclude Include="airdcpp\typedefs.h" />
     <ClInclude Include="airdcpp\UDPServer.h" />

@@ -139,6 +139,7 @@ void DirectoryListingFrame::updateItemCacheImpl(const string& aPath, std::functi
 		newCacheDirectories.emplace(path, iic);
 	}
 
+	dcassert(!newCacheDirectories.empty());
 	callAsync([=] {
 		// Remove itemInfos from subdirectories
 		for (auto i = itemInfos.begin(); i != itemInfos.end();) {
@@ -164,6 +165,10 @@ void DirectoryListingFrame::updateItemCacheImpl(const string& aPath, std::functi
 				}
 			}
 		}
+
+		dcassert(boost::range::find_if(itemInfos | map_values, [](const unique_ptr<ItemInfoCache>& aCache) { 
+			return !aCache; 
+		}).base() == itemInfos.end());
 
 		if (completionF) {
 			completionF();
@@ -266,13 +271,18 @@ void DirectoryListingFrame::on(DirectoryListingListener::SearchFailed, bool time
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::ChangeDirectory, const string& aDir, bool isSearchChange) noexcept {
+	//dcdebug("DirectoryListingListener::ChangeDirectory %s\n", aDir.c_str());
 	callAsync([=] {
+		if (aDir != curPath) {
+			return;
+		}
+
 		if (isSearchChange)
 			ctrlFiles.filter.clear();
 
 		selectItem(aDir);
 		if (isSearchChange) {
-			callAsync([=] { updateStatus(TSTRING_F(X_RESULTS_FOUND, dl->getResultCount())); });
+			updateStatus(TSTRING_F(X_RESULTS_FOUND, dl->getResultCount()));
 			findSearchHit(true);
 		}
 	});
@@ -458,7 +468,9 @@ void DirectoryListingFrame::expandDir(ItemInfo* ii, bool collapsing) {
 
 	if (collapsing || !ii->dir->isComplete()) {
 		changeDir(ii);
-	}
+	} /*else {
+		dcdebug("DirectoryListingFrame::expandDir, skip changeDir %s\n", ii->dir->getPath().c_str());
+	}*/
 }
 
 void DirectoryListingFrame::insertTreeItems(const string& aPath, HTREEITEM aParent) {
@@ -478,6 +490,8 @@ void DirectoryListingFrame::insertTreeItems(const string& aPath, HTREEITEM aPare
 				ctrlTree.Expand(parent);
 			}
 		});
+
+		//updateItemCache(aPath, [=] { insertTreeItems(aPath, aParent); });
 	}
 }
 
@@ -520,7 +534,6 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aReloadLi
 	}
 
 	auto d = ((ItemInfo*)ctrlTree.GetItemData(ht))->dir;
-	d->setLoading(false);
 
 	bool isExpanded = ctrlTree.IsExpanded(ht);
 
@@ -799,23 +812,34 @@ void DirectoryListingFrame::initStatus() {
 }
 
 LRESULT DirectoryListingFrame::onSelChangedDirectories(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
-	if (updating)
+	if (updating) {
+		dcdebug("SKIP: DirectoryListingFrame::onSelChangedDirectories, updating\n");
 		return 0;
+	}
 
 	NMTREEVIEW* p = (NMTREEVIEW*) pnmh;
 
 	if(p->itemNew.state & TVIS_SELECTED) {
 		auto ii = (ItemInfo*)p->itemNew.lParam;
+
 		if (curPath != ii->dir->getPath()) {
 			if (changeType != CHANGE_HISTORY)
 				browserBar.addHistory(ii->dir->getPath());
-		}
 
-		if (curPath != ii->dir->getPath()) {
 			curPath = ii->dir->getPath();
 			changeDir(ii);
+		} /*else {
+			dcdebug("SKIP: DirectoryListingFrame::onSelChangedDirectories, path not changed %s (current: %s)\n", ii->dir->getPath().c_str(), curPath.c_str());
+		}*/
+	} /*else {
+		if (p->itemNew.lParam == 0) {
+			dcdebug("SKIP: DirectoryListingFrame::onSelChangedDirectories, ItemInfo missing\n");
+			return 0;
 		}
-	}
+
+		dcdebug("SKIP: DirectoryListingFrame::onSelChangedDirectories, new item not selected %s\n", ((ItemInfo*)p->itemNew.lParam)->dir->getPath().c_str());
+	}*/
+
 	return 0;
 }
 
@@ -927,13 +951,17 @@ void DirectoryListingFrame::updateItems(const DirectoryListing::Directory::Ptr& 
 }
 
 void DirectoryListingFrame::changeDir(const ItemInfo* ii, DirectoryListing::ReloadMode aReload /*RELOAD_NONE*/) {
-	if (!ii)
+	if (!ii) {
+		dcassert(0);
 		return;
+	}
 
 	if (aReload == DirectoryListing::RELOAD_NONE)
 		updateItems(ii->dir);
 
 	auto path = ii->getPath();
+	//dcdebug("DirectoryListingFrame::changeDir %s\n", path.c_str());
+
 	dl->addAsyncTask([=] {
 		dl->changeDirectory(path, aReload);
 	});
@@ -1141,6 +1169,8 @@ LRESULT DirectoryListingFrame::onFileReconnect(WORD /*wNotifyCode*/, WORD /*wID*
 void DirectoryListingFrame::selectItem(const string& name) {
 	HTREEITEM ht = ctrlTree.findItem(treeRoot, Text::toT(name));
 	if(ht && ctrlTree.GetSelectedItem() != ht) {
+		//dcdebug("DirectoryListingFrame::selectItem %s\n", name.c_str());
+
 		if (changeType == CHANGE_LIST)
 			ctrlTree.EnsureVisible(ht);
 		ctrlTree.SelectItem(ht);

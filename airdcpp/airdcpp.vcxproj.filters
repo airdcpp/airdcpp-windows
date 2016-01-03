@@ -317,6 +317,9 @@
     <ClCompile Include="airdcpp\MessageCache.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="airdcpp\TrackableDownloadItem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="airdcpp\AdcCommand.h">
@@ -824,6 +827,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="airdcpp\ShareDirectoryInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\TrackableDownloadItem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -297,9 +297,8 @@ void DirectoryListingManager::on(QueueManagerListener::Finished, const QueueItem
 	}
 
 	if (dl) {
-		dl->setQueueToken(boost::none);
 		dl->setFileName(qi->getListName());
-		if (dl->isOpen()) {
+		if (dl->hasCompletedDownloads()) {
 			dl->addFullListTask(dir);
 		} else {
 			fire(DirectoryListingManagerListener::OpenListing(), dl, dir, Util::emptyString);
@@ -322,9 +321,8 @@ void DirectoryListingManager::on(QueueManagerListener::PartialList, const Hinted
 		}
 	}
 
-	dl->setQueueToken(boost::none);
 	dl->setHubUrl(aUser.hint, false);
-	if (dl->isOpen()) {
+	if (dl->hasCompletedDownloads()) {
 		dl->addPartialListTask(aXML, aBase, false, true, [=] { dl->setActive(); });
 	} else {
 		fire(DirectoryListingManagerListener::OpenListing(), dl, aBase, aXML);
@@ -332,11 +330,11 @@ void DirectoryListingManager::on(QueueManagerListener::PartialList, const Hinted
 }
 
 void DirectoryListingManager::on(QueueManagerListener::Removed, const QueueItemPtr& qi, bool finished) noexcept {
-	if (finished || !qi->isSet(QueueItem::FLAG_USER_LIST))
+	if (!qi->isSet(QueueItem::FLAG_USER_LIST))
 		return;
 
 	auto u = qi->getSources()[0].getUser();
-	if (qi->isSet(QueueItem::FLAG_DIRECTORY_DOWNLOAD))
+	if (qi->isSet(QueueItem::FLAG_DIRECTORY_DOWNLOAD) && !finished)
 		removeDirectoryDownload(u, qi->getTempTarget(), qi->isSet(QueueItem::FLAG_PARTIAL_LIST));
 
 	if (qi->isSet(QueueItem::FLAG_CLIENT_VIEW) && qi->isSet(QueueItem::FLAG_PARTIAL_LIST)) {
@@ -345,15 +343,16 @@ void DirectoryListingManager::on(QueueManagerListener::Removed, const QueueItemP
 		{
 			RLock l(cs);
 			auto p = viewedLists.find(u);
-			if (p != viewedLists.end()) {
-				dl = p->second;
+			if (p == viewedLists.end()) {
+				dcassert(0);
+				return;
 			}
+
+			dl = p->second;
 		}
 
-		dl->setQueueToken(boost::none);
-		if (dl->isOpen()) {
-			dl->onRemovedQueue(qi->getTempTarget());
-		} else {
+		dl->onRemovedQueue(qi->getTarget(), finished);
+		if (!finished && !dl->hasDownloads()) {
 			removeList(u);
 		}
 	}
@@ -404,7 +403,7 @@ void DirectoryListingManager::on(QueueManagerListener::Added, QueueItemPtr& aQI)
 		dl = DirectoryListingPtr(new DirectoryListing(user, true, Util::emptyString, true, false));
 	}
 
-	dl->setQueueToken(aQI->getToken());
+	dl->onAddedQueue(aQI->getTarget());
 
 	{
 		WLock l(cs);
@@ -438,10 +437,12 @@ bool DirectoryListingManager::removeList(const UserPtr& aUser) noexcept {
 		dl = p->second;
 	}
 
-	auto token = dl->getQueueToken();
-	if (token) {
+	auto downloads = dl->getDownloads();
+	if (!downloads.empty()) {
 		// It will come back here after being removed from the queue
-		QueueManager::getInstance()->removeFile(*token);
+		for (const auto& p : downloads) {
+			QueueManager::getInstance()->removeFile(p);
+		}
 	} else {
 		{
 			WLock l(cs);
