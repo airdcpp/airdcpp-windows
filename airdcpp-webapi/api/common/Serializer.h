@@ -80,12 +80,12 @@ namespace webserver {
 		template <class ContainerT, class FuncT>
 		static json serializeFromPosition(int aBeginPos, int aCount, const ContainerT& aList, FuncT aF) throw(std::exception) {
 			auto listSize = static_cast<int>(std::distance(aList.begin(), aList.end()));
-			if (aBeginPos >= listSize || aCount <= 0) {
-				throw std::domain_error("Invalid range");
-			}
-
 			if (listSize == 0) {
 				return json::array();
+			}
+
+			if (aBeginPos >= listSize || aCount <= 0) {
+				throw std::domain_error("Invalid range");
 			}
 
 			auto beginIter = aList.begin();
