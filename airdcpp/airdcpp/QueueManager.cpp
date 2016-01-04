@@ -538,10 +538,7 @@ QueueItemPtr QueueManager::addList(const HintedUser& aUser, Flags::MaskType aFla
 	}
 
 	//connect
-	if (aInitialDir.empty()) {
-		ConnectionManager::getInstance()->getDownloadConnection(aUser, (aFlags & QueueItem::FLAG_PARTIAL_LIST) || (aFlags & QueueItem::FLAG_TTHLIST_BUNDLE));
-	}
-	
+	ConnectionManager::getInstance()->getDownloadConnection(aUser, (aFlags & QueueItem::FLAG_PARTIAL_LIST) || (aFlags & QueueItem::FLAG_TTHLIST_BUNDLE));
 	return q;
 }
 
