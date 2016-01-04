@@ -351,8 +351,10 @@ void DirectoryListingManager::on(QueueManagerListener::Removed, const QueueItemP
 			dl = p->second;
 		}
 
-		dl->onRemovedQueue(qi->getTarget(), finished);
-		if (!finished && !dl->hasDownloads()) {
+		dl->onListRemovedQueue(qi->getTarget(), qi->getTempTarget(), finished);
+
+		bool closing = (dl->getClosing() || !dl->hasCompletedDownloads());
+		if (!finished && !dl->hasDownloads() && closing) {
 			removeList(u);
 		}
 	}
@@ -393,10 +395,12 @@ void DirectoryListingManager::on(QueueManagerListener::Added, QueueItemPtr& aQI)
 		return;
 
 	auto user = aQI->getSources()[0].getUser();
-	if (hasList(user))
+	auto dl = hasList(user);
+	if (dl) {
+		dl->onAddedQueue(aQI->getTarget());
 		return;
+	}
 
-	DirectoryListingPtr dl = nullptr;
 	if (!aQI->isSet(QueueItem::FLAG_PARTIAL_LIST)) {
 		dl = DirectoryListingPtr(new DirectoryListing(user, false, aQI->getListName(), true, false));
 	} else {
@@ -413,15 +417,15 @@ void DirectoryListingManager::on(QueueManagerListener::Added, QueueItemPtr& aQI)
 	fire(DirectoryListingManagerListener::ListingCreated(), dl);
 }
 
-bool DirectoryListingManager::hasList(const UserPtr& aUser) noexcept {
+DirectoryListingPtr DirectoryListingManager::hasList(const UserPtr& aUser) noexcept {
 	RLock l (cs);
 	auto p = viewedLists.find(aUser);
 	if (p != viewedLists.end()) {
 		p->second->setActive();
-		return true;
+		return p->second;
 	}
 
-	return false;
+	return nullptr;
 }
 
 bool DirectoryListingManager::removeList(const UserPtr& aUser) noexcept {
@@ -439,6 +443,8 @@ bool DirectoryListingManager::removeList(const UserPtr& aUser) noexcept {
 
 	auto downloads = dl->getDownloads();
 	if (!downloads.empty()) {
+		dl->setClosing(true);
+
 		// It will come back here after being removed from the queue
 		for (const auto& p : downloads) {
 			QueueManager::getInstance()->removeFile(p);

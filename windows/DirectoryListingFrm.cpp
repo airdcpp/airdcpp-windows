@@ -274,6 +274,7 @@ void DirectoryListingFrame::on(DirectoryListingListener::ChangeDirectory, const 
 	//dcdebug("DirectoryListingListener::ChangeDirectory %s\n", aDir.c_str());
 	callAsync([=] {
 		if (aDir != curPath) {
+			dcdebug("SKIP: DirectoryListingListener::ChangeDirectory, paths match %s\n", aDir.c_str());
 			return;
 		}
 

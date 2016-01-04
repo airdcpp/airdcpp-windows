@@ -244,7 +244,7 @@ public:
 		return currentLocation;
 	}
 
-	void onRemovedQueue(const string& aDir, bool aFinished) noexcept;
+	void onListRemovedQueue(const string& aTarget, const string& aDir, bool aFinished) noexcept;
 protected:
 	void onStateChanged() noexcept;
 

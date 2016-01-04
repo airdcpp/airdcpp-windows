@@ -1193,14 +1193,20 @@ bool DirectoryListing::isCurrentSearchPath(const string& path) const noexcept {
 	return *curResult == path;
 }
 
-void DirectoryListing::onRemovedQueue(const string& aDir, bool aFinished) noexcept {
-	//dcassert(open);
-
+void DirectoryListing::onListRemovedQueue(const string& aTarget, const string& aDir, bool aFinished) noexcept {
 	if (!aFinished) {
-		fire(DirectoryListingListener::RemovedQueue(), aDir);
+		addAsyncTask([=] {
+			auto dir = findDirectory(aDir);
+			if (dir) {
+				dir->setLoading(false);
+				fire(DirectoryListingListener::RemovedQueue(), aDir);
+
+				onStateChanged();
+			}
+		});
 	}
 
-	TrackableDownloadItem::onRemovedQueue(aDir, aFinished);
+	TrackableDownloadItem::onRemovedQueue(aTarget, aFinished);
 }
 
 void DirectoryListing::on(ShareManagerListener::DirectoriesRefreshed, uint8_t, const RefreshPathList& aPaths) noexcept{

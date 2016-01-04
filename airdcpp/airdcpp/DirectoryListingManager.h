@@ -116,7 +116,7 @@ namespace dcpp {
 
 		mutable SharedMutex cs;
 
-		bool hasList(const UserPtr& aUser) noexcept;
+		DirectoryListingPtr hasList(const UserPtr& aUser) noexcept;
 
 		/** Directories queued for downloading */
 		unordered_multimap<UserPtr, DirectoryDownloadInfo::Ptr, User::Hash> dlDirectories;
