@@ -298,6 +298,10 @@ void SystemFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept
 }
 
 void SystemFrame::on(Message, const LogMessagePtr& aMessageData) noexcept {
+	if (aMessageData->getSeverity() == LogMessage::SEV_NOTIFY) {
+		return;
+	}
+
 	speak(ADD_LINE, aMessageData);
 }
 

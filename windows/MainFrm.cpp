@@ -887,6 +887,11 @@ void MainFrame::updateStatus(TStringList* aList) {
 }
 
 void MainFrame::on(LogManagerListener::Message, const LogMessagePtr& aMessage) noexcept {
+	if (aMessage->getSeverity() == LogMessage::SEV_NOTIFY) {
+		ShowPopup(Text::toT(aMessage->getText()), _T(""), NIIF_INFO | NIIF_NOSOUND, true);
+		return;
+	}
+
 	callAsync([=] { addStatus(aMessage); });
 }
 

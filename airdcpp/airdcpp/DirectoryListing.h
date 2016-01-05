@@ -301,8 +301,6 @@ private:
 	void checkShareDupes() noexcept;
 	void onLoadingFinished(int64_t aStartTime, const string& aDir, bool aReloadList, bool aChangeDir) noexcept;
 
-	void statusMessage(const string& aText, LogMessage::Severity aSeverity) noexcept;
-
 	DispatcherQueue tasks;
 };
 

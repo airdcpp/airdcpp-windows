@@ -68,6 +68,7 @@ namespace webserver {
 
 		if (JsonUtil::getOptionalFieldDefault<bool>("find_nfo", reqJson, false)) {
 			flags.setFlag(QueueItem::FLAG_VIEW_NFO);
+			flags.setFlag(QueueItem::FLAG_RECURSIVE_LIST);
 		}
 
 		if (JsonUtil::getOptionalFieldDefault<bool>("match_queue", reqJson, false)) {

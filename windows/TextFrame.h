@@ -27,9 +27,10 @@
 #include "RichTextBox.h"
 #include "atlstr.h"
 
+#include <airdcpp/ViewFileManagerListener.h>
 
 
-class TextFrame : public MDITabChildWindowImpl<TextFrame>, private SettingsManagerListener
+class TextFrame : public MDITabChildWindowImpl<TextFrame>, private SettingsManagerListener, private ViewFileManagerListener
 {
 public:
 	enum Type {
@@ -82,7 +83,9 @@ private:
 	tstring title;
 	tstring text;
 	RichTextBox ctrlPad;
+
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
+	void on(ViewFileManagerListener::FileClosed, const ViewFilePtr& aFile) noexcept;
 
 	ViewFilePtr viewFile = nullptr;
 };

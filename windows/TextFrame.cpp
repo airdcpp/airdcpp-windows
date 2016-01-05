@@ -53,6 +53,15 @@ TextFrame::TextFrame(const tstring& aTitle, const string& aFilePath, Type aType,
 
 TextFrame::TextFrame(const ViewFilePtr& aFile) : TextFrame(Text::toT(aFile->getDisplayName()), aFile->getPath(), NORMAL) {
 	viewFile = aFile;
+	ViewFileManager::getInstance()->addListener(this);
+}
+
+void TextFrame::on(ViewFileManagerListener::FileClosed, const ViewFilePtr& aFile) noexcept {
+	if (aFile != viewFile) {
+		return;
+	}
+
+	PostMessage(WM_CLOSE, 0, 0);
 }
 
 LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
@@ -176,6 +185,7 @@ LRESULT TextFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 
 	if (viewFile) {
 		ViewFileManager::getInstance()->removeFile(viewFile->getTTH());
+		ViewFileManager::getInstance()->removeListener(this);
 	}
 
 	bHandled = FALSE;

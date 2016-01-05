@@ -149,6 +149,7 @@ namespace webserver {
 
 	string Serializer::getSeverity(LogMessage::Severity aSeverity) noexcept {
 		switch (aSeverity) {
+			case LogMessage::SEV_NOTIFY: return "notify";
 			case LogMessage::SEV_INFO: return "info";
 			case LogMessage::SEV_WARNING: return "warning";
 			case LogMessage::SEV_ERROR: return "error";

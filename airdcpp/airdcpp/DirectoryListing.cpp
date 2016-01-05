@@ -588,15 +588,7 @@ void DirectoryListing::findNfoImpl(const string& aPath, bool aAllowQueueList, Du
 		}
 	}
 
-	statusMessage(dir->getName() + ": " + STRING(NO_NFO_FOUND), LogMessage::SEV_INFO);
-}
-
-void DirectoryListing::statusMessage(const string& aText, LogMessage::Severity aSeverity) noexcept {
-	if (isClientView) {
-		fire(DirectoryListingListener::UpdateStatusMessage(), aText);
-	} else {
-		LogManager::getInstance()->message(getNick(false) + ": " + aText, aSeverity);
-	}
+	LogManager::getInstance()->message(dir->getName() + ": " + STRING(NO_NFO_FOUND), LogMessage::SEV_NOTIFY);
 }
 
 struct HashContained {
