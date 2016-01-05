@@ -1869,7 +1869,7 @@ void MainFrame::on(QueueManagerListener::Finished, const QueueItemPtr& qi, const
 	if(qi->isSet(QueueItem::FLAG_CLIENT_VIEW) && qi->isSet(QueueItem::FLAG_TEXT)) {
 		callAsync([=] {
 			TextFrame::openWindow(Text::toT(qi->getTarget()), TextFrame::NORMAL);
-			File::deleteFile(qi->getTarget());
+			//File::deleteFile(qi->getTarget());
 		});
 	}
 }

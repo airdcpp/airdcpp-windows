@@ -1499,7 +1499,7 @@ void QueueFrame::on(DownloadManagerListener::BundleTick, const BundleList& tickB
 	}
 }
 
-void QueueFrame::on(DownloadManagerListener::BundleWaiting, const BundlePtr aBundle) noexcept { 
+void QueueFrame::on(DownloadManagerListener::BundleWaiting, const BundlePtr& aBundle) noexcept { 
 	addGuiTask(TASK_BUNDLE_STATUS, [=] { onBundleUpdated(aBundle); });
 }
 

@@ -36,6 +36,7 @@
 #include <airdcpp/UpdateManagerListener.h>
 #include <airdcpp/ShareScannerManager.h>
 #include <airdcpp/MessageManager.h>
+#include <airdcpp/ViewFileManagerListener.h>
 
 #include "PopupManager.h"
 #include "Dispatchers.h"

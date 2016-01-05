@@ -673,9 +673,17 @@ QueueItemPtr QueueManager::addOpenedItem(const string& aFileName, int64_t aSize,
 	//add in queue
 	QueueItemPtr qi = nullptr;
 	bool wantConnection = false;
+
+	Flags::MaskType flags;
+	if (isClientView) {
+		flags = QueueItem::FLAG_TEXT | QueueItem::FLAG_CLIENT_VIEW;
+	} else {
+		flags = QueueItem::FLAG_OPEN;
+	}
+
 	{
 		WLock l(cs);
-		auto ret = fileQueue.add(target, aSize, (Flags::MaskType)(isClientView ? (QueueItem::FLAG_TEXT | QueueItem::FLAG_CLIENT_VIEW) : QueueItem::FLAG_OPEN), QueueItem::HIGHEST, Util::emptyString, GET_TIME(), aTTH);
+		auto ret = fileQueue.add(target, aSize, flags, QueueItem::HIGHEST, Util::emptyString, GET_TIME(), aTTH);
 		qi = move(ret.first);
 		wantConnection = addSource(qi, aUser, true, false, false);
 

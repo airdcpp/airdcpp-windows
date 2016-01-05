@@ -8,8 +8,9 @@
 *.vspx
 *.aps
 /sendrelease.bat
-Thumbs.db
 /ipch
 *.suo
 *.opensdf
+*.db
+*.opendb
 *.exe

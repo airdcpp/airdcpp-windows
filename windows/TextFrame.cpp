@@ -21,8 +21,10 @@
 
 #include "TextFrame.h"
 #include "WinUtil.h"
+
 #include <airdcpp/File.h>
 #include <airdcpp/StringTokenizer.h>
+#include <airdcpp/ViewFileManager.h>
 
 //#define MAX_TEXT_LEN 32768
 
@@ -167,7 +169,13 @@ LRESULT TextFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 		SettingsManager::getInstance()->set(SettingsManager::TEXT_LEFT, (rc.left > 0 ? rc.left : 0));
 		SettingsManager::getInstance()->set(SettingsManager::TEXT_RIGHT, (rc.right > 0 ? rc.right : 0));
 	}
+
 	SettingsManager::getInstance()->removeListener(this);
+
+	if (textType == NORMAL) {
+		//ViewFileManager::getInstance()->removeFile();
+	}
+
 	bHandled = FALSE;
 	return 0;
 }
