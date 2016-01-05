@@ -30,10 +30,13 @@ namespace dcpp {
 	typedef std::function<void(const TTHValue&)> UpdateF;
 	public:
 		ViewFile(const string& aTarget, const TTHValue& aTTH, bool aIsText, UpdateF&& aUpdateFunction) noexcept;
+		~ViewFile() noexcept;
 
 		const string& getPath() const noexcept {
 			return path;
 		}
+
+		string getDisplayName() const noexcept;
 
 		bool isText() const noexcept {
 			return text;

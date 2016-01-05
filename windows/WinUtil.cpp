@@ -1819,9 +1819,9 @@ COLORREF WinUtil::blendColors(COLORREF aForeGround, COLORREF aBackGround) {
 
 void WinUtil::viewLog(const string& path, bool aHistory /*false*/) {
 	if (aHistory) {
-		TextFrame::openWindow(Text::toT(path), TextFrame::HISTORY);
+		TextFrame::openWindow(path, TextFrame::HISTORY);
 	} else if(SETTING(OPEN_LOGS_INTERNAL)) {
-		TextFrame::openWindow(Text::toT(path), TextFrame::LOG);
+		TextFrame::openWindow(path, TextFrame::LOG);
 	} else {
 		ShellExecute(NULL, NULL, Text::toT(path).c_str(), NULL, NULL, SW_SHOWNORMAL);
 	}

@@ -68,6 +68,7 @@
 #include <airdcpp/ThrottleManager.h>
 #include <airdcpp/version.h>
 #include <airdcpp/SettingHolder.h>
+#include <airdcpp/ViewFileManager.h>
 
 #include <VersionHelpers.h>
 #include <dbt.h>
@@ -1867,10 +1868,10 @@ void MainFrame::on(QueueManagerListener::Finished, const QueueItemPtr& qi, const
 	}
 
 	if(qi->isSet(QueueItem::FLAG_CLIENT_VIEW) && qi->isSet(QueueItem::FLAG_TEXT)) {
-		callAsync([=] {
-			TextFrame::openWindow(Text::toT(qi->getTarget()), TextFrame::NORMAL);
-			//File::deleteFile(qi->getTarget());
-		});
+		auto file = ViewFileManager::getInstance()->getFile(qi->getTTH());
+		if (file) {
+			callAsync([=] { TextFrame::openWindow(file); });
+		}
 	}
 }
 

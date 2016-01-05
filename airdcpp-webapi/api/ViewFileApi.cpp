@@ -56,7 +56,7 @@ namespace webserver {
 			{ "tth", aFile->getTTH().toBase32() },
 			//{ "path", aFile->getPath() },
 			{ "text", aFile->isText() },
-			{ "name", Util::getFileName(aFile->getPath()) },
+			{ "name", aFile->getDisplayName() },
 			{ "state", Serializer::serializeDownloadState(aFile->getDownloadState()) },
 			{ "type", Serializer::serializeFileType(aFile->getPath()) },
 			{ "time_finished", aFile->getTimeFinished() },

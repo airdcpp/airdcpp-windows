@@ -668,7 +668,7 @@ QueueItemPtr QueueManager::addOpenedItem(const string& aFileName, int64_t aSize,
 	}
 
 	//check the target
-	string target = Util::getOpenPath(Util::validatePath(aFileName));
+	auto target = Util::getOpenPath() + AirUtil::toOpenFileName(aFileName, aTTH);
 
 	//add in queue
 	QueueItemPtr qi = nullptr;

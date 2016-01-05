@@ -39,12 +39,15 @@ public:
 		NORMAL,
 	};
 
-	static void openWindow(const tstring& aFileName, Type aType);
+	static void openWindow(const string& aFilePath, Type aType);
 	static void openWindow(const tstring& aTitle, const tstring& aText, Type aType);
+	static void openWindow(const ViewFilePtr& aFile);
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("TextFrame"), IDR_NOTEPAD, 0, COLOR_3DFACE);
 
-	TextFrame(const tstring& fileName, Type aType, const tstring& aText = Util::emptyStringT);
+	TextFrame(const tstring& aTitle, const string& aFilePath, Type aType, const tstring& aText = Util::emptyStringT);
+	TextFrame(const ViewFilePtr& aFile);
+
 	~TextFrame() { }
 	
 	typedef MDITabChildWindowImpl<TextFrame> baseClass;
@@ -75,10 +78,13 @@ public:
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 private:
 	Type textType;
-	tstring file;
+	string filePath;
+	tstring title;
 	tstring text;
 	RichTextBox ctrlPad;
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
+
+	ViewFilePtr viewFile = nullptr;
 };
 
 #endif // !defined(TEXT_FRAME_H)

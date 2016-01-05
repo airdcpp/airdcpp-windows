@@ -1405,7 +1405,7 @@ void DirectoryListingFrame::handleViewAsText() {
 					StringList paths;
 					dl->getLocalPaths(ii->file, paths);
 					if (!paths.empty())
-						TextFrame::openWindow(Text::toT(paths.front()), TextFrame::NORMAL);
+						TextFrame::openWindow(paths.front(), TextFrame::NORMAL);
 				} else {
 					dl->openFile(ii->file, true);
 				}
@@ -1448,7 +1448,7 @@ void DirectoryListingFrame::handleViewNFO(bool usingTree) {
 	handleItemAction(usingTree, [this](const ItemInfo* ii) {
 		if (ii->type == ItemInfo::DIRECTORY) {
 			dl->addViewNfoTask(ii->dir->getPath(), true, [this](const string& aPath) {
-				callAsync([=] { TextFrame::openWindow(Text::toT(aPath), TextFrame::NORMAL); });
+				callAsync([=] { TextFrame::openWindow(aPath, TextFrame::NORMAL); });
 			});
 		}
 	});

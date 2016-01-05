@@ -17,15 +17,24 @@
 */
 
 #include "stdinc.h"
-
 #include "ViewFile.h"
 
+#include "AirUtil.h"
+#include "File.h"
 
 namespace dcpp {
 	ViewFile::ViewFile(const string& aTarget, const TTHValue& aTTH, bool aIsText, UpdateF&& aUpdateFunction) noexcept :
 		path(aTarget), tth(aTTH), updateFunction(aUpdateFunction), text(aIsText) {
 
 		onAddedQueue(path);
+	}
+
+	ViewFile::~ViewFile() noexcept {
+		File::deleteFile(path);
+	}
+
+	string ViewFile::getDisplayName() const noexcept {
+		return AirUtil::fromOpenFileName(Util::getFileName(path));
 	}
 
 	void ViewFile::onStateChanged() noexcept {

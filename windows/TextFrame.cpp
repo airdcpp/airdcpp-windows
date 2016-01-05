@@ -28,24 +28,31 @@
 
 //#define MAX_TEXT_LEN 32768
 
-void TextFrame::openWindow(const tstring& aFileName, Type aType) {
-	TextFrame* frame = new TextFrame(aFileName, aType);
-	if(SETTING(POPUNDER_TEXT) && aType == NORMAL)
+void TextFrame::openWindow(const string& aFilePath, Type aType) {
+	auto frame = new TextFrame(Text::toT(Util::getFileName(aFilePath)), aFilePath, aType);
+	frame->CreateEx(WinUtil::mdiClient);
+}
+
+void TextFrame::openWindow(const ViewFilePtr& aFile) {
+	auto frame = new TextFrame(aFile);
+	if (SETTING(POPUNDER_TEXT)) {
 		WinUtil::hiddenCreateEx(frame);
-	else
+	} else {
 		frame->CreateEx(WinUtil::mdiClient);
+	}
 }
 
 void TextFrame::openWindow(const tstring& aTitle, const tstring& aText, Type aType) {
-	TextFrame* frame = new TextFrame(aTitle, aType, aText);
-	//if(SETTING(POPUNDER_TEXT))
-		WinUtil::hiddenCreateEx(frame);
-	//else
-	//	frame->CreateEx(WinUtil::mdiClient);
+	auto frame = new TextFrame(aTitle, Util::emptyString, aType, aText);
+	WinUtil::hiddenCreateEx(frame);
 }
 
-TextFrame::TextFrame(const tstring& fileName, Type aType, const tstring& aText /*empty*/) : file(fileName), textType(aType), text(aText) {
+TextFrame::TextFrame(const tstring& aTitle, const string& aFilePath, Type aType, const tstring& aText /*empty*/) : title(aTitle), filePath(aFilePath), textType(aType), text(aText) {
 	SettingsManager::getInstance()->addListener(this);
+}
+
+TextFrame::TextFrame(const ViewFilePtr& aFile) : TextFrame(Text::toT(aFile->getDisplayName()), aFile->getPath(), NORMAL) {
+	viewFile = aFile;
 }
 
 LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
@@ -66,44 +73,39 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 			if (textType == HISTORY) {
 				ctrlPad.setFormatLinks(true);
 				ctrlPad.setFormatReleases(true);
-				File f(Text::fromT(file), File::READ, File::OPEN);
-				int64_t size = f.getSize();
+
+				File f(filePath, File::READ, File::OPEN);
+				auto size = f.getSize();
 				if(size > 64*1024) {
 					f.setPos(size - 64*1024);
 				}
 			
 				tmp = f.read(64*1024);
-				StringList lines;
-				lines = StringTokenizer<string>(tmp, "\r\n").getTokens();
+
+				auto lines = StringTokenizer<string>(tmp, "\r\n").getTokens();
 				long totalLines = lines.size();
 				int i = totalLines > (SETTING(LOG_LINES) +1) ? totalLines - SETTING(LOG_LINES) : 0;
 
 				for(; i < totalLines; ++i){
 					ctrlPad.AppendChat(Identity(NULL, 0), _T("- "), _T(""), Text::toT(lines[i]) + _T('\n'), WinUtil::m_ChatTextGeneral, true);
 				}
-				SetWindowText(Text::toT(Util::getFileName(Text::fromT(file))).c_str());
 			} else if (textType == LOG) {
 				ctrlPad.setFormatPaths(true);
 				ctrlPad.setFormatLinks(true);
 				ctrlPad.setFormatReleases(true);
-				File f(Text::fromT(file), File::READ, File::OPEN);
+				File f(filePath, File::READ, File::OPEN);
 				//if openlog just add the whole text
 				tmp = f.read();
 				ctrlPad.SetWindowText(Text::toT(tmp).c_str());
-				//ctrlPad.AppendText(text);
-
-				SetWindowText(Text::toT(Util::getFileName(Text::fromT(file))).c_str());
 			} else if (textType == REPORT) {
 				ctrlPad.setFormatPaths(true);
 				ctrlPad.AppendText(text);
 
 				ctrlPad.setAutoScrollToEnd(false);
 				ctrlPad.SetSel(0, 0); //set scroll position to top
-
-				SetWindowText(file.c_str());
 			}
 		} else if(textType == NORMAL) {
-			File f(Text::fromT(file), File::READ, File::OPEN);
+			File f(filePath, File::READ, File::OPEN);
 			tmp = Text::toDOS(f.read());
 			tmp = Text::toUtf8(tmp);
 
@@ -135,11 +137,11 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 			ctrlPad.setAutoScrollToEnd(false);
 			ctrlPad.SetSel(0, 0); //set scroll position to top
-			SetWindowText(Text::toT(Util::getFileName(Text::fromT(file))).c_str());
 		}
-		//f.close();
+
+		SetWindowText(title.c_str());
 	} catch(const FileException& e) {
-		ctrlPad.SetWindowText(Text::toT(Util::getFileName(Text::fromT(file)) + ": " + e.getError()).c_str());
+		ctrlPad.SetWindowText((title + _T(": ") + Text::toT(e.getError())).c_str());
 	}
 	
 	CRect rc(SETTING(TEXT_LEFT), SETTING(TEXT_TOP), SETTING(TEXT_RIGHT), SETTING(TEXT_BOTTOM));
@@ -172,8 +174,8 @@ LRESULT TextFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 
 	SettingsManager::getInstance()->removeListener(this);
 
-	if (textType == NORMAL) {
-		//ViewFileManager::getInstance()->removeFile();
+	if (viewFile) {
+		ViewFileManager::getInstance()->removeFile(viewFile->getTTH());
 	}
 
 	bHandled = FALSE;
