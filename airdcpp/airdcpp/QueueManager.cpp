@@ -652,7 +652,7 @@ void QueueManager::validateBundleFile(const string& aBundleDir, string& bundleFi
 	}
 }
 
-QueueItemPtr QueueManager::addOpenedItem(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool isClientView) throw(QueueException, FileException) {
+QueueItemPtr QueueManager::addOpenedItem(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsClientView, bool aIsText) throw(QueueException, FileException) {
 	//check the source
 	if (aUser.user)
 		checkSource(aUser);
@@ -661,7 +661,7 @@ QueueItemPtr QueueManager::addOpenedItem(const string& aFileName, int64_t aSize,
 	if (aSize == 0) {
 		//can't view this...
 		throw QueueException(STRING(CANT_OPEN_EMPTY_FILE));
-	} else if (isClientView && aSize > Util::convertSize(1, Util::MB)) {
+	} else if (aIsClientView && aIsText && aSize > Util::convertSize(1, Util::MB)) {
 		auto msg = STRING_F(VIEWED_FILE_TOO_BIG, aFileName % Util::formatBytes(aSize));
 		LogManager::getInstance()->message(msg, LogMessage::SEV_ERROR);
 		throw QueueException(msg);
@@ -675,8 +675,8 @@ QueueItemPtr QueueManager::addOpenedItem(const string& aFileName, int64_t aSize,
 	bool wantConnection = false;
 
 	Flags::MaskType flags;
-	if (isClientView) {
-		flags = QueueItem::FLAG_TEXT | QueueItem::FLAG_CLIENT_VIEW;
+	if (aIsClientView) {
+		flags = (aIsText ? QueueItem::FLAG_TEXT : 0) | QueueItem::FLAG_CLIENT_VIEW;
 	} else {
 		flags = QueueItem::FLAG_OPEN;
 	}

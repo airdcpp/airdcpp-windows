@@ -48,6 +48,8 @@ namespace dcpp {
 
 		auto file = getFile(aQI->getTTH());
 		if (file) {
+			file->setTimeFinished(GET_TIME());
+
 			file->onRemovedQueue(aQI->getTarget(), true);
 			fire(ViewFileManagerListener::FileFinished(), file);
 		}

@@ -42,6 +42,8 @@ namespace dcpp {
 		const TTHValue& getTTH() const noexcept {
 			return tth;
 		}
+
+		IGETSET(time_t, timeFinished, TimeFinished, 0);
 	protected:
 		void onStateChanged() noexcept;
 	private:

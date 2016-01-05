@@ -37,7 +37,7 @@ namespace webserver {
 		createSubscription("view_file_added");
 		createSubscription("view_file_removed");
 		createSubscription("view_file_updated");
-		//createSubscription("view_file_finished");
+		createSubscription("view_file_finished");
 
 		METHOD_HANDLER("sessions", Access::VIEW_FILES_VIEW, ApiRequest::METHOD_GET, (), false, ViewFileApi::handleGetFiles);
 		METHOD_HANDLER("session", Access::VIEW_FILES_EDIT, ApiRequest::METHOD_POST, (), true, ViewFileApi::handleAddFile);
@@ -59,6 +59,7 @@ namespace webserver {
 			{ "name", Util::getFileName(aFile->getPath()) },
 			{ "state", Serializer::serializeDownloadState(aFile->getDownloadState()) },
 			{ "type", Serializer::serializeFileType(aFile->getPath()) },
+			{ "time_finished", aFile->getTimeFinished() },
 		};
 	}
 
@@ -86,10 +87,10 @@ namespace webserver {
 		auto name = JsonUtil::getField<string>("name", j, false);
 		auto size = JsonUtil::getField<int64_t>("size", j);
 		auto user = Deserializer::deserializeHintedUser(j);
-		//auto text = JsonUtil::getOptionalFieldDefault<bool>("size", j, false);
+		auto isText = JsonUtil::getOptionalFieldDefault<bool>("text", j, false);
 
 		try {
-			QueueManager::getInstance()->addOpenedItem(name, size, tth, user, true);
+			QueueManager::getInstance()->addOpenedItem(name, size, tth, user, true, isText);
 		} catch (const Exception& e) {
 			aRequest.setResponseErrorStr(e.getError());
 			return websocketpp::http::status_code::internal_server_error;
@@ -140,8 +141,6 @@ namespace webserver {
 	}
 
 	void ViewFileApi::on(ViewFileManagerListener::FileClosed, const ViewFilePtr& aFile) noexcept {
-		//maybeSend("view_file_removed", [&] { return serializeFile(aFile); });
-
 		maybeSend("view_file_removed", [&] { 
 			return json({ "id", aFile->getTTH().toBase32() });
 		});
@@ -153,6 +152,8 @@ namespace webserver {
 
 	void ViewFileApi::on(ViewFileManagerListener::FileFinished, const ViewFilePtr& aFile) noexcept {
 		onViewFileUpdated(aFile);
+
+		maybeSend("view_file_finished", [&] { return serializeFile(aFile); });
 	}
 
 	void ViewFileApi::onViewFileUpdated(const ViewFilePtr& aFile) noexcept {
