@@ -26,6 +26,8 @@
 #include <airdcpp/typedefs.h>
 #include <airdcpp/MessageCache.h>
 #include <airdcpp/QueueItemBase.h>
+#include <airdcpp/TrackableDownloadItem.h>
+
 
 namespace webserver {
 	class Serializer {
@@ -52,6 +54,10 @@ namespace webserver {
 
 		static json serializeIp(const string& aIP) noexcept;
 		static json serializeIp(const string& aIP, const string& aCountryCode) noexcept;
+
+		static string getDownloadStateId(TrackableDownloadItem::State aState) noexcept;
+		static string getDownloadStateStr(TrackableDownloadItem::State aState) noexcept;
+		static json serializeDownloadState(TrackableDownloadItem::State aState) noexcept;
 
 
 		// Serialize n messages from end by keeping the list order

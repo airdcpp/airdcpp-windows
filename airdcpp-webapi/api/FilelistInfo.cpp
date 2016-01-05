@@ -95,22 +95,23 @@ namespace webserver {
 	}
 
 	string FilelistInfo::formatState(const DirectoryListingPtr& aList) noexcept {
-		switch (aList->getDownloadState()) {
-			case DirectoryListing::STATE_DOWNLOAD_PENDING: return "download_pending";
-			case DirectoryListing::STATE_DOWNLOADING: return "downloading";
-			case DirectoryListing::STATE_DOWNLOADED: {
-				return !aList->getCurrentLocationInfo().directory || aList->getCurrentLocationInfo().directory->getLoading() ? "loading" : "loaded";
-			}
+		if (aList->getDownloadState() == DirectoryListing::STATE_DOWNLOADED) {
+			return !aList->getCurrentLocationInfo().directory || aList->getCurrentLocationInfo().directory->getLoading() ? "loading" : "loaded";
 		}
 
-		dcassert(0);
-		return "";
+		return Serializer::serializeDownloadState(aList->getDownloadState());
 	}
 
 	json FilelistInfo::serializeState(const DirectoryListingPtr& aList) noexcept {
-		return {
-			{ "id", formatState(aList) }
-		};
+		if (aList->getDownloadState() == DirectoryListing::STATE_DOWNLOADED) {
+			bool loading = !aList->getCurrentLocationInfo().directory || aList->getCurrentLocationInfo().directory->getLoading();
+			return {
+				{ "id", loading ? "loading" : "loaded" },
+				{ "str", loading ? "Parsing data" : "Loaded" },
+			};
+		}
+
+		return Serializer::serializeDownloadState(aList->getDownloadState());
 	}
 
 	json FilelistInfo::serializeLocation(const DirectoryListingPtr& aListing) noexcept {
