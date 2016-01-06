@@ -47,6 +47,8 @@ namespace webserver {
 		{ "new_segment_min_speed", SettingsManager::DONT_BEGIN_SEGMENT_SPEED, ResourceManager::DONT_ADD_SEGMENT_TEXT, ApiSettingItem::TYPE_GENERAL, { ResourceManager::Strings::KiB, true } },
 		{ "allow_slow_overlap", SettingsManager::OVERLAP_SLOW_SOURCES, ResourceManager::SETTINGS_OVERLAP_SLOW_SOURCES },
 		{ "share_finished_bundles", SettingsManager::ADD_FINISHED_INSTANTLY, ResourceManager::ADD_FINISHED_INSTANTLY },
+		{ "finished_no_hash", SettingsManager::FINISHED_NO_HASH, ResourceManager::SETTINGS_FINISHED_NO_HASH },
+		{ "finished_remove_exit", SettingsManager::REMOVE_FINISHED_BUNDLES, ResourceManager::BUNDLES_REMOVE_EXIT },
 
 		//{ ResourceManager::SETTINGS_SKIPPING_OPTIONS },
 		{ "dont_download_shared", SettingsManager::DONT_DL_ALREADY_SHARED, ResourceManager::SETTINGS_DONT_DL_ALREADY_SHARED },
@@ -165,7 +167,7 @@ namespace webserver {
 		{ "log_status", SettingsManager::LOG_STATUS_MESSAGES, ResourceManager::SETTINGS_LOG_STATUS_MESSAGES },
 		{ "log_status_file", SettingsManager::LOG_FILE_STATUS, ResourceManager::FILENAME, ApiSettingItem::TYPE_FILE_PATH },
 		{ "log_status_format", SettingsManager::LOG_FORMAT_STATUS, ResourceManager::SETTINGS_FORMAT },
-		{ "log_list_transfers", SettingsManager::LOG_FILELIST_TRANSFERS, ResourceManager::SETTINGS_FORMAT },
+		{ "log_list_transfers", SettingsManager::LOG_FILELIST_TRANSFERS, ResourceManager::SETTINGS_LOG_FILELIST_TRANSFERS },
 		{ "single_log_per_cid", SettingsManager::PM_LOG_GROUP_CID, ResourceManager::LOG_COMBINE_ADC_PM },
 
 		//{ ResourceManager::HISTORIES },
