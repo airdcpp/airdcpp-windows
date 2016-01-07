@@ -59,13 +59,17 @@ namespace webserver {
 		if (!subscriptionActive("transfer_statistics"))
 			return;
 
+		auto resetSpeed = [](int transfers, int64_t speed) {
+			return (transfers == 0 && speed < 10 * 1024) || speed < 1024;
+		};
+
 		auto downSpeed = DownloadManager::getInstance()->getLastDownSpeed();
-		if (downSpeed < 1024) {
+		if (resetSpeed(lastDownloads, downSpeed)) {
 			downSpeed = 0;
 		}
 
 		auto upSpeed = DownloadManager::getInstance()->getLastUpSpeed();
-		if (upSpeed < 1024) {
+		if (resetSpeed(lastUploads, upSpeed)) {
 			upSpeed = 0;
 		}
 

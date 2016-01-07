@@ -25,7 +25,7 @@
 #include <api/common/Serializer.h>
 
 namespace webserver {
-	HashApi::HashApi(Session* aSession) : ApiModule(aSession, Access::SETTINGS_VIEW),
+	HashApi::HashApi(Session* aSession) : ApiModule(aSession, Access::ANY),
 		timer(WebServerManager::getInstance()->addTimer([this] { onTimer(); }, 1000)) {
 
 		HashManager::getInstance()->addListener(this);
