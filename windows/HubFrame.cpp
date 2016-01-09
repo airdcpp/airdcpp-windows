@@ -227,7 +227,6 @@ bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*messag
 			status = TSTRING(TIMESTAMPS_DISABLED);
 		}
 	} else if( (stricmp(cmd.c_str(), _T("password")) == 0) && waitingForPW ) {
-		client->setPassword(Text::fromT(param));
 		client->password(Text::fromT(param));
 		waitingForPW = false;
 	} else if( stricmp(cmd.c_str(), _T("showjoins")) == 0 ) {
@@ -568,7 +567,6 @@ void HubFrame::onPassword() {
 		linePwd.description = CTSTRING(ENTER_PASSWORD);
 		linePwd.password = true;
 		if(linePwd.DoModal(m_hWnd) == IDOK) {
-			client->setPassword(Text::fromT(linePwd.line));
 			client->password(Text::fromT(linePwd.line));
 			waitingForPW = false;
 		} else {
