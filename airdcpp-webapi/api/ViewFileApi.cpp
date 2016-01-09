@@ -154,7 +154,9 @@ namespace webserver {
 
 	void ViewFileApi::on(ViewFileManagerListener::FileClosed, const ViewFilePtr& aFile) noexcept {
 		maybeSend("view_file_removed", [&] { 
-			return json({ "id", aFile->getTTH().toBase32() });
+			return json({
+				{ "id", aFile->getTTH().toBase32() }
+			});
 		});
 	}
 
