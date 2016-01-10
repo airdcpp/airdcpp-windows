@@ -1899,7 +1899,7 @@ void ShareManager::buildTree(string& aPath, string& aPathLower, const Directory:
 					continue;
 				}
 
-				if (excludedPaths.find(aPath) != excludedPaths.end()) {
+				if (excludedPaths.find(curPath) != excludedPaths.end()) {
 					continue;
 				}
 			}

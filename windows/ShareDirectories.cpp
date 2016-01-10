@@ -693,10 +693,6 @@ bool ShareDirectories::addExcludeFolder(const string& path) {
 }
 
 bool ShareDirectories::removeExcludeFolder(const string& aPath) {
-	if (excludedPaths.find(aPath) != excludedPaths.end()) {
-		return false;
-	}
-
 	excludedPaths.erase(aPath);
 	return true;
 }
