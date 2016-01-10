@@ -569,7 +569,7 @@ void HubFrame::onPassword() {
 		if(linePwd.DoModal(m_hWnd) == IDOK) {
 			client->password(Text::fromT(linePwd.line));
 			waitingForPW = false;
-		} else {
+		} else if (client->isConnected()) {
 			client->disconnect(true);
 		}
 	}
