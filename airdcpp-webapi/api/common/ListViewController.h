@@ -800,8 +800,8 @@ namespace webserver {
 
 		// Must be in merging order (lower ones replace other)
 		enum Tasks {
-			UPDATE_ITEM = 0,
-			ADD_ITEM,
+			ADD_ITEM = 0,
+			UPDATE_ITEM,
 			REMOVE_ITEM
 		};
 
