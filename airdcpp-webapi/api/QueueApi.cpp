@@ -55,11 +55,13 @@ namespace webserver {
 
 		METHOD_HANDLER("bundle", Access::QUEUE_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("file")), true, QueueApi::handleAddFileBundle);
 		METHOD_HANDLER("bundle", Access::QUEUE_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("directory")), true, QueueApi::handleAddDirectoryBundle);
+
 		METHOD_HANDLER("bundle", Access::QUEUE_VIEW, ApiRequest::METHOD_GET, (TOKEN_PARAM), false, QueueApi::handleGetBundle);
-		METHOD_HANDLER("bundle", Access::QUEUE_EDIT, ApiRequest::METHOD_DELETE, (TOKEN_PARAM), false, QueueApi::handleRemoveBundle);
+		METHOD_HANDLER("bundle", Access::QUEUE_EDIT, ApiRequest::METHOD_POST, (TOKEN_PARAM, EXACT_PARAM("remove")), false, QueueApi::handleRemoveBundle);
 		METHOD_HANDLER("bundle", Access::QUEUE_EDIT, ApiRequest::METHOD_PATCH, (TOKEN_PARAM), true, QueueApi::handleUpdateBundle);
 
 		METHOD_HANDLER("bundle", Access::QUEUE_EDIT, ApiRequest::METHOD_POST, (TOKEN_PARAM, EXACT_PARAM("search")), false, QueueApi::handleSearchBundle);
+		METHOD_HANDLER("bundle", Access::QUEUE_EDIT, ApiRequest::METHOD_POST, (TOKEN_PARAM, EXACT_PARAM("share")), false, QueueApi::handleShareBundle);
 
 		/*METHOD_HANDLER("temp_item", ApiRequest::METHOD_POST, (), true, QueueApi::handleAddTempItem);
 		METHOD_HANDLER("temp_item", ApiRequest::METHOD_GET, (TOKEN_PARAM), false, QueueApi::handleGetFile);
@@ -131,24 +133,31 @@ namespace webserver {
 	}
 
 	api_return QueueApi::handleGetBundle(ApiRequest& aRequest) {
-		auto b = QueueManager::getInstance()->findBundle(aRequest.getRangeParam(0));
-		if (b) {
-			auto j = Serializer::serializeItem(b, bundlePropertyHandler);
-			aRequest.setResponseBody(j);
-			return websocketpp::http::status_code::ok;
+		auto b = getBundle(aRequest);
+
+		auto j = Serializer::serializeItem(b, bundlePropertyHandler);
+		aRequest.setResponseBody(j);
+		return websocketpp::http::status_code::ok;
+	}
+
+	BundlePtr QueueApi::getBundle(ApiRequest& aRequest) {
+		auto b = QueueManager::getInstance()->findBundle(aRequest.getTokenParam(0));
+		if (!b) {
+			throw std::invalid_argument("Bundle not found");
 		}
 
-		return websocketpp::http::status_code::not_found;
+		return b;
 	}
 
 	api_return QueueApi::handleSearchBundle(ApiRequest& aRequest) {
-		auto b = QueueManager::getInstance()->findBundle(aRequest.getTokenParam(0));
-		if (b) {
-			QueueManager::getInstance()->searchBundleAlternates(b, true);
-			return  websocketpp::http::status_code::ok;
-		}
+		QueueManager::getInstance()->searchBundleAlternates(getBundle(aRequest), true);
+		return websocketpp::http::status_code::ok;
+	}
 
-		return websocketpp::http::status_code::not_found;
+	api_return QueueApi::handleShareBundle(ApiRequest& aRequest) {
+		auto skipScan = JsonUtil::getOptionalFieldDefault<bool>("skip_scan", aRequest.getRequestBody(), false);
+		QueueManager::getInstance()->shareBundle(getBundle(aRequest), skipScan);
+		return websocketpp::http::status_code::ok;
 	}
 
 	api_return QueueApi::handleAddFileBundle(ApiRequest& aRequest) {
