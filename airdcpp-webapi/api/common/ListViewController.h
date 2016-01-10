@@ -442,7 +442,7 @@ namespace webserver {
 
 				void merge(const MergeTask& aTask) {
 					// Ignore
-					if (type < aTask.type) {
+					if (type > aTask.type) {
 						return;
 					}
 
@@ -800,8 +800,8 @@ namespace webserver {
 
 		// Must be in merging order (lower ones replace other)
 		enum Tasks {
-			ADD_ITEM = 0,
-			UPDATE_ITEM,
+			UPDATE_ITEM = 0,
+			ADD_ITEM,
 			REMOVE_ITEM
 		};
 
