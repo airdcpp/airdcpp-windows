@@ -149,14 +149,29 @@ namespace webserver {
 		return b;
 	}
 
+	QueueItemPtr QueueApi::getFile(ApiRequest& aRequest) {
+		auto q = QueueManager::getInstance()->findFile(aRequest.getTokenParam(0));
+		if (!q) {
+			throw std::invalid_argument("File not found");
+		}
+
+		return q;
+	}
+
 	api_return QueueApi::handleSearchBundle(ApiRequest& aRequest) {
 		QueueManager::getInstance()->searchBundleAlternates(getBundle(aRequest), true);
 		return websocketpp::http::status_code::ok;
 	}
 
 	api_return QueueApi::handleShareBundle(ApiRequest& aRequest) {
+		auto b = getBundle(aRequest);
+		if (!b->isFinished()) {
+			aRequest.setResponseErrorStr("This action can only be performed for finished bundles");
+			return websocketpp::http::status_code::bad_request;
+		}
+
 		auto skipScan = JsonUtil::getOptionalFieldDefault<bool>("skip_scan", aRequest.getRequestBody(), false);
-		QueueManager::getInstance()->shareBundle(getBundle(aRequest), skipScan);
+		QueueManager::getInstance()->shareBundle(b, skipScan);
 		return websocketpp::http::status_code::ok;
 	}
 
@@ -241,16 +256,13 @@ namespace webserver {
 
 	api_return QueueApi::handleRemoveBundle(ApiRequest& aRequest) {
 		auto removeFinished = JsonUtil::getOptionalFieldDefault<bool>("remove_finished", aRequest.getRequestBody(), false);
-		auto success = QueueManager::getInstance()->removeBundle(aRequest.getTokenParam(0), removeFinished);
-		return success ? websocketpp::http::status_code::ok : websocketpp::http::status_code::not_found;
+
+		QueueManager::getInstance()->removeBundle(getBundle(aRequest), removeFinished);
+		return websocketpp::http::status_code::ok;
 	}
 
 	api_return QueueApi::handleUpdateBundle(ApiRequest& aRequest) {
-		auto b = QueueManager::getInstance()->findBundle(aRequest.getTokenParam(0));
-		if (!b) {
-			return websocketpp::http::status_code::not_found;
-		}
-
+		auto b = getBundle(aRequest);
 		const auto& reqJson = aRequest.getRequestBody();
 
 		// Priority
@@ -315,13 +327,18 @@ namespace webserver {
 
 	// FILES (COMMON)
 	api_return QueueApi::handleGetFile(ApiRequest& aRequest) {
-		auto success = QueueManager::getInstance()->findFile(aRequest.getTokenParam(0));
-		return success ? websocketpp::http::status_code::ok : websocketpp::http::status_code::not_found;
+		//auto success = QueueManager::getInstance()->findFile(aRequest.getTokenParam(0));
+		//return success ? websocketpp::http::status_code::ok : websocketpp::http::status_code::not_found;
+		return websocketpp::http::status_code::ok;
 	}
 
 	api_return QueueApi::handleRemoveFile(ApiRequest& aRequest) {
-		auto success = QueueManager::getInstance()->removeFile(aRequest.getTokenParam(0), false);
-		return success ? websocketpp::http::status_code::ok : websocketpp::http::status_code::not_found;
+		if (QueueManager::getInstance()->removeFile(aRequest.getTokenParam(0), false)) {
+			aRequest.setResponseErrorStr("File not found");
+			return websocketpp::http::status_code::bad_request;
+		}
+
+		return websocketpp::http::status_code::ok;
 	}
 
 

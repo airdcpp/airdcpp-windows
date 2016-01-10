@@ -114,6 +114,7 @@ namespace webserver {
 
 		// Throws if the bundle is not found
 		BundlePtr getBundle(ApiRequest& aRequest);
+		QueueItemPtr getFile(ApiRequest& aRequest);
 		//api_return handleUpdateTempItem(ApiRequest& aRequest);
 		//api_return handleUpdateFileList(ApiRequest& aRequest);
 
