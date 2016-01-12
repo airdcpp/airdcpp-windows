@@ -127,19 +127,24 @@ namespace webserver {
 			dcassert(i != childSubscriptions.end());
 			return i->second;
 		}
-	protected:
-		mutable SharedMutex cs;
 
 		// Submodules should NEVER be accessed outside of web server threads (e.g. API requests)
-		typename ItemType::Ptr getSubModule(const string& aId) {
+		typename ItemType::Ptr getSubModule(IdType aId) {
 			RLock l(cs);
-			auto m = subModules.find(convertF(aId));
+			auto m = subModules.find(aId);
 			if (m != subModules.end()) {
 				return m->second;
 			}
 
 			return nullptr;
 		}
+
+		// Submodules should NEVER be accessed outside of web server threads (e.g. API requests)
+		typename ItemType::Ptr getSubModule(const string& aId) {
+			return getSubModule(convertF(aId));
+		}
+	protected:
+		mutable SharedMutex cs;
 
 		void forEachSubModule(std::function<void(const ItemType&)> aAction) {
 			RLock l(cs);
@@ -203,6 +208,25 @@ namespace webserver {
 			parentModule->createChildSubscription(aSubscription);
 		}
 
+		void addAsyncTask(CallBack&& aTask) {
+			ApiModule::addAsyncTask([=] { 
+				asyncRunWrapper(aTask); 
+			});
+		}
+
+		// All custom async tasks should be run inside this to
+		// ensure that the submodule (or the session) won't get deleted
+		void asyncRunWrapper(const CallBack& aTask) {
+			ApiModule::asyncRunWrapper([=] {
+				// Ensure that the submodule won't be deleted
+				auto m = parentModule->getSubModule(id);
+				if (!m) {
+					return;
+				}
+
+				aTask();
+			});
+		}
 	private:
 		ParentType* parentModule;
 
