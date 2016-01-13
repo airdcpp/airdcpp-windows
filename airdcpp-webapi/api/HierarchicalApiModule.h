@@ -214,11 +214,18 @@ namespace webserver {
 			});
 		}
 
+		TimerPtr getTimer(CallBack&& aTask, time_t aIntervalMillis) {
+			return ApiModule::getTimer([=] {
+				asyncRunWrapper(aTask);
+			}, aIntervalMillis);
+		}
+
 		// All custom async tasks should be run inside this to
 		// ensure that the submodule (or the session) won't get deleted
 		void asyncRunWrapper(const CallBack& aTask) {
+			// Ensure that we have a session
 			ApiModule::asyncRunWrapper([=] {
-				// Ensure that the submodule won't be deleted
+				// Ensure that we have a submodule
 				auto m = parentModule->getSubModule(id);
 				if (!m) {
 					return;
