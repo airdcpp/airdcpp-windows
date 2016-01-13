@@ -445,15 +445,15 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	slotsIcon = ResourceLoader::loadIcon(IDI_SLOTS, 16);
 	slotsFullIcon = ResourceLoader::loadIcon(IDI_SLOTSFULL, 16);
 
-	ctrlStatus.SetIcon(STATUS_AWAY, AirUtil::getAway() ? ResourceLoader::getIcon(IDI_USER_AWAY, 16) : ResourceLoader::getIcon(IDI_USER_BASE, 16));
-	ctrlStatus.SetIcon(STATUS_SHARED, ResourceLoader::getIcon(IDI_SHARED, 16));
+	ctrlStatus.SetIcon(STATUS_AWAY, AirUtil::getAway() ? GET_ICON(IDI_USER_AWAY, 16) : GET_ICON(IDI_USER_BASE, 16));
+	ctrlStatus.SetIcon(STATUS_SHARED, GET_ICON(IDI_SHARED, 16));
 	ctrlStatus.SetIcon(STATUS_SLOTS, slotsIcon);
-	ctrlStatus.SetIcon(STATUS_HUBS, ResourceLoader::getIcon(IDI_HUB, 16));
-	ctrlStatus.SetIcon(STATUS_DOWNLOADED, ResourceLoader::getIcon(IDI_TOTAL_DOWN, 16));
-	ctrlStatus.SetIcon(STATUS_UPLOADED, ResourceLoader::getIcon(IDI_TOTAL_UP, 16));
-	ctrlStatus.SetIcon(STATUS_DL_SPEED, ResourceLoader::getIcon(IDI_DOWNLOAD, 16));
-	ctrlStatus.SetIcon(STATUS_UL_SPEED, ResourceLoader::getIcon(IDI_UPLOAD, 16));
-	ctrlStatus.SetIcon(STATUS_QUEUED, ResourceLoader::getIcon(IDI_QUEUE, 16));
+	ctrlStatus.SetIcon(STATUS_HUBS, GET_ICON(IDI_HUB, 16));
+	ctrlStatus.SetIcon(STATUS_DOWNLOADED, GET_ICON(IDI_TOTAL_DOWN, 16));
+	ctrlStatus.SetIcon(STATUS_UPLOADED, GET_ICON(IDI_TOTAL_UP, 16));
+	ctrlStatus.SetIcon(STATUS_DL_SPEED, GET_ICON(IDI_DOWNLOAD, 16));
+	ctrlStatus.SetIcon(STATUS_UL_SPEED, GET_ICON(IDI_UPLOAD, 16));
+	ctrlStatus.SetIcon(STATUS_QUEUED, GET_ICON(IDI_QUEUE, 16));
 
 	//background image
 	if(!SETTING(BACKGROUND_IMAGE).empty()) {
@@ -497,13 +497,13 @@ LRESULT MainFrame::onTaskbarButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 		THUMBBUTTON buttons[2];
 		buttons[0].dwMask = THB_ICON | THB_TOOLTIP | THB_FLAGS;
 		buttons[0].iId = IDC_OPEN_DOWNLOADS;
-		buttons[0].hIcon = ResourceLoader::getIcon(IDI_OPEN_DOWNLOADS, 16);
+		buttons[0].hIcon = GET_ICON(IDI_OPEN_DOWNLOADS, 16);
 		wcscpy(buttons[0].szTip, CWSTRING(MENU_OPEN_DOWNLOADS_DIR));
 		buttons[0].dwFlags = THBF_ENABLED;
 
 		buttons[1].dwMask = THB_ICON | THB_TOOLTIP | THB_FLAGS;
 		buttons[1].iId = ID_FILE_SETTINGS;
-		buttons[1].hIcon = ResourceLoader::getIcon(IDI_SETTINGS, 16);
+		buttons[1].hIcon = GET_ICON(IDI_SETTINGS, 16);
 		wcscpy(buttons[1].szTip, CWSTRING(SETTINGS));
 		buttons[1].dwFlags = THBF_ENABLED;
 
@@ -820,7 +820,7 @@ void MainFrame::updateStatus(TStringList* aList) {
 	if(ctrlStatus.IsWindow()) {
 		const auto& str = *aList;
 		bool u = false;
-		//ctrlStatus.SetIcon(STATUS_AWAY, AirUtil::getAway() ? ResourceLoader::getIcon(IDI_USER_AWAY, 16) : ResourceLoader::getIcon(IDI_USER_BASE, 16));
+		//ctrlStatus.SetIcon(STATUS_AWAY, AirUtil::getAway() ? GET_ICON(IDI_USER_AWAY, 16) : GET_ICON(IDI_USER_BASE, 16));
 		auto pos = 0;
 		for(int i = STATUS_SHARED; i < STATUS_SHUTDOWN; i++) {
 
@@ -1597,18 +1597,18 @@ LRESULT MainFrame::onStatusBarClick(UINT uMsg, WPARAM /*wParam*/, LPARAM lParam,
 				if(!AirUtil::getAway()) {
 					setAwayButton(true);
 					AirUtil::setAway(AWAY_MANUAL);
-					ctrlStatus.SetIcon(STATUS_AWAY, ResourceLoader::getIcon(IDI_USER_AWAY, 16));
+					ctrlStatus.SetIcon(STATUS_AWAY, GET_ICON(IDI_USER_AWAY, 16));
 				}
 			}
 		} else {
 			if(AirUtil::getAway()) { 
 				setAwayButton(false);
 				AirUtil::setAway(AWAY_OFF);
-				ctrlStatus.SetIcon(STATUS_AWAY, ResourceLoader::getIcon(IDI_USER_BASE, 16));
+				ctrlStatus.SetIcon(STATUS_AWAY, GET_ICON(IDI_USER_BASE, 16));
 			} else {
 				setAwayButton(true);
 				AirUtil::setAway(AWAY_MANUAL);
-				ctrlStatus.SetIcon(STATUS_AWAY, ResourceLoader::getIcon(IDI_USER_AWAY, 16));
+				ctrlStatus.SetIcon(STATUS_AWAY, GET_ICON(IDI_USER_AWAY, 16));
 			}
 		}
 	}

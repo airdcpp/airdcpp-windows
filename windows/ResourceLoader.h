@@ -34,6 +34,8 @@
 #include "resource.h"
 #include "ExCImage.h"
 
+#define GET_ICON(id, size) ResourceLoader::getIcon(id, size)
+
 class ResourceLoader
 {
 public:

@@ -418,7 +418,7 @@ LRESULT SystemFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& b
 			scrollToEnd();
 
 		if(errorNotified) {
-			setIcon(ResourceLoader::getIcon(IDI_LOGS, 16));
+			setIcon(GET_ICON(IDI_LOGS, 16));
 			errorNotified = false;
 		}
 	} 

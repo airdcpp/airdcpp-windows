@@ -186,15 +186,15 @@ void PrivateFrame::updatePMInfo(uint8_t aType) {
 	case PrivateChat::MSG_SEEN: {
 		tstring msg = _T("[") + Text::toT(Util::getShortTimeString()) + _T("] *** ") + TSTRING(MESSAGE_SEEN) + _T(" ***");
 		if (!userTyping)
-			addStatus(msg, ResourceLoader::getIcon(IDI_SEEN, 16));
+			addStatus(msg, GET_ICON(IDI_SEEN, 16));
 		else
-			lastStatus = { msg, ResourceLoader::getIcon(IDI_SEEN, 16) };
+			lastStatus = { msg, GET_ICON(IDI_SEEN, 16) };
 		break;
 	}
 	case PrivateChat::TYPING_ON:
 		//setStatusText to prevent saving lastStatus
 		userTyping = true;
-		setStatusText(_T(" *** ") + TSTRING(USER_TYPING) + _T(" ***"), ResourceLoader::getIcon(IDI_TYPING, 16));
+		setStatusText(_T(" *** ") + TSTRING(USER_TYPING) + _T(" ***"), GET_ICON(IDI_TYPING, 16));
 		break;
 
 	case PrivateChat::TYPING_OFF:
@@ -536,7 +536,7 @@ void PrivateFrame::updateStatusBar() {
 		ctrlStatus.SetIcon(STATUS_CC, chat->getSupportsCCPM() ? ResourceLoader::iSecureGray : ResourceLoader::iCCPMUnSupported);
 	} else if(ccReady()){
 		tmp = _T(" ") + TSTRING(SEND_PM_VIA) +_T(": ") + TSTRING(DIRECT_ENCRYPTED_CHANNEL);
-		ctrlStatus.SetIcon(STATUS_CC, ResourceLoader::getIcon(IDI_SECURE, 16));
+		ctrlStatus.SetIcon(STATUS_CC, GET_ICON(IDI_SECURE, 16));
 	} else {
 		ctrlStatus.SetIcon(STATUS_CC, NULL);
 	}
@@ -654,7 +654,7 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 void PrivateFrame::updateTabIcon(bool offline) {
 	if (offline) {
 		bool userBot = getUser() && getUser()->isSet(User::BOT);
-		setIcon(userBot ? ResourceLoader::getIcon(IDI_BOT_OFF, 16) : ResourceLoader::getIcon(IDR_PRIVATE_OFF, 16));
+		setIcon(userBot ? GET_ICON(IDI_BOT_OFF, 16) : GET_ICON(IDR_PRIVATE_OFF, 16));
 		setAway();
 		return;
 	}
@@ -692,9 +692,9 @@ void PrivateFrame::setAway() {
 		return;
 
 	if (!getUser()->isOnline()) {
-		ctrlStatus.SetIcon(STATUS_AWAY, ResourceLoader::getIcon(IDR_PRIVATE_OFF, 16));
+		ctrlStatus.SetIcon(STATUS_AWAY, GET_ICON(IDR_PRIVATE_OFF, 16));
 	} else {
-		ctrlStatus.SetIcon(STATUS_AWAY, userAway ? ResourceLoader::getIcon(IDI_USER_AWAY, 16) : ResourceLoader::getIcon(IDI_USER_BASE, 16));
+		ctrlStatus.SetIcon(STATUS_AWAY, userAway ? GET_ICON(IDI_USER_AWAY, 16) : GET_ICON(IDI_USER_BASE, 16));
 	}
 }
 

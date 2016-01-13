@@ -1134,7 +1134,7 @@ bool WinUtil::parseDBLClick(const tstring& str) {
 
 void WinUtil::SetIcon(HWND hWnd, int aDefault, bool big) {
 	int size = big ? ::GetSystemMetrics(SM_CXICON) : ::GetSystemMetrics(SM_CXSMICON);
-	::SendMessage(hWnd, WM_SETICON, big ? ICON_BIG : ICON_SMALL, (LPARAM)ResourceLoader::getIcon(aDefault, size));
+	::SendMessage(hWnd, WM_SETICON, big ? ICON_BIG : ICON_SMALL, (LPARAM)GET_ICON(aDefault, size));
 }
 
 void WinUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aUser, RichTextBox* ctrlEdit /*nullptr*/) {

@@ -91,7 +91,7 @@ void ChatFrameBase::init(HWND /*m_hWnd*/, RECT aRcDefault) {
 
 	if(SETTING(SHOW_MULTILINE)){
 		ctrlResize.Create(m_hWnd, aRcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_ICON | BS_CENTER, 0, IDC_RESIZE);
-		ctrlResize.SetIcon(ResourceLoader::getIcon(IDI_EXPAND_UP, 16));
+		ctrlResize.SetIcon(GET_ICON(IDI_EXPAND_UP, 16));
 		ctrlResize.SetFont(WinUtil::font);
 		ctrlTooltips.AddTool(ctrlResize.m_hWnd, CTSTRING(MULTILINE_INPUT));
 	}
@@ -104,13 +104,13 @@ void ChatFrameBase::init(HWND /*m_hWnd*/, RECT aRcDefault) {
 
 	if(SETTING(SHOW_EMOTICON)){
 		ctrlEmoticons.Create(m_hWnd, aRcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_BITMAP | BS_CENTER, 0, IDC_EMOT);
-		ctrlEmoticons.SetIcon(ResourceLoader::getIcon(IDR_EMOTICON, 16));
+		ctrlEmoticons.SetIcon(GET_ICON(IDR_EMOTICON, 16));
 		ctrlTooltips.AddTool(ctrlEmoticons.m_hWnd, CTSTRING(INSERT_EMOTICON));
 	}
 
 	if(SETTING(SHOW_MAGNET)) {
 		ctrlMagnet.Create(m_hWnd, aRcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_ICON | BS_CENTER, 0, IDC_BMAGNET);
-		ctrlMagnet.SetIcon(ResourceLoader::getIcon(IDI_SEND_FILE, 16));
+		ctrlMagnet.SetIcon(GET_ICON(IDI_SEND_FILE, 16));
 		ctrlTooltips.AddTool(ctrlMagnet.m_hWnd, getSendFileTitle().c_str());
 	}
 }
@@ -362,7 +362,7 @@ void ChatFrameBase::getLineText(tstring& s) {
 
 LRESULT ChatFrameBase::onResize(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled) {
 	resizePressed = !resizePressed;
-	ctrlResize.SetIcon(resizePressed ? ResourceLoader::getIcon(IDI_EXPAND_DOWN, 16) : ResourceLoader::getIcon(IDI_EXPAND_UP, 16));
+	ctrlResize.SetIcon(resizePressed ? GET_ICON(IDI_EXPAND_DOWN, 16) : GET_ICON(IDI_EXPAND_UP, 16));
 
 	//resize with the button even if user has set max lines for disabling the function otherwise.
 	const int maxLines = SETTING(MAX_RESIZE_LINES) <= 1 ? 2 : SETTING(MAX_RESIZE_LINES);

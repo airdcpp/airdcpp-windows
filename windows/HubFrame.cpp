@@ -490,7 +490,7 @@ void HubFrame::onConnected() {
 	setTabIcons();
 
 	if (client->isSecure()) {
-		ctrlStatus.SetIcon(1, ResourceLoader::getIcon(IDI_SECURE, 16));
+		ctrlStatus.SetIcon(1, GET_ICON(IDI_SECURE, 16));
 		statusSizes[0] = 16 + 8;
 		tstring sslInfo = Text::toT(client->getEncryptionInfo());
 		if (!sslInfo.empty())
