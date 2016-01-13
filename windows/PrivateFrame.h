@@ -192,9 +192,9 @@ private:
 
 	void sendSeen();
 	void updatePMInfo(uint8_t aType);
-	void addStatus(const tstring& aLine, const CIcon& aIcon);
+	void addStatus(const tstring& aLine, HICON aIcon);
 
-	pair<tstring, CIcon> lastStatus;
+	pair<tstring, HICON> lastStatus;
 
 	void updateTabIcon(bool offline);
 	void setCountryFlag();

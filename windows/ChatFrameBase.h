@@ -117,7 +117,7 @@ protected:
 	task_group tasks;
 
 	void setStatusText(const tstring& aLine, uint8_t severity);
-	void setStatusText(const tstring& aLine, const CIcon& aIcon);
+	void setStatusText(const tstring& aLine, HICON aIcon);
 
 	CStatusBarCtrl ctrlStatus;
 

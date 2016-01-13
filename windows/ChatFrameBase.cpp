@@ -478,7 +478,7 @@ void ChatFrameBase::setStatusText(const tstring& aLine, uint8_t sev) {
 	ctrlStatus.SetIcon(0, ResourceLoader::getSeverityIcon(sev));
 }
 
-void ChatFrameBase::setStatusText(const tstring& aLine, const CIcon& aIcon) {
+void ChatFrameBase::setStatusText(const tstring& aLine, HICON aIcon) {
 	ctrlStatus.SetText(0, (_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + aLine).c_str(), SBT_NOTABPARSING);
 	ctrlStatus.SetIcon(0, aIcon);
 }

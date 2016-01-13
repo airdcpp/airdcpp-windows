@@ -171,7 +171,7 @@ void PrivateFrame::addClientLine(const tstring& aLine, uint8_t severity) {
 	}
 }
 
-void PrivateFrame::addStatus(const tstring& aLine, const CIcon& aIcon) {
+void PrivateFrame::addStatus(const tstring& aLine, HICON aIcon) {
 	lastStatus = { aLine, aIcon };
 	ctrlStatus.SetText(STATUS_TEXT, aLine.c_str(), SBT_NOTABPARSING);
 	ctrlStatus.SetIcon(STATUS_TEXT, aIcon);
