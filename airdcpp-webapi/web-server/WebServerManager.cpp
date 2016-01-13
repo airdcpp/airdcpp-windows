@@ -21,7 +21,6 @@
 
 #include <airdcpp/typedefs.h>
 
-#include <airdcpp/format.h>
 #include <airdcpp/LogManager.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/SimpleXML.h>
@@ -30,10 +29,11 @@
 #define CONFIG_DIR Util::PATH_USER_CONFIG
 
 #define HANDSHAKE_TIMEOUT 0 // disabled, affects HTTP downloads
+#define DEFAULT_THREADS 3
 
 namespace webserver {
 	using namespace dcpp;
-	WebServerManager::WebServerManager() : serverThreads(3), has_io_service(false), ios(2) {
+	WebServerManager::WebServerManager() : serverThreads(DEFAULT_THREADS), has_io_service(false), ios(2) {
 		userManager = unique_ptr<WebUserManager>(new WebUserManager(this));
 	}
 
@@ -152,26 +152,13 @@ namespace webserver {
 
 	bool WebServerManager::listen(ErrorF& errorF) {
 		bool hasServer = false;
-		if (plainServerConfig.hasValidConfig()) {
-			try {
-				endpoint_plain.listen(plainServerConfig.getPort());
-				endpoint_plain.start_accept();
-				hasServer = true;
-			} catch (const websocketpp::exception& e) {
-				auto message = boost::format("Failed to set up plain server on port %1%: %2% (is the port in use by another application?)") % plainServerConfig.getPort() % string(e.what());
-				errorF(message.str());
-			}
+
+		if (listenEndpoint(endpoint_plain, plainServerConfig, "HTTP", errorF)) {
+			hasServer = true;
 		}
 
-		if (tlsServerConfig.hasValidConfig()) {
-			try {
-				endpoint_tls.listen(tlsServerConfig.getPort());
-				endpoint_tls.start_accept();
-				hasServer = true;
-			} catch (const websocketpp::exception& e) {
-				auto message = boost::format("Failed to set up secure server on port %1%: %2% (is the port in use by another application?)") % tlsServerConfig.getPort() % string(e.what());
-				errorF(message.str());
-			}
+		if (listenEndpoint(endpoint_tls, tlsServerConfig, "HTTPS", errorF)) {
+			hasServer = true;
 		}
 
 		if (hasServer) {
@@ -244,15 +231,15 @@ namespace webserver {
 		fire(WebServerManagerListener::Stopped());
 	}
 
-	void WebServerManager::logout(const string& aSessionToken) noexcept {
+	void WebServerManager::logout(LocalSessionId aSessionId) noexcept {
 		vector<WebSocketPtr> sessionSockets;
 
 		{
 			RLock l(cs);
 			boost::algorithm::copy_if(sockets | map_values, back_inserter(sessionSockets),
 				[&](const WebSocketPtr& aSocket) {
-				return aSocket->getSession() && aSocket->getSession()->getToken() == aSessionToken;
-			}
+					return aSocket->getSession() && aSocket->getSession()->getId() == aSessionId;
+				}
 			);
 		}
 
@@ -262,17 +249,17 @@ namespace webserver {
 		}
 	}
 
-	WebSocketPtr WebServerManager::getSocket(const std::string& aSessionToken) noexcept {
+	WebSocketPtr WebServerManager::getSocket(LocalSessionId aSessionToken) noexcept {
 		RLock l(cs);
 		auto i = find_if(sockets | map_values, [&](const WebSocketPtr& s) {
-			return s->getSession() && s->getSession()->getToken() == aSessionToken;
+			return s->getSession() && s->getSession()->getId() == aSessionToken;
 		});
 
 		return i.base() == sockets.end() ? nullptr : *i;
 	}
 
-	TimerPtr WebServerManager::addTimer(CallBack&& aCallBack, time_t aIntervalMillis) noexcept {
-		return make_shared<Timer>(move(aCallBack), ios, aIntervalMillis);
+	TimerPtr WebServerManager::addTimer(CallBack&& aCallBack, time_t aIntervalMillis, const Timer::CallbackWrapper& aCallbackWrapper) noexcept {
+		return make_shared<Timer>(move(aCallBack), ios, aIntervalMillis, aCallbackWrapper);
 	}
 
 	void WebServerManager::addAsyncTask(CallBack&& aCallBack) noexcept {
@@ -317,7 +304,7 @@ namespace webserver {
 
 					if (xml.findChild("Threads")) {
 						xml.stepIn();
-						serverThreads = min(Util::toInt(xml.getData()), 2);
+						serverThreads = max(Util::toInt(xml.getData()), 2);
 						xml.stepOut();
 					}
 					xml.resetCurrentChild();
@@ -339,6 +326,8 @@ namespace webserver {
 	void WebServerManager::loadServer(SimpleXML& aXml, const string& aTagName, ServerConfig& config_) noexcept {
 		if (aXml.findChild(aTagName)) {
 			config_.setPort(aXml.getIntChildAttrib("Port"));
+			config_.setBindAddress(aXml.getChildAttrib("BindAddress"));
+
 			aXml.resetCurrentChild();
 		}
 
@@ -354,8 +343,19 @@ namespace webserver {
 		{
 			xml.addTag("Config");
 			xml.stepIn();
+
 			plainServerConfig.save(xml, "Server");
 			tlsServerConfig.save(xml, "TLSServer");
+
+			if (serverThreads != DEFAULT_THREADS) {
+				xml.addTag("Threads");
+				xml.stepIn();
+
+				xml.setData(Util::toString(serverThreads));
+
+				xml.stepOut();
+			}
+
 			xml.stepOut();
 		}
 
@@ -383,5 +383,8 @@ namespace webserver {
 
 		xml_.addTag(aTagName);
 		xml_.addChildAttrib("Port", port);
+		if (!bindAddress.empty()) {
+			xml_.addChildAttrib("BindAddress", bindAddress);
+		}
 	}
 }

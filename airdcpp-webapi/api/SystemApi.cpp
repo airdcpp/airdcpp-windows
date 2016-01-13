@@ -19,6 +19,7 @@
 #include <web-server/stdinc.h>
 
 #include <web-server/JsonUtil.h>
+#include <web-server/Timer.h>
 #include <web-server/WebServerManager.h>
 
 #include <api/SystemApi.h>
@@ -28,7 +29,7 @@
 #include <airdcpp/TimerManager.h>
 
 namespace webserver {
-	SystemApi::SystemApi(Session* aSession) : ApiModule(aSession, Access::ANY), timer(aSession->getServer()->addTimer([this] { onTimer(); }, 500)) {
+	SystemApi::SystemApi(Session* aSession) : ApiModule(aSession, Access::ANY), timer(getTimer([this] { onTimer(); }, 500)) {
 
 		METHOD_HANDLER("stats", Access::ANY, ApiRequest::METHOD_GET, (), false, SystemApi::handleGetStats);
 
@@ -89,14 +90,15 @@ namespace webserver {
 	}
 
 	api_return SystemApi::handleGetStats(ApiRequest& aRequest) {
-		json j;
-
 		auto started = TimerManager::getStartTime();
-		j["client_started"] = started;
-		j["client_version"] = fullVersionString;
-		j["active_sessions"] = session->getServer()->getUserManager().getSessionCount();
+		auto server = session->getServer();
 
-		aRequest.setResponseBody(j);
+		aRequest.setResponseBody({
+			{ "server_threads", server->getServerThreads() },
+			{ "client_started", started },
+			{ "client_version", fullVersionString },
+			{ "active_sessions", server->getUserManager().getSessionCount() },
+		});
 		return websocketpp::http::status_code::ok;
 	}
 }

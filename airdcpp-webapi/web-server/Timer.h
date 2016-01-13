@@ -24,9 +24,16 @@
 namespace webserver {
 	class Timer : boost::noncopyable {
 	public:
-		Timer(CallBack&& aCallBack, boost::asio::io_service& aIO, time_t aIntervalMillis) : cb(move(aCallBack)),
+		typedef std::function<void(const CallBack&)> CallbackWrapper;
+
+		// CallbackWrapper is meant to ensure the lifetime of the timer
+		// (which necessary only if the timer is called from a class that can be deleted, such as sessions)
+		Timer(CallBack&& aCallBack, boost::asio::io_service& aIO, time_t aIntervalMillis, const CallbackWrapper& aWrapper) : 
+			cb(move(aCallBack)),
 			interval(aIntervalMillis),
-			timer(aIO, interval) {
+			timer(aIO, interval),
+			cbWrapper(aWrapper)
+		{
 
 		}
 
@@ -50,16 +57,6 @@ namespace webserver {
 		void stop(bool aShutdown) noexcept {
 			shutdown = aShutdown;
 			timer.cancel();
-
-			if (aShutdown) {
-				join();
-			}
-		}
-
-		void join() noexcept {
-			while (running && !timer.get_io_service().stopped()) {
-				std::this_thread::sleep_for(std::chrono::milliseconds(30));
-			}
 		}
 
 		bool isRunning() const noexcept {
@@ -72,14 +69,23 @@ namespace webserver {
 				return;
 			}
 
-			cb();
-
-			if (!start(false)) {
-				running = false;
+			if (cbWrapper) {
+				// We must ensure that the timer still exists when a new start call is performed
+				cbWrapper(bind(&Timer::runTask, this));
+			} else {
+				runTask();
 			}
 		}
 
+		void runTask() {
+			cb();
+
+			start(false);
+		}
+
 		CallBack cb;
+		CallbackWrapper cbWrapper;
+
 		boost::asio::deadline_timer timer;
 		boost::posix_time::milliseconds interval;
 		bool running = false;

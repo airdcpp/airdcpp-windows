@@ -30,14 +30,17 @@
 #include "WebSocket.h"
 #include "WebUserManager.h"
 
+#include <airdcpp/format.h>
 #include <airdcpp/Singleton.h>
 #include <airdcpp/Speaker.h>
+#include <airdcpp/Util.h>
 
 #include <iostream>
 
 namespace webserver {
 	struct ServerConfig {
-		IGETSET(int, port, Port, -1);
+		IGETSET(int, port, Port, 0);
+		GETSET(string, bindAddress, BindAddress);
 
 		bool hasValidConfig() const noexcept;
 		void save(SimpleXML& aXml, const string& aTagName) noexcept;
@@ -127,7 +130,7 @@ namespace webserver {
 			}
 		}
 
-		TimerPtr addTimer(CallBack&& aCallBack, time_t aIntervalMillis) noexcept;
+		TimerPtr addTimer(CallBack&& aCallBack, time_t aIntervalMillis, const Timer::CallbackWrapper& aCallbackWrapper = nullptr) noexcept;
 		void addAsyncTask(CallBack&& aCallBack) noexcept;
 
 		WebServerManager();
@@ -142,8 +145,8 @@ namespace webserver {
 		void disconnectSockets(const std::string& aMessage) noexcept;
 
 		// Reset sessions for associated sockets
-		void logout(const std::string& aSessionToken) noexcept;
-		WebSocketPtr getSocket(const std::string& aSessionToken) noexcept;
+		void logout(LocalSessionId aSessionId) noexcept;
+		WebSocketPtr getSocket(LocalSessionId aSessionToken) noexcept;
 
 		bool load() noexcept;
 		bool save(std::function<void(const string&)> aCustomErrorF = nullptr) noexcept;
@@ -172,8 +175,36 @@ namespace webserver {
 		}
 
 		bool isRunning() const noexcept;
+
+		int getServerThreads() const noexcept {
+			return serverThreads;
+		}
 	private:
 		bool listen(ErrorF& errorF);
+
+		template <typename EndpointType>
+		bool listenEndpoint(EndpointType& aEndpoint, const ServerConfig& aConfig, const string& aProtocol, ErrorF& errorF) noexcept {
+			if (!aConfig.hasValidConfig()) {
+				return false;
+			}
+
+			try {
+				//endpoint_plain.listen(aConfig.getPort());
+				if (!aConfig.getBindAddress().empty()) {
+					aEndpoint.listen(aConfig.getBindAddress(), Util::toString(aConfig.getPort()));
+				} else {
+					aEndpoint.listen(aConfig.getPort());
+				}
+
+				aEndpoint.start_accept();
+				return true;
+			} catch (const websocketpp::exception& e) {
+				auto message = boost::format("Failed to set up %1% server on port %2%: %3% (is the port in use by another application?)") % aProtocol % aConfig.getPort() % string(e.what());
+				errorF(message.str());
+			}
+
+			return false;
+		}
 
 		bool initialize(ErrorF& errorF);
 

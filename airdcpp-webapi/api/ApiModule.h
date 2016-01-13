@@ -93,11 +93,12 @@ namespace webserver {
 
 		typedef std::function<json()> JsonCallback;
 		virtual bool maybeSend(const string& aSubscription, JsonCallback aCallback);
-		void addAsyncTask(CallBack&& aTask);
+
+		virtual void addAsyncTask(CallBack&& aTask);
+		virtual TimerPtr getTimer(CallBack&& aTask, time_t aIntervalMillis);
 
 		// All custom async tasks should be run inside this to
 		// ensure that the session won't get deleted
-		void asyncRunWrapper(const CallBack& aTask);
 
 		Session* getSession() const noexcept {
 			return session;
@@ -129,7 +130,11 @@ namespace webserver {
 		Access getSubscriptionAccess() const noexcept {
 			return subscriptionAccess;
 		}
+
+		virtual CallBack getAsyncWrapper(CallBack&& aTask) noexcept;
 	protected:
+		static void asyncRunWrapper(const CallBack& aTask, LocalSessionId aSessionId);
+
 		const Access subscriptionAccess;
 		Session* session;
 

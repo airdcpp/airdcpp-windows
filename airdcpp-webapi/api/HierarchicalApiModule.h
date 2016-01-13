@@ -23,6 +23,8 @@
 
 #include <web-server/stdinc.h>
 #include <web-server/ApiRequest.h>
+#include <web-server/Session.h>
+#include <web-server/WebServerManager.h>
 
 #include <airdcpp/CriticalSection.h>
 
@@ -127,19 +129,24 @@ namespace webserver {
 			dcassert(i != childSubscriptions.end());
 			return i->second;
 		}
-	protected:
-		mutable SharedMutex cs;
 
 		// Submodules should NEVER be accessed outside of web server threads (e.g. API requests)
-		typename ItemType::Ptr getSubModule(const string& aId) {
+		typename ItemType::Ptr getSubModule(IdType aId) {
 			RLock l(cs);
-			auto m = subModules.find(convertF(aId));
+			auto m = subModules.find(aId);
 			if (m != subModules.end()) {
 				return m->second;
 			}
 
 			return nullptr;
 		}
+
+		// Submodules should NEVER be accessed outside of web server threads (e.g. API requests)
+		typename ItemType::Ptr getSubModule(const string& aId) {
+			return getSubModule(convertF(aId));
+		}
+	protected:
+		mutable SharedMutex cs;
 
 		void forEachSubModule(std::function<void(const ItemType&)> aAction) {
 			RLock l(cs);
@@ -203,7 +210,41 @@ namespace webserver {
 			parentModule->createChildSubscription(aSubscription);
 		}
 
+		void addAsyncTask(CallBack&& aTask) {
+			ApiModule::addAsyncTask(getAsyncWrapper(move(aTask)));
+		}
+
+		TimerPtr getTimer(CallBack&& aTask, time_t aIntervalMillis) {
+			return session->getServer()->addTimer(move(aTask), aIntervalMillis, 
+				std::bind(&SubApiModule::moduleAsyncRunWrapper<ItemJsonType, ParentType>, std::placeholders::_1, parentModule, id, session->getId())
+			);
+		}
+
+		// All custom async tasks should be run inside this to
+		// ensure that the submodule (or the session) won't get deleted
+		CallBack getAsyncWrapper(CallBack&& aTask) noexcept {
+			auto sessionId = session->getId();
+			auto moduleId = id;
+			return [=] {
+				return moduleAsyncRunWrapper(aTask, parentModule, moduleId, sessionId);
+			};
+		}
 	private:
+		template<class IdType, class ParentType>
+		static void moduleAsyncRunWrapper(const CallBack& aTask, ParentType* aParentModule, const IdType& aId, LocalSessionId aSessionId) {
+			// Ensure that we have a session
+			ApiModule::asyncRunWrapper([=] {
+				// Ensure that we have a submodule (the parent must exist if we have a session)
+				auto m = aParentModule->getSubModule(aId);
+				if (!m) {
+					return;
+				}
+
+				aTask();
+			}, aSessionId);
+		}
+
+
 		ParentType* parentModule;
 
 		const ItemJsonType id;
