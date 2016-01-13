@@ -21,7 +21,6 @@
 
 #include <airdcpp/typedefs.h>
 
-#include <airdcpp/format.h>
 #include <airdcpp/LogManager.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/SimpleXML.h>
@@ -305,7 +304,7 @@ namespace webserver {
 
 					if (xml.findChild("Threads")) {
 						xml.stepIn();
-						serverThreads = min(Util::toInt(xml.getData()), 2);
+						serverThreads = max(Util::toInt(xml.getData()), 2);
 						xml.stepOut();
 					}
 					xml.resetCurrentChild();

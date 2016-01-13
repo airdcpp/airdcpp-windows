@@ -30,8 +30,10 @@
 #include "WebSocket.h"
 #include "WebUserManager.h"
 
+#include <airdcpp/format.h>
 #include <airdcpp/Singleton.h>
 #include <airdcpp/Speaker.h>
+#include <airdcpp/Util.h>
 
 #include <iostream>
 
@@ -173,6 +175,10 @@ namespace webserver {
 		}
 
 		bool isRunning() const noexcept;
+
+		int getServerThreads() const noexcept {
+			return serverThreads;
+		}
 	private:
 		bool listen(ErrorF& errorF);
 
