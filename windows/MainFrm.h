@@ -430,9 +430,6 @@ private:
 
 	int statusSizes[10];
 
-	CIcon awayIconOFF;
-	CIcon awayIconON;
-
 	HANDLE stopperThread;
 
 	bool missedAutoConnect;

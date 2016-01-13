@@ -58,7 +58,7 @@ public:
 		return _T("FlatTabCtrl");
 	}
 
-	void addTab(HWND hWnd, CIcon& hIcon = NULL) {
+	void addTab(HWND hWnd, HICON hIcon = NULL) {
 		TabInfo* i = new TabInfo(hWnd, hIcon);
 		dcassert(getTabInfo(hWnd) == NULL);
 		tabs.push_back(i);
@@ -176,7 +176,7 @@ public:
 		}
 	}
 
-	void setIcon(HWND aWnd, CIcon& setIconVal) {
+	void setIcon(HWND aWnd, HICON setIconVal) {
 		TabInfo* ti = getTabInfo(aWnd);
 		if(ti != NULL) {
 			ti->hIcon = setIconVal;
@@ -526,7 +526,7 @@ private:
 		typedef vector<TabInfo*> List;
 		typedef typename List::iterator ListIter;
 
-		TabInfo(HWND aWnd, CIcon& icon) : hWnd(aWnd), len(0), xpos(0), row(0), 
+		TabInfo(HWND aWnd, HICON icon) : hWnd(aWnd), len(0), xpos(0), row(0), 
 			dirty(false), hIcon(icon), disconnected(false), notification(false),
 			MAX_LENGTH(SETTING(TAB_SIZE)){ 
 			memset(&size, 0, sizeof(size));
@@ -548,7 +548,7 @@ private:
 		bool disconnected;
 		bool notification;
 
-		CIcon hIcon;
+		HICON hIcon;
 
 		bool update() {
 			TCHAR *name2 = new TCHAR[MAX_LENGTH+2];
@@ -864,7 +864,7 @@ public:
 	LRESULT onCreate(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 		bHandled = FALSE;
 		dcassert(getTab());
-		CIcon icon = (HICON)::SendMessage(m_hWnd, WM_GETICON, ICON_SMALL, 0);
+		HICON icon = (HICON)::SendMessage(m_hWnd, WM_GETICON, ICON_SMALL, 0);
 		getTab()->addTab(m_hWnd, icon);
 		created = true;
 		return 0;
@@ -948,7 +948,7 @@ public:
 		getTab()->setNotify(m_hWnd);
 	}
 
-	void setIcon(CIcon& setIconVal) {
+	void setIcon(HICON setIconVal) {
 		dcassert(getTab());
 		getTab()->setIcon(m_hWnd, setIconVal);
 	}

@@ -160,6 +160,7 @@ private:
 	bool created;
 
 	CComboBoxEx ctrlHubSel;
+	CIcon tabIcon;
 
 	void fillHubSelection();
 	StringPairList hubs;
@@ -178,14 +179,6 @@ private:
 	bool closed;
 	ParamMap ucLineParams;
 	
-	CIcon tabIcon;
-	CIcon userOfflineIcon;
-	CIcon CCReadyIcon;
-	CIcon startCCIcon;
-	CIcon noCCPMIcon;
-	CIcon awayIconON;
-	CIcon awayIconOFF;
-
 	tstring lastCCPMError;
 	tstring countryPopup;
 

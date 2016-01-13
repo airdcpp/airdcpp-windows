@@ -88,8 +88,6 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	ctrlShowUsers.SetCheck(showUsers ? BST_CHECKED : BST_UNCHECKED);
 	ctrlShowUsersContainer.SubclassWindow(ctrlShowUsers.m_hWnd);
 
-	iSecure = ResourceLoader::loadIcon(IDI_SECURE, 16);
-
 	auto fhe = FavoriteManager::getInstance()->getFavoriteHubEntry(Text::fromT(server));
 	if(fhe) {
 		WinUtil::splitTokens(columnIndexes, fhe->getHeaderOrder(), OnlineUser::COLUMN_LAST);
@@ -138,7 +136,6 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	ctrlTooltips.AddTool(&ti_3);
 	ctrlTooltips.SetDelayTime(TTDT_AUTOPOP, 15000);
 	ctrlTooltips.Activate(TRUE);
-
 
 	WinUtil::SetIcon(m_hWnd, IDI_HUB);
 
@@ -493,7 +490,7 @@ void HubFrame::onConnected() {
 	setTabIcons();
 
 	if (client->isSecure()) {
-		ctrlStatus.SetIcon(1, iSecure);
+		ctrlStatus.SetIcon(1, ResourceLoader::getIcon(IDI_SECURE, 16));
 		statusSizes[0] = 16 + 8;
 		tstring sslInfo = Text::toT(client->getEncryptionInfo());
 		if (!sslInfo.empty())
@@ -583,6 +580,7 @@ void HubFrame::onUpdateTabIcons() {
 }
 
 void HubFrame::setTabIcons() {
+	//Image list GetIcon results in a new icon handle each time, manage it with CIcon
 	if (wentoffline)
 		tabIcon = ResourceLoader::getHubImages().GetIcon(3);
 	else if (countType == Client::COUNT_OP)

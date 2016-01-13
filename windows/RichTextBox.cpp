@@ -610,7 +610,6 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 				cfSel.cbSize = sizeof(cfSel);
 				lSelBegin += (curReplace - lastReplace);
 				lSelEnd = lSelBegin + foundEmoticon->getEmoticonText().size();
-
 				//check the position
 				if ((curReplace != lastReplace) && (curReplace > 0) && isgraph(sMsg[curReplace-1])) {
 					insert=false;

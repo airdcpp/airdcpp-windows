@@ -52,8 +52,12 @@ public:
 	static CImageList& getFilelistTbImages();
 	static CImageList& getHubImages();
 	static CImageList& getQueueTreeImages();
-	
-	static HICON loadIcon(int aDefault, int size = 0);
+
+	//Loads icon with resource id, returned handle is unmanaged.
+	static HICON loadIcon(int aDefault, int size);
+	//Get icon with resource id, loads if necessary. Manages the handles by adding them in cache.
+	static HICON getIcon(int aDefault, int size);
+
 	static HICON convertGrayscaleIcon(HICON hIcon);
 
 	static HBITMAP getBitmapFromIcon(long defaultIcon, COLORREF crBgColor, int xSize = 0, int ySize = 0);
@@ -63,6 +67,9 @@ public:
 	static CImageList flagImages;
 
 	static const CIcon& getSeverityIcon(uint8_t sev);
+
+	static CIcon iSecureGray;
+	static CIcon iCCPMUnSupported;
 
 	enum {
 		DIR_NORMAL,
@@ -80,6 +87,15 @@ private:
 	typedef std::map<tstring, int> ImageMap;
 	typedef ImageMap::const_iterator ImageIter;
 	static ImageMap fileIndexes;
+
+	struct cachedIcon {
+		cachedIcon(int aSize, HICON aHandle) : size(aSize), handle(aHandle) {}
+		int size;
+		HICON handle;
+	};
+
+	//Store loaded icons in all different loaded sizes by resource id
+	static std::multimap<int, cachedIcon> cachedIcons;
 
 	static int fileImageCount;
 	static COLORREF GrayPalette[256];

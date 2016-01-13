@@ -166,7 +166,6 @@ private:
 		LogMessagePtr data;
 	};
 
-
 	CContainedWindow ctrlClientContainer;
 
 	CRichEditCtrl ctrlPad;
@@ -187,9 +186,6 @@ private:
 	CBitmap  hbInfo;
 	CBitmap  hbWarning;
 	CBitmap  hbError;
-
-	CIcon tabError;
-	CIcon tabNormal;
 
 	bool errorNotified;
 	bool lButtonDown;

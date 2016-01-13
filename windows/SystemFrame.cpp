@@ -54,9 +54,6 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	if(!hbError)
 		hbError = ResourceLoader::getBitmapFromIcon(IDI_IERROR, WinUtil::bgColor, ICON_SIZE, ICON_SIZE);
 
-	tabError = ResourceLoader::loadIcon(IDI_IERROR, 16);
-	tabNormal = ResourceLoader::loadIcon(IDI_LOGS, 16);
-
 	reg.assign(_T("((?<=\\s)(([A-Za-z0-9]:)|(\\\\))(\\\\[^\\\\:]+)(\\\\([^\\s:])([^\\\\:])*)*((\\.[a-z0-9]{2,10})|(\\\\))(?=(\\s|$|:|,)))"));
 
 	//might miss some messages
@@ -226,7 +223,7 @@ void SystemFrame::addLine(const LogMessagePtr& aMessageData) {
 	case LogMessage::SEV_ERROR:
 		CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(), hbError, false);
 		if(!errorNotified && !getActive()) { 
-			setIcon(tabError);
+			setIcon(ResourceLoader::getSeverityIcon(LogMessage::SEV_ERROR));
 			errorNotified = true;
 		}
 		break;
@@ -421,7 +418,7 @@ LRESULT SystemFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& b
 			scrollToEnd();
 
 		if(errorNotified) {
-			setIcon(tabNormal);
+			setIcon(ResourceLoader::getIcon(IDI_LOGS, 16));
 			errorNotified = false;
 		}
 	} 

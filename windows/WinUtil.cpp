@@ -1134,7 +1134,7 @@ bool WinUtil::parseDBLClick(const tstring& str) {
 
 void WinUtil::SetIcon(HWND hWnd, int aDefault, bool big) {
 	int size = big ? ::GetSystemMetrics(SM_CXICON) : ::GetSystemMetrics(SM_CXSMICON);
-	::SendMessage(hWnd, WM_SETICON, big ? ICON_BIG : ICON_SMALL, (LPARAM)ResourceLoader::loadIcon(aDefault, size));
+	::SendMessage(hWnd, WM_SETICON, big ? ICON_BIG : ICON_SMALL, (LPARAM)ResourceLoader::getIcon(aDefault, size));
 }
 
 void WinUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aUser, RichTextBox* ctrlEdit /*nullptr*/) {
@@ -1679,7 +1679,7 @@ void WinUtil::drawProgressBar(HDC& drawDC, CRect& rc, COLORREF clr, COLORREF tex
 	HBITMAP pOldBmp = cdc.SelectBitmap(CreateCompatibleBitmap(drawDC, real_rc.Width(), real_rc.Height()));
 	HDC& dc = cdc.m_hDC;
 
-	HFONT oldFont = (HFONT)SelectObject(dc, WinUtil::font);
+	CFont oldFont = (HFONT)SelectObject(dc, WinUtil::font);
 	SetBkMode(dc, TRANSPARENT);
 
 	COLORREF oldcol;

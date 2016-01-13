@@ -109,17 +109,6 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ctrlClientContainer.SubclassWindow(ctrlClient.m_hWnd);
 	ctrlMessageContainer.SubclassWindow(ctrlMessage.m_hWnd);
 	ctrlStatusContainer.SubclassWindow(ctrlStatus.m_hWnd);
-	
-	bool userBot = getUser() && getUser()->isSet(User::BOT);
-	userOfflineIcon = userBot ? ResourceLoader::loadIcon(IDI_BOT_OFF, 16) : ResourceLoader::loadIcon(IDR_PRIVATE_OFF, 16);
-
-	CCReadyIcon = ResourceLoader::loadIcon(IDI_SECURE, 16);
-	startCCIcon = ResourceLoader::convertGrayscaleIcon(ResourceLoader::loadIcon(IDI_SECURE, 16));
-	noCCPMIcon = ResourceLoader::mergeIcons(startCCIcon, ResourceLoader::loadIcon(IDI_USER_NOCONNECT, 16), 16); //Temp, Todo: find own icon for this!
-	const int i = UserInfoBase::USER_ICON_AWAY * (UserInfoBase::USER_ICON_LAST - UserInfoBase::USER_ICON_MOD_START) * (UserInfoBase::USER_ICON_LAST - UserInfoBase::USER_ICON_MOD_START);
-	awayIconON = ResourceLoader::getUserImages().GetIcon(i);
-	awayIconOFF = ResourceLoader::getUserImages().GetIcon(0);
-	
 	created = true;
 
 	readLog();
@@ -138,7 +127,7 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 		}
 	});
 
-	WinUtil::SetIcon(m_hWnd, userBot ? IDI_BOT : IDR_PRIVATE);
+	WinUtil::SetIcon(m_hWnd, (getUser() && getUser()->isSet(User::BOT)) ? IDI_BOT : IDR_PRIVATE);
 
 	//add the updateonlinestatus in the wnd message queue so the frame and tab can finish creating first.
 	callAsync([this] { updateOnlineStatus(); });
@@ -197,15 +186,15 @@ void PrivateFrame::updatePMInfo(uint8_t aType) {
 	case PrivateChat::MSG_SEEN: {
 		tstring msg = _T("[") + Text::toT(Util::getShortTimeString()) + _T("] *** ") + TSTRING(MESSAGE_SEEN) + _T(" ***");
 		if (!userTyping)
-			addStatus(msg, ResourceLoader::loadIcon(IDI_SEEN, 16));
+			addStatus(msg, ResourceLoader::getIcon(IDI_SEEN, 16));
 		else
-			lastStatus = { msg, ResourceLoader::loadIcon(IDI_SEEN, 16) };
+			lastStatus = { msg, ResourceLoader::getIcon(IDI_SEEN, 16) };
 		break;
 	}
 	case PrivateChat::TYPING_ON:
 		//setStatusText to prevent saving lastStatus
 		userTyping = true;
-		setStatusText(_T(" *** ") + TSTRING(USER_TYPING) + _T(" ***"), ResourceLoader::loadIcon(IDI_TYPING, 16));
+		setStatusText(_T(" *** ") + TSTRING(USER_TYPING) + _T(" ***"), ResourceLoader::getIcon(IDI_TYPING, 16));
 		break;
 
 	case PrivateChat::TYPING_OFF:
@@ -544,10 +533,10 @@ void PrivateFrame::updateStatusBar() {
 	tstring tmp = Util::emptyStringT;
 	if(ctrlHubSel.GetStyle() & WS_VISIBLE) {
 		tmp = _T(" ") + TSTRING(SEND_PM_VIA);
-		ctrlStatus.SetIcon(STATUS_CC, chat->getSupportsCCPM() ? startCCIcon : noCCPMIcon);
+		ctrlStatus.SetIcon(STATUS_CC, chat->getSupportsCCPM() ? ResourceLoader::iSecureGray : ResourceLoader::iCCPMUnSupported);
 	} else if(ccReady()){
 		tmp = _T(" ") + TSTRING(SEND_PM_VIA) +_T(": ") + TSTRING(DIRECT_ENCRYPTED_CHANNEL);
-		ctrlStatus.SetIcon(STATUS_CC, CCReadyIcon);
+		ctrlStatus.SetIcon(STATUS_CC, ResourceLoader::getIcon(IDI_SECURE, 16));
 	} else {
 		ctrlStatus.SetIcon(STATUS_CC, NULL);
 	}
@@ -664,12 +653,14 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 
 void PrivateFrame::updateTabIcon(bool offline) {
 	if (offline) {
-		setIcon(userOfflineIcon);
+		bool userBot = getUser() && getUser()->isSet(User::BOT);
+		setIcon(userBot ? ResourceLoader::getIcon(IDI_BOT_OFF, 16) : ResourceLoader::getIcon(IDR_PRIVATE_OFF, 16));
 		setAway();
 		return;
 	}
 	OnlineUserPtr ou = ClientManager::getInstance()->findOnlineUser(chat->getHintedUser());
 	if (ou) {
+		//Image list GetIcon results in a new icon handle each time, manage it with CIcon
 		tabIcon = ResourceLoader::getUserImages().GetIcon(ou->getImageIndex());
 		setIcon(tabIcon);
 		userAway = !getUser()->isSet(User::BOT) && ou->getIdentity().isAway();
@@ -678,6 +669,9 @@ void PrivateFrame::updateTabIcon(bool offline) {
 }
 
 void PrivateFrame::setCountryFlag() {
+	if (ctrlStatus.GetIcon(STATUS_COUNTRY) != NULL) //Only need to set once.
+		return;
+
 	OnlineUserPtr ou = ClientManager::getInstance()->findOnlineUser(chat->getHintedUser());
 	if (ou && getUser() && !getUser()->isSet(User::BOT)) {
 		string ip = ou->getIdentity().getIp();
@@ -698,9 +692,9 @@ void PrivateFrame::setAway() {
 		return;
 
 	if (!getUser()->isOnline()) {
-		ctrlStatus.SetIcon(STATUS_AWAY, userOfflineIcon);
+		ctrlStatus.SetIcon(STATUS_AWAY, ResourceLoader::getIcon(IDR_PRIVATE_OFF, 16));
 	} else {
-		ctrlStatus.SetIcon(STATUS_AWAY, userAway ? awayIconON : awayIconOFF);
+		ctrlStatus.SetIcon(STATUS_AWAY, userAway ? ResourceLoader::getIcon(IDI_USER_AWAY, 16) : ResourceLoader::getIcon(IDI_USER_BASE, 16));
 	}
 }
 

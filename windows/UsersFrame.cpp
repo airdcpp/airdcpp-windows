@@ -109,13 +109,13 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	m_nProportionalPos = SETTING(FAV_USERS_SPLITTER_POS);
 	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
 
-	images.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 2);
-	images.AddIcon(ResourceLoader::loadIcon(IDI_FAV_USER, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_FAV_USER_OFF, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_USER_ON, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_USER_OFF, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_GRANT_ON, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_GRANT_OFF, 16));
+	images.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 2);
+	images.AddIcon(CIcon(ResourceLoader::loadIcon(IDI_FAV_USER, 16)));
+	images.AddIcon(CIcon(ResourceLoader::loadIcon(IDI_FAV_USER_OFF, 16)));
+	images.AddIcon(CIcon(ResourceLoader::loadIcon(IDI_USER_ON, 16)));
+	images.AddIcon(CIcon(ResourceLoader::loadIcon(IDI_USER_OFF, 16)));
+	images.AddIcon(CIcon(ResourceLoader::loadIcon(IDI_GRANT_ON, 16)));
+	images.AddIcon(CIcon(ResourceLoader::loadIcon(IDI_GRANT_OFF, 16)));
 
 	ctrlUsers.SetImageList(images, LVSIL_SMALL);
 	

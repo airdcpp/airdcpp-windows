@@ -275,8 +275,8 @@ private:
 	LinkList links;
 	//vector<pair<CHARRANGE, ChatLink*>> links;
 
-	HCURSOR		handCursor;
-	HCURSOR		arrowCursor;
+	CCursor		handCursor;
+	CCursor		arrowCursor;
 
 	void formatLink(DupeType aDupeType, bool aIsRelease);
 	DupeType updateDupeType(ChatLink* aChatLink);

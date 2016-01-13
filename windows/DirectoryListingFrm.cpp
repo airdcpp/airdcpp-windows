@@ -2118,14 +2118,8 @@ void DirectoryListingFrame::updateSelCombo(bool init) {
 			onlineNicks = WinUtil::getNicks(dl->getHintedUser());
 			setDisconnected(false);
 
-			if (!online) {
-				//addStatusLine(TSTRING(USER_WENT_ONLINE) + _T(" [") + nicks + _T(" - ") + hubNames + _T("]"));
-				//setIcon(userOnline);
-			}
 		} else {
 			setDisconnected(true);
-			//setIcon(userOffline);
-			//addStatusLine(TSTRING(USER_WENT_OFFLINE) + _T(" [") + hubNames + _T("]"));
 		}
 
 		//ADC related changes
@@ -2145,16 +2139,7 @@ void DirectoryListingFrame::updateSelCombo(bool init) {
 				//the hub was not found
 				selCombo.SetCurSel(0);
 				onComboSelChanged(false);
-				//if (!online) //the user came online but not in the previous hub
-				//addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)));
-				//else
-				//addStatusLine(CTSTRING_F(USER_OFFLINE_PM_CHANGE, Text::toT(oldHubPair.second) % Text::toT(hubs[0].second)));
-			} else if (!oldHubPair.first.empty() && oldHubPair.first != hint) {
-				//addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH_REMOTE, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)));
 			}
-			//else if (!ctrlClient.getClient()) {
-			//	changeClient();
-			//}
 		} else {
 			showSelCombo(false, init);
 		}

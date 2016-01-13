@@ -271,8 +271,8 @@ private:
 	enum { MAX_CLIENT_LINES = 5 };
 	deque<tstring> lastLinesList;
 	tstring lastLines;
-	//CToolTipCtrl ctrlTooltip;
-	CIcon iSecure;
+
+	CIcon tabIcon;
 	tstring cipherPopupTxt;
 	
 	static int columnIndexes[OnlineUser::COLUMN_LAST];
@@ -296,8 +296,6 @@ private:
 	string sColumsOrder;
     string sColumsWidth;
     string sColumsVisible;
-
-	CIcon tabIcon;
 
 	void updateStatusBar();
 	void onChatMessage(const ChatMessagePtr& message);
