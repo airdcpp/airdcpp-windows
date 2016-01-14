@@ -117,7 +117,7 @@ public:
 	bool maintenanceRunning() const noexcept { return optimizer.isRunning(); }
 
 	void renameFile(const string& aOldPath, const string& aNewPath, const HashedFile& fi) throw(HashException);
-	bool addFile(const string& aFilePath, const HashedFile& fi_) throw(HashException);
+	bool addFile(const string& aFilePathLower, const HashedFile& fi_) throw(HashException);
 private:
 	int pausers = 0;
 	class Hasher : public Thread {
