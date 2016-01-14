@@ -438,15 +438,13 @@ LRESULT DirectoryListingFrame::onGetFullList(WORD /*wNotifyCode*/, WORD /*wID*/,
 }
 
 void DirectoryListingFrame::convertToFull() {
-	if (dl->getIsOwnList()) {
-		dl->addFullListTask(Util::emptyString);
-	} else {
-		dl->addAsyncTask([=] {
-			try {
-				QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_CLIENT_VIEW, Util::emptyString);
-			} catch (...) {}
-		});
-	}
+	dcassert(!dl->getIsOwnList());
+
+	dl->addAsyncTask([=] {
+		try {
+			QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_CLIENT_VIEW, Util::emptyString);
+		} catch (...) {}
+	});
 }
 
 DirectoryListingFrame::TreeType::ChildrenState DirectoryListingFrame::getChildrenState(const ItemInfo* ii) const {
@@ -1127,9 +1125,8 @@ LRESULT DirectoryListingFrame::onExitMenuLoop(UINT /*uMsg*/, WPARAM /*wParam*/, 
 }
 
 LRESULT DirectoryListingFrame::onMatchADL(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if (dl->getPartialList() && (dl->getIsOwnList() || WinUtil::showQuestionBox(TSTRING(ADL_DL_FULL_LIST), MB_ICONQUESTION))) {
-		if (!dl->getIsOwnList())
-			ctrlStatus.SetText(0, CTSTRING(DOWNLOADING_LIST));
+	if (!dl->getIsOwnList() && dl->getPartialList() && WinUtil::showQuestionBox(TSTRING(ADL_DL_FULL_LIST), MB_ICONQUESTION)) {
+		ctrlStatus.SetText(0, CTSTRING(DOWNLOADING_LIST));
 
 		dl->setMatchADL(true);
 		convertToFull();
