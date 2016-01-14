@@ -904,7 +904,7 @@ void DirectoryListing::matchAdlImpl() throw(AbortException) {
 
 	if (isOwnList) {
 		// No point in matching own partial list
-		this->loadFileImpl(Util::emptyString);
+		loadFileImpl(Util::emptyString);
 	}
 
 	ADLSearchManager::getInstance()->matchListing(*this);
@@ -940,7 +940,9 @@ void DirectoryListing::onLoadingFinished(int64_t aStartTime, const string& aDir,
 	auto dir = findDirectory(aDir);
 	if (dir) {
 		dir->setLoading(false);
-		updateCurrentLocation(dir);
+		if (aChangeDir) {
+			updateCurrentLocation(dir);
+		}
 		onStateChanged();
 	}
 	
