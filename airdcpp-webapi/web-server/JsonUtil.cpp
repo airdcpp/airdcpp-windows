@@ -27,9 +27,8 @@ namespace webserver {
 			case ERROR_MISSING: return "missing_field";
 			case ERROR_INVALID: return "invalid";
 			case ERROR_EXISTS: return "already_exists";
+			default: dcassert(0); return "";
 			}
-
-			return "error";
 		};
 
 		/*json error = {

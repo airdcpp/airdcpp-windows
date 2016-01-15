@@ -285,7 +285,7 @@ namespace webserver {
 					folders = aBundle->getDirectories().size();
 				}
 
-				return Serializer::serializeFolderType(files, folders);
+				return Serializer::serializeFolderType(static_cast<int>(files), static_cast<int>(folders));
 			}
 		}
 		case QueueApi::PROP_PRIORITY: {

@@ -287,7 +287,7 @@ namespace webserver {
 		api_return handleReset(ApiRequest& aRequest) {
 			if (!active) {
 				aRequest.setResponseErrorStr("The view isn't active");
-				websocketpp::http::status_code::bad_request;
+				return websocketpp::http::status_code::bad_request;
 			}
 
 			stop();
@@ -385,6 +385,8 @@ namespace webserver {
 				res = aItemHandler.customSorterF(t1, t2, aSortProperty);
 				break;
 			}
+			case SORT_NONE: break;
+			default: dcassert(0);
 			}
 
 			return aSortAscending == 1 ? res < 0 : res > 0;

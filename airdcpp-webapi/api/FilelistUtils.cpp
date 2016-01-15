@@ -31,7 +31,7 @@ namespace webserver {
 					return Serializer::serializeFileType(aItem->getPath());
 				}
 				else {
-					return Serializer::serializeFolderType(aItem->dir->getFileCount(), aItem->dir->getFolderCount());
+					return Serializer::serializeFolderType(static_cast<int>(aItem->dir->getFileCount()), static_cast<int>(aItem->dir->getFolderCount()));
 				}
 			}
 		}

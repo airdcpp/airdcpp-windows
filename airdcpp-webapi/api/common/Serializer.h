@@ -50,7 +50,7 @@ namespace webserver {
 		static json serializeOnlineUser(const OnlineUserPtr& aUser) noexcept;
 
 		static json serializeFileType(const string& aPath) noexcept;
-		static json serializeFolderType(size_t aFiles, size_t aDirectories) noexcept;
+		static json serializeFolderType(int aFiles, int aDirectories) noexcept;
 
 		static json serializeIp(const string& aIP) noexcept;
 		static json serializeIp(const string& aIP, const string& aCountryCode) noexcept;

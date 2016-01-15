@@ -153,9 +153,8 @@ namespace webserver {
 			case LogMessage::SEV_INFO: return "info";
 			case LogMessage::SEV_WARNING: return "warning";
 			case LogMessage::SEV_ERROR: return "error";
+			default: return Util::emptyString;
 		}
-
-		return Util::emptyString;
 	}
 
 	json Serializer::serializeLogMessage(const LogMessagePtr& aMessageData) noexcept {
@@ -224,7 +223,7 @@ namespace webserver {
 		};
 	}
 
-	json Serializer::serializeFolderType(size_t aFiles, size_t aDirectories) noexcept {
+	json Serializer::serializeFolderType(int aFiles, int aDirectories) noexcept {
 		json retJson = {
 			{ "id", "directory" },
 			{ "str", Format::formatFolderContent(aFiles, aDirectories) }

@@ -30,8 +30,6 @@ namespace webserver {
 
 		bool hasFileInfo = fileCount > 0;
 		bool hasFolderInfo = folderCount > 0;
-		//if (hasFileInfo || hasFolderInfo)
-		//	name += _T(" (");
 
 		if (hasFolderInfo) {
 			name += STRING_F(X_FOLDERS, folderCount);
@@ -42,9 +40,6 @@ namespace webserver {
 				name += ", ";
 			name += STRING_F(X_FILES, fileCount);
 		}
-
-		//if (hasFileInfo || hasFolderInfo)
-		//	name += _T(")");
 
 		return name;
 	}

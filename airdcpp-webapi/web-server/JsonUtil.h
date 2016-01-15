@@ -103,7 +103,7 @@ namespace webserver {
 			if (!aJson.is_null()) {
 				T ret;
 				try {
-					ret = aJson.get<T>();
+					ret = aJson.template get<T>();
 				}
 				catch (const exception& e) {
 					throwError(aFieldName, ERROR_INVALID, e.what());
