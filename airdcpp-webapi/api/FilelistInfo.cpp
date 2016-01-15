@@ -59,6 +59,7 @@ namespace webserver {
 		directoryView("filelist_view", this, itemHandler, std::bind(&FilelistInfo::getCurrentViewItems, this))
 	{
 		METHOD_HANDLER("directory", Access::FILELISTS_VIEW, ApiRequest::METHOD_POST, (), true, FilelistInfo::handleChangeDirectory);
+		METHOD_HANDLER("read", Access::VIEW_FILES_VIEW, ApiRequest::METHOD_POST, (), false, FilelistInfo::handleSetRead);
 
 		dl->addListener(this);
 
@@ -84,6 +85,11 @@ namespace webserver {
 			dl->changeDirectory(Util::toNmdcFile(listPath), reload ? DirectoryListing::RELOAD_DIR : DirectoryListing::RELOAD_NONE);
 		});
 
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return FilelistInfo::handleSetRead(ApiRequest& aRequest) {
+		dl->setRead();
 		return websocketpp::http::status_code::ok;
 	}
 
@@ -179,6 +185,12 @@ namespace webserver {
 	void FilelistInfo::on(DirectoryListingListener::StateChanged) noexcept {
 		onSessionUpdated({
 			{ "state", serializeState(dl) }
+		});
+	}
+
+	void FilelistInfo::on(DirectoryListingListener::Read) noexcept {
+		onSessionUpdated({
+			{ "read", dl->isRead() }
 		});
 	}
 

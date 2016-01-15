@@ -64,6 +64,12 @@ void TextFrame::on(ViewFileManagerListener::FileClosed, const ViewFilePtr& aFile
 	PostMessage(WM_CLOSE, 0, 0);
 }
 
+void TextFrame::on(ViewFileManagerListener::FileRead, const ViewFilePtr& aFile) noexcept {
+	if (aFile != viewFile) {
+		return;
+	}
+}
+
 LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
 	ctrlPad.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 

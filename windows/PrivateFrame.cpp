@@ -821,12 +821,10 @@ void PrivateFrame::onStatusMessage(const LogMessagePtr& aMessage) noexcept {
 
 void PrivateFrame::activate() noexcept {
 	callAsync([this] {
-		//checkClientChanged(c, true);
 		if (::IsIconic(m_hWnd))
 			::ShowWindow(m_hWnd, SW_RESTORE);
 		MDIActivate(m_hWnd);
 		chat->setRead();
-		//sendFrameMessage(Text::toT(msg));
 	});
 }
 

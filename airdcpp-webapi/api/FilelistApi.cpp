@@ -150,6 +150,7 @@ namespace webserver {
 			{ "partial", aList->getPartialList() },
 			{ "total_files", totalFiles },
 			{ "total_size", shareSize },
+			{ "read", aList->isRead() }
 		};
 	}
 

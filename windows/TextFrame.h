@@ -86,6 +86,7 @@ private:
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 	void on(ViewFileManagerListener::FileClosed, const ViewFilePtr& aFile) noexcept;
+	void on(ViewFileManagerListener::FileRead, const ViewFilePtr& aFile) noexcept;
 
 	ViewFilePtr viewFile = nullptr;
 };

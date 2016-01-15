@@ -1193,6 +1193,15 @@ bool DirectoryListing::isCurrentSearchPath(const string& path) const noexcept {
 	return *curResult == path;
 }
 
+void DirectoryListing::setRead() noexcept {
+	if (read) {
+		return;
+	}
+
+	read = true;
+	fire(DirectoryListingListener::Read());
+}
+
 void DirectoryListing::onListRemovedQueue(const string& aTarget, const string& aDir, bool aFinished) noexcept {
 	if (!aFinished) {
 		addAsyncTask([=] {

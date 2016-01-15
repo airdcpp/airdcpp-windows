@@ -298,6 +298,10 @@ void DirectoryListingFrame::on(DirectoryListingListener::SetActive) noexcept {
 		callAsync([this] { MDIActivate(m_hWnd); });
 }
 
+void DirectoryListingFrame::on(DirectoryListingListener::Read) noexcept {
+	
+}
+
 void DirectoryListingFrame::on(DirectoryListingListener::UserUpdated) noexcept {
 	callAsync([this] { updateSelCombo(); });
 }
