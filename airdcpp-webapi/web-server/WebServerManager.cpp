@@ -80,10 +80,13 @@ namespace webserver {
 
 	template<class T>
 	void setEndpointLogSettings(T& aEndpoint, std::ostream& aStream) {
+		// Access
 		aEndpoint.set_access_channels(websocketpp::log::alevel::all);
-		aEndpoint.clear_access_channels(websocketpp::log::alevel::frame_payload);
+		//aEndpoint.clear_access_channels(websocketpp::log::alevel::frame_payload | websocketpp::log::alevel::message_payload);
+		aEndpoint.get_alog().set_ostream(&aStream);
 
-		aEndpoint.set_access_channels(websocketpp::log::elevel::all);
+		// Errors
+		aEndpoint.set_error_channels(websocketpp::log::elevel::all);
 		aEndpoint.get_elog().set_ostream(&aStream);
 	}
 
@@ -304,7 +307,7 @@ namespace webserver {
 
 					if (xml.findChild("Threads")) {
 						xml.stepIn();
-						serverThreads = max(Util::toInt(xml.getData()), 2);
+						serverThreads = max(Util::toInt(xml.getData()), 1);
 						xml.stepOut();
 					}
 					xml.resetCurrentChild();
