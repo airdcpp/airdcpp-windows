@@ -26,13 +26,16 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
 
 IDB_SPLASH              PNG                     "res\\splash.png"
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Bitmap
 //
 
 IDB_STATE               BITMAP                  "res\\state.bmp"
+
 IDB_FLAGS               BITMAP                  "res\\flags.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -622,10 +625,15 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "res\\AirDCPlusPlus.ico"
+
 IDR_UPDATE              ICON                    "res\\Update.ico"
+
 IDI_MAGNET              ICON                    "res\\magnet.ico"
+
 IDR_EMOTICON            ICON                    "res\\emoticon.ico"
+
 IDI_SEND_FILE           ICON                    "res\\send_file.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -806,6 +814,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 //
 
 IDB_USERS               BITMAP                  "res\\users.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1117,7 +1126,7 @@ BEGIN
     RTEXT           "Group:",IDC_FAVGROUP,13,186,52,8
     CONTROL         "Show users joins / parts in mainchat",IDC_SHOW_JOIN,
                     "Button",BS_AUTO3STATE | WS_TABSTOP,256,32,214,10
-    RTEXT           "Hub encoding:",IDC_ENCODINGTEXT,9,202,57,8
+    RTEXT           "Hub encoding:",IDC_ENCODINGTEXT,8,202,57,8
     COMBOBOX        IDC_ENCODING,67,200,150,30,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Log mainchat",IDC_LOGMAINCHAT,"Button",BS_AUTO3STATE | WS_TABSTOP,256,52,214,10
     CONTROL         "Show notify icon on chat messages",IDC_CHAT_NOTIFY,
@@ -1654,10 +1663,15 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_TRAY_PM             ICON                    "res\\PM.ico"
+
 IDR_TRAY_HUB            ICON                    "res\\Hubmessage.ico"
+
 IDR_PRIVATE             ICON                    "res\\User.ico"
+
 IDR_PRIVATE_OFF         ICON                    "res\\UserOff.ico"
+
 IDR_WINAMP_LOGO         ICON                    "res\\Winamp_logo.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2641,153 +2655,301 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_ADLSEARCH           ICON                    "res\\ToolbarImages\\ADLSearch.ico"
+
 IDI_AWAY                ICON                    "res\\ToolbarImages\\Away.ico"
+
 IDI_FAVORITEHUBS        ICON                    "res\\ToolbarImages\\Favorites.ico"
+
 IDI_FINISHED_DL         ICON                    "res\\ToolbarImages\\FinishedDL.ico"
+
 IDI_FINISHED_UL         ICON                    "res\\ToolbarImages\\FinishedUL.ico"
+
 IDI_PUBLICHUBS          ICON                    "res\\ToolbarImages\\PublicHubs.ico"
+
 IDI_QUEUE               ICON                    "res\\ToolbarImages\\Queue.ico"
+
 IDI_RECENTS             ICON                    "res\\ToolbarImages\\Recents.ico"
+
 IDI_RECONNECT           ICON                    "res\\ToolbarImages\\Reconnect.ico"
+
 IDI_REFRESH             ICON                    "res\\ToolbarImages\\Refresh.ico"
+
 IDI_SEARCH              ICON                    "res\\ToolbarImages\\Search.ico"
+
 IDI_SEARCHSPY           ICON                    "res\\ToolbarImages\\SearchSpy.ico"
+
 IDI_SETTINGS            ICON                    "res\\ToolbarImages\\Settings.ico"
+
 IDI_SHUTDOWN            ICON                    "res\\ToolbarImages\\Exit.ico"
+
 IDI_FOLLOW              ICON                    "res\\ToolbarImages\\Follow.ico"
+
 IDI_USERS               ICON                    "res\\ToolbarImages\\UsersFrame.ico"
+
 IDI_OPEN_LIST           ICON                    "res\\ToolbarImages\\OpenFileList.ico"
+
 IDI_NOTEPAD             ICON                    "res\\ToolbarImages\\Notepad.ico"
+
 IDI_OPEN_DOWNLOADS      ICON                    "res\\ToolbarImages\\OpenDLDir.ico"
+
 IDI_LOGS                ICON                    "res\\ToolbarImages\\SystemLog.ico"
+
 IDI_UPLOAD_QUEUE        ICON                    "res\\ToolbarImages\\uQueue.ico"
+
 IDI_SCAN                ICON                    "res\\ToolbarImages\\ScanMissing.ico"
+
 IDI_AUTOSEARCH          ICON                    "res\\ToolbarImages\\AutoSearch.ico"
+
 IDI_LOGDIR              ICON                    "res\\ToolbarImages\\LogDir.ico"
+
 IDI_TEXT                ICON                    "res\\text.ico"
+
 IDI_IERROR              ICON                    "res\\error.ico"
+
 IDI_IWARNING            ICON                    "res\\warning.ico"
+
 IDI_INFO                ICON                    "res\\info.ico"
+
 IDI_CDM                 ICON                    "res\\Cdm.ico"
+
 IDI_OWNLIST             ICON                    "res\\ownlist.ico"
+
 IDI_MATCHLIST           ICON                    "res\\matchlists.ico"
+
 IDI_QCONNECT            ICON                    "res\\QConnect.ico"
+
 IDI_GET_TTH             ICON                    "res\\getTTH.ico"
+
 IDI_INDEXING            ICON                    "res\\Indexing.ico"
+
 IDI_WINDOW_OPTIONS      ICON                    "res\\WindowOptions.ico"
+
 IDI_WIZARD              ICON                    "res\\Wizard.ico"
+
 IDI_UPLOAD              ICON                    "res\\Upload.ico"
+
 IDI_DOWNLOAD            ICON                    "res\\Download.ico"
+
 IDI_ONLINE              ICON                    "res\\Online.ico"
+
 IDI_OFFLINE             ICON                    "res\\Offline.ico"
+
 IDI_HUB                 ICON                    "res\\Hub.ico"
+
 IDI_HUBREG              ICON                    "res\\HubReg.ico"
+
 IDI_HUBOP               ICON                    "res\\HubOp.ico"
+
 IDI_HUBOFF              ICON                    "res\\HubOff.ico"
+
 IDI_BOT                 ICON                    "res\\Bot.ico"
+
 IDI_BOT_OFF             ICON                    "res\\Botoff.ico"
+
 IDI_DIR_INC_OL          ICON                    "res\\overlay.ico"
+
 IDI_FOLDER              ICON                    "res\\folder.ico"
+
 IDI_FOLDER_INC          ICON                    "res\\folder_incomplete.ico"
+
 IDI_FILE                ICON                    "res\\file.ico"
+
 IDI_SEGMENT             ICON                    "res\\transfer_segmented.ico"
+
 IDI_D_USER              ICON                    "res\\download_user.ico"
+
 IDI_U_USER              ICON                    "res\\upload_user.ico"
+
 IDI_SLOTS               ICON                    "res\\Slots.ico"
+
 IDI_SLOTSFULL           ICON                    "res\\SlotsFull.ico"
+
 IDI_TOTAL_UP            ICON                    "res\\TotalUp.ico"
+
 IDI_TOTAL_DOWN          ICON                    "res\\TotalDown.ico"
+
 IDI_MESSAGE_OVERLAY     ICON                    "res\\message_overlay.ico"
+
 IDI_USER_BASE           ICON                    "res\\UserlistImages\\UserBase.ico"
+
 IDI_USER_AWAY           ICON                    "res\\UserlistImages\\UserAway.ico"
+
 IDI_USER_BOT            ICON                    "res\\UserlistImages\\UserBot.ico"
+
 IDI_USER_PASSIVE        ICON                    "res\\UserlistImages\\UserNoCon.ico"
+
 IDI_USER_OP             ICON                    "res\\UserlistImages\\UserOP.ico"
+
 IDI_USER_NOCONNECT      ICON                    "res\\UserlistImages\\UserNoconnect.ico"
+
 IDI_GENERAL             ICON                    "res\\SettingsTree\\General.ico"
+
 IDI_CONNECTIONS         ICON                    "res\\SettingsTree\\Connections.ico"
+
 IDI_DOWNLOADS           ICON                    "res\\SettingsTree\\Downloads.ico"
+
 IDI_LOCATIONS           ICON                    "res\\SettingsTree\\Locations.ico"
+
 IDI_PREVIEW             ICON                    "res\\SettingsTree\\Preview.ico"
+
 IDI_PRIORITIES          ICON                    "res\\SettingsTree\\Priorities.ico"
+
 IDI_SHARING             ICON                    "res\\SettingsTree\\Sharing.ico"
+
 IDI_SPEED               ICON                    "res\\SettingsTree\\SpeedLimits.ico"
+
 IDI_APPEARANCE          ICON                    "res\\SettingsTree\\Appearance.ico"
+
 IDI_FONTS               ICON                    "res\\SettingsTree\\Fonts.ico"
+
 IDI_PROGRESS            ICON                    "res\\SettingsTree\\ProgressbarColors.ico"
+
 IDI_USERLIST            ICON                    "res\\SettingsTree\\UserlistColors.ico"
+
 IDI_SOUNDS              ICON                    "res\\SettingsTree\\Sounds.ico"
+
 IDI_TOOLBAR             ICON                    "res\\SettingsTree\\Toolbar.ico"
+
 IDI_WINDOWS             ICON                    "res\\SettingsTree\\Windows.ico"
+
 IDI_TABS                ICON                    "res\\SettingsTree\\Tabs.ico"
+
 IDI_POPUPS              ICON                    "res\\SettingsTree\\Popups.ico"
+
 IDI_HIGHLIGHTS          ICON                    "res\\SettingsTree\\Highlights.ico"
+
 IDI_AIRAPPEARANCE       ICON                    "res\\SettingsTree\\AirAppearance.ico"
+
 IDI_ADVANCED            ICON                    "res\\SettingsTree\\Advanced.ico"
+
 IDI_EXPERTS             ICON                    "res\\SettingsTree\\Experts.ico"
+
 IDI_UC                  ICON                    "res\\SettingsTree\\UserCommands.ico"
+
 IDI_WEB_SHORTCUTS       ICON                    "res\\SettingsTree\\Webshortcuts.ico"
+
 IDI_CERTIFICATES        ICON                    "res\\SettingsTree\\Certificates.ico"
+
 IDI_LIMITS              ICON                    "res\\SettingsTree\\Limiter.ico"
+
 IDI_MISC                ICON                    "res\\SettingsTree\\Misc.ico"
+
 IDI_SHAREOPTIONS        ICON                    "res\\SettingsTree\\ShareOptions.ico"
+
 IDI_SEARCHTYPES         ICON                    "res\\SettingsTree\\SearchTypes.ico"
+
 IDI_IGNORE              ICON                    "res\\SettingsTree\\Ignore.ico"
+
 IDI_PROXY               ICON                    "res\\SettingsTree\\Proxy.ico"
+
 IDI_HASHING             ICON                    "res\\SettingsTree\\Hashing.ico"
+
 IDI_ANY                 ICON                    "res\\searchTypes\\Any.ico"
+
 IDI_AUDIO               ICON                    "res\\searchTypes\\Audio.ico"
+
 IDI_COMPRESSED          ICON                    "res\\searchTypes\\Compressed.ico"
+
 IDI_DOCUMENT            ICON                    "res\\searchTypes\\Document.ico"
+
 IDI_EXEC                ICON                    "res\\searchTypes\\Exec.ico"
+
 IDI_PICTURE             ICON                    "res\\searchTypes\\Pic.ico"
+
 IDI_VIDEO               ICON                    "res\\searchTypes\\Video.ico"
+
 IDI_DIRECTORY           ICON                    "res\\searchTypes\\Directory.ico"
+
 IDI_TTH                 ICON                    "res\\searchTypes\\tth.ico"
+
 IDI_CUSTOM              ICON                    "res\\searchTypes\\Custom.ico"
+
 IDI_SFILE               ICON                    "res\\searchTypes\\file.ico"
+
 IDI_MPSTART             ICON                    "res\\MediaToolbar\\start.ico"
+
 IDI_MPSPAM              ICON                    "res\\MediaToolbar\\spam.ico"
+
 IDI_MPBACK              ICON                    "res\\MediaToolbar\\back.ico"
+
 IDI_MPPLAY              ICON                    "res\\MediaToolbar\\play.ico"
+
 IDI_MPPAUSE             ICON                    "res\\MediaToolbar\\pause.ico"
+
 IDI_MPNEXT              ICON                    "res\\MediaToolbar\\next.ico"
+
 IDI_MPSTOP              ICON                    "res\\MediaToolbar\\stop.ico"
+
 IDI_MPVOLUMEUP          ICON                    "res\\MediaToolbar\\up.ico"
+
 IDI_MPVOLUME50          ICON                    "res\\MediaToolbar\\volume50.ico"
+
 IDI_MPVOLUMEDOWN        ICON                    "res\\MediaToolbar\\down.ico"
+
 IDI_SEARCHING           ICON                    "res\\AutoSearch\\Searching.ico"
+
 IDI_QUEUED_OK           ICON                    "res\\AutoSearch\\QueuedOK.ico"
+
 IDI_QUEUED_ERROR        ICON                    "res\\AutoSearch\\QueuedError.ico"
+
 IDI_SEARCH_ERROR        ICON                    "res\\AutoSearch\\SearchError.ico"
+
 IDI_WAITING             ICON                    "res\\AutoSearch\\Waiting.ico"
+
 IDI_MANUAL              ICON                    "res\\AutoSearch\\Manual.ico"
+
 IDI_DISABLED            ICON                    "res\\AutoSearch\\Disabled.ico"
+
 IDI_COLLECTING          ICON                    "res\\AutoSearch\\Collecting.ico"
+
 IDI_POSTSEARCH          ICON                    "res\\AutoSearch\\PostSearch.ico"
+
 IDI_EXPIRED             ICON                    "res\\AutoSearch\\Expired.ico"
+
 IDI_SHARED              ICON                    "res\\Shared.ico"
+
 IDI_DIR_LOADING_OL      ICON                    "res\\ExecMasked.ico"
+
 IDI_FAV_USER            ICON                    "res\\UsersFrame\\FavUser.ico"
+
 IDI_FAV_USER_OFF        ICON                    "res\\UsersFrame\\FavUserOff.ico"
+
 IDI_GRANT_ON            ICON                    "res\\UsersFrame\\grant.ico"
+
 IDI_GRANT_OFF           ICON                    "res\\UsersFrame\\grantOff.ico"
+
 IDI_USER_ON             ICON                    "res\\UsersFrame\\online.ico"
+
 IDI_USER_OFF            ICON                    "res\\UsersFrame\\offline.ico"
+
 IDI_EXPAND_UP           ICON                    "res\\expand_up.ico"
+
 IDI_EXPAND_DOWN         ICON                    "res\\expand_down.ico"
+
 IDI_UP                  ICON                    "res\\up.ico"
+
 IDI_NEXT                ICON                    "res\\next.ico"
+
 IDI_PREV                ICON                    "res\\previous.ico"
+
 IDI_BACK                ICON                    "res\\back.ico"
+
 IDI_FORWARD             ICON                    "res\\forward.ico"
+
 IDI_FIND                ICON                    "res\\Find.ico"
+
 IDI_RELOAD              ICON                    "res\\reload.ico"
+
 IDI_PAUSED              ICON                    "res\\paused.ico"
+
 IDI_STEPBACK            ICON                    "res\\Stepback.ico"
+
 IDI_SECURE              ICON                    "res\\Secure.ico"
+
 IDI_TYPING              ICON                    "res\\Typing.ico"
+
 IDI_SEEN                ICON                    "res\\Seen.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2848,6 +3010,7 @@ LANGUAGE LANG_ESTONIAN, SUBLANG_DEFAULT
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_WEBSERVER           ICON                    "res\\webserver.ico"
+
 #endif    // Estonian (Estonia) resources
 /////////////////////////////////////////////////////////////////////////////
 
