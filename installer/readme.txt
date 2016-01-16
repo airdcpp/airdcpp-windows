@@ -6,7 +6,9 @@ If you try to run it with the ANSI version it will halt so do not bother to try.
 You also need Polib - Library for python to manipulate PO files https://pypi.python.org/pypi/polib
 
 To get the POT file run:
-`python build_gettext_catalog_nsi.py -i AirDC_installscript.nsi -o EN_Installer.pot -p "AirDC++" -v "1.0" -l "English"`
+```
+python build_gettext_catalog_nsi.py -i AirDC_installscript.nsi -o EN_Installer.pot -p "AirDC++" -v "1.0" -l "English"
+```
 and you will get 'EN_Installer.pot' to upload to https://www.transifex.com/projects/p/airdcpp/
 
 Download the PO files from transifex (Download for use).
