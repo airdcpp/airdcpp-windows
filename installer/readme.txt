@@ -6,7 +6,7 @@ If you try to run it with the ANSI version it will halt so do not bother to try.
 You also need Polib - Library for python to manipulate PO files https://pypi.python.org/pypi/polib
 
 To get the POT file run:
-"python build_gettext_catalog_nsi.py -i AirDC_installscript.nsi -o EN_Installer.pot -p "AirDC++" -v "1.0" -l "English""
+`python build_gettext_catalog_nsi.py -i AirDC_installscript.nsi -o EN_Installer.pot -p "AirDC++" -v "1.0" -l "English"`
 and you will get 'EN_Installer.pot' to upload to https://www.transifex.com/projects/p/airdcpp/
 
 Download the PO files from transifex (Download for use).
@@ -16,7 +16,7 @@ but you need to rename it to 'sv.po'. Do the same for every PO file and put them
 You can read in the 'build_locale_nsh.py' what name you need to use on the PO files.
 
 We don't want to use all the text from 'AirDC_installscript.nsi' so we use the dummy_file.nsi file instead.
-Run "python build_locale_nsh.py -i dummy_file.nsi -o all_language.nsh -p "pofiles/" -l "English"" to get 'all_language.nsh'.
+Run `python build_locale_nsh.py -i dummy_file.nsi -o all_language.nsh -p "pofiles/" -l "English"` to get 'all_language.nsh'.
 
 You now have all translated strings in 'all_language.nsh'. It will be included into the AirDC_installscript.nsi when you compile it.
 
