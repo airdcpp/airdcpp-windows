@@ -42,6 +42,7 @@
 #include <airdcpp/LogManager.h>
 #include <airdcpp/version.h>
 #include <airdcpp/Magnet.h>
+#include <airdcpp/ViewFileManager.h>
 
 #include <boost/format.hpp>
 
@@ -1189,7 +1190,7 @@ void WinUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aUser, RichT
 						addFileDownload(SETTING(DOWNLOAD_DIRECTORY) + m.fname, m.fsize, m.getTTH(), aUser, 0);
 					}
 				} else if (sel == SettingsManager::MAGNET_OPEN) {
-					QueueManager::getInstance()->addOpenedItem(m.fname, m.fsize, m.getTTH(), aUser, false);
+					openFile(m.fname, m.fsize, m.getTTH(), aUser, false);
 				}
 			} catch(const Exception& e) {
 				LogManager::getInstance()->message(e.getError(), LogMessage::SEV_ERROR);
@@ -1198,6 +1199,21 @@ void WinUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aUser, RichT
 			MessageBox(mainWnd, CTSTRING(MAGNET_DLG_TEXT_BAD), CTSTRING(MAGNET_DLG_TITLE), MB_OK | MB_ICONEXCLAMATION);
 		}
 	}
+}
+
+bool WinUtil::openFile(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsClientView) noexcept {
+	if (aIsClientView && (!SETTING(NFO_EXTERNAL) || Util::getFileExt(aFileName) != ".nfo")) {
+		return ViewFileManager::getInstance()->addFileNotify(aFileName, aSize, aTTH, aUser, true);
+	}
+
+	try {
+		QueueManager::getInstance()->addOpenedItem(aFileName, aSize, aTTH, aUser, false, true);
+		return true;
+	} catch (const Exception& e) {
+		LogManager::getInstance()->message(STRING_F(ADD_FILE_ERROR, aFileName % ClientManager::getInstance()->getFormatedNicks(aUser) % e.getError()), LogMessage::SEV_NOTIFY);
+	}
+
+	return false;
 }
 
 int WinUtil::textUnderCursor(POINT p, CEdit& ctrl, tstring& x) {

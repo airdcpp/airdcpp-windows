@@ -814,11 +814,8 @@ void SearchFrame::performAction(std::function<void (const SearchInfo* aInfo)> f,
 
 void SearchFrame::handleOpenItem(bool isClientView) {
 	auto open = [=](const SearchInfo* si) {
-		try {
-			if(si->sr->getType() == SearchResult::TYPE_FILE) {
-				QueueManager::getInstance()->addOpenedItem(si->sr->getFileName(), si->sr->getSize(), si->sr->getTTH(), si->sr->getUser(), isClientView);
-			}
-		} catch(const Exception&) {
+		if(si->sr->getType() == SearchResult::TYPE_FILE) {
+			WinUtil::openFile(si->sr->getFileName(), si->sr->getSize(), si->sr->getTTH(), si->sr->getUser(), isClientView);
 		}
 	};
 
@@ -828,11 +825,7 @@ void SearchFrame::handleOpenItem(bool isClientView) {
 void SearchFrame::handleViewNfo() {
 	auto viewNfo = [=](const SearchInfo* si) {
 		if (si->sr->getType() == SearchResult::TYPE_FILE && Util::getFileExt(si->sr->getFileName()) == ".nfo") {
-			try {
-				QueueManager::getInstance()->addOpenedItem(si->sr->getFileName(), si->sr->getSize(), si->sr->getTTH(), si->sr->getUser(), !SETTING(NFO_EXTERNAL));
-			} catch(const Exception&) {
-				// Ignore for now...
-			}
+			WinUtil::openFile(si->sr->getFileName(), si->sr->getSize(), si->sr->getTTH(), si->sr->getUser(), true);
 		} else {
 			auto path = AirUtil::getNmdcReleaseDir(si->sr->getFilePath(), false);
 			try {

@@ -1408,7 +1408,7 @@ void DirectoryListingFrame::handleViewAsText() {
 					if (!paths.empty())
 						TextFrame::openWindow(paths.front(), TextFrame::NORMAL);
 				} else {
-					dl->openFile(ii->file, true);
+					dl->viewAsText(ii->file);
 				}
 			}
 		} catch (const Exception& e) {
@@ -1457,16 +1457,14 @@ void DirectoryListingFrame::handleViewNFO(bool usingTree) {
 
 void DirectoryListingFrame::handleOpenFile() {
 	handleItemAction(false, [this](const ItemInfo* ii) {
-		if (ii->type == ItemInfo::FILE) {
-			try {
-				if (dl->getIsOwnList() || ii->file->getDupe() == DUPE_FINISHED || ii->file->getDupe() == DUPE_SHARE) {
-					openDupe(ii->file, false);
-				} else {
-					dl->openFile(ii->file, false);
-				}
-			} catch (const Exception& e) {
-				updateStatus(Text::toT(e.getError()));
-			}
+		if (ii->type != ItemInfo::FILE) {
+			return;
+		}
+
+		if (dl->getIsOwnList() || ii->file->getDupe() == DUPE_FINISHED || ii->file->getDupe() == DUPE_SHARE) {
+			openDupe(ii->file, false);
+		} else {
+			WinUtil::openFile(ii->file->getName(), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), false);
 		}
 	});
 }
@@ -1482,7 +1480,7 @@ void DirectoryListingFrame::openDupe(const DirectoryListing::Directory::Ptr& d) 
 	}
 }
 
-void DirectoryListingFrame::openDupe(const DirectoryListing::File::Ptr& f, bool openDir) {
+void DirectoryListingFrame::openDupe(const DirectoryListing::File::Ptr& f, bool openDir) noexcept {
 	try {
 		StringList paths;
 		dl->getLocalPaths(f, paths);

@@ -389,9 +389,11 @@ public:
 	static bool urlMagnetRegistered;
 	static int textUnderCursor(POINT p, CEdit& ctrl, tstring& x);
 	static int textUnderCursor(POINT p, CRichEditCtrl& ctrl, tstring& x);
+
 	static void openLink(const tstring& url);
 	static void openFile(const tstring& file);
 	static void openFolder(const tstring& file);
+	static bool openFile(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsClientView) noexcept;
 	
 	static double toBytes(TCHAR* aSize);
 

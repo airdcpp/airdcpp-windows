@@ -1259,9 +1259,7 @@ void RichTextBox::handleOpenFile() {
 			if (!p.empty())
 				WinUtil::openFile(Text::toT(p.front()));
 		} else {
-			try {
-				QueueManager::getInstance()->addOpenedItem(m.fname, m.fsize, m.getTTH(), u, false);
-			} catch (...) {}
+			WinUtil::openFile(m.fname, m.fsize, m.getTTH(), u, false);
 		}
 	});
 }

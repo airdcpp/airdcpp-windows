@@ -234,7 +234,7 @@ private:
 	bool allowPopup() const;
 	bool getLocalPaths(StringList& paths_, bool usingTree, bool dirsOnly);
 	void openDupe(const DirectoryListing::Directory::Ptr& d);
-	void openDupe(const DirectoryListing::File::Ptr& f, bool openDir);
+	void openDupe(const DirectoryListing::File::Ptr& f, bool openDir) noexcept;
 
 	// safe to be called from any thread
 	void updateStatus(const tstring& aMsg);
