@@ -1007,11 +1007,7 @@ void DirectoryListingFrame::onListItemAction() {
 			if(ii->type == ItemInfo::FILE) {
 				// if we already have it there's no reason to download, try to open instead.
 				if (dl->getIsOwnList() || ii->file->getDupe() == DUPE_FINISHED || ii->file->getDupe() == DUPE_SHARE) {
-					try {
-						openDupe(ii->file, false);
-					} catch (const Exception& e) {
-						updateStatus(Text::toT(e.getError()));
-					}
+					openDupe(ii->file, false);
 				} else
 					onDownload(SETTING(DOWNLOAD_DIRECTORY), false, false, WinUtil::isShift() ? QueueItemBase::HIGHEST : QueueItem::DEFAULT);
 			} else {
