@@ -106,14 +106,14 @@ LangString XPOrBelow ${LANG_ENGLISH} "This version is only compatible with Windo
 LangString ^UninstallText ${LANG_ENGLISH} "This will uninstall AirDC++. Hit the Uninstall button to continue."
 LangString RemoveQueue ${LANG_ENGLISH} "Do you also want to remove queue, themes and all settings?"
 LangString NotEmpty ${LANG_ENGLISH} "Installation directory is NOT empty. Do you still want to remove it?"
-LangString DESC_dcpp ${LANG_ENGLISH} "AirDC++ main program "
-LangString DESC_StartMenu ${LANG_ENGLISH} "This will install a shortcut of AirDC++ in you start menu."
-LangString DESC_Radox ${LANG_ENGLISH} "This will install the RadoX emoticon pack."
-LangString DESC_Themes ${LANG_ENGLISH} "This will install two extra themes, Dark Skull and Zoolution."
-LangString DESC_WebResorces ${LANG_ENGLISH} "This will install a Web user interface so you can connect to AirDC++ from any web browser in the world."
-LangString DESC_loc ${LANG_ENGLISH} "This will install the setting files in the user profile. Normally you should not change this because it can lead to abnormal behaviour like loss of settings or downloads."
-LangString DESC_desk ${LANG_ENGLISH} "This will place an icon on your desktop so you can easy run AirDC++."
-LangString DESC_arch ${LANG_ENGLISH} "This will install the 32-bits version even if you are running a 64-bits operating system. If this is grayed out you can not unselect this because you operation system is 32-bits."
+LangString DESC_dcpp ${LANG_ENGLISH} "AirDC++ main program."
+LangString DESC_StartMenu ${LANG_ENGLISH} "A shortcut of AirDC++ will be placed in your start menu."
+LangString DESC_Radox ${LANG_ENGLISH} "RadoX emoticon pack will be installed to be used in chats."
+LangString DESC_Themes ${LANG_ENGLISH} "If you don't like the default theme you can try these two extra themes, Dark Skull and Zoolution."
+LangString DESC_WebResorces ${LANG_ENGLISH} "Allows accessing the client from other devices via a web browser."
+LangString DESC_loc ${LANG_ENGLISH} "Normally you should not change this because it can lead to abnormal behaviour like loss of settings or downloads. If you unselect it, read the warning message carefully."
+LangString DESC_desk ${LANG_ENGLISH} "Do you often run AirDC++? Then this is definitely something for you!"
+LangString DESC_arch ${LANG_ENGLISH} "If you want to use the 32-bits version of AirDC++ on your 64-bits operating system you need to select this. If this is selected and grayed out you can not unselect it because your operation system is 32-bits."
 ;End of English strings
 
 ; The file to write
