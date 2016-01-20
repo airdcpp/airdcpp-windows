@@ -56,7 +56,7 @@ ShowUninstDetails show
 !define MUI_LANGDLL_REGISTRY_VALUENAME "Install_Language"
 !define MUI_FINISHPAGE_NOAUTOCLOSE ; Pause after installation
 
-!define MUI_COMPONENTSPAGE_NODESC
+;!define MUI_COMPONENTSPAGE_NODESC ; Added desc so this is not in use
 
 !define MUI_FINISHPAGE_RUN
 !define MUI_FINISHPAGE_RUN_TEXT "$(RunAtFinish)"
@@ -97,6 +97,7 @@ LangString SM_UNINSTALL ${LANG_ENGLISH} "Uninstall"
 LangString WR_REMOVEONLY ${LANG_ENGLISH} "(remove only)"
 LangString SecRadox ${LANG_ENGLISH} "Radox Emoticon Pack"
 LangString SecThemes ${LANG_ENGLISH} "Themes"
+LangString SecWebResources ${LANG_ENGLISH} "Web user interface"
 LangString SecStore ${LANG_ENGLISH} "Store settings in the user profile directory"
 LangString DeskShort ${LANG_ENGLISH} "Create AirDC++ desktop shourtcut"
 LangString SecInstall32 ${LANG_ENGLISH} "Install the 32-bit version"
@@ -105,13 +106,20 @@ LangString XPOrBelow ${LANG_ENGLISH} "This version is only compatible with Windo
 LangString ^UninstallText ${LANG_ENGLISH} "This will uninstall AirDC++. Hit the Uninstall button to continue."
 LangString RemoveQueue ${LANG_ENGLISH} "Do you also want to remove queue, themes and all settings?"
 LangString NotEmpty ${LANG_ENGLISH} "Installation directory is NOT empty. Do you still want to remove it?"
+LangString DESC_dcpp ${LANG_ENGLISH} "AirDC++ main program "
+LangString DESC_StartMenu ${LANG_ENGLISH} "This will install a shortcut of AirDC++ in you start menu."
+LangString DESC_Radox ${LANG_ENGLISH} "This will install the RadoX emoticon pack."
+LangString DESC_Themes ${LANG_ENGLISH} "This will install two extra themes, Dark Skull and Zoolution."
+LangString DESC_WebResorces ${LANG_ENGLISH} "This will install a Web user interface so you can connect to AirDC++ from any web browser in the world."
+LangString DESC_loc ${LANG_ENGLISH} "This will install the setting files in the user profile. Normally you should not change this because it can lead to abnormal behaviour like loss of settings or downloads."
+LangString DESC_desk ${LANG_ENGLISH} "This will place an icon on your desktop so you can easy run AirDC++."
+LangString DESC_arch ${LANG_ENGLISH} "This will install the 32-bits version even if you are running a 64-bits operating system. If this is grayed out you can not unselect this because you operation system is 32-bits."
 ;End of English strings
 
 ; The file to write
 OutFile "AirDC_Installer_XXX.exe"
 
-; Registry key to check for directory (so if you install again, it will 
-; overwrite the old one automatically)
+; Registry key to check for directory (so if you install again, it will overwrite the old one automatically)
 InstallDirRegKey HKLM SOFTWARE\AirDC++ "Install_Dir"
 
 ; The stuff to install
@@ -232,26 +240,31 @@ no_backup:
 SectionEnd
 
 ; optional section
-Section "$(SecStartMenu)"
+Section "$(SecStartMenu)" DescStartMenu
   CreateDirectory "$SMPROGRAMS\AirDC++\"
   CreateShortCut "$SMPROGRAMS\AirDC++\AirDC++.lnk" "$INSTDIR\AirDC.exe" "" "$INSTDIR\AirDC.exe" 0 "" "" "$(SM_AIRDCPP_DESC)"
   CreateShortCut "$SMPROGRAMS\AirDC++\$(SM_UNINSTALL).lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0 "" "" "$(SM_AIRDCPP_DESCUN)"
 SectionEnd
 
-Section "$(SecRadox)"
+Section "$(SecRadox)" DescRadox
   SetOutPath $INSTDIR
   File /r EmoPacks
 SectionEnd
 
-Section "$(SecThemes)"
+Section "$(SecThemes)" DescThemes
   SetOutPath $INSTDIR
   File /r Themes
+SectionEnd
+
+Section "$(SecWebResources)" DescWebResorces
+  SetOutPath $INSTDIR
+  File /r Web-resources
 SectionEnd
 
 Section "$(SecStore)" loc
 ; Change to nonlocal dcppboot if the checkbox left checked
   SetOutPath $INSTDIR
-  File /oname=dcppboot.xml "dcppboot.nonlocal.xml" 
+  File /oname=dcppboot.xml "dcppboot.nonlocal.xml"
 SectionEnd
 
 Section "$(DeskShort)" desk
@@ -262,6 +275,18 @@ SectionEnd
 Section "$(SecInstall32)" arch
 ; Force to install 32 bit version on an x64 system
 SectionEnd
+
+;Assign language strings to sections
+  !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+    !insertmacro MUI_DESCRIPTION_TEXT ${dcpp} $(DESC_dcpp)
+    !insertmacro MUI_DESCRIPTION_TEXT ${DescStartMenu} $(DESC_StartMenu)
+    !insertmacro MUI_DESCRIPTION_TEXT ${DescRadox} $(DESC_Radox)
+    !insertmacro MUI_DESCRIPTION_TEXT ${DescThemes} $(DESC_Themes)
+    !insertmacro MUI_DESCRIPTION_TEXT ${DescWebResorces} $(DESC_WebResorces)
+    !insertmacro MUI_DESCRIPTION_TEXT ${loc} $(DESC_loc)
+    !insertmacro MUI_DESCRIPTION_TEXT ${desk} $(DESC_desk)
+    !insertmacro MUI_DESCRIPTION_TEXT ${arch} $(DESC_arch)
+  !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 Function .onSelChange
 ; Alter default value for $INSTDIR according to the arch selection
@@ -393,6 +418,9 @@ Section "un.Uninstall"
 ; remove EmoPacks dir
   RMDir /r "$INSTDIR\EmoPacks"
   RMDir /r "$INSTDIR\icons"
+
+; remove Web-resources dir
+  RMDir /r "$INSTDIR\Web-resources"
 
 ; Remove registry entries
 ; Assume they are all registered to us
