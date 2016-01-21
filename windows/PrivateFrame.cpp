@@ -75,7 +75,7 @@ created(false), closed(false), curCommandPosition(0),
 	ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 	ctrlClientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 	ctrlStatusContainer(STATUSCLASSNAME, this, STATUS_MSG_MAP),
-	UserInfoBaseHandler(false, true), hasUnSeenMessages(false), isTyping(false), userTyping(false)
+	UserInfoBaseHandler(false, true), isTyping(false), userTyping(false), windowLoaded(false)
 {
 	chat = MessageManager::getInstance()->getChat(replyTo_);
 	ctrlClient.setClient(chat->getClient());
@@ -110,7 +110,6 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ctrlMessageContainer.SubclassWindow(ctrlMessage.m_hWnd);
 	ctrlStatusContainer.SubclassWindow(ctrlStatus.m_hWnd);
 	created = true;
-
 	readLog();
 
 	SettingsManager::getInstance()->addListener(this);
@@ -130,9 +129,9 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	WinUtil::SetIcon(m_hWnd, (getUser() && getUser()->isSet(User::BOT)) ? IDI_BOT : IDR_PRIVATE);
 
 	//add the updateonlinestatus in the wnd message queue so the frame and tab can finish creating first.
-	callAsync([this] { updateOnlineStatus(); });
+	callAsync([this] { updateOnlineStatus();  windowLoaded = true; });
 	::SetTimer(m_hWnd, 0, 1000, 0);
-
+	
 	bHandled = FALSE;
 	return 1;
 }
@@ -157,7 +156,8 @@ LRESULT PrivateFrame::onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 LRESULT PrivateFrame::onFocusMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	bHandled = FALSE;
-	sendSeen();
+	if(windowLoaded)
+		chat->setRead();
 	return 0;
 }
 	
@@ -178,9 +178,6 @@ void PrivateFrame::addStatus(const tstring& aLine, HICON aIcon) {
 }
 
 void PrivateFrame::updatePMInfo(uint8_t aType) {
-	if (!created) {
-		CreateEx(WinUtil::mdiClient);
-	}
 
 	switch (aType) {
 	case PrivateChat::MSG_SEEN: {
@@ -262,7 +259,7 @@ LRESULT PrivateFrame::OnRelayMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 
 LRESULT PrivateFrame::onEditChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl, BOOL& bHandled) {
 	if (hWndCtl == ctrlMessage.m_hWnd) {
-		sendSeen();
+		chat->setRead();
 	}
 	bHandled = FALSE;
 	return 0;
@@ -728,13 +725,6 @@ void PrivateFrame::readLog() {
 	}
 }
 
-void PrivateFrame::sendSeen() {
-	if (hasUnSeenMessages)
-		chat->sendPMInfo(PrivateChat::MSG_SEEN);
-
-	hasUnSeenMessages = false;
-}
-
 LRESULT PrivateFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {	
 	string file = chat->getLogPath();
 	if(Util::fileExists(file)) {
@@ -802,7 +792,6 @@ void PrivateFrame::onChatMessage(const ChatMessagePtr& aMessage) noexcept {
 	addLine(aMessage->getFrom()->getIdentity(), text);
 
 	if (!myPM) {
-		hasUnSeenMessages = true;
 		addStatus(_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + TSTRING(LAST_MESSAGE_RECEIVED), ResourceLoader::getSeverityIcon(LogMessage::SEV_INFO));
 
 		handleNotifications(false, text);
@@ -824,7 +813,7 @@ void PrivateFrame::activate() noexcept {
 		if (::IsIconic(m_hWnd))
 			::ShowWindow(m_hWnd, SW_RESTORE);
 		MDIActivate(m_hWnd);
-		chat->setRead();
+		//chat->setRead();
 	});
 }
 

@@ -177,6 +177,7 @@ private:
 	CContainedWindow ctrlStatusContainer;
 
 	bool closed;
+	bool windowLoaded;
 	ParamMap ucLineParams;
 	
 	tstring lastCCPMError;
@@ -185,12 +186,10 @@ private:
 	void closeCC(bool silent = false);
 	bool ccReady() const;
 
-	bool hasUnSeenMessages;
 	bool isTyping;
 	bool userTyping;
 	bool userAway;
 
-	void sendSeen();
 	void updatePMInfo(uint8_t aType);
 	void addStatus(const tstring& aLine, HICON aIcon);
 
