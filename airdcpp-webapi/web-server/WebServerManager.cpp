@@ -247,7 +247,7 @@ namespace webserver {
 				socket->ping();
 
 				// Disconnect sockets without a session after one minute
-				if (!socket->getSession() && socket->getTimeCreated() + 20 * 1000ULL < tick) {
+				if (!socket->getSession() && socket->getTimeCreated() + 60 * 1000ULL < tick) {
 					inactiveSockets.push_back(socket);
 				}
 			}
