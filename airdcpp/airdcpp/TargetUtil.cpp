@@ -69,7 +69,7 @@ string TargetUtil::getMountPath(const string& aPath, const VolumeSet& aVolumes) 
 
 bool TargetUtil::getVirtualTarget(const string& aTarget, TargetUtil::TargetType targetType, TargetInfo& ti_, const int64_t& aSize) {
 	if (targetType == TARGET_PATH) {
-		ti_.targetDir = aTarget;
+		ti_.setTarget(aTarget);
 	} else {
 		vector<pair<string, StringList>> dirList;
 		if (targetType == TARGET_FAVORITE) {
@@ -82,15 +82,15 @@ bool TargetUtil::getVirtualTarget(const string& aTarget, TargetUtil::TargetType 
 		if (s != dirList.end()) {
 			const auto& targets = s->second;
 			bool tmp = getTarget(targets, ti_, aSize);
-			if (!ti_.targetDir.empty()) {
+			if (ti_.hasTarget()) {
 				return tmp;
 			}
 		}
 	}
 
-	if (ti_.targetDir.empty()) {
+	if (!ti_.hasTarget()) {
 		//failed to get the target, use the default one
-		ti_.targetDir = SETTING(DOWNLOAD_DIRECTORY);
+		ti_.setTarget(SETTING(DOWNLOAD_DIRECTORY));
 	}
 	return getDiskInfo(ti_);
 }
@@ -113,32 +113,33 @@ bool TargetUtil::getTarget(const StringList& targets, TargetInfo& retTi_, const 
 	if (targetMap.empty()) {
 		//failed to get the volumes
 		if (!targets.empty()) {
-			retTi_.targetDir = targets.front();
+			retTi_.setTarget(targets.front());
 		} else {
-			retTi_.targetDir = SETTING(DOWNLOAD_DIRECTORY);
+			retTi_.setTarget(SETTING(DOWNLOAD_DIRECTORY));
 		}
 
-		retTi_.diskSpace = File::getFreeSpace(retTi_.targetDir);
-		return retTi_.getFreeSpace() >= aSize;
+		retTi_.setFreeDiskSpace(File::getFreeSpace(retTi_.getTarget()));
+	} else {
+		QueueManager::getInstance()->getDiskInfo(targetMap, volumes);
+
+		compareMap(targetMap, retTi_, aSize, SETTING(DL_AUTOSELECT_METHOD));
+		if (retTi_.getTarget().empty()) {
+			//no dir with enough space, choose the one with most space available
+			compareMap(targetMap, retTi_, aSize, (int8_t)SettingsManager::SELECT_MOST_SPACE);
+		}
 	}
 
-	QueueManager::getInstance()->getDiskInfo(targetMap, volumes);
-
-	compareMap(targetMap, retTi_, aSize, SETTING(DL_AUTOSELECT_METHOD));
-	if (retTi_.targetDir.empty()) //no dir with enough space, choose the one with most space available
-		compareMap(targetMap, retTi_, aSize, (int8_t)SettingsManager::SELECT_MOST_SPACE);
-
-	return retTi_.getFreeSpace() >= aSize;
+	return retTi_.hasFreeSpace(aSize);
 }
 
 void TargetUtil::compareMap(const TargetInfoMap& aTargetMap, TargetInfo& retTi_, const int64_t& aSize, int aMethod) {
 
 	for (auto mapTi: aTargetMap | map_values) {
 		if (aMethod == (int8_t)SettingsManager::SELECT_LEAST_SPACE) {
-			int64_t diff = mapTi.getFreeSpace() - aSize;
-			if (diff > 0 && (diff < (retTi_.getFreeSpace() - aSize) || !retTi_.isInitialized()))
+			int64_t diff = mapTi.getRealFreeSpace() - aSize;
+			if (diff > 0 && (diff < (retTi_.getRealFreeSpace() - aSize) || !retTi_.isInitialized()))
 				retTi_ = mapTi;
-		} else if (mapTi.getFreeSpace() > retTi_.getFreeSpace() || !retTi_.isInitialized()) {
+		} else if (mapTi.getRealFreeSpace() > retTi_.getRealFreeSpace() || !retTi_.isInitialized()) {
 			retTi_ = mapTi;
 		}
 	}
@@ -148,12 +149,12 @@ bool TargetUtil::getDiskInfo(TargetInfo& targetInfo_) {
 	VolumeSet volumes;
 	getVolumes(volumes);
 
-	auto pathVol = getMountPath(targetInfo_.targetDir, volumes);
+	auto pathVol = getMountPath(targetInfo_.getTarget(), volumes);
 	if (pathVol.empty()) {
 		return false;
 	}
 
-	targetInfo_.diskSpace = File::getFreeSpace(pathVol);
+	targetInfo_.setFreeDiskSpace(File::getFreeSpace(pathVol));
 
 	TargetInfoMap targetMap;
 	targetMap[pathVol] = targetInfo_;
@@ -219,38 +220,34 @@ void TargetUtil::getVolumes(VolumeSet& volumes) {
 #endif
 }
 
-void TargetUtil::reportInsufficientSize(const TargetInfo& ti, int64_t aSize) {
-	string tmp;
-	if (ti.queued > 0) {
-		tmp = STRING(AUTO_SEARCH) + ": " + STRING_F(NOT_ENOUGH_SPACE_QUEUED_PAUSED,
-			ti.targetDir %
-			Util::formatBytes(ti.diskSpace) % 
-			Util::formatBytes(ti.queued) %
-			Util::formatBytes(aSize));
-	} else {
-		tmp = STRING(AUTO_SEARCH) + ": " + STRING_F(NOT_ENOUGH_SPACE_PAUSED,
-			ti.targetDir.c_str() %
-			Util::formatBytes(ti.getFreeSpace()) % 
+string TargetUtil::formatSizeNotification(const TargetInfo& ti, int64_t aSize) {
+	if (ti.getQueued() > 0) {
+		return STRING_F(NOT_ENOUGH_SPACE_QUEUED_PAUSED,
+			ti.getTarget() %
+			Util::formatBytes(ti.getFreeDiskSpace()) % 
+			Util::formatBytes(ti.getQueued()) %
 			Util::formatBytes(aSize));
 	}
-	LogManager::getInstance()->message(tmp, LogMessage::SEV_WARNING);
+
+	return STRING_F(NOT_ENOUGH_SPACE_PAUSED,
+		ti.getTarget() %
+		Util::formatBytes(ti.getRealFreeSpace()) %
+		Util::formatBytes(aSize));
 }
 
-string TargetUtil::getInsufficientSizeMessage(const TargetInfo& ti, int64_t aSize) {
-	string tmp;
-	if (ti.queued > 0) {
-		tmp = STRING_F(CONFIRM_SIZE_WARNING_QUEUE, 
-			Util::formatBytes(ti.queued).c_str() %
-			ti.targetDir.c_str() %
-			Util::formatBytes(ti.diskSpace).c_str() % 
-			Util::formatBytes(aSize).c_str());
-	} else {
-		tmp = STRING_F(CONFIRM_SIZE_WARNING, 
-			Util::formatBytes(ti.getFreeSpace()).c_str() % 
-			ti.targetDir.c_str() %
-			Util::formatBytes(aSize).c_str());
+string TargetUtil::formatSizeConfirmation(const TargetInfo& ti, int64_t aSize) {
+	if (ti.getQueued() > 0) {
+		return STRING_F(CONFIRM_SIZE_WARNING_QUEUE, 
+			Util::formatBytes(ti.getQueued()) %
+			ti.getTarget() %
+			Util::formatBytes(ti.getFreeDiskSpace()) % 
+			Util::formatBytes(aSize));
 	}
-	return tmp;
+
+	return STRING_F(CONFIRM_SIZE_WARNING, 
+			Util::formatBytes(ti.getRealFreeSpace()) % 
+			ti.getTarget() %
+			Util::formatBytes(aSize));
 }
 
 } //dcpp

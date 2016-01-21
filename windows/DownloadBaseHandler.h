@@ -47,12 +47,12 @@ public:
 	/* Action handlers */
 	void onDownload(const string& aTarget, bool isWhole, bool isSizeUnknown, QueueItemBase::Priority p) {
 		if (!isSizeUnknown) {
-			/* Get the size of the download */
-			int64_t size = getDownloadSize(isWhole);
-			/* Check the space */
-			TargetUtil::TargetInfo ti;
-			ti.targetDir = aTarget;
-			if (TargetUtil::getDiskInfo(ti) && ti.getFreeSpace() < size && !confirmDownload(ti, size))
+			// Get the size of the download
+			auto size = getDownloadSize(isWhole);
+
+			// Check the space
+			TargetUtil::TargetInfo ti(aTarget);
+			if (TargetUtil::getDiskInfo(ti) && ti.hasFreeSpace(size) && !confirmDownload(ti, size))
 				return;
 		}
 
@@ -95,7 +95,7 @@ public:
 				return;
 			}
 
-			handleDownload(targetInfo.targetDir, QueueItem::DEFAULT, isWhole, TargetUtil::TARGET_PATH, false);
+			handleDownload(targetInfo.getTarget(), QueueItem::DEFAULT, isWhole, TargetUtil::TARGET_PATH, false);
 		}
 	}
 
@@ -234,8 +234,7 @@ public:
 	}
 
 	bool confirmDownload(TargetUtil::TargetInfo& targetInfo, int64_t aSize) {
-		//return WinUtil::MessageBoxConfirm(SettingsManager::FREE_SPACE_WARN, Text::toT(TargetUtil::getInsufficientSizeMessage(targetInfo, aSize)));
-		return !SETTING(FREE_SPACE_WARN) || WinUtil::showQuestionBox(Text::toT(TargetUtil::getInsufficientSizeMessage(targetInfo, aSize)), MB_ICONQUESTION);
+		return !SETTING(FREE_SPACE_WARN) || WinUtil::showQuestionBox(Text::toT(TargetUtil::formatSizeConfirmation(targetInfo, aSize)), MB_ICONQUESTION);
 	}
 };
 
