@@ -103,6 +103,12 @@ namespace webserver {
 	}
 
 	void Session::onSocketConnected(const WebSocketPtr& aSocket) noexcept {
+		auto oldSocket = getServer()->getSocket(id);
+		if (oldSocket) {
+			oldSocket->debugMessage("Replace session socket");
+			oldSocket->close(websocketpp::close::status::policy_violation, "Another socket was connected to this session");
+		}
+
 		fire(SessionListener::SocketConnected(), aSocket);
 	}
 
