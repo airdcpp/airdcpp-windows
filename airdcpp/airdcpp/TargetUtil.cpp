@@ -26,6 +26,8 @@
 #ifdef _WIN32
 #include <ShlObj.h>
 #include <direct.h>
+#else
+#include <mntent.h>
 #endif
 
 namespace dcpp {
@@ -40,6 +42,7 @@ string TargetUtil::getMountPath(const string& aPath, const VolumeSet& aVolumes) 
 		l = aPath.rfind(PATH_SEPARATOR, l-2);
 		if (l == string::npos || l <= 1)
 			break;
+
 		if (aVolumes.find(aPath.substr(0, l+1)) != aVolumes.end()) {
 			return aPath.substr(0, l+1);
 		}
@@ -57,6 +60,9 @@ string TargetUtil::getMountPath(const string& aPath, const VolumeSet& aVolumes) 
 			}
 		}
 	}
+#else
+	// Return the root
+	return PATH_SEPARATOR_STR;
 #endif
 	return Util::emptyString;
 }
@@ -141,7 +147,8 @@ void TargetUtil::compareMap(const TargetInfoMap& aTargetMap, TargetInfo& retTi_,
 bool TargetUtil::getDiskInfo(TargetInfo& targetInfo_) {
 	VolumeSet volumes;
 	getVolumes(volumes);
-	string pathVol = getMountPath(targetInfo_.targetDir, volumes);
+
+	auto pathVol = getMountPath(targetInfo_.targetDir, volumes);
 	if (pathVol.empty()) {
 		return false;
 	}
@@ -150,6 +157,8 @@ bool TargetUtil::getDiskInfo(TargetInfo& targetInfo_) {
 
 	TargetInfoMap targetMap;
 	targetMap[pathVol] = targetInfo_;
+
+	//LogManager::getInstance()->message("Target " + targetInfo_.targetDir + ", vol: " + pathVol + ", list " + Util::listToString(volumes) + ", space " + Util::formatBytes(targetInfo_.diskSpace), LogMessage::SEV_INFO);
 
 	QueueManager::getInstance()->getDiskInfo(targetMap, volumes);
 	targetInfo_ = targetMap[pathVol];
@@ -194,6 +203,19 @@ void TargetUtil::getVolumes(VolumeSet& volumes) {
 		++drive[0];
 		drives = (drives >> 1);
 	}
+#else
+	struct mntent *ent;
+	FILE *aFile;
+
+	aFile = setmntent("/proc/mounts", "r");
+	if (aFile == NULL) {
+		return;
+	}
+
+	while ((ent = getmntent(aFile)) != NULL) {
+		volumes.insert(Util::validatePath(ent->mnt_dir, true));
+	}
+	endmntent(aFile);
 #endif
 }
 
