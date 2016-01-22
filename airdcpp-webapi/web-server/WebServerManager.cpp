@@ -30,9 +30,10 @@
 #define CONFIG_NAME "WebServer.xml"
 #define CONFIG_DIR Util::PATH_USER_CONFIG
 
-//#define SOCKET_INACTIVITY_TIMEOUT 120ULL // seconds
-#define PING_INTERVAL 10 // seconds
-#define PONG_TIMEOUT 10000 // milliseconds
+#define AUTHENTICATION_TIMEOUT 60 // seconds
+#define PING_INTERVAL 30 // seconds
+#define PONG_TIMEOUT 10 // seconds
+
 #define HANDSHAKE_TIMEOUT 0 // disabled, affects HTTP downloads
 #define DEFAULT_THREADS 4
 
@@ -107,7 +108,7 @@ namespace webserver {
 
 		aEndpoint.set_open_handshake_timeout(HANDSHAKE_TIMEOUT);
 
-		aEndpoint.set_pong_timeout(PONG_TIMEOUT);
+		aEndpoint.set_pong_timeout(PONG_TIMEOUT * 1000);
 		aEndpoint.set_pong_timeout_handler(std::bind(&WebServerManager::onPongTimeout, aServer, _1, _2));
 	}
 
@@ -223,7 +224,7 @@ namespace webserver {
 			return;
 		}
 
-		//socket->debugMessage("PONG succeed");
+		socket->debugMessage("PONG succeed");
 	}
 
 	void WebServerManager::onPongTimeout(websocketpp::connection_hdl hdl, const string& aPayload) {
@@ -248,7 +249,7 @@ namespace webserver {
 				socket->ping();
 
 				// Disconnect sockets without a session after one minute
-				if (!socket->getSession() && socket->getTimeCreated() + 60 * 1000ULL < tick) {
+				if (!socket->getSession() && socket->getTimeCreated() + AUTHENTICATION_TIMEOUT * 1000ULL < tick) {
 					inactiveSockets.push_back(socket);
 				}
 			}
