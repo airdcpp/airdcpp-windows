@@ -64,7 +64,7 @@ namespace webserver {
 		}
 	private:
 		// Static in case the timer has been destructed
-		static void tick(const boost::system::error_code& error, CallbackWrapper cbWrapper, Timer* aTimer) {
+		static void tick(const boost::system::error_code& error, const CallbackWrapper& cbWrapper, Timer* aTimer) {
 			if (error == boost::asio::error::operation_aborted) {
 				return;
 			}

@@ -21,6 +21,7 @@
 
 #include <airdcpp/typedefs.h>
 
+#include <airdcpp/CryptoManager.h>
 #include <airdcpp/LogManager.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/SimpleXML.h>
@@ -270,8 +271,9 @@ namespace webserver {
 
 			ctx->use_certificate_file(SETTING(TLS_CERTIFICATE_FILE), boost::asio::ssl::context::pem);
 			ctx->use_private_key_file(SETTING(TLS_PRIVATE_KEY_FILE), boost::asio::ssl::context::pem);
+
+			CryptoManager::setContextOptions(ctx->native_handle(), true);
 		} catch (std::exception& e) {
-			//std::cout << e.what() << std::endl;
 			dcdebug("TLS init failed: %s", e.what());
 		}
 
