@@ -19,6 +19,7 @@
 #include "stdinc.h"
 
 #include "ActivityManager.h"
+#include "ClientManager.h"
 #include "SettingsManager.h"
 
 
@@ -67,6 +68,7 @@ void ActivityManager::setAway(AwayMode aNewMode) {
 	if (awayMode > AWAY_OFF)
 		lastActivity = GET_TICK();
 
+	ClientManager::getInstance()->infoUpdated();
 	fire(ActivityManagerListener::AwayModeChanged(), awayMode);
 }
 

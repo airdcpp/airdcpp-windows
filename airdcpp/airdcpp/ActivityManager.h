@@ -60,7 +60,7 @@ namespace dcpp {
 		void on(TimerManagerListener::Second, uint64_t aTick) noexcept;
 
 		AwayMode awayMode;
-		time_t lastActivity;
+		time_t lastActivity = GET_TICK();
 	};
 
 } // namespace dcpp

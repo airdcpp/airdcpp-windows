@@ -19,20 +19,20 @@
 #include "stdinc.h"
 
 #include "AirUtil.h"
-#include "Util.h"
-#include "ThrottleManager.h"
 
-#include "File.h"
-#include "QueueManager.h"
-#include "SettingsManager.h"
 #include "ConnectivityManager.h"
+#include "File.h"
+#include "LogManager.h"
+#include "QueueManager.h"
 #include "ResourceManager.h"
-#include "StringTokenizer.h"
+#include "SettingsManager.h"
+#include "ShareManager.h"
 #include "SimpleXML.h"
 #include "Socket.h"
-#include "LogManager.h"
-#include "Wildcards.h"
-#include "ShareManager.h"
+#include "StringTokenizer.h"
+#include "ThrottleManager.h"
+#include "Util.h"
+
 #include <locale.h>
 
 #include <boost/date_time/format_date_parser.hpp>
