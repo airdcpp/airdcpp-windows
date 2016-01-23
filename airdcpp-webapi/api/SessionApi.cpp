@@ -125,7 +125,7 @@ namespace webserver {
 	api_return SessionApi::handleSocketConnect(ApiRequest& aRequest, bool aIsSecure, const WebSocketPtr& aSocket) {
 		auto sessionToken = JsonUtil::getField<string>("authorization", aRequest.getRequestBody(), false);
 
-		SessionPtr session = WebServerManager::getInstance()->getUserManager().getSession(sessionToken);
+		auto session = WebServerManager::getInstance()->getUserManager().getSession(sessionToken);
 		if (!session) {
 			aRequest.setResponseErrorStr("Invalid session token");
 			return websocketpp::http::status_code::bad_request;
