@@ -53,6 +53,7 @@
 #include "iTunesCOMInterface.h"
 #include "SystemFrame.h"
 
+#include <airdcpp/ActivityManager.h>
 #include <airdcpp/ConnectivityManager.h>
 #include <airdcpp/DownloadManager.h>
 #include <airdcpp/UploadManager.h>
@@ -434,7 +435,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	updateTray(true);
 
-	AirUtil::setAway(SETTING(AWAY) ? AWAY_MANUAL : AWAY_OFF);
+	ActivityManager::getInstance()->setAway(SETTING(AWAY) ? AWAY_MANUAL : AWAY_OFF);
 	ctrlToolbar.CheckButton(IDC_AWAY,SETTING(AWAY));
 	ctrlToolbar.CheckButton(IDC_DISABLE_SOUNDS, SETTING(SOUNDS_DISABLED));
 
@@ -445,7 +446,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	slotsIcon = ResourceLoader::loadIcon(IDI_SLOTS, 16);
 	slotsFullIcon = ResourceLoader::loadIcon(IDI_SLOTSFULL, 16);
 
-	ctrlStatus.SetIcon(STATUS_AWAY, AirUtil::getAway() ? GET_ICON(IDI_USER_AWAY, 16) : GET_ICON(IDI_USER_BASE, 16));
+	ctrlStatus.SetIcon(STATUS_AWAY, ActivityManager::getInstance()->isAway() ? GET_ICON(IDI_USER_AWAY, 16) : GET_ICON(IDI_USER_BASE, 16));
 	ctrlStatus.SetIcon(STATUS_SHARED, GET_ICON(IDI_SHARED, 16));
 	ctrlStatus.SetIcon(STATUS_SLOTS, slotsIcon);
 	ctrlStatus.SetIcon(STATUS_HUBS, GET_ICON(IDI_HUB, 16));
@@ -820,7 +821,7 @@ void MainFrame::updateStatus(TStringList* aList) {
 	if(ctrlStatus.IsWindow()) {
 		const auto& str = *aList;
 		bool u = false;
-		//ctrlStatus.SetIcon(STATUS_AWAY, AirUtil::getAway() ? GET_ICON(IDI_USER_AWAY, 16) : GET_ICON(IDI_USER_BASE, 16));
+		//ctrlStatus.SetIcon(STATUS_AWAY, ActivityManager::getInstance()->isAway() ? GET_ICON(IDI_USER_AWAY, 16) : GET_ICON(IDI_USER_BASE, 16));
 		auto pos = 0;
 		for(int i = STATUS_SHARED; i < STATUS_SHUTDOWN; i++) {
 
@@ -1104,7 +1105,7 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 
 
 
-		if(AirUtil::getAway()) ctrlToolbar.CheckButton(IDC_AWAY, true);
+		if(ActivityManager::getInstance()->isAway()) ctrlToolbar.CheckButton(IDC_AWAY, true);
 		else ctrlToolbar.CheckButton(IDC_AWAY, false);
 
 		if(tabsontop != SETTING(TABS_ON_TOP)) {
@@ -1131,7 +1132,7 @@ LRESULT MainFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 		pDispInfo->lpszText = const_cast<TCHAR*>(lastLines.c_str());
 
 	} else if(idCtrl == STATUS_AWAY+POPUP_UID) {
-		pDispInfo->lpszText = AirUtil::getAway() ? (LPWSTR)CTSTRING(AWAY_ON) : (LPWSTR)CTSTRING(AWAY_OFF);
+		pDispInfo->lpszText = ActivityManager::getInstance()->isAway() ? (LPWSTR)CTSTRING(AWAY_ON) : (LPWSTR)CTSTRING(AWAY_OFF);
 	}
 	return 0;
 }
@@ -1180,13 +1181,6 @@ LRESULT MainFrame::onOpen(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 LRESULT MainFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled)
 {
 	if(wParam == SIZE_MINIMIZED) {
-		if(SETTING(AUTO_AWAY) && (bAppMinimized == false) ) {
-			
-			if(AirUtil::getAwayMode() < AWAY_MANUAL) {
-				AirUtil::setAway(AWAY_MINIMIZE);
-				setAwayButton(true);
-			}
-		}
 		bAppMinimized = true; //set this here, on size is called twice if minimize to tray.
 
 		if(SETTING(MINIMIZE_TRAY) != WinUtil::isShift()) {
@@ -1198,8 +1192,8 @@ LRESULT MainFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 	} else if( (wParam == SIZE_RESTORED || wParam == SIZE_MAXIMIZED) ) {
 		SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
 		if(SETTING(AUTO_AWAY)) {
-			if(AirUtil::getAwayMode() < AWAY_MANUAL) {
-				AirUtil::setAway(AWAY_OFF);
+			if (ActivityManager::getInstance()->getAwayMode() != AWAY_MANUAL) {
+				ActivityManager::getInstance()->setAway(AWAY_OFF);
 				setAwayButton(false);
 			}
 		}
@@ -1583,6 +1577,7 @@ LRESULT MainFrame::onStatusBarClick(UINT uMsg, WPARAM /*wParam*/, LPARAM lParam,
 		fillLimiterMenu(&menu, true);
 		menu.open(ctrlStatus.m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON);
 	} else if(PtInRect(&Awayrect, pt)) {
+		auto isAway = ActivityManager::getInstance()->isAway();
 		if(uMsg == WM_RBUTTONUP) {
 			LineDlg awaymsg;
 			awaymsg.title = CTSTRING(AWAY);
@@ -1594,20 +1589,20 @@ LRESULT MainFrame::onStatusBarClick(UINT uMsg, WPARAM /*wParam*/, LPARAM lParam,
 					SettingsManager::getInstance()->set(SettingsManager::DEFAULT_AWAY_MESSAGE, msg); 
 			
 				//set the away mode on if its not already.
-				if(!AirUtil::getAway()) {
+				if(!isAway) {
 					setAwayButton(true);
-					AirUtil::setAway(AWAY_MANUAL);
+					ActivityManager::getInstance()->setAway(AWAY_MANUAL);
 					ctrlStatus.SetIcon(STATUS_AWAY, GET_ICON(IDI_USER_AWAY, 16));
 				}
 			}
 		} else {
-			if(AirUtil::getAway()) { 
+			if(isAway) {
 				setAwayButton(false);
-				AirUtil::setAway(AWAY_OFF);
+				ActivityManager::getInstance()->setAway(AWAY_OFF);
 				ctrlStatus.SetIcon(STATUS_AWAY, GET_ICON(IDI_USER_BASE, 16));
 			} else {
 				setAwayButton(true);
-				AirUtil::setAway(AWAY_MANUAL);
+				ActivityManager::getInstance()->setAway(AWAY_MANUAL);
 				ctrlStatus.SetIcon(STATUS_AWAY, GET_ICON(IDI_USER_AWAY, 16));
 			}
 		}
@@ -1958,12 +1953,12 @@ LRESULT MainFrame::onAppCommand(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 }
 
 LRESULT MainFrame::onAway(WORD , WORD , HWND, BOOL& ) {
-	if(AirUtil::getAway()) { 
+	if(ActivityManager::getInstance()->isAway()) { 
 		setAwayButton(false);
-		AirUtil::setAway(AWAY_OFF);
+		ActivityManager::getInstance()->setAway(AWAY_OFF);
 	} else {
 		setAwayButton(true);
-		AirUtil::setAway(AWAY_MANUAL);
+		ActivityManager::getInstance()->setAway(AWAY_MANUAL);
 	}
 	return 0;
 }
@@ -2116,13 +2111,13 @@ LRESULT MainFrame::onAppShow(WORD /*wNotifyCode*/,WORD /*wParam*/, HWND, BOOL& /
 	return 0;
 }
 void MainFrame::checkAwayIdle() {
-	if(SETTING(AWAY_IDLE_TIME) && (AirUtil::getAwayMode() <= AWAY_IDLE)) {
+	// NOT IMPLEMENTED
+	/*if (ActivityManager::getInstance()->getAwayMode() == AWAY_IDLE) {
 		LASTINPUTINFO info = { sizeof(LASTINPUTINFO) };
-		bool awayIdle = (AirUtil::getAwayMode() == AWAY_IDLE);
-		if((::GetLastInputInfo(&info) && static_cast<int>(::GetTickCount() - info.dwTime) > SETTING(AWAY_IDLE_TIME) * 60 * 1000) ^ awayIdle) {
-			awayIdle ? AirUtil::setAway(AWAY_OFF) : AirUtil::setAway(AWAY_IDLE);
+		if (::GetLastInputInfo(&info) && static_cast<int>(::GetTickCount() - info.dwTime)) {
+			ActivityManager::getInstance()->updateActivity();
 		}
-	}
+	}*/
 }
 
 void MainFrame::on(UpdateManagerListener::UpdateFailed, const string& line) noexcept {

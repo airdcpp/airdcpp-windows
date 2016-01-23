@@ -18,7 +18,7 @@
 
 #include "stdafx.h"
 #include <airdcpp/SettingsManager.h>
-#include <airdcpp/AirUtil.h>
+#include <airdcpp/ActivityManager.h>
 
 #include "WinUtil.h"
 #include "PopupManager.h"
@@ -45,7 +45,7 @@ void PopupManager::Show(const tstring &aMsg, const tstring &aTitle, int Icon, HI
 		return;
 
 
-	if (!AirUtil::getAway() && SETTING(POPUP_AWAY) && !force)
+	if (!ActivityManager::getInstance()->isAway() && SETTING(POPUP_AWAY) && !force)
 		return;
 	
 	if(!MainFrame::getMainFrame()->getAppMinimized() && SETTING(POPUP_MINIMIZED) && !force) {

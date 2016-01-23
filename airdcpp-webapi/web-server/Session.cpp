@@ -52,7 +52,7 @@ namespace webserver {
 	Session::Session(WebUserPtr& aUser, const string& aToken, bool aIsSecure, WebServerManager* aServer, uint64_t maxInactivityMinutes, bool aIsUserSession) :
 		id(Util::rand()), user(aUser), token(aToken), started(GET_TICK()), 
 		lastActivity(GET_TICK()), secure(aIsSecure), server(aServer), 
-		maxInactivity(maxInactivityMinutes*1000*60), userAway(!aIsUserSession), userSession(aIsUserSession) {
+		maxInactivity(maxInactivityMinutes*1000*60), userSession(aIsUserSession) {
 
 		ADD_MODULE("connectivity", ConnectivityApi);
 		ADD_MODULE("favorite_directories", FavoriteDirectoryApi);
