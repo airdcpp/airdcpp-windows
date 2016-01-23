@@ -36,6 +36,7 @@
 #include <airdcpp/UpdateManagerListener.h>
 #include <airdcpp/ShareScannerManager.h>
 #include <airdcpp/MessageManager.h>
+#include <airdcpp/ActivityManager.h>
 
 #include "PopupManager.h"
 #include "Dispatchers.h"
@@ -55,7 +56,7 @@ class MainFrame : public CMDIFrameWindowImpl<MainFrame>, public CUpdateUI<MainFr
 		public CMessageFilter, public CIdleHandler, public CSplitterImpl<MainFrame>,
 		private TimerManagerListener, private QueueManagerListener, public Async<MainFrame>,
 		private LogManagerListener, private DirectoryListingManagerListener, private UpdateManagerListener, private ScannerManagerListener, private ClientManagerListener,
-		private AutoSearchManagerListener, private MessageManagerListener
+		private AutoSearchManagerListener, private MessageManagerListener, private ActivityManagerListener
 {
 public:
 	MainFrame();
@@ -438,7 +439,8 @@ private:
 	HWND createWinampToolbar();
 	void updateTray(bool add = true);
 	void updateTooltipRect();
-	void checkAwayIdle();
+	void updateActivity();
+	void onAwayButton();
 
 	enum {
 		STATUS_LASTLINES,
@@ -474,6 +476,9 @@ private:
 
 	// DirectoryListingManagerListener
 	void on(DirectoryListingManagerListener::OpenListing, const DirectoryListingPtr& aList, const string& aDir, const string& aXML) noexcept;
+
+	//ActivityManagerListener
+	void on(ActivityManagerListener::AwayModeChanged, AwayMode aNewMode) noexcept;
 
 	void onUpdateAvailable(const string& title, const string& message, const string& aVersionString, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept;
 	void onBadVersion(const string& message, const string& url, const string& update, int buildID, bool canAutoUpdate) noexcept;

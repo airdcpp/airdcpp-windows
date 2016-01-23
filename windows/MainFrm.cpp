@@ -53,7 +53,6 @@
 #include "iTunesCOMInterface.h"
 #include "SystemFrame.h"
 
-#include <airdcpp/ActivityManager.h>
 #include <airdcpp/ConnectivityManager.h>
 #include <airdcpp/DownloadManager.h>
 #include <airdcpp/UploadManager.h>
@@ -83,7 +82,7 @@ bool MainFrame::isShutdownStatus = false;
 
 MainFrame::MainFrame() : CSplitterImpl(false), trayMessage(0), maximized(false), lastUpload(-1), lastUpdate(0), 
 oldshutdown(false), stopperThread(NULL),
-closing(false), awaybyminimize(false), missedAutoConnect(false), tabsontop(false),
+closing(false), missedAutoConnect(false), tabsontop(false),
 bTrayIcon(false), bAppMinimized(false), bHasPM(false), bHasMC(false), hashProgress(false), trayUID(0), fMenuShutdown(false),
 statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP), settingsWindowOpen(false)
 
@@ -238,6 +237,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	ShareScannerManager::getInstance()->addListener(this);
 	ClientManager::getInstance()->addListener(this);
 	MessageManager::getInstance()->addListener(this);
+	ActivityManager::getInstance()->addListener(this);
 
 	WinUtil::init(m_hWnd);
 	ResourceLoader::load();
@@ -817,7 +817,6 @@ LRESULT MainFrame::onRowsChanged(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /*lP
 }
 
 void MainFrame::updateStatus(TStringList* aList) {
-	checkAwayIdle();
 	if(ctrlStatus.IsWindow()) {
 		const auto& str = *aList;
 		bool u = false;
@@ -1571,7 +1570,6 @@ LRESULT MainFrame::onStatusBarClick(UINT uMsg, WPARAM /*wParam*/, LPARAM lParam,
 		fillLimiterMenu(&menu, true);
 		menu.open(ctrlStatus.m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON);
 	} else if(PtInRect(&Awayrect, pt)) {
-		auto isAway = ActivityManager::getInstance()->isAway();
 		if(uMsg == WM_RBUTTONUP) {
 			LineDlg awaymsg;
 			awaymsg.title = CTSTRING(AWAY);
@@ -1582,23 +1580,10 @@ LRESULT MainFrame::onStatusBarClick(UINT uMsg, WPARAM /*wParam*/, LPARAM lParam,
 				if(!msg.empty())
 					SettingsManager::getInstance()->set(SettingsManager::DEFAULT_AWAY_MESSAGE, msg); 
 			
-				//set the away mode on if its not already.
-				if(!isAway) {
-					setAwayButton(true);
-					ActivityManager::getInstance()->setAway(AWAY_MANUAL);
-					ctrlStatus.SetIcon(STATUS_AWAY, GET_ICON(IDI_USER_AWAY, 16));
-				}
+				onAwayButton();
 			}
 		} else {
-			if(isAway) {
-				setAwayButton(false);
-				ActivityManager::getInstance()->setAway(AWAY_OFF);
-				ctrlStatus.SetIcon(STATUS_AWAY, GET_ICON(IDI_USER_BASE, 16));
-			} else {
-				setAwayButton(true);
-				ActivityManager::getInstance()->setAway(AWAY_MANUAL);
-				ctrlStatus.SetIcon(STATUS_AWAY, GET_ICON(IDI_USER_AWAY, 16));
-			}
+			onAwayButton();
 		}
 	}
 	bHandled = TRUE;
@@ -1842,6 +1827,7 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 		currentPic = SETTING(BACKGROUND_IMAGE);
 		callAsync([=] { m_PictureWindow.Load(Text::toT(currentPic).c_str()); });
 	}
+	callAsync([=] { updateActivity(); });
 
 	time_t currentTime;
 	time(&currentTime);
@@ -1904,6 +1890,13 @@ void MainFrame::on(MessageManagerListener::ChatCreated, const PrivateChatPtr& aC
 	});
 }
 
+void MainFrame::on(ActivityManagerListener::AwayModeChanged, AwayMode aNewMode) noexcept {
+	callAsync([=] {
+		setAwayButton(aNewMode != AWAY_OFF);
+		ctrlStatus.SetIcon(STATUS_AWAY, aNewMode == AWAY_OFF ? GET_ICON(IDI_USER_BASE, 16) : GET_ICON(IDI_USER_AWAY, 16));
+	});
+}
+
 LRESULT MainFrame::onActivateApp(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
 	bHandled = FALSE;
 	if (!PopupManager::getInstance()->getCreating()) {
@@ -1946,14 +1939,16 @@ LRESULT MainFrame::onAppCommand(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 	return FALSE;
 }
 
-LRESULT MainFrame::onAway(WORD , WORD , HWND, BOOL& ) {
-	if(ActivityManager::getInstance()->isAway()) { 
-		setAwayButton(false);
+void MainFrame::onAwayButton() {
+	if (ActivityManager::getInstance()->isAway()) {
 		ActivityManager::getInstance()->setAway(AWAY_OFF);
 	} else {
-		setAwayButton(true);
 		ActivityManager::getInstance()->setAway(AWAY_MANUAL);
 	}
+}
+
+LRESULT MainFrame::onAway(WORD , WORD , HWND, BOOL& ) {
+	onAwayButton();
 	return 0;
 }
 
@@ -2055,6 +2050,7 @@ LRESULT MainFrame::onDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ShareScannerManager::getInstance()->removeListener(this);
 	ClientManager::getInstance()->removeListener(this);
 	MessageManager::getInstance()->removeListener(this);
+	ActivityManager::getInstance()->removeListener(this);
 
 	//if(bTrayIcon) {
 		updateTray(false);
@@ -2104,14 +2100,13 @@ LRESULT MainFrame::onAppShow(WORD /*wNotifyCode*/,WORD /*wParam*/, HWND, BOOL& /
 	}
 	return 0;
 }
-void MainFrame::checkAwayIdle() {
-	// NOT IMPLEMENTED
-	/*if (ActivityManager::getInstance()->getAwayMode() == AWAY_IDLE) {
-		LASTINPUTINFO info = { sizeof(LASTINPUTINFO) };
-		if (::GetLastInputInfo(&info) && static_cast<int>(::GetTickCount() - info.dwTime)) {
-			ActivityManager::getInstance()->updateActivity();
-		}
-	}*/
+void MainFrame::updateActivity() {
+	LASTINPUTINFO info = { sizeof(LASTINPUTINFO) };
+	BOOL ret = ::GetLastInputInfo(&info);
+	if(ret > 0) {
+		auto lastInputTick = GET_TICK() - (::GetTickCount() - info.dwTime);
+		ActivityManager::getInstance()->updateActivity(lastInputTick);
+	}
 }
 
 void MainFrame::on(UpdateManagerListener::UpdateFailed, const string& line) noexcept {

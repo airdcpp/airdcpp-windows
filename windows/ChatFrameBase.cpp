@@ -836,19 +836,18 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 			pts.insert(sp->getToken());
 
 		ShareManager::getInstance()->setProfilesDirty(pts, true);
-	} /*else if(stricmp(cmd.c_str(), _T("away")) == 0) {
-		if(AirUtil::getAway()) {
-			AirUtil::setAway(AWAY_OFF);
-			MainFrame::setAwayButton(false);
+	} else if(stricmp(cmd.c_str(), _T("away")) == 0) {
+		auto am = ActivityManager::getInstance();
+
+		if(am->isAway()) {
+			am->setAway(AWAY_OFF);
 			status = TSTRING(AWAY_MODE_OFF);
 		} else {
-			AirUtil::setAway(AWAY_MANUAL);
-			MainFrame::setAwayButton(true);
-			
+			am->setAway(AWAY_MANUAL);
 			ParamMap sm;
-			status = TSTRING(AWAY_MODE_ON) + _T(" ") + Text::toT(AirUtil::getAwayMessage(getAwayMessage(), sm));
+			status = TSTRING(AWAY_MODE_ON) + _T(" ") + Text::toT(am->getAwayMessage(getAwayMessage(), sm));
 		}
-	}*/ else if (WebShortcuts::getInstance()->getShortcutByKey(Text::fromT(cmd))) {
+	} else if (WebShortcuts::getInstance()->getShortcutByKey(Text::fromT(cmd))) {
 		WinUtil::searchSite(WebShortcuts::getInstance()->getShortcutByKey(Text::fromT(cmd)), Text::fromT(param), false);
 	} else if(stricmp(cmd.c_str(), _T("u")) == 0) {
 		if (!param.empty()) {
