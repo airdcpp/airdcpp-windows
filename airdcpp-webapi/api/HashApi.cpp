@@ -42,7 +42,7 @@ namespace webserver {
 		createSubscription("hasher_directory_finished");
 		createSubscription("hasher_finished");
 
-		timer->start();
+		timer->start(false);
 	}
 
 	HashApi::~HashApi() {

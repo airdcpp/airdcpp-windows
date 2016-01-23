@@ -41,13 +41,13 @@ namespace webserver {
 			stop(true);
 		}
 
-		bool start(bool aInstantStart = true) {
+		bool start(bool aInstantTick) {
 			if (shutdown) {
 				return false;
 			}
 
 			running = true;
-			timer.expires_from_now(aInstantStart ? boost::posix_time::milliseconds(0) : interval);
+			timer.expires_from_now(aInstantTick ? boost::posix_time::milliseconds(0) : interval);
 			timer.async_wait(std::bind(&Timer::tick, std::placeholders::_1, cbWrapper, this));
 			return true;
 		}
