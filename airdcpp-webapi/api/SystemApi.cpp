@@ -37,13 +37,16 @@ namespace webserver {
 		METHOD_HANDLER("away", Access::ANY, ApiRequest::METHOD_POST, (), true, SystemApi::handleSetAway);
 
 		createSubscription("away_state");
+
+		ActivityManager::getInstance()->addListener(this);
 	}
 
 	SystemApi::~SystemApi() {
+		ActivityManager::getInstance()->removeListener(this);
 	}
 
-	void SystemApi::on(ActivityManagerListener::AwayModeChanged, AwayMode aNewMode) noexcept {
-		send("away_state", getAwayState(aNewMode));
+	void SystemApi::on(ActivityManagerListener::AwayModeChanged, AwayMode /*aNewMode*/) noexcept {
+		send("away_state", serializeAwayState());
 	}
 
 	string SystemApi::getAwayState(AwayMode aAwayMode) noexcept {
@@ -59,8 +62,7 @@ namespace webserver {
 
 	json SystemApi::serializeAwayState() noexcept {
 		return {
-			{ "state", getAwayState(ActivityManager::getInstance()->getAwayMode()) },
-			{ "away_idle_time", SETTING(AWAY_IDLE_TIME) },
+			{ "id", getAwayState(ActivityManager::getInstance()->getAwayMode()) },
 		};
 	}
 
