@@ -35,7 +35,7 @@ PropPage::TextItem FulTabsPage::texts[] = {
 	{ IDC_SETTINGS_BOLD_CONTENTS,	ResourceManager::SETTINGS_BOLD_OPTIONS		},
 	{ IDC_SETTINGS_MAX_TAB_ROWS,	ResourceManager::SETTINGS_MAX_TAB_ROWS		},
 	{ IDC_BOLD_HUB_TABS_ON_KICK,	ResourceManager::BOLD_HUB_TABS_ON_KICK		},
-	{ 0,							ResourceManager::SETTINGS_AUTO_AWAY			}
+	{ 0,							ResourceManager::LAST			}
 };
 
 PropPage::Item FulTabsPage::items[] = {
@@ -58,7 +58,7 @@ PropPage::ListItem FulTabsPage::listItems[] = {
 	{ SettingsManager::BOLD_SEARCH, ResourceManager::SEARCH },
 	{ SettingsManager::BOLD_WAITING_USERS, ResourceManager::UPLOAD_QUEUE },
 	{ SettingsManager::AUTOSEARCH_BOLD, ResourceManager::AUTO_SEARCH },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 LRESULT FulTabsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {

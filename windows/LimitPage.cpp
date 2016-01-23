@@ -52,7 +52,7 @@ PropPage::TextItem LimitPage::texts[] = {
 	//minislots
 	{ IDC_ST_MINISLOTS_EXT, ResourceManager::ST_MINISLOTS_EXT },
 	{ IDC_SB_MINISLOTS, ResourceManager::SB_MINISLOTS },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 }; 
 
 PropPage::Item LimitPage::items[] = {

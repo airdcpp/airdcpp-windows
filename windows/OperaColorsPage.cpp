@@ -42,7 +42,7 @@ PropPage::TextItem OperaColorsPage::texts[] = {
 	{ IDC_PROGRESS_TEXT_DOWNLOAD, ResourceManager::DOWNLOAD },
 	{ IDC_PROGRESS_TEXT_UPLOAD, ResourceManager::SETCZDC_UPLOAD },
 
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 #define CTLID_VALUE_RED 0x2C2

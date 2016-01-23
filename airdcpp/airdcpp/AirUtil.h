@@ -30,7 +30,6 @@ namespace dcpp {
 enum AwayMode : uint8_t {
 	AWAY_OFF,
 	AWAY_IDLE,
-	AWAY_MINIMIZE,
 	AWAY_MANUAL //highest value
 };
 

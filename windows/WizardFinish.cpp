@@ -22,7 +22,7 @@
 
 PropPage::TextItem WizardFinish::texts[] = {
 	{ IDC_FINISH_INTRO, ResourceManager::WIZARD_FINISHED_INTRO },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 LRESULT WizardFinish::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) { 

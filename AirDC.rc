@@ -902,8 +902,6 @@ BEGIN
     GROUPBOX        "Away Mode",IDC_AWAY_MODE,7,211,294,92
     EDITTEXT        IDC_AWAY_IDLE_TIME,133,280,28,14,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_AWAY_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,154,280,10,14
-    CONTROL         "Auto-away on minimize (and back on restore)",IDC_AUTO_AWAY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,266,238,10
     LTEXT           "Automatically set away mode after",IDC_AWAY_IDLE_TEXT_BEGIN,11,282,120,8,0,WS_EX_RIGHT
     LTEXT           "minutes of inactivity (0 = disabled)",IDC_AWAY_IDLE_TEXT_END,169,282,122,8
     CONTROL         "Normal",IDC_NORMAL,"Button",BS_AUTORADIOBUTTON,15,92,119,10

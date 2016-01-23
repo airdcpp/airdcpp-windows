@@ -34,7 +34,7 @@ PropPage::TextItem AppearancePage::texts[] = {
 	{ IDC_SETTINGS_GET_USER_COUNTRY, ResourceManager::SETTINGS_GET_USER_COUNTRY }, 
 	{ IDC_SETTINGS_COUNTRY_FORMAT, ResourceManager::SETTINGS_COUNTRY_FORMAT }, 
 	{ IDC_DATE_FORMAT_LBL, ResourceManager::FILE_DATE_FORMAT },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 PropPage::Item AppearancePage::items[] = {
@@ -77,7 +77,7 @@ PropPage::ListItem AppearancePage::listItems[] = {
 	{ SettingsManager::SHOW_EMOTICON, ResourceManager::SHOW_EMOTICON_BUTTON },
 	{ SettingsManager::SHOW_MAGNET, ResourceManager::SHOW_MAGNET_BUTTON },
 	{ SettingsManager::SHOW_MULTILINE, ResourceManager::SHOW_MULTILINE_BUTTON },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 

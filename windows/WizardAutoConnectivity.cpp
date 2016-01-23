@@ -26,7 +26,7 @@ PropPage::TextItem WizardAutoConnectivity::texts[] = {
 	{ IDC_AUTOCONN_INTRO, ResourceManager::WIZARD_AUTO_CONNECTIVITY_INTRO },
 	{ IDC_AUTO_DETECT, ResourceManager::DETECT_NOW },
 	{ IDC_MANUAL_CONFIG, ResourceManager::CONN_USE_MANUAL_CONFIG },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 PropPage::Item WizardAutoConnectivity::items[] = {

@@ -51,7 +51,7 @@ PropPage::TextItem LocationsPage::texts[] = {
 	{ IDC_SETTINGS_OPTIONS, ResourceManager::SETTINGS_OPTIONS }, 
 	{ IDC_MOVEDOWN, ResourceManager::MOVE_DOWN }, 
 	{ IDC_MOVEUP, ResourceManager::MOVE_UP }, 
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 

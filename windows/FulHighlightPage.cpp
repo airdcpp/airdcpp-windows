@@ -39,7 +39,7 @@ PropPage::TextItem FulHighlightPage::texts[] = {
 	{ IDC_MOVEDOWN,		 ResourceManager::MOVE_DOWN		},
 	{ IDC_USE_HIGHLIGHT, ResourceManager::USE_HIGHLIGHT				},
 	{ IDC_PRESET,		 ResourceManager::PRESET					},
-	{ 0,				 ResourceManager::SETTINGS_AUTO_AWAY		}
+	{ 0,				 ResourceManager::LAST		}
 };
 
 PropPage::Item FulHighlightPage::items[] = {

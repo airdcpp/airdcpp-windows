@@ -38,7 +38,7 @@ PropPage::TextItem SDCPage::texts[] = {
 	{ IDC_SETTINGS_SOCKET_OUT_BUFFER, ResourceManager::SETTINGS_SOCKET_OUT_BUFFER },
 	{ IDC_LOG_LINESTEXT, ResourceManager::MAX_LOG_LINES },
 	{ IDC_BLOOM_MODE_LBL, ResourceManager::BLOOM_MODE },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 PropPage::Item SDCPage::items[] = {

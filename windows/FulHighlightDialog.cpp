@@ -54,7 +54,7 @@ PropPage::TextItem FulHighlightDialog::texts[] = {
 	{ IDCANCEL,			 ResourceManager::CANCEL					},
 	{ IDC_MATCH_COL_TEXT,ResourceManager::MATCH_COLUMN				},
 	{ IDC_TABCOLOR,		 ResourceManager::CHANGE_TAB_COLOR			},
-	{ 0,				 ResourceManager::SETTINGS_AUTO_AWAY		}
+	{ 0,				 ResourceManager::LAST		}
 };
 
 LRESULT FulHighlightDialog::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {

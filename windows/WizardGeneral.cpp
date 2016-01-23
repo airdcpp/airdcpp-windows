@@ -32,7 +32,7 @@ PropPage::TextItem WizardGeneral::texts[] = {
 	{ IDC_REQUIRED,		ResourceManager::REQUIRED_BRACKETS },
 	{ IDC_OPTIONAL,		ResourceManager::OPTIONAL_BRACKETS },
 	{ IDC_OPTIONAL2,	ResourceManager::OPTIONAL_BRACKETS },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 PropPage::Item WizardGeneral::items[] = {

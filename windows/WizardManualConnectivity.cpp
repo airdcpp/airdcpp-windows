@@ -22,7 +22,7 @@
 
 PropPage::TextItem WizardManualConnectivity::texts[] = {
 	{ IDC_MANUALCONN_INTRO, ResourceManager::WIZARD_MANUAL_CONNECTIVITY_INTRO },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 LRESULT WizardManualConnectivity::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) { 

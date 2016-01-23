@@ -1180,13 +1180,6 @@ LRESULT MainFrame::onOpen(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 LRESULT MainFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled)
 {
 	if(wParam == SIZE_MINIMIZED) {
-		if(SETTING(AUTO_AWAY) && (bAppMinimized == false) ) {
-			
-			if(AirUtil::getAwayMode() < AWAY_MANUAL) {
-				AirUtil::setAway(AWAY_MINIMIZE);
-				setAwayButton(true);
-			}
-		}
 		bAppMinimized = true; //set this here, on size is called twice if minimize to tray.
 
 		if(SETTING(MINIMIZE_TRAY) != WinUtil::isShift()) {
@@ -1197,12 +1190,6 @@ LRESULT MainFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 		maximized = IsZoomed() > 0;
 	} else if( (wParam == SIZE_RESTORED || wParam == SIZE_MAXIMIZED) ) {
 		SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
-		if(SETTING(AUTO_AWAY)) {
-			if(AirUtil::getAwayMode() < AWAY_MANUAL) {
-				AirUtil::setAway(AWAY_OFF);
-				setAwayButton(false);
-			}
-		}
 		if(bHasPM || bHasMC) {
 			bHasPM = false;
 			bHasMC = false;

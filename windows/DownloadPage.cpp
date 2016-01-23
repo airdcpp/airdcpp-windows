@@ -41,7 +41,7 @@ PropPage::TextItem DownloadPage::texts[] = {
 	{ IDC_AUTO_ADD_SOURCES, ResourceManager::AUTO_ADD_SOURCE },
 	{ IDC_ALLOW_MATCH_FULL, ResourceManager::SETTINGS_ALLOW_MATCH_FULL_LIST },
 	{ IDC_FINISHED_OPTIONS, ResourceManager::FINISHED_DOWNLOADS },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 PropPage::Item DownloadPage::items[] = {
@@ -65,7 +65,7 @@ PropPage::ListItem DownloadPage::optionItems[] = {
 	{ SettingsManager::FINISHED_NO_HASH, ResourceManager::SETTINGS_FINISHED_NO_HASH },
 	{ SettingsManager::OVERLAP_SLOW_SOURCES, ResourceManager::SETTINGS_OVERLAP_SLOW_SOURCES },
 	{ SettingsManager::REMOVE_FINISHED_BUNDLES, ResourceManager::BUNDLES_REMOVE_EXIT },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 LRESULT DownloadPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)

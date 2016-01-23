@@ -50,7 +50,7 @@ PropPage::TextItem DownloadingOptionsPage::texts[] = {
 	{ IDC_DOWNLOAD_SKIPLIST_USE_REGEXP, ResourceManager::USE_REGEXP },
 	{ IDC_BUNDLE_RECENT_HOURS_LABEL, ResourceManager::SETTINGS_RECENT_HOURS },
 	{ IDC_HOURS, ResourceManager::HOURS_LOWER },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 PropPage::Item DownloadingOptionsPage::items[] = {
@@ -72,7 +72,7 @@ PropPage::ListItem DownloadingOptionsPage::optionItems[] = {
 	{ SettingsManager::SKIP_ZERO_BYTE, ResourceManager::SETTINGS_SKIP_ZERO_BYTE },
 	{ SettingsManager::DONT_DL_ALREADY_SHARED, ResourceManager::SETTINGS_DONT_DL_ALREADY_SHARED },
 	{ SettingsManager::DONT_DL_ALREADY_QUEUED, ResourceManager::SETTING_DONT_DL_ALREADY_QUEUED },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 LRESULT DownloadingOptionsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {

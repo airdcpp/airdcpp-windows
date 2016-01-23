@@ -1307,7 +1307,6 @@ enum Strings { // @DontAdd
 	SETTINGS_ARGUMENT, // "Arguments"
 	SETTINGS_AUTOPRIO, // "Auto priority settings"
 	SETTINGS_AUTOPRIO_FILES, // "Calculate priorities also for individual files"
-	SETTINGS_AUTO_AWAY, // "Auto-away on minimize (and back on restore)"
 	SETTINGS_AUTO_BUNDLE_SEARCH, // "Automatically search for alternative bundle sources"
 	SETTINGS_AUTO_COMPLETE_BUNDLES, // "Try to complete bundles with missing files automatically"
 	SETTINGS_AUTO_DETECTION_USE_LIMITED, // "Use the limiter values when setting the auto detected speed and slot limits"

@@ -27,7 +27,7 @@ PropPage::TextItem ListViewColours::texts[] = {
 	{ IDC_USER_LIST_COLOR_DESC, ResourceManager::SETTINGS_USER_COLORS },
 	{ IDC_LIST_VIEW_FONT, ResourceManager::SETTINGS_CHANGE },
 	{ IDC_LIST_GENERAL, ResourceManager::LIST_TEXTSTYLE },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 

@@ -29,7 +29,7 @@ PropPage::TextItem SearchPage::texts[] = {
 	{ IDC_AUTO_SEARCH,							ResourceManager::AUTO_SEARCH },
 	{ IDC_AS_MIN_INTERVAL_LABEL,				ResourceManager::AUTOSEARCH_EVERY_INTERVAL },
 	{ IDC_GROUP_FAILED_LABEL,					ResourceManager::AUTOSEARCH_DEFAULT_FAILED_GROUP },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 PropPage::Item SearchPage::items[] = {

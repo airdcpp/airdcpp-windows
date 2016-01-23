@@ -39,14 +39,14 @@ PropPage::ListItem ScanPage::listItems[] = {
 	{ SettingsManager::CHECK_USE_SKIPLIST, ResourceManager::CHECK_IGNORE_SHARE_EXCLUDE },
 	{ SettingsManager::CHECK_IGNORE_ZERO_BYTE, ResourceManager::CHECK_IGNORE_ZERO_BYTE },
 	{ SettingsManager::CHECK_DISK_COUNTS, ResourceManager::CHECK_DISK_COUNTS },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 PropPage::ListItem ScanPage::bundleItems[] = {
 	{ SettingsManager::SCAN_DL_BUNDLES, ResourceManager::SETTINGS_SCAN_FINISHED_BUNDLES },
 	{ SettingsManager::AUTO_COMPLETE_BUNDLES, ResourceManager::SETTINGS_AUTO_COMPLETE_BUNDLES },
 	{ SettingsManager::SCAN_MONITORED_FOLDERS, ResourceManager::SCAN_MONITORED_FOLDERS },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 PropPage::TextItem ScanPage::texts[] = {
@@ -55,7 +55,7 @@ PropPage::TextItem ScanPage::texts[] = {
 	{ IDC_LOG_SCANS, ResourceManager::LOG_SHARE_SCAN },
 	{ IDC_SETTINGS_LOGGING, ResourceManager::SETTINGS_LOGGING },
 	{ IDC_SETTINGS_SCAN_OPTIONS, ResourceManager::SETTINGS_SCAN_OPTIONS },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 PropPage::Item ScanPage::items[] = {

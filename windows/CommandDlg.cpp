@@ -44,7 +44,7 @@ WinUtil::TextItem CommandDlg::texts[] = {
 	{ IDC_SETTINGS_ONCE, ResourceManager::USER_CMD_ONCE },
 	{ IDC_USER_CMD_EXAMPLE, ResourceManager::USER_CMD_PREVIEW },
 	{ IDC_USER_CMD_DESCRIPTION, ResourceManager::DESCRIPTION },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 LRESULT CommandDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)

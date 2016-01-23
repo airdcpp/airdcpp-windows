@@ -40,7 +40,7 @@ PropPage::TextItem HashingPage::texts[] = {
 	{ IDC_OPTIMIZE_DB_LBL, ResourceManager::OPTIMIZE_DB_HELP },
 	{ IDC_VERIFY_DB, ResourceManager::OPTIMIZE_VERIFY_DB },
 	{ IDC_VERIFY_DB_LBL, ResourceManager::OPTIMIZE_VERIFY_DB_HELP },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 PropPage::Item HashingPage::items[] = {

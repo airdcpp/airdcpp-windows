@@ -29,7 +29,7 @@ WinUtil::TextItem PreviewDlg::texts[] = {
 	{ IDC_PREVIEW_APPLICATION_TEXT, ResourceManager::APPLICATION },
 	{ IDC_PREVIEW_ARGUMENTS_TEXT, ResourceManager::PREVIEW_ARGUMENTS },
 	{ IDC_PREVIEW_EXTENSION_TEXT, ResourceManager::PREVIEW_EXTENSION },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 LRESULT PreviewDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {

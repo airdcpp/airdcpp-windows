@@ -62,7 +62,6 @@ namespace webserver {
 		switch (AirUtil::getAwayMode()) {
 			case AWAY_OFF: return "off";
 			case AWAY_MANUAL: return "manual";
-			case AWAY_MINIMIZE:
 			case AWAY_IDLE: return "idle";
 		}
 

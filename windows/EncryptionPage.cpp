@@ -37,7 +37,7 @@ PropPage::TextItem EncryptionPage::texts[] = {
 	{ IDC_TRUSTED_CERT_NOTE, ResourceManager::TRUSTED_CERT_NOTE },
 	{ IDC_TRUSTED_CERTS, ResourceManager::TRUSTED_CERTIFICATES },
 	{ IDC_GENERATE_CERTS_NOTE, ResourceManager::GENERATE_CERTS_NOTE },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 PropPage::Item EncryptionPage::items[] = {
@@ -53,7 +53,7 @@ EncryptionPage::ListItem EncryptionPage::listItems[] = {
 	{ SettingsManager::ALLOW_UNTRUSTED_HUBS, ResourceManager::SETTINGS_ALLOW_UNTRUSTED_HUBS },
 	{ SettingsManager::ALLOW_UNTRUSTED_CLIENTS, ResourceManager::SETTINGS_ALLOW_UNTRUSTED_CLIENTS },
 	{ SettingsManager::ALWAYS_CCPM, ResourceManager::ALWAYS_CCPM },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 
