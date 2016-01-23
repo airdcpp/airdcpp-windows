@@ -1190,13 +1190,7 @@ LRESULT MainFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 		
 		maximized = IsZoomed() > 0;
 	} else if( (wParam == SIZE_RESTORED || wParam == SIZE_MAXIMIZED) ) {
-		SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
-		if(SETTING(AUTO_AWAY)) {
-			if (ActivityManager::getInstance()->getAwayMode() != AWAY_MANUAL) {
-				ActivityManager::getInstance()->setAway(AWAY_OFF);
-				setAwayButton(false);
-			}
-		}
+		ActivityManager::getInstance()->updateActivity();
 		if(bHasPM || bHasMC) {
 			bHasPM = false;
 			bHasMC = false;

@@ -44,7 +44,7 @@ PropPage::TextItem PropPageTextStyles::texts[] = {
 	{ IDC_UNDERLINE_DUPES, ResourceManager::PROPPAGE_UNDERLINE_DUPES },
 	{ IDC_THEME_TEXT, ResourceManager::THEME_TEXT },
 	{ IDC_ICONS_RESTORE, ResourceManager::ICONS_DEFAULT },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 }; 
 
 PropPageTextStyles::clrs PropPageTextStyles::colours[] = {

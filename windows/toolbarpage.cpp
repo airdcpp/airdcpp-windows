@@ -38,7 +38,7 @@ PropPage::TextItem ToolbarPage::texts[] = {
 	{ IDC_TB_SIZE, ResourceManager::SETTINGS_TOOLBAR_SIZE },
 	{ IDC_WTB_SIZE, ResourceManager::SETTINGS_WTOOLBAR_SIZE },
 	{ IDC_TB_NOTE, ResourceManager::SETTINGS_TOOLBAR_NOTE },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 PropPage::Item ToolbarPage::items[] = {

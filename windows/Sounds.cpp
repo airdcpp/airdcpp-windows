@@ -31,7 +31,7 @@ PropPage::TextItem Sounds::texts[] = {
 	{ IDC_BROWSE, ResourceManager::BROWSE },	
 	{ IDC_PLAY, ResourceManager::PLAY },
 	{ IDC_NONE, ResourceManager::NONE },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 PropPage::Item Sounds::items[] = {

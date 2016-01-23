@@ -33,7 +33,7 @@ PropPage::ListItem SharingOptionsPage::listItems[] = {
 	{ SettingsManager::NO_ZERO_BYTE, ResourceManager::SETTINGS_NO_ZERO_BYTE },
 	{ SettingsManager::SKIP_EMPTY_DIRS_SHARE, ResourceManager::DONT_SHARE_EMPTY_DIRS },
 	{ SettingsManager::SHARE_FOLLOW_SYMLINKS, ResourceManager::FOLLOW_SYMLINKS },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 PropPage::TextItem SharingOptionsPage::texts[] = {
@@ -57,7 +57,7 @@ PropPage::TextItem SharingOptionsPage::texts[] = {
 	{ IDC_MONITORING_SECONDS_LBL, ResourceManager::SETTINGS_MONITORING_SECONDS },
 
 	{ IDC_DONT_SHARE_BIGGER_THAN, ResourceManager::DONT_SHARE_BIGGER_THAN },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 PropPage::Item SharingOptionsPage::items[] = {

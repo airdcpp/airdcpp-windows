@@ -23,7 +23,7 @@
 #include "PropertiesDlg.h"
 
 PropPage::TextItem AdvancedPage::texts[] = {
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 PropPage::Item AdvancedPage::items[] = {
@@ -59,7 +59,7 @@ AdvancedPage::ListItem AdvancedPage::listItems[] = {
 	{ SettingsManager::FREE_SPACE_WARN, ResourceManager::SETTINGS_USE_SPACE_WARNING },
 	{ SettingsManager::NMDC_MAGNET_WARN, ResourceManager::SETTINGS_NMDC_MAGNET_WARNING },
 	{ SettingsManager::NFO_EXTERNAL, ResourceManager::OPEN_NFO_EXTERNAL },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 LRESULT AdvancedPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)

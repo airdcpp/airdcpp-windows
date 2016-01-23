@@ -47,7 +47,7 @@ PropPage::TextItem ShareDirectories::texts[] = {
 	{ IDC_RENAME_DIR, ResourceManager::RENAME },
 	{ IDC_SHARE_PROFILE_NOTE, ResourceManager::SETTINGS_SHARE_PROFILE_NOTE },
 	{ IDC_SHOW_TREE, ResourceManager::SHOW_DIRECTORY_TREE },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 ProfileDirectoryInfo::ProfileDirectoryInfo(ShareDirectoryInfoPtr& aInfo, State aState) :

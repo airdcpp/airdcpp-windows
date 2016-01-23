@@ -28,7 +28,7 @@ PropPage::TextItem WebServerPage::texts[] = {
 	{ IDC_WEBSERVER_ADD_USER,					ResourceManager::ADD },
 	{ IDC_WEBSERVER_REMOVE_USER,				ResourceManager::REMOVE },
 	{ IDC_WEBSERVER_CHANGE,						ResourceManager::SETTINGS_CHANGE },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 LRESULT WebServerPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {

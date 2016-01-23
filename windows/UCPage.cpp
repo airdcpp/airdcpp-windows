@@ -31,7 +31,7 @@ PropPage::TextItem UCPage::texts[] = {
 	{ IDC_ADD_MENU, ResourceManager::ADD },
 	{ IDC_CHANGE_MENU, ResourceManager::SETTINGS_CHANGE },
 	{ IDC_REMOVE_MENU, ResourceManager::REMOVE },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 PropPage::Item UCPage::items[] = {

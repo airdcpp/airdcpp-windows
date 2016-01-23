@@ -48,7 +48,7 @@ PropPage::TextItem ProtocolBase::texts[] = {
 
 	//mapper
 	//{ IDC_SETTINGS_MAPPER_DESC, ResourceManager::PREFERRED_MAPPER },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 PropPage::Item ProtocolBase::items[] = {
@@ -153,7 +153,7 @@ PropPage::TextItem ProtocolPage::texts[] = {
 	{ IDC_IPUPDATE, ResourceManager::UPDATE_IP },
 	{ IDC_GETIP, ResourceManager::GET_IP },
 	{ IDC_SETTINGS_MANUAL_CONFIG, ResourceManager::SETTINGS_MANUAL_CONFIG },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 PropPage::Item ProtocolPage::items4[] = {

@@ -39,7 +39,7 @@ PropPage::TextItem Popups::texts[] = {
 	{ IDC_POPUPBROWSE, ResourceManager::BROWSE },
 	{ IDC_PREVIEW, ResourceManager::PREVIEW },
 	{ IDC_POPUP_COLORS, ResourceManager::POPUP_COLORS },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 PropPage::Item Popups::items[] = {
@@ -64,7 +64,7 @@ Popups::ListItem Popups::listItems[] = {
 	{ SettingsManager::PM_PREVIEW, ResourceManager::PM_PREVIEW },
 	{ SettingsManager::POPUP_BUNDLE_DLS, ResourceManager::SETTINGS_BUNDLE_DL_POPUP },
 	{ SettingsManager::POPUP_BUNDLE_ULS, ResourceManager::SETTINGS_BUNDLE_UL_POPUP },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 LRESULT Popups::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)

@@ -47,7 +47,7 @@ PropPage::TextItem ProxyPage::texts[] = {
 	{ IDC_SOCKS_RESOLVE, ResourceManager::SETTINGS_SOCKS5_RESOLVE },
 	{ IDC_SETTINGS_OUTGOING, ResourceManager::SETTINGS_OUTGOING },
 	{ IDC_SETTINGS_HTTP_PROXY, ResourceManager::SETTINGS_HTTP_PROXY },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 PropPage::Item ProxyPage::items[] = {

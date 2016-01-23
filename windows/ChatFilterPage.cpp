@@ -30,7 +30,7 @@ PropPage::TextItem ChatFilterPage::texts[] = {
 	{ IDC_IGNORE_EDIT, ResourceManager::SETTINGS_CHANGE },
 	{ IDC_IGNORE_CLEAR, ResourceManager::CLEAR },
 	{ IDC_MISC_IGNORE, ResourceManager::SETTINGS_CHATFILTER },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 LRESULT ChatFilterPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)

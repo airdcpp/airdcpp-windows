@@ -33,7 +33,7 @@ PropPage::TextItem WizardProfile::texts[] = {
 	{ IDC_NORMAL, ResourceManager::NORMAL },
 	{ IDC_RAR, ResourceManager::RAR_HUBS },
 	{ IDC_LAN, ResourceManager::LAN_HUBS },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 LRESULT WizardProfile::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) { 

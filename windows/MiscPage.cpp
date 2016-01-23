@@ -59,7 +59,7 @@ PropPage::TextItem MiscPage::texts[] = {
 	// updates
 	{ IDC_UPDATE_CHANNEL_DESC, ResourceManager::UPDATE_CHANNEL },
 
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 PropPage::Item MiscPage::items[] = {

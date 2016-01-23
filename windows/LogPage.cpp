@@ -34,7 +34,7 @@ PropPage::TextItem LogPage::texts[] = {
 	{ IDC_SETTINGS_FORMAT,		ResourceManager::SETTINGS_FORMAT },
 	{ IDC_SETTINGS_FILE_NAME,	ResourceManager::SETTINGS_FILE_NAME },
 	{ IDC_MISC,					ResourceManager::SETTINGS_MISC },
-	{ 0,						ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0,						ResourceManager::LAST }
 };
 
 PropPage::Item LogPage::items[] = {
@@ -50,7 +50,7 @@ PropPage::ListItem LogPage::listItems[] = {
 	{ SettingsManager::LOG_SYSTEM,				ResourceManager::SETTINGS_LOG_SYSTEM_MESSAGES },
 	{ SettingsManager::LOG_STATUS_MESSAGES,		ResourceManager::SETTINGS_LOG_STATUS_MESSAGES },
 	{ SettingsManager::LOG_FILELIST_TRANSFERS, ResourceManager::SETTINGS_LOG_FILELIST_TRANSFERS },
-	{ 0,										ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0,										ResourceManager::LAST }
 };
 
 PropPage::ListItem LogPage::systemItems[] = {
@@ -66,13 +66,13 @@ PropPage::ListItem LogPage::systemItems[] = {
 	{ SettingsManager::LOG_IGNORED,					ResourceManager::REPORT_IGNORED },
 	{ SettingsManager::LOG_CRC_OK,					ResourceManager::LOG_CRC_OK },
 	
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 PropPage::ListItem LogPage::miscItems[] = {
 	{ SettingsManager::PM_LOG_GROUP_CID,			ResourceManager::LOG_COMBINE_ADC_PM },
 
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 LRESULT LogPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)

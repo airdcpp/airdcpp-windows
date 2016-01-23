@@ -42,7 +42,7 @@ PropPage::TextItem SharePage::texts[] = {
 	{ IDC_SETTINGS_SHARE_PROFILES, ResourceManager::SHARE_PROFILES },
 	{ IDC_SHARE_PROFILE_NOTE, ResourceManager::SETTINGS_SHARE_PROFILE_NOTE },
 	{ IDC_RENAME_PROFILE, ResourceManager::RENAME },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 SharePage::SharePage(SettingsManager *s) : defaultProfile(SETTING(DEFAULT_SP)), curProfile(SETTING(DEFAULT_SP)), PropPage(s), dirPage(unique_ptr<ShareDirectories>(new ShareDirectories(this, s))) {

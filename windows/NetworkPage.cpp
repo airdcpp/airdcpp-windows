@@ -35,7 +35,7 @@ NetworkPage::~NetworkPage() {
 PropPage::TextItem NetworkPage::texts[] = {
 	//mapper
 	{ IDC_SETTINGS_MAPPER_DESC, ResourceManager::PREFERRED_MAPPER },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 PropPage::Item NetworkPage::items[] = {

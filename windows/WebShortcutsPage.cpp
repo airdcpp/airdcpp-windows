@@ -28,7 +28,7 @@ PropPage::TextItem WebShortCutsPage::texts[] = {
 	{ IDC_WEB_SHORTCUTS_REMOVE,					ResourceManager::REMOVE },
 	{ IDC_WEB_SHORTCUTS_PROPERTIES,				ResourceManager::PROPERTIES },
 	{ IDC_SB_WEB_SHORTCUTS,						ResourceManager::SETTINGS_SB_WEB_SHORTCUTS },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 PropPage::Item WebShortCutsPage::items[] = {

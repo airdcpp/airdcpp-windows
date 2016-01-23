@@ -28,7 +28,7 @@ PropPage::TextItem WindowsPage::textItem[] = {
 	{ IDC_SETTINGS_AUTO_OPEN, ResourceManager::SETTINGS_AUTO_OPEN },
 	{ IDC_SETTINGS_WINDOWS_OPTIONS, ResourceManager::SETTINGS_WINDOWS_OPTIONS },
 	{ IDC_SETTINGS_CONFIRM_OPTIONS, ResourceManager::SETTINGS_CONFIRM_DIALOG_OPTIONS },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 WindowsPage::ListItem WindowsPage::listItems[] = {
@@ -41,7 +41,7 @@ WindowsPage::ListItem WindowsPage::listItems[] = {
 	{ SettingsManager::OPEN_SEARCH_SPY, ResourceManager::SEARCH_SPY },
 	{ SettingsManager::OPEN_NOTEPAD, ResourceManager::NOTEPAD },
 	{ SettingsManager::OPEN_SYSTEM_LOG, ResourceManager::SYSTEM_LOG },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 WindowsPage::ListItem WindowsPage::optionItems[] = {
@@ -54,7 +54,7 @@ WindowsPage::ListItem WindowsPage::optionItems[] = {
 	{ SettingsManager::JOIN_OPEN_NEW_WINDOW, ResourceManager::SETTINGS_OPEN_NEW_WINDOW },
 	{ SettingsManager::TOGGLE_ACTIVE_WINDOW, ResourceManager::SETTINGS_TOGGLE_ACTIVE_WINDOW },
 	{ SettingsManager::PROMPT_PASSWORD, ResourceManager::SETTINGS_PROMPT_PASSWORD },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 WindowsPage::ListItem WindowsPage::confirmItems[] = {
@@ -64,7 +64,7 @@ WindowsPage::ListItem WindowsPage::confirmItems[] = {
 	{ SettingsManager::CONFIRM_HUB_CLOSING, ResourceManager::SETTINGS_CONFIRM_HUB_CLOSE },
 	{ SettingsManager::CONFIRM_AS_REMOVAL, ResourceManager::SETTINGS_CONFIRM_AS_REMOVE },
 	{ SettingsManager::CONFIRM_FILE_DELETIONS, ResourceManager::CONFIRM_FILE_DELETIONS },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+	{ 0, ResourceManager::LAST }
 };
 
 LRESULT WindowsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
