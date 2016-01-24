@@ -184,6 +184,7 @@ public:
 	static string getNickFromFilename(const string& fileName) noexcept;
 	static UserPtr getUserFromFilename(const string& fileName) noexcept;
 	ProfileToken getShareProfile() const noexcept;
+	void setShareProfile(ProfileToken aProfile) noexcept;
 	
 	const UserPtr& getUser() const noexcept { return hintedUser.user; }
 	const HintedUser& getHintedUser() const noexcept { return hintedUser; }

@@ -363,10 +363,17 @@ void DirectoryListingManager::on(QueueManagerListener::Removed, const QueueItemP
 
 void DirectoryListingManager::openOwnList(ProfileToken aProfile, bool useADL /*false*/) noexcept {
 	auto me = HintedUser(ClientManager::getInstance()->getMe(), Util::emptyString);
-	if (hasList(me.user))
-		return;
 
-	auto dl = createList(me, !useADL, Util::toString(aProfile), true);
+	auto dl = hasList(me.user);
+	if (dl) {
+		if (dl->getShareProfile() != aProfile) {
+			dl->setShareProfile(aProfile);
+		}
+
+		return;
+	}
+
+	dl = createList(me, !useADL, Util::toString(aProfile), true);
 	dl->setMatchADL(useADL);
 
 	fire(DirectoryListingManagerListener::OpenListing(), dl, Util::emptyString, Util::emptyString);

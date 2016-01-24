@@ -114,6 +114,19 @@ ProfileToken DirectoryListing::getShareProfile() const noexcept {
 	return Util::toInt(fileName);
 }
 
+void DirectoryListing::setShareProfile(ProfileToken aProfile) noexcept {
+	setFileName(Util::toString(aProfile));
+	if (partialList) {
+		addAsyncTask([=] {
+			changeDirectory(Util::emptyString, RELOAD_ALL);
+		});
+	} else {
+		addFullListTask(Util::emptyString);
+	}
+
+	SettingsManager::getInstance()->set(SettingsManager::LAST_LIST_PROFILE, aProfile);
+}
+
 string DirectoryListing::getNickFromFilename(const string& fileName) noexcept {
 	// General file list name format: [username].[CID].[xml|xml.bz2]
 

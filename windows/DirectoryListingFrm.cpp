@@ -2018,14 +2018,7 @@ LRESULT DirectoryListingFrame::onCustomDrawTree(int /*idCtrl*/, LPNMHDR pnmh, BO
 void DirectoryListingFrame::onComboSelChanged(bool manual) {
 	if (dl->getIsOwnList()) {
 		auto token = ShareManager::getInstance()->getProfiles()[selCombo.GetCurSel()]->getToken();
-		dl->setFileName(Util::toString(token));
-		if (dl->getPartialList()) {
-			handleReloadPartial(false);
-		} else {
-			dl->addFullListTask(curPath);
-		}
-
-		SettingsManager::getInstance()->set(SettingsManager::LAST_LIST_PROFILE, token);
+		dl->setShareProfile(token);
 	} else {
 		auto& newHub = hubs[selCombo.GetCurSel()];
 		if (manual) {
