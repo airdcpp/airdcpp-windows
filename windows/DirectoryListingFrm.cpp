@@ -793,7 +793,7 @@ void DirectoryListingFrame::initStatus() {
 				totalFiles = si.second;
 			}
 			else {
-				ShareManager::getInstance()->getProfileInfo(Util::toInt(dl->getFileName()), totalSize, totalFiles);
+				ShareManager::getInstance()->getProfileInfo(dl->getShareProfile(), totalSize, totalFiles);
 			}
 		} else {
 			totalSize = dl->getTotalListSize();
@@ -1398,14 +1398,7 @@ void DirectoryListingFrame::handleViewAsText() {
 	handleItemAction(false, [this](const ItemInfo* ii) {
 		try {
 			if (ii->type == ItemInfo::FILE) {
-				if (dl->getIsOwnList()) {
-					StringList paths;
-					dl->getLocalPaths(ii->file, paths);
-					if (!paths.empty())
-						TextFrame::openWindow(paths.front(), TextFrame::NORMAL);
-				} else {
-					dl->viewAsText(ii->file);
-				}
+				dl->viewAsText(ii->file);
 			}
 		} catch (const Exception& e) {
 			ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
@@ -2067,7 +2060,7 @@ void DirectoryListingFrame::updateSelCombo(bool init) {
 		for (const auto& p : profiles) {
 			if (p->getToken() != SP_HIDDEN) { 
 				auto idx = selCombo.AddString(Text::toT(p->getPlainName()).c_str());
-				if (p->getToken() == Util::toInt(dl->getFileName())) {
+				if (p->getToken() == dl->getShareProfile()) {
 					selCombo.SetCurSel(idx);
 				}
 			}
