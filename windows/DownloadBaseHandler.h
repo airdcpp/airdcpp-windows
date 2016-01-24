@@ -52,7 +52,7 @@ public:
 
 			// Check the space
 			TargetUtil::TargetInfo ti(aTarget);
-			if (TargetUtil::getDiskInfo(ti) && ti.hasFreeSpace(size) && !confirmDownload(ti, size))
+			if (TargetUtil::getDiskInfo(ti) && !ti.hasFreeSpace(size) && !confirmDownload(ti, size))
 				return;
 		}
 
