@@ -62,7 +62,9 @@ goto END
 :DONE
 if EXIST "Installer\$Web-resources" RMDIR /S /Q "Installer\$Web-resources"
 if EXIST "Installer\$Web-resources" echo.The folder $Web-resources seems to still exists.
-echo.Done!
+echo.
+echo.Version: %version%
+echo.
 pause
 goto END
 
