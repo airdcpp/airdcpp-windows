@@ -175,8 +175,13 @@ namespace webserver {
 		});
 	}
 
-	void ViewFileApi::on(ViewFileManagerListener::FileUpdated, const ViewFilePtr& aFile) noexcept {
-		onViewFileUpdated(aFile);
+	void ViewFileApi::on(ViewFileManagerListener::FileStateUpdated, const ViewFilePtr& aFile) noexcept {
+		maybeSend("view_file_updated", [&] { 
+			return json({
+				{ "id", aFile->getTTH().toBase32() },
+				{ "state", Serializer::serializeDownloadState(*aFile.get()) }
+			});
+		});
 	}
 
 	void ViewFileApi::on(ViewFileManagerListener::FileFinished, const ViewFilePtr& aFile) noexcept {

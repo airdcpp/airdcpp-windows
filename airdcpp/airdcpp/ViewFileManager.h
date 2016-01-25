@@ -65,7 +65,7 @@ namespace dcpp {
 		void on(QueueManagerListener::Removed, const QueueItemPtr& qi, bool finished) noexcept;
 		void on(QueueManagerListener::StatusUpdated, const QueueItemPtr& aQI) noexcept;
 
-		void onFileUpdated(const TTHValue& aTTH) noexcept;
+		void onFileStateUpdated(const TTHValue& aTTH) noexcept;
 
 		friend class Singleton<ViewFileManager>;
 

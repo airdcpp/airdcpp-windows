@@ -89,7 +89,7 @@ namespace dcpp {
 
 	ViewFilePtr ViewFileManager::createFile(const string& aFileName, const TTHValue& aTTH, bool aIsText, bool aIsLocalFile) noexcept {
 		auto file = make_shared<ViewFile>(aFileName, aTTH, aIsText, aIsLocalFile,
-			std::bind(&ViewFileManager::onFileUpdated, this, std::placeholders::_1));
+			std::bind(&ViewFileManager::onFileStateUpdated, this, std::placeholders::_1));
 
 		{
 			WLock l(cs);
@@ -100,10 +100,10 @@ namespace dcpp {
 		return file;
 	}
 
-	void ViewFileManager::onFileUpdated(const TTHValue& aTTH) noexcept {
+	void ViewFileManager::onFileStateUpdated(const TTHValue& aTTH) noexcept {
 		auto file = getFile(aTTH);
 		if (file) {
-			fire(ViewFileManagerListener::FileUpdated(), file);
+			fire(ViewFileManagerListener::FileStateUpdated(), file);
 		}
 	}
 
