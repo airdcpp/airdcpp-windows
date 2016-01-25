@@ -59,7 +59,7 @@ namespace webserver {
 			{ "text", aFile->isText() },
 			{ "read", aFile->getRead() },
 			{ "name", aFile->getDisplayName() },
-			{ "state", Serializer::serializeDownloadState(aFile->getDownloadState()) },
+			{ "state", Serializer::serializeDownloadState(*aFile.get()) },
 			{ "type", Serializer::serializeFileType(aFile->getPath()) },
 			{ "time_finished", aFile->getTimeFinished() },
 			{ "downloaded", !aFile->isLocalFile() },

@@ -57,6 +57,17 @@ namespace dcpp {
 		return aQI->isSet(QueueItem::FLAG_CLIENT_VIEW) && !aQI->isSet(QueueItem::FLAG_USER_LIST) && !aQI->isSet(QueueItem::FLAG_OPEN);
 	}
 
+	void ViewFileManager::on(QueueManagerListener::StatusUpdated, const QueueItemPtr& aQI) noexcept {
+		if (!isViewedItem(aQI)) {
+			return;
+		}
+
+		auto file = getFile(aQI->getTTH());
+		if (file) {
+			file->onProgress(aQI->getTarget(), aQI->getDownloadedBytes());
+		}
+	}
+
 	void ViewFileManager::on(QueueManagerListener::Removed, const QueueItemPtr& aQI, bool finished) noexcept {
 		if (finished || !isViewedItem(aQI)) {
 			return;
@@ -66,11 +77,14 @@ namespace dcpp {
 	}
 
 	void ViewFileManager::on(QueueManagerListener::Added, QueueItemPtr& aQI) noexcept {
-		if (!aQI->isSet(QueueItem::FLAG_CLIENT_VIEW) || aQI->isSet(QueueItem::FLAG_USER_LIST)) {
+		if (!isViewedItem(aQI)) {
 			return;
 		}
 
-		createFile(aQI->getTarget(), aQI->getTTH(), aQI->isSet(QueueItem::FLAG_TEXT), false);
+		auto file = createFile(aQI->getTarget(), aQI->getTTH(), aQI->isSet(QueueItem::FLAG_TEXT), false);
+		if (file) {
+			file->onAddedQueue(aQI->getTarget(), aQI->getSize());
+		}
 	}
 
 	ViewFilePtr ViewFileManager::createFile(const string& aFileName, const TTHValue& aTTH, bool aIsText, bool aIsLocalFile) noexcept {
@@ -148,7 +162,7 @@ namespace dcpp {
 
 	bool ViewFileManager::addUserFileNotify(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsText) noexcept {
 		try {
-			if (ViewFileManager::getInstance()->addUserFileThrow(aFileName, aSize, aTTH, aUser, aIsText)) {
+			if (addUserFileThrow(aFileName, aSize, aTTH, aUser, aIsText)) {
 				return true;
 			}
 

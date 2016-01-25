@@ -103,7 +103,7 @@ namespace webserver {
 			return aList->isLoaded() ? "loaded" : "loading";
 		}
 
-		return Serializer::serializeDownloadState(aList->getDownloadState());
+		return Serializer::serializeDownloadState(*aList.get());
 	}
 
 	json FilelistInfo::serializeState(const DirectoryListingPtr& aList) noexcept {
@@ -115,7 +115,7 @@ namespace webserver {
 			};
 		}
 
-		return Serializer::serializeDownloadState(aList->getDownloadState());
+		return Serializer::serializeDownloadState(*aList.get());
 	}
 
 	json FilelistInfo::serializeLocation(const DirectoryListingPtr& aListing) noexcept {
