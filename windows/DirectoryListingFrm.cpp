@@ -306,6 +306,10 @@ void DirectoryListingFrame::on(DirectoryListingListener::UserUpdated) noexcept {
 	callAsync([this] { updateSelCombo(); });
 }
 
+void DirectoryListingFrame::on(DirectoryListingListener::ShareProfileChanged) noexcept {
+	callAsync([this] { updateSelCombo(); });
+}
+
 void DirectoryListingFrame::createColumns() {
 	WinUtil::splitTokens(columnIndexes, SETTING(DIRECTORYLISTINGFRAME_ORDER), COLUMN_LAST);
 	WinUtil::splitTokens(columnSizes, SETTING(DIRECTORYLISTINGFRAME_WIDTHS), COLUMN_LAST);
@@ -787,14 +791,7 @@ void DirectoryListingFrame::initStatus() {
 		size_t totalFiles = 0;
 		int64_t totalSize = 0;
 		if (dl->getPartialList() && !dl->getHintedUser().user->isNMDC()) {
-			if (!dl->getIsOwnList()) {
-				auto si = ClientManager::getInstance()->getShareInfo(dl->getHintedUser());
-				totalSize = si.first;
-				totalFiles = si.second;
-			}
-			else {
-				ShareManager::getInstance()->getProfileInfo(dl->getShareProfile(), totalSize, totalFiles);
-			}
+			dl->getPartialListInfo(totalSize, totalFiles);
 		} else {
 			totalSize = dl->getTotalListSize();
 			totalFiles = dl->getTotalFileCount();

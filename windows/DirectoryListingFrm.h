@@ -387,6 +387,7 @@ private:
 	void on(DirectoryListingListener::RemovedQueue, const string& aDir) noexcept;
 	void on(DirectoryListingListener::SetActive) noexcept;
 	void on(DirectoryListingListener::UserUpdated) noexcept;
+	void on(DirectoryListingListener::ShareProfileChanged) noexcept;
 	void on(DirectoryListingListener::Read) noexcept;
 
 	void filterList();
