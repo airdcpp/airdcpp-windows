@@ -17,6 +17,7 @@
 */
 
 #include <web-server/stdinc.h>
+#include <web-server/FileServer.h>
 #include <web-server/JsonUtil.h>
 
 #include <api/ViewFileApi.h>
@@ -62,6 +63,7 @@ namespace webserver {
 			{ "type", Serializer::serializeFileType(aFile->getPath()) },
 			{ "time_finished", aFile->getTimeFinished() },
 			{ "downloaded", !aFile->isLocalFile() },
+			{ "mime_type", FileServer::getMimeType(aFile->getPath()) },
 		};
 	}
 
