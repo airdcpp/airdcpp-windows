@@ -156,7 +156,7 @@ namespace webserver {
 			{ "total_files", totalFiles },
 			{ "total_size", totalSize },
 			{ "read", aList->isRead() },
-			{ "share_profile", Serializer::serializeShareProfileSimple(aList->getShareProfile()) },
+			{ "share_profile", aList->getIsOwnList() ? Serializer::serializeShareProfileSimple(aList->getShareProfile()) : nullptr },
 		};
 	}
 
