@@ -60,7 +60,9 @@ namespace webserver {
 	{
 		METHOD_HANDLER("directory", Access::FILELISTS_VIEW, ApiRequest::METHOD_POST, (), true, FilelistInfo::handleChangeDirectory);
 		METHOD_HANDLER("read", Access::VIEW_FILES_VIEW, ApiRequest::METHOD_POST, (), false, FilelistInfo::handleSetRead);
+	}
 
+	void FilelistInfo::init() noexcept {
 		dl->addListener(this);
 
 		if (dl->isLoaded()) {
