@@ -214,6 +214,9 @@ namespace webserver {
 		} catch (const FileException& e) {
 			output_ = e.getError();
 			return websocketpp::http::status_code::not_found;
+		} catch (const std::bad_alloc&) {
+			output_ = "Not enough memory on the server to serve this request";
+			return websocketpp::http::status_code::internal_server_error;
 		}
 
 		// Get the mime type
