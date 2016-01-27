@@ -1,6 +1,6 @@
 /*
 (c) 2014 Glen Joseph Fernandes
-glenjofe at gmail dot com
+<glenjofe -at- gmail.com>
 
 Distributed under the Boost Software
 License, Version 1.0.
@@ -21,8 +21,8 @@ struct alignment_of
     : integral_constant<std::size_t, __alignof(T)> {
 };
 
-} /* :detail */
-} /* :alignment */
-} /* :boost */
+} /* .detail */
+} /* .alignment */
+} /* .boost */
 
 #endif

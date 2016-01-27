@@ -65,7 +65,7 @@ namespace boost { namespace spirit { namespace traits
     {
         if (exp >= 0)
         {
-            std::size_t max_exp = std::numeric_limits<T>::max_exponent10;
+            int max_exp = std::numeric_limits<T>::max_exponent10;
             
             // return false if exp exceeds the max_exp
             // do this check only for primitive types!
@@ -284,7 +284,7 @@ namespace boost { namespace spirit { namespace qi  { namespace detail
                     // If there is no number, disregard the exponent altogether.
                     // by resetting 'first' prior to the exponent prefix (e|E)
                     first = e_pos;
-                    n = acc_n;
+                    n = static_cast<T>(acc_n);
                 }
             }
             else if (frac_digits)
@@ -306,11 +306,11 @@ namespace boost { namespace spirit { namespace qi  { namespace detail
                     return true;    // got a NaN or Inf, return immediately
                 }
 
-                n = acc_n;
+                n = static_cast<T>(acc_n);
             }
             else
             {
-                n = acc_n;
+                n = static_cast<T>(acc_n);
             }
 
             // If we got a negative sign, negate the number

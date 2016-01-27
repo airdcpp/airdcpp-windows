@@ -201,7 +201,9 @@ deque(T_0 && t0 , T_1 && t1 , T_2 && t2 , T_3 && t3 , T_4 && t4 , T_5 && t5 , T_
             {}
         template<typename Sequence>
         BOOST_FUSION_GPU_ENABLED
-        deque(Sequence const& seq, typename disable_if<is_convertible<Sequence, T0> >::type* = 0)
+        deque(Sequence const& seq
+            , typename disable_if<is_convertible<Sequence, T0> >::type* = 0
+            , typename enable_if<traits::is_sequence<Sequence> >::type* = 0)
             : base(base::from_iterator(fusion::begin(seq)))
             {}
         template <typename U0 , typename U1 , typename U2 , typename U3 , typename U4 , typename U5 , typename U6 , typename U7 , typename U8 , typename U9>

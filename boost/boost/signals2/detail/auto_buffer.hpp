@@ -98,7 +98,7 @@ namespace detail
         }
 
         template< class SizeType >
-        static bool should_shrink( SizeType size, SizeType capacity )
+        static bool should_shrink( SizeType, SizeType )
         {
             //
             // @remark: when defining a new grow policy, one might
@@ -257,7 +257,7 @@ namespace detail
                 auto_buffer_destroy( buffer );
         }
 
-        void destroy_back_n( size_type n, const boost::true_type& )
+        void destroy_back_n( size_type, const boost::true_type& )
         { }
 
         void destroy_back_n( size_type n )

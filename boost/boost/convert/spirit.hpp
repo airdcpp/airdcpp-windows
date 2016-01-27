@@ -38,7 +38,7 @@ struct boost::cnv::spirit : public boost::cnv::cnvbase<boost::cnv::spirit>
                 result_out = result;
     }
     template<typename in_type, typename char_type>
-    cnv::range<char*>
+    cnv::range<char_type*>
     to_str(in_type value_in, char_type* beg) const
     {
         typedef typename boost::spirit::traits::create_generator<in_type>::type generator;
@@ -46,7 +46,7 @@ struct boost::cnv::spirit : public boost::cnv::cnvbase<boost::cnv::spirit>
         char_type* end = beg;
         bool      good = boost::spirit::karma::generate(end, generator(), value_in);
         
-        return cnv::range<char*>(beg, good ? end : beg);
+        return cnv::range<char_type*>(beg, good ? end : beg);
     }
 };
 

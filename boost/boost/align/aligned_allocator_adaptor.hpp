@@ -1,6 +1,6 @@
 /*
 (c) 2014-2015 Glen Joseph Fernandes
-glenjofe at gmail dot com
+<glenjofe -at- gmail.com>
 
 Distributed under the Boost Software
 License, Version 1.0.
@@ -17,6 +17,7 @@ http://boost.org/LICENSE_1_0.txt
 #include <boost/align/detail/addressof.hpp>
 #include <boost/align/detail/is_alignment_constant.hpp>
 #include <boost/align/detail/max_align.hpp>
+#include <boost/align/detail/max_size.hpp>
 #include <new>
 
 #if !defined(BOOST_NO_CXX11_ALLOCATOR)
@@ -74,9 +75,8 @@ public:
 
 private:
     enum {
-        min_align = detail::max_align<Alignment,
-            detail::max_align<alignment_of<value_type>::value,
-                alignment_of<char_ptr>::value>::value>::value
+        min_align = detail::max_size<Alignment,
+            detail::max_align<value_type, char_ptr>::value>::value
     };
 
 public:
@@ -184,7 +184,7 @@ inline bool operator!=(const aligned_allocator_adaptor<A1,
     return !(a == b);
 }
 
-} /* :alignment */
-} /* :boost */
+} /* .alignment */
+} /* .boost */
 
 #endif

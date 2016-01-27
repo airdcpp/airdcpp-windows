@@ -30,6 +30,16 @@
 #define BOOST_SIGNALS2_GET std::get
 #endif
 
+// vc12 seems to erroneously report formal parameters as unreferenced (warning C4100)
+// if parameters of variadic template functions are only referenced by calling
+// other varadic template functions. silence these warnings:
+#if defined(BOOST_MSVC)
+#pragma warning(push)
+#if  BOOST_MSVC >= 1800
+#pragma warning(disable:4100)
+#endif
+#endif
+
 namespace boost
 {
   namespace signals2
@@ -129,5 +139,10 @@ namespace boost
     } // namespace detail
   } // namespace signals2
 } // namespace boost
+
+#if defined(BOOST_MSVC)
+#pragma warning(pop)
+#endif
+
 
 #endif // BOOST_SIGNALS2_DETAIL_VARIADIC_SLOT_INVOKER_HPP

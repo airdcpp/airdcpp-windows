@@ -173,6 +173,8 @@ boost::cnv::basic_stream<char_type>::str_to(
     boost::cnv::range<string_type> string_in,
     boost::optional<out_type>& result_out) const
 {
+    if (string_in.empty ()) return;
+
     istream_type& istream = stream_;
     buffer_type*   oldbuf = istream.rdbuf();
     char_type const*  beg = &*string_in.begin();

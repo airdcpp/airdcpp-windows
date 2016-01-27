@@ -801,7 +801,7 @@ struct terminal
 {
    terminal(const R& v) : value(v){}
    terminal(){}
-   terminal& operator = (R val) {  value = val;  }
+   terminal& operator = (R val) { value = val;  return *this; }
    R value;
    operator R()const {  return value;  }
 };
@@ -930,7 +930,7 @@ inline void eval_fmod(T& result, const T& a, const T& b)
    }
    T n;
    eval_divide(result, a, b);
-   if(eval_get_sign(a) < 0)
+   if(eval_get_sign(result) < 0)
       eval_ceil(n, result);
    else
       eval_floor(n, result);

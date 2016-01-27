@@ -101,7 +101,9 @@ namespace boost { namespace fusion {
 
         template<typename Sequence>
         BOOST_FUSION_GPU_ENABLED
-        deque(Sequence const& seq, typename disable_if<is_convertible<Sequence, T0> >::type* /*dummy*/ = 0)
+        deque(Sequence const& seq
+            , typename disable_if<is_convertible<Sequence, T0> >::type* /*dummy*/ = 0
+            , typename enable_if<traits::is_sequence<Sequence> >::type* /*dummy*/ = 0)
             : base(base::from_iterator(fusion::begin(seq)))
             {}
 

@@ -89,7 +89,7 @@ private:
             trampoline_t as_trampoline;
         }
         caster;
-        caster.as_trampoline = &type_dispatcher::callback_base::trampoline< VisitorT, T >;
+        caster.as_trampoline = (trampoline_t)&type_dispatcher::callback_base::trampoline< VisitorT, T >;
         p->second = caster.as_pvoid;
     }
 };
@@ -214,10 +214,10 @@ private:
 
 protected:
     //! Initializing constructor
-    single_type_dispatcher_base(typeindex::type_index type, callback_base const& callback) BOOST_NOEXCEPT :
+    single_type_dispatcher_base(typeindex::type_index type, callback_base const& cb) BOOST_NOEXCEPT :
         type_dispatcher(&single_type_dispatcher_base::get_callback),
         m_type(type),
-        m_callback(callback)
+        m_callback(cb)
     {
     }
 
@@ -242,11 +242,14 @@ template< typename T >
 class single_type_dispatcher :
     public single_type_dispatcher_base
 {
+private:
+    typedef void (*trampoline_t)(void*, T const&);
+
 public:
     //! Constructor
     template< typename VisitorT >
     explicit single_type_dispatcher(VisitorT& visitor) BOOST_NOEXCEPT :
-        single_type_dispatcher_base(typeindex::type_id< T >(), callback_base((void*)boost::addressof(visitor), &callback_base::trampoline< VisitorT, T >))
+        single_type_dispatcher_base(typeindex::type_id< T >(), callback_base((void*)boost::addressof(visitor), (trampoline_t)&callback_base::trampoline< VisitorT, T >))
     {
     }
 
