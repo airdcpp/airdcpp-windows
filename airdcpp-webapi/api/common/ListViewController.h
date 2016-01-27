@@ -171,7 +171,7 @@ namespace webserver {
 		}
 
 		PropertyFilter::Ptr addFilter() {
-			auto filter = make_shared<PropertyFilter>(itemHandler.properties);
+			auto filter = std::make_shared<PropertyFilter>(itemHandler.properties);
 
 			{
 				WLock l(cs);
