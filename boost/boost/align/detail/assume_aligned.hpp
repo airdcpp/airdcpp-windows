@@ -3,7 +3,7 @@
 (c) 2015 LRI UMR 8623 CNRS/University Paris Sud XI
 
 (c) 2015 Glen Joseph Fernandes
-glenjofe at gmail dot com
+<glenjofe -at- gmail.com>
 
 Distributed under the Boost Software
 License, Version 1.0.

@@ -94,8 +94,7 @@ namespace webserver {
 			{ "hub_url", aClient->getHubUrl() },
 			{ "id", aClient->getClientId() },
 			{ "favorite_hub", aClient->getFavToken() },
-			{ "share_profile", aClient->getShareProfile() }
-			//{ "share_profile", Serializer::serializeShare aClient->getShareProfile() },
+			{ "share_profile", Serializer::serializeShareProfileSimple(aClient->getShareProfile()) }
 		};
 
 		Serializer::serializeCacheInfo(j, aClient->getCache(), Serializer::serializeUnreadChat);
@@ -103,7 +102,7 @@ namespace webserver {
 	}
 
 	void HubApi::addHub(const ClientPtr& aClient) noexcept {
-		addSubModule(aClient->getClientId(), make_shared<HubInfo>(this, aClient));
+		addSubModule(aClient->getClientId(), std::make_shared<HubInfo>(this, aClient));
 	}
 
 	api_return HubApi::handleGetHubs(ApiRequest& aRequest) {

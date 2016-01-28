@@ -60,10 +60,12 @@ namespace webserver {
 	{
 		METHOD_HANDLER("directory", Access::FILELISTS_VIEW, ApiRequest::METHOD_POST, (), true, FilelistInfo::handleChangeDirectory);
 		METHOD_HANDLER("read", Access::VIEW_FILES_VIEW, ApiRequest::METHOD_POST, (), false, FilelistInfo::handleSetRead);
+	}
 
+	void FilelistInfo::init() noexcept {
 		dl->addListener(this);
 
-		if (dl->hasCompletedDownloads()) {
+		if (dl->isLoaded()) {
 			updateItems(dl->getCurrentLocationInfo().directory->getPath());
 		}
 	}
@@ -100,10 +102,10 @@ namespace webserver {
 
 	string FilelistInfo::formatState(const DirectoryListingPtr& aList) noexcept {
 		if (aList->getDownloadState() == DirectoryListing::STATE_DOWNLOADED) {
-			return !aList->getCurrentLocationInfo().directory || aList->getCurrentLocationInfo().directory->getLoading() ? "loading" : "loaded";
+			return aList->isLoaded() ? "loaded" : "loading";
 		}
 
-		return Serializer::serializeDownloadState(aList->getDownloadState());
+		return Serializer::serializeDownloadState(*aList.get());
 	}
 
 	json FilelistInfo::serializeState(const DirectoryListingPtr& aList) noexcept {
@@ -115,7 +117,7 @@ namespace webserver {
 			};
 		}
 
-		return Serializer::serializeDownloadState(aList->getDownloadState());
+		return Serializer::serializeDownloadState(*aList.get());
 	}
 
 	json FilelistInfo::serializeLocation(const DirectoryListingPtr& aListing) noexcept {
@@ -124,7 +126,7 @@ namespace webserver {
 			return nullptr;
 		}
 
-		auto ret = Serializer::serializeItem(make_shared<FilelistItemInfo>(location.directory), itemHandler);
+		auto ret = Serializer::serializeItem(std::make_shared<FilelistItemInfo>(location.directory), itemHandler);
 
 		ret["size"] = location.totalSize;
 		ret["complete"] = location.directory->isComplete();
@@ -143,11 +145,11 @@ namespace webserver {
 				currentViewItems.clear();
 
 				for (auto& d : curDir->directories) {
-					currentViewItems.emplace_back(make_shared<FilelistItemInfo>(d));
+					currentViewItems.emplace_back(std::make_shared<FilelistItemInfo>(d));
 				}
 
 				for (auto& f : curDir->files) {
-					currentViewItems.emplace_back(make_shared<FilelistItemInfo>(f));
+					currentViewItems.emplace_back(std::make_shared<FilelistItemInfo>(f));
 				}
 			}
 
@@ -197,6 +199,12 @@ namespace webserver {
 	void FilelistInfo::on(DirectoryListingListener::UserUpdated) noexcept {
 		onSessionUpdated({
 			{ "user", Serializer::serializeHintedUser(dl->getHintedUser()) }
+		});
+	}
+
+	void FilelistInfo::on(DirectoryListingListener::ShareProfileChanged) noexcept {
+		onSessionUpdated({
+			{ "share_profile", Serializer::serializeShareProfileSimple(dl->getShareProfile()) }
 		});
 	}
 

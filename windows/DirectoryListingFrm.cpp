@@ -306,6 +306,10 @@ void DirectoryListingFrame::on(DirectoryListingListener::UserUpdated) noexcept {
 	callAsync([this] { updateSelCombo(); });
 }
 
+void DirectoryListingFrame::on(DirectoryListingListener::ShareProfileChanged) noexcept {
+	callAsync([this] { updateSelCombo(); });
+}
+
 void DirectoryListingFrame::createColumns() {
 	WinUtil::splitTokens(columnIndexes, SETTING(DIRECTORYLISTINGFRAME_ORDER), COLUMN_LAST);
 	WinUtil::splitTokens(columnSizes, SETTING(DIRECTORYLISTINGFRAME_WIDTHS), COLUMN_LAST);
@@ -787,14 +791,7 @@ void DirectoryListingFrame::initStatus() {
 		size_t totalFiles = 0;
 		int64_t totalSize = 0;
 		if (dl->getPartialList() && !dl->getHintedUser().user->isNMDC()) {
-			if (!dl->getIsOwnList()) {
-				auto si = ClientManager::getInstance()->getShareInfo(dl->getHintedUser());
-				totalSize = si.first;
-				totalFiles = si.second;
-			}
-			else {
-				ShareManager::getInstance()->getProfileInfo(Util::toInt(dl->getFileName()), totalSize, totalFiles);
-			}
+			dl->getPartialListInfo(totalSize, totalFiles);
 		} else {
 			totalSize = dl->getTotalListSize();
 			totalFiles = dl->getTotalFileCount();
@@ -1398,14 +1395,7 @@ void DirectoryListingFrame::handleViewAsText() {
 	handleItemAction(false, [this](const ItemInfo* ii) {
 		try {
 			if (ii->type == ItemInfo::FILE) {
-				if (dl->getIsOwnList()) {
-					StringList paths;
-					dl->getLocalPaths(ii->file, paths);
-					if (!paths.empty())
-						TextFrame::openWindow(paths.front(), TextFrame::NORMAL);
-				} else {
-					dl->viewAsText(ii->file);
-				}
+				dl->viewAsText(ii->file);
 			}
 		} catch (const Exception& e) {
 			ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
@@ -2025,14 +2015,7 @@ LRESULT DirectoryListingFrame::onCustomDrawTree(int /*idCtrl*/, LPNMHDR pnmh, BO
 void DirectoryListingFrame::onComboSelChanged(bool manual) {
 	if (dl->getIsOwnList()) {
 		auto token = ShareManager::getInstance()->getProfiles()[selCombo.GetCurSel()]->getToken();
-		dl->setFileName(Util::toString(token));
-		if (dl->getPartialList()) {
-			handleReloadPartial(false);
-		} else {
-			dl->addFullListTask(curPath);
-		}
-
-		SettingsManager::getInstance()->set(SettingsManager::LAST_LIST_PROFILE, token);
+		dl->setShareProfile(token);
 	} else {
 		auto& newHub = hubs[selCombo.GetCurSel()];
 		if (manual) {
@@ -2067,7 +2050,7 @@ void DirectoryListingFrame::updateSelCombo(bool init) {
 		for (const auto& p : profiles) {
 			if (p->getToken() != SP_HIDDEN) { 
 				auto idx = selCombo.AddString(Text::toT(p->getPlainName()).c_str());
-				if (p->getToken() == Util::toInt(dl->getFileName())) {
+				if (p->getToken() == dl->getShareProfile()) {
 					selCombo.SetCurSel(idx);
 				}
 			}

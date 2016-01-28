@@ -1203,7 +1203,7 @@ void WinUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aUser, RichT
 
 bool WinUtil::openFile(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsClientView) noexcept {
 	if (aIsClientView && (!SETTING(NFO_EXTERNAL) || Util::getFileExt(aFileName) != ".nfo")) {
-		return ViewFileManager::getInstance()->addFileNotify(aFileName, aSize, aTTH, aUser, true);
+		return ViewFileManager::getInstance()->addUserFileNotify(aFileName, aSize, aTTH, aUser, true);
 	}
 
 	try {

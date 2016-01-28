@@ -1,6 +1,6 @@
 /*
 (c) 2014 Glen Joseph Fernandes
-glenjofe at gmail dot com
+<glenjofe -at- gmail.com>
 
 Distributed under the Boost Software
 License, Version 1.0.
@@ -23,12 +23,12 @@ public:
         BOOST_NOEXCEPT_IF(BOOST_NOEXCEPT_EXPR(ptr->~T())) {
         if (ptr) {
             ptr->~T();
-            alignment::aligned_free(ptr);
+            ::boost::alignment::aligned_free(ptr);
         }
     }
 };
 
-} /* :alignment */
-} /* :boost */
+} /* .alignment */
+} /* .boost */
 
 #endif

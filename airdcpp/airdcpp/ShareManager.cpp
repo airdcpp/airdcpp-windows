@@ -87,14 +87,14 @@ void ShareManager::startup(function<void(const string&)> splashF, function<void(
 	AirUtil::updateCachedSettings();
 	if (!getShareProfile(SETTING(DEFAULT_SP))) {
 		if (shareProfiles.empty()) {
-			auto sp = make_shared<ShareProfile>(STRING(DEFAULT), SETTING(DEFAULT_SP));
+			auto sp = std::make_shared<ShareProfile>(STRING(DEFAULT), SETTING(DEFAULT_SP));
 			shareProfiles.push_back(sp);
 		} else {
 			SettingsManager::getInstance()->set(SettingsManager::DEFAULT_SP, shareProfiles.front()->getToken());
 		}
 	}
 
-	ShareProfilePtr hidden = make_shared<ShareProfile>(STRING(SHARE_HIDDEN), SP_HIDDEN);
+	ShareProfilePtr hidden = std::make_shared<ShareProfile>(STRING(SHARE_HIDDEN), SP_HIDDEN);
 	shareProfiles.push_back(hidden);
 
 	setSkipList();
@@ -1128,13 +1128,20 @@ void ShareManager::getRealPaths(const string& aPath, StringList& ret, ProfileTok
 
 	Directory::List dirs;
 
-	RLock l (cs);
-	findVirtuals<ProfileToken>(aPath, aProfile, dirs);
+	RLock l(cs);
+	if (aPath == "/") {
+		boost::algorithm::copy_if(rootPaths | map_values, back_inserter(dirs), Directory::HasRootProfile(aProfile));
+	} else {
+		findVirtuals(aPath, aProfile, dirs);
+	}
 
 	if (aPath.back() == '/') {
-		for(const auto& d: dirs)
+		// Directory
+		for (const auto& d : dirs) {
 			ret.push_back(d->getRealPath());
-	} else { //its a file
+		}
+	} else {
+		// File
 		auto fileName = Text::toLower(Util::getAdcFileName(aPath));
 		for(const auto& d: dirs) {
 			auto it = d->files.find(fileName);
@@ -1198,7 +1205,7 @@ ShareManager::DirMap::const_iterator ShareManager::findRoot(const string& aPath)
 }
 
 void ShareManager::loadProfile(SimpleXML& aXml, const string& aName, ProfileToken aToken) {
-	auto sp = make_shared<ShareProfile>(aName, aToken);
+	auto sp = std::make_shared<ShareProfile>(aName, aToken);
 	shareProfiles.push_back(sp);
 
 	aXml.stepIn();
@@ -1721,7 +1728,6 @@ void ShareManager::getRootsByVirtual(const string& virtualName, ProfileToken aPr
 }
 
 void ShareManager::getRootsByVirtual(const string& virtualName, const ProfileTokenSet& aProfiles, Directory::List& dirs) const noexcept {
-	RLock l(cs);
 	for(const auto& d: rootPaths | map_values) {
 		// Compare name
 		if (Util::stricmp(d->getProfileDir()->getNameLower(), virtualName) != 0) {
@@ -2173,7 +2179,7 @@ void ShareManager::setDefaultProfile(ProfileToken aNewDefault) noexcept {
 
 void ShareManager::addProfiles(const ShareProfileInfo::List& aProfiles) noexcept {
 	for (auto& sp : aProfiles) {
-		addProfile(make_shared<ShareProfile>(sp->name, sp->token));
+		addProfile(std::make_shared<ShareProfile>(sp->name, sp->token));
 	}
 }
 
@@ -2766,7 +2772,7 @@ void ShareManager::restoreFailedMonitoredPaths() {
 ShareDirectoryInfoPtr ShareManager::getRootInfo(const Directory::Ptr& aDir) const noexcept {
 	auto& pd = aDir->getProfileDir();
 
-	auto info = make_shared<ShareDirectoryInfo>(aDir->getRealPath());
+	auto info = std::make_shared<ShareDirectoryInfo>(aDir->getRealPath());
 	info->profiles = pd->getRootProfiles();
 	info->incoming = pd->getIncoming();
 	info->size = aDir->getSize();
@@ -3678,7 +3684,7 @@ ShareProfileInfo::List ShareManager::getProfileInfos() const noexcept {
 	ShareProfileInfo::List ret;
 	for (const auto& sp : shareProfiles) {
 		if (sp->getToken() != SP_HIDDEN) {
-			auto p = make_shared<ShareProfileInfo>(sp->getPlainName(), sp->getToken());
+			auto p = std::make_shared<ShareProfileInfo>(sp->getPlainName(), sp->getToken());
 			if (p->token == SETTING(DEFAULT_SP)) {
 				p->isDefault = true;
 				ret.emplace(ret.begin(), p);

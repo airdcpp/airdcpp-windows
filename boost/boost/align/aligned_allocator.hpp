@@ -1,6 +1,6 @@
 /*
-(c) 2014 Glen Joseph Fernandes
-glenjofe at gmail dot com
+(c) 2014-2015 Glen Joseph Fernandes
+<glenjofe -at- gmail.com>
 
 Distributed under the Boost Software
 License, Version 1.0.
@@ -17,8 +17,8 @@ http://boost.org/LICENSE_1_0.txt
 #include <boost/align/alignment_of.hpp>
 #include <boost/align/detail/addressof.hpp>
 #include <boost/align/detail/is_alignment_constant.hpp>
-#include <boost/align/detail/max_align.hpp>
-#include <boost/align/detail/max_count_of.hpp>
+#include <boost/align/detail/max_objects.hpp>
+#include <boost/align/detail/max_size.hpp>
 #include <new>
 
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
@@ -46,7 +46,7 @@ public:
 
 private:
     enum {
-        min_align = detail::max_align<Alignment,
+        min_align = detail::max_size<Alignment,
             alignment_of<value_type>::value>::value
     };
 
@@ -57,7 +57,7 @@ public:
     };
 
 #if !defined(BOOST_NO_CXX11_DEFAULTED_FUNCTIONS)
-    aligned_allocator() BOOST_NOEXCEPT = default;
+    aligned_allocator() = default;
 #else
     aligned_allocator() BOOST_NOEXCEPT {
     }
@@ -79,18 +79,18 @@ public:
 
     pointer allocate(size_type size, const_void_pointer = 0) {
         void* p = aligned_alloc(min_align, sizeof(T) * size);
-        if (!p && size > 0) {
-            boost::throw_exception(std::bad_alloc());
+        if (size > 0 && !p) {
+            ::boost::throw_exception(std::bad_alloc());
         }
         return static_cast<T*>(p);
     }
 
     void deallocate(pointer ptr, size_type) {
-        alignment::aligned_free(ptr);
+        ::boost::alignment::aligned_free(ptr);
     }
 
     BOOST_CONSTEXPR size_type max_size() const BOOST_NOEXCEPT {
-        return detail::max_count_of<T>::value;
+        return detail::max_objects<T>::value;
     }
 
 #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES)
@@ -160,7 +160,7 @@ inline bool operator!=(const aligned_allocator<T1,
     return false;
 }
 
-} /* :alignment */
-} /* :boost */
+} /* .alignment */
+} /* .boost */
 
 #endif

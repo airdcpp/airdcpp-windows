@@ -128,6 +128,18 @@ namespace webserver {
 		};
 	}
 
+	json Serializer::serializeShareProfileSimple(ProfileToken aProfile) noexcept {
+		auto sp = ShareManager::getInstance()->getShareProfile(aProfile);
+		if (!sp) {
+			return nullptr;
+		}
+
+		return {
+			{ "id", sp->getToken() },
+			{ "str", sp->getPlainName() },
+		};
+	}
+
 	json Serializer::serializeChatMessage(const ChatMessagePtr& aMessage) noexcept {
 		json ret = {
 			{ "id", aMessage->getId()},
@@ -261,21 +273,10 @@ namespace webserver {
 		return "";
 	}
 
-	string Serializer::getDownloadStateStr(TrackableDownloadItem::State aState) noexcept {
-		switch (aState) {
-			case TrackableDownloadItem::STATE_DOWNLOAD_PENDING: return "Download pending";
-			case TrackableDownloadItem::STATE_DOWNLOADING: return "Downloading";
-			case TrackableDownloadItem::STATE_DOWNLOADED: return "Downloaded";
-		}
-
-		dcassert(0);
-		return "";
-	}
-
-	json Serializer::serializeDownloadState(TrackableDownloadItem::State aState) noexcept {
+	json Serializer::serializeDownloadState(const TrackableDownloadItem& aItem) noexcept {
 		return {
-			{ "id", getDownloadStateId(aState) },
-			{ "str", getDownloadStateStr(aState) }
+			{ "id", getDownloadStateId(aItem.getDownloadState()) },
+			{ "str", aItem.getStatusString() }
 		};
 	}
 }

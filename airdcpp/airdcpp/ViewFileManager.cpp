@@ -48,8 +48,6 @@ namespace dcpp {
 
 		auto file = getFile(aQI->getTTH());
 		if (file) {
-			file->setTimeFinished(GET_TIME());
-
 			file->onRemovedQueue(aQI->getTarget(), true);
 			fire(ViewFileManagerListener::FileFinished(), file);
 		}
@@ -57,6 +55,17 @@ namespace dcpp {
 
 	bool ViewFileManager::isViewedItem(const QueueItemPtr& aQI) noexcept {
 		return aQI->isSet(QueueItem::FLAG_CLIENT_VIEW) && !aQI->isSet(QueueItem::FLAG_USER_LIST) && !aQI->isSet(QueueItem::FLAG_OPEN);
+	}
+
+	void ViewFileManager::on(QueueManagerListener::StatusUpdated, const QueueItemPtr& aQI) noexcept {
+		if (!isViewedItem(aQI)) {
+			return;
+		}
+
+		auto file = getFile(aQI->getTTH());
+		if (file) {
+			file->onProgress(aQI->getTarget(), aQI->getDownloadedBytes());
+		}
 	}
 
 	void ViewFileManager::on(QueueManagerListener::Removed, const QueueItemPtr& aQI, bool finished) noexcept {
@@ -68,25 +77,33 @@ namespace dcpp {
 	}
 
 	void ViewFileManager::on(QueueManagerListener::Added, QueueItemPtr& aQI) noexcept {
-		if (!aQI->isSet(QueueItem::FLAG_CLIENT_VIEW) || aQI->isSet(QueueItem::FLAG_USER_LIST)) {
+		if (!isViewedItem(aQI)) {
 			return;
 		}
 
-		auto file = make_shared<ViewFile>(aQI->getTarget(), aQI->getTTH(), aQI->isSet(QueueItem::FLAG_TEXT), 
-			std::bind(&ViewFileManager::onFileUpdated, this, std::placeholders::_1));
+		auto file = createFile(aQI->getTarget(), aQI->getTTH(), aQI->isSet(QueueItem::FLAG_TEXT), false);
+		if (file) {
+			file->onAddedQueue(aQI->getTarget(), aQI->getSize());
+		}
+	}
+
+	ViewFilePtr ViewFileManager::createFile(const string& aFileName, const TTHValue& aTTH, bool aIsText, bool aIsLocalFile) noexcept {
+		auto file = std::make_shared<ViewFile>(aFileName, aTTH, aIsText, aIsLocalFile,
+			std::bind(&ViewFileManager::onFileStateUpdated, this, std::placeholders::_1));
 
 		{
 			WLock l(cs);
-			viewFiles[aQI->getTTH()] = file;
+			viewFiles[aTTH] = file;
 		}
 
 		fire(ViewFileManagerListener::FileAdded(), file);
+		return file;
 	}
 
-	void ViewFileManager::onFileUpdated(const TTHValue& aTTH) noexcept {
+	void ViewFileManager::onFileStateUpdated(const TTHValue& aTTH) noexcept {
 		auto file = getFile(aTTH);
 		if (file) {
-			fire(ViewFileManagerListener::FileUpdated(), file);
+			fire(ViewFileManagerListener::FileStateUpdated(), file);
 		}
 	}
 
@@ -113,8 +130,28 @@ namespace dcpp {
 
 		return p->second;
 	}
+
+	bool ViewFileManager::addLocalFile(const string& aPath, const TTHValue& aTTH, bool aIsText) noexcept {
+		if (getFile(aTTH)) {
+			return false;
+		}
+
+		auto file = createFile(aPath, aTTH, aIsText, true);
+
+		fire(ViewFileManagerListener::FileFinished(), file);
+		return true;
+	}
 	
-	bool ViewFileManager::addFileThrow(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsText) throw(QueueException, FileException) {
+	bool ViewFileManager::addUserFileThrow(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsText) throw(QueueException, FileException) {
+		if (aUser == ClientManager::getInstance()->getMe()) {
+			auto paths = ShareManager::getInstance()->getRealPaths(aTTH);
+			if (!paths.empty()) {
+				return addLocalFile(paths.front(), aTTH, aIsText);
+			}
+
+			return false;
+		}
+
 		if (getFile(aTTH)) {
 			return false;
 		}
@@ -123,9 +160,9 @@ namespace dcpp {
 		return true;
 	}
 
-	bool ViewFileManager::addFileNotify(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsText) noexcept {
+	bool ViewFileManager::addUserFileNotify(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsText) noexcept {
 		try {
-			if (ViewFileManager::getInstance()->addFileThrow(aFileName, aSize, aTTH, aUser, aIsText)) {
+			if (addUserFileThrow(aFileName, aSize, aTTH, aUser, aIsText)) {
 				return true;
 			}
 

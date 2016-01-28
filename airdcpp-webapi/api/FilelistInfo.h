@@ -106,6 +106,8 @@ namespace webserver {
 		static string formatState(const DirectoryListingPtr& aList) noexcept;
 		static json serializeState(const DirectoryListingPtr& aList) noexcept;
 		static json serializeLocation(const DirectoryListingPtr& aListing) noexcept;
+
+		void init() noexcept;
 	private:
 		api_return handleChangeDirectory(ApiRequest& aRequest);
 		api_return handleSetRead(ApiRequest& aRequest);
@@ -118,6 +120,7 @@ namespace webserver {
 		void on(DirectoryListingListener::UserUpdated) noexcept;
 		void on(DirectoryListingListener::StateChanged) noexcept;
 		void on(DirectoryListingListener::Read) noexcept;
+		void on(DirectoryListingListener::ShareProfileChanged) noexcept;
 
 		void addListTask(CallBack&& aTask) noexcept;
 

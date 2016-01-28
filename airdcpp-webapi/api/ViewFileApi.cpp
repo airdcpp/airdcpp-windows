@@ -17,6 +17,7 @@
 */
 
 #include <web-server/stdinc.h>
+#include <web-server/FileServer.h>
 #include <web-server/JsonUtil.h>
 
 #include <api/ViewFileApi.h>
@@ -52,16 +53,18 @@ namespace webserver {
 	}
 
 	json ViewFileApi::serializeFile(const ViewFilePtr& aFile) noexcept {
+		auto mimeType = FileServer::getMimeType(aFile->getPath());
 		return{
 			{ "id", aFile->getTTH().toBase32() },
 			{ "tth", aFile->getTTH().toBase32() },
-			//{ "path", aFile->getPath() },
 			{ "text", aFile->isText() },
 			{ "read", aFile->getRead() },
 			{ "name", aFile->getDisplayName() },
-			{ "state", Serializer::serializeDownloadState(aFile->getDownloadState()) },
+			{ "state", Serializer::serializeDownloadState(*aFile.get()) },
 			{ "type", Serializer::serializeFileType(aFile->getPath()) },
 			{ "time_finished", aFile->getTimeFinished() },
+			{ "downloaded", !aFile->isLocalFile() },
+			{ "mime_type", mimeType ? mimeType : Util::emptyString },
 		};
 	}
 
@@ -83,12 +86,12 @@ namespace webserver {
 
 		auto name = JsonUtil::getField<string>("name", j, false);
 		auto size = JsonUtil::getField<int64_t>("size", j);
-		auto user = Deserializer::deserializeHintedUser(j);
+		auto user = Deserializer::deserializeHintedUser(j, true);
 		auto isText = JsonUtil::getOptionalFieldDefault<bool>("text", j, false);
 
 		bool added = false;
 		try {
-			added = ViewFileManager::getInstance()->addFileThrow(name, size, tth, user, isText);
+			added = ViewFileManager::getInstance()->addUserFileThrow(name, size, tth, user, isText);
 		} catch (const Exception& e) {
 			aRequest.setResponseErrorStr(e.getError());
 			return websocketpp::http::status_code::internal_server_error;
@@ -173,8 +176,13 @@ namespace webserver {
 		});
 	}
 
-	void ViewFileApi::on(ViewFileManagerListener::FileUpdated, const ViewFilePtr& aFile) noexcept {
-		onViewFileUpdated(aFile);
+	void ViewFileApi::on(ViewFileManagerListener::FileStateUpdated, const ViewFilePtr& aFile) noexcept {
+		maybeSend("view_file_updated", [&] { 
+			return json({
+				{ "id", aFile->getTTH().toBase32() },
+				{ "state", Serializer::serializeDownloadState(*aFile.get()) }
+			});
+		});
 	}
 
 	void ViewFileApi::on(ViewFileManagerListener::FileFinished, const ViewFilePtr& aFile) noexcept {
