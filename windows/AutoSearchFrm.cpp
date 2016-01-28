@@ -59,6 +59,7 @@ LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	
 	ctrlAutoSearch.SetColumnOrderArray(COLUMN_LAST, columnIndexes);
 	ctrlAutoSearch.SetImageList(ResourceLoader::getAutoSearchStatuses(), LVSIL_SMALL);
+	ctrlAutoSearch.setVisible(SETTING(AUTOSEARCHFRAME_VISIBLE));
 	ctrlAutoSearch.setSortColumn(COLUMN_VALUE);
 
 		//create buttons
@@ -664,15 +665,7 @@ LRESULT AutoSearchFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 		PostMessage(WM_CLOSE);
 		return 0;
 	}else {
-		WinUtil::saveHeaderOrder(
-			ctrlAutoSearch, 
-			SettingsManager::AUTOSEARCHFRAME_ORDER, 
-			SettingsManager::AUTOSEARCHFRAME_WIDTHS, 
-			COLUMN_LAST, 
-			columnIndexes, 
-			columnSizes
-			);
-
+		ctrlAutoSearch.saveHeaderOrder(SettingsManager::AUTOSEARCHFRAME_ORDER, SettingsManager::AUTOSEARCHFRAME_WIDTHS, SettingsManager::AUTOSEARCHFRAME_VISIBLE);
 		ctrlAutoSearch.DeleteAllItems();
 		itemInfos.clear();
 
