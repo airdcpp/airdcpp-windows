@@ -52,8 +52,8 @@ namespace webserver {
 
 		METHOD_HANDLER("stats", Access::ANY, ApiRequest::METHOD_GET, (), false, TransferApi::handleGetStats);
 
-		METHOD_HANDLER("force", Access::ANY, ApiRequest::METHOD_POST, (TOKEN_PARAM), false, TransferApi::handleForce);
-		METHOD_HANDLER("disconnect", Access::ANY, ApiRequest::METHOD_POST, (TOKEN_PARAM), false, TransferApi::handleDisconnect);
+		METHOD_HANDLER("force", Access::TRANSFERS, ApiRequest::METHOD_POST, (TOKEN_PARAM), false, TransferApi::handleForce);
+		METHOD_HANDLER("disconnect", Access::TRANSFERS, ApiRequest::METHOD_POST, (TOKEN_PARAM), false, TransferApi::handleDisconnect);
 
 		createSubscription("transfer_statistics");
 		timer->start(false);
@@ -73,7 +73,8 @@ namespace webserver {
 			auto cm = ConnectionManager::getInstance();
 			RLock l(cm->getCS());
 			for (const auto& d : cm->getTransferConnections(true)) {
-				addTransfer(d, "Inactive, waiting for status updates");
+				auto info = addTransfer(d, "Inactive, waiting for status updates");
+				updateQueueInfo(info);
 			}
 
 			for (const auto& u : cm->getTransferConnections(false)) {
@@ -216,23 +217,7 @@ namespace webserver {
 			t->setStatusString(STRING(DOWNLOAD_STARTING));
 		} else {
 			auto pct = t->getSize() > 0 ? (double)t->getBytesTransferred() * 100.0 / (double)t->getSize() : 0;
-
 			t->setStatusString(STRING_F(RUNNING_PCT, pct));
-
-			//auto tranlation = aIsDownload ? ResourceManager::DOWNLOADED_BYTES : ResourceManager::UPLOADED_BYTES;
-			/*if (aIsDownload) {
-				t->setStatusString(STRING_F(DOWNLOADED_BYTES,
-					Util::formatBytes(t->getBytesTransferred()) %
-					pct %
-					Util::formatSeconds(timeSinceStarted / 1000)
-					));
-			} else {
-				t->setStatusString(STRING_F(UPLOADED_BYTES,
-					Util::formatBytes(t->getBytesTransferred()) %
-					pct %
-					Util::formatSeconds(timeSinceStarted / 1000)
-					));
-			}*/
 		}
 
 		view.onItemUpdated(t, { PROP_STATUS, PROP_BYTES_TRANSFERRED, PROP_SPEED, PROP_SECONDS_LEFT });
@@ -323,33 +308,39 @@ namespace webserver {
 		onFailed(t, aCqi->getUser()->isSet(User::OLD_CLIENT) ? STRING(SOURCE_TOO_OLD) : aReason);
 	}
 
+	void TransferApi::updateQueueInfo(TransferInfoPtr& aInfo) noexcept {
+		QueueToken bundleToken = 0;
+		string aTarget;
+		int64_t aSize; int aFlags = 0;
+		if (!QueueManager::getInstance()->getQueueInfo(aInfo->getHintedUser(), aTarget, aSize, aFlags, bundleToken)) {
+			return;
+		}
+
+		auto type = Transfer::TYPE_FILE;
+		if (aFlags & QueueItem::FLAG_PARTIAL_LIST)
+			type = Transfer::TYPE_PARTIAL_LIST;
+		else if (aFlags & QueueItem::FLAG_USER_LIST)
+			type = Transfer::TYPE_FULL_LIST;
+
+		aInfo->setType(type);
+		aInfo->setTarget(aTarget);
+		aInfo->setSize(aSize);
+
+		aInfo->setState(TransferInfo::STATE_WAITING);
+		aInfo->setStatusString(STRING(CONNECTING));
+
+		aInfo->setState(TransferInfo::STATE_WAITING);
+
+		view.onItemUpdated(aInfo, { PROP_STATUS, PROP_TARGET, PROP_NAME, PROP_SIZE });
+	}
+
 	void TransferApi::on(ConnectionManagerListener::Connecting, const ConnectionQueueItem* aCqi) noexcept {
 		auto t = getTransfer(aCqi->getToken());
 		if (!t) {
 			return;
 		}
 
-		QueueToken bundleToken = 0;
-		string aTarget;
-		int64_t aSize; int aFlags = 0;
-		if (QueueManager::getInstance()->getQueueInfo(aCqi->getHintedUser(), aTarget, aSize, aFlags, bundleToken)) {
-			auto type = Transfer::TYPE_FILE;
-			if (aFlags & QueueItem::FLAG_PARTIAL_LIST)
-				type = Transfer::TYPE_PARTIAL_LIST;
-			else if (aFlags & QueueItem::FLAG_USER_LIST)
-				type = Transfer::TYPE_FULL_LIST;
-
-			t->setType(type);
-			t->setTarget(aTarget);
-			t->setSize(aSize);
-
-			t->setState(TransferInfo::STATE_WAITING);
-			t->setStatusString(STRING(CONNECTING));
-
-			t->setState(TransferInfo::STATE_WAITING);
-
-			view.onItemUpdated(t, { PROP_STATUS, PROP_TARGET, PROP_NAME, PROP_SIZE });
-		}
+		updateQueueInfo(t);
 	}
 
 	void TransferApi::on(ConnectionManagerListener::UserUpdated, const ConnectionQueueItem* aCqi) noexcept {

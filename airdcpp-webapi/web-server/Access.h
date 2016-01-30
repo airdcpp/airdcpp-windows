@@ -30,6 +30,7 @@ namespace webserver {
 		SEARCH,
 		DOWNLOAD,
 		EVENTS,
+		TRANSFERS,
 
 		QUEUE_VIEW,
 		QUEUE_EDIT,

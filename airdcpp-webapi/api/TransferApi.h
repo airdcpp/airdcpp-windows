@@ -98,6 +98,7 @@ namespace webserver {
 		void starting(TransferInfoPtr& aInfo, const Transfer* aTransfer) noexcept;
 		void onTransferCompleted(const Transfer* aTransfer, bool aIsDownload) noexcept;
 		void onTick(const Transfer* aTransfer, bool aIsDownload) noexcept;
+		void updateQueueInfo(TransferInfoPtr& aInfo) noexcept;
 
 		void on(DownloadManagerListener::Tick, const DownloadList& aDownloads) noexcept;
 		void on(DownloadManagerListener::BundleTick, const BundleList& bundles, uint64_t aTick) noexcept;
