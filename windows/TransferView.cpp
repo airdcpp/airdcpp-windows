@@ -928,33 +928,12 @@ void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bun
 	for(const auto& b: bundles) {
 		double ratio = 0;
 		int64_t totalSpeed = 0;
-		bool partial=false, trusted=false, untrusted=false, tthcheck=false, zdownload=false, chunked=false, mcn=false;
 
 		auto ui = new UpdateInfo(b->getStringToken(), true);
+		OrderedStringSet flags;
 		for(const auto& d: b->getDownloads()) {
 			if(d->getStart() > 0) {
-				if(d->isSet(Download::FLAG_PARTIAL)) {
-					partial = true;
-				}
-				if(d->getUserConnection().isSecure()) {
-					if(d->getUserConnection().isSet(UserConnection::FLAG_TRUSTED)) {
-						trusted = true;
-					} else {
-						untrusted = true;
-					}
-				}
-				if(d->isSet(Download::FLAG_TTH_CHECK)) {
-					tthcheck = true;
-				}
-				if(d->isSet(Download::FLAG_ZDOWNLOAD)) {
-					zdownload = true;
-				}
-				if(d->isSet(Download::FLAG_CHUNKED)) {
-					chunked = true;
-				}
-				if(d->getUserConnection().isSet(UserConnection::FLAG_MCN1)) {
-					mcn = true;
-				}
+				d->appendFlags(flags);
 
 				totalSpeed += static_cast<int64_t>(d->getAverageSpeed());
 				ratio += d->getPos() > 0 ? (double)d->getActual() / (double)d->getPos() : 1.00;
@@ -983,40 +962,33 @@ void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bun
 				double percent = (double)ui->pos*100.0/(double)ui->size;
 				dcassert(percent <= 100.00);
 				tstring elapsed = Util::formatSecondsW(timeSinceStarted / 1000);
-				tstring flag;
-					
-				if(partial) {
-					flag += _T("[P]");
-				}
-				if(trusted) {
-					flag += _T("[S]");
-				}
-				if(untrusted) {
-					flag += _T("[U]");
-				}
-				if(tthcheck) {
-					flag += _T("[T]");
-				}
-				if(zdownload) {
-					flag += _T("[Z]");
-				}
-				if(chunked) {
-					flag += _T("[C]");
-				}
-				if(mcn) {
-					flag += _T("[M]");
-				}	
 
-				if(!flag.empty()) {
-					flag += _T(" ");
-				}
-
-				ui->setStatusString(flag + TSTRING_F(DOWNLOADED_BYTES, pos.c_str() % percent % elapsed.c_str()));
+				ui->setStatusString(getRunningStatus(flags) + TSTRING_F(DOWNLOADED_BYTES, pos.c_str() % percent % elapsed.c_str()));
 			}
 		}
 
 		speak(UPDATE_BUNDLE, ui);
 	}
+}
+
+tstring TransferView::getRunningStatus(const OrderedStringSet& aFlags) noexcept {
+	tstring ret;
+	for (const auto& f : aFlags) {
+		ret += _T("[") + Text::toT(f) + _T("]");
+	}
+
+	if (!aFlags.empty()) {
+		ret += _T(" ");
+	}
+
+	return ret;
+}
+
+tstring TransferView::getRunningStatus(const Transfer* aTransfer) noexcept {
+	OrderedStringSet flags;
+	aTransfer->appendFlags(flags);
+
+	return getRunningStatus(flags);
 }
 
 void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) noexcept {
@@ -1037,33 +1009,7 @@ void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) noe
 		double percent = (double) d->getPos()*100.0 / (double) d->getSegmentSize();
 		tstring elapsed = Util::formatSecondsW((GET_TICK() - d->getStart())/1000);
 
-		tstring statusString;
-
-		if(d->isSet(Download::FLAG_PARTIAL)) {
-			statusString += _T("[P]");
-		}
-		if(d->getUserConnection().isSecure()) {
-			if (d->getUserConnection().isSet(UserConnection::FLAG_TRUSTED)) {
-				statusString += _T("[S]");
-			} else {
-				statusString += _T("[U]");
-			}
-		}
-		if(d->isSet(Download::FLAG_TTH_CHECK)) {
-			statusString += _T("[T]");
-		}
-		if(d->isSet(Download::FLAG_ZDOWNLOAD)) {
-			statusString += _T("[Z]");
-		}
-		if(d->isSet(Download::FLAG_CHUNKED)) {
-			statusString += _T("[C]");
-		}
-		if(d->getUserConnection().isSet(UserConnection::FLAG_MCN1)) {
-			statusString += _T("[M]");
-		}
-		if(!statusString.empty()) {
-			statusString += _T(" ");
-		}
+		auto statusString = getRunningStatus(d);
 		statusString += CTSTRING_F(DOWNLOADED_BYTES, pos.c_str() % percent % elapsed);
 		ui->setStatusString(statusString);
 			
@@ -1145,31 +1091,11 @@ void TransferView::on(UploadManagerListener::BundleTick, const UploadBundleList&
 
 		double ratio = 0;
 		int64_t totalSpeed = 0;
-		
-		bool partial=false, trusted=false, untrusted=false, chunked=false, mcn=false, zupload=false;
 
+		OrderedStringSet flags;
 		for(const auto& u: b->getUploads()) {
 			if(u->getStart() > 0) {
-				if(u->isSet(Upload::FLAG_PARTIAL)) {
-					partial = true;
-				}
-				if(u->getUserConnection().isSecure()) {
-					if (u->getUserConnection().isSet(UserConnection::FLAG_TRUSTED)) {
-						trusted = true;
-					} else {
-						untrusted = true;
-					}
-				}
-
-				if(u->isSet(Upload::FLAG_CHUNKED)) {
-					chunked = true;
-				}
-				if(u->getUserConnection().isSet(UserConnection::FLAG_MCN1)) {
-					mcn = true;
-				}
-				if(u->isSet(Upload::FLAG_ZUPLOAD)) {
-					zupload = true;
-				}
+				u->appendFlags(flags);
 
 				totalSpeed += static_cast<int64_t>(u->getAverageSpeed());
 				ratio += u->getPos() > 0 ? (double)u->getActual() / (double)u->getPos() : 1.00;
@@ -1201,32 +1127,8 @@ void TransferView::on(UploadManagerListener::BundleTick, const UploadBundleList&
 				double percent = (double)ui->pos*100.0/(double)ui->size;
 				dcassert(percent <= 100.00);
 				tstring elapsed = Util::formatSecondsW(timeSinceStarted / 1000);
-				tstring flag;
-					
-				if(partial) {
-					flag += _T("[P]");
-				}
-				if(trusted) {
-					flag += _T("[S]");
-				}
-				if(untrusted) {
-					flag += _T("[U]");
-				}
-				if(zupload) {
-					flag += _T("[Z]");
-				}
-				if(chunked) {
-					flag += _T("[C]");
-				}
-				if(mcn) {
-					flag += _T("[M]");
-				}
 
-				if(!flag.empty()) {
-					flag += _T(" ");
-				}
-
-				ui->setStatusString(flag + TSTRING_F(UPLOADED_BYTES, pos.c_str() % percent % elapsed.c_str()));
+				ui->setStatusString(getRunningStatus(flags) + TSTRING_F(UPLOADED_BYTES, pos.c_str() % percent % elapsed.c_str()));
 			}
 		}
 			
@@ -1252,30 +1154,7 @@ void TransferView::on(UploadManagerListener::Tick, const UploadList& ul) noexcep
 		double percent = (double) ui->pos*100.0 / (double) (u->getType() == Transfer::TYPE_TREE ? u->getSegmentSize() : u->getFileSize());
 		tstring elapsed = Util::formatSecondsW((GET_TICK() - u->getStart())/1000); 
 		
-		tstring statusString;
-
-		if(u->isSet(Upload::FLAG_PARTIAL)) {
-			statusString += _T("[P]");
-		}
-		if(u->getUserConnection().isSecure()) {
-			if (u->getUserConnection().isSet(UserConnection::FLAG_TRUSTED)) {
-				statusString += _T("[S]");
-			} else {
-				statusString += _T("[U]");
-			}
-		}
-		if(u->isSet(Upload::FLAG_ZUPLOAD)) {
-			statusString += _T("[Z]");
-		}
-		if(u->isSet(Upload::FLAG_CHUNKED)) {
-			statusString += _T("[C]");
-		}
-		if(u->getUserConnection().isSet(UserConnection::FLAG_MCN1)) {
-			statusString += _T("[M]");
-		}
-		if(!statusString.empty()) {
-			statusString += _T(" ");
-		}			
+		auto statusString = getRunningStatus(u);
 		statusString += CTSTRING_F(UPLOADED_BYTES, pos.c_str() % percent % elapsed);
 
 		ui->setStatusString(statusString);

@@ -300,7 +300,7 @@ private:
 	void on(ConnectionManagerListener::Added, const ConnectionQueueItem* aCqi) noexcept;
 	void on(ConnectionManagerListener::Failed, const ConnectionQueueItem* aCqi, const string& aReason) noexcept;
 	void on(ConnectionManagerListener::Removed, const ConnectionQueueItem* aCqi) noexcept;
-	void on(ConnectionManagerListener::StatusChanged, const ConnectionQueueItem* aCqi) noexcept { onUpdateFileInfo(aCqi->getHintedUser(), aCqi->getToken(), true); };
+	void on(ConnectionManagerListener::Connecting, const ConnectionQueueItem* aCqi) noexcept { onUpdateFileInfo(aCqi->getHintedUser(), aCqi->getToken(), true); };
 	void on(ConnectionManagerListener::UserUpdated, const ConnectionQueueItem* aCqi) noexcept;
 	void on(ConnectionManagerListener::Forced, const ConnectionQueueItem* aCqi) noexcept;
 
@@ -343,6 +343,9 @@ private:
 	ItemInfo* findItem(const UpdateInfo& ui, int& pos) const;
 	void updateItem(const ItemInfo* aII, uint32_t updateMask);
 	void setDefaultItem(OMenu& aMenu);
+
+	static tstring getRunningStatus(const Transfer* aTransfer) noexcept;
+	static tstring getRunningStatus(const OrderedStringSet& aFlags) noexcept;
 };
 
 #endif // !defined(TRANSFER_VIEW_H)
