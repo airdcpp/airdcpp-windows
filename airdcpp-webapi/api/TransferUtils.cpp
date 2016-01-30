@@ -32,6 +32,7 @@ namespace webserver {
 		case TransferApi::PROP_STATUS: return aItem->getStatusString();
 		case TransferApi::PROP_IP: return aItem->getIp();
 		case TransferApi::PROP_USER: return Format::formatNicks(aItem->getHintedUser());
+		case TransferApi::PROP_ENCRYPTION: return aItem->getEncryption();
 		default: dcassert(0); return Util::emptyString;
 		}
 	}

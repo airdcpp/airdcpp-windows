@@ -262,6 +262,9 @@ namespace webserver {
 	}
 
 	void TransferApi::on(ConnectionManagerListener::Added, const ConnectionQueueItem* aCqi) noexcept {
+		if (aCqi->getConnType() == CONNECTION_TYPE_PM)
+			return;
+
 		auto t = addTransfer(aCqi, STRING(CONNECTING));
 		view.onItemAdded(t);
 	}
@@ -375,12 +378,13 @@ namespace webserver {
 		aInfo->setState(TransferInfo::STATE_RUNNING);
 		aInfo->setIp(aTransfer->getUserConnection().getRemoteIp());
 		aInfo->setType(aTransfer->getType());
+		aInfo->setEncryption(aTransfer->getUserConnection().getEncryptionInfo());
 
 		OrderedStringSet flags;
 		aTransfer->appendFlags(flags);
 		aInfo->setFlags(flags);
 
-		view.onItemUpdated(aInfo, { PROP_STATUS, PROP_SPEED, PROP_BYTES_TRANSFERRED, PROP_TIME_STARTED, PROP_SIZE, PROP_TARGET, PROP_NAME, PROP_IP });
+		view.onItemUpdated(aInfo, { PROP_STATUS, PROP_SPEED, PROP_BYTES_TRANSFERRED, PROP_TIME_STARTED, PROP_SIZE, PROP_TARGET, PROP_NAME, PROP_IP, PROP_ENCRYPTION });
 	}
 
 	void TransferApi::on(DownloadManagerListener::Requesting, const Download* aDownload, bool hubChanged) noexcept {
