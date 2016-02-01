@@ -48,6 +48,7 @@ namespace webserver {
 		IGETSET(int64_t, timeLeft, TimeLeft, -1);
 		IGETSET(int64_t, size, Size, -1);
 
+		GETSET(string, encryption, Encryption);
 		GETSET(string, ip, Ip);
 		GETSET(string, target, Target);
 		GETSET(string, statusString, StatusString);

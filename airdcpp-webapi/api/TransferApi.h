@@ -59,6 +59,7 @@ namespace webserver {
 			{ PROP_SECONDS_LEFT, "seconds_left", TYPE_TIME, SERIALIZE_NUMERIC, SORT_NUMERIC },
 			{ PROP_IP, "ip", TYPE_TEXT, SERIALIZE_CUSTOM, SORT_TEXT },
 			{ PROP_FLAGS, "flags", TYPE_LIST_TEXT, SERIALIZE_CUSTOM, SORT_CUSTOM },
+			{ PROP_ENCRYPTION, "encryption", TYPE_TEXT, SERIALIZE_CUSTOM, SORT_TEXT },
 		};
 
 		enum Properties {
@@ -76,13 +77,17 @@ namespace webserver {
 			PROP_SECONDS_LEFT,
 			PROP_IP,
 			PROP_FLAGS,
+			PROP_ENCRYPTION,
 			PROP_LAST
 		};
 	private:
 		void loadTransfers() noexcept;
 		void unloadTransfers() noexcept;
 
-		api_return handleGetStats(ApiRequest& aRequest);
+		json serializeTransferStats() const noexcept;
+
+		api_return handleGetTransferredBytes(ApiRequest& aRequest);
+		api_return handleGetTransferStats(ApiRequest& aRequest);
 		api_return handleForce(ApiRequest& aRequest);
 		api_return handleDisconnect(ApiRequest& aRequest);
 
@@ -98,6 +103,7 @@ namespace webserver {
 		void starting(TransferInfoPtr& aInfo, const Transfer* aTransfer) noexcept;
 		void onTransferCompleted(const Transfer* aTransfer, bool aIsDownload) noexcept;
 		void onTick(const Transfer* aTransfer, bool aIsDownload) noexcept;
+		void updateQueueInfo(TransferInfoPtr& aInfo) noexcept;
 
 		void on(DownloadManagerListener::Tick, const DownloadList& aDownloads) noexcept;
 		void on(DownloadManagerListener::BundleTick, const BundleList& bundles, uint64_t aTick) noexcept;
@@ -124,9 +130,6 @@ namespace webserver {
 
 		int lastUploadBundles = 0;
 		int lastDownloadBundles = 0;
-
-		int lastUploads = 0;
-		int lastDownloads = 0;
 
 		TimerPtr timer;
 

@@ -32,6 +32,7 @@ namespace webserver {
 		case TransferApi::PROP_STATUS: return aItem->getStatusString();
 		case TransferApi::PROP_IP: return aItem->getIp();
 		case TransferApi::PROP_USER: return Format::formatNicks(aItem->getHintedUser());
+		case TransferApi::PROP_ENCRYPTION: return aItem->getEncryption();
 		default: dcassert(0); return Util::emptyString;
 		}
 	}
@@ -75,16 +76,21 @@ namespace webserver {
 
 	json TransferUtils::serializeProperty(const TransferInfoPtr& aItem, int aPropertyName) noexcept {
 		switch (aPropertyName) {
-		case TransferApi::PROP_IP: return Serializer::serializeIp(aItem->getIp());
-		case TransferApi::PROP_USER: return Serializer::serializeHintedUser(aItem->getHintedUser());
-		case TransferApi::PROP_STATUS:
-		{
-			return {
-				{ "id", aItem->getStateKey() },
-				{ "str", aItem->getStatusString() },
-			};
-		}
-		case TransferApi::PROP_FLAGS: return aItem->getFlags();
+			case TransferApi::PROP_IP: return Serializer::serializeIp(aItem->getIp());
+			case TransferApi::PROP_USER: return Serializer::serializeHintedUser(aItem->getHintedUser());
+			case TransferApi::PROP_STATUS:
+			{
+				return {
+					{ "id", aItem->getStateKey() },
+					{ "str", aItem->getStatusString() },
+				};
+			}
+			case TransferApi::PROP_FLAGS: return aItem->getFlags();
+			case TransferApi::PROP_ENCRYPTION:
+			{
+				auto trusted = aItem->getFlags().find("S") != aItem->getFlags().end();
+				return Serializer::serializeEncryption(aItem->getEncryption(), trusted);
+			}
 		}
 
 		dcassert(0);
