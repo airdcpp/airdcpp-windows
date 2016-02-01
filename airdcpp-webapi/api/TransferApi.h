@@ -84,7 +84,10 @@ namespace webserver {
 		void loadTransfers() noexcept;
 		void unloadTransfers() noexcept;
 
-		api_return handleGetStats(ApiRequest& aRequest);
+		json serializeTransferStats() const noexcept;
+
+		api_return handleGetTransferredBytes(ApiRequest& aRequest);
+		api_return handleGetTransferStats(ApiRequest& aRequest);
 		api_return handleForce(ApiRequest& aRequest);
 		api_return handleDisconnect(ApiRequest& aRequest);
 
@@ -127,9 +130,6 @@ namespace webserver {
 
 		int lastUploadBundles = 0;
 		int lastDownloadBundles = 0;
-
-		int lastUploads = 0;
-		int lastDownloads = 0;
 
 		TimerPtr timer;
 
