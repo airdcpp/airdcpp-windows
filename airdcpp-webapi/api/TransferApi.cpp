@@ -333,7 +333,7 @@ namespace webserver {
 
 		aInfo->setState(TransferInfo::STATE_WAITING);
 
-		view.onItemUpdated(aInfo, { PROP_STATUS, PROP_TARGET, PROP_NAME, PROP_SIZE });
+		view.onItemUpdated(aInfo, { PROP_STATUS, PROP_TARGET, PROP_TYPE, PROP_NAME, PROP_SIZE });
 	}
 
 	void TransferApi::on(ConnectionManagerListener::Connecting, const ConnectionQueueItem* aCqi) noexcept {
@@ -379,7 +379,7 @@ namespace webserver {
 		aInfo->setType(aTransfer->getType());
 		aInfo->setEncryption(aTransfer->getUserConnection().getEncryptionInfo());
 
-		view.onItemUpdated(aInfo, { PROP_STATUS, PROP_SPEED, PROP_BYTES_TRANSFERRED, PROP_TIME_STARTED, PROP_SIZE, PROP_TARGET, PROP_NAME, PROP_IP, PROP_ENCRYPTION, PROP_FLAGS });
+		view.onItemUpdated(aInfo, { PROP_STATUS, PROP_SPEED, PROP_BYTES_TRANSFERRED, PROP_TIME_STARTED, PROP_SIZE, PROP_TARGET, PROP_NAME, PROP_TYPE, PROP_IP, PROP_ENCRYPTION, PROP_FLAGS });
 	}
 
 	void TransferApi::on(DownloadManagerListener::Requesting, const Download* aDownload, bool hubChanged) noexcept {
