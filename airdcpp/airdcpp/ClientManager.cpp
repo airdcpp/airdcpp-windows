@@ -755,6 +755,7 @@ bool ClientManager::connect(const UserPtr& aUser, const string& aToken, bool all
 		isProtocolError = false;
 
 		if (aConnType == CONNECTION_TYPE_PM && !ou->supportsCCPM()) {
+			isProtocolError = true;
 			lastError_ = STRING(CCPM_NOT_SUPPORTED);
 			return false;
 		}
