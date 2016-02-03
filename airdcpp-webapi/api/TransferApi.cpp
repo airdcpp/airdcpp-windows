@@ -378,6 +378,11 @@ namespace webserver {
 		aInfo->setIp(aTransfer->getUserConnection().getRemoteIp());
 		aInfo->setType(aTransfer->getType());
 		aInfo->setEncryption(aTransfer->getUserConnection().getEncryptionInfo());
+		aInfo->setSize(aTransfer->getSegmentSize());
+
+		OrderedStringSet flags;
+		aTransfer->appendFlags(flags);
+		aInfo->setFlags(flags);
 
 		view.onItemUpdated(aInfo, { PROP_STATUS, PROP_SPEED, PROP_BYTES_TRANSFERRED, PROP_TIME_STARTED, PROP_SIZE, PROP_TARGET, PROP_NAME, PROP_TYPE, PROP_IP, PROP_ENCRYPTION, PROP_FLAGS });
 	}
@@ -392,17 +397,13 @@ namespace webserver {
 			return;
 		}
 
-		t->setSize(aDownload->getSegmentSize());
 		t->setStatusString(aStatus);
-
-		OrderedStringSet flags;
-		aDownload->appendFlags(flags);
-		t->setFlags(flags);
 
 		if (aFullUpdate) {
 			starting(t, aDownload);
 		} else {
-			view.onItemUpdated(t, { PROP_STATUS, PROP_SIZE, PROP_FLAGS });
+			t->setSize(aDownload->getSegmentSize());
+			view.onItemUpdated(t, { PROP_STATUS, PROP_SIZE });
 		}
 	}
 
@@ -417,7 +418,6 @@ namespace webserver {
 			return;
 		}
 
-		t->setSize(aUpload->getType() == Transfer::TYPE_TREE ? aUpload->getSegmentSize() : aUpload->getFileSize());
 		starting(t, aUpload);
 	}
 
