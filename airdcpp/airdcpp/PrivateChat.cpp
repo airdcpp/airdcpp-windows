@@ -58,7 +58,7 @@ void PrivateChat::checkCCPMHubBlocked() {
 	auto ou = ClientManager::getInstance()->findOnlineUser(replyTo, false);
 	if (ou) {
 		string app = ou->getIdentity().getApplication();
-		if (app.find("AirDC++ 3.") || app.find("AirDC++w"))
+		if ((app.find("AirDC++ 3.") != string::npos) || (app.find("AirDC++w") != string::npos))
 			statusMessage(STRING_F(CCPM_BLOCKED_WARNING, hubName), LogMessage::SEV_WARNING);
 	}
 }

@@ -97,11 +97,11 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	
 	init(m_hWnd, rcDefault);
 	
-	CToolInfo ti_tool4(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_TEXT + POPUP_UID, 0, LPSTR_TEXTCALLBACK);
-	ctrlTooltips.AddTool(&ti_tool4);
-
-	CToolInfo ti_tool(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_CC + POPUP_UID, 0, LPSTR_TEXTCALLBACK);
+	CToolInfo ti_tool(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_TEXT + POPUP_UID, 0, LPSTR_TEXTCALLBACK);
 	ctrlTooltips.AddTool(&ti_tool);
+
+	CToolInfo ti_tool1(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_CC + POPUP_UID, 0, LPSTR_TEXTCALLBACK);
+	ctrlTooltips.AddTool(&ti_tool1);
 
 	CToolInfo ti_tool2(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_AWAY + POPUP_UID, 0, LPSTR_TEXTCALLBACK);
 	ctrlTooltips.AddTool(&ti_tool2);
@@ -215,10 +215,6 @@ void PrivateFrame::updatePMInfo(uint8_t aType) {
 		setStatusText(_T(" *** ") + TSTRING(USER_CLOSED_WINDOW) + _T(" ***"), LogMessage::SEV_INFO);
 		break;
 	}
-
-	//if (SETTING(BOLD_PM) && aType != PrivateChat::TYPING_ON && aType != PrivateChat::TYPING_OFF ) {
-		//setDirty();
-	//}
 }
 
 LRESULT PrivateFrame::onStatusBarClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
