@@ -97,6 +97,9 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	
 	init(m_hWnd, rcDefault);
 	
+	CToolInfo ti_tool4(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_TEXT + POPUP_UID, 0, LPSTR_TEXTCALLBACK);
+	ctrlTooltips.AddTool(&ti_tool4);
+
 	CToolInfo ti_tool(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_CC + POPUP_UID, 0, LPSTR_TEXTCALLBACK);
 	ctrlTooltips.AddTool(&ti_tool);
 
@@ -172,9 +175,16 @@ void PrivateFrame::addClientLine(const tstring& aLine, uint8_t severity) {
 }
 
 void PrivateFrame::addStatus(const tstring& aLine, HICON aIcon) {
+	if (lastLinesList.empty() || (lastLinesList.back() != aLine)) {
+		while (lastLinesList.size() + 1 > 5)
+			lastLinesList.pop_front();
+		lastLinesList.push_back(aLine);
+	}
+
 	lastStatus = { aLine, aIcon };
 	ctrlStatus.SetText(STATUS_TEXT, aLine.c_str(), SBT_NOTABPARSING);
 	ctrlStatus.SetIcon(STATUS_TEXT, aIcon);
+
 }
 
 void PrivateFrame::updatePMInfo(uint8_t aType) {
@@ -234,7 +244,20 @@ LRESULT PrivateFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/)
 	
 	LPNMTTDISPINFO pDispInfo = (LPNMTTDISPINFO)pnmh;
 	pDispInfo->szText[0] = 0;
-	if (idCtrl == STATUS_CC + POPUP_UID) {
+	if (idCtrl == STATUS_TEXT + POPUP_UID) {
+		lastLines.clear();
+		for (auto& i : lastLinesList) {
+			lastLines += i;
+			lastLines += _T("\r\n");
+		}
+
+		if (lastLines.size() > 2) {
+			lastLines.erase(lastLines.size() - 2);
+		}
+
+		pDispInfo->lpszText = const_cast<TCHAR*>(lastLines.c_str());
+	}
+	else if (idCtrl == STATUS_CC + POPUP_UID) {
 		lastCCPMError = Text::toT(chat->getLastCCPMError());
 		pDispInfo->lpszText = !chat->getSupportsCCPM() ? const_cast<TCHAR*>(lastCCPMError.c_str()):
 			ccReady() ? (LPWSTR)CTSTRING(DISCONNECT_CCPM) : (LPWSTR)CTSTRING(START_CCPM);
@@ -551,6 +574,9 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		
 		auto setToolRect = [&] {
 			CRect r;
+			ctrlStatus.GetRect(STATUS_TEXT, r);
+			ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, STATUS_TEXT + POPUP_UID, r);
+
 			ctrlStatus.GetRect(STATUS_CC, r);
 			ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, STATUS_CC + POPUP_UID, r);
 
@@ -579,6 +605,8 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		w[STATUS_AWAY] = w[STATUS_HUBSEL] + status_away_size;
 		w[STATUS_COUNTRY] = w[STATUS_AWAY] + status_country_size +8;
 		ctrlStatus.SetParts(STATUS_LAST, w);
+
+		ctrlTooltips.SetMaxTipWidth(w[STATUS_TEXT]);
 		setToolRect();
 
 		if (ctrlHubSel.IsWindow()){

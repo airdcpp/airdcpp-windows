@@ -346,10 +346,6 @@ bool OnlineUser::supportsCCPM(string& _error) const {
 		_error = STRING(CCPM_NOT_SUPPORTED);
 		return false;
 	}
-	else if (!getClient()->isSecure()) {
-		_error = STRING(CCPM_NOT_SUPPORTED_SECURE);
-		return false;
-	}
 	return true;
 }
 

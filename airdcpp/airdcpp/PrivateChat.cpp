@@ -39,8 +39,8 @@ PrivateChat::PrivateChat(const HintedUser& aUser, UserConnection* aUc) :
 		aUc->addListener(this);
 	} else {
 		delayEvents.addEvent(CCPM_AUTO, [this] { checkAlwaysCCPM(); }, 1000);
+		checkCCPMHubBlocked();
 	}
-
 	ClientManager::getInstance()->addListener(this);
 }
 
@@ -48,6 +48,19 @@ PrivateChat::~PrivateChat() {
 	ClientManager::getInstance()->removeListener(this);
 	if (uc)
 		uc->removeListener(this);
+}
+
+void PrivateChat::checkCCPMHubBlocked() {
+	//If at least 1 or more hubs in common is allowing CCPM, discard the warning, we might be already initiating a connection..
+	if (!replyTo.user->isOnline() || ccReady() || getSupportsCCPM() || replyTo.user->isNMDC() || replyTo.user->isSet(User::BOT))
+		return;
+
+	auto ou = ClientManager::getInstance()->findOnlineUser(replyTo, false);
+	if (ou) {
+		string app = ou->getIdentity().getApplication();
+		if (app.find("AirDC++ 3.") || app.find("AirDC++w"))
+			statusMessage(STRING_F(CCPM_BLOCKED_WARNING, hubName), LogMessage::SEV_WARNING);
+	}
 }
 
 const string& PrivateChat::ccpmStateToString(uint8_t aState) noexcept {
