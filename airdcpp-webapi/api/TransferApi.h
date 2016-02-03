@@ -49,6 +49,7 @@ namespace webserver {
 		const PropertyList properties = {
 			{ PROP_NAME, "name", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
 			{ PROP_TARGET, "target", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
+			{ PROP_TYPE, "type", TYPE_TEXT, SERIALIZE_CUSTOM, SORT_TEXT },
 			{ PROP_DOWNLOAD, "download", TYPE_NUMERIC_OTHER, SERIALIZE_BOOL, SORT_NUMERIC },
 			{ PROP_SIZE, "size", TYPE_SIZE, SERIALIZE_NUMERIC, SORT_NUMERIC },
 			{ PROP_STATUS, "status", TYPE_TEXT, SERIALIZE_CUSTOM, SORT_CUSTOM },
@@ -66,6 +67,7 @@ namespace webserver {
 			PROP_TOKEN = -1,
 			PROP_NAME,
 			PROP_TARGET,
+			PROP_TYPE,
 			PROP_DOWNLOAD,
 			PROP_SIZE,
 			PROP_STATUS,

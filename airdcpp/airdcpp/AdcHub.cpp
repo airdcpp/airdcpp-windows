@@ -275,7 +275,7 @@ void AdcHub::handle(AdcCommand::INF, AdcCommand& c) noexcept {
 			if (isSecure()) {
 				auto encryption = getEncryptionInfo();
 				if (encryption.find("TLSv1.2") == string::npos) {
-					statusMessage("WARNING: This hub uses an outdated cryptographic protocol which contains serious security vulnerabilities. Communication through this hub should not be considered as secure.", LogMessage::SEV_WARNING);
+					statusMessage("This hub uses an outdated cryptographic protocol that has known security issues", LogMessage::SEV_WARNING);
 				}
 			}
 		}
