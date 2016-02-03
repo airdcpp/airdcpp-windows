@@ -306,7 +306,6 @@ LRESULT PrivateFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 LRESULT PrivateFrame::onHubChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled) {
 	chat->setHubUrl(hubs[ctrlHubSel.GetCurSel()].first);
-	updateOnlineStatus();
 
 	addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)), LogMessage::SEV_INFO);
 	bHandled = FALSE;
