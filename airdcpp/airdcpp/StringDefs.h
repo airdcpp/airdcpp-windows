@@ -153,7 +153,7 @@ enum Strings { // @DontAdd
 	CANT_OPEN_EMPTY_FILE, // "A zero-byte file can't be opened"
 	CANT_OPEN_SFV, // "Failed to open the SFV file"
 	CASE_SENSITIVE, // "Case sensitive"
-	CCPM_BLOCKED_WARNING, // "The hub %1% does not allow direct encrypted private message channels, which means that the text is being analyzed by the hub and possibly being read by its operators.\r\nIt's recommended that you use other means of communication for transferring sensitive information."
+	CCPM_BLOCKED_WARNING, // "The hub %1% has chosen not to allow direct encrypted private message channels, which means that the text is being analyzed by the hub and possibly being read by its operators.\r\nIt's recommended that you use other means of communication for transferring sensitive information."
 	CCPM_DISCONNECTED, // "The direct encrypted channel has been disconnected"
 	CCPM_DISCONNECTING, // "Disconnecting the direct encrypted channel..."
 	CCPM_ESTABLISHED, // "A direct encrypted channel has been established"
