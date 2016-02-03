@@ -217,7 +217,7 @@ namespace webserver {
 
 		uint64_t timeSinceStarted = GET_TICK() - t->getStarted();
 		if (timeSinceStarted < 1000) {
-			t->setStatusString(STRING(DOWNLOAD_STARTING));
+			t->setStatusString(aIsDownload ? STRING(DOWNLOAD_STARTING) : STRING(UPLOAD_STARTING));
 		} else {
 			auto pct = t->getSize() > 0 ? (double)t->getBytesTransferred() * 100.0 / (double)t->getSize() : 0;
 			t->setStatusString(STRING_F(RUNNING_PCT, pct));
@@ -374,11 +374,12 @@ namespace webserver {
 		aInfo->setBytesTransferred(aTransfer->getPos());
 		aInfo->setTarget(aTransfer->getPath());
 		aInfo->setStarted(GET_TICK());
+		aInfo->setType(aTransfer->getType());
+		aInfo->setSize(aTransfer->getSegmentSize());
+
 		aInfo->setState(TransferInfo::STATE_RUNNING);
 		aInfo->setIp(aTransfer->getUserConnection().getRemoteIp());
-		aInfo->setType(aTransfer->getType());
 		aInfo->setEncryption(aTransfer->getUserConnection().getEncryptionInfo());
-		aInfo->setSize(aTransfer->getSegmentSize());
 
 		OrderedStringSet flags;
 		aTransfer->appendFlags(flags);
@@ -402,8 +403,15 @@ namespace webserver {
 		if (aFullUpdate) {
 			starting(t, aDownload);
 		} else {
+			// All flags weren't known when requesting
+			OrderedStringSet flags;
+			aDownload->appendFlags(flags);
+			t->setFlags(flags);
+
+			// Size was unknown for filelists when requesting
 			t->setSize(aDownload->getSegmentSize());
-			view.onItemUpdated(t, { PROP_STATUS, PROP_SIZE });
+
+			view.onItemUpdated(t, { PROP_STATUS, PROP_FLAGS, PROP_SIZE });
 		}
 	}
 
