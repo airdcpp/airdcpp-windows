@@ -192,6 +192,8 @@ private:
 
 	void updatePMInfo(uint8_t aType);
 	void addStatus(const tstring& aLine, HICON aIcon);
+	deque<tstring> lastLinesList;
+	tstring lastLines;
 
 	pair<tstring, HICON> lastStatus;
 

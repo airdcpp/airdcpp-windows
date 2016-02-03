@@ -85,7 +85,7 @@ void ChatFrameBase::init(HWND /*m_hWnd*/, RECT aRcDefault) {
 	ctrlClient.SetBackgroundColor(WinUtil::bgColor);
 	//ctrlClient.setClient(aClient);
 
-	ctrlTooltips.Create(m_hWnd, aRcDefault, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);
+	ctrlTooltips.Create(m_hWnd, aRcDefault, NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);
 	ctrlTooltips.SetDelayTime(TTDT_AUTOMATIC, 600);
 	ctrlTooltips.Activate(TRUE);
 
