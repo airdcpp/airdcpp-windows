@@ -218,7 +218,7 @@ void PrivateFrame::updatePMInfo(uint8_t aType) {
 }
 
 LRESULT PrivateFrame::onStatusBarClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
-	if (!getUser()->isOnline() || getUser()->isNMDC())
+	if (!getUser()->isOnline() || getUser()->isNMDC() || getUser()->isSet(User::BOT))
 		return 0;
 	
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
@@ -235,9 +235,7 @@ LRESULT PrivateFrame::onStatusBarClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 }
 
 LRESULT PrivateFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/) {
-	if (getUser()->isNMDC() || getUser()->isSet(User::BOT))
-		return 0;
-	
+
 	LPNMTTDISPINFO pDispInfo = (LPNMTTDISPINFO)pnmh;
 	pDispInfo->szText[0] = 0;
 	if (idCtrl == STATUS_TEXT + POPUP_UID) {
@@ -252,8 +250,13 @@ LRESULT PrivateFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/)
 		}
 
 		pDispInfo->lpszText = const_cast<TCHAR*>(lastLines.c_str());
+		return 0;
 	}
-	else if (idCtrl == STATUS_CC + POPUP_UID) {
+
+	if (idCtrl == STATUS_CC + POPUP_UID) {
+		if (getUser()->isNMDC() || getUser()->isSet(User::BOT))
+			return 0;
+
 		lastCCPMError = Text::toT(chat->getLastCCPMError());
 		pDispInfo->lpszText = !chat->getSupportsCCPM() ? const_cast<TCHAR*>(lastCCPMError.c_str()):
 			ccReady() ? (LPWSTR)CTSTRING(DISCONNECT_CCPM) : (LPWSTR)CTSTRING(START_CCPM);
