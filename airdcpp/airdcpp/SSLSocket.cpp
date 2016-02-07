@@ -174,7 +174,7 @@ int SSLSocket::checkSSL(int ret) {
 			auto sys_err = ERR_get_error();
 			if (sys_err == 0) {
 				if (ret == 0) {
-					dcdebug("TLS error: call ret = %d, SSL_get_error = %d, ERR_get_error = " U64_FMT "\n", ret, err, sys_err);
+					dcdebug("TLS error: call ret = %d, SSL_get_error = %d, ERR_get_error = %lu\n", ret, err, sys_err);
 					throw SSLSocketException(STRING(CONNECTION_CLOSED));
 				}
 				sys_err = getLastError();
@@ -194,7 +194,7 @@ int SSLSocket::checkSSL(int ret) {
 			} else {
 				_error = ERR_error_string(sys_err, NULL);
 			}
-			dcdebug("TLS error: call ret = %d, SSL_get_error = %d, ERR_get_error = " U64_FMT ",ERROR string: %s \n", ret, err, sys_err, ERR_error_string(sys_err, NULL));
+			dcdebug("TLS error: call ret = %d, SSL_get_error = %d, ERR_get_error = %lu,ERROR string: %s \n", ret, err, sys_err, ERR_error_string(sys_err, NULL));
 			throw SSLSocketException(STRING(TLS_ERROR) + (_error.empty() ? "" : + ": " + _error));
 		}
 	}
