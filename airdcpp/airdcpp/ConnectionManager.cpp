@@ -304,7 +304,7 @@ void ConnectionManager::attemptDownloads(uint64_t aTick, StringList& removedToke
 					continue;
 				}
 
-				cqi->setLastBundle(Util::toString(bundleToken));
+				cqi->setLastBundle(bundleToken != 0 ? Util::toString(bundleToken) : Util::emptyString);
 				cqi->setHubUrl(hubHint);
 
 				if (cqi->getState() == ConnectionQueueItem::WAITING) {
