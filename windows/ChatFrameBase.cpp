@@ -73,7 +73,7 @@ void ChatFrameBase::init(HWND /*m_hWnd*/, RECT aRcDefault) {
 
 
 	ctrlClient.Subclass();
-	ctrlClient.LimitText(0);
+	ctrlClient.LimitText(1024 * 64 * 2);
 	ctrlClient.SetFont(WinUtil::font);
 
 	ctrlClient.setFormatLinks(true);
@@ -99,7 +99,7 @@ void ChatFrameBase::init(HWND /*m_hWnd*/, RECT aRcDefault) {
 	ctrlMessage.Create(m_hWnd, aRcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VSCROLL |
 		ES_AUTOHSCROLL | ES_MULTILINE | ES_AUTOVSCROLL, WS_EX_CLIENTEDGE);
 	ctrlMessage.SetFont(WinUtil::font);
-	ctrlMessage.SetLimitText(9999);
+	ctrlMessage.SetLimitText(32*1024);
 	lineCount = 1; //ApexDC
 
 	if(SETTING(SHOW_EMOTICON)){
