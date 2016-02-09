@@ -571,13 +571,11 @@ void ConnectionManager::adcConnect(const OnlineUser& aUser, const string& aPort,
 
 	try {
 		if (aUser.getIdentity().getConnectMode() == Identity::MODE_ACTIVE_DUAL) {
-			uc->connect(Socket::AddressInfo(aUser.getIdentity().getIp4(), aUser.getIdentity().getIp6()), aPort, localPort, natRole);
+			uc->connect(Socket::AddressInfo(aUser.getIdentity().getIp4(), aUser.getIdentity().getIp6()), aPort, localPort, natRole, aUser);
 		} else {
 			auto ai = Socket::AddressInfo(aUser.getIdentity().getIp(), aUser.getIdentity().allowV6Connections() ? Socket::AddressInfo::TYPE_V6 : Socket::AddressInfo::TYPE_V4);
-			uc->connect(move(ai), aPort, localPort, natRole);
+			uc->connect(move(ai), aPort, localPort, natRole, aUser);
 		}
-
-		uc->setUser(aUser);
 	} catch(const Exception&) {
 		putConnection(uc);
 		delete uc;
