@@ -555,8 +555,6 @@ int CryptoManager::verify_callback(int preverify_ok, X509_STORE_CTX *ctx) {
 	SSL* ssl = (SSL*)X509_STORE_CTX_get_ex_data(ctx, SSL_get_ex_data_X509_STORE_CTX_idx());
 	SSLVerifyData* verifyData = (SSLVerifyData*)SSL_get_ex_data(ssl, CryptoManager::idxVerifyData);
 
-	// TODO: we should make sure that the trusted certificate store never overules KeyPrint, if present, because certificate pinning on an individual certificate is a stronger method of verification.
-
 	// verifyData is unset only when KeyPrint has been pinned and we are not skipping errors due to incomplete chains
 	// we can fail here f.ex. if the certificate has expired but is still pinned with KeyPrint
 	if (!verifyData)
@@ -599,22 +597,14 @@ int CryptoManager::verify_callback(int preverify_ok, X509_STORE_CTX *ctx) {
 				// Hide the potential library error about trying to add a dupe
 				ERR_set_mark();
 				if (X509_STORE_add_cert(store, cert)) {
-
-					/*OpenSSL 1.0.2d requires certificate chain to be NULL on each call to verify, basicly it means reinitializing the CTX each time,
-					but this means we need to fill it up with the same callback information again feels dumb, but works fine,
-					however ctx->chain is not a private variable so we hack it :) */
-					ctx->chain = NULL;
-					/* This is the alternative ( "correct method"?? )
-					auto vrfy_cb = SSL_CTX_get_verify_callback(ssl_ctx);
-					X509_STORE_CTX_cleanup(ctx);
-					X509_STORE_CTX_init(ctx, store, cert, X509_STORE_CTX_get_chain(ctx));
-					X509_STORE_CTX_set_ex_data(ctx, SSL_get_ex_data_X509_STORE_CTX_idx(), ssl);
-					X509_STORE_CTX_set_verify_cb(ctx, vrfy_cb);
-					*/
+					if (ctx->chain != NULL) { // We will fail unless reinitialize the ctx.
+						X509_STORE_CTX_cleanup(ctx);
+						X509_STORE_CTX_init(ctx, store, cert, SSL_get_peer_cert_chain(ssl));
+					}
 					X509_STORE_CTX_set_error(ctx, X509_V_OK);
 					int res = X509_verify_cert(ctx);
 					err = X509_STORE_CTX_get_error(ctx);
-					if (res < 0)
+					if (res < 0) // -1 means no verifications were really made, no cert or false ctx?
 						return preverify_ok;
 				}
 				else ERR_pop_to_mark();
