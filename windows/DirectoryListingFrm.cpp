@@ -217,10 +217,14 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir
 		updateStatus(TSTRING_F(X_RESULTS_FOUND, dl->getResultCount()));
 	}
 
-	if (changeType == CHANGE_LIST) {
-		ctrlFiles.list.SetFocus();
-	} else {
-		ctrlTree.SetFocus();
+
+	if (getActive()) { //Don't let it steal focus from other windows
+		if (changeType == CHANGE_LIST) {
+			ctrlFiles.list.SetFocus();
+		}
+		else {
+			ctrlTree.SetFocus();
+		}
 	}
 	updateToolbarState();
 	changeType = CHANGE_LAST;
