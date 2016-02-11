@@ -820,7 +820,7 @@ bool ClientManager::privateMessage(const HintedUser& user, const string& msg, st
 
 void ClientManager::userCommand(const HintedUser& user, const UserCommand& uc, ParamMap& params, bool compatibility) noexcept {
 
-	string hubUrl = (!uc.getHub.empty() && hasClient(uc.getHub())) ? uc.getHub() : user.hint;
+	string hubUrl = (!uc.getHub().empty() && hasClient(uc.getHub())) ? uc.getHub() : user.hint;
 
 	RLock l(cs);
 	auto ou = findOnlineUser(user.user->getCID(), hubUrl);
