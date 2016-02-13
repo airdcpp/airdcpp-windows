@@ -592,20 +592,31 @@ int CryptoManager::verify_callback(int preverify_ok, X509_STORE_CTX *ctx) {
 			if (err != X509_V_OK) {
 				// This is the right way to get the certificate store, although it is rather roundabout
 				SSL_CTX* ssl_ctx = SSL_get_SSL_CTX(ssl);
-				X509_STORE* store = SSL_CTX_get_cert_store(ssl_ctx);
-				dcassert(store == ctx->ctx);
+				X509_STORE* store = X509_STORE_CTX_get0_store(ctx);
+
 				// Hide the potential library error about trying to add a dupe
 				ERR_set_mark();
 				if (X509_STORE_add_cert(store, cert)) {
-					if (ctx->chain != NULL) { // We will fail unless reinitialize the ctx.
-						X509_STORE_CTX_cleanup(ctx);
-						X509_STORE_CTX_init(ctx, store, cert, SSL_get_peer_cert_chain(ssl));
+					// We are fine, but can't leave mark on the stack
+					ERR_pop_to_mark();
+
+					// After the store has been updated, perform a recheck of the current certificate, the existing context can be in mid recursion, so hands off!
+					X509_STORE_CTX* vrfy_ctx = X509_STORE_CTX_new();
+
+					if (vrfy_ctx && X509_STORE_CTX_init(vrfy_ctx, store, cert, NULL)) {
+						X509_STORE_CTX_set_ex_data(vrfy_ctx, SSL_get_ex_data_X509_STORE_CTX_idx(), ssl);
+						X509_STORE_CTX_set_verify_cb(vrfy_ctx, SSL_CTX_get_verify_callback(ssl_ctx));
+
+						int verify_result = X509_verify_cert(vrfy_ctx);
+						err = X509_STORE_CTX_get_error(vrfy_ctx);
+						if (verify_result <= 0 && err == X509_V_OK) {
+							// Watch out for weird library errors that might not set the context error code
+								err = X509_V_ERR_UNSPECIFIED;
+						}
 					}
-					X509_STORE_CTX_set_error(ctx, X509_V_OK);
-					int res = X509_verify_cert(ctx);
-					err = X509_STORE_CTX_get_error(ctx);
-					if (res < 0) // -1 means no verifications were really made, no cert or false ctx?
-						return preverify_ok;
+					// Set the current cert error to the context being verified.
+					X509_STORE_CTX_set_error(ctx, err); 
+					if (vrfy_ctx) X509_STORE_CTX_free(vrfy_ctx);
 				}
 				else ERR_pop_to_mark();
 
