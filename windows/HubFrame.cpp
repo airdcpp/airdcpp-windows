@@ -1495,6 +1495,13 @@ void HubFrame::on(SetActive, const Client*) noexcept {
 	});
 }
 
+void HubFrame::on(KeyprintMismatch, const Client*) noexcept {
+	if (!SETTING(ALLOW_UNTRUSTED_HUBS))
+		return;
+
+	callAsync([=] { addStatus(_T("The keyprint in the address does'nt match the server certificate, use /allow to proceed with untrusted connection"), LogMessage::SEV_WARNING, WinUtil::m_ChatTextServer); });
+}
+
 void HubFrame::on(MessageManagerListener::IgnoreAdded, const UserPtr&) noexcept{
 	callAsync([=] { updateUsers = true; });
 }

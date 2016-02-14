@@ -62,7 +62,7 @@ public:
 	typedef unordered_map<string*, ClientPtr, noCaseStringHash, noCaseStringEq> UrlMap;
 	typedef unordered_map<ClientToken, ClientPtr> IdMap;
 
-	virtual void connect();
+	virtual void connect(bool withKeyprint = true);
 	virtual void disconnect(bool graceless);
 
 	// Default message method
@@ -267,7 +267,6 @@ private:
 	string port;
 	char separator;
 	bool secure;
-	bool iskeypError;
 	CountType countType;
 };
 

@@ -338,6 +338,7 @@ private:
 	void on(Disconnecting, const Client*) noexcept;
 	void on(Redirected, const string&, const ClientPtr& aNewClient) noexcept;
 	void on(MessagesRead) noexcept;
+	void on(KeyprintMismatch, const Client*) noexcept;
 
 	void on(MessageManagerListener::IgnoreAdded, const UserPtr& aUser) noexcept;
 	void on(MessageManagerListener::IgnoreRemoved, const UserPtr& aUser) noexcept;
