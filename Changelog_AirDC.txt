@@ -1,3 +1,27 @@
+3.xx
+
+Added:
+
+- Show the path also for partial filelist uploads
+- Report keyprint validation errors for downloads
+- Report errors when writing of log files
+
+Changed:
+
+- File name casing in SFV files and files on disk must match (filesystems on non-Windows operating systems are case-sensitive)
+
+Fixed:
+
+- Fix ADC hubs randomly getting stuck at "Connecting in progress" state
+- Fix downloading of highest priority files when the bundle is paused (non-forced)
+- Fix transfer grouping issues
+
+Removed:
+
+- Support for failover addresses for favorite hubs
+- Support for per-profile share excludes
+
+
 3.00
 
 Added:
