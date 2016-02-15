@@ -30,7 +30,7 @@
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
-DirectoryListingDlg::DirectoryListingDlg(const DirectoryListingPtr& aDl) : fileTypeStr(SEARCH_TYPE_ANY), fileType(0), size(0), sizeMode(0), useCurDir(false), dl(aDl) { }
+DirectoryListingDlg::DirectoryListingDlg(const DirectoryListingPtr& aDl) : fileTypeStr(SEARCH_TYPE_ANY), dl(aDl) { }
 
 DirectoryListingDlg::~DirectoryListingDlg() {
 	//ctrlSearch.Detach();
@@ -86,7 +86,7 @@ LRESULT DirectoryListingDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*h
 			return 0;
 		}
 
-		sizeMode = ctrlSizeMode.GetCurSel();
+		sizeMode = static_cast<Search::SizeModes>(ctrlSizeMode.GetCurSel());
 		searchStr = WinUtil::addHistory(ctrlSearch, SettingsManager::HISTORY_SEARCH);
 		size = WinUtil::parseSize(ctrlSize, ctrlSizeUnit);
 		useCurDir = IsDlgButtonChecked(IDC_USE_CUR_DIR) == BST_CHECKED;

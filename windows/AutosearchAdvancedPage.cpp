@@ -20,7 +20,8 @@
 #include "Resource.h"
 #include "WinUtil.h"
 #include "AutosearchAdvancedPage.h"
-#include <airdcpp/SearchManager.h>
+
+#include <airdcpp/Search.h>
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 #define setMinMax(x, y, z) \
@@ -125,16 +126,16 @@ LRESULT AutoSearchAdvancedPage::onExactMatch(WORD /*wNotifyCode*/, WORD /*wID*/,
 void AutoSearchAdvancedPage::fixControls() {
 
 	/* File type */
-	if (options.searchType == SearchManager::TYPE_TTH)
+	if (options.searchType == Search::TYPE_TTH)
 		CheckDlgButton(IDC_USE_MATCHER, false);
 
 	/* Result matcher */
 	bool exactMatch = IsDlgButtonChecked(IDC_EXACT_MATCH) == BST_CHECKED;
-	::EnableWindow(GetDlgItem(IDC_USE_MATCHER), options.searchType != SearchManager::TYPE_TTH && !exactMatch);
+	::EnableWindow(GetDlgItem(IDC_USE_MATCHER), options.searchType != Search::TYPE_TTH && !exactMatch);
 	
 	/* Misc advanced */
-	::EnableWindow(GetDlgItem(IDC_CHECK_QUEUED), options.searchType == SearchManager::TYPE_DIRECTORY);
-	::EnableWindow(GetDlgItem(IDC_CHECK_SHARED), options.searchType == SearchManager::TYPE_DIRECTORY);
+	::EnableWindow(GetDlgItem(IDC_CHECK_QUEUED), options.searchType == Search::TYPE_DIRECTORY);
+	::EnableWindow(GetDlgItem(IDC_CHECK_SHARED), options.searchType == Search::TYPE_DIRECTORY);
 
 	BOOL matcherEnabled = (IsDlgButtonChecked(IDC_USE_MATCHER) == BST_CHECKED) && !exactMatch;
 	::EnableWindow(GetDlgItem(IDC_PATTERN), matcherEnabled);

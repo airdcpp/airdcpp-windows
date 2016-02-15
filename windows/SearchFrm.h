@@ -50,7 +50,7 @@ class SearchFrame : public MDITabChildWindowImpl<SearchFrame>,
 	private SettingsManagerListener, private TimerManagerListener, private Async<SearchFrame>
 {
 public:
-	static void openWindow(const tstring& str = Util::emptyStringW, LONGLONG size = 0, SearchManager::SizeModes mode = SearchManager::SIZE_ATLEAST, const string& type = SEARCH_TYPE_ANY);
+	static void openWindow(const tstring& str = Util::emptyStringW, LONGLONG size = 0, Search::SizeModes mode = Search::SIZE_ATLEAST, const string& type = SEARCH_TYPE_ANY);
 	static void closeAll();
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("SearchFrame"), IDR_SEARCH, 0, COLOR_3DFACE)
@@ -205,7 +205,7 @@ public:
 		return 0;
 	}
 
-	void SearchFrame::setInitial(const tstring& str, LONGLONG size, SearchManager::SizeModes mode, const string& type) {
+	void SearchFrame::setInitial(const tstring& str, LONGLONG size, Search::SizeModes mode, const string& type) {
 		initialString = str; initialSize = size; initialMode = mode; initialType = type; running = true;
 	}
 
@@ -335,7 +335,7 @@ private:
 
 	tstring initialString;
 	int64_t initialSize;
-	SearchManager::SizeModes initialMode;
+	Search::SizeModes initialMode;
 	string initialType;
 
 	CStatusBarCtrl ctrlStatus;
@@ -394,11 +394,9 @@ private:
 	bool onlyFree;
 	bool expandSR;
 	bool running;
-	bool exactSize1;
 	bool useGrouping;
 	bool waiting;
 	bool aschOnly;
-	int64_t exactSize2;
 	int64_t resultsCount;
 
 	uint64_t searchEndTime;

@@ -910,11 +910,11 @@ string WinUtil::makeMagnet(const TTHValue& aHash, const string& aFile, int64_t s
 	return ret + "&dn=" + Util::encodeURI(aFile);
 }
 
- void WinUtil::searchHash(const TTHValue& aHash, const string& aFileName, int64_t aSize) {
-	if (SettingsManager::lanMode)
-		SearchFrame::openWindow(Text::toT(aFileName), aSize, SearchManager::SIZE_EXACT, SEARCH_TYPE_ANY);
-	else
-		SearchFrame::openWindow(Text::toT(aHash.toBase32()), 0, SearchManager::SIZE_DONTCARE, SEARCH_TYPE_TTH);
+ void WinUtil::searchHash(const TTHValue& aHash, const string&, int64_t) {
+	//if (SettingsManager::lanMode)
+	//	SearchFrame::openWindow(Text::toT(aFileName), aSize, Search::SIZE_EXACT, SEARCH_TYPE_ANY);
+	//else
+		SearchFrame::openWindow(Text::toT(aHash.toBase32()), 0, Search::SIZE_DONTCARE, SEARCH_TYPE_TTH);
  }
 
  void WinUtil::registerDchubHandler() {
@@ -1644,7 +1644,7 @@ void WinUtil::searchAny(const tstring& aSearch) {
 	searchTerm.erase(std::remove(searchTerm.begin(), searchTerm.end(), '\r'), searchTerm.end());
 	searchTerm.erase(std::remove(searchTerm.begin(), searchTerm.end(), '\n'), searchTerm.end());
 	if(!searchTerm.empty()) {
-		SearchFrame::openWindow(searchTerm, 0, SearchManager::SIZE_ATLEAST, SEARCH_TYPE_ANY);
+		SearchFrame::openWindow(searchTerm, 0, Search::SIZE_DONTCARE, SEARCH_TYPE_ANY);
 	}
 }
 

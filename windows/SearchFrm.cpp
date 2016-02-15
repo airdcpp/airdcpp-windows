@@ -25,15 +25,17 @@
 #include "BarShader.h"
 #include "ResourceLoader.h"
 
-#include <airdcpp/QueueManager.h>
-#include <airdcpp/StringTokenizer.h>
 #include <airdcpp/ClientManager.h>
-#include <airdcpp/TimerManager.h>
-#include <airdcpp/SearchManager.h>
-#include <airdcpp/Localization.h>
 #include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/GeoManager.h>
+#include <airdcpp/Localization.h>
+#include <airdcpp/QueueManager.h>
 #include <airdcpp/ScopedFunctor.h>
+#include <airdcpp/Search.h>
+#include <airdcpp/SearchManager.h>
+#include <airdcpp/StringTokenizer.h>
+#include <airdcpp/TimerManager.h>
+
 #include <airdcpp/HighlightManager.h>
 #include <airdcpp/WildCards.h>
 
@@ -61,7 +63,7 @@ static ColumnType columnTypes[] = { COLUMN_TEXT, COLUMN_NUMERIC_OTHER, COLUMN_NU
 
 SearchFrame::FrameMap SearchFrame::frames;
 
-void SearchFrame::openWindow(const tstring& str /* = Util::emptyString */, LONGLONG size /* = 0 */, SearchManager::SizeModes mode /* = SearchManager::SIZE_ATLEAST */, const string& type /* = SEARCH_TYPE_ANY */) {
+void SearchFrame::openWindow(const tstring& str /* = Util::emptyString */, LONGLONG size /* = 0 */, Search::SizeModes mode /* = SearchManager::SIZE_ATLEAST */, const string& type /* = SEARCH_TYPE_ANY */) {
 	SearchFrame* pChild = new SearchFrame();
 	pChild->setInitial(str, size, mode, type);
 	pChild->CreateEx(WinUtil::mdiClient);
@@ -93,9 +95,9 @@ searchBoxContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
 	excludedBoolContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
 	excludedContainer(WC_EDIT, this, SEARCH_MESSAGE_MAP),
 	aschContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
-	initialSize(0), initialMode(SearchManager::SIZE_ATLEAST), initialType(SEARCH_TYPE_ANY),
+	initialSize(0), initialMode(Search::SIZE_ATLEAST), initialType(SEARCH_TYPE_ANY),
 	showUI(true), onlyFree(false), closed(false), droppedResults(0), resultsCount(0), aschOnly(false),
-	expandSR(false), exactSize1(false), exactSize2(0), searchEndTime(0), searchStartTime(0), waiting(false), statusDirty(false), ctrlResults(this, COLUMN_LAST, [this] { updateSearchList(); }, filterSettings, COLUMN_LAST)
+	expandSR(false), searchEndTime(0), searchStartTime(0), waiting(false), statusDirty(false), ctrlResults(this, COLUMN_LAST, [this] { updateSearchList(); }, filterSettings, COLUMN_LAST)
 {	
 	SearchManager::getInstance()->addListener(this);
 	useGrouping = SETTING(GROUP_SEARCH_RESULTS);
@@ -460,15 +462,25 @@ void SearchFrame::onEnter() {
 		return;
 
 
-	string s = WinUtil::addHistory(ctrlSearchBox, SettingsManager::HISTORY_SEARCH);
-	if (s.empty() || SearchQuery::parseSearchString(s).empty()) {
+	auto query = WinUtil::addHistory(ctrlSearchBox, SettingsManager::HISTORY_SEARCH);
+	if (query.empty() || SearchQuery::parseSearchString(query).empty()) {
 		ctrlStatus.SetText(1, CTSTRING(ENTER_SEARCH_STRING));
 		return;
 	}
 
-	auto llsize = WinUtil::parseSize(ctrlSize, ctrlSizeUnit);
-	auto ldate = WinUtil::parseDate(ctrlDate, ctrlDateUnit);
-	bool asch = ldate > 0 && aschOnly;
+	token = Util::toString(Util::rand());
+
+	auto s = make_shared<Search>(Search::MANUAL, query, token);
+	
+	s->size = WinUtil::parseSize(ctrlSize, ctrlSizeUnit);
+	s->sizeType = static_cast<Search::SizeModes>(ctrlSizeMode.GetCurSel());
+
+	auto date = WinUtil::parseDate(ctrlDate, ctrlDateUnit);
+	if (date > 0) {
+		s->minDate = date;
+	}
+
+	s->aschOnly = date > 0 && aschOnly;
 
 	// delete all results which came in paused state
 	for_each(pausedResults.begin(), pausedResults.end(), DeleteFunction());
@@ -481,31 +493,20 @@ void SearchFrame::onEnter() {
 	::EnableWindow(GetDlgItem(IDC_SEARCH_PAUSE), TRUE);
 	ctrlPauseSearch.SetWindowText(CTSTRING(PAUSE_SEARCH));
 
-	string excluded;
 	usingExcludes = ctrlExcludedBool.GetCheck() == TRUE;
 	SettingsManager::getInstance()->set(SettingsManager::SEARCH_USE_EXCLUDED, usingExcludes);
 	if (usingExcludes) {
-		excluded = WinUtil::addHistory(ctrlExcluded, SettingsManager::HISTORY_EXCLUDE);
+		auto excluded = WinUtil::addHistory(ctrlExcluded, SettingsManager::HISTORY_EXCLUDE);
 		if (!excluded.empty()) {
 			SettingsManager::getInstance()->set(SettingsManager::LAST_SEARCH_EXCLUDED, excluded);
 		}
+
+		s->excluded = SearchQuery::parseSearchString(excluded);
 	}
-
-	/*{
-		Lock l(cs);
-		s = s.substr(0, max(s.size(), static_cast<tstring::size_type>(1)) - 1);
-	}*/
-
-	SearchManager::SizeModes mode((SearchManager::SizeModes)ctrlSizeMode.GetCurSel());
-	if(llsize == 0)
-		mode = SearchManager::SIZE_DONTCARE;
-
-	exactSize1 = (mode == SearchManager::SIZE_EXACT);
-	exactSize2 = llsize;		
 
 	ctrlStatus.SetText(3, _T(""));
 	ctrlStatus.SetText(4, _T(""));
-	target = Text::toT(s);
+	target = Text::toT(s->query);
 	::InvalidateRect(m_hWndStatusBar, NULL, TRUE);
 
 	droppedResults = 0;
@@ -523,18 +524,18 @@ void SearchFrame::onEnter() {
 
 	// Get ADC search type extensions if any is selected
 	StringList extList;
-	int ftype=0;
+	auto ftype = Search::TYPE_ANY;
 	string typeName;
 
 	try {
 		SearchManager::getInstance()->getSearchType(ctrlFileType.GetCurSel(), ftype, extList, typeName);
 	} catch(const SearchTypeException&) {
-		ftype = SearchManager::TYPE_ANY;
+
 	}
 
-	if(ftype == SearchManager::TYPE_TTH) {
-		s.erase(std::remove_if(s.begin(), s.end(), [](char c) { return c == ' ' || c == '\t' || c == '\r' || c == '\n'; }), s.end());
-		if(s.size() != 39 || !Encoder::isBase32(s.c_str())) {
+	if(ftype == Search::TYPE_TTH) {
+		query.erase(std::remove_if(query.begin(), query.end(), [](char c) { return c == ' ' || c == '\t' || c == '\r' || c == '\n'; }), query.end());
+		if(query.size() != 39 || !Encoder::isBase32(query.c_str())) {
 			ctrlStatus.SetText(1, CTSTRING(INVALID_TTH_SEARCH));
 			return;
 		}
@@ -547,16 +548,14 @@ void SearchFrame::onEnter() {
 
 
 	// perform the search
-	auto newSearch = SearchQuery::getSearch(s, excluded, exactSize2, ftype, mode, extList, SearchQuery::MATCH_FULL_PATH, false);
+	auto newSearch = SearchQuery::getSearch(s, SearchQuery::MATCH_FULL_PATH, false);
 	if (newSearch) {
 		WLock l(cs);
 		curSearch.reset(newSearch);
-		token = Util::toString(Util::rand());
-
 		searchStartTime = GET_TICK();
+
 		// more 5 seconds for transferring results
-		searchEndTime = searchStartTime + SearchManager::getInstance()->search(clients, s, llsize, 
-			(SearchManager::TypeModes)ftype, mode, token, extList, SearchQuery::parseSearchString(excluded), Search::MANUAL, ldate, SearchManager::DATE_NEWER, asch, (void*) this) + 5000;
+		searchEndTime = searchStartTime + SearchManager::getInstance()->search(clients, s, static_cast<void*>(this)).queueTime + 5000;
 
 		waiting = true;
 		firstResultTime = 0;
@@ -620,9 +619,7 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 	}
 
 	// Reject results without free slots
-	if((onlyFree && aResult->getFreeSlots() < 1) ||
-	   (exactSize1 && (aResult->getSize() != exactSize2)))
-	{
+	if(onlyFree && aResult->getFreeSlots() < 1) {
 		callAsync([this] { onResultFiltered(); });
 		return;
 	}

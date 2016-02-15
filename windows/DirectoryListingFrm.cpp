@@ -277,7 +277,7 @@ void DirectoryListingFrame::on(DirectoryListingListener::SearchFailed, bool time
 void DirectoryListingFrame::on(DirectoryListingListener::ChangeDirectory, const string& aDir, bool isSearchChange) noexcept {
 	//dcdebug("DirectoryListingListener::ChangeDirectory %s\n", aDir.c_str());
 	callAsync([=] {
-		if (aDir != curPath) {
+		if (!isSearchChange && aDir != curPath) {
 			dcdebug("SKIP: DirectoryListingListener::ChangeDirectory, paths match %s\n", aDir.c_str());
 			return;
 		}
@@ -662,7 +662,14 @@ void DirectoryListingFrame::onFind() {
 		path = Util::toAdcFile(curPath);
 	}
 
-	dl->addSearchTask(dlg.searchStr, dlg.size, dlg.fileType, dlg.sizeMode, dlg.extList, path);
+	auto s = make_shared<Search>(Search::MANUAL, dlg.searchStr, Util::toString(Util::rand()));
+	s->size = dlg.size;
+	s->sizeType = dlg.sizeMode;
+
+	s->fileType = dlg.fileType;
+	s->exts = dlg.extList;
+
+	dl->addSearchTask(s, path);
 }
 
 LRESULT DirectoryListingFrame::onNext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

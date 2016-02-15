@@ -58,10 +58,9 @@ LRESULT AutoSearchGeneralPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LP
 	StringList ext;
 	try {
 		SearchManager::getInstance()->getSearchType(options.fileTypeStr, options.searchType, ext);
-	}
-	catch (...) {
+	} catch (...) {
 		//switch back to default
-		options.searchType = SearchManager::TYPE_ANY;
+		options.searchType = Search::TYPE_ANY;
 	}
 
 	ctrlFileType.fillList(options.fileTypeStr);

@@ -541,7 +541,7 @@ void AutoSearchFrame::handleMoveToGroup(const string& aGroupName) {
 
 
 void AutoSearchFrame::on(AutoSearchManagerListener::SearchForeground, const AutoSearchPtr& as, const string& searchString) noexcept {
-	callAsync([=] { SearchFrame::openWindow(Text::toT(searchString), 0, SearchManager::SIZE_DONTCARE, as->getFileType()); });
+	callAsync([=] { SearchFrame::openWindow(Text::toT(searchString), 0, Search::SIZE_DONTCARE, as->getFileType()); });
 }
 
 void AutoSearchFrame::handleState(bool disabled) {

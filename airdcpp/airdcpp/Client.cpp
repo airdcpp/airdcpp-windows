@@ -127,7 +127,7 @@ void Client::reloadSettings(bool updateNick) {
 		setPassword(Util::emptyString);
 	}
 
-	searchQueue.minInterval = get(HubSettings::SearchInterval) * 1000; //convert from seconds
+	searchQueue.setMinInterval(get(HubSettings::SearchInterval) * 1000); //convert from seconds
 	if (updateNick)
 		checkNick(get(Nick));
 	else
@@ -439,9 +439,9 @@ bool Client::updateCounts(bool aRemove) {
 	return true;
 }
 
-uint64_t Client::queueSearch(SearchPtr aSearch){
+uint64_t Client::queueSearch(const SearchPtr& aSearch){
 	dcdebug("Queue search %s\n", aSearch->query.c_str());
-	return searchQueue.add(move(aSearch));
+	return searchQueue.add(aSearch);
 }
 
 string Client::getCounts() {

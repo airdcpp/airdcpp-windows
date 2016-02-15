@@ -122,7 +122,7 @@ public:
 	SearchTime endTime;
 	bitset<7> searchDays;
 	time_t expireTime;
-	int searchType;
+	Search::TypeModes searchType;
 	string groupName;
 	AutoSearchPtr as;
 

@@ -51,7 +51,7 @@ public:
 	virtual bool isOp() const = 0;
 	virtual int connect(const OnlineUser& user, const string& token, string& lastError_) = 0;
 	virtual bool privateMessage(const OnlineUserPtr& user, const string& aMessage, string& error_, bool thirdPerson = false) = 0;
-	virtual void directSearch(const OnlineUser& /*user*/, int /*aSizeMode*/, int64_t /*aSize*/, int /*aFileType*/, const string& /*aString*/, const string& /*aToken*/, const StringList& /*aExtList*/, const string& /*aDir*/, time_t /*aDate*/, int /*aDateMode*/) { 
+	virtual void directSearch(const OnlineUser&, const string& /*aDir*/, const SearchPtr&) { 
 		dcassert(0); 
 	}
 };
@@ -75,7 +75,7 @@ public:
 	virtual bool privateMessage(const OnlineUserPtr& user, const string& aMessage, string& error_, bool thirdPerson = false) = 0;
 	virtual void sendUserCmd(const UserCommand& command, const ParamMap& params) = 0;
 
-	uint64_t queueSearch(SearchPtr aSearch);
+	uint64_t queueSearch(const SearchPtr& aSearch);
 	void cancelSearch(void* aOwner) { searchQueue.cancelSearch(aOwner); }
 	
 	virtual void password(const string& pwd) = 0;

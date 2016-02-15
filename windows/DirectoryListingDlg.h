@@ -25,16 +25,19 @@
 #include <atlcrack.h>
 
 #include "SearchTypeCombo.h"
+
 #include <airdcpp/DirectoryListing.h>
+#include <airdcpp/Search.h>
 
 class DirectoryListingDlg : public CDialogImpl<DirectoryListingDlg> {
 public:
 	string searchStr;
 	string fileTypeStr;
-	int fileType, sizeMode;
-	int64_t size;
+	Search::TypeModes fileType = Search::TYPE_ANY;
+	Search::SizeModes sizeMode = Search::SIZE_DONTCARE;
+	int64_t size = 0;
 	StringList extList;
-	bool useCurDir;
+	bool useCurDir = false;
 
 	enum { IDD = IDD_DIRLIST_DLG };
 
