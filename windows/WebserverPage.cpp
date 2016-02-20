@@ -68,8 +68,10 @@ LRESULT WebServerPage::onButton(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/
 	if (wID == IDC_WEBSERVER_ADD_USER) {
 		WebUserDlg dlg;
 		if (dlg.DoModal() == IDOK) {
-			webUserList.emplace_back(make_shared<webserver::WebUser>(dlg.getUserName(), dlg.getPassWord()));
-			addListItem(dlg.getUserName(), dlg.getPassWord());
+			if (!dlg.getUserName().empty() && !dlg.getPassWord().empty()) {
+				webUserList.emplace_back(make_shared<webserver::WebUser>(dlg.getUserName(), dlg.getPassWord()));
+				addListItem(dlg.getUserName(), dlg.getPassWord());
+			}
 		}
 	}
 	else if (wID == IDC_WEBSERVER_CHANGE) {
@@ -78,10 +80,10 @@ LRESULT WebServerPage::onButton(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/
 			auto webUser = webUserList[sel];
 			WebUserDlg dlg(Text::toT(webUser->getUserName()), Text::toT(webUser->getPassword()));
 			if (dlg.DoModal() == IDOK) {
-				webUser->setUserName(dlg.getUserName());
-				webUser->setPassword(dlg.getPassWord());
-				ctrlWebUsers.SetItemText(sel, 0, Text::toT(dlg.getUserName()).c_str());
-				ctrlWebUsers.SetItemText(sel, 1, Text::toT(dlg.getPassWord()).c_str());
+				if (!dlg.getUserName().empty()) webUser->setUserName(dlg.getUserName());
+				if (!dlg.getPassWord().empty()) webUser->setPassword(dlg.getPassWord());
+				ctrlWebUsers.SetItemText(sel, 0, Text::toT(webUser->getUserName()).c_str());
+				ctrlWebUsers.SetItemText(sel, 1, Text::toT(webUser->getPassword()).c_str());
 			}
 		}
 	}
@@ -179,7 +181,7 @@ void WebServerPage::write() {
 		needServerRestart = true;
 	}
 	if (webMgr->getTlsServerConfig().getPort() != tlsServerPort) {
-		webMgr->getPlainServerConfig().setPort(tlsServerPort);
+		webMgr->getTlsServerConfig().setPort(tlsServerPort);
 		needServerRestart = true;
 	}
 
