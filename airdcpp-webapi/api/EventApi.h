@@ -27,10 +27,10 @@
 #include <airdcpp/LogManagerListener.h>
 
 namespace webserver {
-	class LogApi : public ApiModule, private LogManagerListener {
+	class EventApi : public ApiModule, private LogManagerListener {
 	public:
-		LogApi(Session* aSession);
-		~LogApi();
+		EventApi(Session* aSession);
+		~EventApi();
 
 		int getVersion() const noexcept {
 			return 0;
