@@ -42,6 +42,7 @@ namespace webserver {
 		api_return handleGetLog(ApiRequest& aRequest);
 		api_return handleRead(ApiRequest& aRequest);
 		api_return handleClear(ApiRequest& aRequest);
+		api_return handlePostMessage(ApiRequest& aRequest);
 
 		// LogManagerListener
 		void on(LogManagerListener::Message, const LogMessagePtr& aMessageData) noexcept;

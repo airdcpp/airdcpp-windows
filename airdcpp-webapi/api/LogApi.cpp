@@ -19,6 +19,7 @@
 #include <web-server/stdinc.h>
 
 #include <api/LogApi.h>
+#include <api/common/Deserializer.h>
 #include <api/common/Serializer.h>
 
 #include <airdcpp/LogManager.h>
@@ -34,10 +35,18 @@ namespace webserver {
 		METHOD_HANDLER("read", Access::EVENTS, ApiRequest::METHOD_POST, (), false, LogApi::handleRead);
 		METHOD_HANDLER("info", Access::EVENTS, ApiRequest::METHOD_GET, (), false, LogApi::handleGetInfo);
 		METHOD_HANDLER("messages", Access::EVENTS, ApiRequest::METHOD_GET, (NUM_PARAM), false, LogApi::handleGetLog);
+
+		METHOD_HANDLER("message", Access::EVENTS, ApiRequest::METHOD_POST, (), true, LogApi::handlePostMessage);
 	}
 
 	LogApi::~LogApi() {
 		LogManager::getInstance()->removeListener(this);
+	}
+
+	api_return LogApi::handlePostMessage(ApiRequest& aRequest) {
+		auto message = Deserializer::deserializeStatusMessage(aRequest.getRequestBody());
+		LogManager::getInstance()->message(message.first, message.second);
+		return websocketpp::http::status_code::ok;
 	}
 
 	api_return LogApi::handleRead(ApiRequest& aRequest) {
