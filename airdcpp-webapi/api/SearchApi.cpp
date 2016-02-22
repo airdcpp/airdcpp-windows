@@ -21,6 +21,7 @@
 
 #include <api/common/Deserializer.h>
 
+#include <airdcpp/DirectSearch.h>
 #include <airdcpp/ScopedFunctor.h>
 
 const unsigned int MIN_SEARCH = 2;
@@ -32,10 +33,12 @@ namespace webserver {
 
 		SearchManager::getInstance()->addListener(this);
 
-		METHOD_HANDLER("query", Access::SEARCH, ApiRequest::METHOD_POST, (), true, SearchApi::handlePostSearch);
+		METHOD_HANDLER("query", Access::SEARCH, ApiRequest::METHOD_POST, (), true, SearchApi::handlePostHubSearch);
+		METHOD_HANDLER("query", Access::SEARCH, ApiRequest::METHOD_POST, (EXACT_PARAM("user")), true, SearchApi::handlePostUserSearch);
+
 		METHOD_HANDLER("types", Access::ANY, ApiRequest::METHOD_GET, (), false, SearchApi::handleGetTypes);
 
-		METHOD_HANDLER("results", Access::SEARCH, ApiRequest::METHOD_GET, (), false, SearchApi::handleGetResults);
+		METHOD_HANDLER("results", Access::SEARCH, ApiRequest::METHOD_GET, (NUM_PARAM, NUM_PARAM), false, SearchApi::handleGetResults);
 		METHOD_HANDLER("result", Access::DOWNLOAD, ApiRequest::METHOD_POST, (TOKEN_PARAM, EXACT_PARAM("download")), false, SearchApi::handleDownload);
 	}
 
@@ -80,7 +83,7 @@ namespace webserver {
 			result = *i;
 		}
 
-		string targetDirectory, targetName;
+		string targetDirectory, targetName = result->sr->getFileName();
 		TargetUtil::TargetType targetType;
 		QueueItemBase::Priority prio;
 		Deserializer::deserializeDownloadParams(aRequest.getRequestBody(), targetDirectory, targetName, targetType, prio);
@@ -129,16 +132,17 @@ namespace webserver {
 		return i != typeMappings.end() ? i->second : aType;
 	}
 
-	SearchPtr SearchApi::parseSearch(const json& aJson, const string& aToken) {
-		auto pattern = JsonUtil::getOptionalFieldDefault<string>("pattern", aJson, Util::emptyString, false);
+	SearchPtr SearchApi::parseQuery(const json& aJson, const string& aToken) {
+		auto queryJson = JsonUtil::getRawValue("query", aJson);
+
+		auto pattern = JsonUtil::getOptionalFieldDefault<string>("pattern", queryJson, Util::emptyString, false);
 
 		auto s = make_shared<Search>(Search::MANUAL, pattern, aToken);
 
-		// Type
+		// Filetype
 		s->fileType = pattern.size() == 39 && Encoder::isBase32(pattern.c_str()) ? Search::TYPE_TTH : Search::TYPE_ANY;
 
-		//StringList exts;
-		auto fileTypeStr = JsonUtil::getOptionalField<string>("file_type", aJson, false);
+		auto fileTypeStr = JsonUtil::getOptionalField<string>("file_type", queryJson, false);
 		if (fileTypeStr) {
 			try {
 				SearchManager::getInstance()->getSearchType(parseFileType(*fileTypeStr), s->fileType, s->exts, true);
@@ -148,46 +152,49 @@ namespace webserver {
 		}
 
 		// Extensions
-		auto optionalExtensions = JsonUtil::getOptionalField<StringList>("extensions", aJson);
+		auto optionalExtensions = JsonUtil::getOptionalField<StringList>("extensions", queryJson);
 		if (optionalExtensions) {
 			s->exts = *optionalExtensions;
 		}
 
 		// Anything to search for?
-		//if (s->exts.empty() && pattern.empty()) {
-		//	throw std::domain_error("Please provide valid pattern or extensions");
-		//}
+		if (s->exts.empty() && pattern.empty()) {
+			throw std::domain_error("A valid pattern or file extensions must be provided");
+		}
 
 		// Date
-		s->maxDate = JsonUtil::getOptionalField<time_t>("max_age", aJson);
-		s->minDate = JsonUtil::getOptionalField<time_t>("min_age", aJson);
+		s->maxDate = JsonUtil::getOptionalField<time_t>("max_age", queryJson);
+		s->minDate = JsonUtil::getOptionalField<time_t>("min_age", queryJson);
 
 		// Size
-		auto minSize = JsonUtil::getOptionalField<int64_t>("min_size", aJson);
+		auto minSize = JsonUtil::getOptionalField<int64_t>("min_size", queryJson);
 		if (minSize) {
 			s->size = *minSize;
 			s->sizeType = Search::SIZE_ATLEAST;
 		}
 
-		auto maxSize = JsonUtil::getOptionalField<int64_t>("max_size", aJson);
+		auto maxSize = JsonUtil::getOptionalField<int64_t>("max_size", queryJson);
 		if (maxSize) {
 			s->size = *maxSize;
 			s->sizeType = Search::SIZE_ATMOST;
 		}
 
+		// Excluded
+		s->excluded = JsonUtil::getOptionalFieldDefault<StringList>("excluded", queryJson, StringList());
+
 		return s;
 	}
 
-	api_return SearchApi::handlePostSearch(ApiRequest& aRequest) {
+	api_return SearchApi::handlePostHubSearch(ApiRequest& aRequest) {
 		const auto& reqJson = aRequest.getRequestBody();
 
 		currentSearchToken = Util::toString(Util::rand());
 
-		auto s = parseSearch(reqJson, currentSearchToken);
+		auto s = parseQuery(reqJson, currentSearchToken);
 		auto hubs = Deserializer::deserializeHubUrls(reqJson);
 
 		// new search
-		auto matcher = SearchQuery::getSearch(s, SearchQuery::MATCH_FULL_PATH, false);
+		auto matcher = SearchQuery::getSearch(s);
 
 		{
 			WLock l(cs);
@@ -198,7 +205,7 @@ namespace webserver {
 
 		curSearch = shared_ptr<SearchQuery>(matcher);
 
-		SettingsManager::getInstance()->addToHistory(s->query, SettingsManager::HISTORY_SEARCH);
+		//SettingsManager::getInstance()->addToHistory(s->query, SettingsManager::HISTORY_SEARCH);
 
 		auto result = SearchManager::getInstance()->search(hubs, s);
 
@@ -206,73 +213,69 @@ namespace webserver {
 			{ "queue_time", result.queueTime },
 			{ "search_token", currentSearchToken },
 			{ "sent", result.succeed },
-			//{ "type", type }
 		});
 		return websocketpp::http::status_code::ok;
 	}
 
-	optional<RelevancyInfo> SearchApi::matches(const SearchResultPtr& aResult) const noexcept {
-		auto search = curSearch;
-		if (!search)
-			return boost::none;
+	api_return SearchApi::handlePostUserSearch(ApiRequest& aRequest) {
+		const auto& reqJson = aRequest.getRequestBody();
 
-		if (!aResult->getToken().empty()) {
-			// ADC
-			if (currentSearchToken != aResult->getToken()) {
-				return boost::none;
+		// User
+		auto user = Deserializer::deserializeHintedUser(reqJson, false);
+
+		// Common query properties
+		auto s = parseQuery(reqJson, Util::toString(Util::rand()));
+
+		// Direct search properties
+		s->maxResults = JsonUtil::getOptionalFieldDefault<int>("max_results", reqJson, 5);
+		s->returnParents = JsonUtil::getOptionalFieldDefault<bool>("return_parents", reqJson, false);
+		s->namesOnly = JsonUtil::getOptionalFieldDefault<bool>("match_name", reqJson, false);
+		s->requireReply = true;
+
+		// Search and matcher
+		auto ds = DirectSearch(user, s, JsonUtil::getOptionalFieldDefault<string>("path", reqJson, Util::emptyString));
+		unique_ptr<SearchQuery> matcher(SearchQuery::getSearch(s));
+
+		// Wait for the search to finish
+		while (true) {
+			Thread::sleep(50);
+			if (ds.finished()) {
+				break;
 			}
-		} else {
-			// NMDC results must be matched manually
+		}
 
-			// Exludes
-			if (curSearch->isExcluded(aResult->getPath())) {
-				return boost::none;
-			}
-
-			if (search->root && *search->root != aResult->getTTH()) {
-				return boost::none;
+		// Construct SearchResultInfos
+		SearchResultInfo::Set resultSet;
+		for (const auto& sr : ds.getResults()) {
+			SearchResult::RelevancyInfo relevancyInfo;
+			if (sr->getRelevancy(*matcher.get(), relevancyInfo)) {
+				resultSet.emplace(std::make_shared<SearchResultInfo>(sr, move(relevancyInfo)));
 			}
 		}
 
-		// All clients can't handle this correctly
-		if (search->itemType == SearchQuery::TYPE_FILE && aResult->getType() != SearchResult::TYPE_FILE) {
-			return boost::none;
-		}
+		// Serialize results
+		auto j = Serializer::serializeItemList(itemHandler, resultSet);
+		aRequest.setResponseBody(j);
 
-
-		WLock l(cs);
-
-		// Path match (always required to get the relevancy)
-		// Must be locked because the match positions are saved in SearchQuery
-		SearchQuery::Recursion recursion;
-		ScopedFunctor([&] { search->recursion = nullptr; });
-		if (!search->root && !search->matchesNmdcPath(aResult->getPath(), recursion)) {
-			return boost::none;
-		}
-
-		// Don't count the levels because they can't be compared with each others
-		auto matchRelevancy = SearchQuery::getRelevancyScores(*search.get(), 0, aResult->getType() == SearchResult::TYPE_DIRECTORY, aResult->getFileName());
-		double sourceScoreFactor = 0.01;
-		if (search->recursion && search->recursion->isComplete()) {
-			// There are subdirectories/files that have more matches than the main directory
-			// Don't give too much weight for those even if there are lots of sources
-			sourceScoreFactor = 0.001;
-
-			// We don't get the level scores so balance those here
-			matchRelevancy = max(0.0, matchRelevancy - (0.05 * search->recursion->recursionLevel));
-		}
-
-		return RelevancyInfo({ matchRelevancy, sourceScoreFactor });
+		return websocketpp::http::status_code::ok;
 	}
 
 	void SearchApi::on(SearchManagerListener::SR, const SearchResultPtr& aResult) noexcept {
-		auto relevancyInfo = matches(aResult);
-		if (!relevancyInfo) {
+		auto search = curSearch; // Increase the refs
+		if (!search) {
 			return;
 		}
 
+		SearchResult::RelevancyInfo relevancyInfo;
+		{
+			WLock l(cs);
+			if (!aResult->getRelevancy(*search.get(), relevancyInfo, currentSearchToken)) {
+				return;
+			}
+		}
+
 		SearchResultInfoPtr parent = nullptr;
-		auto result = std::make_shared<SearchResultInfo>(aResult, move(*relevancyInfo));
+		auto result = std::make_shared<SearchResultInfo>(aResult, move(relevancyInfo));
 
 		{
 			WLock l(cs);

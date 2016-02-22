@@ -72,10 +72,11 @@ namespace webserver {
 		};
 	private:
 		SearchResultInfo::List getResultList();
-		static SearchPtr parseSearch(const json& aJson, const string& aToken);
+		static SearchPtr parseQuery(const json& aJson, const string& aToken);
 		static const string& parseFileType(const string& aType) noexcept;
 
-		api_return handlePostSearch(ApiRequest& aRequest);
+		api_return handlePostHubSearch(ApiRequest& aRequest);
+		api_return handlePostUserSearch(ApiRequest& aRequest);
 
 		api_return handleGetResults(ApiRequest& aRequest);
 		api_return handleGetTypes(ApiRequest& aRequest);
@@ -83,9 +84,6 @@ namespace webserver {
 		api_return handleDownload(ApiRequest& aRequest);
 
 		void on(SearchManagerListener::SR, const SearchResultPtr& aResult) noexcept;
-
-		// Returns the relevancy score if the result matches the current search query
-		optional<RelevancyInfo> matches(const SearchResultPtr& aResult) const noexcept;
 
 		PropertyItemHandler<SearchResultInfoPtr> itemHandler;
 
