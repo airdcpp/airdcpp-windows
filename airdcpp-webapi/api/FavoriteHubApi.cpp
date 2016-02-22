@@ -26,8 +26,24 @@
 #include <airdcpp/ShareManager.h>
 
 namespace webserver {
-	FavoriteHubApi::FavoriteHubApi(Session* aSession) : ApiModule(aSession, Access::FAVORITE_HUBS_VIEW), itemHandler(properties,
-		FavoriteHubUtils::getStringInfo, FavoriteHubUtils::getNumericInfo, FavoriteHubUtils::compareEntries, FavoriteHubUtils::serializeHub),
+	const PropertyList FavoriteHubApi::properties = {
+		{ PROP_NAME, "name", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
+		{ PROP_HUB_URL, "hub_url", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
+		{ PROP_HUB_DESCRIPTION, "hub_description", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
+		{ PROP_AUTO_CONNECT, "auto_connect", TYPE_NUMERIC_OTHER, SERIALIZE_BOOL, SORT_NUMERIC },
+		{ PROP_SHARE_PROFILE, "share_profile", TYPE_TEXT, SERIALIZE_CUSTOM, SORT_TEXT },
+		{ PROP_CONNECT_STATE, "connect_state", TYPE_NUMERIC_OTHER, SERIALIZE_CUSTOM, SORT_NUMERIC },
+		{ PROP_NICK, "nick", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
+		{ PROP_HAS_PASSWORD, "has_password", TYPE_NUMERIC_OTHER, SERIALIZE_BOOL, SORT_NUMERIC },
+		{ PROP_USER_DESCRIPTION, "user_description", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
+	};
+
+	const PropertyItemHandler<FavoriteHubEntryPtr> FavoriteHubApi::itemHandler = {
+		properties,
+		FavoriteHubUtils::getStringInfo, FavoriteHubUtils::getNumericInfo, FavoriteHubUtils::compareEntries, FavoriteHubUtils::serializeHub
+	};
+
+	FavoriteHubApi::FavoriteHubApi(Session* aSession) : ApiModule(aSession, Access::FAVORITE_HUBS_VIEW),
 		view("favorite_hub_view", this, itemHandler, FavoriteHubUtils::getEntryList) {
 
 		FavoriteManager::getInstance()->addListener(this);

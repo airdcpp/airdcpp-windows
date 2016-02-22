@@ -22,6 +22,7 @@
 #include <api/common/Deserializer.h>
 
 #include <airdcpp/ClientManager.h>
+#include <airdcpp/ShareManager.h>
 
 namespace webserver {
 	CID Deserializer::parseCID(const string& aCID) {
@@ -130,5 +131,18 @@ namespace webserver {
 			JsonUtil::getField<string>("text", aJson, false),
 			parseSeverity(JsonUtil::getField<string>("severity", aJson, false))
 		};
+	}
+
+	ProfileToken Deserializer::deserializeShareProfile(const json& aJson) {
+		auto profile = JsonUtil::getOptionalField<ProfileToken>("share_profile", aJson);
+		if (!profile) {
+			return SETTING(DEFAULT_SP);
+		}
+
+		if (!ShareManager::getInstance()->getShareProfile(*profile)) {
+			throw std::invalid_argument("Invalid share profile: " + Util::toString(*profile));
+		}
+
+		return *profile;
 	}
 }

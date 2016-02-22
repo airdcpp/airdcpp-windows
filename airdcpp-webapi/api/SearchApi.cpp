@@ -23,18 +23,39 @@
 
 #include <airdcpp/DirectSearch.h>
 #include <airdcpp/ScopedFunctor.h>
+#include <airdcpp/ShareManager.h>
 
 const unsigned int MIN_SEARCH = 2;
 
 namespace webserver {
-	SearchApi::SearchApi(Session* aSession) : ApiModule(aSession, Access::SEARCH), itemHandler(properties,
-		SearchUtils::getStringInfo, SearchUtils::getNumericInfo, SearchUtils::compareResults, SearchUtils::serializeResult), 
+	const PropertyList SearchApi::properties = {
+		{ PROP_NAME, "name", TYPE_TEXT, SERIALIZE_TEXT, SORT_CUSTOM },
+		{ PROP_RELEVANCY, "relevancy", TYPE_NUMERIC_OTHER, SERIALIZE_NUMERIC, SORT_NUMERIC },
+		{ PROP_HITS, "hits", TYPE_NUMERIC_OTHER, SERIALIZE_NUMERIC, SORT_NUMERIC },
+		{ PROP_USERS, "users", TYPE_TEXT, SERIALIZE_CUSTOM, SORT_CUSTOM },
+		{ PROP_TYPE, "type", TYPE_TEXT, SERIALIZE_CUSTOM, SORT_CUSTOM },
+		{ PROP_SIZE, "size", TYPE_SIZE, SERIALIZE_NUMERIC, SORT_NUMERIC },
+		{ PROP_DATE, "time", TYPE_TIME, SERIALIZE_NUMERIC, SORT_NUMERIC },
+		{ PROP_PATH, "path", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
+		{ PROP_CONNECTION, "connection", TYPE_SPEED, SERIALIZE_NUMERIC, SORT_NUMERIC },
+		{ PROP_SLOTS, "slots", TYPE_TEXT, SERIALIZE_CUSTOM, SORT_CUSTOM },
+		{ PROP_TTH, "tth", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
+		{ PROP_DUPE, "dupe", TYPE_NUMERIC_OTHER, SERIALIZE_NUMERIC, SORT_NUMERIC },
+	};
+
+	const PropertyItemHandler<SearchResultInfoPtr> SearchApi::itemHandler = {
+		properties,
+		SearchUtils::getStringInfo, SearchUtils::getNumericInfo, SearchUtils::compareResults, SearchUtils::serializeResult
+	};
+
+	SearchApi::SearchApi(Session* aSession) : ApiModule(aSession, Access::SEARCH), 
 		searchView("search_view", this, itemHandler, std::bind(&SearchApi::getResultList, this)) {
 
 		SearchManager::getInstance()->addListener(this);
 
 		METHOD_HANDLER("query", Access::SEARCH, ApiRequest::METHOD_POST, (), true, SearchApi::handlePostHubSearch);
 		METHOD_HANDLER("query", Access::SEARCH, ApiRequest::METHOD_POST, (EXACT_PARAM("user")), true, SearchApi::handlePostUserSearch);
+		METHOD_HANDLER("query", Access::SEARCH, ApiRequest::METHOD_POST, (EXACT_PARAM("share")), true, SearchApi::handlePostShareSearch);
 
 		METHOD_HANDLER("types", Access::ANY, ApiRequest::METHOD_GET, (), false, SearchApi::handleGetTypes);
 
@@ -185,30 +206,34 @@ namespace webserver {
 		return s;
 	}
 
+	void SearchApi::parseDirectSearchProperties(const json& aJson, const SearchPtr& aSearch) {
+		aSearch->path = JsonUtil::getOptionalFieldDefault<string>("path", aJson, Util::emptyString);
+		aSearch->maxResults = JsonUtil::getOptionalFieldDefault<int>("max_results", aJson, 5);
+		aSearch->returnParents = JsonUtil::getOptionalFieldDefault<bool>("return_parents", aJson, false);
+		aSearch->namesOnly = JsonUtil::getOptionalFieldDefault<bool>("match_name", aJson, false);
+		aSearch->requireReply = true;
+	}
+
 	api_return SearchApi::handlePostHubSearch(ApiRequest& aRequest) {
 		const auto& reqJson = aRequest.getRequestBody();
 
-		currentSearchToken = Util::toString(Util::rand());
-
+		// Parse request
 		auto s = parseQuery(reqJson, currentSearchToken);
 		auto hubs = Deserializer::deserializeHubUrls(reqJson);
 
-		// new search
-		auto matcher = SearchQuery::getSearch(s);
+		// Result matching
+		currentSearchToken = Util::toString(Util::rand());
+		curSearch = shared_ptr<SearchQuery>(SearchQuery::getSearch(s));
 
+		// Reset old data
 		{
 			WLock l(cs);
 			results.clear();
 		}
-
 		searchView.resetItems();
 
-		curSearch = shared_ptr<SearchQuery>(matcher);
-
-		//SettingsManager::getInstance()->addToHistory(s->query, SettingsManager::HISTORY_SEARCH);
-
+		// Send
 		auto result = SearchManager::getInstance()->search(hubs, s);
-
 		aRequest.setResponseBody({
 			{ "queue_time", result.queueTime },
 			{ "search_token", currentSearchToken },
@@ -217,24 +242,51 @@ namespace webserver {
 		return websocketpp::http::status_code::ok;
 	}
 
+	api_return SearchApi::handlePostShareSearch(ApiRequest& aRequest) {
+		const auto& reqJson = aRequest.getRequestBody();
+
+		// Parse share profile and query
+		auto profile = Deserializer::deserializeShareProfile(reqJson);
+		auto s = parseQuery(reqJson, Util::toString(Util::rand()));
+		parseDirectSearchProperties(reqJson, s);
+
+		// Search
+		unique_ptr<SearchQuery> matcher(SearchQuery::getSearch(s));
+		SearchResultList results;
+
+		try {
+			ShareManager::getInstance()->search(results, *matcher, profile, CID(), s->path);
+		} catch (...) {}
+
+		// Serialize results
+		aRequest.setResponseBody(serializeDirectSearchResults(results, *matcher.get()));
+		return websocketpp::http::status_code::ok;
+	}
+
+	json SearchApi::serializeDirectSearchResults(const SearchResultList& aResults, SearchQuery& aQuery) noexcept {
+		// Construct SearchResultInfos
+		SearchResultInfo::Set resultSet;
+		for (const auto& sr : aResults) {
+			SearchResult::RelevancyInfo relevancyInfo;
+			if (sr->getRelevancy(aQuery, relevancyInfo)) {
+				resultSet.emplace(std::make_shared<SearchResultInfo>(sr, move(relevancyInfo)));
+			}
+		}
+
+		// Serialize results
+		return Serializer::serializeItemList(itemHandler, resultSet);
+	}
+
 	api_return SearchApi::handlePostUserSearch(ApiRequest& aRequest) {
 		const auto& reqJson = aRequest.getRequestBody();
 
-		// User
+		// Parse user and query
 		auto user = Deserializer::deserializeHintedUser(reqJson, false);
-
-		// Common query properties
 		auto s = parseQuery(reqJson, Util::toString(Util::rand()));
+		parseDirectSearchProperties(reqJson, s);
 
-		// Direct search properties
-		s->maxResults = JsonUtil::getOptionalFieldDefault<int>("max_results", reqJson, 5);
-		s->returnParents = JsonUtil::getOptionalFieldDefault<bool>("return_parents", reqJson, false);
-		s->namesOnly = JsonUtil::getOptionalFieldDefault<bool>("match_name", reqJson, false);
-		s->requireReply = true;
-
-		// Search and matcher
-		auto ds = DirectSearch(user, s, JsonUtil::getOptionalFieldDefault<string>("path", reqJson, Util::emptyString));
-		unique_ptr<SearchQuery> matcher(SearchQuery::getSearch(s));
+		// Search
+		auto ds = DirectSearch(user, s);
 
 		// Wait for the search to finish
 		while (true) {
@@ -244,19 +296,9 @@ namespace webserver {
 			}
 		}
 
-		// Construct SearchResultInfos
-		SearchResultInfo::Set resultSet;
-		for (const auto& sr : ds.getResults()) {
-			SearchResult::RelevancyInfo relevancyInfo;
-			if (sr->getRelevancy(*matcher.get(), relevancyInfo)) {
-				resultSet.emplace(std::make_shared<SearchResultInfo>(sr, move(relevancyInfo)));
-			}
-		}
-
 		// Serialize results
-		auto j = Serializer::serializeItemList(itemHandler, resultSet);
-		aRequest.setResponseBody(j);
-
+		unique_ptr<SearchQuery> matcher(SearchQuery::getSearch(s));
+		aRequest.setResponseBody(serializeDirectSearchResults(ds.getResults(), *matcher.get()));
 		return websocketpp::http::status_code::ok;
 	}
 
