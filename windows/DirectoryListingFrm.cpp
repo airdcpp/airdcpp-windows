@@ -669,6 +669,11 @@ void DirectoryListingFrame::onFind() {
 	s->fileType = dlg.fileType;
 	s->exts = dlg.extList;
 
+	s->returnParents = true;
+	s->namesOnly = true;
+	s->maxResults = 20;
+	s->requireReply = true;
+
 	dl->addSearchTask(s, path);
 }
 

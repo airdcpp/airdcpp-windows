@@ -260,7 +260,7 @@ private:
 
 		SearchInfo::List subItems;
 
-		SearchInfo(const SearchResultPtr& aSR, const SearchQuery& aSearch);
+		SearchInfo(const SearchResultPtr& aSR, const SearchResult::RelevancyInfo& aRelevancy);
 		~SearchInfo() {	}
 
 		const UserPtr& getUser() const { return sr->getUser().user; }

@@ -806,12 +806,12 @@ bool ClientManager::connect(const UserPtr& aUser, const string& aToken, bool all
 	return false;
 }
 
-bool ClientManager::privateMessage(const HintedUser& user, const string& msg, string& error_, bool thirdPerson) noexcept {
+bool ClientManager::privateMessage(const HintedUser& aUser, const string& aMsg, string& error_, bool aThirdPerson, bool aEcho) noexcept {
 	RLock l(cs);
-	auto u = findOnlineUser(user);
+	auto u = findOnlineUser(aUser);
 	
 	if(u) {
-		return u->getClient()->privateMessage(u, msg, error_, thirdPerson);
+		return u->getClient()->privateMessage(u, aMsg, error_, aThirdPerson, aEcho);
 	}
 
 	error_ = STRING(USER_OFFLINE);

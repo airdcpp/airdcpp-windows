@@ -9,6 +9,7 @@ Added:
 Changed:
 
 - File name casing in SFV files and files on disk must match (filesystems on non-Windows operating systems are case-sensitive)
+- Add finished bundles in share without hashing by default
 
 Fixed:
 

@@ -548,7 +548,7 @@ void SearchFrame::onEnter() {
 
 
 	// perform the search
-	auto newSearch = SearchQuery::getSearch(s, SearchQuery::MATCH_FULL_PATH, false);
+	auto newSearch = SearchQuery::getSearch(s);
 	if (newSearch) {
 		WLock l(cs);
 		curSearch.reset(newSearch);
@@ -582,50 +582,22 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 	if (!curSearch)
 		return;
 
-	if (!aResult->getToken().empty()) {
-		// ADC
-		if (token != aResult->getToken()) {
-			return;
-		}
-	} else {
-		// NMDC
-
-		// exludes
-		RLock l(cs);
-		if (usingExcludes && curSearch->isExcluded(aResult->getPath())) {
-			callAsync([this] { onResultFiltered(); });
-			return;
-		}
-
-		if (curSearch->root && *curSearch->root != aResult->getTTH()) {
-			callAsync([this] { onResultFiltered(); });
-			return;
-		}
-	}
-
-	if (curSearch->itemType == SearchQuery::TYPE_FILE && aResult->getType() != SearchResult::TYPE_FILE) {
-		callAsync([this] { onResultFiltered(); });
-		return;
-	}
-
-	RLock l(cs);
-
-	// path
-	SearchQuery::Recursion recursion;
-	ScopedFunctor([this] { curSearch->recursion = nullptr; });
-	if (!curSearch->root && !curSearch->matchesNmdcPath(aResult->getPath(), recursion)) {
-		callAsync([this] { onResultFiltered(); });
-		return;
-	}
-
 	// Reject results without free slots
-	if(onlyFree && aResult->getFreeSlots() < 1) {
+	if (onlyFree && aResult->getFreeSlots() < 1) {
 		callAsync([this] { onResultFiltered(); });
 		return;
 	}
 
+	SearchResult::RelevancyInfo relevancy;
+	{
+		WLock l(cs);
+		if (!aResult->getRelevancy(*curSearch.get(), relevancy, token)) {
+			callAsync([this] { onResultFiltered(); });
+			return;
+		}
+	}
 
-	SearchInfo* i = new SearchInfo(aResult, *curSearch.get());
+	auto i = new SearchInfo(aResult, relevancy);
 	callAsync([=] { addSearchResult(i); });
 }
 
@@ -655,7 +627,7 @@ void SearchFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	}
 }
 
-SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR, const SearchQuery& aSearch) : sr(aSR) {
+SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR, const SearchResult::RelevancyInfo& aRelevancy) : sr(aSR) {
 	//check the dupe
 	if(SETTING(DUPE_SEARCH)) {
 		if (sr->getType() == SearchResult::TYPE_DIRECTORY)
@@ -664,19 +636,10 @@ SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR, const SearchQuer
 			dupe = AirUtil::checkFileDupe(sr->getTTH());
 	}
 
-	// don't count the levels because they can't be compared with each others...
-	matchRelevancy = SearchQuery::getRelevancyScores(aSearch, 0, aSR->getType() == SearchResult::TYPE_DIRECTORY, aSR->getFileName());
-	if (aSearch.recursion && aSearch.recursion->isComplete()) {
-		// there are subdirectories/files that have more matches than the main directory
-		// don't give too much weight for those
-		sourceScoreFactor = 0.001;
-
-		// we don't get the level scores so balance those here
-		matchRelevancy = max(0.0, matchRelevancy-(0.05*aSearch.recursion->recursionLevel));
-	}
+	matchRelevancy = aRelevancy.matchRelevancy;
 
 	//get the ip info
-	string ip = sr->getIP();
+	auto ip = sr->getIP();
 	if (!ip.empty()) {
 		// Only attempt to grab a country mapping if we actually have an IP address
 		string tmpCountry = GeoManager::getInstance()->getCountry(sr->getIP());
