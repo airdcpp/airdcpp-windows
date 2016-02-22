@@ -892,8 +892,8 @@ void DirectoryListing::close() noexcept {
 	});
 }
 
-void DirectoryListing::addSearchTask(const SearchPtr& aSearch, const string& aDir) noexcept {
-	addAsyncTask([=] { searchImpl(aSearch, aDir); });
+void DirectoryListing::addSearchTask(const SearchPtr& aSearch) noexcept {
+	addAsyncTask([=] { searchImpl(aSearch); });
 }
 
 void DirectoryListing::addAsyncTask(DispatcherQueue::Callback&& f) noexcept {
@@ -995,7 +995,7 @@ void DirectoryListing::updateCurrentLocation(const Directory::Ptr& aCurrentDirec
 	currentLocation.directory = aCurrentDirectory;
 }
 
-void DirectoryListing::searchImpl(const SearchPtr& aSearch, const string& aDir) noexcept {
+void DirectoryListing::searchImpl(const SearchPtr& aSearch) noexcept {
 	searchResults.clear();
 
 	fire(DirectoryListingListener::SearchStarted());
@@ -1004,7 +1004,7 @@ void DirectoryListing::searchImpl(const SearchPtr& aSearch, const string& aDir) 
 	if (isOwnList && partialList) {
 		SearchResultList results;
 		try {
-			ShareManager::getInstance()->search(results, *curSearch, getShareProfile(), CID(), aDir);
+			ShareManager::getInstance()->search(results, *curSearch, getShareProfile(), CID(), aSearch->path);
 		} catch (...) {}
 
 		for (const auto& sr : results)
@@ -1012,10 +1012,10 @@ void DirectoryListing::searchImpl(const SearchPtr& aSearch, const string& aDir) 
 
 		endSearch(false);
 	} else if (partialList && !hintedUser.user->isNMDC()) {
-		directSearch.reset(new DirectSearch(hintedUser, aSearch, aDir));
+		directSearch.reset(new DirectSearch(hintedUser, aSearch));
 		TimerManager::getInstance()->addListener(this);
 	} else {
-		const auto dir = (aDir.empty()) ? root : findDirectory(Util::toNmdcFile(aDir), root);
+		const auto dir = findDirectory(Util::toNmdcFile(aSearch->path), root);
 		if (dir)
 			dir->search(searchResults, *curSearch);
 

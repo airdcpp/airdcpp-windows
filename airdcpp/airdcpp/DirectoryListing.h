@@ -210,7 +210,7 @@ public:
 	void addAsyncTask(DispatcherQueue::Callback&& f) noexcept;
 	void close() noexcept;
 
-	void addSearchTask(const SearchPtr& aSearch, const string& aDir) noexcept;
+	void addSearchTask(const SearchPtr& aSearch) noexcept;
 
 	bool nextResult(bool prev) noexcept;
 
@@ -296,7 +296,7 @@ private:
 
 	void listDiffImpl(const string& aFile, bool aOwnList) throw(Exception, AbortException);
 	void loadFileImpl(const string& aInitialDir) throw(Exception, AbortException);
-	void searchImpl(const SearchPtr& aSearch, const string& aDir) noexcept;
+	void searchImpl(const SearchPtr& aSearch) noexcept;
 	void loadPartialImpl(const string& aXml, const string& aBaseDir, bool reloadAll, bool changeDir, std::function<void()> completionF) throw(Exception, AbortException);
 	void matchAdlImpl() throw(AbortException);
 	void matchQueueImpl() noexcept;

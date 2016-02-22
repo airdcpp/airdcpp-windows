@@ -34,7 +34,7 @@ namespace dcpp {
 	{
 	public:
 
-		DirectSearch(const HintedUser& aUser, const SearchPtr& aSearch, const string& aDir, uint64_t aNoResultTimeout = 5000);
+		DirectSearch(const HintedUser& aUser, const SearchPtr& aSearch, uint64_t aNoResultTimeout = 5000);
 		~DirectSearch();
 
 		size_t getResultCount() const noexcept { return results.size(); }
@@ -64,6 +64,7 @@ namespace dcpp {
 		int maxResultCount = 0;
 		uint64_t noResultTimeout = 0;
 		uint64_t lastResult = 0;
+		uint64_t started = GET_TICK();
 		string searchToken;
 
 		HintedUser hintedUser;

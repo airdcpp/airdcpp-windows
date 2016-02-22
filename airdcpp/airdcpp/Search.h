@@ -75,6 +75,7 @@ public:
 	bool namesOnly = false;
 	int maxResults = 10;
 	bool requireReply = false;
+	string path;
 
 	/*optional<int64_t> minSize;
 	optional<int64_t> maxSize;

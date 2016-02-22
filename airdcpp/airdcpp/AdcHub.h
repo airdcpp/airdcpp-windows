@@ -44,7 +44,7 @@ public:
 	bool privateMessage(const OnlineUserPtr& aUser, const string& aMessage, string& error_, bool aThirdPerson, bool aEcho);
 	void sendUserCmd(const UserCommand& command, const ParamMap& params);
 	void search(const SearchPtr& aSearch);
-	void directSearch(const OnlineUser& user, const string& aDir, const SearchPtr& aSearch);
+	void directSearch(const OnlineUser& user, const SearchPtr& aSearch);
 	void password(const string& pwd);
 	void infoImpl();
 	void refreshUserList(bool);	

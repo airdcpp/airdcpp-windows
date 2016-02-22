@@ -657,10 +657,6 @@ void DirectoryListingFrame::onFind() {
 		return;
 
 	gotoPrev = false;
-	string path;
-	if (dlg.useCurDir) {
-		path = Util::toAdcFile(curPath);
-	}
 
 	auto s = make_shared<Search>(Search::MANUAL, dlg.searchStr, Util::toString(Util::rand()));
 	s->size = dlg.size;
@@ -674,7 +670,11 @@ void DirectoryListingFrame::onFind() {
 	s->maxResults = 20;
 	s->requireReply = true;
 
-	dl->addSearchTask(s, path);
+	if (dlg.useCurDir) {
+		s->path = Util::toAdcFile(curPath);
+	}
+
+	dl->addSearchTask(s);
 }
 
 LRESULT DirectoryListingFrame::onNext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

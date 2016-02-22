@@ -129,7 +129,7 @@ public:
 	// Get users with nick matching the pattern. Uses relevancies for priorizing the results.
 	OnlineUserList searchNicks(const string& aPattern, size_t aMaxResults, bool aIgnorePrefix) const noexcept;
 
-	void directSearch(const HintedUser& user, const string& aDir, const SearchPtr& aSearch) noexcept;
+	void directSearch(const HintedUser& user, const SearchPtr& aSearch) noexcept;
 	
 	void cancelSearch(void* aOwner) noexcept;
 		

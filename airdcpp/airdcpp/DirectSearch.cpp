@@ -24,14 +24,14 @@
 
 
 namespace dcpp {
-	DirectSearch::DirectSearch(const HintedUser& aUser, const SearchPtr& aSearch, const string& aDir, uint64_t aNoResultTimeout) : noResultTimeout(aNoResultTimeout) {
+	DirectSearch::DirectSearch(const HintedUser& aUser, const SearchPtr& aSearch, uint64_t aNoResultTimeout) : noResultTimeout(aNoResultTimeout) {
 		ClientManager::getInstance()->addListener(this);
 		SearchManager::getInstance()->addListener(this);
 
 		searchToken = aSearch->token;
 
 		maxResultCount = aSearch->maxResults;
-		ClientManager::getInstance()->directSearch(aUser, aDir, aSearch);
+		ClientManager::getInstance()->directSearch(aUser, aSearch);
 	}
 
 	DirectSearch::~DirectSearch() {
@@ -65,7 +65,7 @@ namespace dcpp {
 	bool DirectSearch::finished() noexcept {
 		auto tick = GET_TICK();
 		if (curResultCount == 0) {
-			if (lastResult + noResultTimeout < tick) {
+			if (started + noResultTimeout < tick) {
 				timedOut = true;
 				endSearch();
 				return true;

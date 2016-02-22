@@ -1007,12 +1007,12 @@ optional<uint64_t> ClientManager::search(string& who, const SearchPtr& aSearch) 
 	return boost::none;
 }
 
-void ClientManager::directSearch(const HintedUser& user, const string& aDir, const SearchPtr& aSearch) noexcept {
+void ClientManager::directSearch(const HintedUser& user, const SearchPtr& aSearch) noexcept {
 
 	RLock l (cs);
 	auto ou = findOnlineUser(user);
 	if (ou) {
-		ou->getClient()->directSearch(*ou, aDir, aSearch);
+		ou->getClient()->directSearch(*ou, aSearch);
 	}
 }
 

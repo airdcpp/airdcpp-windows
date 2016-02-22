@@ -1152,7 +1152,7 @@ StringList AdcHub::parseSearchExts(int flag) {
 	return ret;
 }
 
-void AdcHub::directSearch(const OnlineUser& user, const string& aDir, const SearchPtr& aSearch) {
+void AdcHub::directSearch(const OnlineUser& user, const SearchPtr& aSearch) {
 	if(!stateNormal())
 		return;
 
@@ -1160,8 +1160,8 @@ void AdcHub::directSearch(const OnlineUser& user, const string& aDir, const Sear
 	constructSearch(c, aSearch, true);
 
 	if (user.getUser()->isSet(User::ASCH)) {
-		if (!aDir.empty()) {
-			c.addParam("PA", aDir);
+		if (!aSearch->path.empty()) {
+			c.addParam("PA", aSearch->path);
 		}
 
 		if (aSearch->requireReply) {
