@@ -25,18 +25,18 @@
 #include <airdcpp/LogManager.h>
 
 namespace webserver {
-	LogApi::LogApi(Session* aSession) : ApiModule(aSession, Access::EVENTS) {
+	LogApi::LogApi(Session* aSession) : ApiModule(aSession, Access::EVENTS_VIEW) {
 		LogManager::getInstance()->addListener(this);
 
 		createSubscription("log_message");
 		createSubscription("log_info");
 
-		METHOD_HANDLER("clear", Access::EVENTS, ApiRequest::METHOD_POST, (), false, LogApi::handleClear);
-		METHOD_HANDLER("read", Access::EVENTS, ApiRequest::METHOD_POST, (), false, LogApi::handleRead);
-		METHOD_HANDLER("info", Access::EVENTS, ApiRequest::METHOD_GET, (), false, LogApi::handleGetInfo);
-		METHOD_HANDLER("messages", Access::EVENTS, ApiRequest::METHOD_GET, (NUM_PARAM), false, LogApi::handleGetLog);
+		METHOD_HANDLER("read", Access::EVENTS_VIEW, ApiRequest::METHOD_POST, (), false, LogApi::handleRead);
+		METHOD_HANDLER("info", Access::EVENTS_VIEW, ApiRequest::METHOD_GET, (), false, LogApi::handleGetInfo);
+		METHOD_HANDLER("messages", Access::EVENTS_VIEW, ApiRequest::METHOD_GET, (NUM_PARAM), false, LogApi::handleGetLog);
 
-		METHOD_HANDLER("message", Access::EVENTS, ApiRequest::METHOD_POST, (), true, LogApi::handlePostMessage);
+		METHOD_HANDLER("clear", Access::EVENTS_EDIT, ApiRequest::METHOD_POST, (), false, LogApi::handleClear);
+		METHOD_HANDLER("message", Access::EVENTS_EDIT, ApiRequest::METHOD_POST, (), true, LogApi::handlePostMessage);
 	}
 
 	LogApi::~LogApi() {
