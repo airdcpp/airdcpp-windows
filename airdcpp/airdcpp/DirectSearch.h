@@ -61,7 +61,7 @@ namespace dcpp {
 		SearchResultList results;
 
 		int curResultCount = 0;
-		int maxResultCount = 0;
+		int maxResultCount = -1;
 		uint64_t noResultTimeout = 0;
 		uint64_t lastResult = 0;
 		uint64_t started = GET_TICK();

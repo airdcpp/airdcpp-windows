@@ -64,13 +64,18 @@ namespace dcpp {
 
 	bool DirectSearch::finished() noexcept {
 		auto tick = GET_TICK();
-		if (curResultCount == 0) {
-			if (started + noResultTimeout < tick) {
-				timedOut = true;
-				endSearch();
-				return true;
-			}
-		} else if (lastResult + 1000 < tick || maxResultCount == curResultCount) {
+
+		// No results and timeout reached?
+		if (curResultCount == 0 && started + noResultTimeout < tick) {
+			timedOut = true;
+			endSearch();
+			return true;
+		} 
+			
+		// Use a shorter timeout after we have received some results
+		// in case the client doesn't support sending a reply message
+		// This will also finish if all results are received
+		if ((lastResult > 0 && lastResult + 1000 < tick) || maxResultCount == curResultCount) {
 			endSearch();
 			return true;
 		}
