@@ -51,19 +51,18 @@ namespace webserver {
 			PROP_NICK,
 			PROP_HAS_PASSWORD,
 			PROP_USER_DESCRIPTION,
+			PROP_IGNORE_PM,
 			PROP_LAST
 		};
 	private:
 		api_return handleAddHub(ApiRequest& aRequest);
 		api_return handleRemoveHub(ApiRequest& aRequest);
 		api_return handleUpdateHub(ApiRequest& aRequest);
+
+		api_return handleGetHubs(ApiRequest& aRequest);
 		api_return handleGetHub(ApiRequest& aRequest);
 
-		// Returns error if there are invalid properties
-		string updateValidatedProperties(FavoriteHubEntryPtr& aEntry, const json& j, bool aNewHub);
-
-		// Values that don't need to be validated
-		void updateSimpleProperties(FavoriteHubEntryPtr& aEntry, const json& j);
+		void updateProperties(FavoriteHubEntryPtr& aEntry, const json& j, bool aNewHub);
 
 		void on(FavoriteManagerListener::FavoriteHubAdded, const FavoriteHubEntryPtr& /*e*/)  noexcept;
 		void on(FavoriteManagerListener::FavoriteHubRemoved, const FavoriteHubEntryPtr& e) noexcept;

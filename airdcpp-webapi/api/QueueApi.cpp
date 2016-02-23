@@ -113,23 +113,14 @@ namespace webserver {
 	api_return QueueApi::handleFindDupePaths(ApiRequest& aRequest) {
 		const auto& reqJson = aRequest.getRequestBody();
 
-		json ret;
+		auto ret = json::array();
 
-		StringList paths;
 		auto path = JsonUtil::getOptionalField<string>("path", reqJson, false);
 		if (path) {
-			paths = QueueManager::getInstance()->getDirPaths(Util::toNmdcFile(*path));
+			ret = QueueManager::getInstance()->getDirPaths(Util::toNmdcFile(*path));
 		} else {
 			auto tth = Deserializer::deserializeTTH(reqJson);
-			paths = QueueManager::getInstance()->getTargets(tth);
-		}
-
-		if (!paths.empty()) {
-			for (const auto& p : paths) {
-				ret.push_back(p);
-			}
-		} else {
-			ret = json::array();
+			ret = QueueManager::getInstance()->getTargets(tth);
 		}
 
 		aRequest.setResponseBody(ret);

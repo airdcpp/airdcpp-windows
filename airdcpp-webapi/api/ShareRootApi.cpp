@@ -177,7 +177,9 @@ namespace webserver {
 		}
 
 		maybeSend("share_root_removed", [&] {
-			return json({ "path", aPath });
+			return json(
+				{ "path", aPath }
+			);
 		});
 	}
 
@@ -189,7 +191,7 @@ namespace webserver {
 
 		auto profiles = JsonUtil::getOptionalField<ProfileTokenSet>("profiles", j, false, aIsNew);
 		if (profiles) {
-			// Only validate added profiles profiles
+			// Only validate added profiles
 			ProfileTokenSet diff;
 
 			auto newProfiles = *profiles;

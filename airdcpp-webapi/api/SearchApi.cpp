@@ -61,6 +61,8 @@ namespace webserver {
 
 		METHOD_HANDLER("results", Access::SEARCH, ApiRequest::METHOD_GET, (NUM_PARAM, NUM_PARAM), false, SearchApi::handleGetResults);
 		METHOD_HANDLER("result", Access::DOWNLOAD, ApiRequest::METHOD_POST, (TOKEN_PARAM, EXACT_PARAM("download")), false, SearchApi::handleDownload);
+
+		createSubscription("search_result");
 	}
 
 	SearchApi::~SearchApi() {
@@ -236,9 +238,10 @@ namespace webserver {
 		auto result = SearchManager::getInstance()->search(hubs, s);
 		aRequest.setResponseBody({
 			{ "queue_time", result.queueTime },
-			{ "search_token", currentSearchToken },
+			{ "search_id", currentSearchToken },
 			{ "sent", result.succeed },
 		});
+
 		return websocketpp::http::status_code::ok;
 	}
 
@@ -296,6 +299,11 @@ namespace webserver {
 			}
 		}
 
+		if (ds.hasTimedOut()) {
+			aRequest.setResponseErrorStr("Search timed out");
+			return websocketpp::http::status_code::service_unavailable;
+		}
+
 		// Serialize results
 		unique_ptr<SearchQuery> matcher(SearchQuery::getSearch(s));
 		aRequest.setResponseBody(serializeDirectSearchResults(ds.getResults(), *matcher.get()));
@@ -340,5 +348,12 @@ namespace webserver {
 		// Add as child
 		parent->addChildResult(result);
 		searchView.onItemUpdated(parent, { PROP_RELEVANCY, PROP_CONNECTION, PROP_HITS, PROP_SLOTS, PROP_USERS });
+
+		if (subscriptionActive("search_result")) {
+			send("search_result", {
+				{ "search_id", currentSearchToken },
+				{ "result", Serializer::serializeItem(result, itemHandler) }
+			});
+		}
 	}
 }
