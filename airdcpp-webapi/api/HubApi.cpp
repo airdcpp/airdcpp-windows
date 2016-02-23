@@ -59,14 +59,14 @@ namespace webserver {
 	api_return HubApi::handlePostMessage(ApiRequest& aRequest) {
 		const auto& reqJson = aRequest.getRequestBody();
 
-		auto message = Deserializer::deserializeStatusMessage(reqJson);
+		auto message = Deserializer::deserializeChatMessage(reqJson);
 		auto hubs = Deserializer::deserializeHubUrls(reqJson);
 		int succeed = 0;
 
+		string lastError;
 		for (const auto& url : hubs) {
 			auto c = ClientManager::getInstance()->getClient(url);
-			if (c) {
-				c->statusMessage(message.first, message.second);
+			if (c && c->isConnected() && c->sendMessage(message.first, lastError, message.second)) {
 				succeed++;
 			}
 		}
