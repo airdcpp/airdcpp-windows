@@ -220,11 +220,12 @@ namespace webserver {
 		const auto& reqJson = aRequest.getRequestBody();
 
 		// Parse request
+		currentSearchToken = Util::toString(Util::rand());
 		auto s = parseQuery(reqJson, currentSearchToken);
+
 		auto hubs = Deserializer::deserializeHubUrls(reqJson);
 
 		// Result matching
-		currentSearchToken = Util::toString(Util::rand());
 		curSearch = shared_ptr<SearchQuery>(SearchQuery::getSearch(s));
 
 		// Reset old data
