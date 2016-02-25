@@ -20,12 +20,12 @@
 #include <api/SearchUtils.h>
 
 #include <api/common/Deserializer.h>
+#include <api/common/FileSearchParser.h>
 
 #include <airdcpp/DirectSearch.h>
 #include <airdcpp/ScopedFunctor.h>
 #include <airdcpp/ShareManager.h>
 
-const unsigned int MIN_SEARCH = 2;
 
 namespace webserver {
 	const PropertyList SearchApi::properties = {
@@ -137,106 +137,12 @@ namespace webserver {
 		return websocketpp::http::status_code::ok;
 	}
 
-	const map<string, string> fileTypeMappings = {
-		{ "any", "0" },
-		{ "audio", "1" },
-		{ "compressed", "2" },
-		{ "document", "3" },
-		{ "executable", "4" },
-		{ "picture", "5" },
-		{ "video", "6" },
-		{ "directory", "7" },
-		{ "tth", "8" },
-		{ "file", "9" },
-	};
-
-	const string& SearchApi::parseFileType(const string& aType) noexcept {
-		auto i = fileTypeMappings.find(aType);
-		return i != fileTypeMappings.end() ? i->second : aType;
-	}
-
-	Search::MatchType SearchApi::parseMatchType(const string& aTypeStr) {
-		if (aTypeStr == "path_partial") {
-			return Search::MATCH_PATH_PARTIAL;
-		} else if (aTypeStr == "name_exact") {
-			return Search::MATCH_NAME_EXACT;
-		} else if (aTypeStr == "name_partial") {
-			return Search::MATCH_NAME_PARTIAL;
-		}
-
-		throw std::domain_error("Invalid match type");
-	}
-
-	SearchPtr SearchApi::parseQuery(const json& aJson, const string& aToken) {
-		auto queryJson = JsonUtil::getRawValue("query", aJson);
-
-		auto pattern = JsonUtil::getOptionalFieldDefault<string>("pattern", queryJson, Util::emptyString, false);
-
-		auto s = make_shared<Search>(Search::MANUAL, pattern, aToken);
-
-		// Filetype
-		s->fileType = pattern.size() == 39 && Encoder::isBase32(pattern.c_str()) ? Search::TYPE_TTH : Search::TYPE_ANY;
-
-		auto fileTypeStr = JsonUtil::getOptionalField<string>("file_type", queryJson, false);
-		if (fileTypeStr) {
-			try {
-				SearchManager::getInstance()->getSearchType(parseFileType(*fileTypeStr), s->fileType, s->exts, true);
-			} catch (...) {
-				throw std::domain_error("Invalid file type");
-			}
-		}
-
-		// Extensions
-		auto optionalExtensions = JsonUtil::getOptionalField<StringList>("extensions", queryJson);
-		if (optionalExtensions) {
-			s->exts = *optionalExtensions;
-		}
-
-		// Anything to search for?
-		if (s->exts.empty() && pattern.empty()) {
-			throw std::domain_error("A valid pattern or file extensions must be provided");
-		}
-
-		// Date
-		s->maxDate = JsonUtil::getOptionalField<time_t>("max_age", queryJson);
-		s->minDate = JsonUtil::getOptionalField<time_t>("min_age", queryJson);
-
-		// Size
-		auto minSize = JsonUtil::getOptionalField<int64_t>("min_size", queryJson);
-		if (minSize) {
-			s->size = *minSize;
-			s->sizeType = Search::SIZE_ATLEAST;
-		}
-
-		auto maxSize = JsonUtil::getOptionalField<int64_t>("max_size", queryJson);
-		if (maxSize) {
-			s->size = *maxSize;
-			s->sizeType = Search::SIZE_ATMOST;
-		}
-
-		// Excluded
-		s->excluded = JsonUtil::getOptionalFieldDefault<StringList>("excluded", queryJson, StringList());
-
-		// Match type
-		auto matchTypeStr = JsonUtil::getOptionalFieldDefault<string>("match_type", queryJson, "path_partial", false);
-		s->matchType = parseMatchType(matchTypeStr);
-
-		return s;
-	}
-
-	void SearchApi::parseDirectSearchProperties(const json& aJson, const SearchPtr& aSearch) {
-		aSearch->path = JsonUtil::getOptionalFieldDefault<string>("path", aJson, Util::emptyString);
-		aSearch->maxResults = JsonUtil::getOptionalFieldDefault<int>("max_results", aJson, 5);
-		aSearch->returnParents = JsonUtil::getOptionalFieldDefault<bool>("return_parents", aJson, false);
-		aSearch->requireReply = true;
-	}
-
 	api_return SearchApi::handlePostHubSearch(ApiRequest& aRequest) {
 		const auto& reqJson = aRequest.getRequestBody();
 
 		// Parse request
 		currentSearchToken = Util::toString(Util::rand());
-		auto s = parseQuery(reqJson, currentSearchToken);
+		auto s = FileSearchParser::parseSearch(reqJson, false, currentSearchToken);
 
 		auto hubs = Deserializer::deserializeHubUrls(reqJson);
 
@@ -266,8 +172,7 @@ namespace webserver {
 
 		// Parse share profile and query
 		auto profile = Deserializer::deserializeShareProfile(reqJson);
-		auto s = parseQuery(reqJson, Util::toString(Util::rand()));
-		parseDirectSearchProperties(reqJson, s);
+		auto s = FileSearchParser::parseSearch(reqJson, true, Util::toString(Util::rand()));
 
 		// Search
 		unique_ptr<SearchQuery> matcher(SearchQuery::getSearch(s));
@@ -301,8 +206,7 @@ namespace webserver {
 
 		// Parse user and query
 		auto user = Deserializer::deserializeHintedUser(reqJson, false);
-		auto s = parseQuery(reqJson, Util::toString(Util::rand()));
-		parseDirectSearchProperties(reqJson, s);
+		auto s = FileSearchParser::parseSearch(reqJson, true, Util::toString(Util::rand()));
 
 		// Search
 		auto ds = DirectSearch(user, s);

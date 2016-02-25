@@ -60,11 +60,6 @@ namespace webserver {
 	private:
 		SearchResultInfo::List getResultList();
 
-		static Search::MatchType parseMatchType(const string& aTypeStr);
-		static SearchPtr parseQuery(const json& aJson, const string& aToken);
-		static void parseDirectSearchProperties(const json& aJson, const SearchPtr& aSearch);
-		static const string& parseFileType(const string& aType) noexcept;
-
 		static json serializeDirectSearchResults(const SearchResultList& aResults, SearchQuery& aQuery) noexcept;
 
 		api_return handlePostHubSearch(ApiRequest& aRequest);
