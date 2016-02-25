@@ -53,6 +53,12 @@ public:
 		TYPE_LAST
 	};
 
+	enum MatchType : uint8_t {
+		MATCH_PATH_PARTIAL = 0,
+		MATCH_NAME_PARTIAL,
+		MATCH_NAME_EXACT
+	};
+
 	Search(Type aSearchType, const string& aQuery, const string& aToken) noexcept : query(aQuery), type(aSearchType), token(aToken) { }
 	~Search() { }
 
@@ -72,7 +78,7 @@ public:
 
 	// Direct searches
 	bool returnParents = false;
-	bool namesOnly = false;
+	MatchType matchType = MATCH_PATH_PARTIAL;
 	int maxResults = 10;
 	bool requireReply = false;
 	string path;

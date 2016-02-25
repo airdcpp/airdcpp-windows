@@ -3321,7 +3321,7 @@ void ShareManager::Directory::search(SearchResultInfo::Set& results_, SearchQuer
 			//}
 		} 
 		
-		if (aStrings.matchType == SearchQuery::MATCH_FULL_PATH) {
+		if (aStrings.matchType == Search::MATCH_PATH_PARTIAL) {
 			bool hasValidResult = positionsComplete;
 			if (!hasValidResult) {
 				// Partial match; ignore if all matches are less than 3 chars in length
@@ -3412,7 +3412,7 @@ void ShareManager::search(SearchResultList& results, SearchQuery& srch, ProfileT
 		}
 	}
 
-	if (srch.itemType == SearchQuery::TYPE_DIRECTORY && srch.matchType == SearchQuery::MATCH_EXACT) {
+	if (srch.itemType == SearchQuery::TYPE_DIRECTORY && srch.matchType == Search::MATCH_NAME_EXACT) {
 		const auto i = dirNameMap.equal_range(const_cast<string*>(&srch.include.getPatterns().front().str()));
 		for(const auto& d: i | map_values) {
 			auto path = d->getADCPath(aProfile);

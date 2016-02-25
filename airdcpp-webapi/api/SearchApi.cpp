@@ -137,7 +137,7 @@ namespace webserver {
 		return websocketpp::http::status_code::ok;
 	}
 
-	map<string, string> typeMappings = {
+	const map<string, string> fileTypeMappings = {
 		{ "any", "0" },
 		{ "audio", "1" },
 		{ "compressed", "2" },
@@ -151,8 +151,20 @@ namespace webserver {
 	};
 
 	const string& SearchApi::parseFileType(const string& aType) noexcept {
-		auto i = typeMappings.find(aType);
-		return i != typeMappings.end() ? i->second : aType;
+		auto i = fileTypeMappings.find(aType);
+		return i != fileTypeMappings.end() ? i->second : aType;
+	}
+
+	Search::MatchType SearchApi::parseMatchType(const string& aTypeStr) {
+		if (aTypeStr == "path_partial") {
+			return Search::MATCH_PATH_PARTIAL;
+		} else if (aTypeStr == "name_exact") {
+			return Search::MATCH_NAME_EXACT;
+		} else if (aTypeStr == "name_partial") {
+			return Search::MATCH_NAME_PARTIAL;
+		}
+
+		throw std::domain_error("Invalid match type");
 	}
 
 	SearchPtr SearchApi::parseQuery(const json& aJson, const string& aToken) {
@@ -205,6 +217,10 @@ namespace webserver {
 		// Excluded
 		s->excluded = JsonUtil::getOptionalFieldDefault<StringList>("excluded", queryJson, StringList());
 
+		// Match type
+		auto matchTypeStr = JsonUtil::getOptionalFieldDefault<string>("match_type", queryJson, "path_partial", false);
+		s->matchType = parseMatchType(matchTypeStr);
+
 		return s;
 	}
 
@@ -212,7 +228,6 @@ namespace webserver {
 		aSearch->path = JsonUtil::getOptionalFieldDefault<string>("path", aJson, Util::emptyString);
 		aSearch->maxResults = JsonUtil::getOptionalFieldDefault<int>("max_results", aJson, 5);
 		aSearch->returnParents = JsonUtil::getOptionalFieldDefault<bool>("return_parents", aJson, false);
-		aSearch->namesOnly = JsonUtil::getOptionalFieldDefault<bool>("match_name", aJson, false);
 		aSearch->requireReply = true;
 	}
 

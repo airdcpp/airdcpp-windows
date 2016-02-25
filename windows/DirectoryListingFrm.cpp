@@ -666,7 +666,7 @@ void DirectoryListingFrame::onFind() {
 	s->exts = dlg.extList;
 
 	s->returnParents = true;
-	s->namesOnly = true;
+	s->matchType = Search::MATCH_NAME_PARTIAL;
 	s->maxResults = 20;
 	s->requireReply = true;
 
