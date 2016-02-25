@@ -59,7 +59,7 @@ public:
 		MATCH_NAME_EXACT
 	};
 
-	Search(Type aSearchType, const string& aQuery, const string& aToken) noexcept : query(aQuery), type(aSearchType), token(aToken) { }
+	Search(Type aSearchType, const string& aToken) noexcept : type(aSearchType), token(aToken) { }
 	~Search() { }
 
 	SizeModes	sizeType = SIZE_DONTCARE;

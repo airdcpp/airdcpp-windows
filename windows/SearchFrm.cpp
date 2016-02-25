@@ -470,8 +470,9 @@ void SearchFrame::onEnter() {
 
 	token = Util::toString(Util::rand());
 
-	auto s = make_shared<Search>(Search::MANUAL, query, token);
+	auto s = make_shared<Search>(Search::MANUAL, token);
 	
+	s->query = query;
 	s->size = WinUtil::parseSize(ctrlSize, ctrlSizeUnit);
 	s->sizeType = static_cast<Search::SizeModes>(ctrlSizeMode.GetCurSel());
 
