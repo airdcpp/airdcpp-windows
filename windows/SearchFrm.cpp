@@ -461,18 +461,15 @@ void SearchFrame::onEnter() {
 	if(clients.empty())
 		return;
 
+	token = Util::toString(Util::rand());
+	auto s = make_shared<Search>(Search::MANUAL, token);
 
-	auto query = WinUtil::addHistory(ctrlSearchBox, SettingsManager::HISTORY_SEARCH);
-	if (query.empty() || SearchQuery::parseSearchString(query).empty()) {
+	s->query = WinUtil::addHistory(ctrlSearchBox, SettingsManager::HISTORY_SEARCH);
+	if (s->query.empty() || SearchQuery::parseSearchString(s->query).empty()) {
 		ctrlStatus.SetText(1, CTSTRING(ENTER_SEARCH_STRING));
 		return;
 	}
-
-	token = Util::toString(Util::rand());
-
-	auto s = make_shared<Search>(Search::MANUAL, token);
 	
-	s->query = query;
 	s->size = WinUtil::parseSize(ctrlSize, ctrlSizeUnit);
 	s->sizeType = static_cast<Search::SizeModes>(ctrlSizeMode.GetCurSel());
 
@@ -524,19 +521,19 @@ void SearchFrame::onEnter() {
 
 
 	// Get ADC search type extensions if any is selected
-	StringList extList;
-	auto ftype = Search::TYPE_ANY;
 	string typeName;
-
 	try {
-		SearchManager::getInstance()->getSearchType(ctrlFileType.GetCurSel(), ftype, extList, typeName);
+		SearchManager::getInstance()->getSearchType(ctrlFileType.GetCurSel(), s->fileType, s->exts, typeName);
 	} catch(const SearchTypeException&) {
-
+		dcassert(0);
 	}
 
-	if(ftype == Search::TYPE_TTH) {
-		query.erase(std::remove_if(query.begin(), query.end(), [](char c) { return c == ' ' || c == '\t' || c == '\r' || c == '\n'; }), query.end());
-		if(query.size() != 39 || !Encoder::isBase32(query.c_str())) {
+	if(s->fileType == Search::TYPE_TTH) {
+		s->query.erase(std::remove_if(s->query.begin(), s->query.end(), [](char c) { 
+			return c == ' ' || c == '\t' || c == '\r' || c == '\n'; 
+		}), s->query.end());
+
+		if(s->query.size() != 39 || !Encoder::isBase32(s->query.c_str())) {
 			ctrlStatus.SetText(1, CTSTRING(INVALID_TTH_SEARCH));
 			return;
 		}
