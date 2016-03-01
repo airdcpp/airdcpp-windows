@@ -660,8 +660,8 @@ private:
 		removeDirName(aDir, dirNameMap);
 	}*/
 
-	static void addDirName(Directory::Ptr& dir, DirMultiMap& aDirNames, ShareBloom& aBloom) noexcept;
-	static void removeDirName(Directory& dir, DirMultiMap& aDirNames) noexcept;
+	static void addDirName(const Directory::Ptr& dir, DirMultiMap& aDirNames, ShareBloom& aBloom) noexcept;
+	static void removeDirName(const Directory& dir, DirMultiMap& aDirNames) noexcept;
 
 	void onFileHashed(const string& fname, HashedFile& fileInfo) noexcept;
 	

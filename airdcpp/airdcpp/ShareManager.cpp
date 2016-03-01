@@ -2372,7 +2372,10 @@ bool ShareManager::changeDirectory(const ShareDirectoryInfoPtr& aDirectoryInfo) 
 			// Make sure that all removed profiles are set dirty as well
 			dirtyProfiles.insert(profileDir->getRootProfiles().begin(), profileDir->getRootProfiles().end());
 
+			removeDirName(*p->second, dirNameMap);
 			profileDir->setName(vName);
+			addDirName(p->second, dirNameMap, *bloom.get());
+
 			profileDir->setIncoming(aDirectoryInfo->incoming);
 			profileDir->setRootProfiles(aDirectoryInfo->profiles);
 		} else {
@@ -2562,7 +2565,7 @@ void ShareManager::runTasks(function<void (float)> progressF /*nullptr*/) noexce
 			auto& ri = *i.get();
 			auto path = ri.path;
 
-			addDirName(ri.root, ri.dirNameMapNew, *bloom);
+			addDirName(ri.root, ri.dirNameMapNew, *refreshBloom);
 			setRefreshState(ri.path, RefreshState::STATE_RUNNING, false);
 
 			bool succeed = false;
@@ -3471,23 +3474,28 @@ void ShareManager::cleanIndices(Directory& dir, const Directory::File* f) noexce
 		dcassert(0);
 }
 
-void ShareManager::addDirName(Directory::Ptr& aDir, DirMultiMap& aDirNames, ShareBloom& aBloom) noexcept {
+void ShareManager::addDirName(const Directory::Ptr& aDir, DirMultiMap& aDirNames, ShareBloom& aBloom) noexcept {
 #ifdef _DEBUG
 	auto directories = aDirNames.equal_range(const_cast<string*>(&aDir->realName.getLower()));
 	auto p = find(directories | map_values, aDir);
 	dcassert(p.base() == directories.second);
 #endif
-	aDirNames.emplace(const_cast<string*>(&aDir->realName.getLower()), aDir);
+	const auto& name = aDir->getProfileDir() ? aDir->getProfileDir()->getNameLower() : aDir->realName.getLower();
+	aDirNames.emplace(const_cast<string*>(&name), aDir);
 	aBloom.add(aDir->realName.getLower());
 }
 
-void ShareManager::removeDirName(Directory& aDir, DirMultiMap& aDirNames) noexcept {
-	auto directories = aDirNames.equal_range(const_cast<string*>(&aDir.realName.getLower()));
+void ShareManager::removeDirName(const Directory& aDir, DirMultiMap& aDirNames) noexcept {
+	const auto& name = aDir.getProfileDir() ? aDir.getProfileDir()->getNameLower() : aDir.realName.getLower();
+
+	auto directories = aDirNames.equal_range(const_cast<string*>(&name));
 	auto p = find_if(directories | map_values, [&aDir](const Directory::Ptr& d) { return d.get() == &aDir; });
-	if (p.base() != aDirNames.end())
-		aDirNames.erase(p.base());
-	else
+	if (p.base() == aDirNames.end()) {
 		dcassert(0);
+		return;
+	}
+
+	aDirNames.erase(p.base());
 }
 
 void ShareManager::cleanIndices(Directory& dir) noexcept {
