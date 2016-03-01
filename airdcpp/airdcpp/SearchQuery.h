@@ -47,7 +47,7 @@ namespace dcpp {
 		typedef vector<pair<size_t, int>> ResultPointsList;
 
 		// Gets a score (0-1) based on how well the current item matches the provided search (which must have been fully matched first)
-		static double getRelevancyScores(const SearchQuery& aSearch, int aLevel, bool aIsDirectory, const string& aName) noexcept;
+		static double getRelevanceScore(const SearchQuery& aSearch, int aLevel, bool aIsDirectory, const string& aName) noexcept;
 
 		// Count points per pattern based on the matching positions (based on the surrounding separators)
 		ResultPointsList toPointList(const string& aName) const noexcept;

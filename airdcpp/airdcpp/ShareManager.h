@@ -405,12 +405,12 @@ private:
 			};
 
 			explicit SearchResultInfo(const File* f, const SearchQuery& aSearch, int aLevel) :
-				file(f), type(FILE), scores(SearchQuery::getRelevancyScores(aSearch, aLevel, false, f->name.getLower())) {
+				file(f), type(FILE), scores(SearchQuery::getRelevanceScore(aSearch, aLevel, false, f->name.getLower())) {
 
 			}
 
 			explicit SearchResultInfo(const Directory* d, const SearchQuery& aSearch, int aLevel) :
-				directory(d), type(DIRECTORY), scores(SearchQuery::getRelevancyScores(aSearch, aLevel, true, d->realName.getLower())) {
+				directory(d), type(DIRECTORY), scores(SearchQuery::getRelevanceScore(aSearch, aLevel, true, d->realName.getLower())) {
 
 			}
 

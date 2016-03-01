@@ -30,7 +30,7 @@ namespace {
 
 namespace dcpp {
 
-double SearchQuery::getRelevancyScores(const SearchQuery& aSearch, int aLevel, bool aIsDirectory, const string& aName) noexcept {
+double SearchQuery::getRelevanceScore(const SearchQuery& aSearch, int aLevel, bool aIsDirectory, const string& aName) noexcept {
 	// get the level scores first
 	double scores = aLevel > 0 ? 9 / static_cast<double>(aLevel) : 10;
 	double maxPoints = 10;

@@ -42,14 +42,14 @@
 #include <boost/range/numeric.hpp>
 
 
-int SearchFrame::columnIndexes[] = { COLUMN_FILENAME, COLUMN_RELEVANCY, COLUMN_HITS, COLUMN_USERS, COLUMN_TYPE, COLUMN_SIZE,
+int SearchFrame::columnIndexes[] = { COLUMN_FILENAME, COLUMN_RELEVANCE, COLUMN_HITS, COLUMN_USERS, COLUMN_TYPE, COLUMN_SIZE,
 	COLUMN_DATE, COLUMN_PATH, COLUMN_SLOTS, COLUMN_CONNECTION, 
 	COLUMN_HUB, COLUMN_EXACT_SIZE, COLUMN_IP, COLUMN_TTH };
 int SearchFrame::columnSizes[] = { 210, 50, 50, 100, 60, 80, 
 	100, 100, 40, 80, 
 	150, 80, 110, 150 };
 
-static ResourceManager::Strings columnNames[] = { ResourceManager::FILE, ResourceManager::RELEVANCY, ResourceManager::HIT_COUNT, ResourceManager::USER, ResourceManager::TYPE_CONTENT, ResourceManager::SIZE,
+static ResourceManager::Strings columnNames[] = { ResourceManager::FILE, ResourceManager::RELEVANCE, ResourceManager::HIT_COUNT, ResourceManager::USER, ResourceManager::TYPE_CONTENT, ResourceManager::SIZE,
 	ResourceManager::DATE, ResourceManager::PATH, ResourceManager::SLOTS, ResourceManager::CONNECTION,
 	ResourceManager::HUB, ResourceManager::EXACT_SIZE, ResourceManager::IP_BARE, ResourceManager::TTH_ROOT };
 
@@ -290,7 +290,7 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	if(SETTING(SORT_DIRS)) {
 		ctrlResults.list.setSortColumn(COLUMN_FILENAME);
 	} else {
-		ctrlResults.list.setSortColumn(COLUMN_RELEVANCY);
+		ctrlResults.list.setSortColumn(COLUMN_RELEVANCE);
 		ctrlResults.list.setAscending(false);
 	}
 
@@ -586,16 +586,16 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 		return;
 	}
 
-	SearchResult::RelevancyInfo relevancy;
+	SearchResult::RelevanceInfo relevance;
 	{
 		WLock l(cs);
-		if (!aResult->getRelevancy(*curSearch.get(), relevancy, token)) {
+		if (!aResult->getRelevance(*curSearch.get(), relevance, token)) {
 			callAsync([this] { onResultFiltered(); });
 			return;
 		}
 	}
 
-	auto i = new SearchInfo(aResult, relevancy);
+	auto i = new SearchInfo(aResult, relevance);
 	callAsync([=] { addSearchResult(i); });
 }
 
@@ -625,7 +625,7 @@ void SearchFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	}
 }
 
-SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR, const SearchResult::RelevancyInfo& aRelevancy) : sr(aSR) {
+SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR, const SearchResult::RelevanceInfo& aRelevance) : sr(aSR) {
 	//check the dupe
 	if(SETTING(DUPE_SEARCH)) {
 		if (sr->getType() == SearchResult::TYPE_DIRECTORY)
@@ -634,7 +634,7 @@ SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR, const SearchResu
 			dupe = AirUtil::checkFileDupe(sr->getTTH());
 	}
 
-	matchRelevancy = aRelevancy.matchRelevancy;
+	matchRelevance = aRelevance.matchRelevance;
 
 	//get the ip info
 	auto ip = sr->getIP();
@@ -650,8 +650,8 @@ SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR, const SearchResu
 	ipText = Text::toT(ip);
 }
 
-double SearchFrame::SearchInfo::getTotalRelevancy() const {
-	return (hits * sourceScoreFactor) + matchRelevancy;
+double SearchFrame::SearchInfo::getTotalRelevance() const {
+	return (hits * sourceScoreFactor) + matchRelevance;
 }
 
 StringList SearchFrame::SearchInfo::getDupePaths() const {
@@ -673,29 +673,27 @@ int SearchFrame::SearchInfo::compareItems(const SearchInfo* a, const SearchInfo*
 	switch(col) {
 		// I think its nicer to sort the names too, otherwise could do it with typecolumn
 		case COLUMN_FILENAME: 
-			if(a->sr->getType() == b->sr->getType())
-				return lstrcmpi(a->getText(COLUMN_FILENAME).c_str(), b->getText(COLUMN_FILENAME).c_str());
-			else 
-				return ( a->sr->getType() == SearchResult::TYPE_DIRECTORY ) ? -1 : 1;
-		case COLUMN_RELEVANCY:
-			//if (a->getTotalRelevancy() != b->getTotalRelevancy())
-				return compare(a->getTotalRelevancy(), b->getTotalRelevancy());
-			//else
-			//	return compare(a->hits, b->hits);
-		case COLUMN_TYPE: 
-			if (a->sr->getType() == b->sr->getType()) {
-				if (a->sr->getType() == SearchResult::TYPE_DIRECTORY) {
-					if (a->sr->getFolderCount() != b->sr->getFolderCount()) {
-						return a->sr->getFolderCount() < b->sr->getFolderCount() ? 1 : -1;
-					}
+			if (a->sr->getType() != b->sr->getType()) {
+				return a->sr->getType() == SearchResult::TYPE_DIRECTORY ? -1 : 1;
+			}
 
-					return a->sr->getFileCount() < b->sr->getFileCount() ? 1 : -1;
+			return lstrcmpi(a->getText(COLUMN_FILENAME).c_str(), b->getText(COLUMN_FILENAME).c_str());
+		case COLUMN_RELEVANCE:
+			return compare(a->getTotalRelevance(), b->getTotalRelevance());
+		case COLUMN_TYPE: 
+			if (a->sr->getType() != b->sr->getType()) {
+				return a->sr->getType() == SearchResult::TYPE_DIRECTORY ? -1 : 1;
+			}
+
+			if (a->sr->getType() == SearchResult::TYPE_DIRECTORY) {
+				if (a->sr->getFolderCount() != b->sr->getFolderCount()) {
+					return a->sr->getFolderCount() < b->sr->getFolderCount() ? 1 : -1;
 				}
 
-				return lstrcmpi(a->getText(COLUMN_TYPE).c_str(), b->getText(COLUMN_TYPE).c_str());
-			} else {
-				return(a->sr->getType() == SearchResult::TYPE_DIRECTORY) ? -1 : 1;
+				return a->sr->getFileCount() < b->sr->getFileCount() ? 1 : -1;
 			}
+
+			return lstrcmpi(a->getText(COLUMN_TYPE).c_str(), b->getText(COLUMN_TYPE).c_str());
 		/*case COLUMN_FILES: 
 			if(a->sr->getType() == b->sr->getType())
 				return compare(a->sr->getFileCount(), b->sr->getFileCount());
@@ -704,10 +702,11 @@ int SearchFrame::SearchInfo::compareItems(const SearchInfo* a, const SearchInfo*
 
 		case COLUMN_HITS: return compare(a->hits, b->hits);
 		case COLUMN_SLOTS: 
-			if(a->sr->getFreeSlots() == b->sr->getFreeSlots())
+			if (a->sr->getFreeSlots() != b->sr->getFreeSlots()) {
 				return compare(a->sr->getSlots(), b->sr->getSlots());
-			else
-				return compare(a->sr->getFreeSlots(), b->sr->getFreeSlots());
+			}
+
+			return compare(a->sr->getFreeSlots(), b->sr->getFreeSlots());
 		case COLUMN_SIZE:
 		case COLUMN_EXACT_SIZE: return compare(a->sr->getSize(), b->sr->getSize());
 		/*case COLUMN_USERS:
@@ -723,7 +722,7 @@ int SearchFrame::SearchInfo::compareItems(const SearchInfo* a, const SearchInfo*
 const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 	switch(col) {
 		case COLUMN_FILENAME: return Text::toT(sr->getFileName());
-		case COLUMN_RELEVANCY: return Util::toStringW(getTotalRelevancy());
+		case COLUMN_RELEVANCE: return Util::toStringW(getTotalRelevance());
 		case COLUMN_HITS: return hits == 0 ? Util::emptyStringT : TSTRING_F(X_USERS, (hits+1));
 		case COLUMN_USERS: return WinUtil::getNicks(sr->getUser());
 		case COLUMN_TYPE:
@@ -1779,7 +1778,7 @@ void SearchFrame::updateSearchList(SearchInfo* si) {
 	auto filterInfoF = [&](int column) { return Text::fromT(si->getText(column)); };
 	auto filterNumericF = [&](int column) -> double { 
 		switch (column) {
-			case COLUMN_RELEVANCY: return si->getTotalRelevancy();
+			case COLUMN_RELEVANCE: return si->getTotalRelevance();
 			case COLUMN_HITS: return si->hits;
 			case COLUMN_SLOTS: return si->sr->getFreeSlots();
 			case COLUMN_SIZE:

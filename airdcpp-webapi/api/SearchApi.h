@@ -44,7 +44,7 @@ namespace webserver {
 		enum Properties {
 			PROP_TOKEN = -1,
 			PROP_NAME,
-			PROP_RELEVANCY,
+			PROP_RELEVANCE,
 			PROP_HITS,
 			PROP_USERS,
 			PROP_TYPE,

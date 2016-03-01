@@ -30,7 +30,7 @@
 namespace webserver {
 	const PropertyList SearchApi::properties = {
 		{ PROP_NAME, "name", TYPE_TEXT, SERIALIZE_TEXT, SORT_CUSTOM },
-		{ PROP_RELEVANCY, "relevancy", TYPE_NUMERIC_OTHER, SERIALIZE_NUMERIC, SORT_NUMERIC },
+		{ PROP_RELEVANCE, "relevance", TYPE_NUMERIC_OTHER, SERIALIZE_NUMERIC, SORT_NUMERIC },
 		{ PROP_HITS, "hits", TYPE_NUMERIC_OTHER, SERIALIZE_NUMERIC, SORT_NUMERIC },
 		{ PROP_USERS, "users", TYPE_TEXT, SERIALIZE_CUSTOM, SORT_CUSTOM },
 		{ PROP_TYPE, "type", TYPE_TEXT, SERIALIZE_CUSTOM, SORT_CUSTOM },
@@ -191,9 +191,9 @@ namespace webserver {
 		// Construct SearchResultInfos
 		SearchResultInfo::Set resultSet;
 		for (const auto& sr : aResults) {
-			SearchResult::RelevancyInfo relevancyInfo;
-			if (sr->getRelevancy(aQuery, relevancyInfo)) {
-				resultSet.emplace(std::make_shared<SearchResultInfo>(sr, move(relevancyInfo)));
+			SearchResult::RelevanceInfo relevanceInfo;
+			if (sr->getRelevance(aQuery, relevanceInfo)) {
+				resultSet.emplace(std::make_shared<SearchResultInfo>(sr, move(relevanceInfo)));
 			}
 		}
 
@@ -236,16 +236,16 @@ namespace webserver {
 			return;
 		}
 
-		SearchResult::RelevancyInfo relevancyInfo;
+		SearchResult::RelevanceInfo relevanceInfo;
 		{
 			WLock l(cs);
-			if (!aResult->getRelevancy(*search.get(), relevancyInfo, currentSearchToken)) {
+			if (!aResult->getRelevance(*search.get(), relevanceInfo, currentSearchToken)) {
 				return;
 			}
 		}
 
 		SearchResultInfoPtr parent = nullptr;
-		auto result = std::make_shared<SearchResultInfo>(aResult, move(relevancyInfo));
+		auto result = std::make_shared<SearchResultInfo>(aResult, move(relevanceInfo));
 
 		{
 			WLock l(cs);
@@ -267,7 +267,7 @@ namespace webserver {
 
 		// Add as child
 		parent->addChildResult(result);
-		searchView.onItemUpdated(parent, { PROP_RELEVANCY, PROP_CONNECTION, PROP_HITS, PROP_SLOTS, PROP_USERS });
+		searchView.onItemUpdated(parent, { PROP_RELEVANCE, PROP_CONNECTION, PROP_HITS, PROP_SLOTS, PROP_USERS });
 
 		if (subscriptionActive("search_result")) {
 			send("search_result", {

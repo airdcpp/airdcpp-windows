@@ -1518,7 +1518,7 @@ void MainFrame::fillLimiterMenu(OMenu* limiterMenu, bool upload) {
 		x * 11 / 10, x * 6 / 5, x * 3 / 2, x * 2, x * 3, x * 4, x * 5, x * 10, x * 100,
 		x * 10 / 11, x * 5 / 6, x * 2 / 3, x / 2, x / 3, x / 4, x / 5, x / 10, x / 100 };
 
-	// set ensures ordered unique members; remove_if performs range and relevancy checking.
+	// set ensures ordered unique members; remove_if performs range and relevance checking.
 	auto minDelta = (x >= 1024) ? (20 * pow(1024, floor(log(static_cast<float>(x)) / log(1024.)) - 1)) : 
 		(x >= 100) ? 5 : 0; // aint 5KB/s accurate enough?
 	

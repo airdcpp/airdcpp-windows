@@ -229,7 +229,7 @@ private:
 	enum {
 		COLUMN_FIRST,
 		COLUMN_FILENAME = COLUMN_FIRST,
-		COLUMN_RELEVANCY,
+		COLUMN_RELEVANCE,
 		//COLUMN_FILES,
 		COLUMN_HITS,
 		COLUMN_USERS,
@@ -260,7 +260,7 @@ private:
 
 		SearchInfo::List subItems;
 
-		SearchInfo(const SearchResultPtr& aSR, const SearchResult::RelevancyInfo& aRelevancy);
+		SearchInfo(const SearchResultPtr& aSR, const SearchResult::RelevanceInfo& aRelevance);
 		~SearchInfo() {	}
 
 		const UserPtr& getUser() const { return sr->getUser().user; }
@@ -304,10 +304,10 @@ private:
 		IGETSET(DupeType, dupe, Dupe, DUPE_NONE);
 		GETSET(tstring, ipText, IpText);
 
-		double getTotalRelevancy() const;
-		double getMatchRelevancy() const { return matchRelevancy; }
+		double getTotalRelevance() const;
+		double getMatchRelevance() const { return matchRelevance; }
 	private:
-		double matchRelevancy = 0;
+		double matchRelevance = 0;
 		double sourceScoreFactor = 0.01;
 	};
 	
