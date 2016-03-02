@@ -591,6 +591,9 @@ void DirectoryListingFrame::findSearchHit(bool newDir /*false*/) {
 		return;
 
 	bool found = false;
+	if (!ctrlTree.getSelectedItemData()->dir->isComplete()) {
+		return;
+	}
 
 	// set the starting position for the search
 	if (newDir) {
@@ -1381,8 +1384,7 @@ void DirectoryListingFrame::appendTreeContextMenu(CPoint& pt, DirectoryListing::
 
 void DirectoryListingFrame::handleItemAction(bool usingTree, std::function<void (const ItemInfo* ii)> aF, bool firstOnly /*false*/) {
 	if (usingTree) {
-		HTREEITEM t = ctrlTree.GetSelectedItem();
-		auto dir = (ItemInfo*) ctrlTree.GetItemData(t);
+		auto dir = ctrlTree.getSelectedItemData();
 		aF(dir);
 	} else if (ctrlFiles.list.GetSelectedCount() >= 1) {
 		int sel = -1;

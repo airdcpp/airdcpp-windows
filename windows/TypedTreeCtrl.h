@@ -70,6 +70,15 @@ public:
 		return 0;
 	}
 
+	T* getSelectedItemData() noexcept {
+		auto t = GetSelectedItem();
+		if (!t) {
+			return nullptr;
+		}
+
+		return (T*)GetItemData(t);
+	}
+
 	LRESULT OnGetItemDispInfo(int /*idCtrl*/, NMHDR *pNMHDR, BOOL &bHandled) {
 		NMTVDISPINFO *pDispInfo = reinterpret_cast<NMTVDISPINFO*>(pNMHDR);
 		TVITEM* pItem = &(pDispInfo)->item;
