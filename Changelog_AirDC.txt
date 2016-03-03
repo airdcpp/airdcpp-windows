@@ -5,21 +5,28 @@ Added:
 - Show the path also for partial filelist uploads
 - Report keyprint validation errors for downloads
 - Report errors when writing of log files
+- Show SSL/TLS version and cipher information in transfers by tool tip
+- Country flag and away status in Private message window
 
 Changed:
 
 - Add finished bundles in share without hashing by default
+- Auto search window improvements
+- Automatically stop/continue downloading on disk errors when the disk is accessible and has enough free space
 
 Fixed:
 
 - Fix ADC hubs randomly getting stuck at "Connecting in progress" state
 - Fix downloading of highest priority files when the bundle is paused (non-forced)
 - Fix transfer grouping issues
+- Fix user commands being sent to wrong hub
+- Fix some resource leaks and decrease the amount of GDI and user object handles
 
 Removed:
 
 - Support for failover addresses for favorite hubs
 - Support for per-profile share excludes
+- Setting for auto away mode on minimize
 
 
 3.00
