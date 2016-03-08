@@ -3499,19 +3499,24 @@ int QueueManager::changeBundleTarget(BundlePtr& aBundle, const string& newTarget
 	return (int)mBundles.size();
 }
 
-uint8_t QueueManager::isDirQueued(const string& aDir) const noexcept{
+DupeType QueueManager::isDirQueued(const string& aDir, int64_t aSize) const noexcept{
 	Bundle::StringBundleList lst;
 
 	RLock l(cs);
 	bundleQueue.findRemoteDirs(aDir, lst);
 	if (!lst.empty()) {
-		auto s = lst.front().second->getPathInfo(lst.front().first);
-		if (s.first == 0) //no queued items
-			return 2;
-		else
-			return 1;
+		auto pathInfo = lst.front().second->getPathInfo(lst.front().first);
+		if (pathInfo) {
+			auto fullDupe = pathInfo->size == aSize;
+			if (pathInfo->queuedFiles == 0) {
+				return fullDupe ? DUPE_FINISHED_FULL : DUPE_FINISHED_PARTIAL;
+			} else {
+				return fullDupe ? DUPE_QUEUE_FULL : DUPE_QUEUE_PARTIAL;
+			}
+		}
 	}
-	return 0;
+
+	return DUPE_NONE;
 }
 
 

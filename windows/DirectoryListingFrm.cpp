@@ -1024,7 +1024,7 @@ void DirectoryListingFrame::onListItemAction() {
 			const ItemInfo* ii = ctrlFiles.list.getItemData(ctrlFiles.list.GetNextItem(-1, LVNI_SELECTED));
 			if(ii->type == ItemInfo::FILE) {
 				// if we already have it there's no reason to download, try to open instead.
-				if (dl->getIsOwnList() || ii->file->getDupe() == DUPE_FINISHED || ii->file->getDupe() == DUPE_SHARE) {
+				if (dl->getIsOwnList() || AirUtil::isFinishedDupe(ii->file->getDupe()) || AirUtil::isShareDupe(ii->file->getDupe())) {
 					openDupe(ii->file, false);
 				} else
 					onDownload(SETTING(DOWNLOAD_DIRECTORY), false, false, WinUtil::isShift() ? QueueItemBase::HIGHEST : QueueItem::DEFAULT);
@@ -1246,7 +1246,7 @@ void DirectoryListingFrame::appendListContextMenu(CPoint& pt) {
 		}
 	}
 
-	bool isDupeOrOwnlist = (ctrlFiles.list.GetSelectedCount() == 1) && (dl->getIsOwnList() || (ii->getDupe() != DUPE_NONE && ii->getDupe() != DUPE_QUEUE));
+	bool isDupeOrOwnlist = ctrlFiles.list.GetSelectedCount() == 1 && (dl->getIsOwnList() || AirUtil::allowOpenDupe(ii->getDupe()));
 
 	if (!dl->getIsOwnList()) {
 		// download menu
@@ -1364,11 +1364,11 @@ void DirectoryListingFrame::appendTreeContextMenu(CPoint& pt, DirectoryListing::
 		directoryMenu.appendItem(TSTRING(RELOAD), [=] { handleReloadPartial(true); });
 	}
 
-	if (dl->getIsOwnList() || (dir && dl->getPartialList() && dir->getDupe() != DUPE_NONE && dir->getDupe() != DUPE_QUEUE)) {
+	if (dl->getIsOwnList() || (dir && dl->getPartialList() && AirUtil::allowOpenDupe(dir->getDupe()))) {
 		StringList paths;
 		if (getLocalPaths(paths, true, true)) {
 			directoryMenu.appendShellMenu(paths);
-			if (dir->getDupe() != DUPE_FINISHED) {
+			if (!AirUtil::isFinishedDupe(dir->getDupe())) {
 				// shared
 				directoryMenu.appendSeparator();
 				directoryMenu.appendItem(TSTRING(REFRESH_IN_SHARE), [this] { handleRefreshShare(true); });
@@ -1467,7 +1467,7 @@ void DirectoryListingFrame::handleOpenFile() {
 			return;
 		}
 
-		if (dl->getIsOwnList() || ii->file->getDupe() == DUPE_FINISHED || ii->file->getDupe() == DUPE_SHARE) {
+		if (dl->getIsOwnList() || AirUtil::allowOpenDupe(ii->file->getDupe())) {
 			openDupe(ii->file, false);
 		} else {
 			WinUtil::openFile(ii->file->getName(), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), false);

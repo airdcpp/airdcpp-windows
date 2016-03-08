@@ -25,7 +25,7 @@
 #include "TypedListViewCtrl.h"
 #include "OMenu.h"
 
-#include <airdcpp/AirUtil.h>
+#include <airdcpp/DupeType.h>
 #include <airdcpp/SettingsManager.h>
 
 #define KEY_MESSAGE_MAP 7
@@ -314,9 +314,9 @@ public:
 	}
 
 	bool checkDupe(DupeType aDupe) {
-		if (!filterQueued && (aDupe == DUPE_QUEUE || (filterPartialDupes && aDupe == DUPE_QUEUE_PARTIAL))) {
+		if (!filterQueued && (aDupe == DUPE_QUEUE_FULL || (filterPartialDupes && aDupe == DUPE_QUEUE_PARTIAL))) {
 			return false;
-		} else if (!filterShared && (aDupe == DUPE_SHARE || (filterPartialDupes && aDupe == DUPE_SHARE_PARTIAL))) {
+		} else if (!filterShared && (aDupe == DUPE_SHARE_FULL || (filterPartialDupes && aDupe == DUPE_SHARE_PARTIAL))) {
 			return false;
 		}
 

@@ -24,6 +24,7 @@
 #include "FavHubProperties.h"
 #include "PropertiesDlg.h"
 
+#include <airdcpp/AirUtil.h>
 #include <airdcpp/FavoriteManager.h>
 #include <airdcpp/ResourceManager.h>
 #include <airdcpp/tribool.h>

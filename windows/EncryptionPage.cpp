@@ -18,6 +18,7 @@
 
 #include "stdafx.h"
 
+#include <airdcpp/AirUtil.h>
 #include <airdcpp/CryptoManager.h>
 
 #include "Resource.h"

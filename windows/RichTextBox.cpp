@@ -55,24 +55,12 @@ RichTextBox::ChatLink::ChatLink(const string& aUrl, LinkType aLinkType, const Us
 
 DupeType RichTextBox::ChatLink::updateDupeType(const UserPtr& aUser) {
 	if (type == TYPE_RELEASE) {
-		if (ShareManager::getInstance()->isDirShared(url)) {
-			dupe = DUPE_SHARE;
-		}
-		else {
-			auto qd = QueueManager::getInstance()->isDirQueued(url);
-			if (qd == 1) {
-				dupe = DUPE_QUEUE;
-			}
-			else if (qd == 2) {
-				dupe = DUPE_FINISHED;
-			}
-		}
-	}
-	else if (type == TYPE_MAGNET) {
+		dupe = AirUtil::checkDirDupe(url, 0);
+	} else if (type == TYPE_MAGNET) {
 		Magnet m = Magnet(url);
 		dupe = m.getDupeType();
 		if (dupe == DUPE_NONE && ShareManager::getInstance()->isTempShared(aUser ? aUser->getCID().toBase32() : Util::emptyString, m.getTTH())) {
-			dupe = DUPE_SHARE;
+			dupe = DUPE_SHARE_FULL;
 		}
 	}
 	return dupe;
@@ -785,11 +773,11 @@ tstring RichTextBox::LineFromPos(const POINT& p) const {
 }
 
 void RichTextBox::formatLink(DupeType aDupeType, bool aIsRelease) {
-	if (SETTING(DUPES_IN_CHAT) && aDupeType == DUPE_SHARE) {
+	if (SETTING(DUPES_IN_CHAT) && AirUtil::isShareDupe(aDupeType)) {
 		SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
-	} else if (SETTING(DUPES_IN_CHAT) && aDupeType == DUPE_QUEUE) {
+	} else if (SETTING(DUPES_IN_CHAT) && AirUtil::isQueueDupe(aDupeType)) {
 		SetSelectionCharFormat(WinUtil::m_TextStyleQueue);
-	} else if (SETTING(DUPES_IN_CHAT) && aDupeType == DUPE_FINISHED) {
+	} else if (SETTING(DUPES_IN_CHAT) && AirUtil::isFinishedDupe(aDupeType)) {
 		CHARFORMAT2 newFormat = WinUtil::m_TextStyleQueue;
 		newFormat.crTextColor = WinUtil::getDupeColors(aDupeType).first;
 		SetSelectionCharFormat(newFormat);
@@ -1020,7 +1008,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 						appendDownloadMenu(menu, DownloadBaseHandler::TYPE_PRIMARY, false, m.getTTH(), boost::none);
 					}
 
-					if ((!author.empty() && !isMyLink) || dupeType == DUPE_SHARE || dupeType == DUPE_FINISHED)
+					if ((!author.empty() && !isMyLink) || AirUtil::allowOpenDupe(dupeType))
 						menu.appendItem(TSTRING(OPEN), [this] { handleOpenFile(); });
 				} else if (isRelease) {
 					//autosearch menus
@@ -1255,7 +1243,7 @@ void RichTextBox::handleOpenFile() {
 	auto u = getMagnetSource();
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		if (dupeType > 0) {
-			auto p = AirUtil::getDupePaths(dupeType, m.getTTH());
+			auto p = AirUtil::getFileDupePaths(dupeType, m.getTTH());
 			if (!p.empty())
 				WinUtil::openFile(Text::toT(p.front()));
 		} else {
@@ -1308,7 +1296,7 @@ void RichTextBox::handleOpenFolder() {
 			if (m.hash.empty())
 				return;
 
-			paths = AirUtil::getDupePaths(dupeType, m.getTTH());
+			paths = AirUtil::getFileDupePaths(dupeType, m.getTTH());
 
 		}
 	} catch(...) {}

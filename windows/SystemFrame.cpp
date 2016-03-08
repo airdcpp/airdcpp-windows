@@ -25,6 +25,7 @@
 #include "MainFrm.h"
 #include "ResourceLoader.h"
 
+#include <airdcpp/AirUtil.h>
 #include <airdcpp/File.h>
 #include <airdcpp/LogManager.h>
 #include <airdcpp/ShareManager.h>

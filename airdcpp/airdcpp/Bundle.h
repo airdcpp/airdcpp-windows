@@ -135,6 +135,13 @@ public:
 		}
 	};
 
+	struct PathInfo {
+		uint32_t queuedFiles;
+		uint32_t finishedFiles;
+
+		int64_t size;
+	};
+
 	typedef unordered_map<QueueToken, BundlePtr> TokenBundleMap;
 	typedef unordered_multimap<string, pair<string, BundlePtr>, noCaseStringHash, noCaseStringEq> BundleDirMap;
 	typedef vector<pair<string, BundlePtr>> StringBundleList;
@@ -145,7 +152,7 @@ public:
 
 	typedef pair<HintedUser, string> UserBundlePair;
 	typedef vector<UserBundlePair> FinishedNotifyList;
-	typedef unordered_map<string, pair<uint32_t, uint32_t>> DirMap;
+	typedef unordered_map<string, PathInfo> DirMap;
 
 	typedef multimap<double, BundlePtr> SourceSpeedMapB;
 	typedef multimap<double, QueueItemPtr> SourceSpeedMapQI;
@@ -216,7 +223,7 @@ public:
 	void addFinishedNotify(HintedUser& aUser, const string& remoteBundle) noexcept;
 	void removeFinishedNotify(const UserPtr& aUser) noexcept;
 
-	pair<uint32_t, uint32_t> getPathInfo(const string& aDir) const noexcept;
+	const PathInfo* getPathInfo(const string& aDir) const noexcept;
 
 	/* Get the path for matching a file list (remote file must be in NMDC format) */
 	string getMatchPath(const string& aRemoteFile, const string& aLocalFile, bool nmdc) const noexcept;

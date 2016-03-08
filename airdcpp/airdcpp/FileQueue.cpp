@@ -121,12 +121,12 @@ void FileQueue::matchDir(const DirectoryListing::Directory::Ptr& dir, QueueItem:
 	}
 }
 
-int FileQueue::isFileQueued(const TTHValue& aTTH) const noexcept {
+DupeType FileQueue::isFileQueued(const TTHValue& aTTH) const noexcept {
 	auto qi = getQueuedFile(aTTH);
 	if (qi) {
-		return (qi->isFinished() ? 2 : 1);
+		return (qi->isFinished() ? DUPE_FINISHED_FULL : DUPE_QUEUE_FULL);
 	}
-	return 0;
+	return DUPE_NONE;
 }
 
 QueueItemPtr FileQueue::getQueuedFile(const TTHValue& aTTH) const noexcept {

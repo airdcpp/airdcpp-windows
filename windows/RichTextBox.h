@@ -23,8 +23,8 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include <airdcpp/AirUtil.h>
 #include <airdcpp/Client.h>
+#include <airdcpp/DupeType.h>
 #include <airdcpp/TargetUtil.h>
 #include <airdcpp/Message.h>
 #include <airdcpp/UserInfoBase.h>

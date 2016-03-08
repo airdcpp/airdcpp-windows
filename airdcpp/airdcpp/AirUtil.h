@@ -21,20 +21,11 @@
 
 #include "compiler.h"
 
+#include "DupeType.h"
 #include "Text.h"
 #include "SettingsManager.h"
 
 namespace dcpp {
-
-enum DupeType: uint8_t { 
-	DUPE_NONE, 
-	DUPE_SHARE_PARTIAL, 
-	DUPE_SHARE, 
-	DUPE_QUEUE_PARTIAL, 
-	DUPE_QUEUE,
-	DUPE_FINISHED, 
-	DUPE_SHARE_QUEUE 
-};
 
 class AirUtil {
 	
@@ -60,7 +51,12 @@ public:
 	static DupeType checkFileDupe(const TTHValue& aTTH);
 
 	static StringList getDirDupePaths(DupeType aType, const string& aPath);
-	static StringList getDupePaths(DupeType aType, const TTHValue& aTTH);
+	static StringList getFileDupePaths(DupeType aType, const TTHValue& aTTH);
+
+	static bool isShareDupe(DupeType aType) noexcept;
+	static bool isQueueDupe(DupeType aType) noexcept;
+	static bool isFinishedDupe(DupeType aType) noexcept;
+	static bool allowOpenDupe(DupeType aType) noexcept;
 
 	static TTHValue getTTH(const string& aFileName, int64_t aSize);
 

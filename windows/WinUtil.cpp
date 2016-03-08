@@ -1787,11 +1787,13 @@ void WinUtil::removeBundle(QueueToken aBundleToken) {
 
 /* Only returns the text color */
 COLORREF WinUtil::getDupeColor(DupeType aType) {
-	if (aType == DUPE_SHARE) {
+	if (aType == DUPE_SHARE_FULL) {
 		return SETTING(DUPE_COLOR);
-	} else if (aType == DUPE_FINISHED) {
+	} else if (aType == DUPE_FINISHED_FULL) {
 		return blendColors(SETTING(QUEUE_COLOR), SETTING(BACKGROUND_COLOR));
-	} else if (aType == DUPE_QUEUE) {
+	} else if (aType == DUPE_FINISHED_PARTIAL) {
+		return blendColors(SETTING(QUEUE_COLOR), SETTING(BACKGROUND_COLOR));
+	} else if (aType == DUPE_QUEUE_FULL) {
 		return SETTING(QUEUE_COLOR);
 	} else if(aType == DUPE_SHARE_PARTIAL) {
 		return blendColors(SETTING(DUPE_COLOR), SETTING(BACKGROUND_COLOR));
@@ -1806,11 +1808,13 @@ COLORREF WinUtil::getDupeColor(DupeType aType) {
 
 /* Text + the background color */
 pair<COLORREF, COLORREF> WinUtil::getDupeColors(DupeType aType) {
-	if (aType == DUPE_SHARE) {
+	if (aType == DUPE_SHARE_FULL) {
 		return make_pair(SETTING(DUPE_COLOR), SETTING(TEXT_DUPE_BACK_COLOR));
-	} else if (aType == DUPE_FINISHED) {
+	} else if (aType == DUPE_FINISHED_FULL) {
 		return make_pair(blendColors(SETTING(QUEUE_COLOR), SETTING(BACKGROUND_COLOR)), SETTING(TEXT_QUEUE_BACK_COLOR));
-	} else if (aType == DUPE_QUEUE) {
+	} else if (aType == DUPE_FINISHED_PARTIAL) {
+		return make_pair(blendColors(SETTING(QUEUE_COLOR), SETTING(BACKGROUND_COLOR)), SETTING(TEXT_QUEUE_BACK_COLOR));
+	} else if (aType == DUPE_QUEUE_FULL) {
 		return make_pair(SETTING(QUEUE_COLOR), SETTING(TEXT_QUEUE_BACK_COLOR));
 	} else if(aType == DUPE_SHARE_PARTIAL) {
 		return make_pair(blendColors(SETTING(DUPE_COLOR), SETTING(TEXT_DUPE_BACK_COLOR)), SETTING(TEXT_DUPE_BACK_COLOR));

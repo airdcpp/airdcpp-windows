@@ -216,8 +216,9 @@ bool Bundle::addFinishedItem(QueueItemPtr& qi, bool finished) noexcept {
 	qi->setFlag(QueueItem::FLAG_FINISHED);
 
 	auto& bd = directories[qi->getFilePath()];
-	bd.second++;
-	if (bd.first == 0 && bd.second == 1) {
+	bd.finishedFiles++;
+	bd.size += qi->getSize();
+	if (bd.queuedFiles == 0 && bd.finishedFiles == 1) {
 		return true;
 	}
 	return false;
@@ -234,8 +235,9 @@ bool Bundle::removeFinishedItem(QueueItemPtr& qi) noexcept {
 			finishedFiles.pop_back();
 
 			auto& bd = directories[qi->getFilePath()];
-			bd.second--;
-			if (bd.first == 0 && bd.second == 0) {
+			bd.finishedFiles--;
+			bd.size -= qi->getSize();
+			if (bd.queuedFiles == 0 && bd.finishedFiles == 0) {
 				directories.erase(Util::getFilePath(qi->getTarget()));
 				return true;
 			}
@@ -261,8 +263,9 @@ bool Bundle::addQueue(QueueItemPtr& qi) noexcept {
 	addFinishedSegment(qi->getDownloadedSegments());
 
 	auto& bd = directories[qi->getFilePath()];
-	bd.first++;
-	if (bd.first == 1 && bd.second == 0) {
+	bd.queuedFiles++;
+	bd.size += qi->getSize();
+	if (bd.queuedFiles == 1 && bd.finishedFiles == 0) {
 		return true;
 	}
 
@@ -295,8 +298,9 @@ bool Bundle::removeQueue(QueueItemPtr& qi, bool finished) noexcept {
 	}
 
 	auto& bd = directories[qi->getFilePath()];
-	bd.first--;
-	if (bd.first == 0 && bd.second == 0) {
+	bd.queuedFiles--;
+	bd.size -= qi->getSize();
+	if (bd.queuedFiles == 0 && bd.finishedFiles == 0) {
 		directories.erase(qi->getFilePath());
 		return true;
 	}
@@ -462,12 +466,13 @@ string Bundle::getMatchPath(const string& aRemoteFile, const string& aLocalFile,
 	return path;
 }
 
-pair<uint32_t, uint32_t> Bundle::getPathInfo(const string& aDir) const noexcept {
+const Bundle::PathInfo* Bundle::getPathInfo(const string& aDir) const noexcept {
+	// TODO: add support for matching parent directories that don't contain any files directly
 	auto p = directories.find(aDir);
 	if (p != directories.end()) {
-		return p->second;
+		return &p->second;
 	}
-	return { 0, 0 };
+	return nullptr;
 }
 
 void Bundle::rotateUserQueue(QueueItemPtr& qi, const UserPtr& aUser) noexcept {

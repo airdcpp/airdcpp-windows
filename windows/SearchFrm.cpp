@@ -658,7 +658,7 @@ StringList SearchFrame::SearchInfo::getDupePaths() const {
 	if (sr->getType() == SearchResult::TYPE_DIRECTORY) {
 		return AirUtil::getDirDupePaths(dupe, sr->getPath());
 	} else {
-		return AirUtil::getDupePaths(dupe, sr->getTTH());
+		return AirUtil::getFileDupePaths(dupe, sr->getTTH());
 	}
 }
 

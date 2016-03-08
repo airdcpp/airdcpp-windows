@@ -1791,15 +1791,15 @@ bool ShareManager::isDirShared(const string& aDir) const noexcept{
 	return !dirs.empty();
 }
 
-uint8_t ShareManager::isDirShared(const string& aDir, int64_t aSize) const noexcept{
+DupeType ShareManager::isDirShared(const string& aDir, int64_t aSize) const noexcept{
 	Directory::List dirs;
 
 	RLock l (cs);
 	getDirsByName(aDir, dirs);
 	if (dirs.empty())
-		return 0;
+		return DUPE_NONE;
 
-	return dirs.front()->getTotalSize() == aSize ? 2 : 1;
+	return dirs.front()->getTotalSize() == aSize ? DUPE_SHARE_FULL : DUPE_SHARE_PARTIAL;
 }
 
 StringList ShareManager::getDirPaths(const string& aDir) const noexcept{
@@ -3481,12 +3481,14 @@ void ShareManager::addDirName(const Directory::Ptr& aDir, DirMultiMap& aDirNames
 	dcassert(p.base() == directories.second);
 #endif
 	const auto& name = aDir->getProfileDir() ? aDir->getProfileDir()->getNameLower() : aDir->realName.getLower();
+	//const auto& name = aDir->realName.getLower();
 	aDirNames.emplace(const_cast<string*>(&name), aDir);
 	aBloom.add(aDir->realName.getLower());
 }
 
 void ShareManager::removeDirName(const Directory& aDir, DirMultiMap& aDirNames) noexcept {
 	const auto& name = aDir.getProfileDir() ? aDir.getProfileDir()->getNameLower() : aDir.realName.getLower();
+	//const auto& name = aDir.realName.getLower();
 
 	auto directories = aDirNames.equal_range(const_cast<string*>(&name));
 	auto p = find_if(directories | map_values, [&aDir](const Directory::Ptr& d) { return d.get() == &aDir; });

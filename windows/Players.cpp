@@ -19,11 +19,13 @@
 #include "stdafx.h"
 #include "Players.h"
 #include "WinUtil.h"
+
 #include <airdcpp/typedefs.h>
 #include <airdcpp/Text.h>
 #include <airdcpp/Util.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/File.h>
+#include <airdcpp/AirUtil.h>
 
 #include "iTunesCOMInterface.h"
 #include "WMPlayerRemoteApi.h"

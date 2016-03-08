@@ -74,7 +74,7 @@ AirUtil::TimeCounter::~TimeCounter() {
 
 StringList AirUtil::getDirDupePaths(DupeType aType, const string& aPath) {
 	StringList ret;
-	if (aType == DUPE_SHARE || aType == DUPE_SHARE_PARTIAL) {
+	if (isShareDupe(aType)) {
 		ret = ShareManager::getInstance()->getDirPaths(aPath);
 	} else {
 		ret = QueueManager::getInstance()->getDirPaths(aPath);
@@ -83,9 +83,9 @@ StringList AirUtil::getDirDupePaths(DupeType aType, const string& aPath) {
 	return ret;
 }
 
-StringList AirUtil::getDupePaths(DupeType aType, const TTHValue& aTTH) {
+StringList AirUtil::getFileDupePaths(DupeType aType, const TTHValue& aTTH) {
 	StringList ret;
-	if (aType == DUPE_SHARE) {
+	if (isShareDupe(aType)) {
 		ret = ShareManager::getInstance()->getRealPaths(aTTH);
 	} else {
 		ret = QueueManager::getInstance()->getTargets(aTTH);
@@ -94,16 +94,25 @@ StringList AirUtil::getDupePaths(DupeType aType, const TTHValue& aTTH) {
 	return ret;
 }
 
+bool AirUtil::isShareDupe(DupeType aType) noexcept { 
+	return aType == DUPE_SHARE_FULL || aType == DUPE_SHARE_PARTIAL; 
+}
+
+bool AirUtil::isQueueDupe(DupeType aType) noexcept {
+	return aType == DUPE_QUEUE_FULL || aType == DUPE_QUEUE_PARTIAL;
+}
+
+bool AirUtil::isFinishedDupe(DupeType aType) noexcept {
+	return aType == DUPE_FINISHED_FULL || aType == DUPE_FINISHED_PARTIAL;
+}
+
 DupeType AirUtil::checkDirDupe(const string& aDir, int64_t aSize) {
-	const auto sd = ShareManager::getInstance()->isDirShared(aDir, aSize);
-	if (sd > 0) {
-		return sd == 2 ? DUPE_SHARE : DUPE_SHARE_PARTIAL;
-	} else {
-		const auto qd = QueueManager::getInstance()->isDirQueued(aDir);
-		if (qd > 0)
-			return qd == 1 ? DUPE_QUEUE : DUPE_FINISHED;
+	auto dupe = ShareManager::getInstance()->isDirShared(aDir, aSize);
+	if (dupe != DUPE_NONE) {
+		return dupe;
 	}
-	return DUPE_NONE;
+
+	return QueueManager::getInstance()->isDirQueued(aDir, aSize);
 }
 
 string AirUtil::toOpenFileName(const string& aFileName, const TTHValue& aTTH) noexcept {
@@ -121,14 +130,14 @@ string AirUtil::fromOpenFileName(const string& aFileName) noexcept {
 
 DupeType AirUtil::checkFileDupe(const TTHValue& aTTH) {
 	if (ShareManager::getInstance()->isFileShared(aTTH)) {
-		return DUPE_SHARE;
-	} else {
-		const int qd = QueueManager::getInstance()->isFileQueued(aTTH);
-		if (qd > 0) {
-			return qd == 1 ? DUPE_QUEUE : DUPE_FINISHED; 
-		}
+		return DUPE_SHARE_FULL;
 	}
-	return DUPE_NONE;
+
+	return QueueManager::getInstance()->isFileQueued(aTTH);
+}
+
+bool AirUtil::allowOpenDupe(DupeType aType) noexcept {
+	return aType != DUPE_NONE;
 }
 
 TTHValue AirUtil::getTTH(const string& aFileName, int64_t aSize) {

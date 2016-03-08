@@ -31,7 +31,7 @@
 #include <airdcpp/HintedUser.h>
 #include <airdcpp/WebShortcuts.h>
 #include <airdcpp/TargetUtil.h>
-#include <airdcpp/AirUtil.h>
+#include <airdcpp/DupeType.h>
 #include <airdcpp/SettingItem.h>
 #include <airdcpp/QueueItemBase.h>
 

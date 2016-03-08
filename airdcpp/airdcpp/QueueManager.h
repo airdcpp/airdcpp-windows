@@ -28,6 +28,7 @@
 #include "BundleQueue.h"
 #include "ClientManager.h"
 #include "DelayedEvents.h"
+#include "DupeType.h"
 #include "Exception.h"
 #include "File.h"
 #include "FileQueue.h"
@@ -322,13 +323,13 @@ public:
 	// Used for partial file sharing checks
 	bool isChunkDownloaded(const TTHValue& tth, int64_t startPos, int64_t& bytes, int64_t& fileSize_, string& tempTarget) noexcept;
 
-	int isFileQueued(const TTHValue& aTTH) const noexcept { RLock l(cs); return fileQueue.isFileQueued(aTTH); }
+	DupeType isFileQueued(const TTHValue& aTTH) const noexcept { RLock l(cs); return fileQueue.isFileQueued(aTTH); }
 
 	// Get real path of the bundle
 	string getBundlePath(QueueToken aBundleToken) const noexcept;
 
 	// Return dupe information about the directory
-	uint8_t isDirQueued(const string& aDir) const noexcept;
+	DupeType isDirQueued(const string& aDir, int64_t aSize) const noexcept;
 
 	// Get all real paths of the directory
 	// You may also give a path in NMDC format and the relevant 
