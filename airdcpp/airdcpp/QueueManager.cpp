@@ -491,7 +491,7 @@ void QueueManager::on(TimerManagerListener::Minute, uint64_t aTick) noexcept {
 void QueueManager::getBundleContent(const BundlePtr& aBundle, size_t& files_, size_t& directories_) const noexcept {
 	RLock l(cs);
 	files_ = aBundle->getQueueItems().size() + aBundle->getFinishedFiles().size();
-	directories_ = aBundle->isFileBundle() ? 0 : aBundle->getDirectories().size() - 1;
+	directories_ = aBundle->isFileBundle() ? 0 : bundleQueue.getDirectoryCount(aBundle) - 1;
 }
 
 bool QueueManager::hasDownloadedBytes(const string& aTarget) throw(QueueException) {
@@ -2769,10 +2769,10 @@ void QueueManager::matchBundle(QueueItemPtr& aQI, const SearchResultPtr& aResult
 			// Ignore...
 		}
 	} else {
-		string path = aQI->getBundle()->getMatchPath(aResult->getPath(), aQI->getTarget(), aResult->getUser().user->isSet(User::NMDC));
+		auto path = aQI->getBundle()->getMatchPath(aResult->getPath(), aQI->getTarget(), aResult->getUser().user->isSet(User::NMDC));
 		if (!path.empty()) {
 			if (aResult->getUser().user->isSet(User::NMDC)) {
-				//A NMDC directory bundle, just add the sources without matching
+				// A NMDC directory bundle, just add the sources without matching
 				QueueItemList ql;
 				int newFiles = 0;
 				{
@@ -2780,7 +2780,7 @@ void QueueManager::matchBundle(QueueItemPtr& aQI, const SearchResultPtr& aResult
 					aQI->getBundle()->getDirQIs(path, ql);
 					for (auto& q: ql) {
 						try {	 
-							if (addSource(q, aResult->getUser(), QueueItem::Source::FLAG_FILE_NOT_AVAILABLE)) { // no SettingsManager::lanMode in NMDC...
+							if (addSource(q, aResult->getUser(), QueueItem::Source::FLAG_FILE_NOT_AVAILABLE)) {
 								wantConnection = true;
 							}
 							newFiles++;
@@ -2803,11 +2803,18 @@ void QueueManager::matchBundle(QueueItemPtr& aQI, const SearchResultPtr& aResult
 				} catch(...) { }
 			}
 		} else if (SETTING(ALLOW_MATCH_FULL_LIST)) {
-			//failed, use full filelist
+			// No path to match, use full filelist
 			try {
 				addList(aResult->getUser(), QueueItem::FLAG_MATCH_QUEUE, Util::emptyString, aQI->getBundle());
 			} catch(const Exception&) {
 				// ...
+			}
+		} else {
+			// Add for the single file
+			try {
+				wantConnection = addSource(aQI, aResult->getUser(), QueueItem::Source::FLAG_FILE_NOT_AVAILABLE);
+			} catch (...) {
+				// Ignore...
 			}
 		}
 	}
@@ -3217,16 +3224,8 @@ bool QueueManager::handlePartialSearch(const UserPtr& aUser, const TTHValue& tth
 }
 
 StringList QueueManager::getDirPaths(const string& aDirName) const noexcept {
-	Bundle::StringBundleList found;
-	StringList ret;
-
 	RLock l(cs);
-	bundleQueue.findRemoteDirs(aDirName, found);
-	for (const auto& p : found) {
-		ret.push_back(p.first);
-	}
-
-	return ret;
+	return bundleQueue.getDirPaths(aDirName);
 }
 
 void QueueManager::getUnfinishedPaths(StringList& retBundles) noexcept {
@@ -3416,7 +3415,7 @@ bool QueueManager::addBundle(BundlePtr& aBundle, const string& aTarget, int item
 			}
 		}
 
-		aBundle->updateSearchMode();
+		bundleQueue.updateSearchMode(aBundle);
 	}
 
 	if (statusChanged) {
@@ -3500,26 +3499,9 @@ int QueueManager::changeBundleTarget(BundlePtr& aBundle, const string& newTarget
 }
 
 DupeType QueueManager::isDirQueued(const string& aDir, int64_t aSize) const noexcept{
-	Bundle::StringBundleList lst;
-
 	RLock l(cs);
-	bundleQueue.findRemoteDirs(aDir, lst);
-	if (!lst.empty()) {
-		auto pathInfo = lst.front().second->getPathInfo(lst.front().first);
-		if (pathInfo) {
-			auto fullDupe = pathInfo->size == aSize;
-			if (pathInfo->queuedFiles == 0) {
-				return fullDupe ? DUPE_FINISHED_FULL : DUPE_FINISHED_PARTIAL;
-			} else {
-				return fullDupe ? DUPE_QUEUE_FULL : DUPE_QUEUE_PARTIAL;
-			}
-		}
-	}
-
-	return DUPE_NONE;
+	return bundleQueue.isDirQueued(aDir, aSize);
 }
-
-
 
 int QueueManager::getUnfinishedItemCount(const BundlePtr& aBundle) const noexcept {
 	RLock l(cs); 
@@ -4037,7 +4019,7 @@ void QueueManager::searchBundleAlternates(BundlePtr& aBundle, bool aIsManualSear
 		if (isScheduled && !aBundle->allowAutoSearch())
 			return;
 
-		aBundle->getSearchItems(searches, aIsManualSearch);
+		bundleQueue.getSearchItems(aBundle, searches, aIsManualSearch);
 	}
 
 	if (searches.empty()) {

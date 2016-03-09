@@ -1884,8 +1884,8 @@ int QueueFrame::QueueItemInfo::compareItems(const QueueItemInfo* a, const QueueI
 				return a->bundle->isFileBundle();
 			} else if (!a->bundle->isFileBundle()) {
 				RLock l(QueueManager::getInstance()->getCS());
-				auto dirsA = a->bundle->getDirectories().size() - 1;
-				auto dirsB = a->bundle->getDirectories().size() - 1;
+				auto dirsA = QueueManager::getInstance()->bundleQueue.getDirectoryCount(a->bundle);
+				auto dirsB = QueueManager::getInstance()->bundleQueue.getDirectoryCount(b->bundle);
 				if (dirsA != dirsB) {
 					return dirsA < dirsB ? 1 : -1;
 				}

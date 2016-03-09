@@ -3480,15 +3480,15 @@ void ShareManager::addDirName(const Directory::Ptr& aDir, DirMultiMap& aDirNames
 	auto p = find(directories | map_values, aDir);
 	dcassert(p.base() == directories.second);
 #endif
-	const auto& name = aDir->getProfileDir() ? aDir->getProfileDir()->getNameLower() : aDir->realName.getLower();
-	//const auto& name = aDir->realName.getLower();
+	//const auto& name = aDir->getProfileDir() ? aDir->getProfileDir()->getNameLower() : aDir->realName.getLower();
+	const auto& name = aDir->realName.getLower();
 	aDirNames.emplace(const_cast<string*>(&name), aDir);
 	aBloom.add(aDir->realName.getLower());
 }
 
 void ShareManager::removeDirName(const Directory& aDir, DirMultiMap& aDirNames) noexcept {
-	const auto& name = aDir.getProfileDir() ? aDir.getProfileDir()->getNameLower() : aDir.realName.getLower();
-	//const auto& name = aDir.realName.getLower();
+	//const auto& name = aDir.getProfileDir() ? aDir.getProfileDir()->getNameLower() : aDir.realName.getLower();
+	const auto& name = aDir.realName.getLower();
 
 	auto directories = aDirNames.equal_range(const_cast<string*>(&name));
 	auto p = find_if(directories | map_values, [&aDir](const Directory::Ptr& d) { return d.get() == &aDir; });
