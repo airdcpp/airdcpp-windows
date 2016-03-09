@@ -258,7 +258,7 @@ public:
 
 	void terminate();
 
-	void TestWrite(bool downloads, bool incomplete, bool appPath);
+	void TestWrite(bool downloads, bool appPath);
 
 	LRESULT onSelected(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 

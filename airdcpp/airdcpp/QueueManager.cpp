@@ -1385,15 +1385,6 @@ StringList QueueManager::getTargets(const TTHValue& tth) noexcept {
 	return sl;
 }
 
-void QueueManager::moveBundleItemsImpl(QueueItem::StringItemList aItems, BundlePtr /*aTargetBundle*/) noexcept{
-	for (auto& p : aItems) {
-		auto source = p.first;
-		auto target = p.second->getTarget();
-
-		moveFinishedFileImpl(source, target, p.second);
-	}
-}
-
 void QueueManager::moveFinishedFile(const string& source, const string& target, const QueueItemPtr& q) noexcept {
 	tasks.addTask([=] { moveFinishedFileImpl(source, target, q); });
 }
@@ -1404,7 +1395,7 @@ void QueueManager::moveFinishedFileImpl(const string& source, const string& targ
 		UploadManager::getInstance()->abortUpload(source);
 		File::renameFile(source, target);
 		
-		if (SETTING(DCTMP_STORE_DESTINATION) && qi->getBundle() && !qi->getBundle()->isFileBundle() && compare(Util::getFilePath(source), Util::getFilePath(target)) != 0) {
+		if (qi->getBundle() && !qi->getBundle()->isFileBundle() && compare(Util::getFilePath(source), Util::getFilePath(target)) != 0) {
 			// the bundle was moved? try to remove the old main bundle dir
 			auto p = source.find(qi->getBundle()->getName()); //was the bundle dir renamed?
 			auto dir = p != string::npos ? source.substr(0, p + qi->getBundle()->getName().length() + 1) : AirUtil::subtractCommonDirs(Util::getFilePath(target), Util::getFilePath(source), PATH_SEPARATOR);

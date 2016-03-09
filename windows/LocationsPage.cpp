@@ -42,9 +42,7 @@ PropPage::TextItem LocationsPage::texts[] = {
 	{ IDC_SETTINGS_DIRECTORIES, ResourceManager::SETTINGS_DIRECTORIES }, 
 	{ IDC_SETTINGS_DOWNLOAD_DIRECTORY, ResourceManager::SETTINGS_DOWNLOAD_DIRECTORY },
 	{ IDC_BROWSEDIR, ResourceManager::BROWSE },
-	{ IDC_SETTINGS_UNFINISHED_DOWNLOAD_DIRECTORY, ResourceManager::SETTINGS_UNFINISHED_DOWNLOAD_DIRECTORY }, 
 	{ IDC_BROWSETEMPDIR, ResourceManager::BROWSE },
-	{ IDC_UNFINISHED_STORE_DESTINATION, ResourceManager::UNFINISHED_STORE_DESTINATION },
 
 	{ IDC_FORMAT_REMOTE_TIME, ResourceManager::SETTINGS_FORMAT_REMOTE_TIME },
 	{ IDC_AUTOPATH_CAPTION, ResourceManager::AUTOPATH_CAPTION }, 
@@ -56,8 +54,6 @@ PropPage::TextItem LocationsPage::texts[] = {
 
 
 PropPage::Item LocationsPage::items[] = {
-	{ IDC_UNFINISHED_STORE_DESTINATION, SettingsManager::DCTMP_STORE_DESTINATION, PropPage::T_BOOL },
-	{ IDC_TEMP_DOWNLOAD_DIRECTORY, SettingsManager::TEMP_DOWNLOAD_DIRECTORY, PropPage::T_STR },
 	{ IDC_DOWNLOADDIR,	SettingsManager::DOWNLOAD_DIRECTORY, PropPage::T_STR }, 
 	{ IDC_FAVDIRS_SHOW_SHARED, SettingsManager::SHOW_SHARED_DIRS_FAV, PropPage::T_BOOL },
 	{ IDC_FORMAT_REMOTE_TIME, SettingsManager::FORMAT_DIR_REMOTE_TIME, PropPage::T_BOOL },
@@ -86,14 +82,7 @@ LRESULT LocationsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	ctrlAutoSelect.AddString(CTSTRING(AUTOSELECT_MOST_SPACE));
 	ctrlAutoSelect.AddString(CTSTRING(AUTOSELECT_LEAST_SPACE));
 	ctrlAutoSelect.SetCurSel(SETTING(DL_AUTOSELECT_METHOD));
-	fixControls();
 	return TRUE;
-}
-
-void LocationsPage::fixControls() {
-	BOOL useCustomDir = IsDlgButtonChecked(IDC_UNFINISHED_STORE_DESTINATION) != BST_CHECKED;
-	::EnableWindow(GetDlgItem(IDC_TEMP_DOWNLOAD_DIRECTORY), useCustomDir);
-	::EnableWindow(GetDlgItem(IDC_BROWSETEMPDIR), useCustomDir);
 }
 
 void LocationsPage::write()
@@ -105,16 +94,12 @@ void LocationsPage::write()
 	if(s.length() > 0 && s[s.length() - 1] != '\\') {
 		SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_DIRECTORY, s + '\\');
 	}
-	const string& t = SETTING(TEMP_DOWNLOAD_DIRECTORY);
-	if(t.length() > 0 && t[t.length() - 1] != '\\') {
-		SettingsManager::getInstance()->set(SettingsManager::TEMP_DOWNLOAD_DIRECTORY, t + '\\');
-	}
 
 	SettingsManager::getInstance()->set(SettingsManager::DL_AUTOSELECT_METHOD, ctrlAutoSelect.GetCurSel());
 	AirUtil::updateCachedSettings();
 }
 
-LRESULT LocationsPage::onItemchangedDirectories(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/)
+LRESULT LocationsPage::onItemChangedDirectories(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/)
 {
 	bool hasSel = ctrlDirectories.GetSelectedCount() > 0;
 	::EnableWindow(GetDlgItem(IDC_REMOVE), hasSel);
@@ -281,22 +266,5 @@ LRESULT LocationsPage::onClickedBrowseDir(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	if (dlg.show(target)) {
 		SetDlgItemText(IDC_DOWNLOADDIR, target.c_str());
 	}
-	return 0;
-}
-
-LRESULT LocationsPage::onClickedBrowseTempDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
-{
-	tstring target = Text::toT(SETTING(TEMP_DOWNLOAD_DIRECTORY));
-
-	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, BrowseDlg::DIALOG_SELECT_FOLDER);
-	dlg.setPath(target);
-	if (dlg.show(target)) {
-		SetDlgItemText(IDC_TEMP_DOWNLOAD_DIRECTORY, target.c_str());
-	}
-	return 0;
-}
-
-LRESULT LocationsPage::onClickedTargetdrive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	SetDlgItemText(IDC_TEMP_DOWNLOAD_DIRECTORY, _T("%[targetdrive]DCUnfinished"));
 	return 0;
 }

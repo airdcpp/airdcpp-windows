@@ -42,23 +42,21 @@ public:
 
 	BEGIN_MSG_MAP_EX(LocationsPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
-		NOTIFY_HANDLER(IDC_FAVORITE_DIRECTORIES, LVN_ITEMCHANGED, onItemchangedDirectories)
+		NOTIFY_HANDLER(IDC_FAVORITE_DIRECTORIES, LVN_ITEMCHANGED, onItemChangedDirectories)
 		NOTIFY_HANDLER(IDC_FAVORITE_DIRECTORIES, LVN_KEYDOWN, onKeyDown)
 		NOTIFY_HANDLER(IDC_FAVORITE_DIRECTORIES, NM_DBLCLK, onDoubleClick)
+
 		COMMAND_ID_HANDLER(IDC_ADD, onClickedAdd)
 		COMMAND_ID_HANDLER(IDC_REMOVE, onClickedRemove)
 		COMMAND_ID_HANDLER(IDC_RENAME, onClickedRename)
 		COMMAND_ID_HANDLER(IDC_MOVEUP, onMove)
 		COMMAND_ID_HANDLER(IDC_MOVEDOWN, onMove)
-		COMMAND_ID_HANDLER(IDC_UNFINISHED_STORE_DESTINATION, onStoreDestination)
 
 		COMMAND_ID_HANDLER(IDC_BROWSEDIR, onClickedBrowseDir)
-		COMMAND_ID_HANDLER(IDC_BROWSETEMPDIR, onClickedBrowseTempDir)
-		COMMAND_ID_HANDLER(IDC_SETTINGS_BTN_TARGETDRIVE, onClickedTargetdrive)
 	END_MSG_MAP()
 
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-	LRESULT onItemchangedDirectories(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
+	LRESULT onItemChangedDirectories(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 	LRESULT onClickedAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -67,20 +65,12 @@ public:
 	LRESULT onMove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT onClickedBrowseDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onClickedBrowseTempDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onClickedTargetdrive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onStoreDestination(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/) {
-		fixControls();
-		return 0;
-	}
 
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 	void write();
 	
 protected:
-	void fixControls();
-
 	static Item items[];
 	static TextItem texts[];
 	ExListViewCtrl ctrlDirectories;

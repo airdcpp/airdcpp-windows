@@ -24,8 +24,10 @@ Fixed:
 
 Removed:
 
+- Support for moving/renaming bundles
 - Support for failover addresses for favorite hubs
 - Support for per-profile share excludes
+- Support for using a separate directory for unfinished downloads
 - Setting for auto away mode on minimize
 
 

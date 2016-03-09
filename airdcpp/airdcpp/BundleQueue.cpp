@@ -348,20 +348,13 @@ void BundleQueue::removeBundle(BundlePtr& aBundle) noexcept{
 }
 
 void BundleQueue::getDiskInfo(TargetUtil::TargetInfoMap& dirMap, const TargetUtil::VolumeSet& volumes) const noexcept{
-	string tempVol;
-	bool useSingleTempDir = !SETTING(DCTMP_STORE_DESTINATION) && SETTING(TEMP_DOWNLOAD_DIRECTORY).find("%[targetdrive]") == string::npos;
-	if (useSingleTempDir) {
-		tempVol = TargetUtil::getMountPath(SETTING(TEMP_DOWNLOAD_DIRECTORY), volumes);
-	}
-
 	for(const auto& b: bundles | map_values) {
 		string mountPath = TargetUtil::getMountPath(b->getTarget(), volumes);
 		if (!mountPath.empty()) {
 			auto s = dirMap.find(mountPath);
 			if (s != dirMap.end()) {
-				bool countAll = (useSingleTempDir && (mountPath != tempVol));
 				for(const auto& q: b->getQueueItems()) {
-					if (countAll || q->getDownloadedBytes() == 0) {
+					if (q->getDownloadedBytes() == 0) {
 						s->second.addQueued(q->getSize());
 					}
 				}

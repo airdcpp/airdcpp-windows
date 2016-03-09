@@ -1695,11 +1695,6 @@ void ShareManager::validateRootPath(const string& realPath) const throw(ShareExc
 	if (!SETTING(SHARE_HIDDEN) && File::isHidden(realPath)) {
 		throw ShareException(STRING(DIRECTORY_IS_HIDDEN));
 	}
-
-	if(Util::stricmp(SETTING(TEMP_DOWNLOAD_DIRECTORY), realPath) == 0) {
-		throw ShareException(STRING(DONT_SHARE_TEMP_DIRECTORY));
-	}
-
 #ifdef _WIN32
 	//need to throw here, so throw the error and dont use airutil
 	TCHAR path[MAX_PATH];
@@ -3804,9 +3799,6 @@ bool ShareManager::checkSharedName(const string& aPath, const string& aPathLower
 		if(aPathLower.length() >= winDir.length() && strcmp(aPathLower.substr(0, winDir.length()).c_str(), winDir.c_str()) == 0)
 			return false;
 #endif
-		if((strcmp(aPathLower.c_str(), AirUtil::tempDLDir.c_str()) == 0)) {
-			return false;
-		}
 	}
 	return true;
 }

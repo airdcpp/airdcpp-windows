@@ -465,7 +465,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	}
 
 	if(SETTING(TESTWRITE)) {
-		TestWrite(true, true, Util::usingLocalMode());
+		TestWrite(true, Util::usingLocalMode());
 	}
 
 	WinUtil::splash->destroy();
@@ -1957,7 +1957,7 @@ LRESULT MainFrame::onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 	return S_OK;
 }
 
-void MainFrame::TestWrite( bool downloads, bool incomplete, bool AppPath) {
+void MainFrame::TestWrite(bool downloads, bool AppPath) {
 	
 	tstring error = Util::emptyStringT;
 	string filename = (Util::getPath(Util::PATH_USER_CONFIG) + "testwrite.tmp");
@@ -1969,11 +1969,10 @@ void MainFrame::TestWrite( bool downloads, bool incomplete, bool AppPath) {
 	f = new File((filename), File::WRITE, File::OPEN | File::CREATE | File::TRUNCATE);
 
 	} catch (const Exception&) {
-		        //if cant write to settings no need to test anything more
-				downloads = false;
-				incomplete = false;
-				AppPath = false;
-				error += _T("Error: test write to Settings folder failed. \r\n");
+		//if cant write to settings no need to test anything more
+		downloads = false;
+		AppPath = false;
+		error += _T("Error: test write to Settings folder failed. \r\n");
 	}
 
 	if(downloads) {
@@ -1987,19 +1986,6 @@ void MainFrame::TestWrite( bool downloads, bool incomplete, bool AppPath) {
 			}
 				} catch (const Exception&) {
 				error += _T("Error: test write to Downloads folder failed. \r\n");
-			}
-	}
-
-	if(incomplete && (SETTING(TEMP_DOWNLOAD_DIRECTORY).find("%[targetdrive]") == string::npos)) {
-		try {
-			File::ensureDirectory(SETTING(TEMP_DOWNLOAD_DIRECTORY));
-			File::copyFile((filename), (SETTING(TEMP_DOWNLOAD_DIRECTORY) + "testwrite.tmp"));
-			if (Util::fileExists(SETTING(TEMP_DOWNLOAD_DIRECTORY) + "testwrite.tmp")) {
-				File::deleteFile(SETTING(TEMP_DOWNLOAD_DIRECTORY) + "testwrite.tmp");
-				ready = true;
-			}
-				} catch (const Exception&) {
-				error += _T("Error: test write to Incomplete Downloads folder failed. \r\n");
 			}
 	}
 

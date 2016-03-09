@@ -45,7 +45,6 @@ public:
 
 	/* Cache some things to lower case */
 	static string privKeyFile;
-	static string tempDLDir;
 
 	static DupeType checkDirDupe(const string& aDir, int64_t aSize);
 	static DupeType checkFileDupe(const TTHValue& aTTH);

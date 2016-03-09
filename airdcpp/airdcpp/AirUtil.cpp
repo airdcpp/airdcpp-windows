@@ -61,7 +61,6 @@ boost::regex AirUtil::subDirRegPlain;
 boost::regex AirUtil::crcReg;
 
 string AirUtil::privKeyFile;
-string AirUtil::tempDLDir;
 
 AirUtil::TimeCounter::TimeCounter(string aMsg) : start(GET_TICK()), msg(move(aMsg)) {
 
@@ -174,7 +173,6 @@ void AirUtil::init() {
 
 void AirUtil::updateCachedSettings() {
 	privKeyFile = Text::toLower(SETTING(TLS_PRIVATE_KEY_FILE));
-	tempDLDir = Text::toLower(SETTING(TEMP_DOWNLOAD_DIRECTORY));
 }
 
 AirUtil::IpList AirUtil::getDisplayAdapters(bool v6) {

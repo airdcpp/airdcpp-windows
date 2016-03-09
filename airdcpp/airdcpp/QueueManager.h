@@ -433,7 +433,6 @@ private:
 
 	void addBundleUpdate(const BundlePtr& aBundle) noexcept;
 
-	void moveBundleItemsImpl(QueueItem::StringItemList aItems, BundlePtr aBundle) noexcept;
 	void moveFinishedFile(const string& source, const string& target, const QueueItemPtr& aQI) noexcept;
 	void moveFinishedFileImpl(const string& source, const string& target, QueueItemPtr q) noexcept;
 
