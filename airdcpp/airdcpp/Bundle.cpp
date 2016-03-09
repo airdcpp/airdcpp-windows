@@ -56,13 +56,12 @@ Bundle::Bundle(QueueItemPtr& qi, time_t aFileDate, QueueToken aToken /*0*/, bool
 }
 
 Bundle::Bundle(const string& aTarget, time_t aAdded, Priority aPriority, time_t aBundleDate /*0*/, QueueToken aToken /*0*/, bool aDirty /*true*/, bool isFileBundle /*false*/) noexcept :
-	QueueItemBase(aTarget, 0, aPriority, aAdded, aToken, 0), bundleDate(aBundleDate), fileBundle(isFileBundle), dirty(aDirty) {
+	QueueItemBase(Util::validatePath(aTarget, !fileBundle), 0, aPriority, aAdded, aToken, 0), bundleDate(aBundleDate), fileBundle(isFileBundle), dirty(aDirty) {
 
 	if (aToken == 0) {
 		token = Util::toUInt32(ConnectionManager::getInstance()->tokens.getToken(CONNECTION_TYPE_DOWNLOAD));
 	}
 
-	setTarget(aTarget);
 	auto time = GET_TIME();
 	if (bundleDate > 0) {
 		checkRecent();
@@ -95,10 +94,6 @@ void Bundle::increaseSize(int64_t aSize) noexcept {
 
 void Bundle::decreaseSize(int64_t aSize) noexcept {
 	size -= aSize; 
-}
-
-void Bundle::setTarget(const string& aTarget) noexcept {
-	target = Util::validatePath(aTarget, !fileBundle);
 }
 
 bool Bundle::checkRecent() noexcept {
@@ -801,7 +796,7 @@ bool Bundle::removeRunningUser(const UserConnection* aSource, bool sendRemove) n
 	return false;
 }
 
-void Bundle::sendSizeNameUpdate() noexcept {
+void Bundle::sendSizeUpdate() noexcept {
 	for(const auto& u: uploadReports) {
 		AdcCommand cmd(AdcCommand::CMD_UBD, AdcCommand::TYPE_UDP);
 		cmd.addParam("HI", u.hint);
@@ -810,11 +805,6 @@ void Bundle::sendSizeNameUpdate() noexcept {
 		if (isSet(FLAG_UPDATE_SIZE)) {
 			unsetFlag(FLAG_UPDATE_SIZE);
 			cmd.addParam("SI", Util::toString(size));
-		}
-
-		if (isSet(FLAG_UPDATE_NAME)) {
-			unsetFlag(FLAG_UPDATE_NAME);
-			cmd.addParam("NA", getName());
 		}
 
 		cmd.addParam("UD1");

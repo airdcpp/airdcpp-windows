@@ -134,12 +134,6 @@ QueueItemPtr FileQueue::getQueuedFile(const TTHValue& aTTH) const noexcept {
 	return p != tthIndex.end() ? p->second : nullptr;
 }
 
-void FileQueue::move(QueueItemPtr& qi, const string& aTarget) noexcept {
-	pathQueue.erase(const_cast<string*>(&qi->getTarget()));
-	qi->setTarget(aTarget);
-	pathQueue.emplace(const_cast<string*>(&qi->getTarget()), qi);
-}
-
 // compare nextQueryTime, get the oldest ones
 void FileQueue::findPFSSources(PFSSourceList& sl) noexcept {
 	typedef multimap<time_t, pair<QueueItem::SourceConstIter, const QueueItemPtr> > Buffer;

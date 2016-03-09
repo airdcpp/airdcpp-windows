@@ -317,10 +317,6 @@ uint64_t QueueItem::getSecondsLeft() const {
 	return speed > 0 ? (getSize() - getDownloadedBytes()) / speed : 0;
 }
 
-void QueueItem::setTarget(const string& aTarget) {
-	target = aTarget;
-}
-
 double QueueItem::getDownloadedFraction() const { 
 	return static_cast<double>(getDownloadedBytes()) / size; 
 }

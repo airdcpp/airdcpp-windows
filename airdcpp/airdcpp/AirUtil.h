@@ -58,7 +58,7 @@ public:
 	static bool isFinishedDupe(DupeType aType) noexcept;
 	static bool allowOpenDupe(DupeType aType) noexcept;
 
-	static TTHValue getTTH(const string& aFileName, int64_t aSize);
+	static TTHValue getTTH(const string& aFileName, int64_t aSize) noexcept;
 
 	static void init();
 	static void updateCachedSettings();
@@ -85,7 +85,7 @@ public:
 	static int getSpeedLimit(bool download, double value=0);
 	static int getMaxAutoOpened(double value = 0);
 
-	static string getPrioText(int prio);
+	static string getPrioText(int prio) noexcept;
 
 	static bool listRegexMatch(const StringList& l, const boost::regex& aReg);
 	static int listRegexCount(const StringList& l, const boost::regex& aReg);
@@ -95,42 +95,44 @@ public:
 	static void getRegexMatchesT(const tstring& aString, TStringList& l, const boost::wregex& aReg);
 	static void getRegexMatches(const string& aString, StringList& l, const boost::regex& aReg);
 
-	static string formatMatchResults(int matches, int newFiles, const BundleList& bundles, bool partial);
+	static string formatMatchResults(int matches, int newFiles, const BundleList& bundles, bool partial) noexcept;
 
 	static void fileEvent(const string& tgt, bool file=false);
 
 	// Returns true if aDir is a sub directory of aParent
 	// Note: matching is always case insensitive. This will also handle directory paths in aParent without the trailing slash to work with Windows limitations (share monitoring)
-	static bool isSub(const string& aDir, const string& aParent, const char separator = PATH_SEPARATOR);
+	static bool isSub(const string& aDir, const string& aParent, const char separator = PATH_SEPARATOR) noexcept;
 
 	// Returns true if aSub is a subdir of aDir OR both are the same directory
 	// Note: matching is always case insensitive. This will also handle directory paths in aSub without the trailing slash to work with Windows limitations (share monitoring)
-	static bool isParentOrExact(const string& aDir, const string& aSub, const char separator = PATH_SEPARATOR);
+	static bool isParentOrExact(const string& aDir, const string& aSub, const char separator = PATH_SEPARATOR) noexcept;
 
-	static const string getReleaseRegLong(bool chat);
-	static const string getReleaseRegBasic();
-	static const string getSubDirReg();
+	static const string getReleaseRegLong(bool chat) noexcept;
+	static const string getReleaseRegBasic() noexcept;
+	static const string getSubDirReg() noexcept;
 
-	static string getReleaseDir(const string& dir, bool cut, const char separator = PATH_SEPARATOR);
-	inline static string getNmdcReleaseDir(const string& path, bool cut) { return getReleaseDir(path, cut, '\\'); };
-	inline static string getAdcReleaseDir(const string& path, bool cut) { return getReleaseDir(path, cut, '/'); };
+	static string getReleaseDir(const string& dir, bool cut, const char separator = PATH_SEPARATOR) noexcept;
+	inline static string getNmdcReleaseDir(const string& path, bool cut) noexcept { return getReleaseDir(path, cut, '\\'); };
+	inline static string getAdcReleaseDir(const string& path, bool cut) noexcept { return getReleaseDir(path, cut, '/'); };
 
-	static const string getLinkUrl();
+	static const string getLinkUrl() noexcept;
 
 	static void removeDirectoryIfEmpty(const string& tgt, int maxAttempts, bool silent);
 
-	static bool isAdcHub(const string& hubUrl);
-	static bool isHubLink(const string& hubUrl);
+	static bool isAdcHub(const string& hubUrl) noexcept;
+	static bool isHubLink(const string& hubUrl) noexcept;
 
-	static string convertMovePath(const string& aPath, const string& aParent, const string& aTarget);
-	static string regexEscape(const string& aStr, bool isWildcard);
+	static string regexEscape(const string& aStr, bool isWildcard) noexcept;
 
-	/* Removes common dirs from the end of toSubtract */
-	static string subtractCommonDirs(const string& toCompare, const string& toSubtract, char separator);
+	// Removes common dirs from the end of toSubtract
+	static string subtractCommonDirs(const string& toCompare, const string& toSubtract, char separator) noexcept;
+
+	// Removes common path section from the beginning of toSubtract
+	static string subtractCommonParents(const string& toCompare, const StringList& toSubtract) noexcept;
 
 	/* Returns the name without subdirs and possible position from where the subdir starts */
-	static pair<string, string::size_type> getDirName(const string& aName, char separator);
-	static string getTitle(const string& searchTerm);
+	static pair<string, string::size_type> getDirName(const string& aName, char separator) noexcept;
+	static string getTitle(const string& searchTerm) noexcept;
 
 private:
 	static bool removeDirectoryIfEmptyRe(const string& tgt, int maxAttempts, int curAttempts);
@@ -141,7 +143,7 @@ class IsParentOrExact {
 public:
 	// Returns true for items matching the predicate that are parent directories of compareTo (or exact matches)
 	IsParentOrExact(const string& aCompareTo) : compareTo(aCompareTo) {}
-	bool operator()(const string& p) { return AirUtil::isParentOrExact(p, compareTo); }
+	bool operator()(const string& p) noexcept { return AirUtil::isParentOrExact(p, compareTo); }
 
 	IsParentOrExact& operator=(const IsParentOrExact&) = delete;
 private:
@@ -151,7 +153,7 @@ private:
 class IsParentOrExactOrSub {
 public:
 	IsParentOrExactOrSub(const string& aCompareTo) : compareTo(aCompareTo) {}
-	bool operator()(const string& p) { return AirUtil::isParentOrExact(p, compareTo) || AirUtil::isSub(p, compareTo); }
+	bool operator()(const string& p) noexcept { return AirUtil::isParentOrExact(p, compareTo) || AirUtil::isSub(p, compareTo); }
 
 	IsParentOrExactOrSub& operator=(const IsParentOrExactOrSub&) = delete;
 private:
@@ -162,7 +164,7 @@ class IsSub {
 public:
 	// Returns true for items matching the predicate that are subdirectories of compareTo
 	IsSub(const string& aCompareTo) : compareTo(aCompareTo) {}
-	bool operator()(const string& p) { return AirUtil::isSub(p, compareTo); }
+	bool operator()(const string& p) noexcept { return AirUtil::isSub(p, compareTo); }
 
 	IsSub& operator=(const IsSub&) = delete;
 private:

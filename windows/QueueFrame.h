@@ -232,7 +232,6 @@ private:
 
 	typedef vector<QueueItemInfoPtr> QueueItemInfoList;
 
-	void onRenameBundle(BundlePtr b);
 	void onBundleAdded(const BundlePtr& aBundle);
 	void onBundleRemoved(const BundlePtr& aBundle, const string& aPath);
 	void onBundleUpdated(const BundlePtr& aBundle);
@@ -254,7 +253,6 @@ private:
 
 	void handleRecheckFiles(QueueItemList ql);
 	void handleRecheckBundles(BundleList bl);
-	void handleMoveBundles(BundleList bl);
 	void handleRemoveBundles(BundleList bl, bool removeFinished, bool finishedOnly = false);
 	void handleRemoveFiles(QueueItemList ql, bool removeFinished);
 	void handleSearchQI(const QueueItemPtr& aQI, bool byName);
@@ -349,8 +347,6 @@ private:
 	//bundle update listeners
 	void on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle) noexcept;
 	void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept;
-	void on(QueueManagerListener::BundleMoved, const BundlePtr& aBundle) noexcept;
-	void on(QueueManagerListener::BundleMerged, const BundlePtr& aBundle, const string&) noexcept;
 	void on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) noexcept;
 	void on(QueueManagerListener::BundlePriority, const BundlePtr& aBundle) noexcept;
 	void on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept;

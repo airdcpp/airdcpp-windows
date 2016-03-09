@@ -65,7 +65,6 @@ public:
 	BundlePtr getMergeBundle(const string& aTarget) const noexcept;
 	void getSubBundles(const string& aTarget, BundleList& retBundles) const noexcept;
 
-	void moveBundle(BundlePtr& aBundle, const string& aNewTarget) noexcept;
 	void removeBundle(BundlePtr& aBundle) noexcept;
 
 	void getDiskInfo(TargetUtil::TargetInfoMap& dirMap, const TargetUtil::VolumeSet& volumes) const noexcept;

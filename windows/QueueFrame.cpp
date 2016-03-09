@@ -713,12 +713,6 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 			}, b->getSeqOrder() ? OMenu::FLAG_CHECKED : 0 | OMenu::FLAG_THREADED);
 		}
 	}
-	
-	bundleMenu.appendSeparator();
-	if (b) {
-		bundleMenu.appendItem(TSTRING(RENAME), [=] { onRenameBundle(b); });
-	}
-	bundleMenu.appendItem(TSTRING(MOVE), [=] { handleMoveBundles(bl); });
 
 	bundleMenu.appendSeparator();
 	bundleMenu.appendItem(TSTRING(REMOVE), [=] { handleRemoveBundles(bl, false); });
@@ -1044,31 +1038,6 @@ void QueueFrame::handleRecheckFiles(QueueItemList ql) {
 	});
 }
 
-void QueueFrame::handleMoveBundles(BundleList bundles) {
-	tstring targetPath = Text::toT(Util::getParentDir(bundles.front()->getTarget()));
-
-	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_GENERIC, BrowseDlg::DIALOG_SELECT_FOLDER);
-	dlg.setPath(targetPath);
-	if (!dlg.show(targetPath)) {
-		return;
-	}
-
-	string newDir = Util::validatePath(Text::fromT(targetPath), true);
-	if (bundles.size() == 1) {
-		if (!WinUtil::showQuestionBox(TSTRING_F(CONFIRM_MOVE_DIR_BUNDLE, Text::toT(bundles.front()->getName()) % Text::toT(newDir)), MB_ICONQUESTION)) {
-			return;
-		}
-	} else if (!WinUtil::showQuestionBox(TSTRING_F(CONFIRM_MOVE_DIR_MULTIPLE, bundles.size() % Text::toT(newDir)), MB_ICONQUESTION)) {
-		return;
-	}
-
-
-	MainFrame::getMainFrame()->addThreadedTask([=] {
-		for (auto& sourceBundle : bundles) 
-			QueueManager::getInstance()->moveBundle(sourceBundle, newDir, true);
-	});
-}
-
 void QueueFrame::handleRemoveBundles(BundleList bundles, bool removeFinished, bool finishedOnly) {
 	if (bundles.empty())
 		return;
@@ -1115,23 +1084,6 @@ void QueueFrame::handleSearchQI(const QueueItemPtr& aQI, bool byName) {
 			WinUtil::searchAny(Text::toT(Util::getFileName(aQI->getTarget())));
 		else
 			WinUtil::searchHash(aQI->getTTH(), Util::getFileName(aQI->getTarget()), aQI->getSize());
-	}
-}
-
-void QueueFrame::onRenameBundle(BundlePtr b) {
-	LineDlg dlg;
-	dlg.title = TSTRING(RENAME);
-	dlg.description = TSTRING(NEW_NAME);
-	dlg.line = Text::toT(b->getName());
-	if (dlg.DoModal(m_hWnd) == IDOK) {
-		auto newName = Util::validatePath(Text::fromT(dlg.line), false);
-		if (newName == b->getName()) {
-			return;
-		}
-
-		MainFrame::getMainFrame()->addThreadedTask([=] {
-			QueueManager::getInstance()->renameBundle(b, newName);
-		});
 	}
 }
 
@@ -1456,13 +1408,6 @@ void QueueFrame::on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle)
 }
 void QueueFrame::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept{
 	addGuiTask(TASK_REMOVE, [=] { onBundleRemoved(aBundle, getBundleParent(aBundle)); });
-}
-void QueueFrame::on(QueueManagerListener::BundleMoved, const BundlePtr& aBundle) noexcept {
-	string path = getBundleParent(aBundle);
-	addGuiTask(TASK_REMOVE, [=] { onBundleRemoved(aBundle, path); });
-}
-void QueueFrame::on(QueueManagerListener::BundleMerged, const BundlePtr& aBundle, const string&) noexcept { 
-	addGuiTask(TASK_BUNDLE_STATUS, [=] { onBundleUpdated(aBundle); });
 }
 void QueueFrame::on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) noexcept { 
 	addGuiTask(TASK_BUNDLE_UPDATE, [=] { onBundleUpdated(aBundle); });

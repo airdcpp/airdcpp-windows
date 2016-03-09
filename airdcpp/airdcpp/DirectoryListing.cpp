@@ -476,6 +476,9 @@ bool DirectoryListing::createBundle(Directory::Ptr& aDir, const string& aTarget,
 	} catch (const std::bad_alloc&) {
 		LogManager::getInstance()->message(STRING_F(BUNDLE_CREATION_FAILED, aTarget % STRING(OUT_OF_MEMORY)), LogMessage::SEV_ERROR);
 		return false;
+	} catch (const Exception& e) {
+		LogManager::getInstance()->message(STRING_F(BUNDLE_CREATION_FAILED, aTarget % e.getError()), LogMessage::SEV_ERROR);
+		return false;
 	}
 
 	if (!errorMsg.empty()) {
@@ -492,6 +495,7 @@ bool DirectoryListing::createBundle(Directory::Ptr& aDir, const string& aTarget,
 		}
 		return true;
 	}
+
 	return false;
 }
 

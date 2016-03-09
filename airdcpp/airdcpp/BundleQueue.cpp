@@ -41,12 +41,6 @@ size_t BundleQueue::getTotalFiles() const noexcept {
 
 void BundleQueue::addBundle(BundlePtr& aBundle) noexcept {
 	bundles[aBundle->getToken()] = aBundle;
-	//check if we need to insert the root bundle dir
-	//if (!aBundle->isFileBundle()) {
-	//	if (findLocalDir(aBundle->getTarget()) == bundleDirs.end()) {
-	//		addDirectory(aBundle->getTarget(), aBundle);
-	//	}
-	//}
 
 	if (aBundle->isFinished()) {
 		aBundle->setStatus(Bundle::STATUS_FINISHED);
@@ -159,10 +153,11 @@ const BundleQueue::PathInfo* BundleQueue::getSubDirectoryInfo(const string& aSub
 BundlePtr BundleQueue::getMergeBundle(const string& aTarget) const noexcept {
 	/* Returns directory bundles that are in sub or parent dirs (or in the same location), in which we can merge to */
 	for(auto& compareBundle: bundles | map_values) {
+		dcassert(!AirUtil::isSub(aTarget, compareBundle->getTarget()));
 		if (compareBundle->isFileBundle()) {
 			if (!aTarget.empty() && aTarget.back() != PATH_SEPARATOR && aTarget == compareBundle->getTarget())
 				return compareBundle;
-		} else if (AirUtil::isSub(aTarget, compareBundle->getTarget()) || AirUtil::isParentOrExact(aTarget, compareBundle->getTarget())) {
+		} else if (AirUtil::isParentOrExact(aTarget, compareBundle->getTarget())) {
 			return compareBundle;
 		}
 	}
@@ -350,16 +345,6 @@ void BundleQueue::removeBundle(BundlePtr& aBundle) noexcept{
 	bundles.erase(aBundle->getToken());
 
 	aBundle->deleteXmlFile();
-}
-
-void BundleQueue::moveBundle(BundlePtr& aBundle, const string& newTarget) noexcept {
-	//remove the old release dir
-	//removeDirectory(aBundle->getTarget());
-
-	aBundle->setTarget(newTarget);
-
-	//add new
-	//addDirectory(newTarget, aBundle);
 }
 
 void BundleQueue::getDiskInfo(TargetUtil::TargetInfoMap& dirMap, const TargetUtil::VolumeSet& volumes) const noexcept{

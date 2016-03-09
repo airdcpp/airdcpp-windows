@@ -72,12 +72,9 @@ public:
 	enum BundleFlags {
 		/** Flags for scheduled actions */
 		FLAG_UPDATE_SIZE			= 0x01,
-		FLAG_UPDATE_NAME			= 0x02,
 		FLAG_SCHEDULE_SEARCH		= 0x04,
 		/** Autodrop slow sources is enabled for this bundle */
 		FLAG_AUTODROP				= 0x400,
-		/** Set when the bundle is being merged to another bundle */
-		FLAG_MERGING				= 0x800
 	};
 
 	enum Status {
@@ -227,8 +224,6 @@ public:
 	void increaseSize(int64_t aSize) noexcept;
 	void decreaseSize(int64_t aSize) noexcept;
 
-	void setTarget(const string& aTarget) noexcept;
-
 	void addFinishedSegment(int64_t aSize) noexcept;
 	void removeFinishedSegment(int64_t aSize) noexcept;
 
@@ -240,7 +235,7 @@ public:
 	bool removeRunningUser(const UserConnection* aSource, bool sendRemove) noexcept;
 	void setUserMode(bool setSingleUser) noexcept;
 
-	void sendSizeNameUpdate() noexcept;
+	void sendSizeUpdate() noexcept;
 
 	void addDownload(Download* d) noexcept;
 	void removeDownload(Download* d) noexcept;
