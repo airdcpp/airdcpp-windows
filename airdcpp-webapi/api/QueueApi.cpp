@@ -436,7 +436,7 @@ namespace webserver {
 	}
 
 	void QueueApi::on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept {
-		onBundleUpdated(aBundle, { PROP_STATUS }, "bundle_status");
+		onBundleUpdated(aBundle, { PROP_STATUS, PROP_TIME_FINISHED }, "bundle_status");
 	}
 
 	void QueueApi::on(QueueManagerListener::BundleSources, const BundlePtr& aBundle) noexcept {
