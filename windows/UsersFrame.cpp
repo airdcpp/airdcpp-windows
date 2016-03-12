@@ -420,15 +420,13 @@ void UsersFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		
 	if(ctrlStatus.IsWindow()) {
 		CRect sr;
-		int w[3];
+		int w[2];
 		ctrlStatus.GetClientRect(sr);
-		int tmp = (sr.Width() /2) - 16;
 			
-		w[0] = sr.right - tmp;
-		w[1] = w[0] + (tmp-16)/2;
-		w[2] = w[0] + (tmp-16);
+		w[0] = sr.right - (sr.Width() / 4) -16;
+		w[1] = w[0] + (sr.Width() / 4);
 			
-		ctrlStatus.SetParts(3, w);
+		ctrlStatus.SetParts(2, w);
 
 		ctrlStatus.GetRect(0, sr);
 		//filters
@@ -458,7 +456,7 @@ void UsersFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		sr.right = sr.left + ctrlShowIgnored.GetWindowTextLength() * WinUtil::getTextWidth(ctrlShowIgnored.m_hWnd, WinUtil::systemFont) + 24;
 		ctrlShowIgnored.MoveWindow(sr);
 		
-		ctrlStatus.GetRect(2, sr);
+		ctrlStatus.GetRect(1, sr);
 		sr.left = sr.right;
 		sr.right = sr.left + 16;
 		ctrlShowInfo.MoveWindow(sr);
