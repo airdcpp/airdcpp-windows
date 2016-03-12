@@ -284,8 +284,8 @@ public:
 	void setBundlePriority(BundlePtr& aBundle, QueueItemBase::Priority p, bool aKeepAutoPrio=false) noexcept;
 
 	// Toggle autoprio state for the bundle
-	void setBundleAutoPriority(QueueToken aBundleToken) noexcept;
-	void setBundleAutoPriority(BundlePtr& aBundle) noexcept;
+	void toggleBundleAutoPriority(QueueToken aBundleToken) noexcept;
+	void toggleBundleAutoPriority(BundlePtr& aBundle) noexcept;
 
 	// Perform autopriorization for applicable bundles
 	// verbose is only used for debugging purposes to print the points for each bundle

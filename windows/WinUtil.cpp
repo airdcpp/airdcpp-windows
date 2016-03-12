@@ -1554,7 +1554,7 @@ void WinUtil::appendBundlePrioMenu(OMenu& aParent, const BundleList& aBundles) {
 
 	auto autoPrioF = [=] {
 		for (auto& b: aBundles)
-			QueueManager::getInstance()->setBundleAutoPriority(b->getToken());
+			QueueManager::getInstance()->toggleBundleAutoPriority(b->getToken());
 	};
 
 	appendPrioMenu<BundlePtr>(aParent, aBundles, true, prioF, autoPrioF);
