@@ -32,7 +32,7 @@ namespace webserver {
 		{
 			return Serializer::serializeList(aItem->profiles, Serializer::serializeShareProfileSimple);
 		}
-		case ShareRootApi::PROP_CONTENT: {
+		case ShareRootApi::PROP_TYPE: {
 			return Serializer::serializeFolderType(aItem->fileCount, aItem->folderCount);
 		}
 		}
@@ -64,7 +64,7 @@ namespace webserver {
 
 	int ShareUtils::compareItems(const ShareDirectoryInfoPtr& a, const ShareDirectoryInfoPtr& b, int aPropertyName) noexcept {
 		switch (aPropertyName) {
-		case ShareRootApi::PROP_CONTENT: {
+		case ShareRootApi::PROP_TYPE: {
 			auto dirsA = a->folderCount;
 			auto dirsB = b->folderCount;
 			if (dirsA != dirsB) {
@@ -88,7 +88,7 @@ namespace webserver {
 		case ShareRootApi::PROP_VIRTUAL_NAME: return aItem->virtualName;
 		case ShareRootApi::PROP_PATH: return aItem->path;
 		case ShareRootApi::PROP_REFRESH_STATE: return formatRefreshState(aItem);
-		case ShareRootApi::PROP_CONTENT: return Format::formatFolderContent(aItem->fileCount, aItem->folderCount);
+		case ShareRootApi::PROP_TYPE: return Format::formatFolderContent(aItem->fileCount, aItem->folderCount);
 		default: dcassert(0); return Util::emptyString;
 		}
 	}
