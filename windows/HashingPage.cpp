@@ -25,6 +25,9 @@
 #include "PropertiesDlg.h"
 #include "MainFrm.h"
 
+#include <airdcpp/HashManager.h>
+
+
 PropPage::TextItem HashingPage::texts[] = {
 	//hashing
 	{ IDC_HASHING_OPTIONS, ResourceManager::HASHING_OPTIONS },

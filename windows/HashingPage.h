@@ -23,7 +23,7 @@
 #include "PropPage.h"
 #include "ExListViewCtrl.h"
 
-#include <airdcpp/HashManager.h>
+#include <airdcpp/HashManagerListener.h>
 
 class HashingPage : public CPropertyPage<IDD_HASHINGPAGE>, public PropPage
 {

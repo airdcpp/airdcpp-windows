@@ -33,7 +33,7 @@
 #include "File.h"
 #include "FileQueue.h"
 #include "HashBloom.h"
-#include "HashManager.h"
+#include "HashManagerListener.h"
 #include "MerkleTree.h"
 #include "QueueItem.h"
 #include "ShareManagerListener.h"
@@ -468,8 +468,8 @@ private:
 	void on(SearchManagerListener::SR, const SearchResultPtr&) noexcept;
 	
 	// HashManagerListener
-	void on(HashManagerListener::TTHDone, const string& aPath, HashedFile& fi) noexcept { onFileHashed(aPath, fi, false); }
-	void on(HashManagerListener::HashFailed, const string& aPath, HashedFile& fi) noexcept { onFileHashed(aPath, fi, true); }
+	void on(HashManagerListener::FileHashed, const string& aPath, HashedFile& fi) noexcept { onFileHashed(aPath, fi, false); }
+	void on(HashManagerListener::FileFailed, const string& aPath, HashedFile& fi) noexcept { onFileHashed(aPath, fi, true); }
 
 	// ClientManagerListener
 	void on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool wasOffline) noexcept;

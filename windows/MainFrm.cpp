@@ -53,22 +53,24 @@
 #include "iTunesCOMInterface.h"
 #include "SystemFrame.h"
 
-#include <airdcpp/ConnectivityManager.h>
-#include <airdcpp/DownloadManager.h>
-#include <airdcpp/UploadManager.h>
-#include <airdcpp/StringTokenizer.h>
-#include <airdcpp/ShareManager.h>
-#include <airdcpp/LogManager.h>
-#include <airdcpp/FavoriteManager.h>
-#include <airdcpp/MappingManager.h>
 #include <airdcpp/AirUtil.h>
+#include <airdcpp/ConnectivityManager.h>
 #include <airdcpp/DirectoryListingManager.h>
-#include <airdcpp/UpdateManager.h>
+#include <airdcpp/DownloadManager.h>
+#include <airdcpp/FavoriteManager.h>
 #include <airdcpp/GeoManager.h>
-#include <airdcpp/ThrottleManager.h>
-#include <airdcpp/version.h>
+#include <airdcpp/HashManager.h>
+#include <airdcpp/LogManager.h>
+#include <airdcpp/MappingManager.h>
 #include <airdcpp/SettingHolder.h>
+#include <airdcpp/ShareManager.h>
+#include <airdcpp/StringTokenizer.h>
+#include <airdcpp/ThrottleManager.h>
+#include <airdcpp/UpdateManager.h>
+#include <airdcpp/UploadManager.h>
 #include <airdcpp/ViewFileManager.h>
+
+#include <airdcpp/version.h>
 
 #include <VersionHelpers.h>
 #include <dbt.h>

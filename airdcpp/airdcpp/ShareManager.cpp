@@ -2296,7 +2296,6 @@ bool ShareManager::removeDirectory(const string& aPath) noexcept {
 		if (sd->getParent()) {
 			// Subroot and the content still stays shared.. just null the profile
 			sd->setProfileDir(nullptr);
-			removed = true;
 		} else {
 			// Remove the root
 			cleanIndices(*sd);
@@ -2324,6 +2323,8 @@ bool ShareManager::removeDirectory(const string& aPath) noexcept {
 					updateIndices(d, *bloom.get(), sharedSize, tthIndex, dirNameMap);
 				}
 			}
+
+			removed = true;
 		}
 	}
 
