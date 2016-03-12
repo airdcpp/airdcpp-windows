@@ -640,7 +640,11 @@ private:
 
 	// Change the refresh status for a directory and its subroots
 	// Safe to call with non-root directories
-	void setRefreshState(const string& aPath, RefreshState aState, bool aUpdateRefreshTime) noexcept;
+	// The directory pointer should be provided if the changes aren't applied to existing roots yet
+	void setRefreshState(const string& aPath, RefreshState aState, bool aUpdateRefreshTime, const Directory::Ptr& aDirectory = nullptr) noexcept;
+
+	// The directory pointer should be provided if the changes aren't applied to existing roots yet
+	void onRootUpdated(const string& aPath, const Directory::Ptr& aDirectory = nullptr) noexcept;
 
 	// Recursive function for building a new share tree from a path
 	void buildTree(const string& aPath, const string& aPathLower, const Directory::Ptr& aDir, const ProfileDirMap& aSubRoots, DirMultiMap& aDirs, DirMap& newShares, int64_t& hashSize, int64_t& addedSize, HashFileMap& tthIndexNew, ShareBloom& aBloom);

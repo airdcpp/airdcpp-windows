@@ -156,12 +156,12 @@ namespace webserver {
 		maybeSend("share_root_created", [&] { return Serializer::serializeItem(info, itemHandler); });
 	}
 
-	void ShareRootApi::on(ShareManagerListener::RootUpdated, const string& aPath) noexcept {
+	void ShareRootApi::on(ShareManagerListener::RootUpdated, const string& aPath, RootInfoF&& aRootInfoF) noexcept {
 		if (!subscriptionActive("share_root_updated") && !rootView.isActive()) {
 			return;
 		}
 
-		auto info = ShareManager::getInstance()->getRootInfo(aPath);
+		auto info = aRootInfoF();
 		if (rootView.isActive()) {
 			RLock l(cs);
 			auto i = find_if(roots.begin(), roots.end(), ShareDirectoryInfo::PathCompare(aPath));

@@ -2387,7 +2387,7 @@ bool ShareManager::changeDirectory(const ShareDirectoryInfoPtr& aDirectoryInfo) 
 
 	setProfilesDirty(dirtyProfiles, true);
 
-	fire(ShareManagerListener::RootUpdated(), aDirectoryInfo->path);
+	onRootUpdated(aDirectoryInfo->path);
 	return true;
 }
 
@@ -2553,6 +2553,9 @@ void ShareManager::runTasks(function<void (float)> progressF /*nullptr*/) noexce
 		atomic<long> progressCounter(0);
 		const size_t dirCount = refreshDirs.size();
 
+		int64_t totalHash = 0;
+		ProfileTokenSet dirtyProfiles;
+
 
 		//bloom
 		ShareBloom* refreshBloom = t.first == REFRESH_ALL ? new ShareBloom(1<<20) : bloom.get();
@@ -2580,7 +2583,19 @@ void ShareManager::runTasks(function<void (float)> progressF /*nullptr*/) noexce
 				progressF(static_cast<float>(progressCounter++) / static_cast<float>(dirCount));
 			}
 
-			setRefreshState(ri.path, RefreshState::STATE_NORMAL, succeed);
+			// Update changes to partial (or single) roots so that we can fire RootUpdated with the correct information
+			// When performing full refresh, we always have full roots that can be fired before applying the changes globally
+			if (t.first != REFRESH_ALL) {
+				WLock l(cs);
+				refreshDirs.erase(boost::remove_if(refreshDirs, [&](RefreshInfoPtr& ri) {
+					return !handleRefreshedDirectory(ri, static_cast<TaskType>(t.first));
+				}), refreshDirs.end());
+
+				bloom->merge(*refreshBloom);
+				mergeRefreshChanges(refreshDirs, dirNameMap, rootPaths, tthIndex, totalHash, sharedSize, &dirtyProfiles);
+			}
+
+			setRefreshState(ri.path, RefreshState::STATE_NORMAL, succeed, ri.root);
 		};
 
 		try {
@@ -2598,34 +2613,24 @@ void ShareManager::runTasks(function<void (float)> progressF /*nullptr*/) noexce
 		if (aShutdown)
 			break;
 
-		int64_t totalHash=0;
-		ProfileTokenSet dirtyProfiles;
+		if(t.first == REFRESH_ALL) {
+			// We can reset the old data
 
-		//append the changes
-		{		
 			WLock l(cs);
-			if(t.first != REFRESH_ALL) {
-				refreshDirs.erase(boost::remove_if(refreshDirs, [&](RefreshInfoPtr& ri) {
-					return !handleRefreshedDirectory(ri, static_cast<TaskType>(t.first)); 
-				}), refreshDirs.end());
 
-				bloom->merge(*refreshBloom);
-				mergeRefreshChanges(refreshDirs, dirNameMap, rootPaths, tthIndex, totalHash, sharedSize, &dirtyProfiles);
-			} else {
-				int64_t totalAdded=0;
-				DirMultiMap newDirNames;
-				DirMap newRoots;
-				HashFileMap newTTHs;
+			int64_t totalAdded=0;
+			DirMultiMap newDirNames;
+			DirMap newRoots;
+			HashFileMap newTTHs;
 
-				mergeRefreshChanges(refreshDirs, newDirNames, newRoots, newTTHs, totalHash, totalAdded, &dirtyProfiles);
+			mergeRefreshChanges(refreshDirs, newDirNames, newRoots, newTTHs, totalHash, totalAdded, &dirtyProfiles);
 
-				rootPaths.swap(newRoots);
-				dirNameMap.swap(newDirNames);
-				tthIndex.swap(newTTHs);
+			rootPaths.swap(newRoots);
+			dirNameMap.swap(newDirNames);
+			tthIndex.swap(newTTHs);
 
-				sharedSize = totalAdded;
-				bloom.reset(refreshBloom);
-			}
+			sharedSize = totalAdded;
+			bloom.reset(refreshBloom);
 		}
 
 		setProfilesDirty(dirtyProfiles, task->type == TYPE_MANUAL || t.first == REFRESH_ALL || t.first == ADD_BUNDLE);
@@ -2644,7 +2649,7 @@ void ShareManager::runTasks(function<void (float)> progressF /*nullptr*/) noexce
 	refreshing.clear();
 }
 
-void ShareManager::setRefreshState(const string& aPath, RefreshState aState, bool aUpdateRefreshTime) noexcept {
+void ShareManager::setRefreshState(const string& aPath, RefreshState aState, bool aUpdateRefreshTime, const Directory::Ptr& aDirectory) noexcept {
 	ProfileDirectoryList directories;
 	{
 		RLock l(cs);
@@ -2659,8 +2664,18 @@ void ShareManager::setRefreshState(const string& aPath, RefreshState aState, boo
 			pd->setLastRefreshTime(GET_TIME());
 		}
 
-		fire(ShareManagerListener::RootUpdated(), pd->getPath());
+		onRootUpdated(pd->getPath(), aDirectory);
 	}
+}
+
+void ShareManager::onRootUpdated(const string& aPath, const Directory::Ptr& aDirectory) noexcept {
+	fire(ShareManagerListener::RootUpdated(), aPath, [&]() {
+		if (aDirectory) {
+			return getRootInfo(aDirectory);
+		}
+
+		return getRootInfo(aPath);
+	});
 }
 
 bool ShareManager::handleRefreshedDirectory(RefreshInfoPtr& ri, TaskType aTaskType) {
