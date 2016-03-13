@@ -25,8 +25,6 @@
 
 namespace webserver {
 	json ShareUtils::serializeItem(const ShareDirectoryInfoPtr& aItem, int aPropertyName) noexcept {
-		json j;
-
 		switch (aPropertyName) {
 		case ShareRootApi::PROP_PROFILES:
 		{
@@ -37,8 +35,8 @@ namespace webserver {
 		}
 		}
 
-
-		return j;
+		dcassert(0);
+		return nullptr;
 	}
 
 	string ShareUtils::formatRefreshState(const ShareDirectoryInfoPtr& aItem) noexcept {

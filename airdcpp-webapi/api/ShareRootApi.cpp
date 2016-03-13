@@ -84,7 +84,7 @@ namespace webserver {
 	}
 
 	api_return ShareRootApi::handleGetRoots(ApiRequest& aRequest) {
-		auto j = Serializer::serializeItemList(itemHandler, getRoots());
+		auto j = Serializer::serializeItemList(itemHandler, ShareManager::getInstance()->getRootInfos());
 		aRequest.setResponseBody(j);
 		return websocketpp::http::status_code::ok;
 	}
@@ -156,12 +156,17 @@ namespace webserver {
 		maybeSend("share_root_created", [&] { return Serializer::serializeItem(info, itemHandler); });
 	}
 
-	void ShareRootApi::on(ShareManagerListener::RootUpdated, const string& aPath, RootInfoF&& aRootInfoF) noexcept {
+	void ShareRootApi::on(ShareManagerListener::RootUpdated, const string& aPath) noexcept {
 		if (!subscriptionActive("share_root_updated") && !rootView.isActive()) {
 			return;
 		}
 
-		auto info = aRootInfoF();
+		auto info = ShareManager::getInstance()->getRootInfo(aPath);
+		if (!info) {
+			dcassert(0);
+			return;
+		}
+
 		if (rootView.isActive()) {
 			RLock l(cs);
 			auto i = find_if(roots.begin(), roots.end(), ShareDirectoryInfo::PathCompare(aPath));
@@ -189,6 +194,8 @@ namespace webserver {
 			if (i != roots.end()) {
 				rootView.onItemRemoved(*i);
 				roots.erase(i);
+			} else {
+				dcassert(0);
 			}
 		}
 

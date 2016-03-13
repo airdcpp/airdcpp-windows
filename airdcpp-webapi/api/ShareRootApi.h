@@ -62,7 +62,7 @@ namespace webserver {
 
 		void on(ShareManagerListener::RootCreated, const string& aPath) noexcept;
 		void on(ShareManagerListener::RootRemoved, const string& aPath) noexcept;
-		void on(ShareManagerListener::RootUpdated, const string& aPath, RootInfoF&& aRootInfoF) noexcept;
+		void on(ShareManagerListener::RootUpdated, const string& aPath) noexcept;
 		void onRootUpdated(const ShareDirectoryInfoPtr& aInfo, PropertyIdSet&& aUpdatedProperties) noexcept;
 
 		static const PropertyItemHandler<ShareDirectoryInfoPtr> itemHandler;

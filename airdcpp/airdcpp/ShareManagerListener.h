@@ -20,7 +20,6 @@
 #define DCPLUSPLUS_DCPP_SHAREMANAGERLISTENER_H
 
 #include "typedefs.h"
-#include "ShareDirectoryInfo.h"
 
 namespace dcpp {
 
@@ -51,11 +50,7 @@ namespace dcpp {
 
 		virtual void on(RootCreated, const string&) noexcept {}
 		virtual void on(RootRemoved, const string&) noexcept {}
-
-		typedef function<ShareDirectoryInfoPtr()> RootInfoF;
-
-		// RootInfoF should be used to get up-to-date information about the directory
-		virtual void on(RootUpdated, const string&, RootInfoF&&) noexcept {}
+		virtual void on(RootUpdated, const string&) noexcept {}
 	};
 
 } // namespace dcpp
