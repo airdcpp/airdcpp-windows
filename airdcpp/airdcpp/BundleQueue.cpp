@@ -140,15 +140,6 @@ const BundleQueue::PathInfo* BundleQueue::getSubDirectoryInfo(const string& aSub
 			if (pos == 0) {
 				return p;
 			}
-
-			/*auto fullPath = Util::toNmdcFile(p->path);
-			if (aSubPath.length() >= fullPath.length()) {
-				continue;
-			}
-
-			if (fullPath.substr(fullPath.length() - aSubPath.length()) == aSubPath) {
-				return p;
-			}*/
 		}
 	}
 

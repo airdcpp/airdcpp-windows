@@ -177,55 +177,6 @@ void AirUtil::init() {
 	dcassert(AirUtil::compareFromEnd(R"(/Downloads/Projects/CD1/)", R"(cd1\)", '\\') == 0);
 	dcassert(AirUtil::compareFromEnd(R"(/Downloads/1/)", R"(1\)", '\\') == 0);
 
-	// Main base length test with subtract
-	/*string bundlePath = "/B/1/" ;
-	string tmp1 = bundlePath + "2/3/";
-	string tmp2 = R"(1\2\3\)";
-
-	//auto sub1 = AirUtil::subtractCommonSubDirectoriesFromParent(tmp1, tmp2, '\\', bundlePath.length());
-	auto sub2 = AirUtil::subtractCommonSubDirectoriesFromSub(tmp1, tmp2, '\\', bundlePath.length());
-
-	//dcassert(sub1 == "/B/1/");
-	dcassert(sub2 == R"(1\)");
-
-	// Main base length test with exact match
-	tmp1 = bundlePath;
-	tmp2 = R"(B\1\)";
-	//sub1 = AirUtil::subtractCommonSubDirectoriesFromParent(tmp1, tmp2, '\\', bundlePath.length());
-	sub2 = AirUtil::subtractCommonSubDirectoriesFromSub(tmp1, tmp2, '\\', bundlePath.length());
-	//dcassert(sub1 == "/B/1/");
-	dcassert(sub2 == R"(B\1\)");
-
-	// Subpath is shorter than subdir in main
-	tmp1 = bundlePath + "2/3/4/";
-	tmp2 = R"(B\4\)";
-	//sub1 = AirUtil::subtractCommonSubDirectoriesFromParent(tmp1, tmp2, '\\');
-	sub2 = AirUtil::subtractCommonSubDirectoriesFromSub(tmp1, tmp2, '\\');
-	//dcassert(sub1 == "/B/1/2/3/");
-	dcassert(sub2 == R"(B\)");
-
-	// Normal subtraction
-	tmp1 = bundlePath + "2/3/";
-	tmp2 = R"(B\F\1\2\3\)";
-	//sub1 = AirUtil::subtractCommonSubDirectoriesFromParent(tmp1, tmp2, '\\');
-	sub2 = AirUtil::subtractCommonSubDirectoriesFromSub(tmp1, tmp2, '\\');
-	//dcassert(sub1 == "/B/");
-	dcassert(sub2 == R"(B\F\)");
-
-	// Exact match
-	tmp1 = bundlePath;
-	tmp2 = R"(/B/1/)";
-	//sub1 = AirUtil::subtractCommonSubDirectoriesFromParent(tmp1, tmp2, '/');
-	sub2 = AirUtil::subtractCommonSubDirectoriesFromSub(tmp1, tmp2, '/');
-	//dcassert(sub1 == "");
-	dcassert(sub2 == "");*/
-
-	// MATCH PATHS (NMDC)
-	//dcassert(AirUtil::getMatchPath(R"(SHARE\Bundle\TMP1\File1.zip)", R"(E:\Downloads\Bundle\TMP2\File1.zip)", R"(E:\Downloads\Bundle\)", true) == Util::emptyString);
-	//dcassert(AirUtil::getMatchPath(R"(SHARE\RandomName\File1.zip)", R"(E:\Downloads\Bundle\File1.zip)", R"(E:\Downloads\Bundle\)", true) == Util::emptyString);
-
-	//tmp1 = AirUtil::getMatchPath(R"(SHARE\Bundle\Dir1\Dir2\File1.zip)", R"(E:\Downloads\Bundle\Dir3\Dir2\File1.zip)", R"(E:\Downloads\Bundle\)", true);
-	//dcassert(AirUtil::getMatchPath(R"(SHARE\Bundle\Dir1\Dir2\File1.zip)", R"(E:\Downloads\Bundle\Dir3\Dir2\File1.zip)", R"(E:\Downloads\Bundle\)", true) == R"(E:\Downloads\Bundle\Dir3\Dir2\)");
 
 	// MATCH PATHS (NMDC)
 	auto tmp = AirUtil::getMatchPath(R"(SHARE\Random\CommonSub\File1.zip)", R"(E:\Downloads\Bundle\CommonSub\File1.zip)", R"(E:\Downloads\Bundle\)", true);
@@ -857,11 +808,6 @@ string AirUtil::subtractCommonDirs(const string& toCompare, const string& toSubt
 	return toSubtract.substr(0, res);
 }
 
-//string AirUtil::getLastCommonDirectoryPathFromParent(const string& aMainPath, const string& aSubPath, char aSubSeparator, size_t aMainBaseLength) noexcept {
-//	auto pos = AirUtil::compareLastCommonDirectoryFromEnd(aMainPath, aSubPath, aSubSeparator);
-//	return aMainPath.substr(0, max(aMainPath.length() - (aSubPath.length() - pos), aMainBaseLength));
-//}
-
 string AirUtil::getLastCommonDirectoryPathFromSub(const string& aMainPath, const string& aSubPath, char aSubSeparator, size_t aMainBaseLength) noexcept {
 	auto pos = AirUtil::compareFromEnd(aMainPath, aSubPath, aSubSeparator);
 
@@ -913,9 +859,6 @@ size_t AirUtil::compareFromEnd(const string& aMainPath, const string& aSubPath, 
 string AirUtil::getMatchPath(const string& aRemoteFile, const string& aLocalFile, const string& aBundlePath, bool aNmdc) noexcept {
 	if (aNmdc) {
 		// For simplicity, only perform the path comparison for ADC results
-		auto tmp1 = Text::toLower(aRemoteFile);
-		auto tmp2 = Text::toLower(Util::getLastDir(aBundlePath));
-
 		if (Text::toLower(aRemoteFile).find(Text::toLower(Util::getLastDir(aBundlePath))) != string::npos) {
 			return aBundlePath;
 		}
