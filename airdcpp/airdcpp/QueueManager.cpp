@@ -2744,9 +2744,10 @@ void QueueManager::matchBundle(QueueItemPtr& aQI, const SearchResultPtr& aResult
 			// Ignore...
 		}
 	} else {
-		auto path = aQI->getBundle()->getMatchPath(aResult->getPath(), aQI->getTarget(), aResult->getUser().user->isSet(User::NMDC));
+		bool nmdc = aResult->getUser().user->isNMDC();
+		auto path = AirUtil::getMatchPath(aResult->getPath(), aQI->getTarget(), aQI->getBundle()->getTarget(), nmdc);
 		if (!path.empty()) {
-			if (aResult->getUser().user->isSet(User::NMDC)) {
+			if (nmdc) {
 				// A NMDC directory bundle, just add the sources without matching
 				QueueItemList ql;
 				int newFiles = 0;
@@ -2779,12 +2780,14 @@ void QueueManager::matchBundle(QueueItemPtr& aQI, const SearchResultPtr& aResult
 			}
 		} else if (SETTING(ALLOW_MATCH_FULL_LIST)) {
 			// No path to match, use full filelist
+			dcassert(nmdc);
 			try {
 				addList(aResult->getUser(), QueueItem::FLAG_MATCH_QUEUE, Util::emptyString, aQI->getBundle());
 			} catch(const Exception&) {
 				// ...
 			}
 		} else {
+			dcassert(nmdc);
 			// Add for the single file
 			try {
 				wantConnection = addSource(aQI, aResult->getUser(), QueueItem::Source::FLAG_FILE_NOT_AVAILABLE);
