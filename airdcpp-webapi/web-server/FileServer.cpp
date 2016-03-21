@@ -194,6 +194,40 @@ namespace webserver {
 		return file->getPath();
 	}
 
+	// Support partial requests will enhance media file playback
+	// This will only support simple range values (unsupported range types will be ignored)
+	bool FileServer::parsePartialRange(const string& aHeaderData, int64_t& start_, int64_t& end_) noexcept {
+		if (aHeaderData.find("bytes=") != 0) {
+			return false;
+		}
+
+		auto tokenizer = StringTokenizer<string>(aHeaderData.substr(6), '-', true);
+		if (tokenizer.getTokens().size() != 2) {
+			return false;
+		}
+
+		auto parsedStart = Util::toInt64(tokenizer.getTokens().at(0));
+		if (parsedStart >= end_) {
+			return false;
+		}
+
+		const auto& endToken = tokenizer.getTokens().at(1);
+		if (endToken.empty()) {
+			end_ = end_ - start_;
+		} else {
+			auto e = Util::toInt64(endToken);
+			if (e > end_ || e >= parsedStart) {
+				return false;
+			}
+
+			end_ = e;
+		}
+
+		// Both values were passed successfully
+		start_ = parsedStart;
+		return true;
+	}
+
 	websocketpp::http::status_code::value FileServer::handleRequest(const string& aResource, const websocketpp::http::parser::request& aRequest,
 		string& output_, StringPairList& headers_) noexcept {
 
@@ -212,10 +246,16 @@ namespace webserver {
 			return websocketpp::http::status_code::bad_request;
 		}
 
+		auto fileSize = File::getSize(request);
+		int64_t startPos = 0, endPos = fileSize;
+
+		auto partialContent = parsePartialRange(aRequest.get_header("Range"), startPos, endPos);
+
 		// Read file
 		try {
 			File f(request, File::READ, File::OPEN);
-			output_ = f.read();
+			f.setPos(startPos);
+			output_ = f.read(endPos);
 		} catch (const FileException& e) {
 			output_ = e.getError();
 			return websocketpp::http::status_code::not_found;
@@ -230,6 +270,12 @@ namespace webserver {
 			headers_.emplace_back("Content-Type", type);
 		}
 
-		return websocketpp::http::status_code::ok;
+		if (partialContent) {
+			headers_.emplace_back("Content-Range", "bytes " + Util::toString(startPos) + "-" + Util::toString(endPos-1) + "/" + Util::toString(fileSize));
+			headers_.emplace_back("Accept-Ranges", "bytes");
+			return websocketpp::http::status_code::partial_content;
+		}
+
+		return partialContent ? websocketpp::http::status_code::partial_content : websocketpp::http::status_code::ok;
 	}
 }
