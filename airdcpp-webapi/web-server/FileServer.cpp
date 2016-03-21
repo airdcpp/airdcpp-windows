@@ -194,6 +194,11 @@ namespace webserver {
 		return file->getPath();
 	}
 
+	string FileServer::formatPartialRange(int64_t aStartPos, int64_t aEndPos, int64_t aFileSize) noexcept {
+		dcassert(aEndPos < aFileSize);
+		return "bytes " + Util::toString(aStartPos) + "-" + Util::toString(aEndPos) + "/" + Util::toString(aFileSize);
+	}
+
 	// Support partial requests will enhance media file playback
 	// This will only support simple range values (unsupported range types will be ignored)
 	bool FileServer::parsePartialRange(const string& aHeaderData, int64_t& start_, int64_t& end_) noexcept {
@@ -215,12 +220,12 @@ namespace webserver {
 		if (endToken.empty()) {
 			end_ = end_ - start_;
 		} else {
-			auto e = Util::toInt64(endToken);
-			if (e > end_ || e >= parsedStart) {
+			auto parsedEnd = Util::toInt64(endToken);
+			if (parsedEnd > end_ || parsedEnd <= parsedStart) {
 				return false;
 			}
 
-			end_ = e;
+			end_ = parsedEnd;
 		}
 
 		// Both values were passed successfully
@@ -247,7 +252,7 @@ namespace webserver {
 		}
 
 		auto fileSize = File::getSize(request);
-		int64_t startPos = 0, endPos = fileSize;
+		int64_t startPos = 0, endPos = fileSize - 1;
 
 		auto partialContent = parsePartialRange(aRequest.get_header("Range"), startPos, endPos);
 
@@ -255,7 +260,7 @@ namespace webserver {
 		try {
 			File f(request, File::READ, File::OPEN);
 			f.setPos(startPos);
-			output_ = f.read(endPos);
+			output_ = f.read(endPos + 1);
 		} catch (const FileException& e) {
 			output_ = e.getError();
 			return websocketpp::http::status_code::not_found;
@@ -271,7 +276,7 @@ namespace webserver {
 		}
 
 		if (partialContent) {
-			headers_.emplace_back("Content-Range", "bytes " + Util::toString(startPos) + "-" + Util::toString(endPos-1) + "/" + Util::toString(fileSize));
+			headers_.emplace_back("Content-Range", formatPartialRange(startPos, endPos, fileSize));
 			headers_.emplace_back("Accept-Ranges", "bytes");
 			return websocketpp::http::status_code::partial_content;
 		}

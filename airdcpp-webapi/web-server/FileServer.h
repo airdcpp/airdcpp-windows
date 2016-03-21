@@ -48,6 +48,8 @@ namespace webserver {
 		// Initial value of end_ should be the file size
 		// Returns true if the partial range was parsed successfully
 		static bool parsePartialRange(const string& aHeaderData, int64_t& start_, int64_t& end_) noexcept;
+
+		static string formatPartialRange(int64_t aStart, int64_t aEnd, int64_t aFileSize) noexcept;
 	};
 }
 
