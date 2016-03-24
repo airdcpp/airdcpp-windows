@@ -206,13 +206,19 @@ namespace webserver {
 			return false;
 		}
 
+		dcdebug("Partial HTTP request: %s)\n", aHeaderData.c_str());
+
 		auto tokenizer = StringTokenizer<string>(aHeaderData.substr(6), '-', true);
 		if (tokenizer.getTokens().size() != 2) {
+			dcdebug("Partial HTTP request: unsupported range\n");
 			return false;
 		}
 
 		auto parsedStart = Util::toInt64(tokenizer.getTokens().at(0));
-		if (parsedStart >= end_) {
+
+		// Not "parsedStart >= end_" because Safari seems to request one byte past the end (shouldn't be an issue when reading the file)
+		if (parsedStart > end_ || parsedStart < 0) {
+			dcdebug("Partial HTTP request: start position not accepted (" I64_FMT ")\n", parsedStart);
 			return false;
 		}
 
@@ -222,6 +228,7 @@ namespace webserver {
 		} else {
 			auto parsedEnd = Util::toInt64(endToken);
 			if (parsedEnd > end_ || parsedEnd <= parsedStart) {
+				dcdebug("Partial HTTP request: end position not accepted (parsed start: " I64_FMT ", parsed end: " I64_FMT ", file size: " I64_FMT ")\n", parsedStart, parsedEnd, end_);
 				return false;
 			}
 
