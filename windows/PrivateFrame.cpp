@@ -735,9 +735,9 @@ void PrivateFrame::readLog() {
 		StringList lines;
 
 		if(strnicmp(buf.c_str(), "\xef\xbb\xbf", 3) == 0)
-			lines = StringTokenizer<string>(buf.substr(3), "\r\n").getTokens();
+			lines = StringTokenizer<string>(buf.substr(3), "\r\n", true).getTokens();
 		else
-			lines = StringTokenizer<string>(buf, "\r\n").getTokens();
+			lines = StringTokenizer<string>(buf, "\r\n", true).getTokens();
 
 		int linesCount = lines.size();
 
