@@ -303,8 +303,10 @@ static BOOL GetFunctionInfoFromAddresses( DWORD64 fnAddress, DWORD64 stackAddres
 //                       "address"
 #ifndef _WIN64
 static BOOL GetSourceInfoFromAddress( DWORD address, LPTSTR lpszSourceInfo )
+#define MEM_ADDRESS_FMT "%lX"
 #else
 static BOOL GetSourceInfoFromAddress( DWORD64 address, LPTSTR lpszSourceInfo )
+#define MEM_ADDRESS_FMT "%I64X"
 #endif
 
 {
@@ -333,11 +335,11 @@ static BOOL GetSourceInfoFromAddress( DWORD64 address, LPTSTR lpszSourceInfo )
 	  	GetModuleNameFromAddress( address, lpModuleInfo );
 
 		if ( lpModuleInfo[0] == _T('?') || lpModuleInfo[0] == _T('\0'))
-		   // There is no modulename information. :((
-         // Let's use the "address" format
-			_stprintf( lpszSourceInfo, _T("0x%08X"), address );
+			// There is no modulename information. :((
+			// Let's use the "address" format
+			_stprintf( lpszSourceInfo, _T("0x" MEM_ADDRESS_FMT), address );
 		else
-			_stprintf( lpszSourceInfo, _T("%s!0x%08X"), lpModuleInfo, address );
+			_stprintf( lpszSourceInfo, _T("%s!0x" MEM_ADDRESS_FMT), lpModuleInfo, address );
 
 		ret = FALSE;
 	}
@@ -352,7 +354,24 @@ void StackTrace( HANDLE hThread, File& f, const PCONTEXT pCtx)
 	TCHAR          symInfo[BUFFERSIZE] = _T("?");
 	TCHAR          srcInfo[BUFFERSIZE] = _T("?");
 	HANDLE         hProcess = GetCurrentProcess();
-	CONTEXT        ctx = *pCtx;
+	CONTEXT        ctx;
+
+	if (pCtx) {
+		ctx = *pCtx;
+	} else {
+		//
+		// Use current context.
+		//
+		// N.B. GetThreadContext cannot be used on the current thread.
+		// Capture own context - on i386, there is no API for that.
+		//
+#ifndef _WIN64
+		// This is only needed for std::terminate, ignore
+		return;
+#else
+		RtlCaptureContext(&ctx);
+#endif
+	}
 
 	// If it's not this thread, let's suspend it, and resume it at the end
 	if ( hThread != GetCurrentThread() )

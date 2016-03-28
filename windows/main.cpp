@@ -120,7 +120,8 @@ string getExceptionName(DWORD code) {
 	}
 	return "Unknown";
 }
-LONG __stdcall DCUnhandledExceptionFilter( LPEXCEPTION_POINTERS e )
+
+LONG handleCrash(unsigned long aCode, const string& aError, PCONTEXT aContext)
 {	
 	Lock l(cs);
 
@@ -135,16 +136,16 @@ LONG __stdcall DCUnhandledExceptionFilter( LPEXCEPTION_POINTERS e )
 #endif
 
 	// The release version loads the dll and pdb:s here...
-	EXTENDEDTRACEINITIALIZE( Util::getPath(Util::PATH_RESOURCES).c_str() );
+	EXTENDEDTRACEINITIALIZE(Util::getAppFilePath().c_str() );
 
 #endif
 
 	if(firstException) {
-		File::deleteFile(Util::getPath(Util::PATH_RESOURCES) + "exceptioninfo.txt");
+		File::deleteFile(Util::getAppFilePath() + "exceptioninfo.txt");
 		firstException = false;
 	}
 
-	if(File::getSize(Util::getPath(Util::PATH_RESOURCES) + "AirDC.pdb") == -1) {
+	if(File::getSize(Util::getAppFilePath() + "AirDC.pdb") == -1) {
 		// No debug symbols, we're not interested...
 		::MessageBox(WinUtil::mainWnd, _T("AirDC++ has crashed and you don't have AirDC.pdb file installed. Hence, I can't find out why it crashed, so don't report this as a bug unless you find a solution..."), _T("AirDC++ has crashed"), MB_OK);
 #ifndef _DEBUG
@@ -154,17 +155,16 @@ LONG __stdcall DCUnhandledExceptionFilter( LPEXCEPTION_POINTERS e )
 #endif
 	}
 
-	File f(Util::getPath(Util::PATH_RESOURCES) + "exceptioninfo.txt", File::WRITE, File::OPEN | File::CREATE);
+	File f(Util::getAppFilePath() + "exceptioninfo.txt", File::WRITE, File::OPEN | File::CREATE);
 	f.setEndPos(0);
 	
-	DWORD exceptionCode = e->ExceptionRecord->ExceptionCode ;
 	string archStr = "x86";
 #ifdef _WIN64
 	archStr = "x64";
 #endif
 
 	sprintf(debugBuf, "Code: %x ( %s )\r\nVersion: %s %s\r\n",
-		exceptionCode, getExceptionName(exceptionCode).c_str(), shortVersionString.c_str(), archStr.c_str());
+		aCode, aError.c_str(), shortVersionString.c_str(), archStr.c_str());
 
 	f.write(debugBuf, strlen(debugBuf));
 	sprintf(debugBuf, "Build: %s\r\n",
@@ -191,7 +191,7 @@ LONG __stdcall DCUnhandledExceptionFilter( LPEXCEPTION_POINTERS e )
 
     f.write(LIT("\r\n"));
 
-	STACKTRACE(f, e->ContextRecord);
+	STACKTRACE(f, aContext);
 
 	f.write(LIT("\r\n"));
 
@@ -224,6 +224,11 @@ LONG __stdcall DCUnhandledExceptionFilter( LPEXCEPTION_POINTERS e )
 #else
 	return EXCEPTION_CONTINUE_SEARCH;
 #endif
+}
+
+LONG __stdcall DCUnhandledExceptionFilter(LPEXCEPTION_POINTERS e) {
+	auto code = e->ExceptionRecord->ExceptionCode;
+	return handleCrash(code, getExceptionName(code), e->ContextRecord);
 }
 
 static void sendCmdLine(HWND hOther, LPTSTR lpstrCmdLine)
@@ -419,7 +424,14 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpstrCmdLine, int nCmdShow) {
 	SingleInstance dcapp(_T(INST_NAME));
+
 	//std::set_new_handler(no_memory_handler);
+
+#ifndef _DEBUG
+	std::set_terminate([]() {
+		handleCrash(0, "std::terminate was called", nullptr);
+	});
+#endif
 	
 	LPTSTR* argv = __targv;
 	int argc = --__argc;
@@ -551,7 +563,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	// For SHBrowseForFolder, UPnP_COM
 	HRESULT hRes = ::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED); 
 #ifdef _DEBUG
-	EXTENDEDTRACEINITIALIZE(Util::getPath(Util::PATH_RESOURCES).c_str());
+	EXTENDEDTRACEINITIALIZE(Util::getAppFilePath().c_str());
 #endif
 	LPTOP_LEVEL_EXCEPTION_FILTER pOldSEHFilter = NULL;
 	pOldSEHFilter = SetUnhandledExceptionFilter(&DCUnhandledExceptionFilter);
