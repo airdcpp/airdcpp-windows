@@ -194,6 +194,8 @@ namespace webserver {
 			SearchResult::RelevanceInfo relevanceInfo;
 			if (sr->getRelevance(aQuery, relevanceInfo)) {
 				resultSet.emplace(std::make_shared<SearchResultInfo>(sr, move(relevanceInfo)));
+			} else {
+				dcassert(0);
 			}
 		}
 
@@ -212,6 +214,7 @@ namespace webserver {
 		auto ds = DirectSearch(user, s);
 
 		// Wait for the search to finish
+		// TODO: use timer to avoid large number of searches to consume all threads
 		while (true) {
 			Thread::sleep(50);
 			if (ds.finished()) {
