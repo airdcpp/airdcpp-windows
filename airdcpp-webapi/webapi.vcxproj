@@ -112,6 +112,7 @@
       <PrecompiledHeaderFile>stdinc.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)webserver.pch</PrecompiledHeaderOutputFile>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
