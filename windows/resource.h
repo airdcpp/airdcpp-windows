@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airdc-git\AirDC.rc
+// Used by E:\Projects\airgit\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -1640,6 +1640,10 @@
 #define IDC_WEBSERVER_LABEL             10211
 #define IDC_WEBSERVER_STATUS            10212
 #define IDC_WEBSERVER_START             10213
+#define IDC_WEB_SERVER_HELP             10214
+#define IDC_ADMIN_ACCOUNTS              10215
+#define IDC_WEB_SERVER_HELP2            10216
+#define IDC_WEB_SERVER_USERS_NOTE       10216
 #define IDC_REFRESH_WINAMP              11011
 #define IDC_WINAMP_LIST                 11012
 #define IDC_POSITION                    11013
@@ -1855,7 +1859,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        469
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         10214
+#define _APS_NEXT_CONTROL_VALUE         10216
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

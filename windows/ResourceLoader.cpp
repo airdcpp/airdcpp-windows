@@ -453,6 +453,7 @@ CImageList& ResourceLoader::getSettingsTreeIcons() {
 		settingsTreeImages.AddIcon(CIcon(loadDefaultIcon(IDI_SHARING, size)));
 		settingsTreeImages.AddIcon(CIcon(loadDefaultIcon(IDI_SHAREOPTIONS, size)));
 		settingsTreeImages.AddIcon(CIcon(loadDefaultIcon(IDI_HASHING, size)));
+		settingsTreeImages.AddIcon(CIcon(loadDefaultIcon(IDI_WEBSERVER, size)));
 		settingsTreeImages.AddIcon(CIcon(loadDefaultIcon(IDI_APPEARANCE, size)));
 		settingsTreeImages.AddIcon(CIcon(loadDefaultIcon(IDI_FONTS, size)));
 		settingsTreeImages.AddIcon(CIcon(loadDefaultIcon(IDI_PROGRESS, size)));
@@ -475,7 +476,6 @@ CImageList& ResourceLoader::getSettingsTreeIcons() {
 		settingsTreeImages.AddIcon(CIcon(loadDefaultIcon(IDI_SEARCH, size)));
 		settingsTreeImages.AddIcon(CIcon(loadDefaultIcon(IDI_SEARCHTYPES, size)));
 		settingsTreeImages.AddIcon(CIcon(loadDefaultIcon(IDI_SCAN, size)));
-		settingsTreeImages.AddIcon(CIcon(loadDefaultIcon(IDI_WEBSERVER, size)));
 	}
 	return settingsTreeImages;
 }

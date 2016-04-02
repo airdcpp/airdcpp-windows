@@ -80,6 +80,7 @@ PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPa
 	pages[n++] = make_unique<SharePage>(s);
 	pages[n++] = make_unique<SharingOptionsPage>(s);
 	pages[n++] = make_unique<HashingPage>(s);
+	pages[n++] = make_unique<WebServerPage>(s);
 	pages[n++] = make_unique<AppearancePage>(s);
 	pages[n++] = make_unique<PropPageTextStyles>(s);
 	pages[n++] = make_unique<OperaColorsPage>(s);
@@ -102,7 +103,6 @@ PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPa
 	pages[n++] = make_unique<SearchPage>(s);
 	pages[n++] = make_unique<SearchTypesPage>(s);
 	pages[n++] = make_unique<ScanPage>(s);
-	pages[n++] = make_unique<WebServerPage>(s);
 	
 	for(int i=0; i < n; i++) {
 		AddPage(pages[i]->getPSP());

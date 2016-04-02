@@ -35,28 +35,26 @@
 class WebServerPage : public CPropertyPage<IDD_WEB_SERVER_PAGE>, public PropPage, private webserver::WebServerManagerListener, private Async<WebServerPage>
 {
 public:
-	WebServerPage(SettingsManager *s) : PropPage(s), webMgr(webserver::WebServerManager::getInstance()) {
-		title = _tcsdup((TSTRING(SETTINGS_ADVANCED) + _T('\\') + _T("Web server")).c_str());
-
-		SetTitle(title);
-	};
-
+	WebServerPage(SettingsManager *s);
 	~WebServerPage();
 
 	BEGIN_MSG_MAP_EX(WebServerPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
-		COMMAND_ID_HANDLER(IDC_WEBSERVER_ADD_USER, onButton)
-		COMMAND_ID_HANDLER(IDC_WEBSERVER_CHANGE, onButton)
-		COMMAND_ID_HANDLER(IDC_WEBSERVER_REMOVE_USER, onButton)
-		COMMAND_ID_HANDLER(IDC_WEBSERVER_START, onButton)
+		COMMAND_ID_HANDLER(IDC_WEBSERVER_ADD_USER, onAddUser)
+		COMMAND_ID_HANDLER(IDC_WEBSERVER_CHANGE, onChangeUser)
+		COMMAND_ID_HANDLER(IDC_WEBSERVER_REMOVE_USER, onRemoveUser)
+		COMMAND_ID_HANDLER(IDC_WEBSERVER_START, onServerState)
 		NOTIFY_HANDLER(IDC_WEBSERVER_USERS, LVN_ITEMCHANGED, onSelChange)
 		NOTIFY_HANDLER(IDC_WEBSERVER_USERS, NM_DBLCLK, onDoubleClick)
 		NOTIFY_HANDLER(IDC_WEBSERVER_USERS, LVN_KEYDOWN, onKeyDown)
 		END_MSG_MAP()
 
 	LRESULT onInitDialog(UINT, WPARAM, LPARAM, BOOL&);
-	LRESULT onButton(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onServerState(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onChangeUser(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onAddUser(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onRemoveUser(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSelChange(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
@@ -67,10 +65,9 @@ public:
 
 	void updateListItem(int pos);
 	void addListItem(const string& aUserName, const string& aPassword);
-
 protected:
 
-	enum States {
+	enum ServerState {
 		STATE_STARTED,
 		STATE_STOPPING,
 		STATE_STOPPED
@@ -78,9 +75,8 @@ protected:
 
 	static Item items[];
 	static TextItem texts[];
-	TCHAR* title;
 
-	string lastError;
+	tstring lastError;
 
 	CButton ctrlRemove;
 	CButton ctrlAdd;
@@ -92,35 +88,21 @@ protected:
 	CEdit ctrlTlsPort;
 	ExListViewCtrl ctrlWebUsers;
 
-	void updateStatus();
-	States currentState;
+	CHyperLink url;
+
+	void applySettings() noexcept;
+
+	void setLastError(const string& aError) noexcept;
+	void updateState(ServerState aNewState) noexcept;
+	ServerState currentState;
 
 	webserver::WebServerManager* webMgr;
 	vector<webserver::WebUserPtr> webUserList;
 
 
-	void on(webserver::WebServerManagerListener::Started) noexcept {
-		callAsync([=] {
-			ctrlStart.EnableWindow(TRUE);
-			currentState = webMgr->isRunning() ? STATE_STARTED : STATE_STOPPED;
-			updateStatus();
-		});
-	}
-	void on(webserver::WebServerManagerListener::Stopped) noexcept {
-		callAsync([=] {
-			currentState = STATE_STOPPED;
-			ctrlStart.EnableWindow(TRUE);
-			updateStatus();
-		});
-	}
-	void on(webserver::WebServerManagerListener::Stopping) noexcept {
-		callAsync([=] {
-			currentState = STATE_STOPPING;
-			ctrlStart.EnableWindow(FALSE);
-			updateStatus();
-		});
-	}
-
+	void on(webserver::WebServerManagerListener::Started) noexcept;
+	void on(webserver::WebServerManagerListener::Stopped) noexcept;
+	void on(webserver::WebServerManagerListener::Stopping) noexcept;
 };
 
 #endif
