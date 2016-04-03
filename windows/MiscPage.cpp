@@ -294,12 +294,7 @@ LRESULT MiscPage::onChangeCont(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 			dlg.title = TSTRING(SETUP_PASS);
 			dlg.hideold = true;
             if(dlg.DoModal(/*m_hWnd*/) == IDOK){
-				if(dlg.Newline == dlg.Confirmline) {
-					settings->set(SettingsManager::PASSWORD, Util::base64_encode(reinterpret_cast<const unsigned char*>(Text::fromT(dlg.Newline).c_str()), strlen(Text::fromT(dlg.Newline).c_str())));
-				} else {
-					::MessageBox(m_hWnd, CTSTRING(PASS_NO_MATCH), Text::toT(shortVersionString).c_str(), MB_OK | MB_ICONINFORMATION | MB_TOPMOST);
-					::CheckDlgButton(*this, IDC_PASSWD_PROTECT_CHCKBOX, BST_UNCHECKED);
-				}
+				settings->set(SettingsManager::PASSWORD, Util::base64_encode(reinterpret_cast<const unsigned char*>(Text::fromT(dlg.Newline).c_str()), strlen(Text::fromT(dlg.Newline).c_str())));
 			} else {
 				::CheckDlgButton(*this, IDC_PASSWD_PROTECT_CHCKBOX, BST_UNCHECKED);
 			}
@@ -333,12 +328,7 @@ LRESULT MiscPage::OnPasswordChange(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCt
 		dlg.title = TSTRING(CHANGE_PASSWORD);
 			if(dlg.DoModal(/*m_hWnd*/) == IDOK){
 				if(dlg.Oldline == Text::toT(Util::base64_decode(SETTING(PASSWORD)))) {
-					if(dlg.Newline == dlg.Confirmline) {
-						settings->set(SettingsManager::PASSWORD, Util::base64_encode(reinterpret_cast<const unsigned char*>(Text::fromT(dlg.Newline).c_str()), strlen(Text::fromT(dlg.Newline).c_str())));
-					} else {
-						::MessageBox(m_hWnd, CTSTRING(PASS_NO_MATCH), Text::toT(shortVersionString).c_str(), MB_OK | MB_ICONINFORMATION | MB_TOPMOST);
-						::CheckDlgButton(*this, IDC_PASSWD_PROTECT_CHCKBOX, BST_CHECKED);
-					}
+					settings->set(SettingsManager::PASSWORD, Util::base64_encode(reinterpret_cast<const unsigned char*>(Text::fromT(dlg.Newline).c_str()), strlen(Text::fromT(dlg.Newline).c_str())));
 				} else {
 					::MessageBox(m_hWnd, CTSTRING(WRONG_PASS), Text::toT(shortVersionString).c_str(), MB_OK | MB_ICONEXCLAMATION | MB_TOPMOST);
 				}

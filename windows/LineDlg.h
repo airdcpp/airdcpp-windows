@@ -33,8 +33,9 @@ public:
 	tstring line;
 	tstring description;
 	tstring title;
-	bool password;
-	bool disable;
+	bool password = false;
+	bool disable = false;
+	bool allowEmpty = true;
 
 	enum { IDD = IDD_LINE };
 	
@@ -45,7 +46,7 @@ public:
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
 	END_MSG_MAP()
 	
-	LineDlg() : password(false) { }
+	LineDlg() { }
 	
 	LRESULT onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		ctrlLine.SetFocus();
@@ -76,9 +77,15 @@ public:
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 	{
 		if(wID == IDOK) {
+			if (!allowEmpty && ctrlLine.GetWindowTextLength() == 0) {
+				WinUtil::showMessageBox(TSTRING(LINE_EMPTY), MB_ICONINFORMATION);
+				return 0;
+			}
+
 			line.resize(ctrlLine.GetWindowTextLength() + 1);
 			line.resize(GetDlgItemText(IDC_LINE, &line[0], line.size()));
 		}
+
 		EndDialog(wID);
 		return 0;
 	}
@@ -428,7 +435,18 @@ public:
 			TCHAR buf3[128];
 			GetDlgItemText(IDC_LINE3, buf3, len);
 			Confirmline = buf3;
+
+			if (Newline.empty()) {
+				WinUtil::showMessageBox(TSTRING(LINE_EMPTY), MB_ICONINFORMATION);
+				return 0;
+			}
+
+			if (Confirmline != Newline) {
+				WinUtil::showMessageBox(TSTRING(PASS_NO_MATCH), MB_ICONINFORMATION);
+				return 0;
+			}
 		}
+
 		EndDialog(wID);
 		return 0;
 	}

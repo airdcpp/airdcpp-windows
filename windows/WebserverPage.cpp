@@ -20,6 +20,7 @@
 #include "stdafx.h"
 #include "Resource.h"
 
+#include "LineDlg.h"
 #include "WebServerPage.h"
 #include "WebUserDlg.h"
 
@@ -69,7 +70,7 @@ LRESULT WebServerPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	CRect rc;
 	ctrlWebUsers.GetClientRect(rc);
 	ctrlWebUsers.InsertColumn(0, CTSTRING(USERNAME), LVCFMT_LEFT, rc.Width() / 2, 0);
-	ctrlWebUsers.InsertColumn(1, CTSTRING(PASSWORD), LVCFMT_LEFT, rc.Width() / 2, 1);
+	ctrlWebUsers.InsertColumn(1, CTSTRING(LAST_SEEN), LVCFMT_LEFT, rc.Width() / 2, 1);
 
 	ctrlRemove.Attach(GetDlgItem(IDC_WEBSERVER_REMOVE_USER));
 	ctrlAdd.Attach(GetDlgItem(IDC_WEBSERVER_ADD_USER));
@@ -152,12 +153,19 @@ LRESULT WebServerPage::onChangeUser(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 
 		auto webUser = *getListUser(sel);
 
-		WebUserDlg dlg(Text::toT(webUser->getUserName()), Text::toT(webUser->getPassword()));
+		/*ChngPassDlg dlg;
+		dlg.title = TSTRING(CHANGE_PASSWORD);
+		dlg.hideold = true;
 		if (dlg.DoModal() == IDOK) {
-			if (!dlg.getUserName().empty()) webUser->setUserName(dlg.getUserName());
-			if (!dlg.getPassWord().empty()) webUser->setPassword(dlg.getPassWord());
-			ctrlWebUsers.SetItemText(sel, 0, Text::toT(webUser->getUserName()).c_str());
-			ctrlWebUsers.SetItemText(sel, 1, Text::toT(webUser->getPassword()).c_str());
+			webUser->setPassword(Text::fromT(dlg.Newline));
+		}*/
+
+		LineDlg dlg;
+		dlg.allowEmpty = false;
+		dlg.title = TSTRING(CHANGE_PASSWORD);
+		dlg.description = TSTRING(PASSWORD);
+		if (dlg.DoModal() == IDOK) {
+			webUser->setPassword(Text::fromT(dlg.line));
 		}
 	}
 
@@ -286,7 +294,9 @@ void WebServerPage::write() {
 
 void WebServerPage::addListItem(const webserver::WebUserPtr& aUser) noexcept {
 	int p = ctrlWebUsers.insert(ctrlWebUsers.GetItemCount(), Text::toT(aUser->getUserName()), 0, reinterpret_cast<LPARAM>(aUser.get()));
-	ctrlWebUsers.SetItemText(p, 1, Text::toT(aUser->getPassword()).c_str());
+
+	auto login = aUser->getLastLogin() == 0 ? STRING(NEVER) : Util::formatTime("%c", aUser->getLastLogin());
+	ctrlWebUsers.SetItemText(p, 1, Text::toT(login).c_str());
 }
 
 webserver::WebUserList::iterator WebServerPage::getListUser(int aPos) noexcept {
