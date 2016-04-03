@@ -54,10 +54,10 @@ public:
 		ctrlPassword.Attach(GetDlgItem(IDC_WEBUSER_PWD));
 		ctrlPassword.SetWindowText(pwd.c_str());
 
-		::SetWindowText(GetDlgItem(IDC_WEBUSER_NAME_LABEL), CTSTRING(NAME));
+		::SetWindowText(GetDlgItem(IDC_WEBUSER_NAME_LABEL), CTSTRING(USERNAME));
 		::SetWindowText(GetDlgItem(IDC_WEBUSER_PWD_LABEL), CTSTRING(PASSWORD));
 
-		SetWindowText(_T("Web server user"));
+		SetWindowText(CTSTRING(USER));
 
 		CenterWindow(GetParent());
 		return FALSE;

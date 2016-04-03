@@ -62,9 +62,6 @@ public:
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 	void write();
-
-	void updateListItem(int pos);
-	void addListItem(const string& aUserName, const string& aPassword);
 protected:
 
 	enum ServerState {
@@ -97,8 +94,11 @@ protected:
 	ServerState currentState;
 
 	webserver::WebServerManager* webMgr;
-	vector<webserver::WebUserPtr> webUserList;
+	webserver::WebUserList webUserList;
 
+	void updateListItem(int pos);
+	void addListItem(const webserver::WebUserPtr& aUser) noexcept;
+	webserver::WebUserList::iterator getListUser(int aPos) noexcept;
 
 	void on(webserver::WebServerManagerListener::Started) noexcept;
 	void on(webserver::WebServerManagerListener::Stopped) noexcept;

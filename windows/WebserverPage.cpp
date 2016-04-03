@@ -68,7 +68,7 @@ LRESULT WebServerPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 
 	CRect rc;
 	ctrlWebUsers.GetClientRect(rc);
-	ctrlWebUsers.InsertColumn(0, CTSTRING(NAME), LVCFMT_LEFT, rc.Width() / 2, 0);
+	ctrlWebUsers.InsertColumn(0, CTSTRING(USERNAME), LVCFMT_LEFT, rc.Width() / 2, 0);
 	ctrlWebUsers.InsertColumn(1, CTSTRING(PASSWORD), LVCFMT_LEFT, rc.Width() / 2, 1);
 
 	ctrlRemove.Attach(GetDlgItem(IDC_WEBSERVER_REMOVE_USER));
@@ -85,7 +85,7 @@ LRESULT WebServerPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 			continue;
 		}
 
-		addListItem(u->getUserName(), u->getPassword());
+		addListItem(u);
 	}
 
 	webMgr->addListener(this);
@@ -148,8 +148,10 @@ void WebServerPage::on(webserver::WebServerManagerListener::Stopping) noexcept {
 
 LRESULT WebServerPage::onChangeUser(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if (ctrlWebUsers.GetSelectedCount() == 1) {
-		int sel = ctrlWebUsers.GetSelectedIndex();
-		auto webUser = webUserList[sel];
+		auto sel = ctrlWebUsers.GetSelectedIndex();
+
+		auto webUser = *getListUser(sel);
+
 		WebUserDlg dlg(Text::toT(webUser->getUserName()), Text::toT(webUser->getPassword()));
 		if (dlg.DoModal() == IDOK) {
 			if (!dlg.getUserName().empty()) webUser->setUserName(dlg.getUserName());
@@ -165,10 +167,15 @@ LRESULT WebServerPage::onChangeUser(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 LRESULT WebServerPage::onAddUser(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	WebUserDlg dlg;
 	if (dlg.DoModal() == IDOK) {
-		if (!dlg.getUserName().empty() && !dlg.getPassWord().empty()) {
-			webUserList.emplace_back(make_shared<webserver::WebUser>(dlg.getUserName(), dlg.getPassWord()));
-			addListItem(dlg.getUserName(), dlg.getPassWord());
+		if (dlg.getUserName().empty() || dlg.getPassWord().empty()) {
+			WinUtil::showMessageBox(TSTRING(WEB_ACCOUNT_INCOMPLETE), MB_ICONEXCLAMATION);
+			return 0;
 		}
+
+		auto user = make_shared<webserver::WebUser>(dlg.getUserName(), dlg.getPassWord(), true);
+
+		webUserList.push_back(user);
+		addListItem(user);
 	}
 
 	return 0;
@@ -177,7 +184,8 @@ LRESULT WebServerPage::onAddUser(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 LRESULT WebServerPage::onRemoveUser(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if (ctrlWebUsers.GetSelectedCount() == 1) {
 		int sel = ctrlWebUsers.GetSelectedIndex();
-		webUserList.erase(find(webUserList.begin(), webUserList.end(), webUserList[sel]));
+
+		webUserList.erase(getListUser(sel));
 		ctrlWebUsers.DeleteItem(sel);
 	}
 
@@ -276,9 +284,17 @@ void WebServerPage::write() {
 	}
 }
 
-void WebServerPage::addListItem(const string& aUserName, const string& aPassword) {
-	int p = ctrlWebUsers.insert(ctrlWebUsers.GetItemCount(), Text::toT(aUserName));
-	ctrlWebUsers.SetItemText(p, 1, Text::toT(aPassword).c_str());
+void WebServerPage::addListItem(const webserver::WebUserPtr& aUser) noexcept {
+	int p = ctrlWebUsers.insert(ctrlWebUsers.GetItemCount(), Text::toT(aUser->getUserName()), 0, reinterpret_cast<LPARAM>(aUser.get()));
+	ctrlWebUsers.SetItemText(p, 1, Text::toT(aUser->getPassword()).c_str());
+}
+
+webserver::WebUserList::iterator WebServerPage::getListUser(int aPos) noexcept {
+	auto data = reinterpret_cast<webserver::WebUser*>(ctrlWebUsers.GetItemData(aPos));
+
+	return find_if(webUserList.begin(), webUserList.end(), [&data](const webserver::WebUserPtr& aUser) { 
+		return aUser.get() == data; 
+	});
 }
 
 WebServerPage::~WebServerPage() {
