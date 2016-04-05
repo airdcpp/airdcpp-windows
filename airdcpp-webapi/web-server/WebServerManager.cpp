@@ -478,10 +478,6 @@ namespace webserver {
 	}
 
 	void ServerConfig::save(SimpleXML& xml_, const string& aTagName) noexcept {
-		if (!hasValidConfig()) {
-			return;
-		}
-
 		xml_.addTag(aTagName);
 		xml_.addChildAttrib("Port", port);
 		if (!bindAddress.empty()) {
