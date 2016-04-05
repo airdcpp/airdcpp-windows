@@ -581,12 +581,26 @@ bool ShareDirectories::addDirectory(const tstring& aPath){
 		path += PATH_SEPARATOR;
 
 	/* Check if we are trying to share a directory which exists already in this profile */
-	for(const auto& sdi: shareDirs | filtered(ProfileDirectoryInfo::HasProfile(curProfile))) {
+	for(const auto& sdi: shareDirs) {
+		StringSet profileNames;
+		for (auto t : sdi->dir->profiles) {
+			profileNames.insert(parent->getProfile(t)->name);
+		}
+
 		if (AirUtil::isParentOrExact(sdi->dir->path, Text::fromT(aPath))) {
-			WinUtil::showMessageBox(TSTRING(DIRECTORY_SHARED));
+			if (Util::stricmp(sdi->dir->path, Text::fromT(aPath)) == 0) {
+				if (!sdi->hasProfile(curProfile)) {
+					continue;
+				}
+
+				WinUtil::showMessageBox(TSTRING(DIRECTORY_SHARED));
+			} else {
+				WinUtil::showMessageBox(TSTRING_F(DIRECTORY_PARENT_SHARED, Text::toT(Util::listToString(profileNames))));
+			}
+
 			return false;
 		} else if (AirUtil::isSub(sdi->dir->path, Text::fromT(aPath))) {
-			WinUtil::showMessageBox(TSTRING_F(DIRECTORY_SUBDIRS_SHARED, Util::emptyStringT));
+			WinUtil::showMessageBox(TSTRING_F(DIRECTORY_SUBDIRS_SHARED, Text::toT(Util::listToString(profileNames))));
 			return false;
 		}
 	}
@@ -652,21 +666,21 @@ void ShareDirectories::applyChanges(bool /*isQuit*/) {
 
 	getDirs(ProfileDirectoryInfo::STATE_ADDED);
 	if (!dirs.empty()) {
-		ShareManager::getInstance()->addDirectories(dirs);
+		ShareManager::getInstance()->addRootDirectories(dirs);
 		//will be cleared later...
 	}
 
 	getDirs(ProfileDirectoryInfo::STATE_REMOVED);
 	if (!dirs.empty()) {
 		for (const auto& sdi : dirs) {
-			ShareManager::getInstance()->removeDirectory(sdi->path);
+			ShareManager::getInstance()->removeRootDirectory(sdi->path);
 		}
 		//ShareManager::getInstance()->removeDirectories(dirs);
 	}
 
 	getDirs(ProfileDirectoryInfo::STATE_NORMAL);
 	if (!dirs.empty()) {
-		ShareManager::getInstance()->changeDirectories(dirs);
+		ShareManager::getInstance()->updateRootDirectories(dirs);
 	}
 
 	ShareManager::getInstance()->setExcludedPaths(excludedPaths);
