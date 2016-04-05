@@ -48,8 +48,8 @@ WebServerPage::WebServerPage(SettingsManager *s) : PropPage(s), webMgr(webserver
 LRESULT WebServerPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	PropPage::translate((HWND)(*this), texts);
 
-	::SetWindowText(GetDlgItem(IDC_WEBSERVER_PORT_LABEL), (TSTRING(PORT) + _T(" (HTTP)")).c_str());
-	::SetWindowText(GetDlgItem(IDC_WEBSERVER_TLSPORT_LABEL), (TSTRING(PORT) + _T(" (HTTPS)")).c_str());
+	::SetWindowText(GetDlgItem(IDC_WEBSERVER_PORT_LABEL), CTSTRING_F(WEB_SERVER_PORT, "HTTP"));
+	::SetWindowText(GetDlgItem(IDC_WEBSERVER_TLSPORT_LABEL), CTSTRING_F(WEB_SERVER_PORT, "HTTPS"));
 
 	::SetWindowText(GetDlgItem(IDC_WEBSERVER_PORT), Util::toStringW(webMgr->getPlainServerConfig().getPort()).c_str());
 	::SetWindowText(GetDlgItem(IDC_WEBSERVER_TLSPORT), Util::toStringW(webMgr->getTlsServerConfig().getPort()).c_str());
