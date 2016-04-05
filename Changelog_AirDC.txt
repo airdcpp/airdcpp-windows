@@ -1,7 +1,8 @@
-3.xx
+3.10
 
 Added:
 
+- Web UI and scripting API, see http://www.airdcpp.net/forum/viewtopic.php?t=4334 for more information
 - Show the path also for partial filelist uploads
 - Report keyprint validation errors for downloads
 - Report errors when writing of log files
@@ -21,6 +22,7 @@ Fixed:
 - Fix transfer grouping issues
 - Fix user commands being sent to wrong hub
 - Fix some resource leaks and decrease the amount of GDI and user object handles
+- Make the detection of queued and finished dupe directories more reliable 
 
 Removed:
 
@@ -29,6 +31,7 @@ Removed:
 - Support for per-profile share excludes
 - Support for using a separate directory for unfinished downloads
 - Setting for auto away mode on minimize
+- Support for sharing subdirectories of other shared directories in other share profiles
 
 
 3.00
