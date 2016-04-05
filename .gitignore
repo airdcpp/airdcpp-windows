@@ -1,16 +1,20 @@
 *.sdf
 /vc1*
 /compiled
+/releases
 /packages
 *.user
 *.config
 *.psess
 *.vspx
 *.aps
-/sendrelease.bat
+/installer/Web-resources
+/installer/Strings.xml
+/scripts/ftp_credentials.txt
 /ipch
 *.suo
 *.opensdf
 *.db
 *.opendb
 *.exe
+*- Copy*

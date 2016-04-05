@@ -41,6 +41,14 @@ SetCompressor /SOLID "lzma"
 ; The name of the installer
 Name "AirDC++ $VERSION"
 
+; The file to write
+!ifdef GIT_VERSION
+OutFile '..\releases\${GIT_VERSION}\AirDC_Installer_${GIT_VERSION}.exe'
+!else
+OutFile AirDC_Installer_XXX.exe
+!endif
+
+
 ShowInstDetails show
 ShowUninstDetails show
 
@@ -115,9 +123,6 @@ LangString DESC_loc ${LANG_ENGLISH} "Normally you should not change this because
 LangString DESC_desk ${LANG_ENGLISH} "Do you often run AirDC++? Then this is definitely something for you!"
 LangString DESC_arch ${LANG_ENGLISH} "If you want to use the 32-bits version of AirDC++ on your 64-bits operating system you need to select this. If this is selected and grayed out you can not unselect it because your operation system is 32-bits."
 ;End of English strings
-
-; The file to write
-OutFile "AirDC_Installer_XXX.exe"
 
 ; Registry key to check for directory (so if you install again, it will overwrite the old one automatically)
 InstallDirRegKey HKLM SOFTWARE\AirDC++ "Install_Dir"

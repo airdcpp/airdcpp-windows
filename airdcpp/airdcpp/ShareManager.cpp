@@ -1675,7 +1675,7 @@ TTH searches: %d%% (hash bloom mode: %s)")
 void ShareManager::validateNewRootProfiles(const string& realPath, const ProfileTokenSet& aProfiles) const throw(ShareException) {
 	RLock l(cs);
 	for (const auto& p : rootPaths) {
-		auto rootProfileNames = ShareProfile::getProfileNames(p.second->getProfileDir()->getRootProfiles(), shareProfiles);;
+		auto rootProfileNames = ShareProfile::getProfileNames(p.second->getProfileDir()->getRootProfiles(), shareProfiles);
 		if (AirUtil::isParentOrExact(p.first, realPath)) {
 			if (Util::stricmp(p.first, realPath) != 0) {
 				// Subdirectory of an existing directory is not allowed
