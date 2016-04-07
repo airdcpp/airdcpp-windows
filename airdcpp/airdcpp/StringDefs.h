@@ -611,7 +611,7 @@ enum Strings { // @DontAdd
 	IGNORED_USERS, // "Ignored users"
 	IGNORE_HELP, // "Note: Nick pattern or text pattern can be empty.\r\nIf the nick pattern is empty, the text pattern is used, only incoming message will be matched with text pattern. \r\nIf both patterns are set the message is ignored only if both matches are found. "
 	IGNORE_NICK_MATCH, // "Nick match pattern"
-	IGNORE_NO_CONTEXT, // "No context selected, you need to select atleast one of: private chat / main chat"
+	IGNORE_NO_CONTEXT, // "No context selected, you need to select at least one of: private chat / main chat"
 	IGNORE_TEXT_MATCH, // "Text match pattern"
 	IGNORE_TTH_SEARCHES, // "Ignore TTH searches"
 	IGNORE_USER, // "Ignore user"
