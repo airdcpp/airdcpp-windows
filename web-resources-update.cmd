@@ -2,9 +2,9 @@
 
 REM This will download and update Web-resources from https://www.npmjs.com/package/airdcpp-webui
 
-SETLOCAL
+setlocal
 
-SET scriptpath=%~dp0
+set scriptpath=%~dp0
 
 if not exist "%ProgramFiles%\7-Zip" goto NO7ZIP
 set 7path="%ProgramFiles%\7-Zip"
@@ -28,7 +28,7 @@ goto NOWEBRESOURCES
 
 "%ProgramFiles%\7-Zip\7z.exe" x Installer\$Web-resources\latest.tar -o"Installer\$Web-resources"
 
-timeout /t 2 /nobreak > nul
+timeout /t 1 /nobreak > nul
 move installer\$Web-resources\package\dist installer
 
 timeout /t 1 /nobreak > nul
@@ -51,6 +51,8 @@ goto END
 echo.
 echo.Web-resources folder not found or in use!
 echo.
+echo.Note: If this is the first time you run this script, then you need to manually create the folder 'Web-resources' in the 'installer' folder.
+echo.
 goto END
 
 :NORENAME
@@ -63,9 +65,10 @@ goto END
 if EXIST "Installer\$Web-resources" RMDIR /S /Q "Installer\$Web-resources"
 if EXIST "Installer\$Web-resources" echo.The folder $Web-resources seems to still exists.
 echo.
-echo.Version: %version%
+echo.Installed version: %version%
 echo.
-pause
+
 goto END
 
 :END
+IF %0 == "%~0" pause
