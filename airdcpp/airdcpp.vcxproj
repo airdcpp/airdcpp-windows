@@ -138,7 +138,7 @@
     </Lib>
     <PreBuildEvent>
       <Message>Generating revision number...</Message>
-      <Command>$(SolutionDir)generate-version.bat $(SolutionDir)</Command>
+      <Command>$(SolutionDir)\scripts\generate-version.bat $(SolutionDir)</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

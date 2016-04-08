@@ -49,7 +49,7 @@ EmoticonsManager* emoticonsManager = NULL;
 #define MAX_EMOTICONS 48
 UINT RichTextBox::WM_FINDREPLACE = RegisterWindowMessage(FINDMSGSTRING);
 
-RichTextBox::ChatLink::ChatLink(const string& aUrl, LinkType aLinkType, const UserPtr& aUser) : url(Text::toUtf8(aUrl)), type(aLinkType), dupe(DUPE_NONE) {
+RichTextBox::ChatLink::ChatLink(const string& aUrl, LinkType aLinkType, const UserPtr& aUser) : url(aUrl), type(aLinkType), dupe(DUPE_NONE) {
 	updateDupeType(aUser);
 }
 
@@ -488,17 +488,17 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 				size_t linkStart = pos + lSelBegin + result.position();
 				size_t linkEnd = pos + lSelBegin + result.position() + result.length();
 				SetSel(linkStart, linkEnd);
-				std::string link( result[0].first, result[0].second );
+				tstring link( result[0].first, result[0].second );
 
 				//create the link
 				ChatLink::LinkType type = ChatLink::TYPE_URL;
-				if (link.find("magnet:?") != string::npos) {
+				if (link.find(_T("magnet:?")) != tstring::npos) {
 					type = ChatLink::TYPE_MAGNET;
-				} else if (link.find("spotify:") != string::npos) {
+				} else if (link.find(_T("spotify:")) != tstring::npos) {
 					type = ChatLink::TYPE_SPOTIFY;
 				}
 
-				ChatLink* cl = new ChatLink(link, type, pmUser);
+				ChatLink* cl = new ChatLink(Text::fromT(link), type, pmUser);
 				formatLink(cl->getDupe(), false);
 
 				//replace the text displayed in chat
