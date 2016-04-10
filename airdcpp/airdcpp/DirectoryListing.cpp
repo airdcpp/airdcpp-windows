@@ -1157,32 +1157,39 @@ int DirectoryListing::loadShareDirectory(const string& aPath, bool aRecurse) thr
 }
 
 bool DirectoryListing::changeDirectory(const string& aPath, ReloadMode aReloadMode, bool aIsSearchChange) noexcept {
-	const auto dir = aPath.empty() ? root : findDirectory(aPath, root);
-	if (!dir) {
+	// Cases when the directory can't be found must be handled when searching in partial lists 
+	const auto dir = findDirectory(aPath, root);
+
+	if (dir && (!partialList || dir->getLoading() || (dir->isComplete() && aReloadMode == RELOAD_NONE))) {
+		fire(DirectoryListingListener::ChangeDirectory(), aPath, aIsSearchChange);
+	} else if (partialList) {
+		if (isOwnList || getUser()->isOnline()) {
+			if (dir) {
+				dir->setLoading(true);
+			}
+
+			fire(DirectoryListingListener::ChangeDirectory(), aPath, aIsSearchChange);
+
+			try {
+				if (isOwnList) {
+					addPartialListTask(aPath, aPath, aReloadMode == RELOAD_ALL);
+				} else {
+					QueueManager::getInstance()->addList(hintedUser, QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_CLIENT_VIEW, aPath);
+				}
+			} catch (const Exception& e) {
+				fire(DirectoryListingListener::LoadingFailed(), e.getError());
+			}
+		} else {
+			fire(DirectoryListingListener::UpdateStatusMessage(), STRING(USER_OFFLINE));
+		}
+	} else {
 		return false;
 	}
 
-	if (!partialList || dir->getLoading() || (dir->isComplete() && aReloadMode == RELOAD_NONE)) {
-		fire(DirectoryListingListener::ChangeDirectory(), aPath, aIsSearchChange);
-	} else {
-		try {
-			if (isOwnList) {
-				dir->setLoading(true);
-				fire(DirectoryListingListener::ChangeDirectory(), aPath, aIsSearchChange);
-				addPartialListTask(aPath, aPath, aReloadMode == RELOAD_ALL);
-			} else if (getUser()->isOnline()) {
-				dir->setLoading(true);
-				fire(DirectoryListingListener::ChangeDirectory(), aPath, aIsSearchChange);
-				QueueManager::getInstance()->addList(hintedUser, QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_CLIENT_VIEW, aPath);
-			} else {
-				fire(DirectoryListingListener::UpdateStatusMessage(), STRING(USER_OFFLINE));
-			}
-		} catch (const Exception& e) {
-			fire(DirectoryListingListener::LoadingFailed(), e.getError());
-		}
+	if (dir) {
+		updateCurrentLocation(dir);
 	}
 
-	updateCurrentLocation(dir);
 	return true;
 }
 
