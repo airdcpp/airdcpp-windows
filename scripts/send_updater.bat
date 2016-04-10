@@ -8,6 +8,8 @@ set ftpdir=nightly
 set updaterdir=updater
 set versiondir=version
 
+cd ..
+
 ::Pre checks
 IF %send%==false goto :SendDisabled 
 IF [%1]==[] goto :invalidParameters
@@ -30,7 +32,6 @@ set archString=%arch%
 if %arch%==Win32 set archString=x86
 set fileName=updater_%archString%_%~1.zip
 
-cd ..
 cd compiled
 
 echo open %ftpaddress%> checkftp.txt
