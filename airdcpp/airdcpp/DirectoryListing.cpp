@@ -947,6 +947,8 @@ void DirectoryListing::listDiffImpl(const string& aFile, bool aOwnList) throw(Ex
 }
 
 void DirectoryListing::matchAdlImpl() throw(AbortException) {
+	fire(DirectoryListingListener::LoadingStarted(), false);
+
 	int64_t start = GET_TICK();
 	root->clearAdls();
 
