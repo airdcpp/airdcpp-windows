@@ -1129,11 +1129,7 @@ void DirectoryListing::onUserUpdated(const UserPtr& aUser) noexcept {
 }
 
 void DirectoryListing::on(TimerManagerListener::Second, uint64_t /*aTick*/) noexcept {
-	if (!curSearch) {
-		return;
-	}
-
-	if (directSearch->finished()) {
+	if (directSearch && directSearch->finished()) {
 		endSearch(directSearch->hasTimedOut());
 	}
 }
