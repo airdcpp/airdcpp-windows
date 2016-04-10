@@ -1166,9 +1166,8 @@ bool DirectoryListing::changeDirectory(const string& aPath, ReloadMode aReloadMo
 		if (isOwnList || getUser()->isOnline()) {
 			if (dir) {
 				dir->setLoading(true);
+				fire(DirectoryListingListener::ChangeDirectory(), aPath, aIsSearchChange);
 			}
-
-			fire(DirectoryListingListener::ChangeDirectory(), aPath, aIsSearchChange);
 
 			try {
 				if (isOwnList) {
@@ -1206,7 +1205,10 @@ bool DirectoryListing::nextResult(bool prev) noexcept {
 		advance(curResult, 1);
 	}
 
-	changeDirectory(*curResult, RELOAD_NONE, true);
+	addAsyncTask([this] {
+		changeDirectory(*curResult, RELOAD_NONE, true);
+	});
+
 	return true;
 }
 
