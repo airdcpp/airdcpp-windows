@@ -241,8 +241,6 @@ private:
 	void updateStatusText(int aTotalCount, int64_t totalSize, int selectedCount, int displayCount, time_t aUpdateDate);
 
 	string curPath;
-
-	void updateToolbarState();
 	
 	void updateItems(const DirectoryListing::Directory::Ptr& d);
 	void insertItems(const optional<string>& selectedName);
@@ -412,16 +410,14 @@ private:
 
 	typedef set<ItemInfo, ItemInfo::NameSort> ItemInfoSet;
 	struct ItemInfoCache {
-		ItemInfoCache(const DirectoryListing::Directory::Ptr& aDir) : dir(aDir) {}
-
-		const DirectoryListing::Directory::Ptr dir;
+		ItemInfoCache() noexcept {}
 
 		ItemInfoSet files;
 		ItemInfoSet directories;
 	};
 
 	unordered_map<string, unique_ptr<ItemInfoCache>, noCaseStringHash, noCaseStringEq> itemInfos;
-	void updateItemCache(const string& aPath, std::function<void()> completionF);
+	void updateItemCache(const string& aPath);
 protected:
 	/* TypedTreeViewCtrl */
 	TreeType::ChildrenState DirectoryListingFrame::getChildrenState(const ItemInfo* d) const;
@@ -434,9 +430,18 @@ protected:
 	size_t getTotalListItemCount() const;
 
 private:
-	typedef std::set<string, Util::PathSortOrderBool> PathSet;
+	enum WindowState {
+		STATE_ENABLED,
+		STATE_DISABLED,
+	};
 
-	void updateItemCacheImpl(const string& aPath, std::function<void()> completionF, const PathSet& paths);
+	WindowState windowState = STATE_ENABLED;
+
+	void changeWindowState(bool enable, bool redraw = true);
+	void DisableWindow(bool redraw = true);
+	void EnableWindow(bool redraw = true);
+
+	typedef std::set<string, Util::PathSortOrderBool> PathSet;
 };
 
 #endif // !defined(DIRECTORY_LISTING_FRM_H)
