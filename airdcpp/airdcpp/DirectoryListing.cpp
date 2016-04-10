@@ -54,12 +54,16 @@ DirectoryListing::DirectoryListing(const HintedUser& aUser, bool aPartial, const
 	if (isOwnList) {
 		ShareManager::getInstance()->addListener(this);
 	}
+
+	TimerManager::getInstance()->addListener(this);
 }
 
 DirectoryListing::~DirectoryListing() {
 	dcdebug("Filelist deleted\n");
 	ClientManager::getInstance()->removeListener(this);
 	ShareManager::getInstance()->removeListener(this);
+
+	TimerManager::getInstance()->removeListener(this);
 }
 
 bool DirectoryListing::isMyCID() const noexcept {
@@ -1024,7 +1028,6 @@ void DirectoryListing::searchImpl(const SearchPtr& aSearch) noexcept {
 		endSearch(false);
 	} else if (partialList && !hintedUser.user->isNMDC()) {
 		directSearch.reset(new DirectSearch(hintedUser, aSearch));
-		TimerManager::getInstance()->addListener(this);
 	} else {
 		const auto dir = findDirectory(Util::toNmdcFile(aSearch->path), root);
 		if (dir)
@@ -1126,14 +1129,16 @@ void DirectoryListing::onUserUpdated(const UserPtr& aUser) noexcept {
 }
 
 void DirectoryListing::on(TimerManagerListener::Second, uint64_t /*aTick*/) noexcept {
+	if (!curSearch) {
+		return;
+	}
+
 	if (directSearch->finished()) {
 		endSearch(directSearch->hasTimedOut());
 	}
 }
 
 void DirectoryListing::endSearch(bool timedOut /*false*/) noexcept {
-	TimerManager::getInstance()->removeListener(this);
-
 	if (directSearch) {
 		directSearch->getPaths(searchResults, true);
 		directSearch.reset(nullptr);
