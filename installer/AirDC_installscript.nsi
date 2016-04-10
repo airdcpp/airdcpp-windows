@@ -38,14 +38,14 @@ RequestExecutionLevel admin
 
 SetCompressor /SOLID "lzma"
 
-; The name of the installer
-Name "AirDC++ $VERSION"
 
-; The file to write
+; The file to write and the title
 !ifdef GIT_VERSION
 OutFile '..\releases\${GIT_VERSION}\AirDC_Installer_${GIT_VERSION}.exe'
+Name 'AirDC++ ${GIT_VERSION}'
 !else
 OutFile AirDC_Installer_XXX.exe
+Name "AirDC++ $VERSION"
 !endif
 
 
