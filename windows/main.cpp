@@ -155,48 +155,6 @@ LONG handleCrash(unsigned long aCode, const string& aError, PCONTEXT aContext)
 #endif
 	}
 
-	File f(Util::getAppFilePath() + "exceptioninfo.txt", File::WRITE, File::OPEN | File::CREATE);
-	f.setEndPos(0);
-	
-	string archStr = "x86";
-#ifdef _WIN64
-	archStr = "x64";
-#endif
-
-	sprintf(debugBuf, "Code: %x ( %s )\r\nVersion: %s %s\r\n",
-		aCode, aError.c_str(), shortVersionString.c_str(), archStr.c_str());
-
-	f.write(debugBuf, strlen(debugBuf));
-	sprintf(debugBuf, "Build: %s\r\n",
-		BUILD_NUMBER_STR.c_str());	
-	f.write(debugBuf, strlen(debugBuf));
-	
-	OSVERSIONINFOEX ver;
-	WinUtil::getVersionInfo(ver);
-
-	sprintf(debugBuf, "Major: %d\r\nMinor: %d\r\nBuild: %d\r\nSP: %d\r\nType: %d\r\n",
-		(DWORD)ver.dwMajorVersion, (DWORD)ver.dwMinorVersion, (DWORD)ver.dwBuildNumber,
-		(DWORD)ver.wServicePackMajor, (DWORD)ver.wProductType);
-
-	f.write(debugBuf, strlen(debugBuf));
-	time_t now;
-	time(&now);
-	strftime(debugBuf, DEBUG_BUFSIZE, "Time: %Y-%m-%d %H:%M:%S\r\n", localtime(&now));
-
-	f.write(debugBuf, strlen(debugBuf));
-
-	f.write(LIT("TTH: "));
-	f.write(exeTTH, strlen(exeTTH));
-	f.write(LIT("\r\n"));
-
-    f.write(LIT("\r\n"));
-
-	STACKTRACE(f, aContext);
-
-	f.write(LIT("\r\n"));
-
-	f.close();
-
 	if ((!SETTING(SOUND_EXC).empty()) && (!SETTING(SOUNDS_DISABLED)))
 		WinUtil::playSound(Text::toT(SETTING(SOUND_EXC)));
 
@@ -213,8 +171,58 @@ LONG handleCrash(unsigned long aCode, const string& aError, PCONTEXT aContext)
 		Shell_NotifyIcon(NIM_MODIFY, &m_nid);
 	}
 
-	if(::MessageBox(WinUtil::mainWnd, _T("AirDC++ just encountered a fatal bug and should have written an exceptioninfo.txt the same directory as the executable. You can upload this file at http://www.airdcpp.net to help us find out what happened. Go there now?"), _T("AirDC++ Has Crashed"), MB_YESNO | MB_ICONERROR) == IDYES) {
-		WinUtil::openLink(_T("http://crash.airdcpp.net"));
+	auto exceptionInfoPath = Util::getPath(Util::PATH_USER_CONFIG) + "exceptioninfo.txt";
+
+	try {
+		File f(exceptionInfoPath, File::WRITE, File::OPEN | File::CREATE);
+		f.setEndPos(0);
+
+		string archStr = "x86";
+#ifdef _WIN64
+		archStr = "x64";
+#endif
+
+		sprintf(debugBuf, "Code: %x ( %s )\r\nVersion: %s %s\r\n",
+			aCode, aError.c_str(), shortVersionString.c_str(), archStr.c_str());
+
+		f.write(debugBuf, strlen(debugBuf));
+		sprintf(debugBuf, "Build: %s\r\n",
+			BUILD_NUMBER_STR.c_str());
+		f.write(debugBuf, strlen(debugBuf));
+
+		OSVERSIONINFOEX ver;
+		WinUtil::getVersionInfo(ver);
+
+		sprintf(debugBuf, "Major: %d\r\nMinor: %d\r\nBuild: %d\r\nSP: %d\r\nType: %d\r\n",
+			(DWORD)ver.dwMajorVersion, (DWORD)ver.dwMinorVersion, (DWORD)ver.dwBuildNumber,
+			(DWORD)ver.wServicePackMajor, (DWORD)ver.wProductType);
+
+		f.write(debugBuf, strlen(debugBuf));
+		time_t now;
+		time(&now);
+		strftime(debugBuf, DEBUG_BUFSIZE, "Time: %Y-%m-%d %H:%M:%S\r\n", localtime(&now));
+
+		f.write(debugBuf, strlen(debugBuf));
+
+		f.write(LIT("TTH: "));
+		f.write(exeTTH, strlen(exeTTH));
+		f.write(LIT("\r\n"));
+
+		f.write(LIT("\r\n"));
+
+		STACKTRACE(f, aContext);
+
+		f.write(LIT("\r\n"));
+
+		f.close();
+
+		auto msg = "AirDC++ just encountered a fatal bug and details have been written to " + exceptionInfoPath + "\n\nYou can upload this file at http://www.airdcpp.net to help us find out what happened. Go there now?";
+		if (::MessageBox(WinUtil::mainWnd, Text::toT(msg).c_str(), _T("AirDC++ has crashed"), MB_YESNO | MB_ICONERROR) == IDYES) {
+			WinUtil::openLink(_T("http://crash.airdcpp.net"));
+		}
+	} catch (const FileException& e) {
+		auto msg = "Crash details could not be written to " + exceptionInfoPath + " (" + e.what() + "). Ensure that the directory is writable.";
+		::MessageBox(WinUtil::mainWnd, Text::toT(msg).c_str(), _T("AirDC++ has crashed"), MB_OK);
 	}
 
 #ifndef _DEBUG
