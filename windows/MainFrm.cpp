@@ -437,7 +437,6 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	updateTray(true);
 
-	ActivityManager::getInstance()->setAway(SETTING(AWAY) ? AWAY_MANUAL : AWAY_OFF);
 	ctrlToolbar.CheckButton(IDC_AWAY,SETTING(AWAY));
 	ctrlToolbar.CheckButton(IDC_DISABLE_SOUNDS, SETTING(SOUNDS_DISABLED));
 
