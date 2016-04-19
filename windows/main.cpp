@@ -320,10 +320,16 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 
 			webserver::WebServerManager::newInstance();
 			if (webserver::WebServerManager::getInstance()->load()) {
-				
+				auto webResourcePath = Util::getStartupParam("--web-resources");
+#ifdef _DEBUG
+				if (!webResourcePath) {
+					webResourcePath = Util::getParentDir(Util::getParentDir(Util::getAppFilePath())) + "installer\\Web-resources\\";
+				}
+#endif
+
 				auto started = webserver::WebServerManager::getInstance()->start([](const string& aError) {
 					LogManager::getInstance()->message(aError, LogMessage::SEV_ERROR);
-				});
+				}, webResourcePath ? *webResourcePath : Util::emptyString);
 				
 				if (started) {
 					LogManager::getInstance()->message("Web server started", LogMessage::SEV_INFO);
