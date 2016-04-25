@@ -273,7 +273,7 @@ void BundleQueue::forEachPath(const BundlePtr& aBundle, const string& aFilePath,
 			removePathInfo(info);
 		}
 
-		if (Util::stricmp(currentPath, aBundle->getTarget())) {
+		if (Util::stricmp(currentPath, aBundle->getTarget()) == 0) {
 			break;
 		}
 
