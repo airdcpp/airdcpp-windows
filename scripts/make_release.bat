@@ -12,7 +12,7 @@ goto :End
 :: 32 bit portable
 set fileName=airdcpp_%~1_x86.7z
 cd installer
-"%ProgramFiles%\7-Zip\7z.exe" a -t7z %solutionDir%\releases\%~1\%fileName% Web-resources EmoPacks Themes dcppboot.xml
+"%ProgramFiles%\7-Zip\7z.exe" a -t7z %solutionDir%\releases\%~1\%fileName% Web-resources EmoPacks Themes airheader.bmp popup.bmp dcppboot.xml
 cd ..
 cd compiled\Win32
 "%ProgramFiles%\7-Zip\7z.exe" a -t7z %solutionDir%\releases\%~1\%fileName% AirDC.exe AirDC.pdb
@@ -21,7 +21,7 @@ cd %solutionDir%
 :: 64 bit portable
 set fileName=airdcpp_%~1_x64.7z
 cd installer
-"%ProgramFiles%\7-Zip\7z.exe" a -t7z %solutionDir%\releases\%~1\%fileName% Web-resources EmoPacks Themes dcppboot.xml
+"%ProgramFiles%\7-Zip\7z.exe" a -t7z %solutionDir%\releases\%~1\%fileName% Web-resources EmoPacks Themes airheader.bmp popup.bmp dcppboot.xml
 cd ..
 cd compiled\x64
 "%ProgramFiles%\7-Zip\7z.exe" a -t7z %solutionDir%\releases\%~1\%fileName% AirDC.exe AirDC.pdb
