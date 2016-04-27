@@ -1,6 +1,7 @@
 @echo off
 
 REM This will download and update Web-resources from https://www.npmjs.com/package/airdcpp-webui
+REM For it to work you need to manually create 'Web-resources' in the 'installer' folder.
 
 setlocal
 
@@ -9,24 +10,34 @@ set scriptpath=%~dp0
 if not exist "%ProgramFiles%\7-Zip" goto NO7ZIP
 set 7path="%ProgramFiles%\7-Zip"
 
-for /F "tokens=* USEBACKQ" %%F IN (`npm view airdcpp-webui version`) DO (
-set version=%%F
-)
+for /F "tokens=* USEBACKQ" %%F IN (`npm view airdcpp-webui version`) DO set version=%%F
 
 if "%version%" == "" goto NOVERSION
 
 if not exist installer\Web-resources goto NOWEBRESOURCES
 
-rename installer\Web-resources $Web-resources
+if exist "installer\Web-resources\version.chk" (
+    set /P oldversion=<"installer\Web-resources\version.chk"
+ ) else (
+     echo 0.0.0>"installer\Web-resources\version.chk"
+     set /P oldversion=<"installer\Web-resources\version.chk"
+ )
+
+if "%version%" LEQ "%oldversion%" (
+    goto ALRDYEST
+  ) else (
+    goto RENWEBRES
+  )
+
+:RENWEBRES
+rename installer\Web-resources $Web-resources 2>NUL
 if %errorlevel% == 0 goto DOWNLOAD
 goto NOWEBRESOURCES
 
 :DOWNLOAD
 "%windir%\System32\bitsadmin.exe" /transfer "airdcpp-webui" http://registry.npmjs.org/airdcpp-webui/-/airdcpp-webui-%version%.tgz %scriptpath%installer\$Web-resources\latest.tgz
-
-"%ProgramFiles%\7-Zip\7z.exe" x Installer\$Web-resources\latest.tgz -o"Installer\$Web-resources"
-
-"%ProgramFiles%\7-Zip\7z.exe" x Installer\$Web-resources\latest.tar -o"Installer\$Web-resources"
+"%ProgramFiles%\7-Zip\7z.exe" x installer\$Web-resources\latest.tgz -o"installer\$Web-resources"
+"%ProgramFiles%\7-Zip\7z.exe" x installer\$Web-resources\latest.tar -o"installer\$Web-resources"
 
 timeout /t 1 /nobreak > nul
 move installer\$Web-resources\package\dist installer
@@ -61,9 +72,18 @@ echo.Cannot rename dist folder to Web-resources.
 echo.
 goto END
 
+:ALRDYEST
+echo.
+echo.You already have latest version, %oldversion%!
+echo.
+goto END
+
 :DONE
-if EXIST "Installer\$Web-resources" RMDIR /S /Q "Installer\$Web-resources"
-if EXIST "Installer\$Web-resources" echo.The folder $Web-resources seems to still exists.
+if EXIST "installer\$Web-resources" RMDIR /S /Q "installer\$Web-resources"
+if EXIST "installer\$Web-resources" echo.The folder $Web-resources seems to still exist.
+echo.%version%>"installer\Web-resources\version.chk"
+echo.
+echo.      Old version: %oldversion%
 echo.
 echo.Installed version: %version%
 echo.
