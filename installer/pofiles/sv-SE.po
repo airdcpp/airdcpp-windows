@@ -1,14 +1,14 @@
 # 
 # Translators:
-# Sopor, 2015
+# Sopor, 2015-2016
 msgid ""
 msgstr ""
 "Project-Id-Version: AirDC++\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-24 00:23\n"
-"PO-Revision-Date: 2015-03-23 23:51+0000\n"
+"POT-Creation-Date: 2016-05-01 15:00\n"
+"PO-Revision-Date: 2016-05-01 13:25+0000\n"
 "Last-Translator: Sopor\n"
-"Language-Team: Swedish (Sweden) (http://www.transifex.com/projects/p/airdcpp/language/sv_SE/)\n"
+"Language-Team: Swedish (Sweden) (http://www.transifex.com/airdcpp/airdcpp/language/sv_SE/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -16,29 +16,29 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. RunAtFinish
-#: AirDC_installscript.nsi:81
+#: AirDC_installscript.nsi:92
 msgid "Launch AirDC++"
 msgstr "Kör AirDC++"
 
 #. ^ComponentsText
-#: AirDC_installscript.nsi:82
+#: AirDC_installscript.nsi:93
 msgid "Welcome to the AirDC++ installer."
 msgstr "Välkommen till installationen av AirDC++."
 
 #. ^DirText
-#: AirDC_installscript.nsi:83
+#: AirDC_installscript.nsi:94
 msgid ""
 "If you are upgrading from an older version, select the same directory where "
 "your old version resides and your existing settings will be imported."
 msgstr "Om du uppgraderar från en äldre version, välj då samma katalog där den gamla version finns och dina nuvarande inställningar kommer att finnas kvar."
 
 #. SecAirDC
-#: AirDC_installscript.nsi:84
+#: AirDC_installscript.nsi:95
 msgid "AirDC++ (required)"
 msgstr "AirDC++ (krävs)"
 
 #. ProfileDir
-#: AirDC_installscript.nsi:85
+#: AirDC_installscript.nsi:96
 msgid ""
 "Settings of a previous installation of AirDC++ has been found in the user "
 "profile, do you want to backup settings? (You can find them in $DOCBACKUPDIR"
@@ -46,85 +46,90 @@ msgid ""
 msgstr "Hittade inställningsfiler från en tidigare installation av AirDC++ i användarprofilen. Vill du göra en säkerhetskopia av inställningsfilerna? (Du hittar de sen i $DOCBACKUPDIR)"
 
 #. ProgramDir
-#: AirDC_installscript.nsi:86
+#: AirDC_installscript.nsi:97
 msgid ""
 "A previous installation of AirDC++ has been found in the target folder, do "
 "you want to backup settings? (You can find them in $INSTBACKUPDIR later)"
 msgstr "Hittade inställningsfiler från en tidigare installation av AirDC++ i målmappen. Vill du göra en säkerhetskopia av inställningsfilerna? (Du hittar de sen i $INSTBACKUPDIR)"
 
 #. Dcpp
-#: AirDC_installscript.nsi:87
+#: AirDC_installscript.nsi:98
 msgid ""
 "Settings of an existing DC++ installation has been found in the user "
 "profile, do you want to import settings and queue?"
 msgstr "Hittade inställningsfiler från en tidigare installation av DC++ i användarprofilen, vill du importera inställningar och kö?"
 
 #. Apex
-#: AirDC_installscript.nsi:88
+#: AirDC_installscript.nsi:99
 msgid ""
 "Settings of an existing ApexDC++ installation has been found in the user "
 "profile, do you want to import settings and queue?"
 msgstr "Hittade inställningsfiler från en tidigare installation av ApexDC++ i användarprofilen, vill du importera inställningar och kö?"
 
 #. Strong
-#: AirDC_installscript.nsi:89
+#: AirDC_installscript.nsi:100
 msgid ""
 "Settings of an existing StrongDC++ installation has been found in the user "
 "profile, do you want to import settings and queue?"
 msgstr "Hittade inställningsfiler från en tidigare installation av StrongDC++ i användarprofilen, vill du importera inställningar och kö?"
 
 #. SecStartMenu
-#: AirDC_installscript.nsi:90
+#: AirDC_installscript.nsi:101
 msgid "Start menu shortcuts"
 msgstr "Genvägar på Startmenyn"
 
 #. SM_AIRDCPP_DESC
-#: AirDC_installscript.nsi:91
+#: AirDC_installscript.nsi:102
 msgid "AirDC++ File Sharing Application"
 msgstr "Fildelningsprogrammet AirDC++"
 
 #. SM_AIRDCPP_DESCUN
-#: AirDC_installscript.nsi:92
+#: AirDC_installscript.nsi:103
 msgid "Uninstall AirDC++"
 msgstr "Avinstallera AirDC++"
 
 #. SM_UNINSTALL
-#: AirDC_installscript.nsi:93
+#: AirDC_installscript.nsi:104
 msgid "Uninstall"
 msgstr "Avinstallera"
 
 #. WR_REMOVEONLY
-#: AirDC_installscript.nsi:94
+#: AirDC_installscript.nsi:105
 msgid "(remove only)"
 msgstr "(endast avinstallation)"
 
 #. SecRadox
-#: AirDC_installscript.nsi:95
+#: AirDC_installscript.nsi:106
 msgid "Radox Emoticon Pack"
-msgstr "Radox Emotikonpaket"
+msgstr "Uttryckssymbolspaketet Radox"
 
 #. SecThemes
-#: AirDC_installscript.nsi:96
+#: AirDC_installscript.nsi:107
 msgid "Themes"
 msgstr "Teman"
 
+#. SecWebResources
+#: AirDC_installscript.nsi:108
+msgid "Web user interface"
+msgstr "Webbgränssnitt"
+
 #. SecStore
-#: AirDC_installscript.nsi:97
+#: AirDC_installscript.nsi:109
 msgid "Store settings in the user profile directory"
 msgstr "Lagra inställningarna i användarprofilen"
 
 #. DeskShort
-#: AirDC_installscript.nsi:98
-msgid "Create AirDC++ desktop shourtcut"
+#: AirDC_installscript.nsi:110
+msgid "Create AirDC++ desktop shortcut"
 msgstr "Skapa AirDC++ genväg på skrivbordet"
 
 #. SecInstall32
-#: AirDC_installscript.nsi:99
+#: AirDC_installscript.nsi:111
 msgid "Install the 32-bit version"
 msgstr "Installera 32-bitarsversion"
 
 #. XPOrOlder
-#: AirDC_installscript.nsi:100
+#: AirDC_installscript.nsi:112
 msgid ""
 "If you want to keep your settings in the program directory, make sure that "
 "you DO NOT install AirDC++ to the 'Program files' folder!!! This can lead to"
@@ -132,7 +137,7 @@ msgid ""
 msgstr "Om du vill behålla dina inställningsfiler i programkatalogen, se då till att INTE installerar AirDC++ i katalogen 'Program'!!! Detta kan leda till onormalt beteende som förlust av inställningar eller nedladdningar!"
 
 #. XPOrBelow
-#: AirDC_installscript.nsi:101
+#: AirDC_installscript.nsi:113
 msgid ""
 "This version is only compatible with Windows Vista or newer operating "
 "system. You will be forwarded to www.airdcpp.net for downloading a version "
@@ -140,16 +145,64 @@ msgid ""
 msgstr "Denna versionen fungera bara med Windows Vista eller nyare operativsystem. Du kommer nu att bli vidarbefodrad till www.airdcpp.net för nedladdning av en version som fungerar till ditt Windows."
 
 #. ^UninstallText
-#: AirDC_installscript.nsi:102
+#: AirDC_installscript.nsi:114
 msgid "This will uninstall AirDC++. Hit the Uninstall button to continue."
 msgstr "Detta kommer att avinstallera AirDC++. Tryck på knappen Avinstallera för att fortsätta."
 
 #. RemoveQueue
-#: AirDC_installscript.nsi:103
+#: AirDC_installscript.nsi:115
 msgid "Do you also want to remove queue, themes and all settings?"
 msgstr "Vill du även ta bort kön, teman och alla andra inställningar?"
 
 #. NotEmpty
-#: AirDC_installscript.nsi:104
+#: AirDC_installscript.nsi:116
 msgid "Installation directory is NOT empty. Do you still want to remove it?"
 msgstr "Installationskatalogen är INTE tom. Vill du ändå ta bort den?"
+
+#. DESC_dcpp
+#: AirDC_installscript.nsi:117
+msgid "AirDC++ main program."
+msgstr "AirDC++ huvudprogrammet."
+
+#. DESC_StartMenu
+#: AirDC_installscript.nsi:118
+msgid "A shortcut of AirDC++ will be placed in your start menu."
+msgstr "En genväg av AirDC++ kommer att placeras i start-menyn."
+
+#. DESC_Radox
+#: AirDC_installscript.nsi:119
+msgid "RadoX emoticon pack will be installed to be used in chats."
+msgstr "Uttryckssymbolspaketet RadoX kommer att installeras som du kan använda i chatten."
+
+#. DESC_Themes
+#: AirDC_installscript.nsi:120
+msgid ""
+"If you don't like the default theme you can try these two extra themes, Dark"
+" Skull and Zoolution."
+msgstr "Om du inte gillar standardtemat du kan alltid prova en av dessa extra teman, Dark Skull och Zoolution."
+
+#. DESC_WebResorces
+#: AirDC_installscript.nsi:121
+msgid "Allows accessing the client from other devices via a web browser."
+msgstr "Tillåter dig att ansluta till klienter från andra enheter via en webbläsare."
+
+#. DESC_loc
+#: AirDC_installscript.nsi:122
+msgid ""
+"Normally you should not change this because it can lead to abnormal "
+"behaviour like loss of settings or downloads. If you unselect it, read the "
+"warning message carefully."
+msgstr "Normalt ska du inte ändra denna för det kan leda till onormalt beteende som förlust av inställningar eller nedladdningar. Om du avmarkerar den, se till att du läser varningsmeddelandet noga."
+
+#. DESC_desk
+#: AirDC_installscript.nsi:123
+msgid "Do you often run AirDC++? Then this is definitely something for you!"
+msgstr "Startar du ofta AirDC++? Då är detta definitivt något för dig!"
+
+#. DESC_arch
+#: AirDC_installscript.nsi:124
+msgid ""
+"If you want to use the 32-bits version of AirDC++ on your 64-bits operating "
+"system you need to select this. If this is selected and grayed out you can "
+"not unselect it because your operation system is 32-bits."
+msgstr "Om du vill använda 32-bitarsversionen av AirDC++ på ditt 64-bitars operativsystem ska du markera denna. Om denna är markerad och gråskuggad kan du inte avmarkera den därför att ditt operativsystem är 32-bitars."

@@ -3,9 +3,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: AirDC++ 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-24 00:23\n"
-"PO-Revision-Date: 2015-03-24 00:23+1000\n"
-"Last-Translator: Sopor <sopor@hotmail.com>\n"
+"POT-Creation-Date: 2016-05-01 15:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: AirDC++ <noreply@airdcpp.net>\n"
 "Language: en_US\n"
 "MIME-Version: 1.0\n"
@@ -13,29 +13,29 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. RunAtFinish
-#: AirDC_installscript.nsi:81
+#: AirDC_installscript.nsi:92
 msgid "Launch AirDC++"
 msgstr ""
 
 #. ^ComponentsText
-#: AirDC_installscript.nsi:82
+#: AirDC_installscript.nsi:93
 msgid "Welcome to the AirDC++ installer."
 msgstr ""
 
 #. ^DirText
-#: AirDC_installscript.nsi:83
+#: AirDC_installscript.nsi:94
 msgid ""
 "If you are upgrading from an older version, select the same directory where "
 "your old version resides and your existing settings will be imported."
 msgstr ""
 
 #. SecAirDC
-#: AirDC_installscript.nsi:84
+#: AirDC_installscript.nsi:95
 msgid "AirDC++ (required)"
 msgstr ""
 
 #. ProfileDir
-#: AirDC_installscript.nsi:85
+#: AirDC_installscript.nsi:96
 msgid ""
 "Settings of a previous installation of AirDC++ has been found in the user "
 "profile, do you want to backup settings? (You can find them in $DOCBACKUPDIR"
@@ -43,85 +43,90 @@ msgid ""
 msgstr ""
 
 #. ProgramDir
-#: AirDC_installscript.nsi:86
+#: AirDC_installscript.nsi:97
 msgid ""
 "A previous installation of AirDC++ has been found in the target folder, do "
 "you want to backup settings? (You can find them in $INSTBACKUPDIR later)"
 msgstr ""
 
 #. Dcpp
-#: AirDC_installscript.nsi:87
+#: AirDC_installscript.nsi:98
 msgid ""
 "Settings of an existing DC++ installation has been found in the user "
 "profile, do you want to import settings and queue?"
 msgstr ""
 
 #. Apex
-#: AirDC_installscript.nsi:88
+#: AirDC_installscript.nsi:99
 msgid ""
 "Settings of an existing ApexDC++ installation has been found in the user "
 "profile, do you want to import settings and queue?"
 msgstr ""
 
 #. Strong
-#: AirDC_installscript.nsi:89
+#: AirDC_installscript.nsi:100
 msgid ""
 "Settings of an existing StrongDC++ installation has been found in the user "
 "profile, do you want to import settings and queue?"
 msgstr ""
 
 #. SecStartMenu
-#: AirDC_installscript.nsi:90
+#: AirDC_installscript.nsi:101
 msgid "Start menu shortcuts"
 msgstr ""
 
 #. SM_AIRDCPP_DESC
-#: AirDC_installscript.nsi:91
+#: AirDC_installscript.nsi:102
 msgid "AirDC++ File Sharing Application"
 msgstr ""
 
 #. SM_AIRDCPP_DESCUN
-#: AirDC_installscript.nsi:92
+#: AirDC_installscript.nsi:103
 msgid "Uninstall AirDC++"
 msgstr ""
 
 #. SM_UNINSTALL
-#: AirDC_installscript.nsi:93
+#: AirDC_installscript.nsi:104
 msgid "Uninstall"
 msgstr ""
 
 #. WR_REMOVEONLY
-#: AirDC_installscript.nsi:94
+#: AirDC_installscript.nsi:105
 msgid "(remove only)"
 msgstr ""
 
 #. SecRadox
-#: AirDC_installscript.nsi:95
+#: AirDC_installscript.nsi:106
 msgid "Radox Emoticon Pack"
 msgstr ""
 
 #. SecThemes
-#: AirDC_installscript.nsi:96
+#: AirDC_installscript.nsi:107
 msgid "Themes"
 msgstr ""
 
+#. SecWebResources
+#: AirDC_installscript.nsi:108
+msgid "Web user interface"
+msgstr ""
+
 #. SecStore
-#: AirDC_installscript.nsi:97
+#: AirDC_installscript.nsi:109
 msgid "Store settings in the user profile directory"
 msgstr ""
 
 #. DeskShort
-#: AirDC_installscript.nsi:98
-msgid "Create AirDC++ desktop shourtcut"
+#: AirDC_installscript.nsi:110
+msgid "Create AirDC++ desktop shortcut"
 msgstr ""
 
 #. SecInstall32
-#: AirDC_installscript.nsi:99
+#: AirDC_installscript.nsi:111
 msgid "Install the 32-bit version"
 msgstr ""
 
 #. XPOrOlder
-#: AirDC_installscript.nsi:100
+#: AirDC_installscript.nsi:112
 msgid ""
 "If you want to keep your settings in the program directory, make sure that "
 "you DO NOT install AirDC++ to the 'Program files' folder!!! This can lead to"
@@ -129,7 +134,7 @@ msgid ""
 msgstr ""
 
 #. XPOrBelow
-#: AirDC_installscript.nsi:101
+#: AirDC_installscript.nsi:113
 msgid ""
 "This version is only compatible with Windows Vista or newer operating "
 "system. You will be forwarded to www.airdcpp.net for downloading a version "
@@ -137,16 +142,64 @@ msgid ""
 msgstr ""
 
 #. ^UninstallText
-#: AirDC_installscript.nsi:102
+#: AirDC_installscript.nsi:114
 msgid "This will uninstall AirDC++. Hit the Uninstall button to continue."
 msgstr ""
 
 #. RemoveQueue
-#: AirDC_installscript.nsi:103
+#: AirDC_installscript.nsi:115
 msgid "Do you also want to remove queue, themes and all settings?"
 msgstr ""
 
 #. NotEmpty
-#: AirDC_installscript.nsi:104
+#: AirDC_installscript.nsi:116
 msgid "Installation directory is NOT empty. Do you still want to remove it?"
+msgstr ""
+
+#. DESC_dcpp
+#: AirDC_installscript.nsi:117
+msgid "AirDC++ main program."
+msgstr ""
+
+#. DESC_StartMenu
+#: AirDC_installscript.nsi:118
+msgid "A shortcut of AirDC++ will be placed in your start menu."
+msgstr ""
+
+#. DESC_Radox
+#: AirDC_installscript.nsi:119
+msgid "RadoX emoticon pack will be installed to be used in chats."
+msgstr ""
+
+#. DESC_Themes
+#: AirDC_installscript.nsi:120
+msgid ""
+"If you don't like the default theme you can try these two extra themes, Dark"
+" Skull and Zoolution."
+msgstr ""
+
+#. DESC_WebResorces
+#: AirDC_installscript.nsi:121
+msgid "Allows accessing the client from other devices via a web browser."
+msgstr ""
+
+#. DESC_loc
+#: AirDC_installscript.nsi:122
+msgid ""
+"Normally you should not change this because it can lead to abnormal "
+"behaviour like loss of settings or downloads. If you unselect it, read the "
+"warning message carefully."
+msgstr ""
+
+#. DESC_desk
+#: AirDC_installscript.nsi:123
+msgid "Do you often run AirDC++? Then this is definitely something for you!"
+msgstr ""
+
+#. DESC_arch
+#: AirDC_installscript.nsi:124
+msgid ""
+"If you want to use the 32-bits version of AirDC++ on your 64-bits operating "
+"system you need to select this. If this is selected and grayed out you can "
+"not unselect it because your operation system is 32-bits."
 msgstr ""
