@@ -89,21 +89,8 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 				ctrlPad.setFormatLinks(true);
 				ctrlPad.setFormatReleases(true);
 
-				File f(filePath, File::READ, File::OPEN);
-				auto size = f.getSize();
-				if(size > 64*1024) {
-					f.setPos(size - 64*1024);
-				}
-			
-				tmp = f.read(64*1024);
-
-				auto lines = StringTokenizer<string>(tmp, "\r\n").getTokens();
-				long totalLines = lines.size();
-				int i = totalLines > (SETTING(LOG_LINES) +1) ? totalLines - SETTING(LOG_LINES) : 0;
-
-				for(; i < totalLines; ++i){
-					ctrlPad.AppendChat(Identity(NULL, 0), _T("- "), _T(""), Text::toT(lines[i]) + _T('\n'), WinUtil::m_ChatTextGeneral, true);
-				}
+				auto text = LogManager::readFromEnd(filePath, SETTING(LOG_LINES), Util::convertSize(64, Util::KB));
+				ctrlPad.AppendChat(Identity(NULL, 0), _T("- "), _T(""), Text::toT(text), WinUtil::m_ChatTextGeneral, true);
 			} else if (textType == LOG) {
 				ctrlPad.setFormatPaths(true);
 				ctrlPad.setFormatLinks(true);

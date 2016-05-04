@@ -113,7 +113,8 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ctrlMessageContainer.SubclassWindow(ctrlMessage.m_hWnd);
 	ctrlStatusContainer.SubclassWindow(ctrlStatus.m_hWnd);
 	created = true;
-	readLog();
+
+	ctrlClient.AppendChat(Identity(NULL, 0), _T("- "), _T(""), Text::toT(chat->getLastLogLines()), WinUtil::m_ChatTextLog, true);
 
 	SettingsManager::getInstance()->addListener(this);
 	chat->addListener(this);
@@ -718,36 +719,6 @@ void PrivateFrame::setAway() {
 		ctrlStatus.SetIcon(STATUS_AWAY, GET_ICON(IDR_PRIVATE_OFF, 16));
 	} else {
 		ctrlStatus.SetIcon(STATUS_AWAY, userAway ? GET_ICON(IDI_USER_AWAY, 16) : GET_ICON(IDI_USER_BASE, 16));
-	}
-}
-
-void PrivateFrame::readLog() {
-	if (SETTING(SHOW_LAST_LINES_LOG) == 0) return;
-	try {
-		File f(chat->getLogPath(), File::READ, File::OPEN);
-		
-		int64_t size = f.getSize();
-
-		if(size > 32*1024) {
-			f.setPos(size - 32*1024);
-		}
-		string buf = f.read(32*1024);
-		StringList lines;
-
-		if(strnicmp(buf.c_str(), "\xef\xbb\xbf", 3) == 0)
-			lines = StringTokenizer<string>(buf.substr(3), "\r\n", true).getTokens();
-		else
-			lines = StringTokenizer<string>(buf, "\r\n", true).getTokens();
-
-		int linesCount = lines.size();
-
-		int i = linesCount > (SETTING(SHOW_LAST_LINES_LOG) + 1) ? linesCount - SETTING(SHOW_LAST_LINES_LOG) : 0;
-
-		for(; i < linesCount; ++i){
-			ctrlClient.AppendChat(Identity(NULL, 0), _T("- "), _T(""), Text::toT(lines[i]) + _T('\n'), WinUtil::m_ChatTextLog, true);
-		}
-		f.close();
-	} catch(const FileException&){
 	}
 }
 
