@@ -437,7 +437,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	updateTray(true);
 
-	ctrlToolbar.CheckButton(IDC_AWAY,SETTING(AWAY));
+	ctrlToolbar.CheckButton(IDC_AWAY, ActivityManager::getInstance()->isAway());
 	ctrlToolbar.CheckButton(IDC_DISABLE_SOUNDS, SETTING(SOUNDS_DISABLED));
 
 	if(SETTING(NICK).empty()) {
@@ -1102,11 +1102,6 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 			WinUtil::unRegisterMagnetHandler();
 			WinUtil::urlMagnetRegistered = false;
 		}
-
-
-
-		if(ActivityManager::getInstance()->isAway()) ctrlToolbar.CheckButton(IDC_AWAY, true);
-		else ctrlToolbar.CheckButton(IDC_AWAY, false);
 
 		if(tabsontop != SETTING(TABS_ON_TOP)) {
 			tabsontop = SETTING(TABS_ON_TOP);

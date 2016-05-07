@@ -89,8 +89,8 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 				ctrlPad.setFormatLinks(true);
 				ctrlPad.setFormatReleases(true);
 
-				auto text = LogManager::readFromEnd(filePath, SETTING(LOG_LINES), Util::convertSize(64, Util::KB));
-				ctrlPad.AppendChat(Identity(NULL, 0), _T("- "), _T(""), Text::toT(text), WinUtil::m_ChatTextGeneral, true);
+				auto history = LogManager::readFromEnd(filePath, SETTING(LOG_LINES), Util::convertSize(64, Util::KB));
+				ctrlPad.AppendChat(Identity(NULL, 0), _T("- "), _T(""), Text::toT(history), WinUtil::m_ChatTextGeneral, true);
 			} else if (textType == LOG) {
 				ctrlPad.setFormatPaths(true);
 				ctrlPad.setFormatLinks(true);
