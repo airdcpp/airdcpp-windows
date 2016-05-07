@@ -117,23 +117,33 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ctrlClient.AppendChat(Identity(NULL, 0), _T("- "), _T(""), Text::toT(chat->getLastLogLines()), WinUtil::m_ChatTextLog, true);
 
 	SettingsManager::getInstance()->addListener(this);
-	chat->addListener(this);
 
 	callAsync([this] {
-		// Append messages that were received while the frame was being created
-		for (const auto& message : chat->getCache().getMessages()) {
-			if (message.type == Message::TYPE_CHAT) {
-				onChatMessage(message.chatMessage);
-			} else {
-				onStatusMessage(message.logMessage);
+		// The frame must have been created before these operations
+
+		{
+			// Postpone caching of new messages received during this operation to avoid
+			// them being displayed twice
+
+			RLock l(chat->getCache().getCS());
+			chat->addListener(this);
+
+			// Append messages that were received while the frame was being created
+			for (const auto& message : chat->getCache().getMessagesUnsafe()) {
+				if (message.type == Message::TYPE_CHAT) {
+					onChatMessage(message.chatMessage);
+				} else {
+					onStatusMessage(message.logMessage);
+				}
 			}
 		}
+
+		updateOnlineStatus();  
+		windowLoaded = true;
 	});
 
 	WinUtil::SetIcon(m_hWnd, (getUser() && getUser()->isSet(User::BOT)) ? IDI_BOT : IDR_PRIVATE);
 
-	//add the updateonlinestatus in the wnd message queue so the frame and tab can finish creating first.
-	callAsync([this] { updateOnlineStatus();  windowLoaded = true; });
 	::SetTimer(m_hWnd, 0, 1000, 0);
 	
 	bHandled = FALSE;
