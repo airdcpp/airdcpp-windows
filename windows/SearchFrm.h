@@ -29,13 +29,15 @@
 #include "UserInfoBaseHandler.h"
 #include "DownloadBaseHandler.h"
 
-#include <airdcpp/SearchQuery.h>
 #include <airdcpp/Client.h>
 #include <airdcpp/CriticalSection.h>
 #include <airdcpp/SearchManager.h>
+#include <airdcpp/SearchQuery.h>
+#include <airdcpp/SearchResult.h>
 
 #include <airdcpp/ClientManagerListener.h>
-#include <airdcpp/SearchResult.h>
+#include <airdcpp/SettingsManagerListener.h>
+#include <airdcpp/TimerManagerListener.h>
 
 #include "UCHandler.h"
 #include "SearchTypeCombo.h"

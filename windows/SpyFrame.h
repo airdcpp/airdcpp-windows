@@ -24,7 +24,7 @@
 #endif // _MSC_VER > 1000
 
 #include <airdcpp/ClientManager.h>
-#include <airdcpp/TimerManager.h>
+#include <airdcpp/TimerManagerListener.h>
 
 #include "FlatTabCtrl.h"
 #include "ExListViewCtrl.h"

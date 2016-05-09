@@ -21,7 +21,9 @@
 
 #include "typedefs.h"
 
-#include "SettingsManager.h"
+#include "SettingsManagerListener.h"
+#include "TimerManagerListener.h"
+
 #include "Speaker.h"
 #include "TimerManager.h"
 

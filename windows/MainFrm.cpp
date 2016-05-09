@@ -1546,6 +1546,12 @@ void MainFrame::fillLimiterMenu(OMenu* limiterMenu, bool upload) {
 	});
 }
 
+void MainFrame::setShutDown(bool b) {
+	if (b)
+		iCurrentShutdownTime = GET_TICK() / 1000;
+	bShutdown = b;
+}
+
 LRESULT MainFrame::onStatusBarClick(UINT uMsg, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
 	OMenu menu;
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };

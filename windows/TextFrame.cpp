@@ -23,6 +23,7 @@
 #include "WinUtil.h"
 
 #include <airdcpp/File.h>
+#include <airdcpp/LogManager.h>
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/ViewFileManager.h>
 

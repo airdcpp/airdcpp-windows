@@ -21,6 +21,7 @@
 #include "AirUtil.h"
 #include "ClientManager.h"
 #include "DirectoryListingManager.h"
+#include "LogManager.h"
 #include "QueueManager.h"
 
 #include <boost/range/algorithm/copy.hpp>

@@ -41,6 +41,7 @@
 #include "Wizard.h"
 
 #include <airdcpp/DCPlusPlus.h>
+#include <airdcpp/LogManager.h>
 #include <airdcpp/MerkleTree.h>
 #include <airdcpp/Updater.h>
 #include <airdcpp/version.h>

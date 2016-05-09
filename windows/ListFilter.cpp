@@ -20,8 +20,9 @@
 
 #include "Async.h"
 #include "ListFilter.h"
-
 #include "WinUtil.h"
+
+#include <airdcpp/TimerManager.h>
 
 
 ListFilter::ListFilter(size_t colCount, UpdateFunction updateF) :

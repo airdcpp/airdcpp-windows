@@ -32,6 +32,7 @@
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/UploadManager.h>
 #include <airdcpp/DownloadManager.h>
+#include <airdcpp/TimerManager.h>
 #include <airdcpp/version.h>
 #include <airdcpp/Socket.h>
 

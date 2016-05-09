@@ -28,6 +28,7 @@
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"
 #include "UserInfoBaseHandler.h"
+
 #include <airdcpp/UploadManager.h>
 
 #define SHOWTREE_MESSAGE_MAP 12
