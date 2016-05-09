@@ -388,11 +388,6 @@ int UploadQueueItem::getImageIndex() const {
 	return ResourceLoader::getIconIndex(Text::toT(file));
 }
 
-UploadQueueItem::UploadQueueItem(const HintedUser& _user, const string& _file, int64_t _pos, int64_t _size) :
-	user(_user), file(_file), pos(_pos), size(_size), time(GET_TIME()) {
-	inc();
-}
-
 int UploadQueueItem::compareItems(const UploadQueueItem* a, const UploadQueueItem* b, uint8_t col) {
 	switch (col) {
 		case COLUMN_TRANSFERRED: return compare(a->pos, b->pos);
