@@ -14,6 +14,7 @@ Changed:
 - Add finished bundles in share without hashing by default
 - Auto search window improvements
 - Automatically stop/continue downloading on disk errors when the disk is accessible and has enough free space
+- Don't flush the file on disk when a download segment finishes (speeds up downloads with fast connections)
 
 Fixed:
 
@@ -32,6 +33,7 @@ Removed:
 - Support for using a separate directory for unfinished downloads
 - Setting for auto away mode on minimize
 - Support for sharing subdirectories of other shared directories in other share profiles
+- Support for keeping the previous folder date when deleting individual files
 
 
 3.00
