@@ -22,6 +22,8 @@
 #include "AutoSearchGeneralPage.h"
 #include "AutosearchParams.h"
 
+#include <airdcpp/SearchManager.h>
+
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
 AutoSearchGeneralPage::AutoSearchGeneralPage(AutoSearchItemSettings& aSettings) : options(aSettings), loading(true) {}

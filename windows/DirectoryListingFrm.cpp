@@ -1015,9 +1015,7 @@ void DirectoryListingFrame::changeDir(const ItemInfo* ii, DirectoryListing::Relo
 	auto path = ii->getPath();
 	//dcdebug("DirectoryListingFrame::changeDir %s\n", path.c_str());
 
-	dl->addAsyncTask([=] {
-		dl->changeDirectory(path, aReload);
-	});
+	dl->addDirectoryChangeTask(path, aReload);
 }
 
 void DirectoryListingFrame::up() {
@@ -2081,13 +2079,13 @@ LRESULT DirectoryListingFrame::onCustomDrawTree(int /*idCtrl*/, LPNMHDR pnmh, BO
 	}
 }
 
-void DirectoryListingFrame::onComboSelChanged(bool manual) {
+void DirectoryListingFrame::onComboSelChanged(bool aUserChange) {
 	if (dl->getIsOwnList()) {
 		auto token = ShareManager::getInstance()->getProfiles()[selCombo.GetCurSel()]->getToken();
-		dl->setShareProfile(token);
+		dl->addShareProfileChangeTask(token);
 	} else {
 		auto& newHub = hubs[selCombo.GetCurSel()];
-		if (manual) {
+		if (aUserChange) {
 			auto p = boost::find_if(hubs, [this](const User::UserHubInfo& uhi) { return uhi.hubUrl == dl->getHubUrl(); });
 			if (p != hubs.end()) {
 				auto& oldHub = *p;
@@ -2105,7 +2103,7 @@ void DirectoryListingFrame::onComboSelChanged(bool manual) {
 			}
 		}
 
-		dl->setHubUrl(newHub.hubUrl, true);
+		dl->addHubUrlChangeTask(newHub.hubUrl);
 	}
 }
 

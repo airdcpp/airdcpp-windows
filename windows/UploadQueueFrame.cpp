@@ -388,6 +388,16 @@ int UploadQueueItem::getImageIndex() const {
 	return ResourceLoader::getIconIndex(Text::toT(file));
 }
 
+int UploadQueueItem::compareItems(const UploadQueueItem* a, const UploadQueueItem* b, uint8_t col) {
+	switch (col) {
+		case COLUMN_TRANSFERRED: return compare(a->pos, b->pos);
+		case COLUMN_SIZE: return compare(a->size, b->size);
+		case COLUMN_ADDED:
+		case COLUMN_WAITING: return compare(a->time, b->time);
+		default: return Util::stricmp(a->getText(col).c_str(), b->getText(col).c_str());
+	}
+}
+
 const tstring UploadQueueItem::getText(uint8_t col) const {
 	switch(col) {
 		case COLUMN_FILE: return Text::toT(Util::getFileName(file));

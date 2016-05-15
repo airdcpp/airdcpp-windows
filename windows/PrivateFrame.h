@@ -113,7 +113,6 @@ public:
 	bool checkFrameCommand(tstring& cmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson);
 	void UpdateLayout(BOOL bResizeBars = TRUE);	
 	void runUserCommand(UserCommand& uc);
-	void readLog();
 	
 	void addClientLine(const tstring& aLine, uint8_t severity);
 	bool sendMessage(const tstring& msg, string& error_, bool thirdPerson = false);

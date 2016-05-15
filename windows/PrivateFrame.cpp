@@ -113,26 +113,37 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ctrlMessageContainer.SubclassWindow(ctrlMessage.m_hWnd);
 	ctrlStatusContainer.SubclassWindow(ctrlStatus.m_hWnd);
 	created = true;
-	readLog();
+
+	ctrlClient.AppendChat(Identity(NULL, 0), _T("- "), _T(""), Text::toT(chat->getLastLogLines()), WinUtil::m_ChatTextLog, true);
 
 	SettingsManager::getInstance()->addListener(this);
-	chat->addListener(this);
 
 	callAsync([this] {
-		// Append messages that were received while the frame was being created
-		for (const auto& message : chat->getCache().getMessages()) {
-			if (message.type == Message::TYPE_CHAT) {
-				onChatMessage(message.chatMessage);
-			} else {
-				onStatusMessage(message.logMessage);
+		// The frame must have been created before these operations
+
+		{
+			// Postpone caching of new messages received during this operation to avoid
+			// them being displayed twice
+
+			RLock l(chat->getCache().getCS());
+			chat->addListener(this);
+
+			// Append messages that were received while the frame was being created
+			for (const auto& message : chat->getCache().getMessagesUnsafe()) {
+				if (message.type == Message::TYPE_CHAT) {
+					onChatMessage(message.chatMessage);
+				} else {
+					onStatusMessage(message.logMessage);
+				}
 			}
 		}
+
+		updateOnlineStatus();  
+		windowLoaded = true;
 	});
 
 	WinUtil::SetIcon(m_hWnd, (getUser() && getUser()->isSet(User::BOT)) ? IDI_BOT : IDR_PRIVATE);
 
-	//add the updateonlinestatus in the wnd message queue so the frame and tab can finish creating first.
-	callAsync([this] { updateOnlineStatus();  windowLoaded = true; });
 	::SetTimer(m_hWnd, 0, 1000, 0);
 	
 	bHandled = FALSE;
@@ -718,36 +729,6 @@ void PrivateFrame::setAway() {
 		ctrlStatus.SetIcon(STATUS_AWAY, GET_ICON(IDR_PRIVATE_OFF, 16));
 	} else {
 		ctrlStatus.SetIcon(STATUS_AWAY, userAway ? GET_ICON(IDI_USER_AWAY, 16) : GET_ICON(IDI_USER_BASE, 16));
-	}
-}
-
-void PrivateFrame::readLog() {
-	if (SETTING(SHOW_LAST_LINES_LOG) == 0) return;
-	try {
-		File f(chat->getLogPath(), File::READ, File::OPEN);
-		
-		int64_t size = f.getSize();
-
-		if(size > 32*1024) {
-			f.setPos(size - 32*1024);
-		}
-		string buf = f.read(32*1024);
-		StringList lines;
-
-		if(strnicmp(buf.c_str(), "\xef\xbb\xbf", 3) == 0)
-			lines = StringTokenizer<string>(buf.substr(3), "\r\n", true).getTokens();
-		else
-			lines = StringTokenizer<string>(buf, "\r\n", true).getTokens();
-
-		int linesCount = lines.size();
-
-		int i = linesCount > (SETTING(SHOW_LAST_LINES_LOG) + 1) ? linesCount - SETTING(SHOW_LAST_LINES_LOG) : 0;
-
-		for(; i < linesCount; ++i){
-			ctrlClient.AppendChat(Identity(NULL, 0), _T("- "), _T(""), Text::toT(lines[i]) + _T('\n'), WinUtil::m_ChatTextLog, true);
-		}
-		f.close();
-	} catch(const FileException&){
 	}
 }
 

@@ -14,7 +14,7 @@ and you will get 'EN_Installer.pot' to upload to [Transifex](https://www.transif
 Download the PO files from [transifex](https://www.transifex.com/projects/p/airdcpp) (Download for use).
 
 You will then have one file for every language. This is the Swedish file 'for_use_airdcpp_en_installerpot_sv_SE.po',
-but you need to rename it to 'sv.po'. Do the same for every PO file and put them all togheter in the 'pofiles' folder.
+but you need to rename it to 'sv_SE.po'. Do the same for every PO file and put them all together in the 'pofiles' folder.
 You can read in the 'build_locale_nsh.py' what name you need to use on the PO files.
 
 We don't want to use all the text from 'AirDC_installscript.nsi' so we use the dummy_file.nsi file instead.

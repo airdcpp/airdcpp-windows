@@ -25,9 +25,10 @@
 #include "LineDlg.h"
 
 #include <airdcpp/ClientManager.h>
-#include <airdcpp/QueueManager.h>
 #include <airdcpp/GeoManager.h>
 #include <airdcpp/Localization.h>
+#include <airdcpp/LogManager.h>
+#include <airdcpp/QueueManager.h>
 
 int UsersFrame::columnIndexes[] = { COLUMN_FAVORITE, COLUMN_SLOT, COLUMN_NICK, COLUMN_HUB, COLUMN_SEEN, COLUMN_QUEUED, COLUMN_DESCRIPTION, COLUMN_LIMITER, COLUMN_IGNORE, COLUMN_SHARED, COLUMN_TAG, COLUMN_IP4, COLUMN_IP6 };
 int UsersFrame::columnSizes[] = { 60, 90, 200, 300, 150, 100, 200, 70, 60,80, 250, 120, 120 };

@@ -31,7 +31,7 @@
 
 #include <airdcpp/GetSet.h>
 #include <airdcpp/Singleton.h>
-#include <airdcpp/TimerManager.h>
+#include <airdcpp/TimerManagerListener.h>
 
 #include "PopupDlg.h"
 

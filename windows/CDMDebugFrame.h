@@ -17,6 +17,7 @@
 
 #include <airdcpp/DebugManager.h>
 #include <airdcpp/Semaphore.h>
+#include <airdcpp/Thread.h>
 
 #include <boost/lockfree/queue.hpp>
 

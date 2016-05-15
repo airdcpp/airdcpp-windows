@@ -1134,7 +1134,7 @@ void ShareManager::clearTempShares() {
 	tempShares.clear();
 }
 
-void ShareManager::getRealPaths(const string& aPath, StringList& ret, ProfileToken aProfile) const throw(ShareException) {
+void ShareManager::getRealPaths(const string& aPath, StringList& ret, const OptionalProfileToken& aProfile) const throw(ShareException) {
 	if (aPath.empty())
 		throw ShareException("empty virtual path");
 
@@ -1144,7 +1144,7 @@ void ShareManager::getRealPaths(const string& aPath, StringList& ret, ProfileTok
 	if (aPath == "/") {
 		boost::algorithm::copy_if(rootPaths | map_values, back_inserter(dirs), Directory::HasRootProfile(aProfile));
 	} else {
-		findVirtuals(aPath, aProfile, dirs);
+		findVirtuals<OptionalProfileToken>(aPath, aProfile, dirs);
 	}
 
 	if (aPath.back() == '/') {
@@ -1969,7 +1969,7 @@ void ShareManager::updateIndices(Directory& dir, const Directory::File* f, Share
 	aBloom.add(f->name.getLower());
 }
 
-ShareManager::RefreshResult ShareManager::refreshVirtual(const string& aVirtualName) noexcept {
+ShareManager::RefreshResult ShareManager::refreshVirtualName(const string& aVirtualName) noexcept {
 	StringList refreshDirs;
 
 	{
@@ -3005,8 +3005,7 @@ ShareManager::Directory::File::File(DualString&& aName, const Directory::Ptr& aP
 }
 
 ShareManager::Directory::File::~File() {
-	//if (name)
-	//	delete name;
+
 }
 
 void ShareManager::Directory::File::toXml(OutputStream& xmlFile, string& indent, string& tmp2, bool addDate) const {

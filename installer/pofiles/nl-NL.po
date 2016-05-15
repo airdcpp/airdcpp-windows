@@ -1,14 +1,15 @@
 # 
 # Translators:
-# Kaas Hub, 2015
+# Kaas Hub, 2015-2016
+# Sopor, 2016
 msgid ""
 msgstr ""
 "Project-Id-Version: AirDC++\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-24 00:23\n"
-"PO-Revision-Date: 2015-03-24 21:41+0000\n"
-"Last-Translator: Kaas Hub\n"
-"Language-Team: Dutch (Netherlands) (http://www.transifex.com/projects/p/airdcpp/language/nl_NL/)\n"
+"POT-Creation-Date: 2016-05-01 15:00\n"
+"PO-Revision-Date: 2016-05-01 13:27+0000\n"
+"Last-Translator: Sopor\n"
+"Language-Team: Dutch (Netherlands) (http://www.transifex.com/airdcpp/airdcpp/language/nl_NL/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -16,115 +17,120 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. RunAtFinish
-#: AirDC_installscript.nsi:81
+#: AirDC_installscript.nsi:92
 msgid "Launch AirDC++"
 msgstr "Start AirDC++"
 
 #. ^ComponentsText
-#: AirDC_installscript.nsi:82
+#: AirDC_installscript.nsi:93
 msgid "Welcome to the AirDC++ installer."
 msgstr "Welkom bij de AirDC++ installer"
 
 #. ^DirText
-#: AirDC_installscript.nsi:83
+#: AirDC_installscript.nsi:94
 msgid ""
 "If you are upgrading from an older version, select the same directory where "
 "your old version resides and your existing settings will be imported."
-msgstr "Als je een update doet vanaf een oudere versie,kies dan dezelfde map waar je oude versie staat en je bestaande instellingen worden overgenomen en geïmporteerd."
+msgstr "Als je een update doet vanaf een oudere versie, kies dan dezelfde map waar je oude versie staat dan zullen je huidige instellingen worden overgenomen en geïmporteerd."
 
 #. SecAirDC
-#: AirDC_installscript.nsi:84
+#: AirDC_installscript.nsi:95
 msgid "AirDC++ (required)"
 msgstr "AirDC++ (vereist)"
 
 #. ProfileDir
-#: AirDC_installscript.nsi:85
+#: AirDC_installscript.nsi:96
 msgid ""
 "Settings of a previous installation of AirDC++ has been found in the user "
 "profile, do you want to backup settings? (You can find them in $DOCBACKUPDIR"
 " later)"
-msgstr "Instellingen van een vorige installatie van AirDC++ zijn gevonden in je user profiel, wil je de instellingen backuppen? (Je kan ze later vinden in $DOCBACKUPDIR)"
+msgstr "Instellingen van een vorige installatie van AirDC++ zijn gevonden in je gebruikers profiel van windows, wil je de instellingen backuppen? (Je kan ze later vinden in $DOCBACKUPDIR)"
 
 #. ProgramDir
-#: AirDC_installscript.nsi:86
+#: AirDC_installscript.nsi:97
 msgid ""
 "A previous installation of AirDC++ has been found in the target folder, do "
 "you want to backup settings? (You can find them in $INSTBACKUPDIR later)"
-msgstr "Een vorige installatie van AirDC++ is gevonden in de doel map, wil je de instellingen backuppen? (Je kan ze later vinden in $INSTBACKUPDIR)"
+msgstr "Een vorige installatie van AirDC++ is gevonden in de doel map, wil je een backup van die instellingen maken? (Je kan ze later vinden in $INSTBACKUPDIR)"
 
 #. Dcpp
-#: AirDC_installscript.nsi:87
+#: AirDC_installscript.nsi:98
 msgid ""
 "Settings of an existing DC++ installation has been found in the user "
 "profile, do you want to import settings and queue?"
 msgstr "Instellingen van een bestaande installatie van DC++ zijn gevonden in het gebruikers profiel, wil je de instellingen en queue importeren?"
 
 #. Apex
-#: AirDC_installscript.nsi:88
+#: AirDC_installscript.nsi:99
 msgid ""
 "Settings of an existing ApexDC++ installation has been found in the user "
 "profile, do you want to import settings and queue?"
 msgstr "Instellingen van een bestaande installatie van ApexDC++ zijn gevonden in het gebruikers profiel, wil je de instellingen en queue importeren?"
 
 #. Strong
-#: AirDC_installscript.nsi:89
+#: AirDC_installscript.nsi:100
 msgid ""
 "Settings of an existing StrongDC++ installation has been found in the user "
 "profile, do you want to import settings and queue?"
 msgstr "Instellingen van een bestaande installatie van StrongDC++ zijn gevonden in het gebruikers profiel, wil je de instellingen en queue importeren?"
 
 #. SecStartMenu
-#: AirDC_installscript.nsi:90
+#: AirDC_installscript.nsi:101
 msgid "Start menu shortcuts"
 msgstr "Start menu snelkoppelingen"
 
 #. SM_AIRDCPP_DESC
-#: AirDC_installscript.nsi:91
+#: AirDC_installscript.nsi:102
 msgid "AirDC++ File Sharing Application"
 msgstr "AirDC++ Bestands Uitwissel Applicatie"
 
 #. SM_AIRDCPP_DESCUN
-#: AirDC_installscript.nsi:92
+#: AirDC_installscript.nsi:103
 msgid "Uninstall AirDC++"
 msgstr "Verwijder AirDC++"
 
 #. SM_UNINSTALL
-#: AirDC_installscript.nsi:93
+#: AirDC_installscript.nsi:104
 msgid "Uninstall"
 msgstr "Verwijder"
 
 #. WR_REMOVEONLY
-#: AirDC_installscript.nsi:94
+#: AirDC_installscript.nsi:105
 msgid "(remove only)"
-msgstr "(enkel verwijderen)"
+msgstr "(alleen verwijderen)"
 
 #. SecRadox
-#: AirDC_installscript.nsi:95
+#: AirDC_installscript.nsi:106
 msgid "Radox Emoticon Pack"
 msgstr "Radox Emoticon Pakket"
 
 #. SecThemes
-#: AirDC_installscript.nsi:96
+#: AirDC_installscript.nsi:107
 msgid "Themes"
 msgstr "Thema's"
 
+#. SecWebResources
+#: AirDC_installscript.nsi:108
+msgid "Web user interface"
+msgstr "Web gebruikers omgeving"
+
 #. SecStore
-#: AirDC_installscript.nsi:97
+#: AirDC_installscript.nsi:109
 msgid "Store settings in the user profile directory"
 msgstr "Sla instellingen op in de gebruikers profiel map"
 
 #. DeskShort
-#: AirDC_installscript.nsi:98
-msgid "Create AirDC++ desktop shourtcut"
-msgstr "Maak AirDC++ desktop snelkoppeling aan"
+#: AirDC_installscript.nsi:110
+msgid "Create AirDC++ desktop shortcut"
+msgstr "Maak AirDC++ bureaublad snelkoppeling aan"
 
 #. SecInstall32
-#: AirDC_installscript.nsi:99
+#: AirDC_installscript.nsi:111
 msgid "Install the 32-bit version"
 msgstr "Installeer de 32-bit versie"
 
 #. XPOrOlder
-#: AirDC_installscript.nsi:100
+#: AirDC_installscript.nsi:112
 msgid ""
 "If you want to keep your settings in the program directory, make sure that "
 "you DO NOT install AirDC++ to the 'Program files' folder!!! This can lead to"
@@ -132,7 +138,7 @@ msgid ""
 msgstr "Als je je instellingen wilt behouden in de huidige AirDC++ map, zorg dan dat je AirDC++ NIET installeerd in de Program Files map!!! Dit kan leiden tot abnormaal gedrag zoals verlies van instellingen of downloads!"
 
 #. XPOrBelow
-#: AirDC_installscript.nsi:101
+#: AirDC_installscript.nsi:113
 msgid ""
 "This version is only compatible with Windows Vista or newer operating "
 "system. You will be forwarded to www.airdcpp.net for downloading a version "
@@ -140,16 +146,64 @@ msgid ""
 msgstr "Deze versie is alleen geschikt voor Windows Vista of een nieuwer OS. Je wordt doorgestuurd naar www.airdcpp.net om een geschikte versie te downloaden."
 
 #. ^UninstallText
-#: AirDC_installscript.nsi:102
+#: AirDC_installscript.nsi:114
 msgid "This will uninstall AirDC++. Hit the Uninstall button to continue."
 msgstr "Dit zal AirDC++ verwijderen, klik op de Verwijder knop om door te gaan."
 
 #. RemoveQueue
-#: AirDC_installscript.nsi:103
+#: AirDC_installscript.nsi:115
 msgid "Do you also want to remove queue, themes and all settings?"
 msgstr "Wil je ook je queue, thema's en alle instellingen verwijderen?"
 
 #. NotEmpty
-#: AirDC_installscript.nsi:104
+#: AirDC_installscript.nsi:116
 msgid "Installation directory is NOT empty. Do you still want to remove it?"
 msgstr "Installatie map is NIET leeg. Weet je zeker dat je hem wilt verwijderen?"
+
+#. DESC_dcpp
+#: AirDC_installscript.nsi:117
+msgid "AirDC++ main program."
+msgstr "AirDC++ hoofd programma."
+
+#. DESC_StartMenu
+#: AirDC_installscript.nsi:118
+msgid "A shortcut of AirDC++ will be placed in your start menu."
+msgstr "Een snelkoppeling naar AirDC++ zal in het start menu geplaatst worden."
+
+#. DESC_Radox
+#: AirDC_installscript.nsi:119
+msgid "RadoX emoticon pack will be installed to be used in chats."
+msgstr "RadoX smileys pack zal worden geinstalleerd om in chats te gebruiken."
+
+#. DESC_Themes
+#: AirDC_installscript.nsi:120
+msgid ""
+"If you don't like the default theme you can try these two extra themes, Dark"
+" Skull and Zoolution."
+msgstr "Als het standaard thema niet bevalt, kan je een van de twee extra thema's proberen, Dark Skull of Zoolution."
+
+#. DESC_WebResorces
+#: AirDC_installscript.nsi:121
+msgid "Allows accessing the client from other devices via a web browser."
+msgstr "Staat benadering van de client vanaf andere apparaten viabrowsers toe."
+
+#. DESC_loc
+#: AirDC_installscript.nsi:122
+msgid ""
+"Normally you should not change this because it can lead to abnormal "
+"behaviour like loss of settings or downloads. If you unselect it, read the "
+"warning message carefully."
+msgstr "Normaal moet je dit niet aanpassen omdat het kan leiden tot abnormaal gedrag zoals verlies van instellingen of downloads. Als je het uitvinkt, lees dan de waarschuwing aandachtig."
+
+#. DESC_desk
+#: AirDC_installscript.nsi:123
+msgid "Do you often run AirDC++? Then this is definitely something for you!"
+msgstr "Gebruik je AirDC++ vaak? Dan is dit zeker iets voor je!"
+
+#. DESC_arch
+#: AirDC_installscript.nsi:124
+msgid ""
+"If you want to use the 32-bits version of AirDC++ on your 64-bits operating "
+"system you need to select this. If this is selected and grayed out you can "
+"not unselect it because your operation system is 32-bits."
+msgstr "Als je de 32 bits versie van AirDC++ op je 64 bits OS wilt gebruiken, kies dit. Als je keuze reeds is geselecteerd en je het niet kan veranderen dan is dat omdat je OS al 32 bits is."

@@ -437,7 +437,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	updateTray(true);
 
-	ctrlToolbar.CheckButton(IDC_AWAY,SETTING(AWAY));
+	ctrlToolbar.CheckButton(IDC_AWAY, ActivityManager::getInstance()->isAway());
 	ctrlToolbar.CheckButton(IDC_DISABLE_SOUNDS, SETTING(SOUNDS_DISABLED));
 
 	if(SETTING(NICK).empty()) {
@@ -1103,11 +1103,6 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 			WinUtil::urlMagnetRegistered = false;
 		}
 
-
-
-		if(ActivityManager::getInstance()->isAway()) ctrlToolbar.CheckButton(IDC_AWAY, true);
-		else ctrlToolbar.CheckButton(IDC_AWAY, false);
-
 		if(tabsontop != SETTING(TABS_ON_TOP)) {
 			tabsontop = SETTING(TABS_ON_TOP);
 			UpdateLayout();
@@ -1549,6 +1544,12 @@ void MainFrame::fillLimiterMenu(OMenu* limiterMenu, bool upload) {
 			ThrottleManager::setSetting(setting, Util::toUInt(Text::fromT(dlg.line)));
 		}
 	});
+}
+
+void MainFrame::setShutDown(bool b) {
+	if (b)
+		iCurrentShutdownTime = GET_TICK() / 1000;
+	bShutdown = b;
 }
 
 LRESULT MainFrame::onStatusBarClick(UINT uMsg, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
@@ -2058,13 +2059,13 @@ LRESULT MainFrame::onRefreshDropDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 	for(auto& i: l) {
 		if (i.second.size() > 1) {
 			auto vMenu = dropMenu.createSubMenu(Text::toT(i.first).c_str(), true);
-			vMenu->appendItem(CTSTRING(ALL), [=] { ShareManager::getInstance()->refreshVirtual(i.first); }, OMenu::FLAG_THREADED);
+			vMenu->appendItem(CTSTRING(ALL), [=] { ShareManager::getInstance()->refreshVirtualName(i.first); }, OMenu::FLAG_THREADED);
 			vMenu->appendSeparator();
 			for(const auto& s: i.second) {
 				vMenu->appendItem(Text::toT(s).c_str(), [=] { ShareManager::getInstance()->refreshPaths({ s }); }, OMenu::FLAG_THREADED);
 			}
 		} else {
-			dropMenu.appendItem(Text::toT(i.first).c_str(), [=] { ShareManager::getInstance()->refreshVirtual(i.first); }, OMenu::FLAG_THREADED);
+			dropMenu.appendItem(Text::toT(i.first).c_str(), [=] { ShareManager::getInstance()->refreshVirtualName(i.first); }, OMenu::FLAG_THREADED);
 		}
 	}
 

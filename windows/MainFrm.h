@@ -27,15 +27,15 @@
 
 #include <airdcpp/AutoSearchManagerListener.h>
 #include <airdcpp/ClientManagerListener.h>
-#include <airdcpp/TimerManager.h>
-#include <airdcpp/FavoriteManager.h>
+#include <airdcpp/TimerManagerListener.h>
+#include <airdcpp/FavoriteManagerListener.h>
 #include <airdcpp/QueueManagerListener.h>
 #include <airdcpp/LogManagerListener.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/DirectoryListingManagerListener.h>
 #include <airdcpp/UpdateManagerListener.h>
 #include <airdcpp/ShareScannerManager.h>
-#include <airdcpp/MessageManager.h>
+#include <airdcpp/MessageManagerListener.h>
 #include <airdcpp/ActivityManager.h>
 
 #include "PopupManager.h"
@@ -314,11 +314,7 @@ public:
 	bool getAppMinimized() const { return bAppMinimized; }
 	CToolBarCtrl& getToolBar() { return ctrlToolbar; }
 
-	static void setShutDown(bool b) {
-		if (b)
-			iCurrentShutdownTime = GET_TICK() / 1000;
-		bShutdown = b;
-	}
+	static void setShutDown(bool b);
 	static bool getShutDown() { return bShutdown; }
 	
 	static void setAwayButton(bool check) {
