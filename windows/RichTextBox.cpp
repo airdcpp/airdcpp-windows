@@ -599,7 +599,7 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 				lSelEnd = lSelBegin + foundEmoticon->getEmoticonText().size();
 
 				// Check the position (don't replace partial word segments)
-				if (curReplace != lastReplace && curReplace > 0 && !Text::isSeparator(sMsg[curReplace-1])) {
+				if (curReplace != lastReplace && curReplace > 0 && iswgraph(sMsg[curReplace-1])) {
 					lSelBegin = lSelEnd;
 				} else {
 					SetSel(lSelBegin, lSelEnd);
