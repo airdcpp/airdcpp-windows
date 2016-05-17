@@ -48,18 +48,18 @@
     <ClCompile Include="receivedata.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="upnpdev.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="minissdpc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="bsdqueue.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="codelength.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="connecthostport.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="declspec.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="igd_desc_parse.h">
@@ -99,6 +99,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="receivedata.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="upnpdev.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="miniupnpc_declspec.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
