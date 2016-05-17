@@ -593,17 +593,15 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 			}
 
 			if(curReplace != tstring::npos && smiles < MAX_EMOTICONS) {
-				bool insert=true;
 				CHARFORMAT2 cfSel;
 				cfSel.cbSize = sizeof(cfSel);
 				lSelBegin += (curReplace - lastReplace);
 				lSelEnd = lSelBegin + foundEmoticon->getEmoticonText().size();
-				//check the position
-				if ((curReplace != lastReplace) && (curReplace > 0) && isgraph(sMsg[curReplace-1])) {
-					insert=false;
-				}
 
-				if (insert) {
+				// Check the position (don't replace partial word segments)
+				if (curReplace != lastReplace && curReplace > 0 && !Text::isSeparator(sMsg[curReplace-1])) {
+					lSelBegin = lSelEnd;
+				} else {
 					SetSel(lSelBegin, lSelEnd);
 
 					GetSelectionCharFormat(cfSel);
@@ -613,15 +611,16 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 					++lSelBegin;
 
 					//fix the positions for links after this emoticon....
-					for(auto& l: links | reversed) {
+					for (auto& l : links | reversed) {
 						if (l.first.cpMin > lSelBegin) {
-							l.first.cpMin -= foundEmoticon->getEmoticonText().size()-1;
-							l.first.cpMax -= foundEmoticon->getEmoticonText().size()-1;
+							l.first.cpMin -= foundEmoticon->getEmoticonText().size() - 1;
+							l.first.cpMax -= foundEmoticon->getEmoticonText().size() - 1;
 						} else {
 							break;
 						}
 					}
-				} else lSelBegin = lSelEnd;
+				}
+
 				lastReplace = curReplace + foundEmoticon->getEmoticonText().size();
 			} else break;
 		}
