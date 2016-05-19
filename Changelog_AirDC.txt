@@ -15,6 +15,7 @@ Changed:
 - Auto search window improvements
 - Automatically stop/continue downloading on disk errors when the disk is accessible and has enough free space
 - Don't flush the file on disk when a download segment finishes (speeds up downloads with fast connections)
+- Store the generated crash log in the settings directory to avoid permission issues
 
 Fixed:
 
