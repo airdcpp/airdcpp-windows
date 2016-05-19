@@ -23,7 +23,9 @@ Fixed:
 - Fix transfer grouping issues
 - Fix user commands being sent to wrong hub
 - Fix some resource leaks and decrease the amount of GDI and user object handles
-- Make the detection of queued and finished dupe directories more reliable 
+- Make the detection of queued and finished dupe directories more reliable
+- Fix a possible crash when adding temp share items
+- Fix matching of searches using exact file names
 
 Removed:
 
