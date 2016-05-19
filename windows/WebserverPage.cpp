@@ -61,7 +61,7 @@ LRESULT WebServerPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	url.SetHyperLinkExtendedStyle(HLINK_UNDERLINEHOVER);
 
 	// TODO: add better help link
-	url.SetHyperLink(_T("http://www.airdcpp.net/forum/viewtopic.php?t=4334"));
+	url.SetHyperLink(_T("http://www.airdcpp.net/component/k2/24-web-server"));
 	url.SetLabel(CTSTRING(MORE_INFORMATION));
 
 	ctrlWebUsers.Attach(GetDlgItem(IDC_WEBSERVER_USERS));
