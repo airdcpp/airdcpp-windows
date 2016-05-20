@@ -315,7 +315,7 @@ enum Strings { // @DontAdd
 	DIRECTORY_LOADED, // "The directory %1% has been loaded"
 	DIRECTORY_NOT_FOUND, // "Directory not shared"
 	DIRECTORY_NOT_REMOVED,  // "The directory %1% isn't empty, not removed"
-	DIRECTORY_SUBDIRS_SHARED, // "Subdirectories of the directory is already shared in the following profiles: %1%"
+	DIRECTORY_SUBDIRS_SHARED, // "Subdirectories of the directory are already shared in the following profiles: %1%"
 	DIRECTORY_PARENT_SHARED, // "Parent of the directory is already shared in the following profiles: %1%"
 	DIRECTORY_REFRESHED, // "The directory %1% has been refreshed"
 	DIRECTORY_REFRESH_QUEUED, // "The directory %1% has been queued for refreshing"
