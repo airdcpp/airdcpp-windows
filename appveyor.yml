@@ -1,5 +1,5 @@
 image: Visual Studio 2015
-configuration: Release
+configuration: Debug
 platform: x64
 clone_depth: 5
 before_build:
