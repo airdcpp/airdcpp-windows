@@ -480,7 +480,7 @@ private:
 		void toTTHList(OutputStream& tthList, string& tmp2, bool recursive) const;
 
 		//for file list caching
-		void toXmlList(OutputStream& xmlFile, string&& path, string& indent, string& tmp);
+		void toXmlList(OutputStream& xmlFile, string& indent, string& tmp);
 		void filesToXmlList(OutputStream& xmlFile, string& indent, string& tmp2) const;
 
 		GETSET(uint64_t, lastWrite, LastWrite);

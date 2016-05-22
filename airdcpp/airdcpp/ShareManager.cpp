@@ -3081,7 +3081,7 @@ void ShareManager::saveXmlList(function<void(float)> progressF /*nullptr*/) noex
 					indent += '\t';
 
 					for (const auto& child : d->directories) {
-						child->toXmlList(xmlFile, d->getProfileDir()->getPath() + child->realName.getNormal() + PATH_SEPARATOR, indent, tmp);
+						child->toXmlList(xmlFile, indent, tmp);
 					}
 					d->filesToXmlList(xmlFile, indent, tmp);
 
@@ -3110,7 +3110,7 @@ void ShareManager::saveXmlList(function<void(float)> progressF /*nullptr*/) noex
 	lastSave = GET_TICK();
 }
 
-void ShareManager::Directory::toXmlList(OutputStream& xmlFile, string&& path, string& indent, string& tmp) {
+void ShareManager::Directory::toXmlList(OutputStream& xmlFile, string& indent, string& tmp) {
 	xmlFile.write(indent);
 	xmlFile.write(LITERAL("<Directory Name=\""));
 	xmlFile.write(SimpleXML::escape(realName.lowerCaseOnly() ? realName.getLower() : realName.getNormal(), tmp, true));
@@ -3123,7 +3123,7 @@ void ShareManager::Directory::toXmlList(OutputStream& xmlFile, string&& path, st
 	filesToXmlList(xmlFile, indent, tmp);
 
 	for(const auto& d: directories) {
-		d->toXmlList(xmlFile, path + d->realName.getLower() + PATH_SEPARATOR, indent, tmp);
+		d->toXmlList(xmlFile, indent, tmp);
 	}
 
 	indent.erase(indent.length()-1);
