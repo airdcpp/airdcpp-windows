@@ -145,7 +145,7 @@ public:
 	void abortRefresh() noexcept;
 
 	void nmdcSearch(SearchResultList& l, const string& aString, int aSearchType, int64_t aSize, int aFileType, StringList::size_type maxResults, bool aHideShare) noexcept;
-	void adcSearch(SearchResultList& l, SearchQuery& aSearch, OptionalProfileToken aProfile, const CID& cid, const string& aDir, bool isAutoSearch = false) throw(ShareException);
+	void adcSearch(SearchResultList& l, SearchQuery& aSearch, const OptionalProfileToken& aProfile, const CID& cid, const string& aDir, bool isAutoSearch = false) throw(ShareException);
 
 	// Check if a directory is shared
 	// You may also give a path in NMDC format and the relevant 
@@ -166,7 +166,7 @@ public:
 	StringList getDirPaths(const string& aDir) const noexcept;
 
 	vector<pair<string, StringList>> getGroupedDirectories() const noexcept;
-	MemoryInputStream* generatePartialList(const string& dir, bool aRecursive, OptionalProfileToken aProfile) const noexcept;
+	MemoryInputStream* generatePartialList(const string& dir, bool aRecursive, const OptionalProfileToken& aProfile) const noexcept;
 	MemoryInputStream* generateTTHList(const string& dir, bool aRecursive, ProfileToken aProfile) const noexcept;
 	MemoryInputStream* getTree(const string& virtualFile, ProfileToken aProfile) const noexcept;
 	void toFilelist(OutputStream& os_, const string& aVirtualPath, const OptionalProfileToken& aProfile, bool aRecursive) const;
@@ -391,7 +391,7 @@ private:
 			inline string getADCPath() const noexcept{ return parent->getADCPath() + name.getNormal(); }
 			inline string getFullName() const noexcept{ return parent->getFullName() + name.getNormal(); }
 			inline string getRealPath() const noexcept { return parent->getRealPath(name.getNormal()); }
-			inline bool hasProfile(OptionalProfileToken aProfile) const noexcept { return parent->hasProfile(aProfile); }
+			inline bool hasProfile(const OptionalProfileToken& aProfile) const noexcept { return parent->hasProfile(aProfile); }
 
 			void toXml(OutputStream& xmlFile, string& indent, string& tmp2, bool addDate) const;
 			void addSR(SearchResultList& aResults, bool addParent) const noexcept;
@@ -553,7 +553,7 @@ private:
 		int refreshOptions;
 	};
 
-	bool addDirResult(const Directory* aDir, SearchResultList& aResults, OptionalProfileToken aProfile, SearchQuery& srch) const noexcept;
+	bool addDirResult(const Directory* aDir, SearchResultList& aResults, const OptionalProfileToken& aProfile, SearchQuery& srch) const noexcept;
 
 	ProfileDirectory::Map profileDirs;
 
@@ -650,7 +650,7 @@ private:
 
 	// Get root directories matching the provided token
 	// Unsafe
-	void getRootsByVirtual(const string& aVirtualName, OptionalProfileToken aProfile, Directory::List& dirs_) const noexcept;
+	void getRootsByVirtual(const string& aVirtualName, const OptionalProfileToken& aProfile, Directory::List& dirs_) const noexcept;
 
 	// Get root directories matching any of the provided tokens
 	// Unsafe

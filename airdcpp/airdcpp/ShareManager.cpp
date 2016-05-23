@@ -1732,7 +1732,7 @@ void ShareManager::getChildrenByVirtual(const string& aVirtualPath, const Option
 	}
 }
 
-void ShareManager::getRootsByVirtual(const string& aVirtualName, OptionalProfileToken aProfile, Directory::List& dirs_) const noexcept {
+void ShareManager::getRootsByVirtual(const string& aVirtualName, const OptionalProfileToken& aProfile, Directory::List& dirs_) const noexcept {
 	for(const auto& d: rootPaths | map_values | filtered(Directory::HasRootProfile(aProfile))) {
 		if(Util::stricmp(d->getProfileDir()->getName(), aVirtualName) == 0) {
 			dirs_.push_back(d);
@@ -2823,7 +2823,7 @@ FileList* ShareManager::generateXmlList(ProfileToken aProfile, bool forced /*fal
 	return fl;
 }
 
-MemoryInputStream* ShareManager::generatePartialList(const string& aVirtualPath, bool aRecursive, OptionalProfileToken aProfile) const noexcept {
+MemoryInputStream* ShareManager::generatePartialList(const string& aVirtualPath, bool aRecursive, const OptionalProfileToken& aProfile) const noexcept {
 	if(aVirtualPath.front() != '/' || aVirtualPath.back() != '/')
 		return 0;
 
@@ -2849,7 +2849,7 @@ void ShareManager::toFilelist(OutputStream& os_, const string& aVirtualPath, con
 	Directory::List directories;
 
 	RLock l(cs);
-	dcdebug("Generating filelist for %s \n", aVirtualPath);
+	dcdebug("Generating filelist for %s \n", aVirtualPath.c_str());
 	try {
 		getChildrenByVirtual(aVirtualPath, aProfile, directories);
 	} catch (...) {
@@ -3156,7 +3156,7 @@ void ShareManager::Directory::toTTHList(OutputStream& tthList, string& tmp2, boo
 	}
 }
 
-bool ShareManager::addDirResult(const Directory* aDir, SearchResultList& aResults, OptionalProfileToken aProfile, SearchQuery& srch) const noexcept {
+bool ShareManager::addDirResult(const Directory* aDir, SearchResultList& aResults, const OptionalProfileToken& aProfile, SearchQuery& srch) const noexcept {
 	const string path = srch.addParents ? Util::getNmdcParentDir(aDir->getFullName()) : aDir->getFullName();
 
 	// Have we added it already?
@@ -3290,7 +3290,7 @@ void ShareManager::Directory::search(SearchResultInfo::Set& results_, SearchQuer
 	aStrings.recursion = old;
 }
 
-void ShareManager::adcSearch(SearchResultList& results, SearchQuery& srch, OptionalProfileToken aProfile, const CID& cid, const string& aDir, bool isAutoSearch) throw(ShareException) {
+void ShareManager::adcSearch(SearchResultList& results, SearchQuery& srch, const OptionalProfileToken& aProfile, const CID& cid, const string& aDir, bool isAutoSearch) throw(ShareException) {
 	totalSearches++;
 	if (aProfile == SP_HIDDEN) {
 		return;
