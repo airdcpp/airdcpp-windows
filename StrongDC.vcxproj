@@ -785,35 +785,12 @@
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
-    <ProjectReference Include="bzip2\bzip2.vcxproj">
-      <Project>{8b162f1b-5d6c-41c1-8a80-858b379de07d}</Project>
-      <Private>false</Private>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
-      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
-    </ProjectReference>
     <ProjectReference Include="airdcpp\airdcpp.vcxproj">
       <Project>{f8d0e5fe-babd-4fc8-b3fe-b48978d23feb}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="natpmp\natpmp.vcxproj">
       <Project>{05f574be-57b1-3f27-280b-5debe2228086}</Project>
-    </ProjectReference>
-    <ProjectReference Include="MakeDefs\MakeDefs.vcxproj">
-      <Project>{aef82786-9da2-4cdf-8602-02643cafc727}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="miniupnpc\miniupnpc.vcxproj">
-      <Project>{51015502-c27c-43cf-9fa4-12ab9db5d36e}</Project>
-    </ProjectReference>
-    <ProjectReference Include="zlib\zlib.vcxproj">
-      <Project>{dfbbe42a-45f4-4188-89c2-17f5dfe50673}</Project>
-      <Private>false</Private>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
-      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -454,9 +454,16 @@ void ChatFrameBase::addMagnet(const StringList& aPaths) {
 				return;
 			}
 
-			if (!cancelHashing) {
-				ShareManager::getInstance()->addTempShare(ctrlClient.getTempShareKey(), tth, path, size, getClient()->getShareProfile());
+			if (cancelHashing) {
+				return;
 			}
+
+			callAsync([=] {
+				if (getClient()) {
+					ShareManager::getInstance()->addTempShare(ctrlClient.getTempShareKey(), tth, path, size, getClient()->getShareProfile());
+				}
+			});
+
 			if (!ret.empty())
 				ret += _T(" ");
 			ret += Text::toT(WinUtil::makeMagnet(tth, Util::getFileName(path), size));
@@ -464,10 +471,8 @@ void ChatFrameBase::addMagnet(const StringList& aPaths) {
 		}
 
 		callAsync([=] {
-			if (!cancelHashing) {
-				setStatusText(aPaths.size() > 1 ? TSTRING_F(MAGNET_CREATED_FOR_X, aPaths.size()) : TSTRING_F(MAGNET_CREATED_FOR, Text::toT(aPaths.front())), LogMessage::SEV_INFO);
-				appendTextLine(ret, true);
-			}
+			setStatusText(aPaths.size() > 1 ? TSTRING_F(MAGNET_CREATED_FOR_X, aPaths.size()) : TSTRING_F(MAGNET_CREATED_FOR, Text::toT(aPaths.front())), LogMessage::SEV_INFO);
+			appendTextLine(ret, true);
 		});
 	});
 
