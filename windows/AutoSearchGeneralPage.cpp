@@ -34,14 +34,13 @@ LRESULT AutoSearchGeneralPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LP
 	ATTACH(IDC_AS_SEARCH_STRING, ctrlSearch);
 	ATTACH(IDC_TARGET_PATH, ctrlTarget);
 	ATTACH(IDC_TARGET_TYPE, cTargetType);
-	
 
 	ctrlSearch.SetWindowText(Text::toT(options.searchString).c_str());
-
 	ctrlTarget.SetWindowText(Text::toT(options.target).c_str());
 	updateTargetTypeText();
 
 	ATTACH(IDC_AS_FILETYPE, ctrlFileType);
+
 	::SetWindowText(GetDlgItem(IDC_SEARCH_FAKE_DLG_SEARCH_STRING), CTSTRING(SEARCH_STRING));
 	::SetWindowText(GetDlgItem(IDC_AS_ACTION_STATIC), CTSTRING(ACTION));
 	::SetWindowText(GetDlgItem(IDC_ADD_SRCH_STR_TYPE_STATIC), CTSTRING(FILE_TYPE));

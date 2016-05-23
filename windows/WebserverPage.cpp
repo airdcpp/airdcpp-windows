@@ -38,6 +38,7 @@ PropPage::TextItem WebServerPage::texts[] = {
 
 	{ IDC_WEB_SERVER_HELP,						ResourceManager::WEB_SERVER_HELP },
 	{ IDC_LINK,									ResourceManager::MORE_INFORMATION },
+	{ IDC_SERVER_STATE,							ResourceManager::SERVER_STATE },
 	{ 0, ResourceManager::LAST }
 };
 

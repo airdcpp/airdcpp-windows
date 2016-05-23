@@ -53,6 +53,8 @@ public:
 		ATTACH(IDC_MAX_NUMBER, ctrlMaxNumber);
 		ATTACH(IDC_NUMBER_LEN, ctrlNumberLen);
 		
+		SetDlgItemText(IDC_INCR_PARAMETERS, CTSTRING(INCREMENTING_NUMBERS));
+		SetDlgItemText(IDC_AS_CURNUMBER_HELP2, CTSTRING(NEXT_NUMBER_TO_SEARCH_FOR));
 		SetDlgItemText(IDC_INCR_NUM_DESC, CTSTRING(AS_INC_DESC));
 		SetDlgItemText(IDC_CUR_NUMBER_LBL, CTSTRING(CURRENT_NUMBER));
 		SetDlgItemText(IDC_MAX_NUMBER_LBL, CTSTRING(LAST_NUMBER_TO_SEARCH));
@@ -84,7 +86,7 @@ public:
 		url.SetHyperLinkExtendedStyle(HLINK_UNDERLINEHOVER);
 
 		url.SetHyperLink(_T("http://www.cplusplus.com/reference/clibrary/ctime/strftime/"));
-		url.SetLabel(_T("Available time variables"));
+		url.SetLabel(CTSTRING(AS_TIMEVAR_AVAILABLE));
 
 		CenterWindow(GetParent());
 		return FALSE;

@@ -31,9 +31,9 @@ LRESULT AutoSearchOptionsDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPA
 
 	ATTACH(IDC_TAB1, cTab);
 
-	cTab.InsertItem(GENERAL, TCIF_TEXT, _T("General"), -1, NULL);
-	cTab.InsertItem(TIMES, TCIF_TEXT, _T("Search times"), -1, NULL);
-	cTab.InsertItem(ADVANCED, TCIF_TEXT, _T("Advanced"), -1, NULL);
+	cTab.InsertItem(GENERAL, TCIF_TEXT, CTSTRING(SETTINGS_GENERAL), -1, NULL);
+	cTab.InsertItem(TIMES, TCIF_TEXT, CTSTRING(SEARCH_TIMES), -1, NULL);
+	cTab.InsertItem(ADVANCED, TCIF_TEXT, CTSTRING(SETTINGS_ADVANCED), -1, NULL);
 	cTab.SetCurSel(0);
 
 	//Create the pages
