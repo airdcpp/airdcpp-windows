@@ -2852,15 +2852,16 @@ void ShareManager::toFilelist(OutputStream& os_, const string& aVirtualPath, con
 			return;
 		}
 
-		for (const auto& it : listRoot.shareDirs) {
-			copy(it->directories, back_inserter(childDirectories));
+		for (const auto& d : listRoot.shareDirs) {
+			copy(d->directories, back_inserter(childDirectories));
+			listRoot.date = max(listRoot.date, d->getLastWrite());
 		}
 	}
 
 	// Prepare the data
 	for (const auto& d : childDirectories) {
 		d->toFileList(listRoot, aRecursive);
-		listRoot.date = max(listRoot.date, d->getLastWrite());
+		listRoot.date = max(listRoot.date, d->getLastWrite()); // In case the date is not set yet
 	}
 
 	// Write the XML
