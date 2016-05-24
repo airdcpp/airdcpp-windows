@@ -185,7 +185,7 @@ LRESULT PublicHubsFrame::onColumnClickHublist(int /*idCtrl*/, LPNMHDR pnmh, BOOL
 		} else if (l->iSubItem == COLUMN_SHARED || l->iSubItem == COLUMN_MINSHARE){
 			ctrlHubs.setSort(l->iSubItem, ExListViewCtrl::SORT_BYTES);
 		} else {
-			ctrlHubs.setSort(l->iSubItem, ExListViewCtrl::SORT_STRING_NOCASE);
+			ctrlHubs.setSort(l->iSubItem, ExListViewCtrl::SORT_STRING);
 		}
 	}
 	return 0;

@@ -143,7 +143,7 @@ LRESULT RecentHubsFrame::onColumnClickHublist(int /*idCtrl*/, LPNMHDR pnmh, BOOL
 		if (l->iSubItem == 2 || l->iSubItem == 3) {
 			ctrlHubs.setSort(l->iSubItem, ExListViewCtrl::SORT_INT);
 		} else {
-			ctrlHubs.setSort(l->iSubItem, ExListViewCtrl::SORT_STRING_NOCASE);
+			ctrlHubs.setSort(l->iSubItem, ExListViewCtrl::SORT_STRING);
 		}
 	}
 	return 0;

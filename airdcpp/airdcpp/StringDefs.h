@@ -892,7 +892,6 @@ enum Strings { // @DontAdd
 	NAME, // "Name"
 	NAME_IN_USE, // "Name already in use"
 	NAME_REQUIRED, // "Name required"
-	NAT_SORT, // "Use natural sorting"
 	NEVER, // "Never"
 	NEW, // "New"
 	NEW_DISCONNECT, // "Remove user from queue, if speed is below"

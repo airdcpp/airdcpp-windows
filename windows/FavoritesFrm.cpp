@@ -629,7 +629,7 @@ LRESULT FavoriteHubsFrame::onColumnClickHublist(int /*idCtrl*/, LPNMHDR pnmh, BO
 		else
 			ctrlHubs.setSortDirection(false);
 	} else {
-		ctrlHubs.setSort(l->iSubItem, ExListViewCtrl::SORT_STRING_NOCASE);
+		ctrlHubs.setSort(l->iSubItem, ExListViewCtrl::SORT_STRING);
 	}
 	return 0;
 }

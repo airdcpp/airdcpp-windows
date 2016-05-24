@@ -38,7 +38,6 @@ public:
 	enum {	
 		SORT_FUNC = 2,
  		SORT_STRING,
-		SORT_STRING_NOCASE,
 		SORT_INT,
 		SORT_FLOAT,
 		SORT_BYTES
@@ -128,14 +127,10 @@ public:
 			result = p->fun(p->GetItemData(na), p->GetItemData(nb), p->sortColumn);
 		}
 
-		if(result == SORT_STRING) {
+		 if(result == SORT_STRING) {
 			p->GetItemText(na, p->sortColumn, buf, 128);
 			p->GetItemText(nb, p->sortColumn, buf2, 128);
-			result = Util::DefaultSort(buf, buf2, false);			
-		} else if(result == SORT_STRING_NOCASE) {
-			p->GetItemText(na, p->sortColumn, buf, 128);
-			p->GetItemText(nb, p->sortColumn, buf2, 128);
-			result = Util::DefaultSort(buf, buf2, true);			
+			result = Util::DefaultSort(buf, buf2);			
 		} else if(result == SORT_INT) {
 			p->GetItemText(na, p->sortColumn, buf, 128);
 			p->GetItemText(nb, p->sortColumn, buf2, 128);

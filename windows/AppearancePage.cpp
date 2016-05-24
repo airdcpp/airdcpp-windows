@@ -47,7 +47,6 @@ PropPage::Item AppearancePage::items[] = {
 
 PropPage::ListItem AppearancePage::listItems[] = {
 	{ SettingsManager::EXPAND_BUNDLES, ResourceManager::SETTINGS_EXPAND_BUNDLES },
-	{ SettingsManager::NAT_SORT, ResourceManager::NAT_SORT },
 	{ SettingsManager::CLIENT_COMMANDS , ResourceManager::SET_CLIENT_COMMANDS },
 	{ SettingsManager::SERVER_COMMANDS , ResourceManager::SETTINGS_SERVER_COMMANDS },
 	{ SettingsManager::FLASH_WINDOW_ON_PM, ResourceManager::FLASH_WINDOW_ON_PM },

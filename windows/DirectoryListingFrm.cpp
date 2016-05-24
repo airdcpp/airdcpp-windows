@@ -1799,9 +1799,9 @@ int DirectoryListingFrame::ItemInfo::compareItems(const ItemInfo* a, const ItemI
 				case COLUMN_FILENAME: {
 						if (a->dir->getType() == DirectoryListing::Directory::TYPE_ADLS && b->dir->getType() != DirectoryListing::Directory::TYPE_ADLS) return -1;
 						if (a->dir->getType() != DirectoryListing::Directory::TYPE_ADLS && b->dir->getType() == DirectoryListing::Directory::TYPE_ADLS) return 1;
-						return Util::DefaultSort(a->getNameW().c_str(), b->getNameW().c_str(), true);
+						return Util::DefaultSort(a->getNameW().c_str(), b->getNameW().c_str());
 					}
-				default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str(), true);
+				default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str());
 			}
 		} else {
 			return -1;
@@ -1813,8 +1813,8 @@ int DirectoryListingFrame::ItemInfo::compareItems(const ItemInfo* a, const ItemI
 			case COLUMN_EXACTSIZE: return compare(a->file->getSize(), b->file->getSize());
 			case COLUMN_SIZE: return compare(a->file->getSize(), b->file->getSize());
 			case COLUMN_DATE: return compare(a->file->getRemoteDate(), b->file->getRemoteDate());
-			case COLUMN_FILENAME: return Util::DefaultSort(a->getNameW().c_str(), b->getNameW().c_str(), true);
-			default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str(), true);
+			case COLUMN_FILENAME: return Util::DefaultSort(a->getNameW().c_str(), b->getNameW().c_str());
+			default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str());
 		}
 	}
 }

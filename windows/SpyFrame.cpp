@@ -101,7 +101,7 @@ LRESULT SpyFrame::onColumnClickResults(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHa
 		if(l->iSubItem == COLUMN_COUNT) {
 			ctrlSearches.setSort(l->iSubItem, ExListViewCtrl::SORT_INT);
 		} else {
-			ctrlSearches.setSort(l->iSubItem, ExListViewCtrl::SORT_STRING_NOCASE);
+			ctrlSearches.setSort(l->iSubItem, ExListViewCtrl::SORT_STRING);
 		}
 	}
 	return 0;

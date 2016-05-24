@@ -109,9 +109,6 @@ int ExListViewCtrl::insert(TStringList& aList, int iImage, LPARAM lParam) {
 			
 			if(comp == SORT_STRING) {
 				GetItemText(loc, sortColumn, buf, 128);
-				comp = compare(b, tstring(buf));
-			} else if(comp == SORT_STRING_NOCASE) {
-				GetItemText(loc, sortColumn, buf, 128);
 				comp =  stricmp(b.c_str(), buf);
 			} else if(comp == SORT_INT) {
 				GetItemText(loc, sortColumn, buf, 128);
@@ -138,8 +135,6 @@ int ExListViewCtrl::insert(TStringList& aList, int iImage, LPARAM lParam) {
 			comp = fun(lParam, data, sortColumn);
 		}
 		if(comp == SORT_STRING) {
-			comp = compare(b, tstring(buf));
-		} else if(comp == SORT_STRING_NOCASE) {
 			comp =  stricmp(b.c_str(), buf);
 		} else if(comp == SORT_INT) {
 			comp = compare(c, _tstoi(buf)); 
