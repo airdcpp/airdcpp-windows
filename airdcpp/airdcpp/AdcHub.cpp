@@ -257,6 +257,10 @@ void AdcHub::handle(AdcCommand::INF, AdcCommand& c) noexcept {
 		u->getUser()->setFlag(User::ASCH);
 	}
 
+	if (u->getIdentity().supports(CCPM_FEATURE)) {
+		u->getUser()->setFlag(User::CCPM);
+	}
+
 	if (u->getUser() == getMyIdentity().getUser()) {
 		State oldState = getConnectState();
 		if (oldState != STATE_NORMAL) {

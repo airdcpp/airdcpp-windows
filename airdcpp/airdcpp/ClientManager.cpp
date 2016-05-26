@@ -721,28 +721,6 @@ void ClientManager::getUserInfoList(const UserPtr& user, User::UserInfoList& aLi
 	}
 }
 
-bool ClientManager::getSupportsCCPM(const UserPtr& aUser, string& _error) {
-	if (!aUser->isOnline()) {
-		_error = STRING(USER_OFFLINE);
-		return false;
-	} else if (aUser->isNMDC()) {
-		_error = STRING(CCPM_NOT_SUPPORTED_NMDC);
-		return false;
-	}
-
-
-	RLock l(cs);
-	OnlinePair op = onlineUsers.equal_range(const_cast<CID*>(&aUser->getCID()));
-	for (auto u : op | map_values) {
-		if (u->supportsCCPM())
-			return true;
-	}
-
-	_error = STRING(CCPM_NOT_SUPPORTED);
-	return false;
-}
-
-
 OnlineUserPtr ClientManager::findOnlineUser(const HintedUser& user, bool aAllowFallback) const noexcept {
 	return findOnlineUser(user.user->getCID(), user.hint, aAllowFallback);
 }
