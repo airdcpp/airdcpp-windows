@@ -71,6 +71,7 @@ LRESULT AutoSearchAdvancedPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, L
 	CheckDlgButton(IDC_CHECK_QUEUED, options.checkQueued);
 	CheckDlgButton(IDC_CHECK_SHARED, options.checkShared);
 	CheckDlgButton(IDC_MATCH_FULL_PATH, options.matchFullPath);
+	CheckDlgButton(IDC_AS_USERMATCHER_EXCLUDE, options.userMatcherExclude);
 
 	if (options.matcherString != options.searchString) {
 		ctrlMatcherString.SetWindowText(Text::toT(options.matcherString).c_str());
