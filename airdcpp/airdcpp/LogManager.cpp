@@ -74,7 +74,7 @@ void LogManager::log(const UserPtr& aUser, ParamMap& params) noexcept {
 
 void LogManager::setRead() noexcept {
 	auto updated = cache.setRead();
-	if (updated > 0) {
+	if (updated.logmessages > 0 || updated.chatmessages > 0) {
 		fire(LogManagerListener::MessagesRead());
 	}
 }

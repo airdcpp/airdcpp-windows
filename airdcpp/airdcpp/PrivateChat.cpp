@@ -159,8 +159,12 @@ void PrivateChat::handleMessage(const ChatMessagePtr& aMessage) noexcept {
 
 void PrivateChat::setRead() noexcept {
 	auto updated = cache.setRead();
-	if (updated > 0) {
+	
+	if (updated.chatmessages > 0) {
 		sendPMInfo(PrivateChat::MSG_SEEN);
+	}
+
+	if (updated.logmessages > 0 || updated.chatmessages > 0) {
 		fire(PrivateChatListener::MessagesRead(), this);
 	}
 }

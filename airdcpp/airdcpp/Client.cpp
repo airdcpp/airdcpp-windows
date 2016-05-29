@@ -263,7 +263,7 @@ void Client::statusMessage(const string& aMessage, LogMessage::Severity aSeverit
 
 void Client::setRead() noexcept {
 	auto updated = cache.setRead();
-	if (updated > 0) {
+	if (updated.logmessages > 0 || updated.chatmessages > 0) {
 		fire(ClientListener::MessagesRead(), this);
 	}
 }
