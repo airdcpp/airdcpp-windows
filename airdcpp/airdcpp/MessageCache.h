@@ -30,8 +30,12 @@ namespace dcpp {
 	typedef deque<Message> MessageList;
 
 	struct MessageCount {
-		int logmessages = 0;
-		int chatmessages = 0;
+		int logMessages = 0;
+		int chatMessages = 0;
+
+		bool hasMessages() const noexcept {
+			return logMessages > 0 || chatMessages > 0;
+		}
 	};
 
 	class MessageCache {

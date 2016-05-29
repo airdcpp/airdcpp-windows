@@ -56,17 +56,17 @@ namespace dcpp {
 	}
 
 	MessageCount MessageCache::setRead() noexcept {
-		RLock l(cs);
 		MessageCount updated;
+
+		WLock l(cs);
 		for (auto& message : messages) {
 			if (message.type == Message::TYPE_CHAT) {
 				if (!message.chatMessage->getRead()) {
-					updated.chatmessages++;
+					updated.chatMessages++;
 					message.chatMessage->setRead(true);
 				}
-			}
-			else if (!message.logMessage->getRead()) {
-				updated.logmessages++;
+			} else if (!message.logMessage->getRead()) {
+				updated.logMessages++;
 				message.logMessage->setRead(true);
 			}
 		}
