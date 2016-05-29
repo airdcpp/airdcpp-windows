@@ -622,18 +622,31 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 		bundleMenu.InsertSeparatorFirst(CTSTRING_F(X_BUNDLES, bl.size()));
 	}
 
-	WinUtil::appendBundlePrioMenu(bundleMenu, bl);
-	ListBaseType::MenuItemList customItems;
-	ctrlQueue.list.appendCopyMenu(bundleMenu, customItems);
-	
 	bool hasFinished = any_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isFinished(); });
 	bool filesOnly = all_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isFileBundle(); });
+	bool allFinished = all_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isFinished(); });
 
 	/* Insert sub menus */
 	BundlePtr b = nullptr;
 	if (bl.size() == 1) {
 		b = bl.front();
 	}
+	if (!allFinished) {
+		WinUtil::appendBundlePrioMenu(bundleMenu, bl);
+
+		//Maybe move this to priority menu??
+		auto pauseMenu = bundleMenu.createSubMenu(TSTRING(PAUSE_BUNDLE_FOR), true);
+		auto pauseTimes = { 5, 10, 30, 60, 90, 120 }; //add some times + custom time...
+		for (auto t : pauseTimes) {
+			pauseMenu->appendItem(Util::toStringW(t) + _T(" ") + TSTRING(MINUTES), [=] {
+				for (auto b : bl)
+					QueueManager::getInstance()->setBundlePriority(b, QueueItemBase::PAUSED_FORCE, false, GET_TIME() + (t * 60));
+			}, OMenu::FLAG_THREADED);
+		}
+		bundleMenu.appendSeparator();
+	}
+	ListBaseType::MenuItemList customItems;
+	ctrlQueue.list.appendCopyMenu(bundleMenu, customItems);
 
 	if (b) {
 		//current sources
@@ -1619,6 +1632,10 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 			if (isFinished() || getPriority() == -1)
 				return Util::emptyStringT;
 			bool autoPrio = (bundle && bundle->getAutoPriority()) || (qi && qi->getAutoPriority());
+
+			if (getPriority() == QueueItemBase::PAUSED_FORCE && bundle && bundle->getResumeTime() > 0)
+				return TSTRING_F(PAUSED_UNTIL_X, Text::toT(Util::formatTime("[%H:%M]", bundle->getResumeTime()))); //Show time left instead? needs bundle updates to be implemented for these...
+
 			return Text::toT(AirUtil::getPrioText(getPriority())) + (autoPrio ? _T(" (") + TSTRING(AUTO) + _T(")") : Util::emptyStringT);
 		}
 		case COLUMN_STATUS: return getStatusString();

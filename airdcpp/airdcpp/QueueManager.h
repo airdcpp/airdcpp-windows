@@ -278,7 +278,7 @@ public:
 	// Set new priority for the specified bundle
 	// keepAutoPrio should be used only when performing auto priorization.
 	// Use DEFAULT priority to enable auto priority
-	void setBundlePriority(BundlePtr& aBundle, QueueItemBase::Priority p, bool aKeepAutoPrio=false) noexcept;
+	void setBundlePriority(BundlePtr& aBundle, QueueItemBase::Priority p, bool aKeepAutoPrio=false, time_t aResumeTime = 0) noexcept;
 
 	// Toggle autoprio state for the bundle
 	void toggleBundleAutoPriority(QueueToken aBundleToken) noexcept;

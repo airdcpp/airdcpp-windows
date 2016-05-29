@@ -2059,7 +2059,7 @@ void QueueManager::setBundlePriority(QueueToken aBundleToken, QueueItemBase::Pri
 	setBundlePriority(bundle, p, false);
 }
 
-void QueueManager::setBundlePriority(BundlePtr& aBundle, QueueItemBase::Priority p, bool isAuto) noexcept {
+void QueueManager::setBundlePriority(BundlePtr& aBundle, QueueItemBase::Priority p, bool isAuto, time_t aResumeTime/* = 0*/) noexcept {
 	if (!aBundle || aBundle->getStatus() == Bundle::STATUS_RECHECK)
 		return;
 
@@ -2081,6 +2081,8 @@ void QueueManager::setBundlePriority(BundlePtr& aBundle, QueueItemBase::Priority
 		if (!isAuto) {
 			aBundle->setAutoPriority(false);
 		}
+
+		aBundle->setResumeTime(aResumeTime);
 
 		fire(QueueManagerListener::BundlePriority(), aBundle);
 		if (aBundle->isFileBundle()) {
@@ -2341,6 +2343,7 @@ private:
 	bool inFile;
 	QueueToken curToken = 0;
 	time_t bundleDate = 0;
+	time_t resumeTime = 0;
 	bool addedByAutosearch = false;
 
 	int version;
@@ -2426,6 +2429,7 @@ static const string sVersion = "Version";
 static const string sTimeFinished = "TimeFinished";
 static const string sLastSource = "LastSource";
 static const string sAddedByAutoSearch = "AddedByAutoSearch";
+static const string sResumeTime = "ResumeTime";
 
 QueueItemBase::Priority QueueLoader::validatePrio(const string& aPrio) {
 	int prio = Util::toInt(aPrio);
@@ -2445,6 +2449,7 @@ void QueueLoader::createFile(QueueItemPtr& aQI, bool aAddedByAutosearch) {
 		curBundle = new Bundle(aQI, bundleDate, curToken, false);
 		curBundle->setTimeFinished(aQI->getTimeFinished());
 		curBundle->setAddedByAutoSearch(aAddedByAutosearch);
+		curBundle->setResumeTime(resumeTime);
 	} else {
 		qm->fileQueue.remove(aQI);
 		throw Exception("Duplicate token");
@@ -2458,6 +2463,7 @@ void QueueLoader::startTag(const string& name, StringPairList& attribs, bool sim
 		curToken = Util::toUInt32(getAttrib(attribs, sToken, 1));
 		bundleDate = Util::toInt64(getAttrib(attribs, sDate, 2));
 		addedByAutosearch = Util::toBool(Util::toInt(getAttrib(attribs, sAddedByAutoSearch, 3)));
+		resumeTime = static_cast<time_t>(Util::toInt64(getAttrib(attribs, sResumeTime, 4)));
 		inFile = true;
 		version = Util::toInt(getAttrib(attribs, sVersion, 0));
 		if (version == 0 || version > Util::toInt(FILE_BUNDLE_VERSION))
@@ -2480,6 +2486,8 @@ void QueueLoader::startTag(const string& name, StringPairList& attribs, bool sim
 			added = GET_TIME();
 		}
 
+		time_t b_resumeTime = static_cast<time_t>(Util::toInt64(getAttrib(attribs, sResumeTime, 5)));
+
 		if (ConnectionManager::getInstance()->tokens.addToken(token, CONNECTION_TYPE_DOWNLOAD)) {
 			curBundle = new Bundle(bundleTarget, added, !prio.empty() ? validatePrio(prio) : Bundle::DEFAULT, dirDate, Util::toUInt32(token), false);
 			time_t finished = static_cast<time_t>(Util::toInt64(getAttrib(attribs, sTimeFinished, 5)));
@@ -2487,6 +2495,8 @@ void QueueLoader::startTag(const string& name, StringPairList& attribs, bool sim
 				curBundle->setTimeFinished(finished);
 			}
 			curBundle->setAddedByAutoSearch(b_autoSearch);
+			curBundle->setResumeTime(b_resumeTime);
+
 		} else {
 			throw Exception("Duplicate bundle token");
 		}
@@ -2860,6 +2870,7 @@ void QueueManager::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 
 	vector<pair<QueueItemPtr, QueueItemBase::Priority>> qiPriorities;
 	vector<pair<BundlePtr, QueueItemBase::Priority>> bundlePriorities;
+	BundleList resumeBundles;
 	auto prioType = SETTING(AUTOPRIO_TYPE);
 	bool calculate = lastAutoPrio == 0 || (aTick >= lastAutoPrio + (SETTING(AUTOPRIO_INTERVAL)*1000));
 
@@ -2878,6 +2889,9 @@ void QueueManager::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 					bundlePriorities.emplace_back(b, p2);
 				}
 			}
+
+			if (b->getResumeTime() > 0 && GET_TIME() > b->getResumeTime())
+				resumeBundles.push_back(b);
 		}
 		
 		// queueitems
@@ -2910,6 +2924,10 @@ void QueueManager::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 			for(auto& qp: qiPriorities)
 				setQIPriority(qp.first, qp.second);
 		}
+	}
+
+	for (auto& b : resumeBundles) {
+		setBundlePriority(b, QueueItemBase::LOW, false);
 	}
 }
 
