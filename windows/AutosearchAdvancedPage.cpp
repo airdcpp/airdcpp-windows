@@ -48,6 +48,7 @@ LRESULT AutoSearchAdvancedPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, L
 	::SetWindowText(GetDlgItem(IDC_MATCH_FULL_PATH), CTSTRING(MATCH_FULL_PATH));
 	::SetWindowText(GetDlgItem(IDC_AS_EXCLUDED_LABEL), CTSTRING(EXCLUDED_WORDS_DESC));
 	::SetWindowText(GetDlgItem(IDC_EXACT_MATCH), CTSTRING(REQUIRE_EXACT_MATCH));
+	::SetWindowText(GetDlgItem(IDC_AS_USERMATCHER_EXCLUDE), CTSTRING(EXCLUDE_MATCHES));
 
 	ATTACH(IDC_MATCHER_TYPE, cMatcherType);
 	cMatcherType.AddString(CTSTRING(PLAIN_TEXT));
@@ -89,6 +90,7 @@ bool AutoSearchAdvancedPage::write() {
 	options.checkQueued = IsDlgButtonChecked(IDC_CHECK_QUEUED) ? true : false;
 	options.checkShared = IsDlgButtonChecked(IDC_CHECK_SHARED) ? true : false;
 	options.matchFullPath = IsDlgButtonChecked(IDC_MATCH_FULL_PATH) ? true : false;
+	options.userMatcherExclude = IsDlgButtonChecked(IDC_AS_USERMATCHER_EXCLUDE) ? true : false;
 
 	auto useDefaultMatcher = IsDlgButtonChecked(IDC_USE_MATCHER) != BST_CHECKED;
 	auto exactMatch = IsDlgButtonChecked(IDC_EXACT_MATCH) == BST_CHECKED;

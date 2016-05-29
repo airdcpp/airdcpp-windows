@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airdc-git\AirDC.rc
+// Used by N:\projects\airgit\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -1427,6 +1427,7 @@
 #define IDC_IGNORE_NOTE                 1741
 #define IDC_CHECK3                      1742
 #define IDC_IGNORE_PM                   1742
+#define IDC_AS_USERMATCHER_EXCLUDE      1742
 #define IDC_USER_LIST_COLOR_DESC        1744
 #define IDC_TB_PROGRESS_STYLE           1745
 #define IDC_COLOR_LIST                  1751

@@ -69,7 +69,7 @@ enum Strings { // @DontAdd
 	AS_REPORT, // "Report hit in main chat"
 	AS_TIMEVAR_AVAILABLE, // "Available time variables"
 	AS_TIMEVAR_HELP, // "In addition to incrementing numbers, you may also insert time variables in the search string. Note that the parameters can also be used in the custom matcher."
-	AS_USER_MATCH, // "Only from users with nick matching: (wildcards, | separate)"
+	AS_USER_MATCH, // "Users with nick matching: (wildcards, | separate)"
 	AS_X_FOUND_FROM, // "A %1% %2% was found from a user %3%"
 	ATTEMPT_AUTO_UPDATE, // "AirDC++ will now attempt to update your installation automatically"
 	AT_LEAST, // "At least"

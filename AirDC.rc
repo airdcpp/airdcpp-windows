@@ -2319,8 +2319,8 @@ EXSTYLE WS_EX_TRANSPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "Require exact match",IDC_EXACT_MATCH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,33,235,10
-    EDITTEXT        IDC_U_MATCH,11,117,246,14,ES_AUTOHSCROLL
-    LTEXT           "Only from users with nick matching: (wildcards, | separate)",IDC_USER_MATCH_TEXT,10,103,239,8
+    EDITTEXT        IDC_U_MATCH,11,112,246,14,ES_AUTOHSCROLL
+    LTEXT           "Users with nick matching: (wildcards, | separate)",IDC_USER_MATCH_TEXT,10,98,239,8
     CONTROL         "Use a custom matcher for search results",IDC_USE_MATCHER,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,46,293,10
     LTEXT           "Type",IDC_TYPE,268,63,46,9
@@ -2335,6 +2335,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,20,302,10
     COMBOBOX        IDC_AS_EXCLUDED,11,183,246,30,CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Excluded words",IDC_AS_EXCLUDED_LABEL,10,170,151,8
+    CONTROL         "Exclude matches",IDC_AS_USERMATCHER_EXCLUDE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,259,113,135,10
 END
 
 IDD_AS_SEARCH_TIMES DIALOGEX 0, 0, 404, 216
