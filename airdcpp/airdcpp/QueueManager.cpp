@@ -2059,9 +2059,17 @@ void QueueManager::setBundlePriority(QueueToken aBundleToken, QueueItemBase::Pri
 	setBundlePriority(bundle, p, false);
 }
 
-void QueueManager::setBundlePriority(BundlePtr& aBundle, QueueItemBase::Priority p, bool isAuto, time_t aResumeTime/* = 0*/) noexcept {
+void QueueManager::setBundlePriority(BundlePtr& aBundle, QueueItemBase::Priority p, bool aKeepAutoPrio, time_t aResumeTime/* = 0*/) noexcept {
 	if (!aBundle || aBundle->getStatus() == Bundle::STATUS_RECHECK)
 		return;
+
+	if (p == QueueItem::DEFAULT) {
+		if (!aBundle->getAutoPriority()) {
+			toggleBundleAutoPriority(aBundle);
+		}
+		
+		return;
+	}
 
 	QueueItemBase::Priority oldPrio = aBundle->getPriority();
 	if (oldPrio == p) {
@@ -2078,7 +2086,7 @@ void QueueManager::setBundlePriority(BundlePtr& aBundle, QueueItemBase::Priority
 		userQueue.setBundlePriority(aBundle, p);
 		bundleQueue.addSearchPrio(aBundle);
 		bundleQueue.recalculateSearchTimes(aBundle->isRecent(), true, GET_TICK());
-		if (!isAuto) {
+		if (!aKeepAutoPrio) {
 			aBundle->setAutoPriority(false);
 		}
 
@@ -2177,7 +2185,7 @@ void QueueManager::setQIPriority(const string& aTarget, QueueItemBase::Priority 
 	setQIPriority(q, p);
 }
 
-void QueueManager::setQIPriority(QueueItemPtr& q, QueueItemBase::Priority p, bool isAP /*false*/) noexcept {
+void QueueManager::setQIPriority(QueueItemPtr& q, QueueItemBase::Priority p, bool aKeepAutoPrio /*false*/) noexcept {
 	HintedUserList getConn;
 	bool running = false;
 	if (!q || !q->getBundle()) {
@@ -2185,9 +2193,17 @@ void QueueManager::setQIPriority(QueueItemPtr& q, QueueItemBase::Priority p, boo
 		return;
 	}
 
+	if (p == QueueItem::DEFAULT) {
+		if (!q->getAutoPriority()) {
+			setQIAutoPriority(q->getTarget());
+		}
+		
+		return;
+	}
+
 	BundlePtr b = q->getBundle();
 	if (b->isFileBundle()) {
-		dcassert(!isAP);
+		dcassert(!aKeepAutoPrio);
 		setBundlePriority(b, p, false);
 		return;
 	}
@@ -2202,7 +2218,7 @@ void QueueManager::setQIPriority(QueueItemPtr& q, QueueItemBase::Priority p, boo
 
 			running = q->isRunning();
 
-			if (!isAP)
+			if (!aKeepAutoPrio)
 				q->setAutoPriority(false);
 
 			userQueue.setQIPriority(q, p);

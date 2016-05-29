@@ -139,7 +139,7 @@ public:
 	// Set priority for the file.
 	// keepAutoPrio should be used only when performing auto priorization.
 	// Use DEFAULT priority to enable auto priority
-	void setQIPriority(QueueItemPtr& qi, QueueItemBase::Priority p, bool keepAutoPrio=false) noexcept;
+	void setQIPriority(QueueItemPtr& qi, QueueItemBase::Priority p, bool aKeepAutoPrio = false) noexcept;
 
 	// Toggle autoprio for the file
 	void setQIAutoPriority(const string& aTarget) noexcept;
