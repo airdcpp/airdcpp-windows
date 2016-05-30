@@ -1560,6 +1560,31 @@ void WinUtil::appendBundlePrioMenu(OMenu& aParent, const BundleList& aBundles) {
 	appendPrioMenu<BundlePtr>(aParent, aBundles, true, prioF, autoPrioF);
 }
 
+void WinUtil::appendBundlePauseMenu(OMenu& aParent, const BundleList& aBundles) {
+	
+	//Maybe move this to priority menu??
+	auto pauseMenu = aParent.createSubMenu(TSTRING(PAUSE_BUNDLE_FOR), true);
+	auto pauseTimes = { 5, 10, 30, 60, 90, 120, 180 };
+	for (auto t : pauseTimes) {
+		pauseMenu->appendItem(Util::toStringW(t) + _T(" ") + TSTRING(MINUTES), [=] {
+			for (auto b : aBundles)
+				QueueManager::getInstance()->setBundlePriority(b, QueueItemBase::PAUSED_FORCE, false, GET_TIME() + (t * 60));
+		}, OMenu::FLAG_THREADED);
+	}
+	pauseMenu->appendSeparator();
+	pauseMenu->appendItem(TSTRING(CUSTOM), [=] {
+		LineDlg dlg;
+		dlg.title = TSTRING(PAUSE_BUNDLE_FOR);
+		dlg.description = CTSTRING(PAUSE_TIME);
+		if (dlg.DoModal() == IDOK) {
+			for (auto b : aBundles)
+				QueueManager::getInstance()->setBundlePriority(b, QueueItemBase::PAUSED_FORCE, false, GET_TIME() + (Util::toUInt(Text::fromT(dlg.line)) * 60));
+		}
+	}, OMenu::FLAG_THREADED);
+
+}
+
+
 void WinUtil::appendFilePrioMenu(OMenu& aParent, const QueueItemList& aFiles) {
 	auto prioF = [=](QueueItemBase::Priority aPrio) {
 		for (auto& qi: aFiles)

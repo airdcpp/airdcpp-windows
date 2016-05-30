@@ -2073,6 +2073,10 @@ void QueueManager::setBundlePriority(BundlePtr& aBundle, QueueItemBase::Priority
 
 	QueueItemBase::Priority oldPrio = aBundle->getPriority();
 	if (oldPrio == p) {
+		if (aBundle->getResumeTime() != aResumeTime) {
+			aBundle->setResumeTime(aResumeTime);
+			fire(QueueManagerListener::BundlePriority(), aBundle);
+		}
 		return;
 	}
 
@@ -2943,7 +2947,7 @@ void QueueManager::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	}
 
 	for (auto& b : resumeBundles) {
-		setBundlePriority(b, QueueItemBase::LOW, false);
+		setBundlePriority(b, QueueItemBase::DEFAULT, false);
 	}
 }
 
