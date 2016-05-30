@@ -686,7 +686,7 @@ void AdcHub::handle(AdcCommand::SCH, AdcCommand& c) noexcept {
 		}
 	}
 
-	SearchManager::getInstance()->respond(c, *ou, isUdpActive, getIpPort(), getShareProfile());
+	SearchManager::getInstance()->respond(c, *ou, isUdpActive, getIpPort(), get(HubSettings::ShareProfile));
 }
 
 void AdcHub::handle(AdcCommand::RES, AdcCommand& c) noexcept {
@@ -760,12 +760,12 @@ void AdcHub::handle(AdcCommand::GET, AdcCommand& c) noexcept {
 
 		size_t n = 0;
 		
-		if (getShareProfile() != SP_HIDDEN) {
+		if (get(HubSettings::ShareProfile) != SP_HIDDEN) {
 			if (SETTING(USE_PARTIAL_SHARING))
 				n = QueueManager::getInstance()->getQueuedBundleFiles();
 
 			int64_t tmp = 0;
-			ShareManager::getInstance()->getProfileInfo(getShareProfile(), tmp, n);
+			ShareManager::getInstance()->getProfileInfo(get(HubSettings::ShareProfile), tmp, n);
 		}
 		
 		// Ideal size for m is n * k / ln(2), but we allow some slack
@@ -1441,9 +1441,9 @@ void AdcHub::infoImpl() noexcept {
 
 	size_t fileCount = 0;
 	int64_t size = 0;
-	if (getShareProfile() != SP_HIDDEN) {
+	if (get(HubSettings::ShareProfile) != SP_HIDDEN) {
 		fileCount = SETTING(USE_PARTIAL_SHARING) ? QueueManager::getInstance()->getQueuedBundleFiles() : 0;
-		ShareManager::getInstance()->getProfileInfo(getShareProfile(), size, fileCount);
+		ShareManager::getInstance()->getProfileInfo(get(HubSettings::ShareProfile), size, fileCount);
 	}
 
 	addParam(lastInfoMap, c, "SS", Util::toString(size));

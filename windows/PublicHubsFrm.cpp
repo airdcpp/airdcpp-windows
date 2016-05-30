@@ -158,7 +158,6 @@ LRESULT PublicHubsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	
 	hubsMenu.CreatePopupMenu();
 	hubsMenu.AppendMenu(MF_STRING, IDC_CONNECT, CTSTRING(CONNECT));
-	hubsMenu.AppendMenu(MF_STRING, IDC_CONNECT_WITH, CTSTRING(CONNECT_WITH_PROFILE));
 	hubsMenu.AppendMenu(MF_STRING, IDC_ADD, CTSTRING(ADD_TO_FAVORITES));
 	hubsMenu.AppendMenu(MF_STRING, IDC_COPY_HUB, CTSTRING(COPY_HUB));
 	hubsMenu.SetMenuDefaultItem(IDC_CONNECT);
@@ -196,7 +195,7 @@ LRESULT PublicHubsFrame::onDoubleClickHublist(int /*idCtrl*/, LPNMHDR pnmh, BOOL
 		return 0;
 	
 	NMITEMACTIVATE* item = (NMITEMACTIVATE*) pnmh;
-	connectHub(item->iItem, SETTING(DEFAULT_SP));
+	connectHub(item->iItem);
 
 	return 0;
 }
@@ -206,28 +205,7 @@ LRESULT PublicHubsFrame::onEnter(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHa
 		return 0;
 
 	int item = ctrlHubs.GetNextItem(-1, LVNI_FOCUSED);
-	connectHub(item, SETTING(DEFAULT_SP));
-
-	return 0;
-}
-
-LRESULT PublicHubsFrame::onConnectWith(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/) {
-	if(!checkNick())
-		return 0;
-
-	int item = ctrlHubs.GetNextItem(-1, LVNI_FOCUSED);
-	if(item != -1) {
-		TCHAR buf[256];
-
-		ctrlHubs.GetItemText(item, COLUMN_SERVER, buf, 256);
-
-		ConnectDlg dlg(true);
-		dlg.title = TSTRING(CONNECT_WITH_PROFILE);
-		dlg.address = buf;
-		if(dlg.DoModal(m_hWnd) == IDOK) {
-			connectHub(item, dlg.curProfile);
-		}
-	}
+	connectHub(item);
 
 	return 0;
 }
@@ -247,7 +225,7 @@ LRESULT PublicHubsFrame::onClickedConfigure(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	return 0;
 }
 
-void PublicHubsFrame::connectHub(int pos, ProfileToken shareProfile) {
+void PublicHubsFrame::connectHub(int pos) {
 	if (pos == -1)
 		return;
 
@@ -269,7 +247,7 @@ void PublicHubsFrame::connectHub(int pos, ProfileToken shareProfile) {
 	r->setShared(Text::fromT(buf));
 	FavoriteManager::getInstance()->addRecent(r);
 				
-	WinUtil::connectHub(r, shareProfile);
+	WinUtil::connectHub(r);
 }
 
 LRESULT PublicHubsFrame::onClickedConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -278,7 +256,7 @@ LRESULT PublicHubsFrame::onClickedConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 
 	int i = -1;
 	while((i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		connectHub(i, SETTING(DEFAULT_SP));
+		connectHub(i);
 	}
 	return 0;
 }

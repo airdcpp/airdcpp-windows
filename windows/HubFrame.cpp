@@ -208,7 +208,7 @@ bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*messag
 		if(!param.empty()) {
 			if(SETTING(JOIN_OPEN_NEW_WINDOW)) {
 				RecentHubEntryPtr r = new RecentHubEntry(Text::fromT(param));
-				WinUtil::connectHub(r, SETTING(DEFAULT_SP));
+				WinUtil::connectHub(r);
 			} else {
 				BOOL whatever = FALSE;
 				onFollow(0, 0, 0, whatever);
@@ -954,7 +954,7 @@ LRESULT HubFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 	tabMenu.AppendMenu(MF_STRING, ID_FILE_RECONNECT, CTSTRING(MENU_RECONNECT));
 	tabMenu.AppendMenu(MF_SEPARATOR);
 
-	auto p = ShareManager::getInstance()->getShareProfile(client->getShareProfile());
+	auto p = ShareManager::getInstance()->getShareProfile(client->get(HubSettings::ShareProfile));
 
 	tabMenu.appendItem(CTSTRING_F(OPEN_HUB_FILELIST, Text::toT(p->getPlainName())), [this] { 
 		handleOpenOwnList(); 
@@ -974,7 +974,7 @@ LRESULT HubFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 }
 
 void HubFrame::handleOpenOwnList(){
-	DirectoryListingManager::getInstance()->openOwnList(client->getShareProfile());
+	DirectoryListingManager::getInstance()->openOwnList(client->get(HubSettings::ShareProfile));
 }
 
 LRESULT HubFrame::onSetNotify(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){

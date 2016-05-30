@@ -1762,14 +1762,14 @@ LRESULT MainFrame::onReconnectDisconnected(WORD , WORD , HWND , BOOL& ) {
 }
 
 LRESULT MainFrame::onQuickConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
-	ConnectDlg dlg;
+	LineDlg dlg;
 	dlg.title = TSTRING(QUICK_CONNECT);
 	if(dlg.DoModal(m_hWnd) == IDOK){
 		if(SETTING(NICK).empty())
 			return 0;
 
-		RecentHubEntryPtr r = new RecentHubEntry(Text::fromT(dlg.address));
-		WinUtil::connectHub(r, dlg.curProfile);
+		RecentHubEntryPtr r = new RecentHubEntry(Text::fromT(dlg.line));
+		WinUtil::connectHub(r);
 	}
 	return 0;
 }

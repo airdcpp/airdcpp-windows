@@ -29,7 +29,6 @@
 #include "CriticalSection.h"
 #include "OfflineUser.h"
 #include "SettingsManager.h"
-#include "ShareManagerListener.h"
 #include "Singleton.h"
 #include "Socket.h"
 #include "ShareProfile.h"
@@ -50,7 +49,7 @@ class ClientManager : public Speaker<ClientManagerListener>,
 public:
 	// Returns the new ClientPtr
 	// NOTE: the main app should perform connecting to the new hub
-	ClientPtr createClient(const RecentHubEntryPtr& aEntry, ProfileToken aProfile = SETTING(DEFAULT_SP)) noexcept;
+	ClientPtr createClient(const RecentHubEntryPtr& aEntry) noexcept;
 	ClientPtr getClient(const string& aHubURL) noexcept;
 	ClientPtr getClient(ClientToken aClientId) noexcept;
 
@@ -271,12 +270,6 @@ private:
 	* @return OnlineUser* found by CID and hint; discard any user that doesn't match the hint.
 	*/
 	OnlineUser* findOnlineUserHint(const CID& cid, const string& hintUrl, OnlinePairC& p) const noexcept;
-
-	// ShareManagerListener
-	void on(ShareManagerListener::DefaultProfileChanged, ProfileToken aOldDefault, ProfileToken aNewDefault) noexcept;
-	void on(ShareManagerListener::ProfileRemoved, ProfileToken aProfile) noexcept;
-
-	void resetProfile(ProfileToken oldProfile, ProfileToken newProfile, bool nmdcOnly) noexcept;
 
 	// ClientListener
 	void on(Connected, const Client* c) noexcept;

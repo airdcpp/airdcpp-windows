@@ -101,7 +101,7 @@ void RecentHubsFrame::connectSelected() {
 	int i = -1;
 	while ((i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1) {
 		auto r = FavoriteManager::getInstance()->getRecentHubEntry(((RecentHubEntry*) ctrlHubs.GetItemData(i))->getServer());
-		WinUtil::connectHub(r, SETTING(DEFAULT_SP));
+		WinUtil::connectHub(r);
 	}
 }
 

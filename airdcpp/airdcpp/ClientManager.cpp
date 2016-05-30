@@ -49,12 +49,10 @@ using boost::find_if;
 
 ClientManager::ClientManager() : udp(Socket::TYPE_UDP), lastOfflineUserCleanup(GET_TICK()) {
 	TimerManager::getInstance()->addListener(this);
-	ShareManager::getInstance()->addListener(this);
 }
 
 ClientManager::~ClientManager() {
 	TimerManager::getInstance()->removeListener(this);
-	ShareManager::getInstance()->removeListener(this);
 }
 
 ClientPtr ClientManager::createClient(const string& aHubURL, const ClientPtr& aOldClient) noexcept {
@@ -65,9 +63,8 @@ ClientPtr ClientManager::createClient(const string& aHubURL, const ClientPtr& aO
 	return std::make_shared<NmdcHub>(aHubURL, aOldClient);
 }
 
-ClientPtr ClientManager::createClient(const RecentHubEntryPtr& aEntry, ProfileToken aProfile) noexcept {
+ClientPtr ClientManager::createClient(const RecentHubEntryPtr& aEntry) noexcept {
 	auto c = ClientManager::createClient(aEntry->getServer());
-	c->setCustomShareProfile(aProfile);
 	bool added = true;
 
 	{
@@ -614,7 +611,7 @@ void ClientManager::listProfiles(const UserPtr& aUser, ProfileTokenSet& profiles
 	RLock l(cs);
 	OnlinePairC op = onlineUsers.equal_range(const_cast<CID*>(&aUser->getCID()));
 	for(auto i = op.first; i != op.second; ++i) {
-		profiles.insert(i->second->getClient()->getShareProfile());
+		profiles.insert(i->second->getClient()->get(HubSettings::ShareProfile));
 	}
 }
 
@@ -625,7 +622,7 @@ optional<ProfileToken> ClientManager::findProfile(UserConnection& p, const strin
 		for(const auto& ou: op) {
 			if(compare(ou->getIdentity().getSIDString(), userSID) == 0) {
 				p.setHubUrl(ou->getClient()->getHubUrl());
-				return ou->getClient()->getShareProfile();
+				return ou->getClient()->get(HubSettings::ShareProfile);
 			}
 		}
 
@@ -639,10 +636,10 @@ optional<ProfileToken> ClientManager::findProfile(UserConnection& p, const strin
 	RLock l(cs);
 	auto ou = findOnlineUserHint(p.getUser()->getCID(), p.getHubUrl(), op);
 	if(ou) {
-		return ou->getClient()->getShareProfile();
+		return ou->getClient()->get(HubSettings::ShareProfile);
 	} else if(op.first != op.second) {
 		//pick a random profile
-		return op.first->second->getClient()->getShareProfile();
+		return op.first->second->getClient()->get(HubSettings::ShareProfile);
 	}
 
 	return boost::none;
@@ -886,24 +883,6 @@ void ClientManager::infoUpdated() noexcept {
 	}
 }
 
-void ClientManager::resetProfile(ProfileToken oldProfile, ProfileToken newProfile, bool nmdcOnly) noexcept {
-	RLock l(cs);
-	for (auto c : clients | map_values) {
-		if (c->getShareProfile() == oldProfile && (!nmdcOnly || !AirUtil::isAdcHub(c->getHubUrl()))) {
-			c->setCustomShareProfile(newProfile);
-			c->info();
-		}
-	}
-}
-
-void ClientManager::on(ShareManagerListener::DefaultProfileChanged, ProfileToken aOldDefault, ProfileToken aNewDefault) noexcept {
-	resetProfile(aOldDefault, aNewDefault, true);
-}
-
-void ClientManager::on(ShareManagerListener::ProfileRemoved, ProfileToken aProfile) noexcept {
-	resetProfile(aProfile, SETTING(DEFAULT_SP), false);
-}
-
 pair<size_t, size_t> ClientManager::countAschSupport(const OrderedStringSet& hubs) const noexcept {
 	size_t found = 0;
 	size_t total = 0;
@@ -925,7 +904,7 @@ void ClientManager::on(NmdcSearch, Client* aClient, const string& aSeeker, int a
 {
 	fire(ClientManagerListener::IncomingSearch(), aString);
 
-	bool hideShare = aClient->getShareProfile() == SP_HIDDEN;
+	bool hideShare = aClient->get(HubSettings::ShareProfile) == SP_HIDDEN;
 
 	SearchResultList l;
 	ShareManager::getInstance()->nmdcSearch(l, aString, aSearchType, aSize, aFileType, isPassive ? 5 : 10, hideShare);

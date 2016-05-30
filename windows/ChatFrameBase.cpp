@@ -460,7 +460,7 @@ void ChatFrameBase::addMagnet(const StringList& aPaths) {
 
 			callAsync([=] {
 				if (getClient()) {
-					ShareManager::getInstance()->addTempShare(ctrlClient.getTempShareKey(), tth, path, size, getClient()->getShareProfile());
+					ShareManager::getInstance()->addTempShare(ctrlClient.getTempShareKey(), tth, path, size, getClient()->get(HubSettings::ShareProfile));
 				}
 			});
 

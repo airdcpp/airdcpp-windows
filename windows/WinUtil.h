@@ -523,7 +523,7 @@ public:
 	static void addFileDownload(const string& aTarget, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, time_t aDate, Flags::MaskType aFlags = 0, int8_t prio = -1);
 	//static void addFileDownloads(BundleFileList& aFiles, const HintedUser& aUser, Flags::MaskType aFlags = 0, bool addBad = true);
 
-	static void connectHub(const RecentHubEntryPtr& aEntry, ProfileToken aProfile);
+	static void connectHub(const RecentHubEntryPtr& aEntry);
 	static tstring formatFolderContent(int fileCount, int folderCount);
 	static tstring formatFileType(const string& aFileName);
 };

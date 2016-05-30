@@ -1566,7 +1566,6 @@
 #define IDC_GRANTSLOT_WEEK              10083
 #define IDC_UNGRANTSLOT                 10084
 #define IDC_UPLOAD_QUEUE                10085
-#define IDC_CONNECT_WITH                10086
 #define IDC_OPEN_LINK                   10087
 #define IDC_THROTTLE_ENABLE             10093
 #define IDC_PROGRESS_TEXT_COLOR_DOWN    10102

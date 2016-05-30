@@ -975,7 +975,6 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 		}  else if (!selectedWord.empty() && AirUtil::isHubLink(Text::fromT(selectedWord))) {
 			menu.InsertSeparatorFirst(CTSTRING(LINK));
 			menu.appendItem(TSTRING(CONNECT), [this] { handleOpenLink(); });
-			menu.appendItem(TSTRING(CONNECT_WITH_PROFILE), [this] { handleConnectWith(); });
 			menu.appendSeparator();
 		} else if (!isPath) {
 			menu.InsertSeparatorFirst(CTSTRING(TEXT));
@@ -1899,20 +1898,6 @@ LRESULT RichTextBox::handleLink(ENLINK& link) {
 		}*/
 	}
 	return 0;
-}
-
-void RichTextBox::handleConnectWith() {
-	string address = Text::fromT(selectedWord);
-	if (!AirUtil::isHubLink(address))
-		return;
-
-	ConnectDlg dlg(true);
-	dlg.title = TSTRING(CONNECT_WITH_PROFILE);
-	dlg.address = selectedWord;
-	if(dlg.DoModal(m_hWnd) == IDOK){
-		RecentHubEntryPtr r = new RecentHubEntry(Text::fromT(selectedWord));
-		WinUtil::connectHub(r, dlg.curProfile);
-	}
 }
 
 void RichTextBox::handleSearch() {

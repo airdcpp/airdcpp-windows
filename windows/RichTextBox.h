@@ -120,7 +120,6 @@ public:
 	void handleUnignore();
 
 	void handleOpenLink();
-	void handleConnectWith();
 
 	LRESULT onCopyUserInfo(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
