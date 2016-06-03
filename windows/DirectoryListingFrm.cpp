@@ -94,6 +94,7 @@ DirectoryListingFrame::DirectoryListingFrame(const DirectoryListingPtr& aList) :
 }
 
 DirectoryListingFrame::~DirectoryListingFrame() {
+	dl->removeListener(this);
 }
 
 void DirectoryListingFrame::DisableWindow(bool redraw) {

@@ -148,6 +148,7 @@ bool ClientManager::putClient(ClientPtr& aClient) noexcept {
 
 	aClient->disconnect(true);
 	aClient->shutdown(aClient, false);
+	aClient->removeListener(this);
 
 	{
 		WLock l(cs);
