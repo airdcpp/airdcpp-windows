@@ -384,12 +384,16 @@ void Client::on(Failed, const string& aLine) noexcept {
 	setConnectState(STATE_DISCONNECTED);
 	statusMessage(aLine, LogMessage::SEV_WARNING); //Error?
 
-	if (sock && !sock->isKeyprintMatch()) {
+	if (isKeyprintMismatch()) {
 		fire(ClientListener::KeyprintMismatch(), this);
 	}
 
 	sock->removeListener(this);
 	fire(ClientListener::Failed(), getHubUrl(), aLine);
+}
+
+bool Client::isKeyprintMismatch() const noexcept {
+	return sock && !sock->isKeyprintMatch();
 }
 
 void Client::callAsync(AsyncF f) noexcept {
@@ -420,8 +424,8 @@ std::string Client::getEncryptionInfo() const noexcept {
 	return isConnected() ? sock->getEncryptionInfo() : Util::emptyString;
 }
 
-vector<uint8_t> Client::getKeyprint() const noexcept {
-	return isConnected() ? sock->getKeyprint() : vector<uint8_t>();
+ByteVector Client::getKeyprint() const noexcept {
+	return isConnected() ? sock->getKeyprint() : ByteVector();
 }
 
 void Client::updateActivity() noexcept {

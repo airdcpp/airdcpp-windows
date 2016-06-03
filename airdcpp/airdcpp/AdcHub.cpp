@@ -1468,7 +1468,7 @@ void AdcHub::infoImpl() noexcept {
 
 	if(CryptoManager::getInstance()->TLSOk()) {
 		auto &kp = CryptoManager::getInstance()->getKeyprint();
-		addParam(lastInfoMap, c, "KP", "SHA256/" + Encoder::toBase32(&kp[0], kp.size()));
+		addParam(lastInfoMap, c, "KP", CryptoManager::keyprintToString(kp));
 	}
 
 	bool addV4 = !sock->isV6Valid() || (get(HubSettings::Connection) != SettingsManager::INCOMING_DISABLED && supportsHBRI);

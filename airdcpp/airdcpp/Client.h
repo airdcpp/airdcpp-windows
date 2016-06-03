@@ -197,6 +197,7 @@ public:
 	}
 
 	virtual void allowUntrustedConnect() noexcept;
+	bool isKeyprintMismatch() const noexcept;
 protected:
 	virtual void clearUsers() noexcept = 0;
 

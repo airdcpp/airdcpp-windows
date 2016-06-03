@@ -28,6 +28,7 @@
 #include "MainFrm.h"
 
 #include <airdcpp/ColorSettings.h>
+#include <airdcpp/CryptoManager.h>
 #include <airdcpp/HighlightManager.h>
 #include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/Message.h>
@@ -309,58 +310,6 @@ void HubFrame::removeFavoriteHub() {
 	} else {
 		addStatus(TSTRING(FAVORITE_HUB_DOES_NOT_EXIST), LogMessage::SEV_ERROR, WinUtil::m_ChatTextSystem);
 	}
-}
-
-LRESULT HubFrame::onCopyHubInfo(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-    if(client->isConnected()) {
-        string sCopy;
-
-		switch (wID) {
-			case IDC_COPY_HUBNAME:
-				sCopy += client->getHubName();
-				break;
-			case IDC_COPY_HUBADDRESS:
-				sCopy += client->getHubUrl();
-				break;
-		}
-
-		if (!sCopy.empty())
-			WinUtil::setClipboard(Text::toT(sCopy));
-    }
-	return 0;
-}
-
-LRESULT HubFrame::onCopyUserInfo(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	tstring sCopy;
-
-	int sel = -1;
-	while((sel = ctrlUsers.GetNextItem(sel, LVNI_SELECTED)) != -1) {
-		const OnlineUserPtr ou = ctrlUsers.getItemData(sel);
-	
-		if(!sCopy.empty())
-			sCopy += _T("\r\n");
-
-		sCopy += ou->getText(static_cast<uint8_t>(wID - IDC_COPY), true);
-	}
-	if (!sCopy.empty())
-		WinUtil::setClipboard(sCopy);
-
-	return 0;
-}
-LRESULT HubFrame::onCopyAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	tstring sCopy;
-
-	int sel = -1;
-	while((sel = ctrlUsers.GetNextItem(sel, LVNI_SELECTED)) != -1) {
-		if (!sCopy.empty())
-			sCopy += _T("\r\n\r\n");
-		sCopy += ctrlUsers.GetColumnTexts(sel);
-	}
-
-	if (!sCopy.empty())
-		WinUtil::setClipboard(sCopy);
-
-	return 0;
 }
 
 LRESULT HubFrame::onDoubleClickUsers(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
@@ -927,14 +876,10 @@ void HubFrame::addLine(const Identity& i, const tstring& aLine, CHARFORMAT2& cf,
 LRESULT HubFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };        // location of mouse click 
 	tabMenuShown = true;
-	OMenu tabMenu, copyHubMenu;
 
-	copyHubMenu.CreatePopupMenu();
-	copyHubMenu.InsertSeparatorFirst(TSTRING(COPY));
-	copyHubMenu.AppendMenu(MF_STRING, IDC_COPY_HUBNAME, CTSTRING(NAME));
-	copyHubMenu.AppendMenu(MF_STRING, IDC_COPY_HUBADDRESS, CTSTRING(HUB_ADDRESS));
-
+	OMenu tabMenu;
 	tabMenu.CreatePopupMenu();
+
 	tabMenu.InsertSeparatorFirst(Text::toT(!client->getHubName().empty() ? (client->getHubName().size() > 50 ? (client->getHubName().substr(0, 50) + "...") : client->getHubName()) : client->getHubUrl()));	
 	if(SETTING(LOG_MAIN_CHAT) || client->get(HubSettings::LogMainChat)) {
 		tabMenu.AppendMenu(MF_STRING, IDC_OPEN_HUB_LOG, CTSTRING(OPEN_HUB_LOG));
@@ -959,15 +904,30 @@ LRESULT HubFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 	tabMenu.appendItem(CTSTRING_F(OPEN_HUB_FILELIST, Text::toT(p->getPlainName())), [this] { 
 		handleOpenOwnList(); 
 	}, p->getToken() == SP_HIDDEN ? OMenu::FLAG_DISABLED : 0);
-	tabMenu.AppendMenu(MF_POPUP, (HMENU)copyHubMenu, CTSTRING(COPY));
+
+
+	auto copyHubMenu = tabMenu.createSubMenu(TSTRING(COPY));
+	if (client->isConnected()) {
+		copyHubMenu->appendItem(CTSTRING(NAME), [this] {
+			WinUtil::setClipboard(Text::toT(client->getHubName()));
+		});
+	}
+
+	copyHubMenu->appendItem(CTSTRING(HUB_ADDRESS), [this] {
+		WinUtil::setClipboard(Text::toT(client->getHubUrl()));
+	});
+
+	if (client->isSecure() && client->getHubUrl().find("?kp=") == string::npos) {
+		copyHubMenu->appendItem(CTSTRING(ADDRESS_KEYPRINT), [this] {
+			auto url = client->getHubUrl() + "?kp=" + CryptoManager::keyprintToString(client->getKeyprint());
+			WinUtil::setClipboard(Text::toT(url));
+		});
+	}
+
+
 	prepareMenu(tabMenu, ::UserCommand::CONTEXT_HUB, client->getHubUrl());
 	tabMenu.AppendMenu(MF_SEPARATOR);
 	tabMenu.AppendMenu(MF_STRING, IDC_CLOSE_WINDOW, CTSTRING(CLOSE));
-	
-	if(!client->isConnected())
-		tabMenu.EnableMenuItem((UINT_PTR)(HMENU)copyHubMenu, MF_GRAYED);
-	else
-		tabMenu.EnableMenuItem((UINT_PTR)(HMENU)copyHubMenu, MF_ENABLED);
 	
 	tabMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_BOTTOMALIGN | TPM_RIGHTBUTTON, pt);
 	return TRUE;
@@ -1499,7 +1459,7 @@ void HubFrame::on(KeyprintMismatch, const Client*) noexcept {
 	if (!SETTING(ALLOW_UNTRUSTED_HUBS))
 		return;
 
-	callAsync([=] { addStatus(_T("The keyprint in the address does'nt match the server certificate, use /allow to proceed with untrusted connection"), LogMessage::SEV_WARNING, WinUtil::m_ChatTextServer); });
+	callAsync([=] { addStatus(_T("The keyprint in the address doesn't match the server certificate, use /allow to proceed with untrusted connection"), LogMessage::SEV_WARNING, WinUtil::m_ChatTextServer); });
 }
 
 void HubFrame::on(MessageManagerListener::IgnoreAdded, const UserPtr&) noexcept{

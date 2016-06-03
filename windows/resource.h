@@ -423,7 +423,6 @@
 #define IDC_BUFFERSIZE                  1051
 #define IDC_LANGUAGE                    1052
 #define IDC_BROWSE                      1053
-#define IDC_COPY_USER_ALL               1054
 #define IDC_THANKS                      1055
 #define IDC_DOWNLOADS                   1056
 #define IDC_AIRTHANKS                   1056
