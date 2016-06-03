@@ -3534,7 +3534,7 @@ void QueueManager::removeBundleItem(QueueItemPtr& qi, bool finished) noexcept{
 		return;
 	}
 
-	vector<UserPtr> sources;
+	UserList sources;
 	bool emptyBundle = false;
 
 	{
@@ -3591,19 +3591,23 @@ bool QueueManager::removeBundle(QueueToken aBundleToken, bool removeFinishedFile
 	return false;
 }
 
-void QueueManager::removeBundle(BundlePtr& aBundle, bool removeFinishedFiles) noexcept{
+void QueueManager::removeBundle(BundlePtr& aBundle, bool aRemoveFinishedFiles) noexcept{
 	if (aBundle->getStatus() == Bundle::STATUS_NEW) {
 		return;
 	}
 
-	vector<UserPtr> sources;
+	UserList sources;
 	StringList deleteFiles;
 
 	DownloadManager::getInstance()->disconnectBundle(aBundle);
 	fire(QueueManagerListener::BundleRemoved(), aBundle);
 
+	bool isFinished = false;
+
 	{
 		WLock l(cs);
+		isFinished = aBundle->isFinished();
+
 		for (auto& aSource : aBundle->getSources())
 			sources.push_back(aSource.getUser().user);
 
@@ -3611,7 +3615,7 @@ void QueueManager::removeBundle(BundlePtr& aBundle, bool removeFinishedFiles) no
 		for (auto& qi : finishedItems) {
 			fileQueue.remove(qi);
 			bundleQueue.removeBundleItem(qi, false);
-			if (removeFinishedFiles) {
+			if (aRemoveFinishedFiles) {
 				UploadManager::getInstance()->abortUpload(qi->getTarget());
 				deleteFiles.push_back(qi->getTarget());
 			}
@@ -3639,19 +3643,19 @@ void QueueManager::removeBundle(BundlePtr& aBundle, bool removeFinishedFiles) no
 	//Delete files outside lock range, waking up disks can take a long time.
 	for_each(deleteFiles.begin(), deleteFiles.end(), &File::deleteFile);
 
-	LogManager::getInstance()->message(STRING_F(BUNDLE_X_REMOVED, aBundle->getName()), LogMessage::SEV_INFO);
-
-	if (!aBundle->isFileBundle()) {
-		AirUtil::removeDirectoryIfEmpty(aBundle->getTarget(), 10, !removeFinishedFiles);
+	// An empty directory should be deleted even if finished files are not being deleted (directories are created even for temp files)
+	// Avoid disk access when cleaning up finished bundles
+	if (!isFinished && !aBundle->isFileBundle()) {
+		AirUtil::removeDirectoryIfEmpty(aBundle->getTarget(), 10, !aRemoveFinishedFiles);
 	}
+
+
+	LogManager::getInstance()->message(STRING_F(BUNDLE_X_REMOVED, aBundle->getName()), LogMessage::SEV_INFO);
 
 	for (const auto& aUser : sources)
 		fire(QueueManagerListener::SourceFilesUpdated(), aUser);
 
 	removeBundleLists(aBundle);
-
-	if (removeFinishedFiles)
-		File::removeDirectory(aBundle->getTarget());
 }
 
 void QueueManager::removeBundleLists(BundlePtr& aBundle) noexcept{

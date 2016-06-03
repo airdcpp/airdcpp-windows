@@ -1,8 +1,16 @@
 3.xx
 
+Added:
+
+- Allow copying the hub address with keyprint from the hub tab
+
 Fixed:
 
 - Fix a crash when right-clicking on the hub tab after being redirected from the initial hub
+
+Changed:
+
+- Avoid disk access when cleaning up finished bundles
 
 Removed:
 
