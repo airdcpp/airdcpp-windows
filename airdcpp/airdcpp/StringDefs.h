@@ -1008,6 +1008,7 @@ enum Strings { // @DontAdd
 	PATTERN, // "Pattern"
 	PAUSE, // "Pause"
 	PAUSE_BUNDLE_FOR, // "Pause bundle for"
+	PAUSE_TIME, // "Pause time (minutes)"
 	PAUSED, // "Paused"
 	PAUSED_FORCED, // "Paused (forced)"
 	PAUSED_PCT, // "Paused (%.01f%%)"

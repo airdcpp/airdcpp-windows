@@ -398,6 +398,7 @@ public:
 	static double toBytes(TCHAR* aSize);
 
 	static void appendBundlePrioMenu(OMenu& aParent, const BundleList& aBundles);
+	static void appendBundlePauseMenu(OMenu& aParent, const BundleList& aBundles);
 	static void appendFilePrioMenu(OMenu& aParent, const QueueItemList& aFiles);
 	
 	template<typename T1>

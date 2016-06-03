@@ -579,10 +579,15 @@ void QueueFrame::AppendTreeMenu(BundleList& bl, QueueItemList& ql, OMenu& aMenu)
 	if (!bl.empty()) {
 		bool filesOnly = all_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isFileBundle(); });
 		bool hasFinished = any_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isFinished(); });
+		bool allFinished = all_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isFinished(); });
 
 		aMenu.InsertSeparatorFirst(CTSTRING_F(X_BUNDLES, bl.size()));
 
-		WinUtil::appendBundlePrioMenu(aMenu, bl);
+		if (!allFinished) {
+			WinUtil::appendBundlePrioMenu(aMenu, bl);
+			WinUtil::appendBundlePauseMenu(aMenu, bl);
+			aMenu.appendSeparator();
+		}
 
 		if (curSel == TREE_FAILED) {
 			aMenu.appendItem(TSTRING(RETRY_SHARING), [=] {
@@ -591,9 +596,9 @@ void QueueFrame::AppendTreeMenu(BundleList& bl, QueueItemList& ql, OMenu& aMenu)
 			aMenu.appendItem(TSTRING(FORCE_SHARING), [=] { 
 				for_each(bl, [&](BundlePtr b) { QueueManager::getInstance()->shareBundle(b, true); }); 
 			}, OMenu::FLAG_THREADED);
-
+			aMenu.appendSeparator();
 		}
-		aMenu.appendSeparator();
+
 		aMenu.appendItem(TSTRING(REMOVE), [=] { handleRemoveBundles(bl, false); });
 		if (!filesOnly)
 			aMenu.appendItem(TSTRING(REMOVE_WITH_FILES), [=] { handleRemoveBundles(bl, true); });
@@ -601,8 +606,7 @@ void QueueFrame::AppendTreeMenu(BundleList& bl, QueueItemList& ql, OMenu& aMenu)
 			aMenu.appendSeparator();
 			aMenu.appendItem(TSTRING(REMOVE_FINISHED), [=] { handleRemoveBundles(bl, false, true); });
 		}
-	}
-	else if (!ql.empty()) {
+	} else if (!ql.empty()) {
 		aMenu.InsertSeparatorFirst(CTSTRING_F(X_FILES, ql.size()));
 		bool hasFinished = any_of(ql.begin(), ql.end(), [](const QueueItemPtr& q) { return q->isFinished(); });
 		aMenu.appendItem(TSTRING(REMOVE), [=] { handleRemoveFiles(ql, false); });
@@ -633,18 +637,10 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 	}
 	if (!allFinished) {
 		WinUtil::appendBundlePrioMenu(bundleMenu, bl);
-
-		//Maybe move this to priority menu??
-		auto pauseMenu = bundleMenu.createSubMenu(TSTRING(PAUSE_BUNDLE_FOR), true);
-		auto pauseTimes = { 5, 10, 30, 60, 90, 120 }; //add some times + custom time...
-		for (auto t : pauseTimes) {
-			pauseMenu->appendItem(Util::toStringW(t) + _T(" ") + TSTRING(MINUTES), [=] {
-				for (auto b : bl)
-					QueueManager::getInstance()->setBundlePriority(b, QueueItemBase::PAUSED_FORCE, false, GET_TIME() + (t * 60));
-			}, OMenu::FLAG_THREADED);
-		}
+		WinUtil::appendBundlePauseMenu(bundleMenu, bl);
 		bundleMenu.appendSeparator();
 	}
+
 	ListBaseType::MenuItemList customItems;
 	ctrlQueue.list.appendCopyMenu(bundleMenu, customItems);
 
