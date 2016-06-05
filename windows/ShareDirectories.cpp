@@ -576,9 +576,7 @@ LRESULT ShareDirectories::onClickedRenameDir(WORD /*wNotifyCode*/, WORD /*wID*/,
 }
 
 bool ShareDirectories::addDirectory(const tstring& aPath){
-	tstring path = aPath;
-	if(path[path.length()-1] != PATH_SEPARATOR)
-		path += PATH_SEPARATOR;
+	auto path = Util::validatePath(Text::fromT(aPath), true);
 
 	/* Check if we are trying to share a directory which exists already in this profile */
 	for(const auto& sdi: shareDirs) {
@@ -587,8 +585,8 @@ bool ShareDirectories::addDirectory(const tstring& aPath){
 			profileNames.insert(parent->getProfile(t)->name);
 		}
 
-		if (AirUtil::isParentOrExact(sdi->dir->path, Text::fromT(aPath))) {
-			if (Util::stricmp(sdi->dir->path, Text::fromT(aPath)) == 0) {
+		if (AirUtil::isParentOrExact(sdi->dir->path, path)) {
+			if (Util::stricmp(sdi->dir->path, path) == 0) {
 				if (!sdi->hasProfile(curProfile)) {
 					continue;
 				}
@@ -599,16 +597,15 @@ bool ShareDirectories::addDirectory(const tstring& aPath){
 			}
 
 			return false;
-		} else if (AirUtil::isSub(sdi->dir->path, Text::fromT(aPath))) {
+		} else if (AirUtil::isSub(sdi->dir->path, path)) {
 			WinUtil::showMessageBox(TSTRING_F(DIRECTORY_SUBDIRS_SHARED, Text::toT(Util::listToString(profileNames))));
 			return false;
 		}
 	}
 
 	// Validate path
-	auto rPath = Text::fromT(path);
 	try {
-		ShareManager::getInstance()->validateRootPath(rPath);
+		ShareManager::getInstance()->validateRootPath(path);
 	} catch (ShareException& e) {
 		WinUtil::showMessageBox(Text::toT(e.getError()), MB_ICONEXCLAMATION);
 		return false;
@@ -618,21 +615,23 @@ bool ShareDirectories::addDirectory(const tstring& aPath){
 	ProfileTokenSet profileTokens = { curProfile };
 	tstring newName;
 
-	if (!showShareDlg(parent->getProfiles(), curProfile, Text::toT(ShareManager::getInstance()->validateVirtualName(Util::getLastDir(Text::fromT(path)))), profileTokens, newName, false)) {
+	if (!showShareDlg(parent->getProfiles(), curProfile, Text::toT(ShareManager::getInstance()->validateVirtualName(Util::getLastDir(path))), profileTokens, newName, false)) {
 		return false;
 	}
 
 	string virtualName = Text::fromT(newName);
 
-	auto info = getItemByPath(rPath, true);
+	auto info = getItemByPath(path, true);
 	if (info) {
 		//check if the virtual name is different...
 		if (info->dir->virtualName != virtualName) {
 			info->dir->virtualName = virtualName;
 		}
+
+		info->dir->profiles.insert(profileTokens.begin(), profileTokens.end());
 	} else {
 		//create new directory
-		info = make_shared<ProfileDirectoryInfo>(make_shared<ShareDirectoryInfo>(rPath, virtualName, false, profileTokens), ProfileDirectoryInfo::STATE_ADDED);
+		info = make_shared<ProfileDirectoryInfo>(make_shared<ShareDirectoryInfo>(path, virtualName, false, profileTokens), ProfileDirectoryInfo::STATE_ADDED);
 
 		shareDirs.emplace_back(info);
 	}
