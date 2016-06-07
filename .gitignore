@@ -12,8 +12,6 @@
 /installer/Strings.xml
 /installer/.transifexrc
 /installer/dummy.transifexrc
-/installer/tx.exe
-/installer/.tx
 /scripts/ftp_credentials.txt
 /ipch
 *.suo
