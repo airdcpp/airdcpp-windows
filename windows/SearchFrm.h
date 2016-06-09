@@ -58,7 +58,6 @@ public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("SearchFrame"), IDR_SEARCH, 0, COLOR_3DFACE)
 
 	typedef MDITabChildWindowImpl<SearchFrame> baseClass;
-	typedef UCHandler<SearchFrame> ucBase;
 	typedef UserInfoBaseHandler<SearchFrame> uicBase;
 
 	BEGIN_MSG_MAP(SearchFrame)
@@ -92,7 +91,6 @@ public:
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
 		COMMAND_ID_HANDLER(IDC_USE_EXCLUDED, onUseExcluded)
 		COMMAND_CODE_HANDLER(EN_CHANGE, onEditChange)
-		CHAIN_COMMANDS(ucBase)
 		CHAIN_COMMANDS(uicBase)
 		CHAIN_MSG_MAP(baseClass)
 	ALT_MSG_MAP(SEARCH_MESSAGE_MAP)

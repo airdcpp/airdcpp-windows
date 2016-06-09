@@ -52,7 +52,6 @@ public:
 	~TransferView(void);
 
 	typedef UserInfoBaseHandler<TransferView> uibBase;
-	typedef UCHandler<TransferView> ucBase;
 
 	BEGIN_MSG_MAP(TransferView)
 		NOTIFY_HANDLER(IDC_TRANSFERS, LVN_GETDISPINFO, ctrlTransfers.onGetDispInfo)
@@ -69,7 +68,6 @@ public:
 		MESSAGE_HANDLER(WM_NOTIFYFORMAT, onNotifyFormat)
 		MESSAGE_HANDLER_HWND(WM_MEASUREITEM, OMenu::onMeasureItem)
 		MESSAGE_HANDLER_HWND(WM_DRAWITEM, OMenu::onDrawItem)
-		CHAIN_COMMANDS(ucBase)
 		CHAIN_COMMANDS(uibBase)
 	END_MSG_MAP()
 

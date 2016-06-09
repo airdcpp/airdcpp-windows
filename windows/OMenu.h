@@ -75,6 +75,9 @@ public:
 	/* These should be used when submenus are created within a separate function/scope */
 	OMenu* createSubMenu(const tstring& aTitle, bool appendSeparator = false, bool isShellMenu = false);
 	OMenu* getMenu();
+
+	OMenu* getChild(unsigned position);
+
 	void appendThis(const tstring& aTitle, bool appendSeparator = false);
 
 	void CheckOwnerDrawn(UINT uItem, BOOL byPosition);
@@ -102,6 +105,8 @@ public:
 	unsigned getNextID();
 	void addItem(OMenuItem* mi);
 	bool hasItems();
+	bool isPopup(unsigned index);
+	tstring getText(unsigned index) const;
 
 	static LRESULT onMeasureItem(HWND hWnd, UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 	static LRESULT onDrawItem(HWND hWnd, UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);

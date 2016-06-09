@@ -31,25 +31,8 @@
 template<class T>
 class UCHandler {
 public:
-	UCHandler() { subMenu.CreatePopupMenu(); }
-
-	typedef UCHandler<T> thisClass;
-	BEGIN_MSG_MAP(thisClass)
-		COMMAND_RANGE_HANDLER(IDC_USER_COMMAND, IDC_USER_COMMAND + userCommands.size(), onUserCommand)
-	END_MSG_MAP()
-
-	LRESULT onUserCommand(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		dcassert(wID >= IDC_USER_COMMAND);
-		size_t n = (size_t)wID - IDC_USER_COMMAND;
-		dcassert(n < userCommands.size());
-
-		UserCommand& uc = userCommands[n];
-
-		T* t = static_cast<T*>(this);
-
-		t->runUserCommand(uc);
-		return 0;
-	}
+	UCHandler() { }
+	virtual ~UCHandler() { }
 
 	void prepareMenu(OMenu& menu, int ctx, const string& hubUrl) {
 		prepareMenu(menu, ctx, StringList(1, hubUrl));
@@ -59,76 +42,52 @@ public:
 		bool isOp = false;
 		userCommands = FavoriteManager::getInstance()->getUserCommands(ctx, hubs, isOp);
 		isOp = isOp && (ctx != UserCommand::CONTEXT_HUB);
-		int n = 0;
-		int m = 0;
 		
 		if(!userCommands.empty() || isOp) {
-			subMenu.DestroyMenu();
-			subMenu.m_hMenu = NULL;
+			OMenu* subMenu = &menu;
+			menu.appendSeparator();
 
-			menu.AppendMenu(MF_SEPARATOR);
-			
 			if(SETTING(UC_SUBMENU)) {
-				subMenu.CreatePopupMenu();				
-				subMenu.InsertSeparatorLast(TSTRING(SETTINGS_USER_COMMANDS));
-				
-				menu.AppendMenu(MF_POPUP, (HMENU)subMenu, CTSTRING(SETTINGS_USER_COMMANDS));
+				subMenu = menu.createSubMenu(TSTRING(SETTINGS_USER_COMMANDS), true);
 			}
 			
-			CMenuHandle cur = SETTING(UC_SUBMENU) ? subMenu.m_hMenu : menu.m_hMenu;	
+			OMenu* cur = subMenu;
 
-			if(isOp) {
-				extraItems = 5;
-			} else {
-				extraItems = 1;
-			}
-
-			for(const auto& uc: userCommands) {
-				if(uc.getType() == UserCommand::TYPE_SEPARATOR) {
+			for (size_t n = 0; n < userCommands.size(); ++n) {
+				UserCommand* uc = &userCommands[n];
+				if(uc->getType() == UserCommand::TYPE_SEPARATOR) {
 					// Avoid double separators...
-					if( (cur.GetMenuItemCount() >= 1) &&
-						!(cur.GetMenuState(cur.GetMenuItemCount()-1, MF_BYPOSITION) & MF_SEPARATOR))
+					if( cur->hasItems() && !(cur->GetMenuState(cur->GetMenuItemCount()-1, MF_BYPOSITION) & MF_SEPARATOR))
 					{
-						cur.AppendMenu(MF_SEPARATOR);
-						m++;
+						cur->appendSeparator();
 					}
-				} else if(uc.isRaw() || uc.isChat()) {
-					cur = SETTING(UC_SUBMENU) ? subMenu.m_hMenu : menu.m_hMenu;
-					for(auto i = uc.getDisplayName().begin(), iend = uc.getDisplayName().end(); i != iend; ++i) {
+				} else if(uc->isRaw() || uc->isChat()) {
+					cur = subMenu;
+					for(auto i = uc->getDisplayName().begin(), iend = uc->getDisplayName().end(); i != iend; ++i) {
 						tstring name = Text::toT(*i);
 						if(i + 1 == iend) {
-							cur.AppendMenu(MF_STRING, IDC_USER_COMMAND + n, name.c_str());
-							m++;
+							cur->appendItem(name, [=] { static_cast<T*>(this)->runUserCommand(*uc); });
 						} else {
 							bool found = false;
-							TCHAR buf[1024];
 							// Let's see if we find an existing item...
-							for(int k = 0; k < cur.GetMenuItemCount(); k++) {
-								if(cur.GetMenuState(k, MF_BYPOSITION) & MF_POPUP) {
-									cur.GetMenuString(k, buf, 1024, MF_BYPOSITION);
-									if(stricmp(buf, name.c_str()) == 0) {
-										found = true;
-										cur = (HMENU)cur.GetSubMenu(k);
-									}
+							for(int k = 0; k < cur->GetMenuItemCount(); k++) {
+								if(cur->isPopup(k) && stricmp(cur->getText(k), name) == 0) {
+									found = true;
+									cur = cur->getChild(k);
 								}
 							}
 							if(!found) {
-								HMENU newMenu = CreatePopupMenu();
-								cur.AppendMenu(MF_POPUP, (UINT_PTR)newMenu, name.c_str());
-								cur = newMenu;
+								cur = cur->createSubMenu(name);
 							}
 						}
 					}
 				}
-				n++;
 			}
 		}
 	}
 
 private:
-	OMenu subMenu;
 	UserCommand::List userCommands;
-	int extraItems;
 };
 
 #endif // !defined(UC_HANDLER_H)

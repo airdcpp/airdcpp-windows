@@ -40,7 +40,6 @@ public:
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("PrivateFrame"), IDR_PRIVATE, 0, COLOR_3DFACE);
 
-	typedef UCHandler<PrivateFrame> ucBase;
 	typedef ChatFrameBase chatBase;
 	typedef UserInfoBaseHandler<PrivateFrame> uibBase;
 
@@ -62,7 +61,6 @@ public:
 		COMMAND_ID_HANDLER(IDC_PUBLIC_MESSAGE, onPublicMessage)
 		COMMAND_CODE_HANDLER(EN_CHANGE, onEditChange)
 		CHAIN_MSG_MAP(chatBase)
-		CHAIN_COMMANDS(ucBase)
 		CHAIN_COMMANDS(uibBase)
 	ALT_MSG_MAP(EDIT_MESSAGE_MAP)
 		MESSAGE_HANDLER(WM_SETFOCUS, onFocusMsg)

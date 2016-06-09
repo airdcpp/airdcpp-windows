@@ -63,12 +63,12 @@ static const cmdBarButton cmdBarButtons[] = {
 class DirectoryListingFrame : public MDITabChildWindowImpl<DirectoryListingFrame>, public CSplitterImpl<DirectoryListingFrame>,
 	public UCHandler<DirectoryListingFrame>, private SettingsManagerListener, public UserInfoBaseHandler<DirectoryListingFrame>,
 	public DownloadBaseHandler<DirectoryListingFrame>, private DirectoryListingListener, private Async<DirectoryListingFrame> {
+
 public:
 	static void openWindow(const DirectoryListingPtr& aList, const string& aDir, const string& aXML);
 	static void closeAll();
 
 	typedef MDITabChildWindowImpl<DirectoryListingFrame> baseClass;
-	typedef UCHandler<DirectoryListingFrame> ucBase;
 	typedef UserInfoBaseHandler<DirectoryListingFrame> uibBase;
 
 	enum {
@@ -146,7 +146,6 @@ public:
 		MESSAGE_HANDLER(WM_TIMER, onTimer)
 		CHAIN_MSG_MAP_MEMBER(browserBar)
 
-		CHAIN_COMMANDS(ucBase)
 		CHAIN_COMMANDS(uibBase)
 		CHAIN_MSG_MAP(baseClass)
 		CHAIN_MSG_MAP(CSplitterImpl<DirectoryListingFrame>)

@@ -73,6 +73,28 @@ bool OMenu::hasItems() {
 	return GetMenuItemCount() > 0;
 }
 
+bool OMenu::isPopup(unsigned index) {
+	return (GetMenuState(index, MF_BYPOSITION) & MF_POPUP) == MF_POPUP;
+}
+
+tstring OMenu::getText(unsigned index) const {
+	TCHAR buf[1024];
+	GetMenuString(index, buf, 1024, MF_BYPOSITION);
+	return buf;
+}
+
+OMenu* OMenu::getChild(unsigned position) {
+	HMENU h = GetSubMenu(position);
+	for (size_t i = 0, n = subMenuList.size(); i < n; ++i) {
+		auto menu = subMenuList[i].get();
+		if (menu->m_hMenu == h) {
+			return menu;
+		}
+	}
+	return nullptr;
+}
+
+
 void OMenu::appendThis(const tstring& aTitle, bool appendSeparator /*false*/) {
 	dcassert(parent);
 	parent->AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)*this, aTitle.c_str());

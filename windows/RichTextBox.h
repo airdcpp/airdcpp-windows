@@ -45,9 +45,8 @@ class UserInfo;
 
 class RichTextBox : public CRichEditCtrl, public CMessageMap, public UCHandler<RichTextBox>, public DownloadBaseHandler<RichTextBox>, public UserInfoBaseHandler<RichTextBox>, public UserInfoBase
 {
+	friend class UCHandler<RichTextBox>;
 public:
-
-	typedef UCHandler<RichTextBox> ucBase;
 
 	BEGIN_MSG_MAP(RichTextBox)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
@@ -80,9 +79,6 @@ public:
 		COMMAND_ID_HANDLER(IDC_USER_HISTORY, onOpenUserLog)
 
 		COMMAND_RANGE_HANDLER(IDC_COPY, IDC_COPY + OnlineUser::COLUMN_LAST, onCopyUserInfo)
-
-		CHAIN_COMMANDS(ucBase)
-
 		MESSAGE_HANDLER(WM_COMMAND, onCommand)
 	END_MSG_MAP()
 

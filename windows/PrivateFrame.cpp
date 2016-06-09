@@ -39,7 +39,6 @@
 PrivateFrame::FrameMap PrivateFrame::frames;
 
 void PrivateFrame::openWindow(const HintedUser& aReplyTo, bool aMessageReceived) {
-	auto chat = MessageManager::getInstance()->getChat(aReplyTo);
 	if (!MessageManager::getInstance()->getChat(aReplyTo)) {
 		MessageManager::getInstance()->addChat(aReplyTo, false);
 		return;

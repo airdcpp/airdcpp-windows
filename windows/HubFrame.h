@@ -52,7 +52,6 @@ public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("HubFrame"), IDR_HUB, 0, COLOR_3DFACE);
 
 	typedef CSplitterImpl<HubFrame> splitBase;
-	typedef UCHandler<HubFrame> ucBase;
 	typedef UserInfoBaseHandler<HubFrame> uibBase;
 	typedef ChatFrameBase chatBase;
 	
@@ -92,7 +91,6 @@ public:
 		COMMAND_ID_HANDLER(IDC_UNIGNORE, onUnignore)
 		MESSAGE_HANDLER(WM_LBUTTONDBLCLK, onLButton)
 		CHAIN_MSG_MAP(chatBase)
-		CHAIN_COMMANDS(ucBase)
 		CHAIN_COMMANDS(uibBase)
 		CHAIN_MSG_MAP(splitBase)
 		CHAIN_MSG_MAP_MEMBER(filter)
