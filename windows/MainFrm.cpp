@@ -1782,7 +1782,7 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 
 	TStringList* str = new TStringList();
 	str->push_back(Util::formatBytesW(ShareManager::getInstance()->getSharedSize()));
-	str->push_back(Text::toT(Client::getCounts()));
+	str->push_back(Text::toT(Client::getAllCountsStr()));
 	str->push_back(Util::toStringW(UploadManager::getInstance()->getFreeSlots()) + _T('/') + Util::toStringW(UploadManager::getInstance()->getSlots()) + _T(" (") + Util::toStringW(UploadManager::getInstance()->getFreeExtraSlots()) + _T('/') + Util::toStringW(SETTING(EXTRA_SLOTS)) + _T(")"));
 
 	str->push_back(Util::formatBytesW(Socket::getTotalDown()));

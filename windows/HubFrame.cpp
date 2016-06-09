@@ -903,7 +903,7 @@ LRESULT HubFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 
 	tabMenu.appendItem(CTSTRING_F(OPEN_HUB_FILELIST, Text::toT(p->getPlainName())), [this] { 
 		handleOpenOwnList(); 
-	}, p->getToken() == SP_HIDDEN ? OMenu::FLAG_DISABLED : 0);
+	}, client->isSharingHub() ? 0 :OMenu::FLAG_DISABLED);
 
 
 	auto copyHubMenu = tabMenu.createSubMenu(TSTRING(COPY));
