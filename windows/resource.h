@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by N:\projects\airgit\AirDC.rc
+// Used by C:\Projects\airdc-git\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -381,7 +381,6 @@
 #define IDC_BROWSEDIR                   1018
 #define IDC_RESULTS                     1019
 #define IDC_LINE                        1019
-#define IDC_EXTRA_SLOTS2                1019
 #define IDC_EXTRASPIN                   1020
 #define IDC_PRIVATEMESSAGE              1021
 #define IDC_VERSION                     1021
@@ -1778,7 +1777,6 @@
 #define IDC_UPDATE_LANGUAGE_LATEST_LBL  15099
 #define IDC_UPDATE_LANGUAGELANG_CURRENT_LBL 15100
 #define IDC_UPDATE_LANGUAGELANG_CURRENT 15101
-#define IDC_ALLOW_CONNECTION_TO_PASSED_HUBS 15102
 #define IDR_HUB_OP                      15103
 #define IDR_HUB_REG                     15104
 #define IDC_SCANLIST                    15105
@@ -1858,7 +1856,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        469
+#define _APS_NEXT_RESOURCE_VALUE        470
 #define _APS_NEXT_COMMAND_VALUE         32795
 #define _APS_NEXT_CONTROL_VALUE         10216
 #define _APS_NEXT_SYMED_VALUE           136

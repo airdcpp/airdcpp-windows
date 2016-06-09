@@ -42,8 +42,7 @@ PropPage::TextItem LimitPage::texts[] = {
 	//uploads
 	{ IDC_CZDC_SMALL_SLOTS, ResourceManager::SMALL_UP_SLOTS },
 	{ IDC_CZDC_SMALL_SIZE, ResourceManager::SETCZDC_SMALL_FILES },
-	{ IDC_SETTINGS_PARTIAL_SLOTS, ResourceManager::SETSTRONGDC_PARTIAL_SLOTS },		
-	{ IDC_STATICb, ResourceManager::EXTRA_HUB_SLOTS },
+	{ IDC_SETTINGS_PARTIAL_SLOTS, ResourceManager::SETSTRONGDC_PARTIAL_SLOTS },
 	{ IDC_SLOTS_GROUP2, ResourceManager::ADDITIONAL_UP_LIMITS },
 
 	//other
@@ -69,7 +68,6 @@ PropPage::Item LimitPage::items[] = {
 	//uploads
 	{ IDC_EXTRA_SLOTS, SettingsManager::EXTRA_SLOTS, PropPage::T_INT },
 	{ IDC_SMALL_FILE_SIZE, SettingsManager::SET_MINISLOT_SIZE, PropPage::T_INT },
-	{ IDC_EXTRA_SLOTS2, SettingsManager::HUB_SLOTS, PropPage::T_INT },
 	{ IDC_PARTIAL_SLOTS, SettingsManager::EXTRA_PARTIAL_SLOTS, PropPage::T_INT  },
 
 	//minislots

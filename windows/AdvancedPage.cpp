@@ -32,6 +32,8 @@ PropPage::Item AdvancedPage::items[] = {
 
 AdvancedPage::ListItem AdvancedPage::listItems[] = {
 	{ SettingsManager::AUTO_FOLLOW, ResourceManager::SETTINGS_AUTO_FOLLOW },
+	{ SettingsManager::SEPARATE_NOSHARE_HUBS, ResourceManager::SEPARATE_NOSHARE_HUBS },
+	{ SettingsManager::DISALLOW_CONNECTION_TO_PASSED_HUBS, ResourceManager::DISALLOW_CONNECTION_TO_PASSED_HUBS },
 	{ SettingsManager::CLEAR_SEARCH, ResourceManager::SETTINGS_CLEAR_SEARCH },
 	{ SettingsManager::MINIMIZE_ON_STARTUP, ResourceManager::SETTINGS_MINIMIZE_ON_STARTUP },
 	{ SettingsManager::URL_HANDLER, ResourceManager::SETTINGS_URL_HANDLER },
