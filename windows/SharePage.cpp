@@ -67,12 +67,10 @@ LRESULT SharePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 {
 	PropPage::translate((HWND)(*this), texts);
 
-	GetDlgItem(IDC_EDIT_TEMPSHARES).EnableWindow((ShareManager::getInstance()->hasTempShares()) ? 1 : 0);
 	ctrlAddProfile.Attach(GetDlgItem(IDC_ADD_PROFILE));
 
 	ctrlProfile.Attach(GetDlgItem(IDC_PROFILE_SEL));
 	setProfileList();
-
 
 	ctrlProfile.SetCurSel(0);
 
@@ -92,6 +90,7 @@ LRESULT SharePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	//dirPage->MoveWindow(rc.left+10, rc.top+10, 0, 0);
 	//dirPage->SetWindowPos(HWND_TOP, 17, 150, 0, 0, SWP_NOSIZE);*/
 	dirPage->ShowWindow(SW_SHOW);
+	fixControls();
 	//ClientToScreen(
 	return TRUE;
 }
@@ -106,6 +105,7 @@ LRESULT SharePage::onProfileChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 LRESULT SharePage::onEditTempShares(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	TempShareDlg dlg;
 	dlg.DoModal();
+	fixControls();
 	return 0;
 }
 
@@ -255,6 +255,7 @@ void SharePage::fixControls() {
 	//::EnableWindow(GetDlgItem(IDC_APPLY_CHANGES), hasChanged());
 	::EnableWindow(GetDlgItem(IDC_REMOVE_PROFILE), curProfile != defaultProfile);
 	::EnableWindow(GetDlgItem(IDC_SET_DEFAULT), curProfile != defaultProfile);
+	::EnableWindow(GetDlgItem(IDC_EDIT_TEMPSHARES), ShareManager::getInstance()->hasTempShares() ? TRUE : FALSE);
 }
 
 void SharePage::applyChanges(bool isQuit) {
