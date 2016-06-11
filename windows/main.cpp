@@ -62,17 +62,6 @@ static bool firstException = true;
 static char debugBuf[DEBUG_BUFSIZE];
 
 
-#ifndef _DEBUG
-
-FARPROC WINAPI FailHook(unsigned /* dliNotify */, PDelayLoadInfo  pdli) {
-	char buf[DEBUG_BUFSIZE];
-	sprintf(buf, "AirDC++ just encountered and unhandled exception and will terminate.\nPlease do not report this as a bug. The error was caused by library %s.", pdli->szDll);
-	MessageBox(WinUtil::mainWnd, Text::toT(buf).c_str(), _T("AirDC++ Has Crashed"), MB_OK | MB_ICONERROR);
-	exit(-1);
-}
-
-#endif
-
 #include <airdcpp/SSLSocket.h>
 
 string getExceptionName(DWORD code) {
@@ -130,15 +119,8 @@ LONG handleCrash(unsigned long aCode, const string& aError, PCONTEXT aContext)
 		exit(-1);
 
 #ifndef _DEBUG
-#if _MSC_VER >= 1600
-	__pfnDliFailureHook2 = FailHook;
-#else
-#error Unknown Compiler version
-#endif
-
 	// The release version loads the dll and pdb:s here...
-	EXTENDEDTRACEINITIALIZE(Util::getAppFilePath().c_str() );
-
+	EXTENDEDTRACEINITIALIZE(Util::getAppFilePath().c_str());
 #endif
 
 	if(firstException) {

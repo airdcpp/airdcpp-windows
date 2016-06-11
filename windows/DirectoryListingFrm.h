@@ -182,7 +182,6 @@ public:
 	LRESULT onReloadDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
 
 	void UpdateLayout(BOOL bResizeBars = TRUE);
-	void findFile(bool findNext);
 	void runUserCommand(UserCommand& uc);
 
 	void refreshTree(const string& root, bool reloadList, bool changeDir);
@@ -277,9 +276,9 @@ private:
 			const DirectoryListing::Directory::Ptr dir;
 		};
 
-		ItemInfo(const DirectoryListing::File::Ptr& f) : type(FILE), file(f), name(Text::toT(f->getName())) { }
-		ItemInfo(const DirectoryListing::Directory::Ptr& d) : type(DIRECTORY), dir(d), name(Text::toT(d->getName())) {}
-		~ItemInfo() { }
+		ItemInfo(const DirectoryListing::File::Ptr& f);
+		ItemInfo(const DirectoryListing::Directory::Ptr& d);
+		~ItemInfo();
 
 		const tstring getText(uint8_t col) const;
 		const string getTextNormal(uint8_t col) const;
@@ -437,8 +436,8 @@ private:
 	WindowState windowState = STATE_ENABLED;
 
 	void changeWindowState(bool enable, bool redraw = true);
-	void DisableWindow(bool redraw = true);
-	void EnableWindow(bool redraw = true);
+	void disableBrowserLayout(bool redraw = true);
+	void enableBrowserLayout(bool redraw = true);
 
 	typedef std::set<string, Util::PathSortOrderBool> PathSet;
 };

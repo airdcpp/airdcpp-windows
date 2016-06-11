@@ -23,23 +23,24 @@
 #include "DirectoryListingFrm.h"
 #include "DirectoryListingDlg.h"
 
-#include "WinUtil.h"
-#include "ResourceLoader.h"
 #include "LineDlg.h"
-#include "ShellContextMenu.h"
 #include "ListFilter.h"
+#include "MainFrm.h"
+#include "ResourceLoader.h"
+#include "ShellContextMenu.h"
+#include "TextFrame.h"
+#include "WinUtil.h"
 
-#include <airdcpp/HighlightManager.h>
+#include <airdcpp/ADLSearch.h>
+#include <airdcpp/ClientManager.h>
+#include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/File.h>
+#include <airdcpp/HighlightManager.h>
 #include <airdcpp/QueueManager.h>
 #include <airdcpp/StringTokenizer.h>
-#include <airdcpp/ADLSearch.h>
 #include <airdcpp/User.h>
-#include <airdcpp/ClientManager.h>
 #include <airdcpp/ShareScannerManager.h>
 #include <airdcpp/Wildcards.h>
-#include <airdcpp/DirectoryListingManager.h>
-#include "TextFrame.h"
 
 #include <boost/move/algorithm.hpp>
 #include <boost/range/algorithm/copy.hpp>
@@ -97,7 +98,7 @@ DirectoryListingFrame::~DirectoryListingFrame() {
 	dl->removeListener(this);
 }
 
-void DirectoryListingFrame::DisableWindow(bool redraw) {
+void DirectoryListingFrame::disableBrowserLayout(bool redraw) {
 	windowState = STATE_DISABLED;
 	if (redraw) {
 		ctrlFiles.list.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
@@ -109,7 +110,7 @@ void DirectoryListingFrame::DisableWindow(bool redraw) {
 	ctrlTree.SetWindowLongPtr(GWL_STYLE, ctrlTree.GetWindowLongPtr(GWL_STYLE) | WS_DISABLED);
 }
 
-void DirectoryListingFrame::EnableWindow(bool redraw) {
+void DirectoryListingFrame::enableBrowserLayout(bool redraw) {
 	windowState = STATE_ENABLED;
 	ctrlFiles.SetWindowLongPtr(GWL_STYLE, ctrlFiles.list.GetWindowLongPtr(GWL_STYLE) & ~WS_DISABLED);
 	ctrlTree.SetWindowLongPtr(GWL_STYLE, ctrlTree.GetWindowLongPtr(GWL_STYLE) & ~WS_DISABLED);
@@ -133,11 +134,11 @@ void DirectoryListingFrame::changeWindowState(bool enable, bool redraw) {
 	selCombo.EnableWindow(enable);
 
 	if (enable) {
-		EnableWindow(redraw);
+		enableBrowserLayout(redraw);
 		ctrlToolbar.EnableButton(IDC_GETLIST, dl->getPartialList() && !dl->isMyCID());
 		ctrlToolbar.EnableButton(IDC_RELOAD_DIR, dl->getPartialList());
 	} else {
-		DisableWindow(redraw);
+		disableBrowserLayout(redraw);
 		ctrlToolbar.EnableButton(IDC_RELOAD_DIR, FALSE);
 		ctrlToolbar.EnableButton(IDC_GETLIST, FALSE);
 	}
@@ -271,7 +272,8 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingStarted, bool aC
 
 	callAsync([=, &waiting] { 
 		if (aChangeDir) {
-			DisableWindow(false);
+			// Don't disable everything to prevent flashing while browsing partial lists
+			disableBrowserLayout(false);
 		} else {
 			changeWindowState(false);
 			ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
@@ -544,10 +546,8 @@ void DirectoryListingFrame::insertTreeItems(const string& aPath, HTREEITEM aPare
 void DirectoryListingFrame::createRoot() {
 	auto r = dl->getRoot();
 	root.reset(new ItemInfo(r));
-//	const auto icon = getIconIndex(dl->getRoot());
 	const auto icon = ResourceLoader::DIR_NORMAL;
 	treeRoot = ctrlTree.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT | TVIF_PARAM, Text::toT(dl->getNick(true)).c_str(), icon, icon, 0, 0, (LPARAM)root.get(), NULL, NULL);
-	//history.push_back(dl->getRoot()->getPath());
 	browserBar.addHistory(dl->getRoot()->getPath());
 	dcassert(treeRoot); 
 }
@@ -1343,7 +1343,7 @@ void DirectoryListingFrame::appendListContextMenu(CPoint& pt) {
 			fileMenu.appendItem(TSTRING(GO_TO_DIRECTORY), [this] { handleGoToDirectory(false); });
 		}
 	} else {
-		if (ii->type == ItemInfo::DIRECTORY && ii->dir->getAdls() && ii->dir->getParent() != dl->getRoot()) {
+		if (ii->type == ItemInfo::DIRECTORY && ii->dir->getAdls() && ii->dir->getParent() != dl->getRoot().get()) {
 			fileMenu.appendItem(TSTRING(GO_TO_DIRECTORY), [this] { handleGoToDirectory(false); });
 		}
 	}
@@ -1383,7 +1383,7 @@ void DirectoryListingFrame::appendTreeContextMenu(CPoint& pt, DirectoryListing::
 	WinUtil::appendSearchMenu(directoryMenu, curPath);
 	directoryMenu.appendSeparator();
 
-	if (dir && dir->getAdls() && dir->getParent() != dl->getRoot()) {
+	if (dir && dir->getAdls() && dir->getParent() != dl->getRoot().get()) {
 		directoryMenu.appendItem(TSTRING(GO_TO_DIRECTORY), [this] { handleGoToDirectory(true); });
 	}
 
@@ -1471,7 +1471,7 @@ void DirectoryListingFrame::handleGoToDirectory(bool usingTree) {
 
 			path = ii->file->getPath();
 		} else if (ii->type == ItemInfo::DIRECTORY)	{
-			if (!(ii->dir->getAdls() && ii->dir->getParent() != dl->getRoot()))
+			if (!(ii->dir->getAdls() && ii->dir->getParent() != dl->getRoot().get()))
 				return;
 			path = ((DirectoryListing::AdlDirectory*)ii->dir.get())->getFullPath();
 		}
@@ -1817,6 +1817,25 @@ int DirectoryListingFrame::ItemInfo::compareItems(const ItemInfo* a, const ItemI
 			case COLUMN_FILENAME: return Util::DefaultSort(a->getNameW().c_str(), b->getNameW().c_str());
 			default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str());
 		}
+	}
+}
+
+DirectoryListingFrame::ItemInfo::ItemInfo(const DirectoryListing::File::Ptr& f) : type(FILE), file(f), name(Text::toT(f->getName())) { 
+	//dcdebug("ItemInfo (file) %s was created\n", f->getName().c_str());
+}
+
+DirectoryListingFrame::ItemInfo::ItemInfo(const DirectoryListing::Directory::Ptr& d) : type(DIRECTORY), dir(d), name(Text::toT(d->getName())) {
+	//dcdebug("ItemInfo (directory) %s was created\n", d->getName().c_str());
+}
+
+DirectoryListingFrame::ItemInfo::~ItemInfo() {
+	//dcdebug("ItemInfo %s was deleted\n", getName().c_str());
+
+	// The member destructor is not called automatically in an union
+	if (type == FILE) {
+		file.~shared_ptr();
+	} else {
+		dir.~shared_ptr();
 	}
 }
 

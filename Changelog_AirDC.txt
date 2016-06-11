@@ -3,10 +3,14 @@
 Added:
 
 - Allow copying the hub address with keyprint from the hub tab
+- Allow excluding hubs with hidden share from total hub counts
 
 Fixed:
 
 - Fix a crash when right-clicking on the hub tab after being redirected from the initial hub
+- Fix filelist-related crashes and memory leaks
+- Fix issues when adding shared directories
+- Don't send "Message Seen" notifications for status messages
 
 Changed:
 
@@ -15,6 +19,7 @@ Changed:
 Removed:
 
 - Support for using custom share profiles in non-favorite hubs
+- Slot ratio setting
 
 
 3.10

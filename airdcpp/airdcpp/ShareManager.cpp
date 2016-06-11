@@ -2835,7 +2835,7 @@ MemoryInputStream* ShareManager::generatePartialList(const string& aVirtualPath,
 		dcdebug("Partial NULL");
 		return nullptr;
 	} else {
-		dcdebug("Partial list Generated.");
+		dcdebug("Partial list generated (%s)\n", aVirtualPath.c_str());
 		return new MemoryInputStream(xml);
 	}
 }
