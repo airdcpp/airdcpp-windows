@@ -3,6 +3,8 @@
 Added:
 
 - Allow copying the hub address with keyprint from the hub tab
+- Pause bundle for x minutes right click command for bundles in queue window 
+- Exclude matches option in auto search user matcher
 
 Changed:
 
