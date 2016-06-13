@@ -47,7 +47,6 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	SetDlgItemText(IDC_FH_PASSWORD, CTSTRING(PASSWORD));
 	SetDlgItemText(IDC_FH_USER_DESC, CTSTRING(DESCRIPTION));
 	SetDlgItemText(IDC_FH_CONN, CTSTRING(CONNECTION));
-	SetDlgItemText(IDC_STEALTH, CTSTRING(STEALTH_MODE));
 	SetDlgItemText(IDC_FAV_NO_PM, CTSTRING(FAV_NO_PM));
 	SetDlgItemText(IDC_SHOW_JOIN, CTSTRING(FAV_SHOW_JOIN));
 	SetDlgItemText(IDC_HIDE_SHARE, CTSTRING(HIDE_SHARE));
@@ -77,7 +76,6 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 
 	SetDlgItemText(IDC_AWAY_MSG, Text::toT(entry->get(HubSettings::AwayMsg)).c_str());
 
-	CheckDlgButton(IDC_STEALTH, entry->getStealth() ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_FAV_NO_PM, entry->getFavNoPM() ? BST_CHECKED : BST_UNCHECKED);
 
 	CheckDlgButton(IDC_SHOW_JOIN, toInt(entry->get(HubSettings::ShowJoins)));
@@ -283,7 +281,6 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 		entry->setDescription(Text::fromT(buf));
 		GetDlgItemText(IDC_HUBPASS, buf, 256);
 		entry->setPassword(Text::fromT(buf));
-		entry->setStealth(IsDlgButtonChecked(IDC_STEALTH) == 1);
 		entry->setFavNoPM(IsDlgButtonChecked(IDC_FAV_NO_PM) == 1);
 
 		//Hub settings
@@ -384,11 +381,9 @@ LRESULT FavHubProperties::OnTextChanged(WORD /*wNotifyCode*/, WORD wID, HWND /*h
 			if (!hideShare)
 				ctrlProfile.EnableWindow(true);
 			combo.SetCurSel(4); // select UTF-8 for ADC hubs
-			::EnableWindow(GetDlgItem(IDC_STEALTH),	0);
 			combo.EnableWindow(false);
 		} else {
 			ctrlProfile.EnableWindow(false);
-			::EnableWindow(GetDlgItem(IDC_STEALTH),	1);
 			combo.EnableWindow(true);
 		}
 		combo.Detach();
