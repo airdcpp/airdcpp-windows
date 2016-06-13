@@ -1,20 +1,19 @@
-3.xx
+3.20
 
 Added:
 
 - Allow copying the hub address with keyprint from the hub tab
-- Allow excluding hubs with hidden share from total hub counts
-
-Fixed:
-
-- Fix a crash when right-clicking on the hub tab after being redirected from the initial hub
-- Fix filelist-related crashes and memory leaks
-- Fix issues when adding shared directories
-- Don't send "Message Seen" notifications for status messages
 
 Changed:
 
 - Avoid disk access when cleaning up finished bundles
+
+Fixed:
+
+- Fix a crash when right-clicking on the hub tab after being redirected from the initial hub
+- Fix filelist-related crashes, memory leaks and deadlocks
+- Fix issues when adding shared directories to other profiles
+- Don't send "Message Seen" notifications for status messages
 
 Removed:
 
