@@ -1835,7 +1835,7 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	time(&currentTime);
 }
 
-void MainFrame::on(QueueManagerListener::Finished, const QueueItemPtr& qi, const string& /*dir*/, const HintedUser& /*aUser*/, int64_t /*aSpeed*/) noexcept {
+void MainFrame::on(QueueManagerListener::ItemFinished, const QueueItemPtr& qi, const string& /*dir*/, const HintedUser& /*aUser*/, int64_t /*aSpeed*/) noexcept {
 	if(!qi->isSet(QueueItem::FLAG_USER_LIST)) {
 		// Finished file sound
 		if(!SETTING(FINISHFILE).empty() && !SETTING(SOUNDS_DISABLED))

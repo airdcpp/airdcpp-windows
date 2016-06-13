@@ -467,7 +467,7 @@ private:
 	virtual void on(MessageManagerListener::ChatCreated, const PrivateChatPtr& aChat, bool aMessageReceived) noexcept;
 
 	// QueueManagerListener
-	void on(QueueManagerListener::Finished, const QueueItemPtr& qi, const string& dir, const HintedUser& aUser, int64_t aSpeed) noexcept;
+	void on(QueueManagerListener::ItemFinished, const QueueItemPtr& qi, const string& dir, const HintedUser& aUser, int64_t aSpeed) noexcept;
 	void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept;
 
 	// DirectoryListingManagerListener

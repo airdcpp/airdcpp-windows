@@ -1431,16 +1431,16 @@ void QueueFrame::on(QueueManagerListener::BundleSources, const BundlePtr& aBundl
 	addGuiTask(TASK_BUNDLE_UPDATE, [=] { onBundleUpdated(aBundle); });
 }
 
-void QueueFrame::on(QueueManagerListener::Removed, const QueueItemPtr& aQI, bool /*finished*/) noexcept{
+void QueueFrame::on(QueueManagerListener::ItemRemoved, const QueueItemPtr& aQI, bool /*finished*/) noexcept{
 	addGuiTask(TASK_REMOVE, [=] { onQueueItemRemoved(aQI); });
 }
-void QueueFrame::on(QueueManagerListener::Added, QueueItemPtr& aQI) noexcept{
+void QueueFrame::on(QueueManagerListener::ItemAdded, const QueueItemPtr& aQI) noexcept{
 	addGuiTask(TASK_ADD, [=] { onQueueItemAdded(aQI); });
 }
-void QueueFrame::on(QueueManagerListener::SourcesUpdated, const QueueItemPtr& aQI) noexcept {
+void QueueFrame::on(QueueManagerListener::ItemSourcesUpdated, const QueueItemPtr& aQI) noexcept {
 	addGuiTask(TASK_QI_UPDATE, [=] { onQueueItemUpdated(aQI); });
 }
-void QueueFrame::on(QueueManagerListener::StatusUpdated, const QueueItemPtr& aQI) noexcept{
+void QueueFrame::on(QueueManagerListener::ItemStatusUpdated, const QueueItemPtr& aQI) noexcept{
 	addGuiTask(TASK_QI_UPDATE, [=] { onQueueItemUpdated(aQI); });
 }
 
