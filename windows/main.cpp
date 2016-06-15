@@ -123,11 +123,6 @@ LONG handleCrash(unsigned long aCode, const string& aError, PCONTEXT aContext)
 	EXTENDEDTRACEINITIALIZE(Util::getAppFilePath().c_str());
 #endif
 
-	if(firstException) {
-		File::deleteFile(Util::getAppFilePath() + "exceptioninfo.txt");
-		firstException = false;
-	}
-
 	if(File::getSize(Util::getAppFilePath() + "AirDC.pdb") == -1) {
 		// No debug symbols, we're not interested...
 		::MessageBox(WinUtil::mainWnd, _T("AirDC++ has crashed and you don't have AirDC.pdb file installed. Hence, I can't find out why it crashed, so don't report this as a bug unless you find a solution..."), _T("AirDC++ has crashed"), MB_OK);
@@ -154,10 +149,15 @@ LONG handleCrash(unsigned long aCode, const string& aError, PCONTEXT aContext)
 		Shell_NotifyIcon(NIM_MODIFY, &m_nid);
 	}
 
-	auto exceptionInfoPath = Util::getPath(Util::PATH_USER_CONFIG) + "exceptioninfo.txt";
+	auto exceptionFilePath = Util::getPath(Util::PATH_USER_CONFIG) + "exceptioninfo.txt";
+
+	if (firstException) {
+		File::deleteFile(exceptionFilePath);
+		firstException = false;
+	}
 
 	try {
-		File f(exceptionInfoPath, File::WRITE, File::OPEN | File::CREATE);
+		File f(exceptionFilePath, File::WRITE, File::OPEN | File::CREATE);
 		f.setEndPos(0);
 
 		string archStr = "x86";
@@ -199,12 +199,12 @@ LONG handleCrash(unsigned long aCode, const string& aError, PCONTEXT aContext)
 
 		f.close();
 
-		auto msg = "AirDC++ just encountered a fatal bug and details have been written to " + exceptionInfoPath + "\n\nYou can upload this file at http://www.airdcpp.net to help us find out what happened. Go there now?";
+		auto msg = "AirDC++ just encountered a fatal bug and details have been written to " + exceptionFilePath + "\n\nYou can upload this file at http://www.airdcpp.net to help us find out what happened. Go there now?";
 		if (::MessageBox(WinUtil::mainWnd, Text::toT(msg).c_str(), _T("AirDC++ has crashed"), MB_YESNO | MB_ICONERROR) == IDYES) {
 			WinUtil::openLink(_T("http://crash.airdcpp.net"));
 		}
 	} catch (const FileException& e) {
-		auto msg = "Crash details could not be written to " + exceptionInfoPath + " (" + e.what() + "). Ensure that the directory is writable.";
+		auto msg = "Crash details could not be written to " + exceptionFilePath + " (" + e.what() + "). Ensure that the directory is writable.";
 		::MessageBox(WinUtil::mainWnd, Text::toT(msg).c_str(), _T("AirDC++ has crashed"), MB_OK);
 	}
 
