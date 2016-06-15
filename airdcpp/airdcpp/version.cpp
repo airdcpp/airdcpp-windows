@@ -41,9 +41,9 @@ namespace dcpp {
 
 	string getConfigurationType() {
 #ifdef _WIN64
-		return "x86-64";
+		return "x64";
 #elif _WIN32
-		return "x86-32";
+		return "x86";
 #else
 		utsname n;
 		if (uname(&n) != 0) {

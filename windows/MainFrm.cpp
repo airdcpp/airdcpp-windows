@@ -259,7 +259,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	TimerManager::getInstance()->start();
 
 	// Set window name
-	SetWindowText(Text::toT(fullVersionString).c_str());
+	SetWindowText(Text::toT(shortVersionString).c_str());
 
 	// Load images
 	// create command bar window
