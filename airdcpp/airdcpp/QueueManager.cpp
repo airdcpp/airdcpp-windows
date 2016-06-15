@@ -1831,13 +1831,10 @@ void QueueManager::onFilelistDownloadCompleted(QueueItemPtr& aQI, Download* aDow
 			WLock l(cs);
 			matchLists.right.erase(aQI->getTarget());
 		}
+	} else if (aDownload->getType() == Transfer::TYPE_PARTIAL_LIST) {
+		fire(QueueManagerListener::PartialListFinished(), aDownload->getHintedUser(), aDownload->getPFS(), aQI->getTempTarget());
 	} else {
-		if (aDownload->getType() == Transfer::TYPE_PARTIAL_LIST) {
-			fire(QueueManagerListener::PartialListFinished(), aDownload->getHintedUser(), aDownload->getPFS(), aQI->getTempTarget());
-		} else {
-			fire(QueueManagerListener::ItemFinished(), aQI, aQI->getTempTarget(), aDownload->getHintedUser(), aDownload->getAverageSpeed());
-			onFileFinished(aQI, aDownload, aQI->getTempTarget());  // We cheated and stored the initial display directory here (when opening lists from search)
-		}
+		onFileFinished(aQI, aDownload, aQI->getTempTarget());  // We cheated and stored the initial display directory here (when opening lists from search)
 	}
 
 	{
