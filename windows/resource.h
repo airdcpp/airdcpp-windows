@@ -381,7 +381,6 @@
 #define IDC_BROWSEDIR                   1018
 #define IDC_RESULTS                     1019
 #define IDC_LINE                        1019
-#define IDC_EXTRASPIN                   1020
 #define IDC_PRIVATEMESSAGE              1021
 #define IDC_VERSION                     1021
 #define IDC_GETLIST                     1022

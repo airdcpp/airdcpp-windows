@@ -81,7 +81,6 @@ LRESULT LimitPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	PropPage::read((HWND)*this, items);
 
 	//advanced limits start
-	setMinMax(IDC_EXTRASPIN, 0, 10);
 	setMinMax(IDC_PARTIAL_SLOTS_SPIN, 0, 10);
 	setMinMax(IDC_SMALL_FILE_SIZE_SPIN, 64, 30000);
 	setMinMax(IDC_EXTRA_SLOTS_SPIN, 3, 100);
