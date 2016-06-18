@@ -9,6 +9,7 @@ Added:
 Changed:
 
 - Avoid disk access when cleaning up finished bundles
+- Existing directories won't be removed from share when a bundle with the same path is queued
 
 Fixed:
 
@@ -16,6 +17,7 @@ Fixed:
 - Fix filelist-related crashes, memory leaks and deadlocks
 - Fix issues when adding shared directories to other profiles
 - Don't send "Message Seen" notifications for status messages
+- Fix possible deadlocks when adding finished bundles in share
 
 Removed:
 
