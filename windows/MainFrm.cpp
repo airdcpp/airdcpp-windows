@@ -1764,6 +1764,7 @@ LRESULT MainFrame::onReconnectDisconnected(WORD , WORD , HWND , BOOL& ) {
 LRESULT MainFrame::onQuickConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
 	LineDlg dlg;
 	dlg.title = TSTRING(QUICK_CONNECT);
+	dlg.description = TSTRING(HUB_ADDRESS);
 	if(dlg.DoModal(m_hWnd) == IDOK){
 		if(SETTING(NICK).empty())
 			return 0;
