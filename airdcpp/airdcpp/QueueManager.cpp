@@ -2987,8 +2987,6 @@ void QueueManager::checkResumeBundles() noexcept {
 
 	{
 		RLock l(cs);
-
-		// bundles
 		for (const auto& b : bundleQueue.getBundles() | map_values) {
 			if (b->isFinished()) {
 				continue;
