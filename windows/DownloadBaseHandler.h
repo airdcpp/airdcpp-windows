@@ -225,10 +225,10 @@ public:
 				}
 			};
 
-			targets = QueueManager::getInstance()->getDirPaths(isDir ? *aPath : Util::getFilePath(*aPath));
+			targets = QueueManager::getInstance()->getNmdcDirPaths(isDir ? *aPath : Util::getFilePath(*aPath));
 			doAppend(TSTRING(QUEUED_DUPE_PATHS));
 
-			targets = ShareManager::getInstance()->getDirPaths(isDir ? *aPath : Util::getFilePath(*aPath));
+			targets = ShareManager::getInstance()->getNmdcDirPaths(isDir ? *aPath : Util::getFilePath(*aPath));
 			doAppend(TSTRING(SHARED_DUPE_PATHS));
 		}
 	}

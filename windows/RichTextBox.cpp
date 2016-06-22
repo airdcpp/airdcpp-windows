@@ -1307,7 +1307,7 @@ void RichTextBox::handleDownload(const string& aTarget, QueueItemBase::Priority 
 	if (!aIsRelease) {
 		auto u = move(getMagnetSource());
 		Magnet m = Magnet(Text::fromT(selectedWord));
-		if (pmUser && ShareManager::getInstance()->isDirShared(aTarget, m.fsize) > 0 &&
+		if (pmUser && ShareManager::getInstance()->isNmdcDirShared(aTarget, m.fsize) > 0 &&
 			!WinUtil::showQuestionBox(TSTRING_F(PM_MAGNET_SHARED_WARNING, Text::toT(Util::getFilePath(aTarget))), MB_ICONQUESTION)) {
 				return;
 		}
