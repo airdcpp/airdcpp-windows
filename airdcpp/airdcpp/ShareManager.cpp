@@ -1917,7 +1917,7 @@ void ShareManager::buildTree(const string& aPath, const string& aPathLower, cons
 				//	return;
 				//}
 
-				if (bundleDirs.find(aPathLower) != bundleDirs.end()) {
+				if (bundleDirs.find(curPathLower) != bundleDirs.end()) {
 					continue;
 				}
 
