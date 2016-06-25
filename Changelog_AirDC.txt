@@ -17,12 +17,15 @@ Fixed:
 - Fix filelist-related crashes, memory leaks and deadlocks
 - Fix issues when adding shared directories to other profiles
 - Don't send "Message Seen" notifications for status messages
-- Fix possible deadlocks when adding finished bundles in share
+- Fix possible deadlocks when adding finished bundles/hashed files in share
+- Add valid finished bundles in share on startup
 
 Removed:
 
 - Support for using custom share profiles in non-favorite hubs
 - Slot ratio setting
+- A few settings that didn't work correctly
+- Option to emulate DC++ in NMDC favorite hubs
 
 
 3.10
