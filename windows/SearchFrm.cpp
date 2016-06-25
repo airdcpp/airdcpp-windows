@@ -100,7 +100,6 @@ searchBoxContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
 	expandSR(false), searchEndTime(0), searchStartTime(0), waiting(false), statusDirty(false), ctrlResults(this, COLUMN_LAST, [this] { updateSearchList(); }, filterSettings, COLUMN_LAST)
 {	
 	SearchManager::getInstance()->addListener(this);
-	useGrouping = SETTING(GROUP_SEARCH_RESULTS);
 }
 
 void SearchFrame::createColumns() {
@@ -1338,7 +1337,7 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 	const SearchResultPtr& sr = si->sr;
 
     // Check previous search results for dupes
-	if(si->sr->getTTH().data > 0 && useGrouping && (!si->getUser()->isNMDC() || si->sr->getType() == SearchResult::TYPE_FILE)) {
+	if(si->sr->getTTH().data > 0 && (!si->getUser()->isNMDC() || si->sr->getType() == SearchResult::TYPE_FILE)) {
 		auto pp = ctrlResults.list.findParentPair(sr->getTTH());
 		if(pp) {
 			if ((sr->getUser() == pp->parent->getUser()) && (sr->getPath() == pp->parent->sr->getPath())) {
@@ -1365,7 +1364,7 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 
 	if(running) {
 		resultsCount++;
-		if(si->sr->getTTH().data > 0 && useGrouping && (!si->getUser()->isNMDC() || si->sr->getType() == SearchResult::TYPE_FILE)) {
+		if(si->sr->getTTH().data > 0 && (!si->getUser()->isNMDC() || si->sr->getType() == SearchResult::TYPE_FILE)) {
 			ctrlResults.list.insertGroupedItem(si, expandSR);
 		} else {
 			SearchInfoList::ParentPair pp = { si, SearchInfoList::emptyVector };

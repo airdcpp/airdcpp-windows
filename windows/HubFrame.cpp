@@ -207,13 +207,8 @@ bool HubFrame::sendMessage(const tstring& aMessage, string& error_, bool isThird
 bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*message*/, tstring& status, bool& /*thirdPerson*/) {	
 	if(stricmp(cmd.c_str(), _T("join"))==0) {
 		if(!param.empty()) {
-			if(SETTING(JOIN_OPEN_NEW_WINDOW)) {
-				RecentHubEntryPtr r = new RecentHubEntry(Text::fromT(param));
-				WinUtil::connectHub(r);
-			} else {
-				BOOL whatever = FALSE;
-				onFollow(0, 0, 0, whatever);
-			}
+			RecentHubEntryPtr r = new RecentHubEntry(Text::fromT(param));
+			WinUtil::connectHub(r);
 		} else {
 			status = TSTRING(SPECIFY_SERVER);
 		}

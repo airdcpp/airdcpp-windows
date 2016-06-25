@@ -51,7 +51,6 @@ WindowsPage::ListItem WindowsPage::optionItems[] = {
 	{ SettingsManager::POPUNDER_PARTIAL_LIST, ResourceManager::SETTINGS_POPUNDER_PARTIAL_LIST },
 	{ SettingsManager::POPUNDER_PM, ResourceManager::SETTINGS_POPUNDER_PM },
 	{ SettingsManager::POPUNDER_TEXT, ResourceManager::SETTINGS_POPUNDER_TEXT },
-	{ SettingsManager::JOIN_OPEN_NEW_WINDOW, ResourceManager::SETTINGS_OPEN_NEW_WINDOW },
 	{ SettingsManager::TOGGLE_ACTIVE_WINDOW, ResourceManager::SETTINGS_TOGGLE_ACTIVE_WINDOW },
 	{ SettingsManager::PROMPT_PASSWORD, ResourceManager::SETTINGS_PROMPT_PASSWORD },
 	{ 0, ResourceManager::LAST }

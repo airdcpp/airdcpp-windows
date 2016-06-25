@@ -394,7 +394,6 @@ private:
 	bool onlyFree;
 	bool expandSR;
 	bool running;
-	bool useGrouping;
 	bool waiting;
 	bool aschOnly;
 	int64_t resultsCount;
