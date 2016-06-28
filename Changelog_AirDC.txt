@@ -10,6 +10,7 @@ Changed:
 
 - Avoid disk access when cleaning up finished bundles
 - Existing directories won't be removed from share when a bundle with the same path is queued
+- Improve performance with huge bundles (adding in queue and search for alternates)
 
 Fixed:
 
@@ -19,6 +20,7 @@ Fixed:
 - Don't send "Message Seen" notifications for status messages
 - Fix possible deadlocks when adding finished bundles/hashed files in share
 - Add valid finished bundles in share on startup
+- Don't show the PM privacy warning in NMDC hubs
 
 Removed:
 
