@@ -659,7 +659,7 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(FINISHED_VISIBLE, "1,1,1,1,1,1,1,1");
 	setDefault(FINISHED_UL_VISIBLE, "1,1,1,1,1,1,1");
 	setDefault(QUEUEFRAME_VISIBLE, "1,1,1,1,1,1,1,0,1,1,1");
-	setDefault(EMOTICONS_FILE, "RadoX");
+	setDefault(EMOTICONS_FILE, "Atlantis");
 	setDefault(TABS_ON_TOP, false);
 	setDefault(DOWNCONN_PER_SEC, 2);
 	setDefault(UC_SUBMENU, true);
