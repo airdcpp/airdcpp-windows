@@ -178,6 +178,13 @@ void Updater::signVersionFile(const string& file, const string& key, bool makeHe
 		fclose(f);
 	} catch(const FileException&) { return; }
 
+#ifdef _WIN32
+	if (versionData.find("\r\n") != string::npos) {
+		::MessageBox(NULL, _T("The version file contains Windows line endings. UNIX endings should be used instead."), _T(""), MB_OK | MB_ICONERROR);
+		return;
+	}
+#endif
+
 	// Make SHA hash
 	int res = -1;
 	SHA_CTX sha_ctx = { 0 };
