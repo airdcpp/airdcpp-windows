@@ -1,3 +1,11 @@
+3.21
+
+Fixed:
+
+- Fix TTH search responses
+- Fix bundle merging issues
+
+
 3.20
 
 Added:
