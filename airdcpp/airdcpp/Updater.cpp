@@ -123,6 +123,7 @@ void Updater::createUpdate() {
 	ZipFile::CreateZipFileList(files, installer, Util::emptyString, "^(Themes)$");
 	//Add the web-resources
 	ZipFile::CreateZipFileList(files, installer, Util::emptyString, "^(Web-resources)$");
+	ZipFile::CreateZipFileList(files, installer, Util::emptyString, "^(EmoPacks)$");
 
 	ZipFile::CreateZipFile(updaterFilePath + updaterFile, files);
 
