@@ -169,13 +169,20 @@ const BundleQueue::PathInfo* BundleQueue::getNmdcSubDirectoryInfo(const string& 
 }
 
 BundlePtr BundleQueue::getMergeBundle(const string& aTarget) const noexcept {
-	/* Returns directory bundles that are in sub or parent dirs (or in the same location), in which we can merge to */
+	// Returns bundles that are in sub or parent dirs (or in the same location), in which we can merge to
+	// File bundles with the exact target will be returned as well
+
+	// In case it's a file bundle
+	auto filePath = Util::getFilePath(aTarget);
+
 	for(auto& compareBundle: bundles | map_values) {
-		dcassert(!AirUtil::isSubLocal(aTarget, compareBundle->getTarget()));
+		dcassert(!AirUtil::isSubLocal(filePath, compareBundle->getTarget()));
 		if (compareBundle->isFileBundle()) {
-			if (!aTarget.empty() && aTarget.back() != PATH_SEPARATOR && aTarget == compareBundle->getTarget())
+			// Adding the same file again?
+			if (!aTarget.empty() && aTarget.back() != PATH_SEPARATOR && aTarget == compareBundle->getTarget()) {
 				return compareBundle;
-		} else if (AirUtil::isParentOrExactLocal(aTarget, compareBundle->getTarget())) {
+			}
+		} else if (AirUtil::isParentOrExactLocal(filePath, compareBundle->getTarget())) {
 			return compareBundle;
 		}
 	}
