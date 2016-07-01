@@ -152,22 +152,22 @@ void AirUtil::init() {
 	crcReg.assign(R"(.{5,200}\s(\w{8})$)");
 
 #if defined _WIN32 && defined _DEBUG
-	dcassert(AirUtil::isParentOrExact(R"(C:\Projects\)", R"(C:\Projects\)"));
-	dcassert(AirUtil::isParentOrExact(R"(C:\Projects\)", R"(C:\Projects\test)"));
-	dcassert(AirUtil::isParentOrExact(R"(C:\Projects)", R"(C:\Projects\test)"));
-	dcassert(AirUtil::isParentOrExact(R"(C:\Projects\)", R"(C:\Projects\test)"));
-	dcassert(!AirUtil::isParentOrExact(R"(C:\Projects)", R"(C:\Projectstest)"));
-	dcassert(!AirUtil::isParentOrExact(R"(C:\Projectstest)", R"(C:\Projects)"));
-	dcassert(!AirUtil::isParentOrExact(R"(C:\Projects\test)", ""));
-	dcassert(AirUtil::isParentOrExact("", R"(C:\Projects\test)"));
+	dcassert(AirUtil::isParentOrExactLocal(R"(C:\Projects\)", R"(C:\Projects\)"));
+	dcassert(AirUtil::isParentOrExactLocal(R"(C:\Projects\)", R"(C:\Projects\test)"));
+	dcassert(AirUtil::isParentOrExactLocal(R"(C:\Projects)", R"(C:\Projects\test)"));
+	dcassert(AirUtil::isParentOrExactLocal(R"(C:\Projects\)", R"(C:\Projects\test)"));
+	dcassert(!AirUtil::isParentOrExactLocal(R"(C:\Projects)", R"(C:\Projectstest)"));
+	dcassert(!AirUtil::isParentOrExactLocal(R"(C:\Projectstest)", R"(C:\Projects)"));
+	dcassert(!AirUtil::isParentOrExactLocal(R"(C:\Projects\test)", ""));
+	dcassert(AirUtil::isParentOrExactLocal("", R"(C:\Projects\test)"));
 
-	dcassert(!AirUtil::isSub(R"(C:\Projects\)", R"(C:\Projects\)"));
-	dcassert(AirUtil::isSub(R"(C:\Projects\test)", R"(C:\Projects\)"));
-	dcassert(AirUtil::isSub(R"(C:\Projects\test)", R"(C:\Projects)"));
-	dcassert(!AirUtil::isSub(R"(C:\Projectstest)", R"(C:\Projects)"));
-	dcassert(!AirUtil::isSub(R"(C:\Projects)", R"(C:\Projectstest)"));
-	dcassert(AirUtil::isSub(R"(C:\Projects\test)", ""));
-	dcassert(!AirUtil::isSub("", R"(C:\Projects\test)"));
+	dcassert(!AirUtil::isSubLocal(R"(C:\Projects\)", R"(C:\Projects\)"));
+	dcassert(AirUtil::isSubLocal(R"(C:\Projects\test)", R"(C:\Projects\)"));
+	dcassert(AirUtil::isSubLocal(R"(C:\Projects\test)", R"(C:\Projects)"));
+	dcassert(!AirUtil::isSubLocal(R"(C:\Projectstest)", R"(C:\Projects)"));
+	dcassert(!AirUtil::isSubLocal(R"(C:\Projects)", R"(C:\Projectstest)"));
+	dcassert(AirUtil::isSubLocal(R"(C:\Projects\test)", ""));
+	dcassert(!AirUtil::isSubLocal("", R"(C:\Projects\test)"));
 
 	dcassert(AirUtil::compareFromEnd(R"(/Downloads/1/)", R"(Downloads\1\)", '\\') == 0);
 	dcassert(AirUtil::compareFromEnd(R"(/Downloads/1/)", R"(Download\1\)", '\\') == 9);
@@ -954,7 +954,7 @@ bool AirUtil::isSub(const string& aTestSub, const string& aParent, const char se
 }
 
 /* returns true if aSub is a subdir of aDir OR both are the same dir */
-bool AirUtil::isParentOrExact(const string& aTestParent, const string& aSub, const char separator) noexcept {
+bool AirUtil::isParentOrExact(const string& aTestParent, const string& aSub, const char aSeparator) noexcept {
 	if (aSub.length() < aTestParent.length())
 		return false;
 
@@ -962,7 +962,7 @@ bool AirUtil::isParentOrExact(const string& aTestParent, const string& aSub, con
 		return false;
 
 	// either the parent must end with a separator or it must follow in the subdirectory
-	return aTestParent.empty() || aTestParent.length() == aSub.length() || aTestParent.back() == separator || aSub[aTestParent.length()] == separator;
+	return aTestParent.empty() || aTestParent.length() == aSub.length() || aTestParent.back() == aSeparator || aSub[aTestParent.length()] == aSeparator;
 }
 
 }

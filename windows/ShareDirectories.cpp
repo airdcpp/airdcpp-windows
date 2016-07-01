@@ -585,7 +585,7 @@ bool ShareDirectories::addDirectory(const tstring& aPath){
 			profileNames.insert(parent->getProfile(t)->name);
 		}
 
-		if (AirUtil::isParentOrExact(sdi->dir->path, path)) {
+		if (AirUtil::isParentOrExactLocal(sdi->dir->path, path)) {
 			if (Util::stricmp(sdi->dir->path, path) == 0) {
 				if (!sdi->hasProfile(curProfile)) {
 					continue;
@@ -597,7 +597,7 @@ bool ShareDirectories::addDirectory(const tstring& aPath){
 			}
 
 			return false;
-		} else if (AirUtil::isSub(sdi->dir->path, path)) {
+		} else if (AirUtil::isSubLocal(sdi->dir->path, path)) {
 			WinUtil::showMessageBox(TSTRING_F(DIRECTORY_SUBDIRS_SHARED, Text::toT(Util::listToString(profileNames))));
 			return false;
 		}
@@ -687,16 +687,16 @@ void ShareDirectories::applyChanges(bool /*isQuit*/) {
 
 bool ShareDirectories::addExcludeFolder(const string& path) {
 	// make sure this is a sub folder of a shared folder
-	if (find_if(shareDirs, [&path](const ProfileDirectoryInfoPtr& aDir) { return aDir->isCurItem() && AirUtil::isSub(path, aDir->dir->path); } ) == shareDirs.end())
+	if (find_if(shareDirs, [&path](const ProfileDirectoryInfoPtr& aDir) { return aDir->isCurItem() && AirUtil::isSubLocal(path, aDir->dir->path); } ) == shareDirs.end())
 		return false;
 
 	// Make sure this not a subfolder of an already excluded folder
-	if (find_if(excludedPaths, [&path](const string& aDir) { return AirUtil::isParentOrExact(aDir, path); } ) != excludedPaths.end())
+	if (find_if(excludedPaths, [&path](const string& aDir) { return AirUtil::isParentOrExactLocal(aDir, path); } ) != excludedPaths.end())
 		return false;
 
 	// remove all sub folder excludes
 	for(auto& j: excludedPaths) {
-		if (AirUtil::isSub(j, path))
+		if (AirUtil::isSubLocal(j, path))
 			removeExcludeFolder(j);
 	}
 
@@ -737,7 +737,7 @@ bool ShareDirectories::shareFolder(const string& path) {
 		return false;
 
 	// check if it's an excluded folder or a sub folder of an excluded folder
-	if (find_if(excludedPaths, [&path](const string& aDir) { return AirUtil::isParentOrExact(aDir, path); } ) != excludedPaths.end())
+	if (find_if(excludedPaths, [&path](const string& aDir) { return AirUtil::isParentOrExactLocal(aDir, path); } ) != excludedPaths.end())
 		return false;
 
 	foundInfo->found = true;

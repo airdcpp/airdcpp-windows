@@ -1688,7 +1688,7 @@ void WinUtil::searchSite(const WebShortcut* ws, const string& aSearchTerm, bool 
 	if(!ws)
 		return;
 
-	auto searchTerm = getReleaseDir ? AirUtil::getReleaseDir(aSearchTerm, true) : Util::getLastDir(aSearchTerm);
+	auto searchTerm = getReleaseDir ? AirUtil::getNmdcReleaseDir(aSearchTerm, true) : Util::getLastDir(aSearchTerm);
 
 	if(ws->clean && !searchTerm.empty()) {
 		searchTerm = AirUtil::getTitle(searchTerm);

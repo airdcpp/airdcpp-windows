@@ -171,11 +171,11 @@ const BundleQueue::PathInfo* BundleQueue::getNmdcSubDirectoryInfo(const string& 
 BundlePtr BundleQueue::getMergeBundle(const string& aTarget) const noexcept {
 	/* Returns directory bundles that are in sub or parent dirs (or in the same location), in which we can merge to */
 	for(auto& compareBundle: bundles | map_values) {
-		dcassert(!AirUtil::isSub(aTarget, compareBundle->getTarget()));
+		dcassert(!AirUtil::isSubLocal(aTarget, compareBundle->getTarget()));
 		if (compareBundle->isFileBundle()) {
 			if (!aTarget.empty() && aTarget.back() != PATH_SEPARATOR && aTarget == compareBundle->getTarget())
 				return compareBundle;
-		} else if (AirUtil::isParentOrExact(aTarget, compareBundle->getTarget())) {
+		} else if (AirUtil::isParentOrExactLocal(aTarget, compareBundle->getTarget())) {
 			return compareBundle;
 		}
 	}
@@ -185,7 +185,7 @@ BundlePtr BundleQueue::getMergeBundle(const string& aTarget) const noexcept {
 void BundleQueue::getSubBundles(const string& aTarget, BundleList& retBundles) const noexcept {
 	/* Returns bundles that are inside aTarget */
 	for(auto& compareBundle: bundles | map_values) {
-		if (AirUtil::isSub(compareBundle->getTarget(), aTarget)) {
+		if (AirUtil::isSubLocal(compareBundle->getTarget(), aTarget)) {
 			retBundles.push_back(compareBundle);
 		}
 	}
@@ -232,7 +232,7 @@ QueueItemList BundleQueue::getSearchItems(const BundlePtr& aBundle) const noexce
 				continue;
 			}
 
-			mainBundlePaths.insert(AirUtil::getReleaseDir(pathInfo->path, false));
+			mainBundlePaths.insert(AirUtil::getReleaseDirLocal(pathInfo->path, false));
 		}
 
 

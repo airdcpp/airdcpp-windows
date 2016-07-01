@@ -1680,7 +1680,7 @@ tstring SearchFrame::handleCopyMagnet(const SearchInfo* si) {
 }
 
 tstring SearchFrame::handleCopyDirectory(const SearchInfo* si) {
-	return Text::toT(AirUtil::getReleaseDir(si->sr->getPath(), true));
+	return Text::toT(AirUtil::getNmdcReleaseDir(si->sr->getPath(), true));
 }
 
 LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {

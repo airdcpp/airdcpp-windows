@@ -730,7 +730,7 @@ BundlePtr QueueManager::getBundle(const string& aTarget, QueueItemBase::Priority
 		b = BundlePtr(new Bundle(aTarget, GET_TIME(), aPrio, aDate, 0, true, isFileBundle));
 	} else {
 		// use an existing one
-		dcassert(!AirUtil::isSub(b->getTarget(), aTarget));
+		dcassert(!AirUtil::isSubLocal(b->getTarget(), aTarget));
 	}
 
 	return b;
@@ -2575,7 +2575,7 @@ void QueueLoader::startTag(const string& name, StringPairList& attribs, bool sim
 				return;
 			}
 
-			if (curBundle && inBundle && !AirUtil::isParentOrExact(curBundle->getTarget(), currentFileTarget)) {
+			if (curBundle && inBundle && !AirUtil::isParentOrExactLocal(curBundle->getTarget(), currentFileTarget)) {
 				//the file isn't inside the main bundle dir, can't add this
 				return;
 			}
@@ -3344,7 +3344,7 @@ void QueueManager::checkRefreshPaths(OrderedStringSet& retBundles_, RefreshPathL
 
 			{
 				// Find parent refresh directories of this bundle path
-				auto refreshPathIter = find_if(refreshPaths_.begin(), refreshPaths_.end(), IsParentOrExact(b->getTarget()));
+				auto refreshPathIter = find_if(refreshPaths_.begin(), refreshPaths_.end(), IsParentOrExact(b->getTarget(), PATH_SEPARATOR));
 
 				if (refreshPathIter == refreshPaths_.end()) {
 					continue;
@@ -3398,7 +3398,7 @@ void QueueManager::onPathRefreshed(const string& aPath, bool aStartup) noexcept{
 	{
 		RLock l(cs);
 		for (auto& b : bundleQueue.getBundles() | map_values) {
-			if (AirUtil::isParentOrExact(aPath, b->getTarget()) && (b->getStatus() == Bundle::STATUS_FINISHED || b->getStatus() == Bundle::STATUS_HASHED)) {
+			if (AirUtil::isParentOrExactLocal(aPath, b->getTarget()) && (b->getStatus() == Bundle::STATUS_FINISHED || b->getStatus() == Bundle::STATUS_HASHED)) {
 				bundles.push_back(b);
 			}
 		}

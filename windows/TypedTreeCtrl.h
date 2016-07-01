@@ -111,7 +111,7 @@ public:
 			HTREEITEM sel = GetSelectedItem();
 			bool childSelected = false;
 			if (sel) {
-				childSelected = AirUtil::isSub(((T*)GetItemData(sel))->getPath(), ((T*)pNMTreeView->itemNew.lParam)->getPath());
+				childSelected = AirUtil::isSubNmdc(((T*)GetItemData(sel))->getPath(), ((T*)pNMTreeView->itemNew.lParam)->getPath());
 				if (childSelected) {
 					//it would be selected anyway but without any notification message
 					SelectItem(pNMTreeView->itemNew.hItem);

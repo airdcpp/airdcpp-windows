@@ -184,7 +184,7 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_
 	vector<unique_ptr<ItemInfoCache>> removedInfos;
 	if (!aReload) {
 		for (auto i = itemInfos.begin(); i != itemInfos.end();) {
-			if (AirUtil::isParentOrExact(aDir, i->first)) {
+			if (AirUtil::isParentOrExactNmdc(aDir, i->first)) {
 				removedInfos.push_back(move(i->second));
 				i = itemInfos.erase(i);
 			} else {
@@ -600,7 +600,7 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aReloadLi
 				break;
 			}
 		}
-	} else if (aChangeDir || AirUtil::isParentOrExact(aLoadedDir, curPath)) {
+	} else if (aChangeDir || AirUtil::isParentOrExactNmdc(aLoadedDir, curPath)) {
 		// insert the new items
 		ctrlTree.SelectItem(nullptr);
 

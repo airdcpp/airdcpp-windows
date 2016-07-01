@@ -1142,7 +1142,7 @@ const QueueFrame::QueueItemInfoPtr QueueFrame::findItemByPath(const string& aPat
 		if (b->bundle && !b->bundle->isFileBundle()) {
 			if (aPath == b->bundle->getTarget())
 				return b;
-			else if (AirUtil::isSub(aPath, b->bundle->getTarget())) {
+			else if (AirUtil::isSubLocal(aPath, b->bundle->getTarget())) {
 				return b->findChild(aPath);
 			}
 		}
@@ -1162,7 +1162,7 @@ void QueueFrame::onBundleRemoved(const BundlePtr& aBundle, const string& aPath) 
 	auto i = parents.find(aBundle->getToken());;
 	if (i != parents.end()) {
 		removeLocationItem(aPath);
-		if (curDirectory && AirUtil::isParentOrExact(aBundle->getTarget(), curDirectory->getTarget()))
+		if (curDirectory && AirUtil::isParentOrExactLocal(aBundle->getTarget(), curDirectory->getTarget()))
 			ctrlQueue.list.DeleteAllItems();
 		else
 			ctrlQueue.list.deleteItem(i->second.get());
@@ -1584,7 +1584,7 @@ void QueueFrame::updateParentDirectories(QueueItemInfoPtr Qii) {
 	if (!Qii->getParent() || !curDirectory)
 		return;
 	
-	if (AirUtil::isSub(Qii->getParent()->getTarget(), curDirectory->getTarget())) {
+	if (AirUtil::isSubLocal(Qii->getParent()->getTarget(), curDirectory->getTarget())) {
 		auto cur = Qii;
 		while ((cur = cur->getParent()) && !cur->bundle && cur != curDirectory) {
 			int64_t newSize = 0;
