@@ -57,7 +57,7 @@ public:
 				UserCommand* uc = &userCommands[n];
 				if(uc->getType() == UserCommand::TYPE_SEPARATOR) {
 					// Avoid double separators...
-					if( cur->hasItems() && !(cur->GetMenuState(cur->GetMenuItemCount()-1, MF_BYPOSITION) & MF_SEPARATOR))
+					if( cur->hasItems() && !cur->isSeparator(cur->GetMenuItemCount()-1))
 					{
 						cur->appendSeparator();
 					}

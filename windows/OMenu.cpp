@@ -77,6 +77,11 @@ bool OMenu::isPopup(unsigned index) {
 	return (GetMenuState(index, MF_BYPOSITION) & MF_POPUP) == MF_POPUP;
 }
 
+bool OMenu::isSeparator(unsigned index) {
+	//Items that open a sub menu also seem to have MF_SEPARATOR flag...
+	return !isPopup(index) && (GetMenuState(index, MF_BYPOSITION) & MF_SEPARATOR) == MF_SEPARATOR;
+}
+
 tstring OMenu::getText(unsigned index) const {
 	TCHAR buf[1024];
 	GetMenuString(index, buf, 1024, MF_BYPOSITION);
@@ -172,19 +177,14 @@ void OMenu::open(HWND aHWND, unsigned flags /*= TPM_LEFTALIGN | TPM_RIGHTBUTTON*
 
 void OMenu::disableEmptyMenus() {
 	for (auto& m: subMenuList) {
-		auto itemCount = m->GetMenuItemCount();
-		if (itemCount > 1 || m->isShellmenu)
+		if (m->isShellmenu)
 			continue;
 
-		if (itemCount == 1) {
-			MENUITEMINFO mii = {0};
-			mii.cbSize = sizeof(MENUITEMINFO);
-			mii.fMask = MIIM_TYPE | MIIM_DATA | MIIM_SUBMENU;
-			GetMenuItemInfo(0, TRUE, &mii);
-			if (!mii.dwItemData)
+		if (m->hasItems()) {
+			if (m->GetMenuItemCount() > 1 || !m->isSeparator(0))
 				continue;
 		}
-
+		
 		EnableMenuItem((UINT_PTR)(HMENU)*m.get(), MFS_DISABLED);
 	}
 }

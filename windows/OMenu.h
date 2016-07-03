@@ -106,6 +106,7 @@ public:
 	void addItem(OMenuItem* mi);
 	bool hasItems();
 	bool isPopup(unsigned index);
+	bool isSeparator(unsigned index);
 	tstring getText(unsigned index) const;
 
 	static LRESULT onMeasureItem(HWND hWnd, UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
