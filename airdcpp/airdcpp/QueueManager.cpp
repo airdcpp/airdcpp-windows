@@ -3758,8 +3758,8 @@ void QueueManager::removeBundle(BundlePtr& aBundle, bool aRemoveFinishedFiles) n
 		AirUtil::removeDirectoryIfEmpty(aBundle->getTarget(), 10, !aRemoveFinishedFiles);
 	}
 
-
-	LogManager::getInstance()->message(STRING_F(BUNDLE_X_REMOVED, aBundle->getName()), LogMessage::SEV_INFO);
+	if(SETTING(LOG_REMOVED_BUNDLES))
+		LogManager::getInstance()->message(STRING_F(BUNDLE_X_REMOVED, aBundle->getName()), LogMessage::SEV_INFO);
 
 	for (const auto& aUser : sources)
 		fire(QueueManagerListener::SourceFilesUpdated(), aUser);
