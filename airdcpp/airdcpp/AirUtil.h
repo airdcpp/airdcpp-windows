@@ -94,7 +94,7 @@ public:
 	static void getRegexMatchesT(const tstring& aString, TStringList& l, const boost::wregex& aReg);
 	static void getRegexMatches(const string& aString, StringList& l, const boost::regex& aReg);
 
-	static string formatMatchResults(int matches, int newFiles, const BundleList& bundles, bool partial) noexcept;
+	static string formatMatchResults(int aMatchingFiles, int aNewFiles, const BundleList& aBundles) noexcept;
 
 	static void fileEvent(const string& tgt, bool file=false);
 

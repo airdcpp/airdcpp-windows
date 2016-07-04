@@ -1133,7 +1133,7 @@ void DirectoryListing::matchQueueImpl() noexcept {
 	int matches = 0, newFiles = 0;
 	BundleList bundles;
 	QueueManager::getInstance()->matchListing(*this, matches, newFiles, bundles);
-	fire(DirectoryListingListener::QueueMatched(), AirUtil::formatMatchResults(matches, newFiles, bundles, false));
+	fire(DirectoryListingListener::QueueMatched(), AirUtil::formatMatchResults(matches, newFiles, bundles));
 }
 
 void DirectoryListing::on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool /*wentOffline*/) noexcept {

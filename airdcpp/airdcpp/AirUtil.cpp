@@ -545,28 +545,16 @@ void AirUtil::listRegexSubtract(StringList& l, const boost::regex& aReg) {
 	l.erase(remove_if(l.begin(), l.end(), [&](const string& s) { return regex_match(s, aReg); }), l.end());
 }
 
-string AirUtil::formatMatchResults(int matches, int newFiles, const BundleList& bundles, bool partial) noexcept {
-	string tmp;
-	if(partial) {
-		//partial lists
-		if (bundles.size() == 1) {
-			tmp = STRING_F(MATCH_SOURCE_ADDED, newFiles % bundles.front()->getName().c_str());
+string AirUtil::formatMatchResults(int aMatchingFiles, int aNewFiles, const BundleList& aBundles) noexcept {
+	if (aMatchingFiles > 0) {
+		if (aBundles.size() == 1) {
+			return STRING_F(MATCHED_FILES_BUNDLE, aMatchingFiles % aBundles.front()->getName().c_str() % aNewFiles);
 		} else {
-			tmp = STRING_F(MATCH_SOURCE_ADDED_X_BUNDLES, newFiles % (int)bundles.size());
-		}
-	} else {
-		//full lists
-		if (matches > 0) {
-			if (bundles.size() == 1) {
-				tmp = STRING_F(MATCHED_FILES_BUNDLE, matches % bundles.front()->getName().c_str() % newFiles);
-			} else {
-				tmp = STRING_F(MATCHED_FILES_X_BUNDLES, matches % (int)bundles.size() % newFiles);
-			}
-		} else {
-			tmp = STRING(NO_MATCHED_FILES);
+			return STRING_F(MATCHED_FILES_X_BUNDLES, aMatchingFiles % (int)aBundles.size() % aNewFiles);
 		}
 	}
-	return tmp;
+
+	return STRING(NO_MATCHED_FILES);;
 }
 
 //fuldc ftp logger support

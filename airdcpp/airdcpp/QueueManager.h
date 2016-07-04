@@ -88,7 +88,7 @@ public:
 	QueueItemPtr addOpenedItem(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsClientView, bool aIsText = true) throw(QueueException, FileException);
 
 	/** Readd a source that was removed */
-	void readdQISource(const string& target, const HintedUser& aUser) throw(QueueException);
+	bool readdQISource(const string& target, const HintedUser& aUser) noexcept;
 	void readdBundleSource(BundlePtr aBundle, const HintedUser& aUser) noexcept;
 
 	// Change bundle to use sequential order (instead of random order)
@@ -219,7 +219,7 @@ public:
 
 	SharedMutex& getCS() { return cs; }
 	// Locking must be handled by the caller
-	const Bundle::TokenBundleMap& getBundles() const { return bundleQueue.getBundles(); }
+	const Bundle::TokenMap& getBundles() const { return bundleQueue.getBundles(); }
 	// Locking must be handled by the caller
 	const QueueItem::StringMap& getFileQueue() const { return fileQueue.getPathQueue(); }
 
@@ -401,7 +401,12 @@ private:
 
 	void removeBundleItem(QueueItemPtr& qi, bool finished) noexcept;
 	void addLoadedBundle(BundlePtr& aBundle) noexcept;
-	bool addBundle(BundlePtr& aBundle, const string& aTarget, int filesAdded) noexcept;
+
+	// Add a bundle in queue
+	bool addBundle(BundlePtr& aBundle, int aFilesAdded) noexcept;
+
+	void onBundleAdded(const BundlePtr& aBundle, bool aIsNew, const QueueItem::ItemBoolList& aItemsAdded, const HintedUser& aUser, bool aWantConnection) noexcept;
+
 	void readdBundle(BundlePtr& aBundle) noexcept;
 	void removeBundleLists(BundlePtr& aBundle) noexcept;
 
@@ -410,7 +415,7 @@ private:
 	void handleBundleUpdate(QueueToken aBundleToken) noexcept;
 
 	/** Get a bundle for adding new items in queue (a new one or existing)  */
-	BundlePtr getBundle(const string& aTarget, QueueItemBase::Priority aPrio, time_t aDate, bool isFileBundle) noexcept;
+	BundlePtr getBundle(const string& aTarget, QueueItemBase::Priority aPrio, time_t aDate, bool aIsFileBundle) noexcept;
 
 	// Add a file to the queue
 	// Returns the possibly added queue item and bool whether it's a newly created item
@@ -428,8 +433,12 @@ private:
 	static string checkTarget(const string& toValidate, const string& aParentDir=Util::emptyString) throw(QueueException, FileException);
 	static string formatBundleTarget(const string& aPath, time_t aRemoteDate) noexcept;
 
-	/** Add a source to an existing queue item */
-	bool addSource(QueueItemPtr& qi, const HintedUser& aUser, Flags::MaskType addBad, bool newBundle=false, bool checkTLS=true) throw(QueueException, FileException);
+	// Add a source to an existing queue item
+	bool addSource(QueueItemPtr& qi, const HintedUser& aUser, Flags::MaskType addBad, bool checkTLS=true) throw(QueueException, FileException);
+
+	// Add a source for a list of queue items, returns the number of (new) files for which the source was added
+	int addSources(const HintedUser& aUser, QueueItemList items, Flags::MaskType aAddBad) noexcept;
+	int addSources(const HintedUser& aUser, QueueItemList items, Flags::MaskType aAddBad, BundleList& bundles_) noexcept;
 	 
 	void matchTTHList(const string& name, const HintedUser& user, int flags) noexcept;
 

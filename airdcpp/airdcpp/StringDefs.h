@@ -768,7 +768,6 @@ enum Strings { // @DontAdd
 	MATCH_PARTIAL, // "Match partial list"
 	MATCH_QUEUE, // "Match queue"
 	MATCH_SOURCE_ADDED, // "Added as source for %1% items in the bundle %2%"
-	MATCH_SOURCE_ADDED_X_BUNDLES, // "Added as source for %1% items in %2% bundles"
 	MAXIMUM_AGE, // "Maximum age"
 	MAX_BUNDLES_RUNNING, // "Maximum number of bundles running already"
 	MAX_CHAT_RESIZE_LINES, // "Max lines to resize the message box on multiline messages"
