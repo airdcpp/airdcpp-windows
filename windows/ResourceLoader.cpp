@@ -309,6 +309,7 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_SECURE:		return _T("Secure.ico");
 		case IDI_TYPING:		return _T("Typing.ico");
 		case IDI_SEEN:			return _T("Seen.ico");
+		case IDI_SEND_MESSAGE:	return _T("Send_message.ico");
 
 		case IDI_UP:            return _T("BrowserBar\\Up.ico");
 		case IDI_NEXT:			return _T("BrowserBar\\NextResult.ico");

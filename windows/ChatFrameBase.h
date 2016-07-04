@@ -64,12 +64,8 @@ public:
 	LRESULT onEmoticons(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl, BOOL& bHandled);
 	LRESULT onEmoPackChange(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
-	LRESULT onSendMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		onEnter();
-		return 0;
-	}
+	LRESULT onSendMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled);
 	LRESULT onResize(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled);
-
 
 	virtual bool checkFrameCommand(tstring& cmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson) = 0;
 	virtual bool sendMessage(const tstring& aMessage, string& error_, bool thirdPerson) = 0;
@@ -94,6 +90,7 @@ protected:
 	CButton ctrlEmoticons;
 	CButton ctrlMagnet;
 	CButton ctrlResize;
+	CButton ctrlSendMessage;
 	CToolTipCtrl ctrlTooltips;
 	bool resizePressed;
 
@@ -108,7 +105,7 @@ protected:
 
 	void appendTextLine(const tstring& aText, bool addSpace);
 
-	void onEnter();
+	void handleSendMessage();
 	static tstring commands;
 
 	void getLineText(tstring& s);

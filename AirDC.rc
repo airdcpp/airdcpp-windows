@@ -2951,6 +2951,8 @@ IDI_TYPING              ICON                    "res\\Typing.ico"
 
 IDI_SEEN                ICON                    "res\\Seen.ico"
 
+IDI_SEND_MESSAGE        ICON                    "res\\Send_message.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

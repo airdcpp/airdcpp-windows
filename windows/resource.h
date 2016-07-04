@@ -318,6 +318,7 @@
 #define IDI_TOTAL_DOWN                  483
 #define IDI_SHARED                      484
 #define IDI_DIR_LOADING_OL              485
+#define IDI_SEND_MESSAGE				486
 #define IDI_PROXY                       488
 #define IDI_FAV_USER                    489
 #define IDD_FORMVIEW                    500

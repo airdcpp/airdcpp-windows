@@ -75,6 +75,7 @@ PropPage::ListItem AppearancePage::listItems[] = {
 	{ SettingsManager::SHOW_EMOTICON, ResourceManager::SHOW_EMOTICON_BUTTON },
 	{ SettingsManager::SHOW_MAGNET, ResourceManager::SHOW_MAGNET_BUTTON },
 	{ SettingsManager::SHOW_MULTILINE, ResourceManager::SHOW_MULTILINE_BUTTON },
+	{ SettingsManager::SHOW_SEND_MESSAGE, ResourceManager::SHOW_SEND_MESSAGE_BUTTON },
 	{ 0, ResourceManager::LAST }
 };
 

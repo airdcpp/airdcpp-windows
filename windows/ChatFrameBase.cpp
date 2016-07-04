@@ -80,10 +80,7 @@ void ChatFrameBase::init(HWND /*m_hWnd*/, RECT aRcDefault) {
 	ctrlClient.setFormatReleases(true);
 	ctrlClient.setAllowClear(true);
 	
-	//ctrlClient.SetAutoURLDetect(false);
-	//ctrlClient.SetEventMask(ctrlClient.GetEventMask() | ENM_LINK);
 	ctrlClient.SetBackgroundColor(WinUtil::bgColor);
-	//ctrlClient.setClient(aClient);
 
 	ctrlTooltips.Create(m_hWnd, aRcDefault, NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);
 	ctrlTooltips.SetDelayTime(TTDT_AUTOMATIC, 600);
@@ -95,6 +92,14 @@ void ChatFrameBase::init(HWND /*m_hWnd*/, RECT aRcDefault) {
 		ctrlResize.SetFont(WinUtil::font);
 		ctrlTooltips.AddTool(ctrlResize.m_hWnd, CTSTRING(MULTILINE_INPUT));
 	}
+
+	if (SETTING(SHOW_SEND_MESSAGE)) {
+		ctrlSendMessage.Create(m_hWnd, aRcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_ICON | BS_CENTER, 0, IDC_SEND_MESSAGE);
+		ctrlSendMessage.SetIcon(GET_ICON(IDI_SEND_MESSAGE, 16));
+		ctrlSendMessage.SetFont(WinUtil::font);
+		ctrlTooltips.AddTool(ctrlSendMessage.m_hWnd, CTSTRING(SEND_MESSAGE));
+	}
+
 
 	ctrlMessage.Create(m_hWnd, aRcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VSCROLL |
 		ES_AUTOHSCROLL | ES_MULTILINE | ES_AUTOVSCROLL, WS_EX_CLIENTEDGE);
@@ -173,7 +178,11 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 				(GetKeyState(VK_SHIFT) & 0x8000)) {
 					bHandled = FALSE;
 				} else {
-					onEnter();
+					if (resizePressed && !WinUtil::isShift()) { //Shift + Enter to send
+						ctrlMessage.AppendText(_T("\r\n"));
+					} else {
+						handleSendMessage();
+					}
 				}
 			break;
 		case VK_UP:
@@ -358,6 +367,13 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 void ChatFrameBase::getLineText(tstring& s) {
 	s.resize(ctrlMessage.GetWindowTextLength());
 	ctrlMessage.GetWindowText(&s[0], ctrlMessage.GetWindowTextLength() + 1);
+}
+
+LRESULT ChatFrameBase::onSendMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled) {
+	handleSendMessage();
+	ctrlMessage.SetFocus();
+	bHandled = FALSE;
+	return 0;
 }
 
 LRESULT ChatFrameBase::onResize(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled) {
@@ -611,16 +627,11 @@ LRESULT ChatFrameBase::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam
 	return 0; 
 }
 
-void ChatFrameBase::onEnter() {
+void ChatFrameBase::handleSendMessage() {
 	tstring message;
 	tstring status;
 	bool thirdPerson = false;
 	bool isCommand = false;
-
-	if(resizePressed && !WinUtil::isShift()) { //Shift + Enter to send
-		ctrlMessage.AppendText(_T("\r\n"));
-		return;
-	}
 
 	if(ctrlMessage.GetWindowTextLength() > 0) {
 		tstring s;

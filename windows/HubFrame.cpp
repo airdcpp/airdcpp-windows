@@ -605,6 +605,9 @@ void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	if(ctrlResize.IsWindow())
 		buttonsize += 26;
 
+	if (ctrlSendMessage.IsWindow())
+		buttonsize += 26;
+
 	rc = rect;
 	rc.bottom -= 2;
 	rc.top = rc.bottom - h - 5;
@@ -617,6 +620,12 @@ void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		rc.bottom -= h - (WinUtil::fontHeight + 4);
 	}
 //end
+
+	if (ctrlSendMessage.IsWindow()) {
+		rc.left = rc.right + 2;
+		rc.right += 24;
+		ctrlSendMessage.MoveWindow(rc);
+	}
 
 	if(ctrlResize.IsWindow()) {
 		//resize lines button
