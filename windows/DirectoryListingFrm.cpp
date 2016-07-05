@@ -317,11 +317,6 @@ void DirectoryListingFrame::on(DirectoryListingListener::SearchFailed, bool time
 void DirectoryListingFrame::on(DirectoryListingListener::ChangeDirectory, const string& aDir, bool aIsSearchChange) noexcept {
 	//dcdebug("DirectoryListingListener::ChangeDirectory %s\n", aDir.c_str());
 	callAsync([=] {
-		if (!aIsSearchChange && aDir != curPath) {
-			dcdebug("SKIP: DirectoryListingListener::ChangeDirectory, paths match %s\n", aDir.c_str());
-			return;
-		}
-
 		if (aIsSearchChange)
 			ctrlFiles.filter.clear();
 
@@ -878,23 +873,16 @@ LRESULT DirectoryListingFrame::onSelChangedDirectories(int /*idCtrl*/, LPNMHDR p
 	if(p->itemNew.state & TVIS_SELECTED) {
 		auto ii = (ItemInfo*)p->itemNew.lParam;
 
-		if (curPath != ii->dir->getPath()) {
+		// Don't cause an infinite loop when changing directories in the GUI faster than the
+		// list thread is able to handle (= don't send another changeDir for previously queued changes)
+		if (curPath != ii->dir->getPath() && dl->getCurrentLocationInfo().directory != ii->dir) {
 			if (changeType != CHANGE_HISTORY)
 				browserBar.addHistory(ii->dir->getPath());
 
 			curPath = ii->dir->getPath();
 			changeDir(ii);
-		} /*else {
-			dcdebug("SKIP: DirectoryListingFrame::onSelChangedDirectories, path not changed %s (current: %s)\n", ii->dir->getPath().c_str(), curPath.c_str());
-		}*/
-	} /*else {
-		if (p->itemNew.lParam == 0) {
-			dcdebug("SKIP: DirectoryListingFrame::onSelChangedDirectories, ItemInfo missing\n");
-			return 0;
 		}
-
-		dcdebug("SKIP: DirectoryListingFrame::onSelChangedDirectories, new item not selected %s\n", ((ItemInfo*)p->itemNew.lParam)->dir->getPath().c_str());
-	}*/
+	}
 
 	return 0;
 }

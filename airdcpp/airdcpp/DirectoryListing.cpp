@@ -1190,6 +1190,9 @@ bool DirectoryListing::changeDirectory(const string& aPath, ReloadMode aReloadMo
 	// Cases when the directory can't be found must be handled when searching in partial lists 
 	// or when opening directories from search (or via the API) for existing filelists
 	const auto dir = findDirectory(aPath, root);
+	if (dir) {
+		updateCurrentLocation(dir);
+	}
 
 	if (dir && (!partialList || dir->getLoading() || (dir->isComplete() && aReloadMode == RELOAD_NONE))) {
 		fire(DirectoryListingListener::ChangeDirectory(), aPath, aIsSearchChange);
@@ -1214,10 +1217,6 @@ bool DirectoryListing::changeDirectory(const string& aPath, ReloadMode aReloadMo
 		}
 	} else {
 		return false;
-	}
-
-	if (dir) {
-		updateCurrentLocation(dir);
 	}
 
 	return true;
