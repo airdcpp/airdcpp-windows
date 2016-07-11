@@ -851,6 +851,7 @@
     <Image Include="res\Secure.ico" />
     <Image Include="res\Seen.ico" />
     <Image Include="res\send_file.ico" />
+    <Image Include="res\Send_message.ico" />
     <Image Include="res\SettingsTree\Hashing.ico" />
     <Image Include="res\SettingsTree\Limiter.ico" />
     <Image Include="res\SettingsTree\Proxy.ico" />
