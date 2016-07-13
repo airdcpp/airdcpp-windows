@@ -279,17 +279,19 @@ void WebServerPage::write() {
 
 	auto needServerRestart = webMgr->getPlainServerConfig().getPort() != plainserverPort || webMgr->getTlsServerConfig().getPort() != tlsServerPort;
 
+	const auto errorF = [](const string& aError) {
+		LogManager::getInstance()->message(aError, LogMessage::SEV_ERROR);
+	};
+
 	applySettings();
-	webMgr->save();
+	webMgr->save(errorF);
 
 	if (needServerRestart) {
 		if (webMgr->isRunning()) {
 			webMgr->getInstance()->stop();
 		}
 
-		webMgr->getInstance()->start([](const string& aError) {
-			LogManager::getInstance()->message(aError, LogMessage::SEV_ERROR);
-		});
+		webMgr->getInstance()->start(errorF);
 	}
 }
 

@@ -260,6 +260,10 @@ public:
 	}
 };
 
+void webErrorF(const string& aError) {
+	LogManager::getInstance()->message(aError, LogMessage::SEV_ERROR);
+};
+
 static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 {
 	static unique_ptr<MainFrame> wndMain;
@@ -302,7 +306,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 			);
 
 			webserver::WebServerManager::newInstance();
-			if (webserver::WebServerManager::getInstance()->load()) {
+			if (webserver::WebServerManager::getInstance()->load(webErrorF)) {
 				auto webResourcePath = Util::getStartupParam("--web-resources");
 #ifdef _DEBUG
 				if (!webResourcePath) {
@@ -310,9 +314,9 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 				}
 #endif
 
-				auto started = webserver::WebServerManager::getInstance()->start([](const string& aError) {
-					LogManager::getInstance()->message(aError, LogMessage::SEV_ERROR);
-				}, webResourcePath ? *webResourcePath : Util::emptyString);
+				auto started = webserver::WebServerManager::getInstance()->start(webErrorF,
+					webResourcePath ? *webResourcePath : Util::emptyString
+				);
 				
 				if (started) {
 					LogManager::getInstance()->message("Web server started", LogMessage::SEV_INFO);
@@ -386,13 +390,13 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	loader = std::async(std::launch::async, [=] {
 		PopupManager::deleteInstance();
 		webserver::WebServerManager::getInstance()->stop();
+		webserver::WebServerManager::getInstance()->save(webErrorF);
 
 		shutdown(
 			[&](const string& str) { WinUtil::splash->update(str); },
 			[=](float progress) { WinUtil::splash->update(progress); }
 		);
 
-		webserver::WebServerManager::getInstance()->save();
 		webserver::WebServerManager::deleteInstance();
 
 		WinUtil::splash->callAsync([=] { PostQuitMessage(0); });
