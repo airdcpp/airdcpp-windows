@@ -103,7 +103,7 @@ LangString SM_AIRDCPP_DESC ${LANG_ENGLISH} "AirDC++ File Sharing Application"
 LangString SM_AIRDCPP_DESCUN ${LANG_ENGLISH} "Uninstall AirDC++"
 LangString SM_UNINSTALL ${LANG_ENGLISH} "Uninstall"
 LangString WR_REMOVEONLY ${LANG_ENGLISH} "(remove only)"
-LangString SecRadox ${LANG_ENGLISH} "Radox Emoticon Pack"
+LangString SecAtlantis ${LANG_ENGLISH} "Atlantis Emoticon Pack"
 LangString SecThemes ${LANG_ENGLISH} "Themes"
 LangString SecWebResources ${LANG_ENGLISH} "Web user interface"
 LangString SecStore ${LANG_ENGLISH} "Store settings in the user profile directory"
@@ -116,7 +116,7 @@ LangString RemoveQueue ${LANG_ENGLISH} "Do you also want to remove queue, themes
 LangString NotEmpty ${LANG_ENGLISH} "Installation directory is NOT empty. Do you still want to remove it?"
 LangString DESC_dcpp ${LANG_ENGLISH} "AirDC++ main program."
 LangString DESC_StartMenu ${LANG_ENGLISH} "A shortcut of AirDC++ will be placed in your start menu."
-LangString DESC_Radox ${LANG_ENGLISH} "RadoX emoticon pack will be installed to be used in chats."
+LangString DESC_Atlantis ${LANG_ENGLISH} "Atlantis emoticon pack will be installed to be used in chats."
 LangString DESC_Themes ${LANG_ENGLISH} "If you don't like the default theme you can try these two extra themes, Dark Skull and Zoolution."
 LangString DESC_WebResorces ${LANG_ENGLISH} "Allows accessing the client from other devices via a web browser."
 LangString DESC_loc ${LANG_ENGLISH} "Normally you should not change this because it can lead to abnormal behaviour like loss of settings or downloads. If you unselect it, read the warning message carefully."
@@ -251,7 +251,7 @@ Section "$(SecStartMenu)" DescStartMenu
   CreateShortCut "$SMPROGRAMS\AirDC++\$(SM_UNINSTALL).lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0 "" "" "$(SM_AIRDCPP_DESCUN)"
 SectionEnd
 
-Section "$(SecRadox)" DescRadox
+Section "$(SecAtlantis)" DescAtlantis
   SetOutPath $INSTDIR
   File /r EmoPacks
 SectionEnd
@@ -285,7 +285,7 @@ SectionEnd
   !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
     !insertmacro MUI_DESCRIPTION_TEXT ${dcpp} $(DESC_dcpp)
     !insertmacro MUI_DESCRIPTION_TEXT ${DescStartMenu} $(DESC_StartMenu)
-    !insertmacro MUI_DESCRIPTION_TEXT ${DescRadox} $(DESC_Radox)
+    !insertmacro MUI_DESCRIPTION_TEXT ${DescAtlantis} $(DESC_Atlantis)
     !insertmacro MUI_DESCRIPTION_TEXT ${DescThemes} $(DESC_Themes)
     !insertmacro MUI_DESCRIPTION_TEXT ${DescWebResorces} $(DESC_WebResorces)
     !insertmacro MUI_DESCRIPTION_TEXT ${loc} $(DESC_loc)
