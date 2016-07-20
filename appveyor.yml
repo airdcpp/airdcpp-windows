@@ -1,7 +1,6 @@
 image: Visual Studio 2015
 configuration: Debug
 platform: x64
-clone_depth: 5
 before_build:
 - cmd: scripts\generate-version.bat
 build:
