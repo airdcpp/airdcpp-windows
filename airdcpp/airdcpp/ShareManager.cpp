@@ -2271,10 +2271,9 @@ bool ShareManager::removeProfile(ProfileToken aToken) noexcept {
 
 		shareProfiles.erase(remove(shareProfiles.begin(), shareProfiles.end(), aToken), shareProfiles.end());
 	}
-
+	
+	fire(ShareManagerListener::ProfileRemoved(), aToken); //removeRootDirectories() might take a while so fire listener first.
 	removeRootDirectories(removedPaths);
-
-	fire(ShareManagerListener::ProfileRemoved(), aToken);
 	return true;
 }
 

@@ -904,7 +904,6 @@ LRESULT HubFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 	tabMenu.AppendMenu(MF_SEPARATOR);
 
 	auto p = ShareManager::getInstance()->getShareProfile(client->get(HubSettings::ShareProfile));
-
 	tabMenu.appendItem(CTSTRING_F(OPEN_HUB_FILELIST, Text::toT(p->getPlainName())), [this] { 
 		handleOpenOwnList(); 
 	}, client->isSharingHub() ? 0 :OMenu::FLAG_DISABLED);
