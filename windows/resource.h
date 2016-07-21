@@ -71,6 +71,7 @@
 #define IDC_COPY_END                    163
 #define IDC_SPLITTER                    164
 #define IDC_TREE                        165
+#define IDR_RSSINFO						166
 #define IDD_SHAREPAGE                   205
 #define IDD_AIRAPPEARANCEPAGE           206
 #define IDD_LINE                        207
@@ -345,6 +346,7 @@
 #define IDI_LOGDIR                      521
 #define IDI_SEND_FILE                   522
 #define IDI_WEB_SHORTCUTS               523
+#define IDI_RSS							524
 #define IDC_BACK                        997
 #define IDC_FORWARD                     998
 #define IDC_UP                          999
@@ -404,6 +406,7 @@
 #define IDC_SET_FONTS                   1038
 #define IDC_SEARCHDIR                   1038
 #define IDC_VIEW_AS_TEXT                1039
+#define IDC_RSSFRAME					1040
 #define IDC_HUBPASS                     1042
 #define IDC_NEWFAV                      1042
 #define IDC_HUBNAME                     1043
@@ -1255,6 +1258,8 @@
 #define IDC_EXACT_MATCH                 1548
 #define IDC_DL_TO2                      1549
 #define IDC_AS_EXCLUDED_LABEL           1549
+#define IDC_RSS_LIST					1550
+#define IDC_RSS_TREE					1551
 #define IDC_AUTOPRIORITY                1572
 #define IDC_SETTINGS_ODC_MENUBAR        1612
 #define IDC_SETTINGS_ODC_MENUBAR_USETWO 1613

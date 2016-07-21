@@ -1506,7 +1506,7 @@ bool ShareManager::loadCache(function<void(float)> progressF) noexcept{
 	}
 
 #ifdef _DEBUG
-	validateDirectoryTreeDebug();
+	//validateDirectoryTreeDebug();
 #endif
 
 	if (hashSize > 0) {

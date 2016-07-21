@@ -44,6 +44,7 @@
 #include "ThrottleManager.h"
 #include "MessageManager.h"
 #include "HighlightManager.h"
+#include "RssManager.h"
 
 #include "StringTokenizer.h"
 
@@ -108,6 +109,7 @@ void startup(function<void(const string&)> stepF, function<bool(const string& /*
 	HighlightManager::newInstance();
 	ViewFileManager::newInstance();
 	ActivityManager::newInstance();
+	RSSManager::newInstance();
 
 	SettingsManager::getInstance()->load(messageF);
 
@@ -151,6 +153,7 @@ void startup(function<void(const string&)> stepF, function<bool(const string& /*
 	ShareManager::getInstance()->startup(stepF, progressF); 
 
 	FavoriteManager::getInstance()->load();
+	RSSManager::getInstance()->load();
 
 	if(SETTING(GET_USER_COUNTRY)) {
 		announce(STRING(COUNTRY_INFORMATION));
@@ -186,6 +189,7 @@ void shutdown(function<void (const string&)> stepF, function<void (float)> progr
 	AutoSearchManager::getInstance()->AutoSearchSave();
 	QueueManager::getInstance()->shutdown();
 	SettingsManager::getInstance()->save();
+	RSSManager::getInstance()->save();
 
 	announce(STRING(SHUTTING_DOWN));
 
@@ -216,6 +220,7 @@ void shutdown(function<void (const string&)> stepF, function<void (float)> progr
 	HashManager::deleteInstance();
 	LogManager::deleteInstance();
 	SettingsManager::deleteInstance();
+	RSSManager::deleteInstance();
 	TimerManager::deleteInstance();
 	ResourceManager::deleteInstance();
 
