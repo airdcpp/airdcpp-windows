@@ -24,7 +24,7 @@
 #include <airdcpp/File.h>
 #include <airdcpp/LogManager.h>
 
-int RssInfoFrame::columnIndexes[] = { COLUMN_FILE, COLUMN_DIRECTORY, COLUMN_DATE, COLUMN_SHARED, COLUMN_CATEGORIE };
+int RssInfoFrame::columnIndexes[] = { COLUMN_FILE, COLUMN_LINK, COLUMN_DATE, COLUMN_SHARED, COLUMN_CATEGORIE };
 int RssInfoFrame::columnSizes[] = { 800, 350, 150, 80, 150};
 static ResourceManager::Strings columnNames[] = { ResourceManager::FILE, ResourceManager::LINK, ResourceManager::DATE, ResourceManager::SHARED, ResourceManager::CATEGORIES };
 static SettingsManager::BoolSetting filterSettings[] = { SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST };
@@ -66,7 +66,7 @@ LRESULT RssInfoFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	FillTree();
 	ctrlTree.SelectItem(treeParent);
 	auto tr = RSSManager::getInstance()->getRssData();
-	for(auto i : tr){
+	for(auto i : tr | map_values){
 		onItemAdded(i);
 	}
 
@@ -179,7 +179,7 @@ void RssInfoFrame::reloadList() {
 LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 
-	if (reinterpret_cast<HWND>(wParam) == ctrlRss && ctrlRss.list.GetSelectedCount() > 0) {
+	if (reinterpret_cast<HWND>(wParam) == ctrlRss && ctrlRss.list.GetSelectedCount() == 1) {
 		if (pt.x == -1 && pt.y == -1) {
 			WinUtil::getContextMenuPos(ctrlRss.list, pt);
 		}
@@ -198,12 +198,36 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 	return FALSE;
 }
 
+LRESULT RssInfoFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+	LPNMLVCUSTOMDRAW cd = (LPNMLVCUSTOMDRAW)pnmh;
+
+	switch (cd->nmcd.dwDrawStage) {
+	case CDDS_PREPAINT:
+		return CDRF_NOTIFYITEMDRAW;
+
+	case CDDS_ITEMPREPAINT: {
+		cd->clrText = WinUtil::textColor;
+		auto ii = (ItemInfo*)cd->nmcd.lItemlParam;
+		auto c = WinUtil::getDupeColors(ii->getDupe());
+		cd->clrText = c.first;
+		cd->clrTextBk = c.second;
+
+		return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
+	}
+	default:
+		return CDRF_DODEFAULT;
+	}
+}
+
 LRESULT RssInfoFrame::onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(ctrlRss.list. GetSelectedCount() == 1) {
 		int sel = ctrlRss.list.GetNextItem(-1, LVNI_SELECTED);
 		ItemInfo* ii = (ItemInfo*)ctrlRss.list.GetItemData(sel);
-		if (ii)
-			WinUtil::openFolder(Text::toT(ii->item.getFolder()));
+		if (ii) {
+			auto paths = AirUtil::getDirDupePaths(ii->getDupe(), ii->item.getTitle());
+			if(!paths.empty())
+				WinUtil::openFolder(Text::toT(paths.front()));
+		}
 	}
 	return 0;
 }
@@ -233,9 +257,9 @@ const tstring RssInfoFrame::ItemInfo::getText(int col) const {
 	switch (col) {
 
 	case COLUMN_FILE: return Text::toT(item.getTitle());
-	case COLUMN_DIRECTORY: return Text::toT(item.getFolder());
-	case COLUMN_DATE: return Text::toT(item.getDate());
-	case COLUMN_SHARED: return item.getShared() ? TSTRING(YES) : TSTRING(NO);
+	case COLUMN_LINK: return Text::toT(item.getLink());
+	case COLUMN_DATE: return Text::toT(item.getPubDate());
+	case COLUMN_SHARED: return AirUtil::isShareDupe(getDupe()) ? TSTRING(SHARED) : AirUtil::isQueueDupe(getDupe()) ? TSTRING(QUEUED) : AirUtil::isFinishedDupe(getDupe()) ? TSTRING(FINISHED) : _T("");
 	case COLUMN_CATEGORIE: return Text::toT(item.getCategorie());
 
 	default: return Util::emptyStringT;

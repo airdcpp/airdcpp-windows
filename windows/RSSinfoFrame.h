@@ -27,6 +27,7 @@
 #include "WinUtil.h"
 #include "FilteredListViewCtrl.h"
 #include <airdcpp/RSSManager.h>
+#include <airdcpp/AirUtil.h>
 
 
 #define RSS_STATUS_MSG_MAP 11
@@ -47,6 +48,7 @@ public:
 		NOTIFY_HANDLER(IDC_RSS_LIST, LVN_GETDISPINFO, ctrlRss.list.onGetDispInfo)
 		NOTIFY_HANDLER(IDC_RSS_LIST, LVN_COLUMNCLICK, ctrlRss.list.onColumnClick)
 		NOTIFY_HANDLER(IDC_RSS_LIST, LVN_GETINFOTIP, ctrlRss.list.onInfoTip)
+		NOTIFY_HANDLER(IDC_RSS_LIST, NM_CUSTOMDRAW, onCustomDraw)
 		NOTIFY_HANDLER(IDC_RSS_TREE, TVN_SELCHANGED, onSelChanged)
 		NOTIFY_HANDLER(IDC_RSS_TREE, NM_CLICK, onTreeItemClick)
 		NOTIFY_HANDLER(IDC_RSS_TREE, NM_RCLICK, onTreeItemClick)
@@ -66,6 +68,7 @@ public:
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
+	LRESULT onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 	LRESULT onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onOpenLink(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -123,7 +126,7 @@ private:
 	enum {
 		COLUMN_FIRST,
 		COLUMN_FILE = COLUMN_FIRST,
-		COLUMN_DIRECTORY,
+		COLUMN_LINK,
 		COLUMN_DATE,
 		COLUMN_SHARED,
 		COLUMN_CATEGORIE,
@@ -132,7 +135,9 @@ private:
 
 	class ItemInfo {
 	public:
-		ItemInfo(const RSSdata& aRssData) : item(aRssData) {	}
+		ItemInfo(const RSSdata& aRssData) : item(aRssData) {
+			setDupe(AirUtil::checkDirDupe(aRssData.getTitle(), 0));
+		}
 		~ItemInfo() { }
 
 		const tstring getText(int col) const;
@@ -144,6 +149,7 @@ private:
 		int getImageIndex() const { return -1; }
 
 		RSSdata item;
+		GETSET(DupeType, dupe, Dupe);
 	};
 
 

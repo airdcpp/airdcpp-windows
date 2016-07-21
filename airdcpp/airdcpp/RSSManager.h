@@ -18,32 +18,37 @@ namespace dcpp {
 class RSS {
 public:
 	RSS(){}
-	RSS(const string& aUrl) throw() : url(aUrl) {}
 	RSS(const string& aUrl, const string& aCategory, uint64_t aLastUpdate) noexcept : 
 		url(aUrl), categories(aCategory), lastUpdate(aLastUpdate) {}
+
+	RSS(const string& aUrl, const string& aCategory, uint64_t aLastUpdate, const string& aAutoSearchFilter, const string& aDownloadTarget) noexcept :
+		url(aUrl), categories(aCategory), lastUpdate(aLastUpdate), autoSearchFilter(aAutoSearchFilter), downloadTarget(aDownloadTarget) {}
+
 	virtual ~RSS(){};
 
 	GETSET(string, url, Url);
 	GETSET(string, categories, Categories);
 	GETSET(uint64_t, lastUpdate, LastUpdate);
 
+	GETSET(string, autoSearchFilter, AutoSearchFilter);
+	GETSET(string, downloadTarget, DownloadTarget);
+
 };
 
 class RSSdata {
 public:
-	RSSdata() : shared(false) {}
-	RSSdata(string aTitle, string aLink) throw() : title(aTitle), link(aLink), date(Util::emptyString), shared(false), folder(Util::emptyString) {
+	RSSdata(string aTitle, string aLink) noexcept : title(aTitle), link(aLink), pubDate(Util::emptyString) {
 	}
-	RSSdata(string aTitle, string aLink, string aDate, bool aShared, string aCategorie) throw() : title(aTitle), link(aLink), date(aDate), shared(aShared), folder(Util::emptyString), categorie(aCategorie) {
+	RSSdata(string aTitle, string aLink, string aPubDate, string aCategorie, time_t aDateAdded = GET_TIME()) noexcept :
+		title(aTitle), link(aLink), pubDate(aPubDate), categorie(aCategorie), dateAdded(aDateAdded)  {
 	}
 	virtual ~RSSdata(){};
 	
 	GETSET(string, title, Title);
 	GETSET(string, link, Link);
-	GETSET(string, date, Date);
-	GETSET(string, folder, Folder);
-	GETSET(bool, shared, Shared);
+	GETSET(string, pubDate, PubDate);
 	GETSET(string, categorie, Categorie);
+	GETSET(time_t, dateAdded, DateAdded); //For prune old entries in database...
 
 
 };
@@ -72,12 +77,12 @@ public:
 	void load();
 	void save();
 
-	vector<RSSdata> getRssData(){
-		return rssdata;
+	unordered_map<string, RSSdata> getRssData(){
+		return rssData;
 	}
 
 	deque<RSS> getRss(){
-		return rsslist;
+		return rssList;
 	}
 
 private:
@@ -88,10 +93,10 @@ private:
 	atomic<bool> updating;
 	uint64_t nextUpdate;
 	
-	//void matchAutosearch(const RSSdata& aData);
+	void matchAutosearch(const RSSdata& aData);
 
-	deque<RSS> rsslist;
-	vector<RSSdata> rssdata;
+	deque<RSS> rssList;
+	unordered_map<string, RSSdata> rssData;
 	
 	mutable CriticalSection cs;
 

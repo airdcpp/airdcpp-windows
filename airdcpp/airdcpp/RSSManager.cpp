@@ -28,10 +28,12 @@ void RSSManager::load() {
 			xml.stepIn();
 			
 			while (xml.findChild("Settings")) {
-				rsslist.push_back(
+				rssList.push_back(
 					RSS(xml.getChildAttrib("Url"),
 						xml.getChildAttrib("Categorie"),
-						Util::toInt64(xml.getChildAttrib("LastUpdate"))
+						Util::toInt64(xml.getChildAttrib("LastUpdate")),
+						xml.getChildAttrib("AutoSearchFilter"),
+						xml.getChildAttrib("DownloadTarget")
 					)
 				);
 			}
@@ -54,14 +56,14 @@ void RSSManager::loaddatabase() {
 		if(xml.findChild("RSSDatabase")) {
 			xml.stepIn();
 			while(xml.findChild("item")) {
-				rssdata.push_back(
-					RSSdata(xml.getChildAttrib("title"),
-							xml.getChildAttrib("link"),
-							xml.getChildAttrib("date"),
-							!ShareManager::getInstance()->getNmdcDirPaths(xml.getChildAttrib("title")).empty(),
-							xml.getChildAttrib("categorie")
-							)
-					);
+				
+				auto rd = RSSdata(xml.getChildAttrib("title"),
+					xml.getChildAttrib("link"),
+					xml.getChildAttrib("pubdate"),
+					xml.getChildAttrib("categorie"),
+					Util::toInt64(xml.getChildAttrib("dateadded")));
+
+				rssData.emplace(rd.getTitle(), rd);
 			}
 			xml.stepOut();
 		}
@@ -77,11 +79,13 @@ void RSSManager::save() {
 		SimpleXML xml;
 		xml.addTag("RSS");
 		xml.stepIn();
-		for (auto r : rsslist) {
+		for (auto r : rssList) {
 			xml.addTag("Settings");
 			xml.addChildAttrib("Url", r.getUrl());
 			xml.addChildAttrib("Categorie", r.getCategories());
 			xml.addChildAttrib("LastUpdate", Util::toString(r.getLastUpdate()));
+			xml.addChildAttrib("AutoSearchFilter", r.getAutoSearchFilter());
+			xml.addChildAttrib("DownloadTarget", r.getDownloadTarget());
 		}
 		xml.stepOut();
 
@@ -105,13 +109,16 @@ void RSSManager::savedatabase() {
 		SimpleXML xml;
 		xml.addTag("RSSDatabase"); 
 		xml.stepIn();
-		for(auto r : rssdata) {
-			xml.addTag("item");
-			xml.addChildAttrib("title", r.getTitle());
-			xml.addChildAttrib("link", r.getLink());
-			xml.addChildAttrib("date", r.getDate());
-			xml.addChildAttrib("shared", r.getShared());
-			xml.addChildAttrib("categorie", r.getCategorie());
+		for(auto r : rssData | map_values) {
+			//Don't save more than 3 days old entries... Todo: setting?
+			if ((r.getDateAdded() + 3 * 24 * 60 * 60) > GET_TIME()) {
+				xml.addTag("item");
+				xml.addChildAttrib("title", r.getTitle());
+				xml.addChildAttrib("link", r.getLink());
+				xml.addChildAttrib("pubdate", r.getPubDate());
+				xml.addChildAttrib("categorie", r.getCategorie());
+				xml.addChildAttrib("dateadded", Util::toString(r.getDateAdded()));
+			}
 		}
 		xml.stepOut();
 		
@@ -155,6 +162,7 @@ void RSSManager::on(HttpConnectionListener::Complete, HttpConnection* conn, cons
 	try {
 		SimpleXML xml;
 		xml.fromXML(tmpdata.c_str());
+		LogManager::getInstance()->message(tmpdata, LogMessage::SEV_INFO);
 		if(xml.findChild("rss")) {
 			xml.stepIn();
 			if(xml.findChild("channel")) {	
@@ -167,29 +175,25 @@ void RSSManager::on(HttpConnectionListener::Complete, HttpConnection* conn, cons
 					string date;
 					if(xml.findChild("title")){
 						titletmp = xml.getChildData();
-						for(auto r : rssdata) {
-							if ( r.getTitle().find(titletmp) != string::npos ){
-								newdata = true;
-							}
-						}
+						if(rssData.find(titletmp) == rssData.end())
+							newdata = true;
+	
 					}
 					if(xml.findChild("link"))
-						link = xml.getChildData();
+						link = "http:" + xml.getChildData();
 
 					if(xml.findChild("pubDate"))
 						date = xml.getChildData();
 
-					if(!newdata) {
-
-						for (auto rss : rsslist) {
+					if(newdata) {
+						for (auto rss : rssList) {
 							if (url == rss.getUrl()){
 								url = rss.getCategories();
 							}
 						}
-							
-						auto data = RSSdata(titletmp, link, date, !ShareManager::getInstance()->getNmdcDirPaths(titletmp).empty(), url);
+						auto data = RSSdata(titletmp, link, date, url);
 						//matchAutosearch(data);
-						rssdata.push_back(data);
+						rssData.emplace(titletmp, data);
 							
 						fire(RSSManagerListener::RSSAdded(), data);
 					}
@@ -213,14 +217,13 @@ void RSSManager::on(HttpConnectionListener::Failed, HttpConnection* conn, const 
 	LogManager::getInstance()->message(status_, LogMessage::SEV_ERROR);
 	conn->removeListener(this);
 }
-/*
+
 void RSSManager::matchAutosearch(const RSSdata& aData) {
 	
 	try {
+		for (auto m : rssList) {
 
-		for (auto m : rsslist) {
-
-			boost::regex reg(m.getFilter());
+			boost::regex reg(m.getAutoSearchFilter());
 
 			if (regex_match(aData.getTitle().c_str(), reg)) {
 				AutoSearchPtr as = new AutoSearch;
@@ -232,7 +235,7 @@ void RSSManager::matchAutosearch(const RSSdata& aData) {
 				as->setTargetType(TargetUtil::TargetType::TARGET_PATH);
 				as->setMethod(StringMatch::Method::EXACT);
 				as->setFileType(SEARCH_TYPE_DIRECTORY);
-				as->setTarget(m.getDownloadFolder());
+				as->setTarget(m.getDownloadTarget());
 				AutoSearchManager::getInstance()->addAutoSearch(as, true);
 				break;
 			}
@@ -243,20 +246,20 @@ void RSSManager::matchAutosearch(const RSSdata& aData) {
 	}
 
 }
-*/
+
 
 void RSSManager::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
-	if (rsslist.empty() || updating)
+	if (rssList.empty() || updating)
 		return;
 
 	if (nextUpdate < aTick) {
 		try {
 			Lock l(cs);
 			//Move item to the back of the list
-			auto item = rsslist.front();
+			auto item = rssList.front();
 			item.setLastUpdate(aTick);
-			rsslist.pop_front();
-			rsslist.push_back(item);
+			rssList.pop_front();
+			rssList.push_back(item);
 
 			c.addListener(this);
 			c.downloadFile(item.getUrl());
