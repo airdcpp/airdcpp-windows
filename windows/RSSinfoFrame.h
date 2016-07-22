@@ -26,6 +26,7 @@
 #include "FlatTabCtrl.h"
 #include "WinUtil.h"
 #include "FilteredListViewCtrl.h"
+#include "RssConfigDlg.h"
 #include <airdcpp/RSSManager.h>
 #include <airdcpp/AirUtil.h>
 
@@ -59,10 +60,11 @@ public:
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenFolder);
 		COMMAND_ID_HANDLER(IDC_OPEN_LINK, onOpenLink);
-		COMMAND_ID_HANDLER(IDR_SEARCH, onSearch);	
+		COMMAND_ID_HANDLER(IDR_SEARCH, onSearch);
 		CHAIN_MSG_MAP(baseClass)
 		CHAIN_MSG_MAP(CSplitterImpl<RssInfoFrame>)
 		ALT_MSG_MAP(RSS_STATUS_MSG_MAP)
+			COMMAND_ID_HANDLER(IDC_RSS_UPDATE, onConfig);
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
@@ -72,6 +74,12 @@ public:
 	LRESULT onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onOpenLink(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onConfig(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		RssDlg dlg;
+		dlg.DoModal();
+		return 0;
+	}
+
 
 	LRESULT onSelChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /* bHandled */) {
 		NMTREEVIEW* nmtv = (NMTREEVIEW*)pnmh;
@@ -195,6 +203,8 @@ private:
 	CStatusBarCtrl ctrlStatus;
 	int statusSizes[2];
 	CContainedWindow ctrlStatusContainer;
+
+	CButton ctrlConfig;
 
 	virtual void on(RSSManagerListener::RSSAdded, const RSSdata& aData) noexcept;
 	virtual void on(RSSManagerListener::RSSRemoved, const string& fname) noexcept;

@@ -59,6 +59,11 @@ LRESULT RssInfoFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ctrlTree.SetBkColor(WinUtil::bgColor);
 	ctrlTree.SetTextColor(WinUtil::textColor);
 
+	ctrlConfig.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
+		BS_PUSHBUTTON, 0, IDC_RSS_UPDATE);
+	ctrlConfig.SetWindowText(CTSTRING(RSS_CONFIG));
+	ctrlConfig.SetFont(WinUtil::systemFont);
+
 	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
 	SetSplitterPanes(ctrlTree.m_hWnd, ctrlRss.m_hWnd);
 	m_nProportionalPos = 1000;
@@ -107,6 +112,13 @@ void RssInfoFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
 		w[0] = 16;
 
 		ctrlStatus.SetParts(2, w);
+
+		CRect rc;
+		ctrlStatus.GetRect(0, &rc);
+		rc.left += 2;
+		rc.right = rc.left + 100;
+		ctrlConfig.MoveWindow(rc);
+
 	}
 
 	SetSplitterRect(&rect);

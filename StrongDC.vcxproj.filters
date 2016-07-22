@@ -384,6 +384,9 @@
     <ClCompile Include="windows\RSSinfoFrame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\RssConfigDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -821,6 +824,9 @@
     <ClInclude Include="windows\RSSinfoFrame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="windows\RssConfigDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\apply.ico">
@@ -1071,6 +1077,9 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\Send_message.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ToolbarImages\RSS.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

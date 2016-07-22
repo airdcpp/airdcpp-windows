@@ -525,6 +525,7 @@
     <ClCompile Include="windows\ProxyPage.cpp" />
     <ClCompile Include="windows\QueueFrame.cpp" />
     <ClCompile Include="windows\ResourceLoader.cpp" />
+    <ClCompile Include="windows\RssConfigDlg.cpp" />
     <ClCompile Include="windows\RSSinfoFrame.cpp" />
     <ClCompile Include="windows\ScanPage.cpp" />
     <ClCompile Include="windows\SearchTypeCombo.cpp" />
@@ -666,6 +667,7 @@
     <ClInclude Include="windows\ProtocolPage.h" />
     <ClInclude Include="windows\ProxyPage.h" />
     <ClInclude Include="windows\QueueFrame.h" />
+    <ClInclude Include="windows\RssConfigDlg.h" />
     <ClInclude Include="windows\RSSinfoFrame.h" />
     <ClInclude Include="windows\ScanPage.h" />
     <ClInclude Include="windows\SearchTypeCombo.h" />
@@ -866,6 +868,7 @@
     <Image Include="res\Stepback.ico" />
     <Image Include="res\text.ico" />
     <Image Include="res\ToolbarImages\LogDir.ico" />
+    <Image Include="res\ToolbarImages\RSS.ico" />
     <Image Include="res\TotalDown.ico" />
     <Image Include="res\TotalUp.ico" />
     <Image Include="res\types.bmp" />

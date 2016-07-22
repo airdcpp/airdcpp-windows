@@ -78,11 +78,20 @@ public:
 	void save();
 
 	unordered_map<string, RSSdata> getRssData(){
+		Lock l(cs);
 		return rssData;
 	}
 
 	deque<RSS> getRss(){
+		Lock l(cs);
 		return rssList;
+	}
+
+	void replaceRSSList(const deque<RSS>& newList) {
+		Lock l(cs);
+		rssList = newList;
+		//Sort the list back in the search order... temporary until search system is changed...
+		sort(rssList.begin(), rssList.end(), [](const RSS& a, const RSS& b) { return a.getLastUpdate() > b.getLastUpdate(); });
 	}
 
 private:

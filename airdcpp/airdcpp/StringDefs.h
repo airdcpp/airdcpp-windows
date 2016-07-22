@@ -1185,6 +1185,8 @@ enum Strings { // @DontAdd
 	RESUME, // "Resume"
 	RETRY_SHARING, // "Retry sharing"
 	RIGHT_COLOR, // "Right color"
+	RSS_CONFIG, // "RSS config"
+	RSS_MATCH_PATTERN, // "Match pattern (regex)"
 	RSSINFO, // "RSS Info"
 	RUNNING_PCT, // "Running (%.01f%%)"
 	RUN_SFV_CHECK, // "Perform SFV check"
