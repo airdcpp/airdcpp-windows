@@ -102,7 +102,7 @@ private:
 	atomic<bool> updating;
 	uint64_t nextUpdate;
 	
-	void matchAutosearch(const RSSdata& aData);
+	void matchAutosearch(const RSS& aRss, const RSSdata& aData);
 
 	deque<RSS> rssList;
 	unordered_map<string, RSSdata> rssData;

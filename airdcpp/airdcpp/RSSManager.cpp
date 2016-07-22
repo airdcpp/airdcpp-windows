@@ -162,7 +162,6 @@ void RSSManager::on(HttpConnectionListener::Complete, HttpConnection* conn, cons
 	try {
 		SimpleXML xml;
 		xml.fromXML(tmpdata.c_str());
-		LogManager::getInstance()->message(tmpdata, LogMessage::SEV_INFO);
 		if(xml.findChild("rss")) {
 			xml.stepIn();
 			if(xml.findChild("channel")) {	
@@ -177,7 +176,6 @@ void RSSManager::on(HttpConnectionListener::Complete, HttpConnection* conn, cons
 						titletmp = xml.getChildData();
 						if(rssData.find(titletmp) == rssData.end())
 							newdata = true;
-	
 					}
 					if(xml.findChild("link"))
 						link = "http:" + xml.getChildData();
@@ -186,16 +184,15 @@ void RSSManager::on(HttpConnectionListener::Complete, HttpConnection* conn, cons
 						date = xml.getChildData();
 
 					if(newdata) {
-						for (auto rss : rssList) {
-							if (url == rss.getUrl()){
-								url = rss.getCategories();
-							}
+						auto x = find_if(rssList.begin(), rssList.end(), [url](const RSS& r) {return url == r.getUrl(); });
+						if(x != rssList.end()) {
+							auto rss = *x;
+							auto data = RSSdata(titletmp, link, date, rss.getCategories());
+							matchAutosearch(rss, data);
+							rssData.emplace(titletmp, data);
+
+							fire(RSSManagerListener::RSSAdded(), data);
 						}
-						auto data = RSSdata(titletmp, link, date, url);
-						//matchAutosearch(data);
-						rssData.emplace(titletmp, data);
-							
-						fire(RSSManagerListener::RSSAdded(), data);
 					}
 
 					titletmp.clear();
@@ -218,27 +215,24 @@ void RSSManager::on(HttpConnectionListener::Failed, HttpConnection* conn, const 
 	conn->removeListener(this);
 }
 
-void RSSManager::matchAutosearch(const RSSdata& aData) {
+void RSSManager::matchAutosearch(const RSS& aRss, const RSSdata& aData) {
 	
 	try {
-		for (auto m : rssList) {
 
-			boost::regex reg(m.getAutoSearchFilter());
+		boost::regex reg(aRss.getAutoSearchFilter());
 
-			if (regex_match(aData.getTitle().c_str(), reg)) {
-				AutoSearchPtr as = new AutoSearch;
-				as->setSearchString(aData.getTitle());
-				as->setCheckAlreadyQueued(true);
-				as->setCheckAlreadyShared(true);
-				as->setRemove(true);
-				as->setAction(AutoSearch::ActionType::ACTION_DOWNLOAD);
-				as->setTargetType(TargetUtil::TargetType::TARGET_PATH);
-				as->setMethod(StringMatch::Method::EXACT);
-				as->setFileType(SEARCH_TYPE_DIRECTORY);
-				as->setTarget(m.getDownloadTarget());
-				AutoSearchManager::getInstance()->addAutoSearch(as, true);
-				break;
-			}
+		if (regex_match(aData.getTitle().c_str(), reg)) {
+			AutoSearchPtr as = new AutoSearch;
+			as->setSearchString(aData.getTitle());
+			as->setCheckAlreadyQueued(true);
+			as->setCheckAlreadyShared(true);
+			as->setRemove(true);
+			as->setAction(AutoSearch::ActionType::ACTION_DOWNLOAD);
+			as->setTargetType(TargetUtil::TargetType::TARGET_PATH);
+			as->setMethod(StringMatch::Method::EXACT);
+			as->setFileType(SEARCH_TYPE_DIRECTORY);
+			as->setTarget(aRss.getDownloadTarget());
+			AutoSearchManager::getInstance()->addAutoSearch(as, true);
 		}
 
 	} catch (const Exception& e) {
