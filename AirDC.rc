@@ -2403,6 +2403,29 @@ BEGIN
     LTEXT           "Password",IDC_WEBUSER_PWD_LABEL,17,45,53,8
 END
 
+IDD_RSS_DLG DIALOGEX 0, 0, 436, 250
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,320,229,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,379,229,50,14
+    CONTROL         "",IDC_RSS_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,17,15,108,218
+    EDITTEXT        IDC_RSS_URL,215,41,199,15,ES_AUTOHSCROLL
+    EDITTEXT        IDC_RSS_NAME,313,66,101,14,ES_AUTOHSCROLL
+    RTEXT           "Name / Categorie",IDC_RSS_NAME_TEXT,224,69,78,8
+    RTEXT           "RSS url",IDC_RSS_URL_TEXT,142,44,61,8
+    GROUPBOX        "RSS Feed config",IDC_RSS_GROUP_TEXT,176,15,247,211
+    EDITTEXT        IDC_RSS_AUTOSEARCH,202,127,217,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_RSS_DOWNLOAD_PATH,202,158,216,14,ES_AUTOHSCROLL
+    LTEXT           "Match pattern (Regex)",IDC_RSS_AUTOSEARCH_TEXT,202,114,211,8
+    LTEXT           "Download location",IDC_RSS_DOWNLOAD_PATH_TEXT,203,146,216,8
+    PUSHBUTTON      "Browse",IDC_RSS_BROWSE,367,175,50,14
+    PUSHBUTTON      "Add",IDC_RSS_ADD,129,82,43,14
+    PUSHBUTTON      "Remove",IDC_RSS_REMOVE,130,119,43,14
+    PUSHBUTTON      "Update",IDC_RSS_UPDATE,186,203,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2644,6 +2667,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 99
     END
+
+    IDD_RSS_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 429
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 243
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -2702,6 +2733,8 @@ IDI_SCAN                ICON                    "res\\ToolbarImages\\ScanMissing
 IDI_AUTOSEARCH          ICON                    "res\\ToolbarImages\\AutoSearch.ico"
 
 IDI_LOGDIR              ICON                    "res\\ToolbarImages\\LogDir.ico"
+
+IDI_RSS                 ICON                    "res\\ToolbarImages\\RSS.ico"
 
 IDI_TEXT                ICON                    "res\\text.ico"
 
@@ -3000,6 +3033,11 @@ BEGIN
 END
 
 IDD_MISC_PAGE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_RSS_DLG AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

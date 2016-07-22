@@ -52,6 +52,7 @@
 #include "Players.h"
 #include "iTunesCOMInterface.h"
 #include "SystemFrame.h"
+#include "RSSinfoFrame.h"
 
 #include <airdcpp/AirUtil.h>
 #include <airdcpp/ConnectivityManager.h>
@@ -309,6 +310,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	m_CmdBar.m_arrCommand.Add(ID_WIZARD);
 	m_CmdBar.m_arrCommand.Add(IDC_OPEN_LOG_DIR);
 	m_CmdBar.m_arrCommand.Add(IDC_OPEN_CONFIG_DIR);
+	m_CmdBar.m_arrCommand.Add(IDC_RSSFRAME);
 
 	// use Vista-styled menus on Vista/Win7
 	m_CmdBar._AddVistaBitmapsFromImageList(0, m_CmdBar.m_arrCommand.GetSize());
@@ -1044,8 +1046,8 @@ LRESULT MainFrame::onOpenWindows(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 		case IDC_RECENTS: RecentHubsFrame::openWindow(); break;
 		case IDC_SYSTEM_LOG: SystemFrame::openWindow(); break;
 		case IDC_AUTOSEARCH: AutoSearchFrame::openWindow(); break;
+		case IDC_RSSFRAME: RssInfoFrame::openWindow(); break;
 
-	
 		default: dcassert(0); break;
 	}
 	return 0;
