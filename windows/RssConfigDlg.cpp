@@ -131,11 +131,6 @@ LRESULT RssDlg::onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, B
 }
 
 void RssDlg::fillList() {
-	tstring curSel;
-	if (ctrlRssList.GetSelectedCount() == 1) {
-		int i = ctrlRssList.GetSelectedIndex();
-		curSel = Text::toT(rssList[i].getCategories());
-	}
 
 	sort(rssList.begin(), rssList.end(), [](const RSS& a, const RSS& b) { return compare(a.getCategories(), b.getCategories()) < 0; });
 	ctrlRssList.DeleteAllItems();
@@ -143,8 +138,6 @@ void RssDlg::fillList() {
 	for (auto i : rssList) {
 		ctrlRssList.InsertItem(pos++, Text::toT(i.getCategories()).c_str());
 	}
-
-	restoreSelection(curSel);
 }
 
 void RssDlg::remove() {
@@ -173,6 +166,8 @@ bool RssDlg::add() {
 
 	rssList.emplace_back(RSS(Text::fromT(url), Text::fromT(categorie), 0, Text::fromT(asPattern), Text::fromT(dlTarget)));
 	fillList();
+	//Select the new item
+	restoreSelection(categorie);
 
 	return true;
 }
