@@ -65,7 +65,6 @@ PropPage::ListItem LogPage::systemItems[] = {
 	{ SettingsManager::FL_REPORT_FILE_DUPES,		ResourceManager::REPORT_DUPLICATE_FILES },
 	{ SettingsManager::LOG_IGNORED,					ResourceManager::REPORT_IGNORED },
 	{ SettingsManager::LOG_CRC_OK,					ResourceManager::LOG_CRC_OK },
-	{ SettingsManager::LOG_REMOVED_BUNDLES,			ResourceManager::LOG_REMOVED_BUNDLES },
 	
 	{ 0, ResourceManager::LAST }
 };
