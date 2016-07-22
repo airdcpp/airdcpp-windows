@@ -1,8 +1,15 @@
 3.xx
 
+Changed:
+
+- Don't show log messages when removing finished bundles from queue
+
 Fixed:
 
 - Fix possible deadlocks when loading filelists
+- Fix crashes when non-existing share profiles are configured for favorite hubs
+- Fix duplicate dupe paths being displayed for root share directories
+- Fix ADL search item list becoming uneditable after closing a filelist that was being matched
 
 
 3.21
