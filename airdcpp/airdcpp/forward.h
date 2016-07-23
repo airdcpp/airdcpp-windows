@@ -184,6 +184,9 @@ typedef boost::intrusive_ptr<AutoSearch> AutoSearchPtr;
 typedef std::vector<AutoSearchPtr> AutoSearchList;
 typedef std::unordered_map<int, AutoSearchPtr> AutoSearchMap;
 
+class RSS;
+typedef std::shared_ptr<RSS> RSSPtr;
+
 } // namespace dcpp
 
 #endif /*DCPLUSPLUS_CLIENT_FORWARD_H_*/

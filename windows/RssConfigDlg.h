@@ -84,6 +84,26 @@ public:
 		return 0;
 	}
 private:
+
+	class RSSConfigItem {
+	public:
+
+		RSSConfigItem(const RSSPtr& aRss) noexcept :
+			url(aRss->getUrl()), categories(aRss->getCategories()), autoSearchFilter(aRss->getAutoSearchFilter()), downloadTarget(aRss->getDownloadTarget())
+		{
+		}
+		RSSConfigItem(const string& aUrl, const string& aCategory, const string& aAutoSearchFilter, const string& aDownloadTarget) noexcept :
+			url(aUrl), categories(aCategory), autoSearchFilter(aAutoSearchFilter), downloadTarget(aDownloadTarget) {}
+
+		~RSSConfigItem() {};
+
+		GETSET(string, url, Url);
+		GETSET(string, categories, Categories);
+		GETSET(string, autoSearchFilter, AutoSearchFilter);
+		GETSET(string, downloadTarget, DownloadTarget);
+	};
+
+
 	CEdit ctrlUrl;
 	CEdit ctrlCategorie;
 	CEdit ctrlAutoSearchPattern;
@@ -91,12 +111,14 @@ private:
 
 	ExListViewCtrl ctrlRssList;
 
-	deque<RSS> rssList;
+	deque<RSSConfigItem> rssList;
+	StringList removeList;
 
 	void fillList();
 
 	void remove();
 	bool add();
+	void update();
 
 	void restoreSelection(const tstring& curSel);
 };

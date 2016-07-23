@@ -66,7 +66,10 @@ LRESULT RssDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	::EnableWindow(GetDlgItem(IDC_REMOVE), false);
 
-	rssList = RSSManager::getInstance()->getRss();
+	auto tmpList = RSSManager::getInstance()->getRss();
+	for (auto i : tmpList)
+		rssList.emplace_back(i);
+
 	fillList();
 
 	CenterWindow(GetParent());
@@ -98,7 +101,13 @@ LRESULT RssDlg::onSelectionChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandle
 
 LRESULT RssDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if (wID == IDOK) {
-		RSSManager::getInstance()->replaceRSSList(rssList);
+		update();
+
+		for (auto url : removeList)
+			RSSManager::getInstance()->removeItem(url);
+
+		for(auto i : rssList)
+			RSSManager::getInstance()->updateItem(i.getUrl(), i.getCategories(), i.getAutoSearchFilter(), i.getDownloadTarget());
 	}
 	ctrlRssList.Detach();
 	EndDialog(wID);
@@ -118,24 +127,16 @@ LRESULT RssDlg::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, B
 }
 
 LRESULT RssDlg::onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int i = ctrlRssList.GetSelectedIndex();
-	RSS item = rssList[i];
-	rssList.erase(rssList.begin() + i);
-	if (!add()) { //Failed, restore the old item
-		rssList.push_back(item);
-		fillList();
-		restoreSelection(Text::toT(item.getCategories()));
-	}
-
+	update();
 	return 0;
 }
 
 void RssDlg::fillList() {
 
-	sort(rssList.begin(), rssList.end(), [](const RSS& a, const RSS& b) { return compare(a.getCategories(), b.getCategories()) < 0; });
+	sort(rssList.begin(), rssList.end(), [](const RSSConfigItem& a, const RSSConfigItem& b) { return compare(a.getCategories(), b.getCategories()) < 0; });
 	ctrlRssList.DeleteAllItems();
 	int pos = 0;
-	for (auto i : rssList) {
+	for (auto& i : rssList) {
 		ctrlRssList.InsertItem(pos++, Text::toT(i.getCategories()).c_str());
 	}
 }
@@ -143,7 +144,8 @@ void RssDlg::fillList() {
 void RssDlg::remove() {
 	int i = ctrlRssList.GetSelectedIndex();
 	ctrlRssList.DeleteItem(i);
-	rssList.erase(rssList.begin() + i);
+	auto r = *rssList.erase(rssList.begin() + i);
+	removeList.push_back(r.getUrl());
 }
 
 bool RssDlg::add() {
@@ -153,7 +155,7 @@ bool RssDlg::add() {
 		MessageBox(_T("URL and Name / Categorie must not be empty"));
 		return false;
 	}
-	bool exists = find_if(rssList.begin(), rssList.end(), [url, categorie](const RSS& item) 
+	bool exists = find_if(rssList.begin(), rssList.end(), [url, categorie](const RSSConfigItem& item) 
 	{ return Text::fromT(url) == item.getUrl() || Text::fromT(categorie) == item.getCategories(); }) != rssList.end();
 
 	if (exists) {
@@ -164,12 +166,22 @@ bool RssDlg::add() {
 	auto asPattern = WinUtil::getEditText(ctrlAutoSearchPattern);
 	auto dlTarget = WinUtil::getEditText(ctrlTarget);
 
-	rssList.emplace_back(RSS(Text::fromT(url), Text::fromT(categorie), 0, Text::fromT(asPattern), Text::fromT(dlTarget)));
+	rssList.emplace_back(RSSConfigItem(Text::fromT(url), Text::fromT(categorie), Text::fromT(asPattern), Text::fromT(dlTarget)));
 	fillList();
 	//Select the new item
 	restoreSelection(categorie);
 
 	return true;
+}
+void RssDlg::update() {
+	int i = ctrlRssList.GetSelectedIndex();
+	auto item = rssList[i];
+	rssList.erase(rssList.begin() + i);
+	if (!add()) { //Failed, restore the old item
+		rssList.push_back(item);
+		fillList();
+		restoreSelection(Text::toT(item.getCategories()));
+	}
 }
 
 void RssDlg::restoreSelection(const tstring& curSel) {

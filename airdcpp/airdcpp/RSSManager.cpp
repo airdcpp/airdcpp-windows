@@ -6,6 +6,7 @@
 #include "RSSManager.h"
 #include "LogManager.h"
 #include "SearchManager.h"
+#include "ScopedFunctor.h"
 
 namespace dcpp {
 
@@ -13,7 +14,6 @@ RSSManager::RSSManager() { }
 
 RSSManager::~RSSManager()
 {
-	c.removeListener(this);
 	TimerManager::getInstance()->removeListener(this);
 }
 
@@ -29,7 +29,7 @@ void RSSManager::load() {
 			
 			while (xml.findChild("Settings")) {
 				rssList.push_back(
-					RSS(xml.getChildAttrib("Url"),
+					std::make_shared<RSS>(xml.getChildAttrib("Url"),
 						xml.getChildAttrib("Categorie"),
 						Util::toInt64(xml.getChildAttrib("LastUpdate")),
 						xml.getChildAttrib("AutoSearchFilter"),
@@ -44,7 +44,6 @@ void RSSManager::load() {
 	}
 	
 	TimerManager::getInstance()->addListener(this);
-	updating = false;
 	nextUpdate = GET_TICK() + 10 * 1000; //start after 10 seconds
 }
 
@@ -81,11 +80,11 @@ void RSSManager::save() {
 		xml.stepIn();
 		for (auto r : rssList) {
 			xml.addTag("Settings");
-			xml.addChildAttrib("Url", r.getUrl());
-			xml.addChildAttrib("Categorie", r.getCategories());
-			xml.addChildAttrib("LastUpdate", Util::toString(r.getLastUpdate()));
-			xml.addChildAttrib("AutoSearchFilter", r.getAutoSearchFilter());
-			xml.addChildAttrib("DownloadTarget", r.getDownloadTarget());
+			xml.addChildAttrib("Url", r->getUrl());
+			xml.addChildAttrib("Categorie", r->getCategories());
+			xml.addChildAttrib("LastUpdate", Util::toString(r->getLastUpdate()));
+			xml.addChildAttrib("AutoSearchFilter", r->getAutoSearchFilter());
+			xml.addChildAttrib("DownloadTarget", r->getDownloadTarget());
 		}
 		xml.stepOut();
 
@@ -135,12 +134,22 @@ void RSSManager::savedatabase() {
 	}
 }
 
-void RSSManager::on(HttpConnectionListener::Complete, HttpConnection* conn, const string&, bool) noexcept{
+void RSSManager::downloadComplete(const string& aUrl) {
 	Lock l(cs);
-	string url = conn->getCurrentUrl();
-	conn->removeListener(this);
-	string tmpdata(downBuf.c_str());
-	downBuf.clear();
+	auto x = find_if(rssList.begin(), rssList.end(), [aUrl](const RSSPtr& a) { return aUrl == a->getUrl(); });
+	if (x == rssList.end())
+		return;
+
+	auto rss = *x;
+	auto& conn = rss->rssDownload;
+	ScopedFunctor([&conn] { conn.reset(); });
+
+	if (conn->buf.empty()) {
+		LogManager::getInstance()->message(conn->status, LogMessage::SEV_ERROR);
+		return;
+	}
+
+	string tmpdata(conn->buf);
 	string erh;
 	string type;
 	unsigned long i = 1;
@@ -184,15 +193,11 @@ void RSSManager::on(HttpConnectionListener::Complete, HttpConnection* conn, cons
 						date = xml.getChildData();
 
 					if(newdata) {
-						auto x = find_if(rssList.begin(), rssList.end(), [url](const RSS& r) {return url == r.getUrl(); });
-						if(x != rssList.end()) {
-							auto rss = *x;
-							auto data = RSSdata(titletmp, link, date, rss.getCategories());
+							auto data = RSSdata(titletmp, link, date, rss->getCategories());
 							matchAutosearch(rss, data);
 							rssData.emplace(titletmp, data);
 
 							fire(RSSManagerListener::RSSAdded(), data);
-						}
 					}
 
 					titletmp.clear();
@@ -206,20 +211,14 @@ void RSSManager::on(HttpConnectionListener::Complete, HttpConnection* conn, cons
 	} catch(const Exception& e) {
 		LogManager::getInstance()->message(e.getError().c_str(), LogMessage::SEV_ERROR);
 	}
-	updating = false;
 }
 
-void RSSManager::on(HttpConnectionListener::Failed, HttpConnection* conn, const string& status_) noexcept{
-	updating = false;
-	LogManager::getInstance()->message(status_, LogMessage::SEV_ERROR);
-	conn->removeListener(this);
-}
 
-void RSSManager::matchAutosearch(const RSS& aRss, const RSSdata& aData) {
+void RSSManager::matchAutosearch(const RSSPtr& aRss, const RSSdata& aData) {
 	
 	try {
 
-		boost::regex reg(aRss.getAutoSearchFilter());
+		boost::regex reg(aRss->getAutoSearchFilter());
 
 		if (regex_match(aData.getTitle().c_str(), reg)) {
 			AutoSearchPtr as = new AutoSearch;
@@ -231,7 +230,7 @@ void RSSManager::matchAutosearch(const RSS& aRss, const RSSdata& aData) {
 			as->setTargetType(TargetUtil::TargetType::TARGET_PATH);
 			as->setMethod(StringMatch::Method::EXACT);
 			as->setFileType(SEARCH_TYPE_DIRECTORY);
-			as->setTarget(aRss.getDownloadTarget());
+			as->setTarget(aRss->getDownloadTarget());
 			AutoSearchManager::getInstance()->addAutoSearch(as, true);
 		}
 
@@ -240,31 +239,33 @@ void RSSManager::matchAutosearch(const RSS& aRss, const RSSdata& aData) {
 	}
 
 }
+void RSSManager::downloadFeed(const RSSPtr& aRss) {
+	if (!aRss)
+		return;
+
+	string url = aRss->getUrl();
+	aRss->setLastUpdate(GET_TIME());
+	aRss->rssDownload.reset(new HttpDownload(aRss->getUrl(),
+		[this, url] { downloadComplete(url); }, false));
+	LogManager::getInstance()->message("updating the " + aRss->getUrl(), LogMessage::SEV_INFO);
+}
+
+RSSPtr RSSManager::getUpdateItem() {
+	for (auto i : rssList) {
+		if (i->allowUpdate())
+			return i;
+	}
+	return nullptr;
+}
 
 
 void RSSManager::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
-	if (rssList.empty() || updating)
+	if (rssList.empty())
 		return;
 
 	if (nextUpdate < aTick) {
-		try {
-			Lock l(cs);
-			//Move item to the back of the list
-			auto item = rssList.front();
-			item.setLastUpdate(aTick);
-			rssList.pop_front();
-			rssList.push_back(item);
-
-			c.addListener(this);
-			c.downloadFile(item.getUrl());
-			updating = true;
-			LogManager::getInstance()->message("updating the " + item.getUrl(), LogMessage::SEV_INFO);
-	
-		} catch (const Exception& e) {
-			LogManager::getInstance()->message(e.getError().c_str(), LogMessage::SEV_ERROR);
-			updating = false;
-		}
-
+		Lock l(cs);
+		downloadFeed(getUpdateItem());
 		nextUpdate = GET_TICK() + 1 * 60 * 1000; //Minute between item updates for now, TODO: handle intervals smartly :)
 	}
 }
