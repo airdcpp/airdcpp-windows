@@ -77,9 +77,12 @@ public:
 
 	typedef X<0> RSSAdded;
 	typedef X<1> RSSRemoved;
+	typedef X<1> RSSFeedUpdated;
 
 	virtual void on(RSSAdded, const RSSdata&) noexcept { }
 	virtual void on(RSSRemoved, string) noexcept { }
+	virtual void on(RSSFeedUpdated, const RSSPtr&) noexcept { }
+
 };
 
 
@@ -111,9 +114,12 @@ public:
 			rss->setCategories(aCategory);
 			rss->setAutoSearchFilter(aAutoSearchFilter);
 			rss->setDownloadTarget(aDownloadTarget);
+			fire(RSSManagerListener::RSSFeedUpdated(), rss);
 		} else {
-			rssList.push_back(
-				std::make_shared<RSS>(aUrl, aCategory, 0, aAutoSearchFilter, aDownloadTarget));
+			auto rss = std::make_shared<RSS>(aUrl, aCategory, 0, aAutoSearchFilter, aDownloadTarget);
+			rssList.push_back(rss);
+
+			fire(RSSManagerListener::RSSFeedUpdated(), rss);
 		}
 	}
 

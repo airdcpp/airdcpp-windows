@@ -143,6 +143,14 @@ void RssInfoFrame::on(RSSRemoved, const string& fname) noexcept {
 	});
 }
 
+void RssInfoFrame::on(RSSFeedUpdated, const RSSPtr& aRss) noexcept {
+	callAsync([=] {
+		auto cg = categories.find(aRss->getCategories());
+		if (cg == categories.end())
+			categories.emplace(aRss->getCategories(), addTreeItem(treeParent, 0, Text::toT(aRss->getCategories()))); 
+	});
+}
+
 void RssInfoFrame::onItemAdded(const RSSdata& aData) {
 	auto newItem = new ItemInfo(aData);
 	ItemInfos.emplace(aData.getTitle(), newItem);

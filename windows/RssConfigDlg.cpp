@@ -120,9 +120,7 @@ LRESULT RssDlg::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL
 }
 
 LRESULT RssDlg::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if (ctrlRssList.GetSelectedCount() == 1)
-		remove();
-
+	remove();
 	return 0;
 }
 
@@ -142,10 +140,13 @@ void RssDlg::fillList() {
 }
 
 void RssDlg::remove() {
-	int i = ctrlRssList.GetSelectedIndex();
-	ctrlRssList.DeleteItem(i);
-	auto r = *rssList.erase(rssList.begin() + i);
-	removeList.push_back(r.getUrl());
+	if (ctrlRssList.GetSelectedCount() == 1) {
+		//TODO ask to remove data also.
+		int i = ctrlRssList.GetSelectedIndex();
+		ctrlRssList.DeleteItem(i);
+		auto r = *rssList.erase(rssList.begin() + i);
+		removeList.push_back(r.getUrl());
+	}
 }
 
 bool RssDlg::add() {
@@ -174,13 +175,15 @@ bool RssDlg::add() {
 	return true;
 }
 void RssDlg::update() {
-	int i = ctrlRssList.GetSelectedIndex();
-	auto item = rssList[i];
-	rssList.erase(rssList.begin() + i);
-	if (!add()) { //Failed, restore the old item
-		rssList.push_back(item);
-		fillList();
-		restoreSelection(Text::toT(item.getCategories()));
+	if (ctrlRssList.GetSelectedCount() == 1) {
+		int i = ctrlRssList.GetSelectedIndex();
+		auto item = rssList[i];
+		rssList.erase(rssList.begin() + i);
+		if (!add()) { //Failed, restore the old item
+			rssList.push_back(item);
+			fillList();
+			restoreSelection(Text::toT(item.getCategories()));
+		}
 	}
 }
 
