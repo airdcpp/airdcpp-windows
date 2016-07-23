@@ -209,6 +209,7 @@ private:
 
 	virtual void on(RSSManagerListener::RSSAdded, const RSSdata& aData) noexcept;
 	virtual void on(RSSManagerListener::RSSRemoved, const string& fname) noexcept;
+	virtual void on(RSSManagerListener::RSSFeedUpdated, const RSSPtr& aRss) noexcept;
 };
 
 #endif //
