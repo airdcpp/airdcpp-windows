@@ -24,11 +24,11 @@
 #include <airdcpp/File.h>
 #include <airdcpp/LogManager.h>
 
-int RssInfoFrame::columnIndexes[] = { COLUMN_FILE, COLUMN_LINK, COLUMN_DATE, COLUMN_SHARED, COLUMN_CATEGORIE };
-int RssInfoFrame::columnSizes[] = { 800, 350, 150, 80, 150};
-static ResourceManager::Strings columnNames[] = { ResourceManager::FILE, ResourceManager::LINK, ResourceManager::DATE, ResourceManager::SHARED, ResourceManager::CATEGORIES };
-static SettingsManager::BoolSetting filterSettings[] = { SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST };
-static ColumnType columnTypes[] = { COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT };
+int RssInfoFrame::columnIndexes[] = { COLUMN_FILE, COLUMN_LINK, COLUMN_DATE, COLUMN_CATEGORIE };
+int RssInfoFrame::columnSizes[] = { 800, 350, 150, 150};
+static ResourceManager::Strings columnNames[] = { ResourceManager::FILE, ResourceManager::LINK, ResourceManager::DATE, ResourceManager::CATEGORIES };
+static SettingsManager::BoolSetting filterSettings[] = { SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST };
+static ColumnType columnTypes[] = { COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT };
 
 RssInfoFrame::RssInfoFrame() : 
 	ctrlRss(this, COLUMN_LAST, [this] { callAsync([this] { reloadList(); }); }, filterSettings, COLUMN_LAST),
@@ -266,8 +266,14 @@ LRESULT RssInfoFrame::onOpenLink(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	if (ctrlRss.list.GetSelectedCount() == 1) {
 		int sel = ctrlRss.list.GetNextItem(-1, LVNI_SELECTED);
 		ItemInfo* ii = (ItemInfo*)ctrlRss.list.GetItemData(sel);
-		if (ii)
-			WinUtil::openLink(Text::toT(ii->item.getLink()));
+		if (ii) {
+			tstring url = Text::toT(ii->item.getLink());
+
+			if (strnicmp(url.c_str(), _T("http:"), 5) != 0) //tmp fix for predb urls
+				url = _T("http:") + url;
+
+			WinUtil::openLink(url);
+		}
 	}
 	return 0;
 }
@@ -279,7 +285,6 @@ const tstring RssInfoFrame::ItemInfo::getText(int col) const {
 	case COLUMN_FILE: return Text::toT(item.getTitle());
 	case COLUMN_LINK: return Text::toT(item.getLink());
 	case COLUMN_DATE: return Text::toT(item.getPubDate());
-	case COLUMN_SHARED: return AirUtil::isShareDupe(getDupe()) ? TSTRING(SHARED) : AirUtil::isQueueDupe(getDupe()) ? TSTRING(QUEUED) : AirUtil::isFinishedDupe(getDupe()) ? TSTRING(FINISHED) : _T("");
 	case COLUMN_CATEGORIE: return Text::toT(item.getCategorie());
 
 	default: return Util::emptyStringT;
