@@ -177,8 +177,9 @@ private:
 		treeParent = addTreeItem(TVI_ROOT, 0, TSTRING(RSSINFO));
 
 		//Fill the tree with RSS categories
-		for (auto i : RSSManager::getInstance()->getRss()){
-			categories.emplace(i.getCategories(), addTreeItem(treeParent, 0, Text::toT(i.getCategories())));
+		auto lst = RSSManager::getInstance()->getRss();
+		for (auto i : lst){
+			categories.emplace(i->getCategories(), addTreeItem(treeParent, 0, Text::toT(i->getCategories())));
 		}
 		ctrlTree.Expand(treeParent);
 	}

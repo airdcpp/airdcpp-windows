@@ -7,7 +7,7 @@
 #include "Singleton.h"
 #include "Speaker.h"
 #include "SimpleXML.h"
-#include "HttpConnection.h"
+#include "HttpDownload.h"
 #include "TimerManager.h"
 #include "ShareManager.h"
 #include "AutoSearchManager.h"
@@ -15,23 +15,40 @@
 
 namespace dcpp {
 
-class RSS {
+class RSS : private boost::noncopyable {
 public:
-	RSS(){}
-	RSS(const string& aUrl, const string& aCategory, uint64_t aLastUpdate) noexcept : 
-		url(aUrl), categories(aCategory), lastUpdate(aLastUpdate) {}
+	RSS()
+	{
+		rssDownload.reset();
+	}
+	RSS(const string& aUrl, const string& aCategory, time_t aLastUpdate) noexcept : 
+		url(aUrl), categories(aCategory), lastUpdate(aLastUpdate)
+	{
+		rssDownload.reset();
+	}
 
-	RSS(const string& aUrl, const string& aCategory, uint64_t aLastUpdate, const string& aAutoSearchFilter, const string& aDownloadTarget) noexcept :
-		url(aUrl), categories(aCategory), lastUpdate(aLastUpdate), autoSearchFilter(aAutoSearchFilter), downloadTarget(aDownloadTarget) {}
+	RSS(const string& aUrl, const string& aCategory, time_t aLastUpdate, const string& aAutoSearchFilter, const string& aDownloadTarget) noexcept :
+		url(aUrl), categories(aCategory), lastUpdate(aLastUpdate), autoSearchFilter(aAutoSearchFilter), downloadTarget(aDownloadTarget) 
+	{
+		rssDownload.reset();
+	}
 
-	virtual ~RSS(){};
+	~RSS(){};
 
 	GETSET(string, url, Url);
 	GETSET(string, categories, Categories);
-	GETSET(uint64_t, lastUpdate, LastUpdate);
+	GETSET(time_t, lastUpdate, LastUpdate);
 
 	GETSET(string, autoSearchFilter, AutoSearchFilter);
 	GETSET(string, downloadTarget, DownloadTarget);
+
+	bool operator==(const RSSPtr& rhs) const { return url == rhs->getUrl(); }
+
+	unique_ptr<HttpDownload> rssDownload;
+
+	bool allowUpdate() {
+		return (getLastUpdate() + 15 * 60) < GET_TIME();
+	}
 
 };
 
@@ -66,8 +83,7 @@ public:
 };
 
 
-class RSSManager : public Speaker<RSSManagerListener>, public Singleton<RSSManager>
-	, private HttpConnectionListener, private TimerManagerListener
+class RSSManager : public Speaker<RSSManagerListener>, public Singleton<RSSManager>, private TimerManagerListener
 {
 public:
 	friend class Singleton<RSSManager>;	
@@ -82,16 +98,28 @@ public:
 		return rssData;
 	}
 
-	deque<RSS> getRss(){
+	deque<RSSPtr> getRss(){
 		Lock l(cs);
 		return rssList;
 	}
 
-	void replaceRSSList(const deque<RSS>& newList) {
+	void updateItem(const string& aUrl, const string& aCategory, const string& aAutoSearchFilter, const string& aDownloadTarget) {
 		Lock l(cs);
-		rssList = newList;
-		//Sort the list back in the search order... temporary until search system is changed...
-		sort(rssList.begin(), rssList.end(), [](const RSS& a, const RSS& b) { return a.getLastUpdate() > b.getLastUpdate(); });
+		auto r = find_if(rssList.begin(), rssList.end(), [aUrl](const RSSPtr& a) { return aUrl == a->getUrl(); });
+		if (r != rssList.end()) {
+			auto rss = *r;
+			rss->setCategories(aCategory);
+			rss->setAutoSearchFilter(aAutoSearchFilter);
+			rss->setDownloadTarget(aDownloadTarget);
+		} else {
+			rssList.push_back(
+				std::make_shared<RSS>(aUrl, aCategory, 0, aAutoSearchFilter, aDownloadTarget));
+		}
+	}
+
+	void removeItem(const string& aUrl) {
+		Lock l(cs);
+		rssList.erase(remove_if(rssList.begin(), rssList.end(), [&](const RSSPtr& a) { return aUrl == a->getUrl(); }), rssList.end());
 	}
 
 private:
@@ -99,32 +127,23 @@ private:
 	void loaddatabase(); 
 	void savedatabase();
 
-	atomic<bool> updating;
 	uint64_t nextUpdate;
-	
-	void matchAutosearch(const RSS& aRss, const RSSdata& aData);
 
-	deque<RSS> rssList;
+	RSSPtr getUpdateItem();
+	void downloadFeed(const RSSPtr& aRss);
+	
+	void matchAutosearch(const RSSPtr& aRss, const RSSdata& aData);
+
+	deque<RSSPtr> rssList;
 	unordered_map<string, RSSdata> rssData;
 	
 	mutable CriticalSection cs;
 
+	void downloadComplete(const string& aUrl);
 	string getConfigFile() { return Util::getPath(Util::PATH_USER_CONFIG) + "RSS.xml"; }
-
-	HttpConnection c;
-
-	// HttpConnectionListener
-	void on(HttpConnectionListener::Data, HttpConnection* /*conn*/, const uint8_t* buf, size_t len) noexcept{
-		downBuf.append((char*)buf, len);
-	}
-
-	void on(HttpConnectionListener::Complete, HttpConnection* conn, const string&, bool /*fromCoral*/) noexcept;
-	void on(HttpConnectionListener::Failed, HttpConnection* conn, const string& aLine) noexcept;
 	// TimerManagerListener
 	void on(TimerManagerListener::Second, uint64_t tick) noexcept;
 
-	string downBuf;
-	string tmpdataq;
 };
 
 }

@@ -151,7 +151,7 @@ void RssInfoFrame::onItemAdded(const RSSdata& aData) {
 	
 	auto cg = categories.find(aData.getCategorie());
 	if (cg == categories.end())
-		addTreeItem(treeParent, 0, Text::toT(aData.getCategorie()));
+		categories.emplace(aData.getCategorie(), addTreeItem(treeParent, 0, Text::toT(aData.getCategorie())));
 
 }
 
