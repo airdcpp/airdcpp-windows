@@ -58,17 +58,7 @@ public:
 	LRESULT onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		TCHAR buf[MAX_PATH];
-
-		GetDlgItemText(IDC_RSS_DOWNLOAD_PATH, buf, MAX_PATH);
-		tstring x = buf;
-		if (WinUtil::browseApplication(x, m_hWnd)) {
-			SetDlgItemText(IDC_RSS_DOWNLOAD_PATH, x.c_str());
-		}
-
-		return 0;
-	}
+	LRESULT onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT onSelectionChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 
