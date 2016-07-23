@@ -187,7 +187,7 @@ void RSSManager::downloadComplete(const string& aUrl) {
 							newdata = true;
 					}
 					if(xml.findChild("link"))
-						link = "http:" + xml.getChildData();
+						link = xml.getChildData();
 
 					if(xml.findChild("pubDate"))
 						date = xml.getChildData();
