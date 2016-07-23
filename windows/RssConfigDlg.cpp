@@ -20,6 +20,7 @@
 #include "Resource.h"
 #include "WinUtil.h"
 #include "RssConfigDlg.h"
+#include "BrowseDlg.h"
 
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/ResourceManager.h>
@@ -126,6 +127,19 @@ LRESULT RssDlg::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, B
 
 LRESULT RssDlg::onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	update();
+	return 0;
+}
+
+LRESULT RssDlg::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+
+	tstring dir = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
+
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_GENERIC, BrowseDlg::DIALOG_SELECT_FOLDER);
+	dlg.setPath(dir);
+	if (dlg.show(dir)) {
+		SetDlgItemText(IDC_RSS_DOWNLOAD_PATH, dir.c_str());
+	}
+
 	return 0;
 }
 
