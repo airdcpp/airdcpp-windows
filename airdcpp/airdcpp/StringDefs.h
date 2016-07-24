@@ -1675,6 +1675,7 @@ enum Strings { // @DontAdd
 	TIME_ADDED, // "Time added"
 	TIME_FINISHED, // "Time finished"
 	TIME_LEFT, // "Time left"
+	TITLE, // "Title"
 	TLS_ERROR, // "TLS error"
 	TOGGLE_TBSTATUS, // "Toolbar progressbar\tCtrl+5"
 	TOGGLE_TOOLBAR, // "Media toolbar\tCtrl+4"

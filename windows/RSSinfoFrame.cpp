@@ -26,7 +26,7 @@
 
 int RssInfoFrame::columnIndexes[] = { COLUMN_FILE, COLUMN_LINK, COLUMN_DATE, COLUMN_CATEGORIE };
 int RssInfoFrame::columnSizes[] = { 800, 350, 150, 150};
-static ResourceManager::Strings columnNames[] = { ResourceManager::FILE, ResourceManager::LINK, ResourceManager::DATE, ResourceManager::CATEGORIES };
+static ResourceManager::Strings columnNames[] = { ResourceManager::TITLE, ResourceManager::LINK, ResourceManager::DATE, ResourceManager::CATEGORIES };
 static SettingsManager::BoolSetting filterSettings[] = { SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST };
 static ColumnType columnTypes[] = { COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT };
 
@@ -113,7 +113,101 @@ LRESULT RssInfoFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		delete ii;
 	bHandled = FALSE;
 	return 0;
+}
 
+LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+	bool listMenu = false;
+	bool treeMenu = false;
+	if (reinterpret_cast<HWND>(wParam) == ctrlRss && ctrlRss.list.GetSelectedCount() == 1) {
+		if (pt.x == -1 && pt.y == -1) {
+			WinUtil::getContextMenuPos(ctrlRss.list, pt);
+		}
+		listMenu = true;
+	}
+	else if (reinterpret_cast<HWND>(wParam) == ctrlTree) {
+		if (pt.x == -1 && pt.y == -1) {
+			WinUtil::getContextMenuPos(ctrlTree, pt);
+		}
+		// Select the item we right-clicked on
+		UINT a = 0;
+		ctrlTree.ScreenToClient(&pt);
+		HTREEITEM ht = ctrlTree.HitTest(pt, &a);
+		if (ht) {
+			if (ht != ctrlTree.GetSelectedItem())
+				ctrlTree.SelectItem(ht);
+			ctrlTree.ClientToScreen(&pt);
+			treeMenu = true;
+		}
+	}
+
+	if (listMenu) {
+		auto ii = getSelectedListitem();
+		if (ii) {
+			OMenu menu;
+			menu.CreatePopupMenu();
+			menu.appendItem(TSTRING(OPEN_LINK), [=] { WinUtil::openLink(Text::toT(ii->item.getLink())); }, OMenu::FLAG_DEFAULT);
+			menu.appendSeparator();
+			menu.appendItem(TSTRING(SEARCH), [=] { WinUtil::searchAny(Text::toT(ii->item.getTitle())); });
+			WinUtil::appendSearchMenu(menu, ii->item.getTitle());
+			if (AirUtil::allowOpenDupe(ii->getDupe())) {
+				menu.appendSeparator();
+				menu.appendItem(TSTRING(OPEN_FOLDER), [=] {
+					auto paths = AirUtil::getDirDupePaths(ii->getDupe(), ii->item.getTitle());
+					if (!paths.empty())
+						WinUtil::openFolder(Text::toT(paths.front()));
+				});
+			}
+
+			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
+			return TRUE;
+		}
+	}
+	else if (treeMenu) {
+		string category = getSelectedCategory();
+		if (!category.empty()) {
+
+			OMenu menu;
+			menu.CreatePopupMenu();
+			menu.appendItem(TSTRING(UPDATE), [=] { RSSManager::getInstance()->downloadFeed(category); });
+			menu.appendItem(TSTRING(MATCH_AUTOSEARCH), [=] { RSSManager::getInstance()->matchAutosearchFilters(category);  });
+			menu.appendSeparator();
+			menu.appendItem(TSTRING(CLEAR), [=] { RSSManager::getInstance()->clearRSSData(category);  });
+			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
+			return TRUE;
+		}
+	}
+
+	bHandled = FALSE;
+	return FALSE;
+}
+
+LRESULT RssInfoFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+	LPNMLVCUSTOMDRAW cd = (LPNMLVCUSTOMDRAW)pnmh;
+
+	switch (cd->nmcd.dwDrawStage) {
+	case CDDS_PREPAINT:
+		return CDRF_NOTIFYITEMDRAW;
+
+	case CDDS_ITEMPREPAINT: {
+		cd->clrText = WinUtil::textColor;
+		auto ii = (ItemInfo*)cd->nmcd.lItemlParam;
+		auto c = WinUtil::getDupeColors(ii->getDupe());
+		cd->clrText = c.first;
+		cd->clrTextBk = c.second;
+
+		return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
+	}
+	default:
+		return CDRF_DODEFAULT;
+	}
+}
+
+LRESULT RssInfoFrame::onDoubleClickList(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
+	auto ii = getSelectedListitem();
+	if(ii)
+		WinUtil::openLink(Text::toT(ii->item.getLink()));
+	return 0;
 }
 
 void RssInfoFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
@@ -213,109 +307,15 @@ void RssInfoFrame::reloadList() {
 	ctrlRss.list.SetRedraw(TRUE);
 }
 
-
-LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
-	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
-	bool listMenu = false;
-	bool treeMenu = false;
-	if (reinterpret_cast<HWND>(wParam) == ctrlRss && ctrlRss.list.GetSelectedCount() == 1) {
-		if (pt.x == -1 && pt.y == -1) {
-			WinUtil::getContextMenuPos(ctrlRss.list, pt);
-		}
-		listMenu = true;
-	} else if (reinterpret_cast<HWND>(wParam) == ctrlTree) {
-		if (pt.x == -1 && pt.y == -1) {
-			WinUtil::getContextMenuPos(ctrlTree, pt);
-		}
-		// Select the item we right-clicked on
-		UINT a = 0;
-		ctrlTree.ScreenToClient(&pt);
-		HTREEITEM ht = ctrlTree.HitTest(pt, &a);
-		if (ht) {
-			if (ht != ctrlTree.GetSelectedItem())
-				ctrlTree.SelectItem(ht);
-			ctrlTree.ClientToScreen(&pt);
-			treeMenu = true;
-		}
-	}
-	
-	if(listMenu) {
-		OMenu menu;
-		menu.CreatePopupMenu();
-		menu.appendItem(TSTRING(SEARCH), [=] { handleSearch(); });
-		menu.appendItem(TSTRING(OPEN_LINK), [=] { handleOpenLink(); });
-		menu.appendItem(TSTRING(OPEN_FOLDER), [=] { handleOpenFolder(); });
-
-		menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
-		return TRUE;
-	} else if (treeMenu) {
-		string category = getSelectedCategory();
-		if (!category.empty()) {
-
-			OMenu menu;
-			menu.CreatePopupMenu();
-			menu.appendItem(TSTRING(UPDATE), [=] { RSSManager::getInstance()->downloadFeed(category); });
-			menu.appendItem(TSTRING(CLEAR), [=] { RSSManager::getInstance()->clearRSSData(category);  });
-			menu.appendItem(TSTRING(MATCH_AUTOSEARCH), [=] { RSSManager::getInstance()->matchAutosearchFilters(category);  });
-			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
-			return TRUE;
-		}
-	}
-
-	bHandled = FALSE;
-	return FALSE;
-}
-
-LRESULT RssInfoFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
-	LPNMLVCUSTOMDRAW cd = (LPNMLVCUSTOMDRAW)pnmh;
-
-	switch (cd->nmcd.dwDrawStage) {
-	case CDDS_PREPAINT:
-		return CDRF_NOTIFYITEMDRAW;
-
-	case CDDS_ITEMPREPAINT: {
-		cd->clrText = WinUtil::textColor;
-		auto ii = (ItemInfo*)cd->nmcd.lItemlParam;
-		auto c = WinUtil::getDupeColors(ii->getDupe());
-		cd->clrText = c.first;
-		cd->clrTextBk = c.second;
-
-		return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
-	}
-	default:
-		return CDRF_DODEFAULT;
-	}
-}
-
-void RssInfoFrame::handleOpenFolder() {
-	if(ctrlRss.list. GetSelectedCount() == 1) {
-		int sel = ctrlRss.list.GetNextItem(-1, LVNI_SELECTED);
-		ItemInfo* ii = (ItemInfo*)ctrlRss.list.GetItemData(sel);
-		if (ii) {
-			auto paths = AirUtil::getDirDupePaths(ii->getDupe(), ii->item.getTitle());
-			if(!paths.empty())
-				WinUtil::openFolder(Text::toT(paths.front()));
-		}
-	}
-}
-
-void RssInfoFrame::handleSearch() {
+RssInfoFrame::ItemInfo* RssInfoFrame::getSelectedListitem() {
 	if (ctrlRss.list.GetSelectedCount() == 1) {
 		int sel = ctrlRss.list.GetNextItem(-1, LVNI_SELECTED);
-		ItemInfo* ii = (ItemInfo*)ctrlRss.list.GetItemData(sel);
-		if (ii)
-			WinUtil::searchAny(Text::toT(ii->item.getTitle()));
-	}
-}
-
-void RssInfoFrame::handleOpenLink() {
-	if (ctrlRss.list.GetSelectedCount() == 1) {
-		int sel = ctrlRss.list.GetNextItem(-1, LVNI_SELECTED);
-		ItemInfo* ii = (ItemInfo*)ctrlRss.list.GetItemData(sel);
+		auto ii = (ItemInfo*)ctrlRss.list.GetItemData(sel);
 		if (ii) {
-			WinUtil::openLink(Text::toT(ii->item.getLink()));
+			return ii;
 		}
 	}
+	return nullptr;
 }
 
 string RssInfoFrame::getSelectedCategory() {

@@ -51,6 +51,7 @@ public:
 		NOTIFY_HANDLER(IDC_RSS_LIST, LVN_COLUMNCLICK, ctrlRss.list.onColumnClick)
 		NOTIFY_HANDLER(IDC_RSS_LIST, LVN_GETINFOTIP, ctrlRss.list.onInfoTip)
 		NOTIFY_HANDLER(IDC_RSS_LIST, NM_CUSTOMDRAW, onCustomDraw)
+		NOTIFY_HANDLER(IDC_RSS_LIST, NM_DBLCLK, onDoubleClickList)
 		NOTIFY_HANDLER(IDC_RSS_TREE, TVN_SELCHANGED, onSelChanged)
 		NOTIFY_HANDLER(IDC_RSS_TREE, NM_CLICK, onTreeItemClick)
 		NOTIFY_HANDLER(IDC_RSS_TREE, NM_RCLICK, onTreeItemClick)
@@ -70,6 +71,7 @@ public:
 	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
+	LRESULT onDoubleClickList(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onConfig(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		RssDlg dlg;
@@ -190,10 +192,9 @@ private:
 	void onItemAdded(const RSSdata& aData);
 	
 	void handleOpenFolder();
-	void handleOpenLink();
-	void handleSearch();
 
 	string getSelectedCategory();
+	ItemInfo* getSelectedListitem();
 
 	//categories by name
 	unordered_map<string, HTREEITEM> categories;
