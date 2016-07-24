@@ -81,12 +81,32 @@ LRESULT RssInfoFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	statusSizes[0] = 16;
 	ctrlStatus.SetParts(1, statusSizes);
 
+	::SetTimer(m_hWnd, 0, 500, 0);
+
 	WinUtil::SetIcon(m_hWnd, IDI_RSS);
 	bHandled = FALSE;
 	return 1;
 }
 
+LRESULT RssInfoFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+	if (tasks.getTasks().empty())
+		return 0;
+	ctrlRss.list.SetRedraw(FALSE);
+	for (;;) {
+		TaskQueue::TaskPair t;
+		if (!tasks.getFront(t))
+			break;
+
+		static_cast<AsyncTask*>(t.second)->f();
+		tasks.pop_front();
+	}
+	ctrlRss.list.SetRedraw(TRUE);
+	bHandled = TRUE;
+	return 0;
+}
+
 LRESULT RssInfoFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+	::KillTimer(m_hWnd, 0);
 	RSSManager::getInstance()->removeListener(this);
 	//temporary...
 	for (auto ii : ItemInfos | map_values)
@@ -126,25 +146,23 @@ void RssInfoFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
 }
 
 void RssInfoFrame::on(RSSAdded, const RSSdata& aData) noexcept {
-	callAsync([=] { onItemAdded(aData); } );
+	addGuiTask([=] { onItemAdded(aData); } );
 
 }
 
 void RssInfoFrame::on(RSSRemoved, const string& fname) noexcept {
-	callAsync([=] {
-		ctrlRss.SetRedraw(FALSE);
+	addGuiTask([=] {
 		auto i = ItemInfos.find(fname);
 		if (i != ItemInfos.end()) {
 			ctrlRss.list.deleteItem(i->second);
 			delete i->second;
 			ItemInfos.erase(i);
 		}
-		ctrlRss.SetRedraw(TRUE);
 	});
 }
 
 void RssInfoFrame::on(RSSFeedUpdated, const RSSPtr& aRss) noexcept {
-	callAsync([=] {
+	addGuiTask([=] {
 		auto cg = categories.find(aRss->getCategories());
 		if (cg == categories.end())
 			categories.emplace(aRss->getCategories(), addTreeItem(treeParent, 0, Text::toT(aRss->getCategories()))); 
@@ -198,20 +216,50 @@ void RssInfoFrame::reloadList() {
 
 LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
-
+	bool listMenu = false;
+	bool treeMenu = false;
 	if (reinterpret_cast<HWND>(wParam) == ctrlRss && ctrlRss.list.GetSelectedCount() == 1) {
 		if (pt.x == -1 && pt.y == -1) {
 			WinUtil::getContextMenuPos(ctrlRss.list, pt);
 		}
-
+		listMenu = true;
+	} else if (reinterpret_cast<HWND>(wParam) == ctrlTree) {
+		if (pt.x == -1 && pt.y == -1) {
+			WinUtil::getContextMenuPos(ctrlTree, pt);
+		}
+		// Select the item we right-clicked on
+		UINT a = 0;
+		ctrlTree.ScreenToClient(&pt);
+		HTREEITEM ht = ctrlTree.HitTest(pt, &a);
+		if (ht) {
+			if (ht != ctrlTree.GetSelectedItem())
+				ctrlTree.SelectItem(ht);
+			ctrlTree.ClientToScreen(&pt);
+			treeMenu = true;
+		}
+	}
+	
+	if(listMenu) {
 		OMenu menu;
 		menu.CreatePopupMenu();
-		menu.AppendMenu(MF_STRING, IDR_SEARCH, CTSTRING(SEARCH));
-		menu.AppendMenu(MF_STRING, IDC_OPEN_LINK, CTSTRING(OPEN_LINK));
-		menu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
+		menu.appendItem(TSTRING(SEARCH), [=] { handleSearch(); });
+		menu.appendItem(TSTRING(OPEN_LINK), [=] { handleOpenLink(); });
+		menu.appendItem(TSTRING(OPEN_FOLDER), [=] { handleOpenFolder(); });
 
 		menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 		return TRUE;
+	} else if (treeMenu) {
+		string category = getSelectedCategory();
+		if (!category.empty()) {
+
+			OMenu menu;
+			menu.CreatePopupMenu();
+			menu.appendItem(TSTRING(UPDATE), [=] { RSSManager::getInstance()->downloadFeed(category); });
+			menu.appendItem(TSTRING(CLEAR), [=] { RSSManager::getInstance()->clearRSSData(category);  });
+			menu.appendItem(TSTRING(MATCH_AUTOSEARCH), [=] { RSSManager::getInstance()->matchAutosearchFilters(category);  });
+			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
+			return TRUE;
+		}
 	}
 
 	bHandled = FALSE;
@@ -239,7 +287,7 @@ LRESULT RssInfoFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandle
 	}
 }
 
-LRESULT RssInfoFrame::onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+void RssInfoFrame::handleOpenFolder() {
 	if(ctrlRss.list. GetSelectedCount() == 1) {
 		int sel = ctrlRss.list.GetNextItem(-1, LVNI_SELECTED);
 		ItemInfo* ii = (ItemInfo*)ctrlRss.list.GetItemData(sel);
@@ -249,34 +297,39 @@ LRESULT RssInfoFrame::onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 				WinUtil::openFolder(Text::toT(paths.front()));
 		}
 	}
-	return 0;
 }
 
-LRESULT RssInfoFrame::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+void RssInfoFrame::handleSearch() {
 	if (ctrlRss.list.GetSelectedCount() == 1) {
 		int sel = ctrlRss.list.GetNextItem(-1, LVNI_SELECTED);
 		ItemInfo* ii = (ItemInfo*)ctrlRss.list.GetItemData(sel);
 		if (ii)
 			WinUtil::searchAny(Text::toT(ii->item.getTitle()));
 	}
-	return 0;
 }
 
-LRESULT RssInfoFrame::onOpenLink(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+void RssInfoFrame::handleOpenLink() {
 	if (ctrlRss.list.GetSelectedCount() == 1) {
 		int sel = ctrlRss.list.GetNextItem(-1, LVNI_SELECTED);
 		ItemInfo* ii = (ItemInfo*)ctrlRss.list.GetItemData(sel);
 		if (ii) {
-			tstring url = Text::toT(ii->item.getLink());
-
-			if (strnicmp(url.c_str(), _T("http:"), 5) != 0) //tmp fix for predb urls
-				url = _T("http:") + url;
-
-			WinUtil::openLink(url);
+			WinUtil::openLink(Text::toT(ii->item.getLink()));
 		}
 	}
-	return 0;
 }
+
+string RssInfoFrame::getSelectedCategory() {
+	auto ht = ctrlTree.GetSelectedItem();
+	if (ht && ht != treeParent) {
+		for (auto i : categories) {
+			if (ht == i.second) {
+				return i.first;
+			}
+		}
+	}
+	return Util::emptyString;
+}
+
 
 const tstring RssInfoFrame::ItemInfo::getText(int col) const {
 
