@@ -105,10 +105,10 @@ LRESULT RssDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOO
 		update();
 
 		for (auto url : removeList)
-			RSSManager::getInstance()->removeItem(url);
+			RSSManager::getInstance()->removeFeedItem(url);
 
 		for(auto i : rssList)
-			RSSManager::getInstance()->updateItem(i.getUrl(), i.getCategories(), i.getAutoSearchFilter(), i.getDownloadTarget());
+			RSSManager::getInstance()->updateFeedItem(i.getUrl(), i.getCategories(), i.getAutoSearchFilter(), i.getDownloadTarget());
 	}
 	ctrlRssList.Detach();
 	EndDialog(wID);

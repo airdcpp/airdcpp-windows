@@ -80,7 +80,7 @@ public:
 	typedef X<1> RSSFeedUpdated;
 
 	virtual void on(RSSAdded, const RSSdata&) noexcept { }
-	virtual void on(RSSRemoved, string) noexcept { }
+	virtual void on(RSSRemoved, const string&) noexcept { }
 	virtual void on(RSSFeedUpdated, const RSSPtr&) noexcept { }
 
 };
@@ -101,32 +101,23 @@ public:
 		return rssData;
 	}
 
+	//Clears RSS feed data by category / name.
+	void clearRSSData(const string& aCategory);
+	//remove RSS feed data by title
+	void removeRSSData(const string& aTitle);
+	void matchAutosearchFilters(const string& aCateGory);
+
+
 	deque<RSSPtr> getRss(){
 		Lock l(cs);
 		return rssList;
 	}
 
-	void updateItem(const string& aUrl, const string& aCategory, const string& aAutoSearchFilter, const string& aDownloadTarget) {
-		Lock l(cs);
-		auto r = find_if(rssList.begin(), rssList.end(), [aUrl](const RSSPtr& a) { return aUrl == a->getUrl(); });
-		if (r != rssList.end()) {
-			auto rss = *r;
-			rss->setCategories(aCategory);
-			rss->setAutoSearchFilter(aAutoSearchFilter);
-			rss->setDownloadTarget(aDownloadTarget);
-			fire(RSSManagerListener::RSSFeedUpdated(), rss);
-		} else {
-			auto rss = std::make_shared<RSS>(aUrl, aCategory, 0, aAutoSearchFilter, aDownloadTarget);
-			rssList.push_back(rss);
+	void downloadFeed(const string& aCategory);
 
-			fire(RSSManagerListener::RSSFeedUpdated(), rss);
-		}
-	}
+	void updateFeedItem(const string& aUrl, const string& aCategory, const string& aAutoSearchFilter, const string& aDownloadTarget);
 
-	void removeItem(const string& aUrl) {
-		Lock l(cs);
-		rssList.erase(remove_if(rssList.begin(), rssList.end(), [&](const RSSPtr& a) { return aUrl == a->getUrl(); }), rssList.end());
-	}
+	void removeFeedItem(const string& aUrl);
 
 private:
 

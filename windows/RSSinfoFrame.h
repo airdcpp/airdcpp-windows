@@ -29,6 +29,7 @@
 #include "RssConfigDlg.h"
 #include <airdcpp/RSSManager.h>
 #include <airdcpp/AirUtil.h>
+#include <airdcpp/TaskQueue.h>
 
 
 #define RSS_STATUS_MSG_MAP 11
@@ -57,10 +58,8 @@ public:
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
+		MESSAGE_HANDLER(WM_TIMER, onTimer)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
-		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenFolder);
-		COMMAND_ID_HANDLER(IDC_OPEN_LINK, onOpenLink);
-		COMMAND_ID_HANDLER(IDR_SEARCH, onSearch);
 		CHAIN_MSG_MAP(baseClass)
 		CHAIN_MSG_MAP(CSplitterImpl<RssInfoFrame>)
 		ALT_MSG_MAP(RSS_STATUS_MSG_MAP)
@@ -71,9 +70,7 @@ public:
 	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
-	LRESULT onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onOpenLink(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onConfig(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		RssDlg dlg;
 		dlg.DoModal();
@@ -183,9 +180,20 @@ private:
 		ctrlTree.Expand(treeParent);
 	}
 
+	TaskQueue tasks;
+	void addGuiTask(std::function<void()> f) {
+		tasks.add(0, unique_ptr<AsyncTask>(new AsyncTask(f)));
+	}
+
 	bool show(const ItemInfo* aItem);
 
 	void onItemAdded(const RSSdata& aData);
+	
+	void handleOpenFolder();
+	void handleOpenLink();
+	void handleSearch();
+
+	string getSelectedCategory();
 
 	//categories by name
 	unordered_map<string, HTREEITEM> categories;
