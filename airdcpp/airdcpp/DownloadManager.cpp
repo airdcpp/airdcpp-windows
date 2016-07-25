@@ -546,11 +546,10 @@ void DownloadManager::removeConnection(UserConnectionPtr aConn) {
 
 void DownloadManager::removeDownload(Download* d) {
 	// Write the leftover bytes into file
-	// TODO: https://bugs.launchpad.net/airdcpp/+bug/1486851
 	if(d->getOutput()) {
 		if(d->getActual() > 0) {
 			try {
-				d->getOutput()->flushBuffers(true);
+				d->getOutput()->flushBuffers(false);
 			} catch(const Exception&) {
 			}
 		}
