@@ -2178,7 +2178,6 @@ ShareManager::RefreshResult ShareManager::addRefreshTask(TaskType aTaskType, con
 	} else {
 		try {
 			start();
-			setThreadPriority(aRefreshType == TYPE_MANUAL ? Thread::NORMAL : Thread::IDLE);
 		} catch(const ThreadException& e) {
 			LogManager::getInstance()->message(STRING(FILE_LIST_REFRESH_FAILED) + " " + e.getError(), LogMessage::SEV_WARNING);
 			refreshing.clear();
@@ -2498,7 +2497,6 @@ void ShareManager::runTasks(function<void (float)> progressF /*nullptr*/) noexce
 		ScopedFunctor([this] { tasks.pop_front(); });
 
 		if (t.first == ASYNC) {
-			refreshRunning = false;
 			auto task = static_cast<AsyncTask*>(t.second);
 			task->f();
 			continue;
@@ -2508,7 +2506,11 @@ void ShareManager::runTasks(function<void (float)> progressF /*nullptr*/) noexce
 		if (task->type == TYPE_STARTUP_DELAYED)
 			Thread::sleep(5000); // let the client start first
 
+		setThreadPriority(task->type == TYPE_MANUAL ? Thread::NORMAL : Thread::IDLE);
+
 		refreshRunning = true;
+		ScopedFunctor([this] { refreshRunning = false; });
+
 		if (!pauser) {
 			pauser.reset(new HashManager::HashPauser());
 		}
@@ -2643,8 +2645,6 @@ void ShareManager::runTasks(function<void (float)> progressF /*nullptr*/) noexce
 #ifdef _DEBUG
 	validateDirectoryTreeDebug();
 #endif
-
-	refreshRunning = false;
 	refreshing.clear();
 }
 
