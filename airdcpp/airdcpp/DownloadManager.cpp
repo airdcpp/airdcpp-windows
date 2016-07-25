@@ -453,7 +453,7 @@ void DownloadManager::endData(UserConnection* aSource) {
 	dcassert(d);
 
 	if(d->getType() == Transfer::TYPE_TREE) {
-		d->getOutput()->flush();
+		d->getOutput()->flushBuffers(false);
 
 		int64_t bl = 1024;
 		while(bl * (int64_t)d->getTigerTree().getLeaves().size() < d->getTigerTree().getFileSize())
@@ -550,7 +550,7 @@ void DownloadManager::removeDownload(Download* d) {
 	if(d->getOutput()) {
 		if(d->getActual() > 0) {
 			try {
-				d->getOutput()->flush();
+				d->getOutput()->flushBuffers(true);
 			} catch(const Exception&) {
 			}
 		}

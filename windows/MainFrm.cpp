@@ -2010,7 +2010,6 @@ void MainFrame::TestWrite(bool downloads, bool AppPath) {
 	
 	if( f != NULL) {
 		try {
-			f->flush();
 			delete f;
 			f = NULL;
 		} catch(const FileException&) { }
