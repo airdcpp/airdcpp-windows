@@ -1576,7 +1576,7 @@ void ShareManager::countStats(uint64_t& totalAge_, size_t& totalDirs_, int64_t& 
 }
 
 optional<ShareManager::ShareStats> ShareManager::getShareStats() const noexcept {
-	unordered_set<TTHValue*> uniqueTTHs;
+	unordered_set<decltype(tthIndex)::key_type> uniqueTTHs;
 
 	{
 		RLock l(cs);
