@@ -17,19 +17,15 @@ namespace dcpp {
 
 class RSS : private boost::noncopyable {
 public:
-	RSS()
-	{
-		rssDownload.reset();
-	}
-	RSS(const string& aUrl, const string& aCategory, time_t aLastUpdate) noexcept : 
-		url(aUrl), categories(aCategory), lastUpdate(aLastUpdate)
-	{
-		rssDownload.reset();
-	}
 
-	RSS(const string& aUrl, const string& aCategory, time_t aLastUpdate, const string& aAutoSearchFilter, const string& aDownloadTarget) noexcept :
-		url(aUrl), categories(aCategory), lastUpdate(aLastUpdate), autoSearchFilter(aAutoSearchFilter), downloadTarget(aDownloadTarget) 
+	RSS(const string& aUrl, const string& aCategory, time_t aLastUpdate, const string& aAutoSearchFilter, 
+		const string& aDownloadTarget, int aUpdateInterval = 30) noexcept :
+		url(aUrl), categories(aCategory), lastUpdate(aLastUpdate), autoSearchFilter(aAutoSearchFilter), 
+			downloadTarget(aDownloadTarget), updateInterval(aUpdateInterval)
 	{
+		if (aUpdateInterval < 10)
+			updateInterval = 10;
+
 		rssDownload.reset();
 	}
 
@@ -41,13 +37,14 @@ public:
 
 	GETSET(string, autoSearchFilter, AutoSearchFilter);
 	GETSET(string, downloadTarget, DownloadTarget);
+	GETSET(int, updateInterval, UpdateInterval);
 
 	bool operator==(const RSSPtr& rhs) const { return url == rhs->getUrl(); }
 
 	unique_ptr<HttpDownload> rssDownload;
 
 	bool allowUpdate() {
-		return (getLastUpdate() + 15 * 60) < GET_TIME();
+		return (getLastUpdate() + getUpdateInterval() * 60) < GET_TIME();
 	}
 
 };
@@ -115,7 +112,7 @@ public:
 
 	void downloadFeed(const string& aCategory);
 
-	void updateFeedItem(const string& aUrl, const string& aCategory, const string& aAutoSearchFilter, const string& aDownloadTarget);
+	void updateFeedItem(const string& aUrl, const string& aCategory, const string& aAutoSearchFilter, const string& aDownloadTarget, int aUpdateInterval);
 
 	void removeFeedItem(const string& aUrl);
 

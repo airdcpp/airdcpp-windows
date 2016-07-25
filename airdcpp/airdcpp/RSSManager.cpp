@@ -54,7 +54,8 @@ void RSSManager::load() {
 						xml.getChildAttrib("Categorie"),
 						Util::toInt64(xml.getChildAttrib("LastUpdate")),
 						xml.getChildAttrib("AutoSearchFilter"),
-						xml.getChildAttrib("DownloadTarget")
+						xml.getChildAttrib("DownloadTarget"),
+						xml.getIntChildAttrib("UpdateInterval")
 					)
 				);
 			}
@@ -106,6 +107,7 @@ void RSSManager::save() {
 			xml.addChildAttrib("LastUpdate", Util::toString(r->getLastUpdate()));
 			xml.addChildAttrib("AutoSearchFilter", r->getAutoSearchFilter());
 			xml.addChildAttrib("DownloadTarget", r->getDownloadTarget());
+			xml.addChildAttrib("UpdateInterval", Util::toString(r->getUpdateInterval()));
 		}
 		xml.stepOut();
 
@@ -272,7 +274,7 @@ void RSSManager::downloadFeed(const string& aCategory) {
 		downloadFeed(*r);
 }
 
-void RSSManager::updateFeedItem(const string& aUrl, const string& aCategory, const string& aAutoSearchFilter, const string& aDownloadTarget) {
+void RSSManager::updateFeedItem(const string& aUrl, const string& aCategory, const string& aAutoSearchFilter, const string& aDownloadTarget, int aUpdateInterval) {
 	Lock l(cs);
 	auto r = find_if(rssList.begin(), rssList.end(), [aUrl](const RSSPtr& a) { return aUrl == a->getUrl(); });
 	if (r != rssList.end()) {
@@ -280,10 +282,11 @@ void RSSManager::updateFeedItem(const string& aUrl, const string& aCategory, con
 		rss->setCategories(aCategory);
 		rss->setAutoSearchFilter(aAutoSearchFilter);
 		rss->setDownloadTarget(aDownloadTarget);
+		rss->setUpdateInterval(aUpdateInterval);
 		fire(RSSManagerListener::RSSFeedUpdated(), rss);
 	}
 	else {
-		auto rss = std::make_shared<RSS>(aUrl, aCategory, 0, aAutoSearchFilter, aDownloadTarget);
+		auto rss = std::make_shared<RSS>(aUrl, aCategory, 0, aAutoSearchFilter, aDownloadTarget, aUpdateInterval);
 		rssList.push_back(rss);
 
 		fire(RSSManagerListener::RSSFeedUpdated(), rss);
