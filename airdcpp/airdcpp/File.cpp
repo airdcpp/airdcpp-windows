@@ -359,17 +359,18 @@ uint64_t File::getLastModified() const noexcept {
 }
 
 string File::getRealPath() const {
-	char buf[MAX_PATH + 1];
+	char buf[PATH_MAX + 1];
 
 	int ret;
 #ifdef F_GETPATH
 	ret = fcntl(h, F_GETPATH, buf);
 #else
-	ret = ::readlink("/proc/self/fd/" + Util::toString(h), buf, sizeof(buf));
+	auto procPath = "/proc/self/fd/" + Util::toString(h);
+	ret = ::readlink(procPath.c_str(), buf, sizeof(buf));
 #endif
 
 	if (ret == -1) {
-		throw FileException(Util::translateError(GetLastError()));
+		throw FileException(Util::translateError(errno));
 	}
 
 	return string(buf);
@@ -615,8 +616,9 @@ std::string File::makeAbsolutePath(const std::string& path, const std::string& f
 
 bool File::deleteFileEx(const string& aFileName, int maxAttempts) noexcept {
 	bool success = false;
-	for (int i = 0; i < maxAttempts && (success = deleteFile(aFileName)) == false; ++i)
+	for (int i = 0; i < maxAttempts && (success = deleteFile(aFileName)) == false; ++i) {
 		Thread::sleep(1000);
+	}
 
 	return success;
 }
