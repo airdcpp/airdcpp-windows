@@ -36,7 +36,6 @@ public:
 
 	BEGIN_MSG_MAP_EX(RssDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
-		MESSAGE_HANDLER(WM_SETFOCUS, onFocus)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDC_RSS_ADD, onAdd)
@@ -45,16 +44,13 @@ public:
 		COMMAND_ID_HANDLER(IDC_RSS_UPDATE, onUpdate)
 		NOTIFY_HANDLER(IDC_RSS_LIST, LVN_KEYDOWN, onKeyDown)
 		NOTIFY_HANDLER(IDC_RSS_LIST, LVN_ITEMCHANGED, onSelectionChanged)
+		COMMAND_HANDLER(IDC_RSS_INTERVAL, EN_KILLFOCUS, onIntervalChange)
 		END_MSG_MAP()
 
 
-	LRESULT onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-		//ctrlSearch.SetFocus();
-		return FALSE;
-	}
-
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onIntervalChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
 	LRESULT onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -66,7 +62,7 @@ public:
 		NMLVKEYDOWN* kd = (NMLVKEYDOWN*)pnmh;
 		switch (kd->wVKey) {
 		case VK_DELETE:
-			PostMessage(WM_COMMAND, IDC_REMOVE, 0);
+			PostMessage(WM_COMMAND, IDC_RSS_REMOVE, 0);
 			break;
 		default:
 			bHandled = FALSE;
@@ -79,11 +75,14 @@ private:
 	public:
 
 		RSSConfigItem(const RSSPtr& aRss) noexcept :
-			url(aRss->getUrl()), categories(aRss->getCategories()), autoSearchFilter(aRss->getAutoSearchFilter()), downloadTarget(aRss->getDownloadTarget())
+			url(aRss->getUrl()), categories(aRss->getCategories()), autoSearchFilter(aRss->getAutoSearchFilter()), 
+			downloadTarget(aRss->getDownloadTarget()), updateInterval(aRss->getUpdateInterval())
 		{
 		}
-		RSSConfigItem(const string& aUrl, const string& aCategory, const string& aAutoSearchFilter, const string& aDownloadTarget) noexcept :
-			url(aUrl), categories(aCategory), autoSearchFilter(aAutoSearchFilter), downloadTarget(aDownloadTarget) {}
+		RSSConfigItem(const string& aUrl, const string& aCategory, const string& aAutoSearchFilter, 
+			const string& aDownloadTarget, int aUpdateInterval) noexcept :
+			url(aUrl), categories(aCategory), autoSearchFilter(aAutoSearchFilter), 
+			downloadTarget(aDownloadTarget), updateInterval(aUpdateInterval) {}
 
 		~RSSConfigItem() {};
 
@@ -91,6 +90,7 @@ private:
 		GETSET(string, categories, Categories);
 		GETSET(string, autoSearchFilter, AutoSearchFilter);
 		GETSET(string, downloadTarget, DownloadTarget);
+		GETSET(int, updateInterval, UpdateInterval);
 	};
 
 
@@ -98,6 +98,8 @@ private:
 	CEdit ctrlCategorie;
 	CEdit ctrlAutoSearchPattern;
 	CEdit ctrlTarget;
+	CEdit ctrlInterval;
+	CUpDownCtrl updown;
 
 	ExListViewCtrl ctrlRssList;
 
@@ -109,6 +111,8 @@ private:
 	void remove();
 	bool add();
 	void update();
+
+	bool loading;
 
 	void restoreSelection(const tstring& curSel);
 };
