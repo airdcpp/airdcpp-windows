@@ -43,6 +43,8 @@ public:
 
 	unique_ptr<HttpDownload> rssDownload;
 
+	unordered_map<string, RSSDataPtr> rssData;
+
 	bool allowUpdate() {
 		return (getLastUpdate() + getUpdateInterval() * 60) < GET_TIME();
 	}
@@ -51,17 +53,15 @@ public:
 
 class RSSData: public intrusive_ptr_base<RSSData>, private boost::noncopyable {
 public:
-	RSSData(string aTitle, string aLink) noexcept : title(aTitle), link(aLink), pubDate(Util::emptyString) {
-	}
-	RSSData(string aTitle, string aLink, string aPubDate, string aCategory, time_t aDateAdded = GET_TIME()) noexcept :
-		title(aTitle), link(aLink), pubDate(aPubDate), category(aCategory), dateAdded(aDateAdded)  {
+	RSSData(const string& aTitle, const string& aLink, const string& aPubDate, const RSSPtr& aFeed, time_t aDateAdded = GET_TIME()) noexcept :
+		title(aTitle), link(aLink), pubDate(aPubDate), feed(aFeed), dateAdded(aDateAdded)  {
 	}
 	~RSSData() noexcept { };
 	
 	GETSET(string, title, Title);
 	GETSET(string, link, Link);
 	GETSET(string, pubDate, PubDate);
-	GETSET(string, category, Category);
+	GETSET(RSSPtr, feed, Feed);
 	GETSET(time_t, dateAdded, DateAdded); //For prune old entries in database...
 
 
@@ -72,16 +72,18 @@ public:
 	virtual ~RSSManagerListener() { }
 	template<int I>	struct X { enum { TYPE = I }; };
 
-	typedef X<0> RSSAdded;
-	typedef X<1> RSSRemoved;
+	typedef X<0> RSSDataAdded;
+	typedef X<1> RSSDataCleared;
 	typedef X<2> RSSFeedUpdated;
 	typedef X<3> RSSFeedChanged;
-	typedef X<4> RSSFeedAdded;
+	typedef X<4> RSSFeedRemoved;
+	typedef X<5> RSSFeedAdded;
 
-	virtual void on(RSSAdded, const RSSDataPtr&) noexcept { }
-	virtual void on(RSSRemoved, const string&) noexcept { }
+	virtual void on(RSSDataAdded, const RSSDataPtr&) noexcept { }
+	virtual void on(RSSDataCleared, const RSSPtr&) noexcept { }
 	virtual void on(RSSFeedUpdated, const RSSPtr&) noexcept { }
 	virtual void on(RSSFeedChanged, const RSSPtr&) noexcept { }
+	virtual void on(RSSFeedRemoved, const RSSPtr&) noexcept { }
 	virtual void on(RSSFeedAdded, const RSSPtr&) noexcept { }
 
 };
@@ -97,16 +99,9 @@ public:
 	void load();
 	void save();
 
-	unordered_map<string, RSSDataPtr> getRssData(){
-		Lock l(cs);
-		return rssData;
-	}
-
 	//Clears RSS feed data by category / name.
-	void clearRSSData(const string& aCategory);
-	//remove RSS feed data by title
-	void removeRSSData(const string& aTitle);
-	void matchAutosearchFilters(const string& aCateGory);
+	void clearRSSData(const RSSPtr& aFeed);
+	void matchAutosearchFilters(const RSSPtr& aFeed);
 	//Find feed by category
 	RSSPtr getFeedByCategory(const string& aCategory);
 	//Find feed by url
@@ -118,7 +113,7 @@ public:
 		return rssList;
 	}
 
-	void downloadFeed(const string& aCategory);
+	void downloadFeed(const RSSPtr& aFeed);
 
 	void updateFeedItem(const string& aUrl, const string& aCategory, const string& aAutoSearchFilter, const string& aDownloadTarget, int aUpdateInterval);
 
@@ -126,18 +121,16 @@ public:
 
 private:
 
-	void loaddatabase(); 
-	void savedatabase();
+	void loaddatabase(const RSSPtr& aFeed, SimpleXML& aXml);
+	void savedatabase(const RSSPtr& aFeed, SimpleXML& aXml);
 
 	uint64_t nextUpdate;
 
 	RSSPtr getUpdateItem();
-	void downloadFeed(const RSSPtr& aRss);
 	
 	void matchAutosearch(const RSSPtr& aRss, const RSSDataPtr& aData);
 
 	deque<RSSPtr> rssList;
-	unordered_map<string, RSSDataPtr> rssData;
 	
 	mutable CriticalSection cs;
 
