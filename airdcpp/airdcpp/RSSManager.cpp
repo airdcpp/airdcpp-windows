@@ -22,7 +22,7 @@ void RSSManager::clearRSSData(const RSSPtr& aFeed) {
 	
 	{
 		Lock l(cs);
-		aFeed->rssData.clear(); 
+		aFeed->getFeedData().clear(); 
 	}
 	fire(RSSManagerListener::RSSDataCleared(), aFeed);
 
@@ -94,7 +94,7 @@ void RSSManager::downloadComplete(const string& aUrl) {
 					if(xml.findChild("title")){
 						titletmp = xml.getChildData();
 						Lock l(cs);
-						newdata = feed->rssData.find(titletmp) == feed->rssData.end();
+						newdata = feed->getFeedData().find(titletmp) == feed->getFeedData().end();
 					}
 					if (xml.findChild("link")) {
 						link = xml.getChildData();
@@ -107,11 +107,12 @@ void RSSManager::downloadComplete(const string& aUrl) {
 
 					
 					if(newdata) {
-						Lock l(cs);
 						RSSDataPtr data = new RSSData(titletmp, link, date, feed);
 						matchAutosearch(feed, data);
-						feed->rssData.emplace(titletmp, data);
-
+						{
+							Lock l(cs);
+							feed->getFeedData().emplace(titletmp, data);
+						}
 						fire(RSSManagerListener::RSSDataAdded(), data);
 					}
 
@@ -131,7 +132,7 @@ void RSSManager::downloadComplete(const string& aUrl) {
 void RSSManager::matchAutosearchFilters(const RSSPtr& aFeed) {
 	if (aFeed) {
 		Lock l(cs);
-		for (auto data : aFeed->rssData | map_values) {
+		for (auto data : aFeed->getFeedData() | map_values) {
 				matchAutosearch(aFeed, data);
 		}
 	}
@@ -258,7 +259,7 @@ void RSSManager::loaddatabase(const RSSPtr& aFeed, SimpleXML& aXml) {
 				aFeed,
 				Util::toInt64(aXml.getChildAttrib("dateadded")));
 
-			aFeed->rssData.emplace(rd->getTitle(), rd);
+			aFeed->getFeedData().emplace(rd->getTitle(), rd);
 		}
 		aXml.stepOut();
 	}
@@ -300,7 +301,7 @@ void RSSManager::savedatabase(const RSSPtr& aFeed, SimpleXML& aXml) {
 	aXml.stepIn();
 	aXml.addTag("Data");
 	aXml.stepIn();
-	for (auto r : aFeed->rssData | map_values) {
+	for (auto r : aFeed->getFeedData() | map_values) {
 		//Don't save more than 3 days old entries... Todo: setting?
 		if ((r->getDateAdded() + 3 * 24 * 60 * 60) > GET_TIME()) {
 			aXml.addTag("item");

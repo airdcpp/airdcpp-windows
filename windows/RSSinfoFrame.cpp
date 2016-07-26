@@ -68,11 +68,21 @@ LRESULT RssInfoFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	SetSplitterPanes(ctrlTree.m_hWnd, ctrlRss.m_hWnd);
 	m_nProportionalPos = 1000;
 
-	FillTree();
+	treeParent = addTreeItem(TVI_ROOT, 0, TSTRING(RSSINFO));
 	ctrlTree.SelectItem(treeParent);
-	auto lst = RSSManager::getInstance()->getRss();
-	for (auto i : lst)
-		addData(i);
+	{
+		Lock l(RSSManager::getInstance()->getCS());
+		auto lst = RSSManager::getInstance()->getRss();
+		for (auto feed : lst) {
+			addCategory(feed);
+			for (auto data : feed->getFeedData() | map_values) {
+				ItemInfos.emplace(data->getTitle(), new ItemInfo(data));
+			}
+		}
+	}
+	ctrlTree.Expand(treeParent);
+
+	callAsync([=] { reloadList(); });
 
 	RSSManager::getInstance()->addListener(this);
 	
@@ -107,6 +117,7 @@ LRESULT RssInfoFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 LRESULT RssInfoFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	::KillTimer(m_hWnd, 0);
 	RSSManager::getInstance()->removeListener(this);
+	WinUtil::setButtonPressed(IDC_RSSFRAME, false);
 	//temporary...
 	for (auto ii : ItemInfos | map_values)
 		delete ii;
@@ -262,7 +273,6 @@ void RssInfoFrame::on(RSSFeedRemoved, const RSSPtr& aRss) noexcept {
 void RssInfoFrame::on(RSSFeedAdded, const RSSPtr& aRss) noexcept {
 	addGuiTask([=] {
 		addCategory(aRss);
-		addData(aRss);
 	});
 }
 
@@ -277,12 +287,6 @@ void RssInfoFrame::on(RSSFeedChanged, const RSSPtr& aRss) noexcept {
 		ctrlTree.SetRedraw(TRUE);
 		reloadList();
 	});
-}
-
-void RssInfoFrame::addData(const RSSPtr& aFeed) {
-	for (auto i : aFeed->rssData | map_values) {
-		onItemAdded(i);
-	}
 }
 
 void RssInfoFrame::clearData(const RSSPtr& aFeed) {
@@ -311,8 +315,10 @@ void RssInfoFrame::onItemAdded(const RSSDataPtr& aData) {
 
 void RssInfoFrame::addCategory(const RSSPtr& aFeed) {
 	auto cg = categories.find(aFeed);
-	if (cg == categories.end())
+	if (cg == categories.end()) {
 		categories.emplace(aFeed, addTreeItem(treeParent, 0, Text::toT(aFeed->getCategory())));
+		//addData(aFeed);
+	}
 }
 
 bool RssInfoFrame::show(const ItemInfo* aItem) {
