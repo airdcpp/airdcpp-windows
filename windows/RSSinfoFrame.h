@@ -177,7 +177,7 @@ private:
 		//Fill the tree with RSS categories
 		auto lst = RSSManager::getInstance()->getRss();
 		for (auto i : lst){
-			addCategory(i->getCategory());
+			addCategory(i);
 		}
 		ctrlTree.Expand(treeParent);
 	}
@@ -190,17 +190,20 @@ private:
 
 	bool show(const ItemInfo* aItem);
 
+	void addData(const RSSPtr& aFeed);
+	void clearData(const RSSPtr& aFeed);
+
 	void onItemAdded(const RSSDataPtr& aData);
 
-	void addCategory(const string& aCategory);
+	void addCategory(const RSSPtr& aFeed);
 	
 	void handleOpenFolder();
 
-	string getSelectedCategory();
+	RSSPtr getSelectedCategory();
 	ItemInfo* getSelectedListitem();
 
 	//categories by name
-	unordered_map<string, HTREEITEM> categories;
+	unordered_map<RSSPtr, HTREEITEM> categories;
 
 	HTREEITEM treeParent;
 	HTREEITEM curItem;
@@ -218,10 +221,11 @@ private:
 
 	CButton ctrlConfig;
 
-	virtual void on(RSSManagerListener::RSSAdded, const RSSDataPtr& aData) noexcept;
-	virtual void on(RSSManagerListener::RSSRemoved, const string& fname) noexcept;
+	virtual void on(RSSManagerListener::RSSDataAdded, const RSSDataPtr& aData) noexcept;
+	virtual void on(RSSManagerListener::RSSFeedRemoved, const RSSPtr& aRss) noexcept;
 	virtual void on(RSSManagerListener::RSSFeedChanged, const RSSPtr& aRss) noexcept;
 	virtual void on(RSSManagerListener::RSSFeedAdded, const RSSPtr& aRss) noexcept;
+	virtual void on(RSSManagerListener::RSSDataCleared, const RSSPtr& aRss) noexcept;
 };
 
 #endif //

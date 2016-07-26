@@ -191,8 +191,10 @@ void RssDlg::remove() {
 		//TODO ask to remove data also.
 		int i = ctrlRssList.GetSelectedIndex();
 		ctrlRssList.DeleteItem(i);
-		auto r = *rssList.erase(rssList.begin() + i);
-		removeList.push_back(r.getUrl());
+		auto r = rssList.begin();
+		advance(r, i);
+		removeList.push_back((*r).getUrl());
+		rssList.erase(r);
 	}
 }
 

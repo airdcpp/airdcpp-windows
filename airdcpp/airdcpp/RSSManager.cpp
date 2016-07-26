@@ -18,23 +18,14 @@ RSSManager::~RSSManager()
 	TimerManager::getInstance()->removeListener(this);
 }
 
-void RSSManager::clearRSSData(const string& aCategory) {
-	Lock l(cs);
-	rssData.erase(boost::remove_if(rssData | map_values, [&](RSSDataPtr& d) {
-		if (compare(d->getCategory(), aCategory) == 0) {
-			fire(RSSManagerListener::RSSRemoved(), d->getTitle());
-			return true;
-		}
-		return false;
-	}).base(), rssData.end());
+void RSSManager::clearRSSData(const RSSPtr& aFeed) {
+	
+	{
+		Lock l(cs);
+		aFeed->rssData.clear(); 
+	}
+	fire(RSSManagerListener::RSSDataCleared(), aFeed);
 
-}
-
-void RSSManager::removeRSSData(const string& aTitle) {
-	Lock l(cs);
-	auto ret = rssData.erase(aTitle);
-	if (ret > 0)
-		fire(RSSManagerListener::RSSRemoved(), aTitle);
 }
 
 RSSPtr RSSManager::getFeedByCategory(const string& aCategory) {
@@ -53,126 +44,6 @@ RSSPtr RSSManager::getFeedByUrl(const string& aUrl) {
 		return *r;
 
 	return nullptr;
-}
-
-
-void RSSManager::load() {
-	loaddatabase();
-	try {
-		SimpleXML xml;
-		string tmpf = getConfigFile();
-		xml.fromXML(File(tmpf, File::READ, File::OPEN).read());
-
-		if(xml.findChild("RSS")) {
-			xml.stepIn();
-			
-			while (xml.findChild("Settings")) {
-				rssList.push_back(
-					std::make_shared<RSS>(xml.getChildAttrib("Url"),
-						xml.getChildAttrib("Categorie"),
-						Util::toInt64(xml.getChildAttrib("LastUpdate")),
-						xml.getChildAttrib("AutoSearchFilter"),
-						xml.getChildAttrib("DownloadTarget"),
-						xml.getIntChildAttrib("UpdateInterval")
-					)
-				);
-			}
-			xml.stepOut();
-		}
-	} catch(const Exception& e) {
-		dcdebug("RSSManager::load: %s\n", e.getError().c_str());
-	}
-	
-	TimerManager::getInstance()->addListener(this);
-	nextUpdate = GET_TICK() + 10 * 1000; //start after 10 seconds
-}
-
-void RSSManager::loaddatabase() {
-	try {
-		SimpleXML xml;
-		xml.fromXML(File(Util::getPath(Util::PATH_USER_CONFIG) + "RSSDatabase.xml", File::READ, File::OPEN).read());
-
-		if(xml.findChild("RSSDatabase")) {
-			xml.stepIn();
-			while(xml.findChild("item")) {
-				
-				auto rd = new RSSData(xml.getChildAttrib("title"),
-					xml.getChildAttrib("link"),
-					xml.getChildAttrib("pubdate"),
-					xml.getChildAttrib("categorie"),
-					Util::toInt64(xml.getChildAttrib("dateadded")));
-
-				rssData.emplace(rd->getTitle(), rd);
-			}
-			xml.stepOut();
-		}
-	} catch(const Exception& e) {
-		dcdebug("RSSManager::loaddatabase: %s\n", e.getError().c_str());
-	}
-
-	//checkshared();
-}
-
-void RSSManager::save() {
-	try {
-		SimpleXML xml;
-		xml.addTag("RSS");
-		xml.stepIn();
-		for (auto r : rssList) {
-			xml.addTag("Settings");
-			xml.addChildAttrib("Url", r->getUrl());
-			xml.addChildAttrib("Categorie", r->getCategory());
-			xml.addChildAttrib("LastUpdate", Util::toString(r->getLastUpdate()));
-			xml.addChildAttrib("AutoSearchFilter", r->getAutoSearchFilter());
-			xml.addChildAttrib("DownloadTarget", r->getDownloadTarget());
-			xml.addChildAttrib("UpdateInterval", Util::toString(r->getUpdateInterval()));
-		}
-		xml.stepOut();
-
-		string fname = getConfigFile();
-		File f(fname + ".tmp", File::WRITE, File::CREATE | File::TRUNCATE);
-		f.write(SimpleXML::utf8Header);
-		f.write(xml.toXML());
-		f.close();
-		File::deleteFile(fname);
-		File::renameFile(fname + ".tmp", fname);
-	}
-	catch (const Exception& e) {
-		dcdebug("RSSManager::save: %s\n", e.getError().c_str());
-	}
-
-	savedatabase();
-}
-
-void RSSManager::savedatabase() {
-	try {
-		SimpleXML xml;
-		xml.addTag("RSSDatabase"); 
-		xml.stepIn();
-		for(auto r : rssData | map_values) {
-			//Don't save more than 3 days old entries... Todo: setting?
-			if ((r->getDateAdded() + 3 * 24 * 60 * 60) > GET_TIME()) {
-				xml.addTag("item");
-				xml.addChildAttrib("title", r->getTitle());
-				xml.addChildAttrib("link", r->getLink());
-				xml.addChildAttrib("pubdate", r->getPubDate());
-				xml.addChildAttrib("categorie", r->getCategory());
-				xml.addChildAttrib("dateadded", Util::toString(r->getDateAdded()));
-			}
-		}
-		xml.stepOut();
-		
-		string fname = Util::getPath(Util::PATH_USER_CONFIG) + "RSSDatabase.xml";
-
-		File f(fname + ".tmp", File::WRITE, File::CREATE | File::TRUNCATE);
-		f.write(SimpleXML::utf8Header);
-		f.write(xml.toXML());
-		f.close();
-		File::deleteFile(fname);
-		File::renameFile(fname + ".tmp", fname);
-	} catch(const Exception& e) {
-		dcdebug("RSSManager::savedatabase: %s\n", e.getError().c_str());
-	}
 }
 
 void RSSManager::downloadComplete(const string& aUrl) {
@@ -223,8 +94,7 @@ void RSSManager::downloadComplete(const string& aUrl) {
 					if(xml.findChild("title")){
 						titletmp = xml.getChildData();
 						Lock l(cs);
-						if(rssData.find(titletmp) == rssData.end())
-							newdata = true;
+						newdata = feed->rssData.find(titletmp) == feed->rssData.end();
 					}
 					if (xml.findChild("link")) {
 						link = xml.getChildData();
@@ -235,13 +105,14 @@ void RSSManager::downloadComplete(const string& aUrl) {
 					if(xml.findChild("pubDate"))
 						date = xml.getChildData();
 
+					
 					if(newdata) {
-							Lock l(cs);
-							RSSDataPtr data = new RSSData(titletmp, link, date, feed->getCategory());
-							matchAutosearch(feed, data);
-							rssData.emplace(titletmp, data);
+						Lock l(cs);
+						RSSDataPtr data = new RSSData(titletmp, link, date, feed);
+						matchAutosearch(feed, data);
+						feed->rssData.emplace(titletmp, data);
 
-							fire(RSSManagerListener::RSSAdded(), data);
+						fire(RSSManagerListener::RSSDataAdded(), data);
 					}
 
 					titletmp.clear();
@@ -257,13 +128,11 @@ void RSSManager::downloadComplete(const string& aUrl) {
 	}
 }
 
-void RSSManager::matchAutosearchFilters(const string& aCategory) {
-	auto feed = getFeedByCategory(aCategory);
-	if (feed) {
+void RSSManager::matchAutosearchFilters(const RSSPtr& aFeed) {
+	if (aFeed) {
 		Lock l(cs);
-		for (auto data : rssData | map_values) {
-			if (data->getCategory() == aCategory)
-				matchAutosearch(feed, data);
+		for (auto data : aFeed->rssData | map_values) {
+				matchAutosearch(aFeed, data);
 		}
 	}
 }
@@ -283,12 +152,6 @@ void RSSManager::matchAutosearch(const RSSPtr& aRss, const RSSDataPtr& aData) {
 		as->setTarget(aRss->getDownloadTarget());
 		AutoSearchManager::getInstance()->addAutoSearch(as, true);
 	}
-}
-
-void RSSManager::downloadFeed(const string& aCategory) {
-	auto feed = getFeedByCategory(aCategory);
-	if (feed)
-		downloadFeed(feed);
 }
 
 void RSSManager::updateFeedItem(const string& aUrl, const string& aCategory, const string& aAutoSearchFilter, const string& aDownloadTarget, int aUpdateInterval) {
@@ -314,7 +177,9 @@ void RSSManager::updateFeedItem(const string& aUrl, const string& aCategory, con
 
 void RSSManager::removeFeedItem(const string& aUrl) {
 	Lock l(cs);
+	auto feed = getFeedByUrl(aUrl);
 	rssList.erase(remove_if(rssList.begin(), rssList.end(), [&](const RSSPtr& a) { return aUrl == a->getUrl(); }), rssList.end());
+	fire(RSSManagerListener::RSSFeedRemoved(), feed);
 }
 
 void RSSManager::downloadFeed(const RSSPtr& aRss) {
@@ -348,6 +213,105 @@ void RSSManager::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 		downloadFeed(getUpdateItem());
 		nextUpdate = GET_TICK() + 1 * 60 * 1000; //Minute between item updates for now, TODO: handle intervals smartly :)
 	}
+}
+
+void RSSManager::load() {
+	try {
+		SimpleXML xml;
+		string tmpf = getConfigFile();
+		xml.fromXML(File(tmpf, File::READ, File::OPEN).read());
+
+		if (xml.findChild("RSS")) {
+			xml.stepIn();
+
+			while (xml.findChild("Settings")) {
+				auto feed = std::make_shared<RSS>(xml.getChildAttrib("Url"),
+					xml.getChildAttrib("Categorie"),
+					Util::toInt64(xml.getChildAttrib("LastUpdate")),
+					xml.getChildAttrib("AutoSearchFilter"),
+					xml.getChildAttrib("DownloadTarget"),
+					xml.getIntChildAttrib("UpdateInterval"));
+
+				loaddatabase(feed, xml);
+				rssList.push_back(feed);
+			}
+			xml.stepOut();
+		}
+	}
+	catch (const Exception& e) {
+		dcdebug("RSSManager::load: %s\n", e.getError().c_str());
+	}
+
+	TimerManager::getInstance()->addListener(this);
+	nextUpdate = GET_TICK() + 10 * 1000; //start after 10 seconds
+}
+
+void RSSManager::loaddatabase(const RSSPtr& aFeed, SimpleXML& aXml) {
+	aXml.stepIn();
+	if (aXml.findChild("Data")) {
+		aXml.stepIn();
+		while (aXml.findChild("item")) {
+
+			auto rd = new RSSData(aXml.getChildAttrib("title"),
+				aXml.getChildAttrib("link"),
+				aXml.getChildAttrib("pubdate"),
+				aFeed,
+				Util::toInt64(aXml.getChildAttrib("dateadded")));
+
+			aFeed->rssData.emplace(rd->getTitle(), rd);
+		}
+		aXml.stepOut();
+	}
+	aXml.stepOut();
+}
+
+void RSSManager::save() {
+	try {
+		SimpleXML xml;
+		xml.addTag("RSS");
+		xml.stepIn();
+		for (auto r : rssList) {
+			xml.addTag("Settings");
+			xml.addChildAttrib("Url", r->getUrl());
+			xml.addChildAttrib("Categorie", r->getCategory());
+			xml.addChildAttrib("LastUpdate", Util::toString(r->getLastUpdate()));
+			xml.addChildAttrib("AutoSearchFilter", r->getAutoSearchFilter());
+			xml.addChildAttrib("DownloadTarget", r->getDownloadTarget());
+			xml.addChildAttrib("UpdateInterval", Util::toString(r->getUpdateInterval()));
+			savedatabase(r, xml);
+		}
+		xml.stepOut();
+
+		string fname = getConfigFile();
+		File f(fname + ".tmp", File::WRITE, File::CREATE | File::TRUNCATE);
+		f.write(SimpleXML::utf8Header);
+		f.write(xml.toXML());
+		f.close();
+		File::deleteFile(fname);
+		File::renameFile(fname + ".tmp", fname);
+	}
+	catch (const Exception& e) {
+		dcdebug("RSSManager::save: %s\n", e.getError().c_str());
+	}
+
+}
+
+void RSSManager::savedatabase(const RSSPtr& aFeed, SimpleXML& aXml) {
+	aXml.stepIn();
+	aXml.addTag("Data");
+	aXml.stepIn();
+	for (auto r : aFeed->rssData | map_values) {
+		//Don't save more than 3 days old entries... Todo: setting?
+		if ((r->getDateAdded() + 3 * 24 * 60 * 60) > GET_TIME()) {
+			aXml.addTag("item");
+			aXml.addChildAttrib("title", r->getTitle());
+			aXml.addChildAttrib("link", r->getLink());
+			aXml.addChildAttrib("pubdate", r->getPubDate());
+			aXml.addChildAttrib("dateadded", Util::toString(r->getDateAdded()));
+		}
+	}
+	aXml.stepOut();
+	aXml.stepOut();
 }
 
 }
