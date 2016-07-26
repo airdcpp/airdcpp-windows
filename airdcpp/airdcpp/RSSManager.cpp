@@ -21,7 +21,7 @@ RSSManager::~RSSManager()
 void RSSManager::clearRSSData(const string& aCategory) {
 	Lock l(cs);
 	rssData.erase(boost::remove_if(rssData | map_values, [&](RSSdata& d) {
-		if (compare(d.getCategorie(), aCategory) == 0) {
+		if (compare(d.getCategory(), aCategory) == 0) {
 			fire(RSSManagerListener::RSSRemoved(), d.getTitle());
 			return true;
 		}
@@ -35,6 +35,24 @@ void RSSManager::removeRSSData(const string& aTitle) {
 	auto ret = rssData.erase(aTitle);
 	if (ret > 0)
 		fire(RSSManagerListener::RSSRemoved(), aTitle);
+}
+
+RSSPtr RSSManager::getFeedByCategory(const string& aCategory) {
+	Lock l(cs);
+	auto r = find_if(rssList.begin(), rssList.end(), [aCategory](const RSSPtr& a) { return aCategory == a->getCategory(); });
+	if (r != rssList.end())
+		return *r;
+
+	return nullptr;
+}
+
+RSSPtr RSSManager::getFeedByUrl(const string& aUrl) {
+	Lock l(cs);
+	auto r = find_if(rssList.begin(), rssList.end(), [aUrl](const RSSPtr& a) { return aUrl == a->getUrl(); });
+	if (r != rssList.end())
+		return *r;
+
+	return nullptr;
 }
 
 
@@ -103,7 +121,7 @@ void RSSManager::save() {
 		for (auto r : rssList) {
 			xml.addTag("Settings");
 			xml.addChildAttrib("Url", r->getUrl());
-			xml.addChildAttrib("Categorie", r->getCategories());
+			xml.addChildAttrib("Categorie", r->getCategory());
 			xml.addChildAttrib("LastUpdate", Util::toString(r->getLastUpdate()));
 			xml.addChildAttrib("AutoSearchFilter", r->getAutoSearchFilter());
 			xml.addChildAttrib("DownloadTarget", r->getDownloadTarget());
@@ -138,7 +156,7 @@ void RSSManager::savedatabase() {
 				xml.addChildAttrib("title", r.getTitle());
 				xml.addChildAttrib("link", r.getLink());
 				xml.addChildAttrib("pubdate", r.getPubDate());
-				xml.addChildAttrib("categorie", r.getCategorie());
+				xml.addChildAttrib("categorie", r.getCategory());
 				xml.addChildAttrib("dateadded", Util::toString(r.getDateAdded()));
 			}
 		}
@@ -158,13 +176,11 @@ void RSSManager::savedatabase() {
 }
 
 void RSSManager::downloadComplete(const string& aUrl) {
-	Lock l(cs);
-	auto x = find_if(rssList.begin(), rssList.end(), [aUrl](const RSSPtr& a) { return aUrl == a->getUrl(); });
-	if (x == rssList.end())
+	auto feed = getFeedByUrl(aUrl);
+	if (!feed)
 		return;
 
-	auto rss = *x;
-	auto& conn = rss->rssDownload;
+	auto& conn = feed->rssDownload;
 	ScopedFunctor([&conn] { conn.reset(); });
 
 	if (conn->buf.empty()) {
@@ -206,6 +222,7 @@ void RSSManager::downloadComplete(const string& aUrl) {
 					string date;
 					if(xml.findChild("title")){
 						titletmp = xml.getChildData();
+						Lock l(cs);
 						if(rssData.find(titletmp) == rssData.end())
 							newdata = true;
 					}
@@ -219,8 +236,9 @@ void RSSManager::downloadComplete(const string& aUrl) {
 						date = xml.getChildData();
 
 					if(newdata) {
-							auto data = RSSdata(titletmp, link, date, rss->getCategories());
-							matchAutosearch(rss, data);
+							Lock l(cs);
+							auto data = RSSdata(titletmp, link, date, feed->getCategory());
+							matchAutosearch(feed, data);
 							rssData.emplace(titletmp, data);
 
 							fire(RSSManagerListener::RSSAdded(), data);
@@ -240,12 +258,12 @@ void RSSManager::downloadComplete(const string& aUrl) {
 }
 
 void RSSManager::matchAutosearchFilters(const string& aCategory) {
-	Lock l(cs);
-	auto r = find_if(rssList.begin(), rssList.end(), [aCategory](const RSSPtr& a) { return aCategory == a->getCategories(); });
-	if (r != rssList.end()) {
+	auto feed = getFeedByCategory(aCategory);
+	if (feed) {
+		Lock l(cs);
 		for (auto data : rssData | map_values) {
-			if (data.getCategorie() == aCategory)
-				matchAutosearch(*r, data);
+			if (data.getCategory() == aCategory)
+				matchAutosearch(feed, data);
 		}
 	}
 }
@@ -268,28 +286,29 @@ void RSSManager::matchAutosearch(const RSSPtr& aRss, const RSSdata& aData) {
 }
 
 void RSSManager::downloadFeed(const string& aCategory) {
-	Lock l(cs);
-	auto r = find_if(rssList.begin(), rssList.end(), [aCategory](const RSSPtr& a) { return aCategory == a->getCategories(); });
-	if (r != rssList.end())
-		downloadFeed(*r);
+	auto feed = getFeedByCategory(aCategory);
+	if (feed)
+		downloadFeed(feed);
 }
 
 void RSSManager::updateFeedItem(const string& aUrl, const string& aCategory, const string& aAutoSearchFilter, const string& aDownloadTarget, int aUpdateInterval) {
-	Lock l(cs);
-	auto r = find_if(rssList.begin(), rssList.end(), [aUrl](const RSSPtr& a) { return aUrl == a->getUrl(); });
-	if (r != rssList.end()) {
-		auto rss = *r;
-		rss->setCategories(aCategory);
-		rss->setAutoSearchFilter(aAutoSearchFilter);
-		rss->setDownloadTarget(aDownloadTarget);
-		rss->setUpdateInterval(aUpdateInterval);
-		fire(RSSManagerListener::RSSFeedUpdated(), rss);
-	}
-	else {
-		auto rss = std::make_shared<RSS>(aUrl, aCategory, 0, aAutoSearchFilter, aDownloadTarget, aUpdateInterval);
-		rssList.push_back(rss);
-
-		fire(RSSManagerListener::RSSFeedUpdated(), rss);
+	auto feed = getFeedByUrl(aUrl);
+	if (feed) {
+		{
+			Lock l(cs);
+			feed->setCategory(aCategory);
+			feed->setAutoSearchFilter(aAutoSearchFilter);
+			feed->setDownloadTarget(aDownloadTarget);
+			feed->setUpdateInterval(aUpdateInterval);
+		}
+		fire(RSSManagerListener::RSSFeedChanged(), feed);
+	} else {
+		{
+			Lock l(cs);
+			feed = std::make_shared<RSS>(aUrl, aCategory, 0, aAutoSearchFilter, aDownloadTarget, aUpdateInterval);
+			rssList.push_back(feed);
+		}
+		fire(RSSManagerListener::RSSFeedAdded(), feed);
 	}
 }
 
@@ -306,6 +325,8 @@ void RSSManager::downloadFeed(const RSSPtr& aRss) {
 	aRss->setLastUpdate(GET_TIME());
 	aRss->rssDownload.reset(new HttpDownload(aRss->getUrl(),
 		[this, url] { downloadComplete(url); }, false));
+
+	fire(RSSManagerListener::RSSFeedUpdated(), aRss);
 	LogManager::getInstance()->message("updating the " + aRss->getUrl(), LogMessage::SEV_INFO);
 }
 
