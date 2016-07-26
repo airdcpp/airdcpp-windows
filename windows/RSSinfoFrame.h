@@ -141,8 +141,8 @@ private:
 
 	class ItemInfo {
 	public:
-		ItemInfo(const RSSdata& aRssData) : item(aRssData) {
-			setDupe(AirUtil::checkDirDupe(aRssData.getTitle(), 0));
+		ItemInfo(const RSSDataPtr& aRssData) : item(aRssData) {
+			setDupe(AirUtil::checkDirDupe(item->getTitle(), 0));
 		}
 		~ItemInfo() { }
 
@@ -154,7 +154,7 @@ private:
 
 		int getImageIndex() const { return -1; }
 
-		RSSdata item;
+		RSSDataPtr item;
 		GETSET(DupeType, dupe, Dupe);
 	};
 
@@ -190,7 +190,7 @@ private:
 
 	bool show(const ItemInfo* aItem);
 
-	void onItemAdded(const RSSdata& aData);
+	void onItemAdded(const RSSDataPtr& aData);
 
 	void addCategory(const string& aCategory);
 	
@@ -218,7 +218,7 @@ private:
 
 	CButton ctrlConfig;
 
-	virtual void on(RSSManagerListener::RSSAdded, const RSSdata& aData) noexcept;
+	virtual void on(RSSManagerListener::RSSAdded, const RSSDataPtr& aData) noexcept;
 	virtual void on(RSSManagerListener::RSSRemoved, const string& fname) noexcept;
 	virtual void on(RSSManagerListener::RSSFeedChanged, const RSSPtr& aRss) noexcept;
 	virtual void on(RSSManagerListener::RSSFeedAdded, const RSSPtr& aRss) noexcept;
