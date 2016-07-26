@@ -20,7 +20,7 @@ public:
 
 	RSS(const string& aUrl, const string& aCategory, time_t aLastUpdate, const string& aAutoSearchFilter, 
 		const string& aDownloadTarget, int aUpdateInterval = 30) noexcept :
-		url(aUrl), categories(aCategory), lastUpdate(aLastUpdate), autoSearchFilter(aAutoSearchFilter), 
+		url(aUrl), category(aCategory), lastUpdate(aLastUpdate), autoSearchFilter(aAutoSearchFilter), 
 			downloadTarget(aDownloadTarget), updateInterval(aUpdateInterval)
 	{
 		if (aUpdateInterval < 10)
@@ -32,7 +32,7 @@ public:
 	~RSS(){};
 
 	GETSET(string, url, Url);
-	GETSET(string, categories, Categories);
+	GETSET(string, category, Category);
 	GETSET(time_t, lastUpdate, LastUpdate);
 
 	GETSET(string, autoSearchFilter, AutoSearchFilter);
@@ -53,15 +53,15 @@ class RSSdata {
 public:
 	RSSdata(string aTitle, string aLink) noexcept : title(aTitle), link(aLink), pubDate(Util::emptyString) {
 	}
-	RSSdata(string aTitle, string aLink, string aPubDate, string aCategorie, time_t aDateAdded = GET_TIME()) noexcept :
-		title(aTitle), link(aLink), pubDate(aPubDate), categorie(aCategorie), dateAdded(aDateAdded)  {
+	RSSdata(string aTitle, string aLink, string aPubDate, string aCategory, time_t aDateAdded = GET_TIME()) noexcept :
+		title(aTitle), link(aLink), pubDate(aPubDate), category(aCategory), dateAdded(aDateAdded)  {
 	}
 	virtual ~RSSdata(){};
 	
 	GETSET(string, title, Title);
 	GETSET(string, link, Link);
 	GETSET(string, pubDate, PubDate);
-	GETSET(string, categorie, Categorie);
+	GETSET(string, category, Category);
 	GETSET(time_t, dateAdded, DateAdded); //For prune old entries in database...
 
 
@@ -74,11 +74,15 @@ public:
 
 	typedef X<0> RSSAdded;
 	typedef X<1> RSSRemoved;
-	typedef X<1> RSSFeedUpdated;
+	typedef X<2> RSSFeedUpdated;
+	typedef X<3> RSSFeedChanged;
+	typedef X<4> RSSFeedAdded;
 
 	virtual void on(RSSAdded, const RSSdata&) noexcept { }
 	virtual void on(RSSRemoved, const string&) noexcept { }
 	virtual void on(RSSFeedUpdated, const RSSPtr&) noexcept { }
+	virtual void on(RSSFeedChanged, const RSSPtr&) noexcept { }
+	virtual void on(RSSFeedAdded, const RSSPtr&) noexcept { }
 
 };
 
@@ -103,6 +107,10 @@ public:
 	//remove RSS feed data by title
 	void removeRSSData(const string& aTitle);
 	void matchAutosearchFilters(const string& aCateGory);
+	//Find feed by category
+	RSSPtr getFeedByCategory(const string& aCategory);
+	//Find feed by url
+	RSSPtr getFeedByUrl(const string& aUrl);
 
 
 	deque<RSSPtr> getRss(){

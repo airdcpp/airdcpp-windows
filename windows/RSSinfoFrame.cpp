@@ -169,10 +169,10 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 
 			OMenu menu;
 			menu.CreatePopupMenu();
-			menu.appendItem(TSTRING(UPDATE), [=] { RSSManager::getInstance()->downloadFeed(category); });
-			menu.appendItem(TSTRING(MATCH_AUTOSEARCH), [=] { RSSManager::getInstance()->matchAutosearchFilters(category);  });
+			menu.appendItem(TSTRING(UPDATE), [=] { RSSManager::getInstance()->downloadFeed(category); }, OMenu::FLAG_THREADED);
+			menu.appendItem(TSTRING(MATCH_AUTOSEARCH), [=] { RSSManager::getInstance()->matchAutosearchFilters(category);  }, OMenu::FLAG_THREADED);
 			menu.appendSeparator();
-			menu.appendItem(TSTRING(CLEAR), [=] { RSSManager::getInstance()->clearRSSData(category);  });
+			menu.appendItem(TSTRING(CLEAR), [=] { RSSManager::getInstance()->clearRSSData(category);  }, OMenu::FLAG_THREADED);
 			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 			return TRUE;
 		}
@@ -255,11 +255,37 @@ void RssInfoFrame::on(RSSRemoved, const string& fname) noexcept {
 	});
 }
 
-void RssInfoFrame::on(RSSFeedUpdated, const RSSPtr& aRss) noexcept {
+void RssInfoFrame::on(RSSFeedAdded, const RSSPtr& aRss) noexcept {
 	addGuiTask([=] {
-		auto cg = categories.find(aRss->getCategories());
-		if (cg == categories.end())
-			categories.emplace(aRss->getCategories(), addTreeItem(treeParent, 0, Text::toT(aRss->getCategories()))); 
+		addCategory(aRss->getCategory());
+	});
+}
+
+void RssInfoFrame::on(RSSFeedChanged, const RSSPtr& aRss) noexcept {
+	addGuiTask([=] {
+		//auto cg = categories.find(aRss->getCategory());
+		//if (cg != categories.end())
+			//return;
+
+		string oldSel = getSelectedCategory();
+
+		ctrlTree.SetRedraw(FALSE);
+		categories.clear();
+		ctrlTree.DeleteAllItems();
+		FillTree();
+		for (auto data : ItemInfos | map_values)
+			addCategory(data->item.getCategory());
+
+		if (!oldSel.empty()) {
+			for (auto i : categories) {
+				if (oldSel == i.first) {
+					ctrlTree.SelectItem(i.second);
+					break;
+				}
+			}
+		}
+
+		ctrlTree.SetRedraw(TRUE);
 	});
 }
 
@@ -269,17 +295,21 @@ void RssInfoFrame::onItemAdded(const RSSdata& aData) {
 	if (show(newItem))
 		ctrlRss.list.insertItem(newItem, 0);
 	
-	auto cg = categories.find(aData.getCategorie());
-	if (cg == categories.end())
-		categories.emplace(aData.getCategorie(), addTreeItem(treeParent, 0, Text::toT(aData.getCategorie())));
+	addCategory(aData.getCategory());
 
+}
+
+void RssInfoFrame::addCategory(const string& aCategory) {
+	auto cg = categories.find(aCategory);
+	if (cg == categories.end())
+		categories.emplace(aCategory, addTreeItem(treeParent, 0, Text::toT(aCategory)));
 }
 
 bool RssInfoFrame::show(const ItemInfo* aItem) {
 
 	auto treeFilter = [&]() -> bool {
 		if (curItem != treeParent) {
-			auto c = categories.find(aItem->item.getCategorie());
+			auto c = categories.find(aItem->item.getCategory());
 			return curItem == c->second;
 		}
 		return true;
@@ -338,7 +368,7 @@ const tstring RssInfoFrame::ItemInfo::getText(int col) const {
 	case COLUMN_FILE: return Text::toT(item.getTitle());
 	case COLUMN_LINK: return Text::toT(item.getLink());
 	case COLUMN_DATE: return Text::toT(item.getPubDate());
-	case COLUMN_CATEGORIE: return Text::toT(item.getCategorie());
+	case COLUMN_CATEGORIE: return Text::toT(item.getCategory());
 
 	default: return Util::emptyStringT;
 	}

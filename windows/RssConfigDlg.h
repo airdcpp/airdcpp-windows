@@ -75,19 +75,19 @@ private:
 	public:
 
 		RSSConfigItem(const RSSPtr& aRss) noexcept :
-			url(aRss->getUrl()), categories(aRss->getCategories()), autoSearchFilter(aRss->getAutoSearchFilter()), 
+			url(aRss->getUrl()), category(aRss->getCategory()), autoSearchFilter(aRss->getAutoSearchFilter()), 
 			downloadTarget(aRss->getDownloadTarget()), updateInterval(aRss->getUpdateInterval())
 		{
 		}
 		RSSConfigItem(const string& aUrl, const string& aCategory, const string& aAutoSearchFilter, 
 			const string& aDownloadTarget, int aUpdateInterval) noexcept :
-			url(aUrl), categories(aCategory), autoSearchFilter(aAutoSearchFilter), 
+			url(aUrl), category(aCategory), autoSearchFilter(aAutoSearchFilter), 
 			downloadTarget(aDownloadTarget), updateInterval(aUpdateInterval) {}
 
 		~RSSConfigItem() {};
 
 		GETSET(string, url, Url);
-		GETSET(string, categories, Categories);
+		GETSET(string, category, Category);
 		GETSET(string, autoSearchFilter, AutoSearchFilter);
 		GETSET(string, downloadTarget, DownloadTarget);
 		GETSET(int, updateInterval, UpdateInterval);
@@ -103,7 +103,7 @@ private:
 
 	ExListViewCtrl ctrlRssList;
 
-	deque<RSSConfigItem> rssList;
+	vector<RSSConfigItem> rssList;
 	StringList removeList;
 
 	void fillList();

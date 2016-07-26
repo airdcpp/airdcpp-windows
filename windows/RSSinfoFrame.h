@@ -177,10 +177,11 @@ private:
 		//Fill the tree with RSS categories
 		auto lst = RSSManager::getInstance()->getRss();
 		for (auto i : lst){
-			categories.emplace(i->getCategories(), addTreeItem(treeParent, 0, Text::toT(i->getCategories())));
+			addCategory(i->getCategory());
 		}
 		ctrlTree.Expand(treeParent);
 	}
+
 
 	TaskQueue tasks;
 	void addGuiTask(std::function<void()> f) {
@@ -190,6 +191,8 @@ private:
 	bool show(const ItemInfo* aItem);
 
 	void onItemAdded(const RSSdata& aData);
+
+	void addCategory(const string& aCategory);
 	
 	void handleOpenFolder();
 
@@ -217,7 +220,8 @@ private:
 
 	virtual void on(RSSManagerListener::RSSAdded, const RSSdata& aData) noexcept;
 	virtual void on(RSSManagerListener::RSSRemoved, const string& fname) noexcept;
-	virtual void on(RSSManagerListener::RSSFeedUpdated, const RSSPtr& aRss) noexcept;
+	virtual void on(RSSManagerListener::RSSFeedChanged, const RSSPtr& aRss) noexcept;
+	virtual void on(RSSManagerListener::RSSFeedAdded, const RSSPtr& aRss) noexcept;
 };
 
 #endif //
