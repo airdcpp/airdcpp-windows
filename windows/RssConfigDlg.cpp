@@ -74,10 +74,12 @@ LRESULT RssDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	::EnableWindow(GetDlgItem(IDC_RSS_REMOVE), false);
 	::EnableWindow(GetDlgItem(IDC_RSS_UPDATE), false);
 
-	auto tmpList = RSSManager::getInstance()->getRss();
-	for (auto i : tmpList)
-		rssList.emplace_back(i);
-
+	{
+		Lock l(RSSManager::getInstance()->getCS());
+		auto tmpList = RSSManager::getInstance()->getRss();
+		for (auto i : tmpList)
+			rssList.emplace_back(i);
+	}
 	loading = false;
 	fillList();
 

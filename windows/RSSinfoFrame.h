@@ -171,18 +171,6 @@ private:
 		return ctrlTree.InsertItem(&tvis);
 	}
 
-	void FillTree() {
-		treeParent = addTreeItem(TVI_ROOT, 0, TSTRING(RSSINFO));
-
-		//Fill the tree with RSS categories
-		auto lst = RSSManager::getInstance()->getRss();
-		for (auto i : lst){
-			addCategory(i);
-		}
-		ctrlTree.Expand(treeParent);
-	}
-
-
 	TaskQueue tasks;
 	void addGuiTask(std::function<void()> f) {
 		tasks.add(0, unique_ptr<AsyncTask>(new AsyncTask(f)));
@@ -190,7 +178,6 @@ private:
 
 	bool show(const ItemInfo* aItem);
 
-	void addData(const RSSPtr& aFeed);
 	void clearData(const RSSPtr& aFeed);
 
 	void onItemAdded(const RSSDataPtr& aData);

@@ -41,13 +41,17 @@ public:
 
 	bool operator==(const RSSPtr& rhs) const { return url == rhs->getUrl(); }
 
-	unique_ptr<HttpDownload> rssDownload;
+	unordered_map<string, RSSDataPtr>& getFeedData() { return rssData; }
 
-	unordered_map<string, RSSDataPtr> rssData;
+	unique_ptr<HttpDownload> rssDownload;
 
 	bool allowUpdate() {
 		return (getLastUpdate() + getUpdateInterval() * 60) < GET_TIME();
 	}
+
+private:
+
+	unordered_map<string, RSSDataPtr> rssData;
 
 };
 
@@ -107,8 +111,8 @@ public:
 	//Find feed by url
 	RSSPtr getFeedByUrl(const string& aUrl);
 
-
-	deque<RSSPtr> getRss(){
+	CriticalSection& getCS() { return cs; }
+	deque<RSSPtr>& getRss(){
 		Lock l(cs);
 		return rssList;
 	}
