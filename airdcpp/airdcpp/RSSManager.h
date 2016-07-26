@@ -29,7 +29,7 @@ public:
 		rssDownload.reset();
 	}
 
-	~RSS(){};
+	~RSS() noexcept {};
 
 	GETSET(string, url, Url);
 	GETSET(string, category, Category);
@@ -49,14 +49,14 @@ public:
 
 };
 
-class RSSdata {
+class RSSData: public intrusive_ptr_base<RSSData>, private boost::noncopyable {
 public:
-	RSSdata(string aTitle, string aLink) noexcept : title(aTitle), link(aLink), pubDate(Util::emptyString) {
+	RSSData(string aTitle, string aLink) noexcept : title(aTitle), link(aLink), pubDate(Util::emptyString) {
 	}
-	RSSdata(string aTitle, string aLink, string aPubDate, string aCategory, time_t aDateAdded = GET_TIME()) noexcept :
+	RSSData(string aTitle, string aLink, string aPubDate, string aCategory, time_t aDateAdded = GET_TIME()) noexcept :
 		title(aTitle), link(aLink), pubDate(aPubDate), category(aCategory), dateAdded(aDateAdded)  {
 	}
-	virtual ~RSSdata(){};
+	~RSSData() noexcept { };
 	
 	GETSET(string, title, Title);
 	GETSET(string, link, Link);
@@ -78,7 +78,7 @@ public:
 	typedef X<3> RSSFeedChanged;
 	typedef X<4> RSSFeedAdded;
 
-	virtual void on(RSSAdded, const RSSdata&) noexcept { }
+	virtual void on(RSSAdded, const RSSDataPtr&) noexcept { }
 	virtual void on(RSSRemoved, const string&) noexcept { }
 	virtual void on(RSSFeedUpdated, const RSSPtr&) noexcept { }
 	virtual void on(RSSFeedChanged, const RSSPtr&) noexcept { }
@@ -97,7 +97,7 @@ public:
 	void load();
 	void save();
 
-	unordered_map<string, RSSdata> getRssData(){
+	unordered_map<string, RSSDataPtr> getRssData(){
 		Lock l(cs);
 		return rssData;
 	}
@@ -134,10 +134,10 @@ private:
 	RSSPtr getUpdateItem();
 	void downloadFeed(const RSSPtr& aRss);
 	
-	void matchAutosearch(const RSSPtr& aRss, const RSSdata& aData);
+	void matchAutosearch(const RSSPtr& aRss, const RSSDataPtr& aData);
 
 	deque<RSSPtr> rssList;
-	unordered_map<string, RSSdata> rssData;
+	unordered_map<string, RSSDataPtr> rssData;
 	
 	mutable CriticalSection cs;
 

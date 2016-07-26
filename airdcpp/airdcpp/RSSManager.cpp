@@ -20,9 +20,9 @@ RSSManager::~RSSManager()
 
 void RSSManager::clearRSSData(const string& aCategory) {
 	Lock l(cs);
-	rssData.erase(boost::remove_if(rssData | map_values, [&](RSSdata& d) {
-		if (compare(d.getCategory(), aCategory) == 0) {
-			fire(RSSManagerListener::RSSRemoved(), d.getTitle());
+	rssData.erase(boost::remove_if(rssData | map_values, [&](RSSDataPtr& d) {
+		if (compare(d->getCategory(), aCategory) == 0) {
+			fire(RSSManagerListener::RSSRemoved(), d->getTitle());
 			return true;
 		}
 		return false;
@@ -96,13 +96,13 @@ void RSSManager::loaddatabase() {
 			xml.stepIn();
 			while(xml.findChild("item")) {
 				
-				auto rd = RSSdata(xml.getChildAttrib("title"),
+				auto rd = new RSSData(xml.getChildAttrib("title"),
 					xml.getChildAttrib("link"),
 					xml.getChildAttrib("pubdate"),
 					xml.getChildAttrib("categorie"),
 					Util::toInt64(xml.getChildAttrib("dateadded")));
 
-				rssData.emplace(rd.getTitle(), rd);
+				rssData.emplace(rd->getTitle(), rd);
 			}
 			xml.stepOut();
 		}
@@ -151,13 +151,13 @@ void RSSManager::savedatabase() {
 		xml.stepIn();
 		for(auto r : rssData | map_values) {
 			//Don't save more than 3 days old entries... Todo: setting?
-			if ((r.getDateAdded() + 3 * 24 * 60 * 60) > GET_TIME()) {
+			if ((r->getDateAdded() + 3 * 24 * 60 * 60) > GET_TIME()) {
 				xml.addTag("item");
-				xml.addChildAttrib("title", r.getTitle());
-				xml.addChildAttrib("link", r.getLink());
-				xml.addChildAttrib("pubdate", r.getPubDate());
-				xml.addChildAttrib("categorie", r.getCategory());
-				xml.addChildAttrib("dateadded", Util::toString(r.getDateAdded()));
+				xml.addChildAttrib("title", r->getTitle());
+				xml.addChildAttrib("link", r->getLink());
+				xml.addChildAttrib("pubdate", r->getPubDate());
+				xml.addChildAttrib("categorie", r->getCategory());
+				xml.addChildAttrib("dateadded", Util::toString(r->getDateAdded()));
 			}
 		}
 		xml.stepOut();
@@ -237,7 +237,7 @@ void RSSManager::downloadComplete(const string& aUrl) {
 
 					if(newdata) {
 							Lock l(cs);
-							auto data = RSSdata(titletmp, link, date, feed->getCategory());
+							RSSDataPtr data = new RSSData(titletmp, link, date, feed->getCategory());
 							matchAutosearch(feed, data);
 							rssData.emplace(titletmp, data);
 
@@ -262,17 +262,17 @@ void RSSManager::matchAutosearchFilters(const string& aCategory) {
 	if (feed) {
 		Lock l(cs);
 		for (auto data : rssData | map_values) {
-			if (data.getCategory() == aCategory)
+			if (data->getCategory() == aCategory)
 				matchAutosearch(feed, data);
 		}
 	}
 }
 
-void RSSManager::matchAutosearch(const RSSPtr& aRss, const RSSdata& aData) {
+void RSSManager::matchAutosearch(const RSSPtr& aRss, const RSSDataPtr& aData) {
 	
-	if (AirUtil::stringRegexMatch(aRss->getAutoSearchFilter(), aData.getTitle())) {
+	if (AirUtil::stringRegexMatch(aRss->getAutoSearchFilter(), aData->getTitle())) {
 		AutoSearchPtr as = new AutoSearch;
-		as->setSearchString(aData.getTitle());
+		as->setSearchString(aData->getTitle());
 		as->setCheckAlreadyQueued(true);
 		as->setCheckAlreadyShared(true);
 		as->setRemove(true);

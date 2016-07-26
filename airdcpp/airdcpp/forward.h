@@ -186,6 +186,8 @@ typedef std::unordered_map<int, AutoSearchPtr> AutoSearchMap;
 
 class RSS;
 typedef std::shared_ptr<RSS> RSSPtr;
+class RSSData;
+typedef boost::intrusive_ptr<RSSData> RSSDataPtr;
 
 } // namespace dcpp
 
