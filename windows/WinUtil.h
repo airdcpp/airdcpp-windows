@@ -161,7 +161,7 @@ static const toolbarButton ToolbarButtons[] = {
 	{ IDC_AWAY, 19, IDI_AWAY, true, ResourceManager::AWAY },
 	//separator
 	{ ID_FILE_SETTINGS, 20, IDI_SETTINGS, false, ResourceManager::MENU_SETTINGS },
-	{ IDC_RSSFRAME, 21, IDI_RSS, true, ResourceManager::RSSINFO },
+	{ IDC_RSSFRAME, 21, IDI_RSS, true, ResourceManager::RSS_FEEDS },
 };
 
 

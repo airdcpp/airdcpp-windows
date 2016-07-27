@@ -111,7 +111,7 @@ public:
 
 	CriticalSection& getCS() { return cs; }
 
-	deque<RSSPtr>& getRss(){
+	unordered_set<RSSPtr>& getRss(){
 		return rssList;
 	}
 
@@ -132,7 +132,7 @@ private:
 	
 	void matchAutosearch(const RSSPtr& aFeed, const RSSDataPtr& aData);
 
-	deque<RSSPtr> rssList;
+	unordered_set<RSSPtr> rssList;
 	
 	mutable CriticalSection cs;
 

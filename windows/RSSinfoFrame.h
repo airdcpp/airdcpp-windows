@@ -34,7 +34,7 @@
 
 #define RSS_STATUS_MSG_MAP 11
 
-class RssInfoFrame : public MDITabChildWindowImpl<RssInfoFrame>, public StaticFrame<RssInfoFrame, ResourceManager::RSSINFO, IDC_RSSFRAME>, 
+class RssInfoFrame : public MDITabChildWindowImpl<RssInfoFrame>, public StaticFrame<RssInfoFrame, ResourceManager::RSS_FEEDS, IDC_RSSFRAME>, 
 	private RSSManagerListener, public CSplitterImpl<RssInfoFrame>,  private Async<RssInfoFrame>
 {
 public:
@@ -135,7 +135,7 @@ private:
 		COLUMN_FILE = COLUMN_FIRST,
 		COLUMN_LINK,
 		COLUMN_DATE,
-		COLUMN_CATEGORIE,
+		COLUMN_CATEGORY,
 		COLUMN_LAST
 	};
 

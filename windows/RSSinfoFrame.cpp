@@ -24,9 +24,9 @@
 #include <airdcpp/File.h>
 #include <airdcpp/LogManager.h>
 
-int RssInfoFrame::columnIndexes[] = { COLUMN_FILE, COLUMN_LINK, COLUMN_DATE, COLUMN_CATEGORIE };
+int RssInfoFrame::columnIndexes[] = { COLUMN_FILE, COLUMN_LINK, COLUMN_DATE, COLUMN_CATEGORY };
 int RssInfoFrame::columnSizes[] = { 800, 350, 150, 150};
-static ResourceManager::Strings columnNames[] = { ResourceManager::TITLE, ResourceManager::LINK, ResourceManager::DATE, ResourceManager::CATEGORIES };
+static ResourceManager::Strings columnNames[] = { ResourceManager::TITLE, ResourceManager::LINK, ResourceManager::DATE, ResourceManager::CATEGORY };
 static SettingsManager::BoolSetting filterSettings[] = { SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST };
 static ColumnType columnTypes[] = { COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT };
 
@@ -68,7 +68,7 @@ LRESULT RssInfoFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	SetSplitterPanes(ctrlTree.m_hWnd, ctrlRss.m_hWnd);
 	m_nProportionalPos = 1000;
 
-	treeParent = addTreeItem(TVI_ROOT, 0, TSTRING(RSSINFO));
+	treeParent = addTreeItem(TVI_ROOT, 0, TSTRING(RSS_FEEDS));
 	ctrlTree.SelectItem(treeParent);
 	{
 		Lock l(RSSManager::getInstance()->getCS());
@@ -384,7 +384,7 @@ const tstring RssInfoFrame::ItemInfo::getText(int col) const {
 	case COLUMN_FILE: return Text::toT(item->getTitle());
 	case COLUMN_LINK: return Text::toT(item->getLink());
 	case COLUMN_DATE: return Text::toT(item->getPubDate());
-	case COLUMN_CATEGORIE: return Text::toT(item->getFeed()->getCategory());
+	case COLUMN_CATEGORY: return Text::toT(item->getFeed()->getCategory());
 
 	default: return Util::emptyStringT;
 	}

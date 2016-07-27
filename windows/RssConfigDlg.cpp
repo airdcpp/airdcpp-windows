@@ -46,7 +46,7 @@ LRESULT RssDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	::SetWindowText(GetDlgItem(IDC_RSS_URL_TEXT), CTSTRING(LINK));
 
 	ATTACH(IDC_RSS_NAME, ctrlCategorie);
-	::SetWindowText(GetDlgItem(IDC_RSS_NAME_TEXT), CTSTRING(CATEGORIES));
+	::SetWindowText(GetDlgItem(IDC_RSS_NAME_TEXT), CTSTRING(CATEGORY));
 
 	ATTACH(IDC_RSS_AUTOSEARCH, ctrlAutoSearchPattern);
 	::SetWindowText(GetDlgItem(IDC_RSS_AUTOSEARCH_TEXT), CTSTRING(RSS_MATCH_PATTERN));

@@ -153,7 +153,7 @@ void RSSManager::matchAutosearch(const RSSPtr& aFeed, const RSSDataPtr& aData) {
 }
 
 void RSSManager::updateFeedItem(RSSPtr& aFeed, const string& aUrl, const string& aCategory, const string& aAutoSearchFilter, const string& aDownloadTarget, int aUpdateInterval) {
-	auto r = find_if(rssList.begin(), rssList.end(), [aFeed](const RSSPtr& a) { return aFeed == a; });
+	auto r = rssList.find(aFeed);
 	if (r != rssList.end())
 	{
 		{
@@ -168,7 +168,7 @@ void RSSManager::updateFeedItem(RSSPtr& aFeed, const string& aUrl, const string&
 	} else {
 		{
 			Lock l(cs);
-			rssList.push_back(aFeed);
+			rssList.emplace(aFeed);
 		}
 		fire(RSSManagerListener::RSSFeedAdded(), aFeed);
 	}
@@ -176,7 +176,7 @@ void RSSManager::updateFeedItem(RSSPtr& aFeed, const string& aUrl, const string&
 
 void RSSManager::removeFeedItem(const RSSPtr& aFeed) {
 	Lock l(cs);
-	rssList.erase(remove_if(rssList.begin(), rssList.end(), [&](const RSSPtr& a) { return aFeed == a; }), rssList.end());
+	rssList.erase(aFeed);
 	fire(RSSManagerListener::RSSFeedRemoved(), aFeed);
 }
 
@@ -230,7 +230,7 @@ void RSSManager::load() {
 			xml.stepIn();
 			loaddatabase(feed, xml);
 			xml.stepOut();
-			rssList.push_back(feed);
+			rssList.emplace(feed);
 		}
 		xml.stepOut();
 	}

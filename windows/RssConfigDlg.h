@@ -75,9 +75,9 @@ private:
 	public:
 
 		//Bah.. this is complex, maybe just update changes directly without Cancel button?
-		RSSConfigItem(const RSSPtr& aRss) noexcept :
-			url(aRss->getUrl()), category(aRss->getCategory()), autoSearchFilter(aRss->getAutoSearchFilter()),
-			downloadTarget(aRss->getDownloadTarget()), updateInterval(aRss->getUpdateInterval()), feedItem(aRss)
+		RSSConfigItem(const RSSPtr& aFeed) noexcept :
+			url(aFeed->getUrl()), category(aFeed->getCategory()), autoSearchFilter(aFeed->getAutoSearchFilter()),
+			downloadTarget(aFeed->getDownloadTarget()), updateInterval(aFeed->getUpdateInterval()), feedItem(aFeed)
 		{
 		}
 		~RSSConfigItem() {};
