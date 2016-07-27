@@ -453,7 +453,7 @@ void DownloadManager::endData(UserConnection* aSource) {
 	dcassert(d);
 
 	if(d->getType() == Transfer::TYPE_TREE) {
-		d->getOutput()->flush();
+		d->getOutput()->flushBuffers(false);
 
 		int64_t bl = 1024;
 		while(bl * (int64_t)d->getTigerTree().getLeaves().size() < d->getTigerTree().getFileSize())
@@ -477,7 +477,7 @@ void DownloadManager::endData(UserConnection* aSource) {
 		aSource->setSpeed(static_cast<int64_t>(d->getAverageSpeed()));
 		aSource->updateChunkSize(d->getTigerTree().getBlockSize(), d->getSegmentSize(), GET_TICK() - d->getStart());
 		
-		dcdebug("Download finished: %s, size " I64_FMT ", downloaded " I64_FMT "\n", d->getPath().c_str(), d->getSegmentSize(), d->getPos());
+		dcdebug("Download finished: %s, size " I64_FMT ", downloaded " I64_FMT " in " U64_FMT " ms\n", d->getPath().c_str(), d->getSegmentSize(), d->getPos(), GET_TICK() - d->getStart());
 	}
 
 	removeDownload(d);
@@ -545,10 +545,11 @@ void DownloadManager::removeConnection(UserConnectionPtr aConn) {
 }
 
 void DownloadManager::removeDownload(Download* d) {
+	// Write the leftover bytes into file
 	if(d->getOutput()) {
 		if(d->getActual() > 0) {
 			try {
-				d->getOutput()->flush();
+				d->getOutput()->flushBuffers(false);
 			} catch(const Exception&) {
 			}
 		}

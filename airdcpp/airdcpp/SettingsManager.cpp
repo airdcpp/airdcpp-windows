@@ -31,6 +31,8 @@
 #include "Util.h"
 #include "version.h"
 
+#include <thread>
+
 namespace dcpp {
 
 #define CONFIG_NAME "DCPlusPlus.xml"
@@ -278,7 +280,7 @@ const string SettingsManager::settingTags[] =
 	"RemoveExpiredAs", "AdcLogGroupCID", "ShareFollowSymlinks", "ScanMonitoredFolders", "FinishedNoHash", "ConfirmFileDeletions", "UseDefaultCertPaths", "StartupRefresh", "FLReportDupeFiles",
 	"FilterFLShared", "FilterFLQueued", "FilterFLInversed", "FilterFLTop", "FilterFLPartialDupes", "FilterFLResetChange", "FilterSearchShared", "FilterSearchQueued", "FilterSearchInversed", "FilterSearchTop", "FilterSearchPartialDupes", "FilterSearchResetChange",
 	"SearchAschOnlyMan", "UseUploadBundles", "CloseMinimize", "LogIgnored", "UsersFilterIgnore", "NfoExternal", "SingleClickTray", "QueueShowFinished", "RemoveFinishedBundles", "LogCRCOk",
-	"FilterQueueInverse", "FilterQueueTop", "FilterQueueReset", "AlwaysCCPM", "LogRemovedBundles",
+	"FilterQueueInverse", "FilterQueueTop", "FilterQueueReset", "AlwaysCCPM",
 	"SENTRY",
 	// Int64
 	"TotalUpload", "TotalDownload",
@@ -908,7 +910,6 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(REMOVE_FINISHED_BUNDLES, false);
 	setDefault(LOG_CRC_OK, false);
 	setDefault(ALWAYS_CCPM, false);
-	setDefault(LOG_REMOVED_BUNDLES, false);
 	setDefault(AUTOSEARCHFRAME_VISIBLE, "1,1,1,1,1,1,1,1,1,1,1");
 
 
@@ -1401,10 +1402,11 @@ bool SettingsManager::saveSettingFile(SimpleXML& aXML, Util::Paths aPath, const 
 	string fname = Util::getPath(aPath) + aFileName;
 
 	try {
-		File f(fname + ".tmp", File::WRITE, File::CREATE | File::TRUNCATE);
-		f.write(SimpleXML::utf8Header);
-		f.write(aXML.toXML());
-		f.close();
+		{
+			File f(fname + ".tmp", File::WRITE, File::CREATE | File::TRUNCATE);
+			f.write(SimpleXML::utf8Header);
+			f.write(aXML.toXML());
+		}
 
 		//dont overWrite with empty file.
 		if (File::getSize(fname + ".tmp") > 0) {

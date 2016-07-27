@@ -196,16 +196,14 @@ LONG handleCrash(unsigned long aCode, const string& aError, PCONTEXT aContext)
 		STACKTRACE(f, aContext);
 
 		f.write(LIT("\r\n"));
-
-		f.close();
-
-		auto msg = "AirDC++ just encountered a fatal bug and details have been written to " + exceptionFilePath + "\n\nYou can upload this file at http://www.airdcpp.net to help us find out what happened. Go there now?";
-		if (::MessageBox(WinUtil::mainWnd, Text::toT(msg).c_str(), _T("AirDC++ has crashed"), MB_YESNO | MB_ICONERROR) == IDYES) {
-			WinUtil::openLink(_T("http://crash.airdcpp.net"));
-		}
 	} catch (const FileException& e) {
 		auto msg = "Crash details could not be written to " + exceptionFilePath + " (" + e.what() + "). Ensure that the directory is writable.";
 		::MessageBox(WinUtil::mainWnd, Text::toT(msg).c_str(), _T("AirDC++ has crashed"), MB_OK);
+	}
+
+	auto msg = "AirDC++ just encountered a fatal bug and details have been written to " + exceptionFilePath + "\n\nYou can upload this file at http://www.airdcpp.net to help us find out what happened. Go there now?";
+	if (::MessageBox(WinUtil::mainWnd, Text::toT(msg).c_str(), _T("AirDC++ has crashed"), MB_YESNO | MB_ICONERROR) == IDYES) {
+		WinUtil::openLink(_T("http://crash.airdcpp.net"));
 	}
 
 #ifndef _DEBUG

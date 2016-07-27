@@ -2489,10 +2489,12 @@ void QueueManager::loadQueue(function<void (float)> progressF) noexcept {
 		auto path = Util::getPath(Util::PATH_USER_CONFIG) + "Queue.xml";
 		Util::migrate(path);
 
-		File f(path, File::READ, File::OPEN, File::BUFFER_SEQUENTIAL);
-		QueueLoader loader;
-		SimpleXMLReader(&loader).parse(f);
-		f.close();
+		{
+			File f(path, File::READ, File::OPEN, File::BUFFER_SEQUENTIAL);
+			QueueLoader loader;
+			SimpleXMLReader(&loader).parse(f);
+		}
+
 		File::copyFile(Util::getPath(Util::PATH_USER_CONFIG) + "Queue.xml", Util::getPath(Util::PATH_USER_CONFIG) + "Queue.xml.bak");
 		File::deleteFile(Util::getPath(Util::PATH_USER_CONFIG) + "Queue.xml");
 	} catch(const Exception&) {
@@ -3758,8 +3760,9 @@ void QueueManager::removeBundle(BundlePtr& aBundle, bool aRemoveFinishedFiles) n
 		AirUtil::removeDirectoryIfEmpty(aBundle->getTarget(), 10, !aRemoveFinishedFiles);
 	}
 
-	if(SETTING(LOG_REMOVED_BUNDLES))
+	if (!isFinished) {
 		LogManager::getInstance()->message(STRING_F(BUNDLE_X_REMOVED, aBundle->getName()), LogMessage::SEV_INFO);
+	}
 
 	for (const auto& aUser : sources)
 		fire(QueueManagerListener::SourceFilesUpdated(), aUser);

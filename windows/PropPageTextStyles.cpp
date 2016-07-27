@@ -706,8 +706,6 @@ void PropPageTextStyles::SaveTheme(const string& path, bool backup) {
 		BufferedOutputStream<false> f(&ff);
 		f.write(SimpleXML::utf8Header);
 		xml.toXML(&f);
-		f.flush();
-		ff.close();
 	} catch(const FileException&) {
 		// ...
 	}
