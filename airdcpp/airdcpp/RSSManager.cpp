@@ -141,56 +141,56 @@ void RSSManager::matchAutosearchFilters(const RSSPtr& aFeed) {
 	}
 }
 
-void RSSManager::matchAutosearch(const RSSPtr& aRss, const RSSDataPtr& aData) {
+void RSSManager::matchAutosearch(const RSSPtr& aFeed, const RSSDataPtr& aData) {
 	
-	if (AirUtil::stringRegexMatch(aRss->getAutoSearchFilter(), aData->getTitle())) {
+	if (AirUtil::stringRegexMatch(aFeed->getAutoSearchFilter(), aData->getTitle())) {
 
 		auto targetType = TargetUtil::TargetType::TARGET_PATH;
 		AutoSearchManager::getInstance()->addAutoSearch(aData->getTitle(), 
-			aRss->getDownloadTarget(), targetType, true, AutoSearch::RSS_DOWNLOAD, true);
+			aFeed->getDownloadTarget(), targetType, true, AutoSearch::RSS_DOWNLOAD, true);
 
 	}
 }
 
-void RSSManager::updateFeedItem(const string& aUrl, const string& aCategory, const string& aAutoSearchFilter, const string& aDownloadTarget, int aUpdateInterval) {
-	auto feed = getFeedByUrl(aUrl);
-	if (feed) {
+void RSSManager::updateFeedItem(RSSPtr& aFeed, const string& aUrl, const string& aCategory, const string& aAutoSearchFilter, const string& aDownloadTarget, int aUpdateInterval) {
+	auto r = find_if(rssList.begin(), rssList.end(), [aFeed](const RSSPtr& a) { return aFeed == a; });
+	if (r != rssList.end())
+	{
 		{
 			Lock l(cs);
-			feed->setCategory(aCategory);
-			feed->setAutoSearchFilter(aAutoSearchFilter);
-			feed->setDownloadTarget(aDownloadTarget);
-			feed->setUpdateInterval(aUpdateInterval);
+			aFeed->setUrl(aUrl);
+			aFeed->setCategory(aCategory);
+			aFeed->setAutoSearchFilter(aAutoSearchFilter);
+			aFeed->setDownloadTarget(aDownloadTarget);
+			aFeed->setUpdateInterval(aUpdateInterval);
 		}
-		fire(RSSManagerListener::RSSFeedChanged(), feed);
+		fire(RSSManagerListener::RSSFeedChanged(), aFeed);
 	} else {
 		{
 			Lock l(cs);
-			feed = std::make_shared<RSS>(aUrl, aCategory, 0, aAutoSearchFilter, aDownloadTarget, aUpdateInterval);
-			rssList.push_back(feed);
+			rssList.push_back(aFeed);
 		}
-		fire(RSSManagerListener::RSSFeedAdded(), feed);
+		fire(RSSManagerListener::RSSFeedAdded(), aFeed);
 	}
 }
 
-void RSSManager::removeFeedItem(const string& aUrl) {
+void RSSManager::removeFeedItem(const RSSPtr& aFeed) {
 	Lock l(cs);
-	auto feed = getFeedByUrl(aUrl);
-	rssList.erase(remove_if(rssList.begin(), rssList.end(), [&](const RSSPtr& a) { return aUrl == a->getUrl(); }), rssList.end());
-	fire(RSSManagerListener::RSSFeedRemoved(), feed);
+	rssList.erase(remove_if(rssList.begin(), rssList.end(), [&](const RSSPtr& a) { return aFeed == a; }), rssList.end());
+	fire(RSSManagerListener::RSSFeedRemoved(), aFeed);
 }
 
-void RSSManager::downloadFeed(const RSSPtr& aRss) {
-	if (!aRss)
+void RSSManager::downloadFeed(const RSSPtr& aFeed) {
+	if (!aFeed)
 		return;
 
-	string url = aRss->getUrl();
-	aRss->setLastUpdate(GET_TIME());
-	aRss->rssDownload.reset(new HttpDownload(aRss->getUrl(),
+	string url = aFeed->getUrl();
+	aFeed->setLastUpdate(GET_TIME());
+	aFeed->rssDownload.reset(new HttpDownload(aFeed->getUrl(),
 		[this, url] { downloadComplete(url); }, false));
 
-	fire(RSSManagerListener::RSSFeedUpdated(), aRss);
-	LogManager::getInstance()->message("updating the " + aRss->getUrl(), LogMessage::SEV_INFO);
+	fire(RSSManagerListener::RSSFeedUpdated(), aFeed);
+	LogManager::getInstance()->message("updating the " + aFeed->getUrl(), LogMessage::SEV_INFO);
 }
 
 RSSPtr RSSManager::getUpdateItem() {

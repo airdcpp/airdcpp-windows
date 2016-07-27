@@ -39,7 +39,7 @@ public:
 	GETSET(string, downloadTarget, DownloadTarget);
 	GETSET(int, updateInterval, UpdateInterval);
 
-	bool operator==(const RSSPtr& rhs) const { return url == rhs->getUrl(); }
+	//bool operator==(const RSSPtr& rhs) const { return url == rhs->getUrl(); }
 
 	unordered_map<string, RSSDataPtr>& getFeedData() { return rssData; }
 
@@ -117,9 +117,9 @@ public:
 
 	void downloadFeed(const RSSPtr& aFeed);
 
-	void updateFeedItem(const string& aUrl, const string& aCategory, const string& aAutoSearchFilter, const string& aDownloadTarget, int aUpdateInterval);
+	void updateFeedItem(RSSPtr& aFeed, const string& aUrl, const string& aCategory, const string& aAutoSearchFilter, const string& aDownloadTarget, int aUpdateInterval);
 
-	void removeFeedItem(const string& aUrl);
+	void removeFeedItem(const RSSPtr& aFeed);
 
 private:
 
@@ -130,7 +130,7 @@ private:
 
 	RSSPtr getUpdateItem();
 	
-	void matchAutosearch(const RSSPtr& aRss, const RSSDataPtr& aData);
+	void matchAutosearch(const RSSPtr& aFeed, const RSSDataPtr& aData);
 
 	deque<RSSPtr> rssList;
 	

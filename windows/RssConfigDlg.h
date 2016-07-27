@@ -49,7 +49,7 @@ public:
 
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& bHandled);
 	LRESULT onIntervalChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
 	LRESULT onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -74,16 +74,12 @@ private:
 	class RSSConfigItem {
 	public:
 
+		//Bah.. this is complex, maybe just update changes directly without Cancel button?
 		RSSConfigItem(const RSSPtr& aRss) noexcept :
-			url(aRss->getUrl()), category(aRss->getCategory()), autoSearchFilter(aRss->getAutoSearchFilter()), 
-			downloadTarget(aRss->getDownloadTarget()), updateInterval(aRss->getUpdateInterval())
+			url(aRss->getUrl()), category(aRss->getCategory()), autoSearchFilter(aRss->getAutoSearchFilter()),
+			downloadTarget(aRss->getDownloadTarget()), updateInterval(aRss->getUpdateInterval()), feedItem(aRss)
 		{
 		}
-		RSSConfigItem(const string& aUrl, const string& aCategory, const string& aAutoSearchFilter, 
-			const string& aDownloadTarget, int aUpdateInterval) noexcept :
-			url(aUrl), category(aCategory), autoSearchFilter(aAutoSearchFilter), 
-			downloadTarget(aDownloadTarget), updateInterval(aUpdateInterval) {}
-
 		~RSSConfigItem() {};
 
 		GETSET(string, url, Url);
@@ -91,6 +87,8 @@ private:
 		GETSET(string, autoSearchFilter, AutoSearchFilter);
 		GETSET(string, downloadTarget, DownloadTarget);
 		GETSET(int, updateInterval, UpdateInterval);
+
+		RSSPtr feedItem;
 	};
 
 
@@ -104,13 +102,15 @@ private:
 	ExListViewCtrl ctrlRssList;
 
 	vector<RSSConfigItem> rssList;
-	StringList removeList;
+	vector<RSSPtr> removeList;
 
 	void fillList();
 
 	void remove();
-	bool add();
-	void update();
+	void add();
+	bool update();
+
+	bool validateSettings(const RSSPtr& aFeed);
 
 	bool loading;
 

@@ -141,7 +141,7 @@ private:
 
 	class ItemInfo {
 	public:
-		ItemInfo(const RSSDataPtr& aRssData) : item(aRssData) {
+		ItemInfo(const RSSDataPtr& aFeedData) : item(aFeedData) {
 			setDupe(AirUtil::checkDirDupe(item->getTitle(), 0));
 		}
 		~ItemInfo() { }
@@ -209,10 +209,10 @@ private:
 	CButton ctrlConfig;
 
 	virtual void on(RSSManagerListener::RSSDataAdded, const RSSDataPtr& aData) noexcept;
-	virtual void on(RSSManagerListener::RSSFeedRemoved, const RSSPtr& aRss) noexcept;
-	virtual void on(RSSManagerListener::RSSFeedChanged, const RSSPtr& aRss) noexcept;
-	virtual void on(RSSManagerListener::RSSFeedAdded, const RSSPtr& aRss) noexcept;
-	virtual void on(RSSManagerListener::RSSDataCleared, const RSSPtr& aRss) noexcept;
+	virtual void on(RSSManagerListener::RSSFeedRemoved, const RSSPtr& aFeed) noexcept;
+	virtual void on(RSSManagerListener::RSSFeedChanged, const RSSPtr& aFeed) noexcept;
+	virtual void on(RSSManagerListener::RSSFeedAdded, const RSSPtr& aFeed) noexcept;
+	virtual void on(RSSManagerListener::RSSDataCleared, const RSSPtr& aFeed) noexcept;
 };
 
 #endif //

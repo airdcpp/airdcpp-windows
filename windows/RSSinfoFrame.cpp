@@ -258,11 +258,11 @@ void RssInfoFrame::on(RSSDataCleared, const RSSPtr& aFeed) noexcept {
 
 }
 
-void RssInfoFrame::on(RSSFeedRemoved, const RSSPtr& aRss) noexcept {
+void RssInfoFrame::on(RSSFeedRemoved, const RSSPtr& aFeed) noexcept {
 	addGuiTask([=] {
 		ctrlTree.SetRedraw(FALSE);
-		clearData(aRss);
-		auto j = categories.find(aRss);
+		clearData(aFeed);
+		auto j = categories.find(aFeed);
 		auto ht = j->second;
 		categories.erase(j);
 		ctrlTree.DeleteItem(ht);
@@ -270,19 +270,19 @@ void RssInfoFrame::on(RSSFeedRemoved, const RSSPtr& aRss) noexcept {
 	});
 }
 
-void RssInfoFrame::on(RSSFeedAdded, const RSSPtr& aRss) noexcept {
+void RssInfoFrame::on(RSSFeedAdded, const RSSPtr& aFeed) noexcept {
 	addGuiTask([=] {
-		addCategory(aRss);
+		addCategory(aFeed);
 	});
 }
 
-void RssInfoFrame::on(RSSFeedChanged, const RSSPtr& aRss) noexcept {
+void RssInfoFrame::on(RSSFeedChanged, const RSSPtr& aFeed) noexcept {
 	addGuiTask([=] {
 
 		ctrlTree.SetRedraw(FALSE);
-		auto j = categories.find(aRss);
+		auto j = categories.find(aFeed);
 		auto ht = j->second;
-		ctrlTree.SetItemText(ht, Text::toT(aRss->getCategory()).c_str());
+		ctrlTree.SetItemText(ht, Text::toT(aFeed->getCategory()).c_str());
 
 		ctrlTree.SetRedraw(TRUE);
 		reloadList();
