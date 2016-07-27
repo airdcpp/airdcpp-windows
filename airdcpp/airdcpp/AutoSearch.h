@@ -113,7 +113,7 @@ public:
 	GETSET(ActionType, action, Action);
 	GETSET(string, fileType, FileType);
 	GETSET(TargetUtil::TargetType, tType, TargetType);
-	GETSET(time_t, expireTime, ExpireTime);
+	IGETSET(time_t, expireTime, ExpireTime, 0);
 
 	GETSET(ProfileToken, token, Token);
 	GETSET(BundleList, bundles, Bundles);

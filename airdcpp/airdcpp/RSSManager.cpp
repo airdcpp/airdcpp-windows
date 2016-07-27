@@ -144,17 +144,11 @@ void RSSManager::matchAutosearchFilters(const RSSPtr& aFeed) {
 void RSSManager::matchAutosearch(const RSSPtr& aRss, const RSSDataPtr& aData) {
 	
 	if (AirUtil::stringRegexMatch(aRss->getAutoSearchFilter(), aData->getTitle())) {
-		AutoSearchPtr as = new AutoSearch;
-		as->setSearchString(aData->getTitle());
-		as->setCheckAlreadyQueued(true);
-		as->setCheckAlreadyShared(true);
-		as->setRemove(true);
-		as->setAction(AutoSearch::ActionType::ACTION_DOWNLOAD);
-		as->setTargetType(TargetUtil::TargetType::TARGET_PATH);
-		as->setMethod(StringMatch::Method::EXACT);
-		as->setFileType(SEARCH_TYPE_DIRECTORY);
-		as->setTarget(aRss->getDownloadTarget());
-		AutoSearchManager::getInstance()->addAutoSearch(as, true);
+
+		auto targetType = TargetUtil::TargetType::TARGET_PATH;
+		AutoSearchManager::getInstance()->addAutoSearch(aData->getTitle(), 
+			aRss->getDownloadTarget(), targetType, true, AutoSearch::RSS_DOWNLOAD, true);
+
 	}
 }
 
