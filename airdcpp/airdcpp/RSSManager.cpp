@@ -11,6 +11,9 @@
 
 namespace dcpp {
 
+#define CONFIG_NAME "RSS.xml"
+#define CONFIG_DIR Util::PATH_USER_CONFIG
+
 RSSManager::RSSManager() { }
 
 RSSManager::~RSSManager()
@@ -217,38 +220,32 @@ void RSSManager::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 }
 
 void RSSManager::load() {
-	try {
-		SimpleXML xml;
-		string tmpf = getConfigFile();
-		xml.fromXML(File(tmpf, File::READ, File::OPEN).read());
 
-		if (xml.findChild("RSS")) {
+	SimpleXML xml;
+	SettingsManager::loadSettingFile(xml, CONFIG_DIR, CONFIG_NAME);
+	if (xml.findChild("RSS")) {
+		xml.stepIn();
+
+		while (xml.findChild("Settings")) {
+			auto feed = std::make_shared<RSS>(xml.getChildAttrib("Url"),
+				xml.getChildAttrib("Categorie"),
+				Util::toInt64(xml.getChildAttrib("LastUpdate")),
+				xml.getChildAttrib("AutoSearchFilter"),
+				xml.getChildAttrib("DownloadTarget"),
+				xml.getIntChildAttrib("UpdateInterval"));
 			xml.stepIn();
-
-			while (xml.findChild("Settings")) {
-				auto feed = std::make_shared<RSS>(xml.getChildAttrib("Url"),
-					xml.getChildAttrib("Categorie"),
-					Util::toInt64(xml.getChildAttrib("LastUpdate")),
-					xml.getChildAttrib("AutoSearchFilter"),
-					xml.getChildAttrib("DownloadTarget"),
-					xml.getIntChildAttrib("UpdateInterval"));
-
-				loaddatabase(feed, xml);
-				rssList.push_back(feed);
-			}
+			loaddatabase(feed, xml);
 			xml.stepOut();
+			rssList.push_back(feed);
 		}
+		xml.stepOut();
 	}
-	catch (const Exception& e) {
-		dcdebug("RSSManager::load: %s\n", e.getError().c_str());
-	}
-
+	
 	TimerManager::getInstance()->addListener(this);
 	nextUpdate = GET_TICK() + 10 * 1000; //start after 10 seconds
 }
 
 void RSSManager::loaddatabase(const RSSPtr& aFeed, SimpleXML& aXml) {
-	aXml.stepIn();
 	if (aXml.findChild("Data")) {
 		aXml.stepIn();
 		while (aXml.findChild("item")) {
@@ -263,42 +260,30 @@ void RSSManager::loaddatabase(const RSSPtr& aFeed, SimpleXML& aXml) {
 		}
 		aXml.stepOut();
 	}
-	aXml.stepOut();
 }
 
 void RSSManager::save() {
-	try {
-		SimpleXML xml;
-		xml.addTag("RSS");
+	SimpleXML xml;
+	xml.addTag("RSS");
+	xml.stepIn();
+	for (auto r : rssList) {
+		xml.addTag("Settings");
+		xml.addChildAttrib("Url", r->getUrl());
+		xml.addChildAttrib("Categorie", r->getCategory());
+		xml.addChildAttrib("LastUpdate", Util::toString(r->getLastUpdate()));
+		xml.addChildAttrib("AutoSearchFilter", r->getAutoSearchFilter());
+		xml.addChildAttrib("DownloadTarget", r->getDownloadTarget());
+		xml.addChildAttrib("UpdateInterval", Util::toString(r->getUpdateInterval()));
 		xml.stepIn();
-		for (auto r : rssList) {
-			xml.addTag("Settings");
-			xml.addChildAttrib("Url", r->getUrl());
-			xml.addChildAttrib("Categorie", r->getCategory());
-			xml.addChildAttrib("LastUpdate", Util::toString(r->getLastUpdate()));
-			xml.addChildAttrib("AutoSearchFilter", r->getAutoSearchFilter());
-			xml.addChildAttrib("DownloadTarget", r->getDownloadTarget());
-			xml.addChildAttrib("UpdateInterval", Util::toString(r->getUpdateInterval()));
-			savedatabase(r, xml);
-		}
+		savedatabase(r, xml);
 		xml.stepOut();
-
-		string fname = getConfigFile();
-		File f(fname + ".tmp", File::WRITE, File::CREATE | File::TRUNCATE);
-		f.write(SimpleXML::utf8Header);
-		f.write(xml.toXML());
-		f.close();
-		File::deleteFile(fname);
-		File::renameFile(fname + ".tmp", fname);
 	}
-	catch (const Exception& e) {
-		dcdebug("RSSManager::save: %s\n", e.getError().c_str());
-	}
+	xml.stepOut();
 
+	SettingsManager::saveSettingFile(xml, CONFIG_DIR, CONFIG_NAME);
 }
 
 void RSSManager::savedatabase(const RSSPtr& aFeed, SimpleXML& aXml) {
-	aXml.stepIn();
 	aXml.addTag("Data");
 	aXml.stepIn();
 	for (auto r : aFeed->getFeedData() | map_values) {
@@ -311,7 +296,6 @@ void RSSManager::savedatabase(const RSSPtr& aFeed, SimpleXML& aXml) {
 			aXml.addChildAttrib("dateadded", Util::toString(r->getDateAdded()));
 		}
 	}
-	aXml.stepOut();
 	aXml.stepOut();
 }
 

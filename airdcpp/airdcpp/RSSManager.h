@@ -97,23 +97,21 @@ class RSSManager : public Speaker<RSSManagerListener>, public Singleton<RSSManag
 {
 public:
 	friend class Singleton<RSSManager>;	
-	RSSManager(void);
-	~RSSManager(void);
+	RSSManager();
+	~RSSManager();
 
 	void load();
 	void save();
 
-	//Clears RSS feed data by category / name.
 	void clearRSSData(const RSSPtr& aFeed);
 	void matchAutosearchFilters(const RSSPtr& aFeed);
-	//Find feed by category
+	
 	RSSPtr getFeedByCategory(const string& aCategory);
-	//Find feed by url
 	RSSPtr getFeedByUrl(const string& aUrl);
 
 	CriticalSection& getCS() { return cs; }
+
 	deque<RSSPtr>& getRss(){
-		Lock l(cs);
 		return rssList;
 	}
 
@@ -139,7 +137,6 @@ private:
 	mutable CriticalSection cs;
 
 	void downloadComplete(const string& aUrl);
-	string getConfigFile() { return Util::getPath(Util::PATH_USER_CONFIG) + "RSS.xml"; }
 	// TimerManagerListener
 	void on(TimerManagerListener::Second, uint64_t tick) noexcept;
 
