@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airgit\AirDC.rc
+// Used by N:\projects\airgit\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -198,8 +198,8 @@
 #define IDD_CHANGE_PASS                 360
 #define IDI_SHUTDOWN                    361
 #define IDD_CHATFILTERITEM_DLG          361
-#define IDI_FOLLOW                      363
-#define IDD_AS_DIALOG                   363
+#define IDI_FOLLOW                      362
+#define IDD_TABBED_DIALOG               363
 #define IDI_USERS                       364
 #define IDD_DIALOG6                     364
 #define IDD_WEB_SHORTCUTS_PAGE          364

@@ -360,9 +360,6 @@
     <ClCompile Include="windows\ListViewColours.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\AutosearchOptionsDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="windows\AutoSearchGeneralPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -385,6 +382,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="windows\RssConfigDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="windows\TabbedDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -794,9 +794,6 @@
     <ClInclude Include="windows\ListViewColours.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="windows\AutosearchOptionsDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="windows\AutosearchGeneralPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -825,6 +822,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\RssConfigDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\TabbedDialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

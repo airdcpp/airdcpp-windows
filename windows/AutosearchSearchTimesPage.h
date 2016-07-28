@@ -28,16 +28,17 @@
 #include <airdcpp/Util.h>
 #include <airdcpp/AutoSearchManager.h>
 #include "AutoSearchItemSettings.h"
+#include "TabbedDialog.h"
 
 
-class AutosearchSearchTimesPage : public CDialogImpl<AutosearchSearchTimesPage> {
+class AutosearchSearchTimesPage : public CDialogImpl<AutosearchSearchTimesPage>, public TabPage {
 public:
 
 	AutoSearchItemSettings& options;
 
 	enum { IDD = IDD_AS_SEARCH_TIMES };
 
-	AutosearchSearchTimesPage(AutoSearchItemSettings& aSettings);
+	AutosearchSearchTimesPage(AutoSearchItemSettings& aSettings, const string& aName);
 	~AutosearchSearchTimesPage();
 
 	BEGIN_MSG_MAP_EX(AutosearchSearchTimesPage)
@@ -50,6 +51,11 @@ public:
 
 
 	bool write();
+	string getName() { return name; }
+	void moveWindow(CRect& rc) { this->MoveWindow(rc); }
+	void create(HWND aParent) { this->Create(aParent); }
+	void showWindow(BOOL aShow) { this->ShowWindow(aShow); }
+
 	LRESULT onCheckTimes(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onTimeChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
 
@@ -71,6 +77,7 @@ private:
 	CUpDownCtrl updown;
 	CDateTimePickerCtrl ctrlSearchStart, ctrlSearchEnd;
 
+	string name;
 	void fixControls();
 	bool loading;
 

@@ -27,16 +27,16 @@
 #include <airdcpp/Util.h>
 #include <airdcpp/AutoSearchManager.h>
 #include "AutoSearchItemSettings.h"
+#include "TabbedDialog.h"
 
-
-class AutoSearchAdvancedPage : public CDialogImpl<AutoSearchAdvancedPage> {
+class AutoSearchAdvancedPage : public CDialogImpl<AutoSearchAdvancedPage>, public TabPage {
 public:
 
 	AutoSearchItemSettings& options;
 
 	enum { IDD = IDD_AS_ADVANCED };
 
-	AutoSearchAdvancedPage(AutoSearchItemSettings& aSettings);
+	AutoSearchAdvancedPage(AutoSearchItemSettings& aSettings, const string& aName);
 	~AutoSearchAdvancedPage();
 
 	BEGIN_MSG_MAP_EX(AutoSearchAdvancedPage)
@@ -49,6 +49,11 @@ public:
 
 
 	bool write();
+	string getName() { return name; }
+	void moveWindow(CRect& rc) { this->MoveWindow(rc);  }
+	void create(HWND aParent) { this->Create(aParent); }
+	void showWindow(BOOL aShow) { this->ShowWindow(aShow); }
+
 	LRESULT onCheckMatcher(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onExactMatch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
@@ -70,6 +75,7 @@ private:
 	CComboBox cMatcherType;
 	CComboBox cExcludedWords;
 
+	string name;
 	void fixControls();
 	bool loading;
 

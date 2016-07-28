@@ -19,7 +19,7 @@
 #ifndef SEARCH_AUTOSEARCH_PARAMS_H
 #define SEARCH_AUTOSEARCH_PARAMS_H
 
-#include "AutoSearchOptionsDlg.h"
+#include "TabbedDialog.h"
 
 class AutoSearchParams : public CDialogImpl<AutoSearchParams>
 {

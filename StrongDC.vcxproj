@@ -503,7 +503,7 @@
     <ClCompile Include="windows\AutoSearchFrm.cpp" />
     <ClCompile Include="windows\AutoSearchGeneralPage.cpp" />
     <ClCompile Include="windows\AutoSearchGroupDlg.cpp" />
-    <ClCompile Include="windows\AutosearchOptionsDlg.cpp" />
+    <ClCompile Include="windows\TabbedDialog.cpp" />
     <ClCompile Include="windows\AutosearchSearchTimesPage.cpp" />
     <ClCompile Include="windows\BrowseDlg.cpp" />
     <ClCompile Include="windows\ChatCommands.cpp" />
@@ -640,7 +640,7 @@
     <ClInclude Include="windows\AutosearchGeneralPage.h" />
     <ClInclude Include="windows\AutoSearchGroupDlg.h" />
     <ClInclude Include="windows\AutoSearchItemSettings.h" />
-    <ClInclude Include="windows\AutosearchOptionsDlg.h" />
+    <ClInclude Include="windows\TabbedDialog.h" />
     <ClInclude Include="windows\AutosearchParams.h" />
     <ClInclude Include="windows\AutosearchSearchTimesPage.h" />
     <ClInclude Include="windows\BrowseDlg.h" />

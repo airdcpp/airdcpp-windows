@@ -27,7 +27,7 @@
 	updown.SetRange32(y, z); \
 	updown.Detach();
 
-AutosearchSearchTimesPage::AutosearchSearchTimesPage(AutoSearchItemSettings& aSettings) : options(aSettings), loading(true) {}
+AutosearchSearchTimesPage::AutosearchSearchTimesPage(AutoSearchItemSettings& aSettings, const string& aName) : options(aSettings), name(aName), loading(true) {}
 
 AutosearchSearchTimesPage::~AutosearchSearchTimesPage() { }
 

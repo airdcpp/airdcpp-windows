@@ -26,7 +26,7 @@
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
-AutoSearchGeneralPage::AutoSearchGeneralPage(AutoSearchItemSettings& aSettings) : options(aSettings), loading(true) {}
+AutoSearchGeneralPage::AutoSearchGeneralPage(AutoSearchItemSettings& aSettings, const string& aName) : options(aSettings), name(aName), loading(true) {}
 
 AutoSearchGeneralPage::~AutoSearchGeneralPage() { }
 

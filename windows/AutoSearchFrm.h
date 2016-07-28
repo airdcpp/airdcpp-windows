@@ -27,7 +27,7 @@
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"
 
-#include "AutoSearchOptionsDlg.h"
+#include "TabbedDialog.h"
 #include "AutoSearchItemSettings.h"
 #include "Async.h"
 
@@ -163,6 +163,8 @@ private:
 	bool closed;
 	bool loading;
 	std::unordered_map<ProfileToken, ItemInfo> itemInfos;
+
+	void createPages(TabbedDialog& dlg, AutoSearchItemSettings& options);
 
 
 	virtual void on(AutoSearchManagerListener::RemoveItem, const AutoSearchPtr& aToken) noexcept;

@@ -24,6 +24,10 @@
 #include "ResourceLoader.h"
 #include "SearchFrm.h"
 #include "AutoSearchGroupDlg.h"
+#include "AutosearchGeneralPage.h"
+#include "AutosearchAdvancedPage.h"
+#include "AutosearchSearchTimesPage.h"
+#include "AutoSearchItemSettings.h"
 
 #include <airdcpp/SettingsManager.h>
 
@@ -381,10 +385,12 @@ LRESULT AutoSearchFrame::onChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		int sel = ctrlAutoSearch.GetNextItem(-1, LVNI_SELECTED);
 		auto ii = ctrlAutoSearch.getItemData(sel);
 
-		AutoSearchOptionsDlg dlg(ii->asItem);
+		TabbedDialog dlg;
+		AutoSearchItemSettings options(ii->asItem, false);
+		createPages(dlg, options);
 
 		if (dlg.DoModal() == IDOK) {
-			dlg.options.setItemProperties(ii->asItem, dlg.options.searchString);
+			options.setItemProperties(ii->asItem, options.searchString);
 			AutoSearchManager::getInstance()->updateAutoSearch(ii->asItem);
 		}
 	}
@@ -457,23 +463,37 @@ LRESULT AutoSearchFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandle
 }
 
 LRESULT AutoSearchFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	AutoSearchOptionsDlg dlg;
+	TabbedDialog dlg;
+	AutoSearchItemSettings options;
+	createPages(dlg, options);
 
 	if (dlg.DoModal() == IDOK) {
-		SettingsManager::getInstance()->set(SettingsManager::LAST_AS_FILETYPE, dlg.options.fileTypeStr);
-		addFromDialog(dlg.options);
+		SettingsManager::getInstance()->set(SettingsManager::LAST_AS_FILETYPE, options.fileTypeStr);
+		addFromDialog(options);
 	}
 	return 0;
+}
+
+void AutoSearchFrame::createPages(TabbedDialog& dlg, AutoSearchItemSettings& options) {
+	dlg.addPage<AutoSearchGeneralPage>(shared_ptr<AutoSearchGeneralPage>(new AutoSearchGeneralPage(options, STRING(SETTINGS_GENERAL))));
+	dlg.addPage<AutosearchSearchTimesPage>(shared_ptr<AutosearchSearchTimesPage>(new AutosearchSearchTimesPage(options, STRING(SEARCH_TIMES))));
+	dlg.addPage<AutoSearchAdvancedPage>(shared_ptr<AutoSearchAdvancedPage>(new AutoSearchAdvancedPage(options, STRING(SETTINGS_ADVANCED))));
+	
 }
 
 LRESULT AutoSearchFrame::onDuplicate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if (ctrlAutoSearch.GetSelectedCount() == 1) {
 		int sel = ctrlAutoSearch.GetNextItem(-1, LVNI_SELECTED);
 		AutoSearchPtr as = ctrlAutoSearch.getItemData(sel)->asItem;
-		AutoSearchOptionsDlg dlg(as, true);
+
+
+		TabbedDialog dlg;
+
+		AutoSearchItemSettings options(as, true);
+		createPages(dlg, options);
 
 		if (dlg.DoModal() == IDOK) {
-			addFromDialog(dlg.options);
+			addFromDialog(options);
 		}
 	}
 	return 0;
