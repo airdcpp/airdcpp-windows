@@ -51,12 +51,12 @@ LRESULT RssFilterPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	ctrlRssFilterList.InsertColumn(0, CTSTRING(PATTERN), LVCFMT_LEFT, (rc.Width() / 3), 0);
 	ctrlRssFilterList.InsertColumn(1, CTSTRING(PATH), LVCFMT_LEFT, (rc.Width() / 3 * 2), 0);
 
-	::SetWindowText(GetDlgItem(IDC_RSS_REMOVE), CTSTRING(REMOVE));
-	::SetWindowText(GetDlgItem(IDC_RSS_ADD), CTSTRING(ADD));
-	::SetWindowText(GetDlgItem(IDC_RSS_UPDATE), CTSTRING(UPDATE));
+	::SetWindowText(GetDlgItem(IDC_FILTER_REMOVE), CTSTRING(REMOVE));
+	::SetWindowText(GetDlgItem(IDC_FILTER_ADD), CTSTRING(ADD));
+	::SetWindowText(GetDlgItem(IDC_FILTER_UPDATE), CTSTRING(UPDATE));
 
-	::EnableWindow(GetDlgItem(IDC_RSS_REMOVE), false);
-	::EnableWindow(GetDlgItem(IDC_RSS_UPDATE), false);
+	::EnableWindow(GetDlgItem(IDC_FILTER_REMOVE), false);
+	::EnableWindow(GetDlgItem(IDC_FILTER_UPDATE), false);
 
 	{
 		Lock l(RSSManager::getInstance()->getCS());
@@ -79,8 +79,8 @@ LRESULT RssFilterPage::onSelectionChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*
 		return 0;
 
 	NM_LISTVIEW* lv = (NM_LISTVIEW*)pnmh;
-	::EnableWindow(GetDlgItem(IDC_RSS_REMOVE), (lv->uNewState & LVIS_FOCUSED));
-	::EnableWindow(GetDlgItem(IDC_RSS_UPDATE), (lv->uNewState & LVIS_FOCUSED));
+	::EnableWindow(GetDlgItem(IDC_FILTER_REMOVE), (lv->uNewState & LVIS_FOCUSED));
+	::EnableWindow(GetDlgItem(IDC_FILTER_UPDATE), (lv->uNewState & LVIS_FOCUSED));
 	loading = true;
 	if (ctrlRssFilterList.GetSelectedCount() == 1) {
 		auto item = filterList.begin();
