@@ -22,7 +22,7 @@
 #include "TabbedDialog.h"
 #include <airdcpp/Text.h>
 
-TabbedDialog::TabbedDialog() { }
+TabbedDialog::TabbedDialog(const string& aTitle) : wTitle(aTitle) { }
 
 TabbedDialog::~TabbedDialog() { 
 }
@@ -39,7 +39,7 @@ LRESULT TabbedDialog::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	cTab.SetCurSel(0);
 
 	CenterWindow(GetParent());
-	SetWindowText(CTSTRING(AUTOSEARCH_DLG));
+	SetWindowText(Text::toT(wTitle).c_str());
 	showPage(0);
 
 	return TRUE;

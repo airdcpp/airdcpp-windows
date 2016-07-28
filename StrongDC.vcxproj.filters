@@ -381,10 +381,13 @@
     <ClCompile Include="windows\RSSinfoFrame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\RssConfigDlg.cpp">
+    <ClCompile Include="windows\TabbedDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\TabbedDialog.cpp">
+    <ClCompile Include="windows\RssFilterPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="windows\RssFeedsPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -821,10 +824,13 @@
     <ClInclude Include="windows\RSSinfoFrame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="windows\RssConfigDlg.h">
+    <ClInclude Include="windows\TabbedDialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="windows\TabbedDialog.h">
+    <ClInclude Include="windows\RssFilterPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\RssFeedsPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

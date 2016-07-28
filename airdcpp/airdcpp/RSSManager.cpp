@@ -143,16 +143,19 @@ void RSSManager::matchAutosearchFilters(const RSSPtr& aFeed) {
 
 void RSSManager::matchAutosearch(const RSSPtr& aFeed, const RSSDataPtr& aData) {
 	
-	if (AirUtil::stringRegexMatch(aFeed->getAutoSearchFilter(), aData->getTitle())) {
+	for (auto& aF : rssFilterList) {
+		if (AirUtil::stringRegexMatch(aF.getAutoSearchFilter(), aData->getTitle())) {
 
-		auto targetType = TargetUtil::TargetType::TARGET_PATH;
-		AutoSearchManager::getInstance()->addAutoSearch(aData->getTitle(), 
-			aFeed->getDownloadTarget(), targetType, true, AutoSearch::RSS_DOWNLOAD, true);
+			auto targetType = TargetUtil::TargetType::TARGET_PATH;
+			AutoSearchManager::getInstance()->addAutoSearch(aData->getTitle(),
+				aF.getDownloadTarget(), targetType, true, AutoSearch::RSS_DOWNLOAD, true);
 
+			break; //One match is enough
+		}
 	}
 }
 
-void RSSManager::updateFeedItem(RSSPtr& aFeed, const string& aUrl, const string& aCategory, const string& aAutoSearchFilter, const string& aDownloadTarget, int aUpdateInterval) {
+void RSSManager::updateFeedItem(RSSPtr& aFeed, const string& aUrl, const string& aCategory, int aUpdateInterval) {
 	auto r = rssList.find(aFeed);
 	if (r != rssList.end())
 	{
@@ -160,8 +163,6 @@ void RSSManager::updateFeedItem(RSSPtr& aFeed, const string& aUrl, const string&
 			Lock l(cs);
 			aFeed->setUrl(aUrl);
 			aFeed->setCategory(aCategory);
-			aFeed->setAutoSearchFilter(aAutoSearchFilter);
-			aFeed->setDownloadTarget(aDownloadTarget);
 			aFeed->setUpdateInterval(aUpdateInterval);
 		}
 		fire(RSSManagerListener::RSSFeedChanged(), aFeed);
@@ -172,6 +173,11 @@ void RSSManager::updateFeedItem(RSSPtr& aFeed, const string& aUrl, const string&
 		}
 		fire(RSSManagerListener::RSSFeedAdded(), aFeed);
 	}
+}
+
+void RSSManager::updateFilterList(vector<RSSFilter>& aNewList) {
+	Lock l(cs);
+	rssFilterList = aNewList;
 }
 
 void RSSManager::removeFeedItem(const RSSPtr& aFeed) {
@@ -224,14 +230,19 @@ void RSSManager::load() {
 			auto feed = std::make_shared<RSS>(xml.getChildAttrib("Url"),
 				xml.getChildAttrib("Categorie"),
 				Util::toInt64(xml.getChildAttrib("LastUpdate")),
-				xml.getChildAttrib("AutoSearchFilter"),
-				xml.getChildAttrib("DownloadTarget"),
 				xml.getIntChildAttrib("UpdateInterval"));
 			xml.stepIn();
 			loaddatabase(feed, xml);
 			xml.stepOut();
 			rssList.emplace(feed);
 		}
+		xml.resetCurrentChild();
+		while (xml.findChild("Filter")) {
+			rssFilterList.emplace_back(
+				xml.getChildAttrib("AutoSearchFilter"),
+				xml.getChildAttrib("DownloadTarget"));
+		}
+
 		xml.stepOut();
 	}
 	
@@ -265,13 +276,18 @@ void RSSManager::save() {
 		xml.addChildAttrib("Url", r->getUrl());
 		xml.addChildAttrib("Categorie", r->getCategory());
 		xml.addChildAttrib("LastUpdate", Util::toString(r->getLastUpdate()));
-		xml.addChildAttrib("AutoSearchFilter", r->getAutoSearchFilter());
-		xml.addChildAttrib("DownloadTarget", r->getDownloadTarget());
 		xml.addChildAttrib("UpdateInterval", Util::toString(r->getUpdateInterval()));
 		xml.stepIn();
 		savedatabase(r, xml);
 		xml.stepOut();
 	}
+
+	for (auto f : rssFilterList) {
+		xml.addTag("Filter");
+		xml.addChildAttrib("AutoSearchFilter", f.getAutoSearchFilter());
+		xml.addChildAttrib("DownloadTarget", f.getDownloadTarget());
+	}
+
 	xml.stepOut();
 
 	SettingsManager::saveSettingFile(xml, CONFIG_DIR, CONFIG_NAME);

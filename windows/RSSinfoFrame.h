@@ -26,7 +26,9 @@
 #include "FlatTabCtrl.h"
 #include "WinUtil.h"
 #include "FilteredListViewCtrl.h"
-#include "RssConfigDlg.h"
+#include "RssFeedsPage.h"
+#include "TabbedDialog.h"
+#include "RssFilterPage.h"
 #include <airdcpp/RSSManager.h>
 #include <airdcpp/AirUtil.h>
 #include <airdcpp/TaskQueue.h>
@@ -74,7 +76,9 @@ public:
 	LRESULT onDoubleClickList(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onConfig(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		RssDlg dlg;
+		TabbedDialog dlg(STRING(RSS_CONFIG));
+		dlg.addPage<RssFeedsPage>(shared_ptr<RssFeedsPage>(new RssFeedsPage(STRING(RSS_FEEDS))));
+		dlg.addPage<RssFilterPage>(shared_ptr<RssFilterPage>(new RssFilterPage(STRING(FILTER))));
 		dlg.DoModal();
 		return 0;
 	}

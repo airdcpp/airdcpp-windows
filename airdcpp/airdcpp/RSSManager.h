@@ -18,10 +18,8 @@ namespace dcpp {
 class RSS : private boost::noncopyable {
 public:
 
-	RSS(const string& aUrl, const string& aCategory, time_t aLastUpdate, const string& aAutoSearchFilter, 
-		const string& aDownloadTarget, int aUpdateInterval = 30) noexcept :
-		url(aUrl), category(aCategory), lastUpdate(aLastUpdate), autoSearchFilter(aAutoSearchFilter), 
-			downloadTarget(aDownloadTarget), updateInterval(aUpdateInterval)
+	RSS(const string& aUrl, const string& aCategory, time_t aLastUpdate, int aUpdateInterval = 30) noexcept :
+		url(aUrl), category(aCategory), lastUpdate(aLastUpdate), updateInterval(aUpdateInterval)
 	{
 		if (aUpdateInterval < 10)
 			updateInterval = 10;
@@ -34,9 +32,6 @@ public:
 	GETSET(string, url, Url);
 	GETSET(string, category, Category);
 	GETSET(time_t, lastUpdate, LastUpdate);
-
-	GETSET(string, autoSearchFilter, AutoSearchFilter);
-	GETSET(string, downloadTarget, DownloadTarget);
 	GETSET(int, updateInterval, UpdateInterval);
 
 	//bool operator==(const RSSPtr& rhs) const { return url == rhs->getUrl(); }
@@ -68,6 +63,22 @@ public:
 	GETSET(RSSPtr, feed, Feed);
 	GETSET(time_t, dateAdded, DateAdded); //For prune old entries in database...
 
+
+};
+
+
+class RSSFilter {
+public:
+
+	RSSFilter(const string& aAutoSearchFilter, const string& aDownloadTarget) noexcept :
+		autoSearchFilter(aAutoSearchFilter), downloadTarget(aDownloadTarget)
+	{
+	}
+
+	~RSSFilter() noexcept {};
+
+	GETSET(string, autoSearchFilter, AutoSearchFilter);
+	GETSET(string, downloadTarget, DownloadTarget);
 
 };
 
@@ -115,9 +126,15 @@ public:
 		return rssList;
 	}
 
+	vector<RSSFilter>& getRssFilterList() {
+		return rssFilterList;
+	}
+
 	void downloadFeed(const RSSPtr& aFeed);
 
-	void updateFeedItem(RSSPtr& aFeed, const string& aUrl, const string& aCategory, const string& aAutoSearchFilter, const string& aDownloadTarget, int aUpdateInterval);
+	void updateFeedItem(RSSPtr& aFeed, const string& aUrl, const string& aCategory, int aUpdateInterval);
+	
+	void updateFilterList(vector<RSSFilter>& aNewList);
 
 	void removeFeedItem(const RSSPtr& aFeed);
 
@@ -133,6 +150,8 @@ private:
 	void matchAutosearch(const RSSPtr& aFeed, const RSSDataPtr& aData);
 
 	unordered_set<RSSPtr> rssList;
+
+	vector<RSSFilter> rssFilterList;
 	
 	mutable CriticalSection cs;
 

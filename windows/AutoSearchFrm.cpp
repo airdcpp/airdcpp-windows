@@ -385,7 +385,7 @@ LRESULT AutoSearchFrame::onChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		int sel = ctrlAutoSearch.GetNextItem(-1, LVNI_SELECTED);
 		auto ii = ctrlAutoSearch.getItemData(sel);
 
-		TabbedDialog dlg;
+		TabbedDialog dlg(STRING(AUTOSEARCH_DLG));
 		AutoSearchItemSettings options(ii->asItem, false);
 		createPages(dlg, options);
 
@@ -463,7 +463,7 @@ LRESULT AutoSearchFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandle
 }
 
 LRESULT AutoSearchFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	TabbedDialog dlg;
+	TabbedDialog dlg(STRING(AUTOSEARCH_DLG));
 	AutoSearchItemSettings options;
 	createPages(dlg, options);
 
@@ -486,8 +486,7 @@ LRESULT AutoSearchFrame::onDuplicate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 		int sel = ctrlAutoSearch.GetNextItem(-1, LVNI_SELECTED);
 		AutoSearchPtr as = ctrlAutoSearch.getItemData(sel)->asItem;
 
-
-		TabbedDialog dlg;
+		TabbedDialog dlg(STRING(AUTOSEARCH_DLG));
 
 		AutoSearchItemSettings options(as, true);
 		createPages(dlg, options);

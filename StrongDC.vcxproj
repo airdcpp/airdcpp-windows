@@ -503,6 +503,7 @@
     <ClCompile Include="windows\AutoSearchFrm.cpp" />
     <ClCompile Include="windows\AutoSearchGeneralPage.cpp" />
     <ClCompile Include="windows\AutoSearchGroupDlg.cpp" />
+    <ClCompile Include="windows\RssFilterPage.cpp" />
     <ClCompile Include="windows\TabbedDialog.cpp" />
     <ClCompile Include="windows\AutosearchSearchTimesPage.cpp" />
     <ClCompile Include="windows\BrowseDlg.cpp" />
@@ -525,7 +526,7 @@
     <ClCompile Include="windows\ProxyPage.cpp" />
     <ClCompile Include="windows\QueueFrame.cpp" />
     <ClCompile Include="windows\ResourceLoader.cpp" />
-    <ClCompile Include="windows\RssConfigDlg.cpp" />
+    <ClCompile Include="windows\RssFeedsPage.cpp" />
     <ClCompile Include="windows\RSSinfoFrame.cpp" />
     <ClCompile Include="windows\ScanPage.cpp" />
     <ClCompile Include="windows\SearchTypeCombo.cpp" />
@@ -640,6 +641,7 @@
     <ClInclude Include="windows\AutosearchGeneralPage.h" />
     <ClInclude Include="windows\AutoSearchGroupDlg.h" />
     <ClInclude Include="windows\AutoSearchItemSettings.h" />
+    <ClInclude Include="windows\RssFilterPage.h" />
     <ClInclude Include="windows\TabbedDialog.h" />
     <ClInclude Include="windows\AutosearchParams.h" />
     <ClInclude Include="windows\AutosearchSearchTimesPage.h" />
@@ -667,7 +669,7 @@
     <ClInclude Include="windows\ProtocolPage.h" />
     <ClInclude Include="windows\ProxyPage.h" />
     <ClInclude Include="windows\QueueFrame.h" />
-    <ClInclude Include="windows\RssConfigDlg.h" />
+    <ClInclude Include="windows\RssFeedsPage.h" />
     <ClInclude Include="windows\RSSinfoFrame.h" />
     <ClInclude Include="windows\ScanPage.h" />
     <ClInclude Include="windows\SearchTypeCombo.h" />

@@ -52,7 +52,7 @@ public:
 		IDD = IDD_TABBED_DIALOG
 	};
 
-	TabbedDialog();
+	TabbedDialog(const string& aTitle);
 	~TabbedDialog();
 
 	BEGIN_MSG_MAP_EX(TabbedDialog)
@@ -76,7 +76,7 @@ public:
 private:
 
 	vector<shared_ptr<TabPage>> pages;
-
+	string wTitle;
 	void showPage(int aPage);
 	CTabCtrl cTab;
 
