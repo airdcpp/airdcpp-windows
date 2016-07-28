@@ -63,21 +63,20 @@ public:
 	GETSET(RSSPtr, feed, Feed);
 	GETSET(time_t, dateAdded, DateAdded); //For prune old entries in database...
 
-
 };
 
 
 class RSSFilter {
 public:
 
-	RSSFilter(const string& aAutoSearchFilter, const string& aDownloadTarget) noexcept :
-		autoSearchFilter(aAutoSearchFilter), downloadTarget(aDownloadTarget)
+	RSSFilter(const string& aFilterPattern, const string& aDownloadTarget) noexcept :
+		filterPattern(aFilterPattern), downloadTarget(aDownloadTarget)
 	{
 	}
 
 	~RSSFilter() noexcept {};
 
-	GETSET(string, autoSearchFilter, AutoSearchFilter);
+	GETSET(string, filterPattern, FilterPattern);
 	GETSET(string, downloadTarget, DownloadTarget);
 
 };
@@ -115,7 +114,7 @@ public:
 	void save();
 
 	void clearRSSData(const RSSPtr& aFeed);
-	void matchAutosearchFilters(const RSSPtr& aFeed);
+	void matchFilters(const RSSPtr& aFeed);
 	
 	RSSPtr getFeedByCategory(const string& aCategory);
 	RSSPtr getFeedByUrl(const string& aUrl);
@@ -147,7 +146,7 @@ private:
 
 	RSSPtr getUpdateItem();
 	
-	void matchAutosearch(const RSSPtr& aFeed, const RSSDataPtr& aData);
+	void matchFilters(const RSSDataPtr& aData);
 
 	unordered_set<RSSPtr> rssList;
 

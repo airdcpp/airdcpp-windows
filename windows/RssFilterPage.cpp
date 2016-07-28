@@ -85,7 +85,7 @@ LRESULT RssFilterPage::onSelectionChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*
 	if (ctrlRssFilterList.GetSelectedCount() == 1) {
 		auto item = filterList.begin();
 		advance(item, ctrlRssFilterList.GetSelectedIndex());
-		ctrlAutoSearchPattern.SetWindowText(Text::toT(item->getAutoSearchFilter()).c_str());
+		ctrlAutoSearchPattern.SetWindowText(Text::toT(item->getFilterPattern()).c_str());
 		ctrlTarget.SetWindowText(Text::toT(item->getDownloadTarget()).c_str());
 	} else {
 		ctrlAutoSearchPattern.SetWindowText(_T(""));
@@ -147,11 +147,11 @@ LRESULT RssFilterPage::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 }
 
 void RssFilterPage::fillList() {
-	sort(filterList.begin(), filterList.end(), [](const RSSFilter& a, const RSSFilter& b) { return compare(a.getAutoSearchFilter(), b.getAutoSearchFilter()) < 0; });
+	sort(filterList.begin(), filterList.end(), [](const RSSFilter& a, const RSSFilter& b) { return compare(a.getFilterPattern(), b.getFilterPattern()) < 0; });
 	ctrlRssFilterList.DeleteAllItems();
 	int pos = 0;
 	for (auto& i : filterList) {
-		ctrlRssFilterList.InsertItem(pos, Text::toT(i.getAutoSearchFilter()).c_str());
+		ctrlRssFilterList.InsertItem(pos, Text::toT(i.getFilterPattern()).c_str());
 		ctrlRssFilterList.SetItemText(pos, 1, Text::toT(i.getDownloadTarget()).c_str());
 		pos++;
 	}
@@ -182,7 +182,7 @@ bool RssFilterPage::update() {
 		if (!validateSettings(asPattern)) {
 			filterList.push_back(fItem);
 			fillList();
-			restoreSelection(Text::toT(fItem.getAutoSearchFilter()));
+			restoreSelection(Text::toT(fItem.getFilterPattern()));
 			return false;
 		}
 
@@ -200,7 +200,7 @@ bool RssFilterPage::validateSettings(const string& aPattern) {
 
 	bool exists = find_if(filterList.begin(), filterList.end(), [&](const RSSFilter& a)
 	{
-		return aPattern == a.getAutoSearchFilter();
+		return aPattern == a.getFilterPattern();
 
 	}) != filterList.end();
 

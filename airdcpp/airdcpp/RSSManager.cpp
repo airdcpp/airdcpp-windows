@@ -111,7 +111,7 @@ void RSSManager::downloadComplete(const string& aUrl) {
 					
 					if(newdata) {
 						RSSDataPtr data = new RSSData(titletmp, link, date, feed);
-						matchAutosearch(feed, data);
+						matchFilters(data);
 						{
 							Lock l(cs);
 							feed->getFeedData().emplace(titletmp, data);
@@ -132,19 +132,19 @@ void RSSManager::downloadComplete(const string& aUrl) {
 	}
 }
 
-void RSSManager::matchAutosearchFilters(const RSSPtr& aFeed) {
+void RSSManager::matchFilters(const RSSPtr& aFeed) {
 	if (aFeed) {
 		Lock l(cs);
 		for (auto data : aFeed->getFeedData() | map_values) {
-				matchAutosearch(aFeed, data);
+				matchFilters(data);
 		}
 	}
 }
 
-void RSSManager::matchAutosearch(const RSSPtr& aFeed, const RSSDataPtr& aData) {
+void RSSManager::matchFilters(const RSSDataPtr& aData) {
 	
 	for (auto& aF : rssFilterList) {
-		if (AirUtil::stringRegexMatch(aF.getAutoSearchFilter(), aData->getTitle())) {
+		if (AirUtil::stringRegexMatch(aF.getFilterPattern(), aData->getTitle())) {
 
 			auto targetType = TargetUtil::TargetType::TARGET_PATH;
 			AutoSearchManager::getInstance()->addAutoSearch(aData->getTitle(),
@@ -239,7 +239,7 @@ void RSSManager::load() {
 		xml.resetCurrentChild();
 		while (xml.findChild("Filter")) {
 			rssFilterList.emplace_back(
-				xml.getChildAttrib("AutoSearchFilter"),
+				xml.getChildAttrib("FilterPattern"),
 				xml.getChildAttrib("DownloadTarget"));
 		}
 
@@ -284,7 +284,7 @@ void RSSManager::save() {
 
 	for (auto f : rssFilterList) {
 		xml.addTag("Filter");
-		xml.addChildAttrib("AutoSearchFilter", f.getAutoSearchFilter());
+		xml.addChildAttrib("FilterPattern", f.getFilterPattern());
 		xml.addChildAttrib("DownloadTarget", f.getDownloadTarget());
 	}
 
