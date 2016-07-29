@@ -8,6 +8,7 @@
 #include "SearchManager.h"
 #include "ScopedFunctor.h"
 #include "AirUtil.h"
+#include <boost/algorithm/string/trim.hpp>
 
 namespace dcpp {
 
@@ -49,6 +50,68 @@ RSSPtr RSSManager::getFeedByUrl(const string& aUrl) {
 	return nullptr;
 }
 
+void RSSManager::parseAtomFeed(SimpleXML& xml, RSSPtr& aFeed) {
+	xml.stepIn();
+		while (xml.findChild("entry")) {
+			xml.stepIn();
+			bool newdata = false;
+			string titletmp;
+			string link;
+			string date;
+
+			if (xml.findChild("link")) {
+				link = xml.getChildAttrib("href");
+			}
+			if (xml.findChild("title")) {
+				titletmp = xml.getChildData();
+				newdata = checkTitle(aFeed, titletmp);
+			}
+			if (xml.findChild("updated"))
+				date = xml.getChildData();
+
+			if (newdata) 
+				addData(titletmp, link, date, aFeed);
+
+			xml.stepOut();
+		}
+	xml.stepOut();
+}
+
+void RSSManager::parseRSSFeed(SimpleXML& xml, RSSPtr& aFeed) {
+	xml.stepIn();
+	if (xml.findChild("channel")) {
+		xml.stepIn();
+		while (xml.findChild("item")) {
+			xml.stepIn();
+			bool newdata = false;
+			string titletmp;
+			string link;
+			string date;
+			if (xml.findChild("title")) {
+				titletmp = xml.getChildData();
+				newdata = checkTitle(aFeed, titletmp);
+			}
+
+			if (xml.findChild("link")) {
+				link = xml.getChildData();
+				//temp fix for some urls
+				if (strncmp(link.c_str(), "//", 2) == 0)
+					link = "https:" + link;
+			}
+			if (xml.findChild("pubDate"))
+				date = xml.getChildData();
+
+
+			if (newdata)
+				addData(titletmp, link, date, aFeed);
+
+			xml.stepOut();
+		}
+		xml.stepOut();
+	}
+	xml.stepOut();
+}
+
 void RSSManager::downloadComplete(const string& aUrl) {
 	auto feed = getFeedByUrl(aUrl);
 	if (!feed)
@@ -85,51 +148,33 @@ void RSSManager::downloadComplete(const string& aUrl) {
 		SimpleXML xml;
 		xml.fromXML(tmpdata.c_str());
 		if(xml.findChild("rss")) {
-			xml.stepIn();
-			if(xml.findChild("channel")) {	
-				xml.stepIn();
-				while(xml.findChild("item")) {
-					xml.stepIn();
-					bool newdata = false;
-					string titletmp;
-					string link;
-					string date;
-					if(xml.findChild("title")){
-						titletmp = xml.getChildData();
-						Lock l(cs);
-						newdata = feed->getFeedData().find(titletmp) == feed->getFeedData().end();
-					}
-					if (xml.findChild("link")) {
-						link = xml.getChildData();
-						//temp fix for some urls
-						if (strncmp(link.c_str(), "//", 2) == 0)
-							link = "https:" + link;
-					}
-					if(xml.findChild("pubDate"))
-						date = xml.getChildData();
-
-					
-					if(newdata) {
-						RSSDataPtr data = new RSSData(titletmp, link, date, feed);
-						matchFilters(data);
-						{
-							Lock l(cs);
-							feed->getFeedData().emplace(titletmp, data);
-						}
-						fire(RSSManagerListener::RSSDataAdded(), data);
-					}
-
-					titletmp.clear();
-					link.clear();
-					xml.stepOut();
-				}
-			xml.stepOut();
-			}
-		xml.stepOut();
+			parseRSSFeed(xml, feed);
+		}
+		xml.resetCurrentChild();
+		if (xml.findChild("feed")) {
+			parseAtomFeed(xml, feed);
 		}
 	} catch(const Exception& e) {
 		LogManager::getInstance()->message(e.getError().c_str(), LogMessage::SEV_ERROR);
 	}
+}
+
+bool RSSManager::checkTitle(const RSSPtr& aFeed, string& aTitle) {
+	if (aTitle.empty())
+		return false;
+	boost::algorithm::trim_if(aTitle, boost::is_space() || boost::is_any_of("\r\n"));
+	Lock l(cs);
+	return aFeed->getFeedData().find(aTitle) == aFeed->getFeedData().end();
+}
+
+void RSSManager::addData(const string& aTitle, const string& aLink, const string& aDate, RSSPtr& aFeed) {
+	RSSDataPtr data = new RSSData(aTitle, aLink, aDate, aFeed);
+	matchFilters(data);
+	{
+		Lock l(cs);
+		aFeed->getFeedData().emplace(aTitle, data);
+	}
+	fire(RSSManagerListener::RSSDataAdded(), data);
 }
 
 void RSSManager::matchFilters(const RSSPtr& aFeed) {

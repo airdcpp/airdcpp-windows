@@ -151,7 +151,13 @@ private:
 	unordered_set<RSSPtr> rssList;
 
 	vector<RSSFilter> rssFilterList;
-	
+	void parseRSSFeed(SimpleXML& xml, RSSPtr& aFeed);
+	void parseAtomFeed(SimpleXML& xml, RSSPtr& aFeed);
+	void addData(const string& aTitle, const string& aLink, const string& aDate, RSSPtr& aFeed);
+
+	//trim title, return true if new data.
+	bool checkTitle(const RSSPtr& aFeed, string& aTitle);
+
 	mutable CriticalSection cs;
 
 	void downloadComplete(const string& aUrl);
