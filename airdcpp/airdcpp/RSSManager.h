@@ -119,11 +119,11 @@ public:
 	void saveConfig(bool saveDatabase = true);
 
 	void clearRSSData(const RSSPtr& aFeed);
-	void matchFilters(const RSSPtr& aFeed);
+	void matchFilters(const RSSPtr& aFeed) const;
 	
-	RSSPtr getFeedByCategory(const string& aCategory);
-	RSSPtr getFeedByUrl(const string& aUrl);
-	RSSPtr getFeedByToken(int aToken);
+	RSSPtr getFeedByCategory(const string& aCategory) const;
+	RSSPtr getFeedByUrl(const string& aUrl) const;
+	RSSPtr getFeedByToken(int aToken) const;
 
 	CriticalSection& getCS() { return cs; }
 
@@ -150,9 +150,9 @@ private:
 	uint64_t nextUpdate;
 	uint64_t lastXmlSave = GET_TICK();
 
-	RSSPtr getUpdateItem();
+	RSSPtr getUpdateItem() const;
 	
-	void matchFilters(const RSSDataPtr& aData);
+	void matchFilters(const RSSDataPtr& aData) const;
 
 	unordered_set<RSSPtr> rssList;
 

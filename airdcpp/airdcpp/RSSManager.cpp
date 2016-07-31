@@ -32,12 +32,13 @@ void RSSManager::clearRSSData(const RSSPtr& aFeed) {
 	{
 		Lock l(cs);
 		aFeed->getFeedData().clear(); 
+		aFeed->setDirty(true);
 	}
 	fire(RSSManagerListener::RSSDataCleared(), aFeed);
 
 }
 
-RSSPtr RSSManager::getFeedByCategory(const string& aCategory) {
+RSSPtr RSSManager::getFeedByCategory(const string& aCategory) const {
 	Lock l(cs);
 	auto r = find_if(rssList.begin(), rssList.end(), [aCategory](const RSSPtr& a) { return aCategory == a->getCategory(); });
 	if (r != rssList.end())
@@ -46,7 +47,7 @@ RSSPtr RSSManager::getFeedByCategory(const string& aCategory) {
 	return nullptr;
 }
 
-RSSPtr RSSManager::getFeedByUrl(const string& aUrl) {
+RSSPtr RSSManager::getFeedByUrl(const string& aUrl) const {
 	Lock l(cs);
 	auto r = find_if(rssList.begin(), rssList.end(), [aUrl](const RSSPtr& a) { return aUrl == a->getUrl(); });
 	if (r != rssList.end())
@@ -55,7 +56,7 @@ RSSPtr RSSManager::getFeedByUrl(const string& aUrl) {
 	return nullptr;
 }
 
-RSSPtr RSSManager::getFeedByToken(int aToken) {
+RSSPtr RSSManager::getFeedByToken(int aToken) const {
 	Lock l(cs);
 	auto r = find_if(rssList.begin(), rssList.end(), [aToken](const RSSPtr& a) { return aToken == a->getToken(); });
 	if (r != rssList.end())
@@ -193,7 +194,7 @@ void RSSManager::addData(const string& aTitle, const string& aLink, const string
 	fire(RSSManagerListener::RSSDataAdded(), data);
 }
 
-void RSSManager::matchFilters(const RSSPtr& aFeed) {
+void RSSManager::matchFilters(const RSSPtr& aFeed) const {
 	if (aFeed) {
 		Lock l(cs);
 		for (auto data : aFeed->getFeedData() | map_values) {
@@ -202,7 +203,7 @@ void RSSManager::matchFilters(const RSSPtr& aFeed) {
 	}
 }
 
-void RSSManager::matchFilters(const RSSDataPtr& aData) {
+void RSSManager::matchFilters(const RSSDataPtr& aData) const {
 	
 	for (auto& aF : rssFilterList) {
 		if (AirUtil::stringRegexMatch(aF.getFilterPattern(), aData->getTitle())) {
@@ -243,6 +244,7 @@ void RSSManager::updateFilterList(vector<RSSFilter>& aNewList) {
 
 void RSSManager::removeFeedItem(const RSSPtr& aFeed) {
 	Lock l(cs);
+	//Delete database file?
 	rssList.erase(aFeed);
 	fire(RSSManagerListener::RSSFeedRemoved(), aFeed);
 }
@@ -253,14 +255,16 @@ void RSSManager::downloadFeed(const RSSPtr& aFeed) {
 
 	string url = aFeed->getUrl();
 	aFeed->setLastUpdate(GET_TIME());
-	aFeed->rssDownload.reset(new HttpDownload(aFeed->getUrl(),
-		[this, url] { downloadComplete(url); }, false));
+	tasks.addTask([=] {
+		aFeed->rssDownload.reset(new HttpDownload(aFeed->getUrl(),
+			[this, url] { downloadComplete(url); }, false));
 
-	fire(RSSManagerListener::RSSFeedUpdated(), aFeed);
-	LogManager::getInstance()->message("updating the " + aFeed->getUrl(), LogMessage::SEV_INFO);
+		fire(RSSManagerListener::RSSFeedUpdated(), aFeed);
+		LogManager::getInstance()->message("updating the " + aFeed->getUrl(), LogMessage::SEV_INFO);
+	});
 }
 
-RSSPtr RSSManager::getUpdateItem() {
+RSSPtr RSSManager::getUpdateItem() const {
 	for (auto i : rssList) {
 		if (i->allowUpdate())
 			return i;
@@ -373,6 +377,7 @@ void RSSManager::saveConfig(bool saveDatabase) {
 	SimpleXML xml;
 	xml.addTag("RSS");
 	xml.stepIn();
+	Lock l(cs);
 	for (auto r : rssList) {
 		xml.addTag("Settings");
 		xml.addChildAttrib("Url", r->getUrl());
@@ -399,9 +404,7 @@ void RSSManager::saveConfig(bool saveDatabase) {
 #define LITERAL(n) n, sizeof(n)-1
 
 void RSSManager::savedatabase(const RSSPtr& aFeed) {
-
-	if (aFeed->getFeedData().empty())
-		return;
+	ScopedFunctor([&] { aFeed->setDirty(false); });
 
 	string path = DATABASE_DIR + "RSSDataBase" + Util::toString(aFeed->getToken()) + ".xml";
 	try {
@@ -447,6 +450,7 @@ void RSSManager::savedatabase(const RSSPtr& aFeed) {
 	catch (Exception& e) {
 		LogManager::getInstance()->message("Saving RSSDatabase failed: " + e.getError(), LogMessage::SEV_WARNING);
 	}
+	
 }
 
 }
