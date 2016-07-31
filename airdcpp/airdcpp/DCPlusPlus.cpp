@@ -189,7 +189,7 @@ void shutdown(function<void (const string&)> stepF, function<void (float)> progr
 	AutoSearchManager::getInstance()->AutoSearchSave();
 	QueueManager::getInstance()->shutdown();
 	SettingsManager::getInstance()->save();
-	RSSManager::getInstance()->save();
+	RSSManager::getInstance()->saveConfig();
 
 	announce(STRING(SHUTTING_DOWN));
 

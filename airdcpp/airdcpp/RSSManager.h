@@ -18,11 +18,14 @@ namespace dcpp {
 class RSS : private boost::noncopyable {
 public:
 
-	RSS(const string& aUrl, const string& aCategory, time_t aLastUpdate, int aUpdateInterval = 30) noexcept :
-		url(aUrl), category(aCategory), lastUpdate(aLastUpdate), updateInterval(aUpdateInterval)
+	RSS(const string& aUrl, const string& aCategory, time_t aLastUpdate, int aUpdateInterval = 60, int aToken = 0) noexcept :
+		url(aUrl), category(aCategory), lastUpdate(aLastUpdate), updateInterval(aUpdateInterval), token(aToken)
 	{
 		if (aUpdateInterval < 10)
 			updateInterval = 10;
+
+		if (token == 0)
+			token = Util::randInt(10);
 
 		rssDownload.reset();
 	}
@@ -33,6 +36,8 @@ public:
 	GETSET(string, category, Category);
 	GETSET(time_t, lastUpdate, LastUpdate);
 	GETSET(int, updateInterval, UpdateInterval);
+	GETSET(int, token, Token);
+	IGETSET(bool, dirty, Dirty, false);
 
 	//bool operator==(const RSSPtr& rhs) const { return url == rhs->getUrl(); }
 
@@ -111,13 +116,14 @@ public:
 	~RSSManager();
 
 	void load();
-	void save();
+	void saveConfig(bool saveDatabase = true);
 
 	void clearRSSData(const RSSPtr& aFeed);
 	void matchFilters(const RSSPtr& aFeed);
 	
 	RSSPtr getFeedByCategory(const string& aCategory);
 	RSSPtr getFeedByUrl(const string& aUrl);
+	RSSPtr getFeedByToken(int aToken);
 
 	CriticalSection& getCS() { return cs; }
 
@@ -139,10 +145,10 @@ public:
 
 private:
 
-	void loaddatabase(const RSSPtr& aFeed, SimpleXML& aXml);
-	void savedatabase(const RSSPtr& aFeed, SimpleXML& aXml);
+	void savedatabase(const RSSPtr& aFeed);
 
 	uint64_t nextUpdate;
+	uint64_t lastXmlSave = GET_TICK();
 
 	RSSPtr getUpdateItem();
 	
@@ -159,6 +165,8 @@ private:
 	bool checkTitle(const RSSPtr& aFeed, string& aTitle);
 
 	mutable CriticalSection cs;
+
+	DispatcherQueue tasks;
 
 	void downloadComplete(const string& aUrl);
 	// TimerManagerListener

@@ -20,6 +20,7 @@
 #include "Resource.h"
 
 #include "RSSinfoFrame.h"
+#include "MainFrm.h"
 #include "WinUtil.h"
 #include <airdcpp/File.h>
 #include <airdcpp/LogManager.h>
@@ -200,7 +201,6 @@ LRESULT RssInfoFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandle
 		return CDRF_NOTIFYITEMDRAW;
 
 	case CDDS_ITEMPREPAINT: {
-		cd->clrText = WinUtil::textColor;
 		auto ii = (ItemInfo*)cd->nmcd.lItemlParam;
 		auto c = WinUtil::getDupeColors(ii->getDupe());
 		cd->clrText = c.first;
@@ -211,6 +211,18 @@ LRESULT RssInfoFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandle
 	default:
 		return CDRF_DODEFAULT;
 	}
+}
+
+LRESULT RssInfoFrame::onConfig(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	TabbedDialog dlg(STRING(RSS_CONFIG));
+	dlg.addPage<RssFeedsPage>(shared_ptr<RssFeedsPage>(new RssFeedsPage(STRING(RSS_FEEDS))));
+	dlg.addPage<RssFilterPage>(shared_ptr<RssFilterPage>(new RssFilterPage(STRING(FILTER))));
+	if (dlg.DoModal() == IDOK) {
+		MainFrame::getMainFrame()->addThreadedTask([=] {
+			RSSManager::getInstance()->saveConfig(false);
+		});
+	}
+	return 0;
 }
 
 LRESULT RssInfoFrame::onDoubleClickList(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
