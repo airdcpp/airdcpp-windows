@@ -1,10 +1,11 @@
-3.xx
+3.22
 
 Changed:
 
 - Don't show log messages when removing finished bundles from queue
 - Don't flush the file on disk when a download segment finishes (speeds up downloads with fast connections, didn't really work in version 3.10)
 - Use lower thread priority for uploads to make them less disruptive when the system is under high load
+- Adjust the auto detected slot counts for connections faster than 100 Mbits
 
 Fixed:
 
@@ -12,6 +13,7 @@ Fixed:
 - Fix crashes when non-existing share profiles are configured for favorite hubs
 - Fix duplicate dupe paths being displayed for root share directories
 - Fix ADL search item list becoming uneditable after closing a filelist that was being matched
+- Fix handling of user updates after being redirected from the original hub
 
 
 3.21
