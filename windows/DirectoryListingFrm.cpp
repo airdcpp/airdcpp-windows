@@ -773,7 +773,7 @@ void DirectoryListingFrame::updateStatus() {
 		}
 
 		callAsync([=] {
-			updateStatusText(totalCount, totalSize, selectedCount, displayCount, currentDir->getUpdateDate());
+			updateStatusText(totalCount, totalSize, selectedCount, displayCount, currentDir->getLastUpdateDate());
 		});
 	});
 }
