@@ -1221,6 +1221,7 @@ bool DirectoryListing::changeDirectory(const string& aPath, ReloadMode aReloadMo
 
 	dcassert(findDirectory(aPath, root) != nullptr);
 
+	clearLastError();
 	updateCurrentLocation(dir);
 	fire(DirectoryListingListener::ChangeDirectory(), aPath, aIsSearchChange);
 
