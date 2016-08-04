@@ -137,8 +137,9 @@ namespace webserver {
 				}
 			}
 		} else if (propertyTypes[currentFilterProperty].filterType == TYPE_LIST_NUMERIC || propertyTypes[currentFilterProperty].filterType == TYPE_LIST_TEXT) {
+			// No default matcher for list properies
 			hasMatch = aCustomF(currentFilterProperty, matcher, numericMatcher);
-		} else if (defMethod < StringMatch::METHOD_LAST || propertyTypes[currentFilterProperty].filterType == TYPE_TEXT) {
+		} else if (propertyTypes[currentFilterProperty].filterType == TYPE_TEXT) {
 			hasMatch = matchText(currentFilterProperty, infoF);
 		} else {
 			hasMatch = matchNumeric(currentFilterProperty, numericF);
@@ -153,7 +154,6 @@ namespace webserver {
 	bool PropertyFilter::matchNumeric(int aProperty, const NumericFunction& numericF) const {
 		auto toCompare = numericF(aProperty);
 		switch (numComparisonMode) {
-			case EQUAL: return toCompare == numericMatcher;
 			case NOT_EQUAL: return toCompare != numericMatcher;
 
 			// inverse the match for time periods (smaller number = older age)
@@ -161,7 +161,8 @@ namespace webserver {
 			case LESS_EQUAL: return type == TYPE_TIME ? toCompare >= numericMatcher : toCompare <= numericMatcher;
 			case GREATER: return type == TYPE_TIME ? toCompare < numericMatcher : toCompare > numericMatcher; break;
 			case LESS: return type == TYPE_TIME ? toCompare > numericMatcher : toCompare < numericMatcher; break;
-			default: dcassert(0); return false;
+			case EQUAL:
+			default: return toCompare == numericMatcher;
 		}
 	}
 
