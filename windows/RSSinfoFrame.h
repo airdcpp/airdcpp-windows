@@ -29,6 +29,8 @@
 #include "RssFeedsPage.h"
 #include "TabbedDialog.h"
 #include "RssFilterPage.h"
+#include "DownloadBaseHandler.h"
+
 #include <airdcpp/RSSManager.h>
 #include <airdcpp/AirUtil.h>
 #include <airdcpp/TaskQueue.h>
@@ -37,7 +39,7 @@
 #define RSS_STATUS_MSG_MAP 11
 
 class RssInfoFrame : public MDITabChildWindowImpl<RssInfoFrame>, public StaticFrame<RssInfoFrame, ResourceManager::RSS_FEEDS, IDC_RSSFRAME>, 
-	private RSSManagerListener, public CSplitterImpl<RssInfoFrame>,  private Async<RssInfoFrame>
+	private RSSManagerListener, public CSplitterImpl<RssInfoFrame>,  private Async<RssInfoFrame>, public DownloadBaseHandler<RssInfoFrame>
 {
 public:
 
@@ -118,6 +120,9 @@ public:
 	}
 	void createColumns();
 
+	/* DownloadBaseHandler functions */
+	void handleDownload(const string& aTarget, QueueItemBase::Priority p, bool isRelease, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
+
 private:
 
 	class ItemInfo;
@@ -140,7 +145,8 @@ private:
 	class ItemInfo {
 	public:
 		ItemInfo(const RSSDataPtr& aFeedData) : item(aFeedData) {
-			setDupe(AirUtil::checkDirDupe(item->getTitle(), 0));
+			isRelease = AirUtil::isRelease(item->getTitle());
+			setDupe(isRelease ? AirUtil::checkDirDupe(item->getTitle(), 0) : DUPE_NONE);
 		}
 		~ItemInfo() { }
 
@@ -154,18 +160,18 @@ private:
 
 		RSSDataPtr item;
 		GETSET(DupeType, dupe, Dupe);
+
+		bool isRelease = false;
 	};
 
 
-	HTREEITEM addTreeItem(const HTREEITEM& parent, int item, const tstring& name, HTREEITEM insertAfter = TVI_SORT) {
+	HTREEITEM addTreeItem(const HTREEITEM& parent, int img, const tstring& name, HTREEITEM insertAfter = TVI_SORT) {
 		TVINSERTSTRUCT tvis = { 0 };
 		tvis.hParent = parent;
 		tvis.hInsertAfter = insertAfter;
-		tvis.item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
+		tvis.item.mask = TVIF_TEXT | TVIF_IMAGE;
 		tvis.item.pszText = (LPWSTR)name.c_str();
-		tvis.item.iImage = item;
-		tvis.item.iSelectedImage = item;
-		tvis.item.lParam = item;
+		tvis.item.iImage = img;
 		return ctrlTree.InsertItem(&tvis);
 	}
 
@@ -205,6 +211,7 @@ private:
 	CContainedWindow ctrlStatusContainer;
 
 	CButton ctrlConfig;
+	CImageList treeImages;
 
 	virtual void on(RSSManagerListener::RSSDataAdded, const RSSDataPtr& aData) noexcept;
 	virtual void on(RSSManagerListener::RSSFeedRemoved, const RSSPtr& aFeed) noexcept;

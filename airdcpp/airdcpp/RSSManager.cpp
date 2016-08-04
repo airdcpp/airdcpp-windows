@@ -56,7 +56,7 @@ RSSPtr RSSManager::getFeedByUrl(const string& aUrl) const {
 	return nullptr;
 }
 
-RSSPtr RSSManager::getFeedByToken(int aToken) const {
+RSSPtr RSSManager::getFeedByToken(int aToken) const { 
 	Lock l(cs);
 	auto r = find_if(rssList.begin(), rssList.end(), [aToken](const RSSPtr& a) { return aToken == a->getToken(); });
 	if (r != rssList.end())

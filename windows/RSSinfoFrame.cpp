@@ -22,8 +22,11 @@
 #include "RSSinfoFrame.h"
 #include "MainFrm.h"
 #include "WinUtil.h"
+#include "ResourceLoader.h"
+
 #include <airdcpp/File.h>
 #include <airdcpp/LogManager.h>
+
 
 int RssInfoFrame::columnIndexes[] = { COLUMN_FILE, COLUMN_LINK, COLUMN_DATE, COLUMN_CATEGORY };
 int RssInfoFrame::columnSizes[] = { 800, 350, 150, 150};
@@ -60,6 +63,11 @@ LRESULT RssInfoFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ctrlTree.SetBkColor(WinUtil::bgColor);
 	ctrlTree.SetTextColor(WinUtil::textColor);
 
+	treeImages.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 3);
+	treeImages.AddIcon(CIcon(ResourceLoader::getIcon(IDI_RSS, 16)));
+
+	ctrlTree.SetImageList(treeImages);
+
 	ctrlConfig.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 		BS_PUSHBUTTON, 0, IDC_RSS_UPDATE);
 	ctrlConfig.SetWindowText(CTSTRING(RSS_CONFIG));
@@ -69,7 +77,7 @@ LRESULT RssInfoFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	SetSplitterPanes(ctrlTree.m_hWnd, ctrlRss.m_hWnd);
 	m_nProportionalPos = 1000;
 
-	treeParent = addTreeItem(TVI_ROOT, 0, TSTRING(RSS_FEEDS));
+	treeParent = addTreeItem(TVI_ROOT, -1, TSTRING(RSS_FEEDS));
 	ctrlTree.SelectItem(treeParent);
 	{
 		Lock l(RSSManager::getInstance()->getCS());
@@ -159,6 +167,12 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 			menu.CreatePopupMenu();
 			menu.appendItem(TSTRING(OPEN_LINK), [=] { WinUtil::openLink(Text::toT(ii->item->getLink())); }, OMenu::FLAG_DEFAULT);
 			menu.appendSeparator();
+			if (ii->isRelease) {
+				//autosearch menus
+				appendDownloadMenu(menu, DownloadBaseHandler::TYPE_SECONDARY, true, boost::none, ii->item->getTitle() + PATH_SEPARATOR, false);
+				menu.appendSeparator();
+			}
+
 			menu.appendItem(TSTRING(SEARCH), [=] { WinUtil::searchAny(Text::toT(ii->item->getTitle())); });
 			WinUtil::appendSearchMenu(menu, ii->item->getTitle());
 			if (AirUtil::allowOpenDupe(ii->getDupe())) {
@@ -299,6 +313,12 @@ void RssInfoFrame::on(RSSFeedChanged, const RSSPtr& aFeed) noexcept {
 		ctrlTree.SetRedraw(TRUE);
 		reloadList();
 	});
+}
+
+void RssInfoFrame::handleDownload(const string& aTarget, QueueItemBase::Priority p, bool aIsRelease, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
+	auto ii = ctrlRss.list.getSelectedItem();
+	if(ii)
+		AutoSearchManager::getInstance()->addAutoSearch(ii->item->getTitle(), aTarget, aTargetType, true, AutoSearch::RSS_DOWNLOAD);
 }
 
 void RssInfoFrame::clearData(const RSSPtr& aFeed) {
