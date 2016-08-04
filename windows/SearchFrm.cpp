@@ -702,7 +702,7 @@ int SearchFrame::SearchInfo::compareItems(const SearchInfo* a, const SearchInfo*
 		case COLUMN_HITS: return compare(a->hits, b->hits);
 		case COLUMN_SLOTS: 
 			if (a->sr->getFreeSlots() != b->sr->getFreeSlots()) {
-				return compare(a->sr->getSlots(), b->sr->getSlots());
+				return compare(a->sr->getTotalSlots(), b->sr->getTotalSlots());
 			}
 
 			return compare(a->sr->getFreeSlots(), b->sr->getFreeSlots());

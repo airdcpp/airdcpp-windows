@@ -34,12 +34,7 @@ namespace webserver {
 		case SearchApi::PROP_SLOTS: {
 			int free = 0, total = 0;
 			aResult->getSlots(free, total);
-
-			return {
-				{ "str", aResult->getSlotStr() },
-				{ "free", free },
-				{ "total", total }
-			};
+			return Serializer::serializeSlots(free, total);
 		}
 		case SearchApi::PROP_USERS: {
 			
@@ -92,7 +87,7 @@ namespace webserver {
 		}
 		case SearchApi::PROP_SLOTS: {
 			if (a->sr->getFreeSlots() == b->sr->getFreeSlots())
-				return compare(a->sr->getSlots(), b->sr->getSlots());
+				return compare(a->sr->getTotalSlots(), b->sr->getTotalSlots());
 			else
 				return compare(a->sr->getFreeSlots(), b->sr->getFreeSlots());
 		}
@@ -119,7 +114,11 @@ namespace webserver {
 				return Format::formatFileType(aResult->sr->getPath());
 			}
 		}
-		case SearchApi::PROP_SLOTS: return aResult->getSlotStr();
+		case SearchApi::PROP_SLOTS: {
+			int freeSlots = 0, totalSlots = 0;
+			aResult->getSlots(freeSlots, totalSlots);
+			return SearchResult::formatSlots(freeSlots, totalSlots);
+		}
 		case SearchApi::PROP_TTH: return aResult->sr->getTTH().toBase32();
 		default: dcassert(0); return Util::emptyString;
 		}

@@ -67,6 +67,7 @@ namespace webserver {
 		static json serializeDupe(DupeType aDupeType, StringList&& aPaths) noexcept;
 		static json serializeFileDupe(DupeType aDupeType, const TTHValue& aTTH) noexcept;
 		static json serializeDirectoryDupe(DupeType aDupeType, const string& aPath) noexcept;
+		static json serializeSlots(int aFree, int aTotal) noexcept;
 
 
 		// Serialize n messages from end by keeping the list order

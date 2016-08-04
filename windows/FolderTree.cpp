@@ -1351,10 +1351,23 @@ BOOL FolderTree::SetChecked(HTREEITEM hItem, bool fCheck)
 	return SetItem(&item);
 }
 
+
+bool isPathValid(const tstring &sPath) noexcept {
+	if (sPath.empty())
+		return false;
+
+	if ((sPath.substr(1, 2) == _T(":\\")) || (sPath.substr(0, 2) == _T("\\\\"))) {
+		if (GetFileAttributes(sPath.c_str()) & FILE_ATTRIBUTE_DIRECTORY)
+			return true;
+	}
+
+	return false;
+}
+
 LRESULT FolderTree::OnChecked(HTREEITEM hItem, BOOL &bHandled)
 {
 	FolderTreeItemInfo* pItem = (FolderTreeItemInfo*) GetItemData(hItem);
-	if(!Util::isPathValid(Text::fromT(pItem->m_sFQPath)))
+	if(!isPathValid(pItem->m_sFQPath))
 	{
 		// no checking myComp or network
 		bHandled = TRUE;
