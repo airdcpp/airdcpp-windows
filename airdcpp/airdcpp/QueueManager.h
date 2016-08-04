@@ -169,7 +169,6 @@ public:
 	Bundle::SourceList getBundleSources(const BundlePtr& b) const noexcept { RLock l(cs); return b->getSources(); }
 	Bundle::SourceList getBadBundleSources(const BundlePtr& b) const noexcept { RLock l(cs); return b->getBadSources(); }
 
-	size_t getSourcesCount(const QueueItemPtr& qi) const noexcept { RLock l(cs); return qi->getSources().size(); }
 	void getChunksVisualisation(const QueueItemPtr& qi, vector<Segment>& running, vector<Segment>& downloaded, vector<Segment>& done) const noexcept { RLock l(cs); qi->getChunksVisualisation(running, downloaded, done); }
 
 
@@ -297,6 +296,22 @@ public:
 
 	// Get source infos for the specified user
 	void getSourceInfo(const UserPtr& aUser, Bundle::SourceBundleList& aSources, Bundle::SourceBundleList& aBad) const noexcept;
+
+	template<typename T>
+	QueueItemBase::SourceCount getSourceCount(const T& aItem) const noexcept {
+		size_t online = 0, total = 0;
+		{
+			RLock l(cs);
+			for (const auto& s : aItem->getSources()) {
+				if (s.getUser().user->isOnline())
+					online++;
+			}
+
+			total = aItem->getSources().size();
+		}
+
+		return { online, total };
+	}
 
 	// Check if the source is slow enough for slow speed disconnecting
 	bool checkDropSlowSource(Download* d) noexcept;
