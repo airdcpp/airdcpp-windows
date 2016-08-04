@@ -81,6 +81,9 @@ namespace webserver {
 		api_return handleAddDirectoryBundle(ApiRequest& aRequest);
 		api_return handleAddFileBundle(ApiRequest& aRequest);
 
+		api_return handleGetBundleSources(ApiRequest& aRequest);
+		api_return handleRemoveBundleSource(ApiRequest& aRequest);
+
 		api_return handleUpdateBundle(ApiRequest& aRequest);
 
 		api_return handleSearchBundle(ApiRequest& aRequest);

@@ -74,6 +74,9 @@ namespace webserver {
 		METHOD_HANDLER("bundle", Access::QUEUE_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("file")), true, QueueApi::handleAddFileBundle);
 		METHOD_HANDLER("bundle", Access::QUEUE_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("directory")), true, QueueApi::handleAddDirectoryBundle);
 
+		METHOD_HANDLER("bundle", Access::QUEUE_EDIT, ApiRequest::METHOD_GET, (TOKEN_PARAM, EXACT_PARAM("sources")), false, QueueApi::handleGetBundleSources);
+		METHOD_HANDLER("bundle", Access::QUEUE_EDIT, ApiRequest::METHOD_DELETE, (TOKEN_PARAM, EXACT_PARAM("source"), CID_PARAM), false, QueueApi::handleRemoveBundleSource);
+
 		METHOD_HANDLER("bundle", Access::QUEUE_VIEW, ApiRequest::METHOD_GET, (TOKEN_PARAM), false, QueueApi::handleGetBundle);
 		METHOD_HANDLER("bundle", Access::QUEUE_EDIT, ApiRequest::METHOD_POST, (TOKEN_PARAM, EXACT_PARAM("remove")), false, QueueApi::handleRemoveBundle);
 		METHOD_HANDLER("bundle", Access::QUEUE_EDIT, ApiRequest::METHOD_PATCH, (TOKEN_PARAM), true, QueueApi::handleUpdateBundle);
@@ -175,6 +178,36 @@ namespace webserver {
 	api_return QueueApi::handleSearchBundle(ApiRequest& aRequest) {
 		auto b = getBundle(aRequest);
 		QueueManager::getInstance()->searchBundleAlternates(b, true);
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return QueueApi::handleGetBundleSources(ApiRequest& aRequest) {
+		auto b = getBundle(aRequest);
+		auto sources = QueueManager::getInstance()->getBundleSources(b);
+
+		auto ret = json::array();
+		for (const auto& s : sources) {
+			ret.push_back({
+				{ "user", Serializer::serializeHintedUser(s.getUser()) },
+				{ "last_speed", s.getUser().user->getSpeed() },
+				{ "files", s.files },
+				{ "size", s.size },
+			});
+		}
+
+		aRequest.setResponseBody(ret);
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return QueueApi::handleRemoveBundleSource(ApiRequest& aRequest) {
+		auto b = getBundle(aRequest);
+		auto user = Deserializer::getUser(aRequest.getStringParam(2), false);
+
+		auto removed = QueueManager::getInstance()->removeBundleSource(b, user, QueueItem::Source::FLAG_REMOVED);
+		aRequest.setResponseBody({
+			{ "count", removed },
+		});
+
 		return websocketpp::http::status_code::ok;
 	}
 
