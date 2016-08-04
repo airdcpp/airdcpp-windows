@@ -289,8 +289,11 @@ public:
 	void calculateBundlePriorities(bool verbose) noexcept;
 
 
-	void removeBundleSource(QueueToken aBundleToken, const UserPtr& aUser, Flags::MaskType reason) noexcept;
-	void removeBundleSource(BundlePtr aBundle, const UserPtr& aUser, Flags::MaskType reason) noexcept;
+	size_t removeBundleSource(QueueToken aBundleToken, const UserPtr& aUser, Flags::MaskType reason) noexcept;
+
+	// Remove source from the provided bundle
+	// Returns the number of removed source files
+	size_t removeBundleSource(BundlePtr aBundle, const UserPtr& aUser, Flags::MaskType reason) noexcept;
 
 	// Get source infos for the specified user
 	void getSourceInfo(const UserPtr& aUser, Bundle::SourceBundleList& aSources, Bundle::SourceBundleList& aBad) const noexcept;

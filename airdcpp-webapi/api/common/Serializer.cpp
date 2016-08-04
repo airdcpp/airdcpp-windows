@@ -340,9 +340,17 @@ namespace webserver {
 	}
 
 	json Serializer::serializeDupe(DupeType aDupeType, StringList&& aPaths) noexcept {
-		return{
+		return {
 			{ "id", getDupeId(aDupeType) },
 			{ "paths", aPaths },
+		};
+	}
+
+	json Serializer::serializeSlots(int aFree, int aTotal) noexcept {
+		return{
+			{ "str", SearchResult::formatSlots(aFree, aTotal) },
+			{ "free", aFree },
+			{ "total", aTotal }
 		};
 	}
 }
