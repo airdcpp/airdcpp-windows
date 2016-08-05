@@ -100,20 +100,6 @@ namespace webserver {
 		}
 	}
 
-	PropertyFilter::Matcher::Matcher(const PropertyFilter::Ptr& aFilter) : filter(aFilter) {
-		filter->cs.lock_shared();
-	}
-
-	PropertyFilter::Matcher::~Matcher() {
-		if (filter) {
-			filter->cs.unlock_shared();
-		}
-	}
-
-	PropertyFilter::Matcher::Matcher(Matcher&& rhs) noexcept : filter(rhs.filter) {
-		rhs.filter = nullptr;
-	}
-
 	bool PropertyFilter::match(const NumericFunction& numericF, const InfoFunction& infoF, const CustomFilterFunction& aCustomF) const {
 		if (empty())
 			return true;

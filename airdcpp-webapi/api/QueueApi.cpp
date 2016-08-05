@@ -438,7 +438,7 @@ namespace webserver {
 	}
 
 	void QueueApi::on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) noexcept {
-		onBundleUpdated(aBundle, { QueueBundleUtils::PROP_SIZE });
+		onBundleUpdated(aBundle, { QueueBundleUtils::PROP_SIZE, QueueBundleUtils::PROP_TYPE });
 	}
 
 	void QueueApi::on(QueueManagerListener::BundlePriority, const BundlePtr& aBundle) noexcept {
