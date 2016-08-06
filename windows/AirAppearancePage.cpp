@@ -38,9 +38,9 @@ PropPage::TextItem AirAppearancePage::texts[] = {
 
 PropPage::Item AirAppearancePage::items[] = {
 	{ IDC_BACKGROUND_IMAGE, SettingsManager::BACKGROUND_IMAGE, PropPage::T_STR },
-	{ IDC_RESIZE_LINES, SettingsManager::MAX_RESIZE_LINES, PropPage::T_INT },//ApexDC
-	{ IDC_PM_LINES, SettingsManager::SHOW_LAST_LINES_LOG, PropPage::T_INT },
-	{ IDC_DUPE_SEARCH, SettingsManager::DUPE_SEARCH, PropPage::T_BOOL },
+	{ IDC_RESIZE_LINES,		SettingsManager::MAX_RESIZE_LINES, PropPage::T_INT },//ApexDC
+	{ IDC_PM_LINES,			SettingsManager::MAX_PM_HISTORY_LINES, PropPage::T_INT },
+	{ IDC_DUPE_SEARCH,		SettingsManager::DUPE_SEARCH, PropPage::T_BOOL },
 	{ IDC_DUPE_CHAT,		SettingsManager::DUPES_IN_CHAT, PropPage::T_BOOL	},
 	{ IDC_DUPE_FILELISTS,	SettingsManager::DUPES_IN_FILELIST, PropPage::T_BOOL	},
 	{ 0, 0, PropPage::T_END }
