@@ -124,7 +124,6 @@ bool SearchResult::SpeedSortOrder::operator()(const SearchResultPtr& lhs, const 
 }
 
 bool SearchResult::DateOrder::operator()(const SearchResultPtr& a, const SearchResultPtr& b) const noexcept {
-	auto tmp = a->getDate() > 0 && a->getDate() < b->getDate();
 	return a->getDate() > 0 && a->getDate() < b->getDate();
 }
 
