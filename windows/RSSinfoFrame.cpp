@@ -64,7 +64,7 @@ LRESULT RssInfoFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ctrlTree.SetTextColor(WinUtil::textColor);
 
 	treeImages.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 3);
-	treeImages.AddIcon(CIcon(ResourceLoader::getIcon(IDI_RSS, 16)));
+	treeImages.AddIcon(CIcon(ResourceLoader::loadIcon(IDI_RSS, 16)));
 
 	ctrlTree.SetImageList(treeImages);
 
