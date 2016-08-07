@@ -49,8 +49,6 @@ public:
 		COMMAND_ID_HANDLER(IDC_ADD, onClickedAdd)
 		COMMAND_ID_HANDLER(IDC_REMOVE, onClickedRemove)
 		COMMAND_ID_HANDLER(IDC_RENAME, onClickedRename)
-		COMMAND_ID_HANDLER(IDC_MOVEUP, onMove)
-		COMMAND_ID_HANDLER(IDC_MOVEDOWN, onMove)
 
 		COMMAND_ID_HANDLER(IDC_BROWSEDIR, onClickedBrowseDir)
 	END_MSG_MAP()
@@ -62,7 +60,6 @@ public:
 	LRESULT onClickedAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedRename(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onMove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT onClickedBrowseDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
@@ -75,12 +72,16 @@ protected:
 	static TextItem texts[];
 	ExListViewCtrl ctrlDirectories;
 	TCHAR* title;
-	FavoriteManager::FavDirList favoriteDirs;
+	FavoriteManager::FavoriteDirectoryMap favoriteDirs;
 	CComboBox ctrlAutoSelect;
 
-	bool renameFavoriteDir(const string& aName, const string& anotherName, const string& aPath);
-	bool removeFavoriteDir(const string& aName);
-	void addDirs(const string& vName, const StringList& aPaths);
+	FavoriteManager::FavoriteDirectoryMap::iterator getByPosition(int aPos) noexcept;
+
+	bool renameDirectory(const string& aPath, const string& aNewName) noexcept;
+	bool removeDirectory(const string& aPath) noexcept;
+	void addDirectory(const string& aPath, const string& aName) noexcept;
+
+	void fillList();
 };
 
 #endif // !defined(FAVORITE_DIR_SPAGE_H)

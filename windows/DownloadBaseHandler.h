@@ -84,18 +84,20 @@ public:
 		if (isSizeUnknown) {
 			handleDownload(aTarget, QueueItemBase::DEFAULT, isWhole, isFav ? TargetUtil::TARGET_FAVORITE : TargetUtil::TARGET_SHARE, true);
 		} else {
-			auto list = isFav ? FavoriteManager::getInstance()->getFavoriteDirs() : ShareManager::getInstance()->getGroupedDirectories();
-			auto p = find_if(list.begin(), list.end(), CompareFirst<string, StringList>(aTarget));
-			dcassert(p != list.end());
+			auto groupedDirectories = isFav ? FavoriteManager::getInstance()->getGroupedFavoriteDirs() : ShareManager::getInstance()->getGroupedDirectories();
 
-			TargetUtil::TargetInfo targetInfo;
-			int64_t size = getDownloadSize(isWhole);
+			auto p = groupedDirectories.find(aTarget);
+			dcassert(p != groupedDirectories.end());
+			if (p != groupedDirectories.end()) {
+				TargetUtil::TargetInfo targetInfo;
+				auto size = getDownloadSize(isWhole);
 
-			if (!TargetUtil::getTarget(p->second, targetInfo, size) && !confirmDownload(targetInfo, size)) {
-				return;
+				if (!TargetUtil::getTarget(p->second, targetInfo, size) && !confirmDownload(targetInfo, size)) {
+					return;
+				}
+
+				handleDownload(targetInfo.getTarget(), QueueItem::DEFAULT, isWhole, TargetUtil::TARGET_PATH, false);
 			}
-
-			handleDownload(targetInfo.getTarget(), QueueItem::DEFAULT, isWhole, TargetUtil::TARGET_PATH, false);
 		}
 	}
 
@@ -166,22 +168,24 @@ public:
 	}
 
 	void appendVirtualItems(OMenu &targetMenu, bool wholeDir, bool isFavDirs, bool isSizeUnknown) {
-		auto l = isFavDirs ? FavoriteManager::getInstance()->getFavoriteDirs() : ShareManager::getInstance()->getGroupedDirectories();
+		auto directoryMap = isFavDirs ? FavoriteManager::getInstance()->getGroupedFavoriteDirs() : ShareManager::getInstance()->getGroupedDirectories();
 
-		if (!l.empty()) {
-			targetMenu.InsertSeparatorLast(isFavDirs ? TSTRING(SETTINGS_FAVORITE_DIRS_PAGE) : TSTRING(SHARED));
-			for(auto& i: l) {
-				string t = i.first;
-				if (i.second.size() > 1) {
-					auto vMenu = targetMenu.createSubMenu(Text::toT(i.first).c_str(), true);
-					vMenu->appendItem(CTSTRING(AUTO_SELECT), [=] { onDownloadVirtual(t, isFavDirs, wholeDir, isSizeUnknown); });
-					vMenu->appendSeparator();
-					for(auto& target: i.second) {
-						vMenu->appendItem(Text::toT(target).c_str(), [=] { onDownload(target, wholeDir, isSizeUnknown, QueueItemBase::DEFAULT); });
-					}
-				} else {
-					targetMenu.appendItem(Text::toT(t).c_str(), [=] { onDownloadVirtual(t, isFavDirs, wholeDir, isSizeUnknown); });
+		if (directoryMap.empty()) {
+			return;
+		}
+
+		targetMenu.InsertSeparatorLast(isFavDirs ? TSTRING(SETTINGS_FAVORITE_DIRS_PAGE) : TSTRING(SHARED));
+		for(const auto& dp: directoryMap) {
+			const auto& groupName = dp.first;
+			if (dp.second.size() > 1) {
+				auto vMenu = targetMenu.createSubMenu(Text::toT(groupName).c_str(), true);
+				vMenu->appendItem(CTSTRING(AUTO_SELECT), [=] { onDownloadVirtual(groupName, isFavDirs, wholeDir, isSizeUnknown); });
+				vMenu->appendSeparator();
+				for (const auto& target: dp.second) {
+					vMenu->appendItem(Text::toT(target).c_str(), [=] { onDownload(target, wholeDir, isSizeUnknown, QueueItemBase::DEFAULT); });
 				}
+			} else {
+				targetMenu.appendItem(Text::toT(groupName).c_str(), [=] { onDownloadVirtual(groupName, isFavDirs, wholeDir, isSizeUnknown); });
 			}
 		}
 	}

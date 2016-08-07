@@ -1035,13 +1035,13 @@ void UsersFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept 
 		RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	}
 }
-void UsersFrame::on(UserAdded, const FavoriteUser& aUser) noexcept { 
+void UsersFrame::on(FavoriteManagerListener::FavoriteUserAdded, const FavoriteUser& aUser) noexcept {
 	callAsync([=] { addUser(aUser.getUser(), aUser.getUrl()); } ); 
 }
-void UsersFrame::on(UserRemoved, const FavoriteUser& aUser) noexcept { 
+void UsersFrame::on(FavoriteManagerListener::FavoriteUserRemoved, const FavoriteUser& aUser) noexcept {
 	callAsync([=] { updateUser(aUser.getUser()); } ); 
 }
-void UsersFrame::on(StatusChanged, const UserPtr& aUser) noexcept { 
+void UsersFrame::on(FavoriteManagerListener::FavoriteUserUpdated, const UserPtr& aUser) noexcept {
 	callAsync([=] { updateUser(aUser); } ); 
 }
 

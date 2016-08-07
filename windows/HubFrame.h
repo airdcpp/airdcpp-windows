@@ -302,34 +302,34 @@ private:
 	void execTasks();
 
 	// FavoriteManagerListener
-	void on(FavoriteManagerListener::UserAdded, const FavoriteUser& /*aUser*/) noexcept;
-	void on(FavoriteManagerListener::UserRemoved, const FavoriteUser& /*aUser*/) noexcept;
+	void on(FavoriteManagerListener::FavoriteUserAdded, const FavoriteUser& /*aUser*/) noexcept;
+	void on(FavoriteManagerListener::FavoriteUserRemoved, const FavoriteUser& /*aUser*/) noexcept;
 	void resortForFavsFirst(bool justDoIt = false);
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
 	// ClientListener
-	void on(Connecting, const Client*) noexcept;
-	void on(Connected, const Client*) noexcept;
-	void on(UserConnected, const Client*, const OnlineUserPtr&) noexcept;
-	void on(UserUpdated, const Client*, const OnlineUserPtr&) noexcept;
-	void on(UsersUpdated, const Client*, const OnlineUserList&) noexcept;
+	void on(ClientListener::Connecting, const Client*) noexcept;
+	void on(ClientListener::Connected, const Client*) noexcept;
+	void on(ClientListener::UserConnected, const Client*, const OnlineUserPtr&) noexcept;
+	void on(ClientListener::UserUpdated, const Client*, const OnlineUserPtr&) noexcept;
+	void on(ClientListener::UsersUpdated, const Client*, const OnlineUserList&) noexcept;
 	void on(ClientListener::UserRemoved, const Client*, const OnlineUserPtr&) noexcept;
-	void on(Redirect, const Client*, const string&) noexcept;
-	void on(Failed, const string&, const string&) noexcept;
-	void on(GetPassword, const Client*) noexcept;
-	void on(HubUpdated, const Client*) noexcept;
-	void on(ChatMessage, const Client*, const ChatMessagePtr&) noexcept;
-	void on(StatusMessage, const Client*, const LogMessagePtr&, int = ClientListener::FLAG_NORMAL) noexcept;
-	void on(NickTaken, const Client*) noexcept;
-	void on(SearchFlood, const Client*, const string&) noexcept;	
-	void on(HubTopic, const Client*, const string&) noexcept;
-	void on(AddLine, const Client*, const string&) noexcept;
-	void on(SetActive, const Client*) noexcept;
-	void on(Disconnecting, const Client*) noexcept;
-	void on(Redirected, const string&, const ClientPtr& aNewClient) noexcept;
-	void on(MessagesRead) noexcept;
-	void on(KeyprintMismatch, const Client*) noexcept;
+	void on(ClientListener::Redirect, const Client*, const string&) noexcept;
+	void on(ClientListener::Failed, const string&, const string&) noexcept;
+	void on(ClientListener::GetPassword, const Client*) noexcept;
+	void on(ClientListener::HubUpdated, const Client*) noexcept;
+	void on(ClientListener::ChatMessage, const Client*, const ChatMessagePtr&) noexcept;
+	void on(ClientListener::StatusMessage, const Client*, const LogMessagePtr&, int = ClientListener::FLAG_NORMAL) noexcept;
+	void on(ClientListener::NickTaken, const Client*) noexcept;
+	void on(ClientListener::SearchFlood, const Client*, const string&) noexcept;
+	void on(ClientListener::HubTopic, const Client*, const string&) noexcept;
+	void on(ClientListener::AddLine, const Client*, const string&) noexcept;
+	void on(ClientListener::SetActive, const Client*) noexcept;
+	void on(ClientListener::Disconnecting, const Client*) noexcept;
+	void on(ClientListener::Redirected, const string&, const ClientPtr& aNewClient) noexcept;
+	void on(ClientListener::MessagesRead) noexcept;
+	void on(ClientListener::KeyprintMismatch, const Client*) noexcept;
 
 	void on(MessageManagerListener::IgnoreAdded, const UserPtr& aUser) noexcept;
 	void on(MessageManagerListener::IgnoreRemoved, const UserPtr& aUser) noexcept;
