@@ -156,7 +156,7 @@ private:
 			return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str());
 		}
 
-		int getImageIndex() const { return -1; }
+		int getImageIndex() const { return isRelease ? 1 : 0; }
 
 		RSSDataPtr item;
 		GETSET(DupeType, dupe, Dupe);
@@ -212,6 +212,7 @@ private:
 
 	CButton ctrlConfig;
 	CImageList treeImages;
+	CImageList listImages;
 
 	virtual void on(RSSManagerListener::RSSDataAdded, const RSSDataPtr& aData) noexcept;
 	virtual void on(RSSManagerListener::RSSFeedRemoved, const RSSPtr& aFeed) noexcept;

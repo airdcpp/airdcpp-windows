@@ -65,8 +65,12 @@ LRESULT RssInfoFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 
 	treeImages.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 3);
 	treeImages.AddIcon(CIcon(ResourceLoader::loadIcon(IDI_RSS, 16)));
-
 	ctrlTree.SetImageList(treeImages);
+
+	listImages.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 3);
+	listImages.AddIcon(CIcon(ResourceLoader::loadIcon(IDI_TEXT, 16)));
+	listImages.AddIcon(CIcon(ResourceLoader::getFileImages().GetIcon(ResourceLoader::DIR_NORMAL)));
+	ctrlRss.list.SetImageList(listImages, LVSIL_SMALL);
 
 	ctrlConfig.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 		BS_PUSHBUTTON, 0, IDC_RSS_UPDATE);
@@ -315,7 +319,7 @@ void RssInfoFrame::on(RSSFeedChanged, const RSSPtr& aFeed) noexcept {
 	});
 }
 
-void RssInfoFrame::handleDownload(const string& aTarget, QueueItemBase::Priority p, bool aIsRelease, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
+void RssInfoFrame::handleDownload(const string& aTarget, QueueItemBase::Priority p, bool /*aIsRelease*/, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
 	auto ii = ctrlRss.list.getSelectedItem();
 	if(ii)
 		AutoSearchManager::getInstance()->addAutoSearch(ii->item->getTitle(), aTarget, aTargetType, true, AutoSearch::RSS_DOWNLOAD);
