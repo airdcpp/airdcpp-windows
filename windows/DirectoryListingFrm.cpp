@@ -199,6 +199,10 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_
 	updateItemCache(aDir);
 
 	callAsync([=] {
+		if (getActive()) {
+			dl->setRead();
+		}
+
 		onLoadingFinished(aStart, aDir, aReload, aChangeDir);
 	});
 }
