@@ -229,12 +229,12 @@ private:
 	static int columnIndexes[];
 
 	// FavoriteManagerListener
-	void on(UserAdded, const FavoriteUser& aUser) noexcept;
-	void on(UserRemoved, const FavoriteUser& aUser) noexcept;
-	void on(StatusChanged, const UserPtr& aUser) noexcept;
+	void on(FavoriteManagerListener::FavoriteUserAdded, const FavoriteUser& aUser) noexcept;
+	void on(FavoriteManagerListener::FavoriteUserRemoved, const FavoriteUser& aUser) noexcept;
+	void on(FavoriteManagerListener::FavoriteUserUpdated, const UserPtr& aUser) noexcept;
 
 	// ClientManagerListner
-	void on(UserConnected, const OnlineUser& aUser, bool) noexcept;
+	void on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool) noexcept;
 	void on(ClientManagerListener::UserUpdated, const OnlineUser& aUser) noexcept;
 	void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool) noexcept;
 

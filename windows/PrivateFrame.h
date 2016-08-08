@@ -106,7 +106,7 @@ public:
 	void addLine(const Identity&, const tstring& aLine);
 	void addLine(const Identity&, const tstring& aLine, CHARFORMAT2& cf);
 	void addPrivateLine(const tstring& aLine, CHARFORMAT2& cf) { addLine(aLine, cf); }
-	void addStatusLine(const tstring& aLine, uint8_t severity);
+	void addStatusLine(const tstring& aLine, uint8_t aSeverity);
 
 	bool checkFrameCommand(tstring& cmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson);
 	void UpdateLayout(BOOL bResizeBars = TRUE);	

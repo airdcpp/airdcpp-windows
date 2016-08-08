@@ -353,4 +353,20 @@ namespace webserver {
 			{ "total", aTotal }
 		};
 	}
+
+	json Serializer::serializePriority(const QueueItemBase& aItem) noexcept {
+		return{
+			{ "id", aItem.getPriority() },
+			{ "str", AirUtil::getPrioText(aItem.getPriority()) },
+			{ "auto", aItem.getAutoPriority() }
+		};
+	}
+
+	json Serializer::serializeSourceCount(const QueueItemBase::SourceCount& aCount) noexcept {
+		return{
+			{ "online", aCount.online },
+			{ "total", aCount.total },
+			{ "str", aCount.format() },
+		};
+	}
 }

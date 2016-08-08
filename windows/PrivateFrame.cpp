@@ -113,8 +113,6 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ctrlStatusContainer.SubclassWindow(ctrlStatus.m_hWnd);
 	created = true;
 
-	ctrlClient.AppendChat(Identity(NULL, 0), _T("- "), _T(""), Text::toT(chat->getLastLogLines()), WinUtil::m_ChatTextLog, true);
-
 	SettingsManager::getInstance()->addListener(this);
 
 	callAsync([this] {
@@ -131,6 +129,8 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 			for (const auto& message : chat->getCache().getMessagesUnsafe()) {
 				if (message.type == Message::TYPE_CHAT) {
 					onChatMessage(message.chatMessage);
+				} else if (message.logMessage->isHistory()) {
+					ctrlClient.AppendChat(Identity(NULL, 0), _T("- "), _T(""), Text::toT(message.logMessage->getText()), WinUtil::m_ChatTextLog, true);
 				} else {
 					onStatusMessage(message.logMessage);
 				}

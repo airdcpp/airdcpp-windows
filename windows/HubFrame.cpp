@@ -1257,11 +1257,12 @@ void HubFrame::reconnectDisconnected() {
 	}
 }
 
-void HubFrame::on(FavoriteManagerListener::UserAdded, const FavoriteUser& /*aUser*/) noexcept{
+void HubFrame::on(FavoriteManagerListener::FavoriteUserAdded, const FavoriteUser& /*aUser*/) noexcept{
 	callAsync([=] { updateUsers = true; });
 	resortForFavsFirst();
 }
-void HubFrame::on(FavoriteManagerListener::UserRemoved, const FavoriteUser& /*aUser*/) noexcept {
+
+void HubFrame::on(FavoriteManagerListener::FavoriteUserRemoved, const FavoriteUser& /*aUser*/) noexcept {
 	callAsync([=] { updateUsers = true; });
 	resortForFavsFirst();
 }

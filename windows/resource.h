@@ -153,7 +153,6 @@
 #define IDD_HIGHLIGHTDIALOG             313
 #define IDD_DIALOG1                     314
 #define IDD_DIRLIST_DLG                 316
-#define IDD_FAVORITEDIR                 320
 #define IDD_TEMPSHARE_DLG               321
 #define IDI_PUBLICHUBS                  324
 #define IDI_RECONNECT                   325
@@ -642,7 +641,6 @@
 #define IDC_FILELIST_HL                 1218
 #define IDC_SHARE_SAVE_TIME             1218
 #define IDC_U_MATCH                     1218
-#define IDC_FDNAME                      1218
 #define IDC_AWAY_IDLE_TIME              1218
 #define IDC_NICK_MATCH                  1218
 #define IDC_WEBUSER_NAME                1218
@@ -1278,7 +1276,6 @@
 #define IDC_USER_MATCH_TEXT             1620
 #define IDC_FAVDIRS_SHOW_SHARED2        1620
 #define IDC_CLEAR_DIR_HISTORY           1620
-#define IDC_FDNAME_TEXT                 1621
 #define IDC_FDPATH_TEXT                 1622
 #define IDC_FAVDIR_EXPLAIN              1624
 #define IDC_SEARCH_INTERVAL             1625
@@ -1288,8 +1285,6 @@
 #define IDC_FORMAT_REMOTE_TIME          1628
 #define IDC_SHARED                      1629
 #define IDC_HUBSHARES_ADC_ONLY          1630
-#define IDC_FAVDIR_EDIT                 1631
-#define IDC_SETTINGS_FAVDIR_PATHS       1634
 #define IDC_AUTOPRIO_DISABLED           1634
 #define IDC_AUTOPRIO_ENABLED            1634
 #define IDC_AUTOPRIO_FILES              1635
@@ -1468,7 +1463,6 @@
 #define IDC_AUTOSEARCHFRM               3031
 #define IDC_ENABLE                      3032
 #define IDC_DISABLE                     3033
-#define IDC_DIRPATHS                    3034
 #define IDC_BMAGNET                     3035
 #define IDC_SELECT_WINDOW               6000
 #define IDC_USER_COMMAND                6500
