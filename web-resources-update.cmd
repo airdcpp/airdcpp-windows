@@ -24,10 +24,24 @@ if exist "installer\Web-resources\version.chk" (
  )
 
 if "%version%" LEQ "%oldversion%" (
-    goto ALRDYEST
+    goto VERSIONCHECK
   ) else (
     goto RENWEBRES
   )
+
+:VERSIONCHECK
+if "%oldversion%"=="%oldversion:beta=%" (
+    set oldbetafound=false
+    ) else (
+      set oldbetafound=true
+      if "%version%"=="%version:beta=%" (
+      set betafound=false
+      goto RENWEBRES
+      ) else (
+        set betafound=true
+      )
+    )
+goto ALRDYEST
 
 :RENWEBRES
 rename installer\Web-resources $Web-resources 2>NUL
