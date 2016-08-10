@@ -7,6 +7,8 @@ setlocal
 
 set scriptpath=%~dp0
 
+if /i "%1"=="/force" set force=true
+
 if not exist "%ProgramFiles%\7-Zip" goto NO7ZIP
 set 7path="%ProgramFiles%\7-Zip"
 
@@ -22,6 +24,8 @@ if exist "installer\Web-resources\version.chk" (
      echo 0.0.0>"installer\Web-resources\version.chk"
      set /P oldversion=<"installer\Web-resources\version.chk"
  )
+
+if "%force%"=="true" goto RENWEBRES
 
 if "%version%" LEQ "%oldversion%" (
     goto VERSIONCHECK
