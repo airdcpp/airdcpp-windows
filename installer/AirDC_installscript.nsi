@@ -13,8 +13,10 @@
 !include "FileFunc.nsh"   ; for ${GetSize}
 !include "WinVer.nsh"
 
-!ifndef NSIS_UNICODE
-  !error "An Unicode version of NSIS is required, see <http://code.google.com/p/unsis/>"
+Unicode true
+
+!if 0x3000000 >= "${NSIS_PACKEDVERSION}"
+  !error "NSIS 3.0 or higher is required to build this installer!"
 !endif
 
 Var VERSION ; will be filled in onInit
