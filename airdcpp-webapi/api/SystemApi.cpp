@@ -21,6 +21,7 @@
 #include <web-server/JsonUtil.h>
 #include <web-server/Timer.h>
 #include <web-server/WebServerManager.h>
+#include <web-server/WebServerSettings.h>
 
 #include <api/SystemApi.h>
 #include <api/common/Serializer.h>
@@ -83,7 +84,7 @@ namespace webserver {
 		auto server = session->getServer();
 
 		aRequest.setResponseBody({
-			{ "server_threads", server->getServerThreads() },
+			{ "server_threads", WEBCFG(SERVER_THREADS).num() },
 			{ "client_started", started },
 			{ "client_version", fullVersionString },
 			{ "active_sessions", server->getUserManager().getSessionCount() },
