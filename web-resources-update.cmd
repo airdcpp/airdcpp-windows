@@ -7,6 +7,8 @@ setlocal
 
 set scriptpath=%~dp0
 
+if /i "%1"=="/force" set force=true
+
 if not exist "%ProgramFiles%\7-Zip" goto NO7ZIP
 set 7path="%ProgramFiles%\7-Zip"
 
@@ -23,11 +25,27 @@ if exist "installer\Web-resources\version.chk" (
      set /P oldversion=<"installer\Web-resources\version.chk"
  )
 
+if "%force%"=="true" goto RENWEBRES
+
 if "%version%" LEQ "%oldversion%" (
-    goto ALRDYEST
+    goto VERSIONCHECK
   ) else (
     goto RENWEBRES
   )
+
+:VERSIONCHECK
+if "%oldversion%"=="%oldversion:beta=%" (
+    set oldbetafound=false
+    ) else (
+      set oldbetafound=true
+      if "%version%"=="%version:beta=%" (
+      set betafound=false
+      goto RENWEBRES
+      ) else (
+        set betafound=true
+      )
+    )
+goto ALRDYEST
 
 :RENWEBRES
 rename installer\Web-resources $Web-resources 2>NUL
