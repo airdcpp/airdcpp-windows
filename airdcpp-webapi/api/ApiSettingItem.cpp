@@ -43,7 +43,7 @@ namespace webserver {
 		json ret;
 		ret["value"] = value.first;
 		ret["key"] = name;
-		//ret["title"] = ResourceManager::getInstance()->getString(desc);
+		ret["title"] = getTitle();
 		if (value.second) {
 			ret["auto"] = true;
 		}
@@ -63,8 +63,8 @@ namespace webserver {
 		return ret;
 	}
 
-	ServerSettingItem::ServerSettingItem(const string& aName, ResourceManager::Strings aDesc, Type aType, Unit&& aUnit) : 
-		ApiSettingItem(aName, aType, move(aUnit)), desc(aDesc) {
+	ServerSettingItem::ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType, Unit&& aUnit) :
+		ApiSettingItem(aKey, aType, move(aUnit)), desc(aTitle), defaultValue(aDefaultValue), value(aDefaultValue) {
 
 	}
 
@@ -77,9 +77,35 @@ namespace webserver {
 		return { value, false };
 	}
 
-	bool ServerSettingItem::setCurValue(const json& aJson) noexcept {
-		value = aJson;
+	void ServerSettingItem::unset() noexcept {
+		value = defaultValue;
+	}
+
+	bool ServerSettingItem::setCurValue(const json& aJson) {
+		if (aJson.is_null()) {
+			unset();
+		} else {
+			JsonUtil::ensureType(name, aJson, defaultValue);
+			value = aJson;
+		}
+
 		return true;
+	}
+
+	int ServerSettingItem::num() {
+		return value.get<int>();
+	}
+
+	string ServerSettingItem::str() {
+		if (value.is_number()) {
+			return Util::toString(num());
+		}
+
+		return value.get<string>();
+	}
+
+	bool ServerSettingItem::isDefault() const noexcept {
+		return value == defaultValue;
 	}
 
 	CoreSettingItem::CoreSettingItem(const string& aName, int aKey, ResourceManager::Strings aDesc, Type aType, Unit&& aUnit) :
@@ -176,8 +202,6 @@ namespace webserver {
 			ret["type"] = "long_text";
 		}*/
 
-		ret["title"] = getDescription();
-
 		// Serialize possible enum values
 		auto enumStrings = SettingsManager::getEnumStrings(key, false);
 		if (!enumStrings.empty()) {
@@ -208,7 +232,11 @@ namespace webserver {
 		return ret;
 	}
 
-	bool CoreSettingItem::setCurValue(const json& aJson) noexcept {
+	void CoreSettingItem::unset() noexcept {
+		SettingItem::unset();
+	}
+
+	bool CoreSettingItem::setCurValue(const json& aJson) {
 		if ((type == TYPE_CONN_V4 && SETTING(AUTO_DETECT_CONNECTION)) ||
 			(type == TYPE_CONN_V6 && SETTING(AUTO_DETECT_CONNECTION6))) {
 			//display::Manager::get()->cmdMessage("Note: Connection autodetection is enabled for the edited protocol. The changed setting won't take effect before auto detection has been disabled.");

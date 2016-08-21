@@ -53,8 +53,10 @@ namespace webserver {
 
 		// Returns the value and bool indicating whether it's an auto detected value
 		virtual pair<json, bool> valueToJson(bool aForceAutoValues = false) const noexcept = 0;
+		virtual const string& getTitle() const noexcept = 0;
 
-		virtual bool setCurValue(const json& aJson) noexcept = 0;
+		virtual bool setCurValue(const json& aJson) = 0;
+		virtual void unset() noexcept = 0;
 
 		const string name;
 		const Type type;
@@ -72,23 +74,45 @@ namespace webserver {
 		pair<json, bool> valueToJson(bool aForceAutoValues = false) const noexcept override;
 		json autoValueToJson(bool aForceAutoValues) const noexcept;
 
-		bool setCurValue(const json& aJson) noexcept override;
+		// Throws on invalid JSON
+		bool setCurValue(const json& aJson) override;
+		void unset() noexcept override;
+
+		const string& getTitle() const noexcept override {
+			return SettingItem::getDescription();
+		}
 	};
 
 	class ServerSettingItem : public ApiSettingItem {
 	public:
-		ServerSettingItem(const string& aName, ResourceManager::Strings aDesc, Type aType = TYPE_GENERAL, Unit&& aUnit = { ResourceManager::Strings::LAST, false });
+		ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType = TYPE_GENERAL, Unit&& aUnit = { ResourceManager::Strings::LAST, false });
 
 		json infoToJson(bool aForceAutoValues = false) const noexcept override;
 
 		// Returns the value and bool indicating whether it's an auto detected value
 		pair<json, bool> valueToJson(bool aForceAutoValues = false) const noexcept override;
 
-		bool setCurValue(const json& aJson) noexcept override;
+		bool setCurValue(const json& aJson) override;
 
-		const ResourceManager::Strings desc;
+		const string desc;
 
-		GETSET(json, value, Value);
+		const string& getTitle() const noexcept override {
+			return desc;
+		}
+
+		void unset() noexcept override;
+
+		int num();
+		string str();
+
+		bool isDefault() const noexcept;
+
+		const json& getValue() const noexcept {
+			return value;
+		}
+	private:
+		json value;
+		const json defaultValue;
 	};
 }
 

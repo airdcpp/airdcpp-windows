@@ -18,7 +18,9 @@
 
 #include <api/SettingApi.h>
 #include <api/ApiSettingItem.h>
+
 #include <api/CoreSettings.h>
+#include <web-server/WebServerSettings.h>
 
 #include <web-server/JsonUtil.h>
 #include <api/common/Serializer.h>
@@ -42,7 +44,7 @@ namespace webserver {
 		auto forceAutoValues = JsonUtil::getOptionalFieldDefault<bool>("force_auto_values", requestJson, false);
 
 		json retJson;
-		parseSettingKeys(requestJson, [&](const ApiSettingItem* aItem) {
+		parseSettingKeys(requestJson, [&](ApiSettingItem* aItem) {
 			retJson[aItem->name] = aItem->infoToJson(forceAutoValues);
 		});
 
@@ -54,7 +56,7 @@ namespace webserver {
 		const auto& requestJson = aRequest.getRequestBody();
 
 		json retJson;
-		parseSettingKeys(requestJson, [&](const ApiSettingItem* aItem) {
+		parseSettingKeys(requestJson, [&](ApiSettingItem* aItem) {
 			retJson[aItem->name] = aItem->valueToJson().first;
 		});
 
@@ -77,7 +79,7 @@ namespace webserver {
 	api_return SettingApi::handleResetSettings(ApiRequest& aRequest) {
 		const auto& requestJson = aRequest.getRequestBody();
 
-		parseSettingKeys(requestJson, [&](const CoreSettingItem* aItem) {
+		parseSettingKeys(requestJson, [&](ApiSettingItem* aItem) {
 			aItem->unset();
 		});
 
@@ -88,7 +90,7 @@ namespace webserver {
 		SettingHolder h(nullptr);
 
 		for (const auto& elem : json::iterator_wrapper(aRequest.getRequestBody())) {
-			auto setting = const_cast<CoreSettingItem*>(getSettingItem(elem.key()));
+			auto setting = getSettingItem(elem.key());
 			if (!setting) {
 				JsonUtil::throwError(elem.key(), JsonUtil::ERROR_INVALID, "Setting not found");
 			}
@@ -100,12 +102,12 @@ namespace webserver {
 		return websocketpp::http::status_code::ok;
 	}
 
-	const CoreSettingItem* SettingApi::getSettingItem(const string& aKey) const noexcept {
-		auto p = boost::find_if(coreSettings, [&](const ApiSettingItem& aItem) { return aItem.name == aKey; });
+	ApiSettingItem* SettingApi::getSettingItem(const string& aKey) noexcept {
+		auto p = boost::find_if(coreSettings, [&](ApiSettingItem& aItem) { return aItem.name == aKey; });
 		if (p != coreSettings.end()) {
 			return &(*p);
 		}
 
-		return nullptr;
+		return WebServerSettings::getSettingItem(aKey);
 	}
 }

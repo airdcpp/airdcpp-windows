@@ -24,6 +24,8 @@
 #include "WebServerPage.h"
 #include "WebUserDlg.h"
 
+#include <web-server/WebServerSettings.h>
+
 #include <airdcpp/LogManager.h>
 
 
@@ -52,8 +54,8 @@ LRESULT WebServerPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	::SetWindowText(GetDlgItem(IDC_WEBSERVER_PORT_LABEL), CTSTRING_F(WEB_SERVER_PORT, "HTTP"));
 	::SetWindowText(GetDlgItem(IDC_WEBSERVER_TLSPORT_LABEL), CTSTRING_F(WEB_SERVER_PORT, "HTTPS"));
 
-	::SetWindowText(GetDlgItem(IDC_WEBSERVER_PORT), Util::toStringW(webMgr->getPlainServerConfig().getPort()).c_str());
-	::SetWindowText(GetDlgItem(IDC_WEBSERVER_TLSPORT), Util::toStringW(webMgr->getTlsServerConfig().getPort()).c_str());
+	::SetWindowText(GetDlgItem(IDC_WEBSERVER_PORT), Util::toStringW(WEBCFG(PLAIN_PORT).num()).c_str());
+	::SetWindowText(GetDlgItem(IDC_WEBSERVER_TLSPORT), Util::toStringW(WEBCFG(TLS_PORT).num()).c_str());
 
 	ctrlTlsPort.Attach(GetDlgItem(IDC_WEBSERVER_TLSPORT));
 	ctrlPort.Attach(GetDlgItem(IDC_WEBSERVER_PORT));
@@ -98,8 +100,8 @@ void WebServerPage::applySettings() noexcept {
 	auto plainserverPort = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlPort)));
 	auto tlsServerPort = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlTlsPort)));
 
-	webMgr->getPlainServerConfig().setPort(plainserverPort);
-	webMgr->getTlsServerConfig().setPort(tlsServerPort);
+	WEBCFG(PLAIN_PORT).setCurValue(plainserverPort);
+	WEBCFG(TLS_PORT).setCurValue(tlsServerPort);
 
 	webMgr->getUserManager().replaceWebUsers(webUserList);
 }
@@ -277,7 +279,7 @@ void WebServerPage::write() {
 	auto plainserverPort = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlPort)));
 	auto tlsServerPort = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlTlsPort)));
 
-	auto needServerRestart = webMgr->getPlainServerConfig().getPort() != plainserverPort || webMgr->getTlsServerConfig().getPort() != tlsServerPort;
+	auto needServerRestart = WEBCFG(PLAIN_PORT).num() != plainserverPort || WEBCFG(TLS_PORT).num() != tlsServerPort;
 
 	const auto errorF = [](const string& aError) {
 		LogManager::getInstance()->message(aError, LogMessage::SEV_ERROR);
