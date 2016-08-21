@@ -163,7 +163,10 @@ namespace webserver {
 
 			//endpoint_plain.set_pong_handler(std::bind(&WebServerManager::onPongReceived, this, _1, _2));
 		} catch (const std::exception& e) {
-			errorF(e.what());
+			if (errorF) {
+				errorF(e.what());
+			}
+
 			return false;
 		}
 
@@ -200,7 +203,9 @@ namespace webserver {
 			return true;
 		} catch (const std::exception& e) {
 			auto message = boost::format("Failed to set up %1% server on port %2%: %3% (is the port in use by another application?)") % aProtocol % aConfig.port.num() % string(e.what());
-			errorF(message.str());
+			if (errorF) {
+				errorF(message.str());
+			}
 		}
 
 		return false;
@@ -440,7 +445,9 @@ namespace webserver {
 				xml.stepOut();
 			}
 		} catch (const Exception& e) {
-			aErrorF(STRING_F(LOAD_FAILED_X, CONFIG_NAME % e.getError()));
+			if (aErrorF) {
+				aErrorF(STRING_F(LOAD_FAILED_X, CONFIG_NAME % e.getError()));
+			}
 		}
 
 		return hasValidConfig();

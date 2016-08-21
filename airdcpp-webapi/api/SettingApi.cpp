@@ -20,6 +20,7 @@
 #include <api/ApiSettingItem.h>
 
 #include <api/CoreSettings.h>
+#include <web-server/WebServerManager.h>
 #include <web-server/WebServerSettings.h>
 
 #include <web-server/JsonUtil.h>
@@ -99,6 +100,8 @@ namespace webserver {
 		}
 
 		SettingsManager::getInstance()->save();
+		WebServerManager::getInstance()->save(nullptr);
+
 		return websocketpp::http::status_code::ok;
 	}
 

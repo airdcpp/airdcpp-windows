@@ -27,6 +27,7 @@
 #include <api/common/Serializer.h>
 
 #include <airdcpp/ActivityManager.h>
+#include <airdcpp/Thread.h>
 #include <airdcpp/TimerManager.h>
 
 namespace webserver {
@@ -37,6 +38,8 @@ namespace webserver {
 		METHOD_HANDLER("away", Access::ANY, ApiRequest::METHOD_GET, (), false, SystemApi::handleGetAwayState);
 		METHOD_HANDLER("away", Access::ANY, ApiRequest::METHOD_POST, (), true, SystemApi::handleSetAway);
 
+		METHOD_HANDLER("restart_web", Access::ADMIN, ApiRequest::METHOD_POST, (), false, SystemApi::handleRestartWeb);
+
 		createSubscription("away_state");
 
 		ActivityManager::getInstance()->addListener(this);
@@ -44,6 +47,31 @@ namespace webserver {
 
 	SystemApi::~SystemApi() {
 		ActivityManager::getInstance()->removeListener(this);
+	}
+
+	class RestartThread : public Thread {
+	public:
+		typedef shared_ptr<RestartThread> Ptr;
+		RestartThread(Ptr& aPtr) : thisPtr(aPtr) {
+			start();
+		}
+
+		int run() override {
+			sleep(500);
+			WebServerManager::getInstance()->stop();
+			WebServerManager::getInstance()->start(nullptr);
+			thisPtr.reset();
+			return 0;
+		}
+	private:
+		Ptr& thisPtr;
+	};
+	static RestartThread::Ptr restartThread;
+
+	api_return SystemApi::handleRestartWeb(ApiRequest& aRequest) {
+		// We can't use the server thread for restarting...
+		restartThread = make_shared<RestartThread>(restartThread);
+		return websocketpp::http::status_code::ok;
 	}
 
 	void SystemApi::on(ActivityManagerListener::AwayModeChanged, AwayMode /*aNewMode*/) noexcept {
