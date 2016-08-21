@@ -62,7 +62,7 @@ namespace webserver {
 		return websocketpp::http::status_code::ok;
 	}
 
-	void SettingApi::parseSettingKeys(const json& aJson, function<void(const ApiSettingItem*)> aHandler) {
+	void SettingApi::parseSettingKeys(const json& aJson, ParserF aHandler) {
 		auto keys = JsonUtil::getField<StringList>("keys", aJson, true);
 		for (const auto& key : keys) {
 			auto setting = getSettingItem(key);
@@ -77,7 +77,7 @@ namespace webserver {
 	api_return SettingApi::handleResetSettings(ApiRequest& aRequest) {
 		const auto& requestJson = aRequest.getRequestBody();
 
-		parseSettingKeys(requestJson, [&](const ApiSettingItem* aItem) {
+		parseSettingKeys(requestJson, [&](const CoreSettingItem* aItem) {
 			aItem->unset();
 		});
 
@@ -87,8 +87,8 @@ namespace webserver {
 	api_return SettingApi::handleSetSettings(ApiRequest& aRequest) {
 		SettingHolder h(nullptr);
 
-		for (auto elem : json::iterator_wrapper(aRequest.getRequestBody())) {
-			auto setting = getSettingItem(elem.key());
+		for (const auto& elem : json::iterator_wrapper(aRequest.getRequestBody())) {
+			auto setting = const_cast<CoreSettingItem*>(getSettingItem(elem.key()));
 			if (!setting) {
 				JsonUtil::throwError(elem.key(), JsonUtil::ERROR_INVALID, "Setting not found");
 			}
@@ -100,7 +100,7 @@ namespace webserver {
 		return websocketpp::http::status_code::ok;
 	}
 
-	const ApiSettingItem* SettingApi::getSettingItem(const string& aKey) const noexcept {
+	const CoreSettingItem* SettingApi::getSettingItem(const string& aKey) const noexcept {
 		auto p = boost::find_if(coreSettings, [&](const ApiSettingItem& aItem) { return aItem.name == aKey; });
 		if (p != coreSettings.end()) {
 			return &(*p);
