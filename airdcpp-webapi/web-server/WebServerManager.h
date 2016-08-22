@@ -158,10 +158,6 @@ namespace webserver {
 
 		bool hasValidConfig() const noexcept;
 
-		void join() {
-			worker_threads.join_all();
-		}
-
 		ServerConfig& getPlainServerConfig() noexcept {
 			return plainServerConfig;
 		}
