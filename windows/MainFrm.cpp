@@ -83,7 +83,7 @@ bool MainFrame::isShutdownStatus = false;
 #define ICON_SPACE 24
 
 MainFrame::MainFrame() : CSplitterImpl(false), trayMessage(0), maximized(false), lastUpload(-1), lastUpdate(0), 
-oldshutdown(false), stopperThread(NULL),
+stopperThread(NULL),
 closing(false), missedAutoConnect(false), tabsontop(false),
 bTrayIcon(false), bAppMinimized(false), bHasPM(false), bHasMC(false), hashProgress(false), trayUID(0), fMenuShutdown(false),
 statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP), settingsWindowOpen(false)
@@ -225,8 +225,8 @@ LRESULT MainFrame::onMatchAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 	return 0;
 }
 
-void MainFrame::terminate() {
-	oldshutdown = true;
+void MainFrame::shutdown() {
+	forcedShutdown = true;
 	PostMessage(WM_CLOSE);
 }
 
@@ -1241,7 +1241,7 @@ void MainFrame::showMessageBox(const tstring& aMsg, UINT aFlags, const tstring& 
 }
 
 LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
-	if (!fMenuShutdown && SETTING(CLOSE_USE_MINIMIZE) && !oldshutdown && !closing) {
+	if (!fMenuShutdown && SETTING(CLOSE_USE_MINIMIZE) && !forcedShutdown && !closing) {
 		ShowWindow(SW_MINIMIZE);
 		return 0;
 	}
@@ -1255,7 +1255,7 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 			return 0;
 		}
 		
-		if (oldshutdown || WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_EXIT, TSTRING(REALLY_EXIT))) {
+		if (forcedShutdown || WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_EXIT, TSTRING(REALLY_EXIT))) {
 			
 			HubFrame::ShutDown();
 
@@ -2132,8 +2132,7 @@ void MainFrame::onBadVersion(const string& message, const string& infoUrl, const
 		if(!infoUrl.empty())
 			WinUtil::openLink(Text::toT(infoUrl));
 
-		oldshutdown = true;
-		PostMessage(WM_CLOSE);
+		shutdown();
 	} else {
 		if(!UpdateManager::getInstance()->getUpdater().isUpdating()) {
 			addThreadedTask([=] { UpdateManager::getInstance()->getUpdater().downloadUpdate(updateUrl, buildID, true); });
@@ -2148,8 +2147,7 @@ void MainFrame::onUpdateComplete(const string& aUpdater) noexcept {
 	if(WinUtil::showQuestionBox(TSTRING(UPDATER_RESTART), MB_ICONQUESTION)) {
 		WinUtil::addUpdate(aUpdater);
 
-		oldshutdown = true;
-		PostMessage(WM_CLOSE);
+		shutdown();
 	}
 }
 

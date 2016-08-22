@@ -312,8 +312,10 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 				}
 #endif
 
-				auto started = webserver::WebServerManager::getInstance()->start(webErrorF,
-					webResourcePath ? *webResourcePath : Util::emptyString
+				auto started = webserver::WebServerManager::getInstance()->startup(
+					webErrorF,
+					webResourcePath ? *webResourcePath : Util::emptyString,
+					[&]() { wndMain->shutdown(); }
 				);
 				
 				if (started) {
