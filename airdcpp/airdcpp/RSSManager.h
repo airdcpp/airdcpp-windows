@@ -71,12 +71,14 @@ public:
 };
 
 
-class RSSFilter {
+class RSSFilter : public StringMatch {
 public:
 
-	RSSFilter(const string& aFilterPattern, const string& aDownloadTarget) noexcept :
+	RSSFilter(const string& aFilterPattern, const string& aDownloadTarget, int aMethod) noexcept :
 		filterPattern(aFilterPattern), downloadTarget(aDownloadTarget)
 	{
+		pattern = aFilterPattern;
+		setMethod((StringMatch::Method)aMethod);
 	}
 
 	~RSSFilter() noexcept {};
@@ -135,7 +137,7 @@ public:
 		return rssFilterList;
 	}
 
-	void downloadFeed(const RSSPtr& aFeed);
+	void downloadFeed(const RSSPtr& aFeed, bool verbose = false);
 
 	void updateFeedItem(RSSPtr& aFeed, const string& aUrl, const string& aCategory, int aUpdateInterval);
 	

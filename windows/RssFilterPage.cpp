@@ -51,6 +51,12 @@ LRESULT RssFilterPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	ctrlRssFilterList.InsertColumn(0, CTSTRING(PATTERN), LVCFMT_LEFT, (rc.Width() / 3), 0);
 	ctrlRssFilterList.InsertColumn(1, CTSTRING(PATH), LVCFMT_LEFT, (rc.Width() / 3 * 2), 0);
 
+	ATTACH(IDC_MATCHER_TYPE, cMatcherType);
+	cMatcherType.AddString(CTSTRING(PLAIN_TEXT));
+	cMatcherType.AddString(CTSTRING(REGEXP));
+	cMatcherType.AddString(CTSTRING(WILDCARDS));
+	cMatcherType.SetCurSel(0);
+
 	::SetWindowText(GetDlgItem(IDC_FILTER_REMOVE), CTSTRING(REMOVE));
 	::SetWindowText(GetDlgItem(IDC_FILTER_ADD), CTSTRING(ADD));
 	::SetWindowText(GetDlgItem(IDC_FILTER_UPDATE), CTSTRING(UPDATE));
@@ -87,9 +93,11 @@ LRESULT RssFilterPage::onSelectionChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*
 		advance(item, ctrlRssFilterList.GetSelectedIndex());
 		ctrlAutoSearchPattern.SetWindowText(Text::toT(item->getFilterPattern()).c_str());
 		ctrlTarget.SetWindowText(Text::toT(item->getDownloadTarget()).c_str());
+		cMatcherType.SetCurSel(item->getMethod());
 	} else {
 		ctrlAutoSearchPattern.SetWindowText(_T(""));
 		ctrlTarget.SetWindowText(_T(""));
+		cMatcherType.SetCurSel(0);
 	}
 	loading = false;
 
@@ -113,7 +121,7 @@ LRESULT RssFilterPage::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 		return 0;
 	}
 
-	add(asPattern, dlTarget);
+	add(asPattern, dlTarget, cMatcherType.GetCurSel());
 	return 0;
 }
 
@@ -163,8 +171,8 @@ void RssFilterPage::remove(int i) {
 	filterList.erase(r);
 }
 
-void RssFilterPage::add(const string& aPattern, const string& aTarget) {
-	filterList.emplace_back(RSSFilter(aPattern, aTarget));
+void RssFilterPage::add(const string& aPattern, const string& aTarget, int aMethod) {
+	filterList.emplace_back(RSSFilter(aPattern, aTarget, aMethod));
 	fillList();
 	restoreSelection(Text::toT(aPattern));
 }
@@ -186,7 +194,7 @@ bool RssFilterPage::update() {
 			return false;
 		}
 
-		add(asPattern, dlTarget);
+		add(asPattern, dlTarget, cMatcherType.GetCurSel());
 	}
 	return true;
 }

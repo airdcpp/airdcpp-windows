@@ -198,7 +198,7 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 
 			OMenu menu;
 			menu.CreatePopupMenu();
-			menu.appendItem(TSTRING(UPDATE), [=] { RSSManager::getInstance()->downloadFeed(feed); }, OMenu::FLAG_THREADED);
+			menu.appendItem(TSTRING(UPDATE), [=] { RSSManager::getInstance()->downloadFeed(feed, true); }, OMenu::FLAG_THREADED);
 			menu.appendItem(TSTRING(MATCH_AUTOSEARCH), [=] { RSSManager::getInstance()->matchFilters(feed);  }, OMenu::FLAG_THREADED);
 			menu.appendSeparator();
 			menu.appendItem(TSTRING(CLEAR), [=] { RSSManager::getInstance()->clearRSSData(feed);  }, OMenu::FLAG_THREADED);
@@ -319,7 +319,7 @@ void RssInfoFrame::on(RSSFeedChanged, const RSSPtr& aFeed) noexcept {
 	});
 }
 
-void RssInfoFrame::handleDownload(const string& aTarget, QueueItemBase::Priority p, bool /*aIsRelease*/, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
+void RssInfoFrame::handleDownload(const string& aTarget, QueueItemBase::Priority /*p*/, bool /*aIsRelease*/, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
 	auto ii = ctrlRss.list.getSelectedItem();
 	if(ii)
 		AutoSearchManager::getInstance()->addAutoSearch(ii->item->getTitle(), aTarget, aTargetType, true, AutoSearch::RSS_DOWNLOAD);
@@ -345,7 +345,7 @@ void RssInfoFrame::onItemAdded(const RSSDataPtr& aData) {
 	auto newItem = new ItemInfo(aData);
 	ItemInfos.emplace(aData->getTitle(), newItem);
 	if (show(newItem))
-		ctrlRss.list.insertItem(newItem, 0);
+		ctrlRss.list.insertItem(newItem, newItem->getImageIndex());
 
 }
 

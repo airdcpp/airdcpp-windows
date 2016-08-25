@@ -219,7 +219,7 @@ bool RssFeedsPage::validateSettings(const RSSPtr& aFeed) {
 	auto category = Text::fromT(WinUtil::getEditText(ctrlCategorie));
 
 	if (url.empty() || category.empty()) {
-		MessageBox(_T("URL and Name / Categor must not be empty"));
+		MessageBox(_T("URL and Name / Category must not be empty"));
 		return false;
 	}
 

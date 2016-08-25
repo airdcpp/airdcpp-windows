@@ -92,6 +92,8 @@ private:
 
 	CEdit ctrlAutoSearchPattern;
 	CEdit ctrlTarget;
+	CComboBox cMatcherType;
+
 	ExListViewCtrl ctrlRssFilterList;
 
 	vector<RSSFilter> filterList;
@@ -99,7 +101,7 @@ private:
 	void fillList();
 
 	void remove(int i);
-	void add(const string& aPattern, const string& aTarget);
+	void add(const string& aPattern, const string& aTarget, int aMethod);
 	bool update();
 
 	bool validateSettings(const string& aPattern);

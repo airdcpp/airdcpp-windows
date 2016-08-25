@@ -206,7 +206,7 @@ void RSSManager::matchFilters(const RSSPtr& aFeed) const {
 void RSSManager::matchFilters(const RSSDataPtr& aData) const {
 	
 	for (auto& aF : rssFilterList) {
-		if (AirUtil::stringRegexMatch(aF.getFilterPattern(), aData->getTitle())) {
+		if (aF.match(aData->getTitle())) {
 
 			auto targetType = TargetUtil::TargetType::TARGET_PATH;
 			AutoSearchManager::getInstance()->addAutoSearch(aData->getTitle(),
@@ -240,6 +240,7 @@ void RSSManager::updateFeedItem(RSSPtr& aFeed, const string& aUrl, const string&
 void RSSManager::updateFilterList(vector<RSSFilter>& aNewList) {
 	Lock l(cs);
 	rssFilterList = aNewList;
+	for_each(rssFilterList.begin(), rssFilterList.end(), [&](RSSFilter& i) { i.prepare(); });
 }
 
 void RSSManager::removeFeedItem(const RSSPtr& aFeed) {
@@ -249,7 +250,7 @@ void RSSManager::removeFeedItem(const RSSPtr& aFeed) {
 	fire(RSSManagerListener::RSSFeedRemoved(), aFeed);
 }
 
-void RSSManager::downloadFeed(const RSSPtr& aFeed) {
+void RSSManager::downloadFeed(const RSSPtr& aFeed, bool verbose/*false*/) {
 	if (!aFeed)
 		return;
 
@@ -260,7 +261,8 @@ void RSSManager::downloadFeed(const RSSPtr& aFeed) {
 			[this, url] { downloadComplete(url); }, false));
 
 		fire(RSSManagerListener::RSSFeedUpdated(), aFeed);
-		LogManager::getInstance()->message("updating the " + aFeed->getUrl(), LogMessage::SEV_INFO);
+		if(verbose)
+			LogManager::getInstance()->message("updating the " + aFeed->getUrl(), LogMessage::SEV_INFO);
 	});
 }
 
@@ -341,9 +343,11 @@ void RSSManager::load() {
 		while (xml.findChild("Filter")) {
 			rssFilterList.emplace_back(
 				xml.getChildAttrib("FilterPattern"),
-				xml.getChildAttrib("DownloadTarget"));
+				xml.getChildAttrib("DownloadTarget"),
+				Util::toInt(xml.getChildAttrib("Method", "1")));
 		}
 
+		for_each(rssFilterList.begin(), rssFilterList.end(), [&](RSSFilter& i) { i.prepare(); });
 		xml.stepOut();
 	}
 
@@ -394,6 +398,7 @@ void RSSManager::saveConfig(bool saveDatabase) {
 		xml.addTag("Filter");
 		xml.addChildAttrib("FilterPattern", f.getFilterPattern());
 		xml.addChildAttrib("DownloadTarget", f.getDownloadTarget());
+		xml.addChildAttrib("Method", f.getMethod());
 	}
 
 	xml.stepOut();
