@@ -194,7 +194,7 @@ void ConnectivityManager::detectConnection() {
 	autoDetectedV4 = detectV4;
 	autoDetectedV6 = detectV6;
 
-	if(detectV4 && !AirUtil::getLocalIp(false, false).empty()) {
+	if (detectV4 && Util::isPublicIp(AirUtil::getLocalIp(false), false)) {
 		{
 			WLock l(cs);
 			autoSettings[SettingsManager::INCOMING_CONNECTIONS] = SettingsManager::INCOMING_ACTIVE;
@@ -206,8 +206,8 @@ void ConnectivityManager::detectConnection() {
 		detectV4 = false;
 	}
 
-	if(detectV6) {
-		if (!AirUtil::getLocalIp(true, false).empty()) {
+	if (detectV6) {
+		if (Util::isPublicIp(AirUtil::getLocalIp(true), true)) {
 			{
 				WLock l(cs);
 				autoSettings[SettingsManager::INCOMING_CONNECTIONS6] = SettingsManager::INCOMING_ACTIVE;
@@ -215,11 +215,12 @@ void ConnectivityManager::detectConnection() {
 
 			log(STRING(CONN_DIRECT_DETECTED), LogMessage::SEV_INFO, TYPE_V6);
 		} else {
-			//disable IPv6 if no public IP address is available
+			// Disable IPv6 connectivity if no public IP address is available
 			{
 				WLock l(cs);
 				autoSettings[SettingsManager::INCOMING_CONNECTIONS6] = SettingsManager::INCOMING_DISABLED;
 			}
+
 			log(STRING(IPV6_NO_PUBLIC_IP), LogMessage::SEV_INFO, TYPE_V6);
 		}
 

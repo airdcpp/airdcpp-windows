@@ -62,7 +62,7 @@ private:
 	void fixControls();
 	void getAddresses();
 
-	AirUtil::IpList bindAddresses;
+	AirUtil::AdapterInfoList bindAdapters;
 	bool v6;
 
 	// UpdateManagerListener
