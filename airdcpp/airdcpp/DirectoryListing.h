@@ -212,7 +212,7 @@ public:
 	void addViewNfoTask(const string& aDir, bool aAllowQueueList, DupeOpenF aDupeF = nullptr) noexcept;
 	void addMatchADLTask() noexcept;
 	void addListDiffTask(const string& aFile, bool aOwnList) noexcept;
-	void addPartialListTask(const string& aXml, const string& aBase, bool aReloadAll = false, bool aChangeDir = true, const AsyncF& aCompletionF = nullptr) noexcept;
+	void addPartialListTask(const string& aXml, const string& aBase, bool aReloadAll, bool aChangeDir, const AsyncF& aCompletionF = nullptr) noexcept;
 	void addFullListTask(const string& aDir) noexcept;
 	void addQueueMatchTask() noexcept;
 

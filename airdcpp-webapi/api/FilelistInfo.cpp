@@ -120,7 +120,7 @@ namespace webserver {
 			WLock l(cs);
 			currentViewItems.clear();
 
-			for (auto& d : curDir->directories) {
+			for (auto& d : curDir->directories | map_values) {
 				currentViewItems.emplace_back(std::make_shared<FilelistItemInfo>(d));
 			}
 

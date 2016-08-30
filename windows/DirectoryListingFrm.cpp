@@ -67,7 +67,7 @@ void DirectoryListingFrame::openWindow(const DirectoryListingPtr& aList, const s
 
 	if (aHWND != 0) {
 		if (aList->getPartialList()) {
-			aList->addPartialListTask(aXML, aDir, false);
+			aList->addPartialListTask(aXML, aDir, false, true);
 		} else {
 			frame->ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
 			aList->addFullListTask(aDir);
@@ -155,7 +155,7 @@ void DirectoryListingFrame::updateItemCache(const string& aPath) {
 		iic = make_unique<ItemInfoCache>();
 	}
 
-	for (auto& d : curDir->directories) {
+	for (auto& d : curDir->directories | map_values) {
 		iic->directories.emplace(d);
 	}
 

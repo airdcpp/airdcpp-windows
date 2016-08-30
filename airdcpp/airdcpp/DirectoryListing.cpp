@@ -727,7 +727,6 @@ DirectoryListing::Directory::~Directory() {
 }
 
 void DirectoryListing::Directory::clearAll() noexcept {
-	//for_each(files, DeleteFunction());
 	directories.clear();
 	files.clear();
 }
@@ -809,7 +808,7 @@ int64_t DirectoryListing::Directory::getTotalSize(bool countAdls) const noexcept
 		return 0;
 	
 	auto x = getFilesSize();
-	for(const auto& d: directories | map_values) {
+	for (const auto& d: directories | map_values) {
 		if(!countAdls && d->getAdls())
 			continue;
 		x += d->getTotalSize(getAdls());
@@ -818,11 +817,11 @@ int64_t DirectoryListing::Directory::getTotalSize(bool countAdls) const noexcept
 }
 
 size_t DirectoryListing::Directory::getTotalFileCount(bool countAdls) const noexcept {
-	if(!countAdls && getAdls())
+	if (!countAdls && getAdls())
 		return 0;
 
 	auto x = getFileCount();
-	for(const auto& d: directories | map_values) {
+	for (const auto& d: directories | map_values) {
 		if (!countAdls && d->getAdls()) {
 			continue;
 		}
@@ -844,7 +843,7 @@ void DirectoryListing::Directory::clearAdls() noexcept {
 
 string DirectoryListing::Directory::getPath() const noexcept {
 	//make sure to not try and get the name of the root dir
-	if(parent) {
+	if (parent) {
 		return parent->getPath() + name + '\\';
 	}
 
@@ -858,7 +857,7 @@ void DirectoryListing::setActive() noexcept {
 
 int64_t DirectoryListing::Directory::getFilesSize() const noexcept {
 	int64_t x = 0;
-	for(const auto& f: files) {
+	for (const auto& f: files) {
 		x += f->getSize();
 	}
 	return x;
@@ -1253,7 +1252,7 @@ bool DirectoryListing::changeDirectory(const string& aPath, ReloadMode aReloadMo
 
 			try {
 				if (isOwnList) {
-					addPartialListTask(aPath, aPath, aReloadMode == RELOAD_ALL);
+					addPartialListTask(aPath, aPath, aReloadMode == RELOAD_ALL, true);
 				} else {
 					QueueManager::getInstance()->addList(hintedUser, QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_CLIENT_VIEW, aPath);
 				}
