@@ -99,14 +99,13 @@ public:
 		struct Sort { bool operator()(const Ptr& a, const Ptr& b) const; };
 
 		typedef std::vector<Ptr> List;
-		typedef List::const_iterator Iter;
 		typedef unordered_set<TTHValue> TTHSet;
+		typedef map<const string*, Ptr, noCaseStringLess> Map;
 		
-		List directories;
+		Map directories;
 		File::List files;
 
-		Directory(Directory* aParent, const string& aName, DirType aType, time_t aUpdateDate, bool checkDupe = false, const string& aSize = Util::emptyString, time_t aRemoteDate = 0);
-
+		static Directory::Ptr create(Directory* aParent, const string& aName, DirType aType, time_t aUpdateDate, bool checkDupe = false, const string& aSize = Util::emptyString, time_t aRemoteDate = 0);
 		virtual ~Directory();
 
 		size_t getTotalFileCount(bool countAdls) const noexcept;
@@ -129,7 +128,6 @@ public:
 		string getPath() const noexcept;
 		uint8_t checkShareDupes() noexcept;
 		
-		GETSET(string, name, Name);
 		IGETSET(int64_t, partialSize, PartialSize, 0);
 		GETSET(Directory*, parent, Parent);
 		GETSET(DirType, type, Type);
@@ -142,14 +140,25 @@ public:
 		void setComplete() noexcept { type = TYPE_NORMAL; }
 		bool getAdls() const noexcept { return type == TYPE_ADLS; }
 
-		void download(const string& aTarget, BundleFileInfo::List& aFiles) noexcept;
+		void download(const string& aTarget, BundleFileInfo::List& aFiles) const noexcept;
+
+		const string& getName() const noexcept {
+			return name;
+		}
+
+	protected:
+		Directory(Directory* aParent, const string& aName, DirType aType, time_t aUpdateDate, bool checkDupe, const string& aSize, time_t aRemoteDate);
+
+		const string name;
 	};
 
 	class AdlDirectory : public Directory {
 	public:
-		AdlDirectory(const string& aFullPath, Directory* aParent, const string& aName) : Directory(aParent, aName, Directory::TYPE_ADLS, GET_TIME()), fullPath(aFullPath) { }
-
+		typedef shared_ptr<AdlDirectory> Ptr;
 		GETSET(string, fullPath, FullPath);
+		static Ptr create(const string& aFullPath, Directory* aParent, const string& aName);
+	private:
+		AdlDirectory(const string& aFullPath, Directory* aParent, const string& aName);
 	};
 
 	DirectoryListing(const HintedUser& aUser, bool aPartial, const string& aFileName, bool isClientView, bool aIsOwnList=false);
@@ -163,7 +172,7 @@ public:
 	int loadPartialXml(const string& aXml, const string& aAdcBase) throw(AbortException);
 
 	bool downloadDir(const string& aRemoteDir, const string& aTarget, QueueItemBase::Priority prio = QueueItem::DEFAULT, ProfileToken aAutoSearch = 0) noexcept;
-	bool createBundle(Directory::Ptr& aDir, const string& aTarget, QueueItemBase::Priority prio, ProfileToken aAutoSearch) noexcept;
+	bool createBundle(const Directory::Ptr& aDir, const string& aTarget, QueueItemBase::Priority prio, ProfileToken aAutoSearch) noexcept;
 
 	bool viewAsText(const File::Ptr& aFile) const noexcept;
 
@@ -203,7 +212,7 @@ public:
 	void addViewNfoTask(const string& aDir, bool aAllowQueueList, DupeOpenF aDupeF = nullptr) noexcept;
 	void addMatchADLTask() noexcept;
 	void addListDiffTask(const string& aFile, bool aOwnList) noexcept;
-	void addPartialListTask(const string& aXml, const string& aBase, bool reloadAll = false, bool changeDir = true, std::function<void()> f = nullptr) noexcept;
+	void addPartialListTask(const string& aXml, const string& aBase, bool aReloadAll = false, bool aChangeDir = true, const AsyncF& aCompletionF = nullptr) noexcept;
 	void addFullListTask(const string& aDir) noexcept;
 	void addQueueMatchTask() noexcept;
 
@@ -219,8 +228,8 @@ public:
 	bool isCurrentSearchPath(const string& path) const noexcept;
 	size_t getResultCount() const noexcept { return searchResults.size(); }
 
-	Directory::Ptr findDirectory(const string& aName) const noexcept { return findDirectory(aName, root); }
-	Directory::Ptr findDirectory(const string& aName, const Directory::Ptr& current) const noexcept;
+	Directory::Ptr findDirectory(const string& aName) const noexcept { return findDirectory(aName, root.get()); }
+	Directory::Ptr findDirectory(const string& aName, const Directory* current) const noexcept;
 	
 	bool supportsASCH() const noexcept;
 
@@ -278,12 +287,6 @@ private:
 
 	Directory::Ptr root;
 
-	typedef unordered_map<string, pair<Directory::Ptr, bool>> DirBoolMap;
-
-	// Maps loaded base directories (exact visited paths and their parents) with their full lowercase 
-	// paths and whether they've been visited or not
-	DirBoolMap baseDirs;
-
 	void dispatch(DispatcherQueue::Callback& aCallback) noexcept;
 
 	atomic_flag running;
@@ -310,7 +313,7 @@ private:
 	void listDiffImpl(const string& aFile, bool aOwnList) throw(Exception, AbortException);
 	void loadFileImpl(const string& aInitialDir) throw(Exception, AbortException);
 	void searchImpl(const SearchPtr& aSearch) noexcept;
-	void loadPartialImpl(const string& aXml, const string& aBaseDir, bool reloadAll, bool changeDir, std::function<void()> completionF) throw(Exception, AbortException);
+	void loadPartialImpl(const string& aXml, const string& aBasePath, bool aReloadAll, bool aChangeDir, const AsyncF& aCompletionF) throw(Exception, AbortException);
 	void matchAdlImpl() throw(AbortException);
 	void matchQueueImpl() noexcept;
 	void findNfoImpl(const string& aPath, bool aAllowQueueList, DupeOpenF aDupeF) noexcept;
