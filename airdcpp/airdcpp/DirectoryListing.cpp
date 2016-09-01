@@ -146,7 +146,7 @@ void DirectoryListing::setShareProfile(ProfileToken aProfile) noexcept {
 
 	setFileName(Util::toString(aProfile));
 	if (partialList) {
-		addDirectoryChangeTask(Util::emptyString, RELOAD_ALL);
+		addDirectoryChangeTask(Util::emptyString, true);
 	} else {
 		addFullListTask(Util::emptyString);
 	}
@@ -955,13 +955,11 @@ void DirectoryListing::addListDiffTask(const string& aFile, bool aOwnList) noexc
 	addAsyncTask([=] { listDiffImpl(aFile, aOwnList); });
 }
 
-void DirectoryListing::addPartialListTask(const string& aXml, const string& aBase, bool aReloadAll /*false*/, bool aChangeDir /*true*/, const AsyncF& aCompletionF) noexcept {
-	//onStateChanged();
-	addAsyncTask([=] { loadPartialImpl(aXml, aBase, aReloadAll, aChangeDir, aCompletionF); });
+void DirectoryListing::addPartialListTask(const string& aXml, const string& aBase, bool aBackgroundTask /*false*/, const AsyncF& aCompletionF) noexcept {
+	addAsyncTask([=] { loadPartialImpl(aXml, aBase, aBackgroundTask, aCompletionF); });
 }
 
 void DirectoryListing::addFullListTask(const string& aDir) noexcept {
-	//onStateChanged();
 	addAsyncTask([=] { loadFileImpl(aDir); });
 }
 
@@ -1018,7 +1016,7 @@ void DirectoryListing::listDiffImpl(const string& aFile, bool aOwnList) throw(Ex
 	dirList.loadFile();
 
 	root->filterList(dirList);
-	fire(DirectoryListingListener::LoadingFinished(), start, Util::emptyString, false, true);
+	fire(DirectoryListingListener::LoadingFinished(), start, Util::emptyString, false);
 }
 
 void DirectoryListing::matchAdlImpl() throw(AbortException) {
@@ -1034,7 +1032,7 @@ void DirectoryListing::matchAdlImpl() throw(AbortException) {
 	} else {
 		fire(DirectoryListingListener::UpdateStatusMessage(), CSTRING(MATCHING_ADL));
 		ADLSearchManager::getInstance()->matchListing(*this);
-		fire(DirectoryListingListener::LoadingFinished(), start, Util::emptyString, false, true);
+		fire(DirectoryListingListener::LoadingFinished(), start, Util::emptyString, false);
 	}
 }
 
@@ -1043,11 +1041,9 @@ void DirectoryListing::loadFileImpl(const string& aInitialDir) throw(Exception, 
 	partialList = false;
 
 	fire(DirectoryListingListener::LoadingStarted(), false);
-	bool reloading = !root->directories.empty();
 
-	if (reloading) {
-		root->clearAll();
-	}
+	// In case we are reloading...
+	root->clearAll();
 
 	loadFile();
 
@@ -1056,10 +1052,10 @@ void DirectoryListing::loadFileImpl(const string& aInitialDir) throw(Exception, 
 		ADLSearchManager::getInstance()->matchListing(*this);
 	}
 
-	onLoadingFinished(start, aInitialDir, reloading, true);
+	onLoadingFinished(start, aInitialDir, false);
 }
 
-void DirectoryListing::onLoadingFinished(int64_t aStartTime, const string& aBasePath, bool aReloadList, bool aChangeDir) noexcept {
+void DirectoryListing::onLoadingFinished(int64_t aStartTime, const string& aBasePath, bool aBackgroundTask) noexcept {
 	if (!getIsOwnList() && SETTING(DUPES_IN_FILELIST) && isClientView)
 		checkShareDupes();
 
@@ -1067,7 +1063,7 @@ void DirectoryListing::onLoadingFinished(int64_t aStartTime, const string& aBase
 	dcassert(dir);
 	if (dir) {
 		dir->setLoading(false);
-		if (aChangeDir) {
+		if (!aBackgroundTask) {
 			updateCurrentLocation(dir);
 			read = false;
 		}
@@ -1075,7 +1071,7 @@ void DirectoryListing::onLoadingFinished(int64_t aStartTime, const string& aBase
 		onStateChanged();
 	}
 	
-	fire(DirectoryListingListener::LoadingFinished(), aStartTime, aBasePath, aReloadList, aChangeDir);
+	fire(DirectoryListingListener::LoadingFinished(), aStartTime, aBasePath, aBackgroundTask);
 }
 
 void DirectoryListing::updateCurrentLocation(const Directory::Ptr& aCurrentDirectory) noexcept {
@@ -1115,48 +1111,39 @@ void DirectoryListing::searchImpl(const SearchPtr& aSearch) noexcept {
 	}
 }
 
-void DirectoryListing::loadPartialImpl(const string& aXml, const string& aBasePath, bool aReloadAll, bool aChangeDir, const AsyncF& aCompletionF) throw(Exception, AbortException) {
+void DirectoryListing::loadPartialImpl(const string& aXml, const string& aBasePath, bool aBackgroundTask, const AsyncF& aCompletionF) throw(Exception, AbortException) {
 	if (!partialList)
 		return;
 
-	auto baseDir = isOwnList && aReloadAll ? "/" : Util::toAdcFile(aBasePath);
+	// Preparations
+	{
+		bool reloading = false;
 
-	bool reloading = aReloadAll;
-	if (!reloading) {
 		// Has this directory been loaded before? Existing content must be cleared in that case
-		auto d = findDirectory(Util::toNmdcFile(baseDir));
+		auto d = findDirectory(aBasePath);
 		if (d) {
 			reloading = d->isComplete();
 		}
-	}
 
-	fire(DirectoryListingListener::LoadingStarted(), !reloading);
-	if (reloading) {
-		// Remove all existing directories inside this path
-		if (baseDir.empty() || aReloadAll) {
-			root->clearAll();
-			if (baseDir.empty()) {
-				root->setComplete();
-			} else {
-				root->setType(Directory::TYPE_INCOMPLETE_CHILD);
-			}
-		} else {
-			auto cur = findDirectory(Util::toNmdcFile(baseDir));
-			if (cur && (!cur->directories.empty() || !cur->files.empty())) {
-				//we have been here already, just reload all items
-				cur->clearAll();
-			}
+		// Let the window to be disabled before making any modifications
+		fire(DirectoryListingListener::LoadingStarted(), !reloading);
+
+		if (reloading) {
+			// Remove all existing directories inside this path
+			d->clearAll();
 		}
 	}
 
+	// Load content
 	int dirsLoaded = 0;
 	if (isOwnList) {
-		dirsLoaded = loadShareDirectory(Util::toNmdcFile(baseDir));
+		dirsLoaded = loadShareDirectory(aBasePath);
 	} else {
-		dirsLoaded = loadPartialXml(aXml, baseDir);
+		dirsLoaded = loadPartialXml(aXml, Util::toAdcFile(aBasePath));
 	}
 
-	onLoadingFinished(0, Util::toNmdcFile(baseDir), aReloadAll || (reloading && baseDir == "/"), aChangeDir);
+	// Done
+	onLoadingFinished(0, aBasePath, aBackgroundTask);
 
 	if (aCompletionF) {
 		aCompletionF();
@@ -1210,7 +1197,7 @@ void DirectoryListing::endSearch(bool timedOut /*false*/) noexcept {
 		fire(DirectoryListingListener::SearchFailed(), timedOut);
 	} else {
 		curResult = searchResults.begin();
-		addDirectoryChangeTask(*curResult, RELOAD_NONE, true);
+		addDirectoryChangeTask(*curResult, false, true);
 	}
 }
 
@@ -1224,7 +1211,7 @@ int DirectoryListing::loadShareDirectory(const string& aPath, bool aRecurse) thr
 	throw Exception(CSTRING(FILE_NOT_AVAILABLE));
 }
 
-bool DirectoryListing::changeDirectory(const string& aPath, ReloadMode aReloadMode, bool aIsSearchChange) noexcept {
+bool DirectoryListing::changeDirectory(const string& aPath, bool aReload, bool aIsSearchChange) noexcept {
 	Directory::Ptr dir;
 	if (partialList) {
 		// Directory may not exist when searching in partial lists 
@@ -1244,7 +1231,7 @@ bool DirectoryListing::changeDirectory(const string& aPath, ReloadMode aReloadMo
 	updateCurrentLocation(dir);
 	fire(DirectoryListingListener::ChangeDirectory(), aPath, aIsSearchChange);
 
-	if (!partialList || dir->getLoading() || (dir->isComplete() && aReloadMode == RELOAD_NONE)) {
+	if (!partialList || dir->getLoading() || (dir->isComplete() && !aReload)) {
 		// No need to load anything
 	} else if (partialList) {
 		if (isOwnList || getUser()->isOnline()) {
@@ -1252,7 +1239,7 @@ bool DirectoryListing::changeDirectory(const string& aPath, ReloadMode aReloadMo
 
 			try {
 				if (isOwnList) {
-					addPartialListTask(aPath, aPath, aReloadMode == RELOAD_ALL, true);
+					addPartialListTask(aPath, aPath, false);
 				} else {
 					QueueManager::getInstance()->addList(hintedUser, QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_CLIENT_VIEW, aPath);
 				}
@@ -1282,13 +1269,13 @@ bool DirectoryListing::nextResult(bool prev) noexcept {
 		advance(curResult, 1);
 	}
 
-	addDirectoryChangeTask(*curResult, RELOAD_NONE, true);
+	addDirectoryChangeTask(*curResult, false, true);
 	return true;
 }
 
-void DirectoryListing::addDirectoryChangeTask(const string& aPath, ReloadMode aReloadMode, bool aIsSearchChange) noexcept {
+void DirectoryListing::addDirectoryChangeTask(const string& aPath, bool aReload, bool aIsSearchChange) noexcept {
 	addAsyncTask([=] {
-		changeDirectory(aPath, aReloadMode, aIsSearchChange);
+		changeDirectory(aPath, aReload, aIsSearchChange);
 	});
 }
 
@@ -1335,7 +1322,7 @@ void DirectoryListing::on(ShareManagerListener::DirectoriesRefreshed, uint8_t, c
 	for (const auto& p : aPaths) {
 		auto vPath = ShareManager::getInstance()->realToVirtual(p, getShareProfile());
 		if (!vPath.empty() && lastVirtual != vPath && findDirectory(vPath)) {
-			addPartialListTask(Util::emptyString, vPath, false, false, nullptr);
+			addPartialListTask(Util::emptyString, vPath, true);
 			lastVirtual = vPath;
 		}
 	}

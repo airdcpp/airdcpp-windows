@@ -129,7 +129,7 @@ public:
 		NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_KEYDOWN, onKeyDownDirs)
 		NOTIFY_HANDLER(IDC_DIRECTORIES, NM_CLICK, onClickTree)
 
-		COMMAND_ID_HANDLER(ID_FILE_RECONNECT, onFileReconnect)
+		COMMAND_ID_HANDLER(ID_FILE_RECONNECT, onReloadDir)
 
 		COMMAND_ID_HANDLER(IDC_FIND, onFind)
 		COMMAND_ID_HANDLER(IDC_NEXT, onNext)
@@ -160,7 +160,6 @@ public:
 		COMMAND_CODE_HANDLER(CBN_SELCHANGE, onComboSelChanged)
 	END_MSG_MAP()
 
-	LRESULT onFileReconnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onComboSelChanged(WORD wNotifyCode, WORD wID, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
 	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
@@ -184,7 +183,7 @@ public:
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	void runUserCommand(UserCommand& uc);
 
-	void refreshTree(const string& root, bool reloadList, bool changeDir);
+	void refreshTree(const string& root, bool aSelectDir);
 
 	void selectItem(const string& name);
 	
@@ -311,7 +310,7 @@ private:
 
 	void handleItemAction(bool usingTree, std::function<void (const ItemInfo* ii)> aF, bool firstOnly = false);
 	void onListItemAction();
-	void changeDir(const ItemInfo* d, DirectoryListing::ReloadMode aReload = DirectoryListing::RELOAD_NONE);
+	void changeDir(const ItemInfo* d, bool aReloadDir = false);
 
 	static tstring handleCopyMagnet(const ItemInfo* ii);
 	static tstring handleCopyPath(const ItemInfo* ii);
@@ -330,7 +329,7 @@ private:
 	void handleSearchByName(bool usingTree, bool dirsOnly);
 	void handleSearchByTTH();
 
-	void handleReloadPartial(bool dirOnly);
+	void handleReloadPartial();
 
 	CContainedWindow treeContainer;
 	CContainedWindow listContainer;
@@ -371,7 +370,7 @@ private:
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
-	void on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool reloadList, bool changeDir) noexcept;
+	void on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool aBackgroundTask) noexcept;
 	void on(DirectoryListingListener::LoadingFailed, const string& aReason) noexcept;
 	void on(DirectoryListingListener::LoadingStarted, bool changeDir) noexcept;
 	void on(DirectoryListingListener::QueueMatched, const string& aMessage) noexcept;
@@ -389,7 +388,7 @@ private:
 	void filterList();
 	void createRoot();
 	void convertToFull();
-	void onLoadingFinished(int64_t aStart, const string& aDir, bool reloadList, bool changeDir);
+	void onLoadingFinished(int64_t aStart, const string& aDir, bool aBackgroundTask);
 
 
 	CComboBox selCombo;

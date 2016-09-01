@@ -30,7 +30,6 @@
 #include "DirectSearch.h"
 #include "DispatcherQueue.h"
 #include "DupeType.h"
-#include "FastAlloc.h"
 #include "GetSet.h"
 #include "HintedUser.h"
 #include "MerkleTree.h"
@@ -40,7 +39,6 @@
 #include "TaskQueue.h"
 #include "UserInfoBase.h"
 #include "Streams.h"
-#include "TargetUtil.h"
 #include "TrackableDownloadItem.h"
 
 namespace dcpp {
@@ -212,7 +210,8 @@ public:
 	void addViewNfoTask(const string& aDir, bool aAllowQueueList, DupeOpenF aDupeF = nullptr) noexcept;
 	void addMatchADLTask() noexcept;
 	void addListDiffTask(const string& aFile, bool aOwnList) noexcept;
-	void addPartialListTask(const string& aXml, const string& aBase, bool aReloadAll, bool aChangeDir, const AsyncF& aCompletionF = nullptr) noexcept;
+
+	void addPartialListTask(const string& aXml, const string& aBase, bool aBackgroundTask = false, const AsyncF& aCompletionF = nullptr) noexcept;
 	void addFullListTask(const string& aDir) noexcept;
 	void addQueueMatchTask() noexcept;
 
@@ -237,12 +236,6 @@ public:
 	bool downloadDirImpl(Directory::Ptr& aDir, const string& aTarget, QueueItemBase::Priority prio, ProfileToken aAutoSearch) noexcept;
 	void setActive() noexcept;
 
-	enum ReloadMode {
-		RELOAD_NONE,
-		RELOAD_DIR,
-		RELOAD_ALL
-	};
-
 	struct LocationInfo {
 		int64_t totalSize = -1;
 		int files = -1;
@@ -263,7 +256,7 @@ public:
 
 	void setRead() noexcept;
 
-	void addDirectoryChangeTask(const string& aPath, ReloadMode aReloadMode, bool aIsSearchChange = false) noexcept;
+	void addDirectoryChangeTask(const string& aPath, bool aReload, bool aIsSearchChange = false) noexcept;
 protected:
 	void onStateChanged() noexcept;
 
@@ -275,7 +268,7 @@ private:
 	Directory::Ptr createBaseDirectory(const string& aPath, time_t aDownloadDate = GET_TIME()) noexcept;
 
 	// Returns false if the directory was not found from the list
-	bool changeDirectory(const string& aPath, ReloadMode aReloadMode, bool aIsSearchChange = false) noexcept;
+	bool changeDirectory(const string& aPath, bool aReload, bool aIsSearchChange = false) noexcept;
 
 	void setShareProfile(ProfileToken aProfile) noexcept;
 	void setHubUrl(const string& aHubUrl) noexcept;
@@ -313,7 +306,7 @@ private:
 	void listDiffImpl(const string& aFile, bool aOwnList) throw(Exception, AbortException);
 	void loadFileImpl(const string& aInitialDir) throw(Exception, AbortException);
 	void searchImpl(const SearchPtr& aSearch) noexcept;
-	void loadPartialImpl(const string& aXml, const string& aBasePath, bool aReloadAll, bool aChangeDir, const AsyncF& aCompletionF) throw(Exception, AbortException);
+	void loadPartialImpl(const string& aXml, const string& aBasePath, bool aBackgroundTask, const AsyncF& aCompletionF) throw(Exception, AbortException);
 	void matchAdlImpl() throw(AbortException);
 	void matchQueueImpl() noexcept;
 	void findNfoImpl(const string& aPath, bool aAllowQueueList, DupeOpenF aDupeF) noexcept;
@@ -322,7 +315,7 @@ private:
 	bool read = false;
 
 	void checkShareDupes() noexcept;
-	void onLoadingFinished(int64_t aStartTime, const string& aDir, bool aReloadList, bool aChangeDir) noexcept;
+	void onLoadingFinished(int64_t aStartTime, const string& aDir, bool aBackgroundTask) noexcept;
 
 	unique_ptr<DirectSearch> directSearch;
 	DispatcherQueue tasks;

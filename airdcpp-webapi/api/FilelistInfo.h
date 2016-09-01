@@ -54,7 +54,7 @@ namespace webserver {
 		api_return handleChangeDirectory(ApiRequest& aRequest);
 		api_return handleSetRead(ApiRequest& aRequest);
 
-		void on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool reloadList, bool changeDir) noexcept;
+		void on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool aBackgroundTask) noexcept;
 		void on(DirectoryListingListener::LoadingFailed, const string& aReason) noexcept;
 		void on(DirectoryListingListener::LoadingStarted, bool changeDir) noexcept;
 		void on(DirectoryListingListener::ChangeDirectory, const string& aDir, bool isSearchChange) noexcept;

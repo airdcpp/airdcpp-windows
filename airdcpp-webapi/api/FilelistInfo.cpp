@@ -62,7 +62,7 @@ namespace webserver {
 		auto listPath = JsonUtil::getField<string>("list_path", j, false);
 		auto reload = JsonUtil::getOptionalFieldDefault<bool>("reload", j, false);
 
-		dl->addDirectoryChangeTask(Util::toNmdcFile(listPath), reload ? DirectoryListing::RELOAD_DIR : DirectoryListing::RELOAD_NONE);
+		dl->addDirectoryChangeTask(Util::toNmdcFile(listPath), reload);
 		return websocketpp::http::status_code::ok;
 	}
 
@@ -145,7 +145,7 @@ namespace webserver {
 
 	}
 
-	void FilelistInfo::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aPath, bool aReloadList, bool aDirectoryChanged) noexcept {
+	void FilelistInfo::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aPath, bool aBackgroundTask) noexcept {
 		updateItems(aPath);
 	}
 
