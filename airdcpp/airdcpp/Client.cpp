@@ -127,10 +127,10 @@ void Client::reloadSettings(bool aUpdateNick) noexcept {
 			setPassword(fav->getPassword());
 		}
 
-		setFavNoPM(fav->getFavNoPM());
+		ignorePM = fav->getIgnorePM();
 		favToken = fav->getToken();
 	} else {
-		setFavNoPM(false);
+		ignorePM = false;
 		setPassword(Util::emptyString);
 	}
 

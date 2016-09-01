@@ -129,7 +129,7 @@ public:
 	const string& getHubUrl() const noexcept { return hubUrl; }
 
 	GETSET(string, defpassword, Password);
-	IGETSET(bool, favnoPM, FavNoPM, false);
+	IGETSET(bool, ignorePM, IgnorePM, false);
 
 	GETSET(uint64_t, lastActivity, LastActivity);
 	IGETSET(uint32_t, reconnDelay, ReconnDelay, 120);

@@ -102,7 +102,7 @@ public:
 	IGETSET(bool, autoConnect, AutoConnect, true);
 	IGETSET(int, chatusersplit, ChatUserSplit, 0);
 	IGETSET(bool, userliststate, UserListState, true);
-	IGETSET(bool, favnoPM, FavNoPM, false);
+	IGETSET(bool, ignorePM, IgnorePM, false);
 	GETSET(string, group, Group);
 	GETSET(ProfileToken, token, Token);
 
