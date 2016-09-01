@@ -243,9 +243,6 @@ private:
 	void on(UploadManagerListener::SlotsUpdated, const UserPtr& aUser) noexcept;
 
 	void on(QueueManagerListener::SourceFilesUpdated, const UserPtr& aUser) noexcept;
-
-	void on(MessageManagerListener::IgnoreAdded, const UserPtr&) noexcept;
-	void on(MessageManagerListener::IgnoreRemoved, const UserPtr&) noexcept;
 };
 
 #endif // !defined(USERS_FRAME_H)

@@ -23,7 +23,6 @@
 #include <web-server/JsonUtil.h>
 
 #include <airdcpp/ClientManager.h>
-#include <airdcpp/MessageManager.h>
 
 
 namespace webserver {
@@ -55,12 +54,10 @@ namespace webserver {
 	HubInfo::~HubInfo() {
 		timer->stop(true);
 
-		MessageManager::getInstance()->removeListener(this);
 		client->removeListener(this);
 	}
 
 	void HubInfo::init() noexcept {
-		MessageManager::getInstance()->addListener(this);
 		client->addListener(this);
 
 		timer->start(false);
@@ -266,20 +263,5 @@ namespace webserver {
 		}
 
 		maybeSend("hub_user_disconnected", [&] { return Serializer::serializeItem(aUser, OnlineUserUtils::propertyHandler); });
-	}
-
-	void HubInfo::onFlagsUpdated(const UserPtr& aUser) noexcept {
-		auto ou = ClientManager::getInstance()->findOnlineUser(aUser->getCID(), client->getHubUrl(), false);
-		if (ou) {
-			onUserUpdated(ou, { OnlineUserUtils::PROP_FLAGS });
-		}
-	}
-
-	void HubInfo::on(MessageManagerListener::IgnoreAdded, const UserPtr& aUser) noexcept {
-		onFlagsUpdated(aUser);
-	}
-
-	void HubInfo::on(MessageManagerListener::IgnoreRemoved, const UserPtr& aUser) noexcept {
-		onFlagsUpdated(aUser);
 	}
 }

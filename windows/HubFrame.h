@@ -29,11 +29,8 @@
 #include "ChatFrameBase.h"
 
 #include <airdcpp/Client.h>
-#include <airdcpp/User.h>
-#include <airdcpp/ClientManager.h>
 #include <airdcpp/FastAlloc.h>
 #include <airdcpp/TaskQueue.h>
-#include <airdcpp/MessageManager.h>
 
 #include "atlstr.h"
 #include "WinUtil.h"
@@ -46,7 +43,7 @@ struct CompareItems;
 class ChatFrameBase;
 
 class HubFrame : private ClientListener, public CSplitterImpl<HubFrame>, private FavoriteManagerListener,
-	public UCHandler<HubFrame>, public UserInfoBaseHandler<HubFrame>, private SettingsManagerListener, private MessageManagerListener, public ChatFrameBase
+	public UCHandler<HubFrame>, public UserInfoBaseHandler<HubFrame>, private SettingsManagerListener, public ChatFrameBase
 {
 public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("HubFrame"), IDR_HUB, 0, COLOR_3DFACE);
@@ -330,9 +327,6 @@ private:
 	void on(ClientListener::Redirected, const string&, const ClientPtr& aNewClient) noexcept;
 	void on(ClientListener::MessagesRead) noexcept;
 	void on(ClientListener::KeyprintMismatch, const Client*) noexcept;
-
-	void on(MessageManagerListener::IgnoreAdded, const UserPtr& aUser) noexcept;
-	void on(MessageManagerListener::IgnoreRemoved, const UserPtr& aUser) noexcept;
 
 	void speak(Tasks s, const OnlineUserPtr& u) { tasks.add(static_cast<uint8_t>(s), unique_ptr<Task>(new UserTask(u))); updateUsers = true; }
 	void openLinksInTopic();
