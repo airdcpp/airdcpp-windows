@@ -20,8 +20,10 @@
 #define AS_SETTINGS_H
 
 #include "stdafx.h"
-#include <airdcpp/SettingsManager.h>
+
 #include <airdcpp/AutoSearchManager.h>
+#include <airdcpp/Search.h>
+#include <airdcpp/SettingsManager.h>
 #include <airdcpp/TargetUtil.h>
 
 
