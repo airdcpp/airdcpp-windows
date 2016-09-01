@@ -1908,7 +1908,7 @@ void WinUtil::appendLanguageMenu(CComboBoxEx& ctrlLanguage) {
 	ctrlLanguage.SetImageList(ResourceLoader::flagImages);
 	int count = 0;
 	
-	for(auto l: Localization::languageList){
+	for (const auto& l: Localization::languageList){
 		COMBOBOXEXITEM cbli =  {CBEIF_TEXT|CBEIF_IMAGE|CBEIF_SELECTEDIMAGE};
 		CString str = Text::toT(l.languageName).c_str();
 		cbli.iItem = count;
