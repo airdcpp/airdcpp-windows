@@ -433,7 +433,7 @@ void HubFrame::onConnected() {
 	setDisconnected(false);
 	setTabIcons();
 
-	if (client->isSecure()) {
+	if (client->isSocketSecure()) {
 		ctrlStatus.SetIcon(1, GET_ICON(IDI_SECURE, 16));
 		statusSizes[0] = 16 + 8;
 		tstring sslInfo = Text::toT(client->getEncryptionInfo());
@@ -919,7 +919,7 @@ LRESULT HubFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 		WinUtil::setClipboard(Text::toT(client->getHubUrl()));
 	});
 
-	if (client->isSecure() && client->getHubUrl().find("?kp=") == string::npos) {
+	if (client->isSocketSecure() && client->getHubUrl().find("?kp=") == string::npos) {
 		copyHubMenu->appendItem(CTSTRING(ADDRESS_KEYPRINT), [this] {
 			auto url = client->getHubUrl() + "?kp=" + CryptoManager::keyprintToString(client->getKeyprint());
 			WinUtil::setClipboard(Text::toT(url));
@@ -1388,7 +1388,7 @@ void HubFrame::on(HubUpdated, const Client*) noexcept {
 	string hubName;
 	if(client->isTrusted()) {
 		hubName = "[S] ";
-	} else if(client->isSecure()) {
+	} else if(client->isSocketSecure()) {
 		hubName = "[U] ";
 	}
 	
