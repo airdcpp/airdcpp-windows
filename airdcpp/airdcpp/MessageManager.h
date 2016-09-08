@@ -125,9 +125,8 @@ namespace dcpp {
 		typedef unordered_set<UserPtr, User::Hash> UserSet;
 
 		UserSet getIgnoredUsers() const noexcept;
-		void storeIgnore(const UserPtr& aUser);
-		void removeIgnore(const UserPtr& aUser);
-		bool isIgnored(const UserPtr& aUser);
+		void storeIgnore(const UserPtr& aUser) noexcept;
+		void removeIgnore(const UserPtr& aUser) noexcept;
 		bool isIgnoredOrFiltered(const ChatMessagePtr& msg, Client* aClient, bool PM);
 
 		// chat filter

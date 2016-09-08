@@ -250,7 +250,7 @@ MessageManager::UserSet MessageManager::getIgnoredUsers() const noexcept {
 	return ignoredUsers;
 }
 
-void MessageManager::storeIgnore(const UserPtr& aUser) {
+void MessageManager::storeIgnore(const UserPtr& aUser) noexcept {
 	{
 		WLock l(Ignorecs);
 		ignoredUsers.emplace(aUser);
@@ -260,10 +260,18 @@ void MessageManager::storeIgnore(const UserPtr& aUser) {
 	dirty = true;
 
 	fire(MessageManagerListener::IgnoreAdded(), aUser);
+
+	{
+		auto chat = getChat(aUser);
+		if (chat) {
+			chat->checkIgnored();
+		}
+	}
+
 	ClientManager::getInstance()->userUpdated(aUser);
 }
 
-void MessageManager::removeIgnore(const UserPtr& aUser) {
+void MessageManager::removeIgnore(const UserPtr& aUser) noexcept {
 	{
 		WLock l(Ignorecs);
 		auto i = ignoredUsers.find(aUser);
@@ -278,14 +286,8 @@ void MessageManager::removeIgnore(const UserPtr& aUser) {
 	ClientManager::getInstance()->userUpdated(aUser);
 }
 
-bool MessageManager::isIgnored(const UserPtr& aUser) {
-	RLock l(Ignorecs);
-	auto i = ignoredUsers.find(aUser);
-	return (i != ignoredUsers.end());
-}
-
 bool MessageManager::isIgnoredOrFiltered(const ChatMessagePtr& msg, Client* aClient, bool PM){
-	const auto& identity = msg->getFrom()->getIdentity();
+	const auto& fromIdentity = msg->getFrom()->getIdentity();
 
 	auto logIgnored = [&](bool filter) -> void {
 		if (SETTING(LOG_IGNORED)) {
@@ -298,17 +300,22 @@ bool MessageManager::isIgnoredOrFiltered(const ChatMessagePtr& msg, Client* aCli
 					(aClient->getHubName().size() > 50 ? (aClient->getHubName().substr(0, 50) + "...") : aClient->getHubName()) : aClient->getHubUrl()) + "] ";
 				tmp = (filter ? STRING(MC_MESSAGE_FILTERED) : STRING(MC_MESSAGE_IGNORED)) + hub;
 			}
-			tmp += "<" + identity.getNick() + "> " + msg->getText();
+			tmp += "<" + fromIdentity.getNick() + "> " + msg->getText();
 			LogManager::getInstance()->message(tmp, LogMessage::SEV_INFO);
 		}
 	};
 
-	if (msg->getFrom()->getUser()->isIgnored() && ((aClient && aClient->isOp()) || !identity.isOp() || identity.isBot())) {
-		logIgnored(false);
+	auto isIgnored = [&](const OnlineUserPtr& aUser) {
+		return aUser && aUser->getUser()->isIgnored() && 
+			((aClient && aClient->isOp()) || !aUser->getIdentity().isOp() || aUser->getIdentity().isBot());
+	};
+
+	// replyTo can be different if the message is received via a chat room (it should be possible to ignore those as well)
+	if (isIgnored(msg->getFrom()) || isIgnored(msg->getReplyTo())) {
 		return true;
 	}
 
-	if (isChatFiltered(identity.getNick(), msg->getText(), PM ? ChatFilterItem::PM : ChatFilterItem::MC)) {
+	if (isChatFiltered(fromIdentity.getNick(), msg->getText(), PM ? ChatFilterItem::PM : ChatFilterItem::MC)) {
 		logIgnored(true);
 		return true;
 	}
