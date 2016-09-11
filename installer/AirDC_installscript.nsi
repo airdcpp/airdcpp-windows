@@ -40,7 +40,6 @@ RequestExecutionLevel admin
 
 SetCompressor /SOLID "lzma"
 
-
 ; The file to write and the title
 !ifdef GIT_VERSION
 OutFile '..\releases\${GIT_VERSION}\AirDC_Installer_${GIT_VERSION}.exe'
@@ -49,7 +48,6 @@ Name 'AirDC++ ${GIT_VERSION}'
 OutFile AirDC_Installer_XXX.exe
 Name "AirDC++ $VERSION"
 !endif
-
 
 ShowInstDetails show
 ShowUninstDetails show
