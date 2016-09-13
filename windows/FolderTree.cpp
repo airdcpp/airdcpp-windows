@@ -1287,7 +1287,7 @@ LRESULT FolderTree::OnItemExpanding(int /*idCtrl*/, LPNMHDR pnmh, BOOL &bHandled
 		//Display an hour glass as this may take some time
 		//CWaitCursor wait;
 
-		tstring sPath = ItemToPath(pNMTreeView->itemNew.hItem);
+		//tstring sPath = ItemToPath(pNMTreeView->itemNew.hItem);
 		
 		//Collapse the node and remove all the child items from it
 		Expand(pNMTreeView->itemNew.hItem, TVE_COLLAPSE);

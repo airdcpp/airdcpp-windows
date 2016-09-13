@@ -36,7 +36,7 @@ int __cdecl main(int argc, char* argv[])
 	}
 	
 	try {
-		string tmp;
+		//string tmp;
 		File src(argv[1], File::READ, File::OPEN, File::BUFFER_SEQUENTIAL, false);
 		File tgt(argv[2], File::WRITE, File::CREATE | File::TRUNCATE, File::BUFFER_AUTO, false);
 		File example(argv[3], File::WRITE, File::CREATE | File::TRUNCATE, File::BUFFER_AUTO, false);

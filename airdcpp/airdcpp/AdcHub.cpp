@@ -883,7 +883,7 @@ void AdcHub::handle(AdcCommand::TCP, AdcCommand& c) noexcept {
 
 void AdcHub::sendHBRI(const string& aIP, const string& aPort, const string& aToken, bool v6) {
 	// Construct the command we are going to send
-	string su;
+	//string su;
 	AdcCommand hbriCmd(AdcCommand::CMD_TCP, AdcCommand::TYPE_HUB);
 
 	StringMap dummyMap;

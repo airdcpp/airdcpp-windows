@@ -1783,7 +1783,7 @@ void QueueManager::onFileFinished(const QueueItemPtr& aQI, Download* aDownload, 
 }
 
 void QueueManager::putDownload(Download* aDownload, bool aFinished, bool aNoAccess /*false*/, bool aRotateQueue /*false*/) throw(HashException) {
-	HintedUserList getConn;
+	//HintedUserList getConn;
 	QueueItemPtr q = nullptr;
 
 	// Make sure the download gets killed

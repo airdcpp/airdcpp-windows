@@ -292,7 +292,7 @@ void PropPageTextStyles::RefreshPreview() {
 	WinUtil::m_TextStyleTimestamp = TextStyles[ TS_TIMESTAMP ];
 	m_Preview.SetWindowText(_T(""));
 
-	string sText;
+	//string sText;
 	Identity id = Identity(NULL, 0);
 	for ( int i = 0; i < TS_LAST; i++ ) {
 		m_Preview.AppendChat(id, _T("My nick"), _T("[12:34] "), Text::toT(TextStyles[i].m_sPreviewText) + _T('\n'), TextStyles[i], false);

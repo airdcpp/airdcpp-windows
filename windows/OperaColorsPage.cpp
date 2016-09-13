@@ -358,7 +358,7 @@ void OperaColorsPage::setProgressText(const tstring& text){
 	progress.SetRedraw(TRUE);
 	progress.SetPos(50);
 
-	CPoint ptStart;
+	//CPoint ptStart;
 	CRect prc;
 	progress.GetClientRect(&prc);
 
