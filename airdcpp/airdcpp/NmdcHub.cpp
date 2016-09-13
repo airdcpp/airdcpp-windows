@@ -1041,37 +1041,43 @@ void NmdcHub::search(const SearchPtr& s) noexcept {
 
 string NmdcHub::validateMessage(string tmp, bool reverse) {
 	string::size_type i = 0;
-
-	if(reverse) {
-		while( (i = tmp.find("&#36;", i)) != string::npos) {
-			tmp.replace(i, 5, "$");
-			i++;
-		}
-		i = 0;
-		while( (i = tmp.find("&#124;", i)) != string::npos) {
-			tmp.replace(i, 6, "|");
-			i++;
-		}
-		i = 0;
-		while( (i = tmp.find("&amp;", i)) != string::npos) {
-			tmp.replace(i, 5, "&");
-			i++;
+	const auto j = tmp.find('&');
+	if (reverse) {
+		if (j != string::npos)
+		{
+			i = j;
+			while ((i = tmp.find("&#36;", i)) != string::npos) {
+				tmp.replace(i, 5, "$");
+				i++;
+			}
+			i = j;
+			while ((i = tmp.find("&#124;", i)) != string::npos) {
+				tmp.replace(i, 6, "|");
+				i++;
+			}
+			i = j;
+			while ((i = tmp.find("&amp;", i)) != string::npos) {
+				tmp.replace(i, 5, "&");
+				i++;
+			}
 		}
 	} else {
-		i = 0;
-		while( (i = tmp.find("&amp;", i)) != string::npos) {
+		if (j != string::npos) {
+		 i = j;
+		 while( (i = tmp.find("&amp;", i)) != string::npos) {
 			tmp.replace(i, 1, "&amp;");
 			i += 4;
-		}
-		i = 0;
-		while( (i = tmp.find("&#36;", i)) != string::npos) {
+		 }
+		 i = j;
+		 while( (i = tmp.find("&#36;", i)) != string::npos) {
 			tmp.replace(i, 1, "&amp;");
 			i += 4;
-		}
-		i = 0;
-		while( (i = tmp.find("&#124;", i)) != string::npos) {
+		 }
+		 i = j;
+		 while( (i = tmp.find("&#124;", i)) != string::npos) {
 			tmp.replace(i, 1, "&amp;");
 			i += 4;
+		 }
 		}
 		i = 0;
 		while( (i = tmp.find('$', i)) != string::npos) {
