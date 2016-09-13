@@ -267,7 +267,7 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingFailed, const st
 void DirectoryListingFrame::on(DirectoryListingListener::LoadingStarted, bool aChangeDir) noexcept {
 	// Wait for the GUI to be disabled so we won't access the list items that are
 	// possibly going to be deleted
-	bool waiting = true;
+	volatile bool waiting = true;
 
 	callAsync([=, &waiting] { 
 		if (aChangeDir) {

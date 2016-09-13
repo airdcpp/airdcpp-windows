@@ -238,7 +238,7 @@ string Players::getMPCSpam() {
 								params["title"] = Util::getFileName(filename).substr(0, Util::getFileName(filename).size() - 4);
 								params["size"] = Util::formatBytes(File::getSize(filename));
 							}
-							delete test;
+							delete [] test;
 							CoTaskMemFree(pFileName);
 							// alternative to FreeMediaType(mt)
 							// provided by MSDN DirectX 9 help page for FreeMediaType
