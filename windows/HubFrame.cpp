@@ -32,6 +32,7 @@
 #include <airdcpp/HighlightManager.h>
 #include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/Message.h>
+#include <airdcpp/MessageManager.h>
 #include <airdcpp/QueueManager.h>
 #include <airdcpp/ShareManager.h>
 #include <airdcpp/UploadManager.h>
@@ -156,7 +157,6 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 
 	FavoriteManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
-	MessageManager::getInstance()->addListener(this);
 
 	::SetTimer(m_hWnd, 0, 500, 0);
 	return 1;
@@ -433,7 +433,7 @@ void HubFrame::onConnected() {
 	setDisconnected(false);
 	setTabIcons();
 
-	if (client->isSecure()) {
+	if (client->isSocketSecure()) {
 		ctrlStatus.SetIcon(1, GET_ICON(IDI_SECURE, 16));
 		statusSizes[0] = 16 + 8;
 		tstring sslInfo = Text::toT(client->getEncryptionInfo());
@@ -676,7 +676,6 @@ void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 void HubFrame::on(Disconnecting, const Client*) noexcept {
 	SettingsManager::getInstance()->removeListener(this);
 	FavoriteManager::getInstance()->removeListener(this);
-	MessageManager::getInstance()->removeListener(this);
 
 	client->removeListener(this);
 	callAsync([this] {
@@ -920,7 +919,7 @@ LRESULT HubFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 		WinUtil::setClipboard(Text::toT(client->getHubUrl()));
 	});
 
-	if (client->isSecure() && client->getHubUrl().find("?kp=") == string::npos) {
+	if (client->isSocketSecure() && client->getHubUrl().find("?kp=") == string::npos) {
 		copyHubMenu->appendItem(CTSTRING(ADDRESS_KEYPRINT), [this] {
 			auto url = client->getHubUrl() + "?kp=" + CryptoManager::keyprintToString(client->getKeyprint());
 			WinUtil::setClipboard(Text::toT(url));
@@ -1389,7 +1388,7 @@ void HubFrame::on(HubUpdated, const Client*) noexcept {
 	string hubName;
 	if(client->isTrusted()) {
 		hubName = "[S] ";
-	} else if(client->isSecure()) {
+	} else if(client->isSocketSecure()) {
 		hubName = "[U] ";
 	}
 	
@@ -1464,14 +1463,6 @@ void HubFrame::on(KeyprintMismatch, const Client*) noexcept {
 		return;
 
 	callAsync([=] { addStatus(_T("The keyprint in the address doesn't match the server certificate, use /allow to proceed with untrusted connection"), LogMessage::SEV_WARNING, WinUtil::m_ChatTextServer); });
-}
-
-void HubFrame::on(MessageManagerListener::IgnoreAdded, const UserPtr&) noexcept{
-	callAsync([=] { updateUsers = true; });
-}
-
-void HubFrame::on(MessageManagerListener::IgnoreRemoved, const UserPtr&) noexcept{
-	callAsync([=] { updateUsers = true; });
 }
 
 void HubFrame::openLinksInTopic() {

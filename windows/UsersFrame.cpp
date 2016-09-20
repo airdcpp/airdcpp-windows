@@ -1074,11 +1074,3 @@ void UsersFrame::on(UploadManagerListener::SlotsUpdated, const UserPtr& aUser) n
 void UsersFrame::on(QueueManagerListener::SourceFilesUpdated, const UserPtr& aUser) noexcept {
 	callAsync([=] { updateUser(aUser); });
 }
-
-void UsersFrame::on(MessageManagerListener::IgnoreAdded, const UserPtr& aUser) noexcept{
-	callAsync([=] { updateUser(aUser); });
-}
-
-void UsersFrame::on(MessageManagerListener::IgnoreRemoved, const UserPtr& aUser) noexcept{
-	callAsync([=] { updateUser(aUser); });
-}

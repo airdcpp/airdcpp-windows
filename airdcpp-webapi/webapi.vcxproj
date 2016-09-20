@@ -187,6 +187,7 @@
     <ClInclude Include="api\FavoriteHubUtils.h" />
     <ClInclude Include="api\FilelistInfo.h" />
     <ClInclude Include="api\FilelistApi.h" />
+    <ClInclude Include="api\FilelistItemInfo.h" />
     <ClInclude Include="api\FilelistUtils.h" />
     <ClInclude Include="api\FilesystemApi.h" />
     <ClInclude Include="api\HashApi.h" />
@@ -233,6 +234,7 @@
     <ClInclude Include="web-server\Timer.h" />
     <ClInclude Include="web-server\WebServerManagerListener.h" />
     <ClInclude Include="web-server\WebServerManager.h" />
+    <ClInclude Include="web-server\WebServerSettings.h" />
     <ClInclude Include="web-server\WebSocket.h" />
     <ClInclude Include="web-server\WebUser.h" />
     <ClInclude Include="web-server\WebUserManager.h" />
@@ -252,6 +254,7 @@
     <ClCompile Include="api\FavoriteHubUtils.cpp" />
     <ClCompile Include="api\FilelistInfo.cpp" />
     <ClCompile Include="api\FilelistApi.cpp" />
+    <ClCompile Include="api\FilelistItemInfo.cpp" />
     <ClCompile Include="api\FilelistUtils.cpp" />
     <ClCompile Include="api\FilesystemApi.cpp" />
     <ClCompile Include="api\HashApi.cpp" />

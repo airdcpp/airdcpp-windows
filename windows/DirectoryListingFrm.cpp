@@ -67,7 +67,7 @@ void DirectoryListingFrame::openWindow(const DirectoryListingPtr& aList, const s
 
 	if (aHWND != 0) {
 		if (aList->getPartialList()) {
-			aList->addPartialListTask(aXML, aDir, false);
+			aList->addPartialListTask(aXML, aDir);
 		} else {
 			frame->ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
 			aList->addFullListTask(aDir);
@@ -155,7 +155,7 @@ void DirectoryListingFrame::updateItemCache(const string& aPath) {
 		iic = make_unique<ItemInfoCache>();
 	}
 
-	for (auto& d : curDir->directories) {
+	for (auto& d : curDir->directories | map_values) {
 		iic->directories.emplace(d);
 	}
 
@@ -179,21 +179,16 @@ void DirectoryListingFrame::updateItemCache(const string& aPath) {
 	}
 }
 
-void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool aReload, bool aChangeDir) noexcept {
+void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool aBackgroundTask) noexcept {
 	// Get ownership of all item infos so that they won't be deleted before we finish loading
 	vector<unique_ptr<ItemInfoCache>> removedInfos;
-	if (!aReload) {
-		for (auto i = itemInfos.begin(); i != itemInfos.end();) {
-			if (AirUtil::isParentOrExactNmdc(aDir, i->first)) {
-				removedInfos.push_back(move(i->second));
-				i = itemInfos.erase(i);
-			} else {
-				i++;
-			}
+	for (auto i = itemInfos.begin(); i != itemInfos.end();) {
+		if (AirUtil::isParentOrExactNmdc(aDir, i->first)) {
+			removedInfos.push_back(move(i->second));
+			i = itemInfos.erase(i);
+		} else {
+			i++;
 		}
-	} else {
-		boost::copy(itemInfos | map_values, boost::back_move_inserter(removedInfos));
-		itemInfos.clear();
 	}
 
 	updateItemCache(aDir);
@@ -203,11 +198,11 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_
 			dl->setRead();
 		}
 
-		onLoadingFinished(aStart, aDir, aReload, aChangeDir);
+		onLoadingFinished(aStart, aDir, aBackgroundTask);
 	});
 }
 
-void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir, bool reloadList, bool changeDir) {
+void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir, bool aBackgroundTask) {
 	bool searching = dl->isCurrentSearchPath(aDir);
 
 	if (!dl->getPartialList())
@@ -217,7 +212,7 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir
 	if (searching)
 		ctrlFiles.filter.clear();
 
-	refreshTree(aDir, reloadList, changeType != CHANGE_TREE_EXPAND && changeDir ? true : false);
+	refreshTree(aDir, (changeType != CHANGE_TREE_EXPAND && !aBackgroundTask));
 
 	changeWindowState(true);
 	if (!searching) {
@@ -551,20 +546,8 @@ void DirectoryListingFrame::createRoot() {
 	dcassert(treeRoot); 
 }
 
-void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aReloadList, bool aChangeDir) {
+void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aSelectDir) {
 	ctrlTree.SetRedraw(FALSE);
-
-	if (aReloadList) {
-		ctrlTree.DeleteAllItems();
-		ctrlFiles.list.DeleteAllItems();
-		if (dl->getIsOwnList()) {
-			browserBar.clearHistory();
-		}
-
-		createRoot();
-		//dcassert(!root->dir->directories.empty());
-		//browserBar.updateHistoryCombo();
-	}
 
 	//check the root children state
 	bool initialChange = !ctrlTree.hasChildren(treeRoot);
@@ -587,7 +570,7 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aReloadLi
 	if (initialChange || isExpanded || changeType == CHANGE_TREE_EXPAND || changeType == CHANGE_TREE_DOUBLE)
 		ctrlTree.Expand(ht);
 
-	if (!aChangeDir && curPath == Util::getNmdcParentDir(aLoadedDir)) {
+	if (!aSelectDir && curPath == Util::getNmdcParentDir(aLoadedDir)) {
 		// find the loaded directory and set it as complete
 		int j = ctrlFiles.list.GetItemCount();        
 		for(int i = 0; i < j; i++) {
@@ -599,7 +582,7 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aReloadLi
 				break;
 			}
 		}
-	} else if (aChangeDir || AirUtil::isParentOrExactNmdc(aLoadedDir, curPath)) {
+	} else if (aSelectDir || AirUtil::isParentOrExactNmdc(aLoadedDir, curPath)) {
 		// insert the new items
 		ctrlTree.SelectItem(nullptr);
 
@@ -996,19 +979,20 @@ void DirectoryListingFrame::updateItems(const DirectoryListing::Directory::Ptr& 
 	updateStatus();
 }
 
-void DirectoryListingFrame::changeDir(const ItemInfo* ii, DirectoryListing::ReloadMode aReload /*RELOAD_NONE*/) {
+void DirectoryListingFrame::changeDir(const ItemInfo* ii, bool aReloadDir) {
 	if (!ii) {
 		dcassert(0);
 		return;
 	}
 
-	if (aReload == DirectoryListing::RELOAD_NONE)
+	if (!aReloadDir) {
 		updateItems(ii->dir);
+	}
 
 	auto path = ii->getPath();
 	//dcdebug("DirectoryListingFrame::changeDir %s\n", path.c_str());
 
-	dl->addDirectoryChangeTask(path, aReload);
+	dl->addDirectoryChangeTask(path, aReloadDir);
 }
 
 void DirectoryListingFrame::up() {
@@ -1199,12 +1183,6 @@ LRESULT DirectoryListingFrame::onChar(UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*
 	return 0;
 }
 
-LRESULT DirectoryListingFrame::onFileReconnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if (dl->getPartialList())
-		handleReloadPartial(true);
-	return 1;
-}
-
 void DirectoryListingFrame::selectItem(const string& name) {
 	HTREEITEM ht = ctrlTree.findItem(treeRoot, Text::toT(name));
 	if(ht && ctrlTree.GetSelectedItem() != ht) {
@@ -1384,7 +1362,7 @@ void DirectoryListingFrame::appendTreeContextMenu(CPoint& pt, DirectoryListing::
 	directoryMenu.appendItem(TSTRING(VIEW_NFO), [this] { handleViewNFO(true); });
 	if (dl->getPartialList() && !dir->getAdls()) {
 		directoryMenu.appendSeparator();
-		directoryMenu.appendItem(TSTRING(RELOAD), [=] { handleReloadPartial(true); });
+		directoryMenu.appendItem(TSTRING(RELOAD), [=] { handleReloadPartial(); });
 	}
 
 	if (dl->getIsOwnList() || (dir && dl->getPartialList() && AirUtil::allowOpenDupe(dir->getDupe()))) {
@@ -1530,10 +1508,10 @@ void DirectoryListingFrame::openDupe(const DirectoryListing::File::Ptr& f, bool 
 	}
 }
 
-void DirectoryListingFrame::handleReloadPartial(bool dirOnly) {
+void DirectoryListingFrame::handleReloadPartial() {
 	handleItemAction(true, [=](const ItemInfo* ii) {
 		if (ii && !ii->dir->getAdls())
-			changeDir(ii, dirOnly ? DirectoryListing::RELOAD_DIR : DirectoryListing::RELOAD_ALL);
+			changeDir(ii, true);
 	});
 }
 
@@ -1942,16 +1920,12 @@ LRESULT DirectoryListingFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/
 }
 
 LRESULT DirectoryListingFrame::onReloadList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/) {
-	if (dl->getPartialList()) {
-		handleReloadPartial(false);
-	} else {
-		convertToFull();
-	}
+	convertToFull();
 	return 0;
 }
 
 LRESULT DirectoryListingFrame::onReloadDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/) {
-	handleReloadPartial(true);
+	handleReloadPartial();
 	return 0;
 }
 

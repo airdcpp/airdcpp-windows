@@ -257,7 +257,7 @@ public:
 	LRESULT onRowsChanged(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onDeviceChanged(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 
-	void terminate();
+	void shutdown();
 
 	void TestWrite(bool downloads, bool appPath);
 
@@ -419,7 +419,7 @@ private:
 	uint64_t lastMove;
 	uint64_t lastUpdate;
 
-	bool oldshutdown;
+	bool forcedShutdown = false;
 
 	bool tabsontop;
 	bool closing;

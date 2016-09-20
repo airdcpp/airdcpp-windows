@@ -115,7 +115,7 @@ namespace webserver {
 		{
 			RLock l(cs);
 			boost::algorithm::copy_if(sessionsLocalId | map_values, back_inserter(removedSession), [=](const SessionPtr& s) {
-				return s->getLastActivity() + s->getMaxInactivity() < tick;
+				return s->getMaxInactivity() > 0 && s->getLastActivity() + s->getMaxInactivity() < tick;
 			});
 		}
 
@@ -144,6 +144,8 @@ namespace webserver {
 	}
 
 	void WebUserManager::on(WebServerManagerListener::Stopped) noexcept {
+		expirationTimer = nullptr;
+
 		// Let the modules handle deletion in a clean way before we are shutting down...
 		WLock l(cs);
 		sessionsLocalId.clear();

@@ -287,12 +287,6 @@
     <ClInclude Include="util\random.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="util\testharness.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="util\testutil.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="port\win\unistd.h">
       <Filter>Header Files</Filter>
     </ClInclude>

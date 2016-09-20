@@ -32,7 +32,7 @@ PropPage::TextItem DownloadingOptionsPage::texts[] = {
 	{ IDC_SETTINGS_KIB, ResourceManager::KiB },
 	{ IDC_MIN_DUPE_SIZE_LBL, ResourceManager::MIN_DUPE_CHECK_SIZE },
 
-	{ IDC_SETTINGS_MINUTES, ResourceManager::SECONDS },
+	{ IDC_SETTINGS_MINUTES, ResourceManager::SECONDS_LOWER },
 	{ IDC_MONITOR_SLOW_SPEED, ResourceManager::SETTINGS_AUTO_DROP_SLOW_SOURCES },
 	{ IDC_CZDC_SLOW_DISCONNECT, ResourceManager::SETCZDC_SLOW_DISCONNECT },
 	{ IDC_CZDC_I_DOWN_SPEED, ResourceManager::SETCZDC_I_DOWN_SPEED },

@@ -263,8 +263,6 @@
     <ClInclude Include="util\mutexlock.h" />
     <ClInclude Include="util\posix_logger.h" />
     <ClInclude Include="util\random.h" />
-    <ClInclude Include="util\testharness.h" />
-    <ClInclude Include="util\testutil.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="doc\benchmark.html" />

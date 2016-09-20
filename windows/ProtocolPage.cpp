@@ -202,7 +202,7 @@ void ProtocolPage::write()
 	auto sel = BindCombo.GetCurSel();
 	const auto bind = v6 ? SettingsManager::BIND_ADDRESS6 : SettingsManager::BIND_ADDRESS;
 	if (sel > 0 || !settings->isDefault(bind))
-		settings->set(bind, bindAddresses[sel].ip);
+		settings->set(bind, bindAdapters[sel].ip);
 }
 
 LRESULT ProtocolPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
@@ -266,14 +266,14 @@ void ProtocolPage::fixControls() {
 
 void ProtocolPage::getAddresses() {
 	// fill the combo
-	bindAddresses = AirUtil::getDisplayAdapters(v6);
-	for (auto& addr : bindAddresses)
+	bindAdapters = AirUtil::getBindAdapters(v6);
+	for (const auto& addr : bindAdapters)
 		BindCombo.AddString(Text::toT(addr.adapterName + " (" + addr.ip + ")").c_str());
 
 	// select the current address
 	const auto& setting = v6 ? SETTING(BIND_ADDRESS6) : SETTING(BIND_ADDRESS);
-	auto cur = boost::find_if(bindAddresses, [&setting](const AirUtil::AddressInfo& aInfo) { return aInfo.ip == setting; });
-	BindCombo.SetCurSel(distance(bindAddresses.begin(), cur));
+	auto cur = boost::find_if(bindAdapters, [&setting](const AirUtil::AdapterInfo& aInfo) { return aInfo.ip == setting; });
+	BindCombo.SetCurSel(distance(bindAdapters.begin(), cur));
 }
 
 LRESULT ProtocolPage::onClickedActive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
