@@ -3,7 +3,6 @@
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
 #include "db/db_iter.h"
-#include <basetsd.h>
 
 #include "db/filename.h"
 #include "db/db_impl.h"
@@ -14,8 +13,6 @@
 #include "util/logging.h"
 #include "util/mutexlock.h"
 #include "util/random.h"
-
-typedef SSIZE_T ssize_t;
 
 namespace leveldb {
 
