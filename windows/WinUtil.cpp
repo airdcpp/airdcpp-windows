@@ -1566,7 +1566,7 @@ void WinUtil::appendBundlePauseMenu(OMenu& aParent, const BundleList& aBundles) 
 	auto pauseMenu = aParent.createSubMenu(TSTRING(PAUSE_BUNDLE_FOR), true);
 	auto pauseTimes = { 5, 10, 30, 60, 90, 120, 180 };
 	for (auto t : pauseTimes) {
-		pauseMenu->appendItem(Util::toStringW(t) + _T(" ") + TSTRING(MINUTES), [=] {
+		pauseMenu->appendItem(Util::toStringW(t) + _T(" ") + TSTRING(MINUTES_LOWER), [=] {
 			for (auto b : aBundles)
 				QueueManager::getInstance()->setBundlePriority(b, QueueItemBase::PAUSED_FORCE, false, GET_TIME() + (t * 60));
 		}, OMenu::FLAG_THREADED);

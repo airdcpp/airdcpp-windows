@@ -23,6 +23,7 @@
 #include <web-server/JsonUtil.h>
 #include <web-server/WebSocket.h>
 #include <web-server/WebServerManager.h>
+#include <web-server/WebServerSettings.h>
 #include <web-server/WebUserManager.h>
 
 #include <airdcpp/ActivityManager.h>
@@ -46,15 +47,9 @@ namespace webserver {
 	}
 
 	api_return SessionApi::handleActivity(ApiRequest& aRequest) {
-		auto s = aRequest.getSession();
-		if (!s) {
-			aRequest.setResponseErrorStr("Not authorized");
-			return websocketpp::http::status_code::unauthorized;
-		}
-
-		if (!s->isUserSession()) {
-			aRequest.setResponseErrorStr("Activity can only be updated for user sessions");
-			return websocketpp::http::status_code::bad_request;
+		if (!aRequest.getSession()->isUserSession()) {
+			// This can be used to prevent the session from expiring
+			return websocketpp::http::status_code::ok;
 		}
 
 		ActivityManager::getInstance()->updateActivity();
@@ -62,13 +57,7 @@ namespace webserver {
 	}
 
 	api_return SessionApi::handleLogout(ApiRequest& aRequest) {
-		if (!aRequest.getSession()) {
-			aRequest.setResponseErrorStr("Not authorized");
-			return websocketpp::http::status_code::unauthorized;
-		}
-
 		WebServerManager::getInstance()->logout(aRequest.getSession()->getId());
-
 		return websocketpp::http::status_code::ok;
 	}
 
@@ -81,6 +70,10 @@ namespace webserver {
 			auto end = aIp.rfind("]");
 			ip = aIp.substr(8, end - 8);
 			v6 = false;
+		} else if (aIp[0] == '[') {
+			// Remove brackets
+			auto end = aIp.rfind("]");
+			ip = aIp.substr(1, end - 1);
 		}
 
 		if (Util::isPrivateIp(ip, v6)) {
@@ -130,7 +123,7 @@ namespace webserver {
 		auto username = JsonUtil::getField<string>("username", reqJson, false);
 		auto password = JsonUtil::getField<string>("password", reqJson, false);
 
-		auto inactivityMinutes = JsonUtil::getOptionalFieldDefault<uint64_t>("max_inactivity", reqJson, 20ULL);
+		auto inactivityMinutes = JsonUtil::getOptionalFieldDefault<uint64_t>("max_inactivity", reqJson, WEBCFG(DEFAULT_SESSION_IDLE_TIMEOUT).uint64());
 		auto userSession = JsonUtil::getOptionalFieldDefault<bool>("user_session", reqJson, false);
 
 		auto session = WebServerManager::getInstance()->getUserManager().authenticate(username, password, 

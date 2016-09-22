@@ -28,7 +28,7 @@ PropPage::TextItem DownloadPage::texts[] = {
 	{ IDC_AUTO_SEARCH_ALT, ResourceManager::SETTINGS_AUTO_BUNDLE_SEARCH },
 	{ IDC_DONTBEGIN, ResourceManager::DONT_ADD_SEGMENT_TEXT },
 	{ IDC_ENABLE_SEGMENTS, ResourceManager::ENABLE_MULTI_SOURCE },
-	{ IDC_MINUTES, ResourceManager::MINUTES },
+	{ IDC_MINUTES, ResourceManager::MINUTES_LOWER },
 	{ IDC_KBPS, ResourceManager::KiBS },
 	{ IDC_CHUNKCOUNT, ResourceManager::TEXT_MANUAL },
 	{ IDC_SETTINGS_SEGMENTS, ResourceManager::SETTINGS_SEGMENTED_DOWNLOADS },
