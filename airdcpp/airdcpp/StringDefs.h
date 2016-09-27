@@ -1389,7 +1389,7 @@ enum Strings { // @DontAdd
 	SETTINGS_HUB_USER_COMMANDS, // "Accept custom user commands from hub"
 	SETTINGS_IGNORE, // "Ignore"
 	SETTINGS_INCLUDE_NICKLIST, // "Highlight for nicklist (wildcards or $Re: for regexp)"
-	SETTINGS_INCOMING, // "Incoming connection settings (see help/FAQ if unsure)"
+	SETTINGS_INCOMING, // "Incoming connection settings"
 	SETTINGS_INCOMING_REFRESH_TIME, // "Incoming refresh time"
 	SETTINGS_KEEP_LISTS, // "Don't delete file lists when exiting"
 	SETTINGS_LANGUAGE, // "Language"

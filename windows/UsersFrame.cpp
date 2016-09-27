@@ -837,7 +837,7 @@ void UsersFrame::UserInfo::update(const UserPtr& u) {
 	if (fu) {
 		columns[COLUMN_NICK] = u->isOnline() ? Text::toT(ui.Nicks) : fu->getNick().empty() ? Text::toT(ui.Nicks) : Text::toT(fu->getNick());
 		columns[COLUMN_HUB] = u->isOnline() ? Text::toT(ui.Hubs) : Text::toT(fu->getUrl()); 
-		columns[COLUMN_SEEN] = u->isOnline() ? TSTRING(ONLINE) : fu->getLastSeen() ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", fu->getLastSeen())) : TSTRING(UNKNOWN);
+		columns[COLUMN_SEEN] = u->isOnline() ? TSTRING(ONLINE) : fu->getLastSeen() ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", fu->getLastSeen())) : Text::toT(ui.lastSeen);
 		columns[COLUMN_DESCRIPTION] = Text::toT(fu->getDescription());
 		columns[COLUMN_LIMITER] = noLimiter ? TSTRING(YES) : TSTRING(NO);
 	} else {

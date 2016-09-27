@@ -985,14 +985,6 @@ LRESULT SearchFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		// delete all results which came in paused state
 		for_each(pausedResults.begin(), pausedResults.end(), DeleteFunction());
 		lastDisabledHubs.clear();
-		for(int i = 0; i < ctrlHubs.GetItemCount(); i++) {
-			HubInfo* hub = ctrlHubs.getItemData(i);
-			if(ctrlHubs.GetCheckState(i) == FALSE && i != 0)
-				lastDisabledHubs.push_back(Text::fromT(hub->url));
-
-			delete hub;
-		}
-		SettingsManager::getInstance()->set(SettingsManager::LAST_SEARCH_DISABLED_HUBS, Util::toString(",", lastDisabledHubs));
 		ctrlHubs.DeleteAllItems();
 
 		CRect rc;

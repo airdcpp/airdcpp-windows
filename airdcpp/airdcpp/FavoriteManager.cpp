@@ -218,22 +218,29 @@ void FavoriteManager::addFavoriteUser(const HintedUser& aUser) {
 	}
 
 	string nick;
+	int64_t seen = 0;
+	string hubUrl = aUser.hint;
 
 	//prefer to use the add nick
 	ClientManager* cm = ClientManager::getInstance();
 	{
 		RLock l(cm->getCS());
-		auto ou = cm->findOnlineUser(aUser.user->getCID(), aUser.hint);
+		auto ou = cm->findOnlineUser(aUser.user->getCID(), hubUrl);
 		if (!ou) {
-			auto nicks = move(ClientManager::getInstance()->getNicks(aUser.user->getCID(), false));
-			if (!nicks.empty())
-				nick = nicks[0];
+			//offline
+			auto ofu = ClientManager::getInstance()->getOfflineUser(aUser.user->getCID());
+			if (ofu) {
+				nick = ofu->getNick();
+				seen = ofu->getLastSeen();
+				hubUrl = ofu->getUrl();
+			}
 		} else {
 			nick = ou->getIdentity().getNick();
 		}
 	}
 
-	auto fu = FavoriteUser(aUser, nick, aUser.hint, aUser.user->getCID().toBase32());
+	auto fu = FavoriteUser(aUser, nick, hubUrl, aUser.user->getCID().toBase32());
+	fu.setLastSeen(seen);
 	{
 		WLock l (cs);
 		users.emplace(aUser.user->getCID(), fu);

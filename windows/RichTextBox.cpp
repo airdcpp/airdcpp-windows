@@ -849,31 +849,24 @@ void RichTextBox::updateSelectedText(POINT pt, bool selectLink) {
 	}
 }
 
-LRESULT RichTextBox::OnRButtonDown(POINT pt) {
+void RichTextBox::OnRButtonDown(POINT pt) {
 	clearSelInfo();
-
-	updateSelectedText(pt, true);
-
 	updateAuthor();
 
-	// Po kliku dovnitr oznaceneho textu si zkusime poznamenat pripadnej nick ci ip...
-	// jinak by nam to neuznalo napriklad druhej klik na uz oznaceny nick =)
 	long lSelBegin = 0, lSelEnd = 0;
 	GetSel(lSelBegin, lSelEnd);
 	int iCharPos = CharFromPos(pt), iBegin = 0, iEnd = 0;
-	if((lSelEnd > lSelBegin) && (iCharPos >= lSelBegin) && (iCharPos <= lSelEnd)) {
-		if(!HitIP(pt, selectedIP, iBegin, iEnd))
-			HitNick(pt, selectedUser, iBegin, iEnd);
+	
+	//Check if we clicked inside an already selected text
+	bool clickedInSel = ((lSelEnd > lSelBegin) && (iCharPos >= lSelBegin) && (iCharPos <= lSelEnd));
 
-		return 1;
-	}
-
-	// hightlight IP or nick when clicking on it
-	if(HitIP(pt, selectedIP, iBegin, iEnd) || HitNick(pt, selectedUser, iBegin, iEnd)) {
+	// highlight IP or nick when clicking on it, unless we have right clicked inside our own selection 
+	if((HitIP(pt, selectedIP, iBegin, iEnd) || HitNick(pt, selectedUser, iBegin, iEnd)) && !clickedInSel) {
 		SetSel(iBegin, iEnd);
 		InvalidateRect(NULL);
 	}
-	return 1;
+
+	updateSelectedText(pt, true);
 }
 
 bool RichTextBox::updateAuthor() {

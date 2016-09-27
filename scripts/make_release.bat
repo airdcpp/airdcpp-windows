@@ -30,7 +30,7 @@ cd %solutionDir%
 :: Installer
 
 cd installer
-"%ProgramFiles(x86)%\NSIS\Unicode\makensis.exe" /DGIT_VERSION=%~1 AirDC_installscript.nsi
+"%ProgramFiles(x86)%\NSIS\makensis.exe" /DGIT_VERSION=%~1 AirDC_installscript.nsi
 cd %solutionDir%
 
 :End
