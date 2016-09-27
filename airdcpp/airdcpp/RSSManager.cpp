@@ -171,7 +171,7 @@ void RSSManager::downloadComplete(const string& aUrl) {
 			parseAtomFeed(xml, feed);
 		}
 	} catch(const Exception& e) {
-		LogManager::getInstance()->message(e.getError().c_str(), LogMessage::SEV_ERROR);
+		LogManager::getInstance()->message("Error updating the " + aUrl + " : " + e.getError().c_str(), LogMessage::SEV_ERROR);
 	}
 }
 
