@@ -138,7 +138,7 @@ private:
 		COLUMN_FILE = COLUMN_FIRST,
 		COLUMN_LINK,
 		COLUMN_DATE,
-		COLUMN_CATEGORY,
+		COLUMN_NAME,
 		COLUMN_LAST
 	};
 
@@ -186,15 +186,15 @@ private:
 
 	void onItemAdded(const RSSDataPtr& aData);
 
-	void addCategory(const RSSPtr& aFeed);
+	void addFeed(const RSSPtr& aFeed);
 	
 	void handleOpenFolder();
 
-	RSSPtr getSelectedCategory();
+	RSSPtr getSelectedFeed();
 	ItemInfo* getSelectedListitem();
 
-	//categories by name
-	unordered_map<RSSPtr, HTREEITEM> categories;
+	//map feeds to tree item
+	unordered_map<RSSPtr, HTREEITEM> feeds;
 
 	HTREEITEM treeParent;
 	HTREEITEM curItem;

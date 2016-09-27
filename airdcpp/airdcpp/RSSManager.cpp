@@ -38,9 +38,9 @@ void RSSManager::clearRSSData(const RSSPtr& aFeed) {
 
 }
 
-RSSPtr RSSManager::getFeedByCategory(const string& aCategory) const {
+RSSPtr RSSManager::getFeedByName(const string& aName) const {
 	Lock l(cs);
-	auto r = find_if(rssList.begin(), rssList.end(), [aCategory](const RSSPtr& a) { return aCategory == a->getCategory(); });
+	auto r = find_if(rssList.begin(), rssList.end(), [aName](const RSSPtr& a) { return aName == a->getFeedName(); });
 	if (r != rssList.end())
 		return *r;
 
@@ -217,14 +217,14 @@ void RSSManager::matchFilters(const RSSDataPtr& aData) const {
 	}
 }
 
-void RSSManager::updateFeedItem(RSSPtr& aFeed, const string& aUrl, const string& aCategory, int aUpdateInterval) {
+void RSSManager::updateFeedItem(RSSPtr& aFeed, const string& aUrl, const string& aName, int aUpdateInterval) {
 	auto r = rssList.find(aFeed);
 	if (r != rssList.end())
 	{
 		{
 			Lock l(cs);
 			aFeed->setUrl(aUrl);
-			aFeed->setCategory(aCategory);
+			aFeed->setFeedName(aName);
 			aFeed->setUpdateInterval(aUpdateInterval);
 		}
 		fire(RSSManagerListener::RSSFeedChanged(), aFeed);
@@ -333,7 +333,7 @@ void RSSManager::load() {
 
 		while (xml.findChild("Settings")) {
 			auto feed = std::make_shared<RSS>(xml.getChildAttrib("Url"),
-				xml.getChildAttrib("Categorie"),
+				xml.getChildAttrib("Name"),
 				Util::toInt64(xml.getChildAttrib("LastUpdate")),
 				xml.getIntChildAttrib("UpdateInterval"),
 				xml.getIntChildAttrib("Token"));
@@ -385,7 +385,7 @@ void RSSManager::saveConfig(bool saveDatabase) {
 	for (auto r : rssList) {
 		xml.addTag("Settings");
 		xml.addChildAttrib("Url", r->getUrl());
-		xml.addChildAttrib("Categorie", r->getCategory());
+		xml.addChildAttrib("Name", r->getFeedName());
 		xml.addChildAttrib("LastUpdate", Util::toString(r->getLastUpdate()));
 		xml.addChildAttrib("UpdateInterval", Util::toString(r->getUpdateInterval()));
 		xml.addChildAttrib("Token", Util::toString(r->getToken()));

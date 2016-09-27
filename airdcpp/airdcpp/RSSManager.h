@@ -18,8 +18,8 @@ namespace dcpp {
 class RSS : private boost::noncopyable {
 public:
 
-	RSS(const string& aUrl, const string& aCategory, time_t aLastUpdate, int aUpdateInterval = 60, int aToken = 0) noexcept :
-		url(aUrl), category(aCategory), lastUpdate(aLastUpdate), updateInterval(aUpdateInterval), token(aToken)
+	RSS(const string& aUrl, const string& aName, time_t aLastUpdate, int aUpdateInterval = 60, int aToken = 0) noexcept :
+		url(aUrl), feedName(aName), lastUpdate(aLastUpdate), updateInterval(aUpdateInterval), token(aToken)
 	{
 		if (aUpdateInterval < 10)
 			updateInterval = 10;
@@ -33,7 +33,7 @@ public:
 	~RSS() noexcept {};
 
 	GETSET(string, url, Url);
-	GETSET(string, category, Category);
+	GETSET(string, feedName, FeedName);
 	GETSET(time_t, lastUpdate, LastUpdate);
 	GETSET(int, updateInterval, UpdateInterval);
 	GETSET(int, token, Token);
@@ -123,7 +123,7 @@ public:
 	void clearRSSData(const RSSPtr& aFeed);
 	void matchFilters(const RSSPtr& aFeed) const;
 	
-	RSSPtr getFeedByCategory(const string& aCategory) const;
+	RSSPtr getFeedByName(const string& aName) const;
 	RSSPtr getFeedByUrl(const string& aUrl) const;
 	RSSPtr getFeedByToken(int aToken) const;
 
@@ -139,7 +139,7 @@ public:
 
 	void downloadFeed(const RSSPtr& aFeed, bool verbose = false);
 
-	void updateFeedItem(RSSPtr& aFeed, const string& aUrl, const string& aCategory, int aUpdateInterval);
+	void updateFeedItem(RSSPtr& aFeed, const string& aUrl, const string& aName, int aUpdateInterval);
 	
 	void updateFilterList(vector<RSSFilter>& aNewList);
 

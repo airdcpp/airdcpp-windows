@@ -28,9 +28,9 @@
 #include <airdcpp/LogManager.h>
 
 
-int RssInfoFrame::columnIndexes[] = { COLUMN_FILE, COLUMN_LINK, COLUMN_DATE, COLUMN_CATEGORY };
+int RssInfoFrame::columnIndexes[] = { COLUMN_FILE, COLUMN_LINK, COLUMN_DATE, COLUMN_NAME };
 int RssInfoFrame::columnSizes[] = { 800, 350, 150, 150};
-static ResourceManager::Strings columnNames[] = { ResourceManager::TITLE, ResourceManager::LINK, ResourceManager::DATE, ResourceManager::CATEGORY };
+static ResourceManager::Strings columnNames[] = { ResourceManager::TITLE, ResourceManager::LINK, ResourceManager::DATE, ResourceManager::FEED_NAME };
 static SettingsManager::BoolSetting filterSettings[] = { SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST };
 static ColumnType columnTypes[] = { COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT };
 
@@ -87,7 +87,7 @@ LRESULT RssInfoFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 		Lock l(RSSManager::getInstance()->getCS());
 		auto lst = RSSManager::getInstance()->getRss();
 		for (auto feed : lst) {
-			addCategory(feed);
+			addFeed(feed);
 			for (auto data : feed->getFeedData() | map_values) {
 				ItemInfos.emplace(data->getTitle(), new ItemInfo(data));
 			}
@@ -193,7 +193,7 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 		}
 	}
 	else if (treeMenu) {
-		auto feed = getSelectedCategory();
+		auto feed = getSelectedFeed();
 		if (feed) {
 
 			OMenu menu;
@@ -292,9 +292,9 @@ void RssInfoFrame::on(RSSFeedRemoved, const RSSPtr& aFeed) noexcept {
 	addGuiTask([=] {
 		ctrlTree.SetRedraw(FALSE);
 		clearData(aFeed);
-		auto j = categories.find(aFeed);
+		auto j = feeds.find(aFeed);
 		auto ht = j->second;
-		categories.erase(j);
+		feeds.erase(j);
 		ctrlTree.DeleteItem(ht);
 		ctrlTree.SetRedraw(TRUE);
 	});
@@ -302,7 +302,7 @@ void RssInfoFrame::on(RSSFeedRemoved, const RSSPtr& aFeed) noexcept {
 
 void RssInfoFrame::on(RSSFeedAdded, const RSSPtr& aFeed) noexcept {
 	addGuiTask([=] {
-		addCategory(aFeed);
+		addFeed(aFeed);
 	});
 }
 
@@ -310,9 +310,9 @@ void RssInfoFrame::on(RSSFeedChanged, const RSSPtr& aFeed) noexcept {
 	addGuiTask([=] {
 
 		ctrlTree.SetRedraw(FALSE);
-		auto j = categories.find(aFeed);
+		auto j = feeds.find(aFeed);
 		auto ht = j->second;
-		ctrlTree.SetItemText(ht, Text::toT(aFeed->getCategory()).c_str());
+		ctrlTree.SetItemText(ht, Text::toT(aFeed->getFeedName()).c_str());
 
 		ctrlTree.SetRedraw(TRUE);
 		reloadList();
@@ -349,10 +349,10 @@ void RssInfoFrame::onItemAdded(const RSSDataPtr& aData) {
 
 }
 
-void RssInfoFrame::addCategory(const RSSPtr& aFeed) {
-	auto cg = categories.find(aFeed);
-	if (cg == categories.end()) {
-		categories.emplace(aFeed, addTreeItem(treeParent, 0, Text::toT(aFeed->getCategory())));
+void RssInfoFrame::addFeed(const RSSPtr& aFeed) {
+	auto cg = feeds.find(aFeed);
+	if (cg == feeds.end()) {
+		feeds.emplace(aFeed, addTreeItem(treeParent, 0, Text::toT(aFeed->getFeedName())));
 		//addData(aFeed);
 	}
 }
@@ -361,7 +361,7 @@ bool RssInfoFrame::show(const ItemInfo* aItem) {
 
 	auto treeFilter = [&]() -> bool {
 		if (curItem != treeParent) {
-			auto c = categories.find(aItem->item->getFeed());
+			auto c = feeds.find(aItem->item->getFeed());
 			return curItem == c->second;
 		}
 		return true;
@@ -400,10 +400,10 @@ RssInfoFrame::ItemInfo* RssInfoFrame::getSelectedListitem() {
 	return nullptr;
 }
 
-RSSPtr RssInfoFrame::getSelectedCategory() {
+RSSPtr RssInfoFrame::getSelectedFeed() {
 	auto ht = ctrlTree.GetSelectedItem();
 	if (ht && ht != treeParent) {
-		for (auto i : categories) {
+		for (auto i : feeds) {
 			if (ht == i.second) {
 				return i.first;
 			}
@@ -420,7 +420,7 @@ const tstring RssInfoFrame::ItemInfo::getText(int col) const {
 	case COLUMN_FILE: return Text::toT(item->getTitle());
 	case COLUMN_LINK: return Text::toT(item->getLink());
 	case COLUMN_DATE: return Text::toT(item->getPubDate());
-	case COLUMN_CATEGORY: return Text::toT(item->getFeed()->getCategory());
+	case COLUMN_NAME: return Text::toT(item->getFeed()->getFeedName());
 
 	default: return Util::emptyStringT;
 	}

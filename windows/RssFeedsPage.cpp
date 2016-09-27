@@ -45,8 +45,8 @@ LRESULT RssFeedsPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	ATTACH(IDC_RSS_URL, ctrlUrl);
 	::SetWindowText(GetDlgItem(IDC_RSS_URL_TEXT), CTSTRING(LINK));
 
-	ATTACH(IDC_RSS_NAME, ctrlCategorie);
-	::SetWindowText(GetDlgItem(IDC_RSS_NAME_TEXT), CTSTRING(CATEGORY));
+	ATTACH(IDC_RSS_NAME, ctrlName);
+	::SetWindowText(GetDlgItem(IDC_RSS_NAME_TEXT), CTSTRING(NAME));
 
 	ATTACH(IDC_RSS_INTERVAL, ctrlInterval);
 	::SetWindowText(GetDlgItem(IDC_INTERVAL_TEXT), CTSTRING(MINIMUM_UPDATE_INTERVAL_MIN));
@@ -98,11 +98,11 @@ LRESULT RssFeedsPage::onSelectionChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*b
 		auto item = rssList.begin();
 		advance(item, ctrlRssList.GetSelectedIndex());
 		ctrlUrl.SetWindowText(Text::toT(item->getUrl()).c_str());
-		ctrlCategorie.SetWindowText(Text::toT(item->getCategory()).c_str());
+		ctrlName.SetWindowText(Text::toT(item->getFeedName()).c_str());
 		ctrlInterval.SetWindowText(Util::toStringW(item->getUpdateInterval()).c_str());
 	} else {
 		ctrlUrl.SetWindowText(_T(""));
-		ctrlCategorie.SetWindowText(_T(""));
+		ctrlName.SetWindowText(_T(""));
 		ctrlInterval.SetWindowText(_T("60"));
 	}
 	loading = false;
@@ -135,7 +135,7 @@ bool RssFeedsPage::write() {
 		RSSManager::getInstance()->removeFeedItem(r);
 
 	for (auto i : rssList) {
-		RSSManager::getInstance()->updateFeedItem(i.feedItem, i.getUrl(), i.getCategory(), i.getUpdateInterval());
+		RSSManager::getInstance()->updateFeedItem(i.feedItem, i.getUrl(), i.getFeedName(), i.getUpdateInterval());
 	}
 	return true;
 }
@@ -157,11 +157,11 @@ LRESULT RssFeedsPage::onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 
 void RssFeedsPage::fillList() {
 
-	sort(rssList.begin(), rssList.end(), [](const RSSConfigItem& a, const RSSConfigItem& b) { return compare(a.getCategory(), b.getCategory()) < 0; });
+	sort(rssList.begin(), rssList.end(), [](const RSSConfigItem& a, const RSSConfigItem& b) { return compare(a.getFeedName(), b.getFeedName()) < 0; });
 	ctrlRssList.DeleteAllItems();
 	int pos = 0;
 	for (auto& i : rssList) {
-		ctrlRssList.InsertItem(pos++, Text::toT(i.getCategory()).c_str());
+		ctrlRssList.InsertItem(pos++, Text::toT(i.getFeedName()).c_str());
 	}
 }
 
@@ -183,14 +183,14 @@ void RssFeedsPage::add() {
 		return;
 
 	auto url = Text::fromT(WinUtil::getEditText(ctrlUrl));
-	auto category = WinUtil::getEditText(ctrlCategorie);
+	auto feedname = WinUtil::getEditText(ctrlName);
 	auto updateInt = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlInterval)));
 
-	auto feed = std::make_shared<RSS>(url, Text::fromT(category), 0, updateInt);
+	auto feed = std::make_shared<RSS>(url, Text::fromT(feedname), 0, updateInt);
 	rssList.emplace_back(RSSConfigItem(feed));
 	fillList();
 	//Select the new item
-	restoreSelection(category);
+	restoreSelection(feedname);
 
 }
 
@@ -203,29 +203,29 @@ bool RssFeedsPage::update() {
 		if (!validateSettings(curItem.feedItem))
 			return false;
 
-		curItem.setCategory(Text::fromT(WinUtil::getEditText(ctrlCategorie)));
+		curItem.setFeedName(Text::fromT(WinUtil::getEditText(ctrlName)));
 		curItem.setUrl(Text::fromT(WinUtil::getEditText(ctrlUrl)));
 		curItem.setUpdateInterval(Util::toInt(Text::fromT(WinUtil::getEditText(ctrlInterval))));
 		fillList();
 		
 		//Select the new item
-		restoreSelection(Text::toT(curItem.getCategory()));
+		restoreSelection(Text::toT(curItem.getFeedName()));
 	}
 	return true;
 }
 
 bool RssFeedsPage::validateSettings(const RSSPtr& aFeed) {
 	auto url = Text::fromT(WinUtil::getEditText(ctrlUrl));
-	auto category = Text::fromT(WinUtil::getEditText(ctrlCategorie));
+	auto feedname = Text::fromT(WinUtil::getEditText(ctrlName));
 
-	if (url.empty() || category.empty()) {
-		MessageBox(_T("URL and Name / Category must not be empty"));
+	if (url.empty() || feedname.empty()) {
+		MessageBox(_T("URL and Name must not be empty"));
 		return false;
 	}
 
 	bool exists = find_if(rssList.begin(), rssList.end(), [&](const RSSConfigItem& a)
 	{
-		if (url == a.getUrl() || category == a.getCategory()) {
+		if (url == a.getUrl() || feedname == a.getFeedName()) {
 			return !aFeed || (aFeed != a.feedItem); //Skip the current item
 		}
 		return false;
@@ -233,7 +233,7 @@ bool RssFeedsPage::validateSettings(const RSSPtr& aFeed) {
 	}) != rssList.end();
 
 	if (exists) {
-		MessageBox(_T("An item with the same URL or Name / Category already exists"));
+		MessageBox(_T("An item with the same URL or Name already exists"));
 		return false;
 	}
 
