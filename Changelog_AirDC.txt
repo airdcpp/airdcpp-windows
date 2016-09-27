@@ -1,3 +1,17 @@
+3.23
+
+Changed:
+
+- Updated Web UI and API
+- Simplified favorite directory layout
+
+Fixed:
+
+- Minor port mapping fixes (DC++)
+- Ignore chat rooms properly
+- Fix transfer rate limiting not working correctly when there are multiple (unbalanced) connections
+
+
 3.22
 
 Changed:

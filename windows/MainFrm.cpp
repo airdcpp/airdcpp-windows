@@ -1858,7 +1858,8 @@ void MainFrame::on(QueueManagerListener::ItemFinished, const QueueItemPtr& qi, c
 }
 
 void MainFrame::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept {
-	if (aBundle->getStatus() >= Bundle::STATUS_DOWNLOADED)
+	
+	if (aBundle->getStatus() >= Bundle::STATUS_FINISHED)
 		return;
 
 	// ask for auto search items with an exact match only (added via main chat/system log/scanning)
