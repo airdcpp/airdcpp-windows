@@ -51,7 +51,7 @@ ECHO Y | DEL checkftp.txt
 
 ::Not found, make sure that we have the latest version file
 
-echo Not found from the FTP, fetching the latest version file
+echo Not found from the FTP, fetching the latest version file...
 
 echo open %ftpaddress%> fetchversionxml.txt
 echo %ftpuser%>> fetchversionxml.txt
@@ -69,7 +69,7 @@ ECHO Y | DEL dir
 ECHO Y | DEL open
 ECHO Y | DEL quit
 
-echo Creating the updater file
+echo Creating the updater file...
 cd %arch%
 AirDC.exe /createupdate
 cd ..
@@ -99,7 +99,7 @@ echo Sending finished
 goto :end
 
 :ExistsFTP
-echo This revision exists already on the FTP, aborting
+echo This version exists on the FTP already, aborting
 ECHO Y | DEL checkftp.txt
 goto :end
 
