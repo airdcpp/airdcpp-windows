@@ -106,7 +106,7 @@ namespace experimental {
     };
 
     template <typename Sequence, typename F>
-    constexpr transformed_view_t<Sequence, typename std::decay<F>::type>
+    constexpr transformed_view_t<Sequence, typename hana::detail::decay<F>::type>
     transformed(Sequence& sequence, F&& f) {
         return {sequence, static_cast<F&&>(f)};
     }
@@ -205,6 +205,7 @@ struct unpack_impl<experimental::view_tag> {
     template <typename Sequence, std::size_t ...i, typename F>
     static constexpr decltype(auto)
     apply(experimental::sliced_view_t<Sequence, i...> view, F&& f) {
+        (void)view; // Remove spurious unused variable warning with GCC
         return static_cast<F&&>(f)(hana::at_c<i>(view.sequence_)...);
     }
 
@@ -221,6 +222,7 @@ struct unpack_impl<experimental::view_tag> {
     unpack_joined(View view, F&& f, std::index_sequence<i1...>,
                                     std::index_sequence<i2...>)
     {
+        (void)view; // Remove spurious unused variable warning with GCC
         return static_cast<F&&>(f)(hana::at_c<i1>(view.sequence1_)...,
                                    hana::at_c<i2>(view.sequence2_)...);
     }

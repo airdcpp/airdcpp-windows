@@ -94,7 +94,7 @@ namespace boost { namespace phoenix
               , typename C
               , typename Arg1
             >
-            struct result<This(C&, Arg1 const &)>
+            struct result<This(C&, Arg1&)>
             {
                 typedef typename add_reference<C>::type type;
             };

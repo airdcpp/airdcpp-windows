@@ -158,7 +158,7 @@ namespace boost { namespace phoenix { namespace impl
         struct result;
 
         template<typename This, class R, class O, class T, class T2>
-        struct result<This(R&, O, T const&, T2 const&)>
+        struct result<This(R&, O, T&, T2&)>
             : detail::decay_array<O>
         {};
 
@@ -176,7 +176,7 @@ namespace boost { namespace phoenix { namespace impl
         struct result;
 
         template<typename This, class R, class O, class P, class T>
-        struct result<This(R&, O, P, T const&)>
+        struct result<This(R&, O, P, T&)>
             : detail::decay_array<O>
         {};
 
@@ -238,7 +238,7 @@ namespace boost { namespace phoenix { namespace impl
         struct result;
 
         template<typename This, class R, class T>
-        struct result<This(R&, T const&)>
+        struct result<This(R&, T&)>
             : range_iterator<R>
         {
         };

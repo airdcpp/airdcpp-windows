@@ -12,6 +12,7 @@
 #include <boost/math/special_functions/fpclassify.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/scoped_array.hpp>
+#include <boost/functional/hash_fwd.hpp>
 #include <tommath.h>
 #include <cmath>
 #include <limits>
@@ -649,6 +650,16 @@ template <class Integer>
 inline typename enable_if<is_signed<Integer>, Integer>::type eval_integer_modulus(const tommath_int& x, Integer val)
 {
    return eval_integer_modulus(x, boost::multiprecision::detail::unsigned_abs(val));
+}
+
+inline std::size_t hash_value(const tommath_int& val)
+{
+   std::size_t result = 0;
+   std::size_t len = val.data().used;
+   for(std::size_t i = 0; i < len; ++i)
+      boost::hash_combine(result, val.data().dp[i]);
+   boost::hash_combine(result, val.data().sign);
+   return result;
 }
 
 } // namespace backends

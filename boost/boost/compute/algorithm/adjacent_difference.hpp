@@ -23,6 +23,35 @@
 namespace boost {
 namespace compute {
 
+namespace detail {
+
+template<class InputIterator, class OutputIterator, class BinaryFunction>
+inline OutputIterator
+dispatch_adjacent_difference(InputIterator first,
+                             InputIterator last,
+                             OutputIterator result,
+                             BinaryFunction op,
+                             command_queue &queue = system::default_queue())
+{
+    size_t count = detail::iterator_range_size(first, last);
+    detail::meta_kernel k("adjacent_difference");
+
+    k << "const uint i = get_global_id(0);\n"
+      << "if(i == 0){\n"
+      << "    " << result[k.var<uint_>("0")] << " = " << first[k.var<uint_>("0")] << ";\n"
+      << "}\n"
+      << "else {\n"
+      << "    " << result[k.var<uint_>("i")] << " = "
+      <<               op(first[k.var<uint_>("i")], first[k.var<uint_>("i-1")]) << ";\n"
+      << "}\n";
+
+    k.exec_1d(queue, 0, count, 1);
+
+    return result + count;
+}
+
+} // end detail namespace
+
 /// Stores the difference of each pair of consecutive values in the range
 /// [\p first, \p last) to the range beginning at \p result. If \p op is not
 /// provided, \c minus<T> is used.
@@ -44,26 +73,26 @@ adjacent_difference(InputIterator first,
                     BinaryFunction op,
                     command_queue &queue = system::default_queue())
 {
-    if(first == last){
+    typedef typename std::iterator_traits<InputIterator>::value_type value_type;
+
+    if(first == last) {
         return result;
     }
 
-    size_t count = detail::iterator_range_size(first, last);
+    if (first == result) {
+        vector<value_type> temp(detail::iterator_range_size(first, last),
+                                queue.get_context());
+        copy(first, last, temp.begin(), queue);
 
-    detail::meta_kernel k("adjacent_difference");
-
-    k << "const uint i = get_global_id(0);\n"
-      << "if(i == 0){\n"
-      << "    " << result[k.var<uint_>("0")] << " = " << first[k.var<uint_>("0")] << ";\n"
-      << "}\n"
-      << "else {\n"
-      << "    " << result[k.var<uint_>("i")] << " = "
-      <<               op(first[k.var<uint_>("i")], first[k.var<uint_>("i-1")]) << ";\n"
-      << "}\n";
-
-    k.exec_1d(queue, 0, count, 1);
-
-    return result + count;
+        return ::boost::compute::detail::dispatch_adjacent_difference(
+            temp.begin(), temp.end(), result, op, queue
+        );
+    }
+    else {
+        return ::boost::compute::detail::dispatch_adjacent_difference(
+            first, last, result, op, queue
+        );
+    }
 }
 
 /// \overload
@@ -76,20 +105,9 @@ adjacent_difference(InputIterator first,
 {
     typedef typename std::iterator_traits<InputIterator>::value_type value_type;
 
-    if (first == result) {
-        vector<value_type> temp(detail::iterator_range_size(first, last),
-                                queue.get_context());
-        copy(first, last, temp.begin(), queue);
-
-        return ::boost::compute::adjacent_difference(
-            temp.begin(), temp.end(), result, ::boost::compute::minus<value_type>(), queue
-        );
-    }
-    else {
-        return ::boost::compute::adjacent_difference(
-            first, last, result, ::boost::compute::minus<value_type>(), queue
-        );
-    }
+    return ::boost::compute::adjacent_difference(
+        first, last, result, ::boost::compute::minus<value_type>(), queue
+    );
 }
 
 } // end compute namespace
