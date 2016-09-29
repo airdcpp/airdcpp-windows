@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airdc-git\AirDC.rc
+// Used by N:\projects\airgit\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -1646,7 +1646,6 @@
 #define IDC_REGEXP                      15000
 #define IDC_BACKGROUND_IMAGE            15001
 #define IDC_RECONNECT_DISCONNECTED      15002
-#define IDC_FAV_NO_PM                   15003
 #define IDD_CHATFILTERPAGE              15005
 #define IDC_IGNORE_ADD                  15006
 #define IDD_PRIOPAGE                    15006

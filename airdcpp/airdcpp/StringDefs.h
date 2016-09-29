@@ -451,7 +451,6 @@ enum Strings { // @DontAdd
 	FAV_JOIN_SHOWING_OFF, // "Join/part of favorite users showing off"
 	FAV_JOIN_SHOWING_ON, // "Join/part of favorite users showing on"
 	FAV_LOG_CHAT, // "Log main chat"
-	FAV_NO_PM, // "Ignore private messages"
 	FAV_SHOW_JOIN, // "Show user joins / parts"
 	FILE, // "File"
 	FILELIST_LOADED_IN, // "File list has been loaded in %1%"
