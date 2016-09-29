@@ -8,6 +8,7 @@
 
 #include <boost/config.hpp>
 #include <boost/scoped_array.hpp>
+#include <boost/functional/hash.hpp>
 #include <boost/multiprecision/number.hpp>
 
 #if defined(BOOST_INTEL) && !defined(BOOST_MP_USE_FLOAT128) && !defined(BOOST_MP_USE_QUAD)
@@ -489,6 +490,11 @@ inline void eval_atan2(float128_backend& result, const float128_backend& a, cons
    result.value() = atan2q(a.value(), b.value());
 }
 
+inline std::size_t hash_value(const float128_backend& val)
+{
+   return  boost::hash_value(static_cast<double>(val.value()));
+}
+
 } // namespace backends
 
 }} // namespaces
@@ -547,7 +553,26 @@ void serialize(Archive& ar, boost::multiprecision::backends::float128_backend& v
    float128_detail::do_serialize(ar, val, load_tag(), binary_tag());
 }
 
-}}
+} // namepsace multiprecision
+
+namespace math{
+
+template <multiprecision::expression_template_option ExpressionTemplates>
+inline int signbit BOOST_PREVENT_MACRO_SUBSTITUTION(const boost::multiprecision::number<boost::multiprecision::backends::float128_backend, ExpressionTemplates>& arg)
+{
+   return ::signbitq(arg.backend().value());
+}
+
+template <multiprecision::expression_template_option ExpressionTemplates>
+inline boost::multiprecision::number<boost::multiprecision::backends::float128_backend, ExpressionTemplates> copysign BOOST_PREVENT_MACRO_SUBSTITUTION(const boost::multiprecision::number<boost::multiprecision::backends::float128_backend, ExpressionTemplates>& a, const boost::multiprecision::number<boost::multiprecision::backends::float128_backend, ExpressionTemplates>& b)
+{
+   return ::copysignq(a.backend().value(), b.backend().value());
+}
+
+
+} // namespace math
+
+} // namespace boost
 
 namespace std{
 

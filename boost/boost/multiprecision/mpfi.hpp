@@ -12,10 +12,16 @@
 #include <boost/multiprecision/detail/big_lanczos.hpp>
 #include <boost/multiprecision/detail/digits.hpp>
 #include <boost/multiprecision/mpfr.hpp>
+#include <boost/multiprecision/logged_adaptor.hpp>
 #include <boost/math/constants/constants.hpp>
+#include <boost/functional/hash_fwd.hpp>
 #include <mpfi.h>
 #include <cmath>
 #include <algorithm>
+
+#ifndef BOOST_MULTIPRECISION_MPFI_DEFAULT_PRECISION
+#  define BOOST_MULTIPRECISION_MPFI_DEFAULT_PRECISION 20
+#endif
 
 namespace boost{
 namespace multiprecision{
@@ -315,7 +321,7 @@ protected:
    mpfi_t m_data;
    static unsigned& get_default_precision() BOOST_NOEXCEPT
    {
-      static unsigned val = 50;
+      static unsigned val = BOOST_MULTIPRECISION_MPFI_DEFAULT_PRECISION;
       return val;
    }
 };
@@ -1015,6 +1021,28 @@ inline void eval_tanh(mpfi_float_backend<Digits10>& result, const mpfi_float_bac
    mpfi_tanh(result.data(), arg.data());
 }
 
+template <unsigned Digits10>
+inline std::size_t hash_value(const mpfi_float_backend<Digits10>& val)
+{
+   std::size_t result = 0;
+   std::size_t len = val.left_data()[0]._mpfr_prec / mp_bits_per_limb;
+   if(val.left_data()[0]._mpfr_prec % mp_bits_per_limb)
+      ++len;
+   for(int i = 0; i < len; ++i)
+      boost::hash_combine(result, val.left_data()[0]._mpfr_d[i]);
+   boost::hash_combine(result, val.left_data()[0]._mpfr_exp);
+   boost::hash_combine(result, val.left_data()[0]._mpfr_sign);
+
+   len = val.right_data()[0]._mpfr_prec / mp_bits_per_limb;
+   if(val.right_data()[0]._mpfr_prec % mp_bits_per_limb)
+      ++len;
+   for(int i = 0; i < len; ++i)
+      boost::hash_combine(result, val.right_data()[0]._mpfr_d[i]);
+   boost::hash_combine(result, val.right_data()[0]._mpfr_exp);
+   boost::hash_combine(result, val.right_data()[0]._mpfr_sign);
+   return result;
+}
+
 } // namespace backends
 
 #ifdef BOOST_NO_SFINAE_EXPR
@@ -1153,7 +1181,7 @@ inline int digits<boost::multiprecision::mpfi_float>()
    BOOST_NOEXCEPT
 #endif
 {
-   return boost::multiprecision::backends::detail::get_default_precision();
+   return  multiprecision::detail::digits10_2_2(boost::multiprecision::mpfi_float::default_precision());
 }
 template <>
 inline int digits<boost::multiprecision::number<boost::multiprecision::mpfi_float_backend<0>, boost::multiprecision::et_off> >()
@@ -1161,9 +1189,109 @@ inline int digits<boost::multiprecision::number<boost::multiprecision::mpfi_floa
    BOOST_NOEXCEPT
 #endif
 {
-   return boost::multiprecision::backends::detail::get_default_precision();
+   return  multiprecision::detail::digits10_2_2(boost::multiprecision::mpfi_float::default_precision());
 }
 
+template <>
+inline boost::multiprecision::mpfi_float
+max_value<boost::multiprecision::mpfi_float>()
+{
+   boost::multiprecision::mpfi_float result(0.5);
+   mpfi_mul_2exp(result.backend().data(), result.backend().data(), mpfr_get_emax());
+   //BOOST_ASSERT(mpfi_number_p(result.backend().data()));
+   return result;
+}
+
+template <>
+inline boost::multiprecision::mpfi_float
+min_value<boost::multiprecision::mpfi_float>()
+{
+   boost::multiprecision::mpfi_float result(0.5);
+   mpfi_div_2exp(result.backend().data(), result.backend().data(), -mpfr_get_emin());
+   //BOOST_ASSERT(mpfi_number_p(result.backend().data()));
+   return result;
+}
+
+template <>
+inline boost::multiprecision::number<boost::multiprecision::mpfi_float_backend<0>, boost::multiprecision::et_off>
+max_value<boost::multiprecision::number<boost::multiprecision::mpfi_float_backend<0>, boost::multiprecision::et_off> >()
+{
+   boost::multiprecision::number<boost::multiprecision::mpfi_float_backend<0>, boost::multiprecision::et_off> result(0.5);
+   mpfi_mul_2exp(result.backend().data(), result.backend().data(), mpfr_get_emax());
+   //BOOST_ASSERT(mpfi_number_p(result.backend().data()));
+   return result;
+}
+
+template <>
+inline boost::multiprecision::number<boost::multiprecision::mpfi_float_backend<0>, boost::multiprecision::et_off>
+min_value<boost::multiprecision::number<boost::multiprecision::mpfi_float_backend<0>, boost::multiprecision::et_off> >()
+{
+   boost::multiprecision::number<boost::multiprecision::mpfi_float_backend<0>, boost::multiprecision::et_off> result(0.5);
+   mpfi_div_2exp(result.backend().data(), result.backend().data(), -mpfr_get_emin());
+   //BOOST_ASSERT(mpfi_number_p(result.backend().data()));
+   return result;
+}
+
+// mpfi gets used with logged_adaptor fairly often, so specialize for that use case as well:
+typedef boost::multiprecision::number<boost::multiprecision::backends::logged_adaptor<boost::multiprecision::mpfi_float::backend_type>, boost::multiprecision::et_on> logged_type1;
+typedef boost::multiprecision::number<boost::multiprecision::backends::logged_adaptor<boost::multiprecision::mpfi_float::backend_type>, boost::multiprecision::et_off> logged_type2;
+
+template <>
+inline int digits<logged_type1>()
+#ifdef BOOST_MATH_NOEXCEPT
+BOOST_NOEXCEPT
+#endif
+{
+   return  multiprecision::detail::digits10_2_2(logged_type1::default_precision());
+}
+template <>
+inline int digits<logged_type2 >()
+#ifdef BOOST_MATH_NOEXCEPT
+BOOST_NOEXCEPT
+#endif
+{
+   return  multiprecision::detail::digits10_2_2(logged_type1::default_precision());
+}
+
+template <>
+inline logged_type1
+max_value<logged_type1>()
+{
+   logged_type1 result(0.5);
+   mpfi_mul_2exp(result.backend().value().data(), result.backend().value().data(), mpfr_get_emax());
+   //BOOST_ASSERT(mpfi_number_p(result.backend().data()));
+   return result;
+}
+
+template <>
+inline logged_type1
+min_value<logged_type1>()
+{
+   logged_type1 result(0.5);
+   mpfi_div_2exp(result.backend().value().data(), result.backend().value().data(), -mpfr_get_emin());
+   //BOOST_ASSERT(mpfi_number_p(result.backend().data()));
+   return result;
+}
+
+template <>
+inline logged_type2
+max_value<logged_type2 >()
+{
+   logged_type2 result(0.5);
+   mpfi_mul_2exp(result.backend().value().data(), result.backend().value().data(), mpfr_get_emax());
+   //BOOST_ASSERT(mpfi_number_p(result.backend().data()));
+   return result;
+}
+
+template <>
+inline logged_type2
+min_value<logged_type2 >()
+{
+   logged_type2 result(0.5);
+   mpfi_div_2exp(result.backend().value().data(), result.backend().value().data(), -mpfr_get_emin());
+   //BOOST_ASSERT(mpfi_number_p(result.backend().data()));
+   return result;
+}
 } // namespace tools
 
 namespace constants{ namespace detail{
@@ -1217,13 +1345,19 @@ struct constant_pi<boost::multiprecision::number<boost::multiprecision::mpfi_flo
       }
       return result;
    }
+   static inline result_type get(const mpl::int_<0>&)
+   {
+      result_type result;
+      mpfi_const_pi(result.backend().data());
+      return result;
+   }
 };
 template<unsigned Digits10, boost::multiprecision::expression_template_option ExpressionTemplates>
 struct constant_ln_two<boost::multiprecision::number<boost::multiprecision::mpfi_float_backend<Digits10>, ExpressionTemplates> >
 {
    typedef boost::multiprecision::number<boost::multiprecision::mpfi_float_backend<Digits10>, ExpressionTemplates> result_type;
    template<int N>
-   static inline result_type const& get(const mpl::int_<N>&)
+   static inline result_type get(const mpl::int_<N>&)
    {
       mpfi_initializer<result_type>::force_instantiate();
       static result_type result;
@@ -1233,6 +1367,12 @@ struct constant_ln_two<boost::multiprecision::number<boost::multiprecision::mpfi
          has_init = true;
          mpfi_const_log2(result.backend().data());
       }
+      return result;
+   }
+   static inline result_type get(const mpl::int_<0>&)
+   {
+      result_type result;
+      mpfi_const_log2(result.backend().data());
       return result;
    }
 };
@@ -1253,6 +1393,12 @@ struct constant_euler<boost::multiprecision::number<boost::multiprecision::mpfi_
       }
       return result;
    }
+   static inline result_type get(const mpl::int_<0>&)
+   {
+      result_type result;
+      mpfi_const_euler(result.backend().data());
+      return result;
+   }
 };
 template<unsigned Digits10, boost::multiprecision::expression_template_option ExpressionTemplates>
 struct constant_catalan<boost::multiprecision::number<boost::multiprecision::mpfi_float_backend<Digits10>, ExpressionTemplates> >
@@ -1269,6 +1415,12 @@ struct constant_catalan<boost::multiprecision::number<boost::multiprecision::mpf
          has_init = true;
          mpfi_const_catalan(result.backend().data());
       }
+      return result;
+   }
+   static inline result_type get(const mpl::int_<0>&)
+   {
+      result_type result;
+      mpfi_const_catalan(result.backend().data());
       return result;
    }
 };

@@ -21,12 +21,14 @@
 
 #include <boost/move/utility_core.hpp>
 #include <boost/move/adl_move_swap.hpp>
+#include <boost/move/detail/iterator_traits.hpp>
 
 namespace boost {
 namespace movelib {
 
 struct forward_t{};
 struct backward_t{};
+struct three_way_t{};
 
 struct move_op
 {
@@ -41,6 +43,13 @@ struct move_op
    template <class SourceIt, class DestinationIt>
    DestinationIt operator()(backward_t, SourceIt first, SourceIt last, DestinationIt dest_last)
    {  return ::boost::move_backward(first, last, dest_last);  }
+
+   template <class SourceIt, class DestinationIt1, class DestinationIt2>
+   void operator()(three_way_t, SourceIt srcit, DestinationIt1 dest1it, DestinationIt2 dest2it)
+   {
+      *dest2it = boost::move(*dest1it);
+      *dest1it = boost::move(*srcit);
+   }
 };
 
 struct swap_op
@@ -56,6 +65,15 @@ struct swap_op
    template <class SourceIt, class DestinationIt>
    DestinationIt operator()(backward_t, SourceIt first, SourceIt last, DestinationIt dest_begin)
    {  return boost::adl_move_swap_ranges_backward(first, last, dest_begin);  }
+
+   template <class SourceIt, class DestinationIt1, class DestinationIt2>
+   void operator()(three_way_t, SourceIt srcit, DestinationIt1 dest1it, DestinationIt2 dest2it)
+   {
+      typename ::boost::movelib::iterator_traits<SourceIt>::value_type tmp(boost::move(*dest2it));
+      *dest2it = boost::move(*dest1it);
+      *dest1it = boost::move(*srcit);
+      *srcit = boost::move(tmp);
+   }
 };
 
 }} //namespace boost::movelib

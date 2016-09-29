@@ -16,10 +16,12 @@
 #include <boost/compute/system.hpp>
 #include <boost/compute/command_queue.hpp>
 #include <boost/compute/algorithm/detail/merge_sort_on_cpu.hpp>
+#include <boost/compute/algorithm/detail/merge_sort_on_gpu.hpp>
 #include <boost/compute/algorithm/detail/radix_sort.hpp>
 #include <boost/compute/algorithm/detail/insertion_sort.hpp>
 #include <boost/compute/algorithm/reverse.hpp>
 #include <boost/compute/functional/operator.hpp>
+#include <boost/compute/detail/iterator_range_size.hpp>
 
 namespace boost {
 namespace compute {
@@ -31,9 +33,17 @@ inline void dispatch_gpu_stable_sort(Iterator first,
                                      Compare compare,
                                      command_queue &queue)
 {
-    ::boost::compute::detail::serial_insertion_sort(
-        first, last, compare, queue
-    );
+    size_t count = detail::iterator_range_size(first, last);
+
+    if(count < 32){
+        detail::serial_insertion_sort(
+            first, last, compare, queue
+        );
+    } else {
+        detail::merge_sort_on_gpu(
+            first, last, compare, true /* stable */, queue
+        );
+    }
 }
 
 template<class T>
@@ -53,11 +63,8 @@ dispatch_gpu_stable_sort(buffer_iterator<T> first,
                          greater<T>,
                          command_queue &queue)
 {
-    // radix sort in ascending order
-    ::boost::compute::detail::radix_sort(first, last, queue);
-
-    // reverse range to descending order
-    ::boost::compute::reverse(first, last, queue);
+    // radix sorts in descending order
+    ::boost::compute::detail::radix_sort(first, last, false, queue);
 }
 
 } // end detail namespace
@@ -76,6 +83,7 @@ inline void stable_sort(Iterator first,
         ::boost::compute::detail::dispatch_gpu_stable_sort(
             first, last, compare, queue
         );
+        return;
     }
     ::boost::compute::detail::merge_sort_on_cpu(first, last, compare, queue);
 }

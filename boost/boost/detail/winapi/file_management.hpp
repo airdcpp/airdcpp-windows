@@ -136,6 +136,14 @@ UnlockFileEx(
     ::_OVERLAPPED* lpOverlapped);
 
 BOOST_SYMBOL_IMPORT boost::detail::winapi::BOOL_ WINAPI
+ReadFile(
+    boost::detail::winapi::HANDLE_ hFile,
+    boost::detail::winapi::LPVOID_ lpBuffer,
+    boost::detail::winapi::DWORD_ nNumberOfBytesToRead,
+    boost::detail::winapi::LPDWORD_ lpNumberOfBytesRead,
+    ::_OVERLAPPED* lpOverlapped);
+
+BOOST_SYMBOL_IMPORT boost::detail::winapi::BOOL_ WINAPI
 WriteFile(
     boost::detail::winapi::HANDLE_ hFile,
     boost::detail::winapi::LPCVOID_ lpBuffer,
@@ -386,6 +394,16 @@ BOOST_FORCEINLINE BOOL_ UnlockFileEx(
     return ::UnlockFileEx(hFile, dwReserved, nNumberOfBytesToUnlockLow, nNumberOfBytesToUnlockHigh, reinterpret_cast< ::_OVERLAPPED* >(lpOverlapped));
 }
 
+BOOST_FORCEINLINE BOOL_ ReadFile(
+    HANDLE_ hFile,
+    LPVOID_ lpBuffer,
+    DWORD_ nNumberOfBytesToWrite,
+    LPDWORD_ lpNumberOfBytesWritten,
+    OVERLAPPED_* lpOverlapped)
+{
+    return ::ReadFile(hFile, lpBuffer, nNumberOfBytesToWrite, lpNumberOfBytesWritten, reinterpret_cast< ::_OVERLAPPED* >(lpOverlapped));
+}
+
 BOOST_FORCEINLINE BOOL_ WriteFile(
     HANDLE_ hFile,
     LPCVOID_ lpBuffer,
@@ -394,7 +412,7 @@ BOOST_FORCEINLINE BOOL_ WriteFile(
     OVERLAPPED_* lpOverlapped)
 {
     return ::WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite, lpNumberOfBytesWritten, reinterpret_cast< ::_OVERLAPPED* >(lpOverlapped));
-};
+}
 
 #if !defined( BOOST_NO_ANSI_APIS )
 BOOST_FORCEINLINE HANDLE_ create_file(
