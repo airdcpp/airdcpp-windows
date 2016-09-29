@@ -503,6 +503,8 @@
     <ClCompile Include="windows\AutoSearchFrm.cpp" />
     <ClCompile Include="windows\AutoSearchGeneralPage.cpp" />
     <ClCompile Include="windows\AutoSearchGroupDlg.cpp" />
+    <ClCompile Include="windows\FavHubGeneralPage.cpp" />
+    <ClCompile Include="windows\FavHubOptionsPage.cpp" />
     <ClCompile Include="windows\RssFilterPage.cpp" />
     <ClCompile Include="windows\TabbedDialog.cpp" />
     <ClCompile Include="windows\AutosearchSearchTimesPage.cpp" />
@@ -547,7 +549,6 @@
     <ClCompile Include="windows\ExListViewCtrl.cpp" />
     <ClCompile Include="windows\ExtendedTrace.cpp" />
     <ClCompile Include="windows\FavHubGroupsDlg.cpp" />
-    <ClCompile Include="windows\FavHubProperties.cpp" />
     <ClCompile Include="windows\LocationsPage.cpp" />
     <ClCompile Include="windows\FavoritesFrm.cpp" />
     <ClCompile Include="windows\FolderTree.cpp" />
@@ -640,6 +641,8 @@
     <ClInclude Include="windows\AutosearchGeneralPage.h" />
     <ClInclude Include="windows\AutoSearchGroupDlg.h" />
     <ClInclude Include="windows\AutoSearchItemSettings.h" />
+    <ClInclude Include="windows\FavHubGeneralPage.h" />
+    <ClInclude Include="windows\FavHubOptionsPage.h" />
     <ClInclude Include="windows\RssFilterPage.h" />
     <ClInclude Include="windows\TabbedDialog.h" />
     <ClInclude Include="windows\AutosearchParams.h" />
@@ -693,7 +696,6 @@
     <ClInclude Include="windows\ExListViewCtrl.h" />
     <ClInclude Include="windows\ExtendedTrace.h" />
     <ClInclude Include="windows\FavHubGroupsDlg.h" />
-    <ClInclude Include="windows\FavHubProperties.h" />
     <ClInclude Include="windows\LocationsPage.h" />
     <ClInclude Include="windows\FavoritesFrm.h" />
     <ClInclude Include="windows\FinishedFrameBase.h" />

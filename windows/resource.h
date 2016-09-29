@@ -89,7 +89,6 @@
 #define IDR_NOTEPAD                     220
 #define IDR_QUEUE                       221
 #define IDR_SPY                         222
-#define IDD_FAVORITEHUB                 223
 #define IDR_USERS                       224
 #define IDD_LOGPAGE                     224
 #define IDD_USER_COMMAND                230
@@ -314,6 +313,8 @@
 #define IDI_WEBSERVER                   467
 #define IDD_RSS_DLG                     470
 #define IDD_RSS_FILTER_DLG              472
+#define IDD_FAV_HUB_GENERAL             474
+#define IDD_FAV_OPTIONS_DLG             476
 #define IDI_SLOTS                       480
 #define IDI_SLOTSFULL                   481
 #define IDI_TOTAL_UP                    482
@@ -1876,7 +1877,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        474
+#define _APS_NEXT_RESOURCE_VALUE        478
 #define _APS_NEXT_COMMAND_VALUE         32795
 #define _APS_NEXT_CONTROL_VALUE         10228
 #define _APS_NEXT_SYMED_VALUE           136
