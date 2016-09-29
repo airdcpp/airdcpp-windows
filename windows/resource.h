@@ -1674,7 +1674,6 @@
 #define IDC_REGEXP                      15000
 #define IDC_BACKGROUND_IMAGE            15001
 #define IDC_RECONNECT_DISCONNECTED      15002
-#define IDC_FAV_NO_PM                   15003
 #define IDD_CHATFILTERPAGE              15005
 #define IDC_IGNORE_ADD                  15006
 #define IDD_PRIOPAGE                    15006

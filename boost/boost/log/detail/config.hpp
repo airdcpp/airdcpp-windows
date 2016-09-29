@@ -134,6 +134,16 @@
 #define BOOST_LOG_NO_CXX11_ARG_PACKS_TO_NON_VARIADIC_ARGS_EXPANSION
 #endif
 
+#if defined(BOOST_NO_CXX11_CONSTEXPR) || (defined(BOOST_GCC) && ((BOOST_GCC+0) / 100) <= 406)
+// GCC 4.6 does not support in-class brace initializers for static constexpr array members
+#define BOOST_LOG_NO_CXX11_CONSTEXPR_DATA_MEMBER_BRACE_INITIALIZERS
+#endif
+
+#if defined(BOOST_NO_CXX11_DEFAULTED_FUNCTIONS) || (defined(BOOST_GCC) && ((BOOST_GCC+0) / 100) <= 406)
+// GCC 4.6 cannot handle a defaulted function with noexcept specifier
+#define BOOST_LOG_NO_CXX11_DEFAULTED_NOEXCEPT_FUNCTIONS
+#endif
+
 #if defined(_MSC_VER)
 #   define BOOST_LOG_NO_VTABLE __declspec(novtable)
 #elif defined(__GNUC__)
@@ -166,6 +176,14 @@
 #   define BOOST_LOG_UNREACHABLE_RETURN(r) return r
 #else
 #   define BOOST_LOG_UNREACHABLE_RETURN(r) BOOST_LOG_UNREACHABLE()
+#endif
+
+// The macro efficiently returns a local lvalue from a function.
+// It employs NRVO, if supported by compiler, or uses a move constructor otherwise.
+#if defined(BOOST_HAS_NRVO)
+#define BOOST_LOG_NRVO_RESULT(x) x
+#else
+#define BOOST_LOG_NRVO_RESULT(x) boost::move(x)
 #endif
 
 // Some compilers support a special attribute that shows that a function won't return

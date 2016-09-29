@@ -7,7 +7,7 @@
 #ifndef BOOST_IOSTREAMS_MAPPED_FILE_HPP_INCLUDED
 #define BOOST_IOSTREAMS_MAPPED_FILE_HPP_INCLUDED
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1020)
+#if defined(_MSC_VER)
 # pragma once
 #endif
 
@@ -32,6 +32,10 @@
 #include <boost/type_traits/is_same.hpp>
 
 // Must come last.
+#if defined(BOOST_MSVC)
+# pragma warning(push)
+# pragma warning(disable:4251)  // Missing DLL interface for shared_ptr
+#endif
 #include <boost/config/abi_prefix.hpp>
 
 namespace boost { namespace iostreams {
@@ -595,5 +599,8 @@ operator^=(mapped_file::mapmode& a, mapped_file::mapmode b)
 } } // End namespaces iostreams, boost.
 
 #include <boost/config/abi_suffix.hpp> // pops abi_suffix.hpp pragmas
+#if defined(BOOST_MSVC)
+# pragma warning(pop)  // pops #pragma warning(disable:4251)
+#endif
 
 #endif // #ifndef BOOST_IOSTREAMS_MAPPED_FILE_HPP_INCLUDED

@@ -47,7 +47,6 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	SetDlgItemText(IDC_FH_PASSWORD, CTSTRING(PASSWORD));
 	SetDlgItemText(IDC_FH_USER_DESC, CTSTRING(DESCRIPTION));
 	SetDlgItemText(IDC_FH_CONN, CTSTRING(CONNECTION));
-	SetDlgItemText(IDC_FAV_NO_PM, CTSTRING(FAV_NO_PM));
 	SetDlgItemText(IDC_SHOW_JOIN, CTSTRING(FAV_SHOW_JOIN));
 	SetDlgItemText(IDC_HIDE_SHARE, CTSTRING(HIDE_SHARE));
 	SetDlgItemText(IDC_FAV_SEARCH_INTERVAL, CTSTRING(MINIMUM_SEARCH_INTERVAL_SEC));
@@ -76,14 +75,10 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 
 	SetDlgItemText(IDC_AWAY_MSG, Text::toT(entry->get(HubSettings::AwayMsg)).c_str());
 
-	CheckDlgButton(IDC_FAV_NO_PM, entry->getIgnorePM() ? BST_CHECKED : BST_UNCHECKED);
-
 	CheckDlgButton(IDC_SHOW_JOIN, toInt(entry->get(HubSettings::ShowJoins)));
 	CheckDlgButton(IDC_SHOW_JOIN_FAV, toInt(entry->get(HubSettings::FavShowJoins)));
 	CheckDlgButton(IDC_LOGMAINCHAT, toInt(entry->get(HubSettings::LogMainChat)));
 	CheckDlgButton(IDC_CHAT_NOTIFY, toInt(entry->get(HubSettings::ChatNotify)));
-
-	CheckDlgButton(IDC_FAV_NO_PM, entry->getIgnorePM() ? BST_CHECKED : BST_UNCHECKED);
 
 	auto searchInterval = entry->get(HubSettings::SearchInterval);
 	CheckDlgButton(IDC_SEARCH_INTERVAL_DEFAULT, searchInterval == HUB_SETTING_DEFAULT_INT ? BST_CHECKED : BST_UNCHECKED);
@@ -281,7 +276,6 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 		entry->setDescription(Text::fromT(buf));
 		GetDlgItemText(IDC_HUBPASS, buf, 256);
 		entry->setPassword(Text::fromT(buf));
-		entry->setIgnorePM(IsDlgButtonChecked(IDC_FAV_NO_PM) == 1);
 
 		//Hub settings
 		GetDlgItemText(IDC_NICK, buf, 256);
