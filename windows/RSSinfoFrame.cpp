@@ -177,7 +177,7 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 				menu.appendSeparator();
 			}
 
-			menu.appendItem(TSTRING(SEARCH), [=] { WinUtil::searchAny(Text::toT(ii->item->getTitle())); });
+			menu.appendItem(TSTRING(SEARCH), [=] { WinUtil::search(Text::toT(ii->item->getTitle())); });
 			WinUtil::appendSearchMenu(menu, ii->item->getTitle());
 			if (AirUtil::allowOpenDupe(ii->getDupe())) {
 				menu.appendSeparator();

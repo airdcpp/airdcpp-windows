@@ -251,7 +251,7 @@ public:
 	static void initColors();
 	static void setFonts();
 	static void FlashWindow();
-	static void searchAny(const tstring& aSearch);
+	static void search(const tstring& aSearch, bool searchDirectory = false);
 	static void SetIcon(HWND hWnd, int aDefault, bool big = false);
 
 	static void searchSite(const WebShortcut* ws, const string& strSearchString, bool getReleaseDir = true);

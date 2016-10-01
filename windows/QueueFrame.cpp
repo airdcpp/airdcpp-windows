@@ -882,9 +882,9 @@ void QueueFrame::handleOpenFolder() {
 void QueueFrame::handleSearchDirectory() {
 	ctrlQueue.list.forEachSelectedT([&](const QueueItemInfoPtr qii) {
 		if (qii->bundle)
-			WinUtil::searchAny(qii->bundle->isFileBundle() ? Util::getLastDir(Text::toT(qii->bundle->getTarget())) : Text::toT(qii->bundle->getName()));
+			WinUtil::search(qii->bundle->isFileBundle() ? Util::getLastDir(Text::toT(qii->bundle->getTarget())) : Text::toT(qii->bundle->getName()), true);
 		else if ( qii->isDirectory && qii != iBack)
-			WinUtil::searchAny(qii->name);
+			WinUtil::search(qii->name, true);
 	});
 }
 
@@ -1090,7 +1090,7 @@ void QueueFrame::handleRemoveFiles(QueueItemList queueitems, bool removeFinished
 void QueueFrame::handleSearchQI(const QueueItemPtr& aQI, bool byName) {
 	if (aQI) {
 		if (byName)
-			WinUtil::searchAny(Text::toT(Util::getFileName(aQI->getTarget())));
+			WinUtil::search(Text::toT(Util::getFileName(aQI->getTarget())));
 		else
 			WinUtil::searchHash(aQI->getTTH(), Util::getFileName(aQI->getTarget()), aQI->getSize());
 	}

@@ -868,7 +868,7 @@ void SearchFrame::handleMatchPartial() {
 void SearchFrame::handleSearchDir() {
 	if(ctrlResults.list.GetSelectedCount() == 1) {
 		const SearchInfo* si = ctrlResults.list.getSelectedItem();
-		WinUtil::searchAny(Text::toT(AirUtil::getNmdcReleaseDir(si->sr->getPath(), true)));
+		WinUtil::search(Text::toT(AirUtil::getNmdcReleaseDir(si->sr->getPath(), true)), true);
 	}
 }
 

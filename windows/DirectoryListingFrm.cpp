@@ -1533,7 +1533,7 @@ void DirectoryListingFrame::handleSearchByName(bool usingTree, bool dirsOnly) {
 			name = ii->dir->getName();
 		}
 
-		WinUtil::searchAny(Text::toT(name));
+		WinUtil::search(Text::toT(name), dirsOnly);
 	});
 }
 

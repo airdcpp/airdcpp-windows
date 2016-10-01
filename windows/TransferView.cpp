@@ -1317,7 +1317,7 @@ void TransferView::handleRemoveFile() {
 
 void TransferView::handleSearchDir() {
 	auto search = [=](const ItemInfo* ii) {
-		WinUtil::searchAny(Util::getLastDir(ii->target));
+		WinUtil::search(Util::getLastDir(ii->target), true);
 	};
 
 	performActionBundles(search);
