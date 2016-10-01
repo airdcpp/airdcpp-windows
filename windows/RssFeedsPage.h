@@ -92,7 +92,7 @@ private:
 
 		//Bah.. this is complex, maybe just update changes directly without Cancel button?
 		RSSConfigItem(const RSSPtr& aFeed) noexcept :
-			url(aFeed->getUrl()), feedName(aFeed->getFeedName()), updateInterval(aFeed->getUpdateInterval()), feedItem(aFeed)
+			url(aFeed->getUrl()), feedName(aFeed->getFeedName()), enable(aFeed->getEnable()), updateInterval(aFeed->getUpdateInterval()), feedItem(aFeed)
 		{
 		}
 		~RSSConfigItem() {};
@@ -100,6 +100,7 @@ private:
 		GETSET(string, url, Url);
 		GETSET(string, feedName, FeedName);
 		GETSET(int, updateInterval, UpdateInterval);
+		GETSET(bool, enable, Enable);
 
 		RSSPtr feedItem;
 	};

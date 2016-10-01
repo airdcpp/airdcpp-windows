@@ -65,6 +65,7 @@ LRESULT RssFeedsPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	::SetWindowText(GetDlgItem(IDC_RSS_ADD), CTSTRING(ADD));
 	::SetWindowText(GetDlgItem(IDC_RSS_GROUP_TEXT), CTSTRING(RSS_CONFIG));
 	::SetWindowText(GetDlgItem(IDC_RSS_UPDATE), CTSTRING(UPDATE));
+	::SetWindowText(GetDlgItem(IDC_RSS_ENABLE), CTSTRING(ENABLE_RSS));
 
 	::EnableWindow(GetDlgItem(IDC_RSS_REMOVE), false);
 	::EnableWindow(GetDlgItem(IDC_RSS_UPDATE), false);
@@ -100,10 +101,12 @@ LRESULT RssFeedsPage::onSelectionChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*b
 		ctrlUrl.SetWindowText(Text::toT(item->getUrl()).c_str());
 		ctrlName.SetWindowText(Text::toT(item->getFeedName()).c_str());
 		ctrlInterval.SetWindowText(Util::toStringW(item->getUpdateInterval()).c_str());
+		CheckDlgButton(IDC_RSS_ENABLE, item->getEnable() ? TRUE : FALSE);
 	} else {
 		ctrlUrl.SetWindowText(_T(""));
 		ctrlName.SetWindowText(_T(""));
 		ctrlInterval.SetWindowText(_T("60"));
+		CheckDlgButton(IDC_RSS_ENABLE, TRUE);
 	}
 	loading = false;
 
@@ -135,7 +138,7 @@ bool RssFeedsPage::write() {
 		RSSManager::getInstance()->removeFeedItem(r);
 
 	for (auto i : rssList) {
-		RSSManager::getInstance()->updateFeedItem(i.feedItem, i.getUrl(), i.getFeedName(), i.getUpdateInterval());
+		RSSManager::getInstance()->updateFeedItem(i.feedItem, i.getUrl(), i.getFeedName(), i.getUpdateInterval(), i.getEnable());
 	}
 	return true;
 }
@@ -185,6 +188,7 @@ void RssFeedsPage::add() {
 	auto url = Text::fromT(WinUtil::getEditText(ctrlUrl));
 	auto feedname = WinUtil::getEditText(ctrlName);
 	auto updateInt = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlInterval)));
+	bool enabled = IsDlgButtonChecked(IDC_RSS_ENABLE) ? true : false;
 
 	auto feed = std::make_shared<RSS>(url, Text::fromT(feedname), 0, updateInt);
 	rssList.emplace_back(RSSConfigItem(feed));
@@ -206,6 +210,7 @@ bool RssFeedsPage::update() {
 		curItem.setFeedName(Text::fromT(WinUtil::getEditText(ctrlName)));
 		curItem.setUrl(Text::fromT(WinUtil::getEditText(ctrlUrl)));
 		curItem.setUpdateInterval(Util::toInt(Text::fromT(WinUtil::getEditText(ctrlInterval))));
+		curItem.setEnable(IsDlgButtonChecked(IDC_RSS_ENABLE) ? true : false);
 		fillList();
 		
 		//Select the new item

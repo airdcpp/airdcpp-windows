@@ -390,6 +390,7 @@ enum Strings { // @DontAdd
 	ENABLE_CONNECTIVITY, // "Enable %1% connectivity"
 	ENABLE_MULTI_SOURCE, // "Enable segmented downloads"
 	ENABLE_PARAMETERS, // "Enable parameters"
+	ENABLE_RSS, // "Enable auto update"
 	ENCRYPTED_TRANSFER, // "Encrypted transfer"
 	ENCRYPTION, // "Encryption"
 	ENCRYPTION_FORCED, // "Enabled (forced in ADC hubs)"
