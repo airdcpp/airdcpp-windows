@@ -82,6 +82,7 @@ LRESULT RssFeedsPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	ctrlRssList.SelectItem(0);
 	CenterWindow(GetParent());
 	SetWindowText(CTSTRING(RSS_CONFIG));
+	fixControls();
 
 	return TRUE;
 }
@@ -109,7 +110,7 @@ LRESULT RssFeedsPage::onSelectionChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*b
 		CheckDlgButton(IDC_RSS_ENABLE, TRUE);
 	}
 	loading = false;
-
+	fixControls();
 	return 0;
 }
 
@@ -158,6 +159,13 @@ LRESULT RssFeedsPage::onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	return 0;
 }
 
+LRESULT RssFeedsPage::onEnable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if (loading)
+		return 0;
+	fixControls();
+	return 0;
+}
+
 void RssFeedsPage::fillList() {
 
 	sort(rssList.begin(), rssList.end(), [](const RSSConfigItem& a, const RSSConfigItem& b) { return compare(a.getFeedName(), b.getFeedName()) < 0; });
@@ -190,7 +198,7 @@ void RssFeedsPage::add() {
 	auto updateInt = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlInterval)));
 	bool enabled = IsDlgButtonChecked(IDC_RSS_ENABLE) ? true : false;
 
-	auto feed = std::make_shared<RSS>(url, Text::fromT(feedname), 0, updateInt);
+	auto feed = std::make_shared<RSS>(url, Text::fromT(feedname), enabled, 0, updateInt);
 	rssList.emplace_back(RSSConfigItem(feed));
 	fillList();
 	//Select the new item
@@ -251,4 +259,12 @@ void RssFeedsPage::restoreSelection(const tstring& curSel) {
 		if (i != -1)
 			ctrlRssList.SelectItem(i);
 	}
+}
+
+void RssFeedsPage::fixControls() {
+	BOOL enabled = IsDlgButtonChecked(IDC_RSS_ENABLE);
+	::EnableWindow(GetDlgItem(IDC_RSS_INTERVAL), enabled);
+	::EnableWindow(GetDlgItem(IDC_RSS_INTERVAL_TEXT), enabled);
+	::EnableWindow(GetDlgItem(IDC_RSS_INT_SPIN), enabled);
+
 }

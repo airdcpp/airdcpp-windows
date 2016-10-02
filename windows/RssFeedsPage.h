@@ -40,6 +40,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_RSS_ADD, onAdd)
 		COMMAND_ID_HANDLER(IDC_RSS_REMOVE, onRemove)
 		COMMAND_ID_HANDLER(IDC_RSS_UPDATE, onUpdate)
+		COMMAND_ID_HANDLER(IDC_RSS_ENABLE, onEnable)
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)
 		MESSAGE_HANDLER(WM_CTLCOLORDLG, onCtlColor)
 		NOTIFY_HANDLER(IDC_RSS_LIST, LVN_KEYDOWN, onKeyDown)
@@ -54,6 +55,7 @@ public:
 	LRESULT onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onEnable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT onCtlColor(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		HDC hdc = (HDC)wParam;
@@ -130,5 +132,7 @@ private:
 	bool loading;
 
 	void restoreSelection(const tstring& curSel);
+
+	void fixControls();
 };
 #endif
