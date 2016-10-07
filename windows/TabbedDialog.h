@@ -17,39 +17,45 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef AS_SEARCH_DLG_H
-#define AS_SEARCH__DLG_H
+#ifndef TABBED_DLG_H
+#define TABBED_DLG_H
 
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
 #include <atlcrack.h>
-#include <airdcpp/AutoSearchManager.h>
-#include "AutosearchGeneralPage.h"
-#include "AutosearchAdvancedPage.h"
-#include "AutosearchSearchTimesPage.h"
-#include "AutoSearchItemSettings.h"
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
-class AutoSearchOptionsDlg : public CDialogImpl<AutoSearchOptionsDlg> {
+
+//Wrapper around different dialog classes
+class TabPage
+{
+public:
+	TabPage() {}
+	~TabPage() {}
+
+	virtual bool write() = 0;
+	virtual string getName() = 0;
+
+	virtual void moveWindow(CRect& rc) = 0;
+	virtual void create(HWND aParent) = 0;
+	virtual void showWindow(BOOL aShow) = 0;
+
+};
+
+
+class TabbedDialog : public CDialogImpl<TabbedDialog> {
 public:
 
 	enum {
-		IDD = IDD_AS_DIALOG
+		IDD = IDD_TABBED_DIALOG
 	};
 
-	enum Page {
-		GENERAL = 0,
-		TIMES = 1,
-		ADVANCED = 2
-	};
+	TabbedDialog(const string& aTitle);
+	~TabbedDialog();
 
-	AutoSearchOptionsDlg(const AutoSearchPtr& as, bool isDuplicate = false);
-	AutoSearchOptionsDlg();
-	~AutoSearchOptionsDlg();
-
-	BEGIN_MSG_MAP_EX(AutoSearchOptionsDlg)
+	BEGIN_MSG_MAP_EX(TabbedDialog)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		NOTIFY_HANDLER(IDC_TAB1, TCN_SELCHANGE, onTabChanged)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
@@ -61,15 +67,16 @@ public:
 	
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& bHandled);
 	LRESULT onTabChanged(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHandled*/);
-
-	AutoSearchItemSettings options;
+	
+	template<class T>
+	void addPage(shared_ptr<T>&& t) {
+		pages.push_back(move(t));
+	}
 
 private:
 
-	unique_ptr<AutoSearchGeneralPage> AsGeneral;
-	unique_ptr<AutosearchSearchTimesPage> AsSearchTimes;
-	unique_ptr<AutoSearchAdvancedPage> AsAdvanced;
-
+	vector<shared_ptr<TabPage>> pages;
+	string wTitle;
 	void showPage(int aPage);
 	CTabCtrl cTab;
 

@@ -21,7 +21,9 @@
 
 #include "FavoritesFrm.h"
 #include "HubFrame.h"
-#include "FavHubProperties.h"
+#include "TabbedDialog.h"
+#include "FavHubGeneralPage.h"
+#include "FavHubOptionsPage.h"
 #include "FavHubGroupsDlg.h"
 
 #include <airdcpp/ConnectivityManager.h>
@@ -338,7 +340,10 @@ LRESULT FavoriteHubsFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 
 		bool isActive = ClientManager::getInstance()->isActive();
 		dcassert(e != NULL);
-		FavHubProperties dlg(e);
+		TabbedDialog dlg(STRING(FAVORITE_HUB_PROPERTIES));
+		dlg.addPage<FavHubGeneralPage>(shared_ptr<FavHubGeneralPage>(new FavHubGeneralPage(e, STRING(SETTINGS_GENERAL))));
+		dlg.addPage<FavHubOptionsPage>(shared_ptr<FavHubOptionsPage>(new FavHubOptionsPage(e, STRING(SETTINGS_OPTIONS))));
+
 		if(dlg.DoModal(m_hWnd) == IDOK)
 		{
 			if (ClientManager::getInstance()->isActive() != isActive) {
@@ -357,7 +362,10 @@ LRESULT FavoriteHubsFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 LRESULT FavoriteHubsFrame::onNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	FavoriteHubEntryPtr e = new FavoriteHubEntry();
-	FavHubProperties dlg(e.get());
+	TabbedDialog dlg(STRING(FAVORITE_HUB_PROPERTIES));
+	dlg.addPage<FavHubGeneralPage>(shared_ptr<FavHubGeneralPage>(new FavHubGeneralPage(e.get(), STRING(SETTINGS_GENERAL))));
+	dlg.addPage<FavHubOptionsPage>(shared_ptr<FavHubOptionsPage>(new FavHubOptionsPage(e.get(), STRING(SETTINGS_OPTIONS))));
+
 
 	if(dlg.DoModal((HWND)*this) == IDOK) {
 		FavoriteManager::getInstance()->addFavoriteHub(e);

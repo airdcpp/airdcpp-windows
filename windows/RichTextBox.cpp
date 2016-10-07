@@ -1120,7 +1120,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 }
 
 void RichTextBox::handleSearchDir() {
-	WinUtil::searchAny(Text::toT(AirUtil::getReleaseDirLocal(Text::fromT(selectedWord), true)));
+	WinUtil::search(Text::toT(AirUtil::getReleaseDirLocal(Text::fromT(selectedWord), true)), true);
 }
 
 void RichTextBox::handleDeleteFile() {
@@ -1896,11 +1896,11 @@ LRESULT RichTextBox::handleLink(ENLINK& link) {
 void RichTextBox::handleSearch() {
 	if (isMagnet) {
 		Magnet m = Magnet(Text::fromT(selectedWord));
-		WinUtil::searchAny(Text::toT(m.fname));
+		WinUtil::search(Text::toT(m.fname));
 	} else if (isPath) {
-		WinUtil::searchAny(Util::getFileName(selectedWord));
+		WinUtil::search(Util::getFileName(selectedWord));
 	} else {
-		WinUtil::searchAny(selectedWord);
+		WinUtil::search(selectedWord);
 	}
 	SetSelNone();
 }

@@ -495,11 +495,11 @@ LRESULT SystemFrame::onEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 }
 
 LRESULT SystemFrame::onSearchFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	WinUtil::searchAny(Util::getFileName(selWord));
+	WinUtil::search(Util::getFileName(selWord));
 	return 0;
 }
 
 LRESULT SystemFrame::onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	WinUtil::searchAny(Text::toT(AirUtil::getReleaseDirLocal(Text::fromT(selWord), true)));
+	WinUtil::search(Text::toT(AirUtil::getReleaseDirLocal(Text::fromT(selWord), true)), true);
 	return 0;
 }

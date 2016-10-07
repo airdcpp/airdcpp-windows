@@ -413,6 +413,7 @@ void WinUtil::init(HWND hWnd) {
 	view.AppendMenu(MF_STRING, IDC_CDMDEBUG_WINDOW, CTSTRING(MENU_CDMDEBUG_MESSAGES));
 	view.AppendMenu(MF_STRING, IDC_NOTEPAD, CTSTRING(MENU_NOTEPAD));
 	view.AppendMenu(MF_STRING, IDC_SYSTEM_LOG, CTSTRING(SYSTEM_LOG));
+	view.AppendMenu(MF_STRING, IDC_RSSFRAME, CTSTRING(RSS_FEEDS));
 	view.AppendMenu(MF_STRING, IDC_HASH_PROGRESS, CTSTRING(MENU_HASH_PROGRESS));
 	view.AppendMenu(MF_SEPARATOR);
 	view.AppendMenu(MF_STRING, ID_VIEW_TOOLBAR, CTSTRING(MENU_TOOLBAR));
@@ -1125,7 +1126,7 @@ bool WinUtil::parseDBLClick(const tstring& str) {
 	boost::regex reg;
 	reg.assign(AirUtil::getReleaseRegLong(false));
 	if(regex_match(url, reg)) {
-		WinUtil::searchAny(Text::toT(url));
+		WinUtil::search(Text::toT(url), true);
 		return true;
 	} else {
 		::ShellExecute(NULL, NULL, Text::toT(url).c_str(), NULL, NULL, SW_SHOWNORMAL);
@@ -1664,12 +1665,12 @@ int WinUtil::setButtonPressed(int nID, bool bPressed /* = true */) {
 
 
 
-void WinUtil::searchAny(const tstring& aSearch) {
+void WinUtil::search(const tstring& aSearch, bool searchDirectory) {
 	tstring searchTerm = aSearch;
 	searchTerm.erase(std::remove(searchTerm.begin(), searchTerm.end(), '\r'), searchTerm.end());
 	searchTerm.erase(std::remove(searchTerm.begin(), searchTerm.end(), '\n'), searchTerm.end());
 	if(!searchTerm.empty()) {
-		SearchFrame::openWindow(searchTerm, 0, Search::SIZE_DONTCARE, SEARCH_TYPE_ANY);
+		SearchFrame::openWindow(searchTerm, 0, Search::SIZE_DONTCARE, searchDirectory ? SEARCH_TYPE_DIRECTORY : SEARCH_TYPE_ANY);
 	}
 }
 

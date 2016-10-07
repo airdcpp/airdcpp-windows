@@ -186,7 +186,9 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 				}
 			break;
 		case VK_UP:
-			if ( (GetKeyState(VK_MENU) & 0x8000) ||	(ctrlMessage.GetWindowTextLength() == 0 && ((GetKeyState(VK_CONTROL) & 0x8000) == 0) ^ (SETTING(USE_CTRL_FOR_LINE_HISTORY) == true) ) ) {
+			if ( (GetKeyState(VK_MENU) & 0x8000) ||	
+				((SETTING(USE_CTRL_FOR_LINE_HISTORY) && WinUtil::isCtrl()) || 
+				((!SETTING(USE_CTRL_FOR_LINE_HISTORY) && (ctrlMessage.GetWindowTextLength() == 0 || inHistory))))) {
 				//scroll up in chat command history
 				//currently beyond the last command?
 				if (curCommandPosition > 0) {
@@ -197,6 +199,7 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 
 					//replace current chat buffer with current command
 					ctrlMessage.SetWindowText(prevCommands[--curCommandPosition].c_str());
+					inHistory = true;
 				}
 				// move cursor to end of line
 				ctrlMessage.SetSel(ctrlMessage.GetWindowTextLength(), ctrlMessage.GetWindowTextLength());
@@ -206,13 +209,16 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 
 			break;
 		case VK_DOWN:
-			if ( (GetKeyState(VK_MENU) & 0x8000) ||	(ctrlMessage.GetWindowTextLength() == 0 && ((GetKeyState(VK_CONTROL) & 0x8000) == 0) ^ (SETTING(USE_CTRL_FOR_LINE_HISTORY) == true) ) ) {
+			if ( (GetKeyState(VK_MENU) & 0x8000) ||	
+				((SETTING(USE_CTRL_FOR_LINE_HISTORY) && WinUtil::isCtrl()) ||
+				((!SETTING(USE_CTRL_FOR_LINE_HISTORY) && (ctrlMessage.GetWindowTextLength() == 0 || inHistory))))) {
 				//scroll down in chat command history
 
 				//currently beyond the last command?
 				if (curCommandPosition + 1 < prevCommands.size()) {
 					//replace current chat buffer with current command
 					ctrlMessage.SetWindowText(prevCommands[++curCommandPosition].c_str());
+					inHistory = true;
 				} else if (curCommandPosition + 1 == prevCommands.size()) {
 					//revert to last saved, unfinished command
 
@@ -256,8 +262,15 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 				}
 				break;
 		default:
+			inHistory = false;
 			bHandled = FALSE;
 //ApexDC
+	}
+
+	//reset the line history scrolling
+	if (inHistory && (wParam != VK_UP && wParam != VK_DOWN)) {
+		inHistory = false;
+		curCommandPosition = prevCommands.size();
 	}
 
 	// Kinda ugly, but oh well... will clean it later, maybe...

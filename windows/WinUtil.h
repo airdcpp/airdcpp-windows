@@ -161,6 +161,7 @@ static const toolbarButton ToolbarButtons[] = {
 	{ IDC_AWAY, 19, IDI_AWAY, true, ResourceManager::AWAY },
 	//separator
 	{ ID_FILE_SETTINGS, 20, IDI_SETTINGS, false, ResourceManager::MENU_SETTINGS },
+	{ IDC_RSSFRAME, 21, IDI_RSS, true, ResourceManager::RSS_FEEDS },
 };
 
 
@@ -250,7 +251,7 @@ public:
 	static void initColors();
 	static void setFonts();
 	static void FlashWindow();
-	static void searchAny(const tstring& aSearch);
+	static void search(const tstring& aSearch, bool searchDirectory = false);
 	static void SetIcon(HWND hWnd, int aDefault, bool big = false);
 
 	static void searchSite(const WebShortcut* ws, const string& strSearchString, bool getReleaseDir = true);

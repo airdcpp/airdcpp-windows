@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by N:\projects\airgit\AirDC.rc
+// Used by C:\Projects\airgit\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -71,6 +71,7 @@
 #define IDC_COPY_END                    163
 #define IDC_SPLITTER                    164
 #define IDC_TREE                        165
+#define IDR_RSSINFO                     166
 #define IDD_SHAREPAGE                   205
 #define IDD_AIRAPPEARANCEPAGE           206
 #define IDD_LINE                        207
@@ -88,7 +89,6 @@
 #define IDR_NOTEPAD                     220
 #define IDR_QUEUE                       221
 #define IDR_SPY                         222
-#define IDD_FAVORITEHUB                 223
 #define IDR_USERS                       224
 #define IDD_LOGPAGE                     224
 #define IDD_USER_COMMAND                230
@@ -196,8 +196,8 @@
 #define IDD_CHANGE_PASS                 360
 #define IDI_SHUTDOWN                    361
 #define IDD_CHATFILTERITEM_DLG          361
-#define IDI_FOLLOW                      363
-#define IDD_AS_DIALOG                   363
+#define IDI_FOLLOW                      362
+#define IDD_TABBED_DIALOG               363
 #define IDI_USERS                       364
 #define IDD_DIALOG6                     364
 #define IDD_WEB_SHORTCUTS_PAGE          364
@@ -311,6 +311,10 @@
 #define IDI_TYPING                      465
 #define IDI_SEEN                        466
 #define IDI_WEBSERVER                   467
+#define IDD_RSS_DLG                     470
+#define IDD_RSS_FILTER_DLG              472
+#define IDD_FAV_HUB_GENERAL             474
+#define IDD_FAV_OPTIONS_DLG             476
 #define IDI_SLOTS                       480
 #define IDI_SLOTSFULL                   481
 #define IDI_TOTAL_UP                    482
@@ -344,6 +348,7 @@
 #define IDI_LOGDIR                      521
 #define IDI_SEND_FILE                   522
 #define IDI_WEB_SHORTCUTS               523
+#define IDI_RSS                         524
 #define IDC_BACK                        997
 #define IDC_FORWARD                     998
 #define IDC_UP                          999
@@ -403,6 +408,7 @@
 #define IDC_SET_FONTS                   1038
 #define IDC_SEARCHDIR                   1038
 #define IDC_VIEW_AS_TEXT                1039
+#define IDC_RSSFRAME                    1040
 #define IDC_HUBPASS                     1042
 #define IDC_NEWFAV                      1042
 #define IDC_HUBNAME                     1043
@@ -639,6 +645,7 @@
 #define IDC_AWAY_IDLE_TIME              1218
 #define IDC_NICK_MATCH                  1218
 #define IDC_WEBUSER_NAME                1218
+#define IDC_RSS_URL                     1218
 #define IDC_CLIENT_VERSION              1219
 #define IDC_HIGH_PRIO_FILES             1219
 #define IDC_MAX_UPLOAD_SP               1219
@@ -807,13 +814,16 @@
 #define IDC_TEXT_MATCH_TYPE             1285
 #define IDC_SEARCH_INT                  1285
 #define IDC_WEBSERVER_PORT              1285
+#define IDC_RSS_NAME                    1285
 #define IDC_EDIT3                       1286
 #define IDC_BIND_ADDRESS                1286
 #define IDC_SKIPLIST_PRESET3            1286
 #define IDC_WEBSERVER_PORT2             1286
+#define IDC_RSS_AUTOSEARCH              1286
 #define IDC_STATIC1                     1287
 #define IDC_SETTINGS_BIND_ADDRESS_HELP  1287
 #define IDC_PRIV_KEY_LBL                1287
+#define IDC_RSS_INTERVAL                1287
 #define IDC_REGEXP_TESTER_BUTTON        1288
 #define IDC_BIND_ADDRESS2               1288
 #define IDC_MAPPER                      1288
@@ -903,6 +913,7 @@
 #define IDC_CHECK_QUEUED                1309
 #define IDC_VOL_HASHERS_SPIN            1309
 #define IDC_AUTO_AWAY                   1309
+#define IDC_RSS_ENABLE                  1309
 #define IDC_DOWNCONN_SPIN               1310
 #define IDC_HIGHEST_PRIORITY_USE_REGEXP 1310
 #define IDC_FAV_SEARCH_INTERVAL_BOX     1310
@@ -923,6 +934,7 @@
 #define IDC_TB_PROG_STYLE               1313
 #define IDC_LIST_VIEW_FONT              1313
 #define IDC_WEBSERVER_ADD_USER          1313
+#define IDC_RSS_BROWSE                  1313
 #define IDC_SETTINGS_BOLD_CONTENTS      1314
 #define IDC_SHARE_SKIPLIST_USE_REGEXP   1314
 #define IDC_UPDATE_CLIENTS              1314
@@ -1253,6 +1265,8 @@
 #define IDC_EXACT_MATCH                 1548
 #define IDC_DL_TO2                      1549
 #define IDC_AS_EXCLUDED_LABEL           1549
+#define IDC_RSS_LIST                    1550
+#define IDC_RSS_TREE                    1551
 #define IDC_AUTOPRIORITY                1572
 #define IDC_SETTINGS_ODC_MENUBAR        1612
 #define IDC_SETTINGS_ODC_MENUBAR_USETWO 1613
@@ -1356,6 +1370,7 @@
 #define IDC_SCROLLBAR1                  1698
 #define IDC_EDIT4                       1699
 #define IDC_SCROLLBAR2                  1699
+#define IDC_RSS_DOWNLOAD_PATH           1699
 #define IDC_PREVIEW_APP                 1700
 #define IDC_IPV4                        1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
@@ -1412,7 +1427,9 @@
 #define IDC_BUTTON2                     1735
 #define IDC_TMP_REMOVE_ALL              1735
 #define IDC_WEBSERVER_REMOVE_USER       1735
+#define IDC_RSS_ADD                     1735
 #define IDC_NICK_MATCH_LABEL            1736
+#define IDC_RSS_REMOVE                  1736
 #define IDC_TEXT_MATCH_LABEL            1737
 #define IDC_NICK_MATCH_TYPE             1738
 #define IDC_NICK_MATCH_TYPE_LABEL       1739
@@ -1635,8 +1652,21 @@
 #define IDC_ADMIN_ACCOUNTS              10215
 #define IDC_WEB_SERVER_HELP2            10216
 #define IDC_WEB_SERVER_USERS_NOTE       10216
+#define IDC_RSS_URL_TEXT                10216
+#define IDC_RSS_NAME_TEXT               10217
 #define IDC_WEBSERVER_LABEL2            10218
 #define IDC_SERVER_STATE                10218
+#define IDC_RSS_GROUP_TEXT              10218
+#define IDC_RSS_AUTOSEARCH_TEXT         10219
+#define IDC_RSS_DOWNLOAD_PATH_TEXT      10220
+#define IDC_BUTTON3                     10221
+#define IDC_RSS_UPDATE                  10221
+#define IDC_RSS_INT_SPIN                10222
+#define IDC_RSS_INTERVAL_TEXT           10223
+#define IDC_RSS_FILTER_LIST             10224
+#define IDC_FILTER_ADD                  10225
+#define IDC_FILTER_REMOVE               10226
+#define IDC_FILTER_UPDATE               10227
 #define IDC_REFRESH_WINAMP              11011
 #define IDC_WINAMP_LIST                 11012
 #define IDC_POSITION                    11013
@@ -1848,9 +1878,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        470
+#define _APS_NEXT_RESOURCE_VALUE        478
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         10216
+#define _APS_NEXT_CONTROL_VALUE         10228
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

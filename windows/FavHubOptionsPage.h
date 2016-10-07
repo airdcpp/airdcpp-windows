@@ -1,6 +1,6 @@
-
+#pragma once
 /*
-* Copyright (C) 2011-2016 AirDC++ Project
+* Copyright (C) 2012-2016 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -17,47 +17,34 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef AS_SEARCH_ADVANCEDPAGE_H
-#define AS_SEARCH_ADVANCEDPAGE_H
+#ifndef FAV_OPTIONS_DLG_H
+#define FAV_OPTIONS_DLG_H
 
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
+#include "stdafx.h"
 #include <atlcrack.h>
-#include <airdcpp/Util.h>
-#include <airdcpp/AutoSearchManager.h>
-#include "AutoSearchItemSettings.h"
+
+#include <airdcpp/HubEntry.h>
+#include "WinUtil.h"
 #include "TabbedDialog.h"
 
-class AutoSearchAdvancedPage : public CDialogImpl<AutoSearchAdvancedPage>, public TabPage {
+class FavHubOptionsPage : public CDialogImpl<FavHubOptionsPage>, public TabPage {
 public:
 
-	AutoSearchItemSettings& options;
+	enum { IDD = IDD_FAV_OPTIONS_DLG };
 
-	enum { IDD = IDD_AS_ADVANCED };
+	FavHubOptionsPage(FavoriteHubEntry* entry, const string& aName);
+	~FavHubOptionsPage() { }
 
-	AutoSearchAdvancedPage(AutoSearchItemSettings& aSettings, const string& aName);
-	~AutoSearchAdvancedPage();
-
-	BEGIN_MSG_MAP_EX(AutoSearchAdvancedPage)
+	BEGIN_MSG_MAP_EX(FavHubOptionsPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
-		COMMAND_ID_HANDLER(IDC_USE_MATCHER, onCheckMatcher)
-		COMMAND_ID_HANDLER(IDC_EXACT_MATCH, onExactMatch)
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)
 		MESSAGE_HANDLER(WM_CTLCOLORDLG, onCtlColor)
-		END_MSG_MAP()
+		COMMAND_ID_HANDLER(IDC_SEARCH_INTERVAL_DEFAULT, fixControls)
+	END_MSG_MAP()
 
-
-	bool write();
-	string getName() { return name; }
-	void moveWindow(CRect& rc) { this->MoveWindow(rc);  }
-	void create(HWND aParent) { this->Create(aParent); }
-	void showWindow(BOOL aShow) { this->ShowWindow(aShow); }
-
-	LRESULT onCheckMatcher(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onExactMatch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT fixControls(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT onCtlColor(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		HDC hdc = (HDC)wParam;
@@ -69,17 +56,20 @@ public:
 		return (LRESULT)GetStockObject(NULL_BRUSH);
 	}
 
+	bool write();
+	string getName() { return name; }
+	void moveWindow(CRect& rc) { this->MoveWindow(rc); }
+	void create(HWND aParent) { this->Create(aParent); }
+	void showWindow(BOOL aShow) { this->ShowWindow(aShow); }
+
 private:
-
-	CEdit  ctrlCheatingDescription, ctrlUserMatch, ctrlMatcherString;
-	CComboBox cMatcherType;
-	CComboBox cExcludedWords;
-
 	string name;
+
 	void fixControls();
-	bool loading;
 
+	CComboBox modeCombo4;
+	CComboBox modeCombo6;
+
+	FavoriteHubEntry* entry;
 };
-
-
 #endif

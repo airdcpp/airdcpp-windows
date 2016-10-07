@@ -82,6 +82,7 @@ protected:
 
 	int menuItems;
 	tstring complete;
+	bool inHistory = false;
 	int lineCount; //ApexDC
 
 	OMenu emoMenu;
