@@ -244,6 +244,12 @@ void RSSManager::updateFilterList(vector<RSSFilter>& aNewList) {
 	for_each(rssFilterList.begin(), rssFilterList.end(), [&](RSSFilter& i) { i.prepare(); });
 }
 
+void RSSManager::enableFeedUpdate(const RSSPtr& aFeed, bool enable) {
+	Lock l(cs);
+	aFeed->setEnable(enable);
+	fire(RSSManagerListener::RSSFeedChanged(), aFeed);
+}
+
 void RSSManager::removeFeedItem(const RSSPtr& aFeed) {
 	Lock l(cs);
 	//Delete database file?

@@ -79,7 +79,7 @@ LRESULT RssInfoFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 
 	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
 	SetSplitterPanes(ctrlTree.m_hWnd, ctrlRss.m_hWnd);
-	m_nProportionalPos = 1000;
+	m_nProportionalPos = 1500;
 
 	treeParent = addTreeItem(TVI_ROOT, -1, TSTRING(RSS_FEEDS));
 	ctrlTree.SelectItem(treeParent);
@@ -94,6 +94,7 @@ LRESULT RssInfoFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 		}
 	}
 	ctrlTree.Expand(treeParent);
+	ctrlRss.list.setSortColumn(COLUMN_NAME); // name for now, should be date..?
 
 	callAsync([=] { reloadList(); });
 
@@ -199,6 +200,7 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 			OMenu menu;
 			menu.CreatePopupMenu();
 			menu.appendItem(TSTRING(UPDATE), [=] { RSSManager::getInstance()->downloadFeed(feed, true); }, OMenu::FLAG_THREADED);
+			menu.appendItem(feed->getEnable() ? TSTRING(DISABLE_RSS) : TSTRING(ENABLE_RSS), [=] { RSSManager::getInstance()->enableFeedUpdate(feed, !feed->getEnable()); }, OMenu::FLAG_THREADED);
 			menu.appendItem(TSTRING(MATCH_AUTOSEARCH), [=] { RSSManager::getInstance()->matchFilters(feed);  }, OMenu::FLAG_THREADED);
 			menu.appendSeparator();
 			menu.appendItem(TSTRING(CLEAR), [=] { RSSManager::getInstance()->clearRSSData(feed);  }, OMenu::FLAG_THREADED);
@@ -352,8 +354,9 @@ void RssInfoFrame::onItemAdded(const RSSDataPtr& aData) {
 void RssInfoFrame::addFeed(const RSSPtr& aFeed) {
 	auto cg = feeds.find(aFeed);
 	if (cg == feeds.end()) {
-		feeds.emplace(aFeed, addTreeItem(treeParent, 0, Text::toT(aFeed->getFeedName())));
-		//addData(aFeed);
+		auto ht = addTreeItem(treeParent, 0, Text::toT(aFeed->getFeedName()));
+		feeds.emplace(aFeed, ht);
+		ctrlTree.EnsureVisible(ht);
 	}
 }
 

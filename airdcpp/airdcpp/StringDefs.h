@@ -328,6 +328,7 @@ enum Strings { // @DontAdd
 	DIR_SHARED_ALREADY, // "The directory exists in share: %1%"
 	DISABLED, // "Disabled"
 	DISABLE_AUTOSEARCH, // "Disable item(s)"
+	DISABLE_RSS, // "Disable auto update"
 	DISALLOW_CONNECTION_TO_PASSED_HUBS, // "Automatically disconnect hubs if not registered"
 	DISCONNECTED, // "Disconnected"
 	DISCONNECTED_USER, // "Disconnected user leaving the hub: "

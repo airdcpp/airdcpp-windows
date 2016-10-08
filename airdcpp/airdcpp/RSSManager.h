@@ -146,6 +146,8 @@ public:
 
 	void removeFeedItem(const RSSPtr& aFeed);
 
+	void enableFeedUpdate(const RSSPtr& aFeed, bool enable);
+
 private:
 
 	void savedatabase(const RSSPtr& aFeed);
