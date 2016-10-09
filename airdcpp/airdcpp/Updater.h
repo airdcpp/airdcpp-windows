@@ -75,7 +75,8 @@ public:
 
 	// Extract the updater package
 	// Returns the path of the extracted updater executable
-	static string extractUpdater(const string& aUpdaterPath, int aBuildID, const string& aSessionToken) throw(FileException, ZipFileException);
+	// Throws FileException, ZipFileException
+	static string extractUpdater(const string& aUpdaterPath, int aBuildID, const string& aSessionToken);
 private:
 	// Copy files recursively from the temp directory to application directory
 	static bool applyUpdaterFiles(const string& aCurTempPath, const string& aCurDestinationPath, string& error_, StringSet& updatedFiles_, FileLogger& aLogger) noexcept;

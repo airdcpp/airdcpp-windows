@@ -44,7 +44,7 @@
 #include "ThrottleManager.h"
 #include "MessageManager.h"
 #include "HighlightManager.h"
-#include "RssManager.h"
+#include "RSSManager.h"
 
 #include "StringTokenizer.h"
 

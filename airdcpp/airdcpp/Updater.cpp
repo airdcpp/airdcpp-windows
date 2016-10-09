@@ -400,7 +400,7 @@ void Updater::completeUpdateDownload(int aBuildID, bool aManualCheck) {
 	}
 }
 
-string Updater::extractUpdater(const string& aUpdaterPath, int aBuildID, const string& aSessionToken) throw(FileException, ZipFileException) {
+string Updater::extractUpdater(const string& aUpdaterPath, int aBuildID, const string& aSessionToken) {
 	ZipFile zip;
 	zip.Open(aUpdaterPath);
 
