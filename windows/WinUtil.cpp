@@ -1954,26 +1954,30 @@ void WinUtil::addCue(HWND hwnd, LPCWSTR text, BOOL drawFocus) {
 	Edit_SetCueBannerTextFocused(hwnd, text, drawFocus);
 }
 
-void WinUtil::addUpdate(const string& aUpdater) {
+void WinUtil::addUpdate(const string& aUpdater, bool aTesting) noexcept {
 	updated = true;
-	auto path = Util::getAppFilePath();
+	auto appPath = Util::getAppFilePath();
 
-	if(path[path.size() - 1] == PATH_SEPARATOR)
-		path.insert(path.size() - 1, "\\");
-
-	auto updateCmd = Text::toT("/update \"" +  path + "\"");
+	auto updateCmd = Text::toT("/update \"" + appPath + "\\\""); // The extra end slash is required!
 	if (isElevated()) {
 		updateCmd += _T(" /elevation");
+	}
+
+	if (aTesting) {
+		updateCmd += _T(" /test");
 	}
 
 	updateCommand = make_pair(Text::toT(aUpdater), updateCmd);
 }
 
-void WinUtil::runPendingUpdate() {
+bool WinUtil::runPendingUpdate() noexcept {
 	if(updated && !updateCommand.first.empty()) {
 		auto cmd = updateCommand.second + Text::toT(Util::getStartupParams(false));
 		ShellExecute(NULL, _T("runas"), updateCommand.first.c_str(), cmd.c_str(), NULL, SW_SHOWNORMAL);
+		return true;
 	}
+
+	return false;
 }
 
 void WinUtil::showPopup(tstring szMsg, tstring szTitle, HICON hIcon, bool force) {
