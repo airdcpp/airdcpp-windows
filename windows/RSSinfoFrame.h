@@ -201,7 +201,7 @@ private:
 	int curSel;
 
 	//RSSdata, itemInfos by title
-	unordered_map<string, ItemInfo*> ItemInfos;
+	unordered_map<string, unique_ptr<ItemInfo>> ItemInfos;
 
 	static int columnSizes[COLUMN_LAST];
 	static int columnIndexes[COLUMN_LAST];
@@ -213,6 +213,8 @@ private:
 	CButton ctrlConfig;
 	CImageList treeImages;
 	CImageList listImages;
+
+	bool closed = false;
 
 	virtual void on(RSSManagerListener::RSSDataAdded, const RSSDataPtr& aData) noexcept;
 	virtual void on(RSSManagerListener::RSSFeedRemoved, const RSSPtr& aFeed) noexcept;

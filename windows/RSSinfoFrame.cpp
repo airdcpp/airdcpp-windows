@@ -89,12 +89,11 @@ LRESULT RssInfoFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 		for (auto feed : lst) {
 			addFeed(feed);
 			for (auto data : feed->getFeedData() | map_values) {
-				ItemInfos.emplace(data->getTitle(), new ItemInfo(data));
+				ItemInfos.emplace(data->getTitle(), unique_ptr<ItemInfo>(new ItemInfo(data)));
 			}
 		}
 	}
 	ctrlTree.Expand(treeParent);
-	ctrlRss.list.setSortColumn(COLUMN_NAME); // name for now, should be date..?
 
 	callAsync([=] { reloadList(); });
 
@@ -129,12 +128,19 @@ LRESULT RssInfoFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 }
 
 LRESULT RssInfoFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
-	::KillTimer(m_hWnd, 0);
-	RSSManager::getInstance()->removeListener(this);
-	WinUtil::setButtonPressed(IDC_RSSFRAME, false);
-	//temporary...
-	for (auto ii : ItemInfos | map_values)
-		delete ii;
+	if (!closed) {
+		::KillTimer(m_hWnd, 0);
+		RSSManager::getInstance()->removeListener(this);
+		WinUtil::setButtonPressed(IDC_RSSFRAME, false);
+		closed = true;
+		PostMessage(WM_CLOSE);
+		return 0;
+	}
+	ctrlRss.list.SetRedraw(FALSE);
+	ctrlRss.list.DeleteAllItems();
+	ctrlRss.list.SetRedraw(TRUE);
+
+	ItemInfos.clear();
 	bHandled = FALSE;
 	return 0;
 }
@@ -329,11 +335,10 @@ void RssInfoFrame::handleDownload(const string& aTarget, QueueItemBase::Priority
 
 void RssInfoFrame::clearData(const RSSPtr& aFeed) {
 	ctrlRss.list.SetRedraw(FALSE);
-	ItemInfos.erase(boost::remove_if(ItemInfos | map_values, [&](const ItemInfo* a) {
+	ItemInfos.erase(boost::remove_if(ItemInfos | map_values, [&](const unique_ptr<ItemInfo>& a) {
 
 		if (aFeed == a->item->getFeed()) {
-			ctrlRss.list.deleteItem(a);
-			delete a;
+			ctrlRss.list.deleteItem(a.get());
 			return true;
 		}
 		return false;
@@ -344,10 +349,9 @@ void RssInfoFrame::clearData(const RSSPtr& aFeed) {
 }
 
 void RssInfoFrame::onItemAdded(const RSSDataPtr& aData) {
-	auto newItem = new ItemInfo(aData);
-	ItemInfos.emplace(aData->getTitle(), newItem);
-	if (show(newItem))
-		ctrlRss.list.insertItem(newItem, newItem->getImageIndex());
+	auto i = ItemInfos.emplace(aData->getTitle(), unique_ptr<ItemInfo>(new ItemInfo(aData))).first;
+	if (show(i->second.get()))
+		ctrlRss.list.insertItem(i->second.get(), i->second->getImageIndex());
 
 }
 
@@ -384,10 +388,10 @@ void RssInfoFrame::reloadList() {
 	ctrlRss.list.SetRedraw(FALSE);
 	ctrlRss.list.DeleteAllItems();
 	for (auto& p : ItemInfos | map_values) {
-		if (!show(p))
+		if (!show(p.get()))
 			continue;
 
-		ctrlRss.list.insertItem(ctrlRss.list.getSortPos(p), p, p->getImageIndex());
+		ctrlRss.list.insertItem(ctrlRss.list.getSortPos(p.get()), p.get(), p->getImageIndex());
 	}
 	ctrlRss.list.SetRedraw(TRUE);
 }
