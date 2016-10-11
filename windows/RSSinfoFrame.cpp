@@ -176,8 +176,15 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 		if (ii) {
 			OMenu menu;
 			menu.CreatePopupMenu();
+			menu.InsertSeparatorFirst(Text::toT(ii->item->getTitle()));
+
 			menu.appendItem(TSTRING(OPEN_LINK), [=] { WinUtil::openLink(Text::toT(ii->item->getLink())); }, OMenu::FLAG_DEFAULT);
 			menu.appendSeparator();
+
+			ListBaseType::MenuItemList customItems;
+			ctrlRss.list.appendCopyMenu(menu, customItems);
+			menu.appendSeparator();
+
 			if (ii->isRelease) {
 				//autosearch menus
 				appendDownloadMenu(menu, DownloadBaseHandler::TYPE_SECONDARY, true, boost::none, ii->item->getTitle() + PATH_SEPARATOR, false);
@@ -205,6 +212,8 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 
 			OMenu menu;
 			menu.CreatePopupMenu();
+			menu.InsertSeparatorFirst(Text::toT(feed->getFeedName()));
+
 			menu.appendItem(TSTRING(UPDATE), [=] { RSSManager::getInstance()->downloadFeed(feed, true); }, OMenu::FLAG_THREADED);
 			menu.appendItem(feed->getEnable() ? TSTRING(DISABLE_RSS) : TSTRING(ENABLE_RSS), [=] { RSSManager::getInstance()->enableFeedUpdate(feed, !feed->getEnable()); }, OMenu::FLAG_THREADED);
 			menu.appendItem(TSTRING(MATCH_AUTOSEARCH), [=] { RSSManager::getInstance()->matchFilters(feed);  }, OMenu::FLAG_THREADED);

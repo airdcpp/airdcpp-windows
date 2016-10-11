@@ -168,7 +168,7 @@ LRESULT RssFeedsPage::onEnable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 
 void RssFeedsPage::fillList() {
 
-	sort(rssList.begin(), rssList.end(), [](const RSSConfigItem& a, const RSSConfigItem& b) { return compare(a.getFeedName(), b.getFeedName()) < 0; });
+	sort(rssList.begin(), rssList.end(), [](const RSSConfigItem& a, const RSSConfigItem& b) { return Util::stricmp(a.getFeedName(), b.getFeedName()) < 0; });
 	ctrlRssList.DeleteAllItems();
 	int pos = 0;
 	for (auto& i : rssList) {

@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airgit\AirDC.rc
+// Used by N:\projects\airgit\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -824,6 +824,7 @@
 #define IDC_SETTINGS_BIND_ADDRESS_HELP  1287
 #define IDC_PRIV_KEY_LBL                1287
 #define IDC_RSS_INTERVAL                1287
+#define IDC_RSS_FILTER_LBL              1287
 #define IDC_REGEXP_TESTER_BUTTON        1288
 #define IDC_BIND_ADDRESS2               1288
 #define IDC_MAPPER                      1288

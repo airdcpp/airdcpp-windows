@@ -375,8 +375,8 @@ protected:
 		totalSpeed += entry->getAvgSpeed();
 
 		int image = ResourceLoader::getIconIndex(Text::toT(entry->getTarget()));
-		int loc = ctrlList.insertItem(entry, image);
-		ctrlList.EnsureVisible(loc, FALSE);
+		ctrlList.insertItem(entry, image);
+		//ctrlList.EnsureVisible(loc, FALSE);
 	}
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
