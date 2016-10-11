@@ -243,8 +243,8 @@ public:
 	static TStringPair updateCommand;
 
 	static bool isElevated();
-	static void addUpdate(const string& aUpdater);
-	static void runPendingUpdate();
+	static void addUpdate(const string& aUpdaterFile, bool aTesting = false) noexcept;
+	static bool runPendingUpdate() noexcept;
 	static void preInit(); // init required for the wizard
 	static void init(HWND hWnd);
 	static void uninit();
