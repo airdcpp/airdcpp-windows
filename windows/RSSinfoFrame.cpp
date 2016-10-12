@@ -388,6 +388,10 @@ void RssInfoFrame::on(QueueManagerListener::BundleStatusChanged, const BundlePtr
 	}
 }
 
+void RssInfoFrame::on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle) noexcept {
+	addGuiTask([=] { updateDupeType(aBundle->getName()); });
+}
+
 void RssInfoFrame::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept {
 	if ((aBundle->getStatus() < Bundle::STATUS_SHARED)) {
 		addGuiTask([=] { updateDupeType(aBundle->getName()); });

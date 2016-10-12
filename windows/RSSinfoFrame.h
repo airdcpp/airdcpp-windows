@@ -244,6 +244,7 @@ private:
 	//test this to detect dupe type changes...
 	virtual void on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept;
 	virtual void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept;
+	virtual void on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle) noexcept;
 	virtual void on(AutoSearchManagerListener::RemoveItem, const AutoSearchPtr& as) noexcept;
 	virtual void on(AutoSearchManagerListener::AddItem, const AutoSearchPtr& as) noexcept;
 
