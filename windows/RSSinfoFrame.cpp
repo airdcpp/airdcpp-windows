@@ -110,6 +110,8 @@ LRESULT RssInfoFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	callAsync([=] { reloadList(); });
 
 	RSSManager::getInstance()->addListener(this);
+	QueueManager::getInstance()->addListener(this);
+	AutoSearchManager::getInstance()->addListener(this);
 	
 	memzero(statusSizes, sizeof(statusSizes));
 	statusSizes[0] = 16;
@@ -142,6 +144,8 @@ LRESULT RssInfoFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 LRESULT RssInfoFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if (!closed) {
 		::KillTimer(m_hWnd, 0);
+		AutoSearchManager::getInstance()->removeListener(this);
+		QueueManager::getInstance()->removeListener(this);
 		RSSManager::getInstance()->removeListener(this);
 		WinUtil::setButtonPressed(IDC_RSSFRAME, false);
 		closed = true;
@@ -249,9 +253,14 @@ LRESULT RssInfoFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandle
 
 	case CDDS_ITEMPREPAINT: {
 		auto ii = (ItemInfo*)cd->nmcd.lItemlParam;
-		auto c = WinUtil::getDupeColors(ii->getDupe());
-		cd->clrText = c.first;
-		cd->clrTextBk = c.second;
+
+		if (ii->getDupe() == DupeType::DUPE_NONE && ii->isAutosearchDupe) {
+			cd->clrText = WinUtil::blendColors(cd->clrText, cd->clrTextBk);
+		} else {
+			auto c = WinUtil::getDupeColors(ii->getDupe());
+			cd->clrText = c.first;
+			cd->clrTextBk = c.second;
+		}
 
 		return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
 	}
@@ -371,6 +380,37 @@ void RssInfoFrame::on(RSSFeedChanged, const RSSPtr& aFeed) noexcept {
 		ctrlTree.SetRedraw(TRUE);
 		reloadList();
 	});
+}
+
+void RssInfoFrame::on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept {
+	if ((aBundle->getStatus() == Bundle::STATUS_QUEUED) || (aBundle->getStatus() == Bundle::STATUS_SHARED)) {
+		addGuiTask([=] { updateDupeType(aBundle->getName()); });
+	}
+}
+
+void RssInfoFrame::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept {
+	if ((aBundle->getStatus() < Bundle::STATUS_SHARED)) {
+		addGuiTask([=] { updateDupeType(aBundle->getName()); });
+	}
+}
+
+void RssInfoFrame::on(AutoSearchManagerListener::AddItem, const AutoSearchPtr& as) noexcept {
+	addGuiTask([=] { updateDupeType(as->getSearchString()); });
+}
+void RssInfoFrame::on(AutoSearchManagerListener::RemoveItem, const AutoSearchPtr& as) noexcept {
+	addGuiTask([=] { updateDupeType(as->getSearchString()); });
+}
+
+void RssInfoFrame::updateDupeType(const string& aName) {
+	auto i = ItemInfos.find(aName);
+	if (i != ItemInfos.end()) {
+		i->second->setDupe(AirUtil::checkDirDupe(i->second->item->getTitle(), 0));
+
+		if(i->second->getDupe() == DupeType::DUPE_NONE)
+			i->second->isAutosearchDupe =  AutoSearchManager::getInstance()->getSearchesByString(aName) != AutoSearchList();
+
+		ctrlRss.list.Invalidate();
+	}
 }
 
 void RssInfoFrame::handleDownload(const string& aTarget, QueueItemBase::Priority /*p*/, bool /*aIsRelease*/, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {

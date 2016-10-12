@@ -39,7 +39,8 @@
 #define RSS_STATUS_MSG_MAP 11
 
 class RssInfoFrame : public MDITabChildWindowImpl<RssInfoFrame>, public StaticFrame<RssInfoFrame, ResourceManager::RSS_FEEDS, IDC_RSSFRAME>, 
-	private RSSManagerListener, public CSplitterImpl<RssInfoFrame>,  private Async<RssInfoFrame>, public DownloadBaseHandler<RssInfoFrame>
+	private RSSManagerListener, private QueueManagerListener, private AutoSearchManagerListener,
+	public CSplitterImpl<RssInfoFrame>,  private Async<RssInfoFrame>, public DownloadBaseHandler<RssInfoFrame>
 {
 public:
 
@@ -156,6 +157,7 @@ private:
 		ItemInfo(const RSSDataPtr& aFeedData) : item(aFeedData) {
 			isRelease = AirUtil::isRelease(aFeedData->getTitle());
 			setDupe(isRelease ? AirUtil::checkDirDupe(aFeedData->getTitle(), 0) : DUPE_NONE);
+			isAutosearchDupe = isRelease && AutoSearchManager::getInstance()->getSearchesByString(aFeedData->getTitle()) != AutoSearchList();
 		}
 		~ItemInfo() { }
 
@@ -169,7 +171,8 @@ private:
 
 		RSSDataPtr item;
 		GETSET(DupeType, dupe, Dupe);
-
+		
+		bool isAutosearchDupe = false;
 		bool isRelease = false;
 	};
 
@@ -199,6 +202,8 @@ private:
 	
 	void handleOpenFolder();
 	void openDialog(RSSPtr& aFeed);
+
+	void updateDupeType(const string& aName);
 
 	RSSPtr getSelectedFeed();
 	ItemInfo* getSelectedListitem();
@@ -235,6 +240,13 @@ private:
 	virtual void on(RSSManagerListener::RSSFeedChanged, const RSSPtr& aFeed) noexcept;
 	virtual void on(RSSManagerListener::RSSFeedAdded, const RSSPtr& aFeed) noexcept;
 	virtual void on(RSSManagerListener::RSSDataCleared, const RSSPtr& aFeed) noexcept;
+
+	//test this to detect dupe type changes...
+	virtual void on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept;
+	virtual void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept;
+	virtual void on(AutoSearchManagerListener::RemoveItem, const AutoSearchPtr& as) noexcept;
+	virtual void on(AutoSearchManagerListener::AddItem, const AutoSearchPtr& as) noexcept;
+
 };
 
 #endif //
