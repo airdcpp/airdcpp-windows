@@ -63,6 +63,23 @@ LRESULT RssInfoFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ctrlTree.SetBkColor(WinUtil::bgColor);
 	ctrlTree.SetTextColor(WinUtil::textColor);
 
+	//create buttons
+	ctrlAdd.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
+		BS_PUSHBUTTON, 0, IDC_ADD);
+	ctrlAdd.SetWindowText(CTSTRING(ADD));
+	ctrlAdd.SetFont(WinUtil::systemFont);
+
+	ctrlRemove.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
+		BS_PUSHBUTTON, 0, IDC_REMOVE);
+	ctrlRemove.SetWindowText(CTSTRING(REMOVE));
+	ctrlRemove.SetFont(WinUtil::systemFont);
+
+	ctrlChange.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
+		BS_PUSHBUTTON, 0, IDC_CHANGE);
+	ctrlChange.SetWindowText(CTSTRING(SETTINGS_CHANGE));
+	ctrlChange.SetFont(WinUtil::systemFont);
+
+
 	treeImages.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 3);
 	treeImages.AddIcon(CIcon(ResourceLoader::loadIcon(IDI_RSS, 16)));
 	ctrlTree.SetImageList(treeImages);
@@ -71,11 +88,6 @@ LRESULT RssInfoFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	listImages.AddIcon(CIcon(ResourceLoader::loadIcon(IDI_TEXT, 16)));
 	listImages.AddIcon(CIcon(ResourceLoader::getFileImages().GetIcon(ResourceLoader::DIR_NORMAL)));
 	ctrlRss.list.SetImageList(listImages, LVSIL_SMALL);
-
-	ctrlConfig.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
-		BS_PUSHBUTTON, 0, IDC_RSS_UPDATE);
-	ctrlConfig.SetWindowText(CTSTRING(RSS_CONFIG));
-	ctrlConfig.SetFont(WinUtil::systemFont);
 
 	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
 	SetSplitterPanes(ctrlTree.m_hWnd, ctrlRss.m_hWnd);
@@ -248,15 +260,30 @@ LRESULT RssInfoFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandle
 	}
 }
 
-LRESULT RssInfoFrame::onConfig(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	TabbedDialog dlg(STRING(RSS_CONFIG));
-	dlg.addPage<RssFeedsPage>(shared_ptr<RssFeedsPage>(new RssFeedsPage(STRING(RSS_FEEDS))));
-	dlg.addPage<RssFilterPage>(shared_ptr<RssFilterPage>(new RssFilterPage(STRING(FILTER))));
-	if (dlg.DoModal() == IDOK) {
+LRESULT RssInfoFrame::onConfig(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	switch (wID) {
+	case IDC_ADD:
+	{
+		auto feed = std::make_shared<RSS>();
+		openDialog(feed);
+		break;
+	}
+	case IDC_CHANGE :
+	{
+		auto feed = getSelectedFeed();
+		openDialog(feed);
+		break;
+	}
+	case IDC_REMOVE: {
+		RSSManager::getInstance()->removeFeedItem(getSelectedFeed());
 		MainFrame::getMainFrame()->addThreadedTask([=] {
 			RSSManager::getInstance()->saveConfig(false);
 		});
+		break;
 	}
+	default:
+		break;
+	} 
 	return 0;
 }
 
@@ -286,13 +313,23 @@ void RssInfoFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
 
 		CRect rc;
 		ctrlStatus.GetRect(0, &rc);
-		rc.left += 2;
-		rc.right = rc.left + 100;
-		ctrlConfig.MoveWindow(rc);
 
+		const int button_width = 80;
+		const int textbox_width = 30;
+
+		rc.left += 2;
+		rc.right = rc.left + button_width;
+		ctrlAdd.MoveWindow(rc);
+
+		rc.OffsetRect(button_width + 2, 0);
+		ctrlRemove.MoveWindow(rc);
+
+		rc.OffsetRect(button_width + 2, 0);
+		ctrlChange.MoveWindow(rc);
 	}
 
 	SetSplitterRect(&rect);
+
 	
 }
 
@@ -340,6 +377,17 @@ void RssInfoFrame::handleDownload(const string& aTarget, QueueItemBase::Priority
 	auto ii = ctrlRss.list.getSelectedItem();
 	if(ii)
 		AutoSearchManager::getInstance()->addAutoSearch(ii->item->getTitle(), aTarget, aTargetType, true, AutoSearch::RSS_DOWNLOAD);
+}
+
+void RssInfoFrame::openDialog(RSSPtr& aFeed) {
+	TabbedDialog dlg(STRING(RSS_CONFIG));
+	dlg.addPage<RssFeedsPage>(shared_ptr<RssFeedsPage>(new RssFeedsPage(STRING(SETTINGS_GENERAL), aFeed)));
+	dlg.addPage<RssFilterPage>(shared_ptr<RssFilterPage>(new RssFilterPage(STRING(FILTER), aFeed)));
+	if (dlg.DoModal() == IDOK) {
+		MainFrame::getMainFrame()->addThreadedTask([=] {
+			RSSManager::getInstance()->saveConfig(false);
+		});
+	}
 }
 
 void RssInfoFrame::clearData(const RSSPtr& aFeed) {

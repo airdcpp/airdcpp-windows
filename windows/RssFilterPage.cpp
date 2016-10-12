@@ -27,7 +27,7 @@
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
-RssFilterPage::RssFilterPage(const string& aName) : name(aName) {
+RssFilterPage::RssFilterPage(const string& aName, RSSPtr aFeed) : name(aName), feedItem(aFeed) {
 	loading = true;
 }
 
@@ -66,9 +66,10 @@ LRESULT RssFilterPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 
 	{
 		Lock l(RSSManager::getInstance()->getCS());
-		filterList = RSSManager::getInstance()->getRssFilterList();
+		filterList = feedItem->getRssFilterList();
 
 	}
+
 	loading = false;
 	fillList();
 
@@ -110,7 +111,7 @@ bool RssFilterPage::write() {
 		return false;
 	}
 
-	RSSManager::getInstance()->updateFilterList(filterList);
+	RSSManager::getInstance()->updateFilterList(feedItem, filterList);
 	return true;
 }
 

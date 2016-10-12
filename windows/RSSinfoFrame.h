@@ -68,7 +68,9 @@ public:
 		CHAIN_MSG_MAP(baseClass)
 		CHAIN_MSG_MAP(CSplitterImpl<RssInfoFrame>)
 		ALT_MSG_MAP(RSS_STATUS_MSG_MAP)
-			COMMAND_ID_HANDLER(IDC_RSS_UPDATE, onConfig);
+			COMMAND_ID_HANDLER(IDC_ADD, onConfig);
+			COMMAND_ID_HANDLER(IDC_REMOVE, onConfig);
+			COMMAND_ID_HANDLER(IDC_CHANGE, onConfig);
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
@@ -77,7 +79,7 @@ public:
 	LRESULT onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 	LRESULT onDoubleClickList(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
-	LRESULT onConfig(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onConfig(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 
 	LRESULT onSelChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /* bHandled */) {
@@ -85,6 +87,13 @@ public:
 		if (nmtv->itemNew.lParam != -1) {
 			curSel = nmtv->itemNew.lParam;
 			curItem = nmtv->itemNew.hItem;
+			if (getSelectedFeed()) {
+				ctrlChange.EnableWindow(TRUE);
+				ctrlRemove.EnableWindow(TRUE);
+			} else {
+				ctrlChange.EnableWindow(FALSE);
+				ctrlRemove.EnableWindow(FALSE);
+			}
 			reloadList();
 		}
 
@@ -145,8 +154,8 @@ private:
 	class ItemInfo {
 	public:
 		ItemInfo(const RSSDataPtr& aFeedData) : item(aFeedData) {
-			isRelease = AirUtil::isRelease(item->getTitle());
-			setDupe(isRelease ? AirUtil::checkDirDupe(item->getTitle(), 0) : DUPE_NONE);
+			isRelease = AirUtil::isRelease(aFeedData->getTitle());
+			setDupe(isRelease ? AirUtil::checkDirDupe(aFeedData->getTitle(), 0) : DUPE_NONE);
 		}
 		~ItemInfo() { }
 
@@ -189,6 +198,7 @@ private:
 	void addFeed(const RSSPtr& aFeed);
 	
 	void handleOpenFolder();
+	void openDialog(RSSPtr& aFeed);
 
 	RSSPtr getSelectedFeed();
 	ItemInfo* getSelectedListitem();
@@ -213,6 +223,10 @@ private:
 	CButton ctrlConfig;
 	CImageList treeImages;
 	CImageList listImages;
+
+	CButton ctrlAdd;
+	CButton ctrlRemove;
+	CButton ctrlChange;
 
 	bool closed = false;
 

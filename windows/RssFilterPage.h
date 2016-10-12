@@ -32,7 +32,7 @@ public:
 
 	enum { IDD = IDD_RSS_FILTER_DLG };
 
-	RssFilterPage(const string& aName);
+	RssFilterPage(const string& aName, RSSPtr aFeed);
 	~RssFilterPage();
 
 	BEGIN_MSG_MAP_EX(RssFilterPage)
@@ -95,8 +95,9 @@ private:
 	CComboBox cMatcherType;
 
 	ExListViewCtrl ctrlRssFilterList;
-
 	vector<RSSFilter> filterList;
+
+	RSSPtr feedItem;
 
 	void fillList();
 
