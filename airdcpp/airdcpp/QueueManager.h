@@ -251,20 +251,20 @@ public:
 
 
 	/* Partial bundle sharing */
-	bool checkPBDReply(HintedUser& aUser, const TTHValue& aTTH, string& _bundleToken, bool& _notify, bool& _add, const string& remoteBundle) noexcept;
-	void addFinishedNotify(HintedUser& aUser, const TTHValue& aTTH, const string& remoteBundle) noexcept;
-	void updatePBD(const HintedUser& aUser, const TTHValue& aTTH) noexcept;
+	bool checkPBDReply(const UserPtr& aUser, const TTHValue& aTTH, string& _bundleToken, bool& _notify, bool& _add, const string& remoteBundle) noexcept;
+	void addFinishedNotify(const UserPtr& aUser, const TTHValue& aTTH, const string& remoteBundle) noexcept;
+	void updatePBD(const UserPtr& aUser, const TTHValue& aTTH) noexcept;
 
 	// Remove user from a notify list of the local bundle
 	void removeBundleNotify(const UserPtr& aUser, QueueToken aBundleToken) noexcept;
 
-	void sendRemovePBD(const HintedUser& aUser, const string& aRemoteToken) noexcept;
+	void sendRemovePBD(const UserPtr& aUser, const string& aRemoteToken) noexcept;
 	bool getSearchInfo(const string& aTarget, TTHValue& tth_, int64_t size_) noexcept;
 	bool handlePartialSearch(const UserPtr& aUser, const TTHValue& tth, PartsInfo& _outPartsInfo, string& _bundle, bool& _reply, bool& _add) noexcept;
 	bool handlePartialResult(const HintedUser& aUser, const TTHValue& tth, const QueueItem::PartialSource& partialSource, PartsInfo& outPartialInfo) noexcept;
 
 	// Queue a TTH list from the user containing the supplied TTH
-	void addBundleTTHList(const HintedUser& aUser, const string& aRemoteBundleToken, const TTHValue& tth) throw(QueueException);
+	void addBundleTTHList(const UserPtr& aUser, const string& aRemoteBundleToken, const TTHValue& tth) throw(QueueException);
 	MemoryInputStream* generateTTHList(QueueToken aBundleToken, bool isInSharingHub, BundlePtr& bundle_) throw(QueueException);
 
 	//Bundle download failed due to Ex. disk full

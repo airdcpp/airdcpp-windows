@@ -339,17 +339,17 @@ QueueItemPtr Bundle::getNextQI(const UserPtr& aUser, const OrderedStringSet& aOn
 }
 
 bool Bundle::isFinishedNotified(const UserPtr& aUser) const noexcept {
-	return find_if(finishedNotifications, [&aUser](const UserBundlePair& ubp) { return ubp.first.user == aUser; }) != finishedNotifications.end();
+	return find_if(finishedNotifications, [&aUser](const UserBundlePair& ubp) { return ubp.first == aUser; }) != finishedNotifications.end();
 }
 
-void Bundle::addFinishedNotify(HintedUser& aUser, const string& remoteBundle) noexcept {
-	if (!isFinishedNotified(aUser.user) && !isBadSource(aUser)) {
+void Bundle::addFinishedNotify(const UserPtr& aUser, const string& remoteBundle) noexcept {
+	if (!isFinishedNotified(aUser) && !isBadSource(aUser)) {
 		finishedNotifications.emplace_back(aUser, remoteBundle);
 	}
 }
 
 void Bundle::removeFinishedNotify(const UserPtr& aUser) noexcept {
-	auto p = find_if(finishedNotifications, [&aUser](const UserBundlePair& ubp) { return ubp.first.user == aUser; });
+	auto p = find_if(finishedNotifications, [&aUser](const UserBundlePair& ubp) { return ubp.first == aUser; });
 	if (p != finishedNotifications.end()) {
 		finishedNotifications.erase(p);
 	}
@@ -615,7 +615,6 @@ bool Bundle::onDownloadTick(vector<pair<CID, AdcCommand>>& UBNList) noexcept {
 				for (const auto& i: uploadReports) {
 					AdcCommand cmd(AdcCommand::CMD_UBN, AdcCommand::TYPE_UDP);
 
-					cmd.addParam("HI", i.hint);
 					cmd.addParam("BU", getStringToken());
 					if (!speedStr.empty())
 						cmd.addParam("DS", speedStr);
@@ -652,7 +651,6 @@ bool Bundle::addRunningUser(const UserConnection* aSource) noexcept {
 		//tell the uploader to connect this token to a correct bundle
 		AdcCommand cmd(AdcCommand::CMD_UBD, AdcCommand::TYPE_UDP);
 
-		cmd.addParam("HI", aSource->getHintedUser().hint);
 		cmd.addParam("TO", aSource->getToken());
 		cmd.addParam("BU", getStringToken());
 		if (!updateOnly) {
@@ -693,7 +691,6 @@ void Bundle::setUserMode(bool setSingleUser) noexcept {
 
 		AdcCommand cmd(AdcCommand::CMD_UBD, AdcCommand::TYPE_UDP);
 
-		cmd.addParam("HI", u.hint);
 		cmd.addParam("BU", getStringToken());
 		cmd.addParam("UD1");
 		if (singleUser) {
@@ -724,7 +721,6 @@ bool Bundle::removeRunningUser(const UserConnection* aSource, bool sendRemove) n
 		if (aSource->isSet(UserConnection::FLAG_UBN1) && (finished || sendRemove)) {
 			AdcCommand cmd(AdcCommand::CMD_UBD, AdcCommand::TYPE_UDP);
 
-			cmd.addParam("HI", aSource->getHintedUser().hint);
 			if (finished) {
 				cmd.addParam("BU", getStringToken());
 				cmd.addParam("FI1");
@@ -751,7 +747,6 @@ bool Bundle::removeRunningUser(const UserConnection* aSource, bool sendRemove) n
 void Bundle::sendSizeUpdate() noexcept {
 	for(const auto& u: uploadReports) {
 		AdcCommand cmd(AdcCommand::CMD_UBD, AdcCommand::TYPE_UDP);
-		cmd.addParam("HI", u.hint);
 		cmd.addParam("BU", getStringToken());
 
 		if (isSet(FLAG_UPDATE_SIZE)) {

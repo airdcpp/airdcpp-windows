@@ -1504,14 +1504,14 @@ void QueueManager::renameDownloadedFile(const string& source, const string& targ
 void QueueManager::handleMovedBundleItem(QueueItemPtr& qi) noexcept {
 	BundlePtr b = qi->getBundle();
 
-	HintedUserList notified;
+	vector<UserPtr> notified;
 
 	{
 		RLock l (cs);
 
 		//collect the users that don't have this file yet
 		for (auto& fn: qi->getBundle()->getFinishedNotifications()) {
-			if (!qi->isSource(fn.first.user)) {
+			if (!qi->isSource(fn.first)) {
 				notified.push_back(fn.first);
 			}
 		}
@@ -1522,9 +1522,8 @@ void QueueManager::handleMovedBundleItem(QueueItemPtr& qi) noexcept {
 		AdcCommand cmd(AdcCommand::CMD_PBD, AdcCommand::TYPE_UDP);
 
 		cmd.addParam("UP1");
-		cmd.addParam("HI", u.hint);
 		cmd.addParam("TH", qi->getTTH().toBase32());
-		ClientManager::getInstance()->sendUDP(cmd, u.user->getCID(), false, true);
+		ClientManager::getInstance()->sendUDP(cmd, u->getCID(), false, true);
 	}
 
 
@@ -2401,7 +2400,7 @@ size_t QueueManager::removeBundleSource(BundlePtr aBundle, const UserPtr& aUser,
 		aBundle->getItems(aUser, ql);
 
 		//we don't want notifications from this user anymore
-		auto p = boost::find_if(aBundle->getFinishedNotifications(), [&aUser](const Bundle::UserBundlePair& ubp) { return ubp.first.user == aUser; });
+		auto p = boost::find_if(aBundle->getFinishedNotifications(), [&aUser](const Bundle::UserBundlePair& ubp) { return ubp.first == aUser; });
 		if (p != aBundle->getFinishedNotifications().end()) {
 			sendRemovePBD(p->first, p->second);
 		}
@@ -2415,13 +2414,12 @@ size_t QueueManager::removeBundleSource(BundlePtr aBundle, const UserPtr& aUser,
 	return ql.size();
 }
 
-void QueueManager::sendRemovePBD(const HintedUser& aUser, const string& aRemoteToken) noexcept {
+void QueueManager::sendRemovePBD(const UserPtr& aUser, const string& aRemoteToken) noexcept {
 	AdcCommand cmd(AdcCommand::CMD_PBD, AdcCommand::TYPE_UDP);
 
-	cmd.addParam("HI", aUser.hint);
 	cmd.addParam("BU", aRemoteToken);
 	cmd.addParam("RM1");
-	ClientManager::getInstance()->sendUDP(cmd, aUser.user->getCID(), false, true);
+	ClientManager::getInstance()->sendUDP(cmd, aUser->getCID(), false, true);
 }
 
 void QueueManager::saveQueue(bool aForce) noexcept {
@@ -3822,15 +3820,19 @@ MemoryInputStream* QueueManager::generateTTHList(QueueToken aBundleToken, bool i
 	}
 }
 
-void QueueManager::addBundleTTHList(const HintedUser& aUser, const string& aRemoteBundleToken, const TTHValue& tth) throw(QueueException) {
+void QueueManager::addBundleTTHList(const UserPtr& aUser, const string& aRemoteBundleToken, const TTHValue& tth) throw(QueueException) {
 	//LogManager::getInstance()->message("ADD TTHLIST");
 	auto b = findBundle(tth);
 	if (b) {
-		addList(aUser, QueueItem::FLAG_TTHLIST_BUNDLE | QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_MATCH_QUEUE, aRemoteBundleToken, b);
+		//find bundle source to bind with correct hub url.
+		auto sources = getBundleSources(b);
+		auto sourceIter = find(sources.begin(), sources.end(), aUser);
+		if(sourceIter != sources.end())
+			addList(sourceIter->getUser(), QueueItem::FLAG_TTHLIST_BUNDLE | QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_MATCH_QUEUE, aRemoteBundleToken, b);
 	}
 }
 
-bool QueueManager::checkPBDReply(HintedUser& aUser, const TTHValue& aTTH, string& _bundleToken, bool& _notify, bool& _add, const string& remoteBundle) noexcept {
+bool QueueManager::checkPBDReply(const UserPtr& aUser, const TTHValue& aTTH, string& _bundleToken, bool& _notify, bool& _add, const string& remoteBundle) noexcept {
 	BundlePtr bundle = findBundle(aTTH);
 	if (bundle) {
 		WLock l(cs);
@@ -3848,7 +3850,7 @@ bool QueueManager::checkPBDReply(HintedUser& aUser, const TTHValue& aTTH, string
 	return false;
 }
 
-void QueueManager::addFinishedNotify(HintedUser& aUser, const TTHValue& aTTH, const string& remoteBundle) noexcept {
+void QueueManager::addFinishedNotify(const UserPtr& aUser, const TTHValue& aTTH, const string& remoteBundle) noexcept {
 	BundlePtr bundle = findBundle(aTTH);
 	if (bundle) {
 		WLock l(cs);
@@ -3868,7 +3870,7 @@ void QueueManager::removeBundleNotify(const UserPtr& aUser, QueueToken aBundleTo
 	}
 }
 
-void QueueManager::updatePBD(const HintedUser& aUser, const TTHValue& aTTH) noexcept {
+void QueueManager::updatePBD(const UserPtr& aUser, const TTHValue& aTTH) noexcept {
 	QueueItemList qiList;
 
 	{
@@ -3876,7 +3878,7 @@ void QueueManager::updatePBD(const HintedUser& aUser, const TTHValue& aTTH) noex
 		fileQueue.findFiles(aTTH, qiList);
 	}
 
-	addSources(aUser, qiList, QueueItem::Source::FLAG_FILE_NOT_AVAILABLE);
+	addSources(HintedUser(aUser, Util::emptyString), qiList, QueueItem::Source::FLAG_FILE_NOT_AVAILABLE);
 }
 
 int QueueManager::searchBundleAlternates(BundlePtr& aBundle, bool aIsManualSearch, uint64_t aTick) noexcept {

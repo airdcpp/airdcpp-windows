@@ -325,14 +325,11 @@ void SearchManager::on(TimerManagerListener::Minute, uint64_t aTick) noexcept {
 
 void SearchManager::onPBD(const AdcCommand& aCmd, const UserPtr& from) {
 	string remoteBundle;
-	string hubIpPort;
 	string tth;
 	bool add=false, update=false, reply=false, notify = false, remove = false;
 
 	for(auto& str: aCmd.getParameters()) {
-		if(str.compare(0, 2, "HI") == 0) {
-			hubIpPort = str.substr(2);
-		} else if(str.compare(0, 2, "BU") == 0) {
+		if(str.compare(0, 2, "BU") == 0) {
 			remoteBundle = str.substr(2);
 		} else if(str.compare(0, 2, "TH") == 0) {
 			tth = str.substr(2);
@@ -362,29 +359,26 @@ void SearchManager::onPBD(const AdcCommand& aCmd, const UserPtr& from) {
 		return;
 	}
 
-	string url = ClientManager::getInstance()->findHub(hubIpPort, !from);
-
 	if (update) {
 		//LogManager::getInstance()->message("PBD UPDATE TTH");
-		QueueManager::getInstance()->updatePBD(HintedUser(from, url), TTHValue(tth));
+		QueueManager::getInstance()->updatePBD(from, TTHValue(tth));
 		return;
 	} else if (remoteBundle.empty()) {
 		//LogManager::getInstance()->message("ONPBD EMPTY BUNDLE");
 		return;
 	}
 
-	HintedUser u = HintedUser(from, url);
 	if (notify) {
 		//LogManager::getInstance()->message("PBD NOTIFY");
-		QueueManager::getInstance()->addFinishedNotify(u, TTHValue(tth), remoteBundle);
+		QueueManager::getInstance()->addFinishedNotify(from, TTHValue(tth), remoteBundle);
 	} else if (reply) {
 		//LogManager::getInstance()->message("PBD REQUIRE REPLY");
 
 		string localBundle;
 		bool sendNotify = false, sendAdd = false;
-		if (QueueManager::getInstance()->checkPBDReply(u, TTHValue(tth), localBundle, sendNotify, sendAdd, remoteBundle)) {
+		if (QueueManager::getInstance()->checkPBDReply(from, TTHValue(tth), localBundle, sendNotify, sendAdd, remoteBundle)) {
 			//LogManager::getInstance()->message("PBD REPLY: ACCEPTED");
-			AdcCommand cmd = toPBD(hubIpPort, localBundle, tth, false, sendAdd, sendNotify);
+			AdcCommand cmd = toPBD(localBundle, tth, false, sendAdd, sendNotify);
 			ClientManager::getInstance()->sendUDP(cmd, from->getCID(), false, true);
 		} else {
 			//LogManager::getInstance()->message("PBD REPLY: QUEUEMANAGER FAIL");
@@ -393,7 +387,7 @@ void SearchManager::onPBD(const AdcCommand& aCmd, const UserPtr& from) {
 
 	if (add) {
 		try {
-			QueueManager::getInstance()->addBundleTTHList(u, remoteBundle, TTHValue(tth));
+			QueueManager::getInstance()->addBundleTTHList(HintedUser(from, Util::emptyString), remoteBundle, TTHValue(tth));
 		}catch(const Exception&) { }
 	}
 }
@@ -526,7 +520,7 @@ void SearchManager::respond(const AdcCommand& adc, OnlineUser& aUser, bool isUdp
 		
 		if (!bundle.empty()) {
 			//LogManager::getInstance()->message("SEARCH RESPOND: BUNDLE NOT EMPTY");
-			AdcCommand cmd = toPBD(hubIpPort, bundle, tth, reply, add);
+			AdcCommand cmd = toPBD(bundle, tth, reply, add);
 			ClientManager::getInstance()->sendUDP(cmd, aUser.getUser()->getCID(), false, true, Util::emptyString, aUser.getHubUrl());
 		}
 
@@ -580,10 +574,9 @@ AdcCommand SearchManager::toPSR(bool wantResponse, const string& myNick, const s
 	return cmd;
 }
 
-AdcCommand SearchManager::toPBD(const string& hubIpPort, const string& bundle, const string& aTTH, bool reply, bool add, bool notify) const {
+AdcCommand SearchManager::toPBD(const string& bundle, const string& aTTH, bool reply, bool add, bool notify) const {
 	AdcCommand cmd(AdcCommand::CMD_PBD, AdcCommand::TYPE_UDP);
 
-	cmd.addParam("HI", hubIpPort);
 	cmd.addParam("BU", bundle);
 	cmd.addParam("TH", aTTH);
 	if (notify) {
