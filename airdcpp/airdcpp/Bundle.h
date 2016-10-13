@@ -139,7 +139,7 @@ public:
 	typedef vector<BundleSource> SourceList;
 	typedef vector<pair<BundlePtr, BundleSource>> SourceBundleList;
 
-	typedef pair<UserPtr, string> UserBundlePair;
+	typedef pair<HintedUser, string> UserBundlePair;
 	typedef vector<UserBundlePair> FinishedNotifyList;
 
 	typedef multimap<double, BundlePtr> SourceSpeedMapB;
@@ -207,7 +207,7 @@ public:
 
 	void clearFinishedNotifications(FinishedNotifyList& fnl) noexcept;
 	bool isFinishedNotified(const UserPtr& aUser) const noexcept;
-	void addFinishedNotify(const UserPtr& aUser, const string& remoteBundle) noexcept;
+	void addFinishedNotify(HintedUser& aUser, const string& remoteBundle) noexcept;
 	void removeFinishedNotify(const UserPtr& aUser) noexcept;
 
 	QueueItemPtr findQI(const string& aTarget) const noexcept;

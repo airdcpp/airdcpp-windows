@@ -339,17 +339,17 @@ QueueItemPtr Bundle::getNextQI(const UserPtr& aUser, const OrderedStringSet& aOn
 }
 
 bool Bundle::isFinishedNotified(const UserPtr& aUser) const noexcept {
-	return find_if(finishedNotifications, [&aUser](const UserBundlePair& ubp) { return ubp.first == aUser; }) != finishedNotifications.end();
+	return find_if(finishedNotifications, [&aUser](const UserBundlePair& ubp) { return ubp.first.user == aUser; }) != finishedNotifications.end();
 }
 
-void Bundle::addFinishedNotify(const UserPtr& aUser, const string& remoteBundle) noexcept {
-	if (!isFinishedNotified(aUser) && !isBadSource(aUser)) {
+void Bundle::addFinishedNotify(HintedUser& aUser, const string& remoteBundle) noexcept {
+	if (!isFinishedNotified(aUser.user) && !isBadSource(aUser)) {
 		finishedNotifications.emplace_back(aUser, remoteBundle);
 	}
 }
 
 void Bundle::removeFinishedNotify(const UserPtr& aUser) noexcept {
-	auto p = find_if(finishedNotifications, [&aUser](const UserBundlePair& ubp) { return ubp.first == aUser; });
+	auto p = find_if(finishedNotifications, [&aUser](const UserBundlePair& ubp) { return ubp.first.user == aUser; });
 	if (p != finishedNotifications.end()) {
 		finishedNotifications.erase(p);
 	}
