@@ -201,6 +201,9 @@ private:
 	void addFeed(const RSSPtr& aFeed);
 	
 	void handleOpenFolder();
+	void add();
+	void change();
+	void remove();
 	void openDialog(RSSPtr& aFeed);
 
 	void updateDupeType(const string& aName);

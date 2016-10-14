@@ -165,6 +165,7 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 	bool listMenu = false;
 	bool treeMenu = false;
+	bool hitTreeitem = false;
 	if (reinterpret_cast<HWND>(wParam) == ctrlRss && ctrlRss.list.GetSelectedCount() == 1) {
 		if (pt.x == -1 && pt.y == -1) {
 			WinUtil::getContextMenuPos(ctrlRss.list, pt);
@@ -182,9 +183,10 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 		if (ht) {
 			if (ht != ctrlTree.GetSelectedItem())
 				ctrlTree.SelectItem(ht);
-			ctrlTree.ClientToScreen(&pt);
-			treeMenu = true;
+			hitTreeitem = true;
 		}
+		ctrlTree.ClientToScreen(&pt);
+		treeMenu = true;
 	}
 
 	if (listMenu) {
@@ -223,18 +225,25 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 		}
 	}
 	else if (treeMenu) {
-		auto feed = getSelectedFeed();
-		if (feed) {
 
-			OMenu menu;
-			menu.CreatePopupMenu();
+		OMenu menu;
+		menu.CreatePopupMenu();
+		auto feed = getSelectedFeed();
+		if (feed && hitTreeitem) {
 			menu.InsertSeparatorFirst(Text::toT(feed->getFeedName()));
 
 			menu.appendItem(TSTRING(UPDATE), [=] { RSSManager::getInstance()->downloadFeed(feed, true); }, OMenu::FLAG_THREADED);
 			menu.appendItem(feed->getEnable() ? TSTRING(DISABLE_RSS) : TSTRING(ENABLE_RSS), [=] { RSSManager::getInstance()->enableFeedUpdate(feed, !feed->getEnable()); }, OMenu::FLAG_THREADED);
 			menu.appendItem(TSTRING(MATCH_AUTOSEARCH), [=] { RSSManager::getInstance()->matchFilters(feed);  }, OMenu::FLAG_THREADED);
-			menu.appendSeparator();
 			menu.appendItem(TSTRING(CLEAR), [=] { RSSManager::getInstance()->clearRSSData(feed);  }, OMenu::FLAG_THREADED);
+			menu.appendSeparator();
+			menu.appendItem(TSTRING(ADD), [=] { add(); });
+			menu.appendItem(TSTRING(SETTINGS_CHANGE), [=] { change(); });
+			menu.appendItem(TSTRING(REMOVE), [=] { remove(); });
+			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
+			return TRUE;
+		} else {
+			menu.appendItem(TSTRING(ADD), [=] { add(); });
 			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 			return TRUE;
 		}
@@ -273,21 +282,16 @@ LRESULT RssInfoFrame::onConfig(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 	switch (wID) {
 	case IDC_ADD:
 	{
-		auto feed = std::make_shared<RSS>();
-		openDialog(feed);
+		add();
 		break;
 	}
 	case IDC_CHANGE :
 	{
-		auto feed = getSelectedFeed();
-		openDialog(feed);
+		change();
 		break;
 	}
 	case IDC_REMOVE: {
-		RSSManager::getInstance()->removeFeedItem(getSelectedFeed());
-		MainFrame::getMainFrame()->addThreadedTask([=] {
-			RSSManager::getInstance()->saveConfig(false);
-		});
+		remove();
 		break;
 	}
 	default:
@@ -423,6 +427,22 @@ void RssInfoFrame::handleDownload(const string& aTarget, QueueItemBase::Priority
 		AutoSearchManager::getInstance()->addAutoSearch(ii->item->getTitle(), aTarget, aTargetType, true, AutoSearch::RSS_DOWNLOAD);
 }
 
+void RssInfoFrame::add() {
+	auto feed = std::make_shared<RSS>();
+	openDialog(feed);
+}
+
+void RssInfoFrame::change() {
+	auto feed = getSelectedFeed();
+	openDialog(feed);
+}
+
+void RssInfoFrame::remove() {
+	RSSManager::getInstance()->removeFeedItem(getSelectedFeed());
+	MainFrame::getMainFrame()->addThreadedTask([=] {
+		RSSManager::getInstance()->saveConfig(false);
+	});
+}
 void RssInfoFrame::openDialog(RSSPtr& aFeed) {
 	TabbedDialog dlg(STRING(RSS_CONFIG));
 	dlg.addPage<RssFeedsPage>(shared_ptr<RssFeedsPage>(new RssFeedsPage(STRING(SETTINGS_GENERAL), aFeed)));
