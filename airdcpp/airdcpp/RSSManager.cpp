@@ -233,7 +233,7 @@ void RSSManager::updateFeedItem(RSSPtr& aFeed, const string& aUrl, const string&
 		}
 	}
 
-	if(added)
+	if(!added)
 		fire(RSSManagerListener::RSSFeedChanged(), aFeed);
 	else
 		fire(RSSManagerListener::RSSFeedAdded(), aFeed);
