@@ -27,6 +27,9 @@
 #include <airdcpp/File.h>
 #include <airdcpp/LogManager.h>
 
+#include <boost/algorithm/cxx11/all_of.hpp>
+
+using boost::algorithm::all_of;
 
 int RssInfoFrame::columnIndexes[] = { COLUMN_FILE, COLUMN_LINK, COLUMN_DATE, COLUMN_NAME };
 int RssInfoFrame::columnSizes[] = { 800, 350, 150, 150};
@@ -152,6 +155,10 @@ LRESULT RssInfoFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		PostMessage(WM_CLOSE);
 		return 0;
 	}
+
+	ctrlRss.list.saveHeaderOrder(SettingsManager::RSSFRAME_ORDER,
+		SettingsManager::RSSFRAME_WIDTHS, SettingsManager::RSSFRAME_VISIBLE);
+
 	ctrlRss.list.SetRedraw(FALSE);
 	ctrlRss.list.DeleteAllItems();
 	ctrlRss.list.SetRedraw(TRUE);
@@ -240,6 +247,20 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 			menu.appendItem(TSTRING(ADD), [=] { add(); });
 			menu.appendItem(TSTRING(SETTINGS_CHANGE), [=] { change(); });
 			menu.appendItem(TSTRING(REMOVE), [=] { remove(); });
+			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
+			return TRUE;
+		}
+		else if (hitTreeitem && treeParent == ctrlTree.GetSelectedItem()) {
+			bool allEnabled = all_of(feeds | map_keys, [&](const RSSPtr& r) { return r->getEnable(); });
+			bool allDisabled = all_of(feeds | map_keys, [&](const RSSPtr& r) { return !r->getEnable(); });
+			menu.InsertSeparatorFirst(Util::toStringW(feeds.size()) + _T(" ") + TSTRING(FEEDS));
+			//menu.appendItem(TSTRING(UPDATE), [=] { for_each(feeds | map_keys, [&](const RSSPtr& feed) { RSSManager::getInstance()->downloadFeed(feed, true); }); }, OMenu::FLAG_THREADED);
+			if(!allEnabled)
+				menu.appendItem(TSTRING(ENABLE_RSS), [=] { for_each(feeds | map_keys, [&](const RSSPtr& feed) { RSSManager::getInstance()->enableFeedUpdate(feed, true); }); }, OMenu::FLAG_THREADED);
+			if(!allDisabled)
+				menu.appendItem(TSTRING(DISABLE_RSS), [=] { for_each(feeds | map_keys, [&](const RSSPtr& feed) { RSSManager::getInstance()->enableFeedUpdate(feed, false); }); }, OMenu::FLAG_THREADED);
+			menu.appendItem(TSTRING(MATCH_AUTOSEARCH), [=] { for_each(feeds | map_keys, [&](const RSSPtr& feed) { RSSManager::getInstance()->matchFilters(feed); }); }, OMenu::FLAG_THREADED);
+			menu.appendItem(TSTRING(CLEAR), [=] { for_each(feeds | map_keys, [&](const RSSPtr& feed) { RSSManager::getInstance()->clearRSSData(feed); }); }, OMenu::FLAG_THREADED);
 			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 			return TRUE;
 		} else {
@@ -335,10 +356,10 @@ void RssInfoFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
 		ctrlAdd.MoveWindow(rc);
 
 		rc.OffsetRect(button_width + 2, 0);
-		ctrlRemove.MoveWindow(rc);
+		ctrlChange.MoveWindow(rc);
 
 		rc.OffsetRect(button_width + 2, 0);
-		ctrlChange.MoveWindow(rc);
+		ctrlRemove.MoveWindow(rc);
 	}
 
 	SetSplitterRect(&rect);
@@ -556,8 +577,8 @@ const tstring RssInfoFrame::ItemInfo::getText(int col) const {
 
 void RssInfoFrame::createColumns() {
 	// Create listview columns
-	//WinUtil::splitTokens(columnIndexes, SETTING(RSSFRAME_ORDER), COLUMN_LAST);
-	//WinUtil::splitTokens(columnSizes, SETTING(RSSFRAME_WIDTHS), COLUMN_LAST);
+	WinUtil::splitTokens(columnIndexes, SETTING(RSSFRAME_ORDER), COLUMN_LAST);
+	WinUtil::splitTokens(columnSizes, SETTING(RSSFRAME_WIDTHS), COLUMN_LAST);
 
 	for (uint8_t j = 0; j < COLUMN_LAST; j++) {
 		int fmt = LVCFMT_LEFT;
@@ -566,5 +587,5 @@ void RssInfoFrame::createColumns() {
 
 	ctrlRss.list.setColumnOrderArray(COLUMN_LAST, columnIndexes);
 	ctrlRss.list.setSortColumn(COLUMN_FILE);
-	//ctrlRss.list.setVisible(SETTING(RSSFRAME_VISIBLE));
+	ctrlRss.list.setVisible(SETTING(RSSFRAME_VISIBLE));
 }
