@@ -115,6 +115,7 @@ OnlineUser& AdcHub::getUser(const uint32_t aSID, const CID& aCID) noexcept {
 		ou->inc();
 	}
 
+	//Hmm... should this be done AFTER the OnlineUser actually has some params like Nick???
 	if (aSID != AdcCommand::HUB_SID) {
 		ClientManager::getInstance()->putOnline(ou);
 	}
@@ -167,8 +168,15 @@ void AdcHub::putUser(const uint32_t aSID, bool disconnect) noexcept {
 		availableBytes -= ou->getIdentity().getBytesShared();
 	}
 
-	if(aSID != AdcCommand::HUB_SID)
+	if (aSID != AdcCommand::HUB_SID) {
 		ClientManager::getInstance()->putOffline(ou, disconnect);
+		
+		if (ou->getUser() != ClientManager::getInstance()->getMe()) {
+			if (!ou->isHidden() && get(HubSettings::ShowJoins) || (get(HubSettings::FavShowJoins) && ou->getUser()->isFavorite())) {
+				statusMessage("*** " + STRING(PARTS) + ": " + ou->getIdentity().getNick(), LogMessage::SEV_INFO, ClientListener::FLAG_IS_SYSTEM);
+			}
+		}
+	}
 
 	fire(ClientListener::UserRemoved(), this, ou);
 	ou->dec();
@@ -313,6 +321,13 @@ void AdcHub::handle(AdcCommand::INF, AdcCommand& c) noexcept {
 	} else if (!newUser) {
 		fire(ClientListener::UserUpdated(), this, u);
 	} else {
+
+		if (u->getUser() != ClientManager::getInstance()->getMe()) {
+			if (!u->isHidden() && get(HubSettings::ShowJoins) || (get(HubSettings::FavShowJoins) && u->getUser()->isFavorite())) {
+				statusMessage("*** " + STRING(JOINS) + ": " + u->getIdentity().getNick(), LogMessage::SEV_INFO, ClientListener::FLAG_IS_SYSTEM);
+			}
+		}
+
 		fire(ClientListener::UserConnected(), this, u);
 	}
 }
