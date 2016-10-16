@@ -89,11 +89,12 @@ void AdcHub::shutdown(ClientPtr& aClient, bool aRedirect) {
 	TimerManager::getInstance()->removeListener(this);
 }
 
-size_t AdcHub::getUserCount() const noexcept { 
-	RLock l(cs);
+size_t AdcHub::getUserCount() const noexcept {
 	size_t userCount = 0;
-	for(const auto& u: users | map_values) {
-		if(!u->isHidden()) {
+
+	RLock l(cs);
+	for (const auto& u: users | map_values) {
+		if (!u->isHidden()) {
 			++userCount;
 		}
 	}
@@ -113,11 +114,6 @@ OnlineUser& AdcHub::getUser(const uint32_t aSID, const CID& aCID) noexcept {
 		WLock l(cs);
 		ou = users.emplace(aSID, new OnlineUser(user, client, aSID)).first->second;
 		ou->inc();
-	}
-
-	//Hmm... should this be done AFTER the OnlineUser actually has some params like Nick???
-	if (aSID != AdcCommand::HUB_SID) {
-		ClientManager::getInstance()->putOnline(ou);
 	}
 
 	return *ou;
@@ -154,7 +150,7 @@ void AdcHub::getUserList(OnlineUserList& list, bool aListHidden) const noexcept 
 	}
 }
 
-void AdcHub::putUser(const uint32_t aSID, bool disconnect) noexcept {
+void AdcHub::putUser(const uint32_t aSID, bool aDisconnectTransfers) noexcept {
 	OnlineUser* ou = nullptr;
 	{
 		WLock l(cs);
@@ -168,17 +164,7 @@ void AdcHub::putUser(const uint32_t aSID, bool disconnect) noexcept {
 		availableBytes -= ou->getIdentity().getBytesShared();
 	}
 
-	if (aSID != AdcCommand::HUB_SID) {
-		ClientManager::getInstance()->putOffline(ou, disconnect);
-		
-		if (ou->getUser() != ClientManager::getInstance()->getMe()) {
-			if (!ou->isHidden() && get(HubSettings::ShowJoins) || (get(HubSettings::FavShowJoins) && ou->getUser()->isFavorite())) {
-				statusMessage("*** " + STRING(PARTS) + ": " + ou->getIdentity().getNick(), LogMessage::SEV_INFO, ClientListener::FLAG_IS_SYSTEM);
-			}
-		}
-	}
-
-	fire(ClientListener::UserRemoved(), this, ou);
+	onUserDisconnected(ou, aDisconnectTransfers);
 	ou->dec();
 }
 
@@ -207,8 +193,8 @@ void AdcHub::handle(AdcCommand::INF, AdcCommand& c) noexcept {
 	bool newUser = false;
 	if(c.getParam("ID", 0, cid)) {
 		u = findUser(CID(cid));
-		if(u) {
-			if(u->getIdentity().getSID() != c.getFrom()) {
+		if (u) {
+			if (u->getIdentity().getSID() != c.getFrom()) {
 				// Same CID but different SID not allowed - buggy hub?
 				string nick;
 				if(!c.getParam("NI", 0, nick)) {
@@ -223,7 +209,7 @@ void AdcHub::handle(AdcCommand::INF, AdcCommand& c) noexcept {
 			u = &getUser(c.getFrom(), CID(cid));
 			newUser = true;
 		}
-	} else if(c.getFrom() == AdcCommand::HUB_SID) {
+	} else if (c.getFrom() == AdcCommand::HUB_SID) {
 		u = &getUser(c.getFrom(), CID());
 	} else {
 		u = findUser(c.getFrom());
@@ -234,7 +220,7 @@ void AdcHub::handle(AdcCommand::INF, AdcCommand& c) noexcept {
 		return;
 	}
 
-	for(const auto& p: c.getParameters()) {
+	for (const auto& p: c.getParameters()) {
 		if(p.length() < 2)
 			continue;
 
@@ -253,17 +239,17 @@ void AdcHub::handle(AdcCommand::INF, AdcCommand& c) noexcept {
 		}
 	}
 
-	if(u->getIdentity().isBot()) {
+	if (u->getIdentity().isBot()) {
 		u->getUser()->setFlag(User::BOT);
 	} else {
 		u->getUser()->unsetFlag(User::BOT);
 	}
 
-	if(u->getIdentity().supports(ADCS_FEATURE)) {
+	if (u->getIdentity().supports(ADCS_FEATURE)) {
 		u->getUser()->setFlag(User::TLS);
 	}
 
-	if(u->getIdentity().supports(ASCH_FEATURE)) {
+	if (u->getIdentity().supports(ASCH_FEATURE)) {
 		u->getUser()->setFlag(User::ASCH);
 	}
 
@@ -315,20 +301,13 @@ void AdcHub::handle(AdcCommand::INF, AdcCommand& c) noexcept {
 		u->getIdentity().updateConnectMode(getMyIdentity(), this);
 	}
 
-	if(u->getIdentity().isHub()) {
+	if (u->getIdentity().isHub()) {
 		setHubIdentity(u->getIdentity());
 		fire(ClientListener::HubUpdated(), this);
 	} else if (!newUser) {
 		fire(ClientListener::UserUpdated(), this, u);
 	} else {
-
-		if (u->getUser() != ClientManager::getInstance()->getMe()) {
-			if (!u->isHidden() && get(HubSettings::ShowJoins) || (get(HubSettings::FavShowJoins) && u->getUser()->isFavorite())) {
-				statusMessage("*** " + STRING(JOINS) + ": " + u->getIdentity().getNick(), LogMessage::SEV_INFO, ClientListener::FLAG_IS_SYSTEM);
-			}
-		}
-
-		fire(ClientListener::UserConnected(), this, u);
+		onUserConnected(u);
 	}
 }
 
