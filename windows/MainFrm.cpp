@@ -251,11 +251,9 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	_d_ChangeWindowMessageFilter(trayMessage, 1);
 	_d_ChangeWindowMessageFilter(WMU_WHERE_ARE_YOU, 1);
 
-	if (Util::IsOSVersionOrGreater(6, 1)) {
-		tbButtonMessage = RegisterWindowMessage(_T("TaskbarButtonCreated"));
-		_d_ChangeWindowMessageFilter(tbButtonMessage, 1);
-		_d_ChangeWindowMessageFilter(WM_COMMAND, 1);
-	}
+	tbButtonMessage = RegisterWindowMessage(_T("TaskbarButtonCreated"));
+	_d_ChangeWindowMessageFilter(tbButtonMessage, 1);
+	_d_ChangeWindowMessageFilter(WM_COMMAND, 1);
 
 	TimerManager::getInstance()->start();
 
@@ -490,9 +488,6 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 }
 
 LRESULT MainFrame::onTaskbarButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-	if (!Util::IsOSVersionOrGreater(6, 1))
-		return 0;
-
 	taskbarList.Release();
 	HRESULT hRes = taskbarList.CoCreateInstance(CLSID_TaskbarList);
 	if (hRes == S_OK && taskbarList) {

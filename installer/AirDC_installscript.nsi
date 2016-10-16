@@ -110,7 +110,7 @@ LangString SecStore ${LANG_ENGLISH} "Store settings in the user profile director
 LangString DeskShort ${LANG_ENGLISH} "Create AirDC++ desktop shortcut"
 LangString SecInstall32 ${LANG_ENGLISH} "Install the 32-bit version"
 LangString XPOrOlder ${LANG_ENGLISH} "If you want to keep your settings in the program directory, make sure that you DO NOT install AirDC++ to the 'Program files' folder!!! This can lead to abnormal behaviour like loss of settings or downloads!"
-LangString XPOrBelow ${LANG_ENGLISH} "This version is only compatible with Windows Vista or newer operating system. You will be forwarded to www.airdcpp.net for downloading a version that is compatible with your Windows version."
+LangString OsUnsupported ${LANG_ENGLISH} "This application is compatible with Windows 7 SP1 or newer operating systems only. The installer will now exit."
 LangString ^UninstallText ${LANG_ENGLISH} "This will uninstall AirDC++. Hit the Uninstall button to continue."
 LangString RemoveQueue ${LANG_ENGLISH} "Do you also want to remove queue, themes and all settings?"
 LangString NotEmpty ${LANG_ENGLISH} "Installation directory is NOT empty. Do you still want to remove it?"
@@ -227,9 +227,9 @@ no_backup:
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AirDC++" "DisplayVersion" "$2"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AirDC++" "UninstallString" '"$INSTDIR\uninstall.exe"'
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AirDC++" "Publisher" "AirDC++ Team"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AirDC++" "URLInfoAbout" "http://www.airdcpp.net"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AirDC++" "URLUpdateInfo" "http://www.airdcpp.net/download"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AirDC++" "HelpLink" "http://www.airdcpp.net/guides"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AirDC++" "URLInfoAbout" "https://www.airdcpp.net"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AirDC++" "URLUpdateInfo" "https://www.airdcpp.net/download"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AirDC++" "HelpLink" "https://www.airdcpp.net/guides"
    ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
    IntFmt $0 "0x%08X" $0
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AirDC++" "EstimatedSize" "$0"
@@ -336,9 +336,15 @@ Function .onInit
   IfFileExists "$EXEDIR\AirDC.exe" 0 checkos
   StrCpy $INSTDIR $EXEDIR
 checkos:
-  ${IfNot} ${AtLeastWinVista}
-    MessageBox MB_OK|MB_ICONEXCLAMATION $(XPOrBelow)
-    Exec '"$WINDIR\explorer.exe" "http://www.airdcpp.net/download"'
+  ${IfNot} ${AtLeastWin7}
+    MessageBox MB_OK|MB_ICONEXCLAMATION $(OsUnsupported)
+    Quit
+  ${EndIf}
+	
+; The application won't wont properly on Win 7 without SP1
+  ${If} ${IsWin7}
+  ${AndIfNot} ${AtLeastServicePack} 1
+    MessageBox MB_OK|MB_ICONEXCLAMATION $(OsUnsupported)
     Quit
   ${EndIf}
 
