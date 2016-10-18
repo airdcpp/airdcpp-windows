@@ -142,15 +142,7 @@ OnlineUser& NmdcHub::getUser(const string& aNick) noexcept {
 		}
 	}
 	
-	ClientManager::getInstance()->putOnline(u);
-	fire(ClientListener::UserConnected(), this, u);
-
-	if (u->getUser() != ClientManager::getInstance()->getMe()) {
-		if (!u->isHidden() && get(HubSettings::ShowJoins) || (get(HubSettings::FavShowJoins) && u->getUser()->isFavorite())) {
-			statusMessage("*** " + STRING(JOINS) + ": " + u->getIdentity().getNick(), LogMessage::SEV_INFO, ClientListener::FLAG_IS_SYSTEM);
-		}
-	}
-
+	onUserConnected(u);
 	return *u;
 }
 
@@ -180,14 +172,8 @@ void NmdcHub::putUser(const string& aNick) noexcept {
 
 		availableBytes -= ou->getIdentity().getBytesShared();
 	}
-	ClientManager::getInstance()->putOffline(ou);
 
-	if (ou->getUser() != ClientManager::getInstance()->getMe()) {
-		if (!ou->isHidden() && get(HubSettings::ShowJoins) || (get(HubSettings::FavShowJoins) && ou->getUser()->isFavorite())) {
-			statusMessage("*** " + STRING(PARTS) + ": " + ou->getIdentity().getNick(), LogMessage::SEV_INFO, ClientListener::FLAG_IS_SYSTEM);
-		}
-	}
-
+	onUserDisconnected(ou, false);
 	ou->dec();
 }
 
