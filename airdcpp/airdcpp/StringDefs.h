@@ -88,6 +88,7 @@ enum Strings { // @DontAdd
 	AUTOSEARCH_DEFAULT_FAILED_GROUP, // "Default group for failed bundle items"
 	AUTOSEARCH_DLG, // "Add/Change auto search"
 	AUTOSEARCH_EVERY_INTERVAL, // "Minimum search interval between items (in minutes)"
+	AUTOSEARCH_GROUP, // "Auto search group: "
 	AUTOSEARCH_MINIMUM_SEARCH_INTERVAL, // "Minimum search interval for the item to be searched again"
 	AUTOSELECT_LEAST_SPACE, // "least possible free space available"
 	AUTOSELECT_MOST_SPACE, // "most free space available"
