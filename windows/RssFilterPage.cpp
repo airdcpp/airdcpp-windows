@@ -60,6 +60,8 @@ LRESULT RssFilterPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	::SetWindowText(GetDlgItem(IDC_FILTER_REMOVE), CTSTRING(REMOVE));
 	::SetWindowText(GetDlgItem(IDC_FILTER_ADD), CTSTRING(ADD));
 	::SetWindowText(GetDlgItem(IDC_FILTER_UPDATE), CTSTRING(UPDATE));
+	::SetWindowText(GetDlgItem(IDC_GROUP_LABEL), CTSTRING(AUTOSEARCH_GROUP));
+
 
 	::EnableWindow(GetDlgItem(IDC_FILTER_REMOVE), false);
 	::EnableWindow(GetDlgItem(IDC_FILTER_UPDATE), false);
@@ -69,6 +71,14 @@ LRESULT RssFilterPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 		filterList = feedItem->getRssFilterList();
 
 	}
+
+	cGroups.Attach(GetDlgItem(IDC_ASGROUP_BOX));
+	cGroups.AddString(_T("---"));
+	auto groups = AutoSearchManager::getInstance()->getGroups();
+	for (const auto& i : groups) {
+		cGroups.AddString(Text::toT(i).c_str());
+	}
+	cGroups.SetCurSel(0);
 
 	loading = false;
 	fillList();
@@ -95,10 +105,14 @@ LRESULT RssFilterPage::onSelectionChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*
 		ctrlAutoSearchPattern.SetWindowText(Text::toT(item->getFilterPattern()).c_str());
 		ctrlTarget.SetWindowText(Text::toT(item->getDownloadTarget()).c_str());
 		cMatcherType.SetCurSel(item->getMethod());
+		int g = cGroups.FindString(0, Text::toT(item->getAutosearchGroup()).c_str());
+		cGroups.SetCurSel(g > 0 ? g : 0);
+
 	} else {
 		ctrlAutoSearchPattern.SetWindowText(_T(""));
 		ctrlTarget.SetWindowText(_T(""));
 		cMatcherType.SetCurSel(0);
+		cGroups.SetCurSel(0);
 	}
 	loading = false;
 
@@ -121,6 +135,7 @@ LRESULT RssFilterPage::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 	if (!validateSettings(asPattern)) {
 		return 0;
 	}
+
 
 	add(asPattern, dlTarget, cMatcherType.GetCurSel());
 	return 0;
@@ -173,7 +188,13 @@ void RssFilterPage::remove(int i) {
 }
 
 void RssFilterPage::add(const string& aPattern, const string& aTarget, int aMethod) {
-	filterList.emplace_back(RSSFilter(aPattern, aTarget, aMethod));
+	tstring grp = Util::emptyStringT;
+	if (cGroups.GetCurSel() > 0) {
+		grp.resize(cGroups.GetWindowTextLength());
+		grp.resize(cGroups.GetWindowText(&grp[0], grp.size() + 1));
+	}
+
+	filterList.emplace_back(RSSFilter(aPattern, aTarget, aMethod, Text::fromT(grp)));
 	fillList();
 	restoreSelection(Text::toT(aPattern));
 }

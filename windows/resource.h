@@ -1668,6 +1668,7 @@
 #define IDC_FILTER_ADD                  10225
 #define IDC_FILTER_REMOVE               10226
 #define IDC_FILTER_UPDATE               10227
+#define IDC_ASGROUP_BOX                 10228
 #define IDC_REFRESH_WINAMP              11011
 #define IDC_WINAMP_LIST                 11012
 #define IDC_POSITION                    11013
@@ -1881,7 +1882,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        478
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         10228
+#define _APS_NEXT_CONTROL_VALUE         10229
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

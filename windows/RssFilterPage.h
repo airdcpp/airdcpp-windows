@@ -93,6 +93,7 @@ private:
 	CEdit ctrlAutoSearchPattern;
 	CEdit ctrlTarget;
 	CComboBox cMatcherType;
+	CComboBox cGroups;
 
 	ExListViewCtrl ctrlRssFilterList;
 	vector<RSSFilter> filterList;

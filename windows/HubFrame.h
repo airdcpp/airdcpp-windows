@@ -331,7 +331,7 @@ private:
 	void speak(Tasks s, const OnlineUserPtr& u) { tasks.add(static_cast<uint8_t>(s), unique_ptr<Task>(new UserTask(u))); updateUsers = true; }
 	void openLinksInTopic();
 
-	void onStatusMessage(const LogMessagePtr& aMessage, bool isSpam) noexcept;
+	void onStatusMessage(const LogMessagePtr& aMessage, int aFlags) noexcept;
 };
 
 #endif // !defined(HUB_FRAME_H)
