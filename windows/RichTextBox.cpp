@@ -851,7 +851,6 @@ void RichTextBox::updateSelectedText(POINT pt, bool selectLink) {
 
 void RichTextBox::OnRButtonDown(POINT pt) {
 	clearSelInfo();
-	updateAuthor();
 
 	long lSelBegin = 0, lSelEnd = 0;
 	GetSel(lSelBegin, lSelEnd);
@@ -867,6 +866,7 @@ void RichTextBox::OnRButtonDown(POINT pt) {
 	}
 
 	updateSelectedText(pt, true);
+	updateAuthor();
 }
 
 bool RichTextBox::updateAuthor() {

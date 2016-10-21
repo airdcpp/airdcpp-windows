@@ -1211,7 +1211,8 @@ bool WinUtil::openFile(const string& aFileName, int64_t aSize, const TTHValue& a
 		QueueManager::getInstance()->addOpenedItem(aFileName, aSize, aTTH, aUser, false, true);
 		return true;
 	} catch (const Exception& e) {
-		LogManager::getInstance()->message(STRING_F(ADD_FILE_ERROR, aFileName % ClientManager::getInstance()->getFormatedNicks(aUser) % e.getError()), LogMessage::SEV_NOTIFY);
+		auto nicks = aUser.user ? ClientManager::getInstance()->getFormatedNicks(aUser) : STRING(UNKNOWN);
+		LogManager::getInstance()->message(STRING_F(ADD_FILE_ERROR, aFileName % nicks % e.getError()), LogMessage::SEV_NOTIFY);
 	}
 
 	return false;
