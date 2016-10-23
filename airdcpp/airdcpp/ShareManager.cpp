@@ -1539,9 +1539,14 @@ void ShareManager::save(SimpleXML& aXml) {
 
 		aXml.addTag("NoShare");
 		aXml.stepIn();
-		for(const auto& path: excludedPaths) {
-			aXml.addTag("Directory", path);
+
+		{
+			RLock l(refreshMatcherCS);
+			for (const auto& path : excludedPaths) {
+				aXml.addTag("Directory", path);
+			}
 		}
+
 		aXml.stepOut();
 		aXml.stepOut();
 	}
@@ -3682,11 +3687,6 @@ void ShareManager::addFile(const string& aName, Directory::Ptr& aDir, const Hash
 	aDir->copyRootProfiles(dirtyProfiles_, true);
 }
 
-StringSet ShareManager::getExcludedPaths() const noexcept {
-	RLock l(cs);
-	return excludedPaths;
-}
-
 ShareProfileList ShareManager::getProfiles() const noexcept {
 	RLock l(cs);
 	return shareProfiles; 
@@ -3710,21 +3710,30 @@ ShareProfileInfo::List ShareManager::getProfileInfos() const noexcept {
 	return ret;
 }
 
+StringSet ShareManager::getExcludedPaths() const noexcept {
+	RLock l(refreshMatcherCS);
+	return excludedPaths;
+}
+
 void ShareManager::setExcludedPaths(const StringSet& aPaths) noexcept {
-	WLock l(cs);
+	WLock l(refreshMatcherCS);
 	excludedPaths = aPaths;
 }
 
 void ShareManager::addExcludedPath(const string& aPath) {
-	StringList toRemove;
 
 	{
-		WLock l(cs);
-
+		RLock l(cs);
 		// Make sure this is a sub folder of a shared folder
 		if (find_if(rootPaths | map_keys, [&aPath](const string& aRootPath) { return AirUtil::isSubLocal(aPath, aRootPath); }).base() == rootPaths.end()) {
 			throw ShareException(STRING(PATH_NOT_SHARED));
 		}
+	}
+
+	StringList toRemove;
+
+	{
+		WLock l(refreshMatcherCS);
 
 		// Subfolder of an already excluded folder?
 		if (find_if(excludedPaths, [&aPath](const string& aExcludedPath) { return AirUtil::isParentOrExactLocal(aExcludedPath, aPath); }) != excludedPaths.end()) {
@@ -3748,7 +3757,7 @@ void ShareManager::addExcludedPath(const string& aPath) {
 
 bool ShareManager::removeExcludedPath(const string& aPath) noexcept {
 	{
-		WLock l(cs);
+		WLock l(refreshMatcherCS);
 		if (excludedPaths.erase(aPath) == 0) {
 			return false;
 		}

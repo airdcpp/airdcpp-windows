@@ -587,6 +587,8 @@ private:
 	// Bundle paths, skiplist, excluded dirs
 	mutable SharedMutex refreshMatcherCS;
 
+	// Excluded paths with exact casing
+	// Use refreshMatcherCS for locking
 	StringSet excludedPaths;
 
 	// Map real name to virtual name - multiple real names may be mapped to a single virtual one
