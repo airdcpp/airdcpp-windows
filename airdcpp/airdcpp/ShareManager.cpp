@@ -3638,7 +3638,7 @@ ShareManager::Directory::Ptr ShareManager::getDirectory(const string& aRealPath,
 		} else {
 			if (aCheckExcluded) {
 				RLock l(refreshMatcherCS);
-				if (excludedPaths.find(pathLower) != excludedPaths.end()) {
+				if (excludedPaths.find(curPath) != excludedPaths.end()) {
 					return nullptr;
 				}
 			}
