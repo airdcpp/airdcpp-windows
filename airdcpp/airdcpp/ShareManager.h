@@ -283,8 +283,13 @@ public:
 
 	// Get a list of excluded real paths
 	StringSet getExcludedPaths() const noexcept;
-
 	void setExcludedPaths(const StringSet& aPaths) noexcept;
+
+	// Add an excluded path
+	// Throws ShareException if validation fails
+	void addExcludedPath(const string& aPath);
+
+	bool removeExcludedPath(const string& aPath) noexcept;
 
 	// Get a profile token by its display name
 	OptionalProfileToken getProfileByName(const string& aName) const noexcept;

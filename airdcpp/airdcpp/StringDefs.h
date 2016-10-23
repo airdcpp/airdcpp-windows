@@ -1005,6 +1005,8 @@ enum Strings { // @DontAdd
 	PASS_NO_MATCH, // "Passwords did not match"
 	PASTE, // "Paste"
 	PATH, // "Path"
+	PATH_NOT_SHARED, // "Path is not inside a shared directory"
+	PATH_ALREADY_EXCLUDED, // "Path is excluded already"
 	PATTERN, // "Pattern"
 	PAUSE, // "Pause"
 	PAUSE_BUNDLE_FOR, // "Pause bundle for"

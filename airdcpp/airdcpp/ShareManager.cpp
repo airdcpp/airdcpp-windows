@@ -3715,6 +3715,49 @@ void ShareManager::setExcludedPaths(const StringSet& aPaths) noexcept {
 	excludedPaths = aPaths;
 }
 
+void ShareManager::addExcludedPath(const string& aPath) {
+	StringList toRemove;
+
+	{
+		WLock l(cs);
+
+		// Make sure this is a sub folder of a shared folder
+		if (find_if(rootPaths | map_keys, [&aPath](const string& aRootPath) { return AirUtil::isSubLocal(aPath, aRootPath); }).base() == rootPaths.end()) {
+			throw ShareException(STRING(PATH_NOT_SHARED));
+		}
+
+		// Subfolder of an already excluded folder?
+		if (find_if(excludedPaths, [&aPath](const string& aExcludedPath) { return AirUtil::isParentOrExactLocal(aExcludedPath, aPath); }) != excludedPaths.end()) {
+			throw ShareException(STRING(PATH_ALREADY_EXCLUDED));
+		}
+
+		// No use for excluded subfolders of this path
+		copy_if(excludedPaths, back_inserter(toRemove), [&aPath](const string& aExcluded) { 
+			return AirUtil::isSubLocal(aExcluded, aPath); 
+		});
+
+		excludedPaths.insert(aPath);
+	}
+
+	for (const auto& p : toRemove) {
+		removeExcludedPath(p);
+	}
+
+	fire(ShareManagerListener::ExcludeAdded(), aPath);
+}
+
+bool ShareManager::removeExcludedPath(const string& aPath) noexcept {
+	{
+		WLock l(cs);
+		if (excludedPaths.erase(aPath) == 0) {
+			return false;
+		}
+	}
+
+	fire(ShareManagerListener::ExcludeRemoved(), aPath);
+	return true;
+}
+
 GroupedDirectoryMap ShareManager::getGroupedDirectories() const noexcept {
 	GroupedDirectoryMap ret;
 	
