@@ -382,13 +382,13 @@ private:
 		typedef std::vector<Directory::Ptr> List;
 
 		struct NameLower {
-			const string& operator()(const Ptr& a) const { return a->realName.getLower(); }
+			const string& operator()(const Ptr& a) const noexcept { return a->realName.getLower(); }
 		};
 
 		class File {
 		public:
 			struct NameLower {
-				const string& operator()(const File* a) const { return a->name.getLower(); }
+				const string& operator()(const File* a) const noexcept { return a->name.getLower(); }
 			};
 
 			//typedef set<File, FileLess> Set;
@@ -398,7 +398,7 @@ private:
 			~File();
 		
 			inline string getADCPath() const noexcept{ return parent->getADCPath() + name.getNormal(); }
-			inline string getFullName() const noexcept{ return parent->getFullName() + name.getNormal(); }
+			inline string getNmdcPath() const noexcept{ return parent->getNmdcPath() + name.getNormal(); }
 			inline string getRealPath() const noexcept { return parent->getRealPath(name.getNormal()); }
 			inline bool hasProfile(const OptionalProfileToken& aProfile) const noexcept { return parent->hasProfile(aProfile); }
 
@@ -416,7 +416,7 @@ private:
 		class SearchResultInfo {
 		public:
 			struct Sort {
-				bool operator()(const SearchResultInfo& left, const SearchResultInfo& right) const { return left.scores > right.scores; }
+				bool operator()(const SearchResultInfo& left, const SearchResultInfo& right) const noexcept { return left.scores > right.scores; }
 			};
 
 			explicit SearchResultInfo(const File* f, const SearchQuery& aSearch, int aLevel) :
@@ -440,9 +440,9 @@ private:
 				const Directory::File* file;
 			};
 
-			Type getType() const { return type; }
+			Type getType() const noexcept { return type; }
 		private:
-			Type type;
+			const Type type;
 			double scores;
 		};
 
@@ -463,16 +463,10 @@ private:
 			HasRootProfile& operator=(const HasRootProfile&) = delete;
 		};
 
-		struct IsParent {
-			bool operator()(const Ptr& d) const {
-				return !d->getParent();
-			}
-		};
-
 		string getADCPath() const noexcept;
 		string getVirtualName() const noexcept;
 		const string& getVirtualNameLower() const noexcept;
-		string getFullName() const noexcept; 
+		string getNmdcPath() const noexcept; 
 
 		inline string getRealPath() const noexcept{ return getRealPath(Util::emptyString); };
 

@@ -119,7 +119,7 @@ void ShareManager::startup(function<void(const string&)> splashF, function<void(
 
 		{
 			RLock l(cs);
-			for(const auto& d: rootPaths | map_values | filtered(Directory::IsParent())) {
+			for (const auto& d: rootPaths | map_values) {
 				if (d->getProfileDir()->useMonitoring())
 					monitorPaths.push_back(d->getProfileDir()->getPath());
 			}
@@ -824,11 +824,13 @@ const string& ShareManager::Directory::getVirtualNameLower() const noexcept {
 	return realName.getLower();
 }
 
-string ShareManager::Directory::getFullName() const noexcept {
-	if(profileDir)
+string ShareManager::Directory::getNmdcPath() const noexcept {
+	if (profileDir) {
 		return profileDir->getName() + '\\';
+	}
+
 	dcassert(parent);
-	return parent->getFullName() + realName.getNormal() + '\\';
+	return parent->getNmdcPath() + realName.getNormal() + '\\';
 }
 
 StringList ShareManager::getRealPaths(const TTHValue& root) const noexcept {
@@ -855,8 +857,8 @@ bool ShareManager::isTTHShared(const TTHValue& tth) const noexcept {
 }
 
 string ShareManager::Directory::getRealPath(const string& path) const noexcept {
-	if(getParent()) {
-		return getParent()->getRealPath(realName.getNormal() + PATH_SEPARATOR_STR + path);
+	if (parent) {
+		return parent->getRealPath(realName.getNormal() + PATH_SEPARATOR_STR + path);
 	}
 
 	return profileDir->getPath() + path;
@@ -871,8 +873,10 @@ bool ShareManager::Directory::hasProfile(const ProfileTokenSet& aProfiles) const
 		return true;
 	}
 
-	if (parent)
+	if (parent) {
 		return parent->hasProfile(aProfiles);
+	}
+
 	return false;
 }
 
@@ -1197,7 +1201,7 @@ string ShareManager::realToVirtual(const string& aPath, const OptionalProfileTok
 		return Util::emptyString;
 	}
 
-	auto vPath = d->getFullName();
+	auto vPath = d->getNmdcPath();
 	if (aPath.back() == PATH_SEPARATOR) {
 		// Directory
 		return vPath;
@@ -1275,8 +1279,9 @@ void ShareManager::load(SimpleXML& aXml) {
 	while(aXml.findChild("ShareProfile")) {
 		const auto& token = aXml.getIntChildAttrib("Token");
 		const auto& name = aXml.getChildAttrib("Name");
-		if (token != SP_HIDDEN && !name.empty()) //reserve a few numbers for predefined profiles
+		if (token != SP_HIDDEN && !name.empty()) {
 			loadProfile(aXml, name, token);
+		}
 	}
 
 	{
@@ -1518,36 +1523,36 @@ bool ShareManager::loadCache(function<void(float)> progressF) noexcept{
 
 void ShareManager::save(SimpleXML& aXml) {
 	RLock l(cs);
-	for(const auto& sp: shareProfiles) {
-		if (sp->getToken() == SP_HIDDEN) {
-			continue;
-		}
+	for(const auto& sp: shareProfiles | filtered(ShareProfile::NotHidden())) {
+		auto isDefault = sp->getToken() == SETTING(DEFAULT_SP);
 
-		aXml.addTag(sp->getToken() == SETTING(DEFAULT_SP) ? "Share" : "ShareProfile");
+		aXml.addTag(isDefault ? "Share" : "ShareProfile"); // Keep the old Share tag around for compatibility with other clients
 		aXml.addChildAttrib("Token", sp->getToken());
 		aXml.addChildAttrib("Name", sp->getPlainName());
 		aXml.stepIn();
 
-		for(const auto& d: rootPaths | map_values) {
-			if (!d->getProfileDir()->hasRootProfile(sp->getToken()))
-				continue;
+		for(const auto& d: rootPaths | map_values | filtered(Directory::HasRootProfile(sp->getToken()))) {
 			aXml.addTag("Directory", d->getRealPath());
 			aXml.addChildAttrib("Virtual", d->getProfileDir()->getName());
 			aXml.addChildAttrib("Incoming", d->getProfileDir()->getIncoming());
 			aXml.addChildAttrib("LastRefreshTime", d->getProfileDir()->getLastRefreshTime());
 		}
 
-		aXml.addTag("NoShare");
-		aXml.stepIn();
+		if (isDefault) {
+			// Excludes are global so they need to be saved only once
+			aXml.addTag("NoShare");
+			aXml.stepIn();
 
-		{
-			RLock l(refreshMatcherCS);
-			for (const auto& path : excludedPaths) {
-				aXml.addTag("Directory", path);
+			{
+				RLock excludeL(refreshMatcherCS);
+				for (const auto& path : excludedPaths) {
+					aXml.addTag("Directory", path);
+				}
 			}
+
+			aXml.stepOut();
 		}
 
-		aXml.stepOut();
 		aXml.stepOut();
 	}
 }
@@ -1573,7 +1578,7 @@ void ShareManager::Directory::countStats(uint64_t& totalAge_, size_t& totalDirs_
 
 void ShareManager::countStats(uint64_t& totalAge_, size_t& totalDirs_, int64_t& totalSize_, size_t& totalFiles_, size_t& lowerCaseFiles_, size_t& totalStrLen_, size_t& roots_) const noexcept{
 	RLock l(cs);
-	for (const auto& d : rootPaths | map_values | filtered(Directory::IsParent())) {
+	for (const auto& d : rootPaths | map_values) {
 		totalDirs_++;
 		roots_++;
 		d->countStats(totalAge_, totalDirs_, totalSize_, totalFiles_, lowerCaseFiles_, totalStrLen_);
@@ -2067,7 +2072,7 @@ ShareManager::RefreshResult ShareManager::refresh(bool aIncoming, RefreshType aT
 
 	{
 		RLock l (cs);
-		for(const auto& d: rootPaths | map_values | filtered(Directory::IsParent())) {
+		for (const auto& d: rootPaths | map_values) {
 			if (aIncoming && !d->getProfileDir()->getIncoming())
 				continue;
 
@@ -3257,7 +3262,7 @@ void ShareManager::Directory::toTTHList(OutputStream& tthList, string& tmp2, boo
 }
 
 bool ShareManager::addDirResult(const Directory* aDir, SearchResultList& aResults, const OptionalProfileToken& aProfile, SearchQuery& srch) const noexcept {
-	const string path = srch.addParents ? Util::getNmdcParentDir(aDir->getFullName()) : aDir->getFullName();
+	const string path = srch.addParents ? Util::getNmdcParentDir(aDir->getNmdcPath()) : aDir->getNmdcPath();
 
 	// Have we added it already?
 	auto p = find_if(aResults, [&path](const SearchResultPtr& sr) { return sr->getPath() == path; });
@@ -3293,12 +3298,11 @@ bool ShareManager::addDirResult(const Directory* aDir, SearchResultList& aResult
 
 void ShareManager::Directory::File::addSR(SearchResultList& aResults, bool addParent) const noexcept {
 	if (addParent) {
-		//getInstance()->addDirResult(getFullName(aProfile), aResults, aProfile, true);
-		SearchResultPtr sr(new SearchResult(parent->getFullName()));
+		SearchResultPtr sr(new SearchResult(parent->getNmdcPath()));
 		aResults.push_back(sr);
 	} else {
 		SearchResultPtr sr(new SearchResult(SearchResult::TYPE_FILE, 
-			size, getFullName(), getTTH(), getLastWrite(), 1));
+			size, getNmdcPath(), getTTH(), getLastWrite(), 1));
 		aResults.push_back(sr);
 	}
 }
@@ -3390,7 +3394,7 @@ void ShareManager::Directory::search(SearchResultInfo::Set& results_, SearchQuer
 	aStrings.recursion = old;
 }
 
-void ShareManager::adcSearch(SearchResultList& results, SearchQuery& srch, const OptionalProfileToken& aProfile, const CID& cid, const string& aDir, bool isAutoSearch) throw(ShareException) {
+void ShareManager::adcSearch(SearchResultList& results, SearchQuery& srch, const OptionalProfileToken& aProfile, const CID& cid, const string& aDir, bool aIsAutoSearch) throw(ShareException) {
 	totalSearches++;
 	if (aProfile == SP_HIDDEN) {
 		return;
@@ -3419,7 +3423,7 @@ void ShareManager::adcSearch(SearchResultList& results, SearchQuery& srch, const
 	}
 
 	recursiveSearches++;
-	if (isAutoSearch)
+	if (aIsAutoSearch)
 		autoSearches++;
 
 	for (const auto& p : srch.include.getPatterns()) {
@@ -3693,17 +3697,16 @@ ShareProfileList ShareManager::getProfiles() const noexcept {
 }
 
 ShareProfileInfo::List ShareManager::getProfileInfos() const noexcept {
-	RLock l(cs);
 	ShareProfileInfo::List ret;
-	for (const auto& sp : shareProfiles) {
-		if (sp->getToken() != SP_HIDDEN) {
-			auto p = std::make_shared<ShareProfileInfo>(sp->getPlainName(), sp->getToken());
-			if (p->token == SETTING(DEFAULT_SP)) {
-				p->isDefault = true;
-				ret.emplace(ret.begin(), p);
-			} else {
-				ret.emplace_back(p);
-			}
+
+	RLock l(cs);
+	for (const auto& sp : shareProfiles | filtered(ShareProfile::NotHidden())) {
+		auto p = std::make_shared<ShareProfileInfo>(sp->getPlainName(), sp->getToken());
+		if (p->token == SETTING(DEFAULT_SP)) {
+			p->isDefault = true;
+			ret.emplace(ret.begin(), p);
+		} else {
+			ret.emplace_back(p);
 		}
 	}
 	
@@ -3772,7 +3775,7 @@ GroupedDirectoryMap ShareManager::getGroupedDirectories() const noexcept {
 	
 	{
 		RLock l (cs);
-		for(const auto& d: rootPaths | map_values | filtered(Directory::IsParent())) {
+		for (const auto& d: rootPaths | map_values) {
 			const auto& currentPath = d->getProfileDir()->getPath();
 			auto virtualName = d->getProfileDir()->getName();
 

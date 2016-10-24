@@ -35,11 +35,10 @@ class SocketException;
 
 class TokenManager {
 public:
-	string makeToken() const noexcept;
-	string getToken(ConnectionType aConnType) noexcept;
+	string createToken(ConnectionType aConnType) noexcept;
 	bool addToken(const string& aToken, ConnectionType aConnType) noexcept;
 	void removeToken(const string& aToken) noexcept;
-	bool hasToken(const string& aToken, ConnectionType aConnType) noexcept;
+	bool hasToken(const string& aToken, ConnectionType aConnType) const noexcept;
 private:
 	unordered_map<string, ConnectionType> tokens;
 	static FastCriticalSection cs;
@@ -85,17 +84,16 @@ public:
 	GETSET(string, hubUrl, HubUrl);
 	GETSET(ConnectionType, connType, ConnType);
 
-	const UserPtr& getUser() const { return user; }
-	//UserPtr& getUser() { return user; }
-	const HintedUser getHintedUser() const { return HintedUser(user, hubUrl); }
-	bool allowNewConnections(int running) const;
+	const UserPtr& getUser() const noexcept { return user; }
+	const HintedUser getHintedUser() const noexcept { return HintedUser(user, hubUrl); }
+	bool allowNewConnections(int running) const noexcept;
 private:
-	UserPtr user;
+	const UserPtr user;
 };
 
 class ExpectedMap {
 public:
-	void add(const string& aKey, const string& aMyNick, const string& aHubUrl) {
+	void add(const string& aKey, const string& aMyNick, const string& aHubUrl) noexcept {
 		Lock l(cs);
 		expectedConnections.emplace(aKey, make_pair(aMyNick, aHubUrl));
 	}

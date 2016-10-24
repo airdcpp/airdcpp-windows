@@ -22,7 +22,6 @@
 #include "compiler.h"
 
 #include "DupeType.h"
-#include "Text.h"
 #include "SettingsManager.h"
 
 namespace dcpp {
