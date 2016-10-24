@@ -106,6 +106,11 @@ void ConnectionManager::listen() {
 	secureServer.reset(new Server(true, Util::toString(CONNSETTING(TLS_PORT)), CONNSETTING(BIND_ADDRESS), CONNSETTING(BIND_ADDRESS6)));
 }
 
+ConnectionQueueItem::ConnectionQueueItem(const HintedUser& aUser, ConnectionType aConntype, const string& aToken) : token(aToken),
+	connType(aConntype), user(aUser) {
+
+}
+
 bool ConnectionQueueItem::allowNewConnections(int aRunning) const noexcept {
 	return (aRunning < AirUtil::getSlotsPerUser(true) || AirUtil::getSlotsPerUser(true) == 0) && (aRunning < maxConns || maxConns == 0);
 }
@@ -255,7 +260,7 @@ void ConnectionManager::attemptDownloads(uint64_t aTick, StringList& removedToke
 	uint16_t attempts = 0;
 	for (auto cqi : downloads) {
 		if (cqi->getState() != ConnectionQueueItem::ACTIVE && cqi->getState() != ConnectionQueueItem::RUNNING) {
-			if (!cqi->getUser()->isOnline() || cqi->isSet(ConnectionQueueItem::FLAG_REMOVE)) {
+			if (!cqi->getUser().user->isOnline() || cqi->isSet(ConnectionQueueItem::FLAG_REMOVE)) {
 				removedTokens.push_back(cqi->getToken());
 				continue;
 			}
@@ -704,7 +709,7 @@ void ConnectionManager::on(UserConnectionListener::MyNick, UserConnection* aSour
 		for(auto cqi: downloads) {
 			cqi->setErrors(0);
 			if((cqi->getState() == ConnectionQueueItem::CONNECTING || cqi->getState() == ConnectionQueueItem::WAITING) && 
-				cqi->getUser()->getCID() == cid)
+				cqi->getUser().user->getCID() == cid)
 			{
 				aSource->setUser(cqi->getUser());
 				// Indicate that we're interested in this file...
@@ -1051,7 +1056,7 @@ void ConnectionManager::failDownload(const string& aToken, const string& aError,
 		if (cqi->getDownloadType() == ConnectionQueueItem::TYPE_SMALL_CONF && cqi->getState() == ConnectionQueueItem::ACTIVE) {
 			//small slot item that was never used for downloading anything? check if we have normal files to download
 			if (allowNewMCN(cqi))
-				mcnUser = cqi->getHintedUser();
+				mcnUser = cqi->getUser();
 		}
 
 		cqi->setState(ConnectionQueueItem::WAITING);

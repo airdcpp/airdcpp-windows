@@ -69,26 +69,23 @@ public:
 		TYPE_MCN_NORMAL
 	};
 
-	ConnectionQueueItem(const HintedUser& aUser, ConnectionType aConntype, const string& aToken) : token(aToken), 
-		downloadType(TYPE_ANY), connType(aConntype),
-		lastAttempt(0), errors(0), state(WAITING), maxConns(0), hubUrl(aUser.hint), user(aUser.user) {
-	}
+	ConnectionQueueItem(const HintedUser& aUser, ConnectionType aConntype, const string& aToken);
 	
 	GETSET(string, token, Token);
-	GETSET(DownloadType, downloadType, DownloadType);
+	IGETSET(DownloadType, downloadType, DownloadType, TYPE_ANY);
 	GETSET(string, lastBundle, LastBundle);
-	GETSET(uint64_t, lastAttempt, LastAttempt);
-	GETSET(int, errors, Errors); // Number of connection errors, or -1 after a protocol error
-	GETSET(State, state, State);
-	GETSET(uint8_t, maxConns, MaxConns);
-	GETSET(string, hubUrl, HubUrl);
+	IGETSET(uint64_t, lastAttempt, LastAttempt, 0);
+	IGETSET(int, errors, Errors, 0); // Number of connection errors, or -1 after a protocol error
+	IGETSET(State, state, State, WAITING);
+	IGETSET(uint8_t, maxConns, MaxConns, 0);
 	GETSET(ConnectionType, connType, ConnType);
 
-	const UserPtr& getUser() const noexcept { return user; }
-	const HintedUser getHintedUser() const noexcept { return HintedUser(user, hubUrl); }
+	const string& getHubUrl() const noexcept { return user.hint; }
+	void setHubUrl(const string& aHubUrl) noexcept { user.hint = aHubUrl; }
+	const HintedUser& getUser() const noexcept { return user; }
 	bool allowNewConnections(int running) const noexcept;
 private:
-	const UserPtr user;
+	HintedUser user;
 };
 
 class ExpectedMap {
