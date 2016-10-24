@@ -43,8 +43,8 @@ namespace webserver {
 
 		createSubscription("share_refreshed");
 
-		createSubscription("exclude_added");
-		createSubscription("exclude_removed");
+		createSubscription("share_exclude_added");
+		createSubscription("share_exclude_removed");
 
 		ShareManager::getInstance()->addListener(this);
 	}
@@ -82,13 +82,13 @@ namespace webserver {
 	}
 
 	void ShareApi::on(ShareManagerListener::ExcludeAdded, const string& aPath) noexcept {
-		send("exclude_added", {
+		send("share_exclude_added", {
 			{ "path", aPath }
 		});
 	}
 
 	void ShareApi::on(ShareManagerListener::ExcludeRemoved, const string& aPath) noexcept {
-		send("exclude_removed", {
+		send("share_exclude_removed", {
 			{ "path", aPath }
 		});
 	}
