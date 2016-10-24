@@ -670,11 +670,11 @@ private:
 	template<class T>
 	void findVirtuals(const string& aVirtualPath, const T& aProfile, Directory::List& dirs_) const throw(ShareException) {
 		Directory::List virtuals; //since we are mapping by realpath, we can have more than 1 same virtualnames
-		if(aVirtualPath.empty() || aVirtualPath[0] != '/') {
+		if(aVirtualPath.empty() || aVirtualPath[0] != ADC_SEPARATOR) {
 			throw ShareException(UserConnection::FILE_NOT_AVAILABLE);
 		}
 
-		string::size_type start = aVirtualPath.find('/', 1);
+		string::size_type start = aVirtualPath.find(ADC_SEPARATOR, 1);
 		if(start == string::npos || start == 1) {
 			throw ShareException(UserConnection::FILE_NOT_AVAILABLE);
 		}
@@ -690,7 +690,7 @@ private:
 			string::size_type j = i + 1;
 			d = *k;
 
-			while((i = aVirtualPath.find('/', j)) != string::npos) {
+			while((i = aVirtualPath.find(ADC_SEPARATOR, j)) != string::npos) {
 				auto mi = d->directories.find(Text::toLower(aVirtualPath.substr(j, i - j)));
 				j = i + 1;
 				if (mi != d->directories.end()) {   //if we found something, look for more.

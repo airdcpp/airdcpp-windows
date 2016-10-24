@@ -802,10 +802,10 @@ int64_t ShareManager::Directory::getTotalSize() const noexcept {
 
 string ShareManager::Directory::getADCPath() const noexcept {
 	if (profileDir) {
-		return '/' + profileDir->getName() + '/';
+		return ADC_SEPARATOR + profileDir->getName() + ADC_SEPARATOR;
 	}
 
-	return parent->getADCPath() + realName.getNormal() + '/';
+	return parent->getADCPath() + realName.getNormal() + ADC_SEPARATOR;
 }
 
 string ShareManager::Directory::getVirtualName() const noexcept {
@@ -826,11 +826,11 @@ const string& ShareManager::Directory::getVirtualNameLower() const noexcept {
 
 string ShareManager::Directory::getNmdcPath() const noexcept {
 	if (profileDir) {
-		return profileDir->getName() + '\\';
+		return profileDir->getName() + NMDC_SEPARATOR;
 	}
 
 	dcassert(parent);
-	return parent->getNmdcPath() + realName.getNormal() + '\\';
+	return parent->getNmdcPath() + realName.getNormal() + NMDC_SEPARATOR;
 }
 
 StringList ShareManager::getRealPaths(const TTHValue& root) const noexcept {
@@ -1147,7 +1147,7 @@ void ShareManager::getRealPaths(const string& aPath, StringList& realPaths_, con
 	if (aPath.empty())
 		throw ShareException("empty virtual path");
 
-	if (aPath == "/") {
+	if (aPath == ADC_ROOT_STR) {
 		getRootPaths(realPaths_);
 		return;
 	}
@@ -1157,7 +1157,7 @@ void ShareManager::getRealPaths(const string& aPath, StringList& realPaths_, con
 	RLock l(cs);
 	findVirtuals<OptionalProfileToken>(aPath, aProfile, dirs);
 
-	if (aPath.back() == '/') {
+	if (aPath.back() == ADC_SEPARATOR) {
 		// Directory
 		for (const auto& d : dirs) {
 			realPaths_.push_back(d->getRealPath());
@@ -1201,14 +1201,14 @@ string ShareManager::realToVirtual(const string& aPath, const OptionalProfileTok
 		return Util::emptyString;
 	}
 
-	auto vPath = d->getNmdcPath();
+	auto vPathNmdc = d->getNmdcPath();
 	if (aPath.back() == PATH_SEPARATOR) {
 		// Directory
-		return vPath;
+		return vPathNmdc;
 	}
 
 	// It's a file
-	return vPath + "\\" + Util::getFileName(aPath);
+	return vPathNmdc + NMDC_SEPARATOR_STR + Util::getFileName(aPath);
 }
 
 string ShareManager::validateVirtualName(const string& aVirt) const noexcept {
@@ -1835,7 +1835,7 @@ void ShareManager::getDirsByName(const string& aPath, Directory::List& dirs_) co
 		return;
 
 	// get the last meaningful directory to look up
-	auto nameInfo = AirUtil::getDirName(aPath, '\\');
+	auto nameInfo = AirUtil::getDirName(aPath, NMDC_SEPARATOR);
 
 	auto nameLower = Text::toLower(nameInfo.first);
 	const auto directories = lowerDirNameMap.equal_range(&nameLower);
@@ -1845,7 +1845,7 @@ void ShareManager::getDirsByName(const string& aPath, Directory::List& dirs_) co
 	for (auto s = directories.first; s != directories.second; ++s) {
 		if (nameInfo.second != string::npos) {
 			// confirm that we have the subdirectory as well
-			auto dir = s->second->findDirByPath(aPath.substr(nameInfo.second), '\\');
+			auto dir = s->second->findDirByPath(aPath.substr(nameInfo.second), NMDC_SEPARATOR);
 			if (dir) {
 				dirs_.push_back(dir);
 			}
@@ -2877,7 +2877,7 @@ FileList* ShareManager::generateXmlList(ProfileToken aProfile, bool forced /*fal
 				{
 					File f(tmpName, File::RW, File::TRUNCATE | File::CREATE, File::BUFFER_SEQUENTIAL, false);
 
-					toFilelist(f, "/", aProfile, true);
+					toFilelist(f, ADC_ROOT_STR, aProfile, true);
 
 					fl->setXmlListLen(f.getSize());
 
@@ -2917,8 +2917,9 @@ FileList* ShareManager::generateXmlList(ProfileToken aProfile, bool forced /*fal
 }
 
 MemoryInputStream* ShareManager::generatePartialList(const string& aVirtualPath, bool aRecursive, const OptionalProfileToken& aProfile) const noexcept {
-	if(aVirtualPath.front() != '/' || aVirtualPath.back() != '/')
+	if (aVirtualPath.front() != ADC_SEPARATOR || aVirtualPath.back() != ADC_SEPARATOR) {
 		return 0;
+	}
 
 	string xml = Util::emptyString;
 
@@ -2944,7 +2945,7 @@ void ShareManager::toFilelist(OutputStream& os_, const string& aVirtualPath, con
 	dcdebug("Generating filelist for %s \n", aVirtualPath.c_str());
 
 	// Get the directories
-	if (aVirtualPath == "/") {
+	if (aVirtualPath == ADC_ROOT_STR) {
 		getRoots(aProfile, childDirectories);
 	} else {
 		try {
@@ -3309,7 +3310,7 @@ void ShareManager::Directory::File::addSR(SearchResultList& aResults, bool addPa
 
 void ShareManager::nmdcSearch(SearchResultList& l, const string& nmdcString, int aSearchType, int64_t aSize, int aFileType, StringList::size_type maxResults, bool aHideShare) noexcept{
 	auto query = SearchQuery(nmdcString, static_cast<Search::SizeModes>(aSearchType), aSize, static_cast<Search::TypeModes>(aFileType), maxResults);
-	adcSearch(l, query, aHideShare ? SP_HIDDEN : SETTING(DEFAULT_SP), CID(), "/", false);
+	adcSearch(l, query, aHideShare ? SP_HIDDEN : SETTING(DEFAULT_SP), CID(), ADC_ROOT_STR, false);
 }
 
 /**
@@ -3395,6 +3396,8 @@ void ShareManager::Directory::search(SearchResultInfo::Set& results_, SearchQuer
 }
 
 void ShareManager::adcSearch(SearchResultList& results, SearchQuery& srch, const OptionalProfileToken& aProfile, const CID& cid, const string& aDir, bool aIsAutoSearch) throw(ShareException) {
+	dcassert(!aDir.empty());
+
 	totalSearches++;
 	if (aProfile == SP_HIDDEN) {
 		return;
@@ -3461,7 +3464,7 @@ void ShareManager::adcSearch(SearchResultList& results, SearchQuery& srch, const
 
 	// Get the search roots
 	Directory::List roots;
-	if (aDir == "/" || aDir.empty()) {
+	if (aDir == ADC_ROOT_STR) {
 		getRoots(aProfile, roots);
 	} else {
 		findVirtuals<OptionalProfileToken>(aDir, aProfile, roots);
