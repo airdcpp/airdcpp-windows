@@ -32,6 +32,8 @@
 #include "DownloadBaseHandler.h"
 
 #include <airdcpp/RSSManager.h>
+#include <airdcpp/AutoSearchManager.h>
+#include <airdcpp/QueueManagerListener.h>
 #include <airdcpp/AirUtil.h>
 #include <airdcpp/TaskQueue.h>
 

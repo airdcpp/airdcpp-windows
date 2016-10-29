@@ -22,6 +22,7 @@
 #include "RssFilterPage.h"
 #include "BrowseDlg.h"
 
+#include <airdcpp/AutoSearchManager.h>
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/ResourceManager.h>
 
@@ -48,8 +49,8 @@ LRESULT RssFilterPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	CRect rc;
 	ctrlRssFilterList.GetClientRect(rc);
 	ctrlRssFilterList.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_FULLROWSELECT);
-	ctrlRssFilterList.InsertColumn(0, CTSTRING(PATTERN), LVCFMT_LEFT, (rc.Width() / 3), 0);
-	ctrlRssFilterList.InsertColumn(1, CTSTRING(PATH), LVCFMT_LEFT, (rc.Width() / 3 * 2), 0);
+	ctrlRssFilterList.InsertColumn(0, CTSTRING(PATTERN), LVCFMT_LEFT, (rc.Width() / 3 * 2), 0);
+	ctrlRssFilterList.InsertColumn(1, CTSTRING(PATH), LVCFMT_LEFT, (rc.Width() / 3), 0);
 
 	ATTACH(IDC_MATCHER_TYPE, cMatcherType);
 	cMatcherType.AddString(CTSTRING(PLAIN_TEXT));
@@ -61,6 +62,7 @@ LRESULT RssFilterPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	::SetWindowText(GetDlgItem(IDC_FILTER_ADD), CTSTRING(ADD));
 	::SetWindowText(GetDlgItem(IDC_FILTER_UPDATE), CTSTRING(UPDATE));
 	::SetWindowText(GetDlgItem(IDC_GROUP_LABEL), CTSTRING(AUTOSEARCH_GROUP));
+	::SetWindowText(GetDlgItem(IDC_SKIP_DUPES), CTSTRING(SKIP_DUPES));
 
 
 	::EnableWindow(GetDlgItem(IDC_FILTER_REMOVE), false);
@@ -84,6 +86,7 @@ LRESULT RssFilterPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	fillList();
 
 	ctrlRssFilterList.SelectItem(0);
+	CheckDlgButton(IDC_SKIP_DUPES, TRUE);
 	CenterWindow(GetParent());
 	SetWindowText(CTSTRING(RSS_CONFIG));
 
@@ -107,12 +110,14 @@ LRESULT RssFilterPage::onSelectionChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*
 		cMatcherType.SetCurSel(item->getMethod());
 		int g = cGroups.FindString(0, Text::toT(item->getAutosearchGroup()).c_str());
 		cGroups.SetCurSel(g > 0 ? g : 0);
+		CheckDlgButton(IDC_SKIP_DUPES, item->skipDupes ? TRUE : FALSE);
 
 	} else {
 		ctrlAutoSearchPattern.SetWindowText(_T(""));
 		ctrlTarget.SetWindowText(_T(""));
 		cMatcherType.SetCurSel(0);
 		cGroups.SetCurSel(0);
+		CheckDlgButton(IDC_SKIP_DUPES, TRUE);
 	}
 	loading = false;
 
@@ -193,8 +198,9 @@ void RssFilterPage::add(const string& aPattern, const string& aTarget, int aMeth
 		grp.resize(cGroups.GetWindowTextLength());
 		grp.resize(cGroups.GetWindowText(&grp[0], grp.size() + 1));
 	}
+	bool skipDupes = IsDlgButtonChecked(IDC_SKIP_DUPES) ? true : false;
 
-	filterList.emplace_back(RSSFilter(aPattern, aTarget, aMethod, Text::fromT(grp)));
+	filterList.emplace_back(RSSFilter(aPattern, aTarget, aMethod, Text::fromT(grp), skipDupes));
 	fillList();
 	restoreSelection(Text::toT(aPattern));
 }

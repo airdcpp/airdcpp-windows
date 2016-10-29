@@ -915,6 +915,7 @@
 #define IDC_VOL_HASHERS_SPIN            1309
 #define IDC_AUTO_AWAY                   1309
 #define IDC_RSS_ENABLE                  1309
+#define IDC_SKIP_DUPES                  1309
 #define IDC_DOWNCONN_SPIN               1310
 #define IDC_HIGHEST_PRIORITY_USE_REGEXP 1310
 #define IDC_FAV_SEARCH_INTERVAL_BOX     1310
