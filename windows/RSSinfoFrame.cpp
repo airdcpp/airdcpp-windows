@@ -85,6 +85,7 @@ LRESULT RssInfoFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 
 	treeImages.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 3);
 	treeImages.AddIcon(CIcon(ResourceLoader::loadIcon(IDI_RSS, 16)));
+	treeImages.AddIcon(CIcon(ResourceLoader::convertGrayscaleIcon(ResourceLoader::loadIcon(IDI_RSS, 16))));
 	ctrlTree.SetImageList(treeImages);
 
 	listImages.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 3);
@@ -96,7 +97,7 @@ LRESULT RssInfoFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	SetSplitterPanes(ctrlTree.m_hWnd, ctrlRss.m_hWnd);
 	m_nProportionalPos = 1500;
 
-	treeParent = addTreeItem(TVI_ROOT, -1, TSTRING(RSS_FEEDS));
+	treeParent = addTreeItem(TVI_ROOT, 0, TSTRING(RSS_FEEDS));
 	ctrlTree.SelectItem(treeParent);
 	{
 		Lock l(RSSManager::getInstance()->getCS());
@@ -401,6 +402,8 @@ void RssInfoFrame::on(RSSFeedChanged, const RSSPtr& aFeed) noexcept {
 		auto j = feeds.find(aFeed);
 		auto ht = j->second;
 		ctrlTree.SetItemText(ht, Text::toT(aFeed->getFeedName()).c_str());
+		int img = aFeed->getEnable() ? 0 : 1;
+		ctrlTree.SetItemImage(ht, img, img);
 
 		ctrlTree.SetRedraw(TRUE);
 		reloadList();
@@ -500,7 +503,7 @@ void RssInfoFrame::onItemAdded(const RSSDataPtr& aData) {
 void RssInfoFrame::addFeed(const RSSPtr& aFeed) {
 	auto cg = feeds.find(aFeed);
 	if (cg == feeds.end()) {
-		auto ht = addTreeItem(treeParent, 0, Text::toT(aFeed->getFeedName()));
+		auto ht = addTreeItem(treeParent, aFeed->getEnable() ? 0 : 1, Text::toT(aFeed->getFeedName()));
 		feeds.emplace(aFeed, ht);
 		ctrlTree.EnsureVisible(ht);
 	}

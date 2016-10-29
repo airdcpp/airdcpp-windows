@@ -183,9 +183,10 @@ private:
 		TVINSERTSTRUCT tvis = { 0 };
 		tvis.hParent = parent;
 		tvis.hInsertAfter = insertAfter;
-		tvis.item.mask = TVIF_TEXT | TVIF_IMAGE;
+		tvis.item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
 		tvis.item.pszText = (LPWSTR)name.c_str();
 		tvis.item.iImage = img;
+		tvis.item.iSelectedImage = img;
 		return ctrlTree.InsertItem(&tvis);
 	}
 
