@@ -74,8 +74,8 @@ public:
 
 	time_t getNextSearch() const noexcept { return nextSearch; }
 
-	void AutoSearchLoad();
-	void AutoSearchSave() noexcept;
+	void load() noexcept;
+	void save() noexcept;
 
 	void logMessage(const string& aMsg, LogMessage::Severity aSeverity) const noexcept;
 

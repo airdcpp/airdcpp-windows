@@ -290,11 +290,11 @@ public:
 		}
 	}
 
-	void unsetKey(size_t key) { isSet[key] = false; }
-	bool isKeySet(size_t key) const { return isSet[key]; }
+	void unsetKey(size_t key) noexcept { isSet[key] = false; }
+	bool isKeySet(size_t key) const noexcept { return isSet[key]; }
 
-	void load(function<bool (const string& /*Message*/, bool /*isQuestion*/, bool /*isError*/)> messageF);
-	void save();
+	void load(function<bool (const string& /*Message*/, bool /*isQuestion*/, bool /*isError*/)> messageF) noexcept;
+	void save() noexcept;
 	
 	void reloadPages(int group = 0) noexcept {
 		fire(SettingsManagerListener::ReloadPages(), group);
@@ -330,7 +330,8 @@ public:
 	// Reports errors to system log if no custom error function is supplied
 	typedef std::function<void(const string&)> CustomErrorF;
 	static bool saveSettingFile(SimpleXML& aXML, Util::Paths aPath, const string& aFileName, CustomErrorF aCustomErrorF = nullptr) noexcept;
-	static void loadSettingFile(SimpleXML& aXML, Util::Paths aPath, const string& aFileName, bool migrate = true) throw(Exception);
+	// Throws on XML parsing errors
+	static void loadSettingFile(SimpleXML& aXML, Util::Paths aPath, const string& aFileName, bool migrate = true);
 private:
 	boost::regex connectionRegex;
 

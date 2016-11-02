@@ -544,7 +544,7 @@ void AutoSearchManager::on(TimerManagerListener::Second, uint64_t aTick) noexcep
 	if (dirty && (lastSave + (20 * 1000) < aTick)) { //20 second delay between saves.
 		lastSave = aTick;
 		dirty = false;
-		AutoSearchSave();
+		save();
 	}
 
 }
@@ -924,7 +924,7 @@ int AutoSearchManager::getGroupIndex(const AutoSearchPtr& as) {
 }
 
 /* Loading and saving */
-void AutoSearchManager::AutoSearchSave() noexcept {
+void AutoSearchManager::save() noexcept {
 	dirty = false;
 	SimpleXML xml;
 
@@ -1079,7 +1079,7 @@ AutoSearchPtr AutoSearchManager::loadItemFromXml(SimpleXML& aXml) {
 	return as;
 }
 
-void AutoSearchManager::AutoSearchLoad() {
+void AutoSearchManager::load() noexcept {
 	try {
 		SimpleXML xml;
 		SettingsManager::loadSettingFile(xml, CONFIG_DIR, CONFIG_NAME);

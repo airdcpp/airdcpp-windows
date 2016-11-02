@@ -149,7 +149,7 @@ private:
 	void addFromDialog(AutoSearchItemSettings& dlg);
 
 	void save() {
-		AutoSearchManager::getInstance()->AutoSearchSave();
+		AutoSearchManager::getInstance()->save();
 	}
 
 	void addListEntry(ItemInfo* ii);

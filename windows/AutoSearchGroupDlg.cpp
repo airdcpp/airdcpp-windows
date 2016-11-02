@@ -73,7 +73,7 @@ void AsGroupsDlg::save() {
 		groups.emplace_back(Text::fromT(getText(0, i)));
 	}
 	AutoSearchManager::getInstance()->setGroups(groups);
-	AutoSearchManager::getInstance()->AutoSearchSave();
+	AutoSearchManager::getInstance()->save();
 }
 
 int AsGroupsDlg::findGroup(LPCTSTR name) {
