@@ -445,10 +445,10 @@ void RssInfoFrame::updateDupeType(const string& aName) {
 	}
 }
 
-void RssInfoFrame::handleDownload(const string& aTarget, Priority /*p*/, bool /*aIsRelease*/, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
+void RssInfoFrame::handleDownload(const string& aTarget, Priority /*p*/, bool /*aIsRelease*/) {
 	auto ii = ctrlRss.list.getSelectedItem();
 	if(ii)
-		AutoSearchManager::getInstance()->addAutoSearch(ii->item->getTitle(), aTarget, aTargetType, true, AutoSearch::RSS_DOWNLOAD);
+		AutoSearchManager::getInstance()->addAutoSearch(ii->item->getTitle(), aTarget, true, AutoSearch::RSS_DOWNLOAD);
 }
 
 void RssInfoFrame::add() {

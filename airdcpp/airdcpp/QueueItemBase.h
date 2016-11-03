@@ -42,18 +42,6 @@ public:
 		TYPE_MCN_NORMAL
 	};
 
-	/*enum Priority {
-		DEFAULT = -1,
-		PAUSED_FORCE = 0,
-		PAUSED,
-		LOWEST,
-		LOW,
-		NORMAL,
-		HIGH,
-		HIGHEST,
-		LAST
-	};*/
-
 	QueueItemBase(const string& aTarget, int64_t aSize, Priority aPriority, time_t aAdded, QueueToken aToken, Flags::MaskType aFlags);
 
 	const DownloadList& getDownloads() { return downloads; }

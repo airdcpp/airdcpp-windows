@@ -60,7 +60,7 @@ void AutoSearchManager::logMessage(const string& aMsg, LogMessage::Severity aSev
 }
 
 /* Adding new items for external use */
-AutoSearchPtr AutoSearchManager::addAutoSearch(const string& ss, const string& aTarget, TargetUtil::TargetType aTargetType, bool isDirectory, AutoSearch::ItemType asType, bool aRemove, int aInterval) noexcept {
+AutoSearchPtr AutoSearchManager::addAutoSearch(const string& ss, const string& aTarget, bool isDirectory, AutoSearch::ItemType asType, bool aRemove, int aInterval) noexcept {
 	if (ss.length() <= 5) {
 		logMessage(STRING_F(AUTOSEARCH_ADD_FAILED, ss % STRING(LINE_EMPTY_OR_TOO_SHORT)), LogMessage::SEV_ERROR);
 		return nullptr;
@@ -72,7 +72,7 @@ AutoSearchPtr AutoSearchManager::addAutoSearch(const string& ss, const string& a
 		return nullptr;
 	}
 
-	AutoSearchPtr as = new AutoSearch(true, ss, isDirectory ? SEARCH_TYPE_DIRECTORY : SEARCH_TYPE_FILE, AutoSearch::ACTION_DOWNLOAD, aRemove, aTarget, aTargetType, 
+	AutoSearchPtr as = new AutoSearch(true, ss, isDirectory ? SEARCH_TYPE_DIRECTORY : SEARCH_TYPE_FILE, AutoSearch::ACTION_DOWNLOAD, aRemove, aTarget, 
 		StringMatch::EXACT, Util::emptyString, Util::emptyString, SETTING(AUTOSEARCH_EXPIRE_DAYS) > 0 ? GET_TIME() + (SETTING(AUTOSEARCH_EXPIRE_DAYS)*24*60*60) : 0, false, false, false, Util::emptyString, aInterval, asType, false);
 
 	addAutoSearch(as, true);
@@ -364,7 +364,7 @@ bool AutoSearchManager::addFailedBundle(const BundlePtr& aBundle) noexcept {
 	}
 
 	//7 days expiry
-	auto as = new AutoSearch(true, aBundle->getName(), SEARCH_TYPE_DIRECTORY, AutoSearch::ACTION_DOWNLOAD, true, Util::getParentDir(aBundle->getTarget()), TargetUtil::TARGET_PATH, 
+	auto as = new AutoSearch(true, aBundle->getName(), SEARCH_TYPE_DIRECTORY, AutoSearch::ACTION_DOWNLOAD, true, Util::getParentDir(aBundle->getTarget()), 
 		StringMatch::EXACT, Util::emptyString, Util::emptyString, GET_TIME() + 7*24*60*60, false, false, false, Util::emptyString, 60, AutoSearch::FAILED_BUNDLE, false);
 
 	as->setGroup(SETTING(AS_FAILED_DEFAULT_GROUP));
@@ -845,7 +845,6 @@ void AutoSearchManager::handleAction(const SearchResultPtr& sr, AutoSearchPtr& a
 	if (as->getAction() == AutoSearch::ACTION_QUEUE || as->getAction() == AutoSearch::ACTION_DOWNLOAD) {
 		if(sr->getType() == SearchResult::TYPE_DIRECTORY) {
 			auto target = as->getTarget();
-			auto targetType = as->getTargetType();
 
 			// Do we have a bundle with the same name?
 			{
@@ -856,22 +855,19 @@ void AutoSearchManager::handleAction(const SearchResultPtr& sr, AutoSearchPtr& a
 				if (p != as->getBundles().end()) {
 					// Use the same path
 					target = Util::getParentDir((*p)->getTarget());
-					targetType = TargetUtil::TARGET_PATH;
 				}
 			}
 
 			DirectoryListingManager::getInstance()->addDirectoryDownload(sr->getPath(), sr->getFileName(), sr->getUser(), target,
-				targetType, true, (as->getAction() == AutoSearch::ACTION_QUEUE) ? Priority::PAUSED : Priority::DEFAULT,
+				(as->getAction() == AutoSearch::ACTION_QUEUE) ? Priority::PAUSED : Priority::DEFAULT,
 				false, as.get(), as->getRemove() || as->usingIncrementation(), false);
 		} else {
-			TargetUtil::TargetInfo ti;
-			bool hasSpace = TargetUtil::getVirtualTarget(as->getTarget(), as->getTargetType(), ti, sr->getSize());
-			if (!hasSpace) {
-				logMessage(TargetUtil::formatSizeNotification(ti, sr->getSize()), LogMessage::SEV_WARNING);
-			}
+			//if (!hasSpace) {
+			//	logMessage(TargetUtil::formatSizeNotification(ti, sr->getSize()), LogMessage::SEV_WARNING);
+			//}
 
 			try {
-				auto b = QueueManager::getInstance()->createFileBundle(ti.getTarget() + sr->getFileName(), sr->getSize(), sr->getTTH(), 
+				auto b = QueueManager::getInstance()->createFileBundle(as->getTarget() + sr->getFileName(), sr->getSize(), sr->getTTH(), 
 					sr->getUser(), sr->getDate(), 0, 
 					((as->getAction() == AutoSearch::ACTION_QUEUE) ? Priority::PAUSED : Priority::DEFAULT));
 
@@ -879,7 +875,7 @@ void AutoSearchManager::handleAction(const SearchResultPtr& sr, AutoSearchPtr& a
 					onBundleCreated(b, as.get());
 				}
 			} catch(const Exception& e) {
-				onBundleError(as.get(), e.getError(), ti.getTarget() + sr->getFileName(), sr->getUser());
+				onBundleError(as.get(), e.getError(), as->getTarget() + sr->getFileName(), sr->getUser());
 				return;
 			}
 		}
@@ -991,7 +987,6 @@ AutoSearchPtr AutoSearchManager::loadItemFromXml(SimpleXML& aXml) {
 		(AutoSearch::ActionType)aXml.getIntChildAttrib("Action"),
 		aXml.getBoolChildAttrib("Remove"),
 		aXml.getChildAttrib("Target"),
-		(TargetUtil::TargetType)aXml.getIntChildAttrib("TargetType"),
 		(StringMatch::Method)aXml.getIntChildAttrib("MatcherType"),
 		aXml.getChildAttrib("MatcherString"),
 		aXml.getChildAttrib("UserMatch"),
@@ -1020,19 +1015,27 @@ AutoSearchPtr AutoSearchManager::loadItemFromXml(SimpleXML& aXml) {
 	auto startTime = aXml.getChildAttrib("StartTime");
 	if (!startTime.empty()) {
 		as->startTime = SearchTime(startTime);
-	}
-	else {
+	} else {
 		as->startTime = SearchTime();
 	}
 
 	auto endTime = aXml.getChildAttrib("EndTime");
 	if (!endTime.empty()) {
 		as->endTime = SearchTime(endTime);
-	}
-	else {
+	} else {
 		as->endTime = SearchTime(true);
 	}
 	as->setLastSearch(aXml.getIntChildAttrib("LastSearchTime"));
+
+	// LEGACY
+	auto targetType = (TargetUtil::TargetType)aXml.getIntChildAttrib("TargetType");
+	if (targetType > TargetUtil::TARGET_PATH) {
+		TargetUtil::TargetInfo ti;
+		TargetUtil::getVirtualTarget(as->getTarget(), targetType, ti, 0);
+
+		as->setTarget(ti.getTarget());
+		logMessage("The target path of item " + as->getDisplayName() + " was changed to " + ti.getTarget() + " (auto selecting of paths isn't supported in this client version)", LogMessage::SEV_INFO);
+	}
 
 	aXml.stepIn();
 

@@ -34,8 +34,6 @@ namespace dcpp {
 
 	Priority priority;
 	void* owner;
-
-	TargetUtil::TargetType targetType;
 };*/
 
 struct BundleAddInfo {

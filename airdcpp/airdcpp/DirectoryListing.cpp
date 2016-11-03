@@ -592,18 +592,6 @@ bool DirectoryListing::downloadDirImpl(Directory::Ptr& aDir, const string& aTarg
 	return createBundle(aDir, aTarget, prio, aOwner);
 }
 
-bool DirectoryListing::downloadDir(const string& aDir, const string& aTarget, Priority prio, void* aOwner) noexcept {
-	dcassert(aDir.size() > 2);
-	dcassert(aDir[aDir.size() - 1] == NMDC_SEPARATOR);
-
-	auto d = findDirectory(aDir);
-	if (d) {
-		return downloadDirImpl(d, aTarget, prio, aOwner);
-	}
-
-	return false;
-}
-
 int64_t DirectoryListing::getDirSize(const string& aDir) const noexcept {
 	dcassert(aDir.size() > 2);
 	dcassert(aDir == NMDC_ROOT_STR || aDir[aDir.size() - 1] == NMDC_SEPARATOR);

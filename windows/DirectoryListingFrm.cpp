@@ -1398,15 +1398,15 @@ void DirectoryListingFrame::handleItemAction(bool usingTree, std::function<void 
 	}
 }
 
-void DirectoryListingFrame::handleDownload(const string& aTarget, Priority prio, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown) {
-	handleItemAction(usingTree, [&](const ItemInfo* ii) {
+void DirectoryListingFrame::handleDownload(const string& aTarget, Priority prio, bool aUsingTree) {
+	handleItemAction(aUsingTree, [&](const ItemInfo* ii) {
 		if (ii->type == ItemInfo::FILE) {
 			WinUtil::addFileDownload(aTarget + (aTarget[aTarget.length() - 1] != PATH_SEPARATOR ? Util::emptyString : ii->getName()), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), ii->file->getRemoteDate(),
 				0, WinUtil::isShift() ? Priority::HIGHEST : prio);
 		} else {
 			dl->addAsyncTask([=] {
 				DirectoryListingManager::getInstance()->addDirectoryDownload(ii->getPath(), ii->getName(), dl->getHintedUser(),
-					aTarget, aTargetType, isSizeUnknown, WinUtil::isShift() ? Priority::HIGHEST : prio, false);
+					aTarget, WinUtil::isShift() ? Priority::HIGHEST : prio, false);
 			});
 		}
 	});

@@ -66,6 +66,19 @@ public:
 		int64_t queued = 0;
 	};
 
+	typedef unordered_map<string, TargetInfo, noCaseStringHash, noCaseStringEq> TargetInfoMap;
+	typedef unordered_set<string, noCaseStringHash, noCaseStringEq> VolumeSet;
+
+	// Get a set of all mount points
+	static void getVolumes(VolumeSet& volumes);
+
+	static string getMountPath(const string& aPath, const VolumeSet& aVolumes);
+
+	static string formatSizeNotification(const TargetInfo& ti, int64_t aSize);
+	static string formatSizeConfirmation(const TargetInfo& ti, int64_t aSize);
+
+
+	// LEGACY
 	enum TargetType {
 		TARGET_PATH,
 		TARGET_FAVORITE,
@@ -73,21 +86,13 @@ public:
 		TARGET_LAST
 	};
 
-	typedef unordered_map<string, TargetInfo, noCaseStringHash, noCaseStringEq> TargetInfoMap;
-	typedef unordered_set<string, noCaseStringHash, noCaseStringEq> VolumeSet;
-
-	static string getMountPath(const string& aPath, const VolumeSet& aVolumes);
-
-	static bool getTarget(const OrderedStringSet& aTargets, TargetInfo& ti_, const int64_t& size);
-
+	// LEGACY
 	static bool getVirtualTarget(const string& aTarget, TargetType targetType, TargetInfo& ti_, const int64_t& size);
 
-	static void getVolumes(VolumeSet& volumes);
 	static bool getDiskInfo(TargetInfo& ti_);
-
-	static void compareMap(const TargetInfoMap& targets, TargetInfo& retTi_, const int64_t& aSize, int aMethod);
-	static string formatSizeNotification(const TargetInfo& ti, int64_t aSize);
-	static string formatSizeConfirmation(const TargetInfo& ti, int64_t aSize);
+private:
+	static bool getTarget(const OrderedStringSet& aTargets, TargetInfo& ti_, const int64_t& size);
+	static void compareMap(const TargetInfoMap& targets, TargetInfo& retTi_);
 };
 
 }

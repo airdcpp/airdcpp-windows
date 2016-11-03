@@ -33,7 +33,7 @@ struct AutoSearchItemSettings {
 	//Default constructor, for adding auto search
 	AutoSearchItemSettings() :
 		as(nullptr), fileTypeStr(SETTING(LAST_AS_FILETYPE)), action(0), matcherType(0), remove(false),
-		targetType(TargetUtil::TARGET_PATH), curNumber(1), maxNumber(0), startTime(0, 0),
+		curNumber(1), maxNumber(0), startTime(0, 0),
 		endTime(23, 59), searchDays("1111111"), checkQueued(true), checkShared(true), matchFullPath(false),
 		numberLen(2), useParams(false), searchInterval(180), groupName(Util::emptyString), userMatcherExclude(false)
 	{
@@ -55,7 +55,6 @@ struct AutoSearchItemSettings {
 		searchDays(aAutoSearch->searchDays),
 		startTime(aAutoSearch->startTime),
 		endTime(aAutoSearch->endTime),
-		targetType(aAutoSearch->getTargetType()),
 		checkQueued(aAutoSearch->getCheckAlreadyQueued()),
 		checkShared(aAutoSearch->getCheckAlreadyShared()),
 		matchFullPath(aAutoSearch->getMatchFullPath()),
@@ -80,7 +79,6 @@ public:
 		aAutoSearch->setFileType(fileTypeStr);
 		aAutoSearch->setAction((AutoSearch::ActionType)action);
 		aAutoSearch->setRemove(remove);
-		aAutoSearch->setTargetType(targetType);
 		aAutoSearch->setTarget(target);
 		aAutoSearch->setMethod((StringMatch::Method)matcherType);
 		aAutoSearch->setMatcherString(matcherString);
@@ -121,7 +119,6 @@ public:
 	string searchString, target, fileTypeStr;
 	string comment, userMatch, matcherString, excludedWords;
 	uint8_t action;
-	TargetUtil::TargetType targetType;
 	uint8_t matcherType;
 	SearchTime startTime;
 	SearchTime endTime;

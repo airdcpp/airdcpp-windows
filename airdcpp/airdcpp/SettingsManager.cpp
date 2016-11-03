@@ -228,7 +228,7 @@ const string SettingsManager::settingTags[] =
 "NotepadLeft", "NotepadRight", "QueueTop", "QueueBottom", "QueueLeft", "QueueRight", "SearchTop", "SearchBottom", "SearchLeft", "SearchRight", "UsersTop", "UsersBottom",
 "UsersLeft", "UsersRight", "FinishedTop", "FinishedBottom", "FinishedLeft", "FinishedRight", "TextTop", "TextBottom", "TextLeft", "TextRight", "DirlistTop", "DirlistBottom",
 "DirlistLeft", "DirlistRight", "StatsTop", "StatsBottom", "StatsLeft", "StatsRight", "MaxMCNDownloads", "MaxMCNUploads", "ListHighlightBackColor", "ListHighlightColor", "QueueColor", "TextQueueBackColor",
-"RecentBundleHours", "DisconnectMinSources", "AutoprioType", "AutoprioInterval", "AutosearchExpireDays", "DLAutoSelectMethod", "WinampBarIconSize", "TBProgressTextColor", "TLSMode", "UpdateMethod",
+"RecentBundleHours", "DisconnectMinSources", "AutoprioType", "AutoprioInterval", "AutosearchExpireDays", "WinampBarIconSize", "TBProgressTextColor", "TLSMode", "UpdateMethod",
 "QueueSplitterPosition", "FullListDLLimit", "ASDelayHours", "LastListProfile", "MaxHashingThreads", "HashersPerVolume", "SubtractlistSkip", "BloomMode", "FavUsersSplitterPos", "AwayIdleTime",
 "SearchHistoryMax", "ExcludeHistoryMax", "DirectoryHistoryMax", "MinDupeCheckSize", "DbCacheSize", "DLAutoDisconnectMode", "RemovedTrees", "RemovedFiles", "MultithreadedRefresh", "MonitoringMode",
 "MonitoringDelay", "DelayCountMode", "MaxRunningBundles", "DefaultShareProfile", "UpdateChannel", "ColorStatusFinished", "ColorStatusShared", "ProgressLighten",
@@ -788,7 +788,6 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(AUTOPRIO_TYPE, PRIO_BALANCED);
 	setDefault(AUTOPRIO_INTERVAL, 10);
 	setDefault(AUTOSEARCH_EXPIRE_DAYS, 5);
-	setDefault(DL_AUTOSELECT_METHOD, 0);
 	setDefault(WTB_IMAGE_SIZE, 16);
 	setDefault(SHOW_TBSTATUS, true);
 

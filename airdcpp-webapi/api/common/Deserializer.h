@@ -28,7 +28,7 @@
 #include <airdcpp/TargetUtil.h>
 
 namespace webserver {
-	typedef std::function<api_return(const string& aTarget, TargetUtil::TargetType aTargetType, Priority aPriority)> DownloadHandler;
+	typedef std::function<api_return(const string& aTarget, Priority aPriority)> DownloadHandler;
 
 	class Deserializer {
 	public:
@@ -45,7 +45,7 @@ namespace webserver {
 		static TTHValue deserializeTTH(const json& aJson);
 		static Priority deserializePriority(const json& aJson, bool allowDefault);
 
-		static void deserializeDownloadParams(const json& aJson, const SessionPtr& aSession, string& targetDirectory_, string& targetName_, TargetUtil::TargetType& targetType_, Priority& priority_);
+		static void deserializeDownloadParams(const json& aJson, const SessionPtr& aSession, string& targetDirectory_, string& targetName_, Priority& priority_);
 
 		// Returns all connected hubs if the list is not found from the JSON
 		static StringList deserializeHubUrls(const json& aJson);

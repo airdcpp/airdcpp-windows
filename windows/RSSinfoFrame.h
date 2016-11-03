@@ -133,7 +133,7 @@ public:
 	void createColumns();
 
 	/* DownloadBaseHandler functions */
-	void handleDownload(const string& aTarget, Priority p, bool isRelease, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
+	void handleDownload(const string& aTarget, Priority p, bool isRelease);
 
 private:
 

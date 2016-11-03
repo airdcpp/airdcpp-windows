@@ -795,7 +795,7 @@ void SearchFrame::handleViewNfo() {
 	performAction(viewNfo, true);
 }
 
-void SearchFrame::handleDownload(const string& aTarget, Priority p, bool useWhole, TargetUtil::TargetType aTargetType, bool isSizeUnknown) {
+void SearchFrame::handleDownload(const string& aTarget, Priority p, bool useWhole) {
 	ctrlResults.list.filteredForEachSelectedT([&](const SearchInfo* aSI) {
 		bool fileDownload = aSI->sr->getType() == SearchResult::TYPE_FILE && !useWhole;
 
@@ -813,8 +813,7 @@ void SearchFrame::handleDownload(const string& aTarget, Priority p, bool useWhol
 					path = aSR->getType() == SearchResult::TYPE_DIRECTORY ? aSR->getFileName() : Util::getLastDir(aSR->getFilePath());
 				}
 
-				DirectoryListingManager::getInstance()->addDirectoryDownload(aSR->getFilePath(), *path, aSR->getUser(), aTarget, aTargetType,
-					isSizeUnknown, p, false, nullptr, false, false);
+				DirectoryListingManager::getInstance()->addDirectoryDownload(aSR->getFilePath(), *path, aSR->getUser(), aTarget, p, false, nullptr, false, false);
 			}
 		};
 

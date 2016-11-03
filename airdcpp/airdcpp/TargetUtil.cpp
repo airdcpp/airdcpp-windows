@@ -124,24 +124,20 @@ bool TargetUtil::getTarget(const OrderedStringSet& aTargets, TargetInfo& retTi_,
 	} else {
 		QueueManager::getInstance()->getDiskInfo(targetMap, volumes);
 
-		compareMap(targetMap, retTi_, aSize, SETTING(DL_AUTOSELECT_METHOD));
+		compareMap(targetMap, retTi_);
 		if (retTi_.getTarget().empty()) {
 			//no dir with enough space, choose the one with most space available
-			compareMap(targetMap, retTi_, aSize, (int8_t)SettingsManager::SELECT_MOST_SPACE);
+			compareMap(targetMap, retTi_);
 		}
 	}
 
 	return retTi_.hasFreeSpace(aSize);
 }
 
-void TargetUtil::compareMap(const TargetInfoMap& aTargetMap, TargetInfo& retTi_, const int64_t& aSize, int aMethod) {
+void TargetUtil::compareMap(const TargetInfoMap& aTargetMap, TargetInfo& retTi_) {
 
 	for (auto mapTi: aTargetMap | map_values) {
-		if (aMethod == (int8_t)SettingsManager::SELECT_LEAST_SPACE) {
-			int64_t diff = mapTi.getRealFreeSpace() - aSize;
-			if (diff > 0 && (diff < (retTi_.getRealFreeSpace() - aSize) || !retTi_.isInitialized()))
-				retTi_ = mapTi;
-		} else if (mapTi.getRealFreeSpace() > retTi_.getRealFreeSpace() || !retTi_.isInitialized()) {
+		if (mapTi.getRealFreeSpace() > retTi_.getRealFreeSpace() || !retTi_.isInitialized()) {
 			retTi_ = mapTi;
 		}
 	}

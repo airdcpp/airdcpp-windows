@@ -238,9 +238,8 @@ void RSSManager::matchFilters(const RSSPtr& aFeed, const RSSDataPtr& aData) cons
 					break; //Need to match other filters?
 			}
 
-			auto targetType = TargetUtil::TargetType::TARGET_PATH;
 			auto as = AutoSearchManager::getInstance()->addAutoSearch(aData->getTitle(),
-				aF.getDownloadTarget(), targetType, true, AutoSearch::RSS_DOWNLOAD, true);
+				aF.getDownloadTarget(), true, AutoSearch::RSS_DOWNLOAD, true);
 			if (as) {
 				AutoSearchManager::getInstance()->moveItemToGroup(as, aF.getAutosearchGroup());
 			}

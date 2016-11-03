@@ -210,7 +210,7 @@ public:
 	}
 
 	/* DownloadBaseHandler functions */
-	void handleDownload(const string& aTarget, Priority p, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
+	void handleDownload(const string& aTarget, Priority p, bool usingTree);
 	int64_t getDownloadSize(bool isWhole);
 	bool showDirDialog(string& fileName);
 

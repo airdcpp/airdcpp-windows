@@ -1186,7 +1186,7 @@ void WinUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aUser, RichT
 					WinUtil::searchHash(m.getTTH(), m.fname, m.fsize);
 				} else if (sel == SettingsManager::MAGNET_DOWNLOAD) {
 					if (ctrlEdit) {
-						ctrlEdit->handleDownload(SETTING(DOWNLOAD_DIRECTORY), Priority::DEFAULT, false, TargetUtil::TARGET_PATH, false);
+						ctrlEdit->handleDownload(SETTING(DOWNLOAD_DIRECTORY), Priority::DEFAULT, false);
 					} else {
 						addFileDownload(SETTING(DOWNLOAD_DIRECTORY) + m.fname, m.fsize, m.getTTH(), aUser, 0);
 					}

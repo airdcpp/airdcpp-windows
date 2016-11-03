@@ -99,7 +99,7 @@ public:
 		RSS_DOWNLOAD
 	};
 
-	AutoSearch(bool aEnabled, const string& aSearchString, const string& aFileType, ActionType aAction, bool aRemove, const string& aTarget, TargetUtil::TargetType aTargetType,
+	AutoSearch(bool aEnabled, const string& aSearchString, const string& aFileType, ActionType aAction, bool aRemove, const string& aTarget,
 		StringMatch::Method aMatcherType, const string& aMatcherString, const string& aUserMatch, time_t aExpireTime, bool aCheckAlreadyQueued,
 		bool aCheckAlreadyShared, bool matchFullPath, const string& aExcluded, int aSearhInterval, ItemType aType, bool aUserMatcherExclude, ProfileToken aToken = 0) noexcept;
 
@@ -112,7 +112,6 @@ public:
 	GETSET(string, matcherString, MatcherString);
 	GETSET(ActionType, action, Action);
 	GETSET(string, fileType, FileType);
-	GETSET(TargetUtil::TargetType, tType, TargetType);
 	IGETSET(time_t, expireTime, ExpireTime, 0);
 
 	GETSET(ProfileToken, token, Token);

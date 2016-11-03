@@ -86,7 +86,7 @@ namespace webserver {
 		return static_cast<Priority>(*priority);
 	}
 
-	void Deserializer::deserializeDownloadParams(const json& aJson, const SessionPtr& aSession, string& targetDirectory_, string& targetName_, TargetUtil::TargetType& targetType_, Priority& priority_) {
+	void Deserializer::deserializeDownloadParams(const json& aJson, const SessionPtr& aSession, string& targetDirectory_, string& targetName_, Priority& priority_) {
 		// Target path
 		targetDirectory_ = JsonUtil::getOptionalFieldDefault<string>("target_directory", aJson, SETTING(DOWNLOAD_DIRECTORY), false);
 
@@ -106,7 +106,6 @@ namespace webserver {
 		}
 
 		priority_ = deserializePriority(aJson, true);
-		targetType_ = static_cast<TargetUtil::TargetType>(*targetType);;
 	}
 
 	StringList Deserializer::deserializeHubUrls(const json& aJson) {

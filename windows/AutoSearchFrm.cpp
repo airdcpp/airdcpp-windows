@@ -627,12 +627,6 @@ void AutoSearchFrame::ItemInfo::update(const AutoSearchPtr& as) {
 	if (target.empty()) {
 		target = CSTRING(SETTINGS_DOWNLOAD_DIRECTORY);
 	}
-	else if (as->getTargetType() == TargetUtil::TARGET_FAVORITE) {
-		target += " (" + Text::toLower(STRING(FAVORITE)) + ")";
-	}
-	else if (as->getTargetType() == TargetUtil::TARGET_SHARE) {
-		target += " (" + Text::toLower(STRING(SHARED)) + ")";
-	}
 
 	columns[COLUMN_VALUE] = Text::toT(as->getDisplayName());
 	columns[COLUMN_LASTSEARCH] = (as->getLastSearch() > 0 ? formatSearchDate(as->getLastSearch()) : _T("Unknown"));
