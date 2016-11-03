@@ -127,7 +127,8 @@ LRESULT AutoSearchGeneralPage::onClickLocation(WORD /*wNotifyCode*/, WORD /*wID*
 	targetMenu.CreatePopupMenu();
 	targetMenu.InsertSeparatorFirst(CTSTRING(DOWNLOAD_TO));
 	//appendDownloadMenu(targetMenu, false, true);
-	appendDownloadTo(targetMenu, false, true, boost::none, boost::none);
+
+	appendDownloadTo(targetMenu, false, true, boost::none, boost::none, TargetUtil::getVolumeInfos());
 
 	targetMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_VERPOSANIMATION, pt);
 	return 0;

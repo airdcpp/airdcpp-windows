@@ -96,8 +96,9 @@ void DirectoryListingManager::addDirectoryDownload(const string& aRemoteDir, con
 		// List already queued from this user?
 		auto dp = dlDirectories.equal_range(aUser);
 		for(auto i = dp.first; i != dp.second; ++i) {
-			if (Util::stricmp(aRemoteDir.c_str(), i->second->getListPath().c_str()) == 0)
+			if (Util::stricmp(aRemoteDir.c_str(), i->second->getListPath().c_str()) == 0) {
 				return;
+			}
 		}
 		
 		// Unique directory, fine...
@@ -105,7 +106,7 @@ void DirectoryListingManager::addDirectoryDownload(const string& aRemoteDir, con
 		needList = aUser.user->isSet(User::NMDC) ? (dp.first == dp.second) : true;
 	}
 
-	if(needList) {
+	if (needList) {
 		try {
 			if (!aUser.user->isSet(User::NMDC) && !aUseFullList) {
 				QueueManager::getInstance()->addList(aUser, QueueItem::FLAG_DIRECTORY_DOWNLOAD | QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_RECURSIVE_LIST, aRemoteDir);
@@ -153,7 +154,7 @@ void DirectoryListingManager::processList(const string& aFileName, const string&
 	processListAction(dirList, aRemotePath, aFlags);
 }
 
-bool DirectoryListingManager::download(const DirectoryDownloadInfo::Ptr& di, const DirectoryListingPtr& aList, bool aHasFreeSpace) noexcept {
+bool DirectoryListingManager::handleDownload(const DirectoryDownloadInfo::Ptr& di, const DirectoryListingPtr& aList) noexcept {
 	auto getList = [&] {
 		addDirectoryDownload(di->getListPath(), di->getBundleName(), aList->getHintedUser(), di->getTarget(), di->getPriority(), di->getRecursiveListAttempted() ? true : false, di->getOwner(), false, false);
 	};
@@ -174,22 +175,7 @@ bool DirectoryListingManager::download(const DirectoryDownloadInfo::Ptr& di, con
 	}
 
 	// Queue the directory
-	return aList->downloadDirImpl(dir, di->getTarget() + di->getBundleName() + PATH_SEPARATOR, aHasFreeSpace ? di->getPriority() : Priority::PAUSED_FORCE, di->getOwner());
-}
-
-void DirectoryListingManager::handleDownload(DirectoryDownloadInfo::Ptr& di, const DirectoryListingPtr& aList) noexcept {
-	//we have a new directory
-	//auto dirSize = aList->getDirSize(di->getListPath());
-	/*if (di->getSizeUnknown()) {
-		auto queued = download(di, aList, ti.getTarget(), hasFreeSpace);
-		if (!hasFreeSpace && queued) {
-			LogManager::getInstance()->message(TargetUtil::formatSizeNotification(ti, dirSize), LogMessage::SEV_WARNING);
-		}
-	} else*/ {
-		if (download(di, aList, true)) {
-
-		}
-	}
+	return aList->downloadDirImpl(dir, di->getTarget() + di->getBundleName() + PATH_SEPARATOR, di->getPriority(), di->getOwner());
 }
 
 void DirectoryListingManager::processListAction(DirectoryListingPtr aList, const string& aPath, int aFlags) noexcept {
@@ -213,7 +199,7 @@ void DirectoryListingManager::processListAction(DirectoryListingPtr aList, const
 		if (dl.empty())
 			return;
 
-		for(auto& di: dl) {
+		for (const auto& di: dl) {
 			handleDownload(di, aList);
 		}
 

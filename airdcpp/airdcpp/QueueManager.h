@@ -350,12 +350,6 @@ public:
 	// directory (+ possible subdirectories) are detected automatically
 	StringList getNmdcDirPaths(const string& aDir) const noexcept;
 
-	// Get the amount of queued bytes for each mountpoint (takes reserved space into account as well)
-	void getDiskInfo(TargetUtil::TargetInfoMap& dirMap, const TargetUtil::VolumeSet& volumes) const noexcept { 
-		RLock l(cs); 
-		bundleQueue.getDiskInfo(dirMap, volumes); 
-	}
-
 	// Get the paths of all bundles
 	void getBundlePaths(OrderedStringSet& bundles) const noexcept;
 

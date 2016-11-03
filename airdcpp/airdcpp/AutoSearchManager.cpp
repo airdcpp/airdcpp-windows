@@ -862,10 +862,6 @@ void AutoSearchManager::handleAction(const SearchResultPtr& sr, AutoSearchPtr& a
 				(as->getAction() == AutoSearch::ACTION_QUEUE) ? Priority::PAUSED : Priority::DEFAULT,
 				false, as.get(), as->getRemove() || as->usingIncrementation(), false);
 		} else {
-			//if (!hasSpace) {
-			//	logMessage(TargetUtil::formatSizeNotification(ti, sr->getSize()), LogMessage::SEV_WARNING);
-			//}
-
 			try {
 				auto b = QueueManager::getInstance()->createFileBundle(as->getTarget() + sr->getFileName(), sr->getSize(), sr->getTTH(), 
 					sr->getUser(), sr->getDate(), 0, 
@@ -1031,7 +1027,7 @@ AutoSearchPtr AutoSearchManager::loadItemFromXml(SimpleXML& aXml) {
 	auto targetType = (TargetUtil::TargetType)aXml.getIntChildAttrib("TargetType");
 	if (targetType > TargetUtil::TARGET_PATH) {
 		TargetUtil::TargetInfo ti;
-		TargetUtil::getVirtualTarget(as->getTarget(), targetType, ti, 0);
+		TargetUtil::getVirtualTarget(as->getTarget(), targetType, ti);
 
 		as->setTarget(ti.getTarget());
 		logMessage("The target path of item " + as->getDisplayName() + " was changed to " + ti.getTarget() + " (auto selecting of paths isn't supported in this client version)", LogMessage::SEV_INFO);

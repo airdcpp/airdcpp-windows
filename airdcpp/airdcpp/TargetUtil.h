@@ -37,44 +37,32 @@ public:
 		explicit TargetInfo() { }
 		explicit TargetInfo(const string& aPath, int64_t aFreeSpace = 0) : target(aPath), freeDiskSpace(aFreeSpace) { }
 
-		int64_t getRealFreeSpace() const { return freeDiskSpace - queued; }
-		bool isInitialized() { return freeDiskSpace != 0 || queued != 0 || !target.empty(); }
-
-		bool operator<(const TargetInfo& ti) const {
-			return (freeDiskSpace - queued) < (ti.freeDiskSpace - ti.queued);
-		}
-
-		int64_t getQueued() const noexcept {
-			return queued;
-		}
+		bool isInitialized() { return freeDiskSpace != 0 || !target.empty(); }
 
 		bool hasTarget() const noexcept {
 			return !target.empty();
 		}
 
 		bool hasFreeSpace(int64_t aRequiredBytes) const noexcept {
-			return getRealFreeSpace() >= aRequiredBytes;
+			return freeDiskSpace >= aRequiredBytes;
 		}
 
 		GETSET(string, target, Target);
 		IGETSET(int64_t, freeDiskSpace, FreeDiskSpace, 0);
-
-		void addQueued(int64_t aBytes) noexcept {
-			queued += aBytes;
-		}
-	private:
-		int64_t queued = 0;
 	};
 
-	typedef unordered_map<string, TargetInfo, noCaseStringHash, noCaseStringEq> TargetInfoMap;
-	typedef unordered_set<string, noCaseStringHash, noCaseStringEq> VolumeSet;
+	typedef map<string, TargetInfo, noCaseStringLess> TargetInfoMap;
+	typedef set<string, noCaseStringLess> VolumeSet;
 
 	// Get a set of all mount points
-	static void getVolumes(VolumeSet& volumes);
+	static VolumeSet getVolumes() noexcept;
+	static TargetInfoMap getVolumeInfos() noexcept;
 
-	static string getMountPath(const string& aPath, const VolumeSet& aVolumes);
+	static string getMountPath(const string& aPath, const TargetInfoMap& aVolumes) noexcept;
 
-	static string formatSizeNotification(const TargetInfo& ti, int64_t aSize);
+	static const TargetInfo* getTargetInfo(const string& aTarget, const TargetInfoMap& aVolumeInfos) noexcept;
+	static TargetInfoMap toTargetInfoMap(const OrderedStringSet& aTargets, const TargetInfoMap& aVolumeInfos) noexcept;
+
 	static string formatSizeConfirmation(const TargetInfo& ti, int64_t aSize);
 
 
@@ -87,11 +75,9 @@ public:
 	};
 
 	// LEGACY
-	static bool getVirtualTarget(const string& aTarget, TargetType targetType, TargetInfo& ti_, const int64_t& size);
-
-	static bool getDiskInfo(TargetInfo& ti_);
+	static void getVirtualTarget(const string& aTarget, TargetType targetType, TargetInfo& ti_);
 private:
-	static bool getTarget(const OrderedStringSet& aTargets, TargetInfo& ti_, const int64_t& size);
+	static void getTarget(const OrderedStringSet& aTargets, TargetInfo& ti_);
 	static void compareMap(const TargetInfoMap& targets, TargetInfo& retTi_);
 };
 

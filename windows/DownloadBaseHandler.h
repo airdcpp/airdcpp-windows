@@ -51,8 +51,8 @@ public:
 			auto size = getDownloadSize(aIsWhole);
 
 			// Check the space
-			TargetUtil::TargetInfo ti(aTarget);
-			if (TargetUtil::getDiskInfo(ti) && !ti.hasFreeSpace(size) && !confirmDownload(ti, size))
+			TargetUtil::TargetInfo ti(aTarget, File::getFreeSpace(File::getMountPath(aTarget)));
+			if (ti.getFreeDiskSpace() >= 0 && !ti.hasFreeSpace(size) && !confirmDownload(ti, size))
 				return;
 		}
 
@@ -85,17 +85,21 @@ public:
 	void appendDownloadMenu(OMenu& aMenu, Type aType, bool isSizeUnknown, const optional<TTHValue>& aTTH, 
 		const optional<string>& aPath, bool appendPrioMenu = true, bool addDefault = true) {
 
+		auto volumeInfos = TargetUtil::getVolumeInfos();
+
 		// Download
 		aMenu.appendItem(CTSTRING(DOWNLOAD), [=] { 
-			onDownload(SETTING(DOWNLOAD_DIRECTORY), aType == TYPE_SECONDARY, isSizeUnknown, Priority::DEFAULT); }, addDefault ? OMenu::FLAG_DEFAULT : 0);
+			onDownload(SETTING(DOWNLOAD_DIRECTORY), aType == TYPE_SECONDARY, isSizeUnknown, Priority::DEFAULT);
+		}, addDefault ? OMenu::FLAG_DEFAULT : 0);
 
 		// Download to
 		auto targetMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_TO), true);
-		appendDownloadTo(*targetMenu, aType == TYPE_SECONDARY, isSizeUnknown, aTTH, aPath);
+		appendDownloadTo(*targetMenu, aType == TYPE_SECONDARY, isSizeUnknown, aTTH, aPath, volumeInfos);
 
 		// Download with priority
-		if (appendPrioMenu)
+		if (appendPrioMenu) {
 			appendPriorityMenu(aMenu, aType == TYPE_SECONDARY, isSizeUnknown);
+		}
 
 		if (aType == TYPE_BOTH) {
 			// Download whole directory
@@ -107,18 +111,18 @@ public:
 			if (aPath && !(*aPath).empty() && (*aPath).back() != PATH_SEPARATOR)
 				pathWhole = Util::getFilePath(*aPath);
 
-			appendDownloadTo(*targetMenuWhole, true, true, boost::none, pathWhole);
+			appendDownloadTo(*targetMenuWhole, true, true, boost::none, pathWhole, volumeInfos);
 		}
 	}
 
-	void appendDownloadTo(OMenu& targetMenu_, bool aWholeDir, bool aIsSizeUnknown, const optional<TTHValue>& aTTH, const optional<string>& aPath) {
+	void appendDownloadTo(OMenu& targetMenu_, bool aWholeDir, bool aIsSizeUnknown, const optional<TTHValue>& aTTH, const optional<string>& aPath, const TargetUtil::TargetInfoMap& aVolumeInfos) {
 		targetMenu_.appendItem(CTSTRING(BROWSE), [=] { onDownloadTo(aWholeDir, aIsSizeUnknown); });
 
 		//Append shared and favorite directories
 		if (SETTING(SHOW_SHARED_DIRS_FAV)) {
-			appendVirtualItems(targetMenu_, aWholeDir, false, aIsSizeUnknown);
+			appendVirtualItems(targetMenu_, aWholeDir, FavoriteManager::getInstance()->getGroupedFavoriteDirs(), TSTRING(SETTINGS_FAVORITE_DIRS_PAGE), aIsSizeUnknown, aVolumeInfos);
 		}
-		appendVirtualItems(targetMenu_, aWholeDir, true, aIsSizeUnknown);
+		appendVirtualItems(targetMenu_, aWholeDir, ShareManager::getInstance()->getGroupedDirectories(), TSTRING(SHARED), aIsSizeUnknown, aVolumeInfos);
 
 		appendTargets(targetMenu_, aWholeDir, aIsSizeUnknown, aTTH, aPath);
 
@@ -152,23 +156,34 @@ private:
 		addItem(CTSTRING(HIGHEST), Priority::HIGHEST);
 	}
 
-	void appendVirtualItems(OMenu &targetMenu, bool aWholeDir, bool aIsFavDirs, bool aIsSizeUnknown) {
-		auto directoryMap = aIsFavDirs ? FavoriteManager::getInstance()->getGroupedFavoriteDirs() : ShareManager::getInstance()->getGroupedDirectories();
+	static tstring toDisplayTarget(const TargetUtil::TargetInfo& aInfo) {
+		auto ret = Text::toT(aInfo.getTarget());
+		if (aInfo.getFreeDiskSpace() >= 0) {
+			return TSTRING_F(X_BYTES_FREE, ret % Util::formatBytesW(aInfo.getFreeDiskSpace()));
+		}
 
-		if (directoryMap.empty()) {
+		return ret;
+	}
+
+	void appendVirtualItems(OMenu &targetMenu, bool aWholeDir, const GroupedDirectoryMap& aDirectories, const tstring& aTitle, bool aIsSizeUnknown, const TargetUtil::TargetInfoMap& aVolumeInfos) {
+		if (aDirectories.empty()) {
 			return;
 		}
 
-		targetMenu.InsertSeparatorLast(aIsFavDirs ? TSTRING(SETTINGS_FAVORITE_DIRS_PAGE) : TSTRING(SHARED));
-		for(const auto& dp: directoryMap) {
+		targetMenu.InsertSeparatorLast(aTitle);
+		for(const auto& dp: aDirectories) {
 			const auto& groupName = dp.first;
-			if (dp.second.size() > 1) {
+			auto targetInfos = TargetUtil::toTargetInfoMap(dp.second, aVolumeInfos);
+
+			if (targetInfos.size() > 1) {
 				auto vMenu = targetMenu.createSubMenu(Text::toT(groupName).c_str(), true);
-				for (const auto& target: dp.second) {
-					vMenu->appendItem(Text::toT(target).c_str(), [=] { onDownload(target, aWholeDir, aIsSizeUnknown, Priority::DEFAULT); });
+				for (const auto& targetInfo: targetInfos | map_values) {
+					auto target = targetInfo.getTarget();
+					vMenu->appendItem(toDisplayTarget(targetInfo).c_str(), [=] { onDownload(target, aWholeDir, aIsSizeUnknown, Priority::DEFAULT); });
 				}
-			} else if (!dp.second.empty()) {
-				targetMenu.appendItem(Text::toT(groupName).c_str(), [=] { onDownload(*dp.second.begin(), aWholeDir, aIsSizeUnknown, Priority::DEFAULT); });
+			} else if (!targetInfos.empty()) {
+				auto target = (*targetInfos.begin()).second.getTarget();
+				targetMenu.appendItem(Text::toT(groupName).c_str(), [=] { onDownload(target, aWholeDir, aIsSizeUnknown, Priority::DEFAULT); });
 			}
 		}
 	}
@@ -222,7 +237,7 @@ private:
 		}
 	}
 
-	bool confirmDownload(TargetUtil::TargetInfo& targetInfo, int64_t aSize) {
+	bool confirmDownload(const TargetUtil::TargetInfo& targetInfo, int64_t aSize) {
 		return !SETTING(FREE_SPACE_WARN) || WinUtil::showQuestionBox(Text::toT(TargetUtil::formatSizeConfirmation(targetInfo, aSize)), MB_ICONQUESTION);
 	}
 };
