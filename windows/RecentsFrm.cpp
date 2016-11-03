@@ -210,7 +210,7 @@ LRESULT RecentHubsFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 
 LRESULT RecentHubsFrame::onRemoveAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	ctrlHubs.DeleteAllItems();
-	FavoriteManager::getInstance()->removeallRecent();
+	FavoriteManager::getInstance()->clearRecent();
 	return 0;
 }
 
@@ -272,7 +272,7 @@ LRESULT RecentHubsFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 		if(dlg.DoModal(m_hWnd) == IDOK) {
 			r->setDescription(Text::fromT(dlg.line));
 			ctrlHubs.SetItemText(i, COLUMN_DESCRIPTION, Text::toT(r->getDescription()).c_str());
-			FavoriteManager::getInstance()->recentsave();
+			FavoriteManager::getInstance()->saveRecent();
 		}
 	}
 	return 0;

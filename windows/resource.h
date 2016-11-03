@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by N:\projects\airgit\AirDC.rc
+// Used by C:\Projects\airdc-git\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -556,7 +556,6 @@
 #define IDC_SETTINGS_OPTIONS            1147
 #define IDC_SETTINGS_DOWNLOADS_MAX      1148
 #define IDC_SETTINGS_DOWNLOADS_SPEED_PAUSE 1149
-#define IDC_AUTOPATH_CAPTION            1149
 #define IDC_SETTINGS_SPEEDS_NOT_ACCURATE 1150
 #define IDC_MAX_DL_BUNDLES_LBL          1150
 #define IDC_MAX_RUNNING_BUNDLES_LBL     1150
@@ -1303,8 +1302,6 @@
 #define IDC_LANGUAGE_NOTE               1641
 #define IDC_CONF_PARAMS                 1641
 #define IDC_CURRENT_PROFILE             1642
-#define IDC_AUTOSELECT_METHOD           1643
-#define IDC_AUTOPATH_METHOD             1644
 #define IDC_CURRENT_PROFILE2            1644
 #define IDC_CURRENT_PROFILE_NAME        1644
 #define IDC_TB_SIZE                     1645

@@ -1625,11 +1625,11 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 		case COLUMN_TYPE: return getType();
 		case COLUMN_PRIORITY:
 		{
-			if (isFinished() || getPriority() == -1)
+			if (isFinished() || getPriority() == Priority::DEFAULT)
 				return Util::emptyStringT;
 			bool autoPrio = (bundle && bundle->getAutoPriority()) || (qi && qi->getAutoPriority());
 
-			if (getPriority() == QueueItemBase::PAUSED_FORCE && bundle && bundle->getResumeTime() > 0)
+			if (getPriority() == Priority::PAUSED_FORCE && bundle && bundle->getResumeTime() > 0)
 				return TSTRING_F(PAUSED_UNTIL_X, Text::toT(Util::formatTime("[%H:%M]", bundle->getResumeTime()))); //Show time left instead? needs bundle updates to be implemented for these...
 
 			return Text::toT(AirUtil::getPrioText(getPriority())) + (autoPrio ? _T(" (") + TSTRING(AUTO) + _T(")") : Util::emptyStringT);
@@ -1702,8 +1702,8 @@ time_t QueueFrame::QueueItemInfo::getTimeFinished() const {
 	return bundle ? bundle->getTimeFinished() : qi ? qi->getTimeFinished() : 0;
 }
 
-int QueueFrame::QueueItemInfo::getPriority() const {
-	return  bundle ? bundle->getPriority() : qi ? qi->getPriority() : -1;
+Priority QueueFrame::QueueItemInfo::getPriority() const {
+	return bundle ? bundle->getPriority() : qi ? qi->getPriority() : Priority::DEFAULT;
 }
  
 bool QueueFrame::QueueItemInfo::isFinished() const {

@@ -1139,7 +1139,7 @@ void RichTextBox::handleAddAutoSearchFile() {
 		targetPath = Util::getFilePath(Text::fromT(selectedWord));
 	auto fileName = Util::getFileName(Text::fromT(selectedWord));
 
-	AutoSearchManager::getInstance()->addAutoSearch(fileName, targetPath, TargetUtil::TARGET_PATH, false, AutoSearch::CHAT_DOWNLOAD, true, 60);
+	AutoSearchManager::getInstance()->addAutoSearch(fileName, targetPath, false, AutoSearch::CHAT_DOWNLOAD, true, 60);
 
 	SetSelNone();
 }
@@ -1148,7 +1148,7 @@ void RichTextBox::handleAddAutoSearchDir() {
 	string targetPath = Util::getParentDir(Text::fromT(selectedWord), PATH_SEPARATOR, true);
 	string dirName = Util::getLastDir(selectedWord[selectedWord.length()-1] != PATH_SEPARATOR ? Util::getFilePath(Text::fromT(selectedWord)) : Text::fromT(selectedWord));
 
-	AutoSearchManager::getInstance()->addAutoSearch(dirName, targetPath, TargetUtil::TARGET_PATH, true, AutoSearch::CHAT_DOWNLOAD, true, 60);
+	AutoSearchManager::getInstance()->addAutoSearch(dirName, targetPath, true, AutoSearch::CHAT_DOWNLOAD, true, 60);
 
 	SetSelNone();
 }
@@ -1296,7 +1296,7 @@ void RichTextBox::handleOpenFolder() {
 		WinUtil::openFolder(Text::toT(paths.front()));
 }
 
-void RichTextBox::handleDownload(const string& aTarget, QueueItemBase::Priority p, bool aIsRelease, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
+void RichTextBox::handleDownload(const string& aTarget, Priority p, bool aIsRelease) {
 	if (!aIsRelease) {
 		auto u = move(getMagnetSource());
 		Magnet m = Magnet(Text::fromT(selectedWord));
@@ -1307,7 +1307,7 @@ void RichTextBox::handleDownload(const string& aTarget, QueueItemBase::Priority 
 
 		WinUtil::addFileDownload(aTarget + (aTarget[aTarget.length() - 1] != PATH_SEPARATOR ? Util::emptyString : m.fname), m.fsize, m.getTTH(), u, 0, pmUser ? QueueItem::FLAG_PRIVATE : 0, p);
 	} else {
-		AutoSearchManager::getInstance()->addAutoSearch(Text::fromT(selectedWord), aTarget, aTargetType, true, AutoSearch::CHAT_DOWNLOAD);
+		AutoSearchManager::getInstance()->addAutoSearch(Text::fromT(selectedWord), aTarget, true, AutoSearch::CHAT_DOWNLOAD);
 	}
 }
 

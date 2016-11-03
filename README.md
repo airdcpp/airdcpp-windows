@@ -2,7 +2,7 @@
 
 # AirDC++ for Windows
 
-**Required compiler**: Visual Studio 2015 Update 2
+**Required compiler**: Visual Studio 2015 (Update 2 or newer)
 
 ## Cloning
 

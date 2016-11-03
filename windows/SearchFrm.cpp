@@ -795,7 +795,7 @@ void SearchFrame::handleViewNfo() {
 	performAction(viewNfo, true);
 }
 
-void SearchFrame::handleDownload(const string& aTarget, QueueItemBase::Priority p, bool useWhole, TargetUtil::TargetType aTargetType, bool isSizeUnknown) {
+void SearchFrame::handleDownload(const string& aTarget, Priority p, bool useWhole) {
 	ctrlResults.list.filteredForEachSelectedT([&](const SearchInfo* aSI) {
 		bool fileDownload = aSI->sr->getType() == SearchResult::TYPE_FILE && !useWhole;
 
@@ -813,8 +813,7 @@ void SearchFrame::handleDownload(const string& aTarget, QueueItemBase::Priority 
 					path = aSR->getType() == SearchResult::TYPE_DIRECTORY ? aSR->getFileName() : Util::getLastDir(aSR->getFilePath());
 				}
 
-				DirectoryListingManager::getInstance()->addDirectoryDownload(aSR->getFilePath(), *path, aSR->getUser(), aTarget, aTargetType,
-					isSizeUnknown, p, false, 0, false, false);
+				DirectoryListingManager::getInstance()->addDirectoryDownload(aSR->getFilePath(), *path, aSR->getUser(), aTarget, p, false, nullptr, false, false);
 			}
 		};
 
@@ -957,7 +956,7 @@ LRESULT SearchFrame::onDoubleClickResults(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*
 		if (item->ptAction.x < rect.left)
 			return 0;
 
-		onDownload(SETTING(DOWNLOAD_DIRECTORY), false, ctrlResults.list.getItemData(item->iItem)->getUser()->isNMDC(), WinUtil::isShift() ? QueueItem::HIGHEST : QueueItem::DEFAULT);
+		onDownload(SETTING(DOWNLOAD_DIRECTORY), false, ctrlResults.list.getItemData(item->iItem)->getUser()->isNMDC(), WinUtil::isShift() ? Priority::HIGHEST : Priority::DEFAULT);
 	}
 	return 0;
 }

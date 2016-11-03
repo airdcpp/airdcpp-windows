@@ -1186,7 +1186,7 @@ void WinUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aUser, RichT
 					WinUtil::searchHash(m.getTTH(), m.fname, m.fsize);
 				} else if (sel == SettingsManager::MAGNET_DOWNLOAD) {
 					if (ctrlEdit) {
-						ctrlEdit->handleDownload(SETTING(DOWNLOAD_DIRECTORY), QueueItem::DEFAULT, false, TargetUtil::TARGET_PATH, false);
+						ctrlEdit->handleDownload(SETTING(DOWNLOAD_DIRECTORY), Priority::DEFAULT, false);
 					} else {
 						addFileDownload(SETTING(DOWNLOAD_DIRECTORY) + m.fname, m.fsize, m.getTTH(), aUser, 0);
 					}
@@ -1500,7 +1500,7 @@ void WinUtil::appendPreviewMenu(OMenu& parent, const string& aTarget) {
 }
 
 template<typename T> 
-static void appendPrioMenu(OMenu& aParent, const vector<T>& aBase, bool isBundle, function<void (QueueItemBase::Priority aPrio)> prioF, function<void ()> autoPrioF) {
+static void appendPrioMenu(OMenu& aParent, const vector<T>& aBase, bool isBundle, function<void (Priority aPrio)> prioF, function<void ()> autoPrioF) {
 	if (aBase.empty())
 		return;
 
@@ -1512,10 +1512,10 @@ static void appendPrioMenu(OMenu& aParent, const vector<T>& aBase, bool isBundle
 		text = aBase.size() == 1 ? TSTRING(SET_FILE_PRIORITY) : TSTRING(SET_FILE_PRIORITIES);
 	}
 
-	QueueItemBase::Priority p = QueueItemBase::DEFAULT;
+	Priority p = Priority::DEFAULT;
 	for (auto& aItem: aBase) {
-		if (aItem->getPriority() != p && p != QueueItemBase::DEFAULT) {
-			p = QueueItemBase::DEFAULT;
+		if (aItem->getPriority() != p && p != Priority::DEFAULT) {
+			p = Priority::DEFAULT;
 			break;
 		}
 
@@ -1525,7 +1525,7 @@ static void appendPrioMenu(OMenu& aParent, const vector<T>& aBase, bool isBundle
 	auto priorityMenu = aParent.createSubMenu(text, true);
 
 	int curItem = 0;
-	auto appendItem = [=, &curItem](const tstring& aString, QueueItemBase::Priority aPrio) {
+	auto appendItem = [=, &curItem](const tstring& aString, Priority aPrio) {
 		curItem++;
 		priorityMenu->appendItem(aString, [=] { 		
 			prioF(aPrio);
@@ -1533,13 +1533,13 @@ static void appendPrioMenu(OMenu& aParent, const vector<T>& aBase, bool isBundle
 	};
 
 	if (isBundle)
-		appendItem(TSTRING(PAUSED_FORCED), QueueItemBase::PAUSED_FORCE);
-	appendItem(TSTRING(PAUSED), QueueItemBase::PAUSED);
-	appendItem(TSTRING(LOWEST), QueueItemBase::LOWEST);
-	appendItem(TSTRING(LOW), QueueItemBase::LOW);
-	appendItem(TSTRING(NORMAL), QueueItemBase::NORMAL);
-	appendItem(TSTRING(HIGH), QueueItemBase::HIGH);
-	appendItem(TSTRING(HIGHEST), QueueItemBase::HIGHEST);
+		appendItem(TSTRING(PAUSED_FORCED), Priority::PAUSED_FORCE);
+	appendItem(TSTRING(PAUSED), Priority::PAUSED);
+	appendItem(TSTRING(LOWEST), Priority::LOWEST);
+	appendItem(TSTRING(LOW), Priority::LOW);
+	appendItem(TSTRING(NORMAL), Priority::NORMAL);
+	appendItem(TSTRING(HIGH), Priority::HIGH);
+	appendItem(TSTRING(HIGHEST), Priority::HIGHEST);
 
 	curItem++;
 	//priorityMenu->appendSeparator();
@@ -1549,7 +1549,7 @@ static void appendPrioMenu(OMenu& aParent, const vector<T>& aBase, bool isBundle
 }
 	
 void WinUtil::appendBundlePrioMenu(OMenu& aParent, const BundleList& aBundles) {
-	auto prioF = [=](QueueItemBase::Priority aPrio) {
+	auto prioF = [=](Priority aPrio) {
 		for (auto& b: aBundles)
 			QueueManager::getInstance()->setBundlePriority(b->getToken(), aPrio);
 	};
@@ -1570,7 +1570,7 @@ void WinUtil::appendBundlePauseMenu(OMenu& aParent, const BundleList& aBundles) 
 	for (auto t : pauseTimes) {
 		pauseMenu->appendItem(Util::toStringW(t) + _T(" ") + TSTRING(MINUTES_LOWER), [=] {
 			for (auto b : aBundles)
-				QueueManager::getInstance()->setBundlePriority(b, QueueItemBase::PAUSED_FORCE, false, GET_TIME() + (t * 60));
+				QueueManager::getInstance()->setBundlePriority(b, Priority::PAUSED_FORCE, false, GET_TIME() + (t * 60));
 		}, OMenu::FLAG_THREADED);
 	}
 	pauseMenu->appendSeparator();
@@ -1580,7 +1580,7 @@ void WinUtil::appendBundlePauseMenu(OMenu& aParent, const BundleList& aBundles) 
 		dlg.description = CTSTRING(PAUSE_TIME);
 		if (dlg.DoModal() == IDOK) {
 			for (auto b : aBundles)
-				QueueManager::getInstance()->setBundlePriority(b, QueueItemBase::PAUSED_FORCE, false, GET_TIME() + (Util::toUInt(Text::fromT(dlg.line)) * 60));
+				QueueManager::getInstance()->setBundlePriority(b, Priority::PAUSED_FORCE, false, GET_TIME() + (Util::toUInt(Text::fromT(dlg.line)) * 60));
 		}
 	}, OMenu::FLAG_THREADED);
 
@@ -1588,7 +1588,7 @@ void WinUtil::appendBundlePauseMenu(OMenu& aParent, const BundleList& aBundles) 
 
 
 void WinUtil::appendFilePrioMenu(OMenu& aParent, const QueueItemList& aFiles) {
-	auto prioF = [=](QueueItemBase::Priority aPrio) {
+	auto prioF = [=](Priority aPrio) {
 		for (auto& qi: aFiles)
 			QueueManager::getInstance()->setQIPriority(qi->getTarget(), aPrio);
 	};
@@ -2248,10 +2248,10 @@ void WinUtil::getProfileConflicts(HWND aParent, int aProfile, ProfileSettingItem
 	}
 }
 
-void WinUtil::addFileDownload(const string& aTarget, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, time_t aDate, Flags::MaskType aFlags /*0*/, int8_t prio /*0*/) {
+void WinUtil::addFileDownload(const string& aTarget, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, time_t aDate, Flags::MaskType aFlags /*0*/, Priority aPriority /*DEFAULT*/) {
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		try {
-			QueueManager::getInstance()->createFileBundle(aTarget, aSize, aTTH, aUser, aDate, aFlags, (QueueItemBase::Priority)prio);
+			QueueManager::getInstance()->createFileBundle(aTarget, aSize, aTTH, aUser, aDate, aFlags, aPriority);
 		} catch (const Exception& e) {
 			auto nick = aUser ? Text::fromT(getNicks(aUser)) : STRING(UNKNOWN);
 			LogManager::getInstance()->message(STRING_F(ADD_FILE_ERROR, aTarget % nick % e.getError()), LogMessage::SEV_ERROR);

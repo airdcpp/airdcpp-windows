@@ -45,7 +45,6 @@ PropPage::TextItem LocationsPage::texts[] = {
 	{ IDC_BROWSETEMPDIR, ResourceManager::BROWSE },
 
 	{ IDC_FORMAT_REMOTE_TIME, ResourceManager::SETTINGS_FORMAT_REMOTE_TIME },
-	{ IDC_AUTOPATH_CAPTION, ResourceManager::AUTOPATH_CAPTION }, 
 	{ IDC_SETTINGS_OPTIONS, ResourceManager::SETTINGS_OPTIONS },
 	{ 0, ResourceManager::LAST }
 };
@@ -74,10 +73,6 @@ LRESULT LocationsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	favoriteDirs = FavoriteManager::getInstance()->getFavoriteDirs();
 	fillList();
 
-	ctrlAutoSelect.Attach(GetDlgItem(IDC_AUTOPATH_METHOD));
-	ctrlAutoSelect.AddString(CTSTRING(AUTOSELECT_MOST_SPACE));
-	ctrlAutoSelect.AddString(CTSTRING(AUTOSELECT_LEAST_SPACE));
-	ctrlAutoSelect.SetCurSel(SETTING(DL_AUTOSELECT_METHOD));
 	return TRUE;
 }
 
@@ -91,7 +86,6 @@ void LocationsPage::write()
 		SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_DIRECTORY, s + '\\');
 	}
 
-	SettingsManager::getInstance()->set(SettingsManager::DL_AUTOSELECT_METHOD, ctrlAutoSelect.GetCurSel());
 	AirUtil::updateCachedSettings();
 }
 
