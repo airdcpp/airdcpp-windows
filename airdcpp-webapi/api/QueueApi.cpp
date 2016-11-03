@@ -243,7 +243,7 @@ namespace webserver {
 
 		string targetDirectory, targetFileName;
 		TargetUtil::TargetType targetType;
-		QueueItemBase::Priority prio;
+		Priority prio;
 		Deserializer::deserializeDownloadParams(aRequest.getRequestBody(), aRequest.getSession(), targetDirectory, targetFileName, targetType, prio);
 
 		BundlePtr b = nullptr;

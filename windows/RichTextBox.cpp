@@ -1296,7 +1296,7 @@ void RichTextBox::handleOpenFolder() {
 		WinUtil::openFolder(Text::toT(paths.front()));
 }
 
-void RichTextBox::handleDownload(const string& aTarget, QueueItemBase::Priority p, bool aIsRelease, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
+void RichTextBox::handleDownload(const string& aTarget, Priority p, bool aIsRelease, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
 	if (!aIsRelease) {
 		auto u = move(getMagnetSource());
 		Magnet m = Magnet(Text::fromT(selectedWord));

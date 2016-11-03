@@ -251,7 +251,7 @@ void AutoSearchManager::clearError(AutoSearchPtr& as) noexcept {
 	fire(AutoSearchManagerListener::UpdateItem(), as, true);
 }
 
-void AutoSearchManager::onBundleCreated(BundlePtr& aBundle, const ProfileToken aSearch) noexcept {
+void AutoSearchManager::onBundleCreated(BundlePtr& aBundle, void* aSearch) noexcept {
 	bool found = false;
 	{
 		WLock l(cs);
@@ -269,7 +269,7 @@ void AutoSearchManager::onBundleCreated(BundlePtr& aBundle, const ProfileToken a
 		delayEvents.addEvent(RECALCULATE_SEARCH, [=] { resetSearchTimes(GET_TICK(), true); }, 1000);
 }
 
-void AutoSearchManager::onBundleError(const ProfileToken aSearch, const string& aError, const string& aDir, const HintedUser& aUser) noexcept {
+void AutoSearchManager::onBundleError(void* aSearch, const string& aError, const string& aDir, const HintedUser& aUser) noexcept {
 	RLock l(cs);
 	auto as = searchItems.getItem(aSearch);
 	if (as) {
@@ -861,8 +861,8 @@ void AutoSearchManager::handleAction(const SearchResultPtr& sr, AutoSearchPtr& a
 			}
 
 			DirectoryListingManager::getInstance()->addDirectoryDownload(sr->getPath(), sr->getFileName(), sr->getUser(), target,
-				targetType, true, (as->getAction() == AutoSearch::ACTION_QUEUE) ? QueueItem::PAUSED : QueueItem::DEFAULT,
-				false, as->getToken(), as->getRemove() || as->usingIncrementation(), false);
+				targetType, true, (as->getAction() == AutoSearch::ACTION_QUEUE) ? Priority::PAUSED : Priority::DEFAULT,
+				false, as.get(), as->getRemove() || as->usingIncrementation(), false);
 		} else {
 			TargetUtil::TargetInfo ti;
 			bool hasSpace = TargetUtil::getVirtualTarget(as->getTarget(), as->getTargetType(), ti, sr->getSize());
@@ -873,13 +873,13 @@ void AutoSearchManager::handleAction(const SearchResultPtr& sr, AutoSearchPtr& a
 			try {
 				auto b = QueueManager::getInstance()->createFileBundle(ti.getTarget() + sr->getFileName(), sr->getSize(), sr->getTTH(), 
 					sr->getUser(), sr->getDate(), 0, 
-					((as->getAction() == AutoSearch::ACTION_QUEUE) ? QueueItem::PAUSED : QueueItem::DEFAULT));
+					((as->getAction() == AutoSearch::ACTION_QUEUE) ? Priority::PAUSED : Priority::DEFAULT));
 
 				if (b) {
-					onBundleCreated(b, as->getToken());
+					onBundleCreated(b, as.get());
 				}
 			} catch(const Exception& e) {
-				onBundleError(as->getToken(), e.getError(), ti.getTarget() + sr->getFileName(), sr->getUser());
+				onBundleError(as.get(), e.getError(), ti.getTarget() + sr->getFileName(), sr->getUser());
 				return;
 			}
 		}

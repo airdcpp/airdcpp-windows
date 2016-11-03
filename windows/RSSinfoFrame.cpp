@@ -445,7 +445,7 @@ void RssInfoFrame::updateDupeType(const string& aName) {
 	}
 }
 
-void RssInfoFrame::handleDownload(const string& aTarget, QueueItemBase::Priority /*p*/, bool /*aIsRelease*/, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
+void RssInfoFrame::handleDownload(const string& aTarget, Priority /*p*/, bool /*aIsRelease*/, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
 	auto ii = ctrlRss.list.getSelectedItem();
 	if(ii)
 		AutoSearchManager::getInstance()->addAutoSearch(ii->item->getTitle(), aTarget, aTargetType, true, AutoSearch::RSS_DOWNLOAD);

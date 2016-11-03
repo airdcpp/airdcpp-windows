@@ -24,11 +24,11 @@
 #include "typedefs.h"
 
 #include "GetSet.h"
+#include "Priority.h"
 #include "Pointer.h"
 #include "StringMatch.h"
 #include "TargetUtil.h"
 #include "Util.h"
-#include "QueueItem.h"
 
 //default minimum search interval for the same item to be searched again
 #define AS_DEFAULT_SEARCH_INTERVAL 180
@@ -143,7 +143,7 @@ public:
 	IGETSET(ItemType, asType, AsType, NORMAL);
 	IGETSET(time_t, timeAdded, TimeAdded, 0);
 
-	IGETSET(QueueItem::Priority, priority, Priority, QueueItemBase::LOW);
+	IGETSET(Priority, priority, Priority, Priority::LOW);
 
 	SearchTime startTime = SearchTime(false);
 	SearchTime endTime = SearchTime(true);
@@ -157,14 +157,14 @@ public:
 	string getSearchingStatus() const noexcept;
 	string getExpiration() const noexcept;
 
-	QueueItem::Priority calculatePriority() const noexcept {
-		auto prio = QueueItem::LOW;
+	Priority calculatePriority() const noexcept {
+		auto prio = Priority::LOW;
 		if ((status == STATUS_FAILED_MISSING) && getLastSearch() == 0) 
-			prio = QueueItem::HIGHEST;
+			prio = Priority::HIGHEST;
 		else if (status == STATUS_FAILED_MISSING)
-			prio = QueueItem::HIGH;
+			prio = Priority::HIGH;
 		else if( getLastSearch() == 0)
-			prio = QueueItem::NORMAL;
+			prio = Priority::NORMAL;
 
 		return prio;
 	}

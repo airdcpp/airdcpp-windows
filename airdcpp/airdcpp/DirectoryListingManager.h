@@ -49,54 +49,55 @@ namespace dcpp {
 		void processListAction(DirectoryListingPtr aList, const string& path, int flags) noexcept;
 
 		void addDirectoryDownload(const string& aRemoteDir, const string& aBundleName, const HintedUser& aUser, const string& aTarget, TargetUtil::TargetType aTargetType, bool aSizeUnknown,
-			QueueItemBase::Priority p = QueueItem::DEFAULT, bool useFullList = false, ProfileToken aAutoSearch = 0, bool checkNameDupes = false, bool checkViewed = true) noexcept;
+			Priority p = Priority::DEFAULT, bool useFullList = false, void* aOwner = nullptr, bool checkNameDupes = false, bool checkViewed = true) noexcept;
 
 		void removeDirectoryDownload(const UserPtr& aUser, const string& aPath, bool isPartialList) noexcept;
 		DirectoryListingMap getLists() const noexcept;
 	private:
-		class DirectoryDownloadInfo : public intrusive_ptr_base<DirectoryDownloadInfo> {
+		class DirectoryDownloadInfo {
 		public:
-			DirectoryDownloadInfo() : priority(QueueItemBase::DEFAULT) { }
-			DirectoryDownloadInfo(const UserPtr& aUser, const string& aBundleName, const string& aListPath, const string& aTarget, TargetUtil::TargetType aTargetType, QueueItemBase::Priority p,
-				bool aSizeUnknown, ProfileToken aAutoSearch, bool aRecursiveListAttempted) :
-				listPath(aListPath), target(aTarget), priority(p), targetType(aTargetType), sizeUnknown(aSizeUnknown), listing(nullptr), autoSearch(aAutoSearch), bundleName(aBundleName),
+			DirectoryDownloadInfo() : priority(Priority::DEFAULT) { }
+			DirectoryDownloadInfo(const UserPtr& aUser, const string& aBundleName, const string& aListPath, const string& aTarget, TargetUtil::TargetType aTargetType, Priority p,
+				bool aSizeUnknown, void* aOwner, bool aRecursiveListAttempted) :
+				listPath(aListPath), target(aTarget), priority(p), targetType(aTargetType), sizeUnknown(aSizeUnknown), listing(nullptr), owner(aOwner), bundleName(aBundleName),
 				recursiveListAttempted(aRecursiveListAttempted), user(aUser) {
 			}
 			~DirectoryDownloadInfo() { }
 
-			typedef boost::intrusive_ptr<DirectoryDownloadInfo> Ptr;
+			typedef std::shared_ptr<DirectoryDownloadInfo> Ptr;
 			typedef vector<DirectoryDownloadInfo::Ptr> List;
 
 			UserPtr& getUser() { return user; }
 
 			GETSET(string, listPath, ListPath);
 			GETSET(string, target, Target);
-			GETSET(QueueItemBase::Priority, priority, Priority);
+			GETSET(Priority, priority, Priority);
 			GETSET(TargetUtil::TargetType, targetType, TargetType);
 			GETSET(bool, sizeUnknown, SizeUnknown);
 			GETSET(DirectoryListingPtr, listing, Listing);
-			GETSET(ProfileToken, autoSearch, AutoSearch);
+			GETSET(void*, owner, Owner);
 			GETSET(string, bundleName, BundleName);
 			GETSET(bool, recursiveListAttempted, RecursiveListAttempted);
 
 			string getFinishedDirName() const noexcept { return target + bundleName + Util::toString(targetType); }
 
-			struct HasASItem {
-				HasASItem(ProfileToken aToken, const string& s) : a(s), t(aToken) { }
-				bool operator()(const DirectoryDownloadInfo::Ptr& ddi) const noexcept{ return t == ddi->getAutoSearch() && Util::stricmp(a, ddi->getBundleName()) != 0; }
-				const string& a;
-				ProfileToken t;
+			struct HasOwner {
+				HasOwner(void* aOwner, const string& s) : a(s), owner(aOwner) { }
+				bool operator()(const DirectoryDownloadInfo::Ptr& ddi) const noexcept;
 
-				HasASItem& operator=(const HasASItem&) = delete;
+				const string& a;
+				void* owner;
+
+				HasOwner& operator=(const HasOwner&) = delete;
 			};
 		private:
 			UserPtr user;
 		};
 
 		// Stores information about finished items for a while so that consecutive downloads of the same directory don't get different targets
-		class FinishedDirectoryItem : public intrusive_ptr_base<FinishedDirectoryItem> {
+		class FinishedDirectoryItem {
 		public:
-			typedef boost::intrusive_ptr<FinishedDirectoryItem> Ptr;
+			typedef std::shared_ptr<FinishedDirectoryItem> Ptr;
 			typedef vector<FinishedDirectoryItem::Ptr> List;
 
 			FinishedDirectoryItem(bool aUsePausedPrio, const string& aTargetPath) : usePausedPrio(aUsePausedPrio), targetPath(aTargetPath), timeDownloaded(GET_TICK()) { }

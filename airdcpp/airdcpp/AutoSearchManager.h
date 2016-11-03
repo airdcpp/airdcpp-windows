@@ -79,8 +79,8 @@ public:
 
 	void logMessage(const string& aMsg, LogMessage::Severity aSeverity) const noexcept;
 
-	void onBundleCreated(BundlePtr& aBundle, const ProfileToken aSearch) noexcept;
-	void onBundleError(const ProfileToken aSearch, const string& aError, const string& aDir, const HintedUser& aUser) noexcept;
+	void onBundleCreated(BundlePtr& aBundle, void* aSearch) noexcept;
+	void onBundleError(void* aSearch, const string& aError, const string& aDir, const HintedUser& aUser) noexcept;
 
 	vector<string> getGroups() { RLock l(cs);  return groups; }
 	void setGroups(vector<string>& newGroups) { WLock l(cs);  groups = newGroups; }

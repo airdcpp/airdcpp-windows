@@ -69,17 +69,21 @@ void DirectoryListingManager::removeDirectoryDownload(const UserPtr& aUser, cons
 	}
 }
 
+bool DirectoryListingManager::DirectoryDownloadInfo::HasOwner::operator()(const DirectoryDownloadInfo::Ptr& ddi) const noexcept {
+	return owner == ddi->getOwner() && Util::stricmp(a, ddi->getBundleName()) != 0; 
+}
+
 void DirectoryListingManager::addDirectoryDownload(const string& aRemoteDir, const string& aBundleName, const HintedUser& aUser, const string& aTarget, TargetUtil::TargetType aTargetType, bool aSizeUnknown,
-	QueueItemBase::Priority p, bool useFullList /*false*/, ProfileToken aAutoSearch /*0*/, bool checkNameDupes /*false*/, bool checkViewed /*true*/) noexcept {
+	Priority aPriority, bool aUseFullList /*false*/, void* aOwner /*nullptr*/, bool aCheckNameDupes /*false*/, bool aCheckViewed /*true*/) noexcept {
 
 
-	if (checkViewed) {
+	if (aCheckViewed) {
 		RLock l(cs);
 		auto i = viewedLists.find(aUser.user);
 		if (i != viewedLists.end()) {
 			auto dl = i->second;
 			dl->addAsyncTask([=] {
-				auto di = DirectoryDownloadInfo::Ptr(new DirectoryDownloadInfo(aUser, aBundleName, aRemoteDir, aTarget, aTargetType, p, aSizeUnknown, aAutoSearch, false));
+				auto di = make_shared<DirectoryDownloadInfo>(aUser, aBundleName, aRemoteDir, aTarget, aTargetType, aPriority, aSizeUnknown, aOwner, false);
 				handleDownload(di, dl);
 			});
 			return;
@@ -96,9 +100,9 @@ void DirectoryListingManager::addDirectoryDownload(const string& aRemoteDir, con
 	{
 		WLock l(cs);
 
-		if (checkNameDupes && aAutoSearch > 0) {
+		if (aCheckNameDupes && aOwner > 0) {
 			//don't download different directories for auto search items that don't allow it
-			if (find_if(dlDirectories | map_values, DirectoryDownloadInfo::HasASItem(aAutoSearch, aBundleName)).base() != dlDirectories.end())  {
+			if (find_if(dlDirectories | map_values, DirectoryDownloadInfo::HasOwner(aOwner, aBundleName)).base() != dlDirectories.end())  {
 				return;
 			}
 		}
@@ -111,13 +115,13 @@ void DirectoryListingManager::addDirectoryDownload(const string& aRemoteDir, con
 		}
 		
 		// Unique directory, fine...
-		dlDirectories.emplace(aUser.user, new DirectoryDownloadInfo(aUser, aBundleName, aRemoteDir, aTarget, aTargetType, p, aSizeUnknown, aAutoSearch, true));
+		dlDirectories.emplace(aUser.user, make_shared<DirectoryDownloadInfo>(aUser, aBundleName, aRemoteDir, aTarget, aTargetType, aPriority, aSizeUnknown, aOwner, true));
 		needList = aUser.user->isSet(User::NMDC) ? (dp.first == dp.second) : true;
 	}
 
 	if(needList) {
 		try {
-			if (!aUser.user->isSet(User::NMDC) && !useFullList) {
+			if (!aUser.user->isSet(User::NMDC) && !aUseFullList) {
 				QueueManager::getInstance()->addList(aUser, QueueItem::FLAG_DIRECTORY_DOWNLOAD | QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_RECURSIVE_LIST, aRemoteDir);
 			} else {
 				QueueManager::getInstance()->addList(aUser, QueueItem::FLAG_DIRECTORY_DOWNLOAD, aRemoteDir);
@@ -165,7 +169,7 @@ void DirectoryListingManager::processList(const string& aFileName, const string&
 
 bool DirectoryListingManager::download(const DirectoryDownloadInfo::Ptr& di, const DirectoryListingPtr& aList, const string& aTarget, bool aHasFreeSpace) noexcept {
 	auto getList = [&] {
-		addDirectoryDownload(di->getListPath(), di->getBundleName(), aList->getHintedUser(), di->getTarget(), di->getTargetType(), di->getSizeUnknown(), di->getPriority(), di->getRecursiveListAttempted() ? true : false, di->getAutoSearch(), false, false);
+		addDirectoryDownload(di->getListPath(), di->getBundleName(), aList->getHintedUser(), di->getTarget(), di->getTargetType(), di->getSizeUnknown(), di->getPriority(), di->getRecursiveListAttempted() ? true : false, di->getOwner(), false, false);
 	};
 
 	auto dir = aList->findDirectory(di->getListPath());
@@ -184,7 +188,7 @@ bool DirectoryListingManager::download(const DirectoryDownloadInfo::Ptr& di, con
 	}
 
 	// Queue the directory
-	return aList->downloadDirImpl(dir, aTarget + di->getBundleName() + PATH_SEPARATOR, aHasFreeSpace ? di->getPriority() : QueueItemBase::PAUSED_FORCE, di->getAutoSearch());
+	return aList->downloadDirImpl(dir, aTarget + di->getBundleName() + PATH_SEPARATOR, aHasFreeSpace ? di->getPriority() : Priority::PAUSED_FORCE, di->getOwner());
 }
 
 void DirectoryListingManager::handleDownload(DirectoryDownloadInfo::Ptr& di, const DirectoryListingPtr& aList) noexcept {
@@ -196,7 +200,7 @@ void DirectoryListingManager::handleDownload(DirectoryDownloadInfo::Ptr& di, con
 			//we have downloaded with this dirname before...
 			di->setTargetType(TargetUtil::TARGET_PATH);
 			di->setTarget(p->second->getTargetPath());
-			di->setPriority(p->second->getUsePausedPrio() ? QueueItem::PAUSED : di->getPriority());
+			di->setPriority(p->second->getUsePausedPrio() ? Priority::PAUSED : di->getPriority());
 			directDownload = true;
 		}
 	}
@@ -220,12 +224,12 @@ void DirectoryListingManager::handleDownload(DirectoryDownloadInfo::Ptr& di, con
 
 		if (queued) {
 			WLock l(cs);
-			finishedListings.emplace(di->getFinishedDirName(), new FinishedDirectoryItem(!hasFreeSpace, ti.getTarget()));
+			finishedListings.emplace(di->getFinishedDirName(), make_shared<FinishedDirectoryItem>(!hasFreeSpace, ti.getTarget()));
 		}
 	} else {
 		if (download(di, aList, ti.getTarget(), true)) {
 			WLock l(cs);
-			finishedListings.emplace(di->getFinishedDirName(), new FinishedDirectoryItem(false, ti.getTarget()));
+			finishedListings.emplace(di->getFinishedDirName(), make_shared<FinishedDirectoryItem>(false, ti.getTarget()));
 		}
 	}
 }

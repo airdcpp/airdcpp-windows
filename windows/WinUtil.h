@@ -24,16 +24,16 @@
 #include "OMenu.h"
 #include "SplashWindow.h"
 
-#include <airdcpp/Util.h>
+#include <airdcpp/DupeType.h>
+#include <airdcpp/HintedUser.h>
+#include <airdcpp/MerkleTree.h>
+#include <airdcpp/QueueItemBase.h>
+#include <airdcpp/SettingItem.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/User.h>
-#include <airdcpp/MerkleTree.h>
-#include <airdcpp/HintedUser.h>
-#include <airdcpp/WebShortcuts.h>
+#include <airdcpp/Util.h>
 #include <airdcpp/TargetUtil.h>
-#include <airdcpp/DupeType.h>
-#include <airdcpp/SettingItem.h>
-#include <airdcpp/QueueItemBase.h>
+#include <airdcpp/WebShortcuts.h>
 
 /* Work around DBTYPE name conflict with Berkeley DB */
 #define DBTYPE MS_DBTYPE
@@ -522,7 +522,7 @@ public:
 	static tstring getEditText(CEdit& edit);
 
 	static void handleTab(HWND aCurFocus, HWND* ctrlHwnds, int hwndCount);
-	static void addFileDownload(const string& aTarget, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, time_t aDate, Flags::MaskType aFlags = 0, int8_t prio = -1);
+	static void addFileDownload(const string& aTarget, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, time_t aDate, Flags::MaskType aFlags = 0, Priority aPrio = Priority::DEFAULT);
 	//static void addFileDownloads(BundleFileList& aFiles, const HintedUser& aUser, Flags::MaskType aFlags = 0, bool addBad = true);
 
 	static void connectHub(const RecentHubEntryPtr& aEntry);

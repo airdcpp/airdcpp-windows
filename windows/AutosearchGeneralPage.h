@@ -94,7 +94,7 @@ public:
 	LRESULT onClickLocation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	/* DownloadBaseHandler */
-	void handleDownload(const string& aTarget, QueueItemBase::Priority p, bool isWhole, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
+	void handleDownload(const string& aTarget, Priority p, bool isWhole, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
 	void insertNumber();
 	
 	bool write();

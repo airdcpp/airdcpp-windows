@@ -171,7 +171,7 @@ public:
 	GETSET(bool, allowClear, AllowClear);
 
 	/* DownloadBaseHandler functions */
-	void handleDownload(const string& aTarget, QueueItemBase::Priority p, bool isRelease, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
+	void handleDownload(const string& aTarget, Priority p, bool isRelease, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
 	int64_t getDownloadSize(bool isWhole);
 	bool showDirDialog(string& fileName);
 	HintedUser getMagnetSource();

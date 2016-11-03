@@ -198,7 +198,7 @@ private:
 		tstring getName() const;
 		tstring getType() const;
 		tstring getStatusString() const;
-		int getPriority() const;
+		Priority getPriority() const;
 		int64_t getDownloadedBytes() const;
 		int64_t getSize() const;
 		int64_t getSpeed() const;

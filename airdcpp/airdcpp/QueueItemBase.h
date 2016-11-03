@@ -25,6 +25,7 @@
 #include "Flags.h"
 #include "forward.h"
 #include "GetSet.h"
+#include "Priority.h"
 
 namespace dcpp {
 
@@ -41,7 +42,7 @@ public:
 		TYPE_MCN_NORMAL
 	};
 
-	enum Priority {
+	/*enum Priority {
 		DEFAULT = -1,
 		PAUSED_FORCE = 0,
 		PAUSED,
@@ -51,7 +52,7 @@ public:
 		HIGH,
 		HIGHEST,
 		LAST
-	};
+	};*/
 
 	QueueItemBase(const string& aTarget, int64_t aSize, Priority aPriority, time_t aAdded, QueueToken aToken, Flags::MaskType aFlags);
 
@@ -64,7 +65,7 @@ public:
 	GETSET(DownloadList, downloads, Downloads);
 	GETSET(int64_t, size, Size);
 
-	virtual bool isPausedPrio() const noexcept { return priority == PAUSED_FORCE || priority == PAUSED; }
+	virtual bool isPausedPrio() const noexcept { return priority == Priority::PAUSED_FORCE || priority == Priority::PAUSED; }
 
 	QueueToken getToken() const noexcept {
 		return token;

@@ -133,7 +133,7 @@ LRESULT AutoSearchGeneralPage::onClickLocation(WORD /*wNotifyCode*/, WORD /*wID*
 	return 0;
 }
 
-void AutoSearchGeneralPage::handleDownload(const string& aTarget, QueueItemBase::Priority /*p*/, bool /*useWhole*/, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
+void AutoSearchGeneralPage::handleDownload(const string& aTarget, Priority /*p*/, bool /*useWhole*/, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
 	options.target = aTarget;
 	ctrlTarget.SetWindowTextW(Text::toT(options.target).c_str());
 	//update the type only after setting the text
