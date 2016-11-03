@@ -34,7 +34,7 @@
 
 namespace dcpp {
 
-string TargetUtil::getMountPath(const string& aPath, const TargetInfoMap& aVolumes) noexcept {
+string TargetUtil::getMountPath(const string& aPath, const VolumeSet& aVolumes) noexcept {
 	if (aVolumes.find(aPath) != aVolumes.end()) {
 		return aPath;
 	}
@@ -69,27 +69,13 @@ string TargetUtil::getMountPath(const string& aPath, const TargetInfoMap& aVolum
 	return Util::emptyString;
 }
 
-const TargetUtil::TargetInfo* TargetUtil::getTargetInfo(const string& aTarget, const TargetInfoMap& aVolumeInfos) noexcept {
-	auto mountPoint = getMountPath(aTarget, aVolumeInfos);
+TargetUtil::TargetInfo TargetUtil::getTargetInfo(const string& aTarget, const VolumeSet& aVolumes) noexcept {
+	auto mountPoint = getMountPath(aTarget, aVolumes);
 	if (!mountPoint.empty()) {
-		return &aVolumeInfos.at(mountPoint);
+		return TargetInfo(aTarget, File::getFreeSpace(mountPoint));
 	}
 
-	return nullptr;
-}
-
-TargetUtil::TargetInfoMap TargetUtil::toTargetInfoMap(const OrderedStringSet& aTargets, const TargetInfoMap& aVolumeInfos) noexcept {
-	TargetInfoMap targetInfos;
-	for (const auto& target : aTargets) {
-		auto ti = getTargetInfo(target, aVolumeInfos);
-		if (ti) {
-			targetInfos[target] = TargetInfo(target, ti->getFreeDiskSpace());
-		} else {
-			targetInfos[target] = TargetInfo(target);
-		}
-	}
-
-	return targetInfos;
+	return TargetInfo(aTarget);
 }
 
 void TargetUtil::getVirtualTarget(const string& aTarget, TargetUtil::TargetType targetType, TargetInfo& ti_) {
@@ -114,7 +100,18 @@ void TargetUtil::getVirtualTarget(const string& aTarget, TargetUtil::TargetType 
 }
 
 void TargetUtil::getTarget(const OrderedStringSet& aTargets, TargetInfo& retTi_) {
-	auto targetMap = toTargetInfoMap(aTargets, getVolumeInfos());
+	auto volumes = getVolumes();
+	TargetInfoMap targetMap;
+
+	for(const auto& i: aTargets) {
+		auto target = getMountPath(i, volumes);
+		if (!target.empty() && targetMap.find(target) == targetMap.end()) {
+			auto free = File::getFreeSpace(target);
+			if (free > 0) {
+				targetMap[target] = TargetInfo(i, free);
+			}
+		}
+	}
 
 	if (targetMap.empty()) {
 		//failed to get the volumes
@@ -141,17 +138,6 @@ void TargetUtil::compareMap(const TargetInfoMap& aTargetMap, TargetInfo& retTi_)
 			retTi_ = mapTi;
 		}
 	}
-}
-
-TargetUtil::TargetInfoMap TargetUtil::getVolumeInfos() noexcept {
-	auto volumes = getVolumes();
-
-	TargetInfoMap pathMap;
-	for (const auto& mountPoint: volumes) {
-		pathMap[mountPoint] = TargetInfo(mountPoint, File::getFreeSpace(mountPoint));
-	}
-
-	return pathMap;
 }
 
 TargetUtil::VolumeSet TargetUtil::getVolumes() noexcept {

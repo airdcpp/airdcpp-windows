@@ -56,12 +56,12 @@ public:
 
 	// Get a set of all mount points
 	static VolumeSet getVolumes() noexcept;
-	static TargetInfoMap getVolumeInfos() noexcept;
+	//static TargetInfoMap getVolumeInfos() noexcept;
 
-	static string getMountPath(const string& aPath, const TargetInfoMap& aVolumes) noexcept;
+	static string getMountPath(const string& aPath, const VolumeSet& aVolumes) noexcept;
 
-	static const TargetInfo* getTargetInfo(const string& aTarget, const TargetInfoMap& aVolumeInfos) noexcept;
-	static TargetInfoMap toTargetInfoMap(const OrderedStringSet& aTargets, const TargetInfoMap& aVolumeInfos) noexcept;
+	static TargetInfo getTargetInfo(const string& aTarget, const VolumeSet& aVolumes) noexcept;
+	//static TargetInfoMap toTargetInfoMap(const OrderedStringSet& aTargets, const TargetInfoMap& aVolumeInfos) noexcept;
 
 	static string formatSizeConfirmation(const TargetInfo& ti, int64_t aSize);
 
