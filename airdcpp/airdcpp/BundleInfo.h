@@ -21,6 +21,7 @@
 
 #include "typedefs.h"
 
+//#include "Bundle.h"
 #include "HintedUser.h"
 #include "MerkleTree.h"
 #include "Priority.h"
@@ -34,7 +35,7 @@ namespace dcpp {
 
 	Priority priority;
 	void* owner;
-};*/
+};
 
 struct BundleAddInfo {
 	int filesAdded = 0;
@@ -44,7 +45,7 @@ struct BundleAddInfo {
 	BundlePtr bundle = nullptr;
 
 	string errorMessage;
-};
+};*/
 
 struct BundleFileInfo {
 	BundleFileInfo(BundleFileInfo&& rhs) = default;

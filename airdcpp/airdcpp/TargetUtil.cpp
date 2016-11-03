@@ -184,7 +184,7 @@ TargetUtil::VolumeSet TargetUtil::getVolumes() noexcept {
 
 	aFile = setmntent("/proc/mounts", "r");
 	if (aFile == NULL) {
-		return;
+		return volumes;
 	}
 
 	while ((ent = getmntent(aFile)) != NULL) {
