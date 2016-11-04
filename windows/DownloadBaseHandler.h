@@ -119,10 +119,10 @@ public:
 		targetMenu_.appendItem(CTSTRING(BROWSE), [=] { onDownloadTo(aWholeDir, aIsSizeUnknown); });
 
 		//Append shared and favorite directories
-		if (SETTING(SHOW_SHARED_DIRS_FAV)) {
-			appendVirtualItems(targetMenu_, aWholeDir, FavoriteManager::getInstance()->getGroupedFavoriteDirs(), TSTRING(SETTINGS_FAVORITE_DIRS_PAGE), aIsSizeUnknown, aVolumes);
+		if (SETTING(SHOW_SHARED_DIRS_DL)) {
+			appendVirtualItems(targetMenu_, aWholeDir, ShareManager::getInstance()->getGroupedDirectories(), TSTRING(SHARED), aIsSizeUnknown, aVolumes);
 		}
-		appendVirtualItems(targetMenu_, aWholeDir, ShareManager::getInstance()->getGroupedDirectories(), TSTRING(SHARED), aIsSizeUnknown, aVolumes);
+		appendVirtualItems(targetMenu_, aWholeDir, FavoriteManager::getInstance()->getGroupedFavoriteDirs(), TSTRING(SETTINGS_FAVORITE_DIRS_PAGE), aIsSizeUnknown, aVolumes);
 
 		appendTargets(targetMenu_, aWholeDir, aIsSizeUnknown, aTTH, aPath);
 
