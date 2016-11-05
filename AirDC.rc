@@ -2394,7 +2394,7 @@ BEGIN
     CONTROL         "Log mainchat",IDC_LOGMAINCHAT,"Button",BS_AUTO3STATE | WS_TABSTOP,12,45,214,10
     CONTROL         "Show notify icon on chat messages",IDC_CHAT_NOTIFY,
                     "Button",BS_AUTO3STATE | WS_TABSTOP,12,15,242,10
-    GROUPBOX        "Overrides for global settings",IDC_HUBSETTINGS,3,4,399,205
+    GROUPBOX        "Overrides for global settings",IDC_HUBSETTINGS,3,2,399,205
     CONTROL         "Use default",IDC_SEARCH_INTERVAL_DEFAULT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,304,127,71,10
     CONTROL         "Show users joins / parts in mainchat for favorite users",IDC_SHOW_JOIN_FAV,
                     "Button",BS_AUTO3STATE | WS_TABSTOP,12,35,261,10
@@ -2404,8 +2404,8 @@ BEGIN
     COMBOBOX        IDC_MODE6,20,166,81,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "IPv4",IDC_CONN_IPV4,14,122,205,30
     GROUPBOX        "IPv6",IDC_CONN_IPV6,14,155,205,28
-    EDITTEXT        IDC_AWAY_MSG,10,74,385,27,ES_MULTILINE | ES_AUTOHSCROLL | WS_VSCROLL
-    LTEXT           "Custom away message",IDC_AWAY_MSG_LBL,10,62,215,8
+    EDITTEXT        IDC_AWAY_MSG,10,72,385,32,ES_MULTILINE | ES_AUTOHSCROLL | WS_VSCROLL
+    LTEXT           "Custom away message",IDC_AWAY_MSG_LBL,10,60,215,8
     GROUPBOX        "Minimum search interval ( in seconds )",IDC_FAV_SEARCH_INTERVAL,235,110,158,40
 END
 
