@@ -99,7 +99,7 @@ bool RssFeedsPage::write() {
 
 	auto feed = RSSManager::getInstance()->getFeedByName(feedname);
 	if (feed && feed != feedItem) {
-		MessageBox(_T("An item with the same Name already exists"));
+		MessageBox(CTSTRING(ITEM_NAME_EXISTS));
 		return false;
 	}
 	feed = RSSManager::getInstance()->getFeedByUrl(url);

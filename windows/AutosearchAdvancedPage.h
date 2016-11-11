@@ -52,7 +52,11 @@ public:
 	string getName() { return name; }
 	void moveWindow(CRect& rc) { this->MoveWindow(rc);  }
 	void create(HWND aParent) { this->Create(aParent); }
-	void showWindow(BOOL aShow) { this->ShowWindow(aShow); }
+	void showWindow(BOOL aShow) { 
+		this->ShowWindow(aShow);
+		if(aShow)
+			fixControls();
+	}
 
 	LRESULT onCheckMatcher(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onExactMatch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);

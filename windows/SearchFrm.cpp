@@ -1511,7 +1511,6 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			};
 
 			ctrlResults.list.appendCopyMenu(resultsMenu, customItems);
-			resultsMenu.appendSeparator();
 
 			appendUserItems(resultsMenu, false);
 			prepareMenu(resultsMenu, UserCommand::CONTEXT_SEARCH, tthInfo.hubs);

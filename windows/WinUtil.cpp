@@ -1126,7 +1126,7 @@ bool WinUtil::parseDBLClick(const tstring& str) {
 	boost::regex reg;
 	reg.assign(AirUtil::getReleaseRegLong(false));
 	if(regex_match(url, reg)) {
-		WinUtil::search(Text::toT(url), true);
+		WinUtil::search(Text::toT(url));
 		return true;
 	} else {
 		::ShellExecute(NULL, NULL, Text::toT(url).c_str(), NULL, NULL, SW_SHOWNORMAL);
