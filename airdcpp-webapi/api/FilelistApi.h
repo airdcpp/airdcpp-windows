@@ -49,12 +49,16 @@ namespace webserver {
 		api_return handleOwnList(ApiRequest& aRequest);
 
 		api_return handleGetLists(ApiRequest& aRequest);
-		api_return handleDownload(ApiRequest& aRequest);
+
+		api_return handlePostDirectoryDownload(ApiRequest& aRequest);
+		api_return handleDeleteDirectoryDownload(ApiRequest& aRequest);
+
 		api_return handleFindNfo(ApiRequest& aRequest);
 		api_return handleMatchQueue(ApiRequest& aRequest);
 
 		void on(DirectoryListingManagerListener::ListingCreated, const DirectoryListingPtr& aList) noexcept;
 		void on(DirectoryListingManagerListener::ListingClosed, const DirectoryListingPtr&) noexcept;
+		void on(DirectoryListingManagerListener::DirectoryDownloadCompleted, const DirectoryListingPtr&, const DirectoryBundleAddInfo::List& aQueueInfos, const DirectoryDownloadPtr& aDirectoryInfo) noexcept;
 
 		static json serializeList(const DirectoryListingPtr& aList) noexcept;
 	};

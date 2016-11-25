@@ -22,6 +22,7 @@
 #include "forward.h"
 
 #include "AutoSearchManagerListener.h"
+#include "DirectoryListingManagerListener.h"
 #include "SearchManagerListener.h"
 #include "QueueManagerListener.h"
 
@@ -37,7 +38,8 @@
 
 namespace dcpp {
 
-class AutoSearchManager :  public Singleton<AutoSearchManager>, public Speaker<AutoSearchManagerListener>, private TimerManagerListener, private SearchManagerListener, private QueueManagerListener {
+class AutoSearchManager :  public Singleton<AutoSearchManager>, public Speaker<AutoSearchManagerListener>, 
+	private TimerManagerListener, private SearchManagerListener, private QueueManagerListener, private DirectoryListingManagerListener {
 public:
 	enum SearchType {
 		TYPE_MANUAL_FG,
@@ -79,8 +81,8 @@ public:
 
 	void logMessage(const string& aMsg, LogMessage::Severity aSeverity) const noexcept;
 
-	void onBundleCreated(BundlePtr& aBundle, void* aSearch) noexcept;
-	void onBundleError(void* aSearch, const string& aError, const string& aDir, const HintedUser& aUser) noexcept;
+	void onBundleCreated(const BundlePtr& aBundle, const void* aSearch) noexcept;
+	void onBundleError(const void* aSearch, const string& aError, const string& aBundleName, const HintedUser& aUser) noexcept;
 
 	vector<string> getGroups() { RLock l(cs);  return groups; }
 	void setGroups(vector<string>& newGroups) { WLock l(cs);  groups = newGroups; }
@@ -137,6 +139,8 @@ private:
 
 	void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept { onRemoveBundle(aBundle, false); }
 	void on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept;
+
+	void on(DirectoryListingManagerListener::DirectoryDownloadCompleted, const DirectoryListingPtr&, const DirectoryBundleAddInfo::List&, const DirectoryDownloadPtr&) noexcept;
 
 	//bool onBundleStatus(BundlePtr& aBundle, const ProfileTokenSet& aSearches);
 	void onRemoveBundle(const BundlePtr& aBundle, bool finished) noexcept;

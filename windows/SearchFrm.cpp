@@ -813,7 +813,11 @@ void SearchFrame::handleDownload(const string& aTarget, Priority p, bool useWhol
 					path = aSR->getType() == SearchResult::TYPE_DIRECTORY ? aSR->getFileName() : Util::getLastDir(aSR->getFilePath());
 				}
 
-				DirectoryListingManager::getInstance()->addDirectoryDownload(aSR->getFilePath(), *path, aSR->getUser(), aTarget, p, false, nullptr, false, false);
+				try {
+					DirectoryListingManager::getInstance()->addDirectoryDownload(aSR->getUser(), *path, aSR->getFilePath(), aTarget, p);
+				} catch (const Exception& e) {
+					ctrlStatus.SetText(1, Text::toT(e.getError()).c_str());
+				}
 			}
 		};
 

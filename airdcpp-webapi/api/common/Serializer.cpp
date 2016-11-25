@@ -362,6 +362,25 @@ namespace webserver {
 		};
 	}
 
+	json Serializer::serializeDirectoryBundleAddInfo(const DirectoryBundleAddInfo& aInfo) noexcept {
+		json ret = {
+			{ "files_queued", aInfo.filesAdded },
+			{ "files_updated", aInfo.filesUpdated },
+			{ "files_failed", aInfo.filesFailed },
+			{ "files_exist", aInfo.filesExist },
+			{ "error", aInfo.errorMessage },
+		};
+
+		if (aInfo.bundle) {
+			ret["bundle"] = {
+				{ "id", aInfo.bundle->getToken() },
+				{ "merged", aInfo.merged },
+			};
+		}
+
+		return ret;
+	}
+
 	json Serializer::serializeSourceCount(const QueueItemBase::SourceCount& aCount) noexcept {
 		return{
 			{ "online", aCount.online },

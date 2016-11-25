@@ -82,7 +82,7 @@ public:
 	uint64_t getTotalQueueSize() const noexcept { return fileQueue.getTotalQueueSize(); }
 
 	/** Add a user's filelist to the queue. */
-	QueueItemPtr addList(const HintedUser& HintedUser, Flags::MaskType aFlags, const string& aInitialDir = Util::emptyString, BundlePtr aBundle=nullptr) throw(QueueException, FileException);
+	QueueItemPtr addList(const HintedUser& HintedUser, Flags::MaskType aFlags, const string& aInitialDir = Util::emptyString, BundlePtr aBundle=nullptr) throw(QueueException, DupeException);
 
 	/** Add an item that is opened in the client or with an external program */
 	/** Files that are viewed in the client should be added from ViewFileManager */
@@ -229,16 +229,18 @@ public:
 	// QueueException will be thrown only if the source is invalid (source can be nullptr though)
 	// errorMsg_ will contain errors related to queueing the files
 	// nullptr can be returned if no files could be queued
-	BundlePtr createDirectoryBundle(const string& aTarget, const HintedUser& aUser, BundleFileInfo::List& aFiles, 
-		Priority aPrio, time_t aDate, string& errorMsg_) throw(QueueException);
+	DirectoryBundleAddInfo createDirectoryBundle(const string& aTarget, const HintedUser& aUser, BundleDirectoryItemInfo::List& aFiles,
+		Priority aPrio, time_t aDate) throw(QueueException);
 
 	// Create a file bundle with the supplied target path
 	// 
 	// aDate is the original date of the bundle (usually the modify date from source user)
 	// Source can be nullptr
 	// All errors will be thrown
-	// May return nullptr if the file is already active in queue or when adding 0-byte files
-	BundlePtr createFileBundle(const string& aTarget, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, time_t aDate, 
+	//
+	// Returns the bundle and bool whether it's a newly created bundle
+	// Returns nothing for zero byte items
+	optional<FileBundleAddInfo> createFileBundle(const string& aTarget, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, time_t aDate,
 		Flags::MaskType aFlags = 0, Priority aPrio = Priority::DEFAULT) throw(QueueException, FileException, DupeException);
 
 	bool removeBundle(QueueToken aBundleToken, bool removeFinishedFiles) noexcept;
@@ -265,7 +267,8 @@ public:
 	bool handlePartialResult(const HintedUser& aUser, const TTHValue& tth, const QueueItem::PartialSource& partialSource, PartsInfo& outPartialInfo) noexcept;
 
 	// Queue a TTH list from the user containing the supplied TTH
-	void addBundleTTHList(const HintedUser& aUser, const string& aRemoteBundleToken, const TTHValue& tth) throw(QueueException);
+	// Throws on errors
+	void addBundleTTHList(const HintedUser& aUser, const string& aRemoteBundleToken, const TTHValue& tth);
 	MemoryInputStream* generateTTHList(QueueToken aBundleToken, bool isInSharingHub, BundlePtr& bundle_) throw(QueueException);
 
 	//Bundle download failed due to Ex. disk full

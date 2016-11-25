@@ -69,6 +69,7 @@ namespace webserver {
 		static json serializeDirectoryDupe(DupeType aDupeType, const string& aPath) noexcept;
 		static json serializeSlots(int aFree, int aTotal) noexcept;
 
+		static json serializeDirectoryBundleAddInfo(const DirectoryBundleAddInfo& aInfo) noexcept;
 		static json serializePriority(const QueueItemBase& aItem) noexcept;
 		static json serializeSourceCount(const QueueItemBase::SourceCount& aCount) noexcept;
 

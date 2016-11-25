@@ -36,7 +36,10 @@ class ADLSearch;
 
 class BufferedSocket;
 
-struct BundleFileInfo;
+struct BundleDirectoryItemInfo;
+
+struct DirectoryBundleAddInfo;
+struct FileBundleAddInfo;
 
 class Bundle;
 typedef boost::intrusive_ptr<Bundle> BundlePtr;
@@ -57,6 +60,9 @@ class ConnectionQueueItem;
 class DirectoryListing;
 typedef boost::intrusive_ptr<DirectoryListing> DirectoryListingPtr;
 typedef std::vector<DirectoryListingPtr> DirectoryListingList;
+
+class DirectoryDownload;
+typedef std::shared_ptr<DirectoryDownload> DirectoryDownloadPtr;
 
 class Download;
 typedef Download* DownloadPtr;

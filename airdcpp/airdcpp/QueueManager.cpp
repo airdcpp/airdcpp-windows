@@ -524,26 +524,21 @@ bool QueueManager::hasDownloadedBytes(const string& aTarget) throw(QueueExceptio
 	return q->getDownloadedBytes() > 0;
 }
 
-QueueItemPtr QueueManager::addList(const HintedUser& aUser, Flags::MaskType aFlags, const string& aInitialDir /* = Util::emptyString */, BundlePtr aBundle /*nullptr*/) throw(QueueException, FileException) {
-	//check the source
+QueueItemPtr QueueManager::addList(const HintedUser& aUser, Flags::MaskType aFlags, const string& aInitialDir /* = Util::emptyString */, BundlePtr aBundle /*nullptr*/) throw(QueueException, DupeException) {
+	// Pre-checks
 	checkSource(aUser);
-	//dcassert(!aUser.hint.empty());
-	if (aUser.hint.empty())
+	if (aUser.hint.empty()) {
 		throw QueueException(STRING(HUB_UNKNOWN));
+	}
 
-	//format the target
-	string target;
+	// Format the target
+	auto target = getListPath(aUser);
 	if((aFlags & QueueItem::FLAG_PARTIAL_LIST) && !aInitialDir.empty()) {
-		StringList nicks = ClientManager::getInstance()->getNicks(aUser);
-		if (nicks.empty())
-			throw QueueException(STRING(INVALID_TARGET_FILE));
-		target = Util::getListPath() + nicks[0] + ".partial[" + Util::validateFileName(aInitialDir) + "]";
-	} else {
-		target = getListPath(aUser);
+		target += ".partial[" + Util::validateFileName(aInitialDir) + "]";
 	}
 
 
-	//add in queue
+	// Add in queue
 
 	QueueItemPtr q = nullptr;
 	{
@@ -551,7 +546,7 @@ QueueItemPtr QueueManager::addList(const HintedUser& aUser, Flags::MaskType aFla
 		auto ret = fileQueue.add(target, -1, (Flags::MaskType)(QueueItem::FLAG_USER_LIST | aFlags), Priority::HIGHEST, aInitialDir, GET_TIME(), TTHValue());
 		if (!ret.second) {
 			//exists already
-			throw QueueException(STRING(LIST_ALREADY_QUEUED));
+			throw DupeException(STRING(LIST_ALREADY_QUEUED));
 		}
 
 		q = std::move(ret.first);
@@ -802,11 +797,12 @@ private:
 	unordered_multimap<string, Error> errors;
 };
 
-BundlePtr QueueManager::createDirectoryBundle(const string& aTarget, const HintedUser& aUser, BundleFileInfo::List& aFiles, Priority aPrio, time_t aDate, string& errorMsg_) throw(QueueException) {
-	string target = formatBundleTarget(aTarget, aDate);
+DirectoryBundleAddInfo QueueManager::createDirectoryBundle(const string& aTarget, const HintedUser& aUser, BundleDirectoryItemInfo::List& aFiles, Priority aPrio, time_t aDate) throw(QueueException) {
+	// Generic validations that will throw
+	auto target = formatBundleTarget(aTarget, aDate);
 
-	// Check if the target is allowed
 	{
+		// There can't be existing bundles inside this directory
 		BundleList subBundles;
 		bundleQueue.getSubBundles(target, subBundles);
 		if (!subBundles.empty()) {
@@ -819,33 +815,39 @@ BundlePtr QueueManager::createDirectoryBundle(const string& aTarget, const Hinte
 		}
 	}
 
-	int fileCount = aFiles.size();
-
-	//check the source
 	if (aUser.user) {
-		//it's up to the caller to catch this one
 		checkSource(aUser);
 	}
 
+
+	// File validation
+	int smallDupes = 0, fileCount = aFiles.size();
+
+	DirectoryBundleAddInfo info;
 	ErrorReporter errors(fileCount);
 
-	int existingFiles = 0, smallDupes=0;
+	if (aFiles.empty() || (SETTING(SKIP_ZERO_BYTE) && all_of(aFiles.begin(), aFiles.end(), [](const BundleDirectoryItemInfo& aFile) { return aFile.size == 0; }))) {
+		info.errorMessage = STRING(DIR_EMPTY) + " " + Util::getFileName(aTarget);
+		return info;
+	}
 
-	//check the files
-	aFiles.erase(boost::remove_if(aFiles, [&](BundleFileInfo& bfi) {
+	aFiles.erase(boost::remove_if(aFiles, [&](BundleDirectoryItemInfo& bfi) {
 		try {
 			validateBundleFile(target, bfi.file, bfi.tth, bfi.prio);
 			return false; // valid
 		} catch(QueueException& e) {
 			errors.add(e.getError(), bfi.file, false);
+			info.filesFailed++;
 		} catch(FileException& /*e*/) {
-			existingFiles++;
+			info.filesExist++;
 		} catch(DupeException& e) {
 			bool isSmall = bfi.size < Util::convertSize(SETTING(MIN_DUPE_CHECK_SIZE), Util::KB);
 			errors.add(e.getError(), bfi.file, isSmall);
 			if (isSmall) {
 				smallDupes++;
 				return false;
+			} else {
+				info.filesFailed++;
 			}
 		}
 
@@ -853,21 +855,21 @@ BundlePtr QueueManager::createDirectoryBundle(const string& aTarget, const Hinte
 	}), aFiles.end());
 
 
-	//check the errors
+	// Check file validation errors
 	if (aFiles.empty()) {
 		//report existing files only if all files exist to prevent useless spamming
-		if (existingFiles == fileCount) {
-			errorMsg_ = STRING_F(ALL_BUNDLE_FILES_EXIST, existingFiles);
-			return nullptr;
+		if (info.filesExist == fileCount) {
+			info.errorMessage = STRING_F(ALL_BUNDLE_FILES_EXIST, info.filesExist);
+			return info;
 		}
 
-		errorMsg_ = errors.getMessage();
-		return nullptr;
+		info.errorMessage = errors.getMessage();
+		return info;
 	} else if (smallDupes > 0) {
 		if (smallDupes == static_cast<int>(aFiles.size())) {
 			//no reason to continue if all remaining files are dupes
-			errorMsg_ = errors.getMessage();
-			return nullptr;
+			info.errorMessage = errors.getMessage();
+			return info;
 		} else {
 			//those will get queued, don't report
 			errors.clearMinor();
@@ -878,7 +880,6 @@ BundlePtr QueueManager::createDirectoryBundle(const string& aTarget, const Hinte
 
 	BundlePtr b = nullptr;
 	bool wantConnection = false;
-	int newItems = 0;
 	Bundle::Status oldStatus;
 
 	QueueItem::ItemBoolList items;
@@ -892,30 +893,37 @@ BundlePtr QueueManager::createDirectoryBundle(const string& aTarget, const Hinte
 			try {
 				auto addInfo = addBundleFile(target + bfi.file, bfi.size, bfi.tth, aUser, 0, true, bfi.prio, wantConnection, b);
 				if (!addInfo) {
+					// 0-byte
 					continue;
 				}
 
 				if ((*addInfo).second) {
-					newItems++;
+					info.filesAdded++;
+				} else {
+					info.filesUpdated++;
 				}
 
 				items.push_back(*addInfo);
 			} catch(QueueException& e) {
 				errors.add(e.getError(), bfi.file, false);
+				info.filesFailed++;
 			} catch(FileException& /*e*/) {
 				//the file has finished after we made the initial target check, don't add error for those
-				existingFiles++;
+				info.filesExist++;
 			}
 		}
 
-		if (!addBundle(b, newItems)) {
+		if (!addBundle(b, info.filesAdded)) {
 			b = nullptr;
 		}
 	}
 
-	if (existingFiles == fileCount) {
-		errorMsg_ = STRING_F(ALL_BUNDLE_FILES_EXIST, existingFiles);
-		return nullptr;
+	info.merged = oldStatus != Bundle::STATUS_NEW;
+	info.bundle = b;
+
+	if (info.filesExist == fileCount) {
+		info.errorMessage = STRING_F(ALL_BUNDLE_FILES_EXIST, info.filesExist);
+		return info;
 	}
 
 	if (b) {
@@ -924,20 +932,20 @@ BundlePtr QueueManager::createDirectoryBundle(const string& aTarget, const Hinte
 
 		onBundleAdded(b, oldStatus, items, aUser, wantConnection);
 
-		if (newItems > 0) {
+		if (info.filesAdded > 0) {
 			// Report
 			if (oldStatus == Bundle::STATUS_NEW) {
-				LogManager::getInstance()->message(STRING_F(BUNDLE_CREATED, b->getName() % newItems) + " (" + CSTRING_F(TOTAL_SIZE, Util::formatBytes(b->getSize())) + ")", LogMessage::SEV_INFO);
+				LogManager::getInstance()->message(STRING_F(BUNDLE_CREATED, b->getName() % info.filesAdded) + " (" + CSTRING_F(TOTAL_SIZE, Util::formatBytes(b->getSize())) + ")", LogMessage::SEV_INFO);
 			} else if (b->getTarget() == target) {
-				LogManager::getInstance()->message(STRING_F(X_BUNDLE_ITEMS_ADDED, newItems % b->getName().c_str()), LogMessage::SEV_INFO);
+				LogManager::getInstance()->message(STRING_F(X_BUNDLE_ITEMS_ADDED, info.filesAdded % b->getName().c_str()), LogMessage::SEV_INFO);
 			} else {
-				LogManager::getInstance()->message(STRING_F(BUNDLE_MERGED, Util::getLastDir(target) % b->getName() % newItems), LogMessage::SEV_INFO);
+				LogManager::getInstance()->message(STRING_F(BUNDLE_MERGED, Util::getLastDir(target) % b->getName() % info.filesAdded), LogMessage::SEV_INFO);
 			}
 		}
 	}
 
-	errorMsg_ = errors.getMessage();
-	return b;
+	info.errorMessage = errors.getMessage();
+	return info;
 }
 
 void QueueManager::addLoadedBundle(BundlePtr& aBundle) noexcept {
@@ -1022,7 +1030,7 @@ string QueueManager::formatBundleTarget(const string& aPath, time_t aRemoteDate)
 	return Util::validatePath(formatedPath);
 }
 
-BundlePtr QueueManager::createFileBundle(const string& aTarget, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, time_t aDate, 
+optional<FileBundleAddInfo> QueueManager::createFileBundle(const string& aTarget, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, time_t aDate,
 		Flags::MaskType aFlags, Priority aPrio) throw(QueueException, FileException, DupeException) {
 
 	string filePath = formatBundleTarget(Util::getFilePath(aTarget), aDate);
@@ -1049,25 +1057,25 @@ BundlePtr QueueManager::createFileBundle(const string& aTarget, int64_t aSize, c
 		oldStatus = b->getStatus();
 
 		fileAddInfo = addBundleFile(target, aSize, aTTH, aUser, aFlags, true, aPrio, wantConnection, b);
+		if (!fileAddInfo) {
+			// 0-byte
+			return boost::none;
+		}
 
-		if (!addBundle(b, fileAddInfo && (*fileAddInfo).second ? 1 : 0)) {
-			b = nullptr;
+		addBundle(b, fileAddInfo && (*fileAddInfo).second ? 1 : 0);
+	}
+
+	onBundleAdded(b, oldStatus, { *fileAddInfo }, aUser, wantConnection);
+
+	if ((*fileAddInfo).second) {
+		if (oldStatus == Bundle::STATUS_NEW) {
+			LogManager::getInstance()->message(STRING_F(FILE_X_QUEUED, b->getName() % Util::formatBytes(b->getSize())), LogMessage::SEV_INFO);
+		} else {
+			LogManager::getInstance()->message(STRING_F(BUNDLE_ITEM_ADDED, Util::getFileName(target) % b->getName()), LogMessage::SEV_INFO);
 		}
 	}
 
-	if (fileAddInfo && b) {
-		onBundleAdded(b, oldStatus, { *fileAddInfo }, aUser, wantConnection);
-
-		if ((*fileAddInfo).second) {
-			if (oldStatus == Bundle::STATUS_NEW) {
-				LogManager::getInstance()->message(STRING_F(FILE_X_QUEUED, b->getName() % Util::formatBytes(b->getSize())), LogMessage::SEV_INFO);
-			} else {
-				LogManager::getInstance()->message(STRING_F(BUNDLE_ITEM_ADDED, Util::getFileName(target) % b->getName()), LogMessage::SEV_INFO);
-			}
-		}
-	}
-
-	return b;
+	return FileBundleAddInfo(b, oldStatus == Bundle::STATUS_NEW);
 }
 
 QueueManager::FileAddInfo QueueManager::addBundleFile(const string& aTarget, int64_t aSize, const TTHValue& aRoot, const HintedUser& aUser, Flags::MaskType aFlags /* = 0 */,
@@ -3821,9 +3829,9 @@ MemoryInputStream* QueueManager::generateTTHList(QueueToken aBundleToken, bool i
 	}
 }
 
-void QueueManager::addBundleTTHList(const HintedUser& aUser, const string& aRemoteBundleToken, const TTHValue& tth) throw(QueueException) {
+void QueueManager::addBundleTTHList(const HintedUser& aUser, const string& aRemoteBundleToken, const TTHValue& aTTH) {
 	//LogManager::getInstance()->message("ADD TTHLIST");
-	auto b = findBundle(tth);
+	auto b = findBundle(aTTH);
 	if (b) {
 		addList(aUser, QueueItem::FLAG_TTHLIST_BUNDLE | QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_MATCH_QUEUE, aRemoteBundleToken, b);
 	}
