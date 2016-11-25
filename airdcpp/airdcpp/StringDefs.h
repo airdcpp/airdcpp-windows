@@ -317,7 +317,7 @@ enum Strings { // @DontAdd
 	DIRECTORY_REFRESH_QUEUED, // "The directory %1% has been queued for refreshing"
 	DIRECTORY_SHARED, // "Directory already shared"
 	DIRECT_ENCRYPTED_CHANNEL, // "Direct encrypted channel"
-	DIR_EMPTY, // "The directory is empty:"
+	DIR_EMPTY, // "The directory is empty"
 	DIR_HISTORY, // "Download locations"
 	DIR_QUEUED_ALREADY, // "The directory exists in queue: %1%"
 	DIR_REFRESH_FAILED, // "Failed to refresh the directory %1%: %2%"

@@ -32,7 +32,7 @@ struct AutoSearchItemSettings {
 
 	//Default constructor, for adding auto search
 	AutoSearchItemSettings() :
-		as(nullptr), fileTypeStr(SETTING(LAST_AS_FILETYPE)), action(0), matcherType(0), remove(false),
+		as(nullptr), fileTypeStr(SETTING(LAST_AS_FILETYPE)), action(0), matcherType(0), remove(false), target(SETTING(DOWNLOAD_DIRECTORY)),
 		curNumber(1), maxNumber(0), startTime(0, 0),
 		endTime(23, 59), searchDays("1111111"), checkQueued(true), checkShared(true), matchFullPath(false),
 		numberLen(2), useParams(false), searchInterval(180), groupName(Util::emptyString), userMatcherExclude(false)

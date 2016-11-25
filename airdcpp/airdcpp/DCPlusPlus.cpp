@@ -96,19 +96,20 @@ void startup(function<void(const string&)> stepF, function<bool(const string& /*
 	ThrottleManager::newInstance();
 	QueueManager::newInstance();
 	FavoriteManager::newInstance();
-	FinishedManager::newInstance();
 	ADLSearchManager::newInstance();
 	ConnectivityManager::newInstance();
+	DirectoryListingManager::newInstance();
 	DebugManager::newInstance();
-	WebShortcuts::newInstance();
-	AutoSearchManager::newInstance();
 	ShareScannerManager::newInstance();
 	GeoManager::newInstance();
-	DirectoryListingManager::newInstance();
 	UpdateManager::newInstance();
-	HighlightManager::newInstance();
 	ViewFileManager::newInstance();
 	ActivityManager::newInstance();
+
+	WebShortcuts::newInstance();
+	HighlightManager::newInstance();
+	FinishedManager::newInstance();
+	AutoSearchManager::newInstance();
 	RSSManager::newInstance();
 
 	SettingsManager::getInstance()->load(messageF);
@@ -191,17 +192,19 @@ void shutdown(function<void (const string&)> stepF, function<void (float)> progr
 
 	announce(STRING(SHUTTING_DOWN));
 
+	HighlightManager::deleteInstance();
+	AutoSearchManager::deleteInstance();
+	RSSManager::deleteInstance();
+	FinishedManager::deleteInstance();
+	WebShortcuts::deleteInstance();
+
 	ActivityManager::deleteInstance();
 	ViewFileManager::deleteInstance();
-	HighlightManager::deleteInstance();
 	UpdateManager::deleteInstance();
 	GeoManager::deleteInstance();
 	ConnectivityManager::deleteInstance();
 	DebugManager::deleteInstance();
-	AutoSearchManager::deleteInstance();
-	WebShortcuts::deleteInstance();
 	ADLSearchManager::deleteInstance();
-	FinishedManager::deleteInstance();
 	CryptoManager::deleteInstance();
 	ThrottleManager::deleteInstance();
 	DirectoryListingManager::deleteInstance();
@@ -218,7 +221,6 @@ void shutdown(function<void (const string&)> stepF, function<void (float)> progr
 	HashManager::deleteInstance();
 	LogManager::deleteInstance();
 	SettingsManager::deleteInstance();
-	RSSManager::deleteInstance();
 	TimerManager::deleteInstance();
 	ResourceManager::deleteInstance();
 

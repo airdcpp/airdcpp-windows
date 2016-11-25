@@ -32,7 +32,7 @@ namespace dcpp {
 			return ret != searches.end() ? ret->second : nullptr;
 		}
 
-		AutoSearchPtr getItem(void* aSearch) const {
+		AutoSearchPtr getItem(const void* aSearch) const {
 			auto i = find_if(searches | map_values, [&](const AutoSearchPtr& s) {
 				return s.get() == aSearch;
 			});
