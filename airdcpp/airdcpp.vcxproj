@@ -242,6 +242,7 @@
     <ClCompile Include="airdcpp\MessageManager.cpp" />
     <ClCompile Include="airdcpp\modules\AutoSearch.cpp" />
     <ClCompile Include="airdcpp\modules\AutoSearchManager.cpp" />
+    <ClCompile Include="airdcpp\modules\ColorSettings.cpp" />
     <ClCompile Include="airdcpp\modules\FinishedManager.cpp" />
     <ClCompile Include="airdcpp\modules\HighlightManager.cpp" />
     <ClCompile Include="airdcpp\modules\RSSManager.cpp" />
@@ -258,7 +259,6 @@
     <ClCompile Include="airdcpp\CID.cpp" />
     <ClCompile Include="airdcpp\Client.cpp" />
     <ClCompile Include="airdcpp\ClientManager.cpp" />
-    <ClCompile Include="airdcpp\ColorSettings.cpp" />
     <ClCompile Include="airdcpp\ConnectionManager.cpp" />
     <ClCompile Include="airdcpp\ConnectivityManager.cpp" />
     <ClCompile Include="airdcpp\CriticalSection.cpp" />
@@ -360,6 +360,7 @@
     <ClInclude Include="airdcpp\modules\AutoSearchManager.h" />
     <ClInclude Include="airdcpp\modules\AutoSearchManagerListener.h" />
     <ClInclude Include="airdcpp\modules\AutoSearchQueue.h" />
+    <ClInclude Include="airdcpp\modules\ColorSettings.h" />
     <ClInclude Include="airdcpp\modules\FinishedManager.h" />
     <ClInclude Include="airdcpp\modules\FinishedManagerListener.h" />
     <ClInclude Include="airdcpp\modules\HighlightManager.h" />
@@ -392,7 +393,6 @@
     <ClInclude Include="airdcpp\ClientListener.h" />
     <ClInclude Include="airdcpp\ClientManager.h" />
     <ClInclude Include="airdcpp\ClientManagerListener.h" />
-    <ClInclude Include="airdcpp\ColorSettings.h" />
     <ClInclude Include="airdcpp\compiler.h" />
     <ClInclude Include="airdcpp\concurrency.h" />
     <ClInclude Include="airdcpp\ConnectionManager.h" />

@@ -27,7 +27,7 @@
 #include <airdcpp/SimpleXML.h>
 #include <airdcpp/Singleton.h>
 
-#include <airdcpp/ColorSettings.h>
+#include "ColorSettings.h"
 
 
 namespace dcpp {

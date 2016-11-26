@@ -33,10 +33,10 @@ using boost::range::for_each;
 using boost::range::find_if;
 
 
-DirectoryDownloadId messageIdCounter = 0;
+DirectoryDownloadId directoryDownloadIdCounter = 0;
 
 DirectoryDownload::DirectoryDownload(const HintedUser& aUser, const string& aBundleName, const string& aListPath, const string& aTarget, Priority p, const void* aOwner) :
-	id(messageIdCounter++), listPath(aListPath), target(aTarget), priority(p), owner(aOwner), bundleName(aBundleName), user(aUser) { }
+	id(directoryDownloadIdCounter++), listPath(aListPath), target(aTarget), priority(p), owner(aOwner), bundleName(aBundleName), user(aUser) { }
 
 bool DirectoryDownload::HasOwner::operator()(const DirectoryDownloadPtr& ddi) const noexcept {
 	return owner == ddi->getOwner() && Util::stricmp(a, ddi->getBundleName()) != 0;

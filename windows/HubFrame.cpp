@@ -27,9 +27,7 @@
 #include "ResourceLoader.h"
 #include "MainFrm.h"
 
-#include <airdcpp/ColorSettings.h>
 #include <airdcpp/CryptoManager.h>
-#include <airdcpp/modules/HighlightManager.h>
 #include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/Message.h>
 #include <airdcpp/MessageManager.h>
@@ -43,6 +41,8 @@
 #include <airdcpp/Wildcards.h>
 #include <airdcpp/Localization.h>
 #include <airdcpp/GeoManager.h>
+
+#include <airdcpp/modules/HighlightManager.h>
 
 HubFrame::FrameMap HubFrame::frames;
 bool HubFrame::shutdown = false;

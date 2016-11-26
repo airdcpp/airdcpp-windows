@@ -32,7 +32,7 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include <airdcpp/ColorSettings.h>
+#include <airdcpp/modules/ColorSettings.h>
 
 #include "ShellContextMenu.h"
 #include "TypedListViewCtrl.h"
