@@ -24,7 +24,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include <airdcpp/WebShortcuts.h>
+#include <airdcpp/modules/WebShortcuts.h>
 
 #include <atlcrack.h>
 #include "PropPage.h"

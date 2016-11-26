@@ -76,10 +76,6 @@ class FavoriteUser;
 
 class File;
 
-class FinishedItem;
-typedef FinishedItem* FinishedItemPtr;
-typedef std::vector<FinishedItemPtr> FinishedItemList;
-
 class FinishedManager;
 
 template<class Hasher>
@@ -184,16 +180,6 @@ typedef std::vector<UserConnectionPtr> UserConnectionList;
 class ViewFile;
 typedef shared_ptr<ViewFile> ViewFilePtr;
 typedef vector<ViewFilePtr> ViewFileList;
-
-class AutoSearch;
-typedef boost::intrusive_ptr<AutoSearch> AutoSearchPtr;
-typedef std::vector<AutoSearchPtr> AutoSearchList;
-typedef std::unordered_map<int, AutoSearchPtr> AutoSearchMap;
-
-class RSS;
-typedef std::shared_ptr<RSS> RSSPtr;
-class RSSData;
-typedef boost::intrusive_ptr<RSSData> RSSDataPtr;
 
 } // namespace dcpp
 

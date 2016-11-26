@@ -36,7 +36,7 @@
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/TimerManager.h>
 
-#include <airdcpp/HighlightManager.h>
+#include <airdcpp/modules/HighlightManager.h>
 #include <airdcpp/WildCards.h>
 
 #include <boost/range/numeric.hpp>

@@ -32,7 +32,7 @@
 #include "ResourceLoader.h"
 #include "TextFrame.h"
 
-#include <airdcpp/FinishedManager.h>
+#include <airdcpp/modules/FinishedManager.h>
 
 template<class T, int title, int id>
 class FinishedFrameBase : public MDITabChildWindowImpl<T>, public StaticFrame<T, title, id>,

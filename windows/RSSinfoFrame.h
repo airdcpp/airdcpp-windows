@@ -31,8 +31,8 @@
 #include "RssFilterPage.h"
 #include "DownloadBaseHandler.h"
 
-#include <airdcpp/RSSManager.h>
-#include <airdcpp/AutoSearchManager.h>
+#include <airdcpp/modules/RSSManager.h>
+#include <airdcpp/modules/AutoSearchManager.h>
 #include <airdcpp/QueueManagerListener.h>
 #include <airdcpp/AirUtil.h>
 #include <airdcpp/TaskQueue.h>

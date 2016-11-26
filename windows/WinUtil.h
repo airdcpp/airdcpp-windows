@@ -33,7 +33,7 @@
 #include <airdcpp/User.h>
 #include <airdcpp/Util.h>
 #include <airdcpp/TargetUtil.h>
-#include <airdcpp/WebShortcuts.h>
+#include <airdcpp/modules/WebShortcuts.h>
 
 /* Work around DBTYPE name conflict with Berkeley DB */
 #define DBTYPE MS_DBTYPE

@@ -262,6 +262,34 @@ void webErrorF(const string& aError) {
 	LogManager::getInstance()->message(aError, LogMessage::SEV_ERROR);
 };
 
+#include <airdcpp/modules/AutoSearchManager.h>
+#include <airdcpp/modules/FinishedManager.h>
+#include <airdcpp/modules/HighlightManager.h>
+#include <airdcpp/modules/RSSManager.h>
+#include <airdcpp/modules/WebShortcuts.h>
+
+void initModules() {
+	WebShortcuts::newInstance();
+	HighlightManager::newInstance();
+	FinishedManager::newInstance();
+	AutoSearchManager::newInstance();
+	RSSManager::newInstance();
+
+	AutoSearchManager::getInstance()->load();
+	RSSManager::getInstance()->load();
+}
+
+void destroyModules() {
+	AutoSearchManager::getInstance()->save();
+	RSSManager::getInstance()->saveConfig();
+
+	HighlightManager::deleteInstance();
+	AutoSearchManager::deleteInstance();
+	RSSManager::deleteInstance();
+	FinishedManager::deleteInstance();
+	WebShortcuts::deleteInstance();
+}
+
 #define FINAL_UPDATER_LOG Util::getPath(Util::PATH_USER_LOCAL) + "updater.log"
 static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 {
@@ -301,7 +329,8 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 					// wait for the wizard to finish
 					s.wait();
 			},
-				[=](float progress) { WinUtil::splash->update(progress); }
+				[=](float progress) { WinUtil::splash->update(progress); },
+				initModules
 			);
 
 			webserver::WebServerManager::newInstance();
@@ -399,9 +428,12 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 		webserver::WebServerManager::getInstance()->stop();
 		webserver::WebServerManager::getInstance()->save(webErrorF);
 
+		//destroyModules();
+
 		shutdown(
 			[&](const string& str) { WinUtil::splash->update(str); },
-			[=](float progress) { WinUtil::splash->update(progress); }
+			[=](float progress) { WinUtil::splash->update(progress); },
+			destroyModules
 		);
 
 		webserver::WebServerManager::deleteInstance();

@@ -25,7 +25,7 @@
 
 #include <airdcpp/concurrency.h>
 
-#include <airdcpp/AutoSearchManagerListener.h>
+#include <airdcpp/modules/AutoSearchManagerListener.h>
 #include <airdcpp/ClientManagerListener.h>
 #include <airdcpp/TimerManagerListener.h>
 #include <airdcpp/FavoriteManagerListener.h>

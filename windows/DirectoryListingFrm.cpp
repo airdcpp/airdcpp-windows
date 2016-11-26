@@ -35,7 +35,7 @@
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/File.h>
-#include <airdcpp/HighlightManager.h>
+#include <airdcpp/modules/HighlightManager.h>
 #include <airdcpp/QueueManager.h>
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/User.h>

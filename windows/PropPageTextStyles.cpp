@@ -15,7 +15,7 @@
  */
 
 #include "stdafx.h"
-#include <airdcpp/HighlightManager.h>
+#include <airdcpp/modules/HighlightManager.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/SimpleXML.h>
 #include <airdcpp/version.h>

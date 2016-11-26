@@ -19,26 +19,27 @@
 #ifndef DCPLUSPLUS_DCPP_AUTOSEARCH_MANAGER_H
 #define DCPLUSPLUS_DCPP_AUTOSEARCH_MANAGER_H
 
-#include "forward.h"
+#include <airdcpp/forward.h>
 
 #include "AutoSearchManagerListener.h"
-#include "DirectoryListingManagerListener.h"
-#include "SearchManagerListener.h"
-#include "QueueManagerListener.h"
-
 #include "AutoSearchQueue.h"
-#include "DelayedEvents.h"
-#include "GetSet.h"
-#include "Message.h"
-#include "Singleton.h"
-#include "Speaker.h"
-#include "TargetUtil.h"
-#include "TimerManagerListener.h"
+
+#include <airdcpp/DirectoryListingManagerListener.h>
+#include <airdcpp/SearchManagerListener.h>
+#include <airdcpp/QueueManagerListener.h>
+
+#include <airdcpp/DelayedEvents.h>
+#include <airdcpp/GetSet.h>
+#include <airdcpp/Message.h>
+#include <airdcpp/Singleton.h>
+#include <airdcpp/Speaker.h>
+#include <airdcpp/TargetUtil.h>
+#include <airdcpp/TimerManagerListener.h>
 
 
 namespace dcpp {
 
-class AutoSearchManager :  public Singleton<AutoSearchManager>, public Speaker<AutoSearchManagerListener>, 
+class AutoSearchManager : public Singleton<AutoSearchManager>, public Speaker<AutoSearchManagerListener>, 
 	private TimerManagerListener, private SearchManagerListener, private QueueManagerListener, private DirectoryListingManagerListener {
 public:
 	enum SearchType {

@@ -32,7 +32,7 @@
 
 #include <airdcpp/version.h>
 #include <airdcpp/format.h>
-#include <airdcpp/AutoSearchManager.h>
+#include <airdcpp/modules/AutoSearchManager.h>
 
 #define ICON_SIZE 16
 

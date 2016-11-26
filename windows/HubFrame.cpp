@@ -29,7 +29,7 @@
 
 #include <airdcpp/ColorSettings.h>
 #include <airdcpp/CryptoManager.h>
-#include <airdcpp/HighlightManager.h>
+#include <airdcpp/modules/HighlightManager.h>
 #include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/Message.h>
 #include <airdcpp/MessageManager.h>

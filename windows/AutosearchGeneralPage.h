@@ -25,7 +25,7 @@
 #include <atlcrack.h>
 #include <airdcpp/Util.h>
 #include <airdcpp/TargetUtil.h>
-#include <airdcpp/AutoSearchManager.h>
+#include <airdcpp/modules/AutoSearchManager.h>
 #include "AutoSearchItemSettings.h"
 #include "DownloadBaseHandler.h"
 #include "SearchTypeCombo.h"

@@ -18,7 +18,7 @@
 #include "Resource.h"
 
 #include "SearchPage.h"
-#include <airdcpp/AutoSearchManager.h>
+#include <airdcpp/modules/AutoSearchManager.h>
 
 PropPage::TextItem SearchPage::texts[] = {
 	{ IDC_INTERVAL_TEXT,						ResourceManager::MINIMUM_SEARCH_INTERVAL_SEC },

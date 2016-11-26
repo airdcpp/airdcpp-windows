@@ -17,9 +17,9 @@
 #include "stdafx.h"
 #include "Resource.h"
 
-#include <airdcpp/AutoSearchManager.h>
+#include <airdcpp/modules/AutoSearchManager.h>
 #include <airdcpp/FavoriteManager.h>
-#include <airdcpp/HighlightManager.h>
+#include <airdcpp/modules/HighlightManager.h>
 #include <airdcpp/MessageManager.h>
 #include <airdcpp/Magnet.h>
 #include <airdcpp/UploadManager.h>

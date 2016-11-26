@@ -25,8 +25,10 @@
 #pragma once
 #endif // _MSC_VER > 1000
 #include <atlcrack.h>
+
 #include <airdcpp/Util.h>
-#include <airdcpp/AutoSearchManager.h>
+#include <airdcpp/modules/AutoSearchManager.h>
+
 #include "AutoSearchItemSettings.h"
 #include "TabbedDialog.h"
 

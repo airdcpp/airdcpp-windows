@@ -22,7 +22,6 @@
 
 #include "ADLSearch.h"
 #include "AirUtil.h"
-#include "AutoSearchManager.h"
 #include "Bundle.h"
 #include "BZUtils.h"
 #include "ClientManager.h"

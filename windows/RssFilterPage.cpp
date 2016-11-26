@@ -22,7 +22,7 @@
 #include "RssFilterPage.h"
 #include "BrowseDlg.h"
 
-#include <airdcpp/AutoSearchManager.h>
+#include <airdcpp/modules/AutoSearchManager.h>
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/ResourceManager.h>
 

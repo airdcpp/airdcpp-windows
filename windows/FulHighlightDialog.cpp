@@ -24,7 +24,7 @@
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/version.h>
 
-#include <airdcpp/HighlightManager.h>
+#include <airdcpp/modules/HighlightManager.h>
 #include "FulHighlightDialog.h"
 #include "WinUtil.h"
 

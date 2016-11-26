@@ -24,7 +24,7 @@
 
 #include <atlcrack.h>
 #include "ExListViewCtrl.h"
-#include <airdcpp/RSSManager.h>
+#include <airdcpp/modules/RSSManager.h>
 #include "TabbedDialog.h"
 
 class RssFilterPage : public CDialogImpl<RssFilterPage>, public TabPage {

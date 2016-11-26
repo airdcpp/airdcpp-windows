@@ -20,15 +20,15 @@
 
 #include "AutoSearchManager.h"
 
-#include "ClientManager.h"
-#include "LogManager.h"
-#include "QueueManager.h"
-#include "SearchManager.h"
-#include "SearchResult.h"
-#include "ShareManager.h"
-#include "SimpleXML.h"
-#include "User.h"
-#include "DirectoryListingManager.h"
+#include <airdcpp/ClientManager.h>
+#include <airdcpp/LogManager.h>
+#include <airdcpp/QueueManager.h>
+#include <airdcpp/SearchManager.h>
+#include <airdcpp/SearchResult.h>
+#include <airdcpp/ShareManager.h>
+#include <airdcpp/SimpleXML.h>
+#include <airdcpp/User.h>
+#include <airdcpp/DirectoryListingManager.h>
 
 #include <boost/range/algorithm/max_element.hpp>
 

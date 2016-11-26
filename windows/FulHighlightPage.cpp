@@ -24,7 +24,7 @@
 #include <airdcpp/StringTokenizer.h>
 
 #include <airdcpp/ColorSettings.h>
-#include <airdcpp/HighlightManager.h>
+#include <airdcpp/modules/HighlightManager.h>
 #include "Resource.h"
 #include "FulHighlightPage.h"
 #include "FulHighlightDialog.h"
