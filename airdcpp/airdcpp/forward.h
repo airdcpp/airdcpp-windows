@@ -38,8 +38,8 @@ class BufferedSocket;
 
 struct BundleDirectoryItemInfo;
 
+struct BundleAddInfo;
 struct DirectoryBundleAddInfo;
-struct FileBundleAddInfo;
 
 class Bundle;
 typedef boost::intrusive_ptr<Bundle> BundlePtr;

@@ -201,40 +201,22 @@ void DirectoryListingManager::handleDownload(const DirectoryDownloadPtr& aDownlo
 	}
 
 	// Queue the directory
-	DirectoryBundleAddInfo::List infos;
+	auto target = aDownloadInfo->getTarget() + aDownloadInfo->getBundleName() + PATH_SEPARATOR;
 
-	{
-		auto createBundle = [&](const DirectoryListing::Directory::Ptr& aDir, const string& aTarget) {
-			auto queueInfo = aList->createBundle(aDir, aTarget, aDownloadInfo->getPriority());
+	string errorMsg;
+	auto queueInfo = aList->createBundle(dir, target, aDownloadInfo->getPriority(), errorMsg);
 
-			// Owner (when available) is responsible for error reporting
-			if (!aDownloadInfo->getOwner() && !queueInfo.errorMessage.empty()) {
-				LogManager::getInstance()->message(STRING_F(ADD_BUNDLE_ERRORS_OCC, aTarget % aList->getNick(false) % queueInfo.errorMessage), LogMessage::SEV_WARNING);
-			}
-
-			infos.push_back(move(queueInfo));
-		};
-
-		auto target = aDownloadInfo->getTarget() + aDownloadInfo->getBundleName() + PATH_SEPARATOR;
-
-		// Check if this is a root dir containing release dirs
-		// TODO: consider queueing only a single directory
-		boost::regex reg;
-		reg.assign(AirUtil::getReleaseRegBasic());
-
-		if (!boost::regex_match(dir->getName(), reg) && dir->files.empty() && !dir->directories.empty() &&
-			boost::algorithm::all_of(dir->directories | map_keys, [&reg](const string* aName) { return boost::regex_match(*aName, reg); })) {
-
-			// Create bundles from each subfolder
-			for (const auto& d : dir->directories | map_values) {
-				createBundle(d, target + d->getName() + PATH_SEPARATOR);
-			}
-		} else {
-			createBundle(dir, target);
-		}
+	// Owner, when available, is responsible for error reporting
+	if (!aDownloadInfo->getOwner() && !errorMsg.empty()) {
+		LogManager::getInstance()->message(STRING_F(ADD_BUNDLE_ERRORS_OCC, target % aList->getNick(false) % errorMsg), LogMessage::SEV_WARNING);
 	}
 
-	fire(DirectoryListingManagerListener::DirectoryDownloadCompleted(), aList, infos, aDownloadInfo);
+	if (queueInfo) {
+		fire(DirectoryListingManagerListener::DirectoryDownloadProcessed(), aDownloadInfo, *queueInfo, errorMsg);
+	} else {
+		fire(DirectoryListingManagerListener::DirectoryDownloadFailed(), aDownloadInfo, errorMsg);
+	}
+
 	removeDirectoryDownload(aDownloadInfo->getUser(), aDownloadInfo->getListPath());
 }
 
@@ -332,8 +314,9 @@ void DirectoryListingManager::on(QueueManagerListener::ItemRemoved, const QueueI
 		return;
 
 	auto u = qi->getSources()[0].getUser();
-	if (qi->isSet(QueueItem::FLAG_DIRECTORY_DOWNLOAD) && !aFinished)
+	if (qi->isSet(QueueItem::FLAG_DIRECTORY_DOWNLOAD) && !aFinished) {
 		removeDirectoryDownload(u, qi->getTempTarget());
+	}
 
 	if (qi->isSet(QueueItem::FLAG_CLIENT_VIEW)) {
 		DirectoryListingPtr dl = nullptr;

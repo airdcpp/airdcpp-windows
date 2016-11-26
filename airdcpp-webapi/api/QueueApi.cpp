@@ -245,7 +245,7 @@ namespace webserver {
 		Priority prio;
 		Deserializer::deserializeDownloadParams(aRequest.getRequestBody(), aRequest.getSession(), targetDirectory, targetFileName, prio);
 
-		optional<FileBundleAddInfo> bundleAddInfo;
+		BundleAddInfo bundleAddInfo;
 		try {
 			bundleAddInfo = QueueManager::getInstance()->createFileBundle(
 				targetDirectory + targetFileName,
@@ -256,21 +256,12 @@ namespace webserver {
 				0,
 				prio
 			);
-		}
-		catch (const Exception& e) {
+		} catch (const Exception& e) {
 			aRequest.setResponseErrorStr(e.getError());
 			return websocketpp::http::status_code::internal_server_error;
 		}
 
-		if (bundleAddInfo) {
-			json retJson = {
-				{ "id", (*bundleAddInfo).bundle->getToken() },
-				{ "merged", (*bundleAddInfo).merged }
-			};
-
-			aRequest.setResponseBody(retJson);
-		}
-
+		aRequest.setResponseBody(Serializer::serializeBundleAddInfo(bundleAddInfo));
 		return websocketpp::http::status_code::ok;
 	}
 
@@ -292,21 +283,22 @@ namespace webserver {
 			JsonUtil::throwError("files", JsonUtil::ERROR_INVALID, "No files were supplied");
 		}
 
-		DirectoryBundleAddInfo info;
-		try {
-			info = QueueManager::getInstance()->createDirectoryBundle(
-				JsonUtil::getField<string>("target", bundleJson),
-				Deserializer::deserializeHintedUser(bundleJson),
-				files,
-				Deserializer::deserializePriority(bundleJson, true),
-				JsonUtil::getField<time_t>("time", bundleJson)
-			);
-		} catch (const QueueException& e) {
-			aRequest.setResponseErrorStr(e.getError());
-			return websocketpp::http::status_code::internal_server_error;
+		string errorMsg;
+		auto info = QueueManager::getInstance()->createDirectoryBundle(
+			JsonUtil::getField<string>("target", bundleJson),
+			Deserializer::deserializeHintedUser(bundleJson),
+			files,
+			Deserializer::deserializePriority(bundleJson, true),
+			JsonUtil::getField<time_t>("time", bundleJson),
+			errorMsg
+		);
+
+		if (!info) {
+			aRequest.setResponseErrorStr(errorMsg);
+			return websocketpp::http::status_code::bad_request;
 		}
 
-		aRequest.setResponseBody(Serializer::serializeDirectoryBundleAddInfo(info));
+		aRequest.setResponseBody(Serializer::serializeDirectoryBundleAddInfo(*info, errorMsg));
 		return websocketpp::http::status_code::ok;
 	}
 

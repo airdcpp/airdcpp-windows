@@ -28,6 +28,7 @@ namespace webserver {
 		"filelist_created",
 		"filelist_removed",
 		"filelist_directory_download_processed",
+		"filelist_directory_download_failed",
 	};
 
 	FilelistApi::FilelistApi(Session* aSession) : ParentApiModule("session", CID_PARAM, Access::FILELISTS_VIEW, aSession, FilelistApi::subscriptionList, FilelistInfo::subscriptionList, [](const string& aId) { return Deserializer::parseCID(aId); }) {
@@ -147,13 +148,25 @@ namespace webserver {
 		});
 	}
 
-	void FilelistApi::on(DirectoryListingManagerListener::DirectoryDownloadCompleted, const DirectoryListingPtr&, const DirectoryBundleAddInfo::List& aQueueInfos, const DirectoryDownloadPtr& aDirectoryInfo) noexcept {
+	void FilelistApi::on(DirectoryListingManagerListener::DirectoryDownloadProcessed, const DirectoryDownloadPtr& aDirectoryInfo, const DirectoryBundleAddInfo& aQueueInfo, const string& aError) noexcept {
 		if (!subscriptionActive("filelist_directory_download_processed")) {
 			return;
 		}
 
 		send("filelist_directory_download_processed", {
 			{ "id", aDirectoryInfo->getId() },
+			{ "result", Serializer::serializeDirectoryBundleAddInfo(aQueueInfo, aError) }
+		});
+	}
+
+	void FilelistApi::on(DirectoryDownloadFailed, const DirectoryDownloadPtr& aDirectoryInfo, const string& aError) noexcept {
+		if (!subscriptionActive("filelist_directory_download_failed")) {
+			return;
+		}
+
+		send("filelist_directory_download_failed", {
+			{ "id", aDirectoryInfo->getId() },
+			{ "error", aError }
 		});
 	}
 

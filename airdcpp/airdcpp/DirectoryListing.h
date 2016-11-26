@@ -169,7 +169,7 @@ public:
 	// Returns the number of loaded dirs
 	int loadPartialXml(const string& aXml, const string& aAdcBase) throw(AbortException);
 
-	DirectoryBundleAddInfo createBundle(const Directory::Ptr& aDir, const string& aTarget, Priority aPrio) noexcept;
+	optional<DirectoryBundleAddInfo> createBundle(const Directory::Ptr& aDir, const string& aTarget, Priority aPrio, string& errorMsg_) noexcept;
 
 	bool viewAsText(const File::Ptr& aFile) const noexcept;
 

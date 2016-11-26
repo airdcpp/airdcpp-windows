@@ -530,23 +530,21 @@ void DirectoryListing::Directory::toBundleInfoList(const string& aTarget, Bundle
 	}
 }
 
-DirectoryBundleAddInfo DirectoryListing::createBundle(const Directory::Ptr& aDir, const string& aTarget, Priority aPriority) noexcept {
+optional<DirectoryBundleAddInfo> DirectoryListing::createBundle(const Directory::Ptr& aDir, const string& aTarget, Priority aPriority, string& errorMsg_) noexcept {
 	BundleDirectoryItemInfo::List aFiles;
 	aDir->toBundleInfoList(Util::emptyString, aFiles);
 
-	DirectoryBundleAddInfo info;
 	try {
-		info = QueueManager::getInstance()->createDirectoryBundle(aTarget, hintedUser.user == ClientManager::getInstance()->getMe() && !isOwnList ? HintedUser() : hintedUser,
-			aFiles, aPriority, aDir->getRemoteDate());
+		auto info = QueueManager::getInstance()->createDirectoryBundle(aTarget, hintedUser.user == ClientManager::getInstance()->getMe() && !isOwnList ? HintedUser() : hintedUser,
+			aFiles, aPriority, aDir->getRemoteDate(), errorMsg_);
+
+		return info;
 	} catch (const std::bad_alloc&) {
+		errorMsg_ = STRING(OUT_OF_MEMORY);
 		LogManager::getInstance()->message(STRING_F(BUNDLE_CREATION_FAILED, aTarget % STRING(OUT_OF_MEMORY)), LogMessage::SEV_ERROR);
-		//return false;
-	} catch (const Exception& e) {
-		LogManager::getInstance()->message(STRING_F(BUNDLE_CREATION_FAILED, aTarget % e.getError()), LogMessage::SEV_ERROR);
-		//return false;
 	}
 
-	return info;
+	return boost::none;
 }
 
 int64_t DirectoryListing::getDirSize(const string& aDir) const noexcept {

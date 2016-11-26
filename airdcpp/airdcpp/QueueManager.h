@@ -226,11 +226,11 @@ public:
 	// Create a directory bundle with the supplied target path and files
 	// 
 	// aDate is the original date of the bundle (usually the modify date from source user)
-	// QueueException will be thrown only if the source is invalid (source can be nullptr though)
+	// No result is returned if no bundle was added or used for merging
+	// Source can be nullptr
 	// errorMsg_ will contain errors related to queueing the files
-	// nullptr can be returned if no files could be queued
-	DirectoryBundleAddInfo createDirectoryBundle(const string& aTarget, const HintedUser& aUser, BundleDirectoryItemInfo::List& aFiles,
-		Priority aPrio, time_t aDate) throw(QueueException);
+	optional<DirectoryBundleAddInfo> createDirectoryBundle(const string& aTarget, const HintedUser& aUser, BundleDirectoryItemInfo::List& aFiles,
+		Priority aPrio, time_t aDate, string& errorMsg_) noexcept;
 
 	// Create a file bundle with the supplied target path
 	// 
@@ -239,8 +239,7 @@ public:
 	// All errors will be thrown
 	//
 	// Returns the bundle and bool whether it's a newly created bundle
-	// Returns nothing for zero byte items
-	optional<FileBundleAddInfo> createFileBundle(const string& aTarget, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, time_t aDate,
+	BundleAddInfo createFileBundle(const string& aTarget, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, time_t aDate,
 		Flags::MaskType aFlags = 0, Priority aPrio = Priority::DEFAULT) throw(QueueException, FileException, DupeException);
 
 	bool removeBundle(QueueToken aBundleToken, bool removeFinishedFiles) noexcept;
@@ -440,11 +439,10 @@ private:
 	/** Get a bundle for adding new items in queue (a new one or existing)  */
 	BundlePtr getBundle(const string& aTarget, Priority aPrio, time_t aDate, bool aIsFileBundle) noexcept;
 
-	typedef optional<pair<QueueItemPtr, bool>> FileAddInfo;
+	typedef pair<QueueItemPtr, bool> FileAddInfo;
 
 	// Add a file to the queue
 	// Returns the added queue item and bool whether it's a newly created item
-	// Returns nothing for zero byte items
 	FileAddInfo addBundleFile(const string& aTarget, int64_t aSize, const TTHValue& aRoot,
 		const HintedUser& aUser, Flags::MaskType aFlags, bool addBad, Priority aPrio, bool& wantConnection_, BundlePtr& aBundle_) throw(QueueException, FileException);
 
@@ -452,7 +450,7 @@ private:
 	void checkSource(const HintedUser& aUser) const throw(QueueException);
 
 	/** Check that we can download from this user */
-	void validateBundleFile(const string& aBundleDir, string& aBundleFile, const TTHValue& aTTH, Priority& priority_) const throw(QueueException, FileException, DupeException);
+	void validateBundleFile(const string& aBundleDir, string& aBundleFile, const TTHValue& aTTH, Priority& priority_, int64_t aSize) const throw(QueueException, FileException, DupeException);
 
 	/** Sanity check for the target filename */
 	//static string checkTargetPath(const string& aTarget) throw(QueueException, FileException);

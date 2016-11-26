@@ -105,7 +105,7 @@ namespace webserver {
 
 		int succeeded = 0;
 		string lastError;
-		optional<FileBundleAddInfo> bundleAddInfo;
+		BundleAddInfo bundleAddInfo;
 		vector<DirectoryDownloadId> directoryDownloadIds;
 
 		auto download = [&](const SearchResultPtr& aSR) {
@@ -136,19 +136,15 @@ namespace webserver {
 			throw Exception(lastError);
 		}
 
-		if (bundleAddInfo) {
-			return {
-				{ "bundle_id", (*bundleAddInfo).bundle->getToken() }
-			};
-		}
-
 		if (!directoryDownloadIds.empty()) {
-			return{
+			return {
 				{ "directory_download_ids", directoryDownloadIds }
 			};
 		}
 
-		// Possibly an existing file bundle or zero byte file
-		return nullptr;
+		dcassert(bundleAddInfo.bundle);
+		return {
+			{ "bundle_id", bundleAddInfo.bundle->getToken() }
+		};
 	}
 }

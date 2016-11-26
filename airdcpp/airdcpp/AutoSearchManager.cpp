@@ -253,14 +253,17 @@ void AutoSearchManager::clearError(AutoSearchPtr& as) noexcept {
 	fire(AutoSearchManagerListener::UpdateItem(), as, true);
 }
 
-void AutoSearchManager::on(DirectoryListingManagerListener::DirectoryDownloadCompleted, const DirectoryListingPtr&, const DirectoryBundleAddInfo::List& aQueueInfos, const DirectoryDownloadPtr& aDirectoryInfo) noexcept {
-	for (const auto& queueInfo: aQueueInfos) {
-		if (queueInfo.bundle) {
-			onBundleCreated(queueInfo.bundle, aDirectoryInfo->getOwner());
-		} else if (!queueInfo.errorMessage.empty()) {
-			onBundleError(aDirectoryInfo->getOwner(), queueInfo.errorMessage, aDirectoryInfo->getBundleName(), aDirectoryInfo->getUser());
-		}
-	}
+void AutoSearchManager::on(DirectoryListingManagerListener::DirectoryDownloadProcessed, const DirectoryDownloadPtr& aDirectoryInfo, const DirectoryBundleAddInfo& aQueueInfo, const string& /*aError*/) noexcept {
+	onBundleCreated(aQueueInfo.bundleInfo.bundle, aDirectoryInfo->getOwner());
+
+	//if (aQueueInfo.bundle) {
+	/*} else if (!aError.empty()) {
+		onBundleError(aDirectoryInfo->getOwner(), aError, aDirectoryInfo->getBundleName(), aDirectoryInfo->getUser());
+	}*/
+}
+
+void AutoSearchManager::on(DirectoryDownloadFailed, const DirectoryDownloadPtr& aDirectoryInfo, const string& aError) noexcept {
+	onBundleError(aDirectoryInfo->getOwner(), aError, aDirectoryInfo->getBundleName(), aDirectoryInfo->getUser());
 }
 
 void AutoSearchManager::onBundleCreated(const BundlePtr& aBundle, const void* aSearch) noexcept {
@@ -868,9 +871,7 @@ void AutoSearchManager::handleAction(const SearchResultPtr& sr, AutoSearchPtr& a
 					sr->getUser(), sr->getDate(), 0, 
 					((as->getAction() == AutoSearch::ACTION_QUEUE) ? Priority::PAUSED : Priority::DEFAULT));
 
-				if (info) {
-					onBundleCreated((*info).bundle, as.get());
-				}
+				onBundleCreated(info.bundle, as.get());
 			}
 		} catch (const Exception& e) {
 			onBundleError(as.get(), e.getError(), sr->getFileName(), sr->getUser());

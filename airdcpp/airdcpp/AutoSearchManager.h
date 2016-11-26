@@ -130,17 +130,18 @@ private:
 	void resetSearchTimes(uint64_t aTick, bool aUpdate = false) noexcept;
 
 	/* Listeners */
-	void on(SearchManagerListener::SR, const SearchResultPtr&) noexcept;
+	void on(SearchManagerListener::SR, const SearchResultPtr&) noexcept override;
 
-	void on(TimerManagerListener::Minute, uint64_t aTick) noexcept;
-	void on(TimerManagerListener::Second, uint64_t aTick) noexcept;
+	void on(TimerManagerListener::Minute, uint64_t aTick) noexcept override;
+	void on(TimerManagerListener::Second, uint64_t aTick) noexcept override;
 
-	void on(SearchManagerListener::SearchTypeRenamed, const string& oldName, const string& newName) noexcept;
+	void on(SearchManagerListener::SearchTypeRenamed, const string& oldName, const string& newName) noexcept override;
 
-	void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept { onRemoveBundle(aBundle, false); }
-	void on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept;
+	void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept override { onRemoveBundle(aBundle, false); }
+	void on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept override;
 
-	void on(DirectoryListingManagerListener::DirectoryDownloadCompleted, const DirectoryListingPtr&, const DirectoryBundleAddInfo::List&, const DirectoryDownloadPtr&) noexcept;
+	void on(DirectoryListingManagerListener::DirectoryDownloadProcessed, const DirectoryDownloadPtr& aDirectoryInfo, const DirectoryBundleAddInfo& aQueueInfo, const string& aError) noexcept override;
+	void on(DirectoryDownloadFailed, const DirectoryDownloadPtr&, const string&) noexcept override;
 
 	//bool onBundleStatus(BundlePtr& aBundle, const ProfileTokenSet& aSearches);
 	void onRemoveBundle(const BundlePtr& aBundle, bool finished) noexcept;

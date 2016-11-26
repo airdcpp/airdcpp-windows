@@ -69,7 +69,6 @@ PropPage::Item DownloadingOptionsPage::items[] = {
 };
 
 PropPage::ListItem DownloadingOptionsPage::optionItems[] = {
-	{ SettingsManager::SKIP_ZERO_BYTE, ResourceManager::SETTINGS_SKIP_ZERO_BYTE },
 	{ SettingsManager::DONT_DL_ALREADY_SHARED, ResourceManager::SETTINGS_DONT_DL_ALREADY_SHARED },
 	{ SettingsManager::DONT_DL_ALREADY_QUEUED, ResourceManager::SETTING_DONT_DL_ALREADY_QUEUED },
 	{ 0, ResourceManager::LAST }

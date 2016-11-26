@@ -29,25 +29,23 @@
 namespace dcpp {
 
 
+struct BundleAddInfo {
+	BundleAddInfo(const BundlePtr& aBundle, bool aMerged) : bundle(aBundle), merged(aMerged) {}
+	BundleAddInfo() {}
+
+	BundlePtr bundle = nullptr;
+	bool merged = false;
+};
+
 struct DirectoryBundleAddInfo {
 	int filesAdded = 0; // New files
 	int filesUpdated = 0; // Source added
 	int filesFailed = 0; // Adding failed
-	int filesExist = 0; // Files existing on disk already
+	//int filesExist = 0; // Files existing on disk already
 
-	bool merged = false;
-	BundlePtr bundle = nullptr;
-
-	string errorMessage;
+	BundleAddInfo bundleInfo;
 
 	typedef vector<DirectoryBundleAddInfo> List;
-};
-
-struct FileBundleAddInfo {
-	FileBundleAddInfo(const BundlePtr& aBundle, bool aMerged) : bundle(aBundle), merged(aMerged) {}
-
-	BundlePtr bundle = nullptr;
-	bool merged = false;
 };
 
 struct BundleDirectoryItemInfo {
