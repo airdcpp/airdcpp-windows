@@ -25,7 +25,6 @@
 
 #include <airdcpp/Client.h>
 #include <airdcpp/DupeType.h>
-#include <airdcpp/TargetUtil.h>
 #include <airdcpp/Message.h>
 #include <airdcpp/UserInfoBase.h>
 #include <airdcpp/SortedVector.h>

@@ -39,7 +39,6 @@
 #include <airdcpp/concurrency.h>
 #include <airdcpp/DirectoryListing.h>
 #include <airdcpp/DirectoryListingListener.h>
-#include <airdcpp/TargetUtil.h>
 
 #define CONTROL_MESSAGE_MAP 10
 #define COMBO_SEL_MAP 11

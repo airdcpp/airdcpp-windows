@@ -28,7 +28,6 @@
 #include "DirectoryListing.h"
 #include "Pointer.h"
 #include "Singleton.h"
-#include "TargetUtil.h"
 #include "TimerManagerListener.h"
 
 namespace dcpp {

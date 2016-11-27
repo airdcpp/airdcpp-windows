@@ -24,7 +24,6 @@
 #include <airdcpp/FavoriteManager.h>
 #include <airdcpp/ShareManager.h>
 #include <airdcpp/QueueManager.h>
-#include <airdcpp/TargetUtil.h>
 #include <airdcpp/Util.h>
 
 #include "BrowseDlg.h"
@@ -48,12 +47,13 @@ public:
 	void onDownload(const string& aTarget, bool aIsWhole, bool aIsSizeUnknown, Priority p) {
 		if (!aIsSizeUnknown) {
 			// Get the size of the download
-			auto size = getDownloadSize(aIsWhole);
+			auto downloadSize = getDownloadSize(aIsWhole);
 
 			// Check the space
-			TargetUtil::TargetInfo ti(aTarget, File::getFreeSpace(File::getMountPath(aTarget)));
-			if (ti.getFreeDiskSpace() >= 0 && !ti.hasFreeSpace(size) && !confirmDownload(ti, size))
+			auto freeSpace = File::getFreeSpace(File::getMountPath(aTarget));
+			if (freeSpace < downloadSize && !confirmDownload(aTarget, freeSpace, downloadSize)) {
 				return;
+			}
 		}
 
 		handleDownload(aTarget, WinUtil::isShift() ? Priority::HIGHEST : p, aIsWhole);
@@ -85,7 +85,7 @@ public:
 	void appendDownloadMenu(OMenu& aMenu, Type aType, bool isSizeUnknown, const optional<TTHValue>& aTTH, 
 		const optional<string>& aPath, bool appendPrioMenu = true, bool addDefault = true) {
 
-		auto volumes = TargetUtil::getVolumes();
+		auto volumes = File::getVolumes();
 
 		// Download
 		aMenu.appendItem(CTSTRING(DOWNLOAD), [=] { 
@@ -115,7 +115,7 @@ public:
 		}
 	}
 
-	void appendDownloadTo(OMenu& targetMenu_, bool aWholeDir, bool aIsSizeUnknown, const optional<TTHValue>& aTTH, const optional<string>& aPath, const TargetUtil::VolumeSet& aVolumes) {
+	void appendDownloadTo(OMenu& targetMenu_, bool aWholeDir, bool aIsSizeUnknown, const optional<TTHValue>& aTTH, const optional<string>& aPath, const File::VolumeSet& aVolumes) {
 		targetMenu_.appendItem(CTSTRING(BROWSE), [=] { onDownloadTo(aWholeDir, aIsSizeUnknown); });
 
 		//Append shared and favorite directories
@@ -156,18 +156,18 @@ private:
 		addItem(CTSTRING(HIGHEST), Priority::HIGHEST);
 	}
 
-	static tstring toDisplayTarget(const string& aTarget, const TargetUtil::VolumeSet& aVolumes) {
-		auto targetInfo = TargetUtil::getTargetInfo(aTarget, aVolumes);
+	static tstring toDisplayTarget(const string& aTarget, const File::VolumeSet& aVolumes) {
+		auto diskInfo = File::getDiskInfo(aTarget, aVolumes);
 
 		auto ret = Text::toT(aTarget);
-		if (targetInfo.getFreeDiskSpace() >= 0) {
-			return TSTRING_F(X_BYTES_FREE, ret % Util::formatBytesW(targetInfo.getFreeDiskSpace()));
+		if (diskInfo.freeSpace >= 0) {
+			return TSTRING_F(X_BYTES_FREE, ret % Util::formatBytesW(diskInfo.freeSpace));
 		}
 
 		return ret;
 	}
 
-	void appendVirtualItems(OMenu &targetMenu, bool aWholeDir, const GroupedDirectoryMap& aDirectories, const tstring& aTitle, bool aIsSizeUnknown, const TargetUtil::VolumeSet& aVolumes) {
+	void appendVirtualItems(OMenu &targetMenu, bool aWholeDir, const GroupedDirectoryMap& aDirectories, const tstring& aTitle, bool aIsSizeUnknown, const File::VolumeSet& aVolumes) {
 		if (aDirectories.empty()) {
 			return;
 		}
@@ -238,8 +238,17 @@ private:
 		}
 	}
 
-	bool confirmDownload(const TargetUtil::TargetInfo& targetInfo, int64_t aSize) {
-		return !SETTING(FREE_SPACE_WARN) || WinUtil::showQuestionBox(Text::toT(TargetUtil::formatSizeConfirmation(targetInfo, aSize)), MB_ICONQUESTION);
+	bool confirmDownload(const string& aTarget, int64_t aFreeSpace, int64_t aDownloadSize) {
+		if (!SETTING(FREE_SPACE_WARN)) {
+			return true;
+		}
+
+		auto msg = TSTRING_F(CONFIRM_SIZE_WARNING,
+			Util::formatBytesW(aFreeSpace) %
+			Text::toT(aTarget) %
+			Util::formatBytesW(aDownloadSize));
+
+		return WinUtil::showQuestionBox(msg, MB_ICONQUESTION);
 	}
 };
 
