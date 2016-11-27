@@ -584,7 +584,7 @@ bool File::isAbsolutePath(const string& path) noexcept {
 File::DiskInfo File::getDiskInfo(const string& aFileName) noexcept {
 	struct statvfs sfs;
 	if (statvfs(Text::fromUtf8(aFileName).c_str(), &sfs) == -1) {
-		return -1;
+		return { -1LL, -1LL };
 	}
 
 	int64_t freeSpace = (int64_t)sfs.f_bsize * (int64_t)sfs.f_bfree;
