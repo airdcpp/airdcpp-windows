@@ -770,7 +770,7 @@ string File::getMountPath(const string& aPath, const VolumeSet& aVolumes) noexce
 File::DiskInfo File::getDiskInfo(const string& aTarget, const VolumeSet& aVolumes) noexcept {
 	auto mountPoint = getMountPath(aTarget, aVolumes);
 	if (!mountPoint.empty()) {
-		return File::getDiskInfo(aTarget);
+		return File::getDiskInfo(mountPoint);
 	}
 
 	return{ -1LL, -1LL };
