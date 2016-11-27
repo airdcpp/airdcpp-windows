@@ -274,7 +274,9 @@ void initModules() {
 	FinishedManager::newInstance();
 	AutoSearchManager::newInstance();
 	RSSManager::newInstance();
+}
 
+void loadModules() {
 	AutoSearchManager::getInstance()->load();
 	RSSManager::getInstance()->load();
 }
@@ -288,6 +290,19 @@ void destroyModules() {
 	RSSManager::deleteInstance();
 	FinishedManager::deleteInstance();
 	WebShortcuts::deleteInstance();
+}
+
+bool questionF(const string& aStr, bool aIsQuestion, bool aIsError) {
+	auto ret = ::MessageBox(WinUtil::splash->m_hWnd, Text::toT(aStr).c_str(), Text::toT(shortVersionString).c_str(), MB_SETFOREGROUND | (aIsQuestion ? MB_YESNO : MB_OK) | (aIsError ? MB_ICONEXCLAMATION : MB_ICONQUESTION));
+	return aIsQuestion ? ret == IDYES : true;
+}
+
+void splashStrF(const string& str) {
+	WinUtil::splash->update(str);
+}
+
+void splashProgressF(float progress) { 
+	WinUtil::splash->update(progress); 
 }
 
 #define FINAL_UPDATER_LOG Util::getPath(Util::PATH_USER_LOCAL) + "updater.log"
@@ -310,11 +325,8 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 		unique_ptr<SetupWizard> wizard = nullptr;
 		try {
 			startup(
-				[&](const string& str) { WinUtil::splash->update(str); },
-				[&](const string& str, bool isQuestion, bool isError) {
-					auto ret = ::MessageBox(WinUtil::splash->m_hWnd, Text::toT(str).c_str(), Text::toT(shortVersionString).c_str(), MB_SETFOREGROUND | (isQuestion ? MB_YESNO : MB_OK) | (isError ? MB_ICONEXCLAMATION : MB_ICONQUESTION));
-					return isQuestion ? ret == IDYES : true;
-			},
+				splashStrF,
+				questionF,
 				[&]() {
 					Semaphore s;
 					WinUtil::splash->callAsync([&] {
@@ -328,9 +340,10 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 
 					// wait for the wizard to finish
 					s.wait();
-			},
-				[=](float progress) { WinUtil::splash->update(progress); },
-				initModules
+				},
+				splashProgressF,
+				initModules,
+				loadModules
 			);
 
 			webserver::WebServerManager::newInstance();
@@ -428,11 +441,9 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 		webserver::WebServerManager::getInstance()->stop();
 		webserver::WebServerManager::getInstance()->save(webErrorF);
 
-		//destroyModules();
-
 		shutdown(
-			[&](const string& str) { WinUtil::splash->update(str); },
-			[=](float progress) { WinUtil::splash->update(progress); },
+			splashStrF,
+			splashProgressF,
 			destroyModules
 		);
 
