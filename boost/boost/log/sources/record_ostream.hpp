@@ -20,8 +20,8 @@
 #include <ostream>
 #include <boost/assert.hpp>
 #include <boost/move/core.hpp>
-#include <boost/move/utility.hpp>
-#include <boost/utility/addressof.hpp>
+#include <boost/move/utility_core.hpp>
+#include <boost/core/addressof.hpp>
 #include <boost/log/detail/config.hpp>
 #include <boost/log/detail/native_typeof.hpp>
 #include <boost/log/detail/unhandled_exception_count.hpp>

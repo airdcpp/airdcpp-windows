@@ -35,7 +35,7 @@
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/File.h>
-#include <airdcpp/HighlightManager.h>
+#include <airdcpp/modules/HighlightManager.h>
 #include <airdcpp/QueueManager.h>
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/User.h>
@@ -1034,7 +1034,7 @@ void DirectoryListingFrame::onListItemAction() {
 				if (dl->getIsOwnList() || AirUtil::isFinishedDupe(ii->file->getDupe()) || AirUtil::isShareDupe(ii->file->getDupe())) {
 					openDupe(ii->file, false);
 				} else
-					onDownload(SETTING(DOWNLOAD_DIRECTORY), false, false, WinUtil::isShift() ? QueueItemBase::HIGHEST : QueueItem::DEFAULT);
+					onDownload(SETTING(DOWNLOAD_DIRECTORY), false, false, WinUtil::isShift() ? Priority::HIGHEST : Priority::DEFAULT);
 			} else {
 				changeType = CHANGE_LIST;
 				auto ht = ctrlTree.findItem(t, ii->getNameW() + _T("\\"));
@@ -1043,7 +1043,7 @@ void DirectoryListingFrame::onListItemAction() {
 				}
 			}
 		} else {
-			onDownload(SETTING(DOWNLOAD_DIRECTORY), false, false, WinUtil::isShift() ? QueueItem::HIGHEST : QueueItem::DEFAULT);
+			onDownload(SETTING(DOWNLOAD_DIRECTORY), false, false, WinUtil::isShift() ? Priority::HIGHEST : Priority::DEFAULT);
 		}
 	}
 }
@@ -1398,15 +1398,18 @@ void DirectoryListingFrame::handleItemAction(bool usingTree, std::function<void 
 	}
 }
 
-void DirectoryListingFrame::handleDownload(const string& aTarget, QueueItemBase::Priority prio, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown) {
-	handleItemAction(usingTree, [&](const ItemInfo* ii) {
+void DirectoryListingFrame::handleDownload(const string& aTarget, Priority aPriority, bool aUsingTree) {
+	handleItemAction(aUsingTree, [&](const ItemInfo* ii) {
 		if (ii->type == ItemInfo::FILE) {
 			WinUtil::addFileDownload(aTarget + (aTarget[aTarget.length() - 1] != PATH_SEPARATOR ? Util::emptyString : ii->getName()), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), ii->file->getRemoteDate(),
-				0, WinUtil::isShift() ? QueueItemBase::HIGHEST : prio);
+				0, aPriority);
 		} else {
 			dl->addAsyncTask([=] {
-				DirectoryListingManager::getInstance()->addDirectoryDownload(ii->getPath(), ii->getName(), dl->getHintedUser(),
-					aTarget, aTargetType, isSizeUnknown, WinUtil::isShift() ? QueueItemBase::HIGHEST : prio, false);
+				try {
+					DirectoryListingManager::getInstance()->addDirectoryDownload(dl->getHintedUser(), ii->getName(), ii->getPath(), aTarget, aPriority);
+				} catch (const Exception& e) {
+					ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
+				}
 			});
 		}
 	});
@@ -1533,7 +1536,7 @@ void DirectoryListingFrame::handleSearchByName(bool usingTree, bool dirsOnly) {
 			name = ii->dir->getName();
 		}
 
-		WinUtil::searchAny(Text::toT(name));
+		WinUtil::search(Text::toT(name), dirsOnly);
 	});
 }
 

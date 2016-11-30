@@ -69,9 +69,6 @@
     <ClCompile Include="windows\FavHubGroupsDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\FavHubProperties.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="windows\FavoritesFrm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -357,9 +354,6 @@
     <ClCompile Include="windows\ListViewColours.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\AutosearchOptionsDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="windows\AutoSearchGeneralPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -376,6 +370,24 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="windows\WebserverPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="windows\RSSinfoFrame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="windows\TabbedDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="windows\RssFilterPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="windows\RssFeedsPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="windows\FavHubGeneralPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="windows\FavHubOptionsPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -426,9 +438,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\FavHubGroupsDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\FavHubProperties.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\FavoritesFrm.h">
@@ -782,9 +791,6 @@
     <ClInclude Include="windows\ListViewColours.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="windows\AutosearchOptionsDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="windows\AutosearchGeneralPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -807,6 +813,24 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\WebUserDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\RSSinfoFrame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\TabbedDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\RssFilterPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\RssFeedsPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\FavHubGeneralPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\FavHubOptionsPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1059,6 +1083,9 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\Send_message.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ToolbarImages\RSS.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

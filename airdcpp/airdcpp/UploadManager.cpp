@@ -333,7 +333,7 @@ checkslots:
 				unique_ptr<MemoryInputStream> mis = nullptr;
 				// Partial file list
 				if (tthList) {
-					if (aFile[0] != '/') {
+					if (aFile[0] != ADC_ROOT) {
 						BundlePtr bundle = nullptr;
 						mis.reset(QueueManager::getInstance()->generateTTHList(Util::toUInt32(aFile), *profile != SP_HIDDEN, bundle));
 
@@ -542,9 +542,7 @@ void UploadManager::onUBN(const AdcCommand& cmd) {
 	string speedStr;
 
 	for(const auto& str: cmd.getParameters()) {
-		if(str.compare(0, 2, "HI") == 0) {
-			hubIpPort = str.substr(2);
-		} else if(str.compare(0, 2, "BU") == 0) {
+		if(str.compare(0, 2, "BU") == 0) {
 			bundleToken = str.substr(2);
 		} else if(str.compare(0, 2, "DS") == 0) {
 			speedStr = str.substr(2);
@@ -619,14 +617,17 @@ void UploadManager::createBundle(const AdcCommand& cmd) {
 	
 	if (bundleToken.empty() || name.empty() || size <= 0 || token.empty()) {
 		//LogManager::getInstance()->message("INVALID UBD1", LogMessage::SEV_ERROR);
+		dcassert(0);
 		return;
 	} else if (!ConnectionManager::getInstance()->tokens.addToken(bundleToken, CONNECTION_TYPE_DOWNLOAD)) {
+		dcassert(0);
 		return;
 	}
 
 	//dcassert(!findBundle(bundleToken));
 	if (findBundle(bundleToken)) {
 		//LogManager::getInstance()->message("ADDBUNDLE, BUNDLE FOUND!");
+		dcassert(0);
 		changeBundle(cmd);
 		return;
 	}

@@ -25,7 +25,7 @@
 
 #include <airdcpp/concurrency.h>
 
-#include <airdcpp/AutoSearchManagerListener.h>
+#include <airdcpp/modules/AutoSearchManagerListener.h>
 #include <airdcpp/ClientManagerListener.h>
 #include <airdcpp/TimerManagerListener.h>
 #include <airdcpp/FavoriteManagerListener.h>
@@ -169,6 +169,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_HASH_PROGRESS, onHashProgress)
 		COMMAND_ID_HANDLER(IDC_HASH_PROGRESS_AUTO_CLOSE, onHashProgress)
 		COMMAND_ID_HANDLER(IDC_OPEN_SYSTEMLOG, onOpenSysLog)
+		COMMAND_ID_HANDLER(IDC_RSSFRAME, onOpenWindows)
 		COMMAND_RANGE_HANDLER(IDC_WINAMP_BACK, IDC_WINAMP_VOL_HALF, onWinampButton)
 
 		MESSAGE_HANDLER_HWND(WM_MEASUREITEM, OMenu::onMeasureItem)

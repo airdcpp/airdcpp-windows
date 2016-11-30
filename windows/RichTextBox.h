@@ -25,14 +25,13 @@
 
 #include <airdcpp/Client.h>
 #include <airdcpp/DupeType.h>
-#include <airdcpp/TargetUtil.h>
 #include <airdcpp/Message.h>
 #include <airdcpp/UserInfoBase.h>
 #include <airdcpp/SortedVector.h>
 
 #include <boost/algorithm/string.hpp>
 
-#include <airdcpp/ColorSettings.h>
+#include <airdcpp/modules/ColorSettings.h>
 
 #include "ShellContextMenu.h"
 #include "TypedListViewCtrl.h"
@@ -171,7 +170,7 @@ public:
 	GETSET(bool, allowClear, AllowClear);
 
 	/* DownloadBaseHandler functions */
-	void handleDownload(const string& aTarget, QueueItemBase::Priority p, bool isRelease, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
+	void handleDownload(const string& aTarget, Priority p, bool isRelease);
 	int64_t getDownloadSize(bool isWhole);
 	bool showDirDialog(string& fileName);
 	HintedUser getMagnetSource();

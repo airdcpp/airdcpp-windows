@@ -32,7 +32,7 @@
 
 #include <airdcpp/version.h>
 #include <airdcpp/format.h>
-#include <airdcpp/AutoSearchManager.h>
+#include <airdcpp/modules/AutoSearchManager.h>
 
 #define ICON_SIZE 16
 
@@ -457,7 +457,7 @@ LRESULT SystemFrame::onAddAutoSearchFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 		targetPath = Util::getFilePath(Text::fromT(selWord));
 	auto fileName = Util::getFileName(Text::fromT(selWord));
 
-	AutoSearchManager::getInstance()->addAutoSearch(fileName, targetPath, TargetUtil::TARGET_PATH, false, AutoSearch::CHAT_DOWNLOAD);
+	AutoSearchManager::getInstance()->addAutoSearch(fileName, targetPath, false, AutoSearch::CHAT_DOWNLOAD);
 
 	ctrlPad.SetSelNone();
 	return 0;
@@ -467,7 +467,7 @@ LRESULT SystemFrame::onAddAutoSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 	auto targetPath = Util::getParentDir(Text::fromT(selWord), PATH_SEPARATOR, true);
 	auto dirName = Util::getLastDir(selWord[selWord.length() - 1] != PATH_SEPARATOR ? Util::getFilePath(Text::fromT(selWord)) : Text::fromT(selWord));
 
-	AutoSearchManager::getInstance()->addAutoSearch(dirName, targetPath, TargetUtil::TARGET_PATH, true, AutoSearch::CHAT_DOWNLOAD, true);
+	AutoSearchManager::getInstance()->addAutoSearch(dirName, targetPath, true, AutoSearch::CHAT_DOWNLOAD, true);
 
 	ctrlPad.SetSelNone();
 	return 0;
@@ -495,11 +495,11 @@ LRESULT SystemFrame::onEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 }
 
 LRESULT SystemFrame::onSearchFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	WinUtil::searchAny(Util::getFileName(selWord));
+	WinUtil::search(Util::getFileName(selWord));
 	return 0;
 }
 
 LRESULT SystemFrame::onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	WinUtil::searchAny(Text::toT(AirUtil::getReleaseDirLocal(Text::fromT(selWord), true)));
+	WinUtil::search(Text::toT(AirUtil::getReleaseDirLocal(Text::fromT(selWord), true)), true);
 	return 0;
 }

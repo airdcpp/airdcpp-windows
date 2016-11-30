@@ -26,7 +26,7 @@
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
-AutoSearchGeneralPage::AutoSearchGeneralPage(AutoSearchItemSettings& aSettings) : options(aSettings), loading(true) {}
+AutoSearchGeneralPage::AutoSearchGeneralPage(AutoSearchItemSettings& aSettings, const string& aName) : options(aSettings), name(aName), loading(true) {}
 
 AutoSearchGeneralPage::~AutoSearchGeneralPage() { }
 
@@ -127,17 +127,17 @@ LRESULT AutoSearchGeneralPage::onClickLocation(WORD /*wNotifyCode*/, WORD /*wID*
 	targetMenu.CreatePopupMenu();
 	targetMenu.InsertSeparatorFirst(CTSTRING(DOWNLOAD_TO));
 	//appendDownloadMenu(targetMenu, false, true);
-	appendDownloadTo(targetMenu, false, true, boost::none, boost::none);
+
+	appendDownloadTo(targetMenu, false, true, boost::none, boost::none, File::getVolumes());
 
 	targetMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_VERPOSANIMATION, pt);
 	return 0;
 }
 
-void AutoSearchGeneralPage::handleDownload(const string& aTarget, QueueItemBase::Priority /*p*/, bool /*useWhole*/, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
+void AutoSearchGeneralPage::handleDownload(const string& aTarget, Priority /*p*/, bool /*useWhole*/) {
 	options.target = aTarget;
 	ctrlTarget.SetWindowTextW(Text::toT(options.target).c_str());
 	//update the type only after setting the text
-	options.targetType = aTargetType;
 	updateTargetTypeText();
 }
 
@@ -149,14 +149,6 @@ void AutoSearchGeneralPage::updateTargetTypeText() {
 
 	if (Text::fromT(bufPath).empty()) {
 		targetText += TSTRING(SETTINGS_DOWNLOAD_DIRECTORY);
-	}
-	else {
-		if (options.targetType == TargetUtil::TARGET_PATH)
-			targetText += TSTRING(TYPE_TARGET_PATH);
-		else if (options.targetType == TargetUtil::TARGET_FAVORITE)
-			targetText += TSTRING(TYPE_TARGET_FAVORITE);
-		else if (options.targetType == TargetUtil::TARGET_SHARE)
-			targetText += TSTRING(TYPE_TARGET_SHARE);
 	}
 
 	cTargetType.SetWindowText(targetText.c_str());
@@ -206,10 +198,8 @@ bool AutoSearchGeneralPage::write() {
 
 	options.useParams = IsDlgButtonChecked(IDC_USE_PARAMS) ? true : false;
 
-	if (options.targetType == 0) {
-		GetDlgItemText(IDC_TARGET_PATH, bufPath, MAX_PATH);
-		options.target = Text::fromT(bufPath);
-	}
+	GetDlgItemText(IDC_TARGET_PATH, bufPath, MAX_PATH);
+	options.target = Text::fromT(bufPath);
 
 	if (IsDlgButtonChecked(IDC_USE_EXPIRY) == BST_CHECKED) {
 		SYSTEMTIME exp;
@@ -234,7 +224,6 @@ bool AutoSearchGeneralPage::write() {
 
 LRESULT AutoSearchGeneralPage::onTargetChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if (!loading) {
-		options.targetType = TargetUtil::TARGET_PATH;
 		updateTargetTypeText();
 	}
 	return 0;

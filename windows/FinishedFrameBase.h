@@ -32,7 +32,7 @@
 #include "ResourceLoader.h"
 #include "TextFrame.h"
 
-#include <airdcpp/FinishedManager.h>
+#include <airdcpp/modules/FinishedManager.h>
 
 template<class T, int title, int id>
 class FinishedFrameBase : public MDITabChildWindowImpl<T>, public StaticFrame<T, title, id>,
@@ -375,8 +375,8 @@ protected:
 		totalSpeed += entry->getAvgSpeed();
 
 		int image = ResourceLoader::getIconIndex(Text::toT(entry->getTarget()));
-		int loc = ctrlList.insertItem(entry, image);
-		ctrlList.EnsureVisible(loc, FALSE);
+		ctrlList.insertItem(entry, image);
+		//ctrlList.EnsureVisible(loc, FALSE);
 	}
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {

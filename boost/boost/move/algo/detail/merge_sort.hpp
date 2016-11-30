@@ -41,6 +41,21 @@ namespace movelib {
 
 static const unsigned MergeSortInsertionSortThreshold = 16;
 
+template <class RandIt, class Compare>
+void inplace_stable_sort(RandIt first, RandIt last, Compare comp)
+{
+   typedef typename iterator_traits<RandIt>::size_type  size_type;
+   if (size_type(last - first) <= size_type(MergeSortInsertionSortThreshold)) {
+      insertion_sort(first, last, comp);
+      return;
+   }
+   RandIt middle = first + (last - first) / 2;
+   inplace_stable_sort(first, middle, comp);
+   inplace_stable_sort(middle, last, comp);
+   merge_bufferless_ONlogN_recursive
+      (first, middle, last, size_type(middle - first), size_type(last - middle), comp);
+}
+
 // @endcond
 
 template<class RandIt, class RandIt2, class Compare>

@@ -24,21 +24,21 @@
 #endif // _MSC_VER > 1000
 #include <atlcrack.h>
 #include <airdcpp/Util.h>
-#include <airdcpp/TargetUtil.h>
-#include <airdcpp/AutoSearchManager.h>
+#include <airdcpp/modules/AutoSearchManager.h>
 #include "AutoSearchItemSettings.h"
 #include "DownloadBaseHandler.h"
 #include "SearchTypeCombo.h"
+#include "TabbedDialog.h"
 
 
-class AutoSearchGeneralPage : public CDialogImpl<AutoSearchGeneralPage>, public DownloadBaseHandler<AutoSearchGeneralPage> {
+class AutoSearchGeneralPage : public CDialogImpl<AutoSearchGeneralPage>, public DownloadBaseHandler<AutoSearchGeneralPage>, public TabPage {
 public:
 
 	AutoSearchItemSettings& options;
 
 	enum { IDD = IDD_AS_GENERAL };
 
-	AutoSearchGeneralPage(AutoSearchItemSettings& aSettings);
+	AutoSearchGeneralPage(AutoSearchItemSettings& aSettings, const string& aName);
 	~AutoSearchGeneralPage();
 
 	BEGIN_MSG_MAP_EX(AutoSearchGeneralPage)
@@ -93,9 +93,15 @@ public:
 	LRESULT onClickLocation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	/* DownloadBaseHandler */
-	void handleDownload(const string& aTarget, QueueItemBase::Priority p, bool isWhole, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
+	void handleDownload(const string& aTarget, Priority p, bool isWhole);
 	void insertNumber();
+	
 	bool write();
+	string getName() { return name; }
+	void moveWindow(CRect& rc) { this->MoveWindow(rc); }
+	void create(HWND aParent) { this->Create(aParent); }
+	void showWindow(BOOL aShow) { this->ShowWindow(aShow); }
+
 
 private:
 	//	enum { BUF_LEN = 1024 };
@@ -109,6 +115,7 @@ private:
 
 	CDateTimePickerCtrl ctrlExpire;
 
+	string name;
 	void fixControls();
 	void updateTargetTypeText();
 	bool loading;

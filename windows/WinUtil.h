@@ -24,16 +24,15 @@
 #include "OMenu.h"
 #include "SplashWindow.h"
 
-#include <airdcpp/Util.h>
+#include <airdcpp/DupeType.h>
+#include <airdcpp/HintedUser.h>
+#include <airdcpp/MerkleTree.h>
+#include <airdcpp/QueueItemBase.h>
+#include <airdcpp/SettingItem.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/User.h>
-#include <airdcpp/MerkleTree.h>
-#include <airdcpp/HintedUser.h>
-#include <airdcpp/WebShortcuts.h>
-#include <airdcpp/TargetUtil.h>
-#include <airdcpp/DupeType.h>
-#include <airdcpp/SettingItem.h>
-#include <airdcpp/QueueItemBase.h>
+#include <airdcpp/Util.h>
+#include <airdcpp/modules/WebShortcuts.h>
 
 /* Work around DBTYPE name conflict with Berkeley DB */
 #define DBTYPE MS_DBTYPE
@@ -161,6 +160,7 @@ static const toolbarButton ToolbarButtons[] = {
 	{ IDC_AWAY, 19, IDI_AWAY, true, ResourceManager::AWAY },
 	//separator
 	{ ID_FILE_SETTINGS, 20, IDI_SETTINGS, false, ResourceManager::MENU_SETTINGS },
+	{ IDC_RSSFRAME, 21, IDI_RSS, true, ResourceManager::RSS_FEEDS },
 };
 
 
@@ -242,15 +242,15 @@ public:
 	static TStringPair updateCommand;
 
 	static bool isElevated();
-	static void addUpdate(const string& aUpdater);
-	static void runPendingUpdate();
+	static void addUpdate(const string& aUpdaterFile, bool aTesting = false) noexcept;
+	static bool runPendingUpdate() noexcept;
 	static void preInit(); // init required for the wizard
 	static void init(HWND hWnd);
 	static void uninit();
 	static void initColors();
 	static void setFonts();
 	static void FlashWindow();
-	static void searchAny(const tstring& aSearch);
+	static void search(const tstring& aSearch, bool searchDirectory = false);
 	static void SetIcon(HWND hWnd, int aDefault, bool big = false);
 
 	static void searchSite(const WebShortcut* ws, const string& strSearchString, bool getReleaseDir = true);
@@ -521,7 +521,7 @@ public:
 	static tstring getEditText(CEdit& edit);
 
 	static void handleTab(HWND aCurFocus, HWND* ctrlHwnds, int hwndCount);
-	static void addFileDownload(const string& aTarget, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, time_t aDate, Flags::MaskType aFlags = 0, int8_t prio = -1);
+	static void addFileDownload(const string& aTarget, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, time_t aDate, Flags::MaskType aFlags = 0, Priority aPrio = Priority::DEFAULT);
 	//static void addFileDownloads(BundleFileList& aFiles, const HintedUser& aUser, Flags::MaskType aFlags = 0, bool addBad = true);
 
 	static void connectHub(const RecentHubEntryPtr& aEntry);

@@ -26,7 +26,7 @@
 #include <atlcrack.h>
 #include "PropPage.h"
 #include "ExListViewCtrl.h"
-#include <airdcpp/ColorSettings.h>
+#include <airdcpp/modules/ColorSettings.h>
 
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/User.h>

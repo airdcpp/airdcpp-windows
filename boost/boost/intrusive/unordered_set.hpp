@@ -360,6 +360,9 @@ class unordered_set_impl
    //! @copydoc ::boost::intrusive::hashtable::rehash(const bucket_traits &)
    void rehash(const bucket_traits &new_bucket_traits);
 
+   //! @copydoc ::boost::intrusive::hashtable::full_rehash
+   void full_rehash();
+
    //! @copydoc ::boost::intrusive::hashtable::incremental_rehash(bool)
    bool incremental_rehash(bool grow = true);
 
@@ -835,6 +838,9 @@ class unordered_multiset_impl
 
    //! @copydoc ::boost::intrusive::hashtable::rehash(const bucket_traits &)
    void rehash(const bucket_traits &new_bucket_traits);
+
+   //! @copydoc ::boost::intrusive::hashtable::full_rehash
+   void full_rehash();
 
    //! @copydoc ::boost::intrusive::hashtable::incremental_rehash(bool)
    bool incremental_rehash(bool grow = true);

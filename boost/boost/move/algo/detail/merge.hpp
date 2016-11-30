@@ -167,7 +167,7 @@ void op_merge_left( RandIt buf_first
          op(forward_t(), first2, last2, buf_first);
          return;
       }
-		else if(comp(*first2, *first1)){
+      else if(comp(*first2, *first1)){
          op(first2, buf_first);
          ++first2;
       }
@@ -214,7 +214,7 @@ void op_merge_right
 {
    RandIt const first2 = last1;
    while(first1 != last1){
-		if(last2 == first2){
+      if(last2 == first2){
          op(backward_t(), first1, last1, buf_last);
          return;
       }
@@ -230,7 +230,7 @@ void op_merge_right
          ++last1;
       }
    }
-	if(last2 != buf_last){  //In case all remaining elements are in the same place
+   if(last2 != buf_last){  //In case all remaining elements are in the same place
                            //(e.g. buffer is exactly the size of the first half
                            //and all elements from the second half are less)
       op(backward_t(), first2, last2, buf_last);
@@ -257,9 +257,104 @@ void swap_merge_right
    op_merge_right(first1, last1, last2, buf_last, comp, swap_op());
 }
 
-// cost: min(L1,L2)^2+max(L1,L2)
+template <class BidirIt, class Distance, class Compare>
+void merge_bufferless_ONlogN_recursive
+   (BidirIt first, BidirIt middle, BidirIt last, Distance len1, Distance len2, Compare comp)
+{
+   typedef typename iterator_traits<BidirIt>::size_type size_type;
+   while(1) {
+      //#define MERGE_BUFFERLESS_RECURSIVE_OPT
+      #ifndef MERGE_BUFFERLESS_RECURSIVE_OPT
+      if (len2  == 0) {
+         return;
+      }
+
+      if (!len1) {
+         return;
+      }
+
+      if ((len1 | len2) == 1) {
+         if (comp(*middle, *first))
+            adl_move_swap(*first, *middle);  
+         return;
+      }
+      #else
+      if (len2  == 0) {
+         return;
+      }
+
+      if (!len1) {
+         return;
+      }
+      BidirIt middle_prev = middle; --middle_prev;
+      if(!comp(*middle, *middle_prev))
+         return;
+
+      while(true) {
+         if (comp(*middle, *first))
+            break;
+         ++first;
+         if(--len1 == 1)
+            break;
+      }
+
+      if (len1 == 1 && len2 == 1) {
+         //comp(*middle, *first) == true already tested in the loop
+         adl_move_swap(*first, *middle);  
+         return;
+      }
+      #endif
+
+      BidirIt first_cut = first;
+      BidirIt second_cut = middle;
+      Distance len11 = 0;
+      Distance len22 = 0;
+      if (len1 > len2) {
+         len11 = len1 / 2;
+         first_cut +=  len11;
+         second_cut = lower_bound(middle, last, *first_cut, comp);
+         len22 = size_type(second_cut - middle);
+      }
+      else {
+         len22 = len2 / 2;
+         second_cut += len22;
+         first_cut = upper_bound(first, middle, *second_cut, comp);
+         len11 = size_type(first_cut - first);
+      }
+      BidirIt new_middle = rotate_gcd(first_cut, middle, second_cut);
+
+      //Avoid one recursive call doing a manual tail call elimination on the biggest range
+      const Distance len_internal = len11+len22;
+      if( len_internal < (len1 + len2 - len_internal) ) {
+         merge_bufferless_ONlogN_recursive(first,      first_cut,  new_middle, len11,        len22,        comp);
+         //merge_bufferless_recursive(new_middle, second_cut, last,       len1 - len11, len2 - len22, comp);
+         first = new_middle;
+         middle = second_cut;
+         len1 -= len11;
+         len2 -= len22;
+      }
+      else {
+         //merge_bufferless_recursive(first,      first_cut,  new_middle, len11,        len22,        comp);
+         merge_bufferless_ONlogN_recursive(new_middle, second_cut, last,       len1 - len11, len2 - len22, comp);
+         middle = first_cut;
+         last = new_middle;
+         len1 = len11;
+         len2 = len22;
+      }
+   }
+}
+
+//Complexity: NlogN
+template<class BidirIt, class Compare>
+void merge_bufferless_ONlogN(BidirIt first, BidirIt middle, BidirIt last, Compare comp)
+{
+   merge_bufferless_ONlogN_recursive
+      (first, middle, last, middle - first, last - middle, comp); 
+}
+
+//Complexity: min(len1,len2)^2 + max(len1,len2)
 template<class RandIt, class Compare>
-void merge_bufferless(RandIt first, RandIt middle, RandIt last, Compare comp)
+void merge_bufferless_ON2(RandIt first, RandIt middle, RandIt last, Compare comp)
 {
    if((middle - first) < (last - middle)){
       while(first != middle){
@@ -271,12 +366,12 @@ void merge_bufferless(RandIt first, RandIt middle, RandIt last, Compare comp)
          }
          do{
             ++first;
-			} while(first != middle && !comp(*middle, *first));
+         } while(first != middle && !comp(*middle, *first));
       }
    }
    else{
       while(middle != last){
-			RandIt p = upper_bound(first, middle, last[-1], comp);
+         RandIt p = upper_bound(first, middle, last[-1], comp);
          last = rotate_gcd(p, middle, last);
          middle = p;
          if(middle == first){
@@ -290,10 +385,21 @@ void merge_bufferless(RandIt first, RandIt middle, RandIt last, Compare comp)
    }
 }
 
+template<class RandIt, class Compare>
+void merge_bufferless(RandIt first, RandIt middle, RandIt last, Compare comp)
+{
+   //#define BOOST_ADAPTIVE_MERGE_NLOGN_MERGE
+   #ifdef BOOST_ADAPTIVE_MERGE_NLOGN_MERGE
+   merge_bufferless_ONlogN(first, middle, last, comp);
+   #else
+   merge_bufferless_ON2(first, middle, last, comp);
+   #endif   //BOOST_ADAPTIVE_MERGE_NLOGN_MERGE
+}
+
 template<class Comp>
 struct antistable
 {
-   antistable(Comp &comp)
+   explicit antistable(Comp &comp)
       : m_comp(comp)
    {}
 
@@ -304,6 +410,49 @@ struct antistable
    private:
    antistable & operator=(const antistable &);
    Comp &m_comp;
+};
+
+template <class Comp>
+class negate
+{
+   public:
+   negate()
+   {}
+
+   explicit negate(Comp comp)
+      : m_comp(comp)
+   {}
+
+   template <class T1, class T2>
+   bool operator()(const T1& l, const T2& r)
+   {
+      return !m_comp(l, r);
+   }
+
+   private:
+   Comp m_comp;
+};
+
+
+template <class Comp>
+class inverse
+{
+   public:
+   inverse()
+   {}
+
+   explicit inverse(Comp comp)
+      : m_comp(comp)
+   {}
+
+   template <class T1, class T2>
+   bool operator()(const T1& l, const T2& r)
+   {
+      return m_comp(r, l);
+   }
+
+   private:
+   Comp m_comp;
 };
 
 // [r_first, r_last) are already in the right part of the destination range.

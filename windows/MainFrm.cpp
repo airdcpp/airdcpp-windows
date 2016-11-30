@@ -52,6 +52,7 @@
 #include "Players.h"
 #include "iTunesCOMInterface.h"
 #include "SystemFrame.h"
+#include "RSSinfoFrame.h"
 
 #include <airdcpp/AirUtil.h>
 #include <airdcpp/ConnectivityManager.h>
@@ -250,11 +251,9 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	_d_ChangeWindowMessageFilter(trayMessage, 1);
 	_d_ChangeWindowMessageFilter(WMU_WHERE_ARE_YOU, 1);
 
-	if (Util::IsOSVersionOrGreater(6, 1)) {
-		tbButtonMessage = RegisterWindowMessage(_T("TaskbarButtonCreated"));
-		_d_ChangeWindowMessageFilter(tbButtonMessage, 1);
-		_d_ChangeWindowMessageFilter(WM_COMMAND, 1);
-	}
+	tbButtonMessage = RegisterWindowMessage(_T("TaskbarButtonCreated"));
+	_d_ChangeWindowMessageFilter(tbButtonMessage, 1);
+	_d_ChangeWindowMessageFilter(WM_COMMAND, 1);
 
 	TimerManager::getInstance()->start();
 
@@ -309,6 +308,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	m_CmdBar.m_arrCommand.Add(ID_WIZARD);
 	m_CmdBar.m_arrCommand.Add(IDC_OPEN_LOG_DIR);
 	m_CmdBar.m_arrCommand.Add(IDC_OPEN_CONFIG_DIR);
+	m_CmdBar.m_arrCommand.Add(IDC_RSSFRAME);
 
 	// use Vista-styled menus on Vista/Win7
 	m_CmdBar._AddVistaBitmapsFromImageList(0, m_CmdBar.m_arrCommand.GetSize());
@@ -488,9 +488,6 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 }
 
 LRESULT MainFrame::onTaskbarButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-	if (!Util::IsOSVersionOrGreater(6, 1))
-		return 0;
-
 	taskbarList.Release();
 	HRESULT hRes = taskbarList.CoCreateInstance(CLSID_TaskbarList);
 	if (hRes == S_OK && taskbarList) {
@@ -1044,8 +1041,8 @@ LRESULT MainFrame::onOpenWindows(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 		case IDC_RECENTS: RecentHubsFrame::openWindow(); break;
 		case IDC_SYSTEM_LOG: SystemFrame::openWindow(); break;
 		case IDC_AUTOSEARCH: AutoSearchFrame::openWindow(); break;
+		case IDC_RSSFRAME: RssInfoFrame::openWindow(); break;
 
-	
 		default: dcassert(0); break;
 	}
 	return 0;

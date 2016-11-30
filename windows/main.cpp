@@ -262,6 +262,50 @@ void webErrorF(const string& aError) {
 	LogManager::getInstance()->message(aError, LogMessage::SEV_ERROR);
 };
 
+#include <airdcpp/modules/AutoSearchManager.h>
+#include <airdcpp/modules/FinishedManager.h>
+#include <airdcpp/modules/HighlightManager.h>
+#include <airdcpp/modules/RSSManager.h>
+#include <airdcpp/modules/WebShortcuts.h>
+
+void initModules() {
+	WebShortcuts::newInstance();
+	HighlightManager::newInstance();
+	FinishedManager::newInstance();
+	AutoSearchManager::newInstance();
+	RSSManager::newInstance();
+}
+
+void loadModules() {
+	AutoSearchManager::getInstance()->load();
+	RSSManager::getInstance()->load();
+}
+
+void destroyModules() {
+	AutoSearchManager::getInstance()->save();
+	RSSManager::getInstance()->saveConfig();
+
+	HighlightManager::deleteInstance();
+	AutoSearchManager::deleteInstance();
+	RSSManager::deleteInstance();
+	FinishedManager::deleteInstance();
+	WebShortcuts::deleteInstance();
+}
+
+bool questionF(const string& aStr, bool aIsQuestion, bool aIsError) {
+	auto ret = ::MessageBox(WinUtil::splash->m_hWnd, Text::toT(aStr).c_str(), Text::toT(shortVersionString).c_str(), MB_SETFOREGROUND | (aIsQuestion ? MB_YESNO : MB_OK) | (aIsError ? MB_ICONEXCLAMATION : MB_ICONQUESTION));
+	return aIsQuestion ? ret == IDYES : true;
+}
+
+void splashStrF(const string& str) {
+	WinUtil::splash->update(str);
+}
+
+void splashProgressF(float progress) { 
+	WinUtil::splash->update(progress); 
+}
+
+#define FINAL_UPDATER_LOG Util::getPath(Util::PATH_USER_LOCAL) + "updater.log"
 static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 {
 	static unique_ptr<MainFrame> wndMain;
@@ -281,11 +325,8 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 		unique_ptr<SetupWizard> wizard = nullptr;
 		try {
 			startup(
-				[&](const string& str) { WinUtil::splash->update(str); },
-				[&](const string& str, bool isQuestion, bool isError) {
-					auto ret = ::MessageBox(WinUtil::splash->m_hWnd, Text::toT(str).c_str(), Text::toT(shortVersionString).c_str(), MB_SETFOREGROUND | (isQuestion ? MB_YESNO : MB_OK) | (isError ? MB_ICONEXCLAMATION : MB_ICONQUESTION));
-					return isQuestion ? ret == IDYES : true;
-			},
+				splashStrF,
+				questionF,
 				[&]() {
 					Semaphore s;
 					WinUtil::splash->callAsync([&] {
@@ -299,8 +340,10 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 
 					// wait for the wizard to finish
 					s.wait();
-			},
-				[=](float progress) { WinUtil::splash->update(progress); }
+				},
+				splashProgressF,
+				initModules,
+				loadModules
 			);
 
 			webserver::WebServerManager::newInstance();
@@ -324,6 +367,12 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 			}
 
 			WinUtil::splash->update(STRING(LOADING_GUI));
+
+			if (Util::hasStartupParam("/updated")) {
+				LogManager::getInstance()->message(STRING(UPDATE_SUCCEEDED), LogMessage::SEV_INFO);
+			} else if (Util::hasStartupParam("/updatefailed")) {
+				LogManager::getInstance()->message(STRING_F(UPDATE_FAILED, string(FINAL_UPDATER_LOG)), LogMessage::SEV_ERROR);
+			}
 		} catch (...) {
 			ExitProcess(1);
 		}
@@ -393,8 +442,9 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 		webserver::WebServerManager::getInstance()->save(webErrorF);
 
 		shutdown(
-			[&](const string& str) { WinUtil::splash->update(str); },
-			[=](float progress) { WinUtil::splash->update(progress); }
+			splashStrF,
+			splashProgressF,
+			destroyModules
 		);
 
 		webserver::WebServerManager::deleteInstance();
@@ -449,7 +499,26 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	if (argc > 0) {
 		argv++;
 		if(_tcscmp(*argv, _T("/createupdate")) == 0) {
-			Updater::createUpdate();
+			SplashWindow::create();
+			WinUtil::splash->update("Creating updater");
+
+			auto updaterFilePath = Updater::createUpdate();
+
+			checkParams();
+			if (Util::hasStartupParam("/test")) {
+				WinUtil::splash->update("Extracting updater");
+				auto updaterExeFile = Updater::extractUpdater(updaterFilePath, BUILD_NUMBER + 1, Util::toString(Util::rand()));
+
+				WinUtil::addUpdate(updaterExeFile, true);
+				WinUtil::runPendingUpdate();
+
+				if (Util::hasStartupParam("/fail")) {
+					WinUtil::splash->update("Testing failure");
+					Sleep(15000); // Prevent overwriting the exe
+				}
+			}
+
+			WinUtil::splash->destroy();
 			return FALSE;
 		} else if(_tcscmp(*argv, _T("/sign")) == 0 && --argc >= 2) {
 			string xmlPath = Text::fromT(*++argv);
@@ -465,16 +534,6 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 				string sourcePath = Util::getAppFilePath();
 				string installPath = Text::fromT(*++argv); argc--;
 
-				bool startElevated = false;
-				if (argc > 0) {
-					if (Text::fromT((*++argv)) == "/elevation") {
-						startElevated = true;
-						argc--;
-					} else {
-						--argv;
-					}
-				}
-
 				SetPriorityClass(GetCurrentProcess(), IDLE_PRIORITY_CLASS);
 				SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_IDLE);
 
@@ -482,9 +541,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 
 				for (;;) {
 					string error;
-					for(int i = 0; i < 10 && (success = Updater::applyUpdate(sourcePath, installPath, error)) == false; ++i)
-						Thread::sleep(1000);
-
+					success = Updater::applyUpdate(sourcePath, installPath, error, 10);
 					if (!success) {
 						if (::MessageBox(NULL, Text::toT("Updating failed:\n\n" + error + "\n\nDo you want to retry installing the update?").c_str(), 
 							Text::toT(shortVersionString).c_str(), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2 | MB_TOPMOST) == IDYES) {
@@ -508,7 +565,8 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 				//start the updated instance
 				auto path = Text::toT(installPath + Util::getAppFileName());
 				auto startupParams = Text::toT(Util::getStartupParams(true));
-				if (!startElevated) {
+
+				if (!Util::hasStartupParam("/elevation")) {
 					ShellExecAsUser(NULL, path.c_str(), startupParams.c_str(), NULL);
 				} else {
 					ShellExecute(NULL, NULL, path.c_str(), startupParams.c_str(), NULL, SW_SHOWNORMAL);
@@ -529,6 +587,15 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 		WinUtil::addUpdate(updaterFile);
 		WinUtil::runPendingUpdate();
 		return FALSE;
+	}
+
+	if (updated) {
+		// Updating finished, don't leave files in the temp directory
+		try {
+			File::renameFile(UPDATE_TEMP_LOG, FINAL_UPDATER_LOG);
+		} catch (...) {
+
+		}
 	}
 
 	bool multiple = Util::hasStartupParam("/silent");

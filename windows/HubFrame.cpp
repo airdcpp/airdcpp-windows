@@ -27,9 +27,7 @@
 #include "ResourceLoader.h"
 #include "MainFrm.h"
 
-#include <airdcpp/ColorSettings.h>
 #include <airdcpp/CryptoManager.h>
-#include <airdcpp/HighlightManager.h>
 #include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/Message.h>
 #include <airdcpp/MessageManager.h>
@@ -43,6 +41,8 @@
 #include <airdcpp/Wildcards.h>
 #include <airdcpp/Localization.h>
 #include <airdcpp/GeoManager.h>
+
+#include <airdcpp/modules/HighlightManager.h>
 
 HubFrame::FrameMap HubFrame::frames;
 bool HubFrame::shutdown = false;
@@ -473,18 +473,11 @@ void HubFrame::execTasks() {
 				if(isFavorite && SETTING(POPUP_FAVORITE_CONNECTED)) {
 					WinUtil::showPopup(Text::toT(u.onlineUser->getIdentity().getNick() + " - " + client->getHubName()), TSTRING(FAVUSER_ONLINE));
 				}
-
-				if (!u.onlineUser->isHidden() && client->get(HubSettings::ShowJoins) || (client->get(HubSettings::FavShowJoins) && isFavorite)) {
-				 	addLine(_T("*** ") + TSTRING(JOINS) + _T(": ") + Text::toT(u.onlineUser->getIdentity().getNick()), WinUtil::m_ChatTextSystem, SETTING(HUB_BOLD_TABS));
-				}	
+	
 			}
 		} else if(t.first == REMOVE_USER) {
 			const UserTask& u = static_cast<UserTask&>(*t.second);
 			removeUser(u.onlineUser);
-
-			if (!u.onlineUser->isHidden() && client->get(HubSettings::ShowJoins) || (client->get(HubSettings::FavShowJoins) && u.onlineUser->getUser()->isFavorite())) {
-				addLine(Text::toT("*** " + STRING(PARTS) + ": " + u.onlineUser->getIdentity().getNick()), WinUtil::m_ChatTextSystem, SETTING(HUB_BOLD_TABS));
-			}
 		}
 	}
 	
@@ -1423,12 +1416,16 @@ void HubFrame::on(StatusMessage, const Client*, const LogMessagePtr& aMessage, i
 			setDirty();
 		}
 
-		onStatusMessage(aMessage, statusFlags & ClientListener::FLAG_IS_SPAM);
+		onStatusMessage(aMessage, statusFlags);
 	});
 
 }
-void HubFrame::onStatusMessage(const LogMessagePtr& aMessage, bool isSpam) noexcept {
-	addStatus(Text::toT(Text::toDOS(aMessage->getText())), aMessage->getSeverity(), WinUtil::m_ChatTextServer, !SETTING(FILTER_MESSAGES) || !isSpam);
+void HubFrame::onStatusMessage(const LogMessagePtr& aMessage, int aFlags) noexcept {
+	if (aFlags & ClientListener::FLAG_IS_SYSTEM)
+		addLine(Text::toT(aMessage->getText()), WinUtil::m_ChatTextSystem);
+	else
+		addStatus(Text::toT(Text::toDOS(aMessage->getText())), aMessage->getSeverity(), WinUtil::m_ChatTextServer, !SETTING(FILTER_MESSAGES) || !aFlags & ClientListener::FLAG_IS_SPAM);
+
 }
 
 

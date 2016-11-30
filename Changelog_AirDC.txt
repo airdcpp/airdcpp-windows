@@ -1,3 +1,23 @@
+3.30
+
+Added:
+
+- Show available disk space next to grouped download targets
+
+Changed:
+
+- 
+
+Fixed:
+
+- 
+
+Removed:
+
+- Support for Windows Vista
+- Support for download path auto detection
+
+
 3.23
 
 Changed:

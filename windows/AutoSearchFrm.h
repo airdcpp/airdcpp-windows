@@ -27,11 +27,11 @@
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"
 
-#include "AutoSearchOptionsDlg.h"
+#include "TabbedDialog.h"
 #include "AutoSearchItemSettings.h"
 #include "Async.h"
 
-#include <airdcpp/AutoSearchManager.h>
+#include <airdcpp/modules/AutoSearchManager.h>
 
 
 class AutoSearchFrame : public MDITabChildWindowImpl<AutoSearchFrame>, public StaticFrame<AutoSearchFrame, ResourceManager::AUTO_SEARCH, IDC_AUTOSEARCH>,
@@ -149,7 +149,7 @@ private:
 	void addFromDialog(AutoSearchItemSettings& dlg);
 
 	void save() {
-		AutoSearchManager::getInstance()->AutoSearchSave();
+		AutoSearchManager::getInstance()->save();
 	}
 
 	void addListEntry(ItemInfo* ii);
@@ -163,6 +163,8 @@ private:
 	bool closed;
 	bool loading;
 	std::unordered_map<ProfileToken, ItemInfo> itemInfos;
+
+	void createPages(TabbedDialog& dlg, AutoSearchItemSettings& options);
 
 
 	virtual void on(AutoSearchManagerListener::RemoveItem, const AutoSearchPtr& aToken) noexcept;

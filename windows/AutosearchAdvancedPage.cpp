@@ -29,9 +29,11 @@
 	updown.SetRange32(y, z); \
 	updown.Detach();
 
-AutoSearchAdvancedPage::AutoSearchAdvancedPage(AutoSearchItemSettings& aSettings) : options(aSettings), loading(true) {}
+AutoSearchAdvancedPage::AutoSearchAdvancedPage(AutoSearchItemSettings& aSettings, const string& aName) : options(aSettings), name(aName), loading(true) {
+}
 
-AutoSearchAdvancedPage::~AutoSearchAdvancedPage() { }
+AutoSearchAdvancedPage::~AutoSearchAdvancedPage() {
+}
 
 LRESULT AutoSearchAdvancedPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	ATTACH(IDC_U_MATCH, ctrlUserMatch);

@@ -39,7 +39,6 @@
 #include <airdcpp/concurrency.h>
 #include <airdcpp/DirectoryListing.h>
 #include <airdcpp/DirectoryListingListener.h>
-#include <airdcpp/TargetUtil.h>
 
 #define CONTROL_MESSAGE_MAP 10
 #define COMBO_SEL_MAP 11
@@ -221,7 +220,7 @@ public:
 
 	/* DownloadBaseHandler functions */
 	int64_t getDownloadSize(bool isWhole);
-	void handleDownload(const string& aTarget, QueueItemBase::Priority p, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
+	void handleDownload(const string& aTarget, Priority p, bool aUsingTree);
 	bool showDirDialog(string& fileName);
 private:
 	void appendTreeContextMenu(CPoint& pt, DirectoryListing::Directory::Ptr& aDir);

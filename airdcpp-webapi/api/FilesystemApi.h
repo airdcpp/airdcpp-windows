@@ -32,12 +32,13 @@ namespace webserver {
 		FilesystemApi(Session* aSession);
 		~FilesystemApi();
 
-		int getVersion() const noexcept {
+		int getVersion() const noexcept override {
 			return 0;
 		}
 	private:
 		api_return handleListItems(ApiRequest& aRequest);
 		api_return handlePostDirectory(ApiRequest& aRequest);
+		api_return handleGetDiskInfo(ApiRequest& aRequest);
 
 		json serializeDirectoryContent(const string& aPath, bool aDirectoriesOnly);
 	};

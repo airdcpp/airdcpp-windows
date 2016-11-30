@@ -25,6 +25,7 @@
 #include <boost/array.hpp>
 #endif
 #include <boost/cstdint.hpp>
+#include <boost/functional/hash_fwd.hpp>
 #include <boost/multiprecision/number.hpp>
 #include <boost/multiprecision/detail/big_lanczos.hpp>
 #include <boost/multiprecision/detail/dynamic_array.hpp>
@@ -256,6 +257,17 @@ public:
    }
 
    cpp_dec_float(const double mantissa, const ExponentType exponent);
+
+   std::size_t hash()const
+   {
+      std::size_t result = 0;
+      for(int i = 0; i < prec_elem; ++i)
+         boost::hash_combine(result, data[i]);
+      boost::hash_combine(result, exp);
+      boost::hash_combine(result, neg);
+      boost::hash_combine(result, fpclass);
+      return result;
+   }
 
    // Specific special values.
    static const cpp_dec_float& nan()
@@ -948,6 +960,18 @@ cpp_dec_float<Digits10, ExponentType, Allocator>& cpp_dec_float<Digits10, Expone
 template <unsigned Digits10, class ExponentType, class Allocator>
 cpp_dec_float<Digits10, ExponentType, Allocator>& cpp_dec_float<Digits10, ExponentType, Allocator>::operator/=(const cpp_dec_float<Digits10, ExponentType, Allocator>& v)
 {
+   if(iszero())
+   {
+      if((v.isnan)())
+      {
+         return *this = v;
+      }
+      else if(v.iszero())
+      {
+         return *this = nan();
+      }
+   }
+
    const bool u_and_v_are_finite_and_identical = ( (isfinite)()
       && (fpclass == v.fpclass)
       && (exp == v.exp)
@@ -966,14 +990,6 @@ cpp_dec_float<Digits10, ExponentType, Allocator>& cpp_dec_float<Digits10, Expone
    }
    else
    {
-      if(iszero())
-      {
-         if((v.isnan)() || v.iszero())
-         {
-            return *this = v;
-         }
-         return *this;
-      }
       cpp_dec_float t(v);
       t.calculate_inv();
       return operator*=(t);
@@ -2955,6 +2971,12 @@ template <unsigned Digits10, class ExponentType, class Allocator>
 inline int eval_get_sign(const cpp_dec_float<Digits10, ExponentType, Allocator>& val)
 {
    return val.iszero() ? 0 : val.isneg() ? -1 : 1;
+}
+
+template <unsigned Digits10, class ExponentType, class Allocator>
+inline std::size_t hash_value(const cpp_dec_float<Digits10, ExponentType, Allocator>& val)
+{
+   return val.hash();
 }
 
 } // namespace backends

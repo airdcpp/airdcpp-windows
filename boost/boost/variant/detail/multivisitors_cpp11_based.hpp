@@ -17,7 +17,7 @@
 #endif
 
 #include <boost/variant/detail/apply_visitor_unary.hpp>
-#include "boost/variant/variant_fwd.hpp" // for BOOST_VARIANT_DO_NOT_USE_VARIADIC_TEMPLATES
+#include <boost/variant/variant_fwd.hpp> // for BOOST_VARIANT_DO_NOT_USE_VARIADIC_TEMPLATES
 
 #if defined(BOOST_VARIANT_DO_NOT_USE_VARIADIC_TEMPLATES) || defined(BOOST_NO_CXX11_HDR_TUPLE)
 #   error "This file requires <tuple> and variadic templates support"

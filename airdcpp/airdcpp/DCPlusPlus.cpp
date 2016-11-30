@@ -19,47 +19,41 @@
 #include "stdinc.h"
 #include "DCPlusPlus.h"
 
-#include "ActivityManager.h"
-#include "AirUtil.h"
-#include "ConnectionManager.h"
-#include "DownloadManager.h"
-#include "GeoManager.h"
-#include "UploadManager.h"
-#include "CryptoManager.h"
-#include "ShareManager.h"
-#include "SearchManager.h"
-#include "QueueManager.h"
-#include "ClientManager.h"
-#include "HashManager.h"
-#include "LogManager.h"
-#include "FavoriteManager.h"
-#include "SettingsManager.h"
-#include "FinishedManager.h"
-#include "ADLSearch.h"
-#include "ConnectivityManager.h"
-#include "WebShortcuts.h"
-#include "Localization.h"
-#include "DirectoryListingManager.h"
-#include "UpdateManager.h"
-#include "ThrottleManager.h"
-#include "MessageManager.h"
-#include "HighlightManager.h"
-
+#include "format.h"
+#include "File.h"
 #include "StringTokenizer.h"
 
+#include "ActivityManager.h"
+#include "ADLSearch.h"
+#include "AirUtil.h"
+#include "ClientManager.h"
+#include "ConnectionManager.h"
+#include "ConnectivityManager.h"
+#include "CryptoManager.h"
 #include "DebugManager.h"
-#include "File.h"
-
-#include "AutoSearchManager.h"
+#include "DirectoryListingManager.h"
+#include "DownloadManager.h"
+#include "FavoriteManager.h"
+#include "GeoManager.h"
+#include "HashManager.h"
+#include "Localization.h"
+#include "LogManager.h"
+#include "MessageManager.h"
+#include "QueueManager.h"
+#include "ShareManager.h"
+#include "SearchManager.h"
+#include "SettingsManager.h"
 #include "ShareScannerManager.h"
+#include "ThrottleManager.h"
+#include "UpdateManager.h"
+#include "UploadManager.h"
 #include "ViewFileManager.h"
 
-#include "format.h"
 namespace dcpp {
 
 #define RUNNING_FLAG Util::getPath(Util::PATH_USER_LOCAL) + "RUNNING"
 
-void startup(function<void(const string&)> stepF, function<bool(const string& /*Message*/, bool /*isQuestion*/, bool /*isError*/)> messageF, function<void()> runWizard, function<void(float)> progressF) throw(Exception) {
+void startup(StepF stepF, MessageF messageF, Callback runWizard, ProgressF progressF, Callback moduleInitF /*nullptr*/, Callback moduleLoadF /*nullptr*/) throw(Exception) {
 	// "Dedicated to the near-memory of Nev. Let's start remembering people while they're still alive."
 	// Nev's great contribution to dc++
 	while(1) break;
@@ -95,19 +89,19 @@ void startup(function<void(const string&)> stepF, function<bool(const string& /*
 	ThrottleManager::newInstance();
 	QueueManager::newInstance();
 	FavoriteManager::newInstance();
-	FinishedManager::newInstance();
 	ADLSearchManager::newInstance();
 	ConnectivityManager::newInstance();
+	DirectoryListingManager::newInstance();
 	DebugManager::newInstance();
-	WebShortcuts::newInstance();
-	AutoSearchManager::newInstance();
 	ShareScannerManager::newInstance();
 	GeoManager::newInstance();
-	DirectoryListingManager::newInstance();
 	UpdateManager::newInstance();
-	HighlightManager::newInstance();
 	ViewFileManager::newInstance();
 	ActivityManager::newInstance();
+
+	if (moduleInitF) {
+		moduleInitF();
+	}
 
 	SettingsManager::getInstance()->load(messageF);
 
@@ -144,9 +138,6 @@ void startup(function<void(const string&)> stepF, function<bool(const string& /*
 	announce(STRING(DOWNLOAD_QUEUE));
 	QueueManager::getInstance()->loadQueue(progressF);
 
-	//Load before share, it can result in bundles changing status to failed_missing, avoids adding double items in auto search.
-	AutoSearchManager::getInstance()->AutoSearchLoad();
-
 	announce(STRING(SHARED_FILES));
 	ShareManager::getInstance()->startup(stepF, progressF); 
 
@@ -156,9 +147,15 @@ void startup(function<void(const string&)> stepF, function<bool(const string& /*
 		announce(STRING(COUNTRY_INFORMATION));
 		GeoManager::getInstance()->init();
 	}
+
+	// Modules may depend on data loaded in other sections
+	// Initialization should still be performed before loading SettingsManager as some modules save their config there
+	if (moduleLoadF) {
+		moduleLoadF();
+	}
 }
 
-void shutdown(function<void (const string&)> stepF, function<void (float)> progressF) {
+void shutdown(StepF stepF, ProgressF progressF, Callback moduleDestroyF) {
 	TimerManager::getInstance()->shutdown();
 	auto announce = [&stepF](const string& str) {
 		if(stepF) {
@@ -181,23 +178,22 @@ void shutdown(function<void (const string&)> stepF, function<void (float)> progr
 	BufferedSocket::waitShutdown();
 	
 	announce(STRING(SAVING_SETTINGS));
-	AutoSearchManager::getInstance()->AutoSearchSave();
 	QueueManager::getInstance()->shutdown();
 	SettingsManager::getInstance()->save();
+
+	if (moduleDestroyF) {
+		moduleDestroyF();
+	}
 
 	announce(STRING(SHUTTING_DOWN));
 
 	ActivityManager::deleteInstance();
 	ViewFileManager::deleteInstance();
-	HighlightManager::deleteInstance();
 	UpdateManager::deleteInstance();
 	GeoManager::deleteInstance();
 	ConnectivityManager::deleteInstance();
 	DebugManager::deleteInstance();
-	AutoSearchManager::deleteInstance();
-	WebShortcuts::deleteInstance();
 	ADLSearchManager::deleteInstance();
-	FinishedManager::deleteInstance();
 	CryptoManager::deleteInstance();
 	ThrottleManager::deleteInstance();
 	DirectoryListingManager::deleteInstance();

@@ -3,8 +3,6 @@
 
 #include "stdafx.h"
 
-#include <airdcpp/DCPlusPlus.h>
-
 #include <airdcpp/SimpleXML.h>
 #include <airdcpp/File.h>
 #include <airdcpp/StringTokenizer.h>
@@ -17,18 +15,6 @@ string ResourceManager::strings[];
 wstring ResourceManager::wstrings[];
 ResourceManager* Singleton<ResourceManager>::instance;
 
-/*
-int __cdecl main(int argc, char* argv[]) {
-	File src(argv[1], File::READ, File::OPEN);
-	string x = src.read();
-
-	DWORD y = GetTickCount();
-	SimpleXML xml;
-	xml.fromXML(x);
-	printf("%d\n", GetTickCount() - y);
-	return 0;
-}
-*/
 int __cdecl main(int argc, char* argv[])
 {
 	if(argc < 3) {
@@ -83,15 +69,6 @@ int __cdecl main(int argc, char* argv[])
 		
 		varStr += " = {\r\n";
 		varName += " = {\r\n";
-		
-		/*ex.addTag("Language");
-		ex.addChildAttrib("Name", string("Example Language"));
-		ex.addChildAttrib("Author", string("AirDC++ Team"));
-		ex.addChildAttrib("Version", string(VERSIONSTRING));
-		ex.addChildAttrib("Revision", string("1"));
-		ex.stepIn();
-		ex.addTag("Strings");
-		ex.stepIn();*/
 
 		ex.addTag("resources");
 		ex.stepIn();
@@ -135,19 +112,12 @@ int __cdecl main(int argc, char* argv[])
 			while( (k = xmldef.find("\\\"")) != string::npos) {
 				xmldef.replace(k, 2, "\"");
 			}
-			//ex.addTag("String", xmldef);
-			//ex.addChildAttrib("Name", name);
+
 			ex.addTag("string", xmldef);
 			ex.addChildAttrib("name", name);
 
 			varStr += def + ", \r\n";
 			varName += '\"' + name + "\", \r\n";
-
-			/*if(((++a) % 5) == 0) {
-				varStr += "\r\n";
-				varName += "\r\n";
-			}*/
-
 		}
 
 		varStr.erase(varStr.size()-2, 2);
