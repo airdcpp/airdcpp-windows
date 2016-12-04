@@ -102,13 +102,11 @@ LRESULT FavHubGeneralPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 		ctrlEncoding.EnableWindow(false);
 		if (hideShare)
 			ctrlProfile.EnableWindow(false);
-	}
-	else {
+	} else {
 		ctrlProfile.EnableWindow(false);
 		if (entry->get(HubSettings::NmdcEncoding).empty() || entry->get(HubSettings::NmdcEncoding) == "System default") {
 			ctrlEncoding.SetCurSel(0);
-		}
-		else {
+		} else {
 			ctrlEncoding.SetWindowText(Text::toT(entry->get(HubSettings::NmdcEncoding)).c_str());
 		}
 	}
@@ -226,7 +224,7 @@ bool FavHubGeneralPage::write() {
 	}
 
 	//set the values
-	entry->get(HubSettings::NmdcEncoding) = ctrlEncoding.GetCurSel() > 0 ? Text::fromT(buf) : Util::emptyString;
+	entry->get(HubSettings::NmdcEncoding) = ctrlEncoding.GetCurSel() != 0 ? Text::fromT(buf) : Util::emptyString;
 	entry->setServer(addresses);
 
 	GetDlgItemText(IDC_HUBNAME, buf, 256);

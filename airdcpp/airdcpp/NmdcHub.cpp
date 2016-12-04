@@ -52,12 +52,30 @@ NmdcHub::~NmdcHub() {
 
 }
 
-string NmdcHub::toUtf8(const string& str) const { 
-	return Text::validateUtf8(str) ? str : Text::toUtf8(str, get(HubSettings::NmdcEncoding)); 
+string NmdcHub::toUtf8(const string& str) noexcept {
+	if (str.empty() || Text::validateUtf8(str)) {
+		return str;
+	}
+
+	auto ret = Text::toUtf8(str, get(HubSettings::NmdcEncoding));
+	if (ret.empty()) {
+		statusMessage(STRING(INVALID_ENCODING) + ": " + get(HubSettings::NmdcEncoding), LogMessage::SEV_ERROR);
+	}
+
+	return ret;
 }
 
-string NmdcHub::fromUtf8(const string& str) const { 
-	return Text::fromUtf8(str, get(HubSettings::NmdcEncoding));
+string NmdcHub::fromUtf8(const string& str) noexcept {
+	if (str.empty()) {
+		return str;
+	}
+
+	auto ret = Text::fromUtf8(str, get(HubSettings::NmdcEncoding));
+	if (ret.empty()) {
+		statusMessage(STRING(INVALID_ENCODING) + ": " + get(HubSettings::NmdcEncoding), LogMessage::SEV_ERROR);
+	}
+
+	return ret;
 }
 
 
