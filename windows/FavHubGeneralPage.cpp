@@ -219,7 +219,7 @@ bool FavHubGeneralPage::write() {
 	GetDlgItemText(IDC_ENCODING, buf, 512);
 	if (_tcschr(buf, _T('.')) == NULL && _tcscmp(buf, Text::toT(Text::utf8).c_str()) != 0 && ctrlEncoding.GetCurSel() != 0)
 	{
-		WinUtil::showMessageBox(TSTRING(INVALID_ENCODING), MB_ICONWARNING);
+		WinUtil::showMessageBox(TSTRING_F(INVALID_ENCODING, buf), MB_ICONWARNING);
 		return false;
 	}
 
