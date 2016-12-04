@@ -27,7 +27,6 @@ int __cdecl main(int argc, char* argv[])
 		File tgt(argv[2], File::WRITE, File::CREATE | File::TRUNCATE, File::BUFFER_AUTO, false);
 		File example(argv[3], File::WRITE, File::CREATE | File::TRUNCATE, File::BUFFER_AUTO, false);
 		string x = src.read();
-		x = Text::acpToUtf8(x);
 		string::size_type k;
 		
 		while((k = x.find('\r')) != string::npos) {
