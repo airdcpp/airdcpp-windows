@@ -57,9 +57,15 @@ string NmdcHub::toUtf8(const string& str) noexcept {
 		return str;
 	}
 
+	if (Util::stricmp(get(HubSettings::NmdcEncoding), Text::utf8) == 0) {
+		// Validation failed earlier
+		statusMessage("UTF-8 validation failed for the received data", LogMessage::SEV_ERROR);
+		return Util::emptyString;
+	}
+
 	auto ret = Text::toUtf8(str, get(HubSettings::NmdcEncoding));
 	if (ret.empty()) {
-		statusMessage(STRING(INVALID_ENCODING) + ": " + get(HubSettings::NmdcEncoding), LogMessage::SEV_ERROR);
+		statusMessage("Data was received from the hub that could not be parsed with encoding " + get(HubSettings::NmdcEncoding), LogMessage::SEV_ERROR);
 	}
 
 	return ret;
@@ -252,7 +258,7 @@ void NmdcHub::updateFromTag(Identity& id, const string& tag) {
 }
 
 void NmdcHub::onLine(const string& aLine) noexcept {
-	if(aLine.length() == 0)
+	if(aLine.empty())
 		return;
 
 	if(aLine[0] != '$') {
@@ -263,6 +269,10 @@ void NmdcHub::onLine(const string& aLine) noexcept {
 			}
 		}
 		string line = toUtf8(aLine);
+		if (line.empty()) {
+			return;
+		}
+
 		if(line[0] != '<') {
 			statusMessage(unescape(line), LogMessage::SEV_INFO);
 			return;
