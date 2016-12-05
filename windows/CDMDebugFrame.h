@@ -12,16 +12,20 @@
 #define DEBUG_FILTER_MESSAGE_MAP 18
 #define DEBUG_FILTER_TEXT_MESSAGE_MAP 19
 #define CLEAR_MESSAGE_MAP 20
+#define API_COMMAND_MESSAGE_MAP 21
 
 #include "FlatTabCtrl.h"
 
 #include <airdcpp/DebugManager.h>
+#include <airdcpp-webapi/web-server/WebServerManagerListener.h>
+
 #include <airdcpp/Semaphore.h>
 #include <airdcpp/Thread.h>
 
 #include <boost/lockfree/queue.hpp>
 
-class CDMDebugFrame : private DebugManagerListener, public Thread,
+using namespace webserver;
+class CDMDebugFrame : private DebugManagerListener, private WebServerManagerListener, public Thread,
 	public MDITabChildWindowImpl<CDMDebugFrame>,
 	public StaticFrame<CDMDebugFrame, ResourceManager::MENU_CDMDEBUG_MESSAGES>
 {
@@ -47,6 +51,8 @@ public:
 		MESSAGE_HANDLER(BM_SETCHECK, onSetUDPCheckCommand)
 	ALT_MSG_MAP(HUB_COMMAND_MESSAGE_MAP)
 		MESSAGE_HANDLER(BM_SETCHECK, onSetCheckHubCommand)
+	ALT_MSG_MAP(API_COMMAND_MESSAGE_MAP)
+		MESSAGE_HANDLER(BM_SETCHECK, onSetCheckApiCommand)
 	ALT_MSG_MAP(DEBUG_FILTER_MESSAGE_MAP)
 		MESSAGE_HANDLER(BM_SETCHECK, onSetCheckFilter)
 	ALT_MSG_MAP(DEBUG_FILTER_TEXT_MESSAGE_MAP)
@@ -61,16 +67,20 @@ public:
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+
 	LRESULT onSetTCPCheckCommand(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onSetUDPCheckCommand(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onSetCheckHubCommand(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
+	LRESULT onSetCheckApiCommand(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
+
 	LRESULT onSetCheckFilter(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
+
 	LRESULT onChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	void addLine(const string& aLine);
 	
 private:
-	bool stop;
+	bool stop = false;
 	Semaphore s;
 	boost::lockfree::queue<string*> cmdList;
 
@@ -80,14 +90,19 @@ private:
 
 	CEdit ctrlPad, ctrlFilterText;
 	CStatusBarCtrl ctrlStatus;
-	CButton ctrlClear, ctrlTCPCommands, ctrlUDPCommands, ctrlHubCommands, ctrlFilterIp;
-	CContainedWindow clearContainer, statusContainer, commandTCPContainer, commandUDPContainer, HubCommandContainer, cFilterContainer, eFilterContainer;
+	CButton ctrlTCPCommands, ctrlUDPCommands, ctrlHubCommands, ctrlApiCommands;
+	CButton ctrlClear, ctrlFilterIp;
+	CContainedWindow commandTCPContainer, commandUDPContainer, commandHubContainer, commandApiContainer;
+	CContainedWindow clearContainer, statusContainer, cFilterContainer, eFilterContainer;
 
-	bool showTCPCommands, showUDPCommands, showHubCommands, bFilterIp;
+	bool showTCPCommands = true, showUDPCommands = true, showHubCommands = false, showApiCommands = false, bFilterIp = false;
 	tstring sFilterIp;
-	bool closed;
+	bool closed = false;
 	
-	void on(DebugManagerListener::DebugCommand, const string& aLine, uint8_t aType, uint8_t aDirection, const string& ip) noexcept;
+	void on(DebugManagerListener::DebugCommand, const string& aLine, uint8_t aType, uint8_t aDirection, const string& ip) noexcept override;
+	void on(WebServerManagerListener::Data, const string& aData, TransportType aType, Direction aDirection, const string& aIP) noexcept override;
+
+	static string formatMessage(const string& aType, bool aIncoming, const string& aData, const string& aIP) noexcept;
 };
 
 #endif // __CDMDEBUGFRAME_H

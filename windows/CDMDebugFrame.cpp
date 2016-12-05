@@ -20,10 +20,13 @@
 #include "CDMDebugFrame.h"
 #include "WinUtil.h"
 
+#include <airdcpp-webapi/web-server/WebServerManager.h>
+
 #define MAX_TEXT_LEN 131072
 
-CDMDebugFrame::CDMDebugFrame() : stop(false), closed(false), showTCPCommands(true), showUDPCommands(true), showHubCommands(false), bFilterIp(false), cmdList(1024),
-		HubCommandContainer(WC_BUTTON, this, HUB_COMMAND_MESSAGE_MAP),
+CDMDebugFrame::CDMDebugFrame() : cmdList(1024),
+		commandApiContainer(WC_BUTTON, this, API_COMMAND_MESSAGE_MAP),
+		commandHubContainer(WC_BUTTON, this, HUB_COMMAND_MESSAGE_MAP),
 		commandTCPContainer(WC_BUTTON, this, TCP_COMMAND_MESSAGE_MAP),
 		commandUDPContainer(WC_BUTTON, this, UDP_COMMAND_MESSAGE_MAP),
 		cFilterContainer(WC_BUTTON, this, DEBUG_FILTER_MESSAGE_MAP),
@@ -48,23 +51,29 @@ LRESULT CDMDebugFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	ctrlClear.SetFont(WinUtil::systemFont);
 	clearContainer.SubclassWindow(ctrlClear.m_hWnd);
 
-	ctrlHubCommands.Create(ctrlStatus.m_hWnd, rcDefault, _T("Hub Commands"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_STATICEDGE);
+	ctrlHubCommands.Create(ctrlStatus.m_hWnd, rcDefault, _T("Hub commands"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_STATICEDGE);
 	ctrlHubCommands.SetButtonStyle(BS_AUTOCHECKBOX, false);
 	ctrlHubCommands.SetFont(WinUtil::systemFont);
 	ctrlHubCommands.SetCheck(showHubCommands ? BST_CHECKED : BST_UNCHECKED);
-	HubCommandContainer.SubclassWindow(ctrlHubCommands.m_hWnd);
+	commandHubContainer.SubclassWindow(ctrlHubCommands.m_hWnd);
 
-	ctrlTCPCommands.Create(ctrlStatus.m_hWnd, rcDefault, _T("Client Commands (TCP)"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_STATICEDGE);
+	ctrlTCPCommands.Create(ctrlStatus.m_hWnd, rcDefault, _T("Client commands (TCP)"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_STATICEDGE);
 	ctrlTCPCommands.SetButtonStyle(BS_AUTOCHECKBOX, false);
 	ctrlTCPCommands.SetFont(WinUtil::systemFont);
 	ctrlTCPCommands.SetCheck(showTCPCommands ? BST_CHECKED : BST_UNCHECKED);
 	commandTCPContainer.SubclassWindow(ctrlTCPCommands.m_hWnd);
 
-	ctrlUDPCommands.Create(ctrlStatus.m_hWnd, rcDefault, _T("Client Commands (UDP)"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_STATICEDGE);
+	ctrlUDPCommands.Create(ctrlStatus.m_hWnd, rcDefault, _T("Client commands (UDP)"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_STATICEDGE);
 	ctrlUDPCommands.SetButtonStyle(BS_AUTOCHECKBOX, false);
 	ctrlUDPCommands.SetFont(WinUtil::systemFont);
 	ctrlUDPCommands.SetCheck(showUDPCommands ? BST_CHECKED : BST_UNCHECKED);
 	commandUDPContainer.SubclassWindow(ctrlUDPCommands.m_hWnd);
+
+	ctrlApiCommands.Create(ctrlStatus.m_hWnd, rcDefault, _T("Web server commands"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_STATICEDGE);
+	ctrlApiCommands.SetButtonStyle(BS_AUTOCHECKBOX, false);
+	ctrlApiCommands.SetFont(WinUtil::systemFont);
+	ctrlApiCommands.SetCheck(showApiCommands ? BST_CHECKED : BST_UNCHECKED);
+	commandApiContainer.SubclassWindow(ctrlApiCommands.m_hWnd);
 
 	ctrlFilterIp.Create(ctrlStatus.m_hWnd, rcDefault, _T("Filter"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_STATICEDGE);
 	ctrlFilterIp.SetButtonStyle(BS_AUTOCHECKBOX, false);
@@ -84,6 +93,7 @@ LRESULT CDMDebugFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	WinUtil::SetIcon(m_hWnd, IDI_CDM);
 	start();
 	DebugManager::getInstance()->addListener(this);
+	WebServerManager::getInstance()->addListener(this);
 		
 	bHandled = FALSE;
 	return 1;
@@ -92,6 +102,7 @@ LRESULT CDMDebugFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 LRESULT CDMDebugFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closed) {
 		DebugManager::getInstance()->removeListener(this);
+		WebServerManager::getInstance()->removeListener(this);
 		
 		closed = true;
 		stop = true;
@@ -114,11 +125,11 @@ void CDMDebugFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
 	
 	if(ctrlStatus.IsWindow()) {
 		CRect sr;
-		int w[7];
+		int w[8];
 		ctrlStatus.GetClientRect(sr);
 
 		//int clearButtonWidth = 50;
-		int tmp = ((sr.Width() - 50) / 7) - 4;
+		int tmp = ((sr.Width() - 50) / 8) - 4;
 		w[0] = 50;
 		w[1] = w[0] + tmp;
 		w[2] = w[1] + tmp;
@@ -126,8 +137,9 @@ void CDMDebugFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
 		w[4] = w[3] + tmp;
 		w[5] = w[4] + tmp;
 		w[6] = w[5] + tmp;
+		w[7] = w[6] + tmp;
 		
-		ctrlStatus.SetParts(8, w);
+		ctrlStatus.SetParts(9, w);
 
 		ctrlStatus.GetRect(0, sr);
 		ctrlClear.MoveWindow(sr);
@@ -142,8 +154,11 @@ void CDMDebugFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
 		ctrlHubCommands.MoveWindow(sr);
 		ctrlStatus.GetRect(4, sr);
 
-		ctrlFilterIp.MoveWindow(sr);
+		ctrlApiCommands.MoveWindow(sr);
 		ctrlStatus.GetRect(5, sr);
+
+		ctrlFilterIp.MoveWindow(sr);
+		ctrlStatus.GetRect(6, sr);
 
 		ctrlFilterText.MoveWindow(sr);
 		tstring msg;
@@ -151,14 +166,15 @@ void CDMDebugFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
 			msg = Text::toT("Watching IP: ") + sFilterIp;
 		else
 			msg = _T("Watching all IPs");
-		ctrlStatus.SetText(6, msg.c_str());
+		ctrlStatus.SetText(7, msg.c_str());
 	}
 	
 	// resize client window
-	if(m_hWndClient != NULL)
+	if (m_hWndClient != NULL) {
 		::SetWindowPos(m_hWndClient, NULL, rect.left, rect.top,
 			rect.right - rect.left, rect.bottom - rect.top,
 			SWP_NOZORDER | SWP_NOACTIVATE);
+	}
 }
 
 void CDMDebugFrame::addLine(const string& aLine) {
@@ -216,42 +232,67 @@ void CDMDebugFrame::addCmd(const string& cmd) {
 	s.signal();
 }
 
-void CDMDebugFrame::on(DebugManagerListener::DebugCommand, const string& aLine, uint8_t aType, uint8_t aDirection, const string& ip) noexcept {
-	if(bFilterIp && Text::toT(ip).find(sFilterIp) == tstring::npos) {
-		return;
-	}
+string CDMDebugFrame::formatMessage(const string& aType, bool aIncoming, const string& aData, const string& aIP) noexcept {
+	string cmd(aType + ":\t\t");
 
-	string cmd;
-	switch(aType) {
-		case DebugManager::TYPE_HUB:
-			if(!showHubCommands)
-				return;
-			cmd = "Hub:";
-			break;
-		case DebugManager::TYPE_CLIENT:
-			if(!showTCPCommands)
-				return;
-			cmd = "Client (TCP):";
-			break;
-		case DebugManager::TYPE_CLIENT_UDP:
-			if(!showUDPCommands)
-				return;
-			cmd = "Client (UDP):";
-			break;
-		default: dcassert(0);
-	}
-
-	cmd += "\t\t";
-
-	if (aDirection == DebugManager::INCOMING) {
+	if (aIncoming) {
 		cmd += "[Incoming]";
 	} else {
 		cmd += "[Outgoing]";
 	}
 
-	cmd += "[" + ip + "]\t \t" + aLine;
+	cmd += "[" + aIP + "]\t \t" + aData;
+	return cmd;
+}
 
-	addCmd(cmd);
+void CDMDebugFrame::on(WebServerManagerListener::Data, const string& aData, TransportType aType, Direction aDirection, const string& aIP) noexcept {
+	if (!showApiCommands) {
+		return;
+	}
+
+	string type;
+	switch (aType) {
+		case TransportType::TYPE_HTTP_API:
+			type = "API (HTTP)";
+			break;
+		case TransportType::TYPE_SOCKET:
+			type = "API (socket)";
+			break;
+		case TransportType::TYPE_HTTP_FILE:
+			type = "HTTP file request";
+			break;
+		default: dcassert(0);
+	}
+
+	addCmd(formatMessage(type, aDirection == Direction::INCOMING, aData, aIP));
+}
+
+void CDMDebugFrame::on(DebugManagerListener::DebugCommand, const string& aLine, uint8_t aType, uint8_t aDirection, const string& aIP) noexcept {
+	if(bFilterIp && Text::toT(aIP).find(sFilterIp) == tstring::npos) {
+		return;
+	}
+
+	string type;
+	switch(aType) {
+		case DebugManager::TYPE_HUB:
+			if(!showHubCommands)
+				return;
+			type = "Hub";
+			break;
+		case DebugManager::TYPE_CLIENT:
+			if(!showTCPCommands)
+				return;
+			type = "Client (TCP)";
+			break;
+		case DebugManager::TYPE_CLIENT_UDP:
+			if(!showUDPCommands)
+				return;
+			type = "Client (UDP)";
+			break;
+		default: dcassert(0);
+	}
+
+	addCmd(formatMessage(type, aDirection == DebugManager::INCOMING, aLine, aIP));
 }
 
 LRESULT CDMDebugFrame::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
@@ -281,6 +322,11 @@ LRESULT CDMDebugFrame::onSetUDPCheckCommand(UINT /*uMsg*/, WPARAM wParam, LPARAM
 }
 LRESULT CDMDebugFrame::onSetCheckHubCommand(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
 	showHubCommands = wParam == BST_CHECKED;
+	bHandled = FALSE;
+	return 0;
+}
+LRESULT CDMDebugFrame::onSetCheckApiCommand(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
+	showApiCommands = wParam == BST_CHECKED;
 	bHandled = FALSE;
 	return 0;
 }
