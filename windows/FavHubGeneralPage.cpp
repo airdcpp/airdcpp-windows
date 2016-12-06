@@ -102,13 +102,11 @@ LRESULT FavHubGeneralPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 		ctrlEncoding.EnableWindow(false);
 		if (hideShare)
 			ctrlProfile.EnableWindow(false);
-	}
-	else {
+	} else {
 		ctrlProfile.EnableWindow(false);
 		if (entry->get(HubSettings::NmdcEncoding).empty() || entry->get(HubSettings::NmdcEncoding) == "System default") {
 			ctrlEncoding.SetCurSel(0);
-		}
-		else {
+		} else {
 			ctrlEncoding.SetWindowText(Text::toT(entry->get(HubSettings::NmdcEncoding)).c_str());
 		}
 	}
@@ -221,12 +219,12 @@ bool FavHubGeneralPage::write() {
 	GetDlgItemText(IDC_ENCODING, buf, 512);
 	if (_tcschr(buf, _T('.')) == NULL && _tcscmp(buf, Text::toT(Text::utf8).c_str()) != 0 && ctrlEncoding.GetCurSel() != 0)
 	{
-		WinUtil::showMessageBox(TSTRING(INVALID_ENCODING), MB_ICONWARNING);
+		WinUtil::showMessageBox(TSTRING_F(INVALID_ENCODING, buf), MB_ICONWARNING);
 		return false;
 	}
 
 	//set the values
-	entry->get(HubSettings::NmdcEncoding) = ctrlEncoding.GetCurSel() > 0 ? Text::fromT(buf) : Util::emptyString;
+	entry->get(HubSettings::NmdcEncoding) = ctrlEncoding.GetCurSel() != 0 ? Text::fromT(buf) : Util::emptyString;
 	entry->setServer(addresses);
 
 	GetDlgItemText(IDC_HUBNAME, buf, 256);
