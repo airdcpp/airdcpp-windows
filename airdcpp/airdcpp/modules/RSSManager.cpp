@@ -299,6 +299,7 @@ void RSSManager::removeFeedData(const RSSPtr& aFeed, const RSSDataPtr& aData) {
 	fire(RSSManagerListener::RSSDataRemoved(), aData);
 	Lock l(cs);
 	aFeed->getFeedData().erase(aData->getTitle());
+	aFeed->setDirty(true);
 }
 
 void RSSManager::downloadFeed(const RSSPtr& aFeed, bool verbose/*false*/) noexcept {
