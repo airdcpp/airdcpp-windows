@@ -110,9 +110,9 @@ void RSSManager::parseAtomFeed(SimpleXML& xml, RSSPtr& aFeed) {
 			if (xml.findChild("updated"))
 				date = xml.getChildData();
 
-			if (newdata) 
+			if (newdata) {
 				addData(titletmp, link, date, aFeed);
-
+			}
 			xml.stepOut();
 		}
 	xml.stepOut();
@@ -143,8 +143,9 @@ void RSSManager::parseRSSFeed(SimpleXML& xml, RSSPtr& aFeed) {
 				date = xml.getChildData();
 
 
-			if (newdata)
+			if (newdata) {
 				addData(titletmp, link, date, aFeed);
+			}
 
 			xml.stepOut();
 		}
@@ -209,26 +210,26 @@ bool RSSManager::checkTitle(const RSSPtr& aFeed, string& aTitle) {
 }
 
 void RSSManager::addData(const string& aTitle, const string& aLink, const string& aDate, RSSPtr& aFeed) {
-	RSSDataPtr data = new RSSData(aTitle, aLink, aDate, aFeed);
-	matchFilters(aFeed, data);
+	auto data = new RSSData(aTitle, aLink, aDate, aFeed);
 	{
 		Lock l(cs);
 		aFeed->getFeedData().emplace(aTitle, data);
 	}
 	aFeed->setDirty(true);
 	fire(RSSManagerListener::RSSDataAdded(), data);
+	
+	Lock l(cs);
+	matchFilters(aFeed, data);
 }
 
-void RSSManager::matchFilters(const RSSPtr& aFeed) const {
+void RSSManager::matchFilters(const RSSPtr& aFeed) {
 	if (aFeed) {
 		Lock l(cs);
-		for (auto data : aFeed->getFeedData() | map_values) {
-				matchFilters(aFeed, data);
-		}
+		for_each(aFeed->getFeedData() | map_values, [&](const RSSDataPtr& data) { matchFilters(aFeed, data); });
 	}
 }
 
-void RSSManager::matchFilters(const RSSPtr& aFeed, const RSSDataPtr& aData) const {
+void RSSManager::matchFilters(const RSSPtr& aFeed, const RSSDataPtr& aData) {
 	
 	for (auto& aF : aFeed->getRssFilterList()) {
 		if (aF.match(aData->getTitle())) {
@@ -238,13 +239,15 @@ void RSSManager::matchFilters(const RSSPtr& aFeed, const RSSDataPtr& aData) cons
 				if (QueueManager::getInstance()->isNmdcDirQueued(aData->getTitle(), 0) != DUPE_NONE)
 					break; //Need to match other filters?
 			}
-
-			auto as = AutoSearchManager::getInstance()->addAutoSearch(aData->getTitle(),
-				aF.getDownloadTarget(), true, AutoSearch::RSS_DOWNLOAD, true);
-			if (as) {
-				AutoSearchManager::getInstance()->moveItemToGroup(as, aF.getAutosearchGroup());
+			if (aF.getFilterAction() == RSSFilter::DOWNLOAD) {
+				auto as = AutoSearchManager::getInstance()->addAutoSearch(aData->getTitle(),
+					aF.getDownloadTarget(), true, AutoSearch::RSS_DOWNLOAD, true);
+				if (as) {
+					AutoSearchManager::getInstance()->moveItemToGroup(as, aF.getAutosearchGroup());
+				}
+			} else if (aF.getFilterAction() == RSSFilter::REMOVE) {
+				tasks.addTask([=] { removeFeedData(aFeed, aData); });
 			}
-
 			break; //One match is enough
 		}
 	}
@@ -290,6 +293,12 @@ void RSSManager::removeFeedItem(const RSSPtr& aFeed) noexcept {
 	//Delete database file?
 	rssList.erase(aFeed);
 	fire(RSSManagerListener::RSSFeedRemoved(), aFeed);
+}
+
+void RSSManager::removeFeedData(const RSSPtr& aFeed, const RSSDataPtr& aData) {
+	fire(RSSManagerListener::RSSDataRemoved(), aData);
+	Lock l(cs);
+	aFeed->getFeedData().erase(aData->getTitle());
 }
 
 void RSSManager::downloadFeed(const RSSPtr& aFeed, bool verbose/*false*/) noexcept {
@@ -389,7 +398,8 @@ void RSSManager::load() {
 							xml.getChildAttrib("DownloadTarget"),
 							Util::toInt(xml.getChildAttrib("Method", "1")),
 							xml.getChildAttrib("AutoSearchGroup"),
-							xml.getBoolChildAttrib("SkipDupes"));
+							xml.getBoolChildAttrib("SkipDupes"),
+							Util::toInt(xml.getChildAttrib("FilterAction", "0")));
 					}
 					xml.stepOut();
 				}
@@ -454,6 +464,7 @@ void RSSManager::saveConfig(bool saveDatabase) {
 				xml.addChildAttrib("Method", f.getMethod());
 				xml.addChildAttrib("AutoSearchGroup", f.getAutosearchGroup());
 				xml.addChildAttrib("SkipDupes", f.skipDupes);
+				xml.addChildAttrib("FilterAction", f.getFilterAction());
 			}
 			xml.stepOut();
 			xml.stepOut();

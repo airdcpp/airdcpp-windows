@@ -43,6 +43,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_FILTER_UPDATE, onUpdate)
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)
 		MESSAGE_HANDLER(WM_CTLCOLORDLG, onCtlColor)
+		COMMAND_HANDLER(IDC_RSS_FILTER_ACTION, CBN_SELENDOK, onAction)
 		NOTIFY_HANDLER(IDC_RSS_FILTER_LIST, LVN_KEYDOWN, onKeyDown)
 		NOTIFY_HANDLER(IDC_RSS_FILTER_LIST, LVN_ITEMCHANGED, onSelectionChanged)
 		END_MSG_MAP()
@@ -54,6 +55,10 @@ public:
 	LRESULT onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onAction(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		fixControls();
+		return 0;
+	}
 
 	LRESULT onCtlColor(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		HDC hdc = (HDC)wParam;
@@ -94,6 +99,7 @@ private:
 	CEdit ctrlTarget;
 	CComboBox cMatcherType;
 	CComboBox cGroups;
+	CComboBox cAction;
 
 	ExListViewCtrl ctrlRssFilterList;
 	vector<RSSFilter> filterList;
@@ -109,6 +115,7 @@ private:
 	bool validateSettings(const string& aPattern);
 	void restoreSelection(const tstring& curSel);
 
+	void fixControls();
 
 };
 #endif
