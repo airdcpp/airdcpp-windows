@@ -213,7 +213,8 @@ private:
 	void updateDupeType(const string& aName);
 
 	RSSPtr getSelectedFeed();
-	ItemInfo* getSelectedListitem();
+
+	vector<ItemInfo*> getSelectedListitems();
 
 	//map feeds to tree item
 	unordered_map<RSSPtr, HTREEITEM> feeds;

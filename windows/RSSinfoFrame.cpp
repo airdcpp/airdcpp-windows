@@ -174,7 +174,7 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 	bool listMenu = false;
 	bool treeMenu = false;
 	bool hitTreeitem = false;
-	if (reinterpret_cast<HWND>(wParam) == ctrlRss && ctrlRss.list.GetSelectedCount() == 1) {
+	if (reinterpret_cast<HWND>(wParam) == ctrlRss && ctrlRss.list.GetSelectedCount() > 0) {
 		if (pt.x == -1 && pt.y == -1) {
 			WinUtil::getContextMenuPos(ctrlRss.list, pt);
 		}
@@ -198,37 +198,45 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 	}
 
 	if (listMenu) {
-		auto ii = getSelectedListitem();
-		if (ii) {
+		auto items = getSelectedListitems();
+		if (!items.empty()) {
 			OMenu menu;
 			menu.CreatePopupMenu();
-			menu.InsertSeparatorFirst(Text::toT(ii->item->getTitle()));
+			string title = items.size() == 1 ? (items.front()->item->getTitle() + PATH_SEPARATOR) : STRING_F(ITEMS_X, items.size());
 
-			menu.appendItem(TSTRING(OPEN_LINK), [=] { WinUtil::openLink(Text::toT(ii->item->getLink())); }, OMenu::FLAG_DEFAULT);
+			menu.InsertSeparatorFirst(Text::toT(title));
+
+			menu.appendItem(TSTRING(OPEN_LINK), [=] { for_each(items.begin(), items.end(), [=](const ItemInfo* a) { WinUtil::openLink(Text::toT(a->item->getLink())); }); }, OMenu::FLAG_DEFAULT);
 			menu.appendSeparator();
 
 			ListBaseType::MenuItemList customItems;
 			ctrlRss.list.appendCopyMenu(menu, customItems);
 			menu.appendSeparator();
 
-			if (ii->isRelease) {
-				//autosearch menus
-				appendDownloadMenu(menu, DownloadBaseHandler::TYPE_SECONDARY, true, boost::none, ii->item->getTitle() + PATH_SEPARATOR, false);
+			bool allRelease = all_of(items, [=](const ItemInfo* a) { return a->isRelease; });
+			if (allRelease) {
+				//auto search menus
+				appendDownloadMenu(menu, DownloadBaseHandler::TYPE_SECONDARY, true, boost::none, title, false);
 				menu.appendSeparator();
 			}
 
-			menu.appendItem(TSTRING(SEARCH), [=] { WinUtil::search(Text::toT(ii->item->getTitle())); });
-			WinUtil::appendSearchMenu(menu, ii->item->getTitle());
-			if (AirUtil::allowOpenDupe(ii->getDupe())) {
+			if (items.size() == 1) {
+				menu.appendItem(TSTRING(SEARCH), [=] { WinUtil::search(Text::toT(items.front()->item->getTitle())); });
+				WinUtil::appendSearchMenu(menu, items.front()->item->getTitle());
+				if (AirUtil::allowOpenDupe(items.front()->getDupe())) {
+					menu.appendSeparator();
+					menu.appendItem(TSTRING(OPEN_FOLDER), [=] {
+						auto paths = AirUtil::getDirDupePaths(items.front()->getDupe(), items.front()->item->getTitle());
+						if (!paths.empty())
+							WinUtil::openFolder(Text::toT(paths.front()));
+					});
+				}
 				menu.appendSeparator();
-				menu.appendItem(TSTRING(OPEN_FOLDER), [=] {
-					auto paths = AirUtil::getDirDupePaths(ii->getDupe(), ii->item->getTitle());
-					if (!paths.empty())
-						WinUtil::openFolder(Text::toT(paths.front()));
-				});
 			}
-			menu.appendSeparator();
-			menu.appendItem(TSTRING(REMOVE), [=] { RSSManager::getInstance()->removeFeedData(ii->item->getFeed(), ii->item); });
+			menu.appendItem(TSTRING(REMOVE), [=] {
+				for_each(items.begin(), items.end(), [=](const ItemInfo* a) {
+					RSSManager::getInstance()->removeFeedData(a->item->getFeed(), a->item); });
+			});
 			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 			return TRUE;
 		}
@@ -324,9 +332,10 @@ LRESULT RssInfoFrame::onConfig(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 }
 
 LRESULT RssInfoFrame::onDoubleClickList(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
-	auto ii = getSelectedListitem();
-	if(ii)
-		WinUtil::openLink(Text::toT(ii->item->getLink()));
+	auto list = getSelectedListitems();
+	if (!list.empty()) {
+		WinUtil::openLink(Text::toT(list.front()->item->getLink()));
+	}
 	return 0;
 }
 
@@ -453,9 +462,12 @@ void RssInfoFrame::updateDupeType(const string& aName) {
 }
 
 void RssInfoFrame::handleDownload(const string& aTarget, Priority /*p*/, bool /*aIsRelease*/) {
-	auto ii = ctrlRss.list.getSelectedItem();
-	if(ii)
+	auto items = getSelectedListitems();
+	if (items.empty())
+		return;
+	for_each(items.begin(), items.end(), [=](const ItemInfo* ii) {
 		AutoSearchManager::getInstance()->addAutoSearch(ii->item->getTitle(), aTarget, true, AutoSearch::RSS_DOWNLOAD);
+	});
 }
 
 void RssInfoFrame::add() {
@@ -563,15 +575,17 @@ void RssInfoFrame::reloadList() {
 	ctrlRss.list.SetRedraw(TRUE);
 }
 
-RssInfoFrame::ItemInfo* RssInfoFrame::getSelectedListitem() {
-	if (ctrlRss.list.GetSelectedCount() == 1) {
-		int sel = ctrlRss.list.GetNextItem(-1, LVNI_SELECTED);
-		auto ii = (ItemInfo*)ctrlRss.list.GetItemData(sel);
-		if (ii) {
-			return ii;
+vector<RssInfoFrame::ItemInfo*> RssInfoFrame::getSelectedListitems() {
+
+	vector<ItemInfo*> list;
+	if (ctrlRss.list.GetSelectedCount() > 0) {
+		int i = -1;
+		while ((i = ctrlRss.list.GetNextItem(i, LVNI_SELECTED)) != -1) {
+			auto ii = (ItemInfo*)ctrlRss.list.GetItemData(i);
+			list.push_back(ii);
 		}
 	}
-	return nullptr;
+	return list;
 }
 
 RSSPtr RssInfoFrame::getSelectedFeed() {
