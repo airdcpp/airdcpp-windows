@@ -227,7 +227,8 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 						WinUtil::openFolder(Text::toT(paths.front()));
 				});
 			}
-
+			menu.appendSeparator();
+			menu.appendItem(TSTRING(REMOVE), [=] { RSSManager::getInstance()->removeFeedData(ii->item->getFeed(), ii->item); });
 			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 			return TRUE;
 		}

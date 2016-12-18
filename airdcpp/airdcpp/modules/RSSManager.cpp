@@ -391,19 +391,8 @@ void RSSManager::load() {
 					xml.getIntChildAttrib("UpdateInterval"),
 					xml.getIntChildAttrib("Token"));
 				xml.stepIn();
-				if (xml.findChild("Filters")) {
-					xml.stepIn();
-					while (xml.findChild("Filter")) {
-						feed->rssFilterList.emplace_back(
-							xml.getChildAttrib("FilterPattern"),
-							xml.getChildAttrib("DownloadTarget"),
-							Util::toInt(xml.getChildAttrib("Method", "1")),
-							xml.getChildAttrib("AutoSearchGroup"),
-							xml.getBoolChildAttrib("SkipDupes"),
-							Util::toInt(xml.getChildAttrib("FilterAction", "0")));
-					}
-					xml.stepOut();
-				}
+
+				loadFilters(xml, feed->rssFilterList);
 
 				xml.resetCurrentChild();
 				xml.stepOut();
@@ -441,6 +430,22 @@ void RSSManager::load() {
 
 }
 
+void RSSManager::loadFilters(SimpleXML& xml, vector<RSSFilter>& aList) {
+	if (xml.findChild("Filters")) {
+		xml.stepIn();
+		while (xml.findChild("Filter")) {
+			aList.emplace_back(
+				xml.getChildAttrib("FilterPattern"),
+				xml.getChildAttrib("DownloadTarget"),
+				Util::toInt(xml.getChildAttrib("Method", "1")),
+				xml.getChildAttrib("AutoSearchGroup"),
+				xml.getBoolChildAttrib("SkipDupes"),
+				Util::toInt(xml.getChildAttrib("FilterAction", "0")));
+		}
+		xml.stepOut();
+	}
+}
+
 void RSSManager::saveConfig(bool saveDatabase) {
 	SimpleXML xml;
 	xml.addTag("RSS");
@@ -454,22 +459,10 @@ void RSSManager::saveConfig(bool saveDatabase) {
 		xml.addChildAttrib("LastUpdate", Util::toString(r->getLastUpdate()));
 		xml.addChildAttrib("UpdateInterval", Util::toString(r->getUpdateInterval()));
 		xml.addChildAttrib("Token", Util::toString(r->getToken()));
-		if (!r->getRssFilterList().empty()) {
-			xml.stepIn();
-			xml.addTag("Filters");
-			xml.stepIn();
-			for (auto f : r->rssFilterList) {
-				xml.addTag("Filter");
-				xml.addChildAttrib("FilterPattern", f.getFilterPattern());
-				xml.addChildAttrib("DownloadTarget", f.getDownloadTarget());
-				xml.addChildAttrib("Method", f.getMethod());
-				xml.addChildAttrib("AutoSearchGroup", f.getAutosearchGroup());
-				xml.addChildAttrib("SkipDupes", f.skipDupes);
-				xml.addChildAttrib("FilterAction", f.getFilterAction());
-			}
-			xml.stepOut();
-			xml.stepOut();
-		}
+		
+		xml.stepIn();
+		saveFilters(xml, r->getRssFilterList());
+		xml.stepOut();
 
 		if (saveDatabase && r->getDirty())
 			savedatabase(r);
@@ -478,6 +471,23 @@ void RSSManager::saveConfig(bool saveDatabase) {
 	xml.stepOut();
 	SettingsManager::saveSettingFile(xml, CONFIG_DIR, CONFIG_NAME);
 
+}
+
+void RSSManager::saveFilters(SimpleXML& aXml, const vector<RSSFilter>& aList) {
+	if (!aList.empty()) {
+		aXml.addTag("Filters");
+		aXml.stepIn();
+		for (auto f : aList) {
+			aXml.addTag("Filter");
+			aXml.addChildAttrib("FilterPattern", f.getFilterPattern());
+			aXml.addChildAttrib("DownloadTarget", f.getDownloadTarget());
+			aXml.addChildAttrib("Method", f.getMethod());
+			aXml.addChildAttrib("AutoSearchGroup", f.getAutosearchGroup());
+			aXml.addChildAttrib("SkipDupes", f.skipDupes);
+			aXml.addChildAttrib("FilterAction", f.getFilterAction());
+		}
+		aXml.stepOut();
+	}
 }
 
 #define LITERAL(n) n, sizeof(n)-1
