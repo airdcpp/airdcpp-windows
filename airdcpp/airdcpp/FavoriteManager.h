@@ -192,7 +192,7 @@ private:
 	string downloadBuf;
 	
 	/** Used during loading to prevent saving. */
-	bool loaded = false;
+	bool loading = false;
 
 	friend class Singleton<FavoriteManager>;
 	

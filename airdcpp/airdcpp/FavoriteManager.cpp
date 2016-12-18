@@ -575,7 +575,7 @@ bool FavoriteManager::hasActiveHubs() const noexcept {
 // FAVORITE HUBS END
 
 void FavoriteManager::save() noexcept {
-	if (!loaded)
+	if (loading)
 		return;
 
 	try {
@@ -773,6 +773,7 @@ void FavoriteManager::loadCID() noexcept {
 }
 
 void FavoriteManager::load() noexcept {
+	loading = true;
 	
 	// Add NMDC standard op commands
 	static const char kickstr[] = 
@@ -798,7 +799,6 @@ void FavoriteManager::load() noexcept {
 			loadFavoriteUsers(xml);
 			loadUserCommands(xml);
 			loadFavoriteDirectories(xml);
-			loaded = true;
 
 			xml.stepOut();
 
@@ -822,6 +822,8 @@ void FavoriteManager::load() noexcept {
 	} catch(const Exception& e) {
 		LogManager::getInstance()->message(STRING_F(LOAD_FAILED_X, CONFIG_RECENTS_NAME % e.getError()), LogMessage::SEV_ERROR);
 	}
+
+	loading = false;
 }
 
 void FavoriteManager::loadFavoriteHubs(SimpleXML& aXml) {
