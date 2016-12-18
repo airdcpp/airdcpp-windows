@@ -656,6 +656,11 @@ BEGIN
     0
 END
 
+IDD_WINDOWSPAGE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 #endif    // Czech (Czech Republic) resources
 /////////////////////////////////////////////////////////////////////////////
 
