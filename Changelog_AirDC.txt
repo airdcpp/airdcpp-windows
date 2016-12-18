@@ -3,19 +3,26 @@
 Added:
 
 - Show available disk space next to grouped download targets
+- Report encoding-related errors in NMDC hubs
+- Report invalid UTF-8 sent by ADC hubs
+- Allow displaying web server commands in CDM debug tab
 
 Changed:
 
-- 
+- Reject XML files that contain invalid UTF-8 data
+- Always create directory bundle from the requested directory
+- "Exact" list filtering mode is now case-insensitive
+- Re-download corrupted language files
 
 Fixed:
 
-- 
+- Crash when loading filelists with items with duplicate names inside the same directory
 
 Removed:
 
 - Support for Windows Vista
 - Support for download path auto detection
+- Support for "queueing" of 0-byte items
 
 
 3.23
