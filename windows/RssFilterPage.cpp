@@ -46,6 +46,8 @@ LRESULT RssFilterPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 
 	ATTACH(IDC_RSS_FILTER_LIST, ctrlRssFilterList);
 
+	ATTACH(IDC_RSS_BROWSE, cBrowse);
+
 	CRect rc;
 	ctrlRssFilterList.GetClientRect(rc);
 	ctrlRssFilterList.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_FULLROWSELECT);
@@ -174,15 +176,24 @@ LRESULT RssFilterPage::onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 
 LRESULT RssFilterPage::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 
-	tstring dir = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
+	CRect rect;
+	cBrowse.GetWindowRect(rect);
+	auto pt = rect.BottomRight();
+	pt.x = pt.x - rect.Width();
+	cBrowse.SetState(true);
 
-	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_GENERIC, BrowseDlg::DIALOG_SELECT_FOLDER);
-	dlg.setPath(dir);
-	if (dlg.show(dir)) {
-		SetDlgItemText(IDC_RSS_DOWNLOAD_PATH, dir.c_str());
-	}
+	OMenu targetMenu;
+	targetMenu.CreatePopupMenu();
+	targetMenu.InsertSeparatorFirst(CTSTRING(DOWNLOAD_TO));
 
+	appendDownloadTo(targetMenu, false, true, boost::none, boost::none, File::getVolumes());
+
+	targetMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_VERPOSANIMATION, pt);
 	return 0;
+}
+
+void RssFilterPage::handleDownload(const string& aTarget, Priority p, bool isWhole) {
+	SetDlgItemText(IDC_RSS_DOWNLOAD_PATH, Text::toT(aTarget).c_str());
 }
 
 void RssFilterPage::fillList() {

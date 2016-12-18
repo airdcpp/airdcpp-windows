@@ -26,8 +26,9 @@
 #include "ExListViewCtrl.h"
 #include <airdcpp/modules/RSSManager.h>
 #include "TabbedDialog.h"
+#include "DownloadBaseHandler.h"
 
-class RssFilterPage : public CDialogImpl<RssFilterPage>, public TabPage {
+class RssFilterPage : public CDialogImpl<RssFilterPage>, public DownloadBaseHandler<RssFilterPage>, public TabPage {
 public:
 
 	enum { IDD = IDD_RSS_FILTER_DLG };
@@ -39,13 +40,18 @@ public:
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		COMMAND_ID_HANDLER(IDC_FILTER_ADD, onAdd)
 		COMMAND_ID_HANDLER(IDC_FILTER_REMOVE, onRemove)
-		COMMAND_ID_HANDLER(IDC_RSS_BROWSE, onBrowse)
+		COMMAND_HANDLER(IDC_RSS_BROWSE, BN_CLICKED ,onBrowse)
 		COMMAND_ID_HANDLER(IDC_FILTER_UPDATE, onUpdate)
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)
 		MESSAGE_HANDLER(WM_CTLCOLORDLG, onCtlColor)
 		COMMAND_HANDLER(IDC_RSS_FILTER_ACTION, CBN_SELENDOK, onAction)
 		NOTIFY_HANDLER(IDC_RSS_FILTER_LIST, LVN_KEYDOWN, onKeyDown)
 		NOTIFY_HANDLER(IDC_RSS_FILTER_LIST, LVN_ITEMCHANGED, onSelectionChanged)
+		MESSAGE_HANDLER(WM_EXITMENULOOP, onExitMenuLoop)
+
+		MESSAGE_HANDLER_HWND(WM_MEASUREITEM, OMenu::onMeasureItem)
+		MESSAGE_HANDLER_HWND(WM_DRAWITEM, OMenu::onDrawItem)
+
 		END_MSG_MAP()
 
 
@@ -57,6 +63,10 @@ public:
 	LRESULT onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onAction(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		fixControls();
+		return 0;
+	}
+	LRESULT onExitMenuLoop(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+		cBrowse.SetState(false);
 		return 0;
 	}
 
@@ -84,6 +94,9 @@ public:
 		return 0;
 	}
 
+	/* DownloadBaseHandler */
+	void handleDownload(const string& aTarget, Priority p, bool isWhole);
+
 	bool write();
 	string getName() { return name; }
 	void moveWindow(CRect& rc) { this->MoveWindow(rc); }
@@ -95,6 +108,7 @@ private:
 	string name;
 	bool loading;
 
+	CButton cBrowse;
 	CEdit ctrlAutoSearchPattern;
 	CEdit ctrlTarget;
 	CComboBox cMatcherType;
