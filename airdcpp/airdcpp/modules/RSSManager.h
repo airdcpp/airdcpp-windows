@@ -197,6 +197,10 @@ public:
 	void enableFeedUpdate(const RSSPtr& aFeed, bool enable) noexcept;
 
 	void removeFeedData(const RSSPtr& aFeed, const RSSDataPtr& aData);
+
+	void loadFilters(SimpleXML& aXml, vector<RSSFilter>& aList);
+	void saveFilters(SimpleXML& aXml, const vector<RSSFilter>& aList);
+
 private:
 
 	void savedatabase(const RSSPtr& aFeed);

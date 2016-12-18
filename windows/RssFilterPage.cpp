@@ -25,6 +25,7 @@
 #include <airdcpp/modules/AutoSearchManager.h>
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/ResourceManager.h>
+#include <airdcpp/SimpleXML.h>
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
@@ -101,6 +102,96 @@ LRESULT RssFilterPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	return TRUE;
 }
 
+LRESULT RssFilterPage::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+	if (reinterpret_cast<HWND>(wParam) == ctrlRssFilterList) {
+		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+
+		if (pt.x == -1 && pt.y == -1) {
+			WinUtil::getContextMenuPos(ctrlRssFilterList, pt);
+		}
+
+		vector<RSSFilter> filters;
+		int sel = ctrlRssFilterList.GetSelectedCount();
+		if (sel > 0) {
+			int i = -1;
+			while ((i = ctrlRssFilterList.GetNextItem(i, LVNI_SELECTED)) != -1) {
+				auto filter = filterList[i];
+				filters.push_back(filter);
+			}
+		}
+		auto txt = getClipBoardText();
+		if (!filters.empty() || !txt.empty()) {
+			OMenu menu;
+			menu.CreatePopupMenu();
+			if (!filters.empty())
+				menu.appendItem(TSTRING(COPY), [=] { handleCopyFilters(filters); });
+			if (!txt.empty())
+				menu.appendItem(TSTRING(PASTE), [=] { handlePasteFilters(txt); });
+
+			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
+			return TRUE;
+		}
+		
+	}
+	bHandled = FALSE;
+	return FALSE;
+}
+
+void RssFilterPage::handleCopyFilters(const vector<RSSFilter>& aList) {
+	SimpleXML xml;
+	RSSManager::getInstance()->saveFilters(xml, aList);
+	string tmp = xml.toXML();
+	WinUtil::setClipboard(Text::toT(tmp));
+}
+
+void RssFilterPage::handlePasteFilters(const string& aClipText) {
+
+	if (aClipText.empty())
+		return;
+
+	vector<RSSFilter> list;
+
+	try {
+		SimpleXML xml;
+		xml.fromXML(aClipText);
+		RSSManager::getInstance()->loadFilters(xml, list);
+	} catch (...) { }
+
+	if (list.empty())
+		return;
+
+	for (auto f : list) {
+		bool exists = find_if(filterList.begin(), filterList.end(), [&](const RSSFilter& a)
+		{ return f.getFilterPattern() == a.getFilterPattern(); }) != filterList.end();
+
+		if (!exists)
+			filterList.emplace_back(f);
+	}
+
+	fillList();
+}
+
+string RssFilterPage::getClipBoardText() {
+	
+	if (!IsClipboardFormatAvailable(CF_TEXT))
+		return Util::emptyString;
+	if (!::OpenClipboard(WinUtil::mainWnd))
+		return Util::emptyString;
+
+	string tmp;
+	HGLOBAL hglb = GetClipboardData(CF_TEXT);
+	if (hglb != NULL) {
+		char* lptstr = (char*)GlobalLock(hglb);
+		if (lptstr != NULL) {
+			tmp = lptstr;
+			GlobalUnlock(hglb);
+		}
+	}
+	CloseClipboard();
+	return tmp;
+}
+
+
 LRESULT RssFilterPage::onSelectionChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 {
 	if (loading)
@@ -112,7 +203,8 @@ LRESULT RssFilterPage::onSelectionChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*
 	loading = true;
 	if (ctrlRssFilterList.GetSelectedCount() == 1) {
 		auto item = filterList.begin();
-		advance(item, ctrlRssFilterList.GetSelectedIndex());
+		int i = ctrlRssFilterList.GetNextItem(-1, LVNI_SELECTED);
+		advance(item, i);
 		ctrlAutoSearchPattern.SetWindowText(Text::toT(item->getFilterPattern()).c_str());
 		ctrlTarget.SetWindowText(Text::toT(item->getDownloadTarget()).c_str());
 		cMatcherType.SetCurSel(item->getMethod());
@@ -160,7 +252,7 @@ LRESULT RssFilterPage::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 
 LRESULT RssFilterPage::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if (ctrlRssFilterList.GetSelectedCount() == 1) {
-		int i = ctrlRssFilterList.GetSelectedIndex();
+		int i = ctrlRssFilterList.GetNextItem(-1, LVNI_SELECTED);
 		ctrlRssFilterList.DeleteItem(i);
 		remove(i);
 		fillList();
@@ -192,7 +284,7 @@ LRESULT RssFilterPage::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	return 0;
 }
 
-void RssFilterPage::handleDownload(const string& aTarget, Priority p, bool isWhole) {
+void RssFilterPage::handleDownload(const string& aTarget, Priority/* p*/, bool /*isWhole*/) {
 	SetDlgItemText(IDC_RSS_DOWNLOAD_PATH, Text::toT(aTarget).c_str());
 }
 

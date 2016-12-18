@@ -44,6 +44,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_FILTER_UPDATE, onUpdate)
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)
 		MESSAGE_HANDLER(WM_CTLCOLORDLG, onCtlColor)
+		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		COMMAND_HANDLER(IDC_RSS_FILTER_ACTION, CBN_SELENDOK, onAction)
 		NOTIFY_HANDLER(IDC_RSS_FILTER_LIST, LVN_KEYDOWN, onKeyDown)
 		NOTIFY_HANDLER(IDC_RSS_FILTER_LIST, LVN_ITEMCHANGED, onSelectionChanged)
@@ -61,6 +62,7 @@ public:
 	LRESULT onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 	LRESULT onAction(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		fixControls();
 		return 0;
@@ -128,6 +130,11 @@ private:
 
 	bool validateSettings(const string& aPattern);
 	void restoreSelection(const tstring& curSel);
+
+	void handleCopyFilters(const vector<RSSFilter>& aList);
+	void handlePasteFilters(const string& aClipText);
+
+	string getClipBoardText();
 
 	void fixControls();
 
