@@ -44,6 +44,8 @@
 #include <airdcpp/Magnet.h>
 #include <airdcpp/ViewFileManager.h>
 
+#include <airdcpp/modules/PreviewAppManager.h>
+
 #include <boost/format.hpp>
 
 #include "HubFrame.h"
@@ -1472,7 +1474,7 @@ void WinUtil::saveReBarSettings(HWND bar) {
 void WinUtil::appendPreviewMenu(OMenu& parent, const string& aTarget) {
 	auto previewMenu = parent.createSubMenu(TSTRING(PREVIEW), true);
 
-	auto lst = FavoriteManager::getInstance()->getPreviewApps();
+	auto lst = PreviewAppManager::getInstance()->getPreviewApps();
 	auto ext = Util::getFileExt(aTarget);
 	if (ext.empty()) return;
 

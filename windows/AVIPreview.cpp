@@ -18,8 +18,6 @@
 
 #include "stdafx.h"
 
-#include <airdcpp/FavoriteManager.h>
-
 #include "AVIPreview.h"
 #include "PreviewDlg.h"
 
@@ -47,7 +45,7 @@ LRESULT AVIPreview::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	ctrlCommands.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
 
 	// Do specialized reading here
-	PreviewApplication::List lst = FavoriteManager::getInstance()->getPreviewApps();
+	PreviewApplication::List lst = PreviewAppManager::getInstance()->getPreviewApps();
 	for(PreviewApplication::Iter i = lst.begin(); i != lst.end(); ++i) {
 		PreviewApplication::Ptr pa = *i;	
 		addEntry(pa, ctrlCommands.GetItemCount());
@@ -70,7 +68,7 @@ void AVIPreview::addEntry(PreviewApplication::Ptr pa, int pos) {
 LRESULT AVIPreview::onAddMenu(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
 	PreviewDlg dlg;
 	if(dlg.DoModal() == IDOK){
-		addEntry(FavoriteManager::getInstance()->addPreviewApp(Text::fromT(dlg.name), Text::fromT(dlg.application), Text::fromT(dlg.argument), Text::fromT(dlg.extensions)), ctrlCommands.GetItemCount());
+		addEntry(PreviewAppManager::getInstance()->addPreviewApp(Text::fromT(dlg.name), Text::fromT(dlg.application), Text::fromT(dlg.argument), Text::fromT(dlg.extensions)), ctrlCommands.GetItemCount());
 	}
 	return 0;
 }
@@ -102,7 +100,7 @@ LRESULT AVIPreview::onChangeMenu(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	if(ctrlCommands.GetSelectedCount() == 1) {
 		int sel = ctrlCommands.GetSelectedIndex();
 		PreviewApplication pa;
-		FavoriteManager::getInstance()->getPreviewApp(sel, pa);
+		PreviewAppManager::getInstance()->getPreviewApp(sel, pa);
 
 		PreviewDlg dlg;
 		dlg.name = Text::toT(pa.getName());
@@ -116,7 +114,7 @@ LRESULT AVIPreview::onChangeMenu(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 			pa.setArguments(Text::fromT(dlg.argument));
 			pa.setExtension(Text::fromT(dlg.extensions));
 
-			FavoriteManager::getInstance()->updatePreviewApp(sel, pa);
+			PreviewAppManager::getInstance()->updatePreviewApp(sel, pa);
 
 			ctrlCommands.SetItemText(sel, 0, dlg.name.c_str());
 			ctrlCommands.SetItemText(sel, 1, dlg.application.c_str());
@@ -131,7 +129,7 @@ LRESULT AVIPreview::onChangeMenu(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 LRESULT AVIPreview::onRemoveMenu(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
 	if(ctrlCommands.GetSelectedCount() == 1) {
 		int sel = ctrlCommands.GetSelectedIndex();
-		FavoriteManager::getInstance()->removePreviewApp(sel);
+		PreviewAppManager::getInstance()->removePreviewApp(sel);
 		ctrlCommands.DeleteItem(sel);
 	}
 	return 0;

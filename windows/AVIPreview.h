@@ -28,6 +28,8 @@
 #include "ExListViewCtrl.h"
 #include "resource.h"
 
+#include <airdcpp/modules/PreviewAppManager.h>
+
 class AVIPreview : public CPropertyPage<IDD_AVIPREVIEW>, public PropPage
 {
 public:
