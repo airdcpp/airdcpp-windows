@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airdc-git\AirDC.rc
+// Used by N:\projects\airgit\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -1667,6 +1667,8 @@
 #define IDC_FILTER_REMOVE               10226
 #define IDC_FILTER_UPDATE               10227
 #define IDC_ASGROUP_BOX                 10228
+#define IDC_RSS_FILTER_ACTION           10229
+#define IDC_RSS_FILTER_ACTION_TEXT      10230
 #define IDC_REFRESH_WINAMP              11011
 #define IDC_WINAMP_LIST                 11012
 #define IDC_POSITION                    11013
@@ -1880,7 +1882,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        478
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         10229
+#define _APS_NEXT_CONTROL_VALUE         10231
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

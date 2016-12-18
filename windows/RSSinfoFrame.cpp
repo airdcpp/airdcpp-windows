@@ -242,7 +242,7 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 
 			menu.appendItem(TSTRING(UPDATE), [=] { RSSManager::getInstance()->downloadFeed(feed, true); }, OMenu::FLAG_THREADED);
 			menu.appendItem(feed->getEnable() ? TSTRING(DISABLE_RSS) : TSTRING(ENABLE_RSS), [=] { RSSManager::getInstance()->enableFeedUpdate(feed, !feed->getEnable()); }, OMenu::FLAG_THREADED);
-			menu.appendItem(TSTRING(MATCH_AUTOSEARCH), [=] { RSSManager::getInstance()->matchFilters(feed);  }, OMenu::FLAG_THREADED);
+			menu.appendItem(TSTRING(MATCH_FILTERS), [=] { RSSManager::getInstance()->matchFilters(feed);  }, OMenu::FLAG_THREADED);
 			menu.appendItem(TSTRING(CLEAR), [=] { RSSManager::getInstance()->clearRSSData(feed);  }, OMenu::FLAG_THREADED);
 			menu.appendSeparator();
 			menu.appendItem(TSTRING(ADD), [=] { add(); });
@@ -260,7 +260,7 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 				menu.appendItem(TSTRING(ENABLE_RSS), [=] { for_each(feeds | map_keys, [&](const RSSPtr& feed) { RSSManager::getInstance()->enableFeedUpdate(feed, true); }); }, OMenu::FLAG_THREADED);
 			if(!allDisabled)
 				menu.appendItem(TSTRING(DISABLE_RSS), [=] { for_each(feeds | map_keys, [&](const RSSPtr& feed) { RSSManager::getInstance()->enableFeedUpdate(feed, false); }); }, OMenu::FLAG_THREADED);
-			menu.appendItem(TSTRING(MATCH_AUTOSEARCH), [=] { for_each(feeds | map_keys, [&](const RSSPtr& feed) { RSSManager::getInstance()->matchFilters(feed); }); }, OMenu::FLAG_THREADED);
+			menu.appendItem(TSTRING(MATCH_FILTERS), [=] { for_each(feeds | map_keys, [&](const RSSPtr& feed) { RSSManager::getInstance()->matchFilters(feed); }); }, OMenu::FLAG_THREADED);
 			menu.appendItem(TSTRING(CLEAR), [=] { for_each(feeds | map_keys, [&](const RSSPtr& feed) { RSSManager::getInstance()->clearRSSData(feed); }); }, OMenu::FLAG_THREADED);
 			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 			return TRUE;
@@ -372,6 +372,12 @@ void RssInfoFrame::on(RSSDataAdded, const RSSDataPtr& aData) noexcept {
 	addGuiTask([=] { onItemAdded(aData); } );
 
 }
+
+void RssInfoFrame::on(RSSDataRemoved, const RSSDataPtr& aData) noexcept {
+	addGuiTask([=] { onItemRemoved(aData); });
+
+}
+
 void RssInfoFrame::on(RSSDataCleared, const RSSPtr& aFeed) noexcept {
 	addGuiTask([=] { clearData(aFeed); });
 
@@ -483,6 +489,21 @@ void RssInfoFrame::clearData(const RSSPtr& aFeed) {
 	ItemInfos.erase(boost::remove_if(ItemInfos | map_values, [&](const unique_ptr<ItemInfo>& a) {
 
 		if (aFeed == a->item->getFeed()) {
+			ctrlRss.list.deleteItem(a.get());
+			return true;
+		}
+		return false;
+
+	}).base(), ItemInfos.end());
+
+	ctrlRss.list.SetRedraw(TRUE);
+}
+
+void RssInfoFrame::onItemRemoved(const RSSDataPtr& aData) {
+	ctrlRss.list.SetRedraw(FALSE);
+	ItemInfos.erase(boost::remove_if(ItemInfos | map_values, [&](const unique_ptr<ItemInfo>& a) {
+
+		if (aData== a->item) {
 			ctrlRss.list.deleteItem(a.get());
 			return true;
 		}

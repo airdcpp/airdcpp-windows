@@ -63,6 +63,7 @@ LRESULT RssFilterPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	::SetWindowText(GetDlgItem(IDC_FILTER_UPDATE), CTSTRING(UPDATE));
 	::SetWindowText(GetDlgItem(IDC_GROUP_LABEL), CTSTRING(AUTOSEARCH_GROUP));
 	::SetWindowText(GetDlgItem(IDC_SKIP_DUPES), CTSTRING(SKIP_DUPES));
+	::SetWindowText(GetDlgItem(IDC_RSS_FILTER_ACTION_TEXT), CTSTRING(ACTION));
 
 
 	::EnableWindow(GetDlgItem(IDC_FILTER_REMOVE), false);
@@ -73,6 +74,11 @@ LRESULT RssFilterPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 		filterList = feedItem->getRssFilterList();
 
 	}
+
+	ATTACH(IDC_RSS_FILTER_ACTION, cAction);
+	cAction.InsertString(0, CTSTRING(DOWNLOAD));
+	cAction.InsertString(1, CTSTRING(REMOVE));
+	cAction.SetCurSel(0);
 
 	cGroups.Attach(GetDlgItem(IDC_ASGROUP_BOX));
 	cGroups.AddString(_T("---"));
@@ -108,6 +114,8 @@ LRESULT RssFilterPage::onSelectionChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*
 		ctrlAutoSearchPattern.SetWindowText(Text::toT(item->getFilterPattern()).c_str());
 		ctrlTarget.SetWindowText(Text::toT(item->getDownloadTarget()).c_str());
 		cMatcherType.SetCurSel(item->getMethod());
+		cAction.SetCurSel(item->getFilterAction());
+
 		int g = cGroups.FindString(0, Text::toT(item->getAutosearchGroup()).c_str());
 		cGroups.SetCurSel(g > 0 ? g : 0);
 		CheckDlgButton(IDC_SKIP_DUPES, item->skipDupes ? TRUE : FALSE);
@@ -117,8 +125,10 @@ LRESULT RssFilterPage::onSelectionChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*
 		ctrlTarget.SetWindowText(_T(""));
 		cMatcherType.SetCurSel(0);
 		cGroups.SetCurSel(0);
+		cAction.SetCurSel(0);
 		CheckDlgButton(IDC_SKIP_DUPES, TRUE);
 	}
+	fixControls();
 	loading = false;
 
 	return 0;
@@ -199,8 +209,9 @@ void RssFilterPage::add(const string& aPattern, const string& aTarget, int aMeth
 		grp.resize(cGroups.GetWindowText(&grp[0], grp.size() + 1));
 	}
 	bool skipDupes = IsDlgButtonChecked(IDC_SKIP_DUPES) ? true : false;
+	int action = cAction.GetCurSel();
 
-	filterList.emplace_back(RSSFilter(aPattern, aTarget, aMethod, Text::fromT(grp), skipDupes));
+	filterList.emplace_back(RSSFilter(aPattern, aTarget, aMethod, Text::fromT(grp), skipDupes, action));
 	fillList();
 	restoreSelection(Text::toT(aPattern));
 }
@@ -254,4 +265,14 @@ void RssFilterPage::restoreSelection(const tstring& curSel) {
 		if (i != -1)
 			ctrlRssFilterList.SelectItem(i);
 	}
+}
+
+void RssFilterPage::fixControls() {
+	BOOL enable = cAction.GetCurSel() == 0;
+	::EnableWindow(GetDlgItem(IDC_RSS_DOWNLOAD_PATH), enable);
+	::EnableWindow(GetDlgItem(IDC_RSS_BROWSE), enable);
+	::EnableWindow(GetDlgItem(IDC_ASGROUP_BOX), enable);
+	::EnableWindow(GetDlgItem(IDC_GROUP_LABEL), enable);
+	::EnableWindow(GetDlgItem(IDC_RSS_DOWNLOAD_PATH_TEXT), enable);
+
 }

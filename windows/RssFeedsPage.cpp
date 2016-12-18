@@ -60,8 +60,7 @@ LRESULT RssFeedsPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	ctrlName.SetWindowText(Text::toT(feedItem->getFeedName()).c_str());
 	ctrlInterval.SetWindowText(Util::toStringW(feedItem->getUpdateInterval()).c_str());
 	CheckDlgButton(IDC_RSS_ENABLE, feedItem->getEnable() ? TRUE : FALSE);
-
-
+	
 	CenterWindow(GetParent());
 	SetWindowText(CTSTRING(RSS_CONFIG));
 	loading = false;

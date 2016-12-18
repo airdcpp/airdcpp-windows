@@ -200,6 +200,7 @@ private:
 	void clearData(const RSSPtr& aFeed);
 
 	void onItemAdded(const RSSDataPtr& aData);
+	void onItemRemoved(const RSSDataPtr& aData);
 
 	void addFeed(const RSSPtr& aFeed);
 	
@@ -242,6 +243,7 @@ private:
 	bool closed = false;
 
 	virtual void on(RSSManagerListener::RSSDataAdded, const RSSDataPtr& aData) noexcept;
+	virtual void on(RSSManagerListener::RSSDataRemoved, const RSSDataPtr& aData) noexcept;
 	virtual void on(RSSManagerListener::RSSFeedRemoved, const RSSPtr& aFeed) noexcept;
 	virtual void on(RSSManagerListener::RSSFeedChanged, const RSSPtr& aFeed) noexcept;
 	virtual void on(RSSManagerListener::RSSFeedAdded, const RSSPtr& aFeed) noexcept;
