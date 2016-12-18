@@ -265,6 +265,8 @@ void webErrorF(const string& aError) {
 #include <airdcpp/modules/AutoSearchManager.h>
 #include <airdcpp/modules/FinishedManager.h>
 #include <airdcpp/modules/HighlightManager.h>
+#include <airdcpp/modules/HublistManager.h>
+#include <airdcpp/modules/PreviewAppManager.h>
 #include <airdcpp/modules/RSSManager.h>
 #include <airdcpp/modules/WebShortcuts.h>
 
@@ -274,6 +276,8 @@ void initModules() {
 	FinishedManager::newInstance();
 	AutoSearchManager::newInstance();
 	RSSManager::newInstance();
+	PreviewAppManager::newInstance();
+	HublistManager::newInstance();
 }
 
 void loadModules() {
@@ -285,6 +289,8 @@ void destroyModules() {
 	AutoSearchManager::getInstance()->save();
 	RSSManager::getInstance()->saveConfig();
 
+	HublistManager::deleteInstance();
+	PreviewAppManager::deleteInstance();
 	HighlightManager::deleteInstance();
 	AutoSearchManager::deleteInstance();
 	RSSManager::deleteInstance();

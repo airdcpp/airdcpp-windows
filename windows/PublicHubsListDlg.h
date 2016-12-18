@@ -25,7 +25,7 @@
 
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/Text.h>
-#include <airdcpp/FavoriteManager.h>
+#include <airdcpp/modules/HublistManager.h>
 #include "ExListViewCtrl.h"
 #include "LineDlg.h"
 
@@ -67,7 +67,7 @@ public:
 		ctrlList.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
 		ctrlList.GetClientRect(rc);
 		ctrlList.InsertColumn(0, CTSTRING(NAME), LVCFMT_LEFT, rc.Width() - 4, 0);
-		StringList lists(FavoriteManager::getInstance()->getHubLists());
+		StringList lists(HublistManager::getInstance()->getHubLists());
 		for(StringList::const_iterator idx = lists.begin(); idx != lists.end(); ++idx) {
 			ctrlList.insert(ctrlList.GetItemCount(), Text::toT(*idx));
 		}
