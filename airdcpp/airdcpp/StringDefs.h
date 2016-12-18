@@ -652,6 +652,7 @@ enum Strings { // @DontAdd
 	IP_V6, // "IP (v6)"
 	ITALIC, // "Italic"
 	ITEMS, // "Items"
+	ITEMS_X, // "%1% Item(s)"
 	ITEM_NAME_EXISTS, // "An item with the same name exists already"
 	ITEM_SEARCHED, // "%1% has been searched for"
 	ITEM_SEARCHED_IN, // "%1% will be searched in %2% seconds"
