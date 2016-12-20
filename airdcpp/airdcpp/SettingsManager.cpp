@@ -1347,15 +1347,15 @@ HubSettings SettingsManager::getHubSettings() const noexcept {
 	return ret;
 }
 
-void SettingsManager::loadSettingFile(SimpleXML& aXML, Util::Paths aPath, const string& aFileName, bool aMigrate /*true*/) {
+void SettingsManager::loadSettingFile(SimpleXML& aXML, Util::Paths aPath, const string& aFileName) {
 	auto fname = Util::getPath(aPath) + aFileName;
 
-	if (aMigrate) {
-		Util::migrate(fname);
-	}
+	Util::migrate(fname);
 
 	if (Util::fileExists(fname)) {
-		aXML.fromXML(File(fname, File::READ, File::OPEN).read());
+		// Some legacy config files (such as favorites and recent hubs) may contain invalid UTF-8 data
+		// so don't throw in case of validation errors
+		aXML.fromXML(File(fname, File::READ, File::OPEN).read(), SimpleXMLReader::FLAG_REPLACE_INVALID_UTF8);
 	}
 }
 

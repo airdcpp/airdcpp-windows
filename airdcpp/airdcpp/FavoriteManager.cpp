@@ -34,15 +34,12 @@ namespace dcpp {
 #define CONFIG_RECENTS_NAME "Recents.xml"
 #define CONFIG_DIR Util::PATH_USER_CONFIG
 
-using boost::range::for_each;
 using boost::range::find_if;
 
 FavoriteManager::FavoriteManager() {
 	SettingsManager::getInstance()->addListener(this);
 	ClientManager::getInstance()->addListener(this);
 	ShareManager::getInstance()->addListener(this);
-
-	File::ensureDirectory(Util::getHubListsPath());
 }
 
 FavoriteManager::~FavoriteManager() {
@@ -689,7 +686,7 @@ void FavoriteManager::load() noexcept {
 
 	try {
 		SimpleXML xml;
-		SettingsManager::loadSettingFile(xml, CONFIG_DIR, CONFIG_FAV_NAME, false); //we have migrated already when loading the CID
+		SettingsManager::loadSettingFile(xml, CONFIG_DIR, CONFIG_FAV_NAME);
 		if(xml.findChild("Favorites")) {
 			xml.stepIn();
 

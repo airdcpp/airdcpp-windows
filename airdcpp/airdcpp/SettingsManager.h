@@ -329,7 +329,7 @@ public:
 	typedef std::function<void(const string&)> CustomErrorF;
 	static bool saveSettingFile(SimpleXML& aXML, Util::Paths aPath, const string& aFileName, CustomErrorF aCustomErrorF = nullptr) noexcept;
 	// Throws on XML parsing errors
-	static void loadSettingFile(SimpleXML& aXML, Util::Paths aPath, const string& aFileName, bool migrate = true);
+	static void loadSettingFile(SimpleXML& aXML, Util::Paths aPath, const string& aFileName);
 private:
 	boost::regex connectionRegex;
 
