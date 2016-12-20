@@ -281,7 +281,7 @@ const string SettingsManager::settingTags[] =
 	"RemoveExpiredAs", "AdcLogGroupCID", "ShareFollowSymlinks", "ScanMonitoredFolders", "FinishedNoHash", "ConfirmFileDeletions", "UseDefaultCertPaths", "StartupRefresh", "FLReportDupeFiles",
 	"FilterFLShared", "FilterFLQueued", "FilterFLInversed", "FilterFLTop", "FilterFLPartialDupes", "FilterFLResetChange", "FilterSearchShared", "FilterSearchQueued", "FilterSearchInversed", "FilterSearchTop", "FilterSearchPartialDupes", "FilterSearchResetChange",
 	"SearchAschOnlyMan", "UseUploadBundles", "CloseMinimize", "LogIgnored", "UsersFilterIgnore", "NfoExternal", "SingleClickTray", "QueueShowFinished", "RemoveFinishedBundles", "LogCRCOk",
-	"FilterQueueInverse", "FilterQueueTop", "FilterQueueReset", "AlwaysCCPM",
+	"FilterQueueInverse", "FilterQueueTop", "FilterQueueReset", "AlwaysCCPM", "OpenAutoSearch",
 	"SENTRY",
 	// Int64
 	"TotalUpload", "TotalDownload",
@@ -412,6 +412,7 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(OPEN_PUBLIC, false);
 	setDefault(OPEN_FAVORITE_HUBS, false);
 	setDefault(OPEN_FAVORITE_USERS, false);
+	setDefault(OPEN_AUTOSEARCH, false);
 	//setDefault(OPEN_RECENT_HUBS, false);
 	setDefault(OPEN_QUEUE, false);
 	setDefault(OPEN_FINISHED_UPLOADS, false);
