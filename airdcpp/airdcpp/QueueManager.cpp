@@ -3743,7 +3743,7 @@ void QueueManager::removeBundle(BundlePtr& aBundle, bool aRemoveFinishedFiles) n
 
 	// An empty directory should be deleted even if finished files are not being deleted (directories are created even for temp files)
 	// Avoid disk access when cleaning up finished bundles
-	if (!isFinished && !aBundle->isFileBundle()) {
+	if (!aBundle->isFileBundle() && (aRemoveFinishedFiles || !isFinished)) {
 		AirUtil::removeDirectoryIfEmpty(aBundle->getTarget(), 10, !aRemoveFinishedFiles);
 	}
 
