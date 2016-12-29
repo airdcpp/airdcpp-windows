@@ -41,6 +41,9 @@ namespace webserver {
 		UploadManager::getInstance()->addListener(this);
 		ConnectionManager::getInstance()->addListener(this);
 
+		METHOD_HANDLER("transfers", Access::ANY, ApiRequest::METHOD_GET, (), false, TransferApi::handleGetTransfers);
+		METHOD_HANDLER("transfer", Access::ANY, ApiRequest::METHOD_GET, (TOKEN_PARAM), false, TransferApi::handleGetTransfer);
+
 		METHOD_HANDLER("tranferred_bytes", Access::ANY, ApiRequest::METHOD_GET, (), false, TransferApi::handleGetTransferredBytes);
 		METHOD_HANDLER("stats", Access::ANY, ApiRequest::METHOD_GET, (), false, TransferApi::handleGetTransferStats);
 
@@ -112,6 +115,19 @@ namespace webserver {
 		return ret;
 	}
 
+	api_return TransferApi::handleGetTransfers(ApiRequest& aRequest) {
+		auto j = Serializer::serializeItemList(TransferUtils::propertyHandler, getTransfers());
+		aRequest.setResponseBody(j);
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return TransferApi::handleGetTransfer(ApiRequest& aRequest) {
+		auto item = getTransfer(aRequest);
+
+		aRequest.setResponseBody(Serializer::serializeItem(item, TransferUtils::propertyHandler));
+		return websocketpp::http::status_code::ok;
+	}
+
 	api_return TransferApi::handleGetTransferredBytes(ApiRequest& aRequest) {
 		aRequest.setResponseBody({
 			{ "session_downloaded", Socket::getTotalDown() },
@@ -140,8 +156,6 @@ namespace webserver {
 	}
 
 	TransferInfoPtr TransferApi::getTransfer(ApiRequest& aRequest) const {
-		// This isn't used ofter
-
 		auto wantedId = aRequest.getTokenParam(0);
 
 		RLock l(cs);
@@ -210,7 +224,7 @@ namespace webserver {
 	}
 
 	void TransferApi::onTick(const Transfer* aTransfer, bool aIsDownload) noexcept {
-		auto t = getTransfer(aTransfer->getToken());
+		auto t = findTransfer(aTransfer->getToken());
 		if (!t) {
 			return;
 		}
@@ -311,7 +325,7 @@ namespace webserver {
 	}
 
 	void TransferApi::on(ConnectionManagerListener::Failed, const ConnectionQueueItem* aCqi, const string& aReason) noexcept {
-		auto t = getTransfer(aCqi->getToken());
+		auto t = findTransfer(aCqi->getToken());
 		if (!t) {
 			return;
 		}
@@ -350,7 +364,7 @@ namespace webserver {
 	}
 
 	void TransferApi::on(ConnectionManagerListener::Connecting, const ConnectionQueueItem* aCqi) noexcept {
-		auto t = getTransfer(aCqi->getToken());
+		auto t = findTransfer(aCqi->getToken());
 		if (!t) {
 			return;
 		}
@@ -359,7 +373,7 @@ namespace webserver {
 	}
 
 	void TransferApi::on(ConnectionManagerListener::UserUpdated, const ConnectionQueueItem* aCqi) noexcept {
-		auto t = getTransfer(aCqi->getToken());
+		auto t = findTransfer(aCqi->getToken());
 		if (!t) {
 			return;
 		}
@@ -368,7 +382,7 @@ namespace webserver {
 	}
 
 	void TransferApi::on(DownloadManagerListener::Failed, const Download* aDownload, const string& aReason) noexcept {
-		auto t = getTransfer(aDownload->getToken());
+		auto t = findTransfer(aDownload->getToken());
 		if (!t) {
 			return;
 		}
@@ -412,7 +426,7 @@ namespace webserver {
 	}
 
 	void TransferApi::starting(const Download* aDownload, const string& aStatus, bool aFullUpdate) noexcept {
-		auto t = getTransfer(aDownload->getToken());
+		auto t = findTransfer(aDownload->getToken());
 		if (!t) {
 			return;
 		}
@@ -443,7 +457,7 @@ namespace webserver {
 	}
 
 	void TransferApi::on(UploadManagerListener::Starting, const Upload* aUpload) noexcept {
-		auto t = getTransfer(aUpload->getToken());
+		auto t = findTransfer(aUpload->getToken());
 		if (!t) {
 			return;
 		}
@@ -451,7 +465,7 @@ namespace webserver {
 		starting(t, aUpload);
 	}
 
-	TransferInfoPtr TransferApi::getTransfer(const string& aToken) const noexcept {
+	TransferInfoPtr TransferApi::findTransfer(const string& aToken) const noexcept {
 		RLock l(cs);
 		auto i = transfers.find(aToken);
 		return i != transfers.end() ? i->second : nullptr;
@@ -466,7 +480,7 @@ namespace webserver {
 	}
 
 	void TransferApi::onTransferCompleted(const Transfer* aTransfer, bool aIsDownload) noexcept {
-		auto t = getTransfer(aTransfer->getToken());
+		auto t = findTransfer(aTransfer->getToken());
 		if (!t) {
 			return;
 		}

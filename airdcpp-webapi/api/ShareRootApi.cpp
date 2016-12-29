@@ -42,6 +42,8 @@ namespace webserver {
 		});
 
 		METHOD_HANDLER("roots", Access::SETTINGS_VIEW, ApiRequest::METHOD_GET, (), false, ShareRootApi::handleGetRoots);
+		METHOD_HANDLER("root", Access::SETTINGS_VIEW, ApiRequest::METHOD_GET, (EXACT_PARAM("get")), true, ShareRootApi::handleGetRoot);
+
 		METHOD_HANDLER("root", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("add")), true, ShareRootApi::handleAddRoot);
 		METHOD_HANDLER("root", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("update")), true, ShareRootApi::handleUpdateRoot);
 		METHOD_HANDLER("root", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("remove")), true, ShareRootApi::handleRemoveRoot);
@@ -64,6 +66,17 @@ namespace webserver {
 	ShareDirectoryInfoList ShareRootApi::getRoots() const noexcept {
 		RLock l(cs);
 		return roots;
+	}
+
+	api_return ShareRootApi::handleGetRoot(ApiRequest& aRequest) {
+		auto info = ShareManager::getInstance()->getRootInfo(JsonUtil::getField<string>("path", aRequest.getRequestBody(), false));
+		if (!info) {
+			aRequest.setResponseErrorStr("Path not found");
+			return websocketpp::http::status_code::not_found;
+		}
+
+		aRequest.setResponseBody(Serializer::serializeItem(info, ShareUtils::propertyHandler));
+		return websocketpp::http::status_code::ok;
 	}
 
 	api_return ShareRootApi::handleGetRoots(ApiRequest& aRequest) {

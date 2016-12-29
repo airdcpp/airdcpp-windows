@@ -33,11 +33,18 @@ namespace webserver {
 		"filelist_directory_download_failed",
 	};
 
-	FilelistApi::FilelistApi(Session* aSession) : ParentApiModule("session", CID_PARAM, Access::FILELISTS_VIEW, aSession, FilelistApi::subscriptionList, FilelistInfo::subscriptionList, [](const string& aId) { return Deserializer::parseCID(aId); }) {
+	FilelistApi::FilelistApi(Session* aSession) : 
+		ParentApiModule("session", CID_PARAM, Access::FILELISTS_VIEW, aSession, FilelistApi::subscriptionList, 
+			FilelistInfo::subscriptionList, 
+			[](const string& aId) { return Deserializer::parseCID(aId); },
+			[](const FilelistInfo& aInfo) { return serializeList(aInfo.getList()); }
+		) 
+	{
 
 		DirectoryListingManager::getInstance()->addListener(this);
 
-		METHOD_HANDLER("sessions", Access::FILELISTS_VIEW, ApiRequest::METHOD_GET, (), false, FilelistApi::handleGetLists);
+		METHOD_HANDLER("sessions", Access::FILELISTS_VIEW, ApiRequest::METHOD_GET, (), false, ParentApiModule::handleGetSubmodules);
+		METHOD_HANDLER("session", Access::FILELISTS_VIEW, ApiRequest::METHOD_GET, (CID_PARAM), false, ParentApiModule::handleGetSubmodule);
 
 		METHOD_HANDLER("session", Access::FILELISTS_EDIT, ApiRequest::METHOD_DELETE, (CID_PARAM), false, FilelistApi::handleDeleteList);
 		METHOD_HANDLER("session", Access::FILELISTS_EDIT, ApiRequest::METHOD_POST, (), true, FilelistApi::handlePostList);
@@ -117,16 +124,6 @@ namespace webserver {
 		}
 
 		DirectoryListingManager::getInstance()->removeList(list->getList()->getUser());
-		return websocketpp::http::status_code::ok;
-	}
-
-	api_return FilelistApi::handleGetLists(ApiRequest& aRequest) {
-		auto retJson = json::array();
-		forEachSubModule([&](const FilelistInfo& aInfo) { 
-			retJson.push_back(serializeList(aInfo.getList()));
-		});
-
-		aRequest.setResponseBody(retJson);
 		return websocketpp::http::status_code::ok;
 	}
 

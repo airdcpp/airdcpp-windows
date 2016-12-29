@@ -47,9 +47,9 @@ namespace webserver {
 		createSubscription("bundle_status");
 		createSubscription("bundle_sources");
 
-		createSubscription("file_added");
-		createSubscription("file_removed");
-		createSubscription("file_updated");
+		createSubscription("queue_file_added");
+		createSubscription("queue_file_removed");
+		createSubscription("queue_file_updated");
 
 		METHOD_HANDLER("bundles", Access::QUEUE_VIEW, ApiRequest::METHOD_GET, (NUM_PARAM, NUM_PARAM), false, QueueApi::handleGetBundles);
 		METHOD_HANDLER("bundles", Access::QUEUE_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("remove_finished")), false, QueueApi::handleRemoveFinishedBundles);
@@ -376,26 +376,26 @@ namespace webserver {
 	// FILE LISTENERS
 	void QueueApi::on(QueueManagerListener::ItemAdded, const QueueItemPtr& aQI) noexcept {
 		fileView.onItemAdded(aQI);
-		if (!subscriptionActive("file_added"))
+		if (!subscriptionActive("queue_file_added"))
 			return;
 
-		send("file_added", Serializer::serializeItem(aQI, QueueFileUtils::propertyHandler));
+		send("queue_file_added", Serializer::serializeItem(aQI, QueueFileUtils::propertyHandler));
 	}
 
 	void QueueApi::on(QueueManagerListener::ItemRemoved, const QueueItemPtr& aQI, bool /*finished*/) noexcept {
 		fileView.onItemRemoved(aQI);
-		if (!subscriptionActive("file_removed"))
+		if (!subscriptionActive("queue_file_removed"))
 			return;
 
-		send("file_removed", Serializer::serializeItem(aQI, QueueFileUtils::propertyHandler));
+		send("queue_file_removed", Serializer::serializeItem(aQI, QueueFileUtils::propertyHandler));
 	}
 
 	void QueueApi::onFileUpdated(const QueueItemPtr& aQI, const PropertyIdSet& aUpdatedProperties) {
 		fileView.onItemUpdated(aQI, aUpdatedProperties);
-		if (!subscriptionActive("file_updated"))
+		if (!subscriptionActive("queue_file_updated"))
 			return;
 
-		send("file_updated", Serializer::serializeItem(aQI, QueueFileUtils::propertyHandler));
+		send("queue_file_updated", Serializer::serializeItem(aQI, QueueFileUtils::propertyHandler));
 	}
 
 	void QueueApi::on(QueueManagerListener::ItemSourcesUpdated, const QueueItemPtr& aQI) noexcept {

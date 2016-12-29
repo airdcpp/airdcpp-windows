@@ -48,8 +48,6 @@ namespace webserver {
 		api_return handleDeleteList(ApiRequest& aRequest);
 		api_return handleOwnList(ApiRequest& aRequest);
 
-		api_return handleGetLists(ApiRequest& aRequest);
-
 		api_return handlePostDirectoryDownload(ApiRequest& aRequest);
 		api_return handleDeleteDirectoryDownload(ApiRequest& aRequest);
 		api_return handleGetDirectoryDownloads(ApiRequest& aRequest);

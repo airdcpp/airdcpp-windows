@@ -35,10 +35,11 @@ namespace webserver {
 	class ParentApiModule : public SubscribableApiModule {
 	public:
 		typedef ParentApiModule<IdType, ItemType> Type;
-		typedef std::function<IdType(const string&)> ConvertF;
+		typedef std::function<IdType(const string&)> IdConvertF;
+		typedef std::function<json(const ItemType&)> ChildSerializeF;
 
-		ParentApiModule(const string& aSubmoduleSection, const regex& aIdMatcher, Access aAccess, Session* aSession, const StringList& aSubscriptions, const StringList& aChildSubscription, ConvertF aConvertF) :
-			SubscribableApiModule(aSession, aAccess, &aSubscriptions), convertF(aConvertF) {
+		ParentApiModule(const string& aSubmoduleSection, const regex& aIdMatcher, Access aAccess, Session* aSession, const StringList& aSubscriptions, const StringList& aChildSubscription, IdConvertF aIdConvertF, ChildSerializeF aChildSerializeF) :
+			SubscribableApiModule(aSession, aAccess, &aSubscriptions), idConvertF(aIdConvertF), childSerializeF(aChildSerializeF) {
 
 			requestHandlers[aSubmoduleSection].push_back(ApiModule::RequestHandler(aIdMatcher, std::bind(&Type::handleSubModuleRequest, this, placeholders::_1)));
 
@@ -143,7 +144,28 @@ namespace webserver {
 
 		// Submodules should NEVER be accessed outside of web server threads (e.g. API requests)
 		typename ItemType::Ptr getSubModule(const string& aId) {
-			return getSubModule(convertF(aId));
+			return getSubModule(idConvertF(aId));
+		}
+
+		api_return handleGetSubmodules(ApiRequest& aRequest) {
+			auto retJson = json::array();
+			forEachSubModule([&](const ItemType& aInfo) {
+				retJson.push_back(childSerializeF(aInfo));
+			});
+
+			aRequest.setResponseBody(retJson);
+			return websocketpp::http::status_code::ok;
+		}
+
+		api_return handleGetSubmodule(ApiRequest& aRequest) {
+			auto info = getSubModule(aRequest.getStringParam(0));
+			if (!info) {
+				aRequest.setResponseErrorStr("Entity was not found");
+				return websocketpp::http::status_code::not_found;
+			}
+
+			aRequest.setResponseBody(childSerializeF(*info.get()));
+			return websocketpp::http::status_code::ok;
 		}
 	protected:
 		mutable SharedMutex cs;
@@ -172,7 +194,8 @@ namespace webserver {
 		map<IdType, typename ItemType::Ptr> subModules;
 
 		SubscribableApiModule::SubscriptionMap childSubscriptions;
-		const ConvertF convertF;
+		const IdConvertF idConvertF;
+		const ChildSerializeF childSerializeF;
 	};
 
 	template<class ParentIdType, class ItemType, class ItemJsonType>

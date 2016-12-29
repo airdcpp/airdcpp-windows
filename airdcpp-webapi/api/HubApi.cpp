@@ -31,10 +31,17 @@ namespace webserver {
 		"hub_removed"
 	};
 
-	HubApi::HubApi(Session* aSession) : ParentApiModule("session", TOKEN_PARAM, Access::HUBS_VIEW, aSession, subscriptionList, HubInfo::subscriptionList, [](const string& aId) { return Util::toUInt32(aId); }) {
+	HubApi::HubApi(Session* aSession) : 
+		ParentApiModule("session", TOKEN_PARAM, Access::HUBS_VIEW, aSession, subscriptionList, HubInfo::subscriptionList, 
+			[](const string& aId) { return Util::toUInt32(aId); },
+			[](const HubInfo& aInfo) { return serializeClient(aInfo.getClient()); }
+		) 
+	{
+
 		ClientManager::getInstance()->addListener(this);
 
-		METHOD_HANDLER("sessions", Access::HUBS_VIEW, ApiRequest::METHOD_GET, (), false, HubApi::handleGetHubs);
+		METHOD_HANDLER("sessions", Access::HUBS_VIEW, ApiRequest::METHOD_GET, (), false, ParentApiModule::handleGetSubmodules);
+		METHOD_HANDLER("session", Access::HUBS_VIEW, ApiRequest::METHOD_GET, (TOKEN_PARAM), false, ParentApiModule::handleGetSubmodule);
 
 		METHOD_HANDLER("session", Access::HUBS_EDIT, ApiRequest::METHOD_POST, (), true, HubApi::handleConnect);
 		METHOD_HANDLER("session", Access::HUBS_EDIT, ApiRequest::METHOD_DELETE, (TOKEN_PARAM), false, HubApi::handleDisconnect);
@@ -150,16 +157,6 @@ namespace webserver {
 
 	void HubApi::addHub(const ClientPtr& aClient) noexcept {
 		addSubModule(aClient->getClientId(), std::make_shared<HubInfo>(this, aClient));
-	}
-
-	api_return HubApi::handleGetHubs(ApiRequest& aRequest) {
-		auto retJson = json::array();
-		forEachSubModule([&](const HubInfo& aInfo) {
-			retJson.push_back(serializeClient(aInfo.getClient()));
-		});
-
-		aRequest.setResponseBody(retJson);
-		return websocketpp::http::status_code::ok;
 	}
 
 	// Use async tasks because adding/removing HubInfos require calls to ClientListener (which is likely 

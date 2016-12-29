@@ -30,11 +30,16 @@ namespace webserver {
 		"private_chat_removed"
 	};
 
-	PrivateChatApi::PrivateChatApi(Session* aSession) : ParentApiModule("session", CID_PARAM, Access::PRIVATE_CHAT_VIEW, aSession, subscriptionList, PrivateChatInfo::subscriptionList, [](const string& aId) { return Deserializer::parseCID(aId); }) {
+	PrivateChatApi::PrivateChatApi(Session* aSession) : 
+		ParentApiModule("session", CID_PARAM, Access::PRIVATE_CHAT_VIEW, aSession, subscriptionList, PrivateChatInfo::subscriptionList, 
+			[](const string& aId) { return Deserializer::parseCID(aId); },
+			[](const PrivateChatInfo& aInfo) { return serializeChat(aInfo.getChat()); }
+		) {
 
 		MessageManager::getInstance()->addListener(this);
 
-		METHOD_HANDLER("sessions", Access::PRIVATE_CHAT_VIEW, ApiRequest::METHOD_GET, (), false, PrivateChatApi::handleGetThreads);
+		METHOD_HANDLER("sessions", Access::PRIVATE_CHAT_VIEW, ApiRequest::METHOD_GET, (), false, ParentApiModule::handleGetSubmodules);
+		METHOD_HANDLER("session", Access::PRIVATE_CHAT_VIEW, ApiRequest::METHOD_GET, (CID_PARAM), false, ParentApiModule::handleGetSubmodule);
 
 		METHOD_HANDLER("session", Access::PRIVATE_CHAT_EDIT, ApiRequest::METHOD_DELETE, (CID_PARAM), false, PrivateChatApi::handleDeleteChat);
 		METHOD_HANDLER("session", Access::PRIVATE_CHAT_EDIT, ApiRequest::METHOD_POST, (), true, PrivateChatApi::handlePostChat);
@@ -74,16 +79,6 @@ namespace webserver {
 		}
 
 		MessageManager::getInstance()->removeChat(chat->getChat()->getUser());
-		return websocketpp::http::status_code::ok;
-	}
-
-	api_return PrivateChatApi::handleGetThreads(ApiRequest& aRequest) {
-		auto retJson = json::array();
-		forEachSubModule([&](const PrivateChatInfo& aInfo) {
-			retJson.push_back(serializeChat(aInfo.getChat()));
-		});
-
-		aRequest.setResponseBody(retJson);
 		return websocketpp::http::status_code::ok;
 	}
 
