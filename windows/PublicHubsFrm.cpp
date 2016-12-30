@@ -246,7 +246,6 @@ void PublicHubsFrame::connectHub(int pos) {
 	r->setUsers(Text::fromT(buf));
 	ctrlHubs.GetItemText(pos, COLUMN_SHARED, buf, 256);
 	r->setShared(Text::fromT(buf));
-	FavoriteManager::getInstance()->addRecent(r);
 				
 	WinUtil::connectHub(r);
 }

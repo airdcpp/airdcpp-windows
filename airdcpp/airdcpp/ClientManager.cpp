@@ -27,6 +27,7 @@
 #include "FavoriteManager.h"
 #include "LogManager.h"
 #include "QueueManager.h"
+#include "RecentManager.h"
 #include "RelevanceSearch.h"
 #include "ResourceManager.h"
 #include "SearchManager.h"
@@ -85,7 +86,7 @@ ClientPtr ClientManager::createClient(const RecentHubEntryPtr& aEntry) noexcept 
 
 	c->addListener(this);
 
-	FavoriteManager::getInstance()->addRecent(aEntry);
+	RecentManager::getInstance()->addRecentHub(aEntry);
 	fire(ClientManagerListener::ClientCreated(), c);
 	return c;
 }
@@ -141,7 +142,7 @@ bool ClientManager::putClient(ClientPtr& aClient) noexcept {
 	fire(ClientManagerListener::ClientDisconnected(), aClient->getHubUrl());
 	fire(ClientManagerListener::ClientRemoved(), aClient);
 
-	auto r = FavoriteManager::getInstance()->getRecentHubEntry(aClient->getHubUrl());
+	auto r = RecentManager::getInstance()->getRecentHubEntry(aClient->getHubUrl());
 	if (r) {
 		r->setName(aClient->getHubName());
 		r->setUsers(Util::toString(aClient->getUserCount()));
@@ -184,7 +185,7 @@ ClientPtr ClientManager::redirect(const string& aHubUrl, const string& aNewUrl) 
 	newClient->addListener(this);
 
 	RecentHubEntryPtr r = new RecentHubEntry(aNewUrl);
-	FavoriteManager::getInstance()->addRecent(r);
+	RecentManager::getInstance()->addRecentHub(r);
 	fire(ClientManagerListener::ClientRedirected(), oldClient, newClient);
 	
 	return newClient;

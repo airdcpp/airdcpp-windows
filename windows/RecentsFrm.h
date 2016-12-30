@@ -25,10 +25,11 @@
 
 #include "FlatTabCtrl.h"
 #include "ExListViewCtrl.h"
-#include <airdcpp/FavoriteManager.h>
+
+#include <airdcpp/RecentManagerListener.h>
 
 class RecentHubsFrame : public MDITabChildWindowImpl<RecentHubsFrame>, public StaticFrame<RecentHubsFrame, ResourceManager::RECENT_HUBS, IDC_RECENTS>, 
-	private FavoriteManagerListener, private SettingsManagerListener
+	private RecentManagerListener, private SettingsManagerListener
 {
 public:
 	typedef MDITabChildWindowImpl<RecentHubsFrame> baseClass;
@@ -104,18 +105,10 @@ private:
 	void addEntry(const RecentHubEntryPtr& entry, int pos);
 
 	
-	void on(RecentAdded, const RecentHubEntryPtr& entry) noexcept { addEntry(entry, ctrlHubs.GetItemCount()); }
-	void on(RecentRemoved, const RecentHubEntryPtr& entry) noexcept { ctrlHubs.DeleteItem(ctrlHubs.find((LPARAM)entry.get())); }
-	void on(RecentUpdated, const RecentHubEntryPtr& entry) noexcept {
-		int i = -1;
-		if((i = ctrlHubs.find((LPARAM)entry.get())) != -1) {
-			ctrlHubs.SetItemText(i, COLUMN_NAME, Text::toT(entry->getName()).c_str());
-			ctrlHubs.SetItemText(i, COLUMN_DESCRIPTION, Text::toT(entry->getDescription()).c_str());
-			ctrlHubs.SetItemText(i, COLUMN_USERS, Text::toT(entry->getUsers()).c_str());
-			ctrlHubs.SetItemText(i, COLUMN_SHARED, Text::toT(Util::formatBytes(entry->getShared())).c_str());
-			ctrlHubs.SetItemText(i, COLUMN_SERVER, Text::toT(entry->getServer()).c_str());
-		}
-	}
+	void on(RecentManagerListener::RecentHubAdded, const RecentHubEntryPtr& entry) noexcept { addEntry(entry, ctrlHubs.GetItemCount()); }
+	void on(RecentManagerListener::RecentHubRemoved, const RecentHubEntryPtr& entry) noexcept { ctrlHubs.DeleteItem(ctrlHubs.find((LPARAM)entry.get())); }
+	void on(RecentManagerListener::RecentHubUpdated, const RecentHubEntryPtr& entry) noexcept;
+
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 };
 

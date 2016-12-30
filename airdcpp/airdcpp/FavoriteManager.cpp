@@ -31,7 +31,6 @@
 namespace dcpp {
 
 #define CONFIG_FAV_NAME "Favorites.xml"
-#define CONFIG_RECENTS_NAME "Recents.xml"
 #define CONFIG_DIR Util::PATH_USER_CONFIG
 
 using boost::range::find_if;
@@ -327,59 +326,6 @@ FavoriteManager::FavoriteDirectoryMap FavoriteManager::getFavoriteDirs() const n
 	return favoriteDirectories;
 }
 
-void FavoriteManager::clearRecent() noexcept {
-	{
-		WLock l(cs);
-		recentHubs.clear();
-	}
-
-	saveRecent();
-}
-
-
-void FavoriteManager::addRecent(const RecentHubEntryPtr& aEntry) noexcept {
-	{
-		WLock l(cs);
-		auto i = getRecentHub(aEntry->getServer());
-		if (i != recentHubs.end()) {
-			return;
-		}
-
-		recentHubs.push_back(aEntry);
-	}
-
-	fire(FavoriteManagerListener::RecentAdded(), aEntry);
-	saveRecent();
-}
-
-void FavoriteManager::removeRecent(const RecentHubEntryPtr& entry) noexcept {
-	{
-		WLock l(cs);
-		auto i = find(recentHubs.begin(), recentHubs.end(), entry);
-		if (i == recentHubs.end()) {
-			return;
-		}
-
-		fire(FavoriteManagerListener::RecentRemoved(), entry);
-		recentHubs.erase(i);
-	}
-
-	saveRecent();
-}
-
-void FavoriteManager::updateRecent(const RecentHubEntryPtr& entry) noexcept {
-	{
-		RLock l(cs);
-		auto i = find(recentHubs.begin(), recentHubs.end(), entry);
-		if (i == recentHubs.end()) {
-			return;
-		}
-	}
-		
-	fire(FavoriteManagerListener::RecentUpdated(), entry);
-	saveRecent();
-}
-
 // FAVORITE HUBS START
 bool FavoriteManager::addFavoriteHub(const FavoriteHubEntryPtr& aEntry) noexcept {
 	{
@@ -620,33 +566,6 @@ void FavoriteManager::saveFavoriteHubs(SimpleXML& aXml) const noexcept {
 	aXml.stepOut();
 }
 
-void FavoriteManager::saveRecent() const noexcept {
-	SimpleXML xml;
-
-	xml.addTag("Recents");
-	xml.stepIn();
-
-	xml.addTag("Hubs");
-	xml.stepIn();
-
-	{
-		RLock l(cs);
-		for (const auto& rhe : recentHubs) {
-			xml.addTag("Hub");
-			xml.addChildAttrib("Name", rhe->getName());
-			xml.addChildAttrib("Description", rhe->getDescription());
-			xml.addChildAttrib("Users", rhe->getUsers());
-			xml.addChildAttrib("Shared", rhe->getShared());
-			xml.addChildAttrib("Server", rhe->getServer());
-		}
-	}
-
-	xml.stepOut();
-	xml.stepOut();
-		
-	SettingsManager::saveSettingFile(xml, CONFIG_DIR, CONFIG_RECENTS_NAME);
-}
-
 void FavoriteManager::loadCID() noexcept {
 	try {
 		SimpleXML xml;
@@ -704,18 +623,6 @@ void FavoriteManager::load() noexcept {
 		}
 	} catch(const Exception& e) {
 		LogManager::getInstance()->message(STRING_F(LOAD_FAILED_X, CONFIG_FAV_NAME % e.getError()), LogMessage::SEV_ERROR);
-	}
-
-	try {
-		SimpleXML xml;
-		SettingsManager::loadSettingFile(xml, CONFIG_DIR, CONFIG_RECENTS_NAME);
-		if(xml.findChild("Recents")) {
-			xml.stepIn();
-			loadRecent(xml);
-			xml.stepOut();
-		}
-	} catch(const Exception& e) {
-		LogManager::getInstance()->message(STRING_F(LOAD_FAILED_X, CONFIG_RECENTS_NAME % e.getError()), LogMessage::SEV_ERROR);
 	}
 
 	loading = false;
@@ -935,22 +842,6 @@ void FavoriteManager::on(SettingsManagerListener::Load, SimpleXML&) noexcept {
 	loadCID();
 }
 
-void FavoriteManager::loadRecent(SimpleXML& aXml) {
-	aXml.resetCurrentChild();
-	if(aXml.findChild("Hubs")) {
-		aXml.stepIn();
-		while(aXml.findChild("Hub")) {
-			RecentHubEntryPtr e = new RecentHubEntry(aXml.getChildAttrib("Server"));
-			e->setName(aXml.getChildAttrib("Name"));
-			e->setDescription(aXml.getChildAttrib("Description"));
-			e->setUsers(aXml.getChildAttrib("Users"));
-			e->setShared(aXml.getChildAttrib("Shared"));
-			recentHubs.push_back(e);
-		}
-		aXml.stepOut();
-	}
-}
-
 FavoriteHubEntryPtr FavoriteManager::getFavoriteHubEntry(const string& aServer) const noexcept {
 	RLock l(cs);
 	auto p = getFavoriteHub(aServer);
@@ -983,31 +874,6 @@ FavoriteHubEntryList::const_iterator FavoriteManager::getFavoriteHub(const strin
 
 FavoriteHubEntryList::const_iterator FavoriteManager::getFavoriteHub(ProfileToken aToken) const noexcept {
 	return find_if(favoriteHubs, [aToken](const FavoriteHubEntryPtr& f) { return f->getToken() == aToken; });
-}
-
-RecentHubEntryList::const_iterator FavoriteManager::getRecentHub(const string& aServer) const noexcept {
-	return find_if(recentHubs, [&aServer](const RecentHubEntryPtr& rhe) { return Util::stricmp(rhe->getServer(), aServer) == 0; });
-}
-
-RecentHubEntryPtr FavoriteManager::getRecentHubEntry(const string& aServer) const noexcept {
-	RLock l(cs);
-	auto p = getRecentHub(aServer);
-	return p == recentHubs.end() ? nullptr : *p;
-}
-
-RecentHubEntryList FavoriteManager::searchRecentHubs(const string& aPattern, size_t aMaxResults) const noexcept {
-	auto search = RelevanceSearch<RecentHubEntryPtr>(aPattern, [](const RecentHubEntryPtr& aHub) {
-		return aHub->getName();
-	});
-
-	{
-		RLock l(cs);
-		for (const auto& hub : recentHubs) {
-			search.match(hub);
-		}
-	}
-
-	return search.getResults(aMaxResults);
 }
 
 UserCommand::List FavoriteManager::getUserCommands(int ctx, const StringList& hubs, bool& op) noexcept {

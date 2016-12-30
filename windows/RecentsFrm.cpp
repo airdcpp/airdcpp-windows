@@ -23,6 +23,8 @@
 #include "HubFrame.h"
 #include "LineDlg.h"
 
+#include <airdcpp/RecentManager.h>
+
 int RecentHubsFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_DESCRIPTION, COLUMN_USERS, COLUMN_SHARED, COLUMN_SERVER };
 int RecentHubsFrame::columnSizes[] = { 200, 290, 50, 50, 100 };
 static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::DESCRIPTION, 
@@ -65,9 +67,9 @@ LRESULT RecentHubsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	ctrlRemoveAll.SetWindowText(CTSTRING(REMOVE_ALL));
 	ctrlRemoveAll.SetFont(WinUtil::font);
 
-	FavoriteManager::getInstance()->addListener(this);
+	RecentManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
-	updateList(FavoriteManager::getInstance()->getRecentHubs());
+	updateList(RecentManager::getInstance()->getRecentHubs());
 	
 	hubsMenu.CreatePopupMenu();
 	hubsMenu.AppendMenu(MF_STRING, IDC_CONNECT, CTSTRING(CONNECT));
@@ -100,7 +102,7 @@ LRESULT RecentHubsFrame::onClickedConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 void RecentHubsFrame::connectSelected() {
 	int i = -1;
 	while ((i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		auto r = FavoriteManager::getInstance()->getRecentHubEntry(((RecentHubEntry*) ctrlHubs.GetItemData(i))->getServer());
+		auto r = RecentManager::getInstance()->getRecentHubEntry(((RecentHubEntry*) ctrlHubs.GetItemData(i))->getServer());
 		WinUtil::connectHub(r);
 	}
 }
@@ -174,7 +176,7 @@ LRESULT RecentHubsFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bHandl
 	if (kd->wVKey == VK_DELETE) {
 		int i = -1;
 		while ((i = ctrlHubs.GetNextItem(-1, LVNI_SELECTED)) != -1) {
-			FavoriteManager::getInstance()->removeRecent((RecentHubEntry*) ctrlHubs.GetItemData(i));
+			RecentManager::getInstance()->removeRecentHub((RecentHubEntry*) ctrlHubs.GetItemData(i));
 		}
 	}
 	return 0;
@@ -203,20 +205,20 @@ LRESULT RecentHubsFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 LRESULT RecentHubsFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	int i = -1;
 	while( (i = ctrlHubs.GetNextItem(-1, LVNI_SELECTED)) != -1) {
-		FavoriteManager::getInstance()->removeRecent((RecentHubEntry*)ctrlHubs.GetItemData(i));
+		RecentManager::getInstance()->removeRecentHub((RecentHubEntry*)ctrlHubs.GetItemData(i));
 	}
 	return 0;
 }
 
 LRESULT RecentHubsFrame::onRemoveAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	ctrlHubs.DeleteAllItems();
-	FavoriteManager::getInstance()->clearRecent();
+	RecentManager::getInstance()->clearRecentHubs();
 	return 0;
 }
 
 LRESULT RecentHubsFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closed) {
-		FavoriteManager::getInstance()->removeListener(this);
+		RecentManager::getInstance()->removeListener(this);
 		SettingsManager::getInstance()->removeListener(this);
 		closed = true;
 		WinUtil::setButtonPressed(IDC_RECENTS, false);
@@ -263,7 +265,7 @@ LRESULT RecentHubsFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	int i = -1;
 	if((i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1)
 	{
-		auto r = FavoriteManager::getInstance()->getRecentHubEntry(((RecentHubEntry*)ctrlHubs.GetItemData(i))->getServer());
+		auto r = RecentManager::getInstance()->getRecentHubEntry(((RecentHubEntry*)ctrlHubs.GetItemData(i))->getServer());
 		dcassert(r != NULL);
 		LineDlg dlg;
 		dlg.description = TSTRING(DESCRIPTION);
@@ -272,7 +274,7 @@ LRESULT RecentHubsFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 		if(dlg.DoModal(m_hWnd) == IDOK) {
 			r->setDescription(Text::fromT(dlg.line));
 			ctrlHubs.SetItemText(i, COLUMN_DESCRIPTION, Text::toT(r->getDescription()).c_str());
-			FavoriteManager::getInstance()->saveRecent();
+			RecentManager::getInstance()->saveRecentHubs();
 		}
 	}
 	return 0;
@@ -307,4 +309,15 @@ LRESULT RecentHubsFrame::onItemchangedDirectories(int /*idCtrl*/, LPNMHDR pnmh, 
 	::EnableWindow(GetDlgItem(IDC_CONNECT), (lv->uNewState & LVIS_FOCUSED));
 	::EnableWindow(GetDlgItem(IDC_REMOVE), (lv->uNewState & LVIS_FOCUSED));
 	return 0;
+}
+
+void RecentHubsFrame::on(RecentManagerListener::RecentHubUpdated, const RecentHubEntryPtr& entry) noexcept {
+	int i = -1;
+	if ((i = ctrlHubs.find((LPARAM)entry.get())) != -1) {
+		ctrlHubs.SetItemText(i, COLUMN_NAME, Text::toT(entry->getName()).c_str());
+		ctrlHubs.SetItemText(i, COLUMN_DESCRIPTION, Text::toT(entry->getDescription()).c_str());
+		ctrlHubs.SetItemText(i, COLUMN_USERS, Text::toT(entry->getUsers()).c_str());
+		ctrlHubs.SetItemText(i, COLUMN_SHARED, Text::toT(Util::formatBytes(entry->getShared())).c_str());
+		ctrlHubs.SetItemText(i, COLUMN_SERVER, Text::toT(entry->getServer()).c_str());
+	}
 }

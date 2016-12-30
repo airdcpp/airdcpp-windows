@@ -251,6 +251,7 @@
     <ClCompile Include="airdcpp\modules\TargetUtil.cpp" />
     <ClCompile Include="airdcpp\modules\WebShortcuts.cpp" />
     <ClCompile Include="airdcpp\PrivateChat.cpp" />
+    <ClCompile Include="airdcpp\RecentManager.cpp" />
     <ClCompile Include="airdcpp\SearchQuery.cpp" />
     <ClCompile Include="airdcpp\ADLSearch.cpp" />
     <ClCompile Include="airdcpp\AirUtil.cpp" />
@@ -374,6 +375,8 @@
     <ClInclude Include="airdcpp\modules\TargetUtil.h" />
     <ClInclude Include="airdcpp\modules\WebShortcuts.h" />
     <ClInclude Include="airdcpp\Priority.h" />
+    <ClInclude Include="airdcpp\RecentManager.h" />
+    <ClInclude Include="airdcpp\RecentManagerListener.h" />
     <ClInclude Include="airdcpp\SettingsManagerListener.h" />
     <ClInclude Include="airdcpp\TimerManagerListener.h" />
     <ClInclude Include="airdcpp\ViewFileManagerListener.h" />
