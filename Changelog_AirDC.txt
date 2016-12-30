@@ -6,6 +6,8 @@ Added:
 - Report encoding-related errors in NMDC hubs
 - Report invalid UTF-8 sent by ADC hubs
 - Allow displaying web server commands in CDM debug tab
+- RSS/Atom feeds window
+- Log user joins/parts as status messages
 
 Changed:
 
@@ -13,10 +15,13 @@ Changed:
 - Always create directory bundle from the requested directory
 - "Exact" list filtering mode is now case-insensitive
 - Re-download corrupted language files
+- Divide favorite hub settings in tabbed dialog
 
 Fixed:
 
 - Crash when loading filelists with items with duplicate names inside the same directory
+- Fix removing finished bundles with files leaving empty directories
+- Fix possible crash with magnet links
 
 Removed:
 
