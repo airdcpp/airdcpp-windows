@@ -766,11 +766,13 @@ bool SimpleXMLReader::process() {
 
 void SimpleXMLReader::decodeString(string& str_) {
 	auto isUtf8 = encoding.empty() || compare(encoding, Text::utf8) == 0;
+
 	if (!isUtf8) {
 		str_ = Text::toUtf8(str_, encoding);
 	} else if (!Text::validateUtf8(str_)) {
 		if (flags & FLAG_REPLACE_INVALID_UTF8) {
-			str_ = "Malformed UTF-8 data";
+			dcassert(0);
+			str_ = Text::sanitizeUtf8(str_);
 		} else {
 			error("Malformed UTF-8 data");
 		}

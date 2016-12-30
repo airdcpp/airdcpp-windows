@@ -246,6 +246,10 @@ string wideToAcp(const wstring& str, const string& toCharset) noexcept {
 #endif
 }
 
+string sanitizeUtf8(const string& str) noexcept {
+	return wideToUtf8(utf8ToWide(str));
+}
+
 bool validateUtf8(const string& str) noexcept {
 	string::size_type i = 0;
 	while(i < str.length()) {

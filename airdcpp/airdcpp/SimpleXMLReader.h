@@ -72,7 +72,7 @@ public:
 	typedef std::set<ThreadedCallBack, ThreadedCallBack::SizeSort> ThreadedCallBackSet;
 
 	enum Flags {
-		// Replace invalid UTF-8 data with an error message instead of throwing
+		// Replace invalid UTF-8 data with placeholder characters
 		FLAG_REPLACE_INVALID_UTF8 = 0x01,
 	};
 
