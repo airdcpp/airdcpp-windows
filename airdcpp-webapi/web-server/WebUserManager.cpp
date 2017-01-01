@@ -57,10 +57,10 @@ namespace webserver {
 		}
 
 		auto uuid = boost::uuids::to_string(boost::uuids::random_generator()());
-		return createSession(user, uuid, aIsSecure, aMaxInactivityMinutes, aUserSession, aIP);
+		return createSession(user, uuid, aIsSecure ? Session::TYPE_SECURE : Session::TYPE_PLAIN, aMaxInactivityMinutes, aUserSession, aIP);
 	}
 
-	SessionPtr WebUserManager::authenticateBasicHttp(const string& aAuthString, bool aIsSecure, const string& aIP) noexcept {
+	SessionPtr WebUserManager::authenticateBasicHttp(const string& aAuthString, const string& aIP) noexcept {
 
 		string username, password;
 
@@ -81,11 +81,11 @@ namespace webserver {
 			return nullptr;
 		}
 
-		return createSession(user, aAuthString, aIsSecure, 60, false, aIP);
+		return createSession(user, aAuthString, Session::TYPE_BASIC_AUTH, 60, false, aIP);
 	}
 
-	SessionPtr WebUserManager::createSession(const WebUserPtr& aUser, const string& aSessionToken, bool aIsSecure, uint64_t aMaxInactivityMinutes, bool aUserSession, const string& aIP) {
-		auto session = std::make_shared<Session>(aUser, aSessionToken, aIsSecure, server, aMaxInactivityMinutes, aUserSession, aIP);
+	SessionPtr WebUserManager::createSession(const WebUserPtr& aUser, const string& aSessionToken, Session::SessionType aType, uint64_t aMaxInactivityMinutes, bool aUserSession, const string& aIP) {
+		auto session = std::make_shared<Session>(aUser, aSessionToken, aType, server, aMaxInactivityMinutes, aUserSession, aIP);
 
 		aUser->setLastLogin(GET_TIME());
 		aUser->addSession();

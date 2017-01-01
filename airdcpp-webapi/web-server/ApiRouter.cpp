@@ -94,7 +94,7 @@ namespace webserver {
 		auto session = WebServerManager::getInstance()->getUserManager().getSession(token);
 		if (!session) {
 			if (basicAuth) {
-				session = WebServerManager::getInstance()->getUserManager().authenticateBasicHttp(token, aIsSecure, aIp);
+				session = WebServerManager::getInstance()->getUserManager().authenticateBasicHttp(token, aIp);
 				if (!session) {
 					error_ = {
 						{ "message", "Invalid username or password" }
@@ -156,7 +156,7 @@ namespace webserver {
 			}
 
 			// Require using the same protocol that was used for logging in
-			if (aRequest.getSession()->isSecure() != aIsSecure) {
+			if ((aRequest.getSession()->getSessionType() == Session::TYPE_SECURE) != aIsSecure) {
 				aRequest.setResponseErrorStr("Protocol mismatch");
 				return websocketpp::http::status_code::not_acceptable;
 			}
