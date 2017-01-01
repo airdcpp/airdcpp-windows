@@ -36,7 +36,8 @@ namespace webserver {
 		WebUserManager(WebServerManager* aServer);
 		~WebUserManager();
 
-		SessionPtr authenticate(const string& aUserName, const string& aPassword, bool aIsSecure, uint64_t aMaxInactivityMinutes, bool aUserSession, const string& aIP) noexcept;
+		SessionPtr authenticateSession(const string& aUserName, const string& aPassword, bool aIsSecure, uint64_t aMaxInactivityMinutes, bool aUserSession, const string& aIP) noexcept;
+		SessionPtr authenticateBasicHttp(const string& aAuthString, bool aIsSecure, const string& aIP) noexcept;
 
 		SessionList getSessions() const noexcept;
 		SessionPtr getSession(const string& aAuthToken) const noexcept;
@@ -68,6 +69,8 @@ namespace webserver {
 		void checkExpiredSessions() noexcept;
 		void removeSession(const SessionPtr& aSession, bool aTimedOut) noexcept;
 		TimerPtr expirationTimer;
+
+		SessionPtr createSession(const WebUserPtr& aUser, const string& aSessionToken, bool aIsSecure, uint64_t aMaxInactivityMinutes, bool aUserSession, const string& aIP);
 
 		void on(WebServerManagerListener::Started) noexcept;
 		void on(WebServerManagerListener::Stopped) noexcept;

@@ -78,22 +78,46 @@ namespace webserver {
 		}
 	}
 
+	SessionPtr ApiRouter::parseHttpSession(const websocketpp::http::parser::request& aRequest, json& error_, bool aIsSecure, const string& aIp) noexcept {
+		bool basicAuth = false;
+
+		auto token = aRequest.get_header("Authorization");
+		if (token != websocketpp::http::empty_header) {
+			if (token.length() > 6 && token.substr(0, 6) == "Basic ") {
+				token = websocketpp::base64_decode(token.substr(6));
+				basicAuth = true;
+			}
+		} else {
+			return nullptr;
+		}
+
+		auto session = WebServerManager::getInstance()->getUserManager().getSession(token);
+		if (!session) {
+			if (basicAuth) {
+				session = WebServerManager::getInstance()->getUserManager().authenticateBasicHttp(token, aIsSecure, aIp);
+				if (!session) {
+					error_ = {
+						{ "message", "Invalid username or password" }
+					};
+				}
+			} else {
+				error_ = {
+					{ "message", "Invalid authorization token (session expired?)" }
+				};
+			}
+		}
+
+		return session;
+	}
+
 	websocketpp::http::status_code::value ApiRouter::handleHttpRequest(const string& aRequestPath,
 		const websocketpp::http::parser::request& aRequest, json& output_, json& error_,
 		bool aIsSecure, const string& aIp) noexcept {
 
-		SessionPtr session = nullptr;
-		auto token = aRequest.get_header("Authorization");
-		if (token != websocketpp::http::empty_header) {
-			session = WebServerManager::getInstance()->getUserManager().getSession(token);
-			if (!session) {
-				// Don't let invalid Authorization tokens through
-				error_ = {
-					{ "message", "Invalid Authorization token (session expired?)" }
-				};
 
-				return websocketpp::http::status_code::unauthorized;
-			}
+		auto session = parseHttpSession(aRequest, error_, aIsSecure, aIp);
+		if (!error_.is_null()) { // Let it through even if there is no session for possible session authentication
+			return websocketpp::http::status_code::unauthorized;
 		}
 
 		auto& requestBody = aRequest.get_body();

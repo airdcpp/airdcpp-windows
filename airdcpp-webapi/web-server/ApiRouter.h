@@ -36,6 +36,8 @@ namespace webserver {
 		api_return handleRequest(ApiRequest& aRequest, bool aIsSecure, const WebSocketPtr& aSocket, const string& aIp) noexcept;
 
 		api_return routeAuthRequest(ApiRequest& aRequest, bool aIsSecure, const WebSocketPtr& aSocket, const string& aIp);
+
+		SessionPtr parseHttpSession(const websocketpp::http::parser::request& aRequest, json& error_, bool aIsSecure, const string& aIp) noexcept;
 	};
 }
 

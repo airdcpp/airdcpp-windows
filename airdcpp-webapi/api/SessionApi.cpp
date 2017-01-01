@@ -60,16 +60,16 @@ namespace webserver {
 	api_return SessionApi::handleActivity(ApiRequest& aRequest) {
 		if (!aRequest.getSession()->isUserSession()) {
 			// This can be used to prevent the session from expiring
-			return websocketpp::http::status_code::ok;
+			return websocketpp::http::status_code::no_content;
 		}
 
 		ActivityManager::getInstance()->updateActivity();
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return SessionApi::handleLogout(ApiRequest& aRequest) {
 		WebServerManager::getInstance()->logout(aRequest.getSession()->getId());
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	string SessionApi::getNetworkType(const string& aIp) noexcept {
@@ -137,7 +137,7 @@ namespace webserver {
 		auto inactivityMinutes = JsonUtil::getOptionalFieldDefault<uint64_t>("max_inactivity", reqJson, WEBCFG(DEFAULT_SESSION_IDLE_TIMEOUT).uint64());
 		auto userSession = JsonUtil::getOptionalFieldDefault<bool>("user_session", reqJson, false);
 
-		auto session = WebServerManager::getInstance()->getUserManager().authenticate(username, password, 
+		auto session = WebServerManager::getInstance()->getUserManager().authenticateSession(username, password, 
 			aIsSecure, inactivityMinutes, userSession, aIP);
 
 		if (!session) {
@@ -180,7 +180,7 @@ namespace webserver {
 		session->onSocketConnected(aSocket);
 		aSocket->setSession(session);
 
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return SessionApi::handleGetSessions(ApiRequest& aRequest) {

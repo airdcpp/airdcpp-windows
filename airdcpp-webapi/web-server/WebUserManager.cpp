@@ -46,22 +46,50 @@ namespace webserver {
 		server->removeListener(this);
 	}
 
-	SessionPtr WebUserManager::authenticate(const string& aUserName, const string& aPassword, bool aIsSecure, uint64_t aMaxInactivityMinutes, bool aUserSession, const string& aIP) noexcept {
-		auto u = getUser(aUserName);
-		if (!u) {
+	SessionPtr WebUserManager::authenticateSession(const string& aUserName, const string& aPassword, bool aIsSecure, uint64_t aMaxInactivityMinutes, bool aUserSession, const string& aIP) noexcept {
+		auto user = getUser(aUserName);
+		if (!user) {
 			return nullptr;
 		}
 
-		if (u->getPassword() != aPassword) {
+		if (user->getPassword() != aPassword) {
 			return nullptr;
 		}
 
-		u->setLastLogin(GET_TIME());
-		u->addSession();
-		fire(WebUserManagerListener::UserUpdated(), u);
+		auto uuid = boost::uuids::to_string(boost::uuids::random_generator()());
+		return createSession(user, uuid, aIsSecure, aMaxInactivityMinutes, aUserSession, aIP);
+	}
 
-		auto uuid = boost::uuids::random_generator()();
-		auto session = std::make_shared<Session>(u, boost::uuids::to_string(uuid), aIsSecure, server, aMaxInactivityMinutes, aUserSession, aIP);
+	SessionPtr WebUserManager::authenticateBasicHttp(const string& aAuthString, bool aIsSecure, const string& aIP) noexcept {
+
+		string username, password;
+
+		auto i = aAuthString.rfind(':');
+		if (i == string::npos) {
+			return nullptr;
+		}
+
+		username = aAuthString.substr(0, i);
+		password = aAuthString.substr(i + 1);
+
+		auto user = getUser(username);
+		if (!user) {
+			return nullptr;
+		}
+
+		if (user->getPassword() != password) {
+			return nullptr;
+		}
+
+		return createSession(user, aAuthString, aIsSecure, 60, false, aIP);
+	}
+
+	SessionPtr WebUserManager::createSession(const WebUserPtr& aUser, const string& aSessionToken, bool aIsSecure, uint64_t aMaxInactivityMinutes, bool aUserSession, const string& aIP) {
+		auto session = std::make_shared<Session>(aUser, aSessionToken, aIsSecure, server, aMaxInactivityMinutes, aUserSession, aIP);
+
+		aUser->setLastLogin(GET_TIME());
+		aUser->addSession();
+		fire(WebUserManagerListener::UserUpdated(), aUser);
 
 		{
 			WLock l(cs);
