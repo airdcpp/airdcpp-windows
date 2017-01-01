@@ -180,9 +180,7 @@ namespace webserver {
 				return;
 			}
 
-			send("hub_removed", {
-				{ "id", aClient->getClientId() }
-			});
+			send("hub_removed", serializeClient(aClient));
 		});
 	}
 

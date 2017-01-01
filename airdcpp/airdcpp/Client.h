@@ -172,7 +172,7 @@ public:
 	}
 
 	void doRedirect() noexcept;
-	bool saveFavorite();
+	FavoriteHubEntryPtr saveFavorite();
 
 	enum State: uint8_t {
 		STATE_CONNECTING,	///< Waiting for socket to connect

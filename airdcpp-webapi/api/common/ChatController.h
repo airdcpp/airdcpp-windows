@@ -38,7 +38,7 @@ namespace webserver {
 			auto access = aModule->getSubscriptionAccess();
 			METHOD_HANDLER("messages", Access::HUBS_VIEW, ApiRequest::METHOD_GET, (NUM_PARAM), false, ChatController::handleGetMessages);
 			METHOD_HANDLER("message", Access::HUBS_SEND, ApiRequest::METHOD_POST, (), true, ChatController::handlePostChatMessage);
-			METHOD_HANDLER("status", Access::HUBS_EDIT, ApiRequest::METHOD_POST, (), true, ChatController::handleStatusMessage);
+			METHOD_HANDLER("status", Access::HUBS_EDIT, ApiRequest::METHOD_POST, (), true, ChatController::handlePostStatusMessage);
 
 			METHOD_HANDLER("read", Access::HUBS_VIEW, ApiRequest::METHOD_POST, (), false, ChatController::handleSetRead);
 			METHOD_HANDLER("clear", Access::HUBS_EDIT, ApiRequest::METHOD_POST, (), false, ChatController::handleClear);
@@ -92,25 +92,25 @@ namespace webserver {
 				return websocketpp::http::status_code::internal_server_error;
 			}
 
-			return websocketpp::http::status_code::ok;
+			return websocketpp::http::status_code::no_content;
 		}
 
-		api_return handleStatusMessage(ApiRequest& aRequest) {
+		api_return handlePostStatusMessage(ApiRequest& aRequest) {
 			const auto& reqJson = aRequest.getRequestBody();
 
 			auto message = Deserializer::deserializeStatusMessage(reqJson);
 			chat->statusMessage(message.first, message.second);
-			return websocketpp::http::status_code::ok;
+			return websocketpp::http::status_code::no_content;
 		}
 
 		api_return handleClear(ApiRequest& aRequest) {
 			chat->clearCache();
-			return websocketpp::http::status_code::ok;
+			return websocketpp::http::status_code::no_content;
 		}
 
 		api_return handleSetRead(ApiRequest& aRequest) {
 			chat->setRead();
-			return websocketpp::http::status_code::ok;
+			return websocketpp::http::status_code::no_content;
 		}
 
 		api_return handleGetMessages(ApiRequest& aRequest) {

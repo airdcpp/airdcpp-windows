@@ -67,6 +67,10 @@ namespace webserver {
 			ret.insert("offline");
 		}
 
+		if (aUser->isSet(User::CCPM)) {
+			ret.insert("ccpm");
+		}
+
 		return ret;
 	}
 
@@ -85,16 +89,8 @@ namespace webserver {
 			flags_.insert("op");
 		}
 
-		if (aUser->getIdentity().isBot() || aUser->getIdentity().isHub()) {
-			flags_.insert("bot");
-		}
-
 		if (aUser->isHidden()) {
 			flags_.insert("hidden");
-		}
-
-		if (aUser->supportsCCPM()) {
-			flags_.insert("ccpm");
 		}
 
 		auto cm = aUser->getIdentity().getConnectMode();

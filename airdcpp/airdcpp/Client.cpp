@@ -373,7 +373,7 @@ void Client::on(BufferedSocketListener::Connecting) noexcept {
 	fire(ClientListener::Connecting(), this);
 }
 
-bool Client::saveFavorite() {
+FavoriteHubEntryPtr Client::saveFavorite() {
 	FavoriteHubEntryPtr e = new FavoriteHubEntry();
 	e->setServer(getHubUrl());
 	e->setName(getHubName());
@@ -383,7 +383,7 @@ bool Client::saveFavorite() {
 		e->setPassword(defpassword);
 	}
 
-	return FavoriteManager::getInstance()->addFavoriteHub(e);
+	return FavoriteManager::getInstance()->addFavoriteHub(e) ? e : nullptr;
 }
 
 void Client::doRedirect() noexcept {

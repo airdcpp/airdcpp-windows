@@ -44,11 +44,22 @@ namespace webserver {
 		FavoriteHubUtils::getStringInfo, FavoriteHubUtils::getNumericInfo, FavoriteHubUtils::compareEntries, FavoriteHubUtils::serializeHub
 	};
 
-	string FavoriteHubUtils::formatConnectState(const FavoriteHubEntryPtr& aEntry) noexcept {
+	string FavoriteHubUtils::getConnectStateStr(const FavoriteHubEntryPtr& aEntry) noexcept {
 		switch (aEntry->getConnectState()) {
 			case FavoriteHubEntry::STATE_DISCONNECTED: return STRING(DISCONNECTED);
 			case FavoriteHubEntry::STATE_CONNECTING: return STRING(CONNECTING);
 			case FavoriteHubEntry::STATE_CONNECTED: return STRING(CONNECTED);
+		}
+
+		dcassert(0);
+		return Util::emptyString;
+	}
+
+	string FavoriteHubUtils::getConnectStateId(const FavoriteHubEntryPtr& aEntry) noexcept {
+		switch (aEntry->getConnectState()) {
+			case FavoriteHubEntry::STATE_DISCONNECTED: return "disconnected";
+			case FavoriteHubEntry::STATE_CONNECTING: return "connecting";
+			case FavoriteHubEntry::STATE_CONNECTED: return "connected";
 		}
 
 		dcassert(0);
@@ -68,7 +79,8 @@ namespace webserver {
 			{
 				return {
 					{ "id", aEntry->getConnectState() },
-					{ "str", formatConnectState(aEntry) },
+					//{ "id", getConnectStateId(aEntry) },
+					{ "str", getConnectStateStr(aEntry) },
 					{ "current_hub_id", aEntry->getCurrentHubToken() }
 				};
 			}

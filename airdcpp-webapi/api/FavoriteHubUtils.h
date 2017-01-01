@@ -53,7 +53,9 @@ namespace webserver {
 		static std::string getStringInfo(const FavoriteHubEntryPtr& a, int aPropertyName) noexcept;
 		static double getNumericInfo(const FavoriteHubEntryPtr& a, int aPropertyName) noexcept;
 	private:
-		static string formatConnectState(const FavoriteHubEntryPtr& aEntry) noexcept;
+		static string getConnectStateStr(const FavoriteHubEntryPtr& aEntry) noexcept;
+		static string getConnectStateId(const FavoriteHubEntryPtr& aEntry) noexcept;
+
 		static json serializeHubSetting(tribool aSetting) noexcept;
 		static json serializeHubSetting(int aSetting) noexcept;
 	};
