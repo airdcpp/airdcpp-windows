@@ -116,7 +116,7 @@ namespace webserver {
 			return websocketpp::http::status_code::internal_server_error;
 		}
 
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return FilesystemApi::handleGetDiskInfo(ApiRequest& aRequest) {
