@@ -93,22 +93,21 @@ namespace webserver {
 			return websocketpp::http::status_code::unauthorized;
 		}
 
-		json retJson = {
-			{ "permissions", session->getUser()->getPermissions() }, // deprecated
-			{ "token", session->getAuthToken() }, // deprecated
-			{ "user", session->getUser()->getUserName() }, // deprecated
-			{ "session", serializeSession(session) },
-			{ "system", SystemApi::getSystemInfo() },
-			{ "run_wizard", SETTING(WIZARD_RUN) }, // deprecated
-			{ "cid", ClientManager::getInstance()->getMyCID().toBase32() }, // deprecated
-		};
-
 		if (aSocket) {
 			session->onSocketConnected(aSocket);
 			aSocket->setSession(session);
 		}
 
-		aRequest.setResponseBody(retJson);
+		aRequest.setResponseBody({
+			{ "token", session->getAuthToken() },
+			{ "session", serializeSession(session) },
+			{ "system", SystemApi::getSystemInfo() },
+			{ "permissions", session->getUser()->getPermissions() }, // deprecated
+			{ "user", session->getUser()->getUserName() }, // deprecated
+			{ "run_wizard", SETTING(WIZARD_RUN) }, // deprecated
+			{ "cid", ClientManager::getInstance()->getMyCID().toBase32() }, // deprecated
+		});
+
 		return websocketpp::http::status_code::ok;
 	}
 

@@ -36,6 +36,9 @@ namespace webserver {
 		WebUserManager(WebServerManager* aServer);
 		~WebUserManager();
 
+		// Parse Authentication header from an HTTP request
+		SessionPtr parseHttpSession(const websocketpp::http::parser::request& aRequest, string& error_, const string& aIp) noexcept;
+
 		SessionPtr authenticateSession(const string& aUserName, const string& aPassword, bool aIsSecure, uint64_t aMaxInactivityMinutes, bool aUserSession, const string& aIP) noexcept;
 		SessionPtr authenticateBasicHttp(const string& aAuthString, const string& aIP) noexcept;
 

@@ -46,6 +46,34 @@ namespace webserver {
 		server->removeListener(this);
 	}
 
+	SessionPtr WebUserManager::parseHttpSession(const websocketpp::http::parser::request& aRequest, string& error_, const string& aIp) noexcept {
+		bool basicAuth = false;
+
+		auto token = aRequest.get_header("Authorization");
+		if (token != websocketpp::http::empty_header) {
+			if (token.length() > 6 && token.substr(0, 6) == "Basic ") {
+				token = websocketpp::base64_decode(token.substr(6));
+				basicAuth = true;
+			}
+		} else {
+			return nullptr;
+		}
+
+		auto session = getSession(token);
+		if (!session) {
+			if (basicAuth) {
+				session = authenticateBasicHttp(token, aIp);
+				if (!session) {
+					error_ = "Invalid username or password";
+				}
+			} else {
+				error_ = "Invalid authorization token (session expired?)";
+			}
+		}
+
+		return session;
+	}
+
 	SessionPtr WebUserManager::authenticateSession(const string& aUserName, const string& aPassword, bool aIsSecure, uint64_t aMaxInactivityMinutes, bool aUserSession, const string& aIP) noexcept {
 		auto user = getUser(aUserName);
 		if (!user) {
