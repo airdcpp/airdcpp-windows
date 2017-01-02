@@ -375,6 +375,7 @@
     <ClInclude Include="airdcpp\modules\TargetUtil.h" />
     <ClInclude Include="airdcpp\modules\WebShortcuts.h" />
     <ClInclude Include="airdcpp\Priority.h" />
+    <ClInclude Include="airdcpp\RecentEntry.h" />
     <ClInclude Include="airdcpp\RecentManager.h" />
     <ClInclude Include="airdcpp\RecentManagerListener.h" />
     <ClInclude Include="airdcpp\SettingsManagerListener.h" />

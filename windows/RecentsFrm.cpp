@@ -25,10 +25,9 @@
 
 #include <airdcpp/RecentManager.h>
 
-int RecentHubsFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_DESCRIPTION, COLUMN_USERS, COLUMN_SHARED, COLUMN_SERVER };
-int RecentHubsFrame::columnSizes[] = { 200, 290, 50, 50, 100 };
-static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::DESCRIPTION, 
-ResourceManager::USERS, ResourceManager::SHARED, ResourceManager::HUB_ADDRESS
+int RecentHubsFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_DESCRIPTION, COLUMN_SERVER };
+int RecentHubsFrame::columnSizes[] = { 200, 290, 100 };
+static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::DESCRIPTION, ResourceManager::HUB_ADDRESS
 };
 
 LRESULT RecentHubsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
@@ -102,8 +101,8 @@ LRESULT RecentHubsFrame::onClickedConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 void RecentHubsFrame::connectSelected() {
 	int i = -1;
 	while ((i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		auto r = RecentManager::getInstance()->getRecentHubEntry(((RecentHubEntry*) ctrlHubs.GetItemData(i))->getServer());
-		WinUtil::connectHub(r);
+		auto r = RecentManager::getInstance()->getRecentHubEntry(((RecentHubEntry*) ctrlHubs.GetItemData(i))->getUrl());
+		WinUtil::connectHub(r->getUrl());
 	}
 }
 
@@ -142,11 +141,7 @@ LRESULT RecentHubsFrame::onColumnClickHublist(int /*idCtrl*/, LPNMHDR pnmh, BOOL
 		else
 			ctrlHubs.setSortDirection(false);
 	} else {
-		if (l->iSubItem == 2 || l->iSubItem == 3) {
-			ctrlHubs.setSort(l->iSubItem, ExListViewCtrl::SORT_INT);
-		} else {
-			ctrlHubs.setSort(l->iSubItem, ExListViewCtrl::SORT_STRING);
-		}
+		ctrlHubs.setSort(l->iSubItem, ExListViewCtrl::SORT_STRING);
 	}
 	return 0;
 }
@@ -164,9 +159,7 @@ void RecentHubsFrame::addEntry(const RecentHubEntryPtr& entry, int pos) {
 	TStringList l;
 	l.push_back(Text::toT(entry->getName()));
 	l.push_back(Text::toT(entry->getDescription()));
-	l.push_back(Text::toT(entry->getUsers()));
-	l.push_back(Text::toT(Util::formatBytes(entry->getShared())));
-	l.push_back(Text::toT(entry->getServer()));
+	l.push_back(Text::toT(entry->getUrl()));
 
 	ctrlHubs.insert(pos, l, 0, (LPARAM) entry.get());
 }
@@ -176,7 +169,8 @@ LRESULT RecentHubsFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bHandl
 	if (kd->wVKey == VK_DELETE) {
 		int i = -1;
 		while ((i = ctrlHubs.GetNextItem(-1, LVNI_SELECTED)) != -1) {
-			RecentManager::getInstance()->removeRecentHub((RecentHubEntry*) ctrlHubs.GetItemData(i));
+			auto r = (RecentHubEntry*)ctrlHubs.GetItemData(i);
+			RecentManager::getInstance()->removeRecentHub(r->getUrl());
 		}
 	}
 	return 0;
@@ -205,7 +199,8 @@ LRESULT RecentHubsFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 LRESULT RecentHubsFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	int i = -1;
 	while( (i = ctrlHubs.GetNextItem(-1, LVNI_SELECTED)) != -1) {
-		RecentManager::getInstance()->removeRecentHub((RecentHubEntry*)ctrlHubs.GetItemData(i));
+		auto r = (RecentHubEntry*)ctrlHubs.GetItemData(i);
+		RecentManager::getInstance()->removeRecentHub(r->getUrl());
 	}
 	return 0;
 }
@@ -265,7 +260,7 @@ LRESULT RecentHubsFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	int i = -1;
 	if((i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1)
 	{
-		auto r = RecentManager::getInstance()->getRecentHubEntry(((RecentHubEntry*)ctrlHubs.GetItemData(i))->getServer());
+		auto r = RecentManager::getInstance()->getRecentHubEntry(((RecentHubEntry*)ctrlHubs.GetItemData(i))->getUrl());
 		dcassert(r != NULL);
 		LineDlg dlg;
 		dlg.description = TSTRING(DESCRIPTION);
@@ -316,8 +311,6 @@ void RecentHubsFrame::on(RecentManagerListener::RecentHubUpdated, const RecentHu
 	if ((i = ctrlHubs.find((LPARAM)entry.get())) != -1) {
 		ctrlHubs.SetItemText(i, COLUMN_NAME, Text::toT(entry->getName()).c_str());
 		ctrlHubs.SetItemText(i, COLUMN_DESCRIPTION, Text::toT(entry->getDescription()).c_str());
-		ctrlHubs.SetItemText(i, COLUMN_USERS, Text::toT(entry->getUsers()).c_str());
-		ctrlHubs.SetItemText(i, COLUMN_SHARED, Text::toT(Util::formatBytes(entry->getShared())).c_str());
-		ctrlHubs.SetItemText(i, COLUMN_SERVER, Text::toT(entry->getServer()).c_str());
+		ctrlHubs.SetItemText(i, COLUMN_SERVER, Text::toT(entry->getUrl()).c_str());
 	}
 }

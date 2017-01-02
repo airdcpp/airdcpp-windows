@@ -207,8 +207,7 @@ bool HubFrame::sendMessage(const tstring& aMessage, string& error_, bool isThird
 bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*message*/, tstring& status, bool& /*thirdPerson*/) {	
 	if(stricmp(cmd.c_str(), _T("join"))==0) {
 		if(!param.empty()) {
-			RecentHubEntryPtr r = new RecentHubEntry(Text::fromT(param));
-			WinUtil::connectHub(r);
+			WinUtil::connectHub(Text::fromT(param));
 		} else {
 			status = TSTRING(SPECIFY_SERVER);
 		}

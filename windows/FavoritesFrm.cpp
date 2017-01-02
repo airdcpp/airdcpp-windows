@@ -183,13 +183,10 @@ void FavoriteHubsFrame::openSelected() {
 		return;
 	
 	int i = -1;
-	while( (i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1) {
+	while ((i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1) {
 		FavoriteHubEntry* entry = (FavoriteHubEntry*)ctrlHubs.GetItemData(i);
 
-		RecentHubEntryPtr r = new RecentHubEntry(entry->getServer());
-		r->setName(entry->getName());
-		r->setDescription(entry->getDescription());
-		ClientManager::getInstance()->createClient(r); // no multithreading because of disorder!
+		ClientManager::getInstance()->createClient(entry->getServer());
 	}
 	return;
 }

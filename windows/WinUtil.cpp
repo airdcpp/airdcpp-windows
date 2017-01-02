@@ -246,8 +246,7 @@ void WinUtil::GetBrowseList::operator()(UserPtr aUser, const string& aUrl) const
 void WinUtil::ConnectFav::operator()(UserPtr aUser, const string& aUrl) const {
 	if(aUser) {
 		if(!aUrl.empty()) {
-			RecentHubEntryPtr r = new RecentHubEntry(aUrl);
-			connectHub(r);
+			connectHub(aUrl);
 		}
 	}
 }
@@ -1096,8 +1095,7 @@ bool WinUtil::parseDBLClick(const tstring& str) {
 		Util::stricmp(proto.c_str(), "dchub") == 0 )
 	{
 		if(!host.empty()) {
-			RecentHubEntryPtr r = new RecentHubEntry(url);
-			connectHub(r);
+			connectHub(url);
 		}
 
 		if(!file.empty()) {
@@ -2261,9 +2259,9 @@ void WinUtil::addFileDownload(const string& aTarget, int64_t aSize, const TTHVal
 	});
 }
 
-void WinUtil::connectHub(const RecentHubEntryPtr& aEntry) {
+void WinUtil::connectHub(const string& aUrl) {
 	MainFrame::getMainFrame()->addThreadedTask([=] {
-		ClientManager::getInstance()->createClient(aEntry);
+		ClientManager::getInstance()->createClient(aUrl);
 	});
 }
 

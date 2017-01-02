@@ -1767,8 +1767,7 @@ LRESULT MainFrame::onQuickConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		if(SETTING(NICK).empty())
 			return 0;
 
-		RecentHubEntryPtr r = new RecentHubEntry(Text::fromT(dlg.line));
-		WinUtil::connectHub(r);
+		WinUtil::connectHub(Text::fromT(dlg.line));
 	}
 	return 0;
 }

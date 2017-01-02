@@ -354,17 +354,14 @@ void FavoriteManager::onFavoriteHubUpdated(const FavoriteHubEntryPtr& aEntry) no
 }
 
 void FavoriteManager::autoConnect() noexcept {
-	RecentHubEntryList hubs;
+	StringList hubs;
 
 	{
 
 		RLock l(cs);
 		for (const auto& entry : favoriteHubs) {
 			if (entry->getAutoConnect()) {
-				RecentHubEntryPtr r = new RecentHubEntry(entry->getServer());
-				r->setName(entry->getName());
-				r->setDescription(entry->getDescription());
-				hubs.emplace_back(r);
+				hubs.emplace_back(entry->getServer());
 			}
 		}
 	}

@@ -189,8 +189,7 @@ namespace webserver {
 
 		auto address = JsonUtil::getField<string>("hub_url", reqJson, false);
 
-		RecentHubEntryPtr r = new RecentHubEntry(address);
-		auto client = ClientManager::getInstance()->createClient(r);
+		auto client = ClientManager::getInstance()->createClient(address);
 		if (!client) {
 			aRequest.setResponseErrorStr("Hub exists");
 			return websocketpp::http::status_code::bad_request;

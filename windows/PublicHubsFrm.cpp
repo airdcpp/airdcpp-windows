@@ -236,18 +236,7 @@ void PublicHubsFrame::connectHub(int pos) {
 	TCHAR buf[256];
 
 	ctrlHubs.GetItemText(pos, COLUMN_SERVER, buf, 256);
-
-	RecentHubEntryPtr r = new RecentHubEntry(Text::fromT(buf));
-	ctrlHubs.GetItemText(pos, COLUMN_NAME, buf, 256);
-	r->setName(Text::fromT(buf));
-	ctrlHubs.GetItemText(pos, COLUMN_DESCRIPTION, buf, 256);
-	r->setDescription(Text::fromT(buf));
-	ctrlHubs.GetItemText(pos, COLUMN_USERS, buf, 256);
-	r->setUsers(Text::fromT(buf));
-	ctrlHubs.GetItemText(pos, COLUMN_SHARED, buf, 256);
-	r->setShared(Text::fromT(buf));
-				
-	WinUtil::connectHub(r);
+	WinUtil::connectHub(Text::fromT(buf));
 }
 
 LRESULT PublicHubsFrame::onClickedConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

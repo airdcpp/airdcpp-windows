@@ -36,7 +36,7 @@ namespace webserver {
 		return {
 			{ "name", aHub->getName()},
 			{ "description", aHub->getDescription() },
-			{ "hub_url", aHub->getServer() }
+			{ "hub_url", aHub->getUrl() }
 		};
 	}
 

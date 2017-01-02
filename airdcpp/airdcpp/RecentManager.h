@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2001-2016 Jacek Sieka, arnetheduck on gmail point com
+* Copyright (C) 2011-2016 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,10 +16,10 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef DCPLUSPLUS_DCPP_RECENT_MANAGER_H
-#define DCPLUSPLUS_DCPP_RECENT_MANAGER_H
+#ifndef RECENT_MANAGER_H
+#define RECENT_MANAGER_H
 
-#include "HubEntry.h"
+#include "RecentEntry.h"
 #include "Singleton.h"
 #include "Speaker.h"
 
@@ -31,11 +31,11 @@ namespace dcpp {
 	{
 	public:
 		// Recent Hubs
-		RecentHubEntryList& getRecentHubs() noexcept { return recentHubs; };
+		RecentHubEntryList getRecentHubs() noexcept {  RLock l(cs); return recentHubs; };
 
-		void addRecentHub(const RecentHubEntryPtr& aEntry) noexcept;
-		void removeRecentHub(const RecentHubEntryPtr& aEntry) noexcept;
-		void updateRecentHub(const RecentHubEntryPtr& aEntry) noexcept;
+		void addRecentHub(const string& aEntry) noexcept;
+		void removeRecentHub(const string& aEntry) noexcept;
+		void updateRecentHub(const ClientPtr& aClient) noexcept;
 
 		RecentHubEntryPtr getRecentHubEntry(const string& aServer) const noexcept;
 		RecentHubEntryList searchRecentHubs(const string& aPattern, size_t aMaxResults) const noexcept;
@@ -53,7 +53,6 @@ namespace dcpp {
 		RecentManager();
 		~RecentManager();
 
-		RecentHubEntryList::const_iterator getRecentHub(const string& aServer) const noexcept;
 		void loadRecentHubs(SimpleXML& aXml);
 	};
 

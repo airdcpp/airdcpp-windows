@@ -56,7 +56,7 @@ ClientManager::~ClientManager() {
 	TimerManager::getInstance()->removeListener(this);
 }
 
-ClientPtr ClientManager::createClient(const string& aHubURL, const ClientPtr& aOldClient) noexcept {
+ClientPtr ClientManager::makeClient(const string& aHubURL, const ClientPtr& aOldClient) noexcept {
 	if (AirUtil::isAdcHub(aHubURL)) {
 		return std::make_shared<AdcHub>(aHubURL, aOldClient);
 	}
@@ -64,8 +64,9 @@ ClientPtr ClientManager::createClient(const string& aHubURL, const ClientPtr& aO
 	return std::make_shared<NmdcHub>(aHubURL, aOldClient);
 }
 
-ClientPtr ClientManager::createClient(const RecentHubEntryPtr& aEntry) noexcept {
-	auto c = ClientManager::createClient(aEntry->getServer());
+ClientPtr ClientManager::createClient(const string& aUrl) noexcept {
+
+	auto c = ClientManager::makeClient(aUrl);
 	bool added = true;
 
 	{
@@ -86,7 +87,7 @@ ClientPtr ClientManager::createClient(const RecentHubEntryPtr& aEntry) noexcept 
 
 	c->addListener(this);
 
-	RecentManager::getInstance()->addRecentHub(aEntry);
+	RecentManager::getInstance()->addRecentHub(aUrl);
 	fire(ClientManagerListener::ClientCreated(), c);
 	return c;
 }
@@ -142,12 +143,7 @@ bool ClientManager::putClient(ClientPtr& aClient) noexcept {
 	fire(ClientManagerListener::ClientDisconnected(), aClient->getHubUrl());
 	fire(ClientManagerListener::ClientRemoved(), aClient);
 
-	auto r = RecentManager::getInstance()->getRecentHubEntry(aClient->getHubUrl());
-	if (r) {
-		r->setName(aClient->getHubName());
-		r->setUsers(Util::toString(aClient->getUserCount()));
-		r->setShared(Util::toString(aClient->getTotalShare()));
-	}
+	RecentManager::getInstance()->updateRecentHub(aClient);
 
 	aClient->disconnect(true);
 	aClient->shutdown(aClient, false);
@@ -172,7 +168,7 @@ ClientPtr ClientManager::redirect(const string& aHubUrl, const string& aNewUrl) 
 	oldClient->shutdown(oldClient, true);
 	oldClient->removeListener(this);
 
-	auto newClient = ClientManager::createClient(aNewUrl, oldClient);
+	auto newClient = ClientManager::makeClient(aNewUrl, oldClient);
 	oldClient->clearCache();
 
 	{
@@ -184,8 +180,7 @@ ClientPtr ClientManager::redirect(const string& aHubUrl, const string& aNewUrl) 
 
 	newClient->addListener(this);
 
-	RecentHubEntryPtr r = new RecentHubEntry(aNewUrl);
-	RecentManager::getInstance()->addRecentHub(r);
+	RecentManager::getInstance()->addRecentHub(aNewUrl);
 	fire(ClientManagerListener::ClientRedirected(), oldClient, newClient);
 	
 	return newClient;
@@ -1284,6 +1279,7 @@ void ClientManager::on(HubUpdated, const Client* aClient) noexcept {
 	auto c = getClient(aClient->getHubUrl());
 	if (c) {
 		fire(ClientManagerListener::ClientUpdated(), c);
+		RecentManager::getInstance()->updateRecentHub(c);
 	}
 }
 

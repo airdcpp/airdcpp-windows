@@ -49,7 +49,7 @@ class ClientManager : public Speaker<ClientManagerListener>,
 public:
 	// Returns the new ClientPtr
 	// NOTE: the main app should perform connecting to the new hub
-	ClientPtr createClient(const RecentHubEntryPtr& aEntry) noexcept;
+	ClientPtr createClient(const string& aUrl) noexcept;
 	ClientPtr getClient(const string& aHubURL) noexcept;
 	ClientPtr getClient(ClientToken aClientId) noexcept;
 
@@ -225,7 +225,7 @@ public:
 	//return users supporting the ASCH extension (and total users)
 	pair<size_t, size_t> countAschSupport(const OrderedStringSet& aHubs) const noexcept;
 private:
-	static ClientPtr createClient(const string& aHubURL, const ClientPtr& aOldClient = nullptr) noexcept;
+	static ClientPtr makeClient(const string& aHubURL, const ClientPtr& aOldClient = nullptr) noexcept;
 
 	typedef unordered_map<CID*, OfflineUser> OfflineUserMap;
 
