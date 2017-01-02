@@ -1825,6 +1825,7 @@ enum Strings { // @DontAdd
 	WEB_SERVER_INVALID_CONFIG, // "No valid configuration was found (ensure that the ports are valid and that there is at least one administrative account)"
 	WEB_ACCOUNTS_NOTE, // "Note: you will be able to create user accounts with restricted permissions from the Web UI"
 	WEB_ACCOUNT_INCOMPLETE, // "Please enter both username and password"
+	WEB_USERNAME_APLHANUM, // "The username should contain only alphanumeric characters"
 	STOPPING, // "Stopping..."
 	ADMIN_ACCOUNTS, // "Administrator accounts"
 	SERVER_SETTINGS, // "Server settings"

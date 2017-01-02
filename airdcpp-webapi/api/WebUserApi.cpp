@@ -33,6 +33,12 @@ namespace webserver {
 		um.addListener(this);
 
 		METHOD_HANDLER("users", Access::ADMIN, ApiRequest::METHOD_GET, (), false, WebUserApi::handleGetUsers);
+
+		//METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_POST, (), true, WebUserApi::handleAddUser);
+		//METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_PATCH, (STR_PARAM), true, WebUserApi::handleUpdateUser);
+		//METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_DELETE, (STR_PARAM), false, WebUserApi::handleRemoveUser);
+
+		// Deprecated
 		METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_POST, (EXACT_PARAM("add")), true, WebUserApi::handleAddUser);
 		METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_POST, (EXACT_PARAM("update")), true, WebUserApi::handleUpdateUser);
 		METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_POST, (EXACT_PARAM("remove")), true, WebUserApi::handleRemoveUser);
@@ -60,6 +66,9 @@ namespace webserver {
 		const auto& reqJson = aRequest.getRequestBody();
 
 		auto userName = JsonUtil::getField<string>("username", reqJson, false);
+		if (!WebUser::validateUsername(userName)) {
+			JsonUtil::throwError("username", JsonUtil::ERROR_EXISTS, "The username should only contain alphanumeric characters");
+		}
 
 		auto user = std::make_shared<WebUser>(userName, Util::emptyString);
 
@@ -67,7 +76,6 @@ namespace webserver {
 
 		if (!um.addUser(user)) {
 			JsonUtil::throwError("username", JsonUtil::ERROR_EXISTS, "User with the same name exists");
-			return websocketpp::http::status_code::bad_request;
 		}
 
 		return websocketpp::http::status_code::ok;

@@ -49,7 +49,7 @@ const ResourceManager::Strings SettingsManager::bloomStrings[BLOOM_LAST] { Resou
 const ResourceManager::Strings SettingsManager::profileStrings[PROFILE_LAST] { ResourceManager::NORMAL, ResourceManager::RAR_HUBS, ResourceManager::LAN_HUBS };
 const ResourceManager::Strings SettingsManager::refreshStrings[MULTITHREAD_LAST] { ResourceManager::NEVER, ResourceManager::MANUAL_REFRESHES, ResourceManager::ALWAYS };
 const ResourceManager::Strings SettingsManager::prioStrings[PRIO_LAST] { ResourceManager::DISABLED, ResourceManager::PRIOPAGE_ORDER_BALANCED, ResourceManager::PRIOPAGE_ORDER_PROGRESS };
-const ResourceManager::Strings SettingsManager::incomingStrings[INCOMING_LAST] { ResourceManager::DISABLED, ResourceManager::ACTIVE_MODE, ResourceManager::SETTINGS_ACTIVE_UPNP, ResourceManager::PASSIVE_MODE };
+const ResourceManager::Strings SettingsManager::incomingStrings[INCOMING_LAST] { ResourceManager::DISABLED, ResourceManager::SETTINGS_ACTIVE, ResourceManager::SETTINGS_ACTIVE_UPNP, ResourceManager::SETTINGS_PASSIVE };
 const ResourceManager::Strings SettingsManager::outgoingStrings[OUTGOING_LAST] { ResourceManager::SETTINGS_DIRECT, ResourceManager::SETTINGS_SOCKS5 };
 const ResourceManager::Strings SettingsManager::monitoringStrings[MONITORING_LAST] { ResourceManager::DISABLED, ResourceManager::INCOMING_ONLY, ResourceManager::ALL_DIRS };
 const ResourceManager::Strings SettingsManager::dropStrings[QUEUE_LAST] { ResourceManager::FILE, ResourceManager::BUNDLE, ResourceManager::ALL };
