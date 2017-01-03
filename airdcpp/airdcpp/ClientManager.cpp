@@ -43,6 +43,7 @@
 #include <openssl/rand.h>
 
 #include <boost/range/algorithm/copy.hpp>
+#include <boost/algorithm/string/trim.hpp>
 
 namespace dcpp {
 
@@ -66,7 +67,7 @@ ClientPtr ClientManager::makeClient(const string& aHubURL, const ClientPtr& aOld
 
 ClientPtr ClientManager::createClient(const string& aUrl) noexcept {
 
-	auto c = ClientManager::makeClient(aUrl);
+	auto c = ClientManager::makeClient(boost::trim_copy(aUrl));
 	bool added = true;
 
 	{
@@ -87,7 +88,7 @@ ClientPtr ClientManager::createClient(const string& aUrl) noexcept {
 
 	c->addListener(this);
 
-	RecentManager::getInstance()->addRecent(aUrl);
+	RecentManager::getInstance()->addRecent(c->getHubUrl());
 	fire(ClientManagerListener::ClientCreated(), c);
 	return c;
 }
