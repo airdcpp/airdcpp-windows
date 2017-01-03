@@ -162,9 +162,6 @@
     <ClInclude Include="api\HubInfo.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="api\RecentHubApi.h">
-      <Filter>Header Files\api</Filter>
-    </ClInclude>
     <ClInclude Include="api\OnlineUserUtils.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
@@ -247,6 +244,9 @@
       <Filter>Header Files\web-server</Filter>
     </ClInclude>
     <ClInclude Include="api\FilelistItemInfo.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="api\RecentApi.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
   </ItemGroup>

@@ -28,22 +28,22 @@
 
 #include <airdcpp/RecentManagerListener.h>
 
-class RecentHubsFrame : public MDITabChildWindowImpl<RecentHubsFrame>, public StaticFrame<RecentHubsFrame, ResourceManager::RECENT_HUBS, IDC_RECENTS>, 
+class RecentsFrame : public MDITabChildWindowImpl<RecentsFrame>, public StaticFrame<RecentsFrame, ResourceManager::RECENT_HUBS, IDC_RECENTS>, 
 	private RecentManagerListener, private SettingsManagerListener
 {
 public:
-	typedef MDITabChildWindowImpl<RecentHubsFrame> baseClass;
+	typedef MDITabChildWindowImpl<RecentsFrame> baseClass;
 		
-	RecentHubsFrame() : closed(false) { };
-	~RecentHubsFrame() { };
+	RecentsFrame() : closed(false) { };
+	~RecentsFrame() { };
 
-	DECLARE_FRAME_WND_CLASS_EX(_T("RecentHubsFrame"), IDR_RECENTS, 0, COLOR_3DFACE);
+	DECLARE_FRAME_WND_CLASS_EX(_T("RecentsFrame"), IDR_RECENTS, 0, COLOR_3DFACE);
 		
 	void OnFinalMessage(HWND /*hWnd*/) {
 		delete this;
 	}
 
-	BEGIN_MSG_MAP(RecentHubsFrame)
+	BEGIN_MSG_MAP(RecentsFrame)
 		MESSAGE_HANDLER(WM_CREATE, onCreate)
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
@@ -99,13 +99,13 @@ private:
 	static int columnSizes[COLUMN_LAST];
 	static int columnIndexes[COLUMN_LAST];
 	
-	void updateList(const RecentHubEntryList& fl);
-	void addEntry(const RecentHubEntryPtr& entry, int pos);
+	void updateList(const RecentEntryList& fl);
+	void addEntry(const RecentEntryPtr& entry, int pos);
 
 	
-	void on(RecentManagerListener::RecentHubAdded, const RecentHubEntryPtr& entry) noexcept { addEntry(entry, ctrlHubs.GetItemCount()); }
-	void on(RecentManagerListener::RecentHubRemoved, const RecentHubEntryPtr& entry) noexcept { ctrlHubs.DeleteItem(ctrlHubs.find((LPARAM)entry.get())); }
-	void on(RecentManagerListener::RecentHubUpdated, const RecentHubEntryPtr& entry) noexcept;
+	void on(RecentManagerListener::RecentAdded, const RecentEntryPtr& entry) noexcept { addEntry(entry, ctrlHubs.GetItemCount()); }
+	void on(RecentManagerListener::RecentRemoved, const RecentEntryPtr& entry) noexcept { ctrlHubs.DeleteItem(ctrlHubs.find((LPARAM)entry.get())); }
+	void on(RecentManagerListener::RecentUpdated, const RecentEntryPtr& entry) noexcept;
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 };

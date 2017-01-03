@@ -16,7 +16,7 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <api/RecentHubApi.h>
+#include <api/RecentApi.h>
 #include <api/common/Serializer.h>
 
 #include <web-server/JsonUtil.h>
@@ -24,15 +24,15 @@
 #include <airdcpp/RecentManager.h>
 
 namespace webserver {
-	RecentHubApi::RecentHubApi(Session* aSession) : ApiModule(aSession) {
-		METHOD_HANDLER("hubs", Access::HUBS_VIEW, ApiRequest::METHOD_GET, (NUM_PARAM, NUM_PARAM), false, RecentHubApi::handleGetHubs);
-		METHOD_HANDLER("search", Access::HUBS_VIEW, ApiRequest::METHOD_POST, (), true, RecentHubApi::handleSearchHubs);
+	RecentApi::RecentApi(Session* aSession) : ApiModule(aSession) {
+		METHOD_HANDLER("hubs", Access::HUBS_VIEW, ApiRequest::METHOD_GET, (NUM_PARAM, NUM_PARAM), false, RecentApi::handleGetHubs);
+		METHOD_HANDLER("search", Access::HUBS_VIEW, ApiRequest::METHOD_POST, (), true, RecentApi::handleSearchHubs);
 	}
 
-	RecentHubApi::~RecentHubApi() {
+	RecentApi::~RecentApi() {
 	}
 
-	json RecentHubApi::serializeHub(const RecentHubEntryPtr& aHub) noexcept {
+	json RecentApi::serializeHub(const RecentEntryPtr& aHub) noexcept {
 		return {
 			{ "name", aHub->getName()},
 			{ "description", aHub->getDescription() },
@@ -40,13 +40,13 @@ namespace webserver {
 		};
 	}
 
-	api_return RecentHubApi::handleSearchHubs(ApiRequest& aRequest) {
+	api_return RecentApi::handleSearchHubs(ApiRequest& aRequest) {
 		const auto& reqJson = aRequest.getRequestBody();
 
 		auto pattern = JsonUtil::getField<string>("pattern", reqJson);
 		auto maxResults = JsonUtil::getField<size_t>("max_results", reqJson);
 
-		auto hubs = RecentManager::getInstance()->searchRecentHubs(pattern, maxResults);
+		auto hubs = RecentManager::getInstance()->searchRecents(pattern, maxResults);
 
 		auto retJson = json::array();
 		for (const auto& h : hubs) {
@@ -57,8 +57,8 @@ namespace webserver {
 		return websocketpp::http::status_code::ok;
 	}
 
-	api_return RecentHubApi::handleGetHubs(ApiRequest& aRequest) {
-		auto hubs = RecentManager::getInstance()->getRecentHubs();
+	api_return RecentApi::handleGetHubs(ApiRequest& aRequest) {
+		auto hubs = RecentManager::getInstance()->getRecents();
 
 		auto retJson = Serializer::serializeFromPosition(aRequest.getRangeParam(0), aRequest.getRangeParam(1), hubs, serializeHub);
 		aRequest.setResponseBody(retJson);

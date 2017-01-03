@@ -31,29 +31,29 @@ namespace dcpp {
 	{
 	public:
 		// Recent Hubs
-		RecentHubEntryList getRecentHubs() noexcept {  RLock l(cs); return recentHubs; };
+		RecentEntryList getRecents() noexcept {  RLock l(cs); return recents; };
 
-		void addRecentHub(const string& aEntry) noexcept;
-		void removeRecentHub(const string& aEntry) noexcept;
-		void updateRecentHub(const ClientPtr& aClient) noexcept;
+		void addRecent(const string& aEntry) noexcept;
+		void removeRecent(const string& aEntry) noexcept;
+		void updateRecent(const ClientPtr& aClient) noexcept;
 
-		RecentHubEntryPtr getRecentHubEntry(const string& aServer) const noexcept;
-		RecentHubEntryList searchRecentHubs(const string& aPattern, size_t aMaxResults) const noexcept;
+		RecentEntryPtr getRecentEntry(const string& aServer) const noexcept;
+		RecentEntryList searchRecents(const string& aPattern, size_t aMaxResults) const noexcept;
 
-		void clearRecentHubs() noexcept;
-		void saveRecentHubs() const noexcept;
+		void clearRecents() noexcept;
+		void saveRecents() const noexcept;
 
 		void load() noexcept;
 
 		mutable SharedMutex cs;
 	private:
-		RecentHubEntryList recentHubs;
+		RecentEntryList recents;
 		friend class Singleton<RecentManager>;
 
 		RecentManager();
 		~RecentManager();
 
-		void loadRecentHubs(SimpleXML& aXml);
+		void loadRecents(SimpleXML& aXml);
 	};
 
 } // namespace dcpp

@@ -43,49 +43,49 @@ RecentManager::~RecentManager() {
 
 }
 
-void RecentManager::clearRecentHubs() noexcept {
+void RecentManager::clearRecents() noexcept {
 	{
 		WLock l(cs);
-		recentHubs.clear();
+		recents.clear();
 	}
 
-	saveRecentHubs();
+	saveRecents();
 }
 
 
-void RecentManager::addRecentHub(const string& aUrl) noexcept {
+void RecentManager::addRecent(const string& aUrl) noexcept {
 	
-	RecentHubEntryPtr r = getRecentHubEntry(aUrl);
+	RecentEntryPtr r = getRecentEntry(aUrl);
 	if (r)
 		return;
 
 	{
 		WLock l(cs);
-		r = new RecentHubEntry(aUrl);
-		recentHubs.push_back(r);
+		r = new RecentEntry(aUrl);
+		recents.push_back(r);
 	}
 
-	fire(RecentManagerListener::RecentHubAdded(), r);
-	saveRecentHubs();
+	fire(RecentManagerListener::RecentAdded(), r);
+	saveRecents();
 }
 
-void RecentManager::removeRecentHub(const string& aUrl) noexcept {
-	RecentHubEntryPtr r = nullptr;
+void RecentManager::removeRecent(const string& aUrl) noexcept {
+	RecentEntryPtr r = nullptr;
 	{
 		WLock l(cs);
-		auto i = find_if(recentHubs, [&aUrl](const RecentHubEntryPtr& rhe) { return Util::stricmp(rhe->getUrl(), aUrl) == 0; });
-		if (i == recentHubs.end()) {
+		auto i = find_if(recents, [&aUrl](const RecentEntryPtr& rhe) { return Util::stricmp(rhe->getUrl(), aUrl) == 0; });
+		if (i == recents.end()) {
 			return;
 		}
 		r = *i;
-		recentHubs.erase(i);
+		recents.erase(i);
 	}
-	fire(RecentManagerListener::RecentHubRemoved(), r);
-	saveRecentHubs();
+	fire(RecentManagerListener::RecentRemoved(), r);
+	saveRecents();
 }
 
-void RecentManager::updateRecentHub(const ClientPtr& aClient) noexcept {
-	RecentHubEntryPtr r = getRecentHubEntry(aClient->getHubUrl());
+void RecentManager::updateRecent(const ClientPtr& aClient) noexcept {
+	RecentEntryPtr r = getRecentEntry(aClient->getHubUrl());
 	if (!r)
 		return;
 
@@ -95,11 +95,11 @@ void RecentManager::updateRecentHub(const ClientPtr& aClient) noexcept {
 		r->setDescription(aClient->getHubDescription());
 	}
 
-	fire(RecentManagerListener::RecentHubUpdated(), r);
-	saveRecentHubs();
+	fire(RecentManagerListener::RecentUpdated(), r);
+	saveRecents();
 }
 
-void RecentManager::saveRecentHubs() const noexcept {
+void RecentManager::saveRecents() const noexcept {
 	SimpleXML xml;
 
 	xml.addTag("Recents");
@@ -110,7 +110,7 @@ void RecentManager::saveRecentHubs() const noexcept {
 
 	{
 		RLock l(cs);
-		for (const auto& rhe : recentHubs) {
+		for (const auto& rhe : recents) {
 			xml.addTag("Hub");
 			xml.addChildAttrib("Name", rhe->getName());
 			xml.addChildAttrib("Description", rhe->getDescription());
@@ -130,7 +130,7 @@ void RecentManager::load() noexcept {
 		SettingsManager::loadSettingFile(xml, CONFIG_DIR, CONFIG_RECENTS_NAME);
 		if (xml.findChild("Recents")) {
 			xml.stepIn();
-			loadRecentHubs(xml);
+			loadRecents(xml);
 			xml.stepOut();
 		}
 	} catch (const Exception& e) {
@@ -138,37 +138,37 @@ void RecentManager::load() noexcept {
 	}
 }
 
-void RecentManager::loadRecentHubs(SimpleXML& aXml) {
+void RecentManager::loadRecents(SimpleXML& aXml) {
 	aXml.resetCurrentChild();
 	if (aXml.findChild("Hubs")) {
 		aXml.stepIn();
 		while (aXml.findChild("Hub")) {
-			RecentHubEntryPtr e = new RecentHubEntry(aXml.getChildAttrib("Server"));
+			RecentEntryPtr e = new RecentEntry(aXml.getChildAttrib("Server"));
 			e->setName(aXml.getChildAttrib("Name"));
 			e->setDescription(aXml.getChildAttrib("Description"));
-			recentHubs.push_back(e);
+			recents.push_back(e);
 		}
 		aXml.stepOut();
 	}
 }
 
-RecentHubEntryPtr RecentManager::getRecentHubEntry(const string& aServer) const noexcept {
+RecentEntryPtr RecentManager::getRecentEntry(const string& aServer) const noexcept {
 	RLock l(cs);
-	auto i = find_if(recentHubs, [&aServer](const RecentHubEntryPtr& rhe) { return Util::stricmp(rhe->getUrl(), aServer) == 0; });
-	if (i != recentHubs.end())
+	auto i = find_if(recents, [&aServer](const RecentEntryPtr& rhe) { return Util::stricmp(rhe->getUrl(), aServer) == 0; });
+	if (i != recents.end())
 		return *i;
 
 	return nullptr;
 }
 
-RecentHubEntryList RecentManager::searchRecentHubs(const string& aPattern, size_t aMaxResults) const noexcept {
-	auto search = RelevanceSearch<RecentHubEntryPtr>(aPattern, [](const RecentHubEntryPtr& aHub) {
+RecentEntryList RecentManager::searchRecents(const string& aPattern, size_t aMaxResults) const noexcept {
+	auto search = RelevanceSearch<RecentEntryPtr>(aPattern, [](const RecentEntryPtr& aHub) {
 		return aHub->getName();
 	});
 
 	{
 		RLock l(cs);
-		for (const auto& hub : recentHubs) {
+		for (const auto& hub : recents) {
 			search.match(hub);
 		}
 	}

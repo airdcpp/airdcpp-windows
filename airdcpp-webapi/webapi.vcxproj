@@ -203,7 +203,7 @@
     <ClInclude Include="api\QueueApi.h" />
     <ClInclude Include="api\QueueFileUtils.h" />
     <ClInclude Include="api\QueueBundleUtils.h" />
-    <ClInclude Include="api\RecentHubApi.h" />
+    <ClInclude Include="api\RecentApi.h" />
     <ClInclude Include="api\SearchApi.h" />
     <ClInclude Include="api\SearchResultInfo.h" />
     <ClInclude Include="api\SearchUtils.h" />

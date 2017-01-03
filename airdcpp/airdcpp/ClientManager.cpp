@@ -87,7 +87,7 @@ ClientPtr ClientManager::createClient(const string& aUrl) noexcept {
 
 	c->addListener(this);
 
-	RecentManager::getInstance()->addRecentHub(aUrl);
+	RecentManager::getInstance()->addRecent(aUrl);
 	fire(ClientManagerListener::ClientCreated(), c);
 	return c;
 }
@@ -143,7 +143,7 @@ bool ClientManager::putClient(ClientPtr& aClient) noexcept {
 	fire(ClientManagerListener::ClientDisconnected(), aClient->getHubUrl());
 	fire(ClientManagerListener::ClientRemoved(), aClient);
 
-	RecentManager::getInstance()->updateRecentHub(aClient);
+	RecentManager::getInstance()->updateRecent(aClient);
 
 	aClient->disconnect(true);
 	aClient->shutdown(aClient, false);
@@ -180,7 +180,7 @@ ClientPtr ClientManager::redirect(const string& aHubUrl, const string& aNewUrl) 
 
 	newClient->addListener(this);
 
-	RecentManager::getInstance()->addRecentHub(aNewUrl);
+	RecentManager::getInstance()->addRecent(aNewUrl);
 	fire(ClientManagerListener::ClientRedirected(), oldClient, newClient);
 	
 	return newClient;
@@ -1279,7 +1279,7 @@ void ClientManager::on(HubUpdated, const Client* aClient) noexcept {
 	auto c = getClient(aClient->getHubUrl());
 	if (c) {
 		fire(ClientManagerListener::ClientUpdated(), c);
-		RecentManager::getInstance()->updateRecentHub(c);
+		RecentManager::getInstance()->updateRecent(c);
 	}
 }
 

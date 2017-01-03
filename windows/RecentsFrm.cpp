@@ -25,12 +25,12 @@
 
 #include <airdcpp/RecentManager.h>
 
-int RecentHubsFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_DESCRIPTION, COLUMN_SERVER };
-int RecentHubsFrame::columnSizes[] = { 200, 290, 100 };
+int RecentsFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_DESCRIPTION, COLUMN_SERVER };
+int RecentsFrame::columnSizes[] = { 200, 290, 100 };
 static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::DESCRIPTION, ResourceManager::HUB_ADDRESS
 };
 
-LRESULT RecentHubsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+LRESULT RecentsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	ctrlHubs.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_SHOWSELALWAYS, WS_EX_CLIENTEDGE, IDC_RECENTS);
 	
@@ -68,7 +68,7 @@ LRESULT RecentHubsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 
 	RecentManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
-	updateList(RecentManager::getInstance()->getRecentHubs());
+	updateList(RecentManager::getInstance()->getRecents());
 	
 	hubsMenu.CreatePopupMenu();
 	hubsMenu.AppendMenu(MF_STRING, IDC_CONNECT, CTSTRING(CONNECT));
@@ -83,30 +83,30 @@ LRESULT RecentHubsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	return TRUE;
 }
 
-LRESULT RecentHubsFrame::onDoubleClickHublist(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
+LRESULT RecentsFrame::onDoubleClickHublist(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
 	connectSelected();
 	return 0;
 }
 
-LRESULT RecentHubsFrame::onEnter(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHandled*/) {
+LRESULT RecentsFrame::onEnter(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHandled*/) {
 	connectSelected();
 	return 0;
 }
 
-LRESULT RecentHubsFrame::onClickedConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT RecentsFrame::onClickedConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	connectSelected();
 	return 0;
 }
 
-void RecentHubsFrame::connectSelected() {
+void RecentsFrame::connectSelected() {
 	int i = -1;
 	while ((i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		auto r = RecentManager::getInstance()->getRecentHubEntry(((RecentHubEntry*) ctrlHubs.GetItemData(i))->getUrl());
+		auto r = RecentManager::getInstance()->getRecentEntry(((RecentEntry*) ctrlHubs.GetItemData(i))->getUrl());
 		WinUtil::connectHub(r->getUrl());
 	}
 }
 
-LRESULT RecentHubsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL & /*bHandled*/) {
+LRESULT RecentsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL & /*bHandled*/) {
 	if (reinterpret_cast<HWND>(wParam) == ctrlHubs && ctrlHubs.GetSelectedCount() > 0) {
 		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };        // location of mouse click 
 
@@ -128,12 +128,12 @@ LRESULT RecentHubsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 	return FALSE;
 }
 
-LRESULT RecentHubsFrame::onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/) {
+LRESULT RecentsFrame::onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/) {
 	ctrlHubs.SetFocus();
 	return 0;
 }
 
-LRESULT RecentHubsFrame::onColumnClickHublist(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bHandled*/) {
+LRESULT RecentsFrame::onColumnClickHublist(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bHandled*/) {
 	NMLISTVIEW* l = (NMLISTVIEW*) pnmh;
 	if (l->iSubItem == ctrlHubs.getSortColumn()) {
 		if (!ctrlHubs.isAscending())
@@ -146,7 +146,7 @@ LRESULT RecentHubsFrame::onColumnClickHublist(int /*idCtrl*/, LPNMHDR pnmh, BOOL
 	return 0;
 }
 
-void RecentHubsFrame::updateList(const RecentHubEntryList& fl) {
+void RecentsFrame::updateList(const RecentEntryList& fl) {
 	ctrlHubs.SetRedraw(FALSE);
 	for (const auto& i : fl) {
 		addEntry(i, ctrlHubs.GetItemCount());
@@ -155,7 +155,7 @@ void RecentHubsFrame::updateList(const RecentHubEntryList& fl) {
 	ctrlHubs.Invalidate();
 }
 
-void RecentHubsFrame::addEntry(const RecentHubEntryPtr& entry, int pos) {
+void RecentsFrame::addEntry(const RecentEntryPtr& entry, int pos) {
 	TStringList l;
 	l.push_back(Text::toT(entry->getName()));
 	l.push_back(Text::toT(entry->getDescription()));
@@ -164,19 +164,19 @@ void RecentHubsFrame::addEntry(const RecentHubEntryPtr& entry, int pos) {
 	ctrlHubs.insert(pos, l, 0, (LPARAM) entry.get());
 }
 
-LRESULT RecentHubsFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bHandled*/) {
+LRESULT RecentsFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bHandled*/) {
 	NMLVKEYDOWN* kd = (NMLVKEYDOWN*) pnmh;
 	if (kd->wVKey == VK_DELETE) {
 		int i = -1;
 		while ((i = ctrlHubs.GetNextItem(-1, LVNI_SELECTED)) != -1) {
-			auto r = (RecentHubEntry*)ctrlHubs.GetItemData(i);
-			RecentManager::getInstance()->removeRecentHub(r->getUrl());
+			auto r = (RecentEntry*)ctrlHubs.GetItemData(i);
+			RecentManager::getInstance()->removeRecent(r->getUrl());
 		}
 	}
 	return 0;
 }
 
-LRESULT RecentHubsFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT RecentsFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	TCHAR buf[256];
 	
 	if(ctrlHubs.GetSelectedCount() == 1) {
@@ -196,22 +196,22 @@ LRESULT RecentHubsFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	return 0;
 }
 
-LRESULT RecentHubsFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT RecentsFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	int i = -1;
 	while( (i = ctrlHubs.GetNextItem(-1, LVNI_SELECTED)) != -1) {
-		auto r = (RecentHubEntry*)ctrlHubs.GetItemData(i);
-		RecentManager::getInstance()->removeRecentHub(r->getUrl());
+		auto r = (RecentEntry*)ctrlHubs.GetItemData(i);
+		RecentManager::getInstance()->removeRecent(r->getUrl());
 	}
 	return 0;
 }
 
-LRESULT RecentHubsFrame::onRemoveAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT RecentsFrame::onRemoveAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	ctrlHubs.DeleteAllItems();
-	RecentManager::getInstance()->clearRecentHubs();
+	RecentManager::getInstance()->clearRecents();
 	return 0;
 }
 
-LRESULT RecentHubsFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+LRESULT RecentsFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closed) {
 		RecentManager::getInstance()->removeListener(this);
 		SettingsManager::getInstance()->removeListener(this);
@@ -228,7 +228,7 @@ LRESULT RecentHubsFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	}	
 }
 
-void RecentHubsFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
+void RecentsFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	RECT rect;
 	GetClientRect(&rect);
 	// position bars and offset their dimensions
@@ -256,11 +256,11 @@ void RecentHubsFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	ctrlRemoveAll.MoveWindow(rc);
 }
 
-LRESULT RecentHubsFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT RecentsFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	int i = -1;
 	if((i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1)
 	{
-		auto r = RecentManager::getInstance()->getRecentHubEntry(((RecentHubEntry*)ctrlHubs.GetItemData(i))->getUrl());
+		auto r = RecentManager::getInstance()->getRecentEntry(((RecentEntry*)ctrlHubs.GetItemData(i))->getUrl());
 		dcassert(r != NULL);
 		LineDlg dlg;
 		dlg.description = TSTRING(DESCRIPTION);
@@ -269,13 +269,13 @@ LRESULT RecentHubsFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 		if(dlg.DoModal(m_hWnd) == IDOK) {
 			r->setDescription(Text::fromT(dlg.line));
 			ctrlHubs.SetItemText(i, COLUMN_DESCRIPTION, Text::toT(r->getDescription()).c_str());
-			RecentManager::getInstance()->saveRecentHubs();
+			RecentManager::getInstance()->saveRecents();
 		}
 	}
 	return 0;
 }
 
-void RecentHubsFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
+void RecentsFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
 	bool refresh = false;
 	if(ctrlHubs.GetBkColor() != WinUtil::bgColor) {
 		ctrlHubs.SetBkColor(WinUtil::bgColor);
@@ -298,7 +298,7 @@ void RecentHubsFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noex
 }
 
 
-LRESULT RecentHubsFrame::onItemchangedDirectories(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
+LRESULT RecentsFrame::onItemchangedDirectories(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 {
 	NM_LISTVIEW* lv = (NM_LISTVIEW*) pnmh;
 	::EnableWindow(GetDlgItem(IDC_CONNECT), (lv->uNewState & LVIS_FOCUSED));
@@ -306,7 +306,7 @@ LRESULT RecentHubsFrame::onItemchangedDirectories(int /*idCtrl*/, LPNMHDR pnmh, 
 	return 0;
 }
 
-void RecentHubsFrame::on(RecentManagerListener::RecentHubUpdated, const RecentHubEntryPtr& entry) noexcept {
+void RecentsFrame::on(RecentManagerListener::RecentUpdated, const RecentEntryPtr& entry) noexcept {
 	int i = -1;
 	if ((i = ctrlHubs.find((LPARAM)entry.get())) != -1) {
 		ctrlHubs.SetItemText(i, COLUMN_NAME, Text::toT(entry->getName()).c_str());

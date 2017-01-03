@@ -121,9 +121,9 @@ class QueueItem;
 typedef boost::intrusive_ptr<QueueItem> QueueItemPtr;
 typedef std::vector<QueueItemPtr> QueueItemList;
 
-class RecentHubEntry;
-typedef boost::intrusive_ptr<RecentHubEntry> RecentHubEntryPtr;
-typedef std::vector<RecentHubEntryPtr> RecentHubEntryList;
+class RecentEntry;
+typedef boost::intrusive_ptr<RecentEntry> RecentEntryPtr;
+typedef std::vector<RecentEntryPtr> RecentEntryList;
 
 class Search;
 typedef shared_ptr<Search> SearchPtr;

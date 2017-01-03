@@ -28,13 +28,13 @@ namespace dcpp {
 		virtual ~RecentManagerListener() { }
 		template<int I>	struct X { enum { TYPE = I }; };
 
-		typedef X<0> RecentHubAdded;
-		typedef X<1> RecentHubRemoved;
-		typedef X<2> RecentHubUpdated;
+		typedef X<0> RecentAdded;
+		typedef X<1> RecentRemoved;
+		typedef X<2> RecentUpdated;
 
-		virtual void on(RecentHubAdded, const RecentHubEntryPtr&) noexcept {}
-		virtual void on(RecentHubRemoved, const RecentHubEntryPtr&) noexcept {}
-		virtual void on(RecentHubUpdated, const RecentHubEntryPtr&) noexcept {}
+		virtual void on(RecentAdded, const RecentEntryPtr&) noexcept {}
+		virtual void on(RecentRemoved, const RecentEntryPtr&) noexcept {}
+		virtual void on(RecentUpdated, const RecentEntryPtr&) noexcept {}
 	};
 
 } // namespace dcpp
