@@ -558,15 +558,9 @@ int64_t DirectoryListing::getDirSize(const string& aDir) const noexcept {
 	return 0;
 }
 
-bool DirectoryListing::viewAsText(const File::Ptr& aFile) const noexcept {
+ViewFilePtr DirectoryListing::viewAsText(const File::Ptr& aFile) const noexcept {
 	if (isOwnList) {
-		StringList paths;
-		getLocalPaths(aFile, paths);
-		if (!paths.empty()) {
-			return ViewFileManager::getInstance()->addLocalFile(paths.front(), aFile->getTTH(), true);
-		}
-
-		return false;
+		return ViewFileManager::getInstance()->addLocalFile(aFile->getTTH(), true);
 	}
 
 	return ViewFileManager::getInstance()->addUserFileNotify(aFile->getName(), aFile->getSize(), aFile->getTTH(), hintedUser, true);

@@ -171,7 +171,7 @@ public:
 
 	optional<DirectoryBundleAddInfo> createBundle(const Directory::Ptr& aDir, const string& aTarget, Priority aPrio, string& errorMsg_) noexcept;
 
-	bool viewAsText(const File::Ptr& aFile) const noexcept;
+	ViewFilePtr viewAsText(const File::Ptr& aFile) const noexcept;
 
 	int64_t getTotalListSize(bool adls = false) const noexcept { return root->getTotalSize(adls); }
 	int64_t getDirSize(const string& aDir) const noexcept;
