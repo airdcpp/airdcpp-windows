@@ -46,17 +46,17 @@ namespace webserver {
 	api_return EventApi::handlePostMessage(ApiRequest& aRequest) {
 		auto message = Deserializer::deserializeStatusMessage(aRequest.getRequestBody());
 		LogManager::getInstance()->message(message.first, message.second);
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return EventApi::handleRead(ApiRequest& aRequest) {
 		LogManager::getInstance()->setRead();
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return EventApi::handleClear(ApiRequest& aRequest) {
 		LogManager::getInstance()->clearCache();
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return EventApi::handleGetLog(ApiRequest& aRequest) {

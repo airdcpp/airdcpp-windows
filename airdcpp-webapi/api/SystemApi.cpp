@@ -81,12 +81,12 @@ namespace webserver {
 
 	api_return SystemApi::handleRestartWeb(ApiRequest& aRequest) {
 		systemActionThread = make_shared<SystemActionThread>(systemActionThread, false);
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return SystemApi::handleShutdown(ApiRequest& aRequest) {
 		systemActionThread = make_shared<SystemActionThread>(systemActionThread, true);
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	void SystemApi::on(ActivityManagerListener::AwayModeChanged, AwayMode /*aNewMode*/) noexcept {
@@ -184,6 +184,7 @@ namespace webserver {
 		auto away = JsonUtil::getField<bool>("away", aRequest.getRequestBody());
 		ActivityManager::getInstance()->setAway(away ? AWAY_MANUAL : AWAY_OFF);
 
+		aRequest.setResponseBody(serializeAwayState());
 		return websocketpp::http::status_code::ok;
 	}
 

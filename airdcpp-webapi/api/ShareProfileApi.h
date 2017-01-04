@@ -44,7 +44,9 @@ namespace webserver {
 		api_return handleAddProfile(ApiRequest& aRequest);
 		api_return handleUpdateProfile(ApiRequest& aRequest);
 		api_return handleRemoveProfile(ApiRequest& aRequest);
-		api_return handleDefaultProfile(ApiRequest& aRequest);
+
+		api_return handleGetDefaultProfile(ApiRequest& aRequest);
+		api_return handleSetDefaultProfile(ApiRequest& aRequest);
 
 		void parseProfile(ShareProfilePtr& aProfile, const json& j);
 

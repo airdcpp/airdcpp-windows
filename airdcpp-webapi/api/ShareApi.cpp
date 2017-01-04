@@ -68,7 +68,7 @@ namespace webserver {
 			return websocketpp::http::status_code::bad_request;
 		}
 
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return ShareApi::handleRemoveExclude(ApiRequest& aRequest) {
@@ -78,7 +78,7 @@ namespace webserver {
 			return websocketpp::http::status_code::bad_request;
 		}
 
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	void ShareApi::on(ShareManagerListener::ExcludeAdded, const string& aPath) noexcept {
@@ -98,7 +98,7 @@ namespace webserver {
 		ShareManager::getInstance()->refresh(incoming);
 
 		//aRequest.setResponseBody(j);
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return ShareApi::handleRefreshPaths(ApiRequest& aRequest) {
@@ -110,7 +110,7 @@ namespace webserver {
 			return websocketpp::http::status_code::bad_request;
 		}
 
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return ShareApi::handleRefreshVirtual(ApiRequest& aRequest) {
@@ -125,7 +125,7 @@ namespace webserver {
 		}
 
 		ShareManager::getInstance()->refreshPaths(refreshPaths);
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return ShareApi::handleGetStats(ApiRequest& aRequest) {
