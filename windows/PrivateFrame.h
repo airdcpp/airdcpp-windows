@@ -38,7 +38,7 @@ private PrivateChatListener, public UCHandler<PrivateFrame>, private SettingsMan
 public:
 	static void openWindow(const HintedUser& replyTo, bool aMessageReceived = false);
 	
-	static bool saveWindow(HWND hWnd, StringMap& params) {
+	static bool getWindowParams(HWND hWnd, StringMap& params) {
 		auto f = find_if(frames | map_values, [hWnd](PrivateFrame* h) { return hWnd == h->m_hWnd; }).base();
 		if (f != frames.end()) {
 			params["id"] = PrivateFrame::id;

@@ -66,7 +66,7 @@ class DirectoryListingFrame : public MDITabChildWindowImpl<DirectoryListingFrame
 public:
 	static void openWindow(const DirectoryListingPtr& aList, const string& aDir, const string& aXML);
 	static void closeAll();
-	static bool saveWindow(HWND hWnd, StringMap &params) {
+	static bool getWindowParams(HWND hWnd, StringMap &params) {
 		auto f = frames.find(hWnd);
 		if (f != frames.end()) {
 			params["id"] = DirectoryListingFrame::id;

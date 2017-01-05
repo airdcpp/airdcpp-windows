@@ -54,7 +54,7 @@ class SearchFrame : public MDITabChildWindowImpl<SearchFrame>,
 public:
 	static void openWindow(const tstring& str = Util::emptyStringW, LONGLONG size = 0, Search::SizeModes mode = Search::SIZE_ATLEAST, const string& type = SEARCH_TYPE_ANY);
 	static void closeAll();
-	static bool saveWindow(HWND hWnd, StringMap& /*params*/) {
+	static bool getWindowParams(HWND hWnd, StringMap& /*params*/) {
 		auto f = frames.find(hWnd);
 		if (f != frames.end()) {
 			//params["id] = SearchFrame::id;

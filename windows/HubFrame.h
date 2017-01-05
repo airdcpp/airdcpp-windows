@@ -170,7 +170,7 @@ public:
 	static void closeDisconnected();
 	static void reconnectDisconnected();
 	static void updateFonts();
-	static bool saveWindow(HWND hWnd, StringMap& params) {
+	static bool getWindowParams(HWND hWnd, StringMap& params) {
 		auto f = find_if(frames | map_values, [hWnd](const HubFrame* h) { return hWnd == h->m_hWnd; }).base();
 		if (f != frames.end()) {
 			params["id"] = HubFrame::id;

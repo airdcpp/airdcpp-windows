@@ -93,7 +93,7 @@ public:
 		return (hWnd == wnd);
 	}
 
-	static bool saveWindow(HWND hWnd, StringMap& params) {
+	static bool getWindowParams(HWND hWnd, StringMap& params) {
 		if (frame != NULL && hWnd == frame->m_hWnd) {
 			params["id"] = T::id;
 			return true;

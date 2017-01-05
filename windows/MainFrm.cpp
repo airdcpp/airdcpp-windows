@@ -1334,7 +1334,7 @@ void MainFrame::saveOpenWindows() {
 	xml.addTag("Frames");
 	xml.stepIn();
 
-#define save(frame) else if(frame::saveWindow(t, params)) writeParams(xml, params);
+#define save(frame) else if(frame::getWindowParams(t, params)) writeParams(xml, params);
 
 	auto writeParams = [&](SimpleXML& xml, StringMap& params) {
 		xml.addTag("Window");

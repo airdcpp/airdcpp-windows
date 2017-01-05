@@ -43,7 +43,7 @@ public:
 	static void openWindow(const string& aFilePath, Type aType);
 	static void openWindow(const tstring& aTitle, const tstring& aText, Type aType);
 	static void openWindow(const ViewFilePtr& aFile);
-	static bool saveWindow(HWND hWnd, StringMap&/*params*/) {
+	static bool getWindowParams(HWND hWnd, StringMap&/*params*/) {
 		auto f = frames.find(hWnd);
 		if (f != frames.end()) {
 			//params["id"] = TextFrame::id;
