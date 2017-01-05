@@ -69,11 +69,7 @@ namespace webserver {
 	}
 
 	api_return PrivateChatApi::handleDeleteChat(ApiRequest& aRequest) {
-		auto chat = getSubModule(aRequest.getStringParam(0));
-		if (!chat) {
-			aRequest.setResponseErrorStr("Chat session not found");
-			return websocketpp::http::status_code::not_found;
-		}
+		auto chat = getSubModule(aRequest);
 
 		MessageManager::getInstance()->removeChat(chat->getChat()->getUser());
 		return websocketpp::http::status_code::ok;

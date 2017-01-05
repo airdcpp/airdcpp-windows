@@ -141,7 +141,7 @@ namespace webserver {
 			auto slots = aResult->getSlots();
 			return SearchResult::formatSlots(slots.free, slots.total);
 		}
-		case PROP_TTH: return aResult->getTTH().toBase32();
+		case PROP_TTH: return aResult->isDirectory() ? Util::emptyString : aResult->getTTH().toBase32();
 		default: dcassert(0); return Util::emptyString;
 		}
 	}

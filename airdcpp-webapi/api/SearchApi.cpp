@@ -73,8 +73,9 @@ namespace webserver {
 	void SearchApi::onTimer() noexcept {
 		vector<SearchInstanceToken> expiredIds;
 		forEachSubModule([&](const SearchEntity& aInstance) {
-			if (aInstance.getExpirationTick() > 0 && aInstance.getExpirationTick() > GET_TICK()) {
+			if (aInstance.getExpirationTick() > 0 && GET_TICK() > aInstance.getExpirationTick()) {
 				expiredIds.push_back(aInstance.getId());
+				dcdebug("Removing an expired search instance (expiration: " U64_FMT ", now: " U64_FMT ")\n", aInstance.getExpirationTick(), GET_TICK());
 			}
 		});
 
@@ -86,7 +87,7 @@ namespace webserver {
 	json SearchApi::serializeSearchInstance(const SearchEntity& aSearch) noexcept {
 		return {
 			{ "id", aSearch.getId() },
-			{ "expiration", aSearch.getExpirationTick() - GET_TICK() },
+			{ "expiration", static_cast<int64_t>(aSearch.getExpirationTick()) - static_cast<int64_t>(GET_TICK()) },
 		};
 	}
 
@@ -108,7 +109,7 @@ namespace webserver {
 	}
 
 	api_return SearchApi::handleDeleteInstance(ApiRequest& aRequest) {
-		auto instance = getSubModule(aRequest.getStringParam(0));
+		auto instance = getSubModule(aRequest);
 		removeSubModule(instance->getId());
 
 		return websocketpp::http::status_code::no_content;
