@@ -114,11 +114,7 @@ namespace webserver {
 	}
 
 	api_return FilelistApi::handleDeleteList(ApiRequest& aRequest) {
-		auto list = getSubModule(aRequest.getStringParam(0));
-		if (!list) {
-			aRequest.setResponseErrorStr("List not found");
-			return websocketpp::http::status_code::not_found;
-		}
+		auto list = getSubModule(aRequest);
 
 		DirectoryListingManager::getInstance()->removeList(list->getList()->getUser());
 		return websocketpp::http::status_code::ok;

@@ -78,8 +78,7 @@ void Client::shutdown(ClientPtr& aClient, bool aRedirect) {
 	}
 
 	if(sock) {
-		BufferedSocket::putSocket(sock, [=] { // Ensure that the pointer won't be deleted too early
-			state = STATE_DISCONNECTED;
+		destroySocket([=] { // Ensure that the pointer won't be deleted too early
 			if (!aRedirect) {
 				cache.clear();
 			}
@@ -187,10 +186,17 @@ bool Client::isActiveV6() const noexcept {
 	return !v4only() && get(HubSettings::Connection6) != SettingsManager::INCOMING_PASSIVE && get(HubSettings::Connection6) != SettingsManager::INCOMING_DISABLED;
 }
 
+void Client::destroySocket(const AsyncF& aShutdownAction) noexcept {
+	auto socket = sock;
+	state = STATE_DISCONNECTED;
+	sock = nullptr;
+
+	BufferedSocket::putSocket(socket, aShutdownAction);
+}
+
 void Client::connect(bool withKeyprint) noexcept {
 	if (sock) {
-		BufferedSocket::putSocket(sock);
-		sock = 0;
+		destroySocket();
 	}
 
 	redirectUrl = Util::emptyString;

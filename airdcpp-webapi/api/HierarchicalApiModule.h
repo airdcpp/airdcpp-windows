@@ -95,11 +95,7 @@ namespace webserver {
 
 		// Forward request to a submodule
 		api_return handleSubModuleRequest(ApiRequest& aRequest) {
-			auto sub = getSubModule(aRequest.getStringParam(0));
-			if (!sub) {
-				aRequest.setResponseErrorStr("Submodule was not found");
-				return websocketpp::http::status_code::not_found;
-			}
+			auto sub = getSubModule(aRequest);
 
 			aRequest.popParam();
 			return sub->handleRequest(aRequest);
@@ -139,7 +135,7 @@ namespace webserver {
 		}
 
 		// Submodules should NEVER be accessed outside of web server threads (e.g. API requests)
-		typename ItemType::Ptr getSubModule(IdType aId) {
+		typename ItemType::Ptr findSubModule(IdType aId) {
 			RLock l(cs);
 			auto m = subModules.find(aId);
 			if (m != subModules.end()) {
@@ -150,8 +146,18 @@ namespace webserver {
 		}
 
 		// Submodules should NEVER be accessed outside of web server threads (e.g. API requests)
-		typename ItemType::Ptr getSubModule(const string& aId) {
-			return getSubModule(idConvertF(aId));
+		typename ItemType::Ptr findSubModule(const string& aId) {
+			return findSubModule(idConvertF(aId));
+		}
+
+		// Parse module ID from the request, throws if the module was not found
+		typename ItemType::Ptr getSubModule(ApiRequest& aRequest) {
+			auto sub = findSubModule(aRequest.getStringParam(0));
+			if (!sub) {
+				throw std::invalid_argument("Entity was not found");
+			}
+
+			return sub;
 		}
 
 		api_return handleGetSubmodules(ApiRequest& aRequest) {
@@ -165,11 +171,7 @@ namespace webserver {
 		}
 
 		api_return handleGetSubmodule(ApiRequest& aRequest) {
-			auto info = getSubModule(aRequest.getStringParam(0));
-			if (!info) {
-				aRequest.setResponseErrorStr("Entity was not found");
-				return websocketpp::http::status_code::not_found;
-			}
+			auto info = getSubModule(aRequest);
 
 			aRequest.setResponseBody(childSerializeF(*info.get()));
 			return websocketpp::http::status_code::ok;
@@ -275,7 +277,7 @@ namespace webserver {
 			// Ensure that we have a session
 			SubscribableApiModule::asyncRunWrapper([=] {
 				// Ensure that we have a submodule (the parent must exist if we have a session)
-				auto m = aParentModule->getSubModule(aId);
+				auto m = aParentModule->findSubModule(aId);
 				if (!m) {
 					dcdebug("Trying to run an async task for a removed submodule\n");
 					return;

@@ -92,7 +92,7 @@ namespace webserver {
 			{ "user", Serializer::serializeHintedUser(aSR->getUser()) },
 			{ "connection", aSR->getConnectionInt() },
 			{ "time", aSR->getDate() },
-			{ "slots", Serializer::serializeSlots(aSR->getFreeSlots(), aSR->getTotalSlots()) }
+			{ "slots", Serializer::serializeSlots(aSR->getFreeSlots(), aSR->getTotalSlots()) },
 		};
 	}
 
