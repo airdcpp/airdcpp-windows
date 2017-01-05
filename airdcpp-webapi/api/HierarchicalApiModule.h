@@ -41,7 +41,14 @@ namespace webserver {
 		ParentApiModule(const string& aSubmoduleSection, const regex& aIdMatcher, Access aAccess, Session* aSession, const StringList& aSubscriptions, const StringList& aChildSubscription, IdConvertF aIdConvertF, ChildSerializeF aChildSerializeF) :
 			SubscribableApiModule(aSession, aAccess, &aSubscriptions), idConvertF(aIdConvertF), childSerializeF(aChildSerializeF) {
 
+			// Request forwarder
 			requestHandlers[aSubmoduleSection].push_back(ApiModule::RequestHandler(aIdMatcher, std::bind(&Type::handleSubModuleRequest, this, placeholders::_1)));
+
+			// Get module
+			METHOD_HANDLER(aSubmoduleSection, aAccess, ApiRequest::METHOD_GET, (aIdMatcher), false, Type::handleGetSubmodule);
+
+			// List modules
+			METHOD_HANDLER(aSubmoduleSection + "s", aAccess, ApiRequest::METHOD_GET, (), false, Type::handleGetSubmodules);
 
 			for (const auto& s: aChildSubscription) {
 				childSubscriptions.emplace(s, false);
@@ -177,7 +184,7 @@ namespace webserver {
 			}
 		}
 
-		void addSubModule(IdType aId, typename ItemType::Ptr&& aModule) {
+		void addSubModule(IdType aId, typename ItemType::Ptr& aModule) {
 			{
 				WLock l(cs);
 				subModules.emplace(aId, aModule);

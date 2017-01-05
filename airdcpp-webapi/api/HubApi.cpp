@@ -40,9 +40,6 @@ namespace webserver {
 
 		ClientManager::getInstance()->addListener(this);
 
-		METHOD_HANDLER("sessions", Access::HUBS_VIEW, ApiRequest::METHOD_GET, (), false, ParentApiModule::handleGetSubmodules);
-		METHOD_HANDLER("session", Access::HUBS_VIEW, ApiRequest::METHOD_GET, (TOKEN_PARAM), false, ParentApiModule::handleGetSubmodule);
-
 		METHOD_HANDLER("session", Access::HUBS_EDIT, ApiRequest::METHOD_POST, (), true, HubApi::handleConnect);
 		METHOD_HANDLER("session", Access::HUBS_EDIT, ApiRequest::METHOD_DELETE, (TOKEN_PARAM), false, HubApi::handleDisconnect);
 
