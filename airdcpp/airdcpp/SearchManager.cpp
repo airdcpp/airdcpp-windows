@@ -80,14 +80,14 @@ string SearchManager::normalizeWhitespace(const string& aString){
 	return normalized;
 }
 
-SearchManager::SearchQueueInfo SearchManager::search(const SearchPtr& aSearch) noexcept {
+SearchQueueInfo SearchManager::search(const SearchPtr& aSearch) noexcept {
 	StringList who;
 	ClientManager::getInstance()->getOnlineClients(who);
 
 	return search(who, aSearch);
 }
 
-SearchManager::SearchQueueInfo SearchManager::search(StringList& who, const SearchPtr& aSearch, void* aOwner /* NULL */) noexcept {
+SearchQueueInfo SearchManager::search(StringList& who, const SearchPtr& aSearch, void* aOwner /* NULL */) noexcept {
 
 	string keyStr;
 	if (SETTING(ENABLE_SUDP)) {

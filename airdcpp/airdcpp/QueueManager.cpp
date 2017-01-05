@@ -1055,7 +1055,7 @@ BundleAddInfo QueueManager::createFileBundle(const string& aTarget, int64_t aSiz
 		}
 	}
 
-	return BundleAddInfo(b, oldStatus == Bundle::STATUS_NEW);
+	return BundleAddInfo(b, oldStatus != Bundle::STATUS_NEW);
 }
 
 QueueManager::FileAddInfo QueueManager::addBundleFile(const string& aTarget, int64_t aSize, const TTHValue& aRoot, const HintedUser& aUser, Flags::MaskType aFlags /* = 0 */,
