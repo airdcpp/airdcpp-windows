@@ -37,6 +37,7 @@
 #include <airdcpp/Localization.h>
 
 PrivateFrame::FrameMap PrivateFrame::frames;
+string PrivateFrame::id = "PM";
 
 void PrivateFrame::openWindow(const HintedUser& aReplyTo, bool aMessageReceived) {
 	if (!MessageManager::getInstance()->getChat(aReplyTo)) {

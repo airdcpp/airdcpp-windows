@@ -32,6 +32,8 @@
 #include <airdcpp/DownloadManager.h>
 #include <airdcpp/ShareScannerManager.h>
 
+string QueueFrame::id = "Queue";
+
 int QueueFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_SIZE, COLUMN_TYPE, COLUMN_PRIORITY, COLUMN_STATUS, COLUMN_TIMELEFT, 
 	COLUMN_SPEED, COLUMN_SOURCES, COLUMN_DOWNLOADED, COLUMN_TIME_ADDED, COLUMN_TIME_FINISHED, COLUMN_PATH };
 

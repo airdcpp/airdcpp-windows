@@ -22,6 +22,7 @@
 #include "RecentEntry.h"
 #include "Singleton.h"
 #include "Speaker.h"
+#include "DelayedEvents.h"
 
 #include "RecentManagerListener.h"
 
@@ -49,9 +50,14 @@ namespace dcpp {
 	private:
 		RecentEntryList recents;
 		friend class Singleton<RecentManager>;
-
+		
+		enum Events {
+			SAVE = 0
+		};
 		RecentManager();
 		~RecentManager();
+
+		DelayedEvents<int> delayEvents;
 
 		void loadRecents(SimpleXML& aXml);
 	};

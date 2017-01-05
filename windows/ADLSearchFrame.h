@@ -94,6 +94,7 @@ public:
 	// Update control layouts
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	
+	static string id;
 private:
 
 	// Communication with manager

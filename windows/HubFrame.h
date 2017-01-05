@@ -170,6 +170,16 @@ public:
 	static void closeDisconnected();
 	static void reconnectDisconnected();
 	static void updateFonts();
+	static bool saveWindow(HWND hWnd, StringMap& params) {
+		auto f = find_if(frames | map_values, [hWnd](const HubFrame* h) { return hWnd == h->m_hWnd; }).base();
+		if (f != frames.end()) {
+			params["id"] = HubFrame::id;
+			params["url"] = Text::fromT(f->first);
+			return true;
+		}
+		return false;
+	}
+
 
 	void setFonts();
 
@@ -196,6 +206,7 @@ public:
 	TypedListViewCtrl<OnlineUser, IDC_USERS>& getUserList() { return ctrlUsers; }
 
 	static ResourceManager::Strings columnNames[OnlineUser::COLUMN_LAST];
+	static string id;
 private:
 	enum Tasks { UPDATE_USER_JOIN, UPDATE_USER, REMOVE_USER, ADD_SILENT_STATUS_LINE, 
 		GET_SHUTDOWN, SET_SHUTDOWN, KICK_MSG, UPDATE_TAB_ICONS, ADD_STATUS_LINE

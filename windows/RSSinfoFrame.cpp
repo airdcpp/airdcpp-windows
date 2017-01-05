@@ -31,6 +31,8 @@
 
 using boost::algorithm::all_of;
 
+string RssInfoFrame::id = "RSS";
+
 int RssInfoFrame::columnIndexes[] = { COLUMN_FILE, COLUMN_LINK, COLUMN_DATE, COLUMN_NAME };
 int RssInfoFrame::columnSizes[] = { 800, 350, 150, 150};
 static ResourceManager::Strings columnNames[] = { ResourceManager::TITLE, ResourceManager::LINK, ResourceManager::DATE, ResourceManager::FEED_NAME };

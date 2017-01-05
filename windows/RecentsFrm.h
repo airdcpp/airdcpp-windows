@@ -77,7 +77,10 @@ public:
 	LRESULT onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/);
 	LRESULT onColumnClickHublist(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bHandled*/);
 	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bHandled*/);
+
+	static string id;
 private:
+
 	void connectSelected();
 	enum {
 		COLUMN_FIRST,

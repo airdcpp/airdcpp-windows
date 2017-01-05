@@ -28,6 +28,8 @@
 
 #include <airdcpp/LogManager.h>
 
+string ADLSearchFrame::id = "ADLSearch";
+
 int ADLSearchFrame::columnIndexes[] = { 
 	COLUMN_ACTIVE_SEARCH_STRING,
 	COLUMN_SOURCE_TYPE,

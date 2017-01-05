@@ -135,8 +135,9 @@ public:
 	/* DownloadBaseHandler functions */
 	void handleDownload(const string& aTarget, Priority p, bool isRelease);
 
-private:
 
+	static string id;
+private:
 	class ItemInfo;
 	typedef TypedListViewCtrl<ItemInfo, IDC_RSS_LIST> ListBaseType;
 	typedef FilteredListViewCtrl <ListBaseType, RssInfoFrame, IDC_RSS_LIST, FLV_HAS_OPTIONS> ListType;

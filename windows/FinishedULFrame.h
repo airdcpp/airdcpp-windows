@@ -40,12 +40,14 @@ public:
 	~FinishedULFrame() { }
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("FinishedULFrame"), IDR_FINISHED_UL, 0, COLOR_3DFACE);
-		
+	static string id;
+
 private:
 
 	void on(AddedUl, FinishedItem* entry) noexcept {
 		PostMessage(WM_SPEAKER, SPEAK_ADD_LINE, (WPARAM)entry);
 	}
 };
+string FinishedULFrame::id = "FinishedUL";
 
 #endif // !defined(FINISHED_UL_FRAME_H)

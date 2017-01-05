@@ -41,7 +41,7 @@
 
 #include <boost/range/numeric.hpp>
 
-
+string SearchFrame::id = "Search";
 int SearchFrame::columnIndexes[] = { COLUMN_FILENAME, COLUMN_RELEVANCE, COLUMN_HITS, COLUMN_USERS, COLUMN_TYPE, COLUMN_SIZE,
 	COLUMN_DATE, COLUMN_PATH, COLUMN_SLOTS, COLUMN_CONNECTION, 
 	COLUMN_HUB, COLUMN_EXACT_SIZE, COLUMN_IP, COLUMN_TTH };

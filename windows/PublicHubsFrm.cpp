@@ -27,6 +27,8 @@
 #include <airdcpp/modules/HublistManager.h>
 #include <airdcpp/Localization.h>
 
+string PublicHubsFrame::id = "PublicHubs";
+
 int PublicHubsFrame::columnIndexes[] = { 
 	COLUMN_NAME,
 	COLUMN_DESCRIPTION,

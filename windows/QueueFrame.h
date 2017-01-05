@@ -122,7 +122,10 @@ public:
 	size_t getTotalListItemCount() { return curDirectory ? curDirectory->children.size() : parents.size(); }
 	void filterList();
 
+	static string id;
+
 private:
+
 	class QueueItemInfo;
 	enum {
 		COLUMN_FIRST,

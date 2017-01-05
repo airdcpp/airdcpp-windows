@@ -268,7 +268,7 @@
     <ClCompile Include="api\QueueApi.cpp" />
     <ClCompile Include="api\QueueFileUtils.cpp" />
     <ClCompile Include="api\QueueBundleUtils.cpp" />
-    <ClCompile Include="api\RecentHubApi.cpp" />
+    <ClCompile Include="api\RecentApi.cpp" />
     <ClCompile Include="api\SearchApi.cpp" />
     <ClCompile Include="api\SearchResultInfo.cpp" />
     <ClCompile Include="api\SearchUtils.cpp" />

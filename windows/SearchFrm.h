@@ -54,6 +54,15 @@ class SearchFrame : public MDITabChildWindowImpl<SearchFrame>,
 public:
 	static void openWindow(const tstring& str = Util::emptyStringW, LONGLONG size = 0, Search::SizeModes mode = Search::SIZE_ATLEAST, const string& type = SEARCH_TYPE_ANY);
 	static void closeAll();
+	static bool saveWindow(HWND hWnd, StringMap& /*params*/) {
+		auto f = frames.find(hWnd);
+		if (f != frames.end()) {
+			//params["id] = SearchFrame::id;
+			//params["str"] = Text::fromT(WinUtil::getEditText(f->second->ctrlSearch));
+			return true;
+		}
+		return false;
+	}
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("SearchFrame"), IDR_SEARCH, 0, COLOR_3DFACE)
 
@@ -224,8 +233,11 @@ public:
 	typedef TypedTreeListViewCtrl < SearchInfo, IDC_RESULTS, TTHValue, hash<TTHValue*>, equal_to < TTHValue*>, NO_GROUP_UNIQUE_CHILDREN> SearchInfoList;
 	typedef FilteredListViewCtrl<SearchInfoList, SearchFrame, IDC_RESULTS> FilteredList;
 	SearchInfoList& getUserList() { return ctrlResults.list; }
+	
+	static string id;
 
 private:
+
 	enum {
 		COLUMN_FIRST,
 		COLUMN_FILENAME = COLUMN_FIRST,

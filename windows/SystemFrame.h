@@ -158,8 +158,10 @@ public:
 		return FALSE;
 	}
 
+	static string id;
+
 private:
-	
+
 	struct MessageTask : public Task {
 		MessageTask(const LogMessagePtr& _data) : data(_data) { }
 

@@ -48,8 +48,7 @@ void RecentManager::clearRecents() noexcept {
 		WLock l(cs);
 		recents.clear();
 	}
-
-	saveRecents();
+	delayEvents.addEvent(SAVE, [=] { saveRecents(); }, 1000);
 }
 
 
@@ -66,7 +65,7 @@ void RecentManager::addRecent(const string& aUrl) noexcept {
 	}
 
 	fire(RecentManagerListener::RecentAdded(), r);
-	saveRecents();
+	delayEvents.addEvent(SAVE, [=] { saveRecents(); }, 5000);
 }
 
 void RecentManager::removeRecent(const string& aUrl) noexcept {
@@ -81,7 +80,7 @@ void RecentManager::removeRecent(const string& aUrl) noexcept {
 		recents.erase(i);
 	}
 	fire(RecentManagerListener::RecentRemoved(), r);
-	saveRecents();
+	delayEvents.addEvent(SAVE, [=] { saveRecents(); }, 1000);
 }
 
 void RecentManager::updateRecent(const ClientPtr& aClient) noexcept {
@@ -96,7 +95,7 @@ void RecentManager::updateRecent(const ClientPtr& aClient) noexcept {
 	}
 
 	fire(RecentManagerListener::RecentUpdated(), r);
-	saveRecents();
+	delayEvents.addEvent(SAVE, [=] { saveRecents(); }, 5000);
 }
 
 void RecentManager::saveRecents() const noexcept {

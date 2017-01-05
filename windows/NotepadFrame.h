@@ -68,8 +68,9 @@ public:
 		return 0;
 	}
 	
+	static string id;
 private:
-	
+
 	bool dirty;
 	bool closed;
 	CEdit ctrlPad;

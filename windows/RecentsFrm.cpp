@@ -25,6 +25,8 @@
 
 #include <airdcpp/RecentManager.h>
 
+string RecentsFrame::id = "Recents";
+
 int RecentsFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_DESCRIPTION, COLUMN_SERVER };
 int RecentsFrame::columnSizes[] = { 200, 290, 100 };
 static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::DESCRIPTION, ResourceManager::HUB_ADDRESS

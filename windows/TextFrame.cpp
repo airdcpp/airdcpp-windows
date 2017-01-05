@@ -28,10 +28,13 @@
 #include <airdcpp/ViewFileManager.h>
 
 //#define MAX_TEXT_LEN 32768
+string TextFrame::id = "TextFrame";
+TextFrame::FrameMap TextFrame::frames;
 
 void TextFrame::openWindow(const string& aFilePath, Type aType) {
 	auto frame = new TextFrame(Text::toT(Util::getFileName(aFilePath)), aFilePath, aType);
 	frame->CreateEx(WinUtil::mdiClient);
+	frames.emplace(frame->m_hWnd, frame);
 }
 
 void TextFrame::openWindow(const ViewFilePtr& aFile) {
@@ -41,11 +44,13 @@ void TextFrame::openWindow(const ViewFilePtr& aFile) {
 	} else {
 		frame->CreateEx(WinUtil::mdiClient);
 	}
+	frames.emplace(frame->m_hWnd, frame);
 }
 
 void TextFrame::openWindow(const tstring& aTitle, const tstring& aText, Type aType) {
 	auto frame = new TextFrame(aTitle, Util::emptyString, aType, aText);
 	WinUtil::hiddenCreateEx(frame);
+	frames.emplace(frame->m_hWnd, frame);
 }
 
 TextFrame::TextFrame(const tstring& aTitle, const string& aFilePath, Type aType, const tstring& aText /*empty*/) : title(aTitle), filePath(aFilePath), textType(aType), text(aText) {

@@ -347,9 +347,6 @@
     <ClCompile Include="api\FilesystemApi.cpp">
       <Filter>Source Files\api</Filter>
     </ClCompile>
-    <ClCompile Include="api\RecentHubApi.cpp">
-      <Filter>Source Files\api</Filter>
-    </ClCompile>
     <ClCompile Include="api\HubInfo.cpp">
       <Filter>Source Files\api</Filter>
     </ClCompile>
@@ -411,6 +408,9 @@
       <Filter>Source Files\api</Filter>
     </ClCompile>
     <ClCompile Include="api\FilelistItemInfo.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="api\RecentApi.cpp">
       <Filter>Source Files\api</Filter>
     </ClCompile>
   </ItemGroup>

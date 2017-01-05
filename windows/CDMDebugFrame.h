@@ -78,8 +78,10 @@ public:
 	LRESULT onChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	void addLine(const string& aLine);
-	
+	static string id;
+
 private:
+
 	bool stop = false;
 	Semaphore s;
 	boost::lockfree::queue<string*> cmdList;

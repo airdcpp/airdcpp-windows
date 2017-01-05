@@ -85,6 +85,8 @@ public:
 		ignoreTth = (wParam == BST_CHECKED);
 		return 0;
 	}
+
+	static string id;
 	
 private:
 

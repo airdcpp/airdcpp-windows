@@ -46,6 +46,7 @@
 
 HubFrame::FrameMap HubFrame::frames;
 bool HubFrame::shutdown = false;
+string HubFrame::id = "hub";
 
 int HubFrame::columnSizes[] = { 100, 75, 75, 75, 100, 75, 130, 130, 100, 50, 40, 40, 40, 40, 40, 300 };
 int HubFrame::columnIndexes[] = { OnlineUser::COLUMN_NICK, OnlineUser::COLUMN_SHARED, OnlineUser::COLUMN_EXACT_SHARED,

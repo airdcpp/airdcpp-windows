@@ -83,6 +83,9 @@ bool MainFrame::isShutdownStatus = false;
 
 #define ICON_SPACE 24
 
+#define CONFIG_FRAMES_NAME "Frames.xml"
+#define CONFIG_DIR Util::PATH_USER_CONFIG
+
 MainFrame::MainFrame() : CSplitterImpl(false), trayMessage(0), maximized(false), lastUpload(-1), lastUpdate(0), 
 stopperThread(NULL),
 closing(false), missedAutoConnect(false), tabsontop(false),
@@ -397,24 +400,13 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	pLoop->AddMessageFilter(this);
 	pLoop->AddIdleHandler(this);
 
-	if(SETTING(OPEN_PUBLIC)) PostMessage(WM_COMMAND, ID_FILE_CONNECT);
-	if(SETTING(OPEN_FAVORITE_HUBS)) PostMessage(WM_COMMAND, IDC_FAVORITES);
-	if(SETTING(OPEN_FAVORITE_USERS)) PostMessage(WM_COMMAND, IDC_FAVUSERS);
-	if(SETTING(OPEN_QUEUE)) PostMessage(WM_COMMAND, IDC_QUEUE);
-	if(SETTING(OPEN_WAITING_USERS)) PostMessage(WM_COMMAND, IDC_UPLOAD_QUEUE);
-	if(SETTING(OPEN_FINISHED_UPLOADS)) PostMessage(WM_COMMAND, IDC_FINISHED_UL);
-	if(SETTING(OPEN_SEARCH_SPY)) PostMessage(WM_COMMAND, IDC_SEARCH_SPY);
-	if(SETTING(OPEN_NOTEPAD)) PostMessage(WM_COMMAND, IDC_NOTEPAD);
-	if(SETTING(OPEN_AUTOSEARCH)) PostMessage(WM_COMMAND, IDC_AUTOSEARCH);
+	if (!SETTING(SHOW_STATUSBAR)) PostMessage(WM_COMMAND, ID_VIEW_STATUS_BAR);
+	if (!SETTING(SHOW_TOOLBAR)) PostMessage(WM_COMMAND, ID_VIEW_TOOLBAR);
+	if (!SETTING(SHOW_TRANSFERVIEW))	PostMessage(WM_COMMAND, ID_VIEW_TRANSFER_VIEW);
 
-	if(!SETTING(SHOW_STATUSBAR)) PostMessage(WM_COMMAND, ID_VIEW_STATUS_BAR);
-	if(!SETTING(SHOW_TOOLBAR)) PostMessage(WM_COMMAND, ID_VIEW_TOOLBAR);
-	if(!SETTING(SHOW_TRANSFERVIEW))	PostMessage(WM_COMMAND, ID_VIEW_TRANSFER_VIEW);
-
-	if(!SETTING(SHOW_WINAMP_CONTROL)) PostMessage(WM_COMMAND, ID_TOGGLE_TOOLBAR);
-	if(!SETTING(SHOW_TBSTATUS)) PostMessage(WM_COMMAND, ID_TOGGLE_TBSTATUS);
-	if(SETTING(LOCK_TB)) PostMessage(WM_COMMAND, ID_LOCK_TB);
-	if(SETTING(OPEN_SYSTEM_LOG)) PostMessage(WM_COMMAND, IDC_SYSTEM_LOG);
+	if (!SETTING(SHOW_WINAMP_CONTROL)) PostMessage(WM_COMMAND, ID_TOGGLE_TOOLBAR);
+	if (!SETTING(SHOW_TBSTATUS)) PostMessage(WM_COMMAND, ID_TOGGLE_TBSTATUS);
+	if (SETTING(LOCK_TB)) PostMessage(WM_COMMAND, ID_LOCK_TB);
 
 	callAsync([=] { parseCommandLine(GetCommandLine()); });
 
@@ -474,7 +466,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	if (!WinUtil::isShift() && !Util::hasStartupParam("/noautoconnect")) {
 		if (!SETTING(NICK).empty())
-			addThreadedTask([=] { FavoriteManager::getInstance()->autoConnect(); });
+			addThreadedTask([=] { loadOpenWindows(); });
 		else
 			missedAutoConnect = true;
 	}
@@ -1255,6 +1247,7 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 		
 		if (forcedShutdown || WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_EXIT, TSTRING(REALLY_EXIT))) {
 			
+			saveOpenWindows();
 			HubFrame::ShutDown();
 
 			SplashWindow::create();
@@ -1334,6 +1327,115 @@ LRESULT MainFrame::onLink(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL
 
 	return 0;
 }
+
+void MainFrame::saveOpenWindows() {
+	StringMap params;
+	SimpleXML xml;
+	xml.addTag("Frames");
+	xml.stepIn();
+
+#define save(frame) else if(frame::saveWindow(t, params)) writeParams(xml, params);
+
+	auto writeParams = [&](SimpleXML& xml, StringMap& params) {
+		xml.addTag("Window");
+		for (auto p = params.begin(); p != params.end(); ++p) {
+				xml.addChildAttrib(p->first, p->second);
+			}
+	};
+
+	auto tabs = WinUtil::tabCtrl->getTabList();
+	for (auto t : tabs) {
+		params.clear();
+		if (0);
+		save(HubFrame)
+		save(PrivateFrame)
+		save(QueueFrame)
+		save(DirectoryListingFrame) //currently no handling of re opening
+		save(SystemFrame)
+		save(AutoSearchFrame)
+		save(RssInfoFrame)
+		save(SearchFrame) //currently no handling of re opening
+		save(PublicHubsFrame)
+		save(FavoriteHubsFrame)
+		save(UsersFrame)
+		save(NotepadFrame)
+		save(SpyFrame)
+		save(ADLSearchFrame)
+		save(FinishedULFrame)
+		save(UploadQueueFrame)
+		save(CDMDebugFrame)
+		save(RecentsFrame)
+	}
+	SettingsManager::saveSettingFile(xml, CONFIG_DIR, CONFIG_FRAMES_NAME);
+#undef save
+}
+
+void MainFrame::loadOpenWindows() {
+
+#define load(frame, ID) else if(frame::id == ID) callAsync( [=] { frame::openWindow(); });
+
+	SimpleXML xml;
+	SettingsManager::loadSettingFile(xml, CONFIG_DIR, CONFIG_FRAMES_NAME);
+	bool hasHubs = false;
+
+	if (xml.findChild("Frames")) {
+		xml.stepIn();
+		while (xml.findChild("Window")) {
+			string id = xml.getChildAttrib("id");
+
+			//Hubs, PMs, File list, Search etc non static frames are special to open..
+			if (id == HubFrame::id) {
+				string hubUrl = xml.getChildAttrib("url");
+				if (!hubUrl.empty()) {
+					ClientManager::getInstance()->createClient(hubUrl);
+					hasHubs = true;
+				}
+			} else if (id == PrivateFrame::id) {
+				string cid = xml.getChildAttrib("CID");
+				string hubUrl = xml.getChildAttrib("hubURL");
+				auto u = ClientManager::getInstance()->getUser(CID(cid));
+				if (u)
+					callAsync([=] { PrivateFrame::openWindow(HintedUser(u, hubUrl)); });
+			} //TODO: handle File lists, Search
+
+			//Static frames
+			load(QueueFrame, id)
+			//load(DirectoryListingFrame, id) //currently no handling of re opening
+			load(SystemFrame, id)
+			load(AutoSearchFrame, id)
+			load(RssInfoFrame, id)
+			//load(SearchFrame, id) //currently no handling of re opening
+			load(PublicHubsFrame, id)
+			load(FavoriteHubsFrame, id)
+			load(UsersFrame, id)
+			load(NotepadFrame, id)
+			load(SpyFrame, id)
+			load(ADLSearchFrame, id)
+			load(FinishedULFrame, id)
+			load(UploadQueueFrame, id)
+			load(CDMDebugFrame, id)
+			load(RecentsFrame, id)
+		}
+	} else { //or still open these? OR Disable the window opening settings if save last state is enabled??
+
+		if (SETTING(OPEN_PUBLIC)) PostMessage(WM_COMMAND, ID_FILE_CONNECT);
+		if (SETTING(OPEN_FAVORITE_HUBS)) PostMessage(WM_COMMAND, IDC_FAVORITES);
+		if (SETTING(OPEN_FAVORITE_USERS)) PostMessage(WM_COMMAND, IDC_FAVUSERS);
+		if (SETTING(OPEN_QUEUE)) PostMessage(WM_COMMAND, IDC_QUEUE);
+		if (SETTING(OPEN_WAITING_USERS)) PostMessage(WM_COMMAND, IDC_UPLOAD_QUEUE);
+		if (SETTING(OPEN_FINISHED_UPLOADS)) PostMessage(WM_COMMAND, IDC_FINISHED_UL);
+		if (SETTING(OPEN_SEARCH_SPY)) PostMessage(WM_COMMAND, IDC_SEARCH_SPY);
+		if (SETTING(OPEN_NOTEPAD)) PostMessage(WM_COMMAND, IDC_NOTEPAD);
+		if (SETTING(OPEN_AUTOSEARCH)) PostMessage(WM_COMMAND, IDC_AUTOSEARCH);
+		if (SETTING(OPEN_SYSTEM_LOG)) PostMessage(WM_COMMAND, IDC_SYSTEM_LOG);
+	}
+
+	if (!hasHubs)
+		FavoriteManager::getInstance()->autoConnect();
+
+#undef load
+}
+
 
 void MainFrame::getMagnetForFile() {
 	tstring file;

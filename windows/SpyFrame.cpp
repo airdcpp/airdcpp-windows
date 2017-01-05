@@ -26,6 +26,7 @@
 #include <airdcpp/ShareManager.h>
 #include <airdcpp/ResourceManager.h>
 
+string SpyFrame::id = "SpyFrame";
 int SpyFrame::columnSizes[] = { 305, 70, 85 };
 int SpyFrame::columnIndexes[] = { COLUMN_STRING, COLUMN_COUNT, COLUMN_TIME };
 static ResourceManager::Strings columnNames[] = { ResourceManager::SEARCH_STRING, ResourceManager::COUNT, ResourceManager::TIME };

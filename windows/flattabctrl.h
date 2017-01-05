@@ -517,7 +517,13 @@ public:
 		}
 		Invalidate();
 	}
-
+	vector<HWND> getTabList() {
+		vector<HWND> windows;
+		for (auto t : tabs) {
+			windows.push_back(t->hWnd);
+		}
+		return windows;
+	}
 
 private:
 	class TabInfo {

@@ -55,6 +55,8 @@ static SettingsManager::BoolSetting filterSettings [] = { SettingsManager::FILTE
 
 static ColumnType columnTypes [] = { COLUMN_TEXT, COLUMN_TEXT, COLUMN_SIZE, COLUMN_SIZE, COLUMN_TEXT, COLUMN_TIME };
 
+string DirectoryListingFrame::id = "FileList";
+
 void DirectoryListingFrame::openWindow(const DirectoryListingPtr& aList, const string& aDir, const string& aXML) {
 
 	HWND aHWND = NULL;

@@ -91,6 +91,7 @@ public:
 	void addItem(const AutoSearchPtr& as);
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 
+	static string id;
 private:
 	class ItemInfo;
 public:

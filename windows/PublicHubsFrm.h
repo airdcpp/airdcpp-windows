@@ -100,8 +100,9 @@ public:
 		ctrlHubs.SetFocus();
 		return 0;
 	}
-	
+	static string id;
 private:
+
 	void connectHub(int pos);
 	enum {
 		COLUMN_FIRST,

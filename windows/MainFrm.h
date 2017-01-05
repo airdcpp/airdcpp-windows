@@ -388,7 +388,7 @@ private:
 	bool bHasPM;
 	bool bHasMC;
 	bool fMenuShutdown;
-
+	
 	HashProgressDlg hashProgress;
 
 	static bool bShutdown;
@@ -438,7 +438,9 @@ private:
 	void updateTooltipRect();
 	void updateActivity();
 	void onAwayButton();
+	void saveOpenWindows();
 
+	void loadOpenWindows();
 	enum {
 		STATUS_LASTLINES,
 		STATUS_AWAY,
