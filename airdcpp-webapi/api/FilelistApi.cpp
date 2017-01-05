@@ -41,16 +41,13 @@ namespace webserver {
 		) 
 	{
 
-		DirectoryListingManager::getInstance()->addListener(this);
-
-		METHOD_HANDLER("sessions", Access::FILELISTS_VIEW, ApiRequest::METHOD_GET, (), false, ParentApiModule::handleGetSubmodules);
-		METHOD_HANDLER("session", Access::FILELISTS_VIEW, ApiRequest::METHOD_GET, (CID_PARAM), false, ParentApiModule::handleGetSubmodule);
+		DirectoryListingManager::getInstance()->addListener(this);;
 
 		METHOD_HANDLER("session", Access::FILELISTS_EDIT, ApiRequest::METHOD_DELETE, (CID_PARAM), false, FilelistApi::handleDeleteList);
 		METHOD_HANDLER("session", Access::FILELISTS_EDIT, ApiRequest::METHOD_POST, (), true, FilelistApi::handlePostList);
 		METHOD_HANDLER("session", Access::FILELISTS_VIEW, ApiRequest::METHOD_POST, (EXACT_PARAM("me")), true, FilelistApi::handleOwnList);
 
-		METHOD_HANDLER("download_directory", Access::DOWNLOAD, ApiRequest::METHOD_POST, (), true, FilelistApi::handlePostDirectoryDownload); // DEPRECEATED
+		METHOD_HANDLER("download_directory", Access::DOWNLOAD, ApiRequest::METHOD_POST, (), true, FilelistApi::handlePostDirectoryDownload); // DEPRECATED
 
 		METHOD_HANDLER("directory_downloads", Access::DOWNLOAD, ApiRequest::METHOD_GET, (), false, FilelistApi::handleGetDirectoryDownloads);
 		METHOD_HANDLER("directory_download", Access::DOWNLOAD, ApiRequest::METHOD_POST, (), true, FilelistApi::handlePostDirectoryDownload);
@@ -153,7 +150,7 @@ namespace webserver {
 			return;
 		}
 
-		send("filelist_directory_download_added", serializeDirectoryDownload(aDownload));
+		send("filelist_directory_download_added", Serializer::serializeDirectoryDownload(aDownload));
 	}
 
 	void FilelistApi::on(DirectoryListingManagerListener::DirectoryDownloadRemoved, const DirectoryDownloadPtr& aDownload) noexcept {
@@ -161,7 +158,7 @@ namespace webserver {
 			return;
 		}
 
-		send("filelist_directory_download_removed", serializeDirectoryDownload(aDownload));
+		send("filelist_directory_download_removed", Serializer::serializeDirectoryDownload(aDownload));
 	}
 
 	void FilelistApi::on(DirectoryListingManagerListener::DirectoryDownloadProcessed, const DirectoryDownloadPtr& aDirectoryInfo, const DirectoryBundleAddInfo& aQueueInfo, const string& aError) noexcept {
@@ -170,7 +167,7 @@ namespace webserver {
 		}
 
 		send("filelist_directory_download_processed", {
-			{ "directory_download", serializeDirectoryDownload(aDirectoryInfo) },
+			{ "directory_download", Serializer::serializeDirectoryDownload(aDirectoryInfo) },
 			{ "result", Serializer::serializeDirectoryBundleAddInfo(aQueueInfo, aError) }
 		});
 	}
@@ -181,7 +178,7 @@ namespace webserver {
 		}
 
 		send("filelist_directory_download_failed", {
-			{ "directory_download", serializeDirectoryDownload(aDirectoryInfo) },
+			{ "directory_download", Serializer::serializeDirectoryDownload(aDirectoryInfo) },
 			{ "error", aError }
 		});
 	}
@@ -204,22 +201,12 @@ namespace webserver {
 		};
 	}
 
-	json FilelistApi::serializeDirectoryDownload(const DirectoryDownloadPtr& aDownload) noexcept {
-		return {
-			{ "id", aDownload->getId() },
-			{ "user", Serializer::serializeHintedUser(aDownload->getUser()) },
-			{ "target_name", aDownload->getBundleName() },
-			{ "target_directory", aDownload->getTarget() },
-			{ "list_path", aDownload->getListPath() },
-		};
-	}
-
 	api_return FilelistApi::handleGetDirectoryDownloads(ApiRequest& aRequest) {
 		auto downloads = DirectoryListingManager::getInstance()->getDirectoryDownloads();
 
 		auto ret = json::array();
 		for (const auto& d : downloads) {
-			ret.push_back(serializeDirectoryDownload(d));
+			ret.push_back(Serializer::serializeDirectoryDownload(d));
 		}
 
 		aRequest.setResponseBody(ret);
@@ -237,10 +224,8 @@ namespace webserver {
 		auto user = Deserializer::deserializeHintedUser(reqJson);
 
 		try {
-			auto downloadId = DirectoryListingManager::getInstance()->addDirectoryDownload(user, targetBundleName, Util::toNmdcFile(listPath), targetDirectory, prio);
-			aRequest.setResponseBody({
-				{ "id", downloadId }
-			});
+			auto directoryDownload = DirectoryListingManager::getInstance()->addDirectoryDownload(user, targetBundleName, Util::toNmdcFile(listPath), targetDirectory, prio);
+			aRequest.setResponseBody(Serializer::serializeDirectoryDownload(directoryDownload));
 		} catch (const Exception& e) {
 			aRequest.setResponseErrorStr(e.getError());
 			return websocketpp::http::status_code::bad_request;

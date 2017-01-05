@@ -29,6 +29,7 @@
 
 namespace dcpp {
 
+typedef uint64_t SearchResultId;
 class SearchResult : public FastAlloc<SearchResult>, public intrusive_ptr_base<SearchResult> {
 public:	
 	enum Types {
@@ -70,7 +71,8 @@ public:
 	int64_t getSpeedPerSlot() const noexcept;
 
 	const string& getIP() const noexcept { return IP; }
-	const string& getToken() const noexcept { return token; }
+	const string& getSearchToken() const noexcept { return searchToken; }
+	SearchResultId getId() const noexcept { return id; }
 	time_t getDate() const noexcept { return date; }
 	const CID& getCID() const noexcept;
 	bool isNMDC() const noexcept;
@@ -105,7 +107,9 @@ private:
 	
 	const string path;
 	const string IP;
-	const string token;
+
+	const string searchToken;
+	const SearchResultId id;
 	
 	const int64_t size = 0;
 	

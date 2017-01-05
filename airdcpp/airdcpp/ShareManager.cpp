@@ -1143,11 +1143,11 @@ void ShareManager::clearTempShares() {
 	tempShares.clear();
 }
 
-void ShareManager::getRealPaths(const string& aPath, StringList& realPaths_, const OptionalProfileToken& aProfile) const throw(ShareException) {
-	if (aPath.empty())
+void ShareManager::getRealPaths(const string& aVirtualPath, StringList& realPaths_, const OptionalProfileToken& aProfile) const throw(ShareException) {
+	if (aVirtualPath.empty())
 		throw ShareException("empty virtual path");
 
-	if (aPath == ADC_ROOT_STR) {
+	if (aVirtualPath == ADC_ROOT_STR) {
 		getRootPaths(realPaths_);
 		return;
 	}
@@ -1155,16 +1155,16 @@ void ShareManager::getRealPaths(const string& aPath, StringList& realPaths_, con
 	Directory::List dirs;
 
 	RLock l(cs);
-	findVirtuals<OptionalProfileToken>(aPath, aProfile, dirs);
+	findVirtuals<OptionalProfileToken>(aVirtualPath, aProfile, dirs);
 
-	if (aPath.back() == ADC_SEPARATOR) {
+	if (aVirtualPath.back() == ADC_SEPARATOR) {
 		// Directory
 		for (const auto& d : dirs) {
 			realPaths_.push_back(d->getRealPath());
 		}
 	} else {
 		// File
-		auto fileName = Text::toLower(Util::getAdcFileName(aPath));
+		auto fileName = Text::toLower(Util::getAdcFileName(aVirtualPath));
 		for(const auto& d: dirs) {
 			auto it = d->files.find(fileName);
 			if(it != d->files.end()) {

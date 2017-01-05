@@ -38,9 +38,6 @@ namespace webserver {
 
 		MessageManager::getInstance()->addListener(this);
 
-		METHOD_HANDLER("sessions", Access::PRIVATE_CHAT_VIEW, ApiRequest::METHOD_GET, (), false, ParentApiModule::handleGetSubmodules);
-		METHOD_HANDLER("session", Access::PRIVATE_CHAT_VIEW, ApiRequest::METHOD_GET, (CID_PARAM), false, ParentApiModule::handleGetSubmodule);
-
 		METHOD_HANDLER("session", Access::PRIVATE_CHAT_EDIT, ApiRequest::METHOD_DELETE, (CID_PARAM), false, PrivateChatApi::handleDeleteChat);
 		METHOD_HANDLER("session", Access::PRIVATE_CHAT_EDIT, ApiRequest::METHOD_POST, (), true, PrivateChatApi::handlePostChat);
 

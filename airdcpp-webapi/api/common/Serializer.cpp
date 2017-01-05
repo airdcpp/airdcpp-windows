@@ -29,6 +29,7 @@
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/Message.h>
 #include <airdcpp/DirectoryListing.h>
+#include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/GeoManager.h>
 #include <airdcpp/OnlineUser.h>
 #include <airdcpp/QueueItem.h>
@@ -237,7 +238,7 @@ namespace webserver {
 		return serializeItemProperties(aUser, toPropertyIdSet(OnlineUserUtils::propertyHandler.properties), OnlineUserUtils::propertyHandler);
 	}
 
-	std::string typeNameToString(const string& aName) {
+	std::string Serializer::getFileTypeId(const string& aName) noexcept {
 		switch (aName[0]) {
 			case '1': return "audio";
 			case '2': return "compressed";
@@ -245,17 +246,17 @@ namespace webserver {
 			case '4': return "executable";
 			case '5': return "picture";
 			case '6': return "video";
-			default: return "other";
+			default: return aName.empty() ? "other" : aName;
 		}
 	}
 
 	json Serializer::serializeFileType(const string& aPath) noexcept {
 		auto ext = Format::formatFileType(aPath);
-		auto typeName = SearchManager::getInstance()->getNameByExtension(ext, true);
+		auto typeName = getFileTypeId(SearchManager::getInstance()->getNameByExtension(ext, true));
 
 		return{
 			{ "id", "file" },
-			{ "content_type", typeNameToString(typeName) },
+			{ "content_type", typeName },
 			{ "str", ext }
 		};
 	}
@@ -350,11 +351,30 @@ namespace webserver {
 		};
 	}
 
+	json Serializer::serializePriorityId(Priority aPriority) noexcept {
+		if (aPriority == Priority::DEFAULT) {
+			return nullptr;
+		}
+
+		return static_cast<int>(aPriority);
+	}
+
 	json Serializer::serializePriority(const QueueItemBase& aItem) noexcept {
 		return{
-			{ "id", static_cast<int>(aItem.getPriority()) },
+			{ "id", serializePriorityId(aItem.getPriority()) },
 			{ "str", AirUtil::getPrioText(aItem.getPriority()) },
 			{ "auto", aItem.getAutoPriority() }
+		};
+	}
+
+	json Serializer::serializeDirectoryDownload(const DirectoryDownloadPtr& aDownload) noexcept {
+		return{
+			{ "id", aDownload->getId() },
+			{ "user", Serializer::serializeHintedUser(aDownload->getUser()) },
+			{ "target_name", aDownload->getBundleName() },
+			{ "target_directory", aDownload->getTarget() },
+			{ "priority", Serializer::serializePriorityId(aDownload->getPriority()) },
+			{ "list_path", aDownload->getListPath() },
 		};
 	}
 

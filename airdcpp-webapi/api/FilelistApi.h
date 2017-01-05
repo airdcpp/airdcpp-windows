@@ -64,7 +64,6 @@ namespace webserver {
 		void on(DirectoryListingManagerListener::DirectoryDownloadFailed, const DirectoryDownloadPtr& aDirectoryInfo, const string& aError) noexcept override;
 
 		static json serializeList(const DirectoryListingPtr& aList) noexcept;
-		static json serializeDirectoryDownload(const DirectoryDownloadPtr& aDownload) noexcept;
 	};
 }
 
