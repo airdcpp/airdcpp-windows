@@ -154,7 +154,7 @@ namespace webserver {
 		typename ItemType::Ptr getSubModule(ApiRequest& aRequest) {
 			auto sub = findSubModule(aRequest.getStringParam(0));
 			if (!sub) {
-				throw std::invalid_argument("Entity was not found");
+				throw RequestException(websocketpp::http::status_code::not_found, "Entity was not found");
 			}
 
 			return sub;

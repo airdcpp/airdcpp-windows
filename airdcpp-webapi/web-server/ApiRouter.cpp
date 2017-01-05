@@ -129,6 +129,9 @@ namespace webserver {
 		} catch (const ArgumentException& e) {
 			aRequest.setResponseErrorJson(e.getErrorJson());
 			code = CODE_UNPROCESSABLE_ENTITY;
+		} catch (const RequestException& e) {
+			aRequest.setResponseErrorStr(e.what());
+			code = e.getCode();
 		} catch (const std::exception& e) {
 			aRequest.setResponseErrorStr(e.what());
 			code = websocketpp::http::status_code::bad_request;

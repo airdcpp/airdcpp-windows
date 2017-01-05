@@ -164,7 +164,7 @@ namespace webserver {
 		});
 
 		if (ret.base() == transfers.end()) {
-			throw std::invalid_argument("Transfer not found");
+			throw RequestException(websocketpp::http::status_code::not_found, "Transfer not found");
 		}
 
 		return *ret;
