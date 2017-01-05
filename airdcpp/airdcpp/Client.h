@@ -264,6 +264,8 @@ private:
 	// Last used count type information for this hub
 	CountType countType = COUNT_UNCOUNTED;
 	bool countIsSharing = false;
+
+	void destroySocket(const AsyncF& aShutdownAction = nullptr) noexcept;
 };
 
 } // namespace dcpp
