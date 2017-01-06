@@ -456,11 +456,11 @@ namespace webserver {
 	void QueueApi::onBundleUpdated(const BundlePtr& aBundle, const PropertyIdSet& aUpdatedProperties, const string& aSubscription) {
 		bundleView.onItemUpdated(aBundle, aUpdatedProperties);
 		if (subscriptionActive(aSubscription)) {
-			send(aSubscription, Serializer::serializeItem(aBundle, QueueBundleUtils::propertyHandler));;
+			send(aSubscription, Serializer::serializeItemProperties(aBundle, aUpdatedProperties, QueueBundleUtils::propertyHandler));
 		}
 
 		if (subscriptionActive("bundle_updated")) {
-			send(aSubscription, Serializer::serializeItem(aBundle, QueueBundleUtils::propertyHandler));
+			send("bundle_updated", Serializer::serializeItemProperties(aBundle, aUpdatedProperties, QueueBundleUtils::propertyHandler));
 		}
 	}
 

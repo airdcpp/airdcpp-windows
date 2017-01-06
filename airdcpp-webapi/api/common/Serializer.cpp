@@ -282,7 +282,7 @@ namespace webserver {
 	json Serializer::serializeIp(const string& aIP, const string& aCountryCode) noexcept {
 		return{
 			{ "str", Format::formatIp(aIP, aCountryCode) },
-			{ "country_id", aCountryCode },
+			{ "country_id", aCountryCode }, // deprecated
 			{ "ip", aIP }
 		};
 	}

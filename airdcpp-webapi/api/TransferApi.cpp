@@ -41,16 +41,25 @@ namespace webserver {
 		UploadManager::getInstance()->addListener(this);
 		ConnectionManager::getInstance()->addListener(this);
 
-		METHOD_HANDLER("transfers", Access::ANY, ApiRequest::METHOD_GET, (), false, TransferApi::handleGetTransfers);
-		METHOD_HANDLER("transfer", Access::ANY, ApiRequest::METHOD_GET, (TOKEN_PARAM), false, TransferApi::handleGetTransfer);
+		METHOD_HANDLER("transfers", Access::TRANSFERS, ApiRequest::METHOD_GET, (), false, TransferApi::handleGetTransfers);
+		METHOD_HANDLER("transfer", Access::TRANSFERS, ApiRequest::METHOD_GET, (TOKEN_PARAM), false, TransferApi::handleGetTransfer);
+
+		METHOD_HANDLER("transfer", Access::TRANSFERS, ApiRequest::METHOD_POST, (TOKEN_PARAM, EXACT_PARAM("force")), false, TransferApi::handleForce);
+		METHOD_HANDLER("transfer", Access::TRANSFERS, ApiRequest::METHOD_POST, (TOKEN_PARAM, EXACT_PARAM("disconnect")), false, TransferApi::handleDisconnect);
 
 		METHOD_HANDLER("tranferred_bytes", Access::ANY, ApiRequest::METHOD_GET, (), false, TransferApi::handleGetTransferredBytes);
 		METHOD_HANDLER("stats", Access::ANY, ApiRequest::METHOD_GET, (), false, TransferApi::handleGetTransferStats);
 
-		METHOD_HANDLER("force", Access::TRANSFERS, ApiRequest::METHOD_POST, (TOKEN_PARAM), false, TransferApi::handleForce);
-		METHOD_HANDLER("disconnect", Access::TRANSFERS, ApiRequest::METHOD_POST, (TOKEN_PARAM), false, TransferApi::handleDisconnect);
+
+		METHOD_HANDLER("force", Access::TRANSFERS, ApiRequest::METHOD_POST, (TOKEN_PARAM), false, TransferApi::handleForce); // Deprecated
+		METHOD_HANDLER("disconnect", Access::TRANSFERS, ApiRequest::METHOD_POST, (TOKEN_PARAM), false, TransferApi::handleDisconnect); // Deprecated
 
 		createSubscription("transfer_statistics");
+
+		createSubscription("transfer_added");
+		createSubscription("transfer_updated");
+		createSubscription("transfer_removed");
+
 		timer->start(false);
 
 		loadTransfers();
@@ -240,7 +249,7 @@ namespace webserver {
 			t->setStatusString(STRING_F(RUNNING_PCT, t->getPercentage()));
 		}
 
-		view.onItemUpdated(t, { 
+		onTransferUpdated(t, {
 			TransferUtils::PROP_STATUS, TransferUtils::PROP_BYTES_TRANSFERRED, 
 			TransferUtils::PROP_SPEED, TransferUtils::PROP_SECONDS_LEFT
 		});
@@ -285,7 +294,11 @@ namespace webserver {
 			return;
 
 		auto t = addTransfer(aCqi, STRING(CONNECTING));
+
 		view.onItemAdded(t);
+		if (subscriptionActive("transfer_added")) {
+			send("transfer_added", Serializer::serializeItem(t, TransferUtils::propertyHandler));
+		}
 	}
 
 	void TransferApi::on(ConnectionManagerListener::Removed, const ConnectionQueueItem* aCqi) noexcept {
@@ -303,6 +316,9 @@ namespace webserver {
 		}
 
 		view.onItemRemoved(t);
+		if (subscriptionActive("transfer_removed")) {
+			send("transfer_removed", Serializer::serializeItem(t, TransferUtils::propertyHandler));
+		}
 	}
 
 	void TransferApi::onFailed(TransferInfoPtr& aInfo, const string& aReason) noexcept {
@@ -318,7 +334,7 @@ namespace webserver {
 		aInfo->setTimeLeft(-1);
 		aInfo->setState(TransferInfo::STATE_FAILED);
 
-		view.onItemUpdated(aInfo, { 
+		onTransferUpdated(aInfo, {
 			TransferUtils::PROP_STATUS, TransferUtils::PROP_SPEED,
 			TransferUtils::PROP_BYTES_TRANSFERRED, TransferUtils::PROP_SECONDS_LEFT
 		});
@@ -331,6 +347,14 @@ namespace webserver {
 		}
 
 		onFailed(t, aCqi->getUser().user->isSet(User::OLD_CLIENT) ? STRING(SOURCE_TOO_OLD) : aReason);
+	}
+
+	void TransferApi::onTransferUpdated(const TransferInfoPtr& aTransfer, const PropertyIdSet& aUpdatedProperties) noexcept {
+		view.onItemUpdated(aTransfer, aUpdatedProperties);
+
+		if (subscriptionActive("transfer_updated")) {
+			send("transfer_updated", Serializer::serializeItemProperties(aTransfer, aUpdatedProperties, TransferUtils::propertyHandler));
+		}
 	}
 
 	void TransferApi::updateQueueInfo(TransferInfoPtr& aInfo) noexcept {
@@ -356,7 +380,7 @@ namespace webserver {
 
 		aInfo->setState(TransferInfo::STATE_WAITING);
 
-		view.onItemUpdated(aInfo, { 
+		onTransferUpdated(aInfo, {
 			TransferUtils::PROP_STATUS, TransferUtils::PROP_TARGET, 
 			TransferUtils::PROP_TYPE, TransferUtils::PROP_NAME, 
 			TransferUtils::PROP_SIZE 
@@ -378,7 +402,7 @@ namespace webserver {
 			return;
 		}
 
-		view.onItemUpdated(t, { TransferUtils::PROP_USER });
+		onTransferUpdated(t, { TransferUtils::PROP_USER });
 	}
 
 	void TransferApi::on(DownloadManagerListener::Failed, const Download* aDownload, const string& aReason) noexcept {
@@ -412,7 +436,7 @@ namespace webserver {
 		aTransfer->appendFlags(flags);
 		aInfo->setFlags(flags);
 
-		view.onItemUpdated(aInfo, { 
+		onTransferUpdated(aInfo, {
 			TransferUtils::PROP_STATUS, TransferUtils::PROP_SPEED, 
 			TransferUtils::PROP_BYTES_TRANSFERRED, TransferUtils::PROP_TIME_STARTED, 
 			TransferUtils::PROP_SIZE, TransferUtils::PROP_TARGET, 
@@ -444,7 +468,7 @@ namespace webserver {
 			// Size was unknown for filelists when requesting
 			t->setSize(aDownload->getSegmentSize());
 
-			view.onItemUpdated(t, { 
+			onTransferUpdated(t, {
 				TransferUtils::PROP_STATUS, TransferUtils::PROP_FLAGS, 
 				TransferUtils::PROP_SIZE 
 			});
@@ -491,7 +515,7 @@ namespace webserver {
 		t->setBytesTransferred(aTransfer->getSegmentSize());
 		t->setState(TransferInfo::STATE_FINISHED);
 
-		view.onItemUpdated(t, { 
+		onTransferUpdated(t, {
 			TransferUtils::PROP_STATUS, TransferUtils::PROP_SPEED,
 			TransferUtils::PROP_SECONDS_LEFT, TransferUtils::PROP_TIME_STARTED,
 			TransferUtils::PROP_BYTES_TRANSFERRED

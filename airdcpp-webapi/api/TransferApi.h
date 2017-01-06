@@ -106,6 +106,8 @@ namespace webserver {
 
 		typedef ListViewController<TransferInfoPtr, TransferUtils::PROP_LAST> TransferListView;
 		TransferListView view;
+
+		void onTransferUpdated(const TransferInfoPtr& aTransfer, const PropertyIdSet& aUpdatedProperties) noexcept;
 	};
 }
 
