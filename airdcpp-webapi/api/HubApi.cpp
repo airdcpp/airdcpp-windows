@@ -189,14 +189,11 @@ namespace webserver {
 		RecentHubEntryPtr r = new RecentHubEntry(address);
 		auto client = ClientManager::getInstance()->createClient(r);
 		if (!client) {
-			aRequest.setResponseErrorStr("Hub exists");
-			return websocketpp::http::status_code::bad_request;
+			aRequest.setResponseErrorStr("Hub with the same URL exists already");
+			return websocketpp::http::status_code::conflict;
 		}
 
-		aRequest.setResponseBody({
-			{ "id", client->getClientId() }
-		});
-
+		aRequest.setResponseBody(serializeClient(client));
 		return websocketpp::http::status_code::ok;
 	}
 

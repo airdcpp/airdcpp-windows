@@ -15,7 +15,7 @@ Changed:
 - Always create directory bundle from the requested directory
 - "Exact" list filtering mode is now case-insensitive
 - Re-download corrupted language files
-- Divide favorite hub settings in tabbed dialog
+- Divide favorite hub settings in tabbed dialog
 
 Fixed:
 
