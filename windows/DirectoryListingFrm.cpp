@@ -80,6 +80,51 @@ void DirectoryListingFrame::openWindow(const DirectoryListingPtr& aList, const s
 	}
 }
 
+bool DirectoryListingFrame::getWindowParams(HWND hWnd, StringMap &params) {
+	auto f = frames.find(hWnd);
+	if (f != frames.end()) {
+		params["id"] = DirectoryListingFrame::id;
+		params["CID"] = f->second->dl->getUser()->getCID().toBase32();
+		params["url"] = f->second->dl->getHubUrl();
+		params["dir"] = f->second->curPath;
+		params["file"] = f->second->dl->getFileName();
+		params["partial"] = Util::toString(f->second->dl->getPartialList());
+		params["profileToken"] = Util::toString(f->second->dl->getIsOwnList() ? f->second->dl->getShareProfile() : 0);
+		if (f->second->dl->getPartialList())
+			QueueManager::getInstance()->noDeleteFileList(f->second->dl->getFileName());
+		return true;
+	}
+	return false;
+}
+
+bool DirectoryListingFrame::parseWindowParams(StringMap& params) {
+	if (params["id"] == DirectoryListingFrame::id) {
+		string cid = params["CID"];
+		if (!cid.empty()) {
+			UserPtr u = ClientManager::getInstance()->getUser(CID(cid));
+			if (u) {
+				bool partial = Util::toBool(Util::toInt(params["partial"]));
+				string dir = params["dir"];
+				string file = params["file"];
+				string url = params["url"];
+				if (u == ClientManager::getInstance()->getMe()) {
+					ProfileToken token = Util::toInt(params["profileToken"]);
+					DirectoryListingManager::getInstance()->openOwnList(token);
+				}
+				else if (partial) { //re download partial list
+					MainFrame::getMainFrame()->addThreadedTask([=] {
+						QueueManager::getInstance()->addList(HintedUser(u, url), QueueItem::FLAG_CLIENT_VIEW | (partial ? QueueItem::FLAG_PARTIAL_LIST : 0), dir); });
+				}
+				else if (!file.empty()) {
+					DirectoryListingManager::getInstance()->openFileList(HintedUser(u, url), file);
+				}
+			}
+		}
+		return true;
+	}
+	return false;
+}
+
 bool DirectoryListingFrame::allowPopup() const {
 	return dl->getIsOwnList() || (!SETTING(POPUNDER_FILELIST) && !dl->getPartialList()) || (!SETTING(POPUNDER_PARTIAL_LIST) && dl->getPartialList());
 }

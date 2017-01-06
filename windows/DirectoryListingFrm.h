@@ -66,22 +66,8 @@ class DirectoryListingFrame : public MDITabChildWindowImpl<DirectoryListingFrame
 public:
 	static void openWindow(const DirectoryListingPtr& aList, const string& aDir, const string& aXML);
 	static void closeAll();
-	static bool getWindowParams(HWND hWnd, StringMap &params) {
-		auto f = frames.find(hWnd);
-		if (f != frames.end()) {
-			params["id"] = DirectoryListingFrame::id;
-			params["CID"] = f->second->dl->getUser()->getCID().toBase32();
-			params["url"] = f->second->dl->getHubUrl();
-			params["dir"] = f->second->curPath;
-			params["file"] = f->second->dl->getFileName();
-			params["partial"] = f->second->dl->getPartialList();
-			params["profileToken"] = Util::toString(f->second->dl->getIsOwnList() ? f->second->dl->getShareProfile() : 0);
-			if (f->second->dl->getPartialList())
-				QueueManager::getInstance()->noDeleteFileList(f->second->dl->getFileName());
-			return true;
-		}
-		return false;
-	}
+	static bool getWindowParams(HWND hWnd, StringMap &params);
+	static bool parseWindowParams(StringMap& params);
 
 	typedef MDITabChildWindowImpl<DirectoryListingFrame> baseClass;
 	typedef UserInfoBaseHandler<DirectoryListingFrame> uibBase;

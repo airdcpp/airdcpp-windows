@@ -1331,16 +1331,19 @@ LRESULT MainFrame::onLink(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL
 void MainFrame::saveOpenWindows() {
 	StringMap params;
 	SimpleXML xml;
-	xml.addTag("Frames");
+	xml.addTag("Windows");
 	xml.stepIn();
 
 #define save(frame) else if(frame::getWindowParams(t, params)) writeParams(xml, params);
 
 	auto writeParams = [&](SimpleXML& xml, StringMap& params) {
 		xml.addTag("Window");
+		xml.stepIn();
 		for (auto p = params.begin(); p != params.end(); ++p) {
-				xml.addChildAttrib(p->first, p->second);
+				xml.addTag("param", p->second);
+				xml.addChildAttrib("name", p->first);
 			}
+		xml.stepOut();
 	};
 
 	auto tabs = WinUtil::tabCtrl->getTabList();
@@ -1372,83 +1375,58 @@ void MainFrame::saveOpenWindows() {
 
 void MainFrame::loadOpenWindows() {
 
-#define load(frame, ID) else if(frame::id == ID) callAsync( [=] { frame::openWindow(); });
-
-	SimpleXML xml;
-	SettingsManager::loadSettingFile(xml, CONFIG_DIR, CONFIG_FRAMES_NAME);
+#define load(frame, ID) else if(frame::id == ID) frame::parseWindowParams(params)
 	bool hasHubs = false;
 
-	if (xml.findChild("Frames")) {
-		xml.stepIn();
-		while (xml.findChild("Window")) {
-			string id = xml.getChildAttrib("id");
-
-			//Hubs, PMs, File list, Search etc non static frames are special to open..
-			if (id == HubFrame::id) {
-				string hubUrl = xml.getChildAttrib("url");
-				if (!hubUrl.empty()) {
-					ClientManager::getInstance()->createClient(hubUrl);
-					hasHubs = true;
+	try {
+		SimpleXML xml;
+		SettingsManager::loadSettingFile(xml, CONFIG_DIR, CONFIG_FRAMES_NAME);
+		if (xml.findChild("Windows")) {
+			xml.stepIn();
+			while (xml.findChild("Window")) {
+				xml.stepIn();
+				StringMap params;
+				while (xml.findChild("param")) {
+					params[xml.getChildAttrib("name")] = xml.getChildData();
 				}
-			} else if (id == PrivateFrame::id) {
-				string cid = xml.getChildAttrib("CID");
-				string hubUrl = xml.getChildAttrib("url");
-				auto u = ClientManager::getInstance()->getUser(CID(cid));
-				if (u)
-					callAsync([=] { PrivateFrame::openWindow(HintedUser(u, hubUrl)); });
-			}
-			else if (id == DirectoryListingFrame::id) {
-				string cid = xml.getChildAttrib("CID");
-				if (!cid.empty()) {
-					UserPtr u = ClientManager::getInstance()->getUser(CID(cid));
-					if (u) {
-						bool partial = xml.getBoolChildAttrib("partial");
-						string dir = xml.getChildAttrib("dir");
-						string file = xml.getChildAttrib("file");
-						string url = xml.getChildAttrib("url");
-						if (u == ClientManager::getInstance()->getMe()) {
-							ProfileToken token = xml.getIntChildAttrib("profileToken");
-							DirectoryListingManager::getInstance()->openOwnList(token);
-						} else if (partial) { //re download partial list
-							addThreadedTask([=] { QueueManager::getInstance()->addList(HintedUser(u, url), QueueItem::FLAG_CLIENT_VIEW | (partial ? QueueItem::FLAG_PARTIAL_LIST : 0), dir); });
-						} else if(!file.empty()) {
-							DirectoryListingManager::getInstance()->openFileList(HintedUser(u, url), file);
-						}
-					}
-				}
-			}
-			//TODO: handle File lists, Search
-			//load(SearchFrame, id) //currently no handling of re opening
-
-			//Static frames
-			load(QueueFrame, id)
-			load(SystemFrame, id)
-			load(AutoSearchFrame, id)
-			load(RssInfoFrame, id)
-			load(PublicHubsFrame, id)
-			load(FavoriteHubsFrame, id)
-			load(UsersFrame, id)
-			load(NotepadFrame, id)
-			load(SpyFrame, id)
-			load(ADLSearchFrame, id)
-			load(FinishedULFrame, id)
-			load(UploadQueueFrame, id)
-			load(CDMDebugFrame, id)
-			load(RecentsFrame, id)
+				xml.stepOut();
+				string id = params["id"];
+				hasHubs = hasHubs || id == HubFrame::id;
+	
+				if (0);
+				load(HubFrame, id);
+				load(PrivateFrame, id);
+				load(DirectoryListingFrame, id);
+				//Static frames
+				load(QueueFrame, id);
+				load(SystemFrame, id);
+				load(AutoSearchFrame, id);
+				load(RssInfoFrame, id);
+				load(PublicHubsFrame, id);
+				load(FavoriteHubsFrame, id);
+				load(UsersFrame, id);
+				load(NotepadFrame, id);
+				load(SpyFrame, id);
+				load(ADLSearchFrame, id);
+				load(FinishedULFrame, id);
+				load(UploadQueueFrame, id);
+				load(CDMDebugFrame, id);
+				load(RecentsFrame, id);
+			}	
 		}
-	} else { //or still open these? OR Disable the window opening settings if save last state is enabled??
+	} catch (const Exception&) { }
 
-		if (SETTING(OPEN_PUBLIC)) PostMessage(WM_COMMAND, ID_FILE_CONNECT);
-		if (SETTING(OPEN_FAVORITE_HUBS)) PostMessage(WM_COMMAND, IDC_FAVORITES);
-		if (SETTING(OPEN_FAVORITE_USERS)) PostMessage(WM_COMMAND, IDC_FAVUSERS);
-		if (SETTING(OPEN_QUEUE)) PostMessage(WM_COMMAND, IDC_QUEUE);
-		if (SETTING(OPEN_WAITING_USERS)) PostMessage(WM_COMMAND, IDC_UPLOAD_QUEUE);
-		if (SETTING(OPEN_FINISHED_UPLOADS)) PostMessage(WM_COMMAND, IDC_FINISHED_UL);
-		if (SETTING(OPEN_SEARCH_SPY)) PostMessage(WM_COMMAND, IDC_SEARCH_SPY);
-		if (SETTING(OPEN_NOTEPAD)) PostMessage(WM_COMMAND, IDC_NOTEPAD);
-		if (SETTING(OPEN_AUTOSEARCH)) PostMessage(WM_COMMAND, IDC_AUTOSEARCH);
-		if (SETTING(OPEN_SYSTEM_LOG)) PostMessage(WM_COMMAND, IDC_SYSTEM_LOG);
-	}
+	//Always open these??
+	if (SETTING(OPEN_PUBLIC)) PostMessage(WM_COMMAND, ID_FILE_CONNECT);
+	if (SETTING(OPEN_FAVORITE_HUBS)) PostMessage(WM_COMMAND, IDC_FAVORITES);
+	if (SETTING(OPEN_FAVORITE_USERS)) PostMessage(WM_COMMAND, IDC_FAVUSERS);
+	if (SETTING(OPEN_QUEUE)) PostMessage(WM_COMMAND, IDC_QUEUE);
+	if (SETTING(OPEN_WAITING_USERS)) PostMessage(WM_COMMAND, IDC_UPLOAD_QUEUE);
+	if (SETTING(OPEN_FINISHED_UPLOADS)) PostMessage(WM_COMMAND, IDC_FINISHED_UL);
+	if (SETTING(OPEN_SEARCH_SPY)) PostMessage(WM_COMMAND, IDC_SEARCH_SPY);
+	if (SETTING(OPEN_NOTEPAD)) PostMessage(WM_COMMAND, IDC_NOTEPAD);
+	if (SETTING(OPEN_AUTOSEARCH)) PostMessage(WM_COMMAND, IDC_AUTOSEARCH);
+	if (SETTING(OPEN_SYSTEM_LOG)) PostMessage(WM_COMMAND, IDC_SYSTEM_LOG);
 
 	if (!hasHubs)
 		FavoriteManager::getInstance()->autoConnect();

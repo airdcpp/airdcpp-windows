@@ -180,6 +180,17 @@ public:
 		return false;
 	}
 
+	static bool parseWindowParams(StringMap& params) {
+		if (params["id"] == HubFrame::id) {
+			string hubUrl = params["url"];
+			if (!hubUrl.empty()) {
+				ClientManager::getInstance()->createClient(hubUrl);
+			}
+			return true;
+		}
+		return false;
+	}
+
 
 	void setFonts();
 

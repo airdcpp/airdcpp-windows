@@ -37,17 +37,8 @@ private PrivateChatListener, public UCHandler<PrivateFrame>, private SettingsMan
 {
 public:
 	static void openWindow(const HintedUser& replyTo, bool aMessageReceived = false);
-	
-	static bool getWindowParams(HWND hWnd, StringMap& params) {
-		auto f = find_if(frames | map_values, [hWnd](PrivateFrame* h) { return hWnd == h->m_hWnd; }).base();
-		if (f != frames.end()) {
-			params["id"] = PrivateFrame::id;
-			params["CID"] = f->first->getCID().toBase32();
-			params["url"] = f->second->getHubUrl();
-			return true;
-		}
-		return false;
-	}
+	static bool getWindowParams(HWND hWnd, StringMap& params);
+	static bool parseWindowParams(StringMap& params);
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("PrivateFrame"), IDR_PRIVATE, 0, COLOR_3DFACE);
 

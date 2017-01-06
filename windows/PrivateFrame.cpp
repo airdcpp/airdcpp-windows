@@ -68,6 +68,29 @@ void PrivateFrame::openWindow(const HintedUser& aReplyTo, bool aMessageReceived)
 	}
 }
 
+bool PrivateFrame::getWindowParams(HWND hWnd, StringMap& params) {
+	auto f = find_if(frames | map_values, [hWnd](PrivateFrame* h) { return hWnd == h->m_hWnd; }).base();
+	if (f != frames.end()) {
+		params["id"] = PrivateFrame::id;
+		params["CID"] = f->first->getCID().toBase32();
+		params["url"] = f->second->getHubUrl();
+		return true;
+	}
+	return false;
+}
+
+bool PrivateFrame::parseWindowParams(StringMap& params) {
+	if (params["id"] == PrivateFrame::id) {
+		string cid = params["CID"];
+		string hubUrl = params["url"];
+		auto u = ClientManager::getInstance()->getUser(CID(cid));
+		if (u)
+			MessageManager::getInstance()->addChat(HintedUser(u, hubUrl), false);
+		return true;
+	}
+	return false;
+}
+
 
 PrivateFrame::PrivateFrame(const HintedUser& replyTo_) :
 created(false), closed(false), curCommandPosition(0),

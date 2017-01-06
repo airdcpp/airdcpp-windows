@@ -93,6 +93,14 @@ public:
 		return (hWnd == wnd);
 	}
 
+	static bool parseWindowParams(StringMap& params) {
+		if (params["id"] == T::id) {
+			MainFrame::getMainFrame()->callAsync([=] { T::openWindow(); });
+			return true;
+		}
+		return false;
+	}
+
 	static bool getWindowParams(HWND hWnd, StringMap& params) {
 		if (frame != NULL && hWnd == frame->m_hWnd) {
 			params["id"] = T::id;
