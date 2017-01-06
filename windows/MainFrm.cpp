@@ -1392,19 +1392,39 @@ void MainFrame::loadOpenWindows() {
 				}
 			} else if (id == PrivateFrame::id) {
 				string cid = xml.getChildAttrib("CID");
-				string hubUrl = xml.getChildAttrib("hubURL");
+				string hubUrl = xml.getChildAttrib("url");
 				auto u = ClientManager::getInstance()->getUser(CID(cid));
 				if (u)
 					callAsync([=] { PrivateFrame::openWindow(HintedUser(u, hubUrl)); });
-			} //TODO: handle File lists, Search
+			}
+			else if (id == DirectoryListingFrame::id) {
+				string cid = xml.getChildAttrib("CID");
+				if (!cid.empty()) {
+					UserPtr u = ClientManager::getInstance()->getUser(CID(cid));
+					if (u) {
+						bool partial = xml.getBoolChildAttrib("partial");
+						string dir = xml.getChildAttrib("dir");
+						string file = xml.getChildAttrib("file");
+						string url = xml.getChildAttrib("url");
+						if (u == ClientManager::getInstance()->getMe()) {
+							ProfileToken token = xml.getIntChildAttrib("profileToken");
+							DirectoryListingManager::getInstance()->openOwnList(token);
+						} else if (partial) { //re download partial list
+							addThreadedTask([=] { QueueManager::getInstance()->addList(HintedUser(u, url), QueueItem::FLAG_CLIENT_VIEW | (partial ? QueueItem::FLAG_PARTIAL_LIST : 0), dir); });
+						} else if(!file.empty()) {
+							DirectoryListingManager::getInstance()->openFileList(HintedUser(u, url), file);
+						}
+					}
+				}
+			}
+			//TODO: handle File lists, Search
+			//load(SearchFrame, id) //currently no handling of re opening
 
 			//Static frames
 			load(QueueFrame, id)
-			//load(DirectoryListingFrame, id) //currently no handling of re opening
 			load(SystemFrame, id)
 			load(AutoSearchFrame, id)
 			load(RssInfoFrame, id)
-			//load(SearchFrame, id) //currently no handling of re opening
 			load(PublicHubsFrame, id)
 			load(FavoriteHubsFrame, id)
 			load(UsersFrame, id)

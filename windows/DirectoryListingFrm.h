@@ -72,6 +72,12 @@ public:
 			params["id"] = DirectoryListingFrame::id;
 			params["CID"] = f->second->dl->getUser()->getCID().toBase32();
 			params["url"] = f->second->dl->getHubUrl();
+			params["dir"] = f->second->curPath;
+			params["file"] = f->second->dl->getFileName();
+			params["partial"] = f->second->dl->getPartialList();
+			params["profileToken"] = Util::toString(f->second->dl->getIsOwnList() ? f->second->dl->getShareProfile() : 0);
+			if (f->second->dl->getPartialList())
+				QueueManager::getInstance()->noDeleteFileList(f->second->dl->getFileName());
 			return true;
 		}
 		return false;
