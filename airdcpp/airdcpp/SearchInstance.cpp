@@ -64,8 +64,12 @@ namespace dcpp {
 	}
 
 	void SearchInstance::reset() noexcept {
-		WLock l(cs);
-		results.clear();
+		{
+			WLock l(cs);
+			results.clear();
+		}
+
+		fire(SearchInstanceListener::Reset());
 	}
 
 	SearchQueueInfo SearchInstance::hubSearch(StringList& aHubUrls, const SearchPtr& aSearch) noexcept {
