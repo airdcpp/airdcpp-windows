@@ -800,15 +800,19 @@ bool ClientManager::connect(const UserPtr& aUser, const string& aToken, bool all
 }
 
 bool ClientManager::privateMessage(const HintedUser& aUser, const string& aMsg, string& error_, bool aThirdPerson, bool aEcho) noexcept {
-	RLock l(cs);
-	auto u = findOnlineUser(aUser);
-	
-	if(u) {
-		return u->getClient()->privateMessage(u, aMsg, error_, aThirdPerson, aEcho);
+	OnlineUserPtr user = nullptr;
+
+	{
+		RLock l(cs);
+		user = findOnlineUser(aUser);
 	}
 
-	error_ = STRING(USER_OFFLINE);
-	return false;
+	if (!user) {
+		error_ = STRING(USER_OFFLINE);
+		return false;
+	}
+	
+	return user->getClient()->privateMessage(user, aMsg, error_, aThirdPerson, aEcho);
 }
 
 void ClientManager::userCommand(const HintedUser& user, const UserCommand& uc, ParamMap& params, bool compatibility) noexcept {
