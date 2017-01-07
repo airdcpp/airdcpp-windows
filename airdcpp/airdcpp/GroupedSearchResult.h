@@ -105,11 +105,7 @@ namespace dcpp {
 		};
 		SlotInfo getSlots() const noexcept;
 
-		struct ContentInfo {
-			const int folders;
-			const int files;
-		};
-		ContentInfo getContentInfo() const noexcept;
+		const DirectoryContentInfo& getContentInfo() const noexcept;
 
 		time_t getOldestDate() const noexcept;
 

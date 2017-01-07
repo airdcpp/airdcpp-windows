@@ -2828,8 +2828,7 @@ ShareDirectoryInfoPtr ShareManager::getRootInfo(const Directory::Ptr& aDir) cons
 	info->profiles = pd->getRootProfiles();
 	info->incoming = pd->getIncoming();
 	info->size = size;
-	info->fileCount = fileCount;
-	info->folderCount = folderCount;
+	info->contentInfo = DirectoryContentInfo(folderCount, fileCount);
 	info->virtualName = pd->getName();
 	info->refreshState = static_cast<uint8_t>(pd->getRefreshState());
 	info->lastRefreshTime = pd->getLastRefreshTime();
@@ -2956,7 +2955,7 @@ MemoryInputStream* ShareManager::generatePartialList(const string& aVirtualPath,
 }
 
 void ShareManager::toFilelist(OutputStream& os_, const string& aVirtualPath, const OptionalProfileToken& aProfile, bool aRecursive) const {
-	FileListDir listRoot(Util::emptyString, 0, 0);
+	FilelistDirectory listRoot(Util::emptyString, 0);
 	Directory::List childDirectories;
 
 	RLock l(cs);
@@ -3002,41 +3001,37 @@ void ShareManager::toFilelist(OutputStream& os_, const string& aVirtualPath, con
 	os_.write("</FileListing>");
 }
 
-void ShareManager::Directory::toFileList(FileListDir& aListDir, bool aRecursive) {
-	FileListDir* newListDir = nullptr;
+void ShareManager::Directory::toFileList(FilelistDirectory& aListDir, bool aRecursive) {
+	FilelistDirectory* newListDir = nullptr;
 	auto pos = aListDir.listDirs.find(const_cast<string*>(&getVirtualNameLower()));
 	if (pos != aListDir.listDirs.end()) {
 		newListDir = pos->second;
-		if (!aRecursive) {
-			newListDir->size += getSize();
-		}
-
 		newListDir->date = max(newListDir->date, lastWrite);
 	} else {
-		newListDir = new FileListDir(getVirtualName(), aRecursive ? 0 : getSize(), lastWrite);
+		newListDir = new FilelistDirectory(getVirtualName(), lastWrite);
 		aListDir.listDirs.emplace(const_cast<string*>(&newListDir->name), newListDir);
 	}
 
 	newListDir->shareDirs.push_back(this);
 
 	if (aRecursive) {
-		for(auto& d: directories) {
+		for (const auto& d: directories) {
 			d->toFileList(*newListDir, aRecursive);
 		}
 	}
 }
 
-ShareManager::FileListDir::FileListDir(const string& aName, int64_t aSize, uint64_t aDate) : name(aName), size(aSize), date(aDate) { }
+ShareManager::FilelistDirectory::FilelistDirectory(const string& aName, uint64_t aDate) : name(aName), date(aDate) { }
+
+ShareManager::FilelistDirectory::~FilelistDirectory() {
+	for_each(listDirs | map_values, DeleteFunction());
+}
 
 #define LITERAL(n) n, sizeof(n)-1
-void ShareManager::FileListDir::toXml(OutputStream& xmlFile, string& indent, string& tmp2, bool aRecursive) const {
+void ShareManager::FilelistDirectory::toXml(OutputStream& xmlFile, string& indent, string& tmp2, bool aRecursive) const {
 	xmlFile.write(indent);
 	xmlFile.write(LITERAL("<Directory Name=\""));
 	xmlFile.write(SimpleXML::escape(name, tmp2, true));
-	if (!aRecursive) {
-		xmlFile.write(LITERAL("\" Size=\""));
-		xmlFile.write(Util::toString(size));
-	}
 	xmlFile.write(LITERAL("\" Date=\""));
 	xmlFile.write(Util::toString(date));
 
@@ -3054,20 +3049,41 @@ void ShareManager::FileListDir::toXml(OutputStream& xmlFile, string& indent, str
 		xmlFile.write(indent);
 		xmlFile.write(LITERAL("</Directory>\r\n"));
 	} else {
-		bool hasDirs = any_of(shareDirs.begin(), shareDirs.end(), [](const Directory::Ptr& d) { return !d->directories.empty(); });
-		if(!hasDirs && all_of(shareDirs.begin(), shareDirs.end(), [](const Directory::Ptr& d) { return d->files.empty(); })) {
+		size_t fileCount = 0, directoryCount = 0;
+		int64_t totalSize = 0;
+		for (const auto& d : shareDirs) {
+			d->getContentInfo(totalSize, fileCount, directoryCount);
+		}
+
+		xmlFile.write(LITERAL("\" Size=\""));
+		xmlFile.write(Util::toString(totalSize));
+
+		if (fileCount == 0 && directoryCount == 0) {
 			xmlFile.write(LITERAL("\" />\r\n"));
 		} else {
-			xmlFile.write(LITERAL("\" Incomplete=\"1\""));
-			if (hasDirs) {
-				xmlFile.write(LITERAL(" Children=\"1\""));
+			xmlFile.write(LITERAL("\" Incomplete=\"1"));
+
+			// DEPRECATED
+			if (directoryCount > 0) {
+				xmlFile.write(LITERAL("\" Children=\"1"));
 			}
-			xmlFile.write(LITERAL("/>\r\n"));
+
+			if (directoryCount > 0) {
+				xmlFile.write(LITERAL("\" Directories=\""));
+				xmlFile.write(Util::toString(directoryCount));
+			}
+
+			if (fileCount > 0) {
+				xmlFile.write(LITERAL("\" Files=\""));
+				xmlFile.write(Util::toString(fileCount));
+			}
+
+			xmlFile.write(LITERAL("\"/>\r\n"));
 		}
 	}
 }
 
-void ShareManager::FileListDir::filesToXml(OutputStream& xmlFile, string& indent, string& tmp2, bool addDate) const {
+void ShareManager::FilelistDirectory::filesToXml(OutputStream& xmlFile, string& indent, string& tmp2, bool addDate) const {
 	bool filesAdded = false;
 	int dupeFiles = 0;
 	for(auto di = shareDirs.begin(); di != shareDirs.end(); ++di) {
@@ -3129,10 +3145,6 @@ void ShareManager::Directory::File::toXml(OutputStream& xmlFile, string& indent,
 		xmlFile.write(Util::toString(lastWrite));
 	}
 	xmlFile.write(LITERAL("\"/>\r\n"));
-}
-
-ShareManager::FileListDir::~FileListDir() {
-	for_each(listDirs | map_values, DeleteFunction());
 }
 
 string ShareManager::ProfileDirectory::getCacheXmlPath() const noexcept {
@@ -3307,7 +3319,7 @@ bool ShareManager::addDirResult(const Directory* aDir, SearchResultList& aResult
 	}
 
 	if (srch.matchesDate(date)) {
-		SearchResultPtr sr(new SearchResult(SearchResult::TYPE_DIRECTORY, size, path, TTHValue(), date, files, folders));
+		SearchResultPtr sr(new SearchResult(SearchResult::TYPE_DIRECTORY, size, path, TTHValue(), date, DirectoryContentInfo(folders, files)));
 		aResults.push_back(sr);
 		return true;
 	}
@@ -3321,7 +3333,7 @@ void ShareManager::Directory::File::addSR(SearchResultList& aResults, bool addPa
 		aResults.push_back(sr);
 	} else {
 		SearchResultPtr sr(new SearchResult(SearchResult::TYPE_FILE, 
-			size, getNmdcPath(), getTTH(), getLastWrite(), 1));
+			size, getNmdcPath(), getTTH(), getLastWrite(), DirectoryContentInfo()));
 		aResults.push_back(sr);
 	}
 }
@@ -3436,7 +3448,7 @@ void ShareManager::adcSearch(SearchResultList& results, SearchQuery& srch, const
 		for(const auto& f: files | map_values) {
 			if(f.key.empty() || (f.key == cid.toBase32())) { // if no key is set, it means its a hub share.
 				//TODO: fix the date?
-				SearchResultPtr sr(new SearchResult(SearchResult::TYPE_FILE, f.size, "tmp\\" + Util::getFileName(f.path), *srch.root, 0, 1));
+				SearchResultPtr sr(new SearchResult(SearchResult::TYPE_FILE, f.size, "tmp\\" + Util::getFileName(f.path), *srch.root, 0, DirectoryContentInfo()));
 				results.push_back(sr);
 			}
 		}

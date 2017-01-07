@@ -75,7 +75,7 @@ public:
 	bool hasDownloadedBytes(const string& aTarget) throw(QueueException);
 
 	// Get the subdirectories and total file count of a bundle
-	void getBundleContent(const BundlePtr& aBundle, size_t& files_, size_t& directories_) const noexcept;
+	DirectoryContentInfo getBundleContent(const BundlePtr& aBundle) const noexcept;
 
 	// Get the total queued bytes
 	uint64_t getTotalQueueSize() const noexcept { return fileQueue.getTotalQueueSize(); }

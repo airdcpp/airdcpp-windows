@@ -251,7 +251,7 @@ namespace webserver {
 	}
 
 	json Serializer::serializeFileType(const string& aPath) noexcept {
-		auto ext = Format::formatFileType(aPath);
+		auto ext = Util::formatFileType(aPath);
 		auto typeName = getFileTypeId(SearchManager::getInstance()->getNameByExtension(ext, true));
 
 		return{
@@ -261,15 +261,15 @@ namespace webserver {
 		};
 	}
 
-	json Serializer::serializeFolderType(int aFiles, int aDirectories) noexcept {
+	json Serializer::serializeFolderType(const DirectoryContentInfo& aContentInfo) noexcept {
 		json retJson = {
 			{ "id", "directory" },
-			{ "str", Format::formatFolderContent(aFiles, aDirectories) }
+			{ "str", Util::formatDirectoryContent(aContentInfo) }
 		};
 
-		if (aFiles >= 0 && aDirectories >= 0) {
-			retJson["files"] = aFiles;
-			retJson["directories"] = aDirectories;
+		if (Util::hasContentInfo(aContentInfo)) {
+			retJson["files"] = aContentInfo.files;
+			retJson["directories"] = aContentInfo.directories;
 		}
 
 		return retJson;

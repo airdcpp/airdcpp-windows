@@ -251,7 +251,7 @@ void SearchManager::onSR(const string& x, const string& aRemoteIP /*Util::emptyS
 
 
 	SearchResultPtr sr(new SearchResult(user, type, slots, freeSlots, size,
-		file, aRemoteIP, SettingsManager::lanMode ? TTHValue() : TTHValue(tth), Util::emptyString, 0, connection, -1, -1));
+		file, aRemoteIP, SettingsManager::lanMode ? TTHValue() : TTHValue(tth), Util::emptyString, 0, connection, DirectoryContentInfo()));
 	fire(SearchManagerListener::SR(), sr);
 }
 
@@ -304,7 +304,7 @@ void SearchManager::onRES(const AdcCommand& cmd, const UserPtr& from, const stri
 		}
 		
 		SearchResultPtr sr(new SearchResult(HintedUser(from, hubUrl), type, slots, (uint8_t)freeSlots, size,
-			file, remoteIp, th, token, date, connection, files, folders));
+			file, remoteIp, th, token, date, connection, DirectoryContentInfo(folders, files)));
 		fire(SearchManagerListener::SR(), sr);
 	}
 }

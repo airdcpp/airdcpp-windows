@@ -509,10 +509,11 @@ void QueueManager::searchAlternates(uint64_t aTick) noexcept {
 	}
 }
 
-void QueueManager::getBundleContent(const BundlePtr& aBundle, size_t& files_, size_t& directories_) const noexcept {
+DirectoryContentInfo QueueManager::getBundleContent(const BundlePtr& aBundle) const noexcept {
 	RLock l(cs);
-	files_ = aBundle->getQueueItems().size() + aBundle->getFinishedFiles().size();
-	directories_ = aBundle->isFileBundle() ? 0 : bundleQueue.getDirectoryCount(aBundle) - 1;
+	auto files = aBundle->getQueueItems().size() + aBundle->getFinishedFiles().size();
+	auto directories = aBundle->isFileBundle() ? 0 : bundleQueue.getDirectoryCount(aBundle) - 1;
+	return DirectoryContentInfo(directories, files);
 }
 
 bool QueueManager::hasDownloadedBytes(const string& aTarget) throw(QueueException) {

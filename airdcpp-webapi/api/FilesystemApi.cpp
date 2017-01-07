@@ -90,7 +90,7 @@ namespace webserver {
 			json item;
 			item["name"] = fileName;
 			if (i->isDirectory()) {
-				item["type"] = Serializer::serializeFolderType(-1, -1);
+				item["type"] = Serializer::serializeFolderType(DirectoryContentInfo());
 			} else {
 				item["type"] = Serializer::serializeFileType(i->getFileName());
 				item["size"] = i->getSize();

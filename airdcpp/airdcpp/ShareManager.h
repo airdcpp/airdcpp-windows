@@ -389,7 +389,7 @@ private:
 	typedef vector<ProfileDirectory::Ptr> ProfileDirectoryList;
 	unique_ptr<ShareBloom> bloom;
 
-	struct FileListDir;
+	struct FilelistDirectory;
 	class Directory : public intrusive_ptr_base<Directory> {
 	public:
 		typedef boost::intrusive_ptr<Directory> Ptr;
@@ -497,7 +497,7 @@ private:
 
 		void search(SearchResultInfo::Set& aResults, SearchQuery& aStrings, int aLevel) const noexcept;
 
-		void toFileList(FileListDir& aListDir, bool aRecursive);
+		void toFileList(FilelistDirectory& aListDir, bool aRecursive);
 		void toTTHList(OutputStream& tthList, string& tmp2, bool recursive) const;
 
 		//for file list caching
@@ -533,17 +533,17 @@ private:
 		string getRealPath(const string& path) const noexcept;
 	};
 
-	struct FileListDir {
-		typedef unordered_map<string*, FileListDir*, noCaseStringHash, noCaseStringEq> ListDirectoryMap;
+	struct FilelistDirectory {
+		typedef unordered_map<string*, FilelistDirectory*, noCaseStringHash, noCaseStringEq> Map;
 		Directory::List shareDirs;
 
-		FileListDir(const string& aName, int64_t aSize, uint64_t aDate);
-		~FileListDir();
+		FilelistDirectory(const string& aName, uint64_t aDate);
+		~FilelistDirectory();
 
-		string name;
-		int64_t size;
+		const string name;
 		uint64_t date;
-		ListDirectoryMap listDirs;
+
+		Map listDirs;
 
 		void toXml(OutputStream& xmlFile, string& indent, string& tmp2, bool fullList) const;
 		void filesToXml(OutputStream& xmlFile, string& indent, string& tmp2, bool addDate) const;

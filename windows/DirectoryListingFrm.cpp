@@ -1819,10 +1819,10 @@ const tstring DirectoryListingFrame::ItemInfo::getText(uint8_t col) const {
 			if (type == FILE) {
 				return WinUtil::formatFileType(file->getName());
 			} else {
-				return Util::emptyStringT;
+				return Text::toT(Util::formatDirectoryContent(dir->getContentInfoRecursive(true)));
 			}
 		case COLUMN_EXACTSIZE: return type == DIRECTORY ? Util::formatExactSizeW(dir->getTotalSize(true)) : Util::formatExactSizeW(file->getSize());
-		case COLUMN_SIZE: return  type == DIRECTORY ? Util::formatBytesW(dir->getTotalSize(true)) : Util::formatBytesW(file->getSize());
+		case COLUMN_SIZE: return type == DIRECTORY ? Util::formatBytesW(dir->getTotalSize(true)) : Util::formatBytesW(file->getSize());
 		case COLUMN_DATE: return Util::getDateTimeW(type == DIRECTORY ? dir->getRemoteDate() : file->getRemoteDate());
 		default: return Text::toT(getTextNormal(col));
 	}

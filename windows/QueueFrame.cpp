@@ -1657,9 +1657,7 @@ tstring QueueFrame::QueueItemInfo::getType() const {
 		if (bundle->isFileBundle()) {
 			return WinUtil::formatFileType(bundle->getTarget());
 		} else {
-			size_t files = 0, folders = 0;
-			QueueManager::getInstance()->getBundleContent(bundle, files, folders);
-			return WinUtil::formatFolderContent(files, folders);
+			return WinUtil::formatFolderContent(QueueManager::getInstance()->getBundleContent(bundle));
 		}
 	} else if (isFilelist()) {
 		return TSTRING(FILE_LIST);

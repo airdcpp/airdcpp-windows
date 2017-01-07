@@ -685,11 +685,7 @@ int SearchFrame::SearchInfo::compareItems(const SearchInfo* a, const SearchInfo*
 			}
 
 			if (a->sr->getType() == SearchResult::TYPE_DIRECTORY) {
-				if (a->sr->getFolderCount() != b->sr->getFolderCount()) {
-					return a->sr->getFolderCount() < b->sr->getFolderCount() ? 1 : -1;
-				}
-
-				return a->sr->getFileCount() < b->sr->getFileCount() ? 1 : -1;
+				return Util::directoryContentSort(a->sr->getContentInfo(), b->sr->getContentInfo());
 			}
 
 			return lstrcmpi(a->getText(COLUMN_TYPE).c_str(), b->getText(COLUMN_TYPE).c_str());
@@ -728,7 +724,7 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 			if(sr->getType() == SearchResult::TYPE_FILE) {
 				return WinUtil::formatFileType(sr->getPath());
 			} else {
-				return WinUtil::formatFolderContent(sr->getFileCount(), sr->getFolderCount());
+				return WinUtil::formatFolderContent(sr->getContentInfo());
 			}
 		case COLUMN_SIZE: 
 			if(sr->getType() == SearchResult::TYPE_FILE) {

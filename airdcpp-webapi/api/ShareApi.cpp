@@ -73,7 +73,7 @@ namespace webserver {
 			{ "virtual_path", path },
 			{ "real_paths", realPaths },
 			{ "time", aSR->getDate() },
-			{ "type", isDirectory ? Serializer::serializeFolderType(aSR->getFileCount(), aSR->getFolderCount()) : Serializer::serializeFileType(aSR->getPath()) },
+			{ "type", isDirectory ? Serializer::serializeFolderType(aSR->getContentInfo()) : Serializer::serializeFileType(aSR->getPath()) },
 			{ "size", aSR->getSize() },
 			{ "tth", isDirectory ? Util::emptyString : aSR->getTTH().toBase32() },
 		};
