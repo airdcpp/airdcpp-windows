@@ -391,23 +391,14 @@ DirectoryListingPtr DirectoryListingManager::createList(const HintedUser& aUser,
 }
 
 void DirectoryListingManager::on(QueueManagerListener::ItemAdded, const QueueItemPtr& aQI) noexcept {
-	if (!aQI->isSet(QueueItem::FLAG_CLIENT_VIEW) || !aQI->isSet(QueueItem::FLAG_USER_LIST))
+	if (!aQI->isSet(QueueItem::FLAG_USER_LIST))
 		return;
 
 	auto user = aQI->getSources()[0].getUser();
 	auto dl = hasList(user);
 	if (dl) {
 		dl->onAddedQueue(aQI->getTarget());
-		return;
 	}
-
-	if (!aQI->isSet(QueueItem::FLAG_PARTIAL_LIST)) {
-		dl = createList(user, false, aQI->getListName(), false);
-	} else {
-		dl = createList(user, true, Util::emptyString, false);
-	}
-
-	dl->onAddedQueue(aQI->getTarget());
 }
 
 DirectoryListingPtr DirectoryListingManager::hasList(const UserPtr& aUser) noexcept {
@@ -419,6 +410,26 @@ DirectoryListingPtr DirectoryListingManager::hasList(const UserPtr& aUser) noexc
 	}
 
 	return nullptr;
+}
+
+DirectoryListingPtr DirectoryListingManager::createList(const HintedUser& aUser, Flags::MaskType aFlags, const string& aInitialDir) {
+	auto dl = hasList(aUser);
+	if (dl) {
+		return nullptr;
+	}
+
+	auto qi = QueueManager::getInstance()->addList(aUser, aFlags, aInitialDir);
+	if (!qi) {
+		return nullptr;
+	}
+
+	if (!qi->isSet(QueueItem::FLAG_PARTIAL_LIST)) {
+		dl = createList(aUser, false, qi->getListName(), false);
+	} else {
+		dl = createList(aUser, true, Util::emptyString, false);
+	}
+
+	return dl;
 }
 
 bool DirectoryListingManager::removeList(const UserPtr& aUser) noexcept {

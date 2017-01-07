@@ -25,7 +25,8 @@
 #include "FilteredListViewCtrl.h"
 #include "BrowserBar.h"
 
-#include <airdcpp/QueueManager.h>
+#include <airdcpp/DirectoryListingManager.h>
+#include <airdcpp/QueueManagerListener.h>
 #include <airdcpp/TaskQueue.h>
 
 #define STATUS_MSG_MAP 19
@@ -377,7 +378,7 @@ private:
 			// get list
 			getListMenu->appendItem(nick, [=] {
 				try {
-					QueueManager::getInstance()->addList(u, QueueItem::FLAG_CLIENT_VIEW);
+					DirectoryListingManager::getInstance()->createList(u, QueueItem::FLAG_CLIENT_VIEW);
 				} catch (const QueueException& e) {
 					ctrlStatus.SetText(1, Text::toT(e.getError()).c_str());
 				}
@@ -386,7 +387,7 @@ private:
 			// browse list
 			browseMenu->appendItem(nick, [=] {
 				try {
-					QueueManager::getInstance()->addList(u, QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
+					DirectoryListingManager::getInstance()->createList(u, QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
 				} catch (const QueueException& e) {
 					ctrlStatus.SetText(1, Text::toT(e.getError()).c_str());
 				}

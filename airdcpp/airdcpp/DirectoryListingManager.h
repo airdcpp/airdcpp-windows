@@ -74,6 +74,8 @@ namespace dcpp {
 		void openOwnList(ProfileToken aProfile, bool useADL=false) noexcept;
 		void openFileList(const HintedUser& aUser, const string& aFile) noexcept;
 		
+		// Add a managed filelist session, throws queueing errors
+		DirectoryListingPtr createList(const HintedUser& HintedUser, Flags::MaskType aFlags, const string& aInitialDir = Util::emptyString);
 		bool removeList(const UserPtr& aUser) noexcept;
 
 		DirectoryListingManager() noexcept;

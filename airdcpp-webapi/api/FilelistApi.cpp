@@ -79,9 +79,9 @@ namespace webserver {
 		auto flags = aFlags;
 		flags.setFlag(QueueItem::FLAG_PARTIAL_LIST);
 
-		QueueItemPtr q = nullptr;
+		DirectoryListingPtr dl = nullptr;
 		try {
-			q = QueueManager::getInstance()->addList(user, flags.getFlags(), directory);
+			dl = DirectoryListingManager::getInstance()->createList(user, flags.getFlags(), directory);
 		} catch (const DupeException& e) {
 			aRequest.setResponseErrorStr(e.getError());
 			return websocketpp::http::status_code::conflict;
@@ -90,10 +90,7 @@ namespace webserver {
 			return websocketpp::http::status_code::bad_request;
 		}
 
-		aRequest.setResponseBody({
-			{ "id", user.user->getCID().toBase32() }
-		});
-
+		aRequest.setResponseBody(serializeList(dl));
 		return websocketpp::http::status_code::ok;
 	}
 
@@ -120,7 +117,7 @@ namespace webserver {
 		auto list = getSubModule(aRequest);
 
 		DirectoryListingManager::getInstance()->removeList(list->getList()->getUser());
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	void FilelistApi::on(DirectoryListingManagerListener::ListingCreated, const DirectoryListingPtr& aList) noexcept {
@@ -187,7 +184,7 @@ namespace webserver {
 		size_t totalFiles = -1;
 		aList->getPartialListInfo(totalSize, totalFiles);
 
-		return{
+		return {
 			{ "id", aList->getUser()->getCID().toBase32() },
 			{ "user", Serializer::serializeHintedUser(aList->getHintedUser()) },
 			{ "state", FilelistInfo::serializeState(aList) },
@@ -196,7 +193,7 @@ namespace webserver {
 			{ "total_files", totalFiles },
 			{ "total_size", totalSize },
 			{ "read", aList->isRead() },
-			{ "share_profile", aList->getIsOwnList() ? Serializer::serializeShareProfileSimple(aList->getShareProfile()) : json() },
+			{ "share_profile", aList->getIsOwnList() ? Serializer::serializeShareProfileSimple(aList->getShareProfile()) : nullptr },
 		};
 	}
 
@@ -216,7 +213,7 @@ namespace webserver {
 		const auto& reqJson = aRequest.getRequestBody();
 		auto listPath = JsonUtil::getField<string>("list_path", aRequest.getRequestBody(), false);
 
-		string targetDirectory, targetBundleName;
+		string targetDirectory, targetBundleName = Util::getAdcLastDir(listPath);
 		Priority prio;
 		Deserializer::deserializeDownloadParams(aRequest.getRequestBody(), aRequest.getSession(), targetDirectory, targetBundleName, prio);
 
@@ -240,6 +237,6 @@ namespace webserver {
 			return websocketpp::http::status_code::not_found;
 		}
 
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 }
