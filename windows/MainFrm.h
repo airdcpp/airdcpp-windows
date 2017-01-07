@@ -348,6 +348,10 @@ private:
 	void updateStatus(TStringList* aItems);
 	void addStatus(const LogMessagePtr& aMessage);
 
+	void initTooltips();
+	void initStatusbar();
+	void initCmdBar();
+
 	NOTIFYICONDATA pmicon;
 	NOTIFYICONDATA hubicon;
 	NOTIFYICONDATA hubPmicon;
@@ -430,7 +434,6 @@ private:
 
 	HANDLE stopperThread;
 
-	bool missedAutoConnect;
 	bool settingsWindowOpen;
 	HWND createToolbar();
 	HWND createWinampToolbar();
@@ -438,8 +441,8 @@ private:
 	void updateTooltipRect();
 	void updateActivity();
 	void onAwayButton();
-	void saveOpenWindows();
 
+	void saveOpenWindows();
 	void loadOpenWindows();
 	enum {
 		STATUS_LASTLINES,

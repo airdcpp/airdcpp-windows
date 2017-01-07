@@ -367,7 +367,8 @@ void FavoriteManager::autoConnect() noexcept {
 	}
 
 	for (const auto& h : hubs) {
-		ClientManager::getInstance()->createClient(h);
+		if (!ClientManager::getInstance()->hasClient(h))
+			ClientManager::getInstance()->createClient(h);
 	}
 }
 
