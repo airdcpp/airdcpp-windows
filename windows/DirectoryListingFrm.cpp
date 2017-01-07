@@ -841,7 +841,7 @@ void DirectoryListingFrame::updateStatusText(int aTotalCount, int64_t aTotalSize
 	}
 	ctrlStatus.SetText(STATUS_SELECTED_SIZE, tmp.c_str());
 
-	tmp = TSTRING_F(UPDATED_ON_X, Text::toT(Util::formatTime("%c", aUpdateDate)));
+	tmp = aUpdateDate > 0 ? TSTRING_F(UPDATED_ON_X, Text::toT(Util::formatTime("%c", aUpdateDate))) : Util::emptyStringT;
 	w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
 	if (statusSizes[STATUS_UPDATED] < w) {
 		statusSizes[STATUS_UPDATED] = w;
