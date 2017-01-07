@@ -67,7 +67,7 @@ namespace webserver {
 
 		auto userName = JsonUtil::getField<string>("username", reqJson, false);
 		if (!WebUser::validateUsername(userName)) {
-			JsonUtil::throwError("username", JsonUtil::ERROR_EXISTS, "The username should only contain alphanumeric characters");
+			JsonUtil::throwError("username", JsonUtil::ERROR_INVALID, "The username should only contain alphanumeric characters");
 		}
 
 		auto user = std::make_shared<WebUser>(userName, Util::emptyString);
@@ -75,7 +75,7 @@ namespace webserver {
 		parseUser(user, reqJson, true);
 
 		if (!um.addUser(user)) {
-			JsonUtil::throwError("username", JsonUtil::ERROR_EXISTS, "User with the same name exists");
+			JsonUtil::throwError("username", JsonUtil::ERROR_EXISTS, "User with the same name exists already");
 		}
 
 		return websocketpp::http::status_code::ok;

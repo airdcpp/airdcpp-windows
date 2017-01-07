@@ -166,7 +166,7 @@ namespace webserver {
 	BundlePtr QueueApi::getBundle(ApiRequest& aRequest) {
 		auto b = QueueManager::getInstance()->findBundle(aRequest.getTokenParam(0));
 		if (!b) {
-			throw std::invalid_argument("Bundle not found");
+			throw RequestException(websocketpp::http::status_code::not_found, "Bundle not found");
 		}
 
 		return b;
@@ -175,7 +175,7 @@ namespace webserver {
 	QueueItemPtr QueueApi::getFile(ApiRequest& aRequest) {
 		auto q = QueueManager::getInstance()->findFile(aRequest.getTokenParam(0));
 		if (!q) {
-			throw std::invalid_argument("File not found");
+			throw RequestException(websocketpp::http::status_code::not_found, "File not found");
 		}
 
 		return q;
@@ -456,11 +456,11 @@ namespace webserver {
 	void QueueApi::onBundleUpdated(const BundlePtr& aBundle, const PropertyIdSet& aUpdatedProperties, const string& aSubscription) {
 		bundleView.onItemUpdated(aBundle, aUpdatedProperties);
 		if (subscriptionActive(aSubscription)) {
-			send(aSubscription, Serializer::serializeItem(aBundle, QueueBundleUtils::propertyHandler));;
+			send(aSubscription, Serializer::serializeItemProperties(aBundle, aUpdatedProperties, QueueBundleUtils::propertyHandler));
 		}
 
 		if (subscriptionActive("bundle_updated")) {
-			send(aSubscription, Serializer::serializeItem(aBundle, QueueBundleUtils::propertyHandler));
+			send("bundle_updated", Serializer::serializeItemProperties(aBundle, aUpdatedProperties, QueueBundleUtils::propertyHandler));
 		}
 	}
 

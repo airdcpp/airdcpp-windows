@@ -135,14 +135,13 @@ namespace webserver {
 		auto s = FileSearchParser::parseSearch(reqJson, false, Util::toString(Util::rand()));
 		auto hubs = Deserializer::deserializeHubUrls(reqJson);
 
-		searchView.resetItems();
 		auto queueResult = search->hubSearch(hubs, s);
-
 		aRequest.setResponseBody({
 			{ "queue_time", queueResult.queueTime },
 			{ "search_id", search->getCurrentSearchToken() },
 			{ "sent", queueResult.succeed },
 		});
+
 		return websocketpp::http::status_code::ok;
 	}
 
@@ -153,9 +152,7 @@ namespace webserver {
 		auto user = Deserializer::deserializeHintedUser(reqJson, false);
 		auto s = FileSearchParser::parseSearch(reqJson, true, Util::toString(Util::rand()));
 
-		searchView.resetItems();
 		search->userSearch(user, s);
-
 		return websocketpp::http::status_code::ok;
 	}
 
@@ -193,5 +190,9 @@ namespace webserver {
 				{ "result", serializeSearchResult(aResult) }
 			});
 		}
+	}
+
+	void SearchEntity::on(SearchInstanceListener::Reset) noexcept {
+		searchView.resetItems();
 	}
 }

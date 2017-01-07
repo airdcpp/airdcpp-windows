@@ -188,14 +188,11 @@ namespace webserver {
 
 		auto client = ClientManager::getInstance()->createClient(address);
 		if (!client) {
-			aRequest.setResponseErrorStr("Hub exists");
-			return websocketpp::http::status_code::bad_request;
+			aRequest.setResponseErrorStr("Hub with the same URL exists already");
+			return websocketpp::http::status_code::conflict;
 		}
 
-		aRequest.setResponseBody({
-			{ "id", client->getClientId() }
-		});
-
+		aRequest.setResponseBody(serializeClient(client));
 		return websocketpp::http::status_code::ok;
 	}
 

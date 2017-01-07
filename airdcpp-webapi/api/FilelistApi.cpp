@@ -82,6 +82,9 @@ namespace webserver {
 		QueueItemPtr q = nullptr;
 		try {
 			q = QueueManager::getInstance()->addList(user, flags.getFlags(), directory);
+		} catch (const DupeException& e) {
+			aRequest.setResponseErrorStr(e.getError());
+			return websocketpp::http::status_code::conflict;
 		} catch (const Exception& e) {
 			aRequest.setResponseErrorStr(e.getError());
 			return websocketpp::http::status_code::bad_request;

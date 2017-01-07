@@ -42,8 +42,8 @@ namespace webserver {
 		});
 
 		METHOD_HANDLER("roots", Access::SETTINGS_VIEW, ApiRequest::METHOD_GET, (), false, ShareRootApi::handleGetRoots);
-		METHOD_HANDLER("root", Access::SETTINGS_VIEW, ApiRequest::METHOD_GET, (EXACT_PARAM("get")), true, ShareRootApi::handleGetRoot);
 
+		METHOD_HANDLER("root", Access::SETTINGS_VIEW, ApiRequest::METHOD_POST, (EXACT_PARAM("get")), true, ShareRootApi::handleGetRoot);
 		METHOD_HANDLER("root", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("add")), true, ShareRootApi::handleAddRoot);
 		METHOD_HANDLER("root", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("update")), true, ShareRootApi::handleUpdateRoot);
 		METHOD_HANDLER("root", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("remove")), true, ShareRootApi::handleRemoveRoot);

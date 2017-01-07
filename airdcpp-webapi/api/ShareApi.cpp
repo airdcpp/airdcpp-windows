@@ -17,14 +17,16 @@
 */
 
 #include <api/ShareApi.h>
-#include <api/common/Serializer.h>
+
 #include <api/common/Deserializer.h>
-#include <api/ShareUtils.h>
+#include <api/common/FileSearchParser.h>
+#include <api/common/Serializer.h>
 
 #include <web-server/JsonUtil.h>
 
-#include <airdcpp/ShareManager.h>
 #include <airdcpp/HubEntry.h>
+#include <airdcpp/SearchResult.h>
+#include <airdcpp/ShareManager.h>
 
 namespace webserver {
 	ShareApi::ShareApi(Session* aSession) : SubscribableApiModule(aSession, Access::SETTINGS_VIEW) {
@@ -32,6 +34,7 @@ namespace webserver {
 		METHOD_HANDLER("grouped_root_paths", Access::ANY, ApiRequest::METHOD_GET, (), false, ShareApi::handleGetGroupedRootPaths);
 		METHOD_HANDLER("stats", Access::ANY, ApiRequest::METHOD_GET, (), false, ShareApi::handleGetStats);
 		METHOD_HANDLER("find_dupe_paths", Access::ANY, ApiRequest::METHOD_POST, (), true, ShareApi::handleFindDupePaths);
+		METHOD_HANDLER("search", Access::SETTINGS_VIEW, ApiRequest::METHOD_POST, (), true, ShareApi::handleSearch);
 
 		METHOD_HANDLER("refresh", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (), false, ShareApi::handleRefreshShare);
 		METHOD_HANDLER("refresh", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("paths")), true, ShareApi::handleRefreshPaths);
@@ -51,6 +54,51 @@ namespace webserver {
 
 	ShareApi::~ShareApi() {
 		ShareManager::getInstance()->removeListener(this);
+	}
+
+	json ShareApi::serializeShareItem(const SearchResultPtr& aSR) noexcept {
+		auto isDirectory = aSR->getType() == SearchResult::TYPE_DIRECTORY;
+		auto path = Util::toAdcFile(aSR->getPath());
+
+		StringList realPaths;
+		try {
+			ShareManager::getInstance()->getRealPaths(path, realPaths);
+		} catch (const ShareException&) {
+			dcassert(0);
+		}
+
+		return {
+			{ "id", aSR->getId() },
+			{ "name", aSR->getFileName() },
+			{ "virtual_path", path },
+			{ "real_paths", realPaths },
+			{ "time", aSR->getDate() },
+			{ "type", isDirectory ? Serializer::serializeFolderType(aSR->getFileCount(), aSR->getFolderCount()) : Serializer::serializeFileType(aSR->getPath()) },
+			{ "size", aSR->getSize() },
+			{ "tth", isDirectory ? Util::emptyString : aSR->getTTH().toBase32() },
+		};
+	}
+
+	api_return ShareApi::handleSearch(ApiRequest& aRequest) {
+		const auto& reqJson = aRequest.getRequestBody();
+
+		// Parse share profile and query
+		auto profile = Deserializer::deserializeOptionalShareProfile(reqJson);
+		auto s = FileSearchParser::parseSearch(reqJson, true, Util::toString(Util::rand()));
+
+		// Search
+		SearchResultList results;
+		
+		{
+			unique_ptr<SearchQuery> matcher(SearchQuery::getSearch(s));
+			try {
+				ShareManager::getInstance()->adcSearch(results, *matcher, profile, CID(), s->path);
+			} catch (...) {}
+		}
+
+		// Serialize results
+		aRequest.setResponseBody(Serializer::serializeList(results, serializeShareItem));
+		return websocketpp::http::status_code::ok;
 	}
 
 	api_return ShareApi::handleGetExcludes(ApiRequest& aRequest) {

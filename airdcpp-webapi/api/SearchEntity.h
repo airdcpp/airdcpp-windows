@@ -71,6 +71,7 @@ namespace webserver {
 		void on(SearchInstanceListener::GroupedResultAdded, const GroupedSearchResultPtr& aResult) noexcept override;
 		void on(SearchInstanceListener::GroupedResultUpdated, const GroupedSearchResultPtr& aResult) noexcept override;
 		void on(SearchInstanceListener::UserResult, const SearchResultPtr& aResult, const GroupedSearchResultPtr& aParent) noexcept override;
+		void on(SearchInstanceListener::Reset) noexcept override;
 
 		typedef ListViewController<GroupedSearchResultPtr, SearchUtils::PROP_LAST> SearchView;
 		SearchView searchView;
