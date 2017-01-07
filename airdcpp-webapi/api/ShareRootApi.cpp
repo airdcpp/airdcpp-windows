@@ -106,6 +106,8 @@ namespace webserver {
 		parseRoot(info, reqJson, true);
 
 		ShareManager::getInstance()->addRootDirectory(info);
+
+		aRequest.setResponseBody(Serializer::serializeItem(info, ShareUtils::propertyHandler));
 		return websocketpp::http::status_code::ok;
 	}
 
@@ -123,6 +125,7 @@ namespace webserver {
 		parseRoot(info, reqJson, false);
 
 		ShareManager::getInstance()->updateRootDirectory(info);
+		aRequest.setResponseBody(Serializer::serializeItem(info, ShareUtils::propertyHandler));
 		return websocketpp::http::status_code::ok;
 	}
 
@@ -135,8 +138,7 @@ namespace webserver {
 			return websocketpp::http::status_code::not_found;
 		}
 
-
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	void ShareRootApi::on(ShareManagerListener::RootCreated, const string& aPath) noexcept {
@@ -212,17 +214,24 @@ namespace webserver {
 	}
 
 	void ShareRootApi::parseRoot(ShareDirectoryInfoPtr& aInfo, const json& j, bool aIsNew) {
-		auto virtualName = JsonUtil::getOptionalField<string>("virtual_name", j, false, aIsNew);
+		auto virtualName = JsonUtil::getOptionalField<string>("virtual_name", j, false);
 		if (virtualName) {
 			aInfo->virtualName = *virtualName;
 		}
 
-		auto profiles = JsonUtil::getOptionalField<ProfileTokenSet>("profiles", j, false, aIsNew);
+		auto profiles = JsonUtil::getOptionalField<ProfileTokenSet>("profiles", j, false);
 		if (profiles) {
 			// Only validate added profiles
 			ProfileTokenSet diff;
 
 			auto newProfiles = *profiles;
+			for (const auto& p : newProfiles) {
+				if (!ShareManager::getInstance()->getShareProfile(p)) {
+					JsonUtil::throwError("profiles", JsonUtil::ERROR_INVALID, "Share profile " +  Util::toString(p)  + " was not found");
+				}
+			}
+
+
 			std::set_difference(newProfiles.begin(), newProfiles.end(),
 				aInfo->profiles.begin(), aInfo->profiles.end(), std::inserter(diff, diff.begin()));
 
@@ -235,7 +244,7 @@ namespace webserver {
 			aInfo->profiles = newProfiles;
 		}
 
-		auto incoming = JsonUtil::getOptionalField<bool>("incoming", j, false, false);
+		auto incoming = JsonUtil::getOptionalField<bool>("incoming", j, false);
 		if (incoming) {
 			aInfo->incoming = *incoming;
 		}

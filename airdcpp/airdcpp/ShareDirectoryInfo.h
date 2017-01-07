@@ -23,6 +23,7 @@
 
 #include "forward.h"
 #include "typedefs.h"
+#include "SettingsManager.h"
 #include "Util.h"
 
 namespace dcpp {
@@ -39,6 +40,10 @@ namespace dcpp {
 		
 			if (virtualName.empty()) {
 				virtualName = Util::getLastDir(aPath);
+			}
+
+			if (profiles.empty()) {
+				profiles.insert(SETTING(DEFAULT_SP));
 			}
 		}
 
