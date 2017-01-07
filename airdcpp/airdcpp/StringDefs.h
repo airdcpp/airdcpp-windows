@@ -943,7 +943,6 @@ enum Strings { // @DontAdd
 	NO_NEEDED_PART, // "No needed part"
 	NO_NFO_FOUND, // "No NFO files found!"
 	NO_PARTIAL_SUPPORT, // "The remote client doesn't support this feature"
-	NO_PARTIAL_SUPPORT_RETRY, // "The remote client is too old, retrying soon with full list..."
 	NO_RESULTS_FOUND, // "No results were found"
 	NO_RESULTS_SPECIFIED_TIME, // "No results were received in the specified time"
 	NO_SLOTS_AVAILABLE, // "No slots available"

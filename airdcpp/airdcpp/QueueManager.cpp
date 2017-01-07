@@ -524,7 +524,7 @@ bool QueueManager::hasDownloadedBytes(const string& aTarget) throw(QueueExceptio
 	return q->getDownloadedBytes() > 0;
 }
 
-QueueItemPtr QueueManager::addList(const HintedUser& aUser, Flags::MaskType aFlags, const string& aInitialDir /* = Util::emptyString */, BundlePtr aBundle /*nullptr*/) throw(QueueException, DupeException) {
+QueueItemPtr QueueManager::addList(const HintedUser& aUser, Flags::MaskType aFlags, const string& aInitialDir /* = Util::emptyString */, const BundlePtr& aBundle /*nullptr*/) throw(QueueException, DupeException) {
 	// Pre-checks
 	checkSource(aUser);
 	if (aUser.hint.empty()) {

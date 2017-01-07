@@ -271,7 +271,7 @@ LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHand
 			FinishedItem *ii = ctrlList.getItemData(i);
 			if(ii->getUser().user->isOnline()) {
 				try {
-					QueueManager::getInstance()->addList(ii->getUser(), QueueItem::FLAG_CLIENT_VIEW);
+					DirectoryListingManager::getInstance()->createList(ii->getUser(), QueueItem::FLAG_CLIENT_VIEW);
 				} catch(const Exception&) {
 				}
 			} else {

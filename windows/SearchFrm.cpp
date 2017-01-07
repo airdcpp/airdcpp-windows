@@ -846,7 +846,7 @@ void SearchFrame::handleGetList(ListType aType) {
 		}
 
 		try {
-			QueueManager::getInstance()->addList(si->sr->getUser(), QueueItem::FLAG_CLIENT_VIEW | flags, si->sr->getFilePath());
+			DirectoryListingManager::getInstance()->createList(si->sr->getUser(), QueueItem::FLAG_CLIENT_VIEW | flags, si->sr->getFilePath());
 		} catch(const Exception&) {
 			// Ignore for now...
 		}

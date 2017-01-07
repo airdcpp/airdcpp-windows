@@ -86,7 +86,7 @@ namespace webserver {
 		auto reload = JsonUtil::getOptionalFieldDefault<bool>("reload", j, false);
 
 		dl->addDirectoryChangeTask(Util::toNmdcFile(listPath), reload);
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return FilelistInfo::handleSetRead(ApiRequest& aRequest) {

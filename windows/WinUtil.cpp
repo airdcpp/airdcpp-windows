@@ -29,22 +29,24 @@
 #include "LineDlg.h"
 #include "MainFrm.h"
 
-#include <airdcpp/ScopedFunctor.h>
-#include <airdcpp/Util.h>
-#include <airdcpp/Localization.h>
-#include <airdcpp/StringTokenizer.h>
 #include <airdcpp/ClientManager.h>
-#include <airdcpp/TimerManager.h>
+#include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/FavoriteManager.h>
-#include <airdcpp/ResourceManager.h>
-#include <airdcpp/QueueManager.h>
-#include <airdcpp/UploadManager.h>
+#include <airdcpp/Localization.h>
 #include <airdcpp/LogManager.h>
-#include <airdcpp/version.h>
 #include <airdcpp/Magnet.h>
+#include <airdcpp/QueueManager.h>
+#include <airdcpp/ResourceManager.h>
+#include <airdcpp/ScopedFunctor.h>
+#include <airdcpp/StringTokenizer.h>
+#include <airdcpp/TimerManager.h>
+#include <airdcpp/UploadManager.h>
+#include <airdcpp/Util.h>
 #include <airdcpp/ViewFileManager.h>
 
 #include <airdcpp/modules/PreviewAppManager.h>
+
+#include <airdcpp/version.h>
 
 #include <boost/format.hpp>
 
@@ -213,7 +215,7 @@ void WinUtil::GetList::operator()(UserPtr aUser, const string& aUrl) const {
 	
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		try {
-			QueueManager::getInstance()->addList(HintedUser(aUser, aUrl), QueueItem::FLAG_CLIENT_VIEW);
+			DirectoryListingManager::getInstance()->createList(HintedUser(aUser, aUrl), QueueItem::FLAG_CLIENT_VIEW);
 		} catch(const Exception& e) {
 			LogManager::getInstance()->message(e.getError(), LogMessage::SEV_ERROR);		
 		}
@@ -226,7 +228,7 @@ void WinUtil::BrowseList::operator()(UserPtr aUser, const string& aUrl) const {
 
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		try {
-			QueueManager::getInstance()->addList(HintedUser(aUser, aUrl), QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
+			DirectoryListingManager::getInstance()->createList(HintedUser(aUser, aUrl), QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
 		} catch (const Exception& e) {
 			LogManager::getInstance()->message(e.getError(), LogMessage::SEV_ERROR);
 		}
@@ -1107,9 +1109,10 @@ bool WinUtil::parseDBLClick(const tstring& str) {
 
 			MainFrame::getMainFrame()->addThreadedTask([=] {
 				try {
-					UserPtr user = ClientManager::getInstance()->findLegacyUser(file);
-					if (user)
-						QueueManager::getInstance()->addList(HintedUser(user, url), QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
+					auto user = ClientManager::getInstance()->findLegacyUser(file);
+					if (user) {
+						DirectoryListingManager::getInstance()->createList(HintedUser(user, url), QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
+					}
 					// @todo else report error
 				} catch (const Exception&) {
 					// ...

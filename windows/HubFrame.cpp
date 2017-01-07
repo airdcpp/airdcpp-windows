@@ -808,7 +808,7 @@ LRESULT HubFrame::onLButton(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& b
 					PrivateFrame::openWindow(HintedUser(ui->getUser(), client->getHubUrl()));
 				} else if (wParam & MK_SHIFT) {
 					try {
-						QueueManager::getInstance()->addList(HintedUser(ui->getUser(), client->getHubUrl()), QueueItem::FLAG_CLIENT_VIEW);
+						DirectoryListingManager::getInstance()->createList(HintedUser(ui->getUser(), client->getHubUrl()), QueueItem::FLAG_CLIENT_VIEW);
 					} catch(const Exception& e) {
 						addStatus(Text::toT(e.getError()), LogMessage::SEV_ERROR, WinUtil::m_ChatTextSystem);
 					}
@@ -1178,7 +1178,7 @@ LRESULT HubFrame::onEnterUsers(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHand
 	int item = ctrlUsers.GetNextItem(-1, LVNI_FOCUSED);
 	if(item != -1) {
 		try {
-			QueueManager::getInstance()->addList(HintedUser((ctrlUsers.getItemData(item))->getUser(), client->getHubUrl()), QueueItem::FLAG_CLIENT_VIEW);
+			DirectoryListingManager::getInstance()->createList(HintedUser((ctrlUsers.getItemData(item))->getUser(), client->getHubUrl()), QueueItem::FLAG_CLIENT_VIEW);
 		} catch(const Exception& e) {
 			addStatus(Text::toT(e.getError()), LogMessage::SEV_ERROR);
 		}

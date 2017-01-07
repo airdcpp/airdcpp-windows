@@ -80,8 +80,9 @@ public:
 	// Get the total queued bytes
 	uint64_t getTotalQueueSize() const noexcept { return fileQueue.getTotalQueueSize(); }
 
-	/** Add a user's filelist to the queue. */
-	QueueItemPtr addList(const HintedUser& HintedUser, Flags::MaskType aFlags, const string& aInitialDir = Util::emptyString, BundlePtr aBundle=nullptr) throw(QueueException, DupeException);
+	// Add a user's filelist to the queue.
+	// New managed filelist sessions should be created via DirectoryListingManager instead
+	QueueItemPtr addList(const HintedUser& aUser, Flags::MaskType aFlags, const string& aInitialDir = Util::emptyString, const BundlePtr& aBundle = nullptr) throw(QueueException, DupeException);
 
 	/** Add an item that is opened in the client or with an external program */
 	/** Files that are viewed in the client should be added from ViewFileManager */
