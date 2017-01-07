@@ -124,7 +124,7 @@ public:
 	optional<uint64_t> search(string& who, const SearchPtr& aSearch) noexcept;
 
 	// Get users with nick matching the pattern. Uses relevancies for priorizing the results.
-	OnlineUserList searchNicks(const string& aPattern, size_t aMaxResults, bool aIgnorePrefix) const noexcept;
+	OnlineUserList searchNicks(const string& aPattern, size_t aMaxResults, bool aIgnorePrefix, const StringList& aHubUrls) const noexcept;
 
 	void directSearch(const HintedUser& user, const SearchPtr& aSearch) noexcept;
 	

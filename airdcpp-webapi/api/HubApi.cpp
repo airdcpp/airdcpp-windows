@@ -202,7 +202,7 @@ namespace webserver {
 			return websocketpp::http::status_code::not_found;
 		}
 
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	// TODO: move to user API
@@ -212,8 +212,9 @@ namespace webserver {
 		auto pattern = JsonUtil::getField<string>("pattern", reqJson);
 		auto maxResults = JsonUtil::getField<size_t>("max_results", reqJson);
 		auto ignorePrefixes = JsonUtil::getOptionalFieldDefault<bool>("ignore_prefixes", reqJson, true);
+		auto hubs = Deserializer::deserializeHubUrls(reqJson);
 
-		auto users = ClientManager::getInstance()->searchNicks(pattern, maxResults, ignorePrefixes);
+		auto users = ClientManager::getInstance()->searchNicks(pattern, maxResults, ignorePrefixes, hubs);
 
 		auto retJson = json::array();
 		for (const auto& u : users) {

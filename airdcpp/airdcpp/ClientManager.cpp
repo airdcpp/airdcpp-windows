@@ -1005,7 +1005,7 @@ void ClientManager::directSearch(const HintedUser& user, const SearchPtr& aSearc
 	}
 }
 
-OnlineUserList ClientManager::searchNicks(const string& aPattern, size_t aMaxResults, bool aIgnorePrefix) const noexcept {
+OnlineUserList ClientManager::searchNicks(const string& aPattern, size_t aMaxResults, bool aIgnorePrefix, const StringList& aHubUrls) const noexcept {
 	auto search = RelevanceSearch<OnlineUserPtr>(aPattern, [aIgnorePrefix](const OnlineUserPtr& aUser) {
 		return aIgnorePrefix ? stripNick(aUser->getIdentity().getNick()) : aUser->getIdentity().getNick();
 	});
@@ -1013,6 +1013,10 @@ OnlineUserList ClientManager::searchNicks(const string& aPattern, size_t aMaxRes
 	{
 		RLock l(cs);
 		for (const auto& c: clients | map_values) {
+			if (find(aHubUrls.begin(), aHubUrls.end(), c->getHubUrl()) == aHubUrls.end()) {
+				continue;
+			}
+
 			OnlineUserList hubUsers;
 			c->getUserList(hubUsers, false);
 			for (const auto& ou : hubUsers) {
