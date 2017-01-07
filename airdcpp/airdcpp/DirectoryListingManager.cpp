@@ -355,7 +355,7 @@ void DirectoryListingManager::on(QueueManagerListener::ItemRemoved, const QueueI
 	}
 }
 
-void DirectoryListingManager::openOwnList(ProfileToken aProfile, bool useADL /*false*/) noexcept {
+void DirectoryListingManager::openOwnList(ProfileToken aProfile, bool useADL /*false*/, const string& aDir/*Util::emptyString*/) noexcept {
 	auto me = HintedUser(ClientManager::getInstance()->getMe(), Util::emptyString);
 
 	auto dl = hasList(me.user);
@@ -367,15 +367,15 @@ void DirectoryListingManager::openOwnList(ProfileToken aProfile, bool useADL /*f
 	dl = createList(me, !useADL, Util::toString(aProfile), true);
 	dl->setMatchADL(useADL);
 
-	fire(DirectoryListingManagerListener::OpenListing(), dl, Util::emptyString, Util::emptyString);
+	fire(DirectoryListingManagerListener::OpenListing(), dl, aDir, Util::emptyString);
 }
 
-void DirectoryListingManager::openFileList(const HintedUser& aUser, const string& aFile) noexcept {
+void DirectoryListingManager::openFileList(const HintedUser& aUser, const string& aFile, const string& aDir/*Util::emptyString*/) noexcept {
 	if (hasList(aUser.user))
 		return;
 
 	auto dl = createList(aUser, false, aFile, false);
-	fire(DirectoryListingManagerListener::OpenListing(), dl, Util::emptyString, Util::emptyString);
+	fire(DirectoryListingManagerListener::OpenListing(), dl, aDir, Util::emptyString);
 }
 
 DirectoryListingPtr DirectoryListingManager::createList(const HintedUser& aUser, bool aPartial, const string& aFileName, bool aIsOwnList) noexcept {

@@ -71,8 +71,8 @@ namespace dcpp {
 	public:
 		typedef unordered_map<UserPtr, DirectoryListingPtr, User::Hash> DirectoryListingMap;
 
-		void openOwnList(ProfileToken aProfile, bool useADL=false) noexcept;
-		void openFileList(const HintedUser& aUser, const string& aFile) noexcept;
+		void openOwnList(ProfileToken aProfile, bool useADL=false, const string& aDir = Util::emptyString) noexcept;
+		void openFileList(const HintedUser& aUser, const string& aFile, const string& aDir = Util::emptyString) noexcept;
 		
 		bool removeList(const UserPtr& aUser) noexcept;
 

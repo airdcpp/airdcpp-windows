@@ -109,14 +109,14 @@ bool DirectoryListingFrame::parseWindowParams(StringMap& params) {
 				string url = params["url"];
 				if (u == ClientManager::getInstance()->getMe()) {
 					ProfileToken token = Util::toInt(params["profileToken"]);
-					DirectoryListingManager::getInstance()->openOwnList(token);
+					DirectoryListingManager::getInstance()->openOwnList(token, false, dir);
 				}
 				else if (partial) { //re download partial list
 					MainFrame::getMainFrame()->addThreadedTask([=] {
 						QueueManager::getInstance()->addList(HintedUser(u, url), QueueItem::FLAG_CLIENT_VIEW | (partial ? QueueItem::FLAG_PARTIAL_LIST : 0), dir); });
 				}
 				else if (!file.empty()) {
-					DirectoryListingManager::getInstance()->openFileList(HintedUser(u, url), file);
+					DirectoryListingManager::getInstance()->openFileList(HintedUser(u, url), file, dir);
 				}
 			}
 		}

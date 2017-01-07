@@ -172,6 +172,27 @@ void HubFrame::openWindow(const tstring& aServer) {
 	}
 }
 
+bool HubFrame::getWindowParams(HWND hWnd, StringMap& params) {
+	auto f = find_if(frames | map_values, [hWnd](const HubFrame* h) { return hWnd == h->m_hWnd; }).base();
+	if (f != frames.end()) {
+		params["id"] = HubFrame::id;
+		params["url"] = Text::fromT(f->first);
+		return true;
+	}
+	return false;
+}
+
+bool HubFrame::parseWindowParams(StringMap& params) {
+	if (params["id"] == HubFrame::id) {
+		string hubUrl = params["url"];
+		if (!hubUrl.empty()) {
+			ClientManager::getInstance()->createClient(hubUrl);
+		}
+		return true;
+	}
+	return false;
+}
+
 HubFrame::~HubFrame() {
 }
 
