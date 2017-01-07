@@ -90,7 +90,7 @@ bool DirectoryListingFrame::getWindowParams(HWND hWnd, StringMap &params) {
 		params["file"] = f->second->dl->getFileName();
 		params["partial"] = Util::toString(f->second->dl->getPartialList());
 		params["profileToken"] = Util::toString(f->second->dl->getIsOwnList() ? f->second->dl->getShareProfile() : 0);
-		if (f->second->dl->getPartialList())
+		if (!f->second->dl->getPartialList())
 			QueueManager::getInstance()->noDeleteFileList(f->second->dl->getFileName());
 		return true;
 	}
@@ -113,7 +113,10 @@ bool DirectoryListingFrame::parseWindowParams(StringMap& params) {
 				}
 				else if (partial) { //re download partial list
 					MainFrame::getMainFrame()->addThreadedTask([=] {
-						QueueManager::getInstance()->addList(HintedUser(u, url), QueueItem::FLAG_CLIENT_VIEW | (partial ? QueueItem::FLAG_PARTIAL_LIST : 0), dir); });
+						try {
+							DirectoryListingManager::getInstance()->createList(HintedUser(u, url), QueueItem::FLAG_CLIENT_VIEW | (partial ? QueueItem::FLAG_PARTIAL_LIST : 0), dir);
+						} catch (Exception&) {}
+						});
 				}
 				else if (!file.empty()) {
 					DirectoryListingManager::getInstance()->openFileList(HintedUser(u, url), file, dir);
