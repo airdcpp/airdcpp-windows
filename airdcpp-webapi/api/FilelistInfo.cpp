@@ -128,7 +128,6 @@ namespace webserver {
 		auto ret = Serializer::serializeItem(std::make_shared<FilelistItemInfo>(location.directory), FilelistUtils::propertyHandler);
 
 		ret["size"] = location.totalSize;
-		ret["complete"] = location.directory->isComplete();
 		return ret;
 	}
 

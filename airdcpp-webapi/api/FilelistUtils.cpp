@@ -31,7 +31,7 @@ namespace webserver {
 		{ PROP_PATH, "path", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
 		{ PROP_TTH, "tth", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
 		{ PROP_DUPE, "dupe", TYPE_NUMERIC_OTHER, SERIALIZE_CUSTOM, SORT_NUMERIC },
-		//{ PROP_COMPLETE, "complete", TYPE_NUMERIC_OTHER, SERIALIZE_BOOL, SORT_NUMERIC },
+		{ PROP_COMPLETE, "complete", TYPE_NUMERIC_OTHER, SERIALIZE_BOOL, SORT_NUMERIC },
 	};
 
 	const PropertyItemHandler<FilelistItemInfoPtr> FilelistUtils::propertyHandler(properties,
@@ -109,6 +109,7 @@ namespace webserver {
 		case PROP_SIZE: return (double)aItem->getSize();
 		case PROP_DATE: return (double)aItem->getDate();
 		case PROP_DUPE: return (double)aItem->getDupe();
+		case PROP_COMPLETE: return (double)aItem->isComplete();
 		default: dcassert(0); return 0;
 		}
 	}
