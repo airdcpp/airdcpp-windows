@@ -179,6 +179,14 @@ namespace webserver {
 		});
 	}
 
+	json FilelistApi::serializeShareProfile(const DirectoryListingPtr& aList) noexcept {
+		if (!aList->getIsOwnList()) {
+			return nullptr;
+		}
+
+		return Serializer::serializeShareProfileSimple(aList->getShareProfile());
+	}
+
 	json FilelistApi::serializeList(const DirectoryListingPtr& aList) noexcept {
 		int64_t totalSize = -1;
 		size_t totalFiles = -1;
@@ -193,7 +201,7 @@ namespace webserver {
 			{ "total_files", totalFiles },
 			{ "total_size", totalSize },
 			{ "read", aList->isRead() },
-			{ "share_profile", aList->getIsOwnList() ? Serializer::serializeShareProfileSimple(aList->getShareProfile()) : nullptr },
+			{ "share_profile", serializeShareProfile(aList) },
 		};
 	}
 

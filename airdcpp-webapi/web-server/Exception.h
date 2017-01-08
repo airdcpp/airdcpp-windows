@@ -40,10 +40,10 @@ namespace webserver {
 		json error;
 	};
 
-	class RequestException : public std::exception
+	class RequestException : public std::runtime_error
 	{
 	public:
-		RequestException(websocketpp::http::status_code::value aCode, const std::string& aMessage) : code(aCode), std::exception(aMessage.c_str()) { }
+		RequestException(websocketpp::http::status_code::value aCode, const std::string& aMessage) : code(aCode), std::runtime_error(aMessage.c_str()) { }
 
 		websocketpp::http::status_code::value getCode() const noexcept { return code; }
 	protected:
