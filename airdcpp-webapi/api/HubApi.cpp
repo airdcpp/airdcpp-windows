@@ -144,10 +144,11 @@ namespace webserver {
 			{ "hub_url", aClient->getHubUrl() },
 			{ "id", aClient->getClientId() },
 			{ "favorite_hub", aClient->getFavToken() },
-			{ "share_profile", Serializer::serializeShareProfileSimple(aClient->get(HubSettings::ShareProfile)) }
+			{ "share_profile", Serializer::serializeShareProfileSimple(aClient->get(HubSettings::ShareProfile)) },
+			{ "message_counts", Serializer::serializeCacheInfo(aClient->getCache(), Serializer::serializeUnreadChat) },
 		};
 
-		Serializer::serializeCacheInfo(j, aClient->getCache(), Serializer::serializeUnreadChat);
+		Serializer::serializeCacheInfoLegacy(j, aClient->getCache(), Serializer::serializeUnreadChat);
 		return j;
 	}
 

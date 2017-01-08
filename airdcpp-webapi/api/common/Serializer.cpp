@@ -205,7 +205,14 @@ namespace webserver {
 		};
 	}
 
-	void Serializer::serializeCacheInfo(json& json_, const MessageCache& aCache, UnreadSerializerF unreadF) noexcept {
+	json Serializer::serializeCacheInfo(const MessageCache& aCache, const UnreadSerializerF& unreadF) noexcept {
+		return{
+			{ "total", aCache.size() },
+			{ "unread", unreadF(aCache) },
+		};
+	}
+
+	void Serializer::serializeCacheInfoLegacy(json& json_, const MessageCache& aCache, UnreadSerializerF unreadF) noexcept {
 		json_["unread_messages"] = unreadF(aCache);
 		json_["total_messages"] = aCache.size();
 	}

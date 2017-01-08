@@ -43,7 +43,8 @@ namespace webserver {
 		static json serializeLogMessage(const LogMessagePtr& aMessageData) noexcept;
 
 		typedef std::function<json(const MessageCache& aCache)> UnreadSerializerF;
-		static void serializeCacheInfo(json& json_, const MessageCache& aCache, UnreadSerializerF unreadF) noexcept;
+		static void serializeCacheInfoLegacy(json& json_, const MessageCache& aCache, UnreadSerializerF unreadF) noexcept;
+		static json serializeCacheInfo(const MessageCache& aCache, const UnreadSerializerF& unreadF) noexcept;
 		static json serializeUnreadChat(const MessageCache& aCache) noexcept;
 		static json serializeUnreadLog(const MessageCache& aCache) noexcept;
 

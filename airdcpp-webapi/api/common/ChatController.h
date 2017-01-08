@@ -75,8 +75,11 @@ namespace webserver {
 				return;
 			}
 
-			json j;
-			Serializer::serializeCacheInfo(j, chat->getCache(), Serializer::serializeUnreadChat);
+			json j = {
+				{ "message_counts",  Serializer::serializeCacheInfo(chat->getCache(), Serializer::serializeUnreadChat) },
+			};
+
+			Serializer::serializeCacheInfoLegacy(j, chat->getCache(), Serializer::serializeUnreadChat);
 
 			module->send(s, j);
 		}
