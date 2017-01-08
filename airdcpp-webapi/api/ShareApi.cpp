@@ -194,7 +194,7 @@ namespace webserver {
 			{ "unique_files", itemStats.uniqueFileCount },
 			{ "average_file_age", itemStats.averageFileAge },
 			{ "profile_count", itemStats.profileCount },
-			{ "profile_root_count", itemStats.profileDirectoryCount},
+			{ "root_count", itemStats.rootDirectoryCount },
 
 			{ "total_searches", searchStats.totalSearches },
 			{ "total_searches_per_second", searchStats.totalSearchesPerSecond },
