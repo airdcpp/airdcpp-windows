@@ -313,7 +313,7 @@ private:
 	void on(ClientListener::UsersUpdated, const Client*, const OnlineUserList&) noexcept;
 	void on(ClientListener::UserRemoved, const Client*, const OnlineUserPtr&) noexcept;
 	void on(ClientListener::Redirect, const Client*, const string&) noexcept;
-	void on(ClientListener::Failed, const string&, const string&) noexcept;
+	void on(ClientListener::Disconnected, const string&, const string&) noexcept;
 	void on(ClientListener::GetPassword, const Client*) noexcept;
 	void on(ClientListener::HubUpdated, const Client*) noexcept;
 	void on(ClientListener::ChatMessage, const Client*, const ChatMessagePtr&) noexcept;
@@ -323,7 +323,7 @@ private:
 	void on(ClientListener::HubTopic, const Client*, const string&) noexcept;
 	void on(ClientListener::AddLine, const Client*, const string&) noexcept;
 	void on(ClientListener::SetActive, const Client*) noexcept;
-	void on(ClientListener::Disconnecting, const Client*) noexcept;
+	void on(ClientListener::Close, const Client*) noexcept;
 	void on(ClientListener::Redirected, const string&, const ClientPtr& aNewClient) noexcept;
 	void on(ClientListener::MessagesRead) noexcept;
 	void on(ClientListener::KeyprintMismatch, const Client*) noexcept;

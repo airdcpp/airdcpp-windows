@@ -124,7 +124,6 @@ namespace webserver {
 		j["adc_down_per_user"] = stats.downPerAdcUser;
 		j["adc_up_per_user"] = stats.upPerAdcUser;
 		j["nmdc_speed_user"] = stats.nmdcSpeedPerUser;
-		//j["profile_root_count"] = stats.;
 
 		stats.forEachClient([&](const string& aName, int aCount, double aPercentage) {
 			j["clients"].push_back({

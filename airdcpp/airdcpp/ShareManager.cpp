@@ -1807,28 +1807,37 @@ void ShareManager::getProfileInfo(ProfileToken aProfile, int64_t& size, size_t& 
 int64_t ShareManager::getTotalShareSize(ProfileToken aProfile) const noexcept {
 	int64_t ret = 0;
 
-	RLock l(cs);
-	for(const auto& d: rootPaths | map_values) {
-		if(d->getProfileDir()->hasRootProfile(aProfile)) {
-			ret += d->getSize();
+	{
+		RLock l(cs);
+		for (const auto& d : rootPaths | map_values) {
+			if (d->getProfileDir()->hasRootProfile(aProfile)) {
+				ret += d->getSize();
+			}
 		}
 	}
+
 	return ret;
 }
 
 bool ShareManager::isNmdcDirShared(const string& aDir) const noexcept{
 	Directory::List dirs;
 
-	RLock l (cs);
-	getDirsByName(aDir, dirs);
+	{
+		RLock l(cs);
+		getDirsByName(aDir, dirs);
+	}
+
 	return !dirs.empty();
 }
 
 DupeType ShareManager::isNmdcDirShared(const string& aDir, int64_t aSize) const noexcept{
 	Directory::List dirs;
 
-	RLock l (cs);
-	getDirsByName(aDir, dirs);
+	{
+		RLock l(cs);
+		getDirsByName(aDir, dirs);
+	}
+
 	if (dirs.empty())
 		return DUPE_NONE;
 
@@ -1839,8 +1848,11 @@ StringList ShareManager::getNmdcDirPaths(const string& aDir) const noexcept{
 	StringList ret;
 	Directory::List dirs;
 
-	RLock l(cs);
-	getDirsByName(aDir, dirs);
+	{
+		RLock l(cs);
+		getDirsByName(aDir, dirs);
+	}
+
 	for (const auto& dir : dirs) {
 		ret.push_back(dir->getRealPath());
 	}

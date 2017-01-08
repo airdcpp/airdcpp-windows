@@ -35,7 +35,7 @@ namespace webserver {
 		METHOD_HANDLER("users", Access::ADMIN, ApiRequest::METHOD_GET, (), false, WebUserApi::handleGetUsers);
 
 		METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_POST, (), true, WebUserApi::handleAddUser);
-		METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_GET, (STR_PARAM), true, WebUserApi::handleGetUser);
+		METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_GET, (STR_PARAM), false, WebUserApi::handleGetUser);
 		METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_PATCH, (STR_PARAM), true, WebUserApi::handleUpdateUser);
 		METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_DELETE, (STR_PARAM), false, WebUserApi::handleRemoveUser);
 

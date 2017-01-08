@@ -666,7 +666,7 @@ void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	}
 }
 
-void HubFrame::on(Disconnecting, const Client*) noexcept {
+void HubFrame::on(ClientListener::Close, const Client*) noexcept {
 	SettingsManager::getInstance()->removeListener(this);
 	FavoriteManager::getInstance()->removeListener(this);
 
@@ -1361,23 +1361,23 @@ void HubFrame::on(ClientListener::UserRemoved, const Client*, const OnlineUserPt
 	updateUsers = true;
 }
 
-void HubFrame::on(Redirect, const Client*, const string& line) noexcept { 
+void HubFrame::on(ClientListener::Redirect, const Client*, const string& line) noexcept {
 	callAsync([=] { 
 		addStatus(Text::toT(STRING(PRESS_FOLLOW) + " " + line), LogMessage::SEV_INFO, WinUtil::m_ChatTextServer); 
 	});
 }
 
-void HubFrame::on(Failed, const string&, const string& line) noexcept {
+void HubFrame::on(ClientListener::Disconnected, const string&, const string& line) noexcept {
 	callAsync([=] {
 		onDisconnected(line);
 	});
 }
-void HubFrame::on(GetPassword, const Client*) noexcept { 
+void HubFrame::on(ClientListener::GetPassword, const Client*) noexcept {
 	callAsync([=] {
 		onPassword();
 	});
 }
-void HubFrame::on(HubUpdated, const Client*) noexcept {
+void HubFrame::on(ClientListener::HubUpdated, const Client*) noexcept {
 	string hubName;
 	if(client->isTrusted()) {
 		hubName = "[S] ";

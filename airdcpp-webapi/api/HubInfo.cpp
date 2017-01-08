@@ -145,7 +145,7 @@ namespace webserver {
 		};
 	}
 
-	void HubInfo::on(ClientListener::Disconnecting, const Client*) noexcept {
+	void HubInfo::on(ClientListener::Close, const Client*) noexcept {
 
 	}
 
@@ -157,7 +157,7 @@ namespace webserver {
 		sendConnectState();
 	}
 
-	void HubInfo::on(Failed, const string&, const string&) noexcept {
+	void HubInfo::on(ClientListener::Disconnected, const string&, const string&) noexcept {
 		sendConnectState();
 
 		view.resetItems();
