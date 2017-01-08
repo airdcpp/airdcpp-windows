@@ -1224,48 +1224,52 @@ LRESULT MainFrame::onLink(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL
 }
 
 void MainFrame::saveOpenWindows() {
-	StringMap params;
-	SimpleXML xml;
-	xml.addTag("Windows");
-	xml.stepIn();
 
-#define save(frame) else if(frame::getWindowParams(t, params)) writeParams(xml, params);
+	vector<StringMap> windowParams;
 
-	auto writeParams = [&](SimpleXML& xml, StringMap& params) {
-		xml.addTag("Window");
-		xml.stepIn();
-		for (auto p = params.begin(); p != params.end(); ++p) {
-				xml.addTag("param", p->second);
-				xml.addChildAttrib("name", p->first);
-			}
-		xml.stepOut();
-	};
+#define save(frame) else if(frame::getWindowParams(t, params)) windowParams.push_back(params);
 
 	auto tabs = WinUtil::tabCtrl->getTabList();
 	for (auto t : tabs) {
-		params.clear();
+		StringMap params;
 		if (0);
 		save(HubFrame)
 		save(PrivateFrame)
 		save(QueueFrame)
-		save(DirectoryListingFrame) //currently no handling of re opening
+		save(DirectoryListingFrame)
 		save(SystemFrame)
 		save(AutoSearchFrame)
 		save(RssInfoFrame)
-		save(SearchFrame) //currently no handling of re opening
-		save(PublicHubsFrame)
+		//save(SearchFrame) //currently no handling of re opening
 		save(FavoriteHubsFrame)
 		save(UsersFrame)
 		save(NotepadFrame)
-		save(SpyFrame)
-		save(ADLSearchFrame)
 		save(FinishedULFrame)
 		save(UploadQueueFrame)
+		save(SpyFrame)
+		save(ADLSearchFrame)
+		save(PublicHubsFrame)
 		save(CDMDebugFrame)
 		save(RecentsFrame)
 	}
-	SettingsManager::saveSettingFile(xml, CONFIG_DIR, CONFIG_FRAMES_NAME);
 #undef save
+
+	addThreadedTask([=] {
+		SimpleXML xml;
+		xml.addTag("Windows");
+		xml.stepIn();
+
+		for (auto& params : windowParams) {
+			xml.addTag("Window");
+			xml.stepIn();
+			for (auto p = params.begin(); p != params.end(); ++p) {
+				xml.addTag("param", p->second);
+				xml.addChildAttrib("name", p->first);
+			}
+			xml.stepOut();
+		}
+		SettingsManager::saveSettingFile(xml, CONFIG_DIR, CONFIG_FRAMES_NAME);
+	});
 }
 
 void MainFrame::loadOpenWindows() {
