@@ -280,9 +280,10 @@ namespace webserver {
 	}
 
 	json Serializer::serializeIp(const string& aIP, const string& aCountryCode) noexcept {
-		return{
+		return {
 			{ "str", Format::formatIp(aIP, aCountryCode) },
 			{ "country_id", aCountryCode }, // deprecated
+			{ "country", aCountryCode },
 			{ "ip", aIP }
 		};
 	}
@@ -344,7 +345,7 @@ namespace webserver {
 	}
 
 	json Serializer::serializeSlots(int aFree, int aTotal) noexcept {
-		return{
+		return {
 			{ "str", SearchResult::formatSlots(aFree, aTotal) },
 			{ "free", aFree },
 			{ "total", aTotal }
@@ -360,7 +361,7 @@ namespace webserver {
 	}
 
 	json Serializer::serializePriority(const QueueItemBase& aItem) noexcept {
-		return{
+		return {
 			{ "id", serializePriorityId(aItem.getPriority()) },
 			{ "str", AirUtil::getPrioText(aItem.getPriority()) },
 			{ "auto", aItem.getAutoPriority() }
@@ -368,7 +369,7 @@ namespace webserver {
 	}
 
 	json Serializer::serializeDirectoryDownload(const DirectoryDownloadPtr& aDownload) noexcept {
-		return{
+		return {
 			{ "id", aDownload->getId() },
 			{ "user", Serializer::serializeHintedUser(aDownload->getUser()) },
 			{ "target_name", aDownload->getBundleName() },
@@ -396,7 +397,7 @@ namespace webserver {
 	}
 
 	json Serializer::serializeSourceCount(const QueueItemBase::SourceCount& aCount) noexcept {
-		return{
+		return {
 			{ "online", aCount.online },
 			{ "total", aCount.total },
 			{ "str", aCount.format() },
