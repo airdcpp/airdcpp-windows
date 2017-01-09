@@ -670,7 +670,7 @@ QueueItemPtr QueueItem::pickSearchItem(const QueueItemList& aItems) noexcept {
 }
 
 void QueueItem::searchAlternates() noexcept {
-	auto s = make_shared<Search>(Search::ALT_AUTO, "qa");
+	auto s = make_shared<Search>(Priority::LOW, "qa");
 	s->query = tthRoot.toBase32();
 	s->fileType = Search::TYPE_TTH;
 

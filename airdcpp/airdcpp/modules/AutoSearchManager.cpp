@@ -433,7 +433,7 @@ void AutoSearchManager::performSearch(AutoSearchPtr& as, StringList& aHubs, Sear
 	
 	//Run the search
 	if (aType != TYPE_MANUAL_FG) {
-		auto s = make_shared<Search>(aType == TYPE_MANUAL_BG ? Search::MANUAL : Search::AUTO_SEARCH, "as");
+		auto s = make_shared<Search>(aType == TYPE_MANUAL_BG ? Priority::NORMAL : Priority::LOWEST, "as");
 		s->query = searchWord;
 		s->fileType = ftype;
 		s->exts = extList;

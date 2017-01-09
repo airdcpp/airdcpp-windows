@@ -75,10 +75,10 @@ namespace webserver {
 		return parseTTH(JsonUtil::getField<string>("tth", aJson, false));
 	}
 
-	Priority Deserializer::deserializePriority(const json& aJson, bool allowDefault) {
-		auto minAllowed = allowDefault ? Priority::DEFAULT : Priority::PAUSED_FORCE;
+	Priority Deserializer::deserializePriority(const json& aJson, bool aAllowDefault) {
+		auto minAllowed = aAllowDefault ? Priority::DEFAULT : Priority::PAUSED_FORCE;
 
-		auto priority = JsonUtil::getEnumField<int>("priority", aJson, !allowDefault, static_cast<int>(minAllowed), static_cast<int>(Priority::HIGHEST));
+		auto priority = JsonUtil::getEnumField<int>("priority", aJson, !aAllowDefault, static_cast<int>(minAllowed), static_cast<int>(Priority::HIGHEST));
 		if (!priority) {
 			return Priority::DEFAULT;
 		}

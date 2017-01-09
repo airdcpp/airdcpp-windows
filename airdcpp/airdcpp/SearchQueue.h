@@ -45,7 +45,7 @@ public:
 	// Interval defined by the client (settings or fav hub interval)
 	IGETSET(int, minInterval, MinInterval, 5000);
 private:
-	int getInterval(Search::Type aSearchType) const noexcept;
+	int getInterval(Priority aPriority) const noexcept;
 
 	deque<SearchPtr> searchQueue;
 	int	nextInterval;

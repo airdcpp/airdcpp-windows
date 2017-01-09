@@ -678,7 +678,7 @@ void DirectoryListingFrame::onFind() {
 
 	gotoPrev = false;
 
-	auto s = make_shared<Search>(Search::MANUAL, Util::toString(Util::rand()));
+	auto s = make_shared<Search>(Priority::HIGH, Util::toString(Util::rand()));
 
 	s->query = dlg.searchStr;
 	s->size = dlg.size;

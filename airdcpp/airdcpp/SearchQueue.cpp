@@ -33,13 +33,14 @@ SearchQueue::SearchQueue() : nextInterval(10 * 1000) {
 
 SearchQueue::~SearchQueue() { }
 
-int SearchQueue::getInterval(const Search::Type aSearchType) const noexcept {
+int SearchQueue::getInterval(Priority aPriority) const noexcept {
 	int ret = 0;
-	switch(aSearchType) {
-		case Search::MANUAL: ret = 5000; break;
-		case Search::ALT: ret = 10000; break;
-		case Search::ALT_AUTO: ret = 20000; break;
-		case Search::AUTO_SEARCH: ret = 20000; break;
+	switch(aPriority) {
+		case Priority::HIGHEST:
+		case Priority::HIGH: ret = 5000; break;
+		case Priority::NORMAL: ret = 10000; break;
+		case Priority::LOW: ret = 15000; break;
+		default: ret = 20000; break;
 	}
 	return max(ret, minInterval);
 }
@@ -64,7 +65,7 @@ uint64_t SearchQueue::add(const SearchPtr& s) noexcept {
 	for (;;) {
 		if (i == searchQueue.end())
 			break;
-		if(s->type < (*i)->type) {
+		if(s->priority < (*i)->priority) {
 			//we found our place :}
 			if((*i) == s) {
 				//replace the lower prio item with this one, move the owners from the old search
@@ -81,7 +82,7 @@ uint64_t SearchQueue::add(const SearchPtr& s) noexcept {
 			break;
 		}
 
-		x += getInterval((*i)->type);
+		x += getInterval((*i)->priority);
 		i++;
 	}
 
@@ -103,7 +104,7 @@ uint64_t SearchQueue::add(const SearchPtr& s) noexcept {
 		}
 	} else {
 		//we have the first item, recount the tick allowed for the search
-		nextInterval = getInterval(searchQueue.front()->type);
+		nextInterval = getInterval(searchQueue.front()->priority);
 		if (getNextSearchTick() <= now) {
 			return 0;
 		}
@@ -124,7 +125,7 @@ SearchPtr SearchQueue::pop() noexcept {
 			auto s = move(searchQueue.front());
 			searchQueue.pop_front();
 			lastSearchTime = GET_TICK();
-			nextInterval = !searchQueue.empty() ? getInterval(searchQueue.front()->type) : minInterval;
+			nextInterval = !searchQueue.empty() ? getInterval(searchQueue.front()->priority) : minInterval;
 			return move(s);
 		} else {
 			nextInterval = -1;

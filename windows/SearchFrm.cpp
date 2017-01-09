@@ -461,7 +461,7 @@ void SearchFrame::onEnter() {
 		return;
 
 	token = Util::toString(Util::rand());
-	auto s = make_shared<Search>(Search::MANUAL, token);
+	auto s = make_shared<Search>(Priority::HIGH, token);
 
 	s->query = WinUtil::addHistory(ctrlSearchBox, SettingsManager::HISTORY_SEARCH);
 	if (s->query.empty() || SearchQuery::parseSearchString(s->query).empty()) {
