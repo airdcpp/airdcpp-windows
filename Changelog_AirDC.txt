@@ -2,6 +2,7 @@
 
 Added:
 
+- Show the number of files and directories for incomplete partial list directories
 - Show available disk space next to grouped download targets
 - Report encoding-related errors in NMDC hubs
 - Report invalid UTF-8 sent by ADC hubs
@@ -22,6 +23,7 @@ Fixed:
 - Crash when loading filelists with items with duplicate names inside the same directory
 - Fix removing finished bundles with files leaving empty directories
 - Fix possible crash with magnet links
+- Fix possible crashes when closing or reconnecting hub sessions
 
 Removed:
 
