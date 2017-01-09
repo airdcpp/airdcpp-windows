@@ -102,7 +102,7 @@ namespace webserver {
 		SettingsManager::getInstance()->save();
 		WebServerManager::getInstance()->save(nullptr);
 
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	ApiSettingItem* SettingApi::getSettingItem(const string& aKey) noexcept {
