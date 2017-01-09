@@ -212,11 +212,6 @@ namespace webserver {
 		};
 	}
 
-	void Serializer::serializeCacheInfoLegacy(json& json_, const MessageCache& aCache, UnreadSerializerF unreadF) noexcept {
-		json_["unread_messages"] = unreadF(aCache);
-		json_["total_messages"] = aCache.size();
-	}
-
 	json Serializer::serializeUnreadLog(const MessageCache& aCache) noexcept {
 		return{
 			{ "info", aCache.countUnreadLogMessages(LogMessage::SEV_INFO) },
@@ -289,7 +284,6 @@ namespace webserver {
 	json Serializer::serializeIp(const string& aIP, const string& aCountryCode) noexcept {
 		return {
 			{ "str", Format::formatIp(aIP, aCountryCode) },
-			{ "country_id", aCountryCode }, // deprecated
 			{ "country", aCountryCode },
 			{ "ip", aIP }
 		};

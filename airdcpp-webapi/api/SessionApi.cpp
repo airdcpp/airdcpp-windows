@@ -99,13 +99,10 @@ namespace webserver {
 		}
 
 		aRequest.setResponseBody({
-			{ "token", session->getAuthToken() },
+			{ "token", session->getAuthToken() }, // deprecated
+			{ "authorization", session->getAuthToken() },
 			{ "session", serializeSession(session) },
 			{ "system", SystemApi::getSystemInfo() },
-			{ "permissions", session->getUser()->getPermissions() }, // deprecated
-			{ "user", session->getUser()->getUserName() }, // deprecated
-			{ "run_wizard", SETTING(WIZARD_RUN) }, // deprecated
-			{ "cid", ClientManager::getInstance()->getMyCID().toBase32() }, // deprecated
 		});
 
 		return websocketpp::http::status_code::ok;

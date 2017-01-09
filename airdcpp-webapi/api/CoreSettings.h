@@ -53,7 +53,6 @@ namespace webserver {
 		{ "dont_download_shared", SettingsManager::DONT_DL_ALREADY_SHARED, ResourceManager::SETTINGS_DONT_DL_ALREADY_SHARED },
 		{ "dont_download_queued", SettingsManager::DONT_DL_ALREADY_QUEUED, ResourceManager::SETTING_DONT_DL_ALREADY_QUEUED },
 		{ "download_dupe_min_size", SettingsManager::MIN_DUPE_CHECK_SIZE, ResourceManager::MIN_DUPE_CHECK_SIZE, ApiSettingItem::TYPE_GENERAL, { ResourceManager::Strings::KiB, false } },
-		{ "download_skip_zero_byte", SettingsManager::SKIP_ZERO_BYTE, ResourceManager::CHECK_IGNORE_ZERO_BYTE }, // DEPRECEATED, REMOVE LATER
 		{ "download_skiplist", SettingsManager::SKIPLIST_DOWNLOAD, ResourceManager::SETTINGS_SKIPLIST_DOWNLOAD },
 		{ "download_skiplist_regex", SettingsManager::DOWNLOAD_SKIPLIST_USE_REGEXP, ResourceManager::USE_REGEXP },
 
@@ -216,7 +215,7 @@ namespace webserver {
 		{ "auto_follow_redirects", SettingsManager::AUTO_FOLLOW, ResourceManager::SETTINGS_AUTO_FOLLOW },
 		{ "disconnect_hubs_noreg", SettingsManager::DISALLOW_CONNECTION_TO_PASSED_HUBS, ResourceManager::DISALLOW_CONNECTION_TO_PASSED_HUBS },
 
-		{ "run_wizard", SettingsManager::WIZARD_RUN, ResourceManager::WIZARD_FINISHED_TITLE },
+		{ "wizard_pending", SettingsManager::WIZARD_PENDING, ResourceManager::WIZARD_FINISHED_TITLE },
 
 		{ "use_default_cert_paths", SettingsManager::USE_DEFAULT_CERT_PATHS, ResourceManager::USE_DEFAULT_CERT_PATHS },
 		{ "tls_certificate_file", SettingsManager::TLS_CERTIFICATE_FILE, ResourceManager::OWN_CERTIFICATE, ApiSettingItem::TYPE_FILE_PATH },

@@ -47,8 +47,6 @@ namespace webserver {
 		METHOD_HANDLER("session", Access::FILELISTS_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("me")), true, FilelistApi::handleOwnList);
 		METHOD_HANDLER("session", Access::FILELISTS_EDIT, ApiRequest::METHOD_DELETE, (CID_PARAM), false, FilelistApi::handleDeleteList);
 
-		METHOD_HANDLER("download_directory", Access::DOWNLOAD, ApiRequest::METHOD_POST, (), true, FilelistApi::handlePostDirectoryDownload); // DEPRECATED
-
 		METHOD_HANDLER("directory_downloads", Access::DOWNLOAD, ApiRequest::METHOD_GET, (), false, FilelistApi::handleGetDirectoryDownloads);
 		METHOD_HANDLER("directory_download", Access::DOWNLOAD, ApiRequest::METHOD_POST, (), true, FilelistApi::handlePostDirectoryDownload);
 		METHOD_HANDLER("directory_download", Access::DOWNLOAD, ApiRequest::METHOD_DELETE, (TOKEN_PARAM), false, FilelistApi::handleDeleteDirectoryDownload);

@@ -55,7 +55,6 @@ namespace webserver {
 			{ "id", aProfile->getToken() },
 			{ "name", aProfile->getPlainName() },
 			{ "str", aProfile->getDisplayName() },
-			{ "plain_name", aProfile->getPlainName() }, // deprecated
 			{ "default", aProfile->isDefault() },
 			{ "size", totalSize },
 			{ "files", totalFiles },

@@ -43,8 +43,6 @@ namespace webserver {
 		api_return handleUpdateUser(ApiRequest& aRequest);
 		api_return handleRemoveUser(ApiRequest& aRequest);
 
-		api_return handleUpdateUserLegacy(ApiRequest& aRequest);
-		api_return handleRemoveUserLegacy(ApiRequest& aRequest);
 		void parseUser(WebUserPtr& aUser, const json& j, bool aIsNew);
 
 		void on(WebUserManagerListener::UserAdded, const WebUserPtr& aUser) noexcept override;

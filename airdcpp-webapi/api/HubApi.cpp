@@ -138,7 +138,7 @@ namespace webserver {
 	}
 
 	json HubApi::serializeClient(const ClientPtr& aClient) noexcept {
-		json j = {
+		return {
 			{ "identity", HubInfo::serializeIdentity(aClient) },
 			{ "connect_state", HubInfo::serializeConnectState(aClient) },
 			{ "hub_url", aClient->getHubUrl() },
@@ -146,10 +146,8 @@ namespace webserver {
 			{ "favorite_hub", aClient->getFavToken() },
 			{ "share_profile", Serializer::serializeShareProfileSimple(aClient->get(HubSettings::ShareProfile)) },
 			{ "message_counts", Serializer::serializeCacheInfo(aClient->getCache(), Serializer::serializeUnreadChat) },
+			{ "encryption", Serializer::serializeEncryption(aClient->getEncryptionInfo(), aClient->isTrusted()) },
 		};
-
-		Serializer::serializeCacheInfoLegacy(j, aClient->getCache(), Serializer::serializeUnreadChat);
-		return j;
 	}
 
 	void HubApi::addHub(const ClientPtr& aClient) noexcept {

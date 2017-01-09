@@ -40,11 +40,6 @@ namespace webserver {
 		METHOD_HANDLER("root", Access::SETTINGS_EDIT, ApiRequest::METHOD_PATCH, (TTH_PARAM), true, ShareRootApi::handleUpdateRoot);
 		METHOD_HANDLER("root", Access::SETTINGS_EDIT, ApiRequest::METHOD_DELETE, (TTH_PARAM), false, ShareRootApi::handleRemoveRoot);
 
-		// DEPRECATED
-		METHOD_HANDLER("root", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("add")), true, ShareRootApi::handleAddRoot);
-		METHOD_HANDLER("root", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("update")), true, ShareRootApi::handleUpdateRootLegacy);
-		METHOD_HANDLER("root", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("remove")), true, ShareRootApi::handleRemoveRootLegacy);
-
 		createSubscription("share_root_created");
 		createSubscription("share_root_updated");
 		createSubscription("share_root_removed");
@@ -283,36 +278,5 @@ namespace webserver {
 	void ShareRootApi::on(HashManagerListener::FileHashed, const string& aFilePath, HashedFile& aFileInfo) noexcept {
 		WLock l(cs);
 		hashedPaths.insert(Util::getFilePath(aFilePath));
-	}
-
-
-	api_return ShareRootApi::handleUpdateRootLegacy(ApiRequest& aRequest) {
-		const auto& reqJson = aRequest.getRequestBody();
-
-		auto path = JsonUtil::getField<string>("path", reqJson, false);
-
-		auto info = ShareManager::getInstance()->getRootInfo(path);
-		if (!info) {
-			aRequest.setResponseErrorStr("Path not found");
-			return websocketpp::http::status_code::not_found;
-		}
-
-		parseRoot(info, reqJson, false);
-
-		ShareManager::getInstance()->updateRootDirectory(info);
-		aRequest.setResponseBody(Serializer::serializeItem(info, ShareUtils::propertyHandler));
-		return websocketpp::http::status_code::ok;
-	}
-
-	api_return ShareRootApi::handleRemoveRootLegacy(ApiRequest& aRequest) {
-		const auto& reqJson = aRequest.getRequestBody();
-
-		auto path = JsonUtil::getField<string>("path", reqJson, false);
-		if (!ShareManager::getInstance()->removeRootDirectory(path)) {
-			aRequest.setResponseErrorStr("Path not found");
-			return websocketpp::http::status_code::not_found;
-		}
-
-		return websocketpp::http::status_code::no_content;
 	}
 }

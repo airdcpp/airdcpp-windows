@@ -112,14 +112,11 @@ namespace webserver {
 	}
 
 	json PrivateChatApi::serializeChat(const PrivateChatPtr& aChat) noexcept {
-		json j = {
+		return {
 			{ "id", aChat->getUser()->getCID().toBase32() },
 			{ "user", Serializer::serializeHintedUser(aChat->getHintedUser()) },
 			{ "ccpm_state", PrivateChatInfo::serializeCCPMState(aChat) },
 			{ "message_counts", Serializer::serializeCacheInfo(aChat->getCache(), Serializer::serializeUnreadChat) },
 		};
-
-		Serializer::serializeCacheInfoLegacy(j, aChat->getCache(), Serializer::serializeUnreadChat);
-		return j;
 	}
 }

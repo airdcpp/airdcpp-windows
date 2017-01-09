@@ -39,11 +39,6 @@ namespace webserver {
 		METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_PATCH, (STR_PARAM), true, WebUserApi::handleUpdateUser);
 		METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_DELETE, (STR_PARAM), false, WebUserApi::handleRemoveUser);
 
-		// Deprecated
-		METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_POST, (EXACT_PARAM("add")), true, WebUserApi::handleAddUser);
-		METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_POST, (EXACT_PARAM("update")), true, WebUserApi::handleUpdateUserLegacy);
-		METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_POST, (EXACT_PARAM("remove")), true, WebUserApi::handleRemoveUserLegacy);
-
 		createSubscription("web_user_added");
 		createSubscription("web_user_updated");
 		createSubscription("web_user_removed");
@@ -158,35 +153,5 @@ namespace webserver {
 		maybeSend("web_user_removed", [&] { 
 			return Serializer::serializeItem(aUser, WebUserUtils::propertyHandler); 
 		});
-	}
-
-	api_return WebUserApi::handleUpdateUserLegacy(ApiRequest& aRequest) {
-		const auto& reqJson = aRequest.getRequestBody();
-
-		auto userName = JsonUtil::getField<string>("username", reqJson, false);
-
-		auto user = um.getUser(userName);
-		if (!user) {
-			aRequest.setResponseErrorStr("User not found");
-			return websocketpp::http::status_code::not_found;
-		}
-
-		parseUser(user, reqJson, false);
-
-		um.updateUser(user);
-		return websocketpp::http::status_code::ok;
-	}
-
-	api_return WebUserApi::handleRemoveUserLegacy(ApiRequest& aRequest) {
-		const auto& reqJson = aRequest.getRequestBody();
-
-		auto userName = JsonUtil::getField<string>("username", reqJson, false);
-		if (!um.removeUser(userName)) {
-			aRequest.setResponseErrorStr("User not found");
-			return websocketpp::http::status_code::not_found;
-		}
-
-
-		return websocketpp::http::status_code::ok;
 	}
 }

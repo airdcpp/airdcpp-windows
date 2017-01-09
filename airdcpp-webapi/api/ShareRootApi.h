@@ -47,10 +47,6 @@ namespace webserver {
 		api_return handleUpdateRoot(ApiRequest& aRequest);
 		api_return handleRemoveRoot(ApiRequest& aRequest);
 
-		// DEPRECATED
-		api_return handleUpdateRootLegacy(ApiRequest& aRequest);
-		api_return handleRemoveRootLegacy(ApiRequest& aRequest);
-
 		void parseRoot(ShareDirectoryInfoPtr& aInfo, const json& j, bool aIsNew);
 
 		void on(ShareManagerListener::RootCreated, const string& aPath) noexcept override;

@@ -43,7 +43,6 @@ namespace webserver {
 		static json serializeLogMessage(const LogMessagePtr& aMessageData) noexcept;
 
 		typedef std::function<json(const MessageCache& aCache)> UnreadSerializerF;
-		static void serializeCacheInfoLegacy(json& json_, const MessageCache& aCache, UnreadSerializerF unreadF) noexcept;
 		static json serializeCacheInfo(const MessageCache& aCache, const UnreadSerializerF& unreadF) noexcept;
 		static json serializeUnreadChat(const MessageCache& aCache) noexcept;
 		static json serializeUnreadLog(const MessageCache& aCache) noexcept;
@@ -164,11 +163,6 @@ namespace webserver {
 				}
 				case SERIALIZE_TEXT: {
 					j[prop.name] = aHandler.stringF(aItem, id);
-					break;
-				}
-				case SERIALIZE_TEXT_NUMERIC: {
-					j[prop.name]["id"] = aHandler.numberF(aItem, id);
-					j[prop.name]["str"] = aHandler.stringF(aItem, id);
 					break;
 				}
 				case SERIALIZE_BOOL: {

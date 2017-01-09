@@ -27,19 +27,13 @@
 
 namespace webserver {
 	FavoriteDirectoryApi::FavoriteDirectoryApi(Session* aSession) : SubscribableApiModule(aSession, Access::ANY) {
-		// TODO: fix method naming in the next major version
-		METHOD_HANDLER("directories", Access::ANY, ApiRequest::METHOD_GET, (), false, FavoriteDirectoryApi::handleGetGroupedDirectories);
-		METHOD_HANDLER("directories_flat", Access::ANY, ApiRequest::METHOD_GET, (), false, FavoriteDirectoryApi::handleGetDirectories);
+		METHOD_HANDLER("grouped_directories", Access::ANY, ApiRequest::METHOD_GET, (), false, FavoriteDirectoryApi::handleGetGroupedDirectories);
+		METHOD_HANDLER("directories", Access::ANY, ApiRequest::METHOD_GET, (), false, FavoriteDirectoryApi::handleGetDirectories);
 
 		METHOD_HANDLER("directory", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (), true, FavoriteDirectoryApi::handleAddDirectory);
 		METHOD_HANDLER("directory", Access::ANY, ApiRequest::METHOD_GET, (TTH_PARAM), false, FavoriteDirectoryApi::handleGetDirectory);
 		METHOD_HANDLER("directory", Access::SETTINGS_EDIT, ApiRequest::METHOD_PATCH, (TTH_PARAM), true, FavoriteDirectoryApi::handleUpdateDirectory);
 		METHOD_HANDLER("directory", Access::SETTINGS_EDIT, ApiRequest::METHOD_DELETE, (TTH_PARAM), false, FavoriteDirectoryApi::handleRemoveDirectory);
-
-		// DEPRECATED
-		METHOD_HANDLER("directory", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("add")), true, FavoriteDirectoryApi::handleAddDirectory);
-		METHOD_HANDLER("directory", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("update")), true, FavoriteDirectoryApi::handleUpdateDirectoryLegacy);
-		METHOD_HANDLER("directory", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("remove")), true, FavoriteDirectoryApi::handleRemoveDirectoryLegacy);
 
 		FavoriteManager::getInstance()->addListener(this);
 
@@ -140,32 +134,5 @@ namespace webserver {
 
 	void FavoriteDirectoryApi::on(FavoriteManagerListener::FavoriteDirectoriesUpdated) noexcept {
 		maybeSend("favorite_directories_updated", [&] { return serializeDirectories(); });
-	}
-
-
-
-
-	api_return FavoriteDirectoryApi::handleUpdateDirectoryLegacy(ApiRequest& aRequest) {
-		const auto& reqJson = aRequest.getRequestBody();
-
-		auto path = JsonUtil::getField<string>("path", reqJson, false);
-		if (!FavoriteManager::getInstance()->hasFavoriteDir(path)) {
-			JsonUtil::throwError("path", JsonUtil::ERROR_INVALID, "Path doesn't exist");
-		}
-
-		updatePath(path, reqJson);
-		return websocketpp::http::status_code::no_content;
-	}
-
-	api_return FavoriteDirectoryApi::handleRemoveDirectoryLegacy(ApiRequest& aRequest) {
-		const auto& reqJson = aRequest.getRequestBody();
-
-		auto path = JsonUtil::getField<string>("path", reqJson, false);
-		if (!FavoriteManager::getInstance()->removeFavoriteDir(path)) {
-			aRequest.setResponseErrorStr("Path not found");
-			return websocketpp::http::status_code::not_found;
-		}
-
-		return websocketpp::http::status_code::no_content;
 	}
 }

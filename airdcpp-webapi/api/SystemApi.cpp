@@ -149,7 +149,7 @@ namespace webserver {
 			{ "platform", getPlatform() },
 			{ "hostname", getHostname() },
 			{ "cid", ClientManager::getInstance()->getMyCID().toBase32() },
-			{ "run_wizard", SETTING(WIZARD_RUN) },
+			{ "wizard_pending", SETTING(WIZARD_PENDING) },
 		};
 	}
 
