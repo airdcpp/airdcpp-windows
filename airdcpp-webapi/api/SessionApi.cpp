@@ -112,6 +112,11 @@ namespace webserver {
 	}
 
 	api_return SessionApi::handleSocketConnect(ApiRequest& aRequest, bool aIsSecure, const WebSocketPtr& aSocket) {
+		if (!aSocket) {
+			aRequest.setResponseErrorStr("This method may be called only via a websocket");
+			return websocketpp::http::status_code::bad_request;
+		}
+
 		auto sessionToken = JsonUtil::getField<string>("authorization", aRequest.getRequestBody(), false);
 
 		auto session = WebServerManager::getInstance()->getUserManager().getSession(sessionToken);
