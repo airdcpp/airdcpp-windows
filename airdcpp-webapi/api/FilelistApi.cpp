@@ -230,7 +230,7 @@ namespace webserver {
 			{ "user", Serializer::serializeHintedUser(aList->getHintedUser()) },
 			{ "state", FilelistInfo::serializeState(aList) },
 			{ "location", FilelistInfo::serializeLocation(aList) },
-			{ "partial", aList->getPartialList() },
+			{ "partial_list", aList->getPartialList() },
 			{ "total_files", totalFiles },
 			{ "total_size", totalSize },
 			{ "read", aList->isRead() },

@@ -305,7 +305,8 @@ namespace webserver {
 		auto info = aItem.getStatusInfo();
 		return {
 			{ "id", getDownloadStateId(info.state) },
-			{ "str", info.str }
+			{ "str", info.str },
+			{ "time_finished", aItem.isDownloaded() ? aItem.getLastTimeFinished() : 0 },
 		};
 	}
 

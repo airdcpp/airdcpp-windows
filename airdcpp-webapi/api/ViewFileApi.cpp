@@ -44,6 +44,7 @@ namespace webserver {
 
 		METHOD_HANDLER("sessions", Access::VIEW_FILES_VIEW, ApiRequest::METHOD_GET, (), false, ViewFileApi::handleGetFiles);
 		METHOD_HANDLER("session", Access::VIEW_FILES_EDIT, ApiRequest::METHOD_POST, (), true, ViewFileApi::handleAddFile);
+		METHOD_HANDLER("session", Access::VIEW_FILES_VIEW, ApiRequest::METHOD_GET, (TTH_PARAM), false, ViewFileApi::handleGetFile);
 		METHOD_HANDLER("session", Access::VIEW_FILES_EDIT, ApiRequest::METHOD_POST, (TTH_PARAM), false, ViewFileApi::handleAddLocalFile);
 		METHOD_HANDLER("session", Access::VIEW_FILES_EDIT, ApiRequest::METHOD_DELETE, (TTH_PARAM), false, ViewFileApi::handleRemoveFile);
 
@@ -55,6 +56,14 @@ namespace webserver {
 		ViewFileManager::getInstance()->removeListener(this);
 	}
 
+	json ViewFileApi::serializeDownloadState(const ViewFilePtr& aFile) noexcept {
+		if (aFile->isLocalFile()) {
+			return nullptr;
+		}
+
+		return Serializer::serializeDownloadState(*aFile.get());
+	}
+
 	json ViewFileApi::serializeFile(const ViewFilePtr& aFile) noexcept {
 		auto mimeType = FileServer::getMimeType(aFile->getPath());
 		return{
@@ -63,10 +72,10 @@ namespace webserver {
 			{ "text", aFile->isText() },
 			{ "read", aFile->getRead() },
 			{ "name", aFile->getDisplayName() },
-			{ "state", Serializer::serializeDownloadState(*aFile.get()) },
+			{ "download_state", serializeDownloadState(aFile) },
 			{ "type", Serializer::serializeFileType(aFile->getPath()) },
-			{ "time_finished", aFile->getLastTimeFinished() },
-			{ "downloaded", !aFile->isLocalFile() },
+			{ "time_opened", aFile->getTimeCreated() },
+			{ "content_ready", aFile->isLocalFile() || aFile->isDownloaded() },
 			{ "mime_type", mimeType ? mimeType : Util::emptyString },
 		};
 	}
@@ -170,6 +179,17 @@ namespace webserver {
 		return websocketpp::http::status_code::ok;
 	}
 
+	api_return ViewFileApi::handleGetFile(ApiRequest& aRequest) {
+		auto file = ViewFileManager::getInstance()->getFile(Deserializer::parseTTH(aRequest.getStringParam(0)));
+		if (!file) {
+			aRequest.setResponseErrorStr("File not found");
+			return websocketpp::http::status_code::not_found;
+		}
+
+		aRequest.setResponseBody(serializeFile(file));
+		return websocketpp::http::status_code::ok;
+	}
+
 	api_return ViewFileApi::handleRemoveFile(ApiRequest& aRequest) {
 		auto success = ViewFileManager::getInstance()->removeFile(Deserializer::parseTTH(aRequest.getStringParam(0)));
 		if (!success) {
@@ -202,7 +222,7 @@ namespace webserver {
 		maybeSend("view_file_updated", [&] { 
 			return json({
 				{ "id", aFile->getTTH().toBase32() },
-				{ "state", Serializer::serializeDownloadState(*aFile.get()) }
+				{ "download_state", Serializer::serializeDownloadState(*aFile.get()) }
 			});
 		});
 	}
