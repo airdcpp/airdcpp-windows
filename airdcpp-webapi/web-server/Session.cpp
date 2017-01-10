@@ -50,10 +50,10 @@
 namespace webserver {
 #define ADD_MODULE(name, type) (apiHandlers.emplace(name, LazyModuleWrapper([this] { return unique_ptr<type>(new type(this)); })))
 
-	Session::Session(const WebUserPtr& aUser, const string& aToken, SessionType aSessionType, WebServerManager* aServer, uint64_t maxInactivityMinutes, bool aIsUserSession, const string& aIP) :
+	Session::Session(const WebUserPtr& aUser, const string& aToken, SessionType aSessionType, WebServerManager* aServer, uint64_t maxInactivityMinutes, const string& aIP) :
 		id(Util::rand()), user(aUser), token(aToken), started(GET_TICK()), 
 		lastActivity(GET_TICK()), sessionType(aSessionType), server(aServer),
-		maxInactivity(maxInactivityMinutes*1000*60), userSession(aIsUserSession),
+		maxInactivity(maxInactivityMinutes*1000*60),
 		ip(aIP) {
 
 		ADD_MODULE("connectivity", ConnectivityApi);

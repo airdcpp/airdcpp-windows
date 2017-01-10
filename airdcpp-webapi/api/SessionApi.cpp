@@ -62,12 +62,12 @@ namespace webserver {
 	}
 
 	api_return SessionApi::handleActivity(ApiRequest& aRequest) {
-		if (!aRequest.getSession()->isUserSession()) {
-			// This can be used to prevent the session from expiring
-			return websocketpp::http::status_code::no_content;
+		// This may also be used to prevent the session from expiring
+
+		if (JsonUtil::getOptionalFieldDefault<bool>("user_active", aRequest.getRequestBody(), false)) {
+			ActivityManager::getInstance()->updateActivity();
 		}
 
-		ActivityManager::getInstance()->updateActivity();
 		return websocketpp::http::status_code::no_content;
 	}
 
@@ -83,10 +83,9 @@ namespace webserver {
 		auto password = JsonUtil::getField<string>("password", reqJson, false);
 
 		auto inactivityMinutes = JsonUtil::getOptionalFieldDefault<uint64_t>("max_inactivity", reqJson, WEBCFG(DEFAULT_SESSION_IDLE_TIMEOUT).uint64());
-		auto userSession = JsonUtil::getOptionalFieldDefault<bool>("user_session", reqJson, false);
 
 		auto session = WebServerManager::getInstance()->getUserManager().authenticateSession(username, password, 
-			aIsSecure, inactivityMinutes, userSession, aIP);
+			aIsSecure, inactivityMinutes, aIP);
 
 		if (!session) {
 			aRequest.setResponseErrorStr("Invalid username or password");
