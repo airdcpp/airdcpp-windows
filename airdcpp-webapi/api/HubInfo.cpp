@@ -50,6 +50,7 @@ namespace webserver {
 		METHOD_HANDLER("redirect", Access::HUBS_EDIT, ApiRequest::METHOD_POST, (), false, HubInfo::handleRedirect);
 
 		METHOD_HANDLER("counts", Access::HUBS_VIEW, ApiRequest::METHOD_GET, (), false, HubInfo::handleGetCounts);
+		METHOD_HANDLER("users", Access::HUBS_VIEW, ApiRequest::METHOD_GET, (NUM_PARAM, NUM_PARAM), false, HubInfo::handleGetUsers);
 	}
 
 	HubInfo::~HubInfo() {
@@ -62,6 +63,18 @@ namespace webserver {
 		client->addListener(this);
 
 		timer->start(false);
+	}
+
+	api_return HubInfo::handleGetUsers(ApiRequest& aRequest) {
+		OnlineUserList users;
+		client->getUserList(users, false);
+
+		int start = aRequest.getRangeParam(0);
+		int count = aRequest.getRangeParam(1);
+
+		auto j = Serializer::serializeItemList(start, count, OnlineUserUtils::propertyHandler, users);
+		aRequest.setResponseBody(j);
+		return websocketpp::http::status_code::ok;
 	}
 
 	api_return HubInfo::handleGetCounts(ApiRequest& aRequest) {
@@ -115,33 +128,54 @@ namespace webserver {
 		if (!aClient->getRedirectUrl().empty()) {
 			return{
 				{ "id", "redirect" },
-				{ "hub_url", aClient->getRedirectUrl() }
+				{ "str", "Redirect" },
+				{ "data", {
+					{ "hub_url", aClient->getRedirectUrl() },
+				} },
 			};
 		}
 
-		string id;
 		switch (aClient->getConnectState()) {
-			case Client::STATE_CONNECTING:
 			case Client::STATE_PROTOCOL:
-			case Client::STATE_IDENTIFY: id = "connecting"; break;
+			case Client::STATE_IDENTIFY:
 			case Client::STATE_VERIFY: {
-				return {
-					{ "id", "password" },
-					{ "has_password", !aClient->getPassword().empty() }
-				};
-				break;
+				if (aClient->getPassword().empty()) {
+					return {
+						{ "id", "password" },
+						{ "str", "Password requested" },
+					};
+				}
 			}
-			case Client::STATE_NORMAL: id = "connected"; break;
+			case Client::STATE_CONNECTING: {
+				return {
+					{ "id", "connecting" },
+					{ "str", STRING(CONNECTING) },
+				};
+			}
 			case Client::STATE_DISCONNECTED: 
 			{
-				id = aClient->isKeyprintMismatch() ? "keyprint_mismatch" : "disconnected";
-				break;
+				if (aClient->isKeyprintMismatch()) {
+					return{
+						{ "id", "keyprint_mismatch" },
+						{ "str", STRING(KEYPRINT_MISMATCH) },
+					};
+				}
+
+				return {
+					{ "id", "disconnected" },
+					{ "str", STRING(DISCONNECTED) },
+				};
+			}
+			case Client::STATE_NORMAL: {
+				return {
+					{ "id", "connected" },
+					{ "str", STRING(CONNECTED) },
+				};
 			}
 		}
 
-		return {
-			{ "id", id },
-		};
+		dcassert(0);
+		return nullptr;
 	}
 
 	void HubInfo::on(ClientListener::Close, const Client*) noexcept {

@@ -43,8 +43,6 @@ namespace webserver {
 		METHOD_HANDLER("session", Access::HUBS_EDIT, ApiRequest::METHOD_POST, (), true, HubApi::handleConnect);
 		METHOD_HANDLER("session", Access::HUBS_EDIT, ApiRequest::METHOD_DELETE, (TOKEN_PARAM), false, HubApi::handleDisconnect);
 
-		METHOD_HANDLER("search_nicks", Access::ANY, ApiRequest::METHOD_POST, (), true, HubApi::handleSearchNicks);
-
 		METHOD_HANDLER("stats", Access::ANY, ApiRequest::METHOD_GET, (), false, HubApi::handleGetStats);
 
 		METHOD_HANDLER("message", Access::HUBS_SEND, ApiRequest::METHOD_POST, (), true, HubApi::handlePostMessage);
@@ -201,25 +199,5 @@ namespace webserver {
 		}
 
 		return websocketpp::http::status_code::no_content;
-	}
-
-	// TODO: move to user API
-	api_return HubApi::handleSearchNicks(ApiRequest& aRequest) {
-		const auto& reqJson = aRequest.getRequestBody();
-
-		auto pattern = JsonUtil::getField<string>("pattern", reqJson);
-		auto maxResults = JsonUtil::getField<size_t>("max_results", reqJson);
-		auto ignorePrefixes = JsonUtil::getOptionalFieldDefault<bool>("ignore_prefixes", reqJson, true);
-		auto hubs = Deserializer::deserializeHubUrls(reqJson);
-
-		auto users = ClientManager::getInstance()->searchNicks(pattern, maxResults, ignorePrefixes, hubs);
-
-		auto retJson = json::array();
-		for (const auto& u : users) {
-			retJson.push_back(Serializer::serializeOnlineUser(u));
-		}
-
-		aRequest.setResponseBody(retJson);
-		return websocketpp::http::status_code::ok;
 	}
 }

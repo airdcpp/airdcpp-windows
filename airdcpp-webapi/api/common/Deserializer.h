@@ -41,6 +41,7 @@ namespace webserver {
 
 		static UserPtr deserializeUser(const json& aJson, bool aAllowMe = false, const string& aFieldName = "user");
 		static HintedUser deserializeHintedUser(const json& aJson, bool aAllowMe = false, const string& aFieldName = "user");
+		static OnlineUserPtr deserializeOnlineUser(const json& aJson, bool aAllowMe = false, const string& aFieldName = "user");
 		static TTHValue deserializeTTH(const json& aJson);
 		static Priority deserializePriority(const json& aJson, bool allowDefault);
 

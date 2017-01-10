@@ -71,6 +71,17 @@ namespace webserver {
 		return HintedUser(user, JsonUtil::getField<string>("hub_url", userJson, aAllowMe && user == ClientManager::getInstance()->getMe()));
 	}
 
+	OnlineUserPtr Deserializer::deserializeOnlineUser(const json& aJson, bool aAllowMe, const string& aFieldName) {
+		auto hintedUser = deserializeHintedUser(aJson, aAllowMe, aFieldName);
+
+		auto onlineUser = ClientManager::getInstance()->findOnlineUser(hintedUser, false);
+		if (!onlineUser) {
+			throw std::invalid_argument("User is offline");
+		}
+
+		return onlineUser;
+	}
+
 	TTHValue Deserializer::deserializeTTH(const json& aJson) {
 		return parseTTH(JsonUtil::getField<string>("tth", aJson, false));
 	}

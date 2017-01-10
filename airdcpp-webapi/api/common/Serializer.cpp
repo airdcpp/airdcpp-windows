@@ -237,7 +237,7 @@ namespace webserver {
 	}
 
 	json Serializer::serializeOnlineUser(const OnlineUserPtr& aUser) noexcept {
-		return serializeItemProperties(aUser, toPropertyIdSet(OnlineUserUtils::propertyHandler.properties), OnlineUserUtils::propertyHandler);
+		return serializeItem(aUser, OnlineUserUtils::propertyHandler);
 	}
 
 	std::string Serializer::getFileTypeId(const string& aName) noexcept {

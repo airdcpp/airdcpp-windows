@@ -49,7 +49,6 @@ namespace webserver {
 
 		api_return handleConnect(ApiRequest& aRequest);
 		api_return handleDisconnect(ApiRequest& aRequest);
-		api_return handleSearchNicks(ApiRequest& aRequest);
 		api_return handleGetStats(ApiRequest& aRequest);
 
 		void on(ClientManagerListener::ClientCreated, const ClientPtr&) noexcept override;

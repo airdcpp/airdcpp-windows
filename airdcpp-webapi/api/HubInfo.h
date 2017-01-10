@@ -62,6 +62,7 @@ namespace webserver {
 		api_return handleRedirect(ApiRequest& aRequest);
 
 		api_return handleGetCounts(ApiRequest& aRequest);
+		api_return handleGetUsers(ApiRequest& aRequest);
 
 		void on(ClientListener::Redirect, const Client*, const string&) noexcept override;
 		void on(ClientListener::Disconnected, const string&, const string&) noexcept override;
