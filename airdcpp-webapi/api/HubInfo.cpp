@@ -50,7 +50,9 @@ namespace webserver {
 		METHOD_HANDLER("redirect", Access::HUBS_EDIT, ApiRequest::METHOD_POST, (), false, HubInfo::handleRedirect);
 
 		METHOD_HANDLER("counts", Access::HUBS_VIEW, ApiRequest::METHOD_GET, (), false, HubInfo::handleGetCounts);
+
 		METHOD_HANDLER("users", Access::HUBS_VIEW, ApiRequest::METHOD_GET, (NUM_PARAM, NUM_PARAM), false, HubInfo::handleGetUsers);
+		METHOD_HANDLER("user", Access::HUBS_VIEW, ApiRequest::METHOD_GET, (CID_PARAM), false, HubInfo::handleGetUser);
 	}
 
 	HubInfo::~HubInfo() {
@@ -74,6 +76,14 @@ namespace webserver {
 
 		auto j = Serializer::serializeItemList(start, count, OnlineUserUtils::propertyHandler, users);
 		aRequest.setResponseBody(j);
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return HubInfo::handleGetUser(ApiRequest& aRequest) {
+		auto user = Deserializer::getUser(aRequest.getStringParam(0), true);
+		auto ou = ClientManager::getInstance()->findOnlineUser(user->getCID(), client->getHubUrl(), false);
+
+		aRequest.setResponseBody(Serializer::serializeOnlineUser(ou));
 		return websocketpp::http::status_code::ok;
 	}
 

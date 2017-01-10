@@ -30,7 +30,7 @@ namespace webserver {
 		METHOD_HANDLER("profiles", Access::ANY, ApiRequest::METHOD_GET, (), false, ShareProfileApi::handleGetProfiles);
 
 		METHOD_HANDLER("profile", Access::ANY, ApiRequest::METHOD_GET, (TOKEN_PARAM), false, ShareProfileApi::handleGetProfile);
-		METHOD_HANDLER("profile", Access::ANY, ApiRequest::METHOD_GET, (), false, ShareProfileApi::handleGetDefaultProfile);
+		METHOD_HANDLER("profile", Access::ANY, ApiRequest::METHOD_GET, (EXACT_PARAM("default")), false, ShareProfileApi::handleGetDefaultProfile);
 
 		METHOD_HANDLER("profile", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (), true, ShareProfileApi::handleAddProfile);
 		METHOD_HANDLER("profile", Access::SETTINGS_EDIT, ApiRequest::METHOD_PATCH, (TOKEN_PARAM), true, ShareProfileApi::handleUpdateProfile);

@@ -72,7 +72,8 @@ namespace webserver {
 		METHOD_HANDLER("file", Access::QUEUE_EDIT, ApiRequest::METHOD_POST, (TOKEN_PARAM, EXACT_PARAM("search")), false, QueueApi::handleSearchFile);
 		METHOD_HANDLER("file", Access::QUEUE_EDIT, ApiRequest::METHOD_PATCH, (TOKEN_PARAM), true, QueueApi::handleUpdateFile);
 
-		METHOD_HANDLER("remove_source", Access::QUEUE_EDIT, ApiRequest::METHOD_POST, (), true, QueueApi::handleRemoveSource);
+		METHOD_HANDLER("source", Access::QUEUE_EDIT, ApiRequest::METHOD_DELETE, (CID_PARAM), false, QueueApi::handleRemoveSource);
+
 		METHOD_HANDLER("remove_file", Access::QUEUE_EDIT, ApiRequest::METHOD_POST, (), true, QueueApi::handleRemoveTarget);
 		METHOD_HANDLER("find_dupe_paths", Access::ANY, ApiRequest::METHOD_POST, (), true, QueueApi::handleFindDupePaths);
 	}
@@ -101,7 +102,7 @@ namespace webserver {
 	}
 
 	api_return QueueApi::handleRemoveSource(ApiRequest& aRequest) {
-		auto user = Deserializer::deserializeUser(aRequest.getRequestBody());
+		auto user = Deserializer::getUser(aRequest.getStringParam(0), true);
 
 		auto removed = QueueManager::getInstance()->removeSource(user, QueueItem::Source::FLAG_REMOVED);
 		aRequest.setResponseBody({

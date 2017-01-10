@@ -45,7 +45,6 @@ namespace webserver {
 		api_return handleGetIgnores(ApiRequest& aRequest);
 
 		api_return handleGetUser(ApiRequest& aRequest);
-		api_return handleGetOnlineUser(ApiRequest& aRequest);
 		api_return handleSearchNicks(ApiRequest& aRequest);
 
 		void on(MessageManagerListener::IgnoreAdded, const UserPtr& aUser) noexcept override;

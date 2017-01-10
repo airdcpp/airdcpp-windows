@@ -33,7 +33,6 @@ namespace webserver {
 		MessageManager::getInstance()->addListener(this);
 
 		METHOD_HANDLER("user", Access::ANY, ApiRequest::METHOD_GET, (CID_PARAM), false, UserApi::handleGetUser);
-		METHOD_HANDLER("get_hub_user", Access::ANY, ApiRequest::METHOD_POST, (), true, UserApi::handleGetOnlineUser);
 		METHOD_HANDLER("search_nicks", Access::ANY, ApiRequest::METHOD_POST, (), true, UserApi::handleSearchNicks);
 
 		METHOD_HANDLER("ignores", Access::SETTINGS_VIEW, ApiRequest::METHOD_GET, (), false, UserApi::handleGetIgnores);
@@ -60,12 +59,6 @@ namespace webserver {
 	api_return UserApi::handleGetUser(ApiRequest& aRequest) {
 		auto user = getUser(aRequest);
 		aRequest.setResponseBody(Serializer::serializeUser(user));
-		return websocketpp::http::status_code::ok;
-	}
-
-	api_return UserApi::handleGetOnlineUser(ApiRequest& aRequest) {
-		auto user = Deserializer::deserializeOnlineUser(aRequest.getRequestBody(), true);
-		aRequest.setResponseBody(Serializer::serializeOnlineUser(user));
 		return websocketpp::http::status_code::ok;
 	}
 
