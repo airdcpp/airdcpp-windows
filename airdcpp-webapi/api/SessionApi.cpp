@@ -99,10 +99,10 @@ namespace webserver {
 		}
 
 		aRequest.setResponseBody({
-			{ "token", session->getAuthToken() }, // deprecated
-			{ "authorization", session->getAuthToken() },
-			{ "session", serializeSession(session) },
-			{ "system", SystemApi::getSystemInfo() },
+			{ "token", session->getAuthToken() },
+			{ "user", Serializer::serializeItem(session->getUser(), WebUserUtils::propertyHandler) },
+			{ "system_info", SystemApi::getSystemInfo() },
+			{ "wizard_pending", SETTING(WIZARD_PENDING) },
 		});
 
 		return websocketpp::http::status_code::ok;
