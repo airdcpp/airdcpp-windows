@@ -63,9 +63,10 @@ namespace webserver {
 	void SearchApi::onTimer() noexcept {
 		vector<SearchInstanceToken> expiredIds;
 		forEachSubModule([&](const SearchEntity& aInstance) {
-			if (aInstance.getExpirationTick() > 0 && GET_TICK() > aInstance.getExpirationTick()) {
+			auto expiration = aInstance.getTimeToExpiration();
+			if (expiration && *expiration <= 0) {
 				expiredIds.push_back(aInstance.getId());
-				dcdebug("Removing an expired search instance (expiration: " U64_FMT ", now: " U64_FMT ")\n", aInstance.getExpirationTick(), GET_TICK());
+				dcdebug("Removing an expired search instance (expiration: " U64_FMT ", now: " U64_FMT ")\n", *expiration, GET_TICK());
 			}
 		});
 
@@ -75,9 +76,14 @@ namespace webserver {
 	}
 
 	json SearchApi::serializeSearchInstance(const SearchEntity& aSearch) noexcept {
+		auto expiration = aSearch.getTimeToExpiration();
 		return {
 			{ "id", aSearch.getId() },
-			{ "expiration_minutes", static_cast<int64_t>(aSearch.getExpirationTick()) - static_cast<int64_t>(GET_TICK()) },
+			{ "expires_in", expiration ? *expiration : json() },
+			{ "current_search_id", aSearch.getSearch()->getCurrentSearchToken() },
+			{ "time_from_search", aSearch.getSearch()->getTimeFromLastSearch() },
+			{ "queue_time", aSearch.getSearch()->getQueueTime() },
+			{ "queued_count", aSearch.getSearch()->getQueueCount() },
 		};
 	}
 

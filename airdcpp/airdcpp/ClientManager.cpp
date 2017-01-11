@@ -918,6 +918,10 @@ pair<size_t, size_t> ClientManager::countAschSupport(const OrderedStringSet& hub
 	return { found, total };
 }
 
+void ClientManager::on(ClientListener::OutgoingSearch, const Client* aClient, const SearchPtr& aSearch) noexcept {
+	fire(ClientManagerListener::OutgoingSearch(), aClient->getHubUrl(), aSearch);
+}
+
 void ClientManager::on(ClientListener::NmdcSearch, Client* aClient, const string& aSeeker, int aSearchType, int64_t aSize,
 									int aFileType, const string& aString, bool isPassive) noexcept
 {
@@ -986,23 +990,79 @@ void ClientManager::on(ClientListener::NmdcSearch, Client* aClient, const string
 	}
 }
 
-optional<uint64_t> ClientManager::search(string& who, const SearchPtr& aSearch) noexcept {
+optional<uint64_t> ClientManager::search(string& aHubUrl, const SearchPtr& aSearch, string& error_) noexcept {
 	RLock l(cs);
-	auto i = clients.find(const_cast<string*>(&who));
-	if(i != clients.end() && i->second->isConnected()) {
-		return i->second->queueSearch(aSearch);		
+	auto i = clients.find(const_cast<string*>(&aHubUrl));
+	if(i != clients.end()) {
+		if (!i->second->isConnected()) {
+			error_ = "Hub is not connected";
+			return boost::none;
+		}
+
+		auto result = i->second->queueSearch(aSearch);
+		if (!result) {
+			error_ = "Search queue overflow";
+			i->second->statusMessage("Failed to queue the search " + aSearch->query + " due to search queue overflow", LogMessage::SEV_WARNING);
+		}
+
+		return result;
+
 	}
 
+	error_ = "Hub was not found";
 	return boost::none;
 }
 
-void ClientManager::directSearch(const HintedUser& user, const SearchPtr& aSearch) noexcept {
+bool ClientManager::cancelSearch(const void* aOwner) noexcept {
+	bool ret = false;
 
-	RLock l (cs);
-	auto ou = findOnlineUser(user);
-	if (ou) {
-		ou->getClient()->directSearch(*ou, aSearch);
+	{
+		RLock l(cs);
+		for (const auto& c : clients | map_values) {
+			if (c->cancelSearch(aOwner)) {
+				ret = true;
+			}
+		}
 	}
+
+	return ret;
+}
+
+optional<uint64_t> ClientManager::getMaxSearchQueueTime(const void* aOwner) noexcept {
+	optional<uint64_t> maxTime;
+
+	{
+		RLock l(cs);
+		for (const auto& c : clients | map_values) {
+			auto t = c->getQueueTime(aOwner);
+			if (t) {
+				t = maxTime ? max(*t, *maxTime) : *t;
+			}
+		}
+	}
+
+	return maxTime;
+}
+
+bool ClientManager::directSearch(const HintedUser& aUser, const SearchPtr& aSearch, string& error_) noexcept {
+	if (aUser.user->isNMDC()) {
+		error_ = "Direct search is not supported with NMDC users";
+		return false;
+	}
+
+	OnlineUserPtr ou = nullptr;
+
+	{
+		RLock l(cs);
+		ou = findOnlineUser(aUser);
+		if (!ou) {
+			error_ = STRING(USER_OFFLINE);
+			return false;
+		}
+	}
+
+	ou->getClient()->directSearch(*ou, aSearch);
+	return true;
 }
 
 OnlineUserList ClientManager::searchNicks(const string& aPattern, size_t aMaxResults, bool aIgnorePrefix, const StringList& aHubUrls) const noexcept {
@@ -1263,13 +1323,6 @@ string ClientManager::getMyNick(const string& hubUrl) const noexcept {
 	}
 	return Util::emptyString;
 }
-
-void ClientManager::cancelSearch(void* aOwner) noexcept {
-	RLock l(cs);
-	for(auto c: clients | map_values)
-		c->cancelSearch(aOwner);
-}
-
 
 void ClientManager::on(ClientListener::Connected, const Client* aClient) noexcept {
 	auto c = getClient(aClient->getHubUrl());

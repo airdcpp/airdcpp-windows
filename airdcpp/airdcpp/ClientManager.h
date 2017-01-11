@@ -121,14 +121,15 @@ public:
 
 	bool hasClient(const string& aUrl) const noexcept;
 	
-	optional<uint64_t> search(string& who, const SearchPtr& aSearch) noexcept;
+	optional<uint64_t> search(string& aHubUrl, const SearchPtr& aSearch, string& error_) noexcept;
 
 	// Get users with nick matching the pattern. Uses relevancies for priorizing the results.
 	OnlineUserList searchNicks(const string& aPattern, size_t aMaxResults, bool aIgnorePrefix, const StringList& aHubUrls) const noexcept;
 
-	void directSearch(const HintedUser& user, const SearchPtr& aSearch) noexcept;
+	bool directSearch(const HintedUser& user, const SearchPtr& aSearch, string& error_) noexcept;
 	
-	void cancelSearch(void* aOwner) noexcept;
+	bool cancelSearch(const void* aOwner) noexcept;
+	optional<uint64_t> getMaxSearchQueueTime(const void* aOwner) noexcept;
 		
 	void infoUpdated() noexcept;
 
@@ -277,6 +278,7 @@ private:
 	void on(ClientListener::HubUserCommand, const Client*, int, int, const string&, const string&) noexcept;
 	void on(ClientListener::NmdcSearch, Client* aClient, const string& aSeeker, int aSearchType, int64_t aSize,
 		int aFileType, const string& aString, bool) noexcept;
+	void on(ClientListener::OutgoingSearch, const Client*, const SearchPtr&) noexcept;
 
 	// TimerManagerListener
 	void on(TimerManagerListener::Minute, uint64_t aTick) noexcept;

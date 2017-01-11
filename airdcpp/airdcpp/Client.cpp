@@ -506,9 +506,13 @@ bool Client::updateCounts(bool aRemove) noexcept {
 	return true;
 }
 
-uint64_t Client::queueSearch(const SearchPtr& aSearch) noexcept {
+optional<uint64_t> Client::queueSearch(const SearchPtr& aSearch) noexcept {
 	dcdebug("Queue search %s\n", aSearch->query.c_str());
-	return searchQueue.add(aSearch);
+	return searchQueue.maybeAdd(aSearch);
+}
+
+optional<uint64_t> Client::getQueueTime(const void* aOwner) const noexcept {
+	return searchQueue.getQueueTime(Search::CompareOwner(aOwner));
 }
 
 string Client::getAllCountsStr() noexcept {
@@ -537,11 +541,10 @@ void Client::on(TimerManagerListener::Second, uint64_t aTick) noexcept{
 		connect();
 	}
 
-	if (searchQueue.hasWaitingTime(aTick)) return;
-
 	if (isConnected()){
-		auto s = move(searchQueue.pop());
-		if (s){
+		auto s = move(searchQueue.maybePop());
+		if (s) {
+			fire(ClientListener::OutgoingSearch(), this, s);
 			search(move(s));
 		}
 	}

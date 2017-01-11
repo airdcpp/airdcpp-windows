@@ -73,7 +73,7 @@ public:
 	string		query;
 	StringList	exts;
 	StringList	excluded;
-	set<void*>	owners;
+	const void*	owner;
 	string		key;
 
 	bool		aschOnly = false;
@@ -111,15 +111,38 @@ public:
 	const Priority priority;
 	
 	bool operator==(const Search& rhs) const {
-		 return this->sizeType == rhs.sizeType && 
-		 		this->size == rhs.size && 
-		 		this->fileType == rhs.fileType && 
-		 		this->query == rhs.query;
+		return this->sizeType == rhs.sizeType && 
+				this->size == rhs.size && 
+				this->fileType == rhs.fileType && 
+				this->query == rhs.query;
 	}
 
 	bool operator<(const Search& rhs) const {
-		 return this->priority > rhs.priority;
+		return this->priority > rhs.priority;
 	}
+
+	typedef function<bool(const SearchPtr&)> CompareF;
+	class ComparePtr {
+	public:
+		ComparePtr(const SearchPtr& compareTo) : a(compareTo) { }
+		bool operator()(const SearchPtr& p) const noexcept {
+			return p == a;
+		}
+	private:
+		ComparePtr& operator=(const ComparePtr&) = delete;
+		const SearchPtr& a;
+	};
+
+	class CompareOwner {
+	public:
+		CompareOwner(const void* compareTo) : a(compareTo) { }
+		bool operator()(const SearchPtr& p) const noexcept {
+			return p->owner == a;
+		}
+	private:
+		CompareOwner& operator=(const CompareOwner&) = delete;
+		const void* a;
+	};
 };
 
 }
