@@ -293,7 +293,6 @@ namespace webserver {
 				JsonUtil::getField<string>("name", fileJson),
 				Deserializer::deserializeTTH(fileJson),
 				JsonUtil::getField<int64_t>("size", fileJson),
-				JsonUtil::getField<time_t>("time", fileJson),
 				Deserializer::deserializePriority(fileJson, true))
 			);
 		}
