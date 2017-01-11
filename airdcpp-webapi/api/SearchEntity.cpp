@@ -84,12 +84,7 @@ namespace webserver {
 			return websocketpp::http::status_code::not_found;
 		}
 
-		auto j = json::array();
-		for (const auto& sr : result->getChildren()) {
-			j.push_back(serializeSearchResult(sr));
-		}
-
-		aRequest.setResponseBody(j);
+		aRequest.setResponseBody(Serializer::serializeList(result->getChildren(), serializeSearchResult));
 		return websocketpp::http::status_code::ok;
 	}
 

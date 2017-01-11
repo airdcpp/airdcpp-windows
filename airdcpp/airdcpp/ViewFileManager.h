@@ -35,11 +35,12 @@ namespace dcpp {
 	class ViewFileManager : public Singleton<ViewFileManager>, public Speaker<ViewFileManagerListener>, public QueueManagerListener {
 	public:
 		typedef unordered_map<TTHValue, ViewFilePtr> ViewFileMap;
+		typedef vector<ViewFilePtr> ViewFileList;
 
 		ViewFileManager() noexcept;
 		~ViewFileManager() noexcept;
 
-		ViewFileMap getFiles() const noexcept;
+		ViewFileList getFiles() const noexcept;
 
 		// Adds the file and shows a notification in case of errors
 		// Can be used for viewing own files by TTH as well

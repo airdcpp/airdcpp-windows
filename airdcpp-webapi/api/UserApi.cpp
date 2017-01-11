@@ -71,13 +71,7 @@ namespace webserver {
 		auto hubs = Deserializer::deserializeHubUrls(reqJson);
 
 		auto users = ClientManager::getInstance()->searchNicks(pattern, maxResults, ignorePrefixes, hubs);
-
-		auto retJson = json::array();
-		for (const auto& u : users) {
-			retJson.push_back(Serializer::serializeOnlineUser(u));
-		}
-
-		aRequest.setResponseBody(retJson);
+		aRequest.setResponseBody(Serializer::serializeList(users, Serializer::serializeOnlineUser));
 		return websocketpp::http::status_code::ok;
 	}
 

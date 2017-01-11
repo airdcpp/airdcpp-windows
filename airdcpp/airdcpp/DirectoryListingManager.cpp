@@ -101,8 +101,10 @@ bool DirectoryListingManager::hasDirectoryDownload(const string& aBundleName, vo
 DirectoryDownloadList DirectoryListingManager::getDirectoryDownloads() const noexcept {
 	DirectoryDownloadList ret;
 
-	RLock l(cs);
-	boost::range::copy(dlDirectories | map_values, back_inserter(ret));
+	{
+		RLock l(cs);
+		boost::range::copy(dlDirectories | map_values, back_inserter(ret));
+	}
 
 	return ret;
 }

@@ -405,4 +405,11 @@ namespace webserver {
 			{ "str", aCount.format() },
 		};
 	}
+
+	json Serializer::serializeGroupedPaths(const pair<string, OrderedStringSet>& aGroupedPair) noexcept {
+		return {
+			{ "name", aGroupedPair.first },
+			{ "paths", aGroupedPair.second }
+		};
+	}
 }

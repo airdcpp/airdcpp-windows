@@ -134,13 +134,7 @@ namespace webserver {
 
 	api_return SessionApi::handleGetSessions(ApiRequest& aRequest) {
 		auto sessions = session->getServer()->getUserManager().getSessions();
-
-		auto ret = json::array();
-		for (const auto& s : sessions) {
-			ret.push_back(serializeSession(s));
-		}
-
-		aRequest.setResponseBody(ret);
+		aRequest.setResponseBody(Serializer::serializeList(sessions, serializeSession));
 		return websocketpp::http::status_code::ok;
 	}
 

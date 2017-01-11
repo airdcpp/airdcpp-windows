@@ -214,17 +214,8 @@ namespace webserver {
 	}
 
 	api_return ShareApi::handleGetGroupedRootPaths(ApiRequest& aRequest) {
-		auto ret = json::array();
-
 		auto roots = ShareManager::getInstance()->getGroupedDirectories();
-		for (const auto& vPath : roots) {
-			ret.push_back({
-				{ "name", vPath.first },
-				{ "paths", vPath.second }
-			});
-		}
-
-		aRequest.setResponseBody(ret);
+		aRequest.setResponseBody(Serializer::serializeList(roots, Serializer::serializeGroupedPaths));
 		return websocketpp::http::status_code::ok;
 	}
 

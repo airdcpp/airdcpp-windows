@@ -240,13 +240,7 @@ namespace webserver {
 
 	api_return FilelistApi::handleGetDirectoryDownloads(ApiRequest& aRequest) {
 		auto downloads = DirectoryListingManager::getInstance()->getDirectoryDownloads();
-
-		auto ret = json::array();
-		for (const auto& d : downloads) {
-			ret.push_back(Serializer::serializeDirectoryDownload(d));
-		}
-
-		aRequest.setResponseBody(ret);
+		aRequest.setResponseBody(Serializer::serializeList(downloads, Serializer::serializeDirectoryDownload));
 		return websocketpp::http::status_code::ok;
 	}
 

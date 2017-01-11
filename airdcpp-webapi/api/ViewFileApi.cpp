@@ -81,14 +81,8 @@ namespace webserver {
 	}
 
 	api_return ViewFileApi::handleGetFiles(ApiRequest& aRequest) {
-		auto ret = json::array();
-
 		auto files = ViewFileManager::getInstance()->getFiles();
-		for (const auto& file : files | map_values) {
-			ret.push_back(serializeFile(file));
-		}
-
-		aRequest.setResponseBody(ret);
+		aRequest.setResponseBody(Serializer::serializeList(files, serializeFile));
 		return websocketpp::http::status_code::ok;
 	}
 

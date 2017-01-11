@@ -45,17 +45,8 @@ namespace webserver {
 	}
 
 	api_return FavoriteDirectoryApi::handleGetGroupedDirectories(ApiRequest& aRequest) {
-		auto ret = json::array();
-
 		auto directories = FavoriteManager::getInstance()->getGroupedFavoriteDirs();
-		for (const auto& vPath : directories) {
-			ret.push_back({
-				{ "name", vPath.first },
-				{ "paths", vPath.second }
-			});
-		}
-
-		aRequest.setResponseBody(ret);
+		aRequest.setResponseBody(Serializer::serializeList(directories, Serializer::serializeGroupedPaths));
 		return websocketpp::http::status_code::ok;
 	}
 
