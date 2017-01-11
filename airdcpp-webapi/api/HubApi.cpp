@@ -46,8 +46,8 @@ namespace webserver {
 		METHOD_HANDLER("stats", Access::ANY, ApiRequest::METHOD_GET, (), false, HubApi::handleGetStats);
 		METHOD_HANDLER("find_by_url", Access::HUBS_VIEW, ApiRequest::METHOD_POST, (), true, HubApi::handleFindByUrl);
 
-		METHOD_HANDLER("message", Access::HUBS_SEND, ApiRequest::METHOD_POST, (), true, HubApi::handlePostMessage);
-		METHOD_HANDLER("status", Access::HUBS_EDIT, ApiRequest::METHOD_POST, (), true, HubApi::handlePostStatus);
+		METHOD_HANDLER("chat_message", Access::HUBS_SEND, ApiRequest::METHOD_POST, (), true, HubApi::handlePostMessage);
+		METHOD_HANDLER("status_message", Access::HUBS_EDIT, ApiRequest::METHOD_POST, (), true, HubApi::handlePostStatus);
 
 		auto rawHubs = ClientManager::getInstance()->getClients();
 		for (const auto& c : rawHubs | map_values) {

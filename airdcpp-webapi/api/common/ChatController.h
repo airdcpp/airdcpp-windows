@@ -36,8 +36,8 @@ namespace webserver {
 			auto& requestHandlers = aModule->getRequestHandlers();
 
 			METHOD_HANDLER("messages", aViewPermission, ApiRequest::METHOD_GET, (NUM_PARAM), false, ChatController::handleGetMessages);
-			METHOD_HANDLER("message", aSendPermission, ApiRequest::METHOD_POST, (), true, ChatController::handlePostChatMessage);
-			METHOD_HANDLER("status", aEditPermission, ApiRequest::METHOD_POST, (), true, ChatController::handlePostStatusMessage);
+			METHOD_HANDLER("chat_message", aSendPermission, ApiRequest::METHOD_POST, (), true, ChatController::handlePostChatMessage);
+			METHOD_HANDLER("status_message", aEditPermission, ApiRequest::METHOD_POST, (), true, ChatController::handlePostStatusMessage);
 
 			METHOD_HANDLER("read", aViewPermission, ApiRequest::METHOD_POST, (), false, ChatController::handleSetRead);
 			METHOD_HANDLER("clear", aEditPermission, ApiRequest::METHOD_POST, (), false, ChatController::handleClear);
