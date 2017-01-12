@@ -59,7 +59,7 @@ namespace webserver {
 		// Find section
 		auto i = requestHandlers.find(aRequest.getStringParam(0));
 		if (i == requestHandlers.end()) {
-			aRequest.setResponseErrorStr("Invalid API section");
+			aRequest.setResponseErrorStr("API module section " + aRequest.getStringParam(0) + " was not found");
 			return websocketpp::http::status_code::bad_request;
 		}
 
@@ -86,11 +86,11 @@ namespace webserver {
 
 		if (handler == sectionHandlers.end()) {
 			if (hasParamMatch) {
-				aRequest.setResponseErrorStr("Method not supported for this command");
-			} else {
-				aRequest.setResponseErrorStr("Invalid parameters for this API section");
+				aRequest.setResponseErrorStr("Method " + aRequest.getMethodStr() + " is not supported for this handler");
+				return websocketpp::http::status_code::method_not_allowed;
 			}
 
+			aRequest.setResponseErrorStr("Supplied URL parameters don't match any method handler in this API module");
 			return websocketpp::http::status_code::bad_request;
 		}
 

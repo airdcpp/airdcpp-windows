@@ -23,7 +23,7 @@
 #include <airdcpp/Util.h>
 
 namespace webserver {
-	ApiRequest::ApiRequest(const string& aUrl, const string& aMethod, json& output_, json& error_) noexcept : responseJsonData(output_), responseJsonError(error_) {
+	ApiRequest::ApiRequest(const string& aUrl, const string& aMethod, json& output_, json& error_) noexcept : responseJsonData(output_), responseJsonError(error_), methodStr(aMethod) {
 		auto url = aUrl.length() >= 4 && aUrl.compare(0, 4, "/api") == 0 ? aUrl.substr(4) : aUrl;
 		parameters = StringTokenizer<std::string, deque>(url, '/').getTokens();
 
@@ -60,7 +60,7 @@ namespace webserver {
 
 		// Version, module and command are always mandatory
 		if (static_cast<int>(parameters.size()) < 3) {
-			throw std::invalid_argument("Not enough parameters");
+			throw std::invalid_argument("Not enough URL parameters");
 		}
 
 		// Version
@@ -72,7 +72,7 @@ namespace webserver {
 		parameters.pop_front();
 
 		if (version.size() < 2) {
-			throw std::invalid_argument("Invalid version");
+			throw std::invalid_argument("Invalid API version format");
 		}
 
 		apiVersion = Util::toInt(version.substr(1));
