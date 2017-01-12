@@ -132,6 +132,11 @@ namespace dcpp {
 		return static_cast<int>(queuedHubUrls.size());
 	}
 
+	int SearchInstance::getResultCount() const noexcept {
+		RLock l(cs);
+		return static_cast<int>(results.size());
+	}
+
 	void SearchInstance::on(ClientManagerListener::OutgoingSearch, const string& aHubUrl, const SearchPtr& aSearch) noexcept {
 		if (aSearch->owner != this) {
 			return;

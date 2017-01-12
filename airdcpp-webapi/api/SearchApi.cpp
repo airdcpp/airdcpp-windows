@@ -81,9 +81,10 @@ namespace webserver {
 			{ "id", aSearch.getId() },
 			{ "expires_in", expiration ? *expiration : json() },
 			{ "current_search_id", aSearch.getSearch()->getCurrentSearchToken() },
-			{ "time_from_search", aSearch.getSearch()->getTimeFromLastSearch() },
+			{ "searches_sent_ago", aSearch.getSearch()->getTimeFromLastSearch() },
 			{ "queue_time", aSearch.getSearch()->getQueueTime() },
 			{ "queued_count", aSearch.getSearch()->getQueueCount() },
+			{ "result_count", aSearch.getSearch()->getResultCount() },
 		};
 	}
 

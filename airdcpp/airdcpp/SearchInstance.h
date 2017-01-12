@@ -54,6 +54,7 @@ namespace dcpp {
 
 		uint64_t getTimeFromLastSearch() const noexcept;
 		int getQueueCount() const noexcept;
+		int getResultCount() const noexcept;
 		uint64_t getQueueTime() const noexcept;
 	private:
 		void on(SearchManagerListener::SR, const SearchResultPtr& aResult) noexcept override;

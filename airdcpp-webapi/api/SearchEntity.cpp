@@ -32,7 +32,7 @@ namespace webserver {
 		"search_user_result",
 		"search_result_added",
 		"search_result_updated",
-		"search_hub_search_sent",
+		"search_hub_searches_sent",
 	};
 
 	SearchEntity::SearchEntity(ParentType* aParentModule, const SearchInstancePtr& aSearch, SearchInstanceToken aId, uint64_t aExpirationTick) :
@@ -148,7 +148,7 @@ namespace webserver {
 		aRequest.setResponseBody({
 			{ "queue_time", queueResult.queueTime },
 			{ "search_id", search->getCurrentSearchToken() },
-			{ "queued_searches", queueResult.queuedHubUrls.size() },
+			{ "queued_count", queueResult.queuedHubUrls.size() },
 		});
 
 		return websocketpp::http::status_code::ok;
@@ -211,8 +211,8 @@ namespace webserver {
 	}
 
 	void SearchEntity::on(SearchInstanceListener::HubSearchSent, const string& aSearchToken, int aSent) noexcept {
-		if (subscriptionActive("search_hub_search_sent")) {
-			send("search_hub_search_sent", {
+		if (subscriptionActive("search_hub_searches_sent")) {
+			send("search_hub_searches_sent", {
 				{ "search_id", aSearchToken },
 				{ "sent", aSent }
 			});
