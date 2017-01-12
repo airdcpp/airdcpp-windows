@@ -19,44 +19,83 @@
 #include <api/HistoryApi.h>
 
 #include <web-server/JsonUtil.h>
-
 #include <api/common/Serializer.h>
+
+#include <airdcpp/RecentManager.h>
+
 
 namespace webserver {
 	HistoryApi::HistoryApi(Session* aSession) : ApiModule(aSession) {
-		METHOD_HANDLER("items", Access::ANY, ApiRequest::METHOD_GET, (NUM_PARAM), false, HistoryApi::handleGetHistory);
-		METHOD_HANDLER("item", Access::ANY, ApiRequest::METHOD_POST, (NUM_PARAM), true, HistoryApi::handlePostHistory);
+		METHOD_HANDLER("strings", Access::ANY, ApiRequest::METHOD_GET, (STR_PARAM), false, HistoryApi::handleGetStrings);
+		METHOD_HANDLER("strings", Access::SETTINGS_EDIT, ApiRequest::METHOD_DELETE, (STR_PARAM), false, HistoryApi::handleDeleteStrings);
+		METHOD_HANDLER("string", Access::ANY, ApiRequest::METHOD_POST, (STR_PARAM), true, HistoryApi::handlePostString);
+
+		METHOD_HANDLER("hubs", Access::HUBS_VIEW, ApiRequest::METHOD_GET, (NUM_PARAM), false, HistoryApi::handleGetHubs);
+		METHOD_HANDLER("hubs", Access::HUBS_VIEW, ApiRequest::METHOD_POST, (EXACT_PARAM("search")), true, HistoryApi::handleSearchHubs);
 	}
 
 	HistoryApi::~HistoryApi() {
 	}
 
-	api_return HistoryApi::handleGetHistory(ApiRequest& aRequest) {
-		auto j = json::array();
-
-		auto history = SettingsManager::getInstance()->getHistory(toHistoryType(aRequest.getStringParam(0)));
-		for (const auto& s : history) {
-			j.push_back(s);
-		}
-
-		aRequest.setResponseBody(j);
+	api_return HistoryApi::handleGetStrings(ApiRequest& aRequest) {
+		auto type = toHistoryType(aRequest.getStringParam(0));
+		auto history = SettingsManager::getInstance()->getHistory(type);
+		aRequest.setResponseBody(history);
 		return websocketpp::http::status_code::ok;
 	}
 
-	api_return HistoryApi::handlePostHistory(ApiRequest& aRequest) {
+	api_return HistoryApi::handlePostString(ApiRequest& aRequest) {
 		auto type = toHistoryType(aRequest.getStringParam(0));
-		auto item = JsonUtil::getField<string>("item", aRequest.getRequestBody(), false);
+		auto item = JsonUtil::getField<string>("string", aRequest.getRequestBody(), false);
 
 		SettingsManager::getInstance()->addToHistory(item, type);
 		return websocketpp::http::status_code::no_content;
 	}
 
-	static SettingsManager::HistoryType toHistoryType(const string& aName) {
-		auto type = Util::toInt(aName);
-		if (type < 0 || type >= SettingsManager::HistoryType::HISTORY_LAST) {
-			throw std::invalid_argument("Invalid history type");
+	api_return HistoryApi::handleDeleteStrings(ApiRequest& aRequest) {
+		auto type = toHistoryType(aRequest.getStringParam(0));
+		SettingsManager::getInstance()->clearHistory(type);
+		return websocketpp::http::status_code::no_content;
+	}
+
+	SettingsManager::HistoryType HistoryApi::toHistoryType(const string& aName) {
+		if (aName == "search_pattern") {
+			return SettingsManager::HISTORY_SEARCH;
+		} else if (aName == "search_excluded") {
+			return SettingsManager::HISTORY_EXCLUDE;
+		} else if (aName == "download_target") {
+			return SettingsManager::HISTORY_DOWNLOAD_DIR;
 		}
 
-		return static_cast<SettingsManager::HistoryType>(type);
+		dcassert(0);
+		throw RequestException(websocketpp::http::status_code::bad_request, "Invalid string history type");
+	}
+
+	json HistoryApi::serializeHub(const RecentHubEntryPtr& aHub) noexcept {
+		return {
+			{ "name", aHub->getName() },
+			{ "description", aHub->getDescription() },
+			{ "hub_url", aHub->getServer() }
+		};
+	}
+
+	api_return HistoryApi::handleSearchHubs(ApiRequest& aRequest) {
+		const auto& reqJson = aRequest.getRequestBody();
+
+		auto pattern = JsonUtil::getField<string>("pattern", reqJson);
+		auto maxResults = JsonUtil::getField<size_t>("max_results", reqJson);
+
+		auto hubs = RecentManager::getInstance()->searchRecentHubs(pattern, maxResults);
+		aRequest.setResponseBody(Serializer::serializeList(hubs, serializeHub));
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return HistoryApi::handleGetHubs(ApiRequest& aRequest) {
+		auto hubs = RecentManager::getInstance()->getRecentHubs();
+
+		auto retJson = Serializer::serializeFromEnd(aRequest.getRangeParam(0), hubs, serializeHub);
+		aRequest.setResponseBody(retJson);
+
+		return websocketpp::http::status_code::ok;
 	}
 }
