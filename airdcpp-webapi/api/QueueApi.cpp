@@ -36,16 +36,16 @@ namespace webserver {
 		QueueManager::getInstance()->addListener(this);
 		DownloadManager::getInstance()->addListener(this);
 
-		createSubscription("bundle_added");
-		createSubscription("bundle_removed");
-		createSubscription("bundle_updated");
+		createSubscription("queue_bundle_added");
+		createSubscription("queue_bundle_removed");
+		createSubscription("queue_bundle_updated");
 
 		// These are included in bundle_updated events as well
-		createSubscription("bundle_tick");
-		createSubscription("bundle_content");
-		createSubscription("bundle_priority");
-		createSubscription("bundle_status");
-		createSubscription("bundle_sources");
+		createSubscription("queue_bundle_tick");
+		createSubscription("queue_bundle_content");
+		createSubscription("queue_bundle_priority");
+		createSubscription("queue_bundle_status");
+		createSubscription("queue_bundle_sources");
 
 		createSubscription("queue_file_added");
 		createSubscription("queue_file_removed");
