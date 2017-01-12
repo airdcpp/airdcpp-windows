@@ -35,10 +35,6 @@ namespace webserver {
 
 		SearchApi(Session* aSession);
 		~SearchApi();
-
-		int getVersion() const noexcept override {
-			return 0;
-		}
 	private:
 		static json serializeSearchInstance(const SearchEntity& aSearch) noexcept;
 		SearchEntity::Ptr createInstance(uint64_t aExpirationTick);

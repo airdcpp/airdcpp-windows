@@ -32,10 +32,6 @@ namespace webserver {
 	public:
 		WebUserApi(Session* aSession);
 		~WebUserApi();
-
-		int getVersion() const noexcept override {
-			return 0;
-		}
 	private:
 		api_return handleGetUsers(ApiRequest& aRequest);
 		api_return handleAddUser(ApiRequest& aRequest);

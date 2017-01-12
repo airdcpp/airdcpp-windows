@@ -31,10 +31,6 @@ namespace webserver {
 	public:
 		EventApi(Session* aSession);
 		~EventApi();
-
-		int getVersion() const noexcept override {
-			return 0;
-		}
 	private:
 		void onMessagesChanged() noexcept;
 

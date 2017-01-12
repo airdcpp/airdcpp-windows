@@ -38,10 +38,6 @@ namespace webserver {
 	public:
 		QueueApi(Session* aSession);
 		~QueueApi();
-
-		int getVersion() const noexcept override {
-			return 0;
-		}
 	private:
 		api_return handleFindDupePaths(ApiRequest& aRequest);
 		api_return handleRemoveSource(ApiRequest& aRequest);

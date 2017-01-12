@@ -33,10 +33,6 @@ namespace webserver {
 	public:
 		UserApi(Session* aSession);
 		~UserApi();
-
-		int getVersion() const noexcept override {
-			return 0;
-		}
 	private:
 		UserPtr getUser(ApiRequest& aRequest);
 

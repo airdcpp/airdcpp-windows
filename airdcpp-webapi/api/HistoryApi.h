@@ -31,10 +31,6 @@ namespace webserver {
 	public:
 		HistoryApi(Session* aSession);
 		~HistoryApi();
-
-		int getVersion() const noexcept override {
-			return 0;
-		}
 	private:
 		api_return handleGetStrings(ApiRequest& aRequest);
 		api_return handleDeleteStrings(ApiRequest& aRequest);

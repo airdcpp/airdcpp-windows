@@ -41,10 +41,6 @@ namespace webserver {
 	public:
 		TransferApi(Session* aSession);
 		~TransferApi();
-
-		int getVersion() const noexcept override {
-			return 0;
-		}
 	private:
 		void loadTransfers() noexcept;
 		void unloadTransfers() noexcept;

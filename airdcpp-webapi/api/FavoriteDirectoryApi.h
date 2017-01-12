@@ -31,10 +31,6 @@ namespace webserver {
 	public:
 		FavoriteDirectoryApi(Session* aSession);
 		~FavoriteDirectoryApi();
-
-		int getVersion() const noexcept override {
-			return 0;
-		}
 	private:
 		static json serializeDirectories() noexcept;
 		

@@ -35,10 +35,6 @@ namespace webserver {
 	public:
 		ShareRootApi(Session* aSession);
 		~ShareRootApi();
-
-		int getVersion() const noexcept override {
-			return 0;
-		}
 	private:
 		api_return handleGetRoots(ApiRequest& aRequest);
 

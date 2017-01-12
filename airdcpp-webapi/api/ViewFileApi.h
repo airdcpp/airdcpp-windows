@@ -33,10 +33,6 @@ namespace webserver {
 
 		ViewFileApi(Session* aSession);
 		~ViewFileApi();
-
-		int getVersion() const noexcept override {
-			return 0;
-		}
 	private:
 		api_return handleGetFiles(ApiRequest& aRequest);
 

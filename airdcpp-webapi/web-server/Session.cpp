@@ -93,11 +93,6 @@ namespace webserver {
 	websocketpp::http::status_code::value Session::handleRequest(ApiRequest& aRequest) {
 		auto h = apiHandlers.find(aRequest.getApiModule());
 		if (h != apiHandlers.end()) {
-			if (aRequest.getApiVersion() != h->second->getVersion()) {
-				aRequest.setResponseErrorStr("Invalid API version");
-				return websocketpp::http::status_code::precondition_failed;
-			}
-
 			return h->second->handleRequest(aRequest);
 		}
 

@@ -17,6 +17,7 @@
 */
 
 #include <web-server/stdinc.h>
+#include <web-server/version.h>
 
 #include <web-server/JsonUtil.h>
 #include <web-server/Timer.h>
@@ -185,6 +186,8 @@ namespace webserver {
 	json SystemApi::getSystemInfo() noexcept {
 		auto started = TimerManager::getStartTime();
 		return {
+			{ "api_version", API_VERSION },
+			{ "api_feature_level", API_FEATURE_LEVEL },
 			{ "path_separator", PATH_SEPARATOR_STR },
 			{ "platform", getPlatform() },
 			{ "hostname", getHostname() },

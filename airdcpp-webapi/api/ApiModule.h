@@ -75,12 +75,6 @@ namespace webserver {
 
 		api_return handleRequest(ApiRequest& aRequest);
 
-		virtual int getVersion() const noexcept {
-			// Root module should always have version specified (and this shouldn't be called for submodules)
-			dcassert(0);
-			return -1;
-		}
-
 		ApiModule(ApiModule&) = delete;
 		ApiModule& operator=(ApiModule&) = delete;
 

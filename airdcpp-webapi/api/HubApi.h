@@ -36,10 +36,6 @@ namespace webserver {
 		HubApi(Session* aSession);
 		~HubApi();
 
-		int getVersion() const noexcept override {
-			return 0;
-		}
-
 		static json serializeClient(const ClientPtr& aClient) noexcept;
 	private:
 		void addHub(const ClientPtr& aClient) noexcept;

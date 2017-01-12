@@ -76,8 +76,9 @@ namespace webserver {
 				return;
 			}
 
+			auto con = aServer->get_con_from_hdl(hdl);
 			onData(msg->get_payload(), TransportType::TYPE_SOCKET, Direction::INCOMING, socket->getIp());
-			api.handleSocketRequest(msg->get_payload(), socket, aIsSecure);
+			api.handleSocketRequest(msg->get_payload(), con->get_request(), socket, aIsSecure);
 		}
 
 		template <typename EndpointType>
@@ -112,13 +113,11 @@ namespace webserver {
 			}
 
 			if (con->get_resource().length() >= 4 && con->get_resource().compare(0, 4, "/api") == 0) {
-				auto path = con->get_resource().substr(4);
-
-				onData(path + ": " + con->get_request().get_body(), TransportType::TYPE_HTTP_API, Direction::INCOMING, ip);
+				onData(con->get_resource() + ": " + con->get_request().get_body(), TransportType::TYPE_HTTP_API, Direction::INCOMING, ip);
 
 				json output, apiError;
 				status = api.handleHttpRequest(
-					path,
+					con->get_resource(),
 					con->get_request(),
 					output,
 					apiError,
@@ -128,7 +127,7 @@ namespace webserver {
 				);
 
 				auto data = status != websocketpp::http::status_code::ok ? apiError.dump() : output.dump();
-				onData(path + " (" + Util::toString(status) + "): " + data, TransportType::TYPE_HTTP_API, Direction::OUTGOING, ip);
+				onData(con->get_resource() + " (" + Util::toString(status) + "): " + data, TransportType::TYPE_HTTP_API, Direction::OUTGOING, ip);
 
 				con->set_body(data);
 				con->append_header("Content-Type", "application/json");

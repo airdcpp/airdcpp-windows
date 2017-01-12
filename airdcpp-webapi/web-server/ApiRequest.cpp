@@ -24,21 +24,18 @@
 
 namespace webserver {
 	ApiRequest::ApiRequest(const string& aUrl, const string& aMethod, json& output_, json& error_) noexcept : responseJsonData(output_), responseJsonError(error_) {
-		parameters = StringTokenizer<std::string, deque>(aUrl, '/').getTokens();
+		auto url = aUrl.length() >= 4 && aUrl.compare(0, 4, "/api") == 0 ? aUrl.substr(4) : aUrl;
+		parameters = StringTokenizer<std::string, deque>(url, '/').getTokens();
 
 		if (aMethod == "GET") {
 			method = METHOD_GET;
-		}
-		else if (aMethod == "POST") {
+		} else if (aMethod == "POST") {
 			method = METHOD_POST;
-		}
-		else if (aMethod == "PUT") {
+		} else if (aMethod == "PUT") {
 			method = METHOD_PUT;
-		}
-		else if (aMethod == "DELETE") {
+		} else if (aMethod == "DELETE") {
 			method = METHOD_DELETE;
-		}
-		else if (aMethod == "PATCH") {
+		} else if (aMethod == "PATCH") {
 			method = METHOD_PATCH;
 		}
 	}
@@ -61,17 +58,17 @@ namespace webserver {
 			throw std::invalid_argument("Unsupported method");
 		}
 
-		// Module, version and command are always mandatory
+		// Version, module and command are always mandatory
 		if (static_cast<int>(parameters.size()) < 3) {
 			throw std::invalid_argument("Not enough parameters");
 		}
 
-		// API Module
-		apiModule = parameters.front();
-		parameters.pop_front();
-
 		// Version
 		auto version = parameters.front();
+		parameters.pop_front();
+
+		// API Module
+		apiModule = parameters.front();
 		parameters.pop_front();
 
 		if (version.size() < 2) {

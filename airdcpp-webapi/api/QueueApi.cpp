@@ -440,17 +440,17 @@ namespace webserver {
 	// BUNDLE LISTENERS
 	void QueueApi::on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle) noexcept {
 		bundleView.onItemAdded(aBundle);
-		if (!subscriptionActive("bundle_added"))
+		if (!subscriptionActive("queue_bundle_added"))
 			return;
 
-		send("bundle_added", Serializer::serializeItem(aBundle, QueueBundleUtils::propertyHandler));
+		send("queue_bundle_added", Serializer::serializeItem(aBundle, QueueBundleUtils::propertyHandler));
 	}
 	void QueueApi::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept {
 		bundleView.onItemRemoved(aBundle);
-		if (!subscriptionActive("bundle_removed"))
+		if (!subscriptionActive("queue_bundle_removed"))
 			return;
 
-		send("bundle_removed", Serializer::serializeItem(aBundle, QueueBundleUtils::propertyHandler));
+		send("queue_bundle_removed", Serializer::serializeItem(aBundle, QueueBundleUtils::propertyHandler));
 	}
 
 	void QueueApi::onBundleUpdated(const BundlePtr& aBundle, const PropertyIdSet& aUpdatedProperties, const string& aSubscription) {
@@ -459,36 +459,36 @@ namespace webserver {
 			send(aSubscription, Serializer::serializeItemProperties(aBundle, aUpdatedProperties, QueueBundleUtils::propertyHandler));
 		}
 
-		if (subscriptionActive("bundle_updated")) {
-			send("bundle_updated", Serializer::serializeItemProperties(aBundle, aUpdatedProperties, QueueBundleUtils::propertyHandler));
+		if (subscriptionActive("queue_bundle_updated")) {
+			send("queue_bundle_updated", Serializer::serializeItemProperties(aBundle, aUpdatedProperties, QueueBundleUtils::propertyHandler));
 		}
 	}
 
 	void QueueApi::on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) noexcept {
-		onBundleUpdated(aBundle, { QueueBundleUtils::PROP_SIZE, QueueBundleUtils::PROP_TYPE }, "bundle_content");
+		onBundleUpdated(aBundle, { QueueBundleUtils::PROP_SIZE, QueueBundleUtils::PROP_TYPE }, "queue_bundle_content");
 	}
 
 	void QueueApi::on(QueueManagerListener::BundlePriority, const BundlePtr& aBundle) noexcept {
-		onBundleUpdated(aBundle, { QueueBundleUtils::PROP_PRIORITY, QueueBundleUtils::PROP_STATUS }, "bundle_priority");
+		onBundleUpdated(aBundle, { QueueBundleUtils::PROP_PRIORITY, QueueBundleUtils::PROP_STATUS }, "queue_bundle_priority");
 	}
 
 	void QueueApi::on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept {
-		onBundleUpdated(aBundle, { QueueBundleUtils::PROP_STATUS, QueueBundleUtils::PROP_TIME_FINISHED }, "bundle_status");
+		onBundleUpdated(aBundle, { QueueBundleUtils::PROP_STATUS, QueueBundleUtils::PROP_TIME_FINISHED }, "queue_bundle_status");
 	}
 
 	void QueueApi::on(QueueManagerListener::BundleSources, const BundlePtr& aBundle) noexcept {
-		onBundleUpdated(aBundle, { QueueBundleUtils::PROP_SOURCES }, "bundle_sources");
+		onBundleUpdated(aBundle, { QueueBundleUtils::PROP_SOURCES }, "queue_bundle_sources");
 	}
 
 #define TICK_PROPS { QueueBundleUtils::PROP_SECONDS_LEFT, QueueBundleUtils::PROP_SPEED, QueueBundleUtils::PROP_STATUS, QueueBundleUtils::PROP_BYTES_DOWNLOADED }
 	void QueueApi::on(DownloadManagerListener::BundleTick, const BundleList& aTickBundles, uint64_t /*aTick*/) noexcept {
 		for (const auto& b : aTickBundles) {
-			onBundleUpdated(b, TICK_PROPS, "bundle_tick");
+			onBundleUpdated(b, TICK_PROPS, "queue_bundle_tick");
 		}
 	}
 
 	void QueueApi::on(DownloadManagerListener::BundleWaiting, const BundlePtr& aBundle) noexcept {
 		// "Waiting" isn't really a status (it's just meant to clear the props for running bundles...)
-		onBundleUpdated(aBundle, TICK_PROPS, "bundle_tick");
+		onBundleUpdated(aBundle, TICK_PROPS, "queue_bundle_tick");
 	}
 }
