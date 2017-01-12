@@ -842,7 +842,7 @@ bool ClientManager::sendUDP(AdcCommand& cmd, const CID& cid, bool noCID /*false*
 			u->getClient()->send(cmd);
 		} else {
 			try {
-				COMMAND_DEBUG(cmd.toString(), DebugManager::TYPE_CLIENT_UDP, DebugManager::OUTGOING, u->getIdentity().getIp());
+				COMMAND_DEBUG(cmd.toString(), DebugManager::TYPE_CLIENT_UDP, DebugManager::OUTGOING, u->getIdentity().getIp() + ":" + u->getIdentity().getUdpPort());
 				auto cmdStr = noCID ? cmd.toString() : cmd.toString(getMe()->getCID());
 				if (!aKey.empty() && Encoder::isBase32(aKey.c_str())) {
 					uint8_t keyChar[16];

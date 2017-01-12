@@ -86,10 +86,12 @@ namespace webserver {
 		//QueueItem update listeners
 		void on(QueueManagerListener::ItemRemoved, const QueueItemPtr& aQI, bool /*finished*/) noexcept override;
 		void on(QueueManagerListener::ItemAdded, const QueueItemPtr& aQI) noexcept override;
-		void on(QueueManagerListener::ItemSourcesUpdated, const QueueItemPtr& aQI) noexcept override;
-		void on(QueueManagerListener::ItemStatusUpdated, const QueueItemPtr& aQI) noexcept override;
+		void on(QueueManagerListener::ItemSources, const QueueItemPtr& aQI) noexcept override;
+		void on(QueueManagerListener::ItemStatus, const QueueItemPtr& aQI) noexcept override;
+		void on(QueueManagerListener::ItemPriority, const QueueItemPtr& aQI) noexcept override;
+		void on(QueueManagerListener::ItemTick, const QueueItemPtr& aQI) noexcept override;
 
-		void onFileUpdated(const QueueItemPtr& aQI, const PropertyIdSet& aUpdatedProperties);
+		void onFileUpdated(const QueueItemPtr& aQI, const PropertyIdSet& aUpdatedProperties, const string& aSubscription);
 		void onBundleUpdated(const BundlePtr& aBundle, const PropertyIdSet& aUpdatedProperties, const string& aSubscription);
 
 		typedef ListViewController<BundlePtr, QueueBundleUtils::PROP_LAST> BundleListView;

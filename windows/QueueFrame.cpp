@@ -1437,10 +1437,18 @@ void QueueFrame::on(QueueManagerListener::ItemRemoved, const QueueItemPtr& aQI, 
 void QueueFrame::on(QueueManagerListener::ItemAdded, const QueueItemPtr& aQI) noexcept{
 	addGuiTask(TASK_ADD, [=] { onQueueItemAdded(aQI); });
 }
-void QueueFrame::on(QueueManagerListener::ItemSourcesUpdated, const QueueItemPtr& aQI) noexcept {
+void QueueFrame::on(QueueManagerListener::ItemSources, const QueueItemPtr& aQI) noexcept {
 	addGuiTask(TASK_QI_UPDATE, [=] { onQueueItemUpdated(aQI); });
 }
-void QueueFrame::on(QueueManagerListener::ItemStatusUpdated, const QueueItemPtr& aQI) noexcept{
+void QueueFrame::on(QueueManagerListener::ItemStatus, const QueueItemPtr& aQI) noexcept{
+	addGuiTask(TASK_QI_UPDATE, [=] { onQueueItemUpdated(aQI); });
+}
+
+void QueueFrame::on(QueueManagerListener::ItemPriority, const QueueItemPtr& aQI) noexcept {
+	addGuiTask(TASK_QI_UPDATE, [=] { onQueueItemUpdated(aQI); });
+}
+
+void QueueFrame::on(QueueManagerListener::ItemTick, const QueueItemPtr& aQI) noexcept {
 	addGuiTask(TASK_QI_UPDATE, [=] { onQueueItemUpdated(aQI); });
 }
 

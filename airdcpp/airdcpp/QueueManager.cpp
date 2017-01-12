@@ -408,7 +408,7 @@ bool QueueManager::recheckFileImpl(const string& aPath, bool isBundleCheck, int6
 	}
 
 	fire(QueueManagerListener::FileRecheckDone(), q->getTarget());
-	fire(QueueManagerListener::ItemStatusUpdated(), q);
+	fire(QueueManagerListener::ItemStatus(), q);
 	return false;
 }
 
@@ -993,7 +993,7 @@ void QueueManager::onBundleAdded(const BundlePtr& aBundle, Bundle::Status aOldSt
 			if (itemInfo.second) {
 				fire(QueueManagerListener::ItemAdded(), itemInfo.first);
 			} else {
-				fire(QueueManagerListener::ItemSourcesUpdated(), itemInfo.first);
+				fire(QueueManagerListener::ItemSources(), itemInfo.first);
 			}
 		}
 	}
@@ -1256,7 +1256,7 @@ Download* QueueManager::getDownload(UserConnection& aSource, const QueueTokenSet
 		userQueue.addDownload(q, d);
 	}
 
-	fire(QueueManagerListener::ItemSourcesUpdated(), q);
+	fire(QueueManagerListener::ItemSources(), q);
 	dcdebug("found %s for %s (" I64_FMT ", " I64_FMT ")\n", q->getTarget().c_str(), d->getToken().c_str(), d->getSegment().getStart(), d->getSegment().getEnd());
 	return d;
 }
@@ -1522,7 +1522,7 @@ void QueueManager::handleMovedBundleItem(QueueItemPtr& qi) noexcept {
 		}
 	}
 
-	fire(QueueManagerListener::ItemStatusUpdated(), qi);
+	fire(QueueManagerListener::ItemStatus(), qi);
 
 	checkBundleFinished(b);
 }
@@ -1852,7 +1852,7 @@ void QueueManager::onDownloadFailed(QueueItemPtr& aQI, Download* aDownload, bool
 			ConnectionManager::getInstance()->getDownloadConnection(u);
 	}
 
-	fire(QueueManagerListener::ItemStatusUpdated(), aQI);
+	fire(QueueManagerListener::ItemStatus(), aQI);
 	return;
 }
 
@@ -1903,7 +1903,7 @@ void QueueManager::onFileDownloadCompleted(QueueItemPtr& aQI, Download* aDownloa
 
 		dcassert(aDownload->getTreeValid());
 		HashManager::getInstance()->addTree(aDownload->getTigerTree());
-		fire(QueueManagerListener::ItemStatusUpdated(), aQI);
+		fire(QueueManagerListener::ItemStatus(), aQI);
 		return;
 	}
 
@@ -1955,7 +1955,7 @@ void QueueManager::onFileDownloadCompleted(QueueItemPtr& aQI, Download* aDownloa
 	if (wholeFileCompleted && !aQI->getBundle()) {
 		fire(QueueManagerListener::ItemRemoved(), aQI, true);
 	} else {
-		fire(QueueManagerListener::ItemStatusUpdated(), aQI);
+		fire(QueueManagerListener::ItemStatus(), aQI);
 	}
 }
 
@@ -2080,7 +2080,7 @@ void QueueManager::removeFileSource(QueueItemPtr& q, const UserPtr& aUser, Flags
 		q->removeSource(aUser, aReason);
 	}
 
-	fire(QueueManagerListener::ItemSourcesUpdated(), q);
+	fire(QueueManagerListener::ItemSources(), q);
 
 	if (q->getBundle()) {
 		q->getBundle()->setDirty();
@@ -2173,7 +2173,7 @@ void QueueManager::setBundlePriority(BundlePtr& aBundle, Priority p, bool aKeepA
 	}
 
 	if (qi) {
-		fire(QueueManagerListener::ItemStatusUpdated(), qi);
+		fire(QueueManagerListener::ItemPriority(), qi);
 	}
 
 	fire(QueueManagerListener::BundlePriority(), aBundle);
@@ -2301,7 +2301,7 @@ void QueueManager::setQIPriority(QueueItemPtr& q, Priority p, bool aKeepAutoPrio
 		}
 	}
 
-	fire(QueueManagerListener::ItemStatusUpdated(), q);
+	fire(QueueManagerListener::ItemPriority(), q);
 
 	b->setDirty();
 	if(p == Priority::PAUSED && running) {
@@ -2333,7 +2333,7 @@ void QueueManager::setQIAutoPriority(const string& aTarget) noexcept {
 	}
 
 	q->setAutoPriority(!q->getAutoPriority());
-	fire(QueueManagerListener::ItemStatusUpdated(), q);
+	fire(QueueManagerListener::ItemPriority(), q);
 
 	q->getBundle()->setDirty();
 
@@ -2898,7 +2898,7 @@ void QueueManager::on(ClientManagerListener::UserConnected, const OnlineUser& aU
 		}
 
 		for(const auto& q: ql) {
-			fire(QueueManagerListener::ItemSourcesUpdated(), q);
+			fire(QueueManagerListener::ItemSources(), q);
 			if(!hasDown && !q->isPausedPrio() && !q->isHubBlocked(aUser.getUser(), aUser.getHubUrl()))
 				hasDown = true;
 		}
@@ -2927,7 +2927,7 @@ void QueueManager::on(ClientManagerListener::UserDisconnected, const UserPtr& aU
 	}
 
 	for (const auto& q: ql)
-		fire(QueueManagerListener::ItemSourcesUpdated(), q); 
+		fire(QueueManagerListener::ItemSources(), q); 
 
 	for (const auto& b : bl)
 		fire(QueueManagerListener::BundleSources(), b);
@@ -3036,7 +3036,7 @@ void QueueManager::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 		}
 
 		for (const auto& q : runningItems) {
-			fire(QueueManagerListener::ItemStatusUpdated(), q);
+			fire(QueueManagerListener::ItemTick(), q);
 		}
 
 		calculatePriorities(aTick);
@@ -3273,7 +3273,7 @@ bool QueueManager::handlePartialResult(const HintedUser& aUser, const TTHValue& 
 	
 	// Connect to this user
 	if (wantConnection) {
-		fire(QueueManagerListener::ItemSourcesUpdated(), qi);
+		fire(QueueManagerListener::ItemSources(), qi);
 
 		if (aUser.user->isOnline()) {
 			ConnectionManager::getInstance()->getDownloadConnection(aUser);
@@ -3517,7 +3517,7 @@ int QueueManager::addSources(const HintedUser& aUser, QueueItemList items, Flags
 
 		// Speakers
 		for (const auto& qi : items) {
-			fire(QueueManagerListener::ItemSourcesUpdated(), qi);
+			fire(QueueManagerListener::ItemSources(), qi);
 
 			if (qi->getBundle() && updatedBundles.insert(qi->getBundle()).second) {
 				fire(QueueManagerListener::BundleSources(), qi->getBundle());

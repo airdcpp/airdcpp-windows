@@ -64,7 +64,7 @@ namespace dcpp {
 
 		void on(QueueManagerListener::ItemFinished, const QueueItemPtr& qi, const string& dir, const HintedUser& aUser, int64_t aSpeed) noexcept;
 		void on(QueueManagerListener::ItemRemoved, const QueueItemPtr& qi, bool finished) noexcept;
-		void on(QueueManagerListener::ItemStatusUpdated, const QueueItemPtr& aQI) noexcept;
+		void on(QueueManagerListener::ItemTick, const QueueItemPtr& aQI) noexcept;
 
 		void onFileStateUpdated(const TTHValue& aTTH) noexcept;
 

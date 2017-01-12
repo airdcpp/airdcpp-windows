@@ -40,7 +40,7 @@ namespace webserver {
 		createSubscription("queue_bundle_removed");
 		createSubscription("queue_bundle_updated");
 
-		// These are included in bundle_updated events as well
+		// These are included in queue_bundle_updated events as well
 		createSubscription("queue_bundle_tick");
 		createSubscription("queue_bundle_content");
 		createSubscription("queue_bundle_priority");
@@ -50,6 +50,13 @@ namespace webserver {
 		createSubscription("queue_file_added");
 		createSubscription("queue_file_removed");
 		createSubscription("queue_file_updated");
+
+		// These are included in queue_file_updated events as well
+		createSubscription("queue_file_priority");
+		createSubscription("queue_file_status");
+		createSubscription("queue_file_sources");
+		createSubscription("queue_file_tick");
+
 
 		METHOD_HANDLER("bundles", Access::QUEUE_VIEW, ApiRequest::METHOD_GET, (NUM_PARAM, NUM_PARAM), false, QueueApi::handleGetBundles);
 		METHOD_HANDLER("bundles", Access::QUEUE_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("remove_finished")), false, QueueApi::handleRemoveFinishedBundles);
@@ -413,23 +420,42 @@ namespace webserver {
 		send("queue_file_removed", Serializer::serializeItem(aQI, QueueFileUtils::propertyHandler));
 	}
 
-	void QueueApi::onFileUpdated(const QueueItemPtr& aQI, const PropertyIdSet& aUpdatedProperties) {
+	void QueueApi::onFileUpdated(const QueueItemPtr& aQI, const PropertyIdSet& aUpdatedProperties, const string& aSubscription) {
 		fileView.onItemUpdated(aQI, aUpdatedProperties);
-		if (!subscriptionActive("queue_file_updated"))
-			return;
+		if (subscriptionActive(aSubscription)) {
+			// Serialize full item for more specific updates to make reading of data easier 
+			// (such as cases when the script is interested only in finished files)
+			send(aSubscription, Serializer::serializeItem(aQI, QueueFileUtils::propertyHandler));
+		}
 
-		send("queue_file_updated", Serializer::serializeItem(aQI, QueueFileUtils::propertyHandler));
+		if (subscriptionActive("queue_file_updated")) {
+			// Serialize updated properties only
+			send("queue_file_updated", Serializer::serializeItem(aQI, QueueFileUtils::propertyHandler));
+		}
 	}
 
-	void QueueApi::on(QueueManagerListener::ItemSourcesUpdated, const QueueItemPtr& aQI) noexcept {
-		onFileUpdated(aQI, { QueueFileUtils::PROP_SOURCES });
+	void QueueApi::on(QueueManagerListener::ItemSources, const QueueItemPtr& aQI) noexcept {
+		onFileUpdated(aQI, { QueueFileUtils::PROP_SOURCES }, "queue_file_sources");
 	}
 
-	void QueueApi::on(QueueManagerListener::ItemStatusUpdated, const QueueItemPtr& aQI) noexcept {
+	void QueueApi::on(QueueManagerListener::ItemStatus, const QueueItemPtr& aQI) noexcept {
 		onFileUpdated(aQI, { 
 			QueueFileUtils::PROP_STATUS, QueueFileUtils::PROP_TIME_FINISHED, QueueFileUtils::PROP_BYTES_DOWNLOADED, 
-			QueueFileUtils::PROP_SECONDS_LEFT, QueueFileUtils::PROP_SPEED, QueueFileUtils::PROP_PRIORITY 
-		});
+			QueueFileUtils::PROP_SECONDS_LEFT, QueueFileUtils::PROP_SPEED 
+		}, "queue_file_status");
+	}
+
+	void QueueApi::on(QueueManagerListener::ItemPriority, const QueueItemPtr& aQI) noexcept {
+		onFileUpdated(aQI, {
+			QueueFileUtils::PROP_STATUS, QueueFileUtils::PROP_PRIORITY
+		}, "queue_file_priority");
+	}
+
+	void QueueApi::on(QueueManagerListener::ItemTick, const QueueItemPtr& aQI) noexcept {
+		onFileUpdated(aQI, {
+			QueueFileUtils::PROP_STATUS, QueueFileUtils::PROP_BYTES_DOWNLOADED,
+			QueueFileUtils::PROP_SECONDS_LEFT, QueueFileUtils::PROP_SPEED
+		}, "queue_file_tick");
 	}
 
 	void QueueApi::on(QueueManagerListener::FileRecheckFailed, const QueueItemPtr& aQI, const string& aError) noexcept {
@@ -456,10 +482,13 @@ namespace webserver {
 	void QueueApi::onBundleUpdated(const BundlePtr& aBundle, const PropertyIdSet& aUpdatedProperties, const string& aSubscription) {
 		bundleView.onItemUpdated(aBundle, aUpdatedProperties);
 		if (subscriptionActive(aSubscription)) {
-			send(aSubscription, Serializer::serializeItemProperties(aBundle, aUpdatedProperties, QueueBundleUtils::propertyHandler));
+			// Serialize full item for more specific updates to make reading of data easier 
+			// (such as cases when the script is interested only in finished bundles)
+			send(aSubscription, Serializer::serializeItem(aBundle, QueueBundleUtils::propertyHandler));
 		}
 
 		if (subscriptionActive("queue_bundle_updated")) {
+			// Serialize updated properties only
 			send("queue_bundle_updated", Serializer::serializeItemProperties(aBundle, aUpdatedProperties, QueueBundleUtils::propertyHandler));
 		}
 	}

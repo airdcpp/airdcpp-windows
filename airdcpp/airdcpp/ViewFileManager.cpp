@@ -63,7 +63,7 @@ namespace dcpp {
 		return aQI->isSet(QueueItem::FLAG_CLIENT_VIEW) && !aQI->isSet(QueueItem::FLAG_USER_LIST) && !aQI->isSet(QueueItem::FLAG_OPEN);
 	}
 
-	void ViewFileManager::on(QueueManagerListener::ItemStatusUpdated, const QueueItemPtr& aQI) noexcept {
+	void ViewFileManager::on(QueueManagerListener::ItemTick, const QueueItemPtr& aQI) noexcept {
 		if (!isViewedItem(aQI)) {
 			return;
 		}
