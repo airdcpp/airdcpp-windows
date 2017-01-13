@@ -145,15 +145,23 @@ namespace webserver {
 			});
 		}
 
+		// Serialize item with ID and all properties
 		template <class T>
 		static json serializeItem(const T& aItem, const PropertyItemHandler<T>& aHandler) noexcept {
-			auto j = serializeItemProperties(aItem, toPropertyIdSet(aHandler.properties), aHandler);
+			return serializePartialItem(aItem, aHandler, toPropertyIdSet(aHandler.properties));
+		}
+
+		// Serialize item with ID and specified properties
+		template <class T>
+		static json serializePartialItem(const T& aItem, const PropertyItemHandler<T>& aHandler, const PropertyIdSet& aPropertyIds) noexcept {
+			auto j = serializeProperties(aItem, aHandler, aPropertyIds);
 			j["id"] = aItem->getToken();
 			return j;
 		}
 
+		// Serialize specified item properties (without the ID)
 		template <class T>
-		static json serializeItemProperties(const T& aItem, const PropertyIdSet& aPropertyIds, const PropertyItemHandler<T>& aHandler) noexcept {
+		static json serializeProperties(const T& aItem, const PropertyItemHandler<T>& aHandler, const PropertyIdSet& aPropertyIds) noexcept {
 			json j;
 			for (auto id : aPropertyIds) {
 				const auto& prop = aHandler.properties[id];

@@ -430,7 +430,7 @@ namespace webserver {
 
 		if (subscriptionActive("queue_file_updated")) {
 			// Serialize updated properties only
-			send("queue_file_updated", Serializer::serializeItem(aQI, QueueFileUtils::propertyHandler));
+			send("queue_file_updated", Serializer::serializePartialItem(aQI, QueueFileUtils::propertyHandler, aUpdatedProperties));
 		}
 	}
 
@@ -489,7 +489,7 @@ namespace webserver {
 
 		if (subscriptionActive("queue_bundle_updated")) {
 			// Serialize updated properties only
-			send("queue_bundle_updated", Serializer::serializeItemProperties(aBundle, aUpdatedProperties, QueueBundleUtils::propertyHandler));
+			send("queue_bundle_updated", Serializer::serializePartialItem(aBundle, QueueBundleUtils::propertyHandler, aUpdatedProperties));
 		}
 	}
 

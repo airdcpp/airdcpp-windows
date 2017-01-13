@@ -150,7 +150,8 @@ namespace webserver {
 
 	void ShareRootApi::onRootUpdated(const ShareDirectoryInfoPtr& aInfo, PropertyIdSet&& aUpdatedProperties) noexcept {
 		maybeSend("share_root_updated", [&] { 
-			return Serializer::serializeItemProperties(aInfo, aUpdatedProperties, ShareUtils::propertyHandler);
+			// Always serialize the full item
+			return Serializer::serializeItem(aInfo, ShareUtils::propertyHandler);
 		});
 
 		//dcassert(rootView.hasSourceItem(aInfo));

@@ -354,7 +354,7 @@ namespace webserver {
 		view.onItemUpdated(aTransfer, aUpdatedProperties);
 
 		if (subscriptionActive("transfer_updated")) {
-			send("transfer_updated", Serializer::serializeItemProperties(aTransfer, aUpdatedProperties, TransferUtils::propertyHandler));
+			send("transfer_updated", Serializer::serializePartialItem(aTransfer, TransferUtils::propertyHandler, aUpdatedProperties));
 		}
 
 		if (!aSubscriptionName.empty() && subscriptionActive(aSubscriptionName)) {
