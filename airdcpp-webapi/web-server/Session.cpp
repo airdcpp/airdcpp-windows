@@ -31,7 +31,6 @@
 #include <api/HubApi.h>
 #include <api/PrivateChatApi.h>
 #include <api/QueueApi.h>
-#include <api/RecentHubApi.h>
 #include <api/SearchApi.h>
 #include <api/SessionApi.h>
 #include <api/SettingApi.h>
@@ -67,7 +66,6 @@ namespace webserver {
 		ADD_MODULE("hubs", HubApi);
 		ADD_MODULE("private_chat", PrivateChatApi);
 		ADD_MODULE("queue", QueueApi);
-		ADD_MODULE("recent_hubs", RecentHubApi);
 		ADD_MODULE("search", SearchApi);
 		ADD_MODULE("session", SessionApi);
 		ADD_MODULE("settings", SettingApi);
