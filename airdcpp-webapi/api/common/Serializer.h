@@ -43,7 +43,7 @@ namespace webserver {
 		static json serializeLogMessage(const LogMessagePtr& aMessageData) noexcept;
 
 		typedef std::function<json(const MessageCache& aCache)> UnreadSerializerF;
-		static void serializeCacheInfo(json& json_, const MessageCache& aCache, UnreadSerializerF unreadF) noexcept;
+		static json serializeCacheInfo(const MessageCache& aCache, const UnreadSerializerF& unreadF) noexcept;
 		static json serializeUnreadChat(const MessageCache& aCache) noexcept;
 		static json serializeUnreadLog(const MessageCache& aCache) noexcept;
 
@@ -53,7 +53,7 @@ namespace webserver {
 
 		static string getFileTypeId(const string& aName) noexcept;
 		static json serializeFileType(const string& aPath) noexcept;
-		static json serializeFolderType(int aFiles, int aDirectories) noexcept;
+		static json serializeFolderType(const DirectoryContentInfo& aContentInfo) noexcept;
 
 		static json serializeIp(const string& aIP) noexcept;
 		static json serializeIp(const string& aIP, const string& aCountryCode) noexcept;
@@ -78,6 +78,7 @@ namespace webserver {
 		static json serializePriority(const QueueItemBase& aItem) noexcept;
 		static json serializeSourceCount(const QueueItemBase::SourceCount& aCount) noexcept;
 
+		static json serializeGroupedPaths(const pair<string, OrderedStringSet>& aGroupedPair) noexcept;
 
 		// Serialize n messages from end by keeping the list order
 		// Throws for invalid parameters
@@ -163,11 +164,6 @@ namespace webserver {
 				}
 				case SERIALIZE_TEXT: {
 					j[prop.name] = aHandler.stringF(aItem, id);
-					break;
-				}
-				case SERIALIZE_TEXT_NUMERIC: {
-					j[prop.name]["id"] = aHandler.numberF(aItem, id);
-					j[prop.name]["str"] = aHandler.stringF(aItem, id);
 					break;
 				}
 				case SERIALIZE_BOOL: {

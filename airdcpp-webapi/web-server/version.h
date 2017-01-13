@@ -16,32 +16,13 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include "stdinc.h"
-#include "ViewFile.h"
+#ifndef DCPLUSPLUS_API_VERSION_H
+#define DCPLUSPLUS_API_VERSION_H
 
-#include "AirUtil.h"
-#include "File.h"
-#include "TimerManager.h"
+namespace webserver {
+#define API_VERSION 1
+#define API_FEATURE_LEVEL 0
 
-namespace dcpp {
-	ViewFile::ViewFile(const string& aTarget, const TTHValue& aTTH, bool aIsText, bool aIsLocalFile, UpdateF&& aUpdateFunction) noexcept :
-		TrackableDownloadItem(aIsLocalFile), path(aTarget), tth(aTTH), timeCreated(GET_TIME()),
-		updateFunction(aUpdateFunction), text(aIsText), localFile(aIsLocalFile) {
+}
 
-	}
-
-	ViewFile::~ViewFile() noexcept {
-		if (!localFile) {
-			File::deleteFile(path);
-		}
-	}
-
-	string ViewFile::getDisplayName() const noexcept {
-		return localFile ? Util::getFileName(path) : AirUtil::fromOpenFileName(Util::getFileName(path));
-	}
-
-	void ViewFile::onStateChanged() noexcept {
-		updateFunction(tth);
-	}
-
-} //dcpp
+#endif

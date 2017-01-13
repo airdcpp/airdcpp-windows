@@ -363,10 +363,10 @@ private:
 	//QueueItem update listeners
 	void on(QueueManagerListener::ItemRemoved, const QueueItemPtr& aQI, bool /*finished*/) noexcept;
 	void on(QueueManagerListener::ItemAdded, const QueueItemPtr& aQI) noexcept;
-	void on(QueueManagerListener::ItemSourcesUpdated, const QueueItemPtr& aQI) noexcept;
-	void on(QueueManagerListener::ItemStatusUpdated, const QueueItemPtr& aQI) noexcept;
-
-
+	void on(QueueManagerListener::ItemSources, const QueueItemPtr& aQI) noexcept;
+	void on(QueueManagerListener::ItemStatus, const QueueItemPtr& aQI) noexcept;
+	void on(QueueManagerListener::ItemPriority, const QueueItemPtr& aQI) noexcept;
+	void on(QueueManagerListener::ItemTick, const QueueItemPtr& aQI) noexcept;
 
 	template<typename SourceType>
 	void appendUserMenu(OMenu& aMenu, const vector<SourceType>& aSources) {

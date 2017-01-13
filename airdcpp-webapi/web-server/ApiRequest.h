@@ -54,6 +54,10 @@ namespace webserver {
 			return method;
 		}
 
+		const string& getMethodStr() const noexcept {
+			return methodStr;
+		}
+
 		const RequestParamList& getParameters() const noexcept {
 			return parameters;
 		}
@@ -94,6 +98,7 @@ namespace webserver {
 			responseJsonError = aError;
 		}
 	private:
+		const string methodStr;
 		RequestParamList parameters;
 		int apiVersion = -1;
 		std::string apiModule;

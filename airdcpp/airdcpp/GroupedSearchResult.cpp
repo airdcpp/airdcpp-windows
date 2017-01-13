@@ -91,8 +91,19 @@ namespace dcpp {
 		return { free, total };
 	}
 
-	GroupedSearchResult::ContentInfo GroupedSearchResult::getContentInfo() const noexcept {
-		return { baseResult->getFolderCount(), baseResult->getFileCount() };
+	const DirectoryContentInfo& GroupedSearchResult::getContentInfo() const noexcept {
+		{
+			FastLock l(cs);
+
+			// Attempt to find a user that provides this information
+			auto i = boost::find_if(children, [&](const SearchResultPtr& aResult) { return Util::hasContentInfo(aResult->getContentInfo()); });
+			if (i != children.end()) {
+				return (*i)->getContentInfo();
+			}
+		}
+
+
+		return baseResult->getContentInfo();
 	}
 
 	time_t GroupedSearchResult::getOldestDate() const noexcept {

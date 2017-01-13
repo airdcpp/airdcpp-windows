@@ -186,7 +186,7 @@ namespace webserver {
 			}
 		}
 
-		void addSubModule(IdType aId, typename ItemType::Ptr& aModule) {
+		void addSubModule(IdType aId, const typename ItemType::Ptr& aModule) {
 			{
 				WLock l(cs);
 				subModules.emplace(aId, aModule);

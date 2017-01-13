@@ -121,14 +121,15 @@ public:
 
 	bool hasClient(const string& aUrl) const noexcept;
 	
-	optional<uint64_t> search(string& who, const SearchPtr& aSearch) noexcept;
+	optional<uint64_t> search(string& aHubUrl, const SearchPtr& aSearch, string& error_) noexcept;
 
 	// Get users with nick matching the pattern. Uses relevancies for priorizing the results.
-	OnlineUserList searchNicks(const string& aPattern, size_t aMaxResults, bool aIgnorePrefix) const noexcept;
+	OnlineUserList searchNicks(const string& aPattern, size_t aMaxResults, bool aIgnorePrefix, const StringList& aHubUrls) const noexcept;
 
-	void directSearch(const HintedUser& user, const SearchPtr& aSearch) noexcept;
+	bool directSearch(const HintedUser& user, const SearchPtr& aSearch, string& error_) noexcept;
 	
-	void cancelSearch(void* aOwner) noexcept;
+	bool cancelSearch(const void* aOwner) noexcept;
+	optional<uint64_t> getMaxSearchQueueTime(const void* aOwner) noexcept;
 		
 	void infoUpdated() noexcept;
 
@@ -269,14 +270,16 @@ private:
 	OnlineUser* findOnlineUserHint(const CID& cid, const string& hintUrl, OnlinePairC& p) const noexcept;
 
 	// ClientListener
-	void on(Connected, const Client* c) noexcept;
-	void on(UserUpdated, const Client*, const OnlineUserPtr& user) noexcept;
-	void on(UsersUpdated, const Client* c, const OnlineUserList&) noexcept;
-	void on(Failed, const string&, const string&) noexcept;
-	void on(HubUpdated, const Client* c) noexcept;
-	void on(HubUserCommand, const Client*, int, int, const string&, const string&) noexcept;
-	void on(NmdcSearch, Client* aClient, const string& aSeeker, int aSearchType, int64_t aSize,
+	void on(ClientListener::Connected, const Client* c) noexcept;
+	void on(ClientListener::UserUpdated, const Client*, const OnlineUserPtr& user) noexcept;
+	void on(ClientListener::UsersUpdated, const Client* c, const OnlineUserList&) noexcept;
+	void on(ClientListener::Disconnected, const string&, const string&) noexcept;
+	void on(ClientListener::HubUpdated, const Client* c) noexcept;
+	void on(ClientListener::HubUserCommand, const Client*, int, int, const string&, const string&) noexcept;
+	void on(ClientListener::NmdcSearch, Client* aClient, const string& aSeeker, int aSearchType, int64_t aSize,
 		int aFileType, const string& aString, bool) noexcept;
+	void on(ClientListener::OutgoingSearch, const Client*, const SearchPtr&) noexcept;
+
 	// TimerManagerListener
 	void on(TimerManagerListener::Minute, uint64_t aTick) noexcept;
 };

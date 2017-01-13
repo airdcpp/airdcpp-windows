@@ -50,8 +50,7 @@ namespace webserver {
 				return Serializer::serializeFileType(aResult->getPath());
 			}
 
-			auto contentInfo = aResult->getContentInfo();
-			return Serializer::serializeFolderType(contentInfo.files, contentInfo.folders);
+			return Serializer::serializeFolderType(aResult->getContentInfo());
 		}
 		case PROP_SLOTS: {
 			auto slots = aResult->getSlots();
@@ -91,15 +90,7 @@ namespace webserver {
 			}
 
 			if (a->isDirectory() && b->isDirectory()) {
-				// Directories
-				auto contentA = a->getContentInfo();
-				auto contentB = b->getContentInfo();
-
-				if (contentA.folders != contentB.folders) {
-					return compare(contentA.folders, contentB.folders);
-				}
-
-				return compare(contentA.files, contentB.files);
+				return Util::directoryContentSort(a->getContentInfo(), b->getContentInfo());
 			}
 
 			return Util::DefaultSort(Util::getFileExt(a->getPath()), Util::getFileExt(b->getPath()));
@@ -131,11 +122,10 @@ namespace webserver {
 		case PROP_USERS: return Format::formatNicks(aResult->getBaseUser());
 		case PROP_TYPE: {
 			if (aResult->isDirectory()) {
-				auto contentInfo = aResult->getContentInfo();
-				return Format::formatFolderContent(contentInfo.files, contentInfo.folders);
+				return Util::formatDirectoryContent(aResult->getContentInfo());
 			}
 
-			return Format::formatFileType(aResult->getPath());
+			return Util::formatFileType(aResult->getPath());
 		}
 		case PROP_SLOTS: {
 			auto slots = aResult->getSlots();

@@ -838,7 +838,7 @@ bool ClientManager::sendUDP(AdcCommand& cmd, const CID& cid, bool noCID /*false*
 			u->getClient()->send(cmd);
 		} else {
 			try {
-				COMMAND_DEBUG(cmd.toString(), DebugManager::TYPE_CLIENT_UDP, DebugManager::OUTGOING, u->getIdentity().getIp());
+				COMMAND_DEBUG(cmd.toString(), DebugManager::TYPE_CLIENT_UDP, DebugManager::OUTGOING, u->getIdentity().getIp() + ":" + u->getIdentity().getUdpPort());
 				auto cmdStr = noCID ? cmd.toString() : cmd.toString(getMe()->getCID());
 				if (!aKey.empty() && Encoder::isBase32(aKey.c_str())) {
 					uint8_t keyChar[16];
@@ -914,7 +914,11 @@ pair<size_t, size_t> ClientManager::countAschSupport(const OrderedStringSet& hub
 	return { found, total };
 }
 
-void ClientManager::on(NmdcSearch, Client* aClient, const string& aSeeker, int aSearchType, int64_t aSize, 
+void ClientManager::on(ClientListener::OutgoingSearch, const Client* aClient, const SearchPtr& aSearch) noexcept {
+	fire(ClientManagerListener::OutgoingSearch(), aClient->getHubUrl(), aSearch);
+}
+
+void ClientManager::on(ClientListener::NmdcSearch, Client* aClient, const string& aSeeker, int aSearchType, int64_t aSize,
 									int aFileType, const string& aString, bool isPassive) noexcept
 {
 	fire(ClientManagerListener::IncomingSearch(), aString);
@@ -982,26 +986,82 @@ void ClientManager::on(NmdcSearch, Client* aClient, const string& aSeeker, int a
 	}
 }
 
-optional<uint64_t> ClientManager::search(string& who, const SearchPtr& aSearch) noexcept {
+optional<uint64_t> ClientManager::search(string& aHubUrl, const SearchPtr& aSearch, string& error_) noexcept {
 	RLock l(cs);
-	auto i = clients.find(const_cast<string*>(&who));
-	if(i != clients.end() && i->second->isConnected()) {
-		return i->second->queueSearch(aSearch);		
+	auto i = clients.find(const_cast<string*>(&aHubUrl));
+	if(i != clients.end()) {
+		if (!i->second->isConnected()) {
+			error_ = "Hub is not connected";
+			return boost::none;
+		}
+
+		auto result = i->second->queueSearch(aSearch);
+		if (!result) {
+			error_ = "Search queue overflow";
+			i->second->statusMessage("Failed to queue the search " + aSearch->query + " due to search queue overflow", LogMessage::SEV_WARNING);
+		}
+
+		return result;
+
 	}
 
+	error_ = "Hub was not found";
 	return boost::none;
 }
 
-void ClientManager::directSearch(const HintedUser& user, const SearchPtr& aSearch) noexcept {
+bool ClientManager::cancelSearch(const void* aOwner) noexcept {
+	bool ret = false;
 
-	RLock l (cs);
-	auto ou = findOnlineUser(user);
-	if (ou) {
-		ou->getClient()->directSearch(*ou, aSearch);
+	{
+		RLock l(cs);
+		for (const auto& c : clients | map_values) {
+			if (c->cancelSearch(aOwner)) {
+				ret = true;
+			}
+		}
 	}
+
+	return ret;
 }
 
-OnlineUserList ClientManager::searchNicks(const string& aPattern, size_t aMaxResults, bool aIgnorePrefix) const noexcept {
+optional<uint64_t> ClientManager::getMaxSearchQueueTime(const void* aOwner) noexcept {
+	optional<uint64_t> maxTime;
+
+	{
+		RLock l(cs);
+		for (const auto& c : clients | map_values) {
+			auto t = c->getQueueTime(aOwner);
+			if (t) {
+				t = maxTime ? max(*t, *maxTime) : *t;
+			}
+		}
+	}
+
+	return maxTime;
+}
+
+bool ClientManager::directSearch(const HintedUser& aUser, const SearchPtr& aSearch, string& error_) noexcept {
+	if (aUser.user->isNMDC()) {
+		error_ = "Direct search is not supported with NMDC users";
+		return false;
+	}
+
+	OnlineUserPtr ou = nullptr;
+
+	{
+		RLock l(cs);
+		ou = findOnlineUser(aUser);
+		if (!ou) {
+			error_ = STRING(USER_OFFLINE);
+			return false;
+		}
+	}
+
+	ou->getClient()->directSearch(*ou, aSearch);
+	return true;
+}
+
+OnlineUserList ClientManager::searchNicks(const string& aPattern, size_t aMaxResults, bool aIgnorePrefix, const StringList& aHubUrls) const noexcept {
 	auto search = RelevanceSearch<OnlineUserPtr>(aPattern, [aIgnorePrefix](const OnlineUserPtr& aUser) {
 		return aIgnorePrefix ? stripNick(aUser->getIdentity().getNick()) : aUser->getIdentity().getNick();
 	});
@@ -1009,6 +1069,10 @@ OnlineUserList ClientManager::searchNicks(const string& aPattern, size_t aMaxRes
 	{
 		RLock l(cs);
 		for (const auto& c: clients | map_values) {
+			if (find(aHubUrls.begin(), aHubUrls.end(), c->getHubUrl()) == aHubUrls.end()) {
+				continue;
+			}
+
 			OnlineUserList hubUsers;
 			c->getUserList(hubUsers, false);
 			for (const auto& ou : hubUsers) {
@@ -1256,31 +1320,24 @@ string ClientManager::getMyNick(const string& hubUrl) const noexcept {
 	return Util::emptyString;
 }
 
-void ClientManager::cancelSearch(void* aOwner) noexcept {
-	RLock l(cs);
-	for(auto c: clients | map_values)
-		c->cancelSearch(aOwner);
-}
-
-
-void ClientManager::on(Connected, const Client* aClient) noexcept {
+void ClientManager::on(ClientListener::Connected, const Client* aClient) noexcept {
 	auto c = getClient(aClient->getHubUrl());
 	if (c) {
 		fire(ClientManagerListener::ClientConnected(), c);
 	}
 }
 
-void ClientManager::on(UserUpdated, const Client*, const OnlineUserPtr& user) noexcept {
+void ClientManager::on(ClientListener::UserUpdated, const Client*, const OnlineUserPtr& user) noexcept {
 	fire(ClientManagerListener::UserUpdated(), *user);
 }
 
-void ClientManager::on(UsersUpdated, const Client*, const OnlineUserList& l) noexcept {
+void ClientManager::on(ClientListener::UsersUpdated, const Client*, const OnlineUserList& l) noexcept {
 	for (const auto& ou: l) {
 		fire(ClientManagerListener::UserUpdated(), *ou); 
 	}
 }
 
-void ClientManager::on(HubUpdated, const Client* aClient) noexcept {
+void ClientManager::on(ClientListener::HubUpdated, const Client* aClient) noexcept {
 	auto c = getClient(aClient->getHubUrl());
 	if (c) {
 		fire(ClientManagerListener::ClientUpdated(), c);
@@ -1288,11 +1345,11 @@ void ClientManager::on(HubUpdated, const Client* aClient) noexcept {
 	}
 }
 
-void ClientManager::on(Failed, const string& aHubUrl, const string& /*aLine*/) noexcept {
+void ClientManager::on(ClientListener::Disconnected, const string& aHubUrl, const string& /*aLine*/) noexcept {
 	fire(ClientManagerListener::ClientDisconnected(), aHubUrl);
 }
 
-void ClientManager::on(HubUserCommand, const Client* client, int aType, int ctx, const string& name, const string& command) noexcept {
+void ClientManager::on(ClientListener::HubUserCommand, const Client* client, int aType, int ctx, const string& name, const string& command) noexcept {
 	if(SETTING(HUB_USER_COMMANDS)) {
 		if(aType == UserCommand::TYPE_REMOVE) {
 			int cmd = FavoriteManager::getInstance()->findUserCommand(name, client->getHubUrl());

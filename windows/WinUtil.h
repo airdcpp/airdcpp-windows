@@ -516,7 +516,7 @@ public:
 	//static void addFileDownloads(BundleFileList& aFiles, const HintedUser& aUser, Flags::MaskType aFlags = 0, bool addBad = true);
 
 	static void connectHub(const string& aUrl);
-	static tstring formatFolderContent(int fileCount, int folderCount);
+	static tstring formatFolderContent(const DirectoryContentInfo& aContentInfo);
 	static tstring formatFileType(const string& aFileName);
 };
 

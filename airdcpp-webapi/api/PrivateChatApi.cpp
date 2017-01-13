@@ -41,7 +41,7 @@ namespace webserver {
 		METHOD_HANDLER("session", Access::PRIVATE_CHAT_EDIT, ApiRequest::METHOD_DELETE, (CID_PARAM), false, PrivateChatApi::handleDeleteChat);
 		METHOD_HANDLER("session", Access::PRIVATE_CHAT_EDIT, ApiRequest::METHOD_POST, (), true, PrivateChatApi::handlePostChat);
 
-		METHOD_HANDLER("message", Access::PRIVATE_CHAT_SEND, ApiRequest::METHOD_POST, (), true, PrivateChatApi::handlePostMessage);
+		METHOD_HANDLER("chat_message", Access::PRIVATE_CHAT_SEND, ApiRequest::METHOD_POST, (), true, PrivateChatApi::handlePostMessage);
 
 		auto rawChats = MessageManager::getInstance()->getChats();
 		for (const auto& c : rawChats | map_values) {
@@ -112,13 +112,11 @@ namespace webserver {
 	}
 
 	json PrivateChatApi::serializeChat(const PrivateChatPtr& aChat) noexcept {
-		json j = {
+		return {
 			{ "id", aChat->getUser()->getCID().toBase32() },
 			{ "user", Serializer::serializeHintedUser(aChat->getHintedUser()) },
 			{ "ccpm_state", PrivateChatInfo::serializeCCPMState(aChat) },
+			{ "message_counts", Serializer::serializeCacheInfo(aChat->getCache(), Serializer::serializeUnreadChat) },
 		};
-
-		Serializer::serializeCacheInfo(j, aChat->getCache(), Serializer::serializeUnreadChat);
-		return j;
 	}
 }

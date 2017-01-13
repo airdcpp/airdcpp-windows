@@ -253,7 +253,7 @@ const string SettingsManager::settingTags[] =
 "LowestPrio", "PromptPassword",
 "SendUnknownCommands",
 "ShareHidden", "ShowJoins", "ShowMenuBar", "ShowStatusbar", "ShowToolbar",
-"ShowTransferview", "SkipZeroByte", "SocksResolve", "SortFavUsersFirst",
+"ShowTransferview", "SocksResolve", "SortFavUsersFirst",
 "StatusInChat", "TimeDependentThrottle", "TimeStamps",
 "ToggleActiveTab", "UrlHandler", "UseCTRLForLineHistory", "UseSystemIcons",
 "UsersFilterFavorite", "UsersFilterOnline", "UsersFilterQueue", "UsersFilterWaiting",
@@ -378,7 +378,6 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(MAX_TAB_ROWS, 4);
 	setDefault(MAX_COMPRESSION, 6);
 	setDefault(NO_AWAYMSG_TO_BOTS, true);
-	setDefault(SKIP_ZERO_BYTE, false);
 	setDefault(ADLS_BREAK_ON_FIRST, false);
 	setDefault(HUB_USER_COMMANDS, true);
 	setDefault(LOG_FILELIST_TRANSFERS, false);
@@ -735,7 +734,7 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(SYSTEM_SHOW_DOWNLOADS, false);
 	setDefault(SETTINGS_PROFILE, PROFILE_NORMAL);
 	setDefault(DOWNLOAD_SPEED, connectionSpeeds[0]);
-	setDefault(WIZARD_RUN, true); // run wizard on startup
+	setDefault(WIZARD_PENDING, true); // run wizard on startup
 	setDefault(FORMAT_RELEASE, true);
 	setDefault(LOG_LINES, 500);
 

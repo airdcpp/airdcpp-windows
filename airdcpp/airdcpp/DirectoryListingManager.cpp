@@ -101,8 +101,10 @@ bool DirectoryListingManager::hasDirectoryDownload(const string& aBundleName, vo
 DirectoryDownloadList DirectoryListingManager::getDirectoryDownloads() const noexcept {
 	DirectoryDownloadList ret;
 
-	RLock l(cs);
-	boost::range::copy(dlDirectories | map_values, back_inserter(ret));
+	{
+		RLock l(cs);
+		boost::range::copy(dlDirectories | map_values, back_inserter(ret));
+	}
 
 	return ret;
 }
@@ -355,27 +357,30 @@ void DirectoryListingManager::on(QueueManagerListener::ItemRemoved, const QueueI
 	}
 }
 
-void DirectoryListingManager::openOwnList(ProfileToken aProfile, bool useADL /*false*/, const string& aDir/*Util::emptyString*/) noexcept {
+DirectoryListingPtr DirectoryListingManager::openOwnList(ProfileToken aProfile, bool useADL /*false*/) noexcept {
 	auto me = HintedUser(ClientManager::getInstance()->getMe(), Util::emptyString);
 
 	auto dl = hasList(me.user);
 	if (dl) {
 		dl->addShareProfileChangeTask(aProfile);
-		return;
+		return dl;
 	}
 
 	dl = createList(me, !useADL, Util::toString(aProfile), true);
 	dl->setMatchADL(useADL);
 
 	fire(DirectoryListingManagerListener::OpenListing(), dl, aDir, Util::emptyString);
+	return dl;
 }
 
-void DirectoryListingManager::openFileList(const HintedUser& aUser, const string& aFile, const string& aDir/*Util::emptyString*/) noexcept {
-	if (hasList(aUser.user))
-		return;
+DirectoryListingPtr DirectoryListingManager::openFileList(const HintedUser& aUser, const string& aFile) noexcept {
+	if (hasList(aUser.user)) {
+		return nullptr;
+	}
 
 	auto dl = createList(aUser, false, aFile, false);
 	fire(DirectoryListingManagerListener::OpenListing(), dl, aDir, Util::emptyString);
+	return dl;
 }
 
 DirectoryListingPtr DirectoryListingManager::createList(const HintedUser& aUser, bool aPartial, const string& aFileName, bool aIsOwnList) noexcept {
@@ -391,7 +396,7 @@ DirectoryListingPtr DirectoryListingManager::createList(const HintedUser& aUser,
 }
 
 void DirectoryListingManager::on(QueueManagerListener::ItemAdded, const QueueItemPtr& aQI) noexcept {
-	if (!aQI->isSet(QueueItem::FLAG_USER_LIST))
+	if (!aQI->isSet(QueueItem::FLAG_CLIENT_VIEW) || !aQI->isSet(QueueItem::FLAG_USER_LIST))
 		return;
 
 	auto user = aQI->getSources()[0].getUser();

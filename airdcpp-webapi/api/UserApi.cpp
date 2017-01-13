@@ -32,6 +32,9 @@ namespace webserver {
 		ClientManager::getInstance()->addListener(this);
 		MessageManager::getInstance()->addListener(this);
 
+		METHOD_HANDLER("user", Access::ANY, ApiRequest::METHOD_GET, (CID_PARAM), false, UserApi::handleGetUser);
+		METHOD_HANDLER("search_nicks", Access::ANY, ApiRequest::METHOD_POST, (), true, UserApi::handleSearchNicks);
+
 		METHOD_HANDLER("ignores", Access::SETTINGS_VIEW, ApiRequest::METHOD_GET, (), false, UserApi::handleGetIgnores);
 		METHOD_HANDLER("ignore", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (CID_PARAM), false, UserApi::handleIgnore);
 		METHOD_HANDLER("ignore", Access::SETTINGS_EDIT, ApiRequest::METHOD_DELETE, (CID_PARAM), false, UserApi::handleUnignore);
@@ -51,6 +54,25 @@ namespace webserver {
 
 	UserPtr UserApi::getUser(ApiRequest& aRequest) {
 		return Deserializer::getUser(aRequest.getStringParam(0), true);
+	}
+
+	api_return UserApi::handleGetUser(ApiRequest& aRequest) {
+		auto user = getUser(aRequest);
+		aRequest.setResponseBody(Serializer::serializeUser(user));
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return UserApi::handleSearchNicks(ApiRequest& aRequest) {
+		const auto& reqJson = aRequest.getRequestBody();
+
+		auto pattern = JsonUtil::getField<string>("pattern", reqJson);
+		auto maxResults = JsonUtil::getField<size_t>("max_results", reqJson);
+		auto ignorePrefixes = JsonUtil::getOptionalFieldDefault<bool>("ignore_prefixes", reqJson, true);
+		auto hubs = Deserializer::deserializeHubUrls(reqJson);
+
+		auto users = ClientManager::getInstance()->searchNicks(pattern, maxResults, ignorePrefixes, hubs);
+		aRequest.setResponseBody(Serializer::serializeList(users, Serializer::serializeOnlineUser));
+		return websocketpp::http::status_code::ok;
 	}
 
 	api_return UserApi::handleIgnore(ApiRequest& aRequest) {

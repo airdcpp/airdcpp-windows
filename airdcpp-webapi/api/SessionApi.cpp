@@ -62,12 +62,12 @@ namespace webserver {
 	}
 
 	api_return SessionApi::handleActivity(ApiRequest& aRequest) {
-		if (!aRequest.getSession()->isUserSession()) {
-			// This can be used to prevent the session from expiring
-			return websocketpp::http::status_code::no_content;
+		// This may also be used to prevent the session from expiring
+
+		if (JsonUtil::getOptionalFieldDefault<bool>("user_active", aRequest.getRequestBody(), false)) {
+			ActivityManager::getInstance()->updateActivity();
 		}
 
-		ActivityManager::getInstance()->updateActivity();
 		return websocketpp::http::status_code::no_content;
 	}
 
@@ -83,10 +83,9 @@ namespace webserver {
 		auto password = JsonUtil::getField<string>("password", reqJson, false);
 
 		auto inactivityMinutes = JsonUtil::getOptionalFieldDefault<uint64_t>("max_inactivity", reqJson, WEBCFG(DEFAULT_SESSION_IDLE_TIMEOUT).uint64());
-		auto userSession = JsonUtil::getOptionalFieldDefault<bool>("user_session", reqJson, false);
 
 		auto session = WebServerManager::getInstance()->getUserManager().authenticateSession(username, password, 
-			aIsSecure, inactivityMinutes, userSession, aIP);
+			aIsSecure, inactivityMinutes, aIP);
 
 		if (!session) {
 			aRequest.setResponseErrorStr("Invalid username or password");
@@ -100,18 +99,20 @@ namespace webserver {
 
 		aRequest.setResponseBody({
 			{ "token", session->getAuthToken() },
-			{ "session", serializeSession(session) },
-			{ "system", SystemApi::getSystemInfo() },
-			{ "permissions", session->getUser()->getPermissions() }, // deprecated
-			{ "user", session->getUser()->getUserName() }, // deprecated
-			{ "run_wizard", SETTING(WIZARD_RUN) }, // deprecated
-			{ "cid", ClientManager::getInstance()->getMyCID().toBase32() }, // deprecated
+			{ "user", Serializer::serializeItem(session->getUser(), WebUserUtils::propertyHandler) },
+			{ "system_info", SystemApi::getSystemInfo() },
+			{ "wizard_pending", SETTING(WIZARD_PENDING) },
 		});
 
 		return websocketpp::http::status_code::ok;
 	}
 
 	api_return SessionApi::handleSocketConnect(ApiRequest& aRequest, bool aIsSecure, const WebSocketPtr& aSocket) {
+		if (!aSocket) {
+			aRequest.setResponseErrorStr("This method may be called only via a websocket");
+			return websocketpp::http::status_code::bad_request;
+		}
+
 		auto sessionToken = JsonUtil::getField<string>("authorization", aRequest.getRequestBody(), false);
 
 		auto session = WebServerManager::getInstance()->getUserManager().getSession(sessionToken);
@@ -133,13 +134,7 @@ namespace webserver {
 
 	api_return SessionApi::handleGetSessions(ApiRequest& aRequest) {
 		auto sessions = session->getServer()->getUserManager().getSessions();
-
-		auto ret = json::array();
-		for (const auto& s : sessions) {
-			ret.push_back(serializeSession(s));
-		}
-
-		aRequest.setResponseBody(ret);
+		aRequest.setResponseBody(Serializer::serializeList(sessions, serializeSession));
 		return websocketpp::http::status_code::ok;
 	}
 

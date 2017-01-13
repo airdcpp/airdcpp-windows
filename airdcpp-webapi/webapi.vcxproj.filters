@@ -249,6 +249,9 @@
     <ClInclude Include="api\RecentApi.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
+    <ClInclude Include="web-server\version.h">
+      <Filter>Header Files\web-server</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="api\QueueApi.cpp">

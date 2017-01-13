@@ -43,12 +43,11 @@ namespace webserver {
 		METHOD_HANDLER("session", Access::HUBS_EDIT, ApiRequest::METHOD_POST, (), true, HubApi::handleConnect);
 		METHOD_HANDLER("session", Access::HUBS_EDIT, ApiRequest::METHOD_DELETE, (TOKEN_PARAM), false, HubApi::handleDisconnect);
 
-		METHOD_HANDLER("search_nicks", Access::ANY, ApiRequest::METHOD_POST, (), true, HubApi::handleSearchNicks);
-
 		METHOD_HANDLER("stats", Access::ANY, ApiRequest::METHOD_GET, (), false, HubApi::handleGetStats);
+		METHOD_HANDLER("find_by_url", Access::HUBS_VIEW, ApiRequest::METHOD_POST, (), true, HubApi::handleFindByUrl);
 
-		METHOD_HANDLER("message", Access::HUBS_SEND, ApiRequest::METHOD_POST, (), true, HubApi::handlePostMessage);
-		METHOD_HANDLER("status", Access::HUBS_EDIT, ApiRequest::METHOD_POST, (), true, HubApi::handlePostStatus);
+		METHOD_HANDLER("chat_message", Access::HUBS_SEND, ApiRequest::METHOD_POST, (), true, HubApi::handlePostMessage);
+		METHOD_HANDLER("status_message", Access::HUBS_EDIT, ApiRequest::METHOD_POST, (), true, HubApi::handlePostStatus);
 
 		auto rawHubs = ClientManager::getInstance()->getClients();
 		for (const auto& c : rawHubs | map_values) {
@@ -124,7 +123,6 @@ namespace webserver {
 		j["adc_down_per_user"] = stats.downPerAdcUser;
 		j["adc_up_per_user"] = stats.upPerAdcUser;
 		j["nmdc_speed_user"] = stats.nmdcSpeedPerUser;
-		//j["profile_root_count"] = stats.;
 
 		stats.forEachClient([&](const string& aName, int aCount, double aPercentage) {
 			j["clients"].push_back({
@@ -139,17 +137,16 @@ namespace webserver {
 	}
 
 	json HubApi::serializeClient(const ClientPtr& aClient) noexcept {
-		json j = {
+		return {
 			{ "identity", HubInfo::serializeIdentity(aClient) },
 			{ "connect_state", HubInfo::serializeConnectState(aClient) },
 			{ "hub_url", aClient->getHubUrl() },
 			{ "id", aClient->getClientId() },
 			{ "favorite_hub", aClient->getFavToken() },
-			{ "share_profile", Serializer::serializeShareProfileSimple(aClient->get(HubSettings::ShareProfile)) }
+			{ "share_profile", Serializer::serializeShareProfileSimple(aClient->get(HubSettings::ShareProfile)) },
+			{ "message_counts", Serializer::serializeCacheInfo(aClient->getCache(), Serializer::serializeUnreadChat) },
+			{ "encryption", Serializer::serializeEncryption(aClient->getEncryptionInfo(), aClient->isTrusted()) },
 		};
-
-		Serializer::serializeCacheInfo(j, aClient->getCache(), Serializer::serializeUnreadChat);
-		return j;
 	}
 
 	void HubApi::addHub(const ClientPtr& aClient) noexcept {
@@ -201,25 +198,19 @@ namespace webserver {
 			return websocketpp::http::status_code::not_found;
 		}
 
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
-	// TODO: move to user API
-	api_return HubApi::handleSearchNicks(ApiRequest& aRequest) {
-		const auto& reqJson = aRequest.getRequestBody();
+	api_return HubApi::handleFindByUrl(ApiRequest& aRequest) {
+		auto address = JsonUtil::getField<string>("hub_url", aRequest.getRequestBody(), false);
 
-		auto pattern = JsonUtil::getField<string>("pattern", reqJson);
-		auto maxResults = JsonUtil::getField<size_t>("max_results", reqJson);
-		auto ignorePrefixes = JsonUtil::getOptionalFieldDefault<bool>("ignore_prefixes", reqJson, true);
-
-		auto users = ClientManager::getInstance()->searchNicks(pattern, maxResults, ignorePrefixes);
-
-		auto retJson = json::array();
-		for (const auto& u : users) {
-			retJson.push_back(Serializer::serializeOnlineUser(u));
+		auto client = ClientManager::getInstance()->getClient(address);
+		if (!client) {
+			aRequest.setResponseErrorStr("Hub was not found");
+			return websocketpp::http::status_code::not_found;
 		}
 
-		aRequest.setResponseBody(retJson);
+		aRequest.setResponseBody(serializeClient(client));
 		return websocketpp::http::status_code::ok;
 	}
 }

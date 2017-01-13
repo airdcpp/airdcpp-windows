@@ -73,7 +73,7 @@ namespace webserver {
 			{ "virtual_path", path },
 			{ "real_paths", realPaths },
 			{ "time", aSR->getDate() },
-			{ "type", isDirectory ? Serializer::serializeFolderType(aSR->getFileCount(), aSR->getFolderCount()) : Serializer::serializeFileType(aSR->getPath()) },
+			{ "type", isDirectory ? Serializer::serializeFolderType(aSR->getContentInfo()) : Serializer::serializeFileType(aSR->getPath()) },
 			{ "size", aSR->getSize() },
 			{ "tth", isDirectory ? Util::emptyString : aSR->getTTH().toBase32() },
 		};
@@ -194,7 +194,7 @@ namespace webserver {
 			{ "unique_files", itemStats.uniqueFileCount },
 			{ "average_file_age", itemStats.averageFileAge },
 			{ "profile_count", itemStats.profileCount },
-			{ "profile_root_count", itemStats.profileDirectoryCount},
+			{ "root_count", itemStats.rootDirectoryCount },
 
 			{ "total_searches", searchStats.totalSearches },
 			{ "total_searches_per_second", searchStats.totalSearchesPerSecond },
@@ -214,17 +214,8 @@ namespace webserver {
 	}
 
 	api_return ShareApi::handleGetGroupedRootPaths(ApiRequest& aRequest) {
-		auto ret = json::array();
-
 		auto roots = ShareManager::getInstance()->getGroupedDirectories();
-		for (const auto& vPath : roots) {
-			ret.push_back({
-				{ "name", vPath.first },
-				{ "paths", vPath.second }
-			});
-		}
-
-		aRequest.setResponseBody(ret);
+		aRequest.setResponseBody(Serializer::serializeList(roots, Serializer::serializeGroupedPaths));
 		return websocketpp::http::status_code::ok;
 	}
 

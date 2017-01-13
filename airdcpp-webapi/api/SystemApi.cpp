@@ -17,6 +17,7 @@
 */
 
 #include <web-server/stdinc.h>
+#include <web-server/version.h>
 
 #include <web-server/JsonUtil.h>
 #include <web-server/Timer.h>
@@ -142,22 +143,6 @@ namespace webserver {
 #endif
 	}
 
-	json SystemApi::getSystemInfo() noexcept {
-		return{
-			{ "path_separator", PATH_SEPARATOR_STR },
-			//{ "network_type", getNetworkType(aIp) },
-			{ "platform", getPlatform() },
-			{ "hostname", getHostname() },
-			{ "cid", ClientManager::getInstance()->getMyCID().toBase32() },
-			{ "run_wizard", SETTING(WIZARD_RUN) },
-		};
-	}
-
-	api_return SystemApi::handleGetSystemInfo(ApiRequest& aRequest) {
-		aRequest.setResponseBody(getSystemInfo());
-		return websocketpp::http::status_code::ok;
-	}
-
 	string SystemApi::getAwayState(AwayMode aAwayMode) noexcept {
 		switch (aAwayMode) {
 			case AWAY_OFF: return "off";
@@ -189,15 +174,31 @@ namespace webserver {
 	}
 
 	api_return SystemApi::handleGetStats(ApiRequest& aRequest) {
-		auto started = TimerManager::getStartTime();
 		auto server = session->getServer();
 
 		aRequest.setResponseBody({
 			{ "server_threads", WEBCFG(SERVER_THREADS).num() },
-			{ "client_started", started },
-			{ "client_version", fullVersionString },
 			{ "active_sessions", server->getUserManager().getSessionCount() },
 		});
+		return websocketpp::http::status_code::ok;
+	}
+
+	json SystemApi::getSystemInfo() noexcept {
+		auto started = TimerManager::getStartTime();
+		return {
+			{ "api_version", API_VERSION },
+			{ "api_feature_level", API_FEATURE_LEVEL },
+			{ "path_separator", PATH_SEPARATOR_STR },
+			{ "platform", getPlatform() },
+			{ "hostname", getHostname() },
+			{ "cid", ClientManager::getInstance()->getMyCID().toBase32() },
+			{ "client_version", fullVersionString },
+			{ "client_started", started },
+		};
+	}
+
+	api_return SystemApi::handleGetSystemInfo(ApiRequest& aRequest) {
+		aRequest.setResponseBody(getSystemInfo());
 		return websocketpp::http::status_code::ok;
 	}
 }

@@ -205,9 +205,11 @@ namespace webserver {
 		};
 	}
 
-	void Serializer::serializeCacheInfo(json& json_, const MessageCache& aCache, UnreadSerializerF unreadF) noexcept {
-		json_["unread_messages"] = unreadF(aCache);
-		json_["total_messages"] = aCache.size();
+	json Serializer::serializeCacheInfo(const MessageCache& aCache, const UnreadSerializerF& unreadF) noexcept {
+		return {
+			{ "total", aCache.size() },
+			{ "unread", unreadF(aCache) },
+		};
 	}
 
 	json Serializer::serializeUnreadLog(const MessageCache& aCache) noexcept {
@@ -235,7 +237,7 @@ namespace webserver {
 	}
 
 	json Serializer::serializeOnlineUser(const OnlineUserPtr& aUser) noexcept {
-		return serializeItemProperties(aUser, toPropertyIdSet(OnlineUserUtils::propertyHandler.properties), OnlineUserUtils::propertyHandler);
+		return serializeItem(aUser, OnlineUserUtils::propertyHandler);
 	}
 
 	std::string Serializer::getFileTypeId(const string& aName) noexcept {
@@ -251,7 +253,7 @@ namespace webserver {
 	}
 
 	json Serializer::serializeFileType(const string& aPath) noexcept {
-		auto ext = Format::formatFileType(aPath);
+		auto ext = Util::formatFileType(aPath);
 		auto typeName = getFileTypeId(SearchManager::getInstance()->getNameByExtension(ext, true));
 
 		return{
@@ -261,15 +263,15 @@ namespace webserver {
 		};
 	}
 
-	json Serializer::serializeFolderType(int aFiles, int aDirectories) noexcept {
+	json Serializer::serializeFolderType(const DirectoryContentInfo& aContentInfo) noexcept {
 		json retJson = {
 			{ "id", "directory" },
-			{ "str", Format::formatFolderContent(aFiles, aDirectories) }
+			{ "str", Util::formatDirectoryContent(aContentInfo) }
 		};
 
-		if (aFiles >= 0 && aDirectories >= 0) {
-			retJson["files"] = aFiles;
-			retJson["directories"] = aDirectories;
+		if (Util::hasContentInfo(aContentInfo)) {
+			retJson["files"] = aContentInfo.files;
+			retJson["directories"] = aContentInfo.directories;
 		}
 
 		return retJson;
@@ -280,9 +282,9 @@ namespace webserver {
 	}
 
 	json Serializer::serializeIp(const string& aIP, const string& aCountryCode) noexcept {
-		return{
+		return {
 			{ "str", Format::formatIp(aIP, aCountryCode) },
-			{ "country_id", aCountryCode }, // deprecated
+			{ "country", aCountryCode },
 			{ "ip", aIP }
 		};
 	}
@@ -303,7 +305,8 @@ namespace webserver {
 		auto info = aItem.getStatusInfo();
 		return {
 			{ "id", getDownloadStateId(info.state) },
-			{ "str", info.str }
+			{ "str", info.str },
+			{ "time_finished", aItem.isDownloaded() ? aItem.getLastTimeFinished() : 0 },
 		};
 	}
 
@@ -344,7 +347,7 @@ namespace webserver {
 	}
 
 	json Serializer::serializeSlots(int aFree, int aTotal) noexcept {
-		return{
+		return {
 			{ "str", SearchResult::formatSlots(aFree, aTotal) },
 			{ "free", aFree },
 			{ "total", aTotal }
@@ -360,7 +363,7 @@ namespace webserver {
 	}
 
 	json Serializer::serializePriority(const QueueItemBase& aItem) noexcept {
-		return{
+		return {
 			{ "id", serializePriorityId(aItem.getPriority()) },
 			{ "str", AirUtil::getPrioText(aItem.getPriority()) },
 			{ "auto", aItem.getAutoPriority() }
@@ -368,7 +371,7 @@ namespace webserver {
 	}
 
 	json Serializer::serializeDirectoryDownload(const DirectoryDownloadPtr& aDownload) noexcept {
-		return{
+		return {
 			{ "id", aDownload->getId() },
 			{ "user", Serializer::serializeHintedUser(aDownload->getUser()) },
 			{ "target_name", aDownload->getBundleName() },
@@ -396,10 +399,17 @@ namespace webserver {
 	}
 
 	json Serializer::serializeSourceCount(const QueueItemBase::SourceCount& aCount) noexcept {
-		return{
+		return {
 			{ "online", aCount.online },
 			{ "total", aCount.total },
 			{ "str", aCount.format() },
+		};
+	}
+
+	json Serializer::serializeGroupedPaths(const pair<string, OrderedStringSet>& aGroupedPair) noexcept {
+		return {
+			{ "name", aGroupedPair.first },
+			{ "paths", aGroupedPair.second }
 		};
 	}
 }

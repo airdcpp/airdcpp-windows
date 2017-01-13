@@ -32,6 +32,7 @@ namespace webserver {
 		"search_user_result",
 		"search_result_added",
 		"search_result_updated",
+		"search_hub_searches_sent",
 	};
 
 	SearchEntity::SearchEntity(ParentType* aParentModule, const SearchInstancePtr& aSearch, SearchInstanceToken aId, uint64_t aExpirationTick) :
@@ -55,6 +56,14 @@ namespace webserver {
 		search->addListener(this);
 	}
 
+	optional<int64_t> SearchEntity::getTimeToExpiration() const noexcept {
+		if (expirationTick == 0) {
+			return boost::none;
+		}
+
+		return static_cast<int64_t>(expirationTick) - static_cast<int64_t>(GET_TICK());
+	}
+
 	GroupedSearchResultList SearchEntity::getResultList() noexcept {
 		return search->getResultList();
 	}
@@ -75,12 +84,7 @@ namespace webserver {
 			return websocketpp::http::status_code::not_found;
 		}
 
-		auto j = json::array();
-		for (const auto& sr : result->getChildren()) {
-			j.push_back(serializeSearchResult(sr));
-		}
-
-		aRequest.setResponseBody(j);
+		aRequest.setResponseBody(Serializer::serializeList(result->getChildren(), serializeSearchResult));
 		return websocketpp::http::status_code::ok;
 	}
 
@@ -136,10 +140,15 @@ namespace webserver {
 		auto hubs = Deserializer::deserializeHubUrls(reqJson);
 
 		auto queueResult = search->hubSearch(hubs, s);
+		if (queueResult.queuedHubUrls.empty() && !queueResult.error.empty()) {
+			aRequest.setResponseErrorStr(queueResult.error);
+			return websocketpp::http::status_code::bad_request;
+		}
+
 		aRequest.setResponseBody({
 			{ "queue_time", queueResult.queueTime },
 			{ "search_id", search->getCurrentSearchToken() },
-			{ "sent", queueResult.succeed },
+			{ "queued_count", queueResult.queuedHubUrls.size() },
 		});
 
 		return websocketpp::http::status_code::ok;
@@ -152,7 +161,12 @@ namespace webserver {
 		auto user = Deserializer::deserializeHintedUser(reqJson, false);
 		auto s = FileSearchParser::parseSearch(reqJson, true, Util::toString(Util::rand()));
 
-		search->userSearch(user, s);
+		string error;
+		if (!search->userSearch(user, s, error)) {
+			aRequest.setResponseErrorStr(error);
+			return websocketpp::http::status_code::bad_request;
+		}
+
 		return websocketpp::http::status_code::ok;
 	}
 
@@ -194,5 +208,14 @@ namespace webserver {
 
 	void SearchEntity::on(SearchInstanceListener::Reset) noexcept {
 		searchView.resetItems();
+	}
+
+	void SearchEntity::on(SearchInstanceListener::HubSearchSent, const string& aSearchToken, int aSent) noexcept {
+		if (subscriptionActive("search_hub_searches_sent")) {
+			send("search_hub_searches_sent", {
+				{ "search_id", aSearchToken },
+				{ "sent", aSent }
+			});
+		}
 	}
 }

@@ -143,10 +143,10 @@ std::string RichTextBox::unicodeEscapeFormatter(const tstring_range& match) {
 }
 
 std::string RichTextBox::escapeUnicode(const tstring& str) {
-	std::string ret;
+	tstring ret;
 	boost::find_format_all_copy(std::back_inserter(ret), str,
 		boost::first_finder(L"\x7f", std::greater<TCHAR>()), unicodeEscapeFormatter);
-	return ret;
+	return Text::fromT(ret);
 }
 
 tstring RichTextBox::rtfEscapeFormatter(const tstring_range& match) {

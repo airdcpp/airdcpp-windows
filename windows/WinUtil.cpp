@@ -2288,28 +2288,8 @@ bool WinUtil::checkClientPassword() {
 	return true;
 }
 
-tstring WinUtil::formatFolderContent(int files, int folders) {
-	tstring name;
-
-	bool hasFileInfo = files > 0;
-	bool hasFolderInfo = folders > 0;
-	//if (hasFileInfo || hasFolderInfo)
-	//	name += _T(" (");
-
-	if (hasFolderInfo) {
-		name += TSTRING_F(X_FOLDERS, folders);
-	}
-
-	if (hasFileInfo) {
-		if (hasFolderInfo)
-			name += _T(", ");
-		name += TSTRING_F(X_FILES, files);
-	}
-
-	//if (hasFileInfo || hasFolderInfo)
-	//	name += _T(")");
-
-	return name;
+tstring WinUtil::formatFolderContent(const DirectoryContentInfo& aContentInfo) {
+	return Text::toT(Util::formatDirectoryContent(aContentInfo));
 }
 
 tstring WinUtil::formatFileType(const string& aFileName) {
