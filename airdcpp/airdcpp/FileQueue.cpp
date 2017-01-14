@@ -63,12 +63,20 @@ pair<QueueItem::StringMap::const_iterator, bool> FileQueue::add(QueueItemPtr& qi
 	return ret;
 }
 
+bool FileQueue::countTotalSize(const QueueItemPtr& aQI) noexcept {
+	if (aQI->isSet(QueueItem::FLAG_CLIENT_VIEW) || aQI->isSet(QueueItem::FLAG_USER_LIST)) {
+		return false;
+	}
+
+	return !aQI->getBundle() || !aQI->isSet(QueueItem::FLAG_FINISHED);
+}
+
 void FileQueue::remove(const QueueItemPtr& qi) noexcept {
 	//TargetMap
 	auto f = pathQueue.find(const_cast<string*>(&qi->getTarget()));
 	if (f != pathQueue.end()) {
 		pathQueue.erase(f);
-		if (!qi->isSet(QueueItem::FLAG_USER_LIST) && (!qi->isSet(QueueItem::FLAG_FINISHED) || !qi->getBundle()) && !qi->isSet(QueueItem::FLAG_CLIENT_VIEW)) {
+		if (countTotalSize(qi)) {
 			dcassert(qi->getSize() >= 0);
 			queueSize -= qi->getSize();
 		}

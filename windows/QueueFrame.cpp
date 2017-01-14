@@ -592,7 +592,7 @@ void QueueFrame::AppendTreeMenu(BundleList& bl, QueueItemList& ql, OMenu& aMenu)
 		}
 
 		if (curSel == TREE_FAILED) {
-			aMenu.appendItem(TSTRING(RETRY_SHARING), [=] {
+			aMenu.appendItem(TSTRING(RESCAN_BUNDLE), [=] {
 				for_each(bl, [&](BundlePtr b) { QueueManager::getInstance()->shareBundle(b, false); });
 			}, OMenu::FLAG_THREADED);
 			aMenu.appendItem(TSTRING(FORCE_SHARING), [=] { 
@@ -691,22 +691,10 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 		WinUtil::appendSearchMenu(bundleMenu, b->getName());
 		bundleMenu.appendItem(TSTRING(SEARCH_DIRECTORY), [this] { handleSearchDirectory(); });
 
-		if (b->isFailed()) {
+		if (b->getHookError()) {
 			bundleMenu.appendSeparator();
-			if (b->getStatus() != Bundle::STATUS_DOWNLOAD_FAILED) {
-				if (ShareManager::getInstance()->allowAddDir(b->getTarget())) {
-					bundleMenu.appendItem(TSTRING(RETRY_SHARING), [=] { QueueManager::getInstance()->shareBundle(b, false); }, OMenu::FLAG_THREADED);
-					if (b->getStatus() == Bundle::STATUS_SHARING_FAILED || b->getStatus() == Bundle::STATUS_FAILED_MISSING) {
-						bundleMenu.appendItem(TSTRING(FORCE_SHARING), [=] { QueueManager::getInstance()->shareBundle(b, true); }, OMenu::FLAG_THREADED);
-					}
-				}
-				else {
-					bundleMenu.appendItem(TSTRING(RESCAN_BUNDLE), [=] {
-						auto bundle = b;
-						QueueManager::getInstance()->scanBundle(bundle);
-					}, OMenu::FLAG_THREADED);
-				}
-			}
+			bundleMenu.appendItem(TSTRING(RESCAN_BUNDLE), [=] { QueueManager::getInstance()->shareBundle(b, false); }, OMenu::FLAG_THREADED);
+			bundleMenu.appendItem(TSTRING(FORCE_SHARING), [=] { QueueManager::getInstance()->shareBundle(b, true); }, OMenu::FLAG_THREADED);
 		}
 
 		if (!b->isFinished()) {
@@ -1846,14 +1834,12 @@ int QueueFrame::QueueItemInfo::compareItems(const QueueItemInfo* a, const QueueI
 
 COLORREF QueueFrame::getStatusColor(uint8_t status) {
 	switch (status) {
-	case Bundle::STATUS_NEW: return SETTING(DOWNLOAD_BAR_COLOR);
-	case Bundle::STATUS_QUEUED: return SETTING(DOWNLOAD_BAR_COLOR);
-	case Bundle::STATUS_DOWNLOADED: return SETTING(DOWNLOAD_BAR_COLOR);;
-	case Bundle::STATUS_MOVED: return SETTING(DOWNLOAD_BAR_COLOR);
-	case Bundle::STATUS_FINISHED: return SETTING(COLOR_STATUS_FINISHED);
-	case Bundle::STATUS_HASHED: return SETTING(COLOR_STATUS_FINISHED);
-	case Bundle::STATUS_SHARED: return SETTING(COLOR_STATUS_SHARED);
-	default:
-		return SETTING(DOWNLOAD_BAR_COLOR);
+		case Bundle::STATUS_NEW:
+		case Bundle::STATUS_QUEUED:
+		case Bundle::STATUS_DOWNLOADED: return SETTING(DOWNLOAD_BAR_COLOR);
+		case Bundle::STATUS_FINISHED:
+		case Bundle::STATUS_HASHED:
+		case Bundle::STATUS_SHARED: return SETTING(COLOR_STATUS_SHARED);
+		default: return SETTING(DOWNLOAD_BAR_COLOR);
 	}
 }

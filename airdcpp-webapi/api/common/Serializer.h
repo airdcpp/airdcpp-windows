@@ -79,6 +79,7 @@ namespace webserver {
 		static json serializeSourceCount(const QueueItemBase::SourceCount& aCount) noexcept;
 
 		static json serializeGroupedPaths(const pair<string, OrderedStringSet>& aGroupedPair) noexcept;
+		static json serializeActionHookError(const ActionHookErrorPtr& aError) noexcept;
 
 		// Serialize n messages from end by keeping the list order
 		// Throws for invalid parameters

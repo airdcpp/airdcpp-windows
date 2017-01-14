@@ -104,11 +104,10 @@ string Bundle::getStatusString() const noexcept {
 			}
 		}
 		case Bundle::STATUS_RECHECK: return STRING(RECHECKING);
-		case Bundle::STATUS_DOWNLOADED: return STRING(MOVING);
-		case Bundle::STATUS_MOVED: return STRING(DOWNLOADED);
-		case Bundle::STATUS_DOWNLOAD_FAILED:
-		case Bundle::STATUS_FAILED_MISSING:
-		case Bundle::STATUS_SHARING_FAILED: return getLastError();
+		case Bundle::STATUS_DOWNLOADED: return STRING(DOWNLOADED);
+		case Bundle::STATUS_HOOK_VALIDATION: return STRING(VALIDATING_CONTENT);
+		case Bundle::STATUS_DOWNLOAD_ERROR:
+		case Bundle::STATUS_HOOK_ERROR: return getError();
 		case Bundle::STATUS_FINISHED: return STRING(FINISHED);
 		case Bundle::STATUS_HASHING: return STRING(HASHING);
 		case Bundle::STATUS_HASH_FAILED: return STRING(HASH_FAILED);
@@ -404,8 +403,12 @@ void Bundle::getDirQIs(const string& aDir, QueueItemList& ql) const noexcept {
 	}
 }
 
+bool Bundle::isFailedStatus(Status aStatus) noexcept {
+	return aStatus == STATUS_HOOK_ERROR || aStatus == STATUS_HASH_FAILED || aStatus == STATUS_DOWNLOAD_ERROR;
+}
+
 bool Bundle::isFailed() const noexcept {
-	return status == STATUS_SHARING_FAILED || status == STATUS_FAILED_MISSING || status == STATUS_HASH_FAILED || status == STATUS_DOWNLOAD_FAILED;
+	return isFailedStatus(status);
 }
 
 void Bundle::rotateUserQueue(QueueItemPtr& qi, const UserPtr& aUser) noexcept {

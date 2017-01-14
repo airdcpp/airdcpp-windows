@@ -354,6 +354,7 @@
     <ClCompile Include="airdcpp\ZUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="airdcpp\ActionHook.h" />
     <ClInclude Include="airdcpp\ActivityManager.h" />
     <ClInclude Include="airdcpp\AdcCommand.h" />
     <ClInclude Include="airdcpp\AdcHub.h" />

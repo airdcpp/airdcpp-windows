@@ -412,4 +412,16 @@ namespace webserver {
 			{ "paths", aGroupedPair.second }
 		};
 	}
+
+	json Serializer::serializeActionHookError(const ActionHookErrorPtr& aError) noexcept {
+		if (!aError) {
+			return nullptr;
+		}
+
+		return{
+			{ "hook_id", aError->hookId },
+			{ "error_id", aError->errorId },
+			{ "str", aError->errorMessage },
+		};
+	}
 }

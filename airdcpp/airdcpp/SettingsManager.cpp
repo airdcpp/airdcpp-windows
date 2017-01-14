@@ -236,7 +236,7 @@ const string SettingsManager::settingTags[] =
 "SENTRY",
 
 // Bools
-"AddFinishedInstantly", "AdlsBreakOnFirst",
+"AdlsBreakOnFirst",
 "AllowUntrustedClients", "AllowUntrustedHubs",
 "AutoDetectIncomingConnection", "AutoDetectIncomingConnection6", "AutoFollow", "AutoKick", "AutoKickNoFavs", "AutoSearch",
 "BoldFinishedDownloads", "BoldFinishedUploads", "BoldHub", "BoldPm",
@@ -395,7 +395,6 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(MAGNET_REGISTER, false);
 	setDefault(MAGNET_ASK, true);
 	setDefault(MAGNET_ACTION, MAGNET_DOWNLOAD);
-	setDefault(ADD_FINISHED_INSTANTLY, true);
 	setDefault(DONT_DL_ALREADY_SHARED, false);
 	setDefault(CONFIRM_HUB_REMOVAL, true);
 	setDefault(USE_CTRL_FOR_LINE_HISTORY, true);

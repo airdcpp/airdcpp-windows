@@ -36,7 +36,6 @@
 #include "SearchManager.h"
 #include "SearchResult.h"
 #include "ShareManager.h"
-#include "ShareScannerManager.h"
 #include "SimpleXMLReader.h"
 #include "Transfer.h"
 #include "UploadManager.h"
@@ -1276,11 +1275,11 @@ bool QueueManager::allowStartQI(const QueueItemPtr& aQI, const QueueTokenSet& ru
 		return false;
 
 	//Download was failed for writing errors, check if we have enough free space to continue the downloading now...
-	if (aQI->getBundle() && aQI->getBundle()->getStatus() == Bundle::STATUS_DOWNLOAD_FAILED) {
+	if (aQI->getBundle() && aQI->getBundle()->getStatus() == Bundle::STATUS_DOWNLOAD_ERROR) {
 		if (File::getFreeSpace(aQI->getBundle()->getTarget()) >= static_cast<int64_t>(aQI->getSize() - aQI->getDownloadedBytes())) {
 			setBundleStatus(aQI->getBundle(), Bundle::STATUS_QUEUED);
 		} else {
-			lastError_ = aQI->getBundle()->getLastError();
+			lastError_ = aQI->getBundle()->getError();
 			return false;
 		}
 	}
@@ -1556,36 +1555,42 @@ bool QueueManager::checkBundleFinished(BundlePtr& aBundle) noexcept {
 			sendRemovePBD(ubp.first, ubp.second);
 	}
 
-	setBundleStatus(aBundle, Bundle::STATUS_MOVED);
+	//setBundleStatus(aBundle, Bundle::STATUS_MOVED);
+	LogManager::getInstance()->message(STRING_F(DL_BUNDLE_FINISHED, aBundle->getName().c_str()), LogMessage::SEV_INFO);
 
-	if (!SETTING(SCAN_DL_BUNDLES) || aBundle->isFileBundle()) {
-		LogManager::getInstance()->message(STRING_F(DL_BUNDLE_FINISHED, aBundle->getName().c_str()), LogMessage::SEV_INFO);
-		setBundleStatus(aBundle, Bundle::STATUS_FINISHED);
-	} else if (!scanBundle(aBundle)) {
-		return true;
-	} 
-
-	if (SETTING(ADD_FINISHED_INSTANTLY)) {
-		hashBundle(aBundle);
-	} else if (!isPrivate) {
-		if (ShareManager::getInstance()->allowAddDir(aBundle->getTarget())) {
-			LogManager::getInstance()->message(CSTRING(INSTANT_SHARING_DISABLED), LogMessage::SEV_INFO);
-		} else {
-			LogManager::getInstance()->message(STRING_F(NOT_IN_SHARED_DIR, aBundle->getTarget().c_str()), LogMessage::SEV_INFO);
-		}
-	}
-
+	shareBundle(aBundle, false);
 	return true;
 }
 
-bool QueueManager::scanBundle(BundlePtr& aBundle) noexcept {
-	string error_;
-	auto newStatus = ShareScannerManager::getInstance()->onScanBundle(aBundle, aBundle->getStatus() == Bundle::STATUS_MOVED, error_);
-	if (!error_.empty())
-		aBundle->setLastError(error_);
+void QueueManager::shareBundle(BundlePtr aBundle, bool aSkipScan) noexcept {
+	if (!aSkipScan && !runCompletionHooks(aBundle)) {
+		return;
+	}
 
-	setBundleStatus(aBundle, newStatus);
-	return newStatus == Bundle::STATUS_FINISHED;
+	setBundleStatus(aBundle, Bundle::STATUS_FINISHED);
+
+	if (!ShareManager::getInstance()->allowAddDir(aBundle->getTarget())) {
+		LogManager::getInstance()->message(STRING_F(NOT_IN_SHARED_DIR, aBundle->getTarget().c_str()), LogMessage::SEV_INFO);
+	} else {
+		hashBundle(aBundle);
+	}
+}
+
+bool QueueManager::runCompletionHooks(BundlePtr& aBundle) noexcept {
+	if (bundleCompletionHook.hasSubscribers()) {
+		setBundleStatus(aBundle, Bundle::STATUS_HOOK_VALIDATION);
+
+		auto error = bundleCompletionHook.runHooks(aBundle);
+		if (error) {
+			aBundle->setHookError(error);
+			aBundle->setError(error->hookName + ": " + error->errorMessage);
+			setBundleStatus(aBundle, Bundle::STATUS_HOOK_ERROR);
+			return false;
+		}
+	}
+
+	setBundleStatus(aBundle, Bundle::STATUS_FINISHED);
+	return true;
 }
 
 void QueueManager::hashBundle(BundlePtr& aBundle) noexcept {
@@ -1738,10 +1743,12 @@ void QueueManager::checkBundleHashed(BundlePtr& b) noexcept {
 }
 
 void QueueManager::bundleDownloadFailed(BundlePtr& aBundle, const string& aError) {
-	if (aBundle) {
-		aBundle->setLastError(aError);
-		setBundleStatus(aBundle, Bundle::STATUS_DOWNLOAD_FAILED);
+	if (!aBundle) {
+		return;
 	}
+
+	aBundle->setError(aError);
+	setBundleStatus(aBundle, Bundle::STATUS_DOWNLOAD_ERROR);
 }
 
 void QueueManager::onFileFinished(const QueueItemPtr& aQI, Download* aDownload, const string& aListDirectory) noexcept {
@@ -3386,21 +3393,8 @@ void QueueManager::checkRefreshPaths(OrderedStringSet& retBundles_, RefreshPathL
 	}
 
 	for (auto& b: hash) {
-		if(b->isFailed() && !scanBundle(b)) {
-			continue;
-		}
-
-		hashBundle(b); 
+		shareBundle(b, false);
 	}
-}
-
-void QueueManager::shareBundle(BundlePtr aBundle, bool aSkipScan) noexcept{
-	if (!aSkipScan && !scanBundle(aBundle)) {
-		return;
-	}
-
-	setBundleStatus(aBundle, Bundle::STATUS_FINISHED);
-	hashBundle(aBundle);
 }
 
 void QueueManager::on(ShareManagerListener::DirectoriesRefreshed, uint8_t aType, const RefreshPathList& aPaths) noexcept {
@@ -3441,6 +3435,11 @@ void QueueManager::on(ShareManagerListener::ShareLoaded) noexcept {
 
 void QueueManager::setBundleStatus(BundlePtr aBundle, Bundle::Status newStatus) noexcept {
 	if (aBundle->getStatus() != newStatus) {
+		if (!Bundle::isFailedStatus(newStatus)) {
+			aBundle->setHookError(nullptr);
+			aBundle->setError(Util::emptyString);
+		}
+
 		aBundle->setStatus(newStatus);
 		fire(QueueManagerListener::BundleStatusChanged(), aBundle);
 	}

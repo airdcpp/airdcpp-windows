@@ -29,7 +29,9 @@
 #include <airdcpp/ShareManager.h>
 #include <airdcpp/SimpleXML.h>
 #include <airdcpp/User.h>
+
 #include <airdcpp/DirectoryListingManager.h>
+#include <airdcpp/ShareScannerManager.h>
 
 #include <boost/range/algorithm/max_element.hpp>
 
@@ -229,8 +231,8 @@ string AutoSearchManager::getBundleStatuses(const AutoSearchPtr& as) const noexc
 				auto& b = *as->getBundles().begin();
 				if (b->getStatus() == Bundle::STATUS_QUEUED) {
 					statusString += STRING_F(BUNDLE_X_QUEUED, b->getName());
-				} else if (b->getStatus() == Bundle::STATUS_FAILED_MISSING || b->getStatus() == Bundle::STATUS_SHARING_FAILED) {
-					statusString += b->getName() + " (" + b->getLastError() + ")";
+				} else if (b->getStatus() == Bundle::STATUS_HOOK_ERROR) {
+					statusString += b->getName() + " (" + b->getError() + ")";
 				}
 			} else {
 				statusString += STRING_F(X_BUNDLES_QUEUED, bundleCount);
@@ -302,24 +304,29 @@ void AutoSearchManager::on(QueueManagerListener::BundleStatusChanged, const Bund
 		return;
 	}
 
+	auto filesMissing = ActionHookError::matches(aBundle->getHookError(), SHARE_SCANNER_HOOK_ID, SHARE_SCANNER_ERROR_MISSING);
 	auto items = getSearchesByBundle(aBundle);
 	bool found = false, searched = false;
 	for (auto& as : items) {
-		if (as->hasBundle(aBundle)) {
-			found = true;
-			{
-				RLock l(cs);
-				updateStatus(as, true);
-			}
-			// if we already have a waiting time over 5 minutes in search queue don't pile up more...
-			if (!searched && aBundle->getStatus() == Bundle::STATUS_FAILED_MISSING && checkSearchQueueLimit()) {
-				searchItem(as, TYPE_NORMAL);
-				searched = true;
-			}
+		if (!as->hasBundle(aBundle)) {
+			continue;
+		}
+
+		found = true;
+
+		{
+			RLock l(cs);
+			updateStatus(as, true);
+		}
+
+		// if we already have a waiting time over 5 minutes in search queue don't pile up more...
+		if (!searched && filesMissing && checkSearchQueueLimit()) {
+			searchItem(as, TYPE_NORMAL);
+			searched = true;
 		}
 	}
 
-	if (aBundle->getStatus() == Bundle::STATUS_FAILED_MISSING && !found && SETTING(AUTO_COMPLETE_BUNDLES)) {
+	if (filesMissing && !found && SETTING(AUTO_COMPLETE_BUNDLES)) {
 		AutoSearchManager::getInstance()->addFailedBundle(aBundle); 
 	}
 }
@@ -414,7 +421,7 @@ void AutoSearchManager::performSearch(AutoSearchPtr& as, StringList& aHubs, Sear
 		WLock l(cs);
 		as->updatePattern();
 		if (as->getStatus() == AutoSearch::STATUS_FAILED_MISSING) {
-			auto p = find_if(as->getBundles(), Bundle::HasStatus(Bundle::STATUS_FAILED_MISSING));
+			auto p = find_if(as->getBundles(), Bundle::HasStatus(Bundle::STATUS_HOOK_VALIDATION));
 			if (p != as->getBundles().end()) {
 				searchWord = (*p)->getName();
 				failedBundle = true;
@@ -748,7 +755,7 @@ void AutoSearchManager::pickNameMatch(AutoSearchPtr as) noexcept{
 
 		updateStatus(as, false);
 		if (as->getStatus() == AutoSearch::STATUS_FAILED_MISSING) {
-			auto bundle = find_if(as->getBundles(), Bundle::HasStatus(Bundle::STATUS_FAILED_MISSING));
+			auto bundle = find_if(as->getBundles(), Bundle::HasStatus(Bundle::STATUS_HOOK_VALIDATION));
 			dcassert(bundle != as->getBundles().end());
 			minWantedSize = (*bundle)->getSize();
 		}

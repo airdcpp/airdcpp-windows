@@ -28,6 +28,10 @@
 
 namespace dcpp {
 
+struct ActionHookError;
+typedef std::shared_ptr<ActionHookError> ActionHookErrorPtr;
+typedef std::function<ActionHookErrorPtr(const string& aErrorId, const string& aErrorMessage)> HookErrorGetter;
+
 class AdcCommand;
 
 class SearchQuery;

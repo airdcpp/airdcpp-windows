@@ -149,11 +149,10 @@ namespace webserver {
 			case Bundle::STATUS_QUEUED: return "queued";
 			case Bundle::STATUS_RECHECK: return "recheck";
 			case Bundle::STATUS_DOWNLOADED: return "downloaded";
-			case Bundle::STATUS_MOVED: return "moved";
-			case Bundle::STATUS_DOWNLOAD_FAILED: return "download_failed";
-			case Bundle::STATUS_FAILED_MISSING: return "scan_failed_files_missing";
-			case Bundle::STATUS_SHARING_FAILED: return "scan_failed";
-			case Bundle::STATUS_FINISHED: return "finished";
+			case Bundle::STATUS_DOWNLOAD_ERROR: return "download_error";
+			case Bundle::STATUS_HOOK_VALIDATION: return "completion_validation_running";
+			case Bundle::STATUS_HOOK_ERROR: return "completion_validation_error";
+			case Bundle::STATUS_FINISHED: return "completed";
 			case Bundle::STATUS_HASHING: return "hashing";
 			case Bundle::STATUS_HASH_FAILED: return "hash_failed";
 			case Bundle::STATUS_HASHED: return "hashed";
@@ -177,8 +176,9 @@ namespace webserver {
 			return{
 				{ "id", formatStatusId(aBundle) },
 				{ "failed", aBundle->isFailed() },
-				{ "finished", aBundle->getStatus() >= Bundle::STATUS_MOVED },
+				{ "finished", aBundle->getStatus() >= Bundle::STATUS_DOWNLOADED },
 				{ "str", aBundle->getStatusString() },
+				{ "validation_hook_error", Serializer::serializeActionHookError(aBundle->getHookError()) }
 			};
 		}
 

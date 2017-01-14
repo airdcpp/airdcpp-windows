@@ -50,13 +50,12 @@ public:
 	enum Status {
 		STATUS_NEW, // not added in queue yet
 		STATUS_QUEUED,
-		STATUS_DOWNLOAD_FAILED,
+		STATUS_DOWNLOAD_ERROR,
 		STATUS_RECHECK,
 		STATUS_DOWNLOADED, // no queued files
-		STATUS_MOVED, // all files moved
-		STATUS_FAILED_MISSING,
-		STATUS_SHARING_FAILED,
-		STATUS_FINISHED, // no missing files, ready for hashing
+		STATUS_HOOK_VALIDATION, // the bundle is being validated by the completion hooks
+		STATUS_HOOK_ERROR, // hook validation failed (see the error pointer for more information)
+		STATUS_FINISHED, // no validation errors, ready for hashing
 		STATUS_HASHING,
 		STATUS_HASH_FAILED,
 		STATUS_HASHED,
@@ -120,7 +119,8 @@ public:
 	Bundle(QueueItemPtr& qi, time_t aBundleDate, QueueToken aToken = 0, bool aDirty = true) noexcept;
 	~Bundle() noexcept;
 
-	GETSET(string, lastError, LastError);
+	IGETSET(ActionHookErrorPtr, hookError, HookError, nullptr);
+	GETSET(string, error, Error);
 
 	IGETSET(Status, status, Status, STATUS_NEW);
 	IGETSET(time_t, bundleDate, BundleDate, 0);				// the file/directory modify date picked from the remote filelist when the bundle has been queued
@@ -163,6 +163,7 @@ public:
 	bool isRecent() const noexcept { return recent; }
 
 	/* QueueManager */
+	static bool isFailedStatus(Status aStatus) noexcept;
 	bool isFailed() const noexcept;
 
 	// Throws on errors

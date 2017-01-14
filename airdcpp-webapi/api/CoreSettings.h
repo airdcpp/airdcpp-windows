@@ -45,7 +45,6 @@ namespace webserver {
 		{ "min_segment_size", SettingsManager::MIN_SEGMENT_SIZE, ResourceManager::SETTINGS_AIRDOWNLOADS_SEGMENT_SIZE, ApiSettingItem::TYPE_GENERAL, { ResourceManager::Strings::KiB, false } },
 		{ "new_segment_min_speed", SettingsManager::DONT_BEGIN_SEGMENT_SPEED, ResourceManager::DONT_ADD_SEGMENT_TEXT, ApiSettingItem::TYPE_GENERAL, { ResourceManager::Strings::KiB, true } },
 		{ "allow_slow_overlap", SettingsManager::OVERLAP_SLOW_SOURCES, ResourceManager::SETTINGS_OVERLAP_SLOW_SOURCES },
-		{ "share_finished_bundles", SettingsManager::ADD_FINISHED_INSTANTLY, ResourceManager::ADD_FINISHED_INSTANTLY },
 		{ "finished_no_hash", SettingsManager::FINISHED_NO_HASH, ResourceManager::SETTINGS_FINISHED_NO_HASH },
 		{ "finished_remove_exit", SettingsManager::REMOVE_FINISHED_BUNDLES, ResourceManager::BUNDLES_REMOVE_EXIT },
 

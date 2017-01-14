@@ -27,6 +27,7 @@
 #include "ShareManagerListener.h"
 #include "TimerManagerListener.h"
 
+#include "ActionHook.h"
 #include "BundleInfo.h"
 #include "BundleQueue.h"
 #include "DelayedEvents.h"
@@ -65,6 +66,8 @@ class QueueManager : public Singleton<QueueManager>, public Speaker<QueueManager
 	private SearchManagerListener, private ClientManagerListener, private HashManagerListener, private ShareManagerListener
 {
 public:
+	ActionHook<const BundlePtr> bundleCompletionHook;
+
 	// Add all queued TTHs in the supplied bloom filter
 	void getBloom(HashBloom& bloom) const noexcept;
 
@@ -370,7 +373,7 @@ public:
 
 	// Returns true if the bundle passes the scan for missing/extra files
 	// Blocking call
-	bool scanBundle(BundlePtr& aBundle) noexcept;
+	bool runCompletionHooks(BundlePtr& aBundle) noexcept;
 
 	// Performs recheck for the supplied files. Recheck will be done in the calling thread.
 	// The integrity of all finished segments will be verified and SFV will be validated for finished files
