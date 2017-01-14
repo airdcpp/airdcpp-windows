@@ -246,9 +246,6 @@
     <ClInclude Include="api\SearchEntity.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="api\RecentApi.h">
-      <Filter>Header Files\api</Filter>
-    </ClInclude>
     <ClInclude Include="web-server\version.h">
       <Filter>Header Files\web-server</Filter>
     </ClInclude>
@@ -411,9 +408,6 @@
       <Filter>Source Files\api</Filter>
     </ClCompile>
     <ClCompile Include="api\SearchEntity.cpp">
-      <Filter>Source Files\api</Filter>
-    </ClCompile>
-    <ClCompile Include="api\RecentApi.cpp">
       <Filter>Source Files\api</Filter>
     </ClCompile>
   </ItemGroup>
