@@ -48,7 +48,7 @@ namespace webserver {
 		HubInfo(ParentType* aParentModule, const ClientPtr& aClient);
 		~HubInfo();
 
-		ClientPtr getClient() const noexcept { return client; }
+		const ClientPtr& getClient() const noexcept { return client; }
 
 		static json serializeConnectState(const ClientPtr& aClient) noexcept;
 		static json serializeIdentity(const ClientPtr& aClient) noexcept;

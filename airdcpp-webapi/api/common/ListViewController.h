@@ -743,7 +743,7 @@ namespace webserver {
 		// Append item with supplied property values
 		void appendItemPartial(const T& aItem, json& json_, int pos, const PropertyIdSet& aPropertyIds) {
 			appendItemPosition(aItem, json_, pos);
-			json_["items"][pos]["properties"] = Serializer::serializeItemProperties(aItem, aPropertyIds, itemHandler);
+			json_["items"][pos]["properties"] = Serializer::serializeProperties(aItem, itemHandler, aPropertyIds);
 		}
 
 		// Append item without property values

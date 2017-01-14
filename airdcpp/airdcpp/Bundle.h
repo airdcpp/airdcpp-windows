@@ -196,6 +196,8 @@ public:
 	void addFinishedSegment(int64_t aSize) noexcept;
 	void removeFinishedSegment(int64_t aSize) noexcept;
 
+	string getStatusString() const noexcept;
+
 	/* DownloadManager */
 	int countConnections() const noexcept;
 	const UserIntMap& getRunningUsers() const noexcept { return runningUsers; }

@@ -31,7 +31,7 @@
 
 namespace webserver {
 	QueueApi::QueueApi(Session* aSession) : SubscribableApiModule(aSession, Access::QUEUE_VIEW),
-			bundleView("bundle_view", this, QueueBundleUtils::propertyHandler, getBundleList), fileView("queue_file_view", this, QueueFileUtils::propertyHandler, getFileList) {
+			bundleView("queue_bundle_view", this, QueueBundleUtils::propertyHandler, getBundleList), fileView("queue_file_view", this, QueueFileUtils::propertyHandler, getFileList) {
 
 		QueueManager::getInstance()->addListener(this);
 		DownloadManager::getInstance()->addListener(this);
@@ -430,7 +430,7 @@ namespace webserver {
 
 		if (subscriptionActive("queue_file_updated")) {
 			// Serialize updated properties only
-			send("queue_file_updated", Serializer::serializeItem(aQI, QueueFileUtils::propertyHandler));
+			send("queue_file_updated", Serializer::serializePartialItem(aQI, QueueFileUtils::propertyHandler, aUpdatedProperties));
 		}
 	}
 
@@ -489,7 +489,7 @@ namespace webserver {
 
 		if (subscriptionActive("queue_bundle_updated")) {
 			// Serialize updated properties only
-			send("queue_bundle_updated", Serializer::serializeItemProperties(aBundle, aUpdatedProperties, QueueBundleUtils::propertyHandler));
+			send("queue_bundle_updated", Serializer::serializePartialItem(aBundle, QueueBundleUtils::propertyHandler, aUpdatedProperties));
 		}
 	}
 

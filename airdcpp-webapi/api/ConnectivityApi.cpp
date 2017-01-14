@@ -27,9 +27,9 @@ namespace webserver {
 	ConnectivityApi::ConnectivityApi(Session* aSession) : SubscribableApiModule(aSession, Access::SETTINGS_VIEW) {
 		ConnectivityManager::getInstance()->addListener(this);
 
-		createSubscription("connectivity_message");
-		createSubscription("connectivity_started");
-		createSubscription("connectivity_finished");
+		createSubscription("connectivity_detection_message");
+		createSubscription("connectivity_detection_started");
+		createSubscription("connectivity_detection_finished");
 
 		METHOD_HANDLER("status", Access::SETTINGS_VIEW, ApiRequest::METHOD_GET, (), false, ConnectivityApi::handleGetStatus);
 		METHOD_HANDLER("detect", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (), false, ConnectivityApi::handleDetect);
@@ -79,26 +79,26 @@ namespace webserver {
 	}
 
 	void ConnectivityApi::on(ConnectivityManagerListener::Message, const string& aMessage) noexcept {
-		if (!subscriptionActive("connectivity_message"))
+		if (!subscriptionActive("connectivity_detection_message"))
 			return;
 
-		send("connectivity_message", aMessage);
+		send("connectivity_detection_message", aMessage);
 	}
 
 	void ConnectivityApi::on(ConnectivityManagerListener::Started, bool v6) noexcept {
-		if (!subscriptionActive("connectivity_started"))
+		if (!subscriptionActive("connectivity_detection_started"))
 			return;
 
-		send("connectivity_started", {  
+		send("connectivity_detection_started", {  
 			{ "v6", v6 }
 		});
 	}
 
 	void ConnectivityApi::on(ConnectivityManagerListener::Finished, bool v6, bool aFailed) noexcept {
-		if (!subscriptionActive("connectivity_finished"))
+		if (!subscriptionActive("connectivity_detection_finished"))
 			return;
 
-		send("connectivity_finished", {
+		send("connectivity_detection_finished", {
 			{ "v6", v6 },
 			{ "failed", aFailed }
 		});

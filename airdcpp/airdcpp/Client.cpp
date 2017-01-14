@@ -43,7 +43,7 @@ Client::Client(const string& aHubUrl, char aSeparator, const ClientPtr& aOldClie
 	myIdentity(ClientManager::getInstance()->getMe(), 0),
 	clientId(aOldClient ? aOldClient->getClientId() : ++idCounter),
 	lastActivity(GET_TICK()),
-	cache(aOldClient ? aOldClient->getCache() : SettingsManager::HUB_MESSAGE_CACHE)
+	cache(SettingsManager::HUB_MESSAGE_CACHE)
 {
 	TimerManager::getInstance()->addListener(this);
 	ShareManager::getInstance()->addListener(this);
@@ -79,6 +79,8 @@ void Client::shutdown(ClientPtr& aClient, bool aRedirect) {
 
 	if(sock) {
 		destroySocket([=] { // Ensure that the pointer won't be deleted too early
+			// Users store a reference that prevents the client from being deleted
+			// so the lists must be cleared manually 
 			if (!aRedirect) {
 				cache.clear();
 			}

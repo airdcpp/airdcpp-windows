@@ -49,37 +49,6 @@ namespace webserver {
 		QueueBundleUtils::getStringInfo, QueueBundleUtils::getNumericInfo, QueueBundleUtils::compareBundles, QueueBundleUtils::serializeBundleProperty
 	};
 
-	std::string QueueBundleUtils::formatDisplayStatus(const BundlePtr& aBundle) noexcept {
-		switch (aBundle->getStatus()) {
-		case Bundle::STATUS_NEW:
-		case Bundle::STATUS_QUEUED: {
-			auto percentage = aBundle->getPercentage(aBundle->getDownloadedBytes());
-			if (aBundle->isPausedPrio())
-				return STRING_F(PAUSED_PCT, percentage);
-
-			if (aBundle->getSpeed() > 0) { // Bundle->isRunning() ?
-				return STRING_F(RUNNING_PCT, percentage);
-			}
-			else {
-				return STRING_F(WAITING_PCT, percentage);
-			}
-		}
-		case Bundle::STATUS_RECHECK: return STRING(RECHECKING);
-		case Bundle::STATUS_DOWNLOADED: return STRING(MOVING);
-		case Bundle::STATUS_MOVED: return STRING(DOWNLOADED);
-		case Bundle::STATUS_DOWNLOAD_FAILED:
-		case Bundle::STATUS_FAILED_MISSING:
-		case Bundle::STATUS_SHARING_FAILED: return aBundle->getLastError();
-		case Bundle::STATUS_FINISHED: return STRING(FINISHED);
-		case Bundle::STATUS_HASHING: return STRING(HASHING);
-		case Bundle::STATUS_HASH_FAILED: return STRING(HASH_FAILED);
-		case Bundle::STATUS_HASHED: return STRING(HASHING_FINISHED);
-		case Bundle::STATUS_SHARED: return STRING(SHARED);
-		default:
-			return Util::emptyString;
-		}
-	}
-
 	std::string QueueBundleUtils::formatBundleSources(const BundlePtr& aBundle) noexcept {
 		return QueueManager::getInstance()->getSourceCount(aBundle).format();
 	}
@@ -89,7 +58,7 @@ namespace webserver {
 		case PROP_NAME: return b->getName();
 		case PROP_TARGET: return b->getTarget();
 		case PROP_TYPE: return formatBundleType(b);
-		case PROP_STATUS: return formatDisplayStatus(b);
+		case PROP_STATUS: return b->getStatusString();
 		case PROP_PRIORITY: return AirUtil::getPrioText(b->getPriority());
 		case PROP_SOURCES: return formatBundleSources(b);
 		default: dcassert(0); return Util::emptyString;
@@ -209,7 +178,7 @@ namespace webserver {
 				{ "id", formatStatusId(aBundle) },
 				{ "failed", aBundle->isFailed() },
 				{ "finished", aBundle->getStatus() >= Bundle::STATUS_MOVED },
-				{ "str", formatDisplayStatus(aBundle) },
+				{ "str", aBundle->getStatusString() },
 			};
 		}
 

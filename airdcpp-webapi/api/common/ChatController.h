@@ -30,8 +30,9 @@ namespace webserver {
 	template<class T>
 	class ChatController {
 	public:
-		ChatController(SubscribableApiModule* aModule, const T& aChat, const string& aSubscriptionId, Access aViewPermission, Access aEditPermission, Access aSendPermission) :
-			module(aModule), subscriptionId(aSubscriptionId), chat(aChat)
+		typedef typename std::function<const T&()> ChatGetterF;
+		ChatController(SubscribableApiModule* aModule, const ChatGetterF& aChatF, const string& aSubscriptionId, Access aViewPermission, Access aEditPermission, Access aSendPermission) :
+			module(aModule), subscriptionId(aSubscriptionId), chatF(aChatF)
 		{
 			auto& requestHandlers = aModule->getRequestHandlers();
 
@@ -76,7 +77,7 @@ namespace webserver {
 			}
 
 			module->send(s, {
-				{ "message_counts",  Serializer::serializeCacheInfo(chat->getCache(), Serializer::serializeUnreadChat) },
+				{ "message_counts",  Serializer::serializeCacheInfo(chatF()->getCache(), Serializer::serializeUnreadChat) },
 			});
 		}
 
@@ -85,7 +86,7 @@ namespace webserver {
 			auto message = Deserializer::deserializeChatMessage(reqJson);
 
 			string error_;
-			if (!chat->sendMessage(message.first, error_, message.second)) {
+			if (!chatF()->sendMessage(message.first, error_, message.second)) {
 				aRequest.setResponseErrorStr(error_);
 				return websocketpp::http::status_code::internal_server_error;
 			}
@@ -97,24 +98,24 @@ namespace webserver {
 			const auto& reqJson = aRequest.getRequestBody();
 
 			auto message = Deserializer::deserializeStatusMessage(reqJson);
-			chat->statusMessage(message.first, message.second);
+			chatF()->statusMessage(message.first, message.second);
 			return websocketpp::http::status_code::no_content;
 		}
 
 		api_return handleClear(ApiRequest& aRequest) {
-			chat->clearCache();
+			chatF()->clearCache();
 			return websocketpp::http::status_code::no_content;
 		}
 
 		api_return handleSetRead(ApiRequest& aRequest) {
-			chat->setRead();
+			chatF()->setRead();
 			return websocketpp::http::status_code::no_content;
 		}
 
 		api_return handleGetMessages(ApiRequest& aRequest) {
 			auto j = Serializer::serializeFromEnd(
 				aRequest.getRangeParam(0),
-				chat->getCache().getMessages(),
+				chatF()->getCache().getMessages(),
 				Serializer::serializeMessage);
 
 			aRequest.setResponseBody(j);
@@ -125,7 +126,7 @@ namespace webserver {
 			return subscriptionId + "_" + aSubscription;
 		}
 
-		T chat;
+		ChatGetterF chatF;
 		string subscriptionId;
 		SubscribableApiModule* module;
 	};
