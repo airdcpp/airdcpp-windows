@@ -1735,44 +1735,10 @@ double QueueFrame::QueueItemInfo::getPercentage() const {
 }
 
 tstring QueueFrame::QueueItemInfo::getStatusString() const {
-	//Yeah, think about these a little more...
 	if (bundle) {
-		switch (bundle->getStatus()) {
-		case Bundle::STATUS_NEW:
-		case Bundle::STATUS_QUEUED: {
-			if (bundle->isPausedPrio())
-				return TSTRING_F(PAUSED_PCT, getPercentage());
-
-			if (bundle->getSpeed() > 0) { // Bundle->isRunning() ?
-				return TSTRING_F(RUNNING_PCT, getPercentage());
-			} else {
-				return TSTRING_F(WAITING_PCT, getPercentage());
-			}
-		}
-		case Bundle::STATUS_DOWNLOAD_FAILED: return Text::toT(bundle->getLastError());
-		case Bundle::STATUS_RECHECK: return TSTRING(RECHECKING);
-		case Bundle::STATUS_DOWNLOADED: return TSTRING(MOVING);
-		case Bundle::STATUS_MOVED: return TSTRING(DOWNLOADED);
-		case Bundle::STATUS_FAILED_MISSING:
-		case Bundle::STATUS_SHARING_FAILED: return Text::toT(bundle->getLastError());
-		case Bundle::STATUS_FINISHED: return TSTRING(FINISHED);
-		case Bundle::STATUS_HASHING: return TSTRING(HASHING);
-		case Bundle::STATUS_HASH_FAILED: return TSTRING(HASH_FAILED);
-		case Bundle::STATUS_HASHED: return TSTRING(HASHING_FINISHED);
-		case Bundle::STATUS_SHARED: return TSTRING(SHARED);
-		default:
-			return Util::emptyStringT;
-		}
-	} else if(qi) {
-		if (qi->isPausedPrio()) 
-			return TSTRING_F(PAUSED_PCT, getPercentage());
-		if (isFinished())
-			return qi->isSet(QueueItem::FLAG_MOVED) ? TSTRING(FINISHED) : TSTRING(MOVING);
-		if (QueueManager::getInstance()->isWaiting(qi)) {
-			return TSTRING_F(WAITING_PCT, getPercentage());
-		} else {
-			return TSTRING_F(RUNNING_PCT, getPercentage());
-		} 
+		return Text::toT(bundle->getStatusString());
+	} else if (qi) {
+		return Text::toT(qi->getStatusString(QueueManager::getInstance()->getDownloadedBytes(qi), QueueManager::getInstance()->isWaiting(qi)));
 	} else if (isDirectory && getTotalSize() != -1) {
 		if (getFinishedBytes() > 0 && getTotalSize() == getFinishedBytes())
 			return TSTRING(FINISHED);

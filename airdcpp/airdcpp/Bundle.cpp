@@ -88,6 +88,36 @@ Bundle::~Bundle() noexcept {
 	ConnectionManager::getInstance()->tokens.removeToken(getStringToken());
 }
 
+string Bundle::getStatusString() const noexcept {
+	switch (getStatus()) {
+		case Bundle::STATUS_NEW:
+		case Bundle::STATUS_QUEUED: {
+			auto percentage = getPercentage(getDownloadedBytes());
+			if (isPausedPrio()) {
+				return STRING_F(PAUSED_PCT, percentage);
+			}
+
+			if (getSpeed() > 0) {
+				return STRING_F(RUNNING_PCT, percentage);
+			} else {
+				return STRING_F(WAITING_PCT, percentage);
+			}
+		}
+		case Bundle::STATUS_RECHECK: return STRING(RECHECKING);
+		case Bundle::STATUS_DOWNLOADED: return STRING(MOVING);
+		case Bundle::STATUS_MOVED: return STRING(DOWNLOADED);
+		case Bundle::STATUS_DOWNLOAD_FAILED:
+		case Bundle::STATUS_FAILED_MISSING:
+		case Bundle::STATUS_SHARING_FAILED: return getLastError();
+		case Bundle::STATUS_FINISHED: return STRING(FINISHED);
+		case Bundle::STATUS_HASHING: return STRING(HASHING);
+		case Bundle::STATUS_HASH_FAILED: return STRING(HASH_FAILED);
+		case Bundle::STATUS_HASHED: return STRING(HASHING_FINISHED);
+		case Bundle::STATUS_SHARED: return STRING(SHARED);
+		default: return Util::emptyString;
+	}
+}
+
 void Bundle::increaseSize(int64_t aSize) noexcept {
 	size += aSize; 
 }

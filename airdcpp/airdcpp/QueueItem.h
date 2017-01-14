@@ -240,6 +240,7 @@ public:
 	bool hasPartialSharingTarget() noexcept;
 
 	string getListName() const noexcept;
+	string getStatusString(int64_t aDownloadedBytes, bool aIsWaiting) const noexcept;
 
 	const string& getTempTarget() noexcept;
 	void setTempTarget(const string& aTempTarget) noexcept { tempTarget = aTempTarget; }

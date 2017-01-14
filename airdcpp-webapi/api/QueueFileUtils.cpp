@@ -52,18 +52,7 @@ namespace webserver {
 	};
 
 	std::string QueueFileUtils::formatDisplayStatus(const QueueItemPtr& aItem) noexcept {
-		if (aItem->isSet(QueueItem::FLAG_FINISHED)) {
-			return STRING(FINISHED);
-		} 
-		
-		auto percentage = aItem->getPercentage(QueueManager::getInstance()->getDownloadedBytes(aItem));
-		if (aItem->isPausedPrio()) {
-			return STRING_F(PAUSED_PCT, percentage);
-		} else if (QueueManager::getInstance()->isWaiting(aItem)) {
-			return STRING_F(WAITING_PCT, percentage);
-		} else {
-			return STRING_F(RUNNING_PCT, percentage);
-		}
+		return aItem->getStatusString(QueueManager::getInstance()->getDownloadedBytes(aItem), QueueManager::getInstance()->isWaiting(aItem));
 	}
 
 	std::string QueueFileUtils::formatFileSources(const QueueItemPtr& aItem) noexcept {

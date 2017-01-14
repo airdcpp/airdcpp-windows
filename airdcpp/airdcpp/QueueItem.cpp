@@ -191,6 +191,21 @@ bool QueueItem::isChunkDownloaded(int64_t startPos, int64_t& len) const noexcept
 	return false;
 }
 
+string QueueItem::getStatusString(int64_t aDownloadedBytes, bool aIsWaiting) const noexcept {
+	if (isSet(QueueItem::FLAG_FINISHED)) {
+		return STRING(FINISHED);
+	}
+
+	auto percentage = getPercentage(aDownloadedBytes);
+	if (isPausedPrio()) {
+		return STRING_F(PAUSED_PCT, percentage);
+	} else if (aIsWaiting) {
+		return STRING_F(WAITING_PCT, percentage);
+	} else {
+		return STRING_F(RUNNING_PCT, percentage);
+	}
+}
+
 string QueueItem::getListName() const noexcept {
 	dcassert(isSet(QueueItem::FLAG_USER_LIST));
 	if (isSet(QueueItem::FLAG_PARTIAL_LIST)) {
