@@ -33,7 +33,7 @@ namespace webserver {
 
 	PrivateChatInfo::PrivateChatInfo(ParentType* aParentModule, const PrivateChatPtr& aChat) :
 		SubApiModule(aParentModule, aChat->getUser()->getCID().toBase32(), subscriptionList), chat(aChat),
-		chatHandler(this, aChat, "private_chat", Access::PRIVATE_CHAT_VIEW, Access::PRIVATE_CHAT_EDIT, Access::PRIVATE_CHAT_SEND) {
+		chatHandler(this, std::bind(&PrivateChatInfo::getChat, this), "private_chat", Access::PRIVATE_CHAT_VIEW, Access::PRIVATE_CHAT_EDIT, Access::PRIVATE_CHAT_SEND) {
 
 		METHOD_HANDLER("ccpm", Access::PRIVATE_CHAT_EDIT, ApiRequest::METHOD_POST, (), false, PrivateChatInfo::handleConnectCCPM);
 		METHOD_HANDLER("ccpm", Access::PRIVATE_CHAT_EDIT, ApiRequest::METHOD_DELETE, (), false, PrivateChatInfo::handleDisconnectCCPM);
