@@ -504,6 +504,19 @@ UserPtr ClientManager::getUser(const CID& cid) noexcept {
 	return u.first->second;
 }
 
+UserPtr ClientManager::loadUser(const string& aCid, const string& aUrl, const string& aNick, uint32_t lastSeen) noexcept {
+	//Skip loading any old data without correct CID
+	if (aCid.length() != 39) {
+		return nullptr;
+	}
+	auto u = getUser(CID(aCid));
+	
+	if (!aNick.empty() || !aUrl.empty())
+		addOfflineUser(u, aNick, aUrl, lastSeen);
+
+	return u;
+}
+
 UserPtr ClientManager::findUser(const CID& cid) const noexcept {
 	RLock l(cs);
 	auto ui = users.find(const_cast<CID*>(&cid));
@@ -585,7 +598,7 @@ void ClientManager::putOffline(const OnlineUserPtr& ou, bool aDisconnectTransfer
 				so we ensure that we should always find the user in atleast one of the lists.
 				*/
 				if (diff == 1) {
-					addOfflineUser(ou->getUser(), ou->getIdentity().getNick(), ou->getHubUrl());
+					offlineUsers.emplace(const_cast<CID*>(&ou->getUser()->getCID()), OfflineUser(ou->getIdentity().getNick(), ou->getHubUrl(), GET_TIME()));
 				}
 
 				onlineUsers.erase(i);
@@ -1308,6 +1321,7 @@ CID ClientManager::getMyCID() noexcept {
 }
 
 void ClientManager::addOfflineUser(const UserPtr& user, const string& nick, const string& url, uint32_t lastSeen/*GET_TIME()*/) noexcept{
+	WLock l(cs);
 	offlineUsers.emplace(const_cast<CID*>(&user->getCID()), OfflineUser(nick, url, lastSeen));
 }
 

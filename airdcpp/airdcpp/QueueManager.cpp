@@ -2672,21 +2672,19 @@ void QueueLoader::startTag(const string& name, StringPairList& attribs, bool sim
 			}
 		} else if(curFile && name == sSource) {
 			const string& cid = getAttrib(attribs, sCID, 0);
-			if(cid.length() != 39) {
-				// Skip loading this source - sorry old users
+			const string& hubHint = getAttrib(attribs, sHubHint, 1);
+
+			ClientManager* cm = ClientManager::getInstance();
+			auto user = cm->loadUser(cid, hubHint, sNick);
+			if (user == nullptr) {
 				return;
 			}
-			ClientManager* cm = ClientManager::getInstance();
-			UserPtr user = cm->getUser(CID(cid));
 
 			try {
-				const string& hubHint = getAttrib(attribs, sHubHint, 1);
 				HintedUser hintedUser(user, hubHint);
-				{
-					WLock l(cm->getCS());
-					cm->addOfflineUser(user, getAttrib(attribs, sNick, 1), hubHint);
-					qm->addSource(curFile, hintedUser, 0, false) && user->isOnline();
-				}
+			
+				WLock l(qm->cs);
+				qm->addSource(curFile, hintedUser, 0, false);
 			} catch(const Exception&) {
 				return;
 			}

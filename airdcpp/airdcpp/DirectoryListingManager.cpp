@@ -357,7 +357,7 @@ void DirectoryListingManager::on(QueueManagerListener::ItemRemoved, const QueueI
 	}
 }
 
-DirectoryListingPtr DirectoryListingManager::openOwnList(ProfileToken aProfile, bool useADL /*false*/) noexcept {
+DirectoryListingPtr DirectoryListingManager::openOwnList(ProfileToken aProfile, bool useADL /*false*/, const string& aDir/* = Util::emptyString*/) noexcept {
 	auto me = HintedUser(ClientManager::getInstance()->getMe(), Util::emptyString);
 
 	auto dl = hasList(me.user);
@@ -373,7 +373,7 @@ DirectoryListingPtr DirectoryListingManager::openOwnList(ProfileToken aProfile, 
 	return dl;
 }
 
-DirectoryListingPtr DirectoryListingManager::openFileList(const HintedUser& aUser, const string& aFile) noexcept {
+DirectoryListingPtr DirectoryListingManager::openFileList(const HintedUser& aUser, const string& aFile, const string& aDir/* = Util::emptyString*/) noexcept {
 	if (hasList(aUser.user)) {
 		return nullptr;
 	}

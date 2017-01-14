@@ -74,6 +74,7 @@ bool PrivateFrame::getWindowParams(HWND hWnd, StringMap& params) {
 		params["id"] = PrivateFrame::id;
 		params["CID"] = f->first->getCID().toBase32();
 		params["url"] = f->second->getHubUrl();
+		FavoriteManager::getInstance()->addSavedUser(f->first);
 		return true;
 	}
 	return false;
@@ -84,8 +85,9 @@ bool PrivateFrame::parseWindowParams(StringMap& params) {
 		string cid = params["CID"];
 		string hubUrl = params["url"];
 		auto u = ClientManager::getInstance()->getUser(CID(cid));
-		if (u)
+		if (u) {
 			MessageManager::getInstance()->addChat(HintedUser(u, hubUrl), false);
+		}
 		return true;
 	}
 	return false;

@@ -36,7 +36,7 @@ namespace webserver {
 		api_return handleDeleteStrings(ApiRequest& aRequest);
 		api_return handlePostString(ApiRequest& aRequest);
 
-		static json serializeHub(const RecentHubEntryPtr& aHub) noexcept;
+		static json serializeHub(const RecentEntryPtr& aHub) noexcept;
 
 		api_return handleSearchHubs(ApiRequest& aRequest);
 		api_return handleGetHubs(ApiRequest& aRequest);

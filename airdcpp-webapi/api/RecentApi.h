@@ -31,10 +31,6 @@ namespace webserver {
 		RecentApi(Session* aSession);
 		~RecentApi();
 
-		int getVersion() const noexcept override {
-			return 0;
-		}
-
 		static json serializeHub(const RecentEntryPtr& aHub) noexcept;
 	private:
 		api_return handleSearchHubs(ApiRequest& aRequest);

@@ -71,11 +71,11 @@ namespace webserver {
 		throw RequestException(websocketpp::http::status_code::bad_request, "Invalid string history type");
 	}
 
-	json HistoryApi::serializeHub(const RecentHubEntryPtr& aHub) noexcept {
+	json HistoryApi::serializeHub(const RecentEntryPtr& aHub) noexcept {
 		return {
 			{ "name", aHub->getName() },
 			{ "description", aHub->getDescription() },
-			{ "hub_url", aHub->getServer() }
+			{ "hub_url", aHub->getUrl() }
 		};
 	}
 
@@ -85,13 +85,13 @@ namespace webserver {
 		auto pattern = JsonUtil::getField<string>("pattern", reqJson);
 		auto maxResults = JsonUtil::getField<size_t>("max_results", reqJson);
 
-		auto hubs = RecentManager::getInstance()->searchRecentHubs(pattern, maxResults);
+		auto hubs = RecentManager::getInstance()->searchRecents(pattern, maxResults);
 		aRequest.setResponseBody(Serializer::serializeList(hubs, serializeHub));
 		return websocketpp::http::status_code::ok;
 	}
 
 	api_return HistoryApi::handleGetHubs(ApiRequest& aRequest) {
-		auto hubs = RecentManager::getInstance()->getRecentHubs();
+		auto hubs = RecentManager::getInstance()->getRecents();
 
 		auto retJson = Serializer::serializeFromEnd(aRequest.getRangeParam(0), hubs, serializeHub);
 		aRequest.setResponseBody(retJson);

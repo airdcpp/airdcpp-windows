@@ -44,6 +44,7 @@ public:
 	const FavoriteMap& getFavoriteUsers() const noexcept { return users; }
 
 	void addFavoriteUser(const HintedUser& aUser) noexcept;
+	void addSavedUser(const UserPtr& aUser) noexcept;
 	void removeFavoriteUser(const UserPtr& aUser) noexcept;
 	optional<FavoriteUser> getFavoriteUser(const UserPtr& aUser) const noexcept;
 
@@ -110,7 +111,12 @@ private:
 	UserCommand::List userCommands;
 	int lastId = 0;
 
+	//Favorite users
 	FavoriteMap users;
+	//Saved users
+	unordered_set<UserPtr, User::Hash> savedUsers;
+
+	FavoriteUser createUser(const UserPtr& aUser, const string& aUrl);
 	
 	/** Used during loading to prevent saving. */
 	bool loading = false;
@@ -150,7 +156,7 @@ private:
 	void loadUserCommands(SimpleXML& aXml);
 
 	void saveFavoriteHubs(SimpleXML& aXml) const noexcept;
-	void saveFavoriteUsers(SimpleXML& aXml) const noexcept;
+	void saveFavoriteUsers(SimpleXML& aXml) noexcept;
 	void saveFavoriteDirectories(SimpleXML& aXml) const noexcept;
 	void saveUserCommands(SimpleXML& aXml) const noexcept;
 

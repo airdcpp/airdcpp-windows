@@ -138,6 +138,7 @@ public:
 
 	UserPtr getUser(const string& aNick, const string& aHubUrl) noexcept;
 	UserPtr getUser(const CID& cid) noexcept;
+	UserPtr loadUser(const string& aCid, const string& aUrl, const string& aNick, uint32_t lastSeen = GET_TIME()) noexcept;
 
 	// usage needs to be locked!
 	const UserMap& getUsers() const { return users; }
@@ -156,7 +157,6 @@ public:
 
 	UserPtr findUserByNick(const string& aNick, const string& aHubUrl) const noexcept;
 	
-	//Note; Lock usage
 	void addOfflineUser(const UserPtr& user, const string& nick, const string& url, uint32_t lastSeen = GET_TIME()) noexcept;
 
 	string getMyNick(const string& hubUrl) const noexcept;

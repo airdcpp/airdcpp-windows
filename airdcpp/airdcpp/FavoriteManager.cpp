@@ -189,6 +189,35 @@ void FavoriteManager::removeHubUserCommands(int ctx, const string& hub) noexcept
 	}
 }
 
+FavoriteUser FavoriteManager::createUser(const UserPtr& aUser, const string& aUrl) {
+	string nick;
+	int64_t seen = 0;
+	string hubUrl = aUrl;
+
+	//prefer to use the add nick
+	ClientManager* cm = ClientManager::getInstance();
+	{
+		RLock l(cm->getCS());
+		auto ou = cm->findOnlineUser(aUser->getCID(), aUrl);
+		if (!ou) {
+			//offline
+			auto ofu = ClientManager::getInstance()->getOfflineUser(aUser->getCID());
+			if (ofu) {
+				nick = ofu->getNick();
+				seen = ofu->getLastSeen();
+				hubUrl = ofu->getUrl();
+			}
+		}
+		else {
+			nick = ou->getIdentity().getNick();
+		}
+	}
+
+	auto fu = FavoriteUser(aUser, nick, hubUrl, aUser->getCID().toBase32());
+	fu.setLastSeen(seen);
+	return fu;
+}
+
 void FavoriteManager::addFavoriteUser(const HintedUser& aUser) noexcept {
 	if(aUser.user == ClientManager::getInstance()->getMe()) // we cant allow adding ourself as a favorite user :P
 		return;
@@ -200,30 +229,7 @@ void FavoriteManager::addFavoriteUser(const HintedUser& aUser) noexcept {
 		}
 	}
 
-	string nick;
-	int64_t seen = 0;
-	string hubUrl = aUser.hint;
-
-	//prefer to use the add nick
-	ClientManager* cm = ClientManager::getInstance();
-	{
-		RLock l(cm->getCS());
-		auto ou = cm->findOnlineUser(aUser.user->getCID(), hubUrl);
-		if (!ou) {
-			//offline
-			auto ofu = ClientManager::getInstance()->getOfflineUser(aUser.user->getCID());
-			if (ofu) {
-				nick = ofu->getNick();
-				seen = ofu->getLastSeen();
-				hubUrl = ofu->getUrl();
-			}
-		} else {
-			nick = ou->getIdentity().getNick();
-		}
-	}
-
-	auto fu = FavoriteUser(aUser, nick, hubUrl, aUser.user->getCID().toBase32());
-	fu.setLastSeen(seen);
+	auto fu = createUser(aUser.user, aUser.hint);
 	{
 		WLock l (cs);
 		users.emplace(aUser.user->getCID(), fu);
@@ -231,6 +237,23 @@ void FavoriteManager::addFavoriteUser(const HintedUser& aUser) noexcept {
 
 	aUser.user->setFlag(User::FAVORITE);
 	fire(FavoriteManagerListener::FavoriteUserAdded(), fu);
+}
+
+void FavoriteManager::addSavedUser(const UserPtr& aUser) noexcept {
+	if (aUser == ClientManager::getInstance()->getMe()) // no reason saving ourself
+		return;
+
+	{
+		RLock l(cs);
+		if (savedUsers.find(aUser) != savedUsers.end()) {
+			return;
+		}
+	}
+
+	{
+		WLock l(cs);
+		savedUsers.emplace(aUser);
+	}
 }
 
 void FavoriteManager::removeFavoriteUser(const UserPtr& aUser) noexcept {
@@ -498,7 +521,7 @@ void FavoriteManager::saveUserCommands(SimpleXML& aXml) const noexcept {
 	aXml.stepOut();
 }
 
-void FavoriteManager::saveFavoriteUsers(SimpleXML& aXml) const noexcept {
+void FavoriteManager::saveFavoriteUsers(SimpleXML& aXml) noexcept {
 	aXml.addTag("Users");
 	aXml.stepIn();
 
@@ -513,6 +536,17 @@ void FavoriteManager::saveFavoriteUsers(SimpleXML& aXml) const noexcept {
 			aXml.addChildAttrib("Nick", i.second.getNick());
 			aXml.addChildAttrib("URL", i.second.getUrl());
 			aXml.addChildAttrib("CID", i.first.toBase32());
+			aXml.addChildAttrib("Favorite", true);
+		}
+
+		for (auto& s : savedUsers) {
+			auto u = createUser(s, Util::emptyString);
+			aXml.addTag("User");
+			aXml.addChildAttrib("LastSeen", u.getLastSeen());
+			aXml.addChildAttrib("Nick", u.getNick());
+			aXml.addChildAttrib("URL", u.getUrl());
+			aXml.addChildAttrib("CID", s->getCID().toBase32());
+			aXml.addChildAttrib("Favorite", false);
 		}
 	}
 
@@ -754,35 +788,26 @@ void FavoriteManager::loadFavoriteUsers(SimpleXML& aXml) {
 	if (aXml.findChild("Users")) {
 		aXml.stepIn();
 		while (aXml.findChild("User")) {
-			UserPtr u;
 			const string& cid = aXml.getChildAttrib("CID");
 			const string& nick = aXml.getChildAttrib("Nick");
 			const string& hubUrl = aXml.getChildAttrib("URL");
-			ClientManager* cm = ClientManager::getInstance();
+			bool isFavorite = Util::toBool(Util::toInt(aXml.getChildAttrib("Favorite", "1")));
+			auto lastSeen = (uint32_t)aXml.getIntChildAttrib("LastSeen");
+			auto u = ClientManager::getInstance()->loadUser(cid, hubUrl, nick, lastSeen);
+			if(!u || !isFavorite)
+				continue;
 
-			if (cid.length() != 39) {
-				if (nick.empty() || hubUrl.empty())
-					continue;
-				u = cm->getUser(nick, hubUrl);
-			} else {
-				u = cm->getUser(CID(cid));
-			}
 			u->setFlag(User::FAVORITE);
-
-			auto i = users.emplace(u->getCID(), FavoriteUser(u, nick, hubUrl, cid)).first;
-			{
-				WLock(cm->getCS());
-				cm->addOfflineUser(u, nick, hubUrl);
-			}
+			auto i = users.emplace(u->getCID(), FavoriteUser(u, nick, hubUrl, u->getCID().toBase32())).first;
 
 			if (aXml.getBoolChildAttrib("GrantSlot"))
 				i->second.setFlag(FavoriteUser::FLAG_GRANTSLOT);
 			if (aXml.getBoolChildAttrib("SuperUser"))
 				i->second.setFlag(FavoriteUser::FLAG_SUPERUSER);
 
-			i->second.setLastSeen((uint32_t)aXml.getIntChildAttrib("LastSeen"));
+			i->second.setLastSeen(lastSeen);
 			i->second.setDescription(aXml.getChildAttrib("UserDescription"));
-
+			
 		}
 		aXml.stepOut();
 	}
