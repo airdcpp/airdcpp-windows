@@ -45,7 +45,7 @@ Bundle::Bundle(QueueItemPtr& qi, time_t aFileDate, QueueToken aToken /*0*/, bool
 	Bundle(qi->getTarget(), qi->getTimeAdded(), qi->getPriority(), aFileDate, aToken, aDirty, true) {
 
 
-	if (qi->isFinished()) {
+	if (qi->isDownloaded()) {
 		addFinishedItem(qi, false);
 	} else {
 		finishedSegments = qi->getDownloadedSegments();
@@ -105,13 +105,10 @@ string Bundle::getStatusString() const noexcept {
 		}
 		case Bundle::STATUS_RECHECK: return STRING(RECHECKING);
 		case Bundle::STATUS_DOWNLOADED: return STRING(DOWNLOADED);
-		case Bundle::STATUS_HOOK_VALIDATION: return STRING(VALIDATING_CONTENT);
+		case Bundle::STATUS_VALIDATION_RUNNING: return STRING(VALIDATING_CONTENT);
 		case Bundle::STATUS_DOWNLOAD_ERROR:
-		case Bundle::STATUS_HOOK_ERROR: return getError();
-		case Bundle::STATUS_FINISHED: return STRING(FINISHED);
-		case Bundle::STATUS_HASHING: return STRING(HASHING);
-		case Bundle::STATUS_HASH_FAILED: return STRING(HASH_FAILED);
-		case Bundle::STATUS_HASHED: return STRING(HASHING_FINISHED);
+		case Bundle::STATUS_VALIDATION_ERROR: return getError();
+		case Bundle::STATUS_COMPLETED: return STRING(FINISHED);
 		case Bundle::STATUS_SHARED: return STRING(SHARED);
 		default: return Util::emptyString;
 	}
@@ -130,9 +127,17 @@ bool Bundle::checkRecent() noexcept {
 	return recent;
 }
 
-bool Bundle::allowHash() const noexcept {
-	return status != STATUS_HASHING && queueItems.empty() && find_if(finishedFiles, [](const QueueItemPtr& q) { 
+bool Bundle::filesCompleted() const noexcept {
+	return queueItems.empty() && find_if(finishedFiles, [](const QueueItemPtr& q) { 
 		return !q->isSet(QueueItem::FLAG_MOVED); }) == finishedFiles.end();
+}
+
+bool Bundle::isDownloaded() const noexcept { 
+	return status >= STATUS_DOWNLOADED; 
+}
+
+bool Bundle::isCompleted() const noexcept {
+	return status >= STATUS_COMPLETED;
 }
 
 void Bundle::setDownloadedBytes(int64_t aSize) noexcept {
@@ -228,16 +233,14 @@ void Bundle::getItems(const UserPtr& aUser, QueueItemList& ql) const noexcept {
 }
 
 void Bundle::addFinishedItem(QueueItemPtr& qi, bool aFinished) noexcept {
-	dcassert(qi->isSet(QueueItem::FLAG_FINISHED) && qi->getTimeFinished() > 0);
+	dcassert(qi->isSet(QueueItem::FLAG_DOWNLOADED) && qi->getTimeFinished() > 0);
 
 	finishedFiles.push_back(qi);
 	if (!aFinished) {
-		qi->setFlag(QueueItem::FLAG_MOVED);
 		qi->setBundle(this);
 		increaseSize(qi->getSize());
 		addFinishedSegment(qi->getSize());
 	}
-	qi->setFlag(QueueItem::FLAG_FINISHED);
 }
 
 void Bundle::removeFinishedItem(QueueItemPtr& aQI) noexcept {
@@ -254,13 +257,13 @@ void Bundle::removeFinishedItem(QueueItemPtr& aQI) noexcept {
 }
 
 void Bundle::addQueue(QueueItemPtr& qi) noexcept {
-	if (qi->isFinished()) {
+	if (qi->isDownloaded()) {
 		addFinishedItem(qi, false);
 		return;
 	}
 
 	dcassert(qi->getTimeFinished() == 0);
-	dcassert(!qi->isSet(QueueItem::FLAG_FINISHED) && !qi->isSet(QueueItem::FLAG_MOVED));
+	dcassert(!qi->isSet(QueueItem::FLAG_MOVED) && !qi->segmentsDone());
 	dcassert(find(queueItems, qi) == queueItems.end());
 
 	qi->setBundle(this);
@@ -270,7 +273,7 @@ void Bundle::addQueue(QueueItemPtr& qi) noexcept {
 }
 
 void Bundle::removeQueue(QueueItemPtr& aQI, bool aFileCompleted) noexcept {
-	if (!aFileCompleted && aQI->isSet(QueueItem::FLAG_FINISHED)) {
+	if (!aFileCompleted && aQI->isDownloaded()) {
 		removeFinishedItem(aQI);
 		return;
 	}
@@ -404,7 +407,7 @@ void Bundle::getDirQIs(const string& aDir, QueueItemList& ql) const noexcept {
 }
 
 bool Bundle::isFailedStatus(Status aStatus) noexcept {
-	return aStatus == STATUS_HOOK_ERROR || aStatus == STATUS_HASH_FAILED || aStatus == STATUS_DOWNLOAD_ERROR;
+	return aStatus == STATUS_VALIDATION_ERROR || aStatus == STATUS_DOWNLOAD_ERROR;
 }
 
 bool Bundle::isFailed() const noexcept {

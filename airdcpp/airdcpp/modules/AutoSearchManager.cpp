@@ -231,7 +231,7 @@ string AutoSearchManager::getBundleStatuses(const AutoSearchPtr& as) const noexc
 				auto& b = *as->getBundles().begin();
 				if (b->getStatus() == Bundle::STATUS_QUEUED) {
 					statusString += STRING_F(BUNDLE_X_QUEUED, b->getName());
-				} else if (b->getStatus() == Bundle::STATUS_HOOK_ERROR) {
+				} else if (b->getStatus() == Bundle::STATUS_VALIDATION_ERROR) {
 					statusString += b->getName() + " (" + b->getError() + ")";
 				}
 			} else {
@@ -299,7 +299,7 @@ void AutoSearchManager::onBundleError(const void* aSearch, const string& aError,
 }
 
 void AutoSearchManager::on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept {
-	if (aBundle->getStatus() == Bundle::STATUS_FINISHED) {
+	if (aBundle->isCompleted()) {
 		onRemoveBundle(aBundle, true);
 		return;
 	}
@@ -421,7 +421,7 @@ void AutoSearchManager::performSearch(AutoSearchPtr& as, StringList& aHubs, Sear
 		WLock l(cs);
 		as->updatePattern();
 		if (as->getStatus() == AutoSearch::STATUS_FAILED_MISSING) {
-			auto p = find_if(as->getBundles(), Bundle::HasStatus(Bundle::STATUS_HOOK_VALIDATION));
+			auto p = find_if(as->getBundles(), Bundle::HasStatus(Bundle::STATUS_VALIDATION_ERROR));
 			if (p != as->getBundles().end()) {
 				searchWord = (*p)->getName();
 				failedBundle = true;
@@ -755,7 +755,7 @@ void AutoSearchManager::pickNameMatch(AutoSearchPtr as) noexcept{
 
 		updateStatus(as, false);
 		if (as->getStatus() == AutoSearch::STATUS_FAILED_MISSING) {
-			auto bundle = find_if(as->getBundles(), Bundle::HasStatus(Bundle::STATUS_HOOK_VALIDATION));
+			auto bundle = find_if(as->getBundles(), Bundle::HasStatus(Bundle::STATUS_VALIDATION_ERROR));
 			dcassert(bundle != as->getBundles().end());
 			minWantedSize = (*bundle)->getSize();
 		}

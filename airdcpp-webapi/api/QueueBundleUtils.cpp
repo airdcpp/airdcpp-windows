@@ -87,7 +87,7 @@ namespace webserver {
 		}
 	}
 
-#define COMPARE_FINISHED(a, b) if (a->getStatus() >= Bundle::STATUS_FINISHED != b->getStatus() >= Bundle::STATUS_FINISHED) return a->getStatus() >= Bundle::STATUS_FINISHED ? 1 : -1;
+#define COMPARE_IS_DOWNLOADED(a, b) if (a->isDownloaded() != b->isDownloaded()) return a->isDownloaded() ? 1 : -1;
 #define COMPARE_TYPE(a, b) if (a->isFileBundle() != b->isFileBundle()) return a->isFileBundle() ? 1 : -1;
 
 	int QueueBundleUtils::compareBundles(const BundlePtr& a, const BundlePtr& b, int aPropertyName) noexcept {
@@ -111,10 +111,7 @@ namespace webserver {
 			return Util::stricmp(Util::getFileExt(a->getTarget()), Util::getFileExt(b->getTarget()));
 		}
 		case PROP_PRIORITY: {
-			COMPARE_FINISHED(a, b);
-			if (a->isFinished() != b->isFinished()) {
-				return a->isFinished() ? 1 : -1;
-			}
+			COMPARE_IS_DOWNLOADED(a, b);
 
 			return compare(static_cast<int>(a->getPriority()), static_cast<int>(b->getPriority()));
 		}
@@ -129,7 +126,7 @@ namespace webserver {
 			);
 		}
 		case PROP_SOURCES: {
-			COMPARE_FINISHED(a, b);
+			COMPARE_IS_DOWNLOADED(a, b);
 
 			auto countsA = QueueManager::getInstance()->getSourceCount(a);
 			auto countsB = QueueManager::getInstance()->getSourceCount(b);
@@ -150,12 +147,9 @@ namespace webserver {
 			case Bundle::STATUS_RECHECK: return "recheck";
 			case Bundle::STATUS_DOWNLOADED: return "downloaded";
 			case Bundle::STATUS_DOWNLOAD_ERROR: return "download_error";
-			case Bundle::STATUS_HOOK_VALIDATION: return "completion_validation_running";
-			case Bundle::STATUS_HOOK_ERROR: return "completion_validation_error";
-			case Bundle::STATUS_FINISHED: return "completed";
-			case Bundle::STATUS_HASHING: return "hashing";
-			case Bundle::STATUS_HASH_FAILED: return "hash_failed";
-			case Bundle::STATUS_HASHED: return "hashed";
+			case Bundle::STATUS_VALIDATION_RUNNING: return "completion_validation_running";
+			case Bundle::STATUS_VALIDATION_ERROR: return "completion_validation_error";
+			case Bundle::STATUS_COMPLETED: return "completed";
 			case Bundle::STATUS_SHARED: return "shared";
 		}
 
@@ -173,12 +167,13 @@ namespace webserver {
 
 		case PROP_STATUS:
 		{
-			return{
+			return {
 				{ "id", formatStatusId(aBundle) },
 				{ "failed", aBundle->isFailed() },
-				{ "finished", aBundle->getStatus() >= Bundle::STATUS_DOWNLOADED },
+				{ "downloaded", aBundle->isDownloaded() },
+				{ "completed", aBundle->isCompleted() },
 				{ "str", aBundle->getStatusString() },
-				{ "validation_hook_error", Serializer::serializeActionHookError(aBundle->getHookError()) }
+				{ "hook_error", Serializer::serializeActionHookError(aBundle->getHookError()) }
 			};
 		}
 

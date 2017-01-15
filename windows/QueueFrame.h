@@ -257,7 +257,7 @@ private:
 
 	void handleRecheckFiles(QueueItemList ql);
 	void handleRecheckBundles(BundleList bl);
-	void handleRemoveBundles(BundleList bl, bool removeFinished, bool finishedOnly = false);
+	void handleRemoveBundles(BundleList bl, bool removeFinished, bool aCompletedOnly = false);
 	void handleRemoveFiles(QueueItemList ql, bool removeFinished);
 	void handleSearchQI(const QueueItemPtr& aQI, bool byName);
 	void handleOpenFile(const QueueItemPtr& aQI);

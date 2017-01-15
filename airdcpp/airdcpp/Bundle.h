@@ -53,12 +53,9 @@ public:
 		STATUS_DOWNLOAD_ERROR,
 		STATUS_RECHECK,
 		STATUS_DOWNLOADED, // no queued files
-		STATUS_HOOK_VALIDATION, // the bundle is being validated by the completion hooks
-		STATUS_HOOK_ERROR, // hook validation failed (see the error pointer for more information)
-		STATUS_FINISHED, // no validation errors, ready for hashing
-		STATUS_HASHING,
-		STATUS_HASH_FAILED,
-		STATUS_HASHED,
+		STATUS_VALIDATION_RUNNING, // the bundle is being validated by the completion hooks
+		STATUS_VALIDATION_ERROR, // hook validation failed (see the error pointer for more information)
+		STATUS_COMPLETED, // no validation errors, ready for sharing
 		STATUS_SHARED
 	};
 
@@ -177,7 +174,18 @@ public:
 	void addFinishedItem(QueueItemPtr& qi, bool finished) noexcept;
 	void removeFinishedItem(QueueItemPtr& qi) noexcept;
 	void finishBundle() noexcept;
-	bool allowHash() const noexcept;
+
+	// All files have been downloaded and moved to the final destination
+	// Unsafe
+	bool filesCompleted() const noexcept;
+
+	// All bundles files have finished downloading
+	// Safe
+	bool isDownloaded() const noexcept;
+
+	// All bundles files have finished downloading and all validation hooks have completed
+	// Safe
+	bool isCompleted() const noexcept;
 
 	void clearFinishedNotifications(FinishedNotifyList& fnl) noexcept;
 	bool isFinishedNotified(const UserPtr& aUser) const noexcept;
@@ -222,7 +230,6 @@ public:
 	void getSourceUsers(HintedUserList& l) const noexcept;
 	bool isSource(const UserPtr& aUser) const noexcept;
 	bool isBadSource(const UserPtr& aUser) const noexcept;
-	bool isFinished() const noexcept { return queueItems.empty(); }
 
 	/** All queue items indexed by user */
 	void addUserQueue(QueueItemPtr& qi) noexcept;
