@@ -254,7 +254,7 @@ namespace webserver {
 
 	api_return QueueApi::handleShareBundle(ApiRequest& aRequest) {
 		auto b = getBundle(aRequest);
-		if (b->getStatus() != Bundle::STATUS_HOOK_VALIDATION) {
+		if (b->getStatus() != Bundle::STATUS_VALIDATION_ERROR) {
 			aRequest.setResponseErrorStr("This action can only be performed for bundles that have failed content validation");
 			return websocketpp::http::status_code::precondition_failed;
 		}

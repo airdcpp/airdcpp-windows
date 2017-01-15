@@ -105,9 +105,9 @@ string Bundle::getStatusString() const noexcept {
 		}
 		case Bundle::STATUS_RECHECK: return STRING(RECHECKING);
 		case Bundle::STATUS_DOWNLOADED: return STRING(DOWNLOADED);
-		case Bundle::STATUS_HOOK_VALIDATION: return STRING(VALIDATING_CONTENT);
+		case Bundle::STATUS_VALIDATION_RUNNING: return STRING(VALIDATING_CONTENT);
 		case Bundle::STATUS_DOWNLOAD_ERROR:
-		case Bundle::STATUS_HOOK_ERROR: return getError();
+		case Bundle::STATUS_VALIDATION_ERROR: return getError();
 		case Bundle::STATUS_COMPLETED: return STRING(FINISHED);
 		case Bundle::STATUS_SHARED: return STRING(SHARED);
 		default: return Util::emptyString;
@@ -407,7 +407,7 @@ void Bundle::getDirQIs(const string& aDir, QueueItemList& ql) const noexcept {
 }
 
 bool Bundle::isFailedStatus(Status aStatus) noexcept {
-	return aStatus == STATUS_HOOK_ERROR || aStatus == STATUS_DOWNLOAD_ERROR;
+	return aStatus == STATUS_VALIDATION_ERROR || aStatus == STATUS_DOWNLOAD_ERROR;
 }
 
 bool Bundle::isFailed() const noexcept {

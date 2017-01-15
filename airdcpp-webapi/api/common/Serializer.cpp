@@ -420,6 +420,7 @@ namespace webserver {
 
 		return{
 			{ "hook_id", aError->hookId },
+			{ "hook_name", aError->hookName },
 			{ "error_id", aError->errorId },
 			{ "str", aError->errorMessage },
 		};

@@ -147,8 +147,8 @@ namespace webserver {
 			case Bundle::STATUS_RECHECK: return "recheck";
 			case Bundle::STATUS_DOWNLOADED: return "downloaded";
 			case Bundle::STATUS_DOWNLOAD_ERROR: return "download_error";
-			case Bundle::STATUS_HOOK_VALIDATION: return "completion_validation_running";
-			case Bundle::STATUS_HOOK_ERROR: return "completion_validation_error";
+			case Bundle::STATUS_VALIDATION_RUNNING: return "completion_validation_running";
+			case Bundle::STATUS_VALIDATION_ERROR: return "completion_validation_error";
 			case Bundle::STATUS_COMPLETED: return "completed";
 			case Bundle::STATUS_SHARED: return "shared";
 		}

@@ -53,8 +53,8 @@ public:
 		STATUS_DOWNLOAD_ERROR,
 		STATUS_RECHECK,
 		STATUS_DOWNLOADED, // no queued files
-		STATUS_HOOK_VALIDATION, // the bundle is being validated by the completion hooks
-		STATUS_HOOK_ERROR, // hook validation failed (see the error pointer for more information)
+		STATUS_VALIDATION_RUNNING, // the bundle is being validated by the completion hooks
+		STATUS_VALIDATION_ERROR, // hook validation failed (see the error pointer for more information)
 		STATUS_COMPLETED, // no validation errors, ready for sharing
 		STATUS_SHARED
 	};

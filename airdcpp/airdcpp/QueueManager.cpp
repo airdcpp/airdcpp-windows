@@ -1600,13 +1600,13 @@ void QueueManager::shareBundle(BundlePtr aBundle, bool aSkipScan) noexcept {
 
 bool QueueManager::runCompletionHooks(BundlePtr& aBundle) noexcept {
 	if (bundleCompletionHook.hasSubscribers()) {
-		setBundleStatus(aBundle, Bundle::STATUS_HOOK_VALIDATION);
+		setBundleStatus(aBundle, Bundle::STATUS_VALIDATION_RUNNING);
 
 		auto error = bundleCompletionHook.runHooks(aBundle);
 		if (error) {
 			aBundle->setHookError(error);
 			aBundle->setError(error->hookName + ": " + error->errorMessage);
-			setBundleStatus(aBundle, Bundle::STATUS_HOOK_ERROR);
+			setBundleStatus(aBundle, Bundle::STATUS_VALIDATION_ERROR);
 			return false;
 		}
 	}
