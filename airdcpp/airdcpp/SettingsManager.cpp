@@ -278,7 +278,7 @@ const string SettingsManager::settingTags[] =
 "ShareSkiplistUseRegexp", "DownloadSkiplistUseRegexp", "HighestPriorityUseRegexp", "UseHighlight", "FlashWindowOnPm", "FlashWindowOnNewPm", "FlashWindowOnMyNick", "IPUpdate", "serverCommands", "ClientCommands",
 "PreviewPm", "IgnoreUseRegexpOrWc", "HubBoldTabs", "showWinampControl", "BlendTabs", "TabShowIcons", "AllowMatchFullList", "ShowChatNotify", "FreeSpaceWarn", "FavUsersShowInfo",
 "ClearDirectoryHistory", "ClearExcludeHistory", "ClearDirHistory", "NoIpOverride6", "IPUpdate6", "SearchUseExcluded", "AutoSearchBold", "ShowEmoticon", "ShowMultiline", "ShowMagnet", "ShowSendMessage", "WarnElevated", "SkipEmptyDirsShare", "LogShareScans",
-	"RemoveExpiredAs", "AdcLogGroupCID", "ShareFollowSymlinks", "ScanMonitoredFolders", "FinishedNoHash", "ConfirmFileDeletions", "UseDefaultCertPaths", "StartupRefresh", "FLReportDupeFiles",
+	"RemoveExpiredAs", "AdcLogGroupCID", "ShareFollowSymlinks", "ScanMonitoredFolders", "ConfirmFileDeletions", "UseDefaultCertPaths", "StartupRefresh", "FLReportDupeFiles",
 	"FilterFLShared", "FilterFLQueued", "FilterFLInversed", "FilterFLTop", "FilterFLPartialDupes", "FilterFLResetChange", "FilterSearchShared", "FilterSearchQueued", "FilterSearchInversed", "FilterSearchTop", "FilterSearchPartialDupes", "FilterSearchResetChange",
 	"SearchAschOnlyMan", "UseUploadBundles", "CloseMinimize", "LogIgnored", "UsersFilterIgnore", "NfoExternal", "SingleClickTray", "QueueShowFinished", "RemoveFinishedBundles", "LogCRCOk",
 	"FilterQueueInverse", "FilterQueueTop", "FilterQueueReset", "AlwaysCCPM", "OpenAutoSearch",
@@ -868,7 +868,6 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(MONITORING_MODE, MONITORING_DISABLED);
 #endif
 
-	setDefault(FINISHED_NO_HASH, true);
 	setDefault(MONITORING_DELAY, 30);
 	setDefault(DELAY_COUNT_MODE, DELAY_VOLUME);
 

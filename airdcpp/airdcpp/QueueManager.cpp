@@ -79,15 +79,15 @@ void QueueManager::shutdown() noexcept {
 	SearchManager::getInstance()->removeListener(this);
 	TimerManager::getInstance()->removeListener(this);
 	ClientManager::getInstance()->removeListener(this);
-	HashManager::getInstance()->removeListener(this);
 	ShareManager::getInstance()->removeListener(this);
 
 	if (SETTING(REMOVE_FINISHED_BUNDLES)){
 		WLock l(cs);
 		BundleList bl;
 		for (auto& b : bundleQueue.getBundles() | map_values) {
-			if (b->isFinished())
+			if (b->getStatus() >= Bundle::STATUS_FINISHED) {
 				bl.push_back(b);
+			}
 		}
 		for_each(bl.begin(), bl.end(), [=](BundlePtr& b) { bundleQueue.removeBundle(b); });
 	}
@@ -109,7 +109,6 @@ void QueueManager::shutdown() noexcept {
 void QueueManager::recheckBundle(QueueToken aBundleToken) noexcept {
 	QueueItemList ql;
 	BundlePtr b;
-	bool isFinished;
 
 	{
 		RLock l(cs);
@@ -118,7 +117,6 @@ void QueueManager::recheckBundle(QueueToken aBundleToken) noexcept {
 			return;
 		}
 
-		isFinished = b->isFinished();
 		copy(b->getQueueItems().begin(), b->getQueueItems().end(), back_inserter(ql));
 		copy(b->getFinishedFiles().begin(), b->getFinishedFiles().end(), back_inserter(ql));
 	}
@@ -206,8 +204,8 @@ void QueueManager::handleFailedRecheckItems(const QueueItemList& ql) noexcept {
 			bundleQueue.removeBundleItem(q, false);
 
 			q->unsetFlag(QueueItem::FLAG_MOVED);
-			q->unsetFlag(QueueItem::FLAG_FINISHED);
-			q->unsetFlag(QueueItem::FLAG_HASHED);
+			q->unsetFlag(QueueItem::FLAG_DOWNLOADED);
+
 			q->setBundle(nullptr);
 			q->setTimeFinished(0);
 
@@ -337,6 +335,7 @@ bool QueueManager::recheckFileImpl(const string& aPath, bool isBundleCheck, int6
 	ttFile.finalize();
 
 	int64_t pos = 0, failedBytes = 0;
+	bool segmentsDone = false;
 
 	{
 		WLock l(cs);
@@ -358,6 +357,7 @@ bool QueueManager::recheckFileImpl(const string& aPath, bool isBundleCheck, int6
 			pos += tt.getBlockSize();
 		});
 
+		segmentsDone = q->segmentsDone();
 	}
 
 	if (failedBytes > 0) {
@@ -369,9 +369,9 @@ bool QueueManager::recheckFileImpl(const string& aPath, bool isBundleCheck, int6
 		LogManager::getInstance()->message(q->getTarget() + ": " + STRING(ERROR_HASHING_CRC32), LogMessage::SEV_ERROR);
 	}
 
-	if (ttFile.getRoot() == tth && !q->isSet(QueueItem::FLAG_FINISHED)) {
+	if (ttFile.getRoot() == tth && !q->isSet(QueueItem::FLAG_DOWNLOADED)) {
 		q->setTimeFinished(GET_TIME());
-		q->setFlag(QueueItem::FLAG_FINISHED);
+		q->setFlag(QueueItem::FLAG_DOWNLOADED);
 
 		{
 			WLock l(cs);
@@ -394,7 +394,7 @@ bool QueueManager::recheckFileImpl(const string& aPath, bool isBundleCheck, int6
 	}
 
 	// we will also resume files that are added in the destination directory from other sources
-	if (!q->isFinished() && (q->isSet(QueueItem::FLAG_FINISHED) || q->getTarget() == checkTarget)) {
+	if (!segmentsDone && (q->isSet(QueueItem::FLAG_DOWNLOADED) || q->getTarget() == checkTarget)) {
 		try {
 			File::renameFile(q->getTarget(), q->getTempTarget());
 		} catch (const FileException& e) {
@@ -402,7 +402,7 @@ bool QueueManager::recheckFileImpl(const string& aPath, bool isBundleCheck, int6
 		}
 	}
 
-	if (q->isSet(QueueItem::FLAG_FINISHED) && !q->isFinished()) {
+	if (q->isSet(QueueItem::FLAG_MOVED) && !segmentsDone) {
 		return true;
 	}
 
@@ -571,7 +571,7 @@ string QueueManager::getListPath(const HintedUser& user) const noexcept {
 }
 
 bool QueueManager::replaceItem(QueueItemPtr& q, int64_t aSize, const TTHValue& aTTH) throw(FileException, QueueException) {
-	if(q->isFinished()) {
+	if (q->isDownloaded()) {
 		/* The target file doesn't exist, add our item. Also recheck the existance in case of finished files being moved on the same time. */
 		dcassert(q->getBundle());
 		if (!Util::fileExists(q->getTarget()) && q->getBundle() && q->isSet(QueueItem::FLAG_MOVED)) {
@@ -1175,7 +1175,7 @@ bool QueueManager::addSource(QueueItemPtr& qi, const HintedUser& aUser, Flags::M
 		throw QueueException(STRING(SOURCE_NO_ENCRYPTION));
 	}
 
-	if(qi->isFinished()) //no need to add source to finished item.
+	if (qi->isDownloaded()) //no need to add source to finished item.
 		throw QueueException(STRING(FILE_ALREADY_FINISHED) + ": " + Util::getFileName(qi->getTarget()));
 	
 	bool wantConnection = !qi->isPausedPrio();
@@ -1478,6 +1478,7 @@ void QueueManager::renameDownloadedFile(const string& source, const string& targ
 		AirUtil::fileEvent(target, true);
 
 	if (aQI && aQI->getBundle()) {
+		aQI->setFlag(QueueItem::FLAG_MOVED);
 		handleMovedBundleItem(aQI);
 	}
 }
@@ -1511,11 +1512,7 @@ void QueueManager::handleMovedBundleItem(QueueItemPtr& qi) noexcept {
 
 	{
 		RLock l (cs);
-		//flag this file as moved
-		auto s = find_if(b->getFinishedFiles(), [&qi](const QueueItemPtr& aQI) { return aQI->getTarget() == qi->getTarget(); });
-		if (s != b->getFinishedFiles().end()) {
-			qi->setFlag(QueueItem::FLAG_MOVED);
-		} else if (b->getFinishedFiles().empty() && b->getQueueItems().empty()) {
+		if (b->getFinishedFiles().empty() && b->getQueueItems().empty()) {
 			//the bundle was removed while the file was being moved?
 			return;
 		}
@@ -1532,7 +1529,7 @@ bool QueueManager::checkBundleFinished(BundlePtr& aBundle) noexcept {
 	{
 		RLock l (cs);
 		//check if there are queued or non-moved files remaining
-		if (!aBundle->allowHash()) 
+		if (!aBundle->filesCompleted())
 			return false;
 
 		// in order to avoid notifications about adding the file in share...
@@ -1571,8 +1568,33 @@ void QueueManager::shareBundle(BundlePtr aBundle, bool aSkipScan) noexcept {
 
 	if (!ShareManager::getInstance()->allowAddDir(aBundle->getTarget())) {
 		LogManager::getInstance()->message(STRING_F(NOT_IN_SHARED_DIR, aBundle->getTarget().c_str()), LogMessage::SEV_INFO);
-	} else {
-		hashBundle(aBundle);
+		return;
+	}
+
+	// Add the downloaded trees for all bundle file paths in hash database
+	QueueItemList finishedFiles;
+
+	{
+		RLock l(cs);
+		finishedFiles = aBundle->getFinishedFiles();
+	}
+
+
+	{
+		HashManager::HashPauser pauser;
+		for (const auto& q : finishedFiles) {
+			HashedFile fi(q->getTTH(), File::getLastModified(q->getTarget()), q->getSize());
+			try {
+				HashManager::getInstance()->addFile(q->getTarget(), fi);
+			} catch (...) {
+				//hash it...
+			}
+		}
+	}
+
+	ShareManager::getInstance()->shareBundle(aBundle);
+	if (aBundle->isFileBundle()) {
+		setBundleStatus(aBundle, Bundle::STATUS_SHARED);
 	}
 }
 
@@ -1591,155 +1613,6 @@ bool QueueManager::runCompletionHooks(BundlePtr& aBundle) noexcept {
 
 	setBundleStatus(aBundle, Bundle::STATUS_FINISHED);
 	return true;
-}
-
-void QueueManager::hashBundle(BundlePtr& aBundle) noexcept {
-	if(ShareManager::getInstance()->allowAddDir(aBundle->getTarget())) {
-		setBundleStatus(aBundle, Bundle::STATUS_HASHING);
-
-		QueueItemList hash;
-		QueueItemList removed;
-
-		{
-			RLock l(cs);
-			for (auto& qi: aBundle->getFinishedFiles()) {
-				if (ShareManager::getInstance()->checkSharedName(qi->getTarget(), Text::toLower(qi->getTarget()), false, true, qi->getSize()) && Util::fileExists(qi->getTarget())) {
-					qi->unsetFlag(QueueItem::FLAG_HASHED);
-					hash.push_back(qi);
-				} else {
-					removed.push_back(qi);
-				}
-			}
-		}
-
-		if (!removed.empty()) {
-			WLock l (cs);
-			for(auto& q: removed) {
-				//erase failed items
-				bundleQueue.removeBundleItem(q, false);
-				fileQueue.remove(q);
-			}
-		}
-
-		int64_t hashSize = aBundle->getSize();
-
-		{
-			HashManager::HashPauser pauser;
-			for(auto& q: hash) {
-				HashedFile fi(q->getTTH(), File::getLastModified(q->getTarget()), q->getSize());
-				if (SETTING(FINISHED_NO_HASH)) {
-					try {
-						if (HashManager::getInstance()->addFile(q->getTarget(), fi)) {
-							q->setFlag(QueueItem::FLAG_HASHED);
-							hashSize -= q->getSize();
-							continue;
-						}
-					} catch(...) { 
-						//hash it...
-					}
-				}
-
-				try {
-					// Schedule for hashing, it'll be added automatically later on...
-					if (!HashManager::getInstance()->checkTTH(Text::toLower(q->getTarget()), q->getTarget(), fi)) {
-						//..
-					} else {
-						//fine, it's there already..
-						q->setFlag(QueueItem::FLAG_HASHED);
-						hashSize -= q->getSize();
-					}
-				} catch(const Exception&) {
-					//...
-				}
-			}
-		}
-
-		if (hashSize > 0) {
-			LogManager::getInstance()->message(STRING_F(BUNDLE_ADDED_FOR_HASH, aBundle->getName() % Util::formatBytes(hashSize)), LogMessage::SEV_INFO);
-		} else {
-			//all files have been hashed already?
-			checkBundleHashed(aBundle);
-		}
-	} else if (!aBundle->getQueueItems().empty() && !aBundle->getQueueItems().front()->isSet(QueueItem::FLAG_PRIVATE)) {
-		//if (SETTING(ADD_FINISHED_INSTANTLY)) {
-			LogManager::getInstance()->message(STRING_F(NOT_IN_SHARED_DIR, aBundle->getTarget().c_str()), LogMessage::SEV_INFO);
-		//} else {
-		//	LogManager::getInstance()->message(CSTRING(INSTANT_SHARING_DISABLED), LogMessage::SEV_INFO);
-		//}
-	} else {
-		//removeFinishedBundle(aBundle);
-	}
-}
-
-void QueueManager::onFileHashed(const string& aPath, HashedFile& aFileInfo, bool aFailed) noexcept {
-	QueueItemPtr q = nullptr;
-
-	{
-		RLock l(cs);
-		q = fileQueue.findFile(aPath);
-	}
-
-	if (!q) {
-		if (!aFailed) {
-			ShareManager::getInstance()->onFileHashed(aPath, aFileInfo);
-		}
-
-		return;
-	}
-
-	BundlePtr b = q->getBundle();
-	if (!b)
-		return;
-
-
-	q->setFlag(QueueItem::FLAG_HASHED);
-	if (aFailed) {
-		setBundleStatus(b, Bundle::STATUS_HASH_FAILED);
-	} else if (b->getStatus() != Bundle::STATUS_HASHING && b->getStatus() != Bundle::STATUS_HASH_FAILED) {
-		// instant sharing disabled/the folder wasn't shared when the bundle finished
-		ShareManager::getInstance()->onFileHashed(aPath, aFileInfo);
-	}
-
-	checkBundleHashed(b);
-}
-
-void QueueManager::checkBundleHashed(BundlePtr& b) noexcept {
-	bool addToShare = false;
-
-	{
-		RLock l(cs);
-		if (!b->getQueueItems().empty() || !all_of(b->getFinishedFiles().begin(), b->getFinishedFiles().end(), Flags::IsSet(QueueItem::FLAG_HASHED)))
-			return;
-
-
-		//don't fire anything if nothing has been hashed (the folder has probably been removed...)
-		if (!b->getFinishedFiles().empty()) {
-			if (!b->getQueueItems().empty()) {
-				//new items have been added while it was being hashed
-				dcassert(b->getStatus() != Bundle::STATUS_HASHING);
-				return;
-			}
-
-			if (b->getStatus() == Bundle::STATUS_HASH_FAILED) {
-				LogManager::getInstance()->message(STRING_F(BUNDLE_HASH_FAILED, b->getTarget().c_str()), LogMessage::SEV_ERROR);
-				return;
-			} else if (b->getStatus() == Bundle::STATUS_HASHING) {
-				addToShare = true;
-			} else {
-				//instant sharing disabled/the folder wasn't shared when the bundle finished
-			}
-		}
-	}
-
-	if (addToShare) {
-		setBundleStatus(b, Bundle::STATUS_HASHED);
-
-		ShareManager::getInstance()->shareBundle(b);
-
-		if (b->isFileBundle()) {
-			setBundleStatus(b, Bundle::STATUS_SHARED);
-		}
-	}
 }
 
 void QueueManager::bundleDownloadFailed(BundlePtr& aBundle, const string& aError) {
@@ -1799,7 +1672,7 @@ void QueueManager::putDownload(Download* aDownload, bool aFinished, bool aNoAcce
 		return;
 	}
 
-	if (q->isSet(QueueItem::FLAG_FINISHED)) {
+	if (q->isSet(QueueItem::FLAG_DOWNLOADED)) {
 		// Trying to finish it twice? Hmm..
 		return;
 	}
@@ -1922,7 +1795,7 @@ void QueueManager::onFileDownloadCompleted(QueueItemPtr& aQI, Download* aDownloa
 	{
 		WLock l(cs);
 		aQI->addFinishedSegment(aDownload->getSegment());
-		wholeFileCompleted = aQI->isFinished();
+		wholeFileCompleted = aQI->segmentsDone();
 
 		dcdebug("Finish segment for %s (" I64_FMT ", " I64_FMT ")\n", aDownload->getToken().c_str(), aDownload->getSegment().getStart(), aDownload->getSegment().getEnd());
 
@@ -1934,7 +1807,7 @@ void QueueManager::onFileDownloadCompleted(QueueItemPtr& aQI, Download* aDownloa
 			}
 
 			aQI->setTimeFinished(GET_TIME());
-			aQI->setFlag(QueueItem::FLAG_FINISHED);
+			aQI->setFlag(QueueItem::FLAG_DOWNLOADED);
 			userQueue.removeQI(aQI);
 
 			if (!aQI->getBundle()) {
@@ -2025,7 +1898,7 @@ void QueueManager::removeQI(QueueItemPtr& q, bool aDeleteData /*false*/) noexcep
 			File::deleteFile(q->getTempTarget());
 		}
 
-		if(!q->isFinished()) {
+		if (!q->isDownloaded()) {
 			userQueue.removeQI(q);
 		}
 
@@ -2066,7 +1939,7 @@ void QueueManager::removeFileSource(QueueItemPtr& q, const UserPtr& aUser, Flags
 		if(!q->isSource(aUser))
 			return;
 
-		if(q->isFinished())
+		if (q->isDownloaded())
 			return;
 	
 		if(q->isSet(QueueItem::FLAG_USER_LIST)) {
@@ -2159,7 +2032,7 @@ void QueueManager::setBundlePriority(BundlePtr& aBundle, Priority p, bool aKeepA
 	{
 		WLock l(cs);
 
-		if (aBundle->isFinished())
+		if (aBundle->isDownloaded())
 			return;
 
 		bundleQueue.removeSearchPrio(aBundle);
@@ -2207,7 +2080,7 @@ void QueueManager::toggleBundleAutoPriority(QueueToken aBundleToken) noexcept {
 }
 
 void QueueManager::toggleBundleAutoPriority(BundlePtr& aBundle) noexcept {
-	if (aBundle->isFinished())
+	if (aBundle->isDownloaded())
 		return;
 
 	aBundle->setAutoPriority(!aBundle->getAutoPriority());
@@ -2235,7 +2108,7 @@ int QueueManager::removeFinishedBundles() noexcept {
 	{
 		RLock l(cs);
 		boost::algorithm::copy_if(bundleQueue.getBundles() | map_values, back_inserter(bundles), [](const BundlePtr& aBundle) {
-			return aBundle->isFinished() && !aBundle->isFailed();
+			return aBundle->getStatus() >= Bundle::STATUS_FINISHED;
 		});
 	}
 
@@ -2291,21 +2164,19 @@ void QueueManager::setQIPriority(QueueItemPtr& q, Priority p, bool aKeepAutoPrio
 		return;
 	}
 
-	{
+	if (q->getPriority() != p && !q->isDownloaded()) {
 		WLock l(cs);
-		if(q->getPriority() != p && !q->isFinished() ) {
-			if((q->isPausedPrio() && !b->isPausedPrio()) || (p == Priority::HIGHEST && b->getPriority() != Priority::PAUSED)) {
-				// Problem, we have to request connections to all these users...
-				q->getOnlineUsers(getConn);
-			}
-
-			running = q->isRunning();
-
-			if (!aKeepAutoPrio)
-				q->setAutoPriority(false);
-
-			userQueue.setQIPriority(q, p);
+		if((q->isPausedPrio() && !b->isPausedPrio()) || (p == Priority::HIGHEST && b->getPriority() != Priority::PAUSED)) {
+			// Problem, we have to request connections to all these users...
+			q->getOnlineUsers(getConn);
 		}
+
+		running = q->isRunning();
+
+		if (!aKeepAutoPrio)
+			q->setAutoPriority(false);
+
+		userQueue.setQIPriority(q, p);
 	}
 
 	fire(QueueManagerListener::ItemPriority(), q);
@@ -2499,7 +2370,6 @@ void QueueManager::loadQueue(function<void (float)> progressF) noexcept {
 	TimerManager::getInstance()->addListener(this); 
 	SearchManager::getInstance()->addListener(this);
 	ClientManager::getInstance()->addListener(this);
-	HashManager::getInstance()->addListener(this);
 	ShareManager::getInstance()->addListener(this);
 }
 
@@ -2710,7 +2580,7 @@ void QueueLoader::startTag(const string& name, StringPairList& attribs, bool sim
 				return;
 
 			WLock l(qm->cs);
-			auto ret = qm->fileQueue.add(target, size, QueueItem::FLAG_FINISHED | QueueItem::FLAG_MOVED, Priority::DEFAULT, Util::emptyString, added, TTHValue(tth));
+			auto ret = qm->fileQueue.add(target, size, QueueItem::FLAG_DOWNLOADED | QueueItem::FLAG_MOVED, Priority::DEFAULT, Util::emptyString, added, TTHValue(tth));
 			if (!ret.second) {
 				return;
 			}
@@ -2789,11 +2659,11 @@ void QueueManager::on(SearchManagerListener::SR, const SearchResultPtr& sr) noex
 
 			// Size compare to avoid popular spoof
 			if((SETTING(AUTO_ADD_SOURCE) || (q->getBundle()->getLastSearch() != 0 && static_cast<uint64_t>(q->getBundle()->getLastSearch() + 15*60*1000) > GET_TICK())) && q->getSize() == sr->getSize() && !q->isSource(sr->getUser())) {
-				if (q->getBundle()->isFinished()) {
+				if (q->getBundle()->isDownloaded()) {
 					continue;
 				}
 
-				if(q->isFinished() && q->getBundle()->isSource(sr->getUser())) {
+				if (q->isDownloaded() && q->getBundle()->isSource(sr->getUser())) {
 					continue;
 				}
 
@@ -2956,7 +2826,7 @@ void QueueManager::calculatePriorities(uint64_t aTick) noexcept {
 
 		// bundles
 		for (const auto& b : bundleQueue.getBundles() | map_values) {
-			if (b->isFinished()) {
+			if (b->isDownloaded()) {
 				continue;
 			}
 
@@ -3006,7 +2876,7 @@ void QueueManager::checkResumeBundles() noexcept {
 	{
 		RLock l(cs);
 		for (const auto& b : bundleQueue.getBundles() | map_values) {
-			if (b->isFinished()) {
+			if (b->isDownloaded()) {
 				continue;
 			}
 
@@ -3147,14 +3017,16 @@ void QueueManager::calculateBundlePriorities(bool verbose) noexcept {
 	{
 		RLock l (cs);
 		for (auto& b: bundleQueue.getBundles() | map_values) {
-			if (!b->isFinished()) {
-				if (b->getAutoPriority()) {
-					bundleSpeedSourceMap.emplace(b, b->getPrioInfo());
-				}
+			if (b->isDownloaded()) {
+				continue;
+			}
 
-				if (SETTING(QI_AUTOPRIO)) {
-					qiMaps.push_back(b->getQIBalanceMaps());
-				}
+			if (b->getAutoPriority()) {
+				bundleSpeedSourceMap.emplace(b, b->getPrioInfo());
+			}
+
+			if (SETTING(QI_AUTOPRIO)) {
+				qiMaps.push_back(b->getQIBalanceMaps());
 			}
 		}
 	}
@@ -3224,8 +3096,9 @@ bool QueueManager::handlePartialResult(const HintedUser& aUser, const TTHValue& 
 
 		// don't add sources to finished files
 		// this could happen when "Keep finished files in queue" is enabled
-		if(qi->isFinished())
+		if (qi->isDownloaded()) {
 			return false;
+		}
 	}
 
 	// Check min size
@@ -3324,7 +3197,7 @@ bool QueueManager::handlePartialSearch(const UserPtr& aUser, const TTHValue& tth
 			_bundle = b->getStringToken();
 
 			//should we notify the other user about finished item?
-			_reply = !b->isFinished() && !b->isFinishedNotified(aUser);
+			_reply = !b->isDownloaded() && !b->isFinishedNotified(aUser);
 
 			//do we have finished files that the other guy could download?
 			_add = !b->getFinishedFiles().empty();
@@ -3360,15 +3233,21 @@ void QueueManager::getBundlePaths(OrderedStringSet& retBundles) const noexcept {
 	}
 }
 
-void QueueManager::checkRefreshPaths(OrderedStringSet& retBundles_, RefreshPathList& refreshPaths_) noexcept {
-	BundleList hash;
+void QueueManager::checkRefreshPaths(OrderedStringSet& blockedBundlePaths_, RefreshPathList& refreshPaths_) noexcept {
+	BundleList failedBundles;
 	{
 		RLock l(cs);
-		for (auto& b: bundleQueue.getBundles() | map_values) {
-			if (b->isFileBundle() || (b->getStatus() >= Bundle::STATUS_HASHING && b->getStatus() != Bundle::STATUS_HASH_FAILED))
+		for (const auto& b: bundleQueue.getBundles() | map_values) {
+			if (b->isFileBundle()) {
 				continue;
+			}
 
-			//check the path just to avoid hashing/scanning bundles from dirs that aren't being refreshed
+			// Finished bundle that wasn't shared earlier?
+			if (b->getStatus() == Bundle::STATUS_FINISHED) {
+				continue;
+			}
+
+			// check the path just to avoid running validation hooks for bundles that aren't being refreshed
 
 			{
 				// Find parent refresh directories of this bundle path
@@ -3384,15 +3263,15 @@ void QueueManager::checkRefreshPaths(OrderedStringSet& retBundles_, RefreshPathL
 				}
 			}
 
-			if(b->isFinished() && (b->isFailed() || b->allowHash())) {
-				hash.push_back(b);
+			if (b->getHookError()) {
+				failedBundles.push_back(b);
 			}
 
-			retBundles_.insert(Text::toLower(b->getTarget()));
+			blockedBundlePaths_.insert(Text::toLower(b->getTarget()));
 		}
 	}
 
-	for (auto& b: hash) {
+	for (auto& b: failedBundles) {
 		shareBundle(b, false);
 	}
 }
@@ -3413,7 +3292,7 @@ void QueueManager::onPathRefreshed(const string& aPath, bool aStartup) noexcept{
 	{
 		RLock l(cs);
 		for (auto& b : bundleQueue.getBundles() | map_values) {
-			if (AirUtil::isParentOrExactLocal(aPath, b->getTarget()) && (b->getStatus() == Bundle::STATUS_FINISHED || b->getStatus() == Bundle::STATUS_HASHED)) {
+			if (AirUtil::isParentOrExactLocal(aPath, b->getTarget()) && b->getStatus() == Bundle::STATUS_FINISHED) {
 				bundles.push_back(b);
 			}
 		}
@@ -3459,7 +3338,7 @@ bool QueueManager::isChunkDownloaded(const TTHValue& tth, int64_t startPos, int6
 		return false;
 
 	fileSize_ = qi->getSize();
-	target = qi->isFinished() ? qi->getTarget() : qi->getTempTarget();
+	target = qi->isSet(QueueItem::FLAG_MOVED) ? qi->getTarget() : qi->getTempTarget();
 
 	return qi->isChunkDownloaded(startPos, bytes);
 }
@@ -3702,7 +3581,7 @@ void QueueManager::removeBundle(BundlePtr& aBundle, bool aRemoveFinishedFiles) n
 
 	{
 		WLock l(cs);
-		isFinished = aBundle->isFinished();
+		isFinished = aBundle->getStatus() >= Bundle::STATUS_FINISHED;
 
 		for (auto& aSource : aBundle->getSources())
 			sources.push_back(aSource.getUser().user);
@@ -3725,7 +3604,7 @@ void QueueManager::removeBundle(BundlePtr& aBundle, bool aRemoveFinishedFiles) n
 				deleteFiles.push_back(qi->getTempTarget());
 			}
 
-			if (!qi->isFinished()) {
+			if (!qi->isDownloaded()) {
 				userQueue.removeQI(qi);
 			}
 
@@ -3816,7 +3695,7 @@ bool QueueManager::checkPBDReply(HintedUser& aUser, const TTHValue& aTTH, string
 		_bundleToken = bundle->getStringToken();
 		_add = !bundle->getFinishedFiles().empty();
 
-		if (!bundle->isFinished()) {
+		if (!bundle->isDownloaded()) {
 			bundle->addFinishedNotify(aUser, remoteBundle);
 			_notify = true;
 		}
@@ -3831,7 +3710,7 @@ void QueueManager::addFinishedNotify(HintedUser& aUser, const TTHValue& aTTH, co
 	if (bundle) {
 		WLock l(cs);
 		//LogManager::getInstance()->message("addFinishedNotify: BUNDLE FOUND");
-		if (!bundle->isFinished()) {
+		if (!bundle->isDownloaded()) {
 			bundle->addFinishedNotify(aUser, remoteBundle);
 		}
 	}

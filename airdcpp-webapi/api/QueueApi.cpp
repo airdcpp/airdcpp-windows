@@ -254,7 +254,7 @@ namespace webserver {
 
 	api_return QueueApi::handleShareBundle(ApiRequest& aRequest) {
 		auto b = getBundle(aRequest);
-		if (!b->isFinished()) {
+		if (b->getStatus() <= Bundle::STATUS_HOOK_VALIDATION) {
 			aRequest.setResponseErrorStr("This action can only be performed for finished bundles");
 			return websocketpp::http::status_code::bad_request;
 		}

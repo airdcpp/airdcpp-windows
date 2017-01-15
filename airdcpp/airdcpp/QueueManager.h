@@ -21,7 +21,6 @@
 
 #include "ClientManagerListener.h"
 #include "DownloadManagerListener.h"
-#include "HashManagerListener.h"
 #include "QueueManagerListener.h"
 #include "SearchManagerListener.h"
 #include "ShareManagerListener.h"
@@ -58,12 +57,11 @@ namespace dcpp {
 
 namespace bimaps = boost::bimaps;
 
-class HashedFile;
 class UserConnection;
 class QueueLoader;
 
 class QueueManager : public Singleton<QueueManager>, public Speaker<QueueManagerListener>, private TimerManagerListener, 
-	private SearchManagerListener, private ClientManagerListener, private HashManagerListener, private ShareManagerListener
+	private SearchManagerListener, private ClientManagerListener, private ShareManagerListener
 {
 public:
 	ActionHook<const BundlePtr> bundleCompletionHook;
@@ -160,7 +158,6 @@ public:
 	// Set the maximum number of segments for the specified target
 	void setSegments(const string& aTarget, uint8_t aSegments) noexcept;
 
-	bool isFinished(const QueueItemPtr& qi) const noexcept { RLock l(cs); return qi->isFinished(); }
 	bool isWaiting(const QueueItemPtr& qi) const noexcept { RLock l(cs); return qi->isWaiting(); }
 
 	uint64_t getDownloadedBytes(const QueueItemPtr& qi) const noexcept { RLock l(cs); return qi->getDownloadedBytes(); }
@@ -479,9 +476,6 @@ private:
 	void pickMatch(QueueItemPtr qi) noexcept;
 	void matchBundle(QueueItemPtr& aQI, const SearchResultPtr& aResult) noexcept;
 
-	void onFileHashed(const string& aPath, HashedFile& aFileInfo, bool failed) noexcept;
-	void hashBundle(BundlePtr& aBundle) noexcept;
-	void checkBundleHashed(BundlePtr& aBundle) noexcept;
 	void setBundleStatus(BundlePtr aBundle, Bundle::Status newStatus) noexcept;
 
 	/* Returns true if an item can be replaces */
@@ -517,10 +511,6 @@ private:
 	
 	// SearchManagerListener
 	void on(SearchManagerListener::SR, const SearchResultPtr&) noexcept;
-	
-	// HashManagerListener
-	void on(HashManagerListener::FileHashed, const string& aPath, HashedFile& fi) noexcept { onFileHashed(aPath, fi, false); }
-	void on(HashManagerListener::FileFailed, const string& aPath, HashedFile& fi) noexcept { onFileHashed(aPath, fi, true); }
 
 	// ClientManagerListener
 	void on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool wasOffline) noexcept;
