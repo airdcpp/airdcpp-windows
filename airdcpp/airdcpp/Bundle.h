@@ -55,7 +55,7 @@ public:
 		STATUS_DOWNLOADED, // no queued files
 		STATUS_HOOK_VALIDATION, // the bundle is being validated by the completion hooks
 		STATUS_HOOK_ERROR, // hook validation failed (see the error pointer for more information)
-		STATUS_FINISHED, // no validation errors, ready for sharing
+		STATUS_COMPLETED, // no validation errors, ready for sharing
 		STATUS_SHARED
 	};
 
@@ -175,11 +175,17 @@ public:
 	void removeFinishedItem(QueueItemPtr& qi) noexcept;
 	void finishBundle() noexcept;
 
+	// All files have been downloaded and moved to the final destination
 	// Unsafe
 	bool filesCompleted() const noexcept;
 
+	// All bundles files have finished downloading
 	// Safe
 	bool isDownloaded() const noexcept;
+
+	// All bundles files have finished downloading and all validation hooks have completed
+	// Safe
+	bool isCompleted() const noexcept;
 
 	void clearFinishedNotifications(FinishedNotifyList& fnl) noexcept;
 	bool isFinishedNotified(const UserPtr& aUser) const noexcept;

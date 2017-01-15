@@ -118,9 +118,9 @@ public:
 		return false;
 	}
 
-	// Return all finished non-failed bundles
+	// Return all completed (verified) bundles
 	// Returns the number of bundles that were removed
-	int removeFinishedBundles() noexcept;
+	int removeCompletedBundles() noexcept;
 
 	// Remove source from the specified file
 	void removeFileSource(const string& aTarget, const UserPtr& aUser, Flags::MaskType reason, bool removeConn = true) noexcept;

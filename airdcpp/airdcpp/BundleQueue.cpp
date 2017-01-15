@@ -44,7 +44,7 @@ void BundleQueue::addBundle(BundlePtr& aBundle) noexcept {
 	bundles[aBundle->getToken()] = aBundle;
 
 	if (aBundle->filesCompleted()) {
-		aBundle->setStatus(Bundle::STATUS_FINISHED);
+		aBundle->setStatus(Bundle::STATUS_COMPLETED);
 		return;
 	}
 

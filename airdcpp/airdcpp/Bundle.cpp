@@ -108,7 +108,7 @@ string Bundle::getStatusString() const noexcept {
 		case Bundle::STATUS_HOOK_VALIDATION: return STRING(VALIDATING_CONTENT);
 		case Bundle::STATUS_DOWNLOAD_ERROR:
 		case Bundle::STATUS_HOOK_ERROR: return getError();
-		case Bundle::STATUS_FINISHED: return STRING(FINISHED);
+		case Bundle::STATUS_COMPLETED: return STRING(FINISHED);
 		case Bundle::STATUS_SHARED: return STRING(SHARED);
 		default: return Util::emptyString;
 	}
@@ -134,6 +134,10 @@ bool Bundle::filesCompleted() const noexcept {
 
 bool Bundle::isDownloaded() const noexcept { 
 	return status >= STATUS_DOWNLOADED; 
+}
+
+bool Bundle::isCompleted() const noexcept {
+	return status >= STATUS_COMPLETED;
 }
 
 void Bundle::setDownloadedBytes(int64_t aSize) noexcept {

@@ -149,7 +149,7 @@ namespace webserver {
 			case Bundle::STATUS_DOWNLOAD_ERROR: return "download_error";
 			case Bundle::STATUS_HOOK_VALIDATION: return "completion_validation_running";
 			case Bundle::STATUS_HOOK_ERROR: return "completion_validation_error";
-			case Bundle::STATUS_FINISHED: return "completed";
+			case Bundle::STATUS_COMPLETED: return "completed";
 			case Bundle::STATUS_SHARED: return "shared";
 		}
 
@@ -171,7 +171,7 @@ namespace webserver {
 				{ "id", formatStatusId(aBundle) },
 				{ "failed", aBundle->isFailed() },
 				{ "downloaded", aBundle->isDownloaded() },
-				{ "completed", aBundle->getStatus() >= Bundle::STATUS_FINISHED },
+				{ "completed", aBundle->isCompleted() },
 				{ "str", aBundle->getStatusString() },
 				{ "hook_error", Serializer::serializeActionHookError(aBundle->getHookError()) }
 			};

@@ -299,7 +299,7 @@ void AutoSearchManager::onBundleError(const void* aSearch, const string& aError,
 }
 
 void AutoSearchManager::on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept {
-	if (aBundle->getStatus() == Bundle::STATUS_FINISHED) {
+	if (aBundle->isCompleted()) {
 		onRemoveBundle(aBundle, true);
 		return;
 	}

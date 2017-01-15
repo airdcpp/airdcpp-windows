@@ -59,7 +59,7 @@ namespace webserver {
 
 
 		METHOD_HANDLER("bundles", Access::QUEUE_VIEW, ApiRequest::METHOD_GET, (NUM_PARAM, NUM_PARAM), false, QueueApi::handleGetBundles);
-		METHOD_HANDLER("bundles", Access::QUEUE_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("remove_finished")), false, QueueApi::handleRemoveFinishedBundles);
+		METHOD_HANDLER("bundles", Access::QUEUE_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("remove_completed")), false, QueueApi::handleRemoveCompletedBundles);
 		METHOD_HANDLER("bundles", Access::QUEUE_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("priority")), true, QueueApi::handleBundlePriorities);
 
 		METHOD_HANDLER("bundle", Access::DOWNLOAD, ApiRequest::METHOD_POST, (EXACT_PARAM("file")), true, QueueApi::handleAddFileBundle);
@@ -147,8 +147,8 @@ namespace webserver {
 		return websocketpp::http::status_code::ok;
 	}
 
-	api_return QueueApi::handleRemoveFinishedBundles(ApiRequest& aRequest) {
-		auto removed = QueueManager::getInstance()->removeFinishedBundles();
+	api_return QueueApi::handleRemoveCompletedBundles(ApiRequest& aRequest) {
+		auto removed = QueueManager::getInstance()->removeCompletedBundles();
 
 		aRequest.setResponseBody({
 			{ "count", removed }
@@ -254,12 +254,12 @@ namespace webserver {
 
 	api_return QueueApi::handleShareBundle(ApiRequest& aRequest) {
 		auto b = getBundle(aRequest);
-		if (b->getStatus() <= Bundle::STATUS_HOOK_VALIDATION) {
-			aRequest.setResponseErrorStr("This action can only be performed for finished bundles");
-			return websocketpp::http::status_code::bad_request;
+		if (b->getStatus() != Bundle::STATUS_HOOK_VALIDATION) {
+			aRequest.setResponseErrorStr("This action can only be performed for bundles that have failed content validation");
+			return websocketpp::http::status_code::precondition_failed;
 		}
 
-		auto skipScan = JsonUtil::getOptionalFieldDefault<bool>("skip_scan", aRequest.getRequestBody(), false);
+		auto skipScan = JsonUtil::getOptionalFieldDefault<bool>("skip_validation", aRequest.getRequestBody(), false);
 		QueueManager::getInstance()->shareBundle(b, skipScan);
 		return websocketpp::http::status_code::no_content;
 	}

@@ -85,7 +85,7 @@ void QueueManager::shutdown() noexcept {
 		WLock l(cs);
 		BundleList bl;
 		for (auto& b : bundleQueue.getBundles() | map_values) {
-			if (b->getStatus() >= Bundle::STATUS_FINISHED) {
+			if (b->isCompleted()) {
 				bl.push_back(b);
 			}
 		}
@@ -1564,7 +1564,7 @@ void QueueManager::shareBundle(BundlePtr aBundle, bool aSkipScan) noexcept {
 		return;
 	}
 
-	setBundleStatus(aBundle, Bundle::STATUS_FINISHED);
+	setBundleStatus(aBundle, Bundle::STATUS_COMPLETED);
 
 	if (!ShareManager::getInstance()->allowAddDir(aBundle->getTarget())) {
 		LogManager::getInstance()->message(STRING_F(NOT_IN_SHARED_DIR, aBundle->getTarget().c_str()), LogMessage::SEV_INFO);
@@ -1611,7 +1611,7 @@ bool QueueManager::runCompletionHooks(BundlePtr& aBundle) noexcept {
 		}
 	}
 
-	setBundleStatus(aBundle, Bundle::STATUS_FINISHED);
+	setBundleStatus(aBundle, Bundle::STATUS_COMPLETED);
 	return true;
 }
 
@@ -2103,12 +2103,12 @@ void QueueManager::toggleBundleAutoPriority(BundlePtr& aBundle) noexcept {
 	aBundle->setDirty();
 }
 
-int QueueManager::removeFinishedBundles() noexcept {
+int QueueManager::removeCompletedBundles() noexcept {
 	BundleList bundles;
 	{
 		RLock l(cs);
 		boost::algorithm::copy_if(bundleQueue.getBundles() | map_values, back_inserter(bundles), [](const BundlePtr& aBundle) {
-			return aBundle->getStatus() >= Bundle::STATUS_FINISHED;
+			return aBundle->isCompleted();
 		});
 	}
 
@@ -3242,8 +3242,8 @@ void QueueManager::checkRefreshPaths(OrderedStringSet& blockedBundlePaths_, Refr
 				continue;
 			}
 
-			// Finished bundle that wasn't shared earlier?
-			if (b->getStatus() == Bundle::STATUS_FINISHED) {
+			if (b->isCompleted()) {
+				// Valid for sharing
 				continue;
 			}
 
@@ -3292,7 +3292,7 @@ void QueueManager::onPathRefreshed(const string& aPath, bool aStartup) noexcept{
 	{
 		RLock l(cs);
 		for (auto& b : bundleQueue.getBundles() | map_values) {
-			if (AirUtil::isParentOrExactLocal(aPath, b->getTarget()) && b->getStatus() == Bundle::STATUS_FINISHED) {
+			if (b->isCompleted() && AirUtil::isParentOrExactLocal(aPath, b->getTarget())) {
 				bundles.push_back(b);
 			}
 		}
@@ -3577,11 +3577,11 @@ void QueueManager::removeBundle(BundlePtr& aBundle, bool aRemoveFinishedFiles) n
 	DownloadManager::getInstance()->disconnectBundle(aBundle);
 	fire(QueueManagerListener::BundleRemoved(), aBundle);
 
-	bool isFinished = false;
+	bool isCompleted = false;
 
 	{
 		WLock l(cs);
-		isFinished = aBundle->getStatus() >= Bundle::STATUS_FINISHED;
+		isCompleted = aBundle->isCompleted();
 
 		for (auto& aSource : aBundle->getSources())
 			sources.push_back(aSource.getUser().user);
@@ -3620,11 +3620,11 @@ void QueueManager::removeBundle(BundlePtr& aBundle, bool aRemoveFinishedFiles) n
 
 	// An empty directory should be deleted even if finished files are not being deleted (directories are created even for temp files)
 	// Avoid disk access when cleaning up finished bundles
-	if (!aBundle->isFileBundle() && (aRemoveFinishedFiles || !isFinished)) {
+	if (!aBundle->isFileBundle()) {
 		AirUtil::removeDirectoryIfEmpty(aBundle->getTarget(), 10, !aRemoveFinishedFiles);
 	}
 
-	if (!isFinished) {
+	if (!isCompleted) {
 		LogManager::getInstance()->message(STRING_F(BUNDLE_X_REMOVED, aBundle->getName()), LogMessage::SEV_INFO);
 	}
 

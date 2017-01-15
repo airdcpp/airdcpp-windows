@@ -1037,12 +1037,12 @@ void QueueFrame::handleRecheckFiles(QueueItemList ql) {
 	});
 }
 
-void QueueFrame::handleRemoveBundles(BundleList bundles, bool removeFinished, bool finishedOnly) {
+void QueueFrame::handleRemoveBundles(BundleList bundles, bool removeFinished, bool aCompletedOnly) {
 	if (bundles.empty())
 		return;
 
 	bool allFinished = all_of(bundles.begin(), bundles.end(), [](const BundlePtr& b) { return b->isDownloaded(); });
-	if (bundles.size() == 1 && !finishedOnly) {
+	if (bundles.size() == 1 && !aCompletedOnly) {
 		if (removeFinished) {
 			if (!WinUtil::showQuestionBox(TSTRING_F(CONFIRM_REMOVE_DIR_FINISHED, Text::toT(bundles.front()->getName())), MB_ICONQUESTION)) {
 				return;
@@ -1050,7 +1050,7 @@ void QueueFrame::handleRemoveBundles(BundleList bundles, bool removeFinished, bo
 		} else if (!allFinished && !WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_QUEUE_REMOVAL, TSTRING_F(CONFIRM_REMOVE_DIR_BUNDLE, Text::toT(bundles.front()->getName())))) {
 			return;
 		}
-	} else if(!finishedOnly) {
+	} else if(!aCompletedOnly) {
 		if (removeFinished) {
 			if (!WinUtil::showQuestionBox(TSTRING_F(CONFIRM_REMOVE_DIR_FINISHED_MULTIPLE, bundles.size()), MB_ICONQUESTION)) {
 				return;
@@ -1062,8 +1062,9 @@ void QueueFrame::handleRemoveBundles(BundleList bundles, bool removeFinished, bo
 
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		for (auto b : bundles) {
-			if (!finishedOnly || b->getStatus() >= Bundle::STATUS_FINISHED)
+			if (!aCompletedOnly || b->isCompleted()) {
 				QueueManager::getInstance()->removeBundle(b, removeFinished);
+			}
 		}
 	});
 }
@@ -1837,7 +1838,7 @@ COLORREF QueueFrame::getStatusColor(uint8_t status) {
 		case Bundle::STATUS_NEW:
 		case Bundle::STATUS_QUEUED:
 		case Bundle::STATUS_DOWNLOADED: return SETTING(DOWNLOAD_BAR_COLOR);
-		case Bundle::STATUS_FINISHED:
+		case Bundle::STATUS_COMPLETED:
 		case Bundle::STATUS_SHARED: return SETTING(COLOR_STATUS_SHARED);
 		default: return SETTING(DOWNLOAD_BAR_COLOR);
 	}
