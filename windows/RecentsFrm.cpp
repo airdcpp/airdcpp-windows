@@ -116,14 +116,29 @@ LRESULT RecentsFrame::onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lP
 
 void RecentsFrame::updateList() {
 	ctrlList.list.SetRedraw(FALSE);
+	ctrlList.list.DeleteAllItems();
 	for (auto& i : itemInfos | map_values) {
+		if (!show(i.get()))
+			continue;
 		addEntry(i.get());
 	}
 	ctrlList.list.SetRedraw(TRUE);
 }
 
+bool RecentsFrame::show(const ItemInfo* aItem) {
+
+	auto filterNumericF = [&](int) -> double {
+		return 0;
+	};
+
+	auto filterInfo = ctrlList.filter.prepare([this, aItem](int column) { return Text::fromT(aItem->getText(column)); }, filterNumericF);
+
+	return ctrlList.filter.empty() || ctrlList.filter.match(filterInfo);
+
+}
+
 void RecentsFrame::addEntry(ItemInfo* ii) {
-	ctrlList.list.insertItem(ii, ii->getImageIndex());
+	ctrlList.list.insertItem(ctrlList.list.getSortPos(ii), ii, ii->getImageIndex());
 }
 
 LRESULT RecentsFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bHandled*/) {

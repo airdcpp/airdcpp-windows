@@ -108,6 +108,7 @@ private:
 	
 	void updateList();
 	void addEntry(ItemInfo* ii);
+	bool show(const ItemInfo* aItem);
 
 	CImageList listImages;
 
