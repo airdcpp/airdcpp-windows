@@ -1838,7 +1838,7 @@ COLORREF QueueFrame::getStatusColor(uint8_t status) {
 		case Bundle::STATUS_NEW:
 		case Bundle::STATUS_QUEUED:
 		case Bundle::STATUS_DOWNLOADED: return SETTING(DOWNLOAD_BAR_COLOR);
-		case Bundle::STATUS_COMPLETED:
+		case Bundle::STATUS_COMPLETED: SETTING(COLOR_STATUS_FINISHED);
 		case Bundle::STATUS_SHARED: return SETTING(COLOR_STATUS_SHARED);
 		default: return SETTING(DOWNLOAD_BAR_COLOR);
 	}
