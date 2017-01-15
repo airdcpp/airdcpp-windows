@@ -44,6 +44,10 @@ RecentManager::~RecentManager() {
 }
 
 void RecentManager::clearRecents() noexcept {
+	for (auto r : recents) {
+		fire(RecentManagerListener::RecentRemoved(), r);
+	}
+
 	{
 		WLock l(cs);
 		recents.clear();

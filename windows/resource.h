@@ -78,6 +78,7 @@
 #define IDD_LINE2                       208
 #define IDD_ADVANCEDPAGE                209
 #define IDD_UPLOADPAGE                  210
+#define IDC_RECENTS_LIST                211
 #define IDD_SPEEDPAGE                   212
 #define IDD_APPEARANCEPAGE              213
 #define IDR_FLATTAB                     214
