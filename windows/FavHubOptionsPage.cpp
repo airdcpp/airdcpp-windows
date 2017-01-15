@@ -146,7 +146,7 @@ bool FavHubOptionsPage::write() {
 	GetDlgItemText(IDC_SERVER6, buf, 512);
 	entry->get(HubSettings::UserIp6) = Text::fromT(buf);
 	
-	//FavoriteManager::getInstance()->save();
+	FavoriteManager::getInstance()->setDirty();
 
 	return true;
 }

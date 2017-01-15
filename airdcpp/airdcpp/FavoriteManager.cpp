@@ -47,6 +47,11 @@ FavoriteManager::~FavoriteManager() {
 	ShareManager::getInstance()->removeListener(this);
 }
 
+void FavoriteManager::shutdown() noexcept {
+	TimerManager::getInstance()->removeListener(this);
+	save();
+}
+
 UserCommand FavoriteManager::addUserCommand(int type, int ctx, Flags::MaskType flags, const string& name, const string& command, const string& to, const string& hub) noexcept {
 	
 	// The following management is to protect users against malicious hubs or clients.
@@ -99,7 +104,7 @@ UserCommand FavoriteManager::addUserCommand(int type, int ctx, Flags::MaskType f
 	}
 
 	if(!cmd.isSet(UserCommand::FLAG_NOSAVE)) 
-		save();
+		setDirty();
 
 	return cmd;
 }
@@ -141,7 +146,7 @@ void FavoriteManager::updateUserCommand(const UserCommand& uc) noexcept {
 	}
 
 	if(!nosave)
-		save();
+		setDirty();
 }
 
 int FavoriteManager::findUserCommand(const string& aName, const string& aUrl) noexcept {
@@ -168,7 +173,7 @@ void FavoriteManager::removeUserCommand(int cid) noexcept {
 	}
 
 	if(!nosave)
-		save();
+		setDirty();
 }
 void FavoriteManager::removeUserCommand(const string& srv) noexcept {
 	WLock l(cs);
@@ -267,7 +272,7 @@ void FavoriteManager::removeFavoriteUser(const UserPtr& aUser) noexcept {
 		}
 	}
 
-	save();
+	setDirty();
 }
 
 optional<FavoriteUser> FavoriteManager::getFavoriteUser(const UserPtr &aUser) const noexcept {
@@ -299,7 +304,7 @@ bool FavoriteManager::setFavoriteDir(const string& aPath, const string& aGroupNa
 		favoriteDirectories[aPath] = aGroupName;
 	}
 
-	save();
+	setDirty();
 
 	fire(FavoriteManagerListener::FavoriteDirectoriesUpdated());
 	return true;
@@ -315,7 +320,7 @@ bool FavoriteManager::removeFavoriteDir(const string& aPath) noexcept {
 		favoriteDirectories.erase(aPath);
 	}
 
-	save();
+	setDirty();
 
 	fire(FavoriteManagerListener::FavoriteDirectoriesUpdated());
 	return true;
@@ -328,7 +333,7 @@ void FavoriteManager::setFavoriteDirs(const FavoriteDirectoryMap& dirs) noexcept
 	}
 
 	fire(FavoriteManagerListener::FavoriteDirectoriesUpdated());
-	save();
+	setDirty();
 }
 
 StringPair FavoriteManager::getFavoriteDirectory(const string& aPath) const noexcept {
@@ -374,7 +379,7 @@ bool FavoriteManager::addFavoriteHub(const FavoriteHubEntryPtr& aEntry) noexcept
 	setConnectState(aEntry);
 
 	fire(FavoriteManagerListener::FavoriteHubAdded(), aEntry);
-	save();
+	setDirty();
 	return true;
 }
 
@@ -382,7 +387,7 @@ void FavoriteManager::onFavoriteHubUpdated(const FavoriteHubEntryPtr& aEntry) no
 	// Update the connect state in case the address was changed
 	setConnectState(aEntry);
 
-	save();
+	setDirty();
 	fire(FavoriteManagerListener::FavoriteHubUpdated(), aEntry);
 }
 
@@ -420,7 +425,7 @@ bool FavoriteManager::removeFavoriteHub(ProfileToken aToken) noexcept {
 	}
 
 	fire(FavoriteManagerListener::FavoriteHubRemoved(), entry);
-	save();
+	setDirty();
 	return true;
 }
 
@@ -472,8 +477,11 @@ bool FavoriteManager::hasActiveHubs() const noexcept {
 // FAVORITE HUBS END
 
 void FavoriteManager::save() noexcept {
-	if (loading)
+	if (!xmlDirty)
 		return;
+
+	xmlDirty = false;
+	lastXmlSave = GET_TICK();
 
 	try {
 		SimpleXML xml;
@@ -494,9 +502,12 @@ void FavoriteManager::save() noexcept {
 
 
 		SettingsManager::saveSettingFile(xml, CONFIG_DIR, CONFIG_FAV_NAME);
+
 	} catch(const Exception& e) {
+		xmlDirty = true; //Oops, something went wrong, xml was not saved.
 		dcdebug("FavoriteManager::save: %s\n", e.getError().c_str());
 	}
+
 }
 
 void FavoriteManager::saveUserCommands(SimpleXML& aXml) const noexcept {
@@ -629,7 +640,6 @@ void FavoriteManager::loadCID() noexcept {
 }
 
 void FavoriteManager::load() noexcept {
-	loading = true;
 	
 	// Add NMDC standard op commands
 	static const char kickstr[] = 
@@ -667,7 +677,8 @@ void FavoriteManager::load() noexcept {
 		LogManager::getInstance()->message(STRING_F(LOAD_FAILED_X, CONFIG_FAV_NAME % e.getError()), LogMessage::SEV_ERROR);
 	}
 
-	loading = false;
+	lastXmlSave = GET_TICK();
+	TimerManager::getInstance()->addListener(this);
 }
 
 void FavoriteManager::loadFavoriteHubs(SimpleXML& aXml) {
@@ -857,7 +868,7 @@ void FavoriteManager::setAutoGrant(const UserPtr& aUser, bool grant) noexcept {
 			i->second.unsetFlag(FavoriteUser::FLAG_GRANTSLOT);
 	}
 
-	save();
+	setDirty();
 }
 void FavoriteManager::setUserDescription(const UserPtr& aUser, const string& description) noexcept {
 	{
@@ -868,7 +879,7 @@ void FavoriteManager::setUserDescription(const UserPtr& aUser, const string& des
 		i->second.setDescription(description);
 	}
 
-	save();
+	setDirty();
 }
 
 void FavoriteManager::on(SettingsManagerListener::Load, SimpleXML&) noexcept {
@@ -950,6 +961,13 @@ UserCommand::List FavoriteManager::getUserCommands(int ctx, const StringList& hu
 		}
 	}
 	return lst;
+}
+
+
+void FavoriteManager::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
+	if (xmlDirty && aTick > (lastXmlSave + 15 * 1000)) {
+		save();
+	}
 }
 
 void FavoriteManager::on(UserDisconnected, const UserPtr& user, bool wentOffline) noexcept {

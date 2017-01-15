@@ -743,7 +743,7 @@ LRESULT HubFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 			fhe->setHeaderWidths(tmp2);
 			fhe->setHeaderVisible(tmp3);
 			
-			FavoriteManager::getInstance()->save();
+			FavoriteManager::getInstance()->setDirty();
 		} else {
 			SettingsManager::getInstance()->set(SettingsManager::HUBFRAME_ORDER, tmp);
 			SettingsManager::getInstance()->set(SettingsManager::HUBFRAME_WIDTHS, tmp2);

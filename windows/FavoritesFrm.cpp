@@ -433,7 +433,7 @@ void FavoriteHubsFrame::handleMove(bool up) {
 	if(!up)
 		reverse(fh_copy.begin(), fh_copy.end());
 	fh = fh_copy;
-	FavoriteManager::getInstance()->save();
+	FavoriteManager::getInstance()->setDirty();
 
 	fillList();
 }
@@ -499,7 +499,7 @@ LRESULT FavoriteHubsFrame::onItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*b
 	if(!nosave && l->iItem != -1 && ((l->uNewState & LVIS_STATEIMAGEMASK) != (l->uOldState & LVIS_STATEIMAGEMASK))) {
 		FavoriteHubEntry* f = (FavoriteHubEntry*)ctrlHubs.GetItemData(l->iItem);
 		f->setAutoConnect(ctrlHubs.GetCheckState(l->iItem) != FALSE);
-		FavoriteManager::getInstance()->save();
+		FavoriteManager::getInstance()->setDirty();
 	}
 	return 0;
 }

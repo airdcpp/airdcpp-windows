@@ -182,6 +182,7 @@ void shutdown(StepF stepF, ProgressF progressF, Callback moduleDestroyF) {
 	
 	announce(STRING(SAVING_SETTINGS));
 	QueueManager::getInstance()->shutdown();
+	FavoriteManager::getInstance()->shutdown();
 	SettingsManager::getInstance()->save();
 
 	if (moduleDestroyF) {

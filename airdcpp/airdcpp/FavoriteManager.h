@@ -23,6 +23,7 @@
 #include "FavoriteManagerListener.h"
 #include "SettingsManagerListener.h"
 #include "ShareManagerListener.h"
+#include "TimerManagerListener.h"
 
 #include "FavHubGroup.h"
 #include "FavoriteUser.h"
@@ -34,7 +35,7 @@
 namespace dcpp {
 
 class FavoriteManager : public Speaker<FavoriteManagerListener>, public Singleton<FavoriteManager>,
-	private SettingsManagerListener, private ClientManagerListener, private ShareManagerListener
+	private SettingsManagerListener, private ClientManagerListener, private ShareManagerListener, private TimerManagerListener
 {
 public:
 // Favorite Users
@@ -99,7 +100,8 @@ public:
 	UserCommand::List getUserCommands(int ctx, const StringList& hub, bool& op) noexcept;
 
 	void load() noexcept;
-	void save() noexcept;
+	void setDirty() { xmlDirty = true; }
+	void shutdown() noexcept;
 
 	bool hasActiveHubs() const noexcept;
 
@@ -111,6 +113,10 @@ private:
 	UserCommand::List userCommands;
 	int lastId = 0;
 
+	uint64_t lastXmlSave = 0;
+	atomic<bool> xmlDirty = false;
+	void save() noexcept;
+
 	//Favorite users
 	FavoriteMap users;
 	//Saved users
@@ -118,9 +124,6 @@ private:
 
 	FavoriteUser createUser(const UserPtr& aUser, const string& aUrl);
 	
-	/** Used during loading to prevent saving. */
-	bool loading = false;
-
 	friend class Singleton<FavoriteManager>;
 	
 	FavoriteManager();
@@ -130,6 +133,9 @@ private:
 	FavoriteHubEntryList::const_iterator getFavoriteHub(ProfileToken aToken) const noexcept;
 
 	int resetProfile(ProfileToken oldProfile, ProfileToken newProfile, bool nmdcOnly) noexcept;
+
+	// TimerManagerListener
+	void on(TimerManagerListener::Second, uint64_t tick) noexcept;
 
 	// ShareManagerListener
 	void on(ShareManagerListener::DefaultProfileChanged, ProfileToken aOldDefault, ProfileToken aNewDefault) noexcept;
