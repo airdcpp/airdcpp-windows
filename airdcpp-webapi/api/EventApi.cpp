@@ -31,12 +31,12 @@ namespace webserver {
 		createSubscription("event_message");
 		createSubscription("event_counts");
 
-		METHOD_HANDLER(Access::EVENTS_VIEW, METHOD_POST,	(EXACT_PARAM("read")),						EventApi::handleRead);
-		METHOD_HANDLER(Access::EVENTS_VIEW, METHOD_GET,		(EXACT_PARAM("counts")),					EventApi::handleGetInfo);
-		METHOD_HANDLER(Access::EVENTS_VIEW, METHOD_GET,		(EXACT_PARAM("messages"), RANGE_MAX_PARAM), EventApi::handleGetLog);
+		METHOD_HANDLER(Access::EVENTS_VIEW, METHOD_POST,	(EXACT_PARAM("read")),		EventApi::handleRead);
+		METHOD_HANDLER(Access::EVENTS_VIEW, METHOD_GET,		(EXACT_PARAM("counts")),	EventApi::handleGetInfo);
 
-		METHOD_HANDLER(Access::EVENTS_EDIT, METHOD_POST,	(EXACT_PARAM("clear")),						EventApi::handleClear);
-		METHOD_HANDLER(Access::EVENTS_EDIT, METHOD_POST,	(EXACT_PARAM("message")),					EventApi::handlePostMessage);
+		METHOD_HANDLER(Access::EVENTS_VIEW, METHOD_GET,		(RANGE_MAX_PARAM),			EventApi::handleGetMessages);
+		METHOD_HANDLER(Access::EVENTS_EDIT, METHOD_DELETE,	(),							EventApi::handleClearMessages);
+		METHOD_HANDLER(Access::EVENTS_EDIT, METHOD_POST,	(),							EventApi::handlePostMessage);
 	}
 
 	EventApi::~EventApi() {
@@ -54,12 +54,12 @@ namespace webserver {
 		return websocketpp::http::status_code::no_content;
 	}
 
-	api_return EventApi::handleClear(ApiRequest& aRequest) {
+	api_return EventApi::handleClearMessages(ApiRequest& aRequest) {
 		LogManager::getInstance()->clearCache();
 		return websocketpp::http::status_code::no_content;
 	}
 
-	api_return EventApi::handleGetLog(ApiRequest& aRequest) {
+	api_return EventApi::handleGetMessages(ApiRequest& aRequest) {
 		auto j = Serializer::serializeFromEnd(
 			aRequest.getRangeParam(MAX_COUNT),
 			LogManager::getInstance()->getCache().getLogMessages(),

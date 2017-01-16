@@ -31,15 +31,15 @@ namespace webserver {
 	};
 
 	PrivateChatApi::PrivateChatApi(Session* aSession) : 
-		ParentApiModule("session", CID_REG, Access::PRIVATE_CHAT_VIEW, aSession, subscriptionList, PrivateChatInfo::subscriptionList,
+		ParentApiModule("sessions", CID_PARAM, Access::PRIVATE_CHAT_VIEW, aSession, subscriptionList, PrivateChatInfo::subscriptionList,
 			[](const string& aId) { return Deserializer::parseCID(aId); },
 			[](const PrivateChatInfo& aInfo) { return serializeChat(aInfo.getChat()); }
 		) {
 
 		MessageManager::getInstance()->addListener(this);
 
-		METHOD_HANDLER(Access::PRIVATE_CHAT_EDIT,	METHOD_DELETE,	(EXACT_PARAM("session"), CID_PARAM),	PrivateChatApi::handleDeleteChat);
-		METHOD_HANDLER(Access::PRIVATE_CHAT_EDIT,	METHOD_POST,	(EXACT_PARAM("session")),				PrivateChatApi::handlePostChat);
+		METHOD_HANDLER(Access::PRIVATE_CHAT_EDIT,	METHOD_DELETE,	(EXACT_PARAM("sessions"), CID_PARAM),	PrivateChatApi::handleDeleteChat);
+		METHOD_HANDLER(Access::PRIVATE_CHAT_EDIT,	METHOD_POST,	(EXACT_PARAM("sessions")),				PrivateChatApi::handlePostChat);
 
 		METHOD_HANDLER(Access::PRIVATE_CHAT_SEND,	METHOD_POST,	(EXACT_PARAM("chat_message")),			PrivateChatApi::handlePostMessage);
 

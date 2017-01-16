@@ -27,15 +27,15 @@ namespace webserver {
 
 		ShareManager::getInstance()->addListener(this);
 
-		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(EXACT_PARAM("profiles")),										ShareProfileApi::handleGetProfiles);
+		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(),										ShareProfileApi::handleGetProfiles);
 
-		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(EXACT_PARAM("profile"), TOKEN_PARAM),							ShareProfileApi::handleGetProfile);
-		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(EXACT_PARAM("profile"), EXACT_PARAM("default")),				ShareProfileApi::handleGetDefaultProfile);
+		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(TOKEN_PARAM),							ShareProfileApi::handleGetProfile);
+		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(EXACT_PARAM("default")),				ShareProfileApi::handleGetDefaultProfile);
 
-		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(EXACT_PARAM("profile")),										ShareProfileApi::handleAddProfile);
-		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_PATCH,	(EXACT_PARAM("profile"), TOKEN_PARAM),							ShareProfileApi::handleUpdateProfile);
-		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_DELETE,	(EXACT_PARAM("profile"), TOKEN_PARAM),							ShareProfileApi::handleRemoveProfile);
-		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(EXACT_PARAM("profile"), TOKEN_PARAM, EXACT_PARAM("default")),	ShareProfileApi::handleSetDefaultProfile);
+		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(),										ShareProfileApi::handleAddProfile);
+		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_PATCH,	(TOKEN_PARAM),							ShareProfileApi::handleUpdateProfile);
+		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_DELETE,	(TOKEN_PARAM),							ShareProfileApi::handleRemoveProfile);
+		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(TOKEN_PARAM, EXACT_PARAM("default")),	ShareProfileApi::handleSetDefaultProfile);
 
 		createSubscription("share_profile_added");
 		createSubscription("share_profile_updated");

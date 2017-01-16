@@ -33,12 +33,12 @@ namespace webserver {
 		rootView("share_root_view", this, ShareUtils::propertyHandler, std::bind(&ShareRootApi::getRoots, this)),
 		timer(getTimer([this] { onTimer(); }, 5000)) {
 
-		METHOD_HANDLER(Access::SETTINGS_VIEW, METHOD_GET,		(EXACT_PARAM("roots")),				ShareRootApi::handleGetRoots);
+		METHOD_HANDLER(Access::SETTINGS_VIEW, METHOD_GET,		(),				ShareRootApi::handleGetRoots);
 
-		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_POST,		(EXACT_PARAM("root")),				ShareRootApi::handleAddRoot);
-		METHOD_HANDLER(Access::SETTINGS_VIEW, METHOD_GET,		(EXACT_PARAM("root"), TTH_PARAM),	ShareRootApi::handleGetRoot);
-		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_PATCH,		(EXACT_PARAM("root"), TTH_PARAM),	ShareRootApi::handleUpdateRoot);
-		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_DELETE,	(EXACT_PARAM("root"), TTH_PARAM),	ShareRootApi::handleRemoveRoot);
+		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_POST,		(),				ShareRootApi::handleAddRoot);
+		METHOD_HANDLER(Access::SETTINGS_VIEW, METHOD_GET,		(TTH_PARAM),	ShareRootApi::handleGetRoot);
+		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_PATCH,		(TTH_PARAM),	ShareRootApi::handleUpdateRoot);
+		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_DELETE,	(TTH_PARAM),	ShareRootApi::handleRemoveRoot);
 
 		createSubscription("share_root_created");
 		createSubscription("share_root_updated");

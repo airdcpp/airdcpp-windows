@@ -29,12 +29,12 @@ namespace webserver {
 	FavoriteDirectoryApi::FavoriteDirectoryApi(Session* aSession) : SubscribableApiModule(aSession, Access::ANY) {
 
 		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(EXACT_PARAM("grouped_paths")),			FavoriteDirectoryApi::handleGetGroupedDirectories);
-		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(EXACT_PARAM("directories")),			FavoriteDirectoryApi::handleGetDirectories);
+		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(),										FavoriteDirectoryApi::handleGetDirectories);
 
-		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(EXACT_PARAM("directory")),				FavoriteDirectoryApi::handleAddDirectory);
-		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(EXACT_PARAM("directory"), TTH_PARAM),	FavoriteDirectoryApi::handleGetDirectory);
-		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_PATCH,	(EXACT_PARAM("directory"), TTH_PARAM),	FavoriteDirectoryApi::handleUpdateDirectory);
-		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_DELETE,	(EXACT_PARAM("directory"), TTH_PARAM),	FavoriteDirectoryApi::handleRemoveDirectory);
+		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(),										FavoriteDirectoryApi::handleAddDirectory);
+		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(TTH_PARAM),							FavoriteDirectoryApi::handleGetDirectory);
+		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_PATCH,	(TTH_PARAM),							FavoriteDirectoryApi::handleUpdateDirectory);
+		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_DELETE,	(TTH_PARAM),							FavoriteDirectoryApi::handleRemoveDirectory);
 
 		FavoriteManager::getInstance()->addListener(this);
 

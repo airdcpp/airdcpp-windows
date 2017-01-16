@@ -41,11 +41,11 @@ namespace webserver {
 		UploadManager::getInstance()->addListener(this);
 		ConnectionManager::getInstance()->addListener(this);
 
-		METHOD_HANDLER(Access::TRANSFERS,	METHOD_GET,		(EXACT_PARAM("transfers")),											TransferApi::handleGetTransfers);
-		METHOD_HANDLER(Access::TRANSFERS,	METHOD_GET,		(EXACT_PARAM("transfer"), TOKEN_PARAM),								TransferApi::handleGetTransfer);
+		METHOD_HANDLER(Access::TRANSFERS,	METHOD_GET,		(),											TransferApi::handleGetTransfers);
+		METHOD_HANDLER(Access::TRANSFERS,	METHOD_GET,		(TOKEN_PARAM),								TransferApi::handleGetTransfer);
 
-		METHOD_HANDLER(Access::TRANSFERS,	METHOD_POST,	(EXACT_PARAM("transfer"), TOKEN_PARAM, EXACT_PARAM("force")),		TransferApi::handleForce);
-		METHOD_HANDLER(Access::TRANSFERS,	METHOD_POST,	(EXACT_PARAM("transfer"), TOKEN_PARAM, EXACT_PARAM("disconnect")),	TransferApi::handleDisconnect);
+		METHOD_HANDLER(Access::TRANSFERS,	METHOD_POST,	(TOKEN_PARAM, EXACT_PARAM("force")),		TransferApi::handleForce);
+		METHOD_HANDLER(Access::TRANSFERS,	METHOD_POST,	(TOKEN_PARAM, EXACT_PARAM("disconnect")),	TransferApi::handleDisconnect);
 
 		METHOD_HANDLER(Access::ANY,			METHOD_GET,		(EXACT_PARAM("tranferred_bytes")),									TransferApi::handleGetTransferredBytes);
 		METHOD_HANDLER(Access::ANY,			METHOD_GET,		(EXACT_PARAM("stats")),												TransferApi::handleGetTransferStats);

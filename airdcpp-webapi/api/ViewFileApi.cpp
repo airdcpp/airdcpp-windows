@@ -43,13 +43,13 @@ namespace webserver {
 		createSubscription("view_file_finished");
 
 		METHOD_HANDLER(Access::VIEW_FILES_VIEW, METHOD_GET,		(EXACT_PARAM("sessions")),									ViewFileApi::handleGetFiles);
-		METHOD_HANDLER(Access::VIEW_FILES_EDIT, METHOD_POST,	(EXACT_PARAM("session")),									ViewFileApi::handleAddFile);
-		METHOD_HANDLER(Access::VIEW_FILES_VIEW, METHOD_GET,		(EXACT_PARAM("session"), TTH_PARAM),						ViewFileApi::handleGetFile);
-		METHOD_HANDLER(Access::VIEW_FILES_EDIT, METHOD_POST,	(EXACT_PARAM("session"), TTH_PARAM),						ViewFileApi::handleAddLocalFile);
-		METHOD_HANDLER(Access::VIEW_FILES_EDIT, METHOD_DELETE,	(EXACT_PARAM("session"), TTH_PARAM),						ViewFileApi::handleRemoveFile);
+		METHOD_HANDLER(Access::VIEW_FILES_EDIT, METHOD_POST,	(EXACT_PARAM("sessions")),									ViewFileApi::handleAddFile);
+		METHOD_HANDLER(Access::VIEW_FILES_VIEW, METHOD_GET,		(EXACT_PARAM("sessions"), TTH_PARAM),						ViewFileApi::handleGetFile);
+		METHOD_HANDLER(Access::VIEW_FILES_EDIT, METHOD_POST,	(EXACT_PARAM("sessions"), TTH_PARAM),						ViewFileApi::handleAddLocalFile);
+		METHOD_HANDLER(Access::VIEW_FILES_EDIT, METHOD_DELETE,	(EXACT_PARAM("sessions"), TTH_PARAM),						ViewFileApi::handleRemoveFile);
 
-		METHOD_HANDLER(Access::VIEW_FILES_VIEW, METHOD_GET,		(EXACT_PARAM("session"), TTH_PARAM, EXACT_PARAM("text")),	ViewFileApi::handleGetText);
-		METHOD_HANDLER(Access::VIEW_FILES_VIEW, METHOD_POST,	(EXACT_PARAM("session"), TTH_PARAM, EXACT_PARAM("read")),	ViewFileApi::handleSetRead);
+		METHOD_HANDLER(Access::VIEW_FILES_VIEW, METHOD_GET,		(EXACT_PARAM("sessions"), TTH_PARAM, EXACT_PARAM("text")),	ViewFileApi::handleGetText);
+		METHOD_HANDLER(Access::VIEW_FILES_VIEW, METHOD_POST,	(EXACT_PARAM("sessions"), TTH_PARAM, EXACT_PARAM("read")),	ViewFileApi::handleSetRead);
 	}
 
 	ViewFileApi::~ViewFileApi() {

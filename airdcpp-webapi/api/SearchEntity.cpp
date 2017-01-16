@@ -44,8 +44,8 @@ namespace webserver {
 		METHOD_HANDLER(Access::SEARCH,		METHOD_POST,	(EXACT_PARAM("user_search")),									SearchEntity::handlePostUserSearch);
 
 		METHOD_HANDLER(Access::SEARCH,		METHOD_GET,		(EXACT_PARAM("results"), RANGE_START_PARAM, RANGE_MAX_PARAM),	SearchEntity::handleGetResults);
-		METHOD_HANDLER(Access::DOWNLOAD,	METHOD_POST,	(EXACT_PARAM("result"), TTH_PARAM, EXACT_PARAM("download")),	SearchEntity::handleDownload);
-		METHOD_HANDLER(Access::SEARCH,		METHOD_GET,		(EXACT_PARAM("result"), TTH_PARAM, EXACT_PARAM("children")),	SearchEntity::handleGetChildren);
+		METHOD_HANDLER(Access::DOWNLOAD,	METHOD_POST,	(EXACT_PARAM("results"), TTH_PARAM, EXACT_PARAM("download")),	SearchEntity::handleDownload);
+		METHOD_HANDLER(Access::SEARCH,		METHOD_GET,		(EXACT_PARAM("results"), TTH_PARAM, EXACT_PARAM("children")),	SearchEntity::handleGetChildren);
 	}
 
 	SearchEntity::~SearchEntity() {

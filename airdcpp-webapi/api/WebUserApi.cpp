@@ -33,12 +33,12 @@ namespace webserver {
 
 		um.addListener(this);
 
-		METHOD_HANDLER(Access::ADMIN, METHOD_GET,		(EXACT_PARAM("users")),								WebUserApi::handleGetUsers);
+		METHOD_HANDLER(Access::ADMIN, METHOD_GET,		(),								WebUserApi::handleGetUsers);
 
-		METHOD_HANDLER(Access::ADMIN, METHOD_POST,		(EXACT_PARAM("user")),								WebUserApi::handleAddUser);
-		METHOD_HANDLER(Access::ADMIN, METHOD_GET,		(EXACT_PARAM("user"), STR_PARAM(USERNAME_PARAM)),	WebUserApi::handleGetUser);
-		METHOD_HANDLER(Access::ADMIN, METHOD_PATCH,		(EXACT_PARAM("user"), STR_PARAM(USERNAME_PARAM)),	WebUserApi::handleUpdateUser);
-		METHOD_HANDLER(Access::ADMIN, METHOD_DELETE,	(EXACT_PARAM("user"), STR_PARAM(USERNAME_PARAM)),	WebUserApi::handleRemoveUser);
+		METHOD_HANDLER(Access::ADMIN, METHOD_POST,		(),								WebUserApi::handleAddUser);
+		METHOD_HANDLER(Access::ADMIN, METHOD_GET,		(STR_PARAM(USERNAME_PARAM)),	WebUserApi::handleGetUser);
+		METHOD_HANDLER(Access::ADMIN, METHOD_PATCH,		(STR_PARAM(USERNAME_PARAM)),	WebUserApi::handleUpdateUser);
+		METHOD_HANDLER(Access::ADMIN, METHOD_DELETE,	(STR_PARAM(USERNAME_PARAM)),	WebUserApi::handleRemoveUser);
 
 		createSubscription("web_user_added");
 		createSubscription("web_user_updated");

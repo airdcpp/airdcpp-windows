@@ -34,7 +34,7 @@ namespace webserver {
 	};
 
 	FilelistApi::FilelistApi(Session* aSession) : 
-		ParentApiModule("session", CID_REG, Access::FILELISTS_VIEW, aSession, FilelistApi::subscriptionList, 
+		ParentApiModule("sessions", CID_PARAM, Access::FILELISTS_VIEW, aSession, FilelistApi::subscriptionList,
 			FilelistInfo::subscriptionList, 
 			[](const string& aId) { return Deserializer::parseCID(aId); },
 			[](const FilelistInfo& aInfo) { return serializeList(aInfo.getList()); }
@@ -43,13 +43,13 @@ namespace webserver {
 
 		DirectoryListingManager::getInstance()->addListener(this);;
 
-		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_POST,	(EXACT_PARAM("session")),							FilelistApi::handlePostList);
-		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_POST,	(EXACT_PARAM("session"), EXACT_PARAM("me")),		FilelistApi::handleOwnList);
-		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_DELETE,	(EXACT_PARAM("session"), CID_PARAM),				FilelistApi::handleDeleteList);
+		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_POST,	(EXACT_PARAM("sessions")),							FilelistApi::handlePostList);
+		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_POST,	(EXACT_PARAM("sessions"), EXACT_PARAM("me")),		FilelistApi::handleOwnList);
+		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_DELETE,	(EXACT_PARAM("sessions"), CID_PARAM),				FilelistApi::handleDeleteList);
 
 		METHOD_HANDLER(Access::DOWNLOAD,		METHOD_GET,		(EXACT_PARAM("directory_downloads")),				FilelistApi::handleGetDirectoryDownloads);
-		METHOD_HANDLER(Access::DOWNLOAD,		METHOD_POST,	(EXACT_PARAM("directory_download")),				FilelistApi::handlePostDirectoryDownload);
-		METHOD_HANDLER(Access::DOWNLOAD,		METHOD_DELETE,	(EXACT_PARAM("directory_download"), TOKEN_PARAM),	FilelistApi::handleDeleteDirectoryDownload);
+		METHOD_HANDLER(Access::DOWNLOAD,		METHOD_POST,	(EXACT_PARAM("directory_downloads")),				FilelistApi::handlePostDirectoryDownload);
+		METHOD_HANDLER(Access::DOWNLOAD,		METHOD_DELETE,	(EXACT_PARAM("directory_downloads"), TOKEN_PARAM),	FilelistApi::handleDeleteDirectoryDownload);
 
 		METHOD_HANDLER(Access::VIEW_FILES_EDIT,	METHOD_POST,	(EXACT_PARAM("find_nfo")),							FilelistApi::handleFindNfo);
 		METHOD_HANDLER(Access::QUEUE_EDIT,		METHOD_POST,	(EXACT_PARAM("match_queue")),						FilelistApi::handleMatchQueue);

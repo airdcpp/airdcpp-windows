@@ -52,7 +52,7 @@ namespace webserver {
 		METHOD_HANDLER(Access::HUBS_VIEW, METHOD_GET,	(EXACT_PARAM("counts")),	HubInfo::handleGetCounts);
 
 		METHOD_HANDLER(Access::HUBS_VIEW, METHOD_GET,	(EXACT_PARAM("users"), RANGE_START_PARAM, RANGE_MAX_PARAM), HubInfo::handleGetUsers);
-		METHOD_HANDLER(Access::HUBS_VIEW, METHOD_GET,	(EXACT_PARAM("user"), CID_PARAM),							HubInfo::handleGetUser);
+		METHOD_HANDLER(Access::HUBS_VIEW, METHOD_GET,	(EXACT_PARAM("users"), CID_PARAM),							HubInfo::handleGetUser);
 	}
 
 	HubInfo::~HubInfo() {

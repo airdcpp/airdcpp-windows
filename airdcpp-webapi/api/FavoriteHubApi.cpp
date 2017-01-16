@@ -31,11 +31,11 @@ namespace webserver {
 
 		FavoriteManager::getInstance()->addListener(this);
 
-		METHOD_HANDLER(Access::FAVORITE_HUBS_VIEW, METHOD_GET,		(EXACT_PARAM("hubs"), RANGE_START_PARAM, RANGE_MAX_PARAM),	FavoriteHubApi::handleGetHubs);
-		METHOD_HANDLER(Access::FAVORITE_HUBS_EDIT, METHOD_POST,		(EXACT_PARAM("hub")),										FavoriteHubApi::handleAddHub);
-		METHOD_HANDLER(Access::FAVORITE_HUBS_EDIT, METHOD_DELETE,	(EXACT_PARAM("hub"), TOKEN_PARAM),							FavoriteHubApi::handleRemoveHub);
-		METHOD_HANDLER(Access::FAVORITE_HUBS_EDIT, METHOD_PATCH,	(EXACT_PARAM("hub"), TOKEN_PARAM),							FavoriteHubApi::handleUpdateHub);
-		METHOD_HANDLER(Access::FAVORITE_HUBS_VIEW, METHOD_GET,		(EXACT_PARAM("hub"), TOKEN_PARAM),							FavoriteHubApi::handleGetHub);
+		METHOD_HANDLER(Access::FAVORITE_HUBS_VIEW, METHOD_GET,		(RANGE_START_PARAM, RANGE_MAX_PARAM),	FavoriteHubApi::handleGetHubs);
+		METHOD_HANDLER(Access::FAVORITE_HUBS_EDIT, METHOD_POST,		(),										FavoriteHubApi::handleAddHub);
+		METHOD_HANDLER(Access::FAVORITE_HUBS_EDIT, METHOD_DELETE,	(TOKEN_PARAM),							FavoriteHubApi::handleRemoveHub);
+		METHOD_HANDLER(Access::FAVORITE_HUBS_EDIT, METHOD_PATCH,	(TOKEN_PARAM),							FavoriteHubApi::handleUpdateHub);
+		METHOD_HANDLER(Access::FAVORITE_HUBS_VIEW, METHOD_GET,		(TOKEN_PARAM),							FavoriteHubApi::handleGetHub);
 
 		createSubscription("favorite_hub_created");
 		createSubscription("favorite_hub_updated");

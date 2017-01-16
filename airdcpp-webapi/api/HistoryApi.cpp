@@ -29,7 +29,7 @@ namespace webserver {
 	HistoryApi::HistoryApi(Session* aSession) : ApiModule(aSession) {
 		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(EXACT_PARAM("strings"), STR_PARAM(HISTORY_TYPE)),	HistoryApi::handleGetStrings);
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_DELETE,	(EXACT_PARAM("strings"), STR_PARAM(HISTORY_TYPE)),	HistoryApi::handleDeleteStrings);
-		METHOD_HANDLER(Access::ANY,				METHOD_POST,	(EXACT_PARAM("string"), STR_PARAM(HISTORY_TYPE)),	HistoryApi::handlePostString);
+		METHOD_HANDLER(Access::ANY,				METHOD_POST,	(EXACT_PARAM("strings"), STR_PARAM(HISTORY_TYPE)),	HistoryApi::handlePostString);
 
 		METHOD_HANDLER(Access::HUBS_VIEW,		METHOD_GET,		(EXACT_PARAM("hubs"), RANGE_MAX_PARAM),				HistoryApi::handleGetHubs);
 		METHOD_HANDLER(Access::HUBS_VIEW,		METHOD_POST,	(EXACT_PARAM("hubs"), EXACT_PARAM("search")),		HistoryApi::handleSearchHubs);

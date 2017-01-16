@@ -38,21 +38,17 @@ namespace webserver {
 		typedef std::function<IdType(const string&)> IdConvertF;
 		typedef std::function<json(const ItemType&)> ChildSerializeF;
 
-#define SUBMODULE_ID "submodule"
-
-		ParentApiModule(const string& aSubmoduleSection, regex&& aIdMatcher, Access aAccess, Session* aSession, const StringList& aSubscriptions, const StringList& aChildSubscription, IdConvertF aIdConvertF, ChildSerializeF aChildSerializeF) :
-			SubscribableApiModule(aSession, aAccess, &aSubscriptions), idConvertF(aIdConvertF), childSerializeF(aChildSerializeF) {
-
-			auto paramMatcher = ApiModule::RequestHandler::Param(SUBMODULE_ID, std::move(aIdMatcher));
+		ParentApiModule(const string& aSubmoduleSection, ApiModule::RequestHandler::Param&& aParamMatcher, Access aAccess, Session* aSession, const StringList& aSubscriptions, const StringList& aChildSubscription, IdConvertF aIdConvertF, ChildSerializeF aChildSerializeF) :
+			SubscribableApiModule(aSession, aAccess, &aSubscriptions), idConvertF(aIdConvertF), childSerializeF(aChildSerializeF), paramId(aParamMatcher.id) {
 
 			// Get module
-			METHOD_HANDLER(aAccess, METHOD_GET, (EXACT_PARAM(aSubmoduleSection), paramMatcher), Type::handleGetSubmodule);
+			METHOD_HANDLER(aAccess, METHOD_GET, (EXACT_PARAM(aSubmoduleSection), aParamMatcher), Type::handleGetSubmodule);
 
 			// List modules
-			METHOD_HANDLER(aAccess, METHOD_GET, (EXACT_PARAM(aSubmoduleSection + "s")), Type::handleGetSubmodules);
+			METHOD_HANDLER(aAccess, METHOD_GET, (EXACT_PARAM(aSubmoduleSection)), Type::handleGetSubmodules);
 
 			// Request forwarder
-			METHOD_HANDLER(Access::ANY, METHOD_FORWARD, (EXACT_PARAM(aSubmoduleSection), paramMatcher), Type::handleSubModuleRequest);
+			METHOD_HANDLER(Access::ANY, METHOD_FORWARD, (EXACT_PARAM(aSubmoduleSection), aParamMatcher), Type::handleSubModuleRequest);
 
 			for (const auto& s: aChildSubscription) {
 				childSubscriptions.emplace(s, false);
@@ -158,7 +154,7 @@ namespace webserver {
 
 		// Parse module ID from the request, throws if the module was not found
 		typename ItemType::Ptr getSubModule(ApiRequest& aRequest) {
-			auto id = aRequest.getStringParam(SUBMODULE_ID);
+			auto id = aRequest.getStringParam(paramId);
 
 			auto sub = findSubModule(id);
 			if (!sub) {
@@ -213,6 +209,7 @@ namespace webserver {
 		SubscribableApiModule::SubscriptionMap childSubscriptions;
 		const IdConvertF idConvertF;
 		const ChildSerializeF childSerializeF;
+		const string paramId;
 	};
 
 	template<class ParentIdType, class ItemType, class ItemJsonType>
