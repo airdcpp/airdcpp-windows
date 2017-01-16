@@ -31,25 +31,27 @@ namespace webserver {
 	class WebSocket;
 	class ApiModule {
 	public:
-#define LISTENER_ID "listener"
-#define MAX_COUNT "max_count"
-#define START_POS "start_pos"
+#define LISTENER_PARAM_ID "listener_param"
+#define MAX_COUNT "max_count_param"
+#define START_POS "start_pos_param"
 
 #define TTH_REG regex(R"(^[0-9A-Z]{39}$)")
 #define CID_REG TTH_REG
 #define TOKEN_REG regex(R"(^\d+$)")
 
 #define NUM_PARAM(id) (ApiModule::RequestHandler::Param(id, TOKEN_REG))
-#define TOKEN_PARAM NUM_PARAM(TOKEN_ID)
+#define TOKEN_PARAM NUM_PARAM(TOKEN_PARAM_ID)
+#define RANGE_START_PARAM NUM_PARAM(START_POS)
+#define RANGE_MAX_PARAM NUM_PARAM(MAX_COUNT)
 
-#define TTH_PARAM (ApiModule::RequestHandler::Param(TTH_ID, TTH_REG))
-#define CID_PARAM (ApiModule::RequestHandler::Param(CID_ID, CID_REG))
+#define TTH_PARAM (ApiModule::RequestHandler::Param(TTH_PARAM_ID, TTH_REG))
+#define CID_PARAM (ApiModule::RequestHandler::Param(CID_PARAM_ID, CID_REG))
 
 #define STR_PARAM(id) (ApiModule::RequestHandler::Param(id, regex(R"(^\w+$)")))
 #define EXACT_PARAM(pattern) (ApiModule::RequestHandler::Param(pattern, regex("^" + string(pattern) + "$")))
 
 #define BRACED_INIT_LIST(...) {__VA_ARGS__}
-#define METHOD_HANDLER(section, access, method, params, requireJson, func) (requestHandlers[section].push_back(ApiModule::RequestHandler(access, method, requireJson, BRACED_INIT_LIST params, std::bind(&func, this, placeholders::_1))))
+#define METHOD_HANDLER(access, method, params, func) (requestHandlers.push_back(ApiModule::RequestHandler(access, method, BRACED_INIT_LIST params, std::bind(&func, this, placeholders::_1))))
 
 		ApiModule(Session* aSession);
 		virtual ~ApiModule();
@@ -64,18 +66,15 @@ namespace webserver {
 
 			typedef vector<Param> ParamList;
 
-			typedef std::vector<RequestHandler> List;
 			typedef std::function<api_return(ApiRequest& aRequest)> HandlerFunction;
 
 			// Regular handler
-			RequestHandler(Access aAccess, ApiRequest::Method aMethod, bool aRequireJson, ParamList&& aParams, HandlerFunction aFunction) :
-				method(aMethod), requireJson(aRequireJson), params(std::move(aParams)), f(aFunction), access(aAccess) {
+			RequestHandler(Access aAccess, RequestMethod aMethod, ParamList&& aParams, HandlerFunction aFunction) :
+				method(aMethod), params(std::move(aParams)), f(aFunction), access(aAccess) {
 			
-				dcassert((aMethod != ApiRequest::METHOD_DELETE && aMethod != ApiRequest::METHOD_GET) || !aRequireJson);
 			}
 
-			const ApiRequest::Method method;
-			const bool requireJson;
+			const RequestMethod method;
 			const ParamList params;
 			const HandlerFunction f;
 			const Access access;
@@ -83,7 +82,7 @@ namespace webserver {
 			optional<ApiRequest::NamedParamMap> matchParams(const ApiRequest::ParamList& aParams) const noexcept;
 		};
 
-		typedef std::map<std::string, RequestHandler::List> RequestHandlerMap;
+		typedef std::vector<RequestHandler> RequestHandlerList;
 
 		api_return handleRequest(ApiRequest& aRequest);
 
@@ -97,7 +96,7 @@ namespace webserver {
 			return session;
 		}
 
-		RequestHandlerMap& getRequestHandlers() noexcept {
+		RequestHandlerList& getRequestHandlers() noexcept {
 			return requestHandlers;
 		}
 
@@ -109,7 +108,7 @@ namespace webserver {
 
 		Session* session;
 
-		RequestHandlerMap requestHandlers;
+		RequestHandlerList requestHandlers;
 	};
 
 	

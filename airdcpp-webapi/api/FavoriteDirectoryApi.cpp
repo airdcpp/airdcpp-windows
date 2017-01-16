@@ -27,13 +27,14 @@
 
 namespace webserver {
 	FavoriteDirectoryApi::FavoriteDirectoryApi(Session* aSession) : SubscribableApiModule(aSession, Access::ANY) {
-		METHOD_HANDLER("grouped_paths", Access::ANY, ApiRequest::METHOD_GET, (), false, FavoriteDirectoryApi::handleGetGroupedDirectories);
-		METHOD_HANDLER("directories", Access::ANY, ApiRequest::METHOD_GET, (), false, FavoriteDirectoryApi::handleGetDirectories);
 
-		METHOD_HANDLER("directory", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (), true, FavoriteDirectoryApi::handleAddDirectory);
-		METHOD_HANDLER("directory", Access::ANY, ApiRequest::METHOD_GET, (TTH_PARAM), false, FavoriteDirectoryApi::handleGetDirectory);
-		METHOD_HANDLER("directory", Access::SETTINGS_EDIT, ApiRequest::METHOD_PATCH, (TTH_PARAM), true, FavoriteDirectoryApi::handleUpdateDirectory);
-		METHOD_HANDLER("directory", Access::SETTINGS_EDIT, ApiRequest::METHOD_DELETE, (TTH_PARAM), false, FavoriteDirectoryApi::handleRemoveDirectory);
+		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(EXACT_PARAM("grouped_paths")),			FavoriteDirectoryApi::handleGetGroupedDirectories);
+		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(EXACT_PARAM("directories")),			FavoriteDirectoryApi::handleGetDirectories);
+
+		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(EXACT_PARAM("directory")),				FavoriteDirectoryApi::handleAddDirectory);
+		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(EXACT_PARAM("directory"), TTH_PARAM),	FavoriteDirectoryApi::handleGetDirectory);
+		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_PATCH,	(EXACT_PARAM("directory"), TTH_PARAM),	FavoriteDirectoryApi::handleUpdateDirectory);
+		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_DELETE,	(EXACT_PARAM("directory"), TTH_PARAM),	FavoriteDirectoryApi::handleRemoveDirectory);
 
 		FavoriteManager::getInstance()->addListener(this);
 

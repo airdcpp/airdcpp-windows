@@ -44,15 +44,15 @@ namespace webserver {
 		view("hub_user_view", this, OnlineUserUtils::propertyHandler, std::bind(&HubInfo::getUsers, this), 500), 
 		timer(getTimer([this] { onTimer(); }, 1000)) {
 
-		METHOD_HANDLER("reconnect", Access::HUBS_EDIT, ApiRequest::METHOD_POST, (), false, HubInfo::handleReconnect);
-		METHOD_HANDLER("favorite", Access::HUBS_EDIT, ApiRequest::METHOD_POST, (), false, HubInfo::handleFavorite);
-		METHOD_HANDLER("password", Access::HUBS_EDIT, ApiRequest::METHOD_POST, (), true, HubInfo::handlePassword);
-		METHOD_HANDLER("redirect", Access::HUBS_EDIT, ApiRequest::METHOD_POST, (), false, HubInfo::handleRedirect);
+		METHOD_HANDLER(Access::HUBS_EDIT, METHOD_POST,	(EXACT_PARAM("reconnect")),	HubInfo::handleReconnect);
+		METHOD_HANDLER(Access::HUBS_EDIT, METHOD_POST,	(EXACT_PARAM("favorite")),	HubInfo::handleFavorite);
+		METHOD_HANDLER(Access::HUBS_EDIT, METHOD_POST,	(EXACT_PARAM("password")),	HubInfo::handlePassword);
+		METHOD_HANDLER(Access::HUBS_EDIT, METHOD_POST,	(EXACT_PARAM("redirect")),	HubInfo::handleRedirect);
 
-		METHOD_HANDLER("counts", Access::HUBS_VIEW, ApiRequest::METHOD_GET, (), false, HubInfo::handleGetCounts);
+		METHOD_HANDLER(Access::HUBS_VIEW, METHOD_GET,	(EXACT_PARAM("counts")),	HubInfo::handleGetCounts);
 
-		METHOD_HANDLER("users", Access::HUBS_VIEW, ApiRequest::METHOD_GET, (NUM_PARAM(START_POS), NUM_PARAM(MAX_COUNT)), false, HubInfo::handleGetUsers);
-		METHOD_HANDLER("user", Access::HUBS_VIEW, ApiRequest::METHOD_GET, (CID_PARAM), false, HubInfo::handleGetUser);
+		METHOD_HANDLER(Access::HUBS_VIEW, METHOD_GET,	(EXACT_PARAM("users"), RANGE_START_PARAM, RANGE_MAX_PARAM), HubInfo::handleGetUsers);
+		METHOD_HANDLER(Access::HUBS_VIEW, METHOD_GET,	(EXACT_PARAM("user"), CID_PARAM),							HubInfo::handleGetUser);
 	}
 
 	HubInfo::~HubInfo() {

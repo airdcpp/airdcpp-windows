@@ -43,10 +43,10 @@ namespace webserver {
 		),
 		timer(getTimer([this] { onTimer(); }, 30 * 1000)) {
 
-		METHOD_HANDLER("instance", Access::SEARCH, ApiRequest::METHOD_POST, (), false, SearchApi::handleCreateInstance);
-		METHOD_HANDLER("instance", Access::SEARCH, ApiRequest::METHOD_DELETE, (TOKEN_PARAM), false, SearchApi::handleDeleteInstance);
+		METHOD_HANDLER(Access::SEARCH,	METHOD_POST,	(EXACT_PARAM("instance")),				SearchApi::handleCreateInstance);
+		METHOD_HANDLER(Access::SEARCH,	METHOD_DELETE,	(EXACT_PARAM("instance"), TOKEN_PARAM),	SearchApi::handleDeleteInstance);
 
-		METHOD_HANDLER("types", Access::ANY, ApiRequest::METHOD_GET, (), false, SearchApi::handleGetTypes);
+		METHOD_HANDLER(Access::ANY,		METHOD_GET,		(EXACT_PARAM("types")),					SearchApi::handleGetTypes);
 
 		// Create an initial search instance
 		if (aSession->getSessionType() != Session::TYPE_BASIC_AUTH) {

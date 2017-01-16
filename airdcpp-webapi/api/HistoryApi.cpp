@@ -27,12 +27,12 @@
 namespace webserver {
 #define HISTORY_TYPE "history_type"
 	HistoryApi::HistoryApi(Session* aSession) : ApiModule(aSession) {
-		METHOD_HANDLER("strings", Access::ANY, ApiRequest::METHOD_GET, (STR_PARAM(HISTORY_TYPE)), false, HistoryApi::handleGetStrings);
-		METHOD_HANDLER("strings", Access::SETTINGS_EDIT, ApiRequest::METHOD_DELETE, (STR_PARAM(HISTORY_TYPE)), false, HistoryApi::handleDeleteStrings);
-		METHOD_HANDLER("string", Access::ANY, ApiRequest::METHOD_POST, (STR_PARAM(HISTORY_TYPE)), true, HistoryApi::handlePostString);
+		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(EXACT_PARAM("strings"), STR_PARAM(HISTORY_TYPE)),	HistoryApi::handleGetStrings);
+		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_DELETE,	(EXACT_PARAM("strings"), STR_PARAM(HISTORY_TYPE)),	HistoryApi::handleDeleteStrings);
+		METHOD_HANDLER(Access::ANY,				METHOD_POST,	(EXACT_PARAM("string"), STR_PARAM(HISTORY_TYPE)),	HistoryApi::handlePostString);
 
-		METHOD_HANDLER("hubs", Access::HUBS_VIEW, ApiRequest::METHOD_GET, (NUM_PARAM(MAX_COUNT)), false, HistoryApi::handleGetHubs);
-		METHOD_HANDLER("hubs", Access::HUBS_VIEW, ApiRequest::METHOD_POST, (EXACT_PARAM("search")), true, HistoryApi::handleSearchHubs);
+		METHOD_HANDLER(Access::HUBS_VIEW,		METHOD_GET,		(EXACT_PARAM("hubs"), RANGE_MAX_PARAM),				HistoryApi::handleGetHubs);
+		METHOD_HANDLER(Access::HUBS_VIEW,		METHOD_POST,	(EXACT_PARAM("hubs"), EXACT_PARAM("search")),		HistoryApi::handleSearchHubs);
 	}
 
 	HistoryApi::~HistoryApi() {

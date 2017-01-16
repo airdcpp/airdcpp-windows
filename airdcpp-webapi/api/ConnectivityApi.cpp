@@ -31,8 +31,8 @@ namespace webserver {
 		createSubscription("connectivity_detection_started");
 		createSubscription("connectivity_detection_finished");
 
-		METHOD_HANDLER("status", Access::SETTINGS_VIEW, ApiRequest::METHOD_GET, (), false, ConnectivityApi::handleGetStatus);
-		METHOD_HANDLER("detect", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (), false, ConnectivityApi::handleDetect);
+		METHOD_HANDLER(Access::SETTINGS_VIEW, METHOD_GET,	(EXACT_PARAM("status")), ConnectivityApi::handleGetStatus);
+		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_POST,	(EXACT_PARAM("detect")), ConnectivityApi::handleDetect);
 	}
 
 	ConnectivityApi::~ConnectivityApi() {

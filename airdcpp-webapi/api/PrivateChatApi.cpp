@@ -38,10 +38,10 @@ namespace webserver {
 
 		MessageManager::getInstance()->addListener(this);
 
-		METHOD_HANDLER("session", Access::PRIVATE_CHAT_EDIT, ApiRequest::METHOD_DELETE, (CID_PARAM), false, PrivateChatApi::handleDeleteChat);
-		METHOD_HANDLER("session", Access::PRIVATE_CHAT_EDIT, ApiRequest::METHOD_POST, (), true, PrivateChatApi::handlePostChat);
+		METHOD_HANDLER(Access::PRIVATE_CHAT_EDIT,	METHOD_DELETE,	(EXACT_PARAM("session"), CID_PARAM),	PrivateChatApi::handleDeleteChat);
+		METHOD_HANDLER(Access::PRIVATE_CHAT_EDIT,	METHOD_POST,	(EXACT_PARAM("session")),				PrivateChatApi::handlePostChat);
 
-		METHOD_HANDLER("chat_message", Access::PRIVATE_CHAT_SEND, ApiRequest::METHOD_POST, (), true, PrivateChatApi::handlePostMessage);
+		METHOD_HANDLER(Access::PRIVATE_CHAT_SEND,	METHOD_POST,	(EXACT_PARAM("chat_message")),			PrivateChatApi::handlePostMessage);
 
 		auto rawChats = MessageManager::getInstance()->getChats();
 		for (const auto& c : rawChats | map_values) {

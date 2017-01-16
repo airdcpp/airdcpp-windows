@@ -31,12 +31,12 @@ namespace webserver {
 		createSubscription("event_message");
 		createSubscription("event_counts");
 
-		METHOD_HANDLER("read", Access::EVENTS_VIEW, ApiRequest::METHOD_POST, (), false, EventApi::handleRead);
-		METHOD_HANDLER("counts", Access::EVENTS_VIEW, ApiRequest::METHOD_GET, (), false, EventApi::handleGetInfo);
-		METHOD_HANDLER("messages", Access::EVENTS_VIEW, ApiRequest::METHOD_GET, (NUM_PARAM(MAX_COUNT)), false, EventApi::handleGetLog);
+		METHOD_HANDLER(Access::EVENTS_VIEW, METHOD_POST,	(EXACT_PARAM("read")),						EventApi::handleRead);
+		METHOD_HANDLER(Access::EVENTS_VIEW, METHOD_GET,		(EXACT_PARAM("counts")),					EventApi::handleGetInfo);
+		METHOD_HANDLER(Access::EVENTS_VIEW, METHOD_GET,		(EXACT_PARAM("messages"), RANGE_MAX_PARAM), EventApi::handleGetLog);
 
-		METHOD_HANDLER("clear", Access::EVENTS_EDIT, ApiRequest::METHOD_POST, (), false, EventApi::handleClear);
-		METHOD_HANDLER("message", Access::EVENTS_EDIT, ApiRequest::METHOD_POST, (), true, EventApi::handlePostMessage);
+		METHOD_HANDLER(Access::EVENTS_EDIT, METHOD_POST,	(EXACT_PARAM("clear")),						EventApi::handleClear);
+		METHOD_HANDLER(Access::EVENTS_EDIT, METHOD_POST,	(EXACT_PARAM("message")),					EventApi::handlePostMessage);
 	}
 
 	EventApi::~EventApi() {

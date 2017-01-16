@@ -27,15 +27,15 @@ namespace webserver {
 
 		ShareManager::getInstance()->addListener(this);
 
-		METHOD_HANDLER("profiles", Access::ANY, ApiRequest::METHOD_GET, (), false, ShareProfileApi::handleGetProfiles);
+		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(EXACT_PARAM("profiles")),										ShareProfileApi::handleGetProfiles);
 
-		METHOD_HANDLER("profile", Access::ANY, ApiRequest::METHOD_GET, (TOKEN_PARAM), false, ShareProfileApi::handleGetProfile);
-		METHOD_HANDLER("profile", Access::ANY, ApiRequest::METHOD_GET, (EXACT_PARAM("default")), false, ShareProfileApi::handleGetDefaultProfile);
+		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(EXACT_PARAM("profile"), TOKEN_PARAM),							ShareProfileApi::handleGetProfile);
+		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(EXACT_PARAM("profile"), EXACT_PARAM("default")),				ShareProfileApi::handleGetDefaultProfile);
 
-		METHOD_HANDLER("profile", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (), true, ShareProfileApi::handleAddProfile);
-		METHOD_HANDLER("profile", Access::SETTINGS_EDIT, ApiRequest::METHOD_PATCH, (TOKEN_PARAM), true, ShareProfileApi::handleUpdateProfile);
-		METHOD_HANDLER("profile", Access::SETTINGS_EDIT, ApiRequest::METHOD_DELETE, (TOKEN_PARAM), false, ShareProfileApi::handleRemoveProfile);
-		METHOD_HANDLER("profile", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (TOKEN_PARAM, EXACT_PARAM("default")), false, ShareProfileApi::handleSetDefaultProfile);
+		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(EXACT_PARAM("profile")),										ShareProfileApi::handleAddProfile);
+		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_PATCH,	(EXACT_PARAM("profile"), TOKEN_PARAM),							ShareProfileApi::handleUpdateProfile);
+		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_DELETE,	(EXACT_PARAM("profile"), TOKEN_PARAM),							ShareProfileApi::handleRemoveProfile);
+		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(EXACT_PARAM("profile"), TOKEN_PARAM, EXACT_PARAM("default")),	ShareProfileApi::handleSetDefaultProfile);
 
 		createSubscription("share_profile_added");
 		createSubscription("share_profile_updated");

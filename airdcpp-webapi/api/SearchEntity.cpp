@@ -40,12 +40,12 @@ namespace webserver {
 		SubApiModule(aParentModule, aId, subscriptionList), search(aSearch),
 		searchView("search_view", this, SearchUtils::propertyHandler, std::bind(&SearchEntity::getResultList, this)) {
 
-		METHOD_HANDLER("hub_search", Access::SEARCH, ApiRequest::METHOD_POST, (), true, SearchEntity::handlePostHubSearch);
-		METHOD_HANDLER("user_search", Access::SEARCH, ApiRequest::METHOD_POST, (), true, SearchEntity::handlePostUserSearch);
+		METHOD_HANDLER(Access::SEARCH,		METHOD_POST,	(EXACT_PARAM("hub_search")),									SearchEntity::handlePostHubSearch);
+		METHOD_HANDLER(Access::SEARCH,		METHOD_POST,	(EXACT_PARAM("user_search")),									SearchEntity::handlePostUserSearch);
 
-		METHOD_HANDLER("results", Access::SEARCH, ApiRequest::METHOD_GET, (NUM_PARAM(START_POS), NUM_PARAM(MAX_COUNT)), false, SearchEntity::handleGetResults);
-		METHOD_HANDLER("result", Access::DOWNLOAD, ApiRequest::METHOD_POST, (TTH_PARAM, EXACT_PARAM("download")), false, SearchEntity::handleDownload);
-		METHOD_HANDLER("result", Access::SEARCH, ApiRequest::METHOD_GET, (TTH_PARAM, EXACT_PARAM("children")), false, SearchEntity::handleGetChildren);
+		METHOD_HANDLER(Access::SEARCH,		METHOD_GET,		(EXACT_PARAM("results"), RANGE_START_PARAM, RANGE_MAX_PARAM),	SearchEntity::handleGetResults);
+		METHOD_HANDLER(Access::DOWNLOAD,	METHOD_POST,	(EXACT_PARAM("result"), TTH_PARAM, EXACT_PARAM("download")),	SearchEntity::handleDownload);
+		METHOD_HANDLER(Access::SEARCH,		METHOD_GET,		(EXACT_PARAM("result"), TTH_PARAM, EXACT_PARAM("children")),	SearchEntity::handleGetChildren);
 	}
 
 	SearchEntity::~SearchEntity() {

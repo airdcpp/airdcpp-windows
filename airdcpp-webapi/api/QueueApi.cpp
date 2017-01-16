@@ -58,31 +58,31 @@ namespace webserver {
 		createSubscription("queue_file_tick");
 
 
-		METHOD_HANDLER("bundles", Access::QUEUE_VIEW, ApiRequest::METHOD_GET, (NUM_PARAM(START_POS), NUM_PARAM(MAX_COUNT)), false, QueueApi::handleGetBundles);
-		METHOD_HANDLER("bundles", Access::QUEUE_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("remove_completed")), false, QueueApi::handleRemoveCompletedBundles);
-		METHOD_HANDLER("bundles", Access::QUEUE_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("priority")), true, QueueApi::handleBundlePriorities);
+		METHOD_HANDLER(Access::QUEUE_VIEW,	METHOD_GET,		(EXACT_PARAM("bundles"), RANGE_START_PARAM, RANGE_MAX_PARAM),			QueueApi::handleGetBundles);
+		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_POST,	(EXACT_PARAM("bundles"), EXACT_PARAM("remove_completed")),				QueueApi::handleRemoveCompletedBundles);
+		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_POST,	(EXACT_PARAM("bundles"),EXACT_PARAM("priority")),						QueueApi::handleBundlePriorities);
 
-		METHOD_HANDLER("bundle", Access::DOWNLOAD, ApiRequest::METHOD_POST, (EXACT_PARAM("file")), true, QueueApi::handleAddFileBundle);
-		METHOD_HANDLER("bundle", Access::DOWNLOAD, ApiRequest::METHOD_POST, (EXACT_PARAM("directory")), true, QueueApi::handleAddDirectoryBundle);
+		METHOD_HANDLER(Access::DOWNLOAD,	METHOD_POST,	(EXACT_PARAM("bundle"),	EXACT_PARAM("file")),							QueueApi::handleAddFileBundle);
+		METHOD_HANDLER(Access::DOWNLOAD,	METHOD_POST,	(EXACT_PARAM("bundle"), EXACT_PARAM("directory")),						QueueApi::handleAddDirectoryBundle);
 
-		METHOD_HANDLER("bundle", Access::QUEUE_VIEW, ApiRequest::METHOD_GET, (TOKEN_PARAM, EXACT_PARAM("files"), NUM_PARAM(START_POS), NUM_PARAM(MAX_COUNT)), false, QueueApi::handleGetBundleFiles);
-		METHOD_HANDLER("bundle", Access::QUEUE_VIEW, ApiRequest::METHOD_GET, (TOKEN_PARAM, EXACT_PARAM("sources")), false, QueueApi::handleGetBundleSources);
-		METHOD_HANDLER("bundle", Access::QUEUE_EDIT, ApiRequest::METHOD_DELETE, (TOKEN_PARAM, EXACT_PARAM("source"), CID_PARAM), false, QueueApi::handleRemoveBundleSource);
+		METHOD_HANDLER(Access::QUEUE_VIEW,	METHOD_GET,		(EXACT_PARAM("bundle"), TOKEN_PARAM, EXACT_PARAM("files"), RANGE_START_PARAM, RANGE_MAX_PARAM), QueueApi::handleGetBundleFiles);
+		METHOD_HANDLER(Access::QUEUE_VIEW,	METHOD_GET,		(EXACT_PARAM("bundle"), TOKEN_PARAM, EXACT_PARAM("sources")),			QueueApi::handleGetBundleSources);
+		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_DELETE,	(EXACT_PARAM("bundle"), TOKEN_PARAM, EXACT_PARAM("source"), CID_PARAM), QueueApi::handleRemoveBundleSource);
 
-		METHOD_HANDLER("bundle", Access::QUEUE_VIEW, ApiRequest::METHOD_GET, (TOKEN_PARAM), false, QueueApi::handleGetBundle);
-		METHOD_HANDLER("bundle", Access::QUEUE_EDIT, ApiRequest::METHOD_POST, (TOKEN_PARAM, EXACT_PARAM("remove")), false, QueueApi::handleRemoveBundle);
-		METHOD_HANDLER("bundle", Access::QUEUE_EDIT, ApiRequest::METHOD_PATCH, (TOKEN_PARAM), true, QueueApi::handleUpdateBundle);
+		METHOD_HANDLER(Access::QUEUE_VIEW,	METHOD_GET,		(EXACT_PARAM("bundle"), TOKEN_PARAM),									QueueApi::handleGetBundle);
+		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_POST,	(EXACT_PARAM("bundle"), TOKEN_PARAM, EXACT_PARAM("remove")),			QueueApi::handleRemoveBundle);
+		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_PATCH,	(EXACT_PARAM("bundle"), TOKEN_PARAM),									QueueApi::handleUpdateBundle);
 
-		METHOD_HANDLER("bundle", Access::QUEUE_EDIT, ApiRequest::METHOD_POST, (TOKEN_PARAM, EXACT_PARAM("search")), false, QueueApi::handleSearchBundle);
-		METHOD_HANDLER("bundle", Access::QUEUE_EDIT, ApiRequest::METHOD_POST, (TOKEN_PARAM, EXACT_PARAM("share")), false, QueueApi::handleShareBundle);
+		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_POST,	(EXACT_PARAM("bundle"), TOKEN_PARAM, EXACT_PARAM("search")),			QueueApi::handleSearchBundle);
+		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_POST,	(EXACT_PARAM("bundle"), TOKEN_PARAM, EXACT_PARAM("share")),				QueueApi::handleShareBundle);
 
-		METHOD_HANDLER("file", Access::QUEUE_EDIT, ApiRequest::METHOD_POST, (TOKEN_PARAM, EXACT_PARAM("search")), false, QueueApi::handleSearchFile);
-		METHOD_HANDLER("file", Access::QUEUE_EDIT, ApiRequest::METHOD_PATCH, (TOKEN_PARAM), true, QueueApi::handleUpdateFile);
+		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_POST,	(EXACT_PARAM("file"), TOKEN_PARAM, EXACT_PARAM("search")),				QueueApi::handleSearchFile);
+		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_PATCH,	(EXACT_PARAM("file"), TOKEN_PARAM),										QueueApi::handleUpdateFile);
 
-		METHOD_HANDLER("source", Access::QUEUE_EDIT, ApiRequest::METHOD_DELETE, (CID_PARAM), false, QueueApi::handleRemoveSource);
+		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_DELETE,	(EXACT_PARAM("source"), CID_PARAM),										QueueApi::handleRemoveSource);
 
-		METHOD_HANDLER("remove_file", Access::QUEUE_EDIT, ApiRequest::METHOD_POST, (), true, QueueApi::handleRemoveTarget);
-		METHOD_HANDLER("find_dupe_paths", Access::ANY, ApiRequest::METHOD_POST, (), true, QueueApi::handleFindDupePaths);
+		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_POST,	(EXACT_PARAM("remove_file")),											QueueApi::handleRemoveTarget);
+		METHOD_HANDLER(Access::ANY,			METHOD_POST,	(EXACT_PARAM("find_dupe_paths")),										QueueApi::handleFindDupePaths);
 	}
 
 	QueueApi::~QueueApi() {
@@ -386,7 +386,7 @@ namespace webserver {
 
 	// FILES (COMMON)
 	api_return QueueApi::handleGetFile(ApiRequest& aRequest) {
-		//auto success = QueueManager::getInstance()->findFile(aRequest.getTokenParam(TOKEN_ID));
+		//auto success = QueueManager::getInstance()->findFile(aRequest.getTokenParam(TOKEN_PARAM_ID));
 		//return success ? websocketpp::http::status_code::ok : websocketpp::http::status_code::not_found;
 		return websocketpp::http::status_code::ok;
 	}

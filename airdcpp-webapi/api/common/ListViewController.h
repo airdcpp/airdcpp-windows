@@ -54,14 +54,14 @@ namespace webserver {
 			auto& requestHandlers = aModule->getRequestHandlers();
 
 			auto access = aModule->getSubscriptionAccess();
-			METHOD_HANDLER(viewName, access, ApiRequest::METHOD_POST, (EXACT_PARAM("filter")), false, ListViewController::handlePostFilter);
-			METHOD_HANDLER(viewName, access, ApiRequest::METHOD_PUT, (EXACT_PARAM("filter"), TOKEN_PARAM), true, ListViewController::handlePutFilter);
-			METHOD_HANDLER(viewName, access, ApiRequest::METHOD_DELETE, (EXACT_PARAM("filter"), TOKEN_PARAM), false, ListViewController::handleDeleteFilter);
+			METHOD_HANDLER(access, METHOD_POST, (EXACT_PARAM(viewName), EXACT_PARAM("filter")), ListViewController::handlePostFilter);
+			METHOD_HANDLER(access, METHOD_PUT, (EXACT_PARAM(viewName), EXACT_PARAM("filter"), TOKEN_PARAM), ListViewController::handlePutFilter);
+			METHOD_HANDLER(access, METHOD_DELETE, (EXACT_PARAM(viewName), EXACT_PARAM("filter"), TOKEN_PARAM), ListViewController::handleDeleteFilter);
 
-			METHOD_HANDLER(viewName, access, ApiRequest::METHOD_POST, (EXACT_PARAM("settings")), true, ListViewController::handlePostSettings);
-			METHOD_HANDLER(viewName, access, ApiRequest::METHOD_DELETE, (), false, ListViewController::handleReset);
+			METHOD_HANDLER(access, METHOD_POST, (EXACT_PARAM(viewName), EXACT_PARAM("settings")), ListViewController::handlePostSettings);
+			METHOD_HANDLER(access, METHOD_DELETE, (EXACT_PARAM(viewName)), ListViewController::handleReset);
 
-			METHOD_HANDLER(viewName, access, ApiRequest::METHOD_GET, (EXACT_PARAM("items"), NUM_PARAM(START_POS), NUM_PARAM(MAX_COUNT)), false, ListViewController::handleGetItems);
+			METHOD_HANDLER(access, METHOD_GET, (EXACT_PARAM(viewName), EXACT_PARAM("items"), RANGE_START_PARAM, RANGE_MAX_PARAM), ListViewController::handleGetItems);
 		}
 
 		~ListViewController() {

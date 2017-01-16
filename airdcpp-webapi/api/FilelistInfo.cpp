@@ -34,10 +34,10 @@ namespace webserver {
 		dl(aFilelist),
 		directoryView("filelist_view", this, FilelistUtils::propertyHandler, std::bind(&FilelistInfo::getCurrentViewItems, this))
 	{
-		METHOD_HANDLER("directory", Access::FILELISTS_VIEW, ApiRequest::METHOD_POST, (), true, FilelistInfo::handleChangeDirectory);
-		METHOD_HANDLER("read", Access::VIEW_FILES_VIEW, ApiRequest::METHOD_POST, (), false, FilelistInfo::handleSetRead);
+		METHOD_HANDLER(Access::FILELISTS_VIEW,	METHOD_POST,	(EXACT_PARAM("directory")),									FilelistInfo::handleChangeDirectory);
+		METHOD_HANDLER(Access::VIEW_FILES_VIEW,	METHOD_POST,	(EXACT_PARAM("read")),										FilelistInfo::handleSetRead);
 
-		METHOD_HANDLER("items", Access::FILELISTS_VIEW, ApiRequest::METHOD_GET, (NUM_PARAM(START_POS), NUM_PARAM(MAX_COUNT)), false, FilelistInfo::handleGetItems);
+		METHOD_HANDLER(Access::FILELISTS_VIEW,	METHOD_GET,		(EXACT_PARAM("items"), RANGE_START_PARAM, RANGE_MAX_PARAM), FilelistInfo::handleGetItems);
 	}
 
 	void FilelistInfo::init() noexcept {

@@ -35,15 +35,15 @@
 namespace webserver {
 	SystemApi::SystemApi(Session* aSession) : SubscribableApiModule(aSession, Access::ANY) {
 
-		METHOD_HANDLER("stats", Access::ANY, ApiRequest::METHOD_GET, (), false, SystemApi::handleGetStats);
+		METHOD_HANDLER(Access::ANY, METHOD_GET,		(EXACT_PARAM("stats")),			SystemApi::handleGetStats);
 
-		METHOD_HANDLER("away", Access::ANY, ApiRequest::METHOD_GET, (), false, SystemApi::handleGetAwayState);
-		METHOD_HANDLER("away", Access::ANY, ApiRequest::METHOD_POST, (), true, SystemApi::handleSetAway);
+		METHOD_HANDLER(Access::ANY, METHOD_GET,		(EXACT_PARAM("away")),			SystemApi::handleGetAwayState);
+		METHOD_HANDLER(Access::ANY, METHOD_POST,	(EXACT_PARAM("away")),			SystemApi::handleSetAway);
 
-		METHOD_HANDLER("restart_web", Access::ADMIN, ApiRequest::METHOD_POST, (), false, SystemApi::handleRestartWeb);
-		METHOD_HANDLER("shutdown", Access::ADMIN, ApiRequest::METHOD_POST, (), false, SystemApi::handleShutdown);
+		METHOD_HANDLER(Access::ADMIN, METHOD_POST,	(EXACT_PARAM("restart_web")),	SystemApi::handleRestartWeb);
+		METHOD_HANDLER(Access::ADMIN, METHOD_POST,	(EXACT_PARAM("shutdown")),		SystemApi::handleShutdown);
 
-		METHOD_HANDLER("system_info", Access::ANY, ApiRequest::METHOD_GET, (), false, SystemApi::handleGetSystemInfo);
+		METHOD_HANDLER(Access::ANY, METHOD_GET,		(EXACT_PARAM("system_info")),	SystemApi::handleGetSystemInfo);
 
 		createSubscription("away_state");
 

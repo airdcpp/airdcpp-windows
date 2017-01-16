@@ -46,13 +46,13 @@ namespace webserver {
 			auto paramMatcher = ApiModule::RequestHandler::Param(SUBMODULE_ID, std::move(aIdMatcher));
 
 			// Get module
-			METHOD_HANDLER(aSubmoduleSection, aAccess, ApiRequest::METHOD_GET, (paramMatcher), false, Type::handleGetSubmodule);
+			METHOD_HANDLER(aAccess, METHOD_GET, (EXACT_PARAM(aSubmoduleSection), paramMatcher), Type::handleGetSubmodule);
 
 			// List modules
-			METHOD_HANDLER(aSubmoduleSection + "s", aAccess, ApiRequest::METHOD_GET, (), false, Type::handleGetSubmodules);
+			METHOD_HANDLER(aAccess, METHOD_GET, (EXACT_PARAM(aSubmoduleSection + "s")), Type::handleGetSubmodules);
 
 			// Request forwarder
-			METHOD_HANDLER(aSubmoduleSection, Access::ANY, ApiRequest::METHOD_FORWARD, (paramMatcher), false, Type::handleSubModuleRequest);
+			METHOD_HANDLER(Access::ANY, METHOD_FORWARD, (EXACT_PARAM(aSubmoduleSection), paramMatcher), Type::handleSubModuleRequest);
 
 			for (const auto& s: aChildSubscription) {
 				childSubscriptions.emplace(s, false);
@@ -80,7 +80,7 @@ namespace webserver {
 				return websocketpp::http::status_code::precondition_required;
 			}
 
-			const auto& subscription = aRequest.getStringParam(LISTENER_ID);
+			const auto& subscription = aRequest.getStringParam(LISTENER_PARAM_ID);
 			if (setChildSubscriptionState(subscription, true)) {
 				return websocketpp::http::status_code::ok;
 			}
@@ -89,7 +89,7 @@ namespace webserver {
 		}
 
 		api_return handleUnsubscribe(ApiRequest& aRequest) override {
-			const auto& subscription = aRequest.getStringParam(LISTENER_ID);
+			const auto& subscription = aRequest.getStringParam(LISTENER_PARAM_ID);
 			if (setChildSubscriptionState(subscription, false)) {
 				return websocketpp::http::status_code::ok;
 			}
@@ -101,7 +101,9 @@ namespace webserver {
 		api_return handleSubModuleRequest(ApiRequest& aRequest) {
 			auto sub = getSubModule(aRequest);
 
-			aRequest.popParam();
+			// Remove section and module ID
+			aRequest.popParam(2);
+
 			return sub->handleRequest(aRequest);
 		}
 

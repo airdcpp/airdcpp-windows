@@ -61,8 +61,8 @@ namespace webserver {
 			throw std::invalid_argument("Unsupported method");
 		}
 
-		// Version, module and command are always mandatory
-		if (static_cast<int>(parameters.size()) < 3) {
+		// Version and module are always mandatory
+		if (static_cast<int>(parameters.size()) < 2) {
 			throw std::invalid_argument("Not enough URL parameters");
 		}
 

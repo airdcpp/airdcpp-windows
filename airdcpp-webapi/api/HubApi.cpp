@@ -40,14 +40,14 @@ namespace webserver {
 
 		ClientManager::getInstance()->addListener(this);
 
-		METHOD_HANDLER("session", Access::HUBS_EDIT, ApiRequest::METHOD_POST, (), true, HubApi::handleConnect);
-		METHOD_HANDLER("session", Access::HUBS_EDIT, ApiRequest::METHOD_DELETE, (TOKEN_PARAM), false, HubApi::handleDisconnect);
+		METHOD_HANDLER(Access::HUBS_EDIT,	METHOD_POST,	(EXACT_PARAM("session")),				HubApi::handleConnect);
+		METHOD_HANDLER(Access::HUBS_EDIT,	METHOD_DELETE,	(EXACT_PARAM("session"), TOKEN_PARAM),	HubApi::handleDisconnect);
 
-		METHOD_HANDLER("stats", Access::ANY, ApiRequest::METHOD_GET, (), false, HubApi::handleGetStats);
-		METHOD_HANDLER("find_by_url", Access::HUBS_VIEW, ApiRequest::METHOD_POST, (), true, HubApi::handleFindByUrl);
+		METHOD_HANDLER(Access::ANY,			METHOD_GET,		(EXACT_PARAM("stats")),					HubApi::handleGetStats);
+		METHOD_HANDLER(Access::HUBS_VIEW,	METHOD_POST,	(EXACT_PARAM("find_by_url")),			HubApi::handleFindByUrl);
 
-		METHOD_HANDLER("chat_message", Access::HUBS_SEND, ApiRequest::METHOD_POST, (), true, HubApi::handlePostMessage);
-		METHOD_HANDLER("status_message", Access::HUBS_EDIT, ApiRequest::METHOD_POST, (), true, HubApi::handlePostStatus);
+		METHOD_HANDLER(Access::HUBS_SEND,	METHOD_POST,	(EXACT_PARAM("chat_message")),			HubApi::handlePostMessage);
+		METHOD_HANDLER(Access::HUBS_EDIT,	METHOD_POST,	(EXACT_PARAM("status_message")),		HubApi::handlePostStatus);
 
 		auto rawHubs = ClientManager::getInstance()->getClients();
 		for (const auto& c : rawHubs | map_values) {

@@ -43,16 +43,16 @@ namespace webserver {
 
 		DirectoryListingManager::getInstance()->addListener(this);;
 
-		METHOD_HANDLER("session", Access::FILELISTS_EDIT, ApiRequest::METHOD_POST, (), true, FilelistApi::handlePostList);
-		METHOD_HANDLER("session", Access::FILELISTS_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("me")), true, FilelistApi::handleOwnList);
-		METHOD_HANDLER("session", Access::FILELISTS_EDIT, ApiRequest::METHOD_DELETE, (CID_PARAM), false, FilelistApi::handleDeleteList);
+		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_POST,	(EXACT_PARAM("session")),							FilelistApi::handlePostList);
+		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_POST,	(EXACT_PARAM("session"), EXACT_PARAM("me")),		FilelistApi::handleOwnList);
+		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_DELETE,	(EXACT_PARAM("session"), CID_PARAM),				FilelistApi::handleDeleteList);
 
-		METHOD_HANDLER("directory_downloads", Access::DOWNLOAD, ApiRequest::METHOD_GET, (), false, FilelistApi::handleGetDirectoryDownloads);
-		METHOD_HANDLER("directory_download", Access::DOWNLOAD, ApiRequest::METHOD_POST, (), true, FilelistApi::handlePostDirectoryDownload);
-		METHOD_HANDLER("directory_download", Access::DOWNLOAD, ApiRequest::METHOD_DELETE, (TOKEN_PARAM), false, FilelistApi::handleDeleteDirectoryDownload);
+		METHOD_HANDLER(Access::DOWNLOAD,		METHOD_GET,		(EXACT_PARAM("directory_downloads")),				FilelistApi::handleGetDirectoryDownloads);
+		METHOD_HANDLER(Access::DOWNLOAD,		METHOD_POST,	(EXACT_PARAM("directory_download")),				FilelistApi::handlePostDirectoryDownload);
+		METHOD_HANDLER(Access::DOWNLOAD,		METHOD_DELETE,	(EXACT_PARAM("directory_download"), TOKEN_PARAM),	FilelistApi::handleDeleteDirectoryDownload);
 
-		METHOD_HANDLER("find_nfo", Access::VIEW_FILES_EDIT, ApiRequest::METHOD_POST, (), true, FilelistApi::handleFindNfo);
-		METHOD_HANDLER("match_queue", Access::QUEUE_EDIT, ApiRequest::METHOD_POST, (), true, FilelistApi::handleMatchQueue);
+		METHOD_HANDLER(Access::VIEW_FILES_EDIT,	METHOD_POST,	(EXACT_PARAM("find_nfo")),							FilelistApi::handleFindNfo);
+		METHOD_HANDLER(Access::QUEUE_EDIT,		METHOD_POST,	(EXACT_PARAM("match_queue")),						FilelistApi::handleMatchQueue);
 
 		auto rawLists = DirectoryListingManager::getInstance()->getLists();
 		for (const auto& list : rawLists | map_values) {

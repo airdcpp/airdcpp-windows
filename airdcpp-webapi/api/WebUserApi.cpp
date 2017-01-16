@@ -33,12 +33,12 @@ namespace webserver {
 
 		um.addListener(this);
 
-		METHOD_HANDLER("users", Access::ADMIN, ApiRequest::METHOD_GET, (), false, WebUserApi::handleGetUsers);
+		METHOD_HANDLER(Access::ADMIN, METHOD_GET,		(EXACT_PARAM("users")),								WebUserApi::handleGetUsers);
 
-		METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_POST, (), true, WebUserApi::handleAddUser);
-		METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_GET, (STR_PARAM(USERNAME_PARAM)), false, WebUserApi::handleGetUser);
-		METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_PATCH, (STR_PARAM(USERNAME_PARAM)), true, WebUserApi::handleUpdateUser);
-		METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_DELETE, (STR_PARAM(USERNAME_PARAM)), false, WebUserApi::handleRemoveUser);
+		METHOD_HANDLER(Access::ADMIN, METHOD_POST,		(EXACT_PARAM("user")),								WebUserApi::handleAddUser);
+		METHOD_HANDLER(Access::ADMIN, METHOD_GET,		(EXACT_PARAM("user"), STR_PARAM(USERNAME_PARAM)),	WebUserApi::handleGetUser);
+		METHOD_HANDLER(Access::ADMIN, METHOD_PATCH,		(EXACT_PARAM("user"), STR_PARAM(USERNAME_PARAM)),	WebUserApi::handleUpdateUser);
+		METHOD_HANDLER(Access::ADMIN, METHOD_DELETE,	(EXACT_PARAM("user"), STR_PARAM(USERNAME_PARAM)),	WebUserApi::handleRemoveUser);
 
 		createSubscription("web_user_added");
 		createSubscription("web_user_updated");

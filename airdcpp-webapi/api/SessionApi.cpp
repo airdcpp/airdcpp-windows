@@ -36,15 +36,15 @@
 
 namespace webserver {
 	SessionApi::SessionApi(Session* aSession) : SubscribableApiModule(aSession, Access::ADMIN) {
-		METHOD_HANDLER("activity", Access::ANY, ApiRequest::METHOD_POST, (), false, SessionApi::handleActivity);
-		METHOD_HANDLER("auth", Access::ANY, ApiRequest::METHOD_DELETE, (), false, SessionApi::handleLogout);
+		METHOD_HANDLER(Access::ANY, METHOD_POST, (EXACT_PARAM("activity")), SessionApi::handleActivity);
+		METHOD_HANDLER(Access::ANY, METHOD_DELETE, (EXACT_PARAM("auth")), SessionApi::handleLogout);
 
 		// Just fail these...
-		METHOD_HANDLER("auth", Access::ANY, ApiRequest::METHOD_POST, (), false, SessionApi::failAuthenticatedRequest);
-		METHOD_HANDLER("socket", Access::ANY, ApiRequest::METHOD_POST, (), false, SessionApi::failAuthenticatedRequest);
+		METHOD_HANDLER(Access::ANY, METHOD_POST, (EXACT_PARAM("auth")), SessionApi::failAuthenticatedRequest);
+		METHOD_HANDLER(Access::ANY, METHOD_POST, (EXACT_PARAM("socket")), SessionApi::failAuthenticatedRequest);
 
-		METHOD_HANDLER("sessions", Access::ADMIN, ApiRequest::METHOD_GET, (), false, SessionApi::handleGetSessions);
-		METHOD_HANDLER("session", Access::ANY, ApiRequest::METHOD_GET, (), false, SessionApi::handleGetCurrentSession);
+		METHOD_HANDLER(Access::ADMIN, METHOD_GET, (EXACT_PARAM("sessions")), SessionApi::handleGetSessions);
+		METHOD_HANDLER(Access::ANY, METHOD_GET, (EXACT_PARAM("session")), SessionApi::handleGetCurrentSession);
 
 		aSession->getServer()->getUserManager().addListener(this);
 
