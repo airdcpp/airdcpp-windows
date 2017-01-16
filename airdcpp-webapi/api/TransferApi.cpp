@@ -166,7 +166,7 @@ namespace webserver {
 	}
 
 	TransferInfoPtr TransferApi::getTransfer(ApiRequest& aRequest) const {
-		auto wantedId = aRequest.getTokenParam(0);
+		auto wantedId = aRequest.getTokenParam();
 
 		RLock l(cs);
 		auto ret = boost::find_if(transfers | map_values, [&](const TransferInfoPtr& aInfo) {

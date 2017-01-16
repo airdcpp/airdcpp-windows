@@ -37,7 +37,7 @@ namespace webserver {
 		METHOD_HANDLER("directory", Access::FILELISTS_VIEW, ApiRequest::METHOD_POST, (), true, FilelistInfo::handleChangeDirectory);
 		METHOD_HANDLER("read", Access::VIEW_FILES_VIEW, ApiRequest::METHOD_POST, (), false, FilelistInfo::handleSetRead);
 
-		METHOD_HANDLER("items", Access::FILELISTS_VIEW, ApiRequest::METHOD_GET, (NUM_PARAM, NUM_PARAM), false, FilelistInfo::handleGetItems);
+		METHOD_HANDLER("items", Access::FILELISTS_VIEW, ApiRequest::METHOD_GET, (NUM_PARAM(START_POS), NUM_PARAM(MAX_COUNT)), false, FilelistInfo::handleGetItems);
 	}
 
 	void FilelistInfo::init() noexcept {
@@ -59,8 +59,8 @@ namespace webserver {
 	}
 
 	api_return FilelistInfo::handleGetItems(ApiRequest& aRequest) {
-		int start = aRequest.getRangeParam(0);
-		int count = aRequest.getRangeParam(1);
+		int start = aRequest.getRangeParam(START_POS);
+		int count = aRequest.getRangeParam(MAX_COUNT);
 
 		{
 			RLock l(cs);

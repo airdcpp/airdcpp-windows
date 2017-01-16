@@ -37,7 +37,7 @@ namespace webserver {
 	};
 
 	SearchApi::SearchApi(Session* aSession) : 
-		ParentApiModule("instance", TOKEN_PARAM, Access::SEARCH, aSession, subscriptionList, SearchEntity::subscriptionList,
+		ParentApiModule("instance", TOKEN_REG, Access::SEARCH, aSession, subscriptionList, SearchEntity::subscriptionList,
 			[](const string& aId) { return Util::toUInt32(aId); },
 			[](const SearchEntity& aInfo) { return serializeSearchInstance(aInfo); }
 		),

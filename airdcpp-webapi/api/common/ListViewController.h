@@ -61,7 +61,7 @@ namespace webserver {
 			METHOD_HANDLER(viewName, access, ApiRequest::METHOD_POST, (EXACT_PARAM("settings")), true, ListViewController::handlePostSettings);
 			METHOD_HANDLER(viewName, access, ApiRequest::METHOD_DELETE, (), false, ListViewController::handleReset);
 
-			METHOD_HANDLER(viewName, access, ApiRequest::METHOD_GET, (EXACT_PARAM("items"), NUM_PARAM, NUM_PARAM), false, ListViewController::handleGetItems);
+			METHOD_HANDLER(viewName, access, ApiRequest::METHOD_GET, (EXACT_PARAM("items"), NUM_PARAM(START_POS), NUM_PARAM(MAX_COUNT)), false, ListViewController::handleGetItems);
 		}
 
 		~ListViewController() {
@@ -225,7 +225,7 @@ namespace webserver {
 
 			{
 				WLock l(cs);
-				auto i = findFilter(aRequest.getTokenParam(1));
+				auto i = findFilter(aRequest.getTokenParam());
 				if (i == filters.end()) {
 					aRequest.setResponseErrorStr("Filter not found");
 					return websocketpp::http::status_code::bad_request;
@@ -241,7 +241,7 @@ namespace webserver {
 		api_return handleDeleteFilter(ApiRequest& aRequest) {
 			const auto& reqJson = aRequest.getRequestBody();
 
-			if (!removeFilter(aRequest.getTokenParam(1))) {
+			if (!removeFilter(aRequest.getTokenParam())) {
 				aRequest.setResponseErrorStr("Filter not found");
 				return websocketpp::http::status_code::bad_request;
 			}
@@ -426,8 +426,8 @@ namespace webserver {
 		}
 
 		api_return handleGetItems(ApiRequest& aRequest) {
-			auto start = aRequest.getRangeParam(1);
-			auto end = aRequest.getRangeParam(2);
+			auto start = aRequest.getRangeParam(START_POS);
+			auto end = aRequest.getRangeParam(MAX_COUNT);
 			decltype(matchingItems) matchingItemsCopy;
 
 			{

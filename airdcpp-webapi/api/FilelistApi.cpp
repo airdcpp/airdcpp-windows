@@ -34,7 +34,7 @@ namespace webserver {
 	};
 
 	FilelistApi::FilelistApi(Session* aSession) : 
-		ParentApiModule("session", CID_PARAM, Access::FILELISTS_VIEW, aSession, FilelistApi::subscriptionList, 
+		ParentApiModule("session", CID_REG, Access::FILELISTS_VIEW, aSession, FilelistApi::subscriptionList, 
 			FilelistInfo::subscriptionList, 
 			[](const string& aId) { return Deserializer::parseCID(aId); },
 			[](const FilelistInfo& aInfo) { return serializeList(aInfo.getList()); }
@@ -266,7 +266,7 @@ namespace webserver {
 	}
 
 	api_return FilelistApi::handleDeleteDirectoryDownload(ApiRequest& aRequest) {
-		auto removed = DirectoryListingManager::getInstance()->removeDirectoryDownload(aRequest.getTokenParam(0));
+		auto removed = DirectoryListingManager::getInstance()->removeDirectoryDownload(aRequest.getTokenParam());
 		if (!removed) {
 			aRequest.setResponseErrorStr("Directory download not found");
 			return websocketpp::http::status_code::not_found;

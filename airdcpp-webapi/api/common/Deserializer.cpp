@@ -35,12 +35,15 @@ namespace webserver {
 	}
 
 	UserPtr Deserializer::getUser(const string& aCID, bool aAllowMe) {
-		auto cid = parseCID(aCID);
-		if (!aAllowMe && cid == ClientManager::getInstance()->getMyCID()) {
+		return getUser(parseCID(aCID), aAllowMe);
+	}
+
+	UserPtr Deserializer::getUser(const CID& aCID, bool aAllowMe) {
+		if (!aAllowMe && aCID == ClientManager::getInstance()->getMyCID()) {
 			throw std::invalid_argument("Own CID isn't allowed for this command");
 		}
 
-		auto u = ClientManager::getInstance()->findUser(cid);
+		auto u = ClientManager::getInstance()->findUser(aCID);
 		if (!u) {
 			throw std::invalid_argument("User not found");
 		}

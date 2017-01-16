@@ -36,6 +36,7 @@ namespace webserver {
 		// Get user with the provided CID
 		// Throws if the user is not found
 		static UserPtr getUser(const string& aCID, bool aAllowMe);
+		static UserPtr getUser(const CID& aCID, bool aAllowMe);
 
 		static TTHValue parseTTH(const string& aTTH);
 

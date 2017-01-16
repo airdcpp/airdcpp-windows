@@ -53,7 +53,7 @@ namespace webserver {
 	}
 
 	UserPtr UserApi::getUser(ApiRequest& aRequest) {
-		return Deserializer::getUser(aRequest.getStringParam(0), true);
+		return Deserializer::getUser(aRequest.getCIDParam(), true);
 	}
 
 	api_return UserApi::handleGetUser(ApiRequest& aRequest) {

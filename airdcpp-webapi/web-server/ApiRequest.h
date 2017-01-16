@@ -24,10 +24,15 @@
 #include <airdcpp/typedefs.h>
 #include <airdcpp/GetSet.h>
 
+#define TOKEN_ID "id"
+#define TTH_ID "tth"
+#define CID_ID "cid"
+
 namespace webserver {
 	class ApiRequest {
 	public:
-		typedef deque<std::string> RequestParamList;
+		typedef std::deque<std::string> ParamList;
+		typedef std::map<std::string, std::string> NamedParamMap;
 		enum Method {
 			METHOD_POST,
 			METHOD_GET,
@@ -58,17 +63,24 @@ namespace webserver {
 			return methodStr;
 		}
 
-		const RequestParamList& getParameters() const noexcept {
+		const ParamList& getParameters() const noexcept {
 			return parameters;
 		}
 
 		void popParam(size_t aCount = 1) noexcept;
 
-		const std::string& getStringParam(int pos) const noexcept;
+		const std::string& getStringParam(const string& aName) const noexcept;
+		const std::string& getParamAt(int aIndex) const noexcept;
+
+		// Throws in case of errors
+		TTHValue getTTHParam(const string& aName = TTH_ID) const;
+
+		// Throws in case of errors
+		CID getCIDParam(const string& aName = CID_ID) const;
 
 		// Use different naming to avoid accidentally using wrong conversion...
-		uint32_t getTokenParam(int pos) const noexcept;
-		int getRangeParam(int pos) const noexcept;
+		uint32_t getTokenParam(const string& aName = TOKEN_ID) const noexcept;
+		int getRangeParam(const string& aName) const noexcept;
 
 		//GETSET(std::string , response, Response);
 		GETSET(SessionPtr, session, Session);
@@ -97,9 +109,12 @@ namespace webserver {
 		void setResponseErrorJson(const json& aError) {
 			responseJsonError = aError;
 		}
+
+		void setNamedParams(const NamedParamMap& aParams) noexcept;
 	private:
 		const string methodStr;
-		RequestParamList parameters;
+		ParamList parameters;
+		NamedParamMap namedParameters;
 		int apiVersion = -1;
 		std::string apiModule;
 

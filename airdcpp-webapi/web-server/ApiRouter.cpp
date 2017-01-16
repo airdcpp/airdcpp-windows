@@ -148,9 +148,9 @@ namespace webserver {
 	}
 
 	api_return ApiRouter::routeAuthRequest(ApiRequest& aRequest, bool aIsSecure, const WebSocketPtr& aSocket, const string& aIp) {
-		if (aRequest.getStringParam(0) == "auth" && aRequest.getMethod() == ApiRequest::METHOD_POST) {
+		if (aRequest.getParamAt(0) == "auth" && aRequest.getMethod() == ApiRequest::METHOD_POST) {
 			return SessionApi::handleLogin(aRequest, aIsSecure, aSocket, aIp);
-		} else if (aRequest.getStringParam(0) == "socket" && aRequest.getMethod() == ApiRequest::METHOD_POST) {
+		} else if (aRequest.getParamAt(0) == "socket" && aRequest.getMethod() == ApiRequest::METHOD_POST) {
 			return SessionApi::handleSocketConnect(aRequest, aIsSecure, aSocket);
 		}
 

@@ -26,6 +26,7 @@
 #include <web-server/Session.h>
 #include <web-server/WebUserManager.h>
 
+#define USERNAME_PARAM "username"
 namespace webserver {
 	WebUserApi::WebUserApi(Session* aSession) : SubscribableApiModule(aSession, Access::ADMIN), um(aSession->getServer()->getUserManager()),
 		view("web_user_view", this, WebUserUtils::propertyHandler, std::bind(&WebUserApi::getUsers, this)) {
@@ -35,9 +36,9 @@ namespace webserver {
 		METHOD_HANDLER("users", Access::ADMIN, ApiRequest::METHOD_GET, (), false, WebUserApi::handleGetUsers);
 
 		METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_POST, (), true, WebUserApi::handleAddUser);
-		METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_GET, (STR_PARAM), false, WebUserApi::handleGetUser);
-		METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_PATCH, (STR_PARAM), true, WebUserApi::handleUpdateUser);
-		METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_DELETE, (STR_PARAM), false, WebUserApi::handleRemoveUser);
+		METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_GET, (STR_PARAM(USERNAME_PARAM)), false, WebUserApi::handleGetUser);
+		METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_PATCH, (STR_PARAM(USERNAME_PARAM)), true, WebUserApi::handleUpdateUser);
+		METHOD_HANDLER("user", Access::ADMIN, ApiRequest::METHOD_DELETE, (STR_PARAM(USERNAME_PARAM)), false, WebUserApi::handleRemoveUser);
 
 		createSubscription("web_user_added");
 		createSubscription("web_user_updated");
@@ -59,7 +60,7 @@ namespace webserver {
 	}
 
 	api_return WebUserApi::handleGetUser(ApiRequest& aRequest) {
-		auto user = um.getUser(aRequest.getStringParam(0));
+		auto user = um.getUser(aRequest.getStringParam(USERNAME_PARAM));
 		if (!user) {
 			aRequest.setResponseErrorStr("User not found");
 			return websocketpp::http::status_code::not_found;
@@ -106,7 +107,7 @@ namespace webserver {
 	api_return WebUserApi::handleUpdateUser(ApiRequest& aRequest) {
 		const auto& reqJson = aRequest.getRequestBody();
 
-		auto userName = aRequest.getStringParam(0);
+		auto userName = aRequest.getStringParam(USERNAME_PARAM);
 
 		auto user = um.getUser(userName);
 		if (!user) {
@@ -122,7 +123,7 @@ namespace webserver {
 	}
 
 	api_return WebUserApi::handleRemoveUser(ApiRequest& aRequest) {
-		auto userName = aRequest.getStringParam(0);
+		auto userName = aRequest.getStringParam(USERNAME_PARAM);
 		if (!um.removeUser(userName)) {
 			aRequest.setResponseErrorStr("User not found");
 			return websocketpp::http::status_code::not_found;

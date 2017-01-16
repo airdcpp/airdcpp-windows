@@ -43,9 +43,9 @@ namespace webserver {
 		METHOD_HANDLER("hub_search", Access::SEARCH, ApiRequest::METHOD_POST, (), true, SearchEntity::handlePostHubSearch);
 		METHOD_HANDLER("user_search", Access::SEARCH, ApiRequest::METHOD_POST, (), true, SearchEntity::handlePostUserSearch);
 
-		METHOD_HANDLER("results", Access::SEARCH, ApiRequest::METHOD_GET, (NUM_PARAM, NUM_PARAM), false, SearchEntity::handleGetResults);
-		METHOD_HANDLER("result", Access::DOWNLOAD, ApiRequest::METHOD_POST, (TOKEN_PARAM, EXACT_PARAM("download")), false, SearchEntity::handleDownload);
-		METHOD_HANDLER("result", Access::SEARCH, ApiRequest::METHOD_GET, (TOKEN_PARAM, EXACT_PARAM("children")), false, SearchEntity::handleGetChildren);
+		METHOD_HANDLER("results", Access::SEARCH, ApiRequest::METHOD_GET, (NUM_PARAM(START_POS), NUM_PARAM(MAX_COUNT)), false, SearchEntity::handleGetResults);
+		METHOD_HANDLER("result", Access::DOWNLOAD, ApiRequest::METHOD_POST, (TTH_PARAM, EXACT_PARAM("download")), false, SearchEntity::handleDownload);
+		METHOD_HANDLER("result", Access::SEARCH, ApiRequest::METHOD_GET, (TTH_PARAM, EXACT_PARAM("children")), false, SearchEntity::handleGetChildren);
 	}
 
 	SearchEntity::~SearchEntity() {
@@ -70,15 +70,14 @@ namespace webserver {
 
 	api_return SearchEntity::handleGetResults(ApiRequest& aRequest) {
 		// Serialize the most relevant results first
-		auto j = Serializer::serializeItemList(aRequest.getRangeParam(0), aRequest.getRangeParam(1), SearchUtils::propertyHandler, search->getResultSet());
+		auto j = Serializer::serializeItemList(aRequest.getRangeParam(START_POS), aRequest.getRangeParam(MAX_COUNT), SearchUtils::propertyHandler, search->getResultSet());
 
 		aRequest.setResponseBody(j);
 		return websocketpp::http::status_code::ok;
 	}
 
 	api_return SearchEntity::handleGetChildren(ApiRequest& aRequest) {
-		//auto result = getResult(aRequest.getTokenParam(0));
-		auto result = search->getResult(Deserializer::parseTTH(aRequest.getStringParam(0)));
+		auto result = search->getResult(aRequest.getTTHParam());
 		if (!result) {
 			aRequest.setResponseErrorStr("Result not found");
 			return websocketpp::http::status_code::not_found;
@@ -101,8 +100,7 @@ namespace webserver {
 	}
 
 	api_return SearchEntity::handleDownload(ApiRequest& aRequest) {
-		//auto result = search->getResult(aRequest.getTokenParam(0));
-		auto result = search->getResult(Deserializer::parseTTH(aRequest.getStringParam(0)));
+		auto result = search->getResult(aRequest.getTTHParam());
 		if (!result) {
 			aRequest.setResponseErrorStr("Result not found");
 			return websocketpp::http::status_code::not_found;

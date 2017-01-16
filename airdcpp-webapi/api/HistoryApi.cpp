@@ -25,12 +25,13 @@
 
 
 namespace webserver {
+#define HISTORY_TYPE "history_type"
 	HistoryApi::HistoryApi(Session* aSession) : ApiModule(aSession) {
-		METHOD_HANDLER("strings", Access::ANY, ApiRequest::METHOD_GET, (STR_PARAM), false, HistoryApi::handleGetStrings);
-		METHOD_HANDLER("strings", Access::SETTINGS_EDIT, ApiRequest::METHOD_DELETE, (STR_PARAM), false, HistoryApi::handleDeleteStrings);
-		METHOD_HANDLER("string", Access::ANY, ApiRequest::METHOD_POST, (STR_PARAM), true, HistoryApi::handlePostString);
+		METHOD_HANDLER("strings", Access::ANY, ApiRequest::METHOD_GET, (STR_PARAM(HISTORY_TYPE)), false, HistoryApi::handleGetStrings);
+		METHOD_HANDLER("strings", Access::SETTINGS_EDIT, ApiRequest::METHOD_DELETE, (STR_PARAM(HISTORY_TYPE)), false, HistoryApi::handleDeleteStrings);
+		METHOD_HANDLER("string", Access::ANY, ApiRequest::METHOD_POST, (STR_PARAM(HISTORY_TYPE)), true, HistoryApi::handlePostString);
 
-		METHOD_HANDLER("hubs", Access::HUBS_VIEW, ApiRequest::METHOD_GET, (NUM_PARAM), false, HistoryApi::handleGetHubs);
+		METHOD_HANDLER("hubs", Access::HUBS_VIEW, ApiRequest::METHOD_GET, (NUM_PARAM(MAX_COUNT)), false, HistoryApi::handleGetHubs);
 		METHOD_HANDLER("hubs", Access::HUBS_VIEW, ApiRequest::METHOD_POST, (EXACT_PARAM("search")), true, HistoryApi::handleSearchHubs);
 	}
 
@@ -38,14 +39,14 @@ namespace webserver {
 	}
 
 	api_return HistoryApi::handleGetStrings(ApiRequest& aRequest) {
-		auto type = toHistoryType(aRequest.getStringParam(0));
+		auto type = toHistoryType(aRequest.getStringParam(HISTORY_TYPE));
 		auto history = SettingsManager::getInstance()->getHistory(type);
 		aRequest.setResponseBody(history);
 		return websocketpp::http::status_code::ok;
 	}
 
 	api_return HistoryApi::handlePostString(ApiRequest& aRequest) {
-		auto type = toHistoryType(aRequest.getStringParam(0));
+		auto type = toHistoryType(aRequest.getStringParam(HISTORY_TYPE));
 		auto item = JsonUtil::getField<string>("string", aRequest.getRequestBody(), false);
 
 		SettingsManager::getInstance()->addToHistory(item, type);
@@ -53,7 +54,7 @@ namespace webserver {
 	}
 
 	api_return HistoryApi::handleDeleteStrings(ApiRequest& aRequest) {
-		auto type = toHistoryType(aRequest.getStringParam(0));
+		auto type = toHistoryType(aRequest.getStringParam(HISTORY_TYPE));
 		SettingsManager::getInstance()->clearHistory(type);
 		return websocketpp::http::status_code::no_content;
 	}
@@ -93,7 +94,7 @@ namespace webserver {
 	api_return HistoryApi::handleGetHubs(ApiRequest& aRequest) {
 		auto hubs = RecentManager::getInstance()->getRecents();
 
-		auto retJson = Serializer::serializeFromEnd(aRequest.getRangeParam(0), hubs, serializeHub);
+		auto retJson = Serializer::serializeFromEnd(aRequest.getRangeParam(MAX_COUNT), hubs, serializeHub);
 		aRequest.setResponseBody(retJson);
 
 		return websocketpp::http::status_code::ok;

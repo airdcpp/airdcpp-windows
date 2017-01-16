@@ -58,14 +58,14 @@ namespace webserver {
 		createSubscription("queue_file_tick");
 
 
-		METHOD_HANDLER("bundles", Access::QUEUE_VIEW, ApiRequest::METHOD_GET, (NUM_PARAM, NUM_PARAM), false, QueueApi::handleGetBundles);
+		METHOD_HANDLER("bundles", Access::QUEUE_VIEW, ApiRequest::METHOD_GET, (NUM_PARAM(START_POS), NUM_PARAM(MAX_COUNT)), false, QueueApi::handleGetBundles);
 		METHOD_HANDLER("bundles", Access::QUEUE_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("remove_completed")), false, QueueApi::handleRemoveCompletedBundles);
 		METHOD_HANDLER("bundles", Access::QUEUE_EDIT, ApiRequest::METHOD_POST, (EXACT_PARAM("priority")), true, QueueApi::handleBundlePriorities);
 
 		METHOD_HANDLER("bundle", Access::DOWNLOAD, ApiRequest::METHOD_POST, (EXACT_PARAM("file")), true, QueueApi::handleAddFileBundle);
 		METHOD_HANDLER("bundle", Access::DOWNLOAD, ApiRequest::METHOD_POST, (EXACT_PARAM("directory")), true, QueueApi::handleAddDirectoryBundle);
 
-		METHOD_HANDLER("bundle", Access::QUEUE_VIEW, ApiRequest::METHOD_GET, (TOKEN_PARAM, EXACT_PARAM("files"), NUM_PARAM, NUM_PARAM), false, QueueApi::handleGetBundleFiles);
+		METHOD_HANDLER("bundle", Access::QUEUE_VIEW, ApiRequest::METHOD_GET, (TOKEN_PARAM, EXACT_PARAM("files"), NUM_PARAM(START_POS), NUM_PARAM(MAX_COUNT)), false, QueueApi::handleGetBundleFiles);
 		METHOD_HANDLER("bundle", Access::QUEUE_VIEW, ApiRequest::METHOD_GET, (TOKEN_PARAM, EXACT_PARAM("sources")), false, QueueApi::handleGetBundleSources);
 		METHOD_HANDLER("bundle", Access::QUEUE_EDIT, ApiRequest::METHOD_DELETE, (TOKEN_PARAM, EXACT_PARAM("source"), CID_PARAM), false, QueueApi::handleRemoveBundleSource);
 
@@ -109,7 +109,7 @@ namespace webserver {
 	}
 
 	api_return QueueApi::handleRemoveSource(ApiRequest& aRequest) {
-		auto user = Deserializer::getUser(aRequest.getStringParam(0), true);
+		auto user = Deserializer::getUser(aRequest.getCIDParam(), false);
 
 		auto removed = QueueManager::getInstance()->removeSource(user, QueueItem::Source::FLAG_REMOVED);
 		aRequest.setResponseBody({
@@ -138,8 +138,8 @@ namespace webserver {
 
 	// BUNDLES
 	api_return QueueApi::handleGetBundles(ApiRequest& aRequest)  {
-		int start = aRequest.getRangeParam(0);
-		int count = aRequest.getRangeParam(1);
+		int start = aRequest.getRangeParam(START_POS);
+		int count = aRequest.getRangeParam(MAX_COUNT);
 
 		auto j = Serializer::serializeItemList(start, count, QueueBundleUtils::propertyHandler, getBundleList());
 
@@ -172,7 +172,7 @@ namespace webserver {
 	}
 
 	BundlePtr QueueApi::getBundle(ApiRequest& aRequest) {
-		auto b = QueueManager::getInstance()->findBundle(aRequest.getTokenParam(0));
+		auto b = QueueManager::getInstance()->findBundle(aRequest.getTokenParam());
 		if (!b) {
 			throw RequestException(websocketpp::http::status_code::not_found, "Bundle not found");
 		}
@@ -181,7 +181,7 @@ namespace webserver {
 	}
 
 	QueueItemPtr QueueApi::getFile(ApiRequest& aRequest) {
-		auto q = QueueManager::getInstance()->findFile(aRequest.getTokenParam(0));
+		auto q = QueueManager::getInstance()->findFile(aRequest.getTokenParam());
 		if (!q) {
 			throw RequestException(websocketpp::http::status_code::not_found, "File not found");
 		}
@@ -214,8 +214,8 @@ namespace webserver {
 			files = b->getQueueItems();
 		}
 
-		int start = aRequest.getRangeParam(2);
-		int count = aRequest.getRangeParam(3);
+		int start = aRequest.getRangeParam(START_POS);
+		int count = aRequest.getRangeParam(MAX_COUNT);
 		auto j = Serializer::serializeItemList(start, count, QueueFileUtils::propertyHandler, files);
 
 		aRequest.setResponseBody(j);
@@ -242,7 +242,7 @@ namespace webserver {
 
 	api_return QueueApi::handleRemoveBundleSource(ApiRequest& aRequest) {
 		auto b = getBundle(aRequest);
-		auto user = Deserializer::getUser(aRequest.getStringParam(2), false);
+		auto user = Deserializer::getUser(aRequest.getCIDParam(), false);
 
 		auto removed = QueueManager::getInstance()->removeBundleSource(b, user, QueueItem::Source::FLAG_REMOVED);
 		aRequest.setResponseBody({
@@ -386,7 +386,7 @@ namespace webserver {
 
 	// FILES (COMMON)
 	api_return QueueApi::handleGetFile(ApiRequest& aRequest) {
-		//auto success = QueueManager::getInstance()->findFile(aRequest.getTokenParam(0));
+		//auto success = QueueManager::getInstance()->findFile(aRequest.getTokenParam(TOKEN_ID));
 		//return success ? websocketpp::http::status_code::ok : websocketpp::http::status_code::not_found;
 		return websocketpp::http::status_code::ok;
 	}

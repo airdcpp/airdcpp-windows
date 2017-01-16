@@ -31,7 +31,7 @@ namespace webserver {
 	};
 
 	PrivateChatApi::PrivateChatApi(Session* aSession) : 
-		ParentApiModule("session", CID_PARAM, Access::PRIVATE_CHAT_VIEW, aSession, subscriptionList, PrivateChatInfo::subscriptionList, 
+		ParentApiModule("session", CID_REG, Access::PRIVATE_CHAT_VIEW, aSession, subscriptionList, PrivateChatInfo::subscriptionList,
 			[](const string& aId) { return Deserializer::parseCID(aId); },
 			[](const PrivateChatInfo& aInfo) { return serializeChat(aInfo.getChat()); }
 		) {

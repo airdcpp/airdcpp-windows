@@ -51,7 +51,7 @@ namespace webserver {
 
 		METHOD_HANDLER("counts", Access::HUBS_VIEW, ApiRequest::METHOD_GET, (), false, HubInfo::handleGetCounts);
 
-		METHOD_HANDLER("users", Access::HUBS_VIEW, ApiRequest::METHOD_GET, (NUM_PARAM, NUM_PARAM), false, HubInfo::handleGetUsers);
+		METHOD_HANDLER("users", Access::HUBS_VIEW, ApiRequest::METHOD_GET, (NUM_PARAM(START_POS), NUM_PARAM(MAX_COUNT)), false, HubInfo::handleGetUsers);
 		METHOD_HANDLER("user", Access::HUBS_VIEW, ApiRequest::METHOD_GET, (CID_PARAM), false, HubInfo::handleGetUser);
 	}
 
@@ -71,8 +71,8 @@ namespace webserver {
 		OnlineUserList users;
 		client->getUserList(users, false);
 
-		int start = aRequest.getRangeParam(0);
-		int count = aRequest.getRangeParam(1);
+		auto start = aRequest.getRangeParam(START_POS);
+		auto count = aRequest.getRangeParam(MAX_COUNT);
 
 		auto j = Serializer::serializeItemList(start, count, OnlineUserUtils::propertyHandler, users);
 		aRequest.setResponseBody(j);
@@ -80,7 +80,7 @@ namespace webserver {
 	}
 
 	api_return HubInfo::handleGetUser(ApiRequest& aRequest) {
-		auto user = Deserializer::getUser(aRequest.getStringParam(0), true);
+		auto user = Deserializer::getUser(aRequest.getCIDParam(), true);
 		auto ou = ClientManager::getInstance()->findOnlineUser(user->getCID(), client->getHubUrl(), false);
 
 		aRequest.setResponseBody(Serializer::serializeOnlineUser(ou));

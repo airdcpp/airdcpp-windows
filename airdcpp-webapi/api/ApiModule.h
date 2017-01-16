@@ -31,12 +31,22 @@ namespace webserver {
 	class WebSocket;
 	class ApiModule {
 	public:
-#define NUM_PARAM (regex(R"(\d+)"))
-#define TOKEN_PARAM NUM_PARAM
-#define TTH_PARAM (regex(R"([0-9A-Z]{39})"))
-#define CID_PARAM TTH_PARAM
-#define STR_PARAM (regex(R"(\w+)"))
-#define EXACT_PARAM(pattern) (regex("^" + string(pattern) + "$"))
+#define LISTENER_ID "listener"
+#define MAX_COUNT "max_count"
+#define START_POS "start_pos"
+
+#define TTH_REG regex(R"(^[0-9A-Z]{39}$)")
+#define CID_REG TTH_REG
+#define TOKEN_REG regex(R"(^\d+$)")
+
+#define NUM_PARAM(id) (ApiModule::RequestHandler::Param(id, TOKEN_REG))
+#define TOKEN_PARAM NUM_PARAM(TOKEN_ID)
+
+#define TTH_PARAM (ApiModule::RequestHandler::Param(TTH_ID, TTH_REG))
+#define CID_PARAM (ApiModule::RequestHandler::Param(CID_ID, CID_REG))
+
+#define STR_PARAM(id) (ApiModule::RequestHandler::Param(id, regex(R"(^\w+$)")))
+#define EXACT_PARAM(pattern) (ApiModule::RequestHandler::Param(pattern, regex("^" + string(pattern) + "$")))
 
 #define BRACED_INIT_LIST(...) {__VA_ARGS__}
 #define METHOD_HANDLER(section, access, method, params, requireJson, func) (requestHandlers[section].push_back(ApiModule::RequestHandler(access, method, requireJson, BRACED_INIT_LIST params, std::bind(&func, this, placeholders::_1))))
@@ -45,7 +55,14 @@ namespace webserver {
 		virtual ~ApiModule();
 
 		struct RequestHandler {
-			typedef vector<regex> ParamList;
+			struct Param {
+				Param(string aParamId, regex&& aReg) : id(std::move(aParamId)), reg(std::move(aReg)) { }
+
+				string id;
+				regex reg;
+			};
+
+			typedef vector<Param> ParamList;
 
 			typedef std::vector<RequestHandler> List;
 			typedef std::function<api_return(ApiRequest& aRequest)> HandlerFunction;
@@ -57,18 +74,13 @@ namespace webserver {
 				dcassert((aMethod != ApiRequest::METHOD_DELETE && aMethod != ApiRequest::METHOD_GET) || !aRequireJson);
 			}
 
-			// Forwarder
-			// Used with hierarchial modules when adding matcher for submodule IDs in the parent
-			RequestHandler(const regex& aMatch, HandlerFunction aFunction) :
-				params({ aMatch }), f(aFunction), access(Access::ANY), method(ApiRequest::METHOD_FORWARD), requireJson(false) { }
-
 			const ApiRequest::Method method;
 			const bool requireJson;
 			const ParamList params;
 			const HandlerFunction f;
 			const Access access;
 
-			bool matchParams(const ApiRequest::RequestParamList& aParams) const noexcept;
+			optional<ApiRequest::NamedParamMap> matchParams(const ApiRequest::ParamList& aParams) const noexcept;
 		};
 
 		typedef std::map<std::string, RequestHandler::List> RequestHandlerMap;

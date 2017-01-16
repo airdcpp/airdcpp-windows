@@ -19,6 +19,9 @@
 #include <web-server/stdinc.h>
 #include <web-server/ApiRequest.h>
 
+#include <airdcpp/CID.h>
+#include <airdcpp/MerkleTree.h>
+
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/Util.h>
 
@@ -78,19 +81,45 @@ namespace webserver {
 		apiVersion = Util::toInt(version.substr(1));
 	}
 
+	void ApiRequest::setNamedParams(const NamedParamMap& aParams) noexcept {
+		namedParameters = aParams;
+	}
+
 	void ApiRequest::popParam(size_t aCount) noexcept {
 		parameters.erase(parameters.begin(), parameters.begin() + aCount);
 	}
 
-	uint32_t ApiRequest::getTokenParam(int pos) const noexcept {
-		return Util::toUInt32(parameters[pos]);
+	uint32_t ApiRequest::getTokenParam(const string& aName) const noexcept {
+		return Util::toUInt32(namedParameters.at(aName));
 	}
 
-	const string& ApiRequest::getStringParam(int pos) const noexcept {
-		return parameters[pos];
+	const string& ApiRequest::getStringParam(const string& aName) const noexcept {
+		return namedParameters.at(aName);
 	}
 
-	int ApiRequest::getRangeParam(int pos) const noexcept {
-		return Util::toInt(parameters[pos]);
+	int ApiRequest::getRangeParam(const string& aName) const noexcept {
+		return Util::toInt(namedParameters.at(aName));
+	}
+
+	const std::string& ApiRequest::getParamAt(int aIndex) const noexcept {
+		return parameters[aIndex];
+	}
+
+	TTHValue ApiRequest::getTTHParam(const string& aName) const {
+		auto param = getStringParam(aName);
+		if (!Encoder::isBase32(param.c_str())) {
+			throw std::invalid_argument("Invalid TTH URL parameter");
+		}
+
+		return TTHValue(param);
+	}
+
+	CID ApiRequest::getCIDParam(const string& aName) const {
+		auto param = getStringParam(aName);
+		if (!Encoder::isBase32(param.c_str())) {
+			throw std::invalid_argument("Invalid CID URL parameter");
+		}
+
+		return CID(param);
 	}
 }

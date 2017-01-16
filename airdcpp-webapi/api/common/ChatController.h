@@ -36,7 +36,7 @@ namespace webserver {
 		{
 			auto& requestHandlers = aModule->getRequestHandlers();
 
-			METHOD_HANDLER("messages", aViewPermission, ApiRequest::METHOD_GET, (NUM_PARAM), false, ChatController::handleGetMessages);
+			METHOD_HANDLER("messages", aViewPermission, ApiRequest::METHOD_GET, (NUM_PARAM(MAX_COUNT)), false, ChatController::handleGetMessages);
 			METHOD_HANDLER("chat_message", aSendPermission, ApiRequest::METHOD_POST, (), true, ChatController::handlePostChatMessage);
 			METHOD_HANDLER("status_message", aEditPermission, ApiRequest::METHOD_POST, (), true, ChatController::handlePostStatusMessage);
 
@@ -114,7 +114,7 @@ namespace webserver {
 
 		api_return handleGetMessages(ApiRequest& aRequest) {
 			auto j = Serializer::serializeFromEnd(
-				aRequest.getRangeParam(0),
+				aRequest.getRangeParam(MAX_COUNT),
 				chatF()->getCache().getMessages(),
 				Serializer::serializeMessage);
 

@@ -106,7 +106,8 @@ namespace webserver {
 		return {
 			{ "cid", aUser->getCID().toBase32() },
 			{ "nicks", Util::listToString(ClientManager::getInstance()->getNicks(aUser->getCID())) },
-			{ "hubs", Util::listToString(ClientManager::getInstance()->getHubNames(aUser->getCID())) },
+			{ "hub_names", Util::listToString(ClientManager::getInstance()->getHubNames(aUser->getCID())) },
+			{ "hub_urls", ClientManager::getInstance()->getHubUrls(aUser->getCID()) },
 			{ "flags", getUserFlags(aUser) }
 		};
 	}
@@ -125,6 +126,7 @@ namespace webserver {
 			{ "nicks", ClientManager::getInstance()->getFormatedNicks(aUser) },
 			{ "hub_url", aUser.hint },
 			{ "hub_names", ClientManager::getInstance()->getFormatedHubNames(aUser) },
+			{ "hub_urls", ClientManager::getInstance()->getHubUrls(aUser.user->getCID()) },
 			{ "flags", flags }
 		};
 	}

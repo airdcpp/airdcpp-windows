@@ -32,7 +32,7 @@ namespace webserver {
 	};
 
 	HubApi::HubApi(Session* aSession) : 
-		ParentApiModule("session", TOKEN_PARAM, Access::HUBS_VIEW, aSession, subscriptionList, HubInfo::subscriptionList, 
+		ParentApiModule("session", TOKEN_REG, Access::HUBS_VIEW, aSession, subscriptionList, HubInfo::subscriptionList,
 			[](const string& aId) { return Util::toUInt32(aId); },
 			[](const HubInfo& aInfo) { return serializeClient(aInfo.getClient()); }
 		) 
@@ -194,7 +194,7 @@ namespace webserver {
 	}
 
 	api_return HubApi::handleDisconnect(ApiRequest& aRequest) {
-		if (!ClientManager::getInstance()->putClient(aRequest.getTokenParam(0))) {
+		if (!ClientManager::getInstance()->putClient(aRequest.getTokenParam())) {
 			return websocketpp::http::status_code::not_found;
 		}
 

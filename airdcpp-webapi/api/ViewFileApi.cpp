@@ -113,7 +113,7 @@ namespace webserver {
 	}
 
 	api_return ViewFileApi::handleAddLocalFile(ApiRequest& aRequest) {
-		auto tth = Deserializer::parseTTH(aRequest.getStringParam(0));
+		auto tth = aRequest.getTTHParam();
 		if (!ShareManager::getInstance()->isFileShared(tth)) {
 			aRequest.setResponseErrorStr("TTH not shared");
 			return websocketpp::http::status_code::bad_request;
@@ -130,7 +130,7 @@ namespace webserver {
 	}
 
 	api_return ViewFileApi::handleGetText(ApiRequest& aRequest) {
-		auto file = ViewFileManager::getInstance()->getFile(Deserializer::parseTTH(aRequest.getStringParam(0)));
+		auto file = ViewFileManager::getInstance()->getFile(aRequest.getTTHParam());
 		if (!file) {
 			aRequest.setResponseErrorStr("File not found");
 			return websocketpp::http::status_code::not_found;
@@ -174,7 +174,7 @@ namespace webserver {
 	}
 
 	api_return ViewFileApi::handleGetFile(ApiRequest& aRequest) {
-		auto file = ViewFileManager::getInstance()->getFile(Deserializer::parseTTH(aRequest.getStringParam(0)));
+		auto file = ViewFileManager::getInstance()->getFile(aRequest.getTTHParam());
 		if (!file) {
 			aRequest.setResponseErrorStr("File not found");
 			return websocketpp::http::status_code::not_found;
@@ -185,7 +185,7 @@ namespace webserver {
 	}
 
 	api_return ViewFileApi::handleRemoveFile(ApiRequest& aRequest) {
-		auto success = ViewFileManager::getInstance()->removeFile(Deserializer::parseTTH(aRequest.getStringParam(0)));
+		auto success = ViewFileManager::getInstance()->removeFile(aRequest.getTTHParam());
 		if (!success) {
 			aRequest.setResponseErrorStr("File not found");
 			return websocketpp::http::status_code::not_found;
@@ -195,7 +195,7 @@ namespace webserver {
 	}
 
 	api_return ViewFileApi::handleSetRead(ApiRequest& aRequest) {
-		auto success = ViewFileManager::getInstance()->setRead(Deserializer::parseTTH(aRequest.getStringParam(0)));
+		auto success = ViewFileManager::getInstance()->setRead(aRequest.getTTHParam());
 		if (!success) {
 			aRequest.setResponseErrorStr("File not found");
 			return websocketpp::http::status_code::not_found;

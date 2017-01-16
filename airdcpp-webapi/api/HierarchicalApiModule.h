@@ -38,17 +38,21 @@ namespace webserver {
 		typedef std::function<IdType(const string&)> IdConvertF;
 		typedef std::function<json(const ItemType&)> ChildSerializeF;
 
-		ParentApiModule(const string& aSubmoduleSection, const regex& aIdMatcher, Access aAccess, Session* aSession, const StringList& aSubscriptions, const StringList& aChildSubscription, IdConvertF aIdConvertF, ChildSerializeF aChildSerializeF) :
+#define SUBMODULE_ID "submodule"
+
+		ParentApiModule(const string& aSubmoduleSection, regex&& aIdMatcher, Access aAccess, Session* aSession, const StringList& aSubscriptions, const StringList& aChildSubscription, IdConvertF aIdConvertF, ChildSerializeF aChildSerializeF) :
 			SubscribableApiModule(aSession, aAccess, &aSubscriptions), idConvertF(aIdConvertF), childSerializeF(aChildSerializeF) {
 
-			// Request forwarder
-			requestHandlers[aSubmoduleSection].push_back(ApiModule::RequestHandler(aIdMatcher, std::bind(&Type::handleSubModuleRequest, this, placeholders::_1)));
+			auto paramMatcher = ApiModule::RequestHandler::Param(SUBMODULE_ID, std::move(aIdMatcher));
 
 			// Get module
-			METHOD_HANDLER(aSubmoduleSection, aAccess, ApiRequest::METHOD_GET, (aIdMatcher), false, Type::handleGetSubmodule);
+			METHOD_HANDLER(aSubmoduleSection, aAccess, ApiRequest::METHOD_GET, (paramMatcher), false, Type::handleGetSubmodule);
 
 			// List modules
 			METHOD_HANDLER(aSubmoduleSection + "s", aAccess, ApiRequest::METHOD_GET, (), false, Type::handleGetSubmodules);
+
+			// Request forwarder
+			METHOD_HANDLER(aSubmoduleSection, Access::ANY, ApiRequest::METHOD_FORWARD, (paramMatcher), false, Type::handleSubModuleRequest);
 
 			for (const auto& s: aChildSubscription) {
 				childSubscriptions.emplace(s, false);
@@ -76,7 +80,7 @@ namespace webserver {
 				return websocketpp::http::status_code::precondition_required;
 			}
 
-			const auto& subscription = aRequest.getStringParam(0);
+			const auto& subscription = aRequest.getStringParam(LISTENER_ID);
 			if (setChildSubscriptionState(subscription, true)) {
 				return websocketpp::http::status_code::ok;
 			}
@@ -85,7 +89,7 @@ namespace webserver {
 		}
 
 		api_return handleUnsubscribe(ApiRequest& aRequest) override {
-			const auto& subscription = aRequest.getStringParam(0);
+			const auto& subscription = aRequest.getStringParam(LISTENER_ID);
 			if (setChildSubscriptionState(subscription, false)) {
 				return websocketpp::http::status_code::ok;
 			}
@@ -152,9 +156,11 @@ namespace webserver {
 
 		// Parse module ID from the request, throws if the module was not found
 		typename ItemType::Ptr getSubModule(ApiRequest& aRequest) {
-			auto sub = findSubModule(aRequest.getStringParam(0));
+			auto id = aRequest.getStringParam(SUBMODULE_ID);
+
+			auto sub = findSubModule(id);
 			if (!sub) {
-				throw RequestException(websocketpp::http::status_code::not_found, "Entity was not found");
+				throw RequestException(websocketpp::http::status_code::not_found, "Entity " + id + " was not found");
 			}
 
 			return sub;

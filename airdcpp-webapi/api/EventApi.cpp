@@ -33,7 +33,7 @@ namespace webserver {
 
 		METHOD_HANDLER("read", Access::EVENTS_VIEW, ApiRequest::METHOD_POST, (), false, EventApi::handleRead);
 		METHOD_HANDLER("counts", Access::EVENTS_VIEW, ApiRequest::METHOD_GET, (), false, EventApi::handleGetInfo);
-		METHOD_HANDLER("messages", Access::EVENTS_VIEW, ApiRequest::METHOD_GET, (NUM_PARAM), false, EventApi::handleGetLog);
+		METHOD_HANDLER("messages", Access::EVENTS_VIEW, ApiRequest::METHOD_GET, (NUM_PARAM(MAX_COUNT)), false, EventApi::handleGetLog);
 
 		METHOD_HANDLER("clear", Access::EVENTS_EDIT, ApiRequest::METHOD_POST, (), false, EventApi::handleClear);
 		METHOD_HANDLER("message", Access::EVENTS_EDIT, ApiRequest::METHOD_POST, (), true, EventApi::handlePostMessage);
@@ -61,7 +61,7 @@ namespace webserver {
 
 	api_return EventApi::handleGetLog(ApiRequest& aRequest) {
 		auto j = Serializer::serializeFromEnd(
-			aRequest.getRangeParam(0),
+			aRequest.getRangeParam(MAX_COUNT),
 			LogManager::getInstance()->getCache().getLogMessages(),
 			Serializer::serializeLogMessage);
 
