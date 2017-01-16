@@ -36,15 +36,20 @@
 
 namespace webserver {
 	SessionApi::SessionApi(Session* aSession) : SubscribableApiModule(aSession, Access::ADMIN) {
-		METHOD_HANDLER(Access::ANY, METHOD_POST, (EXACT_PARAM("activity")), SessionApi::handleActivity);
-		METHOD_HANDLER(Access::ANY, METHOD_DELETE, (EXACT_PARAM("auth")), SessionApi::handleLogout);
-
-		// Just fail these...
-		METHOD_HANDLER(Access::ANY, METHOD_POST, (EXACT_PARAM("auth")), SessionApi::failAuthenticatedRequest);
+		// Just fail these since we have a session already...
+		METHOD_HANDLER(Access::ANY, METHOD_POST, (EXACT_PARAM("authorize")), SessionApi::failAuthenticatedRequest);
 		METHOD_HANDLER(Access::ANY, METHOD_POST, (EXACT_PARAM("socket")), SessionApi::failAuthenticatedRequest);
 
-		METHOD_HANDLER(Access::ADMIN, METHOD_GET, (EXACT_PARAM("sessions")), SessionApi::handleGetSessions);
-		METHOD_HANDLER(Access::ANY, METHOD_GET, (EXACT_PARAM("session")), SessionApi::handleGetCurrentSession);
+		// Methods for the current session
+		METHOD_HANDLER(Access::ANY, METHOD_POST, (EXACT_PARAM("activity")), SessionApi::handleActivity);
+
+		METHOD_HANDLER(Access::ANY, METHOD_GET, (EXACT_PARAM("self")), SessionApi::handleGetCurrentSession);
+		METHOD_HANDLER(Access::ANY, METHOD_DELETE, (EXACT_PARAM("self")), SessionApi::handleLogout);
+
+		// Admin methods
+		METHOD_HANDLER(Access::ADMIN, METHOD_GET, (), SessionApi::handleGetSessions);
+		METHOD_HANDLER(Access::ADMIN, METHOD_GET, (TOKEN_PARAM), SessionApi::handleGetSession);
+		METHOD_HANDLER(Access::ADMIN, METHOD_DELETE, (TOKEN_PARAM), SessionApi::handleRemoveSession);
 
 		aSession->getServer()->getUserManager().addListener(this);
 
@@ -72,6 +77,11 @@ namespace webserver {
 	}
 
 	api_return SessionApi::handleLogout(ApiRequest& aRequest) {
+		if (session->getSessionType() == Session::TYPE_BASIC_AUTH) {
+			aRequest.setResponseErrorStr("Sessions using basic authentication can't be deleted");
+			return websocketpp::http::status_code::bad_request;
+		}
+
 		WebServerManager::getInstance()->logout(aRequest.getSession()->getId());
 		return websocketpp::http::status_code::no_content;
 	}
@@ -136,6 +146,28 @@ namespace webserver {
 		auto sessions = session->getServer()->getUserManager().getSessions();
 		aRequest.setResponseBody(Serializer::serializeList(sessions, serializeSession));
 		return websocketpp::http::status_code::ok;
+	}
+
+	api_return SessionApi::handleGetSession(ApiRequest& aRequest) {
+		auto s = session->getServer()->getUserManager().getSession(aRequest.getTokenParam());
+		if (!s) {
+			aRequest.setResponseErrorStr("Session not found");
+			return websocketpp::http::status_code::not_found;
+		}
+
+		aRequest.setResponseBody(serializeSession(s));
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return SessionApi::handleRemoveSession(ApiRequest& aRequest) {
+		auto removeSession = session->getServer()->getUserManager().getSession(aRequest.getTokenParam());
+		if (!removeSession) {
+			aRequest.setResponseErrorStr("Session not found");
+			return websocketpp::http::status_code::not_found;
+		}
+
+		session->getServer()->getUserManager().logout(removeSession);
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return SessionApi::handleGetCurrentSession(ApiRequest& aRequest) {

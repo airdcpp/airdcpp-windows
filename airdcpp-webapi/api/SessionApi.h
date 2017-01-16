@@ -44,6 +44,9 @@ namespace webserver {
 		api_return handleGetSessions(ApiRequest& aRequest);
 		api_return handleGetCurrentSession(ApiRequest& aRequest);
 
+		api_return handleGetSession(ApiRequest& aRequest);
+		api_return handleRemoveSession(ApiRequest& aRequest);
+
 		static json serializeSession(const SessionPtr& aSession) noexcept;
 		static string getSessionType(const SessionPtr& aSession) noexcept;
 
