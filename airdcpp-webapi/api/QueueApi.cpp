@@ -375,6 +375,7 @@ namespace webserver {
 			}
 		}
 
+		aRequest.setResponseBody(Serializer::serializeItem(qi, QueueFileUtils::propertyHandler));
 		return websocketpp::http::status_code::ok;
 	}
 
@@ -399,7 +400,7 @@ namespace webserver {
 			return websocketpp::http::status_code::bad_request;
 		}
 
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 

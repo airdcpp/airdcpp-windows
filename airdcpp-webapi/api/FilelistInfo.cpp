@@ -91,7 +91,7 @@ namespace webserver {
 
 	api_return FilelistInfo::handleSetRead(ApiRequest& aRequest) {
 		dl->setRead();
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	FilelistItemInfo::List FilelistInfo::getCurrentViewItems() {

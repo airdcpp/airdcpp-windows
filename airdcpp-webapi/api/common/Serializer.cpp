@@ -53,7 +53,7 @@ namespace webserver {
 		}
 
 		if (aUser == ClientManager::getInstance()->getMe()) {
-			ret.insert("me");
+			ret.insert("self");
 		}
 
 		if (aUser->isSet(User::NMDC)) {

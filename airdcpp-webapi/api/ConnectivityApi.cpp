@@ -75,7 +75,7 @@ namespace webserver {
 
 	api_return ConnectivityApi::handleDetect(ApiRequest& aRequest) {
 		ConnectivityManager::getInstance()->detectConnection();
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	void ConnectivityApi::on(ConnectivityManagerListener::Message, const string& aMessage) noexcept {

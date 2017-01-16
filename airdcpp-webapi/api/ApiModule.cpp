@@ -173,14 +173,14 @@ namespace webserver {
 		}
 
 		setSubscriptionState(subscription, true);
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return SubscribableApiModule::handleUnsubscribe(ApiRequest& aRequest) {
 		auto subscription = aRequest.getStringParam(LISTENER_PARAM_ID);
 		if (subscriptionExists(subscription)) {
 			setSubscriptionState(subscription, false);
-			return websocketpp::http::status_code::ok;
+			return websocketpp::http::status_code::no_content;
 		}
 
 		return websocketpp::http::status_code::not_found;

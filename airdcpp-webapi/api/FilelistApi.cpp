@@ -44,7 +44,7 @@ namespace webserver {
 		DirectoryListingManager::getInstance()->addListener(this);;
 
 		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_POST,	(EXACT_PARAM("sessions")),							FilelistApi::handlePostList);
-		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_POST,	(EXACT_PARAM("sessions"), EXACT_PARAM("me")),		FilelistApi::handleOwnList);
+		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_POST,	(EXACT_PARAM("sessions"), EXACT_PARAM("self")),		FilelistApi::handleOwnList);
 		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_DELETE,	(EXACT_PARAM("sessions"), CID_PARAM),				FilelistApi::handleDeleteList);
 
 		METHOD_HANDLER(Access::DOWNLOAD,		METHOD_GET,		(EXACT_PARAM("directory_downloads")),				FilelistApi::handleGetDirectoryDownloads);

@@ -78,7 +78,7 @@ namespace webserver {
 
 			const auto& subscription = aRequest.getStringParam(LISTENER_PARAM_ID);
 			if (setChildSubscriptionState(subscription, true)) {
-				return websocketpp::http::status_code::ok;
+				return websocketpp::http::status_code::no_content;
 			}
 
 			return SubscribableApiModule::handleSubscribe(aRequest);
@@ -87,7 +87,7 @@ namespace webserver {
 		api_return handleUnsubscribe(ApiRequest& aRequest) override {
 			const auto& subscription = aRequest.getStringParam(LISTENER_PARAM_ID);
 			if (setChildSubscriptionState(subscription, false)) {
-				return websocketpp::http::status_code::ok;
+				return websocketpp::http::status_code::no_content;
 			}
 
 			return SubscribableApiModule::handleUnsubscribe(aRequest);

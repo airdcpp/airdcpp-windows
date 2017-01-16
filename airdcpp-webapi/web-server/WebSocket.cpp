@@ -77,6 +77,8 @@ namespace webserver {
 			j["error"] = aErrorJson;
 		} else if (!aResponseJson.is_null()) {
 			j["data"] = aResponseJson;
+		} else {
+			dcassert(aCode == websocketpp::http::status_code::no_content);
 		}
 
 		sendPlain(j);

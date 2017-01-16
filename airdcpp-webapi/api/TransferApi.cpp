@@ -155,14 +155,14 @@ namespace webserver {
 			ConnectionManager::getInstance()->force(item->getStringToken());
 		}
 
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return TransferApi::handleDisconnect(ApiRequest& aRequest) {
 		auto item = getTransfer(aRequest);
 		ConnectionManager::getInstance()->disconnect(item->getStringToken());
 
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	TransferInfoPtr TransferApi::getTransfer(ApiRequest& aRequest) const {

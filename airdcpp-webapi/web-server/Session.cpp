@@ -67,7 +67,7 @@ namespace webserver {
 		ADD_MODULE("private_chat", PrivateChatApi);
 		ADD_MODULE("queue", QueueApi);
 		ADD_MODULE("search", SearchApi);
-		ADD_MODULE("session", SessionApi);
+		ADD_MODULE("sessions", SessionApi);
 		ADD_MODULE("settings", SettingApi);
 		ADD_MODULE("share", ShareApi);
 		ADD_MODULE("share_profiles", ShareProfileApi);

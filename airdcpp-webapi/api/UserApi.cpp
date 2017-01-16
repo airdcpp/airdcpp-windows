@@ -78,13 +78,13 @@ namespace webserver {
 	api_return UserApi::handleIgnore(ApiRequest& aRequest) {
 		auto u = getUser(aRequest);
 		MessageManager::getInstance()->storeIgnore(u);
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return UserApi::handleUnignore(ApiRequest& aRequest) {
 		auto u = getUser(aRequest);
 		MessageManager::getInstance()->removeIgnore(u);
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return UserApi::handleGetIgnores(ApiRequest& aRequest) {
