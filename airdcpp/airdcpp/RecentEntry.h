@@ -30,7 +30,7 @@ namespace dcpp {
 
 class RecentEntry : public intrusive_ptr_base<RecentEntry> {
 public:
-	RecentEntry::RecentEntry(const string& aUrl) : 
+	RecentEntry(const string& aUrl) : 
 		url(aUrl), name("*"), description("*") {
 
 	}

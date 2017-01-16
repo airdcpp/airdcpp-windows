@@ -80,7 +80,7 @@ namespace webserver {
 		auto expiration = aSearch.getTimeToExpiration();
 		return {
 			{ "id", aSearch.getId() },
-			{ "expires_in", expiration ? *expiration : json() },
+			{ "expires_in", expiration ? json(*expiration) : json() },
 			{ "current_search_id", aSearch.getSearch()->getCurrentSearchToken() },
 			{ "searches_sent_ago", aSearch.getSearch()->getTimeFromLastSearch() },
 			{ "queue_time", aSearch.getSearch()->getQueueTime() },

@@ -114,7 +114,7 @@ private:
 	int lastId = 0;
 
 	uint64_t lastXmlSave = 0;
-	atomic<bool> xmlDirty = false;
+	atomic<bool> xmlDirty{ false };
 	void save() noexcept;
 
 	//Favorite users

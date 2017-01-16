@@ -353,7 +353,7 @@ void NmdcHub::onLine(const string& aLine) noexcept {
 			if(seeker == (localIp + ":" + SearchManager::getInstance()->getPort())) {
 				return;
 			}
-		} else if (isPassive && stricmp(seeker.c_str() + 4, getMyNick().c_str()) == 0) {
+		} else if (isPassive && Util::stricmp(seeker.c_str() + 4, getMyNick().c_str()) == 0) {
 			return;
 		}
 
