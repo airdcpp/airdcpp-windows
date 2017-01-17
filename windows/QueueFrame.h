@@ -25,7 +25,8 @@
 #include "FilteredListViewCtrl.h"
 #include "BrowserBar.h"
 
-#include <airdcpp/QueueManager.h>
+#include <airdcpp/DirectoryListingManager.h>
+#include <airdcpp/QueueManagerListener.h>
 #include <airdcpp/TaskQueue.h>
 
 #define STATUS_MSG_MAP 19
@@ -122,7 +123,10 @@ public:
 	size_t getTotalListItemCount() { return curDirectory ? curDirectory->children.size() : parents.size(); }
 	void filterList();
 
+	static string id;
+
 private:
+
 	class QueueItemInfo;
 	enum {
 		COLUMN_FIRST,
@@ -253,7 +257,7 @@ private:
 
 	void handleRecheckFiles(QueueItemList ql);
 	void handleRecheckBundles(BundleList bl);
-	void handleRemoveBundles(BundleList bl, bool removeFinished, bool finishedOnly = false);
+	void handleRemoveBundles(BundleList bl, bool removeFinished, bool aCompletedOnly = false);
 	void handleRemoveFiles(QueueItemList ql, bool removeFinished);
 	void handleSearchQI(const QueueItemPtr& aQI, bool byName);
 	void handleOpenFile(const QueueItemPtr& aQI);
@@ -359,10 +363,10 @@ private:
 	//QueueItem update listeners
 	void on(QueueManagerListener::ItemRemoved, const QueueItemPtr& aQI, bool /*finished*/) noexcept;
 	void on(QueueManagerListener::ItemAdded, const QueueItemPtr& aQI) noexcept;
-	void on(QueueManagerListener::ItemSourcesUpdated, const QueueItemPtr& aQI) noexcept;
-	void on(QueueManagerListener::ItemStatusUpdated, const QueueItemPtr& aQI) noexcept;
-
-
+	void on(QueueManagerListener::ItemSources, const QueueItemPtr& aQI) noexcept;
+	void on(QueueManagerListener::ItemStatus, const QueueItemPtr& aQI) noexcept;
+	void on(QueueManagerListener::ItemPriority, const QueueItemPtr& aQI) noexcept;
+	void on(QueueManagerListener::ItemTick, const QueueItemPtr& aQI) noexcept;
 
 	template<typename SourceType>
 	void appendUserMenu(OMenu& aMenu, const vector<SourceType>& aSources) {
@@ -377,7 +381,7 @@ private:
 			// get list
 			getListMenu->appendItem(nick, [=] {
 				try {
-					QueueManager::getInstance()->addList(u, QueueItem::FLAG_CLIENT_VIEW);
+					DirectoryListingManager::getInstance()->createList(u, QueueItem::FLAG_CLIENT_VIEW);
 				} catch (const QueueException& e) {
 					ctrlStatus.SetText(1, Text::toT(e.getError()).c_str());
 				}
@@ -386,7 +390,7 @@ private:
 			// browse list
 			browseMenu->appendItem(nick, [=] {
 				try {
-					QueueManager::getInstance()->addList(u, QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
+					DirectoryListingManager::getInstance()->createList(u, QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
 				} catch (const QueueException& e) {
 					ctrlStatus.SetText(1, Text::toT(e.getError()).c_str());
 				}

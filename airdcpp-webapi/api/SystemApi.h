@@ -31,9 +31,7 @@ namespace webserver {
 		SystemApi(Session* aSession);
 		~SystemApi();
 
-		int getVersion() const noexcept override {
-			return 0;
-		}
+		static json getSystemInfo() noexcept;
 	private:
 		static string getAwayState(AwayMode aAwayMode) noexcept;
 		static json serializeAwayState() noexcept;
@@ -44,6 +42,12 @@ namespace webserver {
 		api_return handleGetStats(ApiRequest& aRequest);
 		api_return handleRestartWeb(ApiRequest& aRequest);
 		api_return handleShutdown(ApiRequest& aRequest);
+
+		api_return handleGetSystemInfo(ApiRequest& aRequest);
+
+		static string getHostname() noexcept;
+		static string getNetworkType(const string& aIp) noexcept;
+		static string getPlatform() noexcept;
 
 		void on(ActivityManagerListener::AwayModeChanged, AwayMode aNewMode) noexcept override;
 	};

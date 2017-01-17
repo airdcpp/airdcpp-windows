@@ -31,7 +31,9 @@ namespace dcpp {
 		searchToken = aSearch->token;
 
 		maxResultCount = aSearch->maxResults;
-		ClientManager::getInstance()->directSearch(aUser, aSearch);
+
+		string error;
+		ClientManager::getInstance()->directSearch(aUser, aSearch, error);
 	}
 
 	DirectSearch::~DirectSearch() {
@@ -39,7 +41,7 @@ namespace dcpp {
 	}
 
 	void DirectSearch::on(SearchManagerListener::SR, const SearchResultPtr& aSR) noexcept {
-		if (compare(aSR->getToken(), searchToken) != 0) {
+		if (compare(aSR->getSearchToken(), searchToken) != 0) {
 			return;
 		}
 

@@ -29,9 +29,9 @@
 
 namespace webserver {
 	FilesystemApi::FilesystemApi(Session* aSession) : ApiModule(aSession) {
-		METHOD_HANDLER("disk_info", Access::ANY, ApiRequest::METHOD_POST, (), true, FilesystemApi::handleGetDiskInfo);
-		METHOD_HANDLER("list_items", Access::FILESYSTEM_VIEW, ApiRequest::METHOD_POST, (), true, FilesystemApi::handleListItems);
-		METHOD_HANDLER("directory", Access::FILESYSTEM_EDIT, ApiRequest::METHOD_POST, (), true, FilesystemApi::handlePostDirectory);
+		METHOD_HANDLER(Access::ANY,				METHOD_POST, (EXACT_PARAM("disk_info")),	FilesystemApi::handleGetDiskInfo);
+		METHOD_HANDLER(Access::FILESYSTEM_VIEW, METHOD_POST, (EXACT_PARAM("list_items")),	FilesystemApi::handleListItems);
+		METHOD_HANDLER(Access::FILESYSTEM_EDIT, METHOD_POST, (EXACT_PARAM("directory")),	FilesystemApi::handlePostDirectory);
 	}
 
 	FilesystemApi::~FilesystemApi() {
@@ -90,7 +90,7 @@ namespace webserver {
 			json item;
 			item["name"] = fileName;
 			if (i->isDirectory()) {
-				item["type"] = Serializer::serializeFolderType(-1, -1);
+				item["type"] = Serializer::serializeFolderType(DirectoryContentInfo());
 			} else {
 				item["type"] = Serializer::serializeFileType(i->getFileName());
 				item["size"] = i->getSize();
@@ -116,7 +116,7 @@ namespace webserver {
 			return websocketpp::http::status_code::internal_server_error;
 		}
 
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return FilesystemApi::handleGetDiskInfo(ApiRequest& aRequest) {

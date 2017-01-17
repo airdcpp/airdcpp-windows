@@ -31,6 +31,8 @@
 
 using boost::algorithm::all_of;
 
+string RssInfoFrame::id = "RSS";
+
 int RssInfoFrame::columnIndexes[] = { COLUMN_FILE, COLUMN_LINK, COLUMN_DATE, COLUMN_NAME };
 int RssInfoFrame::columnSizes[] = { 800, 350, 150, 150};
 static ResourceManager::Strings columnNames[] = { ResourceManager::TITLE, ResourceManager::LINK, ResourceManager::DATE, ResourceManager::FEED_NAME };
@@ -174,7 +176,7 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 	bool listMenu = false;
 	bool treeMenu = false;
 	bool hitTreeitem = false;
-	if (reinterpret_cast<HWND>(wParam) == ctrlRss && ctrlRss.list.GetSelectedCount() == 1) {
+	if (reinterpret_cast<HWND>(wParam) == ctrlRss && ctrlRss.list.GetSelectedCount() > 0) {
 		if (pt.x == -1 && pt.y == -1) {
 			WinUtil::getContextMenuPos(ctrlRss.list, pt);
 		}
@@ -198,36 +200,45 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 	}
 
 	if (listMenu) {
-		auto ii = getSelectedListitem();
-		if (ii) {
+		auto items = getSelectedListitems();
+		if (!items.empty()) {
 			OMenu menu;
 			menu.CreatePopupMenu();
-			menu.InsertSeparatorFirst(Text::toT(ii->item->getTitle()));
+			string title = items.size() == 1 ? (items.front()->item->getTitle() + PATH_SEPARATOR) : STRING_F(ITEMS_X, items.size());
 
-			menu.appendItem(TSTRING(OPEN_LINK), [=] { WinUtil::openLink(Text::toT(ii->item->getLink())); }, OMenu::FLAG_DEFAULT);
+			menu.InsertSeparatorFirst(Text::toT(title));
+
+			menu.appendItem(TSTRING(OPEN_LINK), [=] { for_each(items.begin(), items.end(), [=](const ItemInfo* a) { WinUtil::openLink(Text::toT(a->item->getLink())); }); }, OMenu::FLAG_DEFAULT);
 			menu.appendSeparator();
 
 			ListBaseType::MenuItemList customItems;
 			ctrlRss.list.appendCopyMenu(menu, customItems);
 			menu.appendSeparator();
 
-			if (ii->isRelease) {
-				//autosearch menus
-				appendDownloadMenu(menu, DownloadBaseHandler::TYPE_SECONDARY, true, boost::none, ii->item->getTitle() + PATH_SEPARATOR, false);
+			bool allRelease = all_of(items, [=](const ItemInfo* a) { return a->isRelease; });
+			if (allRelease) {
+				//auto search menus
+				appendDownloadMenu(menu, DownloadBaseHandler::TYPE_SECONDARY, true, boost::none, boost::none, false);
 				menu.appendSeparator();
 			}
 
-			menu.appendItem(TSTRING(SEARCH), [=] { WinUtil::search(Text::toT(ii->item->getTitle())); });
-			WinUtil::appendSearchMenu(menu, ii->item->getTitle());
-			if (AirUtil::allowOpenDupe(ii->getDupe())) {
+			if (items.size() == 1) {
+				menu.appendItem(TSTRING(SEARCH), [=] { WinUtil::search(Text::toT(items.front()->item->getTitle())); });
+				WinUtil::appendSearchMenu(menu, items.front()->item->getTitle());
+				if (AirUtil::allowOpenDupe(items.front()->getDupe())) {
+					menu.appendSeparator();
+					menu.appendItem(TSTRING(OPEN_FOLDER), [=] {
+						auto paths = AirUtil::getDirDupePaths(items.front()->getDupe(), items.front()->item->getTitle());
+						if (!paths.empty())
+							WinUtil::openFolder(Text::toT(paths.front()));
+					});
+				}
 				menu.appendSeparator();
-				menu.appendItem(TSTRING(OPEN_FOLDER), [=] {
-					auto paths = AirUtil::getDirDupePaths(ii->getDupe(), ii->item->getTitle());
-					if (!paths.empty())
-						WinUtil::openFolder(Text::toT(paths.front()));
-				});
 			}
-
+			menu.appendItem(TSTRING(REMOVE), [=] {
+				for_each(items.begin(), items.end(), [=](const ItemInfo* a) {
+					RSSManager::getInstance()->removeFeedData(a->item->getFeed(), a->item); });
+			});
 			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 			return TRUE;
 		}
@@ -242,7 +253,7 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 
 			menu.appendItem(TSTRING(UPDATE), [=] { RSSManager::getInstance()->downloadFeed(feed, true); }, OMenu::FLAG_THREADED);
 			menu.appendItem(feed->getEnable() ? TSTRING(DISABLE_RSS) : TSTRING(ENABLE_RSS), [=] { RSSManager::getInstance()->enableFeedUpdate(feed, !feed->getEnable()); }, OMenu::FLAG_THREADED);
-			menu.appendItem(TSTRING(MATCH_AUTOSEARCH), [=] { RSSManager::getInstance()->matchFilters(feed);  }, OMenu::FLAG_THREADED);
+			menu.appendItem(TSTRING(MATCH_FILTERS), [=] { RSSManager::getInstance()->matchFilters(feed);  }, OMenu::FLAG_THREADED);
 			menu.appendItem(TSTRING(CLEAR), [=] { RSSManager::getInstance()->clearRSSData(feed);  }, OMenu::FLAG_THREADED);
 			menu.appendSeparator();
 			menu.appendItem(TSTRING(ADD), [=] { add(); });
@@ -260,7 +271,7 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 				menu.appendItem(TSTRING(ENABLE_RSS), [=] { for_each(feeds | map_keys, [&](const RSSPtr& feed) { RSSManager::getInstance()->enableFeedUpdate(feed, true); }); }, OMenu::FLAG_THREADED);
 			if(!allDisabled)
 				menu.appendItem(TSTRING(DISABLE_RSS), [=] { for_each(feeds | map_keys, [&](const RSSPtr& feed) { RSSManager::getInstance()->enableFeedUpdate(feed, false); }); }, OMenu::FLAG_THREADED);
-			menu.appendItem(TSTRING(MATCH_AUTOSEARCH), [=] { for_each(feeds | map_keys, [&](const RSSPtr& feed) { RSSManager::getInstance()->matchFilters(feed); }); }, OMenu::FLAG_THREADED);
+			menu.appendItem(TSTRING(MATCH_FILTERS), [=] { for_each(feeds | map_keys, [&](const RSSPtr& feed) { RSSManager::getInstance()->matchFilters(feed); }); }, OMenu::FLAG_THREADED);
 			menu.appendItem(TSTRING(CLEAR), [=] { for_each(feeds | map_keys, [&](const RSSPtr& feed) { RSSManager::getInstance()->clearRSSData(feed); }); }, OMenu::FLAG_THREADED);
 			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 			return TRUE;
@@ -323,9 +334,10 @@ LRESULT RssInfoFrame::onConfig(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 }
 
 LRESULT RssInfoFrame::onDoubleClickList(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
-	auto ii = getSelectedListitem();
-	if(ii)
-		WinUtil::openLink(Text::toT(ii->item->getLink()));
+	auto list = getSelectedListitems();
+	if (!list.empty()) {
+		WinUtil::openLink(Text::toT(list.front()->item->getLink()));
+	}
 	return 0;
 }
 
@@ -372,6 +384,12 @@ void RssInfoFrame::on(RSSDataAdded, const RSSDataPtr& aData) noexcept {
 	addGuiTask([=] { onItemAdded(aData); } );
 
 }
+
+void RssInfoFrame::on(RSSDataRemoved, const RSSDataPtr& aData) noexcept {
+	addGuiTask([=] { onItemRemoved(aData); });
+
+}
+
 void RssInfoFrame::on(RSSDataCleared, const RSSPtr& aFeed) noexcept {
 	addGuiTask([=] { clearData(aFeed); });
 
@@ -446,9 +464,12 @@ void RssInfoFrame::updateDupeType(const string& aName) {
 }
 
 void RssInfoFrame::handleDownload(const string& aTarget, Priority /*p*/, bool /*aIsRelease*/) {
-	auto ii = ctrlRss.list.getSelectedItem();
-	if(ii)
+	auto items = getSelectedListitems();
+	if (items.empty())
+		return;
+	for_each(items.begin(), items.end(), [=](const ItemInfo* ii) {
 		AutoSearchManager::getInstance()->addAutoSearch(ii->item->getTitle(), aTarget, true, AutoSearch::RSS_DOWNLOAD);
+	});
 }
 
 void RssInfoFrame::add() {
@@ -483,6 +504,21 @@ void RssInfoFrame::clearData(const RSSPtr& aFeed) {
 	ItemInfos.erase(boost::remove_if(ItemInfos | map_values, [&](const unique_ptr<ItemInfo>& a) {
 
 		if (aFeed == a->item->getFeed()) {
+			ctrlRss.list.deleteItem(a.get());
+			return true;
+		}
+		return false;
+
+	}).base(), ItemInfos.end());
+
+	ctrlRss.list.SetRedraw(TRUE);
+}
+
+void RssInfoFrame::onItemRemoved(const RSSDataPtr& aData) {
+	ctrlRss.list.SetRedraw(FALSE);
+	ItemInfos.erase(boost::remove_if(ItemInfos | map_values, [&](const unique_ptr<ItemInfo>& a) {
+
+		if (aData== a->item) {
 			ctrlRss.list.deleteItem(a.get());
 			return true;
 		}
@@ -541,15 +577,17 @@ void RssInfoFrame::reloadList() {
 	ctrlRss.list.SetRedraw(TRUE);
 }
 
-RssInfoFrame::ItemInfo* RssInfoFrame::getSelectedListitem() {
-	if (ctrlRss.list.GetSelectedCount() == 1) {
-		int sel = ctrlRss.list.GetNextItem(-1, LVNI_SELECTED);
-		auto ii = (ItemInfo*)ctrlRss.list.GetItemData(sel);
-		if (ii) {
-			return ii;
+vector<RssInfoFrame::ItemInfo*> RssInfoFrame::getSelectedListitems() {
+
+	vector<ItemInfo*> list;
+	if (ctrlRss.list.GetSelectedCount() > 0) {
+		int i = -1;
+		while ((i = ctrlRss.list.GetNextItem(i, LVNI_SELECTED)) != -1) {
+			auto ii = (ItemInfo*)ctrlRss.list.GetItemData(i);
+			list.push_back(ii);
 		}
 	}
-	return nullptr;
+	return list;
 }
 
 RSSPtr RssInfoFrame::getSelectedFeed() {

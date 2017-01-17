@@ -33,13 +33,13 @@ namespace webserver {
 
 	PrivateChatInfo::PrivateChatInfo(ParentType* aParentModule, const PrivateChatPtr& aChat) :
 		SubApiModule(aParentModule, aChat->getUser()->getCID().toBase32(), subscriptionList), chat(aChat),
-		chatHandler(this, aChat, "private_chat") {
+		chatHandler(this, std::bind(&PrivateChatInfo::getChat, this), "private_chat", Access::PRIVATE_CHAT_VIEW, Access::PRIVATE_CHAT_EDIT, Access::PRIVATE_CHAT_SEND) {
 
-		METHOD_HANDLER("ccpm", Access::PRIVATE_CHAT_EDIT, ApiRequest::METHOD_POST, (), false, PrivateChatInfo::handleConnectCCPM);
-		METHOD_HANDLER("ccpm", Access::PRIVATE_CHAT_EDIT, ApiRequest::METHOD_DELETE, (), false, PrivateChatInfo::handleDisconnectCCPM);
+		METHOD_HANDLER(Access::PRIVATE_CHAT_EDIT, METHOD_POST,		(EXACT_PARAM("ccpm")),		PrivateChatInfo::handleConnectCCPM);
+		METHOD_HANDLER(Access::PRIVATE_CHAT_EDIT, METHOD_DELETE,	(EXACT_PARAM("ccpm")),		PrivateChatInfo::handleDisconnectCCPM);
 
-		METHOD_HANDLER("typing", Access::PRIVATE_CHAT_SEND, ApiRequest::METHOD_POST, (), false, PrivateChatInfo::handleStartTyping);
-		METHOD_HANDLER("typing", Access::PRIVATE_CHAT_SEND, ApiRequest::METHOD_DELETE, (), false, PrivateChatInfo::handleEndTyping);
+		METHOD_HANDLER(Access::PRIVATE_CHAT_SEND, METHOD_POST,		(EXACT_PARAM("typing")),	PrivateChatInfo::handleStartTyping);
+		METHOD_HANDLER(Access::PRIVATE_CHAT_SEND, METHOD_DELETE,	(EXACT_PARAM("typing")),	PrivateChatInfo::handleEndTyping);
 	}
 
 	void PrivateChatInfo::init() noexcept {
@@ -52,22 +52,22 @@ namespace webserver {
 
 	api_return PrivateChatInfo::handleStartTyping(ApiRequest& aRequest) {
 		chat->sendPMInfo(PrivateChat::TYPING_ON);
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return PrivateChatInfo::handleEndTyping(ApiRequest& aRequest) {
 		chat->sendPMInfo(PrivateChat::TYPING_OFF);
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return PrivateChatInfo::handleDisconnectCCPM(ApiRequest& aRequest) {
 		chat->closeCC(false, true);
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return PrivateChatInfo::handleConnectCCPM(ApiRequest& aRequest) {
 		chat->startCC();
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	string PrivateChatInfo::formatCCPMState(PrivateChat::CCPMState aState) noexcept {
@@ -90,7 +90,6 @@ namespace webserver {
 		return{
 			{ "id", formatCCPMState(aChat->getCCPMState()) },
 			{ "str", PrivateChat::ccpmStateToString(aChat->getCCPMState()) },
-			{ "supported", aChat->getUser()->isSet(User::CCPM) },
 			{ "encryption", encryption },
 		};
 	}

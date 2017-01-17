@@ -31,10 +31,6 @@ namespace webserver {
 	public:
 		ShareApi(Session* aSession);
 		~ShareApi();
-
-		int getVersion() const noexcept override {
-			return 0;
-		}
 	private:
 		api_return handleRefreshShare(ApiRequest& aRequest);
 		api_return handleRefreshPaths(ApiRequest& aRequest);
@@ -45,6 +41,7 @@ namespace webserver {
 		api_return handleGetExcludes(ApiRequest& aRequest);
 
 		api_return handleGetStats(ApiRequest& aRequest);
+		api_return handleSearch(ApiRequest& aRequest);
 
 		api_return handleGetGroupedRootPaths(ApiRequest& aRequest);
 		api_return handleFindDupePaths(ApiRequest& aRequest);
@@ -57,6 +54,8 @@ namespace webserver {
 		void onShareRefreshed(const RefreshPathList& aRealPaths, uint8_t aTaskType) noexcept;
 
 		static string refreshTypeToString(uint8_t aTaskType) noexcept;
+
+		static json serializeShareItem(const SearchResultPtr& aSR) noexcept;
 	};
 }
 

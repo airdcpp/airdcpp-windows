@@ -32,15 +32,13 @@ namespace webserver {
 	public:
 		WebUserApi(Session* aSession);
 		~WebUserApi();
-
-		int getVersion() const noexcept override {
-			return 0;
-		}
 	private:
 		api_return handleGetUsers(ApiRequest& aRequest);
 		api_return handleAddUser(ApiRequest& aRequest);
+		api_return handleGetUser(ApiRequest& aRequest);
 		api_return handleUpdateUser(ApiRequest& aRequest);
 		api_return handleRemoveUser(ApiRequest& aRequest);
+
 		void parseUser(WebUserPtr& aUser, const json& j, bool aIsNew);
 
 		void on(WebUserManagerListener::UserAdded, const WebUserPtr& aUser) noexcept override;

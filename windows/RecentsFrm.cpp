@@ -23,275 +23,192 @@
 #include "HubFrame.h"
 #include "LineDlg.h"
 
-int RecentHubsFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_DESCRIPTION, COLUMN_USERS, COLUMN_SHARED, COLUMN_SERVER };
-int RecentHubsFrame::columnSizes[] = { 200, 290, 50, 50, 100 };
-static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::DESCRIPTION, 
-ResourceManager::USERS, ResourceManager::SHARED, ResourceManager::HUB_ADDRESS
-};
+#include <airdcpp/RecentManager.h>
 
-LRESULT RecentHubsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
-	ctrlHubs.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
-		WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_SHOWSELALWAYS, WS_EX_CLIENTEDGE, IDC_RECENTS);
-	
-	ctrlHubs.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_HEADERDRAGDROP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP);	
-	ctrlHubs.SetBkColor(WinUtil::bgColor);
-	ctrlHubs.SetTextBkColor(WinUtil::bgColor);
-	ctrlHubs.SetTextColor(WinUtil::textColor);
-	ctrlHubs.SetFont(WinUtil::listViewFont);
-	
-	// Create listview columns
-	WinUtil::splitTokens(columnIndexes, SETTING(RECENTFRAME_ORDER), COLUMN_LAST);
-	WinUtil::splitTokens(columnSizes, SETTING(RECENTFRAME_WIDTHS), COLUMN_LAST);
-	
-	for(int j=0; j<COLUMN_LAST; j++) {
-		int fmt = LVCFMT_LEFT;
-		ctrlHubs.InsertColumn(j, CTSTRING_I(columnNames[j]), fmt, columnSizes[j], j);
-	}
-	
-	ctrlHubs.SetColumnOrderArray(COLUMN_LAST, columnIndexes);
-	
-	ctrlConnect.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
-		BS_PUSHBUTTON , 0, IDC_CONNECT);
-	ctrlConnect.SetWindowText(CTSTRING(CONNECT));
-	ctrlConnect.SetFont(WinUtil::font);
+string RecentsFrame::id = "Recents";
 
-	ctrlRemove.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
-		BS_PUSHBUTTON , 0, IDC_REMOVE);
-	ctrlRemove.SetWindowText(CTSTRING(REMOVE));
-	ctrlRemove.SetFont(WinUtil::font);
+int RecentsFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_DESCRIPTION, COLUMN_SERVER };
+int RecentsFrame::columnSizes[] = { 200, 290, 100 };
+static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::DESCRIPTION, ResourceManager::HUB_ADDRESS };
+static SettingsManager::BoolSetting filterSettings[] = { SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST };
 
-	ctrlRemoveAll.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
-		BS_PUSHBUTTON , 0, IDC_REMOVE_ALL);
-	ctrlRemoveAll.SetWindowText(CTSTRING(REMOVE_ALL));
-	ctrlRemoveAll.SetFont(WinUtil::font);
+RecentsFrame::RecentsFrame() : closed(false),
+ctrlList(this, COLUMN_LAST, [this] { callAsync([this] { updateList(); }); }, filterSettings, COLUMN_LAST)
 
-	FavoriteManager::getInstance()->addListener(this);
+{ };
+
+LRESULT RecentsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+	CreateSimpleStatusBar(ATL_IDS_IDLEMESSAGE, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | SBARS_SIZEGRIP);
+	ctrlStatus.Attach(m_hWndStatusBar);
+	//ctrlStatusContainer.SubclassWindow(ctrlStatus.m_hWnd);
+
+	ctrlList.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, NULL);
+	ctrlList.list.SetBkColor(WinUtil::bgColor);
+	ctrlList.list.SetTextBkColor(WinUtil::bgColor);
+	ctrlList.list.SetTextColor(WinUtil::textColor);
+	ctrlList.list.setFlickerFree(WinUtil::bgBrush);
+	ctrlList.list.SetFont(WinUtil::listViewFont);
+
+	listImages.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 3);
+	listImages.AddIcon(CIcon(ResourceLoader::loadIcon(IDI_HUB, 16)));
+	ctrlList.list.SetImageList(listImages, LVSIL_SMALL);
+
+	RecentManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
-	updateList(FavoriteManager::getInstance()->getRecentHubs());
+
+	auto list = RecentManager::getInstance()->getRecents();
+	for (auto i : list) {
+		itemInfos.emplace(i->getUrl(), unique_ptr<ItemInfo>(new ItemInfo(i)));
+	}
+	callAsync([=] { updateList(); });
 	
-	hubsMenu.CreatePopupMenu();
-	hubsMenu.AppendMenu(MF_STRING, IDC_CONNECT, CTSTRING(CONNECT));
-	hubsMenu.AppendMenu(MF_STRING, IDC_ADD, CTSTRING(ADD_TO_FAVORITES));
-	hubsMenu.AppendMenu(MF_STRING, IDC_EDIT, CTSTRING(PROPERTIES));
-	hubsMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
-	hubsMenu.AppendMenu(MF_STRING, IDC_REMOVE_ALL, CTSTRING(REMOVE_ALL));
-	hubsMenu.SetMenuDefaultItem(IDC_CONNECT);
+	memzero(statusSizes, sizeof(statusSizes));
+	statusSizes[0] = 16;
+	ctrlStatus.SetParts(1, statusSizes);
 
 	WinUtil::SetIcon(m_hWnd, IDI_RECENTS);
 	bHandled = FALSE;
 	return TRUE;
 }
 
-LRESULT RecentHubsFrame::onDoubleClickHublist(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
-	connectSelected();
-	return 0;
-}
 
-LRESULT RecentHubsFrame::onEnter(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHandled*/) {
-	connectSelected();
-	return 0;
-}
-
-LRESULT RecentHubsFrame::onClickedConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	connectSelected();
-	return 0;
-}
-
-void RecentHubsFrame::connectSelected() {
-	int i = -1;
-	while ((i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		auto r = FavoriteManager::getInstance()->getRecentHubEntry(((RecentHubEntry*) ctrlHubs.GetItemData(i))->getServer());
-		WinUtil::connectHub(r);
-	}
-}
-
-LRESULT RecentHubsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL & /*bHandled*/) {
-	if (reinterpret_cast<HWND>(wParam) == ctrlHubs && ctrlHubs.GetSelectedCount() > 0) {
-		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };        // location of mouse click 
-
-		CRect rc;
-		ctrlHubs.GetHeader().GetWindowRect(&rc);
-		if (PtInRect(&rc, pt)) {
-			return 0;
-		}
-
+LRESULT RecentsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL & /*bHandled*/) {
+	if (reinterpret_cast<HWND>(wParam) == ctrlList) {
+		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };  
 		if (pt.x == -1 && pt.y == -1) {
-			WinUtil::getContextMenuPos(ctrlHubs, pt);
+			WinUtil::getContextMenuPos(ctrlList.list, pt);
 		}
 
-		hubsMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
+		OMenu menu;
+		menu.CreatePopupMenu();
 
+		if (ctrlList.list.GetSelectedCount() > 0) {
+			vector<RecentEntryPtr> items;
+			int i = -1;
+			while ((i = ctrlList.list.GetNextItem(i, LVNI_SELECTED)) != -1) {
+				auto r = (ItemInfo*)ctrlList.list.GetItemData(i);
+				items.push_back(r->item);
+			}
+
+			string title = items.size() == 1 ? (items.front()->getUrl()) : STRING_F(ITEMS_X, items.size());
+
+			menu.InsertSeparatorFirst(Text::toT(title));
+
+			menu.appendItem(TSTRING(CONNECT), [=] { for_each(items.begin(), items.end(), [=](const RecentEntryPtr& r) { WinUtil::connectHub(r->getUrl()); }); }, OMenu::FLAG_DEFAULT);
+			menu.appendItem(TSTRING(REMOVE), [=] { for_each(items.begin(), items.end(), [=](const RecentEntryPtr& r) { 
+				RecentManager::getInstance()->removeRecent(r->getUrl()); }); }, OMenu::FLAG_DEFAULT);
+			menu.appendSeparator();
+		}
+
+		menu.appendItem(TSTRING(CLEAR), [=] { RecentManager::getInstance()->clearRecents(); }, OMenu::FLAG_THREADED);
+		
+		menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 		return TRUE;
 	}
 
 	return FALSE;
 }
 
-LRESULT RecentHubsFrame::onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/) {
-	ctrlHubs.SetFocus();
+LRESULT RecentsFrame::onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/) {
+	ctrlList.list.SetFocus();
 	return 0;
 }
 
-LRESULT RecentHubsFrame::onColumnClickHublist(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bHandled*/) {
-	NMLISTVIEW* l = (NMLISTVIEW*) pnmh;
-	if (l->iSubItem == ctrlHubs.getSortColumn()) {
-		if (!ctrlHubs.isAscending())
-			ctrlHubs.setSort(-1, ctrlHubs.getSortType());
-		else
-			ctrlHubs.setSortDirection(false);
-	} else {
-		if (l->iSubItem == 2 || l->iSubItem == 3) {
-			ctrlHubs.setSort(l->iSubItem, ExListViewCtrl::SORT_INT);
-		} else {
-			ctrlHubs.setSort(l->iSubItem, ExListViewCtrl::SORT_STRING);
-		}
+void RecentsFrame::updateList() {
+	ctrlList.list.SetRedraw(FALSE);
+	ctrlList.list.DeleteAllItems();
+	for (auto& i : itemInfos | map_values) {
+		if (!show(i.get()))
+			continue;
+		addEntry(i.get());
 	}
-	return 0;
+	ctrlList.list.SetRedraw(TRUE);
 }
 
-void RecentHubsFrame::updateList(const RecentHubEntryList& fl) {
-	ctrlHubs.SetRedraw(FALSE);
-	for (const auto& i : fl) {
-		addEntry(i, ctrlHubs.GetItemCount());
-	}
-	ctrlHubs.SetRedraw(TRUE);
-	ctrlHubs.Invalidate();
+bool RecentsFrame::show(const ItemInfo* aItem) {
+
+	auto filterNumericF = [&](int) -> double {
+		return 0;
+	};
+
+	auto filterInfo = ctrlList.filter.prepare([this, aItem](int column) { return Text::fromT(aItem->getText(column)); }, filterNumericF);
+
+	return ctrlList.filter.empty() || ctrlList.filter.match(filterInfo);
+
 }
 
-void RecentHubsFrame::addEntry(const RecentHubEntryPtr& entry, int pos) {
-	TStringList l;
-	l.push_back(Text::toT(entry->getName()));
-	l.push_back(Text::toT(entry->getDescription()));
-	l.push_back(Text::toT(entry->getUsers()));
-	l.push_back(Text::toT(Util::formatBytes(entry->getShared())));
-	l.push_back(Text::toT(entry->getServer()));
-
-	ctrlHubs.insert(pos, l, 0, (LPARAM) entry.get());
+void RecentsFrame::addEntry(ItemInfo* ii) {
+	ctrlList.list.insertItem(ctrlList.list.getSortPos(ii), ii, ii->getImageIndex());
 }
 
-LRESULT RecentHubsFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bHandled*/) {
+LRESULT RecentsFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bHandled*/) {
 	NMLVKEYDOWN* kd = (NMLVKEYDOWN*) pnmh;
 	if (kd->wVKey == VK_DELETE) {
 		int i = -1;
-		while ((i = ctrlHubs.GetNextItem(-1, LVNI_SELECTED)) != -1) {
-			FavoriteManager::getInstance()->removeRecent((RecentHubEntry*) ctrlHubs.GetItemData(i));
+		while ((i = ctrlList.list.GetNextItem(i, LVNI_SELECTED)) != -1) {
+			auto r = (ItemInfo*)ctrlList.list.GetItemData(i);
+			RecentManager::getInstance()->removeRecent(r->item->getUrl());
 		}
 	}
 	return 0;
 }
 
-LRESULT RecentHubsFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	TCHAR buf[256];
-	
-	if(ctrlHubs.GetSelectedCount() == 1) {
-		int i = ctrlHubs.GetNextItem(-1, LVNI_SELECTED);
-		FavoriteHubEntryPtr e = new FavoriteHubEntry();
-		ctrlHubs.GetItemText(i, COLUMN_NAME, buf, 256);
-		e->setName(Text::fromT(buf));
-
-		ctrlHubs.GetItemText(i, COLUMN_DESCRIPTION, buf, 256);
-		e->setDescription(Text::fromT(buf));
-
-		ctrlHubs.GetItemText(i, COLUMN_SERVER, buf, 256);
-		e->setServer(Text::fromT(buf));
-
-		FavoriteManager::getInstance()->addFavoriteHub(e);
-	}
-	return 0;
-}
-
-LRESULT RecentHubsFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int i = -1;
-	while( (i = ctrlHubs.GetNextItem(-1, LVNI_SELECTED)) != -1) {
-		FavoriteManager::getInstance()->removeRecent((RecentHubEntry*)ctrlHubs.GetItemData(i));
-	}
-	return 0;
-}
-
-LRESULT RecentHubsFrame::onRemoveAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	ctrlHubs.DeleteAllItems();
-	FavoriteManager::getInstance()->clearRecent();
-	return 0;
-}
-
-LRESULT RecentHubsFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
-	if(!closed) {
-		FavoriteManager::getInstance()->removeListener(this);
+LRESULT RecentsFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+	if (!closed) {
+		::KillTimer(m_hWnd, 0);
+		RecentManager::getInstance()->removeListener(this);
 		SettingsManager::getInstance()->removeListener(this);
 		closed = true;
 		WinUtil::setButtonPressed(IDC_RECENTS, false);
 		PostMessage(WM_CLOSE);
 		return 0;
-	} else {
-		WinUtil::saveHeaderOrder(ctrlHubs, SettingsManager::RECENTFRAME_ORDER, 
-			SettingsManager::RECENTFRAME_WIDTHS, COLUMN_LAST, columnIndexes, columnSizes);
+	}
 
-		bHandled = FALSE;
-		return 0;
-	}	
+	//ctrlList.list.saveHeaderOrder(SettingsManager::RECENTFRAME_ORDER,
+	//	SettingsManager::RECENTFRAME_WIDTHS, SettingsManager::RECENTFRAME_VISIBLE);
+
+	ctrlList.list.SetRedraw(FALSE);
+	ctrlList.list.DeleteAllItems();
+	ctrlList.list.SetRedraw(TRUE);
+
+	itemInfos.clear();
+	bHandled = FALSE;
+	return 0;
 }
 
-void RecentHubsFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
+void RecentsFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	RECT rect;
 	GetClientRect(&rect);
 	// position bars and offset their dimensions
 	UpdateBarsPosition(rect, bResizeBars);
-
 	CRect rc = rect;
-	rc.bottom -=28;
-	ctrlHubs.MoveWindow(rc);
+	if (ctrlStatus.IsWindow()) {
+		CRect sr;
+		int w[2];
+		ctrlStatus.GetClientRect(sr);
 
-	const long bwidth = 90;
-	const long bspace = 10;
+		w[1] = sr.right - 16;
+		w[0] = 16;
 
-	rc = rect;
-	rc.bottom -= 2;
-	rc.top = rc.bottom - 22;
-
-	rc.left = 2;
-	rc.right = rc.left + bwidth;
-	ctrlConnect.MoveWindow(rc);
-
-	rc.OffsetRect(bspace + bwidth +2, 0);
-	ctrlRemove.MoveWindow(rc);
-
-	rc.OffsetRect(bwidth+2, 0);
-	ctrlRemoveAll.MoveWindow(rc);
-}
-
-LRESULT RecentHubsFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int i = -1;
-	if((i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1)
-	{
-		auto r = FavoriteManager::getInstance()->getRecentHubEntry(((RecentHubEntry*)ctrlHubs.GetItemData(i))->getServer());
-		dcassert(r != NULL);
-		LineDlg dlg;
-		dlg.description = TSTRING(DESCRIPTION);
-		dlg.title = Text::toT(r->getName());
-		dlg.line = Text::toT(r->getDescription());
-		if(dlg.DoModal(m_hWnd) == IDOK) {
-			r->setDescription(Text::fromT(dlg.line));
-			ctrlHubs.SetItemText(i, COLUMN_DESCRIPTION, Text::toT(r->getDescription()).c_str());
-			FavoriteManager::getInstance()->saveRecent();
-		}
+		ctrlStatus.SetParts(2, w);
 	}
-	return 0;
+	ctrlList.MoveWindow(rc);
 }
 
-void RecentHubsFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
+void RecentsFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
 	bool refresh = false;
-	if(ctrlHubs.GetBkColor() != WinUtil::bgColor) {
-		ctrlHubs.SetBkColor(WinUtil::bgColor);
-		ctrlHubs.SetTextBkColor(WinUtil::bgColor);
+	if(ctrlList.list.GetBkColor() != WinUtil::bgColor) {
+		ctrlList.list.SetBkColor(WinUtil::bgColor);
+		ctrlList.list.SetTextBkColor(WinUtil::bgColor);
 		refresh = true;
 	}
-	if(ctrlHubs.GetTextColor() != WinUtil::textColor) {
-		ctrlHubs.SetTextColor(WinUtil::textColor);
+	if(ctrlList.list.GetTextColor() != WinUtil::textColor) {
+		ctrlList.list.SetTextColor(WinUtil::textColor);
 		refresh = true;
 	}
 
-	if (ctrlHubs.GetFont() != WinUtil::listViewFont){
-		ctrlHubs.SetFont(WinUtil::listViewFont);
+	if (ctrlList.list.GetFont() != WinUtil::listViewFont){
+		ctrlList.list.SetFont(WinUtil::listViewFont);
 		refresh = true;
 	}
 
@@ -300,11 +217,40 @@ void RecentHubsFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noex
 	}
 }
 
+void RecentsFrame::on(RecentManagerListener::RecentUpdated, const RecentEntryPtr& entry) noexcept {
+	callAsync([=] {
+		auto i = itemInfos.find(entry->getUrl());
+		if (i != itemInfos.end()) {
+			ctrlList.list.updateItem(i->second.get());
+		}
+	});
+}
 
-LRESULT RecentHubsFrame::onItemchangedDirectories(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
-{
-	NM_LISTVIEW* lv = (NM_LISTVIEW*) pnmh;
-	::EnableWindow(GetDlgItem(IDC_CONNECT), (lv->uNewState & LVIS_FOCUSED));
-	::EnableWindow(GetDlgItem(IDC_REMOVE), (lv->uNewState & LVIS_FOCUSED));
-	return 0;
+const tstring RecentsFrame::ItemInfo::getText(int col) const {
+	if(!item)
+		return Util::emptyStringT;
+
+	switch (col) {
+
+	case COLUMN_NAME: return Text::toT(item->getName());
+	case COLUMN_DESCRIPTION: return Text::toT(item->getDescription());
+	case COLUMN_SERVER: return Text::toT(item->getUrl());
+
+	default: return Util::emptyStringT;
+	}
+}
+
+void RecentsFrame::createColumns() {
+	// Create listview columns
+	WinUtil::splitTokens(columnIndexes, SETTING(RECENTFRAME_ORDER), COLUMN_LAST);
+	WinUtil::splitTokens(columnSizes, SETTING(RECENTFRAME_WIDTHS), COLUMN_LAST);
+
+	for (uint8_t j = 0; j < COLUMN_LAST; j++) {
+		int fmt = LVCFMT_LEFT;
+		ctrlList.list.InsertColumn(j, CTSTRING_I(columnNames[j]), fmt, columnSizes[j], j);
+	}
+
+	ctrlList.list.setColumnOrderArray(COLUMN_LAST, columnIndexes);
+	ctrlList.list.setSortColumn(COLUMN_NAME);
+	//ctrlList.list.setVisible(SETTING(RECENTFRAME_VISIBLE));
 }

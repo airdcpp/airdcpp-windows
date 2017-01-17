@@ -73,8 +73,9 @@ public:
 	virtual bool privateMessage(const OnlineUserPtr& aUser, const string& aMessage, string& error_, bool aThirdPerson = false, bool aEcho = true) noexcept = 0;
 	virtual void sendUserCmd(const UserCommand& command, const ParamMap& params) = 0;
 
-	uint64_t queueSearch(const SearchPtr& aSearch) noexcept;
-	void cancelSearch(void* aOwner) noexcept { searchQueue.cancelSearch(aOwner); }
+	optional<uint64_t> queueSearch(const SearchPtr& aSearch) noexcept;
+	optional<uint64_t> getQueueTime(const void* aOwner) const noexcept;
+	bool cancelSearch(const void* aOwner) noexcept { return searchQueue.cancelSearch(aOwner); }
 	
 	virtual void password(const string& pwd) noexcept = 0;
 	void info();
@@ -172,7 +173,7 @@ public:
 	}
 
 	void doRedirect() noexcept;
-	bool saveFavorite();
+	FavoriteHubEntryPtr saveFavorite();
 
 	enum State: uint8_t {
 		STATE_CONNECTING,	///< Waiting for socket to connect
@@ -264,6 +265,8 @@ private:
 	// Last used count type information for this hub
 	CountType countType = COUNT_UNCOUNTED;
 	bool countIsSharing = false;
+
+	void destroySocket(const AsyncF& aShutdownAction = nullptr) noexcept;
 };
 
 } // namespace dcpp

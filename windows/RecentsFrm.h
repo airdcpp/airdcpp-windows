@@ -24,98 +24,117 @@
 #endif // _MSC_VER > 1000
 
 #include "FlatTabCtrl.h"
-#include "ExListViewCtrl.h"
-#include <airdcpp/FavoriteManager.h>
+#include "FilteredListViewCtrl.h"
 
-class RecentHubsFrame : public MDITabChildWindowImpl<RecentHubsFrame>, public StaticFrame<RecentHubsFrame, ResourceManager::RECENT_HUBS, IDC_RECENTS>, 
-	private FavoriteManagerListener, private SettingsManagerListener
+#include <airdcpp/RecentManager.h>
+
+class RecentsFrame : public MDITabChildWindowImpl<RecentsFrame>, public StaticFrame<RecentsFrame, ResourceManager::RECENT_HUBS, IDC_RECENTS>, 
+	private RecentManagerListener, private SettingsManagerListener, private Async<RecentsFrame>
 {
 public:
-	typedef MDITabChildWindowImpl<RecentHubsFrame> baseClass;
+	typedef MDITabChildWindowImpl<RecentsFrame> baseClass;
 		
-	RecentHubsFrame() : closed(false) { };
-	~RecentHubsFrame() { };
+	RecentsFrame();
+	~RecentsFrame() { };
 
-	DECLARE_FRAME_WND_CLASS_EX(_T("RecentHubsFrame"), IDR_RECENTS, 0, COLOR_3DFACE);
+	DECLARE_FRAME_WND_CLASS_EX(_T("RecentsFrame"), IDR_RECENTS, 0, COLOR_3DFACE);
 		
-	void OnFinalMessage(HWND /*hWnd*/) {
-		delete this;
-	}
 
-	BEGIN_MSG_MAP(RecentHubsFrame)
+	BEGIN_MSG_MAP(RecentsFrame)
+		NOTIFY_HANDLER(IDC_RECENTS_LIST, LVN_GETDISPINFO, ctrlList.list.onGetDispInfo)
+		NOTIFY_HANDLER(IDC_RECENTS_LIST, LVN_COLUMNCLICK, ctrlList.list.onColumnClick)
+		NOTIFY_HANDLER(IDC_RECENTS_LIST, LVN_GETINFOTIP, ctrlList.list.onInfoTip)
 		MESSAGE_HANDLER(WM_CREATE, onCreate)
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
+		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
-		COMMAND_ID_HANDLER(IDC_CONNECT, onClickedConnect)
-		COMMAND_ID_HANDLER(IDC_ADD, onAdd)
-		COMMAND_ID_HANDLER(IDC_REMOVE, onRemove)
-		COMMAND_ID_HANDLER(IDC_REMOVE_ALL, onRemoveAll)
-		COMMAND_ID_HANDLER(IDC_EDIT, onEdit)
-		NOTIFY_HANDLER(IDC_RECENTS, LVN_COLUMNCLICK, onColumnClickHublist)
-		NOTIFY_HANDLER(IDC_RECENTS, NM_DBLCLK, onDoubleClickHublist)
-		NOTIFY_HANDLER(IDC_RECENTS, NM_RETURN, onEnter)
 		NOTIFY_HANDLER(IDC_RECENTS, LVN_KEYDOWN, onKeyDown)
-		NOTIFY_HANDLER(IDC_RECENTS, LVN_ITEMCHANGED, onItemchangedDirectories)
 		CHAIN_MSG_MAP(baseClass)
 	END_MSG_MAP()
 		
 	LRESULT onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
-	LRESULT onDoubleClickHublist(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
-	LRESULT onEnter(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
-	LRESULT onAdd(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
-	LRESULT onClickedConnect(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
-	LRESULT onRemove(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
-	LRESULT onRemoveAll(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
-	LRESULT onEdit(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
-	LRESULT onItemchangedDirectories(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL & /*bHandled*/);
 	LRESULT onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/);
-	LRESULT onColumnClickHublist(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bHandled*/);
 	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bHandled*/);
+
+	void createColumns();
+	size_t getTotalListItemCount() {
+		return itemInfos.size();
+	}
+
+	static string id;
 private:
-	void connectSelected();
+	class ItemInfo;
+	typedef TypedListViewCtrl<ItemInfo, IDC_RECENTS_LIST> ListBaseType;
+	typedef FilteredListViewCtrl <ListBaseType, RecentsFrame, IDC_RECENTS_LIST, FLV_HAS_OPTIONS> ListType;
+	friend class ListType;
+	ListType ctrlList;
+
+
+	class ItemInfo {
+	public:
+		ItemInfo(const RecentEntryPtr& aRecent) : item(aRecent) { }
+		~ItemInfo() { }
+
+		const tstring getText(int col) const;
+
+		static int compareItems(const ItemInfo* a, const ItemInfo* b, int col) {
+			return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str());
+		}
+
+		int getImageIndex() const { return 0; }
+
+		RecentEntryPtr item;
+	};
+
+	unordered_map<string, unique_ptr<ItemInfo>> itemInfos; //map to url for now, we only have hubs here...
+
 	enum {
 		COLUMN_FIRST,
 		COLUMN_NAME = COLUMN_FIRST,
 		COLUMN_DESCRIPTION,
-		COLUMN_USERS,
-		COLUMN_SHARED,
 		COLUMN_SERVER,
 		COLUMN_LAST
 	};
-	
-	CButton ctrlConnect;
-	CButton ctrlRemove;
-	CButton ctrlRemoveAll;
-	CMenu hubsMenu;
-	
-	ExListViewCtrl ctrlHubs;
 
 	bool closed;
 	
 	static int columnSizes[COLUMN_LAST];
 	static int columnIndexes[COLUMN_LAST];
 	
-	void updateList(const RecentHubEntryList& fl);
-	void addEntry(const RecentHubEntryPtr& entry, int pos);
+	void updateList();
+	void addEntry(ItemInfo* ii);
+	bool show(const ItemInfo* aItem);
 
+	CImageList listImages;
+
+	CStatusBarCtrl ctrlStatus;
+	int statusSizes[2];
 	
-	void on(RecentAdded, const RecentHubEntryPtr& entry) noexcept { addEntry(entry, ctrlHubs.GetItemCount()); }
-	void on(RecentRemoved, const RecentHubEntryPtr& entry) noexcept { ctrlHubs.DeleteItem(ctrlHubs.find((LPARAM)entry.get())); }
-	void on(RecentUpdated, const RecentHubEntryPtr& entry) noexcept {
-		int i = -1;
-		if((i = ctrlHubs.find((LPARAM)entry.get())) != -1) {
-			ctrlHubs.SetItemText(i, COLUMN_NAME, Text::toT(entry->getName()).c_str());
-			ctrlHubs.SetItemText(i, COLUMN_DESCRIPTION, Text::toT(entry->getDescription()).c_str());
-			ctrlHubs.SetItemText(i, COLUMN_USERS, Text::toT(entry->getUsers()).c_str());
-			ctrlHubs.SetItemText(i, COLUMN_SHARED, Text::toT(Util::formatBytes(entry->getShared())).c_str());
-			ctrlHubs.SetItemText(i, COLUMN_SERVER, Text::toT(entry->getServer()).c_str());
-		}
+	void on(RecentManagerListener::RecentAdded, const RecentEntryPtr& entry) noexcept { 
+		callAsync([=] {
+			auto i = itemInfos.find(entry->getUrl());
+			if (i == itemInfos.end()) {
+				auto ii = itemInfos.emplace(entry->getUrl(), unique_ptr<ItemInfo>(new ItemInfo(entry))).first;
+				addEntry(ii->second.get());
+			}
+		});
 	}
+	void on(RecentManagerListener::RecentRemoved, const RecentEntryPtr& entry) noexcept { 
+		callAsync([=] {
+			auto i = itemInfos.find(entry->getUrl());
+			if (i != itemInfos.end()) {
+				ctrlList.list.deleteItem(i->second.get());
+				itemInfos.erase(i);
+			}
+		});
+	}
+	void on(RecentManagerListener::RecentUpdated, const RecentEntryPtr& entry) noexcept;
+
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 };
 

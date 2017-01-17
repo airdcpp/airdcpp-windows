@@ -135,8 +135,9 @@ public:
 	/* DownloadBaseHandler functions */
 	void handleDownload(const string& aTarget, Priority p, bool isRelease);
 
-private:
 
+	static string id;
+private:
 	class ItemInfo;
 	typedef TypedListViewCtrl<ItemInfo, IDC_RSS_LIST> ListBaseType;
 	typedef FilteredListViewCtrl <ListBaseType, RssInfoFrame, IDC_RSS_LIST, FLV_HAS_OPTIONS> ListType;
@@ -200,6 +201,7 @@ private:
 	void clearData(const RSSPtr& aFeed);
 
 	void onItemAdded(const RSSDataPtr& aData);
+	void onItemRemoved(const RSSDataPtr& aData);
 
 	void addFeed(const RSSPtr& aFeed);
 	
@@ -212,7 +214,8 @@ private:
 	void updateDupeType(const string& aName);
 
 	RSSPtr getSelectedFeed();
-	ItemInfo* getSelectedListitem();
+
+	vector<ItemInfo*> getSelectedListitems();
 
 	//map feeds to tree item
 	unordered_map<RSSPtr, HTREEITEM> feeds;
@@ -242,6 +245,7 @@ private:
 	bool closed = false;
 
 	virtual void on(RSSManagerListener::RSSDataAdded, const RSSDataPtr& aData) noexcept;
+	virtual void on(RSSManagerListener::RSSDataRemoved, const RSSDataPtr& aData) noexcept;
 	virtual void on(RSSManagerListener::RSSFeedRemoved, const RSSPtr& aFeed) noexcept;
 	virtual void on(RSSManagerListener::RSSFeedChanged, const RSSPtr& aFeed) noexcept;
 	virtual void on(RSSManagerListener::RSSFeedAdded, const RSSPtr& aFeed) noexcept;

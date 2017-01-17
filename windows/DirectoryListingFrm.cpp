@@ -55,6 +55,8 @@ static SettingsManager::BoolSetting filterSettings [] = { SettingsManager::FILTE
 
 static ColumnType columnTypes [] = { COLUMN_TEXT, COLUMN_TEXT, COLUMN_SIZE, COLUMN_SIZE, COLUMN_TEXT, COLUMN_TIME };
 
+string DirectoryListingFrame::id = "FileList";
+
 void DirectoryListingFrame::openWindow(const DirectoryListingPtr& aList, const string& aDir, const string& aXML) {
 
 	HWND aHWND = NULL;
@@ -76,6 +78,54 @@ void DirectoryListingFrame::openWindow(const DirectoryListingPtr& aList, const s
 	} else {
 		delete frame;
 	}
+}
+
+bool DirectoryListingFrame::getWindowParams(HWND hWnd, StringMap &params) {
+	auto f = frames.find(hWnd);
+	if (f != frames.end()) {
+		params["id"] = DirectoryListingFrame::id;
+		params["CID"] = f->second->dl->getUser()->getCID().toBase32();
+		params["url"] = f->second->dl->getHubUrl();
+		params["dir"] = f->second->curPath;
+		params["file"] = f->second->dl->getFileName();
+		params["partial"] = Util::toString(f->second->dl->getPartialList());
+		params["profileToken"] = Util::toString(f->second->dl->getIsOwnList() ? f->second->dl->getShareProfile() : 0);
+		if (!f->second->dl->getPartialList())
+			QueueManager::getInstance()->noDeleteFileList(f->second->dl->getFileName());
+		return true;
+	}
+	return false;
+}
+
+bool DirectoryListingFrame::parseWindowParams(StringMap& params) {
+	if (params["id"] == DirectoryListingFrame::id) {
+		string cid = params["CID"];
+		if (!cid.empty()) {
+			UserPtr u = ClientManager::getInstance()->getUser(CID(cid));
+			if (u) {
+				bool partial = Util::toBool(Util::toInt(params["partial"]));
+				string dir = params["dir"];
+				string file = params["file"];
+				string url = params["url"];
+				if (u == ClientManager::getInstance()->getMe()) {
+					ProfileToken token = Util::toInt(params["profileToken"]);
+					DirectoryListingManager::getInstance()->openOwnList(token, false, dir);
+				}
+				else if (partial) { //re download partial list
+					MainFrame::getMainFrame()->addThreadedTask([=] {
+						try {
+							DirectoryListingManager::getInstance()->createList(HintedUser(u, url), QueueItem::FLAG_CLIENT_VIEW | (partial ? QueueItem::FLAG_PARTIAL_LIST : 0), dir);
+						} catch (Exception&) {}
+						});
+				}
+				else if (!file.empty()) {
+					DirectoryListingManager::getInstance()->openFileList(HintedUser(u, url), file, dir);
+				}
+			}
+		}
+		return true;
+	}
+	return false;
 }
 
 bool DirectoryListingFrame::allowPopup() const {
@@ -678,7 +728,7 @@ void DirectoryListingFrame::onFind() {
 
 	gotoPrev = false;
 
-	auto s = make_shared<Search>(Search::MANUAL, Util::toString(Util::rand()));
+	auto s = make_shared<Search>(Priority::HIGH, Util::toString(Util::rand()));
 
 	s->query = dlg.searchStr;
 	s->size = dlg.size;
@@ -794,7 +844,7 @@ void DirectoryListingFrame::updateStatusText(int aTotalCount, int64_t aTotalSize
 	}
 	ctrlStatus.SetText(STATUS_SELECTED_SIZE, tmp.c_str());
 
-	tmp = TSTRING_F(UPDATED_ON_X, Text::toT(Util::formatTime("%c", aUpdateDate)));
+	tmp = aUpdateDate > 0 ? TSTRING_F(UPDATED_ON_X, Text::toT(Util::formatTime("%c", aUpdateDate))) : Util::emptyStringT;
 	w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
 	if (statusSizes[STATUS_UPDATED] < w) {
 		statusSizes[STATUS_UPDATED] = w;
@@ -1819,10 +1869,10 @@ const tstring DirectoryListingFrame::ItemInfo::getText(uint8_t col) const {
 			if (type == FILE) {
 				return WinUtil::formatFileType(file->getName());
 			} else {
-				return Util::emptyStringT;
+				return Text::toT(Util::formatDirectoryContent(dir->getContentInfoRecursive(true)));
 			}
 		case COLUMN_EXACTSIZE: return type == DIRECTORY ? Util::formatExactSizeW(dir->getTotalSize(true)) : Util::formatExactSizeW(file->getSize());
-		case COLUMN_SIZE: return  type == DIRECTORY ? Util::formatBytesW(dir->getTotalSize(true)) : Util::formatBytesW(file->getSize());
+		case COLUMN_SIZE: return type == DIRECTORY ? Util::formatBytesW(dir->getTotalSize(true)) : Util::formatBytesW(file->getSize());
 		case COLUMN_DATE: return Util::getDateTimeW(type == DIRECTORY ? dir->getRemoteDate() : file->getRemoteDate());
 		default: return Text::toT(getTextNormal(col));
 	}

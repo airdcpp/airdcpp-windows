@@ -38,6 +38,8 @@ static ResourceManager::Strings columnNames[] = { ResourceManager::AUTO_CONNECT,
 ResourceManager::NICK, ResourceManager::PASSWORD, ResourceManager::SERVER, ResourceManager::USER_DESCRIPTION, ResourceManager::SHARE_PROFILE
 };
 
+string FavoriteHubsFrame::id = "FavoriteHubs";
+
 LRESULT FavoriteHubsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	ctrlHubs.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_SHOWSELALWAYS, WS_EX_CLIENTEDGE, IDC_HUBLIST);
@@ -183,13 +185,10 @@ void FavoriteHubsFrame::openSelected() {
 		return;
 	
 	int i = -1;
-	while( (i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1) {
+	while ((i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1) {
 		FavoriteHubEntry* entry = (FavoriteHubEntry*)ctrlHubs.GetItemData(i);
 
-		RecentHubEntryPtr r = new RecentHubEntry(entry->getServer());
-		r->setName(entry->getName());
-		r->setDescription(entry->getDescription());
-		ClientManager::getInstance()->createClient(r); // no multithreading because of disorder!
+		ClientManager::getInstance()->createClient(entry->getServer());
 	}
 	return;
 }
@@ -434,7 +433,7 @@ void FavoriteHubsFrame::handleMove(bool up) {
 	if(!up)
 		reverse(fh_copy.begin(), fh_copy.end());
 	fh = fh_copy;
-	FavoriteManager::getInstance()->save();
+	FavoriteManager::getInstance()->setDirty();
 
 	fillList();
 }
@@ -500,7 +499,7 @@ LRESULT FavoriteHubsFrame::onItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*b
 	if(!nosave && l->iItem != -1 && ((l->uNewState & LVIS_STATEIMAGEMASK) != (l->uOldState & LVIS_STATEIMAGEMASK))) {
 		FavoriteHubEntry* f = (FavoriteHubEntry*)ctrlHubs.GetItemData(l->iItem);
 		f->setAutoConnect(ctrlHubs.GetCheckState(l->iItem) != FALSE);
-		FavoriteManager::getInstance()->save();
+		FavoriteManager::getInstance()->setDirty();
 	}
 	return 0;
 }

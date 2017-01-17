@@ -83,12 +83,13 @@ bool MainFrame::isShutdownStatus = false;
 
 #define ICON_SPACE 24
 
+#define CONFIG_FRAMES_NAME "Frames.xml"
+#define CONFIG_DIR Util::PATH_USER_CONFIG
+
 MainFrame::MainFrame() : CSplitterImpl(false), trayMessage(0), maximized(false), lastUpload(-1), lastUpdate(0), 
-stopperThread(NULL),
-closing(false), missedAutoConnect(false), tabsontop(false),
+stopperThread(NULL), closing(false), tabsontop(false),
 bTrayIcon(false), bAppMinimized(false), bHasPM(false), bHasMC(false), hashProgress(false), trayUID(0), fMenuShutdown(false),
 statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP), settingsWindowOpen(false)
-
 
 { 
 
@@ -260,68 +261,14 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	// Set window name
 	SetWindowText(Text::toT(shortVersionString).c_str());
 
-	// Load images
-	// create command bar window
-	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE);
-	
-	m_hMenu = WinUtil::mainMenu;
-
-	hShutdownIcon = ResourceLoader::loadIcon(IDI_SHUTDOWN, 16);
-
-	// attach menu
-	m_CmdBar.AttachMenu(m_hMenu);
-
-	// load command bar images
-	ResourceLoader::loadCmdBarImageList(images);
-	m_CmdBar.m_hImageList = images;
-
-	m_CmdBar.m_arrCommand.Add(ID_FILE_CONNECT);
-	m_CmdBar.m_arrCommand.Add(ID_FILE_RECONNECT);
-	m_CmdBar.m_arrCommand.Add(IDC_FOLLOW);
-	m_CmdBar.m_arrCommand.Add(IDC_RECENTS);
-	m_CmdBar.m_arrCommand.Add(IDC_FAVORITES);
-	m_CmdBar.m_arrCommand.Add(IDC_FAVUSERS);
-	m_CmdBar.m_arrCommand.Add(IDC_QUEUE);
-	m_CmdBar.m_arrCommand.Add(IDC_UPLOAD_QUEUE);
-	m_CmdBar.m_arrCommand.Add(IDC_FINISHED_UL);
-	m_CmdBar.m_arrCommand.Add(ID_FILE_SEARCH);
-	m_CmdBar.m_arrCommand.Add(IDC_FILE_ADL_SEARCH);
-	m_CmdBar.m_arrCommand.Add(IDC_SEARCH_SPY);
-	m_CmdBar.m_arrCommand.Add(IDC_OPEN_FILE_LIST);
-	m_CmdBar.m_arrCommand.Add(IDC_BROWSE_OWN_LIST);
-	m_CmdBar.m_arrCommand.Add(IDC_OWN_LIST_ADL);
-	m_CmdBar.m_arrCommand.Add(IDC_MATCH_ALL);
-	m_CmdBar.m_arrCommand.Add(IDC_REFRESH_FILE_LIST);
-	m_CmdBar.m_arrCommand.Add(IDC_SCAN_MISSING);
-	m_CmdBar.m_arrCommand.Add(IDC_OPEN_DOWNLOADS);
-	m_CmdBar.m_arrCommand.Add(ID_FILE_QUICK_CONNECT);
-	m_CmdBar.m_arrCommand.Add(ID_FILE_SETTINGS);
-	m_CmdBar.m_arrCommand.Add(ID_GET_TTH);
-	m_CmdBar.m_arrCommand.Add(IDC_UPDATE);
-	m_CmdBar.m_arrCommand.Add(ID_APP_EXIT);
-	m_CmdBar.m_arrCommand.Add(IDC_NOTEPAD);
-	m_CmdBar.m_arrCommand.Add(IDC_CDMDEBUG_WINDOW);
-	m_CmdBar.m_arrCommand.Add(IDC_SYSTEM_LOG);
-	m_CmdBar.m_arrCommand.Add(IDC_AUTOSEARCH);
-	m_CmdBar.m_arrCommand.Add(IDC_HASH_PROGRESS);
-	m_CmdBar.m_arrCommand.Add(ID_APP_ABOUT);
-	m_CmdBar.m_arrCommand.Add(ID_WIZARD);
-	m_CmdBar.m_arrCommand.Add(IDC_OPEN_LOG_DIR);
-	m_CmdBar.m_arrCommand.Add(IDC_OPEN_CONFIG_DIR);
-	m_CmdBar.m_arrCommand.Add(IDC_RSSFRAME);
-
-	// use Vista-styled menus on Vista/Win7
-	m_CmdBar._AddVistaBitmapsFromImageList(0, m_CmdBar.m_arrCommand.GetSize());
-
-	// remove old menu
-	SetMenu(NULL);
-
 	tbarcreated = false;
 	tbarwinampcreated = false;
 	HWND hWndToolBar = createToolbar();
 	HWND hWndWinampBar = createWinampToolbar();
 	HWND hWndTBStatusBar = createTBStatusBar();
+	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE);
 
+	initCmdBar();
 	CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
 	AddSimpleReBarBand(hWndCmdBar);
 	AddSimpleReBarBand(hWndToolBar, NULL, TRUE);
@@ -330,41 +277,11 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	CreateSimpleStatusBar();
 	
-	RECT toolRect = {0};
+	RECT toolRect = { 0 };
 	::GetWindowRect(hWndToolBar, &toolRect);
 
-	ctrlStatus.Attach(m_hWndStatusBar);
-	ctrlStatus.SetSimple(FALSE);
-	int w[11] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-	ctrlStatus.SetParts(11, w);
-	//statusSizes[0] = 4;
-	statusContainer.SubclassWindow(ctrlStatus.m_hWnd);
-
-	ctrlTooltips.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);
-	ctrlTooltips.SetWindowPos(HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-	// last lines and away are different, the tooltip text changes, onGetToolTip handles the text shown.
-	CToolInfo ti_lastlines(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_LASTLINES+POPUP_UID, 0, LPSTR_TEXTCALLBACK);
-	CToolInfo ti_away(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_AWAY+POPUP_UID, 0, LPSTR_TEXTCALLBACK);
-	CToolInfo ti_shared(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_SHARED+POPUP_UID, 0, (LPWSTR)CTSTRING(SHARED));
-	CToolInfo ti_dlSpeed(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_DL_SPEED+POPUP_UID, 0, (LPWSTR)CTSTRING(DL_STATUS_POPUP));
-	CToolInfo ti_ulSpeed(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_UL_SPEED+POPUP_UID, 0, (LPWSTR)CTSTRING(UL_STATUS_POPUP));
-	CToolInfo ti_queueSize(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_QUEUED+POPUP_UID, 0, (LPWSTR)CTSTRING(QUEUE_SIZE));
-	CToolInfo ti_slots(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_SLOTS+POPUP_UID, 0, (LPWSTR)CTSTRING(SLOTS));  //TODO: Click to adjust
-	CToolInfo ti_hubs(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_HUBS+POPUP_UID, 0, (LPWSTR)CTSTRING(HUBS));
-	CToolInfo ti_downloaded(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_DOWNLOADED+POPUP_UID, 0, (LPWSTR)CTSTRING(DOWNLOADED));
-	CToolInfo ti_uploaded(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_UPLOADED+POPUP_UID, 0, (LPWSTR)CTSTRING(UPLOADED));
-
-	ctrlTooltips.AddTool(&ti_lastlines);
-	ctrlTooltips.AddTool(&ti_away);
-	ctrlTooltips.AddTool(&ti_shared);
-	ctrlTooltips.AddTool(&ti_dlSpeed);
-	ctrlTooltips.AddTool(&ti_ulSpeed);
-	ctrlTooltips.AddTool(&ti_queueSize);
-	ctrlTooltips.AddTool(&ti_slots);
-	ctrlTooltips.AddTool(&ti_hubs);
-	ctrlTooltips.AddTool(&ti_downloaded);
-	ctrlTooltips.AddTool(&ti_uploaded);
-	ctrlTooltips.SetDelayTime(TTDT_AUTOPOP, 15000);
+	initStatusbar();
+	initTooltips();
 
 	CreateMDIClient();
 	m_CmdBar.SetMDIClient(m_hWndMDIClient);
@@ -397,23 +314,13 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	pLoop->AddMessageFilter(this);
 	pLoop->AddIdleHandler(this);
 
-	if(SETTING(OPEN_PUBLIC)) PostMessage(WM_COMMAND, ID_FILE_CONNECT);
-	if(SETTING(OPEN_FAVORITE_HUBS)) PostMessage(WM_COMMAND, IDC_FAVORITES);
-	if(SETTING(OPEN_FAVORITE_USERS)) PostMessage(WM_COMMAND, IDC_FAVUSERS);
-	if(SETTING(OPEN_QUEUE)) PostMessage(WM_COMMAND, IDC_QUEUE);
-	if(SETTING(OPEN_WAITING_USERS)) PostMessage(WM_COMMAND, IDC_UPLOAD_QUEUE);
-	if(SETTING(OPEN_FINISHED_UPLOADS)) PostMessage(WM_COMMAND, IDC_FINISHED_UL);
-	if(SETTING(OPEN_SEARCH_SPY)) PostMessage(WM_COMMAND, IDC_SEARCH_SPY);
-	if(SETTING(OPEN_NOTEPAD)) PostMessage(WM_COMMAND, IDC_NOTEPAD);
+	if (!SETTING(SHOW_STATUSBAR)) PostMessage(WM_COMMAND, ID_VIEW_STATUS_BAR);
+	if (!SETTING(SHOW_TOOLBAR)) PostMessage(WM_COMMAND, ID_VIEW_TOOLBAR);
+	if (!SETTING(SHOW_TRANSFERVIEW))	PostMessage(WM_COMMAND, ID_VIEW_TRANSFER_VIEW);
 
-	if(!SETTING(SHOW_STATUSBAR)) PostMessage(WM_COMMAND, ID_VIEW_STATUS_BAR);
-	if(!SETTING(SHOW_TOOLBAR)) PostMessage(WM_COMMAND, ID_VIEW_TOOLBAR);
-	if(!SETTING(SHOW_TRANSFERVIEW))	PostMessage(WM_COMMAND, ID_VIEW_TRANSFER_VIEW);
-
-	if(!SETTING(SHOW_WINAMP_CONTROL)) PostMessage(WM_COMMAND, ID_TOGGLE_TOOLBAR);
-	if(!SETTING(SHOW_TBSTATUS)) PostMessage(WM_COMMAND, ID_TOGGLE_TBSTATUS);
-	if(SETTING(LOCK_TB)) PostMessage(WM_COMMAND, ID_LOCK_TB);
-	if(SETTING(OPEN_SYSTEM_LOG)) PostMessage(WM_COMMAND, IDC_SYSTEM_LOG);
+	if (!SETTING(SHOW_WINAMP_CONTROL)) PostMessage(WM_COMMAND, ID_TOGGLE_TOOLBAR);
+	if (!SETTING(SHOW_TBSTATUS)) PostMessage(WM_COMMAND, ID_TOGGLE_TBSTATUS);
+	if (SETTING(LOCK_TB)) PostMessage(WM_COMMAND, ID_LOCK_TB);
 
 	callAsync([=] { parseCommandLine(GetCommandLine()); });
 
@@ -443,19 +350,6 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	if(SETTING(NICK).empty()) {
 		PostMessage(WM_COMMAND, ID_FILE_SETTINGS);
 	}
-	
-	slotsIcon = ResourceLoader::loadIcon(IDI_SLOTS, 16);
-	slotsFullIcon = ResourceLoader::loadIcon(IDI_SLOTSFULL, 16);
-
-	ctrlStatus.SetIcon(STATUS_AWAY, ActivityManager::getInstance()->isAway() ? GET_ICON(IDI_USER_AWAY, 16) : GET_ICON(IDI_USER_BASE, 16));
-	ctrlStatus.SetIcon(STATUS_SHARED, GET_ICON(IDI_SHARED, 16));
-	ctrlStatus.SetIcon(STATUS_SLOTS, slotsIcon);
-	ctrlStatus.SetIcon(STATUS_HUBS, GET_ICON(IDI_HUB, 16));
-	ctrlStatus.SetIcon(STATUS_DOWNLOADED, GET_ICON(IDI_TOTAL_DOWN, 16));
-	ctrlStatus.SetIcon(STATUS_UPLOADED, GET_ICON(IDI_TOTAL_UP, 16));
-	ctrlStatus.SetIcon(STATUS_DL_SPEED, GET_ICON(IDI_DOWNLOAD, 16));
-	ctrlStatus.SetIcon(STATUS_UL_SPEED, GET_ICON(IDI_UPLOAD, 16));
-	ctrlStatus.SetIcon(STATUS_QUEUED, GET_ICON(IDI_QUEUE, 16));
 
 	//background image
 	if(!SETTING(BACKGROUND_IMAGE).empty()) {
@@ -471,11 +365,8 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	WinUtil::splash->destroy();
 
-	if (!WinUtil::isShift() && !Util::hasStartupParam("/noautoconnect")) {
-		if (!SETTING(NICK).empty())
-			addThreadedTask([=] { FavoriteManager::getInstance()->autoConnect(); });
-		else
-			missedAutoConnect = true;
+	if (!WinUtil::isShift() && !Util::hasStartupParam("/noautoconnect") && !SETTING(NICK).empty()) {
+		addThreadedTask([=] { loadOpenWindows(); });
 	}
 
 	if (Util::IsOSVersionOrGreater(6, 2) && !IsWindowsServer() && WinUtil::isElevated()) {
@@ -1038,7 +929,7 @@ LRESULT MainFrame::onOpenWindows(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 		case IDC_FINISHED_UL: FinishedULFrame::openWindow(); break;
 		case IDC_UPLOAD_QUEUE: UploadQueueFrame::openWindow(); break;
 		case IDC_CDMDEBUG_WINDOW: CDMDebugFrame::openWindow(); break;
-		case IDC_RECENTS: RecentHubsFrame::openWindow(); break;
+		case IDC_RECENTS: RecentsFrame::openWindow(); break;
 		case IDC_SYSTEM_LOG: SystemFrame::openWindow(); break;
 		case IDC_AUTOSEARCH: AutoSearchFrame::openWindow(); break;
 		case IDC_RSSFRAME: RssInfoFrame::openWindow(); break;
@@ -1073,9 +964,6 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 			}
 
 			SettingsManager::getInstance()->save();
-			if (missedAutoConnect && !SETTING(NICK).empty()) {
-				FavoriteManager::getInstance()->autoConnect();
-			}
 		});
  
 		if(SETTING(SORT_FAVUSERS_FIRST) != lastSortFavUsersFirst)
@@ -1254,6 +1142,7 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 		
 		if (forcedShutdown || WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_EXIT, TSTRING(REALLY_EXIT))) {
 			
+			saveOpenWindows();
 			HubFrame::ShutDown();
 
 			SplashWindow::create();
@@ -1333,6 +1222,119 @@ LRESULT MainFrame::onLink(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL
 
 	return 0;
 }
+
+void MainFrame::saveOpenWindows() {
+
+	vector<StringMap> windowParams;
+
+#define save(frame) else if(frame::getWindowParams(t, params)) windowParams.push_back(params);
+
+	auto tabs = WinUtil::tabCtrl->getTabList();
+	for (auto t : tabs) {
+		StringMap params;
+		if (0);
+		save(HubFrame)
+		save(PrivateFrame)
+		save(QueueFrame)
+		save(DirectoryListingFrame)
+		save(SystemFrame)
+		save(AutoSearchFrame)
+		save(RssInfoFrame)
+		//save(SearchFrame) //currently no handling of re opening
+		save(FavoriteHubsFrame)
+		save(UsersFrame)
+		save(NotepadFrame)
+		save(FinishedULFrame)
+		save(UploadQueueFrame)
+		save(SpyFrame)
+		save(ADLSearchFrame)
+		save(PublicHubsFrame)
+		save(CDMDebugFrame)
+		save(RecentsFrame)
+	}
+#undef save
+
+	addThreadedTask([=] {
+		SimpleXML xml;
+		xml.addTag("Windows");
+		xml.stepIn();
+
+		for (auto& params : windowParams) {
+			xml.addTag("Window");
+			xml.stepIn();
+			for (auto p = params.begin(); p != params.end(); ++p) {
+				xml.addTag("param", p->second);
+				xml.addChildAttrib("name", p->first);
+			}
+			xml.stepOut();
+		}
+		SettingsManager::saveSettingFile(xml, CONFIG_DIR, CONFIG_FRAMES_NAME);
+	});
+}
+
+void MainFrame::loadOpenWindows() {
+
+#define load(frame, ID) else if(frame::id == ID) frame::parseWindowParams(params)
+
+	try {
+		SimpleXML xml;
+		SettingsManager::loadSettingFile(xml, CONFIG_DIR, CONFIG_FRAMES_NAME);
+		if (xml.findChild("Windows")) {
+			xml.stepIn();
+			while (xml.findChild("Window")) {
+				xml.stepIn();
+				StringMap params;
+				while (xml.findChild("param")) {
+					params[xml.getChildAttrib("name")] = xml.getChildData();
+				}
+				xml.stepOut();
+				string id = params["id"];
+				//hasHubs = hasHubs || id == HubFrame::id;
+	
+				if (0);
+				load(HubFrame, id);
+				load(PrivateFrame, id);
+				load(DirectoryListingFrame, id);
+				//Static frames
+				load(QueueFrame, id);
+				load(SystemFrame, id);
+				load(AutoSearchFrame, id);
+				load(RssInfoFrame, id);
+				load(PublicHubsFrame, id);
+				load(FavoriteHubsFrame, id);
+				load(UsersFrame, id);
+				load(NotepadFrame, id);
+				load(SpyFrame, id);
+				load(ADLSearchFrame, id);
+				load(FinishedULFrame, id);
+				load(UploadQueueFrame, id);
+				load(CDMDebugFrame, id);
+				load(RecentsFrame, id);
+			}	
+		}
+	} catch (const Exception&) { }
+
+	/*
+	For restoring the exact last state of the windows, this is wrong to open these. 
+	However the user can disable the settings and hub auto connect if this is not the desired behavior
+	*/
+	if (SETTING(OPEN_PUBLIC)) PostMessage(WM_COMMAND, ID_FILE_CONNECT);
+	if (SETTING(OPEN_FAVORITE_HUBS)) PostMessage(WM_COMMAND, IDC_FAVORITES);
+	if (SETTING(OPEN_FAVORITE_USERS)) PostMessage(WM_COMMAND, IDC_FAVUSERS);
+	if (SETTING(OPEN_QUEUE)) PostMessage(WM_COMMAND, IDC_QUEUE);
+	if (SETTING(OPEN_WAITING_USERS)) PostMessage(WM_COMMAND, IDC_UPLOAD_QUEUE);
+	if (SETTING(OPEN_FINISHED_UPLOADS)) PostMessage(WM_COMMAND, IDC_FINISHED_UL);
+	if (SETTING(OPEN_SEARCH_SPY)) PostMessage(WM_COMMAND, IDC_SEARCH_SPY);
+	if (SETTING(OPEN_NOTEPAD)) PostMessage(WM_COMMAND, IDC_NOTEPAD);
+	if (SETTING(OPEN_AUTOSEARCH)) PostMessage(WM_COMMAND, IDC_AUTOSEARCH);
+	if (SETTING(OPEN_SYSTEM_LOG)) PostMessage(WM_COMMAND, IDC_SYSTEM_LOG);
+
+	//Connect the remaining auto connect hubs, in case some were closed
+	FavoriteManager::getInstance()->autoConnect();
+
+#undef load
+}
+
 
 void MainFrame::getMagnetForFile() {
 	tstring file;
@@ -1766,8 +1768,7 @@ LRESULT MainFrame::onQuickConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		if(SETTING(NICK).empty())
 			return 0;
 
-		RecentHubEntryPtr r = new RecentHubEntry(Text::fromT(dlg.line));
-		WinUtil::connectHub(r);
+		WinUtil::connectHub(Text::fromT(dlg.line));
 	}
 	return 0;
 }
@@ -1853,8 +1854,7 @@ void MainFrame::on(QueueManagerListener::ItemFinished, const QueueItemPtr& qi, c
 }
 
 void MainFrame::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept {
-	
-	if (aBundle->getStatus() >= Bundle::STATUS_FINISHED)
+	if (aBundle->isCompleted())
 		return;
 
 	// ask for auto search items with an exact match only (added via main chat/system log/scanning)
@@ -2152,6 +2152,108 @@ void MainFrame::onUpdateComplete(const string& aUpdater) noexcept {
 void MainFrame::ShowPopup(tstring szMsg, tstring szTitle, DWORD dwInfoFlags, HICON hIcon, bool force) {
 	callAsync([=] { PopupManager::getInstance()->Show(szMsg, szTitle, dwInfoFlags, hIcon, force); });
 }
+
+void MainFrame::initCmdBar() {
+	m_hMenu = WinUtil::mainMenu;
+	// attach menu
+	m_CmdBar.AttachMenu(m_hMenu);
+
+	// load command bar images
+	ResourceLoader::loadCmdBarImageList(images);
+	m_CmdBar.m_hImageList = images;
+
+	m_CmdBar.m_arrCommand.Add(ID_FILE_CONNECT);
+	m_CmdBar.m_arrCommand.Add(ID_FILE_RECONNECT);
+	m_CmdBar.m_arrCommand.Add(IDC_FOLLOW);
+	m_CmdBar.m_arrCommand.Add(IDC_RECENTS);
+	m_CmdBar.m_arrCommand.Add(IDC_FAVORITES);
+	m_CmdBar.m_arrCommand.Add(IDC_FAVUSERS);
+	m_CmdBar.m_arrCommand.Add(IDC_QUEUE);
+	m_CmdBar.m_arrCommand.Add(IDC_UPLOAD_QUEUE);
+	m_CmdBar.m_arrCommand.Add(IDC_FINISHED_UL);
+	m_CmdBar.m_arrCommand.Add(ID_FILE_SEARCH);
+	m_CmdBar.m_arrCommand.Add(IDC_FILE_ADL_SEARCH);
+	m_CmdBar.m_arrCommand.Add(IDC_SEARCH_SPY);
+	m_CmdBar.m_arrCommand.Add(IDC_OPEN_FILE_LIST);
+	m_CmdBar.m_arrCommand.Add(IDC_BROWSE_OWN_LIST);
+	m_CmdBar.m_arrCommand.Add(IDC_OWN_LIST_ADL);
+	m_CmdBar.m_arrCommand.Add(IDC_MATCH_ALL);
+	m_CmdBar.m_arrCommand.Add(IDC_REFRESH_FILE_LIST);
+	m_CmdBar.m_arrCommand.Add(IDC_SCAN_MISSING);
+	m_CmdBar.m_arrCommand.Add(IDC_OPEN_DOWNLOADS);
+	m_CmdBar.m_arrCommand.Add(ID_FILE_QUICK_CONNECT);
+	m_CmdBar.m_arrCommand.Add(ID_FILE_SETTINGS);
+	m_CmdBar.m_arrCommand.Add(ID_GET_TTH);
+	m_CmdBar.m_arrCommand.Add(IDC_UPDATE);
+	m_CmdBar.m_arrCommand.Add(ID_APP_EXIT);
+	m_CmdBar.m_arrCommand.Add(IDC_NOTEPAD);
+	m_CmdBar.m_arrCommand.Add(IDC_CDMDEBUG_WINDOW);
+	m_CmdBar.m_arrCommand.Add(IDC_SYSTEM_LOG);
+	m_CmdBar.m_arrCommand.Add(IDC_AUTOSEARCH);
+	m_CmdBar.m_arrCommand.Add(IDC_HASH_PROGRESS);
+	m_CmdBar.m_arrCommand.Add(ID_APP_ABOUT);
+	m_CmdBar.m_arrCommand.Add(ID_WIZARD);
+	m_CmdBar.m_arrCommand.Add(IDC_OPEN_LOG_DIR);
+	m_CmdBar.m_arrCommand.Add(IDC_OPEN_CONFIG_DIR);
+	m_CmdBar.m_arrCommand.Add(IDC_RSSFRAME);
+
+	// use Vista-styled menus on Vista/Win7
+	m_CmdBar._AddVistaBitmapsFromImageList(0, m_CmdBar.m_arrCommand.GetSize());
+
+	// remove old menu
+	SetMenu(NULL);
+}
+
+void MainFrame::initTooltips() {
+	ctrlTooltips.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);
+	ctrlTooltips.SetWindowPos(HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+	// last lines and away are different, the tooltip text changes, onGetToolTip handles the text shown.
+	CToolInfo ti_lastlines(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_LASTLINES + POPUP_UID, 0, LPSTR_TEXTCALLBACK);
+	CToolInfo ti_away(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_AWAY + POPUP_UID, 0, LPSTR_TEXTCALLBACK);
+	CToolInfo ti_shared(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_SHARED + POPUP_UID, 0, (LPWSTR)CTSTRING(SHARED));
+	CToolInfo ti_dlSpeed(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_DL_SPEED + POPUP_UID, 0, (LPWSTR)CTSTRING(DL_STATUS_POPUP));
+	CToolInfo ti_ulSpeed(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_UL_SPEED + POPUP_UID, 0, (LPWSTR)CTSTRING(UL_STATUS_POPUP));
+	CToolInfo ti_queueSize(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_QUEUED + POPUP_UID, 0, (LPWSTR)CTSTRING(QUEUE_SIZE));
+	CToolInfo ti_slots(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_SLOTS + POPUP_UID, 0, (LPWSTR)CTSTRING(SLOTS));  //TODO: Click to adjust
+	CToolInfo ti_hubs(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_HUBS + POPUP_UID, 0, (LPWSTR)CTSTRING(HUBS));
+	CToolInfo ti_downloaded(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_DOWNLOADED + POPUP_UID, 0, (LPWSTR)CTSTRING(DOWNLOADED));
+	CToolInfo ti_uploaded(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_UPLOADED + POPUP_UID, 0, (LPWSTR)CTSTRING(UPLOADED));
+
+	ctrlTooltips.AddTool(&ti_lastlines);
+	ctrlTooltips.AddTool(&ti_away);
+	ctrlTooltips.AddTool(&ti_shared);
+	ctrlTooltips.AddTool(&ti_dlSpeed);
+	ctrlTooltips.AddTool(&ti_ulSpeed);
+	ctrlTooltips.AddTool(&ti_queueSize);
+	ctrlTooltips.AddTool(&ti_slots);
+	ctrlTooltips.AddTool(&ti_hubs);
+	ctrlTooltips.AddTool(&ti_downloaded);
+	ctrlTooltips.AddTool(&ti_uploaded);
+	ctrlTooltips.SetDelayTime(TTDT_AUTOPOP, 15000);
+}
+void MainFrame::initStatusbar() {
+	ctrlStatus.Attach(m_hWndStatusBar);
+	ctrlStatus.SetSimple(FALSE);
+	int w[11] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	ctrlStatus.SetParts(11, w);
+	//statusSizes[0] = 4;
+	statusContainer.SubclassWindow(ctrlStatus.m_hWnd);
+
+	slotsIcon = ResourceLoader::loadIcon(IDI_SLOTS, 16);
+	slotsFullIcon = ResourceLoader::loadIcon(IDI_SLOTSFULL, 16);
+	hShutdownIcon = ResourceLoader::loadIcon(IDI_SHUTDOWN, 16);
+
+	ctrlStatus.SetIcon(STATUS_AWAY, ActivityManager::getInstance()->isAway() ? GET_ICON(IDI_USER_AWAY, 16) : GET_ICON(IDI_USER_BASE, 16));
+	ctrlStatus.SetIcon(STATUS_SHARED, GET_ICON(IDI_SHARED, 16));
+	ctrlStatus.SetIcon(STATUS_SLOTS, slotsIcon);
+	ctrlStatus.SetIcon(STATUS_HUBS, GET_ICON(IDI_HUB, 16));
+	ctrlStatus.SetIcon(STATUS_DOWNLOADED, GET_ICON(IDI_TOTAL_DOWN, 16));
+	ctrlStatus.SetIcon(STATUS_UPLOADED, GET_ICON(IDI_TOTAL_UP, 16));
+	ctrlStatus.SetIcon(STATUS_DL_SPEED, GET_ICON(IDI_DOWNLOAD, 16));
+	ctrlStatus.SetIcon(STATUS_UL_SPEED, GET_ICON(IDI_UPLOAD, 16));
+	ctrlStatus.SetIcon(STATUS_QUEUED, GET_ICON(IDI_QUEUE, 16));
+}
+
 void MainFrame::updateTooltipRect() {
 	CRect sr;
 	for(uint8_t i = STATUS_LASTLINES; i != STATUS_SHUTDOWN; i++) {

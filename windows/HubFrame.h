@@ -170,6 +170,9 @@ public:
 	static void closeDisconnected();
 	static void reconnectDisconnected();
 	static void updateFonts();
+	static bool getWindowParams(HWND hWnd, StringMap& params);
+	static bool parseWindowParams(StringMap& params);
+
 
 	void setFonts();
 
@@ -196,6 +199,7 @@ public:
 	TypedListViewCtrl<OnlineUser, IDC_USERS>& getUserList() { return ctrlUsers; }
 
 	static ResourceManager::Strings columnNames[OnlineUser::COLUMN_LAST];
+	static string id;
 private:
 	enum Tasks { UPDATE_USER_JOIN, UPDATE_USER, REMOVE_USER, ADD_SILENT_STATUS_LINE, 
 		GET_SHUTDOWN, SET_SHUTDOWN, KICK_MSG, UPDATE_TAB_ICONS, ADD_STATUS_LINE
@@ -313,7 +317,7 @@ private:
 	void on(ClientListener::UsersUpdated, const Client*, const OnlineUserList&) noexcept;
 	void on(ClientListener::UserRemoved, const Client*, const OnlineUserPtr&) noexcept;
 	void on(ClientListener::Redirect, const Client*, const string&) noexcept;
-	void on(ClientListener::Failed, const string&, const string&) noexcept;
+	void on(ClientListener::Disconnected, const string&, const string&) noexcept;
 	void on(ClientListener::GetPassword, const Client*) noexcept;
 	void on(ClientListener::HubUpdated, const Client*) noexcept;
 	void on(ClientListener::ChatMessage, const Client*, const ChatMessagePtr&) noexcept;
@@ -323,7 +327,7 @@ private:
 	void on(ClientListener::HubTopic, const Client*, const string&) noexcept;
 	void on(ClientListener::AddLine, const Client*, const string&) noexcept;
 	void on(ClientListener::SetActive, const Client*) noexcept;
-	void on(ClientListener::Disconnecting, const Client*) noexcept;
+	void on(ClientListener::Close, const Client*) noexcept;
 	void on(ClientListener::Redirected, const string&, const ClientPtr& aNewClient) noexcept;
 	void on(ClientListener::MessagesRead) noexcept;
 	void on(ClientListener::KeyprintMismatch, const Client*) noexcept;

@@ -34,8 +34,8 @@
 
 #include <airdcpp/modules/FinishedManager.h>
 
-template<class T, int title, int id>
-class FinishedFrameBase : public MDITabChildWindowImpl<T>, public StaticFrame<T, title, id>,
+template<class T, int title, int Idc>
+class FinishedFrameBase : public MDITabChildWindowImpl<T>, public StaticFrame<T, title, Idc>,
 	protected FinishedManagerListener, private SettingsManagerListener
 
 {
@@ -57,10 +57,10 @@ public:
 		COMMAND_ID_HANDLER(IDC_GETLIST, onGetList)
 		COMMAND_ID_HANDLER(IDC_GRANTSLOT, onGrant)		
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
-		NOTIFY_HANDLER(id, LVN_GETDISPINFO, ctrlList.onGetDispInfo)
-		NOTIFY_HANDLER(id, LVN_COLUMNCLICK, ctrlList.onColumnClick)
-		NOTIFY_HANDLER(id, LVN_KEYDOWN, onKeyDown)
-		NOTIFY_HANDLER(id, NM_DBLCLK, onDoubleClick)	
+		NOTIFY_HANDLER(Idc, LVN_GETDISPINFO, ctrlList.onGetDispInfo)
+		NOTIFY_HANDLER(Idc, LVN_COLUMNCLICK, ctrlList.onColumnClick)
+		NOTIFY_HANDLER(Idc, LVN_KEYDOWN, onKeyDown)
+		NOTIFY_HANDLER(Idc, NM_DBLCLK, onDoubleClick)
 		CHAIN_MSG_MAP(baseClass)
 	END_MSG_MAP()
 
@@ -69,7 +69,7 @@ public:
 		ctrlStatus.Attach(m_hWndStatusBar);
 
 		ctrlList.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
-			WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS, WS_EX_CLIENTEDGE, id);
+			WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS, WS_EX_CLIENTEDGE, Idc);
 		ctrlList.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_HEADERDRAGDROP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
 
 		ctrlList.SetImageList(ResourceLoader::getFileImages(), LVSIL_SMALL);
@@ -118,7 +118,7 @@ LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHand
 			SettingsManager::getInstance()->removeListener(this);
 
 			closed = true;
-			WinUtil::setButtonPressed(id, false);
+			WinUtil::setButtonPressed(Idc, false);
 			PostMessage(WM_CLOSE);
 			return 0;
 		} else {
@@ -271,7 +271,7 @@ LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHand
 			FinishedItem *ii = ctrlList.getItemData(i);
 			if(ii->getUser().user->isOnline()) {
 				try {
-					QueueManager::getInstance()->addList(ii->getUser(), QueueItem::FLAG_CLIENT_VIEW);
+					DirectoryListingManager::getInstance()->createList(ii->getUser(), QueueItem::FLAG_CLIENT_VIEW);
 				} catch(const Exception&) {
 				}
 			} else {
@@ -321,7 +321,6 @@ LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHand
 		ctrlList.SetFocus();
 		return 0;
 	}
-
 protected:
 	enum {
 		SPEAK_ADD_LINE,
@@ -331,7 +330,7 @@ protected:
 
 	CStatusBarCtrl ctrlStatus;
 	
-	TypedListViewCtrl<FinishedItem, id> ctrlList;
+	TypedListViewCtrl<FinishedItem, Idc> ctrlList;
 
 	int64_t totalBytes;
 	int64_t totalSpeed;
@@ -403,12 +402,12 @@ protected:
 
 };
 
-template <class T, int title, int id>
-int FinishedFrameBase<T, title, id>::columnIndexes[] = { FinishedItem::COLUMN_DONE, FinishedItem::COLUMN_FILE,
+template <class T, int title, int Idc>
+int FinishedFrameBase<T, title, Idc>::columnIndexes[] = { FinishedItem::COLUMN_DONE, FinishedItem::COLUMN_FILE,
 FinishedItem::COLUMN_PATH, FinishedItem::COLUMN_NICK, FinishedItem::COLUMN_HUB, FinishedItem::COLUMN_SIZE, FinishedItem::COLUMN_SPEED, FinishedItem::COLUMN_TYPE  };
 
-template <class T, int title, int id>
-int FinishedFrameBase<T, title, id>::columnSizes[] = { 100, 110, 290, 125, 80, 80 };
+template <class T, int title, int Idc>
+int FinishedFrameBase<T, title, Idc>::columnSizes[] = { 100, 110, 290, 125, 80, 80 };
 static ResourceManager::Strings columnNames[] = { ResourceManager::FILENAME, ResourceManager::TIME, ResourceManager::PATH, 
 ResourceManager::NICK, ResourceManager::HUB, ResourceManager::SIZE, ResourceManager::SPEED, ResourceManager::TYPE
 };

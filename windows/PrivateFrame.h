@@ -37,6 +37,8 @@ private PrivateChatListener, public UCHandler<PrivateFrame>, private SettingsMan
 {
 public:
 	static void openWindow(const HintedUser& replyTo, bool aMessageReceived = false);
+	static bool getWindowParams(HWND hWnd, StringMap& params);
+	static bool parseWindowParams(StringMap& params);
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("PrivateFrame"), IDR_PRIVATE, 0, COLOR_3DFACE);
 
@@ -133,6 +135,8 @@ public:
 	};
 	
 	UserListHandler getUserList() { return UserListHandler(this); }
+
+	static string id;
 
 private:
 	typedef unordered_map<UserPtr, PrivateFrame*, User::Hash> FrameMap;

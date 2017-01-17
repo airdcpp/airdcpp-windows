@@ -123,9 +123,6 @@
     <ClInclude Include="api\HistoryApi.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="api\SearchResultInfo.h">
-      <Filter>Header Files\api</Filter>
-    </ClInclude>
     <ClInclude Include="web-server\JsonUtil.h">
       <Filter>Header Files\web-server</Filter>
     </ClInclude>
@@ -160,9 +157,6 @@
       <Filter>Header Files\api</Filter>
     </ClInclude>
     <ClInclude Include="api\HubInfo.h">
-      <Filter>Header Files\api</Filter>
-    </ClInclude>
-    <ClInclude Include="api\RecentHubApi.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
     <ClInclude Include="api\OnlineUserUtils.h">
@@ -249,6 +243,12 @@
     <ClInclude Include="api\FilelistItemInfo.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
+    <ClInclude Include="api\SearchEntity.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="web-server\version.h">
+      <Filter>Header Files\web-server</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="api\QueueApi.cpp">
@@ -320,9 +320,6 @@
     <ClCompile Include="api\HistoryApi.cpp">
       <Filter>Source Files\api</Filter>
     </ClCompile>
-    <ClCompile Include="api\SearchResultInfo.cpp">
-      <Filter>Source Files\api</Filter>
-    </ClCompile>
     <ClCompile Include="web-server\JsonUtil.cpp">
       <Filter>Source Files\web-server</Filter>
     </ClCompile>
@@ -345,9 +342,6 @@
       <Filter>Source Files\api</Filter>
     </ClCompile>
     <ClCompile Include="api\FilesystemApi.cpp">
-      <Filter>Source Files\api</Filter>
-    </ClCompile>
-    <ClCompile Include="api\RecentHubApi.cpp">
       <Filter>Source Files\api</Filter>
     </ClCompile>
     <ClCompile Include="api\HubInfo.cpp">
@@ -411,6 +405,9 @@
       <Filter>Source Files\api</Filter>
     </ClCompile>
     <ClCompile Include="api\FilelistItemInfo.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="api\SearchEntity.cpp">
       <Filter>Source Files\api</Filter>
     </ClCompile>
   </ItemGroup>

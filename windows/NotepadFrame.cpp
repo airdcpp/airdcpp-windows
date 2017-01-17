@@ -23,6 +23,8 @@
 #include "WinUtil.h"
 #include <airdcpp/File.h>
 
+string NotepadFrame::id = "Notepad";
+
 LRESULT NotepadFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
 	ctrlPad.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 

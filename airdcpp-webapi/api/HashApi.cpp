@@ -30,12 +30,12 @@ namespace webserver {
 
 		HashManager::getInstance()->addListener(this);
 
-		METHOD_HANDLER("database_status", Access::SETTINGS_VIEW, ApiRequest::METHOD_GET, (), false, HashApi::handleGetDbStatus);
-		METHOD_HANDLER("optimize_database", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (), true, HashApi::handleOptimize);
+		METHOD_HANDLER(Access::SETTINGS_VIEW, METHOD_GET,	(EXACT_PARAM("database_status")),	HashApi::handleGetDbStatus);
+		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_POST,	(EXACT_PARAM("optimize_database")),	HashApi::handleOptimize);
 
-		METHOD_HANDLER("pause", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (), false, HashApi::handlePause);
-		METHOD_HANDLER("resume", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (), false, HashApi::handleResume);
-		METHOD_HANDLER("stop", Access::SETTINGS_EDIT, ApiRequest::METHOD_POST, (), false, HashApi::handleStop);
+		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_POST,	(EXACT_PARAM("pause")),				HashApi::handlePause);
+		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_POST,	(EXACT_PARAM("resume")),			HashApi::handleResume);
+		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_POST,	(EXACT_PARAM("stop")),				HashApi::handleStop);
 
 		createSubscription("hash_database_status");
 		createSubscription("hash_statistics");
@@ -53,17 +53,17 @@ namespace webserver {
 
 	api_return HashApi::handleResume(ApiRequest& aRequest) {
 		HashManager::getInstance()->resumeHashing();
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return HashApi::handlePause(ApiRequest& aRequest) {
 		HashManager::getInstance()->pauseHashing();
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return HashApi::handleStop(ApiRequest& aRequest) {
 		HashManager::getInstance()->stop();
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	void HashApi::onTimer() noexcept {

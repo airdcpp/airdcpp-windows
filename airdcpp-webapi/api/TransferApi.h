@@ -41,15 +41,14 @@ namespace webserver {
 	public:
 		TransferApi(Session* aSession);
 		~TransferApi();
-
-		int getVersion() const noexcept override {
-			return 0;
-		}
 	private:
 		void loadTransfers() noexcept;
 		void unloadTransfers() noexcept;
 
 		json serializeTransferStats() const noexcept;
+
+		api_return handleGetTransfers(ApiRequest& aRequest);
+		api_return handleGetTransfer(ApiRequest& aRequest);
 
 		api_return handleGetTransferredBytes(ApiRequest& aRequest);
 		api_return handleGetTransferStats(ApiRequest& aRequest);
@@ -57,7 +56,7 @@ namespace webserver {
 		api_return handleDisconnect(ApiRequest& aRequest);
 
 		TransferInfoPtr getTransfer(ApiRequest& aRequest) const;
-		TransferInfoPtr getTransfer(const string& aToken) const noexcept;
+		TransferInfoPtr findTransfer(const string& aToken) const noexcept;
 		TransferInfo::List getTransfers() const noexcept;
 		TransferInfoPtr addTransfer(const ConnectionQueueItem* aCqi, const string& aStatus) noexcept;
 
@@ -103,6 +102,8 @@ namespace webserver {
 
 		typedef ListViewController<TransferInfoPtr, TransferUtils::PROP_LAST> TransferListView;
 		TransferListView view;
+
+		void onTransferUpdated(const TransferInfoPtr& aTransfer, const PropertyIdSet& aUpdatedProperties, const string& aSubscriptionName) noexcept;
 	};
 }
 

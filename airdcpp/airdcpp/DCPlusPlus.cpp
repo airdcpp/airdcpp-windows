@@ -40,6 +40,7 @@
 #include "LogManager.h"
 #include "MessageManager.h"
 #include "QueueManager.h"
+#include "RecentManager.h"
 #include "ShareManager.h"
 #include "SearchManager.h"
 #include "SettingsManager.h"
@@ -89,6 +90,7 @@ void startup(StepF stepF, MessageF messageF, Callback runWizard, ProgressF progr
 	ThrottleManager::newInstance();
 	QueueManager::newInstance();
 	FavoriteManager::newInstance();
+	RecentManager::newInstance();
 	ADLSearchManager::newInstance();
 	ConnectivityManager::newInstance();
 	DirectoryListingManager::newInstance();
@@ -107,9 +109,9 @@ void startup(StepF stepF, MessageF messageF, Callback runWizard, ProgressF progr
 
 	UploadManager::getInstance()->setFreeSlotMatcher();
 	Localization::init();
-	if(SETTING(WIZARD_RUN) && runWizard) {
+	if(SETTING(WIZARD_PENDING) && runWizard) {
 		runWizard();
-		SettingsManager::getInstance()->set(SettingsManager::WIZARD_RUN, false); //wizard has run on startup
+		SettingsManager::getInstance()->set(SettingsManager::WIZARD_PENDING, false); //wizard has run on startup
 	}
 
 
@@ -142,6 +144,7 @@ void startup(StepF stepF, MessageF messageF, Callback runWizard, ProgressF progr
 	ShareManager::getInstance()->startup(stepF, progressF); 
 
 	FavoriteManager::getInstance()->load();
+	RecentManager::getInstance()->load();
 
 	if(SETTING(GET_USER_COUNTRY)) {
 		announce(STRING(COUNTRY_INFORMATION));
@@ -179,6 +182,7 @@ void shutdown(StepF stepF, ProgressF progressF, Callback moduleDestroyF) {
 	
 	announce(STRING(SAVING_SETTINGS));
 	QueueManager::getInstance()->shutdown();
+	FavoriteManager::getInstance()->shutdown();
 	SettingsManager::getInstance()->save();
 
 	if (moduleDestroyF) {
@@ -204,6 +208,7 @@ void shutdown(StepF stepF, ProgressF progressF, Callback moduleDestroyF) {
 	MessageManager::deleteInstance();
 	ConnectionManager::deleteInstance();
 	SearchManager::deleteInstance();
+	RecentManager::deleteInstance();
 	FavoriteManager::deleteInstance();
 	ClientManager::deleteInstance();
 	ShareManager::deleteInstance();

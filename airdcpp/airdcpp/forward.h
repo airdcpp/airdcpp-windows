@@ -28,6 +28,10 @@
 
 namespace dcpp {
 
+struct ActionHookError;
+typedef std::shared_ptr<ActionHookError> ActionHookErrorPtr;
+typedef std::function<ActionHookErrorPtr(const string& aErrorId, const string& aErrorMessage)> HookErrorGetter;
+
 class AdcCommand;
 
 class SearchQuery;
@@ -63,6 +67,7 @@ typedef std::vector<DirectoryListingPtr> DirectoryListingList;
 
 class DirectoryDownload;
 typedef std::shared_ptr<DirectoryDownload> DirectoryDownloadPtr;
+typedef vector<DirectoryDownloadPtr> DirectoryDownloadList;
 
 class Download;
 typedef Download* DownloadPtr;
@@ -89,9 +94,6 @@ typedef std::vector<HintedUser> HintedUserList;
 class HttpConnection;
 
 struct HttpDownload;
-
-class HubEntry;
-typedef std::vector<HubEntry> HubEntryList;
 
 class Identity;
 
@@ -124,16 +126,23 @@ class QueueItem;
 typedef boost::intrusive_ptr<QueueItem> QueueItemPtr;
 typedef std::vector<QueueItemPtr> QueueItemList;
 
-class RecentHubEntry;
-typedef boost::intrusive_ptr<RecentHubEntry> RecentHubEntryPtr;
-typedef std::vector<RecentHubEntryPtr> RecentHubEntryList;
+class RecentEntry;
+typedef boost::intrusive_ptr<RecentEntry> RecentEntryPtr;
+typedef std::vector<RecentEntryPtr> RecentEntryList;
 
 class Search;
 typedef shared_ptr<Search> SearchPtr;
 
+class SearchInstance;
+typedef shared_ptr<SearchInstance> SearchInstancePtr;
+
 class SearchResult;
 typedef boost::intrusive_ptr<SearchResult> SearchResultPtr;
 typedef std::vector<SearchResultPtr> SearchResultList;
+
+class GroupedSearchResult;
+typedef std::shared_ptr<GroupedSearchResult> GroupedSearchResultPtr;
+typedef std::vector<GroupedSearchResultPtr> GroupedSearchResultList;
 
 class ServerSocket;
 

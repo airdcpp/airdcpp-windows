@@ -66,6 +66,8 @@ class DirectoryListingFrame : public MDITabChildWindowImpl<DirectoryListingFrame
 public:
 	static void openWindow(const DirectoryListingPtr& aList, const string& aDir, const string& aXML);
 	static void closeAll();
+	static bool getWindowParams(HWND hWnd, StringMap &params);
+	static bool parseWindowParams(StringMap& params);
 
 	typedef MDITabChildWindowImpl<DirectoryListingFrame> baseClass;
 	typedef UserInfoBaseHandler<DirectoryListingFrame> uibBase;
@@ -222,6 +224,8 @@ public:
 	int64_t getDownloadSize(bool isWhole);
 	void handleDownload(const string& aTarget, Priority p, bool aUsingTree);
 	bool showDirDialog(string& fileName);
+
+	static string id;
 private:
 	void appendTreeContextMenu(CPoint& pt, DirectoryListing::Directory::Ptr& aDir);
 	void appendListContextMenu(CPoint& pt);

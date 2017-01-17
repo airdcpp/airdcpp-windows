@@ -28,7 +28,7 @@
 #include "atlstr.h"
 
 #include <airdcpp/ViewFileManagerListener.h>
-
+#include <airdcpp/SimpleXML.h>
 
 class TextFrame : public MDITabChildWindowImpl<TextFrame>, private SettingsManagerListener, private ViewFileManagerListener
 {
@@ -43,6 +43,14 @@ public:
 	static void openWindow(const string& aFilePath, Type aType);
 	static void openWindow(const tstring& aTitle, const tstring& aText, Type aType);
 	static void openWindow(const ViewFilePtr& aFile);
+	static bool getWindowParams(HWND hWnd, StringMap&/*params*/) {
+		auto f = frames.find(hWnd);
+		if (f != frames.end()) {
+			//params["id"] = TextFrame::id;
+			return true;
+		}
+		return false;
+	}
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("TextFrame"), IDR_NOTEPAD, 0, COLOR_3DFACE);
 
@@ -77,7 +85,14 @@ public:
 	LRESULT OnFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
 	void UpdateLayout(BOOL bResizeBars = TRUE);
+
+	static string id;
+
 private:
+
+	typedef map<HWND, TextFrame*> FrameMap;
+	static FrameMap frames;
+
 	Type textType;
 	string filePath;
 	tstring title;

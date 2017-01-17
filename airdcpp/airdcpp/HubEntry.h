@@ -19,105 +19,54 @@
 #ifndef DCPLUSPLUS_DCPP_HUBENTRY_H_
 #define DCPLUSPLUS_DCPP_HUBENTRY_H_
 
-#include <string>
-
 #include "GetSet.h"
 #include "Pointer.h"
-#include "Util.h"
+#include "typedefs.h"
 
 #include "HubSettings.h"
 
 namespace dcpp {
 
-using std::string;
+	using std::string;
 
-class HubEntry {
-public:
-	typedef vector<HubEntry> List;
-	
-	HubEntry(const string& aName, const string& aServer, const string& aDescription, const string& aUsers) noexcept : 
-		name(aName), server(aServer), description(aDescription), users(Util::toInt(aUsers)) { }
 
-	HubEntry(const string& aName, const string& aServer, const string& aDescription, const string& aUsers, const string& aCountry,
-		const string& aShared, const string& aMinShare, const string& aMinSlots, const string& aMaxHubs, const string& aMaxUsers,
-		const string& aReliability, const string& aRating) :
-		
-		name(aName), server(aServer), description(aDescription), country(aCountry),
-		rating(aRating), reliability((float)(Util::toFloat(aReliability) / 100.0)), shared(Util::toInt64(aShared)), minShare(Util::toInt64(aMinShare)),
-		users(Util::toInt(aUsers)), minSlots(Util::toInt(aMinSlots)), maxHubs(Util::toInt(aMaxHubs)), maxUsers(Util::toInt(aMaxUsers))
-	{
+	class ShareProfile;
+	class FavoriteHubEntry : public HubSettings, public intrusive_ptr_base<FavoriteHubEntry> {
+	public:
+		typedef FavoriteHubEntry* Ptr;
+		typedef vector<Ptr> List;
 
-	}
+		enum ConnectState {
+			STATE_DISCONNECTED,
+			STATE_CONNECTING,
+			STATE_CONNECTED
+		};
 
-	HubEntry() { }
+		FavoriteHubEntry() noexcept;
 
-	~HubEntry() { }
+		GETSET(string, name, Name);
+		GETSET(string, description, Description);
+		GETSET(string, password, Password);
+		GETSET(string, server, Server);
+		GETSET(string, headerOrder, HeaderOrder);
+		GETSET(string, headerWidths, HeaderWidths);
+		GETSET(string, headerVisible, HeaderVisible);
+		IGETSET(uint16_t, bottom, Bottom, 0);
+		IGETSET(uint16_t, top, Top, 0);
+		IGETSET(uint16_t, left, Left, 0);
+		IGETSET(uint16_t, right, Right, 0);
 
-	GETSET(string, name, Name);
-	GETSET(string, server, Server);
-	GETSET(string, description, Description);
-	GETSET(string, country, Country);
-	GETSET(string, rating, Rating);
-	IGETSET(float, reliability, Reliability, 0.0);
-	IGETSET(int64_t, shared, Shared, 0);
-	IGETSET(int64_t, minShare, MinShare, 0);
-	IGETSET(int, users, Users, 0);
-	IGETSET(int, minSlots, MinSlots, 0);
-	IGETSET(int, maxHubs, MaxHubs, 0);
-	IGETSET(int, maxUsers, MaxUsers, 0);
-};
+		IGETSET(ConnectState, connectState, ConnectState, STATE_DISCONNECTED);
+		IGETSET(ClientToken, currentHubToken, CurrentHubToken, 0);
 
-class ShareProfile;
-class FavoriteHubEntry : public HubSettings, public intrusive_ptr_base<FavoriteHubEntry> {
-public:
-	typedef FavoriteHubEntry* Ptr;
-	typedef vector<Ptr> List;
+		IGETSET(bool, autoConnect, AutoConnect, true);
+		IGETSET(int, chatusersplit, ChatUserSplit, 0);
+		IGETSET(bool, userliststate, UserListState, true);
+		GETSET(string, group, Group);
+		GETSET(ProfileToken, token, Token);
 
-	enum ConnectState {
-		STATE_DISCONNECTED,
-		STATE_CONNECTING,
-		STATE_CONNECTED
+		bool isAdcHub() const noexcept;
+		string getShareProfileName() const noexcept;
 	};
-
-	FavoriteHubEntry() noexcept;
-	FavoriteHubEntry(const HubEntry& rhs) noexcept;
-
-	GETSET(string, name, Name);
-	GETSET(string, description, Description);
-	GETSET(string, password, Password);
-	GETSET(string, server, Server);
-	GETSET(string, headerOrder, HeaderOrder);
-	GETSET(string, headerWidths, HeaderWidths);
-	GETSET(string, headerVisible, HeaderVisible);
-	IGETSET(uint16_t, bottom, Bottom, 0);
-	IGETSET(uint16_t, top, Top, 0);
-	IGETSET(uint16_t, left, Left, 0);
-	IGETSET(uint16_t, right, Right, 0);
-
-	IGETSET(ConnectState, connectState, ConnectState, STATE_DISCONNECTED);
-	IGETSET(ClientToken, currentHubToken, CurrentHubToken, 0);
-
-	IGETSET(bool, autoConnect, AutoConnect, true);
-	IGETSET(int, chatusersplit, ChatUserSplit, 0);
-	IGETSET(bool, userliststate, UserListState, true);
-	GETSET(string, group, Group);
-	GETSET(ProfileToken, token, Token);
-
-	bool isAdcHub() const noexcept;
-	string getShareProfileName() const noexcept;
-};
-
-class RecentHubEntry : public intrusive_ptr_base<RecentHubEntry> {
-public:
-	RecentHubEntry(const string& aUrl);
-	
-	GETSET(string, server, Server);
-	GETSET(string, name, Name);
-	GETSET(string, description, Description);
-	GETSET(string, shared, Shared);
-	GETSET(string, users, Users);
-};
-
 }
-
-#endif /*HUBENTRY_H_*/
+#endif /*DCPLUSPLUS_DCPP_HUBENTRY_H_*/

@@ -46,6 +46,7 @@
 
 HubFrame::FrameMap HubFrame::frames;
 bool HubFrame::shutdown = false;
+string HubFrame::id = "hub";
 
 int HubFrame::columnSizes[] = { 100, 75, 75, 75, 100, 75, 130, 130, 100, 50, 40, 40, 40, 40, 40, 300 };
 int HubFrame::columnIndexes[] = { OnlineUser::COLUMN_NICK, OnlineUser::COLUMN_SHARED, OnlineUser::COLUMN_EXACT_SHARED,
@@ -171,6 +172,27 @@ void HubFrame::openWindow(const tstring& aServer) {
 	}
 }
 
+bool HubFrame::getWindowParams(HWND hWnd, StringMap& params) {
+	auto f = find_if(frames | map_values, [hWnd](const HubFrame* h) { return hWnd == h->m_hWnd; }).base();
+	if (f != frames.end()) {
+		params["id"] = HubFrame::id;
+		params["url"] = Text::fromT(f->first);
+		return true;
+	}
+	return false;
+}
+
+bool HubFrame::parseWindowParams(StringMap& params) {
+	if (params["id"] == HubFrame::id) {
+		string hubUrl = params["url"];
+		if (!hubUrl.empty()) {
+			ClientManager::getInstance()->createClient(hubUrl);
+		}
+		return true;
+	}
+	return false;
+}
+
 HubFrame::~HubFrame() {
 }
 
@@ -207,8 +229,7 @@ bool HubFrame::sendMessage(const tstring& aMessage, string& error_, bool isThird
 bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*message*/, tstring& status, bool& /*thirdPerson*/) {	
 	if(stricmp(cmd.c_str(), _T("join"))==0) {
 		if(!param.empty()) {
-			RecentHubEntryPtr r = new RecentHubEntry(Text::fromT(param));
-			WinUtil::connectHub(r);
+			WinUtil::connectHub(Text::fromT(param));
 		} else {
 			status = TSTRING(SPECIFY_SERVER);
 		}
@@ -666,7 +687,7 @@ void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	}
 }
 
-void HubFrame::on(Disconnecting, const Client*) noexcept {
+void HubFrame::on(ClientListener::Close, const Client*) noexcept {
 	SettingsManager::getInstance()->removeListener(this);
 	FavoriteManager::getInstance()->removeListener(this);
 
@@ -722,7 +743,7 @@ LRESULT HubFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 			fhe->setHeaderWidths(tmp2);
 			fhe->setHeaderVisible(tmp3);
 			
-			FavoriteManager::getInstance()->save();
+			FavoriteManager::getInstance()->setDirty();
 		} else {
 			SettingsManager::getInstance()->set(SettingsManager::HUBFRAME_ORDER, tmp);
 			SettingsManager::getInstance()->set(SettingsManager::HUBFRAME_WIDTHS, tmp2);
@@ -787,7 +808,7 @@ LRESULT HubFrame::onLButton(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& b
 					PrivateFrame::openWindow(HintedUser(ui->getUser(), client->getHubUrl()));
 				} else if (wParam & MK_SHIFT) {
 					try {
-						QueueManager::getInstance()->addList(HintedUser(ui->getUser(), client->getHubUrl()), QueueItem::FLAG_CLIENT_VIEW);
+						DirectoryListingManager::getInstance()->createList(HintedUser(ui->getUser(), client->getHubUrl()), QueueItem::FLAG_CLIENT_VIEW);
 					} catch(const Exception& e) {
 						addStatus(Text::toT(e.getError()), LogMessage::SEV_ERROR, WinUtil::m_ChatTextSystem);
 					}
@@ -1157,7 +1178,7 @@ LRESULT HubFrame::onEnterUsers(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHand
 	int item = ctrlUsers.GetNextItem(-1, LVNI_FOCUSED);
 	if(item != -1) {
 		try {
-			QueueManager::getInstance()->addList(HintedUser((ctrlUsers.getItemData(item))->getUser(), client->getHubUrl()), QueueItem::FLAG_CLIENT_VIEW);
+			DirectoryListingManager::getInstance()->createList(HintedUser((ctrlUsers.getItemData(item))->getUser(), client->getHubUrl()), QueueItem::FLAG_CLIENT_VIEW);
 		} catch(const Exception& e) {
 			addStatus(Text::toT(e.getError()), LogMessage::SEV_ERROR);
 		}
@@ -1361,23 +1382,23 @@ void HubFrame::on(ClientListener::UserRemoved, const Client*, const OnlineUserPt
 	updateUsers = true;
 }
 
-void HubFrame::on(Redirect, const Client*, const string& line) noexcept { 
+void HubFrame::on(ClientListener::Redirect, const Client*, const string& line) noexcept {
 	callAsync([=] { 
 		addStatus(Text::toT(STRING(PRESS_FOLLOW) + " " + line), LogMessage::SEV_INFO, WinUtil::m_ChatTextServer); 
 	});
 }
 
-void HubFrame::on(Failed, const string&, const string& line) noexcept {
+void HubFrame::on(ClientListener::Disconnected, const string&, const string& line) noexcept {
 	callAsync([=] {
 		onDisconnected(line);
 	});
 }
-void HubFrame::on(GetPassword, const Client*) noexcept { 
+void HubFrame::on(ClientListener::GetPassword, const Client*) noexcept {
 	callAsync([=] {
 		onPassword();
 	});
 }
-void HubFrame::on(HubUpdated, const Client*) noexcept {
+void HubFrame::on(ClientListener::HubUpdated, const Client*) noexcept {
 	string hubName;
 	if(client->isTrusted()) {
 		hubName = "[S] ";

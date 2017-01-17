@@ -102,11 +102,14 @@ public:
 		return 0;
 	}
 
+	static string id;
+
 private:
 	class UserInfo;
 public:
 	TypedListViewCtrl<UserInfo, IDC_USERS>& getUserList() { return ctrlUsers; }
 private:
+
 	enum {
 		COLUMN_FIRST,
 		COLUMN_FAVORITE = COLUMN_FIRST,

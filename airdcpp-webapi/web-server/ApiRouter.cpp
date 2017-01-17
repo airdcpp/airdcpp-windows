@@ -17,6 +17,7 @@
 */
 
 #include <web-server/stdinc.h>
+#include <web-server/version.h>
 #include <web-server/ApiRouter.h>
 
 #include <web-server/ApiRequest.h>
@@ -40,9 +41,9 @@ namespace webserver {
 
 	}
 
-	void ApiRouter::handleSocketRequest(const string& aRequestBody, WebSocketPtr& aSocket, bool aIsSecure) noexcept {
+	void ApiRouter::handleSocketRequest(const string& aMessage, const websocketpp::http::parser::request& aRequest, WebSocketPtr& aSocket, bool aIsSecure) noexcept {
 
-		dcdebug("Received socket request: %s\n", aRequestBody.c_str());
+		dcdebug("Received socket request: %s\n", aMessage.c_str());
 		bool authenticated = aSocket->getSession() != nullptr;
 
 		json responseJsonData, errorJson;
@@ -50,14 +51,15 @@ namespace webserver {
 		int callbackId = -1;
 
 		try {
-			const auto requestJson = json::parse(aRequestBody);
+			const auto requestJson = json::parse(aMessage);
 
 			auto cb = requestJson.find("callback_id");
 			if (cb != requestJson.end()) {
 				callbackId = cb.value();
 			}
 
-			ApiRequest apiRequest(requestJson.at("path"), requestJson.at("method"), responseJsonData, errorJson);
+			const string path = requestJson.at("path");
+			ApiRequest apiRequest(aRequest.get_uri() + path, requestJson.at("method"), responseJsonData, errorJson);
 			apiRequest.parseSocketRequestJson(requestJson);
 			apiRequest.setSession(aSocket->getSession());
 
@@ -80,21 +82,7 @@ namespace webserver {
 
 	websocketpp::http::status_code::value ApiRouter::handleHttpRequest(const string& aRequestPath,
 		const websocketpp::http::parser::request& aRequest, json& output_, json& error_,
-		bool aIsSecure, const string& aIp) noexcept {
-
-		SessionPtr session = nullptr;
-		auto token = aRequest.get_header("Authorization");
-		if (token != websocketpp::http::empty_header) {
-			session = WebServerManager::getInstance()->getUserManager().getSession(token);
-			if (!session) {
-				// Don't let invalid Authorization tokens through
-				error_ = {
-					{ "message", "Invalid Authorization token (session expired?)" }
-				};
-
-				return websocketpp::http::status_code::unauthorized;
-			}
-		}
+		bool aIsSecure, const string& aIp, const SessionPtr& aSession) noexcept {
 
 		auto& requestBody = aRequest.get_body();
 		dcdebug("Received HTTP request: %s\n", aRequest.get_body().c_str());
@@ -103,7 +91,7 @@ namespace webserver {
 			apiRequest.validate();
 
 			apiRequest.parseHttpRequestJson(requestBody);
-			apiRequest.setSession(session);
+			apiRequest.setSession(aSession);
 
 			return handleRequest(apiRequest, aIsSecure, nullptr, aIp);
 		} catch (const std::exception& e) {
@@ -118,10 +106,15 @@ namespace webserver {
 	}
 
 	api_return ApiRouter::handleRequest(ApiRequest& aRequest, bool aIsSecure, const WebSocketPtr& aSocket, const string& aIp) noexcept {
+		if (aRequest.getApiVersion() != API_VERSION) {
+			aRequest.setResponseErrorStr("Unsupported API version");
+			return websocketpp::http::status_code::precondition_failed;
+		}
+
 		int code;
 		try {
 			// Special case because we may not have the session yet
-			if (aRequest.getApiModule() == "session" && !aRequest.getSession()) {
+			if (aRequest.getApiModule() == "sessions" && !aRequest.getSession()) {
 				return routeAuthRequest(aRequest, aIsSecure, aSocket, aIp);
 			}
 
@@ -132,7 +125,7 @@ namespace webserver {
 			}
 
 			// Require using the same protocol that was used for logging in
-			if (aRequest.getSession()->isSecure() != aIsSecure) {
+			if ((aRequest.getSession()->getSessionType() == Session::TYPE_SECURE) != aIsSecure) {
 				aRequest.setResponseErrorStr("Protocol mismatch");
 				return websocketpp::http::status_code::not_acceptable;
 			}
@@ -143,6 +136,9 @@ namespace webserver {
 		} catch (const ArgumentException& e) {
 			aRequest.setResponseErrorJson(e.getErrorJson());
 			code = CODE_UNPROCESSABLE_ENTITY;
+		} catch (const RequestException& e) {
+			aRequest.setResponseErrorStr(e.what());
+			code = e.getCode();
 		} catch (const std::exception& e) {
 			aRequest.setResponseErrorStr(e.what());
 			code = websocketpp::http::status_code::bad_request;
@@ -152,14 +148,9 @@ namespace webserver {
 	}
 
 	api_return ApiRouter::routeAuthRequest(ApiRequest& aRequest, bool aIsSecure, const WebSocketPtr& aSocket, const string& aIp) {
-		if (aRequest.getApiVersion() != 0) {
-			aRequest.setResponseErrorStr("Invalid API version");
-			return websocketpp::http::status_code::precondition_failed;
-		}
-
-		if (aRequest.getStringParam(0) == "auth" && aRequest.getMethod() == ApiRequest::METHOD_POST) {
+		if (aRequest.getParamAt(0) == "authorize" && aRequest.getMethod() == METHOD_POST) {
 			return SessionApi::handleLogin(aRequest, aIsSecure, aSocket, aIp);
-		} else if (aRequest.getStringParam(0) == "socket" && aRequest.getMethod() == ApiRequest::METHOD_POST) {
+		} else if (aRequest.getParamAt(0) == "socket" && aRequest.getMethod() == METHOD_POST) {
 			return SessionApi::handleSocketConnect(aRequest, aIsSecure, aSocket);
 		}
 

@@ -28,14 +28,14 @@
 #include "ExListViewCtrl.h"
 #include "Resource.h"
 
-#include <airdcpp/FavoriteManagerListener.h>
-#include <airdcpp/SettingsManagerListener.h>
+#include <airdcpp/modules/HublistEntry.h>
+#include <airdcpp/modules/HublistManagerListener.h>
 
-#include <airdcpp/HubEntry.h>
+#include <airdcpp/SettingsManagerListener.h>
 
 #define FILTER_MESSAGE_MAP 8
 class PublicHubsFrame : public MDITabChildWindowImpl<PublicHubsFrame>, public StaticFrame<PublicHubsFrame, ResourceManager::PUBLIC_HUBS, ID_FILE_CONNECT>, 
-	private FavoriteManagerListener, private SettingsManagerListener, public Async<PublicHubsFrame>
+	private HublistManagerListener, private SettingsManagerListener, public Async<PublicHubsFrame>
 {
 public:
 	PublicHubsFrame() : users(0), hubs(0), closed(false), filter(Util::emptyString),
@@ -100,8 +100,9 @@ public:
 		ctrlHubs.SetFocus();
 		return 0;
 	}
-	
+	static string id;
 private:
+
 	void connectHub(int pos);
 	enum {
 		COLUMN_FIRST,
@@ -145,7 +146,7 @@ private:
 	CComboBox ctrlFilterSel;
 	ExListViewCtrl ctrlHubs;
 
-	HubEntry::List hubs;
+	HublistEntry::List hubs;
 	string filter;
 
 	bool closed;
@@ -160,13 +161,13 @@ private:
 	void updateDropDown();
 
 	bool parseFilter(FilterModes& mode, double& size);
-	bool matchFilter(const HubEntry& entry, const int& sel, bool doSizeCompare, const FilterModes& mode, const double& size);
+	bool matchFilter(const HublistEntry& entry, const int& sel, bool doSizeCompare, const FilterModes& mode, const double& size);
 
-	void on(DownloadStarting, const string& l) noexcept;
-	void on(DownloadFailed, const string& l) noexcept;
-	void on(DownloadFinished, const string& l, bool /*fromCoral*/) noexcept;
-	void on(LoadedFromCache, const string& l, const string& /*d*/) noexcept;
-	void on(Corrupted, const string& l) noexcept;
+	void on(HublistManagerListener::DownloadStarting, const string& l) noexcept;
+	void on(HublistManagerListener::DownloadFailed, const string& l) noexcept;
+	void on(HublistManagerListener::DownloadFinished, const string& l, bool /*fromCoral*/) noexcept;
+	void on(HublistManagerListener::LoadedFromCache, const string& l, const string& /*d*/) noexcept;
+	void on(HublistManagerListener::Corrupted, const string& l) noexcept;
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 

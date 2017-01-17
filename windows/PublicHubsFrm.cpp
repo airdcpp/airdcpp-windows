@@ -24,7 +24,10 @@
 #include "WinUtil.h"
 #include "PublicHubsListDlg.h"
 
+#include <airdcpp/modules/HublistManager.h>
 #include <airdcpp/Localization.h>
+
+string PublicHubsFrame::id = "PublicHubs";
 
 int PublicHubsFrame::columnIndexes[] = { 
 	COLUMN_NAME,
@@ -145,14 +148,14 @@ LRESULT PublicHubsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	ctrlFilterDesc.SetWindowText(CTSTRING(FILTER));
 	ctrlFilterDesc.SetFont(WinUtil::systemFont);
 
-	FavoriteManager::getInstance()->addListener(this);
+	HublistManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
 
-	hubs = FavoriteManager::getInstance()->getPublicHubs();
-	if(FavoriteManager::getInstance()->isDownloading()) 
+	hubs = HublistManager::getInstance()->getPublicHubs();
+	if(HublistManager::getInstance()->isDownloading())
 		ctrlStatus.SetText(0, CTSTRING(DOWNLOADING_HUB_LIST));
 	else if(hubs.empty())
-		FavoriteManager::getInstance()->refresh();
+		HublistManager::getInstance()->refresh();
 
 	updateList();
 	
@@ -212,7 +215,7 @@ LRESULT PublicHubsFrame::onEnter(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHa
 
 LRESULT PublicHubsFrame::onClickedRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	ctrlStatus.SetText(0, CTSTRING(DOWNLOADING_HUB_LIST));
-	FavoriteManager::getInstance()->refresh(true);
+	HublistManager::getInstance()->refresh(true);
 	updateDropDown();
 	return 0;
 }
@@ -235,19 +238,7 @@ void PublicHubsFrame::connectHub(int pos) {
 	TCHAR buf[256];
 
 	ctrlHubs.GetItemText(pos, COLUMN_SERVER, buf, 256);
-
-	RecentHubEntryPtr r = new RecentHubEntry(Text::fromT(buf));
-	ctrlHubs.GetItemText(pos, COLUMN_NAME, buf, 256);
-	r->setName(Text::fromT(buf));
-	ctrlHubs.GetItemText(pos, COLUMN_DESCRIPTION, buf, 256);
-	r->setDescription(Text::fromT(buf));
-	ctrlHubs.GetItemText(pos, COLUMN_USERS, buf, 256);
-	r->setUsers(Text::fromT(buf));
-	ctrlHubs.GetItemText(pos, COLUMN_SHARED, buf, 256);
-	r->setShared(Text::fromT(buf));
-	FavoriteManager::getInstance()->addRecent(r);
-				
-	WinUtil::connectHub(r);
+	WinUtil::connectHub(Text::fromT(buf));
 }
 
 LRESULT PublicHubsFrame::onClickedConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -295,7 +286,7 @@ LRESULT PublicHubsFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 
 LRESULT PublicHubsFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closed) {
-		FavoriteManager::getInstance()->removeListener(this);
+		HublistManager::getInstance()->removeListener(this);
 		SettingsManager::getInstance()->removeListener(this);
 		closed = true;
 		WinUtil::setButtonPressed(ID_FILE_CONNECT, false);
@@ -310,8 +301,8 @@ LRESULT PublicHubsFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 }
 	
 LRESULT PublicHubsFrame::onListSelChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled) {
-	FavoriteManager::getInstance()->setHubList(ctrlPubLists.GetCurSel());
-	hubs = FavoriteManager::getInstance()->getPublicHubs();
+	HublistManager::getInstance()->setHubList(ctrlPubLists.GetCurSel());
+	hubs = HublistManager::getInstance()->getPublicHubs();
 	updateList();
 	bHandled = FALSE;
 	return 0;
@@ -450,7 +441,7 @@ void PublicHubsFrame::setStatusText(const tstring& aStr) {
 }
 
 void PublicHubsFrame::onFinished(const tstring& aStatus) {
-	hubs = FavoriteManager::getInstance()->getPublicHubs();
+	hubs = HublistManager::getInstance()->getPublicHubs();
 	updateList();
 	setStatusText(aStatus);
 }
@@ -499,11 +490,11 @@ LRESULT PublicHubsFrame::onCopyHub(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 
 void PublicHubsFrame::updateDropDown() {
 	ctrlPubLists.ResetContent();
-	StringList lists(FavoriteManager::getInstance()->getHubLists());
+	StringList lists(HublistManager::getInstance()->getHubLists());
 	for(StringList::iterator idx = lists.begin(); idx != lists.end(); ++idx) {
 		ctrlPubLists.AddString(Text::toT(*idx).c_str());
 	}
-	ctrlPubLists.SetCurSel(FavoriteManager::getInstance()->getSelectedHubList());
+	ctrlPubLists.SetCurSel(HublistManager::getInstance()->getSelectedHubList());
 }
 
 bool PublicHubsFrame::parseFilter(FilterModes& mode, double& size) {
@@ -571,7 +562,7 @@ bool PublicHubsFrame::parseFilter(FilterModes& mode, double& size) {
 	return true;
 }
 
-bool PublicHubsFrame::matchFilter(const HubEntry& entry, const int& sel, bool doSizeCompare, const FilterModes& mode, const double& size) {
+bool PublicHubsFrame::matchFilter(const HublistEntry& entry, const int& sel, bool doSizeCompare, const FilterModes& mode, const double& size) {
 	if(filter.empty())
 		return true;
 
@@ -621,23 +612,23 @@ bool PublicHubsFrame::matchFilter(const HubEntry& entry, const int& sel, bool do
 	return insert;
 }
 
-void PublicHubsFrame::on(DownloadStarting, const string& l) noexcept { 
+void PublicHubsFrame::on(HublistManagerListener::DownloadStarting, const string& l) noexcept {
 	callAsync([=] { setStatusText(TSTRING(DOWNLOADING_HUB_LIST) + _T(" (") + Text::toT(l) + _T(")")); });
 }
 
-void PublicHubsFrame::on(DownloadFailed, const string& l) noexcept { 
+void PublicHubsFrame::on(HublistManagerListener::DownloadFailed, const string& l) noexcept {
 	callAsync([=] { setStatusText(TSTRING(DOWNLOAD_FAILED) + _T(" ") + Text::toT(l)); });
 }
 
-void PublicHubsFrame::on(DownloadFinished, const string& l, bool /*fromCoral*/) noexcept { 
+void PublicHubsFrame::on(HublistManagerListener::DownloadFinished, const string& l, bool /*fromCoral*/) noexcept {
 	callAsync([=] { onFinished(TSTRING(HUB_LIST_DOWNLOADED) + _T(" (") + Text::toT(l) + _T(")")); });
 }
 
-void PublicHubsFrame::on(LoadedFromCache, const string& l, const string& d) noexcept { 
+void PublicHubsFrame::on(HublistManagerListener::LoadedFromCache, const string& l, const string& d) noexcept {
 	callAsync([=] { onFinished(TSTRING(HUB_LIST_LOADED_FROM_CACHE) + _T(" (") + Text::toT(l) + _T(")") + _T(" Download Date: ") + Text::toT(d)); });
 }
 
-void PublicHubsFrame::on(Corrupted, const string& l) noexcept {
+void PublicHubsFrame::on(HublistManagerListener::Corrupted, const string& l) noexcept {
 	if (l.empty()) {
 		callAsync([=] { onFinished(TSTRING(HUBLIST_CACHE_CORRUPTED)); });
 	} else {	

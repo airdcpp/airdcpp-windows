@@ -29,20 +29,24 @@
 #include "LineDlg.h"
 #include "MainFrm.h"
 
-#include <airdcpp/ScopedFunctor.h>
-#include <airdcpp/Util.h>
-#include <airdcpp/Localization.h>
-#include <airdcpp/StringTokenizer.h>
 #include <airdcpp/ClientManager.h>
-#include <airdcpp/TimerManager.h>
+#include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/FavoriteManager.h>
-#include <airdcpp/ResourceManager.h>
-#include <airdcpp/QueueManager.h>
-#include <airdcpp/UploadManager.h>
+#include <airdcpp/Localization.h>
 #include <airdcpp/LogManager.h>
-#include <airdcpp/version.h>
 #include <airdcpp/Magnet.h>
+#include <airdcpp/QueueManager.h>
+#include <airdcpp/ResourceManager.h>
+#include <airdcpp/ScopedFunctor.h>
+#include <airdcpp/StringTokenizer.h>
+#include <airdcpp/TimerManager.h>
+#include <airdcpp/UploadManager.h>
+#include <airdcpp/Util.h>
 #include <airdcpp/ViewFileManager.h>
+
+#include <airdcpp/modules/PreviewAppManager.h>
+
+#include <airdcpp/version.h>
 
 #include <boost/format.hpp>
 
@@ -211,7 +215,7 @@ void WinUtil::GetList::operator()(UserPtr aUser, const string& aUrl) const {
 	
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		try {
-			QueueManager::getInstance()->addList(HintedUser(aUser, aUrl), QueueItem::FLAG_CLIENT_VIEW);
+			DirectoryListingManager::getInstance()->createList(HintedUser(aUser, aUrl), QueueItem::FLAG_CLIENT_VIEW);
 		} catch(const Exception& e) {
 			LogManager::getInstance()->message(e.getError(), LogMessage::SEV_ERROR);		
 		}
@@ -224,7 +228,7 @@ void WinUtil::BrowseList::operator()(UserPtr aUser, const string& aUrl) const {
 
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		try {
-			QueueManager::getInstance()->addList(HintedUser(aUser, aUrl), QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
+			DirectoryListingManager::getInstance()->createList(HintedUser(aUser, aUrl), QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
 		} catch (const Exception& e) {
 			LogManager::getInstance()->message(e.getError(), LogMessage::SEV_ERROR);
 		}
@@ -244,8 +248,7 @@ void WinUtil::GetBrowseList::operator()(UserPtr aUser, const string& aUrl) const
 void WinUtil::ConnectFav::operator()(UserPtr aUser, const string& aUrl) const {
 	if(aUser) {
 		if(!aUrl.empty()) {
-			RecentHubEntryPtr r = new RecentHubEntry(aUrl);
-			connectHub(r);
+			connectHub(aUrl);
 		}
 	}
 }
@@ -1094,8 +1097,7 @@ bool WinUtil::parseDBLClick(const tstring& str) {
 		Util::stricmp(proto.c_str(), "dchub") == 0 )
 	{
 		if(!host.empty()) {
-			RecentHubEntryPtr r = new RecentHubEntry(url);
-			connectHub(r);
+			connectHub(url);
 		}
 
 		if(!file.empty()) {
@@ -1107,9 +1109,10 @@ bool WinUtil::parseDBLClick(const tstring& str) {
 
 			MainFrame::getMainFrame()->addThreadedTask([=] {
 				try {
-					UserPtr user = ClientManager::getInstance()->findLegacyUser(file);
-					if (user)
-						QueueManager::getInstance()->addList(HintedUser(user, url), QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
+					auto user = ClientManager::getInstance()->findLegacyUser(file);
+					if (user) {
+						DirectoryListingManager::getInstance()->createList(HintedUser(user, url), QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
+					}
 					// @todo else report error
 				} catch (const Exception&) {
 					// ...
@@ -1204,7 +1207,7 @@ void WinUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aUser, RichT
 
 bool WinUtil::openFile(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsClientView) noexcept {
 	if (aIsClientView && (!SETTING(NFO_EXTERNAL) || Util::getFileExt(aFileName) != ".nfo")) {
-		return ViewFileManager::getInstance()->addUserFileNotify(aFileName, aSize, aTTH, aUser, true);
+		return ViewFileManager::getInstance()->addUserFileNotify(aFileName, aSize, aTTH, aUser, true) ? true : false;
 	}
 
 	try {
@@ -1472,7 +1475,7 @@ void WinUtil::saveReBarSettings(HWND bar) {
 void WinUtil::appendPreviewMenu(OMenu& parent, const string& aTarget) {
 	auto previewMenu = parent.createSubMenu(TSTRING(PREVIEW), true);
 
-	auto lst = FavoriteManager::getInstance()->getPreviewApps();
+	auto lst = PreviewAppManager::getInstance()->getPreviewApps();
 	auto ext = Util::getFileExt(aTarget);
 	if (ext.empty()) return;
 
@@ -2259,9 +2262,9 @@ void WinUtil::addFileDownload(const string& aTarget, int64_t aSize, const TTHVal
 	});
 }
 
-void WinUtil::connectHub(const RecentHubEntryPtr& aEntry) {
+void WinUtil::connectHub(const string& aUrl) {
 	MainFrame::getMainFrame()->addThreadedTask([=] {
-		ClientManager::getInstance()->createClient(aEntry);
+		ClientManager::getInstance()->createClient(aUrl);
 	});
 }
 
@@ -2285,28 +2288,8 @@ bool WinUtil::checkClientPassword() {
 	return true;
 }
 
-tstring WinUtil::formatFolderContent(int files, int folders) {
-	tstring name;
-
-	bool hasFileInfo = files > 0;
-	bool hasFolderInfo = folders > 0;
-	//if (hasFileInfo || hasFolderInfo)
-	//	name += _T(" (");
-
-	if (hasFolderInfo) {
-		name += TSTRING_F(X_FOLDERS, folders);
-	}
-
-	if (hasFileInfo) {
-		if (hasFolderInfo)
-			name += _T(", ");
-		name += TSTRING_F(X_FILES, files);
-	}
-
-	//if (hasFileInfo || hasFolderInfo)
-	//	name += _T(")");
-
-	return name;
+tstring WinUtil::formatFolderContent(const DirectoryContentInfo& aContentInfo) {
+	return Text::toT(Util::formatDirectoryContent(aContentInfo));
 }
 
 tstring WinUtil::formatFileType(const string& aFileName) {

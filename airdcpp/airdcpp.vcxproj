@@ -238,6 +238,7 @@
     <ClCompile Include="airdcpp\AdcCommand.cpp" />
     <ClCompile Include="airdcpp\AdcHub.cpp" />
     <ClCompile Include="airdcpp\DirectSearch.cpp" />
+    <ClCompile Include="airdcpp\GroupedSearchResult.cpp" />
     <ClCompile Include="airdcpp\MessageCache.cpp" />
     <ClCompile Include="airdcpp\MessageManager.cpp" />
     <ClCompile Include="airdcpp\modules\AutoSearch.cpp" />
@@ -245,10 +246,14 @@
     <ClCompile Include="airdcpp\modules\ColorSettings.cpp" />
     <ClCompile Include="airdcpp\modules\FinishedManager.cpp" />
     <ClCompile Include="airdcpp\modules\HighlightManager.cpp" />
+    <ClCompile Include="airdcpp\modules\HublistManager.cpp" />
+    <ClCompile Include="airdcpp\modules\PreviewAppManager.cpp" />
     <ClCompile Include="airdcpp\modules\RSSManager.cpp" />
     <ClCompile Include="airdcpp\modules\TargetUtil.cpp" />
     <ClCompile Include="airdcpp\modules\WebShortcuts.cpp" />
     <ClCompile Include="airdcpp\PrivateChat.cpp" />
+    <ClCompile Include="airdcpp\RecentManager.cpp" />
+    <ClCompile Include="airdcpp\SearchInstance.cpp" />
     <ClCompile Include="airdcpp\SearchQuery.cpp" />
     <ClCompile Include="airdcpp\ADLSearch.cpp" />
     <ClCompile Include="airdcpp\AirUtil.cpp" />
@@ -349,12 +354,14 @@
     <ClCompile Include="airdcpp\ZUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="airdcpp\ActionHook.h" />
     <ClInclude Include="airdcpp\ActivityManager.h" />
     <ClInclude Include="airdcpp\AdcCommand.h" />
     <ClInclude Include="airdcpp\AdcHub.h" />
     <ClInclude Include="airdcpp\BundleInfo.h" />
     <ClInclude Include="airdcpp\DirectSearch.h" />
     <ClInclude Include="airdcpp\DupeType.h" />
+    <ClInclude Include="airdcpp\GroupedSearchResult.h" />
     <ClInclude Include="airdcpp\HashManagerListener.h" />
     <ClInclude Include="airdcpp\modules\AutoSearch.h" />
     <ClInclude Include="airdcpp\modules\AutoSearchManager.h" />
@@ -364,10 +371,19 @@
     <ClInclude Include="airdcpp\modules\FinishedManager.h" />
     <ClInclude Include="airdcpp\modules\FinishedManagerListener.h" />
     <ClInclude Include="airdcpp\modules\HighlightManager.h" />
+    <ClInclude Include="airdcpp\modules\HublistEntry.h" />
+    <ClInclude Include="airdcpp\modules\HublistManager.h" />
+    <ClInclude Include="airdcpp\modules\HublistManagerListener.h" />
+    <ClInclude Include="airdcpp\modules\PreviewAppManager.h" />
     <ClInclude Include="airdcpp\modules\RSSManager.h" />
     <ClInclude Include="airdcpp\modules\TargetUtil.h" />
     <ClInclude Include="airdcpp\modules\WebShortcuts.h" />
     <ClInclude Include="airdcpp\Priority.h" />
+    <ClInclude Include="airdcpp\RecentEntry.h" />
+    <ClInclude Include="airdcpp\RecentManager.h" />
+    <ClInclude Include="airdcpp\RecentManagerListener.h" />
+    <ClInclude Include="airdcpp\SearchInstance.h" />
+    <ClInclude Include="airdcpp\SearchInstanceListener.h" />
     <ClInclude Include="airdcpp\SettingsManagerListener.h" />
     <ClInclude Include="airdcpp\TimerManagerListener.h" />
     <ClInclude Include="airdcpp\ViewFileManagerListener.h" />

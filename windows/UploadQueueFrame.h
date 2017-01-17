@@ -132,7 +132,9 @@ public:
 	
 	UserListHandler getUserList() { return UserListHandler(ctrlList, ctrlQueued, usingUserMenu); }
 
+	static string id;
 private:
+
 	static int columnSizes[UploadQueueItem::COLUMN_LAST];
 	static int columnIndexes[UploadQueueItem::COLUMN_LAST];
 

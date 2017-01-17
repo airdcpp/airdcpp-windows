@@ -31,11 +31,6 @@ namespace dcpp {
 FavoriteHubEntry::FavoriteHubEntry() noexcept : 
 	token(Util::randInt()) { }
 
-FavoriteHubEntry::FavoriteHubEntry(const HubEntry& rhs) noexcept : name(rhs.getName()), description(rhs.getDescription()),
-	token(Util::randInt()), server(rhs.getServer()) {
-
-}
-
 bool FavoriteHubEntry::isAdcHub() const noexcept {
 	return AirUtil::isAdcHub(server);
 }
@@ -47,10 +42,6 @@ string FavoriteHubEntry::getShareProfileName() const noexcept {
 	}
 
 	return ShareManager::getInstance()->getShareProfile(SETTING(DEFAULT_SP))->getDisplayName();
-}
-
-RecentHubEntry::RecentHubEntry(const string& aUrl) : server(boost::trim_copy(aUrl)), name("*"), description("*"), shared("*"), users("*") {
-
 }
 
 }

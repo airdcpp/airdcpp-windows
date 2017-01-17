@@ -76,7 +76,7 @@ void FavHubGroupsDlg::save() {
 		groups.emplace(name, settings);
 	}
 	FavoriteManager::getInstance()->setFavHubGroups(groups);
-	FavoriteManager::getInstance()->save();
+	FavoriteManager::getInstance()->setDirty();
 }
 
 int FavHubGroupsDlg::findGroup(LPCTSTR name) {

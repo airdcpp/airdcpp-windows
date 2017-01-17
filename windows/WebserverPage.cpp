@@ -156,13 +156,6 @@ LRESULT WebServerPage::onChangeUser(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 
 		auto webUser = *getListUser(sel);
 
-		/*ChngPassDlg dlg;
-		dlg.title = TSTRING(CHANGE_PASSWORD);
-		dlg.hideold = true;
-		if (dlg.DoModal() == IDOK) {
-			webUser->setPassword(Text::fromT(dlg.Newline));
-		}*/
-
 		LineDlg dlg;
 		dlg.allowEmpty = false;
 		dlg.title = TSTRING(CHANGE_PASSWORD);
@@ -180,6 +173,11 @@ LRESULT WebServerPage::onAddUser(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	if (dlg.DoModal() == IDOK) {
 		if (dlg.getUserName().empty() || dlg.getPassWord().empty()) {
 			WinUtil::showMessageBox(TSTRING(WEB_ACCOUNT_INCOMPLETE), MB_ICONEXCLAMATION);
+			return 0;
+		}
+
+		if (!webserver::WebUser::validateUsername(dlg.getUserName())) {
+			WinUtil::showMessageBox(TSTRING(WEB_USERNAME_APLHANUM), MB_ICONEXCLAMATION);
 			return 0;
 		}
 

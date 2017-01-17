@@ -35,20 +35,12 @@ namespace webserver {
 
 		FilelistApi(Session* aSession);
 		~FilelistApi();
-
-		int getVersion() const noexcept override {
-			return 0;
-		}
-
 	private:
 		void addList(const DirectoryListingPtr& aList) noexcept;
-		api_return handleQueueList(ApiRequest& aRequest, QueueItem::Flags aFlags);
 
 		api_return handlePostList(ApiRequest& aRequest);
 		api_return handleDeleteList(ApiRequest& aRequest);
 		api_return handleOwnList(ApiRequest& aRequest);
-
-		api_return handleGetLists(ApiRequest& aRequest);
 
 		api_return handlePostDirectoryDownload(ApiRequest& aRequest);
 		api_return handleDeleteDirectoryDownload(ApiRequest& aRequest);
@@ -66,7 +58,7 @@ namespace webserver {
 		void on(DirectoryListingManagerListener::DirectoryDownloadFailed, const DirectoryDownloadPtr& aDirectoryInfo, const string& aError) noexcept override;
 
 		static json serializeList(const DirectoryListingPtr& aList) noexcept;
-		static json serializeDirectoryDownload(const DirectoryDownloadPtr& aDownload) noexcept;
+		static json serializeShareProfile(const DirectoryListingPtr& aList) noexcept;
 	};
 }
 

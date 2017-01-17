@@ -41,7 +41,7 @@
 
 #include <boost/range/numeric.hpp>
 
-
+string SearchFrame::id = "Search";
 int SearchFrame::columnIndexes[] = { COLUMN_FILENAME, COLUMN_RELEVANCE, COLUMN_HITS, COLUMN_USERS, COLUMN_TYPE, COLUMN_SIZE,
 	COLUMN_DATE, COLUMN_PATH, COLUMN_SLOTS, COLUMN_CONNECTION, 
 	COLUMN_HUB, COLUMN_EXACT_SIZE, COLUMN_IP, COLUMN_TTH };
@@ -461,7 +461,7 @@ void SearchFrame::onEnter() {
 		return;
 
 	token = Util::toString(Util::rand());
-	auto s = make_shared<Search>(Search::MANUAL, token);
+	auto s = make_shared<Search>(Priority::HIGH, token);
 
 	s->query = WinUtil::addHistory(ctrlSearchBox, SettingsManager::HISTORY_SEARCH);
 	if (s->query.empty() || SearchQuery::parseSearchString(s->query).empty()) {
@@ -685,11 +685,7 @@ int SearchFrame::SearchInfo::compareItems(const SearchInfo* a, const SearchInfo*
 			}
 
 			if (a->sr->getType() == SearchResult::TYPE_DIRECTORY) {
-				if (a->sr->getFolderCount() != b->sr->getFolderCount()) {
-					return a->sr->getFolderCount() < b->sr->getFolderCount() ? 1 : -1;
-				}
-
-				return a->sr->getFileCount() < b->sr->getFileCount() ? 1 : -1;
+				return Util::directoryContentSort(a->sr->getContentInfo(), b->sr->getContentInfo());
 			}
 
 			return lstrcmpi(a->getText(COLUMN_TYPE).c_str(), b->getText(COLUMN_TYPE).c_str());
@@ -728,7 +724,7 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 			if(sr->getType() == SearchResult::TYPE_FILE) {
 				return WinUtil::formatFileType(sr->getPath());
 			} else {
-				return WinUtil::formatFolderContent(sr->getFileCount(), sr->getFolderCount());
+				return WinUtil::formatFolderContent(sr->getContentInfo());
 			}
 		case COLUMN_SIZE: 
 			if(sr->getType() == SearchResult::TYPE_FILE) {
@@ -846,7 +842,7 @@ void SearchFrame::handleGetList(ListType aType) {
 		}
 
 		try {
-			QueueManager::getInstance()->addList(si->sr->getUser(), QueueItem::FLAG_CLIENT_VIEW | flags, si->sr->getFilePath());
+			DirectoryListingManager::getInstance()->createList(si->sr->getUser(), QueueItem::FLAG_CLIENT_VIEW | flags, si->sr->getFilePath());
 		} catch(const Exception&) {
 			// Ignore for now...
 		}

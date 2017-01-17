@@ -27,6 +27,7 @@
 
 #include <airdcpp/File.h>
 #include <airdcpp/QueueManager.h>
+#include <airdcpp/ShareManager.h>
 #include <airdcpp/ViewFileManager.h>
 
 #include <boost/range/algorithm/copy.hpp>
@@ -41,16 +42,26 @@ namespace webserver {
 		createSubscription("view_file_updated");
 		createSubscription("view_file_finished");
 
-		METHOD_HANDLER("sessions", Access::VIEW_FILES_VIEW, ApiRequest::METHOD_GET, (), false, ViewFileApi::handleGetFiles);
-		METHOD_HANDLER("session", Access::VIEW_FILES_EDIT, ApiRequest::METHOD_POST, (), true, ViewFileApi::handleAddFile);
-		METHOD_HANDLER("session", Access::VIEW_FILES_EDIT, ApiRequest::METHOD_DELETE, (TTH_PARAM), false, ViewFileApi::handleRemoveFile);
+		METHOD_HANDLER(Access::VIEW_FILES_VIEW, METHOD_GET,		(EXACT_PARAM("sessions")),									ViewFileApi::handleGetFiles);
+		METHOD_HANDLER(Access::VIEW_FILES_EDIT, METHOD_POST,	(EXACT_PARAM("sessions")),									ViewFileApi::handleAddFile);
+		METHOD_HANDLER(Access::VIEW_FILES_VIEW, METHOD_GET,		(EXACT_PARAM("sessions"), TTH_PARAM),						ViewFileApi::handleGetFile);
+		METHOD_HANDLER(Access::VIEW_FILES_EDIT, METHOD_POST,	(EXACT_PARAM("sessions"), TTH_PARAM),						ViewFileApi::handleAddLocalFile);
+		METHOD_HANDLER(Access::VIEW_FILES_EDIT, METHOD_DELETE,	(EXACT_PARAM("sessions"), TTH_PARAM),						ViewFileApi::handleRemoveFile);
 
-		METHOD_HANDLER("session", Access::VIEW_FILES_VIEW, ApiRequest::METHOD_GET, (TTH_PARAM, EXACT_PARAM("text")), false, ViewFileApi::handleGetText);
-		METHOD_HANDLER("session", Access::VIEW_FILES_VIEW, ApiRequest::METHOD_POST, (TTH_PARAM, EXACT_PARAM("read")), false, ViewFileApi::handleSetRead);
+		METHOD_HANDLER(Access::VIEW_FILES_VIEW, METHOD_GET,		(EXACT_PARAM("sessions"), TTH_PARAM, EXACT_PARAM("text")),	ViewFileApi::handleGetText);
+		METHOD_HANDLER(Access::VIEW_FILES_VIEW, METHOD_POST,	(EXACT_PARAM("sessions"), TTH_PARAM, EXACT_PARAM("read")),	ViewFileApi::handleSetRead);
 	}
 
 	ViewFileApi::~ViewFileApi() {
 		ViewFileManager::getInstance()->removeListener(this);
+	}
+
+	json ViewFileApi::serializeDownloadState(const ViewFilePtr& aFile) noexcept {
+		if (aFile->isLocalFile()) {
+			return nullptr;
+		}
+
+		return Serializer::serializeDownloadState(*aFile.get());
 	}
 
 	json ViewFileApi::serializeFile(const ViewFilePtr& aFile) noexcept {
@@ -61,23 +72,17 @@ namespace webserver {
 			{ "text", aFile->isText() },
 			{ "read", aFile->getRead() },
 			{ "name", aFile->getDisplayName() },
-			{ "state", Serializer::serializeDownloadState(*aFile.get()) },
+			{ "download_state", serializeDownloadState(aFile) },
 			{ "type", Serializer::serializeFileType(aFile->getPath()) },
-			{ "time_finished", aFile->getLastTimeFinished() },
-			{ "downloaded", !aFile->isLocalFile() },
+			{ "time_opened", aFile->getTimeCreated() },
+			{ "content_ready", aFile->isLocalFile() || aFile->isDownloaded() },
 			{ "mime_type", mimeType ? mimeType : Util::emptyString },
 		};
 	}
 
 	api_return ViewFileApi::handleGetFiles(ApiRequest& aRequest) {
-		auto ret = json::array();
-
 		auto files = ViewFileManager::getInstance()->getFiles();
-		for (const auto& file : files | map_values) {
-			ret.push_back(serializeFile(file));
-		}
-
-		aRequest.setResponseBody(ret);
+		aRequest.setResponseBody(Serializer::serializeList(files, serializeFile));
 		return websocketpp::http::status_code::ok;
 	}
 
@@ -90,28 +95,42 @@ namespace webserver {
 		auto user = Deserializer::deserializeHintedUser(j, true);
 		auto isText = JsonUtil::getOptionalFieldDefault<bool>("text", j, false);
 
-		bool added = false;
+		ViewFilePtr file = nullptr;
 		try {
-			added = ViewFileManager::getInstance()->addUserFileThrow(name, size, tth, user, isText);
+			file = ViewFileManager::getInstance()->addUserFileThrow(name, size, tth, user, isText);
 		} catch (const Exception& e) {
 			aRequest.setResponseErrorStr(e.getError());
 			return websocketpp::http::status_code::internal_server_error;
 		}
 
-		if (!added) {
+		if (!file) {
 			aRequest.setResponseErrorStr("File with the same TTH is open already");
 			return websocketpp::http::status_code::bad_request;
 		}
 
-		aRequest.setResponseBody({
-			{ "id", tth.toBase32() }
-		});
+		aRequest.setResponseBody(serializeFile(file));
+		return websocketpp::http::status_code::ok;
+	}
 
+	api_return ViewFileApi::handleAddLocalFile(ApiRequest& aRequest) {
+		auto tth = aRequest.getTTHParam();
+		if (!ShareManager::getInstance()->isFileShared(tth)) {
+			aRequest.setResponseErrorStr("TTH not shared");
+			return websocketpp::http::status_code::bad_request;
+		}
+
+		auto file = ViewFileManager::getInstance()->addLocalFile(tth, JsonUtil::getOptionalFieldDefault<bool>("text", aRequest.getRequestBody(), false));
+		if (!file) {
+			aRequest.setResponseErrorStr("File with the same TTH is open already");
+			return websocketpp::http::status_code::bad_request;
+		}
+
+		aRequest.setResponseBody(serializeFile(file));
 		return websocketpp::http::status_code::ok;
 	}
 
 	api_return ViewFileApi::handleGetText(ApiRequest& aRequest) {
-		auto file = ViewFileManager::getInstance()->getFile(Deserializer::parseTTH(aRequest.getStringParam(0)));
+		auto file = ViewFileManager::getInstance()->getFile(aRequest.getTTHParam());
 		if (!file) {
 			aRequest.setResponseErrorStr("File not found");
 			return websocketpp::http::status_code::not_found;
@@ -119,6 +138,11 @@ namespace webserver {
 
 		if (!file->isText()) {
 			aRequest.setResponseErrorStr("This method can't be used for non-text files");
+			return websocketpp::http::status_code::bad_request;
+		}
+
+		if (File::getSize(file->getPath()) > Util::convertSize(1, Util::MB)) {
+			aRequest.setResponseErrorStr("File is too big to be viewed as text");
 			return websocketpp::http::status_code::bad_request;
 		}
 
@@ -149,24 +173,35 @@ namespace webserver {
 		return websocketpp::http::status_code::ok;
 	}
 
-	api_return ViewFileApi::handleRemoveFile(ApiRequest& aRequest) {
-		auto success = ViewFileManager::getInstance()->removeFile(Deserializer::parseTTH(aRequest.getStringParam(0)));
-		if (!success) {
+	api_return ViewFileApi::handleGetFile(ApiRequest& aRequest) {
+		auto file = ViewFileManager::getInstance()->getFile(aRequest.getTTHParam());
+		if (!file) {
 			aRequest.setResponseErrorStr("File not found");
 			return websocketpp::http::status_code::not_found;
 		}
 
+		aRequest.setResponseBody(serializeFile(file));
 		return websocketpp::http::status_code::ok;
 	}
 
-	api_return ViewFileApi::handleSetRead(ApiRequest& aRequest) {
-		auto success = ViewFileManager::getInstance()->setRead(Deserializer::parseTTH(aRequest.getStringParam(0)));
+	api_return ViewFileApi::handleRemoveFile(ApiRequest& aRequest) {
+		auto success = ViewFileManager::getInstance()->removeFile(aRequest.getTTHParam());
 		if (!success) {
 			aRequest.setResponseErrorStr("File not found");
 			return websocketpp::http::status_code::not_found;
 		}
 
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
+	}
+
+	api_return ViewFileApi::handleSetRead(ApiRequest& aRequest) {
+		auto success = ViewFileManager::getInstance()->setRead(aRequest.getTTHParam());
+		if (!success) {
+			aRequest.setResponseErrorStr("File not found");
+			return websocketpp::http::status_code::not_found;
+		}
+
+		return websocketpp::http::status_code::no_content;
 	}
 
 	void ViewFileApi::on(ViewFileManagerListener::FileAdded, const ViewFilePtr& aFile) noexcept {
@@ -174,18 +209,14 @@ namespace webserver {
 	}
 
 	void ViewFileApi::on(ViewFileManagerListener::FileClosed, const ViewFilePtr& aFile) noexcept {
-		maybeSend("view_file_removed", [&] { 
-			return json({
-				{ "id", aFile->getTTH().toBase32() }
-			});
-		});
+		maybeSend("view_file_removed", [&] { return serializeFile(aFile); });
 	}
 
 	void ViewFileApi::on(ViewFileManagerListener::FileStateUpdated, const ViewFilePtr& aFile) noexcept {
 		maybeSend("view_file_updated", [&] { 
 			return json({
 				{ "id", aFile->getTTH().toBase32() },
-				{ "state", Serializer::serializeDownloadState(*aFile.get()) }
+				{ "download_state", Serializer::serializeDownloadState(*aFile.get()) }
 			});
 		});
 	}

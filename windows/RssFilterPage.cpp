@@ -25,6 +25,7 @@
 #include <airdcpp/modules/AutoSearchManager.h>
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/ResourceManager.h>
+#include <airdcpp/SimpleXML.h>
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
@@ -46,6 +47,8 @@ LRESULT RssFilterPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 
 	ATTACH(IDC_RSS_FILTER_LIST, ctrlRssFilterList);
 
+	ATTACH(IDC_RSS_BROWSE, cBrowse);
+
 	CRect rc;
 	ctrlRssFilterList.GetClientRect(rc);
 	ctrlRssFilterList.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_FULLROWSELECT);
@@ -63,6 +66,7 @@ LRESULT RssFilterPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	::SetWindowText(GetDlgItem(IDC_FILTER_UPDATE), CTSTRING(UPDATE));
 	::SetWindowText(GetDlgItem(IDC_GROUP_LABEL), CTSTRING(AUTOSEARCH_GROUP));
 	::SetWindowText(GetDlgItem(IDC_SKIP_DUPES), CTSTRING(SKIP_DUPES));
+	::SetWindowText(GetDlgItem(IDC_RSS_FILTER_ACTION_TEXT), CTSTRING(ACTION));
 
 
 	::EnableWindow(GetDlgItem(IDC_FILTER_REMOVE), false);
@@ -73,6 +77,11 @@ LRESULT RssFilterPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 		filterList = feedItem->getRssFilterList();
 
 	}
+
+	ATTACH(IDC_RSS_FILTER_ACTION, cAction);
+	cAction.InsertString(0, CTSTRING(DOWNLOAD));
+	cAction.InsertString(1, CTSTRING(REMOVE));
+	cAction.SetCurSel(0);
 
 	cGroups.Attach(GetDlgItem(IDC_ASGROUP_BOX));
 	cGroups.AddString(_T("---"));
@@ -93,6 +102,96 @@ LRESULT RssFilterPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	return TRUE;
 }
 
+LRESULT RssFilterPage::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+	if (reinterpret_cast<HWND>(wParam) == ctrlRssFilterList) {
+		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+
+		if (pt.x == -1 && pt.y == -1) {
+			WinUtil::getContextMenuPos(ctrlRssFilterList, pt);
+		}
+
+		vector<RSSFilter> filters;
+		int sel = ctrlRssFilterList.GetSelectedCount();
+		if (sel > 0) {
+			int i = -1;
+			while ((i = ctrlRssFilterList.GetNextItem(i, LVNI_SELECTED)) != -1) {
+				auto filter = filterList[i];
+				filters.push_back(filter);
+			}
+		}
+		auto txt = getClipBoardText();
+		if (!filters.empty() || !txt.empty()) {
+			OMenu menu;
+			menu.CreatePopupMenu();
+			if (!filters.empty())
+				menu.appendItem(TSTRING(COPY), [=] { handleCopyFilters(filters); });
+			if (!txt.empty())
+				menu.appendItem(TSTRING(PASTE), [=] { handlePasteFilters(txt); });
+
+			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
+			return TRUE;
+		}
+		
+	}
+	bHandled = FALSE;
+	return FALSE;
+}
+
+void RssFilterPage::handleCopyFilters(const vector<RSSFilter>& aList) {
+	SimpleXML xml;
+	RSSManager::getInstance()->saveFilters(xml, aList);
+	string tmp = xml.toXML();
+	WinUtil::setClipboard(Text::toT(tmp));
+}
+
+void RssFilterPage::handlePasteFilters(const string& aClipText) {
+
+	if (aClipText.empty())
+		return;
+
+	vector<RSSFilter> list;
+
+	try {
+		SimpleXML xml;
+		xml.fromXML(aClipText);
+		RSSManager::getInstance()->loadFilters(xml, list);
+	} catch (...) { }
+
+	if (list.empty())
+		return;
+
+	for (auto f : list) {
+		bool exists = find_if(filterList.begin(), filterList.end(), [&](const RSSFilter& a)
+		{ return f.getFilterPattern() == a.getFilterPattern(); }) != filterList.end();
+
+		if (!exists)
+			filterList.emplace_back(f);
+	}
+
+	fillList();
+}
+
+string RssFilterPage::getClipBoardText() {
+	
+	if (!IsClipboardFormatAvailable(CF_TEXT))
+		return Util::emptyString;
+	if (!::OpenClipboard(WinUtil::mainWnd))
+		return Util::emptyString;
+
+	string tmp;
+	HGLOBAL hglb = GetClipboardData(CF_TEXT);
+	if (hglb != NULL) {
+		char* lptstr = (char*)GlobalLock(hglb);
+		if (lptstr != NULL) {
+			tmp = lptstr;
+			GlobalUnlock(hglb);
+		}
+	}
+	CloseClipboard();
+	return tmp;
+}
+
+
 LRESULT RssFilterPage::onSelectionChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 {
 	if (loading)
@@ -104,10 +203,13 @@ LRESULT RssFilterPage::onSelectionChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*
 	loading = true;
 	if (ctrlRssFilterList.GetSelectedCount() == 1) {
 		auto item = filterList.begin();
-		advance(item, ctrlRssFilterList.GetSelectedIndex());
+		int i = ctrlRssFilterList.GetNextItem(-1, LVNI_SELECTED);
+		advance(item, i);
 		ctrlAutoSearchPattern.SetWindowText(Text::toT(item->getFilterPattern()).c_str());
 		ctrlTarget.SetWindowText(Text::toT(item->getDownloadTarget()).c_str());
 		cMatcherType.SetCurSel(item->getMethod());
+		cAction.SetCurSel(item->getFilterAction());
+
 		int g = cGroups.FindString(0, Text::toT(item->getAutosearchGroup()).c_str());
 		cGroups.SetCurSel(g > 0 ? g : 0);
 		CheckDlgButton(IDC_SKIP_DUPES, item->skipDupes ? TRUE : FALSE);
@@ -117,8 +219,10 @@ LRESULT RssFilterPage::onSelectionChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*
 		ctrlTarget.SetWindowText(_T(""));
 		cMatcherType.SetCurSel(0);
 		cGroups.SetCurSel(0);
+		cAction.SetCurSel(0);
 		CheckDlgButton(IDC_SKIP_DUPES, TRUE);
 	}
+	fixControls();
 	loading = false;
 
 	return 0;
@@ -148,7 +252,7 @@ LRESULT RssFilterPage::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 
 LRESULT RssFilterPage::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if (ctrlRssFilterList.GetSelectedCount() == 1) {
-		int i = ctrlRssFilterList.GetSelectedIndex();
+		int i = ctrlRssFilterList.GetNextItem(-1, LVNI_SELECTED);
 		ctrlRssFilterList.DeleteItem(i);
 		remove(i);
 		fillList();
@@ -164,15 +268,24 @@ LRESULT RssFilterPage::onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 
 LRESULT RssFilterPage::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 
-	tstring dir = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
+	CRect rect;
+	cBrowse.GetWindowRect(rect);
+	auto pt = rect.BottomRight();
+	pt.x = pt.x - rect.Width();
+	cBrowse.SetState(true);
 
-	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_GENERIC, BrowseDlg::DIALOG_SELECT_FOLDER);
-	dlg.setPath(dir);
-	if (dlg.show(dir)) {
-		SetDlgItemText(IDC_RSS_DOWNLOAD_PATH, dir.c_str());
-	}
+	OMenu targetMenu;
+	targetMenu.CreatePopupMenu();
+	targetMenu.InsertSeparatorFirst(CTSTRING(DOWNLOAD_TO));
 
+	appendDownloadTo(targetMenu, false, true, boost::none, boost::none, File::getVolumes());
+
+	targetMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_VERPOSANIMATION, pt);
 	return 0;
+}
+
+void RssFilterPage::handleDownload(const string& aTarget, Priority/* p*/, bool /*isWhole*/) {
+	SetDlgItemText(IDC_RSS_DOWNLOAD_PATH, Text::toT(aTarget).c_str());
 }
 
 void RssFilterPage::fillList() {
@@ -199,8 +312,9 @@ void RssFilterPage::add(const string& aPattern, const string& aTarget, int aMeth
 		grp.resize(cGroups.GetWindowText(&grp[0], grp.size() + 1));
 	}
 	bool skipDupes = IsDlgButtonChecked(IDC_SKIP_DUPES) ? true : false;
+	int action = cAction.GetCurSel();
 
-	filterList.emplace_back(RSSFilter(aPattern, aTarget, aMethod, Text::fromT(grp), skipDupes));
+	filterList.emplace_back(RSSFilter(aPattern, aTarget, aMethod, Text::fromT(grp), skipDupes, action));
 	fillList();
 	restoreSelection(Text::toT(aPattern));
 }
@@ -254,4 +368,14 @@ void RssFilterPage::restoreSelection(const tstring& curSel) {
 		if (i != -1)
 			ctrlRssFilterList.SelectItem(i);
 	}
+}
+
+void RssFilterPage::fixControls() {
+	BOOL enable = cAction.GetCurSel() == 0;
+	::EnableWindow(GetDlgItem(IDC_RSS_DOWNLOAD_PATH), enable);
+	::EnableWindow(GetDlgItem(IDC_RSS_BROWSE), enable);
+	::EnableWindow(GetDlgItem(IDC_ASGROUP_BOX), enable);
+	::EnableWindow(GetDlgItem(IDC_GROUP_LABEL), enable);
+	::EnableWindow(GetDlgItem(IDC_RSS_DOWNLOAD_PATH_TEXT), enable);
+
 }

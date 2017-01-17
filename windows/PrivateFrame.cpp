@@ -37,6 +37,7 @@
 #include <airdcpp/Localization.h>
 
 PrivateFrame::FrameMap PrivateFrame::frames;
+string PrivateFrame::id = "PM";
 
 void PrivateFrame::openWindow(const HintedUser& aReplyTo, bool aMessageReceived) {
 	if (!MessageManager::getInstance()->getChat(aReplyTo)) {
@@ -65,6 +66,31 @@ void PrivateFrame::openWindow(const HintedUser& aReplyTo, bool aMessageReceived)
 	if (!aMessageReceived) {
 		frame->second->activate();
 	}
+}
+
+bool PrivateFrame::getWindowParams(HWND hWnd, StringMap& params) {
+	auto f = find_if(frames | map_values, [hWnd](PrivateFrame* h) { return hWnd == h->m_hWnd; }).base();
+	if (f != frames.end()) {
+		params["id"] = PrivateFrame::id;
+		params["CID"] = f->first->getCID().toBase32();
+		params["url"] = f->second->getHubUrl();
+		FavoriteManager::getInstance()->addSavedUser(f->first);
+		return true;
+	}
+	return false;
+}
+
+bool PrivateFrame::parseWindowParams(StringMap& params) {
+	if (params["id"] == PrivateFrame::id) {
+		string cid = params["CID"];
+		string hubUrl = params["url"];
+		auto u = ClientManager::getInstance()->getUser(CID(cid));
+		if (u) {
+			MessageManager::getInstance()->addChat(HintedUser(u, hubUrl), false);
+		}
+		return true;
+	}
+	return false;
 }
 
 

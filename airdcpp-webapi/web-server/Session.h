@@ -35,7 +35,13 @@ namespace webserver {
 	// Sessions are owned by WebUserManager and WebSockets (websockets are closed when session is removed)
 	class Session : public Speaker<SessionListener> {
 	public:
-		Session(WebUserPtr& aUser, const std::string& aToken, bool aIsSecure, WebServerManager* aServer, uint64_t maxInactivityMinutes, bool aIsUserSession, const string& aIP);
+		enum SessionType {
+			TYPE_PLAIN,
+			TYPE_SECURE,
+			TYPE_BASIC_AUTH,
+		};
+
+		Session(const WebUserPtr& aUser, const std::string& aToken, SessionType aSessionType, WebServerManager* aServer, uint64_t maxInactivityMinutes, const string& aIP);
 		~Session();
 
 		const std::string& getAuthToken() const noexcept {
@@ -50,8 +56,8 @@ namespace webserver {
 			return user;
 		}
 
-		bool isSecure() const {
-			return secure;
+		SessionType getSessionType() const {
+			return sessionType;
 		}
 
 		ApiModule* getModule(const std::string& aApiID);
@@ -77,10 +83,6 @@ namespace webserver {
 			return maxInactivity;
 		}
 
-		bool isUserSession() const noexcept {
-			return userSession;
-		}
-
 		const string& getIp() const noexcept {
 			return ip;
 		}
@@ -94,8 +96,7 @@ namespace webserver {
 
 		const LocalSessionId id;
 		const std::string token;
-		const bool secure;
-		const bool userSession;
+		const SessionType sessionType;
 		const string ip;
 
 		WebUserPtr user;

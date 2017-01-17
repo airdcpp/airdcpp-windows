@@ -24,6 +24,8 @@
 
 #define MAX_TEXT_LEN 131072
 
+string CDMDebugFrame::id = "CDMDebug";
+
 CDMDebugFrame::CDMDebugFrame() : cmdList(1024),
 		commandApiContainer(WC_BUTTON, this, API_COMMAND_MESSAGE_MAP),
 		commandHubContainer(WC_BUTTON, this, HUB_COMMAND_MESSAGE_MAP),

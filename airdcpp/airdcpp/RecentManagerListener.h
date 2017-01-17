@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2016 AirDC++ Project
+* Copyright (C) 2001-2016 Jacek Sieka, arnetheduck on gmail point com
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,30 +16,27 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef DCPLUSPLUS_DCPP_RECENTHUB_API_H
-#define DCPLUSPLUS_DCPP_RECENTHUB_API_H
+#ifndef DCPLUSPLUS_DCPP_RECENTMANAGERLISTENER_H_
+#define DCPLUSPLUS_DCPP_RECENTMANAGERLISTENER_H_
 
-#include <web-server/stdinc.h>
+#include "forward.h"
 
-#include <api/ApiModule.h>
+namespace dcpp {
 
-#include <airdcpp/typedefs.h>
-
-namespace webserver {
-	class RecentHubApi : public ApiModule {
+	class RecentManagerListener {
 	public:
-		RecentHubApi(Session* aSession);
-		~RecentHubApi();
+		virtual ~RecentManagerListener() { }
+		template<int I>	struct X { enum { TYPE = I }; };
 
-		int getVersion() const noexcept override {
-			return 0;
-		}
+		typedef X<0> RecentAdded;
+		typedef X<1> RecentRemoved;
+		typedef X<2> RecentUpdated;
 
-		static json serializeHub(const RecentHubEntryPtr& aHub) noexcept;
-	private:
-		api_return handleSearchHubs(ApiRequest& aRequest);
-		api_return handleGetHubs(ApiRequest& aRequest);
+		virtual void on(RecentAdded, const RecentEntryPtr&) noexcept {}
+		virtual void on(RecentRemoved, const RecentEntryPtr&) noexcept {}
+		virtual void on(RecentUpdated, const RecentEntryPtr&) noexcept {}
 	};
-}
 
-#endif
+} // namespace dcpp
+
+#endif 

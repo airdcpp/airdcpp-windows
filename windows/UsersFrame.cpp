@@ -30,6 +30,8 @@
 #include <airdcpp/LogManager.h>
 #include <airdcpp/QueueManager.h>
 
+string UsersFrame::id = "Users";
+
 int UsersFrame::columnIndexes[] = { COLUMN_FAVORITE, COLUMN_SLOT, COLUMN_NICK, COLUMN_HUB, COLUMN_SEEN, COLUMN_QUEUED, COLUMN_DESCRIPTION, COLUMN_LIMITER, COLUMN_IGNORE, COLUMN_SHARED, COLUMN_TAG, COLUMN_IP4, COLUMN_IP6 };
 int UsersFrame::columnSizes[] = { 60, 90, 200, 300, 150, 100, 200, 70, 60,80, 250, 120, 120 };
 
@@ -668,11 +670,11 @@ void UsersFrame::updateInfoText(const UserInfo* ui){
 	map<string, Identity> idents = ClientManager::getInstance()->getIdentities(ui->getUser());
 	if(!idents.empty()) {
 		tstring tmp = _T("");
-		for(auto& id: idents) {
-			auto info = id.second.getInfo();
+		for(auto& identity: idents) {
+			auto info = identity.second.getInfo();
 		
 			tmp += _T("\r\nUser Information: \r\n");
-			tmp += _T("Hub: ") + Text::toT(id.first) + _T("\r\n");
+			tmp += _T("Hub: ") + Text::toT(identity.first) + _T("\r\n");
 			for(auto f = fields; !f->field.empty(); ++f) {
 				auto i = info.find(f->field);
 				if(i != info.end()) {

@@ -254,7 +254,7 @@ void Util::initialize(const string& aConfigPath) {
 	paths[PATH_LOCALE] = (localMode ? exePath : paths[PATH_USER_LOCAL]) + "Language\\";
 
 #else
-	paths[PATH_GLOBAL_CONFIG] = "/etc/";
+	paths[PATH_GLOBAL_CONFIG] = GLOBAL_CONFIG_DIRECTORY;
 	const char* home_ = getenv("HOME");
 	string home = home_ ? Text::toUtf8(home_) : "/tmp/";
 
@@ -364,6 +364,9 @@ void Util::loadBootConfig() noexcept {
 
 			params["APPDATA"] = Text::fromT((::SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, path), path));
 			params["PERSONAL"] = Text::fromT((::SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, path), path));
+#else
+			const char* home_ = getenv("HOME");
+			params["HOME"] = home_ ? Text::toUtf8(home_) : "/tmp/";
 #endif
 			paths[PATH_USER_CONFIG] = Util::formatParams(boot.getChildData(), params);
 		}
@@ -1477,6 +1480,55 @@ int Util::pathSort(const string& a, const string& b) noexcept {
 	}
 
 	return comp;
+}
+
+int Util::directoryContentSort(const DirectoryContentInfo& a, const DirectoryContentInfo& b) noexcept {
+	if (a.directories != b.directories) {
+		return compare(a.directories, b.directories);
+	}
+
+	return compare(a.files, b.files);
+}
+
+string Util::formatDirectoryContent(const DirectoryContentInfo& aContentInfo) noexcept {
+	if (!Util::hasContentInfo(aContentInfo)) {
+		return Util::emptyString;
+	}
+
+	string name;
+
+	bool hasFiles = aContentInfo.files > 0;
+	bool hasFolders = aContentInfo.directories > 0;
+
+	if (hasFolders) {
+		if (aContentInfo.directories == 1) {
+			name += Util::toString(aContentInfo.directories) + " " + Text::toLower(STRING(FOLDER));
+		} else {
+			name += STRING_F(X_FOLDERS, aContentInfo.directories);
+		}
+	}
+
+	if (hasFiles || !hasFolders) { // We must return something even if the directory is empty
+		if (hasFolders)
+			name += ", ";
+
+		if (aContentInfo.files == 1) {
+			name += Util::toString(aContentInfo.files) + " " + Text::toLower(STRING(FILE));
+		} else {
+			name += STRING_F(X_FILES, aContentInfo.files);
+		}
+	}
+
+	return name;
+}
+
+string Util::formatFileType(const string& aPath) noexcept {
+	auto type = Util::getFileExt(aPath);
+	if (type.size() > 0 && type[0] == '.') {
+		type.erase(0, 1);
+	}
+
+	return type;
 }
 
 /* natural sorting */

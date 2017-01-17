@@ -103,6 +103,8 @@ public:
 	}
 
 	LRESULT onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
+	
+	static string id;
 
 private:
 

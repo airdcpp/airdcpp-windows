@@ -30,18 +30,18 @@ namespace webserver {
 	template<class T>
 	class ChatController {
 	public:
-		ChatController(SubscribableApiModule* aModule, const T& aChat, const string& aSubscriptionId) :
-			module(aModule), subscriptionId(aSubscriptionId), chat(aChat)
+		typedef typename std::function<const T&()> ChatGetterF;
+		ChatController(SubscribableApiModule* aModule, const ChatGetterF& aChatF, const string& aSubscriptionId, Access aViewPermission, Access aEditPermission, Access aSendPermission) :
+			module(aModule), subscriptionId(aSubscriptionId), chatF(aChatF)
 		{
 			auto& requestHandlers = aModule->getRequestHandlers();
 
-			auto access = aModule->getSubscriptionAccess();
-			METHOD_HANDLER("messages", Access::HUBS_VIEW, ApiRequest::METHOD_GET, (NUM_PARAM), false, ChatController::handleGetMessages);
-			METHOD_HANDLER("message", Access::HUBS_SEND, ApiRequest::METHOD_POST, (), true, ChatController::handlePostChatMessage);
-			METHOD_HANDLER("status", Access::HUBS_EDIT, ApiRequest::METHOD_POST, (), true, ChatController::handleStatusMessage);
+			METHOD_HANDLER(aSendPermission, METHOD_POST, (EXACT_PARAM("chat_message")), ChatController::handlePostChatMessage);
+			METHOD_HANDLER(aEditPermission, METHOD_POST, (EXACT_PARAM("status_message")), ChatController::handlePostStatusMessage);
 
-			METHOD_HANDLER("read", Access::HUBS_VIEW, ApiRequest::METHOD_POST, (), false, ChatController::handleSetRead);
-			METHOD_HANDLER("clear", Access::HUBS_EDIT, ApiRequest::METHOD_POST, (), false, ChatController::handleClear);
+			METHOD_HANDLER(aViewPermission, METHOD_GET, (EXACT_PARAM("messages"), RANGE_MAX_PARAM), ChatController::handleGetMessages);
+			METHOD_HANDLER(aViewPermission, METHOD_POST, (EXACT_PARAM("messages"), EXACT_PARAM("read")), ChatController::handleSetRead);
+			METHOD_HANDLER(aEditPermission, METHOD_DELETE, (EXACT_PARAM("messages")), ChatController::handleClear);
 		}
 
 		void onChatMessage(const ChatMessagePtr& aMessage) noexcept {
@@ -76,10 +76,9 @@ namespace webserver {
 				return;
 			}
 
-			json j;
-			Serializer::serializeCacheInfo(j, chat->getCache(), Serializer::serializeUnreadChat);
-
-			module->send(s, j);
+			module->send(s, {
+				{ "message_counts",  Serializer::serializeCacheInfo(chatF()->getCache(), Serializer::serializeUnreadChat) },
+			});
 		}
 
 		api_return handlePostChatMessage(ApiRequest& aRequest) {
@@ -87,36 +86,36 @@ namespace webserver {
 			auto message = Deserializer::deserializeChatMessage(reqJson);
 
 			string error_;
-			if (!chat->sendMessage(message.first, error_, message.second)) {
+			if (!chatF()->sendMessage(message.first, error_, message.second)) {
 				aRequest.setResponseErrorStr(error_);
 				return websocketpp::http::status_code::internal_server_error;
 			}
 
-			return websocketpp::http::status_code::ok;
+			return websocketpp::http::status_code::no_content;
 		}
 
-		api_return handleStatusMessage(ApiRequest& aRequest) {
+		api_return handlePostStatusMessage(ApiRequest& aRequest) {
 			const auto& reqJson = aRequest.getRequestBody();
 
 			auto message = Deserializer::deserializeStatusMessage(reqJson);
-			chat->statusMessage(message.first, message.second);
-			return websocketpp::http::status_code::ok;
+			chatF()->statusMessage(message.first, message.second);
+			return websocketpp::http::status_code::no_content;
 		}
 
 		api_return handleClear(ApiRequest& aRequest) {
-			chat->clearCache();
-			return websocketpp::http::status_code::ok;
+			chatF()->clearCache();
+			return websocketpp::http::status_code::no_content;
 		}
 
 		api_return handleSetRead(ApiRequest& aRequest) {
-			chat->setRead();
-			return websocketpp::http::status_code::ok;
+			chatF()->setRead();
+			return websocketpp::http::status_code::no_content;
 		}
 
 		api_return handleGetMessages(ApiRequest& aRequest) {
 			auto j = Serializer::serializeFromEnd(
-				aRequest.getRangeParam(0),
-				chat->getCache().getMessages(),
+				aRequest.getRangeParam(MAX_COUNT),
+				chatF()->getCache().getMessages(),
 				Serializer::serializeMessage);
 
 			aRequest.setResponseBody(j);
@@ -127,7 +126,7 @@ namespace webserver {
 			return subscriptionId + "_" + aSubscription;
 		}
 
-		T chat;
+		ChatGetterF chatF;
 		string subscriptionId;
 		SubscribableApiModule* module;
 	};

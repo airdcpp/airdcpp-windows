@@ -31,18 +31,18 @@ namespace webserver {
 	public:
 		ShareProfileApi(Session* aSession);
 		~ShareProfileApi();
-
-		int getVersion() const noexcept override {
-			return 0;
-		}
 	private:
 		static json serializeShareProfile(const ShareProfilePtr& aProfile) noexcept;
 
 		api_return handleGetProfiles(ApiRequest& aRequest);
+		api_return handleGetProfile(ApiRequest& aRequest);
+
 		api_return handleAddProfile(ApiRequest& aRequest);
 		api_return handleUpdateProfile(ApiRequest& aRequest);
 		api_return handleRemoveProfile(ApiRequest& aRequest);
-		api_return handleDefaultProfile(ApiRequest& aRequest);
+
+		api_return handleGetDefaultProfile(ApiRequest& aRequest);
+		api_return handleSetDefaultProfile(ApiRequest& aRequest);
 
 		void parseProfile(ShareProfilePtr& aProfile, const json& j);
 

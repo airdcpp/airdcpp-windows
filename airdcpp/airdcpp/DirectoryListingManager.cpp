@@ -98,16 +98,18 @@ bool DirectoryListingManager::hasDirectoryDownload(const string& aBundleName, vo
 	return find_if(dlDirectories | map_values, DirectoryDownload::HasOwner(aOwner, aBundleName)).base() != dlDirectories.end();
 }
 
-DirectoryDownload::List DirectoryListingManager::getDirectoryDownloads() const noexcept {
-	DirectoryDownload::List ret;
+DirectoryDownloadList DirectoryListingManager::getDirectoryDownloads() const noexcept {
+	DirectoryDownloadList ret;
 
-	RLock l(cs);
-	boost::range::copy(dlDirectories | map_values, back_inserter(ret));
+	{
+		RLock l(cs);
+		boost::range::copy(dlDirectories | map_values, back_inserter(ret));
+	}
 
 	return ret;
 }
 
-DirectoryDownloadId DirectoryListingManager::addDirectoryDownload(const HintedUser& aUser, const string& aBundleName, const string& aListPath, const string& aTarget, Priority p, const void* aOwner) {
+DirectoryDownloadPtr DirectoryListingManager::addDirectoryDownload(const HintedUser& aUser, const string& aBundleName, const string& aListPath, const string& aTarget, Priority p, const void* aOwner) {
 	dcassert(!aTarget.empty() && !aListPath.empty() && !aBundleName.empty());
 	auto downloadInfo = make_shared<DirectoryDownload>(aUser, aBundleName, aListPath, aTarget, p, aOwner);
 
@@ -119,7 +121,7 @@ DirectoryDownloadId DirectoryListingManager::addDirectoryDownload(const HintedUs
 		auto dp = dlDirectories.equal_range(aUser);
 		for (auto i = dp.first; i != dp.second; ++i) {
 			if (Util::stricmp(aListPath.c_str(), i->second->getListPath().c_str()) == 0) {
-				return i->second->getId();
+				return i->second;
 			}
 		}
 
@@ -133,7 +135,7 @@ DirectoryDownloadId DirectoryListingManager::addDirectoryDownload(const HintedUs
 		queueList(downloadInfo);
 	}
 
-	return downloadInfo->getId();
+	return downloadInfo;
 }
 
 void DirectoryListingManager::queueList(const DirectoryDownloadPtr& aDownloadInfo) {
@@ -239,7 +241,7 @@ void DirectoryListingManager::handleDownload(const DirectoryDownloadPtr& aDownlo
 
 void DirectoryListingManager::processListAction(DirectoryListingPtr aList, const string& aPath, int aFlags) noexcept {
 	if(aFlags & QueueItem::FLAG_DIRECTORY_DOWNLOAD) {
-		DirectoryDownload::List dl;
+		DirectoryDownloadList dl;
 		{
 			WLock l(cs);
 			auto dp = dlDirectories.equal_range(aList->getHintedUser().user) | map_values;
@@ -254,9 +256,6 @@ void DirectoryListingManager::processListAction(DirectoryListingPtr aList, const
 				dl.assign(boost::begin(dp), boost::end(dp));
 			}
 		}
-
-		if (dl.empty())
-			return;
 
 		for (const auto& di: dl) {
 			handleDownload(di, aList);
@@ -358,27 +357,30 @@ void DirectoryListingManager::on(QueueManagerListener::ItemRemoved, const QueueI
 	}
 }
 
-void DirectoryListingManager::openOwnList(ProfileToken aProfile, bool useADL /*false*/) noexcept {
+DirectoryListingPtr DirectoryListingManager::openOwnList(ProfileToken aProfile, bool useADL /*false*/, const string& aDir/* = Util::emptyString*/) noexcept {
 	auto me = HintedUser(ClientManager::getInstance()->getMe(), Util::emptyString);
 
 	auto dl = hasList(me.user);
 	if (dl) {
 		dl->addShareProfileChangeTask(aProfile);
-		return;
+		return dl;
 	}
 
 	dl = createList(me, !useADL, Util::toString(aProfile), true);
 	dl->setMatchADL(useADL);
 
-	fire(DirectoryListingManagerListener::OpenListing(), dl, Util::emptyString, Util::emptyString);
+	fire(DirectoryListingManagerListener::OpenListing(), dl, aDir, Util::emptyString);
+	return dl;
 }
 
-void DirectoryListingManager::openFileList(const HintedUser& aUser, const string& aFile) noexcept {
-	if (hasList(aUser.user))
-		return;
+DirectoryListingPtr DirectoryListingManager::openFileList(const HintedUser& aUser, const string& aFile, const string& aDir/* = Util::emptyString*/) noexcept {
+	if (hasList(aUser.user)) {
+		return nullptr;
+	}
 
 	auto dl = createList(aUser, false, aFile, false);
-	fire(DirectoryListingManagerListener::OpenListing(), dl, Util::emptyString, Util::emptyString);
+	fire(DirectoryListingManagerListener::OpenListing(), dl, aDir, Util::emptyString);
+	return dl;
 }
 
 DirectoryListingPtr DirectoryListingManager::createList(const HintedUser& aUser, bool aPartial, const string& aFileName, bool aIsOwnList) noexcept {
@@ -401,16 +403,7 @@ void DirectoryListingManager::on(QueueManagerListener::ItemAdded, const QueueIte
 	auto dl = hasList(user);
 	if (dl) {
 		dl->onAddedQueue(aQI->getTarget());
-		return;
 	}
-
-	if (!aQI->isSet(QueueItem::FLAG_PARTIAL_LIST)) {
-		dl = createList(user, false, aQI->getListName(), false);
-	} else {
-		dl = createList(user, true, Util::emptyString, false);
-	}
-
-	dl->onAddedQueue(aQI->getTarget());
 }
 
 DirectoryListingPtr DirectoryListingManager::hasList(const UserPtr& aUser) noexcept {
@@ -422,6 +415,26 @@ DirectoryListingPtr DirectoryListingManager::hasList(const UserPtr& aUser) noexc
 	}
 
 	return nullptr;
+}
+
+DirectoryListingPtr DirectoryListingManager::createList(const HintedUser& aUser, Flags::MaskType aFlags, const string& aInitialDir) {
+	auto dl = hasList(aUser);
+	if (dl) {
+		return nullptr;
+	}
+
+	auto qi = QueueManager::getInstance()->addList(aUser, aFlags, aInitialDir);
+	if (!qi) {
+		return nullptr;
+	}
+
+	if (!qi->isSet(QueueItem::FLAG_PARTIAL_LIST)) {
+		dl = createList(aUser, false, qi->getListName(), false);
+	} else {
+		dl = createList(aUser, true, Util::emptyString, false);
+	}
+
+	return dl;
 }
 
 bool DirectoryListingManager::removeList(const UserPtr& aUser) noexcept {

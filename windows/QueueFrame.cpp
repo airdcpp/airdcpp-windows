@@ -32,6 +32,8 @@
 #include <airdcpp/DownloadManager.h>
 #include <airdcpp/ShareScannerManager.h>
 
+string QueueFrame::id = "Queue";
+
 int QueueFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_SIZE, COLUMN_TYPE, COLUMN_PRIORITY, COLUMN_STATUS, COLUMN_TIMELEFT, 
 	COLUMN_SPEED, COLUMN_SOURCES, COLUMN_DOWNLOADED, COLUMN_TIME_ADDED, COLUMN_TIME_FINISHED, COLUMN_PATH };
 
@@ -578,8 +580,8 @@ tstring formatSourceFlags(const SourceType& s) {
 void QueueFrame::AppendTreeMenu(BundleList& bl, QueueItemList& ql, OMenu& aMenu) {
 	if (!bl.empty()) {
 		bool filesOnly = all_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isFileBundle(); });
-		bool hasFinished = any_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isFinished(); });
-		bool allFinished = all_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isFinished(); });
+		bool hasFinished = any_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isDownloaded(); });
+		bool allFinished = all_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isDownloaded(); });
 
 		aMenu.InsertSeparatorFirst(CTSTRING_F(X_BUNDLES, bl.size()));
 
@@ -590,7 +592,7 @@ void QueueFrame::AppendTreeMenu(BundleList& bl, QueueItemList& ql, OMenu& aMenu)
 		}
 
 		if (curSel == TREE_FAILED) {
-			aMenu.appendItem(TSTRING(RETRY_SHARING), [=] {
+			aMenu.appendItem(TSTRING(RESCAN_BUNDLE), [=] {
 				for_each(bl, [&](BundlePtr b) { QueueManager::getInstance()->shareBundle(b, false); });
 			}, OMenu::FLAG_THREADED);
 			aMenu.appendItem(TSTRING(FORCE_SHARING), [=] { 
@@ -608,7 +610,7 @@ void QueueFrame::AppendTreeMenu(BundleList& bl, QueueItemList& ql, OMenu& aMenu)
 		}
 	} else if (!ql.empty()) {
 		aMenu.InsertSeparatorFirst(CTSTRING_F(X_FILES, ql.size()));
-		bool hasFinished = any_of(ql.begin(), ql.end(), [](const QueueItemPtr& q) { return q->isFinished(); });
+		bool hasFinished = any_of(ql.begin(), ql.end(), [](const QueueItemPtr& q) { return q->isDownloaded(); });
 		aMenu.appendItem(TSTRING(REMOVE), [=] { handleRemoveFiles(ql, false); });
 		if (hasFinished)
 			aMenu.appendItem(TSTRING(REMOVE_WITH_FILES), [=] { handleRemoveFiles(ql, true); });
@@ -626,9 +628,9 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 		bundleMenu.InsertSeparatorFirst(CTSTRING_F(X_BUNDLES, bl.size()));
 	}
 
-	bool hasFinished = any_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isFinished(); });
+	bool hasFinished = any_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isDownloaded(); });
 	bool filesOnly = all_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isFileBundle(); });
-	bool allFinished = all_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isFinished(); });
+	bool allFinished = all_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isDownloaded(); });
 
 	/* Insert sub menus */
 	BundlePtr b = nullptr;
@@ -678,7 +680,7 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 		/* Sub menus end */
 
 		// search
-		if (!b->isFinished()) {
+		if (!b->isDownloaded()) {
 			bundleMenu.appendItem(TSTRING(SEARCH_BUNDLE_ALT), [=] {
 				auto bundle = b;
 				QueueManager::getInstance()->searchBundleAlternates(bundle, true);
@@ -689,25 +691,13 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 		WinUtil::appendSearchMenu(bundleMenu, b->getName());
 		bundleMenu.appendItem(TSTRING(SEARCH_DIRECTORY), [this] { handleSearchDirectory(); });
 
-		if (b->isFailed()) {
+		if (b->getHookError()) {
 			bundleMenu.appendSeparator();
-			if (b->getStatus() != Bundle::STATUS_DOWNLOAD_FAILED) {
-				if (ShareManager::getInstance()->allowAddDir(b->getTarget())) {
-					bundleMenu.appendItem(TSTRING(RETRY_SHARING), [=] { QueueManager::getInstance()->shareBundle(b, false); }, OMenu::FLAG_THREADED);
-					if (b->getStatus() == Bundle::STATUS_SHARING_FAILED || b->getStatus() == Bundle::STATUS_FAILED_MISSING) {
-						bundleMenu.appendItem(TSTRING(FORCE_SHARING), [=] { QueueManager::getInstance()->shareBundle(b, true); }, OMenu::FLAG_THREADED);
-					}
-				}
-				else {
-					bundleMenu.appendItem(TSTRING(RESCAN_BUNDLE), [=] {
-						auto bundle = b;
-						QueueManager::getInstance()->scanBundle(bundle);
-					}, OMenu::FLAG_THREADED);
-				}
-			}
+			bundleMenu.appendItem(TSTRING(RESCAN_BUNDLE), [=] { QueueManager::getInstance()->shareBundle(b, false); }, OMenu::FLAG_THREADED);
+			bundleMenu.appendItem(TSTRING(FORCE_SHARING), [=] { QueueManager::getInstance()->shareBundle(b, true); }, OMenu::FLAG_THREADED);
 		}
 
-		if (!b->isFinished()) {
+		if (!b->isDownloaded()) {
 			bundleMenu.appendSeparator();
 			readdMenu->appendThis(TSTRING(READD_SOURCE), true);
 			removeMenu->appendThis(TSTRING(REMOVE_SOURCE), true);
@@ -744,7 +734,7 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 	for (int i = IDC_SEGMENTONE; i <= IDC_SEGMENTTEN; i++)
 	segmentsMenu.AppendMenu(MF_STRING, i, (Util::toStringW(i - 109) + _T(" ") + TSTRING(SEGMENTS)).c_str());
 	*/
-	bool hasFinished = any_of(ql.begin(), ql.end(), [](const QueueItemPtr& q) { return q->isFinished(); });
+	bool hasFinished = any_of(ql.begin(), ql.end(), [](const QueueItemPtr& q) { return q->isDownloaded(); });
 	bool hasBundleItems = any_of(ql.begin(), ql.end(), [](const QueueItemPtr& q) { return q->getBundle(); });
 
 	if (hasBundleItems)
@@ -823,7 +813,7 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 			//fileMenu.appendSeparator();
 		}
 
-		if (!qi->isFinished()) {
+		if (!qi->isDownloaded()) {
 			fileMenu.appendSeparator();
 			readdMenu->appendThis(TSTRING(READD_SOURCE), true);
 			removeMenu->appendThis(TSTRING(REMOVE_SOURCE), true);
@@ -1047,12 +1037,12 @@ void QueueFrame::handleRecheckFiles(QueueItemList ql) {
 	});
 }
 
-void QueueFrame::handleRemoveBundles(BundleList bundles, bool removeFinished, bool finishedOnly) {
+void QueueFrame::handleRemoveBundles(BundleList bundles, bool removeFinished, bool aCompletedOnly) {
 	if (bundles.empty())
 		return;
 
-	bool allFinished = all_of(bundles.begin(), bundles.end(), [](const BundlePtr& b) { return b->isFinished(); });
-	if (bundles.size() == 1 && !finishedOnly) {
+	bool allFinished = all_of(bundles.begin(), bundles.end(), [](const BundlePtr& b) { return b->isDownloaded(); });
+	if (bundles.size() == 1 && !aCompletedOnly) {
 		if (removeFinished) {
 			if (!WinUtil::showQuestionBox(TSTRING_F(CONFIRM_REMOVE_DIR_FINISHED, Text::toT(bundles.front()->getName())), MB_ICONQUESTION)) {
 				return;
@@ -1060,7 +1050,7 @@ void QueueFrame::handleRemoveBundles(BundleList bundles, bool removeFinished, bo
 		} else if (!allFinished && !WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_QUEUE_REMOVAL, TSTRING_F(CONFIRM_REMOVE_DIR_BUNDLE, Text::toT(bundles.front()->getName())))) {
 			return;
 		}
-	} else if(!finishedOnly) {
+	} else if(!aCompletedOnly) {
 		if (removeFinished) {
 			if (!WinUtil::showQuestionBox(TSTRING_F(CONFIRM_REMOVE_DIR_FINISHED_MULTIPLE, bundles.size()), MB_ICONQUESTION)) {
 				return;
@@ -1072,8 +1062,9 @@ void QueueFrame::handleRemoveBundles(BundleList bundles, bool removeFinished, bo
 
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		for (auto b : bundles) {
-			if (!finishedOnly || b->isFinished() && !b->isFailed())
+			if (!aCompletedOnly || b->isCompleted()) {
 				QueueManager::getInstance()->removeBundle(b, removeFinished);
+			}
 		}
 	});
 }
@@ -1286,7 +1277,7 @@ void QueueFrame::updateStatus() {
 		for (auto ii : parents | map_values) {
 			if (ii->bundle) {
 				BundlePtr b = ii->bundle;
-				b->isFinished() ? finishedBundles++ : queuedBundles++;
+				b->isDownloaded() ? finishedBundles++ : queuedBundles++;
 				if (b->isFailed()) failedBundles++;
 				if (b->isPausedPrio()) pausedItems++;
 				if (b->getAddedByAutoSearch()) autosearchAdded++;
@@ -1437,10 +1428,18 @@ void QueueFrame::on(QueueManagerListener::ItemRemoved, const QueueItemPtr& aQI, 
 void QueueFrame::on(QueueManagerListener::ItemAdded, const QueueItemPtr& aQI) noexcept{
 	addGuiTask(TASK_ADD, [=] { onQueueItemAdded(aQI); });
 }
-void QueueFrame::on(QueueManagerListener::ItemSourcesUpdated, const QueueItemPtr& aQI) noexcept {
+void QueueFrame::on(QueueManagerListener::ItemSources, const QueueItemPtr& aQI) noexcept {
 	addGuiTask(TASK_QI_UPDATE, [=] { onQueueItemUpdated(aQI); });
 }
-void QueueFrame::on(QueueManagerListener::ItemStatusUpdated, const QueueItemPtr& aQI) noexcept{
+void QueueFrame::on(QueueManagerListener::ItemStatus, const QueueItemPtr& aQI) noexcept{
+	addGuiTask(TASK_QI_UPDATE, [=] { onQueueItemUpdated(aQI); });
+}
+
+void QueueFrame::on(QueueManagerListener::ItemPriority, const QueueItemPtr& aQI) noexcept {
+	addGuiTask(TASK_QI_UPDATE, [=] { onQueueItemUpdated(aQI); });
+}
+
+void QueueFrame::on(QueueManagerListener::ItemTick, const QueueItemPtr& aQI) noexcept {
 	addGuiTask(TASK_QI_UPDATE, [=] { onQueueItemUpdated(aQI); });
 }
 
@@ -1657,9 +1656,7 @@ tstring QueueFrame::QueueItemInfo::getType() const {
 		if (bundle->isFileBundle()) {
 			return WinUtil::formatFileType(bundle->getTarget());
 		} else {
-			size_t files = 0, folders = 0;
-			QueueManager::getInstance()->getBundleContent(bundle, files, folders);
-			return WinUtil::formatFolderContent(files, folders);
+			return WinUtil::formatFolderContent(QueueManager::getInstance()->getBundleContent(bundle));
 		}
 	} else if (isFilelist()) {
 		return TSTRING(FILE_LIST);
@@ -1707,8 +1704,8 @@ Priority QueueFrame::QueueItemInfo::getPriority() const {
 }
  
 bool QueueFrame::QueueItemInfo::isFinished() const {
-	return bundle ? bundle->isFinished() : 
-		qi ? QueueManager::getInstance()->isFinished(qi) :
+	return bundle ? bundle->isDownloaded() : 
+		qi ? qi->isDownloaded() :
 		isDirectory && getTotalSize() == getFinishedBytes();
 }
 
@@ -1729,44 +1726,10 @@ double QueueFrame::QueueItemInfo::getPercentage() const {
 }
 
 tstring QueueFrame::QueueItemInfo::getStatusString() const {
-	//Yeah, think about these a little more...
 	if (bundle) {
-		switch (bundle->getStatus()) {
-		case Bundle::STATUS_NEW:
-		case Bundle::STATUS_QUEUED: {
-			if (bundle->isPausedPrio())
-				return TSTRING_F(PAUSED_PCT, getPercentage());
-
-			if (bundle->getSpeed() > 0) { // Bundle->isRunning() ?
-				return TSTRING_F(RUNNING_PCT, getPercentage());
-			} else {
-				return TSTRING_F(WAITING_PCT, getPercentage());
-			}
-		}
-		case Bundle::STATUS_DOWNLOAD_FAILED: return Text::toT(bundle->getLastError());
-		case Bundle::STATUS_RECHECK: return TSTRING(RECHECKING);
-		case Bundle::STATUS_DOWNLOADED: return TSTRING(MOVING);
-		case Bundle::STATUS_MOVED: return TSTRING(DOWNLOADED);
-		case Bundle::STATUS_FAILED_MISSING:
-		case Bundle::STATUS_SHARING_FAILED: return Text::toT(bundle->getLastError());
-		case Bundle::STATUS_FINISHED: return TSTRING(FINISHED);
-		case Bundle::STATUS_HASHING: return TSTRING(HASHING);
-		case Bundle::STATUS_HASH_FAILED: return TSTRING(HASH_FAILED);
-		case Bundle::STATUS_HASHED: return TSTRING(HASHING_FINISHED);
-		case Bundle::STATUS_SHARED: return TSTRING(SHARED);
-		default:
-			return Util::emptyStringT;
-		}
-	} else if(qi) {
-		if (qi->isPausedPrio()) 
-			return TSTRING_F(PAUSED_PCT, getPercentage());
-		if (isFinished())
-			return qi->isSet(QueueItem::FLAG_MOVED) ? TSTRING(FINISHED) : TSTRING(MOVING);
-		if (QueueManager::getInstance()->isWaiting(qi)) {
-			return TSTRING_F(WAITING_PCT, getPercentage());
-		} else {
-			return TSTRING_F(RUNNING_PCT, getPercentage());
-		} 
+		return Text::toT(bundle->getStatusString());
+	} else if (qi) {
+		return Text::toT(qi->getStatusString(QueueManager::getInstance()->getDownloadedBytes(qi), QueueManager::getInstance()->isWaiting(qi)));
 	} else if (isDirectory && getTotalSize() != -1) {
 		if (getFinishedBytes() > 0 && getTotalSize() == getFinishedBytes())
 			return TSTRING(FINISHED);
@@ -1779,7 +1742,7 @@ tstring QueueFrame::QueueItemInfo::getSourceString() const {
 	auto size = 0;
 	int online = 0;
 	if (bundle) {
-		if (bundle->isFinished())
+		if (isFinished())
 			return Util::emptyStringT;
 
 		Bundle::SourceList sources = QueueManager::getInstance()->getBundleSources(bundle);
@@ -1789,7 +1752,7 @@ tstring QueueFrame::QueueItemInfo::getSourceString() const {
 				online++;
 		}
 	} else if(qi) {
-		if (qi->isFinished())
+		if (isFinished())
 			return Text::toT(qi->getLastSource());
 
 		QueueItem::SourceList sources = QueueManager::getInstance()->getSources(qi);
@@ -1872,14 +1835,11 @@ int QueueFrame::QueueItemInfo::compareItems(const QueueItemInfo* a, const QueueI
 
 COLORREF QueueFrame::getStatusColor(uint8_t status) {
 	switch (status) {
-	case Bundle::STATUS_NEW: return SETTING(DOWNLOAD_BAR_COLOR);
-	case Bundle::STATUS_QUEUED: return SETTING(DOWNLOAD_BAR_COLOR);
-	case Bundle::STATUS_DOWNLOADED: return SETTING(DOWNLOAD_BAR_COLOR);;
-	case Bundle::STATUS_MOVED: return SETTING(DOWNLOAD_BAR_COLOR);
-	case Bundle::STATUS_FINISHED: return SETTING(COLOR_STATUS_FINISHED);
-	case Bundle::STATUS_HASHED: return SETTING(COLOR_STATUS_FINISHED);
-	case Bundle::STATUS_SHARED: return SETTING(COLOR_STATUS_SHARED);
-	default:
-		return SETTING(DOWNLOAD_BAR_COLOR);
+		case Bundle::STATUS_NEW:
+		case Bundle::STATUS_QUEUED:
+		case Bundle::STATUS_DOWNLOADED: return SETTING(DOWNLOAD_BAR_COLOR);
+		case Bundle::STATUS_COMPLETED: SETTING(COLOR_STATUS_FINISHED);
+		case Bundle::STATUS_SHARED: return SETTING(COLOR_STATUS_SHARED);
+		default: return SETTING(DOWNLOAD_BAR_COLOR);
 	}
 }

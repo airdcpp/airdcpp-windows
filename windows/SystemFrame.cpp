@@ -35,7 +35,7 @@
 #include <airdcpp/modules/AutoSearchManager.h>
 
 #define ICON_SIZE 16
-
+string SystemFrame::id = "SystemLog";
 LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
 	ctrlPad.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
