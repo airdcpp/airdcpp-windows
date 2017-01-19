@@ -86,13 +86,13 @@ namespace webserver {
 				return websocketpp::http::status_code::method_not_allowed;
 			}
 
-			aRequest.setResponseErrorStr("Supplied URL doesn't match any method handler in this API module");
+			aRequest.setResponseErrorStr("The supplied URL doesn't match any method in this API module");
 			return websocketpp::http::status_code::bad_request;
 		}
 
 		// Check permission
 		if (!session->getUser()->hasPermission(handler->access)) {
-			aRequest.setResponseErrorStr("Permission denied");
+			aRequest.setResponseErrorStr("The permission " + WebUser::accessToString(handler->access) + " is required for accessing this method");
 			return websocketpp::http::status_code::forbidden;
 		}
 
