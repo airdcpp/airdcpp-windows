@@ -19,6 +19,7 @@
 #include <web-server/stdinc.h>
 #include <web-server/version.h>
 #include <web-server/ApiRouter.h>
+#include <web-server/JsonUtil.h>
 
 #include <web-server/ApiRequest.h>
 #include <web-server/WebServerManager.h>
@@ -41,7 +42,7 @@ namespace webserver {
 
 	}
 
-	void ApiRouter::handleSocketRequest(const string& aMessage, const websocketpp::http::parser::request& aRequest, WebSocketPtr& aSocket, bool aIsSecure) noexcept {
+	void ApiRouter::handleSocketRequest(const string& aMessage, WebSocketPtr& aSocket, bool aIsSecure) noexcept {
 
 		dcdebug("Received socket request: %s\n", aMessage.c_str());
 		bool authenticated = aSocket->getSession() != nullptr;
@@ -53,18 +54,13 @@ namespace webserver {
 		try {
 			const auto requestJson = json::parse(aMessage);
 
-			auto cb = requestJson.find("callback_id");
-			if (cb != requestJson.end()) {
-				callbackId = cb.value();
-			}
+			callbackId = JsonUtil::getOptionalFieldDefault<int>("callback_id", requestJson, -1);
 
 			const string path = requestJson.at("path");
-			ApiRequest apiRequest(aRequest.get_uri() + path, requestJson.at("method"), responseJsonData, errorJson);
-			apiRequest.parseSocketRequestJson(requestJson);
-			apiRequest.setSession(aSocket->getSession());
+			const auto data = JsonUtil::getOptionalRawField("data", requestJson);
+			const string method = requestJson.at("method");
 
-			apiRequest.validate();
-
+			ApiRequest apiRequest(aSocket->getConnectUrl() + path, method, std::move(data), aSocket->getSession(), responseJsonData, errorJson);
 			code = handleRequest(apiRequest, aIsSecure, aSocket, aSocket->getIp());
 		} catch (const std::exception& e) {
 			errorJson = { 
@@ -75,7 +71,7 @@ namespace webserver {
 		}
 
 		// Send an error also if parsing failed (there's no callback id)
-		if (callbackId > 0 || !errorJson.is_null()) {
+		if (callbackId >= 0 || !errorJson.is_null()) {
 			aSocket->sendApiResponse(responseJsonData, errorJson, code, callbackId);
 		}
 	}
@@ -87,12 +83,9 @@ namespace webserver {
 		auto& requestBody = aRequest.get_body();
 		dcdebug("Received HTTP request: %s\n", aRequest.get_body().c_str());
 		try {
-			ApiRequest apiRequest(aRequestPath, aRequest.get_method(), output_, error_);
-			apiRequest.validate();
+			auto bodyJson = aRequest.get_body().empty() ? json() : json::parse(aRequest.get_body());
 
-			apiRequest.parseHttpRequestJson(requestBody);
-			apiRequest.setSession(aSession);
-
+			ApiRequest apiRequest(aRequestPath, aRequest.get_method(), std::move(bodyJson), aSession, output_, error_);
 			return handleRequest(apiRequest, aIsSecure, nullptr, aIp);
 		} catch (const std::exception& e) {
 			error_ = { 

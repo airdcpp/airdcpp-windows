@@ -17,6 +17,7 @@
 */
 
 #include <web-server/stdinc.h>
+#include <web-server/version.h>
 #include <web-server/ApiRequest.h>
 
 #include <airdcpp/CID.h>
@@ -26,9 +27,15 @@
 #include <airdcpp/Util.h>
 
 namespace webserver {
-	ApiRequest::ApiRequest(const string& aUrl, const string& aMethod, json& output_, json& error_) noexcept : responseJsonData(output_), responseJsonError(error_), methodStr(aMethod) {
-		auto url = aUrl.length() >= 4 && aUrl.compare(0, 4, "/api") == 0 ? aUrl.substr(4) : aUrl;
-		parameters = StringTokenizer<std::string, deque>(url, '/').getTokens();
+	ApiRequest::ApiRequest(const string& aUrl, const string& aMethod, const json& aBody, const SessionPtr& aSession, json& output_, json& error_) :
+		responseJsonData(output_), responseJsonError(error_), methodStr(aMethod), session(aSession), requestJson(aBody)
+	{
+
+		if (aUrl.compare(0, 4, "/api") != 0) {
+			throw std::invalid_argument("Invalid URL path (the path should start with /api/v" + Util::toString(API_VERSION) + "/)");
+		}
+
+		parameters = StringTokenizer<std::string, deque>(aUrl.substr(4), '/').getTokens();
 
 		if (aMethod == "GET") {
 			method = METHOD_GET;
@@ -41,18 +48,8 @@ namespace webserver {
 		} else if (aMethod == "PATCH") {
 			method = METHOD_PATCH;
 		}
-	}
 
-	void ApiRequest::parseHttpRequestJson(const string& aRequestBody) {
-		if (!aRequestBody.empty())
-			requestJson = json::parse(aRequestBody);
-	}
-
-	void ApiRequest::parseSocketRequestJson(const json& aJson) {
-		auto data = aJson.find("data");
-		if (data != aJson.end()) {
-			requestJson = *data;
-		}
+		validate();
 	}
 
 	void ApiRequest::validate() {

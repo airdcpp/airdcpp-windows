@@ -44,9 +44,8 @@ namespace webserver {
 		typedef std::deque<std::string> ParamList;
 		typedef std::map<std::string, std::string> NamedParamMap;
 
-		ApiRequest(const std::string& aUrl, const std::string& aMethod, json& output_, json& error_) noexcept;
-
-		void validate();
+		// Throws on errors
+		ApiRequest(const std::string& aUrl, const std::string& aMethod, const json& aBody, const SessionPtr& aSession, json& output_, json& error_);
 
 		int getApiVersion() const noexcept {
 			return apiVersion;
@@ -83,12 +82,6 @@ namespace webserver {
 		uint32_t getTokenParam(const string& aName = TOKEN_PARAM_ID) const noexcept;
 		int getRangeParam(const string& aName) const noexcept;
 
-		//GETSET(std::string , response, Response);
-		GETSET(SessionPtr, session, Session);
-
-		void parseHttpRequestJson(const std::string& aRequestBody);
-		void parseSocketRequestJson(const json& aJson);
-
 		bool hasRequestBody() const noexcept {
 			return !requestJson.is_null();
 		}
@@ -111,8 +104,15 @@ namespace webserver {
 			responseJsonError = aError;
 		}
 
+		const SessionPtr& getSession() const noexcept {
+			return session;
+		}
+
 		void setNamedParams(const NamedParamMap& aParams) noexcept;
 	private:
+		SessionPtr session;
+		void validate();
+
 		const string methodStr;
 		ParamList parameters;
 		NamedParamMap namedParameters;
@@ -121,7 +121,7 @@ namespace webserver {
 
 		RequestMethod method = METHOD_LAST;
 
-		json requestJson;
+		const json requestJson;
 
 		json& responseJsonData;
 		json& responseJsonError;

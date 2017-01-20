@@ -76,16 +76,19 @@ namespace webserver {
 				return;
 			}
 
-			auto con = aServer->get_con_from_hdl(hdl);
 			onData(msg->get_payload(), TransportType::TYPE_SOCKET, Direction::INCOMING, socket->getIp());
-			api.handleSocketRequest(msg->get_payload(), con->get_request(), socket, aIsSecure);
+			api.handleSocketRequest(msg->get_payload(), socket, aIsSecure);
 		}
 
 		template <typename EndpointType>
 		void on_open_socket(EndpointType* aServer, websocketpp::connection_hdl hdl, bool aIsSecure) {
-			WLock l(cs);
-			auto socket = make_shared<WebSocket>(aIsSecure, hdl, aServer, this);
-			sockets.emplace(hdl, socket);
+			auto con = aServer->get_con_from_hdl(hdl);
+			auto socket = make_shared<WebSocket>(aIsSecure, hdl, con->get_request(), aServer, this);
+
+			{
+				WLock l(cs);
+				sockets.emplace(hdl, socket);
+			}
 		}
 
 		void on_close_socket(websocketpp::connection_hdl hdl);
