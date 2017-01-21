@@ -27,6 +27,7 @@
 
 #include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/QueueManagerListener.h>
+#include <airdcpp/QueueItem.h>
 #include <airdcpp/TaskQueue.h>
 
 #define STATUS_MSG_MAP 19
