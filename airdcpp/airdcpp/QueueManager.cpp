@@ -2156,7 +2156,7 @@ void QueueManager::setQIPriority(QueueItemPtr& q, Priority p, bool aKeepAutoPrio
 
 	if (q->getPriority() != p && !q->isDownloaded()) {
 		WLock l(cs);
-		if((q->isPausedPrio() && !b->isPausedPrio()) || (p == Priority::HIGHEST && b->getPriority() != Priority::PAUSED)) {
+		if((q->isPausedPrio() && !b->isPausedPrio()) || (p == Priority::HIGHEST && b->getPriority() != Priority::PAUSED_FORCE)) {
 			// Problem, we have to request connections to all these users...
 			q->getOnlineUsers(getConn);
 		}
