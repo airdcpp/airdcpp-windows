@@ -40,7 +40,7 @@ namespace webserver {
 		{ PROP_IP, "ip", TYPE_TEXT, SERIALIZE_CUSTOM, SORT_TEXT },
 		{ PROP_FLAGS, "flags", TYPE_LIST_TEXT, SERIALIZE_CUSTOM, SORT_CUSTOM },
 		{ PROP_ENCRYPTION, "encryption", TYPE_TEXT, SERIALIZE_CUSTOM, SORT_TEXT },
-		{ PROP_QUEUE_ID, "queue_id", TYPE_NUMERIC_OTHER, SERIALIZE_CUSTOM, SORT_NUMERIC },
+		{ PROP_QUEUE_ID, "queue_file_id", TYPE_NUMERIC_OTHER, SERIALIZE_CUSTOM, SORT_NUMERIC },
 	};
 
 	const PropertyItemHandler<TransferInfoPtr> TransferUtils::propertyHandler = {

@@ -49,7 +49,7 @@ namespace webserver {
 		// BUNDLES
 
 		// Throws if the bundle is not found
-		BundlePtr getBundle(ApiRequest& aRequest);
+		static BundlePtr getBundle(ApiRequest& aRequest);
 
 		api_return handleAddDirectoryBundle(ApiRequest& aRequest);
 		api_return handleAddFileBundle(ApiRequest& aRequest);
@@ -72,7 +72,7 @@ namespace webserver {
 		// FILES
 
 		// Throws if the file can't be found
-		QueueItemPtr getFile(ApiRequest& aRequest);
+		static QueueItemPtr getFile(ApiRequest& aRequest, bool aRequireBundle);
 
 		api_return handleGetFile(ApiRequest& aRequest);
 		api_return handleRemoveFile(ApiRequest& aRequest);
@@ -84,7 +84,10 @@ namespace webserver {
 		api_return handleSearchFile(ApiRequest& aRequest);
 
 		api_return handleGetFileSegments(ApiRequest& aRequest);
+		api_return handleAddFileSegment(ApiRequest& aRequest);
+		api_return handleRemoveFileSegment(ApiRequest& aRequest);
 		static json serializeSegment(const Segment& aSegment) noexcept;
+		static Segment parseSegment(const QueueItemPtr& aQI, ApiRequest& aRequest);
 
 		// Bundle update listeners
 		void on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle) noexcept override;
