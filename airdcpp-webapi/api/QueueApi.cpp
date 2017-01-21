@@ -77,11 +77,15 @@ namespace webserver {
 		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_POST,	(EXACT_PARAM("bundles"), TOKEN_PARAM, EXACT_PARAM("share")),			QueueApi::handleShareBundle);
 
 		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_POST,	(EXACT_PARAM("files"), TOKEN_PARAM, EXACT_PARAM("search")),				QueueApi::handleSearchFile);
-		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_POST,		(EXACT_PARAM("files"), TOKEN_PARAM, EXACT_PARAM("priority")),			QueueApi::handleFilePriority);
+		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_POST,	(EXACT_PARAM("files"), TOKEN_PARAM, EXACT_PARAM("priority")),			QueueApi::handleFilePriority);
+		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_POST,	(EXACT_PARAM("files"), TOKEN_PARAM, EXACT_PARAM("remove")),				QueueApi::handleRemoveFile);
+
+		METHOD_HANDLER(Access::QUEUE_VIEW,	METHOD_GET,		(EXACT_PARAM("files"), TOKEN_PARAM, EXACT_PARAM("sources")),			QueueApi::handleGetFileSources);
+		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_DELETE,	(EXACT_PARAM("files"), TOKEN_PARAM, EXACT_PARAM("sources"), CID_PARAM),	QueueApi::handleRemoveFileSource);
+
+		METHOD_HANDLER(Access::QUEUE_VIEW,	METHOD_GET,		(EXACT_PARAM("files"), TOKEN_PARAM, EXACT_PARAM("segments")),			QueueApi::handleGetFileSegments);
 
 		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_DELETE,	(EXACT_PARAM("sources"), CID_PARAM),									QueueApi::handleRemoveSource);
-
-		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_POST,	(EXACT_PARAM("remove_file")),											QueueApi::handleRemoveTarget);
 		METHOD_HANDLER(Access::ANY,			METHOD_POST,	(EXACT_PARAM("find_dupe_paths")),										QueueApi::handleFindDupePaths);
 	}
 
@@ -347,6 +351,28 @@ namespace webserver {
 		return websocketpp::http::status_code::no_content;
 	}
 
+	api_return QueueApi::handleGetFileSegments(ApiRequest& aRequest) {
+		auto qi = getFile(aRequest);
+
+		vector<Segment> running, downloaded, done;
+		QueueManager::getInstance()->getChunksVisualisation(qi, running, downloaded, done);
+
+		aRequest.setResponseBody({
+			{ "block_size", qi->getBlockSize() },
+			{ "running", Serializer::serializeList(running, serializeSegment) },
+			{ "progress", Serializer::serializeList(downloaded, serializeSegment) },
+			{ "done", Serializer::serializeList(done, serializeSegment) },
+		});
+		return websocketpp::http::status_code::ok;
+	}
+
+	json QueueApi::serializeSegment(const Segment& aSegment) noexcept {
+		return {
+			{ "start", aSegment.getStart() },
+			{ "size", aSegment.getSize() },
+		};
+	}
+
 	api_return QueueApi::handleFilePriority(ApiRequest& aRequest) {
 		auto qi = getFile(aRequest);
 		auto priority = Deserializer::deserializePriority(aRequest.getRequestBody(), true);
@@ -368,14 +394,35 @@ namespace webserver {
 		return websocketpp::http::status_code::ok;
 	}
 
-	api_return QueueApi::handleRemoveTarget(ApiRequest& aRequest) {
+	api_return QueueApi::handleRemoveFile(ApiRequest& aRequest) {
 		auto removeFinished = JsonUtil::getOptionalFieldDefault<bool>("remove_finished", aRequest.getRequestBody(), false);
-		auto path = JsonUtil::getField<string>("target", aRequest.getRequestBody(), false);
-		if (!QueueManager::getInstance()->removeFile(path, removeFinished)) {
-			aRequest.setResponseErrorStr("File not found");
-			return websocketpp::http::status_code::bad_request;
+
+		auto qi = getFile(aRequest);
+		QueueManager::getInstance()->removeFile(qi->getTarget(), removeFinished);
+		return websocketpp::http::status_code::no_content;
+	}
+
+	api_return QueueApi::handleGetFileSources(ApiRequest& aRequest) {
+		auto qi = getFile(aRequest);
+		auto sources = QueueManager::getInstance()->getSources(qi);
+
+		auto ret = json::array();
+		for (const auto& s : sources) {
+			ret.push_back({
+				{ "user", Serializer::serializeHintedUser(s.getUser()) },
+				{ "last_speed", s.getUser().user->getSpeed() },
+			});
 		}
 
+		aRequest.setResponseBody(ret);
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return QueueApi::handleRemoveFileSource(ApiRequest& aRequest) {
+		auto qi = getFile(aRequest);
+		auto user = Deserializer::getUser(aRequest.getCIDParam(), false);
+
+		QueueManager::getInstance()->removeFileSource(qi, user, QueueItem::Source::FLAG_REMOVED);
 		return websocketpp::http::status_code::no_content;
 	}
 

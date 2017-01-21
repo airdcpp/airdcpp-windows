@@ -32,6 +32,9 @@
 #include <api/QueueBundleUtils.h>
 #include <api/QueueFileUtils.h>
 
+namespace dcpp {
+	class Segment;
+}
 
 namespace webserver {
 	class QueueApi : public SubscribableApiModule, private QueueManagerListener, private DownloadManagerListener {
@@ -43,7 +46,10 @@ namespace webserver {
 		api_return handleRemoveSource(ApiRequest& aRequest);
 
 		api_return handleRemoveBundle(ApiRequest& aRequest);
-		api_return handleRemoveTarget(ApiRequest& aRequest);
+
+		api_return handleRemoveFile(ApiRequest& aRequest);
+		api_return handleGetFileSources(ApiRequest& aRequest);
+		api_return handleRemoveFileSource(ApiRequest& aRequest);
 
 		api_return handleGetBundles(ApiRequest& aRequest);
 		api_return handleGetBundleFiles(ApiRequest& aRequest);
@@ -66,6 +72,10 @@ namespace webserver {
 
 		api_return handleFilePriority(ApiRequest& aRequest);
 		api_return handleSearchFile(ApiRequest& aRequest);
+
+		api_return handleGetFileSegments(ApiRequest& aRequest);
+
+		static json serializeSegment(const Segment& aSegment) noexcept;
 
 		// Throws if the bundle is not found
 		BundlePtr getBundle(ApiRequest& aRequest);
