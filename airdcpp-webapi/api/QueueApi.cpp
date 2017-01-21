@@ -71,13 +71,13 @@ namespace webserver {
 
 		METHOD_HANDLER(Access::QUEUE_VIEW,	METHOD_GET,		(EXACT_PARAM("bundles"), TOKEN_PARAM),									QueueApi::handleGetBundle);
 		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_POST,	(EXACT_PARAM("bundles"), TOKEN_PARAM, EXACT_PARAM("remove")),			QueueApi::handleRemoveBundle);
-		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_PATCH,	(EXACT_PARAM("bundles"), TOKEN_PARAM),									QueueApi::handleUpdateBundle);
+		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_POST,	(EXACT_PARAM("bundles"), TOKEN_PARAM, EXACT_PARAM("priority")),			QueueApi::handleBundlePriority);
 
 		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_POST,	(EXACT_PARAM("bundles"), TOKEN_PARAM, EXACT_PARAM("search")),			QueueApi::handleSearchBundle);
 		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_POST,	(EXACT_PARAM("bundles"), TOKEN_PARAM, EXACT_PARAM("share")),			QueueApi::handleShareBundle);
 
 		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_POST,	(EXACT_PARAM("files"), TOKEN_PARAM, EXACT_PARAM("search")),				QueueApi::handleSearchFile);
-		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_PATCH,	(EXACT_PARAM("files"), TOKEN_PARAM),									QueueApi::handleUpdateFile);
+		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_POST,		(EXACT_PARAM("files"), TOKEN_PARAM, EXACT_PARAM("priority")),			QueueApi::handleFilePriority);
 
 		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_DELETE,	(EXACT_PARAM("sources"), CID_PARAM),									QueueApi::handleRemoveSource);
 
@@ -339,50 +339,26 @@ namespace webserver {
 		return websocketpp::http::status_code::no_content;
 	}
 
-	api_return QueueApi::handleUpdateBundle(ApiRequest& aRequest) {
+	api_return QueueApi::handleBundlePriority(ApiRequest& aRequest) {
 		auto b = getBundle(aRequest);
-		const auto& reqJson = aRequest.getRequestBody();
+		auto priority = Deserializer::deserializePriority(aRequest.getRequestBody(), true);
 
-		// Priority
-		if (reqJson.find("priority") != reqJson.end()) {
-			QueueManager::getInstance()->setBundlePriority(b, Deserializer::deserializePriority(reqJson, false));
-		}
-
-		if (reqJson.find("auto_priority") != reqJson.end()) {
-			auto autoPrio = JsonUtil::getField<bool>("auto_priority", reqJson);
-			if (autoPrio != b->getAutoPriority()) {
-				QueueManager::getInstance()->toggleBundleAutoPriority(b);
-			}
-		}
-
-		aRequest.setResponseBody(Serializer::serializeItem(b, QueueBundleUtils::propertyHandler));
-		return websocketpp::http::status_code::ok;
+		QueueManager::getInstance()->setBundlePriority(b, priority);
+		return websocketpp::http::status_code::no_content;
 	}
 
-	api_return QueueApi::handleUpdateFile(ApiRequest& aRequest) {
+	api_return QueueApi::handleFilePriority(ApiRequest& aRequest) {
 		auto qi = getFile(aRequest);
-		const auto& reqJson = aRequest.getRequestBody();
+		auto priority = Deserializer::deserializePriority(aRequest.getRequestBody(), true);
 
-		// Priority
-		if (reqJson.find("priority") != reqJson.end()) {
-			QueueManager::getInstance()->setQIPriority(qi, Deserializer::deserializePriority(reqJson, false));
-		}
-
-		if (reqJson.find("auto_priority") != reqJson.end()) {
-			auto autoPrio = JsonUtil::getField<bool>("auto_priority", reqJson);
-			if (autoPrio != qi->getAutoPriority()) {
-				QueueManager::getInstance()->setQIAutoPriority(qi->getTarget());
-			}
-		}
-
-		aRequest.setResponseBody(Serializer::serializeItem(qi, QueueFileUtils::propertyHandler));
-		return websocketpp::http::status_code::ok;
+		QueueManager::getInstance()->setQIPriority(qi, priority);
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return QueueApi::handleSearchFile(ApiRequest& aRequest) {
 		auto qi = getFile(aRequest);
 		qi->searchAlternates();
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	// FILES (COMMON)

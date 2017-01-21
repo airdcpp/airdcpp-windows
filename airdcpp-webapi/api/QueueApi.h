@@ -59,12 +59,12 @@ namespace webserver {
 		api_return handleGetBundleSources(ApiRequest& aRequest);
 		api_return handleRemoveBundleSource(ApiRequest& aRequest);
 
-		api_return handleUpdateBundle(ApiRequest& aRequest);
+		api_return handleBundlePriority(ApiRequest& aRequest);
 
 		api_return handleSearchBundle(ApiRequest& aRequest);
 		api_return handleShareBundle(ApiRequest& aRequest);
 
-		api_return handleUpdateFile(ApiRequest& aRequest);
+		api_return handleFilePriority(ApiRequest& aRequest);
 		api_return handleSearchFile(ApiRequest& aRequest);
 
 		// Throws if the bundle is not found
