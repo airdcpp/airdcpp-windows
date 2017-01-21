@@ -25,6 +25,7 @@
 #include "FilteredListViewCtrl.h"
 #include "BrowserBar.h"
 
+#include <airdcpp/Bundle.h>
 #include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/QueueManagerListener.h>
 #include <airdcpp/QueueItem.h>
