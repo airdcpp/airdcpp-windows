@@ -1,3 +1,23 @@
+3.40
+
+Added:
+
+- New Web API version: http://apidocs.airdcpp.net
+
+Changed:
+
+- Don't queue new background searches if the search queue is too long
+
+Fixed:
+
+- 
+
+Removed:
+
+- Option to hash finished bundle files
+- Option to add finished finished bundles in share instantly (always shared instantly from now on when inside a shared directory)
+
+
 3.30
 
 Added:
