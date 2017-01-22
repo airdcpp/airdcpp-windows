@@ -24,6 +24,8 @@ Fixed:
 - Fix removing finished bundles with files leaving empty directories
 - Fix possible crash with magnet links
 - Fix possible crashes when closing or reconnecting hub sessions
+- Improve validation of incoming NMDC messages
+- Fix paused file priorities not always working correctly
 
 Removed:
 
