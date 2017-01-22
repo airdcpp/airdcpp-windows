@@ -1467,12 +1467,8 @@ void DirectoryListingFrame::handleDownload(const string& aTarget, Priority aPrio
 
 void DirectoryListingFrame::handleViewAsText() {
 	handleItemAction(false, [this](const ItemInfo* ii) {
-		try {
-			if (ii->type == ItemInfo::FILE) {
-				dl->viewAsText(ii->file);
-			}
-		} catch (const Exception& e) {
-			ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
+		if (ii->type == ItemInfo::FILE) {
+			dl->viewAsText(ii->file);
 		}
 	});
 }

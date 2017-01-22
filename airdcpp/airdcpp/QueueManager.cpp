@@ -1394,7 +1394,7 @@ void QueueManager::matchListing(const DirectoryListing& dl, int& matchingFiles_,
 	newFiles_ = addSources(dl.getHintedUser(), matchingItems, QueueItem::Source::FLAG_FILE_NOT_AVAILABLE, bundles_);
 }
 
-bool QueueManager::getQueueInfo(const HintedUser& aUser, string& aTarget, int64_t& aSize, int& aFlags, QueueToken& bundleToken) noexcept {
+QueueItemPtr QueueManager::getQueueInfo(const HintedUser& aUser) noexcept {
 	OrderedStringSet hubs;
 	hubs.insert(aUser.hint);
 
@@ -1410,17 +1410,7 @@ bool QueueManager::getQueueInfo(const HintedUser& aUser, string& aTarget, int64_
 		qi = userQueue.getNext(aUser, runningBundles, hubs, lastError_, hasDownload);
 	}
 
-	if (!qi)
-		return false;
-
-	aTarget = qi->getTarget();
-	aSize = qi->getSize();
-	aFlags = qi->getFlags();
-	if (qi->getBundle()) {
-		bundleToken = qi->getBundle()->getToken();
-	}
-
-	return true;
+	return qi;
 }
 
 void QueueManager::toggleSlowDisconnectBundle(QueueToken aBundleToken) noexcept {
@@ -2060,7 +2050,7 @@ void QueueManager::setBundlePriority(BundlePtr& aBundle, Priority p, bool aKeepA
 
 	aBundle->setDirty();
 
-	if(p == Priority::PAUSED_FORCE) {
+	if (p == Priority::PAUSED_FORCE) {
 		DownloadManager::getInstance()->disconnectBundle(aBundle);
 	} else if (oldPrio <= Priority::LOWEST) {
 		connectBundleSources(aBundle);
@@ -2166,7 +2156,7 @@ void QueueManager::setQIPriority(QueueItemPtr& q, Priority p, bool aKeepAutoPrio
 
 	if (q->getPriority() != p && !q->isDownloaded()) {
 		WLock l(cs);
-		if((q->isPausedPrio() && !b->isPausedPrio()) || (p == Priority::HIGHEST && b->getPriority() != Priority::PAUSED)) {
+		if((q->isPausedPrio() && !b->isPausedPrio()) || (p == Priority::HIGHEST && b->getPriority() != Priority::PAUSED_FORCE)) {
 			// Problem, we have to request connections to all these users...
 			q->getOnlineUsers(getConn);
 		}
@@ -2182,9 +2172,9 @@ void QueueManager::setQIPriority(QueueItemPtr& q, Priority p, bool aKeepAutoPrio
 	fire(QueueManagerListener::ItemPriority(), q);
 
 	b->setDirty();
-	if(p == Priority::PAUSED && running) {
+	if (p == Priority::PAUSED_FORCE && running) {
 		DownloadManager::getInstance()->abortDownload(q->getTarget());
-	} else if (p != Priority::PAUSED) {
+	} else if (!q->isPausedPrio()) {
 		for(auto& u: getConn)
 			ConnectionManager::getInstance()->getDownloadConnection(u);
 	}
@@ -2419,7 +2409,7 @@ Priority QueueLoader::validatePrio(const string& aPrio) {
 
 void QueueLoader::createFile(QueueItemPtr& aQI, bool aAddedByAutosearch) {
 	if (ConnectionManager::getInstance()->tokens.addToken(Util::toString(curToken), CONNECTION_TYPE_DOWNLOAD)) {
-		curBundle = new Bundle(aQI, bundleDate, curToken, false);
+		curBundle = Bundle::createFileBundle(aQI, bundleDate, curToken, false);
 		curBundle->setTimeFinished(aQI->getTimeFinished());
 		curBundle->setAddedByAutoSearch(aAddedByAutosearch);
 		curBundle->setResumeTime(resumeTime);
@@ -2462,7 +2452,7 @@ void QueueLoader::startTag(const string& name, StringPairList& attribs, bool sim
 		time_t b_resumeTime = static_cast<time_t>(Util::toInt64(getAttrib(attribs, sResumeTime, 5)));
 
 		if (ConnectionManager::getInstance()->tokens.addToken(token, CONNECTION_TYPE_DOWNLOAD)) {
-			curBundle = new Bundle(bundleTarget, added, !prio.empty() ? validatePrio(prio) : Priority::DEFAULT, dirDate, Util::toUInt32(token), false);
+			curBundle = make_shared<Bundle>(bundleTarget, added, !prio.empty() ? validatePrio(prio) : Priority::DEFAULT, dirDate, Util::toUInt32(token), false);
 			time_t finished = static_cast<time_t>(Util::toInt64(getAttrib(attribs, sTimeFinished, 5)));
 			if (finished > 0) {
 				curBundle->setTimeFinished(finished);
@@ -2525,7 +2515,7 @@ void QueueLoader::startTag(const string& name, StringPairList& attribs, bool sim
 					qm->bundleQueue.addBundleItem(qi, curBundle);
 				} else if (inDownloads) {
 					//assign bundles for the items in the old queue file
-					curBundle = new Bundle(qi, 0);
+					curBundle = Bundle::createFileBundle(qi, 0);
 				} else if (inFile && curToken != 0) {
 					createFile(qi, addedByAutosearch);
 				}
@@ -2679,7 +2669,7 @@ void QueueManager::on(SearchManagerListener::SR, const SearchResultPtr& sr) noex
 		{
 			WLock l(cs);
 			auto& rl = searchResults[selQI->getTarget()];
-			if (find_if(rl, [&sr](const SearchResultPtr& aSR) { return aSR->getUser() == sr->getUser() && aSR->getPath() == sr->getPath(); }) != rl.end()) {
+			if (boost::find_if(rl, [&sr](const SearchResultPtr& aSR) { return aSR->getUser() == sr->getUser() && aSR->getPath() == sr->getPath(); }) != rl.end()) {
 				//don't add the same result multiple times, makes the counting more reliable
 				return;
 			}
@@ -3134,7 +3124,7 @@ bool QueueManager::handlePartialResult(const HintedUser& aUser, const TTHValue& 
 				si = qi->getSource(aUser);
 				si->setFlag(QueueItem::Source::FLAG_PARTIAL);
 
-				auto ps = new QueueItem::PartialSource(partialSource.getMyNick(),
+				auto ps = make_shared<QueueItem::PartialSource>(partialSource.getMyNick(),
 					partialSource.getHubIpPort(), partialSource.getIp(), partialSource.getUdpPort());
 				si->setPartialSource(ps);
 
@@ -3619,8 +3609,7 @@ void QueueManager::removeBundle(BundlePtr& aBundle, bool aRemoveFinishedFiles) n
 	for_each(deleteFiles.begin(), deleteFiles.end(), &File::deleteFile);
 
 	// An empty directory should be deleted even if finished files are not being deleted (directories are created even for temp files)
-	// Avoid disk access when cleaning up finished bundles
-	if (!aBundle->isFileBundle()) {
+	if (!aBundle->isFileBundle() && (aRemoveFinishedFiles || !isCompleted)) { // IMPORTANT: avoid disk access when cleaning up finished bundles so don't remove the finished check
 		AirUtil::removeDirectoryIfEmpty(aBundle->getTarget(), 10, !aRemoveFinishedFiles);
 	}
 

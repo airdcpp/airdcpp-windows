@@ -702,19 +702,18 @@ void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueIte
 
 	auto ui = new UpdateInfo(aCqi->getToken(), aCqi->getConnType() == CONNECTION_TYPE_DOWNLOAD);
 	if(ui->download) {
-		QueueToken bundleToken = 0;
-		string aTarget; int64_t aSize; int aFlags;
-		if(QueueManager::getInstance()->getQueueInfo(aCqi->getUser(), aTarget, aSize, aFlags, bundleToken)) {
+		auto qi = QueueManager::getInstance()->getQueueInfo(aCqi->getUser());
+		if (qi) {
 			auto type = Transfer::TYPE_FILE;
-			if(aFlags & QueueItem::FLAG_USER_LIST)
+			if(qi->getFlags() & QueueItem::FLAG_USER_LIST)
 				type = Transfer::TYPE_FULL_LIST;
-			else if(aFlags & QueueItem::FLAG_PARTIAL_LIST)
+			else if(qi->getFlags() & QueueItem::FLAG_PARTIAL_LIST)
 				type = Transfer::TYPE_PARTIAL_LIST;
 			
 			ui->setType(type);
-			ui->setTarget(Text::toT(aTarget));
-			ui->setSize(aSize);
-			ui->setBundle(bundleToken);
+			ui->setTarget(Text::toT(qi->getTarget()));
+			ui->setSize(qi->getSize());
+			ui->setBundle(qi->getBundle() ? qi->getBundle()->getToken() : 0);
 		}
 	}
 
@@ -735,21 +734,19 @@ void TransferView::on(ConnectionManagerListener::Forced, const ConnectionQueueIt
 }
 
 void TransferView::onUpdateFileInfo(const HintedUser& aUser, const string& aToken, bool updateStatus) {
-	QueueToken bundleToken = 0;
-	string aTarget;
-	int64_t aSize; int aFlags = 0;
-	if(QueueManager::getInstance()->getQueueInfo(aUser, aTarget, aSize, aFlags, bundleToken)) {
+	auto qi = QueueManager::getInstance()->getQueueInfo(aUser);
+	if (qi) {
 		auto ui = new UpdateInfo(aToken, true);
 		auto type = Transfer::TYPE_FILE;
-		if(aFlags & QueueItem::FLAG_USER_LIST)
+		if (qi->getFlags() & QueueItem::FLAG_USER_LIST)
 			type = Transfer::TYPE_FULL_LIST;
-		else if(aFlags & QueueItem::FLAG_PARTIAL_LIST)
+		else if(qi->getFlags() & QueueItem::FLAG_PARTIAL_LIST)
 			type = Transfer::TYPE_PARTIAL_LIST;
 	
 		ui->setType(type);
-		ui->setTarget(Text::toT(aTarget));
-		ui->setSize(aSize);
-		ui->setBundle(bundleToken);
+		ui->setTarget(Text::toT(qi->getTarget()));
+		ui->setSize(qi->getSize());
+		ui->setBundle(qi->getBundle() ? qi->getBundle()->getToken() : 0);
 		if (updateStatus) {
 			ui->setStatusString(TSTRING(CONNECTING));
 			ui->setStatus(ItemInfo::STATUS_WAITING);

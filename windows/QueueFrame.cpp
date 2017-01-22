@@ -593,10 +593,10 @@ void QueueFrame::AppendTreeMenu(BundleList& bl, QueueItemList& ql, OMenu& aMenu)
 
 		if (curSel == TREE_FAILED) {
 			aMenu.appendItem(TSTRING(RESCAN_BUNDLE), [=] {
-				for_each(bl, [&](BundlePtr b) { QueueManager::getInstance()->shareBundle(b, false); });
+				boost::for_each(bl, [&](const BundlePtr& b) { QueueManager::getInstance()->shareBundle(b, false); });
 			}, OMenu::FLAG_THREADED);
 			aMenu.appendItem(TSTRING(FORCE_SHARING), [=] { 
-				for_each(bl, [&](BundlePtr b) { QueueManager::getInstance()->shareBundle(b, true); }); 
+				boost::for_each(bl, [&](const BundlePtr& b) { QueueManager::getInstance()->shareBundle(b, true); });
 			}, OMenu::FLAG_THREADED);
 			aMenu.appendSeparator();
 		}
@@ -1108,8 +1108,8 @@ void QueueFrame::insertItems(QueueItemInfoPtr Qii) {
 		Qii->childrenCreated = true;
 		{
 			RLock l(QueueManager::getInstance()->getCS());
-			for_each(aBundle->getQueueItems(), [&](QueueItemPtr& qi) { Qii->addChild(qi); });
-			for_each(aBundle->getFinishedFiles(), [&](QueueItemPtr& qi) { Qii->addChild(qi); });
+			boost::for_each(aBundle->getQueueItems(), [&](const QueueItemPtr& qi) { Qii->addChild(qi); });
+			boost::for_each(aBundle->getFinishedFiles(), [&](const QueueItemPtr& qi) { Qii->addChild(qi); });
 		}
 	}
 

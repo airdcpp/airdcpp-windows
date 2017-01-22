@@ -30,7 +30,6 @@
 #include "HubSettings.h"
 #include "MessageCache.h"
 #include "OnlineUser.h"
-#include "Pointer.h"
 #include "SearchQueue.h"
 #include "Speaker.h"
 
@@ -76,6 +75,7 @@ public:
 	optional<uint64_t> queueSearch(const SearchPtr& aSearch) noexcept;
 	optional<uint64_t> getQueueTime(const void* aOwner) const noexcept;
 	bool cancelSearch(const void* aOwner) noexcept { return searchQueue.cancelSearch(aOwner); }
+	int getSearchQueueSize() const noexcept { return searchQueue.getQueueSize(); }
 	
 	virtual void password(const string& pwd) noexcept = 0;
 	void info();

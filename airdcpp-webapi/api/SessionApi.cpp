@@ -108,7 +108,7 @@ namespace webserver {
 		}
 
 		aRequest.setResponseBody({
-			{ "token", session->getAuthToken() },
+			{ "auth_token", session->getAuthToken() },
 			{ "user", Serializer::serializeItem(session->getUser(), WebUserUtils::propertyHandler) },
 			{ "system_info", SystemApi::getSystemInfo() },
 			{ "wizard_pending", SETTING(WIZARD_PENDING) },
@@ -123,7 +123,7 @@ namespace webserver {
 			return websocketpp::http::status_code::bad_request;
 		}
 
-		auto sessionToken = JsonUtil::getField<string>("authorization", aRequest.getRequestBody(), false);
+		auto sessionToken = JsonUtil::getField<string>("auth_token", aRequest.getRequestBody(), false);
 
 		auto session = WebServerManager::getInstance()->getUserManager().getSession(sessionToken);
 		if (!session) {
