@@ -37,6 +37,7 @@ LRESULT TabbedDialog::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 		i++;
 	}
 	cTab.SetCurSel(0);
+	::SetWindowText(GetDlgItem(IDCANCEL), CTSTRING(CANCEL));
 
 	CenterWindow(GetParent());
 	SetWindowText(Text::toT(wTitle).c_str());

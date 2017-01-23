@@ -52,7 +52,6 @@ LRESULT RssFeedsPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	setMinMax(IDC_RSS_INT_SPIN, 10, 999);
 	ctrlInterval.SetWindowText(_T("60"));
 
-	::SetWindowText(GetDlgItem(IDCANCEL), CTSTRING(CANCEL));
 	::SetWindowText(GetDlgItem(IDC_RSS_GROUP_TEXT), CTSTRING(RSS_CONFIG));
 	::SetWindowText(GetDlgItem(IDC_RSS_ENABLE), CTSTRING(ENABLE_RSS));
 
@@ -91,8 +90,13 @@ bool RssFeedsPage::write() {
 	auto interval = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlInterval)));
 	auto enabled = IsDlgButtonChecked(IDC_RSS_ENABLE) ? true : false;
 
-	if (url.empty() || feedname.empty()) {
-		MessageBox(_T("URL and Name must not be empty"));
+	if (url.empty()) {
+		MessageBox(CTSTRING(URL_REQUIRED));
+		return false;
+	}
+
+	if (feedname.empty()) {
+		MessageBox(CTSTRING(NAME_REQUIRED));
 		return false;
 	}
 
@@ -103,7 +107,7 @@ bool RssFeedsPage::write() {
 	}
 	feed = RSSManager::getInstance()->getFeedByUrl(url);
 	if (feed && feed != feedItem) {
-		MessageBox(_T("An item with the same Url already exists"));
+		MessageBox(CTSTRING(ITEM_URL_EXISTS));
 		return false;
 	}
 

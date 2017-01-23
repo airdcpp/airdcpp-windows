@@ -67,6 +67,7 @@ LRESULT RssFilterPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	::SetWindowText(GetDlgItem(IDC_GROUP_LABEL), CTSTRING(AUTOSEARCH_GROUP));
 	::SetWindowText(GetDlgItem(IDC_SKIP_DUPES), CTSTRING(SKIP_DUPES));
 	::SetWindowText(GetDlgItem(IDC_RSS_FILTER_ACTION_TEXT), CTSTRING(ACTION));
+	::SetWindowText(GetDlgItem(IDC_RSS_BROWSE), CTSTRING(BROWSE));
 
 
 	::EnableWindow(GetDlgItem(IDC_FILTER_REMOVE), false);
@@ -344,7 +345,7 @@ bool RssFilterPage::update() {
 bool RssFilterPage::validateSettings(const string& aPattern) {
 
 	if (aPattern.empty()) {
-		MessageBox(_T("Pattern empty"));
+		MessageBox(CTSTRING(PATTERN_EMPTY));
 		return false;
 	}
 
@@ -355,7 +356,7 @@ bool RssFilterPage::validateSettings(const string& aPattern) {
 	}) != filterList.end();
 
 	if (exists) {
-		MessageBox(_T("An item with the same pattern already exists"));
+		MessageBox(CTSTRING(PATTERN_EXISTS));
 		return false;
 	}
 
