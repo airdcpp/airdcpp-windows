@@ -143,6 +143,7 @@ enum Strings { // @DontAdd
 	BUNDLE_X_QUEUED, // "%1% (queued)"
 	BUNDLE_X_REMOVED,  // "The bundle %1% has been removed from the queue"
 	BUNDLE_X_SHARED, // "The bundle %1% has been added in share"
+	BUNDLE_X_FINISHED_WARNING, // "There are %1% finished bundles in queue, please consider removing some of the bundles"
 	CANCEL, // "Cancel"
 	CANT_OPEN_EMPTY_FILE, // "A zero-byte file can't be opened"
 	CANT_OPEN_SFV, // "Failed to open the SFV file"

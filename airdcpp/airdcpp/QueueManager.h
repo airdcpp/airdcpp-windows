@@ -330,6 +330,7 @@ public:
 	int getUnfinishedItemCount(const BundlePtr& aBundle) const noexcept;
 	int getFinishedItemCount(const BundlePtr& aBundle) const noexcept;
 
+	int getFinishedBundlesCount() const noexcept;
 
 	// Check if there are finished chuncks for the TTH
 	// Gets various information about the actual file and the length of downloaded segment

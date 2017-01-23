@@ -44,6 +44,7 @@
 #include "version.h"
 
 #include <boost/range/algorithm/copy.hpp>
+#include <boost/range/algorithm/count_if.hpp>
 
 #ifdef _WIN32
 #include <mmsystem.h>
@@ -2361,6 +2362,11 @@ void QueueManager::loadQueue(function<void (float)> progressF) noexcept {
 	SearchManager::getInstance()->addListener(this);
 	ClientManager::getInstance()->addListener(this);
 	ShareManager::getInstance()->addListener(this);
+
+	auto finished_count = getFinishedBundlesCount();
+	if (finished_count > 500)
+		LogManager::getInstance()->message(STRING_F(BUNDLE_X_FINISHED_WARNING, finished_count), LogMessage::SEV_WARNING);
+
 }
 
 static const string sFile = "File";
@@ -3457,6 +3463,12 @@ int QueueManager::getUnfinishedItemCount(const BundlePtr& aBundle) const noexcep
 int QueueManager::getFinishedItemCount(const BundlePtr& aBundle) const noexcept { 
 	RLock l(cs); 
 	return (int)aBundle->getFinishedFiles().size(); 
+}
+
+int QueueManager::getFinishedBundlesCount() const noexcept {
+
+	RLock l(cs);
+	return boost::count_if(getBundles() | map_values, [&](const BundlePtr& b) { return b->isDownloaded(); });
 }
 
 void QueueManager::addBundleUpdate(const BundlePtr& aBundle) noexcept{

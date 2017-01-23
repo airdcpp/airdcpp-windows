@@ -1343,6 +1343,14 @@ void QueueFrame::updateStatus() {
 		
 		if (ctrlStatus.IsWindow()) {
 
+			if (finishedBundles > 500) {
+				ctrlStatus.SetText(1, CTSTRING_F(BUNDLE_X_FINISHED_WARNING, finishedBundles));
+				ctrlStatus.SetIcon(1, ResourceLoader::getSeverityIcon(LogMessage::SEV_WARNING));
+			} else {
+				ctrlStatus.SetText(1, _T(""));
+				ctrlStatus.SetIcon(1, NULL);
+			}
+
 			tstring tmp = TSTRING(FINISHED_BUNDLES) + _T(": ") + Util::toStringW(finishedBundles);
 			int w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
 			if (statusSizes[1] < w) {
