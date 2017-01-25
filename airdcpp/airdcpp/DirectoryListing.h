@@ -262,7 +262,7 @@ public:
 
 	void setRead() noexcept;
 
-	void addDirectoryChangeTask(const string& aPath, bool aReload, bool aIsSearchChange = false) noexcept;
+	void addDirectoryChangeTask(const string& aPath, bool aReload, bool aIsSearchChange = false, bool aForceQueue = false) noexcept;
 protected:
 	void onStateChanged() noexcept;
 
@@ -274,7 +274,7 @@ private:
 	Directory::Ptr createBaseDirectory(const string& aPath, time_t aDownloadDate = GET_TIME()) noexcept;
 
 	// Returns false if the directory was not found from the list
-	bool changeDirectory(const string& aPath, bool aReload, bool aIsSearchChange = false) noexcept;
+	bool changeDirectory(const string& aPath, bool aReload, bool aIsSearchChange = false, bool aForceQueue = false) noexcept;
 
 	void setShareProfile(ProfileToken aProfile) noexcept;
 	void setHubUrl(const string& aHubUrl) noexcept;

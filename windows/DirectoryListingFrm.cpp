@@ -59,39 +59,45 @@ string DirectoryListingFrame::id = "FileList";
 
 void DirectoryListingFrame::openWindow(const DirectoryListingPtr& aList, const string& aDir, const string& aXML) {
 
-	HWND aHWND = NULL;
-	DirectoryListingFrame* frame = new DirectoryListingFrame(aList);
-	if(!frame->allowPopup()) {
-		aHWND = WinUtil::hiddenCreateEx(frame);
-	} else {
-		aHWND = frame->CreateEx(WinUtil::mdiClient);
-	}
-
-	if (aHWND != 0) {
-		if (aList->getPartialList()) {
-			aList->addPartialListTask(aXML, aDir);
+	DirectoryListingFrame* frame;
+	auto f = find_if(frames | map_values, [aList](const DirectoryListingFrame* h) { return aList->getUser() == h->dl->getUser(); }).base();
+	if (f == frames.end()) {
+		frame = new DirectoryListingFrame(aList);
+		if (!frame->allowPopup()) {
+			WinUtil::hiddenCreateEx(frame);
 		} else {
-			frame->ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
-			aList->addFullListTask(aDir);
+			frame->CreateEx(WinUtil::mdiClient);
 		}
+
 		frames.emplace(frame->m_hWnd, frame);
 	} else {
-		delete frame;
+		frame = f->second;
+	}
+
+	if (aList->getPartialList()) {
+		aList->addPartialListTask(aXML, aDir);
+	}
+	else {
+		frame->ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
+		aList->addFullListTask(aDir);
 	}
 }
 
 bool DirectoryListingFrame::getWindowParams(HWND hWnd, StringMap &params) {
 	auto f = frames.find(hWnd);
 	if (f != frames.end()) {
+		auto dl = f->second->dl;
 		params["id"] = DirectoryListingFrame::id;
-		params["CID"] = f->second->dl->getUser()->getCID().toBase32();
-		params["url"] = f->second->dl->getHubUrl();
+		params["CID"] = dl->getUser()->getCID().toBase32();
+		params["url"] = dl->getHubUrl();
 		params["dir"] = f->second->curPath;
-		params["file"] = f->second->dl->getFileName();
-		params["partial"] = Util::toString(f->second->dl->getPartialList());
-		params["profileToken"] = Util::toString(f->second->dl->getIsOwnList() ? f->second->dl->getShareProfile() : 0);
-		if (!f->second->dl->getPartialList())
-			QueueManager::getInstance()->noDeleteFileList(f->second->dl->getFileName());
+		params["file"] = dl->getFileName();
+		params["partial"] = Util::toString(dl->getPartialList());
+		params["profileToken"] = Util::toString(dl->getIsOwnList() ? dl->getShareProfile() : 0);
+		if (!dl->getPartialList())
+			QueueManager::getInstance()->noDeleteFileList(dl->getFileName());
+
+		FavoriteManager::getInstance()->addSavedUser(dl->getUser());
 		return true;
 	}
 	return false;
@@ -100,29 +106,27 @@ bool DirectoryListingFrame::getWindowParams(HWND hWnd, StringMap &params) {
 bool DirectoryListingFrame::parseWindowParams(StringMap& params) {
 	if (params["id"] == DirectoryListingFrame::id) {
 		string cid = params["CID"];
-		if (!cid.empty()) {
-			UserPtr u = ClientManager::getInstance()->getUser(CID(cid));
-			if (u) {
-				bool partial = Util::toBool(Util::toInt(params["partial"]));
-				string dir = params["dir"];
-				string file = params["file"];
-				string url = params["url"];
-				if (u == ClientManager::getInstance()->getMe()) {
-					ProfileToken token = Util::toInt(params["profileToken"]);
-					DirectoryListingManager::getInstance()->openOwnList(token, false, dir);
-				}
-				else if (partial) { //re download partial list
-					MainFrame::getMainFrame()->addThreadedTask([=] {
-						try {
-							DirectoryListingManager::getInstance()->createList(HintedUser(u, url), QueueItem::FLAG_CLIENT_VIEW | (partial ? QueueItem::FLAG_PARTIAL_LIST : 0), dir);
-						} catch (Exception&) {}
-						});
-				}
-				else if (!file.empty()) {
-					DirectoryListingManager::getInstance()->openFileList(HintedUser(u, url), file, dir);
-				}
+		if (cid.empty())
+			return false;
+		UserPtr u = ClientManager::getInstance()->getUser(CID(cid));
+		if (!u)
+			return false;
+
+		bool partial = Util::toBool(Util::toInt(params["partial"]));
+		string dir = params["dir"];
+		string file = params["file"];
+		string url = params["url"];
+		if (u == ClientManager::getInstance()->getMe()) {
+			ProfileToken token = Util::toInt(params["profileToken"]);
+			DirectoryListingManager::getInstance()->openOwnList(token, false, dir);
+		} else if (!file.empty() || partial) {
+					
+			auto dl = DirectoryListingManager::getInstance()->openFileList(HintedUser(u, url), file, dir, partial);
+			if (partial) {
+				dl->addDirectoryChangeTask(dir, false, false, true);
 			}
 		}
+
 		return true;
 	}
 	return false;

@@ -259,6 +259,7 @@ void FavoriteManager::addSavedUser(const UserPtr& aUser) noexcept {
 		WLock l(cs);
 		savedUsers.emplace(aUser);
 	}
+	setDirty();
 }
 
 void FavoriteManager::removeFavoriteUser(const UserPtr& aUser) noexcept {
