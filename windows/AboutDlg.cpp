@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2016 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ _T("xaozon, kryppy, B1ackBoX, shuttle, ICU2M8, en_dator, NT, Bl0m5t3r, Shuttle, 
 
 LRESULT AboutDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 
-	SetDlgItemText(IDC_VERSION, Text::toT(fullVersionString + "\r\n(c) Copyright 2007-2016 Night and maksis\n").c_str());
+	SetDlgItemText(IDC_VERSION, Text::toT(fullVersionString + "\r\n(c) Copyright 2007-2017 Night and maksis\n").c_str());
 
 	CEdit ctrlThanks(GetDlgItem(IDC_AIRTHANKS));
 	ctrlThanks.FmtLines(TRUE);

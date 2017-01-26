@@ -2,7 +2,7 @@
 /* Project: miniupnp
  * http://miniupnp.free.fr/
  * Author: Thomas Bernard
- * Copyright (c) 2005-2016 Thomas Bernard
+ * Copyright (c) 2005-2017 Thomas Bernard
  * This software is subjects to the conditions detailed
  * in the LICENCE file provided within this distribution */
 #ifndef MINIUPNPC_H_INCLUDED
