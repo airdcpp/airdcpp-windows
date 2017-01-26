@@ -65,7 +65,7 @@ void AutoSearchManager::logMessage(const string& aMsg, LogMessage::Severity aSev
 }
 
 /* Adding new items for external use */
-AutoSearchPtr AutoSearchManager::addAutoSearch(const string& ss, const string& aTarget, bool isDirectory, AutoSearch::ItemType asType, bool aRemove, int aInterval) noexcept {
+AutoSearchPtr AutoSearchManager::addAutoSearch(const string& ss, const string& aTarget, bool isDirectory, AutoSearch::ItemType asType, bool aRemove, int aInterval, bool aSearch) noexcept {
 	if (ss.length() <= 5) {
 		logMessage(STRING_F(AUTOSEARCH_ADD_FAILED, ss % STRING(LINE_EMPTY_OR_TOO_SHORT)), LogMessage::SEV_ERROR);
 		return nullptr;
@@ -80,7 +80,7 @@ AutoSearchPtr AutoSearchManager::addAutoSearch(const string& ss, const string& a
 	AutoSearchPtr as = new AutoSearch(true, ss, isDirectory ? SEARCH_TYPE_DIRECTORY : SEARCH_TYPE_FILE, AutoSearch::ACTION_DOWNLOAD, aRemove, aTarget, 
 		StringMatch::PARTIAL, Util::emptyString, Util::emptyString, SETTING(AUTOSEARCH_EXPIRE_DAYS) > 0 ? GET_TIME() + (SETTING(AUTOSEARCH_EXPIRE_DAYS)*24*60*60) : 0, false, false, false, Util::emptyString, aInterval, asType, false);
 
-	addAutoSearch(as, true);
+	addAutoSearch(as, aSearch);
 	return as;
 }
 

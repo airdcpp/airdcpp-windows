@@ -241,7 +241,7 @@ void RSSManager::matchFilters(const RSSPtr& aFeed, const RSSDataPtr& aData) {
 			}
 			if (aF.getFilterAction() == RSSFilter::DOWNLOAD) {
 				auto as = AutoSearchManager::getInstance()->addAutoSearch(aData->getTitle(),
-					aF.getDownloadTarget(), true, AutoSearch::RSS_DOWNLOAD, true, 60);
+					aF.getDownloadTarget(), true, AutoSearch::RSS_DOWNLOAD, true, 60, false);
 				if (as) {
 					AutoSearchManager::getInstance()->moveItemToGroup(as, aF.getAutosearchGroup());
 				}
