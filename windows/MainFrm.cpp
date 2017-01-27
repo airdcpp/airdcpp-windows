@@ -363,11 +363,11 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		TestWrite(true, Util::usingLocalMode());
 	}
 
-	WinUtil::splash->destroy();
-
 	if (!WinUtil::isShift() && !Util::hasStartupParam("/noautoconnect") && !SETTING(NICK).empty()) {
-		addThreadedTask([=] { loadOpenWindows(); });
+		loadOpenWindows();
 	}
+
+	WinUtil::splash->destroy();
 
 	if (Util::IsOSVersionOrGreater(6, 2) && !IsWindowsServer() && WinUtil::isElevated()) {
 		callAsync([=] { WinUtil::ShowMessageBox(SettingsManager::WARN_ELEVATED, TSTRING(ELEVATED_WARNING)); });
