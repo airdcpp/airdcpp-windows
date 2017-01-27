@@ -42,6 +42,7 @@
 #include "UCHandler.h"
 #include "SearchTypeCombo.h"
 #include "ListFilter.h"
+#include "MainFrm.h"
 
 #define SEARCH_MESSAGE_MAP 6		// This could be any number, really...
 #define SHOWUI_MESSAGE_MAP 7
@@ -54,11 +55,20 @@ class SearchFrame : public MDITabChildWindowImpl<SearchFrame>,
 public:
 	static void openWindow(const tstring& str = Util::emptyStringW, LONGLONG size = 0, Search::SizeModes mode = Search::SIZE_ATLEAST, const string& type = SEARCH_TYPE_ANY);
 	static void closeAll();
-	static bool getWindowParams(HWND hWnd, StringMap& /*params*/) {
+	static bool getWindowParams(HWND hWnd, StringMap& params) {
 		auto f = frames.find(hWnd);
 		if (f != frames.end()) {
-			//params["id] = SearchFrame::id;
-			//params["str"] = Text::fromT(WinUtil::getEditText(f->second->ctrlSearch));
+			params["id"] = SearchFrame::id;
+			params["str"] = Text::fromT(f->second->getInitialString());
+			return true;
+		}
+		return false;
+	}
+
+	static bool parseWindowParams(StringMap& params) {
+		if(params["id"] == SearchFrame::id) {
+			tstring str = Text::toT(params["str"]);
+			MainFrame::getMainFrame()->callAsync([=] { SearchFrame::openWindow(str); });
 			return true;
 		}
 		return false;
@@ -235,6 +245,7 @@ public:
 	SearchInfoList& getUserList() { return ctrlResults.list; }
 	
 	static string id;
+	tstring getInitialString() const { return initialString;  }
 
 private:
 

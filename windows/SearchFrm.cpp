@@ -319,7 +319,8 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		ctrlSearch.SetWindowText(initialString.c_str());
 		ctrlSizeMode.SetCurSel(initialMode);
 		ctrlSize.SetWindowText(Util::toStringW(initialSize).c_str());
-		onEnter();
+		SetWindowText((TSTRING(SEARCH) + _T(" - ") + initialString).c_str());
+		callAsync([=] { onEnter(); });
 	} else {
 		SetWindowText(CTSTRING(SEARCH));
 		::EnableWindow(GetDlgItem(IDC_SEARCH_PAUSE), FALSE);
@@ -513,6 +514,7 @@ void SearchFrame::onEnter() {
 	if (ctrlSearchBox.GetCount())
 		ctrlSearchBox.SetCurSel(0);
 	SetWindowText((TSTRING(SEARCH) + _T(" - ") + target).c_str());
+	initialString = target;
 	
 	// stop old search
 	ClientManager::getInstance()->cancelSearch((void*)this);	
@@ -542,8 +544,6 @@ void SearchFrame::onEnter() {
 	if (initialString.empty() && typeName != SETTING(LAST_SEARCH_FILETYPE))
 		SettingsManager::getInstance()->set(SettingsManager::LAST_SEARCH_FILETYPE, typeName);
 
-
-
 	// perform the search
 	auto newSearch = SearchQuery::getSearch(s);
 	if (newSearch) {
@@ -553,7 +553,6 @@ void SearchFrame::onEnter() {
 
 		// more 5 seconds for transferring results
 		searchEndTime = searchStartTime + SearchManager::getInstance()->search(clients, s, static_cast<void*>(this)).queueTime + 5000;
-
 		waiting = true;
 		firstResultTime = 0;
 	}

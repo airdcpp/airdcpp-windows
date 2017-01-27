@@ -1240,7 +1240,7 @@ void MainFrame::saveOpenWindows() {
 		save(SystemFrame)
 		save(AutoSearchFrame)
 		save(RssInfoFrame)
-		//save(SearchFrame) //currently no handling of re opening
+		save(SearchFrame)
 		save(FavoriteHubsFrame)
 		save(UsersFrame)
 		save(NotepadFrame)
@@ -1298,6 +1298,7 @@ void MainFrame::loadOpenWindows() {
 				//Static frames
 				load(QueueFrame, id);
 				load(SystemFrame, id);
+				load(SearchFrame, id);
 				load(AutoSearchFrame, id);
 				load(RssInfoFrame, id);
 				load(PublicHubsFrame, id);
