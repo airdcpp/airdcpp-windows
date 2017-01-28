@@ -432,7 +432,6 @@ void AutoSearchManager::performSearch(AutoSearchPtr& as, StringList& aHubs, Sear
 	if (!failedBundle)
 		searchWord = as->getFormatedSearchString();
 
-	as->setLastSearch(GET_TIME());
 	if ((aType == TYPE_MANUAL_BG || aType == TYPE_MANUAL_FG) && !as->getEnabled()) {
 		as->setManualSearch(true);
 		as->setStatus(AutoSearch::STATUS_MANUAL);
@@ -446,35 +445,44 @@ void AutoSearchManager::performSearch(AutoSearchPtr& as, StringList& aHubs, Sear
 		s->exts = extList;
 		s->excluded = SearchQuery::parseSearchString(as->getExcludedString());
 
-		lastSearchQueueTime = SearchManager::getInstance()->search(aHubs, s).queueTime;
-
-		//Report
-		string msg;
-		if (lastSearchQueueTime == 0) {
-			if (failedBundle) {
-				msg = STRING_F(FAILED_BUNDLE_SEARCHED, searchWord);
-			}
-			else if (aType == TYPE_NEW) {
-				msg = CSTRING_F(AUTOSEARCH_ADDED_SEARCHED, searchWord);
+		auto searchInfo = SearchManager::getInstance()->search(aHubs, s);
+		lastSearchQueueTime = searchInfo.queueTime;
+		if (searchInfo.queuedHubUrls.empty()) {
+			/*
+			This is not 100% accurate message in all cases, but we shouldn't have come here if no hubs to search.
+			*/
+			logMessage(STRING_F(SEARCH_QUEUE_OVERFLOW, searchWord), LogMessage::SEV_INFO);
+		} else {
+			as->setLastSearch(GET_TIME()); //set the item as searched only when we actually were able to queue a search for it.
+			string msg;
+			//Report
+			if (lastSearchQueueTime == 0) {
+				if (failedBundle) {
+					msg = STRING_F(FAILED_BUNDLE_SEARCHED, searchWord);
+				}
+				else if (aType == TYPE_NEW) {
+					msg = CSTRING_F(AUTOSEARCH_ADDED_SEARCHED, searchWord);
+				}
+				else {
+					msg = STRING_F(ITEM_SEARCHED, searchWord);
+				}
 			}
 			else {
-				msg = STRING_F(ITEM_SEARCHED, searchWord);
+				auto time = lastSearchQueueTime / 1000;
+				if (failedBundle) {
+					msg = STRING_F(FAILED_BUNDLE_SEARCHED_IN, searchWord % time);
+				}
+				else if (aType == TYPE_NEW) {
+					msg = CSTRING_F(AUTOSEARCH_ADDED_SEARCHED_IN, searchWord % time);
+				}
+				else {
+					msg = STRING_F(ITEM_SEARCHED_IN, searchWord % time);
+				}
 			}
+			logMessage(msg, LogMessage::SEV_INFO);
 		}
-		else {
-			auto time = lastSearchQueueTime / 1000;
-			if (failedBundle) {
-				msg = STRING_F(FAILED_BUNDLE_SEARCHED_IN, searchWord % time);
-			}
-			else if (aType == TYPE_NEW) {
-				msg = CSTRING_F(AUTOSEARCH_ADDED_SEARCHED_IN, searchWord % time);
-			}
-			else {
-				msg = STRING_F(ITEM_SEARCHED_IN, searchWord % time);
-			}
-		}
-		logMessage(msg, LogMessage::SEV_INFO);
 	} else {
+		as->setLastSearch(GET_TIME());
 		fire(AutoSearchManagerListener::SearchForeground(), as, searchWord);
 	}
 	resetSearchTimes(aTick, false);
