@@ -83,41 +83,8 @@ public:
 	LRESULT onDoubleClickList(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onConfig(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-
-
-	LRESULT onSelChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /* bHandled */) {
-		NMTREEVIEW* nmtv = (NMTREEVIEW*)pnmh;
-		if (nmtv->itemNew.lParam != -1) {
-			curSel = nmtv->itemNew.lParam;
-			curItem = nmtv->itemNew.hItem;
-			if (getSelectedFeed()) {
-				ctrlChange.EnableWindow(TRUE);
-				ctrlRemove.EnableWindow(TRUE);
-			} else {
-				ctrlChange.EnableWindow(FALSE);
-				ctrlRemove.EnableWindow(FALSE);
-			}
-			reloadList();
-		}
-
-		return 0;
-	}
-
-	LRESULT onTreeItemClick(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /* bHandled */) {
-		DWORD dwPos = ::GetMessagePos();
-		POINT pt;
-		pt.x = GET_X_LPARAM(dwPos);
-		pt.y = GET_Y_LPARAM(dwPos);
-
-		ctrlTree.ScreenToClient(&pt);
-
-		UINT uFlags;
-		HTREEITEM ht = ctrlTree.HitTest(pt, &uFlags);
-		if (ht && ht == curItem)
-			reloadList();
-
-		return 0;
-	}
+	LRESULT onSelChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /* bHandled */);
+	LRESULT onTreeItemClick(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /* bHandled */);
 
 	LRESULT OnFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		ctrlRss.list.SetFocus();
@@ -179,17 +146,7 @@ private:
 		bool isRelease = false;
 	};
 
-
-	HTREEITEM addTreeItem(const HTREEITEM& parent, int img, const tstring& name, HTREEITEM insertAfter = TVI_SORT) {
-		TVINSERTSTRUCT tvis = { 0 };
-		tvis.hParent = parent;
-		tvis.hInsertAfter = insertAfter;
-		tvis.item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
-		tvis.item.pszText = (LPWSTR)name.c_str();
-		tvis.item.iImage = img;
-		tvis.item.iSelectedImage = img;
-		return ctrlTree.InsertItem(&tvis);
-	}
+	HTREEITEM addTreeItem(const HTREEITEM& parent, int img, const tstring& name, HTREEITEM insertAfter = TVI_SORT);
 
 	TaskQueue tasks;
 	void addGuiTask(std::function<void()> f) {

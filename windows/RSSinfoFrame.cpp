@@ -333,6 +333,42 @@ LRESULT RssInfoFrame::onConfig(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 	return 0;
 }
 
+LRESULT RssInfoFrame::onSelChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /* bHandled */) {
+	NMTREEVIEW* nmtv = (NMTREEVIEW*)pnmh;
+	if (nmtv->itemNew.lParam != -1) {
+		curSel = nmtv->itemNew.lParam;
+		curItem = nmtv->itemNew.hItem;
+		if (getSelectedFeed()) {
+			ctrlChange.EnableWindow(TRUE);
+			ctrlRemove.EnableWindow(TRUE);
+		}
+		else {
+			ctrlChange.EnableWindow(FALSE);
+			ctrlRemove.EnableWindow(FALSE);
+		}
+		reloadList();
+	}
+
+	return 0;
+}
+
+LRESULT RssInfoFrame::onTreeItemClick(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /* bHandled */) {
+	DWORD dwPos = ::GetMessagePos();
+	POINT pt;
+	pt.x = GET_X_LPARAM(dwPos);
+	pt.y = GET_Y_LPARAM(dwPos);
+
+	ctrlTree.ScreenToClient(&pt);
+
+	UINT uFlags;
+	HTREEITEM ht = ctrlTree.HitTest(pt, &uFlags);
+	if (ht && ht == curItem)
+		reloadList();
+
+	return 0;
+}
+
+
 LRESULT RssInfoFrame::onDoubleClickList(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
 	auto list = getSelectedListitems();
 	if (!list.empty()) {
@@ -545,6 +581,17 @@ void RssInfoFrame::addFeed(const RSSPtr& aFeed) {
 		feeds.emplace(aFeed, ht);
 		ctrlTree.EnsureVisible(ht);
 	}
+}
+
+HTREEITEM RssInfoFrame::addTreeItem(const HTREEITEM& parent, int img, const tstring& name, HTREEITEM insertAfter/* = TVI_SORT*/) {
+	TVINSERTSTRUCT tvis = { 0 };
+	tvis.hParent = parent;
+	tvis.hInsertAfter = insertAfter;
+	tvis.item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
+	tvis.item.pszText = (LPWSTR)name.c_str();
+	tvis.item.iImage = img;
+	tvis.item.iSelectedImage = img;
+	return ctrlTree.InsertItem(&tvis);
 }
 
 bool RssInfoFrame::show(const ItemInfo* aItem) {
