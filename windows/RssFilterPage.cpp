@@ -68,6 +68,7 @@ LRESULT RssFilterPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	::SetWindowText(GetDlgItem(IDC_SKIP_DUPES), CTSTRING(SKIP_DUPES));
 	::SetWindowText(GetDlgItem(IDC_RSS_FILTER_ACTION_TEXT), CTSTRING(ACTION));
 	::SetWindowText(GetDlgItem(IDC_RSS_BROWSE), CTSTRING(BROWSE));
+	::SetWindowText(GetDlgItem(IDC_TYPE), CTSTRING(SETTINGS_ST_MATCH_TYPE));
 
 
 	::EnableWindow(GetDlgItem(IDC_FILTER_REMOVE), false);

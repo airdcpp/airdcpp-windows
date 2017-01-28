@@ -107,7 +107,7 @@ LRESULT RssInfoFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 		for (auto feed : lst) {
 			addFeed(feed);
 			for (auto data : feed->getFeedData() | map_values) {
-				ItemInfos.emplace(data->getTitle(), unique_ptr<ItemInfo>(new ItemInfo(data)));
+				ItemInfos.emplace_back(make_shared<ItemInfo>(data));
 			}
 		}
 	}
@@ -452,14 +452,15 @@ void RssInfoFrame::on(AutoSearchManagerListener::RemoveItem, const AutoSearchPtr
 }
 
 void RssInfoFrame::updateDupeType(const string& aName) {
-	auto i = ItemInfos.find(aName);
+	auto i = find_if(ItemInfos.begin(), ItemInfos.end() ,[&](const shared_ptr<ItemInfo>& a) { return a->item->getTitle() == aName;  });
 	if (i != ItemInfos.end()) {
-		i->second->setDupe(AirUtil::checkDirDupe(i->second->item->getTitle(), 0));
+		auto ii = *i;
+		ii->setDupe(AirUtil::checkDirDupe(ii->item->getTitle(), 0));
 
-		if(i->second->getDupe() == DupeType::DUPE_NONE)
-			i->second->isAutosearchDupe =  AutoSearchManager::getInstance()->getSearchesByString(aName) != AutoSearchList();
+		if(ii->getDupe() == DupeType::DUPE_NONE)
+			ii->isAutosearchDupe =  AutoSearchManager::getInstance()->getSearchesByString(ii->item->getTitle()) != AutoSearchList();
 
-		ctrlRss.list.Invalidate();
+		ctrlRss.list.updateItem(ii.get());
 	}
 }
 
@@ -501,7 +502,7 @@ void RssInfoFrame::openDialog(RSSPtr& aFeed) {
 
 void RssInfoFrame::clearData(const RSSPtr& aFeed) {
 	ctrlRss.list.SetRedraw(FALSE);
-	ItemInfos.erase(boost::remove_if(ItemInfos | map_values, [&](const unique_ptr<ItemInfo>& a) {
+	ItemInfos.erase(boost::remove_if(ItemInfos, [&](const shared_ptr<ItemInfo>& a) {
 
 		if (aFeed == a->item->getFeed()) {
 			ctrlRss.list.deleteItem(a.get());
@@ -509,14 +510,14 @@ void RssInfoFrame::clearData(const RSSPtr& aFeed) {
 		}
 		return false;
 
-	}).base(), ItemInfos.end());
+	}), ItemInfos.end());
 
 	ctrlRss.list.SetRedraw(TRUE);
 }
 
 void RssInfoFrame::onItemRemoved(const RSSDataPtr& aData) {
 	ctrlRss.list.SetRedraw(FALSE);
-	ItemInfos.erase(boost::remove_if(ItemInfos | map_values, [&](const unique_ptr<ItemInfo>& a) {
+	ItemInfos.erase(boost::remove_if(ItemInfos, [&](const shared_ptr<ItemInfo>& a) {
 
 		if (aData== a->item) {
 			ctrlRss.list.deleteItem(a.get());
@@ -524,15 +525,16 @@ void RssInfoFrame::onItemRemoved(const RSSDataPtr& aData) {
 		}
 		return false;
 
-	}).base(), ItemInfos.end());
+	}), ItemInfos.end());
 
 	ctrlRss.list.SetRedraw(TRUE);
 }
 
 void RssInfoFrame::onItemAdded(const RSSDataPtr& aData) {
-	auto i = ItemInfos.emplace(aData->getTitle(), unique_ptr<ItemInfo>(new ItemInfo(aData))).first;
-	if (show(i->second.get()))
-		ctrlRss.list.insertItem(i->second.get(), i->second->getImageIndex());
+	auto d = make_shared<ItemInfo>(aData);
+	ItemInfos.emplace_back(d);
+	if (show(d.get()))
+		ctrlRss.list.insertItem(d.get(), d->getImageIndex());
 
 }
 
@@ -568,7 +570,7 @@ bool RssInfoFrame::show(const ItemInfo* aItem) {
 void RssInfoFrame::reloadList() {
 	ctrlRss.list.SetRedraw(FALSE);
 	ctrlRss.list.DeleteAllItems();
-	for (auto& p : ItemInfos | map_values) {
+	for (auto& p : ItemInfos) {
 		if (!show(p.get()))
 			continue;
 

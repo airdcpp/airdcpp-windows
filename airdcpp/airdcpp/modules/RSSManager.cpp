@@ -425,7 +425,7 @@ void RSSManager::load() {
 		LogManager::getInstance()->message("Loading the RSS failed: " + e.getError(), LogMessage::SEV_INFO);
 	}
 
-	nextUpdate = GET_TICK() + 10 * 1000; //start after 10 seconds
+	nextUpdate = GET_TICK() + 60 * 1000; //start after 60 seconds
 	TimerManager::getInstance()->addListener(this);
 
 }

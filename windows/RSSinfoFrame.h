@@ -224,8 +224,8 @@ private:
 	HTREEITEM curItem;
 	int curSel;
 
-	//RSSdata, itemInfos by title
-	unordered_map<string, unique_ptr<ItemInfo>> ItemInfos;
+	//RSSdata
+	vector<shared_ptr<ItemInfo>> ItemInfos;
 
 	static int columnSizes[COLUMN_LAST];
 	static int columnIndexes[COLUMN_LAST];
