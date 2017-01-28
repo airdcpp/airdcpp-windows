@@ -138,6 +138,4 @@ void SDCPage::write()
 	if(SETTING(DOWNCONN_PER_SEC) > 5) 
 		settings->set(SettingsManager::DOWNCONN_PER_SEC, 5);
 
-	if(SETTING(AUTO_SEARCH_LIMIT) < 1)
-		settings->set(SettingsManager::AUTO_SEARCH_LIMIT, 1);	
 }

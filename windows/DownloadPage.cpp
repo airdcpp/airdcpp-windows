@@ -48,7 +48,7 @@ PropPage::Item DownloadPage::items[] = {
 	{ IDC_AUTO_SEARCH_ALT, SettingsManager::AUTO_SEARCH, PropPage::T_BOOL },
 	{ IDC_DONTBEGIN, SettingsManager::DONT_BEGIN_SEGMENT, PropPage::T_BOOL },
 	{ IDC_DONTBEGIN_EDIT, SettingsManager::DONT_BEGIN_SEGMENT_SPEED, PropPage::T_INT },
-	{ IDC_SEARCH_INTERVAL, SettingsManager::SEARCH_TIME, PropPage::T_INT },
+	{ IDC_SEARCH_INTERVAL, SettingsManager::BUNDLE_SEARCH_TIME, PropPage::T_INT },
 	{ IDC_CHUNKCOUNT, SettingsManager::SEGMENTS_MANUAL, PropPage::T_BOOL },
 	{ IDC_SEG_NUMBER, SettingsManager::NUMBER_OF_SEGMENTS, PropPage::T_INT },
 	{ IDC_MIN_SEGMENT_SIZE, SettingsManager::MIN_SEGMENT_SIZE, PropPage::T_INT },

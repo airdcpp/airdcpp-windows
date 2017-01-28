@@ -514,12 +514,12 @@ void AutoSearchManager::resetSearchTimes(uint64_t aTick, bool aUpdate) noexcept 
 	uint64_t nextSearchTick = 0;
 	
 	if(itemCount > 0)
-		nextSearchTick = searchItems.recalculateSearchTimes(false, aUpdate, aTick, itemCount, SETTING(AUTOSEARCH_EVERY));
+		nextSearchTick = searchItems.recalculateSearchTimes(false, aUpdate, aTick, SETTING(AUTOSEARCH_EVERY), itemCount);
 
 	//Calculate interval for recent items, if any..
 	uint64_t recentSearchTick = 0;
 	if (recentItems > 0)
-		recentSearchTick = searchItems.recalculateSearchTimes(true, aUpdate, aTick, recentItems, SETTING(AUTOSEARCH_EVERY));
+		recentSearchTick = searchItems.recalculateSearchTimes(true, aUpdate, aTick, SETTING(AUTOSEARCH_EVERY), recentItems);
 
 	nextSearchTick = recentSearchTick > 0 ? nextSearchTick > 0 ? min(recentSearchTick, nextSearchTick) : recentSearchTick : nextSearchTick;
 

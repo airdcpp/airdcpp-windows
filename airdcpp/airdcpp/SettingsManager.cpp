@@ -122,7 +122,7 @@ const ProfileSettingItem SettingsManager::profileSettings[SettingsManager::PROFI
 	{ SettingsManager::CHECK_EXTRA_FILES, false, ResourceManager::CHECK_EXTRA_FILES },
 	{ SettingsManager::CHECK_DUPES, false, ResourceManager::CHECK_DUPES },
 	{ SettingsManager::MAX_FILE_SIZE_SHARED, 0, ResourceManager::DONT_SHARE_BIGGER_THAN },
-	{ SettingsManager::SEARCH_TIME, 15, ResourceManager::MINIMUM_SEARCH_INTERVAL_SEC },
+	{ SettingsManager::MINIMUM_SEARCH_INTERVAL, 15, ResourceManager::MINIMUM_SEARCH_INTERVAL_SEC },
 	//{ SettingsManager::AUTO_SEARCH_LIMIT, 5 },
 	{ SettingsManager::AUTO_FOLLOW, true, ResourceManager::SETTINGS_AUTO_FOLLOW },
 	{ SettingsManager::TOOLBAR_ORDER, (string)"0,-1,1,2,-1,3,4,5,-1,6,7,8,-1,9,10,12,-1,13,14,-1,15,16,-1,17,18,-1,20", ResourceManager::TOOLBAR_ORDER },
@@ -135,7 +135,7 @@ const ProfileSettingItem SettingsManager::profileSettings[SettingsManager::PROFI
 	{ SettingsManager::CHECK_EXTRA_FILES, true, ResourceManager::CHECK_EXTRA_FILES },
 	{ SettingsManager::CHECK_DUPES, true, ResourceManager::CHECK_DUPES },
 	{ SettingsManager::MAX_FILE_SIZE_SHARED, 600, ResourceManager::DONT_SHARE_BIGGER_THAN },
-	{ SettingsManager::SEARCH_TIME, 10, ResourceManager::MINIMUM_SEARCH_INTERVAL_SEC },
+	{ SettingsManager::MINIMUM_SEARCH_INTERVAL, 10, ResourceManager::MINIMUM_SEARCH_INTERVAL_SEC },
 	//{ SettingsManager::AUTO_SEARCH_LIMIT, 5 },
 	{ SettingsManager::AUTO_FOLLOW, false, ResourceManager::SETTINGS_AUTO_FOLLOW },
 	{ SettingsManager::TOOLBAR_ORDER, (string)"1,-1,3,4,-1,6,7,8,-1,9,10,12,-1,13,14,-1,15,16,-1,17,18,-1,20", ResourceManager::TOOLBAR_ORDER },
@@ -148,7 +148,7 @@ const ProfileSettingItem SettingsManager::profileSettings[SettingsManager::PROFI
 	{ SettingsManager::CHECK_EXTRA_FILES, false, ResourceManager::CHECK_EXTRA_FILES },
 	{ SettingsManager::CHECK_DUPES, false, ResourceManager::CHECK_DUPES },
 	{ SettingsManager::MAX_FILE_SIZE_SHARED, 0, ResourceManager::DONT_SHARE_BIGGER_THAN },
-	{ SettingsManager::SEARCH_TIME, 10, ResourceManager::MINIMUM_SEARCH_INTERVAL_SEC },
+	{ SettingsManager::MINIMUM_SEARCH_INTERVAL, 10, ResourceManager::MINIMUM_SEARCH_INTERVAL_SEC },
 	//{ SettingsManager::AUTO_SEARCH_LIMIT, 5 },
 	{ SettingsManager::AUTO_FOLLOW, true, ResourceManager::SETTINGS_AUTO_FOLLOW },
 	{ SettingsManager::TOOLBAR_ORDER, (string)"0,-1,1,2,-1,3,4,5,-1,6,7,8,-1,9,10,12,-1,13,14,-1,15,16,-1,17,18,-1,20", ResourceManager::TOOLBAR_ORDER },
@@ -617,7 +617,7 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(DONT_BEGIN_SEGMENT, true);
 	setDefault(DONT_BEGIN_SEGMENT_SPEED, 512);
 
-	setDefault(SEARCH_TIME, 15);
+	setDefault(BUNDLE_SEARCH_TIME, 15);
 	setDefault(AUTO_SLOTS, 5);	
 	
 	// default sounds
@@ -1193,7 +1193,7 @@ void SettingsManager::set(IntSetting key, int value, bool aForceSet) noexcept {
 		value = 10;
 	}
 
-	if ((key == SEARCH_TIME) && (value < 5)) {
+	if ((key == BUNDLE_SEARCH_TIME) && (value < 5)) {
 		value = 5;
 	}
 

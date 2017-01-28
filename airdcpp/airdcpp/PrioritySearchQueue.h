@@ -80,7 +80,7 @@ public:
 		return ret;
 	}
 
-	int64_t recalculateSearchTimes(bool aRecent, bool isPrioChange, uint64_t aTick, int aItemCount = 0, int minInterval = SETTING(SEARCH_TIME)) noexcept{
+	int64_t recalculateSearchTimes(bool aRecent, bool isPrioChange, uint64_t aTick, int minInterval, int aItemCount = 0) noexcept{
 		if (!aRecent) {
 			if(aItemCount == 0)
 				aItemCount = getPrioSum();
@@ -104,7 +104,7 @@ public:
 			if (isPrioChange && nextRecentSearch == 0)
 				nextRecentSearch = aTick + (minInterval * 60 * 1000);
 
-			int IntervalMS = getRecentIntervalMs();
+			int IntervalMS = getRecentIntervalMs(minInterval);
 			if (nextRecentSearch > 0 && isPrioChange) {
 				nextRecentSearch = min(nextRecentSearch, aTick + IntervalMS);
 			} else {
@@ -116,7 +116,7 @@ public:
 
 
 
-	int getRecentIntervalMs(int aItemCount = 0) const noexcept{
+	int getRecentIntervalMs(int minInverval, int aItemCount = 0) const noexcept{
 
 		auto recentItems = aItemCount == 0 ? count_if(recentSearchQueue.begin(), recentSearchQueue.end(), [](const ItemT& aItem) { 
 			return aItem->allowAutoSearch(); 
@@ -126,8 +126,10 @@ public:
 			return 15 * 60 * 1000;
 		} else if (recentItems == 2) {
 			return 8 * 60 * 1000;
-		} else {
+		} else if(recentItems < 10) {
 			return 5 * 60 * 1000;
+		} else {
+			return min(5 * 60 * 1000, minInverval * 60 * 1000);
 		}
 	}
 

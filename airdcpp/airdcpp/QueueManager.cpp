@@ -2029,7 +2029,7 @@ void QueueManager::setBundlePriority(BundlePtr& aBundle, Priority p, bool aKeepA
 		bundleQueue.removeSearchPrio(aBundle);
 		userQueue.setBundlePriority(aBundle, p);
 		bundleQueue.addSearchPrio(aBundle);
-		bundleQueue.recalculateSearchTimes(aBundle->isRecent(), true, GET_TICK());
+		bundleQueue.recalculateSearchTimes(aBundle->isRecent(), true, GET_TICK(), SETTING(BUNDLE_SEARCH_TIME));
 		if (!aKeepAutoPrio) {
 			aBundle->setAutoPriority(false);
 		}
@@ -3748,7 +3748,7 @@ int QueueManager::searchBundleAlternates(BundlePtr& aBundle, bool aIsManualSearc
 
 		aBundle->unsetFlag(Bundle::FLAG_SCHEDULE_SEARCH);
 		if (!aIsManualSearch)
-			nextSearch = (bundleQueue.recalculateSearchTimes(aBundle->isRecent(), false, aTick) - aTick) / (60*1000);
+			nextSearch = (bundleQueue.recalculateSearchTimes(aBundle->isRecent(), false, aTick, SETTING(BUNDLE_SEARCH_TIME)) - aTick) / (60*1000);
 
 		if (isScheduled && !aBundle->allowAutoSearch())
 			return 0;
