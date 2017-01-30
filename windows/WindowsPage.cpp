@@ -32,6 +32,7 @@ PropPage::TextItem WindowsPage::textItem[] = {
 };
 
 WindowsPage::ListItem WindowsPage::listItems[] = {
+	{ SettingsManager::SAVE_LAST_STATE, ResourceManager::SAVE_LAST_STATE },
 	{ SettingsManager::OPEN_AUTOSEARCH, ResourceManager::AUTO_SEARCH },
 	{ SettingsManager::OPEN_QUEUE, ResourceManager::DOWNLOAD_QUEUE },
 	{ SettingsManager::OPEN_FAVORITE_HUBS, ResourceManager::FAVORITE_HUBS },

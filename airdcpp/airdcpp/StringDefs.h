@@ -1192,6 +1192,7 @@ enum Strings { // @DontAdd
 	SAVE_DEFAULT, // "Save in the default download directory"
 	SAVE_FAILED_X, // "Failed to save the file %1%: %2%"
 	SAVE_HUBS_STATE, // "Remember previously enabled hubs in search window"
+	SAVE_LAST_STATE, // "Remember previously open windows"
 	SAVING_HASH_DATA, // "Saving hash data"
 	SAVING_SETTINGS, // "Saving settings"
 	SAVING_SHARE, // "Saving the share cache"

@@ -363,11 +363,11 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		TestWrite(true, Util::usingLocalMode());
 	}
 
+	WinUtil::splash->destroy();
+
 	if (!WinUtil::isShift() && !Util::hasStartupParam("/noautoconnect") && !SETTING(NICK).empty()) {
 		loadOpenWindows();
 	}
-
-	WinUtil::splash->destroy();
 
 	if (Util::IsOSVersionOrGreater(6, 2) && !IsWindowsServer() && WinUtil::isElevated()) {
 		callAsync([=] { WinUtil::ShowMessageBox(SettingsManager::WARN_ELEVATED, TSTRING(ELEVATED_WARNING)); });
@@ -1224,6 +1224,8 @@ LRESULT MainFrame::onLink(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL
 }
 
 void MainFrame::saveOpenWindows() {
+	if (!SETTING(SAVE_LAST_STATE))
+		return;
 
 	vector<StringMap> windowParams;
 
@@ -1274,47 +1276,52 @@ void MainFrame::saveOpenWindows() {
 
 void MainFrame::loadOpenWindows() {
 
+
+	if (SETTING(SAVE_LAST_STATE)) {
+
 #define load(frame, ID) else if(frame::id == ID) frame::parseWindowParams(params)
 
-	try {
-		SimpleXML xml;
-		SettingsManager::loadSettingFile(xml, CONFIG_DIR, CONFIG_FRAMES_NAME);
-		if (xml.findChild("Windows")) {
-			xml.stepIn();
-			while (xml.findChild("Window")) {
+		try {
+			SimpleXML xml;
+			SettingsManager::loadSettingFile(xml, CONFIG_DIR, CONFIG_FRAMES_NAME);
+			if (xml.findChild("Windows")) {
 				xml.stepIn();
-				StringMap params;
-				while (xml.findChild("param")) {
-					params[xml.getChildAttrib("name")] = xml.getChildData();
-				}
-				xml.stepOut();
-				string id = params["id"];
-				//hasHubs = hasHubs || id == HubFrame::id;
-	
-				if (0);
-				load(HubFrame, id);
-				load(PrivateFrame, id);
-				load(DirectoryListingFrame, id);
-				//Static frames
-				load(QueueFrame, id);
-				load(SystemFrame, id);
-				load(SearchFrame, id);
-				load(AutoSearchFrame, id);
-				load(RssInfoFrame, id);
-				load(PublicHubsFrame, id);
-				load(FavoriteHubsFrame, id);
-				load(UsersFrame, id);
-				load(NotepadFrame, id);
-				load(SpyFrame, id);
-				load(ADLSearchFrame, id);
-				load(FinishedULFrame, id);
-				load(UploadQueueFrame, id);
-				load(CDMDebugFrame, id);
-				load(RecentsFrame, id);
-			}	
-		}
-	} catch (const Exception&) { }
+				while (xml.findChild("Window")) {
+					xml.stepIn();
+					StringMap params;
+					while (xml.findChild("param")) {
+						params[xml.getChildAttrib("name")] = xml.getChildData();
+					}
+					xml.stepOut();
+					string id = params["id"];
+					//hasHubs = hasHubs || id == HubFrame::id;
 
+					if (0);
+					load(HubFrame, id);
+					load(PrivateFrame, id);
+					load(DirectoryListingFrame, id);
+					//Static frames
+					load(QueueFrame, id);
+					load(SystemFrame, id);
+					load(SearchFrame, id);
+					load(AutoSearchFrame, id);
+					load(RssInfoFrame, id);
+					load(PublicHubsFrame, id);
+					load(FavoriteHubsFrame, id);
+					load(UsersFrame, id);
+					load(NotepadFrame, id);
+					load(SpyFrame, id);
+					load(ADLSearchFrame, id);
+					load(FinishedULFrame, id);
+					load(UploadQueueFrame, id);
+					load(CDMDebugFrame, id);
+					load(RecentsFrame, id);
+				}
+			}
+		}
+		catch (const Exception&) {}
+#undef load
+	}
 	/*
 	For restoring the exact last state of the windows, this is wrong to open these. 
 	However the user can disable the settings and hub auto connect if this is not the desired behavior
@@ -1333,9 +1340,7 @@ void MainFrame::loadOpenWindows() {
 	//Connect the remaining auto connect hubs, in case some were closed
 	FavoriteManager::getInstance()->autoConnect();
 
-#undef load
 }
-
 
 void MainFrame::getMagnetForFile() {
 	tstring file;
