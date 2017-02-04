@@ -137,7 +137,7 @@ public:
 	public:
 		CompareOwner(const void* compareTo) : a(compareTo) { }
 		bool operator()(const SearchPtr& p) const noexcept {
-			return p->owner == a;
+			return !a ? true : p->owner == a;
 		}
 	private:
 		CompareOwner& operator=(const CompareOwner&) = delete;

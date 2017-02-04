@@ -76,11 +76,13 @@
 #include <boost/range/algorithm/find_if.hpp>
 #include <boost/range/algorithm/remove_if.hpp>
 #include <boost/algorithm/cxx11/copy_if.hpp>
-#include <boost/range/adaptor/map.hpp>
+
 #include <boost/scoped_array.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/regex.hpp>
 #include <boost/optional.hpp>
+
+#include <boost/range/adaptor/map.hpp>
 #include <boost/range/adaptor/reversed.hpp>
 
 namespace dcpp {

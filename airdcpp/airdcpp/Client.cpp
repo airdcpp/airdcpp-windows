@@ -508,9 +508,9 @@ bool Client::updateCounts(bool aRemove) noexcept {
 	return true;
 }
 
-optional<uint64_t> Client::queueSearch(const SearchPtr& aSearch) noexcept {
+uint64_t Client::queueSearch(const SearchPtr& aSearch) noexcept {
 	dcdebug("Queue search %s\n", aSearch->query.c_str());
-	return searchQueue.maybeAdd(aSearch);
+	return searchQueue.add(aSearch);
 }
 
 optional<uint64_t> Client::getQueueTime(const void* aOwner) const noexcept {

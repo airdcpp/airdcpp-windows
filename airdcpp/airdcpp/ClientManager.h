@@ -118,16 +118,16 @@ public:
 	uint8_t getSlots(const CID& cid) const noexcept;
 
 	bool hasClient(const string& aUrl) const noexcept;
-	
-	optional<uint64_t> search(string& aHubUrl, const SearchPtr& aSearch, string& error_) noexcept;
 
 	// Get users with nick matching the pattern. Uses relevancies for priorizing the results.
 	OnlineUserList searchNicks(const string& aPattern, size_t aMaxResults, bool aIgnorePrefix, const StringList& aHubUrls) const noexcept;
 
 	bool directSearch(const HintedUser& user, const SearchPtr& aSearch, string& error_) noexcept;
 	
+	optional<uint64_t> search(string& aHubUrl, const SearchPtr& aSearch, string& error_) noexcept;
 	bool cancelSearch(const void* aOwner) noexcept;
-	optional<uint64_t> getMaxSearchQueueTime(const void* aOwner) noexcept;
+	optional<uint64_t> getMaxSearchQueueTime(const void* aOwner) const noexcept;
+	bool hasSearchQueueOverflow() const noexcept;
 		
 	void infoUpdated() noexcept;
 

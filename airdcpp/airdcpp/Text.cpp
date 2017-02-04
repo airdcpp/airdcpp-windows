@@ -107,12 +107,10 @@ int utf8ToWc(const char* str, wchar_t& c) {
 		}
 
 		return bytes;
-	}
-	else if ((c0 & 0x80) == 0) {             // 0xxx xxxx
+	} else if ((c0 & 0x80) == 0) {             // 0xxx xxxx
 		c = static_cast<unsigned char>(str[0]);
 		return 1;
-	}
-	else {                                   // 10xx xxxx
+	} else {                                   // 10xx xxxx
 		return -1;
 	}
 	dcassert(0);

@@ -137,6 +137,11 @@ namespace webserver {
 		auto s = FileSearchParser::parseSearch(reqJson, false, Util::toString(Util::rand()));
 		auto hubs = Deserializer::deserializeHubUrls(reqJson);
 
+		if (s->priority <= Priority::NORMAL && ClientManager::getInstance()->hasSearchQueueOverflow()) {
+			aRequest.setResponseErrorStr("Search queue overflow");
+			return websocketpp::http::status_code::service_unavailable;
+		}
+
 		auto queueResult = search->hubSearch(hubs, s);
 		if (queueResult.queuedHubUrls.empty() && !queueResult.error.empty()) {
 			aRequest.setResponseErrorStr(queueResult.error);

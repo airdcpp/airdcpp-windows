@@ -187,7 +187,7 @@ void AutoSearchFrame::updateStatus() {
 	tstring tmp;
 	if (aTime == 0) {
 		tmp = Util::emptyStringT;
-	} else if(!ClientManager::getInstance()->getMe()->isOnline()) {
+	} else if (!ClientManager::getInstance()->getMe()->isOnline()) {
 		tmp = TSTRING(NO_HUBS_TO_SEARCH_FROM);
 	} else {
 		auto time_left = aTime < GET_TIME() ? 0 : (aTime - GET_TIME());
