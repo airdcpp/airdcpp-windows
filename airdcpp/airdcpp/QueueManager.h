@@ -328,7 +328,7 @@ public:
 	// Returns the number of searches that were sent
 	int searchBundleAlternates(const BundlePtr& aBundle, uint64_t aTick = GET_TICK()) noexcept;
 
-	SearchQueueInfo QueueManager::searchFileAlternates(const QueueItemPtr& aQI) const noexcept;
+	SearchQueueInfo searchFileAlternates(const QueueItemPtr& aQI) const noexcept;
 
 	int getUnfinishedItemCount(const BundlePtr& aBundle) const noexcept;
 	int getFinishedItemCount(const BundlePtr& aBundle) const noexcept;
