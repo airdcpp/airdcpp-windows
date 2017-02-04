@@ -397,7 +397,7 @@ public:
 	}
 
 	static float toFloat(const string& aString) noexcept {
-		return (float)toDouble(aString.c_str());
+		return (float)toDouble(aString);
 	}
 
 	static string toString(short val) noexcept {

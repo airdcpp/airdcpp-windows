@@ -740,7 +740,7 @@ void ShareManager::shutdown(function<void(float)> progressF) noexcept {
 	join();
 }
 
-void ShareManager::setProfilesDirty(ProfileTokenSet aProfiles, bool aIsMajorChange /*false*/) noexcept {
+void ShareManager::setProfilesDirty(const ProfileTokenSet& aProfiles, bool aIsMajorChange /*false*/) noexcept {
 	if (!aProfiles.empty()) {
 		RLock l(cs);
 		for(const auto token: aProfiles) {

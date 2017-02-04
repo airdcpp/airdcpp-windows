@@ -117,7 +117,6 @@ public:
 	typedef vector<WaitingUser> SlotQueue;
 	SlotQueue getUploadQueue() const;
 
-	void unreserveSlot(const UserPtr& aUser, bool add);
 	void onUBD(const AdcCommand& cmd);
 	void onUBN(const AdcCommand& cmd);
 	UploadBundlePtr findBundle(const string& aBundleToken);

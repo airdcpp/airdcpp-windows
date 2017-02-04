@@ -1149,7 +1149,7 @@ string QueueManager::checkTarget(const string& toValidate, const string& aParent
 }
 
 /** Add a source to an existing queue item */
-bool QueueManager::addSource(QueueItemPtr& qi, const HintedUser& aUser, Flags::MaskType addBad, bool checkTLS /*true*/) throw(QueueException, FileException) {
+bool QueueManager::addSource(const QueueItemPtr& qi, const HintedUser& aUser, Flags::MaskType addBad, bool checkTLS /*true*/) throw(QueueException, FileException) {
 	if (!aUser.user) { //atleast magnet links can cause this to happen.
 		throw QueueException(STRING(UNKNOWN_USER));
 	}
@@ -3325,24 +3325,20 @@ void QueueManager::getSourceInfo(const UserPtr& aUser, Bundle::SourceBundleList&
 	bundleQueue.getSourceInfo(aUser, aSources, aBad);
 }
 
-int QueueManager::addSources(const HintedUser& aUser, QueueItemList items, Flags::MaskType aAddBad) noexcept {
+int QueueManager::addSources(const HintedUser& aUser, const QueueItemList& aItems, Flags::MaskType aAddBad) noexcept {
 	BundleList bundles;
-	return addSources(aUser, items, aAddBad, bundles);
+	return addSources(aUser, aItems, aAddBad, bundles);
 }
 
-int QueueManager::addSources(const HintedUser& aUser, QueueItemList items, Flags::MaskType aAddBad, BundleList& matchingBundles_) noexcept {
-	if (items.empty()) {
-		return 0;
-	}
-
-	//int newFiles = 0;
+int QueueManager::addSources(const HintedUser& aUser, const QueueItemList& aItems, Flags::MaskType aAddBad, BundleList& matchingBundles_) noexcept {
 	bool wantConnection = false;
 
+	QueueItemList addedItems;
 	{
-		// Add the source
+		// Add sources
 
 		WLock l(cs);
-		items.erase(boost::remove_if(items, [&](QueueItemPtr& q) {
+		boost::algorithm::copy_if(aItems, back_inserter(addedItems), [&](const QueueItemPtr& q) {
 			if (q->getBundle() && find(matchingBundles_, q->getBundle()) == matchingBundles_.end()) {
 				matchingBundles_.push_back(q->getBundle());
 			}
@@ -3358,36 +3354,29 @@ int QueueManager::addSources(const HintedUser& aUser, QueueItemList items, Flags
 			}
 
 			return true;
-		}), items.end());
+		});
 	}
 
-	if (items.empty()) {
-		return 0;
-	}
-
-	{
-		Bundle::Set updatedBundles;
-
+	if (!addedItems.empty()) {
 		// Speakers
-		for (const auto& qi : items) {
+		for (const auto& qi : addedItems) {
 			fire(QueueManagerListener::ItemSources(), qi);
+		}
 
-			if (qi->getBundle() && updatedBundles.insert(qi->getBundle()).second) {
-				fire(QueueManagerListener::BundleSources(), qi->getBundle());
-			}
+		for (const auto& b : matchingBundles_) {
+			fire(QueueManagerListener::BundleSources(), b);
 		}
 
 		fire(QueueManagerListener::SourceFilesUpdated(), aUser);
-	}
 
-	{
+
 		// Connect
 		if (wantConnection && aUser.user->isOnline()) {
 			ConnectionManager::getInstance()->getDownloadConnection(aUser);
 		}
 	}
 
-	return items.size();
+	return addedItems.size();
 }
 
 void QueueManager::connectBundleSources(BundlePtr& aBundle) noexcept {

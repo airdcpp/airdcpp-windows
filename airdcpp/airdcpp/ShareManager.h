@@ -136,7 +136,7 @@ public:
 	bool isRefreshing() const noexcept { return refreshRunning; }
 	
 	// aIsMajor will regenerate the file list on next time when someone requests it
-	void setProfilesDirty(ProfileTokenSet aProfiles, bool aIsMajor) noexcept;
+	void setProfilesDirty(const ProfileTokenSet& aProfiles, bool aIsMajor) noexcept;
 
 	void startup(function<void(const string&)> stepF, function<void(float)> progressF) noexcept;
 	void shutdown(function<void(float)> progressF) noexcept;

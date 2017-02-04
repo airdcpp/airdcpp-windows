@@ -461,11 +461,11 @@ private:
 	static string formatBundleTarget(const string& aPath, time_t aRemoteDate) noexcept;
 
 	// Add a source to an existing queue item
-	bool addSource(QueueItemPtr& qi, const HintedUser& aUser, Flags::MaskType addBad, bool checkTLS=true) throw(QueueException, FileException);
+	bool addSource(const QueueItemPtr& qi, const HintedUser& aUser, Flags::MaskType addBad, bool checkTLS=true) throw(QueueException, FileException);
 
 	// Add a source for a list of queue items, returns the number of (new) files for which the source was added
-	int addSources(const HintedUser& aUser, QueueItemList items, Flags::MaskType aAddBad) noexcept;
-	int addSources(const HintedUser& aUser, QueueItemList items, Flags::MaskType aAddBad, BundleList& bundles_) noexcept;
+	int addSources(const HintedUser& aUser, const QueueItemList& aItems, Flags::MaskType aAddBad) noexcept;
+	int addSources(const HintedUser& aUser, const QueueItemList& aItems, Flags::MaskType aAddBad, BundleList& bundles_) noexcept;
 	 
 	void matchTTHList(const string& name, const HintedUser& user, int flags) noexcept;
 

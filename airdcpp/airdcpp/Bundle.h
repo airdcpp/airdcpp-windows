@@ -229,8 +229,8 @@ public:
 	bool isBadSource(const UserPtr& aUser) const noexcept;
 
 	/** All queue items indexed by user */
-	void addUserQueue(QueueItemPtr& qi) noexcept;
-	bool addUserQueue(QueueItemPtr& qi, const HintedUser& aUser, bool isBad = false) noexcept;
+	void addUserQueue(const QueueItemPtr& qi) noexcept;
+	bool addUserQueue(const QueueItemPtr& qi, const HintedUser& aUser, bool isBad = false) noexcept;
 	QueueItemPtr getNextQI(const UserPtr& aUser, const OrderedStringSet& onlineHubs, string& aLastError, Priority minPrio, int64_t wantedSize, int64_t lastSpeed, QueueItemBase::DownloadType aType, bool allowOverlap) noexcept;
 	void getItems(const UserPtr& aUser, QueueItemList& ql) const noexcept;
 

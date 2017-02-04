@@ -26,13 +26,13 @@
 namespace dcpp {
 
 
-void UserQueue::addQI(QueueItemPtr& qi) noexcept {
+void UserQueue::addQI(const QueueItemPtr& qi) noexcept {
 	for(const auto& i: qi->getSources()) {
 		addQI(qi, i.getUser());
 	}
 }
 
-void UserQueue::addQI(QueueItemPtr& qi, const HintedUser& aUser, bool aIsBadSource /*false*/) noexcept{
+void UserQueue::addQI(const QueueItemPtr& qi, const HintedUser& aUser, bool aIsBadSource /*false*/) noexcept{
 
 	if (qi->getPriority() == Priority::HIGHEST) {
 		auto& l = userPrioQueue[aUser.user];
