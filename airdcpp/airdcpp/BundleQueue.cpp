@@ -32,7 +32,7 @@ namespace dcpp {
 
 using boost::range::find_if;
 
-BundleQueue::BundleQueue() { }
+BundleQueue::BundleQueue() : PrioritySearchQueue(SettingsManager::BUNDLE_SEARCH_TIME) { }
 
 BundleQueue::~BundleQueue() { }
 

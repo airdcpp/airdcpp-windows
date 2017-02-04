@@ -683,7 +683,8 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 		if (!b->isDownloaded()) {
 			bundleMenu.appendItem(TSTRING(SEARCH_BUNDLE_ALT), [=] {
 				auto bundle = b;
-				QueueManager::getInstance()->searchBundleAlternates(bundle, true);
+				auto queuedFileSearches = QueueManager::getInstance()->searchBundleAlternates(bundle);
+				ctrlStatus.SetText(1, TSTRING_F(BUNDLE_ALT_SEARCH, Text::toT(bundle->getName()) % queuedFileSearches).c_str());
 			}, OMenu::FLAG_THREADED);
 		}
 		bundleMenu.appendSeparator();

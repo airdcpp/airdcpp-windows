@@ -29,7 +29,7 @@ namespace dcpp {
 
 	class Searches : public PrioritySearchQueue<AutoSearchPtr> {
 	public:
-		Searches() {}
+		Searches() : PrioritySearchQueue(SettingsManager::AUTOSEARCH_EVERY) {}
 		~Searches() {}
 
 		void addItem(AutoSearchPtr& as) {

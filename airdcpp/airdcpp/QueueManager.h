@@ -59,6 +59,7 @@ namespace bimaps = boost::bimaps;
 
 class UserConnection;
 class QueueLoader;
+struct SearchQueueInfo;
 
 class QueueManager : public Singleton<QueueManager>, public Speaker<QueueManagerListener>, private TimerManagerListener, 
 	private SearchManagerListener, private ClientManagerListener, private ShareManagerListener
@@ -325,7 +326,9 @@ public:
 
 	// Search bundle for alternatives on the background
 	// Returns the number of searches that were sent
-	int searchBundleAlternates(BundlePtr& aBundle, bool aIsManualSearch, uint64_t aTick = GET_TICK()) noexcept;
+	int searchBundleAlternates(const BundlePtr& aBundle, uint64_t aTick = GET_TICK()) noexcept;
+
+	SearchQueueInfo QueueManager::searchFileAlternates(const QueueItemPtr& aQI) const noexcept;
 
 	int getUnfinishedItemCount(const BundlePtr& aBundle) const noexcept;
 	int getFinishedItemCount(const BundlePtr& aBundle) const noexcept;
@@ -503,6 +506,7 @@ private:
 
 	// Perform automatic search for alternate sources
 	void searchAlternates(uint64_t aTick) noexcept;
+	static bool autoSearchEnabled() noexcept;
 
 	// Resume bundles that were paused for a specific interval
 	void checkResumeBundles() noexcept;

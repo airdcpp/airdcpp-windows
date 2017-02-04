@@ -491,24 +491,6 @@ void QueueManager::requestPartialSourceInfo(uint64_t aTick) noexcept {
 	}
 }
 
-void QueueManager::searchAlternates(uint64_t aTick) noexcept {
-	if (!SETTING(AUTO_SEARCH) || !SETTING(AUTO_ADD_SOURCE)) {
-		return;
-	}
-
-	BundlePtr bundle;
-
-	{
-		RLock l(cs);
-		if (SETTING(AUTO_SEARCH) && SETTING(AUTO_ADD_SOURCE))
-			bundle = bundleQueue.findSearchItem(aTick); //may modify the recent search queue
-	}
-
-	if (bundle) {
-		searchBundleAlternates(bundle, false, aTick);
-	}
-}
-
 DirectoryContentInfo QueueManager::getBundleContent(const BundlePtr& aBundle) const noexcept {
 	RLock l(cs);
 	auto files = aBundle->getQueueItems().size() + aBundle->getFinishedFiles().size();
@@ -978,7 +960,7 @@ void QueueManager::onBundleAdded(const BundlePtr& aBundle, Bundle::Status aOldSt
 	if (aOldStatus == Bundle::STATUS_NEW) {
 		fire(QueueManagerListener::BundleAdded(), aBundle);
 
-		if (SETTING(AUTO_SEARCH) && SETTING(AUTO_ADD_SOURCE) && !aBundle->isPausedPrio()) {
+		if (autoSearchEnabled() && !aBundle->isPausedPrio()) {
 			aBundle->setFlag(Bundle::FLAG_SCHEDULE_SEARCH);
 			addBundleUpdate(aBundle);
 		}
@@ -2029,7 +2011,6 @@ void QueueManager::setBundlePriority(BundlePtr& aBundle, Priority p, bool aKeepA
 		bundleQueue.removeSearchPrio(aBundle);
 		userQueue.setBundlePriority(aBundle, p);
 		bundleQueue.addSearchPrio(aBundle);
-		bundleQueue.recalculateSearchTimes(aBundle->isRecent(), true, GET_TICK(), SETTING(BUNDLE_SEARCH_TIME));
 		if (!aKeepAutoPrio) {
 			aBundle->setAutoPriority(false);
 		}
@@ -3468,7 +3449,7 @@ int QueueManager::getFinishedItemCount(const BundlePtr& aBundle) const noexcept 
 int QueueManager::getFinishedBundlesCount() const noexcept {
 
 	RLock l(cs);
-	return boost::count_if(getBundles() | map_values, [&](const BundlePtr& b) { return b->isDownloaded(); });
+	return static_cast<int>(boost::count_if(getBundles() | map_values, [&](const BundlePtr& b) { return b->isDownloaded(); }));
 }
 
 void QueueManager::addBundleUpdate(const BundlePtr& aBundle) noexcept{
@@ -3501,7 +3482,7 @@ void QueueManager::handleBundleUpdate(QueueToken aBundleToken) noexcept {
 		}
 		
 		if (b->isSet(Bundle::FLAG_SCHEDULE_SEARCH)) {
-			searchBundleAlternates(b, false);
+			searchBundleAlternates(b);
 		}
 	}
 }
@@ -3737,18 +3718,40 @@ void QueueManager::updatePBD(const HintedUser& aUser, const TTHValue& aTTH) noex
 	addSources(aUser, qiList, QueueItem::Source::FLAG_FILE_NOT_AVAILABLE);
 }
 
-int QueueManager::searchBundleAlternates(BundlePtr& aBundle, bool aIsManualSearch, uint64_t aTick) noexcept {
+bool QueueManager::autoSearchEnabled() noexcept {
+	return SETTING(AUTO_SEARCH) && SETTING(AUTO_ADD_SOURCE);
+}
+
+void QueueManager::searchAlternates(uint64_t aTick) noexcept {
+	if (!autoSearchEnabled() || ClientManager::getInstance()->hasSearchQueueOverflow()) {
+		return;
+	}
+
+	BundlePtr bundle;
+
+	// Get the item to search for
+	{
+		WLock l(cs);
+		bundle = bundleQueue.maybePopSearchItem(aTick);
+	}
+
+	if (!bundle) {
+		return;
+	}
+
+	// Perform the search
+	searchBundleAlternates(bundle, aTick);
+}
+
+int QueueManager::searchBundleAlternates(const BundlePtr& aBundle, uint64_t aTick) noexcept {
 	QueueItemList searchItems;
-	int64_t nextSearch = 0;
 
 	// Get the possible items to search for
 	{
 		RLock l(cs);
-		bool isScheduled = aBundle->isSet(Bundle::FLAG_SCHEDULE_SEARCH);
+		auto isScheduled = aBundle->isSet(Bundle::FLAG_SCHEDULE_SEARCH);
 
 		aBundle->unsetFlag(Bundle::FLAG_SCHEDULE_SEARCH);
-		if (!aIsManualSearch)
-			nextSearch = (bundleQueue.recalculateSearchTimes(aBundle->isRecent(), false, aTick, SETTING(BUNDLE_SEARCH_TIME)) - aTick) / (60*1000);
 
 		if (isScheduled && !aBundle->allowAutoSearch())
 			return 0;
@@ -3760,26 +3763,47 @@ int QueueManager::searchBundleAlternates(BundlePtr& aBundle, bool aIsManualSearc
 		return 0;
 	}
 
+	// Perform the searches
+	int queuedFileSearches = 0;
 	for (const auto& q : searchItems) {
-		q->searchAlternates();
-	}
-
-	aBundle->setLastSearch(aTick);
-
-	// Report
-	if (aIsManualSearch) {
-		LogManager::getInstance()->message(STRING_F(BUNDLE_ALT_SEARCH, aBundle->getName().c_str() % searchItems.size()), LogMessage::SEV_INFO);
-	} else if(SETTING(REPORT_ALTERNATES)) {
-		if (aBundle->isRecent()) {
-			LogManager::getInstance()->message(STRING_F(BUNDLE_ALT_SEARCH_RECENT, aBundle->getName() % searchItems.size()) +
-				" " + STRING_F(NEXT_RECENT_SEARCH_IN, nextSearch), LogMessage::SEV_INFO);
-		} else {
-			LogManager::getInstance()->message(STRING_F(BUNDLE_ALT_SEARCH, aBundle->getName() % searchItems.size()) +
-				" " + STRING_F(NEXT_SEARCH_IN, nextSearch), LogMessage::SEV_INFO);
+		auto success = !searchFileAlternates(q).queuedHubUrls.empty();
+		if (success) {
+			queuedFileSearches++;
 		}
 	}
 
-	return static_cast<int>(searchItems.size());
+	if (queuedFileSearches > 0) {
+		aBundle->setLastSearch(aTick);
+
+		uint64_t nextSearchTick = 0;
+		if (autoSearchEnabled()) {
+			RLock l(cs);
+			nextSearchTick = bundleQueue.recalculateSearchTimes(aBundle->isRecent(), true, aTick);
+		}
+
+		if (nextSearchTick == 0) {
+			LogManager::getInstance()->message(STRING_F(BUNDLE_ALT_SEARCH, aBundle->getName().c_str() % queuedFileSearches), LogMessage::SEV_INFO);
+		} else if (SETTING(REPORT_ALTERNATES)) {
+			auto nextSearchMinutes = (nextSearchTick - aTick) / (60 * 1000);
+			if (aBundle->isRecent()) {
+				LogManager::getInstance()->message(STRING_F(BUNDLE_ALT_SEARCH_RECENT, aBundle->getName() % queuedFileSearches) +
+					" " + STRING_F(NEXT_RECENT_SEARCH_IN, nextSearchMinutes), LogMessage::SEV_INFO);
+			} else {
+				LogManager::getInstance()->message(STRING_F(BUNDLE_ALT_SEARCH, aBundle->getName() % queuedFileSearches) +
+					" " + STRING_F(NEXT_SEARCH_IN, nextSearchMinutes), LogMessage::SEV_INFO);
+			}
+		}
+	}
+
+	return queuedFileSearches;
+}
+
+SearchQueueInfo QueueManager::searchFileAlternates(const QueueItemPtr& aQI) const noexcept {
+	auto s = make_shared<Search>(Priority::LOW, "qa");
+	s->query = aQI->getTTH().toBase32();
+	s->fileType = Search::TYPE_TTH;
+
+	return SearchManager::getInstance()->search(s);
 }
 
 void QueueManager::onUseSeqOrder(BundlePtr& b) noexcept {

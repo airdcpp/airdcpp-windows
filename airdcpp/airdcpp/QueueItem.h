@@ -163,7 +163,6 @@ public:
 	~QueueItem();
 
 	bool usesSmallSlot() const noexcept;
-	void searchAlternates() noexcept;
 
 	// Select a random item from the list to search for alternates
 	static QueueItemPtr pickSearchItem(const QueueItemList& aItems) noexcept;

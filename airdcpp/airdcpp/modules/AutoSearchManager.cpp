@@ -319,8 +319,7 @@ void AutoSearchManager::on(QueueManagerListener::BundleStatusChanged, const Bund
 			updateStatus(as, true);
 		}
 
-		// if we already have a waiting time over 5 minutes in search queue don't pile up more...
-		if (!searched && filesMissing && checkSearchQueueLimit()) {
+		if (!searched && filesMissing) {
 			searchItem(as, TYPE_NORMAL);
 			searched = true;
 		}
@@ -392,7 +391,7 @@ bool AutoSearchManager::addFailedBundle(const BundlePtr& aBundle) noexcept {
 
 	as->setGroup(SETTING(AS_FAILED_DEFAULT_GROUP));
 	as->addBundle(aBundle);
-	addAutoSearch(as, aBundle->isRecent() && checkSearchQueueLimit());
+	addAutoSearch(as, aBundle->isRecent());
 	return true;
 }
 
@@ -438,7 +437,10 @@ void AutoSearchManager::performSearch(AutoSearchPtr& as, StringList& aHubs, Sear
 	}
 	
 	//Run the search
-	if (aType != TYPE_MANUAL_FG) {
+	if (aType == TYPE_MANUAL_FG) {
+		as->setLastSearch(GET_TIME());
+		fire(AutoSearchManagerListener::SearchForeground(), as, searchWord);
+	} else if (!ClientManager::getInstance()->hasSearchQueueOverflow()) {
 		auto s = make_shared<Search>(aType == TYPE_MANUAL_BG ? Priority::NORMAL : Priority::LOWEST, "as");
 		s->query = searchWord;
 		s->fileType = ftype;
@@ -446,17 +448,11 @@ void AutoSearchManager::performSearch(AutoSearchPtr& as, StringList& aHubs, Sear
 		s->excluded = SearchQuery::parseSearchString(as->getExcludedString());
 
 		auto searchInfo = SearchManager::getInstance()->search(aHubs, s);
-		lastSearchQueueTime = searchInfo.queueTime;
-		if (searchInfo.queuedHubUrls.empty()) {
-			/*
-			This is not 100% accurate message in all cases, but we shouldn't have come here if no hubs to search.
-			*/
-			logMessage(STRING_F(SEARCH_QUEUE_OVERFLOW, searchWord), LogMessage::SEV_INFO);
-		} else {
+		if (!searchInfo.queuedHubUrls.empty()) {
 			as->setLastSearch(GET_TIME()); //set the item as searched only when we actually were able to queue a search for it.
 			string msg;
 			//Report
-			if (lastSearchQueueTime == 0) {
+			if (searchInfo.queueTime == 0) {
 				if (failedBundle) {
 					msg = STRING_F(FAILED_BUNDLE_SEARCHED, searchWord);
 				}
@@ -466,9 +462,8 @@ void AutoSearchManager::performSearch(AutoSearchPtr& as, StringList& aHubs, Sear
 				else {
 					msg = STRING_F(ITEM_SEARCHED, searchWord);
 				}
-			}
-			else {
-				auto time = lastSearchQueueTime / 1000;
+			} else {
+				auto time = searchInfo.queueTime / 1000;
 				if (failedBundle) {
 					msg = STRING_F(FAILED_BUNDLE_SEARCHED_IN, searchWord % time);
 				}
@@ -479,14 +474,12 @@ void AutoSearchManager::performSearch(AutoSearchPtr& as, StringList& aHubs, Sear
 					msg = STRING_F(ITEM_SEARCHED_IN, searchWord % time);
 				}
 			}
+
 			logMessage(msg, LogMessage::SEV_INFO);
 		}
-	} else {
-		as->setLastSearch(GET_TIME());
-		fire(AutoSearchManagerListener::SearchForeground(), as, searchWord);
 	}
-	resetSearchTimes(aTick, false);
-	nextSearch += lastSearchQueueTime / 1000; //add the waiting time from search queue to avoid pile up...
+
+	resetSearchTimes(aTick);
 	fire(AutoSearchManagerListener::UpdateItem(), as, false);
 }
 void AutoSearchManager::resetSearchTimes(uint64_t aTick, bool aUpdate) noexcept {
@@ -522,12 +515,12 @@ void AutoSearchManager::resetSearchTimes(uint64_t aTick, bool aUpdate) noexcept 
 	uint64_t nextSearchTick = 0;
 	
 	if(itemCount > 0)
-		nextSearchTick = searchItems.recalculateSearchTimes(false, aUpdate, aTick, SETTING(AUTOSEARCH_EVERY), itemCount);
+		nextSearchTick = searchItems.recalculateSearchTimes(false, aUpdate, aTick);
 
 	//Calculate interval for recent items, if any..
 	uint64_t recentSearchTick = 0;
 	if (recentItems > 0)
-		recentSearchTick = searchItems.recalculateSearchTimes(true, aUpdate, aTick, SETTING(AUTOSEARCH_EVERY), recentItems);
+		recentSearchTick = searchItems.recalculateSearchTimes(true, aUpdate, aTick);
 
 	nextSearchTick = recentSearchTick > 0 ? nextSearchTick > 0 ? min(recentSearchTick, nextSearchTick) : recentSearchTick : nextSearchTick;
 
@@ -563,11 +556,13 @@ void AutoSearchManager::on(TimerManagerListener::Second, uint64_t aTick) noexcep
 		if (allowedHubs.empty()) {
 			return;
 		}
+
 		AutoSearchPtr searchItem = nullptr;
 		{
-			RLock l(cs);
-			searchItem = searchItems.findSearchItem(aTick);
+			WLock l(cs);
+			searchItem = searchItems.maybePopSearchItem(aTick);
 		}
+
 		if (searchItem)
 			performSearch(searchItem, allowedHubs, TYPE_NORMAL, aTick);
 	}
