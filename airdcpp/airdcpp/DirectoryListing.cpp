@@ -1161,7 +1161,7 @@ void DirectoryListing::onUserUpdated(const UserPtr& aUser) noexcept {
 		return;
 	}
 
-	fire(DirectoryListingListener::UserUpdated());
+	addAsyncTask([=] { fire(DirectoryListingListener::UserUpdated()); });
 }
 
 void DirectoryListing::on(TimerManagerListener::Second, uint64_t /*aTick*/) noexcept {
