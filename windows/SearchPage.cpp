@@ -21,7 +21,8 @@
 #include <airdcpp/modules/AutoSearchManager.h>
 
 PropPage::TextItem SearchPage::texts[] = {
-	{ IDC_INTERVAL_TEXT,						ResourceManager::MINIMUM_SEARCH_INTERVAL_SEC },
+	{ IDC_SETTINGS_SECONDS,						ResourceManager::SECONDS_LOWER },
+	{ IDC_INTERVAL_TEXT,						ResourceManager::MINIMUM_SEARCH_INTERVAL },
 	{ IDC_SEARCHING_OPTIONS,					ResourceManager::SETTINGS_SEARCHING_OPTIONS	},
 	{ IDC_EXPIRY_DAYS_LABEL,					ResourceManager::SETTINGS_EXPIRY_DAYS	},
 	{ IDC_DELAY_HOURS_LABEL,					ResourceManager::SETTINGS_DELAY_HOURS	},

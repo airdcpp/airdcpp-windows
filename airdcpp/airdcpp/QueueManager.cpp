@@ -2344,9 +2344,9 @@ void QueueManager::loadQueue(function<void (float)> progressF) noexcept {
 	ClientManager::getInstance()->addListener(this);
 	ShareManager::getInstance()->addListener(this);
 
-	auto finished_count = getFinishedBundlesCount();
-	if (finished_count > 500)
-		LogManager::getInstance()->message(STRING_F(BUNDLE_X_FINISHED_WARNING, finished_count), LogMessage::SEV_WARNING);
+	auto finishedCount = getFinishedBundlesCount();
+	if (finishedCount > 500)
+		LogManager::getInstance()->message(STRING_F(BUNDLE_X_FINISHED_WARNING, finishedCount), LogMessage::SEV_WARNING);
 
 }
 

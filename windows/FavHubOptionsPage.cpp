@@ -34,7 +34,8 @@ LRESULT FavHubOptionsPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 {
 
 	SetDlgItemText(IDC_SHOW_JOIN, CTSTRING(FAV_SHOW_JOIN));
-	SetDlgItemText(IDC_FAV_SEARCH_INTERVAL, CTSTRING(MINIMUM_SEARCH_INTERVAL_SEC));
+	SetDlgItemText(IDC_FAV_SEARCH_INTERVAL, CTSTRING(MINIMUM_SEARCH_INTERVAL));
+	SetDlgItemText(IDC_SETTINGS_SECONDS, CTSTRING(SECONDS_LOWER));
 	SetDlgItemText(IDC_SEARCH_INTERVAL_DEFAULT, CTSTRING(USE_DEFAULT));
 	SetDlgItemText(IDC_LOGMAINCHAT, CTSTRING(FAV_LOG_CHAT));
 	SetDlgItemText(IDC_CHAT_NOTIFY, CTSTRING(CHAT_NOTIFY));
@@ -102,6 +103,7 @@ void FavHubOptionsPage::fixControls() {
 	auto usingDefaultInterval = IsDlgButtonChecked(IDC_SEARCH_INTERVAL_DEFAULT);
 	::EnableWindow(GetDlgItem(IDC_FAV_SEARCH_INTERVAL_BOX), !usingDefaultInterval);
 	::EnableWindow(GetDlgItem(IDC_FAV_SEARCH_INTERVAL_SPIN), !usingDefaultInterval);
+	::EnableWindow(GetDlgItem(IDC_SETTINGS_SECONDS), !usingDefaultInterval);
 	if (usingDefaultInterval)
 		SetDlgItemText(IDC_FAV_SEARCH_INTERVAL_BOX, Util::toStringW(SettingsManager::getInstance()->get(SettingsManager::MINIMUM_SEARCH_INTERVAL)).c_str());
 }
