@@ -1092,15 +1092,6 @@ TTH searches: %d%% (hash bloom mode: %s)")
 		% (SETTING(BLOOM_MODE) != SettingsManager::BLOOM_DISABLED ? "Enabled" : "Disabled") // bloom mode
 	);
 
-	/*ret += "\r\n\r\n-=[ Monitoring statistics ]=-\r\n\r\n";
-	if (monitor.hasDirectories()) {
-		ret += "Debug mode: ";
-		ret += (monitorDebug ? "Enabled" : "Disabled");
-		ret += " \r\n\r\nMonitored paths:\r\n";
-		ret += monitor.getStats();
-	} else {
-		ret += "No folders are being monitored\r\n";
-	}*/
 	return ret;
 }
 

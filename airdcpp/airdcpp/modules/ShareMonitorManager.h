@@ -40,6 +40,7 @@ namespace dcpp {
 		~ShareMonitorManager();
 
 		void startup() noexcept;
+		string printStats() const noexcept;
 
 		// Call when a drive has been removed and it should be removed from monitoring
 		// Monitoring won't fail it otherwise and the monitoring will neither be restored if the device is readded

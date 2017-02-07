@@ -48,6 +48,20 @@ namespace dcpp {
 		monitor.callAsync([=] { rebuildMonitoring(); });
 	}
 
+	string ShareMonitorManager::printStats() const noexcept {
+		string ret = "\r\n\r\n-=[ Monitoring statistics ]=-\r\n\r\n";
+		if (monitor.hasDirectories()) {
+			ret += "Debug mode: ";
+			ret += (monitorDebug ? "Enabled" : "Disabled");
+			ret += " \r\n\r\nMonitored paths:\r\n";
+			ret += monitor.getStats();
+		} else {
+			ret += "No folders are being monitored\r\n";
+		}
+
+		return ret;
+	}
+
 	void ShareMonitorManager::on(ShareManagerListener::RefreshQueued, uint8_t /*aTaskType*/, const RefreshPathList& aPaths) noexcept {
 		for (const auto& p: aPaths) {
 			monitor.callAsync([=] { removeNotifications(p); });
