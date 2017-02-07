@@ -79,8 +79,13 @@ File::File(const string& aFileName, int access, int mode, BufferMode aBufferMode
 		throw FileException(Util::translateError(GetLastError()));
 	}
 
+#ifdef _DEBUG
+	// Strip possible network path prefix
+	auto fileName = aFileName.size() > 2 && aFileName.substr(0, 2) == "\\\\" ? aFileName.substr(2) : aFileName;
+
 	// Avoid issues on Linux...
-	dcassert(compare(aFileName, getRealPath()) == 0);
+	dcassert(compare(fileName, getRealPath()) == 0);
+#endif
 }
 
 uint64_t File::getLastModified() const noexcept {

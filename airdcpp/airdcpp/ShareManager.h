@@ -651,13 +651,13 @@ private:
 	// Recursive function for building a new share tree from a path
 	void buildTree(const string& aPath, const string& aPathLower, const Directory::Ptr& aDir, Directory::MultiMap& directoryNameMapNew_, int64_t& hashSize_, int64_t& addedSize_, HashFileMap& tthIndexNew_, ShareBloom& bloomNew_);
 
-	void addFile(const string& aName, Directory::Ptr& aDir, const HashedFile& fi, ProfileTokenSet& dirtyProfiles_) noexcept;
+	static void addFile(const DualString& aName, const Directory::Ptr& aDir, const HashedFile& fi, HashFileMap& tthIndex_, ShareBloom& aBloom_, int64_t& sharedSize_, ProfileTokenSet* dirtyProfiles_ = nullptr) noexcept;
 
 	static void updateIndices(Directory::Ptr& aDirectory, ShareBloom& aBloom_, int64_t& sharedSize_, HashFileMap& tthIndex_, Directory::MultiMap& aDirNames_) noexcept;
 	static void updateIndices(Directory& dir, const Directory::File* f, ShareBloom& aBloom_, int64_t& sharedSize_, HashFileMap& tthIndex_) noexcept;
 
-	void cleanIndices(Directory& dir) noexcept;
-	void cleanIndices(Directory& dir, const Directory::File* f) noexcept;
+	static void cleanIndices(Directory& dir, int64_t& sharedSize_, HashFileMap& tthIndex_, Directory::MultiMap& aDirNames_) noexcept;
+	static void cleanIndices(Directory& dir, const Directory::File* f, int64_t& sharedSize_, HashFileMap& tthIndex_) noexcept;
 
 	static void addDirName(const Directory::Ptr& dir, Directory::MultiMap& aDirNames, ShareBloom& aBloom) noexcept;
 	static void removeDirName(const Directory& dir, Directory::MultiMap& aDirNames) noexcept;
@@ -669,7 +669,7 @@ private:
 
 	// Go through the whole tree and check that the global maps have been filled properly
 	void validateDirectoryTreeDebug() noexcept;
-	void validateDirectoryRecursiveDebug(const Directory::Ptr& dir, size_t& dirCount, size_t& fileCount_) noexcept;
+	void validateDirectoryRecursiveDebug(const Directory::Ptr& dir, OrderedStringSet& directoryPaths_, OrderedStringSet& filePaths_) noexcept;
 #endif
 
 	// Get root directories matching the provided token

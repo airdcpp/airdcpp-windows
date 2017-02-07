@@ -415,7 +415,7 @@ bool ShareManager::handleModifyInfo(DirModifyInfo& info, optional<OrderedStringS
 					HashedFile hashedFile(ff.getLastModified(), size);
 					if (HashManager::getInstance()->checkTTH(Text::toLower(fi), fi, hashedFile)) {
 						WLock l(cs);
-						addFile(Util::getFileName(fi), dir, hashedFile, dirtyProfiles_);
+						addFile(Util::getFileName(fi), dir, hashedFile, tthIndex, *bloom.get(), sharedSize, &dirtyProfiles_);
 						hashedFiles++;
 						continue;
 					}
@@ -569,11 +569,11 @@ void ShareManager::on(DirectoryMonitorListener::FileRenamed, const string& aOldP
 						HashedFile fi((*f)->getTTH(), (*f)->getLastWrite(), (*f)->getSize());
 
 						//remove old
-						cleanIndices(*parent, *f);
+						cleanIndices(*parent, *f, sharedSize, tthIndex);
 						parent->files.erase(f);
 
 						//add new
-						addFile(Util::getFileName(aNewPath), parent, fi, dirtyProfiles);
+						addFile(Util::getFileName(aNewPath), parent, fi, tthIndex, *bloom.get(), sharedSize, &dirtyProfiles);
 						parent->updateModifyDate();
 
 						//add for renaming in file index
@@ -682,7 +682,7 @@ bool ShareManager::handleDeletedFile(const string& aPath, bool isDirectory, Prof
 			auto dirNameLower = Text::toLower(Util::getLastDir(aPath));
 			auto p = parent->directories.find(dirNameLower);
 			if (p != parent->directories.end()) {
-				cleanIndices(**p);
+				cleanIndices(**p, sharedSize, tthIndex, lowerDirNameMap);
 				parent->directories.erase(p);
 				deleted = true;
 			}
@@ -690,7 +690,7 @@ bool ShareManager::handleDeletedFile(const string& aPath, bool isDirectory, Prof
 			auto fileNameLower = Text::toLower(Util::getFileName(aPath));
 			auto f = parent->files.find(fileNameLower);
 			if (f != parent->files.end()) {
-				cleanIndices(*parent, *f);
+				cleanIndices(*parent, *f, sharedSize, tthIndex);
 				parent->files.erase(f);
 				deleted = true;
 			}
@@ -699,7 +699,7 @@ bool ShareManager::handleDeletedFile(const string& aPath, bool isDirectory, Prof
 		parent->updateModifyDate();
 		if (SETTING(SKIP_EMPTY_DIRS_SHARE) && parent->directories.empty() && parent->files.empty() && parent->getParent()) {
 			//remove the parent
-			cleanIndices(*parent);
+			cleanIndices(*parent, sharedSize, tthIndex, lowerDirNameMap);
 			parent->getParent()->directories.erase_key(parent->realName.getLower());
 		}
 	}
@@ -1323,7 +1323,10 @@ ShareManager::Directory::Ptr ShareManager::Directory::createNormal(DualString&& 
 	auto dir = Ptr(new Directory(move(aRealName), aParent, aLastWrite, nullptr));
 
 	if (aParent) {
-		aParent->directories.insert_sorted(dir);
+		auto added = aParent->directories.insert_sorted(dir).second;
+		if (!added) {
+			return nullptr;
+		}
 	}
 
 	addDirName(dir, dirNameMap_, bloom);
@@ -1368,6 +1371,10 @@ struct ShareManager::ShareLoader : public SimpleXMLReader::ThreadedCallBack, pub
 				curDirPath += name + PATH_SEPARATOR;
 
 				cur = ShareManager::Directory::createNormal(name, cur, Util::toUInt32(date), lowerDirNameMapNew, bloom);
+				if (!cur) {
+					throw("Duplicate directory name");
+				}
+
 				curDirPathLower += cur->realName.getLower() + PATH_SEPARATOR;
 			}
 
@@ -1387,8 +1394,7 @@ struct ShareManager::ShareLoader : public SimpleXMLReader::ThreadedCallBack, pub
 				DualString name(fname);
 				HashedFile fi;
 				HashManager::getInstance()->getFileInfo(curDirPathLower + name.getLower(), curDirPath + fname, fi);
-				auto pos = cur->files.insert_sorted(new ShareManager::Directory::File(move(name), cur, fi));
-				ShareManager::updateIndices(*cur, *pos.first, bloom, addedSize, tthIndexNew);
+				addFile(name, cur, fi, tthIndexNew, bloom, addedSize);
 			}catch(Exception& e) {
 				hashSize += File::getSize(curDirPath + fname);
 				dcdebug("Error loading file list %s \n", e.getError().c_str());
@@ -1956,15 +1962,16 @@ void ShareManager::buildTree(const string& aPath, const string& aPathLower, cons
 			}
 
 			auto dir = Directory::createNormal(move(dualName), aDir, i->getLastWriteTime(), directoryNameMapNew_, bloomNew_);
-			buildTree(curPath, curPathLower, dir, directoryNameMapNew_, hashSize_, addedSize_, tthIndexNew_, bloomNew_);
+			if (dir) {
+				buildTree(curPath, curPathLower, dir, directoryNameMapNew_, hashSize_, addedSize_, tthIndexNew_, bloomNew_);
 
-			// Empty directory?
-			if (SETTING(SKIP_EMPTY_DIRS_SHARE) && dir->directories.empty() && dir->files.empty()) {
-				// Remove from parent
-				//cleanIndices(*dir.get());
-				removeDirName(*dir.get(), directoryNameMapNew_);
-				aDir->directories.erase_key(dir->realName.getLower());
-				continue;
+				// Empty directory?
+				if (SETTING(SKIP_EMPTY_DIRS_SHARE) && dir->directories.empty() && dir->files.empty()) {
+					// Remove from parent
+					cleanIndices(*dir.get(), addedSize_, tthIndexNew_, directoryNameMapNew_);
+					aDir->directories.erase_key(dir->realName.getLower());
+					continue;
+				}
 			}
 		} else {
 			// Not a directory, assume it's a file...
@@ -1978,8 +1985,7 @@ void ShareManager::buildTree(const string& aPath, const string& aPathLower, cons
 			try {
 				HashedFile fi(i->getLastWriteTime(), size);
 				if(HashManager::getInstance()->checkTTH(aPathLower + dualName.getLower(), aPath + name, fi)) {
-					auto pos = aDir->files.insert_sorted(new ShareManager::Directory::File(move(dualName), aDir, fi));
-					updateIndices(*aDir, *pos.first, bloomNew_, addedSize_, tthIndexNew_);
+					addFile(move(dualName), aDir, fi, tthIndexNew_, bloomNew_, addedSize_);
 				} else {
 					hashSize_ += size;
 				}
@@ -2019,23 +2025,45 @@ void ShareManager::checkAddedTTHDebug(const Directory::File* aFile, HashFileMap&
 }
 
 void ShareManager::validateDirectoryTreeDebug() noexcept {
-	size_t totalDirs = 0, totalFiles = 0;
+	OrderedStringSet directories, files;
 
 	auto start = GET_TICK();
 	{
 		RLock l(cs);
 		for (const auto& d : rootPaths | map_values) {
-			validateDirectoryRecursiveDebug(d, totalDirs, totalFiles);
+			validateDirectoryRecursiveDebug(d, directories, files);
 		}
 	}
 	auto end = GET_TICK();
 	dcdebug("Share tree checked in " U64_FMT " ms\n", end - start);
 
-	dcassert(totalFiles == tthIndex.size() && totalDirs == lowerDirNameMap.size());
+	StringList filesDiff, directoriesDiff;
+	if (files.size() != tthIndex.size()) {
+		OrderedStringSet indexed;
+		for (const auto& f : tthIndex | map_values) {
+			indexed.insert(f->getRealPath());
+		}
+
+		set_symmetric_difference(files.begin(), files.end(), indexed.begin(), indexed.end(), back_inserter(filesDiff));
+	}
+
+	if (directories.size() != lowerDirNameMap.size()) {
+		OrderedStringSet indexed;
+		for (const auto& d : lowerDirNameMap | map_values) {
+			indexed.insert(d->getRealPath());
+		}
+
+		set_symmetric_difference(directories.begin(), directories.end(), indexed.begin(), indexed.end(), back_inserter(directoriesDiff));
+	}
+
+	dcassert(directoriesDiff.empty() && filesDiff.empty());
 }
 
-void ShareManager::validateDirectoryRecursiveDebug(const Directory::Ptr& aDir, size_t& dirCount_, size_t& fileCount_) noexcept {
-	dirCount_++;
+void ShareManager::validateDirectoryRecursiveDebug(const Directory::Ptr& aDir, OrderedStringSet& directoryPaths_, OrderedStringSet& filePaths_) noexcept {
+	{
+		auto res = directoryPaths_.insert(aDir->getRealPath());
+		dcassert(res.second);
+	}
 
 	{
 		Directory::List dirs;
@@ -2055,11 +2083,12 @@ void ShareManager::validateDirectoryRecursiveDebug(const Directory::Ptr& aDir, s
 		}) == 1);
 
 		dcassert(bloom->match(f->name.getLower()));
-		fileCount_++;
+		auto res = filePaths_.insert(f->getRealPath());
+		dcassert(res.second);
 	}
 
 	for (const auto& d : aDir->directories) {
-		validateDirectoryRecursiveDebug(d, dirCount_, fileCount_);
+		validateDirectoryRecursiveDebug(d, directoryPaths_, filePaths_);
 	}
 }
 
@@ -2360,7 +2389,7 @@ bool ShareManager::removeRootDirectory(const string& aPath) noexcept {
 		rootPaths.erase(k);
 
 		// Remove the root
-		cleanIndices(*sd);
+		cleanIndices(*sd, sharedSize, tthIndex, lowerDirNameMap);
 		File::deleteFile(sd->getRoot()->getCacheXmlPath());
 	}
 
@@ -2747,7 +2776,7 @@ void ShareManager::setRefreshState(const string& aRefreshPath, RefreshState aSta
 bool ShareManager::applyRefreshChanges(RefreshInfo& ri, int64_t& totalHash_, ProfileTokenSet* aDirtyProfiles) {
 	// Recursively remove the content of this dir from TTHIndex and directory name map
 	if (ri.oldShareDirectory) {
-		cleanIndices(*ri.oldShareDirectory);
+		cleanIndices(*ri.oldShareDirectory, sharedSize, tthIndex, lowerDirNameMap);
 	}
 
 	// Remove this path from root paths
@@ -2762,7 +2791,7 @@ bool ShareManager::applyRefreshChanges(RefreshInfo& ri, int64_t& totalHash_, Pro
 		// All content was removed?
 		if (SETTING(SKIP_EMPTY_DIRS_SHARE) && ri.newShareDirectory->directories.empty() && ri.newShareDirectory->files.empty()) {
 			if (ri.oldShareDirectory) {
-				cleanIndices(*ri.oldShareDirectory);
+				cleanIndices(*ri.oldShareDirectory, sharedSize, tthIndex, lowerDirNameMap);
 				ri.oldShareDirectory->directories.erase_key(ri.newShareDirectory->realName.getLower());
 			}
 
@@ -3512,14 +3541,14 @@ void ShareManager::adcSearch(SearchResultList& results, SearchQuery& srch, const
 		recursiveSearchesResponded++;
 }
 
-void ShareManager::cleanIndices(Directory& dir, const Directory::File* f) noexcept {
+void ShareManager::cleanIndices(Directory& dir, const Directory::File* f, int64_t& sharedSize_, HashFileMap& tthIndex_) noexcept {
 	dir.size -= f->getSize();
-	sharedSize -= f->getSize();
+	sharedSize_ -= f->getSize();
 
-	auto flst = tthIndex.equal_range(const_cast<TTHValue*>(&f->getTTH()));
+	auto flst = tthIndex_.equal_range(const_cast<TTHValue*>(&f->getTTH()));
 	auto p = find(flst | map_values, f);
 	if (p.base() != flst.second)
-		tthIndex.erase(p.base());
+		tthIndex_.erase(p.base());
 	else
 		dcassert(0);
 }
@@ -3545,17 +3574,17 @@ void ShareManager::removeDirName(const Directory& aDir, Directory::MultiMap& aDi
 	aDirNames.erase(p.base());
 }
 
-void ShareManager::cleanIndices(Directory& dir) noexcept {
+void ShareManager::cleanIndices(Directory& dir, int64_t& sharedSize_, HashFileMap& tthIndex_, Directory::MultiMap& dirNames_) noexcept {
 	for(auto& d: dir.directories) {
-		cleanIndices(*d);
+		cleanIndices(*d, sharedSize_, tthIndex_, dirNames_);
 	}
 
 	//remove from the name map
-	removeDirName(dir, lowerDirNameMap);
+	removeDirName(dir, dirNames_);
 
 	//remove all files
 	for(auto i = dir.files.begin(); i != dir.files.end(); ++i) {
-		cleanIndices(dir, *i);
+		cleanIndices(dir, *i, sharedSize_, tthIndex_);
 	}
 }
 
@@ -3681,25 +3710,27 @@ void ShareManager::onFileHashed(const string& fname, HashedFile& fileInfo) noexc
 			return;
 		}
 
-		addFile(Util::getFileName(fname), d, fileInfo, dirtyProfiles);
+		addFile(Util::getFileName(fname), d, fileInfo, tthIndex, *bloom.get(), sharedSize, &dirtyProfiles);
 	}
 
 	setProfilesDirty(dirtyProfiles, false);
 }
 
-void ShareManager::addFile(const string& aName, Directory::Ptr& aDir, const HashedFile& fi, ProfileTokenSet& dirtyProfiles_) noexcept {
+void ShareManager::addFile(const DualString& aName, const Directory::Ptr& aDir, const HashedFile& aFileInfo, HashFileMap& tthIndex_, ShareBloom& aBloom_, int64_t& sharedSize_, ProfileTokenSet* dirtyProfiles_) noexcept {
 	DualString dualName(aName);
 	auto i = aDir->files.find(dualName.getLower());
 	if(i != aDir->files.end()) {
 		// Get rid of false constness...
-		cleanIndices(*aDir, *i);
+		cleanIndices(*aDir, *i, sharedSize_, tthIndex_);
 		aDir->files.erase(i);
 	}
 
-	auto it = aDir->files.insert_sorted(new Directory::File(move(dualName), aDir, fi)).first;
-	updateIndices(*aDir, *it, *bloom.get(), sharedSize, tthIndex);
+	auto it = aDir->files.insert_sorted(new Directory::File(move(dualName), aDir, aFileInfo)).first;
+	updateIndices(*aDir, *it, aBloom_, sharedSize_, tthIndex_);
 
-	aDir->copyRootProfiles(dirtyProfiles_, true);
+	if (dirtyProfiles_) {
+		aDir->copyRootProfiles(*dirtyProfiles_, true);
+	}
 }
 
 ShareProfileList ShareManager::getProfiles() const noexcept {
