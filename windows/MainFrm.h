@@ -26,6 +26,8 @@
 #include <airdcpp/concurrency.h>
 
 #include <airdcpp/modules/AutoSearchManagerListener.h>
+#include <airdcpp/modules/ShareScannerManager.h>
+
 #include <airdcpp/ClientManagerListener.h>
 #include <airdcpp/TimerManagerListener.h>
 #include <airdcpp/FavoriteManagerListener.h>
@@ -34,7 +36,6 @@
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/DirectoryListingManagerListener.h>
 #include <airdcpp/UpdateManagerListener.h>
-#include <airdcpp/ShareScannerManager.h>
 #include <airdcpp/MessageManagerListener.h>
 #include <airdcpp/ActivityManager.h>
 

@@ -39,8 +39,9 @@
 #include <airdcpp/QueueManager.h>
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/User.h>
-#include <airdcpp/ShareScannerManager.h>
 #include <airdcpp/Wildcards.h>
+
+#include <airdcpp/modules/ShareScannerManager.h>
 
 #include <boost/move/algorithm.hpp>
 #include <boost/range/algorithm/copy.hpp>

@@ -19,12 +19,12 @@
 #ifndef DCPLUSPLUS_DCPP_SHARE_SCANNER_MANAGER_H_
 #define DCPLUSPLUS_DCPP_SHARE_SCANNER_MANAGER_H_
 
-#include "CriticalSection.h"
-#include "DispatcherQueue.h"
-#include "SFVReader.h"
-#include "Speaker.h"
-#include "Singleton.h"
-#include "Thread.h"
+#include <airdcpp/CriticalSection.h>
+#include <airdcpp/DispatcherQueue.h>
+#include <airdcpp/SFVReader.h>
+#include <airdcpp/Speaker.h>
+#include <airdcpp/Singleton.h>
+#include <airdcpp/Thread.h>
 
 #include <boost/regex.hpp>
 

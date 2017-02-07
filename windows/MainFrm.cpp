@@ -72,6 +72,7 @@
 #include <airdcpp/ViewFileManager.h>
 
 #include <airdcpp/modules/ShareMonitorManager.h>
+#include <airdcpp/modules/ShareScannerManager.h>
 
 #include <airdcpp/version.h>
 

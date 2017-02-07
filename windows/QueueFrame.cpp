@@ -30,7 +30,6 @@
 
 #include <airdcpp/AirUtil.h>
 #include <airdcpp/DownloadManager.h>
-#include <airdcpp/ShareScannerManager.h>
 
 string QueueFrame::id = "Queue";
 

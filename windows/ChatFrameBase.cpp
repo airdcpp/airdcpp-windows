@@ -30,12 +30,12 @@
 #include "ChatCommands.h"
 
 #include <airdcpp/modules/ShareMonitorManager.h>
+#include <airdcpp/modules/ShareScannerManager.h>
 
 #include <airdcpp/HashManager.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/Util.h>
 #include <airdcpp/LogManager.h>
-#include <airdcpp/ShareScannerManager.h>
 #include <airdcpp/QueueManager.h>
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/ConnectivityManager.h>

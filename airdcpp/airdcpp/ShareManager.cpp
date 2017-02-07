@@ -30,7 +30,6 @@
 #include "ResourceManager.h"
 #include "ScopedFunctor.h"
 #include "SearchResult.h"
-#include "ShareScannerManager.h"
 #include "SimpleXML.h"
 #include "StringTokenizer.h"
 #include "Transfer.h"

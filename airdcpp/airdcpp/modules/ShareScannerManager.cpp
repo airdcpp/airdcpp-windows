@@ -20,17 +20,17 @@
 
 #include "ShareScannerManager.h"
 
-#include "AirUtil.h"
-#include "FilteredFile.h"
-#include "File.h"
-#include "HashManager.h"
-#include "LogManager.h"
-#include "QueueManager.h"
-#include "ShareManager.h"
-#include "StringTokenizer.h"
-#include "TimerManager.h"
+#include <airdcpp/AirUtil.h>
+#include <airdcpp/FilteredFile.h>
+#include <airdcpp/File.h>
+#include <airdcpp/HashManager.h>
+#include <airdcpp/LogManager.h>
+#include <airdcpp/QueueManager.h>
+#include <airdcpp/ShareManager.h>
+#include <airdcpp/StringTokenizer.h>
+#include <airdcpp/TimerManager.h>
 
-#include "concurrency.h"
+#include <airdcpp/concurrency.h>
 
 namespace dcpp {
 
