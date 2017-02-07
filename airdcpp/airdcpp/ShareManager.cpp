@@ -67,7 +67,7 @@ atomic_flag ShareManager::refreshing = ATOMIC_FLAG_INIT;
 atomic_flag ShareManager::refreshing;
 #endif
 
-ShareManager::ShareManager() : bloom(new ShareBloom(1 << 20)), monitor(1, false)
+ShareManager::ShareManager() : bloom(new ShareBloom(1 << 20))
 { 
 	SettingsManager::getInstance()->addListener(this);
 	HashManager::getInstance()->addListener(this);
@@ -114,605 +114,11 @@ void ShareManager::startup(function<void(const string&)> splashF, function<void(
 		if (!refreshed)
 			fire(ShareManagerListener::ShareLoaded());
 
-		monitor.addListener(this);
-
-		//this requires disk access
-		StringList monitorPaths;
-
-		{
-			RLock l(cs);
-			for (const auto& d: rootPaths | map_values) {
-				if (d->getRoot()->useMonitoring())
-					monitorPaths.push_back(d->getRoot()->getPath());
-			}
-		}
-
-		addMonitoring(monitorPaths);
 		TimerManager::getInstance()->addListener(this);
 
 		if (SETTING(STARTUP_REFRESH) && !refreshed)
 			refresh(false, TYPE_STARTUP_DELAYED);
 	});
-}
-
-void ShareManager::addMonitoring(const StringList& aPaths) noexcept {
-	int added = 0;
-	for(const auto& p: aPaths) {
-		try {
-			if (monitor.addDirectory(p))
-				added++;
-		} catch (MonitorException& e) {
-			LogManager::getInstance()->message(STRING_F(FAILED_ADD_MONITORING, p % e.getError()), LogMessage::SEV_ERROR);
-		}
-	}
-
-	if (added > 0)
-		LogManager::getInstance()->message(STRING_F(X_MONITORING_ADDED, added), LogMessage::SEV_INFO);
-}
-
-void ShareManager::removeMonitoring(const StringList& aPaths) noexcept {
-	int removed = 0;
-	for(const auto& p: aPaths) {
-		try {
-			if (monitor.removeDirectory(p))
-				removed++;
-		} catch (MonitorException& e) {
-			LogManager::getInstance()->message("Error occurred when trying to remove the folder " + p + " from monitoring: " + e.getError(), LogMessage::SEV_ERROR);
-		}
-	}
-
-	if (removed > 0)
-		LogManager::getInstance()->message(STRING_F(X_MONITORING_REMOVED, removed), LogMessage::SEV_INFO);
-}
-
-optional<pair<string, bool>> ShareManager::checkModifiedPath(const string& aPath) const noexcept {
-	// TODO: FIX LINUX
-	FileFindIter f(aPath);
-	if (f != FileFindIter()) {
-		if (!SETTING(SHARE_HIDDEN) && f->isHidden())
-			return boost::none;
-
-		if (!SETTING(SHARE_FOLLOW_SYMLINKS) && f->isLink())
-			return boost::none;
-
-		bool isDir = f->isDirectory();
-		auto path = isDir ? aPath + PATH_SEPARATOR : aPath;
-		if (!checkSharedName(path, Text::toLower(path), isDir, true, f->getSize()))
-			return boost::none;
-
-		return make_pair(path, isDir);
-	}
-
-	return boost::none;
-}
-
-void ShareManager::addModifyInfo(const string& aPath, bool isDirectory, DirModifyInfo::ActionType aAction) noexcept {
-	auto filePath = isDirectory ? aPath : Util::getFilePath(aPath);
-
-	auto p = findModifyInfo(filePath);
-	if (p == fileModifications.end()) {
-		//add a new modify info
-		fileModifications.emplace_front(aPath, isDirectory, aAction);
-	} else {
-		if (isDirectory && filePath == (*p).path) {
-			// update the directory action
-			p->dirAction = aAction;
-		} else {
-			// is this a parent ?
-			if (AirUtil::isSubLocal((*p).path, filePath))
-				(*p).setPath(filePath);
-
-			if (!isDirectory) {
-				// add the file
-				p->addFile(aPath, aAction);
-			}
-		}
-	}
-}
-
-void ShareManager::DirModifyInfo::addFile(const string& aFile, ActionType aAction, const string& aOldPath /*Util::emptyString*/) noexcept {
-	auto p = files.find(aFile);
-	if (p != files.end()) {
-		if (p->second.action == DirModifyInfo::ACTION_CREATED && aAction == DirModifyInfo::ACTION_DELETED) {
-			files.erase(p);
-		} else {
-			p->second.action = aAction;
-		}
-	} else {
-		files.emplace(aFile, DirModifyInfo::FileInfo(aAction, aOldPath));
-	}
-
-	lastFileActivity = GET_TICK();
-}
-
-void ShareManager::DirModifyInfo::setPath(const string& aPath) noexcept {
-	path = aPath;
-}
-
-ShareManager::DirModifyInfo::DirModifyInfo(const string& aFile, bool isDirectory, ActionType aAction, const string& aOldPath /*Util::emptyString*/) {
-	volume = File::getMountPath(aFile);
-	if (isDirectory) {
-		dirAction = aAction;
-		setPath(aFile);
-		oldPath = aOldPath;
-	} else {
-		dirAction = ACTION_NONE;
-		setPath(Util::getFilePath(aFile));
-		addFile(aFile, aAction, aOldPath);
-	}
-}
-
-ShareManager::DirModifyInfo::List::iterator ShareManager::findModifyInfo(const string& aFile) noexcept {
-	return find_if(fileModifications, [&aFile](const DirModifyInfo& dmi) { return AirUtil::isParentOrExactLocal(dmi.path, aFile) || AirUtil::isSubLocal(dmi.path, aFile); });
-}
-
-void ShareManager::handleChangedFiles() noexcept {
-	monitor.callAsync([this] { handleChangedFiles(GET_TICK(), true); });
-}
-
-bool ShareManager::handleModifyInfo(DirModifyInfo& info, optional<OrderedStringSet>& bundlePaths_, ProfileTokenSet& dirtyProfiles_, StringList& refresh_, uint64_t aTick, bool forced) noexcept{
-	//not enough delay from the last change?
-	if (!forced) {
-		if (SETTING(DELAY_COUNT_MODE) == SettingsManager::DELAY_DIR) {
-			if (info.lastFileActivity + static_cast<uint64_t>(SETTING(MONITORING_DELAY) * 1000) > aTick) {
-				return false;
-			}
-		} else {
-			if (any_of(fileModifications.begin(), fileModifications.end(), [&info, aTick](DirModifyInfo& aInfo) {
-				if (SETTING(DELAY_COUNT_MODE) == SettingsManager::DELAY_VOLUME && compare(aInfo.volume, info.volume) != 0)
-					return false;
-				return aInfo.lastFileActivity + static_cast<uint64_t>(SETTING(MONITORING_DELAY) * 1000) > aTick;
-			})) {
-				return false;
-			}
-		}
-	}
-
-	//handle deleted files first
-	if (info.dirAction == DirModifyInfo::ACTION_DELETED) {
-		WLock l(cs);
-		//the whole dir removed
-		handleDeletedFile(info.path, true, dirtyProfiles_);
-		LogManager::getInstance()->message(STRING_F(SHARED_DIR_REMOVED, info.path), LogMessage::SEV_INFO);
-		return true;
-	} else {
-		// handle the files that have been deleted
-		int removed = 0;
-		string removedPath;
-
-		{
-			WLock l(cs);
-			for (auto i = info.files.begin(); i != info.files.end();) {
-				if (i->second.action == DirModifyInfo::ACTION_DELETED) {
-					bool isDir = i->first.back() == PATH_SEPARATOR;
-					if (handleDeletedFile(i->first, isDir, dirtyProfiles_)) {
-						if (removed == 0) {
-							removedPath = i->first; // for reporting
-						}
-						removed++;
-					}
-
-					i = info.files.erase(i);
-				} else {
-					i++;
-				}
-			}
-		}
-
-		// report deleted
-		if (removed > 0) {
-			if (removed == 1) {
-				LogManager::getInstance()->message((removedPath.back() == PATH_SEPARATOR ? STRING_F(SHARED_DIR_REMOVED, removedPath) : STRING_F(SHARED_FILE_DELETED, removedPath)), LogMessage::SEV_INFO);
-			} else {
-				LogManager::getInstance()->message(STRING_F(X_SHARED_FILES_REMOVED, removed % info.path), LogMessage::SEV_INFO);
-			}
-		}
-
-		// no modified files?
-		if (info.files.empty() && info.dirAction == DirModifyInfo::ACTION_NONE) {
-			return true;
-		}
-	}
-
-	//handle modified files
-	Directory::Ptr dir = nullptr;
-
-	// directories with subdirectories will always be refreshed
-	if (boost::algorithm::all_of(info.files | map_keys, [&info](const string& fileName) { 
-		return fileName.find(PATH_SEPARATOR, info.path.length() + 1) == string::npos; 
-	})) {
-		RLock l(cs);
-		dir = findDirectory(info.path);
-	}
-
-	// new directory?
-	if (!dir && !allowAddDir(info.path)) {
-		return true;
-	}
-
-	// fetch the queued bundles
-	if (!bundlePaths_) {
-		bundlePaths_ = OrderedStringSet();
-		QueueManager::getInstance()->getBundlePaths(*bundlePaths_);
-	}
-
-	// don't handle queued bundles in here (parent directories for bundles shouldn't be totally ignored really...)
-	if (find_if(*bundlePaths_, IsParentOrExactOrSub(info.path, PATH_SEPARATOR)) != (*bundlePaths_).end()) {
-		return true;
-	} /*else {
-		// remove files inside bundle directories if this is a parent directory
-		StringList subBundles;
-		copy_if(*bundlePaths_, back_inserter(subBundles), IsSub<false>(info.path));
-		if (!subBundles.empty()) {
-			for (auto i = info.files.begin(); i != info.files.end();) {
-				auto p = find_if(subBundles, IsParentOrExact<false>(i->first));
-				if (p != subBundles.end()) {
-					i = info.files.erase(i);
-				} else {
-					i++;
-				}
-			}
-
-			// no other files? we don't care about the parent directory action
-			if (info.files.empty()) {
-				return true;
-			}
-
-			// break it
-			decltype(fileModifications) infosNew;
-			for (const auto& p : info.files) {
-				addModifyInfo(p.first, false, p.second.action);
-			}
-
-			for (const auto& i : infosNew) {
-
-			}
-		}
-	}*/
-
-	// scan for missing/extra files
-	if (info.lastReportedError == 0 || info.lastReportedError < info.lastFileActivity) {
-		bool report = forced || info.lastReportedError == 0 || (info.lastReportedError + static_cast<uint64_t>(10 * 60 * 1000) < aTick); //don't spam with reports on every minute
-		if (!ShareScannerManager::getInstance()->onScanSharedDir(info.path, report)) {
-			if (report) {
-				info.lastReportedError = aTick;
-			}
-
-			//keep in the main list and try again later
-			return false;
-		}
-
-		info.lastReportedError = 0;
-	} else if (info.lastReportedError > 0) {
-		// nothing has changed since the last error
-		return false;
-	}
-
-	bool hasExistingFiles = false;
-
-	int64_t hashSize = 0;
-	int filesToHash = 0;
-	int hashedFiles = 0;
-	string hashFile;
-
-	// Check that the file can be accessed, FileFindIter won't show it (also files being copied will come here)
-	for (const auto& fi : info.files | map_keys) {
-		//check for file bundles
-		if ((*bundlePaths_).find(fi) != (*bundlePaths_).end()) {
-			return false;
-		}
-
-		if (!Util::fileExists(fi))
-			continue;
-
-		hasExistingFiles = true;
-		try {
-			File ff(fi, File::READ, File::SHARED_WRITE | File::OPEN, File::BUFFER_AUTO);
-			if (dir) {
-				// we can add it here
-				auto size = ff.getSize();
-				try {
-					HashedFile hashedFile(ff.getLastModified(), size);
-					if (HashManager::getInstance()->checkTTH(Text::toLower(fi), fi, hashedFile)) {
-						WLock l(cs);
-						addFile(Util::getFileName(fi), dir, hashedFile, tthIndex, *bloom.get(), sharedSize, &dirtyProfiles_);
-						hashedFiles++;
-						continue;
-					}
-				} catch (...) {}
-
-				// not hashed
-				filesToHash++;
-				hashSize += size;
-				if (hashFile.empty()) {
-					hashFile = fi;
-				}
-
-				dir->updateModifyDate();
-			}
-		} catch (...) {
-			// try again later
-			info.lastFileActivity = aTick;
-			return false;
-		}
-	}
-
-	if (!hasExistingFiles && (!info.files.empty() || !Util::fileExists(info.path))) {
-		// no need to keep items in the list if all files have been removed...
-		return true;
-	}
-
-	if (!dir) {
-		//add new directories via normal refresh
-		refresh_.push_back(info.path);
-	} else if (hashedFiles > 0) {
-		LogManager::getInstance()->message(STRING_F(X_SHARED_FILES_ADDED, hashedFiles % info.path), LogMessage::SEV_INFO);
-	}  
-	
-	if (hashSize > 0) {
-		if (filesToHash == 1)
-			LogManager::getInstance()->message(STRING_F(FILE_X_ADDED_FOR_HASH, hashFile % Util::formatBytes(hashSize)), LogMessage::SEV_INFO);
-		else
-			LogManager::getInstance()->message(STRING_F(X_FILES_ADDED_FOR_HASH, filesToHash % Util::formatBytes(hashSize) % info.path), LogMessage::SEV_INFO);
-	}
-
-	return true;
-}
-
-void ShareManager::handleChangedFiles(uint64_t aTick, bool forced /*false*/) noexcept {
-	ProfileTokenSet dirtyProfiles;
-	optional<OrderedStringSet> bundlePaths;
-	StringList refresh;
-
-	for (auto k = fileModifications.begin(); k != fileModifications.end();) {
-		if (handleModifyInfo(*k, bundlePaths, dirtyProfiles, refresh, aTick, forced)) {
-			k = fileModifications.erase(k);
-		} else {
-			k++;
-		}
-	}
-
-
-	// add directories for refresh
-	if (!refresh.empty()) {
-		addRefreshTask(REFRESH_DIRS, refresh, TYPE_MONITORING);
-	}
-
-	setProfilesDirty(dirtyProfiles, false);
-}
-
-void ShareManager::on(DirectoryMonitorListener::DirectoryFailed, const string& aPath, const string& aError) noexcept {
-	LogManager::getInstance()->message(STRING_F(MONITOR_DIR_FAILED, aPath % aError), LogMessage::SEV_ERROR);
-}
-
-void ShareManager::on(DirectoryMonitorListener::FileCreated, const string& aPath) noexcept {
-	if (monitorDebug)
-		LogManager::getInstance()->message("File added: " + aPath, LogMessage::SEV_INFO);
-
-	auto ret = checkModifiedPath(aPath);
-	if (ret) {
-		addModifyInfo((*ret).first, (*ret).second, DirModifyInfo::ACTION_CREATED);
-	}
-}
-
-void ShareManager::on(DirectoryMonitorListener::FileModified, const string& aPath) noexcept {
-	if (monitorDebug)
-		LogManager::getInstance()->message("File modified: " + aPath, LogMessage::SEV_INFO);
-
-	auto ret = checkModifiedPath(aPath);
-	if (ret) {
-		// modified directories won't matter at the moment
-		if ((*ret).second)
-			return;
-
-		addModifyInfo((*ret).first, false, DirModifyInfo::ACTION_MODIFIED);
-	}
-}
-
-void ShareManager::Directory::getRenameInfoList(const string& aPath, RenameList& aRename) noexcept {
-	for (const auto& f: files) {
-		aRename.emplace_back(aPath + f->name.getNormal(), HashedFile(f->getTTH(), f->getLastWrite(), f->getSize()));
-	}
-
-	string path = aPath + realName.getNormal() + PATH_SEPARATOR;
-	for (const auto& d: directories) {
-		d->getRenameInfoList(path + realName.getNormal() + PATH_SEPARATOR, aRename);
-	}
-}
-
-void ShareManager::on(DirectoryMonitorListener::FileRenamed, const string& aOldPath, const string& aNewPath) noexcept {
-	if (monitorDebug)
-		LogManager::getInstance()->message("File renamed, old: " + aOldPath + " new: " + aNewPath, LogMessage::SEV_INFO);
-
-	ProfileTokenSet dirtyProfiles;
-	RenameList toRename;
-	bool found = true;
-	bool noSharing = false;
-
-	{
-		WLock l(cs);
-		auto parent = findDirectory(Util::getFilePath(aOldPath));
-		if (parent) {
-			auto fileNameOldLower = Text::toLower(Util::getFileName(aOldPath));
-			auto p = parent->directories.find(fileNameOldLower);
-			if (p != parent->directories.end()) {
-				if (!checkSharedName(aNewPath + PATH_SEPARATOR, Text::toLower(aNewPath) + PATH_SEPARATOR, true)) {
-					noSharing = true;
-				} else {
-					auto d = *p;
-					d->copyRootProfiles(dirtyProfiles, true);
-
-					// remove from the dir name map
-					removeDirName(*d, lowerDirNameMap);
-
-					//rename
-					parent->directories.erase(p);
-					d->realName = DualString(Util::getFileName(aNewPath));
-					parent->directories.insert_sorted(d);
-					parent->updateModifyDate();
-
-					//add in bloom and dir name map
-					addDirName(d, lowerDirNameMap, *bloom.get());
-
-					//get files to convert in the hash database (recursive)
-					d->getRenameInfoList(Util::emptyString, toRename);
-
-					LogManager::getInstance()->message(STRING_F(SHARED_DIR_RENAMED, (aOldPath + PATH_SEPARATOR) % (aNewPath + PATH_SEPARATOR)), LogMessage::SEV_INFO);
-				}
-			} else {
-				auto f = parent->files.find(fileNameOldLower);
-				if (f != parent->files.end()) {
-					if (!checkSharedName(aNewPath, Text::toLower(aNewPath), false, true, (*f)->getSize())) {
-						noSharing = true;
-					} else {
-						//get the info
-						HashedFile fi((*f)->getTTH(), (*f)->getLastWrite(), (*f)->getSize());
-
-						//remove old
-						cleanIndices(*parent, *f, sharedSize, tthIndex);
-						parent->files.erase(f);
-
-						//add new
-						addFile(Util::getFileName(aNewPath), parent, fi, tthIndex, *bloom.get(), sharedSize, &dirtyProfiles);
-						parent->updateModifyDate();
-
-						//add for renaming in file index
-						toRename.emplace_back(Util::emptyString, fi);
-
-						LogManager::getInstance()->message(STRING_F(SHARED_FILE_RENAMED, aOldPath % aNewPath), LogMessage::SEV_INFO);
-					}
-				} else {
-					found = false;
-				}
-			}
-		}
-	}
-
-	if (!found) {
-		// consider it as new file
-		auto ret = checkModifiedPath(aNewPath);
-		if (ret)
-			addModifyInfo((*ret).first, (*ret).second, DirModifyInfo::ACTION_CREATED);
-
-		// remove possible queued notifications
-		onFileDeleted(aOldPath);
-		return;
-	}
-
-	if (noSharing) {
-		// delete the old file
-		onFileDeleted(aOldPath);
-		return;
-	}
-
-	//rename in hash database
-	for (const auto& ri: toRename) {
-		try {
-			HashManager::getInstance()->renameFile(aOldPath + (ri.first.empty() ? Util::emptyString : PATH_SEPARATOR + ri.first), aNewPath + (ri.first.empty() ? Util::emptyString : PATH_SEPARATOR + ri.first), ri.second);
-		} catch (const HashException&) {
-			//...
-		}
-	}
-
-	setProfilesDirty(dirtyProfiles, false);
-}
-
-void ShareManager::on(DirectoryMonitorListener::FileDeleted, const string& aPath) noexcept {
-	if (monitorDebug)
-		LogManager::getInstance()->message("File deleted: " + aPath, LogMessage::SEV_INFO);
-
-	onFileDeleted(aPath);
-}
-
-void ShareManager::onFileDeleted(const string& aPath) {
-	{
-		RLock l(cs);
-		auto parent = findDirectory(Util::getFilePath(aPath));
-		if (parent) {
-			auto fileNameLower = Text::toLower(Util::getFileName(aPath));
-			auto p = parent->directories.find(fileNameLower);
-			if (p != parent->directories.end()) {
-				addModifyInfo(aPath + PATH_SEPARATOR, true, DirModifyInfo::ACTION_DELETED);
-				return;
-			} else {
-				auto f = parent->files.find(fileNameLower);
-				if (f != parent->files.end()) {
-					addModifyInfo(aPath, false, DirModifyInfo::ACTION_DELETED);
-					return;
-				}
-			}
-		}
-	}
-
-	string path = aPath;
-
-	// check if it's being added
-	auto p = findModifyInfo(aPath);
-	if (p != fileModifications.end()) {
-		removeNotifications(p, path);
-	}
-}
-
-void ShareManager::removeNotifications(DirModifyInfo::List::iterator p, const string& aPath) noexcept {
-	if (p->path == aPath || Util::strnicmp(p->path, aPath, aPath.length()) == 0) {
-		fileModifications.erase(p);
-	} else {
-		// remove subitems
-		for (auto i = p->files.begin(); i != p->files.end();) {
-			if (AirUtil::isParentOrExactLocal(aPath, i->first)) {
-				i = p->files.erase(i);
-			} else {
-				i++;
-			}
-		}
-
-		p->lastFileActivity = GET_TICK();
-		if (p->files.empty() && p->dirAction == DirModifyInfo::ACTION_NONE) {
-			fileModifications.erase(p);
-		}
-	}
-}
-
-bool ShareManager::handleDeletedFile(const string& aPath, bool isDirectory, ProfileTokenSet& dirtyProfiles_) noexcept {
-	bool deleted = false;
-	auto parent = findDirectory(isDirectory ? Util::getParentDir(aPath) : Util::getFilePath(aPath));
-	if (parent) {
-		parent->copyRootProfiles(dirtyProfiles_, true);
-		if (isDirectory) {
-			auto dirNameLower = Text::toLower(Util::getLastDir(aPath));
-			auto p = parent->directories.find(dirNameLower);
-			if (p != parent->directories.end()) {
-				cleanIndices(**p, sharedSize, tthIndex, lowerDirNameMap);
-				parent->directories.erase(p);
-				deleted = true;
-			}
-		} else {
-			auto fileNameLower = Text::toLower(Util::getFileName(aPath));
-			auto f = parent->files.find(fileNameLower);
-			if (f != parent->files.end()) {
-				cleanIndices(*parent, *f, sharedSize, tthIndex);
-				parent->files.erase(f);
-				deleted = true;
-			}
-		}
-
-		parent->updateModifyDate();
-		if (SETTING(SKIP_EMPTY_DIRS_SHARE) && parent->directories.empty() && parent->files.empty() && parent->getParent()) {
-			//remove the parent
-			cleanIndices(*parent, sharedSize, tthIndex, lowerDirNameMap);
-			parent->getParent()->directories.erase_key(parent->realName.getLower());
-		}
-	}
-
-	return deleted;
-}
-
-void ShareManager::on(DirectoryMonitorListener::Overflow, const string& aRootPath) noexcept {
-	if (monitorDebug)
-		LogManager::getInstance()->message("Monitoring overflow: " + aRootPath, LogMessage::SEV_INFO);
-
-	// refresh the dir
-	addRefreshTask(REFRESH_DIRS, { aRootPath }, TYPE_MONITORING);
 }
 
 void ShareManager::abortRefresh() noexcept {
@@ -721,7 +127,6 @@ void ShareManager::abortRefresh() noexcept {
 }
 
 void ShareManager::shutdown(function<void(float)> progressF) noexcept {
-	monitor.removeListener(this);
 	saveXmlList(progressF);
 
 	try {
@@ -1688,7 +1093,7 @@ TTH searches: %d%% (hash bloom mode: %s)")
 		% (SETTING(BLOOM_MODE) != SettingsManager::BLOOM_DISABLED ? "Enabled" : "Disabled") // bloom mode
 	);
 
-	ret += "\r\n\r\n-=[ Monitoring statistics ]=-\r\n\r\n";
+	/*ret += "\r\n\r\n-=[ Monitoring statistics ]=-\r\n\r\n";
 	if (monitor.hasDirectories()) {
 		ret += "Debug mode: ";
 		ret += (monitorDebug ? "Enabled" : "Disabled");
@@ -1696,7 +1101,7 @@ TTH searches: %d%% (hash bloom mode: %s)")
 		ret += monitor.getStats();
 	} else {
 		ret += "No folders are being monitored\r\n";
-	}
+	}*/
 	return ret;
 }
 
@@ -1916,6 +1321,37 @@ bool ShareManager::isFileShared(const TTHValue& aTTH, ProfileToken aProfile) con
 	return false;
 }
 
+bool ShareManager::validate(FileFindIter& aIter, const string& aPath, const string& aPathLower) const noexcept {
+	if (!SETTING(SHARE_HIDDEN) && aIter->isHidden())
+		return false;
+
+	if (!SETTING(SHARE_FOLLOW_SYMLINKS) && aIter->isLink())
+		return false;
+
+	if (aIter->isDirectory()) {
+		if (!checkSharedName(aPath, aPathLower, true)) {
+			return false;
+		}
+
+		// Check the queue so we dont add incomplete directories to share
+		auto bundle = QueueManager::getInstance()->findDirectoryBundle(aPath);
+		if (bundle && !bundle->isCompleted()) {
+			return false;
+		}
+
+		{
+			RLock l(refreshMatcherCS);
+			if (excludedPaths.find(aPath) != excludedPaths.end()) {
+				return false;
+			}
+		}
+	} else if (!checkSharedName(aPath, aPathLower, false, true, aIter->getSize())) {
+		return false;
+	}
+
+	return true;
+}
+
 void ShareManager::buildTree(const string& aPath, const string& aPathLower, const Directory::Ptr& aDir, Directory::MultiMap& directoryNameMapNew_, int64_t& hashSize_,
 	int64_t& addedSize_, HashFileMap& tthIndexNew_, ShareBloom& bloomNew_) {
 
@@ -1923,44 +1359,18 @@ void ShareManager::buildTree(const string& aPath, const string& aPathLower, cons
 	for(FileFindIter i(aPath, "*"); i != end && !aShutdown; ++i) {
 		string name = i->getFileName();
 		if(name.empty()) {
-			LogManager::getInstance()->message("Invalid file name found while hashing folder " + aPath + ".", LogMessage::SEV_WARNING);
 			return;
 		}
 
-		if(!SETTING(SHARE_HIDDEN) && i->isHidden())
-			continue;
+		DualString dualName(name);
+		auto curPath = aPath + name + (i->isDirectory() ? PATH_SEPARATOR_STR : Util::emptyString);
+		auto curPathLower = aPathLower + dualName.getLower() + (i->isDirectory() ? PATH_SEPARATOR_STR : Util::emptyString);
 
-		if (!SETTING(SHARE_FOLLOW_SYMLINKS) && i->isLink())
+		if (!validate(i, curPath, curPathLower)) {
 			continue;
+		}
 
 		if(i->isDirectory()) {
-			DualString dualName(name);
-			string curPath = aPath + name + PATH_SEPARATOR;
-			string curPathLower = aPathLower + dualName.getLower() + PATH_SEPARATOR;
-
-			{
-				RLock l (refreshMatcherCS);
-				if (!checkSharedName(curPath, curPathLower, true)) {
-					continue;
-				}
-
-				// Check the queue so we dont add incomplete directories to share
-
-				// TODO
-				//auto bundle = QueueManager::getInstance()->findDirectoryBundle(curPath);
-				//if (bundle && bundle->getStatus() < Bundle::STATUS_HASHED) {
-				//	return;
-				//}
-
-				if (bundleDirs.find(curPathLower) != bundleDirs.end()) {
-					continue;
-				}
-
-				if (excludedPaths.find(curPath) != excludedPaths.end()) {
-					continue;
-				}
-			}
-
 			auto dir = Directory::createNormal(move(dualName), aDir, i->getLastWriteTime(), directoryNameMapNew_, bloomNew_);
 			if (dir) {
 				buildTree(curPath, curPathLower, dir, directoryNameMapNew_, hashSize_, addedSize_, tthIndexNew_, bloomNew_);
@@ -1976,12 +1386,6 @@ void ShareManager::buildTree(const string& aPath, const string& aPathLower, cons
 		} else {
 			// Not a directory, assume it's a file...
 			int64_t size = i->getSize();
-
-			DualString dualName(name);
-			if (!checkSharedName(aPath + name, aPathLower + dualName.getLower(), false, true, size)) {
-				continue;
-			}
-
 			try {
 				HashedFile fi(i->getLastWriteTime(), size);
 				if(HashManager::getInstance()->checkTTH(aPathLower + dualName.getLower(), aPath + name, fi)) {
@@ -2154,7 +1558,7 @@ void ShareManager::addAsyncTask(AsyncF aF) noexcept {
 ShareManager::RefreshResult ShareManager::refreshPaths(const StringList& aPaths, const string& aDisplayName /*Util::emptyString*/, function<void(float)> aProgressF /*nullptr*/) noexcept {
 	for (const auto& path : aPaths) {
 		auto d = findDirectory(path);
-		if (!d) {
+		if (!d && !allowAddDir(path)) {
 			return RefreshResult::REFRESH_PATH_NOT_FOUND;
 		}
 	}
@@ -2227,6 +1631,7 @@ ShareManager::RefreshResult ShareManager::addRefreshTask(TaskType aTaskType, con
 		paths.insert(path);
 	}
 
+	fire(ShareManagerListener::RefreshQueued(), aTaskType, paths);
 	tasks.add(aTaskType, unique_ptr<Task>(new ShareTask(paths, aDisplayName, aRefreshType)));
 
 	if(refreshing.test_and_set()) {
@@ -2393,7 +1798,6 @@ bool ShareManager::removeRootDirectory(const string& aPath) noexcept {
 		File::deleteFile(sd->getRoot()->getCacheXmlPath());
 	}
 
-	removeMonitoring({ aPath });
 	HashManager::getInstance()->stopHashing(aPath);
 
 	LogManager::getInstance()->message(STRING_F(SHARED_DIR_REMOVED, aPath), LogMessage::SEV_INFO);
@@ -2413,11 +1817,6 @@ void ShareManager::removeRootDirectories(const StringList& aRemoveDirs) noexcept
 #ifdef _DEBUG
 	validateDirectoryTreeDebug();
 #endif
-
-	//if (stopHashing.size() == 1)
-	//	LogManager::getInstance()->message(STRING_F(SHARED_DIR_REMOVED, stopHashing.front()), LogMessage::SEV_INFO);
-	//else if (!stopHashing.empty())
-	//	LogManager::getInstance()->message(STRING_F(X_SHARED_DIRS_REMOVED, stopHashing.size()), LogMessage::SEV_INFO);
 }
 
 bool ShareManager::updateRootDirectory(const ShareDirectoryInfoPtr& aDirectoryInfo) noexcept {
@@ -2447,12 +1846,6 @@ bool ShareManager::updateRootDirectory(const ShareDirectoryInfoPtr& aDirectoryIn
 		}
 	}
 
-	if (rootDirectory->useMonitoring()) {
-		addMonitoring({ aDirectoryInfo->path });
-	} else {
-		removeMonitoring({ aDirectoryInfo->path });
-	}
-
 	setProfilesDirty(dirtyProfiles, true);
 
 	fire(ShareManagerListener::RootUpdated(), aDirectoryInfo->path);
@@ -2468,25 +1861,6 @@ void ShareManager::updateRootDirectories(const ShareDirectoryInfoList& changedDi
 #ifdef _DEBUG
 	validateDirectoryTreeDebug();
 #endif
-}
-
-void ShareManager::rebuildMonitoring() noexcept {
-	StringList monAdd;
-	StringList monRem;
-
-	{
-		RLock l(cs);
-		for(auto& dp: rootPaths) {
-			if (dp.second->getRoot()->useMonitoring()) {
-				monAdd.push_back(dp.first);
-			} else {
-				monRem.push_back(dp.first);
-			}
-		}
-	}
-
-	addMonitoring(monAdd);
-	removeMonitoring(monRem);
 }
 
 void ShareManager::reportTaskStatus(uint8_t aTask, const RefreshPathList& directories, bool finished, int64_t aHashSize, const string& displayName, RefreshType aRefreshType) const noexcept {
@@ -2579,11 +1953,7 @@ void ShareManager::runTasks(function<void (float)> progressF /*nullptr*/) noexce
 			pauser.reset(new HashManager::HashPauser());
 		}
 
-		//get unfinished directories and erase exact matches
-		bundleDirs.clear();
-
 		auto dirs = task->dirs;
-		QueueManager::getInstance()->checkRefreshPaths(bundleDirs, dirs);
 
 		// Handle the removed paths
 		for (const auto& d : task->dirs) {
@@ -2596,7 +1966,6 @@ void ShareManager::runTasks(function<void (float)> progressF /*nullptr*/) noexce
 			continue;
 		}
 
-		StringList monitoring;
 		RefreshInfoSet refreshDirs;
 
 		ShareBloom* refreshBloom = t.first == REFRESH_ALL ? new ShareBloom(1 << 20) : bloom.get();
@@ -2611,10 +1980,6 @@ void ShareManager::runTasks(function<void (float)> progressF /*nullptr*/) noexce
 				auto directoryIter = rootPaths.find(refreshPath);
 				if (directoryIter != rootPaths.end()) {
 					directory = directoryIter->second;
-					
-					// A monitored dir?
-					if (t.first == ADD_DIR && (SETTING(MONITORING_MODE) == SettingsManager::MONITORING_ALL || (SETTING(MONITORING_MODE) == SettingsManager::MONITORING_INCOMING && directory->getRoot()->getIncoming())))
-						monitoring.push_back(refreshPath);
 				} else {
 					directory = findDirectory(refreshPath);
 				}
@@ -2696,14 +2061,7 @@ void ShareManager::runTasks(function<void (float)> progressF /*nullptr*/) noexce
 		setProfilesDirty(dirtyProfiles, task->type == TYPE_MANUAL || t.first == REFRESH_ALL || t.first == ADD_BUNDLE);
 		reportTaskStatus(t.first, dirs, true, totalHash, task->displayName, task->type);
 
-		addMonitoring(monitoring);
-
-		fire(ShareManagerListener::DirectoriesRefreshed(), t.first, dirs);
-	}
-
-	{
-		WLock l (refreshMatcherCS);
-		bundleDirs.clear();
+		fire(ShareManagerListener::RefreshCompleted(), t.first, dirs);
 	}
 
 #ifdef _DEBUG
@@ -2821,12 +2179,6 @@ bool ShareManager::applyRefreshChanges(RefreshInfo& ri, int64_t& totalHash_, Pro
 	return true;
 }
 
-void ShareManager::on(TimerManagerListener::Second, uint64_t /*tick*/) noexcept {
-	while (monitor.dispatch()) {
-		//...
-	}
-}
-
 void ShareManager::on(TimerManagerListener::Minute, uint64_t aTick) noexcept {
 	if(lastSave == 0 || lastSave + 15*60*1000 <= aTick) {
 		saveXmlList();
@@ -2839,17 +2191,6 @@ void ShareManager::on(TimerManagerListener::Minute, uint64_t aTick) noexcept {
 	} else if(SETTING(INCOMING_REFRESH_TIME) > 0 && lastIncomingUpdate + SETTING(INCOMING_REFRESH_TIME) * 60 * 1000 <= aTick) {
 		lastIncomingUpdate = aTick;
 		refresh(true, TYPE_SCHEDULED);
-	}
-
-	handleChangedFiles(aTick, false);
-
-	restoreFailedMonitoredPaths();
-}
-
-void ShareManager::restoreFailedMonitoredPaths() {
-	auto restored = monitor.restoreFailedPaths();
-	for (const auto& dir : restored) {
-		LogManager::getInstance()->message(STRING_F(MONITORING_RESTORED_X, dir), LogMessage::SEV_INFO);
 	}
 }
 
@@ -3189,10 +2530,6 @@ string ShareManager::RootDirectory::getCacheXmlPath() const noexcept {
 
 void ShareManager::RootDirectory::setName(const string& aName) noexcept {
 	virtualName.reset(new DualString(aName));
-}
-
-bool ShareManager::RootDirectory::useMonitoring() const noexcept {
-	return SETTING(MONITORING_MODE) == SettingsManager::MONITORING_ALL || (SETTING(MONITORING_MODE) == SettingsManager::MONITORING_INCOMING && incoming);
 }
 
 #define LITERAL(n) n, sizeof(n)-1
@@ -3602,15 +2939,7 @@ void ShareManager::shareBundle(const BundlePtr& aBundle) noexcept {
 	}
 
 	auto path = aBundle->getTarget();
-	monitor.callAsync([=] { removeNotifications(path); });
-
 	addRefreshTask(ADD_BUNDLE, { aBundle->getTarget() }, RefreshType::TYPE_BUNDLE, aBundle->getTarget());
-}
-
-void ShareManager::removeNotifications(const string& aPath) noexcept {
-	auto p = findModifyInfo(aPath);
-	if (p != fileModifications.end())
-		removeNotifications(p, aPath);
 }
 
 bool ShareManager::allowAddDir(const string& aPath) const noexcept {
@@ -3911,10 +3240,6 @@ void ShareManager::setSkipList() {
 	skipList.pattern = SETTING(SKIPLIST_SHARE);
 	skipList.setMethod(SETTING(SHARE_SKIPLIST_USE_REGEXP) ? StringMatch::REGEX : StringMatch::WILDCARD);
 	skipList.prepare();
-}
-
-void ShareManager::deviceRemoved(const string& aDrive) {
-	monitor.deviceRemoved(aDrive);
 }
 
 } // namespace dcpp

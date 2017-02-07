@@ -268,6 +268,7 @@ void webErrorF(const string& aError) {
 #include <airdcpp/modules/HublistManager.h>
 #include <airdcpp/modules/PreviewAppManager.h>
 #include <airdcpp/modules/RSSManager.h>
+#include <airdcpp/modules/ShareMonitorManager.h>
 #include <airdcpp/modules/WebShortcuts.h>
 
 void initModules() {
@@ -278,11 +279,13 @@ void initModules() {
 	RSSManager::newInstance();
 	PreviewAppManager::newInstance();
 	HublistManager::newInstance();
+	ShareMonitorManager::newInstance();
 }
 
 void loadModules() {
 	AutoSearchManager::getInstance()->load();
 	RSSManager::getInstance()->load();
+	ShareMonitorManager::getInstance()->startup();
 }
 
 void destroyModules() {
@@ -296,6 +299,7 @@ void destroyModules() {
 	RSSManager::deleteInstance();
 	FinishedManager::deleteInstance();
 	WebShortcuts::deleteInstance();
+	ShareMonitorManager::deleteInstance();
 }
 
 bool questionF(const string& aStr, bool aIsQuestion, bool aIsError) {

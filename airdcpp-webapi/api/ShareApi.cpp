@@ -260,7 +260,7 @@ namespace webserver {
 		});
 	}
 
-	void ShareApi::on(ShareManagerListener::DirectoriesRefreshed, uint8_t aTaskType, const RefreshPathList& aPaths) noexcept {
+	void ShareApi::on(ShareManagerListener::RefreshCompleted, uint8_t aTaskType, const RefreshPathList& aPaths) noexcept {
 		onShareRefreshed(aPaths, aTaskType);
 	}
 }

@@ -20,7 +20,6 @@
 #define DCPLUSPLUS_DCPP_SHARE_MANAGER_H
 
 
-#include "DirectoryMonitorListener.h"
 #include "HashManagerListener.h"
 #include "SettingsManagerListener.h"
 #include "ShareManagerListener.h"
@@ -28,7 +27,6 @@
 
 #include "BloomFilter.h"
 #include "CriticalSection.h"
-#include "DirectoryMonitor.h"
 #include "DualString.h"
 #include "DupeType.h"
 #include "Exception.h"
@@ -58,13 +56,9 @@ class SearchQuery;
 class FileList;
 
 class ShareManager : public Singleton<ShareManager>, public Speaker<ShareManagerListener>, private Thread, private SettingsManagerListener, 
-	private TimerManagerListener, private DirectoryMonitorListener, private HashManagerListener
+	private TimerManagerListener, private HashManagerListener
 {
 public:
-	// Call when a drive has been removed and it should be removed from monitoring
-	// Monitoring won't fail it otherwise and the monitoring will neither be restored if the device is readded
-	void deviceRemoved(const string& aDrive);
-
 	// Prepares the skiplist regex after the pattern has been changed
 	void setSkipList();
 
@@ -73,7 +67,8 @@ public:
 
 	// Comprehensive check for a directory/file whether it is valid to be added in share
 	// Use validatePath for new root directories instead
-	bool checkSharedName(const string& fullPath, const string& fullPathLower, bool dir, bool report = true, int64_t size = 0) const noexcept;
+	bool checkSharedName(const string& aPath, const string& aPathLower, bool aIsDirectory, bool aReport = true, int64_t aSize = 0) const noexcept;
+	bool validate(FileFindIter& aIter, const string& aPath, const string& aPathLower) const noexcept;
 
 	// Validate that the profiles are valid for the supplied path (sub/parent directory matching)
 	// Existing profiles shouldn't be supplied
@@ -103,7 +98,6 @@ public:
 		TYPE_SCHEDULED,
 		TYPE_STARTUP_BLOCKING,
 		TYPE_STARTUP_DELAYED,
-		TYPE_MONITORING,
 		TYPE_BUNDLE
 	};
 
@@ -196,7 +190,6 @@ public:
 
 	StringList getRealPaths(const TTHValue& root) const noexcept;
 
-	IGETSET(bool, monitorDebug, MonitorDebug, false);
 	IGETSET(size_t, hits, Hits, 0);
 	IGETSET(int64_t, sharedSize, SharedSize, 0);
 
@@ -316,12 +309,6 @@ public:
 
 	struct ShareLoader;
 
-	// Called when the monitoring mode has been changed
-	void rebuildMonitoring() noexcept;
-
-	// Handle monitoring changes (being called regularly from TimerManager so manual calls aren't mandatory)
-	void handleChangedFiles() noexcept;
-
 	void setDefaultProfile(ProfileToken aNewDefault) noexcept;
 
 	enum class RefreshState : uint8_t {
@@ -334,8 +321,6 @@ public:
 	void onFileHashed(const string& fname, HashedFile& fileInfo) noexcept;
 private:
 	void countStats(uint64_t& totalAge_, size_t& totalDirs_, int64_t& totalSize_, size_t& totalFiles, size_t& lowerCaseFiles, size_t& totalStrLen_, size_t& roots_) const noexcept;
-
-	DirectoryMonitor monitor;
 
 	uint64_t totalSearches = 0;
 	uint64_t tthSearches = 0;
@@ -377,8 +362,6 @@ private:
 			inline const string& getPath() const noexcept {
 				return path;
 			}
-
-			bool useMonitoring() const noexcept;
 
 			void setName(const string& aName) noexcept;
 			string getCacheXmlPath() const noexcept;
@@ -524,7 +507,6 @@ private:
 
 		// check for an updated modify date from filesystem
 		void updateModifyDate();
-		void getRenameInfoList(const string& aPath, RenameList& aRename) noexcept;
 		Directory::Ptr findDirByPath(const string& aPath, char separator) const noexcept;
 
 		Directory(Directory&) = delete;
@@ -758,17 +740,7 @@ private:
 	}
 	
 	// TimerManagerListener
-	void on(TimerManagerListener::Second, uint64_t tick) noexcept;
 	void on(TimerManagerListener::Minute, uint64_t tick) noexcept;
-
-
-	//DirectoryMonitorListener
-	virtual void on(DirectoryMonitorListener::FileCreated, const string& aPath) noexcept;
-	virtual void on(DirectoryMonitorListener::FileModified, const string& aPath) noexcept;
-	virtual void on(DirectoryMonitorListener::FileRenamed, const string& aOldPath, const string& aNewPath) noexcept;
-	virtual void on(DirectoryMonitorListener::FileDeleted, const string& aPath) noexcept;
-	virtual void on(DirectoryMonitorListener::Overflow, const string& aPath) noexcept;
-	virtual void on(DirectoryMonitorListener::DirectoryFailed, const string& aPath, const string& aError) noexcept;
 
 	void load(SimpleXML& aXml);
 	void loadProfile(SimpleXML& aXml, const string& aName, ProfileToken aToken);
@@ -780,67 +752,6 @@ private:
 
 	StringMatch skipList;
 	string winDir;
-
-	OrderedStringSet bundleDirs;
-
-	void addMonitoring(const StringList& aPaths) noexcept;
-	void removeMonitoring(const StringList& aPaths) noexcept;
-
-	class DirModifyInfo {
-	public:
-		typedef deque<DirModifyInfo> List;
-		enum ActionType {
-			ACTION_NONE,
-			ACTION_CREATED,
-			ACTION_MODIFIED,
-			ACTION_DELETED
-		};
-
-		struct FileInfo {
-			FileInfo(ActionType aAction, const string& aOldPath) : action(aAction), oldPath(aOldPath) { }
-
-			ActionType action;
-			string oldPath;
-		};
-
-		//DirModifyInfo(ActionType aAction) : lastFileActivity(GET_TICK()), lastReportedError(0), dirAction(aAction) { }
-		DirModifyInfo(const string& aFile, bool isDirectory, ActionType aAction, const string& aOldPath = Util::emptyString);
-
-		void addFile(const string& aFile, ActionType aAction, const string& aOldPath = Util::emptyString) noexcept;
-
-		typedef unordered_map<string, FileInfo> FileInfoMap;
-		FileInfoMap files;
-		time_t lastFileActivity = GET_TICK();
-		time_t lastReportedError = 0;
-
-		ActionType dirAction = ACTION_NONE;
-		string volume;
-		string path;
-		string oldPath;
-
-		void setPath(const string& aPath) noexcept;
-	};
-
-	typedef set<string, Util::PathSortOrderBool> PathSet;
-
-	DirModifyInfo::List fileModifications;
-
-	// Validates that the new/modified path can be shared and returns the full path (path separator is added for directories
-	optional<pair<string, bool>> checkModifiedPath(const string& aPath) const noexcept;
-
-	void addModifyInfo(const string& aPath, bool isDirectory, DirModifyInfo::ActionType) noexcept;
-	bool handleDeletedFile(const string& aPath, bool isDirectory, ProfileTokenSet& dirtyProfiles_) noexcept;
-
-	// Recursively removes all notifications for the given path
-	void removeNotifications(const string& aPath) noexcept;
-	void removeNotifications(DirModifyInfo::List::iterator aInfo, const string& aPath) noexcept;
-
-	DirModifyInfo::List::iterator findModifyInfo(const string& aFile) noexcept;
-	void handleChangedFiles(uint64_t aTick, bool forced = false) noexcept;
-	bool handleModifyInfo(DirModifyInfo& aInfo, optional<OrderedStringSet>& bundlePaths_, ProfileTokenSet& dirtyProfiles_, StringList& refresh_, uint64_t aTick, bool forced) noexcept;
-	void onFileDeleted(const string& aPath);
-
-	void restoreFailedMonitoredPaths();
 }; //sharemanager end
 
 } // namespace dcpp

@@ -275,9 +275,6 @@
     <ClCompile Include="airdcpp\DualString.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="airdcpp\DirectoryMonitor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="airdcpp\SettingHolder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -355,6 +352,12 @@
     </ClCompile>
     <ClCompile Include="airdcpp\GroupedSearchResult.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\modules\DirectoryMonitor.cpp">
+      <Filter>Source Files\modules</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\modules\ShareMonitorManager.cpp">
+      <Filter>Source Files\modules</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -781,12 +784,6 @@
     <ClInclude Include="airdcpp\DualString.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="airdcpp\DirectoryMonitor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\DirectoryMonitorListener.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="airdcpp\SettingHolder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -936,6 +933,15 @@
     </ClInclude>
     <ClInclude Include="airdcpp\ActionHook.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\modules\DirectoryMonitorListener.h">
+      <Filter>Header Files\modules</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\modules\DirectoryMonitor.h">
+      <Filter>Header Files\modules</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\modules\ShareMonitorManager.h">
+      <Filter>Header Files\modules</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

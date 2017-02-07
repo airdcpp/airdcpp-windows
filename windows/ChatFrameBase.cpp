@@ -29,15 +29,14 @@
 #include "ExMessageBox.h"
 #include "ChatCommands.h"
 
-//#include <airdcpp/AutoSearchManager.h>
+#include <airdcpp/modules/ShareMonitorManager.h>
+
 #include <airdcpp/HashManager.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/Util.h>
-#include <airdcpp/ShareManager.h>
 #include <airdcpp/LogManager.h>
 #include <airdcpp/ShareScannerManager.h>
 #include <airdcpp/QueueManager.h>
-#include <airdcpp/ShareManager.h>
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/ConnectivityManager.h>
 #include <airdcpp/ThrottleManager.h>
@@ -863,11 +862,11 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 	} else if (stricmp(cmd.c_str(), _T("clientstats")) == 0) {
 		status = Text::toT(ClientManager::getInstance()->printClientStats());
 	} else if (stricmp(cmd.c_str(), _T("monitordebug")) == 0) {
-		auto cur = ShareManager::getInstance()->getMonitorDebug();
-		ShareManager::getInstance()->setMonitorDebug(!cur);
+		auto cur = ShareMonitorManager::getInstance()->getMonitorDebug();
+		ShareMonitorManager::getInstance()->setMonitorDebug(!cur);
 		status = cur ? _T("Debug disabled") : _T("Debug enabled");
 	} else if (stricmp(cmd.c_str(), _T("handlechanges")) == 0) {
-		ShareManager::getInstance()->handleChangedFiles();
+		ShareMonitorManager::getInstance()->handleChangedFiles();
 	} else if (stricmp(cmd.c_str(), _T("compact")) == 0) {
 		MainFrame::getMainFrame()->addThreadedTask([this] { HashManager::getInstance()->compact(); });
 	} else if (stricmp(cmd.c_str(), _T("setlistdirty")) == 0) {

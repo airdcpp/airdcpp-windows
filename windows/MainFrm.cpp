@@ -71,6 +71,8 @@
 #include <airdcpp/UploadManager.h>
 #include <airdcpp/ViewFileManager.h>
 
+#include <airdcpp/modules/ShareMonitorManager.h>
+
 #include <airdcpp/version.h>
 
 #include <VersionHelpers.h>
@@ -141,7 +143,7 @@ LRESULT MainFrame::onDeviceChanged(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 		if (lpdb->dbch_devicetype == DBT_DEVTYP_VOLUME) {
 			PDEV_BROADCAST_VOLUME lpdbv = (PDEV_BROADCAST_VOLUME)lpdb;
 			auto drive = string(1, FirstDriveFromMask(lpdbv->dbcv_unitmask));
-			ShareManager::getInstance()->deviceRemoved(drive + ":\\");
+			ShareMonitorManager::getInstance()->deviceRemoved(drive + ":\\");
 		}
 	}
 

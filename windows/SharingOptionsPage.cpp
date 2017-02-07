@@ -25,6 +25,7 @@
 #include "PropertiesDlg.h"
 
 #include <airdcpp/ShareManager.h>
+#include <airdcpp/modules/ShareMonitorManager.h>
 
 
 PropPage::ListItem SharingOptionsPage::listItems[] = {
@@ -128,7 +129,7 @@ Dispatcher::F SharingOptionsPage::getThreadedTask() {
 	if (monitoringMode >= 0 && SETTING(MONITORING_MODE) != monitoringMode) {
 		settings->set(SettingsManager::MONITORING_MODE, monitoringMode);
 		return Dispatcher::F([this] { 
-			ShareManager::getInstance()->rebuildMonitoring();
+			ShareMonitorManager::getInstance()->rebuildMonitoring();
 		});
 	}
 
