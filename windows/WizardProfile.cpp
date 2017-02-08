@@ -21,6 +21,7 @@
 #include "WizardProfile.h"
 
 #include <airdcpp/AirUtil.h>
+#include <airdcpp/SettingHolder.h>
 
 PropPage::TextItem WizardProfile::texts[] = {
 	{ IDC_USER_PROFILE_BOX, ResourceManager::USER_PROFILE_PLAIN },
@@ -70,13 +71,14 @@ int WizardProfile::OnWizardNext() {
 }
 
 void WizardProfile::write() {
+	SettingHolder h(nullptr);
+
 	auto newProfile = getCurProfile();
 	if (newProfile == SettingsManager::PROFILE_LAN && IsDlgButtonChecked(IDC_DISABLE_ENCRYPTION)) {
 		SettingsManager::getInstance()->set(SettingsManager::TLS_MODE, static_cast<int>(SettingsManager::TLS_DISABLED));
 	} else if (newProfile == SettingsManager::PROFILE_RAR && IsDlgButtonChecked(IDC_WIZARD_SKIPLIST)) {
 		SettingsManager::getInstance()->set(SettingsManager::SHARE_SKIPLIST_USE_REGEXP, true);
 		SettingsManager::getInstance()->set(SettingsManager::SKIPLIST_SHARE, "(.*(\\.(scn|asd|lnk|cmd|conf|dll|url|log|crc|dat|sfk|mxm|txt|message|iso|inf|sub|exe|img|bin|aac|mrg|tmp|xml|sup|ini|db|debug|pls|ac3|ape|par2|htm(l)?|bat|idx|srt|doc(x)?|ion|b4s|bgl|cab|cat|bat)$))|((All-Files-CRC-OK|xCOMPLETEx|imdb.nfo|- Copy|(.*\\s\\(\\d\\).*)).*$)");
-		ShareManager::getInstance()->setSkipList();
 	}
 
 	SettingsManager::getInstance()->set(SettingsManager::SETTINGS_PROFILE, newProfile);

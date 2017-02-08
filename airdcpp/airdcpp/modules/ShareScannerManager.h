@@ -40,6 +40,7 @@ public:
 	virtual void on(ScanFinished, const string&, const string&) noexcept { }
 };
 
+class FileFindIter;
 
 class ShareScannerManager: public Singleton<ShareScannerManager>, public Thread, public Speaker<ScannerManagerListener> {
 
@@ -70,7 +71,7 @@ private:
 	~ShareScannerManager();
 	
 	int run();
-	bool matchSkipList(const string& dir);
+	bool validateShare(FileFindIter& aIter, const string& aPath);
 	void runSfvCheck(const StringList& paths);
 	void runShareScan(const StringList& paths);
 

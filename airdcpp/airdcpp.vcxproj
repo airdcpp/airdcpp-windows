@@ -314,6 +314,7 @@
     <ClCompile Include="airdcpp\SFVReader.cpp" />
     <ClCompile Include="airdcpp\SharedFileStream.cpp" />
     <ClCompile Include="airdcpp\ShareManager.cpp" />
+    <ClCompile Include="airdcpp\SharePathValidator.cpp" />
     <ClCompile Include="airdcpp\ShareProfile.cpp" />
     <ClCompile Include="airdcpp\SimpleXML.cpp" />
     <ClCompile Include="airdcpp\SimpleXMLReader.cpp" />
@@ -390,6 +391,7 @@
     <ClInclude Include="airdcpp\SearchInstance.h" />
     <ClInclude Include="airdcpp\SearchInstanceListener.h" />
     <ClInclude Include="airdcpp\SettingsManagerListener.h" />
+    <ClInclude Include="airdcpp\SharePathValidator.h" />
     <ClInclude Include="airdcpp\TimerManagerListener.h" />
     <ClInclude Include="airdcpp\ViewFileManagerListener.h" />
     <ClInclude Include="airdcpp\MessageCache.h" />

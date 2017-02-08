@@ -221,7 +221,7 @@ namespace dcpp {
 		if (f != FileFindIter()) {
 			auto isDirectory = f->isDirectory();
 			auto path = isDirectory ? aPath + PATH_SEPARATOR : aPath;
-			if (!ShareManager::getInstance()->validate(f, aPath, Text::toLower(aPath))) {
+			if (!ShareManager::getInstance()->validate(f, aPath)) {
 				return boost::none;
 			}
 
