@@ -157,7 +157,7 @@ private:
 	}
 
 	static tstring toDisplayTarget(const string& aTarget, const File::VolumeSet& aVolumes) {
-		auto diskInfo = File::getDiskInfo(aTarget, aVolumes);
+		auto diskInfo = File::getDiskInfo(aTarget, aVolumes, true);
 
 		auto ret = Text::toT(aTarget);
 		if (diskInfo.freeSpace >= 0) {
