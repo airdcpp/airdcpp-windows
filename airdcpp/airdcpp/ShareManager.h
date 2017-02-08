@@ -656,7 +656,7 @@ private:
 	// Recursive function for building a new share tree from a path
 	void buildTree(const string& aPath, const string& aPathLower, const Directory::Ptr& aDir, Directory::MultiMap& directoryNameMapNew_, int64_t& hashSize_, int64_t& addedSize_, HashFileMap& tthIndexNew_, ShareBloom& bloomNew_);
 
-	static void addFile(const DualString& aName, const Directory::Ptr& aDir, const HashedFile& fi, HashFileMap& tthIndex_, ShareBloom& aBloom_, int64_t& sharedSize_, ProfileTokenSet* dirtyProfiles_ = nullptr) noexcept;
+	static void addFile(DualString&& aName, const Directory::Ptr& aDir, const HashedFile& fi, HashFileMap& tthIndex_, ShareBloom& aBloom_, int64_t& sharedSize_, ProfileTokenSet* dirtyProfiles_ = nullptr) noexcept;
 
 	static void updateIndices(Directory::Ptr& aDirectory, ShareBloom& aBloom_, int64_t& sharedSize_, HashFileMap& tthIndex_, Directory::MultiMap& aDirNames_) noexcept;
 	static void updateIndices(Directory& dir, const Directory::File* f, ShareBloom& aBloom_, int64_t& sharedSize_, HashFileMap& tthIndex_) noexcept;
