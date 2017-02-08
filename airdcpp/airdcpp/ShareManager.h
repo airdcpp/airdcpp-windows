@@ -353,7 +353,7 @@ private:
 			typedef shared_ptr<RootDirectory> Ptr;
 			typedef unordered_map<TTHValue, Ptr> Map;
 
-			static Ptr create(const string& aRootPath, const string& aVname, const ProfileTokenSet& aProfiles, bool aIncoming) noexcept;
+			static Ptr create(const string& aRootPath, const string& aVname, const ProfileTokenSet& aProfiles, bool aIncoming, time_t aLastRefreshTime) noexcept;
 
 			GETSET(ProfileTokenSet, rootProfiles, RootProfiles);
 			IGETSET(bool, cacheDirty, CacheDirty, false);
@@ -383,7 +383,7 @@ private:
 			void setName(const string& aName) noexcept;
 			string getCacheXmlPath() const noexcept;
 		private:
-			RootDirectory(const string& aRootPath, const string& aVname, const ProfileTokenSet& aProfiles, bool aIncoming) noexcept;
+			RootDirectory(const string& aRootPath, const string& aVname, const ProfileTokenSet& aProfiles, bool aIncoming, time_t aLastRefreshTime) noexcept;
 
 			unique_ptr<DualString> virtualName;
 			const string path;
@@ -471,7 +471,7 @@ private:
 		File::Set files;
 
 		static Ptr createNormal(DualString&& aRealName, const Ptr& aParent, uint64_t aLastWrite, Directory::MultiMap& dirNameMap_, ShareBloom& bloom) noexcept;
-		static Ptr createRoot(DualString&& aRealName, uint64_t aLastWrite, const RootDirectory::Ptr& aProfileDir, Map& rootPaths_, Directory::MultiMap& dirNameMap_, ShareBloom& bloom) noexcept;
+		static Ptr createRoot(const string& aRootPath, const string& aVname, const ProfileTokenSet& aProfiles, bool aIncoming, uint64_t aLastWrite, Map& rootPaths_, Directory::MultiMap& dirNameMap_, ShareBloom& bloom_, time_t aLastRefreshTime) noexcept;
 
 		struct HasRootProfile {
 			HasRootProfile(const OptionalProfileToken& aProfile) : profile(aProfile) { }
@@ -509,13 +509,11 @@ private:
 
 		GETSET(uint64_t, lastWrite, LastWrite);
 		GETSET(Directory*, parent, Parent);
-		GETSET(RootDirectory::Ptr, root, Root);
 
 		~Directory();
 
 		void copyRootProfiles(ProfileTokenSet& profiles_, bool setCacheDirty) const noexcept;
 		bool isRoot() const noexcept;
-		int64_t size;
 
 		//void addBloom(ShareBloom& aBloom) const noexcept;
 
@@ -529,7 +527,14 @@ private:
 
 		Directory(Directory&) = delete;
 		Directory& operator=(Directory&) = delete;
+
+		const RootDirectory::Ptr& getRoot() const noexcept { return root; }
+		void increaseSize(int64_t aSize, int64_t& aTotalSize) noexcept { size += aSize; aTotalSize += aSize; }
+		void decreaseSize(int64_t aSize, int64_t& aTotalSize) noexcept { size -= aSize; aTotalSize -= aSize; }
 	private:
+		int64_t size = 0;
+		RootDirectory::Ptr root;
+
 		Directory(DualString&& aRealName, const Ptr& aParent, uint64_t aLastWrite, const RootDirectory::Ptr& aRoot = nullptr);
 		friend void intrusive_ptr_release(intrusive_ptr_base<Directory>*);
 
