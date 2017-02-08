@@ -735,7 +735,7 @@ int64_t File::getFreeSpace(const string& aPath) noexcept {
 	return info.freeSpace;
 }
 
-string File::getMountPath(const string& aPath, const VolumeSet& aVolumes) noexcept {
+string File::getMountPath(const string& aPath, const VolumeSet& aVolumes, bool aIgnoreNetworkPaths) noexcept {
 	if (aVolumes.find(aPath) != aVolumes.end()) {
 		return aPath;
 	}
@@ -752,14 +752,17 @@ string File::getMountPath(const string& aPath, const VolumeSet& aVolumes) noexce
 	}
 
 #ifdef WIN32
-	// Not found from volumes... network path? This won't work with mounted dirs
-	if (aPath.length() > 2 && aPath.substr(0, 2) == "\\\\") {
-		l = aPath.find("\\", 2);
-		if (l != string::npos) {
-			//get the drive letter
-			l = aPath.find("\\", l + 1);
+	if (!aIgnoreNetworkPaths) {
+		// Not found from volumes... network path? This won't work with mounted dirs
+		// Get the first section containing the network host and the first folder/drive (//HTPC/g/)
+		if (aPath.length() > 2 && aPath.substr(0, 2) == "\\\\") {
+			l = aPath.find("\\", 2);
 			if (l != string::npos) {
-				return aPath.substr(0, l + 1);
+				//get the drive letter
+				l = aPath.find("\\", l + 1);
+				if (l != string::npos) {
+					return aPath.substr(0, l + 1);
+				}
 			}
 		}
 	}
@@ -770,8 +773,8 @@ string File::getMountPath(const string& aPath, const VolumeSet& aVolumes) noexce
 	return Util::emptyString;
 }
 
-File::DiskInfo File::getDiskInfo(const string& aTarget, const VolumeSet& aVolumes) noexcept {
-	auto mountPoint = getMountPath(aTarget, aVolumes);
+File::DiskInfo File::getDiskInfo(const string& aTarget, const VolumeSet& aVolumes, bool aIgnoreNetworkPaths) noexcept {
+	auto mountPoint = getMountPath(aTarget, aVolumes, aIgnoreNetworkPaths);
 	if (!mountPoint.empty()) {
 		return File::getDiskInfo(mountPoint);
 	}
