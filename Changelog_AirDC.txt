@@ -9,17 +9,26 @@ Changed:
 - Don't queue new background searches if the search queue is too long
 - Simplified share monitoring that relies on directory refreshes instead of handling individual files
 - Failed bundles won't be rescanned on filelist refresh (rescan must be initiated manually instead)
+
+Fixed:
+
+
+Removed:
+
+- Option to hash finished bundle files
+- Option to add finished finished bundles in share instantly (always shared instantly from now on when inside a shared directory)
+
+
+3.31
+
+Changed:
+
 - Don't show free disk space for network locations in "Download to" menu to avoid delays when opening the menu
 
 Fixed:
 
 - Share related stability improvements
 - Fix incorrect UTF-8 validation errors
-
-Removed:
-
-- Option to hash finished bundle files
-- Option to add finished finished bundles in share instantly (always shared instantly from now on when inside a shared directory)
 
 
 3.30
