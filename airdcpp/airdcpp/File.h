@@ -227,10 +227,10 @@ public:
 	DirData* operator->() { return &data; }
 
 private:
+	FileFindIter& validateCurrent();
 #ifdef _WIN32
 	HANDLE handle;
 #else
-	bool matchPattern() const;
 	DIR* dir;
 	unique_ptr<string> pattern;
 #endif

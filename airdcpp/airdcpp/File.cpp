@@ -850,6 +850,7 @@ FileFindIter::FileFindIter(const string& aPath, const string& aPattern, bool aDi
 	}
 
 	handle = ::FindFirstFileEx(Text::toT(path + aPattern).c_str(), FindExInfoBasic, &data, aDirsOnly ? FindExSearchLimitToDirectories : FindExSearchNameMatch, NULL, NULL);
+	validateCurrent();
 }
 
 FileFindIter::~FileFindIter() {
@@ -858,15 +859,22 @@ FileFindIter::~FileFindIter() {
 	}
 }
 
+FileFindIter& FileFindIter::validateCurrent() {
+	if (wcscmp((*this)->cFileName, _T(".")) == 0 || wcscmp((*this)->cFileName, _T("..")) == 0) {
+		return this->operator++();
+	}
+
+	return *this;
+}
+
 FileFindIter& FileFindIter::operator++() {
 	if(!::FindNextFile(handle, &data)) {
 		::FindClose(handle);
 		handle = INVALID_HANDLE_VALUE;
-	} else if (wcscmp((*this)->cFileName, _T(".")) == 0 || wcscmp((*this)->cFileName, _T("..")) == 0) {
-		this->operator++();
+		return *this;
 	}
 
-	return *this;
+	return validateCurrent();
 }
 
 bool FileFindIter::operator!=(const FileFindIter& rhs) const { return handle != rhs.handle; }
@@ -920,13 +928,25 @@ FileFindIter::FileFindIter(const string& aPath, const string& aPattern, bool dir
 		closedir(dir);
 		dir = NULL;
 		return;
-	} else if (!matchPattern()) {
-		operator++();
 	}
+
+	validateCurrent();
 }
 
 FileFindIter::~FileFindIter() {
 	if (dir) closedir(dir);
+}
+
+FileFindIter& FileFindIter::validateCurrent() {
+	if (strcmp((*this)->ent->d_name, ".") == 0 || strcmp((*this)->ent->d_name, "..") == 0) {
+		return this->operator++();
+	}
+
+	if (pattern && fnmatch(pattern->c_str(), data.ent->d_name, 0) != 0) {
+		return this->operator++();
+	}
+
+	return *this;
 }
 
 FileFindIter& FileFindIter::operator++() {
@@ -939,15 +959,7 @@ FileFindIter& FileFindIter::operator++() {
 		return *this;
 	}
 
-	if (matchPattern())
-		return *this;
-
-	// continue to the next one...
-	return operator++();
-}
-
-bool FileFindIter::matchPattern() const {
-	return !pattern || fnmatch(pattern->c_str(), data.ent->d_name, 0) == 0;
+	return validateCurrent();
 }
 
 bool FileFindIter::operator!=(const FileFindIter& rhs) const {
