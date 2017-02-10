@@ -77,7 +77,7 @@ private:
 
 	class ItemInfo {
 	public:
-		ItemInfo(const RecentEntryPtr& aRecent) : item(aRecent) { }
+		ItemInfo(const RecentHubEntryPtr& aRecent) : item(aRecent) { }
 		~ItemInfo() { }
 
 		const tstring getText(int col) const;
@@ -88,7 +88,7 @@ private:
 
 		int getImageIndex() const { return 0; }
 
-		RecentEntryPtr item;
+		RecentHubEntryPtr item;
 	};
 
 	unordered_map<string, unique_ptr<ItemInfo>> itemInfos; //map to url for now, we only have hubs here...
@@ -115,7 +115,7 @@ private:
 	CStatusBarCtrl ctrlStatus;
 	int statusSizes[2];
 	
-	void on(RecentManagerListener::RecentAdded, const RecentEntryPtr& entry) noexcept { 
+	void on(RecentManagerListener::RecentHubAdded, const RecentHubEntryPtr& entry) noexcept { 
 		callAsync([=] {
 			auto i = itemInfos.find(entry->getUrl());
 			if (i == itemInfos.end()) {
@@ -124,7 +124,7 @@ private:
 			}
 		});
 	}
-	void on(RecentManagerListener::RecentRemoved, const RecentEntryPtr& entry) noexcept { 
+	void on(RecentManagerListener::RecentHubRemoved, const RecentHubEntryPtr& entry) noexcept { 
 		callAsync([=] {
 			auto i = itemInfos.find(entry->getUrl());
 			if (i != itemInfos.end()) {
@@ -133,7 +133,7 @@ private:
 			}
 		});
 	}
-	void on(RecentManagerListener::RecentUpdated, const RecentEntryPtr& entry) noexcept;
+	void on(RecentManagerListener::RecentHubUpdated, const RecentHubEntryPtr& entry) noexcept;
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 };

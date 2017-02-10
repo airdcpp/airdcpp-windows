@@ -56,8 +56,8 @@ LRESULT RecentsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	RecentManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
 
-	auto list = RecentManager::getInstance()->getRecents();
-	for (auto i : list) {
+	auto list = RecentManager::getInstance()->getRecentHubs();
+	for (const auto& i : list) {
 		itemInfos.emplace(i->getUrl(), unique_ptr<ItemInfo>(new ItemInfo(i)));
 	}
 	callAsync([=] { updateList(); });
@@ -83,7 +83,7 @@ LRESULT RecentsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 		menu.CreatePopupMenu();
 
 		if (ctrlList.list.GetSelectedCount() > 0) {
-			vector<RecentEntryPtr> items;
+			vector<RecentHubEntryPtr> items;
 			int i = -1;
 			while ((i = ctrlList.list.GetNextItem(i, LVNI_SELECTED)) != -1) {
 				auto r = (ItemInfo*)ctrlList.list.GetItemData(i);
@@ -94,13 +94,13 @@ LRESULT RecentsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 
 			menu.InsertSeparatorFirst(Text::toT(title));
 
-			menu.appendItem(TSTRING(CONNECT), [=] { for_each(items.begin(), items.end(), [=](const RecentEntryPtr& r) { WinUtil::connectHub(r->getUrl()); }); }, OMenu::FLAG_DEFAULT);
-			menu.appendItem(TSTRING(REMOVE), [=] { for_each(items.begin(), items.end(), [=](const RecentEntryPtr& r) { 
-				RecentManager::getInstance()->removeRecent(r->getUrl()); }); }, OMenu::FLAG_DEFAULT);
+			menu.appendItem(TSTRING(CONNECT), [=] { for_each(items.begin(), items.end(), [=](const RecentHubEntryPtr& r) { WinUtil::connectHub(r->getUrl()); }); }, OMenu::FLAG_DEFAULT);
+			menu.appendItem(TSTRING(REMOVE), [=] { for_each(items.begin(), items.end(), [=](const RecentHubEntryPtr& r) { 
+				RecentManager::getInstance()->removeRecentHub(r->getUrl()); }); }, OMenu::FLAG_DEFAULT);
 			menu.appendSeparator();
 		}
 
-		menu.appendItem(TSTRING(CLEAR), [=] { RecentManager::getInstance()->clearRecents(); }, OMenu::FLAG_THREADED);
+		menu.appendItem(TSTRING(CLEAR), [=] { RecentManager::getInstance()->clearRecentHubs(); }, OMenu::FLAG_THREADED);
 		
 		menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 		return TRUE;
@@ -147,7 +147,7 @@ LRESULT RecentsFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bHandled*
 		int i = -1;
 		while ((i = ctrlList.list.GetNextItem(i, LVNI_SELECTED)) != -1) {
 			auto r = (ItemInfo*)ctrlList.list.GetItemData(i);
-			RecentManager::getInstance()->removeRecent(r->item->getUrl());
+			RecentManager::getInstance()->removeRecentHub(r->item->getUrl());
 		}
 	}
 	return 0;
@@ -217,7 +217,7 @@ void RecentsFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcep
 	}
 }
 
-void RecentsFrame::on(RecentManagerListener::RecentUpdated, const RecentEntryPtr& entry) noexcept {
+void RecentsFrame::on(RecentManagerListener::RecentHubUpdated, const RecentHubEntryPtr& entry) noexcept {
 	callAsync([=] {
 		auto i = itemInfos.find(entry->getUrl());
 		if (i != itemInfos.end()) {
