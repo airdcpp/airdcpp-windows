@@ -38,6 +38,7 @@
 #include <airdcpp/QueueManager.h>
 #include <airdcpp/ResourceManager.h>
 #include <airdcpp/ScopedFunctor.h>
+#include <airdcpp/SearchInstance.h>
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/TimerManager.h>
 #include <airdcpp/UploadManager.h>
@@ -2299,9 +2300,35 @@ tstring WinUtil::formatFileType(const string& aFileName) {
 	return Text::toT(type);
 }
 
-/*void WinUtil::addFileDownloads(BundleFileList& aFiles, const HintedUser& aUser, Flags::MaskType aFlags 0, bool addBad true) {
+void WinUtil::findNfo(const string& aPath, const HintedUser& aUser) noexcept {
 	MainFrame::getMainFrame()->addThreadedTask([=] {
-		for (auto& bfi: aFiles)
-			QueueManager::getInstance()->createFileBundle(bfi.file, bfi.size, bfi.tth, aUser, bfi.date, aFlags, addBad, bfi.prio);
+		SearchInstance searchInstance;
+
+		auto search = make_shared<Search>(Priority::HIGH, Util::toString(Util::rand()));
+		search->maxResults = 1;
+		search->path = Util::toAdcFile(aPath);
+		search->exts = { ".nfo" };
+		search->size = 256 * 1024;
+		search->sizeType = Search::SIZE_ATMOST;
+
+		string error;
+		if (!searchInstance.userSearch(aUser, search, error)) {
+			MainFrame::getMainFrame()->ShowPopup(Text::toT(error), Text::toT(Util::getLastDir(aPath)), NIIF_ERROR, true);
+			return;
+		}
+
+		for (auto i = 0; i < 5; i++) {
+			Thread::sleep(500);
+			if (searchInstance.getResultCount() > 0) {
+				break;
+			}
+		}
+
+		if (searchInstance.getResultCount() > 0) {
+			auto result = searchInstance.getResultList().front();
+			ViewFileManager::getInstance()->addUserFileNotify(result->getFileName(), result->getSize(), result->getTTH(), aUser, true);
+		} else {
+			MainFrame::getMainFrame()->ShowPopup(TSTRING(NO_NFO_FOUND), Text::toT(Util::getLastDir(aPath)), NIIF_INFO, true);
+		}
 	});
-}*/
+}

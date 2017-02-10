@@ -775,15 +775,8 @@ void SearchFrame::handleOpenItem(bool isClientView) {
 
 void SearchFrame::handleViewNfo() {
 	auto viewNfo = [=](const SearchInfo* si) {
-		if (si->sr->getType() == SearchResult::TYPE_FILE && Util::getFileExt(si->sr->getFileName()) == ".nfo") {
-			WinUtil::openFile(si->sr->getFileName(), si->sr->getSize(), si->sr->getTTH(), si->sr->getUser(), true);
-		} else {
-			auto path = AirUtil::getNmdcReleaseDir(si->sr->getFilePath(), false);
-			try {
-				QueueManager::getInstance()->addList(si->sr->getUser(), QueueItem::FLAG_VIEW_NFO | QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_RECURSIVE_LIST, path);
-			} catch(const Exception&) {
-				// Ignore for now...
-			}
+		if (si->sr->getType() == SearchResult::TYPE_DIRECTORY && si->getUser()->isSet(User::ASCH)) {
+			WinUtil::findNfo(si->sr->getPath(), si->sr->getUser());
 		}
 	};
 
@@ -1455,7 +1448,7 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 		}
 		
 		if(ctrlResults.list.GetSelectedCount() > 0) {
-			bool hasFiles=false, hasDupes=false, hasNmdcDirsOnly=true;
+			bool hasFiles = false, hasDupes = false, hasNmdcDirsOnly = true, hasAsch = false, hasDirectories = false;
 
 			int sel = -1;
 			while((sel = ctrlResults.list.GetNextItem(sel, LVNI_SELECTED)) != -1) {
@@ -1463,12 +1456,20 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 				if (si->sr->getType() == SearchResult::TYPE_FILE) {
 					hasFiles = true;
 					hasNmdcDirsOnly = false;
-				} else if (!si->sr->getUser().user->isSet(User::NMDC)) {
-					hasNmdcDirsOnly = false;
+				} else {
+					hasDirectories = true;
+					if (!si->sr->getUser().user->isSet(User::NMDC)) {
+						hasNmdcDirsOnly = false;
+					}
 				}
 
-				if (si->isDupe())
+				if (si->isDupe()) {
 					hasDupes = true;
+				}
+
+				if (si->getUser()->isSet(User::ASCH)) {
+					hasAsch = true;
+				}
 			}
 
 			ShellMenu resultsMenu;
@@ -1489,7 +1490,10 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 				resultsMenu.appendItem(TSTRING(OPEN), [&] { handleOpenItem(false); });
 			}
 
-			resultsMenu.appendItem(TSTRING(VIEW_NFO), [&] { handleViewNfo(); });
+			if (hasDirectories && hasAsch) {
+				resultsMenu.appendItem(TSTRING(VIEW_NFO), [&] { handleViewNfo(); });
+			}
+			
 			resultsMenu.appendItem(TSTRING(MATCH_PARTIAL), [&] { handleMatchPartial(); });
 
 			resultsMenu.appendSeparator();

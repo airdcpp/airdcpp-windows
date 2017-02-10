@@ -518,6 +518,8 @@ public:
 	static void connectHub(const string& aUrl);
 	static tstring formatFolderContent(const DirectoryContentInfo& aContentInfo);
 	static tstring formatFileType(const string& aFileName);
+
+	static void findNfo(const string& aPath, const HintedUser& aUser) noexcept;
 };
 
 

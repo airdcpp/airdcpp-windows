@@ -35,12 +35,13 @@
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/File.h>
-#include <airdcpp/modules/HighlightManager.h>
 #include <airdcpp/QueueManager.h>
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/User.h>
+#include <airdcpp/ViewFileManager.h>
 #include <airdcpp/Wildcards.h>
 
+#include <airdcpp/modules/HighlightManager.h>
 #include <airdcpp/modules/ShareScannerManager.h>
 
 #include <boost/move/algorithm.hpp>
@@ -1331,8 +1332,9 @@ void DirectoryListingFrame::appendListContextMenu(CPoint& pt) {
 		fileMenu.appendItem(TSTRING(OPEN), [this] { handleOpenFile(); }, isDupeOrOwnlist ? OMenu::FLAG_DEFAULT : 0);
 	}
 
-	if (!hasFiles)
+	if (!hasFiles && dl->getUser()->isSet(User::ASCH) && !dl->getIsOwnList()) {
 		fileMenu.appendItem(TSTRING(VIEW_NFO), [this] { handleViewNFO(false); });
+	}
 
 	// searching (client)
 	if (ctrlFiles.list.GetSelectedCount() == 1 && ii->type == ItemInfo::FILE)
@@ -1473,7 +1475,11 @@ void DirectoryListingFrame::handleDownload(const string& aTarget, Priority aPrio
 void DirectoryListingFrame::handleViewAsText() {
 	handleItemAction(false, [this](const ItemInfo* ii) {
 		if (ii->type == ItemInfo::FILE) {
-			dl->viewAsText(ii->file);
+			if (dl->getIsOwnList()) {
+				ViewFileManager::getInstance()->addLocalFile(ii->file->getTTH(), true);
+			} else {
+				ViewFileManager::getInstance()->addUserFileNotify(ii->file->getName(), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), true);
+			}
 		}
 	});
 }
@@ -1509,9 +1515,7 @@ void DirectoryListingFrame::handleGoToDirectory(bool usingTree) {
 void DirectoryListingFrame::handleViewNFO(bool usingTree) {
 	handleItemAction(usingTree, [this](const ItemInfo* ii) {
 		if (ii->type == ItemInfo::DIRECTORY) {
-			dl->addViewNfoTask(ii->dir->getPath(), true, [this](const string& aPath) {
-				callAsync([=] { TextFrame::openWindow(aPath, TextFrame::NORMAL); });
-			});
+			WinUtil::findNfo(ii->dir->getPath(), dl->getHintedUser());
 		}
 	});
 }
