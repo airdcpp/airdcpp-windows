@@ -240,10 +240,11 @@ void WinUtil::GetBrowseList::operator()(UserPtr aUser, const string& aUrl) const
 	if(!aUser)
 		return;
 
-	if (aUser->isSet(User::NMDC) || ClientManager::getInstance()->getShareInfo(HintedUser(aUser, aUrl)).second < SETTING(FULL_LIST_DL_LIMIT))
+	if (allowGetFullList(HintedUser(aUser, aUrl))) {
 		GetList()(aUser, aUrl);
-	else
+	} else {
 		BrowseList()(aUser, aUrl);
+	}
 }
 
 void WinUtil::ConnectFav::operator()(UserPtr aUser, const string& aUrl) const {
@@ -2331,4 +2332,13 @@ void WinUtil::findNfo(const string& aPath, const HintedUser& aUser) noexcept {
 			MainFrame::getMainFrame()->ShowPopup(TSTRING(NO_NFO_FOUND), Text::toT(Util::getLastDir(aPath)), NIIF_INFO, true);
 		}
 	});
+}
+
+bool WinUtil::allowGetFullList(const HintedUser& aUser) noexcept {
+	if (aUser.user->isNMDC()) {
+		return true;
+	}
+
+	auto shareInfo = ClientManager::getInstance()->getShareInfo(HintedUser(aUser));
+	return shareInfo && (*shareInfo).fileCount > SETTING(FULL_LIST_DL_LIMIT);
 }

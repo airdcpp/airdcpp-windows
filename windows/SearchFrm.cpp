@@ -829,7 +829,7 @@ void SearchFrame::handleDownload(const string& aTarget, Priority p, bool useWhol
 void SearchFrame::handleGetList(ListType aType) {
 	auto getList = [&, aType](const SearchInfo* si) {
 		int flags = aType == TYPE_PARTIAL ? QueueItem::FLAG_PARTIAL_LIST : 0;
-		if (aType == TYPE_MIXED && (!si->getUser()->isSet(User::NMDC) && ClientManager::getInstance()->getShareInfo(si->sr->getUser()).second >= SETTING(FULL_LIST_DL_LIMIT))) {
+		if (aType == TYPE_MIXED && !WinUtil::allowGetFullList(si->sr->getUser())) {
 			flags = QueueItem::FLAG_PARTIAL_LIST;
 		}
 

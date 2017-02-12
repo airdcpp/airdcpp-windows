@@ -98,10 +98,10 @@ public:
 	}
 
 	struct UserTraits {
-		UserTraits() : noFullList(true), favOnly(true), nonFavOnly(true), allFullList(true) { }
+		UserTraits() { }
 		void operator()(const UserInfoBase* ui) {
 			if(ui->getUser()) {
-				if(!ui->getUser()->isSet(User::NMDC) && ClientManager::getInstance()->getShareInfo(HintedUser(ui->getUser(), ui->getHubUrl())).second > SETTING(FULL_LIST_DL_LIMIT)) { 
+				if (!WinUtil::allowGetFullList(HintedUser(ui->getUser(), ui->getHubUrl()))) {
 					allFullList = false;
 				} else {
 					noFullList = false;
@@ -115,10 +115,10 @@ public:
 			}
 		}
 
-		bool noFullList;
-		bool allFullList;
-		bool favOnly;
-		bool nonFavOnly;
+		bool noFullList = true;
+		bool allFullList = true;
+		bool favOnly = true;
+		bool nonFavOnly = true;
 	};
 
 	template<class K>
