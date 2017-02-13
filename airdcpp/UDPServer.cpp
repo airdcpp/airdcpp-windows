@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2015 AirDC++ Project
+ * Copyright (C) 2011-2017 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -67,7 +67,6 @@ UDPServer::~UDPServer() { }
 
 #define BUFSIZE 8192
 int UDPServer::run() {
-	uint8_t* buf = nullptr;
 	int len;
 	string remoteAddr;
 
@@ -77,13 +76,11 @@ int UDPServer::run() {
 				continue;
 			}
 
-			buf = new uint8_t[BUFSIZE];
-			if((len = socket->read(buf, BUFSIZE, remoteAddr)) > 0) {
+			auto buf = vector<uint8_t>(BUFSIZE);
+			if((len = socket->read(buf.data(), BUFSIZE, remoteAddr)) > 0) {
 				pp.addTask([=] { handlePacket(buf, len, remoteAddr); });
 				continue;
 			}
-
-			delete buf;
 		} catch(const SocketException& e) {
 			dcdebug("SearchManager::run Error: %s\n", e.getError().c_str());
 		}
@@ -117,15 +114,14 @@ int UDPServer::run() {
 	return 0;
 }
 
-void UDPServer::handlePacket(uint8_t* aBuf, size_t aLen, const string& aRemoteIp) {
-	string x((char*) aBuf, aLen);
+void UDPServer::handlePacket(const ByteVector& aBuf, size_t aLen, const string& aRemoteIp) {
+	string x(aBuf.begin(), aBuf.begin() + aLen);
 
 	//check if this packet has been encrypted
 	if (SETTING(ENABLE_SUDP) && aLen >= 32 && ((aLen & 15) == 0)) {
-		SearchManager::getInstance()->decryptPacket(x, aLen, aBuf, BUFSIZE);
+		SearchManager::getInstance()->decryptPacket(x, aLen, aBuf);
 	}
-			
-	delete aBuf;
+
 	if (x.empty())
 		return;
 
@@ -145,6 +141,7 @@ void UDPServer::handlePacket(uint8_t* aBuf, size_t aLen, const string& aRemoteIp
 		if(!user)
 			return;
 
+		// Remove the CID
 		// This should be handled by AdcCommand really...
 		c.getParameters().erase(c.getParameters().begin());
 
@@ -160,6 +157,7 @@ void UDPServer::handlePacket(uint8_t* aBuf, size_t aLen, const string& aRemoteIp
 		UserPtr user = ClientManager::getInstance()->findUser(CID(cid));
 		// when user == NULL then it is probably NMDC user, check it later
 			
+		// Remove the CID
 		c.getParameters().erase(c.getParameters().begin());			
 			
 		SearchManager::getInstance()->onPSR(c, user, aRemoteIp);
@@ -178,6 +176,7 @@ void UDPServer::handlePacket(uint8_t* aBuf, size_t aLen, const string& aRemoteIp
 
 		UserPtr user = ClientManager::getInstance()->findUser(CID(cid));
 			
+		// Remove the CID
 		c.getParameters().erase(c.getParameters().begin());			
 			
 		if (user)
@@ -188,7 +187,7 @@ void UDPServer::handlePacket(uint8_t* aBuf, size_t aLen, const string& aRemoteIp
 		if(c.getParameters().empty())
 			return;
 			
-		c.getParameters().erase(c.getParameters().begin());			
+		// No CID in UBD/UBN commands
 			
 		if (x.compare(1, 4, "UBN ") == 0) {
 			//LogManager::getInstance()->message("GOT UBN UDP: " + x);

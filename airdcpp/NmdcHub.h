@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,11 +19,8 @@
 #ifndef DCPLUSPLUS_DCPP_NMDC_HUB_H
 #define DCPLUSPLUS_DCPP_NMDC_HUB_H
 
-#include "TimerManager.h"
-
 #include "forward.h"
 #include "Client.h"
-#include "Search.h"
 
 namespace dcpp {
 
@@ -35,26 +32,26 @@ public:
 	using Client::send;
 	using Client::connect;
 
-	int connect(const OnlineUser& aUser, const string& token, string& lastError_);
+	int connect(const OnlineUser& aUser, const string& token, string& lastError_) noexcept override;
 
-	bool hubMessage(const string& aMessage, string& error_, bool /*thirdPerson*/ = false);
-	bool privateMessage(const OnlineUserPtr& aUser, const string& aMessage, string& error_, bool /*thirdPerson*/ = false);
-	void sendUserCmd(const UserCommand& command, const ParamMap& params);
-	void search(const SearchPtr& aSearch);
-	void password(const string& aPass) { send("$MyPass " + fromUtf8(aPass) + "|"); }
-	void infoImpl() { myInfo(false); }
+	bool hubMessage(const string& aMessage, string& error_, bool /*thirdPerson*/ = false) noexcept override;
+	bool privateMessage(const OnlineUserPtr& aUser, const string& aMessage, string& error_, bool aThirdPerson, bool aEcho) noexcept override;
+	void sendUserCmd(const UserCommand& command, const ParamMap& params) override;
+	void search(const SearchPtr& aSearch) noexcept override;
+	void password(const string& aPass) noexcept override;
+	void infoImpl() noexcept override { myInfo(false); }
 
-	size_t getUserCount() const;
+	size_t getUserCount() const noexcept override;
 	
-	string escape(string const& str) const { return validateMessage(str, false); }
+	static string escape(string const& str) { return validateMessage(str, false); }
 	static string unescape(const string& str) { return validateMessage(str, true); }
 
-	bool send(const AdcCommand&) { dcassert(0); return false; }
+	bool send(const AdcCommand&) override { dcassert(0); return false; }
 
 	static string validateMessage(string tmp, bool reverse);
-	void refreshUserList(bool);
+	void refreshUserList(bool) noexcept override;
 
-	void getUserList(OnlineUserList& list) const;
+	void getUserList(OnlineUserList& list, bool aListHidden) const noexcept override;
 
 	NmdcHub(const string& aHubURL, const ClientPtr& aOldClient = nullptr);
 	~NmdcHub();
@@ -87,16 +84,16 @@ private:
 	FloodMap seekers;
 	FloodMap flooders;
 
-	void clearUsers() noexcept;
+	void clearUsers() noexcept override;
 	void onLine(const string& aLine) noexcept;
 
-	OnlineUser& getUser(const string& aNick);
-	OnlineUserPtr findUser(const string& aNick) const;
-	void putUser(const string& aNick);
+	OnlineUser& getUser(const string& aNick) noexcept;
+	OnlineUserPtr findUser(const string& aNick) const noexcept override;
+	void putUser(const string& aNick) noexcept;
 	
 	// don't convert to UTF-8 if string is already in this encoding
-	string toUtf8(const string& str) const;
-	string fromUtf8(const string& str) const;
+	string toUtf8(const string& str) noexcept;
+	string fromUtf8(const string& str) noexcept;
 
 	void privateMessage(const string& nick, const string& aMessage, bool thirdPerson);
 	void validateNick(const string& aNick) { send("$ValidateNick " + fromUtf8(aNick) + "|"); }
@@ -112,16 +109,15 @@ private:
 	void updateFromTag(Identity& id, const string& tag);
 	void refreshLocalIp() noexcept;
 
-	string checkNick(const string& aNick);
-	virtual bool v4only() const { return true; }
+	string checkNick(const string& aNick) noexcept override;
+	virtual bool v4only() const noexcept override { return true; }
 
 	// TimerManagerListener
-	virtual void on(Second, uint64_t aTick) noexcept;
-	virtual void on(Minute, uint64_t aTick) noexcept;
+	virtual void on(Second, uint64_t aTick) noexcept override;
+	virtual void on(Minute, uint64_t aTick) noexcept override;
 
-	void on(Connected) noexcept;
-	void on(Line, const string& l) noexcept;
-	void on(Failed, const string&) noexcept;
+	void on(Connected) noexcept override;
+	void on(Line, const string& l) noexcept override;
 };
 
 } // namespace dcpp

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 AirDC++ Project
+ * Copyright (C) 2012-2017 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 #define DIRECTORYLISTING_MANAGER_LISTENER_H
 
 #include "forward.h"
+#include "BundleInfo.h"
 
 namespace dcpp {
 
@@ -32,11 +33,19 @@ public:
 	typedef X<1> OpenListing;
 	typedef X<2> ListingClosed;
 
-	typedef std::function<void (bool)> completionF;
+	typedef X<3> DirectoryDownloadAdded;
+	typedef X<4> DirectoryDownloadRemoved;
+	typedef X<5> DirectoryDownloadProcessed;
+	typedef X<6> DirectoryDownloadFailed;
 
 	virtual void on(ListingCreated, const DirectoryListingPtr&) noexcept { }
 	virtual void on(OpenListing, const DirectoryListingPtr&, const string& /*aDir*/, const string& /*aXML*/) noexcept { }
 	virtual void on(ListingClosed, const DirectoryListingPtr&) noexcept { }
+
+	virtual void on(DirectoryDownloadAdded, const DirectoryDownloadPtr&) noexcept { }
+	virtual void on(DirectoryDownloadRemoved, const DirectoryDownloadPtr&) noexcept { }
+	virtual void on(DirectoryDownloadProcessed, const DirectoryDownloadPtr&, const DirectoryBundleAddInfo&, const string&) noexcept { }
+	virtual void on(DirectoryDownloadFailed, const DirectoryDownloadPtr&, const string&) noexcept { }
 };
 
 } // namespace dcpp

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2015 AirDC++ Project
+ * Copyright (C) 2011-2017 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "Flags.h"
 #include "forward.h"
 #include "GetSet.h"
+#include "Priority.h"
 
 namespace dcpp {
 
@@ -41,40 +42,41 @@ public:
 		TYPE_MCN_NORMAL
 	};
 
-	enum Priority {
-		DEFAULT = -1,
-		PAUSED_FORCE = 0,
-		PAUSED,
-		LOWEST,
-		LOW,
-		NORMAL,
-		HIGH,
-		HIGHEST,
-		LAST
-	};
-
 	QueueItemBase(const string& aTarget, int64_t aSize, Priority aPriority, time_t aAdded, QueueToken aToken, Flags::MaskType aFlags);
 
-	virtual void setTarget(const string& aTarget) = 0;
 	const DownloadList& getDownloads() { return downloads; }
 
 	GETSET(Priority, priority, Priority);
 	GETSET(bool, autoPriority, AutoPriority);
 	GETSET(time_t, timeAdded, TimeAdded);
 	IGETSET(time_t, timeFinished, TimeFinished, 0);
-	GETSET(string, target, Target);
 	GETSET(DownloadList, downloads, Downloads);
 	GETSET(int64_t, size, Size);
 
-	bool isPausedPrio() const { return priority == PAUSED_FORCE || priority == PAUSED; }
+	virtual bool isPausedPrio() const noexcept { return priority == Priority::PAUSED_FORCE || priority == Priority::PAUSED; }
 
 	QueueToken getToken() const noexcept {
 		return token;
 	}
 
 	string getStringToken() const noexcept;
+
+	const string& getTarget() const noexcept {
+		return target;
+	}
+
+	double getPercentage(int64_t aDownloadedBytes) const noexcept;
+
+	struct SourceCount {
+		const size_t online;
+		const size_t total;
+
+		string format() const noexcept;
+		static int compare(const SourceCount& a, const SourceCount& b) noexcept;
+	};
 protected:
 	QueueToken token;
+	const string target;
 };
 
 }

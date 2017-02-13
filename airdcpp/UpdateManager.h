@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 AirDC++ Project
+ * Copyright (C) 2012-2017 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 #include "HttpDownload.h"
 #include "Singleton.h"
 #include "Speaker.h"
-#include "TimerManager.h"
+#include "TimerManagerListener.h"
 #include "Updater.h"
 #include "UpdateManagerListener.h"
 
@@ -74,7 +74,7 @@ public:
 
 	void checkGeoUpdate();
 
-	void init(const string& aExeName);
+	void init();
 
 	void checkAdditionalUpdates(bool manualCheck);
 	string getVersionUrl() const;

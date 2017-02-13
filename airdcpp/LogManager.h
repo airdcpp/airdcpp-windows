@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,13 +24,13 @@
 
 #include "typedefs.h"
 
+#include "CID.h"
 #include "DispatcherQueue.h"
 #include "LogManagerListener.h"
 #include "Message.h"
 #include "MessageCache.h"
 #include "Singleton.h"
 #include "Speaker.h"
-#include "User.h"
 
 namespace dcpp {
 
@@ -41,18 +41,18 @@ public:
 	enum: uint8_t { FILE, FORMAT };
 
 	void log(Area area, ParamMap& params) noexcept;
-	void message(const string& msg, LogMessage::Severity severity);
+	void message(const string& msg, LogMessage::Severity severity) noexcept;
 
-	string getPath(Area area, ParamMap& params) const;
-	string getPath(Area area) const;
+	string getPath(Area area, ParamMap& params) const noexcept;
+	string getPath(Area area) const noexcept;
 
 	// PM functions
-	string getPath(const UserPtr& aUser, ParamMap& params, bool addCache = false);
-	void log(const UserPtr& aUser, ParamMap& params);
-	void removePmCache(const UserPtr& aUser);
+	string getPath(const UserPtr& aUser, ParamMap& params, bool addCache = false) noexcept;
+	void log(const UserPtr& aUser, ParamMap& params) noexcept;
+	void removePmCache(const UserPtr& aUser) noexcept;
 
-	const string& getSetting(int area, int sel) const;
-	void saveSetting(int area, int sel, const string& setting);
+	const string& getSetting(int area, int sel) const noexcept;
+	void saveSetting(int area, int sel, const string& setting) const noexcept;
 
 	const MessageCache& getCache() const noexcept {
 		return cache;
@@ -60,6 +60,8 @@ public:
 
 	void clearCache() noexcept;
 	void setRead() noexcept;
+
+	static string readFromEnd(const string& aPath, int aMaxLines, int64_t aBufferSize) noexcept;
 private:
 	MessageCache cache;
 
@@ -73,7 +75,7 @@ private:
 	virtual ~LogManager();
 
 	unordered_map<CID, string> pmPaths;
-	void ensureParam(const string& aParam, string& aFile);
+	static void ensureParam(const string& aParam, string& aFile) noexcept;
 
 	DispatcherQueue tasks;
 };

@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include <cmath>
 
 #include "AdcCommand.h"
+#include "AirUtil.h"
 #include "BZUtils.h"
 #include "ClientManager.h"
 #include "ConnectionManager.h"
@@ -67,6 +68,12 @@ UploadManager::~UploadManager() {
 	}
 }
 
+UploadQueueItem::UploadQueueItem(const HintedUser& _user, const string& _file, int64_t _pos, int64_t _size) :
+	user(_user), file(_file), pos(_pos), size(_size), time(GET_TIME()) {
+
+	inc();
+}
+
 void UploadManager::setFreeSlotMatcher() {
 	freeSlotMatcher.pattern = SETTING(FREE_SLOTS_EXTENSIONS);
 	freeSlotMatcher.setMethod(StringMatch::WILDCARD);
@@ -74,7 +81,7 @@ void UploadManager::setFreeSlotMatcher() {
 }
 
 uint8_t UploadManager::getSlots() const { 
-	return (uint8_t)(max(AirUtil::getSlots(false), max(SETTING(HUB_SLOTS),0) * Client::getTotalCounts())); 
+	return static_cast<uint8_t>(AirUtil::getSlots(false)); 
 }
 
 uint8_t UploadManager::getFreeSlots() const { 
@@ -321,11 +328,21 @@ checkslots:
 			}
 		case Transfer::TYPE_PARTIAL_LIST:
 			{
+				sourceFile = aFile;
+
 				unique_ptr<MemoryInputStream> mis = nullptr;
 				// Partial file list
 				if (tthList) {
-					if (aFile[0] != '/') {
-						mis.reset(QueueManager::getInstance()->generateTTHList(Util::toUInt32(aFile), *profile != SP_HIDDEN));
+					if (aFile[0] != ADC_ROOT) {
+						BundlePtr bundle = nullptr;
+						mis.reset(QueueManager::getInstance()->generateTTHList(Util::toUInt32(aFile), *profile != SP_HIDDEN, bundle));
+
+						// We don't want to show the token in transfer view
+						if (bundle) {
+							sourceFile = bundle->getName();
+						} else {
+							dcassert(0);
+						}
 					} else {
 						mis.reset(ShareManager::getInstance()->generateTTHList(aFile, listRecursive, *profile));
 					}
@@ -337,6 +354,7 @@ checkslots:
 					aSource.sendError();
 					return false;
 				}
+
 				start = 0;
 				fileSize = size = mis->getSize();
 				is = move(mis);
@@ -524,9 +542,7 @@ void UploadManager::onUBN(const AdcCommand& cmd) {
 	string speedStr;
 
 	for(const auto& str: cmd.getParameters()) {
-		if(str.compare(0, 2, "HI") == 0) {
-			hubIpPort = str.substr(2);
-		} else if(str.compare(0, 2, "BU") == 0) {
+		if(str.compare(0, 2, "BU") == 0) {
 			bundleToken = str.substr(2);
 		} else if(str.compare(0, 2, "DS") == 0) {
 			speedStr = str.substr(2);
@@ -601,14 +617,17 @@ void UploadManager::createBundle(const AdcCommand& cmd) {
 	
 	if (bundleToken.empty() || name.empty() || size <= 0 || token.empty()) {
 		//LogManager::getInstance()->message("INVALID UBD1", LogMessage::SEV_ERROR);
+		dcassert(0);
 		return;
 	} else if (!ConnectionManager::getInstance()->tokens.addToken(bundleToken, CONNECTION_TYPE_DOWNLOAD)) {
+		dcassert(0);
 		return;
 	}
 
 	//dcassert(!findBundle(bundleToken));
 	if (findBundle(bundleToken)) {
 		//LogManager::getInstance()->message("ADDBUNDLE, BUNDLE FOUND!");
+		dcassert(0);
 		changeBundle(cmd);
 		return;
 	}

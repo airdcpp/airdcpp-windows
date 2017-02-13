@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -75,6 +75,14 @@ int TimerManager::run() {
 uint64_t TimerManager::getTick() {
 	static ptime start = microsec_clock::universal_time();
 	return (microsec_clock::universal_time() - start).total_milliseconds();
+}
+
+time_t TimerManager::getStartTime() noexcept {
+	return getTime() - getUptime();
+}
+
+time_t TimerManager::getUptime() noexcept {
+	return getTick() / 1000;
 }
 
 } // namespace dcpp

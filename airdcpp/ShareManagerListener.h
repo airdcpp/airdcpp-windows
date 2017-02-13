@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2014 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -29,16 +29,38 @@ namespace dcpp {
 		template<int I>	struct X { enum { TYPE = I }; };
 
 		typedef X<0> ShareLoaded;
-		typedef X<1> ShareRefreshed;
-		typedef X<2> DirectoriesRefreshed;
 
-		//typedef X<3> DefaultProfileChanged;
+		typedef X<1> RefreshQueued;
+		typedef X<2> RefreshCompleted;
+
+		typedef X<3> ProfileAdded;
+		typedef X<4> ProfileUpdated;
+		typedef X<5> ProfileRemoved;
+		typedef X<6> DefaultProfileChanged;
+
+		typedef X<7> RootCreated;
+		typedef X<8> RootRemoved;
+		typedef X<9> RootUpdated;
+
+		typedef X<10> ExcludeAdded;
+		typedef X<11> ExcludeRemoved;
+
 
 		virtual void on(ShareLoaded) noexcept{}
-		virtual void on(ShareRefreshed, uint8_t /*tasktype*/) noexcept{}
-		virtual void on(DirectoriesRefreshed, uint8_t /*tasktype*/, const StringList&) noexcept{}
+		virtual void on(RefreshCompleted, uint8_t /*tasktype*/, const RefreshPathList&) noexcept{}
+		virtual void on(RefreshQueued, uint8_t /*tasktype*/, const RefreshPathList&) noexcept {}
 
-		//virtual void on(DefaultProfileChanged, ProfileToken aOldDefault, ShareProfilePtr& aNewDefault) noexcept {}
+		virtual void on(ProfileAdded, ProfileToken) noexcept {}
+		virtual void on(ProfileUpdated, ProfileToken, bool /*aIsMajorChange*/) noexcept {}
+		virtual void on(ProfileRemoved, ProfileToken) noexcept {}
+		virtual void on(DefaultProfileChanged, ProfileToken /*aOldDefault*/, ProfileToken /*aNewDefault*/) noexcept {}
+
+		virtual void on(RootCreated, const string&) noexcept {}
+		virtual void on(RootRemoved, const string&) noexcept {}
+		virtual void on(RootUpdated, const string&) noexcept {}
+
+		virtual void on(ExcludeAdded, const string&) noexcept {}
+		virtual void on(ExcludeRemoved, const string&) noexcept {}
 	};
 
 } // namespace dcpp

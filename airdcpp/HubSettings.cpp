@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,18 +29,8 @@ const string HubSettings::boolNames[BoolCount] = {
 	"ShowJoins", "FavShowJoins", "LogMainChat", "ShowChatNotify"
 };
 const string HubSettings::intNames[IntCount] = {
-	"MinSearchInterval", "IncomingConnections", "IncomingConnections6"
+	"MinSearchInterval", "IncomingConnections", "IncomingConnections6", "ShareProfile"
 };
-
-namespace {
-inline bool defined(const string& s) { return !s.empty(); }
-inline bool defined(tribool b) { return !indeterminate(b); }
-inline bool defined(int b) { return b > numeric_limits<int>::min(); }
-}
-
-int HubSettings::getMinInt() { 
-	return numeric_limits<int>::min(); 
-}
 
 HubSettings::HubSettings() {
 	// tribools default to false; init them to an indeterminate value.
@@ -49,7 +39,7 @@ HubSettings::HubSettings() {
 	}
 
 	for(auto& setting: ints) {
-		setting = getMinInt();
+		setting = HUB_SETTING_DEFAULT_INT;
 	}
 }
 

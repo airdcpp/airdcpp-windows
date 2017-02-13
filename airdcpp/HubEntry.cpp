@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2015 AirDC++ Project
+ * Copyright (C) 2011-2017 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,20 +23,25 @@
 #include "ShareManager.h"
 #include "StringTokenizer.h"
 
+#include <boost/algorithm/string/trim.hpp>
 #include <boost/range/algorithm/for_each.hpp>
 
 namespace dcpp {
 
 FavoriteHubEntry::FavoriteHubEntry() noexcept : 
-	token(Util::randInt()), shareProfile(ShareManager::getInstance()->getShareProfile(SETTING(DEFAULT_SP)))  { }
-
-FavoriteHubEntry::FavoriteHubEntry(const HubEntry& rhs) noexcept : name(rhs.getName()), description(rhs.getDescription()),
-	token(Util::randInt()), server(rhs.getServer()) {
-
-}
+	token(Util::randInt()) { }
 
 bool FavoriteHubEntry::isAdcHub() const noexcept {
 	return AirUtil::isAdcHub(server);
+}
+
+string FavoriteHubEntry::getShareProfileName() const noexcept {
+	auto sp = ShareManager::getInstance()->getShareProfile(get(HubSettings::ShareProfile));
+	if (sp) {
+		return sp->getDisplayName();
+	}
+
+	return ShareManager::getInstance()->getShareProfile(SETTING(DEFAULT_SP))->getDisplayName();
 }
 
 }

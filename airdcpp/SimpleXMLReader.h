@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -71,19 +71,12 @@ public:
 	};
 	typedef std::set<ThreadedCallBack, ThreadedCallBack::SizeSort> ThreadedCallBackSet;
 
-	/*class ThreadedCallBackLoader {
-	public:
-		ThreadedCallBackLoader(const ThreadedCallBackList& loaders);
-		void parse(ProgressFunction prog);
-	private:
-		struct SizeSort {
-			bool operator()(const ThreadedCallBack& left, const ThreadedCallBack& right) const;
-		};
+	enum Flags {
+		// Replace invalid UTF-8 data with placeholder characters
+		FLAG_REPLACE_INVALID_UTF8 = 0x01,
+	};
 
-		boost::ptr_set<ThreadedCallBack, SizeSort> callbacks;
-	};*/
-
-	SimpleXMLReader(CallBack* callback);
+	SimpleXMLReader(CallBack* callback, int aFlags = 0);
 	virtual ~SimpleXMLReader() { }
 
 	void parse(InputStream& is, size_t maxSize = 0);
@@ -221,6 +214,10 @@ private:
 	bool spaceOrError(const char* error);
 
 	bool error(const char* message);
+
+	void decodeString(string& str_);
+
+	const int flags;
 };
 
 

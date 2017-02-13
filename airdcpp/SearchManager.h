@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,15 +19,17 @@
 #ifndef DCPLUSPLUS_DCPP_SEARCH_MANAGER_H
 #define DCPLUSPLUS_DCPP_SEARCH_MANAGER_H
 
+#include "SearchManagerListener.h"
+#include "SettingsManagerListener.h"
+#include "TimerManagerListener.h"
+
 #include "AdcCommand.h"
 #include "CriticalSection.h"
 #include "Search.h"
-#include "SearchManagerListener.h"
-#include "SettingsManager.h"
 #include "Singleton.h"
-#include "TimerManager.h"
+#include "Speaker.h"
 #include "UDPServer.h"
-#include "User.h"
+
 
 namespace dcpp {
 
@@ -36,9 +38,13 @@ namespace dcpp {
 #define SEARCH_TYPE_TTH "8"
 #define SEARCH_TYPE_FILE "9"
 
-STANDARD_EXCEPTION(SearchTypeException);
-
 class SocketException;
+
+struct SearchQueueInfo {
+	StringSet queuedHubUrls;
+	uint64_t queueTime;
+	string error;
+};
 
 class SearchManager : public Speaker<SearchManagerListener>, public Singleton<SearchManager>, private TimerManagerListener, private SettingsManagerListener
 {
@@ -47,42 +53,14 @@ public:
 	typedef map<string, StringList> SearchTypes;
 	typedef SearchTypes::iterator SearchTypesIter;
 	typedef SearchTypes::const_iterator SearchTypesIterC;
-
-	enum SizeModes {
-		SIZE_DONTCARE = 0x00,
-		SIZE_ATLEAST = 0x01,
-		SIZE_ATMOST = 0x02,
-		SIZE_EXACT = 0x03
-	};
-
-	enum TypeModes {
-		TYPE_ANY = 0,
-		TYPE_AUDIO,
-		TYPE_COMPRESSED,
-		TYPE_DOCUMENT,
-		TYPE_EXECUTABLE,
-		TYPE_PICTURE,
-		TYPE_VIDEO,
-		TYPE_DIRECTORY,
-		TYPE_TTH,
-		TYPE_FILE,
-		TYPE_LAST
-	};
-
-	enum DateModes {
-		DATE_DONTCARE,
-		DATE_NEWER,
-		DATE_OLDER
-	};
 private:
-	static const char* types[TYPE_LAST];
+	static const char* types[Search::TYPE_LAST];
 public:
 	static const char* getTypeStr(int type);
 	static bool isDefaultTypeStr(const string& type);
 	
-	uint64_t search(const string& aName, int64_t aSize, TypeModes aTypeMode, SizeModes aSizeMode, const string& aToken, Search::searchType sType);
-	uint64_t search(StringList& who, const string& aName, int64_t aSize, TypeModes aTypeMode, SizeModes aSizeMode, const string& aToken, const StringList& aExtList, const StringList& excluded, Search::searchType sType, time_t aDate, DateModes aDateMode,
-		bool aschOnly=false, void* aOwner = nullptr);
+	SearchQueueInfo search(const SearchPtr& aSearch) noexcept;
+	SearchQueueInfo search(StringList& aHubUrls, const SearchPtr& aSearch, void* aOwner = nullptr) noexcept;
 	
 	void respond(const AdcCommand& cmd, OnlineUser& aUser, bool isUdpActive, const string& hubIpPort, ProfileToken aProfile);
 
@@ -113,11 +91,11 @@ public:
 		return searchTypes;
 	}
 
-	void getSearchType(int pos, int& type, StringList& extList, string& name);
-	void getSearchType(const string& aName, int& type, StringList& extList, bool lock=false);
+	void getSearchType(int pos, Search::TypeModes& type_, StringList& extList_, string& name_);
+	void getSearchType(const string& aName, Search::TypeModes& type_, StringList& extList_, bool aLock = false);
 	string getNameByExtension(const string& aExtension, bool defaultsOnly = false) const noexcept;
 
-	bool decryptPacket(string& x, size_t aLen, uint8_t* aBuf, size_t bufLen);
+	bool decryptPacket(string& x, size_t aLen, const ByteVector& aBuf);
 private:
 	vector<pair<uint8_t*, uint64_t>> searchKeys;
 
@@ -130,7 +108,6 @@ private:
 	static std::string normalizeWhitespace(const std::string& aString);
 
 	~SearchManager();
-	void onData(const uint8_t* buf, size_t aLen, const string& address);
 
 	string getPartsString(const PartsInfo& partsInfo) const;
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +24,6 @@
 #include "Exception.h"
 
 namespace dcpp {
-
-STANDARD_EXCEPTION(ParseException);
 
 class CID;
 
@@ -87,11 +85,7 @@ public:
 	static const char TYPE_HUB = 'H';
 	static const char TYPE_UDP = 'U';
 
-#if defined(_WIN32) || defined(__i386__) || defined(__x86_64__) || defined(__alpha)
 #define C(n, a, b, c) static const uint32_t CMD_##n = (((uint32_t)a) | (((uint32_t)b)<<8) | (((uint32_t)c)<<16)); typedef Type<CMD_##n> n
-#else
-#define C(n, a, b, c) static const uint32_t CMD_##n = ((((uint32_t)a)<<24) | (((uint32_t)b)<<16) | (((uint32_t)c)<<8)); typedef Type<CMD_##n> n
-#endif
 	// Base commands
 	C(SUP, 'S','U','P');
 	C(STA, 'S','T','A');

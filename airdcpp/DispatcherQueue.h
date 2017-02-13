@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -36,7 +36,6 @@ public:
 	DispatcherQueue(bool aStartThread, Thread::Priority aThreadPrio = Thread::NORMAL, DispatchF aDispatchF = nullptr) : threadPriority(aThreadPrio), dispatchF(aDispatchF) {
 		if (aStartThread) {
 			start();
-			setThreadPriority(aThreadPrio);
 		}
 	}
 
@@ -50,7 +49,6 @@ public:
 
 	void start() {
 		started = true;
-		setThreadPriority(threadPriority);
 
 		Thread::start();
 	}
@@ -69,6 +67,7 @@ public:
 	}
 
 	int run() {
+		setThreadPriority(threadPriority);
 		while (true) {
 			s.wait();
 			if (stopping) {

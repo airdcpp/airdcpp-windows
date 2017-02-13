@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,6 @@
 #define DCPLUSPLUS_DCPP_QUEUE_MANAGER_LISTENER_H
 
 #include "forward.h"
-#include "QueueItem.h"
-#include "HashedFile.h"
 
 namespace dcpp {
 
@@ -30,51 +28,46 @@ public:
 	virtual ~QueueManagerListener() { }
 	template<int I>	struct X { enum { TYPE = I };  };
 
-	typedef X<0> Added;
-	typedef X<1> Finished;
-	typedef X<2> Removed;
-	typedef X<3> Moved;
-	typedef X<4> SourcesUpdated;
-	typedef X<5> StatusUpdated;
-	typedef X<6> PartialList;
-	typedef X<7> SourceFilesUpdated;
+	typedef X<0> ItemAdded;
+	typedef X<1> ItemFinished;
+	typedef X<2> ItemRemoved;
+	typedef X<3> ItemSources;
+	typedef X<4> ItemPriority;
+	typedef X<5> ItemStatus;
+	typedef X<6> ItemTick;
 
-	typedef X<8> FileRecheckStarted;
-	typedef X<9> FileRecheckFailed;
-	typedef X<10> FileRecheckDone;
+	typedef X<7> PartialListFinished;
+	typedef X<8> SourceFilesUpdated;
+
+	typedef X<9> FileRecheckStarted;
+	typedef X<10> FileRecheckFailed;
+	typedef X<11> FileRecheckDone;
 	
 	typedef X<15> BundleSources;
 
-	typedef X<17> BundleMerged;
-	typedef X<18> BundleRemoved;
-	typedef X<19> BundleMoved;
-	typedef X<20> BundleSize;
-	typedef X<21> BundleTarget;
-	typedef X<22> BundleUser;
-	typedef X<23> BundlePriority;
-	typedef X<24> BundleAdded;
+	typedef X<16> BundleRemoved;
+	typedef X<17> BundleSize;
+	typedef X<18> BundleUser;
+	typedef X<19> BundlePriority;
+	typedef X<20> BundleAdded;
 
-	typedef X<26> FileHashed;
-	typedef X<28> BundleStatusChanged;
+	typedef X<22> BundleStatusChanged;
 
-	virtual void on(Added, QueueItemPtr&) noexcept { }
-	virtual void on(Finished, const QueueItemPtr&, const string&, const HintedUser&, int64_t) noexcept { }
-	virtual void on(Removed, const QueueItemPtr&, bool) noexcept { }
-	virtual void on(Moved, const QueueItemPtr&, const string&) noexcept { }
-	virtual void on(SourcesUpdated, const QueueItemPtr&) noexcept { }
-	virtual void on(StatusUpdated, const QueueItemPtr&) noexcept { }
-	virtual void on(PartialList, const HintedUser&, const string&, const string&) noexcept { }
+	virtual void on(ItemAdded, const QueueItemPtr&) noexcept { }
+	virtual void on(ItemFinished, const QueueItemPtr&, const string&, const HintedUser&, int64_t) noexcept { }
+	virtual void on(ItemRemoved, const QueueItemPtr&, bool) noexcept { }
+	virtual void on(ItemSources, const QueueItemPtr&) noexcept { }
+	virtual void on(ItemStatus, const QueueItemPtr&) noexcept { }
+	virtual void on(ItemTick, const QueueItemPtr&) noexcept { }
+	virtual void on(ItemPriority, const QueueItemPtr&) noexcept { }
+	virtual void on(PartialListFinished, const HintedUser&, const string&, const string&) noexcept { }
 	virtual void on(SourceFilesUpdated, const UserPtr&) noexcept { }
 
 	virtual void on(BundleSources, const BundlePtr&) noexcept { }
 	virtual void on(BundleRemoved, const BundlePtr&) noexcept { }
-	virtual void on(BundleMoved, const BundlePtr&) noexcept { }
-	virtual void on(BundleMerged, const BundlePtr&, const string&) noexcept { }
 	virtual void on(BundleSize, const BundlePtr&) noexcept { }
-	virtual void on(BundleTarget, const BundlePtr&) noexcept { }
 	virtual void on(BundlePriority, const BundlePtr&) noexcept { }
 	virtual void on(BundleAdded, const BundlePtr&) noexcept { }
-	virtual void on(FileHashed, const string& /* fileName */, HashedFile& /* fileInfo */) noexcept { }
 	virtual void on(BundleStatusChanged, const BundlePtr&) noexcept { }
 	
 	virtual void on(FileRecheckStarted, const string&) noexcept { }

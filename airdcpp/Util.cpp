@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,6 +49,7 @@
 #include <netdb.h>
 #include <sys/utsname.h>
 #include <ctype.h>
+
 #endif
 #include <locale.h>
 
@@ -58,7 +59,6 @@ namespace dcpp {
 FastCriticalSection FastAllocBase::cs;
 #endif
 
-long Util::mUptimeSeconds = 0;
 string Util::emptyString;
 wstring Util::emptyStringW;
 tstring Util::emptyStringT;
@@ -66,10 +66,14 @@ tstring Util::emptyStringT;
 string Util::paths[Util::PATH_LAST];
 StringList Util::startupParams;
 
+#ifndef _WIN32
+string Util::appPath;
+#endif
+
 bool Util::localMode = true;
 bool Util::wasUncleanShutdown = false;
 
-static void sgenrand(unsigned long seed);
+static void sgenrand(unsigned long seed) noexcept;
 
 extern "C" void bz_internal_error(int errcode) { 
 	dcdebug("bzip2 internal error: %d\n", errcode); 
@@ -85,7 +89,7 @@ void WINAPI invalidParameterHandler(const wchar_t*, const wchar_t*, const wchar_
 
 typedef HRESULT (WINAPI* _SHGetKnownFolderPath)(GUID& rfid, DWORD dwFlags, HANDLE hToken, PWSTR *ppszPath);
 
-static string getDownloadsPath(const string& def) {
+static string getDownloadsPath(const string& def) noexcept {
 	// Try Vista downloads path
 	static _SHGetKnownFolderPath getKnownFolderPath = 0;
 	static HINSTANCE shell32 = NULL;
@@ -114,7 +118,7 @@ static string getDownloadsPath(const string& def) {
 
 #endif
 
-string Util::getTempPath() {
+string Util::getTempPath() noexcept {
 #ifdef _WIN32
 	TCHAR buf[MAX_PATH + 1];
 	DWORD x = GetTempPath(MAX_PATH, buf);
@@ -124,23 +128,11 @@ string Util::getTempPath() {
 #endif
 }
 
-string Util::getOpenPath() {
+string Util::getOpenPath() noexcept {
 	return getTempPath() + "Opened Items" + PATH_SEPARATOR_STR;
 }
 
-string Util::getOpenPath(const string& aFileName) {
-	auto fileName = Util::getFileName(aFileName);
-	auto pos = fileName.rfind('.');
-	if (pos != string::npos) {
-		fileName.insert(pos,  "_" + Util::toString(Util::rand()));
-	} else {
-		fileName += "_" + Util::toString(Util::rand());
-	}
-
-	return getOpenPath() + fileName;
-}
-
-void Util::addStartupParam(const string& aParam) {
+void Util::addStartupParam(const string& aParam) noexcept {
 	if (aParam.empty())
 		return;
 
@@ -148,11 +140,11 @@ void Util::addStartupParam(const string& aParam) {
 		startupParams.push_back(aParam);
 }
 
-bool Util::hasStartupParam(const string& aParam) {
+bool Util::hasStartupParam(const string& aParam) noexcept {
 	return find(startupParams.begin(), startupParams.end(), aParam) != startupParams.end();
 }
 
-string Util::getStartupParams(bool isFirst) {
+string Util::getStartupParams(bool isFirst) noexcept {
 	if (startupParams.empty()) {
 		return Util::emptyString;
 	}
@@ -160,7 +152,7 @@ string Util::getStartupParams(bool isFirst) {
 	return string(isFirst ? Util::emptyString : " ") + Util::toString(" ", startupParams);
 }
 
-optional<string> Util::getStartupParam(const string& aKey) {
+optional<string> Util::getStartupParam(const string& aKey) noexcept {
 	for (const auto& p : startupParams) {
 		auto pos = p.find("=");
 		if (pos != string::npos && pos != p.length() && Util::strnicmp(p, aKey, pos) == 0)
@@ -170,48 +162,76 @@ optional<string> Util::getStartupParam(const string& aKey) {
 	return optional<string>();
 }
 
-string Util::getAppName() {
 #ifdef _WIN32
+
+string Util::getSystemUsername() noexcept {
+	DWORD size = 0;
+	::GetUserName(0, &size);
+	if (size > 1) {
+		tstring str(size - 1, 0);
+		if (::GetUserName(&str[0], &size)) {
+			return Text::fromT(str);
+		}
+	}
+
+	return "airdcpp";
+}
+
+string Util::getAppPath() noexcept {
 	TCHAR buf[MAX_PATH+1];
 	DWORD x = GetModuleFileName(NULL, buf, MAX_PATH);
 	return Text::fromT(tstring(buf, x));
-#else
-	return "airdcpp";
-#endif
 }
 
-void Util::initialize() {
+#else
+
+void Util::setApp(const string& app) noexcept {
+	appPath = app;
+}
+
+string Util::getAppPath() noexcept {
+	return appPath;
+}
+
+string Util::getSystemUsername() noexcept {
+	char buf[64] = { 0 };
+	if (getlogin_r(buf, sizeof(buf) - 1) != 0) {
+		return "airdcpp";
+	}
+
+	return buf;
+}
+	
+#endif
+
+string Util::getAppFilePath() noexcept {
+	return getFilePath(getAppPath());
+}
+
+string Util::getAppFileName() noexcept {
+	return getFileName(getAppPath());
+}
+
+void Util::initialize(const string& aConfigPath) {
 	Text::initialize();
 
 	sgenrand((unsigned long)time(NULL));
-
-#ifdef _WIN64
-	// VS2013's CRT only checks the existence of FMA3 instructions, not the
-	// enabled-ness of them at the OS level (this is fixed in VS2015). We force
-	// off usage of FMA3 instructions in the CRT to avoid using that path and
-	// hitting illegal instructions when running on CPUs that support FMA3, but
-	// OSs that don't.
-	// https://connect.microsoft.com/VisualStudio/feedback/details/811093/visual-studio-2013-rtm-c-x64-code-generation-bug-for-avx2-instructions
-	#if _MSC_VER == 1800
-		_set_FMA3_enable(0);
-	#endif
-#endif
 
 #if (_MSC_VER >= 1400)
 	_set_invalid_parameter_handler(reinterpret_cast<_invalid_parameter_handler>(invalidParameterHandler));
 #endif
 
 #ifdef _WIN32
-	string exePath = Util::getFilePath(getAppName());
+	string exePath = getAppFilePath();
 
 	// Global config path is the AirDC++ executable path...
 	paths[PATH_GLOBAL_CONFIG] = exePath;
 
-	paths[PATH_USER_CONFIG] = paths[PATH_GLOBAL_CONFIG] + "Settings\\";
+	paths[PATH_USER_CONFIG] = !aConfigPath.empty() ? aConfigPath : paths[PATH_GLOBAL_CONFIG] + "Settings\\";
 
 	loadBootConfig();
 
-	if(!File::isAbsolute(paths[PATH_USER_CONFIG])) {
+	if(!File::isAbsolutePath(paths[PATH_USER_CONFIG])) {
 		paths[PATH_USER_CONFIG] = paths[PATH_GLOBAL_CONFIG] + paths[PATH_USER_CONFIG];
 	}
 
@@ -234,15 +254,15 @@ void Util::initialize() {
 	paths[PATH_LOCALE] = (localMode ? exePath : paths[PATH_USER_LOCAL]) + "Language\\";
 
 #else
-	paths[PATH_GLOBAL_CONFIG] = "/etc/";
+	paths[PATH_GLOBAL_CONFIG] = GLOBAL_CONFIG_DIRECTORY;
 	const char* home_ = getenv("HOME");
 	string home = home_ ? Text::toUtf8(home_) : "/tmp/";
 
-	paths[PATH_USER_CONFIG] = home + "/.airdc++/";
+	paths[PATH_USER_CONFIG] = !aConfigPath.empty() ? aConfigPath : home + "/.airdc++/";
 
 	loadBootConfig();
 
-	if(!File::isAbsolute(paths[PATH_USER_CONFIG])) {
+	if(!File::isAbsolutePath(paths[PATH_USER_CONFIG])) {
 		paths[PATH_USER_CONFIG] = paths[PATH_GLOBAL_CONFIG] + paths[PATH_USER_CONFIG];
 	}
 
@@ -253,7 +273,7 @@ void Util::initialize() {
 	}
 
 	paths[PATH_USER_LOCAL] = paths[PATH_USER_CONFIG];
-	paths[PATH_RESOURCES] = "/usr/share/";
+	paths[PATH_RESOURCES] = RESOURCE_DIRECTORY;
 	paths[PATH_LOCALE] = paths[PATH_RESOURCES] + "locale/";
 	paths[PATH_DOWNLOADS] = home + "/Downloads/";
 #endif
@@ -272,7 +292,7 @@ void Util::initialize() {
 	File::ensureDirectory(paths[PATH_LOCALE]);
 }
 
-void Util::migrate(const string& file) {
+void Util::migrate(const string& file) noexcept {
 	if(localMode) {
 		return;
 	}
@@ -295,7 +315,7 @@ void Util::migrate(const string& file) {
 	}
 }
 
-void Util::migrate(const string& aNewDir, const string& aPattern) {
+void Util::migrate(const string& aNewDir, const string& aPattern) noexcept {
 	if (localMode)
 		return;
 
@@ -323,15 +343,7 @@ void Util::migrate(const string& aNewDir, const string& aPattern) {
 	}*/
 }
 
-void Util::loadBootConfig() {
-#ifndef _WIN32
-	auto c = getStartupParam("-c");
-	if (c) {
-		paths[PATH_USER_CONFIG] = *c;
-		return;
-	}
-#endif
-
+void Util::loadBootConfig() noexcept {
 	// Load boot settings
 	try {
 		SimpleXML boot;
@@ -352,6 +364,9 @@ void Util::loadBootConfig() {
 
 			params["APPDATA"] = Text::fromT((::SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, path), path));
 			params["PERSONAL"] = Text::fromT((::SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, path), path));
+#else
+			const char* home_ = getenv("HOME");
+			params["HOME"] = home_ ? Text::toUtf8(home_) : "/tmp/";
 #endif
 			paths[PATH_USER_CONFIG] = Util::formatParams(boot.getChildData(), params);
 		}
@@ -379,7 +394,7 @@ static const char badChars[] = {
  * Replaces all strange characters in a file with '_'
  * @todo Check for invalid names such as nul and aux...
  */
-string Util::cleanPathChars(string tmp, bool isFileName) {
+string Util::cleanPathChars(string tmp, bool isFileName) noexcept {
 	string::size_type i = 0;
 
 	// First, eliminate forbidden chars
@@ -457,7 +472,7 @@ string Util::cleanPathChars(string tmp, bool isFileName) {
 	return tmp;
 }
 
-string Util::cleanPathSeparators(const string& str) {
+string Util::cleanPathSeparators(const string& str) noexcept {
 	string ret(str);
 	string::size_type i = 0;
 	while ((i = ret.find_first_of("/\\", i)) != string::npos) {
@@ -467,7 +482,7 @@ string Util::cleanPathSeparators(const string& str) {
 }
 
 
-bool Util::checkExtension(const string& tmp) {
+bool Util::checkExtension(const string& tmp) noexcept {
 	for(size_t i = 0, n = tmp.size(); i < n; ++i) {
 		if (tmp[i] < 0 || tmp[i] == 32 || tmp[i] == ':') {
 			return false;
@@ -479,11 +494,11 @@ bool Util::checkExtension(const string& tmp) {
 	return true;
 }
 
-string Util::addBrackets(const string& s) {
+string Util::addBrackets(const string& s) noexcept {
 	return '<' + s + '>';
 }
 
-string Util::getShortTimeString(time_t t) {
+string Util::getShortTimeString(time_t t) noexcept {
 	char buf[255];
 	tm* _tm = localtime(&t);
 	if(_tm == NULL) {
@@ -494,7 +509,7 @@ string Util::getShortTimeString(time_t t) {
 	return Text::toUtf8(buf);
 }
 
-void Util::sanitizeUrl(string& url) {
+void Util::sanitizeUrl(string& url) noexcept {
 	boost::algorithm::trim_if(url, boost::is_space() || boost::is_any_of("<>\""));
 }
 
@@ -504,7 +519,7 @@ void Util::sanitizeUrl(string& url) {
  * http:// -> port 80
  * dchub:// -> port 411
  */
-void Util::decodeUrl(const string& url, string& protocol, string& host, string& port, string& path, string& query, string& fragment) {
+void Util::decodeUrl(const string& url, string& protocol, string& host, string& port, string& path, string& query, string& fragment) noexcept {
 	auto fragmentEnd = url.size();
 	auto fragmentStart = url.rfind('#');
 
@@ -596,7 +611,7 @@ void Util::decodeUrl(const string& url, string& protocol, string& host, string& 
 	fragment = url.substr(fragmentStart, fragmentEnd - fragmentStart);
 }
 
-void Util::parseIpPort(const string& aIpPort, string& ip, string& port) {
+void Util::parseIpPort(const string& aIpPort, string& ip, string& port) noexcept {
 	string::size_type i = aIpPort.rfind(':');
 	if (i == string::npos) {
 		ip = aIpPort;
@@ -606,7 +621,7 @@ void Util::parseIpPort(const string& aIpPort, string& ip, string& port) {
 	}
 }
 
-map<string, string> Util::decodeQuery(const string& query) {
+map<string, string> Util::decodeQuery(const string& query) noexcept {
 	map<string, string> ret;
 	size_t start = 0;
 	while(start < query.size()) {
@@ -633,7 +648,7 @@ map<string, string> Util::decodeQuery(const string& query) {
 }
 
 #ifdef _WIN32
-wstring Util::formatSecondsW(int64_t aSec, bool supressHours /*false*/) {
+wstring Util::formatSecondsW(int64_t aSec, bool supressHours /*false*/) noexcept {
 	wchar_t buf[64];
 	if (!supressHours)
 		snwprintf(buf, sizeof(buf), L"%01lu:%02d:%02d", (unsigned long)(aSec / (60*60)), (int)((aSec / 60) % 60), (int)(aSec % 60));
@@ -643,7 +658,7 @@ wstring Util::formatSecondsW(int64_t aSec, bool supressHours /*false*/) {
 }
 #endif
 
-string Util::formatSeconds(int64_t aSec, bool supressHours /*false*/) {
+string Util::formatSeconds(int64_t aSec, bool supressHours /*false*/) noexcept {
 	char buf[64];
 	if (!supressHours)
 		snprintf(buf, sizeof(buf), "%01lu:%02d:%02d", (unsigned long)(aSec / (60*60)), (int)((aSec / 60) % 60), (int)(aSec % 60));
@@ -652,7 +667,7 @@ string Util::formatSeconds(int64_t aSec, bool supressHours /*false*/) {
 	return buf;
 }
 
-string Util::formatTime(int64_t aSec, bool translate, bool perMinute) {
+string Util::formatTime(int64_t aSec, bool translate, bool perMinute) noexcept {
 	string formatedTime;
 
 	uint64_t n, i;
@@ -705,18 +720,18 @@ string Util::formatTime(int64_t aSec, bool translate, bool perMinute) {
 	n = aSec / (60);
 	aSec %= (60);
 	if(n || perMinute) {
-		appendTime(STRING(MINUTE), "min", STRING(MINUTES), "min");
+		appendTime(STRING(MINUTE), "min", STRING(MINUTES_LOWER), "min");
 	}
 
 	n = aSec;
 	if(++i <= 3 && !perMinute) {
-		appendTime(STRING(SECOND), "sec", STRING(SECONDS), "sec");
+		appendTime(STRING(SECOND), "sec", STRING(SECONDS_LOWER), "sec");
 	}
 
 	return (!formatedTime.empty() ? formatedTime.erase(formatedTime.size()-1) : formatedTime);
 }
 
-string Util::formatBytes(int64_t aBytes) {
+string Util::formatBytes(int64_t aBytes) noexcept {
 	/*if (aBytes < 0) {
 		aBytes = abs(aBytes);
 	} */
@@ -741,7 +756,7 @@ string Util::formatBytes(int64_t aBytes) {
 }
 
 #ifdef _WIN32
-wstring Util::formatBytesW(int64_t aBytes) {
+wstring Util::formatBytesW(int64_t aBytes) noexcept {
 	wchar_t buf[64];
 	if(aBytes < 1024) {
 		snwprintf(buf, sizeof(buf), L"%d %s", (int)(aBytes&0xffffffff), CWSTRING(B));
@@ -762,7 +777,33 @@ wstring Util::formatBytesW(int64_t aBytes) {
 }
 #endif
 
-int64_t Util::convertSize(int64_t aValue, Util::SizeUnits valueType, Util::SizeUnits to /*B*/) {
+string Util::formatAbbreviated(int aNum) noexcept {
+	char buf[64];
+	if (aNum < 2000) {
+		snprintf(buf, sizeof(buf), "%d", aNum);
+	} else if (aNum < 1000000) {
+		snprintf(buf, sizeof(buf), "%.01f%s", (double)aNum / 1000.0, "k");
+	} else {
+		snprintf(buf, sizeof(buf), "%.01f%s", (double)aNum / (1000000.0), "m");
+	}
+
+	return buf;
+}
+
+wstring Util::formatAbbreviatedW(int aNum) noexcept {
+	wchar_t buf[64];
+	if (aNum < 2000) {
+		snwprintf(buf, sizeof(buf), L"%d", aNum);
+	} else if (aNum < 1000000) {
+		snwprintf(buf, sizeof(buf), L"%.01f%s", (double)aNum / 1000.0, L"k");
+	} else {
+		snwprintf(buf, sizeof(buf), L"%.01f%s", (double)aNum / (1000000.0), L"m");
+	}
+
+	return buf;
+}
+
+int64_t Util::convertSize(int64_t aValue, Util::SizeUnits valueType, Util::SizeUnits to /*B*/) noexcept {
 	if (valueType > to) {
 		return aValue * static_cast<int64_t>(pow(1024LL, static_cast<int64_t>(valueType - to)));
 	} else if (valueType < to) {
@@ -771,7 +812,7 @@ int64_t Util::convertSize(int64_t aValue, Util::SizeUnits valueType, Util::SizeU
 	return aValue;
 }
 
-string Util::formatConnectionSpeed(int64_t aBytes) {
+string Util::formatConnectionSpeed(int64_t aBytes) noexcept {
 	aBytes *= 8;
 	char buf[64];
 	if (aBytes < 1000000) {
@@ -790,7 +831,7 @@ string Util::formatConnectionSpeed(int64_t aBytes) {
 }
 
 #ifdef _WIN32
-wstring Util::formatConnectionSpeedW(int64_t aBytes) {
+wstring Util::formatConnectionSpeedW(int64_t aBytes) noexcept {
 	wchar_t buf[64];
 	aBytes *= 8;
 	if (aBytes < 1000000) {
@@ -808,7 +849,7 @@ wstring Util::formatConnectionSpeedW(int64_t aBytes) {
 	return buf;
 }
 
-wstring Util::formatExactSizeW(int64_t aBytes) {
+wstring Util::formatExactSizeW(int64_t aBytes) noexcept {
 //#ifdef _WIN32	
 	wchar_t buf[64];
 	wchar_t number[64];
@@ -841,7 +882,7 @@ wstring Util::formatExactSizeW(int64_t aBytes) {
 }
 #endif
 
-string Util::formatExactSize(int64_t aBytes) {
+string Util::formatExactSize(int64_t aBytes) noexcept {
 #ifdef _WIN32
 	TCHAR tbuf[128];
 	TCHAR number[64];
@@ -874,9 +915,18 @@ string Util::formatExactSize(int64_t aBytes) {
 #endif
 }
 
-bool Util::isPrivateIp(const string& ip, bool v6) {
+bool Util::isLocalIp(const string& ip, bool v6) noexcept {
 	if (v6) {
-		return ip.length() > 5 && ip.substr(0, 4) == "fe80";
+		return (ip.length() > 4 && ip.substr(0, 4) == "fe80") || ip == "::1";
+	}
+
+	return (ip.length() > 3 && strncmp(ip.c_str(), "169", 3) == 0) || ip == "127.0.0.1";
+}
+
+bool Util::isPrivateIp(const string& ip, bool v6) noexcept {
+	if (v6) {
+		// https://en.wikipedia.org/wiki/Unique_local_address
+		return ip.length() > 2 && ip.substr(0, 2) == "fd";
 	} else {
 		struct in_addr addr;
 
@@ -885,8 +935,6 @@ bool Util::isPrivateIp(const string& ip, bool v6) {
 		if (addr.s_addr  != INADDR_NONE) {
 			unsigned long haddr = ntohl(addr.s_addr);
 			return ((haddr & 0xff000000) == 0x0a000000 || // 10.0.0.0/8
-					(haddr & 0xff000000) == 0x7f000000 || // 127.0.0.0/8
-					(haddr & 0xffff0000) == 0xa9fe0000 || // 169.254.0.0/16
 					(haddr & 0xfff00000) == 0xac100000 || // 172.16.0.0/12
 					(haddr & 0xffff0000) == 0xc0a80000);  // 192.168.0.0/16
 		}
@@ -894,8 +942,12 @@ bool Util::isPrivateIp(const string& ip, bool v6) {
 	return false;
 }
 
+bool Util::isPublicIp(const string& ip, bool v6) noexcept {
+	return !ip.empty() && !isLocalIp(ip, v6) && !isPrivateIp(ip, v6);
+}
+
 typedef const uint8_t* ccp;
-static wchar_t utf8ToLC(ccp& str) {
+static wchar_t utf8ToLC(ccp& str) noexcept {
 	wchar_t c = 0;
    if(str[0] & 0x80) { 
       if(str[0] & 0x40) { 
@@ -935,7 +987,7 @@ static wchar_t utf8ToLC(ccp& str) {
 	return Text::toLower(c);
 }
 
-string Util::toString(const string& sep, const StringList& lst) {
+string Util::toString(const string& sep, const StringList& lst) noexcept {
 	string ret;
 	for(auto i = lst.begin(), iend = lst.end(); i != iend; ++i) {
 		ret += *i;
@@ -1013,7 +1065,7 @@ wstring::size_type Util::findSubString(const wstring& aString, const wstring& aS
 	return static_cast<wstring::size_type>(wstring::npos);
 }
 
-int Util::stricmp(const char* a, const char* b) {
+int Util::stricmp(const char* a, const char* b) noexcept {
 	while(*a) {
 		wchar_t ca = 0, cb = 0;
 		int na = Text::utf8ToWc(a, ca);
@@ -1033,7 +1085,7 @@ int Util::stricmp(const char* a, const char* b) {
 	return (int)Text::toLower(ca) - (int)Text::toLower(cb);
 }
 
-int Util::strnicmp(const char* a, const char* b, size_t n) {
+int Util::strnicmp(const char* a, const char* b, size_t n) noexcept {
 	const char* end = a + n;
 	while(*a && a < end) {
 		wchar_t ca = 0, cb = 0;
@@ -1053,7 +1105,7 @@ int Util::strnicmp(const char* a, const char* b, size_t n) {
 	return (a >= end) ? 0 : ((int)Text::toLower(ca) - (int)Text::toLower(cb));
 }
 
-string Util::encodeURI(const string& aString, bool reverse) {
+string Util::encodeURI(const string& aString, bool reverse) noexcept {
 	// reference: rfc2396
 	string tmp = aString;
 	if(reverse) {
@@ -1089,8 +1141,8 @@ string Util::encodeURI(const string& aString, bool reverse) {
 
 // used to parse the boost::variant params of the formatParams function.
 struct GetString : boost::static_visitor<string> {
-	string operator()(const string& s) const { return s; }
-	string operator()(const std::function<string ()>& f) const { return f(); }
+	string operator()(const string& s) const noexcept { return s; }
+	string operator()(const std::function<string ()>& f) const noexcept { return f(); }
 };
 
 /**
@@ -1102,7 +1154,7 @@ struct GetString : boost::static_visitor<string> {
  * it is removed from the string completely...
  */
 
-string Util::formatParams(const string& aMsg, const ParamMap& aParams, FilterF filter) {
+string Util::formatParams(const string& aMsg, const ParamMap& aParams, FilterF aFilter, time_t aTime) noexcept {
 	string result = aMsg;
 
 	string::size_type i, j, k;
@@ -1124,8 +1176,8 @@ string Util::formatParams(const string& aMsg, const ParamMap& aParams, FilterF f
 			// replace all % in params with %% for strftime
 			replace("%", "%%", replacement);
 
-			if(filter) {
-				replacement = filter(replacement);
+			if(aFilter) {
+				replacement = aFilter(replacement);
 			}
 
 			result.replace(j, k - j + 1, replacement);
@@ -1133,40 +1185,30 @@ string Util::formatParams(const string& aMsg, const ParamMap& aParams, FilterF f
 		}
 	}
 
-	result = formatTime(result, time(NULL));
+	if (aTime > 0) {
+		result = formatTime(result, aTime);
+	}
 
 	return result;
 }
 
-bool Util::isPathValid(const string &sPath) {
-	if(sPath.empty())
-		return false;
-
-#ifdef _WIN32
-	if((sPath.substr(1, 2) == ":\\") || (sPath.substr(0, 2) == "\\\\")) {
-		if(GetFileAttributes(Text::toT(sPath).c_str()) & FILE_ATTRIBUTE_DIRECTORY)
-			return true;
-	}
-
-	return false;
-#else
-	return true;
-#endif
+bool Util::isAdcPath(const string& aPath) noexcept {
+	return !aPath.empty() && aPath.front() == ADC_ROOT && aPath.back() == ADC_SEPARATOR;
 }
 
-bool Util::fileExists(const string &aFile) {
+bool Util::fileExists(const string &aFile) noexcept {
 	if(aFile.empty())
 		return false;
 
 #ifdef _WIN32
-	DWORD attr = GetFileAttributes(Text::toT(Util::FormatPath(aFile)).c_str());
+	DWORD attr = GetFileAttributes(Text::toT(Util::formatPath(aFile)).c_str());
 	return (attr != 0xFFFFFFFF);
 #else
 	return File::getSize(aFile) != -1;
 #endif
 }
 
-string Util::formatTime(const string &msg, const time_t t) {
+string Util::formatTime(const string &msg, const time_t t) noexcept {
 	if (!msg.empty()) {
 		string ret = msg;
 		tm* loc = localtime(&t);
@@ -1238,7 +1280,7 @@ static unsigned long mt[N]; /* the array for the state vector  */
 static int mti=N+1; /* mti==N+1 means mt[N] is not initialized */
 
 /* initializing the array with a NONZERO seed */
-static void sgenrand(unsigned long seed) {
+static void sgenrand(unsigned long seed) noexcept {
 	/* setting initial seeds to mt[N] using         */
 	/* the generator Line 25 of Table 1 in          */
 	/* [KNUTH 1981, The Art of Computer Programming */
@@ -1248,7 +1290,7 @@ static void sgenrand(unsigned long seed) {
 		mt[mti] = (69069 * mt[mti-1]) & 0xffffffff;
 }
 
-uint32_t Util::rand() {
+uint32_t Util::rand() noexcept {
 	unsigned long y;
 	static unsigned long mag01[2]={0x0, MATRIX_A};
 	/* mag01[x] = x * MATRIX_A  for x=0,1 */
@@ -1282,14 +1324,14 @@ uint32_t Util::rand() {
 	return y; 
 }
 
-int Util::randInt(int min, int max) {
+int Util::randInt(int min, int max) noexcept {
 	std::random_device rd;
 	mt19937 gen(rd());
 	uniform_int_distribution<> dist(min, max);
     return dist(gen);
 }
 
-string Util::getDateTime(time_t t) {
+string Util::getDateTime(time_t t) noexcept {
 	if (t == 0)
 		return Util::emptyString;
 
@@ -1301,7 +1343,7 @@ string Util::getDateTime(time_t t) {
 }
 
 #ifdef _WIN32
-wstring Util::getDateTimeW(time_t t) {
+wstring Util::getDateTimeW(time_t t) noexcept {
 	if (t == 0)
 		return Util::emptyStringT;
 
@@ -1314,7 +1356,7 @@ wstring Util::getDateTimeW(time_t t) {
 }
 #endif
 
-string Util::getTimeString() {
+string Util::getTimeString() noexcept {
 	char buf[64];
 	time_t _tt;
 	time(&_tt);
@@ -1327,7 +1369,7 @@ string Util::getTimeString() {
 	return buf;
 }
 
-string Util::getTimeStamp(time_t t) {
+string Util::getTimeStamp(time_t t) noexcept {
 	char buf[255];
 	tm* _tm = localtime(&t);
 	if (_tm == NULL) {
@@ -1335,50 +1377,50 @@ string Util::getTimeStamp(time_t t) {
 	} else {
 		strftime(buf, 254, SETTING(TIME_STAMPS_FORMAT).c_str(), _tm);
 	}
-	return Text::acpToUtf8(buf);
+	return buf;
 }
 
-string Util::toAdcFile(const string& file) {
+string Util::toAdcFile(const string& file) noexcept {
 	if(file == "files.xml.bz2" || file == "files.xml")
 		return file;
 
 	string ret;
 	ret.reserve(file.length() + 1);
-	ret += '/';
+	ret += ADC_ROOT;
 	ret += file;
 	for(string::size_type i = 0; i < ret.length(); ++i) {
-		if(ret[i] == '\\') {
-			ret[i] = '/';
+		if(ret[i] == NMDC_SEPARATOR) {
+			ret[i] = ADC_SEPARATOR;
 		}
 	}
 	return ret;
 }
-string Util::toNmdcFile(const string& file) {
+string Util::toNmdcFile(const string& file) noexcept {
 	if(file.empty())
 		return Util::emptyString;
 
 	string ret(file.substr(1));
 	for(string::size_type i = 0; i < ret.length(); ++i) {
-		if(ret[i] == '/') {
-			ret[i] = '\\';
+		if(ret[i] == ADC_SEPARATOR) {
+			ret[i] = NMDC_SEPARATOR;
 		}
 	}
 	return ret;
 }
 
-string Util::getFilePath(const string& path, const char separator) {
+string Util::getFilePath(const string& path, const char separator) noexcept {
 	string::size_type i = path.rfind(separator);
 	return (i != string::npos) ? path.substr(0, i + 1) : path;
 }
-string Util::getFileName(const string& path, const char separator) {
+string Util::getFileName(const string& path, const char separator) noexcept {
 	string::size_type i = path.rfind(separator);
 	return (i != string::npos) ? path.substr(i + 1) : path;
 }
-string Util::getFileExt(const string& path) {
+string Util::getFileExt(const string& path) noexcept {
 	string::size_type i = path.rfind('.');
 	return (i != string::npos) ? path.substr(i) : Util::emptyString;
 }
-string Util::getLastDir(const string& path, const char separator) {
+string Util::getLastDir(const string& path, const char separator) noexcept {
 	string::size_type i = path.rfind(separator);
 	if(i == string::npos)
 		return path;
@@ -1390,7 +1432,7 @@ string Util::getLastDir(const string& path, const char separator) {
 	return path.substr(j+1, i-j-1);
 }
 
-string Util::getParentDir(const string& path, const char separator /*PATH_SEPARATOR*/, bool allowEmpty /*false*/) {
+string Util::getParentDir(const string& path, const char separator /*PATH_SEPARATOR*/, bool allowEmpty /*false*/) noexcept {
 	string::size_type i = path.rfind(separator);
 	if(i == string::npos)
 		return allowEmpty ? Util::emptyString : path;
@@ -1402,19 +1444,19 @@ string Util::getParentDir(const string& path, const char separator /*PATH_SEPARA
 	return allowEmpty ? Util::emptyString : path;
 }
 
-wstring Util::getFilePath(const wstring& path) {
+wstring Util::getFilePath(const wstring& path) noexcept {
 	wstring::size_type i = path.rfind(PATH_SEPARATOR);
 	return (i != wstring::npos) ? path.substr(0, i + 1) : path;
 }
-wstring Util::getFileName(const wstring& path) {
+wstring Util::getFileName(const wstring& path) noexcept {
 	wstring::size_type i = path.rfind(PATH_SEPARATOR);
 	return (i != wstring::npos) ? path.substr(i + 1) : path;
 }
-wstring Util::getFileExt(const wstring& path) {
+wstring Util::getFileExt(const wstring& path) noexcept {
 	wstring::size_type i = path.rfind('.');
 	return (i != wstring::npos) ? path.substr(i) : Util::emptyStringW;
 }
-wstring Util::getLastDir(const wstring& path) {
+wstring Util::getLastDir(const wstring& path) noexcept {
 	wstring::size_type i = path.rfind(PATH_SEPARATOR);
 	if(i == wstring::npos)
 		return Util::emptyStringW;
@@ -1426,7 +1468,7 @@ wstring Util::getLastDir(const wstring& path) {
 	return path.substr(j+1, i-j-1);
 }
 
-string Util::translateError(int aError) {
+string Util::translateError(int aError) noexcept {
 #ifdef _WIN32
 	LPTSTR lpMsgBuf;
 	DWORD chars = FormatMessage( 
@@ -1457,49 +1499,148 @@ string Util::translateError(int aError) {
 #endif // _WIN32
 }
 
-/* natural sorting */
-int Util::DefaultSort(const wchar_t *a, const wchar_t *b, bool noCase /*=  true*/) {
-	if(SETTING(NAT_SORT)) {
-		int v1, v2;
-		while(*a != 0 && *b != 0) {
-			v1 = 0; v2 = 0;
-			bool t1 = isNumeric(*a);
-			bool t2 = isNumeric(*b);
-			if(t1 != t2) return (t1) ? -1 : 1;
-
-			if(!t1 && noCase) {
-				if(Text::toLower(*a) != Text::toLower(*b))
-					return ((int)Text::toLower(*a)) - ((int)Text::toLower(*b));
-				a++; b++;
-			} else if(!t1) {
-				if(*a != *b)
-					return ((int)*a) - ((int)*b);
-				a++; b++;
-			} else {
-			    while(isNumeric(*a)) {
-			       v1 *= 10;
-			       v1 += *a - '0';
-			       a++;
-			    }
-
-	            while(isNumeric(*b)) {
-		           v2 *= 10;
-		           v2 += *b - '0';
-		           b++;
-		        }
-
-				if(v1 != v2)
-					return (v1 < v2) ? -1 : 1;
-			}			
-		}
-
-		return noCase ? (((int)Text::toLower(*a)) - ((int)Text::toLower(*b))) : (((int)*a) - ((int)*b));
-	} else {
-		return noCase ? Util::stricmp(a, b) : Util::stricmp(a, b);
+int Util::pathSort(const string& a, const string& b) noexcept {
+	auto comp = compare(Util::getFilePath(a), Util::getFilePath(b));
+	if (comp == 0) {
+		return compare(a, b);
 	}
+
+	return comp;
 }
 
-void Util::replace(string& aString, const string& findStr, const string& replaceStr) {
+int Util::directoryContentSort(const DirectoryContentInfo& a, const DirectoryContentInfo& b) noexcept {
+	if (a.directories != b.directories) {
+		return compare(a.directories, b.directories);
+	}
+
+	return compare(a.files, b.files);
+}
+
+string Util::formatDirectoryContent(const DirectoryContentInfo& aContentInfo) noexcept {
+	if (!Util::hasContentInfo(aContentInfo)) {
+		return Util::emptyString;
+	}
+
+	string name;
+
+	bool hasFiles = aContentInfo.files > 0;
+	bool hasFolders = aContentInfo.directories > 0;
+
+	if (hasFolders) {
+		if (aContentInfo.directories == 1) {
+			name += Util::toString(aContentInfo.directories) + " " + Text::toLower(STRING(FOLDER));
+		} else {
+			name += STRING_F(X_FOLDERS, Util::formatAbbreviated(aContentInfo.directories));
+		}
+	}
+
+	if (hasFiles || !hasFolders) { // We must return something even if the directory is empty
+		if (hasFolders)
+			name += ", ";
+
+		if (aContentInfo.files == 1) {
+			name += Util::toString(aContentInfo.files) + " " + Text::toLower(STRING(FILE));
+		} else {
+			name += STRING_F(X_FILES, Util::formatAbbreviated(aContentInfo.files));
+		}
+	}
+
+	return name;
+}
+
+string Util::formatFileType(const string& aPath) noexcept {
+	auto type = Util::getFileExt(aPath);
+	if (type.size() > 0 && type[0] == '.') {
+		type.erase(0, 1);
+	}
+
+	return type;
+}
+
+/* natural sorting */
+int Util::DefaultSort(const wchar_t *a, const wchar_t *b) noexcept {
+	int v1, v2;
+	while(*a != 0 && *b != 0) {
+		v1 = 0; v2 = 0;
+		auto t1 = iswdigit(*a);
+		auto t2 = iswdigit(*b);
+		if(t1 != t2) return (t1) ? -1 : 1;
+
+		if(!t1) {
+			if(Text::toLower(*a) != Text::toLower(*b))
+				return ((int)Text::toLower(*a)) - ((int)Text::toLower(*b));
+			a++; b++;
+		} else if(!t1) {
+			if(*a != *b)
+				return ((int)*a) - ((int)*b);
+			a++; b++;
+		} else {
+			while(iswdigit(*a)) {
+			    v1 *= 10;
+			    v1 += *a - '0';
+			    a++;
+			}
+
+	        while(iswdigit(*b)) {
+		        v2 *= 10;
+		        v2 += *b - '0';
+		        b++;
+		    }
+
+			if(v1 != v2)
+				return (v1 < v2) ? -1 : 1;
+		}			
+	}
+
+	return (int)Text::toLower(*a) - (int)Text::toLower(*b);
+}
+
+int Util::DefaultSort(const char* a, const char* b) noexcept {
+	int v1, v2;
+	while (*a != 0 && *b != 0) {
+		v1 = 0; v2 = 0;
+
+		wchar_t ca = 0, cb = 0;
+		int na = abs(Text::utf8ToWc(a, ca));
+		int nb = abs(Text::utf8ToWc(b, cb));
+
+		auto t1 = iswdigit(ca);
+		auto t2 = iswdigit(cb);
+		if (t1 != t2) return (t1) ? -1 : 1;
+
+		if (!t1) {
+			auto caLower = Text::toLower(ca);
+			auto cbLower = Text::toLower(cb);
+			if (caLower != cbLower)
+				return ((int)caLower) - ((int)cbLower);
+
+			a += na; b += nb;
+		} else {
+			while (iswdigit(ca)) {
+				v1 *= 10;
+				v1 += *a - '0';
+
+				a += na;
+				na = Text::utf8ToWc(a, ca);
+			}
+
+			while (iswdigit(cb)) {
+				v2 *= 10;
+				v2 += *b - '0';
+
+				b += nb;
+				nb = Text::utf8ToWc(b, cb);
+			}
+
+			if (v1 != v2)
+				return (v1 < v2) ? -1 : 1;
+		}
+	}
+
+	return Util::stricmp(a, b);
+}
+
+void Util::replace(string& aString, const string& findStr, const string& replaceStr) noexcept {
    string::size_type offset = 0;
    while((offset = aString.find(findStr, offset)) != string::npos) {
       aString.replace(offset, findStr.length(), replaceStr);
@@ -1507,7 +1648,7 @@ void Util::replace(string& aString, const string& findStr, const string& replace
    }
 }
 
-tstring Util::replaceT(const tstring& aString, const tstring& fStr, const tstring& rStr) {
+tstring Util::replaceT(const tstring& aString, const tstring& fStr, const tstring& rStr) noexcept {
 	tstring tmp = aString;
 	tstring::size_type pos = 0;
 	while( (pos = tmp.find(fStr, pos)) != tstring::npos ) {
@@ -1526,10 +1667,10 @@ static const string base64_chars =
     "0123456789+/";
 
 
-static inline bool is_base64(unsigned char c) {
+static inline bool is_base64(unsigned char c) noexcept {
     return (isalnum(c) || (c == '+') || (c == '/'));
 }
-string Util::base64_encode(unsigned char const* bytes_to_encode, unsigned int in_len) {
+string Util::base64_encode(unsigned char const* bytes_to_encode, unsigned int in_len) noexcept {
 	string ret;
 	int i = 0;
 	int j = 0;
@@ -1570,7 +1711,7 @@ string Util::base64_encode(unsigned char const* bytes_to_encode, unsigned int in
     return ret;
 }
 
-string Util::base64_decode(string const& encoded_string) {
+string Util::base64_decode(string const& encoded_string) noexcept {
 	int in_len = encoded_string.size();
 	int i = 0;
 	int j = 0;
@@ -1613,7 +1754,7 @@ string Util::base64_decode(string const& encoded_string) {
 	return ret;
 }
 
-bool Util::IsOSVersionOrGreater(int major, int minor) {
+bool Util::IsOSVersionOrGreater(int major, int minor) noexcept {
 #ifdef _WIN32
 	return IsWindowsVersionOrGreater((WORD)major, (WORD)minor, 0);
 #else // _WIN32
@@ -1621,7 +1762,7 @@ bool Util::IsOSVersionOrGreater(int major, int minor) {
 #endif
 }
 
-string Util::getOsVersion(bool http /*false*/) {
+string Util::getOsVersion(bool http /*false*/) noexcept {
 #ifdef _WIN32
 	typedef void (WINAPI *PGNSI)(LPSYSTEM_INFO);
 	typedef BOOL(WINAPI *PGPI)(DWORD, DWORD, DWORD, DWORD, PDWORD);

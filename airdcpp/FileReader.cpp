@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,7 +63,7 @@ size_t FileReader::readCached(const string& aPath, const DataCallback& callback)
 	buffer.resize(getBlockSize(0));
 
 	auto buf = &buffer[0];
-	File f(aPath, File::READ, File::OPEN | File::SHARED_WRITE);
+	File f(aPath, File::READ, File::OPEN | File::SHARED_WRITE, File::BUFFER_SEQUENTIAL);
 
 	size_t total = 0;
 	size_t n = buffer.size();
@@ -194,7 +194,7 @@ size_t FileReader::readDirect(const string& aPath, const DataCallback& callback)
 		callback(hbuf, hn);
 	}
 
-	return *((uint64_t*)&over.Offset);
+	return *((size_t*)&over.Offset);
 }
 
 size_t FileReader::readMapped(const string& /*file*/, const DataCallback& /*callback*/) {

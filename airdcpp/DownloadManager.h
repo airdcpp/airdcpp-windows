@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,13 +23,14 @@
 
 #include "DownloadManagerListener.h"
 #include "UserConnectionListener.h"
-#include "TimerManager.h"
+#include "TimerManagerListener.h"
 #include "Singleton.h"
 #include "Speaker.h"
 
-#include "Bundle.h"
 #include "CriticalSection.h"
+#include "Bundle.h"
 #include "MerkleTree.h"
+#include "Util.h"
 
 namespace dcpp {
 
@@ -46,10 +47,9 @@ public:
 	/** @internal */
 	void addConnection(UserConnection* conn);
 	bool checkIdle(const UserPtr& user, bool smallSlot, bool reportOnly = false);
-	void setTarget(const string& oldTarget, const string& newTarget);
-	void changeBundle(BundlePtr sourceBundle, BundlePtr targetBundle, const string& path);
-	void sendSizeNameUpdate(BundlePtr& aBundle);
-	BundlePtr findRunningBundle(QueueToken bundleToken);
+
+	void sendSizeUpdate(BundlePtr& aBundle) const noexcept;
+	BundlePtr findRunningBundle(QueueToken bundleToken) const noexcept;
 
 	/** @internal */
 	void abortDownload(const string& aTarget, const UserPtr& aUser = nullptr);
@@ -87,10 +87,10 @@ private:
 	// The list of bundles being download. Note that all of them may not be running
 	// as the bundle is removed from here only after the connection has been 
 	// switched to use another bundle (or no other downloads were found)
-	Bundle::TokenBundleMap bundles;
+	Bundle::TokenMap bundles;
 	UserConnectionList idlers;
 
-	void removeRunningUser(UserConnection* aSource, bool sendRemoved=false);
+	void removeRunningUser(UserConnection* aSource, bool sendRemoved=false) noexcept;
 	void removeConnection(UserConnectionPtr aConn);
 	void removeDownload(Download* aDown);
 	void fileNotAvailable(UserConnection* aSource, bool noAccess);

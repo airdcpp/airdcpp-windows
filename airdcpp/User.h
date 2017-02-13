@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,7 +46,8 @@ public:
 		NAT_TRAVERSAL			= 0x200,	//< Client supports NAT Traversal
 		FAVORITE				= 0x400,
 		ASCH					= 0x800,
-		IGNORED					= 0x1000
+		IGNORED					= 0x1000,
+		CCPM					= 0x2000 // User supports CCPM
 	};
 
 	struct Hash {
@@ -57,13 +58,13 @@ public:
 
 	~User() { }
 
-	const CID& getCID() const { return cid; }
-	operator const CID&() const { return cid; }
+	const CID& getCID() const noexcept { return cid; }
+	operator const CID&() const noexcept { return cid; }
 
-	bool isOnline() const { return isSet(ONLINE); }
-	bool isNMDC() const { return isSet(NMDC); }
-	bool isFavorite() const { return isSet(FAVORITE); }
-	bool isIgnored() const { return isSet(IGNORED); }
+	bool isOnline() const noexcept { return isSet(ONLINE); }
+	bool isNMDC() const noexcept { return isSet(NMDC); }
+	bool isFavorite() const noexcept { return isSet(FAVORITE); }
+	bool isIgnored() const noexcept { return isSet(IGNORED); }
 
 	struct UserHubInfo {
 		UserHubInfo(const string& aHubUrl, const string& aHubName, int64_t aShared) : hubName(aHubName), hubUrl(aHubUrl), shared(aShared) { }
@@ -74,9 +75,9 @@ public:
 	};
 	typedef vector<UserHubInfo> UserInfoList;
 
-	void addQueued(int64_t inc);
-	void removeQueued(int64_t inc);
-	int64_t getQueued() const { return queued; }
+	void addQueued(int64_t inc) noexcept;
+	void removeQueued(int64_t inc) noexcept;
+	int64_t getQueued() const noexcept { return queued; }
 
 	IGETSET(int64_t, speed, Speed, 0);
 

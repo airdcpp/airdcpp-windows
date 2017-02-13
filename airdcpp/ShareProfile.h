@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 AirDC++ Project
+ * Copyright (C) 2012-2017 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,11 +53,11 @@ class FileList {
 		unique_ptr<File> bzXmlRef;
 		string getFileName() const noexcept;
 
-		bool allowGenerateNew(bool force=false) noexcept;
-		void generationFinished(bool failed) noexcept;
+		bool allowGenerateNew(bool aForce = false) noexcept;
+		void generationFinished(bool aFailed) noexcept;
 		void saveList();
 		CriticalSection cs;
-		int getCurrentNumber() const { return listN; }
+		int getCurrentNumber() const noexcept { return listN; }
 	private:
 		int listN = 0;
 };
@@ -78,7 +78,7 @@ public:
 	~ShareProfileInfo() {}
 
 	string name;
-	ProfileToken token;
+	const ProfileToken token;
 	bool isDefault = false;
 	State state;
 
@@ -90,6 +90,9 @@ inline bool operator==(const ShareProfileInfoPtr& ptr, ProfileToken aToken) { re
 
 class ShareProfile {
 public:
+	static bool hasCommonProfiles(const ProfileTokenSet& a, const ProfileTokenSet& b) noexcept;
+	static StringList getProfileNames(const ProfileTokenSet& aTokens, const ShareProfileList& aProfiles) noexcept;
+
 	struct Hash {
 		size_t operator()(const ShareProfilePtr& x) const { return x->getToken(); }
 	};
@@ -97,18 +100,27 @@ public:
 	GETSET(ProfileToken, token, Token);
 	GETSET(string, plainName, PlainName);
 	IGETSET(bool, profileInfoDirty, ProfileInfoDirty, true);
+
+	// For caching the last information (these should only be accessed from ShareManager, use ShareManager::getProfileInfo for up-to-date information)
 	IGETSET(int64_t, shareSize, ShareSize, 0);
 	IGETSET(size_t, sharedFiles, SharedFiles, 0);
 
-	ShareProfile(const string& aName, ProfileToken aToken = Util::randInt(100));
+	ShareProfile(const string& aName = Util::emptyString, ProfileToken aToken = Util::randInt(100));
 	~ShareProfile();
 
 	FileList* getProfileList() noexcept;
 	bool isDefault() const noexcept;
+	bool isHidden() const noexcept;
 	string getDisplayName() const noexcept;
 
 	typedef unordered_set<ShareProfilePtr, Hash> Set;
 	typedef vector<ShareProfilePtr> List;
+
+	struct NotHidden {
+		bool operator()(const ShareProfilePtr& aProfile) const {
+			return !aProfile->isHidden();
+		}
+	};
 private:
 	FileList fileList;
 };

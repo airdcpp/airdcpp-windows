@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,10 @@
 #ifndef DCPLUSPLUS_DCPP_TIMER_MANAGER_H
 #define DCPLUSPLUS_DCPP_TIMER_MANAGER_H
 
-#include "Thread.h"
-#include "Speaker.h"
 #include "Singleton.h"
+#include "Speaker.h"
+#include "TimerManagerListener.h"
+#include "Thread.h"
 
 #include <boost/thread/mutex.hpp>
 
@@ -31,18 +32,6 @@
 
 namespace dcpp {
 
-class TimerManagerListener {
-public:
-	virtual ~TimerManagerListener() { }
-	template<int I>	struct X { enum { TYPE = I };  };
-
-	typedef X<0> Second;
-	typedef X<1> Minute;
-
-	virtual void on(Second, uint64_t) noexcept { }
-	virtual void on(Minute, uint64_t) noexcept { }
-};
-
 class TimerManager : public Speaker<TimerManagerListener>, public Singleton<TimerManager>, public Thread
 {
 public:
@@ -50,6 +39,9 @@ public:
 
 	static time_t getTime() { return (time_t)time(NULL); }
 	static uint64_t getTick();
+
+	static time_t getStartTime() noexcept;
+	static time_t getUptime() noexcept;
 private:
 	friend class Singleton<TimerManager>;
 	boost::timed_mutex mtx;

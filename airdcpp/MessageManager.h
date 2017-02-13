@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,24 +16,23 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef MESSAGE_MANAGER_H_
-#define MESSAGE_MANAGER_H_
+#ifndef DCPLUSPLUS_DCPP_MESSAGE_MANAGER_H_
+#define DCPLUSPLUS_DCPP_MESSAGE_MANAGER_H_
 
 #include "forward.h"
 
-#include "CriticalSection.h"
-#include "Exception.h"
-
-#include "Pointer.h"
-#include "Singleton.h"
-#include "UserConnection.h"
-#include "ConnectionManager.h"
-#include "ClientManager.h"
+#include "ClientManagerListener.h"
+#include "ConnectionManagerListener.h"
 #include "MessageManagerListener.h"
+#include "SettingsManagerListener.h"
+#include "UserConnectionListener.h"
+
+#include "CriticalSection.h"
 #include "PrivateChat.h"
-#include "SettingsManager.h"
 #include "SimpleXML.h"
+#include "Singleton.h"
 #include "StringMatch.h"
+
 
 namespace dcpp {
 
@@ -108,6 +107,7 @@ namespace dcpp {
 
 	public:
 		typedef unordered_map<UserPtr, PrivateChatPtr, User::Hash> ChatMap;
+		typedef unordered_map<UserPtr, int, User::Hash> IgnoreMap;
 
 		MessageManager() noexcept;
 		~MessageManager() noexcept;
@@ -116,17 +116,18 @@ namespace dcpp {
 		PrivateChatPtr getChat(const UserPtr& aUser) const noexcept;
 
 		void DisconnectCCPM(const UserPtr& aUser);
-		void onPrivateMessage(const ChatMessagePtr& message, UserConnection* aUc = nullptr);
+		void onPrivateMessage(const ChatMessagePtr& message);
 		bool removeChat(const UserPtr& aUser);
 		void closeAll(bool Offline);
 
 		ChatMap getChats() const noexcept;
 
 		//IGNORE
-		// store & remove ignores through/from hubframe
-		void storeIgnore(const UserPtr& aUser);
-		void removeIgnore(const UserPtr& aUser);
-		bool isIgnored(const UserPtr& aUser);
+		typedef unordered_set<UserPtr, User::Hash> UserSet;
+
+		IgnoreMap getIgnoredUsers() const noexcept;
+		bool storeIgnore(const UserPtr& aUser) noexcept;
+		bool removeIgnore(const UserPtr& aUser) noexcept;
 		bool isIgnoredOrFiltered(const ChatMessagePtr& msg, Client* aClient, bool PM);
 
 		// chat filter
@@ -145,9 +146,9 @@ namespace dcpp {
 		UserConnection* getPMConn(const UserPtr& user); //LOCK usage!!
 
 		//IGNORE
-		SharedMutex Ignorecs;
-		typedef unordered_set<UserPtr, User::Hash> IgnoredUsersList;
-		IgnoredUsersList ignoredUsers;
+		IgnoreMap ignoredUsers;
+		bool checkIgnored(const OnlineUserPtr& aUser) noexcept;
+
 		// save & load
 		void load(SimpleXML& aXml);
 		void save(SimpleXML& aXml);
@@ -167,7 +168,7 @@ namespace dcpp {
 		void on(ConnectionManagerListener::Removed, const ConnectionQueueItem* cqi) noexcept;
 
 		// UserConnectionListener
-		virtual void on(UserConnectionListener::PrivateMessage, UserConnection* uc, const ChatMessagePtr& message) noexcept;
+		virtual void on(UserConnectionListener::PrivateMessage, UserConnection*, const ChatMessagePtr& message) noexcept;
 		virtual void on(AdcCommand::PMI, UserConnection* uc, const AdcCommand& cmd) noexcept;
 	};
 

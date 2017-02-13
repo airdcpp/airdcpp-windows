@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -78,76 +78,59 @@ bool isAscii(const char* str) noexcept {
 }
 
 int utf8ToWc(const char* str, wchar_t& c) {
-	uint8_t c0 = (uint8_t)str[0];
-	if(c0 & 0x80) {									// 1xxx xxxx
-		if(c0 & 0x40) {								// 11xx xxxx
-			if(c0 & 0x20) {							// 111x xxxx
-				if(c0 & 0x10) {						// 1111 xxxx
-					int n = -4;
-					if(c0 & 0x08) {					// 1111 1xxx
-						n = -5;
-						if(c0 & 0x04) {				// 1111 11xx
-							if(c0 & 0x02) {			// 1111 111x
-								return -1;
-							}
-							n = -6;
-						}
-					}
-					int i = -1;
-					while(i > n && (str[abs(i)] & 0x80) == 0x80)
-						--i;
-					return i;
-				} else {		// 1110xxxx
-					uint8_t c1 = (uint8_t)str[1];
-					if((c1 & (0x80 | 0x40)) != 0x80)
-						return -1;
+	const auto c0 = static_cast<uint8_t>(str[0]);
+	const auto bytes = 2 + !!(c0 & 0x20) + ((c0 & 0x30) == 0x30);
 
-					uint8_t c2 = (uint8_t)str[2];
-					if((c2 & (0x80 | 0x40)) != 0x80)
-						return -2;
-
-					// Ugly utf-16 surrogate catch
-					if((c0 & 0x0f) == 0x0d && (c1 & 0x3c) >= (0x08 << 2))
-						return -3;
-
-					// Overlong encoding
-					if(c0 == (0x80 | 0x40 | 0x20) && (c1 & (0x80 | 0x40 | 0x20)) == 0x80)
-						return -3;
-
-					c = (((wchar_t)c0 & 0x0f) << 12) |
-						(((wchar_t)c1 & 0x3f) << 6) |
-						((wchar_t)c2 & 0x3f);
-
-					return 3;
-				}
-			} else {				// 110xxxxx
-				uint8_t c1 = (uint8_t)str[1];
-				if((c1 & (0x80 | 0x40)) != 0x80)
-					return -1;
-
-				// Overlong encoding
-				if((c0 & ~1) == (0x80 | 0x40))
-					return -2;
-
-				c = (((wchar_t)c0 & 0x1f) << 6) |
-					((wchar_t)c1 & 0x3f);
-				return 2;
-			}
-		} else {					// 10xxxxxx
+	if ((c0 & 0xc0) == 0xc0) {                  // 11xx xxxx
+												// # bytes of leading 1's; check for 0 next
+		const auto check_bit = 1 << (7 - bytes);
+		if (c0 & check_bit)
 			return -1;
+
+		c = (check_bit - 1) & c0;
+
+		// 2-4 total, or 1-3 additional, bytes
+		// Can't run off end of str so long as has sub-0x80-terminator
+		for (auto i = 1; i < bytes; ++i) {
+			const auto ci = static_cast<uint8_t>(str[i]);
+			if ((ci & 0xc0) != 0x80)
+				return -i;
+			c = (c << 6) | (ci & 0x3f);
 		}
-	} else {						// 0xxxxxxx
-		c = (unsigned char)str[0];
+
+		// Invalid UTF-8 code points
+		if (c > 0x10ffff || (c >= 0xd800 && c <= 0xdfff)) {
+			// "REPLACEMENT CHARACTER": used to replace an incoming character
+			// whose value is unknown or unrepresentable in Unicode
+			c = 0xfffd;
+			return -bytes;
+		}
+
+		return bytes;
+	} else if ((c0 & 0x80) == 0) {             // 0xxx xxxx
+		c = static_cast<unsigned char>(str[0]);
 		return 1;
+	} else {                                   // 10xx xxxx
+		return -1;
 	}
 }
 
 void wcToUtf8(wchar_t c, string& str) {
-	if(c >= 0x0800) {
+	// https://tools.ietf.org/html/rfc3629#section-3
+	if (c > 0x10ffff || (c >= 0xd800 && c <= 0xdfff)) {
+		// Invalid UTF-8 code point
+		// REPLACEMENT CHARACTER: http://www.fileformat.info/info/unicode/char/0fffd/index.htm
+		wcToUtf8(0xfffd, str);
+	} else if (c >= 0x10000) {
+		str += (char)(0x80 | 0x40 | 0x20 | 0x10 | (c >> 18));
+		str += (char)(0x80 | ((c >> 12) & 0x3f));
+		str += (char)(0x80 | ((c >> 6) & 0x3f));
+		str += (char)(0x80 | (c & 0x3f));
+	} else if (c >= 0x0800) {
 		str += (char)(0x80 | 0x40 | 0x20 | (c >> 12));
 		str += (char)(0x80 | ((c >> 6) & 0x3f));
 		str += (char)(0x80 | (c & 0x3f));
-	} else if(c >= 0x0080) {
+	} else if (c >= 0x0080) {
 		str += (char)(0x80 | 0x40 | (c >> 6));
 		str += (char)(0x80 | (c & 0x3f));
 	} else {
@@ -204,26 +187,11 @@ string wideToUtf8(const wstring& str) noexcept {
 	}
 
 	string tgt;
-#ifdef _WIN32
-	int size = 0;
-	tgt.resize( str.length() * 2 );
-
-	while( ( size = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), str.length(), &tgt[0], tgt.length(), NULL, NULL) ) == 0 ){
-		if( GetLastError() == ERROR_INSUFFICIENT_BUFFER )
-			tgt.resize( tgt.size() * 2 );
-		else
-			break;
-	}
-	
-	tgt.resize( size );
-	return tgt;
-#else	
 	string::size_type n = str.length();
 	for(string::size_type i = 0; i < n; ++i) {
 		wcToUtf8(str[i], tgt);
 	}
 	return tgt;
-#endif
 }
 
 string wideToAcp(const wstring& str, const string& toCharset) noexcept {
@@ -261,6 +229,10 @@ string wideToAcp(const wstring& str, const string& toCharset) noexcept {
 #endif
 }
 
+string sanitizeUtf8(const string& str) noexcept {
+	return wideToUtf8(utf8ToWide(str));
+}
+
 bool validateUtf8(const string& str) noexcept {
 	string::size_type i = 0;
 	while(i < str.length()) {
@@ -275,20 +247,6 @@ bool validateUtf8(const string& str) noexcept {
 
 wstring utf8ToWide(const string& str) noexcept {
 	wstring tgt;
-#ifdef _WIN32
-	int size = 0;
-	tgt.resize( str.length()+1 );
-	while( ( size = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.length(), &tgt[0], (int)tgt.length()) ) == 0 ){
-		if( GetLastError() == ERROR_INSUFFICIENT_BUFFER ) {
-			tgt.resize( tgt.size()*2 );
-		} else {
-			break;
-		}
-
-	}
-	tgt.resize( size );
-	return tgt;
-#else
 	tgt.reserve(str.length());
 	string::size_type n = str.length();
 	for(string::size_type i = 0; i < n; ) {
@@ -303,7 +261,6 @@ wstring utf8ToWide(const string& str) noexcept {
 		}
 	}
 	return tgt;
-#endif	
 }
 
 wchar_t toLower(wchar_t c) noexcept {
@@ -383,27 +340,16 @@ string fromUtf8(const string& str, const string& toCharset) noexcept {
 #endif
 }
 
+#ifndef _WIN32
 string convert(const string& str, const string& fromCharset, const string& toCharset) noexcept {
 	if(str.empty())
 		return str;
-
-#ifdef _WIN32
-	if (Util::stricmp(fromCharset, toCharset) == 0)
-		return str;
-	if(toCharset == utf8)
-		return acpToUtf8(str);
-	if(fromCharset == utf8)
-		return utf8ToAcp(str);
-
-	// We don't know how to convert arbitrary charsets
-	dcdebug("Unknown conversion from %s to %s\n", fromCharset.c_str(), toCharset.c_str());
-	return str;
-#else
-
 	// Initialize the converter
 	iconv_t cd = iconv_open(toCharset.c_str(), fromCharset.c_str());
-	if(cd == (iconv_t)-1)
-		return str;
+	if (cd == (iconv_t)-1) {
+		dcdebug("Unknown conversion from %s to %s\n", fromCharset.c_str(), toCharset.c_str());
+		return Util::emptyString;
+	}
 
 	size_t rv;
 	size_t len = str.length() * 2; // optimization
@@ -434,16 +380,18 @@ string convert(const string& str, const string& fromCharset, const string& toCha
 			}
 		}
 	}
+
 	iconv_close(cd);
 	if(outleft > 0) {
 		tmp.resize(len - outleft);
 	}
+
 	return tmp;
+}
 #endif
 }
-}
 
-string Text::toDOS(string tmp) {
+string Text::toDOS(string tmp) noexcept {
 	if(tmp.empty())
 		return Util::emptyString;
 
@@ -464,7 +412,7 @@ string Text::toDOS(string tmp) {
 	return tmp;
 }
 
-wstring Text::toDOS(wstring tmp) {
+wstring Text::toDOS(wstring tmp) noexcept {
 	if(tmp.empty())
 		return Util::emptyStringW;
 
@@ -483,6 +431,14 @@ wstring Text::toDOS(wstring tmp) {
 		}
 	}
 	return tmp;
+}
+
+bool Text::isSeparator(wchar_t c) noexcept {
+	if (c > 127) {
+		return false;
+	}
+
+	return isSeparator(static_cast<char>(c));
 }
 
 } // namespace dcpp

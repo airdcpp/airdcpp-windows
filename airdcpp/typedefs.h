@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ typedef std::unordered_map<string, string> StringMap;
 typedef StringMap::iterator StringMapIter;
 typedef std::unordered_map<string, StringList> StringListMap;
 
-typedef std::unordered_set<int> ProfileTokenSet;
+typedef std::set<int> ProfileTokenSet;
 
 typedef std::set<string> OrderedStringSet;
 typedef std::unordered_set<string> StringSet;
@@ -68,8 +68,11 @@ typedef WStringMap::iterator WStringMapIter;
 typedef vector<uint8_t> ByteVector;
 
 typedef int ProfileToken;
+typedef optional<ProfileToken> OptionalProfileToken;
 typedef vector<ProfileToken> ProfileTokenList;
 typedef vector<pair<ProfileToken, string>> ProfileTokenStringList;
+
+typedef map<string, OrderedStringSet> GroupedDirectoryMap;
 
 #ifdef UNICODE
 

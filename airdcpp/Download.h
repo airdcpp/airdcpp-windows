@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+* Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -23,11 +23,12 @@
 #include <memory>
 
 #include "forward.h"
-#include "Transfer.h"
-#include "MerkleTree.h"
+
 #include "Flags.h"
-#include "Bundle.h"
 #include "GetSet.h"
+#include "MerkleTree.h"
+#include "TimerManager.h"
+#include "Transfer.h"
 
 namespace dcpp {
 
@@ -52,15 +53,12 @@ public:
 		FLAG_VIEW				= 0x100,
 		FLAG_RECURSIVE			= 0x200,
 		FLAG_QUEUE				= 0x400,
-		FLAG_NFO				= 0x800,
-		FLAG_TTHLIST            = 0x1000,
-		FLAG_TTHLIST_BUNDLE		= 0x2000,
-		FLAG_HIGHEST_PRIO		= 0x4000
+		FLAG_TTHLIST            = 0x800,
+		FLAG_TTHLIST_BUNDLE		= 0x1000,
+		FLAG_HIGHEST_PRIO		= 0x2000
 	};
 
-	bool operator==(const Download* d) const {
-		return compare(getToken(), d->getToken()) == 0;
-	}
+	bool operator==(const Download* d) const;
 
 	Download(UserConnection& conn, QueueItem& qi) noexcept;
 
@@ -94,15 +92,12 @@ public:
 	IGETSET(bool, treeValid, TreeValid, false);
 	IGETSET(BundlePtr, bundle, Bundle, nullptr);
 
-	string getBundleStringToken() const noexcept {
-		if (!bundle)
-			return Util::emptyString;
+	string getBundleStringToken() const noexcept;
 
-		return bundle->getStringToken();
-	}
+	void appendFlags(OrderedStringSet& flags_) const noexcept;
 private:
 	Download(const Download&);
-	Download& operator=(const Download&);
+	Download& operator=(const Download&) = delete;
 
 	const string& getDownloadTarget() const noexcept;
 

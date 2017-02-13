@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,14 +22,23 @@
 
 #ifdef _WIN32
 #include "w.h"
+#include <direct.h>
 #else
 #include <sys/stat.h>
 #include <sys/statvfs.h>
-#include <fcntl.h>
 #include <errno.h>
 #include <dirent.h>
 #include <fnmatch.h>
 #include <utime.h>
+#endif
+
+#ifdef HAVE_MNTENT_H
+#include <mntent.h>
+#endif
+
+#ifdef _DEBUG
+#include <boost/date_time/posix_time/ptime.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #endif
 
 namespace dcpp {
@@ -60,7 +69,7 @@ File::File(const string& aFileName, int access, int mode, BufferMode aBufferMode
 	DWORD dwFlags = aBufferMode;
 	string path = aFileName;
 	if (isAbsolute)
-		path = Util::FormatPath(aFileName);
+		path = Util::formatPath(aFileName);
 
 	if (isDirectory)
 		dwFlags |= FILE_FLAG_BACKUP_SEMANTICS;
@@ -69,6 +78,14 @@ File::File(const string& aFileName, int access, int mode, BufferMode aBufferMode
 	if(h == INVALID_HANDLE_VALUE) {
 		throw FileException(Util::translateError(GetLastError()));
 	}
+
+#ifdef _DEBUG
+	// Strip possible network path prefix
+	auto fileName = aFileName.size() > 2 && aFileName.substr(0, 2) == "\\\\" ? aFileName.substr(2) : aFileName;
+
+	// Avoid issues on Linux...
+	dcassert(compare(fileName, getRealPath()) == 0);
+#endif
 }
 
 uint64_t File::getLastModified() const noexcept {
@@ -170,20 +187,53 @@ void File::setEOF() {
 	}
 }
 
-size_t File::flush() {
+string File::getRealPath() const {
+	TCHAR buf[UNC_MAX_PATH];
+	auto ret = GetFinalPathNameByHandle(h, buf, UNC_MAX_PATH, FILE_NAME_OPENED);
+	if (!ret) {
+		throw FileException(Util::translateError(GetLastError()));
+	}
+
+	auto path = Text::fromT(buf);
+
+	// Extended-length path prefix is always added
+	// Remove for consistency
+	if (path.size() > 8 && path.compare(0, 8, "\\\\?\\UNC\\") == 0) {
+		return path.substr(8);
+	} else if (path.size() > 4 && path.compare(0, 4, "\\\\?\\") == 0) {
+		return path.substr(4);
+	}
+
+	return path;
+}
+
+size_t File::flushBuffers(bool aForce) {
+	if (!aForce) {
+		return 0;
+	}
+
+#ifdef _DEBUG
+	auto start = boost::posix_time::microsec_clock::universal_time();;
+#endif
+
 	if(isOpen() && !FlushFileBuffers(h))
 		throw FileException(Util::translateError(GetLastError()));
+
+#ifdef _DEBUG
+	dcdebug("File %s was flushed in " I64_FMT " ms\n", getRealPath().c_str(), (boost::posix_time::microsec_clock::universal_time() - start).total_milliseconds());
+#endif
+
 	return 0;
 }
 
 void File::renameFile(const string& source, const string& target) {
-	if(!::MoveFileEx(Text::toT(Util::FormatPath(source)).c_str(), Text::toT(Util::FormatPath(target)).c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_COPY_ALLOWED | MOVEFILE_WRITE_THROUGH)) {
+	if(!::MoveFileEx(Text::toT(Util::formatPath(source)).c_str(), Text::toT(Util::formatPath(target)).c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_COPY_ALLOWED | MOVEFILE_WRITE_THROUGH)) {
 		throw FileException(Util::translateError(GetLastError()));
 	}
 }
 
 void File::copyFile(const string& src, const string& target) {
-	if(!::CopyFile(Text::toT(Util::FormatPath(src)).c_str(), Text::toT(Util::FormatPath(target)).c_str(), FALSE)) {
+	if(!::CopyFile(Text::toT(Util::formatPath(src)).c_str(), Text::toT(Util::formatPath(target)).c_str(), FALSE)) {
 		throw FileException(Util::translateError(GetLastError()));
 	}
 }
@@ -192,7 +242,7 @@ uint64_t File::getLastModified(const string& aPath) noexcept {
 	if (aPath.empty())
 		return 0;
 
-	FileFindIter ff = FileFindIter(aPath.back() == PATH_SEPARATOR ? aPath.substr(0, aPath.size() - 1) : aPath);
+	FileFindIter ff = FileFindIter(aPath);
 	if (ff != FileFindIter()) {
 		return ff->getLastWriteTime();
 	}
@@ -204,7 +254,7 @@ bool File::isHidden(const string& aPath) noexcept {
 	if (aPath.empty())
 		return 0;
 
-	FileFindIter ff = FileFindIter(aPath.back() == PATH_SEPARATOR ? aPath.substr(0, aPath.size() - 1) : aPath);
+	FileFindIter ff = FileFindIter(aPath);
 	if (ff != FileFindIter()) {
 		return ff->isHidden();
 	}
@@ -213,23 +263,11 @@ bool File::isHidden(const string& aPath) noexcept {
 }
 
 bool File::deleteFile(const string& aFileName) noexcept {
-	return ::DeleteFile(Text::toT(Util::FormatPath(aFileName)).c_str()) > 0 ? true : false;
-}
-
-TimeKeeper::TimeKeeper(const string& aPath) : initialized(false), File(aPath, File::RW, File::OPEN | File::SHARED_WRITE, File::BUFFER_NONE, true, true) {
-	if (::GetFileTime(h, NULL, NULL, &time) > 0)
-		initialized = true;
-}
-
-TimeKeeper::~TimeKeeper() {
-	if (!initialized)
-		return;
-
-	::SetFileTime(h, NULL, NULL, &time);
+	return ::DeleteFile(Text::toT(Util::formatPath(aFileName)).c_str()) > 0 ? true : false;
 }
 
 void File::removeDirectory(const string& aPath) noexcept {
-	::RemoveDirectory(Text::toT(Util::FormatPath(aPath)).c_str());
+	::RemoveDirectory(Text::toT(Util::formatPath(aPath)).c_str());
 }
 
 int64_t File::getSize(const string& aFileName) noexcept {
@@ -238,67 +276,63 @@ int64_t File::getSize(const string& aFileName) noexcept {
 
 }
 
-void File::ensureDirectory(const string& aFile) noexcept {
+int File::ensureDirectory(const string& aFile) noexcept {
+	int result = 0;
+
+	auto file(Text::toT(aFile));
+
 	// Skip the first dir...
-	tstring file(Text::toT(aFile));
-	tstring::size_type start = file.find_first_of(_T("\\/"));
+	auto start = file.find_first_of(_T("\\/"));
 	if(start == string::npos)
-		return;
+		return ERROR_INVALID_NAME;
+
 	start++;
-	while( (start = file.find_first_of(_T("\\/"), start)) != string::npos) {
-		::CreateDirectory((Util::FormatPathT(file.substr(0, start+1))).c_str(), NULL);
+	while((start = file.find_first_of(_T("\\/"), start)) != string::npos) {
+		result = ::CreateDirectory((Util::formatPathW(file.substr(0, start+1))).c_str(), NULL);
 		start++;
 	}
+
+	return result;
 }
 
 bool File::createDirectory(const string& aFile) {
-	// Skip the first dir...
-	int result = 0;
-	tstring file(Text::toT(aFile));
-	wstring::size_type start = file.find_first_of(L"\\/");
-	if(start == string::npos)
-		return false;
-	start++;
-	while( (start = file.find_first_of(L"\\/", start)) != string::npos) {
-		result = CreateDirectory(file.substr(0, start+1).c_str(), NULL);
-		start++;
-	}
+	auto result = ensureDirectory(aFile);
 	if(result == 0) {
 		result = GetLastError();
-		if(result == ERROR_ALREADY_EXISTS || result == ERROR_SUCCESS)
+		if(result == ERROR_ALREADY_EXISTS)
 			return false;
-		else if(result == ERROR_PATH_NOT_FOUND) //we can't recover from this gracefully.
-			throw FileException(Util::translateError(result));
+
+		throw FileException(Util::translateError(result));
 	}
 
 	return true;
 }
 
-bool File::isAbsolute(const string& path) noexcept {
+bool File::isAbsolutePath(const string& path) noexcept {
 	return path.size() > 2 && (path[1] == ':' || path[0] == '/' || path[0] == '\\');
 }
 
 string File::getMountPath(const string& aPath) noexcept {
 	unique_ptr<TCHAR> buf(new TCHAR[aPath.length()]);
-	GetVolumePathName(Text::toT(aPath).c_str(), buf.get(), aPath.length());
+	GetVolumePathName(Text::toT(Util::formatPath(aPath)).c_str(), buf.get(), aPath.length());
 	return Text::fromT(buf.get());
 }
 
-int64_t File::getFreeSpace(const string& aPath) noexcept {
-	int64_t freeSpace = 0, tmp = 0;
-	auto ret = GetDiskFreeSpaceEx(Text::toT(aPath).c_str(), NULL, (PULARGE_INTEGER)&tmp, (PULARGE_INTEGER)&freeSpace);
-	return ret > 0 ? freeSpace : -1;
+File::DiskInfo File::getDiskInfo(const string& aPath) noexcept {
+	int64_t freeSpace = -1, totalSpace = -1;
+	GetDiskFreeSpaceEx(Text::toT(Util::formatPath(aPath)).c_str(), NULL, (PULARGE_INTEGER)&totalSpace, (PULARGE_INTEGER)&freeSpace);
+	return { freeSpace, totalSpace };
 }
 
 int64_t File::getBlockSize(const string& aFileName) noexcept {
 	DWORD sectorBytes, clusterSectors, tmp2, tmp3;
-	auto ret = GetDiskFreeSpace(Text::toT(aFileName).c_str(), &clusterSectors, &sectorBytes, &tmp2, &tmp3);
+	auto ret = GetDiskFreeSpace(Text::toT(Util::formatPath(aFileName)).c_str(), &clusterSectors, &sectorBytes, &tmp2, &tmp3);
 	return ret > 0 ? static_cast<int64_t>(sectorBytes)*static_cast<int64_t>(clusterSectors) : 4096;
 }
 
 #else // !_WIN32
 
-File::File(const string& aFileName, int access, int mode, BufferMode /*aBufferMode*/, bool /*isAbsolute*/, bool /*isDirectory*/) {
+File::File(const string& aFileName, int access, int mode, BufferMode aBufferMode, bool /*isAbsolute*/, bool /*isDirectory*/) {
 	dcassert(access == WRITE || access == READ || access == (READ | WRITE));
 
 	int m = 0;
@@ -316,6 +350,12 @@ File::File(const string& aFileName, int access, int mode, BufferMode /*aBufferMo
 		m |= O_TRUNC;
 	}
 
+#ifdef O_DIRECT
+	if (aBufferMode == BUFFER_NONE) {
+		m |= O_DIRECT;
+	}
+#endif
+
 	string filename = Text::fromUtf8(aFileName);
 	
 	struct stat s;
@@ -327,6 +367,14 @@ File::File(const string& aFileName, int access, int mode, BufferMode /*aBufferMo
 	h = open(filename.c_str(), m, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 	if(h == -1)
 		throw FileException(Util::translateError(errno));
+
+#ifdef HAVE_POSIX_FADVISE
+	if (aBufferMode != BUFFER_NONE) {
+		if (posix_fadvise(h, 0, 0, aBufferMode) != 0) {
+			throw FileException(Util::translateError(errno));
+		}
+	}
+#endif
 }
 
 uint64_t File::getLastModified() const noexcept {
@@ -335,6 +383,24 @@ uint64_t File::getLastModified() const noexcept {
 		return 0;
 
 	return (uint32_t)s.st_mtime;
+}
+
+string File::getRealPath() const {
+	char buf[PATH_MAX + 1];
+
+	int ret;
+#ifdef F_GETPATH
+	ret = fcntl(h, F_GETPATH, buf);
+#else
+	auto procPath = "/proc/self/fd/" + Util::toString(h);
+	ret = ::readlink(procPath.c_str(), buf, sizeof(buf));
+#endif
+
+	if (ret == -1) {
+		throw FileException(Util::translateError(errno));
+	}
+
+	return string(buf);
 }
 
 bool File::isOpen() const noexcept {
@@ -406,8 +472,7 @@ int File::extendFile(int64_t len) noexcept {
 	char zero;
 
 	if( (lseek(h, (off_t)len, SEEK_SET) != -1) && (::write(h, &zero,1) != -1) ) {
-		ftruncate(h,(off_t)len);
-		return 1;
+		return ftruncate(h,(off_t)len);
 	}
 	return -1;
 }
@@ -435,7 +500,11 @@ void File::setSize(int64_t newSize) {
 	setPos(pos);
 }
 
-size_t File::flush() {
+size_t File::flushBuffers(bool aForce) {
+	if (!aForce) {
+		return 0;
+	}
+
 	if(isOpen() && fsync(h) == -1)
 		throw FileException(Util::translateError(errno));
 	return 0;
@@ -488,27 +557,44 @@ int64_t File::getSize(const string& aFileName) noexcept {
 	return s.st_size;
 }
 
-void File::ensureDirectory(const string& aFile) noexcept {
-	string file = Text::fromUtf8(aFile);
-	string::size_type start = 0;
-	while( (start = file.find_first_of('/', start)) != string::npos) {
-		mkdir(file.substr(0, start+1).c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
-		start++;
+bool File::createDirectory(const string& aFile) {
+	auto result = ensureDirectory(aFile);
+	if (result != 0) {
+		if (result == EEXIST)
+			return false;
+
+		throw FileException(Util::translateError(result));
 	}
+
+	return true;
 }
 
-bool File::isAbsolute(const string& path) noexcept {
+int File::ensureDirectory(const string& aFile) noexcept {
+	int result = 0;
+
+	string file = Text::fromUtf8(aFile);
+	string::size_type start = 0;
+	while ((start = file.find_first_of('/', start)) != string::npos) {
+		result = mkdir(file.substr(0, start+1).c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
+		start++;
+	}
+
+	return result;
+}
+
+bool File::isAbsolutePath(const string& path) noexcept {
 	return path.size() > 1 && path[0] == '/';
 }
 
-int64_t File::getFreeSpace(const string& aFileName) noexcept {
+File::DiskInfo File::getDiskInfo(const string& aFileName) noexcept {
 	struct statvfs sfs;
 	if (statvfs(Text::fromUtf8(aFileName).c_str(), &sfs) == -1) {
-		return -1;
+		return { -1LL, -1LL };
 	}
 
-	int64_t ret = (int64_t)sfs.f_bsize * (int64_t)sfs.f_bfree;
-	return ret;
+	int64_t freeSpace = (int64_t)sfs.f_bsize * (int64_t)sfs.f_bfree;
+	int64_t totalSpace = (int64_t)sfs.f_bsize * (int64_t)sfs.f_blocks;
+	return { freeSpace, totalSpace };
 }
 
 int64_t File::getBlockSize(const string& aFileName) noexcept {
@@ -546,41 +632,25 @@ bool File::isHidden(const string& aPath) noexcept {
 	return aPath.find("/.") != string::npos;
 }
 
-TimeKeeper::TimeKeeper(const string& aPath) : path(Text::fromUtf8(aPath)), time(File::getLastModified(path)) {
-}
-
-TimeKeeper::~TimeKeeper() {
-	if (time == 0)
-		return;
-
-	struct utimbuf ubuf;
-	ubuf.modtime = time;
-	::time(&ubuf.actime); 
-	utime(path.c_str(), &ubuf);
-}
-
 #endif // !_WIN32
 
-TimeKeeper* TimeKeeper::createKeeper(const string& aPath) noexcept{
-	TimeKeeper* ret = nullptr;
-	try {
-		ret = new TimeKeeper(aPath);
-		return ret;
-	} catch (FileException & /*e*/) {
-		delete ret;
-		return nullptr;
-	}
+File::~File() {
+	File::close();
 }
 
-bool File::deleteFileEx(const string& aFileName, int maxAttempts, bool keepFolderDate /*false*/) noexcept {
-	unique_ptr<TimeKeeper> keeper;
-	if (keepFolderDate) {
-		keeper.reset(TimeKeeper::createKeeper(Util::getFilePath(aFileName)));
-	}
+std::string File::makeAbsolutePath(const std::string& filename) {
+	return makeAbsolutePath(Util::getAppFilePath() + PATH_SEPARATOR, filename);
+}
 
+std::string File::makeAbsolutePath(const std::string& path, const std::string& filename) {
+	return isAbsolutePath(filename) ? filename : path + filename;
+}
+
+bool File::deleteFileEx(const string& aFileName, int maxAttempts) noexcept {
 	bool success = false;
-	for (int i = 0; i < maxAttempts && (success = deleteFile(aFileName)) == false; ++i)
+	for (int i = 0; i < maxAttempts && (success = deleteFile(aFileName)) == false; ++i) {
 		Thread::sleep(1000);
+	}
 
 	return success;
 }
@@ -597,12 +667,22 @@ bool File::createFile(const string& aPath, const string& aContent) noexcept {
 	}
 }
 
-string File::read(size_t len) {
-	string s(len, 0);
-	size_t x = read(&s[0], len);
+string File::read(size_t aLen) {
+	string s(aLen, 0);
+	size_t x = read(&s[0], aLen);
 	if(x != s.size())
 		s.resize(x);
 	return s;
+}
+
+string File::readFromEnd(size_t aLen) {
+	auto size = getSize();
+
+	if (size > static_cast<int64_t>(aLen)) {
+		setPos(size - aLen);
+	}
+
+	return read(aLen);
 }
 
 string File::read() {
@@ -613,53 +693,164 @@ string File::read() {
 	return read((uint32_t)sz);
 }
 
-StringList File::findFiles(const string& aPath, const string& pattern, int flags) {
+StringList File::findFiles(const string& aPath, const string& aNamePattern, int aFindFlags) {
 	StringList ret;
-	forEachFile(aPath, pattern, [&](const string& aFileName, bool isDir, int64_t /*size*/) { 
-		if ((flags & TYPE_FILE && !isDir) || (flags & TYPE_DIRECTORY && isDir))
-			ret.push_back(aPath + aFileName); 
-	}, !(flags & FLAG_HIDDEN));
+
+	{
+		forEachFile(aPath, aNamePattern, [&](const string& aFileName, bool isDir, int64_t /*size*/) {
+			if ((aFindFlags & TYPE_FILE && !isDir) || (aFindFlags & TYPE_DIRECTORY && isDir)) {
+				ret.push_back(aPath + aFileName);
+			}
+		}, !(aFindFlags & FLAG_HIDDEN));
+	}
+
 	return ret;
 }
 
-void File::forEachFile(const string& aPath, const string& pattern, std::function<void (const string & /*name*/, bool /*isDir*/, int64_t /*size*/)> aF, bool skipHidden) {
-	for (FileFindIter i(aPath, pattern); i != FileFindIter(); ++i) {
-		if ((!skipHidden || !i->isHidden())) {
+void File::forEachFile(const string& aPath, const string& aNamePattern, FileIterF aHandlerF, bool aSkipHidden) {
+	for (FileFindIter i(aPath, aNamePattern); i != FileFindIter(); ++i) {
+		if ((!aSkipHidden || !i->isHidden())) {
 			auto name = i->getFileName();
-			if (name.compare(".") != 0 && (name.length() < 2 || name.compare("..") != 0)) {
-				bool isDir = i->isDirectory();
-				aF(name + (isDir ? PATH_SEPARATOR_STR : Util::emptyString), isDir, i->getSize());
-			}
+			auto isDir = i->isDirectory();
+			aHandlerF(name + (isDir ? PATH_SEPARATOR_STR : Util::emptyString), isDir, i->getSize());
 		}
 	}
 }
 
-static void getDirSizeInternal(const string& aPath, int64_t& size_, bool recursive, const string& pattern) {
-	File::forEachFile(aPath, pattern, [&](const string& aFileName, bool isDir, int64_t aSize) { 
-		if (isDir && recursive) {
-			getDirSizeInternal(aPath + aFileName, size_, true, pattern);
+int64_t File::getDirSize(const string& aPath, bool aRecursive, const string& aNamePattern) noexcept {
+	int64_t size = 0;
+	File::forEachFile(aPath, aNamePattern, [&](const string& aFileName, bool isDir, int64_t aSize) {
+		if (isDir && aRecursive) {
+			size += getDirSize(aPath + aFileName, true, aNamePattern);
 		} else {
-			size_ += aSize;
+			size += aSize;
 		}
 	});
+
+	return size;
 }
 
-int64_t File::getDirSize(const string& aPath, bool recursive, const string& pattern) noexcept {
-	int64_t ret = 0;
-	getDirSizeInternal(aPath, ret, recursive, pattern);
-	return ret;
+int64_t File::getFreeSpace(const string& aPath) noexcept {
+	auto info = getDiskInfo(aPath);
+	return info.freeSpace;
+}
+
+string File::getMountPath(const string& aPath, const VolumeSet& aVolumes, bool aIgnoreNetworkPaths) noexcept {
+	if (aVolumes.find(aPath) != aVolumes.end()) {
+		return aPath;
+	}
+
+	auto l = aPath.length();
+	for (;;) {
+		l = aPath.rfind(PATH_SEPARATOR, l - 2);
+		if (l == string::npos || l <= 1)
+			break;
+
+		if (aVolumes.find(aPath.substr(0, l + 1)) != aVolumes.end()) {
+			return aPath.substr(0, l + 1);
+		}
+	}
+
+#ifdef WIN32
+	if (!aIgnoreNetworkPaths) {
+		// Not found from volumes... network path? This won't work with mounted dirs
+		// Get the first section containing the network host and the first folder/drive (//HTPC/g/)
+		if (aPath.length() > 2 && aPath.substr(0, 2) == "\\\\") {
+			l = aPath.find("\\", 2);
+			if (l != string::npos) {
+				//get the drive letter
+				l = aPath.find("\\", l + 1);
+				if (l != string::npos) {
+					return aPath.substr(0, l + 1);
+				}
+			}
+		}
+	}
+#else
+	// Return the root
+	return PATH_SEPARATOR_STR;
+#endif
+	return Util::emptyString;
+}
+
+File::DiskInfo File::getDiskInfo(const string& aTarget, const VolumeSet& aVolumes, bool aIgnoreNetworkPaths) noexcept {
+	auto mountPoint = getMountPath(aTarget, aVolumes, aIgnoreNetworkPaths);
+	if (!mountPoint.empty()) {
+		return File::getDiskInfo(mountPoint);
+	}
+
+	return{ -1LL, -1LL };
+}
+
+File::VolumeSet File::getVolumes() noexcept {
+	VolumeSet volumes;
+#ifdef WIN32
+	TCHAR   buf[MAX_PATH];
+	HANDLE  hVol;
+	BOOL    found;
+	TCHAR   buf2[MAX_PATH];
+
+	// lookup drive volumes.
+	hVol = FindFirstVolume(buf, MAX_PATH);
+	if (hVol != INVALID_HANDLE_VALUE) {
+		found = true;
+		//while we find drive volumes.
+		while (found) {
+			if (GetDriveType(buf) != DRIVE_CDROM && GetVolumePathNamesForVolumeName(buf, buf2, MAX_PATH, NULL)) {
+				volumes.insert(Text::fromT(buf2));
+			}
+			found = FindNextVolume(hVol, buf, MAX_PATH);
+		}
+		found = FindVolumeClose(hVol);
+	}
+
+	// and a check for mounted Network drives, todo fix a better way for network space
+	ULONG drives = _getdrives();
+	TCHAR drive[3] = { _T('A'), _T(':'), _T('\0') };
+
+	while (drives != 0) {
+		if (drives & 1 && (GetDriveType(drive) != DRIVE_CDROM && GetDriveType(drive) == DRIVE_REMOTE)) {
+			string path = Text::fromT(drive);
+			if (path[path.length() - 1] != PATH_SEPARATOR) {
+				path += PATH_SEPARATOR;
+			}
+			volumes.insert(path);
+		}
+
+		++drive[0];
+		drives = (drives >> 1);
+	}
+#elif HAVE_MNTENT_H
+	struct mntent *ent;
+	FILE *aFile;
+
+	aFile = setmntent("/proc/mounts", "r");
+	if (aFile == NULL) {
+		return volumes;
+	}
+
+	while ((ent = getmntent(aFile)) != NULL) {
+		volumes.insert(Util::validatePath(ent->mnt_dir, true));
+	}
+	endmntent(aFile);
+#endif
+	return volumes;
 }
 
 #ifdef _WIN32
 
 FileFindIter::FileFindIter() : handle(INVALID_HANDLE_VALUE) { }
 
-FileFindIter::FileFindIter(const string& aPath, const string& aPattern, bool dirsOnly /*false*/) : handle(INVALID_HANDLE_VALUE) {
-	if (Util::IsOSVersionOrGreater(6, 1)) { //TODO: check is this not available in Vista??
-		handle = ::FindFirstFileEx(Text::toT(Util::FormatPath(aPath) + aPattern).c_str(), FindExInfoBasic, &data, dirsOnly ? FindExSearchLimitToDirectories : FindExSearchNameMatch, NULL, NULL);
-	} else {
-		handle = ::FindFirstFile(Text::toT(Util::FormatPath(aPath) + aPattern).c_str(), &data);
+FileFindIter::FileFindIter(const string& aPath, const string& aPattern, bool aDirsOnly /*false*/) : handle(INVALID_HANDLE_VALUE) {
+	auto path = Util::formatPath(aPath);
+
+	// An attempt to open a search with a trailing backslash always fails
+	if (aPattern.empty() && !path.empty() && path.back() == PATH_SEPARATOR) {
+		path.pop_back();
 	}
+
+	handle = ::FindFirstFileEx(Text::toT(path + aPattern).c_str(), FindExInfoBasic, &data, aDirsOnly ? FindExSearchLimitToDirectories : FindExSearchNameMatch, NULL, NULL);
+	validateCurrent();
 }
 
 FileFindIter::~FileFindIter() {
@@ -668,12 +859,22 @@ FileFindIter::~FileFindIter() {
 	}
 }
 
+FileFindIter& FileFindIter::validateCurrent() {
+	if (wcscmp((*this)->cFileName, _T(".")) == 0 || wcscmp((*this)->cFileName, _T("..")) == 0) {
+		return this->operator++();
+	}
+
+	return *this;
+}
+
 FileFindIter& FileFindIter::operator++() {
 	if(!::FindNextFile(handle, &data)) {
 		::FindClose(handle);
 		handle = INVALID_HANDLE_VALUE;
+		return *this;
 	}
-	return *this;
+
+	return validateCurrent();
 }
 
 bool FileFindIter::operator!=(const FileFindIter& rhs) const { return handle != rhs.handle; }
@@ -727,13 +928,25 @@ FileFindIter::FileFindIter(const string& aPath, const string& aPattern, bool dir
 		closedir(dir);
 		dir = NULL;
 		return;
-	} else if (!matchPattern()) {
-		operator++();
 	}
+
+	validateCurrent();
 }
 
 FileFindIter::~FileFindIter() {
 	if (dir) closedir(dir);
+}
+
+FileFindIter& FileFindIter::validateCurrent() {
+	if (strcmp((*this)->ent->d_name, ".") == 0 || strcmp((*this)->ent->d_name, "..") == 0) {
+		return this->operator++();
+	}
+
+	if (pattern && fnmatch(pattern->c_str(), data.ent->d_name, 0) != 0) {
+		return this->operator++();
+	}
+
+	return *this;
 }
 
 FileFindIter& FileFindIter::operator++() {
@@ -746,15 +959,7 @@ FileFindIter& FileFindIter::operator++() {
 		return *this;
 	}
 
-	if (matchPattern())
-		return *this;
-
-	// continue to the next one...
-	return operator++();
-}
-
-bool FileFindIter::matchPattern() const {
-	return !pattern || fnmatch(pattern->c_str(), data.ent->d_name, 0) == 0;
+	return validateCurrent();
 }
 
 bool FileFindIter::operator!=(const FileFindIter& rhs) const {

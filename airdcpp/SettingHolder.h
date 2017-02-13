@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2013-2015 AirDC++ Project
+* Copyright (C) 2013-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #ifndef DCPLUSPLUS_DCPP_SETTINGHOLDER_
 #define DCPLUSPLUS_DCPP_SETTINGHOLDER_
 
+#include "ConnectivityManager.h"
 #include "SettingsManager.h"
 
 namespace dcpp {

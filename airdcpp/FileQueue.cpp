@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,18 +32,18 @@ using boost::range::copy;
 
 FileQueue::~FileQueue() { }
 
-void FileQueue::getBloom(HashBloom& bloom) const noexcept {
+void FileQueue::getBloom(HashBloom& bloom_) const noexcept {
 	for(auto& i: tthIndex) {
 		if (i.second->getBundle()) {
-			bloom.add(*i.first);
+			bloom_.add(*i.first);
 		}
 	}
 }
 
-pair<QueueItemPtr, bool> FileQueue::add(const string& aTarget, int64_t aSize, Flags::MaskType aFlags, QueueItemBase::Priority p, 
+pair<QueueItemPtr, bool> FileQueue::add(const string& aTarget, int64_t aSize, Flags::MaskType aFlags, Priority p, 
 	const string& aTempTarget, time_t aAdded, const TTHValue& root) noexcept {
 
-	QueueItemPtr qi = new QueueItem(aTarget, aSize, p, aFlags, aAdded, root, aTempTarget);
+	auto qi = make_shared<QueueItem>(aTarget, aSize, p, aFlags, aAdded, root, aTempTarget);
 	auto ret = add(qi);
 	return { (ret.second ? qi : ret.first->second), ret.second };
 }
@@ -53,7 +53,7 @@ pair<QueueItem::StringMap::const_iterator, bool> FileQueue::add(QueueItemPtr& qi
 	auto ret = pathQueue.emplace(const_cast<string*>(&qi->getTarget()), qi);
 	if (ret.second) {
 		tthIndex.emplace(const_cast<TTHValue*>(&qi->getTTH()), qi);
-		if (!qi->isSet(QueueItem::FLAG_USER_LIST) && !qi->isSet(QueueItem::FLAG_CLIENT_VIEW) && !qi->isSet(QueueItem::FLAG_FINISHED)) {
+		if (!qi->isSet(QueueItem::FLAG_USER_LIST) && !qi->isSet(QueueItem::FLAG_CLIENT_VIEW) && !qi->isSet(QueueItem::FLAG_DOWNLOADED)) {
 			dcassert(qi->getSize() >= 0);
 			queueSize += qi->getSize();
 		}
@@ -63,12 +63,20 @@ pair<QueueItem::StringMap::const_iterator, bool> FileQueue::add(QueueItemPtr& qi
 	return ret;
 }
 
-void FileQueue::remove(QueueItemPtr& qi) noexcept {
+bool FileQueue::countTotalSize(const QueueItemPtr& aQI) noexcept {
+	if (aQI->isSet(QueueItem::FLAG_CLIENT_VIEW) || aQI->isSet(QueueItem::FLAG_USER_LIST)) {
+		return false;
+	}
+
+	return !aQI->getBundle() || !aQI->isSet(QueueItem::FLAG_DOWNLOADED);
+}
+
+void FileQueue::remove(const QueueItemPtr& qi) noexcept {
 	//TargetMap
 	auto f = pathQueue.find(const_cast<string*>(&qi->getTarget()));
 	if (f != pathQueue.end()) {
 		pathQueue.erase(f);
-		if (!qi->isSet(QueueItem::FLAG_USER_LIST) && (!qi->isSet(QueueItem::FLAG_FINISHED) || !qi->getBundle()) && !qi->isSet(QueueItem::FLAG_CLIENT_VIEW)) {
+		if (countTotalSize(qi)) {
 			dcassert(qi->getSize() >= 0);
 			queueSize -= qi->getSize();
 		}
@@ -102,31 +110,34 @@ void FileQueue::findFiles(const TTHValue& tth, QueueItemList& ql_) const noexcep
 	copy(tthIndex.equal_range(const_cast<TTHValue*>(&tth)) | map_values, back_inserter(ql_));
 }
 
-void FileQueue::matchListing(const DirectoryListing& dl, QueueItem::StringItemList& ql_) const noexcept {
+void FileQueue::matchListing(const DirectoryListing& dl, QueueItemList& ql_) const noexcept {
 	matchDir(dl.getRoot(), ql_);
 }
 
-void FileQueue::matchDir(const DirectoryListing::Directory::Ptr& dir, QueueItem::StringItemList& ql) const noexcept{
-	for(const auto& d: dir->directories) {
-		if(!d->getAdls())
-			matchDir(d, ql);
+void FileQueue::matchDir(const DirectoryListing::Directory::Ptr& aDir, QueueItemList& ql_) const noexcept{
+	for(const auto& d: aDir->directories | map_values) {
+		if (!d->getAdls()) {
+			matchDir(d, ql_);
+		}
 	}
 
-	for(const auto& f: dir->files) {
-		auto tp = tthIndex.equal_range(const_cast<TTHValue*>(&f->getTTH()));
-		for_each(tp, [f, &ql](const pair<TTHValue*, QueueItemPtr>& tqp) {
-			if (!tqp.second->isFinished() && tqp.second->getSize() == f->getSize() && find_if(ql, CompareSecond<string, QueueItemPtr>(tqp.second)) == ql.end())
-				ql.emplace_back(Util::emptyString, tqp.second);
+	for(const auto& f: aDir->files) {
+		auto tthRange = tthIndex.equal_range(const_cast<TTHValue*>(&f->getTTH()));
+
+		for_each(tthRange, [&](const pair<TTHValue*, QueueItemPtr>& tqp) {
+			if (!tqp.second->isDownloaded() && tqp.second->getSize() == f->getSize() && find(ql_, tqp.second) == ql_.end()) {
+				ql_.push_back(tqp.second);
+			}
 		});
 	}
 }
 
-int FileQueue::isFileQueued(const TTHValue& aTTH) const noexcept {
+DupeType FileQueue::isFileQueued(const TTHValue& aTTH) const noexcept {
 	auto qi = getQueuedFile(aTTH);
 	if (qi) {
-		return (qi->isFinished() ? 2 : 1);
+		return (qi->isDownloaded() ? DUPE_FINISHED_FULL : DUPE_QUEUE_FULL);
 	}
-	return 0;
+	return DUPE_NONE;
 }
 
 QueueItemPtr FileQueue::getQueuedFile(const TTHValue& aTTH) const noexcept {
@@ -134,14 +145,8 @@ QueueItemPtr FileQueue::getQueuedFile(const TTHValue& aTTH) const noexcept {
 	return p != tthIndex.end() ? p->second : nullptr;
 }
 
-void FileQueue::move(QueueItemPtr& qi, const string& aTarget) noexcept {
-	pathQueue.erase(const_cast<string*>(&qi->getTarget()));
-	qi->setTarget(aTarget);
-	pathQueue.emplace(const_cast<string*>(&qi->getTarget()), qi);
-}
-
 // compare nextQueryTime, get the oldest ones
-void FileQueue::findPFSSources(PFSSourceList& sl) noexcept {
+void FileQueue::findPFSSources(PFSSourceList& sl) const noexcept {
 	typedef multimap<time_t, pair<QueueItem::SourceConstIter, const QueueItemPtr> > Buffer;
 	Buffer buffer;
 	uint64_t now = GET_TICK();

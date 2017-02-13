@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 
 #include "DbHandler.h"
 #include "HashedFile.h"
+#include "HashManagerListener.h"
 #include "MerkleTree.h"
 #include "Semaphore.h"
 #include "SFVReader.h"
@@ -34,25 +35,7 @@
 
 namespace dcpp {
 
-STANDARD_EXCEPTION(HashException);
 class File;
-
-class HashManagerListener {
-public:
-	virtual ~HashManagerListener() { }
-	template<int I>	struct X { enum { TYPE = I };  };
-
-	typedef X<0> TTHDone;
-	typedef X<1> HashFailed;
-	typedef X<2> MaintananceFinished;
-	typedef X<3> MaintananceStarted;
-
-	virtual void on(TTHDone, const string& /* filePath */, HashedFile& /* fileInfo */) noexcept { }
-	virtual void on(HashFailed, const string& /* filePath */, HashedFile& /*null*/) noexcept { }
-	virtual void on(MaintananceStarted) noexcept { }
-	virtual void on(MaintananceFinished) noexcept { }
-};
-
 class HashLoader;
 class FileException;
 
@@ -117,7 +100,6 @@ public:
 	void getDbSizes(int64_t& fileDbSize_, int64_t& hashDbSize_) const noexcept { return store.getDbSizes(fileDbSize_, hashDbSize_); }
 	bool maintenanceRunning() const noexcept { return optimizer.isRunning(); }
 
-	void renameFile(const string& aOldPath, const string& aNewPath, const HashedFile& fi) throw(HashException);
 	bool addFile(const string& aFilePathLower, const HashedFile& fi_) throw(HashException);
 private:
 	int pausers = 0;
@@ -184,13 +166,13 @@ private:
 
 		void instantPause();
 
-		int64_t sizeHashed = 0;
-		int64_t hashTime = 0;
-		int dirsHashed = 0;
-		int filesHashed = 0;
+		int64_t totalSizeHashed = 0;
+		uint64_t totalHashTime = 0;
+		int totalDirsHashed = 0;
+		int totalFilesHashed = 0;
 
 		int64_t dirSizeHashed = 0;
-		int64_t dirHashTime = 0;
+		uint64_t dirHashTime = 0;
 		int dirFilesHashed = 0;
 		string initialDir;
 
@@ -212,7 +194,6 @@ private:
 
 		void addHashedFile(const string& aFilePathLower, const TigerTree& tt, const HashedFile& fi_) throw(HashException);
 		void addFile(const string& aFilePathLower, const HashedFile& fi_) throw(HashException);
-		void renameFile(const string& oldPath, const string& newPath, const HashedFile& fi)  throw(HashException);
 		void removeFile(const string& aFilePathLower) throw(HashException);
 
 		void load(StepFunction stepF, ProgressFunction progressF, MessageFunction messageF) throw(HashException);
@@ -230,7 +211,7 @@ private:
 			TYPE_FILESIZE,
 			TYPE_BLOCKSIZE
 		};
-		int64_t getRootInfo(const TTHValue& root, InfoType aType);
+		int64_t getRootInfo(const TTHValue& root, InfoType aType) noexcept;
 
 		string getDbStats() noexcept;
 

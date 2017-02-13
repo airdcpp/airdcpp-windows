@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 AirDC++ Project
+ * Copyright (C) 2012-2017 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,38 +38,37 @@ class Localization {
 			string languageName, locale, languageFile;
 			const char* countryFlagCode;
 
-			void setLanguageFile();
-			string getLanguageFilePath() const;
-			double getLanguageVersion();
-			bool isDefault() const;
+			void setLanguageFile() noexcept;
+			string getLanguageFilePath() const noexcept;
+			double getLanguageVersion() const noexcept;
+			bool isDefault() const noexcept;
 
 			struct NameSort { 
-				bool operator()(const Language& l1, const Language& l2) const {
+				bool operator()(const Language& l1, const Language& l2) const noexcept {
 					return Util::stricmp(l1.languageName, l2.languageName) < 0;
 				}
 			};
 		};
 
-		static string getSystemLocale();
+		static string getSystemLocale() noexcept;
 		static int curLanguage;
-		static string getCurLanguageFilePath();
-		static string getCurLanguageFileName();
-		static double getCurLanguageVersion();
+		static string getCurLanguageFilePath() noexcept;
+		static string getCurLanguageFileName() noexcept;
+		static double getCurLanguageVersion() noexcept;
 
 		static vector<Language> languageList;
 
-		static void setLanguage(int languageIndex);
-		static void loadLanguage(int languageIndex);
-		static int getLangIndex();
+		static void setLanguage(int languageIndex) noexcept;
+		static void loadLanguage(int languageIndex) noexcept;
 
-		static string getCurrentLocale();
-		static string getLanguageStr();
-		static void init();
+		static string getCurrentLocale() noexcept;
+		static string getLanguageStr() noexcept;
+		static void init() noexcept;
 
-		static uint8_t getFlagIndexByCode(const char* countryCode);
-		static uint8_t getFlagIndexByName(const char* countryName);
+		static uint8_t getFlagIndexByCode(const char* countryCode) noexcept;
+		static uint8_t getFlagIndexByName(const char* countryName) noexcept;
 
-		static bool usingDefaultLanguage();
+		static bool usingDefaultLanguage() noexcept;
 	};
 }
 #endif

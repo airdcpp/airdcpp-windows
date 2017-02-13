@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +39,6 @@ public:
 	SSLSocketException(const string& aError) noexcept : SocketException(aError) { }
 #endif // _DEBUG
 	SSLSocketException(int aError) noexcept : SocketException(aError) { }
-
 	virtual ~SSLSocketException() throw() { }
 };
 
@@ -51,22 +50,21 @@ public:
 
 	virtual ~SSLSocket() { verifyData.reset(); }
 
-	virtual uint16_t accept(const Socket& listeningSocket);
-	virtual void connect(const Socket::AddressInfo& aIp, const string& aPort);
-	virtual int read(void* aBuffer, int aBufLen);
-	virtual int write(const void* aBuffer, int aLen);
-	virtual std::pair<bool, bool> wait(uint32_t millis, bool checkRead, bool checkWrite);
-	virtual void shutdown() noexcept;
-	virtual void close() noexcept;
+	virtual int read(void* aBuffer, int aBufLen) override;
+	virtual int write(const void* aBuffer, int aLen) override;
+	virtual std::pair<bool, bool> wait(uint64_t millis, bool checkRead, bool checkWrite) override;
+	virtual void shutdown() noexcept override;
+	virtual void close() noexcept override;
 
-	virtual bool isSecure() const noexcept { return true; }
-	virtual bool isTrusted() const noexcept;
-	virtual string getCipherName() const noexcept;
-	virtual ByteVector getKeyprint() const noexcept;
-	virtual bool verifyKeyprint(const string& expKeyp, bool allowUntrusted) noexcept;
+	virtual bool isSecure() const noexcept override { return true; }
+	virtual bool isTrusted() const noexcept override;
+	virtual bool isKeyprintMatch() const noexcept override;
+	virtual string getEncryptionInfo() const noexcept override;
+	virtual ByteVector getKeyprint() const noexcept override;
+	virtual bool verifyKeyprint(const string& expKeyp, bool allowUntrusted) noexcept override;
 
-	virtual bool waitConnected(uint32_t millis);
-	virtual bool waitAccepted(uint32_t millis);
+	virtual bool waitConnected(uint64_t millis) override;
+	virtual bool waitAccepted(uint64_t millis) override;
 
 private:
 
@@ -76,7 +74,7 @@ private:
 	unique_ptr<CryptoManager::SSLVerifyData> verifyData;	// application data used by CryptoManager::verify_callback(...)
 
 	int checkSSL(int ret);
-	bool waitWant(int ret, uint32_t millis);
+	bool waitWant(int ret, uint64_t millis);
 };
 
 } // namespace dcpp

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,12 +52,11 @@
 #include <sys/types.h>
 #include <time.h>
 #include <locale.h>
-#ifndef _MSC_VER
 #include <stdint.h>
-#endif
 
 #include <algorithm>
 #include <atomic>
+#include <cinttypes>
 #include <deque>
 #include <functional>
 #include <list>
@@ -77,11 +76,13 @@
 #include <boost/range/algorithm/find_if.hpp>
 #include <boost/range/algorithm/remove_if.hpp>
 #include <boost/algorithm/cxx11/copy_if.hpp>
-#include <boost/range/adaptor/map.hpp>
+
 #include <boost/scoped_array.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/regex.hpp>
 #include <boost/optional.hpp>
+
+#include <boost/range/adaptor/map.hpp>
 #include <boost/range/adaptor/reversed.hpp>
 
 namespace dcpp {
@@ -98,9 +99,5 @@ namespace dcpp {
 	inline int strnicmp(const wstring& a, const wstring& b, size_t n) { return _wcsnicmp(a.c_str(), b.c_str(), n); }
 #endif
 }
-
-// always include
-#include <utility>
-using std::move;
 
 #endif // !defined(STDINC_H)

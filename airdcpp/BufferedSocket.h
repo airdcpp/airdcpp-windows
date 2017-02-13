@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ using std::function;
 using std::pair;
 using std::unique_ptr;
 
-class BufferedSocket : public Speaker<BufferedSocketListener>, private Thread {
+class BufferedSocket : public Speaker<BufferedSocketListener>, public Thread {
 public:
 	enum Modes {
 		MODE_LINE,
@@ -67,7 +67,7 @@ public:
 		}
 	}
 
-	static void waitShutdown() {
+	static void waitShutdown() noexcept {
 		while(sockets > 0)
 			Thread::sleep(100);
 	}
@@ -90,7 +90,8 @@ public:
 
 	bool isSecure() const { return sock->isSecure(); }
 	bool isTrusted() const { return sock->isTrusted(); }
-	std::string getCipherName() const { return sock->getCipherName(); }
+	bool isKeyprintMatch() const { return sock->isKeyprintMatch(); }
+	std::string getEncryptionInfo() const { return sock->getEncryptionInfo(); }
 	ByteVector getKeyprint() const { return sock->getKeyprint(); }
 	bool verifyKeyprint(const string& expKeyp, bool allowUntrusted) noexcept{ return sock->verifyKeyprint(expKeyp, allowUntrusted); };
 

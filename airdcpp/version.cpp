@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+* Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@
 
 namespace dcpp {
 	const std::string shortVersionString(APPNAME_INC " " GIT_TAG);
-	const std::string fullVersionString(APPNAME_INC " " GIT_TAG " " + getConfigurationType() + " / " DCVERSIONSTRING);
+	const std::string fullVersionString(APPNAME_INC " " GIT_TAG " " + getConfigurationType());
 	const char* getAppName() { return APPNAME_INC; }
 	int getBuildNumber() { return GIT_COMMIT_COUNT; }
 	string getBuildNumberStr() { return xstrver(GIT_COMMIT_COUNT); }
@@ -41,9 +41,9 @@ namespace dcpp {
 
 	string getConfigurationType() {
 #ifdef _WIN64
-		return "x86-64";
+		return "x64";
 #elif _WIN32
-		return "x86-32";
+		return "x86";
 #else
 		utsname n;
 		if (uname(&n) != 0) {

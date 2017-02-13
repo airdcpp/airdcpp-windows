@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 AirDC++ Project
+ * Copyright (C) 2012-2017 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,8 @@
 #define DCPLUSPLUS_DCPP_MAGNET_H
 
 #include "forward.h"
-#include "AirUtil.h"
+
+#include "DupeType.h"
 #include "User.h"
 
 #include <string>

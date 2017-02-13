@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,41 +28,27 @@ public:
 	virtual ~FavoriteManagerListener() { }
 	template<int I>	struct X { enum { TYPE = I };  };
 
-	typedef X<0> DownloadStarting;
-	typedef X<1> DownloadFailed;
-	typedef X<2> DownloadFinished;
+	typedef X<0> FavoriteHubAdded;
+	typedef X<1> FavoriteHubRemoved;
+	typedef X<2> FavoriteHubUpdated;
+	typedef X<3> FavoriteHubsUpdated;
 
-	typedef X<3> FavoriteHubAdded;
-	typedef X<4> FavoriteHubRemoved;
-	typedef X<5> FavoriteHubUpdated;
-	typedef X<6> FavoriteHubsUpdated;
+	typedef X<4> FavoriteUserAdded;
+	typedef X<5> FavoriteUserRemoved;
+	typedef X<6> FavoriteUserUpdated;
 
-	typedef X<7> UserAdded;
-	typedef X<8> UserRemoved;
-	typedef X<9> StatusChanged;
-	typedef X<10> LoadedFromCache;
-	typedef X<11> Corrupted;	
-	typedef X<12> RecentAdded;
-	typedef X<13> RecentRemoved;
-	typedef X<14> RecentUpdated;
-
-	virtual void on(DownloadStarting, const string&) noexcept { }
-	virtual void on(DownloadFailed, const string&) noexcept { }
-	virtual void on(DownloadFinished, const string&, bool) noexcept { }
+	typedef X<7> FavoriteDirectoriesUpdated;
 
 	virtual void on(FavoriteHubAdded, const FavoriteHubEntryPtr&) noexcept { }
 	virtual void on(FavoriteHubRemoved, const FavoriteHubEntryPtr&) noexcept {}
 	virtual void on(FavoriteHubUpdated, const FavoriteHubEntryPtr&) noexcept { }
 	virtual void on(FavoriteHubsUpdated) noexcept { }
 
-	virtual void on(UserAdded, const FavoriteUser&) noexcept { }
-	virtual void on(UserRemoved, const FavoriteUser&) noexcept { }
-	virtual void on(StatusChanged, const UserPtr&) noexcept { }
-	virtual void on(LoadedFromCache, const string&, const string&) noexcept { }
-	virtual void on(Corrupted, const string&) noexcept { }
-	virtual void on(RecentAdded, const RecentHubEntryPtr&) noexcept {}
-	virtual void on(RecentRemoved, const RecentHubEntryPtr&) noexcept {}
-	virtual void on(RecentUpdated, const RecentHubEntryPtr&) noexcept {}
+	virtual void on(FavoriteUserAdded, const FavoriteUser&) noexcept { }
+	virtual void on(FavoriteUserRemoved, const FavoriteUser&) noexcept { }
+	virtual void on(FavoriteUserUpdated, const UserPtr&) noexcept { }
+
+	virtual void on(FavoriteDirectoriesUpdated) noexcept { }
 };
 
 } // namespace dcpp

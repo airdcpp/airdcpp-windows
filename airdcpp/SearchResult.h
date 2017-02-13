@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,20 +19,17 @@
 #ifndef DCPLUSPLUS_DCPP_SEARCHRESULT_H
 #define DCPLUSPLUS_DCPP_SEARCHRESULT_H
 
-#include "AdcCommand.h"
 #include "GetSet.h"
 #include "forward.h"
 #include "FastAlloc.h"
 #include "HintedUser.h"
 #include "MerkleTree.h"
-#include "Pointer.h"
 #include "Util.h"
-
-#include <boost/noncopyable.hpp>
 
 namespace dcpp {
 
-class SearchResult : public FastAlloc<SearchResult>, public intrusive_ptr_base<SearchResult> {
+typedef uint64_t SearchResultId;
+class SearchResult : public FastAlloc<SearchResult> {
 public:	
 	enum Types {
 		TYPE_FILE,
@@ -43,67 +40,88 @@ public:
 	SearchResult(const string& name);
 
 	//outgoing result (normal)
-	SearchResult(Types aType, int64_t aSize, const string& name, const TTHValue& aTTH, time_t aDate, int fileCount=0, int dirCount=0);
+	SearchResult(Types aType, int64_t aSize, const string& name, const TTHValue& aTTH, time_t aDate, const DirectoryContentInfo& aContentInfo);
 
 	//incoming results
-	SearchResult(const HintedUser& aUser, Types aType, uint8_t aSlots, uint8_t aFreeSlots, 
-		int64_t aSize, const string& aFilePath, const string& ip, TTHValue aTTH, const string& aToken, time_t aDate, const string& connection, int fileCount, int dirCount);
+	SearchResult(const HintedUser& aUser, Types aType, uint8_t aTotalSlots, uint8_t aFreeSlots, 
+		int64_t aSize, const string& aFilePath, const string& ip, TTHValue aTTH, const string& aToken, time_t aDate, const string& connection, const DirectoryContentInfo& aContentInfo);
 
-	string getFileName() const;
-	string toSR(const Client& client) const;
-	AdcCommand toRES(char type) const;
+	string getFileName() const noexcept;
+	string toSR(const Client& client) const noexcept;
+	AdcCommand toRES(char type) const noexcept;
 
-	HintedUser& getUser() { return user; }
-	string getSlotString() const;
+	const HintedUser& getUser() const noexcept { return user; }
 
-	string getFilePath() const;
-	const string& getPath() const { return path; }
-	int64_t getSize() const { return size; }
-	Types getType() const { return type; }
-	size_t getSlots() const { return slots; }
-	size_t getFreeSlots() const { return freeSlots; }
-	int getFileCount() const { return files; }
-	int getFolderCount() const { return folders; }
-	const TTHValue& getTTH() const { return tth; }
+	static string formatSlots(size_t aFree, size_t aTotal) noexcept;
+	string getSlotString() const noexcept;
+
+	string getFilePath() const noexcept;
+	const string& getPath() const noexcept { return path; }
+	int64_t getSize() const noexcept { return size; }
+	Types getType() const noexcept { return type; }
+	size_t getTotalSlots() const noexcept { return totalSlots; }
+	size_t getFreeSlots() const noexcept { return freeSlots; }
+	const TTHValue& getTTH() const noexcept { return tth; }
 	
-	const string& getConnectionStr() const { return connection; }
-	int64_t getConnectionInt() const;
-	int64_t getSpeedPerSlot() const;
+	const string& getConnectionStr() const noexcept { return connection; }
+	int64_t getConnectionInt() const noexcept;
+	int64_t getSpeedPerSlot() const noexcept;
 
-	const string& getIP() const { return IP; }
-	const string& getToken() const { return token; }
-	time_t getDate() const { return date; }
-	const CID& getCID() const { return user.user->getCID(); }
-	bool isNMDC() const { return user.user->isNMDC(); }
+	const string& getIP() const noexcept { return IP; }
+	const string& getSearchToken() const noexcept { return searchToken; }
+	SearchResultId getId() const noexcept { return id; }
+	time_t getDate() const noexcept { return date; }
+	const CID& getCID() const noexcept;
+	bool isNMDC() const noexcept;
 
-	static void pickResults(SearchResultList& aResults, int pickedNum);
+	static void pickResults(SearchResultList& aResults, int aMaxCount) noexcept;
 	struct SpeedSortOrder {
-		bool operator()(const SearchResultPtr& left, const SearchResultPtr& right) const;
+		bool operator()(const SearchResultPtr& left, const SearchResultPtr& right) const noexcept;
 	};
+
+	// The oldest date will go first (min element)
+	// Results without a date will go last
+	struct DateOrder {
+		bool operator()(const SearchResultPtr& a, const SearchResultPtr& b) const noexcept;
+	};
+
+	struct RelevanceInfo {
+		double matchRelevance;
+		double sourceScoreFactor;
+	};
+
+	// Matches result against the current search and returns relevance information
+	// Non-mandatory validity checks are skipped if no search token is provided
+	bool getRelevance(SearchQuery& aQuery, RelevanceInfo& relevance_, const string& aSearchToken = Util::emptyString) const noexcept;
+
+	const DirectoryContentInfo& getContentInfo() const noexcept { return contentInfo; }
 private:
+	bool matches(SearchQuery& aQuery, const string& aSearchToken) const noexcept;
+
 	friend class SearchManager;
 
 	SearchResult();
 
-	TTHValue tth;
+	const TTHValue tth;
 	
-	string path;
-	string IP;
-	string token;
-	
-	int64_t size;
-	
-	size_t slots;
-	size_t freeSlots;
+	const string path;
+	const string IP;
 
-	int folders;
-	int files;
+	const string searchToken;
+	const SearchResultId id;
 	
-	HintedUser user;
-	Types type;
+	const int64_t size = 0;
+	
+	const size_t totalSlots = 0;
+	const size_t freeSlots = 0;
 
-	time_t date;
-	string connection;
+	const DirectoryContentInfo contentInfo;
+	
+	const HintedUser user;
+	const Types type;
+
+	const time_t date = 0;
+	const string connection;
 };
 
 }

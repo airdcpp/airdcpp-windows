@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -113,10 +113,13 @@ class ADLSearchManager : public Singleton<ADLSearchManager>
 public:
 	// Destination directory indexing
 	struct DestDir {
-		string name;
-		DirectoryListing::Directory* dir;
-		DirectoryListing::Directory* subdir;
-		bool fileAdded;
+		DestDir(const string& aName, const DirectoryListing::Directory::Ptr& aDir) :
+			name(aName), dir(aDir) { }
+
+		const string name;
+		DirectoryListing::Directory::Ptr dir = nullptr;
+		DirectoryListing::Directory* subdir = nullptr;
+		bool fileAdded = false;
 	};
 	typedef vector<DestDir> DestDirList;
 
@@ -151,7 +154,7 @@ private:
 	// @internal
 	void matchRecurse(DestDirList& /*aDestList*/, const DirectoryListing::Directory::Ptr& /*aDir*/, string& /*aPath*/, DirectoryListing& /*aDirList*/) throw(AbortException);
 	// Search for file match
-	void MatchesFile(DestDirList& destDirVector, const DirectoryListing::File *currentFile, string& fullPath) noexcept;
+	void MatchesFile(DestDirList& destDirVector, const DirectoryListing::File::Ptr& currentFile, string& fullPath) noexcept;
 	// Search for directory match
 	void MatchesDirectory(DestDirList& destDirVector, const DirectoryListing::Directory::Ptr& currentDir, string& fullPath) noexcept;
 	// Step up directory

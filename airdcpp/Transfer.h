@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,6 @@
 #include "GetSet.h"
 #include "MerkleTree.h"
 #include "Segment.h"
-#include "TimerManager.h"
 
 namespace dcpp {
 
@@ -47,49 +46,50 @@ public:
 	Transfer(UserConnection& conn, const string& path, const TTHValue& tth);
 	virtual ~Transfer() { };
 
-	int64_t getPos() const { return pos; }
+	int64_t getPos() const noexcept { return pos; }
 
-	int64_t getStartPos() const { return getSegment().getStart(); }
+	int64_t getStartPos() const noexcept { return getSegment().getStart(); }
 	
-	void resetPos();
-	void addPos(int64_t aBytes, int64_t aActual);
+	void resetPos() noexcept;
+	void addPos(int64_t aBytes, int64_t aActual) noexcept;
 
 	enum { MIN_SAMPLES = 15, MIN_SECS = 15 };
 	
 	/** Record a sample for average calculation */
-	void tick();
+	void tick() noexcept;
 
-	int64_t getActual() const { return actual; }
+	int64_t getActual() const noexcept { return actual; }
 
-	int64_t getSegmentSize() const { return getSegment().getSize(); }
-	void setSegmentSize(int64_t size) { segment.setSize(size); }
+	int64_t getSegmentSize() const noexcept { return getSegment().getSize(); }
+	void setSegmentSize(int64_t size) noexcept { segment.setSize(size); }
 
-	bool getOverlapped() const { return getSegment().getOverlapped(); }
-	void setOverlapped(bool overlap) { segment.setOverlapped(overlap); }
+	bool getOverlapped() const noexcept { return getSegment().getOverlapped(); }
+	void setOverlapped(bool overlap) noexcept { segment.setOverlapped(overlap); }
 
-	int64_t getAverageSpeed() const;
+	int64_t getAverageSpeed() const noexcept;
 
-	int64_t getSecondsLeft(bool wholeFile = false) const;
+	int64_t getSecondsLeft(bool wholeFile = false) const noexcept;
 
-	void getParams(const UserConnection& aSource, ParamMap& params) const;
+	void getParams(const UserConnection& aSource, ParamMap& params) const noexcept;
 
-	UserPtr getUser();
-	const UserPtr getUser() const;
-	HintedUser getHintedUser() const;
+	UserPtr getUser() noexcept;
+	const UserPtr getUser() const noexcept;
+	HintedUser getHintedUser() const noexcept;
 	
 	//const string& getPath() const { return path; }
-	const TTHValue& getTTH() const { return tth; }
+	const TTHValue& getTTH() const noexcept { return tth; }
 
-	UserConnection& getUserConnection() { return userConnection; }
-	const UserConnection& getUserConnection() const { return userConnection; }
-	const string& getToken() const;
+	UserConnection& getUserConnection() noexcept { return userConnection; }
+	const UserConnection& getUserConnection() const noexcept { return userConnection; }
+	const string& getToken() const noexcept;
 
 	GETSET(string, path, Path);
 	GETSET(Segment, segment, Segment);
-	GETSET(Type, type, Type);
-	GETSET(uint64_t, start, Start);
+	IGETSET(Type, type, Type, TYPE_FILE);
+	IGETSET(uint64_t, start, Start, 0);
+
+	virtual void appendFlags(OrderedStringSet& flags_) const noexcept;
 private:
-	
 	typedef std::pair<uint64_t, int64_t> Sample;
 	typedef deque<Sample> SampleList;
 	
@@ -101,9 +101,9 @@ private:
 	/** TTH of the file being transferred */
 	TTHValue tth;
 	/** Bytes transferred over socket */
-	int64_t actual;
+	int64_t actual = 0;
 	/** Bytes transferred to/from file */
-	int64_t pos;
+	int64_t pos = 0;
 
 	UserConnection& userConnection;
 };

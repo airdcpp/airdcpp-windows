@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,9 @@
 
 #include "stdinc.h"
 
+#include "SettingsManager.h"
+#include "TimerManager.h"
+
 // TODO: replace with STD when MSVC can initialize the distribution correctly
 #include <boost/random/discrete_distribution.hpp>
 #include <boost/random/mersenne_twister.hpp>
@@ -31,111 +34,98 @@ template<class ItemT>
 class PrioritySearchQueue {
 	typedef vector<double> ProbabilityList;
 public:
-	void addSearchPrio(ItemT& aItem) noexcept{
-		if (aItem->getPriority() < QueueItemBase::LOW) {
-			return;
-		}
+	PrioritySearchQueue(SettingsManager::IntSetting aMinInterval) : minIntervalSetting(aMinInterval) {
 
-		if (aItem->isRecent()) {
-			dcassert(find(recentSearchQueue.begin(), recentSearchQueue.end(), aItem) == recentSearchQueue.end());
-			recentSearchQueue.push_back(aItem);
-			return;
-		} else {
-			dcassert(find(prioSearchQueue[aItem->getPriority()].begin(), prioSearchQueue[aItem->getPriority()].end(), aItem) == prioSearchQueue[aItem->getPriority()].end());
-			prioSearchQueue[aItem->getPriority()].push_back(aItem);
-		}
 	}
 
-	void removeSearchPrio(ItemT& aItem) noexcept{
-		if (aItem->getPriority() < QueueItemBase::LOW) {
+	void addSearchPrio(const ItemT& aItem) noexcept{
+		if (aItem->getPriority() < Priority::LOW) {
 			return;
 		}
 
-		if (aItem->isRecent()) {
-			auto i = find(recentSearchQueue.begin(), recentSearchQueue.end(), aItem);
-			if (i != recentSearchQueue.end()) {
-				recentSearchQueue.erase(i);
-			}
-		} else {
-			auto i = find(prioSearchQueue[aItem->getPriority()].begin(), prioSearchQueue[aItem->getPriority()].end(), aItem);
-			if (i != prioSearchQueue[aItem->getPriority()].end()) {
-				prioSearchQueue[aItem->getPriority()].erase(i);
-			}
+		{
+			auto& queue = getQueue(aItem);
+			dcassert(find(queue.begin(), queue.end(), aItem) == queue.end());
+			queue.push_back(aItem);
 		}
+
+		recalculateSearchTimes(aItem->isRecent(), false);
 	}
 
-	ItemT findSearchItem(uint64_t aTick, bool force = false) noexcept{
+	void removeSearchPrio(const ItemT& aItem) noexcept{
+		if (aItem->getPriority() < Priority::LOW) {
+			return;
+		}
+
+		auto& queue = getQueue(aItem);
+		dcassert(find(queue.begin(), queue.end(), aItem) != queue.end());
+		queue.erase(remove(queue.begin(), queue.end(), aItem), queue.end());
+	}
+
+	// Get the next normal/recent item to search for and rotate the search queue
+	// The next search tick must be updated manually by the caller
+	ItemT maybePopSearchItem(uint64_t aTick, bool aIgnoreNextTick = false) noexcept{
 		ItemT ret = nullptr;
-		if (aTick >= nextSearch || force) {
-			ret = findNormal();
+		if (aTick >= nextSearchNormal || aIgnoreNextTick) {
+			ret = maybePopNormal();
 		}
 
-		if (!ret && (aTick >= nextRecentSearch || force)) {
-			ret = findRecent();
+		if (!ret && (aTick >= nextSearchRecent || aIgnoreNextTick)) {
+			ret = maybePopRecent();
 		}
+
 		return ret;
 	}
 
-	int64_t recalculateSearchTimes(bool aRecent, bool isPrioChange, uint64_t aTick, int aItemCount = 0, int minInterval = SETTING(SEARCH_TIME)) noexcept{
-		if (!aRecent) {
-			if(aItemCount == 0)
-				aItemCount = getPrioSum();
-
-			//start with the min interval
-			if(isPrioChange && nextSearch == 0)
-				nextSearch = aTick + (minInterval * 60 * 1000);
-
-			if (aItemCount > 0) {
-				minInterval = max(60 / aItemCount, minInterval);
-			}
-
-			if (nextSearch > 0 && isPrioChange) {
-				nextSearch = min(nextSearch, aTick + (minInterval * 60 * 1000));
-			} else {
-				nextSearch = aTick + (minInterval * 60 * 1000);
-			}
-			return nextSearch;
-		} else {
-			//start with the min interval
-			if (isPrioChange && nextRecentSearch == 0)
-				nextRecentSearch = aTick + (minInterval * 60 * 1000);
-
-			int IntervalMS = getRecentIntervalMs();
-			if (nextRecentSearch > 0 && isPrioChange) {
-				nextRecentSearch = min(nextRecentSearch, aTick + IntervalMS);
-			} else {
-				nextRecentSearch = aTick + IntervalMS;
-			}
-			return nextRecentSearch;
-		}
+	uint64_t getNextSearchNormal() const noexcept {
+		return nextSearchNormal;
 	}
 
-
-
-	int getRecentIntervalMs(int aItemCount = 0) const noexcept{
-
-		auto recentItems = aItemCount == 0 ? count_if(recentSearchQueue.begin(), recentSearchQueue.end(), [](const ItemT& aItem) { 
-			return aItem->allowAutoSearch(); 
-		}) : aItemCount;
-
-		if (recentItems == 1) {
-			return 15 * 60 * 1000;
-		} else if (recentItems == 2) {
-			return 8 * 60 * 1000;
-		} else {
-			return 5 * 60 * 1000;
-		}
+	uint64_t getNextSearchRecent() const noexcept {
+		return nextSearchRecent;
 	}
 
+	// Recalculates the next normal/recent search tick
+	// Use aForce if the previously set next search tick can be postponed
+	// Returns the calculated search tick
+	// NOTE: remember read lock
+	uint64_t recalculateSearchTimes(bool aRecent, bool aForce, uint64_t aTick = GET_TICK()) noexcept {
+		auto& nextSearch = aRecent ? nextSearchRecent : nextSearchNormal;
+		const auto minIntervalMinutes = SettingsManager::getInstance()->get(minIntervalSetting);
+
+		int calculatedIntervalMinutes = 0;
+		if (aRecent) {
+			auto itemCount = getValidItemCountRecent();
+			if (itemCount == 0) {
+				return 0;
+			}
+
+			calculatedIntervalMinutes = max(15 / itemCount, minIntervalMinutes);
+		} else {
+			auto itemCount = getValidItemCountNormal();
+			if (itemCount == 0) {
+				return 0;
+			}
+
+			calculatedIntervalMinutes = max(60 / itemCount, minIntervalMinutes);
+		}
+
+		if (!aForce && nextSearch > 0) {
+			// Never postpone the next search when adding new items/changing priorities
+			nextSearch = min(nextSearch, aTick + (calculatedIntervalMinutes * 60 * 1000));
+		} else {
+			nextSearch = aTick + (calculatedIntervalMinutes * 60 * 1000);
+		}
+
+		return nextSearch;
+	}
 private:
+	struct AllowSearch {
+		bool operator()(const ItemT& aItem) const noexcept { return aItem->allowAutoSearch(); }
+	};
 
-	ItemT findRecent() noexcept{
-		if (recentSearchQueue.size() == 0) {
-			return nullptr;
-		}
-
-		uint32_t count = 0;
-		for (;;) {
+	ItemT maybePopRecent() noexcept{
+		for (auto i = 0; i < static_cast<int>(recentSearchQueue.size()); i++) {
 			auto item = recentSearchQueue.front();
 			recentSearchQueue.pop_front();
 
@@ -148,19 +138,15 @@ private:
 
 			if (item->allowAutoSearch()) {
 				return item;
-			} else if (count >= recentSearchQueue.size()) {
-				break;
 			}
-
-			count++;
 		}
 
 		return nullptr;
 	}
 
-	ItemT findNormal() noexcept{
+	ItemT maybePopNormal() noexcept{
 		ProbabilityList probabilities;
-		int itemCount = getPrioSum(&probabilities);
+		auto itemCount = getValidItemCountNormal(&probabilities);
 
 		//do we have anything where to search from?
 		if (itemCount == 0) {
@@ -169,12 +155,12 @@ private:
 
 		auto dist = boost::random::discrete_distribution<>(probabilities);
 
-		//choose the search queue, can't be paused or lowest
-		auto& sbq = prioSearchQueue[dist(gen) + QueueItemBase::LOW];
+		// Choose the search queue, can't be paused or lowest
+		auto& sbq = prioSearchQueue[dist(gen) + static_cast<int>(Priority::LOW)];
 		dcassert(!sbq.empty());
 
-		//find the first item from the search queue that can be searched for
-		auto s = find_if(sbq.begin(), sbq.end(), [](const ItemT& item) { return item->allowAutoSearch(); });
+		// Find the first item from the search queue that can be searched for
+		auto s = find_if(sbq.begin(), sbq.end(), AllowSearch());
 		if (s != sbq.end()) {
 			auto item = *s;
 			//move to the back
@@ -186,35 +172,46 @@ private:
 		return nullptr;
 	}
 
+	int getValidItemCountRecent() const noexcept {
+		return static_cast<int>(count_if(recentSearchQueue.begin(), recentSearchQueue.end(), AllowSearch()));
+	}
+
 	boost::mt19937 gen;
 
-	int getPrioSum(ProbabilityList* probabilities_ = nullptr) const noexcept{
+	int getValidItemCountNormal(ProbabilityList* probabilities_ = nullptr) const noexcept{
 		int itemCount = 0;
-		int p = QueueItemBase::LOW;
+		int p = static_cast<int>(Priority::LOW);
 		do {
-			int dequeItems = static_cast<int>(count_if(prioSearchQueue[p].begin(), prioSearchQueue[p].end(), [](const ItemT& aItem) { 
-				return aItem->allowAutoSearch(); 
-			}));
+			int dequeItems = static_cast<int>(count_if(prioSearchQueue[p].begin(), prioSearchQueue[p].end(), AllowSearch()));
 
-			if (probabilities_)
-				(*probabilities_).push_back((p - 1)*dequeItems); //multiply with a priority factor to get bigger probability for items with higher priority
+			if (probabilities_) {
+				(*probabilities_).push_back((p - 1) * dequeItems); //multiply with a priority factor to get bigger probability for items with higher priority
+			}
+
 			itemCount += dequeItems;
 			p++;
-		} while (p < QueueItemBase::LAST);
+		} while (p < static_cast<int>(Priority::LAST));
 
 		return itemCount;
 	}
 
-	/** Search items by priority (low-highest) */
-	vector<ItemT> prioSearchQueue[QueueItemBase::LAST];
-	deque<ItemT> recentSearchQueue;
+	typedef deque<ItemT> QueueType;
 
-	/** Next normal search */
-	uint64_t nextSearch = 0;
-	/** Next recent search */
-	uint64_t nextRecentSearch = 0;
+	QueueType& getQueue(const ItemT& aItem) {
+		return aItem->isRecent() ? recentSearchQueue : prioSearchQueue[static_cast<int>(aItem->getPriority())];
+	}
 
-	//SettingsManager::IntSetting minSearchInterval;
+	// Search items by priority (low-highest)
+	QueueType prioSearchQueue[static_cast<int>(Priority::LAST)];
+	QueueType recentSearchQueue;
+
+	// Next normal search tick
+	uint64_t nextSearchNormal = GET_TICK() + (90 * 1000);
+
+	// Next recent search tick
+	uint64_t nextSearchRecent = GET_TICK() + (30 * 1000);
+
+	const SettingsManager::IntSetting minIntervalSetting;
 };
 
 }

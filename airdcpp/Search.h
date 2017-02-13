@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2015 AirDC++ Project
+ * Copyright (C) 2011-2017 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,52 +16,139 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef SEARCH_H
-#define SEARCH_H
-
-#pragma once
+#ifndef DCPP_SEARCH_H
+#define DCPP_SEARCH_H
 
 #include "typedefs.h"
+#include "Priority.h"
 
 namespace dcpp {
 
 class Search {
 public:
-	Search() { }
-	~Search() { }
-
-	enum searchType {
+	/*enum Type : uint8_t {
 		MANUAL,
 		ALT,
 		ALT_AUTO,
 		AUTO_SEARCH,
+	};*/
+
+	enum SizeModes : uint8_t {
+		SIZE_DONTCARE = 0x00,
+		SIZE_ATLEAST = 0x01,
+		SIZE_ATMOST = 0x02,
+		SIZE_EXACT = 0x03
 	};
 
-	int32_t		sizeType;
-	int64_t		size;
-	int32_t		fileType;
+	enum TypeModes: uint8_t {
+		TYPE_ANY = 0,
+		TYPE_AUDIO,
+		TYPE_COMPRESSED,
+		TYPE_DOCUMENT,
+		TYPE_EXECUTABLE,
+		TYPE_PICTURE,
+		TYPE_VIDEO,
+		TYPE_DIRECTORY,
+		TYPE_TTH,
+		TYPE_FILE,
+		TYPE_LAST
+	};
+
+	enum MatchType : uint8_t {
+		MATCH_PATH_PARTIAL = 0,
+		MATCH_NAME_PARTIAL,
+		MATCH_NAME_EXACT
+	};
+
+	// Typical priorities: 
+	// HIGH - manual foreground searches
+	// NORMAL - manual background searches
+	// LOW - automated queue searches
+	Search(Priority aPriority, const string& aToken) noexcept : priority(aPriority), token(aToken) { }
+	~Search() { }
+
+	SizeModes	sizeType = SIZE_DONTCARE;
+	int64_t		size = 0;
+	TypeModes	fileType = TYPE_ANY;
 	string		query;
-	string		token;
 	StringList	exts;
 	StringList	excluded;
-	set<void*>	owners;
-	searchType	type;
+	const void*	owner;
 	string		key;
-	int			dateMode;
-	time_t		date;
-	bool		aschOnly;
 
+	bool		aschOnly = false;
+
+	optional<time_t> minDate;
+	optional<time_t> maxDate;
+
+	// Direct searches
+	bool returnParents = false;
+	MatchType matchType = MATCH_PATH_PARTIAL;
+	int maxResults = 10;
+	bool requireReply = false;
+	string path;
+
+	/*optional<int64_t> minSize;
+	optional<int64_t> maxSize;
+
+	pair<int64_t, SizeModes> parseNmdcSize() const noexcept {
+		if (minSize && maxSize && *minSize == *maxSize) {
+			return { *minSize, SIZE_EXACT };
+		}
+
+		if (minSize) {
+			return { *minSize, SIZE_ATLEAST };
+		}
+
+		if (maxSize) {
+			return { *maxSize, SIZE_ATMOST };
+		}
+
+		return { 0, SIZE_DONTCARE };
+	}*/
+
+	const string token;
+	const Priority priority;
 	
 	bool operator==(const Search& rhs) const {
-		 return this->sizeType == rhs.sizeType && 
-		 		this->size == rhs.size && 
-		 		this->fileType == rhs.fileType && 
-		 		this->query == rhs.query;
+		return this->sizeType == rhs.sizeType && 
+				this->size == rhs.size && 
+				this->fileType == rhs.fileType && 
+				this->query == rhs.query;
 	}
 
 	bool operator<(const Search& rhs) const {
-		 return this->type < rhs.type;
+		return this->priority > rhs.priority;
 	}
+
+	typedef function<bool(const SearchPtr&)> CompareF;
+	class ComparePtr {
+	public:
+		ComparePtr(const SearchPtr& compareTo) : a(compareTo) { }
+		bool operator()(const SearchPtr& p) const noexcept {
+			return p == a;
+		}
+	private:
+		ComparePtr& operator=(const ComparePtr&) = delete;
+		const SearchPtr& a;
+	};
+
+	class CompareOwner {
+	public:
+		CompareOwner(const void* compareTo) : a(compareTo) { }
+		bool operator()(const SearchPtr& p) const noexcept {
+			return !a ? true : p->owner == a;
+		}
+	private:
+		CompareOwner& operator=(const CompareOwner&) = delete;
+		const void* a;
+	};
+
+	struct PrioritySort {
+		bool operator()(const SearchPtr& left, const SearchPtr& right) const noexcept {
+			return left->priority > right->priority;
+		}
+	};
 };
 
 }

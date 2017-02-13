@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,9 @@
 #ifndef DCPLUSPLUS_DCPP_CONNECTION_MANAGER_H
 #define DCPLUSPLUS_DCPP_CONNECTION_MANAGER_H
 
-#include "TimerManager.h"
 #include "ClientManagerListener.h"
 #include "ConnectionManagerListener.h"
+#include "TimerManagerListener.h"
 
 #include "ConnectionType.h"
 #include "CriticalSection.h"
@@ -35,11 +35,10 @@ class SocketException;
 
 class TokenManager {
 public:
-	string makeToken() const noexcept;
-	string getToken(ConnectionType aConnType) noexcept;
+	string createToken(ConnectionType aConnType) noexcept;
 	bool addToken(const string& aToken, ConnectionType aConnType) noexcept;
 	void removeToken(const string& aToken) noexcept;
-	bool hasToken(const string& aToken, ConnectionType aConnType) noexcept;
+	bool hasToken(const string& aToken, ConnectionType aConnType) const noexcept;
 private:
 	unordered_map<string, ConnectionType> tokens;
 	static FastCriticalSection cs;
@@ -70,32 +69,28 @@ public:
 		TYPE_MCN_NORMAL
 	};
 
-	ConnectionQueueItem(const HintedUser& aUser, ConnectionType aConntype, const string& aToken) : token(aToken), 
-		downloadType(TYPE_ANY), connType(aConntype),
-		lastAttempt(0), errors(0), state(WAITING), maxConns(0), hubUrl(aUser.hint), user(aUser.user) {
-	}
+	ConnectionQueueItem(const HintedUser& aUser, ConnectionType aConntype, const string& aToken);
 	
 	GETSET(string, token, Token);
-	GETSET(DownloadType, downloadType, DownloadType);
+	IGETSET(DownloadType, downloadType, DownloadType, TYPE_ANY);
 	GETSET(string, lastBundle, LastBundle);
-	GETSET(uint64_t, lastAttempt, LastAttempt);
-	GETSET(int, errors, Errors); // Number of connection errors, or -1 after a protocol error
-	GETSET(State, state, State);
-	GETSET(uint8_t, maxConns, MaxConns);
-	GETSET(string, hubUrl, HubUrl);
+	IGETSET(uint64_t, lastAttempt, LastAttempt, 0);
+	IGETSET(int, errors, Errors, 0); // Number of connection errors, or -1 after a protocol error
+	IGETSET(State, state, State, WAITING);
+	IGETSET(uint8_t, maxConns, MaxConns, 0);
 	GETSET(ConnectionType, connType, ConnType);
 
-	const UserPtr& getUser() const { return user; }
-	//UserPtr& getUser() { return user; }
-	const HintedUser getHintedUser() const { return HintedUser(user, hubUrl); }
-	bool allowNewConnections(int running) const;
+	const string& getHubUrl() const noexcept { return user.hint; }
+	void setHubUrl(const string& aHubUrl) noexcept { user.hint = aHubUrl; }
+	const HintedUser& getUser() const noexcept { return user; }
+	bool allowNewConnections(int running) const noexcept;
 private:
-	UserPtr user;
+	HintedUser user;
 };
 
 class ExpectedMap {
 public:
-	void add(const string& aKey, const string& aMyNick, const string& aHubUrl) {
+	void add(const string& aKey, const string& aMyNick, const string& aHubUrl) noexcept {
 		Lock l(cs);
 		expectedConnections.emplace(aKey, make_pair(aMyNick, aHubUrl));
 	}
@@ -140,8 +135,8 @@ public:
 		expectedConnections.add(aToken, aCID.toBase32(), aHubUrl);
 	}
 
-	void nmdcConnect(const string& aServer, const string& aPort, const string& aMyNick, const string& hubUrl, const string& encoding, bool stealth, bool secure);
-	void nmdcConnect(const string& aServer, const string& aPort, const string& localPort, BufferedSocket::NatRoles natRole, const string& aNick, const string& hubUrl, const string& encoding, bool stealth, bool secure);
+	void nmdcConnect(const string& aServer, const string& aPort, const string& aMyNick, const string& hubUrl, const string& encoding, bool secure);
+	void nmdcConnect(const string& aServer, const string& aPort, const string& localPort, BufferedSocket::NatRoles natRole, const string& aNick, const string& hubUrl, const string& encoding, bool secure);
 	void adcConnect(const OnlineUser& aUser, const string& aPort, const string& aToken, bool secure);
 	void adcConnect(const OnlineUser& aUser, const string& aPort, const string& localPort, BufferedSocket::NatRoles natRole, const string& aToken, bool secure);
 
@@ -169,6 +164,8 @@ public:
 	void failDownload(const string& aToken, const string& aError, bool fatalError);
 
 	SharedMutex& getCS() { return cs; }
+
+	// Unsafe
 	const ConnectionQueueItem::List& getTransferConnections(bool aDownloads) const {
 		return aDownloads ? cqis[CONNECTION_TYPE_DOWNLOAD] : cqis[CONNECTION_TYPE_UPLOAD];
 	}
@@ -229,8 +226,6 @@ private:
 	void addUploadConnection(UserConnection* uc);
 	void addDownloadConnection(UserConnection* uc);
 	void addPMConnection(UserConnection* uc);
-
-	void checkWaitingMCN() noexcept;
 
 	ConnectionQueueItem* getCQI(const HintedUser& aUser, ConnectionType aConnType, const string& aToken = Util::emptyString);
 	void putCQI(ConnectionQueueItem* cqi);

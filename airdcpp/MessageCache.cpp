@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+* Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #include "MessageCache.h"
 
 namespace dcpp {
-	MessageCache::MessageCache(const MessageCache& aCache) noexcept : messages(aCache.messages), setting(aCache.setting) {
+	MessageCache::MessageCache(const MessageCache& aCache) noexcept : messages(aCache.getMessages()), setting(aCache.setting) {
 
 	}
 
@@ -55,18 +55,18 @@ namespace dcpp {
 		return ret;
 	}
 
-	int MessageCache::setRead() noexcept {
-		RLock l(cs);
-		int updated = 0;
+	MessageCount MessageCache::setRead() noexcept {
+		MessageCount updated;
+
+		WLock l(cs);
 		for (auto& message : messages) {
 			if (message.type == Message::TYPE_CHAT) {
 				if (!message.chatMessage->getRead()) {
-					updated++;
+					updated.chatMessages++;
 					message.chatMessage->setRead(true);
 				}
-			}
-			else if (!message.logMessage->getRead()) {
-				updated++;
+			} else if (!message.logMessage->getRead()) {
+				updated.logMessages++;
 				message.logMessage->setRead(true);
 			}
 		}
@@ -125,7 +125,7 @@ namespace dcpp {
 		WLock l(cs);
 		messages.push_back(move(aMessage));
 
-		if (messages.size() > SettingsManager::getInstance()->get(setting)) {
+		if (static_cast<int>(messages.size()) > SettingsManager::getInstance()->get(setting)) {
 			messages.pop_front();
 		}
 	}

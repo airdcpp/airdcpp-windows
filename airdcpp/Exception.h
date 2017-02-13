@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,14 +31,17 @@ class Exception : public std::exception
 {
 public:
 	Exception() { }
-	Exception(const string& aError) : error(aError) { dcdrun(if(error.size()>0)) dcdebug("Thrown: %s\n", error.c_str()); }
-	
+	Exception(const string& aError) : errorString(aError), errorCode(0) { dcdrun(if(errorString.size()>0)) dcdebug("Thrown: %s\n", errorString.c_str()); }
+	Exception(const string& aError, int& eCode) : errorString(aError), errorCode(eCode) { dcdrun(if (errorString.size()>0)) dcdebug("Thrown: %s\n", errorString.c_str()); }
+
 	virtual const char* what() const throw() { return getError().c_str(); }
 	
 	virtual ~Exception() throw() { }
-	virtual const string& getError() const { return error; }
+	virtual const string& getError() const { return errorString; }
+	virtual const int& getErrorCode() const { return errorCode; }
 protected:
-	string error;
+	string errorString;
+	int errorCode;
 };
 
 #ifdef _DEBUG
@@ -47,6 +50,7 @@ protected:
 public:\
 	name() : Exception(#name) { } \
 	name(const string& aError) : Exception(#name ": " + aError) { } \
+	name(const string& aError, int& eCode) : Exception(#name ": " + aError, eCode) { } \
 	virtual ~name() throw() { } \
 }
 
@@ -56,9 +60,24 @@ public:\
 public:\
 	name() : Exception() { } \
 	name(const string& aError) : Exception(aError) { } \
+	name(const string& aError, int& eCode) : Exception(aError, eCode) { } \
 	virtual ~name() throw() { } \
 }
 #endif
+
+STANDARD_EXCEPTION(AbortException);
+STANDARD_EXCEPTION(CryptoException);
+STANDARD_EXCEPTION(DbException);
+STANDARD_EXCEPTION(DupeException);
+STANDARD_EXCEPTION(FileException);
+STANDARD_EXCEPTION(HashException);
+STANDARD_EXCEPTION(MonitorException);
+STANDARD_EXCEPTION(ParseException);
+STANDARD_EXCEPTION(QueueException);
+STANDARD_EXCEPTION(SearchTypeException);
+STANDARD_EXCEPTION(ShareException);
+STANDARD_EXCEPTION(SimpleXMLException);
+STANDARD_EXCEPTION(ThreadException);
 
 } // namespace dcpp
 

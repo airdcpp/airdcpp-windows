@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,6 +54,8 @@ public:
 	InputStream* getStream();
 	void setFiltered();
 	void resume(int64_t aStart, int64_t aSize) noexcept;
+
+	void appendFlags(OrderedStringSet& flags_) const noexcept;
 private:
 	unique_ptr<InputStream> stream;
 };

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 AirDC++ Project
+ * Copyright (C) 2012-2017 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,21 +33,23 @@
 #include "SettingsManager.h"
 #include "SimpleXML.h"
 #include "Text.h"
+#include "TimerManager.h"
 #include "version.h"
 
 #include "pubkey.h"
 
 namespace dcpp {
 
-const char* UpdateManager::versionUrl[VERSION_LAST] = { "http://version.airdcpp.net/version.xml",
-	"http://beta.airdcpp.net/version/version.xml",
-	"http://builds.airdcpp.net/version/version.xml"
+const char* UpdateManager::versionUrl[VERSION_LAST] = { 
+	"https://version.airdcpp.net/version.xml",
+	"https://beta.airdcpp.net/version/version.xml",
+	"https://builds.airdcpp.net/version/version.xml"
 };
 
 UpdateManager::UpdateManager() : lastIPUpdate(GET_TICK()) {
 	TimerManager::getInstance()->addListener(this);
 
-	links.homepage = "http://www.airdcpp.net/";
+	links.homepage = "https://www.airdcpp.net/";
 	links.downloads = links.homepage + "download/";
 	links.geoip6 = "http://geoip6.airdcpp.net";
 	links.geoip4 = "http://geoip4.airdcpp.net";
@@ -368,8 +370,8 @@ string UpdateManager::getVersionUrl() const {
 	return versionUrl[max(SETTING(UPDATE_CHANNEL), static_cast<int>(getVersionType()))];
 }
 
-void UpdateManager::init(const string& aExeName) {
-	updater = unique_ptr<Updater>(new Updater(aExeName, this));
+void UpdateManager::init() {
+	updater = unique_ptr<Updater>(new Updater(this));
 
 	checkVersion(false);
 }

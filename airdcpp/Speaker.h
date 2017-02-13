@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,10 +24,10 @@
 #include <vector>
 
 #include "CriticalSection.h"
+#include "debug.h"
 
 namespace dcpp {
 
-using std::forward;
 using std::vector;
 using boost::range::find;
 
@@ -37,31 +37,38 @@ class Speaker {
 
 public:
 	Speaker() noexcept { }
-	virtual ~Speaker() { }
+	virtual ~Speaker() { 
+		dcassert(listeners.empty());
+	}
 
 	template<typename... ArgT>
 	void fire(ArgT&&... args) noexcept {
 		Lock l(listenerCS);
 		tmpListeners = listeners;
 		for(auto listener: tmpListeners) {
-			listener->on(forward<ArgT>(args)...);
+			listener->on(std::forward<ArgT>(args)...);
 		}
 	}
 
-	void addListener(Listener* aListener) {
+	void addListener(Listener* aListener) noexcept {
 		Lock l(listenerCS);
 		if(find(listeners, aListener) == listeners.end())
 			listeners.push_back(aListener);
 	}
 
-	void removeListener(Listener* aListener) {
+	void removeListener(Listener* aListener) noexcept {
 		Lock l(listenerCS);
 		auto it = find(listeners, aListener);
 		if(it != listeners.end())
 			listeners.erase(it);
 	}
 
-	void removeListeners() {
+	bool hasListener(Listener* aListener) const noexcept {
+		Lock l(listenerCS);
+		return find(listeners, aListener) != listeners.end();
+	}
+
+	void removeListeners() noexcept {
 		Lock l(listenerCS);
 		listeners.clear();
 	}
@@ -69,7 +76,7 @@ public:
 protected:
 	ListenerList listeners;
 	ListenerList tmpListeners;
-	CriticalSection listenerCS;
+	mutable CriticalSection listenerCS;
 };
 
 } // namespace dcpp

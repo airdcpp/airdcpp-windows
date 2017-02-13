@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,19 +17,18 @@
  */
 
 #include "stdinc.h"
-#include "ConnectionManager.h"
-#include "DownloadManager.h"
 
-#include "ResourceManager.h"
-#include "QueueManager.h"
-#include "HashManager.h"
+#include "ClientManager.h"
+#include "ConnectionManager.h"
 #include "Download.h"
+#include "DownloadManager.h"
+#include "FavoriteManager.h"
+#include "HashManager.h"
 #include "LogManager.h"
+#include "QueueManager.h"
+#include "ResourceManager.h"
 #include "User.h"
 #include "UserConnection.h"
-
-#include "UploadManager.h"
-#include "FavoriteManager.h"
 
 #include <limits>
 #include <cmath>
@@ -159,9 +158,9 @@ void DownloadManager::on(TimerManagerListener::Second, uint64_t aTick) noexcept 
 		QueueManager::getInstance()->handleSlowDisconnect(dtp.user, dtp.target, dtp.bundle);
 }
 
-void DownloadManager::sendSizeNameUpdate(BundlePtr& aBundle) {
+void DownloadManager::sendSizeUpdate(BundlePtr& aBundle) const noexcept {
 	RLock l (cs);
-	aBundle->sendSizeNameUpdate();
+	aBundle->sendSizeUpdate();
 }
 
 void DownloadManager::startBundle(UserConnection* aSource, BundlePtr aBundle) {
@@ -191,7 +190,7 @@ bool DownloadManager::checkIdle(const UserPtr& user, bool smallSlot, bool report
 				continue;
 			if (!reportOnly)
 				uc->callAsync([this, uc] { revive(uc); });
-			dcdebug("uc updated");
+			//dcdebug("uc updated");
 			return true;
 		}	
 	}
@@ -233,7 +232,7 @@ void DownloadManager::getRunningBundles(QueueTokenSet& bundles_) const {
 			continue;
 		
 		// these won't be included in the running bundle limit
-		if (b->getPriority() == QueueItemBase::HIGHEST)
+		if (b->getPriority() == Priority::HIGHEST)
 			continue;
 		if (all_of(b->getDownloads().begin(), b->getDownloads().end(), Flags::IsSet(Download::FLAG_HIGHEST_PRIO)))
 			continue;
@@ -266,7 +265,6 @@ void DownloadManager::checkDownloads(UserConnection* aConn) {
 
 	// not a finished download?
 	if(!start && aConn->getState() != UserConnection::STATE_RUNNING) {
-		aConn->setDownload(nullptr);
 		removeRunningUser(aConn);
 		removeConnection(aConn);
 		return;
@@ -279,7 +277,7 @@ void DownloadManager::checkDownloads(UserConnection* aConn) {
 		d = QueueManager::getInstance()->getDownload(*aConn, runningBundles, hubs, errorMessage, newUrl, dlType);
 
 	if(!d) {
-		aConn->setDownload(nullptr);
+		//aConn->setDownload(nullptr);
 		aConn->unsetFlag(UserConnection::FLAG_RUNNING);
 		if(!errorMessage.empty()) {
 			fire(DownloadManagerListener::Status(), aConn, errorMessage);
@@ -431,7 +429,8 @@ void DownloadManager::startData(UserConnection* aSource, int64_t start, int64_t 
 
 void DownloadManager::on(UserConnectionListener::Data, UserConnection* aSource, const uint8_t* aData, size_t aLen) noexcept {
 	Download* d = aSource->getDownload();
-	dcassert(d);
+	if (!d) //No download but receiving data??
+		aSource->disconnect(true);
 
 	try {
 		d->addPos(d->getOutput()->write(aData, aLen), aLen);
@@ -454,7 +453,7 @@ void DownloadManager::endData(UserConnection* aSource) {
 	dcassert(d);
 
 	if(d->getType() == Transfer::TYPE_TREE) {
-		d->getOutput()->flush();
+		d->getOutput()->flushBuffers(false);
 
 		int64_t bl = 1024;
 		while(bl * (int64_t)d->getTigerTree().getLeaves().size() < d->getTigerTree().getFileSize())
@@ -475,19 +474,10 @@ void DownloadManager::endData(UserConnection* aSource) {
 		}
 		d->setTreeValid(true);
 	} else {
-		// First, finish writing the file (flushing the buffers and closing the file...)
-		try {
-			d->getOutput()->flush();
-		} catch(const Exception& e) {
-			d->resetPos();
-			failDownload(aSource, e.getError(), true);
-			return;
-		}
-
 		aSource->setSpeed(static_cast<int64_t>(d->getAverageSpeed()));
 		aSource->updateChunkSize(d->getTigerTree().getBlockSize(), d->getSegmentSize(), GET_TICK() - d->getStart());
 		
-		dcdebug("Download finished: %s, size " I64_FMT ", downloaded " I64_FMT "\n", d->getPath().c_str(), d->getSegmentSize(), d->getPos());
+		dcdebug("Download finished: %s, size " I64_FMT ", downloaded " I64_FMT " in " U64_FMT " ms\n", d->getPath().c_str(), d->getSegmentSize(), d->getPos(), GET_TICK() - d->getStart());
 	}
 
 	removeDownload(d);
@@ -496,8 +486,8 @@ void DownloadManager::endData(UserConnection* aSource) {
 	try {
 		QueueManager::getInstance()->putDownload(d, true);
 	} catch (const HashException& e) {
-		aSource->setDownload(nullptr);
-		failDownload(aSource, e.getError(), false);
+		removeRunningUser(aSource);
+		removeConnection(aSource);
 		ConnectionManager::getInstance()->failDownload(aSource->getToken(), e.getError(), true);
 		return;
 	}
@@ -555,10 +545,11 @@ void DownloadManager::removeConnection(UserConnectionPtr aConn) {
 }
 
 void DownloadManager::removeDownload(Download* d) {
+	// Write the leftover bytes into file
 	if(d->getOutput()) {
 		if(d->getActual() > 0) {
 			try {
-				d->getOutput()->flush();
+				d->getOutput()->flushBuffers(false);
 			} catch(const Exception&) {
 			}
 		}
@@ -577,41 +568,7 @@ void DownloadManager::removeDownload(Download* d) {
 	}
 }
 
-void DownloadManager::setTarget(const string& oldTarget, const string& newTarget) {
-	RLock l (cs);
-	for(auto d: downloads) {
-		if (d->getPath() == oldTarget) {
-			d->setPath(newTarget);
-			dcassert(d->getBundle());
-			//update the target in transferview
-			fire(DownloadManagerListener::TargetChanged(), d->getPath(), d->getToken(), d->getBundle()->getToken());
-		}
-	}
-}
-
-void DownloadManager::changeBundle(BundlePtr sourceBundle, BundlePtr targetBundle, const string& path) {
-	UserConnectionList ucl;
-	{
-		WLock l(cs);
-		auto bundleDownloads = sourceBundle->getDownloads();
-		for (auto& d: bundleDownloads) {
-			if (d->getPath() == path) {
-				targetBundle->addDownload(d);
-				d->setBundle(targetBundle);
-				//update the bundle in transferview
-				fire(DownloadManagerListener::TargetChanged(), d->getPath(), d->getToken(), d->getBundle()->getToken());
-				ucl.push_back(&d->getUserConnection());
-				sourceBundle->removeDownload(d);
-			}
-		}
-	}
-
-	for(auto uc: ucl) {
-		startBundle(uc, targetBundle);
-	}
-}
-
-BundlePtr DownloadManager::findRunningBundle(QueueToken aBundleToken) {
+BundlePtr DownloadManager::findRunningBundle(QueueToken aBundleToken) const noexcept {
 	auto s = bundles.find(aBundleToken);
 	if (s != bundles.end()) {
 		return s->second;
@@ -619,7 +576,7 @@ BundlePtr DownloadManager::findRunningBundle(QueueToken aBundleToken) {
 	return nullptr;
 }
 
-void DownloadManager::removeRunningUser(UserConnection* aSource, bool sendRemove /*false*/) {
+void DownloadManager::removeRunningUser(UserConnection* aSource, bool sendRemove /*false*/) noexcept {
 	if (aSource->getLastBundle().empty()) {
 		return;
 	}
@@ -720,7 +677,7 @@ void DownloadManager::on(AdcCommand::STA, UserConnection* aSource, const AdcComm
 	aSource->disconnect();
 }
 
-void DownloadManager::fileNotAvailable(UserConnection* aSource, bool noAccess) {
+void DownloadManager::fileNotAvailable(UserConnection* aSource, bool aNoAccess) {
 	if(aSource->getState() != UserConnection::STATE_SND) {
 		dcdebug("DM::fileNotAvailable Invalid state, disconnecting");
 		aSource->disconnect();
@@ -738,26 +695,23 @@ void DownloadManager::fileNotAvailable(UserConnection* aSource, bool noAccess) {
 	if (d->getType() == Transfer::TYPE_PARTIAL_LIST && isNmdc) {
 		//partial lists should be only used for client viewing in NMDC
 		dcassert(d->isSet(Download::FLAG_VIEW));
-		fire(DownloadManagerListener::Failed(), d, STRING(NO_PARTIAL_SUPPORT_RETRY));
-		string dir = d->getTempTarget();
+		fire(DownloadManagerListener::Failed(), d, STRING(NO_PARTIAL_SUPPORT));
 		QueueManager::getInstance()->putDownload(d, true); // true, false is not used in putDownload for partial
 		removeConnection(aSource);
-		QueueManager::getInstance()->addList(aSource->getHintedUser(), QueueItem::FLAG_CLIENT_VIEW, dir);
 		return;
 	}
 
 	string error = d->getType() == Transfer::TYPE_TREE ? STRING(NO_FULL_TREE) : STRING(FILE_NOT_AVAILABLE);
-	if (d->isSet(Download::FLAG_NFO) && isNmdc) {
-		error = STRING(NO_PARTIAL_SUPPORT);
-	} else if (noAccess) {
+	if (aNoAccess) {
 		error = STRING(NO_FILE_ACCESS);
 	}
 
 	fire(DownloadManagerListener::Failed(), d, error);
-	if (!noAccess)
+	if (!aNoAccess) {
 		QueueManager::getInstance()->removeFileSource(d->getPath(), aSource->getUser(), (Flags::MaskType)(d->getType() == Transfer::TYPE_TREE ? QueueItem::Source::FLAG_NO_TREE : QueueItem::Source::FLAG_FILE_NOT_AVAILABLE), false);
+	}
 
-	QueueManager::getInstance()->putDownload(d, false, noAccess);
+	QueueManager::getInstance()->putDownload(d, false, aNoAccess);
 	checkDownloads(aSource);
 }
 

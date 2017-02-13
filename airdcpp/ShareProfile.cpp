@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 AirDC++ Project
+ * Copyright (C) 2012-2017 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,8 +32,8 @@ string FileList::getFileName() const noexcept {
 	return Util::getPath(Util::PATH_USER_CONFIG) + "files_" + Util::toString(profile) + "_" + Util::toString(listN) + ".xml.bz2";
 }
 
-bool FileList::allowGenerateNew(bool forced) noexcept {
-	bool dirty = (forced && xmlDirty) || forceXmlRefresh || (xmlDirty && (lastXmlUpdate + 15 * 60 * 1000 < GET_TICK()));
+bool FileList::allowGenerateNew(bool aForced) noexcept {
+	bool dirty = (aForced && xmlDirty) || forceXmlRefresh || (xmlDirty && (lastXmlUpdate + 15 * 60 * 1000 < GET_TICK()));
 	if (!dirty) {
 		return false;
 	}
@@ -42,11 +42,11 @@ bool FileList::allowGenerateNew(bool forced) noexcept {
 	return true;
 }
 
-void FileList::generationFinished(bool failed) noexcept {
+void FileList::generationFinished(bool aFailed) noexcept {
 	xmlDirty = false;
 	forceXmlRefresh = false;
 	lastXmlUpdate = GET_TICK();
-	if (failed)
+	if (aFailed)
 		listN--;
 }
 
@@ -62,7 +62,7 @@ void FileList::saveList() {
 	}
 }
 
-ShareProfileInfo::ShareProfileInfo(const string& aName, ProfileToken aToken /*rand*/, State aState /*STATE_NORMAL*/) : name(aName), token(aToken), state(aState), isDefault(false) {}
+ShareProfileInfo::ShareProfileInfo(const string& aName, ProfileToken aToken /*rand*/, State aState /*STATE_NORMAL*/) : name(aName), token(aToken), state(aState) {}
 
 string ShareProfileInfo::getDisplayName() const {
 	string ret = name;
@@ -76,6 +76,28 @@ ShareProfile::ShareProfile(const string& aName, ProfileToken aToken) : token(aTo
 
 ShareProfile::~ShareProfile() {
 
+}
+
+bool ShareProfile::hasCommonProfiles(const ProfileTokenSet& a, const ProfileTokenSet& b) noexcept {
+	for (auto profileToken : a) {
+		if (b.find(profileToken) != b.end()) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+StringList ShareProfile::getProfileNames(const ProfileTokenSet& aTokens, const ShareProfileList& aProfiles) noexcept {
+	StringList ret;
+	for (auto profileToken : aTokens) {
+		auto p = find(aProfiles.begin(), aProfiles.end(), profileToken);
+		if (p != aProfiles.end()) {
+			ret.push_back((*p)->getPlainName());
+		}
+	}
+
+	return ret;
 }
 
 string ShareProfile::getDisplayName() const noexcept {
@@ -92,6 +114,10 @@ FileList* ShareProfile::getProfileList() noexcept {
 
 bool ShareProfile::isDefault() const noexcept {
 	return token == SETTING(DEFAULT_SP);
+}
+
+bool ShareProfile::isHidden() const noexcept {
+	return token == SP_HIDDEN;
 }
 
 } //dcpp

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 AirDC++ Project
+ * Copyright (C) 2012-2017 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,11 +19,12 @@
 #include "stdinc.h"
 #include "Magnet.h"
 
+#include "AirUtil.h"
+#include "QueueManager.h"
+#include "ShareManager.h"
 #include "StringTokenizer.h"
 #include "Text.h"
 #include "Util.h"
-#include "QueueManager.h"
-#include "ShareManager.h"
 
 namespace dcpp {
 

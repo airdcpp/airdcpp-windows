@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,44 +19,41 @@
 #include "stdinc.h"
 #include "DCPlusPlus.h"
 
-#include "ConnectionManager.h"
-#include "DownloadManager.h"
-#include "GeoManager.h"
-#include "UploadManager.h"
-#include "CryptoManager.h"
-#include "ShareManager.h"
-#include "SearchManager.h"
-#include "QueueManager.h"
-#include "ClientManager.h"
-#include "HashManager.h"
-#include "LogManager.h"
-#include "FavoriteManager.h"
-#include "SettingsManager.h"
-#include "FinishedManager.h"
-#include "ADLSearch.h"
-#include "ConnectivityManager.h"
-#include "WebShortcuts.h"
-#include "Localization.h"
-#include "DirectoryListingManager.h"
-#include "UpdateManager.h"
-#include "ThrottleManager.h"
-#include "MessageManager.h"
-#include "HighlightManager.h"
-
+#include "format.h"
+#include "File.h"
 #include "StringTokenizer.h"
 
+#include "ActivityManager.h"
+#include "ADLSearch.h"
+#include "AirUtil.h"
+#include "ClientManager.h"
+#include "ConnectionManager.h"
+#include "ConnectivityManager.h"
+#include "CryptoManager.h"
 #include "DebugManager.h"
-#include "File.h"
+#include "DirectoryListingManager.h"
+#include "DownloadManager.h"
+#include "FavoriteManager.h"
+#include "GeoManager.h"
+#include "HashManager.h"
+#include "Localization.h"
+#include "LogManager.h"
+#include "MessageManager.h"
+#include "QueueManager.h"
+#include "RecentManager.h"
+#include "ShareManager.h"
+#include "SearchManager.h"
+#include "SettingsManager.h"
+#include "ThrottleManager.h"
+#include "UpdateManager.h"
+#include "UploadManager.h"
+#include "ViewFileManager.h"
 
-#include "AutoSearchManager.h"
-#include "ShareScannerManager.h"
-
-#include "format.h"
 namespace dcpp {
 
 #define RUNNING_FLAG Util::getPath(Util::PATH_USER_LOCAL) + "RUNNING"
 
-void startup(function<void(const string&)> stepF, function<bool(const string& /*Message*/, bool /*isQuestion*/, bool /*isError*/)> messageF, function<void()> runWizard, function<void(float)> progressF) throw(Exception) {
+void startup(StepF stepF, MessageF messageF, Callback runWizard, ProgressF progressF, Callback moduleInitF /*nullptr*/, Callback moduleLoadF /*nullptr*/) throw(Exception) {
 	// "Dedicated to the near-memory of Nev. Let's start remembering people while they're still alive."
 	// Nev's great contribution to dc++
 	while(1) break;
@@ -83,6 +80,7 @@ void startup(function<void(const string&)> stepF, function<bool(const string& /*
 	HashManager::newInstance();
 	CryptoManager::newInstance();
 	SearchManager::newInstance();
+	ShareManager::newInstance();
 	ClientManager::newInstance();
 	ConnectionManager::newInstance();
 	MessageManager::newInstance();
@@ -90,33 +88,34 @@ void startup(function<void(const string&)> stepF, function<bool(const string& /*
 	UploadManager::newInstance();
 	ThrottleManager::newInstance();
 	QueueManager::newInstance();
-	ShareManager::newInstance();
 	FavoriteManager::newInstance();
-	FinishedManager::newInstance();
 	ADLSearchManager::newInstance();
 	ConnectivityManager::newInstance();
-	DebugManager::newInstance();
-	WebShortcuts::newInstance();
-	AutoSearchManager::newInstance();
-	ShareScannerManager::newInstance();
-	GeoManager::newInstance();
 	DirectoryListingManager::newInstance();
+	DebugManager::newInstance();
+	GeoManager::newInstance();
 	UpdateManager::newInstance();
-	HighlightManager::newInstance();
+	ViewFileManager::newInstance();
+	ActivityManager::newInstance();
+	RecentManager::newInstance();
+
+	if (moduleInitF) {
+		moduleInitF();
+	}
 
 	SettingsManager::getInstance()->load(messageF);
 
 	UploadManager::getInstance()->setFreeSlotMatcher();
 	Localization::init();
-	if(SETTING(WIZARD_RUN_NEW) && runWizard) {
+	if(SETTING(WIZARD_PENDING) && runWizard) {
 		runWizard();
-		SettingsManager::getInstance()->set(SettingsManager::WIZARD_RUN_NEW, false); //wizard has run on startup
+		SettingsManager::getInstance()->set(SettingsManager::WIZARD_PENDING, false); //wizard has run on startup
 	}
 
 
 	if(!SETTING(LANGUAGE_FILE).empty()) {
 		string languageFile = SETTING(LANGUAGE_FILE);
-		if(!File::isAbsolute(languageFile))
+		if(!File::isAbsolutePath(languageFile))
 			languageFile = Util::getPath(Util::PATH_LOCALE) + languageFile;
 		ResourceManager::getInstance()->loadLanguage(languageFile);
 	}
@@ -139,21 +138,25 @@ void startup(function<void(const string&)> stepF, function<bool(const string& /*
 	announce(STRING(DOWNLOAD_QUEUE));
 	QueueManager::getInstance()->loadQueue(progressF);
 
-	//Load before share, it can result in bundles changing status to failed_missing, avoids adding double items in auto search.
-	AutoSearchManager::getInstance()->AutoSearchLoad();
-
 	announce(STRING(SHARED_FILES));
 	ShareManager::getInstance()->startup(stepF, progressF); 
 
 	FavoriteManager::getInstance()->load();
+	RecentManager::getInstance()->load();
 
 	if(SETTING(GET_USER_COUNTRY)) {
 		announce(STRING(COUNTRY_INFORMATION));
 		GeoManager::getInstance()->init();
 	}
+
+	// Modules may depend on data loaded in other sections
+	// Initialization should still be performed before loading SettingsManager as some modules save their config there
+	if (moduleLoadF) {
+		moduleLoadF();
+	}
 }
 
-void shutdown(function<void (const string&)> stepF, function<void (float)> progressF) {
+void shutdown(StepF stepF, ProgressF progressF, Callback moduleDestroyF) {
 	TimerManager::getInstance()->shutdown();
 	auto announce = [&stepF](const string& str) {
 		if(stepF) {
@@ -166,8 +169,6 @@ void shutdown(function<void (const string&)> stepF, function<void (float)> progr
 	announce(STRING(SAVING_HASH_DATA));
 	HashManager::getInstance()->shutdown(progressF);
 
-	ThrottleManager::getInstance()->shutdown();
-
 	announce(STRING(SAVING_SHARE));
 	ShareManager::getInstance()->shutdown(progressF);
 
@@ -178,34 +179,37 @@ void shutdown(function<void (const string&)> stepF, function<void (float)> progr
 	BufferedSocket::waitShutdown();
 	
 	announce(STRING(SAVING_SETTINGS));
-	AutoSearchManager::getInstance()->AutoSearchSave();
 	QueueManager::getInstance()->shutdown();
+	FavoriteManager::getInstance()->shutdown();
 	SettingsManager::getInstance()->save();
+	RecentManager::getInstance()->save();
+
+	if (moduleDestroyF) {
+		moduleDestroyF();
+	}
 
 	announce(STRING(SHUTTING_DOWN));
 
-	HighlightManager::deleteInstance();
+	RecentManager::deleteInstance();
+	ActivityManager::deleteInstance();
+	ViewFileManager::deleteInstance();
 	UpdateManager::deleteInstance();
 	GeoManager::deleteInstance();
 	ConnectivityManager::deleteInstance();
 	DebugManager::deleteInstance();
-	AutoSearchManager::deleteInstance();
-	WebShortcuts::deleteInstance();
 	ADLSearchManager::deleteInstance();
-	FinishedManager::deleteInstance();
 	CryptoManager::deleteInstance();
 	ThrottleManager::deleteInstance();
 	DirectoryListingManager::deleteInstance();
-	ShareManager::deleteInstance();
 	QueueManager::deleteInstance();
 	DownloadManager::deleteInstance();
 	UploadManager::deleteInstance();
-	ShareScannerManager::deleteInstance();
 	MessageManager::deleteInstance();
 	ConnectionManager::deleteInstance();
 	SearchManager::deleteInstance();
 	FavoriteManager::deleteInstance();
 	ClientManager::deleteInstance();
+	ShareManager::deleteInstance();
 	HashManager::deleteInstance();
 	LogManager::deleteInstance();
 	SettingsManager::deleteInstance();

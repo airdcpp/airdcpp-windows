@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -99,7 +99,7 @@ struct Match : boost::static_visitor<bool> {
 	}
 
 	bool operator()(const string& s) const {
-		return str == s;
+		return Util::stricmp(str, s) == 0;
 	}
 
 	bool operator()(const boost::regex& r) const {

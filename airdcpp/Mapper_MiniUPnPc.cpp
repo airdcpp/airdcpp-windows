@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +24,8 @@
 #include "Socket.h"
 
 extern "C" {
-#ifndef STATICLIB
-#define STATICLIB
+#ifndef MINIUPNP_STATICLIB
+#define MINIUPNP_STATICLIB
 #endif
 #include <miniupnpc/miniupnpc.h>
 #include <miniupnpc/upnpcommands.h>
@@ -97,10 +97,10 @@ bool Mapper_MiniUPnPc::init() {
 	if(!url.empty())
 		return true;
 
-#ifdef HAVE_OLD_MINIUPNPC
-	UPNPDev* devices = upnpDiscover(2000, localIp.empty() ? nullptr : localIp.c_str(), 0, 0);
-#else
+#if MINIUPNPC_API_VERSION < 14
 	UPNPDev* devices = upnpDiscover(2000, localIp.empty() ? nullptr : localIp.c_str(), 0, 0, v6, 0);
+#else
+  UPNPDev* devices = upnpDiscover(2000, localIp.empty() ? nullptr : localIp.c_str(), 0, 0, v6, 2, 0);
 #endif
 	if(!devices)
 		return false;
@@ -113,22 +113,23 @@ bool Mapper_MiniUPnPc::init() {
 	bool ok = ret == 1;
 	if(ok) {
 		if (localIp.empty()) {
-			AirUtil::IpList addresses;
-			AirUtil::getIpAddresses(addresses, v6);
-	
-			auto remoteIP = string(string(data.urlbase).empty() ?  urls.controlURL : data.urlbase);
-			auto start = remoteIP.find("//");
-			if (start != string::npos) {
-				start = start+2;
-				auto end = remoteIP.find(":", start);
-				if (end != string::npos) {
-					remoteIP = Socket::resolve(remoteIP.substr(start, end-start), v6 ? AF_INET6 : AF_INET);
-					if (!remoteIP.empty()) {
-						auto p = boost::find_if(addresses, [&remoteIP, this](const AirUtil::AddressInfo& aInfo) { return isIPInRange(aInfo.ip, remoteIP, aInfo.prefix, v6); });
-						if (p != addresses.end()) {
-							localIp = p->ip;
-						}
-					}
+			// We have no bind address configured in settings
+			// Try to avoid choosing a random adapter for port mapping
+
+			// Parse router IP from the control URL address
+			auto controlUrl = string(string(data.urlbase).empty() ? urls.controlURL : data.urlbase);
+
+			string routerIp, portTmp, protoTmp, pathTmp, queryTmp, fragmentTmp;
+			Util::decodeUrl(controlUrl, protoTmp, routerIp, portTmp, pathTmp, queryTmp, fragmentTmp);
+
+			routerIp = Socket::resolve(routerIp, v6 ? AF_INET6 : AF_INET);
+			if (!routerIp.empty()) {
+				auto adapters = AirUtil::getNetworkAdapters(v6);
+
+				// Find a local IP that is within the same subnet
+				auto p = boost::find_if(adapters, [&routerIp, this](const AirUtil::AdapterInfo& aInfo) { return isIPInRange(aInfo.ip, routerIp, aInfo.prefix, v6); });
+				if (p != adapters.end()) {
+					localIp = p->ip;
 				}
 			}
 		}

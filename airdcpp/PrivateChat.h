@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 
 #include "forward.h"
 
-#include "ClientManager.h"
+#include "ClientManagerListener.h"
 #include "DelayedEvents.h"
 #include "MessageCache.h"
 #include "PrivateChatListener.h"
@@ -54,8 +54,9 @@ namespace dcpp {
 		PrivateChat(const HintedUser& aUser, UserConnection* aUc = nullptr);
 		~PrivateChat();
 
-		bool sendPrivateMessage(const string& msg, string& error_, bool thirdPerson);
-		void handleMessage(const ChatMessagePtr& aMessage);
+		bool sendMessage(const string& msg, string& error_, bool thirdPerson);
+		void handleMessage(const ChatMessagePtr& aMessage) noexcept;
+		void statusMessage(const string& aMessage, LogMessage::Severity aSeverity) noexcept;
 
 		void close();
 
@@ -68,22 +69,19 @@ namespace dcpp {
 		void CCPMConnected(UserConnection* uc);
 		void CCPMDisconnected();
 
-		void setHubUrl(const string& hint);
-		const UserPtr& getUser() const { return replyTo.user; }
-		const string& getHubUrl() const { return replyTo.hint; }
-		const HintedUser& getHintedUser() const { return replyTo; }
+		void setHubUrl(const string& hint) noexcept;
+		const UserPtr& getUser() const noexcept { return replyTo.user; }
+		const string& getHubUrl() const noexcept { return replyTo.hint; }
+		const HintedUser& getHintedUser() const noexcept { return replyTo; }
 
-		ClientPtr getClient() {
-			return ClientManager::getInstance()->getClient(replyTo.hint);
-		}
-		
-		GETSET(bool, supportsCCPM, SupportsCCPM);
-		GETSET(string, lastCCPMError, LastCCPMError);
+		ClientPtr getClient() const noexcept;
+
+		string getLastCCPMError();
 	
-		void logMessage(const string& aMessage);
-		void fillLogParams(ParamMap& params) const;
-		string getLogPath() const;
-		bool isOnline() const { return online; }
+		void logMessage(const string& aMessage) const noexcept;
+		void fillLogParams(ParamMap& params) const noexcept;
+		string getLogPath() const noexcept;
+		bool isOnline() const noexcept { return online; }
 
 		CCPMState getCCPMState() const noexcept {
 			return ccpmState;
@@ -94,8 +92,11 @@ namespace dcpp {
 		}
 
 		void setRead() noexcept;
+		int clearCache() noexcept;
+
+		// Posts an info status message of the user is ignored
+		void checkIgnored() noexcept;
 	private:
-		void statusMessage(const string& aMessage, LogMessage::Severity aSeverity) noexcept;
 		MessageCache cache;
 		enum EventType {
 			USER_UPDATE,
@@ -105,7 +106,8 @@ namespace dcpp {
 
 		void checkAlwaysCCPM();
 		void checkCCPMTimeout();
-		void setUc(UserConnection* aUc){ uc = aUc; ccpmState = aUc ? CONNECTED : DISCONNECTED; }
+		void checkCCPMHubBlocked() noexcept;
+		void setUc(UserConnection* aUc) noexcept { uc = aUc; ccpmState = aUc ? CONNECTED : DISCONNECTED; }
 
 		HintedUser replyTo;
 
@@ -123,11 +125,12 @@ namespace dcpp {
 			handleMessage(message);
 		}
 		virtual void on(AdcCommand::PMI, UserConnection*, const AdcCommand& cmd) noexcept;
+		void onUserUpdated(const OnlineUser& aUser) noexcept;
 
 		// ClientManagerListener
-		void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool wentOffline) noexcept;
+		void on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool aWasOffline) noexcept;
 		void on(ClientManagerListener::UserUpdated, const OnlineUser& aUser) noexcept;
-		void on(ClientManagerListener::ClientDisconnected, const string& aHubUrl) noexcept;
+		void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool aWentOffline) noexcept;
 
 		bool online = true;
 
@@ -135,7 +138,7 @@ namespace dcpp {
 		string hubName;
 
 		// Checks that the user still exists in the hinted hub and changes to another hub when needed
-		void checkUserHub(bool wentOffline);
+		void checkUserHub(bool aWentOffline) noexcept;
 	};
 }
 

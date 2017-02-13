@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,11 +25,19 @@
 #include "format.h"
 #include "LogManager.h"
 #include "Mapper_MiniUPnPc.h"
+
+#ifdef HAVE_NATPMP_H
 #include "Mapper_NATPMP.h"
+#endif
+
+#ifdef WIN32
 #include "Mapper_WinUPnP.h"
+#endif
+
 #include "ScopedFunctor.h"
 #include "SearchManager.h"
 #include "ResourceManager.h"
+#include "TimerManager.h"
 #include "version.h"
 
 namespace dcpp {
@@ -38,8 +46,13 @@ MappingManager::MappingManager(bool v6) : renewal(0), v6(v6) {
 	busy.clear();
 	addMapper<Mapper_MiniUPnPc>();
 	if (!v6) {
+#ifdef HAVE_NATPMP_H
 		addMapper<Mapper_NATPMP>();
+#endif
+
+#ifdef WIN32
 		addMapper<Mapper_WinUPnP>();
+#endif
 	}
 }
 

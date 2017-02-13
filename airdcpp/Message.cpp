@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,12 +20,7 @@
 
 #include "Message.h"
 #include "ClientManager.h"
-#include "Magnet.h"
 #include "OnlineUser.h"
-#include "QueueManager.h"
-#include "ResourceManager.h"
-#include "ShareManager.h"
-#include "Util.h"
 
 namespace dcpp {
 
@@ -37,9 +32,12 @@ ChatMessage::ChatMessage(const string& aText, const OnlineUserPtr& aFrom, const 
 	read = aFrom && aFrom->getUser() == ClientManager::getInstance()->getMe();
 }
 
-LogMessage::LogMessage(const string& aMessage, LogMessage::Severity sev) noexcept : id(messageIdCounter++), text(aMessage), time(GET_TIME()), severity(sev) { }
+LogMessage::LogMessage(const string& aMessage, LogMessage::Severity sev, bool aHistory) noexcept : 
+	id(messageIdCounter++), text(aMessage), time(aHistory ? 0 : GET_TIME()), severity(sev), read(aHistory) {
 
-string ChatMessage::format() const {
+}
+
+string ChatMessage::format() const noexcept {
 	string tmp;
 
 	//if(timestamp) {

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -29,8 +29,18 @@
 namespace dcpp {
 	typedef deque<Message> MessageList;
 
+	struct MessageCount {
+		int logMessages = 0;
+		int chatMessages = 0;
+
+		bool hasMessages() const noexcept {
+			return logMessages > 0 || chatMessages > 0;
+		}
+	};
+
 	class MessageCache {
 	public:
+
 		typedef std::function<bool(const ChatMessagePtr& aMessage)> ChatMessageFilterF;
 
 		MessageCache(SettingsManager::IntSetting aSetting) noexcept : setting(aSetting) { }
@@ -42,6 +52,10 @@ namespace dcpp {
 		}
 
 		MessageList getMessages() const noexcept;
+		const MessageList& getMessagesUnsafe() const noexcept {
+			return messages;
+		}
+
 		LogMessageList getLogMessages() const noexcept;
 		ChatMessageList getChatMessages() const noexcept;
 
@@ -51,7 +65,9 @@ namespace dcpp {
 		// Use the severity SEV_LAST to count all messages
 		int countUnreadLogMessages(LogMessage::Severity aSeverity) const noexcept;
 		int countUnreadChatMessages(ChatMessageFilterF filterF = nullptr) const noexcept;
-		int setRead() noexcept;
+		MessageCount setRead() noexcept;
+
+		SharedMutex& getCS() const noexcept { return cs; }
 	private:
 		void add(Message&& aMessage) noexcept;
 

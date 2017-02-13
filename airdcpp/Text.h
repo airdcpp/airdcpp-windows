@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -80,6 +80,7 @@ namespace Text {
 	inline bool isAscii(const string& str) noexcept { return isAscii(str.c_str()); }
 	bool isAscii(const char* str) noexcept;
 
+	string sanitizeUtf8(const string& str) noexcept;
 	bool validateUtf8(const string& str) noexcept;
 
 	inline char asciiToLower(char c) { dcassert((((uint8_t)c) & 0x80) == 0); return (char)tolower(c); }
@@ -91,23 +92,25 @@ namespace Text {
 	bool isLower(const string& str) noexcept;
 
 	string toLower(const string& str) noexcept;
-
+#ifndef _WIN32
 	string convert(const string& str, const string& fromCharset, const string& toCharset = "") noexcept;
-
+#endif
 	string toUtf8(const string& str, const string& fromCharset = "") noexcept;
 
 	string fromUtf8(const string& str, const string& toCharset = "") noexcept;
 
-	string toDOS(string tmp);
-	wstring toDOS(wstring tmp);
+	string toDOS(string tmp) noexcept;
+	wstring toDOS(wstring tmp) noexcept;
 
-	inline bool isSeparator(char c) {
+	inline bool isSeparator(char c) noexcept {
 		return (c >= 32 && c <= 47) ||
 			(c >= 58 && c <= 64) ||
 			(c >= 91 && c <= 96) ||
 			(c >= 91 && c <= 96) ||
 			(c >= 123 && c <= 127);
 	};
+
+	bool isSeparator(wchar_t c) noexcept;
 }
 
 #ifdef _WIN32

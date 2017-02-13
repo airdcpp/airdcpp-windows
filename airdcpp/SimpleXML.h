@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,8 +28,6 @@
 #include <boost/noncopyable.hpp>
 
 namespace dcpp {
-
-STANDARD_EXCEPTION(SimpleXMLException);
 
 /**
  * A simple XML class that loads an XML-ish structure into an internal tree
@@ -138,26 +136,26 @@ public:
 		return (tmp.size() > 0) && tmp[0] == '1';
 	}
 	
-	void fromXML(const string& aXML);
+	void fromXML(const string& aXML, int aFlags = 0);
 	string toXML();
 	string childToXML();
 	void toXML(OutputStream* f);
 	
-	static const string& escape(const string& str, string& tmp, bool aAttrib, bool aLoading = false, const string &encoding = Text::utf8) {
-		if(needsEscape(str, aAttrib, aLoading, encoding)) {
+	static const string& escape(const string& str, string& tmp, bool aAttrib, bool aLoading = false) {
+		if(needsEscape(str, aAttrib, aLoading)) {
 			tmp = str;
-			return escape(tmp, aAttrib, aLoading, encoding);
+			return escape(tmp, aAttrib, aLoading);
 		}
 		return str;
 	}
-	static string& escape(string& aString, bool aAttrib, bool aLoading = false, const string &encoding = Text::utf8);
+	static string& escape(string& aString, bool aAttrib, bool aLoading = false);
 	/** 
 	 * This is a heuristic for whether escape needs to be called or not. The results are
  	 * only guaranteed for false, i e sometimes true might be returned even though escape
 	 * was not needed...
 	 */
-	static bool needsEscape(const string& aString, bool aAttrib, bool aLoading = false, const string &encoding = Text::utf8) {
-		return Util::stricmp(encoding, Text::utf8) != 0 || (((aLoading) ? aString.find('&') : aString.find_first_of(aAttrib ? "<&>'\"" : "<&>")) != string::npos);
+	static bool needsEscape(const string& aString, bool aAttrib, bool aLoading = false) {
+		return (((aLoading) ? aString.find('&') : aString.find_first_of(aAttrib ? "<&>'\"" : "<&>")) != string::npos);
 	}
 	static const string utf8Header;
 private:

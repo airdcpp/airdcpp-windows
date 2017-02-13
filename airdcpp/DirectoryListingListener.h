@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2015 AirDC++ Project
+ * Copyright (C) 2011-2017 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,8 +41,10 @@ public:
 	typedef X<10> SetActive;
 	typedef X<11> UserUpdated;
 	typedef X<12> StateChanged;
+	typedef X<13> Read;
+	typedef X<14> ShareProfileChanged;
 
-	virtual void on(LoadingFinished, int64_t /*start*/, const string& /*aDir*/, bool /*reloadList*/, bool /*changeDir*/) noexcept { }
+	virtual void on(LoadingFinished, int64_t /*start*/, const string& /*aDir*/, bool /*aBackgroundTask*/) noexcept { }
 	virtual void on(LoadingFailed, const string&) noexcept { }
 	virtual void on(LoadingStarted, bool /* changeDir */) noexcept { }
 	virtual void on(QueueMatched, const string&) noexcept { }
@@ -54,7 +56,9 @@ public:
 	virtual void on(RemovedQueue, const string&) noexcept { }
 	virtual void on(SetActive) noexcept {}
 	virtual void on(UserUpdated) noexcept {}
-	virtual void on(StateChanged, uint8_t) noexcept {}
+	virtual void on(StateChanged) noexcept {}
+	virtual void on(Read) noexcept {}
+	virtual void on(ShareProfileChanged) noexcept {}
 };
 
 } // namespace dcpp

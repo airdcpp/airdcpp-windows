@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2015 AirDC++ Project
+ * Copyright (C) 2011-2017 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,15 +26,15 @@
 namespace dcpp {
 
 
-void UserQueue::addQI(QueueItemPtr& qi, bool newBundle /*false*/) noexcept {
+void UserQueue::addQI(const QueueItemPtr& qi) noexcept {
 	for(const auto& i: qi->getSources()) {
-		addQI(qi, i.getUser(), newBundle);
+		addQI(qi, i.getUser());
 	}
 }
 
-void UserQueue::addQI(QueueItemPtr& qi, const HintedUser& aUser, bool newBundle /*false*/, bool isBadSource /*false*/) noexcept{
+void UserQueue::addQI(const QueueItemPtr& qi, const HintedUser& aUser, bool aIsBadSource /*false*/) noexcept{
 
-	if (qi->getPriority() == QueueItem::HIGHEST) {
+	if (qi->getPriority() == Priority::HIGHEST) {
 		auto& l = userPrioQueue[aUser.user];
 		l.insert(upper_bound(l.begin(), l.end(), qi, QueueItem::SizeSortOrder()), qi);
 	}
@@ -42,11 +42,8 @@ void UserQueue::addQI(QueueItemPtr& qi, const HintedUser& aUser, bool newBundle 
 	BundlePtr bundle = qi->getBundle();
 	if (bundle) {
 		aUser.user->addQueued(qi->getSize());
-		if (bundle->addUserQueue(qi, aUser, isBadSource)) {
+		if (bundle->addUserQueue(qi, aUser, aIsBadSource)) {
 			addBundle(bundle, aUser);
-			if (!newBundle) {
-				QueueManager::getInstance()->fire(QueueManagerListener::BundleSources(), bundle);
-			}
 		} else {
 			dcassert(userBundleQueue.find(aUser.user) != userBundleQueue.end());
 		}
@@ -73,13 +70,13 @@ void UserQueue::getUserQIs(const UserPtr& aUser, QueueItemList& ql) noexcept{
 }
 
 QueueItemPtr UserQueue::getNext(const UserPtr& aUser, const QueueTokenSet& runningBundles, const OrderedStringSet& onlineHubs,
-	string& lastError_, bool& hasDownload, QueueItemBase::Priority minPrio, int64_t wantedSize, int64_t lastSpeed, QueueItemBase::DownloadType aType,
+	string& lastError_, bool& hasDownload, Priority minPrio, int64_t wantedSize, int64_t lastSpeed, QueueItemBase::DownloadType aType,
 	bool allowOverlap /*false*/) noexcept {
 
 	/* Using the PAUSED priority will list all files */
-	QueueItemPtr qi = getNextPrioQI(aUser, onlineHubs, 0, 0, aType, allowOverlap, lastError_);
+	auto qi = getNextPrioQI(aUser, onlineHubs, 0, 0, aType, allowOverlap, lastError_);
 	if(!qi) {
-		qi = getNextBundleQI(aUser, runningBundles, onlineHubs, (QueueItemBase::Priority)minPrio, wantedSize, lastSpeed, aType, allowOverlap, lastError_, hasDownload);
+		qi = getNextBundleQI(aUser, runningBundles, onlineHubs, (Priority)minPrio, wantedSize, lastSpeed, aType, allowOverlap, lastError_, hasDownload);
 	}
 
 	if (!qi && !allowOverlap) {
@@ -109,7 +106,7 @@ QueueItemPtr UserQueue::getNextPrioQI(const UserPtr& aUser, const OrderedStringS
 }
 
 QueueItemPtr UserQueue::getNextBundleQI(const UserPtr& aUser, const QueueTokenSet& runningBundles, const OrderedStringSet& onlineHubs,
-	QueueItemBase::Priority minPrio, int64_t wantedSize, int64_t lastSpeed, QueueItemBase::DownloadType aType, bool allowOverlap, 
+	Priority minPrio, int64_t wantedSize, int64_t lastSpeed, QueueItemBase::DownloadType aType, bool allowOverlap, 
 	string& lastError_, bool& hasDownload) noexcept{
 
 	lastError_ = Util::emptyString;
@@ -146,7 +143,7 @@ void UserQueue::removeDownload(QueueItemPtr& qi, const string& aToken) noexcept 
 	qi->removeDownload(aToken);
 }
 
-void UserQueue::setQIPriority(QueueItemPtr& qi, QueueItemBase::Priority p) noexcept {
+void UserQueue::setQIPriority(QueueItemPtr& qi, Priority p) noexcept {
 	removeQI(qi, false);
 	qi->setPriority(p);
 	addQI(qi);
@@ -180,7 +177,7 @@ void UserQueue::removeQI(QueueItemPtr& qi, const UserPtr& aUser, bool removeRunn
 		}
 	}
 
-	if (qi->getPriority() == QueueItem::HIGHEST) {
+	if (qi->getPriority() == Priority::HIGHEST) {
 		auto j = userPrioQueue.find(aUser);
 		dcassert(j != userPrioQueue.end());
 		if (j == userPrioQueue.end()) {
@@ -225,8 +222,8 @@ void UserQueue::removeBundle(BundlePtr& aBundle, const UserPtr& aUser) noexcept 
 	}
 }
 
-void UserQueue::setBundlePriority(BundlePtr& aBundle, QueueItemBase::Priority p) noexcept {
-	dcassert(!aBundle->isFinished());
+void UserQueue::setBundlePriority(BundlePtr& aBundle, Priority p) noexcept {
+	dcassert(!aBundle->isDownloaded());
 
 	HintedUserList sources;
 	aBundle->getSourceUsers(sources);

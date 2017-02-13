@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2015 AirDC++ Project
+ * Copyright (C) 2011-2017 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ private:
 	bool stop;
 
 	DispatcherQueue pp;
-	void handlePacket(uint8_t* aBuf, size_t aLen, const string& aRemoteIp);
+	void handlePacket(const ByteVector& aBuf, size_t aLen, const string& aRemoteIp);
 };
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #include "stdinc.h"
 #include "Download.h"
 
+#include "Bundle.h"
 #include "File.h"
 #include "FilteredFile.h"
 #include "HashManager.h"
@@ -50,13 +51,11 @@ Download::Download(UserConnection& conn, QueueItem& qi) noexcept : Transfer(conn
 		setFlag(FLAG_VIEW);
 	if(qi.isSet(QueueItem::FLAG_MATCH_QUEUE))
 		setFlag(FLAG_QUEUE);
-	if(qi.isSet(QueueItem::FLAG_VIEW_NFO))
-		setFlag(FLAG_NFO);
 	if(qi.isSet(QueueItem::FLAG_RECURSIVE_LIST))
 		setFlag(FLAG_RECURSIVE);
 	if(qi.isSet(QueueItem::FLAG_TTHLIST_BUNDLE))
 		setFlag(FLAG_TTHLIST_BUNDLE);
-	if (qi.getPriority() == QueueItemBase::HIGHEST)
+	if (qi.getPriority() == Priority::HIGHEST)
 		setFlag(FLAG_HIGHEST_PRIO);
 
 	if (qi.getBundle()) {
@@ -102,6 +101,35 @@ Download::Download(UserConnection& conn, QueueItem& qi) noexcept : Transfer(conn
 
 Download::~Download() {
 	getUserConnection().setDownload(0);
+}
+
+string Download::getBundleStringToken() const noexcept {
+	if (!bundle)
+		return Util::emptyString;
+
+	return bundle->getStringToken();
+}
+
+bool Download::operator==(const Download* d) const {
+	return compare(getToken(), d->getToken()) == 0;
+}
+
+void Download::appendFlags(OrderedStringSet& flags_) const noexcept {
+	if (isSet(Download::FLAG_PARTIAL)) {
+		flags_.insert("P");
+	}
+
+	if (isSet(Download::FLAG_TTH_CHECK)) {
+		flags_.insert("T");
+	}
+	if (isSet(Download::FLAG_ZDOWNLOAD)) {
+		flags_.insert("Z");
+	}
+	if (isSet(Download::FLAG_CHUNKED)) {
+		flags_.insert("C");
+	}
+
+	Transfer::appendFlags(flags_);
 }
 
 AdcCommand Download::getCommand(bool zlib, const string& mySID) const noexcept {

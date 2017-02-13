@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,10 @@
 
 namespace dcpp {
 
+struct ActionHookError;
+typedef std::shared_ptr<ActionHookError> ActionHookErrorPtr;
+typedef std::function<ActionHookErrorPtr(const string& aErrorId, const string& aErrorMessage)> HookErrorGetter;
+
 class AdcCommand;
 
 class SearchQuery;
@@ -36,10 +40,13 @@ class ADLSearch;
 
 class BufferedSocket;
 
-struct BundleFileInfo;
+struct BundleDirectoryItemInfo;
+
+struct BundleAddInfo;
+struct DirectoryBundleAddInfo;
 
 class Bundle;
-typedef boost::intrusive_ptr<Bundle> BundlePtr;
+typedef std::shared_ptr<Bundle> BundlePtr;
 typedef std::vector<BundlePtr> BundleList;
 
 class CID;
@@ -48,14 +55,19 @@ typedef std::vector<uint16_t> PartsInfo;
 
 class Client;
 typedef std::shared_ptr<Client> ClientPtr;
+typedef uint32_t ClientToken;
 
 class ClientManager;
 
 class ConnectionQueueItem;
 
 class DirectoryListing;
-typedef boost::intrusive_ptr<DirectoryListing> DirectoryListingPtr;
+typedef std::shared_ptr<DirectoryListing> DirectoryListingPtr;
 typedef std::vector<DirectoryListingPtr> DirectoryListingList;
+
+class DirectoryDownload;
+typedef std::shared_ptr<DirectoryDownload> DirectoryDownloadPtr;
+typedef vector<DirectoryDownloadPtr> DirectoryDownloadList;
 
 class Download;
 typedef Download* DownloadPtr;
@@ -68,10 +80,6 @@ typedef std::vector<FavoriteHubEntryPtr> FavoriteHubEntryList;
 class FavoriteUser;
 
 class File;
-
-class FinishedItem;
-typedef FinishedItem* FinishedItemPtr;
-typedef std::vector<FinishedItemPtr> FinishedItemList;
 
 class FinishedManager;
 
@@ -86,9 +94,6 @@ typedef std::vector<HintedUser> HintedUserList;
 class HttpConnection;
 
 struct HttpDownload;
-
-class HubEntry;
-typedef std::vector<HubEntry> HubEntryList;
 
 class Identity;
 
@@ -118,24 +123,29 @@ typedef std::shared_ptr<PrivateChat> PrivateChatPtr;
 class QueueItemBase;
 
 class QueueItem;
-typedef boost::intrusive_ptr<QueueItem> QueueItemPtr;
+typedef std::shared_ptr<QueueItem> QueueItemPtr;
 typedef std::vector<QueueItemPtr> QueueItemList;
-
-class RecentHubEntry;
-typedef boost::intrusive_ptr<RecentHubEntry> RecentHubEntryPtr;
-typedef std::vector<RecentHubEntryPtr> RecentHubEntryList;
 
 class Search;
 typedef shared_ptr<Search> SearchPtr;
 
+class SearchInstance;
+typedef shared_ptr<SearchInstance> SearchInstancePtr;
+
 class SearchResult;
-typedef boost::intrusive_ptr<SearchResult> SearchResultPtr;
+typedef std::shared_ptr<SearchResult> SearchResultPtr;
 typedef std::vector<SearchResultPtr> SearchResultList;
+
+class GroupedSearchResult;
+typedef std::shared_ptr<GroupedSearchResult> GroupedSearchResultPtr;
+typedef std::vector<GroupedSearchResultPtr> GroupedSearchResultList;
 
 class ServerSocket;
 
 class ShareProfile;
 typedef std::shared_ptr<ShareProfile> ShareProfilePtr;
+typedef vector<ShareProfilePtr> ShareProfileList;
+typedef set<string> RefreshPathList;
 
 class SimpleXML;
 
@@ -172,10 +182,9 @@ class UserConnection;
 typedef UserConnection* UserConnectionPtr;
 typedef std::vector<UserConnectionPtr> UserConnectionList;
 
-class AutoSearch;
-typedef boost::intrusive_ptr<AutoSearch> AutoSearchPtr;
-typedef std::vector<AutoSearchPtr> AutoSearchList;
-typedef std::unordered_map<int, AutoSearchPtr> AutoSearchMap;
+class ViewFile;
+typedef shared_ptr<ViewFile> ViewFilePtr;
+typedef vector<ViewFilePtr> ViewFileList;
 
 } // namespace dcpp
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -510,13 +510,13 @@ int BufferedSocket::run() {
 }
 
 void BufferedSocket::fail(const string& aError) {
-	if(sock.get()) {
-		sock->disconnect();
-	}
-
 	if(state != FAILED) {
 		state = FAILED;
 		fire(BufferedSocketListener::Failed(), aError);
+	}
+	//fire listener before deleting socket to be able to retrieve information from it.. does it cause any problems?? 
+	if (sock.get()) {
+		sock->disconnect();
 	}
 }
 

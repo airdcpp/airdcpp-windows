@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #include "stdinc.h"
 #include "CID.h"
 
+#include "Encoder.h"
 #include "Util.h"
 
 namespace dcpp {
@@ -31,5 +32,16 @@ CID CID::generate() {
 	return CID(data);
 }
 
+CID::CID(const string& base32) {
+	Encoder::fromBase32(base32.c_str(), cid, sizeof(cid)); 
+}
+
+string CID::toBase32() const {
+	return Encoder::toBase32(cid, sizeof(cid)); 
+}
+
+string& CID::toBase32(string& tmp) const {
+	return Encoder::toBase32(cid, sizeof(cid), tmp); 
+}
 
 }

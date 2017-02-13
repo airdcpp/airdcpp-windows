@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,9 +35,9 @@ inline void CDECL debugTrace(const char* format, ...) {
 	//show the debug info in output window. 	 
 	va_list args;
 	va_start(args, format);
-	char str[512];
+	char str[1024];
 	vsprintf(str, format, args);
-	wchar_t str2[512];
+	wchar_t str2[1024];
 	::MultiByteToWideChar(CP_UTF8, NULL, str, -1, str2, sizeof(str2) -1);
 	OutputDebugString(str2);
 	va_end(args);

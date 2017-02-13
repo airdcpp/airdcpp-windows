@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,15 +19,17 @@
 #ifndef DCPLUSPLUS_DCPP_CRYPTO_MANAGER_H
 #define DCPLUSPLUS_DCPP_CRYPTO_MANAGER_H
 
-#include "SettingsManager.h"
-
+#include "CriticalSection.h"
 #include "Exception.h"
 #include "Singleton.h"
 #include "SSL.h"
 
-namespace dcpp {
+//This is for earlier OpenSSL versions that don't have this error code yet..
+#ifndef X509_V_ERR_UNSPECIFIED
+#define X509_V_ERR_UNSPECIFIED 1
+#endif
 
-STANDARD_EXCEPTION(CryptoException);
+namespace dcpp {
 
 class CryptoManager : public Singleton<CryptoManager>
 {
@@ -71,6 +73,10 @@ public:
 	static void setCertPaths();
 
 	static int idxVerifyData;
+
+	// Options that can also be shared with external contexts
+	static void setContextOptions(SSL_CTX* aSSL, bool aServer);
+	static string keyprintToString(const ByteVector& aKP) noexcept;
 private:
 
 	friend class Singleton<CryptoManager>;

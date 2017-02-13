@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ namespace dcpp {
 
 const string SimpleXML::utf8Header = "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>\r\n";
 
-string& SimpleXML::escape(string& aString, bool aAttrib, bool aLoading /* = false */, const string &encoding /* = "UTF-8" */) {
+string& SimpleXML::escape(string& aString, bool aAttrib, bool aLoading /* = false */) {
 	string::size_type i = 0;
 	const char* chars = aAttrib ? "<&>'\"" : "<&>";
 	
@@ -60,7 +60,6 @@ string& SimpleXML::escape(string& aString, bool aAttrib, bool aLoading /* = fals
 				}
 			}
 		}
-		aString = Text::toUtf8(aString, encoding);
 	} else {
 		while( (i = aString.find_first_of(chars, i)) != string::npos) {
 			switch(aString[i]) {
@@ -216,14 +215,14 @@ string SimpleXML::childToXML() {
 	return tmp; 
 }
 
-void SimpleXML::fromXML(const string& aXML) {
+void SimpleXML::fromXML(const string& aXML, int aFlags) {
 	if(!root.children.empty()) {
 		delete root.children[0];
 		root.children.clear();
 	}
 
 	TagReader t(&root);
-	SimpleXMLReader(&t).parse(aXML);
+	SimpleXMLReader(&t, aFlags).parse(aXML);
 	
 	if(root.children.size() != 1) {
 		throw SimpleXMLException("Invalid XML file, missing or multiple root tags");

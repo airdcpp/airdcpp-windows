@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2013-2015 AirDC++ Project
+* Copyright (C) 2013-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -20,51 +20,6 @@
 #include "CriticalSection.h"
 
 namespace dcpp {
-
-#ifdef _WIN32
-
-SharedMutex::SharedMutex() {
-	InitializeSRWLock(&psrw);
-}
-
-SharedMutex::~SharedMutex() {
-
-}
-
-void SharedMutex::lock_shared() {
-	AcquireSRWLockShared(&psrw);
-}
-
-void SharedMutex::lock() {
-	AcquireSRWLockExclusive(&psrw);
-}
-
-void SharedMutex::unlock_shared() {
-	ReleaseSRWLockShared(&psrw);
-}
-
-void SharedMutex::unlock() {
-	ReleaseSRWLockExclusive(&psrw);
-}
-
-
-RLock::RLock(SharedMutex& aCS) : cs(&aCS) {
-	aCS.lock_shared();
-}
-
-RLock::~RLock() {
-	cs->unlock_shared();
-}
-
-WLock::WLock(SharedMutex& aCS) : cs(&aCS) {
-	aCS.lock();
-}
-
-WLock::~WLock() {
-	cs->unlock();
-}
-
-#endif
 
 ConditionalRLock::ConditionalRLock(SharedMutex& aCS, bool aLock) : cs(&aCS), lock(aLock) {
 	if (lock)

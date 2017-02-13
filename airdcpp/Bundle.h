@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2015 AirDC++ Project
+ * Copyright (C) 2011-2017 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,12 +22,8 @@
 #include <string>
 #include <set>
 
-#include "File.h"
-#include "HashValue.h"
-#include "TigerHash.h"
 #include "HintedUser.h"
-#include "Pointer.h"
-#include "QueueItem.h"
+#include "MerkleTree.h"
 #include "User.h"
 
 #include "QueueItemBase.h"
@@ -36,97 +32,62 @@ namespace dcpp {
 
 using std::string;
 
-struct BundleAddInfo {
-	int filesAdded = 0;
-	int filesFailed = 0;
-
-	bool merged = false;
-	BundlePtr bundle = nullptr;
-
-	string errorMessage;
-};
-
-struct BundleFileInfo {
-	BundleFileInfo(BundleFileInfo&& rhs) = default;
-	BundleFileInfo& operator=(BundleFileInfo&& rhs) = default;
-	BundleFileInfo(BundleFileInfo&) = delete;
-	BundleFileInfo& operator=(BundleFileInfo&) = delete;
-
-	BundleFileInfo(string aFile, const TTHValue& aTTH, int64_t aSize, time_t aDate = 0, QueueItemBase::Priority aPrio = QueueItemBase::DEFAULT) noexcept : 
-		file(move(aFile)), tth(aTTH), size(aSize), prio(aPrio), date(aDate) { }
-
-	string file;
-	TTHValue tth;
-	int64_t size;
-	QueueItemBase::Priority prio;
-	time_t date;
-
-	typedef vector<BundleFileInfo> List;
-};
-
 #define DIR_BUNDLE_VERSION "2"
 #define FILE_BUNDLE_VERSION "2"
 
-class Bundle : public QueueItemBase, public intrusive_ptr_base<Bundle> {
+class Bundle : public QueueItemBase {
 public:
 	enum BundleFlags {
 		/** Flags for scheduled actions */
 		FLAG_UPDATE_SIZE			= 0x01,
-		FLAG_UPDATE_NAME			= 0x02,
 		FLAG_SCHEDULE_SEARCH		= 0x04,
 		/** Autodrop slow sources is enabled for this bundle */
 		FLAG_AUTODROP				= 0x400,
-		/** Set when the bundle is being merged to another bundle */
-		FLAG_MERGING				= 0x800
 	};
 
 	enum Status {
 		STATUS_NEW, // not added in queue yet
 		STATUS_QUEUED,
-		STATUS_DOWNLOAD_FAILED,
+		STATUS_DOWNLOAD_ERROR,
 		STATUS_RECHECK,
 		STATUS_DOWNLOADED, // no queued files
-		STATUS_MOVED, // all files moved
-		STATUS_FAILED_MISSING,
-		STATUS_SHARING_FAILED,
-		STATUS_FINISHED, // no missing files, ready for hashing
-		STATUS_HASHING,
-		STATUS_HASH_FAILED,
-		STATUS_HASHED,
+		STATUS_VALIDATION_RUNNING, // the bundle is being validated by the completion hooks
+		STATUS_VALIDATION_ERROR, // hook validation failed (see the error pointer for more information)
+		STATUS_COMPLETED, // no validation errors, ready for sharing
 		STATUS_SHARED
 	};
 
 	class BundleSource : public Flags {
 	public:
-		BundleSource(const HintedUser& aUser, int64_t aSize, Flags::MaskType aFlags = 0) : user(aUser), size(aSize), files(1), Flags(aFlags) { }
+		BundleSource(const HintedUser& aUser, int64_t aSize, Flags::MaskType aFlags = 0) : user(aUser), size(aSize), Flags(aFlags) { }
 
-		bool operator==(const UserPtr& aUser) const { return user == aUser; }
+		bool operator==(const UserPtr& aUser) const noexcept { return user == aUser; }
 
 		GETSET(HintedUser, user, User);
 		int64_t size;
-		int files;
+		int files = 1;
 	};
 
 	class HasStatus {
 	public:
 		HasStatus(Status aStatus) : status(aStatus) { }
-		bool operator()(const BundlePtr& aBundle) { return aBundle->getStatus() == status; }
+		bool operator()(const BundlePtr& aBundle) const noexcept { return aBundle->getStatus() == status; }
 	private:
 		Status status;
 	};
 
 	struct StatusOrder {
-		bool operator()(const BundlePtr& left, const BundlePtr& right) const {
+		bool operator()(const BundlePtr& left, const BundlePtr& right) const noexcept {
 			return left->getStatus() > right->getStatus();
 		}
 	};
 
 	struct Hash {
-		size_t operator()(const BundlePtr& x) const { return hash<QueueToken>()(x->getToken()); }
+		size_t operator()(const BundlePtr& x) const noexcept { return hash<QueueToken>()(x->getToken()); }
 	};
 
 	struct SortOrder {
-		bool operator()(const BundlePtr& left, const BundlePtr& right) const {
+		bool operator()(const BundlePtr& left, const BundlePtr& right) const noexcept {
 			if (left->getPriority() == right->getPriority()) {
 				return left->getTimeAdded() < right->getTimeAdded();
 			} else {
@@ -135,9 +96,8 @@ public:
 		}
 	};
 
-	typedef unordered_map<QueueToken, BundlePtr> TokenBundleMap;
-	typedef unordered_multimap<string, pair<string, BundlePtr>, noCaseStringHash, noCaseStringEq> BundleDirMap;
-	typedef vector<pair<string, BundlePtr>> StringBundleList;
+	typedef unordered_map<QueueToken, BundlePtr> TokenMap;
+	typedef unordered_set<BundlePtr, Bundle::Hash> Set;
 
 	typedef unordered_map<UserPtr, uint16_t, User::Hash> UserIntMap;
 	typedef vector<BundleSource> SourceList;
@@ -145,23 +105,21 @@ public:
 
 	typedef pair<HintedUser, string> UserBundlePair;
 	typedef vector<UserBundlePair> FinishedNotifyList;
-	typedef unordered_map<string, pair<uint32_t, uint32_t>> DirMap;
 
 	typedef multimap<double, BundlePtr> SourceSpeedMapB;
 	typedef multimap<double, QueueItemPtr> SourceSpeedMapQI;
 
-
+	static BundlePtr createFileBundle(QueueItemPtr& qi, time_t aBundleDate, QueueToken aToken = 0, bool aDirty = true) noexcept;
 	Bundle(const string& target, time_t added, Priority aPriority, time_t aDirDate=0, QueueToken aToken = 0, bool aDirty = true, bool isFileBundle = false) noexcept;
-	Bundle(QueueItemPtr& qi, time_t aBundleDate, QueueToken aToken = 0, bool aDirty = true) noexcept;
 	~Bundle() noexcept;
 
-	GETSET(string, lastError, LastError);
+	IGETSET(ActionHookErrorPtr, hookError, HookError, nullptr);
+	GETSET(string, error, Error);
 
 	IGETSET(Status, status, Status, STATUS_NEW);
 	IGETSET(time_t, bundleDate, BundleDate, 0);				// the file/directory modify date picked from the remote filelist when the bundle has been queued
 	IGETSET(uint64_t, start, Start, 0);						// time that is being reset every time when a waiting the bundle gets running downloads
 	IGETSET(time_t, lastSearch, LastSearch, 0);				// last time when the bundle was searched for
-	IGETSET(bool, simpleMatching, SimpleMatching, true);	// the directory structure is simple enough for matching partial lists with subdirs cut from the path
 	IGETSET(bool, seqOrder, SeqOrder, false);				// using an alphabetical downloading order for files (not enabled by default for fresh bundles)
 
 	IGETSET(bool, singleUser, SingleUser, true);		// the bundle is downloaded from a single user (may have multiple connections)
@@ -169,6 +127,7 @@ public:
 	IGETSET(int64_t, actual, Actual, 0); 
 	IGETSET(int64_t, speed, Speed, 0);					// the speed calculated on every second in downloadmanager
 	IGETSET(bool, addedByAutoSearch, AddedByAutoSearch, false);		// the bundle was added by auto search
+	IGETSET(time_t, resumeTime, ResumeTime, 0);						//Time for bundle to be resumed when paused for x
 
 	GETSET(QueueItemList, queueItems, QueueItems);
 	GETSET(QueueItemList, finishedFiles, FinishedFiles);
@@ -179,7 +138,6 @@ public:
 	QueueItemList& getQueueItems() { return queueItems; }
 
 	const FinishedNotifyList& getFinishedNotifications() const noexcept  { return finishedNotifications; }
-	const DirMap& getDirectories() const noexcept { return directories; }
 
 	/* Misc */
 	bool isFileBundle() const noexcept { return fileBundle; }
@@ -199,27 +157,38 @@ public:
 	bool isRecent() const noexcept { return recent; }
 
 	/* QueueManager */
+	static bool isFailedStatus(Status aStatus) noexcept;
 	bool isFailed() const noexcept;
-	void save() throw(FileException);
-	bool removeQueue(QueueItemPtr& qi, bool finished) noexcept;
-	bool addQueue(QueueItemPtr& qi) noexcept;
+
+	// Throws on errors
+	void save();
+
+	void addQueue(QueueItemPtr& qi) noexcept;
+	void removeQueue(QueueItemPtr& qi, bool aFinished) noexcept;
 
 	void getDirQIs(const string& aDir, QueueItemList& ql) const noexcept;
 
-	bool addFinishedItem(QueueItemPtr& qi, bool finished) noexcept;
-	bool removeFinishedItem(QueueItemPtr& qi) noexcept;
+	void addFinishedItem(QueueItemPtr& qi, bool finished) noexcept;
+	void removeFinishedItem(QueueItemPtr& qi) noexcept;
 	void finishBundle() noexcept;
-	bool allowHash() const noexcept;
+
+	// All files have been downloaded and moved to the final destination
+	// Unsafe
+	bool filesCompleted() const noexcept;
+
+	// All bundles files have finished downloading
+	// Safe
+	bool isDownloaded() const noexcept;
+
+	// All bundles files have finished downloading and all validation hooks have completed
+	// Safe
+	bool isCompleted() const noexcept;
 
 	void clearFinishedNotifications(FinishedNotifyList& fnl) noexcept;
 	bool isFinishedNotified(const UserPtr& aUser) const noexcept;
 	void addFinishedNotify(HintedUser& aUser, const string& remoteBundle) noexcept;
 	void removeFinishedNotify(const UserPtr& aUser) noexcept;
 
-	pair<uint32_t, uint32_t> getPathInfo(const string& aDir) const noexcept;
-
-	/* Get the path for matching a file list (remote file must be in NMDC format) */
-	string getMatchPath(const string& aRemoteFile, const string& aLocalFile, bool nmdc) const noexcept;
 	QueueItemPtr findQI(const string& aTarget) const noexcept;
 	int countOnlineUsers() const noexcept;
 
@@ -230,10 +199,10 @@ public:
 	void increaseSize(int64_t aSize) noexcept;
 	void decreaseSize(int64_t aSize) noexcept;
 
-	void setTarget(const string& aTarget) noexcept;
-
 	void addFinishedSegment(int64_t aSize) noexcept;
 	void removeFinishedSegment(int64_t aSize) noexcept;
+
+	string getStatusString() const noexcept;
 
 	/* DownloadManager */
 	int countConnections() const noexcept;
@@ -243,13 +212,11 @@ public:
 	bool removeRunningUser(const UserConnection* aSource, bool sendRemove) noexcept;
 	void setUserMode(bool setSingleUser) noexcept;
 
-	void sendSizeNameUpdate() noexcept;
+	void sendSizeUpdate() noexcept;
 
 	void addDownload(Download* d) noexcept;
 	void removeDownload(Download* d) noexcept;
 
-	void getSearchItems(map<string, QueueItemPtr>& searches, bool manual) const noexcept;
-	void updateSearchMode() noexcept;
 	bool allowAutoSearch() const noexcept;
 
 	bool onDownloadTick(vector<pair<CID, AdcCommand>>& UBNList) noexcept;
@@ -260,11 +227,10 @@ public:
 	void getSourceUsers(HintedUserList& l) const noexcept;
 	bool isSource(const UserPtr& aUser) const noexcept;
 	bool isBadSource(const UserPtr& aUser) const noexcept;
-	bool isFinished() const noexcept { return queueItems.empty(); }
 
 	/** All queue items indexed by user */
-	void addUserQueue(QueueItemPtr& qi) noexcept;
-	bool addUserQueue(QueueItemPtr& qi, const HintedUser& aUser, bool isBad = false) noexcept;
+	void addUserQueue(const QueueItemPtr& qi) noexcept;
+	bool addUserQueue(const QueueItemPtr& qi, const HintedUser& aUser, bool isBad = false) noexcept;
 	QueueItemPtr getNextQI(const UserPtr& aUser, const OrderedStringSet& onlineHubs, string& aLastError, Priority minPrio, int64_t wantedSize, int64_t lastSpeed, QueueItemBase::DownloadType aType, bool allowOverlap) noexcept;
 	void getItems(const UserPtr& aUser, QueueItemList& ql) const noexcept;
 
@@ -285,11 +251,10 @@ private:
 	bool recent = false;
 
 	/** QueueItems by priority and user (this is where the download order is determined) */
-	unordered_map<UserPtr, deque<QueueItemPtr>, User::Hash> userQueue[LAST];
+	unordered_map<UserPtr, deque<QueueItemPtr>, User::Hash> userQueue[static_cast<int>(Priority::LAST)];
 	/** Currently running downloads, a QueueItem is always either here or in the userQueue */
 	unordered_map<UserPtr, QueueItemList, User::Hash> runningItems;
 
-	DirMap directories;
 	UserIntMap runningUsers;					// running users and their connections cached
 	HintedUserList uploadReports;				// sources receiving UBN notifications (running only)
 	FinishedNotifyList finishedNotifications;	// partial bundle sharing sources (mapped to their local tokens)

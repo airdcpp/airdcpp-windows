@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,8 +33,6 @@ namespace dcpp {
 
 using std::min;
 
-STANDARD_EXCEPTION(FileException);
-
 /**
  * A simple output stream. Intended to be used for nesting streams one inside the other.
  */
@@ -54,8 +52,12 @@ public:
 	 * is properly written (we don't want destructors that throw exceptions
 	 * and the last flush might actually throw). Note that some implementations
 	 * might not need it...
+	 * 
+	 * If aForce is false, only data that is subject to be deleted otherwise will be flushed.
+	 * This applies especially for files for which the operating system should generally decide
+	 * when the buffered data is flushed on disk.
 	 */
-	virtual size_t flush() = 0;
+	virtual size_t flushBuffers(bool aForce) = 0;
 
 	/* This only works for file streams */
 	virtual void setPos(int64_t /*pos*/) noexcept { }
@@ -99,7 +101,7 @@ public:
 		delete[] buf;
 	}
 
-	size_t read(void* tgt, size_t& len) {
+	size_t read(void* tgt, size_t& len) override {
 		len = min(len, size - pos);
 		memcpy(tgt, buf+pos, len);
 		pos += len;
@@ -130,14 +132,14 @@ public:
 			s.release(); 
 	}
 
-	size_t read(void* buf, size_t& len) {
+	size_t read(void* buf, size_t& len) override {
 		auto ret = s->read(buf, len);
 		readBytes += len;
 		return ret;
 	}
 
 	uint64_t getReadBytes() const { return readBytes; }
-	InputStream* releaseRootStream() { 
+	InputStream* releaseRootStream() override {
 		auto as = s.release();
 		return as->releaseRootStream();
 	}
@@ -158,7 +160,7 @@ public:
 			s.release();
 	}
 
-	size_t read(void* buf, size_t& len) {
+	size_t read(void* buf, size_t& len) override {
 		dcassert(maxBytes >= 0);
 		len = (size_t)min(maxBytes, (int64_t)len);
 		if(len == 0)
@@ -167,7 +169,7 @@ public:
 		maxBytes -= x;
 		return x;
 	}
-	InputStream* releaseRootStream() { 
+	InputStream* releaseRootStream() override { 
 		auto as = s.release();
 		return as->releaseRootStream();
 	}
@@ -188,7 +190,7 @@ public:
 			s.release();
 	}
 
-	virtual size_t write(const void* buf, size_t len) {
+	virtual size_t write(const void* buf, size_t len) override {
 		if(maxBytes < len) {
 			throw FileException(STRING(TOO_MUCH_DATA));
 		}
@@ -196,12 +198,12 @@ public:
 		return s->write(buf, len);
 	}
 	
-	virtual size_t flush() {
-		return s->flush();
+	virtual size_t flushBuffers(bool aForce) override {
+		return s->flushBuffers(aForce);
 	}
 	
-	virtual bool eof() { return maxBytes == 0; }
-	OutputStream* releaseRootStream() { 
+	virtual bool eof() override { return maxBytes == 0; }
+	OutputStream* releaseRootStream() override { 
 		auto as = s.release();
 		return as->releaseRootStream();
 	}
@@ -223,22 +225,22 @@ public:
 		try {
 			// We must do this in order not to lose bytes when a download
 			// is disconnected prematurely
-			flush();
+			flushBuffers(false);
 		} catch(const Exception&) { }
 
 		if (!managed)
 			s.release();
 	}
 
-	size_t flush() {
+	size_t flushBuffers(bool aForce) override {
 		if(pos > 0)
 			s->write(&buf[0], pos);
 		pos = 0;
-		s->flush();
+		s->flushBuffers(aForce);
 		return 0;
 	}
 
-	size_t write(const void* wbuf, size_t len) {
+	size_t write(const void* wbuf, size_t len) override {
 		uint8_t* b = (uint8_t*)wbuf;
 		size_t l2 = len;
 		size_t bufSize = buf.size();
@@ -261,7 +263,7 @@ public:
 		return l2;
 	}
 
-	OutputStream* releaseRootStream() { 
+	OutputStream* releaseRootStream() override {
 		auto as = s.release();
 		return as->releaseRootStream();
 	}
@@ -277,8 +279,8 @@ public:
 	~StringOutputStream() { }
 	using OutputStream::write;
 
-	size_t flush() { return 0; }
-	size_t write(const void* buf, size_t len) {
+	size_t flushBuffers(bool) override { return 0; }
+	size_t write(const void* buf, size_t len) override {
 		str.append((char*)buf, len);
 		return len;
 	}

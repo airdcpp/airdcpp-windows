@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ public:
 	typedef X<1> Connected;
 	typedef X<2> Removed;
 	typedef X<3> Failed;
-	typedef X<4> StatusChanged;
+	typedef X<4> Connecting;
 	typedef X<5> UserUpdated;
 	typedef X<6> Forced;
 
@@ -40,7 +40,7 @@ public:
 	virtual void on(Connected, const ConnectionQueueItem*, UserConnection*) noexcept{}
 	virtual void on(Removed, const ConnectionQueueItem*) noexcept { }
 	virtual void on(Failed, const ConnectionQueueItem*, const string&) noexcept { }
-	virtual void on(StatusChanged, const ConnectionQueueItem*) noexcept { }
+	virtual void on(Connecting, const ConnectionQueueItem*) noexcept { }
 	virtual void on(UserUpdated, const ConnectionQueueItem*) noexcept { }
 	virtual void on(Forced, const ConnectionQueueItem*) noexcept { }
 };

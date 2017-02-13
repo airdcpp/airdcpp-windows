@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2003-2015 RevConnect, http://www.revconnect.com
+ * Copyright (C) 2003-2017 RevConnect, http://www.revconnect.com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,9 +16,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#pragma once
+#ifndef DCPLUSPLUS_DCPP_SEARCHQUEUE_H
+#define DCPLUSPLUS_DCPP_SEARCHQUEUE_H
 
 #include "CriticalSection.h"
+#include "GetSet.h"
 #include "Search.h"
 
 namespace dcpp {
@@ -26,32 +28,35 @@ namespace dcpp {
 class SearchQueue
 {
 public:
-	
 	SearchQueue();
 	~SearchQueue();
 
-	uint64_t add(SearchPtr s);
-	SearchPtr pop();
+	// Queues a new search, removes all possible existing items from the same owner
+	// none is returned if the search queue is currently too long
+	uint64_t add(const SearchPtr& s) noexcept;
+
+	// Pops the next search item if one is available and it's allowed by the search intervals
+	SearchPtr maybePop() noexcept;
 	
-	void clear()
-	{
-		Lock l(cs);
-		searchQueue.clear();
-	}
+	void clear() noexcept;
+	bool cancelSearch(const void* aOwner) noexcept;
 
-	bool cancelSearch(void* aOwner);
+	// Interval defined by the client (settings or fav hub interval)
+	IGETSET(int, minInterval, MinInterval, 5000);
 
-	/* Interval defined by the client (settings or fav hub interval) */
-	int minInterval;
-	uint64_t getNextSearchTick() { return lastSearchTime+nextInterval; }
-	bool hasWaitingTime(uint64_t aTick);
-	uint64_t lastSearchTime;
+	optional<uint64_t> getQueueTime(const Search::CompareF& aCompareF) const noexcept;
+	uint64_t getTotalQueueTime() const noexcept;
+	uint64_t getCurrentQueueTime() const noexcept;
+	int getQueueSize() const noexcept;
+	bool hasOverflow() const noexcept;
 private:
-	int getInterval(const Search::searchType aSearchType) const;
+	int getInterval(Priority aPriority) const noexcept;
 
-	deque<SearchPtr>	searchQueue;
-	int	nextInterval;
-	CriticalSection cs;
+	uint64_t lastSearchTick;
+	deque<SearchPtr> searchQueue;
+	mutable CriticalSection cs;
 };
 
 }
+
+#endif // !defined(DCPLUSPLUS_DCPP_SEARCHQUEUE_H)

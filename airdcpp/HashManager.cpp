@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,9 +32,7 @@
 #include "version.h"
 #include "ZUtils.h"
 
-//#include "BerkeleyDB.h"
 #include "LevelDB.h"
-//#include "HamsterDB.h"
 
 #define FILEINDEX_VERSION 1
 #define HASHDATA_VERSION 1
@@ -110,7 +108,8 @@ bool HashManager::hashFile(const string& filePath, const string& pathLower, int6
 	//get the volume name
 	string vol;
 	if (none_of(hashers.begin(), hashers.end(), [&](const Hasher* h) { return h->getPathVolume(pathLower, vol); })) {
-		vol = File::getMountPath(pathLower);
+		// Case-sensitive because of Linux
+		vol = Text::toLower(File::getMountPath(filePath));
 	}
 
 	//dcassert(!vol.empty());
@@ -212,7 +211,6 @@ void HashManager::getFileTTH(const string& aFile, int64_t aSize, bool addStore, 
 			return !aCancel;
 		});
 
-		f.close();
 		tt.finalize();
 		tth_ = tt.getRoot();
 
@@ -249,9 +247,9 @@ void HashManager::hashDone(const string& aFileName, const string& pathLower, con
 	}
 }
 
-bool HashManager::addFile(const string& aFilePathLower, const HashedFile& fi_) throw(HashException) {
+bool HashManager::addFile(const string& aPath, const HashedFile& fi_) throw(HashException) {
 	//check that the file exists
-	if (File::getSize(aFilePathLower) != fi_.getSize()) {
+	if (File::getSize(aPath) != fi_.getSize()) {
 		return false;
 	}
 
@@ -263,7 +261,7 @@ bool HashManager::addFile(const string& aFilePathLower, const HashedFile& fi_) t
 		return false;
 	}
 
-	store.addFile(aFilePathLower, fi_);
+	store.addFile(Text::toLower(aPath), fi_);
 	return true;
 }
 
@@ -284,21 +282,6 @@ void HashManager::HashStore::addFile(const string& aFileLower, const HashedFile&
 	}
 
 	free(buf);
-}
-
-void HashManager::renameFile(const string& aOldPath, const string& aNewPath, const HashedFile& fi) throw(HashException) {
-	return store.renameFile(aOldPath, aNewPath, fi);
-}
-
-void HashManager::HashStore::renameFile(const string& oldPath, const string& newPath, const HashedFile& fi) throw(HashException) {
-	auto oldNameLower = Text::toLower(oldPath);
-	auto newNameLower = Text::toLower(newPath);
-	//HashedFile fi;
-	//if (getFileInfo(oldNameLower, fi)) {
-		removeFile(oldNameLower);
-		addFile(newNameLower, fi);
-		//return true;
-	//}
 }
 
 void HashManager::HashStore::removeFile(const string& aFilePathLower) throw(HashException) {
@@ -475,7 +458,7 @@ void HashManager::HashStore::loadLegacyTree(File& f, int64_t aSize, int64_t aInd
 	}
 }
 
-int64_t HashManager::HashStore::getRootInfo(const TTHValue& root, InfoType aType) {
+int64_t HashManager::HashStore::getRootInfo(const TTHValue& root, InfoType aType) noexcept {
 	int64_t ret = 0;
 	try {
 		hashDb->get((void*)root.data, sizeof(TTHValue), 100*1024, [&](void* aValue, size_t /*valueLen*/) {
@@ -822,7 +805,7 @@ void HashManager::HashStore::load(StepFunction stepF, ProgressFunction progressF
 		try {
 			int migratedFiles, migratedTrees, failedTrees;
 			{
-				File f(indexFile, File::READ, File::OPEN);
+				File f(indexFile, File::READ, File::OPEN, File::BUFFER_SEQUENTIAL);
 				CountedInputStream<false> countedStream(&f);
 				HashLoader l(*this, countedStream, hashDataSize + hashIndexSize, progressF);
 				SimpleXMLReader(&l).parse(countedStream);
@@ -1150,6 +1133,7 @@ int HashManager::Hasher::run() {
 				if (dirChanged)
 					sfv.loadPath(Util::getFilePath(fname));
 				uint64_t start = GET_TICK();
+
 				File f(fname, File::READ, File::OPEN);
 
 				// size changed since adding?
@@ -1163,7 +1147,7 @@ int HashManager::Hasher::run() {
 
 				CRC32Filter crc32;
 
-				auto fileCRC = sfv.hasFile(Util::getFileName(pathLower));
+				auto fileCRC = sfv.hasFile(Text::toLower(Util::getFileName(fname)));
 
 				uint64_t lastRead = GET_TICK();
  
@@ -1196,7 +1180,6 @@ int HashManager::Hasher::run() {
 					return !closing;
 				});
 
-				f.close();
 				tt.finalize();
 
 				failed = fileCRC && crc32.getValue() != *fileCRC;
@@ -1205,31 +1188,30 @@ int HashManager::Hasher::run() {
 				int64_t averageSpeed = 0;
 
 				if (!failed) {
-					sizeHashed += size;
+					totalSizeHashed += size;
 					dirSizeHashed += size;
 
 					dirFilesHashed++;
-					filesHashed++;
+					totalFilesHashed++;
 				}
 
 				if(end > start) {
-					hashTime += (end - start);
+					totalHashTime += (end - start);
 					dirHashTime += (end - start);
 					averageSpeed = size * 1000 / (end - start);
 				}
 
 				if(failed) {
 					getInstance()->log(STRING(ERROR_HASHING) + fname + ": " + STRING(ERROR_HASHING_CRC32), hasherID, true, true);
-					getInstance()->fire(HashManagerListener::HashFailed(), fname, fi);
+					getInstance()->fire(HashManagerListener::FileFailed(), fname, fi);
 				} else {
 					fi = HashedFile(tt.getRoot(), timestamp, size);
 					getInstance()->hashDone(fname, pathLower, tt, averageSpeed, fi, hasherID);
-					//tth = tt.getRoot();
 				}
 			} catch(const FileException& e) {
 				totalBytesLeft -= sizeLeft;
 				getInstance()->log(STRING(ERROR_HASHING) + " " + fname + ": " + e.getError(), hasherID, true, true);
-				getInstance()->fire(HashManagerListener::HashFailed(), fname, fi);
+				getInstance()->fire(HashManagerListener::FileFailed(), fname, fi);
 				failed = true;
 			}
 		
@@ -1237,6 +1219,7 @@ int HashManager::Hasher::run() {
 
 		auto onDirHashed = [&] () -> void {
 			if ((SETTING(HASHERS_PER_VOLUME) == 1 || w.empty()) && (dirFilesHashed > 1 || !failed)) {
+				getInstance()->fire(HashManagerListener::DirectoryHashed(), initialDir, dirFilesHashed, dirSizeHashed, dirHashTime, hasherID);
 				if (dirFilesHashed == 1) {
 					getInstance()->log(STRING_F(HASHING_FINISHED_FILE, currentFile % 
 						Util::formatBytes(dirSizeHashed) % 
@@ -1251,7 +1234,7 @@ int HashManager::Hasher::run() {
 				}
 			}
 
-			dirsHashed++;
+			totalDirsHashed++;
 			dirHashTime = 0;
 			dirSizeHashed = 0;
 			dirFilesHashed = 0;
@@ -1265,15 +1248,16 @@ int HashManager::Hasher::run() {
 				removeDevice(curDevID);
 
 			if (w.empty()) {
-				if (sizeHashed > 0) {
-					if (dirsHashed == 0) {
+				getInstance()->fire(HashManagerListener::HasherFinished(), totalDirsHashed, totalFilesHashed, totalSizeHashed, totalHashTime, hasherID);
+				if (totalSizeHashed > 0) {
+					if (totalDirsHashed == 0) {
 						onDirHashed();
 						//LogManager::getInstance()->message(STRING(HASHING_FINISHED_TOTAL_PLAIN), LogMessage::SEV_INFO);
 					} else {
 						onDirHashed();
-						getInstance()->log(STRING_F(HASHING_FINISHED_TOTAL, filesHashed % Util::formatBytes(sizeHashed) % dirsHashed % 
-							Util::formatTime(hashTime / 1000, true) % 
-							(Util::formatBytes(hashTime > 0 ? ((sizeHashed * 1000) / hashTime) : 0)  + "/s" )), hasherID, false, false);
+						getInstance()->log(STRING_F(HASHING_FINISHED_TOTAL, totalFilesHashed % Util::formatBytes(totalSizeHashed) % totalDirsHashed %
+							Util::formatTime(totalHashTime / 1000, true) %
+							(Util::formatBytes(totalHashTime > 0 ? ((totalSizeHashed * 1000) / totalHashTime) : 0)  + "/s" )), hasherID, false, false);
 					}
 				} else if(!fname.empty()) {
 					//all files failed to hash?
@@ -1283,13 +1267,14 @@ int HashManager::Hasher::run() {
 					initialDir.clear();
 				}
 
-				hashTime = 0;
-				sizeHashed = 0;
-				dirsHashed = 0;
-				filesHashed = 0;
+				totalHashTime = 0;
+				totalSizeHashed = 0;
+				totalDirsHashed = 0;
+				totalFilesHashed = 0;
+				lastSpeed = 0;
 				deleteThis = hasherID != 0;
 				sfv.unload();
-			} else if (!AirUtil::isParentOrExact(initialDir, w.front().filePath)) {
+			} else if (!AirUtil::isParentOrExactLocal(initialDir, w.front().filePath)) {
 				onDirHashed();
 			}
 
@@ -1297,14 +1282,14 @@ int HashManager::Hasher::run() {
 		}
 
 		if (!failed && !fname.empty())
-			getInstance()->fire(HashManagerListener::TTHDone(), fname, fi);
+			getInstance()->fire(HashManagerListener::FileHashed(), fname, fi);
 
 		if (deleteThis) {
 			//check again if we have added new items while this was unlocked
 
 			WLock l(hcs);
 			if (w.empty()) {
-				//Nothing more to has, delete this hasher
+				//Nothing more to hash, delete this hasher
 				getInstance()->removeHasher(this);
 				break;
 			}

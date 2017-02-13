@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,8 +52,6 @@ lifetime(0)
 bool Mapper_NATPMP::supportsProtocol(bool aV6) const {
 	return !aV6;
 }
-
-#ifdef HAVE_NATPMP_H
 
 static natpmp_t nat;
 
@@ -147,34 +145,5 @@ string Mapper_NATPMP::getExternalIP() {
 	}
 	return Util::emptyString;
 }
-
-#else
-
-bool Mapper_NATPMP::init() {
-	return false;
-}
-
-void Mapper_NATPMP::uninit() {
-}
-
-bool Mapper_NATPMP::add(const string& /*port*/, const Protocol /*protocol*/, const string& /*description*/) {
-	return false;
-}
-
-bool Mapper_NATPMP::remove(const string& /*port*/, const Protocol /*protocol*/) {
-	return false;
-}
-
-string Mapper_NATPMP::getDeviceName() {
-	return Util::emptyString;
-}
-
-string Mapper_NATPMP::getExternalIP() {
-	return Util::emptyString;
-}
-
-#endif
-
-
 
 } // dcpp namespace

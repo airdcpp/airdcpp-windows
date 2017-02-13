@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@ public:
 			s.release(); 
 	}
 
-	size_t flush() {
+	size_t flushBuffers(bool aForce) override {
 		if (bufPos != 0)
 			cur.update(buf, bufPos);
 		bufPos = 0;
@@ -58,7 +58,7 @@ public:
 		} else {
 			checkTrees();
 		}
-		return s->flush();
+		return s->flushBuffers(aForce);
 	}
 
 	void commitBytes(const void* b, size_t len) {
@@ -91,7 +91,7 @@ public:
 		}
 	}
 
-	size_t write(const void* b, size_t len) {
+	size_t write(const void* b, size_t len) override {
 		commitBytes(b, len);
 		checkTrees();
 		return s->write(b, len);
@@ -101,7 +101,7 @@ public:
 		return min(real.getFileSize(), (int64_t)(cur.getBlockSize() * cur.getLeaves().size()));
 	}
 
-	OutputStream* releaseRootStream() { 
+	OutputStream* releaseRootStream() override {
 		auto as = s.release();
 		return as->releaseRootStream();
 	}

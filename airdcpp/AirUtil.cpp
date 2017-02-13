@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2015 AirDC++ Project
+ * Copyright (C) 2011-2017 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,20 +19,20 @@
 #include "stdinc.h"
 
 #include "AirUtil.h"
-#include "Util.h"
-#include "ThrottleManager.h"
 
-#include "File.h"
-#include "QueueManager.h"
-#include "SettingsManager.h"
 #include "ConnectivityManager.h"
+#include "File.h"
+#include "LogManager.h"
+#include "QueueManager.h"
 #include "ResourceManager.h"
-#include "StringTokenizer.h"
+#include "SettingsManager.h"
+#include "ShareManager.h"
 #include "SimpleXML.h"
 #include "Socket.h"
-#include "LogManager.h"
-#include "Wildcards.h"
-#include "ShareManager.h"
+#include "StringTokenizer.h"
+#include "ThrottleManager.h"
+#include "Util.h"
+
 #include <locale.h>
 
 #include <boost/date_time/format_date_parser.hpp>
@@ -61,10 +61,6 @@ boost::regex AirUtil::subDirRegPlain;
 boost::regex AirUtil::crcReg;
 
 string AirUtil::privKeyFile;
-string AirUtil::tempDLDir;
-
-AwayMode AirUtil::away = AWAY_OFF;
-time_t AirUtil::awayTime;
 
 AirUtil::TimeCounter::TimeCounter(string aMsg) : start(GET_TICK()), msg(move(aMsg)) {
 
@@ -77,18 +73,18 @@ AirUtil::TimeCounter::~TimeCounter() {
 
 StringList AirUtil::getDirDupePaths(DupeType aType, const string& aPath) {
 	StringList ret;
-	if (aType == DUPE_SHARE || aType == DUPE_SHARE_PARTIAL) {
-		ret = ShareManager::getInstance()->getDirPaths(aPath);
+	if (isShareDupe(aType)) {
+		ret = ShareManager::getInstance()->getNmdcDirPaths(aPath);
 	} else {
-		ret = QueueManager::getInstance()->getDirPaths(aPath);
+		ret = QueueManager::getInstance()->getNmdcDirPaths(aPath);
 	}
 
 	return ret;
 }
 
-StringList AirUtil::getDupePaths(DupeType aType, const TTHValue& aTTH) {
+StringList AirUtil::getFileDupePaths(DupeType aType, const TTHValue& aTTH) {
 	StringList ret;
-	if (aType == DUPE_SHARE) {
+	if (isShareDupe(aType)) {
 		ret = ShareManager::getInstance()->getRealPaths(aTTH);
 	} else {
 		ret = QueueManager::getInstance()->getTargets(aTTH);
@@ -97,33 +93,62 @@ StringList AirUtil::getDupePaths(DupeType aType, const TTHValue& aTTH) {
 	return ret;
 }
 
+bool AirUtil::isShareDupe(DupeType aType) noexcept { 
+	return aType == DUPE_SHARE_FULL || aType == DUPE_SHARE_PARTIAL; 
+}
+
+bool AirUtil::isQueueDupe(DupeType aType) noexcept {
+	return aType == DUPE_QUEUE_FULL || aType == DUPE_QUEUE_PARTIAL;
+}
+
+bool AirUtil::isFinishedDupe(DupeType aType) noexcept {
+	return aType == DUPE_FINISHED_FULL || aType == DUPE_FINISHED_PARTIAL;
+}
+
 DupeType AirUtil::checkDirDupe(const string& aDir, int64_t aSize) {
-	const auto sd = ShareManager::getInstance()->isDirShared(aDir, aSize);
-	if (sd > 0) {
-		return sd == 2 ? DUPE_SHARE : DUPE_SHARE_PARTIAL;
-	} else {
-		const auto qd = QueueManager::getInstance()->isDirQueued(aDir);
-		if (qd > 0)
-			return qd == 1 ? DUPE_QUEUE : DUPE_FINISHED;
+	auto dupe = ShareManager::getInstance()->isNmdcDirShared(aDir, aSize);
+	if (dupe != DUPE_NONE) {
+		return dupe;
 	}
-	return DUPE_NONE;
+
+	return QueueManager::getInstance()->isNmdcDirQueued(aDir, aSize);
+}
+
+string AirUtil::toOpenFileName(const string& aFileName, const TTHValue& aTTH) noexcept {
+	return aTTH.toBase32() + "_" + Util::validateFileName(aFileName);
+}
+
+string AirUtil::fromOpenFileName(const string& aFileName) noexcept {
+	if (aFileName.size() <= 40) {
+		dcassert(0);
+		return aFileName;
+	}
+
+	return aFileName.substr(40);
 }
 
 DupeType AirUtil::checkFileDupe(const TTHValue& aTTH) {
 	if (ShareManager::getInstance()->isFileShared(aTTH)) {
-		return DUPE_SHARE;
-	} else {
-		const int qd = QueueManager::getInstance()->isFileQueued(aTTH);
-		if (qd > 0) {
-			return qd == 1 ? DUPE_QUEUE : DUPE_FINISHED; 
-		}
+		return DUPE_SHARE_FULL;
 	}
-	return DUPE_NONE;
+
+	return QueueManager::getInstance()->isFileQueued(aTTH);
 }
 
-TTHValue AirUtil::getTTH(const string& aFileName, int64_t aSize) {
+bool AirUtil::allowOpenDupe(DupeType aType) noexcept {
+	return aType != DUPE_NONE;
+}
+
+TTHValue AirUtil::getTTH(const string& aFileName, int64_t aSize) noexcept {
 	TigerHash tmp;
 	string str = Text::toLower(aFileName) + Util::toString(aSize);
+	tmp.update(str.c_str(), str.length());
+	return TTHValue(tmp.finalize());
+}
+
+TTHValue AirUtil::getPathId(const string& aPath) noexcept {
+	TigerHash tmp;
+	auto str = Text::toLower(aPath);
 	tmp.update(str.c_str(), str.length());
 	return TTHValue(tmp.finalize());
 }
@@ -133,32 +158,96 @@ void AirUtil::init() {
 	subDirRegPlain.assign(getSubDirReg(), boost::regex::icase);
 	crcReg.assign(R"(.{5,200}\s(\w{8})$)");
 
-#ifdef _WIN32
-	dcassert(AirUtil::isParentOrExact(R"(C:\Projects\)", R"(C:\Projects\)"));
-	dcassert(AirUtil::isParentOrExact(R"(C:\Projects\)", R"(C:\Projects\test)"));
-	dcassert(AirUtil::isParentOrExact(R"(C:\Projects)", R"(C:\Projects\test)"));
-	dcassert(AirUtil::isParentOrExact(R"(C:\Projects\)", R"(C:\Projects\test)"));
-	dcassert(!AirUtil::isParentOrExact(R"(C:\Projects)", R"(C:\Projectstest)"));
-	dcassert(!AirUtil::isParentOrExact(R"(C:\Projectstest)", R"(C:\Projects)"));
-	dcassert(!AirUtil::isParentOrExact(R"(C:\Projects\test)", ""));
-	dcassert(AirUtil::isParentOrExact("", R"(C:\Projects\test)"));
+#if defined _WIN32 && defined _DEBUG
+	dcassert(AirUtil::isParentOrExactLocal(R"(C:\Projects\)", R"(C:\Projects\)"));
+	dcassert(AirUtil::isParentOrExactLocal(R"(C:\Projects\)", R"(C:\Projects\test)"));
+	dcassert(AirUtil::isParentOrExactLocal(R"(C:\Projects)", R"(C:\Projects\test)"));
+	dcassert(AirUtil::isParentOrExactLocal(R"(C:\Projects\)", R"(C:\Projects\test)"));
+	dcassert(!AirUtil::isParentOrExactLocal(R"(C:\Projects)", R"(C:\Projectstest)"));
+	dcassert(!AirUtil::isParentOrExactLocal(R"(C:\Projectstest)", R"(C:\Projects)"));
+	dcassert(!AirUtil::isParentOrExactLocal(R"(C:\Projects\test)", ""));
+	dcassert(AirUtil::isParentOrExactLocal("", R"(C:\Projects\test)"));
 
-	dcassert(!AirUtil::isSub(R"(C:\Projects\)", R"(C:\Projects\)"));
-	dcassert(AirUtil::isSub(R"(C:\Projects\test)", R"(C:\Projects\)"));
-	dcassert(AirUtil::isSub(R"(C:\Projects\test)", R"(C:\Projects)"));
-	dcassert(!AirUtil::isSub(R"(C:\Projectstest)", R"(C:\Projects)"));
-	dcassert(!AirUtil::isSub(R"(C:\Projects)", R"(C:\Projectstest)"));
-	dcassert(AirUtil::isSub(R"(C:\Projects\test)", ""));
-	dcassert(!AirUtil::isSub("", R"(C:\Projects\test)"));
+	dcassert(!AirUtil::isSubLocal(R"(C:\Projects\)", R"(C:\Projects\)"));
+	dcassert(AirUtil::isSubLocal(R"(C:\Projects\test)", R"(C:\Projects\)"));
+	dcassert(AirUtil::isSubLocal(R"(C:\Projects\test)", R"(C:\Projects)"));
+	dcassert(!AirUtil::isSubLocal(R"(C:\Projectstest)", R"(C:\Projects)"));
+	dcassert(!AirUtil::isSubLocal(R"(C:\Projects)", R"(C:\Projectstest)"));
+	dcassert(AirUtil::isSubLocal(R"(C:\Projects\test)", ""));
+	dcassert(!AirUtil::isSubLocal("", R"(C:\Projects\test)"));
+
+	dcassert(AirUtil::compareFromEnd(R"(/Downloads/1/)", R"(Downloads\1\)", '\\') == 0);
+	dcassert(AirUtil::compareFromEnd(R"(/Downloads/1/)", R"(Download\1\)", '\\') == 9);
+
+	dcassert(AirUtil::compareFromEnd(R"(E:\Downloads\Projects\CD1\)", R"(CD1\)", '\\') == 0);
+	dcassert(AirUtil::compareFromEnd(R"(E:\Downloads\1\)", R"(1\)", '\\') == 0);
+	dcassert(AirUtil::compareFromEnd(R"(/Downloads/Projects/CD1/)", R"(cd1\)", '\\') == 0);
+	dcassert(AirUtil::compareFromEnd(R"(/Downloads/1/)", R"(1\)", '\\') == 0);
+
+
+	// MATCH PATHS (NMDC)
+	auto tmp = AirUtil::getMatchPath(R"(SHARE\Random\CommonSub\File1.zip)", R"(E:\Downloads\Bundle\CommonSub\File1.zip)", R"(E:\Downloads\Bundle\)", true);
+	dcassert(AirUtil::getMatchPath(R"(SHARE\Random\CommonSub\File1.zip)", R"(E:\Downloads\Bundle\CommonSub\File1.zip)", R"(E:\Downloads\Bundle\)", true) == Util::emptyString);
+	dcassert(AirUtil::getMatchPath(R"(SHARE\Bundle\Bundle\CommonSub\File1.zip)", R"(E:\Downloads\Bundle\CommonSub\File1.zip)", R"(E:\Downloads\Bundle\)", true) == R"(E:\Downloads\Bundle\)");
+
+	// MATCH PATHS (ADC)
+
+	// Different remote bundle path
+	dcassert(AirUtil::getMatchPath(R"(SHARE\Bundle\RandomRemoteDir\File1.zip)", R"(E:\Downloads\Bundle\RandomLocalDir\File1.zip)", R"(E:\Downloads\Bundle\)", false) == R"(SHARE\Bundle\RandomRemoteDir\)");
+	dcassert(AirUtil::getMatchPath(R"(SHARE\RandomRemoteBundle\File1.zip)", R"(E:\Downloads\Bundle\File1.zip)", R"(E:\Downloads\Bundle\)", false) == R"(SHARE\RandomRemoteBundle\)");
+
+	// Common directory name for file parent
+	dcassert(AirUtil::getMatchPath(R"(SHARE\Bundle\RandomRemoteDir\CommonSub\File1.zip)", R"(E:\Downloads\Bundle\RandomLocalDir\CommonSub\File1.zip)", R"(E:\Downloads\Bundle\)", false) == R"(SHARE\Bundle\RandomRemoteDir\CommonSub\)");
+
+	// Subpath is shorter than subdir in main
+	dcassert(AirUtil::getMatchPath(R"(CommonSub\File1.zip)", R"(E:\Downloads\Bundle\RandomLocalDir\CommonSub\File1.zip)", R"(E:\Downloads\Bundle\)", false) == R"(CommonSub\)");
+
+	// Exact match
+	dcassert(AirUtil::getMatchPath(R"(CommonParent\Bundle\Common\File1.zip)", R"(E:\CommonParent\Bundle\Common\File1.zip)", R"(E:\CommonParent\Bundle\)", false) == R"(CommonParent\Bundle\)");
+
+	// Short parent
+	dcassert(AirUtil::getMatchPath(R"(1\File1.zip)", R"(E:\Bundle\File1.zip)", R"(E:\Bundle\)", false) == R"(1\)");
+
+	// Invalid path 1 (the result won't matter, just don't crash here)
+	dcassert(AirUtil::getMatchPath(R"(File1.zip)", R"(E:\Bundle\File1.zip)", R"(E:\Bundle\)", false) == R"(File1.zip)");
+
+	// Invalid path 2 (the result won't matter, just don't crash here)
+	dcassert(AirUtil::getMatchPath(R"(\File1.zip)", R"(E:\Bundle\File1.zip)", R"(E:\Bundle\)", false) == R"(\)");
 #endif
 }
 
 void AirUtil::updateCachedSettings() {
 	privKeyFile = Text::toLower(SETTING(TLS_PRIVATE_KEY_FILE));
-	tempDLDir = Text::toLower(SETTING(TEMP_DOWNLOAD_DIRECTORY));
 }
 
-void AirUtil::getIpAddresses(IpList& addresses, bool v6) {
+AirUtil::AdapterInfoList AirUtil::getBindAdapters(bool v6) {
+	// Get the addresses and sort them
+	auto bindAddresses = getNetworkAdapters(v6);
+	sort(bindAddresses.begin(), bindAddresses.end(), [](const AdapterInfo& lhs, const AdapterInfo& rhs) {
+		if (lhs.adapterName.empty() && rhs.adapterName.empty()) {
+			return Util::stricmp(lhs.ip, rhs.ip) < 0;
+		}
+
+		return Util::stricmp(lhs.adapterName, rhs.adapterName) < 0;
+	});
+
+	// "Any" adapter
+	bindAddresses.emplace(bindAddresses.begin(), STRING(ANY), v6 ? "::" : "0.0.0.0", static_cast<uint8_t>(0));
+
+	// Current address not listed?
+	const auto& setting = v6 ? SETTING(BIND_ADDRESS6) : SETTING(BIND_ADDRESS);
+	auto cur = boost::find_if(bindAddresses, [&setting](const AirUtil::AdapterInfo& aInfo) { return aInfo.ip == setting; });
+	if (cur == bindAddresses.end()) {
+		bindAddresses.emplace_back(STRING(UNKNOWN), setting, 0);
+		cur = bindAddresses.end() - 1;
+	}
+
+	return bindAddresses;
+}
+
+AirUtil::AdapterInfoList AirUtil::getNetworkAdapters(bool v6) {
+	AdapterInfoList adapterInfos;
+
 #ifdef _WIN32
 	ULONG len =	15360; //"The recommended method of calling the GetAdaptersAddresses function is to pre-allocate a 15KB working buffer pointed to by the AdapterAddresses parameter"
 	for(int i = 0; i < 3; ++i)
@@ -186,7 +275,7 @@ void AirUtil::getIpAddresses(IpList& addresses, bool v6) {
 						BYTE prefix[8] = { 0xFE, 0x80 };
 						auto fLinkLocal = (memcmp(pAddr->sin6_addr.u.Byte, prefix, sizeof(prefix)) == 0);*/
 
-						addresses.emplace_back(Text::fromT(tstring(pAdapterInfo->FriendlyName)), buf, ua->OnLinkPrefixLength);
+						adapterInfos.emplace_back(Text::fromT(tstring(pAdapterInfo->FriendlyName)), buf, ua->OnLinkPrefixLength);
 					}
 					freeObject = false;
 				}
@@ -230,7 +319,7 @@ void AirUtil::getIpAddresses(IpList& addresses, bool v6) {
 					char address[len];
 					inet_ntop(sa->sa_family, src, address, len);
 					// TODO: get the prefix
-					addresses.emplace_back("Unknown", (string)address, 0);
+					adapterInfos.emplace_back("Unknown", (string)address, 0);
 				}
 			}
 		}
@@ -239,24 +328,28 @@ void AirUtil::getIpAddresses(IpList& addresses, bool v6) {
 #endif
 
 #endif
+
+	return adapterInfos;
 }
 
-string AirUtil::getLocalIp(bool v6, bool allowPrivate /*true*/) {
+string AirUtil::getLocalIp(bool v6) noexcept {
 	const auto& bindAddr = v6 ? CONNSETTING(BIND_ADDRESS6) : CONNSETTING(BIND_ADDRESS);
-	if(!bindAddr.empty() && bindAddr != SettingsManager::getInstance()->getDefault(v6 ? SettingsManager::BIND_ADDRESS6 : SettingsManager::BIND_ADDRESS)) {
+	if (!bindAddr.empty() && bindAddr != SettingsManager::getInstance()->getDefault(v6 ? SettingsManager::BIND_ADDRESS6 : SettingsManager::BIND_ADDRESS)) {
 		return bindAddr;
 	}
 
-	IpList addresses;
-	getIpAddresses(addresses, v6);
-	if (addresses.empty())
+	// No bind address configured, try to find a public address
+	auto adapters = getNetworkAdapters(v6);
+	if (adapters.empty()) {
 		return Util::emptyString;
+	}
 
-	auto p = boost::find_if(addresses, [v6](const AddressInfo& aAddress) { return !Util::isPrivateIp(aAddress.ip, v6); });
-	if (p != addresses.end())
+	auto p = boost::find_if(adapters, [v6](const AdapterInfo& aAdapterInfo) { return Util::isPublicIp(aAdapterInfo.ip, v6); });
+	if (p != adapters.end()) {
 		return p->ip;
+	}
 
-	return allowPrivate ? addresses.front().ip : Util::emptyString;
+	return adapters.front().ip;
 }
 
 int AirUtil::getSlotsPerUser(bool download, double value, int aSlots, SettingsManager::SettingProfile aProfile) {
@@ -300,19 +393,19 @@ int AirUtil::getSlotsPerUser(bool download, double value, int aSlots, SettingsMa
 }
 
 
-int AirUtil::getSlots(bool download, double value, SettingsManager::SettingProfile aProfile) {
-	if (!SETTING(DL_AUTODETECT) && value == 0 && download) {
+int AirUtil::getSlots(bool aIsDownload, double aValue, SettingsManager::SettingProfile aProfile) {
+	if (!SETTING(DL_AUTODETECT) && aValue == 0 && aIsDownload) {
 		//LogManager::getInstance()->message("Slots1");
 		return SETTING(DOWNLOAD_SLOTS);
-	} else if (!SETTING(UL_AUTODETECT) && value == 0 && !download) {
+	} else if (!SETTING(UL_AUTODETECT) && aValue == 0 && !aIsDownload) {
 		//LogManager::getInstance()->message("Slots2");
 		return SETTING(SLOTS);
 	}
 
 	double speed;
-	if (value != 0) {
-		speed=value;
-	} else if (download) {
+	if (aValue != 0) {
+		speed = aValue;
+	} else if (aIsDownload) {
 		int limit = SETTING(AUTO_DETECTION_USE_LIMITED) ? ThrottleManager::getInstance()->getDownLimit() : 0;
 		speed = limit > 0 ? (limit * 8.00) / 1024.00 : Util::toDouble(SETTING(DOWNLOAD_SPEED));
 	} else {
@@ -320,7 +413,7 @@ int AirUtil::getSlots(bool download, double value, SettingsManager::SettingProfi
 		speed = limit > 0 ? (limit * 8.00) / 1024.00 : Util::toDouble(SETTING(UPLOAD_SPEED));
 	}
 
-	int slots=3;
+	int slots = 3;
 
 	// Don't try to understand the formula used in here
 	bool rar = aProfile == SettingsManager::PROFILE_RAR;
@@ -328,69 +421,66 @@ int AirUtil::getSlots(bool download, double value, SettingsManager::SettingProfi
 		if (rar) {
 			slots=1;
 		} else {
-			download ? slots=6 : slots=2;
+			aIsDownload ? slots=6 : slots=2;
 		}
 	} else if (speed > 1 && speed <= 2.5) {
 		if (rar) {
 			slots=2;
 		} else {
-			download ? slots=15 : slots=3;
+			aIsDownload ? slots=15 : slots=3;
 		}
 	} else if (speed > 2.5 && speed <= 4) {
 		if (rar) {
-			download ? slots=3 : slots=2;
+			aIsDownload ? slots=3 : slots=2;
 		} else {
-			download ? slots=15 : slots=4;
+			aIsDownload ? slots=15 : slots=4;
 		}
 	} else if (speed > 4 && speed <= 6) {
 		if (rar) {
-			download ? slots=3 : slots=3;
+			aIsDownload ? slots=3 : slots=3;
 		} else {
-			download ? slots=20 : slots=5;
+			aIsDownload ? slots=20 : slots=5;
 		}
 	} else if (speed > 6 && speed < 10) {
 		if (rar) {
-			download ? slots=5 : slots=3;
+			aIsDownload ? slots=5 : slots=3;
 		} else {
-			download ? slots=20 : slots=6;
+			aIsDownload ? slots=20 : slots=6;
 		}
 	} else if (speed >= 10 && speed <= 50) {
 		if (rar) {
 			speed <= 20 ?  slots=4 : slots=5;
-			if (download) {
+			if (aIsDownload) {
 				slots=slots+3;
 			}
 		} else {
-			download ? slots=30 : slots=8;
+			aIsDownload ? slots=30 : slots=8;
 		}
 	} else if(speed > 50 && speed < 100) {
 		if (rar) {
 			slots= static_cast<int>(speed / 10);
-			if (download)
+			if (aIsDownload)
 				slots=slots+4;
 		} else {
-			download ? slots=40 : slots=12;
+			aIsDownload ? slots=40 : slots=12;
 		}
 	} else if (speed >= 100) {
+		// Curves: https://www.desmos.com/calculator/vfywkguiej
 		if (rar) {
-			if (download) {
-				slots = static_cast<int>(speed / 7.0);
+			if (aIsDownload) {
+				slots = static_cast<int>(ceil((log(speed + 750) - 6.61) * 100));
 			} else {
-				slots = static_cast<int>(speed / 12.0);
-				if (slots > 15)
-					slots=15;
+				slots = static_cast<int>(ceil((log(speed + 70.0) - 4.4) * 10));
 			}
 		} else {
-			if (download) {
-				slots=50;
+			if (aIsDownload) {
+				slots = static_cast<int>((speed * 0.10) + 40);
 			} else {
-				slots= static_cast<int>(speed / 7.0);
-				if (slots > 30 && !download)
-					slots=30;
+				slots = static_cast<int>((speed * 0.04) + 15);
 			}
 		}
 	}
-	//LogManager::getInstance()->message("Slots3: " + Util::toString(slots));
+
 	return slots;
 
 }
@@ -438,15 +528,15 @@ int AirUtil::getMaxAutoOpened(double value) {
 	return slots;
 }
 
-string AirUtil::getPrioText(int prio) {
-	switch(prio) {
-		case QueueItemBase::PAUSED_FORCE: return STRING(PAUSED_FORCED);
-		case QueueItemBase::PAUSED: return STRING(PAUSED);
-		case QueueItemBase::LOWEST: return STRING(LOWEST);
-		case QueueItemBase::LOW: return STRING(LOW);
-		case QueueItemBase::NORMAL: return STRING(NORMAL);
-		case QueueItemBase::HIGH: return STRING(HIGH);
-		case QueueItemBase::HIGHEST: return STRING(HIGHEST);
+string AirUtil::getPrioText(Priority aPriority) noexcept {
+	switch(aPriority) {
+		case Priority::PAUSED_FORCE: return STRING(PAUSED_FORCED);
+		case Priority::PAUSED: return STRING(PAUSED);
+		case Priority::LOWEST: return STRING(LOWEST);
+		case Priority::LOW: return STRING(LOW);
+		case Priority::NORMAL: return STRING(NORMAL);
+		case Priority::HIGH: return STRING(HIGH);
+		case Priority::HIGHEST: return STRING(HIGHEST);
 		default: return STRING(PAUSED);
 	}
 }
@@ -463,28 +553,16 @@ void AirUtil::listRegexSubtract(StringList& l, const boost::regex& aReg) {
 	l.erase(remove_if(l.begin(), l.end(), [&](const string& s) { return regex_match(s, aReg); }), l.end());
 }
 
-string AirUtil::formatMatchResults(int matches, int newFiles, const BundleList& bundles, bool partial) {
-	string tmp;
-	if(partial) {
-		//partial lists
-		if (bundles.size() == 1) {
-			tmp = STRING_F(MATCH_SOURCE_ADDED, newFiles % bundles.front()->getName().c_str());
+string AirUtil::formatMatchResults(int aMatchingFiles, int aNewFiles, const BundleList& aBundles) noexcept {
+	if (aMatchingFiles > 0) {
+		if (aBundles.size() == 1) {
+			return STRING_F(MATCHED_FILES_BUNDLE, aMatchingFiles % aBundles.front()->getName().c_str() % aNewFiles);
 		} else {
-			tmp = STRING_F(MATCH_SOURCE_ADDED_X_BUNDLES, newFiles % (int)bundles.size());
-		}
-	} else {
-		//full lists
-		if (matches > 0) {
-			if (bundles.size() == 1) {
-				tmp = STRING_F(MATCHED_FILES_BUNDLE, matches % bundles.front()->getName().c_str() % newFiles);
-			} else {
-				tmp = STRING_F(MATCHED_FILES_X_BUNDLES, matches % (int)bundles.size() % newFiles);
-			}
-		} else {
-			tmp = STRING(NO_MATCHED_FILES);
+			return STRING_F(MATCHED_FILES_X_BUNDLES, aMatchingFiles % (int)aBundles.size() % aNewFiles);
 		}
 	}
-	return tmp;
+
+	return STRING(NO_MATCHED_FILES);;
 }
 
 //fuldc ftp logger support
@@ -585,6 +663,16 @@ bool AirUtil::stringRegexMatch(const string& aReg, const string& aString) {
 	return false;
 }
 
+bool AirUtil::isRelease(const string& aString) {
+
+	try {
+		return boost::regex_match(aString, releaseReg);
+	}
+	catch (...) {}
+
+	return false;
+}
+
 void AirUtil::getRegexMatchesT(const tstring& aString, TStringList& l, const boost::wregex& aReg) {
 	auto start = aString.begin();
 	auto end = aString.end();
@@ -613,26 +701,26 @@ void AirUtil::getRegexMatches(const string& aString, StringList& l, const boost:
 	}
 }
 
-const string AirUtil::getLinkUrl() {
+const string AirUtil::getLinkUrl() noexcept {
 	return R"(((?:[a-z][\w-]{0,10})?:/{1,3}|www\d{0,3}[.]|magnet:\?[^\s=]+=|spotify:|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`()\[\]{};:'\".,<>?«»“”‘’]))";
 }
 
-const string AirUtil::getReleaseRegLong(bool chat) {
+const string AirUtil::getReleaseRegLong(bool chat) noexcept {
 	if (chat)
 		return R"(((?<=\s)|^)(?=\S*[A-Z]\S*)(([A-Z0-9]|\w[A-Z0-9])[A-Za-z0-9-]*)(\.|_|(-(?=\S*\d{4}\S+)))(\S+)-(\w{2,})(?=(\W)?\s|$))";
 	else
 		return R"((?=\S*[A-Z]\S*)(([A-Z0-9]|\w[A-Z0-9])[A-Za-z0-9-]*)(\.|_|(-(?=\S*\d{4}\S+)))(\S+)-(\w{2,}))";
 }
 
-const string AirUtil::getReleaseRegBasic() {
+const string AirUtil::getReleaseRegBasic() noexcept {
 	return R"(((?=\S*[A-Za-z]\S*)[A-Z0-9]\S{3,})-([A-Za-z0-9_]{2,}))";
 }
 
-const string AirUtil::getSubDirReg() {
+const string AirUtil::getSubDirReg() noexcept {
 	return R"((((S(eason)?)|DVD|CD|(D|DIS(K|C))).?([0-9](0-9)?))|Sample.?|Proof.?|Cover.?|.{0,5}Sub(s|pack)?)";
 }
 
-string AirUtil::getReleaseDir(const string& aDir, bool cut, const char separator) {
+string AirUtil::getReleaseDir(const string& aDir, bool cut, const char separator) noexcept {
 	auto p = getDirName(Util::getFilePath(aDir, separator), separator);
 	if (cut) {
 		return p.first;
@@ -642,66 +730,63 @@ string AirUtil::getReleaseDir(const string& aDir, bool cut, const char separator
 	return p.second == string::npos ? aDir : aDir.substr(0, p.second);
 }
 
-bool AirUtil::removeDirectoryIfEmptyRe(const string& aPath, int maxAttempts, int attempts) {
+bool AirUtil::removeDirectoryIfEmptyRe(const string& aPath, int aMaxAttempts, int aAttempts) {
 	/* recursive check for empty dirs */
 	for(FileFindIter i(aPath, "*"); i != FileFindIter(); ++i) {
 		try {
 			if(i->isDirectory()) {
-				if (i->getFileName().compare(".") == 0 || i->getFileName().compare("..") == 0)
-					continue;
-
 				string dir = aPath + i->getFileName() + PATH_SEPARATOR;
-				if (!removeDirectoryIfEmptyRe(dir, maxAttempts, 0))
+				if (!removeDirectoryIfEmptyRe(dir, aMaxAttempts, 0))
 					return false;
 			} else if (Util::getFileExt(i->getFileName()) == ".dctmp") {
-				if (attempts == maxAttempts) {
+				if (aAttempts == aMaxAttempts) {
 					return false;
 				}
 
 				Thread::sleep(500);
-				attempts++;
-				return removeDirectoryIfEmptyRe(aPath, maxAttempts, attempts);
+				return removeDirectoryIfEmptyRe(aPath, aMaxAttempts, aAttempts + 1);
 			} else {
 				return false;
 			}
 		} catch(const FileException&) { } 
 	}
+
 	File::removeDirectory(aPath);
 	return true;
 }
 
-void AirUtil::removeDirectoryIfEmpty(const string& tgt, int maxAttempts /*3*/, bool silent /*false*/) {
-	if (!removeDirectoryIfEmptyRe(tgt, maxAttempts, 0) && !silent) {
-		LogManager::getInstance()->message(STRING_F(DIRECTORY_NOT_REMOVED, tgt), LogMessage::SEV_INFO);
+void AirUtil::removeDirectoryIfEmpty(const string& aPath, int aMaxAttempts /*3*/, bool aSilent /*false*/) {
+	if (!removeDirectoryIfEmptyRe(aPath, aMaxAttempts, 0) && !aSilent) {
+		LogManager::getInstance()->message(STRING_F(DIRECTORY_NOT_REMOVED, aPath), LogMessage::SEV_INFO);
 	}
 }
 
-bool AirUtil::isAdcHub(const string& hubUrl) {
-	if(Util::strnicmp("adc://", hubUrl.c_str(), 6) == 0) {
+bool AirUtil::isAdcHub(const string& aHubUrl) noexcept {
+	if(Util::strnicmp("adc://", aHubUrl.c_str(), 6) == 0) {
 		return true;
-	} else if(Util::strnicmp("adcs://", hubUrl.c_str(), 7) == 0) {
+	} else if(Util::strnicmp("adcs://", aHubUrl.c_str(), 7) == 0) {
 		return true;
 	}
 	return false;
 }
 
-bool AirUtil::isHubLink(const string& hubUrl) {
-	return isAdcHub(hubUrl) || Util::strnicmp("dchub://", hubUrl.c_str(), 8) == 0;
+bool AirUtil::isSecure(const string& aHubUrl) noexcept {
+	return Util::strnicmp("adcs://", aHubUrl.c_str(), 7) == 0 || Util::strnicmp("nmdcs://", aHubUrl.c_str(), 8) == 0;
 }
 
-string AirUtil::convertMovePath(const string& aPath, const string& aParent, const string& aTarget) {
-	return aTarget + aPath.substr(aParent.length(), aPath.length() - aParent.length());
+bool AirUtil::isHubLink(const string& aHubUrl) noexcept {
+	return isAdcHub(aHubUrl) || Util::strnicmp("dchub://", aHubUrl.c_str(), 8) == 0;
 }
 
-string AirUtil::regexEscape(const string& aStr, bool isWildcard) {
+string AirUtil::regexEscape(const string& aStr, bool aIsWildcard) noexcept {
 	if (aStr.empty())
 		return Util::emptyString;
 
 	//don't replace | and ? if it's wildcard
-	static const boost::regex re_boostRegexEscape(isWildcard ? R"([\^\.\$\(\)\[\]\*\+\?\/\\])" : R"([\^\.\$\|\(\)\[\]\*\+\?\/\\])");
+	static const boost::regex re_boostRegexEscape(aIsWildcard ? R"([\^\.\$\(\)\[\]\*\+\?\/\\])" : R"([\^\.\$\|\(\)\[\]\*\+\?\/\\])");
     const string rep("\\\\\\1&");
     string result = regex_replace(aStr, re_boostRegexEscape, rep, boost::match_default | boost::format_sed);
-	if (isWildcard) {
+	if (aIsWildcard) {
 		//convert * and ?
 		boost::replace_all(result, "\\*", ".*");
 		boost::replace_all(result, "\\?", ".");
@@ -710,50 +795,99 @@ string AirUtil::regexEscape(const string& aStr, bool isWildcard) {
     return result;
 }
 
-void AirUtil::setAway(AwayMode aAway) {
-	if(aAway != away)
-		ClientManager::getInstance()->infoUpdated();
-
-	if((aAway == AWAY_MANUAL) || (getAwayMode() == AWAY_MANUAL && aAway == AWAY_OFF) ) //only save the state if away mode is set by user
-		SettingsManager::getInstance()->set(SettingsManager::AWAY, aAway > 0);
-
-	away = aAway;
-
-	if (away > AWAY_OFF)
-		awayTime = time(NULL);
-}
-
-string AirUtil::getAwayMessage(const string& aAwayMsg, ParamMap& params) { 
-	params["idleTI"] = Util::formatSeconds(time(NULL) - awayTime);
-	return Util::formatParams(aAwayMsg, params);
-}
-
-string AirUtil::subtractCommonDirs(const string& toCompare, const string& toSubtract, char separator) {
-	if (toSubtract.length() > 3) {
-		string::size_type i = toSubtract.length()-2;
-		string::size_type j;
-		for(;;) {
-			j = toSubtract.find_last_of(separator, i);
-			if(j == string::npos || (int)(toCompare.length() - (toSubtract.length() - j)) < 0) //also check if it goes out of scope for toCompare
-				break;
-			if(Util::stricmp(toSubtract.substr(j), toCompare.substr(toCompare.length() - (toSubtract.length()-j))) != 0)
-				break;
-			i = j - 1;
+string AirUtil::subtractCommonParents(const string& aToCompare, const StringList& aToSubtract) noexcept {
+	StringList converted;
+	for (const auto& p : aToSubtract) {
+		if (p.length() > aToCompare.length()) {
+			converted.push_back(p.substr(aToCompare.length()));
 		}
-		return toSubtract.substr(0, i+2);
 	}
-	return toSubtract;
+
+	return Util::listToString(converted);
 }
 
-pair<string, string::size_type> AirUtil::getDirName(const string& aPath, char separator) {
+string AirUtil::subtractCommonDirs(const string& toCompare, const string& toSubtract, char separator) noexcept {
+	auto res = compareFromEnd(toCompare, toSubtract, separator);
+	if (res == string::npos) {
+		return toSubtract;
+	}
+
+	return toSubtract.substr(0, res);
+}
+
+string AirUtil::getLastCommonDirectoryPathFromSub(const string& aMainPath, const string& aSubPath, char aSubSeparator, size_t aMainBaseLength) noexcept {
+	auto pos = AirUtil::compareFromEnd(aMainPath, aSubPath, aSubSeparator);
+
+	// Get the next directory
+	if (pos < aSubPath.length()) {
+		auto pos2 = aSubPath.find(aSubSeparator, pos);
+		if (pos2 != string::npos) {
+			pos = pos2 + 1;
+		}
+	}
+
+	auto mainSubSectionLength = aMainPath.length() - aMainBaseLength;
+	return aSubPath.substr(0, max(pos, aSubPath.length() > mainSubSectionLength ? aSubPath.length() - mainSubSectionLength : 0));
+}
+
+size_t AirUtil::compareFromEnd(const string& aMainPath, const string& aSubPath, char aSubSeparator) noexcept {
+	if (aSubPath.length() > 1) {
+		string::size_type i = aSubPath.length() - 2;
+		string::size_type j;
+		for (;;) {
+			j = aSubPath.find_last_of(aSubSeparator, i);
+			if (j == string::npos) {
+				j = 0; // compare from beginning
+			} else {
+				j++;
+			}
+
+			if (static_cast<int>(aMainPath.length() - (aSubPath.length() - j)) < 0)
+				break; // out of scope for aMainPath
+
+			if (Util::stricmp(aSubPath.substr(j, i - j + 1), aMainPath.substr(aMainPath.length() - (aSubPath.length() - j), i - j + 1)) != 0)
+				break;
+
+			if (j <= 1) {
+				// Fully matched
+				return 0;
+			}
+
+			i = j - 2;
+		}
+
+		return i + 2;
+	}
+
+	return aSubPath.length();
+}
+
+
+string AirUtil::getMatchPath(const string& aRemoteFile, const string& aLocalFile, const string& aBundlePath, bool aNmdc) noexcept {
+	if (aNmdc) {
+		// For simplicity, only perform the path comparison for ADC results
+		if (Text::toLower(aRemoteFile).find(Text::toLower(Util::getLastDir(aBundlePath))) != string::npos) {
+			return aBundlePath;
+		}
+
+		return Util::emptyString;
+	}
+
+	// Get last matching directory for matching recursive filelist from the user
+	auto remoteFileDir = Util::getNmdcFilePath(aRemoteFile);
+	auto localBundleFileDir = Util::getFilePath(aLocalFile);
+	return AirUtil::getLastCommonDirectoryPathFromSub(localBundleFileDir, remoteFileDir, NMDC_SEPARATOR, aBundlePath.length());
+}
+
+pair<string, string::size_type> AirUtil::getDirName(const string& aPath, char aSeparator) noexcept {
 	if (aPath.size() < 3)
 		return { aPath, false };
 
 	//get the directory to search for
 	bool isSub = false;
-	string::size_type i = aPath.back() == separator ? aPath.size() - 2 : aPath.size() - 1, j;
+	string::size_type i = aPath.back() == aSeparator ? aPath.size() - 2 : aPath.size() - 1, j;
 	for (;;) {
-		j = aPath.find_last_of(separator, i);
+		j = aPath.find_last_of(aSeparator, i);
 		if (j == string::npos) {
 			j = 0;
 			break;
@@ -771,7 +905,7 @@ pair<string, string::size_type> AirUtil::getDirName(const string& aPath, char se
 	return { aPath.substr(j, i - j + 1), isSub ? i + 2 : string::npos };
 }
 
-string AirUtil::getTitle(const string& searchTerm) {
+string AirUtil::getTitle(const string& searchTerm) noexcept {
 	auto ret = Text::toLower(searchTerm);
 
 	//Remove group name
@@ -815,7 +949,7 @@ string AirUtil::getTitle(const string& searchTerm) {
 }
 
 /* returns true if aDir is a subdir of aParent */
-bool AirUtil::isSub(const string& aTestSub, const string& aParent, const char separator) {
+bool AirUtil::isSub(const string& aTestSub, const string& aParent, const char separator) noexcept {
 	if (aTestSub.length() <= aParent.length())
 		return false;
 
@@ -827,7 +961,7 @@ bool AirUtil::isSub(const string& aTestSub, const string& aParent, const char se
 }
 
 /* returns true if aSub is a subdir of aDir OR both are the same dir */
-bool AirUtil::isParentOrExact(const string& aTestParent, const string& aSub, const char separator) {
+bool AirUtil::isParentOrExact(const string& aTestParent, const string& aSub, const char aSeparator) noexcept {
 	if (aSub.length() < aTestParent.length())
 		return false;
 
@@ -835,7 +969,7 @@ bool AirUtil::isParentOrExact(const string& aTestParent, const string& aSub, con
 		return false;
 
 	// either the parent must end with a separator or it must follow in the subdirectory
-	return aTestParent.empty() || aTestParent.length() == aSub.length() || aTestParent.back() == separator || aSub[aTestParent.length()] == separator;
+	return aTestParent.empty() || aTestParent.length() == aSub.length() || aTestParent.back() == aSeparator || aSub[aTestParent.length()] == aSeparator;
 }
 
 }

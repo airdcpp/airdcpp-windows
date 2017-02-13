@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,6 +68,22 @@ void Upload::resume(int64_t aStart, int64_t aSize) noexcept {
 	if((aStart + aSize) < fileSize) {
 		stream.reset(new LimitedInputStream<true>(stream.release(), aSize));
 	}
+}
+
+void Upload::appendFlags(OrderedStringSet& flags_) const noexcept {
+	if (isSet(Upload::FLAG_PARTIAL)) {
+		flags_.insert("P");
+	}
+
+	if (isSet(Upload::FLAG_ZUPLOAD)) {
+		flags_.insert("Z");
+	}
+
+	if (isSet(Upload::FLAG_CHUNKED)) {
+		flags_.insert("C");
+	}
+
+	Transfer::appendFlags(flags_);
 }
 
 

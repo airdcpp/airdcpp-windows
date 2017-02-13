@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,7 +57,6 @@ public:
 #else //_DEBUG
 	SocketException(const string& aError) noexcept : Exception(aError) { }
 #endif // _DEBUG
-
 	SocketException(int aError) noexcept;
 	virtual ~SocketException() throw() { }
 private:
@@ -152,13 +151,13 @@ public:
 	 * @param aPort Server port.
 	 * @throw SocketException If any connection error occurs.
 	 */
-	virtual void connect(const AddressInfo& aAddr, const string& aPort, const string& localPort = Util::emptyString);
+	virtual void connect(const AddressInfo& aAddr, const string& aPort, const string& aLocalPort = Util::emptyString);
 	void connect(const AddressInfo& aAddr, uint16_t aPort, uint16_t localPort = 0) { connect(aAddr, aPort == 0 ? Util::emptyString : Util::toString(aPort), localPort == 0 ? Util::emptyString : Util::toString(localPort)); }
 
 	/**
 	 * Same as connect(), but through the SOCKS5 server
 	 */
-	void socksConnect(const Socket::AddressInfo& aIp, const string& aPort, uint32_t timeout = 0);
+	void socksConnect(const Socket::AddressInfo& aIp, const string& aPort, uint64_t timeout = 0);
 
 	/**
 	 * Sends data, will block until all data has been sent or an exception occurs
@@ -166,7 +165,7 @@ public:
 	 * @param aLen Data length
 	 * @throw SocketExcpetion Send failed.
 	 */
-	void writeAll(const void* aBuffer, int aLen, uint32_t timeout = 0);
+	void writeAll(const void* aBuffer, int aLen, uint64_t timeout = 0);
 	virtual int write(const void* aBuffer, int aLen);
 	int write(const string& aData) { return write(aData.data(), (int)aData.length()); }
 	virtual void writeTo(const string& aIp, const string& aPort, const void* aBuffer, int aLen, bool proxy = true);
@@ -175,8 +174,8 @@ public:
 	virtual void close() noexcept;
 	void disconnect() noexcept;
 
-	virtual bool waitConnected(uint32_t millis);
-	virtual bool waitAccepted(uint32_t millis);
+	virtual bool waitConnected(uint64_t millis);
+	virtual bool waitAccepted(uint64_t millis);
 
 	/**
 	 * Reads zero to aBufLen characters from this socket,
@@ -201,9 +200,9 @@ public:
 	 * actually read is returned.
 	 * On exception, an unspecified amount of bytes might have already been read.
 	 */
-	int readAll(void* aBuffer, int aBufLen, uint32_t timeout = 0);
+	int readAll(void* aBuffer, int aBufLen, uint64_t timeout = 0);
 
-	virtual std::pair<bool, bool> wait(uint32_t millis, bool checkRead, bool checkWrite);
+	virtual std::pair<bool, bool> wait(uint64_t millis, bool checkRead, bool checkWrite);
 
 	static string resolve(const string& aDns, int af = AF_UNSPEC) noexcept;
 	addrinfo_p resolveAddr(const string& name, const string& port, int family = AF_UNSPEC, int flags = 0) const;
@@ -227,7 +226,8 @@ public:
 
 	virtual bool isSecure() const noexcept { return false; }
 	virtual bool isTrusted() const noexcept { return false; }
-	virtual std::string getCipherName() const noexcept { return Util::emptyString; }
+	virtual bool isKeyprintMatch() const noexcept { return true; }
+	virtual std::string getEncryptionInfo() const noexcept { return Util::emptyString; }
 	virtual ByteVector getKeyprint() const noexcept{ return ByteVector(); }
 	virtual bool verifyKeyprint(const string&, bool) noexcept{ return true; };
 
@@ -273,7 +273,7 @@ protected:
 	static socklen_t udpAddrLen;
 private:
 	void connect(const string& aAddr, const string& aPort, const string& localPort, string& lastError_);
-	void socksAuth(uint32_t timeout);
+	void socksAuth(uint64_t timeout);
 	socket_t setSock(socket_t s, int af);
 
 	// Low level interface

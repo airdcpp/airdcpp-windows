@@ -85,7 +85,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)\natpmp;$(SolutionDir)\leveldb\helpers;$(SolutionDir)\leveldb\include;$(SolutionDir)\bzip2;$(SolutionDir)\zlib;$(SolutionDir)\boost;$(SolutionDir)\openssl\include;$(SolutionDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\airdcpp;$(SolutionDir)\natpmp;$(SolutionDir)\leveldb\helpers;$(SolutionDir)\leveldb\include;$(SolutionDir)\bzip2;$(SolutionDir)\zlib;$(SolutionDir)\boost;$(SolutionDir)\openssl\include;$(SolutionDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -113,7 +113,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)\natpmp;$(SolutionDir);$(SolutionDir)\leveldb\helpers;$(SolutionDir)\leveldb\include;$(SolutionDir)\minizip;$(SolutionDir)\geoip;$(SolutionDir)\boost;$(SolutionDir)\bzip2;$(SolutionDir)\openssl\include;$(SolutionDir)\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\natpmp;$(SolutionDir);$(SolutionDir)\leveldb\helpers;$(SolutionDir)\leveldb\include;$(SolutionDir)\airdcpp;$(SolutionDir)\minizip;$(SolutionDir)\geoip;$(SolutionDir)\boost;$(SolutionDir)\bzip2;$(SolutionDir)\openssl\include;$(SolutionDir)\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -122,7 +122,7 @@
       <PrecompiledHeaderFile>stdinc.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)airdcpp.pch</PrecompiledHeaderOutputFile>
       <WarningLevel>Level4</WarningLevel>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessorDefinitions>WIN32;WIN64;HAVE_NATPMP_H;HAVE_WINUPNP_H;_UNICODE;UNICODE;HAS_PCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -136,11 +136,15 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Lib>
+    <PreBuildEvent>
+      <Message>Generating revision number...</Message>
+      <Command>$(SolutionDir)\scripts\generate-version.bat $(SolutionDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <PreBuildEvent>
       <Message>Generating revision number...</Message>
-      <Command>$(SolutionDir)generate-version.bat $(SolutionDir)</Command>
+      <Command>$(SolutionDir)scripts\generate-version.bat $(SolutionDir)</Command>
     </PreBuildEvent>
     <ClCompile>
       <Optimization>Full</Optimization>
@@ -149,7 +153,7 @@
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <AdditionalIncludeDirectories>$(SolutionDir)\natpmp;$(SolutionDir);$(SolutionDir)\leveldb\helpers;$(SolutionDir)\leveldb\include;$(SolutionDir)\geoip;$(SolutionDir)\bzip2;$(SolutionDir)\boost;$(SolutionDir)\zlib;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\airdcpp;$(SolutionDir)\natpmp;$(SolutionDir);$(SolutionDir)\leveldb\helpers;$(SolutionDir)\leveldb\include;$(SolutionDir)\geoip;$(SolutionDir)\bzip2;$(SolutionDir)\boost;$(SolutionDir)\zlib;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -184,7 +188,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <PreBuildEvent>
       <Message>Generating revision number...</Message>
-      <Command>$(SolutionDir)generate-version.bat $(SolutionDir)</Command>
+      <Command>$(SolutionDir)scripts\generate-version.bat $(SolutionDir)</Command>
     </PreBuildEvent>
     <Midl>
       <TargetEnvironment>X64</TargetEnvironment>
@@ -196,7 +200,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <AdditionalIncludeDirectories>$(SolutionDir)\natpmp;$(SolutionDir)\geoip;$(SolutionDir);$(SolutionDir)\leveldb\helpers;$(SolutionDir)\leveldb\include;$(SolutionDir)\bzip2;$(SolutionDir)\zlib;$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\airdcpp;$(SolutionDir)\natpmp;$(SolutionDir)\geoip;$(SolutionDir);$(SolutionDir)\leveldb\helpers;$(SolutionDir)\leveldb\include;$(SolutionDir)\bzip2;$(SolutionDir)\zlib;$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -219,6 +223,7 @@
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessorDefinitions>WIN32;WIN64;HAVE_NATPMP_H;HAVE_WINUPNP_H;_UNICODE;UNICODE;HAS_PCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -229,16 +234,32 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="airdcpp\ActivityManager.cpp" />
     <ClCompile Include="airdcpp\AdcCommand.cpp" />
     <ClCompile Include="airdcpp\AdcHub.cpp" />
+    <ClCompile Include="airdcpp\DirectSearch.cpp" />
+    <ClCompile Include="airdcpp\GroupedSearchResult.cpp" />
     <ClCompile Include="airdcpp\MessageCache.cpp" />
     <ClCompile Include="airdcpp\MessageManager.cpp" />
+    <ClCompile Include="airdcpp\modules\AutoSearch.cpp" />
+    <ClCompile Include="airdcpp\modules\AutoSearchManager.cpp" />
+    <ClCompile Include="airdcpp\modules\ColorSettings.cpp" />
+    <ClCompile Include="airdcpp\modules\DirectoryMonitor.cpp" />
+    <ClCompile Include="airdcpp\modules\FinishedManager.cpp" />
+    <ClCompile Include="airdcpp\modules\HighlightManager.cpp" />
+    <ClCompile Include="airdcpp\modules\HublistManager.cpp" />
+    <ClCompile Include="airdcpp\modules\PreviewAppManager.cpp" />
+    <ClCompile Include="airdcpp\modules\RSSManager.cpp" />
+    <ClCompile Include="airdcpp\modules\ShareMonitorManager.cpp" />
+    <ClCompile Include="airdcpp\modules\ShareScannerManager.cpp" />
+    <ClCompile Include="airdcpp\modules\TargetUtil.cpp" />
+    <ClCompile Include="airdcpp\modules\WebShortcuts.cpp" />
     <ClCompile Include="airdcpp\PrivateChat.cpp" />
+    <ClCompile Include="airdcpp\RecentManager.cpp" />
+    <ClCompile Include="airdcpp\SearchInstance.cpp" />
     <ClCompile Include="airdcpp\SearchQuery.cpp" />
     <ClCompile Include="airdcpp\ADLSearch.cpp" />
     <ClCompile Include="airdcpp\AirUtil.cpp" />
-    <ClCompile Include="airdcpp\AutoSearch.cpp" />
-    <ClCompile Include="airdcpp\AutoSearchManager.cpp" />
     <ClCompile Include="airdcpp\BufferedSocket.cpp" />
     <ClCompile Include="airdcpp\Bundle.cpp" />
     <ClCompile Include="airdcpp\BundleQueue.cpp" />
@@ -247,7 +268,6 @@
     <ClCompile Include="airdcpp\CID.cpp" />
     <ClCompile Include="airdcpp\Client.cpp" />
     <ClCompile Include="airdcpp\ClientManager.cpp" />
-    <ClCompile Include="airdcpp\ColorSettings.cpp" />
     <ClCompile Include="airdcpp\ConnectionManager.cpp" />
     <ClCompile Include="airdcpp\ConnectivityManager.cpp" />
     <ClCompile Include="airdcpp\CriticalSection.cpp" />
@@ -255,7 +275,6 @@
     <ClCompile Include="airdcpp\DCPlusPlus.cpp" />
     <ClCompile Include="airdcpp\DirectoryListing.cpp" />
     <ClCompile Include="airdcpp\DirectoryListingManager.cpp" />
-    <ClCompile Include="airdcpp\DirectoryMonitor.cpp" />
     <ClCompile Include="airdcpp\Download.cpp" />
     <ClCompile Include="airdcpp\DownloadManager.cpp" />
     <ClCompile Include="airdcpp\DualString.cpp" />
@@ -264,12 +283,10 @@
     <ClCompile Include="airdcpp\File.cpp" />
     <ClCompile Include="airdcpp\FileQueue.cpp" />
     <ClCompile Include="airdcpp\FileReader.cpp" />
-    <ClCompile Include="airdcpp\FinishedManager.cpp" />
     <ClCompile Include="airdcpp\GeoIP.cpp" />
     <ClCompile Include="airdcpp\GeoManager.cpp" />
     <ClCompile Include="airdcpp\HashBloom.cpp" />
     <ClCompile Include="airdcpp\HashManager.cpp" />
-    <ClCompile Include="airdcpp\HighlightManager.cpp" />
     <ClCompile Include="airdcpp\HttpConnection.cpp" />
     <ClCompile Include="airdcpp\HttpDownload.cpp" />
     <ClCompile Include="airdcpp\HubEntry.cpp" />
@@ -297,8 +314,8 @@
     <ClCompile Include="airdcpp\SFVReader.cpp" />
     <ClCompile Include="airdcpp\SharedFileStream.cpp" />
     <ClCompile Include="airdcpp\ShareManager.cpp" />
+    <ClCompile Include="airdcpp\SharePathValidator.cpp" />
     <ClCompile Include="airdcpp\ShareProfile.cpp" />
-    <ClCompile Include="airdcpp\ShareScannerManager.cpp" />
     <ClCompile Include="airdcpp\SimpleXML.cpp" />
     <ClCompile Include="airdcpp\SimpleXMLReader.cpp" />
     <ClCompile Include="airdcpp\Socket.cpp" />
@@ -313,12 +330,12 @@
     <ClCompile Include="airdcpp\StringDefs.cpp" />
     <ClCompile Include="airdcpp\StringMatch.cpp" />
     <ClCompile Include="airdcpp\StringSearch.cpp" />
-    <ClCompile Include="airdcpp\TargetUtil.cpp" />
     <ClCompile Include="airdcpp\Text.cpp" />
     <ClCompile Include="airdcpp\Thread.cpp" />
     <ClCompile Include="airdcpp\ThrottleManager.cpp" />
     <ClCompile Include="airdcpp\TigerHash.cpp" />
     <ClCompile Include="airdcpp\TimerManager.cpp" />
+    <ClCompile Include="airdcpp\TrackableDownloadItem.cpp" />
     <ClCompile Include="airdcpp\Transfer.cpp" />
     <ClCompile Include="airdcpp\UDPServer.cpp" />
     <ClCompile Include="airdcpp\UpdateManager.cpp" />
@@ -332,15 +349,51 @@
     <ClCompile Include="airdcpp\UserQueue.cpp" />
     <ClCompile Include="airdcpp\Util.cpp" />
     <ClCompile Include="airdcpp\version.cpp" />
-    <ClCompile Include="airdcpp\WebShortcuts.cpp" />
+    <ClCompile Include="airdcpp\ViewFile.cpp" />
+    <ClCompile Include="airdcpp\ViewFileManager.cpp" />
     <ClCompile Include="airdcpp\Wildcards.cpp" />
     <ClCompile Include="airdcpp\ZipFile.cpp" />
     <ClCompile Include="airdcpp\ZUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="airdcpp\ActionHook.h" />
+    <ClInclude Include="airdcpp\ActivityManager.h" />
     <ClInclude Include="airdcpp\AdcCommand.h" />
     <ClInclude Include="airdcpp\AdcHub.h" />
-    <ClInclude Include="airdcpp\AutoSearchQueue.h" />
+    <ClInclude Include="airdcpp\BundleInfo.h" />
+    <ClInclude Include="airdcpp\DirectSearch.h" />
+    <ClInclude Include="airdcpp\DupeType.h" />
+    <ClInclude Include="airdcpp\GroupedSearchResult.h" />
+    <ClInclude Include="airdcpp\HashManagerListener.h" />
+    <ClInclude Include="airdcpp\modules\AutoSearch.h" />
+    <ClInclude Include="airdcpp\modules\AutoSearchManager.h" />
+    <ClInclude Include="airdcpp\modules\AutoSearchManagerListener.h" />
+    <ClInclude Include="airdcpp\modules\AutoSearchQueue.h" />
+    <ClInclude Include="airdcpp\modules\ColorSettings.h" />
+    <ClInclude Include="airdcpp\modules\DirectoryMonitor.h" />
+    <ClInclude Include="airdcpp\modules\DirectoryMonitorListener.h" />
+    <ClInclude Include="airdcpp\modules\FinishedManager.h" />
+    <ClInclude Include="airdcpp\modules\FinishedManagerListener.h" />
+    <ClInclude Include="airdcpp\modules\HighlightManager.h" />
+    <ClInclude Include="airdcpp\modules\HublistEntry.h" />
+    <ClInclude Include="airdcpp\modules\HublistManager.h" />
+    <ClInclude Include="airdcpp\modules\HublistManagerListener.h" />
+    <ClInclude Include="airdcpp\modules\PreviewAppManager.h" />
+    <ClInclude Include="airdcpp\modules\RSSManager.h" />
+    <ClInclude Include="airdcpp\modules\ShareMonitorManager.h" />
+    <ClInclude Include="airdcpp\modules\ShareScannerManager.h" />
+    <ClInclude Include="airdcpp\modules\TargetUtil.h" />
+    <ClInclude Include="airdcpp\modules\WebShortcuts.h" />
+    <ClInclude Include="airdcpp\Priority.h" />
+    <ClInclude Include="airdcpp\RecentEntry.h" />
+    <ClInclude Include="airdcpp\RecentManager.h" />
+    <ClInclude Include="airdcpp\RecentManagerListener.h" />
+    <ClInclude Include="airdcpp\SearchInstance.h" />
+    <ClInclude Include="airdcpp\SearchInstanceListener.h" />
+    <ClInclude Include="airdcpp\SettingsManagerListener.h" />
+    <ClInclude Include="airdcpp\SharePathValidator.h" />
+    <ClInclude Include="airdcpp\TimerManagerListener.h" />
+    <ClInclude Include="airdcpp\ViewFileManagerListener.h" />
     <ClInclude Include="airdcpp\MessageCache.h" />
     <ClInclude Include="airdcpp\ConnectionType.h" />
     <ClInclude Include="airdcpp\MessageManager.h" />
@@ -348,13 +401,10 @@
     <ClInclude Include="airdcpp\PrioritySearchQueue.h" />
     <ClInclude Include="airdcpp\PrivateChat.h" />
     <ClInclude Include="airdcpp\PrivateChatListener.h" />
-    <ClInclude Include="airdcpp\RelevancySearch.h" />
+    <ClInclude Include="airdcpp\RelevanceSearch.h" />
     <ClInclude Include="airdcpp\SearchQuery.h" />
     <ClInclude Include="airdcpp\ADLSearch.h" />
     <ClInclude Include="airdcpp\AirUtil.h" />
-    <ClInclude Include="airdcpp\AutoSearch.h" />
-    <ClInclude Include="airdcpp\AutoSearchManager.h" />
-    <ClInclude Include="airdcpp\AutosearchManagerListener.h" />
     <ClInclude Include="airdcpp\BloomFilter.h" />
     <ClInclude Include="airdcpp\BufferedSocket.h" />
     <ClInclude Include="airdcpp\BufferedSocketListener.h" />
@@ -367,7 +417,6 @@
     <ClInclude Include="airdcpp\ClientListener.h" />
     <ClInclude Include="airdcpp\ClientManager.h" />
     <ClInclude Include="airdcpp\ClientManagerListener.h" />
-    <ClInclude Include="airdcpp\ColorSettings.h" />
     <ClInclude Include="airdcpp\compiler.h" />
     <ClInclude Include="airdcpp\concurrency.h" />
     <ClInclude Include="airdcpp\ConnectionManager.h" />
@@ -384,8 +433,6 @@
     <ClInclude Include="airdcpp\DirectoryListingListener.h" />
     <ClInclude Include="airdcpp\DirectoryListingManager.h" />
     <ClInclude Include="airdcpp\DirectoryListingManagerListener.h" />
-    <ClInclude Include="airdcpp\DirectoryMonitor.h" />
-    <ClInclude Include="airdcpp\DirectoryMonitorListener.h" />
     <ClInclude Include="airdcpp\DispatcherQueue.h" />
     <ClInclude Include="airdcpp\Download.h" />
     <ClInclude Include="airdcpp\DownloadManager.h" />
@@ -401,8 +448,6 @@
     <ClInclude Include="airdcpp\FileQueue.h" />
     <ClInclude Include="airdcpp\FileReader.h" />
     <ClInclude Include="airdcpp\FilteredFile.h" />
-    <ClInclude Include="airdcpp\FinishedManager.h" />
-    <ClInclude Include="airdcpp\FinishedManagerListener.h" />
     <ClInclude Include="airdcpp\Flags.h" />
     <ClInclude Include="airdcpp\format.h" />
     <ClInclude Include="airdcpp\forward.h" />
@@ -414,7 +459,6 @@
     <ClInclude Include="airdcpp\HashedFile.h" />
     <ClInclude Include="airdcpp\HashManager.h" />
     <ClInclude Include="airdcpp\HashValue.h" />
-    <ClInclude Include="airdcpp\HighlightManager.h" />
     <ClInclude Include="airdcpp\HintedUser.h" />
     <ClInclude Include="airdcpp\HttpConnection.h" />
     <ClInclude Include="airdcpp\HttpConnectionListener.h" />
@@ -457,10 +501,10 @@
     <ClInclude Include="airdcpp\SettingsManager.h" />
     <ClInclude Include="airdcpp\SFVReader.h" />
     <ClInclude Include="airdcpp\SharedFileStream.h" />
+    <ClInclude Include="airdcpp\ShareDirectoryInfo.h" />
     <ClInclude Include="airdcpp\ShareManager.h" />
     <ClInclude Include="airdcpp\ShareManagerListener.h" />
     <ClInclude Include="airdcpp\ShareProfile.h" />
-    <ClInclude Include="airdcpp\ShareScannerManager.h" />
     <ClInclude Include="airdcpp\SimpleXML.h" />
     <ClInclude Include="airdcpp\SimpleXMLReader.h" />
     <ClInclude Include="airdcpp\Singleton.h" />
@@ -473,8 +517,8 @@
     <ClInclude Include="airdcpp\Streams.h" />
     <ClInclude Include="airdcpp\DualString.h" />
     <ClInclude Include="airdcpp\StringMatch.h" />
-    <ClInclude Include="airdcpp\TargetUtil.h" />
     <ClInclude Include="airdcpp\ThrottleManager.h" />
+    <ClInclude Include="airdcpp\TrackableDownloadItem.h" />
     <ClInclude Include="airdcpp\tribool.h" />
     <ClInclude Include="airdcpp\typedefs.h" />
     <ClInclude Include="airdcpp\UDPServer.h" />
@@ -483,7 +527,8 @@
     <ClInclude Include="airdcpp\Updater.h" />
     <ClInclude Include="airdcpp\UploadBundle.h" />
     <ClInclude Include="airdcpp\UserQueue.h" />
-    <ClInclude Include="airdcpp\WebShortcuts.h" />
+    <ClInclude Include="airdcpp\ViewFile.h" />
+    <ClInclude Include="airdcpp\ViewFileManager.h" />
     <ClInclude Include="airdcpp\ZipFile.h" />
     <CustomBuild Include="airdcpp\StringDefs.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building StringDefs.cpp and Example.xml from StringDefs.h...</Message>
@@ -563,6 +608,15 @@
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
+    <ProjectReference Include="..\miniupnpc\miniupnpc.vcxproj">
+      <Project>{51015502-c27c-43cf-9fa4-12ab9db5d36e}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\natpmp\natpmp.vcxproj">
+      <Project>{6bd1d0b7-ec0c-4473-533b-5ec961138415}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\snappy\Snappy.vcxproj">
+      <Project>{b60e6ad9-779d-4cb4-8dab-f86d7dae0752}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

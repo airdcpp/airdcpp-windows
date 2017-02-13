@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2015 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -60,13 +60,13 @@ void UserConnection::on(BufferedSocketListener::Line, const string& aLine) throw
 	COMMAND_DEBUG(aLine, DebugManager::TYPE_CLIENT, DebugManager::INCOMING, getRemoteIp());
 	
 	if(aLine.length() < 2) {
-		fire(UserConnectionListener::ProtocolError(), this, "Invalid data"); // TODO: translate
+		fire(UserConnectionListener::ProtocolError(), this, STRING(MALFORMED_DATA));
 		return;
 	}
 
 	if(aLine[0] == 'C' && !isSet(FLAG_NMDC)) {
 		if(!Text::validateUtf8(aLine)) {
-			fire(UserConnectionListener::ProtocolError(), this, "Non-UTF-8 data in an ADC connection");  // TODO: translate
+			fire(UserConnectionListener::ProtocolError(), this, STRING(UTF_VALIDATION_ERROR));
 			return;
 		}
 		dispatch(aLine);
@@ -75,7 +75,7 @@ void UserConnection::on(BufferedSocketListener::Line, const string& aLine) throw
 		setFlag(FLAG_NMDC);
 	} else {
 		// We shouldn't be here?
-		fire(UserConnectionListener::ProtocolError(), this, "Invalid data");  // TODO: translate
+		fire(UserConnectionListener::ProtocolError(), this, STRING(MALFORMED_DATA));
 		return;
 	}
 
@@ -100,8 +100,7 @@ void UserConnection::on(BufferedSocketListener::Line, const string& aLine) throw
 			fire(UserConnectionListener::Direction(), this, param.substr(0, x), param.substr(x+1));
 		}
 	} else if(cmd == "Error") {
-		if(Util::stricmp(param.c_str(), FILE_NOT_AVAILABLE) == 0 ||
-			param.rfind(/*path/file*/" no more exists") != string::npos) { 
+		if(Util::stricmp(param.c_str(), FILE_NOT_AVAILABLE)) { 
     		fire(UserConnectionListener::FileNotAvailable(), this);
     	} else {
 			fire(UserConnectionListener::ProtocolError(), this, param);
@@ -146,24 +145,27 @@ void UserConnection::on(BufferedSocketListener::Line, const string& aLine) throw
 			fire(UserConnectionListener::ListLength(), this, param);
 		}
 	} else {
-
-		
-		fire(UserConnectionListener::ProtocolError(), this, "Invalid data"); // TODO: translate
+		fire(UserConnectionListener::ProtocolError(), this, STRING(MALFORMED_DATA));
 	}
 }
 
-void UserConnection::connect(const Socket::AddressInfo& aServer, const string& aPort, const string& localPort, BufferedSocket::NatRoles natRole) {
+void UserConnection::connect(const Socket::AddressInfo& aServer, const string& aPort, const string& localPort, BufferedSocket::NatRoles natRole, const UserPtr& aUser /*nullptr*/) {
 	dcassert(!socket);
 
 	socket = BufferedSocket::getSocket(0);
 	socket->addListener(this);
 
-	// TODO: verify that this KeyPrint was mediated by a trusted hub?
-	string expKP = user ? ClientManager::getInstance()->getField(user->getCID(), hubUrl, "KP") : Util::emptyString;
-	socket->connect(aServer, aPort, localPort, natRole, secure, SETTING(ALLOW_UNTRUSTED_CLIENTS), true, expKP);
+	//string expKP;
+	if (aUser) {
+		// @see UserConnection::accept, additionally opt to treat connections in both directions identically to avoid unforseen issues
+		//expKP = ClientManager::getInstance()->getField(aUser->getCID(), hubUrl, "KP");
+		setUser(aUser);
+	}
+
+	socket->connect(aServer, aPort, localPort, natRole, secure, /*SETTING(ALLOW_UNTRUSTED_CLIENTS)*/ true, true);
 }
 
-int64_t UserConnection::getChunkSize() const {
+int64_t UserConnection::getChunkSize() const noexcept {
 	int64_t min_seg_size = (SETTING(MIN_SEGMENT_SIZE)*1024);
 	if(chunkSize < min_seg_size) {
 		return min_seg_size;
@@ -172,7 +174,11 @@ int64_t UserConnection::getChunkSize() const {
 	}
 }
 
-void UserConnection::setUser(const UserPtr& aUser) {
+void UserConnection::setThreadPriority(Thread::Priority aPriority) {
+	socket->setThreadPriority(aPriority);
+}
+
+void UserConnection::setUser(const UserPtr& aUser) noexcept {
 	user = aUser;
 	if (aUser && socket) {
 		socket->setUseLimiter(true);
@@ -203,7 +209,13 @@ void UserConnection::accept(const Socket& aServer) {
 	dcassert(!socket);
 	socket = BufferedSocket::getSocket(0);
 	socket->addListener(this);
-	socket->accept(aServer, secure, SETTING(ALLOW_UNTRUSTED_CLIENTS));
+
+	/*
+	Technically only one side needs to verify KeyPrint, 
+	also since we most likely requested to be connected to (and we have insufficient info otherwise) deal with TLS options check post handshake
+	-> SSLSocket::verifyKeyprint does full certificate verification after INF
+	*/
+	socket->accept(aServer, secure, true);
 }
 
 void UserConnection::inf(bool withToken, int mcnSlots) { 
@@ -269,7 +281,7 @@ void UserConnection::handlePM(const AdcCommand& c, bool echo) noexcept{
 
 	string tmp;
 
-	auto msg = make_shared<ChatMessage>(message, peer, me, peer);
+	auto msg = std::make_shared<ChatMessage>(message, peer, me, peer);
 	if (c.getParam("TS", 1, tmp)) {
 		msg->setTime(Util::toInt64(tmp));
 	}
@@ -280,7 +292,7 @@ void UserConnection::handlePM(const AdcCommand& c, bool echo) noexcept{
 
 void UserConnection::sup(const StringList& features) {
 	AdcCommand c(AdcCommand::CMD_SUP);
-	for(auto& f: features)
+	for(const auto& f: features)
 		c.addParam(f);
 	send(c);
 }
@@ -295,7 +307,7 @@ void UserConnection::sendError(const std::string& msg /*FILE_NOT_AVAILABLE*/, Ad
 
 void UserConnection::supports(const StringList& feat) {
 	string x;
-	for(auto f: feat)
+	for(const auto& f: feat)
 		x += f + ' ';
 
 	send("$Supports " + x + '|');
@@ -348,7 +360,7 @@ void UserConnection::on(Failed, const string& aLine) noexcept {
 static const int64_t SEGMENT_TIME = 120*1000;
 static const int64_t MIN_CHUNK_SIZE = 64*1024;
 
-void UserConnection::updateChunkSize(int64_t leafSize, int64_t lastChunk, uint64_t ticks) {
+void UserConnection::updateChunkSize(int64_t leafSize, int64_t lastChunk, uint64_t ticks) noexcept {
 	
 	if(chunkSize == 0) {
 		chunkSize = std::max((int64_t)64*1024, std::min(lastChunk, (int64_t)1024*1024));
@@ -389,7 +401,7 @@ void UserConnection::send(const string& aString) {
 	socket->write(aString);
 }
 
-UserConnection::UserConnection(bool secure_) noexcept : encoding(SETTING(NMDC_ENCODING)), state(STATE_UNCONNECTED),
-	lastActivity(0), speed(0), chunkSize(0), secure(secure_), socket(0), slotType(NOSLOT), lastBundle(Util::emptyString), download(nullptr) {
+UserConnection::UserConnection(bool secure_) noexcept : encoding(SETTING(NMDC_ENCODING)),
+	secure(secure_), download(nullptr) {
 }
 } // namespace dcpp
