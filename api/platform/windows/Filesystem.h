@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ namespace webserver {
 
 					tstring sDrive;
 					sDrive = (wchar_t)('A' + i);
-					sDrive += _T(":\\");
+					sDrive += _T(":");
 
 					auto driveType = GetDriveType(sDrive.c_str());
 					if (aListCdrom || driveType != DRIVE_CDROM) {
@@ -53,10 +53,12 @@ namespace webserver {
 
 	private:
 		static json serializeDrive(const tstring& aDrive, UINT aDriveType) {
-			json retJson;
-			retJson["name"] = Text::fromT(aDrive);
-			retJson["type"]["id"] = driveTypeToString(aDriveType);
-			return retJson;
+			return {
+				{ "name", Text::fromT(aDrive) },
+				{ "type", {
+					{ "id", driveTypeToString(aDriveType) }
+				} }
+			};
 		}
 
 		static string driveTypeToString(UINT aDriveType) {

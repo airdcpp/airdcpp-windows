@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -17,14 +17,32 @@
 */
 
 #include <web-server/stdinc.h>
+#include <web-server/WebServerManager.h>
 #include <web-server/WebSocket.h>
 
+#include <airdcpp/format.h>
+#include <airdcpp/TimerManager.h>
 #include <airdcpp/Util.h>
 
-namespace webserver {
-	WebSocket::WebSocket(bool aIsSecure, websocketpp::connection_hdl aHdl) :
-		secure(aIsSecure), hdl(aHdl) {
 
+namespace webserver {
+	WebSocket::WebSocket(bool aIsSecure, websocketpp::connection_hdl aHdl, const websocketpp::http::parser::request& aRequest, server_plain* aServer, WebServerManager* aWsm) : WebSocket(aIsSecure, aHdl, aRequest, aWsm) {
+		plainServer = aServer;
+	}
+
+	WebSocket::WebSocket(bool aIsSecure, websocketpp::connection_hdl aHdl, const websocketpp::http::parser::request& aRequest, server_tls* aServer, WebServerManager* aWsm) : WebSocket(aIsSecure, aHdl, aRequest, aWsm) {
+		tlsServer = aServer;
+	}
+
+	WebSocket::WebSocket(bool aIsSecure, websocketpp::connection_hdl aHdl, const websocketpp::http::parser::request& aRequest, WebServerManager* aWsm) :
+		secure(aIsSecure), hdl(aHdl), timeCreated(GET_TICK()), wsm(aWsm) {
+
+		debugMessage("Websocket created");
+
+		url = aRequest.get_uri();
+		if (!url.empty() && url.back() != '/') {
+			url += '/';
+		}
 	}
 
 	WebSocket::~WebSocket() {
@@ -32,18 +50,31 @@ namespace webserver {
 	}
 
 	string WebSocket::getIp() const noexcept {
-		if (secure) {
-			auto conn = tlsServer->get_con_from_hdl(hdl);
-			return conn->get_remote_endpoint();
-		} else {
-			auto conn = plainServer->get_con_from_hdl(hdl);
-			return conn->get_remote_endpoint();
+		try {
+			if (secure) {
+				auto conn = tlsServer->get_con_from_hdl(hdl);
+				return conn->get_remote_endpoint();
+			} else {
+				auto conn = plainServer->get_con_from_hdl(hdl);
+				return conn->get_remote_endpoint();
+			}
+		} catch (const std::exception& e) {
+			dcdebug("WebSocket::getIp failed: %s\n", e.what());
 		}
+
+		return Util::emptyString;
 	}
 
-	void WebSocket::sendApiResponse(const json& aResponseJson, const json& aErrorJson, websocketpp::http::status_code::value aCode, int aCallbackId) {
+	void WebSocket::sendApiResponse(const json& aResponseJson, const json& aErrorJson, websocketpp::http::status_code::value aCode, int aCallbackId) noexcept {
 		json j;
-		j["callback_id"] = aCallbackId;
+
+		if (aCallbackId > 0) {
+			j["callback_id"] = aCallbackId;
+		} else {
+			// Failed to parse the request
+			dcassert(!aErrorJson.is_null());
+		}
+		
 		j["code"] = aCode;
 
 		if (aCode < 200 || aCode > 299) {
@@ -51,22 +82,52 @@ namespace webserver {
 			j["error"] = aErrorJson;
 		} else if (!aResponseJson.is_null()) {
 			j["data"] = aResponseJson;
+		} else {
+			dcassert(aCode == websocketpp::http::status_code::no_content);
 		}
 
-		sendPlain(j.dump(4));
+		sendPlain(j);
 	}
 
-	void WebSocket::sendPlain(const string& aMsg) {
-		//dcdebug("WebSocket::send: %s\n", aMsg.c_str());
+	void WebSocket::logError(const string& aMessage, websocketpp::log::level aErrorLevel) const noexcept {
+		auto message = (dcpp_fmt("Websocket: " + aMessage + " (%s)") % (session ? session->getAuthToken().c_str() : "no session")).str();
+		if (secure) {
+			tlsServer->get_elog().write(aErrorLevel, message);
+		} else {
+			plainServer->get_elog().write(aErrorLevel, message);
+		}
+	}
+
+	void WebSocket::debugMessage(const string& aMessage) const noexcept {
+		dcdebug(string(aMessage + " (%s)\n").c_str(), session ? session->getAuthToken().c_str() : "no session");
+	}
+
+	void WebSocket::sendPlain(const json& aJson) noexcept {
+		auto str = aJson.dump();
+
+		wsm->onData(str, TransportType::TYPE_SOCKET, Direction::OUTGOING, getIp());
+
 		try {
 			if (secure) {
-				tlsServer->send(hdl, aMsg, websocketpp::frame::opcode::text);
+				tlsServer->send(hdl, str, websocketpp::frame::opcode::text);
 			} else {
-				plainServer->send(hdl, aMsg, websocketpp::frame::opcode::text);
+				plainServer->send(hdl, str, websocketpp::frame::opcode::text);
+			}
+		} catch (const std::exception& e) {
+			logError("Failed to send data: " + string(e.what()), websocketpp::log::elevel::fatal);
+		}
+	}
+
+	void WebSocket::ping() noexcept {
+		try {
+			if (secure) {
+				tlsServer->ping(hdl, Util::emptyString);
+			} else {
+				plainServer->ping(hdl, Util::emptyString);
 			}
 
 		} catch (const std::exception& e) {
-			dcdebug("WebSocket::send failed: %s", e.what());
+			debugMessage("WebSocket::ping failed: " + string(e.what()));
 		}
 	}
 
@@ -78,7 +139,7 @@ namespace webserver {
 				plainServer->close(hdl, aCode, aMsg);
 			}
 		} catch (const std::exception& e) {
-			dcdebug("WebSocket::close failed: %s", e.what());
+			debugMessage("WebSocket::close failed: " + string(e.what()));
 		}
 	}
 }

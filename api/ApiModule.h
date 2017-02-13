@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -20,80 +20,116 @@
 #define DCPLUSPLUS_DCPP_APIMODULE_H
 
 #include <web-server/stdinc.h>
+
+#include <web-server/Access.h>
 #include <web-server/ApiRequest.h>
 #include <web-server/SessionListener.h>
 
-#include <airdcpp/StringMatch.h>
-
 namespace webserver {
+	using boost::regex;
+
 	class WebSocket;
-	class ApiModule : private SessionListener {
+	class ApiModule {
 	public:
-#define NUM_PARAM (StringMatch::getSearch(R"(\d+)", StringMatch::REGEX))
-#define TOKEN_PARAM NUM_PARAM
-#define TTH_PARAM (StringMatch::getSearch(R"([0-9A-Z]{39})", StringMatch::REGEX))
-#define CID_PARAM TTH_PARAM
-#define STR_PARAM (StringMatch::getSearch(R"([a-z_]+)", StringMatch::REGEX))
-#define EXACT_PARAM(pattern) (StringMatch::getSearch(pattern, StringMatch::EXACT))
+#define LISTENER_PARAM_ID "listener_param"
+#define MAX_COUNT "max_count_param"
+#define START_POS "start_pos_param"
+
+#define TTH_REG regex(R"(^[0-9A-Z]{39}$)")
+#define CID_REG TTH_REG
+#define TOKEN_REG regex(R"(^\d+$)")
+
+#define NUM_PARAM(id) (ApiModule::RequestHandler::Param(id, TOKEN_REG))
+#define TOKEN_PARAM NUM_PARAM(TOKEN_PARAM_ID)
+#define RANGE_START_PARAM NUM_PARAM(START_POS)
+#define RANGE_MAX_PARAM NUM_PARAM(MAX_COUNT)
+
+#define TTH_PARAM (ApiModule::RequestHandler::Param(TTH_PARAM_ID, TTH_REG))
+#define CID_PARAM (ApiModule::RequestHandler::Param(CID_PARAM_ID, CID_REG))
+
+#define STR_PARAM(id) (ApiModule::RequestHandler::Param(id, regex(R"(^\w+$)")))
+#define EXACT_PARAM(pattern) (ApiModule::RequestHandler::Param(pattern, regex("^" + string(pattern) + "$")))
 
 #define BRACED_INIT_LIST(...) {__VA_ARGS__}
-#define METHOD_HANDLER(section, method, params, requireJson, func) (requestHandlers[section].push_back(ApiModule::RequestHandler(method, requireJson, BRACED_INIT_LIST params, std::bind(&func, this, placeholders::_1))))
+#define METHOD_HANDLER(access, method, params, func) (requestHandlers.push_back(ApiModule::RequestHandler(access, method, BRACED_INIT_LIST params, std::bind(&func, this, placeholders::_1))))
 
-		ApiModule(Session* aSession, const StringList* aSubscriptions = nullptr);
+		ApiModule(Session* aSession);
 		virtual ~ApiModule();
 
-		typedef vector<StringMatch> ParamList;
 		struct RequestHandler {
-			typedef std::vector<RequestHandler> List;
+			struct Param {
+				Param(string aParamId, regex&& aReg) : id(std::move(aParamId)), reg(std::move(aReg)) { }
+
+				string id;
+				regex reg;
+			};
+
+			typedef vector<Param> ParamList;
+
 			typedef std::function<api_return(ApiRequest& aRequest)> HandlerFunction;
 
 			// Regular handler
-			RequestHandler(ApiRequest::Method aMethod, bool aRequireJson, ParamList&& aParams, HandlerFunction aFunction) :
-				method(aMethod), requireJson(aRequireJson), params(move(aParams)), f(aFunction) { }
+			RequestHandler(Access aAccess, RequestMethod aMethod, ParamList&& aParams, HandlerFunction aFunction) :
+				method(aMethod), params(std::move(aParams)), f(aFunction), access(aAccess) {
+			
+			}
 
-			// Sub handler
-			RequestHandler(const StringMatch& aMatch, HandlerFunction aFunction) :
-				params({ aMatch }), f(aFunction) { }
-
-			const ApiRequest::Method method = ApiRequest::METHOD_LAST;
-			const bool requireJson = false;
+			const RequestMethod method;
 			const ParamList params;
 			const HandlerFunction f;
+			const Access access;
 
-			bool matchParams(const ApiRequest::RequestParamList& aParams) const noexcept;
-			bool isModuleHandler() const noexcept {
-				return method == ApiRequest::METHOD_LAST;
-			}
+			optional<ApiRequest::NamedParamMap> matchParams(const ApiRequest::ParamList& aParams) const noexcept;
 		};
 
-		/*template<class T>
-		void sendPropertyUpdate(const T& aId, const json& aPropertyData) {
-			
-		}*/
-
-		//typedef std::map<std::string , bool> SubscriptionMap;
-		typedef std::map<const string, bool> SubscriptionMap;
-		typedef std::map<std::string, RequestHandler::List> RequestHandlerMap;
+		typedef std::vector<RequestHandler> RequestHandlerList;
 
 		api_return handleRequest(ApiRequest& aRequest);
-
-		virtual void on(SessionListener::SocketConnected, const WebSocketPtr&) noexcept;
-		virtual void on(SessionListener::SocketDisconnected) noexcept;
-
-		virtual int getVersion() const noexcept {
-			dcdebug("Root module should always have version specified");
-			return -1;
-		}
 
 		ApiModule(ApiModule&) = delete;
 		ApiModule& operator=(ApiModule&) = delete;
 
-		virtual bool send(const json& aJson);
-		virtual bool send(const string& aSubscription, const json& aJson);
+		virtual void addAsyncTask(CallBack&& aTask);
+		virtual TimerPtr getTimer(CallBack&& aTask, time_t aIntervalMillis);
 
 		Session* getSession() const noexcept {
 			return session;
 		}
+
+		RequestHandlerList& getRequestHandlers() noexcept {
+			return requestHandlers;
+		}
+
+		// All custom async tasks should be run inside this to
+		// ensure that the session won't get deleted
+		virtual CallBack getAsyncWrapper(CallBack&& aTask) noexcept;
+	protected:
+		static void asyncRunWrapper(const CallBack& aTask, LocalSessionId aSessionId);
+
+		Session* session;
+
+		RequestHandlerList requestHandlers;
+	};
+
+	
+	class SubscribableApiModule : public ApiModule, private SessionListener {
+	public:
+		SubscribableApiModule(Session* aSession, Access aSubscriptionAccess, const StringList* aSubscriptions = nullptr);
+		virtual ~SubscribableApiModule();
+
+		typedef std::map<const string, bool> SubscriptionMap;
+
+		virtual void on(SessionListener::SocketConnected, const WebSocketPtr&) noexcept override;
+		virtual void on(SessionListener::SocketDisconnected) noexcept override;
+
+		virtual bool send(const json& aJson);
+		virtual bool send(const string& aSubscription, const json& aJson);
+
+		typedef std::function<json()> JsonCallback;
+		virtual bool maybeSend(const string& aSubscription, JsonCallback aCallback);
+
+		// All custom async tasks should be run inside this to
+		// ensure that the session won't get deleted
 
 		virtual void setSubscriptionState(const string& aSubscription, bool active) noexcept {
 			subscriptions[aSubscription] = active;
@@ -114,13 +150,11 @@ namespace webserver {
 			subscriptions[aSubscription];
 		}
 
-		RequestHandlerMap& getRequestHandlers() noexcept {
-			return requestHandlers;
+		Access getSubscriptionAccess() const noexcept {
+			return subscriptionAccess;
 		}
 	protected:
-		Session* session;
-
-		RequestHandlerMap requestHandlers;
+		const Access subscriptionAccess;
 
 		WebSocketPtr socket = nullptr;
 

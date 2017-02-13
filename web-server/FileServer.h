@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -30,10 +30,28 @@ namespace webserver {
 		~FileServer();
 
 		void setResourcePath(const string& aPath) noexcept;
-		websocketpp::http::status_code::value handleRequest(const std::string& aRequestPath, const SessionPtr& aSession, 
-			const std::string& aRequestBody, std::string& output_, std::string& contentType) noexcept;
+		const string& getResourcePath() const noexcept;
+
+		websocketpp::http::status_code::value handleRequest(const string& aResource, const websocketpp::http::parser::request& aRequest, 
+			std::string& output_, StringPairList& headers_, const SessionPtr& aSession) noexcept;
+
+		static const char* getMimeType(const string& aFileName) noexcept;
 	private:
 		string resourcePath;
+
+		string parseResourcePath(const string& aResource, const websocketpp::http::parser::request& aRequest, StringPairList& headers_) const;
+		string parseViewFilePath(const string& aResource, StringPairList& headers_, const SessionPtr& aSession) const;
+
+		static string getExtension(const string& aResource) noexcept;
+
+		// Parses start and end position from a range HTTP request field
+		// Initial value of end_ should be the file size
+		// Returns true if the partial range was parsed successfully
+		static bool parsePartialRange(const string& aHeaderData, int64_t& start_, int64_t& end_) noexcept;
+
+		static string formatPartialRange(int64_t aStart, int64_t aEnd, int64_t aFileSize) noexcept;
+
+		static void addCacheControlHeader(StringPairList& headers_, int aDaysValid) noexcept;
 	};
 }
 

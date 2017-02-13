@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -21,71 +21,39 @@
 
 #include <web-server/stdinc.h>
 
+#include <api/FavoriteHubUtils.h>
+
 #include <api/ApiModule.h>
 #include <api/common/ListViewController.h>
 
 #include <airdcpp/typedefs.h>
 #include <airdcpp/FavoriteManagerListener.h>
-#include <airdcpp/HubEntry.h>
+
 
 namespace webserver {
-	class FavoriteHubApi : public ApiModule, private FavoriteManagerListener {
+	class FavoriteHubApi : public SubscribableApiModule, private FavoriteManagerListener {
 	public:
 		FavoriteHubApi(Session* aSession);
 		~FavoriteHubApi();
-
-		int getVersion() const noexcept {
-			return 0;
-		}
-
-		const PropertyList properties = {
-			{ PROP_NAME, "name", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
-			{ PROP_HUB_URL, "hub_url", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
-			{ PROP_HUB_DESCRIPTION, "hub_description", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
-			{ PROP_AUTO_CONNECT, "auto_connect", TYPE_NUMERIC_OTHER, SERIALIZE_BOOL, SORT_NUMERIC },
-			{ PROP_SHARE_PROFILE, "share_profile", TYPE_TEXT, SERIALIZE_TEXT_NUMERIC, SORT_TEXT },
-			{ PROP_CONNECT_STATE, "connect_state", TYPE_NUMERIC_OTHER, SERIALIZE_NUMERIC, SORT_NUMERIC },
-			{ PROP_NICK, "nick", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
-			{ PROP_HAS_PASSWORD, "has_password", TYPE_NUMERIC_OTHER, SERIALIZE_BOOL, SORT_NUMERIC },
-			{ PROP_USER_DESCRIPTION, "user_description", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
-		};
-
-		enum Properties {
-			PROP_TOKEN = -1,
-			PROP_NAME,
-			PROP_HUB_URL,
-			PROP_HUB_DESCRIPTION,
-			PROP_AUTO_CONNECT,
-			PROP_SHARE_PROFILE,
-			PROP_CONNECT_STATE,
-			PROP_NICK,
-			PROP_HAS_PASSWORD,
-			PROP_USER_DESCRIPTION,
-			PROP_LAST
-		};
 	private:
 		api_return handleAddHub(ApiRequest& aRequest);
 		api_return handleRemoveHub(ApiRequest& aRequest);
 		api_return handleUpdateHub(ApiRequest& aRequest);
+
+		api_return handleGetHubs(ApiRequest& aRequest);
 		api_return handleGetHub(ApiRequest& aRequest);
 
-		api_return handleConnect(ApiRequest& aRequest);
-		api_return handleDisconnect(ApiRequest& aRequest);
+		void updateProperties(FavoriteHubEntryPtr& aEntry, const json& j, bool aNewHub);
 
-		// Returns error if there are invalid properties
-		string updateValidatedProperties(FavoriteHubEntryPtr& aEntry, json& j, bool aNewHub);
+		void on(FavoriteManagerListener::FavoriteHubAdded, const FavoriteHubEntryPtr& /*e*/)  noexcept override;
+		void on(FavoriteManagerListener::FavoriteHubRemoved, const FavoriteHubEntryPtr& e) noexcept override;
+		void on(FavoriteManagerListener::FavoriteHubUpdated, const FavoriteHubEntryPtr& e) noexcept override;
 
-		// Values that don't need to be validated
-		void updateSimpleProperties(FavoriteHubEntryPtr& aEntry, json& j);
-
-		void on(FavoriteManagerListener::FavoriteHubAdded, const FavoriteHubEntryPtr& /*e*/)  noexcept;
-		void on(FavoriteManagerListener::FavoriteHubRemoved, const FavoriteHubEntryPtr& e) noexcept;
-		void on(FavoriteManagerListener::FavoriteHubUpdated, const FavoriteHubEntryPtr& e) noexcept;
-
-		PropertyItemHandler<FavoriteHubEntryPtr> itemHandler;
-
-		typedef ListViewController<FavoriteHubEntryPtr, PROP_LAST> HubView;
+		typedef ListViewController<FavoriteHubEntryPtr, FavoriteHubUtils::PROP_LAST> HubView;
 		HubView view;
+
+		static FavoriteHubEntryList getEntryList() noexcept;
+		static optional<int> deserializeIntHubSetting(const string& aFieldName, const json& aJson);
 	};
 }
 

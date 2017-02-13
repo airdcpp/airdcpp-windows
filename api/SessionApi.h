@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -20,20 +20,38 @@
 #define DCPLUSPLUS_DCPP_SESSIONAPI_H
 
 #include <web-server/stdinc.h>
+#include <web-server/WebUserManagerListener.h>
+
+#include <api/ApiModule.h>
 
 #include <airdcpp/typedefs.h>
 
 namespace webserver {
-	class SessionApi {
+	class SessionApi : public SubscribableApiModule, private WebUserManagerListener {
 	public:
-		SessionApi();
+		SessionApi(Session* aSession);
+		~SessionApi();
 
-		api_return handleLogin(ApiRequest& aRequest, bool aIsSecure, const WebSocketPtr& aSocket, const string& aIp);
-		api_return handleSocketConnect(ApiRequest& aRequest, bool aIsSecure, const WebSocketPtr& aSocket);
-		api_return handleLogout(ApiRequest& aRequest);
-
-		json getSystemInfo(const string& aIp) const noexcept;
+		// Session isn't associated yet when these get called...
+		static api_return handleLogin(ApiRequest& aRequest, bool aIsSecure, const WebSocketPtr& aSocket, const string& aIp);
+		static api_return handleSocketConnect(ApiRequest& aRequest, bool aIsSecure, const WebSocketPtr& aSocket);
 	private:
+		api_return failAuthenticatedRequest(ApiRequest& aRequest);
+
+		api_return handleLogout(ApiRequest& aRequest);
+		api_return handleActivity(ApiRequest& aRequest);
+
+		api_return handleGetSessions(ApiRequest& aRequest);
+		api_return handleGetCurrentSession(ApiRequest& aRequest);
+
+		api_return handleGetSession(ApiRequest& aRequest);
+		api_return handleRemoveSession(ApiRequest& aRequest);
+
+		static json serializeSession(const SessionPtr& aSession) noexcept;
+		static string getSessionType(const SessionPtr& aSession) noexcept;
+
+		void on(WebUserManagerListener::SessionCreated, const SessionPtr& aSession) noexcept override;
+		void on(WebUserManagerListener::SessionRemoved, const SessionPtr& aSession, bool aTimedOut) noexcept override;
 	};
 }
 

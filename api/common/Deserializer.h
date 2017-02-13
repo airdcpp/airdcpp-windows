@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -22,21 +22,45 @@
 #include <web-server/stdinc.h>
 
 #include <airdcpp/typedefs.h>
-#include <airdcpp/QueueItemBase.h>
-#include <airdcpp/TargetUtil.h>
+#include <airdcpp/MerkleTree.h>
+#include <airdcpp/Message.h>
+#include <airdcpp/Priority.h>
 
 namespace webserver {
-	typedef std::function<api_return(const string& aTarget, TargetUtil::TargetType aTargetType, QueueItemBase::Priority aPriority)> DownloadHandler;
+	typedef std::function<api_return(const string& aTarget, Priority aPriority)> DownloadHandler;
 
 	class Deserializer {
 	public:
-		static CID deserializeCID(const string& aCID);
-		static UserPtr deserializeUser(const json& aJson);
-		static HintedUser deserializeHintedUser(const json& aJson);
-		static TTHValue deserializeTTH(const json& aJson);
-		static QueueItemBase::Priority deserializePriority(const json& aJson, bool allowDefault);
+		static CID parseCID(const string& aCID);
 
-		static void deserializeDownloadParams(const json& aJson, string& targetDirectory_, string& targetName_, TargetUtil::TargetType& targetType_, QueueItemBase::Priority& priority_);
+		// Get user with the provided CID
+		// Throws if the user is not found
+		static UserPtr getUser(const string& aCID, bool aAllowMe);
+		static UserPtr getUser(const CID& aCID, bool aAllowMe);
+
+		static TTHValue parseTTH(const string& aTTH);
+
+		static UserPtr deserializeUser(const json& aJson, bool aAllowMe = false, const string& aFieldName = "user");
+		static HintedUser deserializeHintedUser(const json& aJson, bool aAllowMe = false, const string& aFieldName = "user");
+		static OnlineUserPtr deserializeOnlineUser(const json& aJson, bool aAllowMe = false, const string& aFieldName = "user");
+		static TTHValue deserializeTTH(const json& aJson);
+		static Priority deserializePriority(const json& aJson, bool allowDefault);
+
+		static void deserializeDownloadParams(const json& aJson, const SessionPtr& aSession, string& targetDirectory_, string& targetName_, Priority& priority_);
+
+		// Returns all connected hubs if the list is not found from the JSON
+		static StringList deserializeHubUrls(const json& aJson);
+
+		static pair<string, bool> deserializeChatMessage(const json& aJson);
+		static pair<string, LogMessage::Severity> deserializeStatusMessage(const json& aJson);
+
+		// Returns the default profile in case no profile was specified
+		static ProfileToken deserializeShareProfile(const json& aJson);
+
+		static OptionalProfileToken deserializeOptionalShareProfile(const json& aJson);
+	private:
+		static LogMessage::Severity parseSeverity(const string& aText);
+		static UserPtr parseUser(const json& aJson, bool aAllowMe);
 	};
 }
 

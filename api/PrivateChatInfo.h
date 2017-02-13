@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@
 #include <airdcpp/User.h>
 
 #include <api/HierarchicalApiModule.h>
+#include <api/common/ChatController.h>
 
 namespace webserver {
 	class PrivateChatInfo;
@@ -44,33 +45,43 @@ namespace webserver {
 		PrivateChatInfo(ParentType* aParentModule, const PrivateChatPtr& aChat);
 		~PrivateChatInfo();
 
-		PrivateChatPtr getChat() const noexcept { return chat; }
+		const PrivateChatPtr& getChat() const noexcept { return chat; }
 
-		static json serializeCCPMState(uint8_t aState) noexcept;
+		static string formatCCPMState(PrivateChat::CCPMState aState) noexcept;
+		static json serializeCCPMState(const PrivateChatPtr& aChat) noexcept;
+
+		void init() noexcept override;
 	private:
-		api_return handleGetMessages(ApiRequest& aRequest);
-		api_return handlePostMessage(ApiRequest& aRequest);
-		api_return handleSetRead(ApiRequest& aRequest);
-
 		api_return handleDisconnectCCPM(ApiRequest& aRequest);
 		api_return handleConnectCCPM(ApiRequest& aRequest);
 
 		api_return handleStartTyping(ApiRequest& aRequest);
 		api_return handleEndTyping(ApiRequest& aRequest);
 
-		void on(PrivateChatListener::PrivateMessage, PrivateChat*, const ChatMessagePtr&) noexcept;
-		void on(PrivateChatListener::StatusMessage, PrivateChat*, const LogMessagePtr&) noexcept;
+		void on(PrivateChatListener::PrivateMessage, PrivateChat*, const ChatMessagePtr& m) noexcept override {
+			chatHandler.onChatMessage(m);
+		}
 
-		void on(PrivateChatListener::Close, PrivateChat*) noexcept;
-		void on(PrivateChatListener::UserUpdated, PrivateChat*) noexcept;
-		void on(PrivateChatListener::PMStatus, PrivateChat*, uint8_t) noexcept;
-		void on(PrivateChatListener::CCPMStatusUpdated, PrivateChat*) noexcept;
-		void on(PrivateChatListener::MessagesRead, PrivateChat*) noexcept;
+		void on(PrivateChatListener::StatusMessage, PrivateChat*, const LogMessagePtr& m) noexcept override {
+			chatHandler.onStatusMessage(m);
+		}
 
+		void on(PrivateChatListener::Close, PrivateChat*) noexcept override;
+		void on(PrivateChatListener::UserUpdated, PrivateChat*) noexcept override;
+		void on(PrivateChatListener::PMStatus, PrivateChat*, uint8_t) noexcept override;
+		void on(PrivateChatListener::CCPMStatusUpdated, PrivateChat*) noexcept override;
+
+		void on(PrivateChatListener::MessagesRead, PrivateChat*) noexcept override {
+			chatHandler.onMessagesUpdated();
+		}
+
+		void on(PrivateChatListener::MessagesCleared, PrivateChat*) noexcept override {
+			chatHandler.onMessagesUpdated();
+		}
 
 		void onSessionUpdated(const json& aData) noexcept;
-		void sendUnread() noexcept;
 
+		ChatController<PrivateChatPtr> chatHandler;
 		PrivateChatPtr chat;
 	};
 

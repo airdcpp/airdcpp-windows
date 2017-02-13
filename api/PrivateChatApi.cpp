@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -21,22 +21,27 @@
 #include <api/common/Deserializer.h>
 #include <api/common/Serializer.h>
 
+#include <airdcpp/ClientManager.h>
 #include <airdcpp/ScopedFunctor.h>
 
 namespace webserver {
 	StringList PrivateChatApi::subscriptionList = {
-		"chat_session_created",
-		"chat_session_removed"
+		"private_chat_created",
+		"private_chat_removed"
 	};
 
-	PrivateChatApi::PrivateChatApi(Session* aSession) : ParentApiModule("session", CID_PARAM, aSession, subscriptionList, PrivateChatInfo::subscriptionList, [](const string& aId) { return Deserializer::deserializeCID(aId); }) {
+	PrivateChatApi::PrivateChatApi(Session* aSession) : 
+		ParentApiModule("sessions", CID_PARAM, Access::PRIVATE_CHAT_VIEW, aSession, subscriptionList, PrivateChatInfo::subscriptionList,
+			[](const string& aId) { return Deserializer::parseCID(aId); },
+			[](const PrivateChatInfo& aInfo) { return serializeChat(aInfo.getChat()); }
+		) {
 
 		MessageManager::getInstance()->addListener(this);
 
-		METHOD_HANDLER("sessions", ApiRequest::METHOD_GET, (), false, PrivateChatApi::handleGetThreads);
+		METHOD_HANDLER(Access::PRIVATE_CHAT_EDIT,	METHOD_DELETE,	(EXACT_PARAM("sessions"), CID_PARAM),	PrivateChatApi::handleDeleteChat);
+		METHOD_HANDLER(Access::PRIVATE_CHAT_EDIT,	METHOD_POST,	(EXACT_PARAM("sessions")),				PrivateChatApi::handlePostChat);
 
-		METHOD_HANDLER("session", ApiRequest::METHOD_DELETE, (CID_PARAM), false, PrivateChatApi::handleDeleteChat);
-		METHOD_HANDLER("session", ApiRequest::METHOD_POST, (), true, PrivateChatApi::handlePostChat);
+		METHOD_HANDLER(Access::PRIVATE_CHAT_SEND,	METHOD_POST,	(EXACT_PARAM("chat_message")),			PrivateChatApi::handlePostMessage);
 
 		auto rawChats = MessageManager::getInstance()->getChats();
 		for (const auto& c : rawChats | map_values) {
@@ -49,87 +54,69 @@ namespace webserver {
 	}
 
 	api_return PrivateChatApi::handlePostChat(ApiRequest& aRequest) {
-		auto c = MessageManager::getInstance()->addChat(Deserializer::deserializeHintedUser(aRequest.getRequestBody()), false);
-		if (!c) {
+		auto user = Deserializer::deserializeHintedUser(aRequest.getRequestBody());
+		auto chat = MessageManager::getInstance()->addChat(user, false);
+		if (!chat) {
 			aRequest.setResponseErrorStr("Chat session exists");
-			return websocketpp::http::status_code::bad_request;
+			return websocketpp::http::status_code::conflict;
 		}
 
-		aRequest.setResponseBody({
-			{ "id", c->getUser()->getCID().toBase32() }
-		});
-
+		aRequest.setResponseBody(serializeChat(chat));
 		return websocketpp::http::status_code::ok;
 	}
 
 	api_return PrivateChatApi::handleDeleteChat(ApiRequest& aRequest) {
-		auto chat = getSubModule(aRequest.getStringParam(0));
-		if (!chat) {
-			aRequest.setResponseErrorStr("Chat session not found");
-			return websocketpp::http::status_code::not_found;
-		}
+		auto chat = getSubModule(aRequest);
 
 		MessageManager::getInstance()->removeChat(chat->getChat()->getUser());
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
-	api_return PrivateChatApi::handleGetThreads(ApiRequest& aRequest) {
-		json retJson;
+	api_return PrivateChatApi::handlePostMessage(ApiRequest& aRequest) {
+		const auto& reqJson = aRequest.getRequestBody();
 
-		{
-			RLock l(cs);
-			if (!subModules.empty()) {
-				for (const auto& c : subModules | map_values) {
-					retJson.push_back(serializeChat(c->getChat()));
-				}
-			} else {
-				retJson = json::array();
-			}
+		auto user = Deserializer::deserializeHintedUser(reqJson);
+		auto message = Deserializer::deserializeChatMessage(reqJson);
+		auto echo = JsonUtil::getOptionalFieldDefault<bool>("echo", reqJson, false);
+
+		string error_;
+		if (!ClientManager::getInstance()->privateMessage(user, message.first, error_, message.second, echo)) {
+			aRequest.setResponseErrorStr(error_);
+			return websocketpp::http::status_code::internal_server_error;
 		}
 
-		aRequest.setResponseBody(retJson);
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	void PrivateChatApi::on(MessageManagerListener::ChatRemoved, const PrivateChatPtr& aChat) noexcept {
-		{
-			WLock l(cs);
-			subModules.erase(aChat->getUser()->getCID());
-		}
+		removeSubModule(aChat->getUser()->getCID());
 
-		if (!subscriptionActive("chat_session_removed")) {
+		if (!subscriptionActive("private_chat_removed")) {
 			return;
 		}
 
-		send("chat_session_removed", {
-			{ "id", aChat->getUser()->getCID().toBase32() }
-		});
+		send("private_chat_removed", serializeChat(aChat));
 	}
 
 	void PrivateChatApi::addChat(const PrivateChatPtr& aChat) noexcept {
-		auto chatInfo = make_shared<PrivateChatInfo>(this, aChat);
-
-		{
-			WLock l(cs);
-			subModules.emplace(aChat->getUser()->getCID(), move(chatInfo));
-		}
+		addSubModule(aChat->getUser()->getCID(), std::make_shared<PrivateChatInfo>(this, aChat));
 	}
 
 	void PrivateChatApi::on(MessageManagerListener::ChatCreated, const PrivateChatPtr& aChat, bool aReceivedMessage) noexcept {
 		addChat(aChat);
-		if (!subscriptionActive("chat_session_created")) {
+		if (!subscriptionActive("private_chat_created")) {
 			return;
 		}
 
-		send("chat_session_created", serializeChat(aChat));
+		send("private_chat_created", serializeChat(aChat));
 	}
 
 	json PrivateChatApi::serializeChat(const PrivateChatPtr& aChat) noexcept {
 		return {
 			{ "id", aChat->getUser()->getCID().toBase32() },
 			{ "user", Serializer::serializeHintedUser(aChat->getHintedUser()) },
-			{ "ccpm_state", PrivateChatInfo::serializeCCPMState(aChat->getCCPMState()) },
-			{ "unread_messages", Serializer::serializeUnread(aChat->getCache()) }
+			{ "ccpm_state", PrivateChatInfo::serializeCCPMState(aChat) },
+			{ "message_counts", Serializer::serializeCacheInfo(aChat->getCache(), Serializer::serializeUnreadChat) },
 		};
 	}
 }

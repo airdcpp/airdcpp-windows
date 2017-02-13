@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -29,8 +29,9 @@
 
 namespace webserver {
 	FilesystemApi::FilesystemApi(Session* aSession) : ApiModule(aSession) {
-		METHOD_HANDLER("list_items", ApiRequest::METHOD_POST, (), true, FilesystemApi::handleListItems);
-		METHOD_HANDLER("directory", ApiRequest::METHOD_POST, (), true, FilesystemApi::handlePostDirectory);
+		METHOD_HANDLER(Access::ANY,				METHOD_POST, (EXACT_PARAM("disk_info")),	FilesystemApi::handleGetDiskInfo);
+		METHOD_HANDLER(Access::FILESYSTEM_VIEW, METHOD_POST, (EXACT_PARAM("list_items")),	FilesystemApi::handleListItems);
+		METHOD_HANDLER(Access::FILESYSTEM_EDIT, METHOD_POST, (EXACT_PARAM("directory")),	FilesystemApi::handlePostDirectory);
 	}
 
 	FilesystemApi::~FilesystemApi() {
@@ -39,29 +40,33 @@ namespace webserver {
 	api_return FilesystemApi::handleListItems(ApiRequest& aRequest) {
 		const auto& reqJson = aRequest.getRequestBody();
 
+		auto path = JsonUtil::getField<string>("path", reqJson, 
 #ifdef WIN32
-		auto path = JsonUtil::getField<string>("path", reqJson, true);
+			true
 #else
-		auto path = JsonUtil::getField<string>("path", reqJson, false);
+			false
 #endif
-		auto dirsOnly = JsonUtil::getOptionalField<bool>("directories_only", reqJson);
+		);
 
-		json retJson;
+		auto dirsOnly = JsonUtil::getOptionalFieldDefault<bool>("directories_only", reqJson, false);
+
+		auto retJson = json::array();
 		if (path.empty()) {
 #ifdef WIN32
 			retJson = Filesystem::getDriveListing(false);
 #endif
 		} else {
+			if (!Util::fileExists(path)) {
+				aRequest.setResponseErrorStr("The path doesn't exist on disk");
+				return websocketpp::http::status_code::bad_request;
+			}
+
 			try {
-				retJson = serializeDirectoryContent(path, dirsOnly ? *dirsOnly : false);
+				retJson = serializeDirectoryContent(path, dirsOnly);
 			} catch (const FileException& e) {
 				aRequest.setResponseErrorStr("Failed to get directory content: " + e.getError());
 				return websocketpp::http::status_code::internal_server_error;
 			}
-		}
-
-		if (retJson.is_null()) {
-			retJson = json::array();
 		}
 
 		aRequest.setResponseBody(retJson);
@@ -69,7 +74,7 @@ namespace webserver {
 	}
 
 	json FilesystemApi::serializeDirectoryContent(const string& aPath, bool aDirectoriesOnly) {
-		json retJson;
+		auto retJson = json::array();
 
 		FileFindIter end;
 		for (FileFindIter i(aPath, "*"); i != end; ++i) {
@@ -85,7 +90,7 @@ namespace webserver {
 			json item;
 			item["name"] = fileName;
 			if (i->isDirectory()) {
-				item["type"] = Serializer::serializeFolderType(-1, -1);
+				item["type"] = Serializer::serializeFolderType(DirectoryContentInfo());
 			} else {
 				item["type"] = Serializer::serializeFileType(i->getFileName());
 				item["size"] = i->getSize();
@@ -111,6 +116,27 @@ namespace webserver {
 			return websocketpp::http::status_code::internal_server_error;
 		}
 
+		return websocketpp::http::status_code::no_content;
+	}
+
+	api_return FilesystemApi::handleGetDiskInfo(ApiRequest& aRequest) {
+		const auto& reqJson = aRequest.getRequestBody();
+		auto paths = JsonUtil::getField<StringList>("paths", reqJson, false);
+
+		auto volumes = File::getVolumes();
+
+		json retJson;
+		for (const auto& path : paths) {
+			auto targetInfo = File::getDiskInfo(path, volumes, false);
+
+			retJson.push_back({
+				{ "path", path },
+				{ "free_space", targetInfo.freeSpace },
+				{ "total_space", targetInfo.totalSpace },
+			});
+		}
+
+		aRequest.setResponseBody(retJson);
 		return websocketpp::http::status_code::ok;
 	}
 }

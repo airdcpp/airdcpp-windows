@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,89 +19,119 @@
 #include <web-server/stdinc.h>
 
 #include <api/SessionApi.h>
+#include <api/SystemApi.h>
+#include <api/WebUserUtils.h>
+#include <api/common/Serializer.h>
 
+#include <web-server/JsonUtil.h>
 #include <web-server/WebSocket.h>
 #include <web-server/WebServerManager.h>
+#include <web-server/WebServerSettings.h>
 #include <web-server/WebUserManager.h>
 
-#include <airdcpp/AirUtil.h>
+#include <airdcpp/ActivityManager.h>
+#include <airdcpp/ClientManager.h>
+#include <airdcpp/SettingsManager.h>
 #include <airdcpp/version.h>
 
 namespace webserver {
-	SessionApi::SessionApi() {
+	SessionApi::SessionApi(Session* aSession) : SubscribableApiModule(aSession, Access::ADMIN) {
+		// Just fail these since we have a session already...
+		METHOD_HANDLER(Access::ANY, METHOD_POST, (EXACT_PARAM("authorize")), SessionApi::failAuthenticatedRequest);
+		METHOD_HANDLER(Access::ANY, METHOD_POST, (EXACT_PARAM("socket")), SessionApi::failAuthenticatedRequest);
+
+		// Methods for the current session
+		METHOD_HANDLER(Access::ANY, METHOD_POST, (EXACT_PARAM("activity")), SessionApi::handleActivity);
+
+		METHOD_HANDLER(Access::ANY, METHOD_GET, (EXACT_PARAM("self")), SessionApi::handleGetCurrentSession);
+		METHOD_HANDLER(Access::ANY, METHOD_DELETE, (EXACT_PARAM("self")), SessionApi::handleLogout);
+
+		// Admin methods
+		METHOD_HANDLER(Access::ADMIN, METHOD_GET, (), SessionApi::handleGetSessions);
+		METHOD_HANDLER(Access::ADMIN, METHOD_GET, (TOKEN_PARAM), SessionApi::handleGetSession);
+		METHOD_HANDLER(Access::ADMIN, METHOD_DELETE, (TOKEN_PARAM), SessionApi::handleRemoveSession);
+
+		aSession->getServer()->getUserManager().addListener(this);
+
+		createSubscription("session_created");
+		createSubscription("session_removed");
 	}
 
-	json SessionApi::getSystemInfo(const string& aIp) const noexcept {
-		json retJson;
-		retJson["path_separator"] = PATH_SEPARATOR_STR;
+	SessionApi::~SessionApi() {
+		session->getServer()->getUserManager().removeListener(this);
+	}
 
-		
-		// IPv4 addresses will be mapped to IPv6
-		auto ip = aIp;
-		auto v6 = aIp.find(":") != string::npos;
-		if (aIp.find("[::ffff:") == 0) {
-			auto end = aIp.rfind("]");
-			ip = aIp.substr(8, end-8);
-			v6 = false;
+	api_return SessionApi::failAuthenticatedRequest(ApiRequest& aRequest) {
+		aRequest.setResponseErrorStr("This method can't be used after authentication");
+		return websocketpp::http::status_code::precondition_failed;
+	}
+
+	api_return SessionApi::handleActivity(ApiRequest& aRequest) {
+		// This may also be used to prevent the session from expiring
+
+		if (JsonUtil::getOptionalFieldDefault<bool>("user_active", aRequest.getRequestBody(), false)) {
+			ActivityManager::getInstance()->updateActivity();
 		}
 
-		retJson["network_type"] = Util::isPrivateIp(ip, v6) ? "local" : "internet";
-		retJson["client_version"] = getVersionTag();
-#ifdef WIN32
-		retJson["platform"] = "windows";
-#elif APPLE
-		retJson["platform"] = "osx";
-#else
-		retJson["platform"] = "other";
-#endif
-		return retJson;
+		return websocketpp::http::status_code::no_content;
 	}
 
-	websocketpp::http::status_code::value SessionApi::handleLogin(ApiRequest& aRequest, bool aIsSecure, const WebSocketPtr& aSocket, const string& aIp) {
+	api_return SessionApi::handleLogout(ApiRequest& aRequest) {
+		if (session->getSessionType() == Session::TYPE_BASIC_AUTH) {
+			aRequest.setResponseErrorStr("Sessions using basic authentication can't be deleted");
+			return websocketpp::http::status_code::bad_request;
+		}
+
+		WebServerManager::getInstance()->logout(aRequest.getSession()->getId());
+		return websocketpp::http::status_code::no_content;
+	}
+
+	websocketpp::http::status_code::value SessionApi::handleLogin(ApiRequest& aRequest, bool aIsSecure, const WebSocketPtr& aSocket, const string& aIP) {
 		const auto& reqJson = aRequest.getRequestBody();
-		auto session = WebServerManager::getInstance()->getUserManager().authenticate(reqJson["username"], reqJson["password"], aIsSecure);
+
+		auto username = JsonUtil::getField<string>("username", reqJson, false);
+		auto password = JsonUtil::getField<string>("password", reqJson, false);
+
+		auto inactivityMinutes = JsonUtil::getOptionalFieldDefault<uint64_t>("max_inactivity", reqJson, WEBCFG(DEFAULT_SESSION_IDLE_TIMEOUT).uint64());
+
+		auto session = WebServerManager::getInstance()->getUserManager().authenticateSession(username, password, 
+			aIsSecure, inactivityMinutes, aIP);
 
 		if (!session) {
 			aRequest.setResponseErrorStr("Invalid username or password");
 			return websocketpp::http::status_code::unauthorized;
 		}
 
-		json retJson = {
-			{ "token", session->getToken() },
-			{ "user", session->getUser()->getUserName() },
-			{ "system", getSystemInfo(aIp) }
-		};
-
 		if (aSocket) {
 			session->onSocketConnected(aSocket);
 			aSocket->setSession(session);
 		}
 
-		aRequest.setResponseBody(retJson);
-		return websocketpp::http::status_code::ok;
-	}
-
-	api_return SessionApi::handleLogout(ApiRequest& aRequest) {
-		if (!aRequest.getSession()) {
-			aRequest.setResponseErrorStr("Not authorized");
-			return websocketpp::http::status_code::unauthorized;
-		}
-
-		WebServerManager::getInstance()->logout(aRequest.getSession()->getToken());
+		aRequest.setResponseBody({
+			{ "auth_token", session->getAuthToken() },
+			{ "user", Serializer::serializeItem(session->getUser(), WebUserUtils::propertyHandler) },
+			{ "system_info", SystemApi::getSystemInfo() },
+			{ "wizard_pending", SETTING(WIZARD_PENDING) },
+		});
 
 		return websocketpp::http::status_code::ok;
 	}
 
 	api_return SessionApi::handleSocketConnect(ApiRequest& aRequest, bool aIsSecure, const WebSocketPtr& aSocket) {
-		std::string sessionToken = aRequest.getRequestBody()["authorization"];
+		if (!aSocket) {
+			aRequest.setResponseErrorStr("This method may be called only via a websocket");
+			return websocketpp::http::status_code::bad_request;
+		}
 
-		SessionPtr session = WebServerManager::getInstance()->getUserManager().getSession(sessionToken);
+		auto sessionToken = JsonUtil::getField<string>("auth_token", aRequest.getRequestBody(), false);
+
+		auto session = WebServerManager::getInstance()->getUserManager().getSession(sessionToken);
 		if (!session) {
 			aRequest.setResponseErrorStr("Invalid session token");
 			return websocketpp::http::status_code::bad_request;
 		}
 
-		if (session->isSecure() != aIsSecure) {
+		if ((session->getSessionType() == Session::TYPE_SECURE)  != aIsSecure) {
 			aRequest.setResponseErrorStr("Invalid protocol");
 			return websocketpp::http::status_code::bad_request;
 		}
@@ -109,6 +139,77 @@ namespace webserver {
 		session->onSocketConnected(aSocket);
 		aSocket->setSession(session);
 
+		return websocketpp::http::status_code::no_content;
+	}
+
+	api_return SessionApi::handleGetSessions(ApiRequest& aRequest) {
+		auto sessions = session->getServer()->getUserManager().getSessions();
+		aRequest.setResponseBody(Serializer::serializeList(sessions, serializeSession));
 		return websocketpp::http::status_code::ok;
+	}
+
+	api_return SessionApi::handleGetSession(ApiRequest& aRequest) {
+		auto s = session->getServer()->getUserManager().getSession(aRequest.getTokenParam());
+		if (!s) {
+			aRequest.setResponseErrorStr("Session not found");
+			return websocketpp::http::status_code::not_found;
+		}
+
+		aRequest.setResponseBody(serializeSession(s));
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return SessionApi::handleRemoveSession(ApiRequest& aRequest) {
+		auto removeSession = session->getServer()->getUserManager().getSession(aRequest.getTokenParam());
+		if (!removeSession) {
+			aRequest.setResponseErrorStr("Session not found");
+			return websocketpp::http::status_code::not_found;
+		}
+
+		session->getServer()->getUserManager().logout(removeSession);
+		return websocketpp::http::status_code::no_content;
+	}
+
+	api_return SessionApi::handleGetCurrentSession(ApiRequest& aRequest) {
+		aRequest.setResponseBody(serializeSession(aRequest.getSession()));
+		return websocketpp::http::status_code::ok;
+	}
+
+	string SessionApi::getSessionType(const SessionPtr& aSession) noexcept {
+		switch (aSession->getSessionType()) {
+			case Session::TYPE_BASIC_AUTH: return "basic_auth";
+			case Session::TYPE_PLAIN: return "plain";
+			case Session::TYPE_SECURE: return "secure";
+		}
+
+		dcassert(0);
+		return "";
+	}
+
+	json SessionApi::serializeSession(const SessionPtr& aSession) noexcept {
+		return {
+			{ "id", aSession->getId() },
+			{ "type", getSessionType(aSession) },
+			{ "last_activity", GET_TICK() - aSession->getLastActivity() },
+			{ "ip", aSession->getIp() },
+			{ "user", Serializer::serializeItem(aSession->getUser(), WebUserUtils::propertyHandler) }
+		};
+	}
+
+	void SessionApi::on(WebUserManagerListener::SessionCreated, const SessionPtr& aSession) noexcept {
+		maybeSend("session_created", [&] {
+			return json({
+				{ "session", serializeSession(aSession) },
+			});
+		});
+	}
+
+	void SessionApi::on(WebUserManagerListener::SessionRemoved, const SessionPtr& aSession, bool aTimedOut) noexcept {
+		maybeSend("session_removed", [&] {
+			return json({
+				{ "session", serializeSession(aSession) },
+				{ "timed_out", aTimedOut },
+			});
+		});
 	}
 }

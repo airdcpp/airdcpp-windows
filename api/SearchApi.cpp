@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -17,63 +17,105 @@
 */
 
 #include <api/SearchApi.h>
-#include <api/SearchUtils.h>
 
 #include <api/common/Deserializer.h>
+#include <api/common/FileSearchParser.h>
 
-#include <airdcpp/ScopedFunctor.h>
+#include <airdcpp/BundleInfo.h>
+#include <airdcpp/ClientManager.h>
+#include <airdcpp/DirectSearch.h>
+#include <airdcpp/SearchInstance.h>
+#include <airdcpp/SearchManager.h>
+#include <airdcpp/ShareManager.h>
 
-const unsigned int MIN_SEARCH = 2;
+
+#define DEFAULT_INSTANCE_EXPIRATION_MINUTES 30
 
 namespace webserver {
-	SearchApi::SearchApi(Session* aSession) : ApiModule(aSession), itemHandler(properties,
-		SearchUtils::getStringInfo, SearchUtils::getNumericInfo, SearchUtils::compareResults, SearchUtils::serializeResult), 
-		searchView("search_view", this, itemHandler, std::bind(&SearchApi::getResultList, this)) {
+	StringList SearchApi::subscriptionList = {
 
-		SearchManager::getInstance()->addListener(this);
+	};
 
-		//subscriptions["search_result"];
+	SearchApi::SearchApi(Session* aSession) : 
+		ParentApiModule("instances", TOKEN_PARAM, Access::SEARCH, aSession, subscriptionList, SearchEntity::subscriptionList,
+			[](const string& aId) { return Util::toUInt32(aId); },
+			[](const SearchEntity& aInfo) { return serializeSearchInstance(aInfo); }
+		),
+		timer(getTimer([this] { onTimer(); }, 30 * 1000)) 
+	{
 
-		METHOD_HANDLER("query", ApiRequest::METHOD_POST, (), true, SearchApi::handlePostSearch);
-		METHOD_HANDLER("types", ApiRequest::METHOD_GET, (), false, SearchApi::handleGetTypes);
+		METHOD_HANDLER(Access::SEARCH,	METHOD_POST,	(EXACT_PARAM("instances")),				SearchApi::handleCreateInstance);
+		METHOD_HANDLER(Access::SEARCH,	METHOD_DELETE,	(EXACT_PARAM("instances"), TOKEN_PARAM),	SearchApi::handleDeleteInstance);
 
-		METHOD_HANDLER("result", ApiRequest::METHOD_POST, (TOKEN_PARAM, EXACT_PARAM("download")), false, SearchApi::handleDownload);
+		METHOD_HANDLER(Access::ANY,		METHOD_GET,		(EXACT_PARAM("types")),					SearchApi::handleGetTypes);
+
+		// Create an initial search instance
+		if (aSession->getSessionType() != Session::TYPE_BASIC_AUTH) {
+			createInstance(0);
+		}
+
+		timer->start(false);
 	}
 
 	SearchApi::~SearchApi() {
-		SearchManager::getInstance()->removeListener(this);
+		timer->stop(true);
 	}
 
-	SearchResultInfo::List SearchApi::getResultList() {
-		SearchResultInfo::List ret;
-		boost::range::copy(results | map_values, back_inserter(ret));
-		return ret;
-	}
-
-	api_return SearchApi::handleDownload(ApiRequest& aRequest) {
-		SearchResultInfoPtr result = nullptr;
-
-		{
-			RLock l(cs);
-			auto i = find_if(results | map_values, [&](const SearchResultInfoPtr& aSI) { return aSI->getToken() == aRequest.getTokenParam(0); });
-			if (i.base() == results.end()) {
-				return websocketpp::http::status_code::not_found;
+	void SearchApi::onTimer() noexcept {
+		vector<SearchInstanceToken> expiredIds;
+		forEachSubModule([&](const SearchEntity& aInstance) {
+			auto expiration = aInstance.getTimeToExpiration();
+			if (expiration && *expiration <= 0) {
+				expiredIds.push_back(aInstance.getId());
+				dcdebug("Removing an expired search instance (expiration: " U64_FMT ", now: " U64_FMT ")\n", *expiration, GET_TICK());
 			}
+		});
 
-			result = *i;
+		for (const auto& id : expiredIds) {
+			removeSubModule(id);
 		}
+	}
 
-		string targetDirectory, targetName;
-		TargetUtil::TargetType targetType;
-		QueueItemBase::Priority prio;
-		Deserializer::deserializeDownloadParams(aRequest.getRequestBody(), targetDirectory, targetName, targetType, prio);
+	json SearchApi::serializeSearchInstance(const SearchEntity& aSearch) noexcept {
+		auto expiration = aSearch.getTimeToExpiration();
+		return {
+			{ "id", aSearch.getId() },
+			{ "expires_in", expiration ? json(*expiration) : json() },
+			{ "current_search_id", aSearch.getSearch()->getCurrentSearchToken() },
+			{ "searches_sent_ago", aSearch.getSearch()->getTimeFromLastSearch() },
+			{ "queue_time", aSearch.getSearch()->getQueueTime() },
+			{ "queued_count", aSearch.getSearch()->getQueueCount() },
+			{ "result_count", aSearch.getSearch()->getResultCount() },
+		};
+	}
 
-		return result->download(targetDirectory, targetName, targetType, prio);
+	SearchEntity::Ptr SearchApi::createInstance(uint64_t aExpirationTick) {
+		auto id = instanceIdCounter++;
+		auto module = std::make_shared<SearchEntity>(this, make_shared<SearchInstance>(), id, aExpirationTick);
+
+		addSubModule(id, module);
+		return module;
+	}
+
+	api_return SearchApi::handleCreateInstance(ApiRequest& aRequest) {
+		auto expirationMinutes = JsonUtil::getOptionalFieldDefault<int>("expiration", aRequest.getRequestBody(), DEFAULT_INSTANCE_EXPIRATION_MINUTES);
+
+		auto instance = createInstance(GET_TICK() + expirationMinutes * 60 * 1000);
+
+		aRequest.setResponseBody(serializeSearchInstance(*instance.get()));
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return SearchApi::handleDeleteInstance(ApiRequest& aRequest) {
+		auto instance = getSubModule(aRequest);
+		removeSubModule(instance->getId());
+
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return SearchApi::handleGetTypes(ApiRequest& aRequest) {
-		auto getName = [](const string& aId) {
-			if (aId.size() == 1 && aId[0] >= '1' && aId[0] <= '6') {
+		auto getName = [](const string& aId) -> string {
+			if (SearchManager::isDefaultTypeStr(aId)) {
 				return string(SearchManager::getTypeStr(aId[0] - '0'));
 			}
 
@@ -85,98 +127,14 @@ namespace webserver {
 		json retJ;
 		for (const auto& s : types) {
 			retJ.push_back({
-				{ "id", s.first },
-				{ "str", getName(s.first) }
+				{ "id", Serializer::getFileTypeId(s.first) },
+				{ "str", getName(s.first) },
+				{ "extensions", s.second },
+				{ "default_type", SearchManager::isDefaultTypeStr(s.first) }
 			});
 		}
 
 		aRequest.setResponseBody(retJ);
 		return websocketpp::http::status_code::ok;
-	}
-
-	api_return SearchApi::handlePostSearch(ApiRequest& aRequest) {
-		const auto& reqJson = aRequest.getRequestBody();
-		std::string str = reqJson["pattern"];
-
-		if (str.length() < MIN_SEARCH) {
-			aRequest.setResponseErrorStr("Search string too short");
-			return websocketpp::http::status_code::bad_request;
-		}
-
-		auto type = str.size() == 39 && Encoder::isBase32(str.c_str()) ? SearchManager::TYPE_TTH : SearchManager::TYPE_ANY;
-
-		// new search
-		auto newSearch = SearchQuery::getSearch(str, Util::emptyString, 0, type, SearchManager::SIZE_DONTCARE, StringList(), SearchQuery::MATCH_FULL_PATH, false);
-
-		{
-			WLock l(cs);
-			results.clear();
-		}
-
-		searchView.setResetItems();
-
-		curSearch = shared_ptr<SearchQuery>(newSearch);
-
-		SettingsManager::getInstance()->addToHistory(str, SettingsManager::HISTORY_SEARCH);
-		currentSearchToken = Util::toString(Util::rand());
-
-		auto queueTime = SearchManager::getInstance()->search(str, 0, type, SearchManager::SIZE_DONTCARE, currentSearchToken, Search::MANUAL);
-
-		aRequest.setResponseBody({
-			{ "queue_time", queueTime },
-			{ "search_token", currentSearchToken }
-		});
-		return websocketpp::http::status_code::ok;
-	}
-
-
-	void SearchApi::on(SearchManagerListener::SR, const SearchResultPtr& aResult) noexcept {
-		auto search = curSearch;
-		if (!search)
-			return;
-
-		if (!aResult->getToken().empty()) {
-			// ADC
-			if (currentSearchToken != aResult->getToken()) {
-				return;
-			}
-		} else {
-			// NMDC
-
-			// exludes
-			RLock l(cs);
-			if (curSearch->isExcluded(aResult->getPath())) {
-				return;
-			}
-
-			if (search->root && *search->root != aResult->getTTH()) {
-				return;
-			}
-		}
-
-		if (search->itemType == SearchQuery::TYPE_FILE && aResult->getType() != SearchResult::TYPE_FILE) {
-			return;
-		}
-
-		// path
-		SearchQuery::Recursion recursion;
-		ScopedFunctor([&] { search->recursion = nullptr; });
-		if (!search->root && !search->matchesNmdcPath(aResult->getPath(), recursion)) {
-			return;
-		}
-
-		auto result = make_shared<SearchResultInfo>(aResult, *curSearch.get());
-
-		{
-			WLock l(cs);
-			auto i = results.find(aResult->getTTH());
-			if (i != results.end()) {
-				(*i).second->addItem(result);
-			} else {
-				results.emplace(aResult->getTTH(), result);
-			}
-		}
-
-		searchView.onItemAdded(result);
 	}
 }

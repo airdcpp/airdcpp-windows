@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,29 +16,30 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef DCPLUSPLUS_DCPP_RECENTHUB_API_H
-#define DCPLUSPLUS_DCPP_RECENTHUB_API_H
+#ifndef DCPLUSPLUS_DCPP_SETTINGAPI_H
+#define DCPLUSPLUS_DCPP_SETTINGAPI_H
 
 #include <web-server/stdinc.h>
 
 #include <api/ApiModule.h>
 
-#include <airdcpp/typedefs.h>
+//#include <airdcpp/SettingsManager.h>
 
 namespace webserver {
-	class RecentHubApi : public ApiModule {
+	class ApiSettingItem;
+	class SettingApi : public ApiModule {
 	public:
-		RecentHubApi(Session* aSession);
-		~RecentHubApi();
-
-		int getVersion() const noexcept {
-			return 0;
-		}
-
-		static json serializeHub(const RecentHubEntryPtr& aHub) noexcept;
+		SettingApi(Session* aSession);
+		~SettingApi();
 	private:
-		api_return handleSearchHubs(ApiRequest& aRequest);
-		api_return handleGetHubs(ApiRequest& aRequest);
+		api_return handleGetSettingInfos(ApiRequest& aRequest);
+		api_return handleGetSettingValues(ApiRequest& aRequest);
+		api_return handleSetSettings(ApiRequest& aRequest);
+		api_return handleResetSettings(ApiRequest& aRequest);
+
+		typedef function<void(ApiSettingItem*)> ParserF;
+		void parseSettingKeys(const json& aJson, ParserF aHandler);
+		static ApiSettingItem* getSettingItem(const string& aKey) noexcept;
 	};
 }
 

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -31,36 +31,46 @@ namespace webserver {
 
 	class WebSocket {
 	public:
-		WebSocket(bool aIsSecure, websocketpp::connection_hdl aHdl, server_plain* aServer) : WebSocket(aIsSecure, aHdl) {
-			plainServer = aServer;
-		}
-		WebSocket(bool aIsSecure, websocketpp::connection_hdl aHdl, server_tls* aServer) : WebSocket(aIsSecure, aHdl) {
-			tlsServer = aServer;
-		}
+		WebSocket(bool aIsSecure, websocketpp::connection_hdl aHdl, const websocketpp::http::parser::request& aRequest, server_plain* aServer, WebServerManager* aWsm);
+		WebSocket(bool aIsSecure, websocketpp::connection_hdl aHdl, const websocketpp::http::parser::request& aRequest, server_tls* aServer, WebServerManager* aWsm);
 		~WebSocket();
 
 		void close(websocketpp::close::status::value aCode, const std::string& aMsg);
 
 		IGETSET(SessionPtr, session, Session, nullptr);
 
-		void sendPlain(const std::string& aMsg);
-		void sendApiResponse(const json& aJsonResponse, const json& aErrorJson, websocketpp::http::status_code::value aCode, int aCallbackId);
+		void sendPlain(const json& aJson) noexcept;
+		void sendApiResponse(const json& aJsonResponse, const json& aErrorJson, websocketpp::http::status_code::value aCode, int aCallbackId) noexcept;
 
 		WebSocket(WebSocket&) = delete;
 		WebSocket& operator=(WebSocket&) = delete;
 
 		string getIp() const noexcept;
+		void ping() noexcept;
+
+		void logError(const string& aMessage, websocketpp::log::level aErrorLevel) const noexcept;
+		void debugMessage(const string& aMessage) const noexcept;
+
+		time_t getTimeCreated() const noexcept {
+			return timeCreated;
+		}
+
+		const string& getConnectUrl() const noexcept {
+			return url;
+		}
 	protected:
-		WebSocket(bool aIsSecure, websocketpp::connection_hdl aHdl);
+		WebSocket(bool aIsSecure, websocketpp::connection_hdl aHdl, const websocketpp::http::parser::request& aRequest, WebServerManager* aWsm);
 	private:
-		union {
+		const union {
 			server_plain* plainServer;
 			server_tls* tlsServer;
 		};
 
-		websocketpp::connection_hdl hdl;
-
-		bool secure;
+		const websocketpp::connection_hdl hdl;
+		WebServerManager* wsm;
+		const bool secure;
+		const time_t timeCreated;
+		string url;
 	};
 }
 

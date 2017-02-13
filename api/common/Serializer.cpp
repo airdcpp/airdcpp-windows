@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 #include <api/common/Serializer.h>
 #include <api/common/Format.h>
 
-#include <api/HubInfo.h>
+#include <api/OnlineUserUtils.h>
 
 #include <airdcpp/AirUtil.h>
 #include <airdcpp/Bundle.h>
@@ -29,11 +29,13 @@
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/Message.h>
 #include <airdcpp/DirectoryListing.h>
+#include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/GeoManager.h>
 #include <airdcpp/OnlineUser.h>
 #include <airdcpp/QueueItem.h>
 #include <airdcpp/QueueManager.h>
 #include <airdcpp/SearchManager.h>
+#include <airdcpp/ShareManager.h>
 
 namespace webserver {
 	StringSet Serializer::getUserFlags(const UserPtr& aUser) noexcept {
@@ -51,15 +53,23 @@ namespace webserver {
 		}
 
 		if (aUser == ClientManager::getInstance()->getMe()) {
-			ret.insert("me");
+			ret.insert("self");
 		}
 
 		if (aUser->isSet(User::NMDC)) {
 			ret.insert("nmdc");
 		}
 
+		if (aUser->isSet(User::ASCH)) {
+			ret.insert("asch");
+		}
+
 		if (!aUser->isOnline()) {
 			ret.insert("offline");
+		}
+
+		if (aUser->isSet(User::CCPM)) {
+			ret.insert("ccpm");
 		}
 
 		return ret;
@@ -80,19 +90,24 @@ namespace webserver {
 			flags_.insert("op");
 		}
 
-		if (aUser->getIdentity().isBot() || aUser->getIdentity().isHub()) {
-			flags_.insert("bot");
-		}
-
 		if (aUser->isHidden()) {
 			flags_.insert("hidden");
+		}
+
+		auto cm = aUser->getIdentity().getConnectMode();
+		if (!aUser->getUser()->isNMDC() && (cm == Identity::MODE_NOCONNECT_PASSIVE || cm == Identity::MODE_NOCONNECT_IP || cm == Identity::MODE_UNDEFINED)) {
+			flags_.insert("noconnect");
+		} else if (!aUser->getIdentity().isTcpActive(aUser->getClient())) {
+			flags_.insert("passive");
 		}
 	}
 
 	json Serializer::serializeUser(const UserPtr& aUser) noexcept {
-		return{
+		return {
 			{ "cid", aUser->getCID().toBase32() },
-			{ "nicks", Util::listToString(ClientManager::getInstance()->getHubNames(aUser->getCID())) },
+			{ "nicks", Util::listToString(ClientManager::getInstance()->getNicks(aUser->getCID())) },
+			{ "hub_names", Util::listToString(ClientManager::getInstance()->getHubNames(aUser->getCID())) },
+			{ "hub_urls", ClientManager::getInstance()->getHubUrls(aUser->getCID()) },
 			{ "flags", getUserFlags(aUser) }
 		};
 	}
@@ -111,6 +126,7 @@ namespace webserver {
 			{ "nicks", ClientManager::getInstance()->getFormatedNicks(aUser) },
 			{ "hub_url", aUser.hint },
 			{ "hub_names", ClientManager::getInstance()->getFormatedHubNames(aUser) },
+			{ "hub_urls", ClientManager::getInstance()->getHubUrls(aUser.user->getCID()) },
 			{ "flags", flags }
 		};
 	}
@@ -127,13 +143,37 @@ namespace webserver {
 		};
 	}
 
+	json Serializer::serializeShareProfileSimple(ProfileToken aProfile) noexcept {
+		auto sp = ShareManager::getInstance()->getShareProfile(aProfile);
+		if (!sp) {
+			return nullptr;
+		}
+
+		return {
+			{ "id", sp->getToken() },
+			{ "str", sp->getPlainName() },
+		};
+	}
+
+	json Serializer::serializeEncryption(const string& aInfo, bool aIsTrusted) noexcept {
+		if (aInfo.empty()) {
+			return nullptr;
+		}
+
+		return {
+			{ "str", aInfo },
+			{ "trusted", aIsTrusted },
+		};
+	}
+
 	json Serializer::serializeChatMessage(const ChatMessagePtr& aMessage) noexcept {
 		json ret = {
 			{ "id", aMessage->getId()},
 			{ "text", aMessage->getText() },
 			{ "from", serializeOnlineUser(aMessage->getFrom()) },
 			{ "time", aMessage->getTime() },
-			{ "is_read", aMessage->getRead() }
+			{ "is_read", aMessage->getRead() },
+			{ "third_person", aMessage->getThirdPerson() },
 		};
 
 		if (aMessage->getTo()) {
@@ -147,17 +187,42 @@ namespace webserver {
 		return ret;
 	}
 
+	string Serializer::getSeverity(LogMessage::Severity aSeverity) noexcept {
+		switch (aSeverity) {
+			case LogMessage::SEV_NOTIFY: return "notify";
+			case LogMessage::SEV_INFO: return "info";
+			case LogMessage::SEV_WARNING: return "warning";
+			case LogMessage::SEV_ERROR: return "error";
+			default: return Util::emptyString;
+		}
+	}
+
 	json Serializer::serializeLogMessage(const LogMessagePtr& aMessageData) noexcept {
 		return{
 			{ "id", aMessageData->getId() },
 			{ "text", aMessageData->getText() },
 			{ "time", aMessageData->getTime() },
-			{ "severity", static_cast<int>(aMessageData->getSeverity()) },
+			{ "severity", getSeverity(aMessageData->getSeverity()) },
 			{ "is_read", aMessageData->getRead() }
 		};
 	}
 
-	json Serializer::serializeUnread(const MessageCache& aCache) noexcept {
+	json Serializer::serializeCacheInfo(const MessageCache& aCache, const UnreadSerializerF& unreadF) noexcept {
+		return {
+			{ "total", aCache.size() },
+			{ "unread", unreadF(aCache) },
+		};
+	}
+
+	json Serializer::serializeUnreadLog(const MessageCache& aCache) noexcept {
+		return{
+			{ "info", aCache.countUnreadLogMessages(LogMessage::SEV_INFO) },
+			{ "warning", aCache.countUnreadLogMessages(LogMessage::SEV_WARNING) },
+			{ "error", aCache.countUnreadLogMessages(LogMessage::SEV_ERROR) },
+		};
+	}
+
+	json Serializer::serializeUnreadChat(const MessageCache& aCache) noexcept {
 		MessageCache::ChatMessageFilterF isBot = [](const ChatMessagePtr& aMessage) {
 			if (aMessage->getFrom()->getIdentity().isBot() || aMessage->getFrom()->getIdentity().isHub()) {
 				return true;
@@ -174,12 +239,10 @@ namespace webserver {
 	}
 
 	json Serializer::serializeOnlineUser(const OnlineUserPtr& aUser) noexcept {
-		auto j = serializeItemProperties(aUser, toPropertyIdSet(HubInfo::onlineUserPropertyHandler.properties), HubInfo::onlineUserPropertyHandler);
-		j["cid"] = aUser->getUser()->getCID().toBase32();
-		return j;
+		return serializeItem(aUser, OnlineUserUtils::propertyHandler);
 	}
 
-	std::string typeNameToString(const string& aName) {
+	std::string Serializer::getFileTypeId(const string& aName) noexcept {
 		switch (aName[0]) {
 			case '1': return "audio";
 			case '2': return "compressed";
@@ -187,30 +250,30 @@ namespace webserver {
 			case '4': return "executable";
 			case '5': return "picture";
 			case '6': return "video";
-			default: return "other";
+			default: return aName.empty() ? "other" : aName;
 		}
 	}
 
 	json Serializer::serializeFileType(const string& aPath) noexcept {
-		auto ext = Format::formatFileType(aPath);
-		auto typeName = SearchManager::getInstance()->getNameByExtension(ext, true);
+		auto ext = Util::formatFileType(aPath);
+		auto typeName = getFileTypeId(SearchManager::getInstance()->getNameByExtension(ext, true));
 
 		return{
 			{ "id", "file" },
-			{ "content_type", typeNameToString(typeName) },
+			{ "content_type", typeName },
 			{ "str", ext }
 		};
 	}
 
-	json Serializer::serializeFolderType(size_t aFiles, size_t aDirectories) noexcept {
+	json Serializer::serializeFolderType(const DirectoryContentInfo& aContentInfo) noexcept {
 		json retJson = {
 			{ "id", "directory" },
-			{ "str", Format::formatFolderContent(aFiles, aDirectories) }
+			{ "str", Util::formatDirectoryContent(aContentInfo) }
 		};
 
-		if (aFiles >= 0 && aDirectories >= 0) {
-			retJson["files"] = aFiles;
-			retJson["directories"] = aDirectories;
+		if (Util::hasContentInfo(aContentInfo)) {
+			retJson["files"] = aContentInfo.files;
+			retJson["directories"] = aContentInfo.directories;
 		}
 
 		return retJson;
@@ -221,10 +284,147 @@ namespace webserver {
 	}
 
 	json Serializer::serializeIp(const string& aIP, const string& aCountryCode) noexcept {
-		return{
+		return {
 			{ "str", Format::formatIp(aIP, aCountryCode) },
-			{ "country_id", aCountryCode },
+			{ "country", aCountryCode },
 			{ "ip", aIP }
+		};
+	}
+
+	string Serializer::getDownloadStateId(TrackableDownloadItem::State aState) noexcept {
+		switch (aState) {
+			case TrackableDownloadItem::STATE_DOWNLOAD_FAILED: return "download_failed";
+			case TrackableDownloadItem::STATE_DOWNLOAD_PENDING: return "download_pending";
+			case TrackableDownloadItem::STATE_DOWNLOADING: return "downloading";
+			case TrackableDownloadItem::STATE_DOWNLOADED: return "downloaded";
+		}
+
+		dcassert(0);
+		return Util::emptyString;
+	}
+
+	json Serializer::serializeDownloadState(const TrackableDownloadItem& aItem) noexcept {
+		auto info = aItem.getStatusInfo();
+		return {
+			{ "id", getDownloadStateId(info.state) },
+			{ "str", info.str },
+			{ "time_finished", aItem.isDownloaded() ? aItem.getLastTimeFinished() : 0 },
+		};
+	}
+
+	string Serializer::getDupeId(DupeType aDupeType) noexcept {
+		switch (aDupeType) {
+			case DUPE_SHARE_PARTIAL: return "share_partial";
+			case DUPE_SHARE_FULL: return "share_full";
+			case DUPE_QUEUE_PARTIAL: return "queue_partial";
+			case DUPE_QUEUE_FULL: return "queue_full";
+			case DUPE_FINISHED_PARTIAL: return "finished_partial";
+			case DUPE_FINISHED_FULL: return "finished_full";
+			case DUPE_SHARE_QUEUE: return "share_queue";
+			default: dcassert(0); return Util::emptyString;
+		}
+	}
+
+	json Serializer::serializeFileDupe(DupeType aDupeType, const TTHValue& aTTH) noexcept {
+		if (aDupeType == DUPE_NONE) {
+			return nullptr;
+		}
+
+		return serializeDupe(aDupeType, AirUtil::getFileDupePaths(aDupeType, aTTH));
+	}
+
+	json Serializer::serializeDirectoryDupe(DupeType aDupeType, const string& aPath) noexcept {
+		if (aDupeType == DUPE_NONE) {
+			return nullptr;
+		}
+
+		return serializeDupe(aDupeType, AirUtil::getDirDupePaths(aDupeType, aPath));
+	}
+
+	json Serializer::serializeDupe(DupeType aDupeType, StringList&& aPaths) noexcept {
+		return {
+			{ "id", getDupeId(aDupeType) },
+			{ "paths", aPaths },
+		};
+	}
+
+	json Serializer::serializeSlots(int aFree, int aTotal) noexcept {
+		return {
+			{ "str", SearchResult::formatSlots(aFree, aTotal) },
+			{ "free", aFree },
+			{ "total", aTotal }
+		};
+	}
+
+	json Serializer::serializePriorityId(Priority aPriority) noexcept {
+		if (aPriority == Priority::DEFAULT) {
+			return nullptr;
+		}
+
+		return static_cast<int>(aPriority);
+	}
+
+	json Serializer::serializePriority(const QueueItemBase& aItem) noexcept {
+		return {
+			{ "id", serializePriorityId(aItem.getPriority()) },
+			{ "str", AirUtil::getPrioText(aItem.getPriority()) },
+			{ "auto", aItem.getAutoPriority() }
+		};
+	}
+
+	json Serializer::serializeDirectoryDownload(const DirectoryDownloadPtr& aDownload) noexcept {
+		return {
+			{ "id", aDownload->getId() },
+			{ "user", Serializer::serializeHintedUser(aDownload->getUser()) },
+			{ "target_name", aDownload->getBundleName() },
+			{ "target_directory", aDownload->getTarget() },
+			{ "priority", Serializer::serializePriorityId(aDownload->getPriority()) },
+			{ "list_path", aDownload->getListPath() },
+		};
+	}
+
+	json Serializer::serializeDirectoryBundleAddInfo(const DirectoryBundleAddInfo& aInfo, const string& aError) noexcept {
+		return {
+			{ "files_queued", aInfo.filesAdded },
+			{ "files_updated", aInfo.filesUpdated },
+			{ "files_failed", aInfo.filesFailed },
+			{ "error", aError },
+			{ "bundle", serializeBundleAddInfo(aInfo.bundleInfo) }
+		};
+	}
+
+	json Serializer::serializeBundleAddInfo(const BundleAddInfo& aInfo) noexcept {
+		return {
+			{ "id", aInfo.bundle->getToken() },
+			{ "merged", aInfo.merged },
+		};
+	}
+
+	json Serializer::serializeSourceCount(const QueueItemBase::SourceCount& aCount) noexcept {
+		return {
+			{ "online", aCount.online },
+			{ "total", aCount.total },
+			{ "str", aCount.format() },
+		};
+	}
+
+	json Serializer::serializeGroupedPaths(const pair<string, OrderedStringSet>& aGroupedPair) noexcept {
+		return {
+			{ "name", aGroupedPair.first },
+			{ "paths", aGroupedPair.second }
+		};
+	}
+
+	json Serializer::serializeActionHookError(const ActionHookErrorPtr& aError) noexcept {
+		if (!aError) {
+			return nullptr;
+		}
+
+		return{
+			{ "hook_id", aError->hookId },
+			{ "hook_name", aError->hookName },
+			{ "error_id", aError->errorId },
+			{ "str", aError->errorMessage },
 		};
 	}
 }

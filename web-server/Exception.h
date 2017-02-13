@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
 #define DCPLUSPLUS_WEBSERVER_EXCEPTION_H
 
 #include <json/json.hpp>
+#include <websocketpp/http/constants.hpp>
+#include <string>
 
 #include <airdcpp/debug.h>
 
@@ -32,12 +34,21 @@ namespace webserver {
 		JsonException(const json& aError) : error(aError) { }
 		JsonException(json&& aError) : error(move(aError)) { }
 
-		virtual ~JsonException() throw() { }
-		virtual const json& getErrorJson() const { return error; }
+		virtual ~JsonException() noexcept { }
+		const json& getErrorJson() const { return error; }
 	protected:
 		json error;
 	};
 
+	class RequestException : public std::runtime_error
+	{
+	public:
+		RequestException(websocketpp::http::status_code::value aCode, const std::string& aMessage) : code(aCode), std::runtime_error(aMessage.c_str()) { }
+
+		websocketpp::http::status_code::value getCode() const noexcept { return code; }
+	protected:
+		const websocketpp::http::status_code::value code;
+	};
 }
 
 #endif // !defined(EXCEPTION_H)

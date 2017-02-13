@@ -56,11 +56,20 @@ using ArgumentException = webserver::JsonException;
 namespace webserver {
 	class ApiRequest;
 
+	typedef std::function<void()> CallBack;
+
 	class Session;
 	typedef std::shared_ptr<Session> SessionPtr;
+	typedef std::vector<SessionPtr> SessionList;
+	typedef uint32_t LocalSessionId;
+
+	class Timer;
+	typedef shared_ptr<Timer> TimerPtr;
 
 	class WebSocket;
 	typedef std::shared_ptr<WebSocket> WebSocketPtr;
+
+	class WebServerManager;
 }
 
 #endif // !defined(DCPLUSPLUS_WEBSERVER_STDINC_H)

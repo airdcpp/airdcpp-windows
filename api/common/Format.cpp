@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -25,39 +25,6 @@
 #include <boost/range/algorithm/copy.hpp>
 
 namespace webserver {
-	std::string Format::formatFolderContent(int fileCount, int folderCount) noexcept {
-		std::string name;
-
-		bool hasFileInfo = fileCount > 0;
-		bool hasFolderInfo = folderCount > 0;
-		//if (hasFileInfo || hasFolderInfo)
-		//	name += _T(" (");
-
-		if (hasFolderInfo) {
-			name += STRING_F(X_FOLDERS, folderCount);
-		}
-
-		if (hasFileInfo) {
-			if (hasFolderInfo)
-				name += ", ";
-			name += STRING_F(X_FILES, fileCount);
-		}
-
-		//if (hasFileInfo || hasFolderInfo)
-		//	name += _T(")");
-
-		return name;
-	}
-
-	std::string Format::formatFileType(const string& aPath) noexcept {
-		auto type = Util::getFileExt(aPath);
-		if (type.size() > 0 && type[0] == '.') {
-			type.erase(0, 1);
-		}
-
-		return type;
-	}
-
 	std::string Format::formatNicks(const HintedUser& aUser) noexcept {
 		return Util::listToString(ClientManager::getInstance()->getNicks(aUser));
 	}

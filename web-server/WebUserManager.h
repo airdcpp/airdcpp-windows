@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -22,40 +22,58 @@
 #include <web-server/stdinc.h>
 
 #include <airdcpp/CriticalSection.h>
+#include <airdcpp/Speaker.h>
 
 #include <web-server/Session.h>
 #include <web-server/Timer.h>
 #include <web-server/WebServerManagerListener.h>
+#include <web-server/WebUserManagerListener.h>
 #include <web-server/WebUser.h>
 
 namespace webserver {
-	class WebServerManager;
-	class WebUserManager : private WebServerManagerListener {
+	class WebUserManager : private WebServerManagerListener, public Speaker<WebUserManagerListener> {
 	public:
 		WebUserManager(WebServerManager* aServer);
 		~WebUserManager();
 
-		SessionPtr authenticate(const string& aUserName, const string& aPassword, bool aIsSecure) noexcept;
+		// Parse Authentication header from an HTTP request
+		SessionPtr parseHttpSession(const websocketpp::http::parser::request& aRequest, string& error_, const string& aIp) noexcept;
 
-		SessionPtr getSession(const string& aSession) const noexcept;
+		SessionPtr authenticateSession(const string& aUserName, const string& aPassword, bool aIsSecure, uint64_t aMaxInactivityMinutes, const string& aIP) noexcept;
+		SessionPtr authenticateBasicHttp(const string& aAuthString, const string& aIP) noexcept;
+
+		SessionList getSessions() const noexcept;
+		SessionPtr getSession(const string& aAuthToken) const noexcept;
+		SessionPtr getSession(LocalSessionId aId) const noexcept;
 		void logout(const SessionPtr& aSession);
 
 		bool hasUsers() const noexcept;
 		bool hasUser(const string& aUserName) const noexcept;
+		WebUserPtr getUser(const string& aUserName) const noexcept;
 
-		// Adds a new users or updates password for an existing one. Returns false when an existing user was found.
-		bool addUser(const string& aUserName, const string& aPassword) noexcept;
-
+		bool addUser(const WebUserPtr& aUser) noexcept;
+		bool updateUser(const WebUserPtr& aUser) noexcept;
 		bool removeUser(const string& aUserName) noexcept;
+
+		WebUserList getUsers() const noexcept;
+		void replaceWebUsers(const WebUserList& newUsers) noexcept;
+
 		StringList getUserNames() const noexcept;
+
+		size_t getSessionCount() const noexcept;
 	private:
 		mutable SharedMutex cs;
 
 		std::map<std::string, WebUserPtr> users;
-		std::map<std::string, SessionPtr> sessions;
+
+		std::map<std::string, SessionPtr> sessionsRemoteId;
+		std::map<LocalSessionId, SessionPtr> sessionsLocalId;
 
 		void checkExpiredSessions() noexcept;
+		void removeSession(const SessionPtr& aSession, bool aTimedOut) noexcept;
 		TimerPtr expirationTimer;
+
+		SessionPtr createSession(const WebUserPtr& aUser, const string& aSessionToken, Session::SessionType aType, uint64_t aMaxInactivityMinutes, const string& aIP);
 
 		void on(WebServerManagerListener::Started) noexcept;
 		void on(WebServerManagerListener::Stopped) noexcept;

@@ -90,7 +90,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions);_SCL_SECURE_NO_WARNINGS;</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)openssl\include;$(SolutionDir)boost;$(SolutionDir)airdcpp</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)zlib;$(SolutionDir)openssl\include;$(SolutionDir)boost;$(SolutionDir)airdcpp;$(SolutionDir);$(ProjectDir)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -104,7 +104,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_SCL_SECURE_NO_WARNINGS;WIN32_LEAN_AND_MEAN;BOOST_ALL_NO_LIB;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)zlib;$(SolutionDir)openssl\include;$(SolutionDir)boost;$(ProjectDir);$(SolutionDir)airdcpp</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)zlib;$(SolutionDir)openssl\include;$(SolutionDir)boost;$(SolutionDir)airdcpp;$(SolutionDir);$(ProjectDir)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4996;</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -112,6 +112,7 @@
       <PrecompiledHeaderFile>stdinc.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)webserver.pch</PrecompiledHeaderOutputFile>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -128,7 +129,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;BOOST_ALL_NO_LIB;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_SCL_SECURE_NO_WARNINGS;</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)openssl\include;$(SolutionDir)boost;$(SolutionDir)airdcpp;$(AdditionalIncludeDirectories);$(ProjectDir)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)zlib;$(SolutionDir)openssl\include;$(SolutionDir)boost;$(SolutionDir)airdcpp;$(SolutionDir);$(ProjectDir)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
@@ -146,16 +147,19 @@
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>MinSpace</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;BOOST_ALL_NO_LIB;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_SCL_SECURE_NO_WARNINGS;</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)zlib;$(ProjectDir);$(SolutionDir)openssl\include;$(SolutionDir)boost;$(SolutionDir)airdcpp;$(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)zlib;$(SolutionDir)openssl\include;$(SolutionDir)boost;$(SolutionDir)airdcpp;$(SolutionDir);$(ProjectDir)</AdditionalIncludeDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <OmitFramePointers>false</OmitFramePointers>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -165,83 +169,121 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="api\ApiSettingItem.h" />
     <ClInclude Include="api\common\Deserializer.h" />
+    <ClInclude Include="api\common\FileSearchParser.h" />
     <ClInclude Include="api\common\Format.h" />
     <ClInclude Include="api\common\ListViewController.h" />
+    <ClInclude Include="api\common\ChatController.h" />
     <ClInclude Include="api\common\Property.h" />
     <ClInclude Include="api\common\PropertyFilter.h" />
     <ClInclude Include="api\common\Serializer.h" />
     <ClInclude Include="api\ApiModule.h" />
+    <ClInclude Include="api\common\ViewTasks.h" />
+    <ClInclude Include="api\ConnectivityApi.h" />
+    <ClInclude Include="api\CoreSettings.h" />
     <ClInclude Include="api\FavoriteDirectoryApi.h" />
     <ClInclude Include="api\FavoriteHubApi.h" />
     <ClInclude Include="api\FavoriteHubUtils.h" />
     <ClInclude Include="api\FilelistInfo.h" />
     <ClInclude Include="api\FilelistApi.h" />
+    <ClInclude Include="api\FilelistItemInfo.h" />
     <ClInclude Include="api\FilelistUtils.h" />
     <ClInclude Include="api\FilesystemApi.h" />
+    <ClInclude Include="api\HashApi.h" />
     <ClInclude Include="api\HierarchicalApiModule.h" />
     <ClInclude Include="api\HistoryApi.h" />
     <ClInclude Include="api\HubApi.h" />
     <ClInclude Include="api\HubInfo.h" />
-    <ClInclude Include="api\LogApi.h" />
+    <ClInclude Include="api\EventApi.h" />
     <ClInclude Include="api\OnlineUserUtils.h" />
     <ClInclude Include="api\platform\windows\Filesystem.h" />
     <ClInclude Include="api\PrivateChatInfo.h" />
     <ClInclude Include="api\PrivateChatApi.h" />
     <ClInclude Include="api\QueueApi.h" />
-    <ClInclude Include="api\QueueUtils.h" />
-    <ClInclude Include="api\RecentHubApi.h" />
+    <ClInclude Include="api\QueueFileUtils.h" />
+    <ClInclude Include="api\QueueBundleUtils.h" />
     <ClInclude Include="api\SearchApi.h" />
-    <ClInclude Include="api\SearchResultInfo.h" />
+    <ClInclude Include="api\SearchEntity.h" />
     <ClInclude Include="api\SearchUtils.h" />
     <ClInclude Include="api\SessionApi.h" />
+    <ClInclude Include="api\SettingApi.h" />
     <ClInclude Include="api\ShareApi.h" />
+    <ClInclude Include="api\ShareProfileApi.h" />
+    <ClInclude Include="api\ShareRootApi.h" />
+    <ClInclude Include="api\ShareUtils.h" />
+    <ClInclude Include="api\SystemApi.h" />
     <ClInclude Include="api\TransferApi.h" />
+    <ClInclude Include="api\TransferInfo.h" />
+    <ClInclude Include="api\TransferUtils.h" />
+    <ClInclude Include="api\UserApi.h" />
+    <ClInclude Include="api\ViewFileApi.h" />
+    <ClInclude Include="api\WebUserApi.h" />
+    <ClInclude Include="api\WebUserUtils.h" />
     <ClInclude Include="web-server\ApiRequest.h" />
     <ClInclude Include="web-server\ApiRouter.h" />
     <ClInclude Include="web-server\Exception.h" />
     <ClInclude Include="web-server\FileServer.h" />
     <ClInclude Include="web-server\JsonUtil.h" />
     <ClInclude Include="web-server\LazyInitWrapper.h" />
+    <ClInclude Include="web-server\Access.h" />
     <ClInclude Include="web-server\Session.h" />
     <ClInclude Include="web-server\SessionListener.h" />
     <ClInclude Include="web-server\stdinc.h" />
     <ClInclude Include="web-server\Timer.h" />
+    <ClInclude Include="web-server\version.h" />
     <ClInclude Include="web-server\WebServerManagerListener.h" />
     <ClInclude Include="web-server\WebServerManager.h" />
+    <ClInclude Include="web-server\WebServerSettings.h" />
     <ClInclude Include="web-server\WebSocket.h" />
     <ClInclude Include="web-server\WebUser.h" />
     <ClInclude Include="web-server\WebUserManager.h" />
+    <ClInclude Include="web-server\WebUserManagerListener.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="api\ApiModule.cpp" />
     <ClCompile Include="api\common\Deserializer.cpp" />
+    <ClCompile Include="api\common\FileSearchParser.cpp" />
     <ClCompile Include="api\common\Format.cpp" />
     <ClCompile Include="api\common\PropertyFilter.cpp" />
     <ClCompile Include="api\common\Serializer.cpp" />
+    <ClCompile Include="api\ApiSettingItem.cpp" />
+    <ClCompile Include="api\ConnectivityApi.cpp" />
     <ClCompile Include="api\FavoriteDirectoryApi.cpp" />
     <ClCompile Include="api\FavoriteHubApi.cpp" />
     <ClCompile Include="api\FavoriteHubUtils.cpp" />
     <ClCompile Include="api\FilelistInfo.cpp" />
     <ClCompile Include="api\FilelistApi.cpp" />
+    <ClCompile Include="api\FilelistItemInfo.cpp" />
     <ClCompile Include="api\FilelistUtils.cpp" />
     <ClCompile Include="api\FilesystemApi.cpp" />
+    <ClCompile Include="api\HashApi.cpp" />
     <ClCompile Include="api\HistoryApi.cpp" />
     <ClCompile Include="api\HubApi.cpp" />
     <ClCompile Include="api\HubInfo.cpp" />
-    <ClCompile Include="api\LogApi.cpp" />
+    <ClCompile Include="api\EventApi.cpp" />
     <ClCompile Include="api\OnlineUserUtils.cpp" />
     <ClCompile Include="api\PrivateChatApi.cpp" />
     <ClCompile Include="api\PrivateChatInfo.cpp" />
     <ClCompile Include="api\QueueApi.cpp" />
-    <ClCompile Include="api\QueueUtils.cpp" />
-    <ClCompile Include="api\RecentHubApi.cpp" />
+    <ClCompile Include="api\QueueFileUtils.cpp" />
+    <ClCompile Include="api\QueueBundleUtils.cpp" />
     <ClCompile Include="api\SearchApi.cpp" />
-    <ClCompile Include="api\SearchResultInfo.cpp" />
+    <ClCompile Include="api\SearchEntity.cpp" />
     <ClCompile Include="api\SearchUtils.cpp" />
     <ClCompile Include="api\SessionApi.cpp" />
+    <ClCompile Include="api\SettingApi.cpp" />
     <ClCompile Include="api\ShareApi.cpp" />
+    <ClCompile Include="api\ShareProfileApi.cpp" />
+    <ClCompile Include="api\ShareRootApi.cpp" />
+    <ClCompile Include="api\ShareUtils.cpp" />
+    <ClCompile Include="api\SystemApi.cpp" />
     <ClCompile Include="api\TransferApi.cpp" />
+    <ClCompile Include="api\TransferUtils.cpp" />
+    <ClCompile Include="api\UserApi.cpp" />
+    <ClCompile Include="api\ViewFileApi.cpp" />
+    <ClCompile Include="api\WebUserApi.cpp" />
+    <ClCompile Include="api\WebUserUtils.cpp" />
     <ClCompile Include="web-server\ApiRequest.cpp" />
     <ClCompile Include="web-server\ApiRouter.cpp" />
     <ClCompile Include="web-server\FileServer.cpp" />
@@ -250,6 +292,7 @@
     <ClCompile Include="web-server\stdinc.cpp" />
     <ClCompile Include="web-server\WebServerManager.cpp" />
     <ClCompile Include="web-server\WebSocket.cpp" />
+    <ClCompile Include="web-server\WebUser.cpp" />
     <ClCompile Include="web-server\WebUserManager.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

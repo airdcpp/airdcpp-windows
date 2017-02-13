@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 
 #include <airdcpp/typedefs.h>
 #include <airdcpp/DirectoryListingManager.h>
+#include <airdcpp/QueueItem.h>
 
 namespace webserver {
 	class FilelistApi : public ParentApiModule<CID, FilelistInfo>, private DirectoryListingManagerListener {
@@ -34,26 +35,29 @@ namespace webserver {
 
 		FilelistApi(Session* aSession);
 		~FilelistApi();
-
-		int getVersion() const noexcept {
-			return 0;
-		}
-
 	private:
 		void addList(const DirectoryListingPtr& aList) noexcept;
 
 		api_return handlePostList(ApiRequest& aRequest);
 		api_return handleDeleteList(ApiRequest& aRequest);
+		api_return handleOwnList(ApiRequest& aRequest);
 
-		api_return handleGetLists(ApiRequest& aRequest);
-		api_return handleDownload(ApiRequest& aRequest);
+		api_return handlePostDirectoryDownload(ApiRequest& aRequest);
+		api_return handleDeleteDirectoryDownload(ApiRequest& aRequest);
+		api_return handleGetDirectoryDownloads(ApiRequest& aRequest);
 
-		void on(DirectoryListingManagerListener::ListingCreated, const DirectoryListingPtr& aList) noexcept;
-		//void on(DirectoryListingManagerListener::OpenListing, const DirectoryListingPtr& aList, const string& aDir, const string& aXML) noexcept;
-		void on(DirectoryListingManagerListener::ListingClosed, const DirectoryListingPtr&) noexcept;
-		//void on(MessageManagerListener::ChatRemoved, const PrivateChatPtr& aChat) noexcept;
+		api_return handleMatchQueue(ApiRequest& aRequest);
+
+		void on(DirectoryListingManagerListener::ListingCreated, const DirectoryListingPtr& aList) noexcept override;
+		void on(DirectoryListingManagerListener::ListingClosed, const DirectoryListingPtr&) noexcept override;
+
+		void on(DirectoryListingManagerListener::DirectoryDownloadAdded, const DirectoryDownloadPtr&) noexcept override;
+		void on(DirectoryListingManagerListener::DirectoryDownloadRemoved, const DirectoryDownloadPtr&) noexcept override;
+		void on(DirectoryListingManagerListener::DirectoryDownloadProcessed, const DirectoryDownloadPtr& aDirectoryInfo, const DirectoryBundleAddInfo& aQueueInfo, const string& aError) noexcept override;
+		void on(DirectoryListingManagerListener::DirectoryDownloadFailed, const DirectoryDownloadPtr& aDirectoryInfo, const string& aError) noexcept override;
 
 		static json serializeList(const DirectoryListingPtr& aList) noexcept;
+		static json serializeShareProfile(const DirectoryListingPtr& aList) noexcept;
 	};
 }
 

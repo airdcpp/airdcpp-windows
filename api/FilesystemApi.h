@@ -1,6 +1,6 @@
 #pragma once
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -31,13 +31,10 @@ namespace webserver {
 	public:
 		FilesystemApi(Session* aSession);
 		~FilesystemApi();
-
-		int getVersion() const noexcept {
-			return 0;
-		}
 	private:
 		api_return handleListItems(ApiRequest& aRequest);
 		api_return handlePostDirectory(ApiRequest& aRequest);
+		api_return handleGetDiskInfo(ApiRequest& aRequest);
 
 		json serializeDirectoryContent(const string& aPath, bool aDirectoriesOnly);
 	};

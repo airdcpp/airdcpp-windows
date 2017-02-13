@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -17,43 +17,36 @@
 */
 
 #include <api/FilelistInfo.h>
-#include <api/FilelistUtils.h>
 
 #include <api/common/Deserializer.h>
 #include <web-server/JsonUtil.h>
 
 #include <airdcpp/DirectoryListingManager.h>
-#include <airdcpp/Download.h>
-#include <airdcpp/DownloadManager.h>
+
 
 namespace webserver {
-	const PropertyList FilelistInfo::properties = {
-		{ PROP_NAME, "name", TYPE_TEXT, SERIALIZE_TEXT, SORT_CUSTOM },
-		{ PROP_TYPE, "type", TYPE_TEXT, SERIALIZE_CUSTOM, SORT_CUSTOM },
-		{ PROP_SIZE, "size", TYPE_SIZE, SERIALIZE_NUMERIC, SORT_NUMERIC },
-		{ PROP_DATE, "time", TYPE_TIME, SERIALIZE_NUMERIC, SORT_NUMERIC },
-		{ PROP_PATH, "path", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
-		{ PROP_TTH, "tth", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
-		{ PROP_DUPE, "dupe", TYPE_NUMERIC_OTHER, SERIALIZE_NUMERIC, SORT_NUMERIC },
-	};
-
 	const StringList FilelistInfo::subscriptionList = {
 		"filelist_updated"
 	};
 
 	FilelistInfo::FilelistInfo(ParentType* aParentModule, const DirectoryListingPtr& aFilelist) : 
 		SubApiModule(aParentModule, aFilelist->getUser()->getCID().toBase32(), subscriptionList), 
-		dl(aFilelist), 
-		itemHandler(properties,
-		FilelistUtils::getStringInfo, FilelistUtils::getNumericInfo, FilelistUtils::compareItems, FilelistUtils::serializeItem),
-		directoryView("filelist_view", this, itemHandler, std::bind(&FilelistInfo::getCurrentViewItems, this))
+		dl(aFilelist),
+		directoryView("filelist_view", this, FilelistUtils::propertyHandler, std::bind(&FilelistInfo::getCurrentViewItems, this))
 	{
-		METHOD_HANDLER("directory", ApiRequest::METHOD_POST, (), true, FilelistInfo::handleChangeDirectory);
+		METHOD_HANDLER(Access::FILELISTS_VIEW,	METHOD_POST,	(EXACT_PARAM("directory")),									FilelistInfo::handleChangeDirectory);
+		METHOD_HANDLER(Access::VIEW_FILES_VIEW,	METHOD_POST,	(EXACT_PARAM("read")),										FilelistInfo::handleSetRead);
 
+		METHOD_HANDLER(Access::FILELISTS_VIEW,	METHOD_GET,		(EXACT_PARAM("items"), RANGE_START_PARAM, RANGE_MAX_PARAM), FilelistInfo::handleGetItems);
+	}
+
+	void FilelistInfo::init() noexcept {
 		dl->addListener(this);
 
-		if (dl->isOpen()) {
-			updateItems(dl->getCurrentPath());
+		if (dl->isLoaded()) {
+			addListTask([=] {
+				updateItems(dl->getCurrentLocationInfo().directory->getPath());
+			});
 		}
 	}
 
@@ -61,12 +54,44 @@ namespace webserver {
 		dl->removeListener(this);
 	}
 
-	api_return FilelistInfo::handleChangeDirectory(ApiRequest& aRequest) {
-		auto listPath = JsonUtil::getField<string>("list_path", aRequest.getRequestBody(), false);
-		dl->addAsyncTask([=] {
-			dl->changeDirectory(Util::toNmdcFile(listPath), DirectoryListing::RELOAD_NONE);
-		});
+	void FilelistInfo::addListTask(CallBack&& aTask) noexcept {
+		dl->addAsyncTask(getAsyncWrapper(move(aTask)));
+	}
+
+	api_return FilelistInfo::handleGetItems(ApiRequest& aRequest) {
+		int start = aRequest.getRangeParam(START_POS);
+		int count = aRequest.getRangeParam(MAX_COUNT);
+
+		{
+			RLock l(cs);
+			auto curDir = dl->getCurrentLocationInfo().directory;
+			if (!curDir->isComplete() || !currentViewItemsInitialized) {
+				aRequest.setResponseErrorStr("Content of this directory is not yet available");
+				return websocketpp::http::status_code::service_unavailable;
+			}
+
+			aRequest.setResponseBody({
+				{ "list_path", curDir->getPath() },
+				{ "items", Serializer::serializeItemList(start, count, FilelistUtils::propertyHandler, currentViewItems) },
+			});
+		}
+
 		return websocketpp::http::status_code::ok;
+	}
+
+	api_return FilelistInfo::handleChangeDirectory(ApiRequest& aRequest) {
+		const auto& j = aRequest.getRequestBody();
+
+		auto listPath = JsonUtil::getField<string>("list_path", j, false);
+		auto reload = JsonUtil::getOptionalFieldDefault<bool>("reload", j, false);
+
+		dl->addDirectoryChangeTask(Util::toNmdcFile(listPath), reload);
+		return websocketpp::http::status_code::no_content;
+	}
+
+	api_return FilelistInfo::handleSetRead(ApiRequest& aRequest) {
+		dl->setRead();
+		return websocketpp::http::status_code::no_content;
 	}
 
 	FilelistItemInfo::List FilelistInfo::getCurrentViewItems() {
@@ -74,44 +99,71 @@ namespace webserver {
 		return currentViewItems;
 	}
 
-	json FilelistInfo::serializeState(const DirectoryListingPtr& aList) noexcept {
-		string id;
-			switch (aList->getState()) {
-			case DirectoryListing::STATE_DOWNLOAD_PENDING: id = "download_pending"; break;
-			case DirectoryListing::STATE_DOWNLOADING: id = "downloading"; break;
-			case DirectoryListing::STATE_LOADING: id = "loading"; break;
-			case DirectoryListing::STATE_LOADED: id = "loaded"; break;
+	string FilelistInfo::formatState(const DirectoryListingPtr& aList) noexcept {
+		if (aList->getDownloadState() == DirectoryListing::STATE_DOWNLOADED) {
+			return aList->isLoaded() ? "loaded" : "loading";
 		}
 
-		return{
-			{ "id", id }
-		};
+		return Serializer::serializeDownloadState(*aList.get());
 	}
 
+	json FilelistInfo::serializeState(const DirectoryListingPtr& aList) noexcept {
+		if (aList->getDownloadState() == DirectoryListing::STATE_DOWNLOADED) {
+			bool loading = !aList->getCurrentLocationInfo().directory || aList->getCurrentLocationInfo().directory->getLoading();
+			return {
+				{ "id", loading ? "loading" : "loaded" },
+				{ "str", loading ? "Parsing data" : "Loaded" },
+			};
+		}
+
+		return Serializer::serializeDownloadState(*aList.get());
+	}
+
+	json FilelistInfo::serializeLocation(const DirectoryListingPtr& aListing) noexcept {
+		const auto& location = aListing->getCurrentLocationInfo();
+		if (!location.directory) {
+			return nullptr;
+		}
+
+		auto ret = Serializer::serializeItem(std::make_shared<FilelistItemInfo>(location.directory), FilelistUtils::propertyHandler);
+
+		ret["size"] = location.totalSize;
+		return ret;
+	}
+
+	// This should be called only from the filelist thread
 	void FilelistInfo::updateItems(const string& aPath) noexcept {
-		dl->addAsyncTask([=] {
-			auto curDir = dl->findDirectory(aPath);
-			if (!curDir) {
-				return;
+		{
+			WLock l(cs);
+			currentViewItemsInitialized = false;
+			currentViewItems.clear();
+		}
+
+		auto curDir = dl->findDirectory(aPath);
+		if (!curDir) {
+			return;
+		}
+
+		{
+			WLock l(cs);
+			currentViewItems.clear();
+
+			for (auto& d : curDir->directories | map_values) {
+				currentViewItems.emplace_back(std::make_shared<FilelistItemInfo>(d));
 			}
 
-			{
-				WLock l(cs);
-				currentViewItems.clear();
-
-				for (auto& d : curDir->directories) {
-					currentViewItems.emplace_back(new FilelistItemInfo(d));
-				}
-
-				for (auto& f : curDir->files) {
-					currentViewItems.emplace_back(new FilelistItemInfo(f));
-				}
+			for (auto& f : curDir->files) {
+				currentViewItems.emplace_back(std::make_shared<FilelistItemInfo>(f));
 			}
 
-			directoryView.setResetItems();
-			onSessionUpdated({
-				{ "directory", Util::toAdcFile(aPath) }
-			});
+			currentViewItemsInitialized = true;
+		}
+
+		directoryView.resetItems();
+
+		onSessionUpdated({
+			{ "location", serializeLocation(dl) },
+			{ "read", dl->isRead() },
 		});
 	}
 
@@ -119,15 +171,17 @@ namespace webserver {
 
 	}
 
-	void FilelistInfo::on(DirectoryListingListener::LoadingStarted, bool changeDir) noexcept {
+	void FilelistInfo::on(DirectoryListingListener::LoadingStarted, bool aChangeDir) noexcept {
 
 	}
 
-	void FilelistInfo::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aPath, bool reloadList, bool changeDir) noexcept {
-		updateItems(aPath);
+	void FilelistInfo::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aPath, bool aBackgroundTask) noexcept {
+		if (aPath == dl->getCurrentLocationInfo().directory->getPath()) {
+			updateItems(aPath);
+		}
 	}
 
-	void FilelistInfo::on(DirectoryListingListener::ChangeDirectory, const string& aPath, bool isSearchChange) noexcept {
+	void FilelistInfo::on(DirectoryListingListener::ChangeDirectory, const string& aPath, bool aIsSearchChange) noexcept {
 		updateItems(aPath);
 	}
 
@@ -135,15 +189,27 @@ namespace webserver {
 
 	}
 
-	void FilelistInfo::on(DirectoryListingListener::StateChanged, uint8_t aState) noexcept {
+	void FilelistInfo::on(DirectoryListingListener::StateChanged) noexcept {
 		onSessionUpdated({
 			{ "state", serializeState(dl) }
+		});
+	}
+
+	void FilelistInfo::on(DirectoryListingListener::Read) noexcept {
+		onSessionUpdated({
+			{ "read", dl->isRead() }
 		});
 	}
 
 	void FilelistInfo::on(DirectoryListingListener::UserUpdated) noexcept {
 		onSessionUpdated({
 			{ "user", Serializer::serializeHintedUser(dl->getHintedUser()) }
+		});
+	}
+
+	void FilelistInfo::on(DirectoryListingListener::ShareProfileChanged) noexcept {
+		onSessionUpdated({
+			{ "share_profile", Serializer::serializeShareProfileSimple(dl->getShareProfile()) }
 		});
 	}
 

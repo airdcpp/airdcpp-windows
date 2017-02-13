@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -20,49 +20,92 @@
 #define DCPP_PROPERTYFILTER_H
 
 #include <airdcpp/stdinc.h>
-#include <airdcpp/StringMatch.h>
+#include <airdcpp/CriticalSection.h>
 
 #include <api/common/Property.h>
 
 namespace webserver {
+	class PropertyFilter;
+	typedef uint32_t FilterToken;
+
 
 	class PropertyFilter : boost::noncopyable {
 	public:
 		typedef std::function<std::string(int)> InfoFunction;
 		typedef std::function<double(int)> NumericFunction;
+		typedef std::function<bool(int, const StringMatch&, double)> CustomFilterFunction;
 
-		struct Preparation {
-			Preparation(const StringMatch& aMatch) : stringMatcher(aMatch) { }
+		typedef shared_ptr<PropertyFilter> Ptr;
+		typedef vector<Ptr> List;
 
-			int column;
-			int method;
-			FilterPropertyType type;
 
-			double numericMatcher;
-			const StringMatch& stringMatcher;
+		// Helper class that will keep a reference to the filter
+		// and prevent making changes to it during during matching (= lifetime of this object)
+		template<typename FilterT>
+		class Matcher {
+		public:
+			Matcher(const FilterT& aFilter) : filter(aFilter) {
+				filter->cs.lock_shared();
+			}
 
-			bool matchNumeric(int aColumn, const NumericFunction& numericF) const;
-			bool matchText(int aColumn, const InfoFunction& infoF) const;
+			~Matcher() {
+				if (filter) {
+					filter->cs.unlock_shared();
+				}
+			}
+
+			Matcher(Matcher&& rhs) noexcept : filter(rhs.filter) {
+				rhs.filter = nullptr;
+			}
+
+			Matcher(Matcher&) = delete;
+			Matcher& operator=(Matcher&) = delete;
+			Matcher& operator=(Matcher&& rhs) = delete;
+
+			typedef Matcher<FilterT> MatcherT;
+			typedef vector<MatcherT> List;
+			static inline bool match(const List& prep, const NumericFunction& aNumericF, const InfoFunction& aStringF, const CustomFilterFunction& aCustomF) {
+				return std::all_of(prep.begin(), prep.end(), [&](const Matcher& aMatcher) { 
+					return aMatcher.filter->match(aNumericF, aStringF, aCustomF); 
+				});
+			}
+
+			static inline bool match(const MatcherT& prep, const NumericFunction& aNumericF, const InfoFunction& aStringF, const CustomFilterFunction& aCustomF) {
+				return prep.filter->match(aNumericF, aStringF, aCustomF);
+			}
+		private:
+			FilterT filter;
 		};
+
+		typedef vector<Matcher<PropertyFilter::Ptr>> MatcherList;
 
 		PropertyFilter(const PropertyList& aPropertyTypes);
 
-		Preparation prepare();
-		bool match(const Preparation& prep, const NumericFunction& numericF, const InfoFunction& infoF) const;
+		void prepare(const string& aPattern, int aMethod, int aProperty);
 
 		bool empty() const noexcept;
-
-		//void SetDefaultMatchColumn(int i) { currentMatchProperty = i; } //for setting the match column without column box
 		void clear() noexcept;
 
 		void setInverse(bool aInverse) noexcept;
 		bool getInverse() const noexcept { return inverse; }
 
+		FilterToken getId() const noexcept {
+			return id;
+		}
 
-		void setText(const std::string& aText) noexcept;
+	private:
+		friend class Preparation;
+
+		mutable SharedMutex cs;
+		bool match(const NumericFunction& numericF, const InfoFunction& infoF, const CustomFilterFunction& aCustomF) const;
+		bool matchText(int aProperty, const InfoFunction& infoF) const;
+		bool matchNumeric(int aProperty, const NumericFunction& infoF) const;
+
+		void setPattern(const std::string& aText) noexcept;
 		void setFilterProperty(int aFilterProperty) noexcept;
 		void setFilterMethod(StringMatch::Method aFilterMethod) noexcept;
-	private:
+
+		const FilterToken id;
 		PropertyList propertyTypes;
 
 		pair<double, bool> prepareSize() const noexcept;
@@ -71,10 +114,12 @@ namespace webserver {
 
 		StringMatch::Method defMethod;
 		int currentFilterProperty;
+		FilterPropertyType type;
 
 		const int propertyCount;
 
 		StringMatch matcher;
+		double numericMatcher;
 
 		// Hide matching items
 		bool inverse;
@@ -94,7 +139,6 @@ namespace webserver {
 
 		FilterMode numComparisonMode;
 	};
-
 }
 
 #endif

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -29,114 +29,97 @@
 #include <api/ApiModule.h>
 #include <api/common/ListViewController.h>
 
+#include <api/QueueBundleUtils.h>
+#include <api/QueueFileUtils.h>
+
+namespace dcpp {
+	class Segment;
+}
+
 namespace webserver {
-	class QueueApi : public ApiModule, private QueueManagerListener, private DownloadManagerListener {
+	class QueueApi : public SubscribableApiModule, private QueueManagerListener, private DownloadManagerListener {
 	public:
-		const PropertyList bundleProperties = {
-			{ PROP_NAME, "name", TYPE_TEXT, SERIALIZE_TEXT, SORT_CUSTOM },
-			{ PROP_TARGET, "target", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
-			{ PROP_TYPE, "type", TYPE_TEXT, SERIALIZE_CUSTOM, SORT_CUSTOM },
-			{ PROP_SIZE, "size", TYPE_SIZE, SERIALIZE_NUMERIC, SORT_NUMERIC },
-			{ PROP_STATUS, "status", TYPE_TEXT, SERIALIZE_TEXT_NUMERIC, SORT_CUSTOM },
-			{ PROP_BYTES_DOWNLOADED, "downloaded_bytes", TYPE_SIZE, SERIALIZE_NUMERIC, SORT_NUMERIC },
-			{ PROP_PRIORITY, "priority", TYPE_TEXT, SERIALIZE_CUSTOM, SORT_CUSTOM },
-			{ PROP_TIME_ADDED, "time_added", TYPE_TIME, SERIALIZE_NUMERIC, SORT_NUMERIC },
-			{ PROP_TIME_FINISHED, "time_finished", TYPE_TIME, SERIALIZE_NUMERIC, SORT_NUMERIC },
-			{ PROP_SPEED, "speed", TYPE_SPEED, SERIALIZE_NUMERIC, SORT_NUMERIC },
-			{ PROP_SECONDS_LEFT, "seconds_left", TYPE_TIME, SERIALIZE_NUMERIC, SORT_NUMERIC },
-			{ PROP_SOURCES, "sources", TYPE_TEXT, SERIALIZE_CUSTOM, SORT_CUSTOM },
-		};
-
-		enum Properties {
-			PROP_TOKEN = -1,
-			PROP_NAME,
-			PROP_TARGET,
-			PROP_TYPE,
-			PROP_SIZE,
-			PROP_STATUS,
-			PROP_BYTES_DOWNLOADED,
-			PROP_PRIORITY,
-			PROP_TIME_ADDED,
-			PROP_TIME_FINISHED,
-			PROP_SPEED,
-			PROP_SECONDS_LEFT,
-			PROP_SOURCES,
-			PROP_LAST
-		};
-
-		/*const PropertyTypeList propertyTypes = {
-			TYPE_TEXT,
-			TYPE_TEXT,
-			TYPE_TEXT,
-			TYPE_SIZE,
-			TYPE_TEXT,
-			TYPE_SIZE,
-			TYPE_TEXT,
-			TYPE_TIME,
-			TYPE_TIME,
-			TYPE_SPEED,
-			TYPE_TIME
-		};*/
-
 		QueueApi(Session* aSession);
 		~QueueApi();
-
-		int getVersion() const noexcept {
-			return 0;
-		}
 	private:
+		// COMMON
 		api_return handleFindDupePaths(ApiRequest& aRequest);
+		api_return handleRemoveSource(ApiRequest& aRequest);
 
-		api_return handleRemoveBundle(ApiRequest& aRequest);
-		//api_return handleRemoveTempItem(ApiRequest& aRequest);
-		//api_return handleRemoveFileList(ApiRequest& aRequest);
-		api_return handleRemoveFile(ApiRequest& aRequest);
+		// BUNDLES
 
-		api_return handleGetBundles(ApiRequest& aRequest);
+		// Throws if the bundle is not found
+		static BundlePtr getBundle(ApiRequest& aRequest);
 
-		//api_return handleGetFilelist(ApiRequest& aRequest);
-		//api_return handleGetTempItem(ApiRequest& aRequest);
-		api_return handleGetFile(ApiRequest& aRequest);
-
-		api_return handleGetBundle(ApiRequest& aRequest);
-
-		api_return handleAddFilelist(ApiRequest& aRequest);
-		api_return handleAddTempItem(ApiRequest& aRequest);
 		api_return handleAddDirectoryBundle(ApiRequest& aRequest);
 		api_return handleAddFileBundle(ApiRequest& aRequest);
+		api_return handleRemoveBundle(ApiRequest& aRequest);
 
-		api_return handleUpdateBundle(ApiRequest& aRequest);
+		api_return handleGetBundle(ApiRequest& aRequest);
+		api_return handleGetBundles(ApiRequest& aRequest);
+		api_return handleGetBundleFiles(ApiRequest& aRequest);
+
+		api_return handleRemoveCompletedBundles(ApiRequest& aRequest);
+		api_return handleBundlePriorities(ApiRequest& aRequest);
+
+		api_return handleGetBundleSources(ApiRequest& aRequest);
+		api_return handleRemoveBundleSource(ApiRequest& aRequest);
+
+		api_return handleBundlePriority(ApiRequest& aRequest);
 		api_return handleSearchBundle(ApiRequest& aRequest);
-		//api_return handleUpdateTempItem(ApiRequest& aRequest);
-		//api_return handleUpdateFileList(ApiRequest& aRequest);
+		api_return handleShareBundle(ApiRequest& aRequest);
 
-		//bundle update listeners
-		void on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle) noexcept;
-		void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept;
-		void on(QueueManagerListener::BundleMoved, const BundlePtr& aBundle) noexcept;
-		void on(QueueManagerListener::BundleMerged, const BundlePtr& aBundle, const string&) noexcept;
-		void on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) noexcept;
-		void on(QueueManagerListener::BundlePriority, const BundlePtr& aBundle) noexcept;
-		void on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept;
-		void on(QueueManagerListener::BundleSources, const BundlePtr& aBundle) noexcept;
-		void on(FileRecheckFailed, const QueueItemPtr&, const string&) noexcept;
+		// FILES
 
-		void on(DownloadManagerListener::BundleTick, const BundleList& tickBundles, uint64_t aTick) noexcept;
-		void on(DownloadManagerListener::BundleWaiting, const BundlePtr aBundle) noexcept;
+		// Throws if the file can't be found
+		static QueueItemPtr getFile(ApiRequest& aRequest, bool aRequireBundle);
 
-		//QueueItem update listeners
-		void on(QueueManagerListener::Removed, const QueueItemPtr& aQI, bool /*finished*/) noexcept;
-		void on(QueueManagerListener::Added, QueueItemPtr& aQI) noexcept;
-		void on(QueueManagerListener::SourcesUpdated, const QueueItemPtr& aQI) noexcept;
-		void on(QueueManagerListener::StatusUpdated, const QueueItemPtr& aQI) noexcept;
+		api_return handleGetFile(ApiRequest& aRequest);
+		api_return handleRemoveFile(ApiRequest& aRequest);
 
-		void onFileUpdated(const QueueItemPtr& qi);
-		void onBundleUpdated(const BundlePtr& aBundle, const PropertyIdSet& aUpdatedProperties, const string& aSubscription = "bundle_updated");
+		api_return handleGetFileSources(ApiRequest& aRequest);
+		api_return handleRemoveFileSource(ApiRequest& aRequest);
 
-		PropertyItemHandler<BundlePtr> bundlePropertyHandler;
+		api_return handleFilePriority(ApiRequest& aRequest);
+		api_return handleSearchFile(ApiRequest& aRequest);
 
-		typedef ListViewController<BundlePtr, PROP_LAST> BundleListView;
+		api_return handleGetFileSegments(ApiRequest& aRequest);
+		api_return handleAddFileSegment(ApiRequest& aRequest);
+		api_return handleRemoveFileSegment(ApiRequest& aRequest);
+		static json serializeSegment(const Segment& aSegment) noexcept;
+		static Segment parseSegment(const QueueItemPtr& aQI, ApiRequest& aRequest);
+
+		// Bundle update listeners
+		void on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle) noexcept override;
+		void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept override;
+		void on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) noexcept override;
+		void on(QueueManagerListener::BundlePriority, const BundlePtr& aBundle) noexcept override;
+		void on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept override;
+		void on(QueueManagerListener::BundleSources, const BundlePtr& aBundle) noexcept override;
+		void on(FileRecheckFailed, const QueueItemPtr&, const string&) noexcept override;
+
+		void on(DownloadManagerListener::BundleTick, const BundleList& tickBundles, uint64_t aTick) noexcept override;
+		void on(DownloadManagerListener::BundleWaiting, const BundlePtr& aBundle) noexcept override;
+
+		// QueueItem update listeners
+		void on(QueueManagerListener::ItemRemoved, const QueueItemPtr& aQI, bool /*finished*/) noexcept override;
+		void on(QueueManagerListener::ItemAdded, const QueueItemPtr& aQI) noexcept override;
+		void on(QueueManagerListener::ItemSources, const QueueItemPtr& aQI) noexcept override;
+		void on(QueueManagerListener::ItemStatus, const QueueItemPtr& aQI) noexcept override;
+		void on(QueueManagerListener::ItemPriority, const QueueItemPtr& aQI) noexcept override;
+		void on(QueueManagerListener::ItemTick, const QueueItemPtr& aQI) noexcept override;
+
+		void onFileUpdated(const QueueItemPtr& aQI, const PropertyIdSet& aUpdatedProperties, const string& aSubscription);
+		void onBundleUpdated(const BundlePtr& aBundle, const PropertyIdSet& aUpdatedProperties, const string& aSubscription);
+
+		typedef ListViewController<BundlePtr, QueueBundleUtils::PROP_LAST> BundleListView;
 		BundleListView bundleView;
+
+		typedef ListViewController<QueueItemPtr, QueueFileUtils::PROP_LAST> FileListView;
+		FileListView fileView;
+
+		static BundleList getBundleList() noexcept;
+		static QueueItemList getFileList() noexcept;
 	};
 }
 

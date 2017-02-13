@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -35,20 +35,29 @@ namespace webserver {
 	// Sessions are owned by WebUserManager and WebSockets (websockets are closed when session is removed)
 	class Session : public Speaker<SessionListener> {
 	public:
-		Session(WebUserPtr& aUser, const std::string& aToken, bool aIsSecure);
+		enum SessionType {
+			TYPE_PLAIN,
+			TYPE_SECURE,
+			TYPE_BASIC_AUTH,
+		};
+
+		Session(const WebUserPtr& aUser, const std::string& aToken, SessionType aSessionType, WebServerManager* aServer, uint64_t maxInactivityMinutes, const string& aIP);
 		~Session();
 
-		GETSET(uint64_t, lastActivity, LastActivity);
-		const std::string& getToken() const noexcept {
+		const std::string& getAuthToken() const noexcept {
 			return token;
+		}
+
+		LocalSessionId getId() const noexcept {
+			return id;
 		}
 
 		WebUserPtr getUser() {
 			return user;
 		}
 
-		bool isSecure() const {
-			return secure;
+		SessionType getSessionType() const {
+			return sessionType;
 		}
 
 		ApiModule* getModule(const std::string& aApiID);
@@ -57,19 +66,41 @@ namespace webserver {
 
 		Session(Session&) = delete;
 		Session& operator=(Session&) = delete;
-		//IGETSET(WebSocketPtr, socket, Socket, nullptr);
 
 		void onSocketConnected(const WebSocketPtr& aSocket) noexcept;
 		void onSocketDisconnected() noexcept;
+		
+		WebServerManager* getServer() noexcept {
+			return server;
+		}
+
+		void updateActivity() noexcept;
+		uint64_t getLastActivity() const noexcept {
+			return lastActivity;
+		}
+
+		uint64_t getMaxInactivity() const noexcept {
+			return maxInactivity;
+		}
+
+		const string& getIp() const noexcept {
+			return ip;
+		}
 	private:
 		typedef LazyInitWrapper<ApiModule> LazyModuleWrapper;
 		std::map<std::string , LazyModuleWrapper> apiHandlers;
 
+		const uint64_t maxInactivity;
 		const time_t started;
-		const std::string  token;
-		const bool secure;
+		uint64_t lastActivity;
+
+		const LocalSessionId id;
+		const std::string token;
+		const SessionType sessionType;
+		const string ip;
 
 		WebUserPtr user;
+		WebServerManager* server;
 	};
 }
 

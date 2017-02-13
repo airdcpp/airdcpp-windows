@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,21 +19,42 @@
 #ifndef DCPLUSPLUS_DCPP_SEARCHUTILS_H
 #define DCPLUSPLUS_DCPP_SEARCHUTILS_H
 
-#include <api/SearchApi.h>
-#include <api/SearchResultInfo.h>
+#include <api/common/Property.h>
 
 #include <web-server/stdinc.h>
 
 #include <airdcpp/typedefs.h>
+#include <airdcpp/GroupedSearchResult.h>
+
 
 namespace webserver {
 	class SearchUtils {
 	public:
-		static json serializeResult(const SearchResultInfoPtr& aResult, int aPropertyName) noexcept;
+		static const PropertyList properties;
+		static const PropertyItemHandler<GroupedSearchResultPtr> propertyHandler;
 
-		static int compareResults(const SearchResultInfoPtr& a, const SearchResultInfoPtr& b, int aPropertyName) noexcept;
-		static std::string getStringInfo(const SearchResultInfoPtr& a, int aPropertyName) noexcept;
-		static double getNumericInfo(const SearchResultInfoPtr& a, int aPropertyName) noexcept;
+		enum Properties {
+			PROP_TOKEN = -1,
+			PROP_NAME,
+			PROP_RELEVANCE,
+			PROP_HITS,
+			PROP_USERS,
+			PROP_TYPE,
+			PROP_SIZE,
+			PROP_DATE,
+			PROP_PATH,
+			PROP_CONNECTION,
+			PROP_SLOTS,
+			PROP_TTH,
+			PROP_DUPE,
+			PROP_LAST
+		};
+
+		static json serializeResult(const GroupedSearchResultPtr& aResult, int aPropertyName) noexcept;
+
+		static int compareResults(const GroupedSearchResultPtr& a, const GroupedSearchResultPtr& b, int aPropertyName) noexcept;
+		static std::string getStringInfo(const GroupedSearchResultPtr& a, int aPropertyName) noexcept;
+		static double getNumericInfo(const GroupedSearchResultPtr& a, int aPropertyName) noexcept;
 	};
 }
 

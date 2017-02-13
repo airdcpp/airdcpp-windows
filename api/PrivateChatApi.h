@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -34,20 +34,16 @@ namespace webserver {
 
 		PrivateChatApi(Session* aSession);
 		~PrivateChatApi();
-
-		int getVersion() const noexcept {
-			return 0;
-		}
 	private:
 		void addChat(const PrivateChatPtr& aChat) noexcept;
 
 		api_return handlePostChat(ApiRequest& aRequest);
 		api_return handleDeleteChat(ApiRequest& aRequest);
 
-		api_return handleGetThreads(ApiRequest& aRequest);
+		api_return handlePostMessage(ApiRequest& aRequest);
 
-		void on(MessageManagerListener::ChatCreated, const PrivateChatPtr& aChat, bool aReceivedMessage) noexcept;
-		void on(MessageManagerListener::ChatRemoved, const PrivateChatPtr& aChat) noexcept;
+		void on(MessageManagerListener::ChatCreated, const PrivateChatPtr& aChat, bool aReceivedMessage) noexcept override;
+		void on(MessageManagerListener::ChatRemoved, const PrivateChatPtr& aChat) noexcept override;
 
 		static json serializeChat(const PrivateChatPtr& aChat) noexcept;
 	};

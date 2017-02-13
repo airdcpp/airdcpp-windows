@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -24,18 +24,30 @@
 #include <api/ApiModule.h>
 
 #include <airdcpp/typedefs.h>
+#include <airdcpp/FavoriteManagerListener.h>
 
 namespace webserver {
-	class FavoriteDirectoryApi : public ApiModule {
+	class FavoriteDirectoryApi : public SubscribableApiModule, private FavoriteManagerListener {
 	public:
 		FavoriteDirectoryApi(Session* aSession);
 		~FavoriteDirectoryApi();
-
-		int getVersion() const noexcept {
-			return 0;
-		}
 	private:
+		static json serializeDirectories() noexcept;
+		
+		api_return handleGetGroupedDirectories(ApiRequest& aRequest);
 		api_return handleGetDirectories(ApiRequest& aRequest);
+
+		api_return handleAddDirectory(ApiRequest& aRequest);
+		api_return handleGetDirectory(ApiRequest& aRequest);
+		api_return handleUpdateDirectory(ApiRequest& aRequest);
+		api_return handleRemoveDirectory(ApiRequest& aRequest);
+
+		StringPair updatePath(const string& aPath, const json& aRequestJson);
+
+		void on(FavoriteManagerListener::FavoriteDirectoriesUpdated) noexcept override;
+
+		static string getPath(const ApiRequest& aRequest);
+		static json serializeDirectory(const StringPair& aDirectory) noexcept;
 	};
 }
 

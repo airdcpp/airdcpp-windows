@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -17,113 +17,132 @@
 */
 
 #include <api/SearchUtils.h>
-#include <api/SearchApi.h>
 
 #include <api/common/Format.h>
+#include <api/common/Serializer.h>
+
 
 namespace webserver {
-	json SearchUtils::serializeResult(const SearchResultInfoPtr& aResult, int aPropertyName) noexcept {
-		json j;
+	const PropertyList SearchUtils::properties = {
+		{ PROP_NAME, "name", TYPE_TEXT, SERIALIZE_TEXT, SORT_CUSTOM },
+		{ PROP_RELEVANCE, "relevance", TYPE_NUMERIC_OTHER, SERIALIZE_NUMERIC, SORT_NUMERIC },
+		{ PROP_HITS, "hits", TYPE_NUMERIC_OTHER, SERIALIZE_NUMERIC, SORT_NUMERIC },
+		{ PROP_USERS, "users", TYPE_TEXT, SERIALIZE_CUSTOM, SORT_CUSTOM },
+		{ PROP_TYPE, "type", TYPE_TEXT, SERIALIZE_CUSTOM, SORT_CUSTOM },
+		{ PROP_SIZE, "size", TYPE_SIZE, SERIALIZE_NUMERIC, SORT_NUMERIC },
+		{ PROP_DATE, "time", TYPE_TIME, SERIALIZE_NUMERIC, SORT_NUMERIC },
+		{ PROP_PATH, "path", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
+		{ PROP_CONNECTION, "connection", TYPE_SPEED, SERIALIZE_NUMERIC, SORT_NUMERIC },
+		{ PROP_SLOTS, "slots", TYPE_TEXT, SERIALIZE_CUSTOM, SORT_CUSTOM },
+		{ PROP_TTH, "tth", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
+		{ PROP_DUPE, "dupe", TYPE_NUMERIC_OTHER, SERIALIZE_CUSTOM, SORT_NUMERIC },
+	};
 
+	const PropertyItemHandler<GroupedSearchResultPtr> SearchUtils::propertyHandler = {
+		properties,
+		SearchUtils::getStringInfo, SearchUtils::getNumericInfo, SearchUtils::compareResults, SearchUtils::serializeResult
+	};
+
+	json SearchUtils::serializeResult(const GroupedSearchResultPtr& aResult, int aPropertyName) noexcept {
 		switch (aPropertyName) {
-		case SearchApi::PROP_TYPE:
+		case PROP_TYPE: {
+			if (!aResult->isDirectory()) {
+				return Serializer::serializeFileType(aResult->getPath());
+			}
+
+			return Serializer::serializeFolderType(aResult->getContentInfo());
+		}
+		case PROP_SLOTS: {
+			auto slots = aResult->getSlots();
+			return Serializer::serializeSlots(slots.free, slots.total);
+		}
+		case PROP_USERS: {
+			return {
+				{ "count", aResult->getHits() },
+				{ "user", Serializer::serializeHintedUser(aResult->getBaseUser()) }
+			};
+		}
+		case PROP_DUPE:
 		{
-			if (aResult->sr->getType() == SearchResult::TYPE_FILE) {
-				return Serializer::serializeFileType(aResult->sr->getPath());
-			} else {
-				return Serializer::serializeFolderType(aResult->sr->getFileCount(), aResult->sr->getFolderCount());
+			if (aResult->isDirectory()) {
+				return Serializer::serializeDirectoryDupe(aResult->getDupe(), aResult->getPath());
 			}
-		}
-		case SearchApi::PROP_SLOTS: {
-			int free = 0, total = 0;
-			aResult->getSlots(free, total);
 
-			json j;
-			j["str"] = aResult->getSlotStr();
-			j["free"] = free;
-			j["total"] = total;
-			return j;
+			return Serializer::serializeFileDupe(aResult->getDupe(), aResult->getTTH());
 		}
-		case SearchApi::PROP_IP: {
-			return Serializer::serializeIp(aResult->sr->getIP(), aResult->getCountry());
+		default: dcassert(0); return nullptr;
 		}
-		case SearchApi::PROP_USERS: {
-			return Serializer::serializeHintedUser(aResult->sr->getUser());
-		}
-		}
-
-		return j;
 	}
 
-	int SearchUtils::compareResults(const SearchResultInfoPtr& a, const SearchResultInfoPtr& b, int aPropertyName) noexcept {
+	int SearchUtils::compareResults(const GroupedSearchResultPtr& a, const GroupedSearchResultPtr& b, int aPropertyName) noexcept {
 		switch (aPropertyName) {
-		case SearchApi::PROP_NAME: {
-			if (a->sr->getType() == b->sr->getType())
-				return Util::stricmp(a->sr->getFileName(), b->sr->getFileName());
-			else
-				return (a->sr->getType() == SearchResult::TYPE_DIRECTORY) ? -1 : 1;
+		case PROP_NAME: {
+			if (a->isDirectory() == b->isDirectory()) {
+				return Util::DefaultSort(a->getFileName(), b->getFileName());
+			}
+
+			return a->isDirectory() ? -1 : 1;
 		}
-		case SearchApi::PROP_TYPE: {
-			if (a->sr->getType() != b->sr->getType()) {
+		case PROP_TYPE: {
+			if (a->isDirectory() != b->isDirectory()) {
 				// Directories go first
-				return a->sr->getType() == SearchResult::TYPE_FILE ? 1 : -1;
+				return a->isDirectory() ? -1 : 1;
 			}
 
-			if (a->sr->getType() != SearchResult::TYPE_FILE && b->sr->getType() != SearchResult::TYPE_FILE) {
-				// Directory bundles
-				auto dirsA = a->sr->getFolderCount();
-				auto dirsB = b->sr->getFolderCount();
-				if (dirsA != dirsB) {
-					return compare(dirsA, dirsB);
-				}
-
-				auto filesA = a->sr->getFileCount();
-				auto filesB = b->sr->getFileCount();
-
-				return compare(filesA, filesB);
+			if (a->isDirectory() && b->isDirectory()) {
+				return Util::directoryContentSort(a->getContentInfo(), b->getContentInfo());
 			}
 
-			return Util::stricmp(Util::getFileExt(a->sr->getPath()), Util::getFileExt(b->sr->getPath()));
+			return Util::DefaultSort(Util::getFileExt(a->getPath()), Util::getFileExt(b->getPath()));
 		}
-		case SearchApi::PROP_SLOTS: {
-			if (a->sr->getFreeSlots() == b->sr->getFreeSlots())
-				return compare(a->sr->getSlots(), b->sr->getSlots());
-			else
-				return compare(a->sr->getFreeSlots(), b->sr->getFreeSlots());
-		}
-		default:
-			dcassert(0);
-		}
+		case PROP_SLOTS: {
+			auto slotsA = a->getSlots();
+			auto slotsB = b->getSlots();
 
-		return 0;
-	}
-	std::string SearchUtils::getStringInfo(const SearchResultInfoPtr& aResult, int aPropertyName) noexcept {
-		switch (aPropertyName) {
-		case SearchApi::PROP_NAME: return aResult->sr->getFileName();
-		case SearchApi::PROP_PATH: return Util::toAdcFile(aResult->sr->getPath());
-		case SearchApi::PROP_USERS: return Format::formatNicks(aResult->sr->getUser());
-		case SearchApi::PROP_TYPE: {
-			if (aResult->sr->getType() == SearchResult::TYPE_DIRECTORY) {
-				return Format::formatFolderContent(aResult->sr->getFileCount(), aResult->sr->getFolderCount());
+			if (slotsA.free == slotsB.free) {
+				return compare(slotsA.total, slotsB.total);
 			}
-			else {
-				return Format::formatFileType(aResult->sr->getPath());
-			}
+
+			return compare(slotsA.free, slotsB.free);
 		}
-		case SearchApi::PROP_SLOTS: return aResult->getSlotStr();
-		case SearchApi::PROP_IP: return Format::formatIp(aResult->sr->getIP(), aResult->getCountry());
-		case SearchApi::PROP_TTH: return aResult->sr->getTTH().toBase32();
+		case PROP_USERS: {
+			if (a->getHits() != b->getHits()) {
+				return compare(a->getHits(), b->getHits());
+			}
+
+			return Util::DefaultSort(Format::formatNicks(a->getBaseUser()), Format::formatNicks(b->getBaseUser()));
+		}
 		default: dcassert(0); return 0;
 		}
 	}
-	double SearchUtils::getNumericInfo(const SearchResultInfoPtr& aResult, int aPropertyName) noexcept {
+	std::string SearchUtils::getStringInfo(const GroupedSearchResultPtr& aResult, int aPropertyName) noexcept {
 		switch (aPropertyName) {
-		case SearchApi::PROP_SIZE: return (double)aResult->sr->getSize();
-		case SearchApi::PROP_HITS: return (double)aResult->hits;
-		case SearchApi::PROP_CONNECTION: return aResult->getConnectionSpeed();
-		case SearchApi::PROP_RELEVANCY : return aResult->getTotalRelevancy();
-		case SearchApi::PROP_DATE: return (double)aResult->sr->getDate();
-		case SearchApi::PROP_DUPE: return (double)aResult->getDupe();
+		case PROP_NAME: return aResult->getFileName();
+		case PROP_PATH: return Util::toAdcFile(aResult->getPath());
+		case PROP_USERS: return Format::formatNicks(aResult->getBaseUser());
+		case PROP_TYPE: {
+			if (aResult->isDirectory()) {
+				return Util::formatDirectoryContent(aResult->getContentInfo());
+			}
+
+			return Util::formatFileType(aResult->getPath());
+		}
+		case PROP_SLOTS: {
+			auto slots = aResult->getSlots();
+			return SearchResult::formatSlots(slots.free, slots.total);
+		}
+		case PROP_TTH: return aResult->isDirectory() ? Util::emptyString : aResult->getTTH().toBase32();
+		default: dcassert(0); return Util::emptyString;
+		}
+	}
+	double SearchUtils::getNumericInfo(const GroupedSearchResultPtr& aResult, int aPropertyName) noexcept {
+		switch (aPropertyName) {
+		case PROP_SIZE: return (double)aResult->getSize();
+		case PROP_HITS: return (double)aResult->getHits();
+		case PROP_CONNECTION: return aResult->getConnectionSpeed();
+		case PROP_RELEVANCE : return aResult->getTotalRelevance();
+		case PROP_DATE: return (double)aResult->getOldestDate();
+		case PROP_DUPE: return (double)aResult->getDupe();
 		default: dcassert(0); return 0;
 		}
 	}

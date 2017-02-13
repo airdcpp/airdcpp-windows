@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,71 +19,92 @@
 #include <api/HubInfo.h>
 #include <api/ApiModule.h>
 #include <api/common/Serializer.h>
-#include <api/OnlineUserUtils.h>
+#include <api/FavoriteHubUtils.h>
 
 #include <web-server/JsonUtil.h>
+
+#include <airdcpp/ClientManager.h>
+
 
 namespace webserver {
 	const StringList HubInfo::subscriptionList = {
 		"hub_updated",
-		"hub_chat_message",
-		"hub_status_message"
-	};
+		"hub_counts_updated",
+		"hub_message",
+		"hub_status",
 
-	const PropertyList HubInfo::properties = {
-		{ PROP_NICK, "nick", TYPE_TEXT, SERIALIZE_TEXT, SORT_CUSTOM },
-		{ PROP_SHARED, "share_size", TYPE_SIZE, SERIALIZE_NUMERIC, SORT_NUMERIC },
-		{ PROP_DESCRIPTION, "description", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
-		{ PROP_TAG, "tag", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
-		{ PROP_UPLOAD_SPEED, "upload_speed", TYPE_SPEED, SERIALIZE_NUMERIC, SORT_NUMERIC },
-		{ PROP_DOWNLOAD_SPEED, "download_speed", TYPE_SPEED, SERIALIZE_NUMERIC, SORT_NUMERIC },
-		{ PROP_IP4, "ip4", TYPE_TEXT, SERIALIZE_CUSTOM, SORT_TEXT },
-		{ PROP_IP6, "ip6", TYPE_TEXT, SERIALIZE_CUSTOM, SORT_TEXT },
-		{ PROP_EMAIL, "email", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
-		//{ PROP_ACTIVE4, "active4", TYPE_NUMERIC_OTHER , SERIALIZE_BOOL, SORT_NUMERIC },
-		//{ PROP_ACTIVE6, "active6", TYPE_NUMERIC_OTHER, SERIALIZE_BOOL, SORT_NUMERIC },
-		{ PROP_FILES, "file_count", TYPE_NUMERIC_OTHER, SERIALIZE_NUMERIC, SORT_NUMERIC },
-		{ PROP_HUB_URL, "hub_url", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
-		{ PROP_HUB_NAME , "hub_name", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
-		{ PROP_FLAGS, "flags", TYPE_LIST, SERIALIZE_CUSTOM, SORT_NONE },
-	};
-
-	PropertyItemHandler<OnlineUserPtr> HubInfo::onlineUserPropertyHandler = {
-		HubInfo::properties,
-		OnlineUserUtils::getStringInfo, OnlineUserUtils::getNumericInfo, OnlineUserUtils::compareUsers, OnlineUserUtils::serializeUser
+		"hub_user_connected",
+		"hub_user_updated",
+		"hub_user_disconnected",
 	};
 
 	HubInfo::HubInfo(ParentType* aParentModule, const ClientPtr& aClient) :
-		SubApiModule(aParentModule, aClient->getClientId(), subscriptionList), client(aClient) {
+		SubApiModule(aParentModule, aClient->getClientId(), subscriptionList), client(aClient),
+		chatHandler(this, std::bind(&HubInfo::getClient, this), "hub", Access::HUBS_VIEW, Access::HUBS_EDIT, Access::HUBS_SEND), 
+		view("hub_user_view", this, OnlineUserUtils::propertyHandler, std::bind(&HubInfo::getUsers, this), 500), 
+		timer(getTimer([this] { onTimer(); }, 1000)) {
 
-		client->addListener(this);
+		METHOD_HANDLER(Access::HUBS_EDIT, METHOD_POST,	(EXACT_PARAM("reconnect")),	HubInfo::handleReconnect);
+		METHOD_HANDLER(Access::HUBS_EDIT, METHOD_POST,	(EXACT_PARAM("favorite")),	HubInfo::handleFavorite);
+		METHOD_HANDLER(Access::HUBS_EDIT, METHOD_POST,	(EXACT_PARAM("password")),	HubInfo::handlePassword);
+		METHOD_HANDLER(Access::HUBS_EDIT, METHOD_POST,	(EXACT_PARAM("redirect")),	HubInfo::handleRedirect);
 
-		METHOD_HANDLER("messages", ApiRequest::METHOD_GET, (NUM_PARAM), false, HubInfo::handleGetMessages);
-		METHOD_HANDLER("message", ApiRequest::METHOD_POST, (), true, HubInfo::handlePostMessage);
+		METHOD_HANDLER(Access::HUBS_VIEW, METHOD_GET,	(EXACT_PARAM("counts")),	HubInfo::handleGetCounts);
 
-		METHOD_HANDLER("reconnect", ApiRequest::METHOD_POST, (), false, HubInfo::handleReconnect);
-		METHOD_HANDLER("favorite", ApiRequest::METHOD_POST, (), false, HubInfo::handleFavorite);
-		METHOD_HANDLER("password", ApiRequest::METHOD_POST, (), true, HubInfo::handlePassword);
-		METHOD_HANDLER("redirect", ApiRequest::METHOD_POST, (), false, HubInfo::handleRedirect);
-
-		METHOD_HANDLER("read", ApiRequest::METHOD_POST, (), false, HubInfo::handleSetRead);
+		METHOD_HANDLER(Access::HUBS_VIEW, METHOD_GET,	(EXACT_PARAM("users"), RANGE_START_PARAM, RANGE_MAX_PARAM), HubInfo::handleGetUsers);
+		METHOD_HANDLER(Access::HUBS_VIEW, METHOD_GET,	(EXACT_PARAM("users"), CID_PARAM),							HubInfo::handleGetUser);
 	}
 
 	HubInfo::~HubInfo() {
+		timer->stop(true);
+
 		client->removeListener(this);
+	}
+
+	void HubInfo::init() noexcept {
+		client->addListener(this);
+
+		timer->start(false);
+	}
+
+	api_return HubInfo::handleGetUsers(ApiRequest& aRequest) {
+		OnlineUserList users;
+		client->getUserList(users, false);
+
+		auto start = aRequest.getRangeParam(START_POS);
+		auto count = aRequest.getRangeParam(MAX_COUNT);
+
+		auto j = Serializer::serializeItemList(start, count, OnlineUserUtils::propertyHandler, users);
+		aRequest.setResponseBody(j);
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return HubInfo::handleGetUser(ApiRequest& aRequest) {
+		auto user = Deserializer::getUser(aRequest.getCIDParam(), true);
+		auto ou = ClientManager::getInstance()->findOnlineUser(user->getCID(), client->getHubUrl(), false);
+
+		aRequest.setResponseBody(Serializer::serializeOnlineUser(ou));
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return HubInfo::handleGetCounts(ApiRequest& aRequest) {
+		aRequest.setResponseBody(serializeCounts(client));
+		return websocketpp::http::status_code::ok;
 	}
 
 	api_return HubInfo::handleReconnect(ApiRequest& aRequest) {
 		client->reconnect();
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return HubInfo::handleFavorite(ApiRequest& aRequest) {
-		if (!client->saveFavorite()) {
+		auto favHub = client->saveFavorite();
+		if (!favHub) {
 			aRequest.setResponseErrorStr(STRING(FAVORITE_HUB_ALREADY_EXISTS));
 			return websocketpp::http::status_code::bad_request;
 		}
 
+		aRequest.setResponseBody(Serializer::serializeItem(favHub, FavoriteHubUtils::propertyHandler));
 		return websocketpp::http::status_code::ok;
 	}
 
@@ -91,18 +112,23 @@ namespace webserver {
 		auto password = JsonUtil::getField<string>("password", aRequest.getRequestBody(), false);
 
 		client->password(password);
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return HubInfo::handleRedirect(ApiRequest& aRequest) {
 		client->doRedirect();
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	json HubInfo::serializeIdentity(const ClientPtr& aClient) noexcept {
-		return{
+		return {
 			{ "name", aClient->getHubName() },
 			{ "description", aClient->getHubDescription() },
+		};
+	}
+
+	json HubInfo::serializeCounts(const ClientPtr& aClient) noexcept {
+		return {
 			{ "user_count", aClient->getUserCount() },
 			{ "share_size", aClient->getTotalShare() },
 		};
@@ -112,76 +138,57 @@ namespace webserver {
 		if (!aClient->getRedirectUrl().empty()) {
 			return{
 				{ "id", "redirect" },
-				{ "hub_url", aClient->getRedirectUrl() }
+				{ "str", "Redirect" },
+				{ "data", {
+					{ "hub_url", aClient->getRedirectUrl() },
+				} },
 			};
 		}
 
-		string id;
 		switch (aClient->getConnectState()) {
-			case Client::STATE_CONNECTING:
 			case Client::STATE_PROTOCOL:
-			case Client::STATE_IDENTIFY: id = "connecting"; break;
-			case Client::STATE_VERIFY:  id = "password"; break;
-			case Client::STATE_NORMAL: id = "connected"; break;
-			case Client::STATE_DISCONNECTED: id = "disconnected"; break;
+			case Client::STATE_IDENTIFY:
+			case Client::STATE_VERIFY: {
+				if (aClient->getPassword().empty()) {
+					return {
+						{ "id", "password" },
+						{ "str", "Password requested" },
+					};
+				}
+			}
+			case Client::STATE_CONNECTING: {
+				return {
+					{ "id", "connecting" },
+					{ "str", STRING(CONNECTING) },
+				};
+			}
+			case Client::STATE_DISCONNECTED: 
+			{
+				if (aClient->isKeyprintMismatch()) {
+					return{
+						{ "id", "keyprint_mismatch" },
+						{ "str", STRING(KEYPRINT_MISMATCH) },
+					};
+				}
+
+				return {
+					{ "id", "disconnected" },
+					{ "str", STRING(DISCONNECTED) },
+				};
+			}
+			case Client::STATE_NORMAL: {
+				return {
+					{ "id", "connected" },
+					{ "str", STRING(CONNECTED) },
+				};
+			}
 		}
 
-		return {
-			{ "id", id }
-		};
+		dcassert(0);
+		return nullptr;
 	}
 
-	api_return HubInfo::handleSetRead(ApiRequest& aRequest) {
-		client->setRead();
-		return websocketpp::http::status_code::ok;
-	}
-
-	api_return HubInfo::handleGetMessages(ApiRequest& aRequest) {
-		auto j = Serializer::serializeFromEnd(
-			aRequest.getRangeParam(0),
-			client->getCache().getMessages(),
-			Serializer::serializeMessage);
-
-		aRequest.setResponseBody(j);
-		return websocketpp::http::status_code::ok;
-	}
-
-	api_return HubInfo::handlePostMessage(ApiRequest& aRequest) {
-		const auto& reqJson = aRequest.getRequestBody();
-
-		auto message = JsonUtil::getField<string>("message", reqJson, false);
-		auto thirdPerson = JsonUtil::getOptionalField<bool>("third_person", reqJson);
-
-		string error_;
-		if (!client->hubMessage(message, error_, thirdPerson ? *thirdPerson : false)) {
-			aRequest.setResponseErrorStr(error_);
-			return websocketpp::http::status_code::internal_server_error;
-		}
-
-		return websocketpp::http::status_code::ok;
-	}
-
-	void HubInfo::on(ClientListener::ChatMessage, const Client*, const ChatMessagePtr& aMessage) noexcept {
-		if (!aMessage->getRead()) {
-			sendUnread();
-		}
-
-		if (!subscriptionActive("hub_chat_message")) {
-			return;
-		}
-
-		send("hub_chat_message", Serializer::serializeChatMessage(aMessage));
-	}
-
-	void HubInfo::on(ClientListener::StatusMessage, const Client*, const LogMessagePtr& aMessage, int aFlags) noexcept {
-		if (!subscriptionActive("hub_status_message")) {
-			return;
-		}
-
-		send("hub_status_message", Serializer::serializeLogMessage(aMessage));
-	}
-
-	void HubInfo::on(ClientListener::Disconnecting, const Client*) noexcept {
+	void HubInfo::on(ClientListener::Close, const Client*) noexcept {
 
 	}
 
@@ -193,16 +200,10 @@ namespace webserver {
 		sendConnectState();
 	}
 
-	/*void HubInfo::on(ClientListener::Connecting, const Client*) noexcept {
+	void HubInfo::on(ClientListener::Disconnected, const string&, const string&) noexcept {
 		sendConnectState();
-	}
 
-	void HubInfo::on(ClientListener::Connected, const Client*) noexcept {
-		sendConnectState();
-	}*/
-
-	void HubInfo::on(Failed, const string&, const string&) noexcept {
-		sendConnectState();
+		view.resetItems();
 	}
 
 	void HubInfo::on(ClientListener::Redirect, const Client*, const string&) noexcept {
@@ -232,20 +233,24 @@ namespace webserver {
 
 	}
 
-	void HubInfo::on(ClientListener::MessagesRead, const Client*) noexcept {
-		sendUnread();
-	}
-
 	void HubInfo::sendConnectState() noexcept {
 		onHubUpdated({
 			{ "connect_state", serializeConnectState(client) }
 		});
 	}
 
-	void HubInfo::sendUnread() noexcept {
-		onHubUpdated({
-			{ "unread_messages", Serializer::serializeUnread(client->getCache()) }
-		});
+	void HubInfo::onTimer() noexcept {
+		if (!subscriptionActive("hub_counts_updated")) {
+			return;
+		}
+
+		auto newCounts = serializeCounts(client);
+		if (newCounts == previousCounts) {
+			return;
+		}
+
+		send("hub_counts_updated", newCounts);
+		previousCounts.swap(newCounts);
 	}
 
 	void HubInfo::onHubUpdated(const json& aData) noexcept {
@@ -254,5 +259,56 @@ namespace webserver {
 		}
 
 		send("hub_updated", aData);
+	}
+
+	OnlineUserList HubInfo::getUsers() noexcept {
+		OnlineUserList ret;
+		client->getUserList(ret, false);
+		return ret;
+	}
+
+	void HubInfo::on(ClientListener::UserConnected, const Client*, const OnlineUserPtr& aUser) noexcept {
+		if (!aUser->isHidden()) {
+			view.onItemAdded(aUser);
+		}
+
+		maybeSend("hub_user_connected", [&] { return Serializer::serializeItem(aUser, OnlineUserUtils::propertyHandler); });
+	}
+
+	void HubInfo::onUserUpdated(const OnlineUserPtr& ou) noexcept {
+		// Don't update all properties to avoid unneeded sorting
+		onUserUpdated(ou, { 
+			OnlineUserUtils::PROP_SHARED, OnlineUserUtils::PROP_DESCRIPTION, 
+			OnlineUserUtils::PROP_TAG, OnlineUserUtils::PROP_UPLOAD_SPEED, 
+			OnlineUserUtils::PROP_DOWNLOAD_SPEED, OnlineUserUtils::PROP_EMAIL, 
+			OnlineUserUtils::PROP_FILES, OnlineUserUtils::PROP_FLAGS,
+			OnlineUserUtils::PROP_UPLOAD_SLOTS
+		});
+	}
+
+	void HubInfo::onUserUpdated(const OnlineUserPtr& aUser, const PropertyIdSet& aUpdatedProperties) noexcept {
+		if (!aUser->isHidden()) {
+			view.onItemUpdated(aUser, aUpdatedProperties);
+		}
+
+		maybeSend("hub_user_updated", [&] { return Serializer::serializeItem(aUser, OnlineUserUtils::propertyHandler); });
+	}
+
+	void HubInfo::on(ClientListener::UserUpdated, const Client*, const OnlineUserPtr& aUser) noexcept {
+		onUserUpdated(aUser);
+	}
+
+	void HubInfo::on(ClientListener::UsersUpdated, const Client* c, const OnlineUserList& aUsers) noexcept {
+		for (auto& u : aUsers) {
+			onUserUpdated(u);
+		}
+	}
+
+	void HubInfo::on(ClientListener::UserRemoved, const Client*, const OnlineUserPtr& aUser) noexcept {
+		if (!aUser->isHidden()) {
+			view.onItemRemoved(aUser);
+		}
+
+		maybeSend("hub_user_disconnected", [&] { return Serializer::serializeItem(aUser, OnlineUserUtils::propertyHandler); });
 	}
 }

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,35 +16,31 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef DCPLUSPLUS_DCPP_LOGAPI_H
-#define DCPLUSPLUS_DCPP_LOGAPI_H
+#ifndef DCPLUSPLUS_DCPP_CONNECTIVITYAPI_H
+#define DCPLUSPLUS_DCPP_CONNECTIVITYAPI_H
 
 #include <web-server/stdinc.h>
 
 #include <api/ApiModule.h>
 
 #include <airdcpp/typedefs.h>
-#include <airdcpp/LogManagerListener.h>
+#include <airdcpp/ConnectivityManager.h>
 
 namespace webserver {
-	class LogApi : public ApiModule, private LogManagerListener {
+	class ConnectivityApi : public SubscribableApiModule, private ConnectivityManagerListener {
 	public:
-		LogApi(Session* aSession);
-		~LogApi();
-
-		int getVersion() const noexcept {
-			return 0;
-		}
-		//websocketpp::http::status_code::value handleRequest(ApiRequest& aRequest, const SessionPtr& aSession, const json& aJson, std::string& output_);
+		ConnectivityApi(Session* aSession);
+		~ConnectivityApi();
 	private:
-		api_return handleGetLog(ApiRequest& aRequest) ;
-		api_return handleRead(ApiRequest& aRequest) ;
-		api_return handleClear(ApiRequest& aRequest) ;
+		static json formatStatus(bool v6) noexcept;
 
-		// LogManagerListener
-		void on(LogManagerListener::Message, const LogMessagePtr& aMessageData) noexcept;
-		void on(LogManagerListener::Cleared) noexcept;
-		void on(LogManagerListener::MessagesRead) noexcept;
+		api_return handleDetect(ApiRequest& aRequest);
+		api_return handleGetStatus(ApiRequest& aRequest);
+
+		void on(ConnectivityManagerListener::Message, const string&) noexcept override;
+		void on(ConnectivityManagerListener::Started, bool /*v6*/) noexcept override;
+		void on(ConnectivityManagerListener::Finished, bool /*v6*/, bool /*failed*/) noexcept override;
+		//virtual void on(SettingChanged) noexcept { }
 	};
 }
 

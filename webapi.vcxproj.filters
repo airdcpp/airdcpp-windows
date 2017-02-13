@@ -48,16 +48,10 @@
     <ClInclude Include="api\SessionApi.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="api\QueueUtils.h">
-      <Filter>Header Files\api</Filter>
-    </ClInclude>
     <ClInclude Include="api\SearchApi.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
     <ClInclude Include="api\SearchUtils.h">
-      <Filter>Header Files\api</Filter>
-    </ClInclude>
-    <ClInclude Include="api\LogApi.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
     <ClInclude Include="web-server\ApiRouter.h">
@@ -129,9 +123,6 @@
     <ClInclude Include="api\HistoryApi.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="api\SearchResultInfo.h">
-      <Filter>Header Files\api</Filter>
-    </ClInclude>
     <ClInclude Include="web-server\JsonUtil.h">
       <Filter>Header Files\web-server</Filter>
     </ClInclude>
@@ -168,9 +159,6 @@
     <ClInclude Include="api\HubInfo.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="api\RecentHubApi.h">
-      <Filter>Header Files\api</Filter>
-    </ClInclude>
     <ClInclude Include="api\OnlineUserUtils.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
@@ -178,6 +166,87 @@
       <Filter>Header Files\api\platform\windows</Filter>
     </ClInclude>
     <ClInclude Include="web-server\WebServerManagerListener.h">
+      <Filter>Header Files\web-server</Filter>
+    </ClInclude>
+    <ClInclude Include="api\CoreSettings.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="api\SettingApi.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="api\ApiSettingItem.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="api\ConnectivityApi.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="api\SystemApi.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="api\ShareUtils.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="api\ShareProfileApi.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="api\ShareRootApi.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="api\WebUserApi.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="web-server\WebUserManagerListener.h">
+      <Filter>Header Files\web-server</Filter>
+    </ClInclude>
+    <ClInclude Include="api\WebUserUtils.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="web-server\Access.h">
+      <Filter>Header Files\web-server</Filter>
+    </ClInclude>
+    <ClInclude Include="api\HashApi.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="api\common\ChatController.h">
+      <Filter>Header Files\api\common</Filter>
+    </ClInclude>
+    <ClInclude Include="api\ViewFileApi.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="api\UserApi.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="api\TransferInfo.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="api\TransferUtils.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="api\common\ViewTasks.h">
+      <Filter>Header Files\api\common</Filter>
+    </ClInclude>
+    <ClInclude Include="api\EventApi.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="api\common\FileSearchParser.h">
+      <Filter>Header Files\api\common</Filter>
+    </ClInclude>
+    <ClInclude Include="api\QueueFileUtils.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="api\QueueBundleUtils.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="web-server\WebServerSettings.h">
+      <Filter>Header Files\web-server</Filter>
+    </ClInclude>
+    <ClInclude Include="api\FilelistItemInfo.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="api\SearchEntity.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="web-server\version.h">
       <Filter>Header Files\web-server</Filter>
     </ClInclude>
   </ItemGroup>
@@ -191,16 +260,10 @@
     <ClCompile Include="api\SessionApi.cpp">
       <Filter>Source Files\api</Filter>
     </ClCompile>
-    <ClCompile Include="api\QueueUtils.cpp">
-      <Filter>Source Files\api</Filter>
-    </ClCompile>
     <ClCompile Include="api\SearchApi.cpp">
       <Filter>Source Files\api</Filter>
     </ClCompile>
     <ClCompile Include="api\SearchUtils.cpp">
-      <Filter>Source Files\api</Filter>
-    </ClCompile>
-    <ClCompile Include="api\LogApi.cpp">
       <Filter>Source Files\api</Filter>
     </ClCompile>
     <ClCompile Include="web-server\ApiRequest.cpp">
@@ -257,9 +320,6 @@
     <ClCompile Include="api\HistoryApi.cpp">
       <Filter>Source Files\api</Filter>
     </ClCompile>
-    <ClCompile Include="api\SearchResultInfo.cpp">
-      <Filter>Source Files\api</Filter>
-    </ClCompile>
     <ClCompile Include="web-server\JsonUtil.cpp">
       <Filter>Source Files\web-server</Filter>
     </ClCompile>
@@ -284,13 +344,70 @@
     <ClCompile Include="api\FilesystemApi.cpp">
       <Filter>Source Files\api</Filter>
     </ClCompile>
-    <ClCompile Include="api\RecentHubApi.cpp">
-      <Filter>Source Files\api</Filter>
-    </ClCompile>
     <ClCompile Include="api\HubInfo.cpp">
       <Filter>Source Files\api</Filter>
     </ClCompile>
     <ClCompile Include="api\OnlineUserUtils.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="api\SettingApi.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="api\ApiSettingItem.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="api\ConnectivityApi.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="api\SystemApi.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="api\ShareUtils.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="api\ShareProfileApi.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="api\ShareRootApi.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="api\WebUserApi.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="api\WebUserUtils.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="web-server\WebUser.cpp">
+      <Filter>Source Files\web-server</Filter>
+    </ClCompile>
+    <ClCompile Include="api\HashApi.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="api\ViewFileApi.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="api\UserApi.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="api\TransferUtils.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="api\EventApi.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="api\common\FileSearchParser.cpp">
+      <Filter>Source Files\api\common</Filter>
+    </ClCompile>
+    <ClCompile Include="api\QueueFileUtils.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="api\QueueBundleUtils.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="api\FilelistItemInfo.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="api\SearchEntity.cpp">
       <Filter>Source Files\api</Filter>
     </ClCompile>
   </ItemGroup>

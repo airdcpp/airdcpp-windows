@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -24,10 +24,16 @@
 namespace webserver {
 	class Timer : boost::noncopyable {
 	public:
-		typedef std::function<void()> CallBack;
-		Timer(CallBack&& aCallBack, boost::asio::io_service& aIO, time_t aIntervalMillis) : cb(move(aCallBack)),
+		typedef std::function<void(const CallBack&)> CallbackWrapper;
+
+		// CallbackWrapper is meant to ensure the lifetime of the timer
+		// (which necessary only if the timer is called from a class that can be deleted, such as sessions)
+		Timer(CallBack&& aCallBack, boost::asio::io_service& aIO, time_t aIntervalMillis, const CallbackWrapper& aWrapper) : 
+			cb(move(aCallBack)),
 			interval(aIntervalMillis),
-			timer(aIO, interval) {
+			timer(aIO),
+			cbWrapper(aWrapper)
+		{
 
 		}
 
@@ -35,42 +41,55 @@ namespace webserver {
 			stop(true);
 		}
 
-		void start(bool aInstantStart = true) {
+		bool start(bool aInstantTick) {
+			if (shutdown) {
+				return false;
+			}
+
 			running = true;
-			timer.expires_from_now(aInstantStart ? boost::posix_time::milliseconds(0) : interval);
-			timer.async_wait(bind(&Timer::tick, this, std::placeholders::_1));
+			timer.expires_from_now(aInstantTick ? boost::posix_time::milliseconds(0) : interval);
+			timer.async_wait(std::bind(&Timer::tick, std::placeholders::_1, cbWrapper, this));
+			return true;
 		}
 
-		void stop(bool aWaitShutdown) {
-			auto cancelled = timer.cancel();
-
-			if (cancelled > 0 && aWaitShutdown) {
-				std::this_thread::sleep_for(std::chrono::milliseconds(30));
-				if (running && !timer.get_io_service().stopped()) {
-					// cancel again in case someone starts the timer meanwhile.....
-					stop(true);
-				}
-			}
+		// Use aShutdown if the timer will be stopped permanently (e.g. the owner is being deleted)
+		void stop(bool aShutdown) noexcept {
+			running = false;
+			shutdown = aShutdown;
+			timer.cancel();
 		}
 
 		bool isRunning() const noexcept {
 			return running;
 		}
 	private:
-		void tick(const boost::system::error_code& error) {
+		// Static in case the timer has been destructed
+		static void tick(const boost::system::error_code& error, const CallbackWrapper& cbWrapper, Timer* aTimer) {
 			if (error == boost::asio::error::operation_aborted) {
-				running = false;
 				return;
 			}
 
+			if (cbWrapper) {
+				// We must ensure that the timer still exists when a new start call is performed
+				cbWrapper(bind(&Timer::runTask, aTimer));
+			} else {
+				aTimer->runTask();
+			}
+		}
+
+		void runTask() {
 			cb();
+
 			start(false);
 		}
 
 		CallBack cb;
+		CallbackWrapper cbWrapper;
+
 		boost::asio::deadline_timer timer;
 		boost::posix_time::milliseconds interval;
 		bool running = false;
+		bool shutdown = false;
 	};
 
 	typedef shared_ptr<Timer> TimerPtr;

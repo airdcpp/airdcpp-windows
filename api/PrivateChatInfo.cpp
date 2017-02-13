@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -26,26 +26,24 @@
 
 namespace webserver {
 	StringList PrivateChatInfo::subscriptionList = {
-		"chat_session_updated",
+		"private_chat_updated",
 		"private_chat_message",
 		"private_chat_status"
 	};
 
 	PrivateChatInfo::PrivateChatInfo(ParentType* aParentModule, const PrivateChatPtr& aChat) :
-		SubApiModule(aParentModule, aChat->getUser()->getCID().toBase32(), subscriptionList), chat(aChat) {
+		SubApiModule(aParentModule, aChat->getUser()->getCID().toBase32(), subscriptionList), chat(aChat),
+		chatHandler(this, std::bind(&PrivateChatInfo::getChat, this), "private_chat", Access::PRIVATE_CHAT_VIEW, Access::PRIVATE_CHAT_EDIT, Access::PRIVATE_CHAT_SEND) {
 
+		METHOD_HANDLER(Access::PRIVATE_CHAT_EDIT, METHOD_POST,		(EXACT_PARAM("ccpm")),		PrivateChatInfo::handleConnectCCPM);
+		METHOD_HANDLER(Access::PRIVATE_CHAT_EDIT, METHOD_DELETE,	(EXACT_PARAM("ccpm")),		PrivateChatInfo::handleDisconnectCCPM);
+
+		METHOD_HANDLER(Access::PRIVATE_CHAT_SEND, METHOD_POST,		(EXACT_PARAM("typing")),	PrivateChatInfo::handleStartTyping);
+		METHOD_HANDLER(Access::PRIVATE_CHAT_SEND, METHOD_DELETE,	(EXACT_PARAM("typing")),	PrivateChatInfo::handleEndTyping);
+	}
+
+	void PrivateChatInfo::init() noexcept {
 		chat->addListener(this);
-
-		METHOD_HANDLER("messages", ApiRequest::METHOD_GET, (NUM_PARAM), false, PrivateChatInfo::handleGetMessages);
-		METHOD_HANDLER("message", ApiRequest::METHOD_POST, (), true, PrivateChatInfo::handlePostMessage);
-
-		METHOD_HANDLER("ccpm", ApiRequest::METHOD_POST, (), false, PrivateChatInfo::handlePostMessage);
-		METHOD_HANDLER("ccpm", ApiRequest::METHOD_DELETE, (), false, PrivateChatInfo::handlePostMessage);
-
-		METHOD_HANDLER("typing", ApiRequest::METHOD_POST, (), false, PrivateChatInfo::handlePostMessage);
-		METHOD_HANDLER("typing", ApiRequest::METHOD_DELETE, (), false, PrivateChatInfo::handlePostMessage);
-
-		METHOD_HANDLER("read", ApiRequest::METHOD_POST, (), false, PrivateChatInfo::handleSetRead);
 	}
 
 	PrivateChatInfo::~PrivateChatInfo() {
@@ -54,78 +52,45 @@ namespace webserver {
 
 	api_return PrivateChatInfo::handleStartTyping(ApiRequest& aRequest) {
 		chat->sendPMInfo(PrivateChat::TYPING_ON);
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return PrivateChatInfo::handleEndTyping(ApiRequest& aRequest) {
 		chat->sendPMInfo(PrivateChat::TYPING_OFF);
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return PrivateChatInfo::handleDisconnectCCPM(ApiRequest& aRequest) {
 		chat->closeCC(false, true);
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return PrivateChatInfo::handleConnectCCPM(ApiRequest& aRequest) {
 		chat->startCC();
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 
-	api_return PrivateChatInfo::handleSetRead(ApiRequest& aRequest) {
-		chat->setRead();
-		return websocketpp::http::status_code::ok;
-	}
-
-	api_return PrivateChatInfo::handleGetMessages(ApiRequest& aRequest) {
-		auto j = Serializer::serializeFromEnd(
-			aRequest.getRangeParam(0),
-			chat->getCache().getMessages(),
-			Serializer::serializeMessage);
-
-		aRequest.setResponseBody(j);
-		return websocketpp::http::status_code::ok;
-	}
-
-	api_return PrivateChatInfo::handlePostMessage(ApiRequest& aRequest) {
-		const auto& reqJson = aRequest.getRequestBody();
-
-		auto message = JsonUtil::getField<string>("message", reqJson, false);
-		auto thirdPerson = JsonUtil::getOptionalField<bool>("third_person", reqJson);
-
-		string error;
-		if (!chat->sendPrivateMessage(message, error, thirdPerson ? *thirdPerson : false)) {
-			aRequest.setResponseErrorStr(error);
-			return websocketpp::http::status_code::internal_server_error;
+	string PrivateChatInfo::formatCCPMState(PrivateChat::CCPMState aState) noexcept {
+		switch (aState) {
+			case PrivateChat::DISCONNECTED: return "disconnected";
+			case PrivateChat::CONNECTING: return "connecting";
+			case PrivateChat::CONNECTED: return "connected";
 		}
 
-		return websocketpp::http::status_code::ok;
+		dcassert(0);
+		return Util::emptyString;
 	}
 
-	void PrivateChatInfo::on(PrivateChatListener::PrivateMessage, PrivateChat* aChat, const ChatMessagePtr& aMessage) noexcept {
-		if (!aMessage->getRead()) {
-			sendUnread();
+	json PrivateChatInfo::serializeCCPMState(const PrivateChatPtr& aChat) noexcept {
+		json encryption;
+		if (aChat->getUc()) {
+			encryption = Serializer::serializeEncryption(aChat->getUc()->getEncryptionInfo(), aChat->getUc()->isTrusted());
 		}
 
-		if (!subscriptionActive("private_chat_message")) {
-			return;
-		}
-
-		send("private_chat_message", Serializer::serializeChatMessage(aMessage));
-	}
-
-	void PrivateChatInfo::on(PrivateChatListener::StatusMessage, PrivateChat*, const LogMessagePtr& aMessage) noexcept {
-		if (!subscriptionActive("private_chat_status")) {
-			return;
-		}
-
-		send("private_chat_status", Serializer::serializeLogMessage(aMessage));
-	}
-
-	json PrivateChatInfo::serializeCCPMState(uint8_t aState) noexcept {
 		return{
-			{ "id", aState },
-			{ "str", PrivateChat::ccpmStateToString(aState) }
+			{ "id", formatCCPMState(aChat->getCCPMState()) },
+			{ "str", PrivateChat::ccpmStateToString(aChat->getCCPMState()) },
+			{ "encryption", encryption },
 		};
 	}
 
@@ -135,7 +100,8 @@ namespace webserver {
 
 	void PrivateChatInfo::on(PrivateChatListener::UserUpdated, PrivateChat*) noexcept {
 		onSessionUpdated({
-			{ "user", Serializer::serializeHintedUser(chat->getHintedUser()) }
+			{ "user", Serializer::serializeHintedUser(chat->getHintedUser()) },
+			{ "ccpm_state", serializeCCPMState(chat) }
 		});
 	}
 
@@ -145,25 +111,15 @@ namespace webserver {
 
 	void PrivateChatInfo::on(PrivateChatListener::CCPMStatusUpdated, PrivateChat*) noexcept {
 		onSessionUpdated({
-			{ serializeCCPMState(chat->getCCPMState()) }
-		});
-	}
-
-	void PrivateChatInfo::on(PrivateChatListener::MessagesRead, PrivateChat*) noexcept {
-		sendUnread();
-	}
-
-	void PrivateChatInfo::sendUnread() noexcept {
-		onSessionUpdated({
-			{ "unread_messages", Serializer::serializeUnread(chat->getCache()) }
+			{ "ccpm_state", serializeCCPMState(chat) }
 		});
 	}
 
 	void PrivateChatInfo::onSessionUpdated(const json& aData) noexcept {
-		if (!subscriptionActive("chat_session_updated")) {
+		if (!subscriptionActive("private_chat_updated")) {
 			return;
 		}
 
-		send("chat_session_updated", aData);
+		send("private_chat_updated", aData);
 	}
 }

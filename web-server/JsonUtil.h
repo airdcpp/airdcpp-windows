@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2015 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -53,6 +53,10 @@ namespace webserver {
 				return getField<T>(aFieldName, aJson, aAllowEmpty);
 			}
 
+			if (aJson.is_null()) {
+				return boost::none;
+			}
+
 			auto p = aJson.find(aFieldName);
 			if (p == aJson.end()) {
 				return boost::none;
@@ -61,15 +65,33 @@ namespace webserver {
 			return parseValue<T>(aFieldName, *p, aAllowEmpty);
 		}
 
+		// Get the field value if it exists and return the default otherwise
+		template <typename T, typename JsonT>
+		static T getOptionalFieldDefault(const string& aFieldName, const JsonT& aJson, const T& aDefault, bool aAllowEmpty = true) {
+			auto v = getOptionalField<T>(aFieldName, aJson, aAllowEmpty);
+			if (v) {
+				return *v;
+			}
+
+			return aDefault;
+		}
+
+		// Returns raw JSON value and throws if the field is missing
+		template <typename JsonT>
+		static json getRawField(const string& aFieldName, const JsonT& aJson) {
+			return getRawValue<JsonT>(aFieldName, aJson, true);
+		}
+
+		// Returns raw JSON value and returns null JSON if the field is missing
+		template <typename JsonT>
+		static json getOptionalRawField(const string& aFieldName, const JsonT& aJson) {
+			return getRawValue<JsonT>(aFieldName, aJson, false);
+		}
+
 		// Find and parse the given field. Throws if not found.
 		template <typename T, typename JsonT>
 		static T getField(const string& aFieldName, const JsonT& aJson, bool aAllowEmpty = true) {
-			auto p = aJson.find(aFieldName);
-			if (p == aJson.end()) {
-				throwError(aFieldName, ERROR_MISSING, "Field missing");
-			}
-
-			return parseValue<T>(aFieldName, *p, aAllowEmpty);
+			return parseValue<T>(aFieldName, getRawValue(aFieldName, aJson, true), aAllowEmpty);
 		}
 
 		// Get value from the given JSON element
@@ -78,13 +100,12 @@ namespace webserver {
 			if (!aJson.is_null()) {
 				T ret;
 				try {
-					ret = aJson.get<T>();
-				}
-				catch (const exception& e) {
+					ret = aJson.template get<T>();
+				} catch (const exception& e) {
 					throwError(aFieldName, ERROR_INVALID, e.what());
 				}
 
-				if (!aAllowEmpty && isEmpty<T>(ret)) {
+				if (!aAllowEmpty && (isEmpty<T>(ret) || aJson.empty())) {
 					throwError(aFieldName, ERROR_INVALID, "Field can't be empty");
 				}
 
@@ -104,7 +125,36 @@ namespace webserver {
 		}
 
 		static json getError(const string& aFieldName, ErrorType aType, const string& aMessage) noexcept;
+
+		// Return a new JSON object with exact key-value pairs removed
+		static json filterExactValues(const json& aNew, const json& aCompareTo) noexcept;
+
+		// Throws if the value types of the supplied JSON objects don't match
+		static void ensureType(const string& aFieldName, const json& aNew, const json& aExisting);
 	private:
+		// Returns raw JSON value and optionally throws
+		template <typename JsonT>
+		static json getRawValue(const string& aFieldName, const JsonT& aJson, bool aThrowIfMissing) {
+			if (aJson.is_null()) {
+				if (!aThrowIfMissing) {
+					return json();
+				}
+
+				throwError(aFieldName, ERROR_MISSING, "JSON null");
+			}
+
+			auto p = aJson.find(aFieldName);
+			if (p == aJson.end()) {
+				if (!aThrowIfMissing) {
+					return json();
+				}
+
+				throwError(aFieldName, ERROR_MISSING, "Field missing");
+			}
+
+			return *p;
+		}
+
 		template <class T>
 		static bool isEmpty(const typename std::enable_if<std::is_same<std::string, T>::value, T>::type& aStr) {
 			return aStr.empty();
@@ -125,6 +175,8 @@ namespace webserver {
 		static typename std::enable_if<!std::is_same<std::string, T>::value, T>::type convertNullValue(const string& aFieldName) {
 			throw ArgumentException(getError(aFieldName, ERROR_INVALID, "Field can't be empty"));
 		}
+
+		static string errorTypeToString(ErrorType aType) noexcept;
 	};
 }
 
