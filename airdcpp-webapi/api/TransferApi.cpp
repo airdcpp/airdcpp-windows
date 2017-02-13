@@ -47,8 +47,8 @@ namespace webserver {
 		METHOD_HANDLER(Access::TRANSFERS,	METHOD_POST,	(TOKEN_PARAM, EXACT_PARAM("force")),		TransferApi::handleForce);
 		METHOD_HANDLER(Access::TRANSFERS,	METHOD_POST,	(TOKEN_PARAM, EXACT_PARAM("disconnect")),	TransferApi::handleDisconnect);
 
-		METHOD_HANDLER(Access::ANY,			METHOD_GET,		(EXACT_PARAM("tranferred_bytes")),			TransferApi::handleGetTransferredBytes);
-		METHOD_HANDLER(Access::ANY,			METHOD_GET,		(EXACT_PARAM("stats")),						TransferApi::handleGetTransferStats);
+		METHOD_HANDLER(Access::TRANSFERS,	METHOD_GET,		(EXACT_PARAM("tranferred_bytes")),			TransferApi::handleGetTransferredBytes);
+		METHOD_HANDLER(Access::TRANSFERS,	METHOD_GET,		(EXACT_PARAM("stats")),						TransferApi::handleGetTransferStats);
 
 		createSubscription("transfer_statistics");
 
