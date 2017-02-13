@@ -113,7 +113,7 @@ namespace webserver {
 		auto entries = RecentManager::getInstance()->getRecents(toRecentType(aRequest));
 		sort(entries.begin(), entries.end(), RecentEntry::Sort());
 
-		auto retJson = Serializer::serializeFromPosition(0, aRequest.getRangeParam(MAX_COUNT), entries, serializeRecentEntry);
+		auto retJson = Serializer::serializeFromBegin(aRequest.getRangeParam(MAX_COUNT), entries, serializeRecentEntry);
 		aRequest.setResponseBody(retJson);
 
 		return websocketpp::http::status_code::ok;

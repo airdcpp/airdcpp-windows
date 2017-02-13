@@ -83,10 +83,10 @@ LRESULT FulHighlightDialog::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 
 	ctrlMatchType.SetCurSel(1);
 
-	ctrlContext.AddString(CTSTRING(CONTEXT_CHAT));
-	ctrlContext.AddString(CTSTRING(CONTEXT_NICKLIST));
-	ctrlContext.AddString(CTSTRING(CONTEXT_FILELIST));
-	ctrlContext.AddString(CTSTRING(CONTEXT_SEARCH));
+	ctrlContext.AddString(CTSTRING(CHAT));
+	ctrlContext.AddString(CTSTRING(USER_LIST));
+	ctrlContext.AddString(CTSTRING(FILELIST));
+	ctrlContext.AddString(CTSTRING(SEARCH));
 
 	CenterWindow(WinUtil::mainWnd);
 	SetWindowText(CTSTRING(HIGHLIGHT_DIALOG_TITLE));

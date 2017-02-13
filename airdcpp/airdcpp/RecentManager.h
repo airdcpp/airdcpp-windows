@@ -27,6 +27,7 @@
 #include "DirectoryListingManagerListener.h"
 #include "MessageManagerListener.h"
 #include "RecentManagerListener.h"
+#include "SettingsManager.h"
 #include "TimerManagerListener.h"
 
 
@@ -45,6 +46,7 @@ namespace dcpp {
 		void load() noexcept;
 		void save() const noexcept;
 	private:
+		void checkCount(RecentEntry::Type aType) noexcept;
 		void onHubOpened(const ClientPtr& aClient) noexcept;
 		void onRecentOpened(RecentEntry::Type aType, const string& aName, const string& aDescription, const string& aUrl, const UserPtr& aUser, const RecentEntryPtr& aEntry) noexcept;
 		void onRecentUpdated(RecentEntry::Type aType, const RecentEntryPtr& aEntry) noexcept;
@@ -83,6 +85,7 @@ namespace dcpp {
 
 		static string rootTags[RecentEntry::TYPE_LAST];
 		static string itemTags[RecentEntry::TYPE_LAST];
+		static SettingsManager::IntSetting maxLimits[RecentEntry::TYPE_LAST];
 
 		bool xmlDirty = false;
 	};

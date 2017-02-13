@@ -783,9 +783,9 @@ static tstring getFile(const Transfer::Type& type, const tstring& fileName) {
 	if(type == Transfer::TYPE_TREE) {
 		file = _T("TTH: ") + fileName;
 	} else if(type == Transfer::TYPE_FULL_LIST) {
-		file = TSTRING(FILE_LIST);
+		file = TSTRING(TYPE_FILE_LIST);
 	} else if(type == Transfer::TYPE_PARTIAL_LIST) {
-		file = TSTRING(FILE_LIST_PARTIAL);
+		file = TSTRING(TYPE_FILE_LIST_PARTIAL);
 	} else {
 		file = fileName;
 	}

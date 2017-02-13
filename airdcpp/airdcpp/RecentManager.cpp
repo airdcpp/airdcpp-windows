@@ -49,6 +49,12 @@ string RecentManager::itemTags[RecentEntry::TYPE_LAST] = {
 	"User"
 };
 
+SettingsManager::IntSetting RecentManager::maxLimits[RecentEntry::TYPE_LAST] = {
+	SettingsManager::MAX_RECENT_HUBS,
+	SettingsManager::MAX_RECENT_PRIVATE_CHATS,
+	SettingsManager::MAX_RECENT_FILELISTS,
+};
+
 RecentManager::RecentManager() {
 	ClientManager::getInstance()->addListener(this);
 	DirectoryListingManager::getInstance()->addListener(this);
@@ -140,23 +146,18 @@ void RecentManager::clearRecents(RecentEntry::Type aType) noexcept {
 void RecentManager::onRecentOpened(RecentEntry::Type aType, const string& aName, const string& aDescription, const string& aUrl, const UserPtr& aUser, const RecentEntryPtr& aOldEntry) noexcept {
 	dcassert(!aName.empty() && !aUrl.empty());
 	if (aOldEntry) {
-		aOldEntry->setDescription(aDescription);
-		aOldEntry->setName(aName);
-		aOldEntry->setUrl(aUrl);
-		aOldEntry->updateLastOpened();
-
-		onRecentUpdated(aType, aOldEntry);
-		return;
+		// Remove and add as the last item
+		removeRecent(aType, aOldEntry);
 	}
 
-	RecentEntryPtr r;
+	auto entry = make_shared<RecentEntry>(aName, aDescription, aUrl, aUser);
 	{
 		WLock l(cs);
-		r = make_shared<RecentEntry>(aName, aDescription, aUrl, aUser);
-		recents[aType].push_back(r);
+		recents[aType].push_back(entry);
+		checkCount(aType);
 	}
 
-	fire(RecentManagerListener::RecentAdded(), r, aType);
+	fire(RecentManagerListener::RecentAdded(), entry, aType);
 	setDirty();
 }
 
@@ -262,6 +263,16 @@ void RecentManager::loadRecents(SimpleXML& aXml, RecentEntry::Type aType) {
 			recents[aType].push_back(e);
 		}
 		aXml.stepOut();
+	}
+
+	// Old versions didn't have any limit for maximum recent hubs
+	checkCount(aType);
+}
+
+void RecentManager::checkCount(RecentEntry::Type aType) noexcept {
+	auto toRemove = static_cast<int>(recents[aType].size()) - SettingsManager::getInstance()->get(maxLimits[aType]);
+	if (toRemove > 0) {
+		recents[aType].erase(recents[aType].begin(), recents[aType].begin() + toRemove);
 	}
 }
 

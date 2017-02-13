@@ -33,7 +33,7 @@
 
 namespace webserver {
 	TransferApi::TransferApi(Session* aSession) : 
-		SubscribableApiModule(aSession, Access::ANY),
+		SubscribableApiModule(aSession, Access::TRANSFERS),
 		timer(getTimer([this] { onTimer(); }, 1000)),
 		view("transfer_view", this, TransferUtils::propertyHandler, std::bind(&TransferApi::getTransfers, this))
 	{

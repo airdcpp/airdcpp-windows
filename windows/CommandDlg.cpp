@@ -29,7 +29,7 @@ WinUtil::TextItem CommandDlg::texts[] = {
 	{ IDCANCEL, ResourceManager::CANCEL },
 	{ IDC_SETTINGS_TYPE, ResourceManager::USER_CMD_TYPE },
 	{ IDC_SETTINGS_SEPARATOR, ResourceManager::SEPARATOR },
-	{ IDC_SETTINGS_CHAT, ResourceManager::USER_CMD_CHAT },
+	{ IDC_SETTINGS_CHAT, ResourceManager::CHAT },
 	{ IDC_SETTINGS_PM, ResourceManager::USER_CMD_PM },
 	{ IDC_SETTINGS_CONTEXT, ResourceManager::CONTEXT },
 	{ IDC_SETTINGS_HUB_MENU, ResourceManager::USER_CMD_HUB_MENU },

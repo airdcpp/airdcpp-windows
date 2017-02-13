@@ -95,13 +95,13 @@ protected:
 	string getContextString(uint8_t i) {
 		switch (i) {
 		case(HighlightManager::CONTEXT_CHAT) :
-				return STRING(CONTEXT_CHAT);
+				return STRING(CHAT);
 		case(HighlightManager::CONTEXT_NICKLIST) :
-				return STRING(CONTEXT_NICKLIST);
+				return STRING(USER_LIST);
 		case(HighlightManager::CONTEXT_FILELIST) :
-				return STRING(CONTEXT_FILELIST);
+				return STRING(FILELIST);
 		case(HighlightManager::CONTEXT_SEARCH) :
-				return STRING(CONTEXT_SEARCH);
+				return STRING(SEARCH);
 		default:
 			return Util::emptyString;
 		}
