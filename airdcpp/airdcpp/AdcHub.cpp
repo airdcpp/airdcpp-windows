@@ -280,8 +280,8 @@ void AdcHub::handle(AdcCommand::INF, AdcCommand& c) noexcept {
 				}
 			}
 
-			if (Text::toLower(getHubIdentity().getApplication()).find("luadch ") != string::npos) {
-				statusMessage("The hubsoft used by this hub doesn't forward Advanced Direct Connect protocol messages according to the protocol specifications. This may silently break various client features.", LogMessage::SEV_ERROR);
+			if (Text::toLower(getHubIdentity().getApplication()).find("luadch v2") != string::npos) {
+				statusMessage("The hubsoft used by this hub doesn't forward Advanced Direct Connect protocol messages according to the protocol specifications. This may silently break various client features.", LogMessage::SEV_WARNING);
 			}
 		}
 
