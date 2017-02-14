@@ -1854,9 +1854,9 @@ void MainFrame::on(QueueManagerListener::ItemFinished, const QueueItemPtr& qi, c
 		addThreadedTask([=] { WinUtil::openFile(Text::toT(qi->getTarget())); });
 	}
 
-	if(qi->isSet(QueueItem::FLAG_CLIENT_VIEW) && qi->isSet(QueueItem::FLAG_TEXT)) {
+	if(qi->isSet(QueueItem::FLAG_CLIENT_VIEW)) {
 		auto file = ViewFileManager::getInstance()->getFile(qi->getTTH());
-		if (file) {
+		if (file && file->isText()) {
 			callAsync([=] { TextFrame::openWindow(file); });
 		}
 	}

@@ -38,6 +38,11 @@ namespace dcpp {
 		const string errorId;
 		const string errorMessage;
 
+		static string formatError(const ActionHookErrorPtr& aError) noexcept {
+			if (!aError) return "";
+			return aError->hookName + ": " + aError->errorMessage;
+		}
+
 		static bool matches(const ActionHookErrorPtr& aError, const string& aHookId, const string& aErrorId) noexcept {
 			if (!aError) return false;
 
