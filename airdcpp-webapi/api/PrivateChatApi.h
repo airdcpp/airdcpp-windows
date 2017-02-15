@@ -21,7 +21,7 @@
 
 #include <web-server/stdinc.h>
 
-#include <api/HierarchicalApiModule.h>
+#include <api/base/HierarchicalApiModule.h>
 #include <api/PrivateChatInfo.h>
 
 #include <airdcpp/typedefs.h>

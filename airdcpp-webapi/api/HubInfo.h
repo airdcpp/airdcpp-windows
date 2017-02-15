@@ -27,7 +27,7 @@
 #include <airdcpp/Client.h>
 #include <airdcpp/Message.h>
 
-#include <api/HierarchicalApiModule.h>
+#include <api/base/HierarchicalApiModule.h>
 #include <api/OnlineUserUtils.h>
 
 #include <api/common/ChatController.h>

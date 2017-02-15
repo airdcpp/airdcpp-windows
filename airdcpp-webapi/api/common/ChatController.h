@@ -22,7 +22,7 @@
 #include <web-server/stdinc.h>
 #include <web-server/JsonUtil.h>
 
-#include <api/ApiModule.h>
+#include <api/base/ApiModule.h>
 #include <api/common/Deserializer.h>
 #include <api/common/Serializer.h>
 

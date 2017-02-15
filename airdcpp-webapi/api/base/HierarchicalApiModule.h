@@ -19,7 +19,7 @@
 #ifndef DCPLUSPLUS_DCPP_HIERARCHIAL_APIMODULE_H
 #define DCPLUSPLUS_DCPP_HIERARCHIAL_APIMODULE_H
 
-#include <api/ApiModule.h>
+#include <api/base/ApiModule.h>
 
 #include <web-server/stdinc.h>
 #include <web-server/ApiRequest.h>

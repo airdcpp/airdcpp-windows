@@ -19,7 +19,7 @@
 #include <web-server/stdinc.h>
 #include <web-server/JsonUtil.h>
 
-#include "HookApiModule.h"
+#include <api/base/HookApiModule.h>
 
 namespace webserver {
 	HookApiModule::HookApiModule(Session* aSession, Access aSubscriptionAccess, const StringList* aSubscriptions) : SubscribableApiModule(aSession, aSubscriptionAccess, aSubscriptions) {

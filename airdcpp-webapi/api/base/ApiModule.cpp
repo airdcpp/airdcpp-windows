@@ -21,7 +21,7 @@
 #include <web-server/WebSocket.h>
 #include <web-server/WebServerManager.h>
 
-#include <api/ApiModule.h>
+#include <api/base/ApiModule.h>
 
 namespace webserver {
 	ApiModule::ApiModule(Session* aSession) : session(aSession) {

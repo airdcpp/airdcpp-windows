@@ -24,9 +24,9 @@
 #include <web-server/Access.h>
 #include <web-server/SessionListener.h>
 
-#include <api/ApiModule.h>
-
 #include <airdcpp/CriticalSection.h>
+
+#include <api/base/ApiModule.h>
 
 namespace webserver {
 	class HookApiModule : public SubscribableApiModule {
