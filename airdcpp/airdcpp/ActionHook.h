@@ -67,10 +67,14 @@ namespace dcpp {
 			}
 		};
 
-		void addSubscriber(const string& aId, const string& aName, HookCallback aCallback) noexcept {
+		bool addSubscriber(const string& aId, const string& aName, HookCallback aCallback) noexcept {
 			Lock l(cs);
-			removeSubscriber(aId);
+			if (findById(aId) != subscribers.end()) {
+				return false;
+			}
+
 			subscribers.push_back({ aId, aName, std::move(aCallback) });
+			return true;
 		}
 
 		bool removeSubscriber(const string& aId) noexcept {
