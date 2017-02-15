@@ -170,6 +170,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="api\ApiSettingItem.h" />
+    <ClInclude Include="api\base\HookApiModule.h" />
     <ClInclude Include="api\common\Deserializer.h" />
     <ClInclude Include="api\common\FileSearchParser.h" />
     <ClInclude Include="api\common\Format.h" />
@@ -242,6 +243,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="api\ApiModule.cpp" />
+    <ClCompile Include="api\base\HookApiModule.cpp" />
     <ClCompile Include="api\common\Deserializer.cpp" />
     <ClCompile Include="api\common\FileSearchParser.cpp" />
     <ClCompile Include="api\common\Format.cpp" />
