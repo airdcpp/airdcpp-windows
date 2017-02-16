@@ -1,6 +1,5 @@
-#pragma once
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2012-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -17,27 +16,26 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef DCPLUSPLUS_DCPP_FILESYSTEM_API_H
-#define DCPLUSPLUS_DCPP_FILESYSTEM_API_H
 
-#include <web-server/stdinc.h>
+#ifndef DCPP_IGNORE_MANAGER_LISTENER_H
+#define DCPP_IGNORE_MANAGER_LISTENER_H
 
-#include <api/base/ApiModule.h>
+#include "forward.h"
 
-#include <airdcpp/typedefs.h>
+namespace dcpp {
 
-namespace webserver {
-	class FilesystemApi : public ApiModule {
+	class IgnoreManagerListener {
 	public:
-		FilesystemApi(Session* aSession);
-		~FilesystemApi();
-	private:
-		api_return handleListItems(ApiRequest& aRequest);
-		api_return handlePostDirectory(ApiRequest& aRequest);
-		api_return handleGetDiskInfo(ApiRequest& aRequest);
+		virtual ~IgnoreManagerListener() { }
+		template<int I>	struct X { enum { TYPE = I }; };
 
-		json serializeDirectoryContent(const string& aPath, bool aDirectoriesOnly);
+		typedef X<0> IgnoreAdded;
+		typedef X<1> IgnoreRemoved;
+
+		virtual void on(IgnoreAdded, const UserPtr&) noexcept {}
+		virtual void on(IgnoreRemoved, const UserPtr&) noexcept {}
 	};
-}
 
-#endif
+} // namespace dcpp
+
+#endif // !defined(DCPP_PRIVATECHAT_MANAGER_LISTENER_H)

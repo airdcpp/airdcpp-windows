@@ -119,9 +119,6 @@ namespace webserver {
 
 		typedef std::map<const string, bool> SubscriptionMap;
 
-		virtual void on(SessionListener::SocketConnected, const WebSocketPtr&) noexcept override;
-		virtual void on(SessionListener::SocketDisconnected) noexcept override;
-
 		virtual bool send(const json& aJson);
 		virtual bool send(const string& aSubscription, const json& aJson);
 
@@ -147,6 +144,7 @@ namespace webserver {
 		}
 
 		virtual void createSubscription(const string& aSubscription) noexcept {
+			dcassert(subscriptions.find(aSubscription) == subscriptions.end());
 			subscriptions[aSubscription];
 		}
 
@@ -154,6 +152,9 @@ namespace webserver {
 			return subscriptionAccess;
 		}
 	protected:
+		virtual void on(SessionListener::SocketConnected, const WebSocketPtr&) noexcept override;
+		virtual void on(SessionListener::SocketDisconnected) noexcept override;
+
 		const Access subscriptionAccess;
 
 		WebSocketPtr socket = nullptr;

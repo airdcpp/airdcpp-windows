@@ -26,6 +26,7 @@
 
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/GeoManager.h>
+#include <airdcpp/IgnoreManager.h>
 #include <airdcpp/Localization.h>
 #include <airdcpp/LogManager.h>
 #include <airdcpp/QueueManager.h>
@@ -208,7 +209,7 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	SettingsManager::getInstance()->addListener(this);
 	UploadManager::getInstance()->addListener(this);
 	QueueManager::getInstance()->addListener(this);
-	MessageManager::getInstance()->addListener(this);
+	IgnoreManager::getInstance()->addListener(this);
 
 	CRect rc(SETTING(USERS_LEFT), SETTING(USERS_TOP), SETTING(USERS_RIGHT), SETTING(USERS_BOTTOM));
 	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
@@ -552,9 +553,9 @@ bool UsersFrame::handleClickIgnore(int row) {
 	auto ui = ctrlUsers.getItemData(row);
 	if (ui){
 		if (ui->getUser()->isIgnored())
-			MessageManager::getInstance()->removeIgnore(ui->getUser());
+			IgnoreManager::getInstance()->removeIgnore(ui->getUser());
 		else
-			MessageManager::getInstance()->storeIgnore(ui->getUser());
+			IgnoreManager::getInstance()->storeIgnore(ui->getUser());
 	}
 	return true;
 }
@@ -983,7 +984,7 @@ LRESULT UsersFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		SettingsManager::getInstance()->removeListener(this);
 		UploadManager::getInstance()->removeListener(this);
 		QueueManager::getInstance()->removeListener(this);
-		MessageManager::getInstance()->removeListener(this);
+		IgnoreManager::getInstance()->removeListener(this);
 
 		closed = true;
 		WinUtil::setButtonPressed(IDC_FAVUSERS, false);

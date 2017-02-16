@@ -36,7 +36,7 @@
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/DirectoryListingManagerListener.h>
 #include <airdcpp/UpdateManagerListener.h>
-#include <airdcpp/MessageManagerListener.h>
+#include <airdcpp/PrivateChatManagerListener.h>
 #include <airdcpp/ActivityManager.h>
 
 #include "PopupManager.h"
@@ -57,7 +57,7 @@ class MainFrame : public CMDIFrameWindowImpl<MainFrame>, public CUpdateUI<MainFr
 		public CMessageFilter, public CIdleHandler, public CSplitterImpl<MainFrame>,
 		private TimerManagerListener, private QueueManagerListener, public Async<MainFrame>,
 		private LogManagerListener, private DirectoryListingManagerListener, private UpdateManagerListener, private ScannerManagerListener, private ClientManagerListener,
-		private AutoSearchManagerListener, private MessageManagerListener, private ActivityManagerListener
+		private AutoSearchManagerListener, private PrivateChatManagerListener, private ActivityManagerListener
 {
 public:
 	MainFrame();
@@ -465,13 +465,13 @@ private:
 	void showPortsError(const string& port);
 
 	// LogManagerListener
-	virtual void on(LogManagerListener::Message, const LogMessagePtr& aMessage) noexcept;
+	void on(LogManagerListener::Message, const LogMessagePtr& aMessage) noexcept;
 
 	// TimerManagerListener
 	void on(TimerManagerListener::Second, uint64_t aTick) noexcept;
 
-	// MessageManagerListener
-	virtual void on(MessageManagerListener::ChatCreated, const PrivateChatPtr& aChat, bool aMessageReceived) noexcept;
+	// PrivateChatManagerListener
+	void on(PrivateChatManagerListener::ChatCreated, const PrivateChatPtr& aChat, bool aMessageReceived) noexcept;
 
 	// QueueManagerListener
 	void on(QueueManagerListener::ItemFinished, const QueueItemPtr& qi, const string& dir, const HintedUser& aUser, int64_t aSpeed) noexcept;

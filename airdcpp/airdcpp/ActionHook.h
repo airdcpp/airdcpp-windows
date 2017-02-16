@@ -38,6 +38,11 @@ namespace dcpp {
 		const string errorId;
 		const string errorMessage;
 
+		static string formatError(const ActionHookErrorPtr& aError) noexcept {
+			if (!aError) return "";
+			return aError->hookName + ": " + aError->errorMessage;
+		}
+
 		static bool matches(const ActionHookErrorPtr& aError, const string& aHookId, const string& aErrorId) noexcept {
 			if (!aError) return false;
 
@@ -62,10 +67,14 @@ namespace dcpp {
 			}
 		};
 
-		void addSubscriber(const string& aId, const string& aName, HookCallback aCallback) noexcept {
+		bool addSubscriber(const string& aId, const string& aName, HookCallback aCallback) noexcept {
 			Lock l(cs);
-			removeSubscriber(aId);
+			if (findById(aId) != subscribers.end()) {
+				return false;
+			}
+
 			subscribers.push_back({ aId, aName, std::move(aCallback) });
+			return true;
 		}
 
 		bool removeSubscriber(const string& aId) noexcept {

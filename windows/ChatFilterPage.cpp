@@ -48,7 +48,7 @@ LRESULT ChatFilterPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 	ChatFilterListCtrl.InsertColumn(4, CTSTRING(PRIVATE_CHAT), LVCFMT_LEFT, (rc.Width() - 17) / 3 / 2, 1);
 	ChatFilterListCtrl.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP | LVS_EX_CHECKBOXES);
 
-	ChatFilterItems = MessageManager::getInstance()->getIgnoreList();
+	ChatFilterItems = IgnoreManager::getInstance()->getIgnoreList();
 	for(auto& def: ChatFilterItems) {
 		int p = ChatFilterListCtrl.insert(ChatFilterListCtrl.GetItemCount(), _T(""));
 		ChatFilterListCtrl.SetItemText(p, 1, Text::toT(def.getNickPattern()).c_str());
@@ -163,5 +163,5 @@ void ChatFilterPage::removeChatFilter(int pos) {
 }
 
 void ChatFilterPage::write() {
-	MessageManager::getInstance()->replaceList(ChatFilterItems);
+	IgnoreManager::getInstance()->replaceList(ChatFilterItems);
 }

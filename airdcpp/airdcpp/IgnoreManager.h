@@ -16,26 +16,23 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef DCPLUSPLUS_DCPP_MESSAGE_MANAGER_H_
-#define DCPLUSPLUS_DCPP_MESSAGE_MANAGER_H_
+#ifndef DCPLUSPLUS_DCPP_IGNORE_MANAGER_H_
+#define DCPLUSPLUS_DCPP_IGNORE_MANAGER_H_
 
 #include "forward.h"
 
-#include "ClientManagerListener.h"
-#include "ConnectionManagerListener.h"
-#include "MessageManagerListener.h"
+#include "IgnoreManagerListener.h"
 #include "SettingsManagerListener.h"
-#include "UserConnectionListener.h"
 
 #include "CriticalSection.h"
-#include "PrivateChat.h"
+#include "GetSet.h"
 #include "SimpleXML.h"
 #include "Singleton.h"
 #include "StringMatch.h"
+#include "User.h"
 
 
 namespace dcpp {
-
 	class ChatFilterItem {
 	public:
 		ChatFilterItem(const string& aNickMatch, const string& aTextMatch, StringMatch::Method aNickMethod,
@@ -69,7 +66,7 @@ namespace dcpp {
 			if ((aContext == PM && !matchPM) || (aContext == MC && !matchMainchat))
 				return false;
 
-			if (!nickMatcher.pattern.empty() && nickMatcher.match(aNick)){
+			if (!nickMatcher.pattern.empty() && nickMatcher.match(aNick)) {
 				//nick matched, match the text in case we just want to ignore some messages of the user
 				return (textMatcher.pattern.empty() || textMatcher.match(aText));
 			}
@@ -93,7 +90,6 @@ namespace dcpp {
 
 		bool matchPM;
 		bool matchMainchat;
-
 	private:
 		StringMatch nickMatcher;
 		StringMatch textMatcher;
@@ -101,26 +97,13 @@ namespace dcpp {
 
 
 
-	class MessageManager : public Speaker<MessageManagerListener>,
-		public Singleton<MessageManager>, private SettingsManagerListener,
-		private UserConnectionListener, private ConnectionManagerListener {
+	class IgnoreManager : public Speaker<IgnoreManagerListener>, public Singleton<IgnoreManager>, private SettingsManagerListener {
 
 	public:
-		typedef unordered_map<UserPtr, PrivateChatPtr, User::Hash> ChatMap;
 		typedef unordered_map<UserPtr, int, User::Hash> IgnoreMap;
 
-		MessageManager() noexcept;
-		~MessageManager() noexcept;
-
-		PrivateChatPtr addChat(const HintedUser& user, bool aReceivedMessage) noexcept;
-		PrivateChatPtr getChat(const UserPtr& aUser) const noexcept;
-
-		void DisconnectCCPM(const UserPtr& aUser);
-		void onPrivateMessage(const ChatMessagePtr& message);
-		bool removeChat(const UserPtr& aUser);
-		void closeAll(bool Offline);
-
-		ChatMap getChats() const noexcept;
+		IgnoreManager() noexcept;
+		~IgnoreManager() noexcept;
 
 		//IGNORE
 		typedef unordered_set<UserPtr, User::Hash> UserSet;
@@ -139,11 +122,7 @@ namespace dcpp {
 		//IGNORE
 
 	private:
-		ChatMap chats;
 		mutable SharedMutex cs;
-
-		unordered_map<UserPtr, UserConnection*, User::Hash> ccpms;
-		UserConnection* getPMConn(const UserPtr& user); //LOCK usage!!
 
 		//IGNORE
 		IgnoreMap ignoredUsers;
@@ -154,7 +133,7 @@ namespace dcpp {
 		void save(SimpleXML& aXml);
 		void saveUsers();
 		void loadUsers();
-		bool dirty;
+		bool dirty = false;
 		// contains the ignored nicks and patterns 
 		vector<ChatFilterItem> ChatFilterItems;
 		//IGNORE
@@ -162,14 +141,6 @@ namespace dcpp {
 		// SettingsManagerListener
 		virtual void on(SettingsManagerListener::Load, SimpleXML& xml) noexcept;
 		virtual void on(SettingsManagerListener::Save, SimpleXML& xml) noexcept;
-
-		// ConnectionManagerListener
-		void on(ConnectionManagerListener::Connected, const ConnectionQueueItem* cqi, UserConnection* uc) noexcept;
-		void on(ConnectionManagerListener::Removed, const ConnectionQueueItem* cqi) noexcept;
-
-		// UserConnectionListener
-		virtual void on(UserConnectionListener::PrivateMessage, UserConnection*, const ChatMessagePtr& message) noexcept;
-		virtual void on(AdcCommand::PMI, UserConnection* uc, const AdcCommand& cmd) noexcept;
 	};
 
 }

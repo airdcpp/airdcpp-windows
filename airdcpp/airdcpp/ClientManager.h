@@ -283,6 +283,7 @@ private:
 	void on(ClientListener::NmdcSearch, Client* aClient, const string& aSeeker, int aSearchType, int64_t aSize,
 		int aFileType, const string& aString, bool) noexcept;
 	void on(ClientListener::OutgoingSearch, const Client*, const SearchPtr&) noexcept;
+	void on(ClientListener::PrivateMessage, const Client*, const ChatMessagePtr&) noexcept;
 
 	// TimerManagerListener
 	void on(TimerManagerListener::Minute, uint64_t aTick) noexcept;

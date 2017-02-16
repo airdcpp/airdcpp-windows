@@ -26,7 +26,7 @@
 #include "DebugManager.h"
 #include "FavoriteManager.h"
 #include "LogManager.h"
-#include "MessageManager.h"
+#include "IgnoreManager.h"
 #include "ResourceManager.h"
 #include "ShareManager.h"
 #include "ThrottleManager.h"
@@ -359,7 +359,7 @@ void Client::allowUntrustedConnect() noexcept {
 }
 
 void Client::onChatMessage(const ChatMessagePtr& aMessage) noexcept {
-	if (MessageManager::getInstance()->isIgnoredOrFiltered(aMessage, this, false))
+	if (IgnoreManager::getInstance()->isIgnoredOrFiltered(aMessage, this, false))
 		return;
 
 	if (get(HubSettings::LogMainChat)) {

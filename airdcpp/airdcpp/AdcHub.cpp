@@ -32,7 +32,6 @@
 #include "HashBloom.h"
 #include "Localization.h"
 #include "LogManager.h"
-#include "MessageManager.h"
 #include "QueueManager.h"
 #include "ResourceManager.h"
 #include "ScopedFunctor.h"
@@ -383,7 +382,7 @@ void AdcHub::handle(AdcCommand::MSG, AdcCommand& c) noexcept {
 		if(!message->getReplyTo())
 			return;
 
-		MessageManager::getInstance()->onPrivateMessage(message);
+		fire(ClientListener::PrivateMessage(), this, message);
 		return;
 	}
 

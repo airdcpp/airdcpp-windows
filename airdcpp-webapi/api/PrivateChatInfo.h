@@ -28,7 +28,7 @@
 #include <airdcpp/PrivateChat.h>
 #include <airdcpp/User.h>
 
-#include <api/HierarchicalApiModule.h>
+#include <api/base/HierarchicalApiModule.h>
 #include <api/common/ChatController.h>
 
 namespace webserver {

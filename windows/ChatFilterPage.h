@@ -26,7 +26,7 @@
 #include "PropPage.h"
 
 #include "ExListViewCtrl.h"
-#include <airdcpp/MessageManager.h>
+#include <airdcpp/IgnoreManager.h>
 
 class ChatFilterPage : public CPropertyPage<IDD_CHATFILTERPAGE>, public PropPage
 {

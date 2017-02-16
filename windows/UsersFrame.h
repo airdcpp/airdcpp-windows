@@ -33,13 +33,13 @@
 #include <airdcpp/FavoriteManager.h>
 #include <airdcpp/UploadManager.h>
 #include <airdcpp/QueueManagerListener.h>
-#include <airdcpp/MessageManager.h>
+#include <airdcpp/IgnoreManagerListener.h>
 
 #define STATUS_MAP 10
 
 class UsersFrame : public MDITabChildWindowImpl<UsersFrame>, public StaticFrame<UsersFrame, ResourceManager::USERS, IDC_FAVUSERS>,
 	public CSplitterImpl<UsersFrame>, private FavoriteManagerListener, private ClientManagerListener, public UserInfoBaseHandler<UsersFrame>, 
-	private SettingsManagerListener, private UploadManagerListener, private QueueManagerListener, private MessageManagerListener, private Async<UsersFrame> {
+	private SettingsManagerListener, private UploadManagerListener, private QueueManagerListener, private IgnoreManagerListener, private Async<UsersFrame> {
 public:
 	
 	UsersFrame();

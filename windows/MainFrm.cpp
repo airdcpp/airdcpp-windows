@@ -63,6 +63,7 @@
 #include <airdcpp/HashManager.h>
 #include <airdcpp/LogManager.h>
 #include <airdcpp/MappingManager.h>
+#include <airdcpp/PrivateChatManager.h>
 #include <airdcpp/SettingHolder.h>
 #include <airdcpp/ShareManager.h>
 #include <airdcpp/StringTokenizer.h>
@@ -243,7 +244,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	UpdateManager::getInstance()->addListener(this);
 	ShareScannerManager::getInstance()->addListener(this);
 	ClientManager::getInstance()->addListener(this);
-	MessageManager::getInstance()->addListener(this);
+	PrivateChatManager::getInstance()->addListener(this);
 	ActivityManager::getInstance()->addListener(this);
 
 	WinUtil::init(m_hWnd);
@@ -1749,8 +1750,8 @@ LRESULT MainFrame::OnViewTransferView(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 LRESULT MainFrame::onCloseWindows(WORD , WORD wID, HWND , BOOL& ) {
 	switch(wID) {
 	case IDC_CLOSE_DISCONNECTED:		HubFrame::closeDisconnected();							break;
-	case IDC_CLOSE_ALL_PM:				MessageManager::getInstance()->closeAll(false);			break;
-	case IDC_CLOSE_ALL_OFFLINE_PM:		MessageManager::getInstance()->closeAll(true);			break;
+	case IDC_CLOSE_ALL_PM:				PrivateChatManager::getInstance()->closeAll(false);		break;
+	case IDC_CLOSE_ALL_OFFLINE_PM:		PrivateChatManager::getInstance()->closeAll(true);		break;
 	case IDC_CLOSE_ALL_DIR_LIST:		DirectoryListingFrame::closeAll();						break;
 	case IDC_CLOSE_ALL_SEARCH_FRAME:	SearchFrame::closeAll();								break;
 	}
@@ -1857,9 +1858,9 @@ void MainFrame::on(QueueManagerListener::ItemFinished, const QueueItemPtr& qi, c
 		addThreadedTask([=] { WinUtil::openFile(Text::toT(qi->getTarget())); });
 	}
 
-	if(qi->isSet(QueueItem::FLAG_CLIENT_VIEW) && qi->isSet(QueueItem::FLAG_TEXT)) {
+	if(qi->isSet(QueueItem::FLAG_CLIENT_VIEW)) {
 		auto file = ViewFileManager::getInstance()->getFile(qi->getTTH());
-		if (file) {
+		if (file && file->isText()) {
 			callAsync([=] { TextFrame::openWindow(file); });
 		}
 	}
@@ -1897,7 +1898,7 @@ void MainFrame::on(ClientManagerListener::ClientCreated, const ClientPtr& c) noe
 	callAsync([=] { HubFrame::openWindow(url); });
 }
 
-void MainFrame::on(MessageManagerListener::ChatCreated, const PrivateChatPtr& aChat, bool aMessageReceived) noexcept{
+void MainFrame::on(PrivateChatManagerListener::ChatCreated, const PrivateChatPtr& aChat, bool aMessageReceived) noexcept{
 	callAsync([=] { 
 		PrivateFrame::openWindow(aChat->getHintedUser(), aMessageReceived);
 	});
@@ -2047,7 +2048,7 @@ LRESULT MainFrame::onDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	UpdateManager::getInstance()->removeListener(this);
 	ShareScannerManager::getInstance()->removeListener(this);
 	ClientManager::getInstance()->removeListener(this);
-	MessageManager::getInstance()->removeListener(this);
+	PrivateChatManager::getInstance()->removeListener(this);
 	ActivityManager::getInstance()->removeListener(this);
 
 	//if(bTrayIcon) {

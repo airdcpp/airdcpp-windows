@@ -20,7 +20,7 @@
 #include <airdcpp/modules/AutoSearchManager.h>
 #include <airdcpp/FavoriteManager.h>
 #include <airdcpp/modules/HighlightManager.h>
-#include <airdcpp/MessageManager.h>
+#include <airdcpp/IgnoreManager.h>
 #include <airdcpp/Magnet.h>
 #include <airdcpp/UploadManager.h>
 #include <airdcpp/QueueManager.h>
@@ -1520,14 +1520,14 @@ LRESULT RichTextBox::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCt
 void RichTextBox::handleIgnore() {
 	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou){
-		MessageManager::getInstance()->storeIgnore(ou->getUser());
+		IgnoreManager::getInstance()->storeIgnore(ou->getUser());
 	}
 }
 
 void RichTextBox::handleUnignore(){
 	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou){
-		MessageManager::getInstance()->removeIgnore(ou->getUser());
+		IgnoreManager::getInstance()->removeIgnore(ou->getUser());
 	}
 }
 

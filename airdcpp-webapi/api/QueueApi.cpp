@@ -34,11 +34,23 @@ namespace webserver {
 #define SEGMENT_START "segment_start"
 #define SEGMENT_SIZE "segment_size"
 
-	QueueApi::QueueApi(Session* aSession) : SubscribableApiModule(aSession, Access::QUEUE_VIEW),
+	QueueApi::QueueApi(Session* aSession) : HookApiModule(aSession, Access::QUEUE_VIEW),
 			bundleView("queue_bundle_view", this, QueueBundleUtils::propertyHandler, getBundleList), fileView("queue_file_view", this, QueueFileUtils::propertyHandler, getFileList) {
 
 		QueueManager::getInstance()->addListener(this);
 		DownloadManager::getInstance()->addListener(this);
+
+		createHook("queue_file_finished", [this](const string& aId, const string& aName) {
+			return QueueManager::getInstance()->fileCompletionHook.addSubscriber(aId, aName, HOOK_HANDLER(QueueApi::fileCompletionHook));
+		}, [this](const string& aId) {
+			QueueManager::getInstance()->fileCompletionHook.removeSubscriber(aId);
+		});
+
+		createHook("queue_bundle_finished", [this](const string& aId, const string& aName) {
+			return QueueManager::getInstance()->bundleCompletionHook.addSubscriber(aId, aName, HOOK_HANDLER(QueueApi::bundleCompletionHook));
+		}, [this](const string& aId) {
+			QueueManager::getInstance()->bundleCompletionHook.removeSubscriber(aId);
+		});
 
 		createSubscription("queue_bundle_added");
 		createSubscription("queue_bundle_removed");
@@ -98,6 +110,32 @@ namespace webserver {
 	QueueApi::~QueueApi() {
 		QueueManager::getInstance()->removeListener(this);
 		DownloadManager::getInstance()->removeListener(this);
+	}
+
+	ActionHookErrorPtr QueueApi::fileCompletionHook(const QueueItemPtr& aFile, const HookErrorGetter& aErrorGetter) noexcept {
+		if (!aFile->getBundle()) {
+			return nullptr;
+		}
+
+		if (hookActive("queue_file_finished")) {
+			auto data = fireHook("queue_file_finished", Serializer::serializeItem(aFile, QueueFileUtils::propertyHandler));
+			if (data && data->hasError()) {
+				return aErrorGetter(data->errorId, data->errorMessage);
+			}
+		}
+
+		return nullptr;
+	}
+
+	ActionHookErrorPtr QueueApi::bundleCompletionHook(const BundlePtr& aBundle, const HookErrorGetter& aErrorGetter) noexcept {
+		if (hookActive("queue_bundle_finished")) {
+			auto data = fireHook("queue_bundle_finished", Serializer::serializeItem(aBundle, QueueBundleUtils::propertyHandler));
+			if (data && data->hasError()) {
+				return aErrorGetter(data->errorId, data->errorMessage);
+			}
+		}
+
+		return nullptr;
 	}
 
 	BundleList QueueApi::getBundleList() noexcept {

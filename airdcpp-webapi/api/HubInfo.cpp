@@ -17,7 +17,7 @@
 */
 
 #include <api/HubInfo.h>
-#include <api/ApiModule.h>
+#include <api/base/ApiModule.h>
 #include <api/common/Serializer.h>
 #include <api/FavoriteHubUtils.h>
 
