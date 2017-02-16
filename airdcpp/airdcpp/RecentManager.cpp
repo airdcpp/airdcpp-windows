@@ -87,7 +87,7 @@ void RecentManager::on(TimerManagerListener::Minute, uint64_t) noexcept {
 
 void RecentManager::on(MessageManagerListener::ChatCreated, const PrivateChatPtr& aChat, bool) noexcept {
 	auto old = getRecent(RecentEntry::TYPE_PRIVATE_CHAT, RecentEntry::CidCompare(aChat->getUser()->getCID()));
-	auto nick = ClientManager::getInstance()->getNick(aChat->getUser(), aChat->getHubUrl(), false);
+	auto nick = ClientManager::getInstance()->getNick(aChat->getUser(), aChat->getHubUrl(), true);
 	onRecentOpened(RecentEntry::TYPE_PRIVATE_CHAT, nick, Util::emptyString, aChat->getHubUrl(), aChat->getUser(), old);
 }
 

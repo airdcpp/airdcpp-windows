@@ -430,8 +430,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 					}
 			}
 
-			int rtl = ResourceManager::getInstance()->isRTL() ? WS_EX_RTLREADING : 0;
-			if(wndMain->CreateEx(NULL, rc, 0, rtl | WS_EX_APPWINDOW | WS_EX_WINDOWEDGE) == NULL) {
+			if(wndMain->CreateEx(NULL, rc, 0, ResourceManager::getInstance()->isRTL() ? WS_EX_RTLREADING : 0 | WS_EX_APPWINDOW | WS_EX_WINDOWEDGE) == NULL) {
 				ATLTRACE(_T("Main window creation failed!\n"));
 				//throw("Main window creation failed");
 				return;

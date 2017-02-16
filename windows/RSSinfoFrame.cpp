@@ -569,8 +569,11 @@ void RssInfoFrame::onItemRemoved(const RSSDataPtr& aData) {
 void RssInfoFrame::onItemAdded(const RSSDataPtr& aData) {
 	auto d = make_shared<ItemInfo>(aData);
 	ItemInfos.emplace_back(d);
-	if (show(d.get()))
-		ctrlRss.list.insertItem(d.get(), d->getImageIndex());
+	if (show(d.get())) {
+		ctrlRss.list.SetRedraw(FALSE);
+		ctrlRss.list.insertItem(ctrlRss.list.getSortPos(d.get()), d.get(), d->getImageIndex());
+		ctrlRss.list.SetRedraw(TRUE);
+	}
 
 }
 

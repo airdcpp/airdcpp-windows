@@ -368,12 +368,12 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	WinUtil::splash->destroy();
 
-	if (!WinUtil::isShift() && !Util::hasStartupParam("/noautoconnect") && !SETTING(NICK).empty()) {
-		loadOpenWindows();
-	}
-
 	if (Util::IsOSVersionOrGreater(6, 2) && !IsWindowsServer() && WinUtil::isElevated()) {
 		callAsync([=] { WinUtil::ShowMessageBox(SettingsManager::WARN_ELEVATED, TSTRING(ELEVATED_WARNING)); });
+	}
+
+	if (!WinUtil::isShift() && !SETTING(NICK).empty()) {
+		loadOpenWindows();
 	}
 
 	// We want to pass this one on to the splitter...hope it get's there...
@@ -1278,7 +1278,7 @@ void MainFrame::saveOpenWindows() {
 }
 
 void MainFrame::loadOpenWindows() {
-
+	bool autoConnect = !Util::hasStartupParam("/noautoconnect");
 
 	if (SETTING(SAVE_LAST_STATE)) {
 
@@ -1297,7 +1297,9 @@ void MainFrame::loadOpenWindows() {
 					}
 					xml.stepOut();
 					string id = params["id"];
-					//hasHubs = hasHubs || id == HubFrame::id;
+
+					if (id == HubFrame::id && !autoConnect)
+						continue;
 
 					if (0);
 					load(HubFrame, id);
@@ -1341,7 +1343,8 @@ void MainFrame::loadOpenWindows() {
 	if (SETTING(OPEN_SYSTEM_LOG)) PostMessage(WM_COMMAND, IDC_SYSTEM_LOG);
 
 	//Connect the remaining auto connect hubs, in case some were closed
-	FavoriteManager::getInstance()->autoConnect();
+	if(autoConnect)
+		FavoriteManager::getInstance()->autoConnect();
 
 }
 
