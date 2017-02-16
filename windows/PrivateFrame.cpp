@@ -31,7 +31,7 @@
 #include <airdcpp/FavoriteManager.h>
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/ResourceManager.h>
-#include <airdcpp/MessageManager.h>
+#include <airdcpp/PrivateChatManager.h>
 #include <airdcpp/Adchub.h>
 #include <airdcpp/GeoManager.h>
 #include <airdcpp/Localization.h>
@@ -40,8 +40,8 @@ PrivateFrame::FrameMap PrivateFrame::frames;
 string PrivateFrame::id = "PM";
 
 void PrivateFrame::openWindow(const HintedUser& aReplyTo, bool aMessageReceived) {
-	if (!MessageManager::getInstance()->getChat(aReplyTo)) {
-		MessageManager::getInstance()->addChat(aReplyTo, false);
+	if (!PrivateChatManager::getInstance()->getChat(aReplyTo)) {
+		PrivateChatManager::getInstance()->addChat(aReplyTo, false);
 		return;
 	}
 
@@ -86,7 +86,7 @@ bool PrivateFrame::parseWindowParams(StringMap& params) {
 		string hubUrl = params["url"];
 		auto u = ClientManager::getInstance()->getUser(CID(cid));
 		if (u) {
-			MessageManager::getInstance()->addChat(HintedUser(u, hubUrl), false);
+			PrivateChatManager::getInstance()->addChat(HintedUser(u, hubUrl), false);
 		}
 		return true;
 	}
@@ -102,7 +102,7 @@ created(false), closed(false), curCommandPosition(0),
 	ctrlStatusContainer(STATUSCLASSNAME, this, STATUS_MSG_MAP),
 	UserInfoBaseHandler(false, true), isTyping(false), userTyping(false), windowLoaded(false)
 {
-	chat = MessageManager::getInstance()->getChat(replyTo_);
+	chat = PrivateChatManager::getInstance()->getChat(replyTo_);
 	ctrlClient.setClient(chat->getClient());
 	ctrlClient.setPmUser(replyTo_.user);
 }
@@ -496,7 +496,7 @@ void PrivateFrame::on(PrivateChatListener::Close, PrivateChat*) noexcept {
 
 LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closed) {
-		MessageManager::getInstance()->removeChat(getUser());
+		PrivateChatManager::getInstance()->removeChat(getUser());
 		return 0;
 	} else {
 		chat->removeListener(this);

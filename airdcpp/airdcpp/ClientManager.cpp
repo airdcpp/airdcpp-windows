@@ -925,6 +925,10 @@ void ClientManager::on(ClientListener::OutgoingSearch, const Client* aClient, co
 	fire(ClientManagerListener::OutgoingSearch(), aClient->getHubUrl(), aSearch);
 }
 
+void ClientManager::on(ClientListener::PrivateMessage, const Client*, const ChatMessagePtr& aMessage) noexcept {
+	fire(ClientManagerListener::PrivateMessage(), aMessage);
+}
+
 void ClientManager::on(ClientListener::NmdcSearch, Client* aClient, const string& aSeeker, int aSearchType, int64_t aSize,
 									int aFileType, const string& aString, bool isPassive) noexcept
 {
