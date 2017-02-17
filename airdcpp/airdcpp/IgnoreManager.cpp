@@ -30,15 +30,27 @@
 
 #define CONFIG_DIR Util::PATH_USER_CONFIG
 #define CONFIG_NAME "IgnoredUsers.xml"
+#define IGNORE_HOOK_ID "chat_ignore"
 
 namespace dcpp {
 
 IgnoreManager::IgnoreManager() noexcept {
 	SettingsManager::getInstance()->addListener(this);
+
+	ClientManager::getInstance()->incomingPrivateMessageHook.addSubscriber(IGNORE_HOOK_ID, STRING(SETTINGS_IGNORE), HOOK_HANDLER(IgnoreManager::onPrivateMessage));
+	ClientManager::getInstance()->incomingHubMessageHook.addSubscriber(IGNORE_HOOK_ID, STRING(SETTINGS_IGNORE), HOOK_HANDLER(IgnoreManager::onHubMessage));
 }
 
 IgnoreManager::~IgnoreManager() noexcept {
 	SettingsManager::getInstance()->removeListener(this);
+}
+
+ActionHookRejectionPtr IgnoreManager::onPrivateMessage(const ChatMessagePtr& aMessage, const HookRejectionGetter& aRejectionGetter) noexcept {
+	return isIgnoredOrFiltered(aMessage, aRejectionGetter, true);
+}
+
+ActionHookRejectionPtr IgnoreManager::onHubMessage(const ChatMessagePtr& aMessage, const HookRejectionGetter& aRejectionGetter) noexcept {
+	return isIgnoredOrFiltered(aMessage, aRejectionGetter, false);
 }
 
 // SettingsManagerListener
@@ -120,7 +132,7 @@ bool IgnoreManager::checkIgnored(const OnlineUserPtr& aUser) noexcept {
 	return ignored;
 }
 
-bool IgnoreManager::isIgnoredOrFiltered(const ChatMessagePtr& msg, Client* aClient, bool PM) {
+ActionHookRejectionPtr IgnoreManager::isIgnoredOrFiltered(const ChatMessagePtr& msg, const HookRejectionGetter& aRejectionGetter, bool PM) noexcept {
 	const auto& fromIdentity = msg->getFrom()->getIdentity();
 
 	auto logIgnored = [&](bool filter) -> void {
@@ -128,11 +140,8 @@ bool IgnoreManager::isIgnoredOrFiltered(const ChatMessagePtr& msg, Client* aClie
 			string tmp;
 			if (PM) {
 				tmp = filter ? STRING(PM_MESSAGE_FILTERED) : STRING(PM_MESSAGE_IGNORED);
-			}
-			else {
-				string hub = "[" + ((aClient && !aClient->getHubName().empty()) ?
-					(aClient->getHubName().size() > 50 ? (aClient->getHubName().substr(0, 50) + "...") : aClient->getHubName()) : aClient->getHubUrl()) + "] ";
-				tmp = (filter ? STRING(MC_MESSAGE_FILTERED) : STRING(MC_MESSAGE_IGNORED)) + hub;
+			} else {
+				tmp = (filter ? STRING(MC_MESSAGE_FILTERED) : STRING(MC_MESSAGE_IGNORED));
 			}
 			tmp += "<" + fromIdentity.getNick() + "> " + msg->getText();
 			LogManager::getInstance()->message(tmp, LogMessage::SEV_INFO);
@@ -141,20 +150,20 @@ bool IgnoreManager::isIgnoredOrFiltered(const ChatMessagePtr& msg, Client* aClie
 
 	// replyTo can be different if the message is received via a chat room (it should be possible to ignore those as well)
 	if (checkIgnored(msg->getFrom()) || checkIgnored(msg->getReplyTo())) {
-		return true;
+		return aRejectionGetter("user_ignored", "User ignored");
 	}
 
 	if (isChatFiltered(fromIdentity.getNick(), msg->getText(), PM ? ChatFilterItem::PM : ChatFilterItem::MC)) {
 		logIgnored(true);
-		return true;
+		return aRejectionGetter("message_filtered", "Message filtered");
 	}
 
 	return false;
 }
 
-bool IgnoreManager::isChatFiltered(const string& aNick, const string& aText, ChatFilterItem::Context aContext) {
+bool IgnoreManager::isChatFiltered(const string& aNick, const string& aText, ChatFilterItem::Context aContext) const noexcept {
 	RLock l(cs);
-	for (auto& i : ChatFilterItems) {
+	for (const auto& i : ChatFilterItems) {
 		if (i.match(aNick, aText, aContext))
 			return true;
 	}

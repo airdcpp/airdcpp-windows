@@ -24,6 +24,7 @@
 #include "ClientManagerListener.h"
 #include "TimerManagerListener.h"
 
+#include "ActionHook.h"
 #include "ConnectionType.h"
 #include "Client.h"
 #include "CriticalSection.h"
@@ -45,6 +46,8 @@ class ClientManager : public Speaker<ClientManagerListener>,
 	typedef UserMap::iterator UserIter;
 
 public:
+	ActionHook<const ChatMessagePtr> incomingHubMessageHook, incomingPrivateMessageHook;
+
 	// Returns the new ClientPtr
 	// NOTE: the main app should perform connecting to the new hub
 	ClientPtr createClient(const string& aUrl) noexcept;

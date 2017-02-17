@@ -100,7 +100,7 @@ namespace dcpp {
 			for (const auto& handler : subscribersCopy) {
 				auto error = handler.callback(aItem, std::bind(&Subscriber::getRejection, handler, std::placeholders::_1, std::placeholders::_2));
 				if (error) {
-					dcdebug("Hook rejected by handler %s: %s\n", error->hookId.c_str(), error->rejectId.c_str());
+					dcdebug("Hook rejected by handler %s: %s (%s)\n", error->hookId.c_str(), error->rejectId.c_str(), error->message.c_str());
 					return error;
 				}
 			}

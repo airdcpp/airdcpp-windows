@@ -155,7 +155,7 @@ namespace webserver {
 		return websocketpp::http::status_code::no_content;
 	}
 
-	HookApiModule::HookCompletionDataPtr HookApiModule::fireHook(const string& aSubscription, const json& aData) {
+	HookApiModule::HookCompletionDataPtr HookApiModule::fireHook(const string& aSubscription, const std::chrono::milliseconds& aPollInterval, const std::chrono::milliseconds& aTimeout, const json& aData) {
 		// Add a pending entry
 		auto id = pendingHookIdCounter++;
 
@@ -176,8 +176,8 @@ namespace webserver {
 			{ "data", aData },
 		})) {
 			// Wait for the response
-			for (int waitCounter = 0; waitCounter < 10 * 4; waitCounter++) {
-				std::this_thread::sleep_for(250ms);
+			for (std::chrono::milliseconds waitCounter = 0ms; waitCounter < aTimeout; waitCounter += aPollInterval) {
+				std::this_thread::sleep_for(aPollInterval);
 
 				if (!hook->second.isActive()) {
 					// Cancelled
@@ -192,6 +192,12 @@ namespace webserver {
 				}
 			}
 		}
+
+#ifdef _DEBUG
+		if (!completionData) {
+			dcdebug("API hook %s timed out\n", aSubscription.c_str());
+		}
+#endif
 
 		{
 			WLock l(cs);

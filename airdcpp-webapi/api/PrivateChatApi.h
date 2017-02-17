@@ -21,6 +21,7 @@
 
 #include <web-server/stdinc.h>
 
+#include <api/base/HookApiModule.h>
 #include <api/base/HierarchicalApiModule.h>
 #include <api/PrivateChatInfo.h>
 
@@ -28,13 +29,15 @@
 #include <airdcpp/PrivateChatManagerListener.h>
 
 namespace webserver {
-	class PrivateChatApi : public ParentApiModule<CID, PrivateChatInfo>, private PrivateChatManagerListener {
+	class PrivateChatApi : public ParentApiModule<CID, PrivateChatInfo, HookApiModule>, private PrivateChatManagerListener {
 	public:
 		static StringList subscriptionList;
 
 		PrivateChatApi(Session* aSession);
 		~PrivateChatApi();
 	private:
+		ActionHookRejectionPtr incomingMessageHook(const ChatMessagePtr& aMessage, const HookRejectionGetter& aRejectionGetter);
+
 		void addChat(const PrivateChatPtr& aChat) noexcept;
 
 		api_return handlePostChat(ApiRequest& aRequest);

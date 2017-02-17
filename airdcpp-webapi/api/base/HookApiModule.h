@@ -76,7 +76,7 @@ namespace webserver {
 		virtual void createHook(const string& aSubscription, HookAddF&& aAddHandler, HookRemoveF&& aRemoveF) noexcept;
 		virtual bool hookActive(const string& aSubscription) const noexcept;
 
-		virtual HookCompletionDataPtr fireHook(const string& aSubscription, const json& aJson);
+		virtual HookCompletionDataPtr fireHook(const string& aSubscription, const std::chrono::milliseconds& aPollInterval, const std::chrono::milliseconds& aTimeout, const json& aJson);
 	protected:
 		HookSubscriber& getHookSubscriber(ApiRequest& aRequest);
 

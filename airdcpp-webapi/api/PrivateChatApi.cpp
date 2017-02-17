@@ -31,13 +31,27 @@ namespace webserver {
 		"private_chat_removed"
 	};
 
+	ActionHookRejectionPtr PrivateChatApi::incomingMessageHook(const ChatMessagePtr& aMessage, const HookRejectionGetter& aRejectionGetter) {
+		return HookCompletionData::toResult(
+			fireHook("private_chat_incoming_message_hook", 25ms, 2s, Serializer::serializeChatMessage(aMessage)),
+			aRejectionGetter
+		);
+	};
+
 	PrivateChatApi::PrivateChatApi(Session* aSession) : 
 		ParentApiModule("sessions", CID_PARAM, Access::PRIVATE_CHAT_VIEW, aSession, subscriptionList, PrivateChatInfo::subscriptionList,
 			[](const string& aId) { return Deserializer::parseCID(aId); },
-			[](const PrivateChatInfo& aInfo) { return serializeChat(aInfo.getChat()); }
+			[](const PrivateChatInfo& aInfo) { return serializeChat(aInfo.getChat()); },
+			Access::PRIVATE_CHAT_EDIT
 		) {
 
 		PrivateChatManager::getInstance()->addListener(this);
+
+		createHook("private_chat_incoming_message_hook", [this](const string& aId, const string& aName) {
+			return ClientManager::getInstance()->incomingPrivateMessageHook.addSubscriber(aId, aName, HOOK_HANDLER(PrivateChatApi::incomingMessageHook));
+		}, [this](const string& aId) {
+			ClientManager::getInstance()->incomingPrivateMessageHook.removeSubscriber(aId);
+		});
 
 		METHOD_HANDLER(Access::PRIVATE_CHAT_EDIT,	METHOD_DELETE,	(EXACT_PARAM("sessions"), CID_PARAM),	PrivateChatApi::handleDeleteChat);
 		METHOD_HANDLER(Access::PRIVATE_CHAT_EDIT,	METHOD_POST,	(EXACT_PARAM("sessions")),				PrivateChatApi::handlePostChat);

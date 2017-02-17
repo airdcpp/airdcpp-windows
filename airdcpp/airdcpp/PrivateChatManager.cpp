@@ -170,7 +170,7 @@ void PrivateChatManager::onPrivateMessage(const ChatMessagePtr& aMessage) {
 	}
 
 	auto c = aMessage->getFrom()->getClient();
-	if (wndCnt > 200 || (!myPM && IgnoreManager::getInstance()->isIgnoredOrFiltered(aMessage, c.get(), true))) {
+	if (wndCnt > 200) {
 		DisconnectCCPM(user);
 		return;
 	}

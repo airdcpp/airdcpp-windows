@@ -240,6 +240,7 @@ protected:
 	virtual bool v4only() const noexcept = 0;
 	void onPassword() noexcept;
 
+	void onPrivateMessage(const ChatMessagePtr& aMessage) noexcept;
 	void onChatMessage(const ChatMessagePtr& aMessage) noexcept;
 	void onRedirect(const string& aRedirectUrl) noexcept;
 

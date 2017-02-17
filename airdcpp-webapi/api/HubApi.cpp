@@ -31,14 +31,28 @@ namespace webserver {
 		"hub_removed"
 	};
 
+	ActionHookRejectionPtr HubApi::incomingMessageHook(const ChatMessagePtr& aMessage, const HookRejectionGetter& aRejectionGetter) {
+		return HookCompletionData::toResult(
+			fireHook("hub_incoming_message_hook", 25ms, 2s, Serializer::serializeChatMessage(aMessage)),
+			aRejectionGetter
+		);
+	};
+
 	HubApi::HubApi(Session* aSession) : 
 		ParentApiModule("sessions", TOKEN_PARAM, Access::HUBS_VIEW, aSession, subscriptionList, HubInfo::subscriptionList,
 			[](const string& aId) { return Util::toUInt32(aId); },
-			[](const HubInfo& aInfo) { return serializeClient(aInfo.getClient()); }
+			[](const HubInfo& aInfo) { return serializeClient(aInfo.getClient()); },
+			Access::HUBS_EDIT
 		) 
 	{
 
 		ClientManager::getInstance()->addListener(this);
+
+		createHook("hub_incoming_message_hook", [this](const string& aId, const string& aName) {
+			return ClientManager::getInstance()->incomingHubMessageHook.addSubscriber(aId, aName, HOOK_HANDLER(HubApi::incomingMessageHook));
+		}, [this](const string& aId) {
+			ClientManager::getInstance()->incomingHubMessageHook.removeSubscriber(aId);
+		});
 
 		METHOD_HANDLER(Access::HUBS_EDIT,	METHOD_POST,	(EXACT_PARAM("sessions")),				HubApi::handleConnect);
 		METHOD_HANDLER(Access::HUBS_EDIT,	METHOD_DELETE,	(EXACT_PARAM("sessions"), TOKEN_PARAM),	HubApi::handleDisconnect);
