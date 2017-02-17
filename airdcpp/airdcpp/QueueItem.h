@@ -258,7 +258,7 @@ public:
 	IGETSET(BundlePtr, bundle, Bundle, nullptr);
 	IGETSET(string, lastSource, LastSource, Util::emptyString);
 	IGETSET(Status, status, Status, STATUS_NEW);
-	IGETSET(ActionHookErrorPtr, hookError, HookError, nullptr);
+	IGETSET(ActionHookRejectionPtr, hookError, HookError, nullptr);
 	
 	Priority calculateAutoPriority() const noexcept;
 

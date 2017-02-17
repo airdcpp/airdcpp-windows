@@ -146,8 +146,8 @@ bool Bundle::isCompleted() const noexcept {
 	return status >= STATUS_COMPLETED;
 }
 
-void Bundle::setHookError(const ActionHookErrorPtr& aError) noexcept {
-	error = ActionHookError::formatError(aError);
+void Bundle::setHookError(const ActionHookRejectionPtr& aError) noexcept {
+	error = ActionHookRejection::formatError(aError);
 	hookError = aError;
 }
 

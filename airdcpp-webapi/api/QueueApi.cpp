@@ -34,7 +34,7 @@ namespace webserver {
 #define SEGMENT_START "segment_start"
 #define SEGMENT_SIZE "segment_size"
 
-	QueueApi::QueueApi(Session* aSession) : HookApiModule(aSession, Access::QUEUE_VIEW),
+	QueueApi::QueueApi(Session* aSession) : HookApiModule(aSession, Access::QUEUE_VIEW, nullptr, Access::QUEUE_EDIT),
 			bundleView("queue_bundle_view", this, QueueBundleUtils::propertyHandler, getBundleList), fileView("queue_file_view", this, QueueFileUtils::propertyHandler, getFileList) {
 
 		QueueManager::getInstance()->addListener(this);
@@ -112,27 +112,23 @@ namespace webserver {
 		DownloadManager::getInstance()->removeListener(this);
 	}
 
-	ActionHookErrorPtr QueueApi::fileCompletionHook(const QueueItemPtr& aFile, const HookErrorGetter& aErrorGetter) noexcept {
-		if (!aFile->getBundle()) {
-			return nullptr;
-		}
-
+	ActionHookRejectionPtr QueueApi::fileCompletionHook(const QueueItemPtr& aFile, const HookRejectionGetter& aErrorGetter) noexcept {
 		if (hookActive("queue_file_finished")) {
-			auto data = fireHook("queue_file_finished", Serializer::serializeItem(aFile, QueueFileUtils::propertyHandler));
-			if (data && data->hasError()) {
-				return aErrorGetter(data->errorId, data->errorMessage);
-			}
+			return HookCompletionData::toResult(
+				fireHook("queue_file_finished", Serializer::serializeItem(aFile, QueueFileUtils::propertyHandler)),
+				aErrorGetter
+			);
 		}
 
 		return nullptr;
 	}
 
-	ActionHookErrorPtr QueueApi::bundleCompletionHook(const BundlePtr& aBundle, const HookErrorGetter& aErrorGetter) noexcept {
+	ActionHookRejectionPtr QueueApi::bundleCompletionHook(const BundlePtr& aBundle, const HookRejectionGetter& aErrorGetter) noexcept {
 		if (hookActive("queue_bundle_finished")) {
-			auto data = fireHook("queue_bundle_finished", Serializer::serializeItem(aBundle, QueueBundleUtils::propertyHandler));
-			if (data && data->hasError()) {
-				return aErrorGetter(data->errorId, data->errorMessage);
-			}
+			return HookCompletionData::toResult(
+				fireHook("queue_bundle_finished", Serializer::serializeItem(aBundle, QueueBundleUtils::propertyHandler)),
+				aErrorGetter
+			);
 		}
 
 		return nullptr;

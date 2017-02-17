@@ -135,8 +135,8 @@ public:
 
 	QueueItemList& getFinishedFiles() { return finishedFiles; }
 	QueueItemList& getQueueItems() { return queueItems; }
-	void setHookError(const ActionHookErrorPtr& aError) noexcept;
-	const ActionHookErrorPtr& getHookError() const noexcept {
+	void setHookError(const ActionHookRejectionPtr& aError) noexcept;
+	const ActionHookRejectionPtr& getHookError() const noexcept {
 		return hookError;
 	}
 
@@ -246,7 +246,7 @@ public:
 	void rotateUserQueue(QueueItemPtr& qi, const UserPtr& aUser) noexcept;
 	bool isEmpty() const noexcept { return queueItems.empty() && finishedFiles.empty(); }
 private:
-	ActionHookErrorPtr hookError = nullptr;
+	ActionHookRejectionPtr hookError = nullptr;
 
 	int64_t lastSpeed = 0; // the speed sent on last time to UBN sources
 	int64_t lastDownloaded = 0; // the progress percent sent on last time to UBN sources

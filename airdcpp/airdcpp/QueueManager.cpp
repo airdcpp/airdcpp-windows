@@ -1630,7 +1630,7 @@ bool QueueManager::runBundleCompletionHooks(const BundlePtr& aBundle) noexcept {
 	if (bundleCompletionHook.hasSubscribers()) {
 		setBundleStatus(aBundle, Bundle::STATUS_VALIDATION_RUNNING);
 
-		auto error = bundleCompletionHook.runHooks(aBundle);
+		auto error = bundleCompletionHook.runHooksError(aBundle);
 		if (error) {
 			aBundle->setHookError(error);
 			setBundleStatus(aBundle, Bundle::STATUS_VALIDATION_ERROR);
@@ -1643,10 +1643,10 @@ bool QueueManager::runBundleCompletionHooks(const BundlePtr& aBundle) noexcept {
 }
 
 bool QueueManager::runFileCompletionHooks(const QueueItemPtr& aQI) noexcept {
-	if (fileCompletionHook.hasSubscribers()) {
+	if (aQI->getBundle() && fileCompletionHook.hasSubscribers()) {
 		setFileStatus(aQI, QueueItem::STATUS_VALIDATION_RUNNING);
 
-		auto error = fileCompletionHook.runHooks(aQI);
+		auto error = fileCompletionHook.runHooksError(aQI);
 		if (error) {
 			aQI->setHookError(error);
 			setFileStatus(aQI, QueueItem::STATUS_VALIDATION_ERROR);

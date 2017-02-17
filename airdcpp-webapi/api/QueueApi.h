@@ -42,8 +42,8 @@ namespace webserver {
 		QueueApi(Session* aSession);
 		~QueueApi();
 	private:
-		ActionHookErrorPtr bundleCompletionHook(const BundlePtr& aBundle, const HookErrorGetter& aErrorGetter) noexcept;
-		ActionHookErrorPtr fileCompletionHook(const QueueItemPtr& aFile, const HookErrorGetter& aErrorGetter) noexcept;
+		ActionHookRejectionPtr bundleCompletionHook(const BundlePtr& aBundle, const HookRejectionGetter& aErrorGetter) noexcept;
+		ActionHookRejectionPtr fileCompletionHook(const QueueItemPtr& aFile, const HookRejectionGetter& aErrorGetter) noexcept;
 
 		// COMMON
 		api_return handleFindDupePaths(ApiRequest& aRequest);

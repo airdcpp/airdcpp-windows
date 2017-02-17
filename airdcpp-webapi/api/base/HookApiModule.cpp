@@ -22,10 +22,13 @@
 #include <api/base/HookApiModule.h>
 
 namespace webserver {
-	HookApiModule::HookApiModule(Session* aSession, Access aSubscriptionAccess, const StringList* aSubscriptions) : SubscribableApiModule(aSession, aSubscriptionAccess, aSubscriptions) {
-		METHOD_HANDLER(aSubscriptionAccess, METHOD_POST, (EXACT_PARAM("hooks"), STR_PARAM(LISTENER_PARAM_ID)), HookApiModule::handleAddHook);
-		METHOD_HANDLER(aSubscriptionAccess, METHOD_DELETE, (EXACT_PARAM("hooks"), STR_PARAM(LISTENER_PARAM_ID)), HookApiModule::handleRemoveHook);
-		METHOD_HANDLER(aSubscriptionAccess, METHOD_POST, (EXACT_PARAM("hooks"), STR_PARAM(LISTENER_PARAM_ID), TOKEN_PARAM), HookApiModule::handleCompleteHook);
+	HookApiModule::HookApiModule(Session* aSession, Access aSubscriptionAccess, const StringList* aSubscriptions, Access aHookAccess) :
+		SubscribableApiModule(aSession, aSubscriptionAccess, aSubscriptions) 
+	{
+		METHOD_HANDLER(aHookAccess, METHOD_POST, (EXACT_PARAM("hooks"), STR_PARAM(LISTENER_PARAM_ID)), HookApiModule::handleAddHook);
+		METHOD_HANDLER(aHookAccess, METHOD_DELETE, (EXACT_PARAM("hooks"), STR_PARAM(LISTENER_PARAM_ID)), HookApiModule::handleRemoveHook);
+		METHOD_HANDLER(aHookAccess, METHOD_POST, (EXACT_PARAM("hooks"), STR_PARAM(LISTENER_PARAM_ID), TOKEN_PARAM, EXACT_PARAM("resolve")), HookApiModule::handleResolveHookAction);
+		METHOD_HANDLER(aHookAccess, METHOD_POST, (EXACT_PARAM("hooks"), STR_PARAM(LISTENER_PARAM_ID), TOKEN_PARAM, EXACT_PARAM("reject")), HookApiModule::handleRejectHookAction);
 	}
 
 	void HookApiModule::on(SessionListener::SocketDisconnected) noexcept {
@@ -69,7 +72,7 @@ namespace webserver {
 		}
 
 		auto id = JsonUtil::getField<string>("id", aJson, false);
-		if (!addHandler(id, JsonUtil::getField<string>("str", aJson, false))) {
+		if (!addHandler(id, JsonUtil::getField<string>("name", aJson, false))) {
 			return false;
 		}
 
@@ -109,19 +112,36 @@ namespace webserver {
 		return websocketpp::http::status_code::not_found;
 	}
 
-	HookApiModule::HookCompletionData::HookCompletionData(const json& aJson) : data(JsonUtil::getOptionalRawField("data", aJson)) {
-		auto error = JsonUtil::getOptionalRawField("error", aJson);
-		if (!error.is_null()) {
-			errorId = JsonUtil::getField<string>("id", error, false);
-			errorMessage = JsonUtil::getField<string>("str", error, false);
+	HookApiModule::HookCompletionData::HookCompletionData(bool aRejected, const json& aJson) : rejected(aRejected) {
+		if (aRejected) {
+			rejectId = JsonUtil::getField<string>("reject_id", aJson, false);
+			rejectMessage = JsonUtil::getField<string>("message", aJson, false);
+		} else {
+			resolveJson = aJson;
 		}
+	}
+
+	ActionHookRejectionPtr HookApiModule::HookCompletionData::toResult(const HookCompletionData::Ptr& aData, const HookRejectionGetter& aRejectionGetter) noexcept {
+		if (!aData || !aData->rejected) {
+			return nullptr;
+		}
+
+		return aRejectionGetter(aData->rejectId, aData->rejectMessage);
 	}
 
 	void HookApiModule::createHook(const string& aSubscription, HookAddF&& aAddHandler, HookRemoveF&& aRemoveF) noexcept {
 		hooks.emplace(aSubscription, HookSubscriber(std::move(aAddHandler), std::move(aRemoveF)));
 	}
 
-	api_return HookApiModule::handleCompleteHook(ApiRequest& aRequest) {
+	api_return HookApiModule::handleResolveHookAction(ApiRequest& aRequest) {
+		return handleHookAction(aRequest, false);
+	}
+
+	api_return HookApiModule::handleRejectHookAction(ApiRequest& aRequest) {
+		return handleHookAction(aRequest, true);
+	}
+
+	api_return HookApiModule::handleHookAction(ApiRequest& aRequest, bool aRejected) {
 		auto id = aRequest.getTokenParam();
 
 		WLock l(cs);
@@ -131,7 +151,7 @@ namespace webserver {
 			return websocketpp::http::status_code::not_found;
 		}
 
-		h->second = std::make_shared<HookCompletionData>(aRequest.getRequestBody());
+		h->second = std::make_shared<HookCompletionData>(aRejected, aRequest.getRequestBody());
 		return websocketpp::http::status_code::no_content;
 	}
 

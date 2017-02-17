@@ -31,19 +31,6 @@
 namespace webserver {
 	class HookApiModule : public SubscribableApiModule {
 	public:
-		struct HookCompletionData {
-			HookCompletionData(const json& aJson);
-
-			json data;
-
-			string errorId;
-			string errorMessage;
-			bool hasError() const noexcept {
-				return !errorId.empty();
-			}
-		};
-		typedef std::shared_ptr<HookCompletionData> HookCompletionDataPtr;
-
 		typedef std::function<bool(const string& aSubscriberId, const string& aSubscriberName)> HookAddF;
 		typedef std::function<void(const string& aSubscriberId)> HookRemoveF;
 
@@ -69,7 +56,22 @@ namespace webserver {
 			string subscriberId;
 		};
 
-		HookApiModule(Session* aSession, Access aSubscriptionAccess, const StringList* aSubscriptions = nullptr);
+		struct HookCompletionData {
+			HookCompletionData(bool aRejected, const json& aJson);
+
+			json resolveJson;
+
+			string rejectId;
+			string rejectMessage;
+			const bool rejected;
+
+			typedef std::shared_ptr<HookCompletionData> Ptr;
+
+			static ActionHookRejectionPtr toResult(const HookCompletionData::Ptr& aData, const HookRejectionGetter& aRejectionGetter) noexcept;
+		};
+		typedef HookCompletionData::Ptr HookCompletionDataPtr;
+
+		HookApiModule(Session* aSession, Access aSubscriptionAccess, const StringList* aSubscriptions, Access aHookAccess);
 
 		virtual void createHook(const string& aSubscription, HookAddF&& aAddHandler, HookRemoveF&& aRemoveF) noexcept;
 		virtual bool hookActive(const string& aSubscription) const noexcept;
@@ -82,8 +84,11 @@ namespace webserver {
 
 		virtual api_return handleAddHook(ApiRequest& aRequest);
 		virtual api_return handleRemoveHook(ApiRequest& aRequest);
-		virtual api_return handleCompleteHook(ApiRequest& aRequest);
+		virtual api_return handleResolveHookAction(ApiRequest& aRequest);
+		virtual api_return handleRejectHookAction(ApiRequest& aRequest);
 	private:
+		api_return handleHookAction(ApiRequest& aRequest, bool aRejected);
+
 		typedef map<int, HookCompletionDataPtr> PendingHookActionMap;
 		PendingHookActionMap pendingHookActions;
 
