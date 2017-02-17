@@ -666,7 +666,7 @@ void ShareScannerManager::checkFileSFV(const string& aFileName, DirSFVReader& aS
 	}
 }
 
-ActionHookRejectionPtr ShareScannerManager::fileCompletionHook(const QueueItemPtr& aFile, const HookRejectionGetter& aErrorGetter) noexcept {
+ActionHookRejectionPtr ShareScannerManager::fileCompletionHook(const QueueItemPtr&, const HookRejectionGetter&) noexcept {
 	/*DirSFVReader sfv(Util::getFilePath(aFile->getTarget()));
 
 	auto fileNameLower = Text::toLower(Util::getFileName(aFile->getTarget()));
@@ -681,9 +681,9 @@ ActionHookRejectionPtr ShareScannerManager::fileCompletionHook(const QueueItemPt
 		}
 	} catch (const FileException&) {
 		LogManager::getInstance()->message(STRING_F(CRC_FILE_ERROR, aFile->getTarget()), LogMessage::SEV_ERROR);
-	}
+	}*/
 
-	return nullptr;*/
+	return nullptr;
 }
 
 ActionHookRejectionPtr ShareScannerManager::bundleCompletionHook(const BundlePtr& aBundle, const HookRejectionGetter& aErrorGetter) noexcept{
