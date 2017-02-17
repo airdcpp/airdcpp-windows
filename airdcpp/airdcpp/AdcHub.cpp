@@ -382,7 +382,7 @@ void AdcHub::handle(AdcCommand::MSG, AdcCommand& c) noexcept {
 		if(!message->getReplyTo())
 			return;
 
-		fire(ClientListener::PrivateMessage(), this, message);
+		onPrivateMessage(message);
 		return;
 	}
 

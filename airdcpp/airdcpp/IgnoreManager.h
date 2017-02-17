@@ -59,7 +59,7 @@ namespace dcpp {
 		StringMatch::Method getNickMethod() const { return nickMatcher.getMethod(); }
 		StringMatch::Method getTextMethod() const { return textMatcher.getMethod(); }
 
-		bool match(const string& aNick, const string& aText, Context aContext) {
+		bool match(const string& aNick, const string& aText, Context aContext) const noexcept {
 			if (!getEnabled())
 				return false;
 
@@ -111,10 +111,7 @@ namespace dcpp {
 		IgnoreMap getIgnoredUsers() const noexcept;
 		bool storeIgnore(const UserPtr& aUser) noexcept;
 		bool removeIgnore(const UserPtr& aUser) noexcept;
-		bool isIgnoredOrFiltered(const ChatMessagePtr& msg, Client* aClient, bool PM);
 
-		// chat filter
-		bool isChatFiltered(const string& aNick, const string& aText, ChatFilterItem::Context aContext = ChatFilterItem::ALL);
 		vector<ChatFilterItem>& getIgnoreList() { return ChatFilterItems; }
 		void replaceList(vector<ChatFilterItem>& newList) {
 			ChatFilterItems = newList;
@@ -122,6 +119,9 @@ namespace dcpp {
 		//IGNORE
 
 	private:
+		ActionHookRejectionPtr onPrivateMessage(const ChatMessagePtr& aMessage, const HookRejectionGetter& aRejectionGetter) noexcept;
+		ActionHookRejectionPtr onHubMessage(const ChatMessagePtr& aMessage, const HookRejectionGetter& aRejectionGetter) noexcept;
+
 		mutable SharedMutex cs;
 
 		//IGNORE
@@ -137,6 +137,12 @@ namespace dcpp {
 		// contains the ignored nicks and patterns 
 		vector<ChatFilterItem> ChatFilterItems;
 		//IGNORE
+
+		ActionHookRejectionPtr isIgnoredOrFiltered(const ChatMessagePtr& msg, const HookRejectionGetter& aRejectionGetter, bool PM) noexcept;
+
+		// chat filter
+		bool isChatFiltered(const string& aNick, const string& aText, ChatFilterItem::Context aContext = ChatFilterItem::ALL) const noexcept;
+
 
 		// SettingsManagerListener
 		virtual void on(SettingsManagerListener::Load, SimpleXML& xml) noexcept;

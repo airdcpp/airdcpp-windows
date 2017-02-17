@@ -26,7 +26,6 @@
 #include "DebugManager.h"
 #include "FavoriteManager.h"
 #include "LogManager.h"
-#include "IgnoreManager.h"
 #include "ResourceManager.h"
 #include "ShareManager.h"
 #include "ThrottleManager.h"
@@ -358,9 +357,18 @@ void Client::allowUntrustedConnect() noexcept {
 	connect(false);
 }
 
-void Client::onChatMessage(const ChatMessagePtr& aMessage) noexcept {
-	if (IgnoreManager::getInstance()->isIgnoredOrFiltered(aMessage, this, false))
+void Client::onPrivateMessage(const ChatMessagePtr& aMessage) noexcept {
+	if (!ClientManager::getInstance()->incomingPrivateMessageHook.runHooksBasic(aMessage)) {
 		return;
+	}
+
+	fire(ClientListener::PrivateMessage(), this, aMessage);
+}
+
+void Client::onChatMessage(const ChatMessagePtr& aMessage) noexcept {
+	if (!ClientManager::getInstance()->incomingHubMessageHook.runHooksBasic(aMessage)) {
+		return;
+	}
 
 	if (get(HubSettings::LogMainChat)) {
 		ParamMap params;
@@ -372,7 +380,6 @@ void Client::onChatMessage(const ChatMessagePtr& aMessage) noexcept {
 	}
 
 	cache.addMessage(aMessage);
-
 	fire(ClientListener::ChatMessage(), this, aMessage);
 }
 

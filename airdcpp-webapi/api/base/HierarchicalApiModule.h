@@ -31,15 +31,16 @@
 namespace webserver {
 	class WebSocket;
 
-	template<class IdType, class ItemType>
-	class ParentApiModule : public SubscribableApiModule {
+	template<class IdType, class ItemType, class BaseType = SubscribableApiModule>
+	class ParentApiModule : public BaseType {
 	public:
-		typedef ParentApiModule<IdType, ItemType> Type;
+		typedef ParentApiModule<IdType, ItemType, BaseType> Type;
 		typedef std::function<IdType(const string&)> IdConvertF;
 		typedef std::function<json(const ItemType&)> ChildSerializeF;
 
-		ParentApiModule(const string& aSubmoduleSection, ApiModule::RequestHandler::Param&& aParamMatcher, Access aAccess, Session* aSession, const StringList& aSubscriptions, const StringList& aChildSubscription, IdConvertF aIdConvertF, ChildSerializeF aChildSerializeF) :
-			SubscribableApiModule(aSession, aAccess, &aSubscriptions), idConvertF(aIdConvertF), childSerializeF(aChildSerializeF), paramId(aParamMatcher.id) {
+		template<typename... ArgT>
+		ParentApiModule(const string& aSubmoduleSection, ApiModule::RequestHandler::Param&& aParamMatcher, Access aAccess, Session* aSession, const StringList& aSubscriptions, const StringList& aChildSubscription, IdConvertF aIdConvertF, ChildSerializeF aChildSerializeF, ArgT&&... args) :
+			BaseType(aSession, aAccess, &aSubscriptions, std::forward<ArgT>(args)...), idConvertF(aIdConvertF), childSerializeF(aChildSerializeF), paramId(aParamMatcher.id) {
 
 			// Get module
 			METHOD_HANDLER(aAccess, METHOD_GET, (EXACT_PARAM(aSubmoduleSection), aParamMatcher), Type::handleGetSubmodule);
@@ -212,10 +213,10 @@ namespace webserver {
 		const string paramId;
 	};
 
-	template<class ParentIdType, class ItemType, class ItemJsonType>
+	template<class ParentIdType, class ItemType, class ItemJsonType, class ParentBaseType = SubscribableApiModule>
 	class SubApiModule : public SubscribableApiModule {
 	public:
-		typedef ParentApiModule<ParentIdType, ItemType> ParentType;
+		typedef ParentApiModule<ParentIdType, ItemType, ParentBaseType> ParentType;
 
 		// aId = ID of the entity owning this module
 		// Will inherit access from the parent module
@@ -238,14 +239,6 @@ namespace webserver {
 			return send(aSubscription, aCallback());
 		}
 
-		bool subscriptionActive(const string& aSubscription) const noexcept override {
-			if (parentModule->childSubscriptionActive(aSubscription)) {
-				return true;
-			}
-
-			return SubscribableApiModule::subscriptionActive(aSubscription);
-		}
-
 
 		// Init submodules in a separate call after the module has been constructed and added to the parent
 		// Otherwise async calls made in module constructor would fail because they require
@@ -253,8 +246,7 @@ namespace webserver {
 		virtual void init() noexcept = 0;
 
 		void createSubscription(const string& aSubscription) noexcept override {
-			SubscribableApiModule::createSubscription(aSubscription);
-			parentModule->createChildSubscription(aSubscription);
+			dcassert(0);
 		}
 
 		void addAsyncTask(CallBack&& aTask) override {

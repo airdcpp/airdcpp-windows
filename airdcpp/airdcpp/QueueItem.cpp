@@ -196,7 +196,7 @@ string QueueItem::getStatusString(int64_t aDownloadedBytes, bool aIsWaiting) con
 			case STATUS_VALIDATION_ERROR: {
 				dcassert(hookError);
 				if (hookError) {
-					return ActionHookError::formatError(hookError);
+					return ActionHookRejection::formatError(hookError);
 				}
 
 				return Util::emptyString;

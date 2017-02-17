@@ -28,6 +28,7 @@
 #include <airdcpp/Message.h>
 
 #include <api/base/HierarchicalApiModule.h>
+#include <api/base/HookApiModule.h>
 #include <api/OnlineUserUtils.h>
 
 #include <api/common/ChatController.h>
@@ -37,11 +38,10 @@
 namespace webserver {
 	class HubInfo;
 
-	class HubInfo : public SubApiModule<ClientToken, HubInfo, ClientToken>, private ClientListener {
+	class HubInfo : public SubApiModule<ClientToken, HubInfo, ClientToken, HookApiModule>, private ClientListener {
 	public:
 		static const StringList subscriptionList;
 
-		typedef ParentApiModule<ClientToken, HubInfo> ParentType;
 		typedef shared_ptr<HubInfo> Ptr;
 		typedef vector<Ptr> List;
 
