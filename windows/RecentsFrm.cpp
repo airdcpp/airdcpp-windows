@@ -27,10 +27,10 @@
 
 string RecentsFrame::id = "Recents";
 
-int RecentsFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_DESCRIPTION, COLUMN_SERVER };
-int RecentsFrame::columnSizes[] = { 200, 290, 100 };
-static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::DESCRIPTION, ResourceManager::HUB_ADDRESS };
-static SettingsManager::BoolSetting filterSettings[] = { SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST };
+int RecentsFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_DESCRIPTION, COLUMN_SERVER, COLUMN_DATE };
+int RecentsFrame::columnSizes[] = { 200, 290, 100, 150 };
+static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::DESCRIPTION, ResourceManager::HUB_ADDRESS, ResourceManager::DATE };
+static SettingsManager::BoolSetting filterSettings[] = { SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST };
 
 RecentsFrame::RecentsFrame() : closed(false),
 ctrlList(this, COLUMN_LAST, [this] { callAsync([this] { updateList(); }); }, filterSettings, COLUMN_LAST)
@@ -51,6 +51,8 @@ LRESULT RecentsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 
 	listImages.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 3);
 	listImages.AddIcon(CIcon(ResourceLoader::loadIcon(IDI_HUB, 16)));
+	listImages.AddIcon(CIcon(ResourceLoader::loadIcon(IDR_PRIVATE, 16)));
+	listImages.AddIcon(CIcon(ResourceLoader::loadIcon(IDI_OPEN_LIST, 16)));
 	ctrlList.list.SetImageList(listImages, LVSIL_SMALL);
 
 	RecentManager::getInstance()->addListener(this);
@@ -58,8 +60,19 @@ LRESULT RecentsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 
 	auto list = RecentManager::getInstance()->getRecents(RecentEntry::TYPE_HUB);
 	for (const auto& i : list) {
-		itemInfos.emplace(i->getUrl(), unique_ptr<ItemInfo>(new ItemInfo(i)));
+		itemInfos.emplace_back(make_unique<ItemInfo>(i, RecentEntry::TYPE_HUB));
 	}
+
+	list = RecentManager::getInstance()->getRecents(RecentEntry::TYPE_PRIVATE_CHAT);
+	for (const auto& i : list) {
+		itemInfos.emplace_back(make_unique<ItemInfo>(i, RecentEntry::TYPE_PRIVATE_CHAT));
+	}
+
+	list = RecentManager::getInstance()->getRecents(RecentEntry::TYPE_FILELIST);
+	for (const auto& i : list) {
+		itemInfos.emplace_back(make_unique<ItemInfo>(i, RecentEntry::TYPE_FILELIST));
+	}
+
 	callAsync([=] { updateList(); });
 	
 	memzero(statusSizes, sizeof(statusSizes));
@@ -83,20 +96,35 @@ LRESULT RecentsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 		menu.CreatePopupMenu();
 
 		if (ctrlList.list.GetSelectedCount() > 0) {
-			RecentEntryList items;
+			vector<ItemInfo*> items;
 			int i = -1;
 			while ((i = ctrlList.list.GetNextItem(i, LVNI_SELECTED)) != -1) {
-				auto r = (ItemInfo*)ctrlList.list.GetItemData(i);
-				items.push_back(r->item);
+				auto ii = (ItemInfo*)ctrlList.list.GetItemData(i);
+				items.push_back(ii);
 			}
 
-			string title = items.size() == 1 ? (items.front()->getUrl()) : STRING_F(ITEMS_X, items.size());
+			string title = items.size() == 1 ? (items.front()->item->getName()) : STRING_F(ITEMS_X, items.size());
 
 			menu.InsertSeparatorFirst(Text::toT(title));
 
-			menu.appendItem(TSTRING(CONNECT), [=] { for_each(items.begin(), items.end(), [=](const RecentEntryPtr& r) { WinUtil::connectHub(r->getUrl()); }); }, OMenu::FLAG_DEFAULT);
-			menu.appendItem(TSTRING(REMOVE), [=] { for_each(items.begin(), items.end(), [=](const RecentEntryPtr& r) { 
-				RecentManager::getInstance()->removeRecent(RecentEntry::TYPE_HUB, r); }); }, OMenu::FLAG_DEFAULT);
+			menu.appendItem(TSTRING(OPEN), [=] { 
+				for_each(items.begin(), items.end(), [=](const ItemInfo* ii) {
+				if (ii->recentType == RecentEntry::TYPE_HUB) {
+					WinUtil::connectHub(ii->item->getUrl());
+
+				}
+				else if (ii->recentType == RecentEntry::TYPE_PRIVATE_CHAT) {
+					WinUtil::PM()(ii->item->getUser(), ii->item->getUrl());
+				}
+				else if (ii->recentType == RecentEntry::TYPE_FILELIST) {
+					WinUtil::GetBrowseList()(ii->item->getUser(), ii->item->getUrl());
+				}
+
+			}); 
+			}, OMenu::FLAG_DEFAULT);
+
+			menu.appendItem(TSTRING(REMOVE), [=] { for_each(items.begin(), items.end(), [=](const ItemInfo* ii) {
+				RecentManager::getInstance()->removeRecent(RecentEntry::TYPE_HUB, ii->item); }); }, OMenu::FLAG_DEFAULT);
 			menu.appendSeparator();
 		}
 
@@ -117,7 +145,7 @@ LRESULT RecentsFrame::onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lP
 void RecentsFrame::updateList() {
 	ctrlList.list.SetRedraw(FALSE);
 	ctrlList.list.DeleteAllItems();
-	for (auto& i : itemInfos | map_values) {
+	for (auto& i : itemInfos) {
 		if (!show(i.get()))
 			continue;
 		addEntry(i.get());
@@ -217,15 +245,12 @@ void RecentsFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcep
 	}
 }
 
-void RecentsFrame::on(RecentManagerListener::RecentUpdated, const RecentEntryPtr& entry, RecentEntry::Type aType) noexcept {
-	if (aType != RecentEntry::TYPE_HUB) {
-		return;
-	}
+void RecentsFrame::on(RecentManagerListener::RecentUpdated, const RecentEntryPtr& entry, RecentEntry::Type) noexcept {
 
 	callAsync([=] {
-		auto i = itemInfos.find(entry->getUrl());
+		auto i = boost::find_if(itemInfos, [=](unique_ptr<ItemInfo>& ii) { return  ii->item == entry; });
 		if (i != itemInfos.end()) {
-			ctrlList.list.updateItem(i->second.get());
+			ctrlList.list.updateItem((*i).get());
 		}
 	});
 }
@@ -239,6 +264,7 @@ const tstring RecentsFrame::ItemInfo::getText(int col) const {
 	case COLUMN_NAME: return Text::toT(item->getName());
 	case COLUMN_DESCRIPTION: return Text::toT(item->getDescription());
 	case COLUMN_SERVER: return Text::toT(item->getUrl());
+	case COLUMN_DATE: return item->getLastOpened() > 0 ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", item->getLastOpened())) : TSTRING(UNKNOWN);
 
 	default: return Util::emptyStringT;
 	}
@@ -255,6 +281,6 @@ void RecentsFrame::createColumns() {
 	}
 
 	ctrlList.list.setColumnOrderArray(COLUMN_LAST, columnIndexes);
-	ctrlList.list.setSortColumn(COLUMN_NAME);
+	ctrlList.list.setSortColumn(COLUMN_DATE);
 	//ctrlList.list.setVisible(SETTING(RECENTFRAME_VISIBLE));
 }

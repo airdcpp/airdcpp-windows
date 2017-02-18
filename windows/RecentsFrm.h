@@ -28,7 +28,7 @@
 
 #include <airdcpp/RecentManager.h>
 
-class RecentsFrame : public MDITabChildWindowImpl<RecentsFrame>, public StaticFrame<RecentsFrame, ResourceManager::RECENT_HUBS, IDC_RECENTS>, 
+class RecentsFrame : public MDITabChildWindowImpl<RecentsFrame>, public StaticFrame<RecentsFrame, ResourceManager::RECENTS, IDC_RECENTS>, 
 	private RecentManagerListener, private SettingsManagerListener, private Async<RecentsFrame>
 {
 public:
@@ -77,27 +77,30 @@ private:
 
 	class ItemInfo {
 	public:
-		ItemInfo(const RecentEntryPtr& aRecent) : item(aRecent) { }
+		ItemInfo(const RecentEntryPtr& aRecent, int aType) : item(aRecent), recentType(aType) { }
 		~ItemInfo() { }
 
+		int recentType = -1;
 		const tstring getText(int col) const;
 
 		static int compareItems(const ItemInfo* a, const ItemInfo* b, int col) {
 			return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str());
 		}
 
-		int getImageIndex() const { return 0; }
+		int getImageIndex() const { return recentType; }
 
 		RecentEntryPtr item;
 	};
 
-	unordered_map<string, unique_ptr<ItemInfo>> itemInfos; //map to url for now, we only have hubs here...
+	typedef vector<unique_ptr<ItemInfo>> ItemInfoList;
+	ItemInfoList itemInfos;
 
 	enum {
 		COLUMN_FIRST,
 		COLUMN_NAME = COLUMN_FIRST,
 		COLUMN_DESCRIPTION,
 		COLUMN_SERVER,
+		COLUMN_DATE,
 		COLUMN_LAST
 	};
 
@@ -116,32 +119,24 @@ private:
 	int statusSizes[2];
 	
 	void on(RecentManagerListener::RecentAdded, const RecentEntryPtr& entry, RecentEntry::Type aType) noexcept override {
-		if (aType != RecentEntry::TYPE_HUB) {
-			return;
-		}
-
 		callAsync([=] {
-			auto i = itemInfos.find(entry->getUrl());
+			auto i = boost::find_if(itemInfos, [=](unique_ptr<ItemInfo>& ii) { return ii->item == entry; });
 			if (i == itemInfos.end()) {
-				auto ii = itemInfos.emplace(entry->getUrl(), unique_ptr<ItemInfo>(new ItemInfo(entry))).first;
-				addEntry(ii->second.get());
+				itemInfos.emplace_back(make_unique<ItemInfo>(entry, aType));
+				addEntry(itemInfos.back().get());
 			}
 		});
 	}
-	void on(RecentManagerListener::RecentRemoved, const RecentEntryPtr& entry, RecentEntry::Type aType) noexcept override {
-		if (aType != RecentEntry::TYPE_HUB) {
-			return;
-		}
-
+	void on(RecentManagerListener::RecentRemoved, const RecentEntryPtr& entry, RecentEntry::Type) noexcept override {
 		callAsync([=] {
-			auto i = itemInfos.find(entry->getUrl());
+			auto i = boost::find_if(itemInfos, [=](unique_ptr<ItemInfo>& ii) { return ii->item == entry; });
 			if (i != itemInfos.end()) {
-				ctrlList.list.deleteItem(i->second.get());
+				ctrlList.list.deleteItem((*i).get());
 				itemInfos.erase(i);
 			}
 		});
 	}
-	void on(RecentManagerListener::RecentUpdated, const RecentEntryPtr& entry, RecentEntry::Type aType) noexcept override;
+	void on(RecentManagerListener::RecentUpdated, const RecentEntryPtr& entry, RecentEntry::Type) noexcept override;
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept override;
 };

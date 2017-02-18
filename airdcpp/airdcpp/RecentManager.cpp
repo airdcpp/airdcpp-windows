@@ -97,7 +97,7 @@ void RecentManager::on(DirectoryListingManagerListener::ListingCreated, const Di
 	}
 
 	auto shareInfo = ClientManager::getInstance()->getShareInfo(aListing->getHintedUser());
-	auto nick = ClientManager::getInstance()->getNick(aListing->getUser(), aListing->getHubUrl(), false);
+	auto nick = ClientManager::getInstance()->getNick(aListing->getUser(), aListing->getHubUrl(), true);
 	auto old = getRecent(RecentEntry::TYPE_FILELIST, RecentEntry::CidCompare(aListing->getUser()->getCID()));
 	onRecentOpened(RecentEntry::TYPE_FILELIST, nick, shareInfo ? Util::formatBytes((*shareInfo).size) : Util::emptyString, aListing->getHubUrl(), aListing->getUser(), old);
 }
