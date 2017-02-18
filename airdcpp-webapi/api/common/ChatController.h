@@ -85,9 +85,9 @@ namespace webserver {
 			const auto& reqJson = aRequest.getRequestBody();
 			auto message = Deserializer::deserializeChatMessage(reqJson);
 
-			string error_;
-			if (!chatF()->sendMessage(message.first, error_, message.second)) {
-				aRequest.setResponseErrorStr(error_);
+			string error;
+			if (!chatF()->sendMessage(message.first, error, message.second) && !error.empty()) {
+				aRequest.setResponseErrorStr(error);
 				return websocketpp::http::status_code::internal_server_error;
 			}
 

@@ -223,7 +223,7 @@ HubFrame::HubFrame(const tstring& aServer) :
 }
 
 bool HubFrame::sendMessage(const tstring& aMessage, string& error_, bool isThirdPerson) {
-	return client->hubMessage(Text::fromT(aMessage), error_, isThirdPerson);
+	return client->sendMessage(Text::fromT(aMessage), error_, isThirdPerson);
 }
 
 bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*message*/, tstring& status, bool& /*thirdPerson*/) {	

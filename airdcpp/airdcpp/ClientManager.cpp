@@ -815,7 +815,7 @@ bool ClientManager::privateMessage(const HintedUser& aUser, const string& aMsg, 
 		return false;
 	}
 	
-	return user->getClient()->privateMessage(user, aMsg, error_, aThirdPerson, aEcho);
+	return user->getClient()->sendPrivateMessage(user, aMsg, error_, aThirdPerson, aEcho);
 }
 
 void ClientManager::userCommand(const HintedUser& user, const UserCommand& uc, ParamMap& params, bool compatibility) noexcept {

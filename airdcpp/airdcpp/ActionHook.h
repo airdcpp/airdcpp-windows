@@ -50,12 +50,12 @@ namespace dcpp {
 		}
 	};
 
-	template<typename ItemT>
+	template<typename... ArgT>
 	class ActionHook {
 	public:
-#define HOOK_HANDLER(func) std::bind(&func, this, placeholders::_1, placeholders::_2)
+#define HOOK_HANDLER(func) &func, *this
 
-		typedef std::function<ActionHookRejectionPtr(ItemT& aItem, const HookRejectionGetter& aRejectionGetter)> HookCallback;
+		typedef std::function<ActionHookRejectionPtr(ArgT&... aItem, const HookRejectionGetter& aRejectionGetter)> HookCallback;
 		struct Subscriber {
 			string id;
 			string name;
@@ -67,13 +67,14 @@ namespace dcpp {
 			}
 		};
 
-		bool addSubscriber(const string& aId, const string& aName, HookCallback aCallback) noexcept {
+		template<typename CallbackT, typename ObjectT>
+		bool addSubscriber(const string& aId, const string& aName, CallbackT aCallback, ObjectT& aObject) noexcept {
 			Lock l(cs);
 			if (findById(aId) != subscribers.end()) {
 				return false;
 			}
 
-			subscribers.push_back({ aId, aName, std::move(aCallback) });
+			subscribers.push_back({ aId, aName, [&, aCallback](ArgT&... aArgs, const HookRejectionGetter& aRejectionGetter) { return (aObject.*aCallback)(aArgs..., aRejectionGetter); } });
 			return true;
 		}
 
@@ -89,7 +90,7 @@ namespace dcpp {
 		}
 
 		// Run all validation hooks, returns a rejection object in case of errors
-		ActionHookRejectionPtr runHooksError(ItemT& aItem) const noexcept {
+		ActionHookRejectionPtr runHooksError(ArgT&... aItem) const noexcept {
 			SubscriberList subscribersCopy;
 
 			{
@@ -98,7 +99,7 @@ namespace dcpp {
 			}
 
 			for (const auto& handler : subscribersCopy) {
-				auto error = handler.callback(aItem, std::bind(&Subscriber::getRejection, handler, std::placeholders::_1, std::placeholders::_2));
+				auto error = handler.callback(aItem..., std::bind(&Subscriber::getRejection, handler, std::placeholders::_1, std::placeholders::_2));
 				if (error) {
 					dcdebug("Hook rejected by handler %s: %s (%s)\n", error->hookId.c_str(), error->rejectId.c_str(), error->message.c_str());
 					return error;
@@ -109,8 +110,8 @@ namespace dcpp {
 		}
 
 		// Run all validation hooks, returns false in case of rejections
-		bool runHooksBasic(ItemT& aItem) const noexcept {
-			auto rejection = runHooksError(aItem);
+		bool runHooksBasic(ArgT&... aItem) const noexcept {
+			auto rejection = runHooksError(aItem...);
 			return rejection ? false : true;
 		}
 

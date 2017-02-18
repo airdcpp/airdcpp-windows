@@ -47,6 +47,8 @@ class ClientManager : public Speaker<ClientManagerListener>,
 
 public:
 	ActionHook<const ChatMessagePtr> incomingHubMessageHook, incomingPrivateMessageHook;
+	ActionHook<const string, const HintedUser> outgoingPrivateMessageHook;
+	ActionHook<const string, const Client&> outgoingHubMessageHook;
 
 	// Returns the new ClientPtr
 	// NOTE: the main app should perform connecting to the new hub

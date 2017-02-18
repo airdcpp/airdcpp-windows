@@ -36,7 +36,17 @@ namespace webserver {
 			fireHook("private_chat_incoming_message_hook", 25ms, 2s, Serializer::serializeChatMessage(aMessage)),
 			aRejectionGetter
 		);
-	};
+	}
+
+	ActionHookRejectionPtr PrivateChatApi::outgoingMessageHook(const string& aMessage, const HintedUser& aUser, const HookRejectionGetter& aRejectionGetter) {
+		return HookCompletionData::toResult(
+			fireHook("private_chat_outgoing_message_hook", 25ms, 2s, {
+				{ "text", aMessage },
+				{ "user", Serializer::serializeHintedUser(aUser) },
+			}),
+			aRejectionGetter
+		);
+	}
 
 	PrivateChatApi::PrivateChatApi(Session* aSession) : 
 		ParentApiModule("sessions", CID_PARAM, Access::PRIVATE_CHAT_VIEW, aSession, subscriptionList, PrivateChatInfo::subscriptionList,
@@ -51,6 +61,12 @@ namespace webserver {
 			return ClientManager::getInstance()->incomingPrivateMessageHook.addSubscriber(aId, aName, HOOK_HANDLER(PrivateChatApi::incomingMessageHook));
 		}, [this](const string& aId) {
 			ClientManager::getInstance()->incomingPrivateMessageHook.removeSubscriber(aId);
+		});
+
+		createHook("private_chat_outgoing_message_hook", [this](const string& aId, const string& aName) {
+			return ClientManager::getInstance()->outgoingPrivateMessageHook.addSubscriber(aId, aName, HOOK_HANDLER(PrivateChatApi::outgoingMessageHook));
+		}, [this](const string& aId) {
+			ClientManager::getInstance()->outgoingPrivateMessageHook.removeSubscriber(aId);
 		});
 
 		METHOD_HANDLER(Access::PRIVATE_CHAT_EDIT,	METHOD_DELETE,	(EXACT_PARAM("sessions"), CID_PARAM),	PrivateChatApi::handleDeleteChat);
