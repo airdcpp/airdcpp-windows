@@ -969,13 +969,8 @@ void NmdcHub::revConnectToMe(const OnlineUser& aUser) {
 	send("$RevConnectToMe " + fromUtf8(getMyNick()) + " " + fromUtf8(aUser.getIdentity().getNick()) + "|");
 }
 
-bool NmdcHub::hubMessage(const string& aMessage, string& error_, bool thirdPerson) noexcept { 
-	if(!stateNormal()) {
-		error_ = STRING(CONNECTING_IN_PROGRESS);
-		return false;
-	}
-
-	send(fromUtf8( "<" + getMyNick() + "> " + escape(thirdPerson ? "/me " + aMessage : aMessage) + "|" ) );
+bool NmdcHub::hubMessage(const string& aMessage, string& /*error_*/, bool aThirdPerson) noexcept { 
+	send(fromUtf8( "<" + getMyNick() + "> " + escape(aThirdPerson ? "/me " + aMessage : aMessage) + "|" ) );
 	return true;
 }
 

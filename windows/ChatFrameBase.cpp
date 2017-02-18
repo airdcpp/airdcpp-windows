@@ -550,7 +550,7 @@ bool ChatFrameBase::sendFrameMessage(const tstring& aMsg, bool thirdPerson /*fal
 		string error;
 		if (sendMessage(aMsg, error, thirdPerson)) {
 			return true;
-		} else {
+		} else if (!error.empty()) {
 			addStatusLine(Text::toT(error),  LogMessage::SEV_ERROR);
 		}
 	}
@@ -665,12 +665,8 @@ void ChatFrameBase::handleSendMessage() {
 				addStatusLine(_T("Client command: ") + s, LogMessage::SEV_INFO);
 			}
 			isCommand = checkCommand(cmd, param, message, status, thirdPerson);
-			if(!isCommand) {
-				if (SETTING(SEND_UNKNOWN_COMMANDS)) {
-					message = s;
-				} else {
-					status = TSTRING(UNKNOWN_COMMAND) + _T(" ") + cmd;
-				}
+			if(message.empty()) {
+				message = s;
 			} 
 		} else {
 			if(SETTING(SERVER_COMMANDS)) {
@@ -694,11 +690,10 @@ void ChatFrameBase::handleSendMessage() {
 	}
 
 	if (!message.empty()) {
-		if (sendFrameMessage(message, thirdPerson))
-			ctrlMessage.SetWindowText(Util::emptyStringT.c_str());
-	} else {
-		ctrlMessage.SetWindowText(Util::emptyStringT.c_str());
+		sendFrameMessage(message, thirdPerson);
 	}
+
+	ctrlMessage.SetWindowText(Util::emptyStringT.c_str());
 }
 
 static TCHAR *msgs[] = { _T("\r\n-- I'm a happy AirDC++ user. You could be happy too.\r\n"),

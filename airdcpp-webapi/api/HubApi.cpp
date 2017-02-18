@@ -38,6 +38,16 @@ namespace webserver {
 		);
 	};
 
+	ActionHookRejectionPtr HubApi::outgoingMessageHook(const string& aMessage, const Client& aClient, const HookRejectionGetter& aRejectionGetter) {
+		return HookCompletionData::toResult(
+			fireHook("hub_outgoing_message_hook", 25ms, 2s, {
+				{ "text", aMessage },
+				{ "hub_url", aClient.getHubUrl() }
+			}),
+			aRejectionGetter
+		);
+	}
+
 	HubApi::HubApi(Session* aSession) : 
 		ParentApiModule("sessions", TOKEN_PARAM, Access::HUBS_VIEW, aSession, subscriptionList, HubInfo::subscriptionList,
 			[](const string& aId) { return Util::toUInt32(aId); },
@@ -52,6 +62,12 @@ namespace webserver {
 			return ClientManager::getInstance()->incomingHubMessageHook.addSubscriber(aId, aName, HOOK_HANDLER(HubApi::incomingMessageHook));
 		}, [this](const string& aId) {
 			ClientManager::getInstance()->incomingHubMessageHook.removeSubscriber(aId);
+		});
+
+		createHook("hub_outgoing_message_hook", [this](const string& aId, const string& aName) {
+			return ClientManager::getInstance()->outgoingHubMessageHook.addSubscriber(aId, aName, HOOK_HANDLER(HubApi::outgoingMessageHook));
+		}, [this](const string& aId) {
+			ClientManager::getInstance()->outgoingHubMessageHook.removeSubscriber(aId);
 		});
 
 		METHOD_HANDLER(Access::HUBS_EDIT,	METHOD_POST,	(EXACT_PARAM("sessions")),				HubApi::handleConnect);

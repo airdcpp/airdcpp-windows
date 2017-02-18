@@ -357,6 +357,45 @@ void Client::allowUntrustedConnect() noexcept {
 	connect(false);
 }
 
+bool Client::sendMessage(const string& aMessage, string& error_, bool aThirdPerson) noexcept {
+	if (!stateNormal()) {
+		error_ = STRING(CONNECTING_IN_PROGRESS);
+		return false;
+	}
+
+	auto error = ClientManager::getInstance()->outgoingHubMessageHook.runHooksError(aMessage, *this);
+	if (error) {
+		error_ = error->formatError(error);
+		return false;
+	}
+
+
+	if (!aMessage.empty() && aMessage.front() == '/') {
+		return false;
+	}
+
+	return hubMessage(aMessage, error_, aThirdPerson);
+}
+
+bool Client::sendPrivateMessage(const OnlineUserPtr& aUser, const string& aMessage, string& error_, bool aThirdPerson, bool aEcho) noexcept {
+	if (!stateNormal()) {
+		error_ = STRING(CONNECTING_IN_PROGRESS);
+		return false;
+	}
+
+	auto error = ClientManager::getInstance()->outgoingPrivateMessageHook.runHooksError(aMessage, HintedUser(aUser->getUser(), aUser->getHubUrl()));
+	if (error) {
+		error_ = error->formatError(error);
+		return false;
+	}
+
+	if (!aMessage.empty() && aMessage.front() == '/') {
+		return false;
+	}
+
+	return privateMessage(aUser, aMessage, error_, aThirdPerson, aEcho);
+}
+
 void Client::onPrivateMessage(const ChatMessagePtr& aMessage) noexcept {
 	if (!ClientManager::getInstance()->incomingPrivateMessageHook.runHooksBasic(aMessage)) {
 		return;
