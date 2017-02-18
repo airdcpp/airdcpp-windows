@@ -44,6 +44,7 @@ public:
 		NOTIFY_HANDLER(IDC_RECENTS_LIST, LVN_GETDISPINFO, ctrlList.list.onGetDispInfo)
 		NOTIFY_HANDLER(IDC_RECENTS_LIST, LVN_COLUMNCLICK, ctrlList.list.onColumnClick)
 		NOTIFY_HANDLER(IDC_RECENTS_LIST, LVN_GETINFOTIP, ctrlList.list.onInfoTip)
+		NOTIFY_HANDLER(IDC_RECENTS_LIST, NM_DBLCLK, onDoubleClick)
 		MESSAGE_HANDLER(WM_CREATE, onCreate)
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
@@ -60,6 +61,7 @@ public:
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL & /*bHandled*/);
 	LRESULT onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/);
 	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bHandled*/);
+	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 
 	void createColumns();
 	size_t getTotalListItemCount() {
@@ -84,7 +86,13 @@ private:
 		const tstring getText(int col) const;
 
 		static int compareItems(const ItemInfo* a, const ItemInfo* b, int col) {
-			return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str());
+			switch (col) {
+			case COLUMN_DATE: {
+				return compare(a->item->getLastOpened(), b->item->getLastOpened());
+			}
+			default:
+				return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str());
+			}
 		}
 
 		int getImageIndex() const { return recentType; }
@@ -113,29 +121,15 @@ private:
 	void addEntry(ItemInfo* ii);
 	bool show(const ItemInfo* aItem);
 
+	void handleOpen(const ItemInfo* aItem);
+
 	CImageList listImages;
 
 	CStatusBarCtrl ctrlStatus;
 	int statusSizes[2];
 	
-	void on(RecentManagerListener::RecentAdded, const RecentEntryPtr& entry, RecentEntry::Type aType) noexcept override {
-		callAsync([=] {
-			auto i = boost::find_if(itemInfos, [=](unique_ptr<ItemInfo>& ii) { return ii->item == entry; });
-			if (i == itemInfos.end()) {
-				itemInfos.emplace_back(make_unique<ItemInfo>(entry, aType));
-				addEntry(itemInfos.back().get());
-			}
-		});
-	}
-	void on(RecentManagerListener::RecentRemoved, const RecentEntryPtr& entry, RecentEntry::Type) noexcept override {
-		callAsync([=] {
-			auto i = boost::find_if(itemInfos, [=](unique_ptr<ItemInfo>& ii) { return ii->item == entry; });
-			if (i != itemInfos.end()) {
-				ctrlList.list.deleteItem((*i).get());
-				itemInfos.erase(i);
-			}
-		});
-	}
+	void on(RecentManagerListener::RecentAdded, const RecentEntryPtr& entry, RecentEntry::Type aType) noexcept override;
+	void on(RecentManagerListener::RecentRemoved, const RecentEntryPtr& entry, RecentEntry::Type) noexcept override;
 	void on(RecentManagerListener::RecentUpdated, const RecentEntryPtr& entry, RecentEntry::Type) noexcept override;
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept override;

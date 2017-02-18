@@ -107,28 +107,18 @@ LRESULT RecentsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 
 			menu.InsertSeparatorFirst(Text::toT(title));
 
-			menu.appendItem(TSTRING(OPEN), [=] { 
-				for_each(items.begin(), items.end(), [=](const ItemInfo* ii) {
-				if (ii->recentType == RecentEntry::TYPE_HUB) {
-					WinUtil::connectHub(ii->item->getUrl());
-
-				}
-				else if (ii->recentType == RecentEntry::TYPE_PRIVATE_CHAT) {
-					WinUtil::PM()(ii->item->getUser(), ii->item->getUrl());
-				}
-				else if (ii->recentType == RecentEntry::TYPE_FILELIST) {
-					WinUtil::GetBrowseList()(ii->item->getUser(), ii->item->getUrl());
-				}
-
-			}); 
-			}, OMenu::FLAG_DEFAULT);
+			menu.appendItem(TSTRING(OPEN), [=] { for_each(items.begin(), items.end(), [=](const ItemInfo* ii) { handleOpen(ii); }); }, OMenu::FLAG_DEFAULT);
 
 			menu.appendItem(TSTRING(REMOVE), [=] { for_each(items.begin(), items.end(), [=](const ItemInfo* ii) {
-				RecentManager::getInstance()->removeRecent(RecentEntry::TYPE_HUB, ii->item); }); }, OMenu::FLAG_DEFAULT);
+				RecentManager::getInstance()->removeRecent((RecentEntry::Type)ii->recentType, ii->item); }); }, OMenu::FLAG_DEFAULT);
 			menu.appendSeparator();
 		}
 
-		menu.appendItem(TSTRING(CLEAR), [=] { RecentManager::getInstance()->clearRecents(RecentEntry::TYPE_HUB); }, OMenu::FLAG_THREADED);
+		menu.appendItem(TSTRING(CLEAR), [=] { 
+			RecentManager::getInstance()->clearRecents(RecentEntry::TYPE_HUB); 
+			RecentManager::getInstance()->clearRecents(RecentEntry::TYPE_FILELIST);
+			RecentManager::getInstance()->clearRecents(RecentEntry::TYPE_PRIVATE_CHAT);
+		}, OMenu::FLAG_THREADED);
 		
 		menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 		return TRUE;
@@ -153,6 +143,25 @@ void RecentsFrame::updateList() {
 	ctrlList.list.SetRedraw(TRUE);
 }
 
+void RecentsFrame::handleOpen(const ItemInfo* aItem) {
+	switch (aItem->recentType) {
+	case RecentEntry::TYPE_HUB: {
+		WinUtil::connectHub(aItem->item->getUrl());
+		break;
+	}
+	case RecentEntry::TYPE_PRIVATE_CHAT: {
+		WinUtil::PM()(aItem->item->getUser(), aItem->item->getUrl());
+		break;
+	}
+	case RecentEntry::TYPE_FILELIST: {
+		WinUtil::GetBrowseList()(aItem->item->getUser(), aItem->item->getUrl());
+		break;
+	}
+	default:
+		break;
+	}
+}
+
 bool RecentsFrame::show(const ItemInfo* aItem) {
 
 	auto filterNumericF = [&](int) -> double {
@@ -175,9 +184,21 @@ LRESULT RecentsFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bHandled*
 		int i = -1;
 		while ((i = ctrlList.list.GetNextItem(i, LVNI_SELECTED)) != -1) {
 			auto r = (ItemInfo*)ctrlList.list.GetItemData(i);
-			RecentManager::getInstance()->removeRecent(RecentEntry::TYPE_HUB, r->item);
+			RecentManager::getInstance()->removeRecent((RecentEntry::Type)r->recentType, r->item);
 		}
 	}
+	return 0;
+}
+
+LRESULT RecentsFrame::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
+	NMITEMACTIVATE* l = (NMITEMACTIVATE*)pnmh;
+
+	if (l->iItem != -1) {
+		auto ii = (ItemInfo*)ctrlList.list.GetItemData(l->iItem);
+		handleOpen(ii);
+	}
+
+	bHandled = FALSE;
 	return 0;
 }
 
@@ -255,6 +276,25 @@ void RecentsFrame::on(RecentManagerListener::RecentUpdated, const RecentEntryPtr
 	});
 }
 
+void RecentsFrame::on(RecentManagerListener::RecentAdded, const RecentEntryPtr& entry, RecentEntry::Type aType) noexcept {
+	callAsync([=] {
+		auto i = boost::find_if(itemInfos, [=](unique_ptr<ItemInfo>& ii) { return ii->item == entry; });
+		if (i == itemInfos.end()) {
+			itemInfos.emplace_back(make_unique<ItemInfo>(entry, aType));
+			addEntry(itemInfos.back().get());
+		}
+	});
+}
+void RecentsFrame::on(RecentManagerListener::RecentRemoved, const RecentEntryPtr& entry, RecentEntry::Type) noexcept  {
+	callAsync([=] {
+		auto i = boost::find_if(itemInfos, [=](unique_ptr<ItemInfo>& ii) { return ii->item == entry; });
+		if (i != itemInfos.end()) {
+			ctrlList.list.deleteItem((*i).get());
+			itemInfos.erase(i);
+		}
+	});
+}
+
 const tstring RecentsFrame::ItemInfo::getText(int col) const {
 	if(!item)
 		return Util::emptyStringT;
@@ -282,5 +322,6 @@ void RecentsFrame::createColumns() {
 
 	ctrlList.list.setColumnOrderArray(COLUMN_LAST, columnIndexes);
 	ctrlList.list.setSortColumn(COLUMN_DATE);
+	ctrlList.list.setAscending(false);
 	//ctrlList.list.setVisible(SETTING(RECENTFRAME_VISIBLE));
 }
