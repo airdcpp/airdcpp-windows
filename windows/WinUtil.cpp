@@ -1091,52 +1091,25 @@ void WinUtil::openLink(const tstring& url) {
 
 bool WinUtil::parseDBLClick(const tstring& str) {
 	auto url = Text::fromT(str);
-	string proto, host, port, file, query, fragment;
-	Util::decodeUrl(url, proto, host, port, file, query, fragment);
 
-	if(Util::stricmp(proto.c_str(), "adc") == 0 ||
-		Util::stricmp(proto.c_str(), "adcs") == 0 ||
-		Util::stricmp(proto.c_str(), "dchub") == 0 )
-	{
-		if(!host.empty()) {
-			connectHub(url);
-		}
-
-		if(!file.empty()) {
-			if(file[0] == '/') {
-				// Remove any '/' in from of the file
-				file = file.substr(1);
-				if(file.empty()) return true;
-			}
-
-			MainFrame::getMainFrame()->addThreadedTask([=] {
-				try {
-					auto user = ClientManager::getInstance()->findLegacyUser(file);
-					if (user) {
-						DirectoryListingManager::getInstance()->createList(HintedUser(user, url), QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
-					}
-					// @todo else report error
-				} catch (const Exception&) {
-					// ...
-				}
-			});
-		}
-
-		return true;
-	} else if(host == "magnet") {
-		parseMagnetUri(str, HintedUser());
+	if (AirUtil::isHubLink(url)) {
+		connectHub(url);
 		return true;
 	}
 
-	boost::regex reg;
-	reg.assign(AirUtil::getReleaseRegLong(false));
-	if(regex_match(url, reg)) {
+	if(AirUtil::isRelease(url)) {
 		WinUtil::search(Text::toT(url));
 		return true;
-	} else {
+	} else if(AirUtil::stringRegexMatch(AirUtil::getLinkUrl(), url)) {
+		if(str.find(_T("magnet:?")) != tstring::npos) {
+			parseMagnetUri(str, HintedUser());
+			return true;
+		}
 		::ShellExecute(NULL, NULL, Text::toT(url).c_str(), NULL, NULL, SW_SHOWNORMAL);
 		return true;
 	}
+
+	return false;
 }
 
 void WinUtil::SetIcon(HWND hWnd, int aDefault, bool big) {

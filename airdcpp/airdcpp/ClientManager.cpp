@@ -504,9 +504,7 @@ UserPtr ClientManager::loadUser(const string& aCid, const string& aUrl, const st
 		return nullptr;
 	}
 	auto u = getUser(CID(aCid));
-	
-	if (!aNick.empty() || !aUrl.empty())
-		addOfflineUser(u, aNick, aUrl, lastSeen);
+	addOfflineUser(u, aNick, aUrl, lastSeen);
 
 	return u;
 }
@@ -1317,9 +1315,12 @@ CID ClientManager::getMyCID() noexcept {
 	return CID(tiger.finalize());
 }
 
-void ClientManager::addOfflineUser(const UserPtr& user, const string& nick, const string& url, uint32_t lastSeen/*GET_TIME()*/) noexcept{
+void ClientManager::addOfflineUser(const UserPtr& user, const string& aNick, const string& aUrl, uint32_t lastSeen/*GET_TIME()*/) noexcept{
+	if (!user || aNick.empty() || aUrl.empty())
+		return;
+
 	WLock l(cs);
-	offlineUsers.emplace(const_cast<CID*>(&user->getCID()), OfflineUser(nick, url, lastSeen));
+	offlineUsers.emplace(const_cast<CID*>(&user->getCID()), OfflineUser(aNick, aUrl, lastSeen));
 }
 
 string ClientManager::getMyNick(const string& hubUrl) const noexcept {
