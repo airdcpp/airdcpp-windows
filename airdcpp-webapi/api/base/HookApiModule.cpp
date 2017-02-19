@@ -45,7 +45,7 @@ namespace webserver {
 				}
 			}
 
-			std::this_thread::sleep_for(100ms);
+			std::this_thread::sleep_for(chrono::milliseconds(100));
 		}
 
 		SubscribableApiModule::on(SessionListener::SocketDisconnected());
@@ -179,7 +179,7 @@ namespace webserver {
 			{ "data", aJsonCallback() },
 		})) {
 			// Wait for the response
-			for (std::chrono::milliseconds waitCounter = 0ms; waitCounter < aTimeout; waitCounter += aPollInterval) {
+			for (std::chrono::milliseconds waitCounter = chrono::milliseconds(0); waitCounter < aTimeout; waitCounter += aPollInterval) {
 				std::this_thread::sleep_for(aPollInterval);
 
 				if (!hook->second.isActive()) {
