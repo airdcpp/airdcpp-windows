@@ -155,7 +155,13 @@ namespace webserver {
 		return websocketpp::http::status_code::no_content;
 	}
 
-	HookApiModule::HookCompletionDataPtr HookApiModule::fireHook(const string& aSubscription, const std::chrono::milliseconds& aPollInterval, const std::chrono::milliseconds& aTimeout, const json& aData) {
+	HookApiModule::HookCompletionDataPtr HookApiModule::fireHook(const string& aSubscription, const std::chrono::milliseconds& aPollInterval, const std::chrono::milliseconds& aTimeout, JsonCallback&& aJsonCallback) {
+		const auto& hook = hooks.find(aSubscription);
+		dcassert(hook != hooks.end());
+		if (!hook->second.isActive()) {
+			return nullptr;
+		}
+
 		// Add a pending entry
 		auto id = pendingHookIdCounter++;
 
@@ -164,8 +170,6 @@ namespace webserver {
 			pendingHookActions[id];
 		}
 
-		const auto& hook = hooks.find(aSubscription);
-
 		HookCompletionDataPtr completionData = nullptr;
 
 		// Notify the subscriber
@@ -173,7 +177,7 @@ namespace webserver {
 			{ "event", aSubscription },
 			{ "completion_id", id },
 			{ "hook_id", hook->second.getSubscriberId() },
-			{ "data", aData },
+			{ "data", aJsonCallback() },
 		})) {
 			// Wait for the response
 			for (std::chrono::milliseconds waitCounter = 0ms; waitCounter < aTimeout; waitCounter += aPollInterval) {

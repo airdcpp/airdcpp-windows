@@ -40,7 +40,7 @@ namespace webserver {
 
 		template<typename... ArgT>
 		ParentApiModule(const string& aSubmoduleSection, ApiModule::RequestHandler::Param&& aParamMatcher, Access aAccess, Session* aSession, const StringList& aSubscriptions, const StringList& aChildSubscription, IdConvertF aIdConvertF, ChildSerializeF aChildSerializeF, ArgT&&... args) :
-			BaseType(aSession, aAccess, &aSubscriptions, std::forward<ArgT>(args)...), idConvertF(aIdConvertF), childSerializeF(aChildSerializeF), paramId(aParamMatcher.id) {
+			BaseType(aSession, aAccess, &aSubscriptions, std::forward<ArgT>(args)...), idConvertF(aIdConvertF), childSerializeF(aChildSerializeF), paramId(aParamMatcher.id), childSubscriptions(aChildSubscription) {
 
 			// Get module
 			METHOD_HANDLER(aAccess, METHOD_GET, (EXACT_PARAM(aSubmoduleSection), aParamMatcher), Type::handleGetSubmodule);
@@ -50,10 +50,6 @@ namespace webserver {
 
 			// Request forwarder
 			METHOD_HANDLER(Access::ANY, METHOD_FORWARD, (EXACT_PARAM(aSubmoduleSection), aParamMatcher), Type::handleSubModuleRequest);
-
-			for (const auto& s: aChildSubscription) {
-				childSubscriptions.emplace(s, false);
-			}
 		}
 
 		~ParentApiModule() {
@@ -105,7 +101,7 @@ namespace webserver {
 		}
 
 		bool subscriptionExists(const string& aSubscription) const noexcept override {
-			if (childSubscriptions.find(aSubscription) != childSubscriptions.end()) {
+			if (hasChildSubscription(aSubscription)) {
 				return true;
 			}
 
@@ -114,27 +110,16 @@ namespace webserver {
 
 		// Change subscription state for all submodules
 		bool setChildSubscriptionState(const string& aSubscription, bool aActive) noexcept {
-			if (childSubscriptions.find(aSubscription) != childSubscriptions.end()) {
+			if (hasChildSubscription(aSubscription)) {
 				RLock l(cs);
 				for (const auto& m : subModules | map_values) {
 					m->setSubscriptionState(aSubscription, aActive);
 				}
 
-				childSubscriptions[aSubscription] = aActive;
 				return true;
 			}
 
 			return false;
-		}
-
-		void createChildSubscription(const string& aSubscription) noexcept {
-			childSubscriptions[aSubscription];
-		}
-
-		bool childSubscriptionActive(const string& aSubscription) const noexcept {
-			auto i = childSubscriptions.find(aSubscription);
-			dcassert(i != childSubscriptions.end());
-			return i->second;
 		}
 
 		// Submodules should NEVER be accessed outside of web server threads (e.g. API requests)
@@ -184,6 +169,10 @@ namespace webserver {
 	protected:
 		mutable SharedMutex cs;
 
+		bool hasChildSubscription(const string& aName) const noexcept {
+			return find(childSubscriptions.begin(), childSubscriptions.end(), aName) != childSubscriptions.end();
+		}
+
 		void forEachSubModule(std::function<void(const ItemType&)> aAction) {
 			RLock l(cs);
 			for (const auto& m : subModules | map_values) {
@@ -207,7 +196,7 @@ namespace webserver {
 	private:
 		map<IdType, typename ItemType::Ptr> subModules;
 
-		SubscribableApiModule::SubscriptionMap childSubscriptions;
+		const StringList& childSubscriptions;
 		const IdConvertF idConvertF;
 		const ChildSerializeF childSerializeF;
 		const string paramId;
