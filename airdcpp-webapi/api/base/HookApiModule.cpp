@@ -176,7 +176,6 @@ namespace webserver {
 		if (send({
 			{ "event", aSubscription },
 			{ "completion_id", id },
-			{ "hook_id", hook->second.getSubscriberId() },
 			{ "data", aJsonCallback() },
 		})) {
 			// Wait for the response

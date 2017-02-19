@@ -139,8 +139,8 @@ namespace webserver {
 
 		aSession->addListener(this);
 
-		METHOD_HANDLER(aSubscriptionAccess, METHOD_POST, (EXACT_PARAM("listener"), STR_PARAM(LISTENER_PARAM_ID)), SubscribableApiModule::handleSubscribe);
-		METHOD_HANDLER(aSubscriptionAccess, METHOD_DELETE, (EXACT_PARAM("listener"), STR_PARAM(LISTENER_PARAM_ID)), SubscribableApiModule::handleUnsubscribe);
+		METHOD_HANDLER(aSubscriptionAccess, METHOD_POST, (EXACT_PARAM("listeners"), STR_PARAM(LISTENER_PARAM_ID)), SubscribableApiModule::handleSubscribe);
+		METHOD_HANDLER(aSubscriptionAccess, METHOD_DELETE, (EXACT_PARAM("listeners"), STR_PARAM(LISTENER_PARAM_ID)), SubscribableApiModule::handleUnsubscribe);
 	}
 
 	SubscribableApiModule::~SubscribableApiModule() {
