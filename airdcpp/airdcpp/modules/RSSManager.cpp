@@ -210,7 +210,7 @@ bool RSSManager::checkTitle(const RSSPtr& aFeed, string& aTitle) {
 }
 
 void RSSManager::addData(const string& aTitle, const string& aLink, const string& aDate, RSSPtr& aFeed) {
-	auto data = new RSSData(aTitle, aLink, aDate, aFeed);
+	auto data = RSSDataPtr(new RSSData(aTitle, aLink, aDate, aFeed));
 	{
 		Lock l(cs);
 		aFeed->getFeedData().emplace(aTitle, data);
@@ -366,7 +366,7 @@ public:
 			const string& link = getAttrib(attribs, "link", 1);
 			const string& pubdate = getAttrib(attribs, "pubdate", 2);
 			const string& dateadded = getAttrib(attribs, "dateadded", 3);
-			auto rd = new RSSData(title, link, pubdate, aFeed, Util::toInt64(dateadded));
+			auto rd = RSSDataPtr(new RSSData(title, link, pubdate, aFeed, Util::toInt64(dateadded)));
 			aFeed->getFeedData().emplace(rd->getTitle(), rd);
 		}
 	}

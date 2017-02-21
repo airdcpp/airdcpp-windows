@@ -122,7 +122,7 @@ private:
 		COLUMN_LAST
 	};
 
-	class ItemInfo {
+	class ItemInfo: boost::noncopyable {
 	public:
 		ItemInfo(const RSSDataPtr& aFeedData) : item(aFeedData) {
 			isRelease = AirUtil::isRelease(aFeedData->getTitle());

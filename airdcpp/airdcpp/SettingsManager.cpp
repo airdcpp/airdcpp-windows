@@ -1407,7 +1407,7 @@ bool SettingsManager::saveSettingFile(SimpleXML& aXML, Util::Paths aPath, const 
 
 	try {
 		{
-			File f(fname + ".tmp", File::WRITE, File::CREATE | File::TRUNCATE);
+			File f(fname + ".tmp", File::WRITE, File::CREATE | File::TRUNCATE, File::BUFFER_WRITE_THROUGH);
 			f.write(SimpleXML::utf8Header);
 			f.write(aXML.toXML());
 		}
