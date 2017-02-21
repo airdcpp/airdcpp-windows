@@ -376,9 +376,7 @@ private:
 };
 
 void RSSManager::load() {
-	try {
-		SimpleXML xml;
-		SettingsManager::loadSettingFile(xml, CONFIG_DIR, CONFIG_NAME);
+	SettingsManager::loadSettingFile(CONFIG_DIR, CONFIG_NAME, [this](SimpleXML& xml) {
 		if (xml.findChild("RSS")) {
 			xml.stepIn();
 
@@ -403,11 +401,12 @@ void RSSManager::load() {
 			xml.resetCurrentChild();
 			xml.stepOut();
 		}
+	});
 
+	try {
 		StringList fileList = File::findFiles(DATABASE_DIR, "RSSDataBase*", File::TYPE_FILE);
 		parallel_for_each(fileList.begin(), fileList.end(), [&](const string& path) {
 			if (Util::getFileExt(path) == ".xml") {
-
 				try {
 					RSSLoader loader;
 
@@ -420,10 +419,7 @@ void RSSManager::load() {
 				}
 			}
 		});
-	}
-	catch (const Exception& e) {
-		LogManager::getInstance()->message("Loading the RSS failed: " + e.getError(), LogMessage::SEV_INFO);
-	}
+	} catch (...) { }
 
 	nextUpdate = GET_TICK() + 60 * 1000; //start after 60 seconds
 	TimerManager::getInstance()->addListener(this);
