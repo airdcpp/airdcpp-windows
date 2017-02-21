@@ -374,7 +374,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	}
 
 	if (!WinUtil::isShift() && !SETTING(NICK).empty()) {
-		loadOpenWindows();
+		callAsync([=] { loadOpenWindows(); });
 	}
 
 	// We want to pass this one on to the splitter...hope it get's there...
