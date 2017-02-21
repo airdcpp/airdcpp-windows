@@ -1285,9 +1285,7 @@ void MainFrame::loadOpenWindows() {
 
 #define load(frame, ID) else if(frame::id == ID) frame::parseWindowParams(params)
 
-		try {
-			SimpleXML xml;
-			SettingsManager::loadSettingFile(xml, CONFIG_DIR, CONFIG_FRAMES_NAME);
+		SettingsManager::loadSettingFile(CONFIG_DIR, CONFIG_FRAMES_NAME, [this, autoConnect](SimpleXML& xml) {
 			if (xml.findChild("Windows")) {
 				xml.stepIn();
 				while (xml.findChild("Window")) {
@@ -1324,8 +1322,7 @@ void MainFrame::loadOpenWindows() {
 					load(RecentsFrame, id);
 				}
 			}
-		}
-		catch (const Exception&) {}
+		});
 #undef load
 	}
 	/*
