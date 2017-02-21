@@ -100,9 +100,9 @@ public:
 
 	GETSET(string, url, Url);
 	GETSET(string, feedName, FeedName);
-	GETSET(time_t, lastUpdate, LastUpdate);
+	IGETSET(time_t, lastUpdate, LastUpdate, 0);
 	IGETSET(int, updateInterval, UpdateInterval, 60);
-	GETSET(int, token, Token);
+	IGETSET(int, token, Token, 0);
 	IGETSET(bool, dirty, Dirty, false);
 	IGETSET(bool, enable, Enable, true);
 

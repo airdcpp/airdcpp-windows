@@ -103,16 +103,20 @@ void RSSManager::parseAtomFeed(SimpleXML& xml, RSSPtr& aFeed) {
 			if (xml.findChild("link")) {
 				link = xml.getChildAttrib("href");
 			}
+			xml.resetCurrentChild();
 			if (xml.findChild("title")) {
 				titletmp = xml.getChildData();
 				newdata = checkTitle(aFeed, titletmp);
 			}
+			xml.resetCurrentChild();
 			if (xml.findChild("updated"))
 				date = xml.getChildData();
 
 			if (newdata) {
 				addData(titletmp, link, date, aFeed);
 			}
+
+			xml.resetCurrentChild();
 			xml.stepOut();
 		}
 	xml.stepOut();
@@ -133,20 +137,23 @@ void RSSManager::parseRSSFeed(SimpleXML& xml, RSSPtr& aFeed) {
 				newdata = checkTitle(aFeed, titletmp);
 			}
 
+			xml.resetCurrentChild();
 			if (xml.findChild("link")) {
 				link = xml.getChildData();
 				//temp fix for some urls
 				if (strncmp(link.c_str(), "//", 2) == 0)
 					link = "https:" + link;
 			}
+
+			xml.resetCurrentChild();
 			if (xml.findChild("pubDate"))
 				date = xml.getChildData();
-
 
 			if (newdata) {
 				addData(titletmp, link, date, aFeed);
 			}
 
+			xml.resetCurrentChild();
 			xml.stepOut();
 		}
 		xml.stepOut();

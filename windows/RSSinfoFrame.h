@@ -95,7 +95,7 @@ public:
 	
 	void reloadList();
 	size_t getTotalListItemCount() {
-		return ItemInfos.size();
+		return itemInfos.size();
 	}
 	void createColumns();
 
@@ -182,7 +182,7 @@ private:
 	int curSel;
 
 	//RSSdata
-	vector<shared_ptr<ItemInfo>> ItemInfos;
+	vector<unique_ptr<ItemInfo>> itemInfos;
 
 	static int columnSizes[COLUMN_LAST];
 	static int columnIndexes[COLUMN_LAST];
