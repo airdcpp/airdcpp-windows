@@ -40,13 +40,13 @@ namespace webserver {
 		QueueManager::getInstance()->addListener(this);
 		DownloadManager::getInstance()->addListener(this);
 
-		createHook("queue_file_finished", [this](const string& aId, const string& aName) {
+		createHook("queue_file_finished_hook", [this](const string& aId, const string& aName) {
 			return QueueManager::getInstance()->fileCompletionHook.addSubscriber(aId, aName, HOOK_HANDLER(QueueApi::fileCompletionHook));
 		}, [this](const string& aId) {
 			QueueManager::getInstance()->fileCompletionHook.removeSubscriber(aId);
 		});
 
-		createHook("queue_bundle_finished", [this](const string& aId, const string& aName) {
+		createHook("queue_bundle_finished_hook", [this](const string& aId, const string& aName) {
 			return QueueManager::getInstance()->bundleCompletionHook.addSubscriber(aId, aName, HOOK_HANDLER(QueueApi::bundleCompletionHook));
 		}, [this](const string& aId) {
 			QueueManager::getInstance()->bundleCompletionHook.removeSubscriber(aId);
@@ -113,25 +113,21 @@ namespace webserver {
 	}
 
 	ActionHookRejectionPtr QueueApi::fileCompletionHook(const QueueItemPtr& aFile, const HookRejectionGetter& aErrorGetter) noexcept {
-		if (hookActive("queue_file_finished")) {
-			return HookCompletionData::toResult(
-				fireHook("queue_file_finished", 250ms, 60s, Serializer::serializeItem(aFile, QueueFileUtils::propertyHandler)),
-				aErrorGetter
-			);
-		}
-
-		return nullptr;
+		return HookCompletionData::toResult(
+			fireHook("queue_file_finished_hook", 60, [&]() {
+				return Serializer::serializeItem(aFile, QueueFileUtils::propertyHandler);
+			}),
+			aErrorGetter
+		);
 	}
 
 	ActionHookRejectionPtr QueueApi::bundleCompletionHook(const BundlePtr& aBundle, const HookRejectionGetter& aErrorGetter) noexcept {
-		if (hookActive("queue_bundle_finished")) {
-			return HookCompletionData::toResult(
-				fireHook("queue_bundle_finished", 250ms, 60s, Serializer::serializeItem(aBundle, QueueBundleUtils::propertyHandler)),
-				aErrorGetter
-			);
-		}
-
-		return nullptr;
+		return HookCompletionData::toResult(
+			fireHook("queue_bundle_finished_hook", 60, [&]() {
+				return Serializer::serializeItem(aBundle, QueueBundleUtils::propertyHandler);
+			}),
+			aErrorGetter
+		);
 	}
 
 	BundleList QueueApi::getBundleList() noexcept {

@@ -31,6 +31,7 @@
 namespace webserver {
 	class WebSocket;
 
+	// Module class that will forward request to child entities and can be used to manager their subscriptions across all entities
 	template<class IdType, class ItemType, class BaseType = SubscribableApiModule>
 	class ParentApiModule : public BaseType {
 	public:
@@ -52,7 +53,7 @@ namespace webserver {
 			METHOD_HANDLER(Access::ANY, METHOD_FORWARD, (EXACT_PARAM(aSubmoduleSection), aParamMatcher), Type::handleSubModuleRequest);
 
 			for (const auto& s: aChildSubscription) {
-				childSubscriptions.emplace(s, false);
+				SubscribableApiModule::createSubscription(s);
 			}
 		}
 
@@ -71,27 +72,8 @@ namespace webserver {
 			subModules.clear();
 		}
 
-		api_return handleSubscribe(ApiRequest& aRequest) override {
-			if (!socket) {
-				aRequest.setResponseErrorStr("Socket required");
-				return websocketpp::http::status_code::precondition_required;
-			}
-
-			const auto& subscription = aRequest.getStringParam(LISTENER_PARAM_ID);
-			if (setChildSubscriptionState(subscription, true)) {
-				return websocketpp::http::status_code::no_content;
-			}
-
-			return SubscribableApiModule::handleSubscribe(aRequest);
-		}
-
-		api_return handleUnsubscribe(ApiRequest& aRequest) override {
-			const auto& subscription = aRequest.getStringParam(LISTENER_PARAM_ID);
-			if (setChildSubscriptionState(subscription, false)) {
-				return websocketpp::http::status_code::no_content;
-			}
-
-			return SubscribableApiModule::handleUnsubscribe(aRequest);
+		void createSubscription(const string& aSubscription) noexcept override {
+			dcassert(0);
 		}
 
 		// Forward request to a submodule
@@ -102,39 +84,6 @@ namespace webserver {
 			aRequest.popParam(2);
 
 			return sub->handleRequest(aRequest);
-		}
-
-		bool subscriptionExists(const string& aSubscription) const noexcept override {
-			if (childSubscriptions.find(aSubscription) != childSubscriptions.end()) {
-				return true;
-			}
-
-			return SubscribableApiModule::subscriptionExists(aSubscription);
-		}
-
-		// Change subscription state for all submodules
-		bool setChildSubscriptionState(const string& aSubscription, bool aActive) noexcept {
-			if (childSubscriptions.find(aSubscription) != childSubscriptions.end()) {
-				RLock l(cs);
-				for (const auto& m : subModules | map_values) {
-					m->setSubscriptionState(aSubscription, aActive);
-				}
-
-				childSubscriptions[aSubscription] = aActive;
-				return true;
-			}
-
-			return false;
-		}
-
-		void createChildSubscription(const string& aSubscription) noexcept {
-			childSubscriptions[aSubscription];
-		}
-
-		bool childSubscriptionActive(const string& aSubscription) const noexcept {
-			auto i = childSubscriptions.find(aSubscription);
-			dcassert(i != childSubscriptions.end());
-			return i->second;
 		}
 
 		// Submodules should NEVER be accessed outside of web server threads (e.g. API requests)
@@ -207,7 +156,6 @@ namespace webserver {
 	private:
 		map<IdType, typename ItemType::Ptr> subModules;
 
-		SubscribableApiModule::SubscriptionMap childSubscriptions;
 		const IdConvertF idConvertF;
 		const ChildSerializeF childSerializeF;
 		const string paramId;
@@ -237,6 +185,16 @@ namespace webserver {
 			}
 
 			return send(aSubscription, aCallback());
+		}
+
+		bool subscriptionActive(const string& aSubscription) const noexcept override {
+			// Enabled across all entities?
+			if (parentModule->subscriptionActive(aSubscription)) {
+				return true;
+			}
+
+			// Enabled for this entity only?
+			return SubscribableApiModule::subscriptionActive(aSubscription);
 		}
 
 

@@ -37,7 +37,7 @@ namespace webserver {
 		~PrivateChatApi();
 	private:
 		ActionHookRejectionPtr incomingMessageHook(const ChatMessagePtr& aMessage, const HookRejectionGetter& aRejectionGetter);
-		ActionHookRejectionPtr outgoingMessageHook(const string& aMessage, const HintedUser& aUser, const HookRejectionGetter& aRejectionGetter);
+		ActionHookRejectionPtr outgoingMessageHook(const string& aMessage, bool aThirdPerson, const HintedUser& aUser, bool aEcho, const HookRejectionGetter& aRejectionGetter);
 
 		void addChat(const PrivateChatPtr& aChat) noexcept;
 
