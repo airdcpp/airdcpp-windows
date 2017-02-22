@@ -96,7 +96,7 @@ void RSSManager::parseAtomFeed(SimpleXML& xml, RSSPtr& aFeed) {
 		while (xml.findChild("entry")) {
 			xml.stepIn();
 			bool newdata = false;
-			string titletmp;
+			string title;
 			string link;
 			string date;
 
@@ -105,15 +105,15 @@ void RSSManager::parseAtomFeed(SimpleXML& xml, RSSPtr& aFeed) {
 			}
 			xml.resetCurrentChild();
 			if (xml.findChild("title")) {
-				titletmp = xml.getChildData();
-				newdata = checkTitle(aFeed, titletmp);
+				title = xml.getChildData();
+				newdata = checkTitle(aFeed, title);
 			}
 			xml.resetCurrentChild();
 			if (xml.findChild("updated"))
 				date = xml.getChildData();
 
 			if (newdata) {
-				addData(titletmp, link, date, aFeed);
+				addData(title, link, date, aFeed);
 			}
 
 			xml.resetCurrentChild();
@@ -129,12 +129,12 @@ void RSSManager::parseRSSFeed(SimpleXML& xml, RSSPtr& aFeed) {
 		while (xml.findChild("item")) {
 			xml.stepIn();
 			bool newdata = false;
-			string titletmp;
+			string title;
 			string link;
 			string date;
 			if (xml.findChild("title")) {
-				titletmp = xml.getChildData();
-				newdata = checkTitle(aFeed, titletmp);
+				title = xml.getChildData();
+				newdata = checkTitle(aFeed, title);
 			}
 
 			xml.resetCurrentChild();
@@ -150,7 +150,7 @@ void RSSManager::parseRSSFeed(SimpleXML& xml, RSSPtr& aFeed) {
 				date = xml.getChildData();
 
 			if (newdata) {
-				addData(titletmp, link, date, aFeed);
+				addData(title, link, date, aFeed);
 			}
 
 			xml.resetCurrentChild();
@@ -175,24 +175,6 @@ void RSSManager::downloadComplete(const string& aUrl) {
 	}
 
 	string tmpdata(conn->buf);
-	string erh;
-	string type;
-	unsigned long i = 1;
-	while (i) {
-		unsigned int res = 0;
-		sscanf(tmpdata.substr(i-1,4).c_str(), "%x", &res);
-		if (res == 0){
-			i=0;
-		}else{
-			if (tmpdata.substr(i-1,3).find("\x0d") != string::npos)
-				erh += tmpdata.substr(i+3,res);
-			if (tmpdata.substr(i-1,4).find("\x0d") != string::npos)
-				erh += tmpdata.substr(i+4,res);
-			else
-				erh += tmpdata.substr(i+5,res);
-			i += res+8;
-		}
-	}
 	try {
 		SimpleXML xml;
 		xml.fromXML(tmpdata.c_str());

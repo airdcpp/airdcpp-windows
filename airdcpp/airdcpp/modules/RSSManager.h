@@ -115,7 +115,7 @@ public:
 	vector<RSSFilter> rssFilterList;
 
 	bool allowUpdate() {
-		return enable && (getLastUpdate() + getUpdateInterval() * 60) < GET_TIME();
+		return getEnable() && (getLastUpdate() + getUpdateInterval() * 60) < GET_TIME();
 	}
 
 private:
