@@ -522,7 +522,7 @@ void RssInfoFrame::change() {
 void RssInfoFrame::remove() {
 	RSSManager::getInstance()->removeFeedItem(getSelectedFeed());
 	MainFrame::getMainFrame()->addThreadedTask([=] {
-		RSSManager::getInstance()->saveConfig(false);
+		RSSManager::getInstance()->save();
 	});
 }
 void RssInfoFrame::openDialog(RSSPtr& aFeed) {
@@ -531,7 +531,7 @@ void RssInfoFrame::openDialog(RSSPtr& aFeed) {
 	dlg.addPage<RssFilterPage>(shared_ptr<RssFilterPage>(new RssFilterPage(STRING(FILTER), aFeed)));
 	if (dlg.DoModal() == IDOK) {
 		MainFrame::getMainFrame()->addThreadedTask([=] {
-			RSSManager::getInstance()->saveConfig(false);
+			RSSManager::getInstance()->save();
 		});
 	}
 }

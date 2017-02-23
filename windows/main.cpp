@@ -292,7 +292,7 @@ void loadModules() {
 
 void destroyModules() {
 	AutoSearchManager::getInstance()->save();
-	RSSManager::getInstance()->saveConfig();
+	RSSManager::getInstance()->save(true);
 
 	HublistManager::deleteInstance();
 	PreviewAppManager::deleteInstance();
