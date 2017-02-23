@@ -54,6 +54,7 @@ void initialize() {
 #else
 	systemCharset = string(nl_langinfo(CODESET));
 #endif
+	dcassert(sanitizeUtf8("A\xc3Name") == "A_Name");
 }
 
 #ifdef _WIN32
@@ -187,10 +188,24 @@ string wideToUtf8(const wstring& str) noexcept {
 	}
 
 	string tgt;
+#ifdef _WIN32
+	int size = 0;
+	tgt.resize(str.length() * 2);
+
+	while ((size = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), str.length(), &tgt[0], tgt.length(), NULL, NULL)) == 0) {
+		if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+			tgt.resize(tgt.size() * 2);
+		else
+			break;
+	}
+
+	tgt.resize(size);
+#else	
 	string::size_type n = str.length();
 	for(string::size_type i = 0; i < n; ++i) {
 		wcToUtf8(str[i], tgt);
 	}
+#endif
 	return tgt;
 }
 
@@ -230,7 +245,23 @@ string wideToAcp(const wstring& str, const string& toCharset) noexcept {
 }
 
 string sanitizeUtf8(const string& str) noexcept {
-	return wideToUtf8(utf8ToWide(str));
+	string tgt;
+	tgt.reserve(str.length());
+
+	const auto n = str.length();
+	for (string::size_type i = 0; i < n; ) {
+		wchar_t c = 0;
+		int x = utf8ToWc(str.c_str() + i, c);
+		if (x < 0) {
+			tgt.insert(i, abs(x), '_');
+		} else {
+			wcToUtf8(c, tgt);
+		}
+
+		i += abs(x);
+	}
+
+	return tgt;
 }
 
 bool validateUtf8(const string& str) noexcept {
@@ -247,6 +278,20 @@ bool validateUtf8(const string& str) noexcept {
 
 wstring utf8ToWide(const string& str) noexcept {
 	wstring tgt;
+#ifdef _WIN32
+	int size = 0;
+	tgt.resize(str.length() + 1);
+	while ((size = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.length(), &tgt[0], (int)tgt.length())) == 0) {
+		if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
+			tgt.resize(tgt.size() * 2);
+		}
+		else {
+			break;
+		}
+
+	}
+	tgt.resize(size);
+#else
 	tgt.reserve(str.length());
 	string::size_type n = str.length();
 	for(string::size_type i = 0; i < n; ) {
@@ -260,6 +305,7 @@ wstring utf8ToWide(const string& str) noexcept {
 			tgt += c;
 		}
 	}
+#endif
 	return tgt;
 }
 
