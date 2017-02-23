@@ -23,22 +23,6 @@
 
 using std::string;
 
-wchar_t toLower(wchar_t c) noexcept {
-#ifdef _WIN32
-	return LOWORD(CharLowerW(reinterpret_cast<LPWSTR>(MAKELONG(c, 0))));
-#else
-	return (wchar_t)towlower(c);
-#endif
-}
-
-wchar_t toUpper(wchar_t c) noexcept {
-#ifdef _WIN32
-	return LOWORD(CharUpperW(reinterpret_cast<LPWSTR>(MAKELONG(c, 0))));
-#else
-	return (wchar_t)towupper(c);
-#endif
-}
-
 #define ARRAY_BITS (sizeof(MaskType)*8)
 
 DualString::DualString(const string& aStr) {
@@ -53,7 +37,7 @@ DualString::DualString(const string& aStr) {
 		if (n < 0) {
 			append("_");
 		} else {
-			auto lc = toLower(c);
+			auto lc = towlower(c);
 			if (lc != c) {
 				if (!charSizes) {
 					initSizeArray(aStr.size());
@@ -117,7 +101,7 @@ string DualString::getNormal() const {
 			wchar_t c = 0;
 			int n = dcpp::Text::utf8ToWc(p, c);
 
-			dcpp::Text::wcToUtf8(toUpper(c), ret);
+			dcpp::Text::wcToUtf8(towupper(c), ret);
 
 			bitPos += n;
 			p += n;

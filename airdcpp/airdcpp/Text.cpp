@@ -174,11 +174,7 @@ bool validateUtf8(const string& str) noexcept {
 }
 
 wchar_t toLower(wchar_t c) noexcept {
-#ifdef _WIN32
-	return LOWORD(CharLowerW(reinterpret_cast<LPWSTR>(MAKELONG(c, 0))));
-#else
 	return (wchar_t)towlower(c);
-#endif
 }
 
 bool isLower(const string& str) noexcept {
