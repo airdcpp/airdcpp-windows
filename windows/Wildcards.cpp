@@ -9,9 +9,13 @@
 // Thanks to the E.S.O. - ACS project that has done this C++ interface
 // to the wildcards pttern matching algorithm
 
-#include "stdinc.h"
+#include "stdafx.h"
 
 #include "Wildcards.h"
+
+#include <airdcpp/StringTokenizer.h>
+#include <airdcpp/Util.h>
+
 
 namespace dcpp {
 int Wildcard::wildcardfit(const char *wildcard, const char *test, bool useSet) {
