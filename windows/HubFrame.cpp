@@ -26,6 +26,7 @@
 #include "TextFrame.h"
 #include "ResourceLoader.h"
 #include "MainFrm.h"
+#include "Wildcards.h"
 
 #include <airdcpp/CryptoManager.h>
 #include <airdcpp/DirectoryListingManager.h>
@@ -38,7 +39,6 @@
 #include <airdcpp/FavoriteManager.h>
 #include <airdcpp/LogManager.h>
 #include <airdcpp/SettingsManager.h>
-#include <airdcpp/Wildcards.h>
 #include <airdcpp/Localization.h>
 #include <airdcpp/GeoManager.h>
 

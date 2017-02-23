@@ -29,6 +29,7 @@
 #include "ResourceLoader.h"
 #include "ShellContextMenu.h"
 #include "TextFrame.h"
+#include "Wildcards.h"
 #include "WinUtil.h"
 
 #include <airdcpp/ADLSearch.h>
@@ -39,7 +40,6 @@
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/User.h>
 #include <airdcpp/ViewFileManager.h>
-#include <airdcpp/Wildcards.h>
 
 #include <airdcpp/modules/HighlightManager.h>
 #include <airdcpp/modules/ShareScannerManager.h>

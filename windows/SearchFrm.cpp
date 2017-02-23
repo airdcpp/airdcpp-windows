@@ -24,6 +24,7 @@
 #include "LineDlg.h"
 #include "BarShader.h"
 #include "ResourceLoader.h"
+#include "Wildcards.h"
 
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/DirectoryListingManager.h>
@@ -37,7 +38,6 @@
 #include <airdcpp/TimerManager.h>
 
 #include <airdcpp/modules/HighlightManager.h>
-#include <airdcpp/WildCards.h>
 
 #include <boost/range/numeric.hpp>
 

@@ -12,9 +12,6 @@
 #ifndef WILDCARD_H
 #define WILDCARD_H
 
-#include "StringTokenizer.h"
-#include "Util.h"
-
 namespace dcpp {
 
 // Implementation of the UN*X wildcards
