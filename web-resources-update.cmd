@@ -82,7 +82,6 @@ if %errorlevel% == 0 goto DOWNLOAD
 goto NOWEBRESOURCES
 
 :DOWNLOAD
-pause
 "%windir%\System32\bitsadmin.exe" /transfer "airdcpp-webui" http://registry.npmjs.org/airdcpp-webui/-/airdcpp-webui-%version%.tgz %scriptpath%installer\$Web-resources\latest.tgz
 "%ProgramFiles%\7-Zip\7z.exe" x installer\$Web-resources\latest.tgz -o"installer\$Web-resources"
 "%ProgramFiles%\7-Zip\7z.exe" x installer\$Web-resources\latest.tar -o"installer\$Web-resources"
