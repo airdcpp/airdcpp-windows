@@ -189,10 +189,8 @@ namespace webserver {
 		json j = {
 			{ "total_file_count", itemStats.totalFileCount },
 			{ "total_directory_count", itemStats.totalDirectoryCount },
-			{ "files_per_directory", itemStats.filesPerDirectory },
 			{ "total_size", itemStats.totalSize },
-			{ "unique_file_percentage", itemStats.uniqueFilePercentage },
-			{ "unique_files", itemStats.uniqueFileCount },
+			{ "unique_file_count", itemStats.uniqueFileCount },
 			{ "average_file_age", itemStats.averageFileAge },
 			{ "profile_count", itemStats.profileCount },
 			{ "root_count", itemStats.rootDirectoryCount },
