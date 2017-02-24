@@ -161,12 +161,12 @@ namespace webserver {
 			{ "nmdc_speed_per_user", stats.nmdcSpeedPerUser },
 		};
 
-		stats.forEachClient([&](const string& aName, int aCount, double aPercentage) {
+		for (const auto& c: stats.clients) {
 			j["clients"].push_back({
-				{ "name", aName },
-				{ "count", aCount },
+				{ "name", c.first },
+				{ "count", c.second },
 			});
-		});
+		}
 
 		aRequest.setResponseBody(j);
 		return websocketpp::http::status_code::ok;
