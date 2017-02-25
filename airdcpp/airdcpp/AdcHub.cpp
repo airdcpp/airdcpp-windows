@@ -942,7 +942,7 @@ void AdcHub::sendHBRI(const string& aIP, const string& aPort, const string& aTok
 				}
 
 				if (severity == AdcCommand::SUCCESS) {
-					statusMessage(STRING(VALIDATION_SUCCEED), LogMessage::SEV_INFO);
+					statusMessage(STRING(VALIDATION_SUCCEEDED), LogMessage::SEV_INFO);
 					return;
 				} else {
 					throw Exception(response.getParam(1));
