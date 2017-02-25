@@ -929,7 +929,7 @@ UsersFrame::UserInfo::userData UsersFrame::UserInfo::getUserInfo(const UserPtr& 
 			}
 		}
 	}
-
+	
 	if (nick.empty()) {
 		//offline
 		auto ofu = ClientManager::getInstance()->getOfflineUser(aUser->getCID());
@@ -938,6 +938,8 @@ UsersFrame::UserInfo::userData UsersFrame::UserInfo::getUserInfo(const UserPtr& 
 			hubs = ofu->getUrl();
 			seen = ofu->getLastSeen() ? Util::formatTime("%Y-%m-%d %H:%M", ofu->getLastSeen()) : STRING(UNKNOWN);
 			hint_ = ofu->getUrl();
+		} else {
+			nick = aUser->getCID().toBase32();
 		}
 	}
 

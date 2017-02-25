@@ -232,7 +232,7 @@ void IgnoreManager::load() {
 			if (xml.findChild("Users")) {
 				xml.stepIn();
 				while (xml.findChild("User")) {
-					auto user = ClientManager::getInstance()->getUser(CID(xml.getChildAttrib("CID")));
+					auto user = ClientManager::getInstance()->loadUser(xml.getChildAttrib("CID"), xml.getChildAttrib("Nick"), xml.getChildAttrib("Hub"));
 					if (!user)
 						continue;
 
