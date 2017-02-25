@@ -182,7 +182,7 @@ public:
 
 	CriticalSection& getCS() { return cs; }
 
-	unordered_set<RSSPtr>& getRss(){
+	vector<RSSPtr>& getRss(){
 		return rssList;
 	}
 
@@ -212,7 +212,7 @@ private:
 	
 	void matchFilters(const RSSPtr& aFeed, const RSSDataPtr& aData);
 
-	unordered_set<RSSPtr> rssList;
+	vector<RSSPtr> rssList;
 
 	void parseRSSFeed(SimpleXML& xml, RSSPtr& aFeed);
 	void parseAtomFeed(SimpleXML& xml, RSSPtr& aFeed);

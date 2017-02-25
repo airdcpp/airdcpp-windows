@@ -250,10 +250,10 @@ void RSSManager::updateFeedItem(RSSPtr& aFeed, const string& aUrl, const string&
 		aFeed->setUpdateInterval(aUpdateInterval);
 		aFeed->setEnable(aEnable);
 
-		auto i = rssList.find(aFeed);
-		if (i == rssList.end()) {
+		auto r = find_if(rssList.begin(), rssList.end(), [aFeed](const RSSPtr& a) { return aFeed->getToken() == a->getToken(); });
+		if (r != rssList.end()) {
 			added = true;
-			rssList.emplace(aFeed);
+			rssList.emplace_back(aFeed);
 		}
 	}
 
@@ -279,7 +279,7 @@ void RSSManager::enableFeedUpdate(const RSSPtr& aFeed, bool enable) noexcept {
 void RSSManager::removeFeedItem(const RSSPtr& aFeed) noexcept {
 	Lock l(cs);
 	//Delete database file?
-	rssList.erase(aFeed);
+	rssList.erase(boost::remove_if(rssList, [aFeed](const RSSPtr& a) { return aFeed->getToken() == a->getToken(); }), rssList.end());
 	fire(RSSManagerListener::RSSFeedRemoved(), aFeed);
 }
 
@@ -295,6 +295,7 @@ void RSSManager::downloadFeed(const RSSPtr& aFeed, bool verbose/*false*/) noexce
 		return;
 
 	aFeed->setLastUpdate(GET_TIME());
+
 	tasks.addTask([=] {
 		aFeed->rssDownload.reset(new HttpDownload(aFeed->getUrl(),
 			[this, aFeed] { downloadComplete(aFeed->getUrl()); }, false));
@@ -302,6 +303,10 @@ void RSSManager::downloadFeed(const RSSPtr& aFeed, bool verbose/*false*/) noexce
 		if(verbose)
 			LogManager::getInstance()->message(STRING(UPDATING) + " " + aFeed->getUrl(), LogMessage::SEV_INFO);
 	});
+
+	//Lets resort the list to get a better chance for all other items to update and not end up updating the same one.
+	Lock l(cs);
+	sort(rssList.begin(), rssList.end(), [](const RSSPtr& a, const RSSPtr& b) { return a->getLastUpdate() < b->getLastUpdate(); });
 }
 
 RSSPtr RSSManager::getUpdateItem() const noexcept {
@@ -381,7 +386,7 @@ void RSSManager::load() {
 
 				Lock l(cs);
 				for_each(feed->rssFilterList.begin(), feed->rssFilterList.end(), [&](RSSFilter& i) { i.prepare(); });
-				rssList.emplace(feed);
+				rssList.emplace_back(feed);
 			}
 			xml.resetCurrentChild();
 			xml.stepOut();
@@ -482,7 +487,7 @@ void RSSManager::savedatabase(const RSSPtr& aFeed) {
 		{
 			string indent, tmp;
 
-			File ff(path + ".tmp", File::WRITE, File::TRUNCATE | File::CREATE);
+			File ff(path + ".tmp", File::WRITE, File::TRUNCATE | File::CREATE, File::BUFFER_WRITE_THROUGH);
 			BufferedOutputStream<false> xmlFile(&ff);
 
 			xmlFile.write(SimpleXML::utf8Header);

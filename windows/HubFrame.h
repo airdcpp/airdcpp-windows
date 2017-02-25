@@ -230,7 +230,7 @@ private:
 	ClientPtr client;
 	tstring server;
 	string cachedHubname;
-	bool wentoffline = true;
+	bool wentoffline = false;
 	CContainedWindow ctrlShowUsersContainer;
 	CContainedWindow ctrlMessageContainer;
 	CContainedWindow ctrlClientContainer;

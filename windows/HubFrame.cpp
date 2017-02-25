@@ -1410,10 +1410,9 @@ void HubFrame::on(ClientListener::HubUpdated, const Client*) noexcept {
 	if(!client->getHubDescription().empty()) {
 		hubName += " - " + client->getHubDescription();
 		cachedHubname = client->getHubDescription();
-	}
-	if(wentoffline && !cachedHubname.empty())
+	} else if (wentoffline && !cachedHubname.empty()) {
 		hubName += " - " + cachedHubname;
-
+	}
 	hubName += " (" + client->getHubUrl() + ")";
 
 #ifdef _DEBUG
