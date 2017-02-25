@@ -69,6 +69,24 @@ ShareManager::ShareManager() : bloom(new ShareBloom(1 << 20))
 	HashManager::getInstance()->addListener(this);
 
 	File::ensureDirectory(Util::getPath(Util::PATH_SHARECACHE));
+
+#ifdef _DEBUG
+	{
+		auto emoji = Text::wideToUtf8(L"\U0001F30D");
+
+		DualString d1(emoji);
+		dcassert(d1.getNormal() == emoji);
+		dcassert(d1.getLower() == emoji);
+	}
+
+#ifdef _WIN32
+	{
+		auto character = _T("\u00D6"); // Ö
+		DualString d2(Text::wideToUtf8(character));
+		dcassert(d2.getNormal() != d2.getLower());
+	}
+#endif
+#endif
 }
 
 ShareManager::~ShareManager() {

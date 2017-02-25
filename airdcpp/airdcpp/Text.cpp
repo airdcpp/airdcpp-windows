@@ -51,6 +51,19 @@ void initialize() {
 	} else {
 		dcdebug("Unable to determine the program's locale");
 	}
+
+#ifdef _DEBUG
+	wstring emojiW = L"\U0001F30D";
+	auto emojiWLower = Text::toLower(emojiW);
+	dcassert(emojiW == emojiWLower);
+
+	auto emojiUtf8 = Text::wideToUtf8(emojiW);
+	auto emojiUtf8Lower = Text::toLower(emojiUtf8);
+	dcassert(emojiUtf8 == emojiUtf8Lower);
+
+	dcassert("abcd1" == Text::toLower("ABCd1"));
+	dcassert(_T("abcd1") == Text::toLower(_T("ABCd1")));
+#endif
 #else
 	systemCharset = string(nl_langinfo(CODESET));
 #endif
@@ -185,6 +198,11 @@ string toLower(const string& str) noexcept {
 	if(str.empty())
 		return Util::emptyString;
 
+#ifdef _WIN32
+	// WinAPI will handle UTF-16 surrogate pairs correctly
+	auto wstr = utf8ToWide(str);
+	return wideToUtf8(Text::toLowerReplace(wstr));
+#else
 	string tmp;
 	tmp.reserve(str.length());
 	const char* end = &str[0] + str.length();
@@ -200,6 +218,7 @@ string toLower(const string& str) noexcept {
 		}
 	}
 	return tmp;
+#endif
 }
 
 string toUtf8(const string& str, const string& fromCharset) noexcept {
@@ -366,16 +385,9 @@ wstring utf8ToWide(const string& str) noexcept {
 	return tgt;
 }
 
-wstring toLower(const wstring& str) noexcept {
-	if (str.empty())
-		return Util::emptyStringW;
-
-	wstring tmp;
-	tmp.reserve(str.length());
-	for (auto& i : str) {
-		tmp += toLower(i);
-	}
-	return tmp;
+const wstring& toLowerReplace(wstring& tgt) noexcept {
+	CharLower(const_cast<LPWSTR>(tgt.c_str()));
+	return tgt;
 }
 
 string Text::toDOS(string tmp) noexcept {
