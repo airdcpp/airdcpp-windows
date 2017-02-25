@@ -1131,32 +1131,6 @@ void ClientManager::on(TimerManagerListener::Minute, uint64_t aTick) noexcept {
 		c->info();
 }
 
-void ClientManager::ClientStats::finalize() noexcept {
-	uniqueUsersPercentage = ((double)uniqueUsers / (double)totalUsers)*100.00;
-
-	activeUserPercentage = ((double)activeUsers / (double)uniqueUsers)*100.00;
-	operatorPercentage = ((double)operators / (double)uniqueUsers)*100.00;
-	botPercentage = ((double)bots / (double)uniqueUsers)*100.00;
-	hiddenPercentage = ((double)hiddenUsers / (double)uniqueUsers)*100.00;
-	sharePerUser = totalShare / uniqueUsers;
-
-	if (nmdcUsers > 0) {
-		nmdcSpeedPerUser = nmdcConnection / nmdcUsers;
-	}
-
-	if (adcUsers > 0) {
-		downPerAdcUser = downloadSpeed / adcUsers;
-		upPerAdcUser = uploadSpeed / adcUsers;
-	}
-}
-
-void ClientManager::ClientStats::forEachClient(function<void(const string&, int, double)> aHandler) const noexcept {
-	for (auto& p : clients) {
-		auto percentage = ((double)p.second / (double)uniqueUsers)*100.00;
-		aHandler(p.first, p.second, percentage);
-	}
-}
-
 optional<ClientManager::ClientStats> ClientManager::getClientStats() const noexcept {
 	ClientStats stats;
 
@@ -1213,7 +1187,7 @@ optional<ClientManager::ClientStats> ClientManager::getClientStats() const noexc
 
 				auto down = ou->getIdentity().getAdcConnectionSpeed(true);
 				if (down > 0) {
-					stats.downloadSpeed += ou->getIdentity().getAdcConnectionSpeed(true);
+					stats.downloadSpeed += down;
 					//stats.adcHasDownload++;
 				}
 				stats.adcUsers++;
@@ -1248,6 +1222,13 @@ optional<ClientManager::ClientStats> ClientManager::getClientStats() const noexc
 	return stats;
 }
 
+void ClientManager::ClientStats::finalize() noexcept {
+	nmdcSpeedPerUser = Util::countAverageInt64(nmdcConnection, nmdcUsers);
+
+	downPerAdcUser = Util::countAverageInt64(downloadSpeed, adcUsers);
+	upPerAdcUser = Util::countAverageInt64(uploadSpeed, adcUsers);
+}
+
 string ClientManager::printClientStats() const noexcept {
 	auto optionalStats = getClientStats();
 	if (!optionalStats) {
@@ -1268,13 +1249,13 @@ Average ADC connection speed: %s down, %s up\r\n\
 Average NMDC connection speed: %s")
 
 % stats.totalUsers
-% stats.uniqueUsers % stats.uniqueUsersPercentage
-% stats.activeUsers % stats.activeUserPercentage
-% stats.operators % stats.operatorPercentage
-% stats.bots % stats.botPercentage
-% stats.hiddenUsers % stats.hiddenPercentage
+% stats.uniqueUsers % Util::countPercentage(stats.uniqueUsers, stats.totalUsers)
+% stats.activeUsers % Util::countPercentage(stats.activeUsers, stats.uniqueUsers)
+% stats.operators % Util::countPercentage(stats.operators, stats.uniqueUsers)
+% stats.bots % Util::countPercentage(stats.bots, stats.uniqueUsers)
+% stats.hiddenUsers % Util::countPercentage(stats.hiddenUsers, stats.uniqueUsers)
 % stats.adcUsers % stats.nmdcUsers
-% Util::formatBytes(stats.totalShare) % Util::formatBytes(stats.sharePerUser)
+% Util::formatBytes(stats.totalShare) % Util::formatBytes(Util::countAverageInt64(stats.totalShare, stats.uniqueUsers))
 % Util::formatConnectionSpeed(stats.downPerAdcUser) % Util::formatConnectionSpeed(stats.upPerAdcUser)
 % Util::formatConnectionSpeed(stats.nmdcSpeedPerUser)
 
@@ -1285,9 +1266,9 @@ Average NMDC connection speed: %s")
 	ret += "Clients (from unique users)";
 	ret += lb;
 
-	stats.forEachClient([&](const string& aName, int aCount, double aPercentage) {
-		ret += aName + ":\t\t" + Util::toString(aCount) + " (" + Util::toString(aPercentage) + "%)" + lb;
-	});
+	for (const auto& c: stats.clients) {
+		ret += c.first + ":\t\t" + Util::toString(c.second) + " (" + Util::toString(Util::countPercentage(c.second, stats.uniqueUsers)) + "%)" + lb;
+	}
 
 	return ret;
 }

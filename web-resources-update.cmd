@@ -5,6 +5,8 @@ REM For it to work you need to manually create 'Web-resources' in the 'installer
 
 setlocal
 
+set force=false
+
 set scriptpath=%~dp0
 
 if /i "%1"=="/force" set force=true
@@ -23,7 +25,7 @@ if exist "installer\Web-resources\version.chk" (
  ) else (
      echo 0.0.0>"installer\Web-resources\version.chk"
      set /P oldversion=<"installer\Web-resources\version.chk"
- )
+)
 
 if "%force%"=="true" goto RENWEBRES
 
@@ -31,7 +33,7 @@ if "%version%" LEQ "%oldversion%" (
     goto VERSIONCHECK
   ) else (
     goto RENWEBRES
-  )
+)
 
 :VERSIONCHECK
 if "%oldversion%"=="%oldversion:beta=%" (
@@ -43,9 +45,36 @@ if "%oldversion%"=="%oldversion:beta=%" (
       goto RENWEBRES
       ) else (
         set betafound=true
-      )
     )
-goto ALRDYEST
+)
+
+echo %oldversion% | findstr /irc:"beta[1-9][0-9]" >NUL
+if not %errorlevel% == 0 goto OLDADDZERO
+set ovtd=%oldversion%
+goto CHECKNEW
+
+:OLDADDZERO
+set ovld=%oldversion:~-1%
+set ovwold=%oldversion:~0,-1%
+set ovtd=%ovwold%0%ovld%
+
+:CHECKNEW
+echo %version% | findstr /irc:"beta[1-9][0-9]" >NUL
+if not %errorlevel% == 0 goto ADDZERO
+set vtd=%version%
+goto CHECKBOTH
+
+:ADDZERO
+set vld=%version:~-1%
+set vwold=%version:~0,-1%
+set vtd=%vwold%0%vld%
+
+:CHECKBOTH
+if "%vtd%" LEQ "%ovtd%" (
+    goto ALRDYEST
+  ) else (
+    goto RENWEBRES
+)
 
 :RENWEBRES
 rename installer\Web-resources $Web-resources 2>NUL
@@ -92,7 +121,7 @@ goto END
 
 :ALRDYEST
 echo.
-echo.You already have latest version, %oldversion%!
+echo.You already have the latest version, %oldversion%!
 echo.
 goto END
 
