@@ -868,7 +868,7 @@ UsersFrame::UserInfo::userData UsersFrame::UserInfo::getUserInfo(const UserPtr& 
 	string tag = Util::emptyString;
 	string ip4 = Util::emptyString;
 	string ip6 = Util::emptyString;
-	string seen = STRING(ONLINE);
+	string seen = aUser->isOnline() ? STRING(ONLINE) : Util::emptyString;
 
 	if(user->isOnline()) {
 		auto hinted = ClientManager::getInstance()->getOnlineUsers(HintedUser(aUser, hint_), ouList);
