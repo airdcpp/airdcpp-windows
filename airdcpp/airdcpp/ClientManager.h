@@ -166,7 +166,7 @@ public:
 
 	UserPtr findUserByNick(const string& aNick, const string& aHubUrl) const noexcept;
 	
-	void addOfflineUser(const UserPtr& user, const string& nick, const string& url, uint32_t lastSeen = GET_TIME()) noexcept;
+	void addOfflineUser(const UserPtr& user, const string& nick, const string& url, uint32_t lastSeen = 0) noexcept;
 
 	string getMyNick(const string& hubUrl) const noexcept;
 	optional<OfflineUser> getOfflineUser(const CID& cid);

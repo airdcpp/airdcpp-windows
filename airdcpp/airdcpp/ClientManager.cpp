@@ -301,8 +301,9 @@ string ClientManager::getNick(const UserPtr& u, const string& hint, bool allowFa
 			}
 		}
 	}
-
-	return Util::emptyString;
+	dcassert(0);
+	//Should try to avoid this case at all times by saving users nicks and loading them...
+	return u->getCID().toBase32();
 
 }
 
@@ -1296,12 +1297,15 @@ CID ClientManager::getMyCID() noexcept {
 	return CID(tiger.finalize());
 }
 
-void ClientManager::addOfflineUser(const UserPtr& user, const string& aNick, const string& aUrl, uint32_t lastSeen/*GET_TIME()*/) noexcept{
+void ClientManager::addOfflineUser(const UserPtr& user, const string& aNick, const string& aUrl, uint32_t lastSeen/*0*/) noexcept{
 	if (!user || aNick.empty() || aUrl.empty())
 		return;
 
 	WLock l(cs);
-	offlineUsers.emplace(const_cast<CID*>(&user->getCID()), OfflineUser(aNick, aUrl, lastSeen));
+	auto p = offlineUsers.emplace(const_cast<CID*>(&user->getCID()), OfflineUser(aNick, aUrl, lastSeen));
+	if (!p.second && lastSeen > 0) {
+		p.first->second.setLastSeen(lastSeen);
+	}
 }
 
 string ClientManager::getMyNick(const string& hubUrl) const noexcept {
