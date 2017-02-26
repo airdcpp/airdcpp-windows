@@ -3,12 +3,15 @@
 Added:
 
 - New Web API version: http://apidocs.airdcpp.net
+- Save and load open tabs between sessions
+- Back up successfully loaded XML setting files and recover corrupted ones automatically
 
 Changed:
 
 - Don't queue new background searches if the search queue is too long
 - Simplified share monitoring that relies on directory refreshes instead of handling individual files
 - Failed bundles won't be rescanned on filelist refresh (rescan must be initiated manually instead)
+- Show recent private chat and file lists in Recents window
 
 Fixed:
 
