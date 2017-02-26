@@ -1006,6 +1006,7 @@ enum Strings { // @DontAdd
 	PAUSE_SEARCH, // "Pause search"
 	PBITS, // "Pbit/s"
 	PERFORM_X_REMAINING, // "Perform this action for %1% remaining items"
+	PERMISSION_DENIED_HUB, // "Permission denied by the hub"
 	PICTURE, // "Picture"
 	PLAIN_TEXT, // "Plain text"
 	PLAY, // "Play"

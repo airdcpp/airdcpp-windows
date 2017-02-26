@@ -1066,8 +1066,7 @@ bool ClientManager::directSearch(const HintedUser& aUser, const SearchPtr& aSear
 		}
 	}
 
-	ou->getClient()->directSearch(*ou, aSearch);
-	return true;
+	return ou->getClient()->directSearch(*ou, aSearch, error_);
 }
 
 OnlineUserList ClientManager::searchNicks(const string& aPattern, size_t aMaxResults, bool aIgnorePrefix, const StringList& aHubUrls) const noexcept {

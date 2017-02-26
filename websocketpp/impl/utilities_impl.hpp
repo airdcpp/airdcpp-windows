@@ -34,12 +34,6 @@
 namespace websocketpp {
 namespace utility {
 
-inline std::string to_lower(std::string const & in) {
-    std::string out = in;
-    std::transform(out.begin(),out.end(),out.begin(),::tolower);
-    return out;
-}
-
 inline std::string to_hex(std::string const & input) {
     std::string output;
     std::string hex = "0123456789ABCDEF";
