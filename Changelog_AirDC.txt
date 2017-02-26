@@ -20,6 +20,7 @@ Removed:
 
 - Option to hash finished bundle files
 - Option to add finished finished bundles in share instantly (always shared instantly from now on when inside a shared directory)
+- Fix issues with displaying of various less common character symbols (or sharing files containing them)
 
 
 3.31
