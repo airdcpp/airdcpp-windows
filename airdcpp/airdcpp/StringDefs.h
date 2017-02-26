@@ -1786,7 +1786,7 @@ enum Strings { // @DontAdd
 	USING_LATEST, // "You are already using the latest version"
 	UTF_VALIDATION_ERROR, // "UTF-8 validation failed for the received data"
 	VALIDATING_CONTENT, // "Validating content"
-	VALIDATION_SUCCEED, // "Validation succeed"
+	VALIDATION_SUCCEEDED, // "Validation succeeded"
 	VERIFY_CERT_FAILED, // "Certificate verification for subject: %1% failed with error: %2% (certificate keyprint: %3%)"
 	VERSION, // "Version"
 	VERSION_CHECK_FAILED, // "Failed to check for new version: %1%"
