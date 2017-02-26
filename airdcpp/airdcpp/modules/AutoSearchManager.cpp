@@ -483,9 +483,6 @@ void AutoSearchManager::performSearch(AutoSearchPtr& as, StringList& aHubs, Sear
 	fire(AutoSearchManagerListener::UpdateItem(), as, false);
 }
 void AutoSearchManager::resetSearchTimes(uint64_t aTick, bool aForce) noexcept {
-	int itemCount = 0;
-	int recentItems = 0;
-
 	RLock l(cs);
 	if (searchItems.getItems().empty()) {
 		nextSearch = 0;
@@ -497,11 +494,6 @@ void AutoSearchManager::resetSearchTimes(uint64_t aTick, bool aForce) noexcept {
 	for (const auto& x : searchItems.getItems() | map_values) {
 		if (!x->allowNewItems())
 			continue;
-		if (x->isRecent())
-			recentItems++;
-
-		if (!x->isRecent() && x->nextAllowedSearch() <= GET_TIME())
-			itemCount++;
 
 		auto next_tt = x->getNextSearchTime();
 		tmp = tmp == 0 ? next_tt : min(next_tt, tmp);
@@ -513,14 +505,11 @@ void AutoSearchManager::resetSearchTimes(uint64_t aTick, bool aForce) noexcept {
 		return;
 	}
 	uint64_t nextSearchTick = 0;
-	
-	if(itemCount > 0)
-		nextSearchTick = searchItems.recalculateSearchTimes(false, aForce, aTick);
+	nextSearchTick = searchItems.recalculateSearchTimes(false, aForce, aTick);
 
 	//Calculate interval for recent items, if any..
 	uint64_t recentSearchTick = 0;
-	if (recentItems > 0)
-		recentSearchTick = searchItems.recalculateSearchTimes(true, aForce, aTick);
+	recentSearchTick = searchItems.recalculateSearchTimes(true, aForce, aTick);
 
 	nextSearchTick = recentSearchTick > 0 ? nextSearchTick > 0 ? min(recentSearchTick, nextSearchTick) : recentSearchTick : nextSearchTick;
 
@@ -560,7 +549,7 @@ void AutoSearchManager::on(TimerManagerListener::Second, uint64_t aTick) noexcep
 		AutoSearchPtr searchItem = nullptr;
 		{
 			WLock l(cs);
-			searchItem = searchItems.maybePopSearchItem(aTick);
+			searchItem = searchItems.maybePopSearchItem(aTick, true);
 		}
 
 		if (searchItem)
@@ -632,7 +621,7 @@ void AutoSearchManager::checkItems() noexcept {
 
 	//One or more items were set to waiting state due to search times
 	if(hasStatusChange)
-		delayEvents.addEvent(RECALCULATE_SEARCH, [=] { resetSearchTimes(GET_TICK(), true); }, 1000);
+		delayEvents.addEvent(RECALCULATE_SEARCH, [=] { resetSearchTimes(GET_TICK()); }, 1000);
 
 	handleExpiredItems(expired);
 }
