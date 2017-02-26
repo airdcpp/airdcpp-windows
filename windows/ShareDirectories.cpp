@@ -631,7 +631,8 @@ bool ShareDirectories::addDirectory(const tstring& aPath){
 		info->dir->profiles.insert(profileTokens.begin(), profileTokens.end());
 	} else {
 		//create new directory
-		info = make_shared<ProfileDirectoryInfo>(make_shared<ShareDirectoryInfo>(path, virtualName, false, profileTokens), ProfileDirectoryInfo::STATE_ADDED);
+		auto dir = make_shared<ShareDirectoryInfo>(path, virtualName, false, profileTokens);
+		info = make_shared<ProfileDirectoryInfo>(dir, ProfileDirectoryInfo::STATE_ADDED);
 
 		shareDirs.emplace_back(info);
 	}
