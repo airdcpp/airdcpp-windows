@@ -489,36 +489,37 @@ void AutoSearchManager::resetSearchTimes(uint64_t aTick, bool aForce) noexcept {
 		return;
 	}
 
-	time_t tmp = 0;
+	time_t nearestPossibleSearchTime = 0;
+	size_t enabledItems = 0;
 	//calculate which of the items has the nearest possible search time.
 	for (const auto& x : searchItems.getItems() | map_values) {
 		if (!x->allowNewItems())
 			continue;
 
-		auto next_tt = x->getNextSearchTime();
-		tmp = tmp == 0 ? next_tt : min(next_tt, tmp);
+		enabledItems++;
+		nearestPossibleSearchTime = min(x->getNextSearchTime(), nearestPossibleSearchTime);
 	}
 
 	//We have nothing to search for...
-	if (tmp == 0) {
+	if (enabledItems == 0) {
 		nextSearch = 0;
 		return;
 	}
 	uint64_t nextSearchTick = 0;
-	nextSearchTick = searchItems.recalculateSearchTimes(false, aForce, aTick);
-
-	//Calculate interval for recent items, if any..
 	uint64_t recentSearchTick = 0;
+
+	nextSearchTick = searchItems.recalculateSearchTimes(false, aForce, aTick);
+	//Calculate interval for recent items, if any..
 	recentSearchTick = searchItems.recalculateSearchTimes(true, aForce, aTick);
 
 	nextSearchTick = recentSearchTick > 0 ? nextSearchTick > 0 ? min(recentSearchTick, nextSearchTick) : recentSearchTick : nextSearchTick;
-
-	//We already missed the search time, add 3 seconds and search then.
-	if (aTick > nextSearchTick)
-		nextSearchTick = aTick + 3000;
+	
+	//We already missed the search time or no enabled items to search for currently, add the min time and search then...
+	if (aTick >= nextSearchTick)
+		nextSearchTick = aTick + SETTING(AUTOSEARCH_EVERY) * 60 * 1000;
 
 	time_t t = GET_TIME() + ((nextSearchTick - aTick) / 1000);
-	nextSearch = max(tmp, t);
+	nextSearch = max(nearestPossibleSearchTime, t);
 	
 }
 
