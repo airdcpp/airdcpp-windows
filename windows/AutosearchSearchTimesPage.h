@@ -46,7 +46,6 @@ public:
 	BEGIN_MSG_MAP_EX(AutosearchSearchTimesPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		COMMAND_ID_HANDLER(IDC_CUSTOM_SEARCH_TIMES, onCheckTimes)
-		COMMAND_HANDLER(IDC_SEARCH_INT, EN_KILLFOCUS, onTimeChange)
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)
 		MESSAGE_HANDLER(WM_CTLCOLORDLG, onCtlColor)
 		END_MSG_MAP()
@@ -59,7 +58,6 @@ public:
 	void showWindow(BOOL aShow) { this->ShowWindow(aShow); }
 
 	LRESULT onCheckTimes(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onTimeChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
@@ -75,7 +73,6 @@ public:
 
 private:
 
-	CEdit ctrlSearchInterval;
 	CUpDownCtrl updown;
 	CDateTimePickerCtrl ctrlSearchStart, ctrlSearchEnd;
 

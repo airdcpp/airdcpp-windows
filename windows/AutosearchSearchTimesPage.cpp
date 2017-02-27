@@ -80,10 +80,6 @@ LRESULT AutosearchSearchTimesPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/
 	e.wMinute = options.endTime.minute;
 	ctrlSearchEnd.SetSystemTime(0, &e);
 
-	setMinMax(IDC_SEARCH_INT_SPIN, 60, 999);
-	ATTACH(IDC_SEARCH_INT, ctrlSearchInterval);
-	ctrlSearchInterval.SetWindowText(Util::toStringW(options.searchInterval).c_str());
-
 	fixControls();
 	loading = false; //loading done.
 	return TRUE;
@@ -123,26 +119,12 @@ bool AutosearchSearchTimesPage::write() {
 			return false;
 		}
 	}
-	int i = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlSearchInterval)));
-	options.searchInterval = i < 60 ? 60 : i;
 
 	return true;
 }
 
 LRESULT AutosearchSearchTimesPage::onCheckTimes(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	fixControls();
-	return 0;
-}
-
-LRESULT AutosearchSearchTimesPage::onTimeChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/) {
-	if (loading)
-		return 0;
-
-	int value = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlSearchInterval)));
-	if (value < 60) {
-		value = 60;
-		ctrlSearchInterval.SetWindowText(Text::toT(Util::toString(value)).c_str());
-	}
 	return 0;
 }
 

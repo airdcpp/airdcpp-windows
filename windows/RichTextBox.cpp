@@ -1139,7 +1139,7 @@ void RichTextBox::handleAddAutoSearchFile() {
 		targetPath = Util::getFilePath(Text::fromT(selectedWord));
 	auto fileName = Util::getFileName(Text::fromT(selectedWord));
 
-	AutoSearchManager::getInstance()->addAutoSearch(fileName, targetPath, false, AutoSearch::CHAT_DOWNLOAD, true, 60);
+	AutoSearchManager::getInstance()->addAutoSearch(fileName, targetPath, false, AutoSearch::CHAT_DOWNLOAD, true);
 
 	SetSelNone();
 }
@@ -1148,7 +1148,7 @@ void RichTextBox::handleAddAutoSearchDir() {
 	string targetPath = Util::getParentDir(Text::fromT(selectedWord), PATH_SEPARATOR, true);
 	string dirName = Util::getLastDir(selectedWord[selectedWord.length()-1] != PATH_SEPARATOR ? Util::getFilePath(Text::fromT(selectedWord)) : Text::fromT(selectedWord));
 
-	AutoSearchManager::getInstance()->addAutoSearch(dirName, targetPath, true, AutoSearch::CHAT_DOWNLOAD, true, 60);
+	AutoSearchManager::getInstance()->addAutoSearch(dirName, targetPath, true, AutoSearch::CHAT_DOWNLOAD, true);
 
 	SetSelNone();
 }

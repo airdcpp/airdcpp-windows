@@ -65,7 +65,7 @@ void AutoSearchManager::logMessage(const string& aMsg, LogMessage::Severity aSev
 }
 
 /* Adding new items for external use */
-AutoSearchPtr AutoSearchManager::addAutoSearch(const string& ss, const string& aTarget, bool isDirectory, AutoSearch::ItemType asType, bool aRemove, int aInterval, bool aSearch) noexcept {
+AutoSearchPtr AutoSearchManager::addAutoSearch(const string& ss, const string& aTarget, bool isDirectory, AutoSearch::ItemType asType, bool aRemove, bool aSearch) noexcept {
 	if (ss.length() <= 5) {
 		logMessage(STRING_F(AUTOSEARCH_ADD_FAILED, ss % STRING(LINE_EMPTY_OR_TOO_SHORT)), LogMessage::SEV_ERROR);
 		return nullptr;
@@ -78,7 +78,7 @@ AutoSearchPtr AutoSearchManager::addAutoSearch(const string& ss, const string& a
 	}
 
 	AutoSearchPtr as = new AutoSearch(true, ss, isDirectory ? SEARCH_TYPE_DIRECTORY : SEARCH_TYPE_FILE, AutoSearch::ACTION_DOWNLOAD, aRemove, aTarget, 
-		StringMatch::PARTIAL, Util::emptyString, Util::emptyString, SETTING(AUTOSEARCH_EXPIRE_DAYS) > 0 ? GET_TIME() + (SETTING(AUTOSEARCH_EXPIRE_DAYS)*24*60*60) : 0, false, false, false, Util::emptyString, aInterval, asType, false);
+		StringMatch::PARTIAL, Util::emptyString, Util::emptyString, SETTING(AUTOSEARCH_EXPIRE_DAYS) > 0 ? GET_TIME() + (SETTING(AUTOSEARCH_EXPIRE_DAYS)*24*60*60) : 0, false, false, false, Util::emptyString, asType, false);
 
 	addAutoSearch(as, aSearch);
 	return as;
@@ -387,7 +387,7 @@ bool AutoSearchManager::addFailedBundle(const BundlePtr& aBundle) noexcept {
 
 	//7 days expiry
 	auto as = new AutoSearch(true, aBundle->getName(), SEARCH_TYPE_DIRECTORY, AutoSearch::ACTION_DOWNLOAD, true, Util::getParentDir(aBundle->getTarget()), 
-		StringMatch::EXACT, Util::emptyString, Util::emptyString, GET_TIME() + 7*24*60*60, false, false, false, Util::emptyString, 60, AutoSearch::FAILED_BUNDLE, false);
+		StringMatch::EXACT, Util::emptyString, Util::emptyString, GET_TIME() + 7*24*60*60, false, false, false, Util::emptyString, AutoSearch::FAILED_BUNDLE, false);
 
 	as->setGroup(SETTING(AS_FAILED_DEFAULT_GROUP));
 	as->addBundle(aBundle);
@@ -460,7 +460,7 @@ void AutoSearchManager::performSearch(AutoSearchPtr& as, StringList& aHubs, Sear
 					msg = CSTRING_F(AUTOSEARCH_ADDED_SEARCHED, searchWord);
 				}
 				else {
-					msg = STRING_F(ITEM_SEARCHED, searchWord);
+					msg = as->isRecent() ? STRING_F(ITEM_SEARCHED_RECENT, searchWord) : STRING_F(ITEM_SEARCHED, searchWord);
 				}
 			} else {
 				auto time = searchInfo.queueTime / 1000;
@@ -471,7 +471,7 @@ void AutoSearchManager::performSearch(AutoSearchPtr& as, StringList& aHubs, Sear
 					msg = CSTRING_F(AUTOSEARCH_ADDED_SEARCHED_IN, searchWord % time);
 				}
 				else {
-					msg = STRING_F(ITEM_SEARCHED_IN, searchWord % time);
+					msg = as->isRecent() ? STRING_F(ITEM_SEARCHED_IN_RECENT, searchWord % time) : STRING_F(ITEM_SEARCHED_IN, searchWord % time);
 				}
 			}
 
@@ -479,47 +479,25 @@ void AutoSearchManager::performSearch(AutoSearchPtr& as, StringList& aHubs, Sear
 		}
 	}
 
-	resetSearchTimes(aTick, true);
+	resetSearchTimes(aTick, as->isRecent(), !as->isRecent());
 	fire(AutoSearchManagerListener::UpdateItem(), as, false);
 }
-void AutoSearchManager::resetSearchTimes(uint64_t aTick, bool aForce) noexcept {
+void AutoSearchManager::resetSearchTimes(uint64_t aTick, bool aForceRecent/*=false*/, bool aForceNormal/*=false*/) noexcept {
 	RLock l(cs);
 	if (searchItems.getItems().empty()) {
 		nextSearch = 0;
 		return;
 	}
+	auto recentSearchTick = searchItems.getNextSearchRecent();
+	auto nextSearchTick = searchItems.getNextSearchNormal();
 
-	time_t nearestPossibleSearchTime = 0;
-	size_t enabledItems = 0;
-	//calculate which of the items has the nearest possible search time.
-	for (const auto& x : searchItems.getItems() | map_values) {
-		if (!x->allowNewItems())
-			continue;
+	nextSearchTick = searchItems.recalculateSearchTimes(false, aForceNormal, aTick);
 
-		enabledItems++;
-		nearestPossibleSearchTime = min(x->getNextSearchTime(), nearestPossibleSearchTime);
-	}
-
-	//We have nothing to search for...
-	if (enabledItems == 0) {
-		nextSearch = 0;
-		return;
-	}
-	uint64_t nextSearchTick = 0;
-	uint64_t recentSearchTick = 0;
-
-	nextSearchTick = searchItems.recalculateSearchTimes(false, aForce, aTick);
-	//Calculate interval for recent items, if any..
-	recentSearchTick = searchItems.recalculateSearchTimes(true, aForce, aTick);
+	recentSearchTick = searchItems.recalculateSearchTimes(true, aForceRecent, aTick);
 
 	nextSearchTick = recentSearchTick > 0 ? nextSearchTick > 0 ? min(recentSearchTick, nextSearchTick) : recentSearchTick : nextSearchTick;
-	
-	//We already missed the search time or no enabled items to search for currently, add the min time and search then...
-	if (aTick >= nextSearchTick)
-		nextSearchTick = aTick + SETTING(AUTOSEARCH_EVERY) * 60 * 1000;
 
-	time_t t = GET_TIME() + ((nextSearchTick - aTick) / 1000);
-	nextSearch = max(nearestPossibleSearchTime, t);
+	nextSearch = toTimeT(nextSearchTick, aTick);
 	
 }
 
@@ -550,7 +528,7 @@ void AutoSearchManager::on(TimerManagerListener::Second, uint64_t aTick) noexcep
 		AutoSearchPtr searchItem = nullptr;
 		{
 			WLock l(cs);
-			searchItem = searchItems.maybePopSearchItem(aTick, true);
+			searchItem = searchItems.maybePopSearchItem(aTick);
 		}
 
 		if (searchItem)
@@ -588,6 +566,7 @@ void AutoSearchManager::checkItems() noexcept {
 				searchItems.removeSearchPrio(as);
 				as->setPriority(newPrio);
 				searchItems.addSearchPrio(as);
+				hasStatusChange = true;
 			}
 
 			
@@ -994,7 +973,6 @@ AutoSearchPtr AutoSearchManager::loadItemFromXml(SimpleXML& aXml) {
 		aXml.getBoolChildAttrib("CheckAlreadyShared"),
 		aXml.getBoolChildAttrib("MatchFullPath"),
 		aXml.getChildAttrib("ExcludedWords"),
-		aXml.getIntChildAttrib("SearchInterval"),
 		(AutoSearch::ItemType)aXml.getIntChildAttrib("ItemType"),
 		aXml.getBoolChildAttrib("UserMatcherExclude"),
 		aXml.getIntChildAttrib("Token"));
@@ -1092,6 +1070,19 @@ void AutoSearchManager::load() noexcept {
 		}
 	});
 
-	resetSearchTimes(GET_TICK(), true);
+	resetSearchTimes(GET_TICK());
 }
+
+time_t AutoSearchManager::toTimeT(uint64_t& aValue, uint64_t currentTick/* = GET_TICK()*/) {
+	if (aValue == 0)
+		return 0;
+
+	if (currentTick >= aValue)
+		return GET_TIME();
+
+
+	return GET_TIME() + ((aValue - currentTick) / 1000);
+}
+
+
 }

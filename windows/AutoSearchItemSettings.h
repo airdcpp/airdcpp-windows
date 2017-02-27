@@ -34,7 +34,7 @@ struct AutoSearchItemSettings {
 		as(nullptr), fileTypeStr(SETTING(LAST_AS_FILETYPE)), action(0), matcherType(0), remove(false), target(SETTING(DOWNLOAD_DIRECTORY)),
 		curNumber(1), maxNumber(0), startTime(0, 0),
 		endTime(23, 59), searchDays("1111111"), checkQueued(true), checkShared(true), matchFullPath(false),
-		numberLen(2), useParams(false), searchInterval(180), groupName(Util::emptyString), userMatcherExclude(false)
+		numberLen(2), useParams(false), groupName(Util::emptyString), userMatcherExclude(false)
 	{
 		expireTime = SETTING(AUTOSEARCH_EXPIRE_DAYS) > 0 ? GET_TIME() + (SETTING(AUTOSEARCH_EXPIRE_DAYS) * 24 * 60 * 60) : 0;
 	}
@@ -57,7 +57,6 @@ struct AutoSearchItemSettings {
 		checkQueued(aAutoSearch->getCheckAlreadyQueued()),
 		checkShared(aAutoSearch->getCheckAlreadyShared()),
 		matchFullPath(aAutoSearch->getMatchFullPath()),
-		searchInterval(aAutoSearch->getSearchInterval()),
 		groupName(aAutoSearch->getGroup()),
 		userMatcherExclude(aAutoSearch->getUserMatcherExclude()),
 
@@ -86,7 +85,6 @@ public:
 		aAutoSearch->setCheckAlreadyQueued(checkQueued);
 		aAutoSearch->setCheckAlreadyShared(checkShared);
 		aAutoSearch->setMatchFullPath(matchFullPath);
-		aAutoSearch->setSearchInterval(searchInterval);
 		aAutoSearch->setGroup(groupName);
 		aAutoSearch->setUserMatcherExclude(userMatcherExclude);
 
@@ -112,7 +110,6 @@ public:
 	bool useParams;
 	bool userMatcherExclude;
 
-	int searchInterval;
 	int numberLen, curNumber, maxNumber;
 
 	string searchString, target, fileTypeStr;

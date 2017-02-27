@@ -649,6 +649,8 @@ enum Strings { // @DontAdd
 	ITEM_URL_EXISTS, // "An item with the same url exists already"
 	ITEM_SEARCHED, // "%1% has been searched for"
 	ITEM_SEARCHED_IN, // "%1% will be searched in %2% seconds"
+	ITEM_SEARCHED_RECENT, // "Recent item %1% has been searched for"
+	ITEM_SEARCHED_IN_RECENT, // "Recent item %1% will be searched in %2% seconds"
 	ITUNES_HELP, // "/itunes - For iTunes media spamming\r\n- %[version]	Numerical Version (ex: 7.0.2.16)\r\n- %[album]	Name of the album the current track is from\r\n- %[artist]	Artist of the current track\r\n- %[title]		Name of the currently playing track\r\n- %[genre]	Genre of the currently playing track\r\n- %[elapsed]	Time elapsed in minutes:seconds\r\n- %[percent]	Time elapsed presented as percentage from total length\r\n- %[bar]		ASCII progress bar, 10 characters wide no including brackets (ex. [----|-----])\r\n- %[length]	Total length of the current track\r\n- %[bitrate]	Bitrate for the playing track (kbps)\r\n- %[frequency]	Frequency for the currently playing track (kHz)\r\n- %[year]	Year of publication/recording of the current track\r\n- %[size]		Size of the currently playing file\r\n- %[state]	Current state of iTunes (playing/stopped)\r\n\r\nEmpty = Default String -> +me playing: %[title] at %[bitrate] <iTunes %[version]>"
 	ITUNES_HELP_DESC, // "iTunes help"
 	JOINS, // "Joins"
