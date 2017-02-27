@@ -175,8 +175,6 @@ public:
 	bool checkRecent();
 
 	time_t nextAllowedSearch() const noexcept;
-	//Get the time for next possible search
-	time_t getNextSearchTime() const noexcept;
 	bool allowNewItems() const noexcept;
 	bool allowAutoSearch() const noexcept;
 	void updatePattern() noexcept;
