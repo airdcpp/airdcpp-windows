@@ -1107,6 +1107,11 @@ bool WinUtil::parseDBLClick(const tstring& str) {
 		}
 		::ShellExecute(NULL, NULL, Text::toT(url).c_str(), NULL, NULL, SW_SHOWNORMAL);
 		return true;
+	} else {
+		if ((str.substr(1, 2) == _T(":\\")) || (str.substr(0, 2) == _T("\\\\"))) {
+			::ShellExecute(NULL, NULL, str.c_str(), NULL, NULL, SW_SHOWNORMAL);
+			return true;
+		}
 	}
 
 	return false;
@@ -1221,15 +1226,15 @@ int WinUtil::textUnderCursor(POINT p, CRichEditCtrl& ctrl, tstring& x) {
 	
 	int i = ctrl.CharFromPos(p);
 	int line = ctrl.LineFromChar(i);
-	int c = i - ctrl.LineIndex(line);
+	int c = LOWORD(i) - ctrl.LineIndex(line);
 	int len = ctrl.LineLength(i);
 	
 	if(len < 3) {
 		return 0;
 	}
 
-	x.resize(len+1);
-	x.resize(ctrl.GetLine(line, &x[0], len+1));
+	x.resize(len);
+	x.resize(ctrl.GetLine(line, &x[0], len));
 
 	string::size_type start = x.find_last_of(_T(" <\t\r\n"), c);
 	if(start == string::npos)
