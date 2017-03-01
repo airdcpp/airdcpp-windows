@@ -414,6 +414,7 @@ enum Strings { // @DontAdd
 	EXPIRED, // "Expired"
 	EXPIRED_AS_DISABLED, // "An expired item %1% has been disabled"
 	EXPIRED_AS_REMOVED, // "An expired item %1% has been removed"
+	EXPIRY_DAYS, // "Expiry days"
 	EXPORT_THEME, // "Export theme"
 	EXTENSIONS_EMPTY, // "No extensions have been defined"
 	EXTRA_FILES_RLSDIR_X, // "The following extra files have been found from a release folder %1%: %2%"

@@ -27,6 +27,11 @@
 #include <airdcpp/ResourceManager.h>
 #include <airdcpp/SimpleXML.h>
 
+#define setMinMax(x, y, z) \
+	updown.Attach(GetDlgItem(x)); \
+	updown.SetRange32(y, z); \
+	updown.Detach();
+
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
 RssFilterPage::RssFilterPage(const string& aName, RSSPtr aFeed) : name(aName), feedItem(aFeed) {
@@ -84,6 +89,11 @@ LRESULT RssFilterPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	cAction.InsertString(0, CTSTRING(DOWNLOAD));
 	cAction.InsertString(1, CTSTRING(REMOVE));
 	cAction.SetCurSel(0);
+
+	::SetWindowText(GetDlgItem(IDC_RSS_EXPIRY_DAYS_LABEL), CTSTRING(EXPIRY_DAYS));
+	setMinMax(IDC_EXPIRE_INT_SPIN, 0, 999);
+	ATTACH(IDC_EXPIRE_INT, ctrlExpireDays);
+	ctrlExpireDays.SetWindowText(_T("3"));
 
 	cGroups.Attach(GetDlgItem(IDC_ASGROUP_BOX));
 	cGroups.AddString(_T("---"));
@@ -211,6 +221,7 @@ LRESULT RssFilterPage::onSelectionChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*
 		ctrlTarget.SetWindowText(Text::toT(item->getDownloadTarget()).c_str());
 		cMatcherType.SetCurSel(item->getMethod());
 		cAction.SetCurSel(item->getFilterAction());
+		ctrlExpireDays.SetWindowText(Util::toStringW(item->getExpireDays()).c_str());
 
 		int g = cGroups.FindString(0, Text::toT(item->getAutosearchGroup()).c_str());
 		cGroups.SetCurSel(g > 0 ? g : 0);
@@ -222,6 +233,7 @@ LRESULT RssFilterPage::onSelectionChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*
 		cMatcherType.SetCurSel(0);
 		cGroups.SetCurSel(0);
 		cAction.SetCurSel(0);
+		ctrlExpireDays.SetWindowText(_T("3"));
 		CheckDlgButton(IDC_SKIP_DUPES, TRUE);
 	}
 	fixControls();
@@ -315,8 +327,9 @@ void RssFilterPage::add(const string& aPattern, const string& aTarget, int aMeth
 	}
 	bool skipDupes = IsDlgButtonChecked(IDC_SKIP_DUPES) ? true : false;
 	int action = cAction.GetCurSel();
+	int expireDays = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlExpireDays)));
 
-	filterList.emplace_back(RSSFilter(aPattern, aTarget, aMethod, Text::fromT(grp), skipDupes, action));
+	filterList.emplace_back(RSSFilter(aPattern, aTarget, aMethod, Text::fromT(grp), skipDupes, action, expireDays));
 	fillList();
 	restoreSelection(Text::toT(aPattern));
 }
@@ -327,7 +340,7 @@ bool RssFilterPage::update() {
 		auto asPattern = Text::fromT(WinUtil::getEditText(ctrlAutoSearchPattern));
 		auto dlTarget = Text::fromT(WinUtil::getEditText(ctrlTarget));
 		
-		int i = ctrlRssFilterList.GetSelectedIndex();
+		int i = ctrlRssFilterList.GetNextItem(-1, LVNI_SELECTED);
 		auto fItem = filterList[i];
 		remove(i);
 
@@ -379,5 +392,8 @@ void RssFilterPage::fixControls() {
 	::EnableWindow(GetDlgItem(IDC_ASGROUP_BOX), enable);
 	::EnableWindow(GetDlgItem(IDC_GROUP_LABEL), enable);
 	::EnableWindow(GetDlgItem(IDC_RSS_DOWNLOAD_PATH_TEXT), enable);
+	::EnableWindow(GetDlgItem(IDC_RSS_EXPIRY_DAYS_LABEL), enable);
+	::EnableWindow(GetDlgItem(IDC_EXPIRE_INT), enable);
+	::EnableWindow(GetDlgItem(IDC_EXPIRE_INT_SPIN), enable);
 
 }

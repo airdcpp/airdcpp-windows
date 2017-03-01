@@ -1670,6 +1670,10 @@
 #define IDC_ASGROUP_BOX                 10228
 #define IDC_RSS_FILTER_ACTION           10229
 #define IDC_RSS_FILTER_ACTION_TEXT      10230
+#define IDC_RSS_EXPIRY_DAYS_LABEL       10231
+#define IDC_EXPIRY_INT_SPIN             10232
+#define IDC_EXPIRE_INT_SPIN             10232
+#define IDC_EXPIRE_INT                  10233
 #define IDC_REFRESH_WINAMP              11011
 #define IDC_WINAMP_LIST                 11012
 #define IDC_POSITION                    11013
@@ -1883,7 +1887,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        478
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         10231
+#define _APS_NEXT_CONTROL_VALUE         10234
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

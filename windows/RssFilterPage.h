@@ -113,9 +113,12 @@ private:
 	CButton cBrowse;
 	CEdit ctrlAutoSearchPattern;
 	CEdit ctrlTarget;
+	CEdit ctrlExpireDays;
 	CComboBox cMatcherType;
 	CComboBox cGroups;
 	CComboBox cAction;
+	CUpDownCtrl updown;
+
 
 	ExListViewCtrl ctrlRssFilterList;
 	vector<RSSFilter> filterList;
