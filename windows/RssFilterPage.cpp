@@ -90,7 +90,7 @@ LRESULT RssFilterPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	cAction.InsertString(1, CTSTRING(REMOVE));
 	cAction.SetCurSel(0);
 
-	::SetWindowText(GetDlgItem(IDC_RSS_EXPIRY_DAYS_LABEL), CTSTRING(EXPIRY_DAYS));
+	::SetWindowText(GetDlgItem(IDC_RSS_EXPIRY_DAYS_LABEL), CTSTRING(AUTOSEARCH_EXPIRY_DAYS));
 	setMinMax(IDC_EXPIRE_INT_SPIN, 0, 999);
 	ATTACH(IDC_EXPIRE_INT, ctrlExpireDays);
 	ctrlExpireDays.SetWindowText(_T("3"));
