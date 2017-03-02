@@ -149,7 +149,7 @@ void AutoSearchFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 
 	CRect r;
 	ctrlStatus.GetRect(0, r);
-	ctrlTooltips.SetMaxTipWidth(w[1]);
+	ctrlTooltips.SetMaxTipWidth(w[0]);
 	ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, 0 + POPUP_UID, r);
 
 	CRect rc = rect;
