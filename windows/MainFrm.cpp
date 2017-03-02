@@ -813,48 +813,34 @@ void MainFrame::onChatMessage(bool pm) {
 			if (taskbarList) {
 				taskbarList->SetOverlayIcon(m_hWnd, hubPmicon.hIcon, NULL);
 			}
-			if (bTrayIcon) {
-				NOTIFYICONDATA nid;
-				ZeroMemory(&nid, sizeof(NOTIFYICONDATA));
-				nid.cbSize = sizeof(NOTIFYICONDATA);
-				nid.hWnd = m_hWnd;
-				nid.uID = trayUID;
-				nid.uFlags = NIF_ICON;
-				nid.hIcon = hubPmicon.hIcon;
-				::Shell_NotifyIcon(NIM_MODIFY, &nid);
-			}
-
+			setTrayIcon(hubPmicon.hIcon);
 		} else if (!pm) {
 			bHasMC = true;
 			if(taskbarList) {
 				taskbarList->SetOverlayIcon(m_hWnd, hubicon.hIcon, NULL);
 			}
-			if(bTrayIcon) {
-				NOTIFYICONDATA nid;
-				ZeroMemory(&nid, sizeof(NOTIFYICONDATA));
-				nid.cbSize = sizeof(NOTIFYICONDATA);
-				nid.hWnd = m_hWnd;
-				nid.uID = trayUID;
-				nid.uFlags = NIF_ICON;
-				nid.hIcon = hubicon.hIcon;
-				::Shell_NotifyIcon(NIM_MODIFY, &nid);
-			}
+			setTrayIcon(hubicon.hIcon);
+			
 		} else {
 			bHasPM = true;
 			if(taskbarList) {
 				taskbarList->SetOverlayIcon(m_hWnd, pmicon.hIcon, NULL);
 			}
-			if(bTrayIcon) {
-				NOTIFYICONDATA nid;
-				ZeroMemory(&nid, sizeof(NOTIFYICONDATA));
-				nid.cbSize = sizeof(NOTIFYICONDATA);
-				nid.hWnd = m_hWnd;
-				nid.uID = trayUID;
-				nid.uFlags = NIF_ICON;
-				nid.hIcon = pmicon.hIcon;
-				::Shell_NotifyIcon(NIM_MODIFY, &nid);
-			}
+			setTrayIcon(pmicon.hIcon);
 		}
+	}
+}
+
+void MainFrame::setTrayIcon(HICON aIcon) {
+	if (bTrayIcon) {
+		NOTIFYICONDATA nid;
+		ZeroMemory(&nid, sizeof(NOTIFYICONDATA));
+		nid.cbSize = sizeof(NOTIFYICONDATA);
+		nid.hWnd = m_hWnd;
+		nid.uID = trayUID;
+		nid.uFlags = NIF_ICON;
+		nid.hIcon = aIcon;
+		::Shell_NotifyIcon(NIM_MODIFY, &nid);
 	}
 }
 
@@ -1032,7 +1018,6 @@ void MainFrame::updateTray(bool add /* = true */) {
 			nid.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
 			nid.uCallbackMessage = WM_APP + 242;
 			nid.hIcon = GetIcon(false);
-			//nid.hIcon = mainSmallIcon;
 			_tcsncpy(nid.szTip, Text::toT(APPNAME).c_str(), 64);
 			nid.szTip[63] = '\0';
 			lastMove = GET_TICK() - 1000;
@@ -1047,7 +1032,6 @@ void MainFrame::updateTray(bool add /* = true */) {
 			nid.uID = trayUID;
 			nid.uFlags = 0;
 			::Shell_NotifyIcon(NIM_DELETE, &nid);
-			//ShowWindow(SW_SHOW);
 			bTrayIcon = false;
 		}
 	}
@@ -1081,18 +1065,7 @@ LRESULT MainFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 			if(taskbarList) {
 				taskbarList->SetOverlayIcon(m_hWnd, NULL , NULL);
 			}
-
-			if (bTrayIcon) {
-				NOTIFYICONDATA nid;
-				ZeroMemory(&nid, sizeof(NOTIFYICONDATA));
-				nid.cbSize = sizeof(NOTIFYICONDATA);
-				nid.hWnd = m_hWnd;
-				nid.uID = trayUID;
-				nid.uFlags = NIF_ICON;
-				nid.hIcon = GetIcon(false);
-				//nid.hIcon = mainSmallIcon;
-				::Shell_NotifyIcon(NIM_MODIFY, &nid);
-			}
+			setTrayIcon(GetIcon(false));
 		}
 		bAppMinimized = false;
 	}
@@ -1920,18 +1893,7 @@ LRESULT MainFrame::onActivateApp(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/
 				if (taskbarList) {
 					taskbarList->SetOverlayIcon(m_hWnd, NULL, NULL);
 				}
-
-				if (bTrayIcon == true) {
-					NOTIFYICONDATA nid;
-					ZeroMemory(&nid, sizeof(NOTIFYICONDATA));
-					nid.cbSize = sizeof(NOTIFYICONDATA);
-					nid.hWnd = m_hWnd;
-					nid.uID = trayUID;
-					nid.uFlags = NIF_ICON;
-					nid.hIcon = GetIcon(false);
-					//nid.hIcon = mainSmallIcon;
-					::Shell_NotifyIcon(NIM_MODIFY, &nid);
-				}
+				setTrayIcon(GetIcon(false));
 			}
 		}
 	}
@@ -2047,10 +2009,9 @@ LRESULT MainFrame::onDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ClientManager::getInstance()->removeListener(this);
 	PrivateChatManager::getInstance()->removeListener(this);
 	ActivityManager::getInstance()->removeListener(this);
+	
+	updateTray(false);
 
-	//if(bTrayIcon) {
-		updateTray(false);
-	//}
 	bHandled = FALSE;
 	return 0;
 }

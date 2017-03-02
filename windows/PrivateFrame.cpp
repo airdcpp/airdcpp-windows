@@ -452,6 +452,9 @@ void PrivateFrame::handleNotifications(bool windowOpened, const tstring& aMessag
 
 		if (SETTING(PRIVATE_MESSAGE_BEEP)) 
 			handleBeep();
+
+		if (!getUser()->isSet(User::BOT))
+			MainFrame::getMainFrame()->onChatMessage(true);
 	}
 }
 
@@ -840,8 +843,6 @@ void PrivateFrame::onChatMessage(const ChatMessagePtr& aMessage) noexcept {
 
 		handleNotifications(false, text);
 
-		if (!getUser()->isSet(User::BOT))
-			MainFrame::getMainFrame()->onChatMessage(true);
 	}
 	else if (!userTyping) {
 		addStatus(_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + TSTRING(LAST_MESSAGE_SENT), ResourceLoader::getSeverityIcon(LogMessage::SEV_INFO));

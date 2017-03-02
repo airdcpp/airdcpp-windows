@@ -463,6 +463,7 @@ private:
 	LRESULT onAppShow(WORD /*wNotifyCode*/,WORD /*wParam*/, HWND, BOOL& /*bHandled*/);
 
 	void showPortsError(const string& port);
+	void setTrayIcon(HICON aIcon);
 
 	// LogManagerListener
 	void on(LogManagerListener::Message, const LogMessagePtr& aMessage) noexcept;
