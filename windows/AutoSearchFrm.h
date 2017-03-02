@@ -33,6 +33,7 @@
 
 #include <airdcpp/modules/AutoSearchManager.h>
 
+#define AS_STATUS_MSG_MAP 17
 
 class AutoSearchFrame : public MDITabChildWindowImpl<AutoSearchFrame>, public StaticFrame<AutoSearchFrame, ResourceManager::AUTO_SEARCH, IDC_AUTOSEARCH>,
 	private AutoSearchManagerListener, private SettingsManagerListener, public Async<AutoSearchFrame>
@@ -41,7 +42,7 @@ public:
 	
 	typedef MDITabChildWindowImpl<AutoSearchFrame> baseClass;
 
-	AutoSearchFrame() : loading(true), closed(false) { }
+	AutoSearchFrame() : loading(true), closed(false), ctrlStatusContainer(STATUSCLASSNAME, this, AS_STATUS_MSG_MAP) { }
 	~AutoSearchFrame() { }
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("AutoSearchFrame"), IDR_AUTOSEARCH, 0, COLOR_3DFACE);
@@ -64,8 +65,10 @@ public:
 		NOTIFY_HANDLER(IDC_AUTOSEARCH, NM_CUSTOMDRAW, onCustomDraw)
 		NOTIFY_HANDLER(IDC_AUTOSEARCH, LVN_GETDISPINFO, ctrlAutoSearch.onGetDispInfo)
 		NOTIFY_HANDLER(IDC_AUTOSEARCH, LVN_COLUMNCLICK, ctrlAutoSearch.onColumnClick)
-		NOTIFY_HANDLER(IDC_AUTOSEARCH, LVN_GETINFOTIP, ctrlAutoSearch.onInfoTip)		
+		NOTIFY_HANDLER(IDC_AUTOSEARCH, LVN_GETINFOTIP, ctrlAutoSearch.onInfoTip)
 		CHAIN_MSG_MAP(baseClass)
+		ALT_MSG_MAP(AS_STATUS_MSG_MAP)
+		NOTIFY_CODE_HANDLER(TTN_GETDISPINFO, onGetToolTip)
 	END_MSG_MAP()
 
 	LRESULT onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
@@ -83,6 +86,7 @@ public:
 	LRESULT onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bHandled*/);
 	LRESULT onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/);
+	LRESULT onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/);
 
 	void handleSearch(bool onBackground);
 	void handleState(bool disabled);
@@ -153,6 +157,10 @@ private:
 		AutoSearchManager::getInstance()->save();
 	}
 
+	void addStatusText(const string& aText, uint8_t sev);
+	deque<tstring> lastLinesList;
+	tstring lastLines;
+
 	void addListEntry(ItemInfo* ii);
 	void updateItem(const AutoSearchPtr as);
 
@@ -160,7 +168,9 @@ private:
 
 	CButton ctrlAdd, ctrlRemove, ctrlChange, ctrlDuplicate, ctrlManageGroups;
 	CStatusBarCtrl ctrlStatus;
-	int statusSizes[5];
+	CToolTipCtrl ctrlTooltips;
+	CContainedWindow ctrlStatusContainer;
+	int statusSizes[4];
 	bool closed;
 	bool loading;
 	std::unordered_map<ProfileToken, ItemInfo> itemInfos;
@@ -168,9 +178,10 @@ private:
 	void createPages(TabbedDialog& dlg, AutoSearchItemSettings& options);
 
 
-	virtual void on(AutoSearchManagerListener::RemoveItem, const AutoSearchPtr& aToken) noexcept;
-	virtual void on(AutoSearchManagerListener::AddItem, const AutoSearchPtr& as) noexcept;
-	virtual void on(AutoSearchManagerListener::UpdateItem, const AutoSearchPtr& as, bool setDirty) noexcept;
+	virtual void on(AutoSearchManagerListener::ItemRemoved, const AutoSearchPtr& aToken) noexcept;
+	virtual void on(AutoSearchManagerListener::ItemAdded, const AutoSearchPtr& as) noexcept;
+	virtual void on(AutoSearchManagerListener::ItemUpdated, const AutoSearchPtr& as, bool setDirty) noexcept;
 	virtual void on(AutoSearchManagerListener::SearchForeground, const AutoSearchPtr& as, const string& searchString) noexcept;
+	virtual void on(AutoSearchManagerListener::ItemSearched, const AutoSearchPtr&/* as*/, const string& aMsg) noexcept;
 };
 #endif // !defined(AUTOSEARCH_FRM_H)

@@ -480,10 +480,10 @@ void RssInfoFrame::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBun
 	}
 }
 
-void RssInfoFrame::on(AutoSearchManagerListener::AddItem, const AutoSearchPtr& as) noexcept {
+void RssInfoFrame::on(AutoSearchManagerListener::ItemAdded, const AutoSearchPtr& as) noexcept {
 	addGuiTask([=] { updateDupeType(as->getSearchString()); });
 }
-void RssInfoFrame::on(AutoSearchManagerListener::RemoveItem, const AutoSearchPtr& as) noexcept {
+void RssInfoFrame::on(AutoSearchManagerListener::ItemRemoved, const AutoSearchPtr& as) noexcept {
 	addGuiTask([=] { updateDupeType(as->getSearchString()); });
 }
 

@@ -212,8 +212,8 @@ private:
 	virtual void on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept;
 	virtual void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept;
 	virtual void on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle) noexcept;
-	virtual void on(AutoSearchManagerListener::RemoveItem, const AutoSearchPtr& as) noexcept;
-	virtual void on(AutoSearchManagerListener::AddItem, const AutoSearchPtr& as) noexcept;
+	virtual void on(AutoSearchManagerListener::ItemRemoved, const AutoSearchPtr& as) noexcept;
+	virtual void on(AutoSearchManagerListener::ItemAdded, const AutoSearchPtr& as) noexcept;
 
 };
 
