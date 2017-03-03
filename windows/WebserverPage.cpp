@@ -25,6 +25,7 @@
 #include "WebUserDlg.h"
 
 #include <web-server/WebServerSettings.h>
+#include <web-server/WebUserManager.h>
 
 #include <airdcpp/LogManager.h>
 
