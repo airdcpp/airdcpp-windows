@@ -129,6 +129,15 @@ namespace webserver {
 		return session;
 	}
 
+	SessionPtr WebUserManager::createExtensionSession(const string& aExtensionName) {
+		auto uuid = boost::uuids::to_string(boost::uuids::random_generator()());
+
+		// For internal use only (can't be used for logging in)
+		auto user = std::make_shared<WebUser>(aExtensionName, Util::emptyString, true);
+
+		return createSession(user, uuid, Session::TYPE_EXTENSION, 1, "localhost");
+	}
+
 	SessionList WebUserManager::getSessions() const noexcept {
 		SessionList ret;
 
