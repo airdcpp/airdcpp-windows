@@ -657,9 +657,15 @@ void File::removeDirectoryForced(const string& aPath) {
 		if (i->isDirectory()) {
 			removeDirectoryForced(aPath + i->getFileName() + PATH_SEPARATOR);
 		} else {
-			deleteFileThrow(aPath + i->getFileName());
+			try {
+				deleteFileThrow(aPath + i->getFileName());
+			} catch (const FileException& e) {
+				throw FileException(e.getError() + "(" + aPath + i->getFileName() + ")");
+			}
 		}
 	}
+
+	File::removeDirectory(aPath);
 }
 
 bool File::deleteFile(const string& aFileName) noexcept {

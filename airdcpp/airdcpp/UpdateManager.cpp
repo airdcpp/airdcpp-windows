@@ -275,6 +275,7 @@ void UpdateManager::completeVersionDownload(bool manualCheck) {
 		}
 		xml.resetCurrentChild();
 
+		fire(UpdateManagerListener::VersionFileDownloaded(), xml);
 		updater->onVersionDownloaded(xml, verified, manualCheck);
 	} catch (const Exception& e) {
 		failVersionDownload(STRING_F(VERSION_PARSING_FAILED, e.getError()), manualCheck);
