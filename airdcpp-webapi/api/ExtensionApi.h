@@ -41,13 +41,19 @@ namespace webserver {
 		api_return handleAddExtension(ApiRequest& aRequest);
 		api_return handleRemoveExtension(ApiRequest& aRequest);
 
+		api_return handleStartExtension(ApiRequest& aRequest);
+		api_return handleStopExtension(ApiRequest& aRequest);
+
 		void on(ExtensionManagerListener::ExtensionAdded, const ExtensionPtr& aExtension) noexcept override;
 		void on(ExtensionManagerListener::ExtensionRemoved, const ExtensionPtr& aExtension) noexcept override;
+		void on(ExtensionManagerListener::ExtensionUpdated, const ExtensionPtr& aExtension) noexcept override;
 
 		void on(ExtensionManagerListener::ExtensionStarted, const ExtensionPtr& aExtension) noexcept override;
 		void on(ExtensionManagerListener::ExtensionStopped, const ExtensionPtr& aExtension) noexcept override;
 
 		ExtensionManager& em;
+
+		ExtensionPtr getExtension(ApiRequest& aRequest);
 	};
 }
 

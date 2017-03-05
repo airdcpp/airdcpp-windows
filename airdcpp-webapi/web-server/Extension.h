@@ -29,10 +29,10 @@ namespace webserver {
 
 	class Extension {
 	public:
-		typedef std::function<void(Extension*, bool)> StopF;
+		typedef std::function<void(const Extension*)> ErrorF;
 
 		// Throws on errors
-		Extension(const string& aPath, StopF&& aStopF);
+		Extension(const string& aPath, ErrorF&& aErrorF, bool aSkipPathValidation = false);
 
 		// Throws on errors
 		void start(WebServerManager* wsm);
@@ -60,11 +60,18 @@ namespace webserver {
 		GETSET(string, name, Name);
 		GETSET(string, entry, Entry);
 		GETSET(string, version, Version);
+		GETSET(string, author, Author);
 
 		bool isRunning() const noexcept {
 			return running;
 		}
+
+		bool isPrivate() const noexcept {
+			return privateExtension;
+		}
 	private:
+		bool privateExtension = false;
+
 		string getLaunchCommand(WebServerManager* wsm, const SessionPtr& aSession) const noexcept;
 
 		bool running = false;
@@ -72,9 +79,10 @@ namespace webserver {
 		// Throws on errors
 		void createProcess(WebServerManager* wsm, const SessionPtr& aSession);
 
-		const StopF stopF;
+		const ErrorF errorF;
 #ifdef _WIN32
 		static void initLog(HANDLE& aHandle, const string& aPath);
+		static void disableLogInheritance(HANDLE& aHandle);
 		static void closeLog(HANDLE& aHandle);
 
 		void checkRunningState(WebServerManager* wsm) noexcept;
