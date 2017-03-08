@@ -60,15 +60,21 @@ namespace webserver {
 			return;
 		}
 
-		auto session = wsm->getUserManager().createExtensionSession(name);
+		session = wsm->getUserManager().createExtensionSession(name);
 		
 		createProcess(wsm, session);
 		running = true;
+
+		// Monitor the running state of the script
+		timer = wsm->addTimer([this, wsm] { checkRunningState(wsm); }, 2500);
+		timer->start(false);
 	}
 
-	string Extension::getLaunchCommand(WebServerManager* wsm, const SessionPtr& aSession) const noexcept {
+	StringList Extension::getLaunchParams(WebServerManager* wsm, const SessionPtr& aSession) const noexcept {
+		StringList ret;
+
 		// Script to launch
-		string ret = getPackageDirectory() + entry + " ";
+		ret.push_back(getPackageDirectory() + entry);
 
 		// Connect URL
 		{
@@ -79,19 +85,52 @@ namespace webserver {
 				bindAddress = "localhost";
 			}
 
-			ret += wsm->isListeningPlain() ? "ws://" : "wss://";
-			ret += bindAddress + ":" + Util::toString(serverConfig.port.num()) + "/api/v1/ ";
+			string address = wsm->isListeningPlain() ? "ws://" : "wss://";
+			address += bindAddress + ":" + Util::toString(serverConfig.port.num()) + "/api/v1/ ";
+
+			ret.push_back(address);
 		}
 
 		// Session token
-		ret += aSession->getAuthToken() + " ";
+		ret.push_back(aSession->getAuthToken());
 
 		// Package directory
-		ret += getRootPath();
+		ret.push_back(getRootPath());
 
 		return ret;
 	}
 
+	bool Extension::stop() noexcept {
+		if (!isRunning()) {
+			return true;
+		}
+
+		timer->stop(false);
+		if (!terminateProcess()) {
+			return false;
+		}
+
+		onStopped(false);
+		return true;
+	}
+
+	void Extension::onStopped(bool aFailed) noexcept {
+		if (aFailed) {
+			timer->stop(false);
+		}
+
+		if (session) {
+			session->getServer()->getUserManager().logout(session);
+			session = nullptr;
+		}
+
+		resetProcessState();
+
+		running = false;
+		if (aFailed && errorF) {
+			errorF(this);
+		}
+	}
 #ifdef _WIN32
 	void Extension::initLog(HANDLE& aHandle, const string& aPath) {
 		dcassert(aHandle == INVALID_HANDLE_VALUE);
@@ -150,8 +189,15 @@ namespace webserver {
 
 		ZeroMemory(&piProcInfo, sizeof(PROCESS_INFORMATION));
 
+		auto paramList = getLaunchParams(wsm, aSession);
+
+		string paramStr;
+		for (const auto& p: paramList) {
+			paramStr += p + " ";
+		}
+
 		// Start the process
-		tstring command = _T("node ") + Text::toT(getLaunchCommand(wsm, aSession));
+		tstring command = _T("node ") + Text::toT(paramStr);
 		dcdebug("Starting extension %s, command %s\n", name.c_str(), Text::fromT(command).c_str());
 
 #ifdef _DEBUG
@@ -188,44 +234,6 @@ namespace webserver {
 		// Extensions spawned after this shouldn't inherit our log handles...
 		disableLogInheritance(messageLogHandle);
 		disableLogInheritance(errorLogHandle);
-
-		// Monitor the running state of the script
-		timer = wsm->addTimer([this, wsm] { checkRunningState(wsm); }, 2500);
-		timer->start(false);
-	}
-
-	bool Extension::stop() noexcept {
-		if (!isRunning()) {
-			return true;
-		}
-
-		timer->stop(false);
-
-		if (TerminateProcess(piProcInfo.hProcess, 0) == 0) {
-			dcdebug("Failed to terminate the extension %s: %s\n", name.c_str(), Util::translateError(::GetLastError()).c_str());
-			dcassert(0);
-			return false;
-		}
-
-		WaitForSingleObject(piProcInfo.hProcess, 5000);
-
-		onStopped(false);
-		return true;
-	}
-
-	void Extension::onStopped(bool aFailed) noexcept {
-		closeLog(messageLogHandle);
-		closeLog(errorLogHandle);
-
-		if (piProcInfo.hProcess != INVALID_HANDLE_VALUE) {
-			CloseHandle(piProcInfo.hProcess);
-			piProcInfo.hProcess = INVALID_HANDLE_VALUE;
-		}
-
-		running = false;
-		if (aFailed && errorF) {
-			errorF(this);
-		}
 	}
 
 	void Extension::checkRunningState(WebServerManager* wsm) noexcept {
@@ -233,7 +241,6 @@ namespace webserver {
 		if (GetExitCodeProcess(piProcInfo.hProcess, &exitCode) != 0) {
 			if (exitCode != STILL_ACTIVE) {
 				dcdebug("Extension %s exited with code %d\n", name.c_str(), exitCode);
-				timer->stop(false);
 				onStopped(true);
 			}
 		} else {
@@ -241,36 +248,94 @@ namespace webserver {
 			dcassert(0);
 		}
 	}
-#else
-	void Extension::createProcess(WebServerManager* wsm, const SessionPtr& aSession) {
-		t.reset(new std::thread([this]() { run(); }));
-	}
 
-	void Extension::run() {
-		char buff[512];
+	void Extension::resetProcessState() noexcept {
+		closeLog(messageLogHandle);
+		closeLog(errorLogHandle);
 
-		string command = "node " + getLaunchCommand(wsm, aSession);
-		if (!(procHandle = popen(command.c_str(), "r"))) {
-			return;
-		}
-
-		while (fgets(buff, 512, handle)) {
-			printf(buff);
-		}
-
-		if (stopF) {
-			stopF(this, aFailed);
+		if (piProcInfo.hProcess != INVALID_HANDLE_VALUE) {
+			CloseHandle(piProcInfo.hProcess);
+			piProcInfo.hProcess = INVALID_HANDLE_VALUE;
 		}
 	}
 
-	void Extension::stop() noexcept {
-		if (pclose(procHandle) != 0) {
+	bool Extension::terminateProcess() noexcept {
+		if (TerminateProcess(piProcInfo.hProcess, 0) == 0) {
 			dcdebug("Failed to terminate the extension %s: %s\n", name.c_str(), Util::translateError(::GetLastError()).c_str());
-			return;
+			dcassert(0);
+			return false;
 		}
 
-		t->join();
-		t.reset(nullptr);
+		WaitForSingleObject(piProcInfo.hProcess, 5000);
+		return true;
+	}
+#else
+#include <sys/wait.h>
+
+	void Extension::checkRunningState(WebServerManager* wsm) noexcept {
+		int status = 0;
+		if (waitpid(pid, &status, WNOHANG) != 0) {
+			onStopped(true);
+		}
+	}
+
+	void Extension::resetProcessState() noexcept {
+		pid = 0;
+	}
+
+	void Extension::createProcess(WebServerManager* wsm, const SessionPtr& aSession) {
+		File messageLog(getMessageLogPath(), File::CREATE, File::RW);
+		File errorLog(getErrorLogPath(), File::CREATE, File::RW);
+
+		pid = fork();
+		if (pid == -1) {
+			throw Exception("Failed to fork the process process: " + Util::translateError(errno));
+		}
+
+		if (pid == 0) {
+			// Child process
+
+			// Logs
+			dup2(messageLog.getNativeHandle(), STDOUT_FILENO);
+			dup2(errorLog.getNativeHandle(), STDERR_FILENO);
+
+			// Construct argv
+			char command[] = "nodejs";
+
+			vector<char*> argv;
+			argv.push_back(command);
+
+			{
+				auto paramList = getLaunchParams(wsm, aSession);
+				for (const auto& p : paramList) {
+					argv.push_back((char*)p.c_str());
+				}
+			}
+
+			argv.push_back(0);
+
+			// Run, checkRunningState will handle errors...
+			execvp("nodejs", &argv[0]);
+			exit(0);
+		}
+	}
+
+	bool Extension::terminateProcess() noexcept {
+		auto res = kill(pid, SIGTERM);
+		if (res == -1) {
+			dcdebug("Failed to terminate the extension %s: %s\n", name.c_str(), Util::translateError(errno).c_str());
+			return false;
+		}
+
+		int exitStatus = 0;
+		if (waitpid(pid, &exitStatus, 0) == -1) {
+			dcdebug("Failed to terminate the extension %s: %s\n", name.c_str(), Util::translateError(errno).c_str());
+			return false;
+		}
+
+
+
+		return true;
 	}
 
 #endif
