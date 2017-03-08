@@ -26,7 +26,8 @@
 #include <web-server/WebServerManager.h>
 
 
-#define EXTENSION_PARAM "extension"
+#define EXTENSION_PARAM_ID "extension"
+#define EXTENSION_PARAM (ApiModule::RequestHandler::Param(EXTENSION_PARAM_ID, regex(R"(^airdcpp-.+$)")))
 namespace webserver {
 	ExtensionApi::ExtensionApi(Session* aSession) : HookApiModule(aSession, Access::ADMIN, nullptr, Access::ADMIN), em(aSession->getServer()->getExtensionManager()) {
 		em.addListener(this);
@@ -34,11 +35,15 @@ namespace webserver {
 		METHOD_HANDLER(Access::ADMIN, METHOD_GET, (), ExtensionApi::handleGetExtensions);
 
 		METHOD_HANDLER(Access::ADMIN, METHOD_POST, (), ExtensionApi::handleAddExtension);
-		METHOD_HANDLER(Access::ADMIN, METHOD_GET, (STR_PARAM(EXTENSION_PARAM)), ExtensionApi::handleGetExtension);
-		METHOD_HANDLER(Access::ADMIN, METHOD_DELETE, (STR_PARAM(EXTENSION_PARAM)), ExtensionApi::handleRemoveExtension);
+		METHOD_HANDLER(Access::ADMIN, METHOD_GET, (EXTENSION_PARAM), ExtensionApi::handleGetExtension);
+		METHOD_HANDLER(Access::ADMIN, METHOD_DELETE, (EXTENSION_PARAM), ExtensionApi::handleRemoveExtension);
+
+		METHOD_HANDLER(Access::ADMIN, METHOD_POST, (EXTENSION_PARAM, EXACT_PARAM("start")), ExtensionApi::handleStartExtension);
+		METHOD_HANDLER(Access::ADMIN, METHOD_POST, (EXTENSION_PARAM, EXACT_PARAM("stop")), ExtensionApi::handleStopExtension);
 
 		createSubscription("extension_added");
 		createSubscription("extension_removed");
+		createSubscription("extension_updated");
 
 		createSubscription("extension_started");
 		createSubscription("extension_stopped");
@@ -52,18 +57,37 @@ namespace webserver {
 		return {
 			{ "name", aExtension->getName() },
 			{ "version", aExtension->getVersion() },
+			{ "author", aExtension->getAuthor() },
+			{ "running", aExtension->isRunning() },
+			{ "private", aExtension->isPrivate() },
 		};
 	}
 
-	api_return ExtensionApi::handleGetExtension(ApiRequest& aRequest) {
-		auto extension = em.getExtension(aRequest.getStringParam(EXTENSION_PARAM));
+	ExtensionPtr ExtensionApi::getExtension(ApiRequest& aRequest) {
+		auto extension = em.getExtension(aRequest.getStringParam(EXTENSION_PARAM_ID));
 		if (!extension) {
-			aRequest.setResponseErrorStr("Extension not found");
-			return websocketpp::http::status_code::not_found;
+			throw RequestException(websocketpp::http::status_code::not_found, "Extension not found");
 		}
 
+		return extension;
+	}
+
+	api_return ExtensionApi::handleGetExtension(ApiRequest& aRequest) {
+		auto extension = getExtension(aRequest);
 		aRequest.setResponseBody(serializeExtension(extension));
 		return websocketpp::http::status_code::ok;
+	}
+
+	api_return ExtensionApi::handleStartExtension(ApiRequest& aRequest) {
+		auto extension = getExtension(aRequest);
+		em.startExtension(extension);
+		return websocketpp::http::status_code::no_content;
+	}
+
+	api_return ExtensionApi::handleStopExtension(ApiRequest& aRequest) {
+		auto extension = getExtension(aRequest);
+		em.stopExtension(extension);
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return ExtensionApi::handleAddExtension(ApiRequest& aRequest) {
@@ -81,14 +105,7 @@ namespace webserver {
 	}
 
 	api_return ExtensionApi::handleRemoveExtension(ApiRequest& aRequest) {
-		auto extensionName = aRequest.getStringParam(EXTENSION_PARAM);
-
-		auto extension = em.getExtension(extensionName);
-
-		if (!extension) {
-			aRequest.setResponseErrorStr("Extension not found");
-			return websocketpp::http::status_code::not_found;
-		}
+		auto extension = getExtension(aRequest);
 
 		try {
 			em.removeExtension(extension);
@@ -113,6 +130,12 @@ namespace webserver {
 
 	void ExtensionApi::on(ExtensionManagerListener::ExtensionRemoved, const ExtensionPtr& aExtension) noexcept {
 		maybeSend("extension_removed", [&] {
+			return serializeExtension(aExtension);
+		});
+	}
+
+	void ExtensionApi::on(ExtensionManagerListener::ExtensionUpdated, const ExtensionPtr& aExtension) noexcept {
+		maybeSend("extension_updated", [&] {
 			return serializeExtension(aExtension);
 		});
 	}

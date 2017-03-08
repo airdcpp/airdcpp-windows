@@ -28,23 +28,38 @@
 
 
 namespace webserver {
-	Extension::Extension(const string& aPath, StopF&& aStopF) : stopF(std::move(aStopF)) {
-		json packageJson = json::parse(File(aPath + "package" + PATH_SEPARATOR_STR + "package.json", File::READ, File::OPEN).read());
+	Extension::Extension(const string& aPath, ErrorF&& aErrorF, bool aSkipPathValidation) : errorF(std::move(aErrorF)) {
+		const auto packageStr = File(aPath + "package" + PATH_SEPARATOR_STR + "package.json", File::READ, File::OPEN).read();
 
 		try {
+			auto packageJson = json::parse(packageStr);
+
 			const string packageName = packageJson.at("name");
 			const string packageEntry = packageJson.at("main");
 			const string packageVersion = packageJson.at("version");
+			const string packageAuthor = packageJson.at("author").at("name");
 
 			name = packageName;
 			entry = packageEntry;
 			version = packageVersion;
+			author = packageAuthor;
+
+			privateExtension = packageJson.value("private", false);
 		} catch (const std::exception& e) {
 			throw Exception("Failed to parse package.json: " + string(e.what()));
+		}
+
+		if (!aSkipPathValidation && compare(name, Util::getLastDir(aPath)) != 0) {
+			throw Exception("Extension path doesn't match with the extension name " + name);
 		}
 	}
 
 	void Extension::start(WebServerManager* wsm) {
+		if (isRunning()) {
+			dcassert(0);
+			return;
+		}
+
 		auto session = wsm->getUserManager().createExtensionSession(name);
 		
 		createProcess(wsm, session);
@@ -79,6 +94,8 @@ namespace webserver {
 
 #ifdef _WIN32
 	void Extension::initLog(HANDLE& aHandle, const string& aPath) {
+		dcassert(aHandle == INVALID_HANDLE_VALUE);
+
 		SECURITY_ATTRIBUTES saAttr;
 		saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
 		saAttr.bInheritHandle = TRUE;
@@ -105,9 +122,15 @@ namespace webserver {
 		}
 	}
 
+	void Extension::disableLogInheritance(HANDLE& aHandle) {
+		if (!SetHandleInformation(aHandle, HANDLE_FLAG_INHERIT, 0))
+			throw Exception("Failed to set handle information");
+	}
+
 	void Extension::closeLog(HANDLE& aHandle) {
 		if (aHandle != INVALID_HANDLE_VALUE) {
-			CloseHandle(aHandle);
+			auto result = CloseHandle(aHandle);
+			dcassert(result != 0);
 			aHandle = INVALID_HANDLE_VALUE;
 		}
 	}
@@ -121,7 +144,7 @@ namespace webserver {
 		STARTUPINFO siStartInfo;
 		ZeroMemory(&siStartInfo, sizeof(STARTUPINFO));
 		siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
-		siStartInfo.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+		siStartInfo.hStdInput = NULL;
 		siStartInfo.hStdOutput = messageLogHandle;
 		siStartInfo.hStdError = errorLogHandle;
 
@@ -135,6 +158,7 @@ namespace webserver {
 		// Show the console window in debug mode
 		// The connection may stay alive indefinitely when the process is killed 
 		// and the extension will not quit until the ping fails
+		//DWORD flags = DETACHED_PROCESS | CREATE_NO_WINDOW;
 		DWORD flags = 0;
 		//siStartInfo.wShowWindow = SW_MINIMIZE;
 #else
@@ -160,6 +184,10 @@ namespace webserver {
 		}
 
 		CloseHandle(piProcInfo.hThread);
+
+		// Extensions spawned after this shouldn't inherit our log handles...
+		disableLogInheritance(messageLogHandle);
+		disableLogInheritance(errorLogHandle);
 
 		// Monitor the running state of the script
 		timer = wsm->addTimer([this, wsm] { checkRunningState(wsm); }, 2500);
@@ -195,8 +223,8 @@ namespace webserver {
 		}
 
 		running = false;
-		if (stopF) {
-			stopF(this, aFailed);
+		if (aFailed && errorF) {
+			errorF(this);
 		}
 	}
 

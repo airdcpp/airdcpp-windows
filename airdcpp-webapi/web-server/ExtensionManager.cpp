@@ -55,7 +55,9 @@ namespace webserver {
 
 		for (const auto& path : directories) {
 			auto ext = loadExtension(path);
-			startExtension(ext);
+			if (ext) {
+				startExtension(ext);
+			}
 		}
 	}
 
@@ -87,6 +89,7 @@ namespace webserver {
 			return true;
 		}
 
+		dcassert(0);
 		return false;
 	}
 
@@ -207,7 +210,7 @@ namespace webserver {
 		string finalInstallPath;
 		try {
 			// Validate the package content
-			auto extensionInfo = Extension(tempPackageDirectory, nullptr);
+			auto extensionInfo = Extension(tempPackageDirectory, nullptr, true);
 			finalInstallPath = extensionInfo.getRootPath();
 		} catch (const std::exception& e) {
 			failInstallation("Failed to read package.json", e.what());
@@ -227,6 +230,7 @@ namespace webserver {
 				failInstallation("Failed to remove the old extension package directory " + oldExtension->getPackageDirectory(), e.getError());
 			}
 
+			removeList(oldExtension);
 			//auto packageBackupPath = oldExtension->getRootPath() + "package.old" + PATH_SEPARATOR_STR;
 			//File::renameFile(oldExtension->getRootPath(), packageBackupPath);
 		}
@@ -244,6 +248,7 @@ namespace webserver {
 		}
 
 		if (oldExtension) {
+			fire(ExtensionManagerListener::ExtensionUpdated(), loadedExtension);
 			LogManager::getInstance()->message("Extension " + loadedExtension->getName() + " was updated succesfully", LogMessage::SEV_INFO);
 		} else {
 			fire(ExtensionManagerListener::ExtensionAdded(), loadedExtension);
@@ -266,13 +271,8 @@ namespace webserver {
 		// Parse
 		ExtensionPtr ext = nullptr;
 		try {
-			ext = std::make_shared<Extension>(aPath, [](const Extension* aExtension, bool aFailed) {
-				if (aFailed) {
-					LogManager::getInstance()->message("Extension " + aExtension->getName() + " has exited (see the extension log for details)", LogMessage::SEV_ERROR);
-				}
-				else {
-					LogManager::getInstance()->message("Extension " + aExtension->getName() + " was stopped", LogMessage::SEV_INFO);
-				}
+			ext = std::make_shared<Extension>(aPath, [](const Extension* aExtension) {
+				LogManager::getInstance()->message("Extension " + aExtension->getName() + " has exited (see the extension log for error details)", LogMessage::SEV_ERROR);
 			});
 		} catch (const Exception& e) {
 			LogManager::getInstance()->message("Failed to parse the extension " + aPath + ": " + e.what(), LogMessage::SEV_ERROR);
