@@ -110,7 +110,7 @@ bool AutoSearch::checkRecent() {
 	if (getTimeAdded() == 0 || getAsType() == NORMAL)
 		recent = false;
 	else {
-		recent = GET_TIME() < (getTimeAdded() + 0.5 * 60 * 60);
+		recent = GET_TIME() < (getTimeAdded() + 3 * 60 * 60);
 	}
 	return recent;
 }
