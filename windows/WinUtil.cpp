@@ -1090,6 +1090,10 @@ void WinUtil::openLink(const tstring& url) {
 }
 
 bool WinUtil::parseDBLClick(const tstring& str) {
+
+	if (str.empty())
+		return false;
+
 	auto url = Text::fromT(str);
 
 	if (AirUtil::isHubLink(url)) {
@@ -1107,11 +1111,9 @@ bool WinUtil::parseDBLClick(const tstring& str) {
 		}
 		::ShellExecute(NULL, NULL, Text::toT(url).c_str(), NULL, NULL, SW_SHOWNORMAL);
 		return true;
-	} else {
-		if ((str.substr(1, 2) == _T(":\\")) || (str.substr(0, 2) == _T("\\\\"))) {
-			::ShellExecute(NULL, NULL, str.c_str(), NULL, NULL, SW_SHOWNORMAL);
-			return true;
-		}
+	} else if (str.size() > 3 && (str.substr(1, 2) == _T(":\\")) || (str.substr(0, 2) == _T("\\\\"))) {
+		::ShellExecute(NULL, NULL, str.c_str(), NULL, NULL, SW_SHOWNORMAL);
+		return true;
 	}
 
 	return false;

@@ -198,11 +198,15 @@ void AutoSearchFrame::updateStatus() {
 	tstring tmp;
 	if (aTime == 0) {
 		tmp = Util::emptyStringT;
-	} else if (!ClientManager::getInstance()->getMe()->isOnline()) {
+	}
+	else if (!ClientManager::getInstance()->getMe()->isOnline()) {
 		tmp = TSTRING(NO_HUBS_TO_SEARCH_FROM);
 	} else {
 		auto time_left = aTime < GET_TIME() ? 0 : (aTime - GET_TIME());
-		tmp = TSTRING(AS_NEXT_SEARCH_IN) + _T(" ") + Text::toT(Util::formatTime(time_left, false, false));
+		if (time_left == 0 && ClientManager::getInstance()->hasSearchQueueOverflow())
+			tmp = TSTRING(SEARCH_QUEUE_OVERFLOW);
+		else
+			tmp = TSTRING(AS_NEXT_SEARCH_IN) + _T(" ") + Text::toT(Util::formatTime(time_left, false, false));
 	}
 
 	bool u = false;

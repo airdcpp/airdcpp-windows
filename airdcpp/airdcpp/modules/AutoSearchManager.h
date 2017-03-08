@@ -125,7 +125,7 @@ private:
 
 	void updateStatus(AutoSearchPtr& as, bool setTabDirty) noexcept;
 	void clearError(AutoSearchPtr& as) noexcept;
-	void resetSearchTimes(uint64_t aTick, bool aForceRecent = false, bool aForceNormal = false) noexcept;
+	void resetSearchTimes(uint64_t aTick, bool aRecalculate = true) noexcept;
 
 	/* Listeners */
 	void on(SearchManagerListener::SR, const SearchResultPtr&) noexcept override;

@@ -1241,6 +1241,7 @@ enum Strings { // @DontAdd
 	SEARCH_TVCOM, // "TV.com"
 	SEARCH_TYPES, // "Search types"
 	SEARCH_TYPES_NOTE, // "Note; Custom search types will only be applied to ADC hubs! On NMDC hubs, using a predefined search type will only search for a set of predefined, unconfigurable extensions; using a custom type will default to searching for any extension."
+	SEARCH_QUEUE_OVERFLOW, // "Search queue overflow"
 	SECOND, // "Second"
 	SECONDS_LOWER, // "seconds"
 	SEE_SYSLOG_FOR_RESULTS, // "Open system log to see the scan results"

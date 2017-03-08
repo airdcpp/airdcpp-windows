@@ -32,7 +32,6 @@
 #include <boost/range/algorithm/max_element.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-
 namespace dcpp {
 
 using boost::max_element;
@@ -111,7 +110,7 @@ bool AutoSearch::checkRecent() {
 	if (getTimeAdded() == 0 || getAsType() == NORMAL)
 		recent = false;
 	else {
-		recent = GET_TIME() < (getTimeAdded() + 3 * 60 * 60);
+		recent = GET_TIME() < (getTimeAdded() + 0.5 * 60 * 60);
 	}
 	return recent;
 }

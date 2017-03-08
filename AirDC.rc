@@ -399,7 +399,7 @@ BEGIN
     CONTROL         "Use full filelists as last resort if adding sources fails",IDC_ALLOW_MATCH_FULL,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,32,142,183,10
     GROUPBOX        "Finished downloads",IDC_FINISHED_OPTIONS,7,209,284,102
-    LTEXT           "seconds",IDC_SETTINGS_SECONDS,253,171,32,8
+    LTEXT           "minutes",IDC_MINUTES,253,171,32,8
 END
 
 IDD_SPEEDPAGE DIALOGEX 0, 0, 312, 318

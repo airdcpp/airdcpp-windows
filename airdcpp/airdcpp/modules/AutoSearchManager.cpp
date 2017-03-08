@@ -484,10 +484,10 @@ void AutoSearchManager::performSearch(AutoSearchPtr& as, StringList& aHubs, Sear
 		}
 	}
 
-	resetSearchTimes(aTick, as->isRecent(), !as->isRecent());
+	resetSearchTimes(aTick, false);
 	fire(AutoSearchManagerListener::ItemUpdated(), as, false);
 }
-void AutoSearchManager::resetSearchTimes(uint64_t aTick, bool aForceRecent/*=false*/, bool aForceNormal/*=false*/) noexcept {
+void AutoSearchManager::resetSearchTimes(uint64_t aTick, bool aRecalculate/* = true*/) noexcept {
 	RLock l(cs);
 	if (searchItems.getItems().empty()) {
 		nextSearch = 0;
@@ -496,10 +496,10 @@ void AutoSearchManager::resetSearchTimes(uint64_t aTick, bool aForceRecent/*=fal
 	auto recentSearchTick = searchItems.getNextSearchRecent();
 	auto nextSearchTick = searchItems.getNextSearchNormal();
 
-	nextSearchTick = searchItems.recalculateSearchTimes(false, aForceNormal, aTick);
-
-	recentSearchTick = searchItems.recalculateSearchTimes(true, aForceRecent, aTick);
-
+	if (aRecalculate) {
+		nextSearchTick = searchItems.recalculateSearchTimes(false, false, aTick);
+		recentSearchTick = searchItems.recalculateSearchTimes(true, false, aTick);
+	}
 	nextSearchTick = recentSearchTick > 0 ? nextSearchTick > 0 ? min(recentSearchTick, nextSearchTick) : recentSearchTick : nextSearchTick;
 
 	nextSearch = toTimeT(nextSearchTick, aTick);
@@ -521,14 +521,22 @@ bool AutoSearchManager::searchItem(AutoSearchPtr& as, SearchType aType) noexcept
 
 /* Timermanager */
 void AutoSearchManager::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
+	
+	if (dirty && (lastSave + (20 * 1000) < aTick)) { //20 second delay between saves.
+		lastSave = aTick;
+		dirty = false;
+		save();
+	}
 
 	if(nextSearch != 0 && nextSearch <= GET_TIME()) {
+		if (ClientManager::getInstance()->hasSearchQueueOverflow())
+			return;
+
 		StringList allowedHubs;
 		ClientManager::getInstance()->getOnlineClients(allowedHubs);
 		//no hubs? no fun...
-		if (allowedHubs.empty()) {
+		if (allowedHubs.empty())
 			return;
-		}
 
 		AutoSearchPtr searchItem = nullptr;
 		{
@@ -538,14 +546,8 @@ void AutoSearchManager::on(TimerManagerListener::Second, uint64_t aTick) noexcep
 
 		if (searchItem)
 			performSearch(searchItem, allowedHubs, TYPE_NORMAL, aTick);
+		
 	}
-
-	if (dirty && (lastSave + (20 * 1000) < aTick)) { //20 second delay between saves.
-		lastSave = aTick;
-		dirty = false;
-		save();
-	}
-
 }
 
 void AutoSearchManager::on(TimerManagerListener::Minute, uint64_t /*aTick*/) noexcept {
