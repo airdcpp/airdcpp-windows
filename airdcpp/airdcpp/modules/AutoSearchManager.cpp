@@ -506,6 +506,31 @@ void AutoSearchManager::resetSearchTimes(uint64_t aTick, bool aRecalculate/* = t
 	
 }
 
+void AutoSearchManager::maybePopSearchItem(uint64_t aTick, bool aIgnoreSearchTimes) {
+	if (!aIgnoreSearchTimes && nextSearch == 0 && nextSearch > GET_TIME()) {
+		return;
+	}
+
+	if (ClientManager::getInstance()->hasSearchQueueOverflow())
+		return;
+
+	StringList allowedHubs;
+	ClientManager::getInstance()->getOnlineClients(allowedHubs);
+	//no hubs? no fun...
+	if (allowedHubs.empty())
+		return;
+
+	AutoSearchPtr searchItem = nullptr;
+	{
+		WLock l(cs);
+		searchItem = searchItems.maybePopSearchItem(aTick, aIgnoreSearchTimes);
+	}
+
+	if (searchItem)
+		performSearch(searchItem, allowedHubs, TYPE_NORMAL, aTick);
+
+}
+
 bool AutoSearchManager::searchItem(AutoSearchPtr& as, SearchType aType) noexcept {
 	StringList allowedHubs;
 	ClientManager::getInstance()->getOnlineClients(allowedHubs);
@@ -522,31 +547,12 @@ bool AutoSearchManager::searchItem(AutoSearchPtr& as, SearchType aType) noexcept
 /* Timermanager */
 void AutoSearchManager::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	
+	maybePopSearchItem(aTick, false);
+
 	if (dirty && (lastSave + (20 * 1000) < aTick)) { //20 second delay between saves.
 		lastSave = aTick;
 		dirty = false;
 		save();
-	}
-
-	if(nextSearch != 0 && nextSearch <= GET_TIME()) {
-		if (ClientManager::getInstance()->hasSearchQueueOverflow())
-			return;
-
-		StringList allowedHubs;
-		ClientManager::getInstance()->getOnlineClients(allowedHubs);
-		//no hubs? no fun...
-		if (allowedHubs.empty())
-			return;
-
-		AutoSearchPtr searchItem = nullptr;
-		{
-			WLock l(cs);
-			searchItem = searchItems.maybePopSearchItem(aTick);
-		}
-
-		if (searchItem)
-			performSearch(searchItem, allowedHubs, TYPE_NORMAL, aTick);
-		
 	}
 }
 
@@ -557,7 +563,10 @@ void AutoSearchManager::on(TimerManagerListener::Minute, uint64_t /*aTick*/) noe
 /* Scheduled searching */
 void AutoSearchManager::checkItems() noexcept {
 	AutoSearchList expired;
-	bool hasStatusChange = false;
+	int itemsEnabled = 0;
+	int itemsDisabled = 0;
+	bool hasPrioChange = false;
+
 	AutoSearchList updateitems;
 
 	{
@@ -573,7 +582,7 @@ void AutoSearchManager::checkItems() noexcept {
 				searchItems.removeSearchPrio(as);
 				as->setPriority(newPrio);
 				searchItems.addSearchPrio(as);
-				hasStatusChange = true;
+				hasPrioChange = true;
 			}
 
 			
@@ -598,17 +607,23 @@ void AutoSearchManager::checkItems() noexcept {
 			if (as->getExpireTime() > 0 || fireUpdate)
 				updateitems.push_back(as);
 
-			if (aOldAllowAutoSearch != as->allowAutoSearch()) {
-				hasStatusChange = true;
-			}
+			if (!aOldAllowAutoSearch && as->allowAutoSearch())
+				itemsEnabled++;
+
+			if (aOldAllowAutoSearch && !as->allowAutoSearch())
+				itemsDisabled++;
 		}
 	}
 
 	for_each(updateitems, [=](AutoSearchPtr as) { fire(AutoSearchManagerListener::ItemUpdated(), as, false); });
 
-	//One or more items were enabled for searching
-	if(hasStatusChange)
-		delayEvents.addEvent(RECALCULATE_SEARCH, [=] { resetSearchTimes(GET_TICK()); }, 1000);
+	//No other enabled searches, start searching for the newly enabled immediately...
+	if (itemsEnabled > 0 && nextSearch == 0) {
+		maybePopSearchItem(GET_TICK(), true);
+	}
+
+	if(hasPrioChange || itemsEnabled > 0 || itemsDisabled > 0)
+		delayEvents.addEvent(RECALCULATE_SEARCH, [=] { resetSearchTimes(GET_TICK()); }, 2000);
 
 	handleExpiredItems(expired);
 }
