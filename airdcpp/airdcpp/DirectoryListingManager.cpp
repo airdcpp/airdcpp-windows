@@ -154,7 +154,7 @@ void DirectoryListingManager::queueList(const DirectoryDownloadPtr& aDownloadInf
 	auto user = aDownloadInfo->getUser();
 
 	Flags flags = QueueItem::FLAG_DIRECTORY_DOWNLOAD;
-	if (!user.user->isSet(User::NMDC) && !aDownloadInfo->getPartialListFailed()) {
+	if (!user.user->isSet(User::NMDC)) {
 		flags.setFlag(QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_RECURSIVE_LIST);
 	}
 
@@ -210,24 +210,17 @@ void DirectoryListingManager::handleDownload(const DirectoryDownloadPtr& aDownlo
 
 	// Check the content
 	{
-		auto getList = [&] {
-			if(aListDownloaded)
-				aDownloadInfo->setPartialListFailed(true);
-			queueList(aDownloadInfo);
-		};
-
 		if (!dir) {
 			// Downloading directory for an open list? Try to download a list from the dir...
 			if (!aListDownloaded) {
-				getList();
+				queueList(aDownloadInfo);
 			}
-
 			return;
 		}
 
 		if (aList->getPartialList() && dir->findIncomplete()) {
 			// Non-recursive partial list
-			getList();
+			queueList(aDownloadInfo);
 			return;
 		}
 	}

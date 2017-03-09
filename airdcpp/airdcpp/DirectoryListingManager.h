@@ -35,8 +35,6 @@ namespace dcpp {
 	public:
 		DirectoryDownload(const HintedUser& aUser, const string& aBundleName, const string& aListPath, const string& aTarget, Priority p, const void* aOwner = nullptr);
 
-		// All clients don't support sending of recursive partial lists
-		IGETSET(bool, partialListFailed, PartialListFailed, false);
 		IGETSET(QueueItemPtr, queueItem, QueueItem, nullptr);
 
 		struct HasOwner {
