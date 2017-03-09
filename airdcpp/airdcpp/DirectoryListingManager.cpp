@@ -144,7 +144,7 @@ DirectoryDownloadPtr DirectoryListingManager::addDirectoryDownload(const HintedU
 	if (!dl && needList) {
 		queueList(downloadInfo);
 	} else if(dl) {
-		handleDownload(downloadInfo, dl, false);
+		dl->addAsyncTask([=] { handleDownload(downloadInfo, dl, false); });
 	}
 
 	return downloadInfo;
@@ -217,8 +217,8 @@ void DirectoryListingManager::handleDownload(const DirectoryDownloadPtr& aDownlo
 		};
 
 		if (!dir) {
-			// Downloading directory for an open list? But don't queue anything if it's a fresh list and the directory is missing.
-			if (aList->getIsClientView()) {
+			// Downloading directory for an open list? Try to download a list from the dir...
+			if (!aListDownloaded) {
 				getList();
 			}
 
