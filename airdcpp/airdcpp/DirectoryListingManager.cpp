@@ -112,8 +112,17 @@ DirectoryDownloadList DirectoryListingManager::getDirectoryDownloads() const noe
 DirectoryDownloadPtr DirectoryListingManager::addDirectoryDownload(const HintedUser& aUser, const string& aBundleName, const string& aListPath, const string& aTarget, Priority p, const void* aOwner) {
 	dcassert(!aTarget.empty() && !aListPath.empty() && !aBundleName.empty());
 	auto downloadInfo = make_shared<DirectoryDownload>(aUser, aBundleName, aListPath, aTarget, p, aOwner);
+	
+	DirectoryListingPtr dl;
+	{
+		RLock l(cs);
+		auto vl = viewedLists.find(aUser.user);
+		if (vl != viewedLists.end()) {
+			dl = vl->second;
+		}
+	}
 
-	bool needList;
+	bool needList = false;
 	{
 		WLock l(cs);
 
@@ -131,8 +140,11 @@ DirectoryDownloadPtr DirectoryListingManager::addDirectoryDownload(const HintedU
 	}
 
 	fire(DirectoryListingManagerListener::DirectoryDownloadAdded(), downloadInfo);
-	if (needList) {
+
+	if (!dl && needList) {
 		queueList(downloadInfo);
+	} else if(dl) {
+		handleDownload(downloadInfo, dl, false);
 	}
 
 	return downloadInfo;
@@ -193,13 +205,14 @@ void DirectoryListingManager::processList(const string& aFileName, const string&
 	processListAction(dirList, aRemotePath, aFlags);
 }
 
-void DirectoryListingManager::handleDownload(const DirectoryDownloadPtr& aDownloadInfo, const DirectoryListingPtr& aList) noexcept {
+void DirectoryListingManager::handleDownload(const DirectoryDownloadPtr& aDownloadInfo, const DirectoryListingPtr& aList, bool aListDownloaded/* = true*/) noexcept {
 	auto dir = aList->findDirectory(aDownloadInfo->getListPath());
 
 	// Check the content
 	{
 		auto getList = [&] {
-			aDownloadInfo->setPartialListFailed(true);
+			if(aListDownloaded)
+				aDownloadInfo->setPartialListFailed(true);
 			queueList(aDownloadInfo);
 		};
 
