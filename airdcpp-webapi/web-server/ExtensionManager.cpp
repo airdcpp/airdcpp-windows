@@ -181,6 +181,7 @@ namespace webserver {
 		}
 
 		const auto untar = [](const string& aTarFile, const string& aDestinationDirectory) {
+			File::ensureDirectory(aDestinationDirectory);
 #ifdef _WIN32
 			string command = "7z x " + aTarFile + " -o" + aDestinationDirectory + " -y";
 #else

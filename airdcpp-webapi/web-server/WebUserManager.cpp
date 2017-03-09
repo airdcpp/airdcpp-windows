@@ -20,6 +20,7 @@
 
 #include <web-server/WebUserManager.h>
 #include <web-server/WebServerManager.h>
+#include <web-server/WebServerSettings.h>
 
 #include <airdcpp/typedefs.h>
 
@@ -135,7 +136,7 @@ namespace webserver {
 		// For internal use only (can't be used for logging in)
 		auto user = std::make_shared<WebUser>(aExtensionName, Util::emptyString, true);
 
-		return createSession(user, uuid, Session::TYPE_EXTENSION, 1, "localhost");
+		return createSession(user, uuid, Session::TYPE_EXTENSION, WEBCFG(DEFAULT_SESSION_IDLE_TIMEOUT).uint64(), "localhost");
 	}
 
 	SessionList WebUserManager::getSessions() const noexcept {

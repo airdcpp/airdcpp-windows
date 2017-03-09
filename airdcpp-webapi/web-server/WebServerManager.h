@@ -27,7 +27,7 @@
 
 #include "Timer.h"
 #include "WebServerManagerListener.h"
-//#include "WebServerSettings.h"
+#include "WebUserManager.h"
 #include "WebSocket.h"
 
 #include <airdcpp/format.h>

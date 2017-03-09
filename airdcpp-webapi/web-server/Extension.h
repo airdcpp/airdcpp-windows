@@ -72,7 +72,7 @@ namespace webserver {
 	private:
 		bool privateExtension = false;
 
-		string getLaunchCommand(WebServerManager* wsm, const SessionPtr& aSession) const noexcept;
+		StringList getLaunchParams(WebServerManager* wsm, const SessionPtr& aSession) const noexcept;
 
 		bool running = false;
 
@@ -80,23 +80,24 @@ namespace webserver {
 		void createProcess(WebServerManager* wsm, const SessionPtr& aSession);
 
 		const ErrorF errorF;
-#ifdef _WIN32
-		static void initLog(HANDLE& aHandle, const string& aPath);
-		static void disableLogInheritance(HANDLE& aHandle);
-		static void closeLog(HANDLE& aHandle);
+		SessionPtr session = nullptr;
 
 		void checkRunningState(WebServerManager* wsm) noexcept;
 		void onStopped(bool aFailed) noexcept;
 		TimerPtr timer = nullptr;
 
+		bool terminateProcess() noexcept;
+		void resetProcessState() noexcept;
+#ifdef _WIN32
+		static void initLog(HANDLE& aHandle, const string& aPath);
+		static void disableLogInheritance(HANDLE& aHandle);
+		static void closeLog(HANDLE& aHandle);
+
 		PROCESS_INFORMATION piProcInfo;
 		HANDLE messageLogHandle = INVALID_HANDLE_VALUE;
 		HANDLE errorLogHandle = INVALID_HANDLE_VALUE;
 #else
-		void run();
-		int procHandle = 0;
-
-		unique_ptr<std::thread> t;
+		pid_t pid = 0;
 #endif
 	};
 
