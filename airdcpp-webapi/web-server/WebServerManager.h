@@ -208,6 +208,9 @@ namespace webserver {
 		}
 
 		bool isRunning() const noexcept;
+		string getLocalIpPlain() noexcept;
+		string getLocalIpTls() noexcept;
+
 		bool isListeningPlain() const noexcept {
 			return endpoint_plain.is_listening();
 		}

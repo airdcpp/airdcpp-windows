@@ -200,6 +200,30 @@ namespace webserver {
 	}
 
 	template <typename EndpointType>
+	string getLocalIp(EndpointType& aEndpoint) noexcept {
+		boost::system::error_code ec;
+		auto localEndpoint = aEndpoint.get_local_endpoint(ec);
+		if (ec) {
+			return Util::emptyString;
+		}
+
+		auto ret = localEndpoint.address().to_string();
+		if (localEndpoint.protocol() == boost::asio::ip::tcp::v6()) {
+			ret = "[" + ret + "]";
+		}
+
+		return ret;
+	}
+
+	string WebServerManager::getLocalIpPlain() noexcept {
+		return getLocalIp(endpoint_plain);
+	}
+
+	string WebServerManager::getLocalIpTls() noexcept {
+		return getLocalIp(endpoint_tls);
+	}
+
+	template <typename EndpointType>
 	bool listenEndpoint(EndpointType& aEndpoint, const ServerConfig& aConfig, const string& aProtocol, const WebServerManager::ErrorF& errorF) noexcept {
 		if (!aConfig.hasValidConfig()) {
 			return false;
