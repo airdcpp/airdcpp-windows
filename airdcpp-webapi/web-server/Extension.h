@@ -83,6 +83,7 @@ namespace webserver {
 		bool privateExtension = false;
 
 		StringList getLaunchParams(WebServerManager* wsm, const SessionPtr& aSession) const noexcept;
+		static string getConnectUrl(WebServerManager* wsm) noexcept;
 
 		bool running = false;
 

@@ -88,6 +88,29 @@ namespace webserver {
 		timer->start(false);
 	}
 
+	string Extension::getConnectUrl(WebServerManager* wsm) noexcept {
+		const auto& serverConfig = wsm->isListeningPlain() ? wsm->getPlainServerConfig() : wsm->getTlsServerConfig();
+
+		auto bindAddress = serverConfig.bindAddress.str();
+		if (bindAddress.empty()) {
+			auto protocol = wsm->isListeningPlain();
+			if (!protocol) {
+				protocol = wsm->isListeningTls();
+			}
+
+			if (protocol) {
+				bindAddress = *protocol == boost::asio::ip::tcp::v6() ? "[::1]" : "127.0.0.1";
+			} else {
+				dcassert(0);
+			}
+		}
+
+		string address = wsm->isListeningPlain() ? "ws://" : "wss://";
+		address += bindAddress;
+		address += ":" + Util::toString(serverConfig.port.num()) + "/api/v1/ ";
+		return address;
+	}
+
 	StringList Extension::getLaunchParams(WebServerManager* wsm, const SessionPtr& aSession) const noexcept {
 		StringList ret;
 
@@ -95,21 +118,7 @@ namespace webserver {
 		ret.push_back(getPackageDirectory() + entry);
 
 		// Connect URL
-		{
-
-			const auto& serverConfig = wsm->isListeningPlain() ? wsm->getPlainServerConfig() : wsm->getTlsServerConfig();
-
-			string address;
-			if (wsm->isListeningPlain()) {
-				address += "ws://" + wsm->getLocalIpPlain();
-			} else {
-				address += "wss://" + wsm->getLocalIpTls();
-			}
-
-			address += ":" + Util::toString(serverConfig.port.num()) + "/api/v1/ ";
-
-			ret.push_back(address);
-		}
+		ret.push_back(getConnectUrl(wsm));
 
 		// Session token
 		ret.push_back(aSession->getAuthToken());

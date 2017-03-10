@@ -208,16 +208,9 @@ namespace webserver {
 		}
 
 		bool isRunning() const noexcept;
-		string getLocalIpPlain() noexcept;
-		string getLocalIpTls() noexcept;
 
-		bool isListeningPlain() const noexcept {
-			return endpoint_plain.is_listening();
-		}
-
-		bool isListeningTls() const noexcept {
-			return endpoint_tls.is_listening();
-		}
+		optional<boost::asio::ip::tcp> isListeningPlain() noexcept;
+		optional<boost::asio::ip::tcp> isListeningTls() noexcept;
 
 		const CallBack getShutdownF() const noexcept {
 			return shutdownF;
