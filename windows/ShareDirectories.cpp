@@ -293,7 +293,7 @@ LRESULT ShareDirectories::onItemchangedDirectories(int /*idCtrl*/, LPNMHDR pnmh,
 }
 
 ProfileDirectoryInfoPtr ShareDirectories::getItemByPath(const string& aPath, bool listRemoved) {
-	ProfileDirectoryInfo::List dirItems;
+	//ProfileDirectoryInfo::List dirItems;
 
 	//add shared dirs
 	auto p = find_if(shareDirs, ProfileDirectoryInfo::PathCompare(aPath));
@@ -611,7 +611,7 @@ bool ShareDirectories::addDirectory(const tstring& aPath){
 		return false;
 	}
 
-	ShareProfileInfo::List spList;
+	//ShareProfileInfo::List spList;
 	ProfileTokenSet profileTokens = { curProfile };
 	tstring newName;
 

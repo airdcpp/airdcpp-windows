@@ -1658,7 +1658,7 @@ LRESULT HubFrame::onPublicMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 }
 
 LRESULT HubFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {	
-	ParamMap params;
+	//ParamMap params;
 	OnlineUserPtr ui = nullptr;
 
 	int i = -1;
@@ -1762,7 +1762,7 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 				ColorList *cList = HighlightManager::getInstance()->getList();
 				for(ColorIter i = cList->begin(); i != cList->end(); ++i) {
 					ColorSettings* cs = &(*i);
-					string str;
+					//string str;
 					if(cs->getContext() == HighlightManager::CONTEXT_NICKLIST) {
 						tstring match = ui->getText(cs->getMatchColumn());
 						if(match.empty()) continue;

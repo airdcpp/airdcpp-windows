@@ -70,7 +70,7 @@ void TreePropertySheet::hideTab() {
 void TreePropertySheet::addTree()
 {
 	// Insert the space to the left
-	CRect rcWindow,rcPage;
+	CRect rcPage;
 
 	HWND page = IndexToHwnd(this->m_psh.nStartPage);
 	::GetWindowRect(page, &rcPage);

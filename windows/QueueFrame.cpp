@@ -193,7 +193,7 @@ void QueueFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 
 		ctrlStatus.GetRect(1, sr);
 	}
-	CRect rc = rect;
+	//CRect rc = rect;
 	SetSplitterRect(&rect);
 	//ctrlQueue.MoveWindow(&rc);
 }
