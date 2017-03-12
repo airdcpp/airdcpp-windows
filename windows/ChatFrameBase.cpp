@@ -31,6 +31,7 @@
 
 #include <airdcpp/modules/ShareMonitorManager.h>
 #include <airdcpp/modules/ShareScannerManager.h>
+#include <airdcpp/modules/AutoSearchManager.h>
 
 #include <airdcpp/HashManager.h>
 #include <airdcpp/SettingsManager.h>
@@ -1010,13 +1011,17 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 		} else {
 			status = _T("Supported version of Winamp is not running");
 		}
-	} else if (stricmp(cmd.c_str(), _T("crashtest")) == 0) {
+	}
+	else if (stricmp(cmd.c_str(), _T("crashtest")) == 0) {
 		if (param == _T("terminate")) {
 			terminate();
 		}
 
 		int recursionCount = Util::toInt(Text::fromT(param));
 		crashWithRecursion<string, string::allocator_type, string, string>(0, recursionCount > 0 ? recursionCount : 30, "1", "2");
+	}
+	else if (stricmp(cmd.c_str(), _T("aspopnext")) == 0) {
+		AutoSearchManager::getInstance()->maybePopSearchItem(GET_TICK(), true);
 	} else {
 		return checkFrameCommand(cmd, param, message, status, thirdPerson);
 	}

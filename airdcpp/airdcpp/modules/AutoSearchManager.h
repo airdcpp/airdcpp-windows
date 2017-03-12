@@ -55,6 +55,7 @@ public:
 	bool addFailedBundle(const BundlePtr& aBundle) noexcept;
 	void addAutoSearch(AutoSearchPtr aAutoSearch, bool search, bool loading = false) noexcept;
 	AutoSearchPtr addAutoSearch(const string& ss, const string& targ, bool isDirectory, AutoSearch::ItemType asType, bool aRemove = true, bool aSearch = true, int aExpiredays = 0) noexcept;
+	bool validateAutoSearchStr(const string& aStr) const noexcept;
 	AutoSearchList getSearchesByBundle(const BundlePtr& aBundle) const noexcept;
 	AutoSearchList getSearchesByString(const string& aSearchString, const AutoSearchPtr& ignoredSearch = nullptr) const noexcept;
 
@@ -89,6 +90,8 @@ public:
 	void moveItemToGroup(AutoSearchPtr& as, const string& aGroupName);
 	bool hasGroup(const string& aGroup) { RLock l(cs);  return (find(groups.begin(), groups.end(), aGroup) != groups.end()); }
 	int getGroupIndex(const AutoSearchPtr& as);
+
+	void maybePopSearchItem(uint64_t aTick, bool aIgnoreSearchTimes);
 
 	SharedMutex& getCS() { return cs; }
 private:
@@ -126,8 +129,6 @@ private:
 	void updateStatus(AutoSearchPtr& as, bool setTabDirty) noexcept;
 	void clearError(AutoSearchPtr& as) noexcept;
 	void resetSearchTimes(uint64_t aTick, bool aRecalculate = true) noexcept;
-
-	void maybePopSearchItem(uint64_t aTick, bool aIgnoreSearchTimes); 
 
 	/* Listeners */
 	void on(SearchManagerListener::SR, const SearchResultPtr&) noexcept override;
