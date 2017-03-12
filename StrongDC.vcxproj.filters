@@ -841,9 +841,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\apply.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="res\AutoSearch\Collecting.ico">
       <Filter>Resource Files</Filter>
     </Image>
@@ -883,12 +880,6 @@
     <Image Include="res\Botoff.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\cancel.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\down.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="res\download_user.ico">
       <Filter>Resource Files</Filter>
     </Image>
@@ -902,9 +893,6 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\expand_up.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\FavUser.ico">
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\file.ico">
@@ -1049,9 +1037,6 @@
     <Image Include="res\TotalUp.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\types.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="res\Typing.ico">
       <Filter>Resource Files</Filter>
     </Image>
@@ -1099,58 +1084,19 @@
     <None Include="res\AirDCPlusPlus.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\arrows.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\bra.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\CDM.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\dan.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\Directory.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\Download.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\emoticon.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\eng.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\error.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\Exec.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\fav.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\fin.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\flags.bmp">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\folders.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\fr.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\GERM.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\getTTH.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\holland.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\Hub.ico">
@@ -1165,28 +1111,16 @@
     <None Include="res\HubReg.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\hun.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\Indexing.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\info.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\ita.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\magnet.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\matchlists.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\message.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\nor.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\Offline.ico">
@@ -1198,31 +1132,13 @@
     <None Include="res\ownlist.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\o_otools.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\o_settings_dlg.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\PM.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\pol.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\QConnect.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\ro.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\rus.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\searchTypes\Custom.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\search_icons.bmp">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\SettingsTree\Advanced.ico">
@@ -1303,37 +1219,10 @@
     <None Include="res\SettingsTree\Windows.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\settings_dlg.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\sounds.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\speeds.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\state.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\stop.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\stop_ikona.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\StrongDC.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\swe.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\toolbar.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\toolbar20-highlight.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\toolbar20.bmp">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\ToolbarImages\ADLSearch.ico">
@@ -1343,9 +1232,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\ToolbarImages\Away.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\ToolbarImages\Clock.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\ToolbarImages\Exit.ico">
@@ -1364,9 +1250,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\ToolbarImages\Follow.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\ToolbarImages\NetStats.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\ToolbarImages\Notepad.ico">
@@ -1411,19 +1294,7 @@
     <None Include="res\ToolbarImages\uQueue.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\transfer_compressed.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\transfer_segmented.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\transfer_tree.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\TreeNo.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\TreeYes.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\Update.ico">
@@ -1433,9 +1304,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\User.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\UserlistImages\UserAirDC.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\UserlistImages\UserAway.ico">
@@ -1463,9 +1331,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\Winamp_logo.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\WinampControl.bmp">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="changelog.txt">
