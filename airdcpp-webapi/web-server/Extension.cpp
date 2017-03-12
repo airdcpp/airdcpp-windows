@@ -265,7 +265,7 @@ namespace webserver {
 		disableLogInheritance(errorLogHandle);
 	}
 
-	void Extension::checkRunningState(WebServerManager* wsm) noexcept {
+	void Extension::checkRunningState(WebServerManager*) noexcept {
 		DWORD exitCode = 0;
 		if (GetExitCodeProcess(piProcInfo.hProcess, &exitCode) != 0) {
 			if (exitCode != STILL_ACTIVE) {

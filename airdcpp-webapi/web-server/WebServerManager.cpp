@@ -236,7 +236,7 @@ namespace webserver {
 			} else {
 				// IPv6 and IPv4-mapped IPv6 addresses are used by default (given that IPv6 is supported by the OS)
 				auto v6Supported = !AirUtil::getLocalIp(true).empty();
-				aEndpoint.listen(v6Supported ? boost::asio::ip::tcp::v6() : boost::asio::ip::tcp::v4(), aConfig.port.num());
+				aEndpoint.listen(v6Supported ? boost::asio::ip::tcp::v6() : boost::asio::ip::tcp::v4(), static_cast<uint16_t>(aConfig.port.num()));
 			}
 
 			aEndpoint.start_accept();
@@ -289,7 +289,7 @@ namespace webserver {
 	}
 
 	// For debugging only
-	void WebServerManager::onPongReceived(websocketpp::connection_hdl hdl, const string& aPayload) {
+	void WebServerManager::onPongReceived(websocketpp::connection_hdl hdl, const string& /*aPayload*/) {
 		auto socket = getSocket(hdl);
 		if (!socket) {
 			return;
@@ -302,7 +302,7 @@ namespace webserver {
 		fire(WebServerManagerListener::Data(), aData, aType, aDirection, aIP);
 	}
 
-	void WebServerManager::onPongTimeout(websocketpp::connection_hdl hdl, const string& aPayload) {
+	void WebServerManager::onPongTimeout(websocketpp::connection_hdl hdl, const string&) {
 		auto socket = getSocket(hdl);
 		if (!socket) {
 			return;
