@@ -12,15 +12,18 @@
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A7FF59D3-EAFD-43A1-8AA7-5087229C75D1}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
+		<UseNativeEnvironment>true</UseNativeEnvironment>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -127,6 +130,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <FloatingPointModel>Fast</FloatingPointModel>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <Optimization>Full</Optimization>
+      <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -137,14 +143,15 @@
     </Link>
     <Lib>
       <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+      <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>USE_VISTA_API;COMPILER_MSVC;SNAPPY;WIN32;NDEBUG;_LIB;LEVELDB_PLATFORM_WINDOWS;OS_WIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_VISTA_API;SNAPPY;WIN32;NDEBUG;_LIB;LEVELDB_PLATFORM_WINDOWS;OS_WIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
-      <DebugInformationFormat>None</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>$(SolutionDir)\leveldb\port\win;$(SolutionDir)\leveldb\include;$(SolutionDir)\snappy;$(SolutionDir)\leveldb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FloatingPointModel>Fast</FloatingPointModel>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -154,9 +161,7 @@
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <Optimization>Full</Optimization>
-      <WholeProgramOptimization>false</WholeProgramOptimization>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalOptions>/Gw %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -166,6 +171,7 @@
     </Link>
     <Lib>
       <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+      <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>

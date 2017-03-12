@@ -64,7 +64,6 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)vc14\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)vc14\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)vc14\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
@@ -82,17 +81,13 @@
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(SolutionDir)boost;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BOOST_THREAD_BUILD_LIB;BOOST_ALL_NO_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ExceptionHandling>Sync</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <SmallerTypeCheck>false</SmallerTypeCheck>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <BufferSecurityCheck>true</BufferSecurityCheck>
-      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
@@ -165,9 +160,7 @@
       </AdditionalOptions>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <DebugInformationFormat>None</DebugInformationFormat>
-      <OmitFramePointers>false</OmitFramePointers>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Lib>
       <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>

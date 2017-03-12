@@ -78,7 +78,6 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)vc14\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)vc14\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)vc14\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
@@ -91,11 +90,11 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>STATICLIB;WIN32;_WIN32_WINNT=0x501;_WIN32_IE=0x501;WINVER=0x501;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>STATICLIB;WIN32;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalIncludeDirectories>
       </AdditionalIncludeDirectories>
@@ -114,7 +113,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>STATICLIB;WIN32;_WIN32_WINNT=0x501;_WIN32_IE=0x501;WINVER=0x501;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>STATICLIB;WIN32;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -133,7 +132,7 @@
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <AdditionalIncludeDirectories>
       </AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>STATICLIB;WIN32;_WIN32_WINNT=0x501;_WIN32_IE=0x501;WINVER=0x501;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>STATICLIB;WIN32;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -159,7 +158,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <PreprocessorDefinitions>errno=WSAGetLastError();STATICLIB;WIN32;_WIN32_WINNT=0x501;_WIN32_IE=0x501;WINVER=0x501;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>STATICLIB;WIN32;WIN32_LEAN_AND_MEAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -168,7 +167,7 @@
       <AdditionalOptions>
       </AdditionalOptions>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <DebugInformationFormat>None</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <OmitFramePointers>false</OmitFramePointers>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WholeProgramOptimization>false</WholeProgramOptimization>
