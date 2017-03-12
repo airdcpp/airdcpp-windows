@@ -57,7 +57,7 @@ TextFrame::TextFrame(const tstring& aTitle, const string& aFilePath, Type aType,
 	SettingsManager::getInstance()->addListener(this);
 }
 
-TextFrame::TextFrame(const ViewFilePtr& aFile) : TextFrame(Text::toT(aFile->getDisplayName()), aFile->getPath(), NORMAL) {
+TextFrame::TextFrame(const ViewFilePtr& aFile) : TextFrame(Text::toT(aFile->getDisplayName()), aFile->getPath(), UNKNOWN) {
 	viewFile = aFile;
 	ViewFileManager::getInstance()->addListener(this);
 }
@@ -84,69 +84,52 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	ctrlPad.Subclass();
 	ctrlPad.LimitText(0);
 
-	string tmp;
 	try {
-		if(textType < NORMAL) {
+		
+		if (!isNfo(filePath)) {
 			ctrlPad.SetFont(WinUtil::font);
-			ctrlPad.SetBackgroundColor(WinUtil::bgColor); 
+			ctrlPad.SetBackgroundColor(WinUtil::bgColor);
 			ctrlPad.SetDefaultCharFormat(WinUtil::m_ChatTextGeneral);
+		}
 
-			if (textType == HISTORY) {
-				ctrlPad.setFormatLinks(true);
-				ctrlPad.setFormatReleases(true);
-
-				auto history = LogManager::readFromEnd(filePath, SETTING(LOG_LINES), Util::convertSize(64, Util::KB));
-				ctrlPad.AppendChat(Identity(NULL, 0), _T("- "), _T(""), Text::toT(history), WinUtil::m_ChatTextGeneral, true);
-			} else if (textType == LOG) {
-				ctrlPad.setFormatPaths(true);
-				ctrlPad.setFormatLinks(true);
-				ctrlPad.setFormatReleases(true);
-				File f(filePath, File::READ, File::OPEN);
-				//if openlog just add the whole text
-				tmp = f.read();
-				ctrlPad.SetWindowText(Text::toT(tmp).c_str());
-			} else if (textType == REPORT) {
-				ctrlPad.setFormatPaths(true);
-				ctrlPad.AppendText(text);
-
-				ctrlPad.setAutoScrollToEnd(false);
-				ctrlPad.SetSel(0, 0); //set scroll position to top
-			}
-		} else if(textType == NORMAL) {
-			File f(filePath, File::READ, File::OPEN);
-			tmp = Text::toDOS(f.read());
-			tmp = Text::toUtf8(tmp);
-
-			//edit text style, disable dwEffects, bold, italic etc. looks really bad with bold font.
-			CHARFORMAT2 cf;
-			cf.cbSize = 9;  //use fixed size for testing.
-			cf.dwEffects = 0;
-			cf.dwMask = CFM_BACKCOLOR | CFM_COLOR;
-			cf.crBackColor = SETTING(BACKGROUND_COLOR);
-			cf.crTextColor = SETTING(TEXT_COLOR);
-			cf.bCharSet = OEM_CHARSET;
-
-			//We need to disable autofont, otherwise it will mess up our new font.
-			LRESULT lres = ::SendMessage(ctrlPad.m_hWnd, EM_GETLANGOPTIONS, 0, 0);
-			lres &= ~IMF_AUTOFONT;
-			::SendMessage(ctrlPad.m_hWnd, EM_SETLANGOPTIONS, 0, lres);
-		
-			ctrlPad.SetFont(WinUtil::OEMFont);
-			//set the colors...
-			ctrlPad.SetBackgroundColor(WinUtil::bgColor); 
-			ctrlPad.SetDefaultCharFormat(cf);
-		
-			//ctrlPad.SetTextEx((LPCTSTR)tmp.c_str(), ST_SELECTION, CP_UTF8);
-			tstring msg = Text::toT(tmp);
+		if (textType == HISTORY) {
 			ctrlPad.setFormatLinks(true);
 			ctrlPad.setFormatReleases(true);
 
-			ctrlPad.AppendText(msg);
+			auto history = LogManager::readFromEnd(filePath, SETTING(LOG_LINES), Util::convertSize(64, Util::KB));
+			ctrlPad.AppendChat(Identity(NULL, 0), _T("- "), _T(""), Text::toT(history), WinUtil::m_ChatTextGeneral, true);
+		} else if (textType == LOG) {
+			ctrlPad.setFormatPaths(true);
+			ctrlPad.setFormatLinks(true);
+			ctrlPad.setFormatReleases(true);
+			File f(filePath, File::READ, File::OPEN);
+			//if openlog just add the whole text
+			string tmp = f.read();
+			ctrlPad.SetWindowText(Text::toT(tmp).c_str());
+		} else if (textType == REPORT) {
+			ctrlPad.setFormatPaths(true);
+			ctrlPad.AppendText(text);
 
 			ctrlPad.setAutoScrollToEnd(false);
 			ctrlPad.SetSel(0, 0); //set scroll position to top
 		}
+		else if (isNfo(filePath)) {
+			openNfo();
+		} else if(isText(filePath)) { //If we need to parse release links and such we should validate the file to be text...
+			File f(filePath, File::READ, File::OPEN);
+			tstring msg = Text::toT(f.read());
+			ctrlPad.SetWindowText(msg.c_str());
 
+			ctrlPad.setFormatLinks(true);
+			ctrlPad.setFormatReleases(true);
+			ctrlPad.AppendText(msg);
+			ctrlPad.setAutoScrollToEnd(false);
+			ctrlPad.SetSel(0, 0); //set scroll position to top*/
+		} else {
+			File f(filePath, File::READ, File::OPEN);
+			tstring msg = Text::toT(f.read());
+			ctrlPad.SetWindowText(msg.c_str());
+		}
 		SetWindowText(title.c_str());
 	} catch(const FileException& e) {
 		ctrlPad.SetWindowText((title + _T(": ") + Text::toT(e.getError())).c_str());
@@ -162,6 +145,50 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	return 1;
 }
 
+bool TextFrame::isNfo(const string& aFile) {
+	return Util::getFileExt(aFile) == ".nfo";
+}
+
+bool TextFrame::isText(const string& aFile) {
+	//TODO: a regex to handle most of the text files...
+	string ext = Util::getFileExt(aFile);
+	return ext == ".sfv" || ext == ".txt" || ext == ".srt" || ext == ".sub" || ext == ".text" || ext == ".log";
+}
+
+void TextFrame::openNfo() {
+	string tmp;
+	File f(filePath, File::READ, File::OPEN);
+	tmp = Text::toDOS(f.read());
+	tmp = Text::toUtf8(tmp);
+
+	//edit text style, disable dwEffects, bold, italic etc. looks really bad with bold font.
+	CHARFORMAT2 cf;
+	cf.cbSize = 9;  //use fixed size for testing.
+	cf.dwEffects = 0;
+	cf.dwMask = CFM_BACKCOLOR | CFM_COLOR;
+	cf.crBackColor = SETTING(BACKGROUND_COLOR);
+	cf.crTextColor = SETTING(TEXT_COLOR);
+	cf.bCharSet = OEM_CHARSET;
+
+	//We need to disable autofont, otherwise it will mess up our new font.
+	LRESULT lres = ::SendMessage(ctrlPad.m_hWnd, EM_GETLANGOPTIONS, 0, 0);
+	lres &= ~IMF_AUTOFONT;
+	::SendMessage(ctrlPad.m_hWnd, EM_SETLANGOPTIONS, 0, lres);
+
+	ctrlPad.SetFont(WinUtil::OEMFont);
+	//set the colors...
+	ctrlPad.SetBackgroundColor(WinUtil::bgColor);
+	ctrlPad.SetDefaultCharFormat(cf);
+
+	tstring msg = Text::toT(tmp);
+	ctrlPad.setFormatLinks(true);
+	ctrlPad.setFormatReleases(true);
+
+	ctrlPad.AppendText(msg);
+
+	ctrlPad.setAutoScrollToEnd(false);
+	ctrlPad.SetSel(0, 0); //set scroll position to top
+}
 
 LRESULT TextFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	CRect rc;

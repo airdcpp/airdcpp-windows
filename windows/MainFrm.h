@@ -38,6 +38,7 @@
 #include <airdcpp/UpdateManagerListener.h>
 #include <airdcpp/PrivateChatManagerListener.h>
 #include <airdcpp/ActivityManager.h>
+#include <airdcpp/ViewFileManagerListener.h>
 
 #include "PopupManager.h"
 #include "Dispatchers.h"
@@ -57,7 +58,7 @@ class MainFrame : public CMDIFrameWindowImpl<MainFrame>, public CUpdateUI<MainFr
 		public CMessageFilter, public CIdleHandler, public CSplitterImpl<MainFrame>,
 		private TimerManagerListener, private QueueManagerListener, public Async<MainFrame>,
 		private LogManagerListener, private DirectoryListingManagerListener, private UpdateManagerListener, private ScannerManagerListener, private ClientManagerListener,
-		private AutoSearchManagerListener, private PrivateChatManagerListener, private ActivityManagerListener
+		private AutoSearchManagerListener, private PrivateChatManagerListener, private ActivityManagerListener, private ViewFileManagerListener
 {
 public:
 	MainFrame();
@@ -483,6 +484,8 @@ private:
 
 	//ActivityManagerListener
 	void on(ActivityManagerListener::AwayModeChanged, AwayMode aNewMode) noexcept;
+
+	void on(ViewFileManagerListener::FileFinished, const ViewFilePtr& aFile) noexcept;
 
 	void onUpdateAvailable(const string& title, const string& message, const string& aVersionString, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept;
 	void onBadVersion(const string& message, const string& url, const string& update, int buildID, bool canAutoUpdate) noexcept;

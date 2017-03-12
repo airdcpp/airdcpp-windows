@@ -37,7 +37,7 @@ public:
 		REPORT,
 		LOG,
 		HISTORY,
-		NORMAL,
+		UNKNOWN,
 	};
 
 	static void openWindow(const string& aFilePath, Type aType);
@@ -98,6 +98,9 @@ private:
 	tstring title;
 	tstring text;
 	RichTextBox ctrlPad;
+	void openNfo();
+	bool isNfo(const string& aFile);
+	bool isText(const string& aFile);
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 	void on(ViewFileManagerListener::FileClosed, const ViewFilePtr& aFile) noexcept;

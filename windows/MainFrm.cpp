@@ -246,6 +246,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	ClientManager::getInstance()->addListener(this);
 	PrivateChatManager::getInstance()->addListener(this);
 	ActivityManager::getInstance()->addListener(this);
+	ViewFileManager::getInstance()->addListener(this);
 
 	WinUtil::init(m_hWnd);
 	ResourceLoader::load();
@@ -1827,13 +1828,10 @@ void MainFrame::on(QueueManagerListener::ItemFinished, const QueueItemPtr& qi, c
 	if (qi->isSet(QueueItem::FLAG_OPEN)) {
 		addThreadedTask([=] { WinUtil::openFile(Text::toT(qi->getTarget())); });
 	}
+}
 
-	if(qi->isSet(QueueItem::FLAG_CLIENT_VIEW)) {
-		auto file = ViewFileManager::getInstance()->getFile(qi->getTTH());
-		if (file && file->isText()) {
-			callAsync([=] { TextFrame::openWindow(file); });
-		}
-	}
+void MainFrame::on(ViewFileManagerListener::FileFinished, const ViewFilePtr& aFile) noexcept {
+	callAsync([=] { TextFrame::openWindow(aFile); });
 }
 
 void MainFrame::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept {
@@ -2009,6 +2007,7 @@ LRESULT MainFrame::onDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ClientManager::getInstance()->removeListener(this);
 	PrivateChatManager::getInstance()->removeListener(this);
 	ActivityManager::getInstance()->removeListener(this);
+	ViewFileManager::getInstance()->removeListener(this);
 	
 	updateTray(false);
 
