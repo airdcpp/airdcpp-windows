@@ -12,10 +12,12 @@
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
@@ -35,26 +37,22 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ConfigurationType>StaticLibrary</ConfigurationType>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <CharacterSet>MultiByte</CharacterSet>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
     <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -96,10 +94,11 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);ssize_t=SSIZE_T;PACKAGE_VERSION=0;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);PACKAGE_VERSION=0;ssize_t=SSIZE_T;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -112,9 +111,10 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Full</Optimization>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>STATICLIB;%(PreprocessorDefinitions);_WIN32_WINNT=0x502;WINVER=0x502;_WIN32_IE=0x600;NOMINMAX;STRICT;WIN32_LEAN_AND_MEAN;BOOST_ALL_NO_LIB;BOOST_USE_WINDOWS_H;HAS_PCH;UNICODE;_UNICODE;NDEBUG;_REENTRANT;HAVE_HTMLHELP_H;HAVE_NATUPNP_H;HAVE_STDINT_H=1;PACKAGE_VERSION=0;ssize_t=SSIZE_T;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>STATICLIB;%(PreprocessorDefinitions);PACKAGE_VERSION=0;ssize_t=SSIZE_T;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
@@ -123,6 +123,7 @@
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <StringPooling>true</StringPooling>
       <BufferSecurityCheck>false</BufferSecurityCheck>
+      <DebugInformationFormat>None</DebugInformationFormat>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -146,7 +147,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>STATICLIB;%(PreprocessorDefinitions);_WIN32_WINNT=0x502;WINVER=0x502;_WIN32_IE=0x600;NOMINMAX;STRICT;WIN32_LEAN_AND_MEAN;BOOST_ALL_NO_LIB;BOOST_USE_WINDOWS_H;HAS_PCH;UNICODE;_UNICODE;NDEBUG;_REENTRANT;HAVE_HTMLHELP_H;HAVE_NATUPNP_H;HAVE_STDINT_H=1;PACKAGE_VERSION=0;ssize_t=SSIZE_T;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>STATICLIB;%(PreprocessorDefinitions);NDEBUG;PACKAGE_VERSION=0;ssize_t=SSIZE_T;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;</PreprocessorDefinitions>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
@@ -164,7 +165,7 @@
       <WarningLevel>Level3</WarningLevel>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <Optimization>Full</Optimization>
-      <PreprocessorDefinitions>STATICLIB;%(PreprocessorDefinitions);_WIN32_WINNT=0x502;WINVER=0x502;_WIN32_IE=0x600;NOMINMAX;STRICT;WIN32_LEAN_AND_MEAN;BOOST_ALL_NO_LIB;BOOST_USE_WINDOWS_H;HAS_PCH;UNICODE;_UNICODE;NDEBUG;_REENTRANT;HAVE_HTMLHELP_H;HAVE_NATUPNP_H;HAVE_STDINT_H=1;PACKAGE_VERSION=0;ssize_t=SSIZE_T;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>STATICLIB;%(PreprocessorDefinitions);NDEBUG;PACKAGE_VERSION=0;ssize_t=SSIZE_T;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <StringPooling>true</StringPooling>
       <BufferSecurityCheck>false</BufferSecurityCheck>
