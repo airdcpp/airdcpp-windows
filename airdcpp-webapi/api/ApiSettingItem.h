@@ -30,24 +30,13 @@ namespace webserver {
 	class ApiSettingItem {
 	public:
 		enum Type {
-			TYPE_GENERAL,
+			TYPE_AUTO,
 			TYPE_FILE_PATH,
 			TYPE_DIRECTORY_PATH,
 			TYPE_LONG_TEXT,
-			TYPE_CONN_V4,
-			TYPE_CONN_V6,
-			TYPE_CONN_GEN,
-			TYPE_LIMITS_DL,
-			TYPE_LIMITS_UL,
-			TYPE_LIMITS_MCN
 		};
 
-		struct Unit {
-			const ResourceManager::Strings str;
-			const bool isSpeed;
-		};
-
-		ApiSettingItem(const string& aName, Type aType = TYPE_GENERAL, Unit&& aUnit = { ResourceManager::Strings::LAST, false });
+		ApiSettingItem(const string& aName, Type aType, ResourceManager::Strings aUnit);
 
 		virtual json infoToJson(bool aForceAutoValues = false) const noexcept;
 
@@ -61,12 +50,22 @@ namespace webserver {
 		const string name;
 		const Type type;
 
-		Unit unit;
+		const ResourceManager::Strings unit;
 	};
 
 	class CoreSettingItem : public ApiSettingItem, public SettingItem {
 	public:
-		CoreSettingItem(const string& aName, int aKey, ResourceManager::Strings aDesc, Type aType = TYPE_GENERAL, Unit&& aUnit = { ResourceManager::Strings::LAST, false });
+		enum Group {
+			GROUP_NONE,
+			GROUP_CONN_V4,
+			GROUP_CONN_V6,
+			GROUP_CONN_GEN,
+			GROUP_LIMITS_DL,
+			GROUP_LIMITS_UL,
+			GROUP_LIMITS_MCN
+		};
+
+		CoreSettingItem(const string& aName, int aKey, ResourceManager::Strings aDesc, Type aType = TYPE_AUTO, ResourceManager::Strings aUnit = ResourceManager::Strings::LAST);
 
 		json infoToJson(bool aForceAutoValues = false) const noexcept override;
 
@@ -85,7 +84,7 @@ namespace webserver {
 
 	class ServerSettingItem : public ApiSettingItem {
 	public:
-		ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType = TYPE_GENERAL, Unit&& aUnit = { ResourceManager::Strings::LAST, false });
+		ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType = TYPE_AUTO, ResourceManager::Strings aUnit = ResourceManager::Strings::LAST);
 
 		json infoToJson(bool aForceAutoValues = false) const noexcept override;
 

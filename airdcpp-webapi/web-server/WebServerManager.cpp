@@ -52,9 +52,9 @@ namespace webserver {
 
 		{ "web_server_threads", "Server threads", 4 },
 
-		{ "default_idle_timeout", "Default session inactivity timeout", 20, ApiSettingItem::TYPE_GENERAL, { ResourceManager::Strings::MINUTES_LOWER, false } },
-		{ "ping_interval", "Socket ping interval", 30, ApiSettingItem::TYPE_GENERAL, { ResourceManager::Strings::SECONDS_LOWER, false } },
-		{ "ping_timeout", "Socket ping timeout", 10, ApiSettingItem::TYPE_GENERAL, { ResourceManager::Strings::SECONDS_LOWER, false } },
+		{ "default_idle_timeout", "Default session inactivity timeout", 20, ApiSettingItem::TYPE_AUTO, ResourceManager::Strings::MINUTES_LOWER },
+		{ "ping_interval", "Socket ping interval", 30, ApiSettingItem::TYPE_AUTO, ResourceManager::Strings::SECONDS_LOWER },
+		{ "ping_timeout", "Socket ping timeout", 10, ApiSettingItem::TYPE_AUTO, ResourceManager::Strings::SECONDS_LOWER },
 	};
 
 	using namespace dcpp;
