@@ -118,7 +118,6 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		} else if(isText(filePath)) { //If we need to parse release links and such we should validate the file to be text...
 			File f(filePath, File::READ, File::OPEN);
 			tstring msg = Text::toT(f.read());
-			ctrlPad.SetWindowText(msg.c_str());
 
 			ctrlPad.setFormatLinks(true);
 			ctrlPad.setFormatReleases(true);
@@ -160,6 +159,7 @@ void TextFrame::openNfo() {
 	File f(filePath, File::READ, File::OPEN);
 	tmp = Text::toDOS(f.read());
 	tmp = Text::toUtf8(tmp);
+	tstring msg = Text::toT(tmp);
 
 	//edit text style, disable dwEffects, bold, italic etc. looks really bad with bold font.
 	CHARFORMAT2 cf;
@@ -180,7 +180,6 @@ void TextFrame::openNfo() {
 	ctrlPad.SetBackgroundColor(WinUtil::bgColor);
 	ctrlPad.SetDefaultCharFormat(cf);
 
-	tstring msg = Text::toT(tmp);
 	ctrlPad.setFormatLinks(true);
 	ctrlPad.setFormatReleases(true);
 
