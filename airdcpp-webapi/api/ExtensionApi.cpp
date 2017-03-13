@@ -74,6 +74,7 @@ namespace webserver {
 			{ "name", aExtension->getName() },
 			{ "description", aExtension->getDescription() },
 			{ "version", aExtension->getVersion() },
+			{ "homepage", aExtension->getHomepage() },
 			{ "author", aExtension->getAuthor() },
 			{ "running", aExtension->isRunning() },
 			{ "private", aExtension->isPrivate() },
