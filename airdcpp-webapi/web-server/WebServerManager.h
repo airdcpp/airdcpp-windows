@@ -209,8 +209,10 @@ namespace webserver {
 
 		bool isRunning() const noexcept;
 
-		optional<boost::asio::ip::tcp> isListeningPlain() noexcept;
-		optional<boost::asio::ip::tcp> isListeningTls() noexcept;
+		bool isListeningPlain() const noexcept;
+		bool isListeningTls() const noexcept;
+
+		static boost::asio::ip::tcp getDefaultListenProtocol() noexcept;
 
 		const CallBack getShutdownF() const noexcept {
 			return shutdownF;

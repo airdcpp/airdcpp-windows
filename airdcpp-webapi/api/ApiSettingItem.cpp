@@ -31,8 +31,8 @@
 #include <airdcpp/StringTokenizer.h>
 
 namespace webserver {
-	ApiSettingItem::ApiSettingItem(const string& aName, Type aType, Unit&& aUnit) : 
-		name(aName), type(aType), unit(move(aUnit)) {
+	ApiSettingItem::ApiSettingItem(const string& aName, Type aType, ResourceManager::Strings aUnit) :
+		name(aName), type(aType), unit(aUnit) {
 
 	}
 
@@ -48,8 +48,8 @@ namespace webserver {
 			ret["auto"] = true;
 		}
 
-		if (unit.str != ResourceManager::LAST) {
-			ret["unit"] = ResourceManager::getInstance()->getString(unit.str) + (unit.isSpeed ? "/s" : "");
+		if (unit != ResourceManager::LAST) {
+			ret["unit"] = ResourceManager::getInstance()->getString(unit);
 		}
 
 		if (type == TYPE_FILE_PATH) {
@@ -71,8 +71,8 @@ namespace webserver {
 		return ret;
 	}
 
-	ServerSettingItem::ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType, Unit&& aUnit) :
-		ApiSettingItem(aKey, aType, move(aUnit)), desc(aTitle), defaultValue(aDefaultValue), value(aDefaultValue) {
+	ServerSettingItem::ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType, ResourceManager::Strings aUnit) :
+		ApiSettingItem(aKey, aType, aUnit), desc(aTitle), defaultValue(aDefaultValue), value(aDefaultValue) {
 
 	}
 
@@ -120,17 +120,45 @@ namespace webserver {
 		return value == defaultValue;
 	}
 
-	CoreSettingItem::CoreSettingItem(const string& aName, int aKey, ResourceManager::Strings aDesc, Type aType, Unit&& aUnit) :
-		ApiSettingItem(aName, aType, move(aUnit)), SettingItem({ aKey, aDesc }) {
+	map<int, CoreSettingItem::Group> groupMappings = {
+		{ SettingsManager::TCP_PORT, CoreSettingItem::GROUP_CONN_GEN },
+		{ SettingsManager::UDP_PORT, CoreSettingItem::GROUP_CONN_GEN },
+		{ SettingsManager::TLS_PORT, CoreSettingItem::GROUP_CONN_GEN },
+		{ SettingsManager::MAPPER, CoreSettingItem::GROUP_CONN_GEN },
+
+		{ SettingsManager::BIND_ADDRESS, CoreSettingItem::GROUP_CONN_V4 },
+		{ SettingsManager::INCOMING_CONNECTIONS, CoreSettingItem::GROUP_CONN_V4 },
+		{ SettingsManager::EXTERNAL_IP, CoreSettingItem::GROUP_CONN_V4 },
+		{ SettingsManager::IP_UPDATE, CoreSettingItem::GROUP_CONN_V4 },
+		{ SettingsManager::NO_IP_OVERRIDE, CoreSettingItem::GROUP_CONN_V4 },
+
+		{ SettingsManager::BIND_ADDRESS6, CoreSettingItem::GROUP_CONN_V6 },
+		{ SettingsManager::INCOMING_CONNECTIONS6, CoreSettingItem::GROUP_CONN_V6 },
+		{ SettingsManager::EXTERNAL_IP6, CoreSettingItem::GROUP_CONN_V6 },
+		{ SettingsManager::IP_UPDATE6, CoreSettingItem::GROUP_CONN_V6 },
+		{ SettingsManager::NO_IP_OVERRIDE6, CoreSettingItem::GROUP_CONN_V6 },
+
+		{ SettingsManager::DOWNLOAD_SLOTS, CoreSettingItem::GROUP_LIMITS_DL },
+		{ SettingsManager::MAX_DOWNLOAD_SPEED, CoreSettingItem::GROUP_LIMITS_DL },
+
+		{ SettingsManager::MIN_UPLOAD_SPEED, CoreSettingItem::GROUP_LIMITS_UL },
+		{ SettingsManager::AUTO_SLOTS, CoreSettingItem::GROUP_LIMITS_UL },
+		{ SettingsManager::SLOTS, CoreSettingItem::GROUP_LIMITS_UL },
+
+		{ SettingsManager::MAX_MCN_DOWNLOADS, CoreSettingItem::GROUP_LIMITS_MCN },
+		{ SettingsManager::MAX_MCN_UPLOADS, CoreSettingItem::GROUP_LIMITS_MCN },
+	};
+
+	CoreSettingItem::CoreSettingItem(const string& aName, int aKey, ResourceManager::Strings aDesc, Type aType, ResourceManager::Strings aUnit) :
+		ApiSettingItem(aName, aType, aUnit), SettingItem({ aKey, aDesc }) {
 
 	}
 
-
-	#define USE_AUTO(aType, aSetting) (type == aType && (aForceAutoValues || SETTING(aSetting)))
+	#define USE_AUTO(aType, aSetting) ((groupMappings.find(SettingsManager::aSetting) != groupMappings.end() && groupMappings.at(SettingsManager::aSetting) == aType) && (aForceAutoValues || SETTING(aSetting)))
 	json CoreSettingItem::autoValueToJson(bool aForceAutoValues) const noexcept {
 		json v;
-		if (USE_AUTO(TYPE_CONN_V4, AUTO_DETECT_CONNECTION) || USE_AUTO(TYPE_CONN_V6, AUTO_DETECT_CONNECTION6) ||
-			(type == TYPE_CONN_GEN && (SETTING(AUTO_DETECT_CONNECTION) || SETTING(AUTO_DETECT_CONNECTION6)))) {
+		if (USE_AUTO(GROUP_CONN_V4, AUTO_DETECT_CONNECTION) || USE_AUTO(GROUP_CONN_V6, AUTO_DETECT_CONNECTION6) ||
+			(type == GROUP_CONN_GEN && (SETTING(AUTO_DETECT_CONNECTION) || SETTING(AUTO_DETECT_CONNECTION6)))) {
 
 			if (key == SettingsManager::TCP_PORT) {
 				v = ConnectionManager::getInstance()->getPort();
@@ -149,13 +177,13 @@ namespace webserver {
 					dcassert(0);
 				}
 			}
-		} else if (USE_AUTO(TYPE_LIMITS_DL, DL_AUTODETECT)) {
+		} else if (USE_AUTO(GROUP_LIMITS_DL, DL_AUTODETECT)) {
 			if (key == SettingsManager::DOWNLOAD_SLOTS) {
 				v = AirUtil::getSlots(true);
 			} else if (key == SettingsManager::MAX_DOWNLOAD_SPEED) {
 				v = AirUtil::getSpeedLimit(true);
 			}
-		} else if (USE_AUTO(TYPE_LIMITS_UL, UL_AUTODETECT)) {
+		} else if (USE_AUTO(GROUP_LIMITS_UL, UL_AUTODETECT)) {
 			if (key == SettingsManager::SLOTS) {
 				v = AirUtil::getSlots(false);
 			} else if (key == SettingsManager::MIN_UPLOAD_SPEED) {
@@ -163,7 +191,7 @@ namespace webserver {
 			} else if (key == SettingsManager::AUTO_SLOTS) {
 				v = AirUtil::getMaxAutoOpened();
 			}
-		} else if (USE_AUTO(TYPE_LIMITS_MCN, MCN_AUTODETECT)) {
+		} else if (USE_AUTO(GROUP_LIMITS_MCN, MCN_AUTODETECT)) {
 			v = AirUtil::getSlotsPerUser(key == SettingsManager::MAX_MCN_DOWNLOADS);
 		}
 
@@ -231,18 +259,6 @@ namespace webserver {
 	}
 
 	bool CoreSettingItem::setCurValue(const json& aJson) {
-		if ((type == TYPE_CONN_V4 && SETTING(AUTO_DETECT_CONNECTION)) ||
-			(type == TYPE_CONN_V6 && SETTING(AUTO_DETECT_CONNECTION6))) {
-			//display::Manager::get()->cmdMessage("Note: Connection autodetection is enabled for the edited protocol. The changed setting won't take effect before auto detection has been disabled.");
-		}
-
-		if ((type == TYPE_LIMITS_DL && SETTING(DL_AUTODETECT)) ||
-			(type == TYPE_LIMITS_UL && SETTING(UL_AUTODETECT)) ||
-			(type == TYPE_LIMITS_MCN && SETTING(MCN_AUTODETECT))) {
-
-			//display::Manager::get()->cmdMessage("Note: auto detection is enabled for the edited settings group. The changed setting won't take effect before auto detection has been disabled.");
-		}
-
 		if (key >= SettingsManager::STR_FIRST && key < SettingsManager::STR_LAST) {
 			auto value = JsonUtil::parseValue<string>(name, aJson);
 			if (type == TYPE_DIRECTORY_PATH) {

@@ -34,22 +34,14 @@ namespace webserver {
 		try {
 			const json packageJson = json::parse(packageStr);
 
+			// Required fields
 			const string packageName = packageJson.at("name");
 			const string packageDescription = packageJson.at("description");
 			const string packageEntry = packageJson.at("main");
 			const string packageVersion = packageJson.at("version");
 			const string packageAuthor = packageJson.at("author").at("name");
 
-			auto enginesJson = packageJson.find("engines");
-			if (enginesJson != packageJson.end()) {
-				for (const auto& engine: json::iterator_wrapper(*enginesJson)) {
-					engines.emplace_back(engine.key());
-				}
-			}
-
-			if (engines.empty()) {
-				engines.emplace_back("node");
-			}
+			privateExtension = packageJson.value("private", false);
 
 			name = packageName;
 			description = packageDescription;
@@ -57,7 +49,22 @@ namespace webserver {
 			version = packageVersion;
 			author = packageAuthor;
 
-			privateExtension = packageJson.value("private", false);
+			// Optional fields
+			homepage = packageJson.value("homepage", Util::emptyString);
+
+			{
+				auto enginesJson = packageJson.find("engines");
+				if (enginesJson != packageJson.end()) {
+					for (const auto& engine : json::iterator_wrapper(*enginesJson)) {
+						engines.emplace_back(engine.key());
+					}
+				}
+
+				if (engines.empty()) {
+					engines.emplace_back("node");
+				}
+
+			}
 		} catch (const std::exception& e) {
 			throw Exception("Could not parse package.json (" + string(e.what()) + ")");
 		}
@@ -93,16 +100,8 @@ namespace webserver {
 
 		auto bindAddress = serverConfig.bindAddress.str();
 		if (bindAddress.empty()) {
-			auto protocol = wsm->isListeningPlain();
-			if (!protocol) {
-				protocol = wsm->isListeningTls();
-			}
-
-			if (protocol) {
-				bindAddress = *protocol == boost::asio::ip::tcp::v6() ? "[::1]" : "127.0.0.1";
-			} else {
-				dcassert(0);
-			}
+			auto protocol = WebServerManager::getDefaultListenProtocol();
+			bindAddress = protocol == boost::asio::ip::tcp::v6() ? "[::1]" : "127.0.0.1";
 		}
 
 		string address = wsm->isListeningPlain() ? "ws://" : "wss://";

@@ -70,6 +70,7 @@ namespace webserver {
 		GETSET(string, entry, Entry);
 		GETSET(string, version, Version);
 		GETSET(string, author, Author);
+		GETSET(string, homepage, Homepage);
 		GETSET(StringList, engines, Engines);
 
 		bool isRunning() const noexcept {
