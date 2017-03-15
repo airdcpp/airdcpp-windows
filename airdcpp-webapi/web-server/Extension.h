@@ -20,19 +20,26 @@
 #define DCPLUSPLUS_DCPP_EXTENSION_H
 
 #include <web-server/stdinc.h>
+#include <web-server/ExtensionListener.h>
 
 #include <airdcpp/GetSet.h>
+#include <airdcpp/Speaker.h>
 #include <airdcpp/Util.h>
 
 namespace webserver {
 #define EXTENSION_DIR_ROOT Util::getPath(Util::PATH_USER_CONFIG) + "extensions" + PATH_SEPARATOR_STR
 
-	class Extension {
+	class Extension : public Speaker<ExtensionListener> {
 	public:
 		typedef std::function<void(const Extension*)> ErrorF;
 
 		// Throws on errors
 		Extension(const string& aPath, ErrorF&& aErrorF, bool aSkipPathValidation = false);
+		Extension(const SessionPtr& aSession, const json& aPackageJson);
+
+		// Reload package.json from the supplied path
+		// Throws on errors
+		void reload(const string& aPath, bool aSkipPathValidation = false);
 
 		// Throws on errors
 		void start(const string& aEngine, WebServerManager* wsm);
@@ -65,6 +72,10 @@ namespace webserver {
 			return getRootPath() + "package" + PATH_SEPARATOR_STR;
 		}
 
+		bool isManaged() const noexcept {
+			return managed;
+		}
+
 		GETSET(string, name, Name);
 		GETSET(string, description, Description);
 		GETSET(string, entry, Entry);
@@ -80,7 +91,16 @@ namespace webserver {
 		bool isPrivate() const noexcept {
 			return privateExtension;
 		}
+
+		const SessionPtr& getSession() const noexcept {
+			return session;
+		}
 	private:
+		// Load package JSON
+		// Throws on errors
+		void initialize(const json& aJson);
+
+		const bool managed;
 		bool privateExtension = false;
 
 		StringList getLaunchParams(WebServerManager* wsm, const SessionPtr& aSession) const noexcept;
