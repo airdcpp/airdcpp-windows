@@ -31,35 +31,72 @@
 string TextFrame::id = "TextFrame";
 TextFrame::FrameMap TextFrame::frames;
 
-void TextFrame::openWindow(const string& aFilePath, Type aType) {
-	auto frame = new TextFrame(Text::toT(Util::getFileName(aFilePath)), aFilePath, aType);
-	frame->CreateEx(WinUtil::mdiClient);
-	frames.emplace(frame->m_hWnd, frame);
-}
+string TextFrame::readFile(const string& aFilePath) noexcept {
+	string text;
+	try {
+		//check the size
+		auto aSize = File::getSize(aFilePath);
+		if (aSize == 0) {
+			throw FileException(STRING(CANT_OPEN_EMPTY_FILE));
+		} else if (aSize > Util::convertSize(50, Util::MB)) {
+			throw FileException(STRING_F(VIEWED_FILE_TOO_BIG, aFilePath % Util::formatBytes(aSize)));
+		}
 
-void TextFrame::openWindow(const ViewFilePtr& aFile) {
-	auto frame = new TextFrame(aFile);
-	if (SETTING(POPUNDER_TEXT)) {
-		WinUtil::hiddenCreateEx(frame);
-	} else {
-		frame->CreateEx(WinUtil::mdiClient);
+		File f(aFilePath, File::READ, File::OPEN);
+		text = f.read();
 	}
-	frames.emplace(frame->m_hWnd, frame);
+	catch (const FileException& e) {
+		LogManager::getInstance()->message(aFilePath + ": " + e.getError().c_str(), LogMessage::SEV_ERROR);
+	}
+	return text;
 }
 
-void TextFrame::openWindow(const tstring& aTitle, const tstring& aText, Type aType) {
-	auto frame = new TextFrame(aTitle, Util::emptyString, aType, aText);
-	WinUtil::hiddenCreateEx(frame);
-	frames.emplace(frame->m_hWnd, frame);
+void TextFrame::openFile(const string& aFilePath) {
+	string aText = TextFrame::readFile(aFilePath);
+	if (aText.empty())
+		return;
+
+	auto frm = new TextFrame(Util::getFileName(aFilePath), aText);
+	frm->setNfo(Util::getFileExt(aFilePath) == ".nfo");
+	frm->openWindow();
 }
 
-TextFrame::TextFrame(const tstring& aTitle, const string& aFilePath, Type aType, const tstring& aText /*empty*/) : title(aTitle), filePath(aFilePath), textType(aType), text(aText) {
-	SettingsManager::getInstance()->addListener(this);
+void TextFrame::openFile(const ViewFilePtr& aFile) {
+	string aText = TextFrame::readFile(aFile->getPath());
+	if (aText.empty())
+		return;
+
+	auto frm = new TextFrame(aFile->getDisplayName(), aText, aFile);
+	frm->setNfo(Util::getFileExt(aFile->getPath()) == ".nfo");
+	frm->openWindow();
 }
 
-TextFrame::TextFrame(const ViewFilePtr& aFile) : TextFrame(Text::toT(aFile->getDisplayName()), aFile->getPath(), UNKNOWN) {
+void TextFrame::viewText(const string& aTitle, const string& aText, bool aFormatText, bool aUseEmo) {
+	if (aText.empty())
+		return;
+
+	auto frm = new TextFrame(aTitle, aText);
+	frm->setUseTextFormatting(aFormatText);
+	frm->setUseEmoticons(aUseEmo);
+	frm->openWindow();
+}
+
+void TextFrame::openWindow() {
+	if (SETTING(POPUNDER_TEXT)) {
+		WinUtil::hiddenCreateEx(this);
+	} else {
+		this->CreateEx(WinUtil::mdiClient);
+	}
+	frames.emplace(this->m_hWnd, this);
+}
+
+TextFrame::TextFrame(const string& aTitle, const string& aText, const ViewFilePtr& aFile/*nullptr*/) : title(Text::toT(aTitle)), text(aText) {
+
 	viewFile = aFile;
-	ViewFileManager::getInstance()->addListener(this);
+	SettingsManager::getInstance()->addListener(this);
+
+	if(viewFile)
+		ViewFileManager::getInstance()->addListener(this);
 }
 
 void TextFrame::on(ViewFileManagerListener::FileClosed, const ViewFilePtr& aFile) noexcept {
@@ -84,55 +121,25 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	ctrlPad.Subclass();
 	ctrlPad.LimitText(0);
 
-	try {
-		
-		if (!isNfo(filePath)) {
-			ctrlPad.SetFont(WinUtil::font);
-			ctrlPad.SetBackgroundColor(WinUtil::bgColor);
-			ctrlPad.SetDefaultCharFormat(WinUtil::m_ChatTextGeneral);
-		}
-
-		if (textType == HISTORY) {
-			ctrlPad.setFormatLinks(true);
-			ctrlPad.setFormatReleases(true);
-
-			auto history = LogManager::readFromEnd(filePath, SETTING(LOG_LINES), Util::convertSize(64, Util::KB));
-			ctrlPad.AppendChat(Identity(NULL, 0), _T("- "), _T(""), Text::toT(history), WinUtil::m_ChatTextGeneral, true);
-		} else if (textType == LOG) {
-			ctrlPad.setFormatPaths(true);
-			ctrlPad.setFormatLinks(true);
-			ctrlPad.setFormatReleases(true);
-			File f(filePath, File::READ, File::OPEN);
-			//if openlog just add the whole text
-			string tmp = f.read();
-			ctrlPad.SetWindowText(Text::toT(tmp).c_str());
-		} else if (textType == REPORT) {
-			ctrlPad.setFormatPaths(true);
-			ctrlPad.AppendText(text);
-
-			ctrlPad.setAutoScrollToEnd(false);
-			ctrlPad.SetSel(0, 0); //set scroll position to top
-		}
-		else if (isNfo(filePath)) {
-			openNfo();
-		} else if(isText(filePath)) { //If we need to parse release links and such we should validate the file to be text...
-			File f(filePath, File::READ, File::OPEN);
-			tstring msg = Text::toT(f.read());
-
-			ctrlPad.setFormatLinks(true);
-			ctrlPad.setFormatReleases(true);
-			ctrlPad.AppendText(msg);
-			ctrlPad.setAutoScrollToEnd(false);
-			ctrlPad.SetSel(0, 0); //set scroll position to top*/
-		} else {
-			File f(filePath, File::READ, File::OPEN);
-			tstring msg = Text::toT(f.read());
-			ctrlPad.SetWindowText(msg.c_str());
-		}
-		SetWindowText(title.c_str());
-	} catch(const FileException& e) {
-		ctrlPad.SetWindowText((title + _T(": ") + Text::toT(e.getError())).c_str());
+	if (getNfo()) {
+		setViewModeNfo();
+	} else {
+		ctrlPad.SetFont(WinUtil::font);
+		ctrlPad.SetBackgroundColor(WinUtil::bgColor);
+		ctrlPad.SetDefaultCharFormat(WinUtil::m_ChatTextGeneral);
 	}
+
+	if (getUseTextFormatting()) {
+		ctrlPad.setFormatPaths(true);
+		ctrlPad.setFormatLinks(true);
+		ctrlPad.setFormatReleases(true);
+		tstring aText = Text::toT(text);
+		ctrlPad.AppendText(aText, getUseEmoticons());
+	} else {
+		ctrlPad.SetWindowText(Text::toT(text).c_str());
+	}
+
+	SetWindowText(title.c_str());
 	
 	CRect rc(SETTING(TEXT_LEFT), SETTING(TEXT_TOP), SETTING(TEXT_RIGHT), SETTING(TEXT_BOTTOM));
 	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
@@ -144,22 +151,10 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	return 1;
 }
 
-bool TextFrame::isNfo(const string& aFile) {
-	return Util::getFileExt(aFile) == ".nfo";
-}
+void TextFrame::setViewModeNfo() {
 
-bool TextFrame::isText(const string& aFile) {
-	//TODO: a regex to handle most of the text files...
-	string ext = Util::getFileExt(aFile);
-	return ext == ".sfv" || ext == ".txt" || ext == ".srt" || ext == ".sub" || ext == ".text" || ext == ".log";
-}
-
-void TextFrame::openNfo() {
-	string tmp;
-	File f(filePath, File::READ, File::OPEN);
-	tmp = Text::toDOS(f.read());
-	tmp = Text::toUtf8(tmp);
-	tstring msg = Text::toT(tmp);
+	text = Text::toDOS(text);
+	text = Text::toUtf8(text);
 
 	//edit text style, disable dwEffects, bold, italic etc. looks really bad with bold font.
 	CHARFORMAT2 cf;
@@ -170,7 +165,7 @@ void TextFrame::openNfo() {
 	cf.crTextColor = SETTING(TEXT_COLOR);
 	cf.bCharSet = OEM_CHARSET;
 
-	//We need to disable autofont, otherwise it will mess up our new font.
+	//We need to disable auto font, otherwise it will mess up our new font.
 	LRESULT lres = ::SendMessage(ctrlPad.m_hWnd, EM_GETLANGOPTIONS, 0, 0);
 	lres &= ~IMF_AUTOFONT;
 	::SendMessage(ctrlPad.m_hWnd, EM_SETLANGOPTIONS, 0, lres);
@@ -179,14 +174,10 @@ void TextFrame::openNfo() {
 	//set the colors...
 	ctrlPad.SetBackgroundColor(WinUtil::bgColor);
 	ctrlPad.SetDefaultCharFormat(cf);
-
-	ctrlPad.setFormatLinks(true);
-	ctrlPad.setFormatReleases(true);
-
-	ctrlPad.AppendText(msg);
-
+	
+	//set scroll position to top
 	ctrlPad.setAutoScrollToEnd(false);
-	ctrlPad.SetSel(0, 0); //set scroll position to top
+	ctrlPad.SetSel(0, 0);
 }
 
 LRESULT TextFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {

@@ -33,16 +33,11 @@
 class TextFrame : public MDITabChildWindowImpl<TextFrame>, private SettingsManagerListener, private ViewFileManagerListener
 {
 public:
-	enum Type {
-		REPORT,
-		LOG,
-		HISTORY,
-		UNKNOWN,
-	};
 
-	static void openWindow(const string& aFilePath, Type aType);
-	static void openWindow(const tstring& aTitle, const tstring& aText, Type aType);
-	static void openWindow(const ViewFilePtr& aFile);
+	static void openFile(const string& aFilePath);
+	static void openFile(const ViewFilePtr& aFile);
+	static void viewText(const string& aTitle, const string& aText, bool aFormatText, bool aUseEmo);
+
 	static bool getWindowParams(HWND hWnd, StringMap&/*params*/) {
 		auto f = frames.find(hWnd);
 		if (f != frames.end()) {
@@ -54,9 +49,7 @@ public:
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("TextFrame"), IDR_NOTEPAD, 0, COLOR_3DFACE);
 
-	TextFrame(const tstring& aTitle, const string& aFilePath, Type aType, const tstring& aText = Util::emptyStringT);
-	TextFrame(const ViewFilePtr& aFile);
-
+	TextFrame(const string& aTitle, const string& aText, const ViewFilePtr& aFile = nullptr);
 	~TextFrame() { }
 	
 	typedef MDITabChildWindowImpl<TextFrame> baseClass;
@@ -93,14 +86,18 @@ private:
 	typedef map<HWND, TextFrame*> FrameMap;
 	static FrameMap frames;
 
-	Type textType;
-	string filePath;
+	void openWindow();
+	static string TextFrame::readFile(const string& aFilePath) noexcept;
+
 	tstring title;
-	tstring text;
+	string text;
 	RichTextBox ctrlPad;
-	void openNfo();
-	bool isNfo(const string& aFile);
-	bool isText(const string& aFile);
+
+	IGETSET(bool, nfo, Nfo, false);
+	IGETSET(bool, useTextFormatting, UseTextFormatting, false);
+	IGETSET(bool, useEmoticons, UseEmoticons, false);
+
+	void setViewModeNfo();
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 	void on(ViewFileManagerListener::FileClosed, const ViewFilePtr& aFile) noexcept;

@@ -140,6 +140,11 @@ bool AutoSearchManager::setItemActive(AutoSearchPtr& as, bool toActive) noexcept
 		as->setEnabled(toActive);
 		updateStatus(as, true);
 	}
+
+	//No items enabled at this time? Schedule search for it...
+	if(toActive && nextSearch == 0 && (as->getLastSearch() < GET_TIME() + SETTING(AUTOSEARCH_EVERY) * 60))
+		delayEvents.addEvent(SEARCH_ITEM, [=] { maybePopSearchItem(GET_TICK(), true); }, 1000);
+
 	delayEvents.addEvent(RECALCULATE_SEARCH, [=] { resetSearchTimes(GET_TICK()); }, 1000);
 	dirty = true;
 	return true;
@@ -514,7 +519,7 @@ void AutoSearchManager::resetSearchTimes(uint64_t aTick, bool aRecalculate/* = t
 }
 
 void AutoSearchManager::maybePopSearchItem(uint64_t aTick, bool aIgnoreSearchTimes) {
-	if (!aIgnoreSearchTimes && nextSearch == 0 && nextSearch > GET_TIME()) {
+	if (!aIgnoreSearchTimes && (nextSearch == 0 || nextSearch > GET_TIME())) {
 		return;
 	}
 
@@ -582,8 +587,16 @@ void AutoSearchManager::checkItems() noexcept {
 		WLock l(cs);
 
 		for(auto& as: searchItems.getItems() | map_values) {
-			bool aOldAllowAutoSearch = as->allowAutoSearch();
+			//Check if the item gets enabled from search time limits...
+			bool aOldSearchTimeEnabled = as->allowNewItems() && as->nextAllowedSearch() == 0;
 			bool fireUpdate = as->updateSearchTime();
+			bool aNewSearchTimeEnabled = as->allowNewItems() && as->nextAllowedSearch() == 0;
+
+			if (!aOldSearchTimeEnabled && aNewSearchTimeEnabled)
+				itemsEnabled++;
+
+			if (aOldSearchTimeEnabled && !aNewSearchTimeEnabled)
+				itemsDisabled++;
 
 			//update possible priority change
 			auto newPrio = as->calculatePriority();
@@ -616,12 +629,6 @@ void AutoSearchManager::checkItems() noexcept {
 
 			if (as->getExpireTime() > 0 || fireUpdate)
 				updateitems.push_back(as);
-
-			if (!aOldAllowAutoSearch && as->allowAutoSearch())
-				itemsEnabled++;
-
-			if (aOldAllowAutoSearch && !as->allowAutoSearch())
-				itemsDisabled++;
 		}
 	}
 

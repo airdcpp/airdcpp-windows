@@ -96,7 +96,8 @@ public:
 	SharedMutex& getCS() { return cs; }
 private:
 	enum {
-		RECALCULATE_SEARCH
+		RECALCULATE_SEARCH,
+		SEARCH_ITEM
 	};
 
 	mutable SharedMutex cs;

@@ -521,6 +521,7 @@ public:
 
 	static void findNfo(const string& aPath, const HintedUser& aUser) noexcept;
 	static bool allowGetFullList(const HintedUser& aUser) noexcept;
+
 };
 
 

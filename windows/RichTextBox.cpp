@@ -172,11 +172,11 @@ void RichTextBox::unifyLineEndings(tstring& aText) {
 		aText.erase(j, 1);
 }
 
-void RichTextBox::AppendText(tstring& sMsg) {
+void RichTextBox::AppendText(tstring& sMsg, bool bUseEmo/* = false*/) {
 	SetRedraw(FALSE);
 	unifyLineEndings(sMsg);
 	SetWindowText(sMsg.c_str());
-	FormatEmoticonsAndLinks(sMsg, 0, false);
+	FormatEmoticonsAndLinks(sMsg, 0, bUseEmo);
 	SetRedraw(TRUE);
 }
 

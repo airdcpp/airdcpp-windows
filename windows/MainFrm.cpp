@@ -1831,7 +1831,7 @@ void MainFrame::on(QueueManagerListener::ItemFinished, const QueueItemPtr& qi, c
 }
 
 void MainFrame::on(ViewFileManagerListener::FileFinished, const ViewFilePtr& aFile) noexcept {
-	callAsync([=] { TextFrame::openWindow(aFile); });
+	callAsync([=] { TextFrame::openFile(aFile); });
 }
 
 void MainFrame::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept {
@@ -1854,7 +1854,7 @@ void MainFrame::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle
 }
 
 void MainFrame::on(ScannerManagerListener::ScanFinished, const string& aText, const string& aTitle) noexcept {
-	callAsync([=] { TextFrame::openWindow(Text::toT(aTitle), Text::toT(aText), TextFrame::REPORT); });
+	callAsync([=] { TextFrame::viewText(aTitle, aText, true, false); });
 }
 
 void MainFrame::on(DirectoryListingManagerListener::OpenListing, const DirectoryListingPtr& aList, const string& aDir, const string& aXML) noexcept {

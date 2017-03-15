@@ -221,7 +221,7 @@ LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHand
 		if((i = ctrlList.GetNextItem(-1, LVNI_SELECTED)) != -1) {
 			FinishedItem *ii = ctrlList.getItemData(i);
 			if (ii != NULL) {
-				TextFrame::openWindow(ii->getTarget(), TextFrame::UNKNOWN);
+				TextFrame::openFile(ii->getTarget());
 			}
 		}
 		return 0;

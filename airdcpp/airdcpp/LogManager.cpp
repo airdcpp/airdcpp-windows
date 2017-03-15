@@ -179,7 +179,8 @@ string LogManager::readFromEnd(const string& aPath, int aMaxLines, int64_t aBuff
 		for (; i < linesCount; ++i) {
 			ret += lines[i] + "\r\n";
 		}
-	} catch (const FileException&) {
+	} catch (const FileException& e) {
+		LogManager::getInstance()->message(aPath + ": " + e.getError().c_str(), LogMessage::SEV_ERROR);
 	}
 
 	return ret;
