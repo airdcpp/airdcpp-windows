@@ -270,6 +270,12 @@
     <ClInclude Include="web-server\Extension.h">
       <Filter>Header Files\web-server</Filter>
     </ClInclude>
+    <ClInclude Include="api\ExtensionInfo.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="web-server\ExtensionListener.h">
+      <Filter>Header Files\web-server</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="api\QueueApi.cpp">
@@ -442,6 +448,9 @@
     </ClCompile>
     <ClCompile Include="web-server\Extension.cpp">
       <Filter>Source Files\web-server</Filter>
+    </ClCompile>
+    <ClCompile Include="api\ExtensionInfo.cpp">
+      <Filter>Source Files\api</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

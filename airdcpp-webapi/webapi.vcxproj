@@ -22,7 +22,7 @@
     <ProjectGuid>{DF45F1D3-1A07-4F40-99D2-BA59DAC925B1}</ProjectGuid>
     <RootNamespace>webserver</RootNamespace>
     <ProjectName>webapi</ProjectName>
-		<UseNativeEnvironment>true</UseNativeEnvironment>
+    <UseNativeEnvironment>true</UseNativeEnvironment>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -183,6 +183,7 @@
     <ClInclude Include="api\ConnectivityApi.h" />
     <ClInclude Include="api\CoreSettings.h" />
     <ClInclude Include="api\ExtensionApi.h" />
+    <ClInclude Include="api\ExtensionInfo.h" />
     <ClInclude Include="api\FavoriteDirectoryApi.h" />
     <ClInclude Include="api\FavoriteHubApi.h" />
     <ClInclude Include="api\FavoriteHubUtils.h" />
@@ -224,6 +225,7 @@
     <ClInclude Include="web-server\ApiRouter.h" />
     <ClInclude Include="web-server\Exception.h" />
     <ClInclude Include="web-server\Extension.h" />
+    <ClInclude Include="web-server\ExtensionListener.h" />
     <ClInclude Include="web-server\ExtensionManager.h" />
     <ClInclude Include="web-server\ExtensionManagerListener.h" />
     <ClInclude Include="web-server\FileServer.h" />
@@ -254,6 +256,7 @@
     <ClCompile Include="api\ApiSettingItem.cpp" />
     <ClCompile Include="api\ConnectivityApi.cpp" />
     <ClCompile Include="api\ExtensionApi.cpp" />
+    <ClCompile Include="api\ExtensionInfo.cpp" />
     <ClCompile Include="api\FavoriteDirectoryApi.cpp" />
     <ClCompile Include="api\FavoriteHubApi.cpp" />
     <ClCompile Include="api\FavoriteHubUtils.cpp" />

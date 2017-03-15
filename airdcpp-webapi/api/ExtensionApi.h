@@ -22,35 +22,32 @@
 #include <web-server/stdinc.h>
 #include <web-server/ExtensionManagerListener.h>
 
-#include <api/base/HookApiModule.h>
+#include <api/base/HierarchicalApiModule.h>
+#include <api/ExtensionInfo.h>
 
 #include <airdcpp/typedefs.h>
 
 namespace webserver {
 	class ExtensionManager;
-	class ExtensionApi : public HookApiModule, private ExtensionManagerListener {
+	class ExtensionApi : public ParentApiModule<string, ExtensionInfo>, private ExtensionManagerListener {
 	public:
 		ExtensionApi(Session* aSession);
 		~ExtensionApi();
+
+		static StringList subscriptionList;
 	private:
+		void addExtension(const ExtensionPtr& aExtension) noexcept;
+
 		static json serializeExtension(const ExtensionPtr& aExtension) noexcept;
 		static json serializeLogs(const ExtensionPtr& aExtension) noexcept;
 
-		api_return handleGetExtensions(ApiRequest& aRequest);
-		api_return handleGetExtension(ApiRequest& aRequest);
-
-		api_return handleAddExtension(ApiRequest& aRequest);
+		api_return handleDownloadExtension(ApiRequest& aRequest);
+		api_return handlePostExtension(ApiRequest& aRequest);
 		api_return handleRemoveExtension(ApiRequest& aRequest);
-
-		api_return handleStartExtension(ApiRequest& aRequest);
-		api_return handleStopExtension(ApiRequest& aRequest);
 
 		void on(ExtensionManagerListener::ExtensionAdded, const ExtensionPtr& aExtension) noexcept override;
 		void on(ExtensionManagerListener::ExtensionRemoved, const ExtensionPtr& aExtension) noexcept override;
 		void on(ExtensionManagerListener::ExtensionUpdated, const ExtensionPtr& aExtension) noexcept override;
-
-		void on(ExtensionManagerListener::ExtensionStarted, const ExtensionPtr& aExtension) noexcept override;
-		void on(ExtensionManagerListener::ExtensionStopped, const ExtensionPtr& aExtension) noexcept override;
 
 		ExtensionManager& em;
 

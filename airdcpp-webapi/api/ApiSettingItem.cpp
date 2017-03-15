@@ -57,7 +57,7 @@ namespace webserver {
 		} else if (type == TYPE_DIRECTORY_PATH) {
 			ret["type"] = "directory_path";
 		} else if (type == TYPE_LONG_TEXT) {
-			ret["type"] = "long_text";
+			ret["type"] = "text";
 		} else if (value.first.is_boolean()) {
 			ret["type"] = "boolean";
 		} else if (value.first.is_number()) {
