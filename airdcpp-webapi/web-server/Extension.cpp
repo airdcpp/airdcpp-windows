@@ -133,14 +133,20 @@ namespace webserver {
 		// Script to launch
 		ret.push_back(getPackageDirectory() + entry);
 
+		// Params
+		auto addParam = [&ret](const string& aName, const string& aParam) {
+			ret.push_back("--" + aName + "=" + aParam);
+		};
+
 		// Connect URL
-		ret.push_back(getConnectUrl(wsm));
+		addParam("apiUrl", getConnectUrl(wsm));
 
 		// Session token
-		ret.push_back(aSession->getAuthToken());
+		addParam("authToken", aSession->getAuthToken());
 
-		// Package directory
-		ret.push_back(getRootPath());
+		// Paths
+		addParam("logPath", getLogPath());
+		addParam("settingsPath", getSettingsPath());
 
 		return ret;
 	}
