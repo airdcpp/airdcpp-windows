@@ -106,9 +106,9 @@ namespace webserver {
 	}
 
 	ApiSettingItem* SettingApi::getSettingItem(const string& aKey) noexcept {
-		auto p = boost::find_if(coreSettings, [&](ApiSettingItem& aItem) { return aItem.name == aKey; });
-		if (p != coreSettings.end()) {
-			return &(*p);
+		auto p = ApiSettingItem::findSettingItem<CoreSettingItem>(coreSettings, aKey);
+		if (p) {
+			return p;
 		}
 
 		return WebServerSettings::getSettingItem(aKey);

@@ -31,7 +31,8 @@
 namespace webserver {
 	const StringList ExtensionInfo::subscriptionList = {
 		"extension_started",
-		"extension_stopped"
+		"extension_stopped",
+		"extension_settings_updated",
 	};
 
 	ExtensionInfo::ExtensionInfo(ParentType* aParentModule, const ExtensionPtr& aExtension) : 
@@ -42,6 +43,10 @@ namespace webserver {
 
 		METHOD_HANDLER(Access::ADMIN, METHOD_POST, (EXACT_PARAM("start")), ExtensionInfo::handleStartExtension);
 		METHOD_HANDLER(Access::ADMIN, METHOD_POST, (EXACT_PARAM("stop")), ExtensionInfo::handleStopExtension);
+
+		METHOD_HANDLER(Access::SETTINGS_VIEW, METHOD_GET, (EXACT_PARAM("settings")), ExtensionInfo::handleGetSettings);
+		METHOD_HANDLER(Access::SETTINGS_VIEW, METHOD_GET, (EXACT_PARAM("settings"), EXACT_PARAM("infos")), ExtensionInfo::handleGetSettingInfos);
+		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_PATCH, (EXACT_PARAM("settings")), ExtensionInfo::handlePostSettings);
 	}
 
 	void ExtensionInfo::init() noexcept {
@@ -71,6 +76,67 @@ namespace webserver {
 	api_return ExtensionInfo::handleStopExtension(ApiRequest& aRequest) {
 		extension->stop();
 		return websocketpp::http::status_code::no_content;
+	}
+
+	api_return ExtensionInfo::handleGetSettings(ApiRequest& aRequest) {
+		aRequest.setResponseBody(serializeSettings(extension));
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return ExtensionInfo::handleGetSettingInfos(ApiRequest& aRequest) {
+		auto ret = json::object();
+		for (const auto& setting : extension->getSettings()) {
+			ret[setting.name] = setting.infoToJson();
+		}
+
+		aRequest.setResponseBody(ret);
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return ExtensionInfo::handlePostSettings(ApiRequest& aRequest) {
+		for (const auto& elem : json::iterator_wrapper(aRequest.getRequestBody())) {
+			auto setting = ApiSettingItem::findSettingItem<ServerSettingItem>(extension->getSettings(), elem.key());
+			if (!setting) {
+				JsonUtil::throwError(elem.key(), JsonUtil::ERROR_INVALID, "Setting not found");
+			}
+
+			setting->setCurValue(elem.value());
+		}
+
+		extension->onSettingsUpdated();
+		return websocketpp::http::status_code::no_content;
+	}
+
+	void ExtensionInfo::on(ExtensionListener::SettingsUpdated) noexcept {
+		maybeSend("extension_settings_updated", [this] {
+			return serializeSettings(extension);
+		});
+	}
+
+	json ExtensionInfo::serializeSettings(const ExtensionPtr& aExtension) noexcept {
+		auto ret = json::object();
+		for (const auto& setting : aExtension->getSettings()) {
+			ret[setting.name] = setting.valueToJson().first;
+		}
+
+		return ret;
+	}
+
+	json ExtensionInfo::serializeLogs(const ExtensionPtr& aExtension) noexcept {
+		auto ret = json::array();
+
+		if (aExtension->isManaged()) {
+			File::forEachFile(aExtension->getLogPath(), "*.log", [&](const string& aFileName, bool aIsDir, int64_t aSize) {
+				if (!aIsDir) {
+					ret.push_back({
+						{ "name", aFileName },
+						{ "size", aSize }
+					});
+				}
+			});
+		}
+
+		return ret;
 	}
 
 	void ExtensionInfo::on(ExtensionListener::ExtensionStarted) noexcept {

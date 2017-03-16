@@ -22,6 +22,8 @@
 #include <web-server/stdinc.h>
 #include <web-server/ExtensionListener.h>
 
+#include <api/ApiSettingItem.h>
+
 #include <airdcpp/GetSet.h>
 #include <airdcpp/Speaker.h>
 #include <airdcpp/Util.h>
@@ -95,10 +97,25 @@ namespace webserver {
 		const SessionPtr& getSession() const noexcept {
 			return session;
 		}
+
+		void onSettingsUpdated() noexcept;
+		bool hasSettings() const noexcept { return !settings.empty(); }
+		const ServerSettingItem::List& getSettings() const noexcept {
+			return settings;
+		}
+
+		ServerSettingItem::List& getSettings() noexcept {
+			return settings;
+		}
 	private:
+		ServerSettingItem::List settings;
+
 		// Load package JSON
 		// Throws on errors
 		void initialize(const json& aJson);
+
+		// Parse airdcpp-specific package.json fields
+		void parseApiData(const json& aJson);
 
 		const bool managed;
 		bool privateExtension = false;

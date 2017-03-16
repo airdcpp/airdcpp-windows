@@ -39,7 +39,6 @@ namespace webserver {
 		void addExtension(const ExtensionPtr& aExtension) noexcept;
 
 		static json serializeExtension(const ExtensionPtr& aExtension) noexcept;
-		static json serializeLogs(const ExtensionPtr& aExtension) noexcept;
 
 		api_return handleDownloadExtension(ApiRequest& aRequest);
 		api_return handlePostExtension(ApiRequest& aRequest);

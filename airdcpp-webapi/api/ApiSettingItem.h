@@ -29,14 +29,24 @@ namespace webserver {
 
 	class ApiSettingItem {
 	public:
+		typedef vector<ApiSettingItem> List;
 		enum Type {
 			TYPE_AUTO,
+			TYPE_NUMBER,
+			TYPE_BOOLEAN,
+			TYPE_STRING,
 			TYPE_FILE_PATH,
 			TYPE_DIRECTORY_PATH,
-			TYPE_LONG_TEXT,
+			TYPE_TEXT,
+			TYPE_LAST
 		};
 
-		ApiSettingItem(const string& aName, Type aType, ResourceManager::Strings aUnit);
+		ApiSettingItem(const string& aName, Type aType);
+
+		static string typeToStr(Type aType) noexcept;
+		static bool isString(Type aType) noexcept {
+			return aType == TYPE_STRING || aType == TYPE_TEXT || aType == TYPE_FILE_PATH || aType == TYPE_DIRECTORY_PATH;
+		}
 
 		virtual json infoToJson(bool aForceAutoValues = false) const noexcept;
 
@@ -50,7 +60,15 @@ namespace webserver {
 		const string name;
 		const Type type;
 
-		const ResourceManager::Strings unit;
+		template<typename T, typename ListT>
+		static T* findSettingItem(ListT& aSettings, const string& aKey) noexcept {
+			auto p = find_if(aSettings.begin(), aSettings.end(), [&](const T& aItem) { return aItem.name == aKey; });
+			if (p != aSettings.end()) {
+				return &(*p);
+			}
+
+			return nullptr;
+		}
 	};
 
 	class CoreSettingItem : public ApiSettingItem, public SettingItem {
@@ -77,15 +95,20 @@ namespace webserver {
 		bool setCurValue(const json& aJson) override;
 		void unset() noexcept override;
 
-		const string& getTitle() const noexcept override {
-			return SettingItem::getDescription();
-		}
+		const string& getTitle() const noexcept override;
+
+		const ResourceManager::Strings unit;
 	};
 
 	class ServerSettingItem : public ApiSettingItem {
 	public:
-		ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType = TYPE_AUTO, ResourceManager::Strings aUnit = ResourceManager::Strings::LAST);
+		typedef vector<ServerSettingItem> List;
 
+		ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType, bool aOptional = false);
+		
+		static Type deserializeType(const string& aTypeStr) noexcept;
+
+		static ServerSettingItem fromJson(const json& aJson);
 		json infoToJson(bool aForceAutoValues = false) const noexcept override;
 
 		// Returns the value and bool indicating whether it's an auto detected value
@@ -104,13 +127,22 @@ namespace webserver {
 		int num();
 		uint64_t uint64();
 		string str();
+		bool boolean();
 
 		bool isDefault() const noexcept;
 
 		const json& getValue() const noexcept {
 			return value;
 		}
+
+		bool isOptional() const noexcept {
+			return optional;
+		}
+
+		//ServerSettingItem(ServerSettingItem&& rhs) noexcept = default;
+		//ServerSettingItem& operator=(ServerSettingItem&& rhs) noexcept = default;
 	private:
+		const bool optional;
 		json value;
 		const json defaultValue;
 	};
