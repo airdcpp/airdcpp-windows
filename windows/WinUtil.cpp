@@ -1852,7 +1852,8 @@ COLORREF WinUtil::blendColors(COLORREF aForeGround, COLORREF aBackGround) {
 void WinUtil::viewLog(const string& path, bool aHistory /*false*/) {
 	if (aHistory) {
 		auto aText = LogManager::readFromEnd(path, SETTING(LOG_LINES), Util::convertSize(64, Util::KB));
-		TextFrame::viewText(Util::getFileName(path), aText, true, true);
+		if(!aText.empty())
+			TextFrame::viewText(Util::getFileName(path), aText, true, true);
 	} else if(SETTING(OPEN_LOGS_INTERNAL)) {
 		TextFrame::openFile(path);
 	} else {
