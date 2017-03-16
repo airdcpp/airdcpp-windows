@@ -49,12 +49,20 @@ namespace webserver {
 		string getId() const noexcept override;
 
 		void init() noexcept override;
+
+		static json serializeSettings(const ExtensionPtr& aExtension) noexcept;
+		static json serializeLogs(const ExtensionPtr& aExtension) noexcept;
 	private:
+		void on(ExtensionListener::SettingsUpdated) noexcept override;
 		void on(ExtensionListener::ExtensionStarted) noexcept override;
 		void on(ExtensionListener::ExtensionStopped) noexcept override;
 
 		api_return handleStartExtension(ApiRequest& aRequest);
 		api_return handleStopExtension(ApiRequest& aRequest);
+
+		api_return handleGetSettings(ApiRequest& aRequest);
+		api_return handleGetSettingInfos(ApiRequest& aRequest);
+		api_return handlePostSettings(ApiRequest& aRequest);
 
 		ExtensionPtr extension;
 	};

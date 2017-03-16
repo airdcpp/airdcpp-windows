@@ -46,6 +46,12 @@ namespace webserver {
 			return value;
 		}
 
+		template <typename T, typename JsonT>
+		static T getEnumFieldDefault(const string& aFieldName, const JsonT& aJson, T aDefault, int aMin, int aMax) {
+			auto value = getEnumField<T, JsonT>(aFieldName, aJson, false, aMin, aMax);
+			return value ? *value : aDefault;
+		}
+
 		// Can be used to return null values for non-existing fields. Behaves similar to getField when throwIfMissing is true.
 		template <typename T, typename JsonT>
 		static optional<T> getOptionalField(const string& aFieldName, const JsonT& aJson, bool aAllowEmpty = true, bool aThrowIfMissing = false) {

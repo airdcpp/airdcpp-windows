@@ -64,25 +64,9 @@ namespace webserver {
 		addSubModule(aExtension->getName(), std::make_shared<ExtensionInfo>(this, aExtension));
 	}
 
-	json ExtensionApi::serializeLogs(const ExtensionPtr& aExtension) noexcept {
-		auto ret = json::array();
-
-		if (aExtension->isManaged()) {
-			File::forEachFile(aExtension->getLogPath(), "*.log", [&](const string& aFileName, bool aIsDir, int64_t aSize) {
-				if (!aIsDir) {
-					ret.push_back({
-						{ "name", aFileName },
-						{ "size", aSize }
-					});
-				}
-			});
-		}
-
-		return ret;
-	}
-
 	json ExtensionApi::serializeExtension(const ExtensionPtr& aExtension) noexcept {
 		return {
+			{ "id", aExtension->getName() },
 			{ "name", aExtension->getName() },
 			{ "description", aExtension->getDescription() },
 			{ "version", aExtension->getVersion() },
@@ -90,9 +74,10 @@ namespace webserver {
 			{ "author", aExtension->getAuthor() },
 			{ "running", aExtension->isRunning() },
 			{ "private", aExtension->isPrivate() },
-			{ "logs", serializeLogs(aExtension) },
+			{ "logs", ExtensionInfo::serializeLogs(aExtension) },
 			{ "engines", aExtension->getEngines() },
 			{ "managed", aExtension->isManaged() },
+			{ "has_settings", aExtension->hasSettings() },
 		};
 	}
 

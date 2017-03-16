@@ -23,6 +23,7 @@
 #include <web-server/WebUserManager.h>
 #include <web-server/WebServerManager.h>
 #include <web-server/WebServerSettings.h>
+#include <web-server/version.h>
 
 #include <airdcpp/File.h>
 
@@ -84,7 +85,36 @@ namespace webserver {
 
 		}
 
-		// TODO: validate platform and API compatibility
+		parseApiData(aJson.at("airdcpp"));
+	}
+
+	void Extension::parseApiData(const json& aJson) {
+		// Check API compatibility
+		{
+			const int apiVersion = aJson.at("apiVersion");
+			if (apiVersion != API_VERSION) {
+				throw Exception("Extension requires API version " + Util::toString(apiVersion) + " while the application uses version " + Util::toString(API_VERSION));
+			}
+		}
+
+		{
+			const int minFeatureLevel = aJson.value("minApiFeatureLevel", 0);
+			if (minFeatureLevel != API_FEATURE_LEVEL) {
+				throw Exception("Extension requires API feature level " + Util::toString(minFeatureLevel) + " or newer while the application uses version " + Util::toString(API_FEATURE_LEVEL));
+			}
+		}
+
+		// Parse settings
+		const json settingsJson = aJson.value("settings", json());
+		if (!settingsJson.is_null()) {
+			for (const auto& setting: settingsJson) {
+				settings.push_back(ServerSettingItem::fromJson(setting));
+			}
+		}
+	}
+
+	void Extension::onSettingsUpdated() noexcept {
+		fire(ExtensionListener::SettingsUpdated());
 	}
 
 	void Extension::start(const string& aEngine, WebServerManager* wsm) {

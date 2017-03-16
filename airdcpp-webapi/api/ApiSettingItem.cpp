@@ -31,9 +31,23 @@
 #include <airdcpp/StringTokenizer.h>
 
 namespace webserver {
-	ApiSettingItem::ApiSettingItem(const string& aName, Type aType, ResourceManager::Strings aUnit) :
-		name(aName), type(aType), unit(aUnit) {
+	ApiSettingItem::ApiSettingItem(const string& aName, Type aType) :
+		name(aName), type(aType) {
 
+	}
+
+	string ApiSettingItem::typeToStr(Type aType) noexcept {
+		switch (aType) {
+			case TYPE_BOOLEAN: return "boolean";
+			case TYPE_NUMBER: return "number";
+			case TYPE_STRING: return "string";
+			case TYPE_FILE_PATH: return "file_path";
+			case TYPE_DIRECTORY_PATH: return "directory_path";
+			case TYPE_TEXT: return "text";
+		}
+
+		dcassert(0);
+		return Util::emptyString;
 	}
 
 	json ApiSettingItem::infoToJson(bool aForceAutoValues) const noexcept {
@@ -48,36 +62,71 @@ namespace webserver {
 			ret["auto"] = true;
 		}
 
-		if (unit != ResourceManager::LAST) {
-			ret["unit"] = ResourceManager::getInstance()->getString(unit);
-		}
-
-		if (type == TYPE_FILE_PATH) {
-			ret["type"] = "file_path";
-		} else if (type == TYPE_DIRECTORY_PATH) {
-			ret["type"] = "directory_path";
-		} else if (type == TYPE_LONG_TEXT) {
-			ret["type"] = "text";
-		} else if (value.first.is_boolean()) {
-			ret["type"] = "boolean";
-		} else if (value.first.is_number()) {
-			ret["type"] = "number";
-		} else if (value.first.is_string()) {
-			ret["type"] = "string";
+		if (type == TYPE_AUTO) {
+			if (value.first.is_boolean()) {
+				ret["type"] = "boolean";
+			} else if (value.first.is_number()) {
+				ret["type"] = "number";
+			} else if (value.first.is_string()) {
+				ret["type"] = "string";
+			}
 		} else {
-			dcassert(0);
+			ret["type"] = typeToStr(type);
 		}
 
 		return ret;
 	}
 
-	ServerSettingItem::ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType, ResourceManager::Strings aUnit) :
-		ApiSettingItem(aKey, aType, aUnit), desc(aTitle), defaultValue(aDefaultValue), value(aDefaultValue) {
+	ServerSettingItem::ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType, bool aOptional) :
+		ApiSettingItem(aKey, aType), desc(aTitle), defaultValue(aDefaultValue), value(aDefaultValue), optional(aOptional) {
 
 	}
 
+	ApiSettingItem::Type ServerSettingItem::deserializeType(const string& aTypeStr) noexcept {
+		if (aTypeStr == "string") {
+			return TYPE_STRING;
+		} else if (aTypeStr == "boolean") {
+			return TYPE_BOOLEAN;
+		} else if (aTypeStr == "number") {
+			return TYPE_NUMBER;
+		} else if (aTypeStr == "text") {
+			return TYPE_TEXT;
+		} else if (aTypeStr == "file_path") {
+			return TYPE_FILE_PATH;
+		} else if (aTypeStr == "directory_path") {
+			return TYPE_DIRECTORY_PATH;
+		}
+
+		dcassert(0);
+		return TYPE_LAST;
+	}
+
+	ServerSettingItem ServerSettingItem::fromJson(const json& aJson) {
+		auto key = JsonUtil::getField<string>("key", aJson, false);
+		auto title = JsonUtil::getField<string>("title", aJson, false);
+
+		auto typeStr = JsonUtil::getField<string>("type", aJson, false);
+		auto type = deserializeType(typeStr);
+		if (type == TYPE_LAST) {
+			JsonUtil::throwError("type", JsonUtil::ERROR_INVALID, "Invalid type " + typeStr);
+		}
+
+		auto isOptional = JsonUtil::getOptionalFieldDefault<bool>("optional", aJson, false);
+		if (isOptional && (type == TYPE_BOOLEAN || type == TYPE_NUMBER)) {
+			JsonUtil::throwError("optional", JsonUtil::ERROR_INVALID, "Field of type " + typeStr + " can't be optional");
+		}
+
+		auto defaultValue = JsonUtil::getOptionalRawField("defaultValue", aJson, !isOptional);
+		return ServerSettingItem(key, title, defaultValue, type, isOptional);
+	}
+
 	json ServerSettingItem::infoToJson(bool aForceAutoValues) const noexcept {
-		return ApiSettingItem::infoToJson(aForceAutoValues);
+		auto ret = ApiSettingItem::infoToJson(aForceAutoValues);
+		if (optional) {
+			ret["optional"] = true;
+		}
+
+		return ret;
 	}
 
 	// Returns the value and bool indicating whether it's an auto detected value
@@ -116,6 +165,10 @@ namespace webserver {
 		return value.get<string>();
 	}
 
+	bool ServerSettingItem::boolean() {
+		return value.get<bool>();
+	}
+
 	bool ServerSettingItem::isDefault() const noexcept {
 		return value == defaultValue;
 	}
@@ -150,7 +203,7 @@ namespace webserver {
 	};
 
 	CoreSettingItem::CoreSettingItem(const string& aName, int aKey, ResourceManager::Strings aDesc, Type aType, ResourceManager::Strings aUnit) :
-		ApiSettingItem(aName, aType, aUnit), SettingItem({ aKey, aDesc }) {
+		ApiSettingItem(aName, aType), SettingItem({ aKey, aDesc }), unit(aUnit) {
 
 	}
 
@@ -224,6 +277,11 @@ namespace webserver {
 		// Serialize the setting
 		json ret = ApiSettingItem::infoToJson(aForceAutoValues);
 
+		// Unit
+		if (unit != ResourceManager::LAST) {
+			ret["unit"] = ResourceManager::getInstance()->getString(unit);
+		}
+
 		// Serialize possible enum values
 		auto enumStrings = SettingsManager::getEnumStrings(key, false);
 		if (!enumStrings.empty()) {
@@ -252,6 +310,10 @@ namespace webserver {
 		}
 
 		return ret;
+	}
+
+	const string& CoreSettingItem::getTitle() const noexcept {
+		return SettingItem::getDescription();
 	}
 
 	void CoreSettingItem::unset() noexcept {

@@ -41,20 +41,20 @@
 
 namespace webserver {
 	vector<ServerSettingItem> WebServerSettings::settings = {
-		{ "web_plain_port", "Port", 5600 },
-		{ "web_plain_bind_address", "Bind address", "" },
+		{ "web_plain_port", "Port", 5600, ApiSettingItem::TYPE_NUMBER },
+		{ "web_plain_bind_address", "Bind address", "", ApiSettingItem::TYPE_STRING, true },
 
-		{ "web_tls_port", "Port", 5601 },
-		{ "web_tls_bind_address", "Bind address", "" },
+		{ "web_tls_port", "Port", 5601, ApiSettingItem::TYPE_NUMBER },
+		{ "web_tls_bind_address", "Bind address", "", ApiSettingItem::TYPE_STRING, true },
 
-		{ "web_tls_certificate_path", "Certificate path", "", ApiSettingItem::TYPE_FILE_PATH },
-		{ "web_tls_certificate_key_path", "Certificate key path", "", ApiSettingItem::TYPE_FILE_PATH },
+		{ "web_tls_certificate_path", "Certificate path", "", ApiSettingItem::TYPE_FILE_PATH, true },
+		{ "web_tls_certificate_key_path", "Certificate key path", "", ApiSettingItem::TYPE_FILE_PATH, true },
 
-		{ "web_server_threads", "Server threads", 4 },
+		{ "web_server_threads", "Server threads", 4, ApiSettingItem::TYPE_NUMBER },
 
-		{ "default_idle_timeout", "Default session inactivity timeout", 20, ApiSettingItem::TYPE_AUTO, ResourceManager::Strings::MINUTES_LOWER },
-		{ "ping_interval", "Socket ping interval", 30, ApiSettingItem::TYPE_AUTO, ResourceManager::Strings::SECONDS_LOWER },
-		{ "ping_timeout", "Socket ping timeout", 10, ApiSettingItem::TYPE_AUTO, ResourceManager::Strings::SECONDS_LOWER },
+		{ "default_idle_timeout", "Default session inactivity timeout (minutes)", 20, ApiSettingItem::TYPE_AUTO },
+		{ "ping_interval", "Socket ping interval (seconds)", 30, ApiSettingItem::TYPE_AUTO },
+		{ "ping_timeout", "Socket ping timeout (seconds)", 10, ApiSettingItem::TYPE_AUTO },
 	};
 
 	using namespace dcpp;
