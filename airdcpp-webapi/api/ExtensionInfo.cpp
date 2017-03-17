@@ -45,7 +45,7 @@ namespace webserver {
 		METHOD_HANDLER(Access::ADMIN, METHOD_POST, (EXACT_PARAM("stop")), ExtensionInfo::handleStopExtension);
 
 		METHOD_HANDLER(Access::SETTINGS_VIEW, METHOD_GET, (EXACT_PARAM("settings")), ExtensionInfo::handleGetSettings);
-		METHOD_HANDLER(Access::SETTINGS_VIEW, METHOD_GET, (EXACT_PARAM("settings"), EXACT_PARAM("infos")), ExtensionInfo::handleGetSettingInfos);
+		METHOD_HANDLER(Access::SETTINGS_VIEW, METHOD_GET, (EXACT_PARAM("settings"), EXACT_PARAM("definitions")), ExtensionInfo::handleGetSettingInfos);
 		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_PATCH, (EXACT_PARAM("settings")), ExtensionInfo::handlePostSettings);
 	}
 

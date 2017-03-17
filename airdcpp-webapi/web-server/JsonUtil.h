@@ -36,14 +36,19 @@ namespace webserver {
 		static optional<T> getEnumField(const string& aFieldName, const JsonT& aJson, bool aRequired, int aMin, int aMax) {
 			auto value = getOptionalField<T>(aFieldName, aJson, false, aRequired);
 			if (value) {
-				if (*value < aMin || *value > aMax) {
-					throwError(aFieldName, ERROR_INVALID,
-						"Value " + std::to_string(*value) + " is not in range " + 
-						std::to_string(aMin) + " - " + std::to_string(aMax));
-				}
+				validateRange(aFieldName, *value, aMin, aMax);
 			}
 
 			return value;
+		}
+
+		template <typename T>
+		static void validateRange(const string& aFieldName, const T& aValue, int aMin, int aMax) {
+			if (aValue < aMin || aValue > aMax) {
+				throwError(aFieldName, ERROR_INVALID,
+					"Value " + std::to_string(aValue) + " is not in range " +
+					std::to_string(aMin) + " - " + std::to_string(aMax));
+			}
 		}
 
 		template <typename T, typename JsonT>
