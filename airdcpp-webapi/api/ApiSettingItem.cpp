@@ -31,6 +31,8 @@
 #include <airdcpp/StringTokenizer.h>
 
 namespace webserver {
+	const ApiSettingItem::MinMax ApiSettingItem::defaultMinMax = { 0, MAX_INT_VALUE };
+
 	ApiSettingItem::ApiSettingItem(const string& aName, Type aType) :
 		name(aName), type(aType) {
 
@@ -55,30 +57,34 @@ namespace webserver {
 
 		// Serialize the setting
 		json ret;
-		ret["value"] = value.first;
-		ret["key"] = name;
 		ret["title"] = getTitle();
 		if (value.second) {
 			ret["auto"] = true;
 		}
 
-		if (type == TYPE_AUTO) {
-			if (value.first.is_boolean()) {
-				ret["type"] = "boolean";
-			} else if (value.first.is_number()) {
-				ret["type"] = "number";
-			} else if (value.first.is_string()) {
-				ret["type"] = "string";
+		ret["type"] = typeToStr(type);
+
+		if (type == TYPE_NUMBER) {
+			const auto& minMax = getMinMax();
+			
+			if (minMax.min != 0) {
+				ret["min"] = minMax.min;
 			}
-		} else {
-			ret["type"] = typeToStr(type);
+
+			if (minMax.max != MAX_INT_VALUE) {
+				ret["max"] = minMax.max;
+			}
+		}
+
+		if (isOptional()) {
+			ret["optional"] = true;
 		}
 
 		return ret;
 	}
 
-	ServerSettingItem::ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType, bool aOptional) :
-		ApiSettingItem(aKey, aType), desc(aTitle), defaultValue(aDefaultValue), value(aDefaultValue), optional(aOptional) {
+	ServerSettingItem::ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType, bool aOptional, const MinMax& aMinMax) :
+		ApiSettingItem(aKey, aType), desc(aTitle), defaultValue(aDefaultValue), value(aDefaultValue), optional(aOptional), minMax(aMinMax) {
 
 	}
 
@@ -117,16 +123,15 @@ namespace webserver {
 		}
 
 		auto defaultValue = JsonUtil::getOptionalRawField("defaultValue", aJson, !isOptional);
-		return ServerSettingItem(key, title, defaultValue, type, isOptional);
+
+		auto minValue = JsonUtil::getOptionalFieldDefault<int>("min", aJson, 0);
+		auto maxValue = JsonUtil::getOptionalFieldDefault<int>("max", aJson, MAX_INT_VALUE);
+
+		return ServerSettingItem(key, title, defaultValue, type, isOptional, { minValue, maxValue });
 	}
 
 	json ServerSettingItem::infoToJson(bool aForceAutoValues) const noexcept {
-		auto ret = ApiSettingItem::infoToJson(aForceAutoValues);
-		if (optional) {
-			ret["optional"] = true;
-		}
-
-		return ret;
+		return ApiSettingItem::infoToJson(aForceAutoValues);
 	}
 
 	// Returns the value and bool indicating whether it's an auto detected value
@@ -143,6 +148,12 @@ namespace webserver {
 			unset();
 		} else {
 			JsonUtil::ensureType(name, aJson, defaultValue);
+
+			if (aJson.is_number()) {
+				const int num = aJson;
+				JsonUtil::validateRange(name, num, getMinMax().min, getMinMax().max);
+			}
+
 			value = aJson;
 		}
 
@@ -171,6 +182,11 @@ namespace webserver {
 
 	bool ServerSettingItem::isDefault() const noexcept {
 		return value == defaultValue;
+	}
+
+
+	const ApiSettingItem::MinMax& ServerSettingItem::getMinMax() const noexcept {
+		return minMax;
 	}
 
 	map<int, CoreSettingItem::Group> groupMappings = {
@@ -202,10 +218,54 @@ namespace webserver {
 		{ SettingsManager::MAX_MCN_UPLOADS, CoreSettingItem::GROUP_LIMITS_MCN },
 	};
 
+	map<int, CoreSettingItem::MinMax > minMaxMappings = {
+		{ SettingsManager::TCP_PORT, { 1, 65535 } },
+		{ SettingsManager::UDP_PORT, { 1, 65535 } },
+		{ SettingsManager::TLS_PORT, { 1, 65535 } },
+
+		{ SettingsManager::MAX_HASHING_THREADS, { 1, 100 } },
+		{ SettingsManager::HASHERS_PER_VOLUME, { 1, 100 } },
+
+		// No validation for other enums at the moment but negative value would cause issues otherwise...
+		{ SettingsManager::INCOMING_CONNECTIONS, { SettingsManager::INCOMING_DISABLED, SettingsManager::INCOMING_LAST } },
+		{ SettingsManager::INCOMING_CONNECTIONS6, { SettingsManager::INCOMING_DISABLED, SettingsManager::INCOMING_LAST } },
+	};
+
+	set<int> optionalSettingKeys = {
+		SettingsManager::DESCRIPTION,
+		SettingsManager::EMAIL,
+
+		SettingsManager::EXTERNAL_IP,
+		SettingsManager::EXTERNAL_IP6,
+
+		SettingsManager::DEFAULT_AWAY_MESSAGE,
+		SettingsManager::SKIPLIST_DOWNLOAD,
+		SettingsManager::SKIPLIST_SHARE,
+		SettingsManager::FREE_SLOTS_EXTENSIONS,
+	};
+
 	CoreSettingItem::CoreSettingItem(const string& aName, int aKey, ResourceManager::Strings aDesc, Type aType, ResourceManager::Strings aUnit) :
-		ApiSettingItem(aName, aType), SettingItem({ aKey, aDesc }), unit(aUnit) {
+		ApiSettingItem(aName, parseAutoType(aType, aKey)), SettingItem({ aKey, aDesc }), unit(aUnit) {
 
 	}
+
+	ApiSettingItem::Type CoreSettingItem::parseAutoType(Type aType, int aKey) noexcept {
+		if (aKey >= SettingsManager::STR_FIRST && aKey < SettingsManager::STR_LAST) {
+			if (aType == TYPE_LAST) return TYPE_STRING;
+			dcassert(isString(aType));
+		} else if (aKey >= SettingsManager::INT_FIRST && aKey < SettingsManager::INT_LAST) {
+			if (aType == TYPE_LAST) return TYPE_NUMBER;
+			dcassert(aType == TYPE_NUMBER);
+		} else if (aKey >= SettingsManager::BOOL_FIRST && aKey < SettingsManager::BOOL_LAST) {
+			if (aType == TYPE_LAST) return TYPE_BOOLEAN;
+			dcassert(aType == TYPE_BOOLEAN);
+		} else {
+			dcassert(0);
+		}
+
+		return aType;
+	}
+
 
 	#define USE_AUTO(aType, aSetting) ((groupMappings.find(SettingsManager::aSetting) != groupMappings.end() && groupMappings.at(SettingsManager::aSetting) == aType) && (aForceAutoValues || SETTING(aSetting)))
 	json CoreSettingItem::autoValueToJson(bool aForceAutoValues) const noexcept {
@@ -220,11 +280,11 @@ namespace webserver {
 			} else if (key == SettingsManager::TLS_PORT) {
 				v = ConnectionManager::getInstance()->getSecurePort();
 			} else {
-				if (key >= SettingsManager::STR_FIRST && key < SettingsManager::STR_LAST) {
+				if (isString(type)) {
 					v = ConnectivityManager::getInstance()->get(static_cast<SettingsManager::StrSetting>(key));
-				} else if (key >= SettingsManager::INT_FIRST && key < SettingsManager::INT_LAST) {
+				} else if (type == TYPE_NUMBER) {
 					v = ConnectivityManager::getInstance()->get(static_cast<SettingsManager::IntSetting>(key));
-				} else if (key >= SettingsManager::BOOL_FIRST && key < SettingsManager::BOOL_LAST) {
+				} else if (type == TYPE_BOOLEAN) {
 					v = ConnectivityManager::getInstance()->get(static_cast<SettingsManager::BoolSetting>(key));
 				} else {
 					dcassert(0);
@@ -251,17 +311,26 @@ namespace webserver {
 		return v;
 	}
 
+	const ApiSettingItem::MinMax& CoreSettingItem::getMinMax() const noexcept {
+		auto i = minMaxMappings.find(key);
+		return i != minMaxMappings.end() ? i->second : defaultMinMax;
+	}
+
+	bool CoreSettingItem::isOptional() const noexcept {
+		return optionalSettingKeys.find(key) != optionalSettingKeys.end();
+	}
+
 	pair<json, bool> CoreSettingItem::valueToJson(bool aForceAutoValues) const noexcept {
 		auto v = autoValueToJson(aForceAutoValues);
 		if (!v.is_null()) {
 			return { v, true };
 		}
 
-		if (key >= SettingsManager::STR_FIRST && key < SettingsManager::STR_LAST) {
+		if (isString(type)) {
 			v = SettingsManager::getInstance()->get(static_cast<SettingsManager::StrSetting>(key), true);
-		} else if (key >= SettingsManager::INT_FIRST && key < SettingsManager::INT_LAST) {
+		} else if (type == TYPE_NUMBER) {
 			v = SettingsManager::getInstance()->get(static_cast<SettingsManager::IntSetting>(key), true);
-		} else if (key >= SettingsManager::BOOL_FIRST && key < SettingsManager::BOOL_LAST) {
+		} else if (type == TYPE_BOOLEAN) {
 			v = SettingsManager::getInstance()->get(static_cast<SettingsManager::BoolSetting>(key), true);
 		} else {
 			dcassert(0);
@@ -287,24 +356,24 @@ namespace webserver {
 		if (!enumStrings.empty()) {
 			for (const auto& i : enumStrings) {
 				ret["values"].push_back({
-					{ "text", ResourceManager::getInstance()->getString(i.second) },
-					{ "value", i.first }
+					{ "id", i.first },
+					{ "name", ResourceManager::getInstance()->getString(i.second) },
 				});
 			}
 		} else if (key == SettingsManager::BIND_ADDRESS || key == SettingsManager::BIND_ADDRESS6) {
 			auto bindAddresses = AirUtil::getBindAdapters(key == SettingsManager::BIND_ADDRESS6);
 			for (const auto& adapter : bindAddresses) {
 				ret["values"].push_back({
-					{ "text", adapter.ip + (!adapter.adapterName.empty() ? " (" + adapter.adapterName + ")" : Util::emptyString) },
-					{ "value", adapter.ip }
+					{ "id", adapter.ip },
+					{ "name", adapter.ip + (!adapter.adapterName.empty() ? " (" + adapter.adapterName + ")" : Util::emptyString) },
 				});
 			}
 		} else if (key == SettingsManager::MAPPER) {
 			auto mappers = ConnectivityManager::getInstance()->getMappers(false);
 			for (const auto& mapper : mappers) {
 				ret["values"].push_back({
-					{ "text", mapper },
-					{ "value", mapper }
+					{ "id", mapper },
+					{ "name", mapper }
 				});
 			}
 		}
@@ -321,16 +390,23 @@ namespace webserver {
 	}
 
 	bool CoreSettingItem::setCurValue(const json& aJson) {
-		if (key >= SettingsManager::STR_FIRST && key < SettingsManager::STR_LAST) {
+		if (isString(type)) {
 			auto value = JsonUtil::parseValue<string>(name, aJson);
 			if (type == TYPE_DIRECTORY_PATH) {
 				value = Util::validatePath(value, true);
 			}
 
 			SettingsManager::getInstance()->set(static_cast<SettingsManager::StrSetting>(key), value);
-		} else if (key >= SettingsManager::INT_FIRST && key < SettingsManager::INT_LAST) {
-			SettingsManager::getInstance()->set(static_cast<SettingsManager::IntSetting>(key), JsonUtil::parseValue<int>(name, aJson));
-		} else if (key >= SettingsManager::BOOL_FIRST && key < SettingsManager::BOOL_LAST) {
+		} else if (type == TYPE_NUMBER) {
+			auto num = JsonUtil::parseValue<int>(name, aJson);
+
+			auto minMax = minMaxMappings.find(key);
+			if (minMax != minMaxMappings.end()) {
+				JsonUtil::validateRange(name, num, (*minMax).second.min, (*minMax).second.max);
+			}
+
+			SettingsManager::getInstance()->set(static_cast<SettingsManager::IntSetting>(key), num);
+		} else if (type == TYPE_BOOLEAN) {
 			SettingsManager::getInstance()->set(static_cast<SettingsManager::BoolSetting>(key), JsonUtil::parseValue<bool>(name, aJson));
 		} else {
 			dcassert(0);

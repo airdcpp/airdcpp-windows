@@ -30,10 +30,10 @@
 
 namespace webserver {
 	SettingApi::SettingApi(Session* aSession) : ApiModule(aSession) {
-		METHOD_HANDLER(Access::SETTINGS_VIEW,	METHOD_POST, (EXACT_PARAM("infos")),	SettingApi::handleGetSettingInfos);
-		METHOD_HANDLER(Access::ANY,				METHOD_POST, (EXACT_PARAM("get")),	SettingApi::handleGetSettingValues);
-		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST, (EXACT_PARAM("set")),	SettingApi::handleSetSettings);
-		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST, (EXACT_PARAM("reset")),	SettingApi::handleResetSettings);
+		METHOD_HANDLER(Access::SETTINGS_VIEW,	METHOD_POST, (EXACT_PARAM("definitions")),	SettingApi::handleGetSettingInfos);
+		METHOD_HANDLER(Access::ANY,				METHOD_POST, (EXACT_PARAM("get")),			SettingApi::handleGetSettingValues);
+		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST, (EXACT_PARAM("set")),			SettingApi::handleSetSettings);
+		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST, (EXACT_PARAM("reset")),		SettingApi::handleResetSettings);
 	}
 
 	SettingApi::~SettingApi() {

@@ -26,12 +26,11 @@
 #include <airdcpp/ResourceManager.h>
 
 namespace webserver {
-
+#define MAX_INT_VALUE std::numeric_limits<int>::max()
 	class ApiSettingItem {
 	public:
 		typedef vector<ApiSettingItem> List;
 		enum Type {
-			TYPE_AUTO,
 			TYPE_NUMBER,
 			TYPE_BOOLEAN,
 			TYPE_STRING,
@@ -40,6 +39,13 @@ namespace webserver {
 			TYPE_TEXT,
 			TYPE_LAST
 		};
+
+		struct MinMax {
+			const int min;
+			const int max;
+		};
+
+		static const MinMax defaultMinMax;
 
 		ApiSettingItem(const string& aName, Type aType);
 
@@ -56,6 +62,9 @@ namespace webserver {
 
 		virtual bool setCurValue(const json& aJson) = 0;
 		virtual void unset() noexcept = 0;
+
+		virtual bool isOptional() const noexcept = 0;
+		virtual const MinMax& getMinMax() const noexcept = 0;
 
 		const string name;
 		const Type type;
@@ -83,7 +92,7 @@ namespace webserver {
 			GROUP_LIMITS_MCN
 		};
 
-		CoreSettingItem(const string& aName, int aKey, ResourceManager::Strings aDesc, Type aType = TYPE_AUTO, ResourceManager::Strings aUnit = ResourceManager::Strings::LAST);
+		CoreSettingItem(const string& aName, int aKey, ResourceManager::Strings aDesc, Type aType = TYPE_LAST, ResourceManager::Strings aUnit = ResourceManager::Strings::LAST);
 
 		json infoToJson(bool aForceAutoValues = false) const noexcept override;
 
@@ -98,13 +107,18 @@ namespace webserver {
 		const string& getTitle() const noexcept override;
 
 		const ResourceManager::Strings unit;
+
+		const MinMax& getMinMax() const noexcept override;
+		bool isOptional() const noexcept override;
+
+		static Type parseAutoType(Type aType, int aKey) noexcept;
 	};
 
 	class ServerSettingItem : public ApiSettingItem {
 	public:
 		typedef vector<ServerSettingItem> List;
 
-		ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType, bool aOptional = false);
+		ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType, bool aOptional = false, const MinMax& aMinMax = defaultMinMax);
 		
 		static Type deserializeType(const string& aTypeStr) noexcept;
 
@@ -135,13 +149,17 @@ namespace webserver {
 			return value;
 		}
 
-		bool isOptional() const noexcept {
+		bool isOptional() const noexcept override {
 			return optional;
 		}
+
+		const MinMax& getMinMax() const noexcept override;
 
 		//ServerSettingItem(ServerSettingItem&& rhs) noexcept = default;
 		//ServerSettingItem& operator=(ServerSettingItem&& rhs) noexcept = default;
 	private:
+		const MinMax minMax;
+
 		const bool optional;
 		json value;
 		const json defaultValue;
