@@ -2220,8 +2220,10 @@ void DirectoryListingFrame::updateSelCombo(bool init) {
 				showSelCombo(true, init);
 			}
 
+			//sort the list by share size, try to avoid changing to 0 share hubs...
+			sort(hubs.begin(), hubs.end(), [](const User::UserHubInfo& a, const User::UserHubInfo& b) { return a.shared > b.shared; });
 			for (const auto& hub : hubs) {
-				auto idx = selCombo.AddString(Text::toT((hub.hubName + " (" + Util::formatBytes(hub.shared) + ")")).c_str());
+				auto idx = selCombo.AddString(Text::toT(("(" + Util::formatBytes(hub.shared) + ") " + hub.hubName)).c_str());
 				if (hub.hubUrl == hint) {
 					selCombo.SetCurSel(idx);
 				}
