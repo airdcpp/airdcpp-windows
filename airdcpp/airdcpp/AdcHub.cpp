@@ -279,7 +279,7 @@ void AdcHub::handle(AdcCommand::INF, AdcCommand& c) noexcept {
 				}
 			}
 
-			if (Text::toLower(getHubIdentity().getApplication()).find("luadch v2") != string::npos) {
+			if (isHubsoftVersionOrOlder("luadch", 2.18)) {
 				statusMessage("The hubsoft used by this hub doesn't forward Advanced Direct Connect protocol messages according to the protocol specifications, which may silently break various client features. Certain functionality may have been disabled automatically in this hub. For more information, please see https://www.airdcpp.net/hubsoft-warnings", LogMessage::SEV_WARNING);
 			}
 		}
@@ -1155,13 +1155,30 @@ StringList AdcHub::parseSearchExts(int flag) noexcept {
 	return ret;
 }
 
+bool AdcHub::isHubsoftVersionOrOlder(const string& aHubsoft, double aVersion) {
+	const auto& app = getHubIdentity().getApplication();
+	auto i = app.find(" ");
+	if (i == string::npos) return false;
+
+	if (Text::toLower(app.substr(0, i)).find(aHubsoft) == string::npos) return false;
+
+	auto version = app.substr(i + 1);
+	if (version.empty()) return false;
+
+	if (version.front() == 'v') {
+		version.erase(0, 1);
+	}
+
+	return Util::toDouble(version) <= aVersion;
+}
+
 bool AdcHub::directSearch(const OnlineUser& user, const SearchPtr& aSearch, string& error_) noexcept {
 	if (!stateNormal()) {
 		error_ = STRING(CONNECTING_IN_PROGRESS);
 		return false;
 	}
 
-	if (Text::toLower(getHubIdentity().getApplication()).find("luadch v2") != string::npos) {
+	if (isHubsoftVersionOrOlder("luadch", 2.18)) {
 		error_ = "This feature is blocked by the hubsoft";
 		return false;
 	}
