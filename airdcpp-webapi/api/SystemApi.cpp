@@ -180,7 +180,7 @@ namespace webserver {
 
 		aRequest.setResponseBody({
 			{ "server_threads", WEBCFG(SERVER_THREADS).num() },
-			{ "active_sessions", server->getUserManager().getSessionCount() },
+			{ "active_sessions", server->getUserManager().getUserSessionCount() },
 		});
 		return websocketpp::http::status_code::ok;
 	}
