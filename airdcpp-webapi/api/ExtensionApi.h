@@ -38,19 +38,14 @@ namespace webserver {
 	private:
 		void addExtension(const ExtensionPtr& aExtension) noexcept;
 
-		static json serializeExtension(const ExtensionPtr& aExtension) noexcept;
-
 		api_return handleDownloadExtension(ApiRequest& aRequest);
 		api_return handlePostExtension(ApiRequest& aRequest);
 		api_return handleRemoveExtension(ApiRequest& aRequest);
 
 		void on(ExtensionManagerListener::ExtensionAdded, const ExtensionPtr& aExtension) noexcept override;
 		void on(ExtensionManagerListener::ExtensionRemoved, const ExtensionPtr& aExtension) noexcept override;
-		void on(ExtensionManagerListener::ExtensionUpdated, const ExtensionPtr& aExtension) noexcept override;
 
 		ExtensionManager& em;
-
-		ExtensionPtr getExtension(ApiRequest& aRequest);
 	};
 }
 

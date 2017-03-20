@@ -281,14 +281,13 @@ namespace webserver {
 		if (extension) {
 			// Updating
 			try {
-				extension->reload(finalInstallPath);
+				extension->reload();
 			} catch (const Exception& e) {
 				dcassert(0);
 				failInstallation("Failed to load extension " + finalInstallPath, e.what());
 				return;
 			}
 
-			fire(ExtensionManagerListener::ExtensionUpdated(), extension);
 			LogManager::getInstance()->message("Extension " + extension->getName() + " was updated succesfully", LogMessage::SEV_INFO);
 		} else {
 			// Install new

@@ -31,12 +31,18 @@ namespace webserver {
 		typedef X<0> ExtensionStarted;
 		typedef X<1> ExtensionStopped;
 
-		typedef X<2> SettingsUpdated;
+		typedef X<2> SettingValuesUpdated;
+		typedef X<3> SettingDefinitionsUpdated;
+
+		typedef X<4> PackageUpdated;
+
 
 		virtual void on(ExtensionStarted) noexcept { }
 		virtual void on(ExtensionStopped) noexcept { }
 
-		virtual void on(SettingsUpdated) noexcept { }
+		virtual void on(SettingValuesUpdated, const SettingValueMap&) noexcept { }
+		virtual void on(SettingDefinitionsUpdated) noexcept { }
+		virtual void on(PackageUpdated) noexcept { }
 	};
 
 }

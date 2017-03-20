@@ -30,11 +30,9 @@ namespace webserver {
 
 		typedef X<0> ExtensionAdded;
 		typedef X<1> ExtensionRemoved;
-		typedef X<2> ExtensionUpdated;
 
 		virtual void on(ExtensionAdded, const ExtensionPtr&) noexcept { }
 		virtual void on(ExtensionRemoved, const ExtensionPtr&) noexcept { }
-		virtual void on(ExtensionUpdated, const ExtensionPtr&) noexcept { }
 	};
 
 }

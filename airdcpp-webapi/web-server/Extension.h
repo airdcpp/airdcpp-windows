@@ -41,7 +41,7 @@ namespace webserver {
 
 		// Reload package.json from the supplied path
 		// Throws on errors
-		void reload(const string& aPath, bool aSkipPathValidation = false);
+		void reload();
 
 		// Throws on errors
 		void start(const string& aEngine, WebServerManager* wsm);
@@ -98,16 +98,23 @@ namespace webserver {
 			return session;
 		}
 
-		void onSettingsUpdated() noexcept;
-		bool hasSettings() const noexcept { return !settings.empty(); }
-		const ServerSettingItem::List& getSettings() const noexcept {
-			return settings;
-		}
+		bool hasSettings() const noexcept;
+		const ServerSettingItem::List& getSettings() const noexcept;
 
-		ServerSettingItem::List& getSettings() noexcept {
-			return settings;
-		}
+		typedef map<string, json> SettingValueMap;
+		void setSettingValues(const SettingValueMap& aValues);
+		SettingValueMap getSettingValues() noexcept;
+
+		// Throws on errors
+		void setSettingDefinitions(const json& aJson);
+
+		FilesystemItemList getLogs() const noexcept;
 	private:
+		// Reload package.json from the supplied path
+		// Throws on errors
+		void initialize(const string& aPath, bool aSkipPathValidation);
+
+		static SharedMutex cs;
 		ServerSettingItem::List settings;
 
 		// Load package JSON

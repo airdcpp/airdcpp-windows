@@ -32,25 +32,27 @@ namespace webserver {
 	const StringList ExtensionInfo::subscriptionList = {
 		"extension_started",
 		"extension_stopped",
+		"extension_updated",
 		"extension_settings_updated",
+		"extension_package_updated",
 	};
 
 	ExtensionInfo::ExtensionInfo(ParentType* aParentModule, const ExtensionPtr& aExtension) : 
 		SubApiModule(aParentModule, aExtension->getName(), subscriptionList),
 		extension(aExtension) 
 	{
-		extension->addListener(this);
-
 		METHOD_HANDLER(Access::ADMIN, METHOD_POST, (EXACT_PARAM("start")), ExtensionInfo::handleStartExtension);
 		METHOD_HANDLER(Access::ADMIN, METHOD_POST, (EXACT_PARAM("stop")), ExtensionInfo::handleStopExtension);
 
+		METHOD_HANDLER(Access::SETTINGS_VIEW, METHOD_GET, (EXACT_PARAM("settings"), EXACT_PARAM("definitions")), ExtensionInfo::handleGetSettingDefinitions);
+		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_POST, (EXACT_PARAM("settings"), EXACT_PARAM("definitions")), ExtensionInfo::handlePostSettingDefinitions);
+
 		METHOD_HANDLER(Access::SETTINGS_VIEW, METHOD_GET, (EXACT_PARAM("settings")), ExtensionInfo::handleGetSettings);
-		METHOD_HANDLER(Access::SETTINGS_VIEW, METHOD_GET, (EXACT_PARAM("settings"), EXACT_PARAM("definitions")), ExtensionInfo::handleGetSettingInfos);
 		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_PATCH, (EXACT_PARAM("settings")), ExtensionInfo::handlePostSettings);
 	}
 
 	void ExtensionInfo::init() noexcept {
-
+		extension->addListener(this);
 	}
 
 	string ExtensionInfo::getId() const noexcept {
@@ -79,75 +81,114 @@ namespace webserver {
 	}
 
 	api_return ExtensionInfo::handleGetSettings(ApiRequest& aRequest) {
-		aRequest.setResponseBody(serializeSettings(extension));
+		aRequest.setResponseBody(extension->getSettingValues());
 		return websocketpp::http::status_code::ok;
 	}
 
-	api_return ExtensionInfo::handleGetSettingInfos(ApiRequest& aRequest) {
-		auto ret = json::object();
-		for (const auto& setting : extension->getSettings()) {
-			ret[setting.name] = setting.infoToJson();
+	api_return ExtensionInfo::handleGetSettingDefinitions(ApiRequest& aRequest) {
+		auto ret = json::array();
+		for (const auto& setting: extension->getSettings()) {
+			ret.push_back(setting.serializeDefinitions());
 		}
 
 		aRequest.setResponseBody(ret);
 		return websocketpp::http::status_code::ok;
 	}
 
-	api_return ExtensionInfo::handlePostSettings(ApiRequest& aRequest) {
-		for (const auto& elem : json::iterator_wrapper(aRequest.getRequestBody())) {
-			auto setting = ApiSettingItem::findSettingItem<ServerSettingItem>(extension->getSettings(), elem.key());
-			if (!setting) {
-				JsonUtil::throwError(elem.key(), JsonUtil::ERROR_INVALID, "Setting not found");
-			}
-
-			setting->setCurValue(elem.value());
+	api_return ExtensionInfo::handlePostSettingDefinitions(ApiRequest& aRequest) {
+		if (extension->hasSettings()) {
+			aRequest.setResponseErrorStr("Setting definitions exist for this extensions already");
+			return websocketpp::http::status_code::conflict;
 		}
 
-		extension->onSettingsUpdated();
+		extension->setSettingDefinitions(aRequest.getRequestBody());
 		return websocketpp::http::status_code::no_content;
 	}
 
-	void ExtensionInfo::on(ExtensionListener::SettingsUpdated) noexcept {
-		maybeSend("extension_settings_updated", [this] {
-			return serializeSettings(extension);
+	api_return ExtensionInfo::handlePostSettings(ApiRequest& aRequest) {
+		/*for (const auto& elem : json::iterator_wrapper(aRequest.getRequestBody())) {
+			auto setting = ApiSettingItem::findSettingItem<ServerSettingItem>(extension->getSettings(), elem.key());
+			if (!setting) {
+				JsonUtil::throwError(elem.key(), JsonUtil::ERROR_INVALID, "Setting definition for the key " + elem.key() + " was not found");
+			}
+
+			setting->setCurValue(elem.value());
+		}*/
+
+		extension->setSettingValues(aRequest.getRequestBody());
+		return websocketpp::http::status_code::no_content;
+	}
+
+	json ExtensionInfo::serializeExtension(const ExtensionPtr& aExtension) noexcept {
+		return {
+			{ "id", aExtension->getName() },
+			{ "name", aExtension->getName() },
+			{ "description", aExtension->getDescription() },
+			{ "version", aExtension->getVersion() },
+			{ "homepage", aExtension->getHomepage() },
+			{ "author", aExtension->getAuthor() },
+			{ "running", aExtension->isRunning() },
+			{ "private", aExtension->isPrivate() },
+			{ "logs", ExtensionInfo::serializeLogs(aExtension) },
+			{ "engines", aExtension->getEngines() },
+			{ "managed", aExtension->isManaged() },
+			{ "has_settings", aExtension->hasSettings() },
+		};
+	}
+
+	void ExtensionInfo::on(ExtensionListener::SettingValuesUpdated, const SettingValueMap& aUpdatedSettings) noexcept {
+		maybeSend("extension_settings_updated", [&aUpdatedSettings] {
+			return aUpdatedSettings;
 		});
 	}
 
-	json ExtensionInfo::serializeSettings(const ExtensionPtr& aExtension) noexcept {
-		auto ret = json::object();
-		for (const auto& setting : aExtension->getSettings()) {
-			ret[setting.name] = setting.valueToJson().first;
-		}
-
-		return ret;
+	void ExtensionInfo::on(ExtensionListener::SettingDefinitionsUpdated) noexcept {
+		onUpdated([&] {
+			return json({
+				{ "has_settings", extension->hasSettings() }
+			});
+		});
 	}
 
 	json ExtensionInfo::serializeLogs(const ExtensionPtr& aExtension) noexcept {
-		auto ret = json::array();
-
-		if (aExtension->isManaged()) {
-			File::forEachFile(aExtension->getLogPath(), "*.log", [&](const string& aFileName, bool aIsDir, int64_t aSize) {
-				if (!aIsDir) {
-					ret.push_back({
-						{ "name", aFileName },
-						{ "size", aSize }
-					});
-				}
-			});
-		}
-
-		return ret;
+		return Serializer::serializeList(aExtension->getLogs(), Serializer::serializeFilesystemItem);
 	}
 
 	void ExtensionInfo::on(ExtensionListener::ExtensionStarted) noexcept {
-		//maybeSend("extension_started", [&] {
-		//	return serializeExtension(aExtension);
-		//});
+		onUpdated([&] {
+			return json({
+				{ "running", extension->isRunning() }
+			});
+		});
+
+		maybeSend("extension_started", [&] {
+			return serializeExtension(extension);
+		});
 	}
 
 	void ExtensionInfo::on(ExtensionListener::ExtensionStopped) noexcept {
-		//maybeSend("extension_stopped", [&] {
-		//	return serializeExtension(aExtension);
-		//});
+		onUpdated([&] {
+			return json({
+				{ "running", extension->isRunning() }
+			});
+		});
+
+		maybeSend("extension_stopped", [&] {
+			return serializeExtension(extension);
+		});
+	}
+
+	void ExtensionInfo::on(ExtensionListener::PackageUpdated) noexcept {
+		onUpdated([&] {
+			return serializeExtension(extension);
+		});
+
+		maybeSend("extension_package_updated", [&] {
+			return serializeExtension(extension);
+		});
+	}
+
+	void ExtensionInfo::onUpdated(const JsonCallback& aDataCallback) noexcept {
+		maybeSend("extension_updated", aDataCallback);
 	}
 }

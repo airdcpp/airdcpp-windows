@@ -54,7 +54,11 @@ namespace webserver {
 			return aType == TYPE_STRING || aType == TYPE_TEXT || aType == TYPE_FILE_PATH || aType == TYPE_DIRECTORY_PATH;
 		}
 
-		virtual json infoToJson(bool aForceAutoValues = false) const noexcept;
+		static json serializeDefinitions(const ApiSettingItem& aItem) noexcept {
+			return aItem.serializeDefinitions();
+		}
+
+		virtual json serializeDefinitions(bool aForceAutoValues = false) const noexcept;
 
 		// Returns the value and bool indicating whether it's an auto detected value
 		virtual pair<json, bool> valueToJson(bool aForceAutoValues = false) const noexcept = 0;
@@ -94,7 +98,7 @@ namespace webserver {
 
 		CoreSettingItem(const string& aName, int aKey, ResourceManager::Strings aDesc, Type aType = TYPE_LAST, ResourceManager::Strings aUnit = ResourceManager::Strings::LAST);
 
-		json infoToJson(bool aForceAutoValues = false) const noexcept override;
+		json serializeDefinitions(bool aForceAutoValues = false) const noexcept override;
 
 		// Returns the value and bool indicating whether it's an auto detected value
 		pair<json, bool> valueToJson(bool aForceAutoValues = false) const noexcept override;
@@ -123,7 +127,7 @@ namespace webserver {
 		static Type deserializeType(const string& aTypeStr) noexcept;
 
 		static ServerSettingItem fromJson(const json& aJson);
-		json infoToJson(bool aForceAutoValues = false) const noexcept override;
+		json serializeDefinitions(bool aForceAutoValues = false) const noexcept override;
 
 		// Returns the value and bool indicating whether it's an auto detected value
 		pair<json, bool> valueToJson(bool aForceAutoValues = false) const noexcept override;

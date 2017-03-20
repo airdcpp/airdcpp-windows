@@ -52,17 +52,17 @@ namespace webserver {
 		return Util::emptyString;
 	}
 
-	json ApiSettingItem::infoToJson(bool aForceAutoValues) const noexcept {
-		auto value = valueToJson(aForceAutoValues);
-
+	json ApiSettingItem::serializeDefinitions(bool) const noexcept {
 		// Serialize the setting
-		json ret;
-		ret["title"] = getTitle();
-		if (value.second) {
-			ret["auto"] = true;
-		}
+		json ret = {
+			{ "key", name },
+			{ "title", getTitle() },
+			{ "type", typeToStr(type) },
+		};
 
-		ret["type"] = typeToStr(type);
+		if (isOptional()) {
+			ret["optional"] = true;
+		}
 
 		if (type == TYPE_NUMBER) {
 			const auto& minMax = getMinMax();
@@ -74,10 +74,6 @@ namespace webserver {
 			if (minMax.max != MAX_INT_VALUE) {
 				ret["max"] = minMax.max;
 			}
-		}
-
-		if (isOptional()) {
-			ret["optional"] = true;
 		}
 
 		return ret;
@@ -130,8 +126,8 @@ namespace webserver {
 		return ServerSettingItem(key, title, defaultValue, type, isOptional, { minValue, maxValue });
 	}
 
-	json ServerSettingItem::infoToJson(bool aForceAutoValues) const noexcept {
-		return ApiSettingItem::infoToJson(aForceAutoValues);
+	json ServerSettingItem::serializeDefinitions(bool aForceAutoValues) const noexcept {
+		return ApiSettingItem::serializeDefinitions(aForceAutoValues);
 	}
 
 	// Returns the value and bool indicating whether it's an auto detected value
@@ -218,13 +214,19 @@ namespace webserver {
 		{ SettingsManager::MAX_MCN_UPLOADS, CoreSettingItem::GROUP_LIMITS_MCN },
 	};
 
-	map<int, CoreSettingItem::MinMax > minMaxMappings = {
+	map<int, CoreSettingItem::MinMax> minMaxMappings = {
 		{ SettingsManager::TCP_PORT, { 1, 65535 } },
 		{ SettingsManager::UDP_PORT, { 1, 65535 } },
 		{ SettingsManager::TLS_PORT, { 1, 65535 } },
 
 		{ SettingsManager::MAX_HASHING_THREADS, { 1, 100 } },
 		{ SettingsManager::HASHERS_PER_VOLUME, { 1, 100 } },
+
+		{ SettingsManager::MAX_COMPRESSION, { 0, 9 } },
+		{ SettingsManager::MINIMUM_SEARCH_INTERVAL, { 5, 1000 } },
+
+		{ SettingsManager::SLOTS, { 1, 250 } },
+		{ SettingsManager::DOWNLOAD_SLOTS, { 1, 250 } },
 
 		// No validation for other enums at the moment but negative value would cause issues otherwise...
 		{ SettingsManager::INCOMING_CONNECTIONS, { SettingsManager::INCOMING_DISABLED, SettingsManager::INCOMING_LAST } },
@@ -339,16 +341,18 @@ namespace webserver {
 		return { v, false };
 	}
 
-	json CoreSettingItem::infoToJson(bool aForceAutoValues) const noexcept {
-		// Get the current value
-		auto value = valueToJson(aForceAutoValues);
-
+	json CoreSettingItem::serializeDefinitions(bool aForceAutoValues) const noexcept {
 		// Serialize the setting
-		json ret = ApiSettingItem::infoToJson(aForceAutoValues);
+		json ret = ApiSettingItem::serializeDefinitions(aForceAutoValues);
 
 		// Unit
 		if (unit != ResourceManager::LAST) {
 			ret["unit"] = ResourceManager::getInstance()->getString(unit);
+		}
+
+		// TODO: this shouldn't be here
+		if (!autoValueToJson(aForceAutoValues).is_null()) {
+			ret["auto"] = true;
 		}
 
 		// Serialize possible enum values
