@@ -196,7 +196,7 @@ namespace webserver {
 			{ "cid", ClientManager::getInstance()->getMyCID().toBase32() },
 			{ "client_version", fullVersionString },
 			{ "client_started", started },
-			{ "language", Localization::getCurrentLocale() }
+			{ "language", Localization::getCurLanguageLocale() }
 		};
 	}
 

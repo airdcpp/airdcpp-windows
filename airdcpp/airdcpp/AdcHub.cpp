@@ -1484,7 +1484,7 @@ void AdcHub::infoImpl() noexcept {
 
 	addParam(lastInfoMap, c, "VE", shortVersionString);
 	addParam(lastInfoMap, c, "AW", ActivityManager::getInstance()->isAway() ? "1" : Util::emptyString);
-	addParam(lastInfoMap, c, "LC", Localization::getCurrentLocale());
+	addParam(lastInfoMap, c, "LC", Localization::getLocale());
 
 	int64_t limit = ThrottleManager::getInstance()->getDownLimit() * 1000;
 	int64_t connSpeed = static_cast<int64_t>((Util::toDouble(SETTING(DOWNLOAD_SPEED)) * 1000.0 * 1000.0) / 8.0);
