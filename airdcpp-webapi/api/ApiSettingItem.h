@@ -62,13 +62,22 @@ namespace webserver {
 
 		// Returns the value and bool indicating whether it's an auto detected value
 		virtual pair<json, bool> valueToJson(bool aForceAutoValues = false) const noexcept = 0;
-		virtual const string& getTitle() const noexcept = 0;
+		virtual string getTitle() const noexcept = 0;
 
 		virtual bool setCurValue(const json& aJson) = 0;
 		virtual void unset() noexcept = 0;
+		virtual json getDefaultValue() const noexcept = 0;
 
 		virtual bool isOptional() const noexcept = 0;
 		virtual const MinMax& getMinMax() const noexcept = 0;
+
+		struct EnumOption {
+			const json id;
+			const string text;
+			typedef vector<EnumOption> List;
+		};
+
+		virtual EnumOption::List getEnumOptions() const noexcept = 0;
 
 		const string name;
 		const Type type;
@@ -84,7 +93,7 @@ namespace webserver {
 		}
 	};
 
-	class CoreSettingItem : public ApiSettingItem, public SettingItem {
+	class CoreSettingItem : public ApiSettingItem {
 	public:
 		enum Group {
 			GROUP_NONE,
@@ -108,7 +117,7 @@ namespace webserver {
 		bool setCurValue(const json& aJson) override;
 		void unset() noexcept override;
 
-		const string& getTitle() const noexcept override;
+		string getTitle() const noexcept override;
 
 		const ResourceManager::Strings unit;
 
@@ -116,6 +125,11 @@ namespace webserver {
 		bool isOptional() const noexcept override;
 
 		static Type parseAutoType(Type aType, int aKey) noexcept;
+		json getDefaultValue() const noexcept override;
+
+		EnumOption::List getEnumOptions() const noexcept override;
+	private:
+		const SettingItem si;
 	};
 
 	class ServerSettingItem : public ApiSettingItem {
@@ -123,10 +137,7 @@ namespace webserver {
 		typedef vector<ServerSettingItem> List;
 
 		ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType, bool aOptional = false, const MinMax& aMinMax = defaultMinMax);
-		
-		static Type deserializeType(const string& aTypeStr) noexcept;
 
-		static ServerSettingItem fromJson(const json& aJson);
 		json serializeDefinitions(bool aForceAutoValues = false) const noexcept override;
 
 		// Returns the value and bool indicating whether it's an auto detected value
@@ -136,7 +147,7 @@ namespace webserver {
 
 		const string desc;
 
-		const string& getTitle() const noexcept override {
+		string getTitle() const noexcept override {
 			return desc;
 		}
 
@@ -158,7 +169,9 @@ namespace webserver {
 		}
 
 		const MinMax& getMinMax() const noexcept override;
+		json getDefaultValue() const noexcept override;
 
+		EnumOption::List getEnumOptions() const noexcept override;
 		//ServerSettingItem(ServerSettingItem&& rhs) noexcept = default;
 		//ServerSettingItem& operator=(ServerSettingItem&& rhs) noexcept = default;
 	private:

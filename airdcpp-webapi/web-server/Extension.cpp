@@ -129,24 +129,25 @@ namespace webserver {
 		return ret;
 	}
 
+	ServerSettingItem* Extension::getSetting(const string& aKey) noexcept {
+		RLock l(cs);
+		return ApiSettingItem::findSettingItem<ServerSettingItem>(settings, aKey);
+	}
+
 	bool Extension::hasSettings() const noexcept {
 		RLock l(cs);
 		return !settings.empty(); 
 	}
 
-	const ServerSettingItem::List& Extension::getSettings() const noexcept {
+	ServerSettingItem::List Extension::getSettings() const noexcept {
 		RLock l(cs);
 		return settings;
 	}
 
-	void Extension::setSettingDefinitions(const json& aJson) {
-		for (const auto& def : aJson) {
-			auto item = ServerSettingItem::fromJson(def);
-
-			{
-				WLock l(cs);
-				settings.push_back(std::move(item));
-			}
+	void Extension::swapSettingDefinitions(ServerSettingItem::List& aDefinitions) {
+		{
+			WLock l(cs);
+			settings.swap(aDefinitions);
 		}
 
 		fire(ExtensionListener::SettingDefinitionsUpdated());
@@ -159,7 +160,6 @@ namespace webserver {
 				auto setting = ApiSettingItem::findSettingItem<ServerSettingItem>(settings, vp.first);
 				if (!setting) {
 					throw Exception("Setting " + vp.first + " was not found");
-					continue;
 				}
 
 				setting->setCurValue(vp.second);
@@ -174,7 +174,7 @@ namespace webserver {
 
 		{
 			RLock l(cs);
-			for (const auto& setting : settings) {
+			for (const auto& setting: settings) {
 				values[setting.name] = setting.valueToJson().first;
 			}
 		}

@@ -71,6 +71,7 @@ namespace webserver {
 
 		ExtensionPtr extension;
 
+		static ServerSettingItem deserializeSettingDefinitions(const json& aJson);
 		void onUpdated(const JsonCallback& aDataCallback) noexcept;
 	};
 }

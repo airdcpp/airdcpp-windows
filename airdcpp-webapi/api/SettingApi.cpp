@@ -25,6 +25,7 @@
 
 #include <web-server/JsonUtil.h>
 #include <api/common/Serializer.h>
+#include <api/common/SettingUtils.h>
 
 #include <airdcpp/SettingHolder.h>
 
@@ -96,7 +97,7 @@ namespace webserver {
 				JsonUtil::throwError(elem.key(), JsonUtil::ERROR_INVALID, "Setting not found");
 			}
 
-			setting->setCurValue(elem.value());
+			setting->setCurValue(SettingUtils::validateValue(*setting, elem.value()));
 		}
 
 		SettingsManager::getInstance()->save();

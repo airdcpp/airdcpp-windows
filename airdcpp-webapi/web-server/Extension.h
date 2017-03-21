@@ -99,14 +99,15 @@ namespace webserver {
 		}
 
 		bool hasSettings() const noexcept;
-		const ServerSettingItem::List& getSettings() const noexcept;
+		ServerSettingItem::List getSettings() const noexcept;
+		ServerSettingItem* getSetting(const string& aKey) noexcept;
 
 		typedef map<string, json> SettingValueMap;
 		void setSettingValues(const SettingValueMap& aValues);
 		SettingValueMap getSettingValues() noexcept;
 
 		// Throws on errors
-		void setSettingDefinitions(const json& aJson);
+		void swapSettingDefinitions(ServerSettingItem::List& aDefinitions);
 
 		FilesystemItemList getLogs() const noexcept;
 	private:

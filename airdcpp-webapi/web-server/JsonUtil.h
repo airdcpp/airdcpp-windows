@@ -141,9 +141,6 @@ namespace webserver {
 
 		// Return a new JSON object with exact key-value pairs removed
 		static json filterExactValues(const json& aNew, const json& aCompareTo) noexcept;
-
-		// Throws if the value types of the supplied JSON objects don't match
-		static void ensureType(const string& aFieldName, const json& aNew, const json& aExisting);
 	private:
 		// Returns raw JSON value and optionally throws
 		template <typename JsonT>

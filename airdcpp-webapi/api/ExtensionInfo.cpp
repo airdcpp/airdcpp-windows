@@ -18,6 +18,7 @@
 
 #include <api/ExtensionInfo.h>
 #include <api/common/Serializer.h>
+#include <api/common/SettingUtils.h>
 
 #include <web-server/JsonUtil.h>
 #include <web-server/Extension.h>
@@ -101,19 +102,23 @@ namespace webserver {
 			return websocketpp::http::status_code::conflict;
 		}
 
-		extension->setSettingDefinitions(aRequest.getRequestBody());
+		auto defs = SettingUtils::deserializeDefinitions(aRequest.getRequestBody());
+		extension->swapSettingDefinitions(defs);
 		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return ExtensionInfo::handlePostSettings(ApiRequest& aRequest) {
-		/*for (const auto& elem : json::iterator_wrapper(aRequest.getRequestBody())) {
-			auto setting = ApiSettingItem::findSettingItem<ServerSettingItem>(extension->getSettings(), elem.key());
+		SettingValueMap settings;
+
+		// Validate values
+		for (const auto& elem : json::iterator_wrapper(aRequest.getRequestBody())) {
+			auto setting = extension->getSetting(elem.key());
 			if (!setting) {
-				JsonUtil::throwError(elem.key(), JsonUtil::ERROR_INVALID, "Setting definition for the key " + elem.key() + " was not found");
+				JsonUtil::throwError(elem.key(), JsonUtil::ERROR_INVALID, "Setting not found");
 			}
 
-			setting->setCurValue(elem.value());
-		}*/
+			settings[elem.key()] = SettingUtils::validateValue(*setting, elem.value());
+		}
 
 		extension->setSettingValues(aRequest.getRequestBody());
 		return websocketpp::http::status_code::no_content;
