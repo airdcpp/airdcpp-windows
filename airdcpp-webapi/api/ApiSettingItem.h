@@ -72,6 +72,7 @@ namespace webserver {
 
 		virtual EnumOption::List getEnumOptions() const noexcept = 0;
 
+		virtual bool usingAutoValue(bool aForce) const noexcept;
 		virtual json getAutoValue() const noexcept;
 
 		const string name;
@@ -121,6 +122,7 @@ namespace webserver {
 		json getDefaultValue() const noexcept override;
 
 		EnumOption::List getEnumOptions() const noexcept override;
+		bool usingAutoValue(bool aForce) const noexcept override;
 	private:
 		const SettingItem si;
 	};

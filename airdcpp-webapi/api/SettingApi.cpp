@@ -55,11 +55,15 @@ namespace webserver {
 	api_return SettingApi::handleGetValues(ApiRequest& aRequest) {
 		const auto& requestJson = aRequest.getRequestBody();
 
-		auto autoValues = JsonUtil::getOptionalFieldDefault<bool>("auto_values", requestJson, false);
+		auto forceAutoValues = JsonUtil::getOptionalFieldDefault<bool>("force_auto_values", requestJson, false);
 
-		json retJson;
+		auto retJson = json::object();
 		parseSettingKeys(requestJson, [&](ApiSettingItem& aItem) {
-			retJson[aItem.name] = autoValues ? aItem.getAutoValue() : aItem.getValue();
+			if (aItem.usingAutoValue(forceAutoValues)) {
+				retJson[aItem.name] = aItem.getAutoValue();
+			} else {
+				retJson[aItem.name] = aItem.getValue();
+			}
 		});
 
 		aRequest.setResponseBody(retJson);

@@ -38,6 +38,10 @@ namespace webserver {
 
 	}
 
+	bool ApiSettingItem::usingAutoValue(bool aForce) const noexcept {
+		return false;
+	}
+
 	json ApiSettingItem::getAutoValue() const noexcept {
 		// Setting types with auto values should override this method
 		return getValue();
@@ -138,6 +142,35 @@ namespace webserver {
 		SettingsManager::FREE_SLOTS_EXTENSIONS,
 	};
 
+	map<int, CoreSettingItem::Group> groupMappings = {
+		{ SettingsManager::TCP_PORT, CoreSettingItem::GROUP_CONN_GEN },
+		{ SettingsManager::UDP_PORT, CoreSettingItem::GROUP_CONN_GEN },
+		{ SettingsManager::TLS_PORT, CoreSettingItem::GROUP_CONN_GEN },
+		{ SettingsManager::MAPPER, CoreSettingItem::GROUP_CONN_GEN },
+
+		{ SettingsManager::BIND_ADDRESS, CoreSettingItem::GROUP_CONN_V4 },
+		{ SettingsManager::INCOMING_CONNECTIONS, CoreSettingItem::GROUP_CONN_V4 },
+		{ SettingsManager::EXTERNAL_IP, CoreSettingItem::GROUP_CONN_V4 },
+		{ SettingsManager::IP_UPDATE, CoreSettingItem::GROUP_CONN_V4 },
+		{ SettingsManager::NO_IP_OVERRIDE, CoreSettingItem::GROUP_CONN_V4 },
+
+		{ SettingsManager::BIND_ADDRESS6, CoreSettingItem::GROUP_CONN_V6 },
+		{ SettingsManager::INCOMING_CONNECTIONS6, CoreSettingItem::GROUP_CONN_V6 },
+		{ SettingsManager::EXTERNAL_IP6, CoreSettingItem::GROUP_CONN_V6 },
+		{ SettingsManager::IP_UPDATE6, CoreSettingItem::GROUP_CONN_V6 },
+		{ SettingsManager::NO_IP_OVERRIDE6, CoreSettingItem::GROUP_CONN_V6 },
+
+		{ SettingsManager::DOWNLOAD_SLOTS, CoreSettingItem::GROUP_LIMITS_DL },
+		{ SettingsManager::MAX_DOWNLOAD_SPEED, CoreSettingItem::GROUP_LIMITS_DL },
+
+		{ SettingsManager::MIN_UPLOAD_SPEED, CoreSettingItem::GROUP_LIMITS_UL },
+		{ SettingsManager::AUTO_SLOTS, CoreSettingItem::GROUP_LIMITS_UL },
+		{ SettingsManager::SLOTS, CoreSettingItem::GROUP_LIMITS_UL },
+
+		{ SettingsManager::MAX_MCN_DOWNLOADS, CoreSettingItem::GROUP_LIMITS_MCN },
+		{ SettingsManager::MAX_MCN_UPLOADS, CoreSettingItem::GROUP_LIMITS_MCN },
+	};
+
 	CoreSettingItem::CoreSettingItem(const string& aName, int aKey, ResourceManager::Strings aDesc, Type aType, ResourceManager::Strings aUnit) :
 		ApiSettingItem(aName, parseAutoType(aType, aKey)), si({ aKey, aDesc }), unit(aUnit) {
 
@@ -158,6 +191,23 @@ namespace webserver {
 		}
 
 		return aType;
+	}
+
+#define USE_AUTO(aType, aGroupSetting) ((groupMappings.find(si.key) != groupMappings.end() && groupMappings.at(si.key) == aType) && (aForceAutoValues || SETTING(aGroupSetting)))
+	bool CoreSettingItem::usingAutoValue(bool aForceAutoValues) const noexcept {
+		if (USE_AUTO(GROUP_CONN_V4, AUTO_DETECT_CONNECTION) || USE_AUTO(GROUP_CONN_V6, AUTO_DETECT_CONNECTION6) ||
+			(type == GROUP_CONN_GEN && (SETTING(AUTO_DETECT_CONNECTION) || SETTING(AUTO_DETECT_CONNECTION6)))) {
+
+			return true;
+		} else if (USE_AUTO(GROUP_LIMITS_DL, DL_AUTODETECT)) {
+			return true;
+		} else if (USE_AUTO(GROUP_LIMITS_UL, UL_AUTODETECT)) {
+			return true;
+		} else if (USE_AUTO(GROUP_LIMITS_MCN, MCN_AUTODETECT)) {
+			return true;
+		}
+
+		return false;
 	}
 
 	json CoreSettingItem::getAutoValue() const noexcept {
