@@ -87,12 +87,7 @@ namespace webserver {
 	}
 
 	api_return ExtensionInfo::handleGetSettingDefinitions(ApiRequest& aRequest) {
-		auto ret = json::array();
-		for (const auto& setting: extension->getSettings()) {
-			ret.push_back(setting.serializeDefinitions());
-		}
-
-		aRequest.setResponseBody(ret);
+		aRequest.setResponseBody(Serializer::serializeList(extension->getSettings(), SettingUtils::serializeDefinition));
 		return websocketpp::http::status_code::ok;
 	}
 

@@ -162,7 +162,7 @@ namespace webserver {
 					throw Exception("Setting " + vp.first + " was not found");
 				}
 
-				setting->setCurValue(vp.second);
+				setting->setValue(vp.second);
 			}
 		}
 
@@ -175,7 +175,7 @@ namespace webserver {
 		{
 			RLock l(cs);
 			for (const auto& setting: settings) {
-				values[setting.name] = setting.valueToJson().first;
+				values[setting.name] = setting.getValue();
 			}
 		}
 

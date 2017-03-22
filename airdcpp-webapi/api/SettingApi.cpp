@@ -43,11 +43,9 @@ namespace webserver {
 	api_return SettingApi::handleGetDefinitions(ApiRequest& aRequest) {
 		const auto& requestJson = aRequest.getRequestBody();
 
-		auto forceAutoValues = JsonUtil::getOptionalFieldDefault<bool>("force_auto_values", requestJson, false);
-
 		json retJson = json::array();
 		parseSettingKeys(requestJson, [&](ApiSettingItem& aItem) {
-			retJson.push_back(aItem.serializeDefinitions(forceAutoValues));
+			retJson.push_back(SettingUtils::serializeDefinition(aItem));
 		});
 
 		aRequest.setResponseBody(retJson);
@@ -57,9 +55,11 @@ namespace webserver {
 	api_return SettingApi::handleGetValues(ApiRequest& aRequest) {
 		const auto& requestJson = aRequest.getRequestBody();
 
+		auto autoValues = JsonUtil::getOptionalFieldDefault<bool>("auto_values", requestJson, false);
+
 		json retJson;
 		parseSettingKeys(requestJson, [&](ApiSettingItem& aItem) {
-			retJson[aItem.name] = aItem.valueToJson().first;
+			retJson[aItem.name] = autoValues ? aItem.getAutoValue() : aItem.getValue();
 		});
 
 		aRequest.setResponseBody(retJson);
@@ -97,7 +97,7 @@ namespace webserver {
 				JsonUtil::throwError(elem.key(), JsonUtil::ERROR_INVALID, "Setting not found");
 			}
 
-			setting->setCurValue(SettingUtils::validateValue(*setting, elem.value()));
+			setting->setValue(SettingUtils::validateValue(*setting, elem.value()));
 		}
 
 		SettingsManager::getInstance()->save();

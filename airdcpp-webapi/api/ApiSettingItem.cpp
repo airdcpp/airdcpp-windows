@@ -38,56 +38,9 @@ namespace webserver {
 
 	}
 
-	string ApiSettingItem::typeToStr(Type aType) noexcept {
-		switch (aType) {
-			case TYPE_BOOLEAN: return "boolean";
-			case TYPE_NUMBER: return "number";
-			case TYPE_STRING: return "string";
-			case TYPE_FILE_PATH: return "file_path";
-			case TYPE_DIRECTORY_PATH: return "directory_path";
-			case TYPE_TEXT: return "text";
-		}
-
-		dcassert(0);
-		return Util::emptyString;
-	}
-
-
-
-	json ApiSettingItem::serializeDefinitions(bool) const noexcept {
-		// Serialize the setting
-		json ret = {
-			{ "key", name },
-			{ "title", getTitle() },
-			{ "type", typeToStr(type) },
-		};
-
-		if (isOptional()) {
-			ret["optional"] = true;
-		}
-
-		{
-			for (const auto& opt: getEnumOptions()) {
-				ret["values"].push_back({
-					{ "id", opt.id },
-					{ "name", opt.text },
-				});
-			}
-		}
-
-		if (type == TYPE_NUMBER) {
-			const auto& minMax = getMinMax();
-			
-			if (minMax.min != 0) {
-				ret["min"] = minMax.min;
-			}
-
-			if (minMax.max != MAX_INT_VALUE) {
-				ret["max"] = minMax.max;
-			}
-		}
-
-		return ret;
+	json ApiSettingItem::getAutoValue() const noexcept {
+		// Setting types with auto values should override this method
+		return getValue();
 	}
 
 	ServerSettingItem::ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType, bool aOptional, const MinMax& aMinMax) :
@@ -95,20 +48,16 @@ namespace webserver {
 
 	}
 
-	json ServerSettingItem::serializeDefinitions(bool aForceAutoValues) const noexcept {
-		return ApiSettingItem::serializeDefinitions(aForceAutoValues);
-	}
-
 	// Returns the value and bool indicating whether it's an auto detected value
-	pair<json, bool> ServerSettingItem::valueToJson(bool /*aForceAutoValues*/) const noexcept {
-		return { value, false };
+	json ServerSettingItem::getValue() const noexcept {
+		return value;
 	}
 
 	void ServerSettingItem::unset() noexcept {
 		value = defaultValue;
 	}
 
-	bool ServerSettingItem::setCurValue(const json& aJson) {
+	bool ServerSettingItem::setValue(const json& aJson) {
 		if (aJson.is_null()) {
 			unset();
 		} else {
@@ -156,35 +105,6 @@ namespace webserver {
 	const ApiSettingItem::MinMax& ServerSettingItem::getMinMax() const noexcept {
 		return minMax;
 	}
-
-	map<int, CoreSettingItem::Group> groupMappings = {
-		{ SettingsManager::TCP_PORT, CoreSettingItem::GROUP_CONN_GEN },
-		{ SettingsManager::UDP_PORT, CoreSettingItem::GROUP_CONN_GEN },
-		{ SettingsManager::TLS_PORT, CoreSettingItem::GROUP_CONN_GEN },
-		{ SettingsManager::MAPPER, CoreSettingItem::GROUP_CONN_GEN },
-
-		{ SettingsManager::BIND_ADDRESS, CoreSettingItem::GROUP_CONN_V4 },
-		{ SettingsManager::INCOMING_CONNECTIONS, CoreSettingItem::GROUP_CONN_V4 },
-		{ SettingsManager::EXTERNAL_IP, CoreSettingItem::GROUP_CONN_V4 },
-		{ SettingsManager::IP_UPDATE, CoreSettingItem::GROUP_CONN_V4 },
-		{ SettingsManager::NO_IP_OVERRIDE, CoreSettingItem::GROUP_CONN_V4 },
-
-		{ SettingsManager::BIND_ADDRESS6, CoreSettingItem::GROUP_CONN_V6 },
-		{ SettingsManager::INCOMING_CONNECTIONS6, CoreSettingItem::GROUP_CONN_V6 },
-		{ SettingsManager::EXTERNAL_IP6, CoreSettingItem::GROUP_CONN_V6 },
-		{ SettingsManager::IP_UPDATE6, CoreSettingItem::GROUP_CONN_V6 },
-		{ SettingsManager::NO_IP_OVERRIDE6, CoreSettingItem::GROUP_CONN_V6 },
-
-		{ SettingsManager::DOWNLOAD_SLOTS, CoreSettingItem::GROUP_LIMITS_DL },
-		{ SettingsManager::MAX_DOWNLOAD_SPEED, CoreSettingItem::GROUP_LIMITS_DL },
-
-		{ SettingsManager::MIN_UPLOAD_SPEED, CoreSettingItem::GROUP_LIMITS_UL },
-		{ SettingsManager::AUTO_SLOTS, CoreSettingItem::GROUP_LIMITS_UL },
-		{ SettingsManager::SLOTS, CoreSettingItem::GROUP_LIMITS_UL },
-
-		{ SettingsManager::MAX_MCN_DOWNLOADS, CoreSettingItem::GROUP_LIMITS_MCN },
-		{ SettingsManager::MAX_MCN_UPLOADS, CoreSettingItem::GROUP_LIMITS_MCN },
-	};
 
 	map<int, CoreSettingItem::MinMax> minMaxMappings = {
 		{ SettingsManager::TCP_PORT, { 1, 65535 } },
@@ -240,49 +160,40 @@ namespace webserver {
 		return aType;
 	}
 
+	json CoreSettingItem::getAutoValue() const noexcept {
+		switch (si.key) {
+			case SettingsManager::TCP_PORT: ConnectionManager::getInstance()->getPort();
+			case SettingsManager::UDP_PORT: SearchManager::getInstance()->getPort();
+			case SettingsManager::TLS_PORT: ConnectionManager::getInstance()->getSecurePort();
+			case SettingsManager::MAPPER: 
 
-	#define USE_AUTO(aType, aSetting) ((groupMappings.find(SettingsManager::aSetting) != groupMappings.end() && groupMappings.at(SettingsManager::aSetting) == aType) && (aForceAutoValues || SETTING(aSetting)))
-	json CoreSettingItem::autoValueToJson(bool aForceAutoValues) const noexcept {
-		json v;
-		if (USE_AUTO(GROUP_CONN_V4, AUTO_DETECT_CONNECTION) || USE_AUTO(GROUP_CONN_V6, AUTO_DETECT_CONNECTION6) ||
-			(type == GROUP_CONN_GEN && (SETTING(AUTO_DETECT_CONNECTION) || SETTING(AUTO_DETECT_CONNECTION6)))) {
+			case SettingsManager::BIND_ADDRESS: 
+			case SettingsManager::EXTERNAL_IP: 
 
-			if (si.key == SettingsManager::TCP_PORT) {
-				v = ConnectionManager::getInstance()->getPort();
-			} else if (si.key == SettingsManager::UDP_PORT) {
-				v = SearchManager::getInstance()->getPort();
-			} else if (si.key == SettingsManager::TLS_PORT) {
-				v = ConnectionManager::getInstance()->getSecurePort();
-			} else {
-				if (isString(type)) {
-					v = ConnectivityManager::getInstance()->get(static_cast<SettingsManager::StrSetting>(si.key));
-				} else if (type == TYPE_NUMBER) {
-					v = ConnectivityManager::getInstance()->get(static_cast<SettingsManager::IntSetting>(si.key));
-				} else if (type == TYPE_BOOLEAN) {
-					v = ConnectivityManager::getInstance()->get(static_cast<SettingsManager::BoolSetting>(si.key));
-				} else {
-					dcassert(0);
-				}
-			}
-		} else if (USE_AUTO(GROUP_LIMITS_DL, DL_AUTODETECT)) {
-			if (si.key == SettingsManager::DOWNLOAD_SLOTS) {
-				v = AirUtil::getSlots(true);
-			} else if (si.key == SettingsManager::MAX_DOWNLOAD_SPEED) {
-				v = AirUtil::getSpeedLimit(true);
-			}
-		} else if (USE_AUTO(GROUP_LIMITS_UL, UL_AUTODETECT)) {
-			if (si.key == SettingsManager::SLOTS) {
-				v = AirUtil::getSlots(false);
-			} else if (si.key == SettingsManager::MIN_UPLOAD_SPEED) {
-				v = AirUtil::getSpeedLimit(false);
-			} else if (si.key == SettingsManager::AUTO_SLOTS) {
-				v = AirUtil::getMaxAutoOpened();
-			}
-		} else if (USE_AUTO(GROUP_LIMITS_MCN, MCN_AUTODETECT)) {
-			v = AirUtil::getSlotsPerUser(si.key == SettingsManager::MAX_MCN_DOWNLOADS);
+			case SettingsManager::BIND_ADDRESS6:
+			case SettingsManager::EXTERNAL_IP6: return ConnectivityManager::getInstance()->get(static_cast<SettingsManager::StrSetting>(si.key));
+
+			case SettingsManager::INCOMING_CONNECTIONS: 
+			case SettingsManager::INCOMING_CONNECTIONS6: return ConnectivityManager::getInstance()->get(static_cast<SettingsManager::IntSetting>(si.key));
+
+			case SettingsManager::IP_UPDATE: 
+			case SettingsManager::NO_IP_OVERRIDE: 
+
+			case SettingsManager::IP_UPDATE6: 
+			case SettingsManager::NO_IP_OVERRIDE6: return ConnectivityManager::getInstance()->get(static_cast<SettingsManager::BoolSetting>(si.key));
+
+			case SettingsManager::DOWNLOAD_SLOTS: return AirUtil::getSlots(true, Util::toDouble(SETTING(DOWNLOAD_SPEED)));
+			case SettingsManager::MAX_DOWNLOAD_SPEED: return AirUtil::getSpeedLimit(true, Util::toDouble(SETTING(DOWNLOAD_SPEED)));
+
+			case SettingsManager::SLOTS: return AirUtil::getSlots(false, Util::toDouble(SETTING(UPLOAD_SPEED)));
+			case SettingsManager::MIN_UPLOAD_SPEED: return AirUtil::getSpeedLimit(false, Util::toDouble(SETTING(UPLOAD_SPEED)));
+			case SettingsManager::AUTO_SLOTS: return AirUtil::getMaxAutoOpened(Util::toDouble(SETTING(UPLOAD_SPEED)));
+
+			case SettingsManager::MAX_MCN_DOWNLOADS: return AirUtil::getSlotsPerUser(true, Util::toDouble(SETTING(DOWNLOAD_SPEED)));
+			case SettingsManager::MAX_MCN_UPLOADS: return AirUtil::getSlotsPerUser(false, Util::toDouble(SETTING(UPLOAD_SPEED)));
 		}
 
-		return v;
+		return ApiSettingItem::getAutoValue();
 	}
 
 	const ApiSettingItem::MinMax& CoreSettingItem::getMinMax() const noexcept {
@@ -294,23 +205,17 @@ namespace webserver {
 		return optionalSettingKeys.find(si.key) != optionalSettingKeys.end();
 	}
 
-	pair<json, bool> CoreSettingItem::valueToJson(bool aForceAutoValues) const noexcept {
-		auto v = autoValueToJson(aForceAutoValues);
-		if (!v.is_null()) {
-			return { v, true };
-		}
-
+	json CoreSettingItem::getValue() const noexcept {
 		if (isString(type)) {
-			v = SettingsManager::getInstance()->get(static_cast<SettingsManager::StrSetting>(si.key), true);
+			return SettingsManager::getInstance()->get(static_cast<SettingsManager::StrSetting>(si.key), true);
 		} else if (type == TYPE_NUMBER) {
-			v = SettingsManager::getInstance()->get(static_cast<SettingsManager::IntSetting>(si.key), true);
+			return SettingsManager::getInstance()->get(static_cast<SettingsManager::IntSetting>(si.key), true);
 		} else if (type == TYPE_BOOLEAN) {
-			v = SettingsManager::getInstance()->get(static_cast<SettingsManager::BoolSetting>(si.key), true);
-		} else {
-			dcassert(0);
+			return SettingsManager::getInstance()->get(static_cast<SettingsManager::BoolSetting>(si.key), true);
 		}
-
-		return { v, false };
+			
+		dcassert(0);
+		return nullptr;
 	}
 
 	json CoreSettingItem::getDefaultValue() const noexcept {
@@ -351,18 +256,6 @@ namespace webserver {
 		return ret;
 	}
 
-	json CoreSettingItem::serializeDefinitions(bool aForceAutoValues) const noexcept {
-		// Serialize the setting
-		json ret = ApiSettingItem::serializeDefinitions(aForceAutoValues);
-
-		// TODO: this shouldn't be here
-		if (!autoValueToJson(aForceAutoValues).is_null()) {
-			ret["auto"] = true;
-		}
-
-		return ret;
-	}
-
 	string CoreSettingItem::getTitle() const noexcept {
 		auto title = si.getDescription();
 
@@ -377,7 +270,7 @@ namespace webserver {
 		si.unset();
 	}
 
-	bool CoreSettingItem::setCurValue(const json& aJson) {
+	bool CoreSettingItem::setValue(const json& aJson) {
 		if (isString(type)) {
 			SettingsManager::getInstance()->set(static_cast<SettingsManager::StrSetting>(si.key), JsonUtil::parseValue<string>(name, aJson));
 		} else if (type == TYPE_NUMBER) {

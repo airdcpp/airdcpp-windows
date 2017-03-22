@@ -49,23 +49,16 @@ namespace webserver {
 
 		ApiSettingItem(const string& aName, Type aType);
 
-		static string typeToStr(Type aType) noexcept;
 		static bool isString(Type aType) noexcept {
 			return aType == TYPE_STRING || aType == TYPE_TEXT || aType == TYPE_FILE_PATH || aType == TYPE_DIRECTORY_PATH;
 		}
 
-		static json serializeDefinitions(const ApiSettingItem& aItem) noexcept {
-			return aItem.serializeDefinitions();
-		}
-
-		virtual json serializeDefinitions(bool aForceAutoValues = false) const noexcept;
-
 		// Returns the value and bool indicating whether it's an auto detected value
-		virtual pair<json, bool> valueToJson(bool aForceAutoValues = false) const noexcept = 0;
 		virtual string getTitle() const noexcept = 0;
 
-		virtual bool setCurValue(const json& aJson) = 0;
+		virtual bool setValue(const json& aJson) = 0;
 		virtual void unset() noexcept = 0;
+		virtual json getValue() const noexcept = 0;
 		virtual json getDefaultValue() const noexcept = 0;
 
 		virtual bool isOptional() const noexcept = 0;
@@ -78,6 +71,8 @@ namespace webserver {
 		};
 
 		virtual EnumOption::List getEnumOptions() const noexcept = 0;
+
+		virtual json getAutoValue() const noexcept;
 
 		const string name;
 		const Type type;
@@ -107,14 +102,12 @@ namespace webserver {
 
 		CoreSettingItem(const string& aName, int aKey, ResourceManager::Strings aDesc, Type aType = TYPE_LAST, ResourceManager::Strings aUnit = ResourceManager::Strings::LAST);
 
-		json serializeDefinitions(bool aForceAutoValues = false) const noexcept override;
-
 		// Returns the value and bool indicating whether it's an auto detected value
-		pair<json, bool> valueToJson(bool aForceAutoValues = false) const noexcept override;
-		json autoValueToJson(bool aForceAutoValues) const noexcept;
+		json getValue() const noexcept override;
+		json getAutoValue() const noexcept override;
 
 		// Throws on invalid JSON
-		bool setCurValue(const json& aJson) override;
+		bool setValue(const json& aJson) override;
 		void unset() noexcept override;
 
 		string getTitle() const noexcept override;
@@ -138,12 +131,10 @@ namespace webserver {
 
 		ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType, bool aOptional = false, const MinMax& aMinMax = defaultMinMax);
 
-		json serializeDefinitions(bool aForceAutoValues = false) const noexcept override;
-
 		// Returns the value and bool indicating whether it's an auto detected value
-		pair<json, bool> valueToJson(bool aForceAutoValues = false) const noexcept override;
+		json getValue() const noexcept override;
 
-		bool setCurValue(const json& aJson) override;
+		bool setValue(const json& aJson) override;
 
 		const string desc;
 
@@ -159,10 +150,6 @@ namespace webserver {
 		bool boolean();
 
 		bool isDefault() const noexcept;
-
-		const json& getValue() const noexcept {
-			return value;
-		}
 
 		bool isOptional() const noexcept override {
 			return optional;

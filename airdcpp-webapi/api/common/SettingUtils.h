@@ -30,6 +30,9 @@ namespace webserver {
 		static ServerSettingItem deserializeDefinition(const json& aJson);
 		static ServerSettingItem::List deserializeDefinitions(const json& aJson);
 
+		static json serializeDefinition(const ApiSettingItem& aItem) noexcept;
+		static string typeToStr(ApiSettingItem::Type aType) noexcept;
+
 		static ApiSettingItem::Type parseType(const string& aTypeStr) noexcept;
 	private:
 

@@ -474,7 +474,7 @@ namespace webserver {
 
 					if (xml.findChild("Threads")) {
 						xml.stepIn();
-						WEBCFG(SERVER_THREADS).setCurValue(max(Util::toInt(xml.getData()), 1));
+						WEBCFG(SERVER_THREADS).setValue(max(Util::toInt(xml.getData()), 1));
 						xml.stepOut();
 					}
 					xml.resetCurrentChild();
@@ -493,12 +493,12 @@ namespace webserver {
 
 	void WebServerManager::loadServer(SimpleXML& aXml, const string& aTagName, ServerConfig& config_, bool aTls) noexcept {
 		if (aXml.findChild(aTagName)) {
-			config_.port.setCurValue(aXml.getIntChildAttrib("Port"));
-			config_.bindAddress.setCurValue(aXml.getChildAttrib("BindAddress"));
+			config_.port.setValue(aXml.getIntChildAttrib("Port"));
+			config_.bindAddress.setValue(aXml.getChildAttrib("BindAddress"));
 
 			if (aTls) {
-				WEBCFG(TLS_CERT_PATH).setCurValue(aXml.getChildAttrib("Certificate"));
-				WEBCFG(TLS_CERT_KEY_PATH).setCurValue(aXml.getChildAttrib("CertificateKey"));
+				WEBCFG(TLS_CERT_PATH).setValue(aXml.getChildAttrib("Certificate"));
+				WEBCFG(TLS_CERT_KEY_PATH).setValue(aXml.getChildAttrib("CertificateKey"));
 			}
 		}
 

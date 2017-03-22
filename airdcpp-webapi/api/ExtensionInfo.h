@@ -30,7 +30,6 @@ namespace webserver {
 	class ExtensionManager;
 	class ExtensionInfo : public SubApiModule<std::string, ExtensionInfo, std::string>, private ExtensionListener {
 	public:
-		//typedef ParentApiModule<string, ExtensionInfo> ParentType;
 		typedef shared_ptr<ExtensionInfo> Ptr;
 
 		ExtensionInfo(ParentType* aParentModule, const ExtensionPtr& aExtension);
@@ -71,7 +70,6 @@ namespace webserver {
 
 		ExtensionPtr extension;
 
-		static ServerSettingItem deserializeSettingDefinitions(const json& aJson);
 		void onUpdated(const JsonCallback& aDataCallback) noexcept;
 	};
 }

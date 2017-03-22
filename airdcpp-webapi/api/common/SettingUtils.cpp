@@ -25,6 +25,55 @@
 
 
 namespace webserver {
+	json SettingUtils::serializeDefinition(const ApiSettingItem& aItem) noexcept {
+		json ret = {
+			{ "key", aItem.name },
+			{ "title", aItem.getTitle() },
+			{ "type", typeToStr(aItem.type) },
+		};
+
+		if (aItem.isOptional()) {
+			ret["optional"] = true;
+		}
+
+		{
+			for (const auto& opt : aItem.getEnumOptions()) {
+				ret["values"].push_back({
+					{ "id", opt.id },
+					{ "name", opt.text },
+				});
+			}
+		}
+
+		if (aItem.type == ApiSettingItem::TYPE_NUMBER) {
+			const auto& minMax = aItem.getMinMax();
+
+			if (minMax.min != 0) {
+				ret["min"] = minMax.min;
+			}
+
+			if (minMax.max != MAX_INT_VALUE) {
+				ret["max"] = minMax.max;
+			}
+		}
+
+		return ret;
+	}
+
+	string SettingUtils::typeToStr(ApiSettingItem::Type aType) noexcept {
+		switch (aType) {
+			case ApiSettingItem::TYPE_BOOLEAN: return "boolean";
+			case ApiSettingItem::TYPE_NUMBER: return "number";
+			case ApiSettingItem::TYPE_STRING: return "string";
+			case ApiSettingItem::TYPE_FILE_PATH: return "file_path";
+			case ApiSettingItem::TYPE_DIRECTORY_PATH: return "directory_path";
+			case ApiSettingItem::TYPE_TEXT: return "text";
+		}
+
+		dcassert(0);
+		return Util::emptyString;
+	}
+
 	json SettingUtils::validateValue(const ApiSettingItem& aItem, const json& aValue) {
 		if (aItem.type == ApiSettingItem::TYPE_NUMBER) {
 			auto num = JsonUtil::parseValue<int>(aItem.name, aValue, aItem.isOptional());
