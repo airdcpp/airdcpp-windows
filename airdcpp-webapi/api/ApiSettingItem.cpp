@@ -196,7 +196,7 @@ namespace webserver {
 #define USE_AUTO(aType, aGroupSetting) ((groupMappings.find(si.key) != groupMappings.end() && groupMappings.at(si.key) == aType) && (aForceAutoValues || SETTING(aGroupSetting)))
 	bool CoreSettingItem::usingAutoValue(bool aForceAutoValues) const noexcept {
 		if (USE_AUTO(GROUP_CONN_V4, AUTO_DETECT_CONNECTION) || USE_AUTO(GROUP_CONN_V6, AUTO_DETECT_CONNECTION6) ||
-			(type == GROUP_CONN_GEN && (SETTING(AUTO_DETECT_CONNECTION) || SETTING(AUTO_DETECT_CONNECTION6)))) {
+			(USE_AUTO(GROUP_CONN_GEN, AUTO_DETECT_CONNECTION) || USE_AUTO(GROUP_CONN_GEN, AUTO_DETECT_CONNECTION6))) {
 
 			return true;
 		} else if (USE_AUTO(GROUP_LIMITS_DL, DL_AUTODETECT)) {
