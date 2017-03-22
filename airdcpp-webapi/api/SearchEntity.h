@@ -47,7 +47,7 @@ namespace webserver {
 			return search;
 		}
 
-		SearchInstanceToken getId() const noexcept {
+		SearchInstanceToken getId() const noexcept override {
 			return id;
 		}
 

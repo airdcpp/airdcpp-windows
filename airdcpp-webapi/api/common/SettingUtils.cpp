@@ -68,6 +68,7 @@ namespace webserver {
 			case ApiSettingItem::TYPE_FILE_PATH: return "file_path";
 			case ApiSettingItem::TYPE_DIRECTORY_PATH: return "directory_path";
 			case ApiSettingItem::TYPE_TEXT: return "text";
+			case ApiSettingItem::TYPE_LAST: dcassert(0);
 		}
 
 		dcassert(0);
