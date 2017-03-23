@@ -17,7 +17,7 @@
 */
 
 #include <api/PrivateChatInfo.h>
-#include <api/ApiModule.h>
+#include <api/base/ApiModule.h>
 #include <api/common/Serializer.h>
 
 #include <web-server/JsonUtil.h>
@@ -46,26 +46,30 @@ namespace webserver {
 		chat->addListener(this);
 	}
 
+	CID PrivateChatInfo::getId() const noexcept {
+		return chat->getUser()->getCID();
+	}
+
 	PrivateChatInfo::~PrivateChatInfo() {
 		chat->removeListener(this);
 	}
 
-	api_return PrivateChatInfo::handleStartTyping(ApiRequest& aRequest) {
+	api_return PrivateChatInfo::handleStartTyping(ApiRequest&) {
 		chat->sendPMInfo(PrivateChat::TYPING_ON);
 		return websocketpp::http::status_code::no_content;
 	}
 
-	api_return PrivateChatInfo::handleEndTyping(ApiRequest& aRequest) {
+	api_return PrivateChatInfo::handleEndTyping(ApiRequest&) {
 		chat->sendPMInfo(PrivateChat::TYPING_OFF);
 		return websocketpp::http::status_code::no_content;
 	}
 
-	api_return PrivateChatInfo::handleDisconnectCCPM(ApiRequest& aRequest) {
+	api_return PrivateChatInfo::handleDisconnectCCPM(ApiRequest&) {
 		chat->closeCC(false, true);
 		return websocketpp::http::status_code::no_content;
 	}
 
-	api_return PrivateChatInfo::handleConnectCCPM(ApiRequest& aRequest) {
+	api_return PrivateChatInfo::handleConnectCCPM(ApiRequest&) {
 		chat->startCC();
 		return websocketpp::http::status_code::no_content;
 	}
@@ -105,7 +109,7 @@ namespace webserver {
 		});
 	}
 
-	void PrivateChatInfo::on(PrivateChatListener::PMStatus, PrivateChat*, uint8_t aSeverity) noexcept {
+	void PrivateChatInfo::on(PrivateChatListener::PMStatus, PrivateChat*, uint8_t /*aSeverity*/) noexcept {
 
 	}
 

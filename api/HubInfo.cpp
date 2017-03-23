@@ -17,7 +17,7 @@
 */
 
 #include <api/HubInfo.h>
-#include <api/ApiModule.h>
+#include <api/base/ApiModule.h>
 #include <api/common/Serializer.h>
 #include <api/FavoriteHubUtils.h>
 
@@ -42,7 +42,8 @@ namespace webserver {
 		SubApiModule(aParentModule, aClient->getClientId(), subscriptionList), client(aClient),
 		chatHandler(this, std::bind(&HubInfo::getClient, this), "hub", Access::HUBS_VIEW, Access::HUBS_EDIT, Access::HUBS_SEND), 
 		view("hub_user_view", this, OnlineUserUtils::propertyHandler, std::bind(&HubInfo::getUsers, this), 500), 
-		timer(getTimer([this] { onTimer(); }, 1000)) {
+		timer(getTimer([this] { onTimer(); }, 1000)) 
+	{
 
 		METHOD_HANDLER(Access::HUBS_EDIT, METHOD_POST,	(EXACT_PARAM("reconnect")),	HubInfo::handleReconnect);
 		METHOD_HANDLER(Access::HUBS_EDIT, METHOD_POST,	(EXACT_PARAM("favorite")),	HubInfo::handleFavorite);
@@ -65,6 +66,10 @@ namespace webserver {
 		client->addListener(this);
 
 		timer->start(false);
+	}
+
+	ClientToken HubInfo::getId() const noexcept {
+		return client->getClientId();
 	}
 
 	api_return HubInfo::handleGetUsers(ApiRequest& aRequest) {
@@ -92,7 +97,7 @@ namespace webserver {
 		return websocketpp::http::status_code::ok;
 	}
 
-	api_return HubInfo::handleReconnect(ApiRequest& aRequest) {
+	api_return HubInfo::handleReconnect(ApiRequest&) {
 		client->reconnect();
 		return websocketpp::http::status_code::no_content;
 	}
@@ -115,7 +120,7 @@ namespace webserver {
 		return websocketpp::http::status_code::no_content;
 	}
 
-	api_return HubInfo::handleRedirect(ApiRequest& aRequest) {
+	api_return HubInfo::handleRedirect(ApiRequest&) {
 		client->doRedirect();
 		return websocketpp::http::status_code::no_content;
 	}
@@ -298,7 +303,7 @@ namespace webserver {
 		onUserUpdated(aUser);
 	}
 
-	void HubInfo::on(ClientListener::UsersUpdated, const Client* c, const OnlineUserList& aUsers) noexcept {
+	void HubInfo::on(ClientListener::UsersUpdated, const Client*, const OnlineUserList& aUsers) noexcept {
 		for (auto& u : aUsers) {
 			onUserUpdated(u);
 		}

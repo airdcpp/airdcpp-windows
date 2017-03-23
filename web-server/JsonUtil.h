@@ -36,20 +36,31 @@ namespace webserver {
 		static optional<T> getEnumField(const string& aFieldName, const JsonT& aJson, bool aRequired, int aMin, int aMax) {
 			auto value = getOptionalField<T>(aFieldName, aJson, false, aRequired);
 			if (value) {
-				if (*value < aMin || *value > aMax) {
-					throwError(aFieldName, ERROR_INVALID,
-						"Value " + std::to_string(*value) + " is not in range " + 
-						std::to_string(aMin) + " - " + std::to_string(aMax));
-				}
+				validateRange(aFieldName, *value, aMin, aMax);
 			}
 
 			return value;
 		}
 
+		template <typename T>
+		static void validateRange(const string& aFieldName, const T& aValue, int aMin, int aMax) {
+			if (aValue < aMin || aValue > aMax) {
+				throwError(aFieldName, ERROR_INVALID,
+					"Value " + std::to_string(aValue) + " is not in range " +
+					std::to_string(aMin) + " - " + std::to_string(aMax));
+			}
+		}
+
+		template <typename T, typename JsonT>
+		static T getEnumFieldDefault(const string& aFieldName, const JsonT& aJson, T aDefault, int aMin, int aMax) {
+			auto value = getEnumField<T, JsonT>(aFieldName, aJson, false, aMin, aMax);
+			return value ? *value : aDefault;
+		}
+
 		// Can be used to return null values for non-existing fields. Behaves similar to getField when throwIfMissing is true.
 		template <typename T, typename JsonT>
-		static optional<T> getOptionalField(const string& aFieldName, const JsonT& aJson, bool aAllowEmpty = true, bool throwIfMissing = false) {
-			if (throwIfMissing) {
+		static optional<T> getOptionalField(const string& aFieldName, const JsonT& aJson, bool aAllowEmpty = true, bool aThrowIfMissing = false) {
+			if (aThrowIfMissing) {
 				return getField<T>(aFieldName, aJson, aAllowEmpty);
 			}
 
@@ -84,8 +95,8 @@ namespace webserver {
 
 		// Returns raw JSON value and returns null JSON if the field is missing
 		template <typename JsonT>
-		static json getOptionalRawField(const string& aFieldName, const JsonT& aJson) {
-			return getRawValue<JsonT>(aFieldName, aJson, false);
+		static json getOptionalRawField(const string& aFieldName, const JsonT& aJson, bool aThrowIfMissing = false) {
+			return getRawValue<JsonT>(aFieldName, aJson, aThrowIfMissing);
 		}
 
 		// Find and parse the given field. Throws if not found.
@@ -103,10 +114,12 @@ namespace webserver {
 					ret = aJson.template get<T>();
 				} catch (const exception& e) {
 					throwError(aFieldName, ERROR_INVALID, e.what());
+					return T(); // avoid MSVC warning
 				}
 
 				if (!aAllowEmpty && (isEmpty<T>(ret) || aJson.empty())) {
 					throwError(aFieldName, ERROR_INVALID, "Field can't be empty");
+					return T(); // avoid MSVC warning
 				}
 
 				return ret;
@@ -128,9 +141,6 @@ namespace webserver {
 
 		// Return a new JSON object with exact key-value pairs removed
 		static json filterExactValues(const json& aNew, const json& aCompareTo) noexcept;
-
-		// Throws if the value types of the supplied JSON objects don't match
-		static void ensureType(const string& aFieldName, const json& aNew, const json& aExisting);
 	private:
 		// Returns raw JSON value and optionally throws
 		template <typename JsonT>
@@ -161,7 +171,7 @@ namespace webserver {
 		}
 
 		template <class T>
-		static bool isEmpty(const typename std::enable_if<!std::is_same<std::string, T>::value, T>::type& aValue) {
+		static bool isEmpty(const typename std::enable_if<!std::is_same<std::string, T>::value, T>::type&) {
 			return false;
 		}
 

@@ -27,9 +27,8 @@
 
 #include "Timer.h"
 #include "WebServerManagerListener.h"
-//#include "WebServerSettings.h"
-#include "WebSocket.h"
 #include "WebUserManager.h"
+#include "WebSocket.h"
 
 #include <airdcpp/format.h>
 #include <airdcpp/Singleton.h>
@@ -42,6 +41,10 @@
 
 namespace webserver {
 	class ServerSettingItem;
+
+	class ExtensionManager;
+	class WebUserManager;
+
 	struct ServerConfig {
 		ServerConfig(ServerSettingItem& aPort, ServerSettingItem& aBindAddress) : port(aPort), bindAddress(aBindAddress) {
 
@@ -64,10 +67,84 @@ namespace webserver {
 
 	class WebServerManager : public dcpp::Singleton<WebServerManager>, public Speaker<WebServerManagerListener> {
 	public:
+		TimerPtr addTimer(CallBack&& aCallBack, time_t aIntervalMillis, const Timer::CallbackWrapper& aCallbackWrapper = nullptr) noexcept;
+		void addAsyncTask(CallBack&& aCallBack) noexcept;
+
+		WebServerManager();
+		~WebServerManager();
+
+		typedef std::function<void(const string&)> ErrorF;
+
+		// Leave the path empty to use the default resource path
+		bool startup(const ErrorF& errorF, const string& aWebResourcePath, const CallBack& aShutdownF);
+
+		bool start(const ErrorF& errorF);
+		void stop();
+
+		void disconnectSockets(const std::string& aMessage) noexcept;
+
+		// Reset sessions for associated sockets
+		void logout(LocalSessionId aSessionId) noexcept;
+		WebSocketPtr getSocket(LocalSessionId aSessionToken) noexcept;
+
+		bool load(const ErrorF& aErrorF) noexcept;
+		bool save(const ErrorF& aErrorF) noexcept;
+
+		WebUserManager& getUserManager() noexcept {
+			return *userManager.get();
+		}
+
+		ExtensionManager& getExtensionManager() noexcept {
+			return *extManager.get();
+		}
+
+		bool hasValidConfig() const noexcept;
+
+		ServerConfig& getPlainServerConfig() noexcept {
+			return plainServerConfig;
+		}
+
+		ServerConfig& getTlsServerConfig() noexcept {
+			return tlsServerConfig;
+		}
+
+		string getConfigPath() const noexcept;
+		string getResourcePath() const noexcept {
+			return fileServer.getResourcePath();
+		}
+
+		bool isRunning() const noexcept;
+
+		bool isListeningPlain() const noexcept;
+		bool isListeningTls() const noexcept;
+
+		static boost::asio::ip::tcp getDefaultListenProtocol() noexcept;
+
+		const CallBack getShutdownF() const noexcept {
+			return shutdownF;
+		}
+
+		// For command debugging
+		void onData(const string& aData, TransportType aType, Direction aDirection, const string& aIP) noexcept;
+
+		// Websocketpp event handlers
+		template <typename EndpointType>
+		void handleSocketConnected(EndpointType* aServer, websocketpp::connection_hdl hdl, bool aIsSecure) {
+			auto con = aServer->get_con_from_hdl(hdl);
+			auto socket = make_shared<WebSocket>(aIsSecure, hdl, con->get_request(), aServer, this);
+
+			addSocket(hdl, socket);
+		}
+
+		void handleSocketDisconnected(websocketpp::connection_hdl hdl);
+
+		void handlePongReceived(websocketpp::connection_hdl hdl, const string& aPayload);
+		void handlePongTimeout(websocketpp::connection_hdl hdl, const string& aPayload);
+
 		// The shared on_message handler takes a template parameter so the function can
 		// resolve any endpoint dependent types like message_ptr or connection_ptr
 		template <typename EndpointType>
-		void on_message(EndpointType* aServer, websocketpp::connection_hdl hdl,
+		void handleSocketMessage(EndpointType*, websocketpp::connection_hdl hdl,
 			typename EndpointType::message_ptr msg, bool aIsSecure) {
 
 			auto socket = getSocket(hdl);
@@ -81,25 +158,7 @@ namespace webserver {
 		}
 
 		template <typename EndpointType>
-		void on_open_socket(EndpointType* aServer, websocketpp::connection_hdl hdl, bool aIsSecure) {
-			auto con = aServer->get_con_from_hdl(hdl);
-			auto socket = make_shared<WebSocket>(aIsSecure, hdl, con->get_request(), aServer, this);
-
-			{
-				WLock l(cs);
-				sockets.emplace(hdl, socket);
-			}
-		}
-
-		void on_close_socket(websocketpp::connection_hdl hdl);
-
-		void onPongReceived(websocketpp::connection_hdl hdl, const string& aPayload);
-		void onPongTimeout(websocketpp::connection_hdl hdl, const string& aPayload);
-
-		void onData(const string& aData, TransportType aType, Direction aDirection, const string& aIP) noexcept;
-
-		template <typename EndpointType>
-		void on_http(EndpointType* s, websocketpp::connection_hdl hdl, bool aIsSecure) {
+		void handleHttpRequest(EndpointType* s, websocketpp::connection_hdl hdl, bool aIsSecure) {
 			// Blocking HTTP Handler
 			auto con = s->get_con_from_hdl(hdl);
 			websocketpp::http::status_code::value status;
@@ -147,9 +206,9 @@ namespace webserver {
 				}
 
 				onData(
-					con->get_request().get_method() + " " + con->get_resource() + ": " + Util::toString(status) + " (" + Util::formatBytes(output.length()) + ")", 
-					TransportType::TYPE_HTTP_FILE, 
-					Direction::OUTGOING, 
+					con->get_request().get_method() + " " + con->get_resource() + ": " + Util::toString(status) + " (" + Util::formatBytes(output.length()) + ")",
+					TransportType::TYPE_HTTP_FILE,
+					Direction::OUTGOING,
 					ip
 				);
 
@@ -157,55 +216,10 @@ namespace webserver {
 				con->set_body(output);
 			}
 		}
-
-		TimerPtr addTimer(CallBack&& aCallBack, time_t aIntervalMillis, const Timer::CallbackWrapper& aCallbackWrapper = nullptr) noexcept;
-		void addAsyncTask(CallBack&& aCallBack) noexcept;
-
-		WebServerManager();
-		~WebServerManager();
-
-		typedef std::function<void(const string&)> ErrorF;
-
-		// Leave the path empty to use the default resource path
-		bool startup(const ErrorF& errorF, const string& aWebResourcePath, const CallBack& aShutdownF);
-
-		bool start(const ErrorF& errorF);
-		void stop();
-
-		void disconnectSockets(const std::string& aMessage) noexcept;
-
-		// Reset sessions for associated sockets
-		void logout(LocalSessionId aSessionId) noexcept;
-		WebSocketPtr getSocket(LocalSessionId aSessionToken) noexcept;
-
-		bool load(const ErrorF& aErrorF) noexcept;
-		bool save(const ErrorF& aErrorF) noexcept;
-
-		WebUserManager& getUserManager() noexcept {
-			return *userManager.get();
-		}
-
-		bool hasValidConfig() const noexcept;
-
-		ServerConfig& getPlainServerConfig() noexcept {
-			return plainServerConfig;
-		}
-
-		ServerConfig& getTlsServerConfig() noexcept {
-			return tlsServerConfig;
-		}
-
-		string getConfigPath() const noexcept;
-		string getResourcePath() const noexcept {
-			return fileServer.getResourcePath();
-		}
-
-		bool isRunning() const noexcept;
-
-		const CallBack getShutdownF() const noexcept {
-			return shutdownF;
-		}
 	private:
+		context_ptr handleInitTls(websocketpp::connection_hdl hdl);
+
+		void addSocket(websocketpp::connection_hdl hdl, const WebSocketPtr& aSocket) noexcept;
 		WebSocketPtr getSocket(websocketpp::connection_hdl hdl) const noexcept;
 		bool listen(const ErrorF& errorF);
 
@@ -224,8 +238,6 @@ namespace webserver {
 		boost::asio::io_service ios;
 		bool has_io_service = false;
 
-		context_ptr on_tls_init(websocketpp::connection_hdl hdl);
-
 		typedef vector<WebSocketPtr> WebSocketList;
 		std::map<websocketpp::connection_hdl, WebSocketPtr, std::owner_less<websocketpp::connection_hdl>> sockets;
 
@@ -233,6 +245,7 @@ namespace webserver {
 		FileServer fileServer;
 
 		unique_ptr<WebUserManager> userManager;
+		unique_ptr<ExtensionManager> extManager;
 
 		TimerPtr socketTimer;
 

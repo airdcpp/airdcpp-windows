@@ -34,7 +34,7 @@ namespace webserver {
 	};
 
 	FilelistApi::FilelistApi(Session* aSession) : 
-		ParentApiModule("sessions", CID_PARAM, Access::FILELISTS_VIEW, aSession, FilelistApi::subscriptionList,
+		ParentApiModule(CID_PARAM, Access::FILELISTS_VIEW, aSession, FilelistApi::subscriptionList,
 			FilelistInfo::subscriptionList, 
 			[](const string& aId) { return Deserializer::parseCID(aId); },
 			[](const FilelistInfo& aInfo) { return serializeList(aInfo.getList()); }
@@ -43,9 +43,9 @@ namespace webserver {
 
 		DirectoryListingManager::getInstance()->addListener(this);;
 
-		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_POST,	(EXACT_PARAM("sessions")),							FilelistApi::handlePostList);
-		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_POST,	(EXACT_PARAM("sessions"), EXACT_PARAM("self")),		FilelistApi::handleOwnList);
-		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_DELETE,	(EXACT_PARAM("sessions"), CID_PARAM),				FilelistApi::handleDeleteList);
+		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_POST,	(),													FilelistApi::handlePostList);
+		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_POST,	(EXACT_PARAM("self")),								FilelistApi::handleOwnList);
+		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_DELETE,	(CID_PARAM),										FilelistApi::handleDeleteList);
 
 		METHOD_HANDLER(Access::DOWNLOAD,		METHOD_GET,		(EXACT_PARAM("directory_downloads")),				FilelistApi::handleGetDirectoryDownloads);
 		METHOD_HANDLER(Access::DOWNLOAD,		METHOD_POST,	(EXACT_PARAM("directory_downloads")),				FilelistApi::handlePostDirectoryDownload);
@@ -196,7 +196,7 @@ namespace webserver {
 
 	json FilelistApi::serializeList(const DirectoryListingPtr& aList) noexcept {
 		int64_t totalSize = -1;
-		size_t totalFiles = -1;
+		size_t totalFiles = 0;
 		aList->getPartialListInfo(totalSize, totalFiles);
 
 		return {

@@ -23,12 +23,14 @@
 #include <web-server/Timer.h>
 #include <web-server/WebServerManager.h>
 #include <web-server/WebServerSettings.h>
+#include <web-server/WebUserManager.h>
 
 #include <api/SystemApi.h>
 #include <api/common/Serializer.h>
 
 #include <airdcpp/ActivityManager.h>
 #include <airdcpp/ClientManager.h>
+#include <airdcpp/Localization.h>
 #include <airdcpp/Thread.h>
 #include <airdcpp/TimerManager.h>
 
@@ -80,12 +82,12 @@ namespace webserver {
 	};
 	static SystemActionThread::Ptr systemActionThread;
 
-	api_return SystemApi::handleRestartWeb(ApiRequest& aRequest) {
+	api_return SystemApi::handleRestartWeb(ApiRequest&) {
 		systemActionThread = make_shared<SystemActionThread>(systemActionThread, false);
 		return websocketpp::http::status_code::no_content;
 	}
 
-	api_return SystemApi::handleShutdown(ApiRequest& aRequest) {
+	api_return SystemApi::handleShutdown(ApiRequest&) {
 		systemActionThread = make_shared<SystemActionThread>(systemActionThread, true);
 		return websocketpp::http::status_code::no_content;
 	}
@@ -178,7 +180,7 @@ namespace webserver {
 
 		aRequest.setResponseBody({
 			{ "server_threads", WEBCFG(SERVER_THREADS).num() },
-			{ "active_sessions", server->getUserManager().getSessionCount() },
+			{ "active_sessions", server->getUserManager().getUserSessionCount() },
 		});
 		return websocketpp::http::status_code::ok;
 	}
@@ -194,6 +196,7 @@ namespace webserver {
 			{ "cid", ClientManager::getInstance()->getMyCID().toBase32() },
 			{ "client_version", fullVersionString },
 			{ "client_started", started },
+			{ "language", Localization::getCurLanguageLocale() }
 		};
 	}
 

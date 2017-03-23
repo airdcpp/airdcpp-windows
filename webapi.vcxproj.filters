@@ -37,12 +37,15 @@
     <Filter Include="Header Files\api\platform\windows">
       <UniqueIdentifier>{ca48c5dc-6195-48d7-a46a-baac00dedad5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\api\base">
+      <UniqueIdentifier>{daa663f3-8877-4548-a07e-1cd045ea1561}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\api\base">
+      <UniqueIdentifier>{dcc50a98-6d4a-468a-b56a-bac48d4d800a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="api\QueueApi.h">
-      <Filter>Header Files\api</Filter>
-    </ClInclude>
-    <ClInclude Include="api\ApiModule.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
     <ClInclude Include="api\SessionApi.h">
@@ -150,9 +153,6 @@
     <ClInclude Include="api\PrivateChatApi.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="api\HierarchicalApiModule.h">
-      <Filter>Header Files\api</Filter>
-    </ClInclude>
     <ClInclude Include="api\FilesystemApi.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
@@ -249,12 +249,39 @@
     <ClInclude Include="web-server\version.h">
       <Filter>Header Files\web-server</Filter>
     </ClInclude>
+    <ClInclude Include="api\base\HookApiModule.h">
+      <Filter>Header Files\api\base</Filter>
+    </ClInclude>
+    <ClInclude Include="api\base\ApiModule.h">
+      <Filter>Header Files\api\base</Filter>
+    </ClInclude>
+    <ClInclude Include="api\base\HierarchicalApiModule.h">
+      <Filter>Header Files\api\base</Filter>
+    </ClInclude>
+    <ClInclude Include="web-server\ExtensionManager.h">
+      <Filter>Header Files\web-server</Filter>
+    </ClInclude>
+    <ClInclude Include="api\ExtensionApi.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="web-server\ExtensionManagerListener.h">
+      <Filter>Header Files\web-server</Filter>
+    </ClInclude>
+    <ClInclude Include="web-server\Extension.h">
+      <Filter>Header Files\web-server</Filter>
+    </ClInclude>
+    <ClInclude Include="api\ExtensionInfo.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="web-server\ExtensionListener.h">
+      <Filter>Header Files\web-server</Filter>
+    </ClInclude>
+    <ClInclude Include="api\common\SettingUtils.h">
+      <Filter>Header Files\api\common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="api\QueueApi.cpp">
-      <Filter>Source Files\api</Filter>
-    </ClCompile>
-    <ClCompile Include="api\ApiModule.cpp">
       <Filter>Source Files\api</Filter>
     </ClCompile>
     <ClCompile Include="api\SessionApi.cpp">
@@ -409,6 +436,27 @@
     </ClCompile>
     <ClCompile Include="api\SearchEntity.cpp">
       <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="api\base\HookApiModule.cpp">
+      <Filter>Source Files\api\base</Filter>
+    </ClCompile>
+    <ClCompile Include="api\base\ApiModule.cpp">
+      <Filter>Source Files\api\base</Filter>
+    </ClCompile>
+    <ClCompile Include="web-server\ExtensionManager.cpp">
+      <Filter>Source Files\web-server</Filter>
+    </ClCompile>
+    <ClCompile Include="api\ExtensionApi.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="web-server\Extension.cpp">
+      <Filter>Source Files\web-server</Filter>
+    </ClCompile>
+    <ClCompile Include="api\ExtensionInfo.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="api\common\SettingUtils.cpp">
+      <Filter>Source Files\api\common</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

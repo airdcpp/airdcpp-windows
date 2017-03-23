@@ -76,28 +76,13 @@ namespace webserver {
 	json FilesystemApi::serializeDirectoryContent(const string& aPath, bool aDirectoriesOnly) {
 		auto retJson = json::array();
 
-		FileFindIter end;
-		for (FileFindIter i(aPath, "*"); i != end; ++i) {
-			auto fileName = i->getFileName();
-			if (fileName == "." || fileName == "..") {
-				continue;
+		File::forEachFile(aPath, "*", [&](const FilesystemItem& aInfo) {
+			if (aDirectoriesOnly && !aInfo.isDirectory) {
+				return;
 			}
 
-			if (aDirectoriesOnly && !i->isDirectory()) {
-				continue;
-			}
-
-			json item;
-			item["name"] = fileName;
-			if (i->isDirectory()) {
-				item["type"] = Serializer::serializeFolderType(DirectoryContentInfo());
-			} else {
-				item["type"] = Serializer::serializeFileType(i->getFileName());
-				item["size"] = i->getSize();
-			}
-
-			retJson.push_back(item);
-		}
+			retJson.push_back(Serializer::serializeFilesystemItem(aInfo));
+		});
 
 		return retJson;
 	}

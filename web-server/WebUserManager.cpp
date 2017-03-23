@@ -20,6 +20,7 @@
 
 #include <web-server/WebUserManager.h>
 #include <web-server/WebServerManager.h>
+#include <web-server/WebServerSettings.h>
 
 #include <airdcpp/typedefs.h>
 
@@ -35,6 +36,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/range/algorithm/count_if.hpp>
 
 
 namespace webserver {
@@ -129,6 +131,15 @@ namespace webserver {
 		return session;
 	}
 
+	SessionPtr WebUserManager::createExtensionSession(const string& aExtensionName) {
+		auto uuid = boost::uuids::to_string(boost::uuids::random_generator()());
+
+		// For internal use only (can't be used for logging in)
+		auto user = std::make_shared<WebUser>(aExtensionName, Util::emptyString, true);
+
+		return createSession(user, uuid, Session::TYPE_EXTENSION, WEBCFG(DEFAULT_SESSION_IDLE_TIMEOUT).uint64(), "localhost");
+	}
+
 	SessionList WebUserManager::getSessions() const noexcept {
 		SessionList ret;
 
@@ -159,9 +170,11 @@ namespace webserver {
 		return s->second;
 	}
 
-	size_t WebUserManager::getSessionCount() const noexcept {
+	size_t WebUserManager::getUserSessionCount() const noexcept {
 		RLock l(cs);
-		return sessionsLocalId.size();
+		return boost::count_if(sessionsLocalId | map_values, [=](const SessionPtr& s) {
+			return s->getSessionType() != Session::TYPE_EXTENSION;
+		});
 	}
 
 	void WebUserManager::logout(const SessionPtr& aSession) {

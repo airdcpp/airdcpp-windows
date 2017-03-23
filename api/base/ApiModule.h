@@ -51,7 +51,8 @@ namespace webserver {
 #define EXACT_PARAM(pattern) (ApiModule::RequestHandler::Param(pattern, regex("^" + string(pattern) + "$")))
 
 #define BRACED_INIT_LIST(...) {__VA_ARGS__}
-#define METHOD_HANDLER(access, method, params, func) (requestHandlers.push_back(ApiModule::RequestHandler(access, method, BRACED_INIT_LIST params, std::bind(&func, this, placeholders::_1))))
+#define MODULE_METHOD_HANDLER(module, access, method, params, func) (module->getRequestHandlers().push_back(ApiModule::RequestHandler(access, method, BRACED_INIT_LIST params, std::bind(&func, this, placeholders::_1))))
+#define METHOD_HANDLER(access, method, params, func) MODULE_METHOD_HANDLER(this, access, method, params, func)
 
 		ApiModule(Session* aSession);
 		virtual ~ApiModule();
@@ -112,15 +113,12 @@ namespace webserver {
 	};
 
 	
-	class SubscribableApiModule : public ApiModule, private SessionListener {
+	class SubscribableApiModule : public ApiModule, protected SessionListener {
 	public:
 		SubscribableApiModule(Session* aSession, Access aSubscriptionAccess, const StringList* aSubscriptions = nullptr);
 		virtual ~SubscribableApiModule();
 
 		typedef std::map<const string, bool> SubscriptionMap;
-
-		virtual void on(SessionListener::SocketConnected, const WebSocketPtr&) noexcept override;
-		virtual void on(SessionListener::SocketDisconnected) noexcept override;
 
 		virtual bool send(const json& aJson);
 		virtual bool send(const string& aSubscription, const json& aJson);
@@ -147,20 +145,27 @@ namespace webserver {
 		}
 
 		virtual void createSubscription(const string& aSubscription) noexcept {
+			dcassert(subscriptions.find(aSubscription) == subscriptions.end());
 			subscriptions[aSubscription];
 		}
 
 		Access getSubscriptionAccess() const noexcept {
 			return subscriptionAccess;
 		}
-	protected:
-		const Access subscriptionAccess;
 
-		WebSocketPtr socket = nullptr;
+		const WebSocketPtr& getSocket() const noexcept {
+			return socket;
+		}
+	protected:
+		virtual void on(SessionListener::SocketConnected, const WebSocketPtr&) noexcept override;
+		virtual void on(SessionListener::SocketDisconnected) noexcept override;
+
+		const Access subscriptionAccess;
 
 		virtual api_return handleSubscribe(ApiRequest& aRequest);
 		virtual api_return handleUnsubscribe(ApiRequest& aRequest);
 	private:
+		WebSocketPtr socket = nullptr;
 		SubscriptionMap subscriptions;
 	};
 
