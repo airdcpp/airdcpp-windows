@@ -836,7 +836,7 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 	} else if (stricmp(cmd.c_str(), _T("slots")) == 0) {
 		int j = Util::toInt(Text::fromT(param));
 		if (j > 0) {
-			SettingsManager::getInstance()->set(SettingsManager::SLOTS, j);
+			SettingsManager::getInstance()->set(SettingsManager::UPLOAD_SLOTS, j);
 			status = TSTRING(SLOTS_SET);
 			ClientManager::getInstance()->infoUpdated();
 		} else {
