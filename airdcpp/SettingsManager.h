@@ -73,7 +73,7 @@ public:
 		STR_LAST };
 
 	enum IntSetting { INT_FIRST = STR_LAST + 1,
-		INCOMING_CONNECTIONS = INT_FIRST, INCOMING_CONNECTIONS6, TCP_PORT, SLOTS,
+		INCOMING_CONNECTIONS = INT_FIRST, INCOMING_CONNECTIONS6, TCP_PORT, UPLOAD_SLOTS,
 		BACKGROUND_COLOR, TEXT_COLOR,
 		BUFFER_SIZE, DOWNLOAD_SLOTS, MAX_DOWNLOAD_SPEED,
 		MIN_UPLOAD_SPEED, MAIN_WINDOW_STATE,
@@ -137,7 +137,6 @@ public:
 		MAGNET_REGISTER, MINIMIZE_TRAY, NO_AWAYMSG_TO_BOTS, NO_IP_OVERRIDE,
 		POPUP_BOT_PMS, POPUP_HUB_PMS, POPUNDER_FILELIST, POPUNDER_PM,
 		PRIO_LOWEST, PROMPT_PASSWORD,
-		SEND_UNKNOWN_COMMANDS,
 		SHARE_HIDDEN, SHOW_JOINS, SHOW_MENU_BAR, SHOW_STATUSBAR, SHOW_TOOLBAR,
 		SHOW_TRANSFERVIEW, SOCKS_RESOLVE, SORT_FAVUSERS_FIRST,
 		STATUS_IN_CHAT, TIME_DEPENDENT_THROTTLE, TIME_STAMPS,
@@ -325,10 +324,13 @@ public:
 	string getProfileName(int profile) const noexcept;
 
 	// Reports errors to system log if no custom error function is supplied
-	typedef std::function<void(const string&)> CustomErrorF;
-	static bool saveSettingFile(SimpleXML& aXML, Util::Paths aPath, const string& aFileName, CustomErrorF aCustomErrorF = nullptr) noexcept;
-	// Throws on XML parsing errors
-	static void loadSettingFile(SimpleXML& aXML, Util::Paths aPath, const string& aFileName);
+	typedef std::function<void(const string&)> CustomReportF;
+	static bool saveSettingFile(SimpleXML& aXML, Util::Paths aPath, const string& aFileName, const CustomReportF& aCustomErrorF = nullptr) noexcept;
+
+	// Attempts to load the setting file and creates a backup after completion
+	// Settings are recovered automatically from the backup file in case the main setting file is malformed/corrupted
+	typedef std::function<void(SimpleXML&)> ParseCallback;
+	static bool loadSettingFile(Util::Paths aPath, const string& aFileName, ParseCallback&& aParseCallback, const CustomReportF& aCustomErrorF = nullptr) noexcept;
 private:
 	boost::regex connectionRegex;
 

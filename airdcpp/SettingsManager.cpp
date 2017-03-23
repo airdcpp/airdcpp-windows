@@ -251,7 +251,6 @@ const string SettingsManager::settingTags[] =
 "MagnetRegister", "MinimizeToTray", "NoAwayMsgToBots", "NoIpOverride",
 "PopupBotPms", "PopupHubPms", "PopunderFilelist", "PopunderPm",
 "LowestPrio", "PromptPassword",
-"SendUnknownCommands",
 "ShareHidden", "ShowJoins", "ShowMenuBar", "ShowStatusbar", "ShowToolbar",
 "ShowTransferview", "SocksResolve", "SortFavUsersFirst",
 "StatusInChat", "TimeDependentThrottle", "TimeStamps",
@@ -306,7 +305,7 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(SLOTS_ALTERNATE_LIMITING, 1);
 	
 	setDefault(DOWNLOAD_DIRECTORY, Util::getPath(Util::PATH_DOWNLOADS));
-	setDefault(SLOTS, 2);
+	setDefault(UPLOAD_SLOTS, 2);
 	setDefault(MAX_COMMAND_LENGTH, 512*1024); // 512 KiB
 
 	setDefault(BIND_ADDRESS, "0.0.0.0");
@@ -382,7 +381,6 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(HUB_USER_COMMANDS, true);
 	setDefault(LOG_FILELIST_TRANSFERS, false);
 	setDefault(LOG_SYSTEM, true);
-	setDefault(SEND_UNKNOWN_COMMANDS, false);
 	setDefault(MAX_HASH_SPEED, 0);
 	setDefault(GET_USER_COUNTRY, true);
 	setDefault(FAV_SHOW_JOINS, false);
@@ -957,44 +955,38 @@ string SettingsManager::getProfileName(int profile) const noexcept {
 }
 
 void SettingsManager::load(function<bool (const string& /*Message*/, bool /*isQuestion*/, bool /*isError*/)> messageF) noexcept {
-	try {
-		SimpleXML xml;
-		loadSettingFile(xml, CONFIG_DIR, CONFIG_NAME);
-		if(xml.findChild("DCPlusPlus"))
-		{
+	loadSettingFile(CONFIG_DIR, CONFIG_NAME, [this](SimpleXML& xml) {
+		if (xml.findChild("DCPlusPlus")) {
 			xml.stepIn();
-		
-			if(xml.findChild("Settings"))
-			{
+
+			if (xml.findChild("Settings")) {
 				xml.stepIn();
 
 				int i;
-			
-				for(i=STR_FIRST; i<STR_LAST; i++)
-				{
+
+				for (i = STR_FIRST; i < STR_LAST; i++) {
 					const string& attr = settingTags[i];
 					dcassert(attr.find("SENTRY") == string::npos);
-				
-					if(xml.findChild(attr))
+
+					if (xml.findChild(attr))
 						set(StrSetting(i), xml.getChildData(), true);
 					xml.resetCurrentChild();
 				}
-				for(i=INT_FIRST; i<INT_LAST; i++)
-				{
+
+				for (i = INT_FIRST; i < INT_LAST; i++) {
 					const string& attr = settingTags[i];
 					dcassert(attr.find("SENTRY") == string::npos);
-				
-					if(xml.findChild(attr))
+
+					if (xml.findChild(attr))
 						set(IntSetting(i), Util::toInt(xml.getChildData()), true);
 					xml.resetCurrentChild();
 				}
 
-				for(i=BOOL_FIRST; i<BOOL_LAST; i++)
-				{
+				for (i = BOOL_FIRST; i < BOOL_LAST; i++) {
 					const string& attr = settingTags[i];
 					dcassert(attr.find("SENTRY") == string::npos);
 
-					if(xml.findChild(attr)) {
+					if (xml.findChild(attr)) {
 						auto val = Util::toInt(xml.getChildData());
 						dcassert(val == 0 || val == 1);
 						set(BoolSetting(i), val ? true : false, true);
@@ -1002,16 +994,15 @@ void SettingsManager::load(function<bool (const string& /*Message*/, bool /*isQu
 					xml.resetCurrentChild();
 				}
 
-				for(i=INT64_FIRST; i<INT64_LAST; i++)
-				{
+				for (i = INT64_FIRST; i < INT64_LAST; i++) {
 					const string& attr = settingTags[i];
 					dcassert(attr.find("SENTRY") == string::npos);
-				
-					if(xml.findChild(attr))
+
+					if (xml.findChild(attr))
 						set(Int64Setting(i), Util::toInt64(xml.getChildData()), true);
 					xml.resetCurrentChild();
 				}
-			
+
 				xml.stepOut();
 			}
 
@@ -1019,27 +1010,27 @@ void SettingsManager::load(function<bool (const string& /*Message*/, bool /*isQu
 
 
 			//load history lists
-			for(int i = 0; i < HISTORY_LAST; ++i) {
+			for (int i = 0; i < HISTORY_LAST; ++i) {
 				if (xml.findChild(historyTags[i])) {
 					xml.stepIn();
-					while(xml.findChild("HistoryItem")) {
+					while (xml.findChild("HistoryItem")) {
 						addToHistory(xml.getChildData(), static_cast<HistoryType>(i));
 					}
 					xml.stepOut();
 				}
 				xml.resetCurrentChild();
 			}
-		
-			if(xml.findChild("FileEvents")) {
+
+			if (xml.findChild("FileEvents")) {
 				xml.stepIn();
-				if(xml.findChild("OnFileComplete")) {
+				if (xml.findChild("OnFileComplete")) {
 					StringPair sp;
 					sp.first = xml.getChildAttrib("Command");
 					sp.second = xml.getChildAttrib("CommandLine");
 					fileEvents[ON_FILE_COMPLETE] = sp;
 				}
 				xml.resetCurrentChild();
-				if(xml.findChild("OnDirCreated")) {
+				if (xml.findChild("OnDirCreated")) {
 					StringPair sp;
 					sp.first = xml.getChildAttrib("Command");
 					sp.second = xml.getChildAttrib("CommandLine");
@@ -1053,7 +1044,7 @@ void SettingsManager::load(function<bool (const string& /*Message*/, bool /*isQu
 			//auto prevBuild = SETTING(CONFIG_BUILD_NUMBER);
 
 			//reset the old private hub profile to normal
-			if(prevVersion < 2.50 && SETTING(SETTINGS_PROFILE) == PROFILE_LAN)
+			if (prevVersion < 2.50 && SETTING(SETTINGS_PROFILE) == PROFILE_LAN)
 				unsetKey(SETTINGS_PROFILE);
 
 			if (prevVersion <= 2.50 && SETTING(MONITORING_MODE) != MONITORING_DISABLED) {
@@ -1067,15 +1058,12 @@ void SettingsManager::load(function<bool (const string& /*Message*/, bool /*isQu
 				unsetKey(SEARCHFRAME_WIDTHS);
 				unsetKey(SEARCHFRAME_VISIBLE);
 			}
-		
+
 			fire(SettingsManagerListener::Load(), xml);
 
 			xml.stepOut();
 		}
-
-	} catch(const Exception& e) { 
-		LogManager::getInstance()->message(STRING_F(LOAD_FAILED_X, CONFIG_NAME % e.getError()), LogMessage::SEV_ERROR);
-	}
+	});
 
 	setDefault(UDP_PORT, SETTING(TCP_PORT));
 
@@ -1179,36 +1167,23 @@ void SettingsManager::set(StrSetting key, string const& value, bool aForceSet) n
 }
 
 void SettingsManager::set(IntSetting key, int value, bool aForceSet) noexcept {
-	if ((key == SLOTS) && (value <= 0)) {
+	if (key == UPLOAD_SLOTS && value <= 0) {
 		value = 1;
-	}
-	if ((key == EXTRA_SLOTS) && (value < 1)) {
+	} else if (key == EXTRA_SLOTS && value < 1) {
 		value = 1;
-	}
-
-	if ((key == AUTOSEARCH_EVERY) && (value < 1)) {
+	} else if (key == AUTOSEARCH_EVERY && value < 1) {
 		value = 1;
-	}
-
-	if ((key == SET_MINISLOT_SIZE) && (value < 64)) {
+	} else if (key == SET_MINISLOT_SIZE && value < 64) {
 		value = 64;
-	}
-
-	if ((key == NUMBER_OF_SEGMENTS) && (value > 10)) {
+	} else if (key == NUMBER_OF_SEGMENTS && value > 10) {
 		value = 10;
-	}
-
-	if ((key == BUNDLE_SEARCH_TIME) && (value < 5)) {
+	} else if (key == BUNDLE_SEARCH_TIME && value < 5) {
 		value = 5;
-	}
-
-	if ((key == MINIMUM_SEARCH_INTERVAL) && (value < 5)) {
+	} else if (key == MINIMUM_SEARCH_INTERVAL && value < 5) {
 		value = 5;
-	}
-	if ((key == MAX_RESIZE_LINES) && (value < 1)) {
+	} else if (key == MAX_RESIZE_LINES && value < 1) {
 		value = 1;
 	}
-
 
 	intSettings[key - INT_FIRST] = value;
 	updateValueSet(key, value, aForceSet);
@@ -1350,24 +1325,78 @@ HubSettings SettingsManager::getHubSettings() const noexcept {
 	return ret;
 }
 
-void SettingsManager::loadSettingFile(SimpleXML& aXML, Util::Paths aPath, const string& aFileName) {
-	auto fname = Util::getPath(aPath) + aFileName;
-
-	Util::migrate(fname);
-
-	if (Util::fileExists(fname)) {
-		// Some legacy config files (such as favorites and recent hubs) may contain invalid UTF-8 data
-		// so don't throw in case of validation errors
-		aXML.fromXML(File(fname, File::READ, File::OPEN).read(), SimpleXMLReader::FLAG_REPLACE_INVALID_UTF8);
+void settingXmlMessage(const string& aMessage, LogMessage::Severity aSeverity, const SettingsManager::CustomReportF& aCustomErrorF) noexcept {
+	if (!aCustomErrorF) {
+		LogManager::getInstance()->message(aMessage, aSeverity);
+	} else {
+		aCustomErrorF(aMessage);
 	}
 }
 
-bool SettingsManager::saveSettingFile(SimpleXML& aXML, Util::Paths aPath, const string& aFileName, CustomErrorF aCustomErrorF) noexcept {
+bool SettingsManager::loadSettingFile(Util::Paths aPath, const string& aFileName, ParseCallback&& aParseCallback, const CustomReportF& aCustomReportF) noexcept {
+	const auto fullPath = Util::getPath(aPath) + aFileName;
+
+	Util::migrate(fullPath);
+
+	if (!Util::fileExists(fullPath)) {
+		return false;
+	}
+
+	const auto parseFile = [&](const string& aPath) {
+		SimpleXML xml;
+
+		try {
+			// Some legacy config files (such as favorites and recent hubs) may contain invalid UTF-8 data
+			// so don't throw in case of validation errors
+			xml.fromXML(File(aPath, File::READ, File::OPEN).read(), SimpleXMLReader::FLAG_REPLACE_INVALID_UTF8);
+
+			aParseCallback(xml);
+		} catch (const Exception& e) {
+			settingXmlMessage(STRING_F(LOAD_FAILED_X, aPath % e.getError()), LogMessage::SEV_ERROR, aCustomReportF);
+			return false;
+		}
+
+		return true;
+	};
+
+	const auto backupPath = fullPath + ".bak";
+	if (!parseFile(fullPath)) {
+		// Try to load the file that was previously loaded succesfully
+		if (!Util::fileExists(backupPath) || !parseFile(backupPath)) {
+			return false;
+		}
+
+		auto corruptedCopyPath = fullPath + Util::formatTime(".CORRUPTED_%Y-%m-%d_%H-%M-%S", time(NULL));
+
+		// Replace the main setting file with the backup
+		try {
+			File::renameFile(fullPath, corruptedCopyPath);
+			File::copyFile(backupPath, fullPath);
+		} catch (const Exception& e) {
+			settingXmlMessage(STRING_F(UNABLE_TO_RENAME, fullPath % e.getError()), LogMessage::SEV_ERROR, aCustomReportF);
+			return false;
+		}
+
+		settingXmlMessage(STRING_F(SETTING_FILE_RECOVERED, backupPath % Util::formatTime("%Y-%m-%d %H:%M", File::getLastModified(backupPath)) % corruptedCopyPath), LogMessage::SEV_INFO, aCustomReportF);
+	} else {
+		// Succeeded, save the backup
+		File::deleteFile(backupPath);
+		try {
+			File::copyFile(fullPath, backupPath);
+		} catch (const Exception& e) {
+			settingXmlMessage(STRING_F(SAVE_FAILED_X, backupPath % e.getError()), LogMessage::SEV_ERROR, aCustomReportF);
+		}
+	}
+
+	return true;
+}
+
+bool SettingsManager::saveSettingFile(SimpleXML& aXML, Util::Paths aPath, const string& aFileName, const CustomReportF& aCustomErrorF) noexcept {
 	string fname = Util::getPath(aPath) + aFileName;
 
 	try {
 		{
-			File f(fname + ".tmp", File::WRITE, File::CREATE | File::TRUNCATE);
+			File f(fname + ".tmp", File::WRITE, File::CREATE | File::TRUNCATE, File::BUFFER_WRITE_THROUGH);
 			f.write(SimpleXML::utf8Header);
 			f.write(aXML.toXML());
 		}
@@ -1378,13 +1407,7 @@ bool SettingsManager::saveSettingFile(SimpleXML& aXML, Util::Paths aPath, const 
 			File::renameFile(fname + ".tmp", fname);
 		}
 	} catch (const FileException& e) {
-		auto msg = STRING_F(SAVE_FAILED_X, fname % e.getError());
-		if (!aCustomErrorF) {
-			LogManager::getInstance()->message(msg, LogMessage::SEV_ERROR);
-		} else {
-			aCustomErrorF(msg);
-		}
-
+		settingXmlMessage(STRING_F(SAVE_FAILED_X, fname % e.getError()), LogMessage::SEV_ERROR, aCustomErrorF);
 		return false;
 	}
 

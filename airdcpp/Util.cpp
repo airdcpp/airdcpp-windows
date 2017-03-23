@@ -183,6 +183,33 @@ string Util::getAppPath() noexcept {
 	return Text::fromT(tstring(buf, x));
 }
 
+int Util::runSystemCommand(const string& aCommand) noexcept {
+	// std::system would flash a console window
+
+	STARTUPINFOW si;
+	PROCESS_INFORMATION pi;
+
+	ZeroMemory(&si, sizeof(si));
+	si.cb = sizeof(si);
+	ZeroMemory(&pi, sizeof(pi));
+
+	if (!CreateProcessW(NULL, (LPWSTR)Text::toT(aCommand).c_str(), NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi)) {
+		return -1;
+	}
+
+	WaitForSingleObject(pi.hProcess, INFINITE);
+
+	DWORD exitCode = 0;
+	if (!GetExitCodeProcess(pi.hProcess, &exitCode)) {
+		return -1;
+	}
+
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
+
+	return exitCode;
+}
+
 #else
 
 void Util::setApp(const string& app) noexcept {
@@ -200,6 +227,10 @@ string Util::getSystemUsername() noexcept {
 	}
 
 	return buf;
+}
+
+int Util::runSystemCommand(const string& aCommand) noexcept {
+	return std::system(aCommand.c_str());
 }
 	
 #endif
@@ -755,6 +786,19 @@ string Util::formatBytes(int64_t aBytes) noexcept {
 	return buf;
 }
 
+string Util::formatAbbreviated(int aNum) noexcept {
+	char buf[64];
+	if (aNum < 2000) {
+		snprintf(buf, sizeof(buf), "%d", aNum);
+	} else if (aNum < 1000000) {
+		snprintf(buf, sizeof(buf), "%.01f%s", (double)aNum / 1000.0, "k");
+	} else {
+		snprintf(buf, sizeof(buf), "%.01f%s", (double)aNum / (1000000.0), "m");
+	}
+
+	return buf;
+}
+
 #ifdef _WIN32
 wstring Util::formatBytesW(int64_t aBytes) noexcept {
 	wchar_t buf[64];
@@ -775,20 +819,6 @@ wstring Util::formatBytesW(int64_t aBytes) noexcept {
 	}
 	return buf;
 }
-#endif
-
-string Util::formatAbbreviated(int aNum) noexcept {
-	char buf[64];
-	if (aNum < 2000) {
-		snprintf(buf, sizeof(buf), "%d", aNum);
-	} else if (aNum < 1000000) {
-		snprintf(buf, sizeof(buf), "%.01f%s", (double)aNum / 1000.0, "k");
-	} else {
-		snprintf(buf, sizeof(buf), "%.01f%s", (double)aNum / (1000000.0), "m");
-	}
-
-	return buf;
-}
 
 wstring Util::formatAbbreviatedW(int aNum) noexcept {
 	wchar_t buf[64];
@@ -802,6 +832,7 @@ wstring Util::formatAbbreviatedW(int aNum) noexcept {
 
 	return buf;
 }
+#endif
 
 int64_t Util::convertSize(int64_t aValue, Util::SizeUnits valueType, Util::SizeUnits to /*B*/) noexcept {
 	if (valueType > to) {

@@ -54,7 +54,8 @@ public:
 	//AutoSearchPtr getNameDupe(const string& aName, bool report, const AutoSearchPtr& thisSearch = nullptr) const noexcept;
 	bool addFailedBundle(const BundlePtr& aBundle) noexcept;
 	void addAutoSearch(AutoSearchPtr aAutoSearch, bool search, bool loading = false) noexcept;
-	AutoSearchPtr addAutoSearch(const string& ss, const string& targ, bool isDirectory, AutoSearch::ItemType asType, bool aRemove = true, int aInterval = AS_DEFAULT_SEARCH_INTERVAL, bool aSearch = true) noexcept;
+	AutoSearchPtr addAutoSearch(const string& ss, const string& targ, bool isDirectory, AutoSearch::ItemType asType, bool aRemove = true, bool aSearch = true, int aExpiredays = 0) noexcept;
+	bool validateAutoSearchStr(const string& aStr) const noexcept;
 	AutoSearchList getSearchesByBundle(const BundlePtr& aBundle) const noexcept;
 	AutoSearchList getSearchesByString(const string& aSearchString, const AutoSearchPtr& ignoredSearch = nullptr) const noexcept;
 
@@ -90,10 +91,13 @@ public:
 	bool hasGroup(const string& aGroup) { RLock l(cs);  return (find(groups.begin(), groups.end(), aGroup) != groups.end()); }
 	int getGroupIndex(const AutoSearchPtr& as);
 
+	void maybePopSearchItem(uint64_t aTick, bool aIgnoreSearchTimes);
+
 	SharedMutex& getCS() { return cs; }
 private:
 	enum {
-		RECALCULATE_SEARCH
+		RECALCULATE_SEARCH,
+		SEARCH_ITEM
 	};
 
 	mutable SharedMutex cs;
@@ -125,7 +129,7 @@ private:
 
 	void updateStatus(AutoSearchPtr& as, bool setTabDirty) noexcept;
 	void clearError(AutoSearchPtr& as) noexcept;
-	void resetSearchTimes(uint64_t aTick, bool aUpdate = false) noexcept;
+	void resetSearchTimes(uint64_t aTick, bool aRecalculate = true) noexcept;
 
 	/* Listeners */
 	void on(SearchManagerListener::SR, const SearchResultPtr&) noexcept override;
@@ -144,6 +148,8 @@ private:
 	//bool onBundleStatus(BundlePtr& aBundle, const ProfileTokenSet& aSearches);
 	void onRemoveBundle(const BundlePtr& aBundle, bool finished) noexcept;
 	void handleExpiredItems(AutoSearchList& asList) noexcept;
+
+	time_t toTimeT(uint64_t& aValue, uint64_t currentTick = GET_TICK());
 };
 }
 #endif

@@ -32,7 +32,6 @@
 #include "HashBloom.h"
 #include "Localization.h"
 #include "LogManager.h"
-#include "MessageManager.h"
 #include "QueueManager.h"
 #include "ResourceManager.h"
 #include "ScopedFunctor.h"
@@ -276,12 +275,12 @@ void AdcHub::handle(AdcCommand::INF, AdcCommand& c) noexcept {
 			if (isSocketSecure()) {
 				auto encryption = getEncryptionInfo();
 				if (encryption.find("TLSv1.2") == string::npos) {
-					statusMessage("This hub uses an outdated cryptographic protocol that has known security issues", LogMessage::SEV_WARNING);
+					statusMessage("This hub uses an outdated cryptographic protocol that has known security issues. For more information, please see https://www.airdcpp.net/hubsoft-warnings", LogMessage::SEV_WARNING);
 				}
 			}
 
-			if (Text::toLower(getHubIdentity().getApplication()).find("luadch v2") != string::npos) {
-				statusMessage("The hubsoft used by this hub doesn't forward Advanced Direct Connect protocol messages according to the protocol specifications. This may silently break various client features.", LogMessage::SEV_WARNING);
+			if (isHubsoftVersionOrOlder("luadch", 2.18)) {
+				statusMessage("The hubsoft used by this hub doesn't forward Advanced Direct Connect protocol messages according to the protocol specifications, which may silently break various client features. Certain functionality may have been disabled automatically in this hub. For more information, please see https://www.airdcpp.net/hubsoft-warnings", LogMessage::SEV_WARNING);
 			}
 		}
 
@@ -383,7 +382,7 @@ void AdcHub::handle(AdcCommand::MSG, AdcCommand& c) noexcept {
 		if(!message->getReplyTo())
 			return;
 
-		MessageManager::getInstance()->onPrivateMessage(message);
+		onPrivateMessage(message);
 		return;
 	}
 
@@ -943,7 +942,7 @@ void AdcHub::sendHBRI(const string& aIP, const string& aPort, const string& aTok
 				}
 
 				if (severity == AdcCommand::SUCCESS) {
-					statusMessage(STRING(VALIDATION_SUCCEED), LogMessage::SEV_INFO);
+					statusMessage(STRING(VALIDATION_SUCCEEDED), LogMessage::SEV_INFO);
 					return;
 				} else {
 					throw Exception(response.getParam(1));
@@ -1073,15 +1072,10 @@ void AdcHub::connect(const OnlineUser& aUser, const string& aToken, bool aSecure
 	}
 }
 
-bool AdcHub::hubMessage(const string& aMessage, string& error_, bool thirdPerson) noexcept {
-	if(!stateNormal()) {
-		error_ = STRING(CONNECTING_IN_PROGRESS);
-		return false;
-	}
-
+bool AdcHub::hubMessage(const string& aMessage, string& error_, bool aThirdPerson) noexcept {
 	AdcCommand c(AdcCommand::CMD_MSG, AdcCommand::TYPE_BROADCAST);
 	c.addParam(aMessage);
-	if(thirdPerson)
+	if (aThirdPerson)
 		c.addParam("ME", "1");
 
 	if (!send(c)) {
@@ -1161,9 +1155,33 @@ StringList AdcHub::parseSearchExts(int flag) noexcept {
 	return ret;
 }
 
-void AdcHub::directSearch(const OnlineUser& user, const SearchPtr& aSearch) noexcept {
-	if(!stateNormal())
-		return;
+bool AdcHub::isHubsoftVersionOrOlder(const string& aHubsoft, double aVersion) {
+	const auto& app = getHubIdentity().getApplication();
+	auto i = app.find(" ");
+	if (i == string::npos) return false;
+
+	if (Text::toLower(app.substr(0, i)).find(aHubsoft) == string::npos) return false;
+
+	auto version = app.substr(i + 1);
+	if (version.empty()) return false;
+
+	if (version.front() == 'v') {
+		version.erase(0, 1);
+	}
+
+	return Util::toDouble(version) <= aVersion;
+}
+
+bool AdcHub::directSearch(const OnlineUser& user, const SearchPtr& aSearch, string& error_) noexcept {
+	if (!stateNormal()) {
+		error_ = STRING(CONNECTING_IN_PROGRESS);
+		return false;
+	}
+
+	if (isHubsoftVersionOrOlder("luadch", 2.18)) {
+		error_ = "This feature is blocked by the hubsoft";
+		return false;
+	}
 
 	AdcCommand c(AdcCommand::CMD_SCH, (user.getIdentity().getSID()), AdcCommand::TYPE_DIRECT);
 	constructSearch(c, aSearch, true);
@@ -1189,7 +1207,12 @@ void AdcHub::directSearch(const OnlineUser& user, const SearchPtr& aSearch) noex
 		c.addParam("MR", Util::toString(aSearch->maxResults));
 	}
 
-	send(c);
+	if (!send(c)) {
+		error_ = STRING(PERMISSION_DENIED_HUB);
+		return false;
+	}
+
+	return true;
 }
 
 void AdcHub::constructSearch(AdcCommand& c, const SearchPtr& aSearch, bool isDirect) noexcept {
@@ -1461,7 +1484,7 @@ void AdcHub::infoImpl() noexcept {
 
 	addParam(lastInfoMap, c, "VE", shortVersionString);
 	addParam(lastInfoMap, c, "AW", ActivityManager::getInstance()->isAway() ? "1" : Util::emptyString);
-	addParam(lastInfoMap, c, "LC", Localization::getCurrentLocale());
+	addParam(lastInfoMap, c, "LC", Localization::getLocale());
 
 	int64_t limit = ThrottleManager::getInstance()->getDownLimit() * 1000;
 	int64_t connSpeed = static_cast<int64_t>((Util::toDouble(SETTING(DOWNLOAD_SPEED)) * 1000.0 * 1000.0) / 8.0);

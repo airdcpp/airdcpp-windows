@@ -25,7 +25,7 @@
 
 #include "ClientManagerListener.h"
 #include "DirectoryListingManagerListener.h"
-#include "MessageManagerListener.h"
+#include "PrivateChatManagerListener.h"
 #include "RecentManagerListener.h"
 #include "SettingsManager.h"
 #include "TimerManagerListener.h"
@@ -33,7 +33,7 @@
 
 namespace dcpp {
 	class RecentManager : public Speaker<RecentManagerListener>, public Singleton<RecentManager>, private TimerManagerListener,
-		private ClientManagerListener, private MessageManagerListener, private DirectoryListingManagerListener
+		private ClientManagerListener, private PrivateChatManagerListener, private DirectoryListingManagerListener
 	{
 	public:
 		RecentEntryList getRecents(RecentEntry::Type aType) const noexcept;
@@ -44,7 +44,7 @@ namespace dcpp {
 		RecentEntryList searchRecents(RecentEntry::Type aType, const string& aPattern, size_t aMaxResults) const noexcept;
 
 		void load() noexcept;
-		void save() const noexcept;
+		void save() noexcept;
 	private:
 		void checkCount(RecentEntry::Type aType) noexcept;
 		void onHubOpened(const ClientPtr& aClient) noexcept;
@@ -72,7 +72,7 @@ namespace dcpp {
 		void on(ClientManagerListener::ClientRedirected, const ClientPtr& aOldClient, const ClientPtr& aNewClient) noexcept;
 		void on(ClientManagerListener::ClientUpdated, const ClientPtr& c) noexcept;
 
-		void on(MessageManagerListener::ChatCreated, const PrivateChatPtr&, bool /* received message */) noexcept;
+		void on(PrivateChatManagerListener::ChatCreated, const PrivateChatPtr&, bool /* received message */) noexcept;
 
 		void on(DirectoryListingManagerListener::ListingCreated, const DirectoryListingPtr&) noexcept;
 

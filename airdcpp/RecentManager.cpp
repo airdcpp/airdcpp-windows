@@ -23,7 +23,7 @@
 #include "ClientManager.h"
 #include "DirectoryListingManager.h"
 #include "LogManager.h"
-#include "MessageManager.h"
+#include "PrivateChatManager.h"
 #include "RelevanceSearch.h"
 #include "ResourceManager.h"
 #include "ShareManager.h"
@@ -58,7 +58,7 @@ SettingsManager::IntSetting RecentManager::maxLimits[RecentEntry::TYPE_LAST] = {
 RecentManager::RecentManager() {
 	ClientManager::getInstance()->addListener(this);
 	DirectoryListingManager::getInstance()->addListener(this);
-	MessageManager::getInstance()->addListener(this);
+	PrivateChatManager::getInstance()->addListener(this);
 
 	TimerManager::getInstance()->addListener(this);
 }
@@ -66,7 +66,7 @@ RecentManager::RecentManager() {
 RecentManager::~RecentManager() {
 	ClientManager::getInstance()->removeListener(this);
 	DirectoryListingManager::getInstance()->removeListener(this);
-	MessageManager::getInstance()->removeListener(this);
+	PrivateChatManager::getInstance()->removeListener(this);
 
 	TimerManager::getInstance()->removeListener(this);
 }
@@ -77,17 +77,12 @@ RecentEntryList RecentManager::getRecents(RecentEntry::Type aType) const noexcep
 }
 
 void RecentManager::on(TimerManagerListener::Minute, uint64_t) noexcept {
-	if (!xmlDirty) {
-		return;
-	}
-
-	xmlDirty = false;
 	save();
 }
 
-void RecentManager::on(MessageManagerListener::ChatCreated, const PrivateChatPtr& aChat, bool) noexcept {
+void RecentManager::on(PrivateChatManagerListener::ChatCreated, const PrivateChatPtr& aChat, bool) noexcept {
 	auto old = getRecent(RecentEntry::TYPE_PRIVATE_CHAT, RecentEntry::CidCompare(aChat->getUser()->getCID()));
-	auto nick = ClientManager::getInstance()->getNick(aChat->getUser(), aChat->getHubUrl(), false);
+	auto nick = ClientManager::getInstance()->getNick(aChat->getUser(), aChat->getHubUrl(), true);
 	onRecentOpened(RecentEntry::TYPE_PRIVATE_CHAT, nick, Util::emptyString, aChat->getHubUrl(), aChat->getUser(), old);
 }
 
@@ -97,7 +92,7 @@ void RecentManager::on(DirectoryListingManagerListener::ListingCreated, const Di
 	}
 
 	auto shareInfo = ClientManager::getInstance()->getShareInfo(aListing->getHintedUser());
-	auto nick = ClientManager::getInstance()->getNick(aListing->getUser(), aListing->getHubUrl(), false);
+	auto nick = ClientManager::getInstance()->getNick(aListing->getUser(), aListing->getHubUrl(), true);
 	auto old = getRecent(RecentEntry::TYPE_FILELIST, RecentEntry::CidCompare(aListing->getUser()->getCID()));
 	onRecentOpened(RecentEntry::TYPE_FILELIST, nick, shareInfo ? Util::formatBytes((*shareInfo).size) : Util::emptyString, aListing->getHubUrl(), aListing->getUser(), old);
 }
@@ -150,7 +145,7 @@ void RecentManager::onRecentOpened(RecentEntry::Type aType, const string& aName,
 		removeRecent(aType, aOldEntry);
 	}
 
-	auto entry = make_shared<RecentEntry>(aName, aDescription, aUrl, aUser);
+	auto entry = std::make_shared<RecentEntry>(aName, aDescription, aUrl, aUser);
 	{
 		WLock l(cs);
 		recents[aType].push_back(entry);
@@ -184,7 +179,13 @@ void RecentManager::onRecentUpdated(RecentEntry::Type aType, const RecentEntryPt
 	setDirty();
 }
 
-void RecentManager::save() const noexcept {
+void RecentManager::save() noexcept {
+	if (!xmlDirty) {
+		return;
+	}
+
+	xmlDirty = false;
+
 	SimpleXML xml;
 
 	xml.addTag("Recents");
@@ -221,9 +222,7 @@ void RecentManager::saveRecents(SimpleXML& aXml, RecentEntry::Type aType) const 
 }
 
 void RecentManager::load() noexcept {
-	try {
-		SimpleXML xml;
-		SettingsManager::loadSettingFile(xml, CONFIG_DIR, CONFIG_RECENTS_NAME);
+	SettingsManager::loadSettingFile(CONFIG_DIR, CONFIG_RECENTS_NAME, [this](SimpleXML& xml) {
 		if (xml.findChild("Recents")) {
 			xml.stepIn();
 			loadRecents(xml, RecentEntry::TYPE_HUB);
@@ -231,9 +230,7 @@ void RecentManager::load() noexcept {
 			loadRecents(xml, RecentEntry::TYPE_FILELIST);
 			xml.stepOut();
 		}
-	} catch (const Exception& e) {
-		LogManager::getInstance()->message(STRING_F(LOAD_FAILED_X, CONFIG_RECENTS_NAME % e.getError()), LogMessage::SEV_ERROR);
-	}
+	});
 }
 
 void RecentManager::loadRecents(SimpleXML& aXml, RecentEntry::Type aType) {
@@ -242,7 +239,7 @@ void RecentManager::loadRecents(SimpleXML& aXml, RecentEntry::Type aType) {
 		aXml.stepIn();
 		while (aXml.findChild(itemTags[aType])) {
 			const string& name = aXml.getChildAttrib("Name");
-			if (name.empty()) {
+			if (name.empty() || name == "*") {
 				continue;
 			}
 
@@ -259,7 +256,7 @@ void RecentManager::loadRecents(SimpleXML& aXml, RecentEntry::Type aType) {
 				}
 			}
 
-			auto e = make_shared<RecentEntry>(name, description, hubUrl, user, lastOpened);
+			auto e = std::make_shared<RecentEntry>(name, description, hubUrl, user, lastOpened);
 			recents[aType].push_back(e);
 		}
 		aXml.stepOut();

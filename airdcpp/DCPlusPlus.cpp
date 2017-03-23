@@ -36,9 +36,10 @@
 #include "FavoriteManager.h"
 #include "GeoManager.h"
 #include "HashManager.h"
+#include "IgnoreManager.h"
 #include "Localization.h"
 #include "LogManager.h"
-#include "MessageManager.h"
+#include "PrivateChatManager.h"
 #include "QueueManager.h"
 #include "RecentManager.h"
 #include "ShareManager.h"
@@ -83,7 +84,7 @@ void startup(StepF stepF, MessageF messageF, Callback runWizard, ProgressF progr
 	ShareManager::newInstance();
 	ClientManager::newInstance();
 	ConnectionManager::newInstance();
-	MessageManager::newInstance();
+	PrivateChatManager::newInstance();
 	DownloadManager::newInstance();
 	UploadManager::newInstance();
 	ThrottleManager::newInstance();
@@ -98,12 +99,14 @@ void startup(StepF stepF, MessageF messageF, Callback runWizard, ProgressF progr
 	ViewFileManager::newInstance();
 	ActivityManager::newInstance();
 	RecentManager::newInstance();
+	IgnoreManager::newInstance();
 
 	if (moduleInitF) {
 		moduleInitF();
 	}
 
 	SettingsManager::getInstance()->load(messageF);
+	FavoriteManager::getInstance()->load();
 
 	UploadManager::getInstance()->setFreeSlotMatcher();
 	Localization::init();
@@ -141,7 +144,7 @@ void startup(StepF stepF, MessageF messageF, Callback runWizard, ProgressF progr
 	announce(STRING(SHARED_FILES));
 	ShareManager::getInstance()->startup(stepF, progressF); 
 
-	FavoriteManager::getInstance()->load();
+	IgnoreManager::getInstance()->load();
 	RecentManager::getInstance()->load();
 
 	if(SETTING(GET_USER_COUNTRY)) {
@@ -180,9 +183,10 @@ void shutdown(StepF stepF, ProgressF progressF, Callback moduleDestroyF) {
 	
 	announce(STRING(SAVING_SETTINGS));
 	QueueManager::getInstance()->shutdown();
+	RecentManager::getInstance()->save();
+	IgnoreManager::getInstance()->save();
 	FavoriteManager::getInstance()->shutdown();
 	SettingsManager::getInstance()->save();
-	RecentManager::getInstance()->save();
 
 	if (moduleDestroyF) {
 		moduleDestroyF();
@@ -190,6 +194,7 @@ void shutdown(StepF stepF, ProgressF progressF, Callback moduleDestroyF) {
 
 	announce(STRING(SHUTTING_DOWN));
 
+	IgnoreManager::deleteInstance();
 	RecentManager::deleteInstance();
 	ActivityManager::deleteInstance();
 	ViewFileManager::deleteInstance();
@@ -204,7 +209,7 @@ void shutdown(StepF stepF, ProgressF progressF, Callback moduleDestroyF) {
 	QueueManager::deleteInstance();
 	DownloadManager::deleteInstance();
 	UploadManager::deleteInstance();
-	MessageManager::deleteInstance();
+	PrivateChatManager::deleteInstance();
 	ConnectionManager::deleteInstance();
 	SearchManager::deleteInstance();
 	FavoriteManager::deleteInstance();

@@ -48,8 +48,9 @@ public:
 	virtual bool isOp() const noexcept = 0;
 	virtual int connect(const OnlineUser& user, const string& token, string& lastError_) noexcept = 0;
 	virtual bool privateMessage(const OnlineUserPtr& aUser, const string& aMessage, string& error_, bool aThirdPerson = false, bool aEcho = true) noexcept = 0;
-	virtual void directSearch(const OnlineUser&, const SearchPtr&) noexcept {
-		dcassert(0); 
+	virtual bool directSearch(const OnlineUser&, const SearchPtr&, string&) noexcept {
+		dcassert(0);
+		return false;
 	}
 };
 
@@ -63,13 +64,10 @@ public:
 	virtual void disconnect(bool graceless) noexcept;
 
 	// Default message method
-	bool sendMessage(const string& aMessage, string& error_, bool thirdPerson = false) noexcept {
-		return hubMessage(aMessage, error_, thirdPerson);
-	}
+	bool sendMessage(const string& aMessage, string& error_, bool aThirdPerson = false) noexcept;
+	bool sendPrivateMessage(const OnlineUserPtr& aUser, const string& aMessage, string& error_, bool aThirdPerson = false, bool aEcho = true) noexcept;
 
 	virtual int connect(const OnlineUser& user, const string& token, string& lastError_) noexcept = 0;
-	virtual bool hubMessage(const string& aMessage, string& error_, bool thirdPerson = false) noexcept = 0;
-	virtual bool privateMessage(const OnlineUserPtr& aUser, const string& aMessage, string& error_, bool aThirdPerson = false, bool aEcho = true) noexcept = 0;
 	virtual void sendUserCmd(const UserCommand& command, const ParamMap& params) = 0;
 
 	uint64_t queueSearch(const SearchPtr& aSearch) noexcept;
@@ -196,12 +194,13 @@ public:
 	void allowUntrustedConnect() noexcept;
 	bool isKeyprintMismatch() const noexcept;
 protected:
+	virtual bool hubMessage(const string& aMessage, string& error_, bool aThirdPerson = false) noexcept = 0;
+	virtual bool privateMessage(const OnlineUserPtr& aUser, const string& aMessage, string& error_, bool aThirdPerson, bool aEcho) noexcept = 0;
 	virtual void clearUsers() noexcept = 0;
 
 	void setConnectState(State aState) noexcept;
 	MessageCache cache;
 
-	friend class ClientManager;
 	Client(const string& hubURL, char separator, const ClientPtr& aOldClient);
 
 	SearchQueue searchQueue;
@@ -240,6 +239,7 @@ protected:
 	virtual bool v4only() const noexcept = 0;
 	void onPassword() noexcept;
 
+	void onPrivateMessage(const ChatMessagePtr& aMessage) noexcept;
 	void onChatMessage(const ChatMessagePtr& aMessage) noexcept;
 	void onRedirect(const string& aRedirectUrl) noexcept;
 

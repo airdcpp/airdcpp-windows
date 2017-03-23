@@ -148,6 +148,9 @@ public:
 	static string getOsVersion(bool http = false) noexcept;
 	static bool IsOSVersionOrGreater(int major, int minor) noexcept;
 
+	// Execute a background process and get exit code
+	static int runSystemCommand(const string& aCommand) noexcept;
+
 	enum Paths {
 		/** Global configuration */
 		PATH_GLOBAL_CONFIG,
@@ -262,6 +265,21 @@ public:
 	template<typename string_t>
 	static inline void replace(const typename string_t::value_type* search, const typename string_t::value_type* replacement, string_t& str) noexcept {
 		replace(string_t(search), string_t(replacement), str);
+	}
+
+	template<typename T1, typename T2>
+	static double countAverage(T1 aFrom, T2 aTotal) {
+		return aTotal == 0 ? 0 : (static_cast<double>(aFrom) / static_cast<double>(aTotal));
+	}
+
+	template<typename T1, typename T2>
+	static int64_t countAverageInt64(T1 aFrom, T2 aTotal) {
+		return aTotal == 0 ? 0 : (aFrom / aTotal);
+	}
+
+	template<typename T1, typename T2>
+	static double countPercentage(T1 aFrom, T2 aTotal) {
+		return countAverage<T1, T2>(aFrom, aTotal) * 100.00;
 	}
 
 	static void sanitizeUrl(string& url) noexcept;
@@ -659,8 +677,15 @@ public:
 
 class StringPtrEq {
 public:
-	size_t operator()(const string* a, const string* b) const noexcept {
+	bool operator()(const string* a, const string* b) const noexcept {
 		return *a == *b;
+	}
+};
+
+class StringPtrLess {
+public:
+	bool operator()(const string* a, const string* b) const noexcept {
+		return compare(*a, *b) < 0;
 	}
 };
 
