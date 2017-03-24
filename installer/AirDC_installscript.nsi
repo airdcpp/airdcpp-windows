@@ -103,11 +103,11 @@ LangString SM_AIRDCPP_DESC ${LANG_ENGLISH} "AirDC++ File Sharing Application"
 LangString SM_AIRDCPP_DESCUN ${LANG_ENGLISH} "Uninstall AirDC++"
 LangString SM_UNINSTALL ${LANG_ENGLISH} "Uninstall"
 LangString WR_REMOVEONLY ${LANG_ENGLISH} "(remove only)"
-LangString SecAtlantis ${LANG_ENGLISH} "Atlantis Emoticon Pack"
+LangString SecEmopack ${LANG_ENGLISH} "Default emoticon pack"
 LangString SecThemes ${LANG_ENGLISH} "Themes"
 LangString SecWebResources ${LANG_ENGLISH} "Web user interface"
 LangString SecStore ${LANG_ENGLISH} "Store settings in the user profile directory"
-LangString DeskShort ${LANG_ENGLISH} "Create AirDC++ desktop shortcut"
+LangString DeskShort ${LANG_ENGLISH} "Desktop shortcut"
 LangString SecInstall32 ${LANG_ENGLISH} "Install the 32-bit version"
 LangString XPOrOlder ${LANG_ENGLISH} "If you want to keep your settings in the program directory, make sure that you DO NOT install AirDC++ to the 'Program files' folder!!! This can lead to abnormal behaviour like loss of settings or downloads!"
 LangString OsUnsupported ${LANG_ENGLISH} "This application is compatible with Windows 7 SP1 or newer operating systems only. The installer will now exit."
@@ -116,7 +116,7 @@ LangString RemoveQueue ${LANG_ENGLISH} "Do you also want to remove queue, themes
 LangString NotEmpty ${LANG_ENGLISH} "Installation directory is NOT empty. Do you still want to remove it?"
 LangString DESC_dcpp ${LANG_ENGLISH} "AirDC++ main program."
 LangString DESC_StartMenu ${LANG_ENGLISH} "A shortcut of AirDC++ will be placed in your start menu."
-LangString DESC_Atlantis ${LANG_ENGLISH} "Atlantis emoticon pack will be installed to be used in chats."
+LangString DESC_Emopack ${LANG_ENGLISH} "Display emoticons as images in chat windows"
 LangString DESC_Themes ${LANG_ENGLISH} "If you don't like the default theme you can try these two extra themes, Dark Skull and Zoolution."
 LangString DESC_WebResorces ${LANG_ENGLISH} "Allows accessing the client from other devices via a web browser."
 LangString DESC_loc ${LANG_ENGLISH} "Normally you should not change this because it can lead to abnormal behaviour like loss of settings or downloads. If you unselect it, read the warning message carefully."
@@ -285,7 +285,7 @@ SectionEnd
   !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
     !insertmacro MUI_DESCRIPTION_TEXT ${dcpp} $(DESC_dcpp)
     !insertmacro MUI_DESCRIPTION_TEXT ${DescStartMenu} $(DESC_StartMenu)
-    !insertmacro MUI_DESCRIPTION_TEXT ${DescAtlantis} $(DESC_Atlantis)
+    !insertmacro MUI_DESCRIPTION_TEXT ${DescEmopack} $(DESC_Emopack)
     !insertmacro MUI_DESCRIPTION_TEXT ${DescThemes} $(DESC_Themes)
     !insertmacro MUI_DESCRIPTION_TEXT ${DescWebResorces} $(DESC_WebResorces)
     !insertmacro MUI_DESCRIPTION_TEXT ${loc} $(DESC_loc)
