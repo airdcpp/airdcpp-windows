@@ -1912,7 +1912,7 @@ void WinUtil::appendLanguageMenu(CComboBoxEx& ctrlLanguage) {
 		count = count++;
 	}
 
-	ctrlLanguage.SetCurSel(Localization::curLanguage);
+	ctrlLanguage.SetCurSel(Localization::getCurLanguageIndex());
 }
 
 void WinUtil::appendHistory(CComboBox& ctrlCombo, SettingsManager::HistoryType aType) {

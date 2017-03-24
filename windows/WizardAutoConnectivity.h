@@ -45,15 +45,16 @@ public:
 	LRESULT OnDetectConnection(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnTickAutoDetect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	
-	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
+	PROPSHEETPAGE *getPSP() override { return (PROPSHEETPAGE *)*this; }
 
 	enum { IDD = IDD_WIZARD_AUTOCONN }; 
 	WizardAutoConnectivity(SettingsManager *s, SetupWizard* wizard);
 	~WizardAutoConnectivity();
 
-	void write();
+	void write() override;
 	int OnWizardNext();
 	int OnSetActive();
+	int OnKillActive();
 
 	bool usingManualConnectivity();
 private: 
@@ -88,10 +89,10 @@ private:
 	void changeControlState(bool enable);
 
 	// ConnectivityManagerListener
-	void on(Message, const string& message) noexcept;
-	void on(Started, bool /*v6*/) noexcept;
-	void on(Finished, bool /*v6*/, bool /*failed*/) noexcept;
-	void on(SettingChanged) noexcept;
+	void on(ConnectivityManagerListener::Message, const string& message) noexcept override;
+	void on(ConnectivityManagerListener::Started, bool /*v6*/) noexcept override;
+	void on(ConnectivityManagerListener::Finished, bool /*v6*/, bool /*failed*/) noexcept override;
+	void on(ConnectivityManagerListener::SettingChanged) noexcept override;
 }; 
 
 #endif

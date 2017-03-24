@@ -32,12 +32,12 @@ namespace webserver {
 		SettingApi(Session* aSession);
 		~SettingApi();
 	private:
-		api_return handleGetSettingInfos(ApiRequest& aRequest);
-		api_return handleGetSettingValues(ApiRequest& aRequest);
-		api_return handleSetSettings(ApiRequest& aRequest);
-		api_return handleResetSettings(ApiRequest& aRequest);
+		api_return handleGetDefinitions(ApiRequest& aRequest);
+		api_return handleGetValues(ApiRequest& aRequest);
+		api_return handleSetValues(ApiRequest& aRequest);
+		api_return handleResetValues(ApiRequest& aRequest);
 
-		typedef function<void(ApiSettingItem*)> ParserF;
+		typedef function<void(ApiSettingItem&)> ParserF;
 		void parseSettingKeys(const json& aJson, ParserF aHandler);
 		static ApiSettingItem* getSettingItem(const string& aKey) noexcept;
 	};

@@ -67,7 +67,7 @@ PropPage::Item SpeedPage::items[] = {
 };
 
 PropPage::Item SpeedPage::uploadItems[] = {
-	{ IDC_SLOTS, SettingsManager::SLOTS, PropPage::T_INT }, 
+	{ IDC_SLOTS, SettingsManager::UPLOAD_SLOTS, PropPage::T_INT }, 
 	{ IDC_AUTO_SLOTS, SettingsManager::AUTO_SLOTS, PropPage::T_INT  },
 	{ IDC_MIN_UPLOAD_SPEED, SettingsManager::MIN_UPLOAD_SPEED, PropPage::T_INT },
 	{ 0, 0, PropPage::T_END }
@@ -361,25 +361,10 @@ void SpeedPage::write() {
 
 	if (!SETTING(UL_AUTODETECT)) {
 		PropPage::write((HWND)(*this), uploadItems);
-
-		if(SETTING(SLOTS) < 1)
-			settings->set(SettingsManager::SLOTS, 1);
-
-		if(SETTING(EXTRA_SLOTS) < 1)
-			settings->set(SettingsManager::EXTRA_SLOTS, 1);
-
-		if(SETTING(SET_MINISLOT_SIZE) < 64)
-			settings->set(SettingsManager::SET_MINISLOT_SIZE, 64);
 	}
 
 	if (!SETTING(MCN_AUTODETECT)) {
 		validateMCNLimits(0);
 		PropPage::write((HWND)(*this), mcnItems);
-
-		/*if(SETTING(MAX_MCN_DOWNLOADS) < 1)
-			settings->set(SettingsManager::MAX_MCN_DOWNLOADS, AirUtil::getSlotsPerUser(true, Util::toDouble(SETTING(DOWNLOAD_SPEED))));
-
-		if(SETTING(MAX_MCN_UPLOADS) < 1)
-			settings->set(SettingsManager::MAX_MCN_UPLOADS, AirUtil::getSlotsPerUser(false, Util::toDouble(SETTING(UPLOAD_SPEED))));*/
 	}	
 }

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2012-2017 AirDC++ Project
+* Copyright (C) 2011-2017 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,35 +16,27 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-
-#ifndef DCPLUSPLUS_DCPP_EXTENSION_LISTENER_H
-#define DCPLUSPLUS_DCPP_EXTENSION_LISTENER_H
+#ifndef DCPLUSPLUS_DCPP_SETTING_UTILS_H
+#define DCPLUSPLUS_DCPP_SETTING_UTILS_H
 
 #include <web-server/stdinc.h>
+#include <api/ApiSettingItem.h>
 
 namespace webserver {
-	class ExtensionListener {
+	class SettingUtils {
 	public:
-		virtual ~ExtensionListener() { }
-		template<int I>	struct X { enum { TYPE = I }; };
+		static json validateValue(const ApiSettingItem& aItem, const json& aValue);
 
-		typedef X<0> ExtensionStarted;
-		typedef X<1> ExtensionStopped;
+		static ServerSettingItem deserializeDefinition(const json& aJson);
+		static ServerSettingItem::List deserializeDefinitions(const json& aJson);
 
-		typedef X<2> SettingValuesUpdated;
-		typedef X<3> SettingDefinitionsUpdated;
+		static json serializeDefinition(const ApiSettingItem& aItem) noexcept;
+		static string typeToStr(ApiSettingItem::Type aType) noexcept;
 
-		typedef X<4> PackageUpdated;
+		static ApiSettingItem::Type parseType(const string& aTypeStr) noexcept;
+	private:
 
-
-		virtual void on(ExtensionStarted) noexcept { }
-		virtual void on(ExtensionStopped) noexcept { }
-
-		virtual void on(SettingValuesUpdated, const SettingValueMap&) noexcept { }
-		virtual void on(SettingDefinitionsUpdated) noexcept { }
-		virtual void on(PackageUpdated) noexcept { }
 	};
-
 }
 
-#endif // !defined(DCPLUSPLUS_DCPP_EXTENSION_LISTENER_H)
+#endif

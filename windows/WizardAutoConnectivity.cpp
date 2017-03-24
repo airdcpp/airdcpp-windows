@@ -83,11 +83,10 @@ void WizardAutoConnectivity::updateAuto() {
 
 WizardAutoConnectivity::WizardAutoConnectivity(SettingsManager *s, SetupWizard* aWizard) : PropPage(s), wizard(aWizard), v4State(STATE_UNKNOWN), v6State(STATE_UNKNOWN) { 
 	SetHeaderTitle(CTSTRING(AUTO_CONNECTIVITY_DETECTION));
-	ConnectivityManager::getInstance()->addListener(this);
 } 
 
 WizardAutoConnectivity::~WizardAutoConnectivity() {
-	ConnectivityManager::getInstance()->removeListener(this);
+
 }
 
 void WizardAutoConnectivity::write() {
@@ -99,6 +98,7 @@ int WizardAutoConnectivity::OnWizardNext() {
 		wizard->SetActivePage(SetupWizard::PAGE_SHARING);
 		return SetupWizard::PAGE_SHARING;
 	}
+
 	return 0;
 }
 
@@ -107,9 +107,16 @@ bool WizardAutoConnectivity::usingManualConnectivity() {
 }
 
 int WizardAutoConnectivity::OnSetActive() {
+	ConnectivityManager::getInstance()->addListener(this);
+
 	ShowWizardButtons( PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_FINISH | PSWIZB_CANCEL, PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_CANCEL); 
 	EnableWizardButtons(PSWIZB_BACK, PSWIZB_BACK);
 	EnableWizardButtons(PSWIZB_NEXT, ConnectivityManager::getInstance()->isRunning() ? 0 : PSWIZB_NEXT);
+	return 0;
+}
+
+int WizardAutoConnectivity::OnKillActive() {
+	ConnectivityManager::getInstance()->removeListener(this);
 	return 0;
 }
 
@@ -127,14 +134,14 @@ void WizardAutoConnectivity::addLogLine(tstring& msg, CHARFORMAT2W& cf /*WinUtil
 	log.AppendChat(Identity(NULL, 0), _T(" -"), Util::emptyStringT, msg, cf, false);
 }
 
-void WizardAutoConnectivity::on(Message, const string& message) noexcept {
+void WizardAutoConnectivity::on(ConnectivityManagerListener::Message, const string& message) noexcept {
 	wizard->callAsync([this, message] { 
 		auto msg = Text::toT(message) + _T("\n");
 		addLogLine(msg); 
 	});
 }
 
-void WizardAutoConnectivity::on(Started, bool v6) noexcept {
+void WizardAutoConnectivity::on(ConnectivityManagerListener::Started, bool v6) noexcept {
 	(v6 ? v6State :v4State) = STATE_DETECTING;
 	wizard->callAsync([this] {
 		changeControlState(false);
@@ -142,7 +149,7 @@ void WizardAutoConnectivity::on(Started, bool v6) noexcept {
 	});
 }
 
-void WizardAutoConnectivity::on(Finished, bool v6, bool failed) noexcept {
+void WizardAutoConnectivity::on(ConnectivityManagerListener::Finished, bool v6, bool failed) noexcept {
 	if (v6){
 		v6State = failed ? STATE_FAILED : STATE_SUCCEED;
 	} else {
@@ -183,6 +190,6 @@ void WizardAutoConnectivity::changeControlState(bool enable) {
 	cDetectIPv6.EnableWindow(enable ? TRUE : false);
 }
 
-void WizardAutoConnectivity::on(SettingChanged) noexcept {
+void WizardAutoConnectivity::on(ConnectivityManagerListener::SettingChanged) noexcept {
 	wizard->callAsync([this] { updateAuto(); });
 }

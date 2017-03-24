@@ -58,7 +58,7 @@ PropPage::Item WizardConnspeed::items[] = {
 };
 
 PropPage::Item WizardConnspeed::uploadItems[] = {
-	{ IDC_UPLOAD_SLOTS, SettingsManager::SLOTS, PropPage::T_INT },
+	{ IDC_UPLOAD_SLOTS, SettingsManager::UPLOAD_SLOTS, PropPage::T_INT },
 	{ IDC_MAX_UPLOAD_SP, SettingsManager::MIN_UPLOAD_SPEED, PropPage::T_INT },
 	{ IDC_MAX_AUTO_OPENED, SettingsManager::AUTO_SLOTS, PropPage::T_INT },
 

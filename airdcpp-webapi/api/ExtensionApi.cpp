@@ -34,7 +34,6 @@ namespace webserver {
 	StringList ExtensionApi::subscriptionList = {
 		"extension_added",
 		"extension_removed",
-		"extension_updated",
 	};
 
 	ExtensionApi::ExtensionApi(Session* aSession) : /*HookApiModule(aSession, Access::ADMIN, nullptr, Access::ADMIN),*/ 
@@ -42,7 +41,7 @@ namespace webserver {
 		ParentApiModule(EXTENSION_PARAM, Access::ADMIN, aSession, ExtensionApi::subscriptionList,
 			ExtensionInfo::subscriptionList,
 			[](const string& aId) { return aId; },
-			[](const ExtensionInfo& aInfo) { return serializeExtension(aInfo.getExtension()); }
+			[](const ExtensionInfo& aInfo) { return ExtensionInfo::serializeExtension(aInfo.getExtension()); }
 		)
 	{
 		em.addListener(this);
@@ -64,43 +63,18 @@ namespace webserver {
 		addSubModule(aExtension->getName(), std::make_shared<ExtensionInfo>(this, aExtension));
 	}
 
-	json ExtensionApi::serializeExtension(const ExtensionPtr& aExtension) noexcept {
-		return {
-			{ "id", aExtension->getName() },
-			{ "name", aExtension->getName() },
-			{ "description", aExtension->getDescription() },
-			{ "version", aExtension->getVersion() },
-			{ "homepage", aExtension->getHomepage() },
-			{ "author", aExtension->getAuthor() },
-			{ "running", aExtension->isRunning() },
-			{ "private", aExtension->isPrivate() },
-			{ "logs", ExtensionInfo::serializeLogs(aExtension) },
-			{ "engines", aExtension->getEngines() },
-			{ "managed", aExtension->isManaged() },
-			{ "has_settings", aExtension->hasSettings() },
-		};
-	}
-
-	ExtensionPtr ExtensionApi::getExtension(ApiRequest& aRequest) {
-		auto extension = em.getExtension(aRequest.getStringParam(EXTENSION_PARAM_ID));
-		if (!extension) {
-			throw RequestException(websocketpp::http::status_code::not_found, "Extension not found");
-		}
-
-		return extension;
-	}
-
 	api_return ExtensionApi::handlePostExtension(ApiRequest& aRequest) {
 		const auto& reqJson = aRequest.getRequestBody();
 
 		try {
-			em.registerRemoteExtension(aRequest.getSession(), reqJson);
+			auto ext = em.registerRemoteExtension(aRequest.getSession(), reqJson);
+			aRequest.setResponseBody(ExtensionInfo::serializeExtension(ext));
 		} catch (const Exception& e) {
 			aRequest.setResponseErrorStr(e.getError());
 			return websocketpp::http::status_code::bad_request;
 		}
 
-		return websocketpp::http::status_code::no_content;
+		return websocketpp::http::status_code::ok;
 	}
 
 	api_return ExtensionApi::handleDownloadExtension(ApiRequest& aRequest) {
@@ -118,10 +92,10 @@ namespace webserver {
 	}
 
 	api_return ExtensionApi::handleRemoveExtension(ApiRequest& aRequest) {
-		auto extension = getExtension(aRequest);
+		auto extensionInfo = getSubModule(aRequest);
 
 		try {
-			em.removeExtension(extension);
+			em.removeExtension(extensionInfo->getExtension());
 		} catch (const Exception& e) {
 			aRequest.setResponseErrorStr(e.getError());
 			return websocketpp::http::status_code::internal_server_error;
@@ -134,20 +108,14 @@ namespace webserver {
 		addExtension(aExtension);
 
 		maybeSend("extension_added", [&] {
-			return serializeExtension(aExtension);
+			return ExtensionInfo::serializeExtension(aExtension);
 		});
 	}
 
 	void ExtensionApi::on(ExtensionManagerListener::ExtensionRemoved, const ExtensionPtr& aExtension) noexcept {
 		removeSubModule(aExtension->getName());
 		maybeSend("extension_removed", [&] {
-			return serializeExtension(aExtension);
-		});
-	}
-
-	void ExtensionApi::on(ExtensionManagerListener::ExtensionUpdated, const ExtensionPtr& aExtension) noexcept {
-		maybeSend("extension_updated", [&] {
-			return serializeExtension(aExtension);
+			return ExtensionInfo::serializeExtension(aExtension);
 		});
 	}
 }

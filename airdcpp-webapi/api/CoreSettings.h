@@ -110,7 +110,7 @@ namespace webserver {
 		{ "upload_auto_limits", SettingsManager::UL_AUTODETECT, ResourceManager::AUTODETECT },
 		{ "upload_auto_grant_speed", SettingsManager::MIN_UPLOAD_SPEED, ResourceManager::SETTINGS_UPLOADS_MIN_SPEED, ApiSettingItem::TYPE_LAST, ResourceManager::Strings::KiBS },
 		{ "upload_max_granted", SettingsManager::AUTO_SLOTS, ResourceManager::SETTINGS_AUTO_SLOTS },
-		{ "upload_slots", SettingsManager::SLOTS, ResourceManager::SETTINGS_UPLOADS_SLOTS },
+		{ "upload_slots", SettingsManager::UPLOAD_SLOTS, ResourceManager::SETTINGS_UPLOADS_SLOTS },
 		{ "upload_minislot_size", SettingsManager::SET_MINISLOT_SIZE, ResourceManager::SETCZDC_SMALL_FILES, ApiSettingItem::TYPE_LAST, ResourceManager::Strings::KiB },
 		{ "upload_minislot_ext", SettingsManager::FREE_SLOTS_EXTENSIONS, ResourceManager::ST_MINISLOTS_EXT },
 
@@ -200,9 +200,9 @@ namespace webserver {
 		{ "history_filelist_sessions", SettingsManager::MAX_RECENT_FILELISTS , ResourceManager::FILELIST },
 
 		//{ ResourceManager::SETTINGS_ADVANCED },
-		{ "socket_read_buffer", SettingsManager::SOCKET_IN_BUFFER, ResourceManager::SETTINGS_SOCKET_IN_BUFFER },
-		{ "socket_write_buffer", SettingsManager::SOCKET_OUT_BUFFER, ResourceManager::SETTINGS_SOCKET_OUT_BUFFER },
-		{ "buffer_size", SettingsManager::BUFFER_SIZE, ResourceManager::SETTINGS_WRITE_BUFFER },
+		{ "socket_read_buffer", SettingsManager::SOCKET_IN_BUFFER, ResourceManager::SETTINGS_SOCKET_IN_BUFFER, ApiSettingItem::TYPE_LAST, ResourceManager::Strings::B },
+		{ "socket_write_buffer", SettingsManager::SOCKET_OUT_BUFFER, ResourceManager::SETTINGS_SOCKET_OUT_BUFFER, ApiSettingItem::TYPE_LAST, ResourceManager::Strings::B },
+		{ "buffer_size", SettingsManager::BUFFER_SIZE, ResourceManager::SETTINGS_WRITE_BUFFER, ApiSettingItem::TYPE_LAST, ResourceManager::Strings::KiBS },
 		{ "compress_transfers", SettingsManager::COMPRESS_TRANSFERS, ResourceManager::SETTINGS_COMPRESS_TRANSFERS },
 		{ "max_compression", SettingsManager::MAX_COMPRESSION, ResourceManager::SETTINGS_MAX_COMPRESS },
 		{ "bloom_mode", SettingsManager::BLOOM_MODE, ResourceManager::BLOOM_MODE },

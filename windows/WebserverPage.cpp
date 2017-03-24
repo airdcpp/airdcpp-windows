@@ -101,8 +101,8 @@ void WebServerPage::applySettings() noexcept {
 	auto plainserverPort = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlPort)));
 	auto tlsServerPort = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlTlsPort)));
 
-	WEBCFG(PLAIN_PORT).setCurValue(plainserverPort);
-	WEBCFG(TLS_PORT).setCurValue(tlsServerPort);
+	WEBCFG(PLAIN_PORT).setValue(plainserverPort);
+	WEBCFG(TLS_PORT).setValue(tlsServerPort);
 
 	webMgr->getUserManager().replaceWebUsers(webUserList);
 }

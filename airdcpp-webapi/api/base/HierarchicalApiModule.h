@@ -210,7 +210,7 @@ namespace webserver {
 
 		TimerPtr getTimer(CallBack&& aTask, time_t aIntervalMillis) override {
 			return session->getServer()->addTimer(move(aTask), aIntervalMillis, 
-				std::bind(&SubApiModule::moduleAsyncRunWrapper<IdType, ParentType>, std::placeholders::_1, parentModule, getId(), session->getId())
+				std::bind(&SubApiModule::moduleAsyncRunWrapper<ParentType>, std::placeholders::_1, parentModule, getId(), session->getId())
 			);
 		}
 
@@ -224,7 +224,7 @@ namespace webserver {
 			};
 		}
 	private:
-		template<class IdType, class ParentType>
+		template<class ParentType>
 		static void moduleAsyncRunWrapper(const CallBack& aTask, ParentType* aParentModule, const IdType& aId, LocalSessionId aSessionId) {
 			// Ensure that we have a session
 			SubscribableApiModule::asyncRunWrapper([=] {

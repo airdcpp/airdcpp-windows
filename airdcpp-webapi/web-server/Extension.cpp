@@ -29,15 +29,23 @@
 
 
 namespace webserver {
+	SharedMutex Extension::cs;
+
 	Extension::Extension(const string& aPath, ErrorF&& aErrorF, bool aSkipPathValidation) : errorF(std::move(aErrorF)), managed(true) {
-		reload(aPath, aSkipPathValidation);
+		initialize(aPath, aSkipPathValidation);
 	}
 
 	Extension::Extension(const SessionPtr& aSession, const json& aPackageJson) : managed(false), session(aSession) {
 		initialize(aPackageJson);
 	}
 
-	void Extension::reload(const string& aPath, bool aSkipPathValidation) {
+	void Extension::reload() {
+		initialize(getRootPath(), false);
+
+		fire(ExtensionListener::PackageUpdated());
+	}
+
+	void Extension::initialize(const string& aPath, bool aSkipPathValidation) {
 		const auto packageStr = File(aPath + "package" + PATH_SEPARATOR_STR + "package.json", File::READ, File::OPEN).read();
 		try {
 			const json packageJson = json::parse(packageStr);
@@ -103,18 +111,75 @@ namespace webserver {
 				throw Exception("Extension requires API feature level " + Util::toString(minFeatureLevel) + " or newer while the application uses version " + Util::toString(API_FEATURE_LEVEL));
 			}
 		}
-
-		// Parse settings
-		const json settingsJson = aJson.value("settings", json());
-		if (!settingsJson.is_null()) {
-			for (const auto& setting: settingsJson) {
-				settings.push_back(ServerSettingItem::fromJson(setting));
-			}
-		}
 	}
 
-	void Extension::onSettingsUpdated() noexcept {
-		fire(ExtensionListener::SettingsUpdated());
+	FilesystemItemList Extension::getLogs() const noexcept {
+		FilesystemItemList ret;
+
+		if (managed) {
+			File::forEachFile(getLogPath(), "*.log", [&](const FilesystemItem& aInfo) {
+				if (aInfo.isDirectory) {
+					return;
+				}
+
+				ret.push_back(aInfo);
+			});
+		}
+
+		return ret;
+	}
+
+	ServerSettingItem* Extension::getSetting(const string& aKey) noexcept {
+		RLock l(cs);
+		return ApiSettingItem::findSettingItem<ServerSettingItem>(settings, aKey);
+	}
+
+	bool Extension::hasSettings() const noexcept {
+		RLock l(cs);
+		return !settings.empty(); 
+	}
+
+	ServerSettingItem::List Extension::getSettings() const noexcept {
+		RLock l(cs);
+		return settings;
+	}
+
+	void Extension::swapSettingDefinitions(ServerSettingItem::List& aDefinitions) {
+		{
+			WLock l(cs);
+			settings.swap(aDefinitions);
+		}
+
+		fire(ExtensionListener::SettingDefinitionsUpdated());
+	}
+
+	void Extension::setSettingValues(const SettingValueMap& aValues) {
+		{
+			WLock l(cs);
+			for (const auto& vp: aValues) {
+				auto setting = ApiSettingItem::findSettingItem<ServerSettingItem>(settings, vp.first);
+				if (!setting) {
+					throw Exception("Setting " + vp.first + " was not found");
+				}
+
+				setting->setValue(vp.second);
+			}
+		}
+
+		fire(ExtensionListener::SettingValuesUpdated(), aValues);
+	}
+
+	Extension::SettingValueMap Extension::getSettingValues() noexcept {
+		SettingValueMap values;
+
+		{
+			RLock l(cs);
+			for (const auto& setting: settings) {
+				values[setting.name] = setting.getValue();
+			}
+		}
+
+		return values;
 	}
 
 	void Extension::start(const string& aEngine, WebServerManager* wsm) {
