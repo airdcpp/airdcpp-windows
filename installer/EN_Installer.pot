@@ -1,16 +1,16 @@
-# 
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: AirDC++ 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-05-01 15:00\n"
+"POT-Creation-Date: 2017-03-24 16:34\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: AirDC++ <noreply@airdcpp.net>\n"
-"Language: en_US\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
 
 #. RunAtFinish
 #: AirDC_installscript.nsi:92
@@ -95,9 +95,9 @@ msgstr ""
 msgid "(remove only)"
 msgstr ""
 
-#. SecRadox
+#. SecAtlantis
 #: AirDC_installscript.nsi:106
-msgid "Radox Emoticon Pack"
+msgid "Atlantis Emoticon Pack"
 msgstr ""
 
 #. SecThemes
@@ -133,12 +133,11 @@ msgid ""
 " abnormal behaviour like loss of settings or downloads!"
 msgstr ""
 
-#. XPOrBelow
+#. OsUnsupported
 #: AirDC_installscript.nsi:113
 msgid ""
-"This version is only compatible with Windows Vista or newer operating "
-"system. You will be forwarded to www.airdcpp.net for downloading a version "
-"that is compatible with your Windows version."
+"This application is compatible with Windows 7 SP1 or newer operating systems"
+" only. The installer will now exit."
 msgstr ""
 
 #. ^UninstallText
@@ -166,9 +165,9 @@ msgstr ""
 msgid "A shortcut of AirDC++ will be placed in your start menu."
 msgstr ""
 
-#. DESC_Radox
+#. DESC_Atlantis
 #: AirDC_installscript.nsi:119
-msgid "RadoX emoticon pack will be installed to be used in chats."
+msgid "Atlantis emoticon pack will be installed to be used in chats."
 msgstr ""
 
 #. DESC_Themes

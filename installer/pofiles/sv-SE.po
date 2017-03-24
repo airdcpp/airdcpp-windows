@@ -1,14 +1,14 @@
 # 
 # Translators:
-# Sopor, 2015-2016
-# steve72 <steve72@spray.se>, 2016
+# Sopor, 2015-2017
+# steve72, 2016
 msgid ""
 msgstr ""
 "Project-Id-Version: AirDC++\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-05-01 15:00\n"
-"PO-Revision-Date: 2016-05-22 07:16+0000\n"
-"Last-Translator: steve72 <steve72@spray.se>\n"
+"POT-Creation-Date: 2017-03-24 16:34\n"
+"PO-Revision-Date: 2017-03-24 15:42+0000\n"
+"Last-Translator: Sopor\n"
 "Language-Team: Swedish (Sweden) (http://www.transifex.com/airdcpp/airdcpp/language/sv_SE/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -99,10 +99,10 @@ msgstr "Avinstallera"
 msgid "(remove only)"
 msgstr "(endast avinstallation)"
 
-#. SecRadox
+#. SecAtlantis
 #: AirDC_installscript.nsi:106
-msgid "Radox Emoticon Pack"
-msgstr "Uttryckssymbolspaketet RadoX"
+msgid "Atlantis Emoticon Pack"
+msgstr "Uttryckssymbolspaketet Atlantis"
 
 #. SecThemes
 #: AirDC_installscript.nsi:107
@@ -137,13 +137,12 @@ msgid ""
 " abnormal behaviour like loss of settings or downloads!"
 msgstr "Om du vill behålla dina inställningsfiler i programkatalogen, se då till att INTE installerar AirDC++ i katalogen 'Program'!!! Detta kan leda till onormalt beteende som förlust av inställningar eller nedladdningar!"
 
-#. XPOrBelow
+#. OsUnsupported
 #: AirDC_installscript.nsi:113
 msgid ""
-"This version is only compatible with Windows Vista or newer operating "
-"system. You will be forwarded to www.airdcpp.net for downloading a version "
-"that is compatible with your Windows version."
-msgstr "Denna versionen fungerar bara med Windows Vista eller nyare operativsystem. Du kommer nu att bli vidarebefordrad till www.airdcpp.net för nedladdning av en version som fungerar till ditt Windows."
+"This application is compatible with Windows 7 SP1 or newer operating systems"
+" only. The installer will now exit."
+msgstr "Detta programmet stöder endast operativsystem Windows 7 SP1 eller nyare. Installationen kommer nu att avbrytas."
 
 #. ^UninstallText
 #: AirDC_installscript.nsi:114
@@ -170,10 +169,10 @@ msgstr "AirDC++ huvudprogrammet."
 msgid "A shortcut of AirDC++ will be placed in your start menu."
 msgstr "En genväg av AirDC++ kommer att placeras i start-menyn."
 
-#. DESC_Radox
+#. DESC_Atlantis
 #: AirDC_installscript.nsi:119
-msgid "RadoX emoticon pack will be installed to be used in chats."
-msgstr "Uttryckssymbolspaketet RadoX kommer att installeras som du kan använda i chatten."
+msgid "Atlantis emoticon pack will be installed to be used in chats."
+msgstr "Uttryckssymbolspaketet Atlantis kommer att installeras som du kan använda i chatten."
 
 #. DESC_Themes
 #: AirDC_installscript.nsi:120
