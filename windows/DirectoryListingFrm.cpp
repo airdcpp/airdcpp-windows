@@ -480,7 +480,7 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	memzero(statusSizes, sizeof(statusSizes));
 
 	int desclen = WinUtil::getTextWidth(getComboDesc(), ctrlStatus.m_hWnd);
-	statusSizes[STATUS_HUB] = 150 + desclen;
+	statusSizes[STATUS_HUB] = 180 + desclen;
 
 	ctrlStatus.SetParts(STATUS_LAST, statusSizes);
 

@@ -250,11 +250,14 @@ int SpeedPage::maxMCNExtras(double speed) {
 		extras = 2;
 	} else if (speed > 10 && speed <= 40) {
 		extras=3;
-	} else if (speed > 40 && speed < 100) {
+	} else if (speed > 40 && speed < 80) {
 		extras=4;
-	} else if (speed >= 100) {
-		extras=5;
-	}
+	} else if (speed >= 100 && speed < 200) {
+		extras=8;
+	} else if (speed >= 200) {
+	 extras = 15;
+ }
+
 	return extras;
 }
 
@@ -347,8 +350,6 @@ LRESULT SpeedPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	loading = false;
 	return TRUE;
 }
-
-
 
 void SpeedPage::write() {
 
