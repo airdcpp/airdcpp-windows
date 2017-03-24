@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: AirDC++\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-03-24 16:34\n"
-"PO-Revision-Date: 2017-03-24 15:42+0000\n"
+"POT-Creation-Date: 2017-03-24 21:02\n"
+"PO-Revision-Date: 2017-03-24 20:17+0000\n"
 "Last-Translator: Sopor\n"
 "Language-Team: Swedish (Sweden) (http://www.transifex.com/airdcpp/airdcpp/language/sv_SE/)\n"
 "MIME-Version: 1.0\n"
@@ -99,10 +99,10 @@ msgstr "Avinstallera"
 msgid "(remove only)"
 msgstr "(endast avinstallation)"
 
-#. SecAtlantis
+#. SecEmopack
 #: AirDC_installscript.nsi:106
-msgid "Atlantis Emoticon Pack"
-msgstr "Uttryckssymbolspaketet Atlantis"
+msgid "Default emoticon pack"
+msgstr "Standard uttryckssymbolspaketet"
 
 #. SecThemes
 #: AirDC_installscript.nsi:107
@@ -121,8 +121,8 @@ msgstr "Lagra inställningarna i användarprofilen"
 
 #. DeskShort
 #: AirDC_installscript.nsi:110
-msgid "Create AirDC++ desktop shortcut"
-msgstr "Skapa AirDC++ genväg på skrivbordet"
+msgid "Desktop shortcut"
+msgstr "Skrivbordsgenväg"
 
 #. SecInstall32
 #: AirDC_installscript.nsi:111
@@ -169,10 +169,10 @@ msgstr "AirDC++ huvudprogrammet."
 msgid "A shortcut of AirDC++ will be placed in your start menu."
 msgstr "En genväg av AirDC++ kommer att placeras i start-menyn."
 
-#. DESC_Atlantis
+#. DESC_Emopack
 #: AirDC_installscript.nsi:119
-msgid "Atlantis emoticon pack will be installed to be used in chats."
-msgstr "Uttryckssymbolspaketet Atlantis kommer att installeras som du kan använda i chatten."
+msgid "Display emoticons as images in chat windows."
+msgstr "Visa uttryckssymboler som bilder i chattfönster."
 
 #. DESC_Themes
 #: AirDC_installscript.nsi:120
