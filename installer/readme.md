@@ -7,7 +7,7 @@ You also need [Polib](https://pypi.python.org/pypi/polib) - Library for python t
 
 To get the POT file run:
 ```
-python build_gettext_catalog_nsi.py -i AirDC_installscript.nsi -o EN_Installer.pot -p "AirDC++" -v "1.0" -l "English"
+python build_gettext_catalog_pot.py -i AirDC_installscript.nsi -o EN_Installer.pot -p "AirDC++" -v "1.0" -l "English"
 ```
 and you will get 'EN_Installer.pot' to upload to [Transifex](https://www.transifex.com/projects/p/airdcpp).
 
