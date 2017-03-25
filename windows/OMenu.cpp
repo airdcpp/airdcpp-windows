@@ -108,7 +108,9 @@ void OMenu::appendThis(const tstring& aTitle, bool appendSeparator /*false*/) {
 }
 
 void OMenu::appendSeparator() {
-	AppendMenu(MF_SEPARATOR);
+	// Avoid double separators...
+	if (GetMenuItemCount() > 0 && !isSeparator(GetMenuItemCount() - 1))
+		AppendMenu(MF_SEPARATOR);
 }
 
 void OMenu::InsertSeparator(UINT uItem, BOOL byPosition, const tstring& caption, bool accels /*= false*/) {
