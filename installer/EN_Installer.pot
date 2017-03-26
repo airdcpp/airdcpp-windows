@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: AirDC++ 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-03-24 16:34\n"
+"POT-Creation-Date: 2017-03-24 21:02\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: AirDC++ <noreply@airdcpp.net>\n"
@@ -95,9 +95,9 @@ msgstr ""
 msgid "(remove only)"
 msgstr ""
 
-#. SecAtlantis
+#. SecEmopack
 #: AirDC_installscript.nsi:106
-msgid "Atlantis Emoticon Pack"
+msgid "Default emoticon pack"
 msgstr ""
 
 #. SecThemes
@@ -117,7 +117,7 @@ msgstr ""
 
 #. DeskShort
 #: AirDC_installscript.nsi:110
-msgid "Create AirDC++ desktop shortcut"
+msgid "Desktop shortcut"
 msgstr ""
 
 #. SecInstall32
@@ -165,9 +165,9 @@ msgstr ""
 msgid "A shortcut of AirDC++ will be placed in your start menu."
 msgstr ""
 
-#. DESC_Atlantis
+#. DESC_Emopack
 #: AirDC_installscript.nsi:119
-msgid "Atlantis emoticon pack will be installed to be used in chats."
+msgid "Display emoticons as images in chat windows."
 msgstr ""
 
 #. DESC_Themes

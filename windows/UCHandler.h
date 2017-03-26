@@ -43,7 +43,7 @@ public:
 		userCommands = FavoriteManager::getInstance()->getUserCommands(ctx, hubs, isOp);
 		isOp = isOp && (ctx != UserCommand::CONTEXT_HUB);
 		
-		if(!userCommands.empty() || isOp) {
+		if(!userCommands.empty()) {
 			OMenu* subMenu = &menu;
 			menu.appendSeparator();
 
@@ -56,9 +56,7 @@ public:
 			for (size_t n = 0; n < userCommands.size(); ++n) {
 				UserCommand* uc = &userCommands[n];
 				if(uc->getType() == UserCommand::TYPE_SEPARATOR) {
-					// Avoid double separators...
-					if( cur->hasItems() && !cur->isSeparator(cur->GetMenuItemCount()-1))
-					{
+					if(cur->hasItems()) {
 						cur->appendSeparator();
 					}
 				} else if(uc->isRaw() || uc->isChat()) {
