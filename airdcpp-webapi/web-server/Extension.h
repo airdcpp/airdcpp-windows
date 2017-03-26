@@ -101,6 +101,7 @@ namespace webserver {
 		bool hasSettings() const noexcept;
 		ServerSettingItem::List getSettings() const noexcept;
 		ServerSettingItem* getSetting(const string& aKey) noexcept;
+		void resetSettings() noexcept;
 
 		typedef map<string, json> SettingValueMap;
 		void setSettingValues(const SettingValueMap& aValues);

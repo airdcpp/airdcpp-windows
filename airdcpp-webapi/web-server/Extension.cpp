@@ -153,6 +153,15 @@ namespace webserver {
 		fire(ExtensionListener::SettingDefinitionsUpdated());
 	}
 
+	void Extension::resetSettings() noexcept {
+		{
+			WLock l(cs);
+			settings.clear();
+		}
+
+		fire(ExtensionListener::SettingDefinitionsUpdated());
+	}
+
 	void Extension::setSettingValues(const SettingValueMap& aValues) {
 		{
 			WLock l(cs);
@@ -260,12 +269,12 @@ namespace webserver {
 			return false;
 		}
 
-		fire(ExtensionListener::ExtensionStopped());
 		onStopped(false);
 		return true;
 	}
 
 	void Extension::onStopped(bool aFailed) noexcept {
+		fire(ExtensionListener::ExtensionStopped(), aFailed);
 		if (aFailed) {
 			timer->stop(false);
 		}
@@ -276,6 +285,7 @@ namespace webserver {
 		}
 
 		resetProcessState();
+		resetSettings();
 
 		running = false;
 		if (aFailed && errorF) {
