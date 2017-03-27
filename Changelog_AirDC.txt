@@ -5,6 +5,7 @@ Added:
 - New Web API version: http://apidocs.airdcpp.net
 - Save and load open tabs between sessions
 - Back up successfully loaded XML setting files and recover corrupted ones automatically
+- New hubsoft-specific warnings (https://www.airdcpp.net/hubsoft-warnings)
 
 Changed:
 
@@ -12,15 +13,16 @@ Changed:
 - Simplified share monitoring that relies on directory refreshes instead of handling individual files
 - Failed bundles won't be rescanned on filelist refresh (rescan must be initiated manually instead)
 - Show recent private chat and file lists in Recents window
+- Use direct search for "Find and view NFO" functionality instead of filelists
 
 Fixed:
 
+- Fix issues with displaying of various less common character symbols (or sharing files containing them)
 
 Removed:
 
 - Option to hash finished bundle files
 - Option to add finished finished bundles in share instantly (always shared instantly from now on when inside a shared directory)
-- Fix issues with displaying of various less common character symbols (or sharing files containing them)
 
 
 3.31
