@@ -47,14 +47,27 @@ namespace webserver {
 		return getValue();
 	}
 
-	ServerSettingItem::ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType, bool aOptional, const MinMax& aMinMax) :
-		ApiSettingItem(aKey, aType), desc(aTitle), defaultValue(aDefaultValue), value(aDefaultValue), optional(aOptional), minMax(aMinMax) {
+	ServerSettingItem::ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType, bool aOptional, const MinMax& aMinMax, const List& aObjectValues, const string& aHelp) :
+		ApiSettingItem(aKey, aType), desc(aTitle), defaultValue(aDefaultValue), value(aDefaultValue), optional(aOptional), minMax(aMinMax), objectValues(aObjectValues), help(aHelp) {
 
 	}
 
 	// Returns the value and bool indicating whether it's an auto detected value
 	json ServerSettingItem::getValue() const noexcept {
 		return value;
+	}
+
+	ApiSettingItem::PtrList ServerSettingItem::getValueTypes() const noexcept {
+		ApiSettingItem::PtrList ret;
+		for (const auto& v: objectValues) {
+			ret.push_back(&v);
+		}
+
+		return ret;
+	}
+
+	const string& ServerSettingItem::getHelpStr() const noexcept {
+		return help;
 	}
 
 	void ServerSettingItem::unset() noexcept {
@@ -72,15 +85,23 @@ namespace webserver {
 		return true;
 	}
 
-	int ServerSettingItem::num() {
+	int ServerSettingItem::num() const {
 		return value.get<int>();
 	}
 
-	uint64_t ServerSettingItem::uint64() {
+	ApiSettingItem::ListNumber ServerSettingItem::numList() const {
+		return value.get<vector<int>>();
+	}
+
+	ApiSettingItem::ListString ServerSettingItem::strList() const {
+		return value.get<vector<string>>();
+	}
+
+	uint64_t ServerSettingItem::uint64() const {
 		return value.get<uint64_t>();
 	}
 
-	string ServerSettingItem::str() {
+	string ServerSettingItem::str() const {
 		if (value.is_number()) {
 			return Util::toString(num());
 		}
@@ -88,7 +109,7 @@ namespace webserver {
 		return value.get<string>();
 	}
 
-	bool ServerSettingItem::boolean() {
+	bool ServerSettingItem::boolean() const {
 		return value.get<bool>();
 	}
 
@@ -258,6 +279,15 @@ namespace webserver {
 
 	bool CoreSettingItem::isOptional() const noexcept {
 		return optionalSettingKeys.find(si.key) != optionalSettingKeys.end();
+	}
+
+	ApiSettingItem::PtrList CoreSettingItem::getValueTypes() const noexcept {
+		dcassert(0);
+		return ApiSettingItem::PtrList();
+	}
+
+	const string& CoreSettingItem::getHelpStr() const noexcept {
+		return Util::emptyString;
 	}
 
 	json CoreSettingItem::getValue() const noexcept {

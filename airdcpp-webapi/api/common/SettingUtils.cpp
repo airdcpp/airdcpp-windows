@@ -32,6 +32,10 @@ namespace webserver {
 			{ "type", typeToStr(aItem.type) },
 		};
 
+		if (!aItem.getHelpStr().empty()) {
+			ret["help"] = aItem.getHelpStr();
+		}
+
 		if (aItem.isOptional()) {
 			ret["optional"] = true;
 		}
@@ -57,6 +61,13 @@ namespace webserver {
 			}
 		}
 
+		if (aItem.type == ApiSettingItem::TYPE_LIST_OBJECT) {
+			dcassert(!aItem.getValueTypes().empty());
+			for (const auto& valueType: aItem.getValueTypes()) {
+				ret["value_definitions"].push_back(serializeDefinition(*valueType));
+			}
+		}
+
 		return ret;
 	}
 
@@ -68,11 +79,28 @@ namespace webserver {
 			case ApiSettingItem::TYPE_FILE_PATH: return "file_path";
 			case ApiSettingItem::TYPE_DIRECTORY_PATH: return "directory_path";
 			case ApiSettingItem::TYPE_TEXT: return "text";
+			case ApiSettingItem::TYPE_LIST_STRING: return "list_string";
+			case ApiSettingItem::TYPE_LIST_NUMBER: return "list_number";
+			case ApiSettingItem::TYPE_LIST_OBJECT: return "list_object";
 			case ApiSettingItem::TYPE_LAST: dcassert(0);
 		}
 
 		dcassert(0);
 		return Util::emptyString;
+	}
+
+	json SettingUtils::validateObjectListValue(const ApiSettingItem::PtrList& aPropertyDefinitions, const json& aValue) {
+		auto ret = json::object();
+		for (const auto& value : json::iterator_wrapper(aValue)) {
+			auto def = boost::find_if(aPropertyDefinitions, [&](const ApiSettingItem* aItem) { return aItem->name == value.key(); });
+			if (def == aPropertyDefinitions.end()) {
+				JsonUtil::throwError(value.key(), JsonUtil::ERROR_INVALID, "Definition for list object property " + value.key() + " was not found");
+			}
+
+			ret[value.key()] = validateValue(**def, value.value());
+		}
+
+		return ret;
 	}
 
 	json SettingUtils::validateValue(const ApiSettingItem& aItem, const json& aValue) {
@@ -96,6 +124,17 @@ namespace webserver {
 			return value;
 		} else if (aItem.type == ApiSettingItem::TYPE_BOOLEAN) {
 			return JsonUtil::parseValue<bool>(aItem.name, aValue, aItem.isOptional());
+		} else if (aItem.type == ApiSettingItem::TYPE_LIST_STRING) {
+			return JsonUtil::parseValue<vector<string>>(aItem.name, aValue, aItem.isOptional());
+		} else if (aItem.type == ApiSettingItem::TYPE_LIST_NUMBER) {
+			return JsonUtil::parseValue<vector<int>>(aItem.name, aValue, aItem.isOptional());
+		} else if (aItem.type == ApiSettingItem::TYPE_LIST_OBJECT) {
+			auto ret = json::array();
+			for (const auto& listValueObj: JsonUtil::parseValue<json::array_t>(aItem.name, aValue, aItem.isOptional())) {
+				ret.push_back(validateObjectListValue(aItem.getValueTypes(), JsonUtil::parseValue<json::object_t>(aItem.name, listValueObj, false)));
+			}
+
+			return ret;
 		}
 
 		dcassert(0);
@@ -128,11 +167,21 @@ namespace webserver {
 		}
 
 		auto defaultValue = JsonUtil::getOptionalRawField("defaultValue", aJson, !isOptional);
+		auto help = JsonUtil::getOptionalFieldDefault<string>("help", aJson, Util::emptyString);
 
 		auto minValue = JsonUtil::getOptionalFieldDefault<int>("min", aJson, 0);
 		auto maxValue = JsonUtil::getOptionalFieldDefault<int>("max", aJson, MAX_INT_VALUE);
 
-		return ServerSettingItem(key, title, defaultValue, type, isOptional, { minValue, maxValue });
+		ServerSettingItem::List objectValues;
+		if (type == ApiSettingItem::TYPE_LIST_OBJECT) {
+			for (const auto& valueJ: JsonUtil::getRawField("value_definitions", aJson)) {
+				objectValues.push_back(deserializeDefinition(valueJ));
+			}
+		}
+
+		auto ret = ServerSettingItem(key, title, defaultValue, type, isOptional, { minValue, maxValue }, objectValues, help);
+		validateValue(ret, defaultValue);
+		return ret;
 	}
 
 	ApiSettingItem::Type SettingUtils::parseType(const string& aTypeStr) noexcept {
@@ -148,6 +197,12 @@ namespace webserver {
 			return ApiSettingItem::TYPE_FILE_PATH;
 		} else if (aTypeStr == "directory_path") {
 			return ApiSettingItem::TYPE_DIRECTORY_PATH;
+		} else if (aTypeStr == "list_string") {
+			return ApiSettingItem::TYPE_LIST_STRING;
+		} else if (aTypeStr == "list_number") {
+			return ApiSettingItem::TYPE_LIST_NUMBER;
+		} else if (aTypeStr == "list_object") {
+			return ApiSettingItem::TYPE_LIST_OBJECT;
 		}
 
 		dcassert(0);

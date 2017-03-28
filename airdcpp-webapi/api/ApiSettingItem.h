@@ -30,6 +30,10 @@ namespace webserver {
 	class ApiSettingItem {
 	public:
 		typedef vector<ApiSettingItem> List;
+		typedef vector<const ApiSettingItem*> PtrList;
+
+		typedef vector<int> ListNumber;
+		typedef vector<string> ListString;
 		enum Type {
 			TYPE_NUMBER,
 			TYPE_BOOLEAN,
@@ -37,6 +41,9 @@ namespace webserver {
 			TYPE_FILE_PATH,
 			TYPE_DIRECTORY_PATH,
 			TYPE_TEXT,
+			TYPE_LIST_STRING,
+			TYPE_LIST_NUMBER,
+			TYPE_LIST_OBJECT,
 			TYPE_LAST
 		};
 
@@ -60,6 +67,8 @@ namespace webserver {
 		virtual void unset() noexcept = 0;
 		virtual json getValue() const noexcept = 0;
 		virtual json getDefaultValue() const noexcept = 0;
+		virtual PtrList getValueTypes() const noexcept = 0;
+		virtual const string& getHelpStr() const noexcept = 0;
 
 		virtual bool isOptional() const noexcept = 0;
 		virtual const MinMax& getMinMax() const noexcept = 0;
@@ -106,6 +115,8 @@ namespace webserver {
 		// Returns the value and bool indicating whether it's an auto detected value
 		json getValue() const noexcept override;
 		json getAutoValue() const noexcept override;
+		ApiSettingItem::PtrList getValueTypes() const noexcept override;
+		const string& getHelpStr() const noexcept override;
 
 		// Throws on invalid JSON
 		bool setValue(const json& aJson) override;
@@ -131,7 +142,8 @@ namespace webserver {
 	public:
 		typedef vector<ServerSettingItem> List;
 
-		ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType, bool aOptional = false, const MinMax& aMinMax = defaultMinMax);
+		ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType, bool aOptional = false, 
+			const MinMax& aMinMax = defaultMinMax, const List& aObjectValues = List(), const string& aHelp = "");
 
 		// Returns the value and bool indicating whether it's an auto detected value
 		json getValue() const noexcept override;
@@ -144,12 +156,18 @@ namespace webserver {
 			return desc;
 		}
 
+		ApiSettingItem::PtrList getValueTypes() const noexcept override;
+		const string& getHelpStr() const noexcept override;
+
 		void unset() noexcept override;
 
-		int num();
-		uint64_t uint64();
-		string str();
-		bool boolean();
+		int num() const;
+		uint64_t uint64() const;
+		string str() const;
+		bool boolean() const;
+
+		ApiSettingItem::ListNumber numList() const;
+		ApiSettingItem::ListString strList() const;
 
 		bool isDefault() const noexcept;
 
@@ -164,8 +182,10 @@ namespace webserver {
 		//ServerSettingItem(ServerSettingItem&& rhs) noexcept = default;
 		//ServerSettingItem& operator=(ServerSettingItem&& rhs) noexcept = default;
 	private:
+		List objectValues;
 		const MinMax minMax;
 
+		const string help;
 		const bool optional;
 		json value;
 		const json defaultValue;

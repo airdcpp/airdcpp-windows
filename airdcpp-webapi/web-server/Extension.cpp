@@ -242,6 +242,9 @@ namespace webserver {
 			ret.push_back("--" + aName + "=" + aParam);
 		};
 
+		// Name
+		addParam("name", name);
+
 		// Connect URL
 		addParam("apiUrl", getConnectUrl(wsm));
 
