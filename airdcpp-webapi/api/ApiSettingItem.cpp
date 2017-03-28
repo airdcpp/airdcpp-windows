@@ -47,8 +47,12 @@ namespace webserver {
 		return getValue();
 	}
 
-	ServerSettingItem::ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType, bool aOptional, const MinMax& aMinMax, const List& aObjectValues, const string& aHelp) :
-		ApiSettingItem(aKey, aType), desc(aTitle), defaultValue(aDefaultValue), value(aDefaultValue), optional(aOptional), minMax(aMinMax), objectValues(aObjectValues), help(aHelp) {
+	ServerSettingItem::ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType, 
+		bool aOptional, const MinMax& aMinMax, const List& aObjectValues, const string& aHelp, const EnumOption::List& aEnumOptions) :
+
+		ApiSettingItem(aKey, aType), desc(aTitle), defaultValue(aDefaultValue), value(aDefaultValue), 
+		optional(aOptional), minMax(aMinMax), objectValues(aObjectValues), help(aHelp), enumOptions(aEnumOptions)
+	{
 
 	}
 
@@ -122,8 +126,7 @@ namespace webserver {
 	}
 
 	ApiSettingItem::EnumOption::List ServerSettingItem::getEnumOptions() const noexcept {
-		ApiSettingItem::EnumOption::List ret;
-		return ret;
+		return enumOptions;
 	}
 
 

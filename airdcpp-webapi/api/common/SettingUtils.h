@@ -36,7 +36,7 @@ namespace webserver {
 
 		static ApiSettingItem::Type parseType(const string& aTypeStr) noexcept;
 	private:
-
+		static json parseEnumId(const json& aJson, ApiSettingItem::Type aType);
 	};
 }
 

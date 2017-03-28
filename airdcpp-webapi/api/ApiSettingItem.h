@@ -143,7 +143,7 @@ namespace webserver {
 		typedef vector<ServerSettingItem> List;
 
 		ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType, bool aOptional = false, 
-			const MinMax& aMinMax = defaultMinMax, const List& aObjectValues = List(), const string& aHelp = "");
+			const MinMax& aMinMax = defaultMinMax, const List& aObjectValues = List(), const string& aHelp = "", const EnumOption::List& aEnumOptions = EnumOption::List());
 
 		// Returns the value and bool indicating whether it's an auto detected value
 		json getValue() const noexcept override;
@@ -182,7 +182,8 @@ namespace webserver {
 		//ServerSettingItem(ServerSettingItem&& rhs) noexcept = default;
 		//ServerSettingItem& operator=(ServerSettingItem&& rhs) noexcept = default;
 	private:
-		List objectValues;
+		const List objectValues;
+		const EnumOption::List enumOptions;
 		const MinMax minMax;
 
 		const string help;

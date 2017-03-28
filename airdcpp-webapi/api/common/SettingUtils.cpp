@@ -30,6 +30,7 @@ namespace webserver {
 			{ "key", aItem.name },
 			{ "title", aItem.getTitle() },
 			{ "type", typeToStr(aItem.type) },
+			{ "defaultValue", aItem.getDefaultValue() },
 		};
 
 		if (!aItem.getHelpStr().empty()) {
@@ -90,20 +91,35 @@ namespace webserver {
 	}
 
 	json SettingUtils::validateObjectListValue(const ApiSettingItem::PtrList& aPropertyDefinitions, const json& aValue) {
+		// Unknown properties will be ignored...
 		auto ret = json::object();
-		for (const auto& value : json::iterator_wrapper(aValue)) {
-			auto def = boost::find_if(aPropertyDefinitions, [&](const ApiSettingItem* aItem) { return aItem->name == value.key(); });
-			if (def == aPropertyDefinitions.end()) {
-				JsonUtil::throwError(value.key(), JsonUtil::ERROR_INVALID, "Definition for list object property " + value.key() + " was not found");
-			}
+		for (const auto& def: aPropertyDefinitions) {
+			auto i = aValue.find(def->name);
+			if (i == aValue.end()) {
+				if (!def->isOptional()) {
+					JsonUtil::throwError(def->name, JsonUtil::ERROR_MISSING, "Required object value was not provided");
+				}
 
-			ret[value.key()] = validateValue(**def, value.value());
+				ret[def->name] = def->getDefaultValue();
+			} else {
+				ret[def->name] = validateValue(*def, i.value());
+			}
 		}
 
 		return ret;
 	}
 
 	json SettingUtils::validateValue(const ApiSettingItem& aItem, const json& aValue) {
+		{
+			auto enumOptions = aItem.getEnumOptions();
+			if (!enumOptions.empty()) {
+				auto i = boost::find_if(enumOptions, [&](const ApiSettingItem::EnumOption& opt) { return opt.id == aValue; });
+				if (i == enumOptions.end()) {
+					JsonUtil::throwError(aItem.name, JsonUtil::ERROR_INVALID, "Value is not one of the enum options");
+				}
+			}
+		}
+
 		if (aItem.type == ApiSettingItem::TYPE_NUMBER) {
 			auto num = JsonUtil::parseValue<int>(aItem.name, aValue, aItem.isOptional());
 
@@ -151,6 +167,14 @@ namespace webserver {
 		return ret;
 	}
 
+	json SettingUtils::parseEnumId(const json& aJson, ApiSettingItem::Type aType) {
+		if (aType == ApiSettingItem::TYPE_NUMBER) {
+			return JsonUtil::getField<int>("id", aJson, false);
+		}
+
+		return JsonUtil::getField<string>("id", aJson, false);
+	}
+
 	ServerSettingItem SettingUtils::deserializeDefinition(const json& aJson) {
 		auto key = JsonUtil::getField<string>("key", aJson, false);
 		auto title = JsonUtil::getField<string>("title", aJson, false);
@@ -179,8 +203,22 @@ namespace webserver {
 			}
 		}
 
-		auto ret = ServerSettingItem(key, title, defaultValue, type, isOptional, { minValue, maxValue }, objectValues, help);
-		validateValue(ret, defaultValue);
+		ApiSettingItem::EnumOption::List enumOptions;
+
+		if (type == ApiSettingItem::TYPE_STRING || type == ApiSettingItem::TYPE_NUMBER || type == ApiSettingItem::TYPE_LIST_NUMBER || type == ApiSettingItem::TYPE_LIST_STRING) {
+			auto optionsJson = JsonUtil::getOptionalRawField("values", aJson, false);
+			if (!optionsJson.is_null()) {
+				for (const auto& opt: optionsJson) {
+					enumOptions.push_back({
+						parseEnumId(opt, type),
+						JsonUtil::getField<string>("name", opt, false)
+					});
+				}
+			}
+		}
+
+		auto ret = ServerSettingItem(key, title, defaultValue, type, isOptional, { minValue, maxValue }, objectValues, help, enumOptions);
+		auto tmp = validateValue(ret, defaultValue);
 		return ret;
 	}
 

@@ -66,7 +66,16 @@ namespace webserver {
 		const string packageDescription = aJson.at("description");
 		const string packageEntry = aJson.at("main");
 		const string packageVersion = aJson.at("version");
-		const string packageAuthor = aJson.at("author").at("name");
+
+		{
+			json packageAuthor = aJson.at("author");
+			if (packageAuthor.is_string()) {
+				author = packageAuthor.get<string>();
+			} else {
+				author = packageAuthor.at("name").get<string>();
+			}
+		}
+
 
 		privateExtension = aJson.value("private", false);
 
@@ -74,7 +83,6 @@ namespace webserver {
 		description = packageDescription;
 		entry = packageEntry;
 		version = packageVersion;
-		author = packageAuthor;
 
 		// Optional fields
 		homepage = aJson.value("homepage", Util::emptyString);
