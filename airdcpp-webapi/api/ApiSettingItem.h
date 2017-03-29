@@ -96,6 +96,16 @@ namespace webserver {
 
 			return nullptr;
 		}
+
+		template<typename ListT>
+		static PtrList valueTypesToPtrList(ListT& aList) noexcept {
+			PtrList ret;
+			for (const auto& v: aList) {
+				ret.push_back(&v);
+			}
+
+			return ret;
+		}
 	};
 
 	class CoreSettingItem : public ApiSettingItem {

@@ -25,7 +25,10 @@
 namespace webserver {
 	class SettingUtils {
 	public:
-		static json validateValue(const ApiSettingItem& aItem, const json& aValue);
+		static json validateValue(const json& aValue, const ApiSettingItem& aItem);
+		static json validateValue(const json& aValue, const string& aKey, ApiSettingItem::Type aType, bool aOptional, const ApiSettingItem::MinMax& aMinMax, 
+			const ApiSettingItem::PtrList& aObjectValues, const ApiSettingItem::EnumOption::List& aEnumOptions);
+
 		static json validateObjectListValue(const ApiSettingItem::PtrList& aPropertyDefinitions, const json& aValue);
 
 		static ServerSettingItem deserializeDefinition(const json& aJson);
