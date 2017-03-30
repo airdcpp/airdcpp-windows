@@ -81,7 +81,7 @@ namespace webserver {
 		const auto& reqJson = aRequest.getRequestBody();
 
 		auto url = JsonUtil::getField<string>("url", reqJson, false);
-		auto sha = JsonUtil::getOptionalFieldDefault<string>("shasum", reqJson, Util::emptyString, true);
+		auto sha = JsonUtil::getOptionalFieldDefault<string>("shasum", reqJson, Util::emptyString);
 
 		if (!em.downloadExtension(url, sha)) {
 			aRequest.setResponseErrorStr("Extension is being download already");

@@ -62,12 +62,7 @@ namespace webserver {
 	}
 
 	ApiSettingItem::PtrList ServerSettingItem::getValueTypes() const noexcept {
-		ApiSettingItem::PtrList ret;
-		for (const auto& v: objectValues) {
-			ret.push_back(&v);
-		}
-
-		return ret;
+		return valueTypesToPtrList(objectValues);
 	}
 
 	const string& ServerSettingItem::getHelpStr() const noexcept {
