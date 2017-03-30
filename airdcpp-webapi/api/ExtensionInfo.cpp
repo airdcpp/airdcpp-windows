@@ -115,7 +115,7 @@ namespace webserver {
 			settings[elem.key()] = SettingUtils::validateValue(elem.value(), *setting);
 		}
 
-		extension->setSettingValues(aRequest.getRequestBody());
+		extension->setSettingValues(settings);
 		return websocketpp::http::status_code::no_content;
 	}
 

@@ -30,7 +30,7 @@ namespace webserver {
 			{ "key", aItem.name },
 			{ "title", aItem.getTitle() },
 			{ "type", typeToStr(aItem.type) },
-			{ "defaultValue", aItem.getDefaultValue() },
+			{ "default_value", aItem.getDefaultValue() },
 		};
 
 		if (!aItem.getHelpStr().empty()) {
@@ -43,7 +43,7 @@ namespace webserver {
 
 		{
 			for (const auto& opt : aItem.getEnumOptions()) {
-				ret["values"].push_back({
+				ret["options"].push_back({
 					{ "id", opt.id },
 					{ "name", opt.text },
 				});
@@ -65,7 +65,7 @@ namespace webserver {
 		if (aItem.type == ApiSettingItem::TYPE_LIST_OBJECT) {
 			dcassert(!aItem.getValueTypes().empty());
 			for (const auto& valueType: aItem.getValueTypes()) {
-				ret["value_definitions"].push_back(serializeDefinition(*valueType));
+				ret["definitions"].push_back(serializeDefinition(*valueType));
 			}
 		}
 
@@ -128,6 +128,8 @@ namespace webserver {
 							JsonUtil::throwError(aKey, JsonUtil::ERROR_INVALID, "All values can't be found from enum options");
 						}
 					}
+				} else {
+					JsonUtil::throwError(aKey, JsonUtil::ERROR_INVALID, "options not supported for type " + typeToStr(aType));
 				}
 			}
 		}
@@ -153,9 +155,9 @@ namespace webserver {
 		} else if (aType == ApiSettingItem::TYPE_BOOLEAN) {
 			return JsonUtil::parseValue<bool>(aKey, aValue, aOptional);
 		} else if (aType == ApiSettingItem::TYPE_LIST_STRING) {
-			return JsonUtil::parseValue<vector<string>>(aKey, aValue, aOptional);
+			return JsonUtil::parseValue<ApiSettingItem::ListString>(aKey, aValue, aOptional);
 		} else if (aType == ApiSettingItem::TYPE_LIST_NUMBER) {
-			return JsonUtil::parseValue<vector<int>>(aKey, aValue, aOptional);
+			return JsonUtil::parseValue<ApiSettingItem::ListNumber>(aKey, aValue, aOptional);
 		} else if (aType == ApiSettingItem::TYPE_LIST_OBJECT) {
 			auto ret = json::array();
 			for (const auto& listValueObj: JsonUtil::parseValue<json::array_t>(aKey, aValue, aOptional)) {
@@ -187,7 +189,7 @@ namespace webserver {
 		return JsonUtil::getField<string>("id", aJson, false);
 	}
 
-	ServerSettingItem SettingUtils::deserializeDefinition(const json& aJson) {
+	ServerSettingItem SettingUtils::deserializeDefinition(const json& aJson, bool aIsListValue) {
 		auto key = JsonUtil::getField<string>("key", aJson, false);
 		auto title = JsonUtil::getField<string>("title", aJson, false);
 
@@ -195,6 +197,10 @@ namespace webserver {
 		auto type = parseType(typeStr);
 		if (type == ApiSettingItem::TYPE_LAST) {
 			JsonUtil::throwError("type", JsonUtil::ERROR_INVALID, "Invalid type " + typeStr);
+		}
+
+		if (aIsListValue && ApiSettingItem::isList(type)) {
+			JsonUtil::throwError("type", JsonUtil::ERROR_INVALID, "Field of type " + typeStr + " can't be used for list item");
 		}
 
 		auto isOptional = JsonUtil::getOptionalFieldDefault<bool>("optional", aJson, false);
@@ -211,15 +217,15 @@ namespace webserver {
 
 		ServerSettingItem::List objectValues;
 		if (type == ApiSettingItem::TYPE_LIST_OBJECT) {
-			for (const auto& valueJ: JsonUtil::getRawField("value_definitions", aJson)) {
-				objectValues.push_back(deserializeDefinition(valueJ));
+			for (const auto& valueJ: JsonUtil::getRawField("definitions", aJson)) {
+				objectValues.push_back(deserializeDefinition(valueJ, true));
 			}
 		}
 
 		ApiSettingItem::EnumOption::List enumOptions;
 
 		if (type == ApiSettingItem::TYPE_STRING || type == ApiSettingItem::TYPE_NUMBER || type == ApiSettingItem::TYPE_LIST_NUMBER || type == ApiSettingItem::TYPE_LIST_STRING) {
-			auto optionsJson = JsonUtil::getOptionalRawField("values", aJson, false);
+			auto optionsJson = JsonUtil::getOptionalRawField("options", aJson, false);
 			if (!optionsJson.is_null()) {
 				for (const auto& opt: optionsJson) {
 					enumOptions.push_back({
@@ -231,7 +237,7 @@ namespace webserver {
 		}
 
 		auto defaultValue = validateValue(
-			JsonUtil::getOptionalRawField("defaultValue", aJson, !isOptional), 
+			JsonUtil::getOptionalRawField("default_value", aJson, !isOptional), 
 			key, type, true, minMax, ApiSettingItem::valueTypesToPtrList(objectValues), enumOptions
 		);
 

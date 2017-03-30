@@ -134,7 +134,6 @@ namespace webserver {
 				throwError(aFieldName, ERROR_INVALID, "Field can't be null");
 			}
 
-			// Strings get converted to "", throws otherwise
 			return convertNullValue<T>(aFieldName);
 		}
 
@@ -180,14 +179,14 @@ namespace webserver {
 			return aJson.empty();
 		}
 
-		// Convert null strings, add more conversions if needed
+		// Non-integral types should be initialized with the default constructor
 		template <class T>
-		static typename std::enable_if<std::is_same<std::string, T>::value, T>::type convertNullValue(const string&) {
-			return "";
+		static typename std::enable_if<!std::is_integral<T>::value, T>::type convertNullValue(const string&) {
+			return T();
 		}
 
 		template <class T>
-		static typename std::enable_if<!std::is_same<std::string, T>::value, T>::type convertNullValue(const string& aFieldName) {
+		static typename std::enable_if<std::is_integral<T>::value, T>::type convertNullValue(const string& aFieldName) {
 			throw ArgumentException(getError(aFieldName, ERROR_INVALID, "Field can't be empty"));
 		}
 

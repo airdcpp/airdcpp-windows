@@ -60,6 +60,10 @@ namespace webserver {
 			return aType == TYPE_STRING || aType == TYPE_TEXT || aType == TYPE_FILE_PATH || aType == TYPE_DIRECTORY_PATH;
 		}
 
+		static bool isList(Type aType) noexcept {
+			return aType == TYPE_LIST_STRING || aType == TYPE_LIST_NUMBER || aType == TYPE_LIST_OBJECT;
+		}
+
 		// Returns the value and bool indicating whether it's an auto detected value
 		virtual string getTitle() const noexcept = 0;
 
