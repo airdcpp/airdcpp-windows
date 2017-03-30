@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airgit\AirDC.rc
+// Used by N:\projects\airgit\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -1011,6 +1011,7 @@
 #define IDC_DECREASE_RAM                1331
 #define IDC_CHECK_SHARED                1331
 #define IDC_IGNORE_MAINCHAT             1331
+#define IDC_SAVE_LAST_STATE             1331
 #define IDC_ASEARCH                     1332
 #define IDC_REFRESH_VNAME_ON_SHAREPAGE2 1332
 #define IDC_SHOW_JOIN2                  1332

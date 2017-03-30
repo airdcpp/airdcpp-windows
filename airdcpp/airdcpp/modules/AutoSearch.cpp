@@ -86,21 +86,25 @@ bool AutoSearch::allowAutoSearch() const noexcept{
 bool AutoSearch::onBundleRemoved(const BundlePtr& aBundle, bool finished) noexcept {
 	removeBundle(aBundle);
 
-	auto usingInc = usingIncrementation();
-	auto expired = usingInc && maxNumberReached() && finished && SETTING(AS_DELAY_HOURS) == 0 && bundles.empty();
-	if (finished) {
-		auto time = GET_TIME();
-		addPath(aBundle->getTarget(), time);
-		if (usingInc) {
-			if (SETTING(AS_DELAY_HOURS) > 0) {
-				lastIncFinish = time;
-				setStatus(AutoSearch::STATUS_POSTSEARCH);
-				expired = false;
-			} else {
-				changeNumber(true);
-			}
+	if (!finished) {
+		updateStatus();
+		return false;
+	}
+
+	bool expired = false;
+	auto time = GET_TIME();
+	addPath(aBundle->getTarget(), time);
+	if (usingIncrementation()) {
+		if (SETTING(AS_DELAY_HOURS) > 0) {
+			lastIncFinish = time;
+			setStatus(AutoSearch::STATUS_POSTSEARCH);
+			expired = false;
+		} else {
+			expired = maxNumberReached();
+			changeNumber(true);
 		}
 	}
+	
 	updateStatus();
 
 	return expired;

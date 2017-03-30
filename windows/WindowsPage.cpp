@@ -32,7 +32,6 @@ PropPage::TextItem WindowsPage::textItem[] = {
 };
 
 WindowsPage::ListItem WindowsPage::listItems[] = {
-	{ SettingsManager::SAVE_LAST_STATE, ResourceManager::SAVE_LAST_STATE },
 	{ SettingsManager::OPEN_AUTOSEARCH, ResourceManager::AUTO_SEARCH },
 	{ SettingsManager::OPEN_QUEUE, ResourceManager::DOWNLOAD_QUEUE },
 	{ SettingsManager::OPEN_FAVORITE_HUBS, ResourceManager::FAVORITE_HUBS },
@@ -75,12 +74,21 @@ LRESULT WindowsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	PropPage::read((HWND)*this, items, optionItems, GetDlgItem(IDC_WINDOWS_OPTIONS));
 	PropPage::read((HWND)*this, items, confirmItems, GetDlgItem(IDC_CONFIRM_OPTIONS));
 
+	::SetWindowText(GetDlgItem(IDC_SAVE_LAST_STATE), CTSTRING(SAVE_LAST_STATE));
+	CheckDlgButton(IDC_SAVE_LAST_STATE, SETTING(SAVE_LAST_STATE));
+	fixControls();
+
 	// Do specialized reading here
 	return TRUE;
+}
+void WindowsPage::fixControls() {
+	::EnableWindow(GetDlgItem(IDC_WINDOWS_STARTUP), IsDlgButtonChecked(IDC_SAVE_LAST_STATE) != BST_CHECKED);
 }
 
 void WindowsPage::write() {
 	PropPage::write((HWND)*this, items, listItems, GetDlgItem(IDC_WINDOWS_STARTUP));
 	PropPage::write((HWND)*this, items, optionItems, GetDlgItem(IDC_WINDOWS_OPTIONS));
 	PropPage::write((HWND)*this, items, confirmItems, GetDlgItem(IDC_CONFIRM_OPTIONS));
+	SettingsManager::getInstance()->set(SettingsManager::SAVE_LAST_STATE, IsDlgButtonChecked(IDC_SAVE_LAST_STATE) == BST_CHECKED);
+
 }

@@ -39,9 +39,14 @@ public:
 
 	BEGIN_MSG_MAP(WindowsPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
+		COMMAND_ID_HANDLER(IDC_SAVE_LAST_STATE, onCheckBox)
 	END_MSG_MAP()
 
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT onCheckBox(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		fixControls();
+		return 0;
+	}
 
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
@@ -55,6 +60,7 @@ protected:
 	static ListItem optionItems[];
 	static ListItem confirmItems[];
 
+	void fixControls();
 	TCHAR* title;
 };
 

@@ -1299,21 +1299,19 @@ void MainFrame::loadOpenWindows() {
 		});
 #undef load
 	}
-	/*
-	For restoring the exact last state of the windows, this is wrong to open these. 
-	However the user can disable the settings and hub auto connect if this is not the desired behavior
-	*/
-	if (SETTING(OPEN_PUBLIC)) PostMessage(WM_COMMAND, ID_FILE_CONNECT);
-	if (SETTING(OPEN_FAVORITE_HUBS)) PostMessage(WM_COMMAND, IDC_FAVORITES);
-	if (SETTING(OPEN_FAVORITE_USERS)) PostMessage(WM_COMMAND, IDC_FAVUSERS);
-	if (SETTING(OPEN_QUEUE)) PostMessage(WM_COMMAND, IDC_QUEUE);
-	if (SETTING(OPEN_WAITING_USERS)) PostMessage(WM_COMMAND, IDC_UPLOAD_QUEUE);
-	if (SETTING(OPEN_FINISHED_UPLOADS)) PostMessage(WM_COMMAND, IDC_FINISHED_UL);
-	if (SETTING(OPEN_SEARCH_SPY)) PostMessage(WM_COMMAND, IDC_SEARCH_SPY);
-	if (SETTING(OPEN_NOTEPAD)) PostMessage(WM_COMMAND, IDC_NOTEPAD);
-	if (SETTING(OPEN_AUTOSEARCH)) PostMessage(WM_COMMAND, IDC_AUTOSEARCH);
-	if (SETTING(OPEN_SYSTEM_LOG)) PostMessage(WM_COMMAND, IDC_SYSTEM_LOG);
 
+	if (!SETTING(SAVE_LAST_STATE)) {
+		if (SETTING(OPEN_PUBLIC)) PostMessage(WM_COMMAND, ID_FILE_CONNECT);
+		if (SETTING(OPEN_FAVORITE_HUBS)) PostMessage(WM_COMMAND, IDC_FAVORITES);
+		if (SETTING(OPEN_FAVORITE_USERS)) PostMessage(WM_COMMAND, IDC_FAVUSERS);
+		if (SETTING(OPEN_QUEUE)) PostMessage(WM_COMMAND, IDC_QUEUE);
+		if (SETTING(OPEN_WAITING_USERS)) PostMessage(WM_COMMAND, IDC_UPLOAD_QUEUE);
+		if (SETTING(OPEN_FINISHED_UPLOADS)) PostMessage(WM_COMMAND, IDC_FINISHED_UL);
+		if (SETTING(OPEN_SEARCH_SPY)) PostMessage(WM_COMMAND, IDC_SEARCH_SPY);
+		if (SETTING(OPEN_NOTEPAD)) PostMessage(WM_COMMAND, IDC_NOTEPAD);
+		if (SETTING(OPEN_AUTOSEARCH)) PostMessage(WM_COMMAND, IDC_AUTOSEARCH);
+		if (SETTING(OPEN_SYSTEM_LOG)) PostMessage(WM_COMMAND, IDC_SYSTEM_LOG);
+	}
 	//Connect the remaining auto connect hubs, in case some were closed
 	if(autoConnect)
 		FavoriteManager::getInstance()->autoConnect();
