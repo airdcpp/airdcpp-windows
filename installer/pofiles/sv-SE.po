@@ -1,14 +1,14 @@
 # 
 # Translators:
 # Sopor, 2015-2017
-# steve72, 2016
+# steve72, 2016-2017
 msgid ""
 msgstr ""
 "Project-Id-Version: AirDC++\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-03-24 21:02\n"
-"PO-Revision-Date: 2017-03-24 20:17+0000\n"
-"Last-Translator: Sopor\n"
+"PO-Revision-Date: 2017-03-26 08:44+0000\n"
+"Last-Translator: steve72\n"
 "Language-Team: Swedish (Sweden) (http://www.transifex.com/airdcpp/airdcpp/language/sv_SE/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -31,7 +31,7 @@ msgstr "Välkommen till installationen av AirDC++."
 msgid ""
 "If you are upgrading from an older version, select the same directory where "
 "your old version resides and your existing settings will be imported."
-msgstr "Om du uppgraderar från en äldre version, välj då samma katalog där den gamla version finns och dina nuvarande inställningar kommer att finnas kvar."
+msgstr "Om du uppgraderar från en äldre version, välj då samma katalog där den gamla versionen finns och dina nuvarande inställningar kommer att behållas."
 
 #. SecAirDC
 #: AirDC_installscript.nsi:95
@@ -122,7 +122,7 @@ msgstr "Lagra inställningarna i användarprofilen"
 #. DeskShort
 #: AirDC_installscript.nsi:110
 msgid "Desktop shortcut"
-msgstr "Skrivbordsgenväg"
+msgstr "Genväg på skrivbordet"
 
 #. SecInstall32
 #: AirDC_installscript.nsi:111
@@ -135,7 +135,7 @@ msgid ""
 "If you want to keep your settings in the program directory, make sure that "
 "you DO NOT install AirDC++ to the 'Program files' folder!!! This can lead to"
 " abnormal behaviour like loss of settings or downloads!"
-msgstr "Om du vill behålla dina inställningsfiler i programkatalogen, se då till att INTE installerar AirDC++ i katalogen 'Program'!!! Detta kan leda till onormalt beteende som förlust av inställningar eller nedladdningar!"
+msgstr "Om du vill behålla dina inställningsfiler i programkatalogen, se då till att du INTE installerar AirDC++ i katalogen 'Program'!!! Detta kan leda till onormalt beteende som förlust av inställningar eller nedladdningar!"
 
 #. OsUnsupported
 #: AirDC_installscript.nsi:113
@@ -167,7 +167,7 @@ msgstr "AirDC++ huvudprogrammet."
 #. DESC_StartMenu
 #: AirDC_installscript.nsi:118
 msgid "A shortcut of AirDC++ will be placed in your start menu."
-msgstr "En genväg av AirDC++ kommer att placeras i start-menyn."
+msgstr "En genväg till AirDC++ kommer att placeras i startmenyn."
 
 #. DESC_Emopack
 #: AirDC_installscript.nsi:119
@@ -192,7 +192,7 @@ msgid ""
 "Normally you should not change this because it can lead to abnormal "
 "behaviour like loss of settings or downloads. If you unselect it, read the "
 "warning message carefully."
-msgstr "Normalt ska du inte ändra denna för det kan leda till onormalt beteende som förlust av inställningar eller nedladdningar. Om du avmarkerar den, se till att du läser varningsmeddelandet noga."
+msgstr "Normalt ska du inte ändra denna då det kan leda till onormalt beteende som förlust av inställningar eller nedladdningar. Om du avmarkerar den, se till att du läser varningsmeddelandet noga."
 
 #. DESC_desk
 #: AirDC_installscript.nsi:123
