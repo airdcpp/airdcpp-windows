@@ -1254,12 +1254,12 @@ void MainFrame::saveOpenWindows() {
 
 void MainFrame::loadOpenWindows() {
 	bool autoConnect = !Util::hasStartupParam("/noautoconnect");
-
+	bool hasSavedState = false;
 	if (SETTING(SAVE_LAST_STATE)) {
 
 #define load(frame, ID) else if(frame::id == ID) frame::parseWindowParams(params)
 
-		SettingsManager::loadSettingFile(CONFIG_DIR, CONFIG_FRAMES_NAME, [this, autoConnect](SimpleXML& xml) {
+		SettingsManager::loadSettingFile(CONFIG_DIR, CONFIG_FRAMES_NAME, [&](SimpleXML& xml) {
 			if (xml.findChild("Windows")) {
 				xml.stepIn();
 				while (xml.findChild("Window")) {
@@ -1294,13 +1294,15 @@ void MainFrame::loadOpenWindows() {
 					load(UploadQueueFrame, id);
 					load(CDMDebugFrame, id);
 					load(RecentsFrame, id);
+
+					hasSavedState = true;
 				}
 			}
 		});
 #undef load
 	}
 
-	if (!SETTING(SAVE_LAST_STATE)) {
+	if (!SETTING(SAVE_LAST_STATE) || !hasSavedState) {
 		if (SETTING(OPEN_PUBLIC)) PostMessage(WM_COMMAND, ID_FILE_CONNECT);
 		if (SETTING(OPEN_FAVORITE_HUBS)) PostMessage(WM_COMMAND, IDC_FAVORITES);
 		if (SETTING(OPEN_FAVORITE_USERS)) PostMessage(WM_COMMAND, IDC_FAVUSERS);
