@@ -3,14 +3,14 @@
 # karl_kox <chus_vader@hotmail.com>, 2015
 # Klondike klondikeño <franxisco1988@gmail.com>, 2015
 # Klondike klondikeño <franxisco1988@gmail.com>, 2016
-# Zerukun <Zeru.VK@gmail.com>, 2016
+# Zerukun <Zeru.VK@gmail.com>, 2016-2017
 msgid ""
 msgstr ""
 "Project-Id-Version: AirDC++\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-05-01 15:00\n"
-"PO-Revision-Date: 2016-05-23 18:08+0000\n"
-"Last-Translator: Klondike klondikeño <franxisco1988@gmail.com>\n"
+"POT-Creation-Date: 2017-03-24 21:02\n"
+"PO-Revision-Date: 2017-03-26 21:25+0000\n"
+"Last-Translator: Zerukun <Zeru.VK@gmail.com>\n"
 "Language-Team: Spanish (Spain) (http://www.transifex.com/airdcpp/airdcpp/language/es_ES/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -101,10 +101,10 @@ msgstr "Desinstalar"
 msgid "(remove only)"
 msgstr "(unicamente eliminar)"
 
-#. SecRadox
+#. SecEmopack
 #: AirDC_installscript.nsi:106
-msgid "Radox Emoticon Pack"
-msgstr "Paquete de Emoticonos Radox"
+msgid "Default emoticon pack"
+msgstr "Pack de emoticonos por defecto"
 
 #. SecThemes
 #: AirDC_installscript.nsi:107
@@ -123,8 +123,8 @@ msgstr "Guardar ajustes en la carpeta del perfil de usuario"
 
 #. DeskShort
 #: AirDC_installscript.nsi:110
-msgid "Create AirDC++ desktop shortcut"
-msgstr "Crear acceso directo para AirDC++"
+msgid "Desktop shortcut"
+msgstr "Acceso directo en el escritorio"
 
 #. SecInstall32
 #: AirDC_installscript.nsi:111
@@ -139,13 +139,12 @@ msgid ""
 " abnormal behaviour like loss of settings or downloads!"
 msgstr "Si quieres conservar tus ajustes en el directorio del programa, asegúrate de NO INSTALAR AirDC++ en la carpeta 'Archivos de Programa' ¡Esto puede acarrear comportamientos anormales como perdida de ajustes o descargas!"
 
-#. XPOrBelow
+#. OsUnsupported
 #: AirDC_installscript.nsi:113
 msgid ""
-"This version is only compatible with Windows Vista or newer operating "
-"system. You will be forwarded to www.airdcpp.net for downloading a version "
-"that is compatible with your Windows version."
-msgstr "Esta versión solo es compatible con Windows Vista o posterior. Vas a ser dirigido a www.airdcpp.net para descargar una versión compatible con tu versión de Windows."
+"This application is compatible with Windows 7 SP1 or newer operating systems"
+" only. The installer will now exit."
+msgstr "Esta aplicación es compatible solamente con Windows 7 SP1 o sistemas operativos posteriores. El instalador se cerrará ahora."
 
 #. ^UninstallText
 #: AirDC_installscript.nsi:114
@@ -172,10 +171,10 @@ msgstr "Programa principal de AirDC++"
 msgid "A shortcut of AirDC++ will be placed in your start menu."
 msgstr "Se creará un acceso directo para AirDC++ en tu menú Inicio"
 
-#. DESC_Radox
+#. DESC_Emopack
 #: AirDC_installscript.nsi:119
-msgid "RadoX emoticon pack will be installed to be used in chats."
-msgstr "Se instalará el paquete de emoticonos RadoX para usarlo en el chat."
+msgid "Display emoticons as images in chat windows."
+msgstr "Mostrar emoticonos como imágenes en las ventanas de chat."
 
 #. DESC_Themes
 #: AirDC_installscript.nsi:120
