@@ -85,13 +85,13 @@ bool AutoSearch::allowAutoSearch() const noexcept{
 
 bool AutoSearch::onBundleRemoved(const BundlePtr& aBundle, bool finished) noexcept {
 	removeBundle(aBundle);
+	bool expired = false;
 
 	if (!finished) {
 		updateStatus();
-		return false;
+		return expired;
 	}
 
-	bool expired = false;
 	auto time = GET_TIME();
 	addPath(aBundle->getTarget(), time);
 	if (usingIncrementation()) {
