@@ -41,9 +41,8 @@ namespace webserver {
 			TYPE_FILE_PATH,
 			TYPE_DIRECTORY_PATH,
 			TYPE_TEXT,
-			TYPE_LIST_STRING,
-			TYPE_LIST_NUMBER,
-			TYPE_LIST_OBJECT,
+			TYPE_LIST,
+			TYPE_STRUCT,
 			TYPE_LAST
 		};
 
@@ -54,14 +53,15 @@ namespace webserver {
 
 		static const MinMax defaultMinMax;
 
-		ApiSettingItem(const string& aName, Type aType);
+		ApiSettingItem(const string& aName, Type aType, Type aItemType);
 
 		static bool isString(Type aType) noexcept {
 			return aType == TYPE_STRING || aType == TYPE_TEXT || aType == TYPE_FILE_PATH || aType == TYPE_DIRECTORY_PATH;
 		}
 
-		static bool isList(Type aType) noexcept {
-			return aType == TYPE_LIST_STRING || aType == TYPE_LIST_NUMBER || aType == TYPE_LIST_OBJECT;
+		static bool optionsAllowed(Type aType, Type aItemType) {
+			return aType == ApiSettingItem::TYPE_STRING || aType == ApiSettingItem::TYPE_NUMBER ||
+				(aItemType == ApiSettingItem::TYPE_LIST && (aItemType == ApiSettingItem::TYPE_STRING || aItemType == ApiSettingItem::TYPE_NUMBER));
 		}
 
 		// Returns the value and bool indicating whether it's an auto detected value
@@ -90,6 +90,7 @@ namespace webserver {
 
 		const string name;
 		const Type type;
+		const Type itemType;
 
 		template<typename T, typename ListT>
 		static T* findSettingItem(ListT& aSettings, const string& aKey) noexcept {
@@ -156,8 +157,8 @@ namespace webserver {
 	public:
 		typedef vector<ServerSettingItem> List;
 
-		ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType, bool aOptional = false, 
-			const MinMax& aMinMax = defaultMinMax, const List& aObjectValues = List(), const string& aHelp = "", const EnumOption::List& aEnumOptions = EnumOption::List());
+		ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType, bool aOptional = false,
+			const MinMax& aMinMax = defaultMinMax, const List& aObjectValues = List(), const string& aHelp = "", Type aItemType = TYPE_LAST, const EnumOption::List& aEnumOptions = EnumOption::List());
 
 		// Returns the value and bool indicating whether it's an auto detected value
 		json getValue() const noexcept override;
