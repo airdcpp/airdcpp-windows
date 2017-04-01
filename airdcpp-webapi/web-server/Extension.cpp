@@ -20,6 +20,7 @@
 
 #include <web-server/Extension.h>
 
+#include <web-server/SystemUtil.h>
 #include <web-server/WebUserManager.h>
 #include <web-server/WebServerManager.h>
 #include <web-server/WebServerSettings.h>
@@ -88,6 +89,7 @@ namespace webserver {
 		homepage = aJson.value("homepage", Util::emptyString);
 
 		{
+			// Engines
 			auto enginesJson = aJson.find("engines");
 			if (enginesJson != aJson.end()) {
 				for (const auto& engine : json::iterator_wrapper(*enginesJson)) {
@@ -98,7 +100,18 @@ namespace webserver {
 			if (engines.empty()) {
 				engines.emplace_back("node");
 			}
+		}
 
+		{
+			// Operating system
+			auto osJson = aJson.find("os");
+			if (osJson != aJson.end()) {
+				const StringList osList = *osJson;
+				auto currentOs = SystemUtil::getPlatform();
+				if (std::find(osList.begin(), osList.end(), currentOs) == osList.end() && currentOs != "other") {
+					throw Exception("Extension is not compatible with your operating system, please the extension documentation for more information");
+				}
+			}
 		}
 
 		parseApiData(aJson.at("airdcpp"));
