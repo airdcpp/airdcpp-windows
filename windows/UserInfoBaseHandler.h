@@ -61,23 +61,23 @@ public:
 	UserInfoBaseHandler(bool appendPmItems=true, bool appendListItems=true) : pmItems(appendPmItems), listItems(appendListItems) { }
 
 	virtual void handleMatchQueue() {
-		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::matchQueue, _1));
+		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::matchQueue, boost::placeholders::_1));
 	}
 	virtual void handleGetList() {
-		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::getList, _1));
+		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::getList, boost::placeholders::_1));
 	}
 	virtual void handleBrowseList() {
-		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::browseList, _1));
+		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::browseList, boost::placeholders::_1));
 	}
 	virtual void handleGetBrowseList() {
-		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::getBrowseList, _1));
+		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::getBrowseList, boost::placeholders::_1));
 	}
 
 	virtual void handleFavorites() {
 		((T*)this)->getUserList().forEachSelected(&UserInfoBase::handleFav);
 	}
 	virtual void handlePrivateMessage() {
-		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::pm, _1));
+		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::pm, boost::placeholders::_1));
 	}
 
 	virtual void handleConnectFav() {
@@ -85,10 +85,10 @@ public:
 	}
 	LRESULT onGrantSlot(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		switch(wID) {
-			case IDC_GRANTSLOT:		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::grant, _1)); break;
-			case IDC_GRANTSLOT_DAY:	((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::grantDay, _1)); break;
-			case IDC_GRANTSLOT_HOUR:	((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::grantHour, _1)); break;
-			case IDC_GRANTSLOT_WEEK:	((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::grantWeek, _1)); break;
+			case IDC_GRANTSLOT:		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::grant, boost::placeholders::_1)); break;
+			case IDC_GRANTSLOT_DAY:	((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::grantDay, boost::placeholders::_1)); break;
+			case IDC_GRANTSLOT_HOUR:	((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::grantHour, boost::placeholders::_1)); break;
+			case IDC_GRANTSLOT_WEEK:	((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::grantWeek, boost::placeholders::_1)); break;
 			case IDC_UNGRANTSLOT:	((T*)this)->getUserList().forEachSelected(&UserInfoBase::ungrant); break;
 		}
 		return 0;

@@ -91,7 +91,8 @@
 #define IDR_QUEUE                       221
 #define IDR_SPY                         222
 #define IDR_USERS                       224
-#define IDD_LOGPAGE                     224
+#define IDD_LOGPAGE                     225
+#define IDR_EXTENSIONS					226
 #define IDD_USER_COMMAND                230
 #define IDR_FINISHED_DL                 231
 #define IDR_FINISHED_UL                 232
@@ -1852,6 +1853,7 @@
 #define IDC_FILTER_OPTIONS              15141
 #define IDC_OPEN_CONFIG_DIR             15142
 #define ID_TOGGLE_TOOLBAR               15999
+#define IDC_EXTENSIONS_LIST				16000
 #define ID_TOGGLE_TBSTATUS              16900
 #define ID_LOCK_TB                      18900
 #define IDC_BROWSELIST                  19000

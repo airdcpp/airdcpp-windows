@@ -53,6 +53,7 @@
 #include "iTunesCOMInterface.h"
 #include "SystemFrame.h"
 #include "RSSinfoFrame.h"
+#include "ExtensionsFrame.h"
 
 #include <airdcpp/AirUtil.h>
 #include <airdcpp/ConnectivityManager.h>
@@ -924,6 +925,7 @@ LRESULT MainFrame::onOpenWindows(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 		case IDC_SYSTEM_LOG: SystemFrame::openWindow(); break;
 		case IDC_AUTOSEARCH: AutoSearchFrame::openWindow(); break;
 		case IDC_RSSFRAME: RssInfoFrame::openWindow(); break;
+		case IDC_EXTENSIONS: ExtensionsFrame::openWindow(); break;
 
 		default: dcassert(0); break;
 	}

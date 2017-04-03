@@ -152,6 +152,7 @@ static const toolbarButton ToolbarButtons[] = {
 	//separator
 	{ ID_FILE_SETTINGS, 20, IDI_SETTINGS, false, ResourceManager::MENU_SETTINGS },
 	{ IDC_RSSFRAME, 21, IDI_RSS, true, ResourceManager::RSS_FEEDS },
+	{ IDC_EXTENSIONS, 22, IDI_QCONNECT, true, ResourceManager::SETTINGS_EXTENSIONS }, //TODO; add icon
 };
 
 

@@ -22,7 +22,7 @@
     <ProjectGuid>{E82610AA-B6FD-4813-B5B9-E717CBD0F23B}</ProjectGuid>
     <RootNamespace>StrongDC</RootNamespace>
     <ProjectName>AirDC</ProjectName>
-		<UseNativeEnvironment>true</UseNativeEnvironment>
+    <UseNativeEnvironment>true</UseNativeEnvironment>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -419,6 +419,7 @@
     <ClCompile Include="windows\AutoSearchFrm.cpp" />
     <ClCompile Include="windows\AutoSearchGeneralPage.cpp" />
     <ClCompile Include="windows\AutoSearchGroupDlg.cpp" />
+    <ClCompile Include="windows\ExtensionsFrame.cpp" />
     <ClCompile Include="windows\FavHubGeneralPage.cpp" />
     <ClCompile Include="windows\FavHubOptionsPage.cpp" />
     <ClCompile Include="windows\RssFilterPage.cpp" />
@@ -558,6 +559,7 @@
     <ClInclude Include="windows\AutosearchGeneralPage.h" />
     <ClInclude Include="windows\AutoSearchGroupDlg.h" />
     <ClInclude Include="windows\AutoSearchItemSettings.h" />
+    <ClInclude Include="windows\ExtensionsFrame.h" />
     <ClInclude Include="windows\FavHubGeneralPage.h" />
     <ClInclude Include="windows\FavHubOptionsPage.h" />
     <ClInclude Include="windows\RssFilterPage.h" />

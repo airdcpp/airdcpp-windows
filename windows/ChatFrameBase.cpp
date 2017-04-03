@@ -28,6 +28,7 @@
 #include "Players.h"
 #include "ExMessageBox.h"
 #include "ChatCommands.h"
+#include "ExtensionsFrame.h"
 
 #include <airdcpp/modules/ShareMonitorManager.h>
 #include <airdcpp/modules/ShareScannerManager.h>
@@ -1022,6 +1023,9 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 	}
 	else if (stricmp(cmd.c_str(), _T("aspopnext")) == 0) {
 		AutoSearchManager::getInstance()->maybePopSearchItem(GET_TICK(), true);
+	}
+	else if (stricmp(cmd.c_str(), _T("extensions")) == 0) {
+		ExtensionsFrame::openWindow();
 	} else {
 		return checkFrameCommand(cmd, param, message, status, thirdPerson);
 	}
