@@ -20,8 +20,6 @@
 #include "Resource.h"
 
 #include "ExtensionsFrame.h"
-
-#include <web-server/ExtensionManager.h>
 #include <web-server/Extension.h>
 
 string ExtensionsFrame::id = "Extensions";
@@ -52,6 +50,7 @@ LRESULT ExtensionsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	SettingsManager::getInstance()->addListener(this);
 
 	webserver::ExtensionManager& emgr = webserver::WebServerManager::getInstance()->getExtensionManager();
+	emgr.addListener(this);
 	auto list = emgr.getExtensions();
 	for (const auto& i : list) {
 		itemInfos.emplace_back(make_unique<ItemInfo>(i));
@@ -107,6 +106,8 @@ LRESULT ExtensionsFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	if (!closed) {
 		::KillTimer(m_hWnd, 0);
 		SettingsManager::getInstance()->removeListener(this);
+		webserver::ExtensionManager& emgr = webserver::WebServerManager::getInstance()->getExtensionManager();
+		emgr.removeListener(this);
 		closed = true;
 		WinUtil::setButtonPressed(IDC_EXTENSIONS, false);
 		PostMessage(WM_CLOSE);
@@ -164,6 +165,29 @@ void ExtensionsFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noex
 	}
 }
 
+void ExtensionsFrame::on(webserver::ExtensionManagerListener::ExtensionAdded, const webserver::ExtensionPtr& e) noexcept {
+	callAsync([=] {
+		itemInfos.emplace_back(make_unique<ItemInfo>(e));
+		addEntry(itemInfos.back().get());
+	});
+}
+
+void ExtensionsFrame::on(webserver::ExtensionManagerListener::ExtensionRemoved, const webserver::ExtensionPtr& e) noexcept {
+	callAsync([=] {
+		ctrlList.SetRedraw(FALSE);
+		itemInfos.erase(boost::remove_if(itemInfos, [&](const unique_ptr<ItemInfo>& a) {
+
+			if (e == a->item) {
+				ctrlList.deleteItem(a.get());
+				return true;
+			}
+			return false;
+
+		}), itemInfos.end());
+
+		ctrlList.SetRedraw(TRUE);
+	});
+}
 
 const tstring ExtensionsFrame::ItemInfo::getText(int col) const {
 	if (!item)
@@ -179,7 +203,7 @@ const tstring ExtensionsFrame::ItemInfo::getText(int col) const {
 }
 
 void ExtensionsFrame::createColumns() {
-	// Create listview columns
+	// Create list view columns
 	for (uint8_t j = 0; j < COLUMN_LAST; j++) {
 		int fmt = LVCFMT_LEFT;
 		ctrlList.InsertColumn(j, CTSTRING_I(columnNames[j]), fmt, columnSizes[j], j);

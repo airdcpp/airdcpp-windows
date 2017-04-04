@@ -27,9 +27,10 @@
 #include "TypedListViewCtrl.h"
 
 #include <web-server/WebServerManager.h>
+#include <web-server/ExtensionManager.h>
 
 class ExtensionsFrame : public MDITabChildWindowImpl<ExtensionsFrame>, public StaticFrame<ExtensionsFrame, ResourceManager::SETTINGS_EXTENSIONS, IDC_EXTENSIONS>,
-	private SettingsManagerListener, private Async<ExtensionsFrame>
+	private SettingsManagerListener, private webserver::ExtensionManagerListener, private Async<ExtensionsFrame>
 {
 public:
 	typedef MDITabChildWindowImpl<ExtensionsFrame> baseClass;
@@ -81,6 +82,7 @@ private:
 		int getImageIndex() const { return 0; }
 
 		webserver::ExtensionPtr item;
+
 	};
 
 	typedef vector<unique_ptr<ItemInfo>> ItemInfoList;
@@ -105,5 +107,8 @@ private:
 	int statusSizes[2];
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept override;
+	void on(webserver::ExtensionManagerListener::ExtensionAdded, const webserver::ExtensionPtr& e) noexcept;
+	void on(webserver::ExtensionManagerListener::ExtensionRemoved, const webserver::ExtensionPtr& e) noexcept;
+
 };
 #endif
