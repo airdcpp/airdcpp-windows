@@ -35,6 +35,7 @@ namespace webserver {
 		METHOD_HANDLER(Access::SETTINGS_VIEW,	METHOD_GET,		(EXACT_PARAM("stats")),								ShareApi::handleGetStats);
 		METHOD_HANDLER(Access::ANY,				METHOD_POST,	(EXACT_PARAM("find_dupe_paths")),					ShareApi::handleFindDupePaths);
 		METHOD_HANDLER(Access::SETTINGS_VIEW,	METHOD_POST,	(EXACT_PARAM("search")),							ShareApi::handleSearch);
+		METHOD_HANDLER(Access::ANY,				METHOD_POST,	(EXACT_PARAM("validate_path")),						ShareApi::handleValidatePath);
 
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(EXACT_PARAM("refresh")),							ShareApi::handleRefreshShare);
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(EXACT_PARAM("refresh"), EXACT_PARAM("paths")),		ShareApi::handleRefreshPaths);
@@ -220,6 +221,20 @@ namespace webserver {
 		auto roots = ShareManager::getInstance()->getGroupedDirectories();
 		aRequest.setResponseBody(Serializer::serializeList(roots, Serializer::serializeGroupedPaths));
 		return websocketpp::http::status_code::ok;
+	}
+
+	api_return ShareApi::handleValidatePath(ApiRequest& aRequest) {
+		try {
+			ShareManager::getInstance()->validatePath(JsonUtil::getField<string>("path", aRequest.getRequestBody()));
+		} catch (const QueueException& e) {
+			aRequest.setResponseErrorStr(e.getError());
+			return websocketpp::http::status_code::conflict;
+		} catch (const Exception& e) {
+			aRequest.setResponseErrorStr(e.getError());
+			return websocketpp::http::status_code::forbidden;
+		}
+
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return ShareApi::handleFindDupePaths(ApiRequest& aRequest) {

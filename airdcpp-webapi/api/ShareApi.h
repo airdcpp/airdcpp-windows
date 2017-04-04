@@ -45,6 +45,7 @@ namespace webserver {
 
 		api_return handleGetGroupedRootPaths(ApiRequest& aRequest);
 		api_return handleFindDupePaths(ApiRequest& aRequest);
+		api_return handleValidatePath(ApiRequest& aRequest);
 
 		void on(ShareManagerListener::RefreshQueued, uint8_t, const RefreshPathList& aPaths) noexcept override;
 		void on(ShareManagerListener::RefreshCompleted, uint8_t, const RefreshPathList& aPaths) noexcept override;
