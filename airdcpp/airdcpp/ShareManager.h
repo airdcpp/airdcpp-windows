@@ -141,7 +141,11 @@ public:
 	bool isRealPathShared(const string& aPath) const noexcept;
 
 	// Returns true if the real path can be added in share
-	bool allowAddDir(const string& aPath) const noexcept;
+	bool allowShareDirectory(const string& aPath) const noexcept;
+
+	// Validate a file/directory path
+	// Throws on errors
+	void validatePath(const string& aPath) const;
 
 	// Returns the dupe paths by directory name/NMDC path
 	StringList getNmdcDirPaths(const string& aDir) const noexcept;
@@ -299,7 +303,6 @@ public:
 	void reloadSkiplist();
 	void validateRootPath(const string& aPath);
 	void setExcludedPaths(const StringSet& aPaths) noexcept;
-	bool validate(FileFindIter& aIter, const string& aPath) const noexcept;
 private:
 	void countStats(uint64_t& totalAge_, size_t& totalDirs_, int64_t& totalSize_, size_t& totalFiles, size_t& lowerCaseFiles, size_t& totalStrLen_, size_t& roots_) const noexcept;
 

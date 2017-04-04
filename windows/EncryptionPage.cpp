@@ -18,7 +18,6 @@
 
 #include "stdafx.h"
 
-#include <airdcpp/AirUtil.h>
 #include <airdcpp/CryptoManager.h>
 
 #include "Resource.h"
@@ -82,7 +81,6 @@ void EncryptionPage::write() {
 
 	SettingsManager::getInstance()->set(SettingsManager::TLS_MODE, ctrlTransferEncryption.GetCurSel());
 	CryptoManager::setCertPaths();
-	AirUtil::updateCachedSettings();
 }
 
 LRESULT EncryptionPage::onBrowsePrivateKey(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
