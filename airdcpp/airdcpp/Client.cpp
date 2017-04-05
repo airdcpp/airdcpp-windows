@@ -35,7 +35,7 @@ namespace dcpp {
 
 atomic<long> Client::allCounts[COUNT_UNCOUNTED];
 atomic<long> Client::sharingCounts[COUNT_UNCOUNTED];
-ClientToken idCounter = 0;
+atomic<ClientToken> idCounter { 0 };
 
 Client::Client(const string& aHubUrl, char aSeparator, const ClientPtr& aOldClient) :
 	hubUrl(aHubUrl), separator(aSeparator), 
