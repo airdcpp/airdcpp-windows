@@ -27,9 +27,10 @@
 #include <airdcpp/HubEntry.h>
 #include <airdcpp/SearchResult.h>
 #include <airdcpp/ShareManager.h>
+#include <airdcpp/SharePathValidator.h>
 
 namespace webserver {
-	ShareApi::ShareApi(Session* aSession) : SubscribableApiModule(aSession, Access::SETTINGS_VIEW) {
+	ShareApi::ShareApi(Session* aSession) : HookApiModule(aSession, Access::SETTINGS_VIEW, nullptr, Access::SETTINGS_EDIT) {
 
 		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(EXACT_PARAM("grouped_root_paths")),				ShareApi::handleGetGroupedRootPaths);
 		METHOD_HANDLER(Access::SETTINGS_VIEW,	METHOD_GET,		(EXACT_PARAM("stats")),								ShareApi::handleGetStats);
@@ -51,11 +52,46 @@ namespace webserver {
 		createSubscription("share_exclude_added");
 		createSubscription("share_exclude_removed");
 
+		createHook("share_file_validation_hook", [this](const string& aId, const string& aName) {
+			return ShareManager::getInstance()->getValidator().fileValidationHook.addSubscriber(aId, aName, HOOK_HANDLER(ShareApi::fileValidationHook));
+		}, [this](const string& aId) {
+			ShareManager::getInstance()->getValidator().fileValidationHook.removeSubscriber(aId);
+		});
+
+		createHook("share_directory_validation_hook", [this](const string& aId, const string& aName) {
+			return ShareManager::getInstance()->getValidator().directoryValidationHook.addSubscriber(aId, aName, HOOK_HANDLER(ShareApi::directoryValidationHook));
+		}, [this](const string& aId) {
+			ShareManager::getInstance()->getValidator().directoryValidationHook.removeSubscriber(aId);
+		});
+
 		ShareManager::getInstance()->addListener(this);
 	}
 
 	ShareApi::~ShareApi() {
 		ShareManager::getInstance()->removeListener(this);
+	}
+
+	ActionHookRejectionPtr ShareApi::fileValidationHook(const string& aPath, int64_t aSize, const HookRejectionGetter& aErrorGetter) noexcept {
+		return HookCompletionData::toResult(
+			fireHook("share_file_validation_hook", 30, [&]() {
+				return json({
+					{ "path", aPath },
+					{ "size", aSize },
+				});
+			}),
+			aErrorGetter
+		);
+	}
+
+	ActionHookRejectionPtr ShareApi::directoryValidationHook(const string& aPath, const HookRejectionGetter& aErrorGetter) noexcept {
+		return HookCompletionData::toResult(
+			fireHook("share_directory_validation_hook", 30, [&]() {
+				return json({
+					{ "path", aPath },
+				});
+			}),
+			aErrorGetter
+		);
 	}
 
 	json ShareApi::serializeShareItem(const SearchResultPtr& aSR) noexcept {

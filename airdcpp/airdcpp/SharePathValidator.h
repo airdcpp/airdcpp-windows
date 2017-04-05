@@ -19,6 +19,7 @@
 #ifndef DCPLUSPLUS_DCPP_SHAREPATH_VALIDATOR_H
 #define DCPLUSPLUS_DCPP_SHAREPATH_VALIDATOR_H
 
+#include "ActionHook.h"
 #include "CriticalSection.h"
 #include "File.h"
 #include "StringMatch.h"
@@ -29,6 +30,9 @@ namespace dcpp {
 
 class SharePathValidator {
 public:
+	ActionHook<const string&, int64_t> fileValidationHook;
+	ActionHook<const string&> directoryValidationHook;
+
 	SharePathValidator();
 
 	// Get a list of excluded real paths

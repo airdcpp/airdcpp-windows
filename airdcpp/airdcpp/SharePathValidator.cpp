@@ -206,8 +206,19 @@ void SharePathValidator::validate(FileFindIter& aIter, const string& aPath) cons
 		if (isExcluded(aPath)) {
 			throw ShareException("Directory is excluded from share");
 		}
+
+		auto error = directoryValidationHook.runHooksError(aPath);
+		if (error) {
+			throw ShareException(error->formatError(error));
+		}
 	} else {
-		checkSharedName(aPath, false, aIter->getSize());
+		auto size = aIter->getSize();
+		checkSharedName(aPath, false, size);
+
+		auto error = fileValidationHook.runHooksError(aPath, size);
+		if (error) {
+			throw ShareException(error->formatError(error));
+		}
 	}
 }
 

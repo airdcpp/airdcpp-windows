@@ -61,6 +61,10 @@ class ShareManager : public Singleton<ShareManager>, public Speaker<ShareManager
 public:
 	const unique_ptr<SharePathValidator> validator;
 
+	SharePathValidator& getValidator() noexcept {
+		return *validator.get();
+	}
+
 	// Validate that the profiles are valid for the supplied path (sub/parent directory matching)
 	// Existing profiles shouldn't be supplied
 	void validateNewRootProfiles(const string& realPath, const ProfileTokenSet& aProfiles) const throw(ShareException);
