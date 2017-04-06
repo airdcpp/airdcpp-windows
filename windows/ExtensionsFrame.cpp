@@ -20,7 +20,7 @@
 #include "Resource.h"
 
 #include "ExtensionsFrame.h"
-#include <web-server/Extension.h>
+#include "ResourceLoader.h"
 
 string ExtensionsFrame::id = "Extensions";
 
@@ -46,6 +46,11 @@ LRESULT ExtensionsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	ctrlList.SetTextColor(WinUtil::textColor);
 	ctrlList.setFlickerFree(WinUtil::bgBrush);
 	ctrlList.SetFont(WinUtil::listViewFont);
+
+	listImages.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 3);
+	listImages.AddIcon(CIcon(ResourceLoader::loadIcon(IDI_ONLINE, 16)));
+	listImages.AddIcon(CIcon(ResourceLoader::convertGrayscaleIcon(ResourceLoader::loadIcon(IDI_ONLINE, 16))));
+	ctrlList.SetImageList(listImages, LVSIL_SMALL);
 
 	SettingsManager::getInstance()->addListener(this);
 
@@ -75,10 +80,19 @@ LRESULT ExtensionsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 			WinUtil::getContextMenuPos(ctrlList, pt);
 		}
 
-		//OMenu menu;
-		//menu.CreatePopupMenu();
-		//menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
-		//return TRUE;
+		if (ctrlList.GetSelectedCount() == 1) {
+			int sel = ctrlList.GetNextItem(-1, LVNI_SELECTED);
+			auto ii = ctrlList.getItemData(sel);
+			OMenu menu;
+			menu.CreatePopupMenu();
+			if(!ii->item->isRunning())
+				menu.appendItem(TSTRING(START), [=] { onStartExtension(ii); });
+			else
+				menu.appendItem(TSTRING(STOP), [=] { onStopExtension(ii); });
+
+			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
+			return TRUE;
+		}
 	}
 
 	return FALSE;
@@ -100,6 +114,18 @@ void ExtensionsFrame::updateList() {
 
 void ExtensionsFrame::addEntry(ItemInfo* ii) {
 	ctrlList.insertItem(ctrlList.getSortPos(ii), ii, ii->getImageIndex());
+}
+
+void ExtensionsFrame::onStopExtension(const ItemInfo* ii) {
+	webserver::ExtensionManager& emgr = webserver::WebServerManager::getInstance()->getExtensionManager();
+	emgr.startExtension(ii->item);
+	ctrlList.updateItem(ii);
+}
+
+void ExtensionsFrame::onStartExtension(const ItemInfo* ii) {
+	webserver::ExtensionManager& emgr = webserver::WebServerManager::getInstance()->getExtensionManager();
+	emgr.stopExtension(ii->item);
+	ctrlList.updateItem(ii);
 }
 
 LRESULT ExtensionsFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {

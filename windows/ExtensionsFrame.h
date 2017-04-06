@@ -28,6 +28,7 @@
 
 #include <web-server/WebServerManager.h>
 #include <web-server/ExtensionManager.h>
+#include <web-server/Extension.h>
 
 class ExtensionsFrame : public MDITabChildWindowImpl<ExtensionsFrame>, public StaticFrame<ExtensionsFrame, ResourceManager::SETTINGS_EXTENSIONS, IDC_EXTENSIONS>,
 	private SettingsManagerListener, private webserver::ExtensionManagerListener, private Async<ExtensionsFrame>
@@ -79,7 +80,7 @@ private:
 		
 		}
 
-		int getImageIndex() const { return 0; }
+		int getImageIndex() const { return item->isRunning() ? 0 : 1; }
 
 		webserver::ExtensionPtr item;
 
@@ -103,6 +104,10 @@ private:
 	void updateList();
 	void addEntry(ItemInfo* ii);
 
+	void onStopExtension(const ItemInfo* ii);
+	void onStartExtension(const ItemInfo* ii);
+
+	CImageList listImages;
 	CStatusBarCtrl ctrlStatus;
 	int statusSizes[2];
 
