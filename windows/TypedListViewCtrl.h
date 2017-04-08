@@ -461,6 +461,12 @@ public:
 	void updateItem(const T* item) { int i = findItem(item); if(i != -1) updateItem(i); }
 	void deleteItem(const T* item) { int i = findItem(item); if(i != -1) DeleteItem(i); }
 	void selectItem(const T* item) { int i = findItem(item); if (i != -1) SelectItem(i); }
+	
+	void updateItemImage(const T* item) { 
+		int i = findItem(item); 
+		if (i != -1)
+			SetItem(i, 0, LVIF_IMAGE, NULL, item->getImageIndex(), 0, 0, NULL);
+	}
 
 	int getSortPos(const T* a) const {
 		int high = GetItemCount();

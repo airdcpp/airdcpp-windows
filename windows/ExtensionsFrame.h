@@ -26,9 +26,12 @@
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"
 
+#include <airdcpp/HttpDownload.h>
+
 #include <web-server/WebServerManager.h>
 #include <web-server/ExtensionManager.h>
 #include <web-server/Extension.h>
+
 
 class ExtensionsFrame : public MDITabChildWindowImpl<ExtensionsFrame>, public StaticFrame<ExtensionsFrame, ResourceManager::SETTINGS_EXTENSIONS, IDC_EXTENSIONS>,
 	private SettingsManagerListener, private webserver::ExtensionManagerListener, private Async<ExtensionsFrame>
@@ -71,7 +74,12 @@ private:
 	class ItemInfo {
 	public:
 		ItemInfo(const webserver::ExtensionPtr& aExtension) : item(aExtension) { }
+		ItemInfo(const string& aName, const string& aDescription) : name(aName),
+		description(aDescription) { }
 		~ItemInfo() { }
+
+		GETSET(string, name, Name);
+		GETSET(string, description, Description);
 
 		const tstring getText(int col) const;
 
@@ -80,9 +88,9 @@ private:
 		
 		}
 
-		int getImageIndex() const { return item->isRunning() ? 0 : 1; }
+		int getImageIndex() const { return !item ? 2 : item->isRunning() ? 0 : 1; }
 
-		webserver::ExtensionPtr item;
+		webserver::ExtensionPtr item = nullptr;
 
 	};
 
@@ -107,9 +115,21 @@ private:
 	void onStopExtension(const ItemInfo* ii);
 	void onStartExtension(const ItemInfo* ii);
 
+	void downloadExtensionList();
+	void onExtensionListDownloaded();
+
+	void downloadExtensionInfo(const ItemInfo* ii);
+	void onExtensionInfoDownloaded();
+
+
+	const string extensionUrl = "https://airdcpp-npm.herokuapp.com/-/v1/search?text=keywords:airdcpp-extensions-public&size=100";
+	const string packageUrl = "https://airdcpp-npm.herokuapp.com/";
+
 	CImageList listImages;
 	CStatusBarCtrl ctrlStatus;
 	int statusSizes[2];
+
+	unique_ptr<HttpDownload> httpDownload;
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept override;
 	void on(webserver::ExtensionManagerListener::ExtensionAdded, const webserver::ExtensionPtr& e) noexcept;

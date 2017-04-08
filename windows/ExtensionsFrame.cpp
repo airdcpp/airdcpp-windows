@@ -21,6 +21,7 @@
 
 #include "ExtensionsFrame.h"
 #include "ResourceLoader.h"
+#include <airdcpp/ScopedFunctor.h>
 
 string ExtensionsFrame::id = "Extensions";
 
@@ -47,9 +48,11 @@ LRESULT ExtensionsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	ctrlList.setFlickerFree(WinUtil::bgBrush);
 	ctrlList.SetFont(WinUtil::listViewFont);
 
+	//TODO: add new icons
 	listImages.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 3);
-	listImages.AddIcon(CIcon(ResourceLoader::loadIcon(IDI_ONLINE, 16)));
-	listImages.AddIcon(CIcon(ResourceLoader::convertGrayscaleIcon(ResourceLoader::loadIcon(IDI_ONLINE, 16))));
+	listImages.AddIcon(CIcon(ResourceLoader::loadIcon(IDI_ONLINE, 16))); //extension running
+	listImages.AddIcon(CIcon(ResourceLoader::convertGrayscaleIcon(ResourceLoader::loadIcon(IDI_ONLINE, 16)))); //extension stopped
+	listImages.AddIcon(CIcon(ResourceLoader::convertGrayscaleIcon(ResourceLoader::loadIcon(IDI_QCONNECT, 16))));  // remote extension, not installed
 	ctrlList.SetImageList(listImages, LVSIL_SMALL);
 
 	SettingsManager::getInstance()->addListener(this);
@@ -61,7 +64,7 @@ LRESULT ExtensionsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 		itemInfos.emplace_back(make_unique<ItemInfo>(i));
 	}
 
-	callAsync([=] { updateList(); });
+	callAsync([=] { updateList(); downloadExtensionList(); });
 
 	memzero(statusSizes, sizeof(statusSizes));
 	statusSizes[0] = 16;
@@ -85,11 +88,15 @@ LRESULT ExtensionsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 			auto ii = ctrlList.getItemData(sel);
 			OMenu menu;
 			menu.CreatePopupMenu();
-			if(!ii->item->isRunning())
-				menu.appendItem(TSTRING(START), [=] { onStartExtension(ii); });
-			else
-				menu.appendItem(TSTRING(STOP), [=] { onStopExtension(ii); });
 
+			if (!ii->item) {
+				menu.appendItem(TSTRING(ADD), [=] { downloadExtensionInfo(ii); });
+			} else {
+				if (!ii->item->isRunning())
+					menu.appendItem(TSTRING(START), [=] { onStartExtension(ii); });
+				else
+					menu.appendItem(TSTRING(STOP), [=] { onStopExtension(ii); });
+			}
 			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 			return TRUE;
 		}
@@ -118,19 +125,119 @@ void ExtensionsFrame::addEntry(ItemInfo* ii) {
 
 void ExtensionsFrame::onStopExtension(const ItemInfo* ii) {
 	webserver::ExtensionManager& emgr = webserver::WebServerManager::getInstance()->getExtensionManager();
-	emgr.startExtension(ii->item);
+	emgr.stopExtension(ii->item);
+	ctrlList.updateItemImage(ii);
 	ctrlList.updateItem(ii);
 }
 
 void ExtensionsFrame::onStartExtension(const ItemInfo* ii) {
 	webserver::ExtensionManager& emgr = webserver::WebServerManager::getInstance()->getExtensionManager();
-	emgr.stopExtension(ii->item);
-	ctrlList.updateItem(ii);
+	emgr.startExtension(ii->item);
+	ctrlList.updateItemImage(ii);
+	ctrlList.updateItem(ii); 
+
+}
+
+void ExtensionsFrame::downloadExtensionList() {
+	httpDownload.reset(new HttpDownload(extensionUrl,
+		[this] { onExtensionListDownloaded(); }, false));
+}
+
+static const string package = "{\"package\":";
+static const string pname = "{\"name\":\"";
+static const string pdesc = "\"description\":\"";
+
+void ExtensionsFrame::onExtensionListDownloaded() {
+
+	ScopedFunctor([&] { httpDownload.reset(); });
+
+	if (httpDownload->buf.empty()) {
+		return;
+	}
+	//Do some kind of parsing...
+	string& data = httpDownload->buf;
+	size_t pos = 0;
+	while ((pos = data.find(package, pos)) != string::npos) {
+		pos += package.length();
+
+		size_t i = 0;
+		size_t iend = 0;
+
+		i = data.find(pname, pos);
+		if(i == string::npos)
+			continue;
+
+		i += pname.length();
+		iend = data.find("\",", i);
+		string aName = data.substr(i, iend - i);
+		
+		i = data.find(pdesc, i);
+		if (i == string::npos)
+			continue;
+
+		i += pdesc.length();
+		iend = data.find("\",", i);
+		string aDesc = data.substr(i, iend -i);
+
+		itemInfos.emplace_back(make_unique<ItemInfo>(aName, aDesc));
+	}
+
+	updateList();
+
+}
+
+static const string dist = "\"dist\":";
+static const string psha = "{\"shasum\":\"";
+static const string purl = "\"tarball\":\"";
+
+
+void ExtensionsFrame::downloadExtensionInfo(const ItemInfo* ii) {
+	httpDownload.reset(new HttpDownload(packageUrl + ii->getName() + "/latest",
+		[this] { onExtensionInfoDownloaded(); }, false));
+}
+
+void ExtensionsFrame::onExtensionInfoDownloaded() {
+	ScopedFunctor([&] { httpDownload.reset(); });
+
+	if (httpDownload->buf.empty()) {
+		return;
+	}
+
+	string& data = httpDownload->buf;
+	size_t pos = 0;
+	pos = data.find(dist, pos);
+	if (pos == string::npos)
+		return;
+
+	pos += dist.length();
+
+	size_t i = 0;
+	size_t iend = 0;
+
+	i = data.find(psha, pos);
+	if (i == string::npos)
+		return;
+
+	i += psha.length();
+	iend = data.find("\",", i);
+	string aSha = data.substr(i, iend - i);
+
+	i = data.find(purl, i);
+	if (i == string::npos)
+		return;
+
+	i += purl.length();
+	iend = data.find("},", i);
+	string aUrl = data.substr(i, iend - i);
+
+	auto& emgr = webserver::WebServerManager::getInstance()->getExtensionManager();
+	emgr.downloadExtension(aUrl, aSha);
+
+
 }
 
 LRESULT ExtensionsFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if (!closed) {
-		::KillTimer(m_hWnd, 0);
 		SettingsManager::getInstance()->removeListener(this);
 		webserver::ExtensionManager& emgr = webserver::WebServerManager::getInstance()->getExtensionManager();
 		emgr.removeListener(this);
@@ -216,13 +323,11 @@ void ExtensionsFrame::on(webserver::ExtensionManagerListener::ExtensionRemoved, 
 }
 
 const tstring ExtensionsFrame::ItemInfo::getText(int col) const {
-	if (!item)
-		return Util::emptyStringT;
 
 	switch (col) {
 
-	case COLUMN_NAME: return Text::toT(item->getName());
-	case COLUMN_DESCRIPTION: return Text::toT(item->getDescription());
+	case COLUMN_NAME: return item == nullptr ? Text::toT(getName()) : Text::toT(item->getName());
+	case COLUMN_DESCRIPTION: return item == nullptr ? Text::toT(getDescription()) : Text::toT(item->getDescription());
 
 	default: return Util::emptyStringT;
 	}
