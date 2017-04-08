@@ -615,6 +615,7 @@ enum Strings { // @DontAdd
 	INFO, // "Info"
 	INSERT_EMOTICON, // "Insert emoticon"
 	INSERT_IN_SEARCHSTRING, // "Insert in the search string"
+	INSTALL, // "Install"
 	INSTALL_RAR_SKIPLIST, // "Install the RAR profile share skiplist to avoid sharing of unwanted files"
 	INTEGRITY_CHECK, // "Integrity check: %1% ( %2% )"
 	INTEGRITY_CHECK_FAILED, // "File integrity check failed"

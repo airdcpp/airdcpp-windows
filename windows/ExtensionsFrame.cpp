@@ -26,7 +26,7 @@
 string ExtensionsFrame::id = "Extensions";
 
 int ExtensionsFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_DESCRIPTION};
-int ExtensionsFrame::columnSizes[] = { 200, 350};
+int ExtensionsFrame::columnSizes[] = { 300, 900};
 static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::DESCRIPTION };
 
 ExtensionsFrame::ExtensionsFrame() : closed(false)
@@ -57,11 +57,10 @@ LRESULT ExtensionsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 
 	SettingsManager::getInstance()->addListener(this);
 
-	webserver::ExtensionManager& emgr = webserver::WebServerManager::getInstance()->getExtensionManager();
-	emgr.addListener(this);
-	auto list = emgr.getExtensions();
+	getExtensionManager().addListener(this);
+	auto list = getExtensionManager().getExtensions();
 	for (const auto& i : list) {
-		itemInfos.emplace_back(make_unique<ItemInfo>(i));
+		itemInfos.emplace(i ->getName(), make_unique<ItemInfo>(i));
 	}
 
 	callAsync([=] { updateList(); downloadExtensionList(); });
@@ -86,16 +85,21 @@ LRESULT ExtensionsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 		if (ctrlList.GetSelectedCount() == 1) {
 			int sel = ctrlList.GetNextItem(-1, LVNI_SELECTED);
 			auto ii = ctrlList.getItemData(sel);
+			string title = ii->item ? ii->item->getName() : ii->getName();
 			OMenu menu;
 			menu.CreatePopupMenu();
+			menu.InsertSeparatorFirst(Text::toT(title));
 
 			if (!ii->item) {
-				menu.appendItem(TSTRING(ADD), [=] { downloadExtensionInfo(ii); });
+				menu.appendItem(TSTRING(INSTALL), [=] { downloadExtensionInfo(ii); });
 			} else {
 				if (!ii->item->isRunning())
 					menu.appendItem(TSTRING(START), [=] { onStartExtension(ii); });
 				else
 					menu.appendItem(TSTRING(STOP), [=] { onStopExtension(ii); });
+
+				menu.appendSeparator();
+				menu.appendItem(TSTRING(REMOVE), [=] { onRemoveExtension(ii); });
 			}
 			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 			return TRUE;
@@ -114,28 +118,32 @@ void ExtensionsFrame::updateList() {
 	ctrlList.SetRedraw(FALSE);
 	ctrlList.DeleteAllItems();
 	for (auto& i : itemInfos) {
-		addEntry(i.get());
+		addEntry(i.second.get());
 	}
 	ctrlList.SetRedraw(TRUE);
 }
 
-void ExtensionsFrame::addEntry(ItemInfo* ii) {
+void ExtensionsFrame::addEntry(const ItemInfo* ii) {
 	ctrlList.insertItem(ctrlList.getSortPos(ii), ii, ii->getImageIndex());
 }
 
-void ExtensionsFrame::onStopExtension(const ItemInfo* ii) {
-	webserver::ExtensionManager& emgr = webserver::WebServerManager::getInstance()->getExtensionManager();
-	emgr.stopExtension(ii->item);
+void ExtensionsFrame::updateEntry(const ItemInfo* ii) {
 	ctrlList.updateItemImage(ii);
 	ctrlList.updateItem(ii);
 }
 
-void ExtensionsFrame::onStartExtension(const ItemInfo* ii) {
-	webserver::ExtensionManager& emgr = webserver::WebServerManager::getInstance()->getExtensionManager();
-	emgr.startExtension(ii->item);
-	ctrlList.updateItemImage(ii);
-	ctrlList.updateItem(ii); 
+void ExtensionsFrame::onStopExtension(const ItemInfo* ii) {
+	getExtensionManager().stopExtension(ii->item);
+	updateEntry(ii);
+}
 
+void ExtensionsFrame::onStartExtension(const ItemInfo* ii) {
+	getExtensionManager().startExtension(ii->item);
+	updateEntry(ii);
+}
+
+void ExtensionsFrame::onRemoveExtension(const ItemInfo* ii) {
+	getExtensionManager().removeExtension(ii->item);
 }
 
 void ExtensionsFrame::downloadExtensionList() {
@@ -179,7 +187,7 @@ void ExtensionsFrame::onExtensionListDownloaded() {
 		iend = data.find("\",", i);
 		string aDesc = data.substr(i, iend -i);
 
-		itemInfos.emplace_back(make_unique<ItemInfo>(aName, aDesc));
+		itemInfos.emplace(aName, make_unique<ItemInfo>(aName, aDesc));
 	}
 
 	updateList();
@@ -230,8 +238,7 @@ void ExtensionsFrame::onExtensionInfoDownloaded() {
 	iend = data.find("},", i);
 	string aUrl = data.substr(i, iend - i);
 
-	auto& emgr = webserver::WebServerManager::getInstance()->getExtensionManager();
-	emgr.downloadExtension(aUrl, aSha);
+	getExtensionManager().downloadExtension(aUrl, aSha);
 
 
 }
@@ -239,14 +246,12 @@ void ExtensionsFrame::onExtensionInfoDownloaded() {
 LRESULT ExtensionsFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if (!closed) {
 		SettingsManager::getInstance()->removeListener(this);
-		webserver::ExtensionManager& emgr = webserver::WebServerManager::getInstance()->getExtensionManager();
-		emgr.removeListener(this);
+		getExtensionManager().removeListener(this);
 		closed = true;
 		WinUtil::setButtonPressed(IDC_EXTENSIONS, false);
 		PostMessage(WM_CLOSE);
 		return 0;
 	}
-
 
 	ctrlList.SetRedraw(FALSE);
 	ctrlList.DeleteAllItems();
@@ -300,24 +305,27 @@ void ExtensionsFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noex
 
 void ExtensionsFrame::on(webserver::ExtensionManagerListener::ExtensionAdded, const webserver::ExtensionPtr& e) noexcept {
 	callAsync([=] {
-		itemInfos.emplace_back(make_unique<ItemInfo>(e));
-		addEntry(itemInfos.back().get());
+		auto i = itemInfos.find(e->getName());
+		if (i == itemInfos.end()) {
+			auto ret = itemInfos.emplace(e->getName(), make_unique<ItemInfo>(e));
+			addEntry(ret.first->second.get());
+		} else {
+			auto& ii = i->second;
+			ii->item = e;
+			updateEntry(ii.get());
+		}
 	});
 }
 
 void ExtensionsFrame::on(webserver::ExtensionManagerListener::ExtensionRemoved, const webserver::ExtensionPtr& e) noexcept {
 	callAsync([=] {
 		ctrlList.SetRedraw(FALSE);
-		itemInfos.erase(boost::remove_if(itemInfos, [&](const unique_ptr<ItemInfo>& a) {
-
-			if (e == a->item) {
-				ctrlList.deleteItem(a.get());
-				return true;
-			}
-			return false;
-
-		}), itemInfos.end());
-
+		auto i = itemInfos.find(e->getName());
+		if (i != itemInfos.end()) {
+			ctrlList.deleteItem(i->second.get());
+			itemInfos.erase(i);
+			downloadExtensionList();
+		}
 		ctrlList.SetRedraw(TRUE);
 	});
 }

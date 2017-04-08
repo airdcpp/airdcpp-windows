@@ -94,8 +94,8 @@ private:
 
 	};
 
-	typedef vector<unique_ptr<ItemInfo>> ItemInfoList;
-	ItemInfoList itemInfos;
+	typedef unordered_map<string, unique_ptr<ItemInfo>> ItemInfoMap;
+	ItemInfoMap itemInfos;
 
 	enum {
 		COLUMN_FIRST,
@@ -110,10 +110,12 @@ private:
 	static int columnIndexes[COLUMN_LAST];
 
 	void updateList();
-	void addEntry(ItemInfo* ii);
+	void addEntry(const ItemInfo* ii);
+	void updateEntry(const ItemInfo* ii);
 
 	void onStopExtension(const ItemInfo* ii);
 	void onStartExtension(const ItemInfo* ii);
+	void onRemoveExtension(const ItemInfo* ii);
 
 	void downloadExtensionList();
 	void onExtensionListDownloaded();
@@ -121,6 +123,9 @@ private:
 	void downloadExtensionInfo(const ItemInfo* ii);
 	void onExtensionInfoDownloaded();
 
+	webserver::ExtensionManager& getExtensionManager() {
+		return webserver::WebServerManager::getInstance()->getExtensionManager();
+	}
 
 	const string extensionUrl = "https://airdcpp-npm.herokuapp.com/-/v1/search?text=keywords:airdcpp-extensions-public&size=100";
 	const string packageUrl = "https://airdcpp-npm.herokuapp.com/";
