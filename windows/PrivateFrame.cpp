@@ -22,6 +22,7 @@
 #include "PrivateFrame.h"
 #include "WinUtil.h"
 #include "MainFrm.h"
+#include "HubFrame.h"
 
 #include <airdcpp/Client.h>
 #include <airdcpp/ClientManager.h>
@@ -569,6 +570,16 @@ LRESULT PrivateFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	tabMenu.AppendMenu(MF_STRING, ID_EDIT_CLEAR_ALL, CTSTRING(CLEAR_CHAT));
 	appendUserItems(tabMenu, true, getUser());
 
+
+	if (getUser()->isOnline()) {
+		tabMenu.appendSeparator();
+		OMenu* copyMenu = tabMenu.createSubMenu(TSTRING(COPY), true);
+
+		for (int j = 0; j < OnlineUser::COLUMN_LAST; j++) {
+			copyMenu->AppendMenu(MF_STRING, IDC_COPY + j, CTSTRING_I(HubFrame::columnNames[j]));
+		}
+	}
+	
 	prepareMenu(tabMenu, UserCommand::CONTEXT_USER, ClientManager::getInstance()->getHubUrls(getUser()->getCID()));
 	if(!(tabMenu.GetMenuState(tabMenu.GetMenuItemCount()-1, MF_BYPOSITION) & MF_SEPARATOR)) {	
 		tabMenu.AppendMenu(MF_SEPARATOR);
@@ -577,6 +588,20 @@ LRESULT PrivateFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 
 	tabMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_BOTTOMALIGN | TPM_RIGHTBUTTON, pt);
 	return TRUE;
+}
+
+LRESULT PrivateFrame::onCopyUserInfo(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	tstring sCopy;
+
+	const OnlineUserPtr ou = ClientManager::getInstance()->findOnlineUser(HintedUser(getUser(), getHubUrl()));
+	if (ou) {
+		sCopy = ou->getText(static_cast<uint8_t>(wID - IDC_COPY), true);
+	}
+
+	if (!sCopy.empty())
+		WinUtil::setClipboard(sCopy);
+
+	return 0;
 }
 
 void PrivateFrame::runUserCommand(UserCommand& uc) {
