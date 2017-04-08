@@ -164,28 +164,15 @@ void ExtensionsFrame::onExtensionListDownloaded() {
 	}
 	//Do some kind of parsing...
 	string& data = httpDownload->buf;
-	size_t pos = 0;
-	while ((pos = data.find(package, pos)) != string::npos) {
-		pos += package.length();
-
-		size_t i = 0;
-		size_t iend = 0;
-
-		i = data.find(pname, pos);
-		if(i == string::npos)
+	size_t i = 0;
+	while ((i = data.find(package, i)) != string::npos) {
+		i += package.length();
+		size_t pos = i;
+		string aName = getData(data, pname, pos);
+		if(aName.empty())
 			continue;
 
-		i += pname.length();
-		iend = data.find("\",", i);
-		string aName = data.substr(i, iend - i);
-		
-		i = data.find(pdesc, i);
-		if (i == string::npos)
-			continue;
-
-		i += pdesc.length();
-		iend = data.find("\",", i);
-		string aDesc = data.substr(i, iend -i);
+		string aDesc = getData(data, pdesc, pos);
 
 		itemInfos.emplace(aName, make_unique<ItemInfo>(aName, aDesc));
 	}
@@ -212,37 +199,27 @@ void ExtensionsFrame::onExtensionInfoDownloaded() {
 	}
 
 	string& data = httpDownload->buf;
+	if (data.find(dist) == string::npos)
+		return;
+
 	size_t pos = 0;
-	pos = data.find(dist, pos);
-	if (pos == string::npos)
-		return;
-
-	pos += dist.length();
-
-	size_t i = 0;
-	size_t iend = 0;
-
-	i = data.find(psha, pos);
-	if (i == string::npos)
-		return;
-
-	i += psha.length();
-	iend = data.find("\",", i);
-	string aSha = data.substr(i, iend - i);
-
-	i = data.find(purl, i);
-	if (i == string::npos)
-		return;
-
-	i += purl.length();
-	iend = data.find("},", i);
-	string aUrl = data.substr(i, iend - i);
+	string aSha = getData(data, psha, pos);
+	string aUrl = getData(data, purl, pos);
 
 	getExtensionManager().downloadExtension(aUrl, aSha);
 
 
 }
+string ExtensionsFrame::getData(const string& aData, const string& aEntry, size_t& pos) {
+	pos = aData.find(aEntry, pos);
+	if (pos == string::npos)
+		return Util::emptyString;
 
+	pos += aEntry.length();
+	size_t iend = aData.find(",", pos);
+	return aData.substr(pos, iend-1 - pos);
+
+}
 LRESULT ExtensionsFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if (!closed) {
 		SettingsManager::getInstance()->removeListener(this);

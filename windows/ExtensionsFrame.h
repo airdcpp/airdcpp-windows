@@ -134,6 +134,8 @@ private:
 	CStatusBarCtrl ctrlStatus;
 	int statusSizes[2];
 
+	string getData(const string& aData, const string& aEntry, size_t& pos);
+
 	unique_ptr<HttpDownload> httpDownload;
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept override;
