@@ -55,10 +55,15 @@ namespace webserver {
 	}
 
 	void ExtensionManager::on(WebServerManagerListener::Stopping) noexcept {
-		RLock l(cs);
-		for (const auto& ext : extensions) {
-			ext->stop();
+		{
+			RLock l(cs);
+			for (const auto& ext: extensions) {
+				ext->stop();
+			}
 		}
+
+		WLock l(cs);
+		extensions.clear();
 	}
 
 	void ExtensionManager::on(WebServerManagerListener::SocketDisconnected, const WebSocketPtr& aSocket) noexcept {
@@ -121,7 +126,7 @@ namespace webserver {
 			if (i != extensions.end()) {
 				extensions.erase(i);
 			} else {
-				dcassert(0);
+				throw Exception("Extension was not found");
 			}
 		}
 
@@ -338,10 +343,19 @@ namespace webserver {
 		ExtensionPtr ext = nullptr;
 		try {
 			ext = std::make_shared<Extension>(aPath, [](const Extension* aExtension) {
-				LogManager::getInstance()->message("Extension " + aExtension->getName() + " has exited (see the extension log for error details)", LogMessage::SEV_ERROR);
+				LogManager::getInstance()->message(
+					"Extension " + aExtension->getName() + " has exited (see the extension log " + aExtension->getErrorLogPath() + " for error details)", 
+					LogMessage::SEV_ERROR
+				);
 			});
 		} catch (const Exception& e) {
 			LogManager::getInstance()->message("Failed to load extension " + aPath + ": " + e.what(), LogMessage::SEV_ERROR);
+			return nullptr;
+		}
+
+		if (getExtension(ext->getName())) {
+			dcassert(0);
+			LogManager::getInstance()->message("Failed to load extension " + aPath + ": exists already", LogMessage::SEV_ERROR);
 			return nullptr;
 		}
 
@@ -368,6 +382,10 @@ namespace webserver {
 	}
 
 	bool ExtensionManager::stopExtension(const ExtensionPtr& aExtension) noexcept {
+		if (!aExtension->isRunning()) {
+			return true;
+		}
+
 		if (!aExtension->stop()) {
 			return false;
 		}

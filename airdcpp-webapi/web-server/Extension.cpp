@@ -20,6 +20,7 @@
 
 #include <web-server/Extension.h>
 
+#include <web-server/SystemUtil.h>
 #include <web-server/WebUserManager.h>
 #include <web-server/WebServerManager.h>
 #include <web-server/WebServerSettings.h>
@@ -88,6 +89,7 @@ namespace webserver {
 		homepage = aJson.value("homepage", Util::emptyString);
 
 		{
+			// Engines
 			auto enginesJson = aJson.find("engines");
 			if (enginesJson != aJson.end()) {
 				for (const auto& engine : json::iterator_wrapper(*enginesJson)) {
@@ -98,7 +100,18 @@ namespace webserver {
 			if (engines.empty()) {
 				engines.emplace_back("node");
 			}
+		}
 
+		{
+			// Operating system
+			auto osJson = aJson.find("os");
+			if (osJson != aJson.end()) {
+				const StringList osList = *osJson;
+				auto currentOs = SystemUtil::getPlatform();
+				if (std::find(osList.begin(), osList.end(), currentOs) == osList.end() && currentOs != "other") {
+					throw Exception("Extension is not compatible with your operating system, please the extension documentation for more information");
+				}
+			}
 		}
 
 		parseApiData(aJson.at("airdcpp"));
@@ -455,33 +468,40 @@ namespace webserver {
 		pid = 0;
 	}
 
+	unique_ptr<File> Extension::initLog(const string& aPath) {
+		if (Util::fileExists(aPath) && !File::deleteFile(aPath)) {
+			dcdebug("Failed to delete the old extension output log %s: %s\n", aPath.c_str(), Util::translateError(errno).c_str());
+			throw Exception("Failed to delete the old extension output log");
+		}
+
+		return unique_ptr<File>(new File(aPath, File::CREATE | File::TRUNCATE, File::RW));
+	}
+
 	void Extension::createProcess(const string& aEngine, WebServerManager* wsm, const SessionPtr& aSession) {
 		// Init logs
-		File messageLog(getMessageLogPath(), File::CREATE, File::RW);
-		File errorLog(getErrorLogPath(), File::CREATE, File::RW);
-
+		auto messageLog = std::move(initLog(getMessageLogPath()));
+		auto errorLog = std::move(initLog(getErrorLogPath()));
 
 		// Construct argv
 		char* app = (char*)aEngine.c_str();
 
+		// Note that pushed pointed params should not be destructed until the extension is running...
 		vector<char*> argv;
 		argv.push_back(app);
 
-		{
-			auto paramList = getLaunchParams(wsm, aSession);
-			for (const auto& p : paramList) {
-				argv.push_back((char*)p.c_str());
-			}
+		auto paramList = getLaunchParams(wsm, aSession);
+		for (const auto& p : paramList) {
+			argv.push_back((char*)p.c_str());
+		}
 
 #ifdef _DEBUG
-			string command = string(app) + " ";
-			for (const auto& p : paramList) {
-				command += p + " ";
-			}
-
-			dcdebug("Starting extension %s, command %s\n", name.c_str(), command.c_str());
-#endif
+		string command = string(app) + " ";
+		for (const auto& p : paramList) {
+			command += p + " ";
 		}
+
+		dcdebug("Starting extension %s, command %s\n", name.c_str(), command.c_str());
+#endif
 
 		argv.push_back(0);
 
@@ -496,8 +516,8 @@ namespace webserver {
 			// Child process
 
 			// Redirect messages to log files
-			dup2(messageLog.getNativeHandle(), STDOUT_FILENO);
-			dup2(errorLog.getNativeHandle(), STDERR_FILENO);
+			dup2(messageLog->getNativeHandle(), STDOUT_FILENO);
+			dup2(errorLog->getNativeHandle(), STDERR_FILENO);
 
 			// Run, checkRunningState will handle errors...
 			if (execvp(aEngine.c_str(), &argv[0]) == -1) {

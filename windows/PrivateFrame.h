@@ -62,6 +62,7 @@ public:
 		COMMAND_ID_HANDLER(ID_EDIT_CLEAR_ALL, onEditClearAll)
 		COMMAND_ID_HANDLER(IDC_PUBLIC_MESSAGE, onPublicMessage)
 		COMMAND_CODE_HANDLER(EN_CHANGE, onEditChange)
+		COMMAND_RANGE_HANDLER(IDC_COPY, IDC_COPY + OnlineUser::COLUMN_LAST, onCopyUserInfo)
 		CHAIN_MSG_MAP(chatBase)
 		CHAIN_COMMANDS(uibBase)
 	ALT_MSG_MAP(EDIT_MESSAGE_MAP)
@@ -99,6 +100,7 @@ public:
 		PostMessage(WM_CLOSE);
 		return 0;
 	}
+	LRESULT onCopyUserInfo(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);

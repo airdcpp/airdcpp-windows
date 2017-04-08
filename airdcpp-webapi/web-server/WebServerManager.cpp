@@ -52,7 +52,7 @@ namespace webserver {
 
 		{ "web_server_threads", "Server threads", 4, ApiSettingItem::TYPE_NUMBER, false, { 1, 100 } },
 
-		{ "default_idle_timeout", "Default session inactivity timeout (minutes)", 20, ApiSettingItem::TYPE_NUMBER, false },
+		{ "default_idle_timeout", "Default session inactivity timeout (minutes)", 20, ApiSettingItem::TYPE_NUMBER, false, { 0, MAX_INT_VALUE } },
 		{ "ping_interval", "Socket ping interval (seconds)", 30, ApiSettingItem::TYPE_NUMBER, false, { 1, 10000 } },
 		{ "ping_timeout", "Socket ping timeout (seconds)", 10, ApiSettingItem::TYPE_NUMBER, false, { 1, 10000 } },
 	};
@@ -66,9 +66,8 @@ namespace webserver {
 		fileServer.setResourcePath(Util::getPath(Util::PATH_RESOURCES) + "web-resources" + PATH_SEPARATOR);
 
 		userManager = unique_ptr<WebUserManager>(new WebUserManager(this));
-#ifdef _DEBUG
 		extManager = unique_ptr<ExtensionManager>(new ExtensionManager(this));
-#endif
+
 		ios.stop(); //Prevent io service from running until we load
 	}
 

@@ -33,8 +33,8 @@
 namespace webserver {
 	const ApiSettingItem::MinMax ApiSettingItem::defaultMinMax = { 0, MAX_INT_VALUE };
 
-	ApiSettingItem::ApiSettingItem(const string& aName, Type aType) :
-		name(aName), type(aType) {
+	ApiSettingItem::ApiSettingItem(const string& aName, Type aType, Type aItemType) :
+		name(aName), type(aType), itemType(aItemType) {
 
 	}
 
@@ -47,13 +47,13 @@ namespace webserver {
 		return getValue();
 	}
 
-	ServerSettingItem::ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType, 
-		bool aOptional, const MinMax& aMinMax, const List& aObjectValues, const string& aHelp, const EnumOption::List& aEnumOptions) :
+	ServerSettingItem::ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType,
+		bool aOptional, const MinMax& aMinMax, const List& aObjectValues, const string& aHelp, Type aItemType, const EnumOption::List& aEnumOptions) :
 
-		ApiSettingItem(aKey, aType), desc(aTitle), defaultValue(aDefaultValue), value(aDefaultValue), 
+		ApiSettingItem(aKey, aType, aItemType), desc(aTitle), defaultValue(aDefaultValue), value(aDefaultValue), 
 		optional(aOptional), minMax(aMinMax), objectValues(aObjectValues), help(aHelp), enumOptions(aEnumOptions)
 	{
-
+		dcassert(aType != TYPE_NUMBER || minMax.min != minMax.max);
 	}
 
 	// Returns the value and bool indicating whether it's an auto detected value
@@ -196,7 +196,7 @@ namespace webserver {
 	};
 
 	CoreSettingItem::CoreSettingItem(const string& aName, int aKey, ResourceManager::Strings aDesc, Type aType, ResourceManager::Strings aUnit) :
-		ApiSettingItem(aName, parseAutoType(aType, aKey)), si({ aKey, aDesc }), unit(aUnit) {
+		ApiSettingItem(aName, parseAutoType(aType, aKey), ApiSettingItem::TYPE_LAST), si({ aKey, aDesc }), unit(aUnit) {
 
 	}
 

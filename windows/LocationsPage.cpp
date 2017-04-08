@@ -85,8 +85,6 @@ void LocationsPage::write()
 	if(s.length() > 0 && s[s.length() - 1] != '\\') {
 		SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_DIRECTORY, s + '\\');
 	}
-
-	AirUtil::updateCachedSettings();
 }
 
 LRESULT LocationsPage::onItemChangedDirectories(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/)

@@ -16,39 +16,36 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef DCPLUSPLUS_DCPP_SEARCHAPI_H
-#define DCPLUSPLUS_DCPP_SEARCHAPI_H
-
 #include <web-server/stdinc.h>
+#include <web-server/SystemUtil.h>
 
-#include <api/SearchEntity.h>
-
-#include <api/base/HierarchicalApiModule.h>
-
-#include <airdcpp/typedefs.h>
-
+#include <airdcpp/Text.h>
 
 namespace webserver {
-	class SearchApi : public ParentApiModule<SearchInstanceToken, SearchEntity> {
-	public:
-		static StringList subscriptionList;
-
-		SearchApi(Session* aSession);
-		~SearchApi();
-	private:
-		static json serializeSearchInstance(const SearchEntity& aSearch) noexcept;
-		SearchEntity::Ptr createInstance(uint64_t aExpirationTick);
-
-		api_return handleCreateInstance(ApiRequest& aRequest);
-		api_return handleDeleteInstance(ApiRequest& aRequest);
-
-		api_return handleGetTypes(ApiRequest& aRequest);
-
-		void onTimer() noexcept;
-
-		atomic<SearchInstanceToken> instanceIdCounter { 0 };
-		TimerPtr timer;
-	};
-}
-
+	string SystemUtil::getHostname() noexcept {
+#ifdef _WIN32
+		TCHAR computerName[1024];
+		DWORD size = 1024;
+		GetComputerName(computerName, &size);
+		return Text::fromT(computerName);
+#else
+		char hostname[128];
+		gethostname(hostname, sizeof hostname);
+		return hostname;
 #endif
+	}
+
+	string SystemUtil::getPlatform() noexcept {
+#ifdef _WIN32
+		return "win32";
+#elif APPLE
+		return "darwin";
+#elif __linux__
+		return "linux";
+#elif __FreeBSD__
+		return "freebsd";
+#else
+		return "other";
+#endif
+	}
+}
