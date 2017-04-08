@@ -81,7 +81,7 @@ LRESULT ExtensionsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 		if (pt.x == -1 && pt.y == -1) {
 			WinUtil::getContextMenuPos(ctrlList, pt);
 		}
-
+		
 		if (ctrlList.GetSelectedCount() == 1) {
 			int sel = ctrlList.GetNextItem(-1, LVNI_SELECTED);
 			auto ii = ctrlList.getItemData(sel);
@@ -151,10 +151,6 @@ void ExtensionsFrame::downloadExtensionList() {
 		[this] { onExtensionListDownloaded(); }, false));
 }
 
-static const string package = "{\"package\":";
-static const string pname = "{\"name\":\"";
-static const string pdesc = "\"description\":\"";
-
 void ExtensionsFrame::onExtensionListDownloaded() {
 
 	ScopedFunctor([&] { httpDownload.reset(); });
@@ -162,29 +158,20 @@ void ExtensionsFrame::onExtensionListDownloaded() {
 	if (httpDownload->buf.empty()) {
 		return;
 	}
-	//Do some kind of parsing...
-	string& data = httpDownload->buf;
-	size_t i = 0;
-	while ((i = data.find(package, i)) != string::npos) {
-		i += package.length();
-		size_t pos = i;
-		string aName = getData(data, pname, pos);
-		if(aName.empty())
-			continue;
 
-		string aDesc = getData(data, pdesc, pos);
+	json listJson = json::parse(httpDownload->buf);
+	auto pJson = listJson.at("objects");
 
+	for (const auto i : pJson) {
+		json package = i.at("package");
+		string aName = package.at("name");
+		string aDesc = package.at("description");
 		itemInfos.emplace(aName, make_unique<ItemInfo>(aName, aDesc));
 	}
 
 	updateList();
 
 }
-
-static const string dist = "\"dist\":";
-static const string psha = "{\"shasum\":\"";
-static const string purl = "\"tarball\":\"";
-
 
 void ExtensionsFrame::downloadExtensionInfo(const ItemInfo* ii) {
 	httpDownload.reset(new HttpDownload(packageUrl + ii->getName() + "/latest",
@@ -198,13 +185,11 @@ void ExtensionsFrame::onExtensionInfoDownloaded() {
 		return;
 	}
 
-	string& data = httpDownload->buf;
-	if (data.find(dist) == string::npos)
-		return;
+	const json packageJson = json::parse(httpDownload->buf);
+	json dist = packageJson.at("dist");
 
-	size_t pos = 0;
-	string aSha = getData(data, psha, pos);
-	string aUrl = getData(data, purl, pos);
+	const string aSha = dist.at("shasum");
+	const string aUrl = dist.at("tarball");
 
 	getExtensionManager().downloadExtension(aUrl, aSha);
 
