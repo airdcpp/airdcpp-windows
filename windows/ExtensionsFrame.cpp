@@ -159,17 +159,20 @@ void ExtensionsFrame::onExtensionListDownloaded() {
 		return;
 	}
 
-	json listJson = json::parse(httpDownload->buf);
-	auto pJson = listJson.at("objects");
+	try {
 
-	for (const auto i : pJson) {
-		json package = i.at("package");
-		string aName = package.at("name");
-		string aDesc = package.at("description");
-		itemInfos.emplace(aName, make_unique<ItemInfo>(aName, aDesc));
-	}
+		json listJson = json::parse(httpDownload->buf);
+		auto pJson = listJson.at("objects");
 
-	updateList();
+		for (const auto i : pJson) {
+			json package = i.at("package");
+			string aName = package.at("name");
+			string aDesc = package.at("description");
+			itemInfos.emplace(aName, make_unique<ItemInfo>(aName, aDesc));
+		}
+
+		updateList();
+	}	catch (const std::exception& /*e*/) { }
 
 }
 
@@ -185,14 +188,15 @@ void ExtensionsFrame::onExtensionInfoDownloaded() {
 		return;
 	}
 
-	const json packageJson = json::parse(httpDownload->buf);
-	json dist = packageJson.at("dist");
+	try {
+		const json packageJson = json::parse(httpDownload->buf);
+		json dist = packageJson.at("dist");
 
-	const string aSha = dist.at("shasum");
-	const string aUrl = dist.at("tarball");
+		const string aSha = dist.at("shasum");
+		const string aUrl = dist.at("tarball");
 
-	getExtensionManager().downloadExtension(aUrl, aSha);
-
+		getExtensionManager().downloadExtension(aUrl, aSha);
+	} catch (const std::exception& /*e*/) {}
 
 }
 string ExtensionsFrame::getData(const string& aData, const string& aEntry, size_t& pos) {
