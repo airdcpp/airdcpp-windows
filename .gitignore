@@ -21,3 +21,4 @@
 *.opendb
 *.exe
 *- Copy*
+/enc_temp_folder
