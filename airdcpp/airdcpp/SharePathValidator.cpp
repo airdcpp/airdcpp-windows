@@ -199,7 +199,7 @@ void SharePathValidator::validate(FileFindIter& aIter, const string& aPath) cons
 		checkSharedName(aPath, true);
 
 		auto bundle = QueueManager::getInstance()->findDirectoryBundle(aPath);
-		if (bundle && !bundle->isCompleted()) {
+		if (bundle && !bundle->isDownloaded()) {
 			throw QueueException("Directory is inside an unfinished bundle");
 		}
 
