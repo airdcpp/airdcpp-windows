@@ -295,7 +295,7 @@ LRESULT PrivateFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/)
 			return 0;
 
 		lastCCPMError = Text::toT(chat->getLastCCPMError());
-		pDispInfo->lpszText = !getUser()->isSet(User::CCPM) ? const_cast<TCHAR*>(lastCCPMError.c_str()) :
+		pDispInfo->lpszText = !chat->allowCCPM() ? const_cast<TCHAR*>(lastCCPMError.c_str()) :
 			ccReady() ? (LPWSTR)CTSTRING(DISCONNECT_CCPM) : (LPWSTR)CTSTRING(START_CCPM);
 	}
 	else if (idCtrl == STATUS_AWAY + POPUP_UID) {
@@ -621,7 +621,7 @@ void PrivateFrame::updateStatusBar() {
 		ctrlStatus.SetIcon(STATUS_CC, GET_ICON(IDI_SECURE, 16));
 	} else if(chat->isOnline() && !getUser()->isNMDC() && !getUser()->isSet(User::BOT)) {
 		tmp = _T(" ") + TSTRING(SEND_PM_VIA);
-		ctrlStatus.SetIcon(STATUS_CC, getUser()->isSet(User::CCPM) ? ResourceLoader::iSecureGray : ResourceLoader::iCCPMUnSupported);
+		ctrlStatus.SetIcon(STATUS_CC, chat->allowCCPM() ? ResourceLoader::iSecureGray : ResourceLoader::iCCPMUnSupported);
 	} else {
 		ctrlStatus.SetIcon(STATUS_CC, NULL);
 	}
