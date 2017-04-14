@@ -149,7 +149,7 @@ public:
 
 	// Validate a file/directory path
 	// Throws on errors
-	void validatePath(const string& aPath) const;
+	void validatePath(const string& aPath, bool aSkipQueueCheck) const;
 
 	// Returns the dupe paths by directory name/NMDC path
 	StringList getNmdcDirPaths(const string& aDir) const noexcept;
