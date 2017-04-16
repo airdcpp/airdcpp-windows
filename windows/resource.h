@@ -92,7 +92,7 @@
 #define IDR_SPY                         222
 #define IDR_USERS                       224
 #define IDD_LOGPAGE                     225
-#define IDR_EXTENSIONS					226
+#define IDR_EXTENSIONS                  226
 #define IDD_USER_COMMAND                230
 #define IDR_FINISHED_DL                 231
 #define IDR_FINISHED_UL                 232
@@ -317,10 +317,13 @@
 #define IDD_RSS_FILTER_DLG              472
 #define IDD_FAV_HUB_GENERAL             474
 #define IDD_FAV_OPTIONS_DLG             476
+#define IDD_DIALOG7                     479
+#define IDD_TABPAGE                     479
 #define IDI_SLOTS                       480
 #define IDI_SLOTSFULL                   481
 #define IDI_TOTAL_UP                    482
 #define IDI_TOTAL_DOWN                  483
+#define IDD_DYNAMIC_DIALOG              483
 #define IDI_SHARED                      484
 #define IDI_DIR_LOADING_OL              485
 #define IDI_SEND_MESSAGE                486
@@ -1370,6 +1373,7 @@
 #define IDC_AWAY_IDLE_TEXT_BEGIN        1695
 #define IDC_AWAY_MODE                   1696
 #define IDC_SCROLLBAR1                  1698
+#define IDC_SCROLLBAR                   1698
 #define IDC_EDIT4                       1699
 #define IDC_SCROLLBAR2                  1699
 #define IDC_RSS_DOWNLOAD_PATH           1699
@@ -1676,6 +1680,7 @@
 #define IDC_EXPIRY_INT_SPIN             10232
 #define IDC_EXPIRE_INT_SPIN             10232
 #define IDC_EXPIRE_INT                  10233
+#define IDC_PLACEHOLDER                 10236
 #define IDC_REFRESH_WINAMP              11011
 #define IDC_WINAMP_LIST                 11012
 #define IDC_POSITION                    11013
@@ -1853,7 +1858,7 @@
 #define IDC_FILTER_OPTIONS              15141
 #define IDC_OPEN_CONFIG_DIR             15142
 #define ID_TOGGLE_TOOLBAR               15999
-#define IDC_EXTENSIONS_LIST				16000
+#define IDC_EXTENSIONS_LIST             16000
 #define ID_TOGGLE_TBSTATUS              16900
 #define ID_LOCK_TB                      18900
 #define IDC_BROWSELIST                  19000
@@ -1888,9 +1893,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        478
+#define _APS_NEXT_RESOURCE_VALUE        485
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         10234
+#define _APS_NEXT_CONTROL_VALUE         10237
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

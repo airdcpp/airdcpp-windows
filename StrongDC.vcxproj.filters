@@ -396,6 +396,9 @@
     <ClCompile Include="windows\ExtensionsFrame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\DynamicTabPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -843,6 +846,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\ExtensionsFrame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\DynamicTabPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\ResizeableDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\DynamicDialogBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

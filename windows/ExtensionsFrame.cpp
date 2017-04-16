@@ -21,6 +21,7 @@
 
 #include "ExtensionsFrame.h"
 #include "ResourceLoader.h"
+#include "DynamicDialogBase.h"
 #include <airdcpp/ScopedFunctor.h>
 
 string ExtensionsFrame::id = "Extensions";
@@ -100,6 +101,7 @@ LRESULT ExtensionsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 
 				menu.appendSeparator();
 				menu.appendItem(TSTRING(REMOVE), [=] { onRemoveExtension(ii); });
+				menu.appendItem(TSTRING(SETTINGS_CHANGE), [=] { onConfigExtension(ii); });
 			}
 			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 			return TRUE;
@@ -145,6 +147,13 @@ void ExtensionsFrame::onStartExtension(const ItemInfo* ii) {
 void ExtensionsFrame::onRemoveExtension(const ItemInfo* ii) {
 	getExtensionManager().removeExtension(ii->item);
 }
+
+void ExtensionsFrame::onConfigExtension(const ItemInfo* ii) {
+	DynamicDialogBase dlg(STRING(SETTINGS_EXTENSIONS));
+	if (dlg.DoModal() == IDOK) {
+	}
+}
+
 
 void ExtensionsFrame::downloadExtensionList() {
 	httpDownload.reset(new HttpDownload(extensionUrl,

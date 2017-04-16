@@ -419,6 +419,7 @@
     <ClCompile Include="windows\AutoSearchFrm.cpp" />
     <ClCompile Include="windows\AutoSearchGeneralPage.cpp" />
     <ClCompile Include="windows\AutoSearchGroupDlg.cpp" />
+    <ClCompile Include="windows\DynamicTabPage.cpp" />
     <ClCompile Include="windows\ExtensionsFrame.cpp" />
     <ClCompile Include="windows\FavHubGeneralPage.cpp" />
     <ClCompile Include="windows\FavHubOptionsPage.cpp" />
@@ -559,9 +560,12 @@
     <ClInclude Include="windows\AutosearchGeneralPage.h" />
     <ClInclude Include="windows\AutoSearchGroupDlg.h" />
     <ClInclude Include="windows\AutoSearchItemSettings.h" />
+    <ClInclude Include="windows\DynamicDialogBase.h" />
+    <ClInclude Include="windows\DynamicTabPage.h" />
     <ClInclude Include="windows\ExtensionsFrame.h" />
     <ClInclude Include="windows\FavHubGeneralPage.h" />
     <ClInclude Include="windows\FavHubOptionsPage.h" />
+    <ClInclude Include="windows\ResizeableDialog.h" />
     <ClInclude Include="windows\RssFilterPage.h" />
     <ClInclude Include="windows\TabbedDialog.h" />
     <ClInclude Include="windows\AutosearchParams.h" />

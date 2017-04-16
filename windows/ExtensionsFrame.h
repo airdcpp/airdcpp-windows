@@ -116,6 +116,7 @@ private:
 	void onStopExtension(const ItemInfo* ii);
 	void onStartExtension(const ItemInfo* ii);
 	void onRemoveExtension(const ItemInfo* ii);
+	void onConfigExtension(const ItemInfo* ii);
 
 	void downloadExtensionList();
 	void onExtensionListDownloaded();
