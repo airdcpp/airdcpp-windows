@@ -56,10 +56,28 @@ public:
 
 	LRESULT onEraseBackground(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL & /*bHandled*/);
 
+	void resizePage();
+
 private:
-	CEdit ctrlEdit;
-	CStatic ctrlStatic;
+	struct EditConfig {
+		EditConfig(const string& aName, const string& aId) : label(aName), id(aId) {}
+		CEdit ctrlEdit;
+		CStatic ctrlStatic;
+		string label;
+		string id;
+	};
+
 	bool loading;
+
+	void addEditConfig(const string& aName, const string& aId);
+
+
+	map<string, shared_ptr<EditConfig>> edits;
+
+	int prevConfigBottomMargin = 0;
+	int configSpacing = 20;
+
+	int editHeight = 25;
 
 };
 
