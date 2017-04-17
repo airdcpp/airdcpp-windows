@@ -41,28 +41,24 @@ public:
 	BEGIN_MSG_MAP_EX(DynamicTabPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)
-		MESSAGE_HANDLER(WM_CTLCOLORDLG, onCtlColor)
+		//MESSAGE_HANDLER(WM_CTLCOLORDLG, onCtlColor)
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
+		MESSAGE_HANDLER(WM_ERASEBKGND, onEraseBackground)
 	END_MSG_MAP()
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
-	LRESULT onCtlColor(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-		HDC hdc = (HDC)wParam;
-		SetBkMode(hdc, TRANSPARENT);
-		if (uMsg != WM_CTLCOLORDLG) {
-			SetBkColor(hdc, ::GetSysColor(COLOR_3DFACE));
-			return (LRESULT)GetStockObject(COLOR_3DFACE);
-		}
-		return (LRESULT)GetStockObject(NULL_BRUSH);
-	}
+	LRESULT onCtlColor(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
 
 	LRESULT onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/) {
 		return 0;
 	}
 
+	LRESULT onEraseBackground(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL & /*bHandled*/);
+
 private:
 	CEdit ctrlEdit;
+	CStatic ctrlStatic;
 	bool loading;
 
 };

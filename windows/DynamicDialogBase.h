@@ -34,8 +34,6 @@
 class DynamicDialogBase : public CDialogImpl<DynamicDialogBase> {
 public:
 
-#define BTN_MSG_MAP 14
-
 	enum { IDD = IDD_DYNAMIC_DIALOG };
 
 	DynamicDialogBase(const string& aName) : name(aName) {
@@ -50,8 +48,8 @@ public:
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		MESSAGE_HANDLER(WM_VSCROLL, onScroll)
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
+		MESSAGE_HANDLER(WM_SIZE, onSize)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
-		ALT_MSG_MAP(BTN_MSG_MAP)
 	END_MSG_MAP()
 
 
@@ -62,10 +60,7 @@ public:
 		// save the original size
 		GetClientRect(&rcOriginalRect);
 
-		moveChildPage();
-
-		// initial scroll position
-		setScrollInfo();
+		updateLayout();
 
 		CenterWindow(GetParent());
 		SetWindowText(Text::toT(name).c_str());
@@ -101,6 +96,11 @@ public:
 		return 0;
 	}
 
+	LRESULT onSize(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/) {
+		updateLayout();
+		return 0;
+	}
+
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		if (wID == IDOK) {
 		}
@@ -108,25 +108,18 @@ public:
 		return 0;
 	}
 
-	void setScrollInfo() {
-		curScrollPos = 0;
-		SCROLLINFO si = { 0 };
-		si.cbSize = sizeof(si);
-		si.fMask = SIF_ALL;
-		GetScrollInfo(SB_VERT, &si);
-		si.nMax = scrollRect.bottom;
-		si.nPage = scrollRect.bottom - rcOriginalRect.bottom;
-		SetScrollInfo(SB_VERT, &si);
-	}
-
-	void moveChildPage() {
+	void updateLayout() {
 		CRect OKbtnRect;
 		GetDlgItem(IDOK).GetClientRect(&OKbtnRect);
 
-		CRect pageRect = rcOriginalRect;
-		pageRect.right -= (OKbtnRect.Width() + 30); //OK button left
-		pageRect.left += 5;
-		pageRect.bottom += 600;
+		CRect baseRect;
+		GetClientRect(&baseRect); // current base dialog rect
+
+		CRect pageRect; 
+		page->GetClientRect(&pageRect);
+		pageRect.top += pageSpacing;
+		pageRect.right = baseRect.right - (OKbtnRect.Width() + 30); //OK button left
+		pageRect.left = baseRect.left + pageSpacing;
 		page->MoveWindow(pageRect);
 
 		//Set the scrolling area, exclude OK button area by button left edge
@@ -138,15 +131,26 @@ public:
 		clipRect.right = pageRect.right;
 		clipRect.bottom = pageRect.bottom;
 
+		//Set scrollbar dimensions.
+		SCROLLINFO si = { 0 };
+		si.cbSize = sizeof(si);
+		si.fMask = SIF_ALL;
+		GetScrollInfo(SB_VERT, &si);
+		si.nMax = scrollRect.bottom;
+		si.nPage = baseRect.bottom;
+		SetScrollInfo(SB_VERT, &si);
+
 	}
 
 private:
 
 	// dialog size in the resource view (original size)
-	CRect	rcOriginalRect;
+	CRect rcOriginalRect;
 
 	// actual scroll position
-	int		curScrollPos;
+	int curScrollPos = 0;
+
+	int pageSpacing = 10;
 
 	CEdit ctrlEdit;
 

@@ -29,11 +29,61 @@ DynamicTabPage::~DynamicTabPage() { }
 LRESULT DynamicTabPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 
 	//add CEdit test item
-	RECT r = { 100, 80, 350, 130 };
+	RECT r = { 100, 80, 400, 100 };
 	ctrlEdit.Create(m_hWnd, r, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | ES_AUTOHSCROLL, WS_EX_CLIENTEDGE);
 	ctrlEdit.SetFont(WinUtil::systemFont);
 
-	loading = false; //loading done.
+	RECT r2 = { 100, 65, 400, 78 };
+	ctrlStatic.Create(m_hWnd, r2, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | ES_AUTOHSCROLL, NULL);
+	ctrlStatic.SetFont(WinUtil::systemFont);
+	ctrlStatic.SetWindowText(_T("Test string for CEdit label"));
+
+	loading = false;
+	return TRUE;
+}
+
+LRESULT DynamicTabPage::onCtlColor(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
+	if (uMsg == WM_CTLCOLORSTATIC) {
+		HDC hdc = (HDC)wParam;
+		SetBkMode(hdc, TRANSPARENT);
+		SetBkColor(hdc, ::GetSysColor(COLOR_3DFACE));
+		return (LRESULT)GetStockObject(COLOR_3DFACE);
+	}
+	else if (uMsg == WM_CTLCOLORDLG) {
+		HDC hdc = (HDC)wParam;
+		SetBkColor(hdc, ::GetSysColor(COLOR_WINDOW));
+		return (LRESULT)GetStockObject(COLOR_WINDOW);
+	}
+
+	bHandled = FALSE;
+	return FALSE;
+}
+
+LRESULT DynamicTabPage::onEraseBackground(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL & /*bHandled*/) {
+	//background
+	WTL::CDCHandle dc(reinterpret_cast<HDC>(wParam));
+	RECT rc;
+	GetClientRect(&rc);
+	dc.FillRect(&rc, GetSysColorBrush(COLOR_WINDOW));
+
+	//draw the left border
+	HGDIOBJ oldPen = SelectObject(dc, CreatePen(PS_SOLID, 1, GetSysColor(COLOR_3DLIGHT)));
+	MoveToEx(dc, rc.left, rc.top, (LPPOINT)NULL);
+	LineTo(dc, rc.left, rc.bottom);
+
+	//draw the right border
+	MoveToEx(dc, rc.right-1, rc.top, (LPPOINT)NULL);
+	LineTo(dc, rc.right-1, rc.bottom);
+
+	//draw the top border
+	MoveToEx(dc, rc.left, rc.top, (LPPOINT)NULL);
+	LineTo(dc, rc.right, rc.top);
+
+	//draw the bottom border
+	MoveToEx(dc, rc.left, rc.bottom - 1, (LPPOINT)NULL);
+	LineTo(dc, rc.right, rc.bottom - 1);
+
+	DeleteObject(SelectObject(dc, oldPen));
 	return TRUE;
 }
 
