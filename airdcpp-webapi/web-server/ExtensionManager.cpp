@@ -423,6 +423,10 @@ namespace webserver {
 		throw Exception(lastError);
 	}
 
+	ExtensionManager::EngineMap ExtensionManager::getEngines() const noexcept {
+		return engines;
+	}
+
 	string ExtensionManager::selectEngineCommand(const string& aEngineCommands) noexcept {
 		auto tokens = StringTokenizer<string>(aEngineCommands, ';', false);
 		for (const auto& token: tokens.getTokens()) {
