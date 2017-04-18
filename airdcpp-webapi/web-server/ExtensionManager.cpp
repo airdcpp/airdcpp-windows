@@ -140,16 +140,18 @@ namespace webserver {
 		return i == extensions.end() ? nullptr : *i;
 	}
 
-	bool ExtensionManager::downloadExtension(const string& aUrl, const string& aSha1) noexcept {
+	bool ExtensionManager::downloadExtension(const string& aInstallId, const string& aUrl, const string& aSha1) noexcept {
+		fire(ExtensionManagerListener::InstallationStarted(), aInstallId);
+
 		WLock l(cs);
 		auto ret = httpDownloads.emplace(aUrl, make_shared<HttpDownload>(aUrl, [=]() {
-			onExtensionDownloadCompleted(aUrl, aSha1);
+			onExtensionDownloadCompleted(aInstallId, aUrl, aSha1);
 		}, false));
 
 		return ret.second;
 	}
 
-	void ExtensionManager::onExtensionDownloadCompleted(const string& aUrl, const string& aSha1) noexcept {
+	void ExtensionManager::onExtensionDownloadCompleted(const string& aInstallId, const string& aUrl, const string& aSha1) noexcept {
 		auto tempFile = Util::getTempPath() + Util::validateFileName(aUrl) + ".tmp";
 
 		// Don't allow the same download to be initiated again until the installation has finished
@@ -176,7 +178,7 @@ namespace webserver {
 			}
 
 			if (download->buf.empty()) {
-				failInstallation("Download failed", download->status);
+				failInstallation(aInstallId, "Download failed", download->status);
 				return;
 			}
 
@@ -189,7 +191,7 @@ namespace webserver {
 						sprintf(&mdString[i * 2], "%02x", (*calculatedSha1)[i]);
 
 					if (compare(string(mdString), aSha1) != 0) {
-						failInstallation("Download failed", "Checksum validation mismatch");
+						failInstallation(aInstallId, "Download failed", "Checksum validation mismatch");
 						return;
 					}
 				}
@@ -199,25 +201,26 @@ namespace webserver {
 			try {
 				File(tempFile, File::WRITE, File::CREATE | File::TRUNCATE).write(download->buf);
 			} catch (const FileException& e) {
-				failInstallation("Failed to save the package", e.what());
+				failInstallation(aInstallId, "Failed to save the package", e.what());
 				return;
 			}
 		}
 
 		// Install
-		installLocalExtension(tempFile);
+		installLocalExtension(aInstallId, tempFile);
 	}
 
-	void ExtensionManager::installLocalExtension(const string& aInstallFilePath) noexcept {
+	void ExtensionManager::installLocalExtension(const string& aInstallId, const string& aInstallFilePath) noexcept {
 		string tarFile = aInstallFilePath + "_DECOMPRESSED";
 		ScopedFunctor([&tarFile]() { 
 			auto success = File::deleteFile(tarFile);
 			dcassert(success);
 		});
+
 		try {
 			GZ::decompress(aInstallFilePath, tarFile);
 		} catch (const Exception& e) {
-			failInstallation("Failed to decompress the package", e.what());
+			failInstallation(aInstallId, "Failed to decompress the package", e.what());
 			return;
 		}
 
@@ -235,7 +238,7 @@ namespace webserver {
 			TarFile tar(tarFile);
 			tar.extract(tempPackageDirectory);
 		} catch (const Exception& e) {
-			failInstallation("Failed to extract the extension to the temp directory", e.what());
+			failInstallation(aInstallId, "Failed to extract the extension to the temp directory", e.what());
 			return;
 		}
 
@@ -247,7 +250,7 @@ namespace webserver {
 			extensionInfo.checkCompatibility();
 			finalInstallPath = extensionInfo.getRootPath();
 		} catch (const std::exception& e) {
-			failInstallation("Failed to load extension", e.what());
+			failInstallation(aInstallId, "Failed to load extension", e.what());
 			return;
 		}
 
@@ -255,7 +258,7 @@ namespace webserver {
 		auto extension = getExtension(Util::getLastDir(finalInstallPath));
 		if (extension) {
 			if (!extension->isManaged()) {
-				failInstallation("Extension exits", "Unmanaged extensions can't be upgraded");
+				failInstallation(aInstallId, "Extension exits", "Unmanaged extensions can't be upgraded");
 				return;
 			}
 
@@ -267,7 +270,7 @@ namespace webserver {
 			try {
 				File::removeDirectoryForced(extension->getPackageDirectory());
 			} catch (const FileException& e) {
-				failInstallation("Failed to remove the old extension package directory " + extension->getPackageDirectory(), e.getError());
+				failInstallation(aInstallId, "Failed to remove the old extension package directory " + extension->getPackageDirectory(), e.getError());
 			}
 		}
 
@@ -276,7 +279,7 @@ namespace webserver {
 			TarFile tar(tarFile);
 			tar.extract(finalInstallPath);
 		} catch (const Exception& e) {
-			failInstallation("Failed to uncompress the extension to destination directory", e.what());
+			failInstallation(aInstallId, "Failed to uncompress the extension to destination directory", e.what());
 			return;
 		}
 
@@ -286,7 +289,7 @@ namespace webserver {
 				extension->reload();
 			} catch (const Exception& e) {
 				dcassert(0);
-				failInstallation("Failed to load extension " + finalInstallPath, e.what());
+				failInstallation(aInstallId, "Failed to load extension " + finalInstallPath, e.what());
 				return;
 			}
 
@@ -304,14 +307,16 @@ namespace webserver {
 		}
 
 		startExtension(extension);
+		fire(ExtensionManagerListener::InstallationSucceeded(), aInstallId);
 	}
 
-	void ExtensionManager::failInstallation(const string& aMessage, const string& aException) noexcept {
+	void ExtensionManager::failInstallation(const string& aInstallId, const string& aMessage, const string& aException) noexcept {
 		string msg = "Extension installation failed: " + aMessage;
 		if (!aException.empty()) {
 			msg += " (" + aException + ")";
 		}
 
+		fire(ExtensionManagerListener::InstallationFailed(), aInstallId, msg);
 		LogManager::getInstance()->message(msg, LogMessage::SEV_ERROR);
 	}
 
