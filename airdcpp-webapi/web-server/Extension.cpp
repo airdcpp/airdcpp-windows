@@ -215,6 +215,10 @@ namespace webserver {
 			return;
 		}
 
+		if (!wsm->isListeningPlain()) {
+			throw Exception("Extensions require the (plain) HTTP protocol to be enabled");
+		}
+
 		if (isRunning()) {
 			dcassert(0);
 			return;
@@ -238,7 +242,7 @@ namespace webserver {
 	}
 
 	string Extension::getConnectUrl(WebServerManager* wsm) noexcept {
-		const auto& serverConfig = wsm->isListeningPlain() ? wsm->getPlainServerConfig() : wsm->getTlsServerConfig();
+		const auto& serverConfig = wsm->getPlainServerConfig();
 
 		auto bindAddress = serverConfig.bindAddress.str();
 		if (bindAddress.empty()) {
@@ -246,10 +250,7 @@ namespace webserver {
 			bindAddress = protocol == boost::asio::ip::tcp::v6() ? "[::1]" : "127.0.0.1";
 		}
 
-		string address = wsm->isListeningPlain() ? "ws://" : "wss://";
-		address += bindAddress;
-		address += ":" + Util::toString(serverConfig.port.num()) + "/api/v1/ ";
-		return address;
+		return bindAddress + ":" + Util::toString(serverConfig.port.num()) + "/api/v1/";
 	}
 
 	StringList Extension::getLaunchParams(WebServerManager* wsm, const SessionPtr& aSession) const noexcept {
@@ -259,8 +260,8 @@ namespace webserver {
 		ret.push_back(getPackageDirectory() + entry);
 
 		// Params
-		auto addParam = [&ret](const string& aName, const string& aParam) {
-			ret.push_back("--" + aName + "=" + aParam);
+		auto addParam = [&ret](const string& aName, const string& aParam = Util::emptyString) {
+			ret.push_back("--" + aName + (!aParam.empty() ? "=" + aParam : Util::emptyString));
 		};
 
 		// Name
