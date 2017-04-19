@@ -671,6 +671,17 @@ void File::removeDirectoryForced(const string& aPath) {
 	File::removeDirectory(aPath);
 }
 
+void File::moveDirectory(const string& aSource, const string& aTarget, const string& aPattern) {
+	File::ensureDirectory(aTarget);
+	File::forEachFile(aSource, aPattern, [&](const FilesystemItem& aInfo) {
+		if (aInfo.isDirectory) {
+			moveDirectory(aSource + aInfo.name, aTarget + aInfo.name);
+		} else {
+			renameFile(aSource + aInfo.name, aTarget + aInfo.name);
+		}
+	});
+}
+
 bool File::deleteFile(const string& aFileName) noexcept {
 	try {
 		deleteFileThrow(aFileName);
