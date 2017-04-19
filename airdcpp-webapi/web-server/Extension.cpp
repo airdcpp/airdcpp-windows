@@ -32,8 +32,24 @@
 namespace webserver {
 	SharedMutex Extension::cs;
 
-	Extension::Extension(const string& aPath, ErrorF&& aErrorF, bool aSkipPathValidation) : errorF(std::move(aErrorF)), managed(true) {
-		initialize(aPath, aSkipPathValidation);
+	string Extension::getRootPath(const string& aName) noexcept {
+		return EXTENSION_DIR_ROOT + aName + PATH_SEPARATOR_STR;
+	}
+
+	string Extension::getRootPath() const noexcept {
+		return getRootPath(name);
+	}
+
+	string Extension::getMessageLogPath() const noexcept {
+		return Util::joinDirectory(getRootPath(), EXT_LOG_DIR) + "output.log";
+	}
+
+	string Extension::getErrorLogPath() const noexcept {
+		return Util::joinDirectory(getRootPath(), EXT_LOG_DIR) + "error.log";
+	}
+
+	Extension::Extension(const string& aPackageDirectory, ErrorF&& aErrorF, bool aSkipPathValidation) : errorF(std::move(aErrorF)), managed(true) {
+		initialize(aPackageDirectory, aSkipPathValidation);
 	}
 
 	Extension::Extension(const SessionPtr& aSession, const json& aPackageJson) : managed(false), session(aSession) {
@@ -46,8 +62,8 @@ namespace webserver {
 		fire(ExtensionListener::PackageUpdated());
 	}
 
-	void Extension::initialize(const string& aPath, bool aSkipPathValidation) {
-		const auto packageStr = File(aPath + "package" + PATH_SEPARATOR_STR + "package.json", File::READ, File::OPEN).read();
+	void Extension::initialize(const string& aPackageDirectory, bool aSkipPathValidation) {
+		const auto packageStr = File(aPackageDirectory + "package.json", File::READ, File::OPEN).read();
 		try {
 			const json packageJson = json::parse(packageStr);
 
@@ -56,7 +72,7 @@ namespace webserver {
 			throw Exception("Could not parse package.json (" + string(e.what()) + ")");
 		}
 
-		if (!aSkipPathValidation && compare(name, Util::getLastDir(aPath)) != 0) {
+		if (!aSkipPathValidation && compare(name, Util::getLastDir(Util::getParentDir(aPackageDirectory))) != 0) {
 			throw Exception("Extension path doesn't match with the extension name " + name);
 		}
 	}
@@ -136,7 +152,7 @@ namespace webserver {
 		FilesystemItemList ret;
 
 		if (managed) {
-			File::forEachFile(getLogPath(), "*.log", [&](const FilesystemItem& aInfo) {
+			File::forEachFile(Util::joinDirectory(getRootPath(), EXT_LOG_DIR), "*.log", [&](const FilesystemItem& aInfo) {
 				if (aInfo.isDirectory) {
 					return;
 				}
@@ -224,8 +240,8 @@ namespace webserver {
 			return;
 		}
 
-		File::ensureDirectory(getLogPath());
-		File::ensureDirectory(getSettingsPath());
+		File::ensureDirectory(Util::joinDirectory(getRootPath(), EXT_LOG_DIR));
+		File::ensureDirectory(Util::joinDirectory(getRootPath(), EXT_CONFIG_DIR));
 
 		checkCompatibility();
 
@@ -257,7 +273,7 @@ namespace webserver {
 		StringList ret;
 
 		// Script to launch
-		ret.push_back(getPackageDirectory() + entry);
+		ret.push_back(Util::joinDirectory(getRootPath(), EXT_PACKAGE_DIR) + entry);
 
 		// Params
 		auto addParam = [&ret](const string& aName, const string& aParam = Util::emptyString) {
@@ -274,8 +290,8 @@ namespace webserver {
 		addParam("authToken", aSession->getAuthToken());
 
 		// Paths
-		addParam("logPath", getLogPath());
-		addParam("settingsPath", getSettingsPath());
+		addParam("logPath", Util::joinDirectory(getRootPath(), EXT_LOG_DIR));
+		addParam("settingsPath", Util::joinDirectory(getRootPath(), EXT_CONFIG_DIR));
 
 		return ret;
 	}

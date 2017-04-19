@@ -43,7 +43,7 @@ namespace webserver {
 #else
 			{ "node", "nodejs;node" },
 #endif
-			{ "python", "python" },
+			{ "python3", "python3;python" },
 		};
 	}
 
@@ -224,38 +224,50 @@ namespace webserver {
 			return;
 		}
 
-		string tempPackageDirectory = Util::getTempPath() + "extension_" + Util::getFileName(aInstallFilePath) + PATH_SEPARATOR_STR;
-		ScopedFunctor([&tempPackageDirectory]() {
+		string tempRoot = Util::getTempPath() + "extension_" + Util::getFileName(aInstallFilePath) + PATH_SEPARATOR_STR;
+		ScopedFunctor([&tempRoot]() {
 			try {
-				File::removeDirectoryForced(tempPackageDirectory);
+				File::removeDirectoryForced(tempRoot);
 			} catch (const FileException& e) {
-				dcdebug("Failed to delete the temporary extension directory %s: %s\n", tempPackageDirectory.c_str(), e.getError().c_str());
+				dcdebug("Failed to delete the temporary extension directory %s: %s\n", tempRoot.c_str(), e.getError().c_str());
 			}
 		});
 
 		try {
 			// Unpack the content to temp directory for validation purposes
 			TarFile tar(tarFile);
-			tar.extract(tempPackageDirectory);
+			tar.extract(tempRoot);
 		} catch (const Exception& e) {
 			failInstallation(aInstallId, "Failed to extract the extension to the temp directory", e.what());
 			return;
 		}
 
-		string finalInstallPath;
+		// Parse the extension directory
+		string tempPackageDirectory;
+		{
+			auto directories = File::findFiles(tempRoot, "*", File::TYPE_DIRECTORY);
+			if (directories.size() != 1) {
+				failInstallation(aInstallId, "Malformed package content", "There should be a single directory directly inside the extension package");
+			}
+
+			tempPackageDirectory = directories.front();
+		}
+
+
+		string extensionName;
 		try {
 			// Validate the package content
 			Extension extensionInfo(tempPackageDirectory, nullptr, true);
 
 			extensionInfo.checkCompatibility();
-			finalInstallPath = extensionInfo.getRootPath();
+			extensionName = extensionInfo.getName();
 		} catch (const std::exception& e) {
 			failInstallation(aInstallId, "Failed to load extension", e.what());
 			return;
 		}
 
 		// Updating an existing extension?
-		auto extension = getExtension(Util::getLastDir(finalInstallPath));
+		auto extension = getExtension(extensionName);
 		if (extension) {
 			if (!extension->isManaged()) {
 				failInstallation(aInstallId, "Extension exits", "Unmanaged extensions can't be upgraded");
@@ -268,18 +280,17 @@ namespace webserver {
 			}
 
 			try {
-				File::removeDirectoryForced(extension->getPackageDirectory());
+				File::removeDirectoryForced(Util::joinDirectory(extension->getRootPath(), EXT_PACKAGE_DIR));
 			} catch (const FileException& e) {
-				failInstallation(aInstallId, "Failed to remove the old extension package directory " + extension->getPackageDirectory(), e.getError());
+				failInstallation(aInstallId, "Failed to remove the old extension package directory " + Util::joinDirectory(extension->getRootPath(), EXT_PACKAGE_DIR), e.getError());
 			}
 		}
 
 		try {
-			// Extract to final destination directory
-			TarFile tar(tarFile);
-			tar.extract(finalInstallPath);
-		} catch (const Exception& e) {
-			failInstallation(aInstallId, "Failed to uncompress the extension to destination directory", e.what());
+			// Move files to final destination directory
+			File::moveDirectory(tempPackageDirectory, Util::joinDirectory(Extension::getRootPath(extensionName), EXT_PACKAGE_DIR));
+		} catch (const FileException& e) {
+			failInstallation(aInstallId, "Failed to move extension files to the final destination directory", e.what());
 			return;
 		}
 
@@ -288,15 +299,16 @@ namespace webserver {
 			try {
 				extension->reload();
 			} catch (const Exception& e) {
+				// Shouldn't happen since the package has been validated earlier
 				dcassert(0);
-				failInstallation(aInstallId, "Failed to load extension " + finalInstallPath, e.what());
+				failInstallation(aInstallId, "Failed to reload the updated extension package", e.what());
 				return;
 			}
 
 			LogManager::getInstance()->message("Extension " + extension->getName() + " was updated succesfully", LogMessage::SEV_INFO);
 		} else {
 			// Install new
-			extension = loadLocalExtension(finalInstallPath);
+			extension = loadLocalExtension(Extension::getRootPath(extensionName));
 			if (!extension) {
 				dcassert(0);
 				return;
@@ -340,7 +352,7 @@ namespace webserver {
 		// Parse
 		ExtensionPtr ext = nullptr;
 		try {
-			ext = std::make_shared<Extension>(aPath, [](const Extension* aExtension) {
+			ext = std::make_shared<Extension>(Util::joinDirectory(aPath, EXT_PACKAGE_DIR), [](const Extension* aExtension) {
 				LogManager::getInstance()->message(
 					"Extension " + aExtension->getName() + " has exited (see the extension log " + aExtension->getErrorLogPath() + " for error details)", 
 					LogMessage::SEV_ERROR
