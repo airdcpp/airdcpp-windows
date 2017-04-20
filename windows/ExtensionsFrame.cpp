@@ -23,6 +23,7 @@
 #include "ResourceLoader.h"
 #include "DynamicDialogBase.h"
 #include <airdcpp/ScopedFunctor.h>
+#include <api/common/SettingUtils.h>
 
 string ExtensionsFrame::id = "Extensions";
 
@@ -150,6 +151,20 @@ void ExtensionsFrame::onRemoveExtension(const ItemInfo* ii) {
 
 void ExtensionsFrame::onConfigExtension(const ItemInfo* ii) {
 	DynamicDialogBase dlg(STRING(SETTINGS_EXTENSIONS));
+
+	for (int i = 0; i < 10; i++) {
+		dlg.getPage()->addConfigItem(Util::toString(i) + " Test label for CEdit config", Util::toString(i), webserver::ApiSettingItem::TYPE_STRING);
+	}
+
+	for (int i = 15; i < 20; i++) {
+		dlg.getPage()->addConfigItem(Util::toString(i) + " Test label for CEdit config", Util::toString(i), webserver::ApiSettingItem::TYPE_BOOLEAN);
+	}
+
+	for (int i = 20; i < 22; i++) {
+		dlg.getPage()->addConfigItem(Util::toString(i) + " Test label for CEdit config", Util::toString(i), webserver::ApiSettingItem::TYPE_FILE_PATH);
+	}
+
+
 	if (dlg.DoModal() == IDOK) {
 	}
 }

@@ -857,6 +857,9 @@
     <ClInclude Include="windows\DynamicDialogBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="windows\ConfigUtil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\AutoSearch\Collecting.ico">

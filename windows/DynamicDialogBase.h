@@ -142,6 +142,8 @@ public:
 
 	}
 
+	shared_ptr<DynamicTabPage> getPage() { return page; }
+
 private:
 
 	// dialog size in the resource view (original size)

@@ -28,6 +28,8 @@
 #include <atlcrack.h>
 
 #include <airdcpp/Util.h>
+#include "ConfigUtil.h"
+#include <api/common/SettingUtils.h>
 
 
 class DynamicTabPage : public CDialogImpl<DynamicTabPage> {
@@ -44,6 +46,7 @@ public:
 		//MESSAGE_HANDLER(WM_CTLCOLORDLG, onCtlColor)
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
 		MESSAGE_HANDLER(WM_ERASEBKGND, onEraseBackground)
+		COMMAND_CODE_HANDLER(BN_CLICKED, OnButtonClick)
 	END_MSG_MAP()
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
@@ -54,25 +57,34 @@ public:
 		return 0;
 	}
 
+	LRESULT OnButtonClick(WORD /* wNotifyCode */, WORD /*wID*/, HWND hWndCtl, BOOL& /* bHandled */) {
+		for (auto cfg : configs) {
+			if (cfg->handleClick(hWndCtl))
+				break;
+		}
+		return 0;
+	}
+
+
 	LRESULT onEraseBackground(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL & /*bHandled*/);
 
 	void resizePage();
 
+	void addConfigItem(const string& aName, const string& aId, int aType) {
+		if(aType == webserver::ApiSettingItem::TYPE_STRING)
+			configs.emplace_back(make_shared<StringConfigItem>(aName, aId, aType));
+
+		if (aType == webserver::ApiSettingItem::TYPE_BOOLEAN)
+			configs.emplace_back(make_shared<BoolConfigItem>(aName, aId, aType));
+
+		if (aType == webserver::ApiSettingItem::TYPE_FILE_PATH || aType == webserver::ApiSettingItem::TYPE_DIRECTORY_PATH)
+			configs.emplace_back(make_shared<BrowseConfigItem>(aName, aId, aType));
+	}
+
 private:
-	struct EditConfig {
-		EditConfig(const string& aName, const string& aId) : label(aName), id(aId) {}
-		CEdit ctrlEdit;
-		CStatic ctrlStatic;
-		string label;
-		string id;
-	};
 
 	bool loading;
-
-	void addEditConfig(const string& aName, const string& aId);
-
-
-	map<string, shared_ptr<EditConfig>> edits;
+	vector<shared_ptr<ConfigIem>> configs;
 
 	int prevConfigBottomMargin = 0;
 	int configSpacing = 20;

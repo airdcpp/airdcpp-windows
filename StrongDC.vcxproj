@@ -560,6 +560,7 @@
     <ClInclude Include="windows\AutosearchGeneralPage.h" />
     <ClInclude Include="windows\AutoSearchGroupDlg.h" />
     <ClInclude Include="windows\AutoSearchItemSettings.h" />
+    <ClInclude Include="windows\ConfigUtil.h" />
     <ClInclude Include="windows\DynamicDialogBase.h" />
     <ClInclude Include="windows\DynamicTabPage.h" />
     <ClInclude Include="windows\ExtensionsFrame.h" />

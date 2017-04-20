@@ -22,14 +22,15 @@
 #include "DynamicTabPage.h"
 
 
-DynamicTabPage::DynamicTabPage() : loading(true) {}
+DynamicTabPage::DynamicTabPage() : loading(true) { }
 
 DynamicTabPage::~DynamicTabPage() { }
 
 LRESULT DynamicTabPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 
-	for (int i = 0; i < 21; i++) {
-		addEditConfig(Util::toString(i) + " Test label for CEdit config", Util::toString(i));
+	for (auto cfg : configs) {
+		prevConfigBottomMargin = cfg->Create(m_hWnd, prevConfigBottomMargin, configSpacing);
+		resizePage();
 	}
 
 	loading = false;
@@ -43,41 +44,6 @@ void DynamicTabPage::resizePage() {
 		windowRect.bottom = prevConfigBottomMargin + 70;
 		MoveWindow(windowRect);
 	}
-}
-
-void DynamicTabPage::addEditConfig(const string& aName, const string& aId) {
-
-	auto cfg = make_shared<EditConfig>(aName, aId);
-	//label
-
-	cfg->ctrlStatic.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | ES_AUTOHSCROLL, NULL);
-	cfg->ctrlStatic.SetFont(WinUtil::systemFont);
-	cfg->ctrlStatic.SetWindowText(Text::toT(aName).c_str());
-
-	cfg->ctrlEdit.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | ES_AUTOHSCROLL, WS_EX_CLIENTEDGE);
-	cfg->ctrlEdit.SetFont(WinUtil::systemFont);
-
-	CRect rc;
-
-	//CStatic
-	rc.left = 100;
-	rc.top = prevConfigBottomMargin + configSpacing;
-	rc.right = 400;
-	rc.bottom = rc.top + WinUtil::getTextHeight(m_hWnd, WinUtil::systemFont);
-	cfg->ctrlStatic.MoveWindow(rc);
-
-	//CEdit
-	rc.top = rc.bottom + 2;
-	rc.bottom = rc.top + editHeight;
-
-	cfg->ctrlEdit.MoveWindow(rc);
-
-	prevConfigBottomMargin = rc.bottom;
-
-	edits.emplace(aId, cfg);
-
-	resizePage();
-	
 }
 
 LRESULT DynamicTabPage::onCtlColor(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
