@@ -293,6 +293,10 @@ namespace webserver {
 		addParam("logPath", Util::joinDirectory(getRootPath(), EXT_LOG_DIR));
 		addParam("settingsPath", Util::joinDirectory(getRootPath(), EXT_CONFIG_DIR));
 
+		if (WEBCFG(EXTENSIONS_DEBUG_MODE).boolean()) {
+			addParam("debug");
+		}
+
 		return ret;
 	}
 

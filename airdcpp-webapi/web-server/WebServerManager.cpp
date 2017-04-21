@@ -55,6 +55,8 @@ namespace webserver {
 		{ "default_idle_timeout", "Default session inactivity timeout (minutes)", 20, ApiSettingItem::TYPE_NUMBER, false, { 0, MAX_INT_VALUE } },
 		{ "ping_interval", "Socket ping interval (seconds)", 30, ApiSettingItem::TYPE_NUMBER, false, { 1, 10000 } },
 		{ "ping_timeout", "Socket ping timeout (seconds)", 10, ApiSettingItem::TYPE_NUMBER, false, { 1, 10000 } },
+
+		{ "extensions_debug_mode", "Run extensions in debug mode", false, ApiSettingItem::TYPE_BOOLEAN, false },
 	};
 
 	using namespace dcpp;
@@ -480,6 +482,13 @@ namespace webserver {
 					}
 					xml.resetCurrentChild();
 
+					if (xml.findChild("ExtensionsDebugMode")) {
+						xml.stepIn();
+						WEBCFG(EXTENSIONS_DEBUG_MODE).setValue(Util::toInt(xml.getData()) > 0 ? true : false);
+						xml.stepOut();
+					}
+					xml.resetCurrentChild();
+
 					xml.stepOut();
 				}
 
@@ -528,6 +537,13 @@ namespace webserver {
 
 				xml.setData(Util::toString(WEBCFG(SERVER_THREADS).num()));
 
+				xml.stepOut();
+			}
+
+			if (!WEBCFG(EXTENSIONS_DEBUG_MODE).isDefault()) {
+				xml.addTag("ExtensionsDebugMode");
+				xml.stepIn();
+				xml.setData(Util::toString(WEBCFG(EXTENSIONS_DEBUG_MODE).boolean()));
 				xml.stepOut();
 			}
 
