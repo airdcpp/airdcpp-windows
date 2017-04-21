@@ -674,10 +674,13 @@ void File::removeDirectoryForced(const string& aPath) {
 void File::moveDirectory(const string& aSource, const string& aTarget, const string& aPattern) {
 	File::ensureDirectory(aTarget);
 	File::forEachFile(aSource, aPattern, [&](const FilesystemItem& aInfo) {
+		auto sourcePath = aInfo.getPath(aSource);
+		auto destPath = aInfo.getPath(aTarget);
+
 		if (aInfo.isDirectory) {
-			moveDirectory(aSource + aInfo.name, aTarget + aInfo.name);
+			moveDirectory(sourcePath, destPath);
 		} else {
-			renameFile(aSource + aInfo.name, aTarget + aInfo.name);
+			renameFile(sourcePath, destPath);
 		}
 	});
 }
@@ -738,13 +741,21 @@ string File::read() {
 	return read((uint32_t)sz);
 }
 
+string FilesystemItem::getPath(const string& aBasePath) const noexcept {
+	if (isDirectory) {
+		return Util::joinDirectory(aBasePath, name);
+	}
+
+	return aBasePath + name;
+}
+
 StringList File::findFiles(const string& aPath, const string& aNamePattern, int aFindFlags) {
 	StringList ret;
 
 	{
 		forEachFile(aPath, aNamePattern, [&](const FilesystemItem& aInfo) {
 			if ((aFindFlags & TYPE_FILE && !aInfo.isDirectory) || (aFindFlags & TYPE_DIRECTORY && aInfo.isDirectory)) {
-				ret.push_back(aPath + aInfo.name);
+				ret.push_back(aInfo.getPath(aPath));
 			}
 		}, !(aFindFlags & FLAG_HIDDEN));
 	}
@@ -755,11 +766,10 @@ StringList File::findFiles(const string& aPath, const string& aNamePattern, int 
 void File::forEachFile(const string& aPath, const string& aNamePattern, FileIterF aHandlerF, bool aSkipHidden) {
 	for (FileFindIter i(aPath, aNamePattern); i != FileFindIter(); ++i) {
 		if ((!aSkipHidden || !i->isHidden())) {
-			auto isDir = i->isDirectory();
 			aHandlerF({
-				i->getFileName() + (isDir ? PATH_SEPARATOR_STR : Util::emptyString),
+				i->getFileName(),
 				i->getSize(),
-				isDir,
+				i->isDirectory(),
 			});
 		}
 	}
@@ -769,7 +779,7 @@ int64_t File::getDirSize(const string& aPath, bool aRecursive, const string& aNa
 	int64_t size = 0;
 	File::forEachFile(aPath, aNamePattern, [&](const FilesystemItem& aInfo) {
 		if (aInfo.isDirectory && aRecursive) {
-			size += getDirSize(aPath + aInfo.name, true, aNamePattern);
+			size += getDirSize(aInfo.getPath(aPath), true, aNamePattern);
 		} else {
 			size += aInfo.size;
 		}

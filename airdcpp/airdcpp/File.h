@@ -32,6 +32,8 @@ struct FilesystemItem {
 	const string name;
 	const int64_t size;
 	const bool isDirectory;
+
+	string getPath(const string& aBasePath) const noexcept;
 };
 
 class File : public IOStream {
