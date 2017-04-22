@@ -1,6 +1,6 @@
 /*
-   © Copyright (c) Marshall Clow 2012-2015.
-   © Copyright Beman Dawes 2015
+   Copyright (c) Marshall Clow 2012-2015.
+   Copyright (c) Beman Dawes 2015
 
    Distributed under the Boost Software License, Version 1.0. (See accompanying
    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -91,9 +91,15 @@ namespace boost {
 #endif
 
       template<typename Allocator>
-        basic_string_view(const std::basic_string<charT, traits,
-          Allocator>& str) BOOST_NOEXCEPT
-        : ptr_(str.data()), len_(str.length()) {}
+        basic_string_view(const std::basic_string<charT, traits, Allocator>& str) BOOST_NOEXCEPT
+          : ptr_(str.data()), len_(str.length()) {}
+
+// #if !defined(BOOST_NO_CXX11_RVALUE_REFERENCES) && !defined(BOOST_NO_CXX11_DELETED_FUNCTIONS)
+//       // Constructing a string_view from a temporary string is a bad idea
+//       template<typename Allocator>
+//         basic_string_view(      std::basic_string<charT, traits, Allocator>&&)
+//           = delete;
+// #endif
 
       BOOST_CONSTEXPR basic_string_view(const charT* str)
         : ptr_(str), len_(traits::length(str)) {}
@@ -121,10 +127,7 @@ namespace boost {
         BOOST_CONSTEXPR const_reference operator[](size_type pos) const BOOST_NOEXCEPT { return ptr_[pos]; }
 
         BOOST_CONSTEXPR const_reference at(size_t pos) const {
-            return pos >= len_ ? BOOST_THROW_EXCEPTION(std::out_of_range("boost::string_view::at")) : ptr_[pos];
-//             if ( pos >= len_ )
-//                 BOOST_THROW_EXCEPTION( std::out_of_range ( "boost::string_view::at" ) );
-//             return ptr_[pos];
+            return pos >= len_ ? BOOST_THROW_EXCEPTION(std::out_of_range("boost::string_view::at")), ptr_[0] : ptr_[pos];
             }
 
         BOOST_CONSTEXPR const_reference front() const                { return ptr_[0]; }
@@ -180,18 +183,14 @@ namespace boost {
             if (pos > size())
                 BOOST_THROW_EXCEPTION(std::out_of_range("string_view::copy" ));
             size_type rlen = (std::min)(n, len_ - pos);
-            // use std::copy(begin() + pos, begin() + pos + rlen, s) rather than
-            // std::copy_n(begin() + pos, rlen, s) to support pre-C++11 standard libraries
-            std::copy(begin() + pos, begin() + pos + rlen, s);
+    		traits_type::copy(s, data() + pos, rlen);
             return rlen;
             }
 
         BOOST_CXX14_CONSTEXPR basic_string_view substr(size_type pos, size_type n=npos) const {
             if ( pos > size())
                 BOOST_THROW_EXCEPTION( std::out_of_range ( "string_view::substr" ) );
-            if (n == npos || pos + n > size())
-                n = size () - pos;
-            return basic_string_view(data() + pos, n);
+            return basic_string_view(data() + pos, (std::min)(size() - pos, n));
             }
 
         BOOST_CXX14_CONSTEXPR int compare(basic_string_view x) const BOOST_NOEXCEPT {

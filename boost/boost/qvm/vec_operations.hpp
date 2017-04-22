@@ -255,7 +255,7 @@ boost
             static
             BOOST_QVM_INLINE_CRITICAL
             scalar_type
-            read_element( this_vector const & x )
+            read_element( this_vector const & )
                 {
                 BOOST_QVM_STATIC_ASSERT(I>=0);
                 BOOST_QVM_STATIC_ASSERT(I<Dim);
@@ -265,7 +265,7 @@ boost
             static
             BOOST_QVM_INLINE_CRITICAL
             scalar_type
-            read_element_idx( int i, this_vector const & x )
+            read_element_idx( int i, this_vector const & )
                 {
                 BOOST_QVM_ASSERT(i>=0);
                 BOOST_QVM_ASSERT(i<Dim);
@@ -689,6 +689,34 @@ boost
             R r;
             for( int i=0; i!=vec_traits<A>::dim; ++i )
                 vec_traits<R>::write_element_idx(i,r)=vec_traits<A>::read_element_idx(i,a)*b;
+            return r;
+            }
+
+        ////////////////////////////////////////////////
+
+        namespace
+        qvm_detail
+            {
+            template <int D>
+            struct
+            mul_sv_defined
+                {
+                static bool const value=false;
+                };
+            }
+
+        template <class A,class B>
+        BOOST_QVM_INLINE_OPERATIONS
+        typename lazy_enable_if_c<
+            is_scalar<A>::value && is_vec<B>::value &&
+            !qvm_detail::mul_sv_defined<vec_traits<B>::dim>::value,
+            deduce_vec<B> >::type
+        operator*( A a, B const & b )
+            {
+            typedef typename deduce_vec<B>::type R;
+            R r;
+            for( int i=0; i!=vec_traits<B>::dim; ++i )
+                vec_traits<R>::write_element_idx(i,r)=a*vec_traits<B>::read_element_idx(i,b);
             return r;
             }
 

@@ -112,7 +112,8 @@ public:
       //
       // Attempt a generic interconvertion:
       //
-      detail::generic_interconvert(backend(), val.backend(), number_category<Backend>(), number_category<Other>());
+      using detail::generic_interconvert;
+      generic_interconvert(backend(), val.backend(), number_category<Backend>(), number_category<Other>());
    }
    template <class Other, expression_template_option ET>
    explicit BOOST_MP_FORCEINLINE number(const number<Other, ET>& val, typename boost::enable_if_c<
@@ -178,7 +179,8 @@ public:
       //
       // Attempt a generic interconvertion:
       //
-      detail::generic_interconvert(backend(), v.backend(), number_category<Backend>(), number_category<Other>());
+      using detail::generic_interconvert;
+      generic_interconvert(backend(), v.backend(), number_category<Backend>(), number_category<Other>());
       return *this;
    }
 
@@ -213,7 +215,7 @@ public:
    }
 
    template <class tag, class Arg1, class Arg2, class Arg3, class Arg4>
-   number& operator+=(const detail::expression<tag, Arg1, Arg2, Arg3, Arg4>& e)
+   typename boost::enable_if<is_convertible<typename detail::expression<tag, Arg1, Arg2, Arg3, Arg4>::result_type, self_type>, number&>::type operator+=(const detail::expression<tag, Arg1, Arg2, Arg3, Arg4>& e)
    {
       // Create a copy if e contains this, but not if we're just doing a
       //    x += x
@@ -256,7 +258,7 @@ public:
    }
 
    template <class tag, class Arg1, class Arg2, class Arg3, class Arg4>
-   number& operator-=(const detail::expression<tag, Arg1, Arg2, Arg3, Arg4>& e)
+   typename boost::enable_if<is_convertible<typename detail::expression<tag, Arg1, Arg2, Arg3, Arg4>::result_type, self_type>, number&>::type operator-=(const detail::expression<tag, Arg1, Arg2, Arg3, Arg4>& e)
    {
       // Create a copy if e contains this:
       if(contains_self(e))
@@ -299,7 +301,7 @@ public:
    }
 
    template <class tag, class Arg1, class Arg2, class Arg3, class Arg4>
-   number& operator*=(const detail::expression<tag, Arg1, Arg2, Arg3, Arg4>& e)
+   typename boost::enable_if<is_convertible<typename detail::expression<tag, Arg1, Arg2, Arg3, Arg4>::result_type, self_type>, number&>::type operator*=(const detail::expression<tag, Arg1, Arg2, Arg3, Arg4>& e)
    {
       // Create a temporary if the RHS references *this, but not
       // if we're just doing an   x *= x;
@@ -331,7 +333,7 @@ public:
       return *this;
    }
    template <class tag, class Arg1, class Arg2, class Arg3, class Arg4>
-   number& operator%=(const detail::expression<tag, Arg1, Arg2, Arg3, Arg4>& e)
+   typename boost::enable_if<is_convertible<typename detail::expression<tag, Arg1, Arg2, Arg3, Arg4>::result_type, self_type>, number&>::type operator%=(const detail::expression<tag, Arg1, Arg2, Arg3, Arg4>& e)
    {
       BOOST_STATIC_ASSERT_MSG(number_category<Backend>::value == number_kind_integer, "The modulus operation is only valid for integer types");
       // Create a temporary if the RHS references *this:
@@ -419,7 +421,7 @@ public:
    }
 
    template <class tag, class Arg1, class Arg2, class Arg3, class Arg4>
-   number& operator/=(const detail::expression<tag, Arg1, Arg2, Arg3, Arg4>& e)
+   typename boost::enable_if<is_convertible<typename detail::expression<tag, Arg1, Arg2, Arg3, Arg4>::result_type, self_type>, number&>::type operator/=(const detail::expression<tag, Arg1, Arg2, Arg3, Arg4>& e)
    {
       // Create a temporary if the RHS references *this:
       if(contains_self(e))
@@ -451,7 +453,7 @@ public:
    }
 
    template <class tag, class Arg1, class Arg2, class Arg3, class Arg4>
-   number& operator&=(const detail::expression<tag, Arg1, Arg2, Arg3, Arg4>& e)
+   typename boost::enable_if<is_convertible<typename detail::expression<tag, Arg1, Arg2, Arg3, Arg4>::result_type, self_type>, number&>::type operator&=(const detail::expression<tag, Arg1, Arg2, Arg3, Arg4>& e)
    {
       BOOST_STATIC_ASSERT_MSG(number_category<Backend>::value == number_kind_integer, "The bitwise & operation is only valid for integer types");
       // Create a temporary if the RHS references *this, but not
@@ -486,7 +488,7 @@ public:
    }
 
    template <class tag, class Arg1, class Arg2, class Arg3, class Arg4>
-   number& operator|=(const detail::expression<tag, Arg1, Arg2, Arg3, Arg4>& e)
+   typename boost::enable_if<is_convertible<typename detail::expression<tag, Arg1, Arg2, Arg3, Arg4>::result_type, self_type>, number&>::type operator|=(const detail::expression<tag, Arg1, Arg2, Arg3, Arg4>& e)
    {
       BOOST_STATIC_ASSERT_MSG(number_category<Backend>::value == number_kind_integer, "The bitwise | operation is only valid for integer types");
       // Create a temporary if the RHS references *this, but not
@@ -521,7 +523,7 @@ public:
    }
 
    template <class tag, class Arg1, class Arg2, class Arg3, class Arg4>
-   number& operator^=(const detail::expression<tag, Arg1, Arg2, Arg3, Arg4>& e)
+   typename boost::enable_if<is_convertible<typename detail::expression<tag, Arg1, Arg2, Arg3, Arg4>::result_type, self_type>, number&>::type operator^=(const detail::expression<tag, Arg1, Arg2, Arg3, Arg4>& e)
    {
       BOOST_STATIC_ASSERT_MSG(number_category<Backend>::value == number_kind_integer, "The bitwise ^ operation is only valid for integer types");
       if(contains_self(e))
@@ -585,7 +587,7 @@ private:
       eval_convert_to(result, m_backend);
    }
    template <class B2, expression_template_option ET>
-   typename enable_if_c<detail::is_explicitly_convertible<Backend, B2>::value>::type convert_to_imp(number<B2, ET>* result)const
+   void convert_to_imp(number<B2, ET>* result)const
    {
       result->assign(*this);
    }
@@ -1730,18 +1732,18 @@ inline std::string read_string_while(std::istream& is, std::string const& permit
 
       for(;; c = is.rdbuf()->snextc())
          if(std::istream::traits_type::eq_int_type(std::istream::traits_type::eof(), c))
-         {	// end of file:
+         { // end of file:
             state |= std::ios_base::eofbit;
             break;
          }
          else if(permitted_chars.find_first_of(std::istream::traits_type::to_char_type(c)) == std::string::npos)
          {
             // Invalid numeric character, stop reading:
-            is.rdbuf()->sputbackc(static_cast<char>(c));
+            //is.rdbuf()->sputbackc(static_cast<char>(c));
             break;
          }
          else
-         {	
+         {
             result.append(1, std::istream::traits_type::to_char_type(c));
          }
    }
@@ -1852,78 +1854,6 @@ inline std::istream& operator >> (std::istream& is, rational<multiprecision::num
       v2 = 1;
    r.assign(v1, v2);
    return is;
-}
-
-template <class T, multiprecision::expression_template_option ExpressionTemplates, class Arithmetic>
-typename boost::enable_if<boost::is_arithmetic<Arithmetic>, bool>::type operator == (const rational<multiprecision::number<T, ExpressionTemplates> >& a, const Arithmetic& b)
-{
-   return a == multiprecision::number<T, ExpressionTemplates>(b);
-}
-
-template <class T, multiprecision::expression_template_option ExpressionTemplates, class Arithmetic>
-typename boost::enable_if<boost::is_arithmetic<Arithmetic>, bool>::type operator == (const Arithmetic& b, const rational<multiprecision::number<T, ExpressionTemplates> >& a)
-{
-   return a == multiprecision::number<T, ExpressionTemplates>(b);
-}
-
-template <class T, multiprecision::expression_template_option ExpressionTemplates, class Arithmetic>
-typename boost::enable_if<boost::is_arithmetic<Arithmetic>, bool>::type operator != (const rational<multiprecision::number<T, ExpressionTemplates> >& a, const Arithmetic& b)
-{
-   return a != multiprecision::number<T, ExpressionTemplates>(b);
-}
-
-template <class T, multiprecision::expression_template_option ExpressionTemplates, class Arithmetic>
-typename boost::enable_if<boost::is_arithmetic<Arithmetic>, bool>::type operator != (const Arithmetic& b, const rational<multiprecision::number<T, ExpressionTemplates> >& a)
-{
-   return a != multiprecision::number<T, ExpressionTemplates>(b);
-}
-
-template <class T, multiprecision::expression_template_option ExpressionTemplates, class Arithmetic>
-typename boost::enable_if<boost::is_arithmetic<Arithmetic>, bool>::type operator < (const rational<multiprecision::number<T, ExpressionTemplates> >& a, const Arithmetic& b)
-{
-   return a < multiprecision::number<T, ExpressionTemplates>(b);
-}
-
-template <class T, multiprecision::expression_template_option ExpressionTemplates, class Arithmetic>
-typename boost::enable_if<boost::is_arithmetic<Arithmetic>, bool>::type operator < (const Arithmetic& b, const rational<multiprecision::number<T, ExpressionTemplates> >& a)
-{
-   return a > multiprecision::number<T, ExpressionTemplates>(b);
-}
-
-template <class T, multiprecision::expression_template_option ExpressionTemplates, class Arithmetic>
-typename boost::enable_if<boost::is_arithmetic<Arithmetic>, bool>::type operator <= (const rational<multiprecision::number<T, ExpressionTemplates> >& a, const Arithmetic& b)
-{
-   return a <= multiprecision::number<T, ExpressionTemplates>(b);
-}
-
-template <class T, multiprecision::expression_template_option ExpressionTemplates, class Arithmetic>
-typename boost::enable_if<boost::is_arithmetic<Arithmetic>, bool>::type operator <= (const Arithmetic& b, const rational<multiprecision::number<T, ExpressionTemplates> >& a)
-{
-   return a >= multiprecision::number<T, ExpressionTemplates>(b);
-}
-
-template <class T, multiprecision::expression_template_option ExpressionTemplates, class Arithmetic>
-typename boost::enable_if<boost::is_arithmetic<Arithmetic>, bool>::type operator > (const rational<multiprecision::number<T, ExpressionTemplates> >& a, const Arithmetic& b)
-{
-   return a > multiprecision::number<T, ExpressionTemplates>(b);
-}
-
-template <class T, multiprecision::expression_template_option ExpressionTemplates, class Arithmetic>
-typename boost::enable_if<boost::is_arithmetic<Arithmetic>, bool>::type operator > (const Arithmetic& b, const rational<multiprecision::number<T, ExpressionTemplates> >& a)
-{
-   return a < multiprecision::number<T, ExpressionTemplates>(b);
-}
-
-template <class T, multiprecision::expression_template_option ExpressionTemplates, class Arithmetic>
-typename boost::enable_if<boost::is_arithmetic<Arithmetic>, bool>::type operator >= (const rational<multiprecision::number<T, ExpressionTemplates> >& a, const Arithmetic& b)
-{
-   return a >= multiprecision::number<T, ExpressionTemplates>(b);
-}
-
-template <class T, multiprecision::expression_template_option ExpressionTemplates, class Arithmetic>
-typename boost::enable_if<boost::is_arithmetic<Arithmetic>, bool>::type operator >= (const Arithmetic& b, const rational<multiprecision::number<T, ExpressionTemplates> >& a)
-{
-   return a <= multiprecision::number<T, ExpressionTemplates>(b);
 }
 
 template <class T, multiprecision::expression_template_option ExpressionTemplates>

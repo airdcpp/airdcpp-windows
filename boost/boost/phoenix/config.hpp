@@ -11,6 +11,7 @@
 #define BOOST_PHOENIX_CONFIG_HPP
 
 #include <boost/config.hpp>
+#include <boost/detail/workaround.hpp>
 
 //////////////////////////////////////////////////////////////////////////
 // This section is to sort out whether hash types or unordered types
@@ -65,6 +66,12 @@
 #define BOOST_PHOENIX_HASH_MAP_HEADER <hash_map>
 #define BOOST_PHOENIX_HAS_HASH
 #define BOOST_PHOENIX_HASH_NAMESPACE stdext
+#endif
+
+#if BOOST_WORKAROUND(BOOST_GCC, < 40100)
+#define BOOST_PHOENIX_SFINAE_AND_OVERLOADS , void* = 0
+#else
+#define BOOST_PHOENIX_SFINAE_AND_OVERLOADS
 #endif
 
 #endif

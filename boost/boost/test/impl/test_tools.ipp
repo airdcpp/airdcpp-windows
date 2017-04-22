@@ -68,6 +68,12 @@ namespace tt_detail {
 // ************************************************************************** //
 
 void
+print_log_value<bool>::operator()( std::ostream& ostr, bool t )
+{
+     ostr << std::boolalpha << t;
+}
+
+void
 print_log_value<char>::operator()( std::ostream& ostr, char t )
 {
     if( (std::isprint)( static_cast<unsigned char>(t) ) )
@@ -112,6 +118,14 @@ print_log_value<wchar_t const*>::operator()( std::ostream& ostr, wchar_t const* 
 {
     ostr << ( t ? t : L"null string" );
 }
+
+#if !defined(BOOST_NO_CXX11_NULLPTR)
+void
+print_log_value<std::nullptr_t>::operator()( std::ostream& ostr, std::nullptr_t p )
+{
+    ostr << "nullptr";
+}
+#endif
 
 //____________________________________________________________________________//
 

@@ -93,6 +93,15 @@ boost
             {
             return reinterpret_cast<qvm_detail::sw_<V,qvm_detail::swizzle_idx<0,qvm_detail::swizzle_idx<-2 > > > const &>(a);
             }
+        template <class S>
+        BOOST_QVM_INLINE_TRIVIAL
+        typename enable_if_c<
+            is_scalar<S>::value,
+            qvm_detail::sws_<S,qvm_detail::swizzle_idx<0,qvm_detail::swizzle_idx<-2 > > > const &>::type
+        X1( S const & a )
+            {
+            return reinterpret_cast<qvm_detail::sws_<S,qvm_detail::swizzle_idx<0,qvm_detail::swizzle_idx<-2 > > > const &>(a);
+            }
         template <class V>
         BOOST_QVM_INLINE_TRIVIAL
         typename enable_if_c<
@@ -101,6 +110,15 @@ boost
         X1( V & a )
             {
             return reinterpret_cast<qvm_detail::sw_<V,qvm_detail::swizzle_idx<0,qvm_detail::swizzle_idx<-2 > > > &>(a);
+            }
+        template <class S>
+        BOOST_QVM_INLINE_TRIVIAL
+        typename enable_if_c<
+            is_scalar<S>::value,
+            qvm_detail::sws_<S,qvm_detail::swizzle_idx<0,qvm_detail::swizzle_idx<-2 > > > &>::type
+        X1( S & a )
+            {
+            return reinterpret_cast<qvm_detail::sws_<S,qvm_detail::swizzle_idx<0,qvm_detail::swizzle_idx<-2 > > > &>(a);
             }
         BOOST_QVM_INLINE_TRIVIAL
         qvm_detail::sw01_<qvm_detail::swizzle_idx<-2,qvm_detail::swizzle_idx<-1 > > > const &
@@ -177,6 +195,15 @@ boost
             {
             return reinterpret_cast<qvm_detail::sw_<V,qvm_detail::swizzle_idx<0,qvm_detail::swizzle_idx<-1 > > > const &>(a);
             }
+        template <class S>
+        BOOST_QVM_INLINE_TRIVIAL
+        typename enable_if_c<
+            is_scalar<S>::value,
+            qvm_detail::sws_<S,qvm_detail::swizzle_idx<0,qvm_detail::swizzle_idx<-1 > > > const &>::type
+        X0( S const & a )
+            {
+            return reinterpret_cast<qvm_detail::sws_<S,qvm_detail::swizzle_idx<0,qvm_detail::swizzle_idx<-1 > > > const &>(a);
+            }
         template <class V>
         BOOST_QVM_INLINE_TRIVIAL
         typename enable_if_c<
@@ -185,6 +212,15 @@ boost
         X0( V & a )
             {
             return reinterpret_cast<qvm_detail::sw_<V,qvm_detail::swizzle_idx<0,qvm_detail::swizzle_idx<-1 > > > &>(a);
+            }
+        template <class S>
+        BOOST_QVM_INLINE_TRIVIAL
+        typename enable_if_c<
+            is_scalar<S>::value,
+            qvm_detail::sws_<S,qvm_detail::swizzle_idx<0,qvm_detail::swizzle_idx<-1 > > > &>::type
+        X0( S & a )
+            {
+            return reinterpret_cast<qvm_detail::sws_<S,qvm_detail::swizzle_idx<0,qvm_detail::swizzle_idx<-1 > > > &>(a);
             }
         template <class V>
         BOOST_QVM_INLINE_TRIVIAL
@@ -519,6 +555,15 @@ boost
             {
             return reinterpret_cast<qvm_detail::sw_<V,qvm_detail::swizzle_idx<-2,qvm_detail::swizzle_idx<0 > > > const &>(a);
             }
+        template <class S>
+        BOOST_QVM_INLINE_TRIVIAL
+        typename enable_if_c<
+            is_scalar<S>::value,
+            qvm_detail::sws_<S,qvm_detail::swizzle_idx<-2,qvm_detail::swizzle_idx<0 > > > const &>::type
+        _1X( S const & a )
+            {
+            return reinterpret_cast<qvm_detail::sws_<S,qvm_detail::swizzle_idx<-2,qvm_detail::swizzle_idx<0 > > > const &>(a);
+            }
         template <class V>
         BOOST_QVM_INLINE_TRIVIAL
         typename enable_if_c<
@@ -527,6 +572,15 @@ boost
         _1X( V & a )
             {
             return reinterpret_cast<qvm_detail::sw_<V,qvm_detail::swizzle_idx<-2,qvm_detail::swizzle_idx<0 > > > &>(a);
+            }
+        template <class S>
+        BOOST_QVM_INLINE_TRIVIAL
+        typename enable_if_c<
+            is_scalar<S>::value,
+            qvm_detail::sws_<S,qvm_detail::swizzle_idx<-2,qvm_detail::swizzle_idx<0 > > > &>::type
+        _1X( S & a )
+            {
+            return reinterpret_cast<qvm_detail::sws_<S,qvm_detail::swizzle_idx<-2,qvm_detail::swizzle_idx<0 > > > &>(a);
             }
         template <class V>
         BOOST_QVM_INLINE_TRIVIAL
@@ -537,6 +591,15 @@ boost
             {
             return reinterpret_cast<qvm_detail::sw_<V,qvm_detail::swizzle_idx<-1,qvm_detail::swizzle_idx<0 > > > const &>(a);
             }
+        template <class S>
+        BOOST_QVM_INLINE_TRIVIAL
+        typename enable_if_c<
+            is_scalar<S>::value,
+            qvm_detail::sws_<S,qvm_detail::swizzle_idx<-1,qvm_detail::swizzle_idx<0 > > > const &>::type
+        _0X( S const & a )
+            {
+            return reinterpret_cast<qvm_detail::sws_<S,qvm_detail::swizzle_idx<-1,qvm_detail::swizzle_idx<0 > > > const &>(a);
+            }
         template <class V>
         BOOST_QVM_INLINE_TRIVIAL
         typename enable_if_c<
@@ -545,6 +608,15 @@ boost
         _0X( V & a )
             {
             return reinterpret_cast<qvm_detail::sw_<V,qvm_detail::swizzle_idx<-1,qvm_detail::swizzle_idx<0 > > > &>(a);
+            }
+        template <class S>
+        BOOST_QVM_INLINE_TRIVIAL
+        typename enable_if_c<
+            is_scalar<S>::value,
+            qvm_detail::sws_<S,qvm_detail::swizzle_idx<-1,qvm_detail::swizzle_idx<0 > > > &>::type
+        _0X( S & a )
+            {
+            return reinterpret_cast<qvm_detail::sws_<S,qvm_detail::swizzle_idx<-1,qvm_detail::swizzle_idx<0 > > > &>(a);
             }
         template <class V>
         BOOST_QVM_INLINE_TRIVIAL
@@ -609,6 +681,15 @@ boost
             {
             return reinterpret_cast<qvm_detail::sw_<V,qvm_detail::swizzle_idx<0,qvm_detail::swizzle_idx<0 > > > const &>(a);
             }
+        template <class S>
+        BOOST_QVM_INLINE_TRIVIAL
+        typename enable_if_c<
+            is_scalar<S>::value,
+            qvm_detail::sws_<S,qvm_detail::swizzle_idx<0,qvm_detail::swizzle_idx<0 > > > const &>::type
+        XX( S const & a )
+            {
+            return reinterpret_cast<qvm_detail::sws_<S,qvm_detail::swizzle_idx<0,qvm_detail::swizzle_idx<0 > > > const &>(a);
+            }
         template <class V>
         BOOST_QVM_INLINE_TRIVIAL
         typename enable_if_c<
@@ -617,6 +698,15 @@ boost
         XX( V & a )
             {
             return reinterpret_cast<qvm_detail::sw_<V,qvm_detail::swizzle_idx<0,qvm_detail::swizzle_idx<0 > > > &>(a);
+            }
+        template <class S>
+        BOOST_QVM_INLINE_TRIVIAL
+        typename enable_if_c<
+            is_scalar<S>::value,
+            qvm_detail::sws_<S,qvm_detail::swizzle_idx<0,qvm_detail::swizzle_idx<0 > > > &>::type
+        XX( S & a )
+            {
+            return reinterpret_cast<qvm_detail::sws_<S,qvm_detail::swizzle_idx<0,qvm_detail::swizzle_idx<0 > > > &>(a);
             }
         }
     }

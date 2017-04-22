@@ -29,6 +29,8 @@ namespace movelib {
 struct forward_t{};
 struct backward_t{};
 struct three_way_t{};
+struct three_way_forward_t{};
+struct four_way_t{};
 
 struct move_op
 {
@@ -47,6 +49,24 @@ struct move_op
    template <class SourceIt, class DestinationIt1, class DestinationIt2>
    void operator()(three_way_t, SourceIt srcit, DestinationIt1 dest1it, DestinationIt2 dest2it)
    {
+      *dest2it = boost::move(*dest1it);
+      *dest1it = boost::move(*srcit);
+   }
+
+   template <class SourceIt, class DestinationIt1, class DestinationIt2>
+   DestinationIt2 operator()(three_way_forward_t, SourceIt srcit, SourceIt srcitend, DestinationIt1 dest1it, DestinationIt2 dest2it)
+   {
+      //Destination2 range can overlap SourceIt range so avoid boost::move
+      while(srcit != srcitend){
+         this->operator()(three_way_t(), srcit++, dest1it++, dest2it++);
+      }
+      return dest2it;
+   }
+
+   template <class SourceIt, class DestinationIt1, class DestinationIt2, class DestinationIt3>
+   void operator()(four_way_t, SourceIt srcit, DestinationIt1 dest1it, DestinationIt2 dest2it, DestinationIt3 dest3it)
+   {
+      *dest3it = boost::move(*dest2it);
       *dest2it = boost::move(*dest1it);
       *dest1it = boost::move(*srcit);
    }
@@ -74,7 +94,27 @@ struct swap_op
       *dest1it = boost::move(*srcit);
       *srcit = boost::move(tmp);
    }
+
+   template <class SourceIt, class DestinationIt1, class DestinationIt2>
+   DestinationIt2 operator()(three_way_forward_t, SourceIt srcit, SourceIt srcitend, DestinationIt1 dest1it, DestinationIt2 dest2it)
+   {
+      while(srcit != srcitend){
+         this->operator()(three_way_t(), srcit++, dest1it++, dest2it++);
+      }
+      return dest2it;
+   }
+
+   template <class SourceIt, class DestinationIt1, class DestinationIt2, class DestinationIt3>
+   void operator()(four_way_t, SourceIt srcit, DestinationIt1 dest1it, DestinationIt2 dest2it, DestinationIt3 dest3it)
+   {
+      typename ::boost::movelib::iterator_traits<SourceIt>::value_type tmp(boost::move(*dest3it));
+      *dest3it = boost::move(*dest2it);
+      *dest2it = boost::move(*dest1it);
+      *dest1it = boost::move(*srcit);
+      *srcit = boost::move(tmp);
+   }
 };
+
 
 }} //namespace boost::movelib
 

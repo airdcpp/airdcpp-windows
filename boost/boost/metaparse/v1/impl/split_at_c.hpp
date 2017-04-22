@@ -47,10 +47,8 @@ namespace boost
           boost::mpl::pair<string<>, string<C, Cs...>>
         {};
 
-        template <char... Cs>
-        struct split_at_c<0, string<Cs...>> :
-          boost::mpl::pair<string<>, string<Cs...>>
-        {};
+        template <class S>
+        struct split_at_c<0, S> : boost::mpl::pair<string<>, S> {};
 #else
         #ifdef BOOST_METAPARSE_ARG
         #  error BOOST_METAPARSE_ARG already defined
