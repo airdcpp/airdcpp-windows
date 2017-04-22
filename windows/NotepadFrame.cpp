@@ -34,7 +34,7 @@ LRESULT NotepadFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ctrlPad.SetFont(WinUtil::font);
 	string tmp;
 	try {
-		auto path = Util::getNotepadFile();
+		auto path = WinUtil::getPath(WinUtil::PATH_NOTEPAD);
 		Util::migrate(path);
 		tmp = File(path, File::READ, File::OPEN).read();
 	} catch(const FileException&) {
@@ -59,7 +59,7 @@ LRESULT NotepadFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		SettingsManager::getInstance()->removeListener(this);
 		if(dirty || ctrlPad.GetModify()) {
 			try {
-				File(Util::getNotepadFile(), File::WRITE, File::CREATE | File::TRUNCATE).write(Text::fromT(WinUtil::getEditText(ctrlPad)));
+				File(WinUtil::getPath(WinUtil::PATH_NOTEPAD), File::WRITE, File::CREATE | File::TRUNCATE).write(Text::fromT(WinUtil::getEditText(ctrlPad)));
 			} catch(const FileException&) {
 				// Oops...
 			}

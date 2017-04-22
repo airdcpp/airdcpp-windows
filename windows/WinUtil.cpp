@@ -104,6 +104,7 @@ HWND WinUtil::findDialog = nullptr;
 
 bool WinUtil::updated;
 TStringPair WinUtil::updateCommand;
+string WinUtil::paths[WinUtil::PATH_LAST];
 	
 HLSCOLOR RGB2HLS (COLORREF rgb) {
 	unsigned char minval = min(GetRValue(rgb), min(GetGValue(rgb), GetBValue(rgb)));
@@ -363,6 +364,12 @@ void WinUtil::preInit() {
 }
 
 void WinUtil::init(HWND hWnd) {
+	paths[PATH_NOTEPAD] = Util::getPath(Util::PATH_USER_CONFIG) + "Notepad.txt";
+	paths[PATH_EMOPACKS] = Util::getPath(Util::PATH_RESOURCES) + "EmoPacks" PATH_SEPARATOR_STR;
+	paths[PATH_THEMES] = Util::getPath(Util::PATH_RESOURCES) + "Themes" PATH_SEPARATOR_STR;
+
+	File::ensureDirectory(paths[PATH_THEMES]);
+
 	pathReg.assign(_T("((?<=\\s)(([A-Za-z0-9]:)|(\\\\))(\\\\[^\\\\:]+)(\\\\([^\\s:])([^\\\\:])*)*((\\.[a-z0-9]{2,10})|(\\\\))(?=(\\s|$|:|,)))"));
 	chatReleaseReg.assign(Text::toT(AirUtil::getReleaseRegLong(true)));
 	chatLinkReg.assign(Text::toT(AirUtil::getLinkUrl()), boost::regex_constants::icase);

@@ -23,9 +23,12 @@
 #include <airdcpp/Pointer.h>
 #include <airdcpp/File.h>
 #include <airdcpp/LogManager.h>
+
 #include "boost/algorithm/string/replace.hpp"
 
 #include "EmoticonsManager.h"
+#include "WinUtil.h"
+
 #include <cmath>
 
 Emoticon::Emoticon(const tstring& _emoticonText, const string& _imagePath) : 
@@ -136,14 +139,15 @@ HBITMAP Emoticon::getEmoticonBmp(const COLORREF &clrBkColor) {
 void EmoticonsManager::Load() {
 
 	setUseEmoticons(false);
+	const auto emojiPath = WinUtil::getPath(WinUtil::PATH_EMOPACKS);
 
-	if((SETTING(EMOTICONS_FILE) == "Disabled") || !Util::fileExists(Util::getPath(Util::PATH_EMOPACKS) + SETTING(EMOTICONS_FILE) + ".xml" )) {
+	if((SETTING(EMOTICONS_FILE) == "Disabled") || !Util::fileExists(emojiPath + SETTING(EMOTICONS_FILE) + ".xml" )) {
 		return;
 	}
 
 	try {
 		SimpleXML xml;
-		xml.fromXML(File(Util::getPath(Util::PATH_EMOPACKS) + SETTING(EMOTICONS_FILE) + ".xml", File::READ, File::OPEN).read());
+		xml.fromXML(File(emojiPath + SETTING(EMOTICONS_FILE) + ".xml", File::READ, File::OPEN).read());
 		
 		if(xml.findChild("Emoticons")) {
 			xml.stepIn();
@@ -158,7 +162,7 @@ void EmoticonsManager::Load() {
 				string strEmotionBmpPath = xml.getChildAttrib("Bitmap");
 				if (!strEmotionBmpPath.empty()) {
 
-						strEmotionBmpPath = Util::getPath(Util::PATH_EMOPACKS) + strEmotionBmpPath;
+						strEmotionBmpPath = emojiPath + strEmotionBmpPath;
 				}
 
 				emoticons.push_back(new Emoticon(strEmotionText, strEmotionBmpPath));

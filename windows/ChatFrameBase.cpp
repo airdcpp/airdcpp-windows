@@ -618,7 +618,7 @@ LRESULT ChatFrameBase::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam
 		// nacteme seznam emoticon packu (vsechny *.xml v adresari EmoPacks)
 		WIN32_FIND_DATA data;
 		HANDLE hFind;
-		hFind = FindFirstFile(Text::toT(Util::getPath(Util::PATH_EMOPACKS) + "*.xml").c_str(), &data);
+		hFind = FindFirstFile(Text::toT(WinUtil::getPath(WinUtil::PATH_EMOPACKS) + "*.xml").c_str(), &data);
 		if(hFind != INVALID_HANDLE_VALUE) {
 			do {
 				tstring name = data.cFileName;

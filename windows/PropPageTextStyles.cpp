@@ -182,7 +182,7 @@ void PropPageTextStyles::PopulateThemes() {
 	ctrlTheme.ResetContent();
 	
 	if(themes.empty()) {
-		string path = Util::getPath(Util::PATH_THEMES);
+		string path = WinUtil::getPath(WinUtil::PATH_THEMES);
 		for(FileFindIter i(path, "*.dctheme"); i != FileFindIter(); ++i) {
 			string filepath = path + i->getFileName();
 			themes.emplace(i->getFileName(), filepath);
@@ -423,7 +423,7 @@ void PropPageTextStyles::LoadTheme(const string& path, bool silent/* = false*/) 
 
 	//backup the old theme for cancelling
 	if(initial){
-		SaveTheme(Util::getPath(Util::PATH_THEMES) + "backup.dctheme", true);
+		SaveTheme(WinUtil::getPath(WinUtil::PATH_THEMES) + "backup.dctheme", true);
 		initial = false;
 	}
 		
