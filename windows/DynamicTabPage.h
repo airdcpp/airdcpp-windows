@@ -45,7 +45,7 @@ public:
 		//MESSAGE_HANDLER(WM_CTLCOLORDLG, onCtlColor)
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
 		MESSAGE_HANDLER(WM_ERASEBKGND, onEraseBackground)
-		COMMAND_CODE_HANDLER(BN_CLICKED, OnButtonClick)
+		MESSAGE_HANDLER(WM_PARENTNOTIFY, OnClick)
 	END_MSG_MAP()
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
@@ -56,11 +56,19 @@ public:
 		return 0;
 	}
 
-	LRESULT OnButtonClick(WORD /* wNotifyCode */, WORD /*wID*/, HWND hWndCtl, BOOL& /* bHandled */) {
-		for (auto cfg : configs) {
-			if (cfg->handleClick(hWndCtl))
-				break;
+	LRESULT OnClick(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL & bHandled) {
+
+		if (LOWORD(wParam) == WM_LBUTTONDOWN) {
+			POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+			HWND hWndCtrl = ChildWindowFromPoint(pt);
+			if (hWndCtrl != NULL && hWndCtrl != m_hWnd && hWndCtrl != GetParent().m_hWnd) {
+				for (auto cfg : configs) {
+					if (cfg->handleClick(hWndCtrl))
+						break;
+				}
+			}
 		}
+		bHandled = FALSE;
 		return 0;
 	}
 

@@ -65,6 +65,8 @@ void ConfigUtil::StringConfigItem::Create(HWND m_hWnd) {
 
 	ctrlEdit.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | ES_AUTOHSCROLL, WS_EX_CLIENTEDGE);
 	ctrlEdit.SetFont(WinUtil::systemFont);
+	ctrlEdit.SetWindowLongPtr(GWL_EXSTYLE, ctrlEdit.GetWindowLongPtr(GWL_EXSTYLE) & ~WS_EX_NOPARENTNOTIFY);
+
 }
 
 int ConfigUtil::StringConfigItem::updateLayout(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing) {
@@ -97,6 +99,7 @@ void ConfigUtil::BoolConfigItem::Create(HWND m_hWnd) {
 	RECT rcDefault = { 0,0,0,0 };
 
 	ctrlCheck.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_AUTOCHECKBOX, NULL);
+	ctrlCheck.SetWindowLongPtr(GWL_EXSTYLE, ctrlCheck.GetWindowLongPtr(GWL_EXSTYLE) & ~WS_EX_NOPARENTNOTIFY);
 	ctrlCheck.SetFont(WinUtil::systemFont);
 	setLabel();
 }

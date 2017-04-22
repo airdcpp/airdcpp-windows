@@ -157,11 +157,11 @@ void ExtensionsFrame::onConfigExtension(const ItemInfo* ii) {
 	}
 
 	for (int i = 15; i < 20; i++) {
-		dlg.getPage()->addConfigItem(Util::toString(i) + " Test label for CEdit config", Util::toString(i), webserver::ApiSettingItem::TYPE_BOOLEAN);
+		dlg.getPage()->addConfigItem(Util::toString(i) + " Test label for Bool config", Util::toString(i), webserver::ApiSettingItem::TYPE_BOOLEAN);
 	}
 
 	for (int i = 20; i < 22; i++) {
-		dlg.getPage()->addConfigItem(Util::toString(i) + " Test label for CEdit config", Util::toString(i), webserver::ApiSettingItem::TYPE_FILE_PATH);
+		dlg.getPage()->addConfigItem(Util::toString(i) + " Test label for Browse config", Util::toString(i), webserver::ApiSettingItem::TYPE_FILE_PATH);
 	}
 
 
