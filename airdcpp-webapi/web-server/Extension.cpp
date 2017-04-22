@@ -61,7 +61,7 @@ namespace webserver {
 	}
 
 	void Extension::reload() {
-		initialize(getRootPath(), false);
+		initialize(Util::joinDirectory(getRootPath(), EXT_PACKAGE_DIR), false);
 
 		fire(ExtensionListener::PackageUpdated());
 	}
