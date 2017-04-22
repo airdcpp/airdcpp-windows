@@ -77,23 +77,28 @@ public:
 
 	void resizePage();
 
-	void addConfigItem(const string& aName, const string& aId, int aType) {
-		auto item = ConfigUtil::getConfigItem(aName, aId, aType);
+	void addConfigItem(webserver::ServerSettingItem& aSetting) {
+		auto item = ConfigUtil::getConfigItem(aSetting);
 		if(item)
 			configs.emplace_back(item);
 	}
 
 	bool write() {
-		for (auto cfg : configs) {
-			auto i = cfg->getValue();
-			if(i.type() == typeid(std::string))
-				string tmp = boost::get<string>(i);
+	
+		try {
+			for (auto cfg : configs) {
+				cfg->write();
+			}
+		} catch (const ArgumentException& e) {
+			string error = e.getErrorJson().at("field") + " : " + e.getErrorJson().at("message");
+			MessageBox(Text::toT(error).c_str());
+			return false;
 		}
-
 		return true;
 	}
 
 	void updateLayout();
+	vector<shared_ptr<ConfigUtil::ConfigIem>>& getConfigs() { return configs; }
 
 private:
 

@@ -102,7 +102,8 @@ LRESULT ExtensionsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 
 				menu.appendSeparator();
 				menu.appendItem(TSTRING(REMOVE), [=] { onRemoveExtension(ii); });
-				menu.appendItem(TSTRING(SETTINGS_CHANGE), [=] { onConfigExtension(ii); });
+				if(ii->item->hasSettings())
+					menu.appendItem(TSTRING(SETTINGS_CHANGE), [=] { onConfigExtension(ii); });
 			}
 			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 			return TRUE;
@@ -152,20 +153,15 @@ void ExtensionsFrame::onRemoveExtension(const ItemInfo* ii) {
 void ExtensionsFrame::onConfigExtension(const ItemInfo* ii) {
 	DynamicDialogBase dlg(STRING(SETTINGS_EXTENSIONS));
 
-	for (int i = 0; i < 10; i++) {
-		dlg.getPage()->addConfigItem(Util::toString(i) + " Test label for CEdit config", Util::toString(i), webserver::ApiSettingItem::TYPE_STRING);
-	}
+	auto settings = ii->item->getSettings();
 
-	for (int i = 15; i < 20; i++) {
-		dlg.getPage()->addConfigItem(Util::toString(i) + " Test label for Bool config", Util::toString(i), webserver::ApiSettingItem::TYPE_BOOLEAN);
+	//use reference to setting item...
+	for (auto& s : settings) {
+		dlg.getPage()->addConfigItem(s);
 	}
-
-	for (int i = 20; i < 22; i++) {
-		dlg.getPage()->addConfigItem(Util::toString(i) + " Test label for Browse config", Util::toString(i), webserver::ApiSettingItem::TYPE_FILE_PATH);
-	}
-
 
 	if (dlg.DoModal() == IDOK) {
+		ii->item->swapSettingDefinitions(settings);
 	}
 }
 

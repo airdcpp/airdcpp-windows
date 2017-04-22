@@ -101,9 +101,12 @@ public:
 		return 0;
 	}
 
-	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& bHandled) {
 		if (wID == IDOK) {
-			page->write();
+			if (!page->write()) {
+				bHandled = FALSE;
+				return 0;
+			}
 		}
 		EndDialog(wID);
 		return 0;

@@ -32,30 +32,40 @@ class ConfigUtil {
 public:
 
 	struct ConfigIem {
-		ConfigIem(const string& aName, const string& aId, int aType) : label(aName), id(aId), type(aType) {}
-		GETSET(string, id, Id);
-		GETSET(string, label, Label);
-		int type;
+		ConfigIem(webserver::ServerSettingItem& aSetting) : setting(aSetting) {}
+
+		string getId() const {
+			return setting.name;
+		}
+		string getLabel() const {
+			return setting.getTitle();
+		}
+		
+
+		webserver::ServerSettingItem& setting;
 
 		virtual void Create(HWND m_hWnd) = 0;
 		virtual int updateLayout(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing) = 0;
 		virtual bool handleClick(HWND m_hWnd) = 0;
-		virtual boost::variant<string, bool, int> getValue() = 0;
+		virtual bool write() = 0;
 
 		int getParentRightEdge(HWND m_hWnd);
 		CRect calculateItemPosition(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing);
 
 	};
 
-	static shared_ptr<ConfigIem> getConfigItem(const string& aName, const string& aId, int aType);
+	static shared_ptr<ConfigIem> getConfigItem(webserver::ServerSettingItem& aSetting);
 
 	//Combines CStatic as setting label and CEdit as setting field
 	struct StringConfigItem : public ConfigIem {
 
-		StringConfigItem(const string& aName, const string& aId, int aType) : ConfigIem(aName, aId, aType) {}
+		StringConfigItem(webserver::ServerSettingItem& aSetting) : ConfigIem(aSetting) {}
 
-		boost::variant<string, bool, int> getValue() {
-			return Text::fromT(WinUtil::getEditText(ctrlEdit));
+		//todo handle errors
+		bool write() {
+			auto val = webserver::SettingUtils::validateValue(Text::fromT(WinUtil::getEditText(ctrlEdit)), setting);
+			setting.setValue(val);
+			return true;
 		}
 
 		void setLabel();
@@ -72,10 +82,14 @@ public:
 	//CheckBox type config
 	struct BoolConfigItem : public ConfigIem {
 
-		BoolConfigItem(const string& aName, const string& aId, int aType) : ConfigIem(aName, aId, aType) {}
+		BoolConfigItem(webserver::ServerSettingItem& aSetting) : ConfigIem(aSetting) {}
 
-		boost::variant<string, bool, int> getValue() {
-			return ctrlCheck.GetCheck() == 1;
+
+		//todo handle errors
+		bool write() {
+			auto val = webserver::SettingUtils::validateValue((ctrlCheck.GetCheck() == 1), setting);
+			setting.setValue(val);
+			return true;
 		}
 
 		void setLabel();
@@ -91,7 +105,7 @@ public:
 	//Extends StringConfigItem by adding a browse button after CEdit field
 	struct BrowseConfigItem : public StringConfigItem {
 
-		BrowseConfigItem(const string& aName, const string& aId, int aType) : StringConfigItem(aName, aId, aType) {}
+		BrowseConfigItem(webserver::ServerSettingItem& aSetting) : StringConfigItem(aSetting) {}
 
 		void Create(HWND m_hWnd);
 		int updateLayout(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing);

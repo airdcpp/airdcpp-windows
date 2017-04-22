@@ -22,18 +22,22 @@
 
 #include "WinUtil.h"
 #include <api/common/SettingUtils.h>
+#include <web-server/JsonUtil.h>
 #include "ConfigUtil.h"
 
 
-shared_ptr<ConfigUtil::ConfigIem> ConfigUtil::getConfigItem(const string& aName, const string& aId, int aType) {
+
+shared_ptr<ConfigUtil::ConfigIem> ConfigUtil::getConfigItem(webserver::ServerSettingItem& aSetting) {
+	auto aType = aSetting.type;
+
 	if (aType == webserver::ApiSettingItem::TYPE_STRING)
-		return make_shared<ConfigUtil::StringConfigItem>(aName, aId, aType);
+		return make_shared<ConfigUtil::StringConfigItem>(aSetting);
 
 	if (aType == webserver::ApiSettingItem::TYPE_BOOLEAN)
-		return make_shared<ConfigUtil::BoolConfigItem>(aName, aId, aType);
+		return make_shared<ConfigUtil::BoolConfigItem>(aSetting);
 
 	if (aType == webserver::ApiSettingItem::TYPE_FILE_PATH || aType == webserver::ApiSettingItem::TYPE_DIRECTORY_PATH)
-		return make_shared<ConfigUtil::BrowseConfigItem>(aName, aId, aType);
+		return make_shared<ConfigUtil::BrowseConfigItem>(aSetting);
 
 	return nullptr;
 }
@@ -65,6 +69,7 @@ void ConfigUtil::StringConfigItem::Create(HWND m_hWnd) {
 
 	ctrlEdit.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | ES_AUTOHSCROLL, WS_EX_CLIENTEDGE);
 	ctrlEdit.SetFont(WinUtil::systemFont);
+	ctrlEdit.SetWindowText(Text::toT(webserver::JsonUtil::parseValue<string>(setting.name, setting.getValue())).c_str());
 	ctrlEdit.SetWindowLongPtr(GWL_EXSTYLE, ctrlEdit.GetWindowLongPtr(GWL_EXSTYLE) & ~WS_EX_NOPARENTNOTIFY);
 
 }
@@ -102,6 +107,9 @@ void ConfigUtil::BoolConfigItem::Create(HWND m_hWnd) {
 	ctrlCheck.SetWindowLongPtr(GWL_EXSTYLE, ctrlCheck.GetWindowLongPtr(GWL_EXSTYLE) & ~WS_EX_NOPARENTNOTIFY);
 	ctrlCheck.SetFont(WinUtil::systemFont);
 	setLabel();
+
+	ctrlCheck.SetCheck(webserver::JsonUtil::parseValue<bool>(setting.name, setting.getValue()));
+
 }
 
 int ConfigUtil::BoolConfigItem::updateLayout(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing) {
