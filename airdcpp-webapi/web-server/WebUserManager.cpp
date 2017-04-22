@@ -187,7 +187,7 @@ namespace webserver {
 			dcdebug("No socket for session %s\n", aSession->getAuthToken().c_str());
 		}
 
-		dcdebug("Session %s logging out, use count: %d\n", aSession->getAuthToken().c_str(), aSession.use_count());
+		dcdebug("Session %s logging out, use count: %ld\n", aSession->getAuthToken().c_str(), aSession.use_count());
 	}
 
 	void WebUserManager::resetSocketSession(const WebSocketPtr& aSocket) noexcept {

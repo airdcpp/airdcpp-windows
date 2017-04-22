@@ -330,7 +330,7 @@ namespace webserver {
 		
 		dcdebug("Extension %s was stopped", name.c_str());
 		if (session) {
-			dcdebug(" (session %s, use count %d)", session->getAuthToken().c_str(), session.use_count());
+			dcdebug(" (session %s, use count %ld)", session->getAuthToken().c_str(), session.use_count());
 		}
 		dcdebug("\n");
 
