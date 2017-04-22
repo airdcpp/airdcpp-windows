@@ -59,12 +59,17 @@ namespace webserver {
 		{
 			RLock l(cs);
 			for (const auto& ext: extensions) {
+				ext->removeListeners();
 				ext->stop();
 			}
 		}
 
 		WLock l(cs);
 		extensions.clear();
+	}
+
+	void ExtensionManager::on(WebServerManagerListener::Stopped) noexcept {
+
 	}
 
 	void ExtensionManager::on(WebServerManagerListener::SocketDisconnected, const WebSocketPtr& aSocket) noexcept {
@@ -111,6 +116,8 @@ namespace webserver {
 
 	void ExtensionManager::removeExtension(const ExtensionPtr& aExtension) {
 		if (aExtension->isManaged()) {
+			aExtension->removeListeners();
+
 			// Stop running extensions
 			if (!stopExtension(aExtension)) {
 				throw Exception("Failed to stop the extension process");

@@ -56,6 +56,10 @@ namespace webserver {
 		initialize(aPackageJson);
 	}
 
+	Extension::~Extension() {
+		dcdebug("Extension %s was destroyed\n", name.c_str());
+	}
+
 	void Extension::reload() {
 		initialize(getRootPath(), false);
 
@@ -323,6 +327,12 @@ namespace webserver {
 		if (aFailed) {
 			timer->stop(false);
 		}
+		
+		dcdebug("Extension %s was stopped", name.c_str());
+		if (session) {
+			dcdebug(" (session %s, use count %d)", session->getAuthToken().c_str(), session.use_count());
+		}
+		dcdebug("\n");
 
 		if (session) {
 			session->getServer()->getUserManager().logout(session);
@@ -332,6 +342,7 @@ namespace webserver {
 		resetProcessState();
 		resetSettings();
 
+		dcassert(running);
 		running = false;
 		if (aFailed && errorF) {
 			errorF(this);

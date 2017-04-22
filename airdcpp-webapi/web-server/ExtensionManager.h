@@ -93,6 +93,7 @@ namespace webserver {
 
 		void on(WebServerManagerListener::Started) noexcept override;
 		void on(WebServerManagerListener::Stopping) noexcept override;
+		void on(WebServerManagerListener::Stopped) noexcept override;
 		void on(WebServerManagerListener::SocketDisconnected, const WebSocketPtr& aSocket) noexcept override;
 	};
 }

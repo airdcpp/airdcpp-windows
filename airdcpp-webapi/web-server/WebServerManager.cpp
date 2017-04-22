@@ -67,16 +67,16 @@ namespace webserver {
 
 		fileServer.setResourcePath(Util::getPath(Util::PATH_RESOURCES) + "web-resources" + PATH_SEPARATOR);
 
-		userManager = unique_ptr<WebUserManager>(new WebUserManager(this));
 		extManager = unique_ptr<ExtensionManager>(new ExtensionManager(this));
+		userManager = unique_ptr<WebUserManager>(new WebUserManager(this));
 
 		ios.stop(); //Prevent io service from running until we load
 	}
 
 	WebServerManager::~WebServerManager() {
 		// Let them remove the listeners
-		userManager.reset();
 		extManager.reset();
+		userManager.reset();
 	}
 
 	string WebServerManager::getConfigPath() const noexcept {
@@ -394,24 +394,6 @@ namespace webserver {
 		fire(WebServerManagerListener::Stopped());
 	}
 
-	void WebServerManager::logout(LocalSessionId aSessionId) noexcept {
-		vector<WebSocketPtr> sessionSockets;
-
-		{
-			RLock l(cs);
-			boost::algorithm::copy_if(sockets | map_values, back_inserter(sessionSockets),
-				[&](const WebSocketPtr& aSocket) {
-					return aSocket->getSession() && aSocket->getSession()->getId() == aSessionId;
-				}
-			);
-		}
-
-		for (const auto& socket : sessionSockets) {
-			userManager->logout(socket->getSession());
-			socket->setSession(nullptr);
-		}
-	}
-
 	WebSocketPtr WebServerManager::getSocket(LocalSessionId aSessionToken) noexcept {
 		RLock l(cs);
 		auto i = find_if(sockets | map_values, [&](const WebSocketPtr& s) {
@@ -453,11 +435,7 @@ namespace webserver {
 			sockets.erase(s);
 		}
 
-		dcdebug("Close socket: %s\n", socket->getSession() ? socket->getSession()->getAuthToken().c_str() : "(no session)");
-		if (socket->getSession()) {
-			socket->getSession()->onSocketDisconnected();
-		}
-
+		dcdebug("Socket disconnected: %s\n", socket->getSession() ? socket->getSession()->getAuthToken().c_str() : "(no session)");
 		fire(WebServerManagerListener::SocketDisconnected(), socket);
 	}
 

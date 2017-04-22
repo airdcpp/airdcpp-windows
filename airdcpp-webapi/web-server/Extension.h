@@ -39,6 +39,8 @@ namespace webserver {
 		Extension(const string& aPackageDirectory, ErrorF&& aErrorF, bool aSkipPathValidation = false);
 		Extension(const SessionPtr& aSession, const json& aPackageJson);
 
+		~Extension();
+
 		// Reload package.json from the supplied path
 		// Throws on errors
 		void reload();
