@@ -29,7 +29,6 @@
 
 #include <airdcpp/Util.h>
 #include "ConfigUtil.h"
-#include <api/common/SettingUtils.h>
 
 
 class DynamicTabPage : public CDialogImpl<DynamicTabPage> {
@@ -71,20 +70,27 @@ public:
 	void resizePage();
 
 	void addConfigItem(const string& aName, const string& aId, int aType) {
-		if(aType == webserver::ApiSettingItem::TYPE_STRING)
-			configs.emplace_back(make_shared<StringConfigItem>(aName, aId, aType));
-
-		if (aType == webserver::ApiSettingItem::TYPE_BOOLEAN)
-			configs.emplace_back(make_shared<BoolConfigItem>(aName, aId, aType));
-
-		if (aType == webserver::ApiSettingItem::TYPE_FILE_PATH || aType == webserver::ApiSettingItem::TYPE_DIRECTORY_PATH)
-			configs.emplace_back(make_shared<BrowseConfigItem>(aName, aId, aType));
+		auto item = ConfigUtil::getConfigItem(aName, aId, aType);
+		if(item)
+			configs.emplace_back(item);
 	}
+
+	bool write() {
+		for (auto cfg : configs) {
+			auto i = cfg->getValue();
+			if(i.type() == typeid(std::string))
+				string tmp = boost::get<string>(i);
+		}
+
+		return true;
+	}
+
+	void updateLayout();
 
 private:
 
 	bool loading;
-	vector<shared_ptr<ConfigIem>> configs;
+	vector<shared_ptr<ConfigUtil::ConfigIem>> configs;
 
 	int prevConfigBottomMargin = 0;
 	int configSpacing = 20;

@@ -27,10 +27,8 @@ DynamicTabPage::DynamicTabPage() : loading(true) { }
 DynamicTabPage::~DynamicTabPage() { }
 
 LRESULT DynamicTabPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-
 	for (auto cfg : configs) {
-		prevConfigBottomMargin = cfg->Create(m_hWnd, prevConfigBottomMargin, configSpacing);
-		resizePage();
+		cfg->Create(m_hWnd);
 	}
 
 	loading = false;
@@ -89,6 +87,13 @@ LRESULT DynamicTabPage::onEraseBackground(UINT /*uMsg*/, WPARAM wParam, LPARAM /
 
 	DeleteObject(SelectObject(dc, oldPen));
 	return TRUE;
+}
+
+void DynamicTabPage::updateLayout() {
+	for (auto cfg : configs) {
+		prevConfigBottomMargin = cfg->updateLayout(m_hWnd, prevConfigBottomMargin, configSpacing);
+		resizePage();
+	}
 }
 
 

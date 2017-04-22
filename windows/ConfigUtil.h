@@ -24,151 +24,84 @@
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
-#include "stdafx.h"
 
 #include "WinUtil.h"
+#include <api/common/SettingUtils.h>
 
+class ConfigUtil {
+public:
 
-struct ConfigIem {
-	ConfigIem(const string& aName, const string& aId, int aType) : label(aName), id(aId), type(aType) {}
-	GETSET(string, id, Id);
-	GETSET(string, label, Label);
-	int type;
+	struct ConfigIem {
+		ConfigIem(const string& aName, const string& aId, int aType) : label(aName), id(aId), type(aType) {}
+		GETSET(string, id, Id);
+		GETSET(string, label, Label);
+		int type;
 
-	virtual int Create(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing) = 0;
-	virtual bool handleClick(HWND m_hWnd) = 0;
+		virtual void Create(HWND m_hWnd) = 0;
+		virtual int updateLayout(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing) = 0;
+		virtual bool handleClick(HWND m_hWnd) = 0;
+		virtual boost::variant<string, bool, int> getValue() = 0;
 
-};
+		int getParentRightEdge(HWND m_hWnd);
+		CRect calculateItemPosition(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing);
 
-struct StringConfigItem : public ConfigIem {
+	};
 
-	StringConfigItem(const string& aName, const string& aId, int aType) : ConfigIem(aName, aId, aType) {}
+	static shared_ptr<ConfigIem> getConfigItem(const string& aName, const string& aId, int aType);
 
-	string getValueString() {
-		return Text::fromT(WinUtil::getEditText(ctrlEdit));
-	}
-	void setLabel() {
-		ctrlLabel.SetWindowText(Text::toT(getLabel()).c_str());
-	}
+	//Combines CStatic as setting label and CEdit as setting field
+	struct StringConfigItem : public ConfigIem {
 
-	int Create(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing) {
-		RECT rcDefault = { 0,0,0,0 };
-		ctrlLabel.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | ES_AUTOHSCROLL, NULL);
-		ctrlLabel.SetFont(WinUtil::systemFont);
-		ctrlLabel.SetWindowText(Text::toT(getLabel()).c_str());
+		StringConfigItem(const string& aName, const string& aId, int aType) : ConfigIem(aName, aId, aType) {}
 
-		ctrlEdit.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | ES_AUTOHSCROLL, WS_EX_CLIENTEDGE);
-		ctrlEdit.SetFont(WinUtil::systemFont);
-
-		CRect rc;
-
-		//CStatic
-		rc.left = 30;
-		rc.top = prevConfigBottomMargin + configSpacing;
-		rc.right = 500;
-		rc.bottom = rc.top + WinUtil::getTextHeight(m_hWnd, WinUtil::systemFont);
-		ctrlLabel.MoveWindow(rc);
-
-		//CEdit
-		rc.top = rc.bottom + 2;
-		rc.bottom = rc.top + 25;
-
-		ctrlEdit.MoveWindow(rc);
-
-		return rc.bottom;
-
-	}
-
-	bool handleClick(HWND m_hWnd) {
-		if (m_hWnd == ctrlEdit.m_hWnd) {
-			return true;
+		boost::variant<string, bool, int> getValue() {
+			return Text::fromT(WinUtil::getEditText(ctrlEdit));
 		}
-		return false;
-	}
 
+		void setLabel();
 
-	CStatic ctrlLabel;
-	CEdit ctrlEdit;
-};
+		void Create(HWND m_hWnd);
+		int updateLayout(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing);
 
-struct BoolConfigItem : public ConfigIem {
+		bool handleClick(HWND m_hWnd);
 
-	BoolConfigItem(const string& aName, const string& aId, int aType) : ConfigIem(aName, aId, aType) {}
+		CStatic ctrlLabel;
+		CEdit ctrlEdit;
+	};
 
-	bool getValueBool() {
-		return ctrlCheck.GetCheck() == 1;
-	}
-	void setLabel() {
-		ctrlCheck.SetWindowText(Text::toT(getLabel()).c_str());
-	}
+	//CheckBox type config
+	struct BoolConfigItem : public ConfigIem {
 
-	int Create(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing) {
-		RECT rcDefault = { 0,0,0,0 };
+		BoolConfigItem(const string& aName, const string& aId, int aType) : ConfigIem(aName, aId, aType) {}
 
-		ctrlCheck.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_AUTOCHECKBOX, NULL);
-		ctrlCheck.SetFont(WinUtil::systemFont);
-		setLabel();
-
-		CRect rc;
-		rc.left = 30;
-		rc.top = prevConfigBottomMargin + configSpacing;
-		rc.right = 500;
-		rc.bottom = rc.top + WinUtil::getTextHeight(m_hWnd, WinUtil::systemFont) +2;
-		ctrlCheck.MoveWindow(rc);
-
-		return rc.bottom;
-
-	}
-
-	bool handleClick(HWND m_hWnd) {
-		if (m_hWnd == ctrlCheck.m_hWnd) {
-			return true;
+		boost::variant<string, bool, int> getValue() {
+			return ctrlCheck.GetCheck() == 1;
 		}
-		return false;
-	}
 
-	CButton ctrlCheck;
-};
+		void setLabel();
 
-struct BrowseConfigItem : public StringConfigItem {
+		void Create(HWND m_hWnd);
+		int updateLayout(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing);
 
-	BrowseConfigItem(const string& aName, const string& aId, int aType) : StringConfigItem(aName, aId, aType) {}
+		bool handleClick(HWND m_hWnd);
 
-	int Create(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing) {
+		CButton ctrlCheck;
+	};
 
-		prevConfigBottomMargin = StringConfigItem::Create(m_hWnd, prevConfigBottomMargin, configSpacing);
-		RECT rcDefault = { 0,0,0,0 };
+	//Extends StringConfigItem by adding a browse button after CEdit field
+	struct BrowseConfigItem : public StringConfigItem {
 
-		ctrlButton.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL);
-		ctrlButton.SetFont(WinUtil::systemFont);
-		ctrlButton.SetWindowText(CTSTRING(BROWSE));
+		BrowseConfigItem(const string& aName, const string& aId, int aType) : StringConfigItem(aName, aId, aType) {}
 
-		CRect rc;
-		ctrlEdit.GetWindowRect(&rc);
-		ctrlEdit.GetParent().ScreenToClient(&rc);
-		rc.right -= (buttonWidth + 2);
-		ctrlEdit.MoveWindow(rc);
+		void Create(HWND m_hWnd);
+		int updateLayout(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing);
 
-		rc.left = rc.right + 2;
-		rc.right = rc.left + buttonWidth;
-		rc.bottom = prevConfigBottomMargin;
-		ctrlButton.MoveWindow(rc);
+		bool handleClick(HWND m_hWnd);
+		CButton ctrlButton;
+		int buttonWidth = 80;
 
-		return prevConfigBottomMargin;
-
-	}
-
-	bool handleClick(HWND m_hWnd) {
-		if (m_hWnd == ctrlButton.m_hWnd) {
-			ctrlButton.SetWindowText(Text::toT("Clicked " + Util::toString(++clickCounter) + " times").c_str());
-			return true;
-		}
-		return false;
-	}
-	CButton ctrlButton;
-	int buttonWidth = 80;
-
-	int clickCounter = 0; //for testing...
+		int clickCounter = 0; //for testing...
+	};
 };
 
 

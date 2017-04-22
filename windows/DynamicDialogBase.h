@@ -103,6 +103,7 @@ public:
 
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		if (wID == IDOK) {
+			page->write();
 		}
 		EndDialog(wID);
 		return 0;
@@ -121,6 +122,9 @@ public:
 		pageRect.right = baseRect.right - (OKbtnRect.Width() + 30); //OK button left
 		pageRect.left = baseRect.left + pageSpacing;
 		page->MoveWindow(pageRect);
+
+		page->updateLayout();
+		page->GetClientRect(&pageRect); //page might have resized, get the rect again...
 
 		//Set the scrolling area, exclude OK button area by button left edge
 		scrollRect = pageRect;

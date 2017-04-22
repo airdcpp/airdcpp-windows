@@ -419,6 +419,7 @@
     <ClCompile Include="windows\AutoSearchFrm.cpp" />
     <ClCompile Include="windows\AutoSearchGeneralPage.cpp" />
     <ClCompile Include="windows\AutoSearchGroupDlg.cpp" />
+    <ClCompile Include="windows\ConfigUtil.cpp" />
     <ClCompile Include="windows\DynamicTabPage.cpp" />
     <ClCompile Include="windows\ExtensionsFrame.cpp" />
     <ClCompile Include="windows\FavHubGeneralPage.cpp" />
