@@ -58,6 +58,7 @@ ProfileDirectoryInfo::ProfileDirectoryInfo(ShareDirectoryInfoPtr& aInfo, State a
 
 SharePageBase::SharePageBase() {
 	profiles = ShareManager::getInstance()->getProfileInfos();
+	dcassert(!profiles.empty());
 }
 
 ShareProfileInfoPtr SharePageBase::getProfile(ProfileToken aProfile) {

@@ -95,19 +95,8 @@ ShareManager::~ShareManager() {
 }
 
 // Note that settings are loaded before this function is called
+// This function shouldn't initialize anything that is needed by the startup wizard
 void ShareManager::startup(function<void(const string&)> splashF, function<void(float)> progressF) noexcept {
-	if (!getShareProfile(SETTING(DEFAULT_SP))) {
-		if (shareProfiles.empty()) {
-			auto sp = std::make_shared<ShareProfile>(STRING(DEFAULT), SETTING(DEFAULT_SP));
-			shareProfiles.push_back(sp);
-		} else {
-			SettingsManager::getInstance()->set(SettingsManager::DEFAULT_SP, shareProfiles.front()->getToken());
-		}
-	}
-
-	ShareProfilePtr hidden = std::make_shared<ShareProfile>(STRING(SHARE_HIDDEN), SP_HIDDEN);
-	shareProfiles.push_back(hidden);
-
 	bool refreshed = false;
 	if(!loadCache(progressF)) {
 		if (splashF)
@@ -690,31 +679,46 @@ void ShareManager::loadProfile(SimpleXML& aXml, const string& aName, ProfileToke
 }
 
 void ShareManager::load(SimpleXML& aXml) {
-	validator->reloadSkiplist();
-
-	//WLock l(cs);
 	aXml.resetCurrentChild();
-
 	if(aXml.findChild("Share")) {
 		const auto& name = aXml.getChildAttrib("Name");
 		loadProfile(aXml, !name.empty() ? name : STRING(DEFAULT), aXml.getIntChildAttrib("Token"));
 	}
 
 	aXml.resetCurrentChild();
-	while(aXml.findChild("ShareProfile")) {
+	while (aXml.findChild("ShareProfile")) {
 		const auto& token = aXml.getIntChildAttrib("Token");
 		const auto& name = aXml.getChildAttrib("Name");
 		if (token != SP_HIDDEN && !name.empty()) {
 			loadProfile(aXml, name, token);
 		}
 	}
+}
+
+void ShareManager::on(SettingsManagerListener::LoadCompleted, bool) noexcept {
+	validator->reloadSkiplist();
+
+	{
+		// Check share profiles
+		if (!getShareProfile(SETTING(DEFAULT_SP))) {
+			if (shareProfiles.empty()) {
+				auto sp = std::make_shared<ShareProfile>(STRING(DEFAULT), SETTING(DEFAULT_SP));
+				shareProfiles.push_back(sp);
+			} else {
+				SettingsManager::getInstance()->set(SettingsManager::DEFAULT_SP, shareProfiles.front()->getToken());
+			}
+		}
+
+		auto hiddenProfile = std::make_shared<ShareProfile>(STRING(SHARE_HIDDEN), SP_HIDDEN);
+		shareProfiles.push_back(hiddenProfile);
+	}
 
 	{
 		// Validate loaded paths
 		auto rootPathsCopy = rootPaths;
 		for (const auto& dp : rootPathsCopy) {
-			if (find_if(rootPathsCopy | map_keys, [&dp](const string& aPath) { 
-				return AirUtil::isSubLocal(dp.first, aPath); 
+			if (find_if(rootPathsCopy | map_keys, [&dp](const string& aPath) {
+				return AirUtil::isSubLocal(dp.first, aPath);
 			}).base() != rootPathsCopy.end()) {
 				removeDirName(*dp.second.get(), lowerDirNameMap);
 				rootPaths.erase(dp.first);
