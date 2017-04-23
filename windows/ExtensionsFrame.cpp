@@ -102,7 +102,7 @@ LRESULT ExtensionsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 
 				menu.appendSeparator();
 				menu.appendItem(TSTRING(REMOVE), [=] { onRemoveExtension(ii); });
-				if(ii->item->hasSettings())
+				//if(ii->item->hasSettings())
 					menu.appendItem(TSTRING(SETTINGS_CHANGE), [=] { onConfigExtension(ii); });
 			}
 			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
@@ -159,9 +159,13 @@ void ExtensionsFrame::onConfigExtension(const ItemInfo* ii) {
 	for (auto& s : settings) {
 		dlg.getPage()->addConfigItem(s);
 	}
-
+	webserver::SettingValueMap values;
 	if (dlg.DoModal() == IDOK) {
-		ii->item->swapSettingDefinitions(settings);
+		for (auto& s : settings) {
+			if (s.getDefaultValue() != s.getValue())
+				values.emplace(s.name, s.getValue());
+		}
+		ii->item->setSettingValues(values);
 	}
 }
 
@@ -214,8 +218,9 @@ void ExtensionsFrame::onExtensionInfoDownloaded() {
 
 		const string aSha = dist.at("shasum");
 		const string aUrl = dist.at("tarball");
+		const string aInstallId = dist.at("install_id");
 
-		getExtensionManager().downloadExtension(aUrl, aSha);
+		getExtensionManager().downloadExtension(aInstallId, aUrl, aSha);
 	} catch (const std::exception& /*e*/) {}
 
 }

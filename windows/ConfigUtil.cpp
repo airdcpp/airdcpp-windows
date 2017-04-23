@@ -36,6 +36,9 @@ shared_ptr<ConfigUtil::ConfigIem> ConfigUtil::getConfigItem(webserver::ServerSet
 	if (aType == webserver::ApiSettingItem::TYPE_BOOLEAN)
 		return make_shared<ConfigUtil::BoolConfigItem>(aSetting);
 
+	if (aType == webserver::ApiSettingItem::TYPE_NUMBER)
+		return make_shared<ConfigUtil::IntConfigItem>(aSetting);
+
 	if (aType == webserver::ApiSettingItem::TYPE_FILE_PATH || aType == webserver::ApiSettingItem::TYPE_DIRECTORY_PATH)
 		return make_shared<ConfigUtil::BrowseConfigItem>(aSetting);
 
@@ -157,6 +160,57 @@ int ConfigUtil::BrowseConfigItem::updateLayout(HWND m_hWnd, int prevConfigBottom
 bool ConfigUtil::BrowseConfigItem::handleClick(HWND m_hWnd) {
 	if (m_hWnd == ctrlButton.m_hWnd) {
 		ctrlButton.SetWindowText(Text::toT("Clicked " + Util::toString(++clickCounter) + " times").c_str());
+		return true;
+	}
+	return false;
+}
+
+void ConfigUtil::IntConfigItem::setLabel() {
+	ctrlLabel.SetWindowText(Text::toT(getLabel()).c_str());
+}
+
+void ConfigUtil::IntConfigItem::Create(HWND m_hWnd) {
+	RECT rcDefault = { 0,0,0,0 };
+	ctrlLabel.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | SS_RIGHT, NULL);
+	ctrlLabel.SetFont(WinUtil::systemFont);
+	ctrlLabel.SetWindowText(Text::toT(getLabel()).c_str());
+
+	ctrlEdit.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | ES_NUMBER, WS_EX_CLIENTEDGE);
+	ctrlEdit.SetFont(WinUtil::systemFont);
+	ctrlEdit.SetWindowText(Text::toT(Util::toString(webserver::JsonUtil::parseValue<int>(setting.name, setting.getValue()))).c_str());
+	ctrlEdit.SetWindowLongPtr(GWL_EXSTYLE, ctrlEdit.GetWindowLongPtr(GWL_EXSTYLE) & ~WS_EX_NOPARENTNOTIFY);
+
+	spin.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | UDS_SETBUDDYINT | UDS_ALIGNRIGHT, NULL);
+	spin.SetBuddy(ctrlEdit.m_hWnd);
+	auto limits = setting.getMinMax();
+	spin.SetRange32(limits.min, limits.max);
+
+}
+
+int ConfigUtil::IntConfigItem::updateLayout(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing) {
+	//CStatic
+	CRect rc = calculateItemPosition(m_hWnd, prevConfigBottomMargin, configSpacing);
+	rc.right -= 200;
+	ctrlLabel.MoveWindow(rc);
+
+	//CEdit
+	rc.left = rc.right + 2;
+	rc.right += 30;
+	int height = max(WinUtil::getTextHeight(m_hWnd, WinUtil::systemFont) + 5, 22);
+	rc.top = rc.bottom - (rc.bottom - rc.top) / 2 - height / 2;
+	rc.bottom = rc.top + height;
+	 
+	ctrlEdit.MoveWindow(rc);
+
+	rc.left = rc.right - 1;
+	rc.right += 20;
+	spin.MoveWindow(rc);
+
+	return rc.bottom;
+}
+
+bool ConfigUtil::IntConfigItem::handleClick(HWND m_hWnd) {
+	if (m_hWnd == ctrlEdit.m_hWnd) {
 		return true;
 	}
 	return false;

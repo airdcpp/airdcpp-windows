@@ -116,6 +116,32 @@ public:
 
 		int clickCounter = 0; //for testing...
 	};
+
+	//Combines CStatic as setting label and CEdit as setting field with spin control
+	struct IntConfigItem : public ConfigIem {
+
+		IntConfigItem(webserver::ServerSettingItem& aSetting) : ConfigIem(aSetting) {}
+
+		//todo handle errors
+		bool write() {
+			auto val = webserver::SettingUtils::validateValue(Util::toInt(Text::fromT(WinUtil::getEditText(ctrlEdit))), setting);
+			setting.setValue(val);
+			return true;
+		}
+
+		void setLabel();
+
+		void Create(HWND m_hWnd);
+		int updateLayout(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing);
+
+		bool handleClick(HWND m_hWnd);
+
+		CStatic ctrlLabel;
+		CEdit ctrlEdit;
+		CUpDownCtrl spin;
+
+	};
+
 };
 
 
