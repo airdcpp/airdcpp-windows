@@ -1180,7 +1180,7 @@ bool AdcHub::directSearch(const OnlineUser& user, const SearchPtr& aSearch, stri
 	}
 
 	if (isHubsoftVersionOrOlder("luadch", 2.18)) {
-		error_ = "Feature is blocked by the hub";
+		error_ = "Feature is blocked by hub " + Client::getHubName();
 		return false;
 	}
 
