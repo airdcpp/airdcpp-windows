@@ -439,6 +439,7 @@ DirectoryListingPtr DirectoryListingManager::createList(const HintedUser& aUser,
 		dl = createList(aUser, true, Util::emptyString, false);
 	}
 
+	dl->onAddedQueue(qi->getTarget());
 	return dl;
 }
 
