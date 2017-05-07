@@ -152,7 +152,7 @@ public:
 
 		User::UserInfoList list;
 		if (aUser) {
-			ClientManager::getInstance()->getUserInfoList(aUser, list);
+			list = ClientManager::getInstance()->getUserInfoList(aUser);
 			if (list.size() > 1) {
 				multipleHubs = true;
 				if (pmItems)

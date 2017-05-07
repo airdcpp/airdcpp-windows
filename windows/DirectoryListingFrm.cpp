@@ -2196,8 +2196,7 @@ void DirectoryListingFrame::updateSelCombo(bool init) {
 		if (!hubs.empty())
 			oldHubPair = { hubs[oldSel].hubName, hubs[oldSel].hubUrl }; // cache the old hub name
 
-		hubs.clear();
-		ClientManager::getInstance()->getUserInfoList(dl->getUser(), hubs);
+		hubs = ClientManager::getInstance()->getUserInfoList(dl->getUser());
 		while (selCombo.GetCount()) {
 			selCombo.DeleteString(0);
 		}
