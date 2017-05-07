@@ -233,6 +233,20 @@ public:
 	static bool updated;
 	static TStringPair updateCommand;
 
+	enum Paths {
+		/** Where the notepad file is stored */
+		PATH_NOTEPAD,
+		/** Folder with emoticons packs */
+		PATH_EMOPACKS,
+		/** Path to theme files */
+		PATH_THEMES,
+
+		PATH_LAST,
+	};
+
+	/** Path of configuration files */
+	static const string& getPath(Paths path) noexcept { return paths[path]; }
+
 	static bool isElevated();
 	static void addUpdate(const string& aUpdaterFile, bool aTesting = false) noexcept;
 	static bool runPendingUpdate() noexcept;
@@ -523,6 +537,8 @@ public:
 	static void findNfo(const string& aPath, const HintedUser& aUser) noexcept;
 	static bool allowGetFullList(const HintedUser& aUser) noexcept;
 
+private:
+	static string paths[PATH_LAST];
 };
 
 

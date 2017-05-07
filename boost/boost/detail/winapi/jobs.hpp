@@ -27,10 +27,12 @@ BOOST_SYMBOL_IMPORT boost::detail::winapi::BOOL_ WINAPI AssignProcessToJobObject
     boost::detail::winapi::HANDLE_ hJob,
     boost::detail::winapi::HANDLE_ hProcess);
 
+#if BOOST_USE_WINAPI_VERSION >= BOOST_WINAPI_VERSION_WINXP
 BOOST_SYMBOL_IMPORT boost::detail::winapi::BOOL_ WINAPI IsProcessInJob(
     boost::detail::winapi::HANDLE_ ProcessHandle,
     boost::detail::winapi::HANDLE_ JobHandle,
     boost::detail::winapi::PBOOL_ Result);
+#endif
 
 BOOST_SYMBOL_IMPORT boost::detail::winapi::BOOL_ WINAPI TerminateJobObject(
     boost::detail::winapi::HANDLE_ hJob,
@@ -73,7 +75,9 @@ using ::OpenJobObjectA;
 using ::OpenJobObjectW;
 
 using ::AssignProcessToJobObject;
+#if BOOST_USE_WINAPI_VERSION >= BOOST_WINAPI_VERSION_WINXP
 using ::IsProcessInJob;
+#endif
 using ::TerminateJobObject;
 
 #if !defined( BOOST_NO_ANSI_APIS )

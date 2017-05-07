@@ -492,7 +492,7 @@ void swap_merge_with_right_placed
    op_merge_with_right_placed(first, last, dest_first, r_first, r_last, comp, swap_op());
 }
 
-// [r_first, r_last) are already in the right part of the destination range.
+// [first, last) are already in the right part of the destination range.
 template <class Compare, class Op, class BidirIterator, class BidirOutIterator>
 void op_merge_with_left_placed
    ( BidirOutIterator const first, BidirOutIterator last, BidirOutIterator dest_last
@@ -525,7 +525,7 @@ void op_merge_with_left_placed
 
 // @endcond
 
-// [r_first, r_last) are already in the right part of the destination range.
+// [irst, last) are already in the right part of the destination range.
 template <class Compare, class BidirIterator, class BidirOutIterator>
 void merge_with_left_placed
    ( BidirOutIterator const first, BidirOutIterator last, BidirOutIterator dest_last
@@ -586,6 +586,50 @@ void uninitialized_merge_with_right_placed
    d.release();
    merge_with_right_placed(first, last, original_r_first, r_first, r_last, comp);
 }
+
+/*
+// [r_first, r_last) are already in the right part of the destination range.
+// [dest_first, r_first) is uninitialized memory
+template <class Compare, class BidirOutIterator, class BidirIterator>
+void uninitialized_merge_with_left_placed
+   ( BidirOutIterator dest_first, BidirOutIterator r_first, BidirOutIterator r_last
+   , BidirIterator first, BidirIterator last
+   , Compare comp)
+{
+   BOOST_ASSERT((last - first) == (r_last - r_first));
+   typedef typename iterator_traits<BidirOutIterator>::value_type value_type;
+   BidirOutIterator const original_r_last = r_last;
+
+   destruct_n<value_type> d(&*dest_last);
+
+   while ( first != last && dest_first != original_r_first ) {
+      if (r_first == r_last) {
+         for(; dest_first != original_r_first; ++dest_first, ++first){
+            ::new(&*dest_first) value_type(::boost::move(*first));
+            d.incr();
+         }
+         d.release();
+         BidirOutIterator end = ::boost::move(first, last, original_r_first);
+         BOOST_ASSERT(end == r_last);
+         (void)end;
+         return;
+      }
+      else if (comp(*r_first, *first)) {
+         ::new(&*dest_first) value_type(::boost::move(*r_first));
+         d.incr();
+         ++r_first;
+      }
+      else {
+         ::new(&*dest_first) value_type(::boost::move(*first));
+         d.incr();
+         ++first;
+      }
+      ++dest_first;
+   }
+   d.release();
+   merge_with_right_placed(first, last, original_r_first, r_first, r_last, comp);
+}
+*/
 
 }  //namespace movelib {
 }  //namespace boost {

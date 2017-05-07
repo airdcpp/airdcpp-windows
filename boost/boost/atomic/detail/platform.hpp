@@ -88,7 +88,7 @@
 
 #define BOOST_ATOMIC_DETAIL_PLATFORM msvc_x86
 
-#elif defined(_MSC_VER) && _MSC_VER >= 1700 && defined(_M_ARM)
+#elif defined(_MSC_VER) && _MSC_VER >= 1700 && (defined(_M_ARM) || defined(_M_ARM64))
 
 #define BOOST_ATOMIC_DETAIL_PLATFORM msvc_arm
 

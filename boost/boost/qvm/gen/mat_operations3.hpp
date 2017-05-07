@@ -525,6 +525,47 @@ boost
         template <class A,class B>
         BOOST_QVM_INLINE_OPERATIONS
         typename lazy_enable_if_c<
+            is_scalar<A>::value && mat_traits<B>::rows==3 && mat_traits<B>::cols==3,
+            deduce_mat<B> >::type
+        operator*( A a, B const & b )
+            {
+            typedef typename deduce_mat<B>::type R;
+            R r;
+            mat_traits<R>::template write_element<0,0>(r)=a*mat_traits<B>::template read_element<0,0>(b);
+            mat_traits<R>::template write_element<0,1>(r)=a*mat_traits<B>::template read_element<0,1>(b);
+            mat_traits<R>::template write_element<0,2>(r)=a*mat_traits<B>::template read_element<0,2>(b);
+            mat_traits<R>::template write_element<1,0>(r)=a*mat_traits<B>::template read_element<1,0>(b);
+            mat_traits<R>::template write_element<1,1>(r)=a*mat_traits<B>::template read_element<1,1>(b);
+            mat_traits<R>::template write_element<1,2>(r)=a*mat_traits<B>::template read_element<1,2>(b);
+            mat_traits<R>::template write_element<2,0>(r)=a*mat_traits<B>::template read_element<2,0>(b);
+            mat_traits<R>::template write_element<2,1>(r)=a*mat_traits<B>::template read_element<2,1>(b);
+            mat_traits<R>::template write_element<2,2>(r)=a*mat_traits<B>::template read_element<2,2>(b);
+            return r;
+            }
+
+        namespace
+        sfinae
+            {
+            using ::boost::qvm::operator*;
+            }
+
+        namespace
+        qvm_detail
+            {
+            template <int R,int C>
+            struct mul_sm_defined;
+
+            template <>
+            struct
+            mul_sm_defined<3,3>
+                {
+                static bool const value=true;
+                };
+            }
+
+        template <class A,class B>
+        BOOST_QVM_INLINE_OPERATIONS
+        typename lazy_enable_if_c<
             mat_traits<A>::rows==3 && mat_traits<A>::cols==1 && is_scalar<B>::value,
             deduce_mat<A> >::type
         operator*( A const & a, B b )
@@ -560,6 +601,41 @@ boost
         template <class A,class B>
         BOOST_QVM_INLINE_OPERATIONS
         typename lazy_enable_if_c<
+            is_scalar<A>::value && mat_traits<B>::rows==3 && mat_traits<B>::cols==1,
+            deduce_mat<B> >::type
+        operator*( A a, B const & b )
+            {
+            typedef typename deduce_mat<B>::type R;
+            R r;
+            mat_traits<R>::template write_element<0,0>(r)=a*mat_traits<B>::template read_element<0,0>(b);
+            mat_traits<R>::template write_element<1,0>(r)=a*mat_traits<B>::template read_element<1,0>(b);
+            mat_traits<R>::template write_element<2,0>(r)=a*mat_traits<B>::template read_element<2,0>(b);
+            return r;
+            }
+
+        namespace
+        sfinae
+            {
+            using ::boost::qvm::operator*;
+            }
+
+        namespace
+        qvm_detail
+            {
+            template <int R,int C>
+            struct mul_sm_defined;
+
+            template <>
+            struct
+            mul_sm_defined<3,1>
+                {
+                static bool const value=true;
+                };
+            }
+
+        template <class A,class B>
+        BOOST_QVM_INLINE_OPERATIONS
+        typename lazy_enable_if_c<
             mat_traits<A>::rows==1 && mat_traits<A>::cols==3 && is_scalar<B>::value,
             deduce_mat<A> >::type
         operator*( A const & a, B b )
@@ -587,6 +663,41 @@ boost
             template <>
             struct
             mul_ms_defined<1,3>
+                {
+                static bool const value=true;
+                };
+            }
+
+        template <class A,class B>
+        BOOST_QVM_INLINE_OPERATIONS
+        typename lazy_enable_if_c<
+            is_scalar<A>::value && mat_traits<B>::rows==1 && mat_traits<B>::cols==3,
+            deduce_mat<B> >::type
+        operator*( A a, B const & b )
+            {
+            typedef typename deduce_mat<B>::type R;
+            R r;
+            mat_traits<R>::template write_element<0,0>(r)=a*mat_traits<B>::template read_element<0,0>(b);
+            mat_traits<R>::template write_element<0,1>(r)=a*mat_traits<B>::template read_element<0,1>(b);
+            mat_traits<R>::template write_element<0,2>(r)=a*mat_traits<B>::template read_element<0,2>(b);
+            return r;
+            }
+
+        namespace
+        sfinae
+            {
+            using ::boost::qvm::operator*;
+            }
+
+        namespace
+        qvm_detail
+            {
+            template <int R,int C>
+            struct mul_sm_defined;
+
+            template <>
+            struct
+            mul_sm_defined<1,3>
                 {
                 static bool const value=true;
                 };
@@ -741,6 +852,47 @@ boost
         template <class A,class B>
         BOOST_QVM_INLINE_OPERATIONS
         typename lazy_enable_if_c<
+            is_scalar<A>::value && mat_traits<B>::rows==3 && mat_traits<B>::cols==3,
+            deduce_mat<B> >::type
+        operator/( A a, B const & b )
+            {
+            typedef typename deduce_mat<B>::type R;
+            R r;
+            mat_traits<R>::template write_element<0,0>(r)=a/mat_traits<B>::template read_element<0,0>(b);
+            mat_traits<R>::template write_element<0,1>(r)=a/mat_traits<B>::template read_element<0,1>(b);
+            mat_traits<R>::template write_element<0,2>(r)=a/mat_traits<B>::template read_element<0,2>(b);
+            mat_traits<R>::template write_element<1,0>(r)=a/mat_traits<B>::template read_element<1,0>(b);
+            mat_traits<R>::template write_element<1,1>(r)=a/mat_traits<B>::template read_element<1,1>(b);
+            mat_traits<R>::template write_element<1,2>(r)=a/mat_traits<B>::template read_element<1,2>(b);
+            mat_traits<R>::template write_element<2,0>(r)=a/mat_traits<B>::template read_element<2,0>(b);
+            mat_traits<R>::template write_element<2,1>(r)=a/mat_traits<B>::template read_element<2,1>(b);
+            mat_traits<R>::template write_element<2,2>(r)=a/mat_traits<B>::template read_element<2,2>(b);
+            return r;
+            }
+
+        namespace
+        sfinae
+            {
+            using ::boost::qvm::operator/;
+            }
+
+        namespace
+        qvm_detail
+            {
+            template <int R,int C>
+            struct div_sm_defined;
+
+            template <>
+            struct
+            div_sm_defined<3,3>
+                {
+                static bool const value=true;
+                };
+            }
+
+        template <class A,class B>
+        BOOST_QVM_INLINE_OPERATIONS
+        typename lazy_enable_if_c<
             mat_traits<A>::rows==3 && mat_traits<A>::cols==1 && is_scalar<B>::value,
             deduce_mat<A> >::type
         operator/( A const & a, B b )
@@ -768,6 +920,41 @@ boost
             template <>
             struct
             div_ms_defined<3,1>
+                {
+                static bool const value=true;
+                };
+            }
+
+        template <class A,class B>
+        BOOST_QVM_INLINE_OPERATIONS
+        typename lazy_enable_if_c<
+            is_scalar<A>::value && mat_traits<B>::rows==3 && mat_traits<B>::cols==1,
+            deduce_mat<B> >::type
+        operator/( A a, B const & b )
+            {
+            typedef typename deduce_mat<B>::type R;
+            R r;
+            mat_traits<R>::template write_element<0,0>(r)=a/mat_traits<B>::template read_element<0,0>(b);
+            mat_traits<R>::template write_element<1,0>(r)=a/mat_traits<B>::template read_element<1,0>(b);
+            mat_traits<R>::template write_element<2,0>(r)=a/mat_traits<B>::template read_element<2,0>(b);
+            return r;
+            }
+
+        namespace
+        sfinae
+            {
+            using ::boost::qvm::operator/;
+            }
+
+        namespace
+        qvm_detail
+            {
+            template <int R,int C>
+            struct div_sm_defined;
+
+            template <>
+            struct
+            div_sm_defined<3,1>
                 {
                 static bool const value=true;
                 };

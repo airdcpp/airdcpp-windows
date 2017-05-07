@@ -823,6 +823,35 @@ boost
             {
             template <int M,int N>
             struct
+            mul_sm_defined
+                {
+                static bool const value=false;
+                };
+            }
+
+        template <class A,class B>
+        BOOST_QVM_INLINE_OPERATIONS
+        typename lazy_enable_if_c<
+            is_scalar<A>::value && is_mat<B>::value &&
+            !qvm_detail::mul_sm_defined<mat_traits<B>::rows,mat_traits<B>::cols>::value,
+            deduce_mat<B> >::type
+        operator*( A a, B const & b )
+            {
+            typedef typename deduce_mat<B>::type R;
+            R r;
+            for( int i=0; i!=mat_traits<B>::rows; ++i )
+                for( int j=0; j!=mat_traits<B>::cols; ++j )
+                    mat_traits<R>::write_element_idx(i,j,r)=a*mat_traits<B>::read_element_idx(i,j,b);
+            return r;
+            }
+
+        ////////////////////////////////////////////////
+
+        namespace
+        qvm_detail
+            {
+            template <int M,int N>
+            struct
             neq_mm_defined
                 {
                 static bool const value=false;
@@ -1067,7 +1096,7 @@ boost
             static
             BOOST_QVM_INLINE_CRITICAL
             scalar_type
-            read_element( this_matrix const & x )
+            read_element( this_matrix const & )
                 {
                 BOOST_QVM_STATIC_ASSERT(Row>=0);
                 BOOST_QVM_STATIC_ASSERT(Row<Rows);
@@ -1079,7 +1108,7 @@ boost
             static
             BOOST_QVM_INLINE_CRITICAL
             scalar_type
-            read_element_idx( int row, int col, this_matrix const & x )
+            read_element_idx( int row, int col, this_matrix const & )
                 {
                 BOOST_QVM_ASSERT(row>=0);
                 BOOST_QVM_ASSERT(row<rows);

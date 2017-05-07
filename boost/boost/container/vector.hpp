@@ -1735,9 +1735,10 @@ class vector
    {
       if (BOOST_LIKELY(this->room_enough())){
          //There is more memory, just construct a new object at the end
-         allocator_traits_type::construct(this->m_holder.alloc(), this->priv_raw_end(), ::boost::forward<Args>(args)...);
+         T* const p = this->priv_raw_end();
+         allocator_traits_type::construct(this->m_holder.alloc(), p, ::boost::forward<Args>(args)...);
          ++this->m_holder.m_size;
-         return *this->priv_raw_end();
+         return *p;
       }
       else{
          typedef container_detail::insert_emplace_proxy<Allocator, T*, Args...> type;
@@ -1793,10 +1794,11 @@ class vector
    BOOST_CONTAINER_FORCEINLINE reference emplace_back(BOOST_MOVE_UREF##N)\
    {\
       if (BOOST_LIKELY(this->room_enough())){\
+         T* const p = this->priv_raw_end();\
          allocator_traits_type::construct (this->m_holder.alloc()\
             , this->priv_raw_end() BOOST_MOVE_I##N BOOST_MOVE_FWD##N);\
          ++this->m_holder.m_size;\
-         return *this->priv_raw_end();\
+         return *p;\
       }\
       else{\
          typedef container_detail::insert_emplace_proxy_arg##N<Allocator, T* BOOST_MOVE_I##N BOOST_MOVE_TARG##N> type;\
@@ -1848,7 +1850,7 @@ class vector
    //! <b>Complexity</b>: Amortized constant time.
    void push_back(T &&x);
    #else
-   BOOST_CONTAINER_FORCEINLINE BOOST_MOVE_CONVERSION_AWARE_CATCH(push_back, T, void, priv_push_back)
+   BOOST_MOVE_CONVERSION_AWARE_CATCH(push_back, T, void, priv_push_back)
    #endif
 
    #if defined(BOOST_CONTAINER_DOXYGEN_INVOKED)
@@ -2255,7 +2257,7 @@ class vector
                boost::uintptr_t const capaddr = boost::uintptr_t(this->priv_raw_begin() + c);
                boost::uintptr_t const aligned_addr = (addr + szt_align_mask) & ~szt_align_mask;
                indexes =  reinterpret_cast<size_type *>(aligned_addr);
-               std::size_t index_capacity = (aligned_addr >= capaddr) ? 0u : (capaddr - addr)/sizeof(size_type);
+               std::size_t index_capacity = (aligned_addr >= capaddr) ? 0u : (capaddr - aligned_addr)/sizeof(size_type);
 
                //Capacity is constant, we're not going to change it
                if(index_capacity < PosCount){
@@ -3120,7 +3122,7 @@ class vector
             }
             else{ //If trivial destructor, we can uninitialized copy + copy in a single uninitialized copy
                ::boost::container::uninitialized_move_alloc_n
-                  (this->m_holder.alloc(), pos, old_finish - pos, new_start + before_plus_new);
+                  (this->m_holder.alloc(), pos, static_cast<size_type>(old_finish - pos), new_start + before_plus_new);
                this->m_holder.m_size = new_size;
                old_values_destroyer.release();
             }

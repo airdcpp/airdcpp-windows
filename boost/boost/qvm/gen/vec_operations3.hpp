@@ -197,6 +197,41 @@ boost
                 };
             }
 
+        template <class A,class B>
+        BOOST_QVM_INLINE_OPERATIONS
+        typename lazy_enable_if_c<
+            is_scalar<A>::value && vec_traits<B>::dim==3,
+            deduce_vec<B> >::type
+        operator*( A a, B const & b )
+            {
+            typedef typename deduce_vec<B>::type R;
+            R r;
+            vec_traits<R>::template write_element<0>(r)=a*vec_traits<B>::template read_element<0>(b);
+            vec_traits<R>::template write_element<1>(r)=a*vec_traits<B>::template read_element<1>(b);
+            vec_traits<R>::template write_element<2>(r)=a*vec_traits<B>::template read_element<2>(b);
+            return r;
+            }
+
+        namespace
+        sfinae
+            {
+            using ::boost::qvm::operator*;
+            }
+
+        namespace
+        qvm_detail
+            {
+            template <int D>
+            struct mul_sv_defined;
+
+            template <>
+            struct
+            mul_sv_defined<3>
+                {
+                static bool const value=true;
+                };
+            }
+
         template <class A,class  B>
         BOOST_QVM_INLINE_OPERATIONS
         typename enable_if_c<

@@ -17,7 +17,7 @@
 #include <boost/metaparse/v1/impl/push_back_c.hpp>
 #include <boost/metaparse/v1/impl/pop_back.hpp>
 #include <boost/metaparse/v1/impl/assert_string_length.hpp>
-
+#include <boost/metaparse/v1/impl/string_at.hpp>
 
 #include <boost/preprocessor/arithmetic/sub.hpp>
 #include <boost/preprocessor/punctuation/comma_if.hpp>
@@ -338,69 +338,17 @@ namespace boost
   }
 }
 
-/*
- * The BOOST_METAPARSE_STRING macro
- */
-
-#if \
-  !defined BOOST_NO_CONSTEXPR && !defined BOOST_NO_CXX11_CONSTEXPR \
-  && !defined BOOST_CONFIG_NO_BOOST_METAPARSE_STRING
-
 #include <boost/metaparse/v1/impl/remove_trailing_no_chars.hpp>
 
-namespace boost
-{
-  namespace metaparse
-  {
-    namespace v1
-    {
-      namespace impl
-      {
-        template <int Len, class T>
-        constexpr int string_at(const T (&s)[Len], int n)
-        {
-          return n >= Len - 1 ? BOOST_NO_CHAR : s[n];
-        }
-      }
-    }
-  }
-}
+#if \
+  defined BOOST_METAPARSE_VARIADIC_STRING \
+  && !defined BOOST_NO_CONSTEXPR && !defined BOOST_NO_CXX11_CONSTEXPR
 
-  #ifdef BOOST_METAPARSE_V1_STRING_N
-  #  error BOOST_METAPARSE_V1_STRING_N already defined
-  #endif
-  #define BOOST_METAPARSE_V1_STRING_N(z, n, s) \
-    boost::metaparse::v1::impl::string_at((s), n)
-
-  #ifdef BOOST_METAPARSE_V1_STRING
-  #  error BOOST_METAPARSE_V1_STRING already defined
-  #endif
-  #define BOOST_METAPARSE_V1_STRING(s) \
-    boost::metaparse::v1::impl::assert_string_length< \
-      sizeof(s) - 1, \
-      boost::metaparse::v1::impl::remove_trailing_no_chars< \
-        boost::metaparse::v1::string< \
-          BOOST_PP_ENUM( \
-            BOOST_METAPARSE_LIMIT_STRING_SIZE, \
-            BOOST_METAPARSE_V1_STRING_N, \
-            s \
-          ) \
-        > \
-      > \
-    >::type
+#  include <boost/metaparse/v1/impl/string.hpp>
 
 #else
 
-  // Include it only when it is needed
-  #include <boost/static_assert.hpp>
-
-  #ifdef BOOST_METAPARSE_V1_STRING
-  #  error BOOST_METAPARSE_V1_STRING already defined
-  #endif
-  #define BOOST_METAPARSE_V1_STRING(s) \
-    BOOST_STATIC_ASSERT_MSG(false, "BOOST_METAPARSE_STRING is not supported")
-
-  #define BOOST_METAPARSE_V1_CONFIG_NO_BOOST_METAPARSE_STRING
+#  define BOOST_METAPARSE_V1_CONFIG_NO_BOOST_METAPARSE_STRING 1
 
 #endif
 

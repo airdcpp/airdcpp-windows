@@ -106,11 +106,12 @@ public:
 	string getApplication() const noexcept;
 	int getTotalHubCount() const noexcept;
 	const string& getCountry() const noexcept;
+	StringList getSupports() const noexcept;
 	bool supports(const string& name) const noexcept;
 	bool isHub() const noexcept { return isClientType(CT_HUB) || isSet("HU"); }
 	bool isOp() const noexcept { return isClientType(CT_OP) || isClientType(CT_SU) || isClientType(CT_OWNER) || isSet("OP"); }
 	bool isRegistered() const noexcept { return isClientType(CT_REGGED) || isSet("RG"); }
-	bool isHidden() const noexcept { return isClientType(CT_HIDDEN) || isSet("HI"); }
+	bool isHidden() const noexcept { return isClientType(CT_HIDDEN) || isClientType(CT_HUB) || isSet("HI"); }
 	bool isBot() const noexcept { return isClientType(CT_BOT) || isSet("BO"); }
 	bool isAway() const noexcept { return (getStatus() & AWAY) || isSet("AW"); }
 	bool isTcpActive(const ClientPtr& = nullptr) const noexcept;

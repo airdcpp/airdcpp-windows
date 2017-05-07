@@ -20,8 +20,8 @@ public:
 	};
 	~PropPageTextStyles() {
 		free(title);
-		if(Util::fileExists(Util::getPath(Util::PATH_THEMES) + "backup.dctheme"))
-			File::deleteFile(Util::getPath(Util::PATH_THEMES) + "backup.dctheme");
+		if(Util::fileExists(WinUtil::getPath(WinUtil::PATH_THEMES) + "backup.dctheme"))
+			File::deleteFile(WinUtil::getPath(WinUtil::PATH_THEMES) + "backup.dctheme");
 	};
 
 	BEGIN_MSG_MAP_EX(PropPageTextStyles)
@@ -116,7 +116,7 @@ private:
 	}
 	virtual void on(SettingsManagerListener::Cancel, int) noexcept {
 		if(!initial)
-			LoadTheme(Util::getPath(Util::PATH_THEMES) + "backup.dctheme", true);
+			LoadTheme(WinUtil::getPath(WinUtil::PATH_THEMES) + "backup.dctheme", true);
 	}
 
 protected:

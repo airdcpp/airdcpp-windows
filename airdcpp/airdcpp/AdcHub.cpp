@@ -136,11 +136,7 @@ OnlineUser* AdcHub::findUser(const CID& aCID) const noexcept {
 
 void AdcHub::getUserList(OnlineUserList& list, bool aListHidden) const noexcept {
 	RLock l(cs);
-	for(const auto& i: users) {
-		if (i.first == AdcCommand::HUB_SID) {
-			continue;
-		}
-
+	for (const auto& i: users) {
 		if (!aListHidden && i.second->isHidden()) {
 			continue;
 		}
@@ -1180,7 +1176,7 @@ bool AdcHub::directSearch(const OnlineUser& user, const SearchPtr& aSearch, stri
 	}
 
 	if (isHubsoftVersionOrOlder("luadch", 2.18)) {
-		error_ = "This feature is blocked by the hubsoft";
+		error_ = "Feature is blocked by hub " + Client::getHubName();
 		return false;
 	}
 

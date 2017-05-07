@@ -1756,10 +1756,12 @@ public: // structors, cont.
 
     template <typename T>
     variant(const T& operand,
-        typename boost::enable_if<mpl::and_<
-            mpl::not_< boost::is_same<T, variant> >,
-            boost::detail::variant::is_variant_constructible_from<const T&, internal_types>
-        > >::type* = 0)
+        typename boost::enable_if<mpl::or_<
+            mpl::and_<
+                mpl::not_< boost::is_same<T, variant> >,
+                boost::detail::variant::is_variant_constructible_from<const T&, internal_types>
+            >, 
+            boost::is_same<T, boost::recursive_variant_> > >::type* = 0)
     {
         convert_construct(operand, 1L);
     }
@@ -1767,11 +1769,13 @@ public: // structors, cont.
     template <typename T>
     variant(
           T& operand
-        , typename boost::enable_if<mpl::and_<
-            mpl::not_< is_const<T> >,
-            mpl::not_< boost::is_same<T, variant> >,
-            boost::detail::variant::is_variant_constructible_from<T&, internal_types>
-        > >::type* = 0
+        , typename boost::enable_if<mpl::or_<
+            mpl::and_<
+                mpl::not_< is_const<T> >,
+                mpl::not_< boost::is_same<T, variant> >,
+                boost::detail::variant::is_variant_constructible_from<T&, internal_types>
+            >,
+            boost::is_same<T, boost::recursive_variant_> > >::type* = 0
         )
     {
         convert_construct(operand, 1L);
@@ -1780,12 +1784,14 @@ public: // structors, cont.
 #ifndef BOOST_NO_CXX11_RVALUE_REFERENCES
     template <class T>
     variant(T&& operand,
-        typename boost::enable_if<mpl::and_<
-            boost::is_rvalue_reference<T&&>,
-            mpl::not_< boost::is_const<T> >,
-            mpl::not_< boost::is_same<T, variant> >,
-            boost::detail::variant::is_variant_constructible_from<T&&, internal_types>
-        > >::type* = 0)
+        typename boost::enable_if<mpl::or_<
+            mpl::and_<
+                boost::is_rvalue_reference<T&&>,
+                mpl::not_< boost::is_const<T> >,
+                mpl::not_< boost::is_same<T, variant> >,
+                boost::detail::variant::is_variant_constructible_from<T&&, internal_types>
+            >,
+            boost::is_same<T, boost::recursive_variant_> > >::type* = 0)
     {
         convert_construct( detail::variant::move(operand), 1L);
     }
