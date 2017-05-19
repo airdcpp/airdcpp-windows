@@ -606,8 +606,8 @@ bool ShareDirectories::addDirectory(const tstring& aPath){
 
 	// Validate path
 	try {
-		ShareManager::getInstance()->validateRootPath(path);
-	} catch (ShareException& e) {
+		ShareManager::getInstance()->validateRootPath(path, false);
+	} catch (const ShareException& e) {
 		WinUtil::showMessageBox(Text::toT(e.getError()), MB_ICONEXCLAMATION);
 		return false;
 	}
