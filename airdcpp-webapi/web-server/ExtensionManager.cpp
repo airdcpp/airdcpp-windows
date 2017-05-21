@@ -56,20 +56,17 @@ namespace webserver {
 	}
 
 	void ExtensionManager::on(WebServerManagerListener::Stopping) noexcept {
-		{
-			RLock l(cs);
-			for (const auto& ext: extensions) {
-				ext->removeListeners();
-				ext->stop();
-			}
+		RLock l(cs);
+		for (const auto& ext: extensions) {
+			ext->removeListeners();
+			ext->stop();
 		}
-
-		WLock l(cs);
-		extensions.clear();
 	}
 
 	void ExtensionManager::on(WebServerManagerListener::Stopped) noexcept {
-
+		WLock l(cs);
+		dcassert(all_of(extensions.begin(), extensions.end(), [](const ExtensionPtr& aExtension) { return !aExtension->getSession(); }));
+		extensions.clear();
 	}
 
 	void ExtensionManager::on(WebServerManagerListener::SocketDisconnected, const WebSocketPtr& aSocket) noexcept {
