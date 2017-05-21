@@ -343,8 +343,13 @@ namespace webserver {
 	ExtensionPtr ExtensionManager::registerRemoteExtension(const SessionPtr& aSession, const json& aPackageJson) {
 		auto ext = std::make_shared<Extension>(aSession, aPackageJson);
 
-		if (getExtension(ext->getName())) {
-			throw Exception("Extension " + ext->getName() + " exists already");
+		auto existing = getExtension(ext->getName());
+		if (existing) {
+			if (existing->isManaged()) {
+				throw Exception("Managed extension with the same name exists already");
+			}
+
+			removeExtension(existing);
 		}
 
 		{
