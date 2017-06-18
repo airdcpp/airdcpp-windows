@@ -186,7 +186,7 @@ public:
 
 	void refreshTree(const string& root, bool aSelectDir);
 
-	void selectItem(const string& name);
+	void selectItem(const string& aPath);
 	
 	LRESULT onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 
@@ -296,7 +296,7 @@ private:
 		int getImageIndex() const;
 		DupeType getDupe() const { return type == DIRECTORY ? dir->getDupe() : file->getDupe(); }
 		const string& getName() const { return type == DIRECTORY ? dir->getName() : file->getName(); }
-		string getPath() const { return type == DIRECTORY ? dir->getPath() : file->getPath(); }
+		string getAdcPath() const { return type == DIRECTORY ? dir->getAdcPath() : file->getAdcPath(); }
 		bool isAdl() const { return type == DIRECTORY ? dir->getAdls() : file->getAdls(); }
 
 		struct NameSort {

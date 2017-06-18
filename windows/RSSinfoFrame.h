@@ -126,7 +126,7 @@ private:
 	public:
 		ItemInfo(const RSSDataPtr& aFeedData) : item(aFeedData) {
 			isRelease = AirUtil::isRelease(aFeedData->getTitle());
-			setDupe(isRelease ? AirUtil::checkDirDupe(aFeedData->getTitle(), 0) : DUPE_NONE);
+			setDupe(isRelease ? AirUtil::checkAdcDirectoryDupe(aFeedData->getTitle(), 0) : DUPE_NONE);
 			isAutosearchDupe = isRelease && AutoSearchManager::getInstance()->getSearchesByString(aFeedData->getTitle()) != AutoSearchList();
 		}
 		~ItemInfo() { }

@@ -67,7 +67,7 @@ namespace webserver {
 		static string getDupeId(DupeType aDupeType) noexcept;
 		static json serializeDupe(DupeType aDupeType, StringList&& aPaths) noexcept;
 		static json serializeFileDupe(DupeType aDupeType, const TTHValue& aTTH) noexcept;
-		static json serializeDirectoryDupe(DupeType aDupeType, const string& aPath) noexcept;
+		static json serializeDirectoryDupe(DupeType aDupeType, const string& aAdcPath) noexcept;
 		static json serializeSlots(int aFree, int aTotal) noexcept;
 
 		static json serializeDirectoryDownload(const DirectoryDownloadPtr& aDownload) noexcept;

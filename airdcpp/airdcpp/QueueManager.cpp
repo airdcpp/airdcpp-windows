@@ -506,6 +506,8 @@ bool QueueManager::hasDownloadedBytes(const string& aTarget) throw(QueueExceptio
 }
 
 QueueItemPtr QueueManager::addList(const HintedUser& aUser, Flags::MaskType aFlags, const string& aInitialDir /* = Util::emptyString */, const BundlePtr& aBundle /*nullptr*/) throw(QueueException, DupeException) {
+	dcassert(!aInitialDir.empty());
+
 	// Pre-checks
 	checkSource(aUser);
 	if (aUser.hint.empty()) {
@@ -514,7 +516,7 @@ QueueItemPtr QueueManager::addList(const HintedUser& aUser, Flags::MaskType aFla
 
 	// Format the target
 	auto target = getListPath(aUser);
-	if((aFlags & QueueItem::FLAG_PARTIAL_LIST) && !aInitialDir.empty()) {
+	if((aFlags & QueueItem::FLAG_PARTIAL_LIST)) {
 		target += ".partial[" + Util::validateFileName(aInitialDir) + "]";
 	}
 
@@ -540,8 +542,10 @@ QueueItemPtr QueueManager::addList(const HintedUser& aUser, Flags::MaskType aFla
 	fire(QueueManagerListener::ItemAdded(), q);
 
 	//connect
-	if(aUser.user->isOnline())
+	if (aUser.user->isOnline()) {
 		ConnectionManager::getInstance()->getDownloadConnection(aUser, (aFlags & QueueItem::FLAG_PARTIAL_LIST) || (aFlags & QueueItem::FLAG_TTHLIST_BUNDLE));
+	}
+
 	return q;
 }
 
@@ -630,7 +634,7 @@ void QueueManager::validateBundleFile(const string& aBundleDir, string& bundleFi
 	if (SETTING(DONT_DL_ALREADY_SHARED) && ShareManager::getInstance()->isFileShared(aTTH)) {
 		auto paths = ShareManager::getInstance()->getRealPaths(aTTH);
 		if (!paths.empty()) {
-			auto path = AirUtil::subtractCommonDirs(aBundleDir, Util::getFilePath(paths.front()), PATH_SEPARATOR);
+			auto path = AirUtil::subtractCommonDirectories(aBundleDir, Util::getFilePath(paths.front()));
 			throw DupeException(STRING_F(TTH_ALREADY_SHARED, path));
 		}
 	}
@@ -640,7 +644,7 @@ void QueueManager::validateBundleFile(const string& aBundleDir, string& bundleFi
 		RLock l(cs);
 		auto q = fileQueue.getQueuedFile(aTTH);
 		if (q && q->getTarget() != aBundleDir + bundleFile_) {
-			auto path = AirUtil::subtractCommonDirs(aBundleDir, q->getFilePath(), PATH_SEPARATOR);
+			auto path = AirUtil::subtractCommonDirectories(aBundleDir, q->getFilePath());
 			throw DupeException(STRING_F(FILE_ALREADY_QUEUED, path));
 		}
 	}
@@ -2651,7 +2655,7 @@ void QueueManager::on(SearchManagerListener::SR, const SearchResultPtr& sr) noex
 		{
 			WLock l(cs);
 			auto& rl = searchResults[selQI->getTarget()];
-			if (boost::find_if(rl, [&sr](const SearchResultPtr& aSR) { return aSR->getUser() == sr->getUser() && aSR->getPath() == sr->getPath(); }) != rl.end()) {
+			if (boost::find_if(rl, [&sr](const SearchResultPtr& aSR) { return aSR->getUser() == sr->getUser() && aSR->getAdcPath() == sr->getAdcPath(); }) != rl.end()) {
 				//don't add the same result multiple times, makes the counting more reliable
 				return;
 			}
@@ -2695,7 +2699,7 @@ void QueueManager::matchBundle(QueueItemPtr& aQI, const SearchResultPtr& aResult
 
 	auto isNmdc = aResult->getUser().user->isNMDC();
 
-	auto path = AirUtil::getMatchPath(aResult->getPath(), aQI->getTarget(), aQI->getBundle()->getTarget(), isNmdc);
+	auto path = AirUtil::getAdcMatchPath(aResult->getAdcPath(), aQI->getTarget(), aQI->getBundle()->getTarget(), isNmdc);
 	if (!path.empty()) {
 		if (isNmdc) {
 			// A NMDC directory bundle, just add the sources without matching
@@ -2722,7 +2726,7 @@ void QueueManager::matchBundle(QueueItemPtr& aQI, const SearchResultPtr& aResult
 		// No path to match, use full filelist
 		dcassert(isNmdc);
 		try {
-			addList(aResult->getUser(), QueueItem::FLAG_MATCH_QUEUE, Util::emptyString, aQI->getBundle());
+			addList(aResult->getUser(), QueueItem::FLAG_MATCH_QUEUE, ADC_ROOT_STR, aQI->getBundle());
 		} catch(const Exception&) {
 			// ...
 		}
@@ -3193,9 +3197,9 @@ bool QueueManager::handlePartialSearch(const UserPtr& aUser, const TTHValue& tth
 	return !_outPartsInfo.empty();
 }
 
-StringList QueueManager::getNmdcDirPaths(const string& aDirName) const noexcept {
+StringList QueueManager::getAdcDirectoryPaths(const string& aDirName) const noexcept {
 	RLock l(cs);
-	return bundleQueue.getNmdcDirPaths(aDirName);
+	return bundleQueue.getAdcDirectoryPaths(aDirName);
 }
 
 void QueueManager::getBundlePaths(OrderedStringSet& retBundles) const noexcept {
@@ -3377,9 +3381,9 @@ void QueueManager::readdBundle(BundlePtr& aBundle) noexcept {
 	LogManager::getInstance()->message(STRING_F(BUNDLE_READDED, aBundle->getName().c_str()), LogMessage::SEV_INFO);
 }
 
-DupeType QueueManager::isNmdcDirQueued(const string& aDir, int64_t aSize) const noexcept{
+DupeType QueueManager::isAdcDirectoryQueued(const string& aDir, int64_t aSize) const noexcept{
 	RLock l(cs);
-	return bundleQueue.isNmdcDirQueued(aDir, aSize);
+	return bundleQueue.isAdcDirectoryQueued(aDir, aSize);
 }
 
 BundlePtr QueueManager::findDirectoryBundle(const string& aPath) const noexcept {

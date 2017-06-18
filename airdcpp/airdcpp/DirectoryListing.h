@@ -67,8 +67,8 @@ public:
 		~File() { }
 
 
-		string getPath() const noexcept {
-			return parent->getPath() + name;
+		string getAdcPath() const noexcept {
+			return parent->getAdcPath() + name;
 		}
 
 		GETSET(string, name, Name);
@@ -122,7 +122,7 @@ public:
 		
 		int64_t getFilesSize() const noexcept;
 
-		string getPath() const noexcept;
+		string getAdcPath() const noexcept;
 		uint8_t checkShareDupes() noexcept;
 		
 		IGETSET(int64_t, partialSize, PartialSize, 0);
@@ -137,7 +137,8 @@ public:
 		void setComplete() noexcept { type = TYPE_NORMAL; }
 		bool getAdls() const noexcept { return type == TYPE_ADLS; }
 
-		void toBundleInfoList(const string& aTarget, BundleDirectoryItemInfo::List& aFiles) const noexcept;
+		// Create recursive bundle file info listing with relative paths
+		BundleDirectoryItemInfo::List toBundleInfoList() const noexcept;
 
 		const string& getName() const noexcept {
 			return name;
@@ -156,6 +157,8 @@ public:
 			contentInfo.directories = aContentInfo.directories;
 		}
 	protected:
+		void toBundleInfoList(const string& aTarget, BundleDirectoryItemInfo::List& aFiles) const noexcept;
+
 		Directory(Directory* aParent, const string& aName, DirType aType, time_t aUpdateDate, bool aCheckDupe, const DirectoryContentInfo& aContentInfo, const string& aSize, time_t aRemoteDate);
 
 		void getContentInfo(size_t& directories_, size_t& files_, bool aCountAdls) const noexcept;
@@ -167,8 +170,8 @@ public:
 	class AdlDirectory : public Directory {
 	public:
 		typedef shared_ptr<AdlDirectory> Ptr;
-		GETSET(string, fullPath, FullPath);
-		static Ptr create(const string& aFullPath, Directory* aParent, const string& aName);
+		GETSET(string, fullAdcPath, FullAdcPath);
+		static Ptr create(const string& aFullAdcPath, Directory* aParent, const string& aName);
 	private:
 		AdlDirectory(const string& aFullPath, Directory* aParent, const string& aName);
 	};

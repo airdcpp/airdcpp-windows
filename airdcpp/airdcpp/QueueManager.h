@@ -85,7 +85,7 @@ public:
 
 	// Add a user's filelist to the queue.
 	// New managed filelist sessions should be created via DirectoryListingManager instead
-	QueueItemPtr addList(const HintedUser& aUser, Flags::MaskType aFlags, const string& aInitialDir = Util::emptyString, const BundlePtr& aBundle = nullptr) throw(QueueException, DupeException);
+	QueueItemPtr addList(const HintedUser& aUser, Flags::MaskType aFlags, const string& aInitialDir = ADC_ROOT_STR, const BundlePtr& aBundle = nullptr) throw(QueueException, DupeException);
 
 	/** Add an item that is opened in the client or with an external program */
 	/** Files that are viewed in the client should be added from ViewFileManager */
@@ -347,15 +347,15 @@ public:
 	string getBundlePath(QueueToken aBundleToken) const noexcept;
 
 	// Return dupe information about the directory
-	DupeType isNmdcDirQueued(const string& aDir, int64_t aSize) const noexcept;
+	DupeType isAdcDirectoryQueued(const string& aDir, int64_t aSize) const noexcept;
 
 	// Get bundle by (exact) real path
 	BundlePtr findDirectoryBundle(const string& aPath) const noexcept;
 
 	// Get all real paths of the directory name
-	// You may also give a path in NMDC format and the relevant 
+	// You may also give a path in ADC format and the relevant 
 	// directory (+ possible subdirectories) are detected automatically
-	StringList getNmdcDirPaths(const string& aDir) const noexcept;
+	StringList getAdcDirectoryPaths(const string& aDir) const noexcept;
 
 	// Get the paths of all bundles
 	void getBundlePaths(OrderedStringSet& bundles) const noexcept;
@@ -450,7 +450,7 @@ private:
 
 	/** Sanity check for the target filename */
 	//static string checkTargetPath(const string& aTarget) throw(QueueException, FileException);
-	static string checkTarget(const string& toValidate, const string& aParentDir=Util::emptyString) throw(QueueException, FileException);
+	static string checkTarget(const string& toValidate, const string& aParentDir = Util::emptyString) throw(QueueException, FileException);
 	static string formatBundleTarget(const string& aPath, time_t aRemoteDate) noexcept;
 
 	// Add a source to an existing queue item

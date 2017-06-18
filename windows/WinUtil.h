@@ -258,10 +258,10 @@ public:
 	static void search(const tstring& aSearch, bool searchDirectory = false);
 	static void SetIcon(HWND hWnd, int aDefault, bool big = false);
 
-	static void searchSite(const WebShortcut* ws, const string& strSearchString, bool getReleaseDir = true);
+	static void searchSite(const WebShortcut* ws, const string& aAdcSearchPath, bool aGetReleaseDir = true);
 
-	static void appendSearchMenu(OMenu& aParent, function<void (const WebShortcut* ws)> f, bool appendTitle = true);
-	static void appendSearchMenu(OMenu& aParent, const string& aPath, bool getReleaseDir = true, bool appendTitle = true);
+	static void appendSearchMenu(OMenu& aParent, function<void (const WebShortcut* ws)> f, bool aAppendTitle = true);
+	static void appendSearchMenu(OMenu& aParent, const string& aAdcPath, bool aGetReleaseDir = true, bool aAppendTitle = true);
 
 	static void loadReBarSettings(HWND bar);
 	static void saveReBarSettings(HWND bar);
@@ -533,7 +533,7 @@ public:
 	static tstring formatFolderContent(const DirectoryContentInfo& aContentInfo);
 	static tstring formatFileType(const string& aFileName);
 
-	static void findNfo(const string& aPath, const HintedUser& aUser) noexcept;
+	static void findNfo(const string& aAdcPath, const HintedUser& aUser) noexcept;
 	static bool allowGetFullList(const HintedUser& aUser) noexcept;
 
 private:

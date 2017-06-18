@@ -111,7 +111,7 @@ public:
 			HTREEITEM sel = GetSelectedItem();
 			bool childSelected = false;
 			if (sel) {
-				childSelected = AirUtil::isSubNmdc(((T*)GetItemData(sel))->getPath(), ((T*)pNMTreeView->itemNew.lParam)->getPath());
+				childSelected = AirUtil::isSubAdc(((T*)GetItemData(sel))->getAdcPath(), ((T*)pNMTreeView->itemNew.lParam)->getAdcPath());
 				if (childSelected) {
 					//it would be selected anyway but without any notification message
 					SelectItem(pNMTreeView->itemNew.hItem);
@@ -125,7 +125,7 @@ public:
 			ChildrenState state = parent->getChildrenState(curDir);
 			/* now create the children */
 			if (state == CHILDREN_CREATED || state == CHILDREN_PART_PENDING) {
-				parent->insertTreeItems(curDir->getPath(), pNMTreeView->itemNew.hItem);
+				parent->insertTreeItems(curDir->getAdcPath(), pNMTreeView->itemNew.hItem);
 			} else if (state == CHILDREN_ALL_PENDING) {
 				//items aren't ready, tell the parent to load them
 				parent->expandDir(curDir, false);
@@ -173,21 +173,44 @@ public:
     	InsertItem(&tvs) ;
 	}
 
-	HTREEITEM findItem(HTREEITEM ht, const tstring& name, bool first = true) {
-		auto i = name.find('\\');
-		if(i == string::npos) {
+	void updateItemImage(const T* item) { 
+		HTREEITEM ht = findItem(GetRootItem(), item->getAdcPath());
+		if (ht) {
+			updateItemImage(ht);
+		}
+	}
+
+	void updateItemImage(HTREEITEM ht) {
+		SetItemImage(ht, I_IMAGECALLBACK, I_IMAGECALLBACK);
+		RedrawWindow();
+	}
+
+	HTREEITEM findItemByPath(HTREEITEM ht, const tstring& aPath) {
+		return findItem(ht, aPath, true);
+	}
+
+	HTREEITEM findItemByName(HTREEITEM ht, const tstring& aPath) {
+		return findItem(ht, _T(ADC_SEPARATOR) + aPath + _T(ADC_SEPARATOR), true);
+	}
+private:
+	HTREEITEM findItem(HTREEITEM ht, const tstring& aPath, bool aIsFirst) {
+		dcassert(!aPath.empty() && aPath.front() == ADC_SEPARATOR);
+		dcassert(aPath.back() == ADC_SEPARATOR);
+
+		auto i = aPath.find(ADC_SEPARATOR, 1);
+		if (i == string::npos) {
 			return ht;
 		}
-	
-		for(HTREEITEM child = GetChildItem(ht); child != NULL; child = GetNextSiblingItem(child)) {
+
+		for (HTREEITEM child = GetChildItem(ht); child != NULL; child = GetNextSiblingItem(child)) {
 			T* d = (T*)GetItemData(child);
-			if(compare(d->getNameW(), name.substr(0, i)) == 0) {
-				return findItem(child, name.substr(i+1));
+			if (compare(d->getNameW(), aPath.substr(1, i - 1)) == 0) {
+				return findItem(child, aPath.substr(i), true);
 			}
 		}
 
 		//have we created it yet?
-		if (first && hasChildren(ht)) {
+		if (aIsFirst && hasChildren(ht)) {
 			bool expanded = IsExpanded(ht);
 			if (expanded) {
 				// refresh the content
@@ -196,7 +219,7 @@ public:
 
 			Expand(ht, TVE_EXPAND);
 
-			auto ret = findItem(ht, name, false);
+			auto ret = findItem(ht, aPath, false);
 
 			if (!expanded) {
 				//leave it as it was...
@@ -208,18 +231,6 @@ public:
 		return nullptr;
 	}
 
-	void updateItemImage(const T* item) { 
-		HTREEITEM ht = findItem(GetRootItem(), item->getPath());
-		if (ht) {
-			updateItemImage(ht);
-		}
-	}
-
-	void updateItemImage(HTREEITEM ht) {
-		SetItemImage(ht, I_IMAGECALLBACK, I_IMAGECALLBACK);
-		RedrawWindow();
-	}
-private:
 	PT* parent;
 };
 

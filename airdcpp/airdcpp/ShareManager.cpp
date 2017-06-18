@@ -198,9 +198,9 @@ int64_t ShareManager::Directory::getTotalSize() const noexcept {
 	return tmp;
 }
 
-string ShareManager::Directory::getADCPath() const noexcept {
+string ShareManager::Directory::getAdcPath() const noexcept {
 	if (parent) {
-		return parent->getADCPath() + realName.getNormal() + ADC_SEPARATOR;
+		return parent->getAdcPath() + realName.getNormal() + ADC_SEPARATOR;
 	}
 
 	if (!root) {
@@ -372,7 +372,7 @@ string ShareManager::toVirtual(const TTHValue& tth, ProfileToken aProfile) const
 
 	auto i = tthIndex.find(const_cast<TTHValue*>(&tth)); 
 	if (i != tthIndex.end()) {
-		return i->second->getADCPath();
+		return i->second->getAdcPath();
 	}
 
 	//nothing found throw;
@@ -508,7 +508,7 @@ AdcCommand ShareManager::getFileInfo(const string& aFile, ProfileToken aProfile)
 	if(i != tthIndex.end()) {
 		const Directory::File* f = i->second;
 		AdcCommand cmd(AdcCommand::CMD_RES);
-		cmd.addParam("FN", f->getADCPath());
+		cmd.addParam("FN", f->getAdcPath());
 		cmd.addParam("SI", Util::toString(f->getSize()));
 		cmd.addParam("TR", f->getTTH().toBase32());
 		return cmd;
@@ -1269,23 +1269,23 @@ int64_t ShareManager::getTotalShareSize(ProfileToken aProfile) const noexcept {
 	return ret;
 }
 
-bool ShareManager::isNmdcDirShared(const string& aDir) const noexcept{
+bool ShareManager::isAdcDirectoryShared(const string& aAdcPath) const noexcept{
 	Directory::List dirs;
 
 	{
 		RLock l(cs);
-		getDirsByName(aDir, dirs);
+		getDirectoriesByAdcName(aAdcPath, dirs);
 	}
 
 	return !dirs.empty();
 }
 
-DupeType ShareManager::isNmdcDirShared(const string& aDir, int64_t aSize) const noexcept{
+DupeType ShareManager::isAdcDirectoryShared(const string& aAdcPath, int64_t aSize) const noexcept{
 	Directory::List dirs;
 
 	{
 		RLock l(cs);
-		getDirsByName(aDir, dirs);
+		getDirectoriesByAdcName(aAdcPath, dirs);
 	}
 
 	if (dirs.empty())
@@ -1294,13 +1294,13 @@ DupeType ShareManager::isNmdcDirShared(const string& aDir, int64_t aSize) const 
 	return dirs.front()->getTotalSize() == aSize ? DUPE_SHARE_FULL : DUPE_SHARE_PARTIAL;
 }
 
-StringList ShareManager::getNmdcDirPaths(const string& aDir) const noexcept{
+StringList ShareManager::getAdcDirectoryPaths(const string& aAdcPath) const noexcept{
 	StringList ret;
 	Directory::List dirs;
 
 	{
 		RLock l(cs);
-		getDirsByName(aDir, dirs);
+		getDirectoriesByAdcName(aAdcPath, dirs);
 	}
 
 	for (const auto& dir : dirs) {
@@ -1310,12 +1310,12 @@ StringList ShareManager::getNmdcDirPaths(const string& aDir) const noexcept{
 	return ret;
 }
 
-void ShareManager::getDirsByName(const string& aPath, Directory::List& dirs_) const noexcept {
-	if (aPath.size() < 3)
+void ShareManager::getDirectoriesByAdcName(const string& aAdcPath, Directory::List& dirs_) const noexcept {
+	if (aAdcPath.size() < 3)
 		return;
 
 	// get the last meaningful directory to look up
-	auto nameInfo = AirUtil::getDirName(aPath, NMDC_SEPARATOR);
+	auto nameInfo = AirUtil::getAdcDirectoryName(aAdcPath);
 
 	auto nameLower = Text::toLower(nameInfo.first);
 	const auto directories = lowerDirNameMap.equal_range(&nameLower);
@@ -1325,7 +1325,7 @@ void ShareManager::getDirsByName(const string& aPath, Directory::List& dirs_) co
 	for (auto s = directories.first; s != directories.second; ++s) {
 		if (nameInfo.second != string::npos) {
 			// confirm that we have the subdirectory as well
-			auto dir = s->second->findDirectoryByPath(aPath.substr(nameInfo.second), NMDC_SEPARATOR);
+			auto dir = s->second->findDirectoryByPath(aAdcPath.substr(nameInfo.second), ADC_SEPARATOR);
 			if (dir) {
 				dirs_.push_back(dir);
 			}
@@ -1523,7 +1523,7 @@ void ShareManager::validateDirectoryRecursiveDebug(const Directory::Ptr& aDir, O
 
 	{
 		Directory::List dirs;
-		getDirsByName(Util::toNmdcFile(aDir->getADCPath()), dirs);
+		getDirectoriesByAdcName(aDir->getAdcPath(), dirs);
 
 		dcassert(count_if(dirs.begin(), dirs.end(), [&](const Directory::Ptr& d) {
 			return d->getRealPath() == aDir->getRealPath();
@@ -2687,11 +2687,11 @@ void ShareManager::Directory::toTTHList(OutputStream& tthList, string& tmp2, boo
 	}
 }
 
-bool ShareManager::addDirResult(const Directory* aDir, SearchResultList& aResults, const OptionalProfileToken& aProfile, SearchQuery& srch) const noexcept {
-	const string path = srch.addParents ? Util::getNmdcParentDir(aDir->getNmdcPath()) : aDir->getNmdcPath();
+bool ShareManager::addDirectoryResult(const Directory* aDir, SearchResultList& aResults, const OptionalProfileToken& aProfile, SearchQuery& srch) const noexcept {
+	const string path = srch.addParents ? Util::getAdcParentDir(aDir->getAdcPath()) : aDir->getAdcPath();
 
 	// Have we added it already?
-	auto p = find_if(aResults, [&path](const SearchResultPtr& sr) { return sr->getPath() == path; });
+	auto p = find_if(aResults, [&path](const SearchResultPtr& sr) { return sr->getAdcPath() == path; });
 	if (p != aResults.end())
 		return false;
 
@@ -2699,7 +2699,7 @@ bool ShareManager::addDirResult(const Directory* aDir, SearchResultList& aResult
 	Directory::List result;
 
 	try {
-		findVirtuals<OptionalProfileToken>(Util::toAdcFile(path), aProfile, result);
+		findVirtuals<OptionalProfileToken>(path, aProfile, result);
 	} catch(...) {
 		dcassert(path.empty());
 	}
@@ -2722,13 +2722,13 @@ bool ShareManager::addDirResult(const Directory* aDir, SearchResultList& aResult
 	return false;
 }
 
-void ShareManager::Directory::File::addSR(SearchResultList& aResults, bool addParent) const noexcept {
-	if (addParent) {
-		auto sr = make_shared<SearchResult>(parent->getNmdcPath());
+void ShareManager::Directory::File::addSR(SearchResultList& aResults, bool aAddParent) const noexcept {
+	if (aAddParent) {
+		auto sr = make_shared<SearchResult>(parent->getAdcPath());
 		aResults.push_back(sr);
 	} else {
 		auto sr = make_shared<SearchResult>(SearchResult::TYPE_FILE,
-			size, getNmdcPath(), getTTH(), getLastWrite(), DirectoryContentInfo());
+			size, getAdcPath(), getTTH(), getLastWrite(), DirectoryContentInfo());
 
 		aResults.push_back(sr);
 	}
@@ -2834,7 +2834,7 @@ void ShareManager::adcSearch(SearchResultList& results, SearchQuery& srch, const
 		tthSearches++;
 		const auto i = tthIndex.equal_range(const_cast<TTHValue*>(&(*srch.root)));
 		for(auto& f: i | map_values) {
-			if (f->hasProfile(aProfile) && AirUtil::isParentOrExactAdc(aDir, f->getADCPath())) {
+			if (f->hasProfile(aProfile) && AirUtil::isParentOrExactAdc(aDir, f->getAdcPath())) {
 				f->addSR(results, srch.addParents);
 				return;
 			}
@@ -2844,7 +2844,7 @@ void ShareManager::adcSearch(SearchResultList& results, SearchQuery& srch, const
 		for(const auto& f: files | map_values) {
 			if(f.key.empty() || (f.key == cid.toBase32())) { // if no key is set, it means its a hub share.
 				//TODO: fix the date?
-				auto sr = make_shared<SearchResult>(SearchResult::TYPE_FILE, f.size, "tmp\\" + Util::getFileName(f.path), *srch.root, 0, DirectoryContentInfo());
+				auto sr = make_shared<SearchResult>(SearchResult::TYPE_FILE, f.size, "/tmp/" + Util::getFileName(f.path), *srch.root, 0, DirectoryContentInfo());
 				results.push_back(sr);
 			}
 		}
@@ -2890,7 +2890,7 @@ void ShareManager::adcSearch(SearchResultList& results, SearchQuery& srch, const
 	for (auto i = resultInfos.begin(); (i != resultInfos.end()) && (results.size() < srch.maxResults); ++i) {
 		auto& info = *i;
 		if (info.getType() == Directory::SearchResultInfo::DIRECTORY) {
-			addDirResult(info.directory, results, aProfile, srch);
+			addDirectoryResult(info.directory, results, aProfile, srch);
 		} else {
 			info.file->addSR(results, srch.addParents);
 		}

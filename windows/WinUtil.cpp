@@ -1674,17 +1674,17 @@ void WinUtil::appendSearchMenu(OMenu& aParent, function<void (const WebShortcut*
 	}
 }
 
-void WinUtil::appendSearchMenu(OMenu& aParent, const string& aPath, bool getReleaseDir /*true*/, bool appendTitle /*true*/) {
-	appendSearchMenu(aParent, [=](const WebShortcut* ws) { searchSite(ws, aPath, getReleaseDir); }, appendTitle);
+void WinUtil::appendSearchMenu(OMenu& aParent, const string& aAdcPath, bool aGetReleaseDir /*true*/, bool aAppendTitle /*true*/) {
+	appendSearchMenu(aParent, [=](const WebShortcut* ws) { searchSite(ws, aAdcPath, aGetReleaseDir); }, aAppendTitle);
 }
 
-void WinUtil::searchSite(const WebShortcut* ws, const string& aSearchTerm, bool getReleaseDir) {
+void WinUtil::searchSite(const WebShortcut* ws, const string& aAdcSearchPath, bool getReleaseDir) {
 	if(!ws)
 		return;
 
-	auto searchTerm = getReleaseDir ? AirUtil::getNmdcReleaseDir(aSearchTerm, true) : Util::getLastDir(aSearchTerm);
+	auto searchTerm = getReleaseDir ? AirUtil::getAdcReleaseDir(aAdcSearchPath, true) : Util::getAdcLastDir(aAdcSearchPath);
 
-	if(ws->clean && !searchTerm.empty()) {
+	if(ws->clean && !aAdcSearchPath.empty()) {
 		searchTerm = AirUtil::getTitle(searchTerm);
 	}
 	
@@ -2290,20 +2290,20 @@ tstring WinUtil::formatFileType(const string& aFileName) {
 	return Text::toT(type);
 }
 
-void WinUtil::findNfo(const string& aPath, const HintedUser& aUser) noexcept {
+void WinUtil::findNfo(const string& aAdcPath, const HintedUser& aUser) noexcept {
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		SearchInstance searchInstance;
 
 		auto search = make_shared<Search>(Priority::HIGH, Util::toString(Util::rand()));
 		search->maxResults = 1;
-		search->path = Util::toAdcFile(aPath);
+		search->path = aAdcPath;
 		search->exts = { ".nfo" };
 		search->size = 256 * 1024;
 		search->sizeType = Search::SIZE_ATMOST;
 
 		string error;
 		if (!searchInstance.userSearch(aUser, search, error)) {
-			MainFrame::getMainFrame()->ShowPopup(Text::toT(error), Text::toT(Util::getLastDir(aPath)), NIIF_ERROR, true);
+			MainFrame::getMainFrame()->ShowPopup(Text::toT(error), Text::toT(Util::getAdcLastDir(aAdcPath)), NIIF_ERROR, true);
 			return;
 		}
 
@@ -2318,7 +2318,7 @@ void WinUtil::findNfo(const string& aPath, const HintedUser& aUser) noexcept {
 			auto result = searchInstance.getResultList().front();
 			ViewFileManager::getInstance()->addUserFileNotify(result->getFileName(), result->getSize(), result->getTTH(), aUser, true);
 		} else {
-			MainFrame::getMainFrame()->ShowPopup(TSTRING(NO_NFO_FOUND), Text::toT(Util::getLastDir(aPath)), NIIF_INFO, true);
+			MainFrame::getMainFrame()->ShowPopup(TSTRING(NO_NFO_FOUND), Text::toT(Util::getAdcLastDir(aAdcPath)), NIIF_INFO, true);
 		}
 	});
 }

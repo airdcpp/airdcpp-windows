@@ -55,7 +55,7 @@ RichTextBox::ChatLink::ChatLink(const string& aUrl, LinkType aLinkType, const Us
 
 DupeType RichTextBox::ChatLink::updateDupeType(const UserPtr& aUser) {
 	if (type == TYPE_RELEASE) {
-		dupe = AirUtil::checkDirDupe(url, 0);
+		dupe = AirUtil::checkAdcDirectoryDupe(url, 0);
 	} else if (type == TYPE_MAGNET) {
 		Magnet m = Magnet(url);
 		dupe = m.getDupeType();
@@ -1279,7 +1279,7 @@ void RichTextBox::handleOpenFolder() {
 	StringList paths;
 	try{
 		if (isRelease) {
-			paths = AirUtil::getDirDupePaths(dupeType, Text::fromT(selectedWord));
+			paths = AirUtil::getAdcDirectoryDupePaths(dupeType, Text::fromT(selectedWord));
 		} else if (isPath) {
 			paths.push_back(Text::fromT(Util::getFilePath(selectedWord)));
 		} else {
@@ -1300,7 +1300,7 @@ void RichTextBox::handleDownload(const string& aTarget, Priority p, bool aIsRele
 	if (!aIsRelease) {
 		auto u = move(getMagnetSource());
 		Magnet m = Magnet(Text::fromT(selectedWord));
-		if (pmUser && ShareManager::getInstance()->isNmdcDirShared(aTarget, m.fsize) > 0 &&
+		if (pmUser && ShareManager::getInstance()->isAdcDirectoryShared(aTarget, m.fsize) > 0 &&
 			!WinUtil::showQuestionBox(TSTRING_F(PM_MAGNET_SHARED_WARNING, Text::toT(Util::getFilePath(aTarget))), MB_ICONQUESTION)) {
 				return;
 		}

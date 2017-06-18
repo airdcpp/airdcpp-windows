@@ -134,10 +134,10 @@ public:
 	// Check if a directory is shared
 	// You may also give a path in NMDC format and the relevant 
 	// directory (+ possible subdirectories) are detected automatically
-	bool isNmdcDirShared(const string& aDir) const noexcept;
+	bool isAdcDirectoryShared(const string& aAdcPath) const noexcept;
 
 	// Mostly for dupe check with size comparison (partial/exact dupe)
-	DupeType isNmdcDirShared(const string& aPath, int64_t aSize) const noexcept;
+	DupeType isAdcDirectoryShared(const string& aAdcPath, int64_t aSize) const noexcept;
 
 	bool isFileShared(const TTHValue& aTTH) const noexcept;
 	bool isFileShared(const TTHValue& aTTH, ProfileToken aProfile) const noexcept;
@@ -151,7 +151,7 @@ public:
 	void validatePath(const string& aPath, bool aSkipQueueCheck) const;
 
 	// Returns the dupe paths by directory name/NMDC path
-	StringList getNmdcDirPaths(const string& aDir) const noexcept;
+	StringList getAdcDirectoryPaths(const string& aAdcPath) const noexcept;
 
 	GroupedDirectoryMap getGroupedDirectories() const noexcept;
 	MemoryInputStream* generatePartialList(const string& dir, bool aRecursive, const OptionalProfileToken& aProfile) const noexcept;
@@ -387,7 +387,7 @@ private:
 			File(DualString&& aName, const Directory::Ptr& aParent, const HashedFile& aFileInfo);
 			~File();
 		
-			inline string getADCPath() const noexcept{ return parent->getADCPath() + name.getNormal(); }
+			inline string getAdcPath() const noexcept{ return parent->getAdcPath() + name.getNormal(); }
 			inline string getNmdcPath() const noexcept{ return parent->getNmdcPath() + name.getNormal(); }
 			inline string getRealPath() const noexcept { return parent->getRealPath(name.getNormal()); }
 			inline bool hasProfile(const OptionalProfileToken& aProfile) const noexcept { return parent->hasProfile(aProfile); }
@@ -462,7 +462,7 @@ private:
 			HasRootProfile& operator=(const HasRootProfile&) = delete;
 		};
 
-		string getADCPath() const noexcept;
+		string getAdcPath() const noexcept;
 		string getVirtualName() const noexcept;
 		const string& getVirtualNameLower() const noexcept;
 		string getNmdcPath() const noexcept; 
@@ -562,8 +562,8 @@ private:
 
 	void addAsyncTask(AsyncF aF) noexcept;
 
-	// Returns the dupe directories by directory name/NMDC path
-	void getDirsByName(const string& aPath, Directory::List& dirs_) const noexcept;
+	// Returns the dupe directories by directory name/ADC path
+	void getDirectoriesByAdcName(const string& aAdcPath, Directory::List& dirs_) const noexcept;
 
 	friend class Singleton<ShareManager>;
 
@@ -582,7 +582,7 @@ private:
 		int refreshOptions;
 	};
 
-	bool addDirResult(const Directory* aDir, SearchResultList& aResults, const OptionalProfileToken& aProfile, SearchQuery& srch) const noexcept;
+	bool addDirectoryResult(const Directory* aDir, SearchResultList& aResults, const OptionalProfileToken& aProfile, SearchQuery& srch) const noexcept;
 
 	//RootDirectory::Map rootDirectories;
 
