@@ -115,7 +115,7 @@ bool DirectoryListingFrame::parseWindowParams(StringMap& params) {
 
 		bool partial = Util::toBool(Util::toInt(params["partial"]));
 		string dir = params["dir"];
-		if (!dir.empty() && dir.front() != ADC_SEPARATOR) {
+		if (dir.empty() || dir.front() != ADC_SEPARATOR) {
 			// Migrate NMDC paths from older versions
 			dir = Util::toAdcFile(dir);
 		}
