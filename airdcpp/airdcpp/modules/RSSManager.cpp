@@ -358,7 +358,7 @@ public:
 			const string& token = getAttrib(attribs, "Token", 1);
 			aFeed = RSSManager::getInstance()->getFeedByToken(Util::toInt(token));
 			if (!aFeed)
-				throw(Exception("No Feed associated with data"));
+				throw Exception("No Feed associated with data");
 			
 		} else if (aName == "item") {
 			const string& title = getAttrib(attribs, "title", 0);

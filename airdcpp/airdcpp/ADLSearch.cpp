@@ -562,7 +562,7 @@ void ADLSearchManager::FinalizeDestinationDirectories(DestDirList& destDirs, Dir
 	}
 }
 
-void ADLSearchManager::matchListing(DirectoryListing& aDirList) throw(AbortException) {
+void ADLSearchManager::matchListing(DirectoryListing& aDirList) {
 	running++;
 	ScopedFunctor([&] { running--; });
 
@@ -579,7 +579,7 @@ void ADLSearchManager::matchListing(DirectoryListing& aDirList) throw(AbortExcep
 	FinalizeDestinationDirectories(destDirs, root);
 }
 
-void ADLSearchManager::matchRecurse(DestDirList &aDestList, const DirectoryListing::Directory::Ptr& aDir, string &aPath, DirectoryListing& aDirList) throw(AbortException) {
+void ADLSearchManager::matchRecurse(DestDirList &aDestList, const DirectoryListing::Directory::Ptr& aDir, string &aPath, DirectoryListing& aDirList) {
 	if (aDirList.getClosing()) {
 		throw AbortException();
 	}

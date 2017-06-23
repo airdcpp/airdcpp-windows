@@ -66,22 +66,27 @@ public:
 	}
 
 	// Validate that the new root can be added in share (sub/parent/existing directory matching)
-	void validateRootPath(const string& aRealPath, bool aMatchCurrentRoots = true) const throw(ShareException);
+	// Throws ShareException
+	void validateRootPath(const string& aRealPath, bool aMatchCurrentRoots = true) const;
 
 	// Returns virtual path of a TTH
-	string toVirtual(const TTHValue& aTTH, ProfileToken aProfile) const throw(ShareException);
+	// Throws ShareException
+	string toVirtual(const TTHValue& aTTH, ProfileToken aProfile) const;
 
 	// Returns size and file name of a filelist
 	// virtualFile = name requested by the other user (Transfer::USER_LIST_NAME_BZ or Transfer::USER_LIST_NAME)
-	pair<int64_t, string> getFileListInfo(const string& virtualFile, ProfileToken aProfile) throw(ShareException);
+	// Throws ShareException
+	pair<int64_t, string> getFileListInfo(const string& virtualFile, ProfileToken aProfile);
 
 	// Get real path and size for a virtual path
 	// noAccess_ will be set to true if the file is availabe but not in the supplied profiles
-	void toRealWithSize(const string& virtualFile, const ProfileTokenSet& aProfiles, const HintedUser& aUser, string& path_, int64_t& size_, bool& noAccess_) throw(ShareException);
+	// Throws ShareException
+	void toRealWithSize(const string& virtualFile, const ProfileTokenSet& aProfiles, const HintedUser& aUser, string& path_, int64_t& size_, bool& noAccess_);
 
 	// Returns TTH value for a file list (not very useful but the ADC specs...)
 	// virtualFile = name requested by the other user (Transfer::USER_LIST_NAME_BZ or Transfer::USER_LIST_NAME)
-	TTHValue getListTTH(const string& virtualFile, ProfileToken aProfile) const throw(ShareException);
+	// Throws ShareException
+	TTHValue getListTTH(const string& virtualFile, ProfileToken aProfile) const;
 	
 	enum RefreshType: uint8_t {
 		TYPE_MANUAL,
@@ -129,7 +134,9 @@ public:
 	void abortRefresh() noexcept;
 
 	void nmdcSearch(SearchResultList& l, const string& aString, int aSearchType, int64_t aSize, int aFileType, StringList::size_type maxResults, bool aHideShare) noexcept;
-	void adcSearch(SearchResultList& l, SearchQuery& aSearch, const OptionalProfileToken& aProfile, const CID& cid, const string& aDir, bool isAutoSearch = false) throw(ShareException);
+
+	// Throws ShareException in case an invalid path is provided
+	void adcSearch(SearchResultList& l, SearchQuery& aSearch, const OptionalProfileToken& aProfile, const CID& cid, const string& aDir, bool isAutoSearch = false);
 
 	// Check if a directory is shared
 	// You may also give a path in NMDC format and the relevant 
@@ -161,7 +168,8 @@ public:
 
 	void saveXmlList(function<void (float)> progressF = nullptr) noexcept;	//for filelist caching
 
-	AdcCommand getFileInfo(const string& aFile, ProfileToken aProfile) throw(ShareException);
+	// Throws ShareException
+	AdcCommand getFileInfo(const string& aFile, ProfileToken aProfile);
 
 	int64_t getTotalShareSize(ProfileToken aProfile) const noexcept;
 
@@ -175,12 +183,14 @@ public:
 	string validateVirtualName(const string& aName) const noexcept;
 
 	// Generate own full filelist on disk
-	string generateOwnList(ProfileToken aProfile) throw(ShareException);
+	// Throws ShareException
+	string generateOwnList(ProfileToken aProfile);
 
 	bool isTTHShared(const TTHValue& tth) const noexcept;
 
 	// Get real paths for an ADC virtual path
-	void getRealPaths(const string& path, StringList& ret, const OptionalProfileToken& aProfile = boost::none) const throw(ShareException);
+	// Throws ShareException
+	void getRealPaths(const string& path, StringList& ret, const OptionalProfileToken& aProfile = boost::none) const;
 
 	StringList getRealPaths(const TTHValue& root) const noexcept;
 
@@ -582,12 +592,13 @@ private:
 
 	bool addDirectoryResult(const Directory* aDir, SearchResultList& aResults, const OptionalProfileToken& aProfile, SearchQuery& srch) const noexcept;
 
-	//RootDirectory::Map rootDirectories;
-
 	TaskQueue tasks;
 
-	FileList* generateXmlList(ProfileToken aProfile, bool forced = false) throw(ShareException);
-	FileList* getFileList(ProfileToken aProfile) const throw(ShareException);
+	// Throws ShareException
+	FileList* generateXmlList(ProfileToken aProfile, bool aForced = false);
+
+	// Throws ShareException
+	FileList* getFileList(ProfileToken aProfile) const;
 
 	bool loadCache(function<void(float)> progressF) noexcept;
 
@@ -689,9 +700,10 @@ private:
 
 	// Get directories matching the virtual path (root path is not accepted here)
 	// Can be used with a single profile token or a set of them
+	// Throws ShareException
 	// Unsafe
 	template<class T>
-	void findVirtuals(const string& aVirtualPath, const T& aProfile, Directory::List& dirs_) const throw(ShareException) {
+	void findVirtuals(const string& aVirtualPath, const T& aProfile, Directory::List& dirs_) const {
 		Directory::List virtuals; //since we are mapping by realpath, we can have more than 1 same virtualnames
 		if(aVirtualPath.empty() || aVirtualPath[0] != ADC_SEPARATOR) {
 			throw ShareException(UserConnection::FILE_NOT_AVAILABLE);

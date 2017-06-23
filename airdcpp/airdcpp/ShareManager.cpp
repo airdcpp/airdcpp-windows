@@ -346,7 +346,7 @@ bool ShareManager::RootDirectory::removeRootProfile(ProfileToken aProfile) noexc
 	return rootProfiles.empty();
 }
 
-string ShareManager::toVirtual(const TTHValue& tth, ProfileToken aProfile) const throw(ShareException) {
+string ShareManager::toVirtual(const TTHValue& tth, ProfileToken aProfile) const {
 	
 	RLock l(cs);
 
@@ -366,7 +366,7 @@ string ShareManager::toVirtual(const TTHValue& tth, ProfileToken aProfile) const
 	throw ShareException(UserConnection::FILE_NOT_AVAILABLE);
 }
 
-FileList* ShareManager::getFileList(ProfileToken aProfile) const throw(ShareException) {
+FileList* ShareManager::getFileList(ProfileToken aProfile) const {
 	const auto i = find(shareProfiles.begin(), shareProfiles.end(), aProfile);
 	if(i != shareProfiles.end()) {
 		dcassert((*i)->getProfileList());
@@ -376,7 +376,7 @@ FileList* ShareManager::getFileList(ProfileToken aProfile) const throw(ShareExce
 	throw ShareException(UserConnection::FILE_NOT_AVAILABLE);
 }
 
-pair<int64_t, string> ShareManager::getFileListInfo(const string& virtualFile, ProfileToken aProfile) throw(ShareException) {
+pair<int64_t, string> ShareManager::getFileListInfo(const string& virtualFile, ProfileToken aProfile) {
 	if(virtualFile == "MyList.DcLst") 
 		throw ShareException("NMDC-style lists no longer supported, please upgrade your client");
 
@@ -388,7 +388,7 @@ pair<int64_t, string> ShareManager::getFileListInfo(const string& virtualFile, P
 	throw ShareException(UserConnection::FILE_NOT_AVAILABLE);
 }
 
-void ShareManager::toRealWithSize(const string& aVirtualFile, const ProfileTokenSet& aProfiles, const HintedUser& aUser, string& path_, int64_t& size_, bool& noAccess_) throw(ShareException) {
+void ShareManager::toRealWithSize(const string& aVirtualFile, const ProfileTokenSet& aProfiles, const HintedUser& aUser, string& path_, int64_t& size_, bool& noAccess_) {
 	if(aVirtualFile.compare(0, 4, "TTH/") == 0) {
 		TTHValue tth(aVirtualFile.substr(4));
 
@@ -439,7 +439,7 @@ void ShareManager::toRealWithSize(const string& aVirtualFile, const ProfileToken
 	throw ShareException(noAccess_ ? "You don't have access to this file" : UserConnection::FILE_NOT_AVAILABLE);
 }
 
-TTHValue ShareManager::getListTTH(const string& virtualFile, ProfileToken aProfile) const throw(ShareException) {
+TTHValue ShareManager::getListTTH(const string& virtualFile, ProfileToken aProfile) const {
 	RLock l(cs);
 	if(virtualFile == Transfer::USER_LIST_NAME_BZ) {
 		return getFileList(aProfile)->getBzXmlRoot();
@@ -468,7 +468,7 @@ MemoryInputStream* ShareManager::getTree(const string& virtualFile, ProfileToken
 	return new MemoryInputStream(&buf[0], buf.size());
 }
 
-AdcCommand ShareManager::getFileInfo(const string& aFile, ProfileToken aProfile) throw(ShareException) {
+AdcCommand ShareManager::getFileInfo(const string& aFile, ProfileToken aProfile) {
 	if(aFile == Transfer::USER_LIST_NAME) {
 		FileList* fl = generateXmlList(aProfile);
 		AdcCommand cmd(AdcCommand::CMD_RES);
@@ -552,7 +552,7 @@ void ShareManager::clearTempShares() {
 	tempShares.clear();
 }
 
-void ShareManager::getRealPaths(const string& aVirtualPath, StringList& realPaths_, const OptionalProfileToken& aProfile) const throw(ShareException) {
+void ShareManager::getRealPaths(const string& aVirtualPath, StringList& realPaths_, const OptionalProfileToken& aProfile) const {
 	if (aVirtualPath.empty())
 		throw ShareException("empty virtual path");
 
@@ -854,7 +854,7 @@ struct ShareManager::ShareLoader : public SimpleXMLReader::ThreadedCallBack, pub
 
 				cur = ShareManager::Directory::createNormal(name, cur, Util::toUInt32(date), lowerDirNameMapNew, bloom);
 				if (!cur) {
-					throw("Duplicate directory name");
+					throw Exception("Duplicate directory name");
 				}
 
 				curDirPathLower += cur->realName.getLower() + PATH_SEPARATOR;
@@ -877,14 +877,14 @@ struct ShareManager::ShareLoader : public SimpleXMLReader::ThreadedCallBack, pub
 				HashedFile fi;
 				HashManager::getInstance()->getFileInfo(curDirPathLower + name.getLower(), curDirPath + fname, fi);
 				addFile(move(name), cur, fi, tthIndexNew, bloom, addedSize);
-			}catch(Exception& e) {
+			} catch(Exception& e) {
 				hashSize += File::getSize(curDirPath + fname);
 				dcdebug("Error loading file list %s \n", e.getError().c_str());
 			}
 		} else if (compare(aName, SHARE) == 0) {
 			int version = Util::toInt(getAttrib(attribs, SVERSION, 0));
 			if (version > Util::toInt(SHARE_CACHE_VERSION))
-				throw("Newer cache version"); //don't load those...
+				throw Exception("Newer cache version"); //don't load those...
 
 			cur->setLastWrite(Util::toUInt32(getAttrib(attribs, DATE, 2)));
 		}
@@ -1159,7 +1159,7 @@ TTH searches: %d%% (hash bloom mode: %s)")
 	return ret;
 }
 
-void ShareManager::validateRootPath(const string& aRealPath, bool aMatchCurrentRoots) const throw(ShareException) {
+void ShareManager::validateRootPath(const string& aRealPath, bool aMatchCurrentRoots) const {
 	validator->validateRootPath(aRealPath);
 
 	if (aMatchCurrentRoots) {
@@ -2251,14 +2251,14 @@ void ShareManager::getBloom(HashBloom& bloom_) const noexcept {
 		bloom_.add(tth);
 }
 
-string ShareManager::generateOwnList(ProfileToken aProfile) throw(ShareException) {
+string ShareManager::generateOwnList(ProfileToken aProfile) {
 	FileList* fl = generateXmlList(aProfile, true);
 	return fl->getFileName();
 }
 
 
 //forwards the calls to createFileList for creating the filelist that was reguested.
-FileList* ShareManager::generateXmlList(ProfileToken aProfile, bool forced /*false*/) throw(ShareException) {
+FileList* ShareManager::generateXmlList(ProfileToken aProfile, bool forced /*false*/) {
 	FileList* fl = nullptr;
 
 	{
@@ -2808,7 +2808,7 @@ void ShareManager::Directory::search(SearchResultInfo::Set& results_, SearchQuer
 	aStrings.recursion = old;
 }
 
-void ShareManager::adcSearch(SearchResultList& results, SearchQuery& srch, const OptionalProfileToken& aProfile, const CID& cid, const string& aDir, bool aIsAutoSearch) throw(ShareException) {
+void ShareManager::adcSearch(SearchResultList& results, SearchQuery& srch, const OptionalProfileToken& aProfile, const CID& cid, const string& aDir, bool aIsAutoSearch) {
 	dcassert(!aDir.empty());
 
 	totalSearches++;

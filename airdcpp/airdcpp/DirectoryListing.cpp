@@ -229,7 +229,7 @@ DirectoryListing::Directory::Ptr DirectoryListing::createBaseDirectory(const str
 	return cur;
 }
 
-void DirectoryListing::loadFile() throw(Exception, AbortException) {
+void DirectoryListing::loadFile() {
 	if (isOwnList) {
 		loadShareDirectory(ADC_ROOT_STR, true);
 	} else {
@@ -277,12 +277,12 @@ private:
 	time_t listDownloadDate;
 };
 
-int DirectoryListing::loadPartialXml(const string& aXml, const string& aBase) throw(AbortException) {
+int DirectoryListing::loadPartialXml(const string& aXml, const string& aBase) {
 	MemoryInputStream mis(aXml);
 	return loadXML(mis, true, aBase);
 }
 
-int DirectoryListing::loadXML(InputStream& is, bool aUpdating, const string& aBase, time_t aListDate) throw(AbortException) {
+int DirectoryListing::loadXML(InputStream& is, bool aUpdating, const string& aBase, time_t aListDate) {
 	ListLoader ll(this, root.get(), aBase, aUpdating, getUser(), !isOwnList && isClientView && SETTING(DUPES_IN_FILELIST), partialList, aListDate);
 	try {
 		dcpp::SimpleXMLReader(&ll).parse(is);
@@ -715,7 +715,7 @@ void DirectoryListing::Directory::getHashList(DirectoryListing::Directory::TTHSe
 		l.insert(f->getTTH());
 }
 	
-void DirectoryListing::getLocalPaths(const File::Ptr& f, StringList& ret) const throw(ShareException) {
+void DirectoryListing::getLocalPaths(const File::Ptr& f, StringList& ret) const {
 	if(f->getParent()->getAdls() && (f->getParent()->getParent() == root.get() || !isOwnList))
 		return;
 
@@ -732,7 +732,7 @@ void DirectoryListing::getLocalPaths(const File::Ptr& f, StringList& ret) const 
 	}
 }
 
-void DirectoryListing::getLocalPaths(const Directory::Ptr& d, StringList& ret) const throw(ShareException) {
+void DirectoryListing::getLocalPaths(const Directory::Ptr& d, StringList& ret) const {
 	if(d->getAdls() && (d->getParent() == root.get() || !isOwnList))
 		return;
 
@@ -946,7 +946,7 @@ void DirectoryListing::dispatch(DispatcherQueue::Callback& aCallback) noexcept {
 	}
 }
 
-void DirectoryListing::listDiffImpl(const string& aFile, bool aOwnList) throw(Exception, AbortException) {
+void DirectoryListing::listDiffImpl(const string& aFile, bool aOwnList) {
 	int64_t start = GET_TICK();
 	if (isOwnList && partialList) {
 		// we need the recursive list for this
@@ -961,7 +961,7 @@ void DirectoryListing::listDiffImpl(const string& aFile, bool aOwnList) throw(Ex
 	fire(DirectoryListingListener::LoadingFinished(), start, ADC_ROOT_STR, false);
 }
 
-void DirectoryListing::matchAdlImpl() throw(AbortException) {
+void DirectoryListing::matchAdlImpl() {
 	fire(DirectoryListingListener::LoadingStarted(), false);
 
 	int64_t start = GET_TICK();
@@ -978,7 +978,7 @@ void DirectoryListing::matchAdlImpl() throw(AbortException) {
 	}
 }
 
-void DirectoryListing::loadFileImpl(const string& aInitialDir) throw(Exception, AbortException) {
+void DirectoryListing::loadFileImpl(const string& aInitialDir) {
 	int64_t start = GET_TICK();
 	partialList = false;
 
@@ -1053,7 +1053,7 @@ void DirectoryListing::searchImpl(const SearchPtr& aSearch) noexcept {
 	}
 }
 
-void DirectoryListing::loadPartialImpl(const string& aXml, const string& aBasePath, bool aBackgroundTask, const AsyncF& aCompletionF) throw(Exception, AbortException) {
+void DirectoryListing::loadPartialImpl(const string& aXml, const string& aBasePath, bool aBackgroundTask, const AsyncF& aCompletionF) {
 	if (!partialList)
 		return;
 
@@ -1143,7 +1143,7 @@ void DirectoryListing::endSearch(bool timedOut /*false*/) noexcept {
 	}
 }
 
-int DirectoryListing::loadShareDirectory(const string& aPath, bool aRecurse) throw(Exception, AbortException) {
+int DirectoryListing::loadShareDirectory(const string& aPath, bool aRecurse) {
 	auto mis = ShareManager::getInstance()->generatePartialList(aPath, aRecurse, getShareProfile());
 	if (mis) {
 		return loadXML(*mis, true, aPath);
