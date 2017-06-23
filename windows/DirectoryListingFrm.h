@@ -240,7 +240,7 @@ private:
 	void updateStatus(const tstring& aMsg);
 	void updateStatusText(int aTotalCount, int64_t totalSize, int selectedCount, int displayCount, time_t aUpdateDate);
 
-	string curPath;
+	string curPath = ADC_ROOT_STR;
 	
 	void updateItems(const DirectoryListing::Directory::Ptr& d);
 	void insertItems(const optional<string>& selectedName);
