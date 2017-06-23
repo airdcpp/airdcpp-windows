@@ -111,7 +111,7 @@ DirectoryDownloadList DirectoryListingManager::getDirectoryDownloads() const noe
 
 DirectoryDownloadPtr DirectoryListingManager::addDirectoryDownload(const HintedUser& aUser, const string& aBundleName, const string& aListPath, const string& aTarget, Priority p, const void* aOwner) {
 	dcassert(!aTarget.empty() && !aListPath.empty() && !aBundleName.empty());
-	auto downloadInfo = make_shared<DirectoryDownload>(aUser, aBundleName, aListPath, aTarget, p, aOwner);
+	auto downloadInfo = make_shared<DirectoryDownload>(aUser, Util::cleanPathSeparators(aBundleName), aListPath, aTarget, p, aOwner);
 	
 	DirectoryListingPtr dl;
 	{
@@ -382,6 +382,8 @@ DirectoryListingPtr DirectoryListingManager::openFileList(const HintedUser& aUse
 	if (hasList(aUser.user)) {
 		return nullptr;
 	}
+
+	dcassert(aPartial || Util::fileExists(aFile));
 
 	auto dl = createList(aUser, aPartial, aFile, false);
 	fire(DirectoryListingManagerListener::OpenListing(), dl, aDir, Util::emptyString);

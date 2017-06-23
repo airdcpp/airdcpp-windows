@@ -216,7 +216,7 @@ DirectoryListing::Directory::Ptr DirectoryListing::createBaseDirectory(const str
 	auto cur = root;
 
 	const auto sl = StringTokenizer<string>(aBasePath, ADC_SEPARATOR).getTokens();
-	for (const auto& curDirName : sl) {
+	for (const auto& curDirName: sl) {
 		auto s = cur->directories.find(&curDirName);
 		if (s == cur->directories.end()) {
 			auto d = DirectoryListing::Directory::create(cur.get(), curDirName, DirectoryListing::Directory::TYPE_INCOMPLETE_CHILD, aDownloadDate, true);
@@ -262,6 +262,8 @@ public:
 	//const string& getBase() const { return base; }
 	int getLoadedDirs() { return dirsLoaded; }
 private:
+	void validateName(const string& aName);
+
 	DirectoryListing* list;
 	DirectoryListing::Directory* cur;
 	UserPtr user;
@@ -291,6 +293,20 @@ int DirectoryListing::loadXML(InputStream& is, bool aUpdating, const string& aBa
 	return ll.getLoadedDirs();
 }
 
+void ListLoader::validateName(const string& aName) {
+	if (aName.empty()) {
+		throw SimpleXMLException("Name attribute missing");
+	}
+
+	if (aName == "." || aName == "..") {
+		throw SimpleXMLException("Forbidden filename");
+	}
+
+	if (aName.find(ADC_SEPARATOR) != string::npos) {
+		throw SimpleXMLException("Filenames can't contain path separators");
+	}
+}
+
 static const string sFileListing = "FileListing";
 static const string sBase = "Base";
 static const string sBaseDate = "BaseDate";
@@ -313,25 +329,25 @@ void ListLoader::startTag(const string& name, StringPairList& attribs, bool simp
 	if(inListing) {
 		if(name == sFile) {
 			const string& n = getAttrib(attribs, sName, 0);
-			if(n.empty())
-				return;
+			validateName(n);
+
 			const string& s = getAttrib(attribs, sSize, 1);
 			if(s.empty())
 				return;
+
 			auto size = Util::toInt64(s);
 
 			const string& h = getAttrib(attribs, sTTH, 2);
 			if(h.empty() && !SettingsManager::lanMode)
 				return;		
+
 			TTHValue tth(h); /// @todo verify validity?
 
 			auto f = make_shared<DirectoryListing::File>(cur, n, size, tth, checkDupe, Util::toUInt32(getAttrib(attribs, sDate, 3)));
 			cur->files.push_back(f);
 		} else if(name == sDirectory) {
 			const string& n = getAttrib(attribs, sName, 0);
-			if(n.empty()) {
-				throw SimpleXMLException("Directory missing name attribute");
-			}
+			validateName(n);
 
 			bool incomp = getAttrib(attribs, sIncomplete, 1) == "1";
 			auto directoriesStr = getAttrib(attribs, sDirectories, 2);
@@ -1246,7 +1262,7 @@ void DirectoryListing::on(ShareManagerListener::RefreshCompleted, uint8_t, const
 	// Reload all locations by virtual path
 	string lastVirtual;
 	for (const auto& p : aPaths) {
-		auto vPath = ShareManager::getInstance()->realToVirtual(p, getShareProfile());
+		auto vPath = ShareManager::getInstance()->realToVirtualAdc(p, getShareProfile());
 		if (!vPath.empty() && lastVirtual != vPath && findDirectory(vPath)) {
 			addPartialListTask(Util::emptyString, vPath, true);
 			lastVirtual = vPath;

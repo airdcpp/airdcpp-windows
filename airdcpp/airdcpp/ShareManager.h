@@ -268,7 +268,7 @@ public:
 	bool removeProfile(ProfileToken aToken) noexcept;
 
 	// Convert real path to virtual path. Returns an empty string if not shared.
-	string realToVirtual(const string& aPath, const OptionalProfileToken& aToken = boost::none) const noexcept;
+	string realToVirtualAdc(const string& aPath, const OptionalProfileToken& aToken = boost::none) const noexcept;
 
 	// If allowFallback is true, the default profile will be returned if the requested one is not found
 	ShareProfilePtr getShareProfile(ProfileToken aProfile, bool allowFallback = false) const noexcept;
@@ -388,7 +388,6 @@ private:
 			~File();
 		
 			inline string getAdcPath() const noexcept{ return parent->getAdcPath() + name.getNormal(); }
-			inline string getNmdcPath() const noexcept{ return parent->getNmdcPath() + name.getNormal(); }
 			inline string getRealPath() const noexcept { return parent->getRealPath(name.getNormal()); }
 			inline bool hasProfile(const OptionalProfileToken& aProfile) const noexcept { return parent->hasProfile(aProfile); }
 
@@ -465,7 +464,6 @@ private:
 		string getAdcPath() const noexcept;
 		string getVirtualName() const noexcept;
 		const string& getVirtualNameLower() const noexcept;
-		string getNmdcPath() const noexcept; 
 
 		inline string getRealPath() const noexcept{ return getRealPath(Util::emptyString); };
 

@@ -77,10 +77,8 @@ void DirectoryListingFrame::openWindow(const DirectoryListingPtr& aList, const s
 	}
 
 	if (aList->getPartialList()) {
-		// Migrate NMDC paths
-		aList->addPartialListTask(aXML, !aDir.empty() && aDir.front() == ADC_SEPARATOR ? aDir : Util::toAdcFile(aDir));
-	}
-	else {
+		aList->addPartialListTask(aXML, aDir);
+	} else {
 		frame->ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
 		aList->addFullListTask(aDir);
 	}
@@ -117,6 +115,11 @@ bool DirectoryListingFrame::parseWindowParams(StringMap& params) {
 
 		bool partial = Util::toBool(Util::toInt(params["partial"]));
 		string dir = params["dir"];
+		if (!dir.empty() && dir.front() != ADC_SEPARATOR) {
+			// Migrate NMDC paths from older versions
+			dir = Util::toAdcFile(dir);
+		}
+
 		string file = params["file"];
 		string url = params["url"];
 		if (u == ClientManager::getInstance()->getMe()) {

@@ -797,7 +797,7 @@ void SearchFrame::handleDownload(const string& aTarget, Priority p, bool useWhol
 				WinUtil::addFileDownload(*targetName, aSR->getSize(), aSR->getTTH(), aSR->getUser(), aSR->getDate(), 0, p);
 			} else {
 				if (!targetName) {
-					//only pick the last dir, different paths are always needed
+					// Only pick the directory name, different paths are always needed
 					targetName = aSR->getType() == SearchResult::TYPE_DIRECTORY ? aSR->getFileName() : Util::getAdcLastDir(aSR->getAdcFilePath());
 				}
 

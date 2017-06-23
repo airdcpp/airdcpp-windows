@@ -227,19 +227,6 @@ const string& ShareManager::Directory::getVirtualNameLower() const noexcept {
 	return realName.getLower();
 }
 
-string ShareManager::Directory::getNmdcPath() const noexcept {
-	if (parent) {
-		return parent->getNmdcPath() + realName.getNormal() + NMDC_SEPARATOR;
-	}
-
-	if (!root) {
-		// Root may not be available for subdirectories that are being refreshed
-		return Util::emptyString;
-	}
-
-	return root->getName() + NMDC_SEPARATOR;
-}
-
 StringList ShareManager::getRealPaths(const TTHValue& root) const noexcept {
 	StringList ret;
 
@@ -616,21 +603,21 @@ bool ShareManager::isRealPathShared(const string& aPath) const noexcept {
 	return false;
 }
 
-string ShareManager::realToVirtual(const string& aPath, const OptionalProfileToken& aToken) const noexcept{
+string ShareManager::realToVirtualAdc(const string& aPath, const OptionalProfileToken& aToken) const noexcept{
 	RLock l(cs);
 	auto d = findDirectory(Util::getFilePath(aPath));
 	if (!d || !d->hasProfile(aToken)) {
 		return Util::emptyString;
 	}
 
-	auto vPathNmdc = d->getNmdcPath();
+	auto vPathAdc = d->getAdcPath();
 	if (aPath.back() == PATH_SEPARATOR) {
 		// Directory
-		return vPathNmdc;
+		return vPathAdc;
 	}
 
 	// It's a file
-	return vPathNmdc + NMDC_SEPARATOR_STR + Util::getFileName(aPath);
+	return vPathAdc + ADC_SEPARATOR_STR + Util::getFileName(aPath);
 }
 
 string ShareManager::validateVirtualName(const string& aVirt) const noexcept {
