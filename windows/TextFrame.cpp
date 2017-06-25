@@ -129,7 +129,7 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		ctrlPad.SetDefaultCharFormat(WinUtil::m_ChatTextGeneral);
 	}
 
-	if (getUseTextFormatting()) {
+	if (getUseTextFormatting() || getNfo()) {
 		ctrlPad.setFormatPaths(true);
 		ctrlPad.setFormatLinks(true);
 		ctrlPad.setFormatReleases(true);
