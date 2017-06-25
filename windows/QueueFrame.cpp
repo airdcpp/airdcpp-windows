@@ -809,7 +809,7 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 		}
 
 		if (hasBundleItems) {
-			WinUtil::appendSearchMenu(fileMenu, Util::getFilePath(qi->getTarget()));
+			WinUtil::appendSearchMenu(fileMenu, Util::toAdcFile(Util::getFilePath(qi->getTarget())));
 			//fileMenu.appendSeparator();
 		}
 

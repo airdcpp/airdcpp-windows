@@ -627,7 +627,7 @@ SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR, const SearchResu
 	//check the dupe
 	if(SETTING(DUPE_SEARCH)) {
 		if (sr->getType() == SearchResult::TYPE_DIRECTORY)
-			dupe = AirUtil::checkDirDupe(sr->getPath(), sr->getSize());
+			dupe = AirUtil::checkAdcDirectoryDupe(sr->getAdcPath(), sr->getSize());
 		else
 			dupe = AirUtil::checkFileDupe(sr->getTTH());
 	}
@@ -654,14 +654,14 @@ double SearchFrame::SearchInfo::getTotalRelevance() const {
 
 StringList SearchFrame::SearchInfo::getDupePaths() const {
 	if (sr->getType() == SearchResult::TYPE_DIRECTORY) {
-		return AirUtil::getDirDupePaths(dupe, sr->getPath());
+		return AirUtil::getAdcDirectoryDupePaths(dupe, sr->getAdcPath());
 	} else {
 		return AirUtil::getFileDupePaths(dupe, sr->getTTH());
 	}
 }
 
 int SearchFrame::SearchInfo::getImageIndex() const {
-	return sr->getType() == SearchResult::TYPE_FILE ? ResourceLoader::getIconIndex(Text::toT(sr->getPath())) : ResourceLoader::DIR_NORMAL;
+	return sr->getType() == SearchResult::TYPE_FILE ? ResourceLoader::getIconIndex(Text::toT(sr->getAdcPath())) : ResourceLoader::DIR_NORMAL;
 }
 
 int SearchFrame::SearchInfo::compareItems(const SearchInfo* a, const SearchInfo* b, uint8_t col) {
@@ -721,7 +721,7 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 		case COLUMN_USERS: return WinUtil::getNicks(sr->getUser());
 		case COLUMN_TYPE:
 			if(sr->getType() == SearchResult::TYPE_FILE) {
-				return WinUtil::formatFileType(sr->getPath());
+				return WinUtil::formatFileType(sr->getAdcPath());
 			} else {
 				return WinUtil::formatFolderContent(sr->getContentInfo());
 			}
@@ -731,7 +731,7 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 			} else {
 				return sr->getSize() > 0 ? Util::formatBytesW(sr->getSize()) : Util::emptyStringT;
 			}				
-		case COLUMN_PATH: return Text::toT(Util::toAdcFile(sr->getFilePath()));
+		case COLUMN_PATH: return Text::toT(sr->getAdcFilePath());
 		case COLUMN_SLOTS: return Text::toT(sr->getSlotString());
 		case COLUMN_CONNECTION: return sr->isNMDC() ? Text::toT(sr->getConnectionStr()) : Util::formatConnectionSpeedW(sr->getConnectionInt());
 		case COLUMN_HUB: return WinUtil::getHubNames(sr->getUser());
@@ -776,7 +776,7 @@ void SearchFrame::handleOpenItem(bool isClientView) {
 void SearchFrame::handleViewNfo() {
 	auto viewNfo = [=](const SearchInfo* si) {
 		if (si->sr->getType() == SearchResult::TYPE_DIRECTORY && si->getUser()->isSet(User::ASCH)) {
-			WinUtil::findNfo(si->sr->getPath(), si->sr->getUser());
+			WinUtil::findNfo(si->sr->getAdcPath(), si->sr->getUser());
 		}
 	};
 
@@ -788,21 +788,21 @@ void SearchFrame::handleDownload(const string& aTarget, Priority p, bool useWhol
 		bool fileDownload = aSI->sr->getType() == SearchResult::TYPE_FILE && !useWhole;
 
 		// names/case sizes may differ for grouped results
-		optional<string> path;
+		optional<string> targetName;
 		auto download = [&](const SearchResultPtr& aSR) {
 			if (fileDownload) {
-				if (!path) {
-					path = aTarget.back() == '\\' ? aTarget + aSI->sr->getFileName() : aTarget;
+				if (!targetName) {
+					targetName = aTarget.back() == PATH_SEPARATOR ? aTarget + aSI->sr->getFileName() : aTarget;
 				}
-				WinUtil::addFileDownload(*path, aSR->getSize(), aSR->getTTH(), aSR->getUser(), aSR->getDate(), 0, p);
+				WinUtil::addFileDownload(*targetName, aSR->getSize(), aSR->getTTH(), aSR->getUser(), aSR->getDate(), 0, p);
 			} else {
-				if (!path) {
-					//only pick the last dir, different paths are always needed
-					path = aSR->getType() == SearchResult::TYPE_DIRECTORY ? aSR->getFileName() : Util::getLastDir(aSR->getFilePath());
+				if (!targetName) {
+					// Only pick the directory name, different paths are always needed
+					targetName = aSR->getType() == SearchResult::TYPE_DIRECTORY ? aSR->getFileName() : Util::getAdcLastDir(aSR->getAdcFilePath());
 				}
 
 				try {
-					DirectoryListingManager::getInstance()->addDirectoryDownload(aSR->getUser(), *path, aSR->getFilePath(), aTarget, p);
+					DirectoryListingManager::getInstance()->addDirectoryDownload(aSR->getUser(), *targetName, aSR->getAdcFilePath(), aTarget, p);
 				} catch (const Exception& e) {
 					ctrlStatus.SetText(1, Text::toT(e.getError()).c_str());
 				}
@@ -834,7 +834,7 @@ void SearchFrame::handleGetList(ListType aType) {
 		}
 
 		try {
-			DirectoryListingManager::getInstance()->createList(si->sr->getUser(), QueueItem::FLAG_CLIENT_VIEW | flags, si->sr->getFilePath());
+			DirectoryListingManager::getInstance()->createList(si->sr->getUser(), QueueItem::FLAG_CLIENT_VIEW | flags, si->sr->getAdcFilePath());
 		} catch(const Exception&) {
 			// Ignore for now...
 		}
@@ -845,7 +845,7 @@ void SearchFrame::handleGetList(ListType aType) {
 
 void SearchFrame::handleMatchPartial() {
 	auto matchPartial = [&](const SearchInfo* si) {
-		string path = AirUtil::getNmdcReleaseDir(si->sr->getFilePath(), false);
+		auto path = AirUtil::getAdcReleaseDir(si->sr->getAdcFilePath(), false);
 		try {
 			QueueManager::getInstance()->addList(si->sr->getUser(), QueueItem::FLAG_MATCH_QUEUE | (si->sr->getUser().user->isNMDC() ? 0 : QueueItem::FLAG_RECURSIVE_LIST) | QueueItem::FLAG_PARTIAL_LIST, path);
 		} catch(const Exception&) {
@@ -859,7 +859,7 @@ void SearchFrame::handleMatchPartial() {
 void SearchFrame::handleSearchDir() {
 	if(ctrlResults.list.GetSelectedCount() == 1) {
 		const SearchInfo* si = ctrlResults.list.getSelectedItem();
-		WinUtil::search(Text::toT(AirUtil::getNmdcReleaseDir(si->sr->getPath(), true)), true);
+		WinUtil::search(Text::toT(AirUtil::getAdcReleaseDir(si->sr->getAdcPath(), true)), true);
 	}
 }
 
@@ -883,10 +883,10 @@ void SearchFrame::SearchInfo::CheckTTH::operator()(SearchInfo* si) {
 	} 
 
 	if (firstPath) {
-		path = si->sr->getPath();
+		path = si->sr->getAdcPath();
 		firstPath = false;
 	} else if (path) {
-		if (AirUtil::getDirName(*path, '\\').first != AirUtil::getDirName(si->sr->getFilePath(), '\\').first) {
+		if (AirUtil::getAdcDirectoryName(*path).first != AirUtil::getAdcDirectoryName(si->sr->getAdcFilePath()).first) {
 			path.reset();
 		}
 	}
@@ -1243,13 +1243,13 @@ void SearchFrame::runUserCommand(UserCommand& uc) {
 		}
 
 
-		ucParams["fileFN"] = [sr] { return sr->getPath(); };
+		ucParams["fileFN"] = [sr] { return Util::toNmdcFile(sr->getAdcPath()); };
 		ucParams["fileSI"] = [sr] { return Util::toString(sr->getSize()); };
 		ucParams["fileSIshort"] = [sr] { return Util::formatBytes(sr->getSize()); };
 		if(sr->getType() == SearchResult::TYPE_FILE) {
 			ucParams["fileTR"] = [sr] { return sr->getTTH().toBase32(); };
 		}
-		ucParams["fileMN"] = [sr] { return WinUtil::makeMagnet(sr->getTTH(), sr->getPath(), sr->getSize()); };
+		ucParams["fileMN"] = [sr] { return WinUtil::makeMagnet(sr->getTTH(), sr->getFileName(), sr->getSize()); };
 
 		// compatibility with 0.674 and earlier
 		ucParams["file"] = ucParams["fileFN"];
@@ -1323,12 +1323,12 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 	if(si->sr->getTTH().data > 0 && (!si->getUser()->isNMDC() || si->sr->getType() == SearchResult::TYPE_FILE)) {
 		auto pp = ctrlResults.list.findParentPair(sr->getTTH());
 		if(pp) {
-			if ((sr->getUser() == pp->parent->getUser()) && (sr->getPath() == pp->parent->sr->getPath())) {
+			if ((sr->getUser() == pp->parent->getUser()) && (sr->getAdcPath() == pp->parent->sr->getAdcPath())) {
 				delete si;
 				return;	 	
 			} 	
 			for(auto c: pp->children){	 	
-				if ((sr->getUser() == c->getUser()) && (sr->getPath() == c->sr->getPath())) {
+				if ((sr->getUser() == c->getUser()) && (sr->getAdcPath() == c->sr->getAdcPath())) {
 					delete si;
 					return;
 				} 	
@@ -1338,7 +1338,7 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 		for(auto& p: ctrlResults.list.getParents() | map_values) {
 			auto si2 = p.parent;
 			const auto& sr2 = si2->sr;
-			if ((sr->getUser() == sr2->getUser()) && (sr->getPath() == sr2->getPath())) {
+			if ((sr->getUser() == sr2->getUser()) && (sr->getAdcPath() == sr2->getAdcPath())) {
 				delete si;	 	
 				return;	 	
 			}
@@ -1504,7 +1504,7 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 
 			WinUtil::appendSearchMenu(resultsMenu, [=](const WebShortcut* ws) {
 				performAction([=](const SearchInfo* ii) { 
-					WinUtil::searchSite(ws, ii->sr->getPath());
+					WinUtil::searchSite(ws, ii->sr->getAdcPath());
 				}, true);
 			});
 
@@ -1673,7 +1673,7 @@ tstring SearchFrame::handleCopyMagnet(const SearchInfo* si) {
 }
 
 tstring SearchFrame::handleCopyDirectory(const SearchInfo* si) {
-	return Text::toT(AirUtil::getNmdcReleaseDir(si->sr->getPath(), true));
+	return Text::toT(AirUtil::getAdcReleaseDir(si->sr->getAdcPath(), true));
 }
 
 LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {

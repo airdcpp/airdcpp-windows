@@ -109,7 +109,7 @@ public:
 			// If we have a dupe path, pick the dir from it
 			optional<string> pathWhole;
 			if (aPath && !(*aPath).empty() && (*aPath).back() != PATH_SEPARATOR)
-				pathWhole = Util::getFilePath(*aPath);
+				pathWhole = Util::getAdcFilePath(*aPath);
 
 			appendDownloadTo(*targetMenuWhole, true, true, boost::none, pathWhole, volumes);
 		}
@@ -230,10 +230,10 @@ private:
 				}
 			};
 
-			targets = QueueManager::getInstance()->getNmdcDirPaths(isDir ? *aPath : Util::getFilePath(*aPath));
+			targets = QueueManager::getInstance()->getAdcDirectoryPaths(isDir ? *aPath : Util::getAdcFilePath(*aPath));
 			doAppend(TSTRING(QUEUED_DUPE_PATHS));
 
-			targets = ShareManager::getInstance()->getNmdcDirPaths(isDir ? *aPath : Util::getFilePath(*aPath));
+			targets = ShareManager::getInstance()->getAdcDirectoryPaths(isDir ? *aPath : Util::getAdcFilePath(*aPath));
 			doAppend(TSTRING(SHARED_DUPE_PATHS));
 		}
 	}
