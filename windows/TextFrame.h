@@ -96,6 +96,7 @@ private:
 	IGETSET(bool, nfo, Nfo, false);
 	IGETSET(bool, useTextFormatting, UseTextFormatting, false);
 	IGETSET(bool, useEmoticons, UseEmoticons, false);
+	IGETSET(bool, autoScroll, AutoScroll, true);
 
 	void setViewModeNfo();
 

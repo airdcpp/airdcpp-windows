@@ -129,7 +129,7 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		ctrlPad.SetDefaultCharFormat(WinUtil::m_ChatTextGeneral);
 	}
 
-	if (getUseTextFormatting() || getNfo()) {
+	if (getUseTextFormatting()) {
 		ctrlPad.setFormatPaths(true);
 		ctrlPad.setFormatLinks(true);
 		ctrlPad.setFormatReleases(true);
@@ -137,6 +137,12 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		ctrlPad.AppendText(aText, getUseEmoticons());
 	} else {
 		ctrlPad.SetWindowText(Text::toT(text).c_str());
+	}
+
+	if (!getAutoScroll()) {
+		//set scroll position to top
+		ctrlPad.setAutoScrollToEnd(false);
+		ctrlPad.SetSel(0, 0);
 	}
 
 	SetWindowText(title.c_str());
@@ -174,10 +180,10 @@ void TextFrame::setViewModeNfo() {
 	//set the colors...
 	ctrlPad.SetBackgroundColor(WinUtil::bgColor);
 	ctrlPad.SetDefaultCharFormat(cf);
-	
-	//set scroll position to top
-	ctrlPad.setAutoScrollToEnd(false);
-	ctrlPad.SetSel(0, 0);
+
+	setUseTextFormatting(true);
+	setAutoScroll(false);
+
 }
 
 LRESULT TextFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
