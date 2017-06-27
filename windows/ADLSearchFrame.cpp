@@ -601,7 +601,7 @@ void ADLSearchFrame::UpdateSearch(int index, BOOL doDelete)
 	tstring fs;
 	line.push_back(Text::toT(search->getPattern()));
 	line.push_back(search->SourceTypeToDisplayString(search->sourceType));
-	line.push_back(Text::toT(search->destDir));
+	line.push_back(Text::toT(search->getDestDir()));
 
 	fs = _T("");
 	if(search->minFileSize >= 0) {
