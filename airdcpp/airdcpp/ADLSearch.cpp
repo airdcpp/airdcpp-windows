@@ -152,7 +152,9 @@ void ADLSearch::setPattern(const string& aPattern) {
 }
 
 void ADLSearch::setDestDir(const string& aDestDir) noexcept {
-	name = Util::cleanPathSeparators(aDestDir);
+	if (!aDestDir.empty()) {
+		name = Util::cleanPathSeparators(aDestDir);
+	}
 }
 
 bool ADLSearch::matchesFile(const string& f, const string& fp, int64_t size) {
