@@ -75,7 +75,7 @@ namespace webserver {
 
 		DirectoryListingPtr dl = nullptr;
 		try {
-			dl = DirectoryListingManager::getInstance()->createList(user, QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_CLIENT_VIEW, directory);
+			dl = DirectoryListingManager::getInstance()->openRemoteFileList(user, QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_CLIENT_VIEW, directory);
 		} catch (const Exception& e) {
 			aRequest.setResponseErrorStr(e.getError());
 			return websocketpp::http::status_code::bad_request;

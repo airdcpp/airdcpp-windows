@@ -271,10 +271,7 @@ LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHand
 		if((i = ctrlList.GetNextItem(-1, LVNI_SELECTED)) != -1) {
 			FinishedItem *ii = ctrlList.getItemData(i);
 			if(ii->getUser().user->isOnline()) {
-				try {
-					DirectoryListingManager::getInstance()->createList(ii->getUser(), QueueItem::FLAG_CLIENT_VIEW);
-				} catch(const Exception&) {
-				}
+				WinUtil::GetList()(ii->getUser().user, ii->getUser().hint);
 			} else {
 				addStatusLine(TSTRING(USER_OFFLINE));
 			}

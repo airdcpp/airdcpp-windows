@@ -26,7 +26,7 @@
 #include "BrowserBar.h"
 
 #include <airdcpp/Bundle.h>
-#include <airdcpp/DirectoryListingManager.h>
+#include <airdcpp/DownloadManagerListener.h>
 #include <airdcpp/QueueManagerListener.h>
 #include <airdcpp/QueueItem.h>
 #include <airdcpp/TaskQueue.h>
@@ -382,20 +382,12 @@ private:
 
 			// get list
 			getListMenu->appendItem(nick, [=] {
-				try {
-					DirectoryListingManager::getInstance()->createList(u, QueueItem::FLAG_CLIENT_VIEW);
-				} catch (const QueueException& e) {
-					ctrlStatus.SetText(1, Text::toT(e.getError()).c_str());
-				}
+				WinUtil::GetList()(u.user, u.hint);
 			});
 
 			// browse list
 			browseMenu->appendItem(nick, [=] {
-				try {
-					DirectoryListingManager::getInstance()->createList(u, QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
-				} catch (const QueueException& e) {
-					ctrlStatus.SetText(1, Text::toT(e.getError()).c_str());
-				}
+				WinUtil::BrowseList()(u.user, u.hint);
 			});
 
 			// PM

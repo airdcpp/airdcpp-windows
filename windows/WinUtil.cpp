@@ -23,6 +23,7 @@
 #include <powrprof.h>
 
 #include "WinUtil.h"
+#include "DirectoryListingFrm.h"
 #include "PrivateFrame.h"
 #include "TextFrame.h"
 #include "SearchFrm.h"
@@ -30,7 +31,6 @@
 #include "MainFrm.h"
 
 #include <airdcpp/ClientManager.h>
-#include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/FavoriteManager.h>
 #include <airdcpp/Localization.h>
 #include <airdcpp/LogManager.h>
@@ -216,11 +216,7 @@ void WinUtil::GetList::operator()(UserPtr aUser, const string& aUrl) const {
 		return;
 	
 	MainFrame::getMainFrame()->addThreadedTask([=] {
-		try {
-			DirectoryListingManager::getInstance()->createList(HintedUser(aUser, aUrl), QueueItem::FLAG_CLIENT_VIEW);
-		} catch(const Exception& e) {
-			LogManager::getInstance()->message(e.getError(), LogMessage::SEV_ERROR);		
-		}
+		DirectoryListingFrame::openWindow(HintedUser(aUser, aUrl), QueueItem::FLAG_CLIENT_VIEW);
 	});
 }
 
@@ -229,11 +225,7 @@ void WinUtil::BrowseList::operator()(UserPtr aUser, const string& aUrl) const {
 		return;
 
 	MainFrame::getMainFrame()->addThreadedTask([=] {
-		try {
-			DirectoryListingManager::getInstance()->createList(HintedUser(aUser, aUrl), QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
-		} catch (const Exception& e) {
-			LogManager::getInstance()->message(e.getError(), LogMessage::SEV_ERROR);
-		}
+		DirectoryListingFrame::openWindow(HintedUser(aUser, aUrl), QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
 	});
 }
 

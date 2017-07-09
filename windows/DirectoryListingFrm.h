@@ -65,6 +65,19 @@ class DirectoryListingFrame : public MDITabChildWindowImpl<DirectoryListingFrame
 
 public:
 	static void openWindow(const DirectoryListingPtr& aList, const string& aDir, const string& aXML);
+
+	// Open own filelist
+	static void openWindow(ProfileToken aProfile, bool aUseADL = false, const string& aDir = ADC_ROOT_STR) noexcept;
+
+	// Open local file
+	static void openWindow(const HintedUser& aUser, const string& aFile, const string& aDir = ADC_ROOT_STR) noexcept;
+
+	// Open remote filelist
+	static void openWindow(const HintedUser& aUser, Flags::MaskType aFlags, const string& aInitialDir = ADC_ROOT_STR) noexcept;
+
+	static DirectoryListingFrame* findFrame(const UserPtr& aUser) noexcept;
+	static void activate(const DirectoryListingPtr& aList) noexcept;
+
 	static void closeAll();
 	static bool getWindowParams(HWND hWnd, StringMap &params);
 	static bool parseWindowParams(StringMap& params);
@@ -226,6 +239,8 @@ public:
 	bool showDirDialog(string& fileName);
 
 	static string id;
+
+	void activate() noexcept;
 private:
 	void appendTreeContextMenu(CPoint& pt, DirectoryListing::Directory::Ptr& aDir);
 	void appendListContextMenu(CPoint& pt);
@@ -383,7 +398,6 @@ private:
 	void on(DirectoryListingListener::ChangeDirectory, const string& aDir, bool isSearchChange) noexcept;
 	void on(DirectoryListingListener::UpdateStatusMessage, const string& aMessage) noexcept;
 	void on(DirectoryListingListener::RemovedQueue, const string& aDir) noexcept;
-	void on(DirectoryListingListener::SetActive) noexcept;
 	void on(DirectoryListingListener::UserUpdated) noexcept;
 	void on(DirectoryListingListener::ShareProfileChanged) noexcept;
 	void on(DirectoryListingListener::Read) noexcept;

@@ -1397,7 +1397,7 @@ LRESULT MainFrame::onOpenOwnList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 		if (find_if(profiles.begin(), profiles.end(), [profile](const ShareProfilePtr& aProfile) { return aProfile->getToken() == profile; }) == profiles.end())
 			profile = SETTING(DEFAULT_SP);
 
-		DirectoryListingManager::getInstance()->openOwnList(profile, wID == IDC_OWN_LIST_ADL);
+		DirectoryListingFrame::openWindow(profile, wID == IDC_OWN_LIST_ADL);
 	});
 	return 0;
 }
@@ -1405,9 +1405,9 @@ LRESULT MainFrame::onOpenOwnList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring file;
 	if (WinUtil::browseList(file, m_hWnd)) {
-		UserPtr u = DirectoryListing::getUserFromFilename(Text::fromT(file));
-		if(u) {
-			addThreadedTask([=] { DirectoryListingManager::getInstance()->openFileList(HintedUser(u, Util::emptyString), Text::fromT(file)); });
+		UserPtr user = DirectoryListing::getUserFromFilename(Text::fromT(file));
+		if (user) {
+			DirectoryListingFrame::openWindow(HintedUser(user, Util::emptyString), Text::fromT(file));
 		} else {
 			WinUtil::showMessageBox(TSTRING(INVALID_LISTNAME), MB_ICONWARNING);
 		}

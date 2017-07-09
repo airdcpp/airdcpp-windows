@@ -21,6 +21,7 @@
 
 #include "HubFrame.h"
 #include "LineDlg.h"
+#include "DirectoryListingFrm.h"
 #include "SearchFrm.h"
 #include "PrivateFrame.h"
 #include "TextFrame.h"
@@ -29,7 +30,6 @@
 #include "Wildcards.h"
 
 #include <airdcpp/CryptoManager.h>
-#include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/Message.h>
 #include <airdcpp/IgnoreManager.h>
 #include <airdcpp/QueueManager.h>
@@ -808,7 +808,7 @@ LRESULT HubFrame::onLButton(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& b
 					PrivateFrame::openWindow(HintedUser(ui->getUser(), client->getHubUrl()));
 				} else if (wParam & MK_SHIFT) {
 					try {
-						DirectoryListingManager::getInstance()->createList(HintedUser(ui->getUser(), client->getHubUrl()), QueueItem::FLAG_CLIENT_VIEW);
+						DirectoryListingFrame::openWindow(HintedUser(ui->getUser(), client->getHubUrl()), QueueItem::FLAG_CLIENT_VIEW);
 					} catch(const Exception& e) {
 						addStatus(Text::toT(e.getError()), LogMessage::SEV_ERROR, WinUtil::m_ChatTextSystem);
 					}
@@ -950,7 +950,7 @@ LRESULT HubFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 }
 
 void HubFrame::handleOpenOwnList(){
-	DirectoryListingManager::getInstance()->openOwnList(client->get(HubSettings::ShareProfile));
+	DirectoryListingFrame::openWindow(client->get(HubSettings::ShareProfile));
 }
 
 LRESULT HubFrame::onSetNotify(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
@@ -1177,11 +1177,8 @@ void HubFrame::on(Redirected, const string&, const ClientPtr& aNewClient) noexce
 LRESULT HubFrame::onEnterUsers(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHandled*/) {
 	int item = ctrlUsers.GetNextItem(-1, LVNI_FOCUSED);
 	if(item != -1) {
-		try {
-			DirectoryListingManager::getInstance()->createList(HintedUser((ctrlUsers.getItemData(item))->getUser(), client->getHubUrl()), QueueItem::FLAG_CLIENT_VIEW);
-		} catch(const Exception& e) {
-			addStatus(Text::toT(e.getError()), LogMessage::SEV_ERROR);
-		}
+		auto user = HintedUser((ctrlUsers.getItemData(item))->getUser(), client->getHubUrl());
+		WinUtil::GetList()(user.user, user.hint);
 	}
 	return 0;
 }

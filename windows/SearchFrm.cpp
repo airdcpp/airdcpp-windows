@@ -19,6 +19,7 @@
 #include "stdafx.h"
 #include "Resource.h"
 
+#include "DirectoryListingFrm.h"
 #include "MainFrm.h"
 #include "SearchFrm.h"
 #include "LineDlg.h"
@@ -833,11 +834,7 @@ void SearchFrame::handleGetList(ListType aType) {
 			flags = QueueItem::FLAG_PARTIAL_LIST;
 		}
 
-		try {
-			DirectoryListingManager::getInstance()->createList(si->sr->getUser(), QueueItem::FLAG_CLIENT_VIEW | flags, si->sr->getAdcFilePath());
-		} catch(const Exception&) {
-			// Ignore for now...
-		}
+		DirectoryListingFrame::openWindow(si->sr->getUser(), QueueItem::FLAG_CLIENT_VIEW | flags, si->sr->getAdcFilePath());
 	};
 
 	performAction(getList, true);

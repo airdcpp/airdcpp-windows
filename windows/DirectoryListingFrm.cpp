@@ -59,11 +59,77 @@ static ColumnType columnTypes [] = { COLUMN_TEXT, COLUMN_TEXT, COLUMN_SIZE, COLU
 
 string DirectoryListingFrame::id = "FileList";
 
-void DirectoryListingFrame::openWindow(const DirectoryListingPtr& aList, const string& aDir, const string& aXML) {
 
-	DirectoryListingFrame* frame;
-	auto f = find_if(frames | map_values, [aList](const DirectoryListingFrame* h) { return aList->getUser() == h->dl->getUser(); }).base();
+// Open own filelist
+void DirectoryListingFrame::openWindow(ProfileToken aProfile, bool aUseADL, const string& aDir) noexcept {
+	auto me = HintedUser(ClientManager::getInstance()->getMe(), Util::emptyString);
+
+	auto list = DirectoryListingManager::getInstance()->findList(me);
+	if (list) {
+		activate(list);
+		if (list->getShareProfile() != aProfile) {
+			list->addShareProfileChangeTask(aProfile);
+		}
+
+		return;
+	}
+
+	DirectoryListingManager::getInstance()->openOwnList(aProfile, aUseADL, aDir);
+}
+
+// Open local file
+void DirectoryListingFrame::openWindow(const HintedUser& aUser, const string& aFile, const string& aDir) noexcept {
+	auto list = DirectoryListingManager::getInstance()->findList(aUser);
+	if (list) {
+		activate(list);
+		return;
+	}
+
+	DirectoryListingManager::getInstance()->openLocalFileList(aUser, aFile, aDir);
+}
+
+// Open remote filelist
+void DirectoryListingFrame::openWindow(const HintedUser& aUser, Flags::MaskType aFlags, const string& aInitialDir) noexcept {
+	auto list = DirectoryListingManager::getInstance()->findList(aUser);
+	if (list) {
+		if (aUser.hint != list->getHubUrl()) {
+			list->addHubUrlChangeTask(aUser.hint);
+		}
+
+		if (aInitialDir != ADC_ROOT_STR) {
+			list->addDirectoryChangeTask(aInitialDir, false);
+		}
+
+		activate(list);
+		return;
+	}
+
+	try {
+		DirectoryListingManager::getInstance()->openRemoteFileList(aUser, QueueItem::FLAG_CLIENT_VIEW | aFlags, aInitialDir);
+	} catch (const Exception& e) {
+		MainFrame::getMainFrame()->ShowPopup(Text::toT(e.getError()), _T(""), NIIF_INFO | NIIF_NOSOUND, true);
+	}
+}
+
+DirectoryListingFrame* DirectoryListingFrame::findFrame(const UserPtr& aUser) noexcept {
+	auto f = find_if(frames | map_values, [&](const DirectoryListingFrame* h) { return aUser == h->dl->getUser(); }).base();
 	if (f == frames.end()) {
+		return nullptr;
+	}
+
+	return f->second;
+}
+
+void DirectoryListingFrame::activate(const DirectoryListingPtr& aList) noexcept {
+	auto frame = findFrame(aList->getUser());
+	if (frame) {
+		frame->activate();
+	}
+}
+
+void DirectoryListingFrame::openWindow(const DirectoryListingPtr& aList, const string& aDir, const string& aXML) {
+	auto frame = findFrame(aList->getUser());
+	if (!frame) {
 		frame = new DirectoryListingFrame(aList);
 		if (!frame->allowPopup()) {
 			WinUtil::hiddenCreateEx(frame);
@@ -72,8 +138,6 @@ void DirectoryListingFrame::openWindow(const DirectoryListingPtr& aList, const s
 		}
 
 		frames.emplace(frame->m_hWnd, frame);
-	} else {
-		frame = f->second;
 	}
 
 	if (aList->getPartialList()) {
@@ -127,7 +191,7 @@ bool DirectoryListingFrame::parseWindowParams(StringMap& params) {
 			DirectoryListingManager::getInstance()->openOwnList(token, false, dir);
 		} else if (!file.empty() || partial) {
 					
-			auto dl = DirectoryListingManager::getInstance()->openFileList(HintedUser(u, url), file, dir, partial);
+			auto dl = DirectoryListingManager::getInstance()->openLocalFileList(HintedUser(u, url), file, dir, partial);
 			if (partial) {
 				dl->addDirectoryChangeTask(dir, false, false, true);
 			}
@@ -394,7 +458,7 @@ void DirectoryListingFrame::on(DirectoryListingListener::UpdateStatusMessage, co
 	callAsync([=] { updateStatus(Text::toT(aMessage)); });
 }
 
-void DirectoryListingFrame::on(DirectoryListingListener::SetActive) noexcept {
+void DirectoryListingFrame::activate() noexcept {
 	if (allowPopup()) {
 		callAsync([this] { MDIActivate(m_hWnd); });
 	}
