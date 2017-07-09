@@ -248,7 +248,7 @@ void DirectoryListingFrame::enableBrowserLayout(bool redraw) {
 void DirectoryListingFrame::changeWindowState(bool enable, bool redraw) {
 	ctrlToolbar.EnableButton(IDC_MATCH_QUEUE, enable && !dl->isMyCID());
 	ctrlToolbar.EnableButton(IDC_MATCH_ADL, enable);
-	ctrlToolbar.EnableButton(IDC_FIND, enable);
+	ctrlToolbar.EnableButton(IDC_FIND, enable && !dl->getIsOwnList());
 	ctrlToolbar.EnableButton(IDC_NEXT, enable && dl->curSearch ? TRUE : FALSE);
 	ctrlToolbar.EnableButton(IDC_PREV, enable && dl->curSearch ? TRUE : FALSE);
 	ctrlToolbar.EnableButton(IDC_FILELIST_DIFF, enable && dl->getPartialList() && !dl->getIsOwnList() ? false : enable);
