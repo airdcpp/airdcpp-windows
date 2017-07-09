@@ -269,6 +269,8 @@ void Util::initialize(const string& aConfigPath) {
 	};
 
 #ifdef _WIN32
+	File::ensureDirectory(getTempPath());
+
 	_set_invalid_parameter_handler(reinterpret_cast<_invalid_parameter_handler>(invalidParameterHandler));
 
 	paths[PATH_GLOBAL_CONFIG] = exeDirectoryPath;
