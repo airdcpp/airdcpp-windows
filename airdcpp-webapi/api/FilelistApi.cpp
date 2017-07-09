@@ -45,7 +45,6 @@ namespace webserver {
 
 		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_POST,	(),													FilelistApi::handlePostList);
 		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_POST,	(EXACT_PARAM("self")),								FilelistApi::handleOwnList);
-		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_DELETE,	(CID_PARAM),										FilelistApi::handleDeleteList);
 
 		METHOD_HANDLER(Access::DOWNLOAD,		METHOD_GET,		(EXACT_PARAM("directory_downloads")),				FilelistApi::handleGetDirectoryDownloads);
 		METHOD_HANDLER(Access::DOWNLOAD,		METHOD_POST,	(EXACT_PARAM("directory_downloads")),				FilelistApi::handlePostDirectoryDownload);
@@ -115,12 +114,16 @@ namespace webserver {
 	api_return FilelistApi::handleOwnList(ApiRequest& aRequest) {
 		auto profile = Deserializer::deserializeShareProfile(aRequest.getRequestBody());
 		auto dl = DirectoryListingManager::getInstance()->openOwnList(profile);
+		if (!dl) {
+			aRequest.setResponseErrorStr("Own filelist is open already");
+			return websocketpp::http::status_code::conflict;
+		}
 
 		aRequest.setResponseBody(serializeList(dl));
 		return websocketpp::http::status_code::ok;
 	}
 
-	api_return FilelistApi::handleDeleteList(ApiRequest& aRequest) {
+	api_return FilelistApi::handleDeleteSubmodule(ApiRequest& aRequest) {
 		auto list = getSubModule(aRequest);
 
 		DirectoryListingManager::getInstance()->removeList(list->getList()->getUser());
