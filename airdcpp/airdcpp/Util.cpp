@@ -407,20 +407,15 @@ bool Util::loadBootConfig(const string& aDirectoryPath) noexcept {
 	return false;
 }
 
-#ifdef _WIN32
-static const char badChars[] = { 
-	1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
-		17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
-		31, '<', '>', '/', '"', '|', '?', '*', 0
-};
-#else
-
 static const char badChars[] = { 
 	1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
 	17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
-	31, '<', '>', '\\', '"', '|', '?', '*', 0
-};
+	31, '/', 
+#ifdef _WIN32
+	'<', '>', '"', '|', '?', '*',
 #endif
+	0
+};
 
 /**
  * Replaces all strange characters in a file with '_'
