@@ -19,7 +19,8 @@
 #include "stdinc.h"
 #include "AdcCommand.h"
 
-#include "ClientManager.h"
+#include "CID.h"
+#include "Util.h"
 
 namespace dcpp {
 
