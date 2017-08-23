@@ -142,11 +142,6 @@ struct emulated_operations
     {
         store(storage, (storage_type)0, order);
     }
-
-    static BOOST_FORCEINLINE bool is_lock_free(storage_type const volatile&) BOOST_NOEXCEPT
-    {
-        return false;
-    }
 };
 
 template< std::size_t Size, bool Signed >

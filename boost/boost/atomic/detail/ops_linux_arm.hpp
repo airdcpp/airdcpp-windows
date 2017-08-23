@@ -136,11 +136,6 @@ struct linux_arm_cas :
             return false;
         }
     }
-
-    static BOOST_FORCEINLINE bool is_lock_free(storage_type const volatile&) BOOST_NOEXCEPT
-    {
-        return true;
-    }
 };
 
 template< bool Signed >

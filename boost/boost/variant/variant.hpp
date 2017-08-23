@@ -71,10 +71,12 @@
 #include <boost/mpl/front.hpp>
 #include <boost/mpl/identity.hpp>
 #include <boost/mpl/if.hpp>
+#include <boost/mpl/insert_range.hpp>
 #include <boost/mpl/int.hpp>
 #include <boost/mpl/is_sequence.hpp>
 #include <boost/mpl/iterator_range.hpp>
 #include <boost/mpl/iter_fold_if.hpp>
+#include <boost/mpl/list.hpp>
 #include <boost/mpl/logical.hpp>
 #include <boost/mpl/max_element.hpp>
 #include <boost/mpl/next.hpp>
@@ -386,7 +388,7 @@ public: // visitor interfaces
 
 #if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x0551)) || \
     BOOST_WORKAROUND(BOOST_MSVC, BOOST_TESTED_AT(1600))
-        operand; // suppresses warnings
+        (void)operand; // suppresses warnings
 #endif
 
         BOOST_VARIANT_AUX_RETURN_VOID;
@@ -2452,15 +2454,19 @@ struct make_variant_over
 private: // precondition assertions
 
     BOOST_STATIC_ASSERT(( ::boost::mpl::is_sequence<Types>::value ));
+    typedef typename boost::mpl::insert_range<
+      boost::mpl::list<>
+    , boost::mpl::end< boost::mpl::list<> >::type
+    , Types
+    >::type copied_sequence_t;
 
 public: // metafunction result
 
     typedef variant<
-          detail::variant::over_sequence< Types >
+          detail::variant::over_sequence<copied_sequence_t>
         > type;
 
 };
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // function template swap

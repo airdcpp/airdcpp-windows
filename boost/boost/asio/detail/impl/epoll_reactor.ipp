@@ -359,10 +359,16 @@ void epoll_reactor::deregister_descriptor(socket_type descriptor,
 
     descriptor_lock.unlock();
 
-    free_descriptor_state(descriptor_data);
-    descriptor_data = 0;
-
     io_service_.post_deferred_completions(ops);
+
+    // Leave descriptor_data set so that it will be freed by the subsequent
+    // call to cleanup_descriptor_data.
+  }
+  else
+  {
+    // We are shutting down, so prevent cleanup_descriptor_data from freeing
+    // the descriptor_data object and let the destructor free it instead.
+    descriptor_data = 0;
   }
 }
 
@@ -388,6 +394,22 @@ void epoll_reactor::deregister_internal_descriptor(socket_type descriptor,
 
     descriptor_lock.unlock();
 
+    // Leave descriptor_data set so that it will be freed by the subsequent
+    // call to cleanup_descriptor_data.
+  }
+  else
+  {
+    // We are shutting down, so prevent cleanup_descriptor_data from freeing
+    // the descriptor_data object and let the destructor free it instead.
+    descriptor_data = 0;
+  }
+}
+
+void epoll_reactor::cleanup_descriptor_data(
+    per_descriptor_data& descriptor_data)
+{
+  if (descriptor_data)
+  {
     free_descriptor_state(descriptor_data);
     descriptor_data = 0;
   }
@@ -451,8 +473,15 @@ void epoll_reactor::run(bool block, op_queue<operation>& ops)
       // don't call work_started() here. This still allows the io_service to
       // stop if the only remaining operations are descriptor operations.
       descriptor_state* descriptor_data = static_cast<descriptor_state*>(ptr);
-      descriptor_data->set_ready_events(events[i].events);
-      ops.push(descriptor_data);
+      if (!ops.is_enqueued(descriptor_data))
+      {
+        descriptor_data->set_ready_events(events[i].events);
+        ops.push(descriptor_data);
+      }
+      else
+      {
+        descriptor_data->add_ready_events(events[i].events);
+      }
     }
   }
 

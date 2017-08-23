@@ -73,4 +73,30 @@
 #define BOOST_ATOMIC_DETAIL_NO_ASM_RAX_RDX_PAIRS
 #endif
 
+#if defined(BOOST_NO_CXX11_HDR_TYPE_TRAITS)
+#if !(defined(BOOST_LIBSTDCXX11) && (BOOST_LIBSTDCXX_VERSION+0) >= 40700) /* libstdc++ from gcc >= 4.7 in C++11 mode */
+// This macro indicates that there is no <type_traits> standard header that is sufficient for Boost.Atomic needs.
+#define BOOST_ATOMIC_DETAIL_NO_CXX11_HDR_TYPE_TRAITS
+#endif
+#endif // defined(BOOST_NO_CXX11_HDR_TYPE_TRAITS)
+
+// Enable pointer/reference casts between storage and value when possible.
+// Note: Despite that MSVC does not employ strict aliasing rules for optimizations
+// and does not require an explicit markup for types that may alias, we still don't
+// enable the optimization for this compiler because at least MSVC-8 and 9 are known
+// to generate broken code sometimes when casts are used.
+#if defined(__GNUC__) && (!defined(BOOST_INTEL_CXX_VERSION) || (BOOST_INTEL_CXX_VERSION+0) >= 1300)
+#define BOOST_ATOMIC_DETAIL_MAY_ALIAS __attribute__((__may_alias__))
+#define BOOST_ATOMIC_DETAIL_STORAGE_TYPE_MAY_ALIAS
+#elif defined(__has_attribute)
+#if __has_attribute(__may_alias__)
+#define BOOST_ATOMIC_DETAIL_MAY_ALIAS __attribute__((__may_alias__))
+#define BOOST_ATOMIC_DETAIL_STORAGE_TYPE_MAY_ALIAS
+#endif
+#endif
+
+#if !defined(BOOST_ATOMIC_DETAIL_MAY_ALIAS)
+#define BOOST_ATOMIC_DETAIL_MAY_ALIAS
+#endif
+
 #endif // BOOST_ATOMIC_DETAIL_CONFIG_HPP_INCLUDED_

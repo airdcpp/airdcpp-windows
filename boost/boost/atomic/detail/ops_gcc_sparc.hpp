@@ -120,11 +120,6 @@ struct gcc_sparc_cas32 :
         fence_after(order);
         return v;
     }
-
-    static BOOST_FORCEINLINE bool is_lock_free(storage_type const volatile&) BOOST_NOEXCEPT
-    {
-        return true;
-    }
 };
 
 template< bool Signed >
@@ -191,11 +186,6 @@ struct gcc_sparc_cas64 :
         storage_type volatile& storage, storage_type& expected, storage_type desired, memory_order success_order, memory_order failure_order) BOOST_NOEXCEPT
     {
         return compare_exchange_strong(storage, expected, desired, success_order, failure_order);
-    }
-
-    static BOOST_FORCEINLINE bool is_lock_free(storage_type const volatile&) BOOST_NOEXCEPT
-    {
-        return true;
     }
 };
 

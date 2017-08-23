@@ -37,22 +37,30 @@ BOOST_SYMBOL_IMPORT boost::detail::winapi::BOOL_ WINAPI IsProcessInJob(
 BOOST_SYMBOL_IMPORT boost::detail::winapi::BOOL_ WINAPI TerminateJobObject(
     boost::detail::winapi::HANDLE_ hJob,
     boost::detail::winapi::UINT_ uExitCode);
+} // extern "C"
+#endif // !defined( BOOST_USE_WINDOWS_H )
 
+// MinGW does not declare OpenJobObjectA/W in headers but exports them from libraries
+#if !defined( BOOST_USE_WINDOWS_H ) || defined( BOOST_WINAPI_IS_MINGW )
+extern "C" {
+#if !defined( BOOST_NO_ANSI_APIS )
 BOOST_SYMBOL_IMPORT boost::detail::winapi::HANDLE_ WINAPI OpenJobObjectA(
     boost::detail::winapi::DWORD_ dwDesiredAccess,
     boost::detail::winapi::BOOL_ bInheritHandles,
     boost::detail::winapi::LPCSTR_ lpName);
+#endif
 
 BOOST_SYMBOL_IMPORT boost::detail::winapi::HANDLE_ WINAPI OpenJobObjectW(
     boost::detail::winapi::DWORD_ dwDesiredAccess,
     boost::detail::winapi::BOOL_ bInheritHandles,
     boost::detail::winapi::LPCWSTR_ lpName);
 } // extern "C"
-#endif // !defined( BOOST_USE_WINDOWS_H )
+#endif // !defined( BOOST_USE_WINDOWS_H ) || defined( BOOST_WINAPI_IS_MINGW )
 
 namespace boost { namespace detail { namespace winapi {
 
-#if defined( BOOST_USE_WINDOWS_H )
+// MinGW does not define job constants
+#if defined( BOOST_USE_WINDOWS_H ) && !defined( BOOST_WINAPI_IS_MINGW )
 const DWORD_ JOB_OBJECT_ASSIGN_PROCESS_ = JOB_OBJECT_ASSIGN_PROCESS;
 const DWORD_ JOB_OBJECT_SET_ATTRIBUTES_ = JOB_OBJECT_SET_ATTRIBUTES;
 const DWORD_ JOB_OBJECT_QUERY_ = JOB_OBJECT_QUERY;
@@ -109,7 +117,7 @@ BOOST_FORCEINLINE HANDLE_ create_job_object(LPSECURITY_ATTRIBUTES_ lpJobAttribut
 
 BOOST_FORCEINLINE HANDLE_ open_job_object(DWORD_ dwDesiredAccess, BOOL_ bInheritHandles, LPCWSTR_ lpName)
 {
-    return OpenJobObjectW(dwDesiredAccess, bInheritHandles, lpName);
+    return ::OpenJobObjectW(dwDesiredAccess, bInheritHandles, lpName);
 }
 
 } // namespace winapi

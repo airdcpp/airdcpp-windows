@@ -7,6 +7,7 @@
 
 # See library home page at http://www.boost.org/libs/system
 
+import testing ;
 
 project
     : requirements
@@ -19,7 +20,42 @@ project
      : <link>shared:<define>BOOST_SYSTEM_DYN_LINK=1
        <link>static:<define>BOOST_SYSTEM_STATIC_LINK=1
      ;
-   
+
+   rule cxx03 ( properties * )
+   {
+      local result ;
+
+      if <toolset>gcc in $(properties) || <toolset>clang in $(properties)
+      {
+         result = <cxxflags>-std=c++03 ;
+      }
+      else
+      {
+         result = <build>no ;
+      }
+
+      return $(result) ;
+   }
+
+   rule cxx11 ( properties * )
+   {
+      local result ;
+
+      if <toolset-gcc:version>4.6 in $(properties)
+      {
+         result = <cxxflags>-std=c++0x ;
+      }
+      else if <toolset>gcc in $(properties) || <toolset>clang in $(properties)
+      {
+         result = <cxxflags>-std=c++11 ;
+      }
+      else
+      {
+         result = <build>no ;
+      }
+
+      return $(result) ;
+   }
 
    test-suite "system"
        : [ run error_code_test.cpp
@@ -30,6 +66,18 @@ project
          ]
          [ run error_code_test.cpp
            :  :  : <link>shared : error_code_test_shared
+         ]
+         [ run error_code_test.cpp
+           :  :  : <link>static <conditional>@cxx03 : error_code_test_03
+         ]
+         [ run error_code_test.cpp
+           :  :  : <link>shared <conditional>@cxx03 : error_code_test_shared_03
+         ]
+         [ run error_code_test.cpp
+           :  :  : <link>static <conditional>@cxx11 : error_code_test_11
+         ]
+         [ run error_code_test.cpp
+           :  :  : <link>shared <conditional>@cxx11 : error_code_test_shared_11
          ]
          [ run error_code_user_test.cpp
            :  :  : <link>static
@@ -54,5 +102,23 @@ project
          ]
          [ run config_test.cpp
            :  :  : <test-info>always_show_run_output 
+         ]
+         [ run std_interop_test.cpp
+           :  :  : <link>static
+         ]
+         [ run std_interop_test.cpp
+            :  :  : <link>shared : std_interop_test_shared
+         ]
+         [ run std_mismatch_test.cpp
+           :  :  : <link>static <conditional>@cxx03 : std_mismatch_test_03
+         ]
+         [ run std_mismatch_test.cpp
+           :  :  : <link>shared <conditional>@cxx03 : std_mismatch_test_shared_03
+         ]
+         [ run std_mismatch_test.cpp
+           :  :  : <link>static <conditional>@cxx11 : std_mismatch_test_11
+         ]
+         [ run std_mismatch_test.cpp
+           :  :  : <link>shared <conditional>@cxx11 : std_mismatch_test_shared_11
          ]
          ;

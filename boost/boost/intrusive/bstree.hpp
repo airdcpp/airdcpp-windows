@@ -255,7 +255,8 @@ struct get_key_of_value<void, T>
 template<class ValuePtr, class VoidOrKeyOfValue, class VoidOrKeyComp>
 struct bst_key_types
 {
-   typedef typename pointer_element<ValuePtr>::type   value_type;
+   typedef typename
+      boost::movelib::pointer_element<ValuePtr>::type value_type;
    typedef typename get_key_of_value
       < VoidOrKeyOfValue, value_type>::type           key_of_value;
    typedef typename key_of_value::type                key_type;

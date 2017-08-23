@@ -17,11 +17,11 @@
 #define BOOST_ATOMIC_DETAIL_OPS_MSVC_X86_HPP_INCLUDED_
 
 #include <boost/memory_order.hpp>
-#include <boost/type_traits/make_signed.hpp>
 #include <boost/atomic/detail/config.hpp>
 #include <boost/atomic/detail/interlocked.hpp>
 #include <boost/atomic/detail/storage_type.hpp>
 #include <boost/atomic/detail/operations_fwd.hpp>
+#include <boost/atomic/detail/type_traits/make_signed.hpp>
 #include <boost/atomic/capabilities.hpp>
 #if defined(BOOST_ATOMIC_DETAIL_X86_HAS_CMPXCHG8B) || defined(BOOST_ATOMIC_DETAIL_X86_HAS_CMPXCHG16B)
 #include <boost/cstdint.hpp>
@@ -135,7 +135,7 @@ struct msvc_x86_operations :
 
     static BOOST_FORCEINLINE storage_type fetch_sub(storage_type volatile& storage, storage_type v, memory_order order) BOOST_NOEXCEPT
     {
-        typedef typename make_signed< storage_type >::type signed_storage_type;
+        typedef typename boost::atomics::detail::make_signed< storage_type >::type signed_storage_type;
         return Derived::fetch_add(storage, static_cast< storage_type >(-static_cast< signed_storage_type >(v)), order);
     }
 
@@ -153,11 +153,6 @@ struct msvc_x86_operations :
     static BOOST_FORCEINLINE void clear(storage_type volatile& storage, memory_order order) BOOST_NOEXCEPT
     {
         store(storage, (storage_type)0, order);
-    }
-
-    static BOOST_FORCEINLINE bool is_lock_free(storage_type const volatile&) BOOST_NOEXCEPT
-    {
-        return true;
     }
 };
 
@@ -799,11 +794,6 @@ struct msvc_dcas_x86
 
         return v;
     }
-
-    static BOOST_FORCEINLINE bool is_lock_free(storage_type const volatile&) BOOST_NOEXCEPT
-    {
-        return true;
-    }
 };
 
 template< bool Signed >
@@ -892,11 +882,6 @@ struct msvc_dcas_x86_64
         storage_type volatile& storage, storage_type& expected, storage_type desired, memory_order success_order, memory_order failure_order) BOOST_NOEXCEPT
     {
         return compare_exchange_strong(storage, expected, desired, success_order, failure_order);
-    }
-
-    static BOOST_FORCEINLINE bool is_lock_free(storage_type const volatile&) BOOST_NOEXCEPT
-    {
-        return true;
     }
 };
 

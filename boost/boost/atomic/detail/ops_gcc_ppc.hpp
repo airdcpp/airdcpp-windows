@@ -331,11 +331,6 @@ struct operations< 4u, Signed > :
     {
         store(storage, 0, order);
     }
-
-    static BOOST_FORCEINLINE bool is_lock_free(storage_type const volatile&) BOOST_NOEXCEPT
-    {
-        return true;
-    }
 };
 
 
@@ -757,11 +752,6 @@ struct operations< 8u, Signed > :
     static BOOST_FORCEINLINE void clear(storage_type volatile& storage, memory_order order) BOOST_NOEXCEPT
     {
         store(storage, 0, order);
-    }
-
-    static BOOST_FORCEINLINE bool is_lock_free(storage_type const volatile&) BOOST_NOEXCEPT
-    {
-        return true;
     }
 };
 

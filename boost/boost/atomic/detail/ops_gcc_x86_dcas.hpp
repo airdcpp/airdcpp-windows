@@ -354,11 +354,6 @@ struct gcc_dcas_x86
 #endif // defined(__PIC__)
 #endif
     }
-
-    static BOOST_FORCEINLINE bool is_lock_free(storage_type const volatile&) BOOST_NOEXCEPT
-    {
-        return true;
-    }
 };
 
 #endif // defined(BOOST_ATOMIC_DETAIL_X86_HAS_CMPXCHG8B)
@@ -610,11 +605,6 @@ struct gcc_dcas_x86_64
 
         return v;
 #endif
-    }
-
-    static BOOST_FORCEINLINE bool is_lock_free(storage_type const volatile&) BOOST_NOEXCEPT
-    {
-        return true;
     }
 };
 

@@ -161,11 +161,6 @@ struct gcc_atomic_operations
     {
         __atomic_clear(const_cast< storage_type* >(&storage), atomics::detail::convert_memory_order_to_gcc(order));
     }
-
-    static BOOST_FORCEINLINE bool is_lock_free(storage_type const volatile& storage) BOOST_NOEXCEPT
-    {
-        return __atomic_is_lock_free(sizeof(storage_type), &storage);
-    }
 };
 
 #if BOOST_ATOMIC_INT128_LOCK_FREE > 0

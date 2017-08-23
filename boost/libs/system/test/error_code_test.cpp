@@ -30,14 +30,20 @@
 //  with a boost::system using directive increases use scenario coverage.
 using namespace boost::system;
 
-# if defined( BOOST_WINDOWS_API )
-#   include "winerror.h"
-#   define BOOST_ACCESS_ERROR_MACRO ERROR_ACCESS_DENIED
-# elif defined( BOOST_POSIX_API )
-#   define BOOST_ACCESS_ERROR_MACRO EACCES
-# else
-#   error "Only supported for POSIX and Windows"
-# endif
+#if defined( BOOST_WINDOWS_API )
+// Neither MinGW or Cygwin versions of winerror.h work if used alone, so on
+// either of those platforms include the full windows.h
+#  if defined(__MINGW32__) || defined(__CYGWIN__)
+#    include <windows.h>
+#  else
+#    include <winerror.h>
+#  endif
+#  define BOOST_ACCESS_ERROR_MACRO ERROR_ACCESS_DENIED
+#elif defined( BOOST_POSIX_API )
+#  define BOOST_ACCESS_ERROR_MACRO EACCES
+#else
+#  error "Only supported for POSIX and Windows"
+#endif
 
 namespace
 {

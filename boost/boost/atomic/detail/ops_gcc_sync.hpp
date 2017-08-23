@@ -145,11 +145,6 @@ struct gcc_sync_operations :
         if (order == memory_order_seq_cst)
             __sync_synchronize();
     }
-
-    static BOOST_FORCEINLINE bool is_lock_free(storage_type const volatile&) BOOST_NOEXCEPT
-    {
-        return true;
-    }
 };
 
 #if BOOST_ATOMIC_INT8_LOCK_FREE > 0
