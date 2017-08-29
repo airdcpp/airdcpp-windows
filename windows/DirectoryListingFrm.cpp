@@ -1496,7 +1496,11 @@ void DirectoryListingFrame::appendTreeContextMenu(CPoint& pt, DirectoryListing::
 
 	directoryMenu.appendItem(TSTRING(COPY_DIRECTORY), [=] { handleCopyDir(); });
 	directoryMenu.appendItem(TSTRING(SEARCH), [=] { handleSearchByName(true, false); });
-	directoryMenu.appendItem(TSTRING(VIEW_NFO), [this] { handleViewNFO(true); });
+
+	if (dl->getUser()->isSet(User::ASCH) && !dl->getIsOwnList()) {
+		directoryMenu.appendItem(TSTRING(VIEW_NFO), [this] { handleViewNFO(true); });
+	}
+
 	if (dl->getPartialList() && !dir->getAdls()) {
 		directoryMenu.appendSeparator();
 		directoryMenu.appendItem(TSTRING(RELOAD), [=] { handleReloadPartial(); });
