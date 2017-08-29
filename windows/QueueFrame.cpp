@@ -1515,8 +1515,7 @@ void QueueFrame::QueueItemInfo::getChildQueueItems(QueueItemList& ret) {
 }
 
 QueueFrame::QueueItemInfoPtr QueueFrame::QueueItemInfo::findChild(const string& aKey) {
-	int i = 0;
-	int j = 0;
+	string::size_type i = 0, j = 0;
 
 	string itemTarget = getTarget();
 	if (itemTarget[itemTarget.length() - 1] != PATH_SEPARATOR)
@@ -1543,15 +1542,13 @@ QueueFrame::QueueItemInfoPtr QueueFrame::QueueItemInfo::findChild(const string& 
 }
 
 QueueFrame::QueueItemInfoPtr QueueFrame::QueueItemInfo::addChild(const QueueItemPtr& aQI) {
-	int i = 0;
-	int j = 0;
-
 	string itemTarget = getTarget();
 	if (itemTarget[itemTarget.length() - 1] != PATH_SEPARATOR)
 		itemTarget += PATH_SEPARATOR;
 	
 	string tmp = aQI->getTarget().substr(itemTarget.size());
 
+	size_t i = 0, j = 0;
 	QueueItemInfoPtr dir(this);
 	while ((i = tmp.find(PATH_SEPARATOR, j)) != string::npos) {
 		string curPath = itemTarget + tmp.substr(0, i + 1);

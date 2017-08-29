@@ -679,7 +679,7 @@ HTREEITEM FolderTree::SetSelectedPath(const tstring &sPath, bool bExpanded /* = 
 		}
 	}
 
-	int nFound = sSearch.find(_T('\\'));
+	auto nFound = sSearch.find(_T('\\'));
 	while(nFound != tstring::npos)
 	{
 		tstring sMatch;
