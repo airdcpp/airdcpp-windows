@@ -1,0 +1,208 @@
+# 
+# Translators:
+# Ettore Atalan <atalanttore@googlemail.com>, 2015-2017
+# Testboy <frank.de@gmail.com>, 2017
+msgid ""
+msgstr ""
+"Project-Id-Version: AirDC++\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-03-24 21:02\n"
+"PO-Revision-Date: 2017-08-03 10:26+0000\n"
+"Last-Translator: Sopor\n"
+"Language-Team: German (Germany) (http://www.transifex.com/airdcpp/airdcpp/language/de_DE/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: de_DE\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. RunAtFinish
+#: AirDC_installscript.nsi:92
+msgid "Launch AirDC++"
+msgstr "AirDC++ starten"
+
+#. ^ComponentsText
+#: AirDC_installscript.nsi:93
+msgid "Welcome to the AirDC++ installer."
+msgstr "Willkommen beim Installationsprogramm von AirDC++."
+
+#. ^DirText
+#: AirDC_installscript.nsi:94
+msgid ""
+"If you are upgrading from an older version, select the same directory where "
+"your old version resides and your existing settings will be imported."
+msgstr "Wenn Sie von einer älteren Version aktualisieren, wählen Sie das Verzeichnis ihrer alten Version aus, damit ihre vorhandenen Einstellungen importiert werden."
+
+#. SecAirDC
+#: AirDC_installscript.nsi:95
+msgid "AirDC++ (required)"
+msgstr "AirDC++ (erforderlich)"
+
+#. ProfileDir
+#: AirDC_installscript.nsi:96
+msgid ""
+"Settings of a previous installation of AirDC++ has been found in the user "
+"profile, do you want to backup settings? (You can find them in $DOCBACKUPDIR"
+" later)"
+msgstr "Einstellungen von einer früheren Installation von AirDC++ wurden im Benutzerprofil gefunden. Möchten Sie die Einstellungen sichern? (Sie finden sie später in $DOCBACKUPDIR)"
+
+#. ProgramDir
+#: AirDC_installscript.nsi:97
+msgid ""
+"A previous installation of AirDC++ has been found in the target folder, do "
+"you want to backup settings? (You can find them in $INSTBACKUPDIR later)"
+msgstr "Eine vorherige Installation von AirDC++ wurde im Zielverzeichnis gefunden. Möchten Sie die Einstellungen sichern? (Sie finden sie später in $INSTBACKUPDIR)"
+
+#. Dcpp
+#: AirDC_installscript.nsi:98
+msgid ""
+"Settings of an existing DC++ installation has been found in the user "
+"profile, do you want to import settings and queue?"
+msgstr "Einstellungen einer vorhandenen DC++-Installation wurden im Benutzerprofil gefunden. Möchten Sie die Einstellungen und die Warteschlange importieren?"
+
+#. Apex
+#: AirDC_installscript.nsi:99
+msgid ""
+"Settings of an existing ApexDC++ installation has been found in the user "
+"profile, do you want to import settings and queue?"
+msgstr "Einstellungen einer vorhandenen ApexDC++-Installation wurden im Benutzerprofil gefunden. Möchten Sie die Einstellungen und die Warteschlange importieren?"
+
+#. Strong
+#: AirDC_installscript.nsi:100
+msgid ""
+"Settings of an existing StrongDC++ installation has been found in the user "
+"profile, do you want to import settings and queue?"
+msgstr "Einstellungen einer vorhandenen StrongDC++-Installation wurden im Benutzerprofil gefunden. Möchten Sie die Einstellungen und die Warteschlange importieren?"
+
+#. SecStartMenu
+#: AirDC_installscript.nsi:101
+msgid "Start menu shortcuts"
+msgstr "Startmenüverknüpfungen"
+
+#. SM_AIRDCPP_DESC
+#: AirDC_installscript.nsi:102
+msgid "AirDC++ File Sharing Application"
+msgstr "AirDC++-Tauschbörsenanwendung"
+
+#. SM_AIRDCPP_DESCUN
+#: AirDC_installscript.nsi:103
+msgid "Uninstall AirDC++"
+msgstr "AirDC++ deinstallieren"
+
+#. SM_UNINSTALL
+#: AirDC_installscript.nsi:104
+msgid "Uninstall"
+msgstr "Deinstallieren"
+
+#. WR_REMOVEONLY
+#: AirDC_installscript.nsi:105
+msgid "(remove only)"
+msgstr "(nur entfernen)"
+
+#. SecEmopack
+#: AirDC_installscript.nsi:106
+msgid "Default emoticon pack"
+msgstr "Standard Emoticon Paket"
+
+#. SecThemes
+#: AirDC_installscript.nsi:107
+msgid "Themes"
+msgstr "Designs"
+
+#. SecWebResources
+#: AirDC_installscript.nsi:108
+msgid "Web user interface"
+msgstr "Web-Benutzeroberfläche"
+
+#. SecStore
+#: AirDC_installscript.nsi:109
+msgid "Store settings in the user profile directory"
+msgstr "Einstellungen im Benutzerprofilverzeichnis speichern"
+
+#. DeskShort
+#: AirDC_installscript.nsi:110
+msgid "Desktop shortcut"
+msgstr "Desktopverknüpfung"
+
+#. SecInstall32
+#: AirDC_installscript.nsi:111
+msgid "Install the 32-bit version"
+msgstr "32-Bit-Version installieren"
+
+#. XPOrOlder
+#: AirDC_installscript.nsi:112
+msgid ""
+"If you want to keep your settings in the program directory, make sure that "
+"you DO NOT install AirDC++ to the 'Program files' folder!!! This can lead to"
+" abnormal behaviour like loss of settings or downloads!"
+msgstr "Wenn Sie Ihre Einstellungen im Programmverzeichnis behalten wollen, stellen Sie sicher, dass Sie AirDC++ NICHT in den \"Programme\"-Ordner installieren!!! Dies kann zu fehlerhaftem Verhalten wie den Verlust von Einstellungen oder Downloads führen!"
+
+#. OsUnsupported
+#: AirDC_installscript.nsi:113
+msgid ""
+"This application is compatible with Windows 7 SP1 or newer operating systems"
+" only. The installer will now exit."
+msgstr "Diese Anwendung ist nur mit Windows 7 SP1 oder neueren Betriebssystemen kompatibel. Das Installationsprogramm wird nun beendet."
+
+#. ^UninstallText
+#: AirDC_installscript.nsi:114
+msgid "This will uninstall AirDC++. Hit the Uninstall button to continue."
+msgstr "Dies wird AirDC ++ deinstallieren. Klicken Sie auf die Schaltfläche Deinstallieren, um fortzufahren."
+
+#. RemoveQueue
+#: AirDC_installscript.nsi:115
+msgid "Do you also want to remove queue, themes and all settings?"
+msgstr "Möchten Sie auch die Warteschlange, Designs und alle Einstellungen entfernen?"
+
+#. NotEmpty
+#: AirDC_installscript.nsi:116
+msgid "Installation directory is NOT empty. Do you still want to remove it?"
+msgstr "Installationsverzeichnis ist NICHT leer. Möchten Sie es immer noch entfernen?"
+
+#. DESC_dcpp
+#: AirDC_installscript.nsi:117
+msgid "AirDC++ main program."
+msgstr "AirDC++ Hauptprogramm"
+
+#. DESC_StartMenu
+#: AirDC_installscript.nsi:118
+msgid "A shortcut of AirDC++ will be placed in your start menu."
+msgstr "Eine Verknüpfung von AirDC++ wird in Ihrem Startmenü platziert."
+
+#. DESC_Emopack
+#: AirDC_installscript.nsi:119
+msgid "Display emoticons as images in chat windows."
+msgstr "Emoticons im Chatfenster als Bild anzeigen."
+
+#. DESC_Themes
+#: AirDC_installscript.nsi:120
+msgid ""
+"If you don't like the default theme you can try these two extra themes, Dark"
+" Skull and Zoolution."
+msgstr "Wenn sie das Standard Design nicht mögen, können sie die beiden Extra Designs Dark Skull und Zoolution testen."
+
+#. DESC_WebResorces
+#: AirDC_installscript.nsi:121
+msgid "Allows accessing the client from other devices via a web browser."
+msgstr "Erlauben, von anderen Geräten via Web Browser auf die Anwendung zuzugreifen."
+
+#. DESC_loc
+#: AirDC_installscript.nsi:122
+msgid ""
+"Normally you should not change this because it can lead to abnormal "
+"behaviour like loss of settings or downloads. If you unselect it, read the "
+"warning message carefully."
+msgstr "Normalerweise sollten sie dies nicht ändern, es kann zu fehlerhaften Verhalten im Programm führen, wie dem Verlust von Einstellungen oder Downloads. Wenn die es abwählen, lesen sie die Warnhinweise sorgfältig durch."
+
+#. DESC_desk
+#: AirDC_installscript.nsi:123
+msgid "Do you often run AirDC++? Then this is definitely something for you!"
+msgstr "Lassen Sie AirDC++ oft laufen? Dann ist dies auf jeden Fall etwas für Sie!"
+
+#. DESC_arch
+#: AirDC_installscript.nsi:124
+msgid ""
+"If you want to use the 32-bits version of AirDC++ on your 64-bits operating "
+"system you need to select this. If this is selected and grayed out you can "
+"not unselect it because your operation system is 32-bits."
+msgstr "Wenn sie die 32 Bit Version von AirDC++ unter einem 64 Bit Betriebssystem verwenden wollen, so müssen sie dieses auswählen. Wenn es bereits ausgewählt und in der Farbe grau ist, können sie es nicht abwählen, da sie ein 32 Bit Betriebssystem verwenden."

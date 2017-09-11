@@ -5,11 +5,11 @@ from optparse import OptionParser
 
 parser = OptionParser()
 parser.add_option("-i", "--input", dest="input",
-                  help="nightly.nsi location", default="../Shared/installer/nightly.nsi" )
+                  help="dummy_file.nsi location", default="dummy_file.nsi" )
 parser.add_option("-o", "--output", dest="output",
-                  help="Localized nightly output location", default="../Shared/installer/nightly_localized.nsi")
+                  help="Localized nightly output location", default="all_language.nsh")
 parser.add_option("-p", "--podir", dest="podir",
-                  help="Directory containing PO files", default="../Shared/installer/locale/")
+                  help="Directory containing PO files", default="pofiles/")
 parser.add_option("-l", "--lang", dest="lang",
                   help="Default language of the NSI", default="English" )
 
@@ -18,8 +18,8 @@ parser.add_option("-l", "--lang", dest="lang",
 
 # Define a dict to convert locale names to language names
 localeToName = {
-    "af" : "Afrikaans",
-    "sq" : "Albanian",
+    "af-ZA" : "Afrikaans",
+    "sq_AL" : "Albanian",
     "ar" : "Arabic",
     "hy" : "Armenian",
     "eu" : "Basque",
@@ -31,7 +31,7 @@ localeToName = {
     "bem" : "Cibemba",
     "hr" : "Croatian",
     "cs" : "Czech",
-    "da" : "Danish",
+    "da-DK" : "Danish",
     "nl-NL" : "Dutch",
     "efi" : "Efik",
     "en" : "English",
@@ -39,19 +39,19 @@ localeToName = {
     "et" : "Estonian",
     "fa" : "Farsi",
     "fi-FI" : "Finnish",
-    "fr" : "French",
+    "fr-FR" : "French",
     "gl" : "Galician",
     "ka" : "Georgian",
-    "de" : "German",
-    "el" : "Greek",
+    "de-DE" : "German",
+    "el-GR" : "GreekGreece",
     "he" : "Hebrew",
     "hi" : "Hindi",
-    "hu" : "Hungarian",
+    "hu-HU" : "Hungarian",
     "is" : "Icelandic",
     "ig" : "Igbo",
     "id" : "Indonesian",
     "ga" : "Irish",
-    "it" : "Italian",
+    "it-IT" : "Italian",
     "ja" : "Japanese",
     "km" : "Khmer",
     "ko" : "Korean",
@@ -63,14 +63,14 @@ localeToName = {
     "mg" : "Malagasy",
     "ms" : "Malay",
     "mn" : "Mongolian",
-    "nb" : "Norwegian",
+    "no-NO" : "Norwegian",
     "nn" : "NorwegianNynorsk",
     "ps" : "Pashto",
-    "pl" : "Polish",
+    "pl-PO" : "Polish",
     "pt" : "Portuguese",
     "pt_BR" : "PortugueseBR",
-    "ro" : "Romanian",
-    "ru" : "Russian",
+    "ro-RO" : "Romanian",
+    "ru-RU" : "Russian",
     "sr" : "Serbian",
     "sr_sp" : "SerbianLatin",
     "st" : "Sesotho",
@@ -87,7 +87,7 @@ localeToName = {
     "zh_HK" : "TradChinese",
     "tr" : "Turkish",
     "tw" : "Twi",
-    "uk" : "Ukrainian",
+    "uk_UA" : "Ukrainian",
     "ug" : "Uyghur",
     "uz" : "Uzbek",
     "ca@valencia" : "Valencian",
@@ -143,22 +143,22 @@ NSISourceFile.close()
 NSINewLines = []
 
 def tostr(obj):
-    if type(obj) == unicode:
+#    if type(obj) == str:
         return obj.encode("utf-8")
-    else:
-        return obj
+#    else:
+#        return obj.encode("utf-8")
 
 # Here we scan for ";@INSERT_TRANSLATIONS@" in the NSIS, and add MUI_LANGUAGE macros and LangString's for translation languages
 lineNo = 1
 for line in NSISourceLines:
     if line.find(";@INSERT_TRANSLATIONS@") == 0:
-        for language,translations in translationCache.iteritems():
+        for language,translations in translationCache.items():
             count = 0
             # if the language isn't the default, we add our MUI_LANGUAGE macro
             if language.upper() != options.lang.upper():
                 NSINewLines.append( tostr('!insertmacro MUI_LANGUAGE "%s"\n'%language) )
             # For every translation we grabbed from the .po, let's add our LangString
-            for label,value in translations.iteritems():
+            for label,value in translations.items():
                 NSINewLines.append( tostr('LangString %s ${LANG_%s} "%s"\n' % (label,language,value)) )
                 count += 1
             print ( "%i translations merged for language '%s'"%(count,language) )
@@ -166,7 +166,7 @@ for line in NSISourceLines:
         NSINewLines.append ( line )
     
 # Finally, let's write our new .nsi to the desired target file
-NSIWorkingFile = open(options.output,"w")
+NSIWorkingFile = open(options.output,"wb")
 NSIWorkingFile.writelines(NSINewLines)
 NSIWorkingFile.close()
     

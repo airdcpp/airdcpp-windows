@@ -1,43 +1,41 @@
 # 
 # Translators:
-# maksis, 2015
-# Night_ <night.fi@gmail.com>, 2016
-# Sopor, 2015-2016
+# Omar Sweidan <omcsesz@gmail.com>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: AirDC++\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-05-01 15:00\n"
-"PO-Revision-Date: 2016-05-19 14:21+0000\n"
+"POT-Creation-Date: 2017-03-24 21:02\n"
+"PO-Revision-Date: 2017-09-11 18:10+0000\n"
 "Last-Translator: Sopor\n"
-"Language-Team: Finnish (Finland) (http://www.transifex.com/airdcpp/airdcpp/language/fi_FI/)\n"
+"Language-Team: Hungarian (Hungary) (http://www.transifex.com/airdcpp/airdcpp/language/hu_HU/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: fi_FI\n"
+"Language: hu_HU\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. RunAtFinish
 #: AirDC_installscript.nsi:92
 msgid "Launch AirDC++"
-msgstr "Käynnistä AirDC++"
+msgstr "AirDC++ indítása"
 
 #. ^ComponentsText
 #: AirDC_installscript.nsi:93
 msgid "Welcome to the AirDC++ installer."
-msgstr "Tervetuloa AirDC++:n asennusohjelmaan."
+msgstr "Üdvözlünk az AirDC++ telepítőben."
 
 #. ^DirText
 #: AirDC_installscript.nsi:94
 msgid ""
 "If you are upgrading from an older version, select the same directory where "
 "your old version resides and your existing settings will be imported."
-msgstr "Valitse hakemisto, jonne AirDC++ asennetaan. Jos päivität ohjelmaa, valitse sama kansio, jossa vanha versio sijaitsee, jolloin asetuksesi säilyvät."
+msgstr "Ha már van telepítve korábbi verzió, válaszd annak a mappáját, és a beállításaid átvevődnek."
 
 #. SecAirDC
 #: AirDC_installscript.nsi:95
 msgid "AirDC++ (required)"
-msgstr "AirDC++ (pakollinen)"
+msgstr "AirDC++ (szükséges)"
 
 #. ProfileDir
 #: AirDC_installscript.nsi:96
@@ -45,90 +43,90 @@ msgid ""
 "Settings of a previous installation of AirDC++ has been found in the user "
 "profile, do you want to backup settings? (You can find them in $DOCBACKUPDIR"
 " later)"
-msgstr "Käyttäjäprofiilista löydettiin edellisen AirDC++ version asetukset. Haluatko, että asennusohjelma varmuuskopioi asetukset? Varmuuskopio löytyy tällöin kansiosta $DOCBACKUPDIR"
+msgstr "Egy korábbi verziója az AirDC++-nak már telepítve van, akarod annak a beállításait használni? (A $DOCBACKUPDIR -ben megtalálod őket)"
 
 #. ProgramDir
 #: AirDC_installscript.nsi:97
 msgid ""
 "A previous installation of AirDC++ has been found in the target folder, do "
 "you want to backup settings? (You can find them in $INSTBACKUPDIR later)"
-msgstr "Kohdekansiosta löydettiin edellisen AirDC++ version asetukset. Haluatko, että asennusohjelma varmuuskopioi asetukset? Varmuuskopio löytyy tällöin kansioista $INSTBACKUPDIR"
+msgstr "A célmappában már telepítve van az AirDC++, akarja menteni a beállításokat? (a $INSTBACKUPDIR mappábabn megtalálja őket)"
 
 #. Dcpp
 #: AirDC_installscript.nsi:98
 msgid ""
 "Settings of an existing DC++ installation has been found in the user "
 "profile, do you want to import settings and queue?"
-msgstr "Käyttäjäprofiilista löydettiin DC++:n asennuksen asetuskansio. Haluatko tuoda asetukset ja latausjonon?"
+msgstr "Egy korábbi DC++ telepítés beállításait megtaláltuk. Szeretné importálni a beállításokat, és a letöltési sort?"
 
 #. Apex
 #: AirDC_installscript.nsi:99
 msgid ""
 "Settings of an existing ApexDC++ installation has been found in the user "
 "profile, do you want to import settings and queue?"
-msgstr "Käyttäjäprofiilista löydettiin ApexDC++:n asennuksen asetuskansio. Haluatko tuoda asetukset ja latausjonon?"
+msgstr "Egy korábbi ApexDC++ verziót találtunk, akarja átvenni a beállításokat, és a letöltési sort?"
 
 #. Strong
 #: AirDC_installscript.nsi:100
 msgid ""
 "Settings of an existing StrongDC++ installation has been found in the user "
 "profile, do you want to import settings and queue?"
-msgstr "Käyttäjäprofiilista löydettiin StrongDC++:n asennuksen asetuskansio. Haluatko tuoda asetukset ja latausjonon?"
+msgstr "Egy korábbi StrongDC++ verziót találtunk, akarja átvenni a beállításokat, és a letöltési sort?"
 
 #. SecStartMenu
 #: AirDC_installscript.nsi:101
 msgid "Start menu shortcuts"
-msgstr "Käynnistä-valikon pikakuvakkeet"
+msgstr "Start menü ikonok"
 
 #. SM_AIRDCPP_DESC
 #: AirDC_installscript.nsi:102
 msgid "AirDC++ File Sharing Application"
-msgstr "AirDC++-tiedostonjako-ohjelma"
+msgstr "AirDC++ Fájlmegosztó alkalmazás"
 
 #. SM_AIRDCPP_DESCUN
 #: AirDC_installscript.nsi:103
 msgid "Uninstall AirDC++"
-msgstr "Poista AirDC++:n asennus"
+msgstr "AirDC++ törlése"
 
 #. SM_UNINSTALL
 #: AirDC_installscript.nsi:104
 msgid "Uninstall"
-msgstr "Poista asennus"
+msgstr "Törlés"
 
 #. WR_REMOVEONLY
 #: AirDC_installscript.nsi:105
 msgid "(remove only)"
-msgstr "(vain poisto)"
+msgstr "(csak eltávolítás)"
 
-#. SecRadox
+#. SecEmopack
 #: AirDC_installscript.nsi:106
-msgid "Radox Emoticon Pack"
-msgstr "Radox-hymiöpaketti"
+msgid "Default emoticon pack"
+msgstr "Alapértelmezett emotikon csomag"
 
 #. SecThemes
 #: AirDC_installscript.nsi:107
 msgid "Themes"
-msgstr "Teemat"
+msgstr "Témák"
 
 #. SecWebResources
 #: AirDC_installscript.nsi:108
 msgid "Web user interface"
-msgstr "Web-käyttöliittymä"
+msgstr "Webes felhasználói felület"
 
 #. SecStore
 #: AirDC_installscript.nsi:109
 msgid "Store settings in the user profile directory"
-msgstr "Tallenna asetukset käyttäjäprofiilikansioon"
+msgstr "Beállítások tárolása a felhasználói profil mappában"
 
 #. DeskShort
 #: AirDC_installscript.nsi:110
-msgid "Create AirDC++ desktop shortcut"
-msgstr "Luo työpöytäpikakuvake"
+msgid "Desktop shortcut"
+msgstr "Parancsikon az asztalra"
 
 #. SecInstall32
 #: AirDC_installscript.nsi:111
 msgid "Install the 32-bit version"
-msgstr "Asenna 32-bittinen versio"
+msgstr "32 bites verzió telepítése"
 
 #. XPOrOlder
 #: AirDC_installscript.nsi:112
@@ -136,57 +134,56 @@ msgid ""
 "If you want to keep your settings in the program directory, make sure that "
 "you DO NOT install AirDC++ to the 'Program files' folder!!! This can lead to"
 " abnormal behaviour like loss of settings or downloads!"
-msgstr "Jos haluat tallentaa asetukset ohjelman asennuskansioon, älä asenna ohjelmaa Ohjelmatiedostot (Program Files) -kansioon! Tämä voi johtaa epänormaaliin toimintaan, sekä asetusten ja latausten häviämiseen."
+msgstr "Ha meg akarja tartani a program beállításait, NE telepítse az AirDC++-t a \"Programok\" mappába!!! Működési rendellenességekhez vezethet, mint a letöltések/beállítások elvesztése!"
 
-#. XPOrBelow
+#. OsUnsupported
 #: AirDC_installscript.nsi:113
 msgid ""
-"This version is only compatible with Windows Vista or newer operating "
-"system. You will be forwarded to www.airdcpp.net for downloading a version "
-"that is compatible with your Windows version."
-msgstr "Tämä versio on yhteensopiva vain Windows Vistan ja sitä uudempien käyttöjärjestelmien kanssa. Sinut ohjataan nyt osoitteeseen www.airdcpp.net, josta voit ladata ohjelmaversion, joka on yhteensopiva käyttämäsi käyttöjärjestelmäversion kanssa."
+"This application is compatible with Windows 7 SP1 or newer operating systems"
+" only. The installer will now exit."
+msgstr "Ez az alkalmazás csak a Windows 7 SP1, vagy újabb operációs rendszerrel működik.A telepítő most kilép."
 
 #. ^UninstallText
 #: AirDC_installscript.nsi:114
 msgid "This will uninstall AirDC++. Hit the Uninstall button to continue."
-msgstr "Tämä poistaa ohjelman AirDC++ asennuksen. Jatka napsauttamalla painiketta \"Poista asennus\"."
+msgstr "Ezzel eltávolítja az AirDC++-t. Nyomja meg az Eltávolítás gombot a folytatáshoz."
 
 #. RemoveQueue
 #: AirDC_installscript.nsi:115
 msgid "Do you also want to remove queue, themes and all settings?"
-msgstr "Haluatko poistaa myös latausjonon, teemat, sekä kaikki asetukset?"
+msgstr "El akarja távolítani a letöltési sort, témákat, beállításokat is?"
 
 #. NotEmpty
 #: AirDC_installscript.nsi:116
 msgid "Installation directory is NOT empty. Do you still want to remove it?"
-msgstr "Asennuskansio EI ole tyhjä. Haluatko silti poistaa sen?"
+msgstr "A telepítési mappa NEM üres. Így is el akarja távolítani?"
 
 #. DESC_dcpp
 #: AirDC_installscript.nsi:117
 msgid "AirDC++ main program."
-msgstr "AirDC++ pääohjelma"
+msgstr "AIrDC++ főprogram"
 
 #. DESC_StartMenu
 #: AirDC_installscript.nsi:118
 msgid "A shortcut of AirDC++ will be placed in your start menu."
-msgstr "Käynnistä valikkoon lisätään pikakuvake"
+msgstr "Az AirDC++ ikonját elhelyezzük a Start menüben."
 
-#. DESC_Radox
+#. DESC_Emopack
 #: AirDC_installscript.nsi:119
-msgid "RadoX emoticon pack will be installed to be used in chats."
-msgstr "RadoX hymiö pakettia käytetään keskustelu ikkunoissa"
+msgid "Display emoticons as images in chat windows."
+msgstr "Az emotikonok megjelenítése képként a csetablakban"
 
 #. DESC_Themes
 #: AirDC_installscript.nsi:120
 msgid ""
 "If you don't like the default theme you can try these two extra themes, Dark"
 " Skull and Zoolution."
-msgstr "Jos et pidä vakio teemasta, voit valita esiasennettujen väri/kuvake teemojen väliltä itsellesi sopivamman teeman."
+msgstr "Ha nem tetszik az alapértelmezett felhasználói felület, próbálja ki a Dark Skull, és Zoolution témákat."
 
 #. DESC_WebResorces
 #: AirDC_installscript.nsi:121
 msgid "Allows accessing the client from other devices via a web browser."
-msgstr "Mahdollistaa AirDC++n etäkäytön internet selaimella "
+msgstr "Hozzáférés engedélyezése a klienshez más eszközökről böngészőből"
 
 #. DESC_loc
 #: AirDC_installscript.nsi:122
@@ -194,12 +191,12 @@ msgid ""
 "Normally you should not change this because it can lead to abnormal "
 "behaviour like loss of settings or downloads. If you unselect it, read the "
 "warning message carefully."
-msgstr "Tämän muuttaminen voi johtaa asetusten tallennus ongelmiin."
+msgstr "Normál esetben ne változtassa meg ezt, mert rendellenes működéshez vezethet, mint beállítások/letöltések elvesztése. Ha kiszedi a pipát, olvassa el figyelmesen a figyelmeztető üzenetet!"
 
 #. DESC_desk
 #: AirDC_installscript.nsi:123
 msgid "Do you often run AirDC++? Then this is definitely something for you!"
-msgstr "Työpöydälle lisätään AirDC++ pikakuvake"
+msgstr "Gyakran használja az AirDC++-t? Akkor van önnek egy ajánlatunk!"
 
 #. DESC_arch
 #: AirDC_installscript.nsi:124
@@ -207,4 +204,4 @@ msgid ""
 "If you want to use the 32-bits version of AirDC++ on your 64-bits operating "
 "system you need to select this. If this is selected and grayed out you can "
 "not unselect it because your operation system is 32-bits."
-msgstr "Muuta vain jos välttämättä haluat käyttää 32bittistä versiota 64bittisessä käyttöjärjestelmässä."
+msgstr "Ha az alkalmazás 32 bites verzióját akarja használni a 64 bites operációs rendszerén, akkor válassza ezt. Ha ez be van jelölve, és ki van szürkítve, akkor nem törölheti ezt, mert az Ön operációs rendszere 32 bites."
