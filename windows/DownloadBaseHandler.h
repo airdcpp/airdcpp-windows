@@ -83,7 +83,7 @@ public:
 
 	/* Menu creation */
 	void appendDownloadMenu(OMenu& aMenu, Type aType, bool isSizeUnknown, const optional<TTHValue>& aTTH, 
-		const optional<string>& aPath, bool appendPrioMenu = true, bool addDefault = true) {
+		const optional<string>& aVirtualPath, bool appendPrioMenu = true, bool addDefault = true) {
 
 		auto volumes = File::getVolumes();
 
@@ -94,7 +94,7 @@ public:
 
 		// Download to
 		auto targetMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_TO), true);
-		appendDownloadTo(*targetMenu, aType == TYPE_SECONDARY, isSizeUnknown, aTTH, aPath, volumes);
+		appendDownloadTo(*targetMenu, aType == TYPE_SECONDARY, isSizeUnknown, aTTH, aVirtualPath, volumes);
 
 		// Download with priority
 		if (appendPrioMenu) {
@@ -106,16 +106,17 @@ public:
 			aMenu.appendItem(CTSTRING(DOWNLOAD_WHOLE_DIR), [=] { onDownload(SETTING(DOWNLOAD_DIRECTORY), true, true, Priority::DEFAULT); });
 			auto targetMenuWhole = aMenu.createSubMenu(TSTRING(DOWNLOAD_WHOLE_DIR_TO), true);
 
-			// If we have a dupe path, pick the dir from it
-			optional<string> pathWhole;
-			if (aPath && !(*aPath).empty() && (*aPath).back() != PATH_SEPARATOR)
-				pathWhole = Util::getAdcFilePath(*aPath);
+			// If we have a dupe path, pick the directory path from it
+			optional<string> virtualFilePath;
+			if (aVirtualPath && !(*aVirtualPath).empty() && (*aVirtualPath).back() != ADC_SEPARATOR) {
+				virtualFilePath = Util::getAdcFilePath(*aVirtualPath);
+			}
 
-			appendDownloadTo(*targetMenuWhole, true, true, boost::none, pathWhole, volumes);
+			appendDownloadTo(*targetMenuWhole, true, true, boost::none, virtualFilePath, volumes);
 		}
 	}
 
-	void appendDownloadTo(OMenu& targetMenu_, bool aWholeDir, bool aIsSizeUnknown, const optional<TTHValue>& aTTH, const optional<string>& aPath, const File::VolumeSet& aVolumes) {
+	void appendDownloadTo(OMenu& targetMenu_, bool aWholeDir, bool aIsSizeUnknown, const optional<TTHValue>& aTTH, const optional<string>& aVirtualPath, const File::VolumeSet& aVolumes) {
 		targetMenu_.appendItem(CTSTRING(BROWSE), [=] { onDownloadTo(aWholeDir, aIsSizeUnknown); });
 
 		//Append shared and favorite directories
@@ -124,7 +125,7 @@ public:
 		}
 		appendVirtualItems(targetMenu_, aWholeDir, FavoriteManager::getInstance()->getGroupedFavoriteDirs(), TSTRING(SETTINGS_FAVORITE_DIRS_PAGE), aIsSizeUnknown, aVolumes);
 
-		appendTargets(targetMenu_, aWholeDir, aIsSizeUnknown, aTTH, aPath);
+		appendTargets(targetMenu_, aWholeDir, aIsSizeUnknown, aTTH, aVirtualPath);
 
 		//Append dir history
 		const auto& historyPaths = SettingsManager::getInstance()->getHistory(SettingsManager::HISTORY_DOWNLOAD_DIR);
@@ -189,7 +190,7 @@ private:
 		}
 	}
 
-	void appendTargets(OMenu& targetMenu, bool wholeDir, bool isSizeUnknown, const optional<TTHValue>& aTTH, const optional<string>& aPath) {
+	void appendTargets(OMenu& targetMenu, bool wholeDir, bool isSizeUnknown, const optional<TTHValue>& aTTH, const optional<string>& aVirtualPath) {
 
 
 		// Append TTH locations
@@ -205,8 +206,8 @@ private:
 		}
 
 		// Append directory dupe paths
-		if (aPath) {
-			bool isDir = !(*aPath).empty() && (*aPath).back() == PATH_SEPARATOR;
+		if (aVirtualPath) {
+			bool isDir = !(*aVirtualPath).empty() && (*aVirtualPath).back() == ADC_SEPARATOR;
 
 			StringList targets;
 			auto doAppend = [&](const tstring& aTitle) {
@@ -230,10 +231,10 @@ private:
 				}
 			};
 
-			targets = QueueManager::getInstance()->getAdcDirectoryPaths(isDir ? *aPath : Util::getAdcFilePath(*aPath));
+			targets = QueueManager::getInstance()->getAdcDirectoryPaths(isDir ? *aVirtualPath : Util::getAdcFilePath(*aVirtualPath));
 			doAppend(TSTRING(QUEUED_DUPE_PATHS));
 
-			targets = ShareManager::getInstance()->getAdcDirectoryPaths(isDir ? *aPath : Util::getAdcFilePath(*aPath));
+			targets = ShareManager::getInstance()->getAdcDirectoryPaths(isDir ? *aVirtualPath : Util::getAdcFilePath(*aVirtualPath));
 			doAppend(TSTRING(SHARED_DUPE_PATHS));
 		}
 	}
