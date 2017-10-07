@@ -376,15 +376,15 @@ void RichTextBox::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFOR
 	SetSelectionCharFormat(isMyMessage ? WinUtil::m_ChatTextMyOwn : cf);
 	
 	// highlight all occurences of my nick
-	long lMyNickStart = -1, lMyNickEnd = -1;
+	size_t lMyNickStart = string::npos;
 	size_t lSearchFrom = 0;	
 	tstring sNick(sMyNick.length(), NULL);
 	std::transform(sMyNick.begin(), sMyNick.end(), sNick.begin(), _totlower);
 
 	if (!sNick.empty()) {
 		bool found = false;
-		while ((lMyNickStart = (long) sMsgLower.find(sNick, lSearchFrom)) != tstring::npos) {
-			lMyNickEnd = lMyNickStart + (long) sNick.size();
+		while ((lMyNickStart = sMsgLower.find(sNick, lSearchFrom)) != tstring::npos) {
+			auto lMyNickEnd = lMyNickStart + (long) sNick.size();
 			SetSel(lSelBegin + lMyNickStart, lSelBegin + lMyNickEnd);
 			SetSelectionCharFormat(WinUtil::m_TextStyleMyNick);
 			lSearchFrom = lMyNickEnd;
@@ -413,7 +413,7 @@ void RichTextBox::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFOR
 			std::transform(sNick.begin(), sNick.end(), sNick.begin(), _totlower);
 
 			while ((lMyNickStart = (long) sMsgLower.find(sNick, lSearchFrom)) != tstring::npos) {
-				lMyNickEnd = lMyNickStart + (long) sNick.size();
+				auto lMyNickEnd = lMyNickStart + (long) sNick.size();
 				SetSel(lSelBegin + lMyNickStart, lSelBegin + lMyNickEnd);
 				SetSelectionCharFormat(WinUtil::m_TextStyleFavUsers);
 				lSearchFrom = lMyNickEnd;
@@ -1678,9 +1678,7 @@ size_t RichTextBox::FullTextMatch(ColorSettings* cs, CHARFORMAT2 &hlcf, const ts
 	} else if( cs->getWholeLine() ) {
 		end = begin + line.length() -1;
 	} else if( cs->getWholeWord() ) {
-		int tmp;
-
-		tmp = line.find_last_of(_T(" \t\r"), index);
+		auto tmp = line.find_last_of(_T(" \t\r"), index);
 		if(tmp != tstring::npos )
 			begin += tmp+1;
 		
@@ -1786,9 +1784,6 @@ tstring RichTextBox::WordFromPos(const POINT& p) {
 	if(p.y > (p_ichar.y +  (t_height*1.5))) { //times 1.5 so dont need to be totally exact
 		return Util::emptyStringT;
 	}
-
-	int begin =  0;
-	int end  = 0;
 	
 	FINDTEXT findt;
 	findt.chrg.cpMin = iCharPos;
@@ -1818,11 +1813,12 @@ tstring RichTextBox::WordFromPos(const POINT& p) {
 
 	iCharPos = iCharPos - l_Start; //modify the charpos within the range of our new line.
 
-	begin = Line.find_last_of(_T(" \t\r"), iCharPos) + 1;	
-	end = Line.find_first_of(_T(" \t\r"), begin);
-			if(end == tstring::npos) {
-				end = Line.length();
-			}
+	auto begin = Line.find_last_of(_T(" \t\r"), iCharPos) + 1;	
+	auto end = Line.find_first_of(_T(" \t\r"), begin);
+	if (end == tstring::npos) {
+		end = Line.length();
+	}
+
 	len = end - begin;
 	
 	/*a hack, limit to 512, scrolling becomes sad with long words...
