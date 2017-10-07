@@ -1,3 +1,18 @@
+3.42
+
+Changed:
+
+- Disable search functionality in own filelist as it wasn't working correctly (https://www.airdcpp.net/forum/viewtopic.php?f=7&t=4642)
+- Switch to the requested directory when trying to browse a filelist that was open already (https://www.airdcpp.net/forum/viewtopic.php?f=7&t=4642)
+- Updated Web API and Web UI (https://airdcpp-web.github.io/2017/08/24/version-2.2.0.html)
+
+Fixed:
+
+- Reject filelists containing problematic file/directory names (forward slashes are no longer allowed in names)
+- Don't show "Find and view NFO" in filelist tree context menu when the feature is not supported
+
+
+
 3.41
 
 Various web-related fixes and improvements:
