@@ -8,6 +8,7 @@ Changed:
 
 Fixed:
 
+- Prevent possible remote crashes caused by malformed data
 - Reject filelists containing problematic file/directory names (forward slashes are no longer allowed in names)
 - Don't show "Find and view NFO" in filelist tree context menu when the feature is not supported
 - Don't add newly added shared directories for monitoring if monitoring is disabled for them
