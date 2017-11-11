@@ -1761,7 +1761,7 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	if(aTick == lastUpdate)	// FIXME: temp fix for new TimerManager
 		return;
 
-	uint64_t queueSize = QueueManager::getInstance()->getTotalQueueSize();
+	auto queueSize = QueueManager::getInstance()->getTotalQueueSize();
 
 	TStringList* str = new TStringList();
 	str->push_back(Util::formatBytesW(ShareManager::getInstance()->getSharedSize()));

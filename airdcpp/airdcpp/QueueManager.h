@@ -82,7 +82,7 @@ public:
 	DirectoryContentInfo getBundleContent(const BundlePtr& aBundle) const noexcept;
 
 	// Get the total queued bytes
-	uint64_t getTotalQueueSize() const noexcept { return bundleQueue.getTotalQueueSize(); }
+	int64_t getTotalQueueSize() const noexcept { return bundleQueue.getTotalQueueSize(); }
 
 	// Add a user's filelist to the queue.
 	// New managed filelist sessions should be created via DirectoryListingManager instead

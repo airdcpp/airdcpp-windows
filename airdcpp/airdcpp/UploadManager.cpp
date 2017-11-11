@@ -537,7 +537,6 @@ void UploadManager::checkMultiConn() {
 
 void UploadManager::onUBN(const AdcCommand& cmd) {
 	string bundleToken;
-	string hubIpPort;
 	float percent = -1;
 	string speedStr;
 

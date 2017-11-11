@@ -1616,7 +1616,6 @@ void QueueManager::bundleDownloadFailed(BundlePtr& aBundle, const string& aError
 }
 
 void QueueManager::putDownload(Download* aDownload, bool aFinished, bool aNoAccess /*false*/, bool aRotateQueue /*false*/) {
-	HintedUserList getConn;
 	QueueItemPtr q = nullptr;
 
 	// Make sure the download gets killed
