@@ -319,7 +319,7 @@ bool File::isAbsolutePath(const string& path) noexcept {
 }
 
 string File::getMountPath(const string& aPath) noexcept {
-	unique_ptr<TCHAR> buf(new TCHAR[aPath.length()]);
+	unique_ptr<TCHAR[]> buf(new TCHAR[aPath.length()+1]);
 	GetVolumePathName(Text::toT(Util::formatPath(aPath)).c_str(), buf.get(), aPath.length());
 	return Text::fromT(buf.get());
 }
