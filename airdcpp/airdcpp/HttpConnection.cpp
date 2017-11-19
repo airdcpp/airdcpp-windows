@@ -162,7 +162,7 @@ void HttpConnection::on(BufferedSocketListener::Line, const string& aLine) noexc
 	if(connState == CONN_CHUNKED && aLine.size() > 1) {
 		string::size_type i;
 		string chunkSizeStr;
-		if((i = aLine.find(";")) == string::npos) {
+		if((i = aLine.find(';')) == string::npos) {
 			chunkSizeStr = aLine.substr(0, aLine.length() - 1);
 		} else chunkSizeStr = aLine.substr(0, i);
 

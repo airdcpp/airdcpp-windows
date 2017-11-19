@@ -810,10 +810,10 @@ string File::getMountPath(const string& aPath, const VolumeSet& aVolumes, bool a
 		// Not found from volumes... network path? This won't work with mounted dirs
 		// Get the first section containing the network host and the first folder/drive (//HTPC/g/)
 		if (aPath.length() > 2 && aPath.substr(0, 2) == "\\\\") {
-			l = aPath.find("\\", 2);
+			l = aPath.find('\\', 2);
 			if (l != string::npos) {
 				//get the drive letter
-				l = aPath.find("\\", l + 1);
+				l = aPath.find('\\', l + 1);
 				if (l != string::npos) {
 					return aPath.substr(0, l + 1);
 				}
