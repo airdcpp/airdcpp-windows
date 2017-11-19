@@ -420,7 +420,7 @@ size_t QueueManager::getQueuedBundleFiles() const noexcept {
 	return bundleQueue.getTotalFiles();
 }
 
-bool QueueManager::getSearchInfo(const string& aTarget, TTHValue& tth_, int64_t size_) noexcept {
+bool QueueManager::getSearchInfo(const string& aTarget, TTHValue& tth_, int64_t& size_) noexcept {
 	RLock l(cs);
 	QueueItemPtr qi = fileQueue.findFile(aTarget);
 	if(qi) {

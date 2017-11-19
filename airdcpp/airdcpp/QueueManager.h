@@ -267,7 +267,7 @@ public:
 	void removeBundleNotify(const UserPtr& aUser, QueueToken aBundleToken) noexcept;
 
 	void sendRemovePBD(const HintedUser& aUser, const string& aRemoteToken) noexcept;
-	bool getSearchInfo(const string& aTarget, TTHValue& tth_, int64_t size_) noexcept;
+	bool getSearchInfo(const string& aTarget, TTHValue& tth_, int64_t& size_) noexcept;
 	bool handlePartialSearch(const UserPtr& aUser, const TTHValue& tth, PartsInfo& _outPartsInfo, string& _bundle, bool& _reply, bool& _add) noexcept;
 	bool handlePartialResult(const HintedUser& aUser, const TTHValue& tth, const QueueItem::PartialSource& partialSource, PartsInfo& outPartialInfo) noexcept;
 
