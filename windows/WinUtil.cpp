@@ -1470,7 +1470,7 @@ void WinUtil::appendPreviewMenu(OMenu& parent, const string& aTarget) {
 			string application = i->getApplication();
 			string arguments = i->getArguments();
 
-			previewMenu->appendItem(Text::toT((i->getName())).c_str(), [=] {
+			previewMenu->appendItem(Text::toT((i->getName())), [=] {
 				string tempTarget = QueueManager::getInstance()->getTempTarget(aTarget);
 				ParamMap ucParams;				
 	
