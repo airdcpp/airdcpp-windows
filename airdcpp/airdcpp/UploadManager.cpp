@@ -590,7 +590,6 @@ void UploadManager::onUBN(const AdcCommand& cmd) {
 
 void UploadManager::createBundle(const AdcCommand& cmd) {
 	string bundleToken;
-	string hubIpPort;
 	string token;
 	string name;
 	int64_t size=0, downloaded=0;

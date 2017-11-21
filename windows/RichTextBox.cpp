@@ -1126,7 +1126,7 @@ void RichTextBox::handleSearchDir() {
 void RichTextBox::handleDeleteFile() {
 	string path = Text::fromT(selectedWord);
 	string msg = STRING_F(DELETE_FILE_CONFIRM, path);
-	if(WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_FILE_DELETIONS, Text::toT(msg).c_str())) {
+	if(WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_FILE_DELETIONS, Text::toT(msg))) {
 		MainFrame::getMainFrame()->addThreadedTask([=] { File::deleteFileEx(path, 3); });
 	}
 

@@ -132,7 +132,7 @@ public:
 		if(!historyPaths.empty()) {
 			targetMenu_.InsertSeparatorLast(TSTRING(PREVIOUS_FOLDERS));
 			for (const auto& path: historyPaths) {
-				targetMenu_.appendItem(Text::toT(path).c_str(), [=] { onDownload(path, aWholeDir, aIsSizeUnknown, Priority::DEFAULT); });
+				targetMenu_.appendItem(Text::toT(path), [=] { onDownload(path, aWholeDir, aIsSizeUnknown, Priority::DEFAULT); });
 			}
 
 			targetMenu_.appendSeparator();
@@ -145,7 +145,7 @@ private:
 		auto priorityMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_WITH_PRIORITY));
 
 		auto addItem = [&](const tstring& aTitle, Priority p) -> void {
-			priorityMenu->appendItem(aTitle.c_str(), [=] { onDownload(SETTING(DOWNLOAD_DIRECTORY), aWholeDir, aIsSizeUnknown, p); });
+			priorityMenu->appendItem(aTitle, [=] { onDownload(SETTING(DOWNLOAD_DIRECTORY), aWholeDir, aIsSizeUnknown, p); });
 		};
 
 		addItem(CTSTRING(PAUSED_FORCED), Priority::PAUSED_FORCE);
@@ -179,13 +179,13 @@ private:
 			const auto& targets = dp.second;
 
 			if (targets.size() > 1) {
-				auto vMenu = targetMenu.createSubMenu(Text::toT(groupName).c_str(), true);
+				auto vMenu = targetMenu.createSubMenu(Text::toT(groupName), true);
 				for (const auto& target: targets) {
-					vMenu->appendItem(toDisplayTarget(target, aVolumes).c_str(), [=] { onDownload(target, aWholeDir, aIsSizeUnknown, Priority::DEFAULT); });
+					vMenu->appendItem(toDisplayTarget(target, aVolumes), [=] { onDownload(target, aWholeDir, aIsSizeUnknown, Priority::DEFAULT); });
 				}
 			} else if (!targets.empty()) {
 				auto target = *targets.begin();
-				targetMenu.appendItem(Text::toT(groupName).c_str(), [=] { onDownload(target, aWholeDir, aIsSizeUnknown, Priority::DEFAULT); });
+				targetMenu.appendItem(Text::toT(groupName), [=] { onDownload(target, aWholeDir, aIsSizeUnknown, Priority::DEFAULT); });
 			}
 		}
 	}
@@ -200,7 +200,7 @@ private:
 			if (tthTargets.size()) {
 				targetMenu.InsertSeparatorLast(TSTRING(ADD_AS_SOURCE));
 				for (auto& target : tthTargets) {
-					targetMenu.appendItem(Text::toT(target).c_str(), [=] { onDownload(target, wholeDir, isSizeUnknown, Priority::DEFAULT); });
+					targetMenu.appendItem(Text::toT(target), [=] { onDownload(target, wholeDir, isSizeUnknown, Priority::DEFAULT); });
 				}
 			}
 		}
@@ -226,7 +226,7 @@ private:
 						//use the parent if it's a dir
 						//string displayText = isDir ? Util::getParentDir(target) + " (" + Util::getLastDir(target) + ")" : target;
 						string location = isDir ? Util::getParentDir(target) : target;
-						targetMenu.appendItem(Text::toT(location).c_str(), [=] { onDownload(location, wholeDir, isSizeUnknown, Priority::DEFAULT); });
+						targetMenu.appendItem(Text::toT(location), [=] { onDownload(location, wholeDir, isSizeUnknown, Priority::DEFAULT); });
 					}
 				}
 			};
