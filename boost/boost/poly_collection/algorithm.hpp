@@ -19,6 +19,7 @@
 #include <boost/poly_collection/detail/iterator_traits.hpp>
 #include <boost/poly_collection/detail/segment_split.hpp>
 #include <boost/poly_collection/detail/type_restitution.hpp>
+#include <boost/poly_collection/detail/workaround_dr1467.hpp>
 #include <iterator>
 #include <type_traits>
 #include <utility>
@@ -90,6 +91,8 @@ bool none_of(const Iterator& first,const Iterator& last,Predicate pred)
 
 struct for_each_alg
 {
+  BOOST_POLY_COLLECTION_WORKAROUND_DR1467(for_each_alg)
+
   template<typename InputIterator,typename Function>
   void operator()(
     InputIterator first,InputIterator last,Function& f)const /* note the & */
@@ -194,6 +197,8 @@ Iterator find_first_of(
 template<typename... Ts>
 struct adjacent_find_alg
 {
+  BOOST_POLY_COLLECTION_WORKAROUND_DR1467(adjacent_find_alg)
+
   template<
     typename LocalIterator,typename BinaryPredicate,typename LocalBaseIterator
   >
@@ -284,6 +289,8 @@ std::ptrdiff_t count_if(
 
 struct mismatch_alg
 {
+  BOOST_POLY_COLLECTION_WORKAROUND_DR1467(mismatch_alg)
+
   template<
     typename InputIterator1,
     typename InputIterator2,typename BinaryPredicate
@@ -367,6 +374,8 @@ std::pair<Iterator,InputIterator> mismatch(
 
 struct equal_alg
 {
+  BOOST_POLY_COLLECTION_WORKAROUND_DR1467(equal_alg)
+
   template<
     typename InputIterator1,
     typename InputIterator2,typename BinaryPredicate
@@ -594,6 +603,8 @@ Iterator find_end(
 
 struct search_n_alg
 {
+  BOOST_POLY_COLLECTION_WORKAROUND_DR1467(search_n_alg)
+
   template<
     typename ForwardIterator,typename Size,
     typename T,typename BinaryPredicate
@@ -753,6 +764,8 @@ OutputIterator transform(
 
 struct transform2_alg
 {
+  BOOST_POLY_COLLECTION_WORKAROUND_DR1467(transform2_alg)
+
   template<
     typename InputIterator1,typename InputIterator2,
     typename OutputIterator,typename BinaryOperation
@@ -786,6 +799,8 @@ struct replace_copy_alg
    * conditional operator".
    */
 
+  BOOST_POLY_COLLECTION_WORKAROUND_DR1467(replace_copy_alg)
+
   template<typename InputIterator,typename OutputIterator,typename T>
   OutputIterator operator()(
     InputIterator first,InputIterator last,OutputIterator res,
@@ -816,6 +831,8 @@ struct replace_copy_if_alg
    * "<algorithm>: replace_copy() and replace_copy_if() shouldn't use the
    * conditional operator".
    */
+
+  BOOST_POLY_COLLECTION_WORKAROUND_DR1467(replace_copy_if_alg)
 
   template<
     typename InputIterator,typename OutputIterator,
@@ -873,6 +890,8 @@ OutputIterator remove_copy_if(
 template<typename... Ts>
 struct unique_copy_alg
 {
+  BOOST_POLY_COLLECTION_WORKAROUND_DR1467(unique_copy_alg)
+
   template<
     typename LocalIterator,typename OutputIterator,
     typename BinaryPredicate,typename LocalBaseIterator
@@ -971,6 +990,8 @@ std::pair<OutputIterator1,OutputIterator2> partition_copy(
 template<typename Predicate,typename... Ts>
 struct partition_point_pred
 {
+  partition_point_pred(const Predicate& pred):pred(pred){}
+
   template<typename Iterator>
   bool operator()(const Iterator& it)const
   {

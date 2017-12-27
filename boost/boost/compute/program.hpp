@@ -179,6 +179,14 @@ public:
         return binary;
     }
 
+    #if defined(BOOST_COMPUTE_CL_VERSION_2_1) || defined(BOOST_COMPUTE_DOXYGEN_INVOKED)
+    /// Returns the SPIR-V binary for the program.
+    std::vector<unsigned char> il_binary() const
+    {
+        return get_info<std::vector<unsigned char> >(CL_PROGRAM_IL);
+    }
+    #endif // BOOST_COMPUTE_CL_VERSION_2_1
+
     std::vector<device> get_devices() const
     {
         std::vector<cl_device_id> device_ids =
@@ -318,7 +326,6 @@ public:
             );
         }
 
-
         if(ret != CL_SUCCESS){
             BOOST_THROW_EXCEPTION(opencl_error(ret));
         }
@@ -444,21 +451,8 @@ public:
     static program create_with_source_file(const std::string &file,
                                            const context &context)
     {
-        // open file stream
-        std::ifstream stream(file.c_str());
-
-        if(stream.fail()){
-          BOOST_THROW_EXCEPTION(std::ios_base::failure("failed to create stream."));
-        }
-
-        // read source
-        std::string source(
-            (std::istreambuf_iterator<char>(stream)),
-            std::istreambuf_iterator<char>()
-        );
-
         // create program
-        return create_with_source(source, context);
+        return create_with_source(read_source_file(file), context);
     }
 
     /// Creates a new program with \p files in \p context.
@@ -574,6 +568,65 @@ public:
     }
     #endif // BOOST_COMPUTE_CL_VERSION_1_2
 
+    #if defined(BOOST_COMPUTE_CL_VERSION_2_1) || defined(BOOST_COMPUTE_DOXYGEN_INVOKED)
+    /// Creates a new program with \p il_binary (SPIR-V binary)
+    /// of \p il_size size in \p context.
+    ///
+    /// \opencl_version_warning{2,1}
+    ///
+    /// \see_opencl21_ref{clCreateProgramWithIL}
+    static program create_with_il(const void * il_binary,
+                                  const size_t il_size,
+                                  const context &context)
+    {
+        cl_int error = 0;
+
+        cl_program program_ = clCreateProgramWithIL(
+            context.get(), il_binary, il_size, &error
+        );
+
+        if(!program_){
+            BOOST_THROW_EXCEPTION(opencl_error(error));
+        }
+
+        return program(program_, false);
+    }
+
+    /// Creates a new program with \p il_binary (SPIR-V binary)
+    /// in \p context.
+    ///
+    /// \opencl_version_warning{2,1}
+    ///
+    /// \see_opencl_ref{clCreateProgramWithIL}
+    static program create_with_il(const std::vector<unsigned char> &il_binary,
+                                  const context &context)
+    {
+        return create_with_il(&il_binary[0], il_binary.size(), context);
+    }
+
+    /// Creates a new program in \p context using SPIR-V
+    /// binary \p file.
+    ///
+    /// \opencl_version_warning{2,1}
+    ///
+    /// \see_opencl_ref{clCreateProgramWithIL}
+    static program create_with_il_file(const std::string &file,
+                                       const context &context)
+    {
+        // open file stream
+        std::ifstream stream(file.c_str(), std::ios::in | std::ios::binary);
+
+        // read binary
+        std::vector<unsigned char> il(
+            (std::istreambuf_iterator<char>(stream)),
+            std::istreambuf_iterator<char>()
+        );
+
+        // create program
+        return create_with_il(&il[0], il.size(), context);
+    }
+    #endif // BOOST_COMPUTE_CL_VERSION_2_1
+
     /// Create a new program with \p source in \p context and builds it with \p options.
     /**
      * In case BOOST_COMPUTE_USE_OFFLINE_CACHE macro is defined,
@@ -638,6 +691,22 @@ public:
         return prog;
     }
 
+    /// Create a new program with \p file in \p context and builds it with \p options.
+    /**
+     * In case BOOST_COMPUTE_USE_OFFLINE_CACHE macro is defined,
+     * the compiled binary is stored for reuse in the offline cache located in
+     * $HOME/.boost_compute on UNIX-like systems and in %APPDATA%/boost_compute
+     * on Windows.
+     */
+    static program build_with_source_file(
+            const std::string &file,
+            const context     &context,
+            const std::string &options = std::string()
+            )
+    {
+        return build_with_source(read_source_file(file), context, options);
+    }
+
 private:
 #ifdef BOOST_COMPUTE_USE_OFFLINE_CACHE
     // Saves program binaries for future reuse.
@@ -679,6 +748,22 @@ private:
     }
 #endif // BOOST_COMPUTE_USE_OFFLINE_CACHE
 
+    static std::string read_source_file(const std::string &file)
+    {
+        // open file stream
+        std::ifstream stream(file.c_str());
+
+        if(stream.fail()){
+          BOOST_THROW_EXCEPTION(std::ios_base::failure("failed to create stream."));
+        }
+
+        // read source
+        return std::string(
+            (std::istreambuf_iterator<char>(stream)),
+            std::istreambuf_iterator<char>()
+        );
+    }
+
 private:
     cl_program m_program;
 };
@@ -700,6 +785,12 @@ BOOST_COMPUTE_DETAIL_DEFINE_GET_INFO_SPECIALIZATIONS(program,
     ((std::string, CL_PROGRAM_KERNEL_NAMES))
 )
 #endif // BOOST_COMPUTE_CL_VERSION_1_2
+
+#ifdef BOOST_COMPUTE_CL_VERSION_2_1
+BOOST_COMPUTE_DETAIL_DEFINE_GET_INFO_SPECIALIZATIONS(program,
+    ((std::vector<unsigned char>, CL_PROGRAM_IL))
+)
+#endif // BOOST_COMPUTE_CL_VERSION_2_1
 
 } // end compute namespace
 } // end boost namespace

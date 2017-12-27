@@ -27,7 +27,7 @@
 
 // Try including WinAPI config as soon as possible so that any other headers don't include Windows SDK headers
 #if defined(BOOST_OS_WINDOWS_AVAILABLE)
-#include <boost/detail/winapi/config.hpp>
+#include <boost/winapi/config.hpp>
 #endif
 
 #include <limits.h> // To bring in libc macros
@@ -204,18 +204,14 @@
 #   define BOOST_LOG_NORETURN
 #endif
 
-// GCC and compatible compilers may require marking types that may alias other types
-#if defined(__GNUC__)
-#   define BOOST_LOG_MAY_ALIAS __attribute__ ((__may_alias__))
-#else
-#   define BOOST_LOG_MAY_ALIAS
-#endif
+// Some compilers may require marking types that may alias other types
+#define BOOST_LOG_MAY_ALIAS BOOST_MAY_ALIAS
 
 #if !defined(BOOST_LOG_BUILDING_THE_LIB)
 
 // Detect if we're dealing with dll
 #   if defined(BOOST_LOG_DYN_LINK) || defined(BOOST_ALL_DYN_LINK)
-#        define BOOST_LOG_DLL
+#       define BOOST_LOG_DLL
 #   endif
 
 #   if defined(BOOST_LOG_DLL)

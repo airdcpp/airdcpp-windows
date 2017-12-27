@@ -129,13 +129,20 @@ public:
 
   base_sentinel nv_shrink_to_fit()
   {
-    auto p=s.data();
-    s.shrink_to_fit();
-    if(p!=s.data())try{
-      index ii{{},i.get_allocator()};
-      ii.reserve(s.capacity()+1);
-      i.swap(ii);
-      build_index();
+    try{
+      auto p=s.data();
+      if(!s.empty())s.shrink_to_fit();
+      else{
+        store ss{s.get_allocator()};
+        ss.reserve(1); /* --> s.data()!=nullptr */
+        s.swap(ss);
+      }
+      if(p!=s.data()){
+        index ii{{},i.get_allocator()};
+        ii.reserve(s.capacity()+1);
+        i.swap(ii);
+        build_index();
+      }
     }
     catch(...){
       rebuild_index();
@@ -296,10 +303,18 @@ private:
 
   split_segment(const Allocator& al):
     s{typename store::allocator_type{al}},
-    i{{},typename index::allocator_type{al}}{build_index();}
+    i{{},typename index::allocator_type{al}}
+  {
+    s.reserve(1); /* --> s.data()!=nullptr */
+    build_index();
+  }
+
   split_segment(store&& s_):
     s{std::move(s_)},i{{},typename index::allocator_type{s.get_allocator()}}
-    {build_index();}
+  {
+    s.reserve(1); /* --> s.data()!=nullptr */
+    build_index();
+  }
 
   void prereserve()
   {

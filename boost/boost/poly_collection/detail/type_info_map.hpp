@@ -13,6 +13,7 @@
 #pragma once
 #endif
 
+#include <boost/detail/workaround.hpp>
 #include <boost/poly_collection/detail/newdelete_allocator.hpp>
 #include <functional>
 #include <typeinfo>
@@ -67,16 +68,45 @@ public:
   using iterator=typename map_type::iterator;
   using const_iterator=typename map_type::const_iterator;
 
+#if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION,<40900)
+  /* std::unordered_map(const unordered_map&,const allocator_type&),
+   * std::unordered_map(unordered_map&&,const allocator_type&) and
+   * std::unordered_map(const allocator_type&) not available.
+   */
+
+#define BOOST_POLY_COLLECTION_MAP_CONT_ALLOC_CTOR(x,al)              \
+x.begin(),x.end(),                                                   \
+0,typename map_type::hasher{},typename map_type::key_equal{},al
+#define BOOST_POLY_COLLECTION_MAP_ALLOC_CTOR(al)                     \
+10,typename map_type::hasher{},typename map_type::key_equal{},al
+#define BOOST_POLY_COLLECTION_CACHE_ALLOC_CTOR(al)                   \
+10,typename cache_type::hasher{},typename cache_type::key_equal{},al
+
+#else
+
+#define BOOST_POLY_COLLECTION_MAP_CONT_ALLOC_CTOR(x,al) x,al
+#define BOOST_POLY_COLLECTION_MAP_ALLOC_CTOR(al) al
+#define BOOST_POLY_COLLECTION_CACHE_ALLOC_CTOR(al) al
+
+#endif
+
   type_info_map()=default;
   type_info_map(const type_info_map& x):
-    map{x.map},cache{x.cache.get_allocator()}{build_cache(x.cache);}
+    map{x.map},
+    cache{BOOST_POLY_COLLECTION_CACHE_ALLOC_CTOR(x.cache.get_allocator())}
+    {build_cache(x.cache);}
   type_info_map(type_info_map&& x)=default;
   type_info_map(const allocator_type& al):
-    map{al},cache{cache_allocator_type{al}}{}
+    map{BOOST_POLY_COLLECTION_MAP_ALLOC_CTOR(al)},
+    cache{BOOST_POLY_COLLECTION_CACHE_ALLOC_CTOR(cache_allocator_type{al})}
+    {}
   type_info_map(const type_info_map& x,const allocator_type& al):
-    map{x.map,al},cache{cache_allocator_type{al}}{build_cache(x.cache);}
+    map{BOOST_POLY_COLLECTION_MAP_CONT_ALLOC_CTOR(x.map,al)},
+    cache{BOOST_POLY_COLLECTION_CACHE_ALLOC_CTOR(cache_allocator_type{al})}
+    {build_cache(x.cache);}
   type_info_map(type_info_map&& x,const allocator_type& al):
-    map{std::move(x.map),al},cache{cache_allocator_type{al}}
+    map{BOOST_POLY_COLLECTION_MAP_CONT_ALLOC_CTOR(std::move(x.map),al)},
+    cache{BOOST_POLY_COLLECTION_CACHE_ALLOC_CTOR(cache_allocator_type{al})}
   {
     if(al==x.map.get_allocator()&&
        cache_allocator_type{al}==x.cache.get_allocator()){
@@ -87,6 +117,10 @@ public:
       x.cache.clear();
     }
   }
+
+#undef BOOST_POLY_COLLECTION_MAP_CONT_ALLOC_CTOR
+#undef BOOST_POLY_COLLECTION_MAP_ALLOC_CTOR
+#undef BOOST_POLY_COLLECTION_CACHE_ALLOC_CTOR
 
   type_info_map& operator=(const type_info_map& x)
   {

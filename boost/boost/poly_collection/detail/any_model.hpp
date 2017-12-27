@@ -101,8 +101,8 @@ struct any_model
   >;
 
   template<typename Concrete>
-  using is_subtype=std::true_type; /* can't compile-time check concept
-                                    * compliance */
+  using is_implementation=std::true_type; /* can't compile-time check concept
+                                           * compliance */
   template<typename T>
   using is_terminal=any_model_is_terminal<T>;
 

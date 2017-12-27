@@ -50,7 +50,7 @@ struct function_model<R(Args...)>
   using value_type=callable_wrapper<R(Args...)>;
 
   template<typename Callable>
-  using is_subtype=is_invocable_r<R,Callable&,Args...>;
+  using is_implementation=is_invocable_r<R,Callable&,Args...>;
 
   template<typename T>
   using is_terminal=function_model_is_terminal<T>;

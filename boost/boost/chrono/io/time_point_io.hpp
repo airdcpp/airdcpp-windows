@@ -940,11 +940,15 @@ namespace boost
           if (tz == timezone::local)
           {
 #if defined BOOST_WINDOWS && ! defined(__CYGWIN__)
+#if BOOST_MSVC < 1400  // localtime_s doesn't exist in vc7.1
             std::tm *tmp = 0;
             if ((tmp=localtime(&t)) == 0)
               failed = true;
             else
               tm =*tmp;
+# else
+            if (localtime_s(&tm, &t) != 0) failed = true;
+# endif
 #else
             if (localtime_r(&t, &tm) == 0) failed = true;
 #endif

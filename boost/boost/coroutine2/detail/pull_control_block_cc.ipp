@@ -43,7 +43,7 @@ pull_coroutine< T >::control_block::destroy( control_block * cb) noexcept {
 
 template< typename T >
 template< typename StackAllocator, typename Fn >
-pull_coroutine< T >::control_block::control_block( context::preallocated palloc, StackAllocator salloc,
+pull_coroutine< T >::control_block::control_block( context::preallocated palloc, StackAllocator && salloc,
                                                    Fn && fn) :
     c{},
     other{ nullptr },
@@ -53,7 +53,7 @@ pull_coroutine< T >::control_block::control_block( context::preallocated palloc,
     storage{} {
 #if defined(BOOST_NO_CXX14_GENERIC_LAMBDAS)
     c = boost::context::callcc(
-            std::allocator_arg, palloc, salloc,
+            std::allocator_arg, palloc, std::forward< StackAllocator >( salloc),
             wrap( [this](typename std::decay< Fn >::type & fn_,boost::context::continuation && c) mutable {
                     // create synthesized push_coroutine< T >
                     typename push_coroutine< T >::control_block synthesized_cb{ this, c };
@@ -79,7 +79,7 @@ pull_coroutine< T >::control_block::control_block( context::preallocated palloc,
                  std::forward< Fn >( fn) ) );
 #else
     c = boost::context::callcc(
-            std::allocator_arg, palloc, salloc,
+            std::allocator_arg, palloc, std::forward< StackAllocator >( salloc),
             [this,fn_=std::forward< Fn >( fn)](boost::context::continuation && c) mutable {
                // create synthesized push_coroutine< T >
                typename push_coroutine< T >::control_block synthesized_cb{ this, c };
@@ -103,6 +103,9 @@ pull_coroutine< T >::control_block::control_block( context::preallocated palloc,
                return other->c.resume();
             });
 #endif
+    if ( except) {
+        std::rethrow_exception( except);
+    }
 }
 
 template< typename T >
@@ -190,7 +193,7 @@ pull_coroutine< T & >::control_block::destroy( control_block * cb) noexcept {
 
 template< typename T >
 template< typename StackAllocator, typename Fn >
-pull_coroutine< T & >::control_block::control_block( context::preallocated palloc, StackAllocator salloc,
+pull_coroutine< T & >::control_block::control_block( context::preallocated palloc, StackAllocator && salloc,
                                                      Fn && fn) :
     c{},
     other{ nullptr },
@@ -200,7 +203,7 @@ pull_coroutine< T & >::control_block::control_block( context::preallocated pallo
     storage{} {
 #if defined(BOOST_NO_CXX14_GENERIC_LAMBDAS)
     c = boost::context::callcc(
-            std::allocator_arg, palloc, salloc,
+            std::allocator_arg, palloc, std::forward< StackAllocator >( salloc),
             wrap( [this](typename std::decay< Fn >::type & fn_,boost::context::continuation && c) mutable {
                     // create synthesized push_coroutine< T & >
                     typename push_coroutine< T & >::control_block synthesized_cb{ this, c };
@@ -226,7 +229,7 @@ pull_coroutine< T & >::control_block::control_block( context::preallocated pallo
                  std::forward< Fn >( fn) ) );
 #else
     c = boost::context::callcc(
-            std::allocator_arg, palloc, salloc,
+            std::allocator_arg, palloc, std::forward< StackAllocator >( salloc),
             [this,fn_=std::forward< Fn >( fn)](boost::context::continuation && c) mutable {
                // create synthesized push_coroutine< T & >
                typename push_coroutine< T & >::control_block synthesized_cb{ this, c };
@@ -250,6 +253,9 @@ pull_coroutine< T & >::control_block::control_block( context::preallocated pallo
                return other->c.resume();
             });
 #endif
+    if ( except) {
+        std::rethrow_exception( except);
+    }
 }
 
 template< typename T >
@@ -313,7 +319,7 @@ pull_coroutine< void >::control_block::destroy( control_block * cb) noexcept {
 }
 
 template< typename StackAllocator, typename Fn >
-pull_coroutine< void >::control_block::control_block( context::preallocated palloc, StackAllocator salloc,
+pull_coroutine< void >::control_block::control_block( context::preallocated palloc, StackAllocator && salloc,
                                                       Fn && fn) :
     c{},
     other{ nullptr },
@@ -321,7 +327,7 @@ pull_coroutine< void >::control_block::control_block( context::preallocated pall
     except{} {
 #if defined(BOOST_NO_CXX14_GENERIC_LAMBDAS)
     c = boost::context::callcc(
-            std::allocator_arg, palloc, salloc,
+            std::allocator_arg, palloc, std::forward< StackAllocator >( salloc),
             wrap( [this](typename std::decay< Fn >::type & fn_,boost::context::continuation && c) mutable {
                     // create synthesized push_coroutine< void >
                     typename push_coroutine< void >::control_block synthesized_cb{ this, c };
@@ -347,7 +353,7 @@ pull_coroutine< void >::control_block::control_block( context::preallocated pall
                  std::forward< Fn >( fn) ) );
 #else
     c = boost::context::callcc(
-            std::allocator_arg, palloc, salloc,
+            std::allocator_arg, palloc, std::forward< StackAllocator >( salloc),
             [this,fn_=std::forward< Fn >( fn)]( boost::context::continuation && c) mutable {
                // create synthesized push_coroutine< void >
                typename push_coroutine< void >::control_block synthesized_cb{ this, c };
@@ -371,6 +377,9 @@ pull_coroutine< void >::control_block::control_block( context::preallocated pall
                return other->c.resume();
             });
 #endif
+    if ( except) {
+        std::rethrow_exception( except);
+    }
 }
 
 inline

@@ -16,6 +16,7 @@
 #include <boost/config.hpp>
 #include <boost/detail/workaround.hpp>
 #include <boost/poly_collection/detail/integer_sequence.hpp>
+#include <boost/poly_collection/detail/workaround_dr1467.hpp>
 #include <tuple>
 #include <utility>
 
@@ -39,6 +40,8 @@ struct name                                               \
 #define BOOST_POLY_COLLECTION_DEFINE_OVERLOAD_SET(name,f) \
 struct name                                               \
 {                                                         \
+  BOOST_POLY_COLLECTION_WORKAROUND_DR1467(name)           \
+                                                          \
   template<typename... Args>                              \
   auto operator()(Args&&... args)const->                  \
     decltype(f(std::forward<Args>(args)...))              \
@@ -54,69 +57,66 @@ namespace poly_collection{
 
 namespace detail{
 
-template<typename F,typename Tuple>
+template<typename F,typename... TailArgs>
 struct tail_closure_class
 {
+  tail_closure_class(const F& f,std::tuple<TailArgs...> t):f(f),t(t){}
+
+  template<typename... Args>
+  using return_type=decltype(
+    std::declval<F>()(std::declval<Args>()...,std::declval<TailArgs>()...));
+
   template<typename... Args,std::size_t... I>
-  auto call(index_sequence<I...>,Args&&... args)
-    ->decltype(std::declval<F>()(
-      std::forward<Args>(args)...,
-      std::get<I>(std::declval<Tuple>())...))
+  return_type<Args&&...> call(index_sequence<I...>,Args&&... args)
   {
     return f(std::forward<Args>(args)...,std::get<I>(t)...);
   }
 
   template<typename... Args>
-  auto operator()(Args&&... args)
-    ->decltype(this->call(
-      make_index_sequence<std::tuple_size<Tuple>::value>{},
-      std::forward<Args>(args)...))
+  return_type<Args&&...> operator()(Args&&... args)
   {
     return call(
-      make_index_sequence<std::tuple_size<Tuple>::value>{},
-      std::forward<Args>(args)...);
+      make_index_sequence<sizeof...(TailArgs)>{},std::forward<Args>(args)...);
   }
   
-  F     f;
-  Tuple t; 
+  F                       f;
+  std::tuple<TailArgs...> t; 
 };
 
 template<typename F,typename... Args>
-auto tail_closure(const F& f,Args&&... args)
-  ->tail_closure_class<F,std::tuple<Args&&...>>
+tail_closure_class<F,Args&&...> tail_closure(const F& f,Args&&... args)
 {
   return {f,std::forward_as_tuple(std::forward<Args>(args)...)};
 }
 
-template<typename F,typename Tuple>
+template<typename F,typename... HeadArgs>
 struct head_closure_class
 {
+  head_closure_class(const F& f,std::tuple<HeadArgs...> t):f(f),t(t){}
+
+  template<typename... Args>
+  using return_type=decltype(
+    std::declval<F>()(std::declval<HeadArgs>()...,std::declval<Args>()...));
+
   template<typename... Args,std::size_t... I>
-  auto call(index_sequence<I...>,Args&&... args)
-    ->decltype(std::declval<F>()(
-      std::get<I>(std::declval<Tuple>())...,std::forward<Args>(args)...))
+  return_type<Args&&...> call(index_sequence<I...>,Args&&... args)
   {
     return f(std::get<I>(t)...,std::forward<Args>(args)...);
   }
 
   template<typename... Args>
-  auto operator()(Args&&... args)
-    ->decltype(this->call(
-      make_index_sequence<std::tuple_size<Tuple>::value>{},
-      std::forward<Args>(args)...))
+  return_type<Args&&...> operator()(Args&&... args)
   {
     return call(
-      make_index_sequence<std::tuple_size<Tuple>::value>{},
-      std::forward<Args>(args)...);
+      make_index_sequence<sizeof...(HeadArgs)>{},std::forward<Args>(args)...);
   }
   
-  F     f;
-  Tuple t; 
+  F                       f;
+  std::tuple<HeadArgs...> t; 
 };
 
 template<typename F,typename... Args>
-auto head_closure(const F& f,Args&&... args)
-  ->head_closure_class<F,std::tuple<Args&&...>>
+head_closure_class<F,Args&&...> head_closure(const F& f,Args&&... args)
 {
   return {f,std::forward_as_tuple(std::forward<Args>(args)...)};
 }
@@ -124,6 +124,8 @@ auto head_closure(const F& f,Args&&... args)
 template<typename ReturnType,typename F>
 struct cast_return_class
 {
+  cast_return_class(const F& f):f(f){}
+
   template<typename... Args>
   ReturnType operator()(Args&&... args)const
   {
@@ -142,6 +144,8 @@ cast_return_class<ReturnType,F> cast_return(const F& f)
 template<typename F>
 struct deref_to_class
 {
+  deref_to_class(const F& f):f(f){}
+
   template<typename... Args>
   auto operator()(Args&&... args)->decltype(std::declval<F>()(*args...))
   {
@@ -160,6 +164,8 @@ deref_to_class<F> deref_to(const F& f)
 template<typename F>
 struct deref_1st_to_class
 {
+  deref_1st_to_class(const F& f):f(f){}
+
   template<typename Arg,typename... Args>
   auto operator()(Arg&& arg,Args&&... args)
     ->decltype(std::declval<F>()(*arg,std::forward<Args>(args)...))
@@ -178,6 +184,8 @@ deref_1st_to_class<F> deref_1st_to(const F& f)
 
 struct transparent_equal_to
 {
+  BOOST_POLY_COLLECTION_WORKAROUND_DR1467(transparent_equal_to)
+
   template<typename T,typename U>
   auto operator()(T&& x,U&& y)const
     noexcept(noexcept(std::forward<T>(x)==std::forward<U>(y)))

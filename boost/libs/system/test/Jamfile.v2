@@ -121,4 +121,10 @@ project
          [ run std_mismatch_test.cpp
            :  :  : <link>shared <conditional>@cxx11 : std_mismatch_test_shared_11
          ]
+         [ run header_only_test.cpp
+           :  :  : <link>static <define>BOOST_NO_ANSI_APIS : header_only_test_no_ansi
+         ]
          ;
+
+# Quick (CI) test
+run quick.cpp ;

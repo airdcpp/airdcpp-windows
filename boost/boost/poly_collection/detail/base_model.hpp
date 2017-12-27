@@ -35,7 +35,7 @@ struct base_model
 {
   using value_type=Base;
   template<typename Derived>
-  using is_subtype=std::is_base_of<Base,Derived>;
+  using is_implementation=std::is_base_of<Base,Derived>;
   template<typename T>
   using is_terminal=is_final<T>; //TODO: should we say !is_polymorhpic||is_final?
 

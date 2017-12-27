@@ -13,6 +13,7 @@
 #pragma once
 #endif
 
+#include <boost/detail/workaround.hpp>
 #include <boost/poly_collection/detail/newdelete_allocator.hpp>
 #include <boost/poly_collection/detail/segment_backend.hpp>
 #include <boost/poly_collection/detail/value_holder.hpp>
@@ -172,7 +173,15 @@ public:
   template<typename InputIterator>
   range nv_insert(const_iterator p,InputIterator first,InputIterator last)
   {
+#if BOOST_WORKAROUND(BOOST_LIBSTDCXX_VERSION,<40900)
+    /* std::vector::insert(pos,first,last) returns void rather than iterator */
+
+    auto n=const_store_value_type_ptr(p)-s.data();
+    s.insert(s.begin()+n,first,last);
+    return range_from(static_cast<std::size_t>(n)); 
+#else
     return range_from(s.insert(iterator_from(p),first,last));
+#endif
   }
 
   virtual range erase(const_base_iterator p)

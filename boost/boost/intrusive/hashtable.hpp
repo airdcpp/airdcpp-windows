@@ -1798,8 +1798,15 @@ class hashtable_impl
          this->insert_equal(b, e);
    }
 
-   //! <b>Effects</b>: to-do
+   //! <b>Effects</b>: Constructs a container moving resources from another container.
+   //!   Internal value traits, bucket traits, hasher and comparison are move constructed and
+   //!   nodes belonging to x are linked to *this.
    //!
+   //! <b>Complexity</b>: Constant.
+   //!
+   //! <b>Throws</b>: If value_traits::node_traits::node's
+   //!   move constructor throws (this does not happen with predefined Boost.Intrusive hooks)
+   //!   or the move constructor of value traits, bucket traits, hasher or comparison throws.
    hashtable_impl(BOOST_RV_REF(hashtable_impl) x)
       : internal_type( ::boost::move(x.priv_value_traits())
                      , ::boost::move(x.priv_bucket_traits())
@@ -1815,7 +1822,7 @@ class hashtable_impl
       x.priv_split_traits().set_size(size_type(0));
    }
 
-   //! <b>Effects</b>: to-do
+   //! <b>Effects</b>: Equivalent to swap.
    //!
    hashtable_impl& operator=(BOOST_RV_REF(hashtable_impl) x)
    {  this->swap(x); return *this;  }
