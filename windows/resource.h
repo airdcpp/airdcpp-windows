@@ -629,7 +629,6 @@
 #define IDC_AUTOSEGMENT                 1216
 #define IDC_AUTO_SEARCH_ALT             1216
 #define IDC_COPY_TTH                    1217
-#define IDC_DONTBEGIN                   1217
 #define IDC_SKIPLIST                    1217
 #define IDC_SKIPLIST_DOWNLOAD           1218
 #define IDC_EDIT1                       1218
@@ -754,10 +753,7 @@
 #define CAA                             1258
 #define IDC_SEARCH_SPIN                 1258
 #define IDC_LIST_UP                     1258
-#define IDC_BEGIN_EDIT                  1259
 #define IDC_LIST_DOWN                   1259
-#define IDC_DONTBEGIN_EDIT              1259
-#define IDC_BEGIN_SPIN                  1260
 #define IDC_LIST_REMOVE                 1260
 #define IDC_LIST_DESC                   1261
 #define IDC_MATCH_SPIN2                 1261

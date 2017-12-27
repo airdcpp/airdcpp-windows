@@ -26,7 +26,6 @@
 
 PropPage::TextItem DownloadPage::texts[] = {
 	{ IDC_AUTO_SEARCH_ALT, ResourceManager::SETTINGS_AUTO_BUNDLE_SEARCH },
-	{ IDC_DONTBEGIN, ResourceManager::DONT_ADD_SEGMENT_TEXT },
 	{ IDC_ENABLE_SEGMENTS, ResourceManager::ENABLE_MULTI_SOURCE },
 	{ IDC_MINUTES, ResourceManager::MINUTES_LOWER },
 	{ IDC_KBPS, ResourceManager::KiBS },
@@ -46,8 +45,6 @@ PropPage::TextItem DownloadPage::texts[] = {
 
 PropPage::Item DownloadPage::items[] = {
 	{ IDC_AUTO_SEARCH_ALT, SettingsManager::AUTO_SEARCH, PropPage::T_BOOL },
-	{ IDC_DONTBEGIN, SettingsManager::DONT_BEGIN_SEGMENT, PropPage::T_BOOL },
-	{ IDC_DONTBEGIN_EDIT, SettingsManager::DONT_BEGIN_SEGMENT_SPEED, PropPage::T_INT },
 	{ IDC_SEARCH_INTERVAL, SettingsManager::BUNDLE_SEARCH_TIME, PropPage::T_INT },
 	{ IDC_CHUNKCOUNT, SettingsManager::SEGMENTS_MANUAL, PropPage::T_BOOL },
 	{ IDC_SEG_NUMBER, SettingsManager::NUMBER_OF_SEGMENTS, PropPage::T_INT },
@@ -78,7 +75,6 @@ LRESULT DownloadPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 
 	setMinMax(IDC_SEG_NUMBER_SPIN, 1, 10);
 	setMinMax(IDC_SEARCH_SPIN, 5, 60);
-	setMinMax(IDC_BEGIN_SPIN, 2, 100000);
 
 	checkItems();
 
@@ -109,10 +105,6 @@ void DownloadPage::checkItems() {
 
 	::EnableWindow(GetDlgItem(IDC_SEG_NUMBER_EDIT),			IsDlgButtonChecked(IDC_CHUNKCOUNT) && usingSegments);
 	::EnableWindow(GetDlgItem(IDC_CHUNKCOUNT),				usingSegments);
-
-	::EnableWindow(GetDlgItem(IDC_DONTBEGIN_EDIT),			IsDlgButtonChecked(IDC_DONTBEGIN) && usingSegments);
-	::EnableWindow(GetDlgItem(IDC_KBPS),					IsDlgButtonChecked(IDC_DONTBEGIN) && usingSegments);
-	::EnableWindow(GetDlgItem(IDC_DONTBEGIN),				usingSegments);
 
 	/* Searching */
 	BOOL autoAddSources = IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES);

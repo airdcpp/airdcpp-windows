@@ -833,7 +833,6 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 		}
 	} else {
 		fileMenu.InsertSeparatorFirst(TSTRING(FILES));
-		//fileMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)segmentsMenu, CTSTRING(MAX_SEGMENTS_NUMBER));
 
 		//if (hasBundleItems)
 		//	WinUtil::appendFilePrioMenu(fileMenu, ql);
