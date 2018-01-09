@@ -203,7 +203,7 @@
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <AdditionalIncludeDirectories>$(SolutionDir)\airdcpp;$(SolutionDir);$(SolutionDir)\leveldb\include;$(SolutionDir)\zlib;$(SolutionDir)\boost;$(SolutionDir)\airdcpp-webapi;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\libmaxminddb\include\;$(SolutionDir)\airdcpp;$(SolutionDir);$(SolutionDir)\leveldb\include;$(SolutionDir)\zlib;$(SolutionDir)\boost;$(SolutionDir)\airdcpp-webapi;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>

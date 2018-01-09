@@ -49,8 +49,8 @@ public:
 private:
 	friend class Singleton<GeoManager>;
 	cMaxMindDB *pMaxMindDB;
-
-	GeoManager() { }
+	bool decompress() const;
+	GeoManager(): pMaxMindDB(NULL) { }
 	virtual ~GeoManager() { }
 };
 

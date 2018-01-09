@@ -18,7 +18,8 @@
 
 #include "stdinc.h"
 #include "GeoManager.h"
-
+#include "File.h"
+#include "ZUtils.h"
 #include "cmaxminddb.h"
 #include "Util.h"
 
@@ -31,28 +32,44 @@ void GeoManager::init() {
 }
 
 void GeoManager::update() {
+	if(decompress()) {
 	if(pMaxMindDB)
 		pMaxMindDB->ReloadAll();
+	}
+}
+
+bool GeoManager::decompress() const {
+
+	if (File::getSize(getDbPath()+ ".gz") <= 0) {
+
+		return false;
+
+	}
+	try { GZ::decompress(getDbPath() + ".gz", getDbPath()); }
+
+	catch (const Exception&) { return false; }
+	return true;
 }
 
 void GeoManager::close() {
 //TODO: proper close?
+	delete pMaxMindDB;
 }
 
 const string GeoManager::getCountry(const string& ip) {
 	if(!ip.empty()) {
 		string cn = "--";
 		string cc = "--";
-		pMaxMindDB->GetCC(ip,cn);
-		pMaxMindDB->GetCN(ip,cc);
-		return cc;
+		pMaxMindDB->GetCC(ip,cc);
+		pMaxMindDB->GetCN(ip,cn);
+		return cc +" - "+cn;
 	}
 
 	return Util::emptyString;
 }
 
 string GeoManager::getDbPath() {
-	return Util::getPath(Util::PATH_USER_LOCAL) + "GeoLite2-Country.mmdb";
+	return Util::getPath(Util::PATH_USER_CONFIG) + "GeoLite2-Country.mmdb";
 }
 
 } // namespace dcpp

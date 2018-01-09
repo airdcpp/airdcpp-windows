@@ -18,7 +18,7 @@
 #include "cmaxminddb.h"
 #include <sstream>
 #include <iostream>
-
+#include "GeoManager.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include "File.h"
@@ -139,6 +139,11 @@ MMDB_s *cMaxMindDB::TryCountryDB(unsigned int flags)
 		if ((ok != MMDB_SUCCESS) && FileExists("./GeoLite2-Country.mmdb"))
 			ok = MMDB_open("./GeoLite2-Country.mmdb", flags, mmdb);
 
+		if ((ok != MMDB_SUCCESS) && FileExists(GeoManager::getDbPath().c_str()))
+			ok = MMDB_open(GeoManager::getDbPath().c_str(), flags, mmdb);
+
+
+
 		if (ok != MMDB_SUCCESS) {
 			if (mmdb) {
 				free(mmdb);
@@ -165,6 +170,6 @@ void cMaxMindDB::ReloadAll()
 
 bool cMaxMindDB::FileExists(const char *name)
 {
-	return File::getSize(name) != 1;
+	return File::getSize(name) != 0;
 }
 };
