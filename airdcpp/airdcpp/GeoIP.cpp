@@ -26,7 +26,7 @@
 #include "ZUtils.h"
 
 #include <GeoIP.h>
-
+/*
 namespace dcpp {
 
 GeoIP::GeoIP(string&& aPath) : geo(0), path(move(aPath)) {
@@ -80,7 +80,7 @@ string getGeoInfo(int id, GEOTYPE type) {
 } // unnamed namespace
 
 void GeoIP::rebuild() {
-	if(geo) {
+	/*if(geo) {
 		const auto& setting = SETTING(COUNTRY_FORMAT);
 
 		auto size = GeoIP_num_countries();
@@ -110,8 +110,8 @@ void GeoIP::rebuild() {
 
 			cache[id] = Util::formatParams(setting, params);
 		}
-	}
-}
+	}*/
+/*}
 
 bool GeoIP::decompress() const {
 	if(File::getSize(path + ".gz") <= 0) {
@@ -125,21 +125,21 @@ bool GeoIP::decompress() const {
 }
 
 void GeoIP::open() {
-#ifdef _WIN32
+/*#ifdef _WIN32
 	geo = GeoIP_open(Text::toT(path).c_str(), GEOIP_STANDARD);
 #else
 	geo = GeoIP_open(path.c_str(), GEOIP_STANDARD);
 #endif
 	if(geo) {
 		GeoIP_set_charset(geo, GEOIP_CHARSET_UTF8);
-	}
-}
+	}*/
+/*}
 
 void GeoIP::close() {
-	cache.clear();
+	//cache.clear();
 
-	GeoIP_delete(geo);
-	geo = 0;
+	//GeoIP_delete(geo);
+	//geo = 0;
 }
 
 bool GeoIP::v6() const {
@@ -147,3 +147,4 @@ bool GeoIP::v6() const {
 }
 
 } // namespace dcpp
+*/

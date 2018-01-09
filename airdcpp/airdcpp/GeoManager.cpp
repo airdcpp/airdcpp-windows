@@ -19,55 +19,40 @@
 #include "stdinc.h"
 #include "GeoManager.h"
 
-#include "GeoIP.h"
+#include "cmaxminddb.h"
 #include "Util.h"
 
 namespace dcpp {
 
 void GeoManager::init() {
-	geo6.reset(new GeoIP(getDbPath(true)));
-	geo4.reset(new GeoIP(getDbPath(false)));
-
-	rebuild();
+	pMaxMindDB = new cMaxMindDB();
+	pMaxMindDB->ReloadAll();
+	
 }
 
-void GeoManager::update(bool v6) {
-	auto geo = (v6 ? geo6 : geo4).get();
-	if(geo) {
-		geo->update();
-		geo->rebuild();
-	}
-}
-
-void GeoManager::rebuild() {
-	geo6->rebuild();
-	geo4->rebuild();
+void GeoManager::update() {
+	if(pMaxMindDB)
+		pMaxMindDB->ReloadAll();
 }
 
 void GeoManager::close() {
-	geo6.reset();
-	geo4.reset();
+//TODO: proper close?
 }
 
-const string& GeoManager::getCountry(const string& ip, int flags) {
+const string GeoManager::getCountry(const string& ip) {
 	if(!ip.empty()) {
-
-		if((flags & V6) && geo6.get()) {
-			const auto& ret = geo6->getCountry(ip);
-			if(!ret.empty())
-				return ret;
-		}
-
-		if((flags & V4) && geo4.get()) {
-			return geo4->getCountry(ip);
-		}
+		string cn = "--";
+		string cc = "--";
+		pMaxMindDB->GetCC(ip,cn);
+		pMaxMindDB->GetCN(ip,cc);
+		return cc;
 	}
 
 	return Util::emptyString;
 }
 
-string GeoManager::getDbPath(bool v6) {
-	return Util::getPath(Util::PATH_USER_LOCAL) + (v6 ? "GeoIPv6.dat" : "GeoIP.dat");
+string GeoManager::getDbPath() {
+	return Util::getPath(Util::PATH_USER_LOCAL) + "GeoLite2-Country.mmdb";
 }
 
 } // namespace dcpp
