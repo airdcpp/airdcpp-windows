@@ -87,7 +87,7 @@ SettingHolder::~SettingHolder() {
 		}
 	}
 	if (rebuildGeo) {
-		GeoManager::getInstance()->rebuild();
+		GeoManager::getInstance()->update();
 	}
 
 	if (prevUpdateChannel != SETTING(UPDATE_CHANNEL)) {

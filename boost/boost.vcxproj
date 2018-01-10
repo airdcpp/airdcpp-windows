@@ -22,7 +22,7 @@
     <ProjectName>boost</ProjectName>
     <ProjectGuid>{D1095E8A-63A5-4592-AE93-2D638F20F66A}</ProjectGuid>
     <RootNamespace>boostregex</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">

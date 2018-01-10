@@ -16,14 +16,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef DCPLUSPLUS_DCPP_GEOIP_H
-#define DCPLUSPLUS_DCPP_GEOIP_H
+//#ifndef DCPLUSPLUS_DCPP_GEOIP_H
+//#define DCPLUSPLUS_DCPP_GEOIP_H
 
 #include <string>
 #include <vector>
 
-typedef struct GeoIPTag GeoIP;
-
+//typedef struct GeoIPTag GeoIP;
+/*
 namespace dcpp {
 
 using std::string;
@@ -42,15 +42,15 @@ private:
 	bool decompress() const;
 	void open();
 	void close();
-	bool v6() const;
+//	bool v6() const;
 
 	//mutable CriticalSection cs;
 	::GeoIP* geo;
 
 	const string path;
-	vector<string> cache;
+//	vector<string> cache;
 };
+*/
+//} // namespace dcpp
 
-} // namespace dcpp
-
-#endif // !defined(DCPLUSPLUS_DCPP_GEOIP_H)
+//#endif // !defined(DCPLUSPLUS_DCPP_GEOIP_H)

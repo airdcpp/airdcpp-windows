@@ -94,12 +94,11 @@ private:
 
 	ByteVector versionSig;
 
-	void updateGeo(bool v6);
-	void checkGeoUpdate(bool v6);
+	void updateGeo();
 
 	void completeSignatureDownload(bool manual);
 	void completeLanguageCheck();
-	void completeGeoDownload(bool v6);
+	void completeGeoDownload();
 	void completeVersionDownload(bool manualCheck);
 	void completeLanguageDownload();
 	void completeIPCheck(bool manualCheck, bool v6);
