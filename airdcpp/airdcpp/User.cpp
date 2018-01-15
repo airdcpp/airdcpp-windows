@@ -201,9 +201,9 @@ string Identity::getApplication() const noexcept {
 
 	return application + ' ' + version;
 }
-const string& Identity::getCountry() const noexcept {
+string Identity::getCountry() const noexcept {
 	bool v6 = !getIp6().empty();
-	return GeoManager::getInstance()->getCountry(v6 ? getIp6() : getIp4(), v6 ? GeoManager::V6 : GeoManager::V4);
+	return GeoManager::getInstance()->getCountry(v6 ? getIp6() : getIp4());
 }
 
 string Identity::get(const char* name) const noexcept {

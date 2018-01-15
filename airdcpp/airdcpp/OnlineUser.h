@@ -105,7 +105,7 @@ public:
 	string getTag() const noexcept;
 	string getApplication() const noexcept;
 	int getTotalHubCount() const noexcept;
-	const string& getCountry() const noexcept;
+	string getCountry() const noexcept;
 	StringList getSupports() const noexcept;
 	bool supports(const string& name) const noexcept;
 	bool isHub() const noexcept { return isClientType(CT_HUB) || isSet("HU"); }
