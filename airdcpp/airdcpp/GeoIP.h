@@ -22,7 +22,7 @@
 #include <string>
 #include <vector>
 
-typedef struct GeoIPTag GeoIP;
+struct MMDB_s;
 
 namespace dcpp {
 
@@ -34,21 +34,20 @@ public:
 	explicit GeoIP(string&& path);
 	~GeoIP();
 
-	const string& getCountry(const string& ip) const;
+	string getCountry(const string& ip) const;
 	void update();
-	void rebuild();
+	//void rebuild();
 
 private:
 	bool decompress() const;
 	void open();
 	void close();
-	bool v6() const;
 
 	//mutable CriticalSection cs;
-	::GeoIP* geo;
+	::MMDB_s* geo;
 
 	const string path;
-	vector<string> cache;
+	const string language;
 };
 
 } // namespace dcpp
