@@ -1688,7 +1688,7 @@ BEGIN
             VALUE "FileDescription", "AirDC++"
             VALUE "FileVersion", "3.42.0.0"
             VALUE "InternalName", "AirDC++"
-            VALUE "LegalCopyright", "Copyright 2007-2017 Night and maksis"
+            VALUE "LegalCopyright", "Copyright 2007-2018 Night and maksis"
             VALUE "OriginalFilename", "AirDC.exe"
             VALUE "ProductName", "AirDC++"
             VALUE "ProductVersion", "3.42"
