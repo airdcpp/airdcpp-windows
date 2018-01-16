@@ -76,18 +76,13 @@ SettingHolder::~SettingHolder() {
 		UploadManager::getInstance()->setFreeSlotMatcher();
 	}
 
-	bool rebuildGeo = prevGeo && SETTING(COUNTRY_FORMAT) != prevGeoFormat;
 	if (SETTING(GET_USER_COUNTRY) != prevGeo) {
 		if (SETTING(GET_USER_COUNTRY)) {
 			GeoManager::getInstance()->init();
 			UpdateManager::getInstance()->checkGeoUpdate();
 		} else {
 			GeoManager::getInstance()->close();
-			rebuildGeo = false;
 		}
-	}
-	if (rebuildGeo) {
-		GeoManager::getInstance()->rebuild();
 	}
 
 	if (prevUpdateChannel != SETTING(UPDATE_CHANNEL)) {
