@@ -47,7 +47,7 @@ private:
 	::MMDB_s* geo;
 
 	const string path;
-	vector<string> cache;
+	const string language;
 };
 
 } // namespace dcpp

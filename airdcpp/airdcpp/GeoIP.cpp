@@ -20,6 +20,7 @@
 #include "GeoIP.h"
 
 #include "File.h"
+#include "Localization.h"
 #include "format.h"
 #include "SettingsManager.h"
 #include "Util.h"
@@ -29,7 +30,24 @@
 
 namespace dcpp {
 
-GeoIP::GeoIP(string&& aPath) : geo(nullptr), path(move(aPath)) {
+// Application locales mapped to supported GeoIP languages
+map<string, string> localeGeoMappings = {
+	{ "de-DE", "de" },
+	{ "en-US", "en" },
+	{ "es-ES", "es" },
+	{ "fr-FR", "fr" },
+	//{ "ja" },
+	{ "pt-BR", "pt-BR" },
+	{ "ru-RU", "ru" } ,
+	//{ "zh-CN" },
+};
+
+static string parseLanguage() noexcept {
+	auto i = localeGeoMappings.find(Localization::getCurLanguageLocale());
+	return i != localeGeoMappings.end() ? i->second : "en";
+}
+
+GeoIP::GeoIP(string&& aPath) : geo(nullptr), path(move(aPath)), language(parseLanguage()) {
 	if(File::getSize(path) > 0 || decompress()) {
 		open();
 	}
@@ -60,7 +78,7 @@ static string parseData(MMDB_lookup_result_s res, ...) {
 		return Util::emptyString;
 	}
 
-	return string((const char*)entry_data.utf8_string, entry_data.data_size);
+	return string(entry_data.utf8_string, entry_data.data_size);
 }
 
 } // unnamed namespace
@@ -79,11 +97,11 @@ string GeoIP::getCountry(const string& ip) const {
 			const string& setting = SETTING(COUNTRY_FORMAT);
 
 			ParamMap params;
-			params["2code"] = [&res] { return parseData(res, "country", "iso_code", NULL); };
-			params["continent"] = [&res] { return parseData(res, "continent", "code", NULL); };
-			params["engname"] = [&res] { return parseData(res, "country", "names", "en", NULL); };
-			params["name"] = [&res] { return parseData(res, "country", "names", "en", NULL); };
-			params["officialname"] = [&res] { return parseData(res, "country", "names", "en", NULL); };
+			params["2code"] = [&] { return parseData(res, "country", "iso_code", NULL); };
+			params["continent"] = [&] { return parseData(res, "continent", "code", NULL); };
+			params["engname"] = [&] { return parseData(res, "country", "names", language.c_str(), NULL); };
+			params["name"] = [&] { return parseData(res, "country", "names", language.c_str(), NULL); };
+			params["officialname"] = [&] { return parseData(res, "country", "names", language.c_str(), NULL); };
 
 			return Util::formatParams(setting, params);
 		} else {
@@ -135,8 +153,6 @@ void GeoIP::open() {
 }
 
 void GeoIP::close() {
-	cache.clear();
-
 	MMDB_close(geo);
 	free(geo);
 	geo = nullptr;
