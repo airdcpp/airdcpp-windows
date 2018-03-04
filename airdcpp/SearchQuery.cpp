@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2017 AirDC++ Project
+ * Copyright (C) 2011-2018 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -363,8 +363,8 @@ bool SearchQuery::matchesFileLower(const string& aName, int64_t aSize, uint64_t 
 	return true;
 }
 
-bool SearchQuery::matchesNmdcPath(const string& aPath, Recursion& recursion_) noexcept {
-	auto sl = StringTokenizer<string>(aPath, NMDC_SEPARATOR).getTokens();
+bool SearchQuery::matchesAdcPath(const string& aPath, Recursion& recursion_) noexcept {
+	auto sl = StringTokenizer<string>(aPath, ADC_SEPARATOR).getTokens();
 
 	size_t level = 0;
 	for (;;) {

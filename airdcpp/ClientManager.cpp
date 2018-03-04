@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -715,14 +715,31 @@ optional<ClientManager::ShareInfo> ClientManager::getShareInfo(const HintedUser&
 	return boost::none;
 }
 
-void ClientManager::getUserInfoList(const UserPtr& user, User::UserInfoList& aList_) const noexcept {
-	RLock l(cs);
-	auto p = onlineUsers.equal_range(const_cast<CID*>(&user->getCID()));
+User::UserInfoList ClientManager::getUserInfoList(const UserPtr& user) const noexcept {
+	User::UserInfoList ret;
 
-	for(auto i = p.first; i != p.second; ++i) {
-		auto& ou = i->second;
-		aList_.emplace_back(ou->getHubUrl(), ou->getClient()->getHubName(), Util::toInt64(ou->getIdentity().getShareSize()));
+	{
+		RLock l(cs);
+		auto p = onlineUsers.equal_range(const_cast<CID*>(&user->getCID()));
+
+		for (auto i = p.first; i != p.second; ++i) {
+			auto& ou = i->second;
+			ret.emplace_back(ou->getHubUrl(), ou->getClient()->getHubName(), Util::toInt64(ou->getIdentity().getShareSize()));
+		}
 	}
+
+	return ret;
+}
+
+HintedUser ClientManager::checkDownloadUrl(const HintedUser& aUser) const noexcept {
+	auto userInfoList = ClientManager::getInstance()->getUserInfoList(aUser);
+	if (!userInfoList.empty() && find(userInfoList, aUser.hint) == userInfoList.end()) {
+		sort(userInfoList.begin(), userInfoList.end(), User::UserHubInfo::ShareSort());
+
+		return { aUser.user, userInfoList.back().hubUrl };
+	}
+
+	return aUser;
 }
 
 OnlineUserPtr ClientManager::findOnlineUser(const HintedUser& user, bool aAllowFallback) const noexcept {
@@ -749,12 +766,6 @@ bool ClientManager::connect(const UserPtr& aUser, const string& aToken, bool all
 	auto connectUser = [&] (OnlineUser* ou) -> bool {
 		isProtocolError = false;
 
-		if (aConnType == CONNECTION_TYPE_PM && !ou->supportsCCPM()) {
-			isProtocolError = true;
-			lastError_ = STRING(CCPM_NOT_SUPPORTED);
-			return false;
-		}
-
 		auto ret = ou->getClient()->connect(*ou, aToken, lastError_);
 		if (ret == AdcCommand::SUCCESS) {
 			return true;
@@ -779,6 +790,21 @@ bool ClientManager::connect(const UserPtr& aUser, const string& aToken, bool all
 
 		return false;
 	};
+
+	if (aConnType == CONNECTION_TYPE_PM) {
+
+		if (!aUser->isSet(User::TLS)) {
+			isProtocolError = true;
+			lastError_ = STRING(SOURCE_NO_ENCRYPTION);
+			return false;
+		}
+		//We don't care which hub we use to establish the connection all we need to know is the user supports the CCPM feature.
+		if (!aUser->isSet(User::CCPM)) {
+			isProtocolError = true;
+			lastError_ = STRING(CCPM_NOT_SUPPORTED);
+			return false;
+		}
+	}
 
 	//prefer the hinted hub
 	auto p = find_if(op, [&hubHint_](const pair<CID*, OnlineUser*>& ouc) { return ouc.second->getHubUrl() == hubHint_; });

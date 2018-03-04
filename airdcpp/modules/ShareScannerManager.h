@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2017 AirDC++ Project
+ * Copyright (C) 2011-2018 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -74,7 +74,7 @@ private:
 	~ShareScannerManager();
 	
 	int run();
-	bool validateShare(FileFindIter& aIter, const string& aPath);
+	bool validateShare(const string& aPath, bool aSkipCheckQueue);
 	void runSfvCheck(const StringList& paths);
 	void runShareScan(const StringList& paths);
 
@@ -126,9 +126,9 @@ private:
 
 		ScanInfo(const string& aRootPath, ReportType aReportType, bool aIsManualShareScan) : rootPath(aRootPath), reportType(aReportType), isManualShareScan(aIsManualShareScan) {}
 
-		string rootPath;
-		ReportType reportType;
-		bool isManualShareScan;
+		const string rootPath;
+		const ReportType reportType;
+		const bool isManualShareScan;
 
 		int missingFiles = 0;
 		int missingSFV = 0;

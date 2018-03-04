@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,30 +20,9 @@
 #define DCPLUSPLUS_DCPP_UTIL_H
 
 #include "compiler.h"
+#include "constants.h"
 
-#define SP_HIDDEN 1
-
-#define ADC_SEPARATOR '/'
-#define ADC_SEPARATOR_STR "/"
-
-#define NMDC_SEPARATOR '\\'
-#define NMDC_SEPARATOR_STR "\\"
-
-#define ADC_ROOT ADC_SEPARATOR
-#define ADC_ROOT_STR ADC_SEPARATOR_STR
-
-// Empty char defines would cause issues with clang
-#define NMDC_ROOT_STR ""
-
-#ifdef _WIN32
-
-# define PATH_SEPARATOR '\\'
-# define PATH_SEPARATOR_STR "\\"
-
-#else
-
-# define PATH_SEPARATOR '/'
-# define PATH_SEPARATOR_STR "/"
+#ifndef _WIN32
 
 #include <sys/stat.h>
 #include <unistd.h>
@@ -166,18 +145,11 @@ public:
 		PATH_DOWNLOADS,
 		/** Default file list location */
 		PATH_FILE_LISTS,
-		/** Default hub list cache */
-		PATH_HUB_LISTS,
-		/** Where the notepad file is stored */
-		PATH_NOTEPAD,
-		/** Folder with emoticons packs*/
-		PATH_EMOPACKS,
-		/** XML files for each bundle*/
+		/** XML files for each bundle */
 		PATH_BUNDLES,
-		/** XML files for each bundle*/
+		/** XML files for cached share structure */
 		PATH_SHARECACHE,
-		/** Path to Theme Files*/
-		PATH_THEMES,
+
 		PATH_LAST
 	};
 
@@ -222,30 +194,24 @@ public:
 
 	/** Path of file lists */
 	static string getListPath() noexcept { return getPath(PATH_FILE_LISTS); }
-	/** Path of hub lists */
-	static string getHubListsPath() noexcept { return getPath(PATH_HUB_LISTS); }
-	/** Notepad filename */
-	static string getNotepadFile() noexcept { return getPath(PATH_NOTEPAD); }
 	/** Path of bundles */
 	static string getBundlePath() noexcept { return getPath(PATH_BUNDLES); }
 
 	static string translateError(int aError) noexcept;
 
 	static string getFilePath(const string& path, const char separator = PATH_SEPARATOR) noexcept;
-	inline static string getNmdcFilePath(const string& path) noexcept { return getFilePath(path, NMDC_SEPARATOR); }
 	inline static string getAdcFilePath(const string& path) noexcept { return getFilePath(path, ADC_SEPARATOR); }
 
 	static string getFileName(const string& path, const char separator = PATH_SEPARATOR) noexcept;
-	inline static string getNmdcFileName(const string& path) noexcept { return getFileName(path, NMDC_SEPARATOR); };
 	inline static string getAdcFileName(const string& path) noexcept { return getFileName(path, ADC_SEPARATOR); };
 
 	static string getLastDir(const string& path, const char separator = PATH_SEPARATOR) noexcept;
-	inline static string getNmdcLastDir(const string& path) noexcept { return getLastDir(path, NMDC_SEPARATOR); };
 	inline static string getAdcLastDir(const string& path) noexcept { return getLastDir(path, ADC_SEPARATOR); };
 
 	static string getParentDir(const string& path, const char separator = PATH_SEPARATOR, bool allowEmpty = false) noexcept;
-	inline static string getNmdcParentDir(const string& path) noexcept { return getParentDir(path, NMDC_SEPARATOR, true); };
 	inline static string getAdcParentDir(const string& path) noexcept { return getParentDir(path, ADC_SEPARATOR, false); };
+
+	static string joinDirectory(const string& aPath, const string& aDirectoryName, const char separator = PATH_SEPARATOR) noexcept;
 
 	static string getFileExt(const string& path) noexcept;
 
@@ -290,6 +256,7 @@ public:
 	static map<string, string> decodeQuery(const string& query) noexcept;
 
 	static bool isAdcPath(const string& aPath) noexcept;
+	static bool isAdcRoot(const string& aPath) noexcept;
 
 	static inline string validatePath(const string& aPath, bool requireEndSeparator = false) noexcept {
 		auto path = cleanPathChars(aPath, false);
@@ -568,7 +535,7 @@ public:
 		snprintf(buf, sizeof(buf), "%%%X", val&0x0FF);
 		return buf;
 	}
-	static char fromHexEscape(const string aString) noexcept {
+	static char fromHexEscape(const string& aString) noexcept {
 		unsigned int res = 0;
 		sscanf(aString.c_str(), "%X", &res);
 		return static_cast<char>(res);
@@ -662,7 +629,7 @@ private:
 
 	static StringList startupParams;
 	
-	static void loadBootConfig() noexcept;
+	static bool loadBootConfig(const string& aDirectoryPath) noexcept;
 
 	static int osMinor;
 	static int osMajor;

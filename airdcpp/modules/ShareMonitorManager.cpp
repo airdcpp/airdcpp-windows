@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -69,7 +69,10 @@ namespace dcpp {
 	}
 
 	void ShareMonitorManager::on(ShareManagerListener::RootCreated, const string& aPath) noexcept {
-		addMonitoring({ aPath });
+		auto rootInfo = ShareManager::getInstance()->getRootInfo(aPath);
+		if (useMonitoring(rootInfo)) {
+			addMonitoring({ aPath });
+		}
 	}
 
 	void ShareMonitorManager::on(ShareManagerListener::RootRemoved, const string& aPath) noexcept {
@@ -139,7 +142,7 @@ namespace dcpp {
 			try {
 				if (monitor.addDirectory(p))
 					added++;
-			} catch (MonitorException& e) {
+			} catch (const MonitorException& e) {
 				LogManager::getInstance()->message(STRING_F(FAILED_ADD_MONITORING, p % e.getError()), LogMessage::SEV_ERROR);
 			}
 		}
@@ -155,7 +158,7 @@ namespace dcpp {
 			try {
 				if (monitor.removeDirectory(p))
 					removed++;
-			} catch (MonitorException& e) {
+			} catch (const MonitorException& e) {
 				LogManager::getInstance()->message("Error occurred when trying to remove the folder " + p + " from monitoring: " + e.getError(), LogMessage::SEV_ERROR);
 			}
 		}
@@ -216,12 +219,27 @@ namespace dcpp {
 		}
 	}
 
-	optional<ShareMonitorManager::FileItem> ShareMonitorManager::checkModifiedPath(const string& aPath) const noexcept {
+	void ShareMonitorManager::reportFile(const string& aMsg) noexcept {
+		// There may be sequential modification notifications so don't spam the same message many times
+		if (lastMessage != aMsg || messageTick + 3000 < GET_TICK()) {
+			LogManager::getInstance()->message(aMsg, LogMessage::SEV_INFO);
+			lastMessage = aMsg;
+			messageTick = GET_TICK();
+		}
+	};
+
+	optional<ShareMonitorManager::FileItem> ShareMonitorManager::checkModifiedPath(const string& aPath) noexcept {
 		FileFindIter f(aPath);
 		if (f != FileFindIter()) {
 			auto isDirectory = f->isDirectory();
 			auto path = isDirectory ? aPath + PATH_SEPARATOR : aPath;
-			if (!ShareManager::getInstance()->validate(f, aPath)) {
+
+			try {
+				ShareManager::getInstance()->validatePath(path, false);
+			} catch (const ShareException& e) {
+				reportFile(e.getError());
+				return boost::none;
+			} catch (...) {
 				return boost::none;
 			}
 

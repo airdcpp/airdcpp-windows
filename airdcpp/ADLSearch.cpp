@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@
 #include "stdinc.h"
 #include "ADLSearch.h"
 
-#include "ClientManager.h"
 #include "File.h"
 #include "LogManager.h"
 #include "QueueManager.h"
@@ -37,14 +36,14 @@
 namespace dcpp {
 	
 // Constructor
-ADLSearch::ADLSearch() : 
+ADLSearch::ADLSearch() :
 isActive(true), 
 isAutoQueue(false), 
 sourceType(OnlyFile), 
 minFileSize(-1), 
 maxFileSize(-1), 
 typeFileSize(SizeBytes), 
-destDir("ADLSearch"), 
+name("ADLSearch"),
 ddIndex(0),
 adlsComment("none") {
 	match.pattern = "<Enter string>";
@@ -151,6 +150,12 @@ void ADLSearch::setPattern(const string& aPattern) {
 	match.pattern = aPattern;
 }
 
+void ADLSearch::setDestDir(const string& aDestDir) noexcept {
+	if (!aDestDir.empty()) {
+		name = Util::cleanPathSeparators(aDestDir);
+	}
+}
+
 bool ADLSearch::matchesFile(const string& f, const string& fp, int64_t size) {
 	// Check status
 	if(!isActive) {
@@ -252,8 +257,8 @@ void ADLSearchManager::load() noexcept {
 						xml.resetCurrentChild();
 					}
 
-					if(xml.findChild("DestDirectory")) {
-						search.destDir = xml.getChildData();
+					if (xml.findChild("DestDirectory")) {
+						search.setDestDir(xml.getChildData());
 					} else {
 						xml.resetCurrentChild();
 					}
@@ -403,7 +408,7 @@ void ADLSearchManager::save(bool force /*false*/) noexcept {
 		xml.addTag("SearchString", search.match.pattern);
 		xml.addChildAttrib("RegEx", search.isRegEx());
 		xml.addTag("SourceType", search.SourceTypeToString(search.sourceType));
-		xml.addTag("DestDirectory", search.destDir);
+		xml.addTag("DestDirectory", search.getDestDir());
 		xml.addTag("AdlsComment", search.adlsComment);
 		xml.addTag("IsActive", search.isActive);
 		xml.addTag("MaxSize", search.maxFileSize);
@@ -421,7 +426,7 @@ void ADLSearchManager::save(bool force /*false*/) noexcept {
 	SettingsManager::saveSettingFile(xml, CONFIG_DIR, CONFIG_NAME);
 }
 
-void ADLSearchManager::MatchesFile(DestDirList& destDirVector, const DirectoryListing::File::Ptr& currentFile, string& fullPath) noexcept {
+void ADLSearchManager::MatchesFile(DestDirList& destDirVector, const DirectoryListing::File::Ptr& currentFile, const string& aAdcPath) noexcept {
 	// Add to any substructure being stored
 	for(auto& id: destDirVector) {
 		if(id.subdir != NULL) {
@@ -438,13 +443,17 @@ void ADLSearchManager::MatchesFile(DestDirList& destDirVector, const DirectoryLi
 		return;
 	}
 
-	string filePath = fullPath + NMDC_SEPARATOR_STR + currentFile->getName();
+	dcassert(Util::isAdcPath(aAdcPath));
+
+	// Use NMDC path for matching due to compatibility reasons
+	const auto nmdcPath = Util::toNmdcFile(aAdcPath + currentFile->getName());
+
 	// Match searches
 	for(auto& is: collection) {
 		if(destDirVector[is.ddIndex].fileAdded) {
 			continue;
 		}
-		if(is.matchesFile(currentFile->getName(), filePath, currentFile->getSize())) {
+		if(is.matchesFile(currentFile->getName(), nmdcPath, currentFile->getSize())) {
 			auto copyFile = make_shared<DirectoryListing::File>(*currentFile, true);
 			destDirVector[is.ddIndex].dir->files.push_back(copyFile);
 			destDirVector[is.ddIndex].fileAdded = true;
@@ -464,11 +473,13 @@ void ADLSearchManager::MatchesFile(DestDirList& destDirVector, const DirectoryLi
 	}
 }
 
-void ADLSearchManager::MatchesDirectory(DestDirList& destDirVector, const DirectoryListing::Directory::Ptr& currentDir, string& fullPath) noexcept {
+void ADLSearchManager::MatchesDirectory(DestDirList& destDirVector, const DirectoryListing::Directory::Ptr& currentDir, const string& aAdcPath) noexcept {
+	dcassert(Util::isAdcPath(aAdcPath));
+
 	// Add to any substructure being stored
 	for (auto& id: destDirVector) {
 		if (id.subdir) {
-			auto newDir = DirectoryListing::AdlDirectory::create(fullPath.substr(1) + NMDC_SEPARATOR_STR, id.subdir, currentDir->getName());
+			auto newDir = DirectoryListing::AdlDirectory::create(aAdcPath, id.subdir, currentDir->getName());
 			id.subdir = newDir.get();
 		}
 	}
@@ -484,7 +495,7 @@ void ADLSearchManager::MatchesDirectory(DestDirList& destDirVector, const Direct
 		}
 
 		if(is.matchesDirectory(currentDir->getName())) {
-			auto newDir = DirectoryListing::AdlDirectory::create(fullPath.substr(1) + NMDC_SEPARATOR_STR, destDirVector[is.ddIndex].dir.get(), currentDir->getName());;
+			auto newDir = DirectoryListing::AdlDirectory::create(aAdcPath, destDirVector[is.ddIndex].dir.get(), currentDir->getName());;
 			destDirVector[is.ddIndex].subdir = newDir.get();
 			if(breakOnFirst) {
 				// Found a match, search no more
@@ -514,7 +525,7 @@ void ADLSearchManager::PrepareDestinationDirectories(DestDirList& destDirs, Dire
 	// Scan all loaded searches
 	for(auto& is: collection) {
 		// Check empty destination directory
-		if(is.destDir.size() == 0) {
+		if(is.getDestDir().size() == 0) {
 			// Set to default
 			is.ddIndex = 0;
 			continue;
@@ -524,7 +535,7 @@ void ADLSearchManager::PrepareDestinationDirectories(DestDirList& destDirs, Dire
 		bool isNew = true;
 		long ddIndex = 0;
 		for(auto id = destDirs.cbegin(); id != destDirs.cend(); ++id, ++ddIndex) {
-			if(Util::stricmp(is.destDir.c_str(), id->name.c_str()) == 0) {
+			if(Util::stricmp(is.getDestDir().c_str(), id->name.c_str()) == 0) {
 				// Already exists, reuse index
 				is.ddIndex = ddIndex;
 				isNew = false;
@@ -534,8 +545,8 @@ void ADLSearchManager::PrepareDestinationDirectories(DestDirList& destDirs, Dire
 
 		if(isNew) {
 			// Add new destination directory
-			DestDir newDir = { is.destDir, 
-				DirectoryListing::Directory::create(root.get(), "<<<" + is.destDir + ">>>", 
+			DestDir newDir = { is.getDestDir(),
+				DirectoryListing::Directory::create(root.get(), "<<<" + is.getDestDir() + ">>>",
 					DirectoryListing::Directory::TYPE_ADLS, GET_TIME()) 
 			};
 
@@ -562,7 +573,7 @@ void ADLSearchManager::FinalizeDestinationDirectories(DestDirList& destDirs, Dir
 	}
 }
 
-void ADLSearchManager::matchListing(DirectoryListing& aDirList) throw(AbortException) {
+void ADLSearchManager::matchListing(DirectoryListing& aDirList) {
 	running++;
 	ScopedFunctor([&] { running--; });
 
@@ -579,19 +590,19 @@ void ADLSearchManager::matchListing(DirectoryListing& aDirList) throw(AbortExcep
 	FinalizeDestinationDirectories(destDirs, root);
 }
 
-void ADLSearchManager::matchRecurse(DestDirList &aDestList, const DirectoryListing::Directory::Ptr& aDir, string &aPath, DirectoryListing& aDirList) throw(AbortException) {
+void ADLSearchManager::matchRecurse(DestDirList &aDestList, const DirectoryListing::Directory::Ptr& aDir, const string& aAdcPath, DirectoryListing& aDirList) {
 	if (aDirList.getClosing()) {
 		throw AbortException();
 	}
 
 	for (const auto& dir: aDir->directories | map_values) {
-		string tmpPath = aPath + NMDC_SEPARATOR_STR + dir->getName();
-		MatchesDirectory(aDestList, dir, tmpPath);
-		matchRecurse(aDestList, dir, tmpPath, aDirList);
+		auto subAdcPath = aAdcPath + dir->getName() + ADC_SEPARATOR_STR;
+		MatchesDirectory(aDestList, dir, subAdcPath);
+		matchRecurse(aDestList, dir, subAdcPath, aDirList);
 	}
 
 	for (const auto& file: aDir->files) {
-		MatchesFile(aDestList, file, aPath);
+		MatchesFile(aDestList, file, aAdcPath);
 	}
 
 	stepUpDirectory(aDestList);

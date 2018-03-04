@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,7 +59,7 @@ SettingsManager::EnumStringMap SettingsManager::getEnumStrings(int aKey, bool aV
 	EnumStringMap ret;
 
 	auto insertStrings = [&](const ResourceManager::Strings* aStrings, int aMax, int aMin = 0) {
-		auto cur = SettingsManager::getInstance()->get(static_cast<SettingsManager::IntSetting>(aKey));
+		auto cur = getInstance()->get(static_cast<IntSetting>(aKey));
 		if (!aValidateCurrentValue || (cur >= aMin && cur < aMax)) {
 			// The string array indexing always starts from 0
 			for (int i = 0; i < aMax; i++) {
@@ -80,12 +80,12 @@ SettingsManager::EnumStringMap SettingsManager::getEnumStrings(int aKey, bool aV
 		insertStrings(refreshStrings, MULTITHREAD_LAST);
 	}
 
-	if (aKey == SettingsManager::TLS_MODE) {
+	if (aKey == TLS_MODE) {
 		insertStrings(encryptionStrings, TLS_LAST);
 	}
 
 	if (aKey == OUTGOING_CONNECTIONS) {
-		insertStrings(outgoingStrings, TLS_LAST);
+		insertStrings(outgoingStrings, OUTGOING_LAST);
 	}
 
 	if (aKey == DL_AUTO_DISCONNECT_MODE) {
@@ -209,7 +209,7 @@ const string SettingsManager::settingTags[] =
 "Progress3DDepth",
 "ProgressTextDown", "ProgressTextUp", "ExtraDownloadSlots", "ErrorColor", "TransferSplitSize",
 "DisconnectSpeed", "DisconnectFileSpeed", "DisconnectTime", "RemoveSpeed", "MenubarLeftColor",
-"MenubarRightColor", "DisconnectFileSize", "NumberOfSegments", "MaxHashSpeed", "PMLogLines", "SearchAlternateColour", "SearchTime", "DontBeginSegmentSpeed",
+"MenubarRightColor", "DisconnectFileSize", "NumberOfSegments", "MaxHashSpeed", "PMLogLines", "SearchAlternateColour", "SearchTime",
 "MagnetAction", "PopupType", "ShutdownAction", "MinimumSearchInterval", "MaxAutoMatchSource", "ReservedSlotColor", "IgnoredColor", "FavoriteColor", "NormalColour",
 "PasiveColor", "OpColor", "ProgressBackColor", "ProgressSegmentColor", "UDPPort",
 "UserListDoubleClick", "TransferListDoubleClick", "ChatDoubleClick", "OutgoingConnections", "SocketInBuffer", "SocketOutBuffer",
@@ -264,12 +264,12 @@ const string SettingsManager::settingTags[] =
 "UseAutoPriorityByDefault", "UseOldSharingUI", "DefaultSearchFreeSlots",
 
 "TextGeneralBold", "TextGeneralItalic", "TextMyOwnBold", "TextMyOwnItalic", "TextPrivateBold", "TextPrivateItalic", "TextSystemBold", "TextSystemItalic", "TextServerBold", "TextServerItalic", "TextTimestampBold", "TextTimestampItalic",
-"TextMyNickBold", "TextMyNickItalic", "TextFavBold", "TextFavItalic", "TextOPBold", "TextOPItalic", "TextURLBold", "TextURLItalic", "ProgressOverrideColors", "ProgressOverrideColors2", "MenubarTwoColors", "MenubarBumped", "DontBeginSegment",
+"TextMyNickBold", "TextMyNickItalic", "TextFavBold", "TextFavItalic", "TextOPBold", "TextOPItalic", "TextURLBold", "TextURLItalic", "ProgressOverrideColors", "ProgressOverrideColors2", "MenubarTwoColors", "MenubarBumped", 
 
 "AutoDetectionUseLimited", "LogScheduledRefreshes", "AutoCompleteBundles", "SearchSaveHubsState", "ConfirmHubExit", "ConfirmASRemove", "EnableSUDP", "NmdcMagnetWarn",
 "UpdateIPHourly", "OpenTextOnBackground", "LockTB", "PopunderPartialList", "ShowTBStatusBar", "UseSlowDisconnectingDefault", "PrioListHighest",
 "UseFTPLogger", "QIAutoPrio", "ShowSharedDirsFav", "ReportAddedSources", "ExpandBundles", "OverlapSlowUser", "FormatDirRemoteTime", "TextQueueBold", "TextQueueItalic", "UnderlineQueue", "LogHashedFiles",
-"UsePartialSharing", "PopupBundleDLs", "PopupBundleULs", "ListHighlightBold", "ListHighlightItalic", "ReportSkiplist", "ScanDLBundles", "MCNAutoDetect", "DLAutoDetect", "ULAutoDetect", "CheckUseSkiplist", "CheckIgnoreZeroByte",
+"UsePartialSharing", "PopupBundleDLs", "PopupBundleULs", "ListHighlightBold", "ListHighlightItalic", "ReportBlockedShare", "ScanDLBundles", "MCNAutoDetect", "DLAutoDetect", "ULAutoDetect", "CheckUseSkiplist", "CheckIgnoreZeroByte",
 "TextDupeBold", "TextDupeItalic", "UnderlineLinks", "UnderlineDupes", "DupesInFilelists", "DupesInChat", "NoZeroByte", "CheckEmptyDirs", "CheckEmptyReleases", "CheckMissing", "CheckInvalidSFV", "CheckSfv",
 "CheckNfo", "CheckMp3Dir", "CheckExtraSfvNfo", "CheckExtraFiles", "CheckDupes", "CheckDiskCounts", "SortDirs", "WizardRunNew", "FormatRelease", "TextNormBold", "TextNormItalic", "SystemShowUploads", "SystemShowDownloads",
 "UseAdls", "DupeSearch", "passwd_protect", "passwd_protect_tray", "DisAllowConnectionToPassedHubs", "BoldHubTabsOnKick",
@@ -611,9 +611,7 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(REPORT_ALTERNATES, true);	
 
 	setDefault(SOUNDS_DISABLED, false);
-	setDefault(UPLOADQUEUEFRAME_SHOW_TREE, true);	
-	setDefault(DONT_BEGIN_SEGMENT, true);
-	setDefault(DONT_BEGIN_SEGMENT_SPEED, 512);
+	setDefault(UPLOADQUEUEFRAME_SHOW_TREE, true);
 
 	setDefault(BUNDLE_SEARCH_TIME, 15);
 	setDefault(AUTO_SLOTS, 5);	
@@ -688,7 +686,7 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(FREE_SLOTS_EXTENSIONS, "*.nfo|*.sfv");
 	setDefault(POPUP_FONT, "MS Shell Dlg,-11,400,0");
 	setDefault(POPUP_TITLE_FONT, "MS Shell Dlg,-11,400,0");
-	setDefault(POPUPFILE, Util::getPath(Util::PATH_GLOBAL_CONFIG) + "popup.bmp");
+	setDefault(POPUPFILE, Util::getPath(Util::PATH_RESOURCES) + "popup.bmp");
 	setDefault(PM_PREVIEW, true);
 	setDefault(POPUP_TIME, 5);
 	setDefault(MAX_MSG_LENGTH, 120);
@@ -761,7 +759,7 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(DUPES_IN_FILELIST, true);
 	setDefault(DUPES_IN_CHAT, true);
 	setDefault(HIGHLIGHT_LIST, "");
-	setDefault(REPORT_SKIPLIST, true);
+	setDefault(REPORT_BLOCKED_SHARE, true);
 
 
 	setDefault(SCAN_DL_BUNDLES, true);
@@ -926,7 +924,7 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 #ifdef _WIN32
 	setDefault(NMDC_ENCODING, Text::systemCharset);
 #else
-	setDefault(NMDC_ENCODING, "CP1250");
+	setDefault(NMDC_ENCODING, "CP1252");
 #endif
 }
 
@@ -955,7 +953,7 @@ string SettingsManager::getProfileName(int profile) const noexcept {
 }
 
 void SettingsManager::load(function<bool (const string& /*Message*/, bool /*isQuestion*/, bool /*isError*/)> messageF) noexcept {
-	loadSettingFile(CONFIG_DIR, CONFIG_NAME, [this](SimpleXML& xml) {
+	auto fileLoaded = loadSettingFile(CONFIG_DIR, CONFIG_NAME, [this](SimpleXML& xml) {
 		if (xml.findChild("DCPlusPlus")) {
 			xml.stepIn();
 
@@ -1040,12 +1038,9 @@ void SettingsManager::load(function<bool (const string& /*Message*/, bool /*isQu
 			}
 			xml.resetCurrentChild();
 
+#ifdef _WIN32
 			auto prevVersion = Util::toDouble(SETTING(CONFIG_VERSION));
 			//auto prevBuild = SETTING(CONFIG_BUILD_NUMBER);
-
-			//reset the old private hub profile to normal
-			if (prevVersion < 2.50 && SETTING(SETTINGS_PROFILE) == PROFILE_LAN)
-				unsetKey(SETTINGS_PROFILE);
 
 			if (prevVersion <= 2.50 && SETTING(MONITORING_MODE) != MONITORING_DISABLED) {
 				set(MONITORING_MODE, MONITORING_ALL);
@@ -1058,6 +1053,7 @@ void SettingsManager::load(function<bool (const string& /*Message*/, bool /*isQu
 				unsetKey(SEARCHFRAME_WIDTHS);
 				unsetKey(SEARCHFRAME_VISIBLE);
 			}
+#endif
 
 			fire(SettingsManagerListener::Load(), xml);
 
@@ -1088,6 +1084,8 @@ void SettingsManager::load(function<bool (const string& /*Message*/, bool /*isQu
 	checkBind(BIND_ADDRESS6, true);
 
 	applyProfileDefaults();
+
+	fire(SettingsManagerListener::LoadCompleted(), fileLoaded);
 }
 
 const SettingsManager::BoolSetting clearSettings[SettingsManager::HISTORY_LAST] = {

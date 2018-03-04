@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -176,10 +176,10 @@ string sanitizeUtf8(const string& str) noexcept {
 
 bool validateUtf8(const string& str) noexcept {
 	string::size_type i = 0;
-	while(i < str.length()) {
+	while (i < str.length()) {
 		wchar_t dummy = 0;
 		int j = utf8ToWc(&str[i], dummy);
-		if(j < 0)
+		if (j < 0)
 			return false;
 		i += j;
 	}
@@ -187,11 +187,29 @@ bool validateUtf8(const string& str) noexcept {
 }
 
 wchar_t toLower(wchar_t c) noexcept {
+#ifdef _WIN32
+	// WinAPI is about 20% faster than towlower
+	return LOWORD(CharLowerW(reinterpret_cast<WCHAR*>(c)));
+#else
 	return (wchar_t)towlower(c);
+#endif
+}
+
+wchar_t toUpper(wchar_t c) noexcept {
+#ifdef _WIN32
+	// WinAPI is about 20% faster than towlower
+	return LOWORD(CharUpperW(reinterpret_cast<WCHAR*>(c)));
+#else
+	return (wchar_t)towupper(c);
+#endif
 }
 
 bool isLower(const string& str) noexcept {
 	return compare(str, toLower(str)) == 0;
+}
+
+bool isLower(wchar_t c) noexcept {
+	return toLower(c) == c;
 }
 
 string toLower(const string& str) noexcept {
@@ -233,12 +251,17 @@ string toUtf8(const string& str, const string& fromCharset) noexcept {
 
 	return acpToUtf8(str, fromCharset);
 #else
+	if (fromCharset.empty()) {
+		// Assume that system encoding is UTF-8
+		return str;
+	}
+
 	return convert(str, fromCharset, utf8);
 #endif
 }
 
 string fromUtf8(const string& str, const string& toCharset) noexcept {
-	if(str.empty()) {
+	if (str.empty()) {
 		return str;
 	}
 
@@ -249,6 +272,11 @@ string fromUtf8(const string& str, const string& toCharset) noexcept {
 
 	return utf8ToAcp(str, toCharset);
 #else
+	if (toCharset.empty()) {
+		// Assume that system encoding is UTF-8
+		return str;
+	}
+
 	return convert(str, utf8, toCharset);
 #endif
 }

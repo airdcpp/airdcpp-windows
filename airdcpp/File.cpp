@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -85,7 +85,10 @@ File::File(const string& aFileName, int access, int mode, BufferMode aBufferMode
 	auto realPath = getRealPath();
 
 	// Avoid issues on Linux...
-	dcassert(compare(fileName, realPath) == 0);
+	dcassert(
+		compare(fileName, realPath) == 0 || 
+		Util::stricmp(fileName, realPath) != 0 // Shortcut/symlink
+	);
 #endif
 }
 
@@ -167,7 +170,7 @@ void File::movePos(int64_t pos) noexcept {
 size_t File::read(void* buf, size_t& len) {
 	DWORD x;
 	if(!::ReadFile(h, buf, (DWORD)len, &x, NULL)) {
-		throw(FileException(Util::translateError(GetLastError())));
+		throw FileException(Util::translateError(GetLastError()));
 	}
 	len = x;
 	return x;
@@ -316,7 +319,7 @@ bool File::isAbsolutePath(const string& path) noexcept {
 }
 
 string File::getMountPath(const string& aPath) noexcept {
-	unique_ptr<TCHAR> buf(new TCHAR[aPath.length()]);
+	unique_ptr<TCHAR[]> buf(new TCHAR[aPath.length()+1]);
 	GetVolumePathName(Text::toT(Util::formatPath(aPath)).c_str(), buf.get(), aPath.length());
 	return Text::fromT(buf.get());
 }
@@ -358,16 +361,13 @@ File::File(const string& aFileName, int access, int mode, BufferMode aBufferMode
 		m |= O_DIRECT;
 	}
 #endif
-
-	string filename = Text::fromUtf8(aFileName);
-	
 	struct stat s;
-	if(lstat(filename.c_str(), &s) != -1) {
+	if(lstat(aFileName.c_str(), &s) != -1) {
 		if(!S_ISREG(s.st_mode) && !S_ISLNK(s.st_mode))
 			throw FileException("Invalid file type");
 	}
 
-	h = open(filename.c_str(), m, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+	h = open(aFileName.c_str(), m, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 	if(h == -1)
 		throw FileException(Util::translateError(errno));
 
@@ -521,7 +521,7 @@ size_t File::flushBuffers(bool aForce) {
  * work across different mount points, even if the same filesystem is mounted on both.)
 */
 void File::renameFile(const string& source, const string& target) {
-	int ret = ::rename(Text::fromUtf8(source).c_str(), Text::fromUtf8(target).c_str());
+	int ret = ::rename(source.c_str(), target.c_str());
 	if(ret != 0 && errno == EXDEV) {
 		copyFile(source, target);
 		deleteFile(source);
@@ -549,7 +549,7 @@ void File::copyFile(const string& source, const string& target) {
 }
 
 void File::deleteFileThrow(const string& aFileName) {
-	auto result = ::unlink(Text::fromUtf8(aFileName).c_str());
+	auto result = ::unlink(aFileName.c_str());
 	if (result == -1) {
 		throw FileException(Util::translateError(result));
 	}
@@ -557,7 +557,7 @@ void File::deleteFileThrow(const string& aFileName) {
 
 int64_t File::getSize(const string& aFileName) noexcept {
 	struct stat s;
-	if(stat(Text::fromUtf8(aFileName).c_str(), &s) == -1)
+	if(stat(aFileName.c_str(), &s) == -1)
 		return -1;
 
 	return s.st_size;
@@ -578,10 +578,9 @@ bool File::createDirectory(const string& aFile) {
 int File::ensureDirectory(const string& aFile) noexcept {
 	int result = 0;
 
-	string file = Text::fromUtf8(aFile);
 	string::size_type start = 0;
-	while ((start = file.find_first_of('/', start)) != string::npos) {
-		result = mkdir(file.substr(0, start+1).c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
+	while ((start = aFile.find_first_of('/', start)) != string::npos) {
+		result = mkdir(aFile.substr(0, start+1).c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
 		start++;
 	}
 
@@ -594,7 +593,7 @@ bool File::isAbsolutePath(const string& path) noexcept {
 
 File::DiskInfo File::getDiskInfo(const string& aFileName) noexcept {
 	struct statvfs sfs;
-	if (statvfs(Text::fromUtf8(aFileName).c_str(), &sfs) == -1) {
+	if (statvfs(aFileName.c_str(), &sfs) == -1) {
 		return { -1LL, -1LL };
 	}
 
@@ -605,7 +604,7 @@ File::DiskInfo File::getDiskInfo(const string& aFileName) noexcept {
 
 int64_t File::getBlockSize(const string& aFileName) noexcept {
 	struct stat statbuf;
-	if (stat(Text::fromUtf8(aFileName).c_str(), &statbuf) == -1) {
+	if (stat(aFileName.c_str(), &statbuf) == -1) {
 		return 4096;
 	}
 
@@ -614,7 +613,7 @@ int64_t File::getBlockSize(const string& aFileName) noexcept {
 
 string File::getMountPath(const string& aPath) noexcept {
 	struct stat statbuf;
-	if (stat(Text::fromUtf8(aPath).c_str(), &statbuf) == -1) {
+	if (stat(aPath.c_str(), &statbuf) == -1) {
 		return Util::emptyString;
 	}
 
@@ -623,7 +622,7 @@ string File::getMountPath(const string& aPath) noexcept {
 
 uint64_t File::getLastModified(const string& aPath) noexcept {
 	struct stat statbuf;
-	if (stat(Text::fromUtf8(aPath).c_str(), &statbuf) == -1) {
+	if (stat(aPath.c_str(), &statbuf) == -1) {
 		return 0;
 	}
 
@@ -631,7 +630,7 @@ uint64_t File::getLastModified(const string& aPath) noexcept {
 }
 
 bool File::removeDirectory(const string& aPath) noexcept {
-	return rmdir(Text::fromUtf8(aPath).c_str()) == 0;
+	return rmdir(aPath.c_str()) == 0;
 }
 
 bool File::isHidden(const string& aPath) noexcept {
@@ -666,6 +665,20 @@ void File::removeDirectoryForced(const string& aPath) {
 	}
 
 	File::removeDirectory(aPath);
+}
+
+void File::moveDirectory(const string& aSource, const string& aTarget, const string& aPattern) {
+	File::ensureDirectory(aTarget);
+	File::forEachFile(aSource, aPattern, [&](const FilesystemItem& aInfo) {
+		auto sourcePath = aInfo.getPath(aSource);
+		auto destPath = aInfo.getPath(aTarget);
+
+		if (aInfo.isDirectory) {
+			moveDirectory(sourcePath, destPath);
+		} else {
+			renameFile(sourcePath, destPath);
+		}
+	});
 }
 
 bool File::deleteFile(const string& aFileName) noexcept {
@@ -724,13 +737,21 @@ string File::read() {
 	return read((uint32_t)sz);
 }
 
+string FilesystemItem::getPath(const string& aBasePath) const noexcept {
+	if (isDirectory) {
+		return Util::joinDirectory(aBasePath, name);
+	}
+
+	return aBasePath + name;
+}
+
 StringList File::findFiles(const string& aPath, const string& aNamePattern, int aFindFlags) {
 	StringList ret;
 
 	{
 		forEachFile(aPath, aNamePattern, [&](const FilesystemItem& aInfo) {
 			if ((aFindFlags & TYPE_FILE && !aInfo.isDirectory) || (aFindFlags & TYPE_DIRECTORY && aInfo.isDirectory)) {
-				ret.push_back(aPath + aInfo.name);
+				ret.push_back(aInfo.getPath(aPath));
 			}
 		}, !(aFindFlags & FLAG_HIDDEN));
 	}
@@ -741,11 +762,10 @@ StringList File::findFiles(const string& aPath, const string& aNamePattern, int 
 void File::forEachFile(const string& aPath, const string& aNamePattern, FileIterF aHandlerF, bool aSkipHidden) {
 	for (FileFindIter i(aPath, aNamePattern); i != FileFindIter(); ++i) {
 		if ((!aSkipHidden || !i->isHidden())) {
-			auto isDir = i->isDirectory();
 			aHandlerF({
-				i->getFileName() + (isDir ? PATH_SEPARATOR_STR : Util::emptyString),
+				i->getFileName(),
 				i->getSize(),
-				isDir,
+				i->isDirectory(),
 			});
 		}
 	}
@@ -755,7 +775,7 @@ int64_t File::getDirSize(const string& aPath, bool aRecursive, const string& aNa
 	int64_t size = 0;
 	File::forEachFile(aPath, aNamePattern, [&](const FilesystemItem& aInfo) {
 		if (aInfo.isDirectory && aRecursive) {
-			size += getDirSize(aPath + aInfo.name, true, aNamePattern);
+			size += getDirSize(aInfo.getPath(aPath), true, aNamePattern);
 		} else {
 			size += aInfo.size;
 		}
@@ -790,10 +810,10 @@ string File::getMountPath(const string& aPath, const VolumeSet& aVolumes, bool a
 		// Not found from volumes... network path? This won't work with mounted dirs
 		// Get the first section containing the network host and the first folder/drive (//HTPC/g/)
 		if (aPath.length() > 2 && aPath.substr(0, 2) == "\\\\") {
-			l = aPath.find("\\", 2);
+			l = aPath.find('\\', 2);
 			if (l != string::npos) {
 				//get the drive letter
-				l = aPath.find("\\", l + 1);
+				l = aPath.find('\\', l + 1);
 				if (l != string::npos) {
 					return aPath.substr(0, l + 1);
 				}
@@ -947,12 +967,11 @@ FileFindIter::FileFindIter() {
 }
 
 FileFindIter::FileFindIter(const string& aPath, const string& aPattern, bool dirsOnly /*false*/) {
-	string filename = Text::fromUtf8(aPath);
-	dir = opendir(filename.c_str());
+	dir = opendir(aPath.c_str());
 	if (!dir)
 		return;
 
-	data.base = filename;
+	data.base = aPath;
 	data.ent = readdir(dir);
 	if (!aPattern.empty() && aPattern != "*") {
 		pattern.reset(new string(aPattern));
@@ -1005,7 +1024,7 @@ FileFindIter::DirData::DirData() : ent(NULL) {}
 
 string FileFindIter::DirData::getFileName() {
 	if (!ent) return Util::emptyString;
-	return Text::toUtf8(ent->d_name);
+	return ent->d_name;
 }
 
 bool FileFindIter::DirData::isDirectory() {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,6 +68,16 @@ public:
 
 	struct UserHubInfo {
 		UserHubInfo(const string& aHubUrl, const string& aHubName, int64_t aShared) : hubName(aHubName), hubUrl(aHubUrl), shared(aShared) { }
+		bool operator==(const string& aHubUrl) const noexcept {
+			return hubUrl == aHubUrl;
+		}
+
+		// Sort from lowest to highest
+		struct ShareSort {
+			bool operator()(const UserHubInfo& a, const UserHubInfo& b) const noexcept {
+				return a.shared < b.shared;
+			}
+		};
 
 		string hubName;
 		string hubUrl;

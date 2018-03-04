@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2017 AirDC++ Project
+ * Copyright (C) 2013-2018 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,17 +41,20 @@ public:
 	DirectoryMonitor(int numThreads, bool useDispatcherThread);
 	~DirectoryMonitor();
 
-	bool addDirectory(const string& aPath) throw(MonitorException);
+	// Throws MonitorException
+	bool addDirectory(const string& aPath);
 	bool removeDirectory(const string& aPath);
 	size_t clear();
 
 	// returns the paths that were restored successfully
 	set<string> restoreFailedPaths();
 	size_t getFailedCount();
-	void deviceRemoved(const string& aDrive){ server->deviceRemoved(aDrive); }
+	void deviceRemoved(const string& aDrive) { server->deviceRemoved(aDrive); }
 
 	void stopMonitoring();
-	void init() throw(MonitorException);
+
+	// Throws MonitorException
+	void init();
 
 	// returns true as long as there are messages queued
 	bool dispatch();
@@ -68,7 +71,7 @@ private:
 	public:
 		Server(DirectoryMonitor* aBase, int numThreads);
 		~Server();
-		bool addDirectory(const string& aPath) throw(MonitorException);
+		bool addDirectory(const string& aPath);
 		bool removeDirectory(const string& aPath);
 		size_t clear();
 
@@ -76,7 +79,9 @@ private:
 
 		DirectoryMonitor* base;
 		virtual int run();
-		void init() throw(MonitorException);
+
+		// Throws MonitorException
+		void init();
 
 		string getStats() const;
 		bool hasDirectories() const;
@@ -146,8 +151,6 @@ public:
 private:
 	uint64_t changes;
 #ifdef WIN32
-	void processNotification();
-
 	// Parameters from the caller for ReadDirectoryChangesW().
 	int				m_dwFlags;
 	int				m_bChildren;

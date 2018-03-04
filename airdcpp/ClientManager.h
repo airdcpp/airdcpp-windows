@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -79,7 +79,12 @@ public:
 	};
 	optional<ShareInfo> getShareInfo(const HintedUser& user) const noexcept;
 
-	void getUserInfoList(const UserPtr& user, User::UserInfoList& aList_) const noexcept;
+	User::UserInfoList getUserInfoList(const UserPtr& user) const noexcept;
+
+	// Updates the hinted URL in case the user is not online in the original one
+	// Selects the hub where the user is sharing most files
+	// URL won't be changed for offline users
+	HintedUser checkDownloadUrl(const HintedUser& aUser) const noexcept;
 
 	StringList getNicks(const HintedUser& user) const noexcept;
 	StringList getHubNames(const HintedUser& user) const noexcept;

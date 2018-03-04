@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -85,22 +85,26 @@ bool AutoSearch::allowAutoSearch() const noexcept{
 
 bool AutoSearch::onBundleRemoved(const BundlePtr& aBundle, bool finished) noexcept {
 	removeBundle(aBundle);
+	bool expired = false;
 
-	auto usingInc = usingIncrementation();
-	auto expired = usingInc && maxNumberReached() && finished && SETTING(AS_DELAY_HOURS) == 0 && bundles.empty();
-	if (finished) {
-		auto time = GET_TIME();
-		addPath(aBundle->getTarget(), time);
-		if (usingInc) {
-			if (SETTING(AS_DELAY_HOURS) > 0) {
-				lastIncFinish = time;
-				setStatus(AutoSearch::STATUS_POSTSEARCH);
-				expired = false;
-			} else {
-				changeNumber(true);
-			}
+	if (!finished) {
+		updateStatus();
+		return expired;
+	}
+
+	auto time = GET_TIME();
+	addPath(aBundle->getTarget(), time);
+	if (usingIncrementation()) {
+		if (SETTING(AS_DELAY_HOURS) > 0) {
+			lastIncFinish = time;
+			setStatus(AutoSearch::STATUS_POSTSEARCH);
+			expired = false;
+		} else {
+			expired = maxNumberReached();
+			changeNumber(true);
 		}
 	}
+	
 	updateStatus();
 
 	return expired;
@@ -297,7 +301,7 @@ void AutoSearch::updateStatus() noexcept {
 }
 
 bool AutoSearch::removePostSearch() noexcept {
-	if (lastIncFinish > 0 && lastIncFinish + SETTING(AS_DELAY_HOURS) + 60 * 60 <= GET_TIME()) {
+	if (lastIncFinish > 0 && (SETTING(AS_DELAY_HOURS) == 0 || lastIncFinish + SETTING(AS_DELAY_HOURS) + 60 * 60 <= GET_TIME())) {
 		lastIncFinish = 0;
 		return true;
 	}

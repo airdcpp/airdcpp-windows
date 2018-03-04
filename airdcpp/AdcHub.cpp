@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -136,11 +136,7 @@ OnlineUser* AdcHub::findUser(const CID& aCID) const noexcept {
 
 void AdcHub::getUserList(OnlineUserList& list, bool aListHidden) const noexcept {
 	RLock l(cs);
-	for(const auto& i: users) {
-		if (i.first == AdcCommand::HUB_SID) {
-			continue;
-		}
-
+	for (const auto& i: users) {
 		if (!aListHidden && i.second->isHidden()) {
 			continue;
 		}
@@ -246,14 +242,15 @@ void AdcHub::handle(AdcCommand::INF, AdcCommand& c) noexcept {
 
 	if (u->getIdentity().supports(ADCS_FEATURE)) {
 		u->getUser()->setFlag(User::TLS);
+
+		//CCPM support flag is only sent if we support encryption too, so keep persistent here also...
+		if (u->getIdentity().supports(CCPM_FEATURE)) {
+			u->getUser()->setFlag(User::CCPM);
+		}
 	}
 
 	if (u->getIdentity().supports(ASCH_FEATURE)) {
 		u->getUser()->setFlag(User::ASCH);
-	}
-
-	if (u->getIdentity().supports(CCPM_FEATURE)) {
-		u->getUser()->setFlag(User::CCPM);
 	}
 
 	if (u->getUser() == getMyIdentity().getUser()) {
@@ -280,7 +277,7 @@ void AdcHub::handle(AdcCommand::INF, AdcCommand& c) noexcept {
 			}
 
 			if (isHubsoftVersionOrOlder("luadch", 2.18)) {
-				statusMessage("The hubsoft used by this hub doesn't forward Advanced Direct Connect protocol messages according to the protocol specifications, which may silently break various client features. Certain functionality may have been disabled automatically in this hub. For more information, please see https://www.airdcpp.net/hubsoft-warnings", LogMessage::SEV_WARNING);
+				statusMessage("This hub uses an outdated hubsoft version that doesn't forward Advanced Direct Connect protocol messages according to the protocol specifications, which may silently break various client features. Certain functionality may have been disabled automatically in this hub. For more information, please see https://www.airdcpp.net/hubsoft-warnings", LogMessage::SEV_WARNING);
 			}
 		}
 
@@ -880,7 +877,6 @@ void AdcHub::handle(AdcCommand::TCP, AdcCommand& c) noexcept {
 
 void AdcHub::sendHBRI(const string& aIP, const string& aPort, const string& aToken, bool v6) {
 	// Construct the command we are going to send
-	string su;
 	AdcCommand hbriCmd(AdcCommand::CMD_TCP, AdcCommand::TYPE_HUB);
 
 	StringMap dummyMap;
@@ -1179,7 +1175,7 @@ bool AdcHub::directSearch(const OnlineUser& user, const SearchPtr& aSearch, stri
 	}
 
 	if (isHubsoftVersionOrOlder("luadch", 2.18)) {
-		error_ = "This feature is blocked by the hubsoft";
+		error_ = "Feature is blocked by hub " + Client::getHubName() + " (the hub is using an outdated hubsoft version)";
 		return false;
 	}
 
@@ -1187,8 +1183,8 @@ bool AdcHub::directSearch(const OnlineUser& user, const SearchPtr& aSearch, stri
 	constructSearch(c, aSearch, true);
 
 	if (user.getUser()->isSet(User::ASCH)) {
-		if (!aSearch->path.empty()) {
-			dcassert(aSearch->path.front() == ADC_SEPARATOR);
+		if (!Util::isAdcRoot(aSearch->path)) {
+			dcassert(Util::isAdcPath(aSearch->path));
 			c.addParam("PA", aSearch->path);
 		}
 

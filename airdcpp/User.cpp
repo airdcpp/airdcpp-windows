@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -201,9 +201,9 @@ string Identity::getApplication() const noexcept {
 
 	return application + ' ' + version;
 }
-const string& Identity::getCountry() const noexcept {
+string Identity::getCountry() const noexcept {
 	bool v6 = !getIp6().empty();
-	return GeoManager::getInstance()->getCountry(v6 ? getIp6() : getIp4(), v6 ? GeoManager::V6 : GeoManager::V4);
+	return GeoManager::getInstance()->getCountry(v6 ? getIp6() : getIp4());
 }
 
 string Identity::get(const char* name) const noexcept {
@@ -227,13 +227,17 @@ void Identity::set(const char* name, const string& val) noexcept {
 		info[*(short*)name] = val;
 }
 
-bool Identity::supports(const string& name) const noexcept {
+StringList Identity::getSupports() const noexcept {
 	string su = get("SU");
-	StringTokenizer<string> st(su, ',');
-	for(auto s: st.getTokens()) {
-		if(s == name)
+	return StringTokenizer<string>(su, ',').getTokens();
+}
+
+bool Identity::supports(const string& name) const noexcept {
+	for (const auto& s: getSupports()) {
+		if (s == name)
 			return true;
 	}
+
 	return false;
 }
 
@@ -241,7 +245,7 @@ std::map<string, string> Identity::getInfo() const noexcept {
 	std::map<string, string> ret;
 
 	RLock l(cs);
-	for(auto& i: info) {
+	for(const auto& i: info) {
 		ret[string((char*)(&i.first), 2)] = i.second;
 	}
 

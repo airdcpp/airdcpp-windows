@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,29 +16,42 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef DCPLUSPLUS_DCPP_RECENTMANAGERLISTENER_H_
-#define DCPLUSPLUS_DCPP_RECENTMANAGERLISTENER_H_
-
-#include "forward.h"
-#include "RecentEntry.h"
+#ifndef DCPLUSPLUS_DCPP_CONSTANTS_H_
+#define DCPLUSPLUS_DCPP_CONSTANTS_H_
 
 namespace dcpp {
 
-	class RecentManagerListener {
-	public:
-		virtual ~RecentManagerListener() { }
-		template<int I>	struct X { enum { TYPE = I }; };
-
-		typedef X<0> RecentAdded;
-		typedef X<1> RecentRemoved;
-		typedef X<2> RecentUpdated;
+#define SP_HIDDEN 1
 
 
-		virtual void on(RecentAdded, const RecentEntryPtr&, RecentEntry::Type) noexcept {}
-		virtual void on(RecentRemoved, const RecentEntryPtr&, RecentEntry::Type) noexcept {}
-		virtual void on(RecentUpdated, const RecentEntryPtr&, RecentEntry::Type) noexcept {}
-	};
+// Protocol separators
 
-} // namespace dcpp
+#define ADC_SEPARATOR '/'
+#define ADC_SEPARATOR_STR "/"
 
-#endif 
+#define NMDC_SEPARATOR '\\'
+#define NMDC_SEPARATOR_STR "\\"
+
+#define ADC_ROOT ADC_SEPARATOR
+#define ADC_ROOT_STR ADC_SEPARATOR_STR
+
+// Empty char defines would cause issues with clang
+#define NMDC_ROOT_STR ""
+
+
+// Filesystem separators
+
+#ifdef _WIN32
+
+#define PATH_SEPARATOR '\\'
+#define PATH_SEPARATOR_STR "\\"
+
+#else
+
+# define PATH_SEPARATOR '/'
+# define PATH_SEPARATOR_STR "/"
+
+#endif
+}
+
+#endif /* DCPLUSPLUS_DCPP_CONSTANTS_H_ */

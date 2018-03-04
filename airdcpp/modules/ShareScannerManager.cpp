@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2017 AirDC++ Project
+ * Copyright (C) 2011-2018 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -264,9 +264,13 @@ void ShareScannerManager::ScanInfo::merge(ScanInfo& collect) const {
 	collect.scanMessage += scanMessage;
 }
 
-bool ShareScannerManager::validateShare(FileFindIter& aIter, const string& aPath) {
+bool ShareScannerManager::validateShare(const string& aPath, bool aSkipCheckQueue) {
 	if (SETTING(CHECK_USE_SKIPLIST)) {
-		return ShareManager::getInstance()->validate(aIter, aPath);
+		try {
+			ShareManager::getInstance()->validatePath(aPath, aSkipCheckQueue);
+		} catch (const Exception&) {
+			return false;
+		}
 	}
 
 	return true;
@@ -280,7 +284,7 @@ void ShareScannerManager::find(const string& aPath, ScanInfo& aScanInfo) noexcep
 		if (!aInfo.isDirectory || stop)
 			return;
 
-		auto currentDir = aPath + aInfo.name;
+		auto currentDir = aInfo.getPath(aPath);
 
 		if (aScanInfo.isManualShareScan) {
 			if (QueueManager::getInstance()->findDirectoryBundle(currentDir)) {
@@ -340,7 +344,7 @@ void ShareScannerManager::scanDir(const string& aPath, ScanInfo& aScan) noexcept
 		}
 
 		auto fileName = i->getFileName();
-		if (!validateShare(i, aPath + fileName + (i->isDirectory() ? PATH_SEPARATOR_STR : Util::emptyString))) {
+		if (!validateShare(aPath + fileName + (i->isDirectory() ? PATH_SEPARATOR_STR : Util::emptyString), !aScan.isManualShareScan)) {
 			continue;
 		}
 
@@ -597,8 +601,9 @@ void ShareScannerManager::prepareSFVScanDir(const string& aPath, SFVScanList& di
 
 	/* Recursively scan subfolders */
 	File::forEachFile(aPath, "*", [&](const FilesystemItem& aInfo) {
-		if (aInfo.isDirectory)
-			prepareSFVScanDir(aPath + aInfo.name, dirs);
+		if (aInfo.isDirectory) {
+			prepareSFVScanDir(aInfo.getPath(aPath), dirs);
+		}
 	});
 }
 
@@ -687,7 +692,7 @@ ActionHookRejectionPtr ShareScannerManager::fileCompletionHook(const QueueItemPt
 }
 
 ActionHookRejectionPtr ShareScannerManager::bundleCompletionHook(const BundlePtr& aBundle, const HookRejectionGetter& aErrorGetter) noexcept{
-	if (!SETTING(SCAN_DL_BUNDLES) || aBundle->isFileBundle()) {
+	if (!SETTING(SCAN_DL_BUNDLES) || aBundle->isFileBundle() || !validateShare(aBundle->getTarget(), true)) {
 		return nullptr;
 	}
 

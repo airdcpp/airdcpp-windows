@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2017 AirDC++ Project
+ * Copyright (C) 2011-2018 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,6 @@ public:
 	typedef X<7> ChangeDirectory;
 	typedef X<8> UpdateStatusMessage;
 	typedef X<9> RemovedQueue;
-	typedef X<10> SetActive;
 	typedef X<11> UserUpdated;
 	typedef X<12> StateChanged;
 	typedef X<13> Read;
@@ -54,7 +53,6 @@ public:
 	virtual void on(ChangeDirectory, const string&, bool) noexcept { }
 	virtual void on(UpdateStatusMessage, const string&) noexcept { }
 	virtual void on(RemovedQueue, const string&) noexcept { }
-	virtual void on(SetActive) noexcept {}
 	virtual void on(UserUpdated) noexcept {}
 	virtual void on(StateChanged) noexcept {}
 	virtual void on(Read) noexcept {}

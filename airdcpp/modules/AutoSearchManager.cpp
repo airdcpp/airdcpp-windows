@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2017 AirDC++ Project
+ * Copyright (C) 2011-2018 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -587,16 +587,7 @@ void AutoSearchManager::checkItems() noexcept {
 		WLock l(cs);
 
 		for(auto& as: searchItems.getItems() | map_values) {
-			//Check if the item gets enabled from search time limits...
-			bool aOldSearchTimeEnabled = as->allowNewItems() && as->nextAllowedSearch() == 0;
-			bool fireUpdate = as->updateSearchTime();
-			bool aNewSearchTimeEnabled = as->allowNewItems() && as->nextAllowedSearch() == 0;
-
-			if (!aOldSearchTimeEnabled && aNewSearchTimeEnabled)
-				itemsEnabled++;
-
-			if (aOldSearchTimeEnabled && !aNewSearchTimeEnabled)
-				itemsDisabled++;
+			bool fireUpdate = false;
 
 			//update possible priority change
 			auto newPrio = as->calculatePriority();
@@ -608,27 +599,38 @@ void AutoSearchManager::checkItems() noexcept {
 				hasPrioChange = true;
 			}
 
-			
-			//check expired, and remove them.
-			if (as->getStatus() != AutoSearch::STATUS_EXPIRED && as->expirationTimeReached() && as->getBundles().empty()) {
-				expired.push_back(as);
-			}
-
 			// check post search items and whether we can change the number
 			if (as->removePostSearch()) {
 				if (as->maxNumberReached()) {
 					expired.push_back(as);
 					continue;
-				} else {
-					dirty = true;
-					as->changeNumber(true);
-					as->updateStatus();
-					fireUpdate = true;
 				}
+				dirty = true;
+				as->changeNumber(true);
+				as->updateStatus();
+				fireUpdate = true;
+			}
+			
+			//check expired, and remove them.
+			if (as->getStatus() != AutoSearch::STATUS_EXPIRED && as->getBundles().empty() && 
+				(as->expirationTimeReached() || (as->usingIncrementation() && as->getMaxNumber() > 0 && as->getCurNumber() > as->getMaxNumber()))) {
+				expired.push_back(as);
+				continue;
 			}
 
-			if (as->getExpireTime() > 0 || fireUpdate)
+			//Check if the item gets enabled from search time limits...
+			bool aOldSearchTimeEnabled = as->allowNewItems() && as->nextAllowedSearch() == 0;
+
+			if (as->updateSearchTime() || as->getExpireTime() > 0 || fireUpdate)
 				updateitems.push_back(as);
+
+			bool aNewSearchTimeEnabled = as->allowNewItems() && as->nextAllowedSearch() == 0;
+
+			if (!aOldSearchTimeEnabled && aNewSearchTimeEnabled)
+				itemsEnabled++;
+
+			if (aOldSearchTimeEnabled && !aNewSearchTimeEnabled)
+				itemsDisabled++;
 		}
 	}
 
@@ -687,9 +689,9 @@ void AutoSearchManager::on(SearchManagerListener::SR, const SearchResultPtr& sr)
 				}
 
 				if (as->getMatchFullPath()) {
-					if (!as->match(sr->getPath()))
+					if (!as->match(sr->getAdcPath()))
 						continue;
-					if (as->isExcluded(sr->getPath()))
+					if (as->isExcluded(sr->getAdcPath()))
 						continue;
 				} else {
 					const string matchPath = sr->getFileName();
@@ -740,7 +742,7 @@ void AutoSearchManager::on(SearchManagerListener::SR, const SearchResultPtr& sr)
 			if (rl.empty()) {
 				as->setStatus(AutoSearch::STATUS_COLLECTING);
 				fire(AutoSearchManagerListener::ItemUpdated(), as, false);
-			} else if (find_if(rl, [&sr](const SearchResultPtr& aSR) { return aSR->getUser() == sr->getUser() && aSR->getPath() == sr->getPath(); }) != rl.end()) {
+			} else if (find_if(rl, [&sr](const SearchResultPtr& aSR) { return aSR->getUser() == sr->getUser() && aSR->getAdcPath() == sr->getAdcPath(); }) != rl.end()) {
 				//don't add the same result multiple times, makes the counting more reliable
 				return;
 			}
@@ -808,7 +810,7 @@ void AutoSearchManager::pickNameMatch(AutoSearchPtr as) noexcept{
 
 			//check shared
 			if (as->getCheckAlreadyShared()) {
-				auto paths = ShareManager::getInstance()->getNmdcDirPaths(dir);
+				auto paths = ShareManager::getInstance()->getAdcDirectoryPaths(dir);
 				if (!paths.empty()) {
 					as->setLastError(STRING_F(DIR_SHARED_ALREADY, paths.front()));
 					fire(AutoSearchManagerListener::ItemUpdated(), as, true);
@@ -818,7 +820,7 @@ void AutoSearchManager::pickNameMatch(AutoSearchPtr as) noexcept{
 
 			//check queued
 			if (as->getCheckAlreadyQueued() && as->getStatus() != AutoSearch::STATUS_FAILED_MISSING) {
-				auto paths = QueueManager::getInstance()->getNmdcDirPaths(dir);
+				auto paths = QueueManager::getInstance()->getAdcDirectoryPaths(dir);
 				if (!paths.empty()) {
 					as->setLastError(STRING_F(DIR_QUEUED_ALREADY, dir));
 					fire(AutoSearchManagerListener::ItemUpdated(), as, true);
@@ -884,7 +886,7 @@ void AutoSearchManager::handleAction(const SearchResultPtr& sr, AutoSearchPtr& a
 				}
 
 				auto priority = as->getAction() == AutoSearch::ACTION_QUEUE ? Priority::PAUSED : Priority::DEFAULT;
-				DirectoryListingManager::getInstance()->addDirectoryDownload(sr->getUser(), sr->getFileName(), sr->getFilePath(), as->getTarget(), priority, as.get());
+				DirectoryListingManager::getInstance()->addDirectoryDownload(sr->getUser(), sr->getFileName(), sr->getAdcFilePath(), as->getTarget(), priority, as.get());
 			} else {
 				auto info = QueueManager::getInstance()->createFileBundle(as->getTarget() + sr->getFileName(), sr->getSize(), sr->getTTH(), 
 					sr->getUser(), sr->getDate(), 0, 

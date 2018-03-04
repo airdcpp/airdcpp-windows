@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -86,7 +86,7 @@ public:
 private:
 
 	static const size_t MAX_NAME_SIZE = 1024; 
-	static const size_t MAX_VALUE_SIZE = 64*1024;
+	static const size_t MAX_VALUE_SIZE = 96*1024;
 	static const size_t MAX_NESTING = 32;
 
 	enum ParseState {
