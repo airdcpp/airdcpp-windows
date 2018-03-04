@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 
 #include <api/base/ApiModule.h>
 
+#include <airdcpp/CriticalSection.h>
 #include <airdcpp/GetSet.h>
 #include <airdcpp/typedefs.h>
 #include <airdcpp/Speaker.h>
@@ -87,6 +88,8 @@ namespace webserver {
 		const string& getIp() const noexcept {
 			return ip;
 		}
+
+		void reportError(const string& aError) noexcept;
 	private:
 		typedef LazyInitWrapper<ApiModule> LazyModuleWrapper;
 		std::map<std::string , LazyModuleWrapper> apiHandlers;
@@ -102,6 +105,8 @@ namespace webserver {
 
 		WebUserPtr user;
 		WebServerManager* server;
+
+		mutable CriticalSection cs;
 	};
 }
 

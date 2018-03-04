@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 
 #include <web-server/Extension.h>
 
+#include <web-server/SystemUtil.h>
 #include <web-server/WebUserManager.h>
 #include <web-server/WebServerManager.h>
 #include <web-server/WebServerSettings.h>
@@ -31,22 +32,42 @@
 namespace webserver {
 	SharedMutex Extension::cs;
 
-	Extension::Extension(const string& aPath, ErrorF&& aErrorF, bool aSkipPathValidation) : errorF(std::move(aErrorF)), managed(true) {
-		initialize(aPath, aSkipPathValidation);
+	string Extension::getRootPath(const string& aName) noexcept {
+		return EXTENSION_DIR_ROOT + aName + PATH_SEPARATOR_STR;
+	}
+
+	string Extension::getRootPath() const noexcept {
+		return getRootPath(name);
+	}
+
+	string Extension::getMessageLogPath() const noexcept {
+		return Util::joinDirectory(getRootPath(), EXT_LOG_DIR) + "output.log";
+	}
+
+	string Extension::getErrorLogPath() const noexcept {
+		return Util::joinDirectory(getRootPath(), EXT_LOG_DIR) + "error.log";
+	}
+
+	Extension::Extension(const string& aPackageDirectory, ErrorF&& aErrorF, bool aSkipPathValidation) : errorF(std::move(aErrorF)), managed(true) {
+		initialize(aPackageDirectory, aSkipPathValidation);
 	}
 
 	Extension::Extension(const SessionPtr& aSession, const json& aPackageJson) : managed(false), session(aSession) {
 		initialize(aPackageJson);
 	}
 
+	Extension::~Extension() {
+		dcdebug("Extension %s was destroyed\n", name.c_str());
+	}
+
 	void Extension::reload() {
-		initialize(getRootPath(), false);
+		initialize(Util::joinDirectory(getRootPath(), EXT_PACKAGE_DIR), false);
 
 		fire(ExtensionListener::PackageUpdated());
 	}
 
-	void Extension::initialize(const string& aPath, bool aSkipPathValidation) {
-		const auto packageStr = File(aPath + "package" + PATH_SEPARATOR_STR + "package.json", File::READ, File::OPEN).read();
+	void Extension::initialize(const string& aPackageDirectory, bool aSkipPathValidation) {
+		const auto packageStr = File(aPackageDirectory + "package.json", File::READ, File::OPEN).read();
 		try {
 			const json packageJson = json::parse(packageStr);
 
@@ -55,7 +76,7 @@ namespace webserver {
 			throw Exception("Could not parse package.json (" + string(e.what()) + ")");
 		}
 
-		if (!aSkipPathValidation && compare(name, Util::getLastDir(aPath)) != 0) {
+		if (!aSkipPathValidation && compare(name, Util::getLastDir(Util::getParentDir(aPackageDirectory))) != 0) {
 			throw Exception("Extension path doesn't match with the extension name " + name);
 		}
 	}
@@ -66,7 +87,16 @@ namespace webserver {
 		const string packageDescription = aJson.at("description");
 		const string packageEntry = aJson.at("main");
 		const string packageVersion = aJson.at("version");
-		const string packageAuthor = aJson.at("author").at("name");
+
+		{
+			json packageAuthor = aJson.at("author");
+			if (packageAuthor.is_string()) {
+				author = packageAuthor.get<string>();
+			} else {
+				author = packageAuthor.at("name").get<string>();
+			}
+		}
+
 
 		privateExtension = aJson.value("private", false);
 
@@ -74,12 +104,12 @@ namespace webserver {
 		description = packageDescription;
 		entry = packageEntry;
 		version = packageVersion;
-		author = packageAuthor;
 
 		// Optional fields
 		homepage = aJson.value("homepage", Util::emptyString);
 
 		{
+			// Engines
 			auto enginesJson = aJson.find("engines");
 			if (enginesJson != aJson.end()) {
 				for (const auto& engine : json::iterator_wrapper(*enginesJson)) {
@@ -90,34 +120,43 @@ namespace webserver {
 			if (engines.empty()) {
 				engines.emplace_back("node");
 			}
+		}
 
+		{
+			// Operating system
+			auto osJson = aJson.find("os");
+			if (osJson != aJson.end()) {
+				const StringList osList = *osJson;
+				auto currentOs = SystemUtil::getPlatform();
+				if (std::find(osList.begin(), osList.end(), currentOs) == osList.end() && currentOs != "other") {
+					throw Exception("Extension is not compatible with your operating system, please the extension documentation for more information");
+				}
+			}
 		}
 
 		parseApiData(aJson.at("airdcpp"));
 	}
 
-	void Extension::parseApiData(const json& aJson) {
-		// Check API compatibility
-		{
-			const int apiVersion = aJson.at("apiVersion");
-			if (apiVersion != API_VERSION) {
-				throw Exception("Extension requires API version " + Util::toString(apiVersion) + " while the application uses version " + Util::toString(API_VERSION));
-			}
+	void Extension::checkCompatibility() {
+		if (apiVersion != API_VERSION) {
+			throw Exception("Extension requires API version " + Util::toString(apiVersion) + " while the application uses version " + Util::toString(API_VERSION));
 		}
 
-		{
-			const int minFeatureLevel = aJson.value("minApiFeatureLevel", 0);
-			if (minFeatureLevel != API_FEATURE_LEVEL) {
-				throw Exception("Extension requires API feature level " + Util::toString(minFeatureLevel) + " or newer while the application uses version " + Util::toString(API_FEATURE_LEVEL));
-			}
+		if (minApiFeatureLevel != API_FEATURE_LEVEL) {
+			throw Exception("Extension requires API feature level " + Util::toString(minApiFeatureLevel) + " or newer while the application uses version " + Util::toString(API_FEATURE_LEVEL));
 		}
+	}
+
+	void Extension::parseApiData(const json& aJson) {
+		apiVersion = aJson.at("apiVersion");
+		minApiFeatureLevel = aJson.value("minApiFeatureLevel", 0);
 	}
 
 	FilesystemItemList Extension::getLogs() const noexcept {
 		FilesystemItemList ret;
 
 		if (managed) {
-			File::forEachFile(getLogPath(), "*.log", [&](const FilesystemItem& aInfo) {
+			File::forEachFile(Util::joinDirectory(getRootPath(), EXT_LOG_DIR), "*.log", [&](const FilesystemItem& aInfo) {
 				if (aInfo.isDirectory) {
 					return;
 				}
@@ -148,6 +187,15 @@ namespace webserver {
 		{
 			WLock l(cs);
 			settings.swap(aDefinitions);
+		}
+
+		fire(ExtensionListener::SettingDefinitionsUpdated());
+	}
+
+	void Extension::resetSettings() noexcept {
+		{
+			WLock l(cs);
+			settings.clear();
 		}
 
 		fire(ExtensionListener::SettingDefinitionsUpdated());
@@ -187,13 +235,19 @@ namespace webserver {
 			return;
 		}
 
-		File::ensureDirectory(getLogPath());
-		File::ensureDirectory(getSettingsPath());
+		if (!wsm->isListeningPlain()) {
+			throw Exception("Extensions require the (plain) HTTP protocol to be enabled");
+		}
 
 		if (isRunning()) {
 			dcassert(0);
 			return;
 		}
+
+		File::ensureDirectory(Util::joinDirectory(getRootPath(), EXT_LOG_DIR));
+		File::ensureDirectory(Util::joinDirectory(getRootPath(), EXT_CONFIG_DIR));
+
+		checkCompatibility();
 
 		session = wsm->getUserManager().createExtensionSession(name);
 		
@@ -208,7 +262,7 @@ namespace webserver {
 	}
 
 	string Extension::getConnectUrl(WebServerManager* wsm) noexcept {
-		const auto& serverConfig = wsm->isListeningPlain() ? wsm->getPlainServerConfig() : wsm->getTlsServerConfig();
+		const auto& serverConfig = wsm->getPlainServerConfig();
 
 		auto bindAddress = serverConfig.bindAddress.str();
 		if (bindAddress.empty()) {
@@ -216,22 +270,22 @@ namespace webserver {
 			bindAddress = protocol == boost::asio::ip::tcp::v6() ? "[::1]" : "127.0.0.1";
 		}
 
-		string address = wsm->isListeningPlain() ? "ws://" : "wss://";
-		address += bindAddress;
-		address += ":" + Util::toString(serverConfig.port.num()) + "/api/v1/ ";
-		return address;
+		return bindAddress + ":" + Util::toString(serverConfig.port.num()) + "/api/v1/";
 	}
 
 	StringList Extension::getLaunchParams(WebServerManager* wsm, const SessionPtr& aSession) const noexcept {
 		StringList ret;
 
 		// Script to launch
-		ret.push_back(getPackageDirectory() + entry);
+		ret.push_back(Util::joinDirectory(getRootPath(), EXT_PACKAGE_DIR) + entry);
 
 		// Params
-		auto addParam = [&ret](const string& aName, const string& aParam) {
-			ret.push_back("--" + aName + "=" + aParam);
+		auto addParam = [&ret](const string& aName, const string& aParam = Util::emptyString) {
+			ret.push_back("--" + aName + (!aParam.empty() ? "=" + aParam : Util::emptyString));
 		};
+
+		// Name
+		addParam("name", name);
 
 		// Connect URL
 		addParam("apiUrl", getConnectUrl(wsm));
@@ -240,8 +294,12 @@ namespace webserver {
 		addParam("authToken", aSession->getAuthToken());
 
 		// Paths
-		addParam("logPath", getLogPath());
-		addParam("settingsPath", getSettingsPath());
+		addParam("logPath", Util::joinDirectory(getRootPath(), EXT_LOG_DIR));
+		addParam("settingsPath", Util::joinDirectory(getRootPath(), EXT_CONFIG_DIR));
+
+		if (WEBCFG(EXTENSIONS_DEBUG_MODE).boolean()) {
+			addParam("debug");
+		}
 
 		return ret;
 	}
@@ -260,15 +318,30 @@ namespace webserver {
 			return false;
 		}
 
-		fire(ExtensionListener::ExtensionStopped());
 		onStopped(false);
 		return true;
 	}
 
-	void Extension::onStopped(bool aFailed) noexcept {
-		if (aFailed) {
-			timer->stop(false);
+	void Extension::onFailed(uint32_t aExitCode) noexcept {
+		dcdebug("Extension %s failed with code %u\n", name.c_str(), aExitCode);
+
+		timer->stop(false);
+
+		onStopped(true);
+
+		if (errorF) {
+			errorF(this, aExitCode);
 		}
+	}
+
+	void Extension::onStopped(bool aFailed) noexcept {
+		fire(ExtensionListener::ExtensionStopped(), aFailed);
+		
+		dcdebug("Extension %s was stopped", name.c_str());
+		if (session) {
+			dcdebug(" (session %s, use count %ld)", session->getAuthToken().c_str(), session.use_count());
+		}
+		dcdebug("\n");
 
 		if (session) {
 			session->getServer()->getUserManager().logout(session);
@@ -276,11 +349,10 @@ namespace webserver {
 		}
 
 		resetProcessState();
+		resetSettings();
 
+		dcassert(running);
 		running = false;
-		if (aFailed && errorF) {
-			errorF(this);
-		}
 	}
 #ifdef _WIN32
 	void Extension::initLog(HANDLE& aHandle, const string& aPath) {
@@ -391,8 +463,7 @@ namespace webserver {
 		DWORD exitCode = 0;
 		if (GetExitCodeProcess(piProcInfo.hProcess, &exitCode) != 0) {
 			if (exitCode != STILL_ACTIVE) {
-				dcdebug("Extension %s exited with code %d\n", name.c_str(), exitCode);
-				onStopped(true);
+				onFailed(exitCode);
 			}
 		} else {
 			dcdebug("Failed to check running state of extension %s (%s)\n", name.c_str(), Util::translateError(::GetLastError()).c_str());
@@ -426,7 +497,12 @@ namespace webserver {
 	void Extension::checkRunningState(WebServerManager* wsm) noexcept {
 		int status = 0;
 		if (waitpid(pid, &status, WNOHANG) != 0) {
-			onStopped(true);
+			int exitCode = 1;
+			if (WIFEXITED(status)) {
+				exitCode = WEXITSTATUS(status);
+			}
+
+			onFailed(exitCode);
 		}
 	}
 
@@ -434,33 +510,35 @@ namespace webserver {
 		pid = 0;
 	}
 
+	unique_ptr<File> Extension::initLog(const string& aPath) {
+		return make_unique<File>(aPath, File::RW, File::CREATE | File::TRUNCATE);
+	}
+
 	void Extension::createProcess(const string& aEngine, WebServerManager* wsm, const SessionPtr& aSession) {
 		// Init logs
-		File messageLog(getMessageLogPath(), File::CREATE, File::RW);
-		File errorLog(getErrorLogPath(), File::CREATE, File::RW);
-
+		auto messageLog = std::move(initLog(getMessageLogPath()));
+		auto errorLog = std::move(initLog(getErrorLogPath()));
 
 		// Construct argv
 		char* app = (char*)aEngine.c_str();
 
+		// Note that pushed pointed params should not be destructed until the extension is running...
 		vector<char*> argv;
 		argv.push_back(app);
 
-		{
-			auto paramList = getLaunchParams(wsm, aSession);
-			for (const auto& p : paramList) {
-				argv.push_back((char*)p.c_str());
-			}
+		auto paramList = getLaunchParams(wsm, aSession);
+		for (const auto& p : paramList) {
+			argv.push_back((char*)p.c_str());
+		}
 
 #ifdef _DEBUG
-			string command = string(app) + " ";
-			for (const auto& p : paramList) {
-				command += p + " ";
-			}
-
-			dcdebug("Starting extension %s, command %s\n", name.c_str(), command.c_str());
-#endif
+		string command = string(app) + " ";
+		for (const auto& p : paramList) {
+			command += p + " ";
 		}
+
+		dcdebug("Starting extension %s, command %s\n", name.c_str(), command.c_str());
+#endif
 
 		argv.push_back(0);
 
@@ -475,8 +553,8 @@ namespace webserver {
 			// Child process
 
 			// Redirect messages to log files
-			dup2(messageLog.getNativeHandle(), STDOUT_FILENO);
-			dup2(errorLog.getNativeHandle(), STDERR_FILENO);
+			dup2(messageLog->getNativeHandle(), STDOUT_FILENO);
+			dup2(errorLog->getNativeHandle(), STDERR_FILENO);
 
 			// Run, checkRunningState will handle errors...
 			if (execvp(aEngine.c_str(), &argv[0]) == -1) {

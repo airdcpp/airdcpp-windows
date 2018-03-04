@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 #include <web-server/stdinc.h>
 #include <web-server/JsonUtil.h>
+#include <web-server/Session.h>
 
 #include <api/base/HookApiModule.h>
 
@@ -154,7 +155,7 @@ namespace webserver {
 		WLock l(cs);
 		auto h = pendingHookActions.find(id);
 		if (h == pendingHookActions.end()) {
-			aRequest.setResponseErrorStr("No pending hook with this ID");
+			aRequest.setResponseErrorStr("No pending hook with ID " + std::to_string(id) + " (did the hook time out?)");
 			return websocketpp::http::status_code::not_found;
 		}
 
@@ -162,6 +163,14 @@ namespace webserver {
 		action.completionData = std::make_shared<HookCompletionData>(aRejected, aRequest.getRequestBody());
 		action.semaphore.signal();
 		return websocketpp::http::status_code::no_content;
+	}
+
+	int HookApiModule::getActionId() noexcept {
+		if (pendingHookIdCounter == std::numeric_limits<int>::max()) {
+			pendingHookIdCounter = 0;
+		}
+
+		return pendingHookIdCounter++;
 	}
 
 	HookApiModule::HookCompletionDataPtr HookApiModule::fireHook(const string& aSubscription, int aTimeoutSeconds, JsonCallback&& aJsonCallback) {
@@ -174,12 +183,14 @@ namespace webserver {
 #endif
 
 		// Add a pending entry
-		auto id = pendingHookIdCounter++;
+		decltype(pendingHookIdCounter) id;
 		Semaphore completionSemaphore;
 
 		{
 			WLock l(cs);
+			id = getActionId();
 			pendingHookActions.emplace(id, PendingAction({ completionSemaphore, nullptr }));
+			//dcdebug("Adding action %d for hook %s, total pending count %d\n", id, aSubscription.c_str(), pendingHookActions.size());
 		}
 
 		// Notify the subscriber
@@ -200,14 +211,15 @@ namespace webserver {
 			pendingHookActions.erase(id);
 		}
 
-#ifdef _DEBUG
-		std::chrono::duration<double> ellapsed = std::chrono::system_clock::now() - start;
-		dcdebug("Action %s completed in %f s\n", aSubscription.c_str(), ellapsed.count());
-
 		if (!completionData) {
-			dcdebug("API hook %s timed out\n", aSubscription.c_str());
-		}
+			session->reportError("Action " + aSubscription + " timed out for subscriber " + session->getUser()->getUserName() + "\n");
+			dcdebug("Action %s (id %d) timed out\n", aSubscription.c_str(), id);
+#ifdef _DEBUG
+		} else {
+			std::chrono::duration<double> ellapsed = std::chrono::system_clock::now() - start;
+			dcdebug("Action %s (id %d) completed in %f s\n", aSubscription.c_str(), id, ellapsed.count());
 #endif
+		}
 
 		return completionData;
 	}

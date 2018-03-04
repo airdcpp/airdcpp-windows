@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -43,18 +43,21 @@ namespace webserver {
 		api_return handleUpdateRoot(ApiRequest& aRequest);
 		api_return handleRemoveRoot(ApiRequest& aRequest);
 
-		void parseRoot(ShareDirectoryInfoPtr& aInfo, const json& j, bool aIsNew);
+		void parseRoot(ShareDirectoryInfoPtr& aInfo, const json& j);
 
 		void on(ShareManagerListener::RootCreated, const string& aPath) noexcept override;
 		void on(ShareManagerListener::RootRemoved, const string& aPath) noexcept override;
 		void on(ShareManagerListener::RootUpdated, const string& aPath) noexcept override;
+		void on(ShareManagerListener::RootRefreshState, const string& aPath) noexcept override;
 
 		void on(HashManagerListener::FileHashed, const string& aFilePath, HashedFile& aFileInfo) noexcept override;
 
 		typedef ListViewController<ShareDirectoryInfoPtr, ShareUtils::PROP_LAST> RootView;
 		RootView rootView;
 
+		void onRootUpdated(const string& aPath, PropertyIdSet&& aUpdatedProperties) noexcept;
 		void onRootUpdated(const ShareDirectoryInfoPtr& aInfo, PropertyIdSet&& aUpdatedProperties) noexcept;
+
 		ShareDirectoryInfoList getRoots() const noexcept;
 		ShareDirectoryInfoPtr findRoot(const string& aPath) noexcept;
 		ShareDirectoryInfoPtr getRoot(const ApiRequest& aRequest);

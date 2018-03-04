@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -53,10 +53,10 @@ namespace webserver {
 		try {
 			if (secure) {
 				auto conn = tlsServer->get_con_from_hdl(hdl);
-				return conn->get_remote_endpoint();
+				return conn->get_raw_socket().remote_endpoint().address().to_string();
 			} else {
 				auto conn = plainServer->get_con_from_hdl(hdl);
-				return conn->get_remote_endpoint();
+				return conn->get_raw_socket().remote_endpoint().address().to_string();
 			}
 		} catch (const std::exception& e) {
 			dcdebug("WebSocket::getIp failed: %s\n", e.what());
@@ -132,6 +132,7 @@ namespace webserver {
 	}
 
 	void WebSocket::close(websocketpp::close::status::value aCode, const string& aMsg) {
+		debugMessage("WebSocket::close");
 		try {
 			if (secure) {
 				tlsServer->close(hdl, aCode, aMsg);

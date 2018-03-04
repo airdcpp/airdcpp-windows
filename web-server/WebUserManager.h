@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include <airdcpp/CriticalSection.h>
 #include <airdcpp/Speaker.h>
 
+#include <web-server/FloodCounter.h>
 #include <web-server/Session.h>
 #include <web-server/Timer.h>
 #include <web-server/WebServerManagerListener.h>
@@ -37,11 +38,13 @@ namespace webserver {
 		~WebUserManager();
 
 		// Parse Authentication header from an HTTP request
-		SessionPtr parseHttpSession(const websocketpp::http::parser::request& aRequest, string& error_, const string& aIp) noexcept;
+		// Throws on errors, returns nullptr if no Authorization header is present
+		SessionPtr parseHttpSession(const string& aAuthToken, const string& aIp);
 
-		SessionPtr authenticateSession(const string& aUserName, const string& aPassword, bool aIsSecure, uint64_t aMaxInactivityMinutes, const string& aIP) noexcept;
-		SessionPtr authenticateBasicHttp(const string& aAuthString, const string& aIP) noexcept;
-		SessionPtr createExtensionSession(const string& aExtensionName);
+		// Throws on errors
+		SessionPtr authenticateSession(const string& aUserName, const string& aPassword, Session::SessionType aType, uint64_t aMaxInactivityMinutes, const string& aIP);
+
+		SessionPtr createExtensionSession(const string& aExtensionName) noexcept;
 
 		SessionList getSessions() const noexcept;
 		SessionPtr getSession(const string& aAuthToken) const noexcept;
@@ -63,6 +66,8 @@ namespace webserver {
 
 		size_t getUserSessionCount() const noexcept;
 	private:
+		FloodCounter authFloodCounter;
+
 		mutable SharedMutex cs;
 
 		std::map<std::string, WebUserPtr> users;
@@ -71,13 +76,20 @@ namespace webserver {
 		std::map<LocalSessionId, SessionPtr> sessionsLocalId;
 
 		void checkExpiredSessions() noexcept;
+		void resetSocketSession(const WebSocketPtr& aSocket) noexcept;
 		void removeSession(const SessionPtr& aSession, bool aTimedOut) noexcept;
 		TimerPtr expirationTimer;
 
-		SessionPtr createSession(const WebUserPtr& aUser, const string& aSessionToken, Session::SessionType aType, uint64_t aMaxInactivityMinutes, const string& aIP);
+		// Throws on errors
+		SessionPtr authenticateSession(const string& aUserName, const string& aPassword, Session::SessionType aType, uint64_t aMaxInactivityMinutes, const string& aIP, const string& aSessionToken);
+
+		SessionPtr createSession(const WebUserPtr& aUser, const string& aSessionToken, Session::SessionType aType, uint64_t aMaxInactivityMinutes, const string& aIP) noexcept;
 
 		void on(WebServerManagerListener::Started) noexcept override;
+		void on(WebServerManagerListener::Stopping) noexcept override;
 		void on(WebServerManagerListener::Stopped) noexcept override;
+		void on(WebServerManagerListener::SocketDisconnected, const WebSocketPtr& aSocket) noexcept override;
+
 		void on(WebServerManagerListener::LoadSettings, SimpleXML& aXml) noexcept override;
 		void on(WebServerManagerListener::SaveSettings, SimpleXML& aXml) noexcept override;
 

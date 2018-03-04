@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -67,7 +67,7 @@ namespace webserver {
 	api_return ExtensionInfo::handleStartExtension(ApiRequest& aRequest) {
 		try {
 			auto server = aRequest.getSession()->getServer();
-			extension->start(server->getExtensionManager().getStartCommand(extension), server);
+			extension->start(server->getExtensionManager().getStartCommand(extension->getEngines()), server);
 		} catch (const Exception& e) {
 			aRequest.setResponseErrorStr(e.what());
 			return websocketpp::http::status_code::internal_server_error;
@@ -97,6 +97,11 @@ namespace webserver {
 			return websocketpp::http::status_code::conflict;
 		}
 
+		if (extension->getSession() != extension->getSession()) {
+			aRequest.setResponseErrorStr("Setting definitions may only be posted by the owning session");
+			return websocketpp::http::status_code::conflict;
+		}
+
 		auto defs = SettingUtils::deserializeDefinitions(aRequest.getRequestBody());
 		extension->swapSettingDefinitions(defs);
 		return websocketpp::http::status_code::no_content;
@@ -112,10 +117,10 @@ namespace webserver {
 				JsonUtil::throwError(elem.key(), JsonUtil::ERROR_INVALID, "Setting not found");
 			}
 
-			settings[elem.key()] = SettingUtils::validateValue(*setting, elem.value());
+			settings[elem.key()] = SettingUtils::validateValue(elem.value(), *setting);
 		}
 
-		extension->setSettingValues(aRequest.getRequestBody());
+		extension->setSettingValues(settings);
 		return websocketpp::http::status_code::no_content;
 	}
 
@@ -166,7 +171,7 @@ namespace webserver {
 		});
 	}
 
-	void ExtensionInfo::on(ExtensionListener::ExtensionStopped) noexcept {
+	void ExtensionInfo::on(ExtensionListener::ExtensionStopped, bool) noexcept {
 		onUpdated([&] {
 			return json({
 				{ "running", extension->isRunning() }

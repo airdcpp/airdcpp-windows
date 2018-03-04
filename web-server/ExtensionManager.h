@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -44,10 +44,10 @@ namespace webserver {
 		// Download extension from the given URL and install it
 		// SHA1 checksum is optional
 		// Returns false if the extension is being downloaded already
-		bool downloadExtension(const string& aUrl, const string& aSha1) noexcept;
+		bool downloadExtension(const string& aInstallId, const string& aUrl, const string& aSha1) noexcept;
 
 		// Install extensions from the given tarball
-		void installLocalExtension(const string& aPath) noexcept;
+		void installLocalExtension(const string& aInstallId, const string& aPath) noexcept;
 
 		// Register non-local extension
 		ExtensionPtr registerRemoteExtension(const SessionPtr& aSession, const json& aPackageJson);
@@ -59,22 +59,24 @@ namespace webserver {
 		ExtensionPtr getExtension(const string& aName) const noexcept;
 		ExtensionList getExtensions() const noexcept;
 
-		bool startExtension(const ExtensionPtr& aExtension) noexcept;
-		bool stopExtension(const ExtensionPtr& aExtension) noexcept;
-
 		typedef map<string, string> EngineMap;
 
 		// Get the engine start command for extension
 		// Throws on errors
-		string getStartCommand(const ExtensionPtr& aExtension) const;
-	private:
+		string getStartCommand(const StringList& aEngines) const;
+
+		EngineMap getEngines() const noexcept;
+
 		// Parses the engine command param (command1;command2;...) and tests each token for an existing application
 		static string selectEngineCommand(const string& aEngineCommands) noexcept;
+	private:
+		void onExtensionFailed(const Extension* aExtension, uint32_t aExitCode) noexcept;
+		bool startExtensionImpl(const ExtensionPtr& aExtension) noexcept;
 
 		EngineMap engines;
 
-		void onExtensionDownloadCompleted(const string& aUrl, const string& aSha1) noexcept;
-		void failInstallation(const string& aMessage, const string& aException) noexcept;
+		void onExtensionDownloadCompleted(const string& aInstallId, const string& aUrl, const string& aSha1) noexcept;
+		void failInstallation(const string& aInstallId, const string& aMessage, const string& aException) noexcept;
 
 		typedef map<string, shared_ptr<HttpDownload>> HttpDownloadMap;
 		HttpDownloadMap httpDownloads;
@@ -91,6 +93,7 @@ namespace webserver {
 
 		void on(WebServerManagerListener::Started) noexcept override;
 		void on(WebServerManagerListener::Stopping) noexcept override;
+		void on(WebServerManagerListener::Stopped) noexcept override;
 		void on(WebServerManagerListener::SocketDisconnected, const WebSocketPtr& aSocket) noexcept override;
 	};
 }

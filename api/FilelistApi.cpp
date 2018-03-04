@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -45,7 +45,6 @@ namespace webserver {
 
 		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_POST,	(),													FilelistApi::handlePostList);
 		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_POST,	(EXACT_PARAM("self")),								FilelistApi::handleOwnList);
-		METHOD_HANDLER(Access::FILELISTS_EDIT,	METHOD_DELETE,	(CID_PARAM),										FilelistApi::handleDeleteList);
 
 		METHOD_HANDLER(Access::DOWNLOAD,		METHOD_GET,		(EXACT_PARAM("directory_downloads")),				FilelistApi::handleGetDirectoryDownloads);
 		METHOD_HANDLER(Access::DOWNLOAD,		METHOD_POST,	(EXACT_PARAM("directory_downloads")),				FilelistApi::handlePostDirectoryDownload);
@@ -71,11 +70,11 @@ namespace webserver {
 		const auto& reqJson = aRequest.getRequestBody();
 
 		auto user = Deserializer::deserializeHintedUser(reqJson);
-		auto directory = Util::toNmdcFile(JsonUtil::getOptionalFieldDefault<string>("directory", reqJson, "/", false));
+		auto directory = JsonUtil::getOptionalFieldDefault<string>("directory", reqJson, ADC_ROOT_STR);
 
 		DirectoryListingPtr dl = nullptr;
 		try {
-			dl = DirectoryListingManager::getInstance()->createList(user, QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_CLIENT_VIEW, directory);
+			dl = DirectoryListingManager::getInstance()->openRemoteFileList(user, QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_CLIENT_VIEW, directory);
 		} catch (const Exception& e) {
 			aRequest.setResponseErrorStr(e.getError());
 			return websocketpp::http::status_code::bad_request;
@@ -94,10 +93,10 @@ namespace webserver {
 		const auto& reqJson = aRequest.getRequestBody();
 
 		auto user = Deserializer::deserializeHintedUser(reqJson);
-		auto directory = Util::toNmdcFile(JsonUtil::getOptionalFieldDefault<string>("directory", reqJson, "/", false));
+		auto directory = JsonUtil::getOptionalFieldDefault<string>("directory", reqJson, ADC_ROOT_STR);
 
 		QueueItem::Flags flags = QueueItem::FLAG_MATCH_QUEUE;
-		if (directory != NMDC_ROOT_STR) {
+		if (directory != ADC_ROOT_STR) {
 			flags.setFlag(QueueItem::FLAG_RECURSIVE_LIST);
 			flags.setFlag(QueueItem::FLAG_PARTIAL_LIST);
 		}
@@ -115,12 +114,16 @@ namespace webserver {
 	api_return FilelistApi::handleOwnList(ApiRequest& aRequest) {
 		auto profile = Deserializer::deserializeShareProfile(aRequest.getRequestBody());
 		auto dl = DirectoryListingManager::getInstance()->openOwnList(profile);
+		if (!dl) {
+			aRequest.setResponseErrorStr("Own filelist is open already");
+			return websocketpp::http::status_code::conflict;
+		}
 
 		aRequest.setResponseBody(serializeList(dl));
 		return websocketpp::http::status_code::ok;
 	}
 
-	api_return FilelistApi::handleDeleteList(ApiRequest& aRequest) {
+	api_return FilelistApi::handleDeleteSubmodule(ApiRequest& aRequest) {
 		auto list = getSubModule(aRequest);
 
 		DirectoryListingManager::getInstance()->removeList(list->getList()->getUser());
@@ -229,7 +232,7 @@ namespace webserver {
 		auto user = Deserializer::deserializeHintedUser(reqJson);
 
 		try {
-			auto directoryDownload = DirectoryListingManager::getInstance()->addDirectoryDownload(user, targetBundleName, Util::toNmdcFile(listPath), targetDirectory, prio);
+			auto directoryDownload = DirectoryListingManager::getInstance()->addDirectoryDownload(user, targetBundleName, listPath, targetDirectory, prio);
 			aRequest.setResponseBody(Serializer::serializeDirectoryDownload(directoryDownload));
 		} catch (const Exception& e) {
 			aRequest.setResponseErrorStr(e.getError());

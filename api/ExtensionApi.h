@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -40,10 +40,16 @@ namespace webserver {
 
 		api_return handleDownloadExtension(ApiRequest& aRequest);
 		api_return handlePostExtension(ApiRequest& aRequest);
-		api_return handleRemoveExtension(ApiRequest& aRequest);
+		api_return handleDeleteSubmodule(ApiRequest& aRequest) override;
+
+		api_return handleGetEngineStatuses(ApiRequest& aRequest);
 
 		void on(ExtensionManagerListener::ExtensionAdded, const ExtensionPtr& aExtension) noexcept override;
 		void on(ExtensionManagerListener::ExtensionRemoved, const ExtensionPtr& aExtension) noexcept override;
+
+		void on(ExtensionManagerListener::InstallationStarted, const string& aInstallId) noexcept override;
+		void on(ExtensionManagerListener::InstallationSucceeded, const string& aInstallId) noexcept override;
+		void on(ExtensionManagerListener::InstallationFailed, const string& aInstallId, const string& aError) noexcept override;
 
 		ExtensionManager& em;
 	};

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@ namespace webserver {
 		api_return handlePostStatus(ApiRequest& aRequest);
 
 		api_return handleConnect(ApiRequest& aRequest);
-		api_return handleDisconnect(ApiRequest& aRequest);
+		api_return handleDeleteSubmodule(ApiRequest& aRequest) override;
 		api_return handleGetStats(ApiRequest& aRequest);
 
 		api_return handleFindByUrl(ApiRequest& aRequest);

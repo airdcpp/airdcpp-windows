@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -46,6 +46,9 @@ namespace webserver {
 			// Get module
 			METHOD_HANDLER(aAccess, METHOD_GET, (aParamMatcher), Type::handleGetSubmodule);
 
+			// Delete module
+			METHOD_HANDLER(aAccess, METHOD_DELETE, (aParamMatcher), Type::handleDeleteSubmodule);
+
 			// List modules
 			METHOD_HANDLER(aAccess, METHOD_GET, (), Type::handleGetSubmodules);
 
@@ -64,12 +67,19 @@ namespace webserver {
 			// There can't be references to shared child pointers from other threads because no other requests 
 			// can be active at this point (otherwise we wouldn't be destoying the session)
 
-			WLock l(cs);
-			dcassert(boost::find_if(subModules | map_values, [](const typename ItemType::Ptr& subModule) {  
-				return !subModule.unique();
-			}).base() == subModules.end());
+			// Run the destructors outside of WLock
+			SubModuleMap subModulesCopy;
 
-			subModules.clear();
+			{
+				WLock l(cs);
+				dcassert(boost::find_if(subModules | map_values, [](const typename ItemType::Ptr& subModule) {
+					return !subModule.unique();
+				}).base() == subModules.end());
+
+				subModules.swap(subModulesCopy);
+			}
+
+			subModulesCopy.clear();
 		}
 
 		void createSubscription(const string&) noexcept override {
@@ -108,23 +118,6 @@ namespace webserver {
 
 			return sub;
 		}
-
-		api_return handleGetSubmodules(ApiRequest& aRequest) {
-			auto retJson = json::array();
-			forEachSubModule([&](const ItemType& aInfo) {
-				retJson.push_back(childSerializeF(aInfo));
-			});
-
-			aRequest.setResponseBody(retJson);
-			return websocketpp::http::status_code::ok;
-		}
-
-		api_return handleGetSubmodule(ApiRequest& aRequest) {
-			auto info = getSubModule(aRequest);
-
-			aRequest.setResponseBody(childSerializeF(*info.get()));
-			return websocketpp::http::status_code::ok;
-		}
 	protected:
 		mutable SharedMutex cs;
 
@@ -145,11 +138,36 @@ namespace webserver {
 		}
 
 		void removeSubModule(IdType aId) {
-			WLock l(cs);
-			subModules.erase(aId);
+			// Avoid destructing the module inside WLock
+			auto subModule = findSubModule(aId);
+
+			{
+				WLock l(cs);
+				subModules.erase(aId);
+			}
 		}
+
+		api_return handleGetSubmodules(ApiRequest& aRequest) {
+			auto retJson = json::array();
+			forEachSubModule([&](const ItemType& aInfo) {
+				retJson.push_back(childSerializeF(aInfo));
+			});
+
+			aRequest.setResponseBody(retJson);
+			return websocketpp::http::status_code::ok;
+		}
+
+		api_return handleGetSubmodule(ApiRequest& aRequest) {
+			auto info = getSubModule(aRequest);
+
+			aRequest.setResponseBody(childSerializeF(*info.get()));
+			return websocketpp::http::status_code::ok;
+		}
+
+		virtual api_return handleDeleteSubmodule(ApiRequest& aRequest) = 0;
 	private:
-		map<IdType, typename ItemType::Ptr> subModules;
+		typedef map<IdType, typename ItemType::Ptr> SubModuleMap;
+		SubModuleMap subModules;
 
 		const IdConvertF idConvertF;
 		const ChildSerializeF childSerializeF;

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2012-2017 AirDC++ Project
+* Copyright (C) 2012-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -31,8 +31,16 @@ namespace webserver {
 		typedef X<0> ExtensionAdded;
 		typedef X<1> ExtensionRemoved;
 
+		typedef X<2> InstallationStarted;
+		typedef X<3> InstallationSucceeded;
+		typedef X<4> InstallationFailed;
+
 		virtual void on(ExtensionAdded, const ExtensionPtr&) noexcept { }
 		virtual void on(ExtensionRemoved, const ExtensionPtr&) noexcept { }
+
+		virtual void on(InstallationStarted, const string&) noexcept { }
+		virtual void on(InstallationSucceeded, const string&) noexcept { }
+		virtual void on(InstallationFailed, const string&, const string&) noexcept { }
 	};
 
 }

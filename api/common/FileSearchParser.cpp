@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -42,12 +42,12 @@ namespace webserver {
 	}
 
 	void FileSearchParser::parseMatcher(const json& aJson, const SearchPtr& aSearch) {
-		aSearch->query = JsonUtil::getOptionalFieldDefault<string>("pattern", aJson, Util::emptyString, false);
+		aSearch->query = JsonUtil::getOptionalFieldDefault<string>("pattern", aJson, Util::emptyString);
 
 		// Filetype
 		aSearch->fileType = aSearch->query.size() == 39 && Encoder::isBase32(aSearch->query.c_str()) ? Search::TYPE_TTH : Search::TYPE_ANY;
 
-		auto fileTypeStr = JsonUtil::getOptionalField<string>("file_type", aJson, false);
+		auto fileTypeStr = JsonUtil::getOptionalField<string>("file_type", aJson);
 		if (fileTypeStr) {
 			try {
 				SearchManager::getInstance()->getSearchType(parseFileType(*fileTypeStr), aSearch->fileType, aSearch->exts, true);
@@ -90,12 +90,12 @@ namespace webserver {
 		aSearch->excluded = JsonUtil::getOptionalFieldDefault<StringList>("excluded", aJson, StringList());
 
 		// Match type
-		auto matchTypeStr = JsonUtil::getOptionalFieldDefault<string>("match_type", aJson, "path_partial", false);
+		auto matchTypeStr = JsonUtil::getOptionalFieldDefault<string>("match_type", aJson, "path_partial");
 		aSearch->matchType = parseMatchType(matchTypeStr);
 	}
 
 	void FileSearchParser::parseOptions(const json& aJson, const SearchPtr& aSearch) {
-		aSearch->path = JsonUtil::getOptionalFieldDefault<string>("path", aJson, "/");
+		aSearch->path = JsonUtil::getOptionalFieldDefault<string>("path", aJson, ADC_ROOT_STR);
 		aSearch->maxResults = JsonUtil::getOptionalFieldDefault<int>("max_results", aJson, 5);
 		aSearch->returnParents = JsonUtil::getOptionalFieldDefault<bool>("return_parents", aJson, false);
 		aSearch->requireReply = true;

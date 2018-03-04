@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 
 #include <airdcpp/AirUtil.h>
 #include <airdcpp/CryptoManager.h>
+#include <airdcpp/LogManager.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/SimpleXML.h>
 #include <airdcpp/TimerManager.h>
@@ -41,10 +42,10 @@
 
 namespace webserver {
 	vector<ServerSettingItem> WebServerSettings::settings = {
-		{ "web_plain_port", "Port", 5600, ApiSettingItem::TYPE_NUMBER, false, { 1, 65535 } },
+		{ "web_plain_port", "Port", 5600, ApiSettingItem::TYPE_NUMBER, false, { 0, 65535 } },
 		{ "web_plain_bind_address", "Bind address", "", ApiSettingItem::TYPE_STRING, true },
 
-		{ "web_tls_port", "Port", 5601, ApiSettingItem::TYPE_NUMBER, false, { 1, 65535 } },
+		{ "web_tls_port", "Port", 5601, ApiSettingItem::TYPE_NUMBER, false, { 0, 65535 } },
 		{ "web_tls_bind_address", "Bind address", "", ApiSettingItem::TYPE_STRING, true },
 
 		{ "web_tls_certificate_path", "Certificate path", "", ApiSettingItem::TYPE_FILE_PATH, true },
@@ -52,9 +53,11 @@ namespace webserver {
 
 		{ "web_server_threads", "Server threads", 4, ApiSettingItem::TYPE_NUMBER, false, { 1, 100 } },
 
-		{ "default_idle_timeout", "Default session inactivity timeout (minutes)", 20, ApiSettingItem::TYPE_NUMBER, false },
+		{ "default_idle_timeout", "Default session inactivity timeout (minutes)", 20, ApiSettingItem::TYPE_NUMBER, false, { 0, MAX_INT_VALUE } },
 		{ "ping_interval", "Socket ping interval (seconds)", 30, ApiSettingItem::TYPE_NUMBER, false, { 1, 10000 } },
 		{ "ping_timeout", "Socket ping timeout (seconds)", 10, ApiSettingItem::TYPE_NUMBER, false, { 1, 10000 } },
+
+		{ "extensions_debug_mode", "Run extensions in debug mode", false, ApiSettingItem::TYPE_BOOLEAN, false },
 	};
 
 	using namespace dcpp;
@@ -65,17 +68,16 @@ namespace webserver {
 
 		fileServer.setResourcePath(Util::getPath(Util::PATH_RESOURCES) + "web-resources" + PATH_SEPARATOR);
 
-		userManager = unique_ptr<WebUserManager>(new WebUserManager(this));
-#ifdef _DEBUG
-		extManager = unique_ptr<ExtensionManager>(new ExtensionManager(this));
-#endif
+		extManager = make_unique<ExtensionManager>(this);
+		userManager = make_unique<WebUserManager>(this);
+
 		ios.stop(); //Prevent io service from running until we load
 	}
 
 	WebServerManager::~WebServerManager() {
 		// Let them remove the listeners
-		userManager.reset();
 		extManager.reset();
+		userManager.reset();
 	}
 
 	string WebServerManager::getConfigPath() const noexcept {
@@ -278,7 +280,10 @@ namespace webserver {
 	}
 
 	void WebServerManager::onData(const string& aData, TransportType aType, Direction aDirection, const string& aIP) noexcept {
-		fire(WebServerManagerListener::Data(), aData, aType, aDirection, aIP);
+		// Avoid possible deadlocks due to possible simultaneous disconnected/server state listener events
+		addAsyncTask([=] {
+			fire(WebServerManagerListener::Data(), aData, aType, aDirection, aIP);
+		});
 	}
 
 	// For debugging only
@@ -332,7 +337,9 @@ namespace webserver {
 			ctx->set_options(boost::asio::ssl::context::default_workarounds |
 				boost::asio::ssl::context::no_sslv2 |
 				boost::asio::ssl::context::no_sslv3 |
-				boost::asio::ssl::context::single_dh_use);
+				boost::asio::ssl::context::single_dh_use |
+				boost::asio::ssl::context::no_compression
+			);
 
 			const auto customCert = WEBCFG(TLS_CERT_PATH).str();
 			const auto customKey = WEBCFG(TLS_CERT_KEY_PATH).str();
@@ -391,24 +398,6 @@ namespace webserver {
 		fire(WebServerManagerListener::Stopped());
 	}
 
-	void WebServerManager::logout(LocalSessionId aSessionId) noexcept {
-		vector<WebSocketPtr> sessionSockets;
-
-		{
-			RLock l(cs);
-			boost::algorithm::copy_if(sockets | map_values, back_inserter(sessionSockets),
-				[&](const WebSocketPtr& aSocket) {
-					return aSocket->getSession() && aSocket->getSession()->getId() == aSessionId;
-				}
-			);
-		}
-
-		for (const auto& socket : sessionSockets) {
-			userManager->logout(socket->getSession());
-			socket->setSession(nullptr);
-		}
-	}
-
 	WebSocketPtr WebServerManager::getSocket(LocalSessionId aSessionToken) noexcept {
 		RLock l(cs);
 		auto i = find_if(sockets | map_values, [&](const WebSocketPtr& s) {
@@ -450,12 +439,12 @@ namespace webserver {
 			sockets.erase(s);
 		}
 
-		dcdebug("Close socket: %s\n", socket->getSession() ? socket->getSession()->getAuthToken().c_str() : "(no session)");
-		if (socket->getSession()) {
-			socket->getSession()->onSocketDisconnected();
-		}
-
+		dcdebug("Socket disconnected: %s\n", socket->getSession() ? socket->getSession()->getAuthToken().c_str() : "(no session)");
 		fire(WebServerManagerListener::SocketDisconnected(), socket);
+	}
+
+	void WebServerManager::log(const string& aMsg, LogMessage::Severity aSeverity) const noexcept {
+		LogManager::getInstance()->message(aMsg, aSeverity);
 	}
 
 	bool WebServerManager::hasValidConfig() const noexcept {
@@ -475,6 +464,13 @@ namespace webserver {
 					if (xml.findChild("Threads")) {
 						xml.stepIn();
 						WEBCFG(SERVER_THREADS).setValue(max(Util::toInt(xml.getData()), 1));
+						xml.stepOut();
+					}
+					xml.resetCurrentChild();
+
+					if (xml.findChild("ExtensionsDebugMode")) {
+						xml.stepIn();
+						WEBCFG(EXTENSIONS_DEBUG_MODE).setValue(Util::toInt(xml.getData()) > 0 ? true : false);
 						xml.stepOut();
 					}
 					xml.resetCurrentChild();
@@ -527,6 +523,13 @@ namespace webserver {
 
 				xml.setData(Util::toString(WEBCFG(SERVER_THREADS).num()));
 
+				xml.stepOut();
+			}
+
+			if (!WEBCFG(EXTENSIONS_DEBUG_MODE).isDefault()) {
+				xml.addTag("ExtensionsDebugMode");
+				xml.stepIn();
+				xml.setData(Util::toString(WEBCFG(EXTENSIONS_DEBUG_MODE).boolean()));
 				xml.stepOut();
 			}
 

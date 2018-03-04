@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -71,12 +71,12 @@ namespace webserver {
 	}
 
 	void WebUserApi::parseUser(WebUserPtr& aUser, const json& j, bool aIsNew) {
-		auto password = JsonUtil::getOptionalField<string>("password", j, false, aIsNew);
+		auto password = JsonUtil::getOptionalField<string>("password", j, aIsNew);
 		if (password) {
 			aUser->setPassword(*password);
 		}
 
-		auto permissions = JsonUtil::getOptionalField<StringList>("permissions", j, false, false);
+		auto permissions = JsonUtil::getOptionalField<StringList>("permissions", j);
 		if (permissions) {
 			// Only validate added profiles profiles
 			aUser->setPermissions(*permissions);

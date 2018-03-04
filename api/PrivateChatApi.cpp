@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -75,7 +75,6 @@ namespace webserver {
 			ClientManager::getInstance()->outgoingPrivateMessageHook.removeSubscriber(aId);
 		});
 
-		METHOD_HANDLER(Access::PRIVATE_CHAT_EDIT,	METHOD_DELETE,	(CID_PARAM),					PrivateChatApi::handleDeleteChat);
 		METHOD_HANDLER(Access::PRIVATE_CHAT_EDIT,	METHOD_POST,	(),								PrivateChatApi::handlePostChat);
 
 		METHOD_HANDLER(Access::PRIVATE_CHAT_SEND,	METHOD_POST,	(EXACT_PARAM("chat_message")),	PrivateChatApi::handlePostMessage);
@@ -102,7 +101,7 @@ namespace webserver {
 		return websocketpp::http::status_code::ok;
 	}
 
-	api_return PrivateChatApi::handleDeleteChat(ApiRequest& aRequest) {
+	api_return PrivateChatApi::handleDeleteSubmodule(ApiRequest& aRequest) {
 		auto chat = getSubModule(aRequest);
 
 		PrivateChatManager::getInstance()->removeChat(chat->getChat()->getUser());

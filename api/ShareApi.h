@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -21,17 +21,20 @@
 
 #include <web-server/stdinc.h>
 
-#include <api/base/ApiModule.h>
+#include <api/base/HookApiModule.h>
 
 #include <airdcpp/typedefs.h>
 #include <airdcpp/ShareManagerListener.h>
 
 namespace webserver {
-	class ShareApi : public SubscribableApiModule, private ShareManagerListener {
+	class ShareApi : public HookApiModule, private ShareManagerListener {
 	public:
 		ShareApi(Session* aSession);
 		~ShareApi();
 	private:
+		ActionHookRejectionPtr fileValidationHook(const string& aPath, int64_t aSize, const HookRejectionGetter& aErrorGetter) noexcept;
+		ActionHookRejectionPtr directoryValidationHook(const string& aPath, const HookRejectionGetter& aErrorGetter) noexcept;
+
 		api_return handleRefreshShare(ApiRequest& aRequest);
 		api_return handleRefreshPaths(ApiRequest& aRequest);
 		api_return handleRefreshVirtual(ApiRequest& aRequest);
@@ -45,6 +48,7 @@ namespace webserver {
 
 		api_return handleGetGroupedRootPaths(ApiRequest& aRequest);
 		api_return handleFindDupePaths(ApiRequest& aRequest);
+		api_return handleValidatePath(ApiRequest& aRequest);
 
 		void on(ShareManagerListener::RefreshQueued, uint8_t, const RefreshPathList& aPaths) noexcept override;
 		void on(ShareManagerListener::RefreshCompleted, uint8_t, const RefreshPathList& aPaths) noexcept override;

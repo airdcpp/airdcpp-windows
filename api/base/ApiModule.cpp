@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -35,12 +35,10 @@ namespace webserver {
 
 	optional<ApiRequest::NamedParamMap> ApiModule::RequestHandler::matchParams(const ApiRequest::ParamList& aRequestParams) const noexcept {
 		if (method == METHOD_FORWARD) {
-			// The request must contain more params than the forwarder has
-			// (there must be at least one parameter left for the next handler)
-			if (aRequestParams.size() <= params.size()) {
+			if (aRequestParams.size() < params.size()) {
 				return boost::none;
 			}
-		} else if (aRequestParams.size() != params.size()) {
+		} else if (method != METHOD_FORWARD && aRequestParams.size() != params.size()) {
 			return boost::none;
 		}
 

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -571,10 +571,10 @@ namespace webserver {
 
 
 				auto startIter = matchingItems.begin();
-				advance(startIter, newStart_);
+				std::advance(startIter, newStart_);
 
 				auto endIter = startIter;
-				advance(endIter, count);
+				std::advance(endIter, count);
 
 				std::copy(startIter, endIter, back_inserter(nextViewportItems_));
 				currentItemsCopy = currentViewportItems;

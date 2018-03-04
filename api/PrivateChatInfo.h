@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -53,6 +53,7 @@ namespace webserver {
 		void init() noexcept override;
 		CID getId() const noexcept override;
 	private:
+		api_return handleUpdateSession(ApiRequest& aRequest);
 		api_return handleDisconnectCCPM(ApiRequest& aRequest);
 		api_return handleConnectCCPM(ApiRequest& aRequest);
 

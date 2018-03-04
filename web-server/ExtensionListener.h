@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2012-2017 AirDC++ Project
+* Copyright (C) 2012-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ namespace webserver {
 
 
 		virtual void on(ExtensionStarted) noexcept { }
-		virtual void on(ExtensionStopped) noexcept { }
+		virtual void on(ExtensionStopped, bool /*aFailed*/) noexcept { }
 
 		virtual void on(SettingValuesUpdated, const SettingValueMap&) noexcept { }
 		virtual void on(SettingDefinitionsUpdated) noexcept { }

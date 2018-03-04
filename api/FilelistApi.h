@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ namespace webserver {
 		void addList(const DirectoryListingPtr& aList) noexcept;
 
 		api_return handlePostList(ApiRequest& aRequest);
-		api_return handleDeleteList(ApiRequest& aRequest);
+		api_return handleDeleteSubmodule(ApiRequest& aRequest) override;
 		api_return handleOwnList(ApiRequest& aRequest);
 
 		api_return handlePostDirectoryDownload(ApiRequest& aRequest);

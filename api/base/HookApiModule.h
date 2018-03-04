@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -103,6 +103,8 @@ namespace webserver {
 
 		int pendingHookIdCounter = 1;
 		mutable SharedMutex cs;
+
+		int getActionId() noexcept;
 	};
 
 	typedef std::unique_ptr<ApiModule> HandlerPtr;

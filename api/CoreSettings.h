@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -43,9 +43,9 @@ namespace webserver {
 		{ "download_directory", SettingsManager::DOWNLOAD_DIRECTORY, ResourceManager::SETTINGS_DOWNLOAD_DIRECTORY, ApiSettingItem::TYPE_DIRECTORY_PATH },
 		{ "segmented_downloads", SettingsManager::MULTI_CHUNK, ResourceManager::SETTINGS_SEGMENTED_DOWNLOADS },
 		{ "min_segment_size", SettingsManager::MIN_SEGMENT_SIZE, ResourceManager::SETTINGS_AIRDOWNLOADS_SEGMENT_SIZE, ApiSettingItem::TYPE_LAST, ResourceManager::Strings::KiB },
-		{ "new_segment_min_speed", SettingsManager::DONT_BEGIN_SEGMENT_SPEED, ResourceManager::DONT_ADD_SEGMENT_TEXT, ApiSettingItem::TYPE_LAST, ResourceManager::Strings::KiBS },
 		{ "allow_slow_overlap", SettingsManager::OVERLAP_SLOW_SOURCES, ResourceManager::SETTINGS_OVERLAP_SLOW_SOURCES },
 		{ "finished_remove_exit", SettingsManager::REMOVE_FINISHED_BUNDLES, ResourceManager::BUNDLES_REMOVE_EXIT },
+		{ "use_partial_sharing", SettingsManager::USE_PARTIAL_SHARING, ResourceManager::PARTIAL_SHARING },
 
 		//{ ResourceManager::SETTINGS_SKIPPING_OPTIONS },
 		{ "dont_download_shared", SettingsManager::DONT_DL_ALREADY_SHARED, ResourceManager::SETTINGS_DONT_DL_ALREADY_SHARED },
@@ -65,7 +65,7 @@ namespace webserver {
 		{ "http_proxy", SettingsManager::HTTP_PROXY, ResourceManager::SETTINGS_HTTP_PROXY },
 		{ "outgoing_mode", SettingsManager::OUTGOING_CONNECTIONS, ResourceManager::SETTINGS_OUTGOING },
 		{ "socks_server", SettingsManager::SOCKS_SERVER, ResourceManager::SETTINGS_SOCKS5_IP },
-		{ "socks_user", SettingsManager::SOCKS_USER, ResourceManager::SETTINGS_SOCKS5_RESOLVE },
+		{ "socks_user", SettingsManager::SOCKS_USER, ResourceManager::SETTINGS_SOCKS5_USERNAME },
 		{ "socks_password", SettingsManager::SOCKS_PASSWORD, ResourceManager::PASSWORD },
 		{ "socks_port", SettingsManager::SOCKS_PORT, ResourceManager::PORT },
 		{ "socks_resolve", SettingsManager::SOCKS_RESOLVE, ResourceManager::SETTINGS_SOCKS5_RESOLVE },
@@ -126,7 +126,7 @@ namespace webserver {
 		{ "limit_alt_start_hour", SettingsManager::BANDWIDTH_LIMIT_START, ResourceManager::SET_ALTERNATE_LIMITING },
 		{ "limit_alt_end_hour", SettingsManager::BANDWIDTH_LIMIT_END, ResourceManager::SET_ALTERNATE_LIMITING },
 		{ "limit_ul_alt_max", SettingsManager::MAX_UPLOAD_SPEED_ALTERNATE, ResourceManager::UPLOAD_LIMIT, ApiSettingItem::TYPE_LAST, ResourceManager::Strings::KiBS },
-		{ "limit_dl_alt_max", SettingsManager::MAX_UPLOAD_SPEED_ALTERNATE, ResourceManager::DOWNLOAD_LIMIT, ApiSettingItem::TYPE_LAST, ResourceManager::Strings::KiBS },
+		{ "limit_dl_alt_max", SettingsManager::MAX_DOWNLOAD_SPEED_ALTERNATE, ResourceManager::DOWNLOAD_LIMIT, ApiSettingItem::TYPE_LAST, ResourceManager::Strings::KiBS },
 		{ "limit_use_with_auto_values", SettingsManager::AUTO_DETECTION_USE_LIMITED, ResourceManager::DOWNLOAD_LIMIT },
 
 		//{ ResourceManager::HASHING_OPTIONS },
@@ -177,7 +177,7 @@ namespace webserver {
 		{ "report_downloads", SettingsManager::SYSTEM_SHOW_DOWNLOADS, ResourceManager::SYSTEM_SHOW_FINISHED_DOWNLOADS },
 		{ "report_search_alternates", SettingsManager::REPORT_ALTERNATES, ResourceManager::REPORT_ALTERNATES },
 		{ "report_added_sources", SettingsManager::REPORT_ADDED_SOURCES, ResourceManager::SETTINGS_REPORT_ADDED_SOURCES },
-		{ "report_share_skiplist", SettingsManager::REPORT_SKIPLIST, ResourceManager::REPORT_SKIPLIST },
+		{ "report_blocked_share", SettingsManager::REPORT_BLOCKED_SHARE, ResourceManager::REPORT_BLOCKED_SHARE },
 		{ "report_hashed_files", SettingsManager::LOG_HASHING, ResourceManager::LOG_HASHING },
 		{ "report_scheduled_refreshes", SettingsManager::LOG_SCHEDULED_REFRESHES, ResourceManager::SETTINGS_LOG_SCHEDULED_REFRESHES },
 		{ "report_filelist_dupes", SettingsManager::FL_REPORT_FILE_DUPES, ResourceManager::REPORT_DUPLICATE_FILES },

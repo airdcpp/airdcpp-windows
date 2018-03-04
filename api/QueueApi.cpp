@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -164,9 +164,9 @@ namespace webserver {
 
 		auto ret = json::array();
 
-		auto path = JsonUtil::getOptionalField<string>("path", reqJson, false);
+		auto path = JsonUtil::getOptionalField<string>("path", reqJson);
 		if (path) {
-			ret = QueueManager::getInstance()->getNmdcDirPaths(Util::toNmdcFile(*path));
+			ret = QueueManager::getInstance()->getAdcDirectoryPaths(*path);
 		} else {
 			auto tth = Deserializer::deserializeTTH(reqJson);
 			ret = QueueManager::getInstance()->getTargets(tth);

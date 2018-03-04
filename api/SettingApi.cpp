@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -95,14 +95,18 @@ namespace webserver {
 	api_return SettingApi::handleSetValues(ApiRequest& aRequest) {
 		SettingHolder h(nullptr);
 
+		bool hasSet = false;
 		for (const auto& elem : json::iterator_wrapper(aRequest.getRequestBody())) {
 			auto setting = getSettingItem(elem.key());
 			if (!setting) {
 				JsonUtil::throwError(elem.key(), JsonUtil::ERROR_INVALID, "Setting not found");
 			}
 
-			setting->setValue(SettingUtils::validateValue(*setting, elem.value()));
+			setting->setValue(SettingUtils::validateValue(elem.value(), *setting));
+			hasSet = true;
 		}
+
+		dcassert(hasSet);
 
 		SettingsManager::getInstance()->save();
 		WebServerManager::getInstance()->save(nullptr);

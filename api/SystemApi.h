@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -44,10 +44,6 @@ namespace webserver {
 		api_return handleShutdown(ApiRequest& aRequest);
 
 		api_return handleGetSystemInfo(ApiRequest& aRequest);
-
-		static string getHostname() noexcept;
-		static string getNetworkType(const string& aIp) noexcept;
-		static string getPlatform() noexcept;
 
 		void on(ActivityManagerListener::AwayModeChanged, AwayMode aNewMode) noexcept override;
 	};

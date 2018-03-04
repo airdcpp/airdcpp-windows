@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -25,12 +25,14 @@
 #include "FileServer.h"
 #include "ApiRequest.h"
 
+#include "SystemUtil.h"
 #include "Timer.h"
 #include "WebServerManagerListener.h"
 #include "WebUserManager.h"
 #include "WebSocket.h"
 
 #include <airdcpp/format.h>
+#include <airdcpp/Message.h>
 #include <airdcpp/Singleton.h>
 #include <airdcpp/Speaker.h>
 #include <airdcpp/Util.h>
@@ -84,7 +86,6 @@ namespace webserver {
 		void disconnectSockets(const std::string& aMessage) noexcept;
 
 		// Reset sessions for associated sockets
-		void logout(LocalSessionId aSessionId) noexcept;
 		WebSocketPtr getSocket(LocalSessionId aSessionToken) noexcept;
 
 		bool load(const ErrorF& aErrorF) noexcept;
@@ -154,7 +155,15 @@ namespace webserver {
 			}
 
 			onData(msg->get_payload(), TransportType::TYPE_SOCKET, Direction::INCOMING, socket->getIp());
-			api.handleSocketRequest(msg->get_payload(), socket, aIsSecure);
+
+			// Messages received from each socket will always use the same thread
+			// This will also help with hooks getting timed out when they are being run and
+			// resolved by the same socket
+			// TODO: use different threads for handling requests that involve running of hooks
+			addAsyncTask([=] {
+				auto s = socket;
+				api.handleSocketRequest(msg->get_payload(), s, aIsSecure); 
+			});
 		}
 
 		template <typename EndpointType>
@@ -162,16 +171,19 @@ namespace webserver {
 			// Blocking HTTP Handler
 			auto con = s->get_con_from_hdl(hdl);
 			websocketpp::http::status_code::value status;
-			auto ip = con->get_remote_endpoint();
+			auto ip = con->get_raw_socket().remote_endpoint().address().to_string();
 
-			string authError;
-			auto session = userManager->parseHttpSession(con->get_request(), authError, ip);
+			SessionPtr session = nullptr;
 
-			// Catch invalid authentication info
-			if (!authError.empty()) {
-				con->set_body(authError);
-				con->set_status(websocketpp::http::status_code::unauthorized);
-				return;
+			auto authToken = con->get_request().get_header("Authorization");
+			if (authToken != websocketpp::http::empty_header) {
+				try {
+					session = userManager->parseHttpSession(authToken, ip);
+				} catch (const std::exception& e) {
+					con->set_body(e.what());
+					con->set_status(websocketpp::http::status_code::unauthorized);
+					return;
+				}
 			}
 
 			if (con->get_resource().length() >= 4 && con->get_resource().compare(0, 4, "/api") == 0) {
@@ -216,6 +228,8 @@ namespace webserver {
 				con->set_body(output);
 			}
 		}
+
+		void log(const string& aMsg, LogMessage::Severity aSeverity) const noexcept;
 	private:
 		context_ptr handleInitTls(websocketpp::connection_hdl hdl);
 

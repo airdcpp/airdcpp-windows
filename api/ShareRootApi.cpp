@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -84,13 +84,9 @@ namespace webserver {
 			JsonUtil::throwError("path", JsonUtil::ERROR_INVALID, e.what());
 		}
 
-		if (ShareManager::getInstance()->isRealPathShared(path)) {
-			JsonUtil::throwError("path", JsonUtil::ERROR_INVALID, "Path is shared already");
-		}
-
 		auto info = std::make_shared<ShareDirectoryInfo>(path);
 
-		parseRoot(info, reqJson, true);
+		parseRoot(info, reqJson);
 
 		ShareManager::getInstance()->addRootDirectory(info);
 
@@ -101,7 +97,7 @@ namespace webserver {
 	api_return ShareRootApi::handleUpdateRoot(ApiRequest& aRequest) {
 		auto info = getRoot(aRequest);
 
-		parseRoot(info, aRequest.getRequestBody(), false);
+		parseRoot(info, aRequest.getRequestBody());
 		ShareManager::getInstance()->updateRootDirectory(info);
 
 		aRequest.setResponseBody(Serializer::serializeItem(info, ShareUtils::propertyHandler));
@@ -130,6 +126,14 @@ namespace webserver {
 	}
 
 	void ShareRootApi::on(ShareManagerListener::RootUpdated, const string& aPath) noexcept {
+		onRootUpdated(aPath, toPropertyIdSet(ShareUtils::properties));
+	}
+
+	void ShareRootApi::on(ShareManagerListener::RootRefreshState, const string& aPath) noexcept {
+		onRootUpdated(aPath, { ShareUtils::PROP_LAST_REFRESH_TIME, ShareUtils::PROP_SIZE, ShareUtils::PROP_STATUS });
+	}
+
+	void ShareRootApi::onRootUpdated(const string& aPath, PropertyIdSet&& aUpdatedProperties) noexcept {
 		auto info = ShareManager::getInstance()->getRootInfo(aPath);
 		if (!info) {
 			dcassert(0);
@@ -145,8 +149,9 @@ namespace webserver {
 		localInfo->merge(info);
 		info = localInfo;  // We need to use the same pointer because of listview
 
-		onRootUpdated(localInfo, toPropertyIdSet(ShareUtils::properties));
+		onRootUpdated(localInfo, std::move(aUpdatedProperties));
 	}
+
 
 	void ShareRootApi::onRootUpdated(const ShareDirectoryInfoPtr& aInfo, PropertyIdSet&& aUpdatedProperties) noexcept {
 		maybeSend("share_root_updated", [&] { 
@@ -202,17 +207,15 @@ namespace webserver {
 		return *i;
 	}
 
-	void ShareRootApi::parseRoot(ShareDirectoryInfoPtr& aInfo, const json& j, bool aIsNew) {
-		auto virtualName = JsonUtil::getOptionalField<string>("virtual_name", j, false);
+	void ShareRootApi::parseRoot(ShareDirectoryInfoPtr& aInfo, const json& j) {
+		auto virtualName = JsonUtil::getOptionalField<string>("virtual_name", j);
 		if (virtualName) {
 			aInfo->virtualName = *virtualName;
 		}
 
-		auto profiles = JsonUtil::getOptionalField<ProfileTokenSet>("profiles", j, false);
+		// Default profile is added for new roots if profiles are not specified
+		auto profiles = JsonUtil::getOptionalField<ProfileTokenSet>("profiles", j);
 		if (profiles) {
-			// Only validate added profiles
-			ProfileTokenSet diff;
-
 			auto newProfiles = *profiles;
 			for (const auto& p : newProfiles) {
 				if (!ShareManager::getInstance()->getShareProfile(p)) {
@@ -220,20 +223,10 @@ namespace webserver {
 				}
 			}
 
-
-			std::set_difference(newProfiles.begin(), newProfiles.end(),
-				aInfo->profiles.begin(), aInfo->profiles.end(), std::inserter(diff, diff.begin()));
-
-			try {
-				ShareManager::getInstance()->validateNewRootProfiles(aInfo->path, diff);
-			} catch (ShareException& e) {
-				JsonUtil::throwError(aIsNew ? "path" : "profiles", JsonUtil::ERROR_INVALID, e.what());
-			}
-
 			aInfo->profiles = newProfiles;
 		}
 
-		auto incoming = JsonUtil::getOptionalField<bool>("incoming", j, false);
+		auto incoming = JsonUtil::getOptionalField<bool>("incoming", j);
 		if (incoming) {
 			aInfo->incoming = *incoming;
 		}

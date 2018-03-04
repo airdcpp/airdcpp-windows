@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -39,8 +39,11 @@
 #include <boost/range/algorithm/count_if.hpp>
 
 
+#define FLOOD_COUNT 5
+#define FLOOD_PERIOD 45
+
 namespace webserver {
-	WebUserManager::WebUserManager(WebServerManager* aServer) : server(aServer){
+	WebUserManager::WebUserManager(WebServerManager* aServer) : server(aServer), authFloodCounter(FLOOD_COUNT, FLOOD_PERIOD) {
 		aServer->addListener(this);
 	}
 
@@ -48,73 +51,60 @@ namespace webserver {
 		server->removeListener(this);
 	}
 
-	SessionPtr WebUserManager::parseHttpSession(const websocketpp::http::parser::request& aRequest, string& error_, const string& aIp) noexcept {
-		bool basicAuth = false;
+	SessionPtr WebUserManager::parseHttpSession(const string& aAuthToken, const string& aIP) {
+		auto token = aAuthToken;
 
-		auto token = aRequest.get_header("Authorization");
-		if (token != websocketpp::http::empty_header) {
-			if (token.length() > 6 && token.substr(0, 6) == "Basic ") {
-				token = websocketpp::base64_decode(token.substr(6));
-				basicAuth = true;
-			}
-		} else {
-			return nullptr;
+		bool basicAuth = false;
+		if (token.length() > 6 && token.substr(0, 6) == "Basic ") {
+			token = websocketpp::base64_decode(token.substr(6));
+			basicAuth = true;
 		}
 
 		auto session = getSession(token);
 		if (!session) {
 			if (basicAuth) {
-				session = authenticateBasicHttp(token, aIp);
-				if (!session) {
-					error_ = "Invalid username or password";
+				string username, password;
+
+				auto i = token.rfind(':');
+				if (i == string::npos) {
+					throw std::domain_error("Invalid authorization token format");
 				}
+
+				username = token.substr(0, i);
+				password = token.substr(i + 1);
+
+				return authenticateSession(username, password, Session::TYPE_BASIC_AUTH, 60, aIP, token);
 			} else {
-				error_ = "Invalid authorization token (session expired?)";
+				throw std::domain_error("Invalid authorization token (session expired?)");
 			}
 		}
 
 		return session;
 	}
 
-	SessionPtr WebUserManager::authenticateSession(const string& aUserName, const string& aPassword, bool aIsSecure, uint64_t aMaxInactivityMinutes, const string& aIP) noexcept {
-		auto user = getUser(aUserName);
-		if (!user) {
-			return nullptr;
-		}
-
-		if (user->getPassword() != aPassword) {
-			return nullptr;
-		}
-
+	SessionPtr WebUserManager::authenticateSession(const string& aUserName, const string& aPassword, Session::SessionType aType, uint64_t aMaxInactivityMinutes, const string& aIP) {
 		auto uuid = boost::uuids::to_string(boost::uuids::random_generator()());
-		return createSession(user, uuid, aIsSecure ? Session::TYPE_SECURE : Session::TYPE_PLAIN, aMaxInactivityMinutes, aIP);
+		return authenticateSession(aUserName, aPassword, aType, aMaxInactivityMinutes, aIP, uuid);
 	}
 
-	SessionPtr WebUserManager::authenticateBasicHttp(const string& aAuthString, const string& aIP) noexcept {
-
-		string username, password;
-
-		auto i = aAuthString.rfind(':');
-		if (i == string::npos) {
-			return nullptr;
+	SessionPtr WebUserManager::authenticateSession(const string& aUserName, const string& aPassword, Session::SessionType aType, uint64_t aMaxInactivityMinutes, const string& aIP, const string& aSessionToken) {
+		if (!authFloodCounter.checkFlood(aIP)) {
+			server->log("Multiple failed login attempts detected from IP " + aIP, LogMessage::SEV_WARNING);
+			throw std::domain_error("Too many failed login attempts detected (wait for a while before retrying)");
 		}
 
-		username = aAuthString.substr(0, i);
-		password = aAuthString.substr(i + 1);
-
-		auto user = getUser(username);
-		if (!user) {
-			return nullptr;
+		auto user = getUser(aUserName);
+		if (!user || user->getPassword() != aPassword) {
+			authFloodCounter.addAttempt(aIP);
+			throw std::domain_error("Invalid username or password");
 		}
 
-		if (user->getPassword() != password) {
-			return nullptr;
-		}
-
-		return createSession(user, aAuthString, Session::TYPE_BASIC_AUTH, 60, aIP);
+		return createSession(user, aSessionToken, aType, aMaxInactivityMinutes, aIP);
 	}
 
-	SessionPtr WebUserManager::createSession(const WebUserPtr& aUser, const string& aSessionToken, Session::SessionType aType, uint64_t aMaxInactivityMinutes, const string& aIP) {
+	SessionPtr WebUserManager::createSession(const WebUserPtr& aUser, const string& aSessionToken, Session::SessionType aType, uint64_t aMaxInactivityMinutes, const string& aIP) noexcept {
+		dcassert(aType != Session::TYPE_BASIC_AUTH || aSessionToken.find(":") != string::npos);
+
 		auto session = std::make_shared<Session>(aUser, aSessionToken, aType, server, aMaxInactivityMinutes, aIP);
 
 		aUser->setLastLogin(GET_TIME());
@@ -123,6 +113,12 @@ namespace webserver {
 
 		{
 			WLock l(cs);
+
+			// Single session per user when using basic auth
+			dcassert(aType != Session::TYPE_BASIC_AUTH || boost::find_if(sessionsRemoteId | map_values, [&](const SessionPtr& aSession) {
+				return aSession->getSessionType() == Session::TYPE_BASIC_AUTH && aSession->getUser() == aUser;
+			}).base() == sessionsRemoteId.end());
+
 			sessionsRemoteId.emplace(session->getAuthToken(), session);
 			sessionsLocalId.emplace(session->getId(), session);
 		}
@@ -131,7 +127,7 @@ namespace webserver {
 		return session;
 	}
 
-	SessionPtr WebUserManager::createExtensionSession(const string& aExtensionName) {
+	SessionPtr WebUserManager::createExtensionSession(const string& aExtensionName) noexcept {
 		auto uuid = boost::uuids::to_string(boost::uuids::random_generator()());
 
 		// For internal use only (can't be used for logging in)
@@ -178,9 +174,24 @@ namespace webserver {
 	}
 
 	void WebUserManager::logout(const SessionPtr& aSession) {
-		aSession->onSocketDisconnected();
-		
 		removeSession(aSession, false);
+
+		auto socket = server->getSocket(aSession->getId());
+		if (socket) {
+			resetSocketSession(socket);
+		} else {
+			dcdebug("No socket for session %s\n", aSession->getAuthToken().c_str());
+		}
+
+		dcdebug("Session %s logging out, use count: %ld\n", aSession->getAuthToken().c_str(), aSession.use_count());
+	}
+
+	void WebUserManager::resetSocketSession(const WebSocketPtr& aSocket) noexcept {
+		if (aSocket->getSession()) {
+			dcdebug("Resetting socket for session %s\n", aSocket->getSession()->getAuthToken().c_str());
+			aSocket->getSession()->onSocketDisconnected();
+			aSocket->setSession(nullptr);
+		}
 	}
 
 	void WebUserManager::checkExpiredSessions() noexcept {
@@ -216,17 +227,45 @@ namespace webserver {
 	}
 
 	void WebUserManager::on(WebServerManagerListener::Started) noexcept {
-		expirationTimer = server->addTimer([this] { checkExpiredSessions(); }, 60*1000);
+		expirationTimer = server->addTimer([this] { 
+			checkExpiredSessions(); 
+			authFloodCounter.prune();
+		}, FLOOD_PERIOD * 1000);
+
 		expirationTimer->start(false);
+	}
+
+	void WebUserManager::on(WebServerManagerListener::Stopping) noexcept {
+
 	}
 
 	void WebUserManager::on(WebServerManagerListener::Stopped) noexcept {
 		expirationTimer = nullptr;
 
 		// Let the modules handle deletion in a clean way before we are shutting down...
-		WLock l(cs);
-		sessionsLocalId.clear();
-		sessionsRemoteId.clear();
+		SessionList sessions;
+
+		{
+			WLock l(cs);
+			boost::copy(sessionsLocalId | map_values, back_inserter(sessions));
+
+			sessionsLocalId.clear();
+			sessionsRemoteId.clear();
+		}
+
+		while (true) {
+			if (all_of(sessions.begin(), sessions.end(), [](const SessionPtr& aSession) {
+				return aSession.unique();
+			})) {
+				break;
+			}
+
+			Thread::sleep(50);
+		}
+	}
+
+	void WebUserManager::on(WebServerManagerListener::SocketDisconnected, const WebSocketPtr& aSocket) noexcept {
+		resetSocketSession(aSocket);
 	}
 
 	void WebUserManager::on(WebServerManagerListener::LoadSettings, SimpleXML& xml_) noexcept {

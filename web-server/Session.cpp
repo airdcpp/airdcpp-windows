@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@
 
 
 namespace webserver {
-#define ADD_MODULE(name, type) (apiHandlers.emplace(name, LazyModuleWrapper([this] { return unique_ptr<type>(new type(this)); })))
+#define ADD_MODULE(name, type) (apiHandlers.emplace(name, LazyModuleWrapper([this] { return make_unique<type>(this); })))
 
 	Session::Session(const WebUserPtr& aUser, const string& aToken, SessionType aSessionType, WebServerManager* aServer, uint64_t maxInactivityMinutes, const string& aIP) :
 		id(Util::rand()), user(aUser), token(aToken), started(GET_TICK()), 
@@ -57,9 +57,7 @@ namespace webserver {
 		ip(aIP) {
 
 		ADD_MODULE("connectivity", ConnectivityApi);
-#ifdef _DEBUG
 		ADD_MODULE("extensions", ExtensionApi);
-#endif
 		ADD_MODULE("events", EventApi);
 		ADD_MODULE("favorite_directories", FavoriteDirectoryApi);
 		ADD_MODULE("favorite_hubs", FavoriteHubApi);
@@ -88,18 +86,19 @@ namespace webserver {
 	}
 
 	ApiModule* Session::getModule(const string& aModule) {
+		Lock l(cs); // Avoid races when modules are being initialized by LazyModuleWrapper
 		auto h = apiHandlers.find(aModule);
 		return h != apiHandlers.end() ? h->second.get() : nullptr;
 	}
 
 	websocketpp::http::status_code::value Session::handleRequest(ApiRequest& aRequest) {
-		auto h = apiHandlers.find(aRequest.getApiModule());
-		if (h != apiHandlers.end()) {
-			return h->second->handleRequest(aRequest);
+		auto module = getModule(aRequest.getApiModule());
+		if (!module) {
+			aRequest.setResponseErrorStr("Section not found");
+			return websocketpp::http::status_code::not_found;
 		}
 
-		aRequest.setResponseErrorStr("Section not found");
-		return websocketpp::http::status_code::not_found;
+		return module->handleRequest(aRequest);
 	}
 
 	void Session::onSocketConnected(const WebSocketPtr& aSocket) noexcept {
@@ -126,5 +125,9 @@ namespace webserver {
 
 	void Session::updateActivity() noexcept {
 		lastActivity = GET_TICK();
+	}
+
+	void Session::reportError(const string& aError) noexcept {
+		server->log(aError, LogMessage::SEV_ERROR);
 	}
 }

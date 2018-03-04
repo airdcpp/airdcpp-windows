@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -56,7 +56,7 @@ namespace webserver {
 		void on(ExtensionListener::SettingDefinitionsUpdated) noexcept override;
 
 		void on(ExtensionListener::ExtensionStarted) noexcept override;
-		void on(ExtensionListener::ExtensionStopped) noexcept override;
+		void on(ExtensionListener::ExtensionStopped, bool aFailed) noexcept override;
 		void on(ExtensionListener::PackageUpdated) noexcept override;
 
 		api_return handleStartExtension(ApiRequest& aRequest);

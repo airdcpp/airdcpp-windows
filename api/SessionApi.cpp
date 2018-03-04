@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ namespace webserver {
 		METHOD_HANDLER(Access::ANY, METHOD_POST, (EXACT_PARAM("activity")), SessionApi::handleActivity);
 
 		METHOD_HANDLER(Access::ANY, METHOD_GET, (EXACT_PARAM("self")), SessionApi::handleGetCurrentSession);
-		METHOD_HANDLER(Access::ANY, METHOD_DELETE, (EXACT_PARAM("self")), SessionApi::handleLogout);
+		METHOD_HANDLER(Access::ANY, METHOD_DELETE, (EXACT_PARAM("self")), SessionApi::handleRemoveCurrentSession);
 
 		// Admin methods
 		METHOD_HANDLER(Access::ADMIN, METHOD_GET, (), SessionApi::handleGetSessions);
@@ -76,13 +76,17 @@ namespace webserver {
 		return websocketpp::http::status_code::no_content;
 	}
 
-	api_return SessionApi::handleLogout(ApiRequest& aRequest) {
-		if (session->getSessionType() == Session::TYPE_BASIC_AUTH) {
+	api_return SessionApi::handleRemoveCurrentSession(ApiRequest& aRequest) {
+		return logout(aRequest, aRequest.getSession());
+	}
+
+	api_return SessionApi::logout(ApiRequest& aRequest, const SessionPtr& aSession) {
+		if (aSession->getSessionType() == Session::TYPE_BASIC_AUTH) {
 			aRequest.setResponseErrorStr("Sessions using basic authentication can't be deleted");
 			return websocketpp::http::status_code::bad_request;
 		}
 
-		WebServerManager::getInstance()->logout(aRequest.getSession()->getId());
+		session->getServer()->getUserManager().logout(aSession);
 		return websocketpp::http::status_code::no_content;
 	}
 
@@ -94,14 +98,16 @@ namespace webserver {
 
 		auto inactivityMinutes = JsonUtil::getOptionalFieldDefault<uint64_t>("max_inactivity", reqJson, WEBCFG(DEFAULT_SESSION_IDLE_TIMEOUT).uint64());
 
-		auto session = WebServerManager::getInstance()->getUserManager().authenticateSession(username, password, 
-			aIsSecure, inactivityMinutes, aIP);
-
-		if (!session) {
-			aRequest.setResponseErrorStr("Invalid username or password");
+		SessionPtr session = nullptr;
+		try {
+			session = WebServerManager::getInstance()->getUserManager().authenticateSession(username, password,
+				aIsSecure ? Session::TYPE_SECURE : Session::TYPE_PLAIN, inactivityMinutes, aIP);
+		} catch (const std::exception& e) {
+			aRequest.setResponseErrorStr(e.what());
 			return websocketpp::http::status_code::unauthorized;
 		}
 
+		dcassert(session);
 		if (aSocket) {
 			session->onSocketConnected(aSocket);
 			aSocket->setSession(session);
@@ -170,8 +176,7 @@ namespace webserver {
 			return websocketpp::http::status_code::not_found;
 		}
 
-		session->getServer()->getUserManager().logout(removeSession);
-		return websocketpp::http::status_code::no_content;
+		return logout(aRequest, removeSession);
 	}
 
 	api_return SessionApi::handleGetCurrentSession(ApiRequest& aRequest) {
