@@ -1,3 +1,19 @@
+Added:
+
+- AirDC++ Web UI 2.3.0 with refreshed graphics
+- Replace the legacy GeoIP IP geolocation library with libmaxminddb
+- Add hubNI logging parameter for transfers
+
+Fixed:
+
+- Fix a possible crash when the hash database is corrupted
+- Fix a possible crash when opening own filelist
+
+Removed:
+
+- Setting "Don’t begin new segment if overall file speed is over X"
+
+
 3.42
 
 Changed:
