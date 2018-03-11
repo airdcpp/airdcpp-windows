@@ -11,7 +11,7 @@ Fixed:
 
 Removed:
 
-- Setting "Don’t begin new segment if overall file speed is over X"
+- Setting "Don't begin new segment if overall file speed is over X"
 
 
 3.42
