@@ -1391,14 +1391,12 @@ void MainFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
 }
 
 LRESULT MainFrame::onOpenOwnList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	addThreadedTask([=] {
-		ProfileToken profile = SETTING(LAST_LIST_PROFILE);
-		auto profiles = ShareManager::getInstance()->getProfiles();
-		if (find_if(profiles.begin(), profiles.end(), [profile](const ShareProfilePtr& aProfile) { return aProfile->getToken() == profile; }) == profiles.end())
-			profile = SETTING(DEFAULT_SP);
+	ProfileToken profile = SETTING(LAST_LIST_PROFILE);
+	auto profiles = ShareManager::getInstance()->getProfiles();
+	if (find_if(profiles.begin(), profiles.end(), [profile](const ShareProfilePtr& aProfile) { return aProfile->getToken() == profile; }) == profiles.end())
+		profile = SETTING(DEFAULT_SP);
 
-		DirectoryListingFrame::openWindow(profile, wID == IDC_OWN_LIST_ADL);
-	});
+	DirectoryListingFrame::openWindow(profile, wID == IDC_OWN_LIST_ADL);
 	return 0;
 }
 
