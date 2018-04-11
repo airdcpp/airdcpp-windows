@@ -123,7 +123,7 @@ uint64_t SearchQueue::add(const SearchPtr& aSearch) noexcept {
 
 	auto queueTime = getQueueTime(Search::ComparePtr(aSearch));
 	dcassert(queueTime);
-	dcdebug("Queueing search %s, queue time " U64_FMT " (priority %d, min interval %d, last search " U64_FMT " ms ago)\n", aSearch->query.c_str(), *queueTime, static_cast<int>(aSearch->priority), minInterval, GET_TICK() - lastSearchTick);
+	dcdebug("Queueing search %s, queue time %llu (priority %d, min interval %d, last search %llu ms ago)\n", aSearch->query.c_str(), *queueTime, static_cast<int>(aSearch->priority), minInterval, GET_TICK() - lastSearchTick);
 	return *queueTime;
 }
 

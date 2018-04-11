@@ -324,7 +324,7 @@ public:
 		return ((size + blockSize - 1) / blockSize) * blockSize;
 	}
 
-	static string formatTime(int64_t aSec, bool translate, bool perMinute = false) noexcept;
+	static string formatTime(uint64_t aSec, bool aTranslate, bool aPerMinute = false) noexcept;
 
 	static int DefaultSort(const char* a, const char* b) noexcept;
 	static int DefaultSort(const wchar_t* a, const wchar_t* b) noexcept;
@@ -514,13 +514,13 @@ public:
 	
 	static wstring toStringW( int64_t val ) noexcept {
 		wchar_t buf[32];
-		snwprintf(buf, sizeof(buf), _T(I64_FMT), val);
+		snwprintf(buf, sizeof(buf), _T("%lld"), val);
 		return buf;
 	}
 
 	static wstring toStringW( uint64_t val ) noexcept {
 		wchar_t buf[32];
-		snwprintf(buf, sizeof(buf), _T(I64_FMT), val);
+		snwprintf(buf, sizeof(buf), _T("%lld"), val);
 		return buf;
 	}
 

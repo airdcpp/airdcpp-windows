@@ -1478,7 +1478,7 @@ void ShareManager::validateDirectoryTreeDebug() noexcept {
 		}
 	}
 	auto end = GET_TICK();
-	dcdebug("Share tree checked in " U64_FMT " ms\n", end - start);
+	dcdebug("Share tree checked in %llu ms\n", end - start);
 
 	StringList filesDiff, directoriesDiff;
 	if (files.size() != tthIndex.size()) {

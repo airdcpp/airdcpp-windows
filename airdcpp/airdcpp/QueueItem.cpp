@@ -474,7 +474,7 @@ Segment QueueItem::getNextSegment(int64_t aBlockSize, int64_t aWantedSize, int64
 
 	if(!neededParts.empty()) {
 		// select random chunk for download
-		dcdebug("Found chunks: " SIZET_FMT "\n", neededParts.size());
+		dcdebug("Found chunks: %zu\n", neededParts.size());
 		
 		Segment& selected = neededParts[Util::rand(0, neededParts.size())];
 		selected.setSize(std::min(selected.getSize(), targetSize));	// request only wanted size
@@ -508,7 +508,7 @@ Segment QueueItem::checkOverlaps(int64_t aBlockSize, int64_t aLastSpeed, const P
 			// new user should finish this chunk more than 2x faster
 			int64_t newChunkLeft = chunkSize / aLastSpeed;
 			if(2 * newChunkLeft < d->getSecondsLeft()) {
-				dcdebug("Overlapping... old user: " I64_FMT " s, new user: " I64_FMT " s\n", d->getSecondsLeft(), newChunkLeft);
+				dcdebug("Overlapping... old user: %lld s, new user: %lld s\n", d->getSecondsLeft(), newChunkLeft);
 				return Segment(d->getStartPos() + pos, chunkSize, true);
 			}
 		}
@@ -544,7 +544,7 @@ uint64_t QueueItem::getDownloadedBytes() const noexcept {
 void QueueItem::addFinishedSegment(const Segment& segment) noexcept {
 #ifdef _DEBUG
 	if (bundle)
-		dcdebug("adding segment segment of size " I64_FMT " (" I64_FMT ", " I64_FMT ")...", segment.getSize(), segment.getStart(), segment.getEnd());
+		dcdebug("adding segment segment of size %lld (%lld, %lld)...", segment.getSize(), segment.getStart(), segment.getEnd());
 #endif
 
 	dcassert(segment.getOverlapped() == false);
@@ -565,7 +565,7 @@ void QueueItem::addFinishedSegment(const Segment& segment) noexcept {
 				done.erase(i++);
 				done.insert(big);
 				if (bundle && !added) {
-					dcdebug("added " I64_FMT " for the bundle (segments merged)\n", newBytes);
+					dcdebug("added %lld for the bundle (segments merged)\n", newBytes);
 					bundle->addFinishedSegment(newBytes);
 				}
 				added = true;
@@ -576,7 +576,7 @@ void QueueItem::addFinishedSegment(const Segment& segment) noexcept {
 	}
 
 	if (!added && bundle) {
-		dcdebug("added " I64_FMT " for the bundle (no merging)\n", segment.getSize());
+		dcdebug("added %lld for the bundle (no merging)\n", segment.getSize());
 		bundle->addFinishedSegment(segment.getSize());
 	}
 }
@@ -669,7 +669,7 @@ bool QueueItem::hasSegment(const UserPtr& aUser, const OrderedStringSet& aOnline
 		Segment segment = getNextSegment(getBlockSize(), aWantedSize, aLastSpeed, source->getPartialSource(), aAllowOverlap);
 		if(segment.getSize() == 0) {
 			lastError_ = (segment.getStart() == -1 || getSize() < Util::convertSize(SETTING(MIN_SEGMENT_SIZE), Util::KB)) ? STRING(NO_FILES_AVAILABLE) : STRING(NO_FREE_BLOCK);
-			dcdebug("No segment for %s (%s) in %s, block " I64_FMT "\n", aUser->getCID().toBase32().c_str(), Util::listToString(aOnlineHubs).c_str(), getTarget().c_str(), blockSize);
+			dcdebug("No segment for %s (%s) in %s, block %lld\n", aUser->getCID().toBase32().c_str(), Util::listToString(aOnlineHubs).c_str(), getTarget().c_str(), blockSize);
 			return false;
 		}
 	} else if (!isWaiting()) {

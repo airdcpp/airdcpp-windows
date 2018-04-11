@@ -351,7 +351,7 @@ bool QueueManager::recheckFileImpl(const string& aPath, bool isBundleCheck, int6
 				if (!blockSegment.inSet(done))
 					return;
 
-				dcdebug("Integrity check failed for the block at pos " I64_FMT "\n", pos);
+				dcdebug("Integrity check failed for the block at pos %lld\n", pos);
 				failedBytes += tt.getBlockSize();
 			}
 
@@ -1183,7 +1183,7 @@ Download* QueueManager::getDownload(UserConnection& aSource, const QueueTokenSet
 	}
 
 	fire(QueueManagerListener::ItemSources(), q);
-	dcdebug("found %s for %s (" I64_FMT ", " I64_FMT ")\n", q->getTarget().c_str(), d->getToken().c_str(), d->getSegment().getStart(), d->getSegment().getEnd());
+	dcdebug("found %s for %s (%lld, %lld)\n", q->getTarget().c_str(), d->getToken().c_str(), d->getSegment().getStart(), d->getSegment().getEnd());
 	return d;
 }
 
@@ -1768,7 +1768,7 @@ void QueueManager::onFileDownloadCompleted(QueueItemPtr& aQI, Download* aDownloa
 		aQI->addFinishedSegment(aDownload->getSegment());
 		wholeFileCompleted = aQI->segmentsDone();
 
-		dcdebug("Finish segment for %s (" I64_FMT ", " I64_FMT ")\n", aDownload->getToken().c_str(), aDownload->getSegment().getStart(), aDownload->getSegment().getEnd());
+		dcdebug("Finish segment for %s (%lld, %lld)\n", aDownload->getToken().c_str(), aDownload->getSegment().getStart(), aDownload->getSegment().getEnd());
 
 		if (wholeFileCompleted) {
 			// Disconnect all possible overlapped downloads
@@ -2517,7 +2517,7 @@ void QueueLoader::startTag(const string& name, StringPairList& attribs, bool sim
 					curFile->setPriority(curFile->calculateAutoPriority());
 				}
 			} else {
-				dcdebug("Invalid segment: " I64_FMT " " I64_FMT "\n", start, size);
+				dcdebug("Invalid segment: %lld %lld\n", start, size);
 			}
 		} else if(curFile && name == sSource) {
 			const string& cid = getAttrib(attribs, sCID, 0);

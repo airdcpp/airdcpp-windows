@@ -260,7 +260,7 @@ namespace webserver {
 
 		// Not "parsedStart >= end_" because Safari seems to request one byte past the end (shouldn't be an issue when reading the file)
 		if (parsedStart > end_ || parsedStart < 0) {
-			dcdebug("Partial HTTP request: start position not accepted (" I64_FMT ")\n", parsedStart);
+			dcdebug("Partial HTTP request: start position not accepted (%lld)\n", parsedStart);
 			return false;
 		}
 
@@ -270,7 +270,7 @@ namespace webserver {
 		} else {
 			auto parsedEnd = Util::toInt64(endToken);
 			if (parsedEnd > end_ || parsedEnd <= parsedStart) {
-				dcdebug("Partial HTTP request: end position not accepted (parsed start: " I64_FMT ", parsed end: " I64_FMT ", file size: " I64_FMT ")\n", parsedStart, parsedEnd, end_);
+				dcdebug("Partial HTTP request: end position not accepted (parsed start: %lld, parsed end: %lld, file size: %lld)\n", parsedStart, parsedEnd, end_);
 				return false;
 			}
 

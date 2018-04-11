@@ -68,7 +68,7 @@ namespace webserver {
 			auto expiration = aInstance.getTimeToExpiration();
 			if (expiration && *expiration <= 0) {
 				expiredIds.push_back(aInstance.getId());
-				dcdebug("Removing an expired search instance (expiration: " U64_FMT ", now: " U64_FMT ")\n", *expiration, GET_TICK());
+				dcdebug("Removing an expired search instance (expiration: %llu, now: %llu)\n", *expiration, GET_TICK());
 			}
 		});
 
