@@ -620,7 +620,7 @@ namespace webserver {
 						aSortAscending
 						));
 
-				dcdebug("Table %s sorted in %llu ms\n", viewName.c_str(), GET_TICK() - start);
+				dcdebug("Table %s sorted in " U64_FMT " ms\n", viewName.c_str(), GET_TICK() - start);
 			}
 		}
 

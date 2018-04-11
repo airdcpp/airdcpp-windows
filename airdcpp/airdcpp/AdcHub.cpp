@@ -777,7 +777,7 @@ void AdcHub::handle(AdcCommand::GET, AdcCommand& c) noexcept {
 		}
 		
 		if (m > 0) {
-			dcdebug("Creating bloom filter, k=%zu, m=%zu, h=%zu\n", k, m, h);
+			dcdebug("Creating bloom filter, k=" SIZET_FMT ", m=" SIZET_FMT ", h=" SIZET_FMT "\n", k, m, h);
 
 			HashBloom bloom;
 			bloom.reset(k, m, h);

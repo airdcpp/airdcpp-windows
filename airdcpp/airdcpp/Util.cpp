@@ -706,9 +706,9 @@ string Util::formatTime(uint64_t aSec, bool aTranslate, bool aPerMinute) noexcep
 
 		char buf[128];
 		if(n >= 2) {
-			snprintf(buf, sizeof(buf), ("%llu " + ((aTranslate ? Text::toLower(aTranslatedP) : aEnglishP) + " ")).c_str(), n);
+			snprintf(buf, sizeof(buf), (U64_FMT " " + ((aTranslate ? Text::toLower(aTranslatedP) : aEnglishP) + " ")).c_str(), n);
 		} else {
-			snprintf(buf, sizeof(buf), ("%llu " + ((aTranslate ? Text::toLower(aTranslatedS) : aEnglishS) + " ")).c_str(), n);
+			snprintf(buf, sizeof(buf), (U64_FMT " " + ((aTranslate ? Text::toLower(aTranslatedS) : aEnglishS) + " ")).c_str(), n);
 		}
 		formatedTime += (string)buf;
 		added++;

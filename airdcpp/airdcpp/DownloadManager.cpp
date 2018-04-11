@@ -321,7 +321,7 @@ void DownloadManager::checkDownloads(UserConnection* aConn) {
 		}
 	}
 
-	dcdebug("Requesting %lld/%lld\n", d->getStartPos(), d->getSegmentSize());
+	dcdebug("Requesting " I64_FMT "/" I64_FMT "\n", d->getStartPos(), d->getSegmentSize());
 
 	//only update the hub if it has been changed
 	if (compare(newUrl, aConn->getHubUrl()) == 0) {
@@ -365,7 +365,7 @@ void DownloadManager::startData(UserConnection* aSource, int64_t start, int64_t 
 	Download* d = aSource->getDownload();
 	dcassert(d);
 
-	dcdebug("Preparing %lld:%lld, %lld:%lld\n", d->getStartPos(), start, d->getSegmentSize(), bytes);
+	dcdebug("Preparing " I64_FMT ":" I64_FMT ", " I64_FMT ":" I64_FMT"\n", d->getStartPos(), start, d->getSegmentSize(), bytes);
 	if (d->getSegmentSize() == -1) {
 		if(bytes >= 0) {
 			d->setSegmentSize(bytes);
@@ -476,7 +476,7 @@ void DownloadManager::endData(UserConnection* aSource) {
 		aSource->setSpeed(static_cast<int64_t>(d->getAverageSpeed()));
 		aSource->updateChunkSize(d->getTigerTree().getBlockSize(), d->getSegmentSize(), GET_TICK() - d->getStart());
 		
-		dcdebug("Download finished: %s, size %lld, downloaded %lld in %llu ms\n", d->getPath().c_str(), d->getSegmentSize(), d->getPos(), GET_TICK() - d->getStart());
+		dcdebug("Download finished: %s, size " I64_FMT ", downloaded " I64_FMT " in " U64_FMT " ms\n", d->getPath().c_str(), d->getSegmentSize(), d->getPos(), GET_TICK() - d->getStart());
 	}
 
 	removeDownload(d);

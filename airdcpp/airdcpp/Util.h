@@ -514,13 +514,13 @@ public:
 	
 	static wstring toStringW( int64_t val ) noexcept {
 		wchar_t buf[32];
-		snwprintf(buf, sizeof(buf), _T("%lld"), val);
+		snwprintf(buf, sizeof(buf), _T(I64_FMT), val);
 		return buf;
 	}
 
 	static wstring toStringW( uint64_t val ) noexcept {
 		wchar_t buf[32];
-		snwprintf(buf, sizeof(buf), _T("%lld"), val);
+		snwprintf(buf, sizeof(buf), _T(I64_FMT), val);
 		return buf;
 	}
 
