@@ -447,11 +447,10 @@ namespace webserver {
 		LogManager::getInstance()->message(aMsg, aSeverity);
 	}
 
-	string WebServerManager::resolveAddress(const string& aHostname, const string& aPort) const noexcept {
+	string WebServerManager::resolveAddress(const string& aHostname, const string& aPort) noexcept {
 		auto ret = aHostname;
 
-		boost::asio::io_service io_service;
-		boost::asio::ip::tcp::resolver resolver(io_service);
+		boost::asio::ip::tcp::resolver resolver(ios);
 		boost::asio::ip::tcp::resolver::query query(aHostname, aPort);
 
 		try {
