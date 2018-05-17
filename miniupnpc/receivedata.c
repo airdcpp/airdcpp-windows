@@ -1,4 +1,4 @@
-/* $Id: receivedata.c,v 1.7 2015/11/09 21:51:41 nanard Exp $ */
+/* $Id: receivedata.c,v 1.9 2018/04/06 10:53:15 nanard Exp $ */
 /* Project : miniupnp
  * Website : http://miniupnp.free.fr/
  * Author : Thomas Bernard
@@ -27,16 +27,10 @@
 #define MINIUPNPC_IGNORE_EINTR
 #endif /* _WIN32 */
 
-#ifdef _WIN32
-#define PRINT_SOCKET_ERROR(x)    printf("Socket error: %s, %d\n", x, WSAGetLastError());
-#else
-#define PRINT_SOCKET_ERROR(x) perror(x)
-#endif
-
 #include "receivedata.h"
 
 int
-receivedata(int socket,
+receivedata(SOCKET socket,
             char * data, int length,
             int timeout, unsigned int * scope_id)
 {
