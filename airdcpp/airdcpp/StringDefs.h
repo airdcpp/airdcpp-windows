@@ -626,6 +626,7 @@ enum Strings { // @DontAdd
 	INVALID_EXTENSION, // "Invalid extension: %1%"
 	INVALID_HUB_RESPONSE, // "The hub returned an invalid response"
 	INVALID_LISTNAME, // "Invalid file list name"
+	INVALID_MODIFICATION_DATE, // "Invalid modification date"
 	INVALID_NUMBER_OF_SLOTS, // "Invalid number of slots"
 	INVALID_PASSWORD, // "Invalid password"
 	INVALID_PATTERN, // "Invalid pattern: %1%"
