@@ -882,7 +882,7 @@ void HashLoader::startTag(const string& name, StringPairList& attribs, bool simp
 			}
 		} else if (inFiles && name == sFile) {
 			file = getAttrib(attribs, sName, 0);
-			auto timeStamp = Util::toUInt32(getAttrib(attribs, sTimeStamp, 1));
+			auto timeStamp = Util::toTimeT(getAttrib(attribs, sTimeStamp, 1));
 			const string& root = getAttrib(attribs, sRoot, 2);
 
 			if (!file.empty() && timeStamp > 0 && !root.empty()) {
