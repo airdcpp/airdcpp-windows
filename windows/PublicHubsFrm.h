@@ -165,7 +165,7 @@ private:
 
 	void on(HublistManagerListener::DownloadStarting, const string& l) noexcept;
 	void on(HublistManagerListener::DownloadFailed, const string& l) noexcept;
-	void on(HublistManagerListener::DownloadFinished, const string& l, bool /*fromCoral*/) noexcept;
+	void on(HublistManagerListener::DownloadFinished, const string& l) noexcept;
 	void on(HublistManagerListener::LoadedFromCache, const string& l, const string& /*d*/) noexcept;
 	void on(HublistManagerListener::Corrupted, const string& l) noexcept;
 

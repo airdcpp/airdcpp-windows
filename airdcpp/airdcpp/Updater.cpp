@@ -606,8 +606,10 @@ void Updater::downloadUpdate(const string& aUrl, int newBuildID, bool manualChec
 	if (clientDownload)
 		return;
 
-	clientDownload.reset(new HttpDownload(aUrl,
-		[this, newBuildID, manualCheck] { completeUpdateDownload(newBuildID, manualCheck); }, false));
+	clientDownload = make_unique<HttpDownload>(
+		aUrl,
+		[this, newBuildID, manualCheck] { completeUpdateDownload(newBuildID, manualCheck); }
+	);
 }
 
 bool Updater::getUpdateVersionInfo(SimpleXML& xml, string& versionString, int& remoteBuild) {

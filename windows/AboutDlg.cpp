@@ -87,7 +87,7 @@ void AboutDlg::on(HttpConnectionListener::Data, HttpConnection* /*conn*/, const 
 	downBuf.append((char*)buf, len);
 }
 
-void AboutDlg::on(HttpConnectionListener::Complete, HttpConnection* conn, const string&, bool /*fromCoral*/) noexcept {
+void AboutDlg::on(HttpConnectionListener::Complete, HttpConnection* conn, const string&) noexcept {
 	conn->removeListener(this);
 	if(!downBuf.empty()) {
 		try {

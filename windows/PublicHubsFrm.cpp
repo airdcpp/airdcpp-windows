@@ -620,7 +620,7 @@ void PublicHubsFrame::on(HublistManagerListener::DownloadFailed, const string& l
 	callAsync([=] { setStatusText(TSTRING(DOWNLOAD_FAILED) + _T(" ") + Text::toT(l)); });
 }
 
-void PublicHubsFrame::on(HublistManagerListener::DownloadFinished, const string& l, bool /*fromCoral*/) noexcept {
+void PublicHubsFrame::on(HublistManagerListener::DownloadFinished, const string& l) noexcept {
 	callAsync([=] { onFinished(TSTRING(HUB_LIST_DOWNLOADED) + _T(" (") + Text::toT(l) + _T(")")); });
 }
 

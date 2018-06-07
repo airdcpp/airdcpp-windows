@@ -254,7 +254,6 @@ enum Strings { // @DontAdd
 	COPY_HUB, // "Copy address to clipboard"
 	COPY_LINE, // "Copy actual line"
 	COPY_PROFILE, // "Copy profile"
-	CORAL, // "Use Coral network when downloading hub lists (improves reliability)"
 	COULD_NOT_OPEN_TARGET_FILE, // "Could not open target file: "
 	COUNT, // "Count"
 	COUNTRY, // "Country"

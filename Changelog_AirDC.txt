@@ -1,6 +1,8 @@
+3.50
+
 Added:
 
-- AirDC++ Web UI 2.3.0 with refreshed graphics
+- AirDC++ Web UI 2.3.0 with refreshed graphics and other improvements (https://airdcpp-web.github.io/2018/03/11/version-2.3.0.html)
 - Replace the legacy GeoIP IP geolocation library with libmaxminddb
 - Add hubNI logging parameter for transfers
 
@@ -8,10 +10,12 @@ Fixed:
 
 - Fix a possible crash when the hash database is corrupted
 - Fix a possible crash when opening own filelist
+- Various fixes for handling of files that were modified more than 48 years ago
 
 Removed:
 
 - Setting "Don't begin new segment if overall file speed is over X"
+- Coral CDN support
 
 
 3.42
