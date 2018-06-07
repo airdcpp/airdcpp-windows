@@ -577,7 +577,9 @@ bool Updater::onVersionDownloaded(SimpleXML& xml, bool aVerified, bool aManualCh
 
 	//Check for updated version
 
+#ifndef FORCE_UPDATE
 	if ((remoteBuild > ownBuild && remoteBuild > installedUpdate) || aManualCheck) {
+#endif
 		auto updateMethod = SETTING(UPDATE_METHOD);
 		if ((!autoUpdateEnabled || updateMethod == UPDATE_PROMPT) || aManualCheck) {
 			if (xml.findChild("Title")) {
@@ -593,7 +595,9 @@ bool Updater::onVersionDownloaded(SimpleXML& xml, bool aVerified, bool aManualCh
 			downloadUpdate(updateUrl, remoteBuild, aManualCheck);
 		}
 		xml.resetCurrentChild();
+#ifndef FORCE_UPDATE
 	}
+#endif
 
 	return true;
 }

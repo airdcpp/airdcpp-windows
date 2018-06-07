@@ -1112,7 +1112,7 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	fMenuShutdown = false;
 
 	if(!closing) {
-		if(UpdateManager::getInstance()->getUpdater().isUpdating()) {
+		if (UpdateManager::getInstance()->getUpdater().isUpdating()) {
 			showMessageBox(CTSTRING(UPDATER_IN_PROGRESS), MB_OK | MB_ICONINFORMATION);
 			bHandled = TRUE;
 			return 0;

@@ -25,6 +25,7 @@
 
 #include <airdcpp/Util.h>
 #include <airdcpp/UpdateManager.h>
+
 #include "WinUtil.h"
 #include "MainFrm.h"
 
@@ -70,7 +71,12 @@ LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 	ctrlDownload.SetWindowText(CTSTRING(DOWNLOAD));
 	
+#ifndef FORCE_UPDATE
 	versionAvailable = BUILD_NUMBER < buildID;
+#else
+	versionAvailable = true;
+#endif
+
 	bool versionDownloaded = UpdateManager::getInstance()->getUpdater().getInstalledUpdate() == buildID;
 	ctrlDownload.EnableWindow(!versionDownloaded && versionAvailable);
 	//ctrlDownload.EnableWindow(!versionDownloaded);
