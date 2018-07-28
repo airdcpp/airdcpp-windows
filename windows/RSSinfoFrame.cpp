@@ -218,7 +218,7 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 			bool allRelease = all_of(items, [=](const ItemInfo* a) { return a->isRelease; });
 			if (allRelease) {
 				//auto search menus
-				appendDownloadMenu(menu, DownloadBaseHandler::TYPE_SECONDARY, true, boost::none, boost::none, false);
+				appendDownloadMenu(menu, DownloadBaseHandler::TYPE_SECONDARY, true, nullopt, nullopt, false);
 				menu.appendSeparator();
 			}
 

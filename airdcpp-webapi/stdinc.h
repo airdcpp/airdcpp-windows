@@ -55,21 +55,24 @@
 #include <boost/range/algorithm/copy.hpp>
 #include <boost/algorithm/cxx11/copy_if.hpp>
 
-// define types for two different server endpoints, one for each config we are
-// using
-typedef websocketpp::server<websocketpp::config::asio> server_plain;
-typedef websocketpp::server<websocketpp::config::asio_tls> server_tls;
-typedef websocketpp::http::status_code::value api_return;
 
-using namespace dcpp;
-
-using json = nlohmann::json;
-
-using ArgumentException = webserver::JsonException;
 
 #define CODE_UNPROCESSABLE_ENTITY 422
 
 namespace webserver {
+	// define types for two different server endpoints, one for each config we are
+	// using
+	typedef websocketpp::server<websocketpp::config::asio> server_plain;
+	typedef websocketpp::server<websocketpp::config::asio_tls> server_tls;
+	typedef websocketpp::http::status_code::value api_return;
+
+	using namespace dcpp;
+
+	using json = nlohmann::json;
+
+	using ArgumentException = webserver::JsonException;
+
+
 	class ApiRequest;
 
 	typedef std::function<void()> CallBack;

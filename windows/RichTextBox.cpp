@@ -996,14 +996,14 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 						/* show an option to remove the item */
 						menu.appendItem(TSTRING(STOP_SHARING), [this] { handleRemoveTemp(); });
 					} else if (!isMyLink) {
-						appendDownloadMenu(menu, DownloadBaseHandler::TYPE_PRIMARY, false, m.getTTH(), boost::none);
+						appendDownloadMenu(menu, DownloadBaseHandler::TYPE_PRIMARY, false, m.getTTH(), nullopt);
 					}
 
 					if ((!author.empty() && !isMyLink) || AirUtil::allowOpenDupe(dupeType))
 						menu.appendItem(TSTRING(OPEN), [this] { handleOpenFile(); });
 				} else if (isRelease) {
 					//autosearch menus
-					appendDownloadMenu(menu, DownloadBaseHandler::TYPE_SECONDARY, true, boost::none, Text::fromT(selectedWord) + PATH_SEPARATOR, false);
+					appendDownloadMenu(menu, DownloadBaseHandler::TYPE_SECONDARY, true, nullopt, Text::fromT(selectedWord) + PATH_SEPARATOR, false);
 				}
 			}
 		}

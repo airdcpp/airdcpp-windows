@@ -1479,7 +1479,7 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			else
 				resultsMenu.InsertSeparatorFirst(TSTRING_F(X_USERS, (((SearchInfo*)ctrlResults.list.getSelectedItem())->hits + 1)));
 
-			appendDownloadMenu(resultsMenu, hasFiles ? DownloadBaseHandler::TYPE_BOTH : DownloadBaseHandler::TYPE_PRIMARY, hasNmdcDirsOnly, hasFiles ? tthInfo.tth : boost::none, tthInfo.path);
+			appendDownloadMenu(resultsMenu, hasFiles ? DownloadBaseHandler::TYPE_BOTH : DownloadBaseHandler::TYPE_PRIMARY, hasNmdcDirsOnly, hasFiles ? tthInfo.tth : nullopt, tthInfo.path);
 
 			if (hasFiles && (!hasDupes || ctrlResults.list.GetSelectedCount() == 1)) {
 				resultsMenu.appendSeparator();

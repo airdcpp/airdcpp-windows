@@ -292,7 +292,7 @@ LRESULT RssFilterPage::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	targetMenu.CreatePopupMenu();
 	targetMenu.InsertSeparatorFirst(CTSTRING(DOWNLOAD_TO));
 
-	appendDownloadTo(targetMenu, false, true, boost::none, boost::none, File::getVolumes());
+	appendDownloadTo(targetMenu, false, true, nullopt, nullopt, File::getVolumes());
 
 	targetMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_VERPOSANIMATION, pt);
 	return 0;

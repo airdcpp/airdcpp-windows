@@ -112,7 +112,7 @@ public:
 				virtualFilePath = Util::getAdcFilePath(*aVirtualPath);
 			}
 
-			appendDownloadTo(*targetMenuWhole, true, true, boost::none, virtualFilePath, volumes);
+			appendDownloadTo(*targetMenuWhole, true, true, nullopt, virtualFilePath, volumes);
 		}
 	}
 

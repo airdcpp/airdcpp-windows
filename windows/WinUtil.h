@@ -415,7 +415,7 @@ public:
 
 		// did we click on a scrollbar?
 		if (WinUtil::isOnScrollbar(aWindow.m_hWnd, pt)) {
-			return boost::none;
+			return nullopt;
 		}
 
 		// get the current one instead of the pos where we clicked
