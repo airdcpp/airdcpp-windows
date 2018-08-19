@@ -557,10 +557,11 @@ public:
     void listen(std::string const & host, std::string const & service,
         lib::error_code & ec)
     {
-		lib::asio::ip::tcp::resolver r(*m_io_service);
-		lib::asio::ip::tcp::resolver::query query(host, service);
-		lib::asio::ip::tcp::resolver::iterator endpoint_iterator = r.resolve(query);
-		lib::asio::ip::tcp::resolver::iterator end;
+        using lib::asio::ip::tcp;
+        tcp::resolver r(*m_io_service);
+        tcp::resolver::query query(host, service);
+        tcp::resolver::iterator endpoint_iterator = r.resolve(query);
+        tcp::resolver::iterator end;
         if (endpoint_iterator == end) {
             m_elog->write(log::elevel::library,
                 "asio::listen could not resolve the supplied host or service");
