@@ -1,3 +1,11 @@
+3.51
+
+Fixed:
+
+- Fix a crash when receiving invalid ADC search results
+- Fix handling of (invalid) files that were modified more than 48 years ago
+
+
 3.50
 
 Added:
