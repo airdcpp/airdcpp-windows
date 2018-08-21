@@ -380,6 +380,8 @@ private:
 
 	ParamMap ucLineParams;
 
+	void listViewSelectSubDir(const string& aSubPath, const string& aParentPath);
+
 	static int columnIndexes[COLUMN_LAST];
 	static int columnSizes[COLUMN_LAST];
 

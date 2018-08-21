@@ -1128,7 +1128,10 @@ void DirectoryListingFrame::up() {
 	t = ctrlTree.GetParentItem(t);
 	if(t == NULL)
 		return;
+	auto aPrevPath = curPath;
 	ctrlTree.SelectItem(t);
+	
+	callAsync([=] { listViewSelectSubDir(aPrevPath, curPath); });
 }
 
 
@@ -1136,7 +1139,18 @@ void DirectoryListingFrame::up() {
 void DirectoryListingFrame::handleHistoryClick(const string& aPath, bool byHistory) {
 	if(byHistory) 
 		changeType = CHANGE_HISTORY;
+	auto aPrevPath = curPath;
 	selectItem(aPath);
+	listViewSelectSubDir(aPrevPath, aPath);
+
+}
+
+void DirectoryListingFrame::listViewSelectSubDir(const string& aSubPath, const string& aParentPath) {
+	if (!aSubPath.empty() && AirUtil::isSubAdc(aSubPath, aParentPath)) {
+		auto i = ctrlFiles.list.findItem(Text::toT(Util::getAdcLastDir(aSubPath)));
+		if (i != -1)
+			ctrlFiles.list.SelectItem(i);
+	}
 }
 
 LRESULT DirectoryListingFrame::onDoubleClickDirs(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& bHandled) {

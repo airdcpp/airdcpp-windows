@@ -328,7 +328,10 @@ void QueueFrame::handleTab() {
 
 void QueueFrame::handleHistoryClick(const string& aPath, bool byHistory) {
 	if (aPath == "/"){
+		auto sel = curDirectory;
 		reloadList(byHistory);
+		if (sel)
+			callAsync([=] { ctrlQueue.list.selectItem(sel); });
 	} else {
 		handleItemClick(findItemByPath(aPath), byHistory);
 	}
@@ -428,7 +431,7 @@ void QueueFrame::handleItemClick(const QueueItemInfoPtr& aII, bool byHistory/*fa
 	insertItems(item);
 	ctrlQueue.list.SetRedraw(TRUE);
 	if (sel)
-		ctrlQueue.list.selectItem(sel);
+		callAsync([=] { ctrlQueue.list.selectItem(sel); });
 
 	ctrlQueue.onListChanged(false);
 }
