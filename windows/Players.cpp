@@ -31,19 +31,15 @@
 #include "WMPlayerRemoteApi.h"
 #include "winamp.h"
 
-#include <atlwin.h>
-#include <atlcomtime.h>
 #include <control.h>
+
+#define byte BYTE // 'byte': ambiguous symbol (C++17)
 #include <strmif.h>	// error with missing ddraw.h, get it from MS DirectX SDK
+#undef byte
 
 #include "boost/algorithm/string/replace.hpp"
 
-#include <cstdlib>
-#include <iostream>
 #include <fstream>
-#include <cstring>
-
-#include <string>
 
 namespace dcpp {
 

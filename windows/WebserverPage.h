@@ -19,11 +19,10 @@
 #ifndef WEBSERVER_PAGE_H
 #define WEBSERVER_PAGE_H
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
 #include "stdafx.h"
+#include "Async.h"
 #include "Resource.h"
 
 #include <atlcrack.h>

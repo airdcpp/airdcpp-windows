@@ -20,6 +20,10 @@
 #ifndef DCPLUSPLUS_WIN32_STDAFX_H
 #define DCPLUSPLUS_WIN32_STDAFX_H
 
+#include <airdcpp/stdinc.h>
+#include <airdcpp/ResourceManager.h>
+
+
 #ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC //if in use preprocessor definitions comment this out
 #include <stdlib.h>
@@ -27,13 +31,6 @@
 #endif
 
 #define OEMRESOURCE
-
-#include <airdcpp/stdinc.h>
-#include <airdcpp/ResourceManager.h>
-
-using namespace dcpp;
-
-
 
 #ifdef _WIN32
 
@@ -57,7 +54,7 @@ using namespace dcpp;
 
 extern CAppModule _Module;
 
-#define _WTL_MDIWINDOWMENU_TEXT CTSTRING(MENU_WINDOW)
+//#define _WTL_MDIWINDOWMENU_TEXT CTSTRING(MENU_WINDOW)
 //#define _WTL_CMDBAR_VISTA_MENUS 0
 //#define _WTL_NO_AUTO_THEME 1
 #define _WTL_TASKDIALOG_DIRECT
@@ -81,3 +78,8 @@ extern CAppModule _Module;
 #define WM_SPEAKER (WM_APP + 500)
 #define WM_REFRESH_SETTINGS (WM_APP + 501)
 #endif
+
+
+using namespace dcpp;
+
+using byte = ::byte;

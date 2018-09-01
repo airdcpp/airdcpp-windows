@@ -25,7 +25,7 @@
 
 #include <string>
 #include <airdcpp/typedefs.h>
-#include <atlimage.h>
+
 #include "ExCImage.h"
 #include "Async.h"
 

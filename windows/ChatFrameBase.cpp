@@ -32,6 +32,7 @@
 #include <airdcpp/modules/ShareMonitorManager.h>
 #include <airdcpp/modules/ShareScannerManager.h>
 #include <airdcpp/modules/AutoSearchManager.h>
+#include <airdcpp/modules/WebShortcuts.h>
 
 #include <airdcpp/HashManager.h>
 #include <airdcpp/SettingsManager.h>

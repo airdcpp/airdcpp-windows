@@ -46,6 +46,7 @@
 #include <airdcpp/ViewFileManager.h>
 
 #include <airdcpp/modules/PreviewAppManager.h>
+#include <airdcpp/modules/WebShortcuts.h>
 
 #include <airdcpp/version.h>
 
@@ -55,6 +56,12 @@
 #include "BarShader.h"
 #include "BrowseDlg.h"
 #include "ExMessageBox.h"
+#include "SplashWindow.h"
+
+#define byte BYTE // 'byte': ambiguous symbol (C++17)
+#include <atlcomtime.h>
+#undef byte
+
 
 boost::wregex WinUtil::pathReg;
 boost::wregex WinUtil::chatLinkReg;
@@ -179,6 +186,12 @@ COLORREF HLS_TRANSFORM (COLORREF rgb, int percent_L, int percent_S) {
 		s = BYTE((s * (100+percent_S)) / 100);
 	}
 	return HLS2RGB (HLS(h, l, s));
+}
+
+string WinUtil::getCompileDate() {
+	COleDateTime tCompileDate;
+	tCompileDate.ParseDateTime(_T(__DATE__), LOCALE_NOUSEROVERRIDE, 1033);
+	return Text::fromT(tCompileDate.Format(_T("%d.%m.%Y")).GetString());
 }
 
 double WinUtil::getFontFactor() {

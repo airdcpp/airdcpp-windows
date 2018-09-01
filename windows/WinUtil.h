@@ -22,7 +22,6 @@
 #include "resource.h"
 
 #include "OMenu.h"
-#include "SplashWindow.h"
 
 #include <airdcpp/DupeType.h>
 #include <airdcpp/HintedUser.h>
@@ -32,12 +31,6 @@
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/User.h>
 #include <airdcpp/Util.h>
-#include <airdcpp/modules/WebShortcuts.h>
-
-/* Work around DBTYPE name conflict with Berkeley DB */
-#define DBTYPE MS_DBTYPE
-#include <atlcomtime.h>
-#undef DBTYPE
 
 class RichTextBox;
 
@@ -55,6 +48,11 @@ COLORREF HLS2RGB (HLSCOLOR hls);
 COLORREF HLS_TRANSFORM (COLORREF rgb, int percent_L, int percent_S);
 
 class FlatTabCtrl;
+class SplashWindow;
+
+namespace dcpp {
+	class WebShortcut;
+}
 
 template<class T, int title, int ID = -1>
 class StaticFrame {
@@ -496,11 +494,7 @@ public:
 
 	static void viewLog(const string& path, bool aHistory=false);
 
-	static string getCompileDate() {
-		COleDateTime tCompileDate; 
-		tCompileDate.ParseDateTime( _T( __DATE__ ), LOCALE_NOUSEROVERRIDE, 1033 );
-		return Text::fromT(tCompileDate.Format(_T("%d.%m.%Y")).GetString());
-	}
+	static string getCompileDate();
 
 	static time_t fromSystemTime(const SYSTEMTIME* pTime);
 	static void toSystemTime(const time_t aTime, SYSTEMTIME* sysTime);

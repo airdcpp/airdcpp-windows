@@ -47,6 +47,7 @@
 #include "AutoSearchFrm.h"
 #include "QueueFrame.h"
 #include "BrowseDlg.h"
+#include "SplashWindow.h"
 
 #include "Winamp.h"
 #include "Players.h"

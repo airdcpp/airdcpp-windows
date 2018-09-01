@@ -20,6 +20,7 @@
 #ifndef QUEUE_FRAME_H
 #define QUEUE_FRAME_H
 
+#include "Async.h"
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"
 #include "FilteredListViewCtrl.h"

@@ -134,7 +134,7 @@ void CBarShader::Fill(COLORREF crColor)
 
 void CBarShader::Draw(CDC& dc, int iLeft, int iTop, int P3DDepth)
 {
-	m_used3dlevel = (byte)P3DDepth;
+	m_used3dlevel = (::byte)P3DDepth;
 	COLORREF crLastColor = (COLORREF)~0, crPrevBkColor = dc.GetBkColor();
 	POSITION pos = m_Spans.GetHeadPosition();
 	RECT rectSpan;
