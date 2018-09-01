@@ -81,14 +81,14 @@
 #include <boost/noncopyable.hpp>
 #include <boost/regex.hpp>
 
-//#if defined(_MSC_VER)
-//#include <optional>
-//using std::optional;
-//#else
-#include <boost/optional.hpp>
-using boost::optional;
-#define nullopt boost::none
-//#endif
+#if defined(_MSC_VER)
+	#include <optional>
+	using std::optional;
+#else
+	#include <boost/optional.hpp>
+	using boost::optional;
+	#define nullopt boost::none
+#endif
 
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/adaptor/reversed.hpp>
