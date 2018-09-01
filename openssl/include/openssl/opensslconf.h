@@ -118,8 +118,8 @@ extern "C" {
 
 #if !(defined(VMS) || defined(__VMS)) /* VMS uses logical names instead */
 #if defined(HEADER_CRYPTLIB_H) && !defined(OPENSSLDIR)
-#define ENGINESDIR "D:\\opensource\\openssl-dist-1.0.2l-vs2017\\openssl-x64-shared-release-vs2017/lib/engines"
-#define OPENSSLDIR "D:\\opensource\\openssl-dist-1.0.2l-vs2017\\openssl-x64-shared-release-vs2017/ssl"
+#define ENGINESDIR "N:\\projects\\openssl-dist-1.0.2p-vs2017\\openssl-x64-static-release-vs2017/lib/engines"
+#define OPENSSLDIR "N:\\projects\\openssl-dist-1.0.2p-vs2017\\openssl-x64-static-release-vs2017/ssl"
 #endif
 #endif
 
