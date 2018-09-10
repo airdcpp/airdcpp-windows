@@ -263,6 +263,7 @@ double OperaColors::RGB2HUE(double r, double g, double b) {
 	double m2 = MAX3(r, g, b);
 	double m1 = CENTER(r, g, b);
 	double m0 = MIN3(r, g, b);
+	double F = 0;
 
 	if (m2 == m1) {
 		if (r == g) {
@@ -276,7 +277,8 @@ double OperaColors::RGB2HUE(double r, double g, double b) {
 		H = 60;
 		goto _RGB2HUE_END;
 	}
-	double F = 60 * (m1 - m0) / (m2 - m0);
+	
+	F = 60 * (m1 - m0) / (m2 - m0);
 	if (r == m2) {
 		H = 0 + F * (g - b);
 		goto _RGB2HUE_END;

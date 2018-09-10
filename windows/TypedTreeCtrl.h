@@ -71,12 +71,12 @@ public:
 	}
 
 	T* getSelectedItemData() noexcept {
-		auto t = GetSelectedItem();
+		auto t = this->GetSelectedItem();
 		if (!t) {
 			return nullptr;
 		}
 
-		return (T*)GetItemData(t);
+		return (T*)this->GetItemData(t);
 	}
 
 	LRESULT OnGetItemDispInfo(int /*idCtrl*/, NMHDR *pNMHDR, BOOL &bHandled) {
@@ -108,17 +108,17 @@ public:
 		NMTREEVIEW *pNMTreeView = (NMTREEVIEW*)pNMHDR;
 		if(pNMTreeView->action == TVE_COLLAPSE || pNMTreeView->action == TVE_COLLAPSERESET) {
 			//Get the currently selected item
-			HTREEITEM sel = GetSelectedItem();
+			HTREEITEM sel = this->GetSelectedItem();
 			bool childSelected = false;
 			if (sel) {
-				childSelected = AirUtil::isSubAdc(((T*)GetItemData(sel))->getAdcPath(), ((T*)pNMTreeView->itemNew.lParam)->getAdcPath());
+				childSelected = AirUtil::isSubAdc(((T*)this->GetItemData(sel))->getAdcPath(), ((T*)pNMTreeView->itemNew.lParam)->getAdcPath());
 				if (childSelected) {
 					//it would be selected anyway but without any notification message
-					SelectItem(pNMTreeView->itemNew.hItem);
+					this->SelectItem(pNMTreeView->itemNew.hItem);
 				}
 			}
 
-			Expand(pNMTreeView->itemNew.hItem, (childSelected && parent->getChildrenState((T*)pNMTreeView->itemNew.lParam) == CHILDREN_PART_PENDING) ? TVE_COLLAPSE | TVE_COLLAPSERESET : pNMTreeView->action);
+			this->Expand(pNMTreeView->itemNew.hItem, (childSelected && parent->getChildrenState((T*)pNMTreeView->itemNew.lParam) == CHILDREN_PART_PENDING) ? TVE_COLLAPSE | TVE_COLLAPSERESET : pNMTreeView->action);
 		} else if (pNMTreeView->action == TVE_EXPAND && !(pNMTreeView->itemNew.state & TVIS_EXPANDEDONCE)) {
 			T* curDir = (T*)pNMTreeView->itemNew.lParam;
 
@@ -143,14 +143,14 @@ public:
 		tvItem.hItem = hItem;
 		tvItem.mask = TVIF_HANDLE | TVIF_CHILDREN;
 		tvItem.cChildren = bHavePlus;
-		SetItem(&tvItem);
+		this->SetItem(&tvItem);
 	}
 
 	bool hasChildren(HTREEITEM hItem) {
 		TVITEM tvItem;
 		tvItem.hItem = hItem;
 		tvItem.mask = TVIF_HANDLE | TVIF_CHILDREN;
-		return GetItem(&tvItem) && (tvItem.cChildren != 0);
+		return this->GetItem(&tvItem) && (tvItem.cChildren != 0);
 	}
 
 	void insertItem(const T* aDir, HTREEITEM aParent, bool bold) {
@@ -170,19 +170,19 @@ public:
 	    
 		tvs.hParent = aParent;
 		tvs.hInsertAfter = TVI_FIRST;
-    	InsertItem(&tvs) ;
+		this->InsertItem(&tvs) ;
 	}
 
 	void updateItemImage(const T* item) { 
-		HTREEITEM ht = findItem(GetRootItem(), item->getAdcPath());
+		HTREEITEM ht = findItem(this->GetRootItem(), item->getAdcPath());
 		if (ht) {
 			updateItemImage(ht);
 		}
 	}
 
 	void updateItemImage(HTREEITEM ht) {
-		SetItemImage(ht, I_IMAGECALLBACK, I_IMAGECALLBACK);
-		RedrawWindow();
+		this->SetItemImage(ht, I_IMAGECALLBACK, I_IMAGECALLBACK);
+		this->RedrawWindow();
 	}
 
 	HTREEITEM findItemByPath(HTREEITEM ht, const tstring& aPath) {
@@ -202,8 +202,8 @@ private:
 			return ht;
 		}
 
-		for (HTREEITEM child = GetChildItem(ht); child != NULL; child = GetNextSiblingItem(child)) {
-			T* d = (T*)GetItemData(child);
+		for (HTREEITEM child = this->GetChildItem(ht); child != NULL; child = this->GetNextSiblingItem(child)) {
+			T* d = (T*)this->GetItemData(child);
 			if (compare(d->getNameW(), aPath.substr(1, i - 1)) == 0) {
 				return findItem(child, aPath.substr(i), true);
 			}
@@ -211,19 +211,19 @@ private:
 
 		//have we created it yet?
 		if (aIsFirst && hasChildren(ht)) {
-			bool expanded = IsExpanded(ht);
+			bool expanded = this->IsExpanded(ht);
 			if (expanded) {
 				// refresh the content
-				Expand(ht, TVE_COLLAPSE | TVE_COLLAPSERESET);
+				this->Expand(ht, TVE_COLLAPSE | TVE_COLLAPSERESET);
 			}
 
-			Expand(ht, TVE_EXPAND);
+			this->Expand(ht, TVE_EXPAND);
 
 			auto ret = findItem(ht, aPath, false);
 
 			if (!expanded) {
 				//leave it as it was...
-				Expand(ht, TVE_COLLAPSE);
+				this->Expand(ht, TVE_COLLAPSE);
 			}
 			return ret;
 		}

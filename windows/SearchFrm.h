@@ -224,7 +224,7 @@ public:
 		return 0;
 	}
 
-	void SearchFrame::setInitial(const tstring& str, LONGLONG size, Search::SizeModes mode, const string& type) {
+	void setInitial(const tstring& str, LONGLONG size, Search::SizeModes mode, const string& type) {
 		initialString = str; initialSize = size; initialMode = mode; initialType = type; running = true;
 	}
 

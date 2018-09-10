@@ -220,7 +220,7 @@ string Players::getMPCSpam() {
 				// from the file routine
 				ULONG cFetched = 0;
 				for(CComPtr<IBaseFilter> pBF; pEF->Next(1, &pBF, &cFetched) == S_OK; pBF = NULL) {
-					if(CComQIPtr<IFileSourceFilter> pFSF = pBF) {
+					if(CComQIPtr<IFileSourceFilter> pFSF = (CComQIPtr<IFileSourceFilter>)pBF) {
 						LPOLESTR pFileName = NULL;
 						AM_MEDIA_TYPE mt;
 						if(pFSF->GetCurFile(&pFileName, &mt) == S_OK) {
@@ -278,7 +278,7 @@ string Players::getMPCSpam() {
 			}
 
 			// position routine
-			CComQIPtr<IMediaSeeking> pMS = pFG;
+			CComQIPtr<IMediaSeeking> pMS = (CComQIPtr<IMediaSeeking>)pFG;
 			REFERENCE_TIME pos, dur;
 			if((pMS->GetCurrentPosition(&pos) == S_OK) && (pMS->GetDuration(&dur) == S_OK)) {
 				params["elapsed"] =  Text::fromT(Util::formatSecondsW(pos/10000000));

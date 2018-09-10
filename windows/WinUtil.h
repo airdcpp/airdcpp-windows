@@ -335,15 +335,16 @@ public:
 		return (sz.cx == 0) ? 0 : (sz.cx + 10);
 	}
 
-	static int WinUtil::getTextWidth(HWND wnd, HFONT fnt) {
-	HDC dc = ::GetDC(wnd);
-	HGDIOBJ old = ::SelectObject(dc, fnt);
-	TEXTMETRIC tm;
-	::GetTextMetrics(dc, &tm);
-	::SelectObject(dc, old);
-	::ReleaseDC(wnd, dc);
-	return tm.tmAveCharWidth;
-}
+	static int getTextWidth(HWND wnd, HFONT fnt) {
+		HDC dc = ::GetDC(wnd);
+		HGDIOBJ old = ::SelectObject(dc, fnt);
+		TEXTMETRIC tm;
+		::GetTextMetrics(dc, &tm);
+		::SelectObject(dc, old);
+		::ReleaseDC(wnd, dc);
+		return tm.tmAveCharWidth;
+	}
+
 	static int getTextHeight(HWND wnd, HFONT fnt) {
 		HDC dc = ::GetDC(wnd);
 		HGDIOBJ old = ::SelectObject(dc, fnt);

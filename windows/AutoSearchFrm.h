@@ -42,7 +42,7 @@ public:
 	
 	typedef MDITabChildWindowImpl<AutoSearchFrame> baseClass;
 
-	AutoSearchFrame() : loading(true), closed(false), ctrlStatusContainer(STATUSCLASSNAME, this, AS_STATUS_MSG_MAP) { }
+	AutoSearchFrame() : loading(true), closed(false), ctrlStatusContainer((LPTSTR)STATUSCLASSNAME, this, AS_STATUS_MSG_MAP) { }
 	~AutoSearchFrame() { }
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("AutoSearchFrame"), IDR_AUTOSEARCH, 0, COLOR_3DFACE);

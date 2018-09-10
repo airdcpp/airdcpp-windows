@@ -35,7 +35,7 @@ class ADLSProperties : public CDialogImpl<ADLSProperties>
 public:
 
 	// Constructor/destructor
-	ADLSProperties::ADLSProperties(ADLSearch& _search) : search(_search) { }
+	ADLSProperties(ADLSearch& _search) : search(_search) { }
 	~ADLSProperties() { }
 
 	// Dilaog unique id

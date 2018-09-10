@@ -104,16 +104,16 @@ public:
 	LRESULT onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 
 		 if(SETTING(USE_EXPLORER_THEME)) {
-			SetWindowTheme(m_hWnd, L"explorer", NULL);
+			SetWindowTheme(this->m_hWnd, L"explorer", NULL);
          }
 
 		 if (style & LVITEM_GROUPING) {
-			 EnableGroupView(TRUE);
+			 this->EnableGroupView(TRUE);
 			 LVGROUPMETRICS metrics = { 0 };
 			 metrics.cbSize = sizeof(metrics);
 			 metrics.mask = LVGMF_TEXTCOLOR;
 			 metrics.crHeader = SETTING(TEXT_GENERAL_FORE_COLOR);
-			 SetGroupMetrics(&metrics);
+			 this->SetGroupMetrics(&metrics);
 		 }
 
 		bHandled = FALSE;
@@ -168,9 +168,9 @@ public:
 
 	LRESULT onChar(UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 		if((GetKeyState(VkKeyScan('A') & 0xFF) & 0xFF00) > 0 && (GetKeyState(VK_CONTROL) & 0xFF00) > 0){
-			int count = GetItemCount();
+			int count = this->GetItemCount();
 			for(int i = 0; i < count; ++i)
-				ListView_SetItemState(m_hWnd, i, LVIS_SELECTED, LVIS_SELECTED);
+				ListView_SetItemState(this->m_hWnd, i, LVIS_SELECTED, LVIS_SELECTED);
 
 			return 0;
 		}
@@ -190,8 +190,8 @@ public:
 	BOOL hitIcon(int aItem, int aSubItem) {
 		CRect rc;
 		CPoint pt = GetMessagePos();
-		ScreenToClient(&pt);
-		GetSubItemRect(aItem, aSubItem, LVIR_ICON, rc);
+		this->ScreenToClient(&pt);
+		this->GetSubItemRect(aItem, aSubItem, LVIR_ICON, rc);
 
 		return PtInRect(&rc, pt);
 	}
@@ -239,7 +239,7 @@ public:
 
 		NMLVGETINFOTIP* pInfoTip = (NMLVGETINFOTIP*) pnmh;
 
-		tstring InfoTip = GetColumnTexts(pInfoTip->iItem);
+		tstring InfoTip = this->GetColumnTexts(pInfoTip->iItem);
 		
 		pInfoTip->cchTextMax = InfoTip.size();
 
@@ -251,18 +251,18 @@ public:
 
 	tstring GetColumnTexts(int row) {
 #define BUF_SIZE 300
-		BOOL NoColumnHeader = (BOOL) (GetWindowLongPtr(GWL_STYLE) & LVS_NOCOLUMNHEADER);
+		BOOL NoColumnHeader = (BOOL) (this->GetWindowLongPtr(GWL_STYLE) & LVS_NOCOLUMNHEADER);
 		tstring InfoTip;
 		tstring buffer;
 		TCHAR buf[512];
 		//buffer.resize(BUF_SIZE);
 
 		int indexes[32];
-		GetColumnOrderArray(GetHeader().GetItemCount(), indexes);
+		this->GetColumnOrderArray(this->GetHeader().GetItemCount(), indexes);
 		LV_COLUMN lvCol;
 
-		for (int i = 0; i < GetHeader().GetItemCount(); ++i) {
-			GetItemText(row, indexes[i], &buf[0], BUF_SIZE);
+		for (int i = 0; i < this->GetHeader().GetItemCount(); ++i) {
+			this->GetItemText(row, indexes[i], &buf[0], BUF_SIZE);
 			buffer = buf;
 
 			if (!buffer.empty()) {
@@ -270,7 +270,7 @@ public:
 					lvCol.mask = LVCF_TEXT;
 					lvCol.pszText = &buf[0];
 					lvCol.cchTextMax = BUF_SIZE;
-					GetColumn(indexes[i], &lvCol);
+					this->GetColumn(indexes[i], &lvCol);
 					InfoTip += lvCol.pszText;
 					InfoTip += _T(": ");
 				}
@@ -296,13 +296,13 @@ public:
 		} else {
 			sortColumn = -1;
 		}
-		updateArrow();
+		this->updateArrow();
 		resort();
 		return 0;
 	}
 	void resort() {
 		if(sortColumn != -1) {
-			SortItems(&compareFunc, (LPARAM)this);
+			this->SortItems(&compareFunc, (LPARAM)this);
 		}
 	}
 
@@ -353,7 +353,7 @@ public:
 		tstring sCopy;
 
 		int sel = -1;
-		while ((sel = GetNextItem(sel, LVNI_SELECTED)) != -1) {
+		while ((sel = this->GetNextItem(sel, LVNI_SELECTED)) != -1) {
 			if (!sCopy.empty())
 				sCopy += _T("\r\n");
 
@@ -375,7 +375,7 @@ public:
 		return insertItem(getSortPos(item), item, image);
 	}
 	int insertItem(int i, const T* item, int image) {
-		return InsertItem(LVIF_TEXT | LVIF_PARAM | LVIF_IMAGE, i, 
+		return this->InsertItem(LVIF_TEXT | LVIF_PARAM | LVIF_IMAGE, i,
 			LPSTR_TEXTCALLBACK, 0, 0, image, (LPARAM)item);
 	}
 
@@ -391,7 +391,7 @@ public:
 		lvi.pszText = LPSTR_TEXTCALLBACK;
 		lvi.iImage = image;
 		lvi.lParam = (LPARAM)item;
-		return InsertItem(&lvi);
+		return this->InsertItem(&lvi);
 	}
 
 	void insertGroup(int id, const tstring& name, DWORD uAlign) {
@@ -402,15 +402,15 @@ public:
 		lvg.mask = LVGF_GROUPID | LVGF_HEADER | LVGF_STATE | LVGF_ALIGN;
 		lvg.uAlign = uAlign;
 		lvg.pszHeader = (LPWSTR)name.c_str();
-		InsertGroup(id, &lvg);
+		this->InsertGroup(id, &lvg);
 	}
 
-	T* getItemData(int iItem) const { return (T*)GetItemData(iItem); }
-	const T* getSelectedItem() const { return (GetSelectedCount() > 0 ? getItemData(GetNextItem(-1, LVNI_SELECTED)) : NULL); }
+	T* getItemData(int iItem) const { return (T*)this->GetItemData(iItem); }
+	const T* getSelectedItem() const { return (this->GetSelectedCount() > 0 ? getItemData(this->GetNextItem(-1, LVNI_SELECTED)) : NULL); }
 
 	int findItem(const T* item) const { 
 		LVFINDINFO fi = { LVFI_PARAM, NULL, (LPARAM)item };
-		return FindItem(&fi, -1);
+		return this->FindItem(&fi, -1);
 	}
 	struct CompFirst {
 		CompFirst() { } 
@@ -420,22 +420,22 @@ public:
 	};
 	int findItem(const tstring& b, int start = -1, bool aPartial = false) const {
 		LVFINDINFO fi = { aPartial ? LVFI_PARTIAL : LVFI_STRING, b.c_str() };
-		return FindItem(&fi, start);
+		return this->FindItem(&fi, start);
 	}
 
 	void forEach(void (T::*func)()) {
-		int n = GetItemCount();
+		int n = this->GetItemCount();
 		for(int i = 0; i < n; ++i)
 			(getItemData(i)->*func)();
 	}
 	void forEachSelected(void (T::*func)()) {
 		int i = -1;
-		while( (i = GetNextItem(i, LVNI_SELECTED)) != -1)
+		while( (i = this->GetNextItem(i, LVNI_SELECTED)) != -1)
 			(getItemData(i)->*func)();
 	}
 	template<class _Function>
 	_Function forEachT(_Function pred) {
-		int n = GetItemCount();
+		int n = this->GetItemCount();
 		for(int i = 0; i < n; ++i)
 			pred(getItemData(i));
 		return pred;
@@ -443,7 +443,7 @@ public:
 	template<class _Function>
 	_Function forEachSelectedT(_Function pred) {
 		int i = -1;
-		while( (i = GetNextItem(i, LVNI_SELECTED)) != -1)
+		while( (i = this->GetNextItem(i, LVNI_SELECTED)) != -1)
 			pred(getItemData(i));
 		return pred;
 	}
@@ -452,18 +452,18 @@ public:
 	}
 
 	void updateItem(int i) {
-		int k = GetHeader().GetItemCount();
+		int k = this->GetHeader().GetItemCount();
 		for(int j = 0; j < k; ++j)
-			SetItemText(i, j, LPSTR_TEXTCALLBACK);
+			this->SetItemText(i, j, LPSTR_TEXTCALLBACK);
 	}
 	
-	void updateItem(int i, int col) { SetItemText(i, col, LPSTR_TEXTCALLBACK); }
+	void updateItem(int i, int col) { this->SetItemText(i, col, LPSTR_TEXTCALLBACK); }
 	void updateItem(const T* item) { int i = findItem(item); if(i != -1) updateItem(i); }
-	void deleteItem(const T* item) { int i = findItem(item); if(i != -1) DeleteItem(i); }
-	void selectItem(const T* item) { int i = findItem(item); if (i != -1) SelectItem(i); }
+	void deleteItem(const T* item) { int i = findItem(item); if(i != -1) this->DeleteItem(i); }
+	void selectItem(const T* item) { int i = findItem(item); if (i != -1) this->SelectItem(i); }
 
 	int getSortPos(const T* a) const {
-		int high = GetItemCount();
+		int high = this->GetItemCount();
 		if((sortColumn == -1) || (high == 0))
 			return high;
 
@@ -501,18 +501,18 @@ public:
 
 	void setSortColumn(int aSortColumn) {
 		sortColumn = aSortColumn;
-		updateArrow();
+		this->updateArrow();
 	}
 	int getSortColumn() const { return sortColumn; }
 	uint8_t getRealSortColumn() const { return findColumn(sortColumn); }
 	bool isAscending() const { return sortAscending; }
 	void setAscending(bool s) {
 		sortAscending = s;
-		updateArrow();
+		this->updateArrow();
 	}
 
 	iterator begin() { return iterator(this); }
-	iterator end() { return iterator(this, GetItemCount()); }
+	iterator end() { return iterator(this, this->GetItemCount()); }
 
 	int InsertColumn(uint8_t nCol, const tstring &columnHeading, int nFormat = LVCFMT_LEFT, int nWidth = -1, int nSubItem = -1, ColumnType aColType = COLUMN_TEXT ){
 		if(nWidth == 0) nWidth = 80;
@@ -536,16 +536,17 @@ public:
 			if((*i)->visible)
 				headerMenu.CheckMenuItem(j, MF_BYPOSITION | MF_CHECKED);
 		}
-		headerMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
+		headerMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, this->m_hWnd);
 	}
 		
 	void DestroyAllItems() {
-		const int count = GetItemCount();
+		const int count = this->GetItemCount();
 		for(int i = 0; i < count; i++) {
 			T* p = getItemData(i);
 			delete p;
 		}
-			DeleteAllItems();
+
+		this->DeleteAllItems();
 	}
 	
 	/*Override handling of window cancelmode, let the owner do the necessary drawing*/
@@ -570,7 +571,7 @@ public:
 		}
 
 		CRect rc;
-		GetHeader().GetWindowRect(&rc);
+		this->GetHeader().GetWindowRect(&rc);
 
 		if (PtInRect(&rc, pt)) {
 			showMenu(pt);
@@ -584,7 +585,7 @@ public:
 		auto ci = columnList[wParam];
 		ci->visible = ! ci->visible;
 
-		SetRedraw(FALSE);
+		this->SetRedraw(FALSE);
 
 		if(!ci->visible){
 			removeColumn(ci);
@@ -594,25 +595,25 @@ public:
 			LVCOLUMN lvcl = { 0 };
 			lvcl.mask = LVCF_ORDER;
 			lvcl.iOrder = ci->pos;
-			SetColumn(ci->pos, &lvcl);
-			for(int i = 0; i < GetItemCount(); ++i) {
+			this->SetColumn(ci->pos, &lvcl);
+			for(int i = 0; i < this->GetItemCount(); ++i) {
 				LVITEM lvItem;
 				lvItem.iItem = i;
 				lvItem.iSubItem = 0;
 				lvItem.mask = LVIF_PARAM | (noDefaultItemImages ? 0 : LVIF_IMAGE);
-				GetItem(&lvItem);
+				this->GetItem(&lvItem);
 				if(!noDefaultItemImages)
 					lvItem.iImage = ((T*)lvItem.lParam)->getImageIndex();
-				SetItem(&lvItem);
+				this->SetItem(&lvItem);
 				updateItem(i);
 			}
 		}
 
 		updateColumnIndexes();
 
-		SetRedraw();
-		Invalidate();
-		UpdateWindow();
+		this->SetRedraw();
+		this->Invalidate();
+		this->UpdateWindow();
 
 		return 0;
 	}
@@ -645,13 +646,13 @@ public:
 		}*/			
 
 		TCHAR buf[512];
-		int size = GetHeader().GetItemCount();
+		int size = this->GetHeader().GetItemCount();
 		for(int i = 0; i < size; ++i) {
 			LVCOLUMN lvc;
 			lvc.mask = LVCF_TEXT | LVCF_ORDER | LVCF_WIDTH;
 			lvc.cchTextMax = 512;
 			lvc.pszText = buf;
-			GetColumn(i, &lvc);
+			this->GetColumn(i, &lvc);
 			for(auto c: columnList){
 				if(_tcscmp(buf, c->name.c_str()) == 0) {
 					c->pos = lvc.iOrder;
@@ -686,8 +687,8 @@ public:
 		StringTokenizer<string> tok(vis, ',');
 		StringList l = tok.getTokens();
 
-		StringIter i = l.begin();
-		for(ColumnIter j = columnList.begin(); j != columnList.end() && i != l.end(); ++i, ++j) {
+		auto i = l.begin();
+		for(auto j = columnList.begin(); j != columnList.end() && i != l.end(); ++i, ++j) {
 
 			if(Util::toInt(*i) == 0){
 				(*j)->visible = false;
@@ -706,7 +707,7 @@ public:
 		for(int i = 0; i < iCount;) {
 			if(columns[i] == j) {
 				lvc.iOrder = columnList[i]->pos = columns[i];
-				SetColumn(i, &lvc);
+				this->SetColumn(i, &lvc);
 
 				j++;
 				i = 0;
@@ -752,30 +753,30 @@ private:
 		lvcl.pszText = buf;
 		lvcl.cchTextMax = 512;
 
-		for(int k = 0; k < GetHeader().GetItemCount(); ++k){
-			GetColumn(k, &lvcl);
+		for(int k = 0; k < this->GetHeader().GetItemCount(); ++k){
+			this->GetColumn(k, &lvcl);
 			if(_tcscmp(ci->name.c_str(), lvcl.pszText) == 0){
 				ci->width = lvcl.cx;
 				ci->pos = lvcl.iOrder;
 
-				int itemCount = GetHeader().GetItemCount();
+				int itemCount = this->GetHeader().GetItemCount();
 				if(itemCount >= 0 && sortColumn > itemCount - 2)
 					setSortColumn(0);
 
 				if(sortColumn == ci->pos)
 					setSortColumn(0);
 	
-				DeleteColumn(k);
+				this->DeleteColumn(k);
 
-				for(int i = 0; i < GetItemCount(); ++i) {
+				for(int i = 0; i < this->GetItemCount(); ++i) {
 					LVITEM lvItem;
 					lvItem.iItem = i;
 					lvItem.iSubItem = 0;
 					lvItem.mask = LVIF_PARAM | (noDefaultItemImages ? 0 : LVIF_IMAGE);
-					GetItem(&lvItem);
+					this->GetItem(&lvItem);
 					if(!noDefaultItemImages)
 						lvItem.iImage = ((T*)lvItem.lParam)->getImageIndex();
-					SetItem(&lvItem);
+					this->SetItem(&lvItem);
 				}
 				break;
 			}
@@ -785,7 +786,7 @@ private:
 	void updateColumnIndexes() {
 		columnIndexes.clear();
 		
-		int columns = GetHeader().GetItemCount();
+		int columns = this->GetHeader().GetItemCount();
 		
 		columnIndexes.reserve(columns);
 
@@ -796,7 +797,7 @@ private:
 			lvcl.mask = LVCF_TEXT;
 			lvcl.pszText = buf;
 			lvcl.cchTextMax = 128;
-			GetColumn(i, &lvcl);
+			this->GetColumn(i, &lvcl);
 			
 			for(size_t j = 0; j < columnList.size(); ++j) {
 				if(stricmp(columnList[j]->name.c_str(), lvcl.pszText) == 0) {
@@ -842,7 +843,7 @@ public:
 
 	LRESULT onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 		states.CreateFromImage(IDB_STATE, 16, 2, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
-		SetImageList(states, LVSIL_STATE); 
+		this->SetImageList(states, LVSIL_STATE);
 
 		bHandled = FALSE;
 		return 0;
@@ -861,13 +862,13 @@ public:
 		LVHITTESTINFO lvhti;
 		lvhti.pt = pt;
 
-		int pos = SubItemHitTest(&lvhti);
+		int pos = this->SubItemHitTest(&lvhti);
 		if (pos != -1) {
 			CRect rect;
-			GetItemRect(pos, rect, LVIR_ICON);
+			this->GetItemRect(pos, rect, LVIR_ICON);
 			
 			if (pt.x < rect.left) {
-				T* i = getItemData(pos);
+				T* i = this->getItemData(pos);
 				if(i->parent == NULL) {
 					if(i->collapsed) {
 						Expand(i, pos);
@@ -883,18 +884,18 @@ public:
 	} 
 
 	void Collapse(T* parent, int itemPos) {
-		SetRedraw(false);
+		this->SetRedraw(false);
 		auto& children = findChildren(parent->getGroupCond());
 		for(const auto& c: children)
-			deleteItem(c);
+			this->deleteItem(c);
 
 		parent->collapsed = true;
-		SetItemState(itemPos, INDEXTOSTATEIMAGEMASK(1), LVIS_STATEIMAGEMASK);
-		SetRedraw(true);
+		this->SetItemState(itemPos, INDEXTOSTATEIMAGEMASK(1), LVIS_STATEIMAGEMASK);
+		this->SetRedraw(true);
 	}
 
 	void Expand(T* parent, int itemPos) {
-		SetRedraw(false);
+		this->SetRedraw(false);
 		
 		if (insertF) {
 			insertF(parent);
@@ -905,7 +906,7 @@ public:
 			lvItem.iItem = itemPos;
 			lvItem.iSubItem = 0;
 			lvItem.mask = LVIF_GROUPID;
-			GetItem(&lvItem);
+			this->GetItem(&lvItem);
 
 			parent->collapsed = false;
 			for (const auto& c : children){
@@ -915,10 +916,10 @@ public:
 				insertChild(c, itemPos + 1, lvItem.iGroupId);
 			}
 
-			SetItemState(itemPos, INDEXTOSTATEIMAGEMASK(2), LVIS_STATEIMAGEMASK);
+			this->SetItemState(itemPos, INDEXTOSTATEIMAGEMASK(2), LVIS_STATEIMAGEMASK);
 			resort();
 		}
-		SetRedraw(true);
+		this->SetRedraw(true);
 	}
 
 	int insertChild(const T* item, int idx, int groupIndex = 0) {
@@ -936,7 +937,7 @@ public:
 		lvi.lParam = (LPARAM)item;
 		lvi.state = 0;
 		lvi.stateMask = 0;
-		return InsertItem(&lvi);
+		return this->InsertItem(&lvi);
 	}
 
 	inline T* findParent(const K& groupCond) const {
@@ -957,7 +958,7 @@ public:
 
 	void insertGroupedItem(T* item, bool autoExpand, int groupIndex = 0, bool hasVirtualChildren = false) {
 		T* parent = nullptr;
-		ParentPair* pp = findParentPair(item->getGroupCond());
+		auto pp = findParentPair(item->getGroupCond());
 
 		int pos = -1;
 
@@ -972,16 +973,16 @@ public:
 			}
 			parent->hits++;
 
-			pos = insertItem(getSortPos(parent), parent, parent->getImageIndex(), groupIndex);
+			pos = this->insertItem(getSortPos(parent), parent, parent->getImageIndex(), groupIndex);
 		};
 
 		auto updateCollapsedState = [&] {
 			if (pos != -1) {
 				if (autoExpand) {
-					SetItemState(pos, INDEXTOSTATEIMAGEMASK(2), LVIS_STATEIMAGEMASK);
+					this->SetItemState(pos, INDEXTOSTATEIMAGEMASK(2), LVIS_STATEIMAGEMASK);
 					parent->collapsed = false;
 				} else {
-					SetItemState(pos, INDEXTOSTATEIMAGEMASK(1), LVIS_STATEIMAGEMASK);
+					this->SetItemState(pos, INDEXTOSTATEIMAGEMASK(1), LVIS_STATEIMAGEMASK);
 				}
 			}
 		};
@@ -997,7 +998,7 @@ public:
 				if (filterF && !filterF(parent))
 					return;
 
-				pos = insertItem(getSortPos(parent), parent, parent->getImageIndex(), groupIndex);
+				pos = this->insertItem(getSortPos(parent), parent, parent->getImageIndex(), groupIndex);
 				if (hasVirtualChildren && (style & VIRTUAL_CHILDREN)) updateCollapsedState();
 				return;
 			} else if (pp->children.empty()) {
@@ -1006,18 +1007,18 @@ public:
 				if (parent != oldParent) {
 					uniqueParent = true;
 					parents.erase(const_cast<K*>(&oldParent->getGroupCond()));
-					deleteItem(oldParent);
+					this->deleteItem(oldParent);
 
 					createParentPair(parent, oldParent);
 				} else {
 					uniqueParent = false;
-					pos = findItem(parent);
+					pos = this->findItem(parent);
 				}
 
 				updateCollapsedState();
 			} else {
 				parent = pp->parent;
-				pos = findItem(parent);
+				pos = this->findItem(parent);
 			}
 		} else {
 			if (!pp) {
@@ -1029,7 +1030,7 @@ public:
 				updateCollapsedState();
 			} else {
 				parent = pp->parent;
-				pos = findItem(parent);
+				pos = this->findItem(parent);
 			}
 		}
 
@@ -1041,7 +1042,7 @@ public:
 			if(!parent->collapsed) {
 				insertChild(item, pos + pp->children.size(), groupIndex);
 			}
-			updateItem(pos);
+			this->updateItem(pos);
 		}
 	}
 
@@ -1049,13 +1050,13 @@ public:
 		auto pp = findParentPair(parent->getGroupCond());
 		if(pp) {
 			for(auto i: pp->children) {
-				deleteItem(i);
+				this->deleteItem(i);
 				delete i;
 			}
 			pp->children.clear();
 			parents.erase(const_cast<K*>(&parent->getGroupCond()));
 		}
-		deleteItem(parent);
+		this->deleteItem(parent);
 	}
 
 	bool removeGroupedItem(T* item, bool removeFromMemory = true, int groupIndex = 0) {
@@ -1067,7 +1068,7 @@ public:
 			T* parent = item->parent;
 			ParentPair* pp = findParentPair(parent->getGroupCond());
 
-			deleteItem(item);
+			this->deleteItem(item);
 
 			auto n = find(pp->children.begin(), pp->children.end(), item);
 			if(n != pp->children.end()) {
@@ -1082,7 +1083,7 @@ public:
 						const auto oldParent = parent;
 						parent = pp->children.front();
 
-						deleteItem(oldParent);
+						this->deleteItem(oldParent);
 						parents.erase(const_cast<K*>(&oldParent->getGroupCond()));
 						delete oldParent;
 
@@ -1090,22 +1091,22 @@ public:
 						parents.emplace(const_cast<K*>(&parent->getGroupCond()), newPP);
 
 						parent->parent = nullptr; // ensure that parent of this item is really NULL
-						deleteItem(parent);
-						insertItem(getSortPos(parent), parent, parent->getImageIndex(), groupIndex);
+						this->deleteItem(parent);
+						this->insertItem(getSortPos(parent), parent, parent->getImageIndex(), groupIndex);
 					}
 				} else if(pp->children.empty()) {
-					SetItemState(findItem(parent), INDEXTOSTATEIMAGEMASK(0), LVIS_STATEIMAGEMASK);
+					this->SetItemState(this->findItem(parent), INDEXTOSTATEIMAGEMASK(0), LVIS_STATEIMAGEMASK);
 				}
 
-				updateItem(parent);
+				this->updateItem(parent);
 			} else {
 				if (pp->children.empty()) {
-					deleteItem(parent);
+					this->deleteItem(parent);
 					parents.erase(const_cast<K*>(&parent->getGroupCond()));
 					delete parent;
 					parentExists = false;
 				} else {
-					updateItem(parent);
+					this->updateItem(parent);
 				}
 			}
 		}
@@ -1120,26 +1121,26 @@ public:
 		// HACK: ugly hack but at least it doesn't crash and there's no memory leak
 		for(auto p: parents | map_values) {
 			for(auto c: p.children) {
-				deleteItem(c);
+				this->deleteItem(c);
 				delete c;
 			}
-			deleteItem(p.parent);
+			this->deleteItem(p.parent);
 			delete p.parent;
 		}
-		for(int i = 0; i < GetItemCount(); i++) {
-			auto si = getItemData(i);
+		for(int i = 0; i < this->GetItemCount(); i++) {
+			auto si = this->getItemData(i);
 			delete si;
 		}
 
  		parents.clear();
-		DeleteAllItems();
+		this->DeleteAllItems();
 	}
 
 	//count the parents and their children that exist in the list
 	size_t getTotalItemCount() {
 		size_t ret = 0;
-		for (int i = 0; i < GetItemCount(); i++) {
-			T* si = getItemData(i);
+		for (int i = 0; i < this->GetItemCount(); i++) {
+			T* si = this->getItemData(i);
 			if (si->parent) {
 				//only count the parents
 				continue;
@@ -1153,27 +1154,27 @@ public:
 
 	LRESULT onColumnClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 		NMLISTVIEW* l = (NMLISTVIEW*)pnmh;
-		if(l->iSubItem != getSortColumn()) {
-			setAscending(true);
-			setSortColumn(l->iSubItem);
-		} else if(isAscending()) {
-			setAscending(false);
+		if(l->iSubItem != this->getSortColumn()) {
+			this->setAscending(true);
+			this->setSortColumn(l->iSubItem);
+		} else if (this->isAscending()) {
+			this->setAscending(false);
 		} else {
-			setSortColumn(-1);
+			this->setSortColumn(-1);
 		}		
 		resort();
 		return 0;
 	}
 
 	void resort() {
-		if(getSortColumn() != -1) {
-			SortItems(&compareFunc, (LPARAM)this);
+		if(this->getSortColumn() != -1) {
+			this->SortItems(&compareFunc, (LPARAM)this);
 		}
 	}
 
 	int getSortPos(const T* a) {
-		int high = GetItemCount();
-		if((getSortColumn() == -1) || (high == 0))
+		int high = this->GetItemCount();
+		if((this->getSortColumn() == -1) || (high == 0))
 			return high;
 
 		high--;
@@ -1184,10 +1185,10 @@ public:
 		int comp = 0;
 		while( low <= high ) {
 			mid = (low + high) / 2;
-			b = getItemData(mid);
-			comp = compareItems(a, b, static_cast<uint8_t>(getSortColumn()));
+			b = this->getItemData(mid);
+			comp = compareItems(a, b, static_cast<uint8_t>(this->getSortColumn()));
 			
-			if(!isAscending())
+			if(!this->isAscending())
 				comp = -comp;
 
 			if(comp == 0) {
@@ -1197,20 +1198,20 @@ public:
 			} else if(comp > 0) {
 				low = mid + 1;
 			} else if(comp == 2){
-				if(isAscending())
+				if(this->isAscending())
 					low = mid + 1;
 				else
 					high = mid -1;
 			} else if(comp == -2){
-				if(!isAscending())
+				if(!this->isAscending())
 					low = mid + 1;
 				else
 					high = mid -1;
 			}
 		}
 
-		comp = compareItems(a, b, static_cast<uint8_t>(getSortColumn()));
-		if(!isAscending())
+		comp = compareItems(a, b, static_cast<uint8_t>(this->getSortColumn()));
+		if(!this->isAscending())
 			comp = -comp;
 		if(comp > 0)
 			mid++;
@@ -1225,8 +1226,8 @@ public:
 	_Function filteredForEachSelectedT(_Function pred) {
 		unordered_set<K> doneParents;
 		int i = -1;
-		while( (i = GetNextItem(i, LVNI_SELECTED)) != -1) {
-			auto d = getItemData(i);
+		while( (i = this->GetNextItem(i, LVNI_SELECTED)) != -1) {
+			auto d = this->getItemData(i);
 			if (!d->parent) {
 				doneParents.insert(d->getGroupCond());
 				pred(d);

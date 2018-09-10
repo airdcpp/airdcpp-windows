@@ -87,7 +87,7 @@ private:
 	static FrameMap frames;
 
 	void openWindow();
-	static string TextFrame::readFile(const string& aFilePath) noexcept;
+	static string readFile(const string& aFilePath) noexcept;
 
 	tstring title;
 	string text;

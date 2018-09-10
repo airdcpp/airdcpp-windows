@@ -436,7 +436,7 @@ private:
 	void updateItemCache(const string& aPath);
 protected:
 	/* TypedTreeViewCtrl */
-	TreeType::ChildrenState DirectoryListingFrame::getChildrenState(const ItemInfo* d) const;
+	TreeType::ChildrenState getChildrenState(const ItemInfo* d) const;
 	int getIconIndex(const ItemInfo* d) const;
 	void expandDir(ItemInfo* d, bool /*collapsing*/);
 	void insertTreeItems(const string& aPath, HTREEITEM aParent);

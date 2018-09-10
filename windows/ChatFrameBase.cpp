@@ -698,7 +698,7 @@ void ChatFrameBase::handleSendMessage() {
 	ctrlMessage.SetWindowText(Util::emptyStringT.c_str());
 }
 
-static TCHAR *msgs[] = { _T("\r\n-- I'm a happy AirDC++ user. You could be happy too.\r\n"),
+static const TCHAR *msgs[] = { _T("\r\n-- I'm a happy AirDC++ user. You could be happy too.\r\n"),
 _T("\r\n-- Is it Superman? No, it's AirDC++!\r\n"),
 _T("\r\n-- My files are burning in my computer...download are way too fast!\r\n"),
 _T("\r\n-- STOP!! My client is too fast, slow down with the writings!\r\n"),

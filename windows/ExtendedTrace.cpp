@@ -29,7 +29,7 @@
 #define BUFFERSIZE		0x200
 #define LIBCOUNT		47
 
-TCHAR* crashLibs[LIBCOUNT][2] = {
+const TCHAR* crashLibs[LIBCOUNT][2] = {
 	{ L"Vlsp", L"V-One Smartpass" },
 	{ L"mclsp", L"McAfee AV" },
 	{ L"Niphk", L"Norman AV" },
