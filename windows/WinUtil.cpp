@@ -1912,7 +1912,7 @@ void WinUtil::appendLanguageMenu(CComboBoxEx& ctrlLanguage) {
 	for (const auto& l: Localization::languageList){
 		COMBOBOXEXITEM cbli =  {CBEIF_TEXT|CBEIF_IMAGE|CBEIF_SELECTEDIMAGE};
 		CString str = Text::toT(l.languageName).c_str();
-		cbli.iItem = count;
+		cbli.iItem = count++;
 		cbli.pszText = (LPTSTR)(LPCTSTR) str;
 		cbli.cchTextMax = str.GetLength();
 
@@ -1920,8 +1920,6 @@ void WinUtil::appendLanguageMenu(CComboBoxEx& ctrlLanguage) {
 		cbli.iImage = flagIndex;
 		cbli.iSelectedImage = flagIndex;
 		ctrlLanguage.InsertItem(&cbli);
-
-		count = count++;
 	}
 
 	ctrlLanguage.SetCurSel(Localization::getCurLanguageIndex());
