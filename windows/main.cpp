@@ -53,7 +53,8 @@
 
 CAppModule _Module;
 
-CriticalSection cs;
+CriticalSection exceptionCS;
+
 enum { DEBUG_BUFSIZE = 8192 };
 static int recursion = 0;
 static char exeTTH[192*8/(5*8)+2];
@@ -113,7 +114,7 @@ string getExceptionName(DWORD code) {
 
 LONG handleCrash(unsigned long aCode, const string& aError, PCONTEXT aContext)
 {	
-	Lock l(cs);
+	Lock l(exceptionCS);
 
 	if(recursion++ > 30)
 		exit(-1);
