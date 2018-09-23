@@ -4,6 +4,8 @@ Fixed:
 
 - Fix a crash when receiving invalid ADC search results
 - Fix handling of (invalid) files that were modified more than 48 years ago
+- Retain listview focus when using back and up buttons in browserbar
+- Update OpenSSL (fixes encryption issues on certain CPU architectures)
 
 
 3.50
