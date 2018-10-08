@@ -170,6 +170,8 @@ namespace webserver {
 		SettingsManager::SKIPLIST_DOWNLOAD,
 		SettingsManager::SKIPLIST_SHARE,
 		SettingsManager::FREE_SLOTS_EXTENSIONS,
+
+		SettingsManager::LANGUAGE_FILE,
 	};
 
 	map<int, CoreSettingItem::Group> groupMappings = {
