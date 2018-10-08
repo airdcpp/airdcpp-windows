@@ -340,8 +340,8 @@ namespace webserver {
 				ret.emplace_back(EnumOption({ mapper, mapper }));
 			}
 		} else if (si.key == SettingsManager::LANGUAGE_FILE) {
-			for (const auto& language: Localization::languageList) {
-				ret.emplace_back(EnumOption({ Util::getFileName(language.getLanguageFilePath()), language.languageName }));
+			for (const auto& language: Localization::getLanguages()) {
+				ret.emplace_back(EnumOption({ language.languageFile, language.languageName }));
 			}
 		}
 

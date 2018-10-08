@@ -489,7 +489,9 @@ public:
 	static int getFirstSelectedIndex(CListViewCtrl& list);
 	static int setButtonPressed(int nID, bool bPressed = true);
 
-	static void appendLanguageMenu(CComboBoxEx& ctrlLanguage);
+	static void appendLanguageMenu(CComboBoxEx& ctrlLanguage) noexcept;
+	static void setLanguage(int aLanguageIndex) noexcept;
+
 	static void appendHistory(CComboBox& ctrlExcluded, SettingsManager::HistoryType aType);
 	static string addHistory(CComboBox& ctrlExcluded, SettingsManager::HistoryType aType);
 

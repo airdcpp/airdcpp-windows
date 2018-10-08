@@ -52,9 +52,8 @@ PropPage::Item GeneralPage::items[] = {
 	{ 0, 0, PropPage::T_END }
 };
 
-void GeneralPage::write()
-{
-	Localization::setLanguage(ctrlLanguage.GetCurSel());
+void GeneralPage::write() {
+	WinUtil::setLanguage(ctrlLanguage.GetCurSel());
 	PropPage::write((HWND)(*this), items);
 }
 

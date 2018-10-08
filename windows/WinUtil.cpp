@@ -1905,12 +1905,13 @@ void WinUtil::toSystemTime(const time_t aTime, SYSTEMTIME* sysTime) {
 	sysTime->wMilliseconds = 0;
 }
 
-void WinUtil::appendLanguageMenu(CComboBoxEx& ctrlLanguage) {
+void WinUtil::appendLanguageMenu(CComboBoxEx& ctrlLanguage) noexcept {
 	ctrlLanguage.SetImageList(ResourceLoader::flagImages);
 	int count = 0;
 	
-	for (const auto& l: Localization::languageList){
-		COMBOBOXEXITEM cbli =  {CBEIF_TEXT|CBEIF_IMAGE|CBEIF_SELECTEDIMAGE};
+	const auto languages = Localization::getLanguages();
+	for (const auto& l: languages){
+		COMBOBOXEXITEM cbli =  { CBEIF_TEXT | CBEIF_IMAGE | CBEIF_SELECTEDIMAGE };
 		CString str = Text::toT(l.languageName).c_str();
 		cbli.iItem = count++;
 		cbli.pszText = (LPTSTR)(LPCTSTR) str;
@@ -1922,7 +1923,18 @@ void WinUtil::appendLanguageMenu(CComboBoxEx& ctrlLanguage) {
 		ctrlLanguage.InsertItem(&cbli);
 	}
 
-	ctrlLanguage.SetCurSel(Localization::getCurLanguageIndex());
+	auto cur = Localization::getLanguageIndex(languages);
+	if (cur) {
+		ctrlLanguage.SetCurSel(*cur);
+	}
+}
+
+
+void WinUtil::setLanguage(int aLanguageIndex) noexcept {
+	auto languages = Localization::getLanguages();
+	if (aLanguageIndex < languages.size()) {
+		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, languages[aLanguageIndex].languageFile);
+	}
 }
 
 void WinUtil::appendHistory(CComboBox& ctrlCombo, SettingsManager::HistoryType aType) {
