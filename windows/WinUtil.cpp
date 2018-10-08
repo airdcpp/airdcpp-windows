@@ -1912,12 +1912,12 @@ void WinUtil::appendLanguageMenu(CComboBoxEx& ctrlLanguage) noexcept {
 	const auto languages = Localization::getLanguages();
 	for (const auto& l: languages){
 		COMBOBOXEXITEM cbli =  { CBEIF_TEXT | CBEIF_IMAGE | CBEIF_SELECTEDIMAGE };
-		CString str = Text::toT(l.languageName).c_str();
+		CString str = Text::toT(l.getLanguageName()).c_str();
 		cbli.iItem = count++;
 		cbli.pszText = (LPTSTR)(LPCTSTR) str;
 		cbli.cchTextMax = str.GetLength();
 
-		auto flagIndex = Localization::getFlagIndexByCode(l.countryFlagCode);
+		auto flagIndex = Localization::getFlagIndexByCode(l.getCountryFlagCode());
 		cbli.iImage = flagIndex;
 		cbli.iSelectedImage = flagIndex;
 		ctrlLanguage.InsertItem(&cbli);
@@ -1933,7 +1933,7 @@ void WinUtil::appendLanguageMenu(CComboBoxEx& ctrlLanguage) noexcept {
 void WinUtil::setLanguage(int aLanguageIndex) noexcept {
 	auto languages = Localization::getLanguages();
 	if (aLanguageIndex < languages.size()) {
-		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, languages[aLanguageIndex].languageFile);
+		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, languages[aLanguageIndex].getLanguageSettingValue());
 	}
 }
 
