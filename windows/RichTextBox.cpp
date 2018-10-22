@@ -1016,7 +1016,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 		copyMenu.CreatePopupMenu();
 		copyMenu.InsertSeparatorFirst(TSTRING(COPY));
 
-		for(int j=0; j < OnlineUser::COLUMN_LAST; j++) {
+		for(int j=0; j < UserUtil::COLUMN_LAST; j++) {
 			copyMenu.AppendMenu(MF_STRING, IDC_COPY + j, CTSTRING_I(HubFrame::columnNames[j]));
 		}
 
@@ -1536,7 +1536,7 @@ LRESULT RichTextBox::onCopyUserInfo(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndC
 	
 	const OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou) {
-		sCopy = ou->getText(static_cast<uint8_t>(wID - IDC_COPY), true);
+		sCopy = UserUtil::getUserText(ou, static_cast<uint8_t>(wID - IDC_COPY), true);
 	}
 
 	if (!sCopy.empty())

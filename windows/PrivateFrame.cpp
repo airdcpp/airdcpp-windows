@@ -575,7 +575,7 @@ LRESULT PrivateFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 		tabMenu.appendSeparator();
 		OMenu* copyMenu = tabMenu.createSubMenu(TSTRING(COPY), true);
 
-		for (int j = 0; j < OnlineUser::COLUMN_LAST; j++) {
+		for (int j = 0; j < UserUtil::COLUMN_LAST; j++) {
 			copyMenu->AppendMenu(MF_STRING, IDC_COPY + j, CTSTRING_I(HubFrame::columnNames[j]));
 		}
 	}
@@ -595,7 +595,7 @@ LRESULT PrivateFrame::onCopyUserInfo(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 
 	const OnlineUserPtr ou = ClientManager::getInstance()->findOnlineUser(HintedUser(getUser(), getHubUrl()));
 	if (ou) {
-		sCopy = ou->getText(static_cast<uint8_t>(wID - IDC_COPY), true);
+		sCopy = UserUtil::getUserText(ou, static_cast<uint8_t>(wID - IDC_COPY), true);
 	}
 
 	if (!sCopy.empty())
@@ -760,7 +760,7 @@ void PrivateFrame::updateTabIcon(bool offline) {
 	OnlineUserPtr ou = ClientManager::getInstance()->findOnlineUser(chat->getHintedUser());
 	if (ou) {
 		//Image list GetIcon results in a new icon handle each time, manage it with CIcon
-		tabIcon = ResourceLoader::getUserImages().GetIcon(ou->getImageIndex());
+		tabIcon = ResourceLoader::getUserImages().GetIcon(UserUtil::getUserImageIndex(ou));
 		setIcon(tabIcon);
 		userAway = !getUser()->isSet(User::BOT) && ou->getIdentity().isAway();
 	}

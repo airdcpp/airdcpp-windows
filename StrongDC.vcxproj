@@ -534,6 +534,7 @@
     <ClCompile Include="windows\UploadQueueFrame.cpp" />
     <ClCompile Include="windows\ListViewColours.cpp" />
     <ClCompile Include="windows\UsersFrame.cpp" />
+    <ClCompile Include="windows\UserUtil.cpp" />
     <ClCompile Include="windows\WebserverPage.cpp" />
     <ClCompile Include="windows\WebShortcutsPage.cpp" />
     <ClCompile Include="windows\WebShortcutsProperties.cpp" />
@@ -682,6 +683,7 @@
     <ClInclude Include="windows\UploadQueueFrame.h" />
     <ClInclude Include="windows\ListViewColours.h" />
     <ClInclude Include="windows\UsersFrame.h" />
+    <ClInclude Include="windows\UserUtil.h" />
     <ClInclude Include="windows\WebserverPage.h" />
     <ClInclude Include="windows\WebShortcutsPage.h" />
     <ClInclude Include="windows\WebShortcutsProperties.h" />

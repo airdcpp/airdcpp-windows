@@ -39,6 +39,7 @@
 #include "UCHandler.h"
 #include "DownloadBaseHandler.h"
 #include "UserInfoBaseHandler.h"
+#include "UserUtil.h"
 
 class UserInfo;
 
@@ -77,7 +78,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_OPEN_USER_LOG, onOpenUserLog)
 		COMMAND_ID_HANDLER(IDC_USER_HISTORY, onOpenUserLog)
 
-		COMMAND_RANGE_HANDLER(IDC_COPY, IDC_COPY + OnlineUser::COLUMN_LAST, onCopyUserInfo)
+		COMMAND_RANGE_HANDLER(IDC_COPY, IDC_COPY + UserUtil::COLUMN_LAST, onCopyUserInfo)
 		MESSAGE_HANDLER(WM_COMMAND, onCommand)
 	END_MSG_MAP()
 
