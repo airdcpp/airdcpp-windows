@@ -38,26 +38,21 @@ uint8_t UserUtil::getIdentityImage(const Identity& identity, bool aIsClientTcpAc
 	image *= (ResourceLoader::USER_ICON_LAST - ResourceLoader::USER_ICON_MOD_START) * (ResourceLoader::USER_ICON_LAST - ResourceLoader::USER_ICON_MOD_START);
 
 	if (identity.getUser()->isNMDC()) {
-		if (!bot && !aIsClientTcpActive)
-		{
+		if (!bot && !aIsClientTcpActive) {
 			image += 1 << (ResourceLoader::USER_ICON_PASSIVE - ResourceLoader::USER_ICON_MOD_START);
 		}
-	}
-	else {
+	} else {
 		const auto cm = identity.getConnectMode();
-		if (!bot && (cm == Identity::MODE_PASSIVE_V6 || cm == Identity::MODE_PASSIVE_V4))
-		{
+		if (!bot && (cm == Identity::MODE_PASSIVE_V6 || cm == Identity::MODE_PASSIVE_V4)) {
 			image += 1 << (ResourceLoader::USER_ICON_PASSIVE - ResourceLoader::USER_ICON_MOD_START);
 		}
 
-		if (!bot && (cm == Identity::MODE_NOCONNECT_PASSIVE || cm == Identity::MODE_NOCONNECT_IP || cm == Identity::MODE_UNDEFINED))
-		{
+		if (!bot && (cm == Identity::MODE_NOCONNECT_PASSIVE || cm == Identity::MODE_NOCONNECT_IP || cm == Identity::MODE_UNDEFINED)) {
 			image += 1 << (ResourceLoader::USER_ICON_NOCONNECT - ResourceLoader::USER_ICON_MOD_START);
 		}
 
 		//TODO: add icon for unknown (passive) connectivity
-		if (!bot && (cm == Identity::MODE_PASSIVE_V4_UNKNOWN || cm == Identity::MODE_PASSIVE_V6_UNKNOWN))
-		{
+		if (!bot && (cm == Identity::MODE_PASSIVE_V4_UNKNOWN || cm == Identity::MODE_PASSIVE_V6_UNKNOWN)) {
 			image += 1 << (ResourceLoader::USER_ICON_PASSIVE - ResourceLoader::USER_ICON_MOD_START);
 		}
 	}

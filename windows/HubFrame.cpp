@@ -984,7 +984,8 @@ LRESULT HubFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOO
 		bool isMe = false;
 
 		if (count == 1) {
-			auto sNick = Text::toT(((OnlineUser*) ctrlUsers.getItemData(ctrlUsers.GetNextItem(-1, LVNI_SELECTED)))->getIdentity().getNick());
+			auto ii = ctrlUsers.getItemData(ctrlUsers.GetNextItem(-1, LVNI_SELECTED));
+			auto sNick = Text::toT(ii->onlineUser->getIdentity().getNick());
 			isMe = (sNick == Text::toT(client->getMyNick()));
 
 			menu.InsertSeparatorFirst(sNick);
@@ -1531,7 +1532,7 @@ void HubFrame::updateUserList(ItemInfo* ii) {
 		ctrlUsers.DeleteAllItems();
 
 		if (filter.empty()) {
-			for (auto& i : userInfos) {
+			for (auto& i: userInfos) {
 				ii = &i.second;
 				if (!ii->onlineUser->isHidden()) {
 					ctrlUsers.insertItem(ii, ii->getImageIndex());
@@ -1621,7 +1622,7 @@ LRESULT HubFrame::onPublicMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		while( (i = ctrlUsers.GetNextItem(i, LVNI_SELECTED)) != -1) {
 			if (!sUsers.empty())
 				sUsers += _T(", ");
-			sUsers += Text::toT(((OnlineUser*)ctrlUsers.getItemData(i))->getIdentity().getNick());
+			sUsers += Text::toT((ctrlUsers.getItemData(i))->onlineUser->getIdentity().getNick());
 		}
 	} else {
 		sUsers = ctrlClient.getSelectedUser();
@@ -1869,7 +1870,7 @@ void HubFrame::setFonts() {
 LRESULT HubFrame::onIgnore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/) {
 	int i=-1;
 	while( (i = ctrlUsers.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		IgnoreManager::getInstance()->storeIgnore(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
+		IgnoreManager::getInstance()->storeIgnore((ctrlUsers.getItemData(i))->getUser());
 	}
 	return 0;
 }
@@ -1877,7 +1878,7 @@ LRESULT HubFrame::onIgnore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BO
 LRESULT HubFrame::onUnignore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/) {
 	int i=-1;
 	while( (i = ctrlUsers.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		IgnoreManager::getInstance()->removeIgnore(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
+		IgnoreManager::getInstance()->removeIgnore((ctrlUsers.getItemData(i))->getUser());
 	}
 	return 0;
 }
