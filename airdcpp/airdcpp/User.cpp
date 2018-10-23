@@ -48,11 +48,17 @@ bool Identity::isTcpActive(const ClientPtr& c) const noexcept {
 }
 
 bool Identity::isTcp4Active(const ClientPtr& c) const noexcept {
-	if (!user->isSet(User::NMDC)) {
-		return !getIp4().empty() && supports(AdcHub::TCP4_FEATURE);
+	if (user->isSet(User::NMDC)) {
+		// NMDC
+		return !user->isSet(User::PASSIVE);
 	} else {
-		//we don't want to use the global passive flag for our own user...
-		return c && user == ClientManager::getInstance()->getMe() ? c->isActiveV4() : !user->isSet(User::PASSIVE);
+		// NMDC flag is not set for our own user (and neither the global User::PASSIVE flag can be used here)
+		if (c && user == ClientManager::getInstance()->getMe()) {
+			return c->isActiveV4();
+		}
+
+		// ADC
+		return !getIp4().empty() && supports(AdcHub::TCP4_FEATURE);
 	}
 }
 
