@@ -276,7 +276,8 @@ private:
 
 	ChangeType changeType;
 
-	void updateStatus();
+	void updateStatus() noexcept;
+	void updateStatus(const DirectoryListing::Directory::Ptr& aCurrentDir) noexcept;
 	void initStatus();
 	void up();
 	void handleHistoryClick(const string& aPath, bool byHistory);

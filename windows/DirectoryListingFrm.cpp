@@ -846,7 +846,17 @@ size_t DirectoryListingFrame::getTotalListItemCount() const {
 	return 0;
 }
 
-void DirectoryListingFrame::updateStatus() {
+
+void DirectoryListingFrame::updateStatus() noexcept {
+	auto currentDir = ctrlTree.getSelectedItemData();
+	if (!currentDir) {
+		return;
+	}
+
+	updateStatus(currentDir->dir);
+}
+
+void DirectoryListingFrame::updateStatus(const DirectoryListing::Directory::Ptr& aCurrentDir) noexcept {
 	if (updating || !ctrlStatus.IsWindow()) {
 		return;
 	}
@@ -869,25 +879,16 @@ void DirectoryListingFrame::updateStatus() {
 		totalCount = getTotalListItemCount();
 	}
 
-	dl->addAsyncTask([=] {
-		auto totalSize = totalFileSize;
-		auto currentDir = dl->findDirectory(curPath);
-		if (!currentDir) {
-			return;
+	auto totalSize = totalFileSize;
+	if (selectedCount == 0) {
+		totalSize = aCurrentDir->getTotalSize(aCurrentDir != dl->getRoot());
+	} else {
+		for (const auto& d: directories) {
+			totalSize += d->getTotalSize(false);
 		}
+	}
 
-		if (selectedCount == 0) {
-			totalSize = currentDir->getTotalSize(currentDir != dl->getRoot());
-		} else {
-			for (const auto& d : directories) {
-				totalSize += d->getTotalSize(false);
-			}
-		}
-
-		callAsync([=] {
-			updateStatusText(totalCount, totalSize, selectedCount, displayCount, currentDir->getLastUpdateDate());
-		});
-	});
+	updateStatusText(totalCount, totalSize, selectedCount, displayCount, aCurrentDir->getLastUpdateDate());
 }
 
 void DirectoryListingFrame::updateStatusText(int aTotalCount, int64_t aTotalSize, int aSelectedCount, int aDisplayCount, time_t aUpdateDate) {
@@ -1102,7 +1103,7 @@ void DirectoryListingFrame::updateItems(const DirectoryListing::Directory::Ptr& 
 
 	ctrlFiles.list.SetRedraw(TRUE);
 	updating = false;
-	updateStatus();
+	updateStatus(d);
 }
 
 void DirectoryListingFrame::changeDir(const ItemInfo* ii, bool aReloadDir) {
@@ -1331,7 +1332,7 @@ LRESULT DirectoryListingFrame::onChar(UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*
 void DirectoryListingFrame::selectItem(const string& aPath) {
 	HTREEITEM ht = ctrlTree.findItemByPath(treeRoot, Text::toT(aPath));
 	if (!ht) {
-		dcassert(0);
+		//dcassert(0);
 		return;
 	}
 
