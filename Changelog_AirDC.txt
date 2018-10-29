@@ -1,3 +1,15 @@
+3.52
+
+Fixed:
+
+- Fixes queue source removal on "File not available" in NMDC hubs (https://github.com/airdcpp-web/airdcpp-webclient/issues/287)
+- Fix possible active mode detection issues for own user in NMDC hubs (https://github.com/airdcpp-web/airdcpp-webclient/issues/249)
+- Fix a possible crash when closing NMDC hubs
+- Fix possible filelist-related stability issues
+- Fix incorrect total file count in NMDC partial lists
+- Fix HTTPS with hublists
+
+
 3.51
 
 Fixed:
