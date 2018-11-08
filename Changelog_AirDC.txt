@@ -8,6 +8,8 @@ Fixed:
 - Fix possible filelist-related stability issues
 - Fix incorrect total file count in NMDC partial lists
 - Fix HTTPS with hublists
+- Don't ignore private messages if there is an open chat session 
+- Web UI updated to version 2.4.0 (https://airdcpp-web.github.io/2018/11/03/version-2.4.0.html)
 
 
 3.51
