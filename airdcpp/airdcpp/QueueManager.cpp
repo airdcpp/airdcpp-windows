@@ -1211,7 +1211,7 @@ bool QueueManager::allowStartQI(const QueueItemPtr& aQI, const QueueTokenSet& ru
 		}
 	}
 
-	size_t downloadCount = DownloadManager::getInstance()->getDownloadCount();
+	size_t downloadCount = DownloadManager::getInstance()->getFileDownloadConnectionCount();
 	bool slotsFull = (AirUtil::getSlots(true) != 0) && (downloadCount >= static_cast<size_t>(AirUtil::getSlots(true)));
 	bool speedFull = (AirUtil::getSpeedLimit(true) != 0) && (DownloadManager::getInstance()->getRunningAverage() >= Util::convertSize(AirUtil::getSpeedLimit(true), Util::KB));
 	//LogManager::getInstance()->message("Speedlimit: " + Util::toString(Util::getSpeedLimit(true)*1024) + " slots: " + Util::toString(Util::getSlots(true)) + " (avg: " + Util::toString(getRunningAverage()) + ")");
@@ -1234,7 +1234,7 @@ bool QueueManager::allowStartQI(const QueueItemPtr& aQI, const QueueTokenSet& ru
 	if (aQI->getPriority() == Priority::LOWEST) {
 		if (aQI->getBundle()) {
 			// start only if there are no other downloads running in this bundle (or the downloads belong to this file)
-			auto bundleDownloads = DownloadManager::getInstance()->getDownloadCount(aQI->getBundle());
+			auto bundleDownloads = DownloadManager::getInstance()->getBundleDownloadConnectionCount(aQI->getBundle());
 
 			RLock l(cs);
 			bool start = bundleDownloads == 0 || bundleDownloads == aQI->getDownloads().size();

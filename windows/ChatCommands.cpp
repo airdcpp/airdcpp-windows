@@ -286,7 +286,7 @@ tstring ChatCommands::Speedinfo() {
 result += _T("-= ");
 result += _T("Downloading: ");
 result += Util::formatBytesW(DownloadManager::getInstance()->getRunningAverage()) + _T("/s  [");
-result += Util::toStringW(DownloadManager::getInstance()->getDownloadCount()) + _T("]");
+result += Util::toStringW(DownloadManager::getInstance()->getTotalDownloadConnectionCount()) + _T("]");
 result += _T(" =- ");
 result += _T(" -= ");
 result += _T("Uploading: ");

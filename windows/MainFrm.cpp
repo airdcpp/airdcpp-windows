@@ -746,7 +746,7 @@ void MainFrame::updateStatus(TStringList* aList) {
 				ctrlStatus.SetIcon(STATUS_SHUTDOWN, hShutdownIcon);
 				isShutdownStatus = true;
 			}
-			if (DownloadManager::getInstance()->getDownloadCount() > 0) {
+			if (DownloadManager::getInstance()->getTotalDownloadConnectionCount() > 0) {
 				iCurrentShutdownTime = iSec;
 				ctrlStatus.SetText(STATUS_SHUTDOWN, _T(""));
 			} else {
@@ -1441,7 +1441,7 @@ LRESULT MainFrame::onTrayIcon(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 		nid.uID = trayUID;
 		nid.uFlags = NIF_TIP;
 		_tcsncpy(nid.szTip, (_T("D: ") + Util::formatBytesW(DownloadManager::getInstance()->getRunningAverage()) + _T("/s (") + 
-			Util::toStringW(DownloadManager::getInstance()->getDownloadCount()) + _T(")\r\nU: ") +
+			Util::toStringW(DownloadManager::getInstance()->getTotalDownloadConnectionCount()) + _T(")\r\nU: ") +
 			Util::formatBytesW(UploadManager::getInstance()->getRunningAverage()) + _T("/s (") + 
 			Util::toStringW(UploadManager::getInstance()->getUploadCount()) + _T(")")
 			+ _T("\r\nUptime: ") + Util::formatSecondsW(TimerManager::getUptime())
@@ -1770,7 +1770,7 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	str->push_back(Util::formatBytesW(Socket::getTotalDown()));
 	str->push_back(Util::formatBytesW(Socket::getTotalUp()));
 
-	tstring down = _T("[") + Util::toStringW(DownloadManager::getInstance()->getDownloadCount()) + _T("][");
+	tstring down = _T("[") + Util::toStringW(DownloadManager::getInstance()->getTotalDownloadConnectionCount()) + _T("][");
 	tstring up = _T("[") + Util::toStringW(UploadManager::getInstance()->getUploadCount()) + _T("][");
 
 	auto dl = ThrottleManager::getDownLimit();
