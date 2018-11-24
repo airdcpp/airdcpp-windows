@@ -4,6 +4,7 @@ Fixed:
 - Fixes an issue where file transfer connections weren't created in some cases when the total download limit was reached
 - Fix failed partial filelist download in NMDC hubs blocking all subsequent filelist downloads from the same user
 - Fix possible crashes after failed filelist downloads
+- Validate paths for queued filelists (fixes crashes)
 
 3.52
 
