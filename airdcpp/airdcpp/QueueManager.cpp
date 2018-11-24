@@ -1724,7 +1724,7 @@ void QueueManager::onFilelistDownloadCompleted(QueueItemPtr& aQI, Download* aDow
 		if (aDownload->isSet(Download::FLAG_TTHLIST)) {
 			matchTTHList(aDownload->getPFS(), aDownload->getHintedUser(), aQI->getFlags());
 		} else {
-			DirectoryListingManager::getInstance()->processList(aQI->getListName(), aDownload->getPFS(), aDownload->getHintedUser(), aDownload->getTempTarget(), aQI->getFlags());
+			DirectoryListingManager::getInstance()->processList(aQI->getListName(), aDownload->getPFS(), aDownload->getHintedUser(), aDownload->getListDirectoryPath(), aQI->getFlags());
 		}
 
 		if (aQI->isSet(QueueItem::FLAG_MATCH_QUEUE)) {
