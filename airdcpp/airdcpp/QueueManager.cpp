@@ -506,8 +506,10 @@ bool QueueManager::hasDownloadedBytes(const string& aTarget) {
 	return q->getDownloadedBytes() > 0;
 }
 
-QueueItemPtr QueueManager::addList(const HintedUser& aUser, Flags::MaskType aFlags, const string& aInitialDir /* = Util::emptyString */, const BundlePtr& aBundle /*nullptr*/) {
-	dcassert(!aInitialDir.empty());
+QueueItemPtr QueueManager::addList(const HintedUser& aUser, Flags::MaskType aFlags, const string& aInitialDir /* = ADC_ROOT */, const BundlePtr& aBundle /*nullptr*/) {
+	if (!Util::isAdcPath(aInitialDir)) {
+		throw QueueException(STRING_F(INVALID_PATH, aInitialDir));
+	}
 
 	// Pre-checks
 	checkSource(aUser);

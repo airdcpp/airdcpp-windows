@@ -336,6 +336,7 @@ void QueueItem::setTempTarget(const string& aTempTarget) noexcept {
 
 const string& QueueItem::getListDirectoryPath() const noexcept {
 	dcassert(isFilelist());
+	dcassert(!tempTarget.empty());
 	return tempTarget;
 }
 
