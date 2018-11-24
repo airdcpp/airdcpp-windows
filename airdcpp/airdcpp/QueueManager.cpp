@@ -1732,9 +1732,9 @@ void QueueManager::onFilelistDownloadCompleted(QueueItemPtr& aQI, Download* aDow
 			matchLists.right.erase(aQI->getTarget());
 		}
 	} else if (aDownload->getType() == Transfer::TYPE_PARTIAL_LIST) {
-		fire(QueueManagerListener::PartialListFinished(), aDownload->getHintedUser(), aDownload->getPFS(), aQI->getTempTarget());
+		fire(QueueManagerListener::PartialListFinished(), aDownload->getHintedUser(), aDownload->getPFS(), aQI->getListDirectoryPath());
 	} else {
-		onFileFinished(aQI, aDownload, aQI->getTempTarget());  // We cheated and stored the initial display directory here (when opening lists from search)
+		onFileFinished(aQI, aDownload, aQI->getListDirectoryPath());
 	}
 
 	{
