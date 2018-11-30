@@ -1,3 +1,10 @@
+3.53
+
+Changed:
+
+- Update to OpenSSL 1.1.1a with a support for TLS 1.3
+- Update the default hublist URLs (DC++)
+
 Fixed:
 
 - Fix total queue size being counted incorrectly for file bundles on startup
@@ -5,6 +12,7 @@ Fixed:
 - Fix failed partial filelist download in NMDC hubs blocking all subsequent filelist downloads from the same user
 - Fix possible crashes after failed filelist downloads
 - Validate paths for queued filelists (fixes crashes)
+
 
 3.52
 
