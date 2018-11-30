@@ -345,11 +345,11 @@ namespace webserver {
 			xml_.stepOut();
 		}
 
-		if (xml_.findChild("AuthTokens")) {
+		if (xml_.findChild("RefreshTokens")) {
 			xml_.stepIn();
-			while (xml_.findChild("Auth")) {
-				const auto& username = xml_.getChildAttrib("Username");
+			while (xml_.findChild("TokenInfo")) {
 				const auto& token = xml_.getChildAttrib("Token");
+				const auto& username = xml_.getChildAttrib("Username");
 				const auto& expiresOn = xml_.getLongLongChildAttrib("ExpiresOn");
 
 				if (username.empty() || token.empty() || GET_TIME() > expiresOn) {
@@ -387,12 +387,12 @@ namespace webserver {
 		}
 
 		{
-			xml_.addTag("AuthTokens");
+			xml_.addTag("RefreshTokens");
 			xml_.stepIn();
 			{
 				RLock l(cs);
 				for (const auto& t: refreshTokens | map_values) {
-					xml_.addTag("Auth");
+					xml_.addTag("TokenInfo");
 					xml_.addChildAttrib("Token", t.token);
 					xml_.addChildAttrib("Username", t.user->getUserName());
 					xml_.addChildAttrib("ExpiresOn", t.expiresOn);
