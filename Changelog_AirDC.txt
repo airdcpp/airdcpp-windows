@@ -4,6 +4,7 @@ Changed:
 
 - Update to OpenSSL 1.1.1a with a support for TLS 1.3
 - Update the default hublist URLs (DC++)
+- Web UI updated to version 2.5.0 (https://airdcpp-web.github.io/2018/12/08/version-2.5.0.html)
 
 Fixed:
 
