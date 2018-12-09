@@ -21,25 +21,24 @@
 #include "stdafx.h"
 
 #include "WinUtil.h"
-#include <api/common/SettingUtils.h>
-#include <web-server/JsonUtil.h>
 #include "ConfigUtil.h"
 
 
+using namespace webserver;
 
-shared_ptr<ConfigUtil::ConfigIem> ConfigUtil::getConfigItem(webserver::ServerSettingItem& aSetting) {
+shared_ptr<ConfigUtil::ConfigIem> ConfigUtil::getConfigItem(ServerSettingItem& aSetting) {
 	auto aType = aSetting.type;
 
-	if (aType == webserver::ApiSettingItem::TYPE_STRING)
+	if (aType == ApiSettingItem::TYPE_STRING)
 		return make_shared<ConfigUtil::StringConfigItem>(aSetting);
 
-	if (aType == webserver::ApiSettingItem::TYPE_BOOLEAN)
+	if (aType == ApiSettingItem::TYPE_BOOLEAN)
 		return make_shared<ConfigUtil::BoolConfigItem>(aSetting);
 
-	if (aType == webserver::ApiSettingItem::TYPE_NUMBER)
+	if (aType == ApiSettingItem::TYPE_NUMBER)
 		return make_shared<ConfigUtil::IntConfigItem>(aSetting);
 
-	if (aType == webserver::ApiSettingItem::TYPE_FILE_PATH || aType == webserver::ApiSettingItem::TYPE_DIRECTORY_PATH)
+	if (aType == ApiSettingItem::TYPE_FILE_PATH || aType == ApiSettingItem::TYPE_DIRECTORY_PATH)
 		return make_shared<ConfigUtil::BrowseConfigItem>(aSetting);
 
 	return nullptr;
@@ -72,7 +71,7 @@ void ConfigUtil::StringConfigItem::Create(HWND m_hWnd) {
 
 	ctrlEdit.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | ES_AUTOHSCROLL, WS_EX_CLIENTEDGE);
 	ctrlEdit.SetFont(WinUtil::systemFont);
-	ctrlEdit.SetWindowText(Text::toT(webserver::JsonUtil::parseValue<string>(setting.name, setting.getValue())).c_str());
+	ctrlEdit.SetWindowText(Text::toT(JsonUtil::parseValue<string>(setting.name, setting.getValue())).c_str());
 	ctrlEdit.SetWindowLongPtr(GWL_EXSTYLE, ctrlEdit.GetWindowLongPtr(GWL_EXSTYLE) & ~WS_EX_NOPARENTNOTIFY);
 
 }
@@ -111,7 +110,7 @@ void ConfigUtil::BoolConfigItem::Create(HWND m_hWnd) {
 	ctrlCheck.SetFont(WinUtil::systemFont);
 	setLabel();
 
-	ctrlCheck.SetCheck(webserver::JsonUtil::parseValue<bool>(setting.name, setting.getValue()));
+	ctrlCheck.SetCheck(JsonUtil::parseValue<bool>(setting.name, setting.getValue()));
 
 }
 
@@ -177,7 +176,7 @@ void ConfigUtil::IntConfigItem::Create(HWND m_hWnd) {
 
 	ctrlEdit.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | ES_NUMBER, WS_EX_CLIENTEDGE);
 	ctrlEdit.SetFont(WinUtil::systemFont);
-	ctrlEdit.SetWindowText(Text::toT(Util::toString(webserver::JsonUtil::parseValue<int>(setting.name, setting.getValue()))).c_str());
+	ctrlEdit.SetWindowText(Text::toT(Util::toString(JsonUtil::parseValue<int>(setting.name, setting.getValue()))).c_str());
 	ctrlEdit.SetWindowLongPtr(GWL_EXSTYLE, ctrlEdit.GetWindowLongPtr(GWL_EXSTYLE) & ~WS_EX_NOPARENTNOTIFY);
 
 	spin.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | UDS_SETBUDDYINT | UDS_ALIGNRIGHT, NULL);

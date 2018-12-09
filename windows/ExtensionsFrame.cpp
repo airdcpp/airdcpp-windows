@@ -95,14 +95,14 @@ LRESULT ExtensionsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 			if (!ii->item) {
 				menu.appendItem(TSTRING(INSTALL), [=] { downloadExtensionInfo(ii); });
 			} else {
-				if (!ii->item->isRunning())
+				/*if (!ii->item->isRunning())
 					menu.appendItem(TSTRING(START), [=] { onStartExtension(ii); });
 				else
 					menu.appendItem(TSTRING(STOP), [=] { onStopExtension(ii); });
 
-				menu.appendSeparator();
+				menu.appendSeparator();*/
 				menu.appendItem(TSTRING(REMOVE), [=] { onRemoveExtension(ii); });
-				//if(ii->item->hasSettings())
+				if(ii->item->hasSettings())
 					menu.appendItem(TSTRING(SETTINGS_CHANGE), [=] { onConfigExtension(ii); });
 			}
 			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
@@ -137,12 +137,12 @@ void ExtensionsFrame::updateEntry(const ItemInfo* ii) {
 }
 
 void ExtensionsFrame::onStopExtension(const ItemInfo* ii) {
-	getExtensionManager().stopExtension(ii->item);
+	//getExtensionManager().stopExtension(ii->item);
 	updateEntry(ii);
 }
 
 void ExtensionsFrame::onStartExtension(const ItemInfo* ii) {
-	getExtensionManager().startExtension(ii->item);
+	//getExtensionManager().startExtension(ii->item);
 	updateEntry(ii);
 }
 
@@ -214,14 +214,18 @@ void ExtensionsFrame::onExtensionInfoDownloaded() {
 
 	try {
 		const json packageJson = json::parse(httpDownload->buf);
-		json dist = packageJson.at("dist");
 
+		json dist = packageJson.at("dist");
+		
+		const string aInstallId = packageJson.at("_id"); //"install_id" ???
 		const string aSha = dist.at("shasum");
 		const string aUrl = dist.at("tarball");
-		const string aInstallId = dist.at("install_id");
+
 
 		getExtensionManager().downloadExtension(aInstallId, aUrl, aSha);
-	} catch (const std::exception& /*e*/) {}
+	} catch (const std::exception& /*e*/) {
+		//TODO error reporting...	
+	}
 
 }
 string ExtensionsFrame::getData(const string& aData, const string& aEntry, size_t& pos) {
@@ -318,6 +322,12 @@ void ExtensionsFrame::on(webserver::ExtensionManagerListener::ExtensionRemoved, 
 			downloadExtensionList();
 		}
 		ctrlList.SetRedraw(TRUE);
+	});
+}
+
+void ExtensionsFrame::on(webserver::ExtensionManagerListener::InstallationSucceeded, const string& /*aInstallId*/) noexcept {
+	callAsync([=] {
+		updateList();
 	});
 }
 

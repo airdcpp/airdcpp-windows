@@ -25,14 +25,21 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include "WinUtil.h"
+
+#include <api/ExtensionInfo.h>
+#include <api/common/Serializer.h>
 #include <api/common/SettingUtils.h>
+#include <web-server/JsonUtil.h>
+
+#include "WinUtil.h"
+
+using namespace webserver;
 
 class ConfigUtil {
 public:
 
 	struct ConfigIem {
-		ConfigIem(webserver::ServerSettingItem& aSetting) : setting(aSetting) {}
+		ConfigIem(ServerSettingItem& aSetting) : setting(aSetting) {}
 
 		string getId() const {
 			return setting.name;
@@ -42,7 +49,7 @@ public:
 		}
 		
 
-		webserver::ServerSettingItem& setting;
+		ServerSettingItem& setting;
 
 		virtual void Create(HWND m_hWnd) = 0;
 		virtual int updateLayout(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing) = 0;
@@ -54,16 +61,16 @@ public:
 
 	};
 
-	static shared_ptr<ConfigIem> getConfigItem(webserver::ServerSettingItem& aSetting);
+	static shared_ptr<ConfigIem> getConfigItem(ServerSettingItem& aSetting);
 
 	//Combines CStatic as setting label and CEdit as setting field
 	struct StringConfigItem : public ConfigIem {
 
-		StringConfigItem(webserver::ServerSettingItem& aSetting) : ConfigIem(aSetting) {}
+		StringConfigItem(ServerSettingItem& aSetting) : ConfigIem(aSetting) {}
 
 		//todo handle errors
 		bool write() {
-			auto val = webserver::SettingUtils::validateValue(Text::fromT(WinUtil::getEditText(ctrlEdit)), setting);
+			auto val = SettingUtils::validateValue(Text::fromT(WinUtil::getEditText(ctrlEdit)), setting);
 			setting.setValue(val);
 			return true;
 		}
@@ -82,12 +89,12 @@ public:
 	//CheckBox type config
 	struct BoolConfigItem : public ConfigIem {
 
-		BoolConfigItem(webserver::ServerSettingItem& aSetting) : ConfigIem(aSetting) {}
+		BoolConfigItem(ServerSettingItem& aSetting) : ConfigIem(aSetting) {}
 
 
 		//todo handle errors
 		bool write() {
-			auto val = webserver::SettingUtils::validateValue((ctrlCheck.GetCheck() == 1), setting);
+			auto val = SettingUtils::validateValue((ctrlCheck.GetCheck() == 1), setting);
 			setting.setValue(val);
 			return true;
 		}
@@ -105,7 +112,7 @@ public:
 	//Extends StringConfigItem by adding a browse button after CEdit field
 	struct BrowseConfigItem : public StringConfigItem {
 
-		BrowseConfigItem(webserver::ServerSettingItem& aSetting) : StringConfigItem(aSetting) {}
+		BrowseConfigItem(ServerSettingItem& aSetting) : StringConfigItem(aSetting) {}
 
 		void Create(HWND m_hWnd);
 		int updateLayout(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing);
@@ -120,11 +127,11 @@ public:
 	//Combines CStatic as setting label and CEdit as setting field with spin control
 	struct IntConfigItem : public ConfigIem {
 
-		IntConfigItem(webserver::ServerSettingItem& aSetting) : ConfigIem(aSetting) {}
+		IntConfigItem(ServerSettingItem& aSetting) : ConfigIem(aSetting) {}
 
 		//todo handle errors
 		bool write() {
-			auto val = webserver::SettingUtils::validateValue(Util::toInt(Text::fromT(WinUtil::getEditText(ctrlEdit))), setting);
+			auto val = SettingUtils::validateValue(Util::toInt(Text::fromT(WinUtil::getEditText(ctrlEdit))), setting);
 			setting.setValue(val);
 			return true;
 		}

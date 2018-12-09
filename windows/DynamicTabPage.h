@@ -29,7 +29,7 @@
 
 #include <airdcpp/Util.h>
 #include "ConfigUtil.h"
-
+using namespace webserver;
 
 class DynamicTabPage : public CDialogImpl<DynamicTabPage> {
 public:

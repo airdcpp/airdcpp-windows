@@ -25,6 +25,7 @@
 
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"
+#include "Async.h"
 
 #include <airdcpp/HttpDownload.h>
 
@@ -32,6 +33,7 @@
 #include <web-server/ExtensionManager.h>
 #include <web-server/Extension.h>
 
+using namespace webserver;
 
 class ExtensionsFrame : public MDITabChildWindowImpl<ExtensionsFrame>, public StaticFrame<ExtensionsFrame, ResourceManager::SETTINGS_EXTENSIONS, IDC_EXTENSIONS>,
 	private SettingsManagerListener, private webserver::ExtensionManagerListener, private Async<ExtensionsFrame>
@@ -142,6 +144,8 @@ private:
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept override;
 	void on(webserver::ExtensionManagerListener::ExtensionAdded, const webserver::ExtensionPtr& e) noexcept;
 	void on(webserver::ExtensionManagerListener::ExtensionRemoved, const webserver::ExtensionPtr& e) noexcept;
+	void on(webserver::ExtensionManagerListener::InstallationSucceeded, const string& /*aInstallId*/) noexcept;
+
 
 };
 #endif
