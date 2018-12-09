@@ -393,6 +393,7 @@ LRESULT TransferView::onDoubleClickTransfers(int /*idCtrl*/, LPNMHDR pnmh, BOOL&
 					break;
 				case 2:
 					i->matchQueue();
+					break;
 				case 3:
 					i->grant();
 					break;

@@ -400,7 +400,7 @@ void QueueFrame::handleItemClick(const QueueItemInfoPtr& aII, bool byHistory/*fa
 	if (!aII) 
 		return;
 	
-	if (aII->qi || aII->bundle && aII->bundle->isFileBundle()) {
+	if (aII->qi || (aII->bundle && aII->bundle->isFileBundle())) {
 		if (aII->isFinished()) 
 			WinUtil::openFile(Text::toT(aII->getTarget()));
 		return;
@@ -539,13 +539,11 @@ void QueueFrame::AppendDirectoryMenu(QueueItemInfoList& dirs, QueueItemList& ql,
 tstring QueueFrame::formatUser(const Bundle::BundleSource& bs) const {
 	auto& u = bs.getUser();
 	tstring nick = WinUtil::escapeMenu(WinUtil::getNicks(u));
-	bool addSpeed = u.user->getSpeed() > 0;
+
 	nick += _T(" (") + TSTRING(FILES) + _T(": ") + Util::toStringW(bs.files);
-	if (addSpeed) {
+	if (u.user->getSpeed() > 0) {
 		nick += _T(", ");
-		if (addSpeed) {
-			nick += TSTRING(SPEED) + _T(": ") + Util::formatBytesW(u.user->getSpeed()) + _T("/s)");
-		}
+		nick += TSTRING(SPEED) + _T(": ") + Util::formatBytesW(u.user->getSpeed()) + _T("/s)");
 	}
 	nick += _T(")");
 	return nick;
