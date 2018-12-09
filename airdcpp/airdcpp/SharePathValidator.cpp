@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+* Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -224,7 +224,7 @@ void SharePathValidator::validate(FileFindIter& aIter, const string& aPath, bool
 	}
 }
 
-void SharePathValidator::validateRootPath(const string& aRealPath) const throw(ShareException) {
+void SharePathValidator::validateRootPath(const string& aRealPath) const {
 	if (aRealPath.empty()) {
 		throw ShareException(STRING(NO_DIRECTORY_SPECIFIED));
 	}

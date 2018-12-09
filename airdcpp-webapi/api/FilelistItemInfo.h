@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 
 #ifndef DCPLUSPLUS_DCPP_FILELIST_ITEMINFO_H
 #define DCPLUSPLUS_DCPP_FILELIST_ITEMINFO_H
-
-#include <web-server/stdinc.h>
 
 #include <airdcpp/typedefs.h>
 
@@ -48,12 +46,12 @@ namespace webserver {
 
 		DupeType getDupe() const noexcept { return type == DIRECTORY ? dir->getDupe() : file->getDupe(); }
 		const string& getName() const noexcept { return type == DIRECTORY ? dir->getName() : file->getName(); }
-		string getPath() const noexcept { return type == DIRECTORY ? dir->getPath() : file->getPath(); }
+		string getAdcPath() const noexcept { return type == DIRECTORY ? dir->getAdcPath() : file->getAdcPath(); }
 		bool isAdl() const noexcept { return type == DIRECTORY ? dir->getAdls() : file->getAdls(); }
 		bool isComplete() const noexcept { return type == DIRECTORY ? dir->isComplete() : true; }
 
 		time_t getDate() const noexcept { return type == DIRECTORY ? dir->getRemoteDate() : file->getRemoteDate(); }
-		time_t getSize() const noexcept { return type == DIRECTORY ? dir->getTotalSize(false) : file->getSize(); }
+		int64_t getSize() const noexcept { return type == DIRECTORY ? dir->getTotalSize(false) : file->getSize(); }
 
 		DirectoryListingToken getToken() const noexcept;
 

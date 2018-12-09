@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+* Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ namespace dcpp {
 
 		virtual void on(DownloadStarting, const string&) noexcept { }
 		virtual void on(DownloadFailed, const string&) noexcept { }
-		virtual void on(DownloadFinished, const string&, bool) noexcept { }
+		virtual void on(DownloadFinished, const string&) noexcept { }
 
 		virtual void on(LoadedFromCache, const string&, const string&) noexcept { }
 		virtual void on(Corrupted, const string&) noexcept { }

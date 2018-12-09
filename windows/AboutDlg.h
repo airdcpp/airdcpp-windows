@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ private:
 	HttpConnection c;
 	
 	void on(HttpConnectionListener::Data, HttpConnection* /*conn*/, const uint8_t* buf, size_t len) noexcept;
-	void on(HttpConnectionListener::Complete, HttpConnection* conn, const string&, bool /*fromCoral*/) noexcept ;
+	void on(HttpConnectionListener::Complete, HttpConnection* conn, const string&) noexcept ;
 	void on(HttpConnectionListener::Failed, HttpConnection* conn, const string& aLine) noexcept;
 
 	string downBuf;

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
 
 #include <web-server/ExtensionManager.h>
 #include <web-server/Extension.h>
@@ -28,7 +28,6 @@
 #include <airdcpp/Encoder.h>
 #include <airdcpp/File.h>
 #include <airdcpp/HttpDownload.h>
-#include <airdcpp/LogManager.h>
 #include <airdcpp/ScopedFunctor.h>
 #include <airdcpp/ZUtils.h>
 
@@ -56,20 +55,17 @@ namespace webserver {
 	}
 
 	void ExtensionManager::on(WebServerManagerListener::Stopping) noexcept {
-		{
-			RLock l(cs);
-			for (const auto& ext: extensions) {
-				ext->removeListeners();
-				ext->stop();
-			}
+		RLock l(cs);
+		for (const auto& ext: extensions) {
+			ext->removeListeners();
+			ext->stop();
 		}
-
-		WLock l(cs);
-		extensions.clear();
 	}
 
 	void ExtensionManager::on(WebServerManagerListener::Stopped) noexcept {
-
+		WLock l(cs);
+		dcassert(all_of(extensions.begin(), extensions.end(), [](const ExtensionPtr& aExtension) { return !aExtension->getSession(); }));
+		extensions.clear();
 	}
 
 	void ExtensionManager::on(WebServerManagerListener::SocketDisconnected, const WebSocketPtr& aSocket) noexcept {
@@ -103,8 +99,8 @@ namespace webserver {
 
 		for (const auto& path : directories) {
 			auto ext = loadLocalExtension(path);
-			if (ext) {
-				startExtension(ext);
+			if (ext && startExtensionImpl(ext)) {
+				wsm->log("Extension " + ext->getName() + " was loaded", LogMessage::SEV_INFO);
 			}
 		}
 	}
@@ -119,7 +115,7 @@ namespace webserver {
 			aExtension->removeListeners();
 
 			// Stop running extensions
-			if (!stopExtension(aExtension)) {
+			if (!aExtension->stop()) {
 				throw Exception("Failed to stop the extension process");
 			}
 
@@ -282,7 +278,7 @@ namespace webserver {
 			}
 
 			// Stop and remove the old package
-			if (!stopExtension(extension)) {
+			if (!extension->stop()) {
 				return;
 			}
 
@@ -312,7 +308,7 @@ namespace webserver {
 				return;
 			}
 
-			LogManager::getInstance()->message("Extension " + extension->getName() + " was updated succesfully", LogMessage::SEV_INFO);
+			wsm->log("Extension " + extension->getName() + " was updated succesfully", LogMessage::SEV_INFO);
 		} else {
 			// Install new
 			extension = loadLocalExtension(Extension::getRootPath(extensionName));
@@ -322,10 +318,10 @@ namespace webserver {
 			}
 
 			fire(ExtensionManagerListener::ExtensionAdded(), extension);
-			LogManager::getInstance()->message("Extension " + extension->getName() + " was installed succesfully", LogMessage::SEV_INFO);
+			wsm->log("Extension " + extension->getName() + " was installed succesfully", LogMessage::SEV_INFO);
 		}
 
-		startExtension(extension);
+		startExtensionImpl(extension);
 		fire(ExtensionManagerListener::InstallationSucceeded(), aInstallId);
 	}
 
@@ -337,14 +333,19 @@ namespace webserver {
 
 		fire(ExtensionManagerListener::InstallationFailed(), aInstallId, msg);
 
-		LogManager::getInstance()->message("Extension installation failed: " + msg, LogMessage::SEV_ERROR);
+		wsm->log("Extension installation failed: " + msg, LogMessage::SEV_ERROR);
 	}
 
 	ExtensionPtr ExtensionManager::registerRemoteExtension(const SessionPtr& aSession, const json& aPackageJson) {
 		auto ext = std::make_shared<Extension>(aSession, aPackageJson);
 
-		if (getExtension(ext->getName())) {
-			throw Exception("Extension " + ext->getName() + " exists already");
+		auto existing = getExtension(ext->getName());
+		if (existing) {
+			if (existing->isManaged()) {
+				throw Exception("Managed extension with the same name exists already");
+			}
+
+			removeExtension(existing);
 		}
 
 		{
@@ -356,24 +357,40 @@ namespace webserver {
 		return ext;
 	}
 
+#define EXIT_CODE_TIMEOUT 124
+	void ExtensionManager::onExtensionFailed(const Extension* aExtension, uint32_t aExitCode) noexcept {
+		if (aExitCode == EXIT_CODE_TIMEOUT) {
+			// Attempt to restart it (but outside of extension's timer thread)
+			auto name = aExtension->getName();
+			wsm->addAsyncTask([=] {
+				auto extension = getExtension(name);
+				if (extension && startExtensionImpl(extension)) {
+					wsm->log("Extension " + aExtension->getName() + " timed out and was restarted", LogMessage::SEV_INFO);
+				}
+			});
+		} else {
+			 wsm->log(
+				 "Extension " + aExtension->getName() + " has exited (see the extension log " + aExtension->getErrorLogPath() + " for error details)",
+				 LogMessage::SEV_ERROR
+			 );
+		 }
+	}
+
 	ExtensionPtr ExtensionManager::loadLocalExtension(const string& aPath) noexcept {
 		// Parse
 		ExtensionPtr ext = nullptr;
 		try {
-			ext = std::make_shared<Extension>(Util::joinDirectory(aPath, EXT_PACKAGE_DIR), [](const Extension* aExtension) {
-				LogManager::getInstance()->message(
-					"Extension " + aExtension->getName() + " has exited (see the extension log " + aExtension->getErrorLogPath() + " for error details)", 
-					LogMessage::SEV_ERROR
-				);
+			ext = std::make_shared<Extension>(Util::joinDirectory(aPath, EXT_PACKAGE_DIR), [this](Extension* aExtension, uint32_t aExitCode) {
+				onExtensionFailed(aExtension, aExitCode);
 			});
 		} catch (const Exception& e) {
-			LogManager::getInstance()->message("Failed to load extension " + aPath + ": " + e.what(), LogMessage::SEV_ERROR);
+			wsm->log("Failed to load extension " + aPath + ": " + e.what(), LogMessage::SEV_ERROR);
 			return nullptr;
 		}
 
 		if (getExtension(ext->getName())) {
 			dcassert(0);
-			LogManager::getInstance()->message("Failed to load extension " + aPath + ": exists already", LogMessage::SEV_ERROR);
+			wsm->log("Failed to load extension " + aPath + ": exists already", LogMessage::SEV_ERROR);
 			return nullptr;
 		}
 
@@ -386,35 +403,21 @@ namespace webserver {
 		return ext;
 	}
 
-	bool ExtensionManager::startExtension(const ExtensionPtr& aExtension) noexcept {
+	bool ExtensionManager::startExtensionImpl(const ExtensionPtr& aExtension) noexcept {
 		try {
-			auto command = getStartCommand(aExtension);
+			auto command = getStartCommand(aExtension->getEngines());
 			aExtension->start(command, wsm);
 		} catch (const Exception& e) {
-			LogManager::getInstance()->message("Failed to start the extension " + aExtension->getName() + ": " + e.what(), LogMessage::SEV_ERROR);
+			wsm->log("Failed to start the extension " + aExtension->getName() + ": " + e.what(), LogMessage::SEV_ERROR);
 			return false;
 		}
 
-		LogManager::getInstance()->message("Extension " + aExtension->getName() + " was started", LogMessage::SEV_INFO);
 		return true;
 	}
 
-	bool ExtensionManager::stopExtension(const ExtensionPtr& aExtension) noexcept {
-		if (!aExtension->isRunning()) {
-			return true;
-		}
-
-		if (!aExtension->stop()) {
-			return false;
-		}
-
-		LogManager::getInstance()->message("Extension " + aExtension->getName() + " was stopped", LogMessage::SEV_INFO);
-		return true;
-	}
-
-	string ExtensionManager::getStartCommand(const ExtensionPtr& aExtension) const {
+	string ExtensionManager::getStartCommand(const StringList& aEngines) const {
 		string lastError;
-		for (const auto& extEngine : aExtension->getEngines()) {
+		for (const auto& extEngine : aEngines) {
 			string engineCommandStr;
 
 			{

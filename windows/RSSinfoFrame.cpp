@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -218,7 +218,7 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 			bool allRelease = all_of(items, [=](const ItemInfo* a) { return a->isRelease; });
 			if (allRelease) {
 				//auto search menus
-				appendDownloadMenu(menu, DownloadBaseHandler::TYPE_SECONDARY, true, boost::none, boost::none, false);
+				appendDownloadMenu(menu, DownloadBaseHandler::TYPE_SECONDARY, true, nullopt, nullopt, false);
 				menu.appendSeparator();
 			}
 
@@ -228,7 +228,7 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 				if (AirUtil::allowOpenDupe(items.front()->getDupe())) {
 					menu.appendSeparator();
 					menu.appendItem(TSTRING(OPEN_FOLDER), [=] {
-						auto paths = AirUtil::getDirDupePaths(items.front()->getDupe(), items.front()->item->getTitle());
+						auto paths = AirUtil::getAdcDirectoryDupePaths(items.front()->getDupe(), items.front()->item->getTitle());
 						if (!paths.empty())
 							WinUtil::openFolder(Text::toT(paths.front()));
 					});
@@ -490,7 +490,7 @@ void RssInfoFrame::on(AutoSearchManagerListener::ItemRemoved, const AutoSearchPt
 void RssInfoFrame::updateDupeType(const string& aName) {
 	for (auto& i : itemInfos) {
 		if (i->isRelease && i->item->getTitle() == aName) {
-			i->setDupe(AirUtil::checkDirDupe(i->item->getTitle(), 0));
+			i->setDupe(AirUtil::checkAdcDirectoryDupe(i->item->getTitle(), 0));
 
 			if (i->getDupe() == DupeType::DUPE_NONE)
 				i->isAutosearchDupe = AutoSearchManager::getInstance()->getSearchesByString(i->item->getTitle()) != AutoSearchList();

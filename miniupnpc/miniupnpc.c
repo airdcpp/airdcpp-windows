@@ -1,9 +1,9 @@
-/* $Id: miniupnpc.c,v 1.149 2016/02/09 09:50:46 nanard Exp $ */
+/* $Id: miniupnpc.c,v 1.152 2018/04/06 10:53:14 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * Project : miniupnp
  * Web : http://miniupnp.free.fr/
  * Author : Thomas BERNARD
- * copyright (c) 2005-2017 Thomas Bernard
+ * copyright (c) 2005-2018 Thomas Bernard
  * This software is subjet to the conditions detailed in the
  * provided LICENSE file. */
 #include <stdlib.h>
@@ -56,12 +56,13 @@
 #include "miniupnpc.h"
 #include "minissdpc.h"
 #include "miniwget.h"
+#include "miniwget_private.h"
 #include "minisoap.h"
 #include "minixml.h"
 #include "upnpcommands.h"
 #include "connecthostport.h"
 
-/* compare the begining of a string with a constant string */
+/* compare the beginning of a string with a constant string */
 #define COMPARE(str, cstr) (0==memcmp(str, cstr, sizeof(cstr) - 1))
 
 #ifndef MAXHOSTNAMELEN
@@ -114,9 +115,10 @@ MINIUPNP_LIBSPEC void parserootdesc(const char * buffer, int bufsize, struct IGD
  * return values :
  *   pointer - OK
  *   NULL - error */
-char * simpleUPnPcommand2(int s, const char * url, const char * service,
-		       const char * action, struct UPNParg * args,
-		       int * bufsize, const char * httpversion)
+static char *
+simpleUPnPcommand2(SOCKET s, const char * url, const char * service,
+                   const char * action, struct UPNParg * args,
+                   int * bufsize, const char * httpversion)
 {
 	char hostname[MAXHOSTNAMELEN+1];
 	unsigned short port = 0;
@@ -213,9 +215,9 @@ char * simpleUPnPcommand2(int s, const char * url, const char * service,
 			return NULL;
 	}
 	if(!parseURL(url, hostname, &port, &path, NULL)) return NULL;
-	if(s < 0) {
+	if(ISINVALID(s)) {
 		s = connecthostport(hostname, port, 0);
-		if(s < 0) {
+		if(ISINVALID(s)) {
 			/* failed to connect */
 			return NULL;
 		}
@@ -250,22 +252,23 @@ char * simpleUPnPcommand2(int s, const char * url, const char * service,
  * return values :
  *   pointer - OK
  *   NULL    - error */
-char * simpleUPnPcommand(int s, const char * url, const char * service,
-		       const char * action, struct UPNParg * args,
-		       int * bufsize)
+char *
+simpleUPnPcommand(int s, const char * url, const char * service,
+                  const char * action, struct UPNParg * args,
+                  int * bufsize)
 {
 	char * buf;
 
 #if 1
-	buf = simpleUPnPcommand2(s, url, service, action, args, bufsize, "1.1");
+	buf = simpleUPnPcommand2((SOCKET)s, url, service, action, args, bufsize, "1.1");
 #else
-	buf = simpleUPnPcommand2(s, url, service, action, args, bufsize, "1.0");
+	buf = simpleUPnPcommand2((SOCKET)s, url, service, action, args, bufsize, "1.0");
 	if (!buf || *bufsize == 0)
 	{
 #if DEBUG
 	    printf("Error or no result from SOAP request; retrying with HTTP/1.1\n");
 #endif
-		buf = simpleUPnPcommand2(s, url, service, action, args, bufsize, "1.1");
+		buf = simpleUPnPcommand2((SOCKET)s, url, service, action, args, bufsize, "1.1");
 	}
 #endif
 	return buf;
@@ -299,30 +302,32 @@ upnpDiscoverDevices(const char * const deviceTypes[],
 	/* first try to get infos from minissdpd ! */
 	if(!minissdpdsock)
 		minissdpdsock = "/var/run/minissdpd.sock";
-	for(deviceIndex = 0; deviceTypes[deviceIndex]; deviceIndex++) {
-		struct UPNPDev * minissdpd_devlist;
-		int only_rootdevice = 1;
-		minissdpd_devlist = getDevicesFromMiniSSDPD(deviceTypes[deviceIndex],
-		                                            minissdpdsock, 0);
-		if(minissdpd_devlist) {
-#ifdef DEBUG
-			printf("returned by MiniSSDPD: %s\t%s\n",
-			       minissdpd_devlist->st, minissdpd_devlist->descURL);
-#endif /* DEBUG */
-			if(!strstr(minissdpd_devlist->st, "rootdevice"))
-				only_rootdevice = 0;
-			for(tmp = minissdpd_devlist; tmp->pNext != NULL; tmp = tmp->pNext) {
+	if(minissdpdsock[0] != '\0') {
+		for(deviceIndex = 0; deviceTypes[deviceIndex]; deviceIndex++) {
+			struct UPNPDev * minissdpd_devlist;
+			int only_rootdevice = 1;
+			minissdpd_devlist = getDevicesFromMiniSSDPD(deviceTypes[deviceIndex],
+			                                            minissdpdsock, 0);
+			if(minissdpd_devlist) {
 #ifdef DEBUG
 				printf("returned by MiniSSDPD: %s\t%s\n",
-				       tmp->pNext->st, tmp->pNext->descURL);
+				       minissdpd_devlist->st, minissdpd_devlist->descURL);
 #endif /* DEBUG */
-				if(!strstr(tmp->st, "rootdevice"))
+				if(!strstr(minissdpd_devlist->st, "rootdevice"))
 					only_rootdevice = 0;
+				for(tmp = minissdpd_devlist; tmp->pNext != NULL; tmp = tmp->pNext) {
+#ifdef DEBUG
+					printf("returned by MiniSSDPD: %s\t%s\n",
+					       tmp->pNext->st, tmp->pNext->descURL);
+#endif /* DEBUG */
+					if(!strstr(tmp->st, "rootdevice"))
+						only_rootdevice = 0;
+				}
+				tmp->pNext = devlist;
+				devlist = minissdpd_devlist;
+				if(!searchalltypes && !only_rootdevice)
+					break;
 			}
-			tmp->pNext = devlist;
-			devlist = minissdpd_devlist;
-			if(!searchalltypes && !only_rootdevice)
-				break;
 		}
 	}
 	for(tmp = devlist; tmp != NULL; tmp = tmp->pNext) {
@@ -550,7 +555,7 @@ UPNPIGD_IsConnected(struct UPNPUrls * urls, struct IGDdatas * data)
  *     3 = an UPnP device has been found but was not recognized as an IGD
  *
  * In any positive non zero return case, the urls and data structures
- * passed as parameters are set. Dont forget to call FreeUPNPUrls(urls) to
+ * passed as parameters are set. Don't forget to call FreeUPNPUrls(urls) to
  * free allocated memory.
  */
 MINIUPNP_LIBSPEC int
@@ -634,7 +639,7 @@ UPNP_GetValidIGD(struct UPNPDev * devlist,
 
 				  GetUPNPUrls(urls, data, dev->descURL, dev->scope_id);
 
-				  /* in state 2 and 3 we dont test if device is connected ! */
+				  /* in state 2 and 3 we don't test if device is connected ! */
 				  if(state >= 2)
 				    goto free_and_return;
 				  is_connected = UPNPIGD_IsConnected(urls, data);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@
 #include "resource.h"
 
 #include "OMenu.h"
-#include "SplashWindow.h"
 
 #include <airdcpp/DupeType.h>
 #include <airdcpp/HintedUser.h>
@@ -32,12 +31,6 @@
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/User.h>
 #include <airdcpp/Util.h>
-#include <airdcpp/modules/WebShortcuts.h>
-
-/* Work around DBTYPE name conflict with Berkeley DB */
-#define DBTYPE MS_DBTYPE
-#include <atlcomtime.h>
-#undef DBTYPE
 
 class RichTextBox;
 
@@ -55,6 +48,11 @@ COLORREF HLS2RGB (HLSCOLOR hls);
 COLORREF HLS_TRANSFORM (COLORREF rgb, int percent_L, int percent_S);
 
 class FlatTabCtrl;
+class SplashWindow;
+
+namespace dcpp {
+	class WebShortcut;
+}
 
 template<class T, int title, int ID = -1>
 class StaticFrame {
@@ -259,10 +257,10 @@ public:
 	static void search(const tstring& aSearch, bool searchDirectory = false);
 	static void SetIcon(HWND hWnd, int aDefault, bool big = false);
 
-	static void searchSite(const WebShortcut* ws, const string& strSearchString, bool getReleaseDir = true);
+	static void searchSite(const WebShortcut* ws, const string& aAdcSearchPath, bool aGetReleaseDir = true);
 
-	static void appendSearchMenu(OMenu& aParent, function<void (const WebShortcut* ws)> f, bool appendTitle = true);
-	static void appendSearchMenu(OMenu& aParent, const string& aPath, bool getReleaseDir = true, bool appendTitle = true);
+	static void appendSearchMenu(OMenu& aParent, function<void (const WebShortcut* ws)> f, bool aAppendTitle = true);
+	static void appendSearchMenu(OMenu& aParent, const string& aAdcPath, bool aGetReleaseDir = true, bool aAppendTitle = true);
 
 	static void loadReBarSettings(HWND bar);
 	static void saveReBarSettings(HWND bar);
@@ -338,15 +336,16 @@ public:
 		return (sz.cx == 0) ? 0 : (sz.cx + 10);
 	}
 
-	static int WinUtil::getTextWidth(HWND wnd, HFONT fnt) {
-	HDC dc = ::GetDC(wnd);
-	HGDIOBJ old = ::SelectObject(dc, fnt);
-	TEXTMETRIC tm;
-	::GetTextMetrics(dc, &tm);
-	::SelectObject(dc, old);
-	::ReleaseDC(wnd, dc);
-	return tm.tmAveCharWidth;
-}
+	static int getTextWidth(HWND wnd, HFONT fnt) {
+		HDC dc = ::GetDC(wnd);
+		HGDIOBJ old = ::SelectObject(dc, fnt);
+		TEXTMETRIC tm;
+		::GetTextMetrics(dc, &tm);
+		::SelectObject(dc, old);
+		::ReleaseDC(wnd, dc);
+		return tm.tmAveCharWidth;
+	}
+
 	static int getTextHeight(HWND wnd, HFONT fnt) {
 		HDC dc = ::GetDC(wnd);
 		HGDIOBJ old = ::SelectObject(dc, fnt);
@@ -416,7 +415,7 @@ public:
 
 		// did we click on a scrollbar?
 		if (WinUtil::isOnScrollbar(aWindow.m_hWnd, pt)) {
-			return boost::none;
+			return nullopt;
 		}
 
 		// get the current one instead of the pos where we clicked
@@ -491,17 +490,15 @@ public:
 	static int getFirstSelectedIndex(CListViewCtrl& list);
 	static int setButtonPressed(int nID, bool bPressed = true);
 
-	static void appendLanguageMenu(CComboBoxEx& ctrlLanguage);
+	static void appendLanguageMenu(CComboBoxEx& ctrlLanguage) noexcept;
+	static void setLanguage(int aLanguageIndex) noexcept;
+
 	static void appendHistory(CComboBox& ctrlExcluded, SettingsManager::HistoryType aType);
 	static string addHistory(CComboBox& ctrlExcluded, SettingsManager::HistoryType aType);
 
 	static void viewLog(const string& path, bool aHistory=false);
 
-	static string getCompileDate() {
-		COleDateTime tCompileDate; 
-		tCompileDate.ParseDateTime( _T( __DATE__ ), LOCALE_NOUSEROVERRIDE, 1033 );
-		return Text::fromT(tCompileDate.Format(_T("%d.%m.%Y")).GetString());
-	}
+	static string getCompileDate();
 
 	static time_t fromSystemTime(const SYSTEMTIME* pTime);
 	static void toSystemTime(const time_t aTime, SYSTEMTIME* sysTime);
@@ -534,7 +531,7 @@ public:
 	static tstring formatFolderContent(const DirectoryContentInfo& aContentInfo);
 	static tstring formatFileType(const string& aFileName);
 
-	static void findNfo(const string& aPath, const HintedUser& aUser) noexcept;
+	static void findNfo(const string& aAdcPath, const HintedUser& aUser) noexcept;
 	static bool allowGetFullList(const HintedUser& aUser) noexcept;
 
 private:

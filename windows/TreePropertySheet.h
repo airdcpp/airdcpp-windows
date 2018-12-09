@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ public:
 	enum { WM_USER_INITDIALOG = WM_APP + 501 };
 	enum { TAB_MESSAGE_MAP = 13 };
 	TreePropertySheet(ATL::_U_STRINGorID title = (LPCTSTR)NULL, UINT uStartPage = 0, HWND hWndParent = NULL) :
-		CPropertySheetImpl<TreePropertySheet>(title, uStartPage, hWndParent), tabContainer(WC_TABCONTROL, this, TAB_MESSAGE_MAP), curPage(0) {
+		CPropertySheetImpl<TreePropertySheet>(title, uStartPage, hWndParent), tabContainer((LPTSTR)WC_TABCONTROL, this, TAB_MESSAGE_MAP), curPage(0) {
 
 		m_psh.pfnCallback = &PropSheetProc;
 		m_psh.dwFlags |= PSH_RTLREADING;

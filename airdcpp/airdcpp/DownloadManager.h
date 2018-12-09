@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,15 +58,9 @@ public:
 	/** @return Running average download speed in Bytes/s */
 	int64_t getRunningAverage() const;
 
-	/** @return Number of downloads. */ 
-	size_t getDownloadCount() const {
-		RLock l(cs);
-		return downloads.size();
-	}
-	size_t getDownloadCount(const BundlePtr& aBundle) const {
-		RLock l(cs);
-		return aBundle->getDownloads().size();
-	}
+	size_t getTotalDownloadConnectionCount() const noexcept;
+	size_t getFileDownloadConnectionCount() const noexcept;
+	size_t getBundleDownloadConnectionCount(const BundlePtr& aBundle) const noexcept;
 
 	// This will ignore bundles with no downloads and 
 	// bundles using highest priority
@@ -94,7 +88,7 @@ private:
 	void removeConnection(UserConnectionPtr aConn);
 	void removeDownload(Download* aDown);
 	void fileNotAvailable(UserConnection* aSource, bool noAccess);
-	void noSlots(UserConnection* aSource, string param = Util::emptyString);
+	void noSlots(UserConnection* aSource, const string& param = Util::emptyString);
 
 	void failDownload(UserConnection* aSource, const string& reason, bool rotateQueue);
 

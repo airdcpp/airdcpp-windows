@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+* Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -86,7 +86,7 @@ public:
 	const unique_ptr<OutputStream>& getOutput() const { return output; }
 
 	GETSET(string, tempTarget, TempTarget);
-	//GETSET(string, remotePath, RemotePath);
+	GETSET(string, listDirectoryPath, ListDirectoryPath);
 
 	IGETSET(uint64_t, lastTick, LastTick, GET_TICK());
 	IGETSET(bool, treeValid, TreeValid, false);

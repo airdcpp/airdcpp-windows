@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@
 namespace dcpp {
 
 Download::Download(UserConnection& conn, QueueItem& qi) noexcept : Transfer(conn, qi.getTarget(), qi.getTTH()),
-	tempTarget(qi.getTempTarget())
+	tempTarget(qi.getTempTarget()), listDirectoryPath(qi.isFilelist() ? qi.getListDirectoryPath() : Util::emptyString)
 {
 	conn.setDownload(this);
 	
@@ -138,12 +138,7 @@ AdcCommand Download::getCommand(bool zlib, const string& mySID) const noexcept {
 	cmd.addParam(Transfer::names[getType()]);
 
 	if(getType() == TYPE_PARTIAL_LIST) {
-		if (isSet(Download::FLAG_TTHLIST_BUNDLE)) {
-			//these must be converted to adc file when adding (if needed, no slash for bundle requests)
-			cmd.addParam(getTempTarget());
-		} else {
-			cmd.addParam(Util::toAdcFile(getTempTarget()));
-		}
+		cmd.addParam(getListDirectoryPath());
 	} else if(getType() == TYPE_FULL_LIST) {
 		if(isSet(Download::FLAG_XML_BZ_LIST)) {
 			cmd.addParam(USER_LIST_NAME_BZ);
@@ -237,7 +232,7 @@ void Download::open(int64_t bytes, bool z, bool hasDownloadedBytes) {
 			fileFlags |= File::BUFFER_AUTO;
 		}
 
-		unique_ptr<SharedFileStream> f(new SharedFileStream(target, File::WRITE, fileFlags));
+		auto f = make_unique<SharedFileStream>(target, File::WRITE, fileFlags);
 
 		if(f->getSize() != fullSize) {
 			f->setSize(fullSize);

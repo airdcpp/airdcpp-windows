@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
 
 #include <web-server/WebSocket.h>
 #include <web-server/WebServerManager.h>
@@ -33,30 +33,28 @@ namespace webserver {
 
 	}
 
-	optional<ApiRequest::NamedParamMap> ApiModule::RequestHandler::matchParams(const ApiRequest::ParamList& aRequestParams) const noexcept {
+	optional<ApiRequest::NamedParamMap> ApiModule::RequestHandler::matchParams(const ApiRequest::PathTokenList& aPathTokens) const noexcept {
 		if (method == METHOD_FORWARD) {
-			// The request must contain more params than the forwarder has
-			// (there must be at least one parameter left for the next handler)
-			if (aRequestParams.size() <= params.size()) {
-				return boost::none;
+			if (aPathTokens.size() < params.size()) {
+				return nullopt;
 			}
-		} else if (aRequestParams.size() != params.size()) {
-			return boost::none;
+		} else if (method != METHOD_FORWARD && aPathTokens.size() != params.size()) {
+			return nullopt;
 		}
 
 		for (auto i = 0; i < static_cast<int>(params.size()); i++) {
 			try {
-				if (!boost::regex_search(aRequestParams[i], params[i].reg)) {
-					return boost::none;
+				if (!boost::regex_search(aPathTokens[i], params[i].reg)) {
+					return nullopt;
 				}
 			} catch (const std::runtime_error&) {
-				return boost::none;
+				return nullopt;
 			}
 		}
 
 		ApiRequest::NamedParamMap paramMap;
 		for (auto i = 0; i < static_cast<int>(params.size()); i++) {
-			paramMap[params[i].id] = aRequestParams[i];
+			paramMap[params[i].id] = aPathTokens[i];
 		}
 
 		return paramMap;
@@ -68,7 +66,7 @@ namespace webserver {
 		// Match parameters
 		auto handler = find_if(requestHandlers.begin(), requestHandlers.end(), [&](const RequestHandler& aHandler) {
 			// Regular matching
-			auto namedParams = aHandler.matchParams(aRequest.getParameters());
+			auto namedParams = aHandler.matchParams(aRequest.getPathTokens());
 			if (!namedParams) {
 				return false;
 			}
@@ -88,7 +86,7 @@ namespace webserver {
 				return websocketpp::http::status_code::method_not_allowed;
 			}
 
-			aRequest.setResponseErrorStr("The supplied URL doesn't match any method in this API module");
+			aRequest.setResponseErrorStr("The supplied URL " + aRequest.getRequestPath() + " doesn't match any method in this API module");
 			return websocketpp::http::status_code::bad_request;
 		}
 
@@ -129,13 +127,11 @@ namespace webserver {
 	}
 
 
-	SubscribableApiModule::SubscribableApiModule(Session* aSession, Access aSubscriptionAccess, const StringList* aSubscriptions) : ApiModule(aSession), subscriptionAccess(aSubscriptionAccess) {
+	SubscribableApiModule::SubscribableApiModule(Session* aSession, Access aSubscriptionAccess, const StringList& aSubscriptions) : ApiModule(aSession), subscriptionAccess(aSubscriptionAccess) {
 		socket = WebServerManager::getInstance()->getSocket(aSession->getId());
 
-		if (aSubscriptions) {
-			for (const auto& s : *aSubscriptions) {
-				subscriptions.emplace(s, false);
-			}
+		for (const auto& s: aSubscriptions) {
+			subscriptions.emplace(s, false);
 		}
 
 		aSession->addListener(this);
@@ -195,7 +191,13 @@ namespace webserver {
 			return false;
 		}
 
-		s->sendPlain(aJson);
+		try {
+			s->sendPlain(aJson);
+		} catch (const std::exception&) {
+			// Ignore JSON errors...
+			return false;
+		}
+
 		return true;
 	}
 

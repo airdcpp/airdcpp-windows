@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,10 +65,10 @@ public:
 	END_MSG_MAP()
 
 	LRESULT onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
-		CreateSimpleStatusBar(ATL_IDS_IDLEMESSAGE, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | SBARS_SIZEGRIP);
-		ctrlStatus.Attach(m_hWndStatusBar);
+		this->CreateSimpleStatusBar(ATL_IDS_IDLEMESSAGE, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | SBARS_SIZEGRIP);
+		ctrlStatus.Attach(this->m_hWndStatusBar);
 
-		ctrlList.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
+		ctrlList.Create(this->m_hWnd, this->rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 			WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS, WS_EX_CLIENTEDGE, Idc);
 		ctrlList.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_HEADERDRAGDROP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
 
@@ -84,14 +84,14 @@ public:
 
 		for(uint8_t j=0; j<FinishedItem::COLUMN_LAST; j++) {
 			int fmt = (j == FinishedItem::COLUMN_SIZE || j == FinishedItem::COLUMN_SPEED) ? LVCFMT_RIGHT : LVCFMT_LEFT;
-			ctrlList.InsertColumn(j, CTSTRING_I(columnNames[j]), fmt, columnSizes[j], j);
+			ctrlList.InsertColumn(j, CTSTRING_I(::columnNames[j]), fmt, columnSizes[j], j);
 		}
 
 		ctrlList.SetColumnOrderArray(FinishedItem::COLUMN_LAST, columnIndexes);
 		ctrlList.setVisible(SettingsManager::getInstance()->get(columnVisible));
 		ctrlList.setSortColumn(FinishedItem::COLUMN_DONE);
 
-		UpdateLayout();
+		this->UpdateLayout();
 
 		SettingsManager::getInstance()->addListener(this);
 		FinishedManager::getInstance()->addListener(this);
@@ -100,15 +100,15 @@ public:
 
 		CRect rc(SETTING(FINISHED_LEFT), SETTING(FINISHED_TOP), SETTING(FINISHED_RIGHT), SETTING(FINISHED_BOTTOM));
 		if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
-			MoveWindow(rc, TRUE);
+			this->MoveWindow(rc, TRUE);
 
-		WinUtil::SetIcon(m_hWnd, iIcon);
+		WinUtil::SetIcon(this->m_hWnd, iIcon);
 		bHandled = FALSE;
 		return TRUE;
 	}
 
 LRESULT onCloseWindow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		PostMessage(WM_CLOSE);
+		this->PostMessage(WM_CLOSE);
 		return 0;
 	}
 
@@ -119,22 +119,22 @@ LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHand
 
 			closed = true;
 			WinUtil::setButtonPressed(Idc, false);
-			PostMessage(WM_CLOSE);
+			this->PostMessage(WM_CLOSE);
 			return 0;
 		} else {
 			
 			ctrlList.saveHeaderOrder(columnOrder, columnWidth, columnVisible);
 		
-			frame = NULL;
+			this->frame = NULL;
 			ctrlList.DeleteAllItems();
 			CRect rc;
-			if(!IsIconic()){
+			if(!this->IsIconic()){
 				//Get position of window
-				GetWindowRect(&rc);
+				this->GetWindowRect(&rc);
 					
 				//convert the position so it's relative to main window
-				::ScreenToClient(GetParent(), &rc.TopLeft());
-				::ScreenToClient(GetParent(), &rc.BottomRight());
+				::ScreenToClient(this->GetParent(), &rc.TopLeft());
+				::ScreenToClient(this->GetParent(), &rc.BottomRight());
 				
 				//save the position
 				SettingsManager::getInstance()->set(SettingsManager::FINISHED_BOTTOM, (rc.bottom > 0 ? rc.bottom : 0));
@@ -163,7 +163,7 @@ LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHand
 			FinishedItem* entry = reinterpret_cast<FinishedItem*>(lParam);
 			addEntry(entry);
 			if(SettingsManager::getInstance()->get(boldFinished))
-				setDirty();
+				this->setDirty();
 			updateStatus();
 		}
 		return 0;
@@ -250,7 +250,7 @@ LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHand
 
 			shellMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
 			shellMenu.AppendMenu(MF_STRING, IDC_TOTAL, CTSTRING(REMOVE_ALL));
-			shellMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
+			shellMenu.open(this->m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 			return TRUE; 
 		}
 		bHandled = FALSE;
@@ -261,7 +261,7 @@ LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHand
 		NMLVKEYDOWN* kd = reinterpret_cast<NMLVKEYDOWN*>(pnmh);
 
 		if(kd->wVKey == VK_DELETE) {
-			PostMessage(WM_COMMAND, IDC_REMOVE);
+			this->PostMessage(WM_COMMAND, IDC_REMOVE);
 		} 
 		return 0;
 	}
@@ -271,10 +271,7 @@ LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHand
 		if((i = ctrlList.GetNextItem(-1, LVNI_SELECTED)) != -1) {
 			FinishedItem *ii = ctrlList.getItemData(i);
 			if(ii->getUser().user->isOnline()) {
-				try {
-					DirectoryListingManager::getInstance()->createList(ii->getUser(), QueueItem::FLAG_CLIENT_VIEW);
-				} catch(const Exception&) {
-				}
+				WinUtil::GetList()(ii->getUser().user, ii->getUser().hint);
 			} else {
 				addStatusLine(TSTRING(USER_OFFLINE));
 			}
@@ -297,10 +294,10 @@ LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHand
 
 	void UpdateLayout(BOOL bResizeBars = TRUE) {
 		RECT rect;
-		GetClientRect(&rect);
+		this->GetClientRect(&rect);
 
 		// position bars and offset their dimensions
-		UpdateBarsPosition(rect, bResizeBars);
+		this->UpdateBarsPosition(rect, bResizeBars);
 
 		if(ctrlStatus.IsWindow()) {
 			CRect sr;
@@ -397,7 +394,7 @@ protected:
 		}
 
 		if(refresh == true) {
-			RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
+			this->RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 		}
 	}
 

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -127,13 +127,13 @@ namespace dcpp {
 		mutable SharedMutex cs;
 
 		IgnoreMap ignoredUsers;
-		bool checkIgnored(const OnlineUserPtr& aUser) noexcept;
+		bool checkIgnored(const OnlineUserPtr& aUser, bool aPM) noexcept;
 
 		bool dirty = false;
 		// contains the ignored nicks and patterns 
 		vector<ChatFilterItem> ChatFilterItems;
 
-		ActionHookRejectionPtr isIgnoredOrFiltered(const ChatMessagePtr& msg, const HookRejectionGetter& aRejectionGetter, bool PM) noexcept;
+		ActionHookRejectionPtr isIgnoredOrFiltered(const ChatMessagePtr& msg, const HookRejectionGetter& aRejectionGetter, bool aPM) noexcept;
 
 		// chat filter
 		bool isChatFiltered(const string& aNick, const string& aText, ChatFilterItem::Context aContext = ChatFilterItem::ALL) const noexcept;

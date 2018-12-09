@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,7 +40,6 @@ public:
 		COMMAND_ID_HANDLER(IDC_ENABLE_SEGMENTS, onTick)
 		COMMAND_ID_HANDLER(IDC_AUTO_SEARCH_ALT, onTick)
 		COMMAND_ID_HANDLER(IDC_CHUNKCOUNT, onTick)
-		COMMAND_ID_HANDLER(IDC_DONTBEGIN, onTick)
 		COMMAND_ID_HANDLER(IDC_AUTO_ADD_SOURCES, onTick)
 	END_MSG_MAP()
 

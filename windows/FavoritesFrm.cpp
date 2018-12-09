@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -217,7 +217,7 @@ void FavoriteHubsFrame::addEntry(const FavoriteHubEntryPtr& entry, int pos, int 
 
 LRESULT FavoriteHubsFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	if(wParam == HUB_CONNECTED) {
-		auto_ptr<string> hub(reinterpret_cast<string*>(lParam));
+		unique_ptr<string> hub(reinterpret_cast<string*>(lParam));
 		onlineHubs.push_back(*hub);
 		
 		for(int i = 0; i < ctrlHubs.GetItemCount(); ++i) {
@@ -229,7 +229,7 @@ LRESULT FavoriteHubsFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam
 			}
 		}
 	} else if(wParam == HUB_DISCONNECTED) {
-		auto_ptr<string> hub(reinterpret_cast<string*>(lParam));
+		unique_ptr<string> hub(reinterpret_cast<string*>(lParam));
 		onlineHubs.erase(remove(onlineHubs.begin(), onlineHubs.end(), *hub), onlineHubs.end());
 
 		for(int i = 0; i < ctrlHubs.GetItemCount(); ++i) {

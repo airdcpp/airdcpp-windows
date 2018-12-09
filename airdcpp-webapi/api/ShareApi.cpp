@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,6 +16,8 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+#include "stdinc.h"
+
 #include <api/ShareApi.h>
 
 #include <api/common/Deserializer.h>
@@ -30,8 +32,20 @@
 #include <airdcpp/SharePathValidator.h>
 
 namespace webserver {
-	ShareApi::ShareApi(Session* aSession) : HookApiModule(aSession, Access::SETTINGS_VIEW, nullptr, Access::SETTINGS_EDIT) {
-
+	ShareApi::ShareApi(Session* aSession) : 
+		HookApiModule(
+			aSession, 
+			Access::SETTINGS_VIEW, 
+			{ 
+				"share_refresh_queued", 
+				"share_refresh_completed", 
+				
+				"share_exclude_added", 
+				"share_exclude_removed" 
+			}, 
+			Access::SETTINGS_EDIT
+		) 
+	{
 		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(EXACT_PARAM("grouped_root_paths")),				ShareApi::handleGetGroupedRootPaths);
 		METHOD_HANDLER(Access::SETTINGS_VIEW,	METHOD_GET,		(EXACT_PARAM("stats")),								ShareApi::handleGetStats);
 		METHOD_HANDLER(Access::ANY,				METHOD_POST,	(EXACT_PARAM("find_dupe_paths")),					ShareApi::handleFindDupePaths);
@@ -45,12 +59,6 @@ namespace webserver {
 		METHOD_HANDLER(Access::SETTINGS_VIEW,	METHOD_GET,		(EXACT_PARAM("excludes")),							ShareApi::handleGetExcludes);
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(EXACT_PARAM("excludes"), EXACT_PARAM("add")),		ShareApi::handleAddExclude);
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(EXACT_PARAM("excludes"), EXACT_PARAM("remove")),	ShareApi::handleRemoveExclude);
-
-		createSubscription("share_refresh_queued");
-		createSubscription("share_refresh_completed");
-
-		createSubscription("share_exclude_added");
-		createSubscription("share_exclude_removed");
 
 		createHook("share_file_validation_hook", [this](const string& aId, const string& aName) {
 			return ShareManager::getInstance()->getValidator().fileValidationHook.addSubscriber(aId, aName, HOOK_HANDLER(ShareApi::fileValidationHook));
@@ -96,7 +104,7 @@ namespace webserver {
 
 	json ShareApi::serializeShareItem(const SearchResultPtr& aSR) noexcept {
 		auto isDirectory = aSR->getType() == SearchResult::TYPE_DIRECTORY;
-		auto path = Util::toAdcFile(aSR->getPath());
+		auto path = aSR->getAdcPath();
 
 		StringList realPaths;
 		try {
@@ -111,7 +119,7 @@ namespace webserver {
 			{ "virtual_path", path },
 			{ "real_paths", realPaths },
 			{ "time", aSR->getDate() },
-			{ "type", isDirectory ? Serializer::serializeFolderType(aSR->getContentInfo()) : Serializer::serializeFileType(aSR->getPath()) },
+			{ "type", isDirectory ? Serializer::serializeFolderType(aSR->getContentInfo()) : Serializer::serializeFileType(aSR->getAdcPath()) },
 			{ "size", aSR->getSize() },
 			{ "tth", isDirectory ? Util::emptyString : aSR->getTTH().toBase32() },
 		};
@@ -284,7 +292,7 @@ namespace webserver {
 
 		auto path = JsonUtil::getOptionalField<string>("path", reqJson);
 		if (path) {
-			ret = ShareManager::getInstance()->getNmdcDirPaths(Util::toNmdcFile(*path));
+			ret = ShareManager::getInstance()->getAdcDirectoryPaths(*path);
 		} else {
 			auto tth = Deserializer::deserializeTTH(reqJson);
 			ret = ShareManager::getInstance()->getRealPaths(tth);

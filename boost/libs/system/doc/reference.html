@@ -60,8 +60,7 @@
       &nbsp;&nbsp;&nbsp;<a href="#Class-error_condition-constructors">Class <code>error_condition</code> constructors</a><br>
       &nbsp;&nbsp;&nbsp;<a href="#Class-error_condition-modifiers">Class <code>error_condition</code> modifiers</a><br>
       &nbsp;&nbsp;&nbsp;<a href="#Class-error_condition-observers">Class <code>error_condition</code> observers</a><br>
-      <a href="#throws-object"><code>throws</code> object</a><br>
-      <a href="#Semantics-of-throws">Semantics of <code>throws</code> object</a><br>
+      <a href="#Function-boost-throws">Function <code>boost::throws()</code></a><br>
       <a href="#Non-member-functions">Non-member functions</a><br>
       <a href="#Header-system_error">Header &lt;boost/system/system_error.hpp&gt;</a><br>
       &nbsp;&nbsp;&nbsp;<a href="#Class-system_error">Class <code>system_error</code></a><br>
@@ -81,7 +80,7 @@ noexcept</code> and explicit conversion operators. The actual implementation
 uses C++11 features only when they are available, and otherwise falls back on 
 C++03 features.</p>
 <h2><a name="Macros">Macros</a></h2>
-<p>Users may defined the following macros if desired. Sensible defaults are 
+<p>Users may define the following macros if desired. Sensible defaults are
 provided, so users may ignore these macros if they prefer.</p>
 <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" height="368">
   <tr>
@@ -110,17 +109,16 @@ provided, so users may ignore these macros if they prefer.</p>
     facility.</td>
   </tr>
   <tr>
-    <td valign="top" height="32"><code>BOOST_SYSTEM_NO_DEPRECATED</code></td>
+    <td valign="top" height="32"><code>BOOST_SYSTEM_ENABLE_DEPRECATED</code></td>
     <td valign="top" height="32">Not defined.</td>
-    <td valign="top" height="32">Deprecated features are excluded.</td>
+    <td valign="top" height="32">Deprecated features are provided for compatibility.</td>
   </tr>
   </table>
 <h2><a name="Deprecated-names">Deprecated names</a></h2>
-<p>In the process of adding Boost.System to C++0x standard library, the C++ 
-committee changed some  
-names. To ease transition, Boost.System deprecates the old 
-names, but continues to provide them unless macro <code>BOOST_SYSTEM_NO_DEPRECATED</code> 
-is defined.</p>
+<p>In the process of adding Boost.System to the C++11 standard library, the
+C++ committee changed some names. To ease transition, Boost.System deprecates
+the old names, but will provide them when the macro
+<code>BOOST_SYSTEM_ENABLE_DEPRECATED</code> is defined.</p>
 <table border="1" cellpadding="5" cellspacing="1" style="border-collapse: collapse" bordercolor="#111111">
   <tr>
     <td><b><i>Old usage, now deprecated</i></b></td>
@@ -316,8 +314,12 @@ fixed by globally adding () to these names to turn them into function calls.</p>
         operator&lt;&lt;( basic_ostream&lt;charT,traits&gt;&amp; os, const error_code &amp; ec );
 
     size_t hash_value( const error_code &amp; ec );
-  }
-}</pre>
+
+  } // namespace system
+
+  system::error_code &amp; throws();
+    
+} // namespace boost</pre>
 </blockquote>
 <p>The value of each<code> errc_t</code> constant shall be the same as the 
 value of the <code>&lt;cerrno&gt;</code> macro shown in the above synopsis.</p>
@@ -645,36 +647,6 @@ observers</a></h3>
   eliminating some sources of user error. One possible implementation choice for 
   this type is pointer to member. <i>--end note</i> <i>]</i></p>
 </blockquote>
-  <h2><a name="throws-object"><code>throws</code> object</a></h2>
-  <pre>extern error_code throws;</pre>
-<p>The predefined <code>error_code</code> object <code>throws</code> is supplied 
-for use as a &quot;throw on error&quot; tag.</p>
-<h2><a name="Semantics-of-throws">Semantics of <code>throws</code></a> object</h2>
-<p>Functions that specify an argument in the form <code>error_code&amp; ec=throws</code>, 
-with appropriate namespace qualifiers, have the following error handling 
-semantics:</p>
-<blockquote>
-  <p><i>Postconditions:</i></p>
-  <blockquote>
-    <p>If <code>&amp;ec != &amp;throws</code> and an error occurred:</p>
-    <ul>
-      <li> <code>ec.value()</code> returns the implementation specific error 
-      number for the particular error that occurred.</li>
-      <li><code>ec.category()</code> returns the <code>
-    <a href="#Class-error_category">error_category</a></code> for <code>ec.value()</code>.</li>
-    </ul>
-    <p>if <code>&amp;ec != &amp;throws</code> and an error did not occur, <code>ec.clear()</code>.</p>
-  </blockquote>
-  <p><i>Throws:</i></p>
-  <blockquote>
-  <p>If an error occurs and <code>&amp;ec == &amp;throws</code>, throws an exception of type
-  <code><a href="#Class-system_error">system_error</a></code> or of a type 
-  derived from <code><a href="#Class-system_error">system_error</a></code>. The 
-  exception's <code>code()</code> member function returns a reference to an
-  <code>error_code</code> object with the behavior specified in <i>
-  Postconditions</i>.</p>
-  </blockquote>
-</blockquote>
 <h2><a name="Non-member-functions">Non-member functions</a></h2>
   <pre>bool operator==( const error_code &amp; lhs, const error_code &amp; rhs ) noexcept;</pre>
 <blockquote>
@@ -734,6 +706,37 @@ bool operator!=( const error_condition &amp; condition, const error_code &amp; c
 <pre>size_t <a name="hash_value">hash_value</a>( const error_code &amp; ec );</pre>
 <blockquote>
   <p><i>Returns: </i>&nbsp;A hash value representing <code>ec</code>.</p>
+</blockquote>
+
+<h2><a name="Function-boost-throws">Function <code>boost::throws()</code></a></h2>
+
+  <pre>system::error_code&amp; throws();</pre>
+<blockquote>
+<p><i>Returns:</i> A <code>system::error_code</code> reference 
+for use in some user-defined function signature as a &quot;throw on error&quot; tag.</p>
+<p><i>Remark:</i> The only valid use for the returned reference is to test its 
+address for equality or inequality to the address of the reference returned by 
+another call to throws(). The returned reference itself has been poisoned so 
+that an attempt to dereference it will fail.</p>
+<p>[<i>Example: </i>Example of a function that uses the <code>throws()</code> idiom:</p>
+  <blockquote>
+  <pre>int divide(int dividend, int divisor,
+           boost::system::error_code&amp; ec = boost::throws())
+{
+  if (divisor == 0)                             // is there an error?
+  {
+    if (&amp;ec == &amp;boost::throws())                // throw on error
+      throw &quot;oops!&quot;;                            // whatever exception you prefer
+    ec = error_code(EDOM, generic_category());  // report error via error_code
+    return 0;
+  }
+
+  if (&amp;ec != &amp;boost::throws())                  // error reporting via error_code
+    ec.clear();
+  return dividend / divisor;
+}</pre>
+  </blockquote>
+  <p>&mdash; <i>end Example</i>]</p>
 </blockquote>
 
 <h2><a name="Header-system_error">Header &lt;boost/system/system_error.hpp&gt;</a></h2>
@@ -818,7 +821,7 @@ application program interfaces.</p>
 <hr>
 
 <p>Revised 
-<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%B %d, %Y" startspan -->January 06, 2014<!--webbot bot="Timestamp" endspan i-checksum="31400" --> </font>
+<!--webbot bot="Timestamp" S-Type="EDITED" S-Format="%B %d, %Y" startspan -->September 07, 2017<!--webbot bot="Timestamp" endspan i-checksum="38006" --> </font>
 </p>
 
 <p>© Copyright Beman Dawes, 2006, 2007, 2008, 2013</p>

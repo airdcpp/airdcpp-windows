@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 
 #ifndef DCPLUSPLUS_DCPP_HOOK_APIMODULE_H
 #define DCPLUSPLUS_DCPP_HOOK_APIMODULE_H
-
-#include <web-server/stdinc.h>
 
 #include <web-server/Access.h>
 #include <web-server/SessionListener.h>
@@ -72,7 +70,7 @@ namespace webserver {
 		};
 		typedef HookCompletionData::Ptr HookCompletionDataPtr;
 
-		HookApiModule(Session* aSession, Access aSubscriptionAccess, const StringList* aSubscriptions, Access aHookAccess);
+		HookApiModule(Session* aSession, Access aSubscriptionAccess, const StringList& aSubscriptions, Access aHookAccess);
 
 		virtual void createHook(const string& aSubscription, HookAddF&& aAddHandler, HookRemoveF&& aRemoveF) noexcept;
 		virtual bool hookActive(const string& aSubscription) const noexcept;

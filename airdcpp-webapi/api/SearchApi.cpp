@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
 * along with this program; if not, write to the Free Software
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
+
+#include "stdinc.h"
 
 #include <api/SearchApi.h>
 
@@ -45,7 +47,6 @@ namespace webserver {
 	{
 
 		METHOD_HANDLER(Access::SEARCH,	METHOD_POST,	(),						SearchApi::handleCreateInstance);
-		METHOD_HANDLER(Access::SEARCH,	METHOD_DELETE,	(TOKEN_PARAM),			SearchApi::handleDeleteInstance);
 
 		METHOD_HANDLER(Access::ANY,		METHOD_GET,		(EXACT_PARAM("types")),	SearchApi::handleGetTypes);
 
@@ -106,10 +107,9 @@ namespace webserver {
 		return websocketpp::http::status_code::ok;
 	}
 
-	api_return SearchApi::handleDeleteInstance(ApiRequest& aRequest) {
+	api_return SearchApi::handleDeleteSubmodule(ApiRequest& aRequest) {
 		auto instance = getSubModule(aRequest);
 		removeSubModule(instance->getId());
-
 		return websocketpp::http::status_code::no_content;
 	}
 

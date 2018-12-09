@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
 * along with this program; if not, write to the Free Software
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
+
+#include "stdinc.h"
 
 #include <api/PrivateChatInfo.h>
 #include <api/base/ApiModule.h>
@@ -35,6 +37,8 @@ namespace webserver {
 		SubApiModule(aParentModule, aChat->getUser()->getCID().toBase32(), subscriptionList), chat(aChat),
 		chatHandler(this, std::bind(&PrivateChatInfo::getChat, this), "private_chat", Access::PRIVATE_CHAT_VIEW, Access::PRIVATE_CHAT_EDIT, Access::PRIVATE_CHAT_SEND) {
 
+		METHOD_HANDLER(Access::PRIVATE_CHAT_VIEW, METHOD_PATCH,		(),							PrivateChatInfo::handleUpdateSession);
+
 		METHOD_HANDLER(Access::PRIVATE_CHAT_EDIT, METHOD_POST,		(EXACT_PARAM("ccpm")),		PrivateChatInfo::handleConnectCCPM);
 		METHOD_HANDLER(Access::PRIVATE_CHAT_EDIT, METHOD_DELETE,	(EXACT_PARAM("ccpm")),		PrivateChatInfo::handleDisconnectCCPM);
 
@@ -52,6 +56,16 @@ namespace webserver {
 
 	PrivateChatInfo::~PrivateChatInfo() {
 		chat->removeListener(this);
+	}
+
+	api_return PrivateChatInfo::handleUpdateSession(ApiRequest& aRequest) {
+		const auto& reqJson = aRequest.getRequestBody();
+		auto hubUrl = JsonUtil::getOptionalField<string>("hub_url", reqJson);
+		if (hubUrl) {
+			chat->setHubUrl(*hubUrl);
+		}
+
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return PrivateChatInfo::handleStartTyping(ApiRequest&) {

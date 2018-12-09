@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
 #include <web-server/WebServerManager.h>
 #include <web-server/WebSocket.h>
 
@@ -53,10 +53,10 @@ namespace webserver {
 		try {
 			if (secure) {
 				auto conn = tlsServer->get_con_from_hdl(hdl);
-				return conn->get_remote_endpoint();
+				return conn->get_raw_socket().remote_endpoint().address().to_string();
 			} else {
 				auto conn = plainServer->get_con_from_hdl(hdl);
-				return conn->get_remote_endpoint();
+				return conn->get_raw_socket().remote_endpoint().address().to_string();
 			}
 		} catch (const std::exception& e) {
 			dcdebug("WebSocket::getIp failed: %s\n", e.what());
@@ -86,15 +86,26 @@ namespace webserver {
 			dcassert(aCode == websocketpp::http::status_code::no_content);
 		}
 
-		sendPlain(j);
+		try {
+			sendPlain(j);
+		} catch (const std::exception& e) {
+			sendApiResponse(
+				nullptr, 
+				{
+					{ "message", "Failed to convert data to JSON: " + string(e.what()) }
+				}, 
+				websocketpp::http::status_code::internal_server_error, 
+				aCallbackId
+			);
+		}
 	}
 
 	void WebSocket::logError(const string& aMessage, websocketpp::log::level aErrorLevel) const noexcept {
 		auto message = (dcpp_fmt("Websocket: " + aMessage + " (%s)") % (session ? session->getAuthToken().c_str() : "no session")).str();
 		if (secure) {
-			tlsServer->get_elog().write(aErrorLevel, message);
+			wsm->logDebugError(tlsServer, message, aErrorLevel);
 		} else {
-			plainServer->get_elog().write(aErrorLevel, message);
+			wsm->logDebugError(plainServer, message, aErrorLevel);
 		}
 	}
 
@@ -102,8 +113,14 @@ namespace webserver {
 		dcdebug(string(aMessage + " (%s)\n").c_str(), session ? session->getAuthToken().c_str() : "no session");
 	}
 
-	void WebSocket::sendPlain(const json& aJson) noexcept {
-		auto str = aJson.dump();
+	void WebSocket::sendPlain(const json& aJson) {
+		string str;
+		try {
+			str = aJson.dump();
+		} catch (const std::exception& e) {
+			logError("Failed to convert data to JSON: " + string(e.what()), websocketpp::log::elevel::fatal);
+			throw e;
+		}
 
 		wsm->onData(str, TransportType::TYPE_SOCKET, Direction::OUTGOING, getIp());
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2017 AirDC++ Project
+ * Copyright (C) 2011-2018 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -79,9 +79,9 @@ public:
 	void saveQueue(bool force) noexcept;
 	QueueItemList getSearchItems(const BundlePtr& aBundle) const noexcept;
 
-	DupeType isNmdcDirQueued(const string& aPath, int64_t aSize) const noexcept;
+	DupeType isAdcDirectoryQueued(const string& aPath, int64_t aSize) const noexcept;
 
-	StringList getNmdcDirPaths(const string& aDirName) const noexcept;
+	StringList getAdcDirectoryPaths(const string& aDirName) const noexcept;
 	size_t getDirectoryCount(const BundlePtr& aBundle) const noexcept;
 
 	void getSourceInfo(const UserPtr& aUser, Bundle::SourceBundleList& aSources, Bundle::SourceBundleList& aBad) const noexcept;
@@ -89,10 +89,10 @@ public:
 	Bundle::TokenMap& getBundles() { return bundles; }
 	const Bundle::TokenMap& getBundles() const { return bundles; }
 
-	uint64_t getTotalQueueSize() const noexcept { return queueSize; }
+	int64_t getTotalQueueSize() const noexcept { return queueSize; }
 private:
-	void findNmdcDirs(const string& aPath, PathInfoPtrList& paths_) const noexcept;
-	const PathInfo* getNmdcSubDirectoryInfo(const string& aSubPath, const BundlePtr& aBundle) const noexcept;
+	void findAdcDirectories(const string& aPath, PathInfoPtrList& paths_) const noexcept;
+	const PathInfo* getAdcSubDirectoryInfo(const string& aSubPath, const BundlePtr& aBundle) const noexcept;
 
 	// Get path infos by bundle path
 	const PathInfo::List* getPathInfos(const string& aBundlePath) const noexcept;
@@ -114,7 +114,7 @@ private:
 	// Bundles by token
 	Bundle::TokenMap bundles;
 
-	uint64_t queueSize = 0;
+	int64_t queueSize = 0;
 };
 
 } // namespace dcpp

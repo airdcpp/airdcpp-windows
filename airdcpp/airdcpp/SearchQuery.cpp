@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2017 AirDC++ Project
+ * Copyright (C) 2011-2018 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -283,9 +283,9 @@ SearchQuery::SearchQuery(const StringList& params, size_t aMaxResults) noexcept 
 		} else if(toCode('M', 'T') == cmd) {
 			matchType = static_cast<Search::MatchType>(Util::toInt(p.substr(2)));
 		} else if(toCode('O', 'T') == cmd) {
-			maxDate = Util::toInt64(p.substr(2));
+			maxDate = Util::toTimeT(p.substr(2));
 		} else if(toCode('N', 'T') == cmd) {
-			minDate = Util::toInt64(p.substr(2));
+			minDate = Util::toTimeT(p.substr(2));
 		} else if(toCode('P', 'P') == cmd) {
 			addParents = (p[2] == '1');
 		}
@@ -363,8 +363,12 @@ bool SearchQuery::matchesFileLower(const string& aName, int64_t aSize, uint64_t 
 	return true;
 }
 
-bool SearchQuery::matchesNmdcPath(const string& aPath, Recursion& recursion_) noexcept {
-	auto sl = StringTokenizer<string>(aPath, NMDC_SEPARATOR).getTokens();
+bool SearchQuery::matchesAdcPath(const string& aPath, Recursion& recursion_) noexcept {
+	auto sl = StringTokenizer<string>(aPath, ADC_SEPARATOR).getTokens();
+	if (sl.empty()) {
+		// Invalid path
+		return false;
+	}
 
 	size_t level = 0;
 	for (;;) {

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 
 #ifndef DCPLUSPLUS_DCPP_SEARCHENTITY_H
 #define DCPLUSPLUS_DCPP_SEARCHENTITY_H
-
-#include <web-server/stdinc.h>
 
 #include <api/SearchUtils.h>
 
@@ -64,6 +62,7 @@ namespace webserver {
 		api_return handlePostHubSearch(ApiRequest& aRequest);
 		api_return handlePostUserSearch(ApiRequest& aRequest);
 		api_return handleGetResults(ApiRequest& aRequest);
+		api_return handleGetResult(ApiRequest& aRequest);
 
 		api_return handleDownload(ApiRequest& aRequest);
 		api_return handleGetChildren(ApiRequest& aRequest);

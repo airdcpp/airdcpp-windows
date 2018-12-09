@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,7 +59,7 @@ public:
 		int64_t size;
 		string xmlPath;
 
-		struct SizeSort : std::binary_function<ThreadedCallBack, ThreadedCallBack,bool> {
+		struct SizeSort {
 			bool operator()(const ThreadedCallBack& left, const ThreadedCallBack& right) const;
 		};
 

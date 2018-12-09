@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -20,13 +20,14 @@
 #ifndef QUEUE_FRAME_H
 #define QUEUE_FRAME_H
 
+#include "Async.h"
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"
 #include "FilteredListViewCtrl.h"
 #include "BrowserBar.h"
 
 #include <airdcpp/Bundle.h>
-#include <airdcpp/DirectoryListingManager.h>
+#include <airdcpp/DownloadManagerListener.h>
 #include <airdcpp/QueueManagerListener.h>
 #include <airdcpp/QueueItem.h>
 #include <airdcpp/TaskQueue.h>
@@ -382,20 +383,12 @@ private:
 
 			// get list
 			getListMenu->appendItem(nick, [=] {
-				try {
-					DirectoryListingManager::getInstance()->createList(u, QueueItem::FLAG_CLIENT_VIEW);
-				} catch (const QueueException& e) {
-					ctrlStatus.SetText(1, Text::toT(e.getError()).c_str());
-				}
+				WinUtil::GetList()(u.user, u.hint);
 			});
 
 			// browse list
 			browseMenu->appendItem(nick, [=] {
-				try {
-					DirectoryListingManager::getInstance()->createList(u, QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
-				} catch (const QueueException& e) {
-					ctrlStatus.SetText(1, Text::toT(e.getError()).c_str());
-				}
+				WinUtil::BrowseList()(u.user, u.hint);
 			});
 
 			// PM

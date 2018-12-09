@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 
 #include "HubFrame.h"
 #include "LineDlg.h"
+#include "DirectoryListingFrm.h"
 #include "SearchFrm.h"
 #include "PrivateFrame.h"
 #include "TextFrame.h"
@@ -29,7 +30,6 @@
 #include "Wildcards.h"
 
 #include <airdcpp/CryptoManager.h>
-#include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/Message.h>
 #include <airdcpp/IgnoreManager.h>
 #include <airdcpp/QueueManager.h>
@@ -49,9 +49,9 @@ bool HubFrame::shutdown = false;
 string HubFrame::id = "hub";
 
 int HubFrame::columnSizes[] = { 100, 75, 75, 75, 100, 75, 130, 130, 100, 50, 40, 40, 40, 40, 40, 300 };
-int HubFrame::columnIndexes[] = { OnlineUser::COLUMN_NICK, OnlineUser::COLUMN_SHARED, OnlineUser::COLUMN_EXACT_SHARED,
-	OnlineUser::COLUMN_DESCRIPTION, OnlineUser::COLUMN_TAG,	OnlineUser::COLUMN_ULSPEED, OnlineUser::COLUMN_DLSPEED, OnlineUser::COLUMN_IP4, OnlineUser::COLUMN_IP6, OnlineUser::COLUMN_EMAIL,
-	OnlineUser::COLUMN_VERSION, OnlineUser::COLUMN_MODE4, OnlineUser::COLUMN_MODE6, OnlineUser::COLUMN_FILES, OnlineUser::COLUMN_HUBS, OnlineUser::COLUMN_SLOTS, OnlineUser::COLUMN_CID };
+int HubFrame::columnIndexes[] = { UserUtil::COLUMN_NICK, UserUtil::COLUMN_SHARED, UserUtil::COLUMN_EXACT_SHARED,
+	UserUtil::COLUMN_DESCRIPTION, UserUtil::COLUMN_TAG,	UserUtil::COLUMN_ULSPEED, UserUtil::COLUMN_DLSPEED, UserUtil::COLUMN_IP4, UserUtil::COLUMN_IP6, UserUtil::COLUMN_EMAIL,
+	UserUtil::COLUMN_VERSION, UserUtil::COLUMN_MODE4, UserUtil::COLUMN_MODE6, UserUtil::COLUMN_FILES, UserUtil::COLUMN_HUBS, UserUtil::COLUMN_SLOTS, UserUtil::COLUMN_CID };
 
 ResourceManager::Strings HubFrame::columnNames[] = { ResourceManager::NICK, ResourceManager::SHARED, ResourceManager::EXACT_SHARED, 
 	ResourceManager::DESCRIPTION, ResourceManager::TAG, ResourceManager::SETCZDC_UPLOAD_SPEED, ResourceManager::SETCZDC_DOWNLOAD_SPEED, ResourceManager::IP_V4, ResourceManager::IP_V6, ResourceManager::EMAIL,
@@ -93,26 +93,26 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 
 	auto fhe = FavoriteManager::getInstance()->getFavoriteHubEntry(Text::fromT(server));
 	if(fhe) {
-		WinUtil::splitTokens(columnIndexes, fhe->getHeaderOrder(), OnlineUser::COLUMN_LAST);
-		WinUtil::splitTokens(columnSizes, fhe->getHeaderWidths(), OnlineUser::COLUMN_LAST);
+		WinUtil::splitTokens(columnIndexes, fhe->getHeaderOrder(), UserUtil::COLUMN_LAST);
+		WinUtil::splitTokens(columnSizes, fhe->getHeaderWidths(), UserUtil::COLUMN_LAST);
 	} else {
-		WinUtil::splitTokens(columnIndexes, SETTING(HUBFRAME_ORDER), OnlineUser::COLUMN_LAST);
-		WinUtil::splitTokens(columnSizes, SETTING(HUBFRAME_WIDTHS), OnlineUser::COLUMN_LAST);                           
+		WinUtil::splitTokens(columnIndexes, SETTING(HUBFRAME_ORDER), UserUtil::COLUMN_LAST);
+		WinUtil::splitTokens(columnSizes, SETTING(HUBFRAME_WIDTHS), UserUtil::COLUMN_LAST);
 	}
     	
-	for(uint8_t j = 0; j < OnlineUser::COLUMN_LAST; ++j) {
-		int fmt = (j == OnlineUser::COLUMN_SHARED || j == OnlineUser::COLUMN_EXACT_SHARED || j == OnlineUser::COLUMN_SLOTS) ? LVCFMT_RIGHT : LVCFMT_LEFT;
+	for(uint8_t j = 0; j < UserUtil::COLUMN_LAST; ++j) {
+		int fmt = (j == UserUtil::COLUMN_SHARED || j == UserUtil::COLUMN_EXACT_SHARED || j == UserUtil::COLUMN_SLOTS) ? LVCFMT_RIGHT : LVCFMT_LEFT;
 		ctrlUsers.InsertColumn(j, CTSTRING_I(columnNames[j]), fmt, columnSizes[j], j, columnTypes[j]);
 	}
 
-	ctrlUsers.addCopyHandler(OnlineUser::COLUMN_IP4, &ColumnInfo::filterCountry);
-	ctrlUsers.addCopyHandler(OnlineUser::COLUMN_IP6, &ColumnInfo::filterCountry);
+	ctrlUsers.addCopyHandler(UserUtil::COLUMN_IP4, &ColumnInfo::filterCountry);
+	ctrlUsers.addCopyHandler(UserUtil::COLUMN_IP6, &ColumnInfo::filterCountry);
 
 	filter.addFilterBox(m_hWnd);
 	filter.addColumnBox(m_hWnd, ctrlUsers.getColumnList());
 	filter.addMethodBox(m_hWnd);
 
-	ctrlUsers.setColumnOrderArray(OnlineUser::COLUMN_LAST, columnIndexes);
+	ctrlUsers.setColumnOrderArray(UserUtil::COLUMN_LAST, columnIndexes);
 	
 	if(fhe) {
 		ctrlUsers.setVisible(fhe->getHeaderVisible());
@@ -125,7 +125,7 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	ctrlUsers.SetTextBkColor(WinUtil::bgColor);
 	ctrlUsers.SetTextColor(WinUtil::textColor);
 	ctrlUsers.setFlickerFree(WinUtil::bgBrush);
-	ctrlUsers.setSortColumn(OnlineUser::COLUMN_NICK);
+	ctrlUsers.setSortColumn(UserUtil::COLUMN_NICK);
 	ctrlUsers.SetImageList(ResourceLoader::getUserImages(), LVSIL_SMALL);
 
 	CToolInfo ti_1(TTF_SUBCLASS, ctrlStatus.m_hWnd, 0 + POPUP_UID, 0, LPSTR_TEXTCALLBACK);
@@ -205,7 +205,7 @@ HubFrame::HubFrame(const tstring& aServer) :
 		ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 		ctrlClientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 		ctrlStatusContainer(STATUSCLASSNAME, this, STATUS_MSG),
-		filter(OnlineUser::COLUMN_LAST, [this] { updateUserList(); updateUsers = true;}),
+		filter(UserUtil::COLUMN_LAST, [this] { updateUserList(); updateUsers = true;}),
 		statusDirty(true)
 {
 	client = ClientManager::getInstance()->getClient(Text::fromT(server));
@@ -265,9 +265,9 @@ bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*messag
 		removeFavoriteHub();
 	} else if(stricmp(cmd.c_str(), _T("getlist")) == 0){
 		if(!param.empty() ){
-			OnlineUserPtr ui = client->findUser(Text::fromT(param));
-			if(ui) {
-				ui->getList();
+			const auto ui = client->findUser(Text::fromT(param));
+			if (ui) {
+				DirectoryListingFrame::openWindow(HintedUser(ui->getUser(), client->getHubUrl()), QueueItem::FLAG_CLIENT_VIEW);
 			}
 		}
 	} else if(stricmp(cmd.c_str(), _T("log")) == 0) {
@@ -277,14 +277,13 @@ bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*messag
 	} else if(stricmp(cmd.c_str(), _T("pm")) == 0) {
 		string::size_type j = param.find(_T(' '));
 		if(j != string::npos) {
-			tstring nick = param.substr(0, j);
-			const OnlineUserPtr ui = client->findUser(Text::fromT(nick));
-
-			if(ui) {
+			const auto nick = param.substr(0, j);
+			const auto ui = client->findUser(Text::fromT(nick));
+			if (ui) {
 				PrivateFrame::openWindow(HintedUser(ui->getUser(), client->getHubUrl()));
 			}
 		} else if(!param.empty()) {
-			const OnlineUserPtr ui = client->findUser(Text::fromT(param));
+			const auto ui = client->findUser(Text::fromT(param));
 			if(ui) {
 				PrivateFrame::openWindow(HintedUser(ui->getUser(), client->getHubUrl()));
 			}
@@ -301,14 +300,6 @@ bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*messag
 
 	return true;
 }
-
-struct CompareItems {
-	CompareItems(uint8_t aCol) : col(aCol) { }
-	bool operator()(const OnlineUser& a, const OnlineUser& b) const {
-		return OnlineUser::compareItems(&a, &b, col) < 0;
-	}
-	const uint8_t col;
-};
 
 void HubFrame::addAsFavorite() {
 	if (client->saveFavorite()) {
@@ -336,7 +327,7 @@ LRESULT HubFrame::onDoubleClickUsers(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 				ctrlUsers.getItemData(item->iItem)->getList();
 		        break;
 		    case 1: {
-				tstring sUser = Text::toT(ctrlUsers.getItemData(item->iItem)->getIdentity().getNick());
+				tstring sUser = Text::toT(ctrlUsers.getItemData(item->iItem)->onlineUser->getIdentity().getNick());
 	            int iSelBegin, iSelEnd;
 	            ctrlMessage.GetSel(iSelBegin, iSelEnd);
 
@@ -380,36 +371,41 @@ LRESULT HubFrame::onDoubleClickUsers(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 bool HubFrame::updateUser(const UserTask& u) {
 	if(!showUsers) return false;
 	
-	if(!u.onlineUser->isInList) {
-		u.onlineUser->update(-1);
+	auto ui = findUserInfo(u.onlineUser);
+	if(!ui) {
+		auto i = userInfos.emplace(u.onlineUser, ItemInfo(u.onlineUser));
+		dcassert(i.second);
+		if (i.second) {
+			ui = &i.first->second;
 
-		if(!u.onlineUser->isHidden()) {
-			u.onlineUser->inc();
-			ctrlUsers.insertItem(u.onlineUser.get(), u.onlineUser->getImageIndex());
+			if (!ui->onlineUser->isHidden()) {
+				//u.onlineUser->inc();
+				ctrlUsers.insertItem(ui, ui->getImageIndex());
+			}
+
+			if (!filter.empty())
+				updateUserList(ui);
 		}
 
-		if(!filter.empty())
-			updateUserList(u.onlineUser);
+		//u.onlineUser->update(-1);
 		return true;
 	} else {
-		const int pos = ctrlUsers.findItem(u.onlineUser.get());
-
-		if(pos != -1) {
+		const int pos = ctrlUsers.findItem(ui);
+		if (pos != -1) {
 			TCHAR buf[255];
 			ListView_GetItemText(ctrlUsers, pos, ctrlUsers.getSortColumn(), buf, 255);
 			
-			resort = u.onlineUser->update(ctrlUsers.getSortColumn(), buf) || resort;
+			resort = ui->update(ctrlUsers.getSortColumn(), buf) || resort;
 			if(u.onlineUser->isHidden()) {
 				ctrlUsers.DeleteItem(pos);
-				u.onlineUser->dec();				
 			} else {
 				ctrlUsers.updateItem(pos);
-				ctrlUsers.SetItem(pos, 0, LVIF_IMAGE, NULL, u.onlineUser->getImageIndex(), 0, 0, NULL);
+				ctrlUsers.SetItem(pos, 0, LVIF_IMAGE, NULL, ui->getImageIndex(), 0, 0, NULL);
 			}
 		}
 
 		u.onlineUser->getIdentity().set("WO", u.onlineUser->getIdentity().isOp() ? "1" : Util::emptyString);
-		updateUserList(u.onlineUser);
+		updateUserList(ui);
 		return false;
 	}
 }
@@ -418,10 +414,14 @@ void HubFrame::removeUser(const OnlineUserPtr& aUser) {
 	if(!showUsers) return;
 	
 	if(!aUser->isHidden()) {
-		int i = ctrlUsers.findItem(aUser.get());
-		if(i != -1) {
-			ctrlUsers.DeleteItem(i);
-			aUser->dec();
+		auto ui = findUserInfo(aUser);
+		if (ui) {
+			int i = ctrlUsers.findItem(ui);
+			if (i != -1) {
+				ctrlUsers.DeleteItem(i);
+			}
+
+			userInfos.erase(aUser);
 		}
 	}
 }
@@ -755,10 +755,11 @@ LRESULT HubFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 }
 
 void HubFrame::clearUserList() {
-	for(auto& u: ctrlUsers)
-		u.dec();
+	//for(auto& u: ctrlUsers)
+	//	u.dec();
 
 	ctrlUsers.DeleteAllItems();
+	userInfos.clear();
 }
 
 void HubFrame::clearTaskList() {
@@ -801,18 +802,18 @@ LRESULT HubFrame::onLButton(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& b
 
 			// Nickname click, let's see if we can find one like it in the name list...
 			tstring nick = x.substr(start, end - start);
-			OnlineUserPtr ui = client->findUser(Text::fromT(nick));
-			if(ui) {
+			const auto ui = findUserInfo(Text::fromT(nick));
+			if (ui) {
 				bHandled = true;
 				if (wParam & MK_CONTROL) { // MK_CONTROL = 0x0008
-					PrivateFrame::openWindow(HintedUser(ui->getUser(), client->getHubUrl()));
+					PrivateFrame::openWindow(HintedUser(ui->onlineUser->getUser(), client->getHubUrl()));
 				} else if (wParam & MK_SHIFT) {
 					try {
-						DirectoryListingManager::getInstance()->createList(HintedUser(ui->getUser(), client->getHubUrl()), QueueItem::FLAG_CLIENT_VIEW);
+						DirectoryListingFrame::openWindow(HintedUser(ui->onlineUser->getUser(), client->getHubUrl()), QueueItem::FLAG_CLIENT_VIEW);
 					} catch(const Exception& e) {
 						addStatus(Text::toT(e.getError()), LogMessage::SEV_ERROR, WinUtil::m_ChatTextSystem);
 					}
-				} else if(ui->getUser() != ClientManager::getInstance()->getMe()) {
+				} else if (ui->onlineUser->getUser() != ClientManager::getInstance()->getMe()) {
 					switch(SETTING(CHAT_DBLCLICK)) {
 					case 0: {
 						int items = ctrlUsers.GetItemCount();
@@ -828,7 +829,7 @@ LRESULT HubFrame::onLButton(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& b
 					    break;
 					}    
 					case 1: {
-					     tstring sUser = ui->getText(OnlineUser::COLUMN_NICK);
+					     tstring sUser = ui->getText(UserUtil::COLUMN_NICK);
 					     int iSelBegin, iSelEnd;
 					     ctrlMessage.GetSel(iSelBegin, iSelEnd);
 
@@ -950,7 +951,7 @@ LRESULT HubFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 }
 
 void HubFrame::handleOpenOwnList(){
-	DirectoryListingManager::getInstance()->openOwnList(client->get(HubSettings::ShareProfile));
+	DirectoryListingFrame::openWindow(client->get(HubSettings::ShareProfile));
 }
 
 LRESULT HubFrame::onSetNotify(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
@@ -983,7 +984,8 @@ LRESULT HubFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOO
 		bool isMe = false;
 
 		if (count == 1) {
-			auto sNick = Text::toT(((OnlineUser*) ctrlUsers.getItemData(ctrlUsers.GetNextItem(-1, LVNI_SELECTED)))->getIdentity().getNick());
+			auto ii = ctrlUsers.getItemData(ctrlUsers.GetNextItem(-1, LVNI_SELECTED));
+			auto sNick = Text::toT(ii->onlineUser->getIdentity().getNick());
 			isMe = (sNick == Text::toT(client->getMyNick()));
 
 			menu.InsertSeparatorFirst(sNick);
@@ -1002,9 +1004,9 @@ LRESULT HubFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOO
 			appendUserItems(menu);
 
 			if (count == 1) {
-				const OnlineUserPtr ou = ctrlUsers.getItemData(ctrlUsers.GetNextItem(-1, LVNI_SELECTED));
-				if (client->isOp() || !ou->getIdentity().isOp() || ou->getIdentity().isBot()) {
-					if (!ou->getUser()->isIgnored()) {
+				const auto ui = ctrlUsers.getItemData(ctrlUsers.GetNextItem(-1, LVNI_SELECTED));
+				if (client->isOp() || !ui->onlineUser->getIdentity().isOp() || ui->onlineUser->getIdentity().isBot()) {
+					if (!ui->onlineUser->getUser()->isIgnored()) {
 						menu.AppendMenu(MF_STRING, IDC_IGNORE, CTSTRING(IGNORE_USER));
 					} else {
 						menu.AppendMenu(MF_STRING, IDC_UNIGNORE, CTSTRING(UNIGNORE_USER));
@@ -1038,10 +1040,10 @@ void HubFrame::runUserCommand(::UserCommand& uc) {
 	} else {
 		int sel = -1;
 		while((sel = ctrlUsers.GetNextItem(sel, LVNI_SELECTED)) != -1) {
-			const OnlineUserPtr u = ctrlUsers.getItemData(sel);
-			if(u->getUser()->isOnline()) {
+			const auto u = ctrlUsers.getItemData(sel);
+			if(u->onlineUser->getUser()->isOnline()) {
 				auto tmp = ucParams;
-				u->getIdentity().getParams(tmp, "user", true);
+				u->onlineUser->getIdentity().getParams(tmp, "user", true);
 				client->sendUserCmd(uc, tmp);
 			}
 		}
@@ -1091,8 +1093,8 @@ void HubFrame::onTab() {
 		if(!firstPass)
 			i = 0;
 		while(firstPass || (!firstPass && i < start)) {
-			const OnlineUserPtr ui = ctrlUsers.getItemData(i);
-			const tstring& nick = ui->getText(OnlineUser::COLUMN_NICK);
+			const auto ui = ctrlUsers.getItemData(i);
+			const tstring& nick = ui->getText(UserUtil::COLUMN_NICK);
 			bool found = (strnicmp(nick, complete, complete.length()) == 0);
 			tstring::size_type x = 0;
 			if(!found) {
@@ -1177,11 +1179,8 @@ void HubFrame::on(Redirected, const string&, const ClientPtr& aNewClient) noexce
 LRESULT HubFrame::onEnterUsers(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHandled*/) {
 	int item = ctrlUsers.GetNextItem(-1, LVNI_FOCUSED);
 	if(item != -1) {
-		try {
-			DirectoryListingManager::getInstance()->createList(HintedUser((ctrlUsers.getItemData(item))->getUser(), client->getHubUrl()), QueueItem::FLAG_CLIENT_VIEW);
-		} catch(const Exception& e) {
-			addStatus(Text::toT(e.getError()), LogMessage::SEV_ERROR);
-		}
+		auto user = HintedUser((ctrlUsers.getItemData(item))->onlineUser->getUser(), client->getHubUrl());
+		WinUtil::GetList()(user.user, user.hint);
 	}
 	return 0;
 }
@@ -1494,74 +1493,67 @@ void HubFrame::openLinksInTopic() {
 	}
 }
 
-void HubFrame::updateUserList(OnlineUserPtr aUser) {
-	
-	//single update?
-	//avoid refreshing the whole list and just update the current item
-	//instead
-	auto filterInfoF = [this, &aUser](int column) { return Text::fromT(aUser->getText(column)); };
+void HubFrame::updateUserList(ItemInfo* ii) {
+	auto filterInfoF = [this, &ii](int column) { return Text::fromT(ii->getText(column)); };
 	auto filterNumericF = [&](int column) -> double {
 		switch (column) {
-		case OnlineUser::COLUMN_EXACT_SHARED:
-		case OnlineUser::COLUMN_SHARED: return aUser->getIdentity().getBytesShared();
-		case OnlineUser::COLUMN_SLOTS: return aUser->getIdentity().getSlots();
-		case OnlineUser::COLUMN_DLSPEED: return aUser->getIdentity().getAdcConnectionSpeed(true);
-		case OnlineUser::COLUMN_ULSPEED: return aUser->getUser()->isNMDC() ? 
-			Util::toFloat(aUser->getIdentity().getConnectionString()) : aUser->getIdentity().getAdcConnectionSpeed(false);
-		case OnlineUser::COLUMN_FILES: return Util::toFloat(aUser->getIdentity().getSharedFiles());
-		case OnlineUser::COLUMN_HUBS: return aUser->getIdentity().getTotalHubCount();
+		case UserUtil::COLUMN_EXACT_SHARED:
+		case UserUtil::COLUMN_SHARED: return ii->onlineUser->getIdentity().getBytesShared();
+		case UserUtil::COLUMN_SLOTS: return ii->onlineUser->getIdentity().getSlots();
+		case UserUtil::COLUMN_DLSPEED: return ii->onlineUser->getIdentity().getAdcConnectionSpeed(true);
+		case UserUtil::COLUMN_ULSPEED: return ii->onlineUser->getUser()->isNMDC() ?
+			Util::toFloat(ii->onlineUser->getIdentity().getConnectionString()) : ii->onlineUser->getIdentity().getAdcConnectionSpeed(false);
+		case UserUtil::COLUMN_FILES: return Util::toFloat(ii->onlineUser->getIdentity().getSharedFiles());
+		case UserUtil::COLUMN_HUBS: return ii->onlineUser->getIdentity().getTotalHubCount();
 		default: dcassert(0); return 0;
 		}
 	};
 
 	auto filterPrep = filter.prepare(filterInfoF, filterNumericF);
 
-	if(aUser) {
-		if(aUser->isHidden()) {
+	if (ii) {
+		if (ii->onlineUser->isHidden()) {
 			return;
 		}
 
-
 		if (filter.empty() || filter.match(filterPrep)) {
-			if (ctrlUsers.findItem(aUser.get()) == -1) {
-				aUser->inc();
-				ctrlUsers.insertItem(aUser.get(), aUser->getImageIndex());
+			if (ctrlUsers.findItem(ii) == -1) {
+				//aUser->inc();
+				ctrlUsers.insertItem(ii, ii->getImageIndex());
 			}
 		} else {
-			int i = ctrlUsers.findItem(aUser.get());
+			int i = ctrlUsers.findItem(ii);
 			if (i != -1) {
 				ctrlUsers.DeleteItem(i);
-				aUser->dec();
 			}
 		}
 	} else {
 		ctrlUsers.SetRedraw(FALSE);
-		clearUserList();
+		ctrlUsers.DeleteAllItems();
 
-		OnlineUserList l;
-		client->getUserList(l, false);
-
-		if(filter.empty()) {
-			for(const auto& ui: l) {
-				ui->inc();
-				ctrlUsers.insertItem(ui.get(), ui->getImageIndex());
+		if (filter.empty()) {
+			for (auto& i: userInfos) {
+				ii = &i.second;
+				if (!ii->onlineUser->isHidden()) {
+					ctrlUsers.insertItem(ii, ii->getImageIndex());
+				}
 			}
 		} else {
-			auto i = l.begin();
-			for(; i != l.end(); ++i){
-				// really hacky because of the filter
-				aUser = *i;
+			auto i = userInfos.begin();
+			for (; i != userInfos.end(); ++i) {
+				ii = &i->second;
 				if (filter.empty() || filter.match(filterPrep)) {
-					aUser->inc();
-					ctrlUsers.insertItem(aUser.get(), aUser->getImageIndex());
+					ctrlUsers.insertItem(ii, ii->getImageIndex());
 				}
 			}
 		}
+
 		ctrlUsers.SetRedraw(TRUE);
 	}
 
 	statusDirty = true;
 }
+
 void HubFrame::handleTab(bool reverse) {
 	HWND focus = GetFocus();
 
@@ -1630,7 +1622,7 @@ LRESULT HubFrame::onPublicMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		while( (i = ctrlUsers.GetNextItem(i, LVNI_SELECTED)) != -1) {
 			if (!sUsers.empty())
 				sUsers += _T(", ");
-			sUsers += Text::toT(((OnlineUser*)ctrlUsers.getItemData(i))->getIdentity().getNick());
+			sUsers += Text::toT((ctrlUsers.getItemData(i))->onlineUser->getIdentity().getNick());
 		}
 	} else {
 		sUsers = ctrlClient.getSelectedUser();
@@ -1659,7 +1651,7 @@ LRESULT HubFrame::onPublicMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 
 LRESULT HubFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {	
 	ParamMap params;
-	OnlineUserPtr ui = nullptr;
+	ItemInfo* ui = nullptr;
 
 	int i = -1;
 	if((i = ctrlUsers.GetNextItem(i, LVNI_SELECTED)) != -1) {
@@ -1669,7 +1661,7 @@ LRESULT HubFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/
 	if(!ui) 
 		return 0;
 
-	string file = ui->getLogPath();
+	string file = ui->onlineUser->getLogPath();
 	if(Util::fileExists(file)) {
 		WinUtil::viewLog(file, wID == IDC_USER_HISTORY);
 	} else {
@@ -1742,7 +1734,7 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 		return CDRF_NOTIFYITEMDRAW;
 
 	case CDDS_ITEMPREPAINT: {
-			OnlineUser* ui = (OnlineUser*)cd->nmcd.lItemlParam;
+			auto ui = (ItemInfo*)cd->nmcd.lItemlParam;
 			// tstring user = ui->getText(OnlineUser::COLUMN_NICK); 
 			if (ui->getUser()->isFavorite()) {
 				cd->clrText = SETTING(FAVORITE_COLOR);
@@ -1750,9 +1742,9 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 				cd->clrText = SETTING(RESERVED_SLOT_COLOR);
 			} else if (ui->getUser()->isIgnored()) {
 				cd->clrText = SETTING(IGNORED_COLOR);
-			} else if(ui->getIdentity().isOp()) {
+			} else if(ui->onlineUser->getIdentity().isOp()) {
 				cd->clrText = SETTING(OP_COLOR);
-			} else if(!ui->getIdentity().isTcpActive(client)) {
+			} else if(!ui->onlineUser->getIdentity().isTcpActive(client)) {
 				cd->clrText = SETTING(PASIVE_COLOR);
 			} else {
 				cd->clrText = SETTING(NORMAL_COLOUR);
@@ -1788,9 +1780,8 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 		}
 
 	case CDDS_SUBITEM | CDDS_ITEMPREPAINT: {
-		if(SETTING(GET_USER_COUNTRY) && (ctrlUsers.findColumn(cd->iSubItem) == OnlineUser::COLUMN_IP4 || ctrlUsers.findColumn(cd->iSubItem) == OnlineUser::COLUMN_IP6)) {
+		if(SETTING(GET_USER_COUNTRY) && (ctrlUsers.findColumn(cd->iSubItem) == UserUtil::COLUMN_IP4 || ctrlUsers.findColumn(cd->iSubItem) == UserUtil::COLUMN_IP6)) {
 			CRect rc;
-			OnlineUser* ou = (OnlineUser*)cd->nmcd.lItemlParam;
 			ctrlUsers.GetSubItemRect((int)cd->nmcd.dwItemSpec, cd->iSubItem, LVIR_BOUNDS, rc);
 
 			SetTextColor(cd->nmcd.hdc, cd->clrText);
@@ -1807,7 +1798,8 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 
 				POINT p = { rc.left, top };
 
-				string ip = ou->getIdentity().getIp();
+				const auto ii = (ItemInfo*)cd->nmcd.lItemlParam;
+				const auto ip = ii->onlineUser->getIdentity().getIp();
 				uint8_t flagIndex = 0;
 				if (!ip.empty()) {
 					// Only attempt to grab a country mapping if we actually have an IP address
@@ -1839,9 +1831,8 @@ LRESULT HubFrame::onKeyDownUsers(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*
 		switch(l->wVKey) {
 			case 'M':
 				while( (i = ctrlUsers.GetNextItem(i, LVNI_SELECTED)) != -1) {
-					OnlineUserPtr ou = ctrlUsers.getItemData(i);
-					if(ou->getUser() != ClientManager::getInstance()->getMe())
-					{
+					auto ou = ctrlUsers.getItemData(i);
+					if(ou->getUser() != ClientManager::getInstance()->getMe()) {
 						ou->pm();
 					}
 				}				
@@ -1879,7 +1870,7 @@ void HubFrame::setFonts() {
 LRESULT HubFrame::onIgnore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/) {
 	int i=-1;
 	while( (i = ctrlUsers.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		IgnoreManager::getInstance()->storeIgnore(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
+		IgnoreManager::getInstance()->storeIgnore((ctrlUsers.getItemData(i))->getUser());
 	}
 	return 0;
 }
@@ -1887,7 +1878,60 @@ LRESULT HubFrame::onIgnore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BO
 LRESULT HubFrame::onUnignore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/) {
 	int i=-1;
 	while( (i = ctrlUsers.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		IgnoreManager::getInstance()->removeIgnore(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
+		IgnoreManager::getInstance()->removeIgnore((ctrlUsers.getItemData(i))->getUser());
 	}
 	return 0;
 }
+
+
+HubFrame::ItemInfo* HubFrame::findUserInfo(const OnlineUserPtr& aUser) noexcept {
+	auto i = userInfos.find(aUser);
+	if (i == userInfos.end()) {
+		return nullptr;
+	}
+
+	return &i->second;
+}
+
+
+HubFrame::ItemInfo* HubFrame::findUserInfo(const string& aNick) noexcept {
+	const auto user = client->findUser(aNick);
+	if (!user) {
+		return nullptr;
+	}
+
+	return findUserInfo(user);
+}
+
+
+HubFrame::ItemInfo::ItemInfo(const OnlineUserPtr& aUser) : onlineUser(aUser) {
+
+}
+
+
+const tstring HubFrame::ItemInfo::getText(uint8_t col) const {
+	return UserUtil::getUserText(onlineUser, col);
+}
+
+
+int HubFrame::ItemInfo::getImageIndex() const {
+	return UserUtil::getUserImageIndex(onlineUser);
+}
+
+
+int HubFrame::ItemInfo::compareItems(const ItemInfo* a, const ItemInfo* b, uint8_t col) {
+	return UserUtil::compareUsers(a->onlineUser, b->onlineUser, col);
+}
+
+bool HubFrame::ItemInfo::update(int sortCol, const tstring& oldText) noexcept {
+	const auto& identity = onlineUser->getIdentity();
+
+	bool needsSort = ((identity.get("WO").empty() ? false : true) != identity.isOp());
+
+	if (sortCol != -1) {
+		needsSort = needsSort || (oldText != UserUtil::getUserText(onlineUser, static_cast<uint8_t>(sortCol)));
+	}
+
+	return needsSort;
+}
+

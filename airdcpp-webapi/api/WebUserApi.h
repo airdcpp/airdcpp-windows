@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,6 @@
 #ifndef DCPLUSPLUS_DCPP_WEBUSER_API_H
 #define DCPLUSPLUS_DCPP_WEBUSER_API_H
 
-#include <web-server/stdinc.h>
-
 #include <api/base/ApiModule.h>
 #include <api/WebUserUtils.h>
 #include <api/common/ListViewController.h>
@@ -39,7 +37,7 @@ namespace webserver {
 		api_return handleUpdateUser(ApiRequest& aRequest);
 		api_return handleRemoveUser(ApiRequest& aRequest);
 
-		void parseUser(WebUserPtr& aUser, const json& j, bool aIsNew);
+		bool parseUser(WebUserPtr& aUser, const json& j, bool aIsNew);
 
 		void on(WebUserManagerListener::UserAdded, const WebUserPtr& aUser) noexcept override;
 		void on(WebUserManagerListener::UserUpdated, const WebUserPtr& aUser) noexcept override;

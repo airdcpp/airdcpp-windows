@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -165,7 +165,7 @@ private:
 
 	void on(HublistManagerListener::DownloadStarting, const string& l) noexcept;
 	void on(HublistManagerListener::DownloadFailed, const string& l) noexcept;
-	void on(HublistManagerListener::DownloadFinished, const string& l, bool /*fromCoral*/) noexcept;
+	void on(HublistManagerListener::DownloadFinished, const string& l) noexcept;
 	void on(HublistManagerListener::LoadedFromCache, const string& l, const string& /*d*/) noexcept;
 	void on(HublistManagerListener::Corrupted, const string& l) noexcept;
 

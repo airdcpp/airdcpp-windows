@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 
 #ifndef DCPLUSPLUS_DCPP_HUBAPI_H
 #define DCPLUSPLUS_DCPP_HUBAPI_H
-
-#include <web-server/stdinc.h>
 
 #include <api/base/HierarchicalApiModule.h>
 #include <api/base/HookApiModule.h>
@@ -48,7 +46,7 @@ namespace webserver {
 		api_return handlePostStatus(ApiRequest& aRequest);
 
 		api_return handleConnect(ApiRequest& aRequest);
-		api_return handleDisconnect(ApiRequest& aRequest);
+		api_return handleDeleteSubmodule(ApiRequest& aRequest) override;
 		api_return handleGetStats(ApiRequest& aRequest);
 
 		api_return handleFindByUrl(ApiRequest& aRequest);

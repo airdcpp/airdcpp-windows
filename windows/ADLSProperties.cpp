@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -67,7 +67,7 @@ LRESULT ADLSProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 	// Load search data
 	ctrlSearch.SetWindowText(Text::toT(search.getPattern()).c_str());
 	ctrlComment.SetWindowText(Text::toT(search.adlsComment).c_str());
-	ctrlDestDir.SetWindowText(Text::toT(search.destDir).c_str());
+	ctrlDestDir.SetWindowText(Text::toT(search.getDestDir()).c_str());
 	ctrlMinSize.SetWindowText((search.minFileSize > 0 ? Util::toStringW(search.minFileSize) : _T("")).c_str());
 	ctrlMaxSize.SetWindowText((search.maxFileSize > 0 ? Util::toStringW(search.maxFileSize) : _T("")).c_str());
 	ctrlActive.SetCheck(search.isActive ? 1 : 0);
@@ -114,7 +114,7 @@ LRESULT ADLSProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCt
 		search.setPattern(Text::fromT(WinUtil::getEditText(ctrlSearch)));
 
 		search.adlsComment = Text::fromT(WinUtil::getEditText(ctrlComment));
-		search.destDir = Text::fromT(WinUtil::getEditText(ctrlDestDir));
+		search.setDestDir(Text::fromT(WinUtil::getEditText(ctrlDestDir)));
 
 		tstring val = WinUtil::getEditText(ctrlMinSize);
 		search.minFileSize = (val.size() == 0 ? -1 : Util::toInt64(Text::fromT(val)));

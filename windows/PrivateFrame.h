@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 #include "UserInfoBaseHandler.h"
 #include "ChatFrameBase.h"
 #include "UCHandler.h"
+#include "UserUtil.h"
 
 #define HUB_SEL_MAP 9
 #define STATUS_MSG_MAP 19
@@ -62,7 +63,7 @@ public:
 		COMMAND_ID_HANDLER(ID_EDIT_CLEAR_ALL, onEditClearAll)
 		COMMAND_ID_HANDLER(IDC_PUBLIC_MESSAGE, onPublicMessage)
 		COMMAND_CODE_HANDLER(EN_CHANGE, onEditChange)
-		COMMAND_RANGE_HANDLER(IDC_COPY, IDC_COPY + OnlineUser::COLUMN_LAST, onCopyUserInfo)
+		COMMAND_RANGE_HANDLER(IDC_COPY, IDC_COPY + UserUtil::COLUMN_LAST, onCopyUserInfo)
 		CHAIN_MSG_MAP(chatBase)
 		CHAIN_COMMANDS(uibBase)
 	ALT_MSG_MAP(EDIT_MESSAGE_MAP)

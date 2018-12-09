@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 
 #ifndef DCPLUSPLUS_DCPP_SHAREROOT_API_H
 #define DCPLUSPLUS_DCPP_SHAREROOT_API_H
-
-#include <web-server/stdinc.h>
 
 #include <api/base/ApiModule.h>
 #include <api/ShareUtils.h>
@@ -43,7 +41,7 @@ namespace webserver {
 		api_return handleUpdateRoot(ApiRequest& aRequest);
 		api_return handleRemoveRoot(ApiRequest& aRequest);
 
-		void parseRoot(ShareDirectoryInfoPtr& aInfo, const json& j, bool aIsNew);
+		void parseRoot(ShareDirectoryInfoPtr& aInfo, const json& j);
 
 		void on(ShareManagerListener::RootCreated, const string& aPath) noexcept override;
 		void on(ShareManagerListener::RootRemoved, const string& aPath) noexcept override;

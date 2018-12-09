@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -139,6 +139,12 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		ctrlPad.SetWindowText(Text::toT(text).c_str());
 	}
 
+	if (!getAutoScroll()) {
+		//set scroll position to top
+		ctrlPad.setAutoScrollToEnd(false);
+		ctrlPad.SetSel(0, 0);
+	}
+
 	SetWindowText(title.c_str());
 	
 	CRect rc(SETTING(TEXT_LEFT), SETTING(TEXT_TOP), SETTING(TEXT_RIGHT), SETTING(TEXT_BOTTOM));
@@ -174,10 +180,10 @@ void TextFrame::setViewModeNfo() {
 	//set the colors...
 	ctrlPad.SetBackgroundColor(WinUtil::bgColor);
 	ctrlPad.SetDefaultCharFormat(cf);
-	
-	//set scroll position to top
-	ctrlPad.setAutoScrollToEnd(false);
-	ctrlPad.SetSel(0, 0);
+
+	setUseTextFormatting(true);
+	setAutoScroll(false);
+
 }
 
 LRESULT TextFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {

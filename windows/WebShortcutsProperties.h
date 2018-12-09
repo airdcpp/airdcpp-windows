@@ -29,7 +29,7 @@ class WebShortcutsProperties : public CDialogImpl<WebShortcutsProperties> {
 public:
 
 	// Constructor/destructor
-	WebShortcutsProperties::WebShortcutsProperties(vector<WebShortcut*>& _wslist, WebShortcut* _ws) : wslist(_wslist), ws(_ws) { };
+	WebShortcutsProperties(vector<WebShortcut*>& _wslist, WebShortcut* _ws) : wslist(_wslist), ws(_ws) { };
 	virtual ~WebShortcutsProperties() { };
 
 	// Dialog unique id

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -269,7 +269,7 @@ bool SystemFrame::scrollIsAtEnd() {
 	si.fMask = SIF_ALL;
 	ctrlPad.GetScrollInfo(SB_VERT, &si);
 	const int tmp = si.nMax - (int)si.nPage - textHeight;
-	return si.nPage == 0 || (si.nPos >= tmp) && (si.nTrackPos >= tmp);
+	return si.nPage == 0 || ((si.nPos >= tmp) && (si.nTrackPos >= tmp));
 }
 
 
@@ -440,7 +440,7 @@ LRESULT SystemFrame::onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 LRESULT SystemFrame::onDeleteFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	string path = Text::fromT(selWord);
 	string msg = STRING_F(DELETE_FILE_CONFIRM, path);
-	if(WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_FILE_DELETIONS, Text::toT(msg).c_str())) {
+	if(WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_FILE_DELETIONS, Text::toT(msg))) {
 		MainFrame::getMainFrame()->addThreadedTask([=] { 
 			if (File::deleteFileEx(path, 3))
 				ShareManager::getInstance()->removeTempShare(path); 

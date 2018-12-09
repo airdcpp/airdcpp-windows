@@ -55,7 +55,7 @@ RichTextBox::ChatLink::ChatLink(const string& aUrl, LinkType aLinkType, const Us
 
 DupeType RichTextBox::ChatLink::updateDupeType(const UserPtr& aUser) {
 	if (type == TYPE_RELEASE) {
-		dupe = AirUtil::checkDirDupe(url, 0);
+		dupe = AirUtil::checkAdcDirectoryDupe(url, 0);
 	} else if (type == TYPE_MAGNET) {
 		Magnet m = Magnet(url);
 		dupe = m.getDupeType();
@@ -376,15 +376,15 @@ void RichTextBox::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFOR
 	SetSelectionCharFormat(isMyMessage ? WinUtil::m_ChatTextMyOwn : cf);
 	
 	// highlight all occurences of my nick
-	long lMyNickStart = -1, lMyNickEnd = -1;
+	size_t lMyNickStart = string::npos;
 	size_t lSearchFrom = 0;	
 	tstring sNick(sMyNick.length(), NULL);
 	std::transform(sMyNick.begin(), sMyNick.end(), sNick.begin(), _totlower);
 
 	if (!sNick.empty()) {
 		bool found = false;
-		while ((lMyNickStart = (long) sMsgLower.find(sNick, lSearchFrom)) != tstring::npos) {
-			lMyNickEnd = lMyNickStart + (long) sNick.size();
+		while ((lMyNickStart = sMsgLower.find(sNick, lSearchFrom)) != tstring::npos) {
+			auto lMyNickEnd = lMyNickStart + (long) sNick.size();
 			SetSel(lSelBegin + lMyNickStart, lSelBegin + lMyNickEnd);
 			SetSelectionCharFormat(WinUtil::m_TextStyleMyNick);
 			lSearchFrom = lMyNickEnd;
@@ -413,7 +413,7 @@ void RichTextBox::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFOR
 			std::transform(sNick.begin(), sNick.end(), sNick.begin(), _totlower);
 
 			while ((lMyNickStart = (long) sMsgLower.find(sNick, lSearchFrom)) != tstring::npos) {
-				lMyNickEnd = lMyNickStart + (long) sNick.size();
+				auto lMyNickEnd = lMyNickStart + (long) sNick.size();
 				SetSel(lSelBegin + lMyNickStart, lSelBegin + lMyNickEnd);
 				SetSelectionCharFormat(WinUtil::m_TextStyleFavUsers);
 				lSearchFrom = lMyNickEnd;
@@ -996,14 +996,14 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 						/* show an option to remove the item */
 						menu.appendItem(TSTRING(STOP_SHARING), [this] { handleRemoveTemp(); });
 					} else if (!isMyLink) {
-						appendDownloadMenu(menu, DownloadBaseHandler::TYPE_PRIMARY, false, m.getTTH(), boost::none);
+						appendDownloadMenu(menu, DownloadBaseHandler::TYPE_PRIMARY, false, m.getTTH(), nullopt);
 					}
 
 					if ((!author.empty() && !isMyLink) || AirUtil::allowOpenDupe(dupeType))
 						menu.appendItem(TSTRING(OPEN), [this] { handleOpenFile(); });
 				} else if (isRelease) {
 					//autosearch menus
-					appendDownloadMenu(menu, DownloadBaseHandler::TYPE_SECONDARY, true, boost::none, Text::fromT(selectedWord) + PATH_SEPARATOR, false);
+					appendDownloadMenu(menu, DownloadBaseHandler::TYPE_SECONDARY, true, nullopt, Text::fromT(selectedWord) + PATH_SEPARATOR, false);
 				}
 			}
 		}
@@ -1016,7 +1016,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 		copyMenu.CreatePopupMenu();
 		copyMenu.InsertSeparatorFirst(TSTRING(COPY));
 
-		for(int j=0; j < OnlineUser::COLUMN_LAST; j++) {
+		for(int j=0; j < UserUtil::COLUMN_LAST; j++) {
 			copyMenu.AppendMenu(MF_STRING, IDC_COPY + j, CTSTRING_I(HubFrame::columnNames[j]));
 		}
 
@@ -1126,7 +1126,7 @@ void RichTextBox::handleSearchDir() {
 void RichTextBox::handleDeleteFile() {
 	string path = Text::fromT(selectedWord);
 	string msg = STRING_F(DELETE_FILE_CONFIRM, path);
-	if(WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_FILE_DELETIONS, Text::toT(msg).c_str())) {
+	if(WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_FILE_DELETIONS, Text::toT(msg))) {
 		MainFrame::getMainFrame()->addThreadedTask([=] { File::deleteFileEx(path, 3); });
 	}
 
@@ -1279,7 +1279,7 @@ void RichTextBox::handleOpenFolder() {
 	StringList paths;
 	try{
 		if (isRelease) {
-			paths = AirUtil::getDirDupePaths(dupeType, Text::fromT(selectedWord));
+			paths = AirUtil::getAdcDirectoryDupePaths(dupeType, Text::fromT(selectedWord));
 		} else if (isPath) {
 			paths.push_back(Text::fromT(Util::getFilePath(selectedWord)));
 		} else {
@@ -1300,7 +1300,7 @@ void RichTextBox::handleDownload(const string& aTarget, Priority p, bool aIsRele
 	if (!aIsRelease) {
 		auto u = move(getMagnetSource());
 		Magnet m = Magnet(Text::fromT(selectedWord));
-		if (pmUser && ShareManager::getInstance()->isNmdcDirShared(aTarget, m.fsize) > 0 &&
+		if (pmUser && ShareManager::getInstance()->isAdcDirectoryShared(aTarget, m.fsize) > 0 &&
 			!WinUtil::showQuestionBox(TSTRING_F(PM_MAGNET_SHARED_WARNING, Text::toT(Util::getFilePath(aTarget))), MB_ICONQUESTION)) {
 				return;
 		}
@@ -1536,7 +1536,7 @@ LRESULT RichTextBox::onCopyUserInfo(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndC
 	
 	const OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou) {
-		sCopy = ou->getText(static_cast<uint8_t>(wID - IDC_COPY), true);
+		sCopy = UserUtil::getUserText(ou, static_cast<uint8_t>(wID - IDC_COPY), true);
 	}
 
 	if (!sCopy.empty())
@@ -1678,9 +1678,7 @@ size_t RichTextBox::FullTextMatch(ColorSettings* cs, CHARFORMAT2 &hlcf, const ts
 	} else if( cs->getWholeLine() ) {
 		end = begin + line.length() -1;
 	} else if( cs->getWholeWord() ) {
-		int tmp;
-
-		tmp = line.find_last_of(_T(" \t\r"), index);
+		auto tmp = line.find_last_of(_T(" \t\r"), index);
 		if(tmp != tstring::npos )
 			begin += tmp+1;
 		
@@ -1786,9 +1784,6 @@ tstring RichTextBox::WordFromPos(const POINT& p) {
 	if(p.y > (p_ichar.y +  (t_height*1.5))) { //times 1.5 so dont need to be totally exact
 		return Util::emptyStringT;
 	}
-
-	int begin =  0;
-	int end  = 0;
 	
 	FINDTEXT findt;
 	findt.chrg.cpMin = iCharPos;
@@ -1818,11 +1813,12 @@ tstring RichTextBox::WordFromPos(const POINT& p) {
 
 	iCharPos = iCharPos - l_Start; //modify the charpos within the range of our new line.
 
-	begin = Line.find_last_of(_T(" \t\r"), iCharPos) + 1;	
-	end = Line.find_first_of(_T(" \t\r"), begin);
-			if(end == tstring::npos) {
-				end = Line.length();
-			}
+	auto begin = Line.find_last_of(_T(" \t\r"), iCharPos) + 1;	
+	auto end = Line.find_first_of(_T(" \t\r"), begin);
+	if (end == tstring::npos) {
+		end = Line.length();
+	}
+
 	len = end - begin;
 	
 	/*a hack, limit to 512, scrolling becomes sad with long words...

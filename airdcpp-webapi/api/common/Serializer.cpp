@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
 
 #include <api/common/Serializer.h>
 #include <api/common/Format.h>
@@ -146,6 +146,7 @@ namespace webserver {
 	json Serializer::serializeShareProfileSimple(ProfileToken aProfile) noexcept {
 		auto sp = ShareManager::getInstance()->getShareProfile(aProfile);
 		if (!sp) {
+			// Shouldn't happen
 			return nullptr;
 		}
 
@@ -333,12 +334,12 @@ namespace webserver {
 		return serializeDupe(aDupeType, AirUtil::getFileDupePaths(aDupeType, aTTH));
 	}
 
-	json Serializer::serializeDirectoryDupe(DupeType aDupeType, const string& aPath) noexcept {
+	json Serializer::serializeDirectoryDupe(DupeType aDupeType, const string& aAdcPath) noexcept {
 		if (aDupeType == DUPE_NONE) {
 			return nullptr;
 		}
 
-		return serializeDupe(aDupeType, AirUtil::getDirDupePaths(aDupeType, aPath));
+		return serializeDupe(aDupeType, AirUtil::getAdcDirectoryDupePaths(aDupeType, aAdcPath));
 	}
 
 	json Serializer::serializeDupe(DupeType aDupeType, StringList&& aPaths) noexcept {

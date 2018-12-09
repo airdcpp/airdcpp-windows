@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -269,6 +269,8 @@ void Util::initialize(const string& aConfigPath) {
 	};
 
 #ifdef _WIN32
+	File::ensureDirectory(getTempPath());
+
 	_set_invalid_parameter_handler(reinterpret_cast<_invalid_parameter_handler>(invalidParameterHandler));
 
 	paths[PATH_GLOBAL_CONFIG] = exeDirectoryPath;
@@ -284,8 +286,6 @@ void Util::initialize(const string& aConfigPath) {
 		paths[PATH_USER_LOCAL] = ::SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL, SHGFP_TYPE_CURRENT, buf) == S_OK ? Text::fromT(buf) + "\\AirDC++\\" : paths[PATH_USER_CONFIG];
 		paths[PATH_RESOURCES] = exeDirectoryPath;
 	}
-
-	paths[PATH_LOCALE] = (localMode ? exeDirectoryPath : paths[PATH_USER_LOCAL]) + "Language\\";
 #else
 	// Usually /etc/airdcpp/
 	paths[PATH_GLOBAL_CONFIG] = GLOBAL_CONFIG_DIRECTORY;
@@ -294,7 +294,7 @@ void Util::initialize(const string& aConfigPath) {
 
 	if (!localMode) {
 		const char* home_ = getenv("HOME");
-		string home = home_ ? Text::toUtf8(home_) : "/tmp/";
+		string home = home_ ? home_ : "/tmp/";
 
 		if (paths[PATH_USER_CONFIG].empty()) {
 			paths[PATH_USER_CONFIG] = home + "/.airdc++/";
@@ -304,10 +304,9 @@ void Util::initialize(const string& aConfigPath) {
 		paths[PATH_USER_LOCAL] = paths[PATH_USER_CONFIG];
 		paths[PATH_RESOURCES] = RESOURCE_DIRECTORY;
 	}
-
-	paths[PATH_LOCALE] = paths[PATH_RESOURCES] + "locale/";
 #endif
 
+	paths[PATH_LOCALE] = (localMode ? exeDirectoryPath : paths[PATH_USER_LOCAL]) + "Language" PATH_SEPARATOR_STR;
 	paths[PATH_FILE_LISTS] = paths[PATH_USER_CONFIG] + "FileLists" PATH_SEPARATOR_STR;
 	paths[PATH_BUNDLES] = paths[PATH_USER_CONFIG] + "Bundles" PATH_SEPARATOR_STR;
 	paths[PATH_SHARECACHE] = paths[PATH_USER_LOCAL] + "ShareCache" PATH_SEPARATOR_STR;
@@ -350,7 +349,6 @@ void Util::migrate(const string& aNewDir, const string& aPattern) noexcept {
 	}
 
 	// Don't migrate if there are files in the new directory already
-	auto fileListNew = File::findFiles(aNewDir, aPattern);
 	if (!File::findFiles(aNewDir, aPattern).empty()) {
 		return;
 	}
@@ -391,7 +389,7 @@ bool Util::loadBootConfig(const string& aDirectoryPath) noexcept {
 			params["PERSONAL"] = Text::fromT((::SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, tmpPath), tmpPath));
 #else
 			const char* home_ = getenv("HOME");
-			params["HOME"] = home_ ? Text::toUtf8(home_) : "/tmp/";
+			params["HOME"] = home_ ? home_ : "/tmp/";
 #endif
 
 			paths[PATH_USER_CONFIG] = Util::formatParams(boot.getChildData(), params);
@@ -405,20 +403,15 @@ bool Util::loadBootConfig(const string& aDirectoryPath) noexcept {
 	return false;
 }
 
-#ifdef _WIN32
-static const char badChars[] = { 
-	1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
-		17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
-		31, '<', '>', '/', '"', '|', '?', '*', 0
-};
-#else
-
 static const char badChars[] = { 
 	1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
 	17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
-	31, '<', '>', '\\', '"', '|', '?', '*', 0
-};
+	31, 
+#ifdef _WIN32
+	'<', '>', '"', '|', '?', '*', '/',
 #endif
+	0
+};
 
 /**
  * Replaces all strange characters in a file with '_'
@@ -433,6 +426,7 @@ string Util::cleanPathChars(string tmp, bool isFileName) noexcept {
 		i++;
 	}
 
+#ifdef _WIN32
 	// Then, eliminate all ':' that are not the second letter ("c:\...")
 	i = 0;
 	while( (i = tmp.find(':', i)) != string::npos) {
@@ -443,6 +437,7 @@ string Util::cleanPathChars(string tmp, bool isFileName) noexcept {
 		tmp[i] = '_';	
 		i++;
 	}
+#endif
 
 	// Remove the .\ that doesn't serve any purpose
 	i = 0;
@@ -697,24 +692,23 @@ string Util::formatSeconds(int64_t aSec, bool supressHours /*false*/) noexcept {
 	return buf;
 }
 
-string Util::formatTime(int64_t aSec, bool translate, bool perMinute) noexcept {
+string Util::formatTime(uint64_t aSec, bool aTranslate, bool aPerMinute) noexcept {
 	string formatedTime;
 
-	uint64_t n, i;
-	i = 0;
+	decltype(aSec) n, added = 0;
 
 	auto appendTime = [&] (const string& aTranslatedS, const string& aEnglishS, const string& aTranslatedP, const string& aEnglishP) -> void {
-		if (perMinute && i == 2) //add max 2 values
+		if (aPerMinute && added == 2) //add max 2 values
 			return;
 
 		char buf[128];
 		if(n >= 2) {
-			snprintf(buf, sizeof(buf), ("%d " + ((translate ? Text::toLower(aTranslatedP) : aEnglishP) + " ")).c_str(), n);
+			snprintf(buf, sizeof(buf), (U64_FMT " " + ((aTranslate ? Text::toLower(aTranslatedP) : aEnglishP) + " ")).c_str(), n);
 		} else {
-			snprintf(buf, sizeof(buf), ("%d " + ((translate ? Text::toLower(aTranslatedS) : aEnglishS) + " ")).c_str(), n);
+			snprintf(buf, sizeof(buf), (U64_FMT " " + ((aTranslate ? Text::toLower(aTranslatedS) : aEnglishS) + " ")).c_str(), n);
 		}
 		formatedTime += (string)buf;
-		i++;
+		added++;
 	};
 
 	n = aSec / (24*3600*365);
@@ -749,12 +743,12 @@ string Util::formatTime(int64_t aSec, bool translate, bool perMinute) noexcept {
 
 	n = aSec / (60);
 	aSec %= (60);
-	if(n || perMinute) {
+	if(n || aPerMinute) {
 		appendTime(STRING(MINUTE), "min", STRING(MINUTES_LOWER), "min");
 	}
 
 	n = aSec;
-	if(++i <= 3 && !perMinute) {
+	if(++added <= 3 && !aPerMinute) {
 		appendTime(STRING(SECOND), "sec", STRING(SECONDS_LOWER), "sec");
 	}
 
@@ -913,7 +907,7 @@ wstring Util::formatExactSizeW(int64_t aBytes) noexcept {
 #endif
 
 string Util::formatExactSize(int64_t aBytes) noexcept {
-#ifdef _WIN32
+#ifdef _WIN32	
 	TCHAR tbuf[128];
 	TCHAR number[64];
 	NUMBERFMT nf;
@@ -928,20 +922,20 @@ string Util::formatExactSize(int64_t aBytes) noexcept {
 	nf.NegativeOrder = 0;
 	nf.lpDecimalSep = sep;
 
-	GetLocaleInfo(LOCALE_SYSTEM_DEFAULT, LOCALE_SGROUPING, Dummy, 16);
+	GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SGROUPING, Dummy, 16);
 	nf.Grouping = Util::toInt(Text::fromT(Dummy));
-	GetLocaleInfo(LOCALE_SYSTEM_DEFAULT, LOCALE_STHOUSAND, Dummy, 16);
+	GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_STHOUSAND, Dummy, 16);
 	nf.lpThousandSep = Dummy;
 
 	GetNumberFormat(LOCALE_USER_DEFAULT, 0, number, &nf, tbuf, sizeof(tbuf) / sizeof(tbuf[0]));
 
 	char buf[128];
-	_snprintf(buf, sizeof(buf), "%s %s", buf, CSTRING(B));
+	_snprintf(buf, sizeof(buf), "%s %s", Text::fromT(tbuf).c_str(), CSTRING(B));
 	return buf;
 #else
 	char buf[128];
-	snprintf(buf, sizeof(buf), "%'lld ", (long long int)aBytes);
-	return string(buf) + STRING(B);
+	snprintf(buf, sizeof(buf), "%'lld %s", (long long int)aBytes, CSTRING(B));
+	return string(buf);
 #endif
 }
 
@@ -1226,6 +1220,10 @@ bool Util::isAdcPath(const string& aPath) noexcept {
 	return !aPath.empty() && aPath.front() == ADC_ROOT && aPath.back() == ADC_SEPARATOR;
 }
 
+bool Util::isAdcRoot(const string& aPath) noexcept {
+	return aPath.size() == 1 && aPath.front() == ADC_ROOT;
+}
+
 bool Util::fileExists(const string &aFile) noexcept {
 	if(aFile.empty())
 		return false;
@@ -1245,8 +1243,8 @@ string Util::formatTime(const string &msg, const time_t t) noexcept {
 		if(!loc) {
 			return Util::emptyString;
 		}
-
-#ifndef _WIN64
+#ifdef _WIN32
+	#ifndef _WIN64
 		// Work it around :P
 		string::size_type i = 0;
 		while((i = ret.find("%", i)) != string::npos) {
@@ -1255,8 +1253,8 @@ string Util::formatTime(const string &msg, const time_t t) noexcept {
 			}
 			i += 2;
 		}
+	#endif
 #endif
-
 		size_t bufsize = ret.size() + 256;
 		string buf(bufsize, 0);
 
@@ -1361,27 +1359,54 @@ int Util::randInt(int min, int max) noexcept {
     return dist(gen);
 }
 
+#ifdef _WIN32
 string Util::getDateTime(time_t t) noexcept {
 	if (t == 0)
 		return Util::emptyString;
 
 	char buf[64];
-	tm _tm = *localtime(&t);
+	tm _tm;
+	auto err = localtime_s(&_tm, &t);
+	if (err > 0) {
+		dcdebug("Failed to parse date " I64_FMT ": %s\n", static_cast<int64_t>(t), translateError(err).c_str());
+		return Util::emptyString;
+	}
+
 	strftime(buf, 64, SETTING(DATE_FORMAT).c_str(), &_tm);
 
 	return buf;
 }
 
-#ifdef _WIN32
 wstring Util::getDateTimeW(time_t t) noexcept {
 	if (t == 0)
 		return Util::emptyStringT;
 
 	TCHAR buf[64];
 	tm _tm;
-	localtime_s(&_tm, &t);
+	auto err = localtime_s(&_tm, &t);
+	if (err > 0) {
+		dcdebug("Failed to parse date " I64_FMT ": %s\n", static_cast<int64_t>(t), translateError(err).c_str());
+		return Util::emptyStringW;
+	}
+
 	wcsftime(buf, 64, Text::toT(SETTING(DATE_FORMAT)).c_str(), &_tm);
 	
+	return buf;
+}
+#else
+string Util::getDateTime(time_t t) noexcept {
+	if (t == 0)
+		return Util::emptyString;
+
+	char buf[64];
+	tm _tm;
+	if (!localtime_r(&t, &_tm)) {
+		dcdebug("Failed to parse date " I64_FMT ": %s\n", static_cast<int64_t>(t), translateError(errno).c_str());
+		return Util::emptyString;
+	}
+
+	strftime(buf, 64, SETTING(DATE_FORMAT).c_str(), &_tm);
+
 	return buf;
 }
 #endif
@@ -1529,7 +1554,7 @@ string Util::translateError(int aError) noexcept {
 	}
 	return tmp;
 #else // _WIN32
-	return Text::toUtf8(strerror(aError));
+	return strerror(aError);
 #endif // _WIN32
 }
 
@@ -1603,10 +1628,6 @@ int Util::DefaultSort(const wchar_t *a, const wchar_t *b) noexcept {
 		if(!t1) {
 			if(Text::toLower(*a) != Text::toLower(*b))
 				return ((int)Text::toLower(*a)) - ((int)Text::toLower(*b));
-			a++; b++;
-		} else if(!t1) {
-			if(*a != *b)
-				return ((int)*a) - ((int)*b);
 			a++; b++;
 		} else {
 			while(iswdigit(*a)) {

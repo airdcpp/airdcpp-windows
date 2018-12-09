@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -288,7 +288,7 @@ static void sigbus_handler(int signum, siginfo_t* info, void* context) {
 }
 
 size_t FileReader::readMapped(const string& filename, const DataCallback& callback) {
-	int fd = open(Text::fromUtf8(filename).c_str(), O_RDONLY);
+	int fd = open(filename.c_str(), O_RDONLY);
 	if(fd == -1) {
 		dcdebug("Error opening file %s: %s\n", filename.c_str(), Util::translateError(errno).c_str());
 		return READ_FAILED;

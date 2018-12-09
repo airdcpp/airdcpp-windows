@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@
 #define dcdebug debugTrace
 #include <crtdbg.h>
 
-inline void CDECL debugTrace(const char* format, ...) {
+inline void __cdecl debugTrace(const char* format, ...) {
 
 	//show the debug info in output window. 	 
 	va_list args;
@@ -41,7 +41,6 @@ inline void CDECL debugTrace(const char* format, ...) {
 	::MultiByteToWideChar(CP_UTF8, NULL, str, -1, str2, sizeof(str2) -1);
 	OutputDebugString(str2);
 	va_end(args);
-
 }
 
 #define dcassert(exp) \

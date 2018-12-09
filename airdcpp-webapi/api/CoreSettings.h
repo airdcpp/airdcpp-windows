@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,6 @@
 #ifndef DCPLUSPLUS_DCPP_CORESETTINGS_H
 #define DCPLUSPLUS_DCPP_CORESETTINGS_H
 
-#include <web-server/stdinc.h>
-
 #include <api/ApiSettingItem.h>
 #include <airdcpp/SettingsManager.h>
 
@@ -31,6 +29,7 @@ namespace webserver {
 		{ "nick", SettingsManager::NICK, ResourceManager::NICK },
 		{ "description", SettingsManager::DESCRIPTION, ResourceManager::DESCRIPTION },
 		{ "email", SettingsManager::EMAIL, ResourceManager::EMAIL },
+		{ "language_file", SettingsManager::LANGUAGE_FILE, ResourceManager::SETTINGS_LANGUAGE },
 
 		{ "upload_speed", SettingsManager::UPLOAD_SPEED, ResourceManager::SETCZDC_UPLOAD_SPEED, ApiSettingItem::TYPE_LAST, ResourceManager::Strings::MBITS },
 		{ "download_speed", SettingsManager::DOWNLOAD_SPEED, ResourceManager::SETCZDC_DOWNLOAD_SPEED, ApiSettingItem::TYPE_LAST, ResourceManager::Strings::MBITS },
@@ -43,9 +42,9 @@ namespace webserver {
 		{ "download_directory", SettingsManager::DOWNLOAD_DIRECTORY, ResourceManager::SETTINGS_DOWNLOAD_DIRECTORY, ApiSettingItem::TYPE_DIRECTORY_PATH },
 		{ "segmented_downloads", SettingsManager::MULTI_CHUNK, ResourceManager::SETTINGS_SEGMENTED_DOWNLOADS },
 		{ "min_segment_size", SettingsManager::MIN_SEGMENT_SIZE, ResourceManager::SETTINGS_AIRDOWNLOADS_SEGMENT_SIZE, ApiSettingItem::TYPE_LAST, ResourceManager::Strings::KiB },
-		{ "new_segment_min_speed", SettingsManager::DONT_BEGIN_SEGMENT_SPEED, ResourceManager::DONT_ADD_SEGMENT_TEXT, ApiSettingItem::TYPE_LAST, ResourceManager::Strings::KiBS },
 		{ "allow_slow_overlap", SettingsManager::OVERLAP_SLOW_SOURCES, ResourceManager::SETTINGS_OVERLAP_SLOW_SOURCES },
 		{ "finished_remove_exit", SettingsManager::REMOVE_FINISHED_BUNDLES, ResourceManager::BUNDLES_REMOVE_EXIT },
+		{ "use_partial_sharing", SettingsManager::USE_PARTIAL_SHARING, ResourceManager::PARTIAL_SHARING },
 
 		//{ ResourceManager::SETTINGS_SKIPPING_OPTIONS },
 		{ "dont_download_shared", SettingsManager::DONT_DL_ALREADY_SHARED, ResourceManager::SETTINGS_DONT_DL_ALREADY_SHARED },
@@ -65,7 +64,7 @@ namespace webserver {
 		{ "http_proxy", SettingsManager::HTTP_PROXY, ResourceManager::SETTINGS_HTTP_PROXY },
 		{ "outgoing_mode", SettingsManager::OUTGOING_CONNECTIONS, ResourceManager::SETTINGS_OUTGOING },
 		{ "socks_server", SettingsManager::SOCKS_SERVER, ResourceManager::SETTINGS_SOCKS5_IP },
-		{ "socks_user", SettingsManager::SOCKS_USER, ResourceManager::SETTINGS_SOCKS5_RESOLVE },
+		{ "socks_user", SettingsManager::SOCKS_USER, ResourceManager::SETTINGS_SOCKS5_USERNAME },
 		{ "socks_password", SettingsManager::SOCKS_PASSWORD, ResourceManager::PASSWORD },
 		{ "socks_port", SettingsManager::SOCKS_PORT, ResourceManager::PORT },
 		{ "socks_resolve", SettingsManager::SOCKS_RESOLVE, ResourceManager::SETTINGS_SOCKS5_RESOLVE },

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,6 +16,8 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+#include "stdinc.h"
+
 #include <api/UserApi.h>
 
 #include <web-server/JsonUtil.h>
@@ -27,24 +29,30 @@
 
 
 namespace webserver {
-	UserApi::UserApi(Session* aSession) : SubscribableApiModule(aSession, Access::ANY) {
+	UserApi::UserApi(Session* aSession) : 
+		SubscribableApiModule(
+			aSession, 
+			Access::ANY, 
+			{ 
+				"user_connected", 
+				"user_updated", 
+				"user_disconnected", 
+				
+				"ignored_user_added", 
+				"ignored_user_removed" 
+			}
+		) 
+	{
+		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(EXACT_PARAM("user"), CID_PARAM),		UserApi::handleGetUser); // DEPRECATED
+		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(CID_PARAM),							UserApi::handleGetUser);
+		METHOD_HANDLER(Access::ANY,				METHOD_POST,	(EXACT_PARAM("search_nicks")),			UserApi::handleSearchNicks);
 
-		ClientManager::getInstance()->addListener(this);
-		IgnoreManager::getInstance()->addListener(this);
-
-		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(EXACT_PARAM("user"), CID_PARAM),	UserApi::handleGetUser);
-		METHOD_HANDLER(Access::ANY,				METHOD_POST,	(EXACT_PARAM("search_nicks")),		UserApi::handleSearchNicks);
-
-		METHOD_HANDLER(Access::SETTINGS_VIEW,	METHOD_GET,		(EXACT_PARAM("ignores")),			UserApi::handleGetIgnores);
+		METHOD_HANDLER(Access::SETTINGS_VIEW,	METHOD_GET,		(EXACT_PARAM("ignores")),				UserApi::handleGetIgnores);
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(EXACT_PARAM("ignores"), CID_PARAM),	UserApi::handleIgnore);
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_DELETE,	(EXACT_PARAM("ignores"), CID_PARAM),	UserApi::handleUnignore);
 
-		createSubscription("user_connected");
-		createSubscription("user_updated");
-		createSubscription("user_disconnected");
-
-		createSubscription("ignored_user_added");
-		createSubscription("ignored_user_removed");
+		ClientManager::getInstance()->addListener(this);
+		IgnoreManager::getInstance()->addListener(this);
 	}
 
 	UserApi::~UserApi() {

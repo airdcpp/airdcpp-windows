@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,7 +55,7 @@ const string UserConnection::DOWNLOAD = "Download";
 
 const string UserConnection::FEATURE_AIRDC = "AIRDC";
 
-void UserConnection::on(BufferedSocketListener::Line, const string& aLine) throw () {
+void UserConnection::on(BufferedSocketListener::Line, const string& aLine) noexcept {
 
 	COMMAND_DEBUG(aLine, DebugManager::TYPE_CLIENT, DebugManager::INCOMING, getRemoteIp());
 	
@@ -95,12 +95,13 @@ void UserConnection::on(BufferedSocketListener::Line, const string& aLine) throw
 		if(!param.empty())
 			fire(UserConnectionListener::MyNick(), this, param);
 	} else if(cmd == "Direction") {
-		x = param.find(" ");
+		x = param.find(' ');
 		if(x != string::npos) {
 			fire(UserConnectionListener::Direction(), this, param.substr(0, x), param.substr(x+1));
 		}
 	} else if(cmd == "Error") {
-		if(Util::stricmp(param.c_str(), FILE_NOT_AVAILABLE)) { 
+		if (Util::stricmp(param.c_str(), FILE_NOT_AVAILABLE) == 0 ||
+			param.rfind(/*path/file*/" no more exists") != string::npos) {
     		fire(UserConnectionListener::FileNotAvailable(), this);
     	} else {
 			fire(UserConnectionListener::ProtocolError(), this, param);
@@ -296,7 +297,7 @@ void UserConnection::handlePM(const AdcCommand& c, bool echo) noexcept{
 	auto msg = std::make_shared<ChatMessage>(message, peer, me, peer);
 	msg->setThirdPerson(c.hasFlag("ME", 1));
 	if (c.getParam("TS", 1, tmp)) {
-		msg->setTime(Util::toInt64(tmp));
+		msg->setTime(Util::toTimeT(tmp));
 	}
 
 	if (!ClientManager::getInstance()->incomingPrivateMessageHook.runHooksBasic(msg)) {

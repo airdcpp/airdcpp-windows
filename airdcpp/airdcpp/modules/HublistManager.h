@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+* Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -71,7 +71,7 @@ namespace dcpp {
 		// HttpConnectionListener
 		void on(Data, HttpConnection*, const uint8_t*, size_t) noexcept;
 		void on(Failed, HttpConnection*, const string&) noexcept;
-		void on(Complete, HttpConnection*, const string&, bool) noexcept;
+		void on(Complete, HttpConnection*, const string&) noexcept;
 		void on(Redirected, HttpConnection*, const string&) noexcept;
 		void on(Retried, HttpConnection*, bool) noexcept;
 

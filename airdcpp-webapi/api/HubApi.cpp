@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
 * along with this program; if not, write to the Free Software
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
+
+#include "stdinc.h"
 
 #include <api/HubApi.h>
 
@@ -77,7 +79,6 @@ namespace webserver {
 		});
 
 		METHOD_HANDLER(Access::HUBS_EDIT,	METHOD_POST,	(),										HubApi::handleConnect);
-		METHOD_HANDLER(Access::HUBS_EDIT,	METHOD_DELETE,	(TOKEN_PARAM),							HubApi::handleDisconnect);
 
 		METHOD_HANDLER(Access::HUBS_VIEW,	METHOD_GET,		(EXACT_PARAM("stats")),					HubApi::handleGetStats);
 		METHOD_HANDLER(Access::HUBS_VIEW,	METHOD_POST,	(EXACT_PARAM("find_by_url")),			HubApi::handleFindByUrl);
@@ -229,11 +230,9 @@ namespace webserver {
 		return websocketpp::http::status_code::ok;
 	}
 
-	api_return HubApi::handleDisconnect(ApiRequest& aRequest) {
-		if (!ClientManager::getInstance()->putClient(aRequest.getTokenParam())) {
-			return websocketpp::http::status_code::not_found;
-		}
-
+	api_return HubApi::handleDeleteSubmodule(ApiRequest& aRequest) {
+		auto hub = getSubModule(aRequest);
+		ClientManager::getInstance()->putClient(hub->getId());
 		return websocketpp::http::status_code::no_content;
 	}
 

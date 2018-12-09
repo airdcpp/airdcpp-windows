@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 #ifndef DCPLUSPLUS_DCPP_APIREQUEST_H
 #define DCPLUSPLUS_DCPP_APIREQUEST_H
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
 
 #include <airdcpp/typedefs.h>
 #include <airdcpp/GetSet.h>
@@ -41,7 +41,7 @@ namespace webserver {
 
 	class ApiRequest {
 	public:
-		typedef std::deque<std::string> ParamList;
+		typedef std::deque<std::string> PathTokenList;
 		typedef std::map<std::string, std::string> NamedParamMap;
 
 		// Throws on errors
@@ -63,14 +63,14 @@ namespace webserver {
 			return methodStr;
 		}
 
-		const ParamList& getParameters() const noexcept {
-			return parameters;
+		const PathTokenList& getPathTokens() const noexcept {
+			return pathTokens;
 		}
 
 		void popParam(size_t aCount = 1) noexcept;
 
 		const std::string& getStringParam(const string& aName) const noexcept;
-		const std::string& getParamAt(int aIndex) const noexcept;
+		const std::string& getPathTokenAt(int aIndex) const noexcept;
 
 		// Throws in case of errors
 		TTHValue getTTHParam(const string& aName = TTH_PARAM_ID) const;
@@ -109,13 +109,18 @@ namespace webserver {
 			return session;
 		}
 
+		const string& getRequestPath() const noexcept {
+			return path;
+		}
+
 		void setNamedParams(const NamedParamMap& aParams) noexcept;
 	private:
 		SessionPtr session;
 		void validate();
 
+		const string path;
 		const string methodStr;
-		ParamList parameters;
+		PathTokenList pathTokens;
 		NamedParamMap namedParameters;
 		int apiVersion = -1;
 		std::string apiModule;

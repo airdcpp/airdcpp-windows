@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,30 +20,9 @@
 #define DCPLUSPLUS_DCPP_UTIL_H
 
 #include "compiler.h"
+#include "constants.h"
 
-#define SP_HIDDEN 1
-
-#define ADC_SEPARATOR '/'
-#define ADC_SEPARATOR_STR "/"
-
-#define NMDC_SEPARATOR '\\'
-#define NMDC_SEPARATOR_STR "\\"
-
-#define ADC_ROOT ADC_SEPARATOR
-#define ADC_ROOT_STR ADC_SEPARATOR_STR
-
-// Empty char defines would cause issues with clang
-#define NMDC_ROOT_STR ""
-
-#ifdef _WIN32
-
-# define PATH_SEPARATOR '\\'
-# define PATH_SEPARATOR_STR "\\"
-
-#else
-
-# define PATH_SEPARATOR '/'
-# define PATH_SEPARATOR_STR "/"
+#ifndef _WIN32
 
 #include <sys/stat.h>
 #include <unistd.h>
@@ -221,19 +200,15 @@ public:
 	static string translateError(int aError) noexcept;
 
 	static string getFilePath(const string& path, const char separator = PATH_SEPARATOR) noexcept;
-	inline static string getNmdcFilePath(const string& path) noexcept { return getFilePath(path, NMDC_SEPARATOR); }
 	inline static string getAdcFilePath(const string& path) noexcept { return getFilePath(path, ADC_SEPARATOR); }
 
 	static string getFileName(const string& path, const char separator = PATH_SEPARATOR) noexcept;
-	inline static string getNmdcFileName(const string& path) noexcept { return getFileName(path, NMDC_SEPARATOR); };
 	inline static string getAdcFileName(const string& path) noexcept { return getFileName(path, ADC_SEPARATOR); };
 
 	static string getLastDir(const string& path, const char separator = PATH_SEPARATOR) noexcept;
-	inline static string getNmdcLastDir(const string& path) noexcept { return getLastDir(path, NMDC_SEPARATOR); };
 	inline static string getAdcLastDir(const string& path) noexcept { return getLastDir(path, ADC_SEPARATOR); };
 
 	static string getParentDir(const string& path, const char separator = PATH_SEPARATOR, bool allowEmpty = false) noexcept;
-	inline static string getNmdcParentDir(const string& path) noexcept { return getParentDir(path, NMDC_SEPARATOR, true); };
 	inline static string getAdcParentDir(const string& path) noexcept { return getParentDir(path, ADC_SEPARATOR, false); };
 
 	static string joinDirectory(const string& aPath, const string& aDirectoryName, const char separator = PATH_SEPARATOR) noexcept;
@@ -281,6 +256,7 @@ public:
 	static map<string, string> decodeQuery(const string& query) noexcept;
 
 	static bool isAdcPath(const string& aPath) noexcept;
+	static bool isAdcRoot(const string& aPath) noexcept;
 
 	static inline string validatePath(const string& aPath, bool requireEndSeparator = false) noexcept {
 		auto path = cleanPathChars(aPath, false);
@@ -348,7 +324,7 @@ public:
 		return ((size + blockSize - 1) / blockSize) * blockSize;
 	}
 
-	static string formatTime(int64_t aSec, bool translate, bool perMinute = false) noexcept;
+	static string formatTime(uint64_t aSec, bool aTranslate, bool aPerMinute = false) noexcept;
 
 	static int DefaultSort(const char* a, const char* b) noexcept;
 	static int DefaultSort(const wchar_t* a, const wchar_t* b) noexcept;
@@ -364,6 +340,10 @@ public:
 #else
 		return strtoll(aString.c_str(), (char **)NULL, 10);
 #endif
+	}
+
+	static time_t toTimeT(const string& aString) noexcept {
+		return static_cast<time_t>(toInt64(aString));
 	}
 
 	static int toInt(const string& aString) noexcept {
@@ -559,7 +539,7 @@ public:
 		snprintf(buf, sizeof(buf), "%%%X", val&0x0FF);
 		return buf;
 	}
-	static char fromHexEscape(const string aString) noexcept {
+	static char fromHexEscape(const string& aString) noexcept {
 		unsigned int res = 0;
 		sscanf(aString.c_str(), "%X", &res);
 		return static_cast<char>(res);

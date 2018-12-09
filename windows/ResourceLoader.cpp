@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2017 AirDC++ Project
+ * Copyright (C) 2011-2018 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -74,8 +74,8 @@ CImageList& ResourceLoader::getUserImages() {
 	
 	if(userImages.IsNull()) {
 		userImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,   10, 10);
-		const unsigned baseCount = UserInfoBase::USER_ICON_MOD_START;
-		const unsigned modifierCount = UserInfoBase::USER_ICON_LAST - UserInfoBase::USER_ICON_MOD_START;
+		const unsigned baseCount = USER_ICON_MOD_START;
+		const unsigned modifierCount = USER_ICON_LAST - USER_ICON_MOD_START;
 
 		CIcon bases[baseCount] = { loadIcon(IDI_USER_BASE, 16), loadIcon(IDI_USER_AWAY, 16), loadIcon(IDI_USER_BOT, 16) };
 		CIcon modifiers[modifierCount] = { loadIcon(IDI_USER_PASSIVE, 16), loadIcon(IDI_USER_OP, 16), loadIcon(IDI_USER_NOCONNECT, 16)/*, loadIcon(IDI_FAV_USER, 16)*/ };

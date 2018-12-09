@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 
 #ifndef DCPLUSPLUS_DCPP_PRIVATEMESSAGEAPI_H
 #define DCPLUSPLUS_DCPP_PRIVATEMESSAGEAPI_H
-
-#include <web-server/stdinc.h>
 
 #include <api/base/HookApiModule.h>
 #include <api/base/HierarchicalApiModule.h>
@@ -42,7 +40,7 @@ namespace webserver {
 		void addChat(const PrivateChatPtr& aChat) noexcept;
 
 		api_return handlePostChat(ApiRequest& aRequest);
-		api_return handleDeleteChat(ApiRequest& aRequest);
+		api_return handleDeleteSubmodule(ApiRequest& aRequest) override;
 
 		api_return handlePostMessage(ApiRequest& aRequest);
 

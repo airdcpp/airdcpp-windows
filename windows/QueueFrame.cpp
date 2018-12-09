@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -328,7 +328,10 @@ void QueueFrame::handleTab() {
 
 void QueueFrame::handleHistoryClick(const string& aPath, bool byHistory) {
 	if (aPath == "/"){
+		auto sel = curDirectory;
 		reloadList(byHistory);
+		if (sel)
+			callAsync([=] { ctrlQueue.list.selectItem(sel); });
 	} else {
 		handleItemClick(findItemByPath(aPath), byHistory);
 	}
@@ -397,7 +400,7 @@ void QueueFrame::handleItemClick(const QueueItemInfoPtr& aII, bool byHistory/*fa
 	if (!aII) 
 		return;
 	
-	if (aII->qi || aII->bundle && aII->bundle->isFileBundle()) {
+	if (aII->qi || (aII->bundle && aII->bundle->isFileBundle())) {
 		if (aII->isFinished()) 
 			WinUtil::openFile(Text::toT(aII->getTarget()));
 		return;
@@ -428,7 +431,7 @@ void QueueFrame::handleItemClick(const QueueItemInfoPtr& aII, bool byHistory/*fa
 	insertItems(item);
 	ctrlQueue.list.SetRedraw(TRUE);
 	if (sel)
-		ctrlQueue.list.selectItem(sel);
+		callAsync([=] { ctrlQueue.list.selectItem(sel); });
 
 	ctrlQueue.onListChanged(false);
 }
@@ -536,13 +539,11 @@ void QueueFrame::AppendDirectoryMenu(QueueItemInfoList& dirs, QueueItemList& ql,
 tstring QueueFrame::formatUser(const Bundle::BundleSource& bs) const {
 	auto& u = bs.getUser();
 	tstring nick = WinUtil::escapeMenu(WinUtil::getNicks(u));
-	bool addSpeed = u.user->getSpeed() > 0;
+
 	nick += _T(" (") + TSTRING(FILES) + _T(": ") + Util::toStringW(bs.files);
-	if (addSpeed) {
+	if (u.user->getSpeed() > 0) {
 		nick += _T(", ");
-		if (addSpeed) {
-			nick += TSTRING(SPEED) + _T(": ") + Util::formatBytesW(u.user->getSpeed()) + _T("/s)");
-		}
+		nick += TSTRING(SPEED) + _T(": ") + Util::formatBytesW(u.user->getSpeed()) + _T("/s)");
 	}
 	nick += _T(")");
 	return nick;
@@ -809,7 +810,7 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 		}
 
 		if (hasBundleItems) {
-			WinUtil::appendSearchMenu(fileMenu, Util::getFilePath(qi->getTarget()));
+			WinUtil::appendSearchMenu(fileMenu, Util::toAdcFile(Util::getFilePath(qi->getTarget())));
 			//fileMenu.appendSeparator();
 		}
 
@@ -833,7 +834,6 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 		}
 	} else {
 		fileMenu.InsertSeparatorFirst(TSTRING(FILES));
-		//fileMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)segmentsMenu, CTSTRING(MAX_SEGMENTS_NUMBER));
 
 		//if (hasBundleItems)
 		//	WinUtil::appendFilePrioMenu(fileMenu, ql);
@@ -1515,8 +1515,7 @@ void QueueFrame::QueueItemInfo::getChildQueueItems(QueueItemList& ret) {
 }
 
 QueueFrame::QueueItemInfoPtr QueueFrame::QueueItemInfo::findChild(const string& aKey) {
-	int i = 0;
-	int j = 0;
+	string::size_type i = 0, j = 0;
 
 	string itemTarget = getTarget();
 	if (itemTarget[itemTarget.length() - 1] != PATH_SEPARATOR)
@@ -1543,15 +1542,13 @@ QueueFrame::QueueItemInfoPtr QueueFrame::QueueItemInfo::findChild(const string& 
 }
 
 QueueFrame::QueueItemInfoPtr QueueFrame::QueueItemInfo::addChild(const QueueItemPtr& aQI) {
-	int i = 0;
-	int j = 0;
-
 	string itemTarget = getTarget();
 	if (itemTarget[itemTarget.length() - 1] != PATH_SEPARATOR)
 		itemTarget += PATH_SEPARATOR;
 	
 	string tmp = aQI->getTarget().substr(itemTarget.size());
 
+	size_t i = 0, j = 0;
 	QueueItemInfoPtr dir(this);
 	while ((i = tmp.find(PATH_SEPARATOR, j)) != string::npos) {
 		string curPath = itemTarget + tmp.substr(0, i + 1);

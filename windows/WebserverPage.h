@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,11 +19,10 @@
 #ifndef WEBSERVER_PAGE_H
 #define WEBSERVER_PAGE_H
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
 #include "stdafx.h"
+#include "Async.h"
 #include "Resource.h"
 
 #include <atlcrack.h>

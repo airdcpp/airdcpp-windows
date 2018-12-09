@@ -64,6 +64,18 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 <function name="operator=="><type>bool</type><template>
           <template-type-parameter name="T"/>
           <template-type-parameter name="S"/>
@@ -78,18 +90,6 @@
           <template-nontype-parameter name="F"><type>std::size_t</type></template-nontype-parameter>
           <template-nontype-parameter name="OP"><type>unsigned char</type></template-nontype-parameter>
         </template><parameter name="alloc1"><paramtype>const <classname>adaptive_pool</classname>&lt; T, S, NodesPerBlock, F, OP &gt; &amp;</paramtype></parameter><parameter name="alloc2"><paramtype>const <classname>adaptive_pool</classname>&lt; T, S, NodesPerBlock, F, OP &gt; &amp;</paramtype></parameter><description><para>Inequality test for same type of <classname alt="boost::interprocess::adaptive_pool">adaptive_pool</classname> </para></description></function>
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -177,6 +177,14 @@
 
 
 
+
+
+
+
+
+
+
+
 <function name="operator=="><type>bool</type><template>
           <template-type-parameter name="T"/>
           <template-type-parameter name="SegmentManager"/>
@@ -185,14 +193,6 @@
           <template-type-parameter name="T"/>
           <template-type-parameter name="SegmentManager"/>
         </template><parameter name="alloc1"><paramtype>const <classname>allocator</classname>&lt; T, SegmentManager &gt; &amp;</paramtype></parameter><parameter name="alloc2"><paramtype>const <classname>allocator</classname>&lt; T, SegmentManager &gt; &amp;</paramtype></parameter><description><para>Inequality test for same type of allocator </para></description></function>
-
-
-
-
-
-
-
-
 
 
 
@@ -299,6 +299,10 @@
 
 
 
+
+
+
+
 <function name="operator=="><type>bool</type><template>
           <template-type-parameter name="T"/>
           <template-type-parameter name="S"/>
@@ -313,10 +317,6 @@
           <template-nontype-parameter name="F"><type>std::size_t</type></template-nontype-parameter>
           <template-nontype-parameter name="OP"><type>std::size_t</type></template-nontype-parameter>
         </template><parameter name="alloc1"><paramtype>const <classname>cached_adaptive_pool</classname>&lt; T, S, NodesPerBlock, F, OP &gt; &amp;</paramtype></parameter><parameter name="alloc2"><paramtype>const <classname>cached_adaptive_pool</classname>&lt; T, S, NodesPerBlock, F, OP &gt; &amp;</paramtype></parameter><description><para>Inequality test for same type of <classname alt="boost::interprocess::cached_adaptive_pool">cached_adaptive_pool</classname> </para></description></function>
-
-
-
-
 
 
 
@@ -536,10 +536,6 @@
 
 
 
-
-
-
-
 <function name="operator=="><type>bool</type><template>
           <template-type-parameter name="T"/>
           <template-type-parameter name="S"/>
@@ -550,6 +546,10 @@
           <template-type-parameter name="S"/>
           <template-nontype-parameter name="NPC"><type>std::size_t</type></template-nontype-parameter>
         </template><parameter name="alloc1"><paramtype>const <classname>node_allocator</classname>&lt; T, S, NPC &gt; &amp;</paramtype></parameter><parameter name="alloc2"><paramtype>const <classname>node_allocator</classname>&lt; T, S, NPC &gt; &amp;</paramtype></parameter><description><para>Inequality test for same type of <classname alt="boost::interprocess::node_allocator">node_allocator</classname> </para></description></function>
+
+
+
+
 
 
 
@@ -654,14 +654,6 @@
 
 
 
-
-
-
-
-
-
-
-
 <function name="operator=="><type>bool</type><template>
           <template-type-parameter name="T"/>
           <template-type-parameter name="S"/>
@@ -676,6 +668,14 @@
           <template-nontype-parameter name="F"><type>std::size_t</type></template-nontype-parameter>
           <template-nontype-parameter name="OP"><type>unsigned char</type></template-nontype-parameter>
         </template><parameter name="alloc1"><paramtype>const <classname>private_adaptive_pool</classname>&lt; T, S, NodesPerBlock, F, OP &gt; &amp;</paramtype></parameter><parameter name="alloc2"><paramtype>const <classname>private_adaptive_pool</classname>&lt; T, S, NodesPerBlock, F, OP &gt; &amp;</paramtype></parameter><description><para>Inequality test for same type of <classname alt="boost::interprocess::private_adaptive_pool">private_adaptive_pool</classname> </para></description></function>
+
+
+
+
+
+
+
+
 
 
 
@@ -772,18 +772,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 <function name="operator=="><type>bool</type><template>
           <template-type-parameter name="T"/>
           <template-type-parameter name="S"/>
@@ -825,19 +813,31 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 </namespace>
 </namespace>
 </header>
 <header name="boost/interprocess/anonymous_shared_memory.hpp">
 <para>Describes a function that creates anonymous shared memory that can be shared between forked processes </para><namespace name="boost">
 <namespace name="interprocess">
+
+
+
+
+
+
 <function name="anonymous_shared_memory"><type><classname>mapped_region</classname></type><parameter name="size"><paramtype>std::size_t</paramtype></parameter><parameter name="address"><paramtype>void *</paramtype><default>0</default></parameter><description><para>A function that creates an anonymous shared memory segment of size "size". If "address" is passed the function will try to map the segment in that address. Otherwise the operating system will choose the mapping address. The function returns a <classname alt="boost::interprocess::mapped_region">mapped_region</classname> holding that segment or throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> if the function fails. </para></description></function>
-
-
-
-
-
-
 
 
 
@@ -3098,8 +3098,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
           <template-type-parameter name="T2"/>
         </template><parameter name="ptr"><paramtype>const <classname>offset_ptr</classname>&lt; T2, DifferenceType, OffsetType, OffsetAlignment &gt; &amp;</paramtype></parameter><parameter name=""><paramtype><emphasis>unspecified</emphasis></paramtype></parameter></method>
 </method-group>
-</class>
-<function name="operator&lt;&lt;"><type>std::basic_ostream&lt; E, T &gt; &amp;</type><template>
+</class><function name="operator&lt;&lt;"><type>std::basic_ostream&lt; E, T &gt; &amp;</type><template>
           <template-type-parameter name="E"/>
           <template-type-parameter name="T"/>
           <template-type-parameter name="W"/>
@@ -3155,6 +3154,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
           <template-type-parameter name="O2"/>
           <template-nontype-parameter name="A2"><type>std::size_t</type></template-nontype-parameter>
         </template><parameter name="r"><paramtype>const <classname>boost::interprocess::offset_ptr</classname>&lt; T2, P2, O2, A2 &gt; &amp;</paramtype></parameter><purpose>Simulation of reinterpret_cast between pointers. Never throws. </purpose></function>
+
 
 
 
@@ -3570,15 +3570,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <header name="boost/interprocess/smart_ptr/enable_shared_from_this.hpp">
 <para>Describes an utility to form a shared pointer from this </para><namespace name="boost">
 <namespace name="interprocess">
-<class name="enable_shared_from_this"><template>
-      <template-type-parameter name="T"/>
-      <template-type-parameter name="A"/>
-      <template-type-parameter name="D"/>
-    </template><description><para>This class is used as a base class that allows a <classname alt="boost::interprocess::shared_ptr">shared_ptr</classname> to the current object to be obtained from within a member function. <classname alt="boost::interprocess::enable_shared_from_this">enable_shared_from_this</classname> defines two member functions called shared_from_this that return a shared_ptr&lt;T&gt; and shared_ptr&lt;T const&gt;, depending on constness, to this. </para></description><method-group name="public member functions">
-<method name="shared_from_this"><type><classname>shared_ptr</classname>&lt; T, A, D &gt;</type></method>
-<method name="shared_from_this" cv="const"><type><classname>shared_ptr</classname>&lt; T const, A, D &gt;</type></method>
-</method-group>
-</class>
+
 
 
 
@@ -3680,6 +3672,23 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <function name="operator=="><type>bool</type><template>
           <template-type-parameter name="T"/>
           <template-type-parameter name="U"/>
@@ -3724,23 +3733,6 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
           <template-type-parameter name="T"/>
           <template-type-parameter name="VP"/>
         </template><parameter name="p"><paramtype><classname>intrusive_ptr</classname>&lt; T, VP &gt;</paramtype></parameter><description><para>Returns p.get(). Does not throw </para></description></function>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 </namespace>
 </namespace>
 </header>
@@ -3800,6 +3792,11 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 
 
 
+
+
+
+
+
 <function name="swap"><type>void</type><template>
           <template-type-parameter name="T"/>
           <template-type-parameter name="D"/>
@@ -3818,41 +3815,20 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 
 
 
-
-
-
-
-
 </namespace>
 </namespace>
 </header>
 <header name="boost/interprocess/smart_ptr/shared_ptr.hpp">
 <para>Describes the smart pointer shared_ptr </para><namespace name="boost">
 <namespace name="interprocess">
-<class name="weak_ptr"><template>
+<class name="enable_shared_from_this"><template>
       <template-type-parameter name="T"/>
       <template-type-parameter name="VoidAllocator"/>
       <template-type-parameter name="Deleter"/>
-    </template><description><para>The <classname alt="boost::interprocess::weak_ptr">weak_ptr</classname> class template stores a "weak reference" to an object that's already managed by a <classname alt="boost::interprocess::shared_ptr">shared_ptr</classname>. To access the object, a <classname alt="boost::interprocess::weak_ptr">weak_ptr</classname> can be converted to a <classname alt="boost::interprocess::shared_ptr">shared_ptr</classname> using the <classname alt="boost::interprocess::shared_ptr">shared_ptr</classname> constructor or the member function lock. When the last <classname alt="boost::interprocess::shared_ptr">shared_ptr</classname> to the object goes away and the object is deleted, the attempt to obtain a <classname alt="boost::interprocess::shared_ptr">shared_ptr</classname> from the <classname alt="boost::interprocess::weak_ptr">weak_ptr</classname> instances that refer to the deleted object will fail: the constructor will throw an exception of type bad_weak_ptr, and weak_ptr::lock will return an empty <classname alt="boost::interprocess::shared_ptr">shared_ptr</classname>.</para><para>Every <classname alt="boost::interprocess::weak_ptr">weak_ptr</classname> meets the CopyConstructible and Assignable requirements of the C++ Standard Library, and so can be used in standard library containers. Comparison operators are supplied so that <classname alt="boost::interprocess::weak_ptr">weak_ptr</classname> works with the standard library's associative containers.</para><para><classname alt="boost::interprocess::weak_ptr">weak_ptr</classname> operations never throw exceptions.</para><para>The class template is parameterized on T, the type of the object pointed to. </para></description><method-group name="public member functions">
-<method name="lock" cv="const"><type><classname>shared_ptr</classname>&lt; T, A, D &gt;</type><description><para>Returns: expired()? shared_ptr&lt;T&gt;(): shared_ptr&lt;T&gt;(*this).</para><para>Throws: nothing. </para></description></method>
-<method name="use_count" cv="const"><type>long</type><description><para>Returns: 0 if *this is empty; otherwise, the number of <classname alt="boost::interprocess::shared_ptr">shared_ptr</classname> objects that share ownership with *this.</para><para>Throws: nothing.</para><para>Notes: use_count() is not necessarily efficient. Use only for debugging and testing purposes, not for production code. </para></description></method>
-<method name="expired" cv="const"><type>bool</type><description><para>Returns: Returns: use_count() == 0.</para><para>Throws: nothing.</para><para>Notes: expired() may be faster than use_count(). </para></description></method>
-<method name="reset"><type>void</type><description><para>Effects: Equivalent to: weak_ptr().swap(*this). </para></description></method>
-<method name="swap"><type>void</type><parameter name="other"><paramtype>this_type &amp;</paramtype></parameter><description><para>Effects: Exchanges the contents of the two smart pointers.</para><para>Throws: nothing. </para></description></method>
+    </template><description><para>This class is used as a base class that allows a <classname alt="boost::interprocess::shared_ptr">shared_ptr</classname> to the current object to be obtained from within a member function. <classname alt="boost::interprocess::enable_shared_from_this">enable_shared_from_this</classname> defines two member functions called shared_from_this that return a shared_ptr&lt;T&gt; and shared_ptr&lt;T const&gt;, depending on constness, to this. </para></description><method-group name="public member functions">
+<method name="shared_from_this"><type><classname>shared_ptr</classname>&lt; T, A, D &gt;</type></method>
+<method name="shared_from_this" cv="const"><type><classname>shared_ptr</classname>&lt; T const, A, D &gt;</type></method>
 </method-group>
-<constructor><description><para>Effects: Constructs an empty <classname alt="boost::interprocess::weak_ptr">weak_ptr</classname>. Postconditions: use_count() == 0. </para></description></constructor>
-<constructor><template>
-          <template-type-parameter name="Y"/>
-        </template><parameter name="r"><paramtype><classname>weak_ptr</classname>&lt; Y, A, D &gt; const &amp;</paramtype></parameter><description><para>Effects: If r is empty, constructs an empty <classname alt="boost::interprocess::weak_ptr">weak_ptr</classname>; otherwise, constructs a <classname alt="boost::interprocess::weak_ptr">weak_ptr</classname> that shares ownership with r as if by storing a copy of the pointer stored in r.</para><para>Postconditions: use_count() == r.use_count().</para><para>Throws: nothing. </para></description></constructor>
-<constructor><template>
-          <template-type-parameter name="Y"/>
-        </template><parameter name="r"><paramtype><classname>shared_ptr</classname>&lt; Y, A, D &gt; const &amp;</paramtype></parameter><description><para>Effects: If r is empty, constructs an empty <classname alt="boost::interprocess::weak_ptr">weak_ptr</classname>; otherwise, constructs a <classname alt="boost::interprocess::weak_ptr">weak_ptr</classname> that shares ownership with r as if by storing a copy of the pointer stored in r.</para><para>Postconditions: use_count() == r.use_count().</para><para>Throws: nothing. </para></description></constructor>
-<copy-assignment><type><classname>weak_ptr</classname> &amp;</type><template>
-          <template-type-parameter name="Y"/>
-        </template><parameter name="r"><paramtype><classname>weak_ptr</classname>&lt; Y, A, D &gt; const &amp;</paramtype></parameter><description><para>Effects: Equivalent to weak_ptr(r).swap(*this).</para><para>Throws: nothing.</para><para>Notes: The implementation is free to meet the effects (and the implied guarantees) via different means, without creating a temporary. </para></description></copy-assignment>
-<copy-assignment><type><classname>weak_ptr</classname> &amp;</type><template>
-          <template-type-parameter name="Y"/>
-        </template><parameter name="r"><paramtype><classname>shared_ptr</classname>&lt; Y, A, D &gt; const &amp;</paramtype></parameter><description><para>Effects: Equivalent to weak_ptr(r).swap(*this).</para><para>Throws: nothing.</para><para>Notes: The implementation is free to meet the effects (and the implied guarantees) via different means, without creating a temporary. </para></description></copy-assignment>
 </class><class name="shared_ptr"><template>
       <template-type-parameter name="T"/>
       <template-type-parameter name="VoidAllocator"/>
@@ -3903,14 +3879,6 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <typedef name="deleter"><type>ManagedMemory::template deleter&lt; T &gt;::<classname>type</classname></type></typedef>
 <typedef name="type"><type><classname>shared_ptr</classname>&lt; T, void_allocator, deleter &gt;</type></typedef>
 </struct>
-
-
-
-
-
-
-
-
 
 
 
@@ -4006,6 +3974,14 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 
 
 
+
+
+
+
+
+
+
+
 </namespace>
 </namespace>
 </header>
@@ -4040,30 +4016,30 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <function name="make_managed_unique_ptr"><type><classname>managed_unique_ptr</classname>&lt; T, ManagedMemory &gt;::type</type><template>
           <template-type-parameter name="T"/>
           <template-type-parameter name="ManagedMemory"/>
         </template><parameter name="constructed_object"><paramtype>T *</paramtype></parameter><parameter name="managed_memory"><paramtype>ManagedMemory &amp;</paramtype></parameter><description><para>Returns an instance of a unique pointer constructed with boost::interproces::deleter from a pointer of type T that has been allocated in the passed managed segment </para></description></function>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -4073,35 +4049,37 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <header name="boost/interprocess/smart_ptr/weak_ptr.hpp">
 <para>Describes the smart pointer weak_ptr. </para><namespace name="boost">
 <namespace name="interprocess">
-<struct name="managed_weak_ptr"><template>
+<class name="weak_ptr"><template>
+      <template-type-parameter name="T"/>
+      <template-type-parameter name="A"/>
+      <template-type-parameter name="D"/>
+    </template><description><para>The <classname alt="boost::interprocess::weak_ptr">weak_ptr</classname> class template stores a "weak reference" to an object that's already managed by a <classname alt="boost::interprocess::shared_ptr">shared_ptr</classname>. To access the object, a <classname alt="boost::interprocess::weak_ptr">weak_ptr</classname> can be converted to a <classname alt="boost::interprocess::shared_ptr">shared_ptr</classname> using the <classname alt="boost::interprocess::shared_ptr">shared_ptr</classname> constructor or the member function lock. When the last <classname alt="boost::interprocess::shared_ptr">shared_ptr</classname> to the object goes away and the object is deleted, the attempt to obtain a <classname alt="boost::interprocess::shared_ptr">shared_ptr</classname> from the <classname alt="boost::interprocess::weak_ptr">weak_ptr</classname> instances that refer to the deleted object will fail: the constructor will throw an exception of type bad_weak_ptr, and weak_ptr::lock will return an empty <classname alt="boost::interprocess::shared_ptr">shared_ptr</classname>.</para><para>Every <classname alt="boost::interprocess::weak_ptr">weak_ptr</classname> meets the CopyConstructible and Assignable requirements of the C++ Standard Library, and so can be used in standard library containers. Comparison operators are supplied so that <classname alt="boost::interprocess::weak_ptr">weak_ptr</classname> works with the standard library's associative containers.</para><para><classname alt="boost::interprocess::weak_ptr">weak_ptr</classname> operations never throw exceptions.</para><para>The class template is parameterized on T, the type of the object pointed to. </para></description><typedef name="element_type"><type>T</type></typedef>
+<typedef name="value_type"><type>T</type></typedef>
+<method-group name="public member functions">
+<method name="lock" cv="const"><type><classname>shared_ptr</classname>&lt; T, A, D &gt;</type><description><para>Returns: expired()? shared_ptr&lt;T&gt;(): shared_ptr&lt;T&gt;(*this).</para><para>Throws: nothing. </para></description></method>
+<method name="use_count" cv="const"><type>long</type><description><para>Returns: 0 if *this is empty; otherwise, the number of <classname alt="boost::interprocess::shared_ptr">shared_ptr</classname> objects that share ownership with *this.</para><para>Throws: nothing.</para><para>Notes: use_count() is not necessarily efficient. Use only for debugging and testing purposes, not for production code. </para></description></method>
+<method name="expired" cv="const"><type>bool</type><description><para>Returns: Returns: use_count() == 0.</para><para>Throws: nothing.</para><para>Notes: expired() may be faster than use_count(). </para></description></method>
+<method name="reset"><type>void</type><description><para>Effects: Equivalent to: weak_ptr().swap(*this). </para></description></method>
+<method name="swap"><type>void</type><parameter name="other"><paramtype>this_type &amp;</paramtype></parameter><description><para>Effects: Exchanges the contents of the two smart pointers.</para><para>Throws: nothing. </para></description></method>
+</method-group>
+<constructor><description><para>Effects: Constructs an empty <classname alt="boost::interprocess::weak_ptr">weak_ptr</classname>. Postconditions: use_count() == 0. </para></description></constructor>
+<constructor><template>
+          <template-type-parameter name="Y"/>
+        </template><parameter name="r"><paramtype><classname>weak_ptr</classname>&lt; Y, A, D &gt; const &amp;</paramtype></parameter><description><para>Effects: If r is empty, constructs an empty <classname alt="boost::interprocess::weak_ptr">weak_ptr</classname>; otherwise, constructs a <classname alt="boost::interprocess::weak_ptr">weak_ptr</classname> that shares ownership with r as if by storing a copy of the pointer stored in r.</para><para>Postconditions: use_count() == r.use_count().</para><para>Throws: nothing. </para></description></constructor>
+<constructor><template>
+          <template-type-parameter name="Y"/>
+        </template><parameter name="r"><paramtype><classname>shared_ptr</classname>&lt; Y, A, D &gt; const &amp;</paramtype></parameter><description><para>Effects: If r is empty, constructs an empty <classname alt="boost::interprocess::weak_ptr">weak_ptr</classname>; otherwise, constructs a <classname alt="boost::interprocess::weak_ptr">weak_ptr</classname> that shares ownership with r as if by storing a copy of the pointer stored in r.</para><para>Postconditions: use_count() == r.use_count().</para><para>Throws: nothing. </para></description></constructor>
+<copy-assignment><type><classname>weak_ptr</classname> &amp;</type><template>
+          <template-type-parameter name="Y"/>
+        </template><parameter name="r"><paramtype><classname>weak_ptr</classname>&lt; Y, A, D &gt; const &amp;</paramtype></parameter><description><para>Effects: Equivalent to weak_ptr(r).swap(*this).</para><para>Throws: nothing.</para><para>Notes: The implementation is free to meet the effects (and the implied guarantees) via different means, without creating a temporary. </para></description></copy-assignment>
+<copy-assignment><type><classname>weak_ptr</classname> &amp;</type><template>
+          <template-type-parameter name="Y"/>
+        </template><parameter name="r"><paramtype><classname>shared_ptr</classname>&lt; Y, A, D &gt; const &amp;</paramtype></parameter><description><para>Effects: Equivalent to weak_ptr(r).swap(*this).</para><para>Throws: nothing.</para><para>Notes: The implementation is free to meet the effects (and the implied guarantees) via different means, without creating a temporary. </para></description></copy-assignment>
+</class><struct name="managed_weak_ptr"><template>
       <template-type-parameter name="T"/>
       <template-type-parameter name="ManagedMemory"/>
     </template><description><para>Returns the type of a weak pointer of type T with the allocator <classname alt="boost::interprocess::allocator">boost::interprocess::allocator</classname> allocator and <classname alt="boost::interprocess::deleter">boost::interprocess::deleter</classname> deleter that can be constructed in the given managed segment type. </para></description><typedef name="type"><type><classname>weak_ptr</classname>&lt; T, typename ManagedMemory::template <classname>allocator</classname>&lt; void &gt;::<classname>type</classname>, typename ManagedMemory::template <classname>deleter</classname>&lt; T &gt;::<classname>type</classname> &gt;</type></typedef>
 </struct>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -4139,6 +4117,30 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
           <template-type-parameter name="T"/>
           <template-type-parameter name="ManagedMemory"/>
         </template><parameter name="constructed_object"><paramtype>T *</paramtype></parameter><parameter name="managed_memory"><paramtype>ManagedMemory &amp;</paramtype></parameter><description><para>Returns an instance of a weak pointer constructed with the default allocator and deleter from a pointer of type T that has been allocated in the passed managed segment </para></description></function>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </namespace>
 </namespace>
 </header>

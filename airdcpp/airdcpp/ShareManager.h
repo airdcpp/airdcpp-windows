@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,24 +65,28 @@ public:
 		return *validator.get();
 	}
 
-	// Validate that the profiles are valid for the supplied path (sub/parent directory matching)
-	// Existing profiles shouldn't be supplied
-	void validateNewRootProfiles(const string& realPath, const ProfileTokenSet& aProfiles) const throw(ShareException);
+	// Validate that the new root can be added in share (sub/parent/existing directory matching)
+	// Throws ShareException
+	void validateRootPath(const string& aRealPath, bool aMatchCurrentRoots = true) const;
 
 	// Returns virtual path of a TTH
-	string toVirtual(const TTHValue& aTTH, ProfileToken aProfile) const throw(ShareException);
+	// Throws ShareException
+	string toVirtual(const TTHValue& aTTH, ProfileToken aProfile) const;
 
 	// Returns size and file name of a filelist
 	// virtualFile = name requested by the other user (Transfer::USER_LIST_NAME_BZ or Transfer::USER_LIST_NAME)
-	pair<int64_t, string> getFileListInfo(const string& virtualFile, ProfileToken aProfile) throw(ShareException);
+	// Throws ShareException
+	pair<int64_t, string> getFileListInfo(const string& virtualFile, ProfileToken aProfile);
 
 	// Get real path and size for a virtual path
 	// noAccess_ will be set to true if the file is availabe but not in the supplied profiles
-	void toRealWithSize(const string& virtualFile, const ProfileTokenSet& aProfiles, const HintedUser& aUser, string& path_, int64_t& size_, bool& noAccess_) throw(ShareException);
+	// Throws ShareException
+	void toRealWithSize(const string& virtualFile, const ProfileTokenSet& aProfiles, const HintedUser& aUser, string& path_, int64_t& size_, bool& noAccess_);
 
 	// Returns TTH value for a file list (not very useful but the ADC specs...)
 	// virtualFile = name requested by the other user (Transfer::USER_LIST_NAME_BZ or Transfer::USER_LIST_NAME)
-	TTHValue getListTTH(const string& virtualFile, ProfileToken aProfile) const throw(ShareException);
+	// Throws ShareException
+	TTHValue getListTTH(const string& virtualFile, ProfileToken aProfile) const;
 	
 	enum RefreshType: uint8_t {
 		TYPE_MANUAL,
@@ -130,15 +134,17 @@ public:
 	void abortRefresh() noexcept;
 
 	void nmdcSearch(SearchResultList& l, const string& aString, int aSearchType, int64_t aSize, int aFileType, StringList::size_type maxResults, bool aHideShare) noexcept;
-	void adcSearch(SearchResultList& l, SearchQuery& aSearch, const OptionalProfileToken& aProfile, const CID& cid, const string& aDir, bool isAutoSearch = false) throw(ShareException);
+
+	// Throws ShareException in case an invalid path is provided
+	void adcSearch(SearchResultList& l, SearchQuery& aSearch, const OptionalProfileToken& aProfile, const CID& cid, const string& aDir, bool isAutoSearch = false);
 
 	// Check if a directory is shared
 	// You may also give a path in NMDC format and the relevant 
 	// directory (+ possible subdirectories) are detected automatically
-	bool isNmdcDirShared(const string& aDir) const noexcept;
+	bool isAdcDirectoryShared(const string& aAdcPath) const noexcept;
 
 	// Mostly for dupe check with size comparison (partial/exact dupe)
-	DupeType isNmdcDirShared(const string& aPath, int64_t aSize) const noexcept;
+	DupeType isAdcDirectoryShared(const string& aAdcPath, int64_t aSize) const noexcept;
 
 	bool isFileShared(const TTHValue& aTTH) const noexcept;
 	bool isFileShared(const TTHValue& aTTH, ProfileToken aProfile) const noexcept;
@@ -152,7 +158,7 @@ public:
 	void validatePath(const string& aPath, bool aSkipQueueCheck) const;
 
 	// Returns the dupe paths by directory name/NMDC path
-	StringList getNmdcDirPaths(const string& aDir) const noexcept;
+	StringList getAdcDirectoryPaths(const string& aAdcPath) const noexcept;
 
 	GroupedDirectoryMap getGroupedDirectories() const noexcept;
 	MemoryInputStream* generatePartialList(const string& dir, bool aRecursive, const OptionalProfileToken& aProfile) const noexcept;
@@ -162,7 +168,8 @@ public:
 
 	void saveXmlList(function<void (float)> progressF = nullptr) noexcept;	//for filelist caching
 
-	AdcCommand getFileInfo(const string& aFile, ProfileToken aProfile) throw(ShareException);
+	// Throws ShareException
+	AdcCommand getFileInfo(const string& aFile, ProfileToken aProfile);
 
 	int64_t getTotalShareSize(ProfileToken aProfile) const noexcept;
 
@@ -176,12 +183,14 @@ public:
 	string validateVirtualName(const string& aName) const noexcept;
 
 	// Generate own full filelist on disk
-	string generateOwnList(ProfileToken aProfile) throw(ShareException);
+	// Throws ShareException
+	string generateOwnList(ProfileToken aProfile);
 
 	bool isTTHShared(const TTHValue& tth) const noexcept;
 
 	// Get real paths for an ADC virtual path
-	void getRealPaths(const string& path, StringList& ret, const OptionalProfileToken& aProfile = boost::none) const throw(ShareException);
+	// Throws ShareException
+	void getRealPaths(const string& path, StringList& ret, const OptionalProfileToken& aProfile = nullopt) const;
 
 	StringList getRealPaths(const TTHValue& root) const noexcept;
 
@@ -269,7 +278,7 @@ public:
 	bool removeProfile(ProfileToken aToken) noexcept;
 
 	// Convert real path to virtual path. Returns an empty string if not shared.
-	string realToVirtual(const string& aPath, const OptionalProfileToken& aToken = boost::none) const noexcept;
+	string realToVirtualAdc(const string& aPath, const OptionalProfileToken& aToken = nullopt) const noexcept;
 
 	// If allowFallback is true, the default profile will be returned if the requested one is not found
 	ShareProfilePtr getShareProfile(ProfileToken aProfile, bool allowFallback = false) const noexcept;
@@ -305,10 +314,9 @@ public:
 	bool removeExcludedPath(const string& aPath) noexcept;
 
 	void reloadSkiplist();
-	void validateRootPath(const string& aPath);
 	void setExcludedPaths(const StringSet& aPaths) noexcept;
 private:
-	void countStats(uint64_t& totalAge_, size_t& totalDirs_, int64_t& totalSize_, size_t& totalFiles, size_t& lowerCaseFiles, size_t& totalStrLen_, size_t& roots_) const noexcept;
+	void countStats(time_t& totalAge_, size_t& totalDirs_, int64_t& totalSize_, size_t& totalFiles, size_t& lowerCaseFiles, size_t& totalStrLen_, size_t& roots_) const noexcept;
 
 	uint64_t totalSearches = 0;
 	uint64_t tthSearches = 0;
@@ -389,8 +397,7 @@ private:
 			File(DualString&& aName, const Directory::Ptr& aParent, const HashedFile& aFileInfo);
 			~File();
 		
-			inline string getADCPath() const noexcept{ return parent->getADCPath() + name.getNormal(); }
-			inline string getNmdcPath() const noexcept{ return parent->getNmdcPath() + name.getNormal(); }
+			inline string getAdcPath() const noexcept{ return parent->getAdcPath() + name.getNormal(); }
 			inline string getRealPath() const noexcept { return parent->getRealPath(name.getNormal()); }
 			inline bool hasProfile(const OptionalProfileToken& aProfile) const noexcept { return parent->hasProfile(aProfile); }
 
@@ -399,7 +406,7 @@ private:
 
 			GETSET(int64_t, size, Size);
 			GETSET(Directory*, parent, Parent);
-			GETSET(uint64_t, lastWrite, LastWrite);
+			GETSET(time_t, lastWrite, LastWrite);
 			GETSET(TTHValue, tth, TTH);
 
 			DualString name;
@@ -444,8 +451,8 @@ private:
 		typedef SortedVector<Ptr, std::vector, string, Compare, NameLower> Set;
 		File::Set files;
 
-		static Ptr createNormal(DualString&& aRealName, const Ptr& aParent, uint64_t aLastWrite, Directory::MultiMap& dirNameMap_, ShareBloom& bloom) noexcept;
-		static Ptr createRoot(const string& aRootPath, const string& aVname, const ProfileTokenSet& aProfiles, bool aIncoming, uint64_t aLastWrite, Map& rootPaths_, Directory::MultiMap& dirNameMap_, ShareBloom& bloom_, time_t aLastRefreshTime) noexcept;
+		static Ptr createNormal(DualString&& aRealName, const Ptr& aParent, time_t aLastWrite, Directory::MultiMap& dirNameMap_, ShareBloom& bloom) noexcept;
+		static Ptr createRoot(const string& aRootPath, const string& aVname, const ProfileTokenSet& aProfiles, bool aIncoming, time_t aLastWrite, Map& rootPaths_, Directory::MultiMap& dirNameMap_, ShareBloom& bloom_, time_t aLastRefreshTime) noexcept;
 
 		// Set a new parent for the directory
 		// Possible directories with the same name must be removed from the parent first
@@ -464,10 +471,9 @@ private:
 			HasRootProfile& operator=(const HasRootProfile&) = delete;
 		};
 
-		string getADCPath() const noexcept;
+		string getAdcPath() const noexcept;
 		string getVirtualName() const noexcept;
 		const string& getVirtualNameLower() const noexcept;
-		string getNmdcPath() const noexcept; 
 
 		inline string getRealPath() const noexcept{ return getRealPath(Util::emptyString); };
 
@@ -493,7 +499,7 @@ private:
 		void toXmlList(OutputStream& xmlFile, string& indent, string& tmp);
 		void filesToXmlList(OutputStream& xmlFile, string& indent, string& tmp2) const;
 
-		GETSET(uint64_t, lastWrite, LastWrite);
+		GETSET(time_t, lastWrite, LastWrite);
 
 		~Directory();
 
@@ -502,7 +508,7 @@ private:
 
 		//void addBloom(ShareBloom& aBloom) const noexcept;
 
-		void countStats(uint64_t& totalAge_, size_t& totalDirs_, int64_t& totalSize_, size_t& totalFiles, size_t& lowerCaseFiles, size_t& totalStrLen_) const noexcept;
+		void countStats(time_t& totalAge_, size_t& totalDirs_, int64_t& totalSize_, size_t& totalFiles, size_t& lowerCaseFiles, size_t& totalStrLen_) const noexcept;
 		DualString realName;
 
 		// check for an updated modify date from filesystem
@@ -538,7 +544,7 @@ private:
 		int64_t size = 0;
 		RootDirectory::Ptr root;
 
-		Directory(DualString&& aRealName, const Ptr& aParent, uint64_t aLastWrite, const RootDirectory::Ptr& aRoot = nullptr);
+		Directory(DualString&& aRealName, const Ptr& aParent, time_t aLastWrite, const RootDirectory::Ptr& aRoot = nullptr);
 		friend void intrusive_ptr_release(intrusive_ptr_base<Directory>*);
 
 		string getRealPath(const string& path) const noexcept;
@@ -548,11 +554,11 @@ private:
 		typedef unordered_map<string*, FilelistDirectory*, noCaseStringHash, noCaseStringEq> Map;
 		Directory::List shareDirs;
 
-		FilelistDirectory(const string& aName, uint64_t aDate);
+		FilelistDirectory(const string& aName, time_t aDate);
 		~FilelistDirectory();
 
 		const string name;
-		uint64_t date;
+		time_t date;
 
 		Map listDirs;
 
@@ -564,8 +570,8 @@ private:
 
 	void addAsyncTask(AsyncF aF) noexcept;
 
-	// Returns the dupe directories by directory name/NMDC path
-	void getDirsByName(const string& aPath, Directory::List& dirs_) const noexcept;
+	// Returns the dupe directories by directory name/ADC path
+	void getDirectoriesByAdcName(const string& aAdcPath, Directory::List& dirs_) const noexcept;
 
 	friend class Singleton<ShareManager>;
 
@@ -584,14 +590,15 @@ private:
 		int refreshOptions;
 	};
 
-	bool addDirResult(const Directory* aDir, SearchResultList& aResults, const OptionalProfileToken& aProfile, SearchQuery& srch) const noexcept;
-
-	//RootDirectory::Map rootDirectories;
+	bool addDirectoryResult(const Directory* aDir, SearchResultList& aResults, const OptionalProfileToken& aProfile, SearchQuery& srch) const noexcept;
 
 	TaskQueue tasks;
 
-	FileList* generateXmlList(ProfileToken aProfile, bool forced = false) throw(ShareException);
-	FileList* getFileList(ProfileToken aProfile) const throw(ShareException);
+	// Throws ShareException
+	FileList* generateXmlList(ProfileToken aProfile, bool aForced = false);
+
+	// Throws ShareException
+	FileList* getFileList(ProfileToken aProfile) const;
 
 	bool loadCache(function<void(float)> progressF) noexcept;
 
@@ -614,7 +621,7 @@ private:
 
 	class RefreshInfo : boost::noncopyable {
 	public:
-		RefreshInfo(const string& aPath, const Directory::Ptr& aOldRoot, uint64_t aLastWrite, ShareBloom& bloom_);
+		RefreshInfo(const string& aPath, const Directory::Ptr& aOldRoot, time_t aLastWrite, ShareBloom& bloom_);
 		~RefreshInfo();
 
 		Directory::Ptr oldShareDirectory;
@@ -635,7 +642,7 @@ private:
 
 	class ShareBuilder : public RefreshInfo {
 	public:
-		ShareBuilder(const string& aPath, const Directory::Ptr& aOldRoot, uint64_t aLastWrite, ShareBloom& bloom_, bool& shutdown_, SharePathValidator& aPathValidator);
+		ShareBuilder(const string& aPath, const Directory::Ptr& aOldRoot, time_t aLastWrite, ShareBloom& bloom_, bool& shutdown_, SharePathValidator& aPathValidator);
 
 		// Recursive function for building a new share tree from a path
 		bool buildTree() noexcept;
@@ -693,9 +700,10 @@ private:
 
 	// Get directories matching the virtual path (root path is not accepted here)
 	// Can be used with a single profile token or a set of them
+	// Throws ShareException
 	// Unsafe
 	template<class T>
-	void findVirtuals(const string& aVirtualPath, const T& aProfile, Directory::List& dirs_) const throw(ShareException) {
+	void findVirtuals(const string& aVirtualPath, const T& aProfile, Directory::List& dirs_) const {
 		Directory::List virtuals; //since we are mapping by realpath, we can have more than 1 same virtualnames
 		if(aVirtualPath.empty() || aVirtualPath[0] != ADC_SEPARATOR) {
 			throw ShareException(UserConnection::FILE_NOT_AVAILABLE);
@@ -764,7 +772,7 @@ private:
 	void on(SettingsManagerListener::LoadCompleted, bool aFileLoaded) noexcept override;
 	
 	// TimerManagerListener
-	void on(TimerManagerListener::Minute, uint64_t tick) noexcept override;
+	void on(TimerManagerListener::Minute, uint64_t aTick) noexcept override;
 
 	void load(SimpleXML& aXml);
 	void loadProfile(SimpleXML& aXml, const string& aName, ProfileToken aToken);

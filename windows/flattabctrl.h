@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,11 +66,11 @@ public:
 		nextTab = --viewOrder.end();
 		active = i;
 		calcRows(false);
-		Invalidate();
+		this->Invalidate();
 	}
 
 	void removeTab(HWND aWnd) {
-		TabInfo::ListIter i;
+		typename TabInfo::ListIter i;
 		for(i = tabs.begin(); i != tabs.end(); ++i) {
 			if((*i)->hWnd == aWnd)
 				break;
@@ -92,7 +92,7 @@ public:
 			--nextTab;
 
 		calcRows(false);
-		Invalidate();
+		this->Invalidate();
 	}
 
 	void startSwitch() {
@@ -130,18 +130,18 @@ public:
 		if(!inTab)
 			setTop(aWnd);
 
-		TabInfo* ti = getTabInfo(aWnd);
+		auto ti = getTabInfo(aWnd);
 		dcassert(ti != NULL);
 		
 		active = ti;
 		ti->dirty = false;
 		ti->notification = false;
 		calcRows(false);
-		Invalidate();
+		this->Invalidate();
 	}
 
 	bool getActive(HWND aWnd) {
-		TabInfo* ti = getTabInfo(aWnd);
+		auto ti = getTabInfo(aWnd);
 		if(ti == NULL)
 			return false;
 
@@ -156,7 +156,7 @@ public:
 	}
 
 	void setDirty(HWND aWnd) {
-		TabInfo* ti = getTabInfo(aWnd);
+		auto ti = getTabInfo(aWnd);
 		dcassert(ti != NULL);
 		if(ti == NULL)
 			return;
@@ -172,24 +172,24 @@ public:
 
 		if(inval) {
 			calcRows(false);
-			Invalidate();
+			this->Invalidate();
 		}
 	}
 
 	void setIcon(HWND aWnd, HICON setIconVal) {
-		TabInfo* ti = getTabInfo(aWnd);
+		auto ti = getTabInfo(aWnd);
 		if(ti != NULL) {
 			ti->hIcon = setIconVal;
-			Invalidate();
+			this->Invalidate();
 		}
 	}
 
 	void setDisconnected(HWND aWnd, bool disconnected) {
-		TabInfo* ti = getTabInfo(aWnd);
+		auto ti = getTabInfo(aWnd);
 		if(ti != NULL) {
 			if( ti->disconnected != disconnected){
 				ti->disconnected = disconnected;
-				Invalidate();
+				this->Invalidate();
 			}
 		}
 	}
@@ -199,7 +199,7 @@ public:
 		if(ti != NULL) {
 			if(ti != active) {
 				ti->notification = true;
-				Invalidate();
+				this->Invalidate();
 			}
 		}
 	}
@@ -209,7 +209,7 @@ public:
 		if(ti != NULL) {
 			ti->updateText(text);
 			calcRows(false);
-			Invalidate();
+			this->Invalidate();
 		}
 	}
 
@@ -235,7 +235,7 @@ public:
 		for(auto t: tabs) {
 			if((row == t->row) && (xPos >= t->xpos) && (xPos < (t->xpos + t->getWidth())) ) {
 				// Bingo, this was clicked
-				HWND hWnd = GetParent();
+				HWND hWnd = this->GetParent();
 				if(hWnd) {
 					if(wParam & MK_SHIFT || wParam & MK_XBUTTON1)
 						::SendMessage(t->hWnd, WM_CLOSE, 0, 0);
@@ -259,7 +259,7 @@ public:
 			for(auto t: tabs) {
 				if((row == t->row) && (xPos >= t->xpos) && (xPos < (t->xpos + t->getWidth())) ) {
 					// Bingo, this was clicked
-					HWND hWnd = GetParent();
+					auto hWnd = this->GetParent();
 					if(hWnd) {
 						if (t == moving) {
 							::SendMessage(hWnd, FTM_SELECTED, (WPARAM) t->hWnd, 0);
@@ -288,7 +288,7 @@ public:
 		for(auto t: tabs) {
 			if((row == t->row) && (xPos >= t->xpos) && (xPos < (t->xpos + t->getWidth())) ) {
 				// Bingo, this was clicked
-				HWND hWnd = GetParent();
+				auto hWnd = this->GetParent();
 				if(hWnd) {
 					::SendMessage(t->hWnd, WM_CLOSE, 0, 0);
 				}
@@ -301,7 +301,7 @@ public:
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };		// location of mouse click
 
-		ScreenToClient(&pt);
+		this->ScreenToClient(&pt);
 		int xPos = pt.x;
 		int row = getRows() - ((pt.y / getTabHeight()) + 1);
 
@@ -310,11 +310,11 @@ public:
 				// Bingo, this was clicked, check if the owner wants to handle it...
 				if(!::SendMessage(t->hWnd, FTM_CONTEXTMENU, 0, lParam)) {
 					closing = t->hWnd;
-					ClientToScreen(&pt);
+					this->ClientToScreen(&pt);
 					OMenu contextMnu;
 					contextMnu.CreatePopupMenu();
 					contextMnu.AppendMenu(MF_STRING, IDC_CLOSE_WINDOW, CTSTRING(CLOSE));
-					contextMnu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_BOTTOMALIGN, pt.x, pt.y, m_hWnd);
+					contextMnu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_BOTTOMALIGN, pt.x, pt.y, this->m_hWnd);
 				}
 				break;
 			}
@@ -357,7 +357,7 @@ public:
 
 	void calcRows(bool inval = true) {
 		CRect rc;
-		GetClientRect(rc);
+		this->GetClientRect(rc);
 		int r = 1;
 		int w = 0;
 		bool notify = false;
@@ -388,24 +388,24 @@ public:
 		}
 
 		if(notify) {
-			::SendMessage(GetParent(), FTM_ROWS_CHANGED, 0, 0);
+			::SendMessage(this->GetParent(), FTM_ROWS_CHANGED, 0, 0);
 		}
 		if(needInval && inval)
-			Invalidate();
+			this->Invalidate();
 	}
 
 	LRESULT onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) { 
-		chevron.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
+		chevron.Create(this->m_hWnd, this->rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 			BS_PUSHBUTTON , 0, IDC_CHEVRON);
 		chevron.SetWindowText(_T("\u00bb"));
 
 		mnu.CreatePopupMenu();
 
-		CDCHandle dc(::GetDC(m_hWnd));
+		CDCHandle dc(::GetDC(this->m_hWnd));
 		HFONT oldfont = dc.SelectFont(WinUtil::font);
 		height = WinUtil::getTextHeight(dc) + 7;
 		dc.SelectFont(oldfont);
-		::ReleaseDC(m_hWnd, dc);
+		::ReleaseDC(this->m_hWnd, dc);
 
 		return 0;
 	}
@@ -425,10 +425,10 @@ public:
 		RECT rc;
 		bool drawActive = false;
 		RECT crc;
-		GetClientRect(&crc);
+		this->GetClientRect(&crc);
 
-		if(GetUpdateRect(&rc, FALSE)) {
-			CPaintDC dc(m_hWnd);
+		if (this->GetUpdateRect(&rc, FALSE)) {
+			CPaintDC dc(this->m_hWnd);
 			dc.SetBkColor(SETTING(TAB_INACTIVE_BG));
 			CMemDC memDC(&dc);
 			
@@ -472,7 +472,7 @@ public:
 		}
 		int n = 0;
 		CRect rc;
-		GetClientRect(&rc);
+		this->GetClientRect(&rc);
 		CMenuItemInfo mi;
 		mi.fMask = MIIM_ID | MIIM_TYPE | MIIM_DATA | MIIM_STATE;
 		mi.fType = MFT_STRING | MFT_RADIOCHECK;
@@ -493,7 +493,7 @@ public:
 		pt.y = 0;
 		chevron.ClientToScreen(&pt);
 
-		mnu.TrackPopupMenu(TPM_RIGHTALIGN | TPM_BOTTOMALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
+		mnu.TrackPopupMenu(TPM_RIGHTALIGN | TPM_BOTTOMALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, this->m_hWnd);
 		return 0;
 	}
 
@@ -502,7 +502,7 @@ public:
 		mi.fMask = MIIM_DATA;
 
 		mnu.GetMenuItemInfo(wID, FALSE, &mi);
-		HWND hWnd = GetParent();
+		auto hWnd = this->GetParent();
 		if(hWnd) {
 			SendMessage(hWnd, FTM_SELECTED, (WPARAM)mi.dwItemData, 0);
 		}
@@ -510,12 +510,12 @@ public:
 	}
 
 	void redraw() {
-		height = WinUtil::getTextHeight(GetParent(), WinUtil::font) + 7;
+		height = WinUtil::getTextHeight(this->GetParent(), WinUtil::font) + 7;
 		for(auto t: tabs) {
 			t->update();
 			::SendMessage(t->hWnd, WM_PAINT, 0, 0);
 		}
-		Invalidate();
+		this->Invalidate();
 	}
 	vector<HWND> getTabList() {
 		vector<HWND> windows;
@@ -597,7 +597,7 @@ private:
 		if(moving == NULL)
 			return;
 
-		TabInfo::ListIter i, j;
+		typename TabInfo::ListIter i, j;
 		//remove the tab we're moving
 		for(j = tabs.begin(); j != tabs.end(); ++j){
 			if((*j) == moving){
@@ -618,7 +618,7 @@ private:
 		tabs.insert(i, moving);
 				
 		calcRows(false);
-		Invalidate();
+		this->Invalidate();
 	}
 
 	HWND closing;
@@ -784,25 +784,21 @@ public:
 	DWORD dwStyle = 0, DWORD dwExStyle = 0,
 	UINT nMenuID = 0, LPVOID lpCreateParam = NULL)
 	{
-		ATOM atom = T::GetWndClassInfo().Register(&m_pfnSuperWindowProc);
+		ATOM atom = T::GetWndClassInfo().Register(&this->m_pfnSuperWindowProc);
 
 		if(nMenuID != 0)
-#if (_ATL_VER >= 0x0700)
-			m_hMenu = ::LoadMenu(ATL::_AtlBaseModule.GetResourceInstance(), MAKEINTRESOURCE(nMenuID));
-#else //!(_ATL_VER >= 0x0700)
-			m_hMenu = ::LoadMenu(_Module.GetResourceInstance(), MAKEINTRESOURCE(nMenuID));
-#endif //!(_ATL_VER >= 0x0700)
+			this->m_hMenu = ::LoadMenu(ATL::_AtlBaseModule.GetResourceInstance(), MAKEINTRESOURCE(nMenuID));
 
-		if(m_hMenu == NULL)
-			m_hMenu = WinUtil::mainMenu;
+		if(this->m_hMenu == NULL)
+			this->m_hMenu = WinUtil::mainMenu;
 
 		dwStyle = T::GetWndStyle(dwStyle);
 		dwExStyle = T::GetWndExStyle(dwExStyle);
 
 		dwExStyle |= WS_EX_MDICHILD;	// force this one
-		m_pfnSuperWindowProc = ::DefMDIChildProc;
-		m_hWndMDIClient = hWndParent;
-		ATLASSERT(::IsWindow(m_hWndMDIClient));
+		this->m_pfnSuperWindowProc = ::DefMDIChildProc;
+		this->m_hWndMDIClient = hWndParent;
+		ATLASSERT(::IsWindow(this->m_hWndMDIClient));
 
 		if(rect.m_lpRect == NULL)
 			rect.m_lpRect = &TBase::rcDefault;
@@ -811,7 +807,7 @@ public:
 		ATL::CWindow wndParent = hWndParent;
 		BOOL bMaximized = FALSE;
 
-		if(MDIGetActive(&bMaximized) == NULL)
+		if(this->MDIGetActive(&bMaximized) == NULL)
 			bMaximized = SETTING(MDI_MAXIMIZED);
 
 		if(bMaximized)
@@ -823,12 +819,12 @@ public:
 		{
 			// Maximize and redraw everything
 			if(hWnd != NULL)
-				MDIMaximize(hWnd);
+				this->MDIMaximize(hWnd);
 			wndParent.SetRedraw(TRUE);
 			wndParent.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
-			::SetFocus(GetMDIFrame());	// focus will be set back to this window
+			::SetFocus(this->GetMDIFrame());	// focus will be set back to this window
 		}
-		else if(hWnd != NULL && ::IsWindowVisible(m_hWnd) && !::IsChild(hWnd, ::GetFocus()))
+		else if(hWnd != NULL && ::IsWindowVisible(this->m_hWnd) && !::IsChild(hWnd, ::GetFocus()))
 		{
 			::SetFocus(hWnd);
 		}
@@ -853,13 +849,13 @@ public:
 		if(wParam == SC_NEXTWINDOW) {
 			HWND next = getTab()->getNext();
 			if(next != NULL) {
-				MDIActivate(next);
+				this->MDIActivate(next);
 				return 0;
 			}
 		} else if(wParam == SC_PREVWINDOW) {
 			HWND next = getTab()->getPrev();
 			if(next != NULL) {
-				MDIActivate(next);
+				this->MDIActivate(next);
 				return 0;
 			}
 		}
@@ -870,16 +866,16 @@ public:
 	LRESULT onCreate(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 		bHandled = FALSE;
 		dcassert(getTab());
-		HICON icon = (HICON)::SendMessage(m_hWnd, WM_GETICON, ICON_SMALL, 0);
-		getTab()->addTab(m_hWnd, icon);
+		HICON icon = (HICON)::SendMessage(this->m_hWnd, WM_GETICON, ICON_SMALL, 0);
+		getTab()->addTab(this->m_hWnd, icon);
 		created = true;
 		return 0;
 	}
 
 	LRESULT onMDIActivate(UINT /*uMsg*/, WPARAM /*wParam */, LPARAM lParam, BOOL& bHandled) {
 		dcassert(getTab());
-		if((m_hWnd == (HWND)lParam))
-			getTab()->setActive(m_hWnd);
+		if((this->m_hWnd == (HWND)lParam))
+			getTab()->setActive(this->m_hWnd);
 
 		bHandled = FALSE;
 		return 1; 
@@ -888,24 +884,24 @@ public:
 	LRESULT onDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 		bHandled = FALSE;
 		dcassert(getTab());
-		getTab()->removeTab(m_hWnd);
-		if(m_hMenu == WinUtil::mainMenu)
-			m_hMenu = NULL;
+		getTab()->removeTab(this->m_hWnd);
+		if (this->m_hMenu == WinUtil::mainMenu)
+			this->m_hMenu = NULL;
 
 		BOOL bMaximized = FALSE;
-		if(::SendMessage(m_hWndMDIClient, WM_MDIGETACTIVE, 0, (LPARAM)&bMaximized) != NULL)
+		if(::SendMessage(this->m_hWndMDIClient, WM_MDIGETACTIVE, 0, (LPARAM)&bMaximized) != NULL)
 			SettingsManager::getInstance()->set(SettingsManager::MDI_MAXIMIZED, (bMaximized>0));
 
 		return 0;
 	}
 
 	LRESULT onReallyClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-		MDIDestroy(m_hWnd);
+		this->MDIDestroy(this->m_hWnd);
 		return 0;
 	}
 
 	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled */) {
-		PostMessage(WM_REALLY_CLOSE);
+		this->PostMessage(WM_REALLY_CLOSE);
 		return 0;
 	}
 
@@ -913,7 +909,7 @@ public:
 		bHandled = FALSE;
 		dcassert(getTab());
 		if(created) {
-			getTab()->updateText(m_hWnd, (LPCTSTR)lParam);
+			getTab()->updateText(this->m_hWnd, (LPCTSTR)lParam);
 		}
 		return 0;
 	}
@@ -937,26 +933,26 @@ public:
 
 	void setDirty() {
 		dcassert(getTab());
-		getTab()->setDirty(m_hWnd);
+		getTab()->setDirty(this->m_hWnd);
 	}
 	bool getActive() {
 		dcassert(getTab());
-		return getTab()->getActive(m_hWnd);
+		return getTab()->getActive(this->m_hWnd);
 	}
 
 	void setDisconnected(bool dis = false) {
 		dcassert(getTab());
-		getTab()->setDisconnected(m_hWnd, dis);
+		getTab()->setDisconnected(this->m_hWnd, dis);
 	}
 	
 	void setNotify(){
 		dcassert(getTab());
-		getTab()->setNotify(m_hWnd);
+		getTab()->setNotify(this->m_hWnd);
 	}
 
 	void setIcon(HICON setIconVal) {
 		dcassert(getTab());
-		getTab()->setIcon(m_hWnd, setIconVal);
+		getTab()->setIcon(this->m_hWnd, setIconVal);
 	}
 
 private:

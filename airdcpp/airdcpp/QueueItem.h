@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -245,10 +245,11 @@ public:
 	bool hasPartialSharingTarget() noexcept;
 
 	string getListName() const noexcept;
+	const string& getListDirectoryPath() const noexcept;
 	string getStatusString(int64_t aDownloadedBytes, bool aIsWaiting) const noexcept;
 
 	const string& getTempTarget() noexcept;
-	void setTempTarget(const string& aTempTarget) noexcept { tempTarget = aTempTarget; }
+	void setTempTarget(const string& aTempTarget) noexcept;
 
 	GETSET(TTHValue, tthRoot, TTH);
 	GETSET(SegmentSet, done, Done);	

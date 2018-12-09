@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2017 AirDC++ Project
+ * Copyright (C) 2012-2018 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -286,7 +286,7 @@ tstring ChatCommands::Speedinfo() {
 result += _T("-= ");
 result += _T("Downloading: ");
 result += Util::formatBytesW(DownloadManager::getInstance()->getRunningAverage()) + _T("/s  [");
-result += Util::toStringW(DownloadManager::getInstance()->getDownloadCount()) + _T("]");
+result += Util::toStringW(DownloadManager::getInstance()->getTotalDownloadConnectionCount()) + _T("]");
 result += _T(" =- ");
 result += _T(" -= ");
 result += _T("Uploading: ");

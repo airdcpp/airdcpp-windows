@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2017 AirDC++ Project
+ * Copyright (C) 2011-2018 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,26 +35,27 @@ class DbSnapshot {
 
 };
 
+// Most methods throw DbException in case of errors
 class DbHandler : boost::noncopyable {
 public:
 	virtual DbSnapshot* getSnapshot() { return nullptr; }
 
-	virtual void repair(StepFunction stepF, MessageFunction messageF) throw(DbException) = 0;
-	virtual void open(StepFunction stepF, MessageFunction messageF) throw(DbException) = 0;
+	virtual void repair(StepFunction stepF, MessageFunction messageF) = 0;
+	virtual void open(StepFunction stepF, MessageFunction messageF) = 0;
 
-	virtual void put(void* key, size_t keyLen, void* value, size_t valueLen, DbSnapshot* aSnapshot = nullptr) throw(DbException) = 0;
-	virtual bool get(void* key, size_t keyLen, size_t initialValueLen, std::function<bool(void* aValue, size_t aValueLen)> loadF, DbSnapshot* aSnapshot = nullptr) throw(DbException) = 0;
-	virtual void remove(void* aKey, size_t keyLen, DbSnapshot* aSnapshot = nullptr) throw(DbException) = 0;
+	virtual void put(void* key, size_t keyLen, void* value, size_t valueLen, DbSnapshot* aSnapshot = nullptr) = 0;
+	virtual bool get(void* key, size_t keyLen, size_t initialValueLen, std::function<bool(void* aValue, size_t aValueLen)> loadF, DbSnapshot* aSnapshot = nullptr) = 0;
+	virtual void remove(void* aKey, size_t keyLen, DbSnapshot* aSnapshot = nullptr) = 0;
 
-	virtual bool hasKey(void* key, size_t keyLen, DbSnapshot* aSnapshot = nullptr) throw(DbException) = 0;
+	virtual bool hasKey(void* key, size_t keyLen, DbSnapshot* aSnapshot = nullptr) = 0;
 
-	virtual size_t size(bool thorough, DbSnapshot* aSnapshot = nullptr) throw(DbException) = 0;
-	virtual int64_t getSizeOnDisk() throw(DbException) = 0;
+	virtual size_t size(bool thorough, DbSnapshot* aSnapshot = nullptr) = 0;
+	virtual int64_t getSizeOnDisk() = 0;
 
-	virtual void remove_if(std::function<bool(void* aKey, size_t keyLen, void* aValue, size_t valueLen)> f, DbSnapshot* aSnapshot = nullptr) throw(DbException) = 0;
+	virtual void remove_if(std::function<bool(void* aKey, size_t keyLen, void* aValue, size_t valueLen)> f, DbSnapshot* aSnapshot = nullptr) = 0;
 	virtual void compact() {}
 
-	virtual string getStats() throw(DbException) { return "Not supported"; }
+	virtual string getStats() { return "Not supported"; }
 	virtual string getRepairFlag() const = 0;
 
 	virtual ~DbHandler() { }

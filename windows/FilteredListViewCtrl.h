@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -94,22 +94,22 @@ public:
 	}
 
 	LRESULT onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
-		list.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS, WS_EX_CLIENTEDGE, ctrlId);
+		list.Create(this->m_hWnd, this->rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS, WS_EX_CLIENTEDGE, ctrlId);
 		list.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_HEADERDRAGDROP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP);
 
 		parent->createColumns();
 
-		filter.addFilterBox(m_hWnd);
-		filter.addColumnBox(m_hWnd, list.getColumnList(), initialColumn, parent->m_hWnd);
-		filter.addMethodBox(m_hWnd);
+		filter.addFilterBox(this->m_hWnd);
+		filter.addColumnBox(this->m_hWnd, list.getColumnList(), initialColumn, parent->m_hWnd);
+		filter.addMethodBox(this->m_hWnd);
 		if (style & FLV_HAS_CHECKBOXES) {
-			ctrlQueued.Create(m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_FILTER_QUEUED);
+			ctrlQueued.Create(this->m_hWnd, this->rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_FILTER_QUEUED);
 			ctrlQueued.SetWindowText(CTSTRING(QUEUED));
 			ctrlQueued.SetButtonStyle(BS_AUTOCHECKBOX, false);
 			ctrlQueued.SetFont(WinUtil::systemFont);
 			ctrlQueued.SetCheck(filterQueued ? BST_CHECKED : BST_UNCHECKED);
 
-			ctrlShared.Create(m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_FILTER_SHARED);
+			ctrlShared.Create(this->m_hWnd, this->rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_FILTER_SHARED);
 			ctrlShared.SetWindowText(CTSTRING(SHARED));
 			ctrlShared.SetButtonStyle(BS_AUTOCHECKBOX, false);
 			ctrlShared.SetFont(WinUtil::systemFont);
@@ -120,7 +120,7 @@ public:
 
 		}
 		if (style & FLV_HAS_OPTIONS) {
-			ctrlOptions.Create(m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_PUSHBUTTON, NULL, IDC_FILTER_OPTIONS);
+			ctrlOptions.Create(this->m_hWnd, this->rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_PUSHBUTTON, NULL, IDC_FILTER_OPTIONS);
 			ctrlOptions.SetWindowText(CTSTRING(OPTIONS_DOTS));
 			ctrlOptions.SetFont(WinUtil::systemFont);
 			optionsContainer.SubclassWindow(ctrlOptions.m_hWnd);
@@ -169,7 +169,7 @@ public:
 			}, filterPartialDupes ? OMenu::FLAG_CHECKED : 0);
 		}
 
-		optionMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_VERPOSANIMATION, pt);
+		optionMenu.open(this->m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_VERPOSANIMATION, pt);
 		return 0;
 	}
 
@@ -182,7 +182,7 @@ public:
 		// draw the background
 		WTL::CDCHandle dc(reinterpret_cast<HDC>(wParam));
 		RECT rc;
-		GetClientRect(&rc);
+		this->GetClientRect(&rc);
 		dc.FillRect(&rc, GetSysColorBrush(COLOR_3DFACE));
 		//dc.FillRect(&rc, WinUtil::bgBrush);
 
@@ -241,7 +241,7 @@ public:
 			WinUtil::getTextWidth(TSTRING(SETTINGS_OPTIONS), ctrlOptions.m_hWnd) + 20 : 0;
 
 		RECT rect;
-		GetClientRect(&rect);
+		this->GetClientRect(&rect);
 
 		CRect rc = rect;
 		if (onTop) {
@@ -285,7 +285,7 @@ public:
 			ctrlOptions.MoveWindow(rc);
 		}
 
-		ShowScrollBar(SB_BOTH, FALSE);
+		this->ShowScrollBar(SB_BOTH, FALSE);
 	}
 
 	LRESULT onShow(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL & /*bHandled*/) {
@@ -307,7 +307,7 @@ public:
 	}
 
 	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
-		::KillTimer(m_hWnd, 1);
+		::KillTimer(this->m_hWnd, 1);
 		updateF();
 		bHandled = TRUE;
 		return 0;
@@ -338,7 +338,7 @@ public:
 			timeOut = 900;
 		}
 
-		::SetTimer(m_hWnd, 1, timeOut, NULL);
+		::SetTimer(this->m_hWnd, 1, timeOut, NULL);
 	}
 
 	void changeFilterState(bool enable) {

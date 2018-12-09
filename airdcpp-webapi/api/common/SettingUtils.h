@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,15 +19,16 @@
 #ifndef DCPLUSPLUS_DCPP_SETTING_UTILS_H
 #define DCPLUSPLUS_DCPP_SETTING_UTILS_H
 
-#include <web-server/stdinc.h>
 #include <api/ApiSettingItem.h>
 
 namespace webserver {
 	class SettingUtils {
 	public:
 		static json validateValue(const json& aValue, const ApiSettingItem& aItem);
-		static json validateValue(const json& aValue, const string& aKey, ApiSettingItem::Type aType, ApiSettingItem::Type aItemType, bool aOptional, const ApiSettingItem::MinMax& aMinMax,
-			const ApiSettingItem::PtrList& aObjectValues, const ApiSettingItem::EnumOption::List& aEnumOptions);
+
+		static void validateEnumValue(const json& aValue, const string& aKey, ApiSettingItem::Type aType, ApiSettingItem::Type aItemType, const ApiSettingItem::EnumOption::List& aEnumOptions);
+
+		static json convertValue(const json& aValue, const string& aKey, ApiSettingItem::Type aType, ApiSettingItem::Type aItemType, bool aOptional, const ApiSettingItem::MinMax& aMinMax, const ApiSettingItem::PtrList& aObjectValues);
 
 		static json validateObjectListValue(const ApiSettingItem::PtrList& aPropertyDefinitions, const json& aValue);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 #include "TypedListViewCtrl.h"
 #include "UserInfoBaseHandler.h"
 #include "ChatFrameBase.h"
+#include "UserUtil.h"
 
 #include <airdcpp/Client.h>
 #include <airdcpp/FastAlloc.h>
@@ -39,7 +40,6 @@
 
 #define SHOW_USERS 9
 #define STATUS_MSG 52
-struct CompareItems;
 class ChatFrameBase;
 
 class HubFrame : private ClientListener, public CSplitterImpl<HubFrame>, private FavoriteManagerListener,
@@ -196,11 +196,39 @@ public:
 	LRESULT onIgnore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onUnignore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/);
 
-	TypedListViewCtrl<OnlineUser, IDC_USERS>& getUserList() { return ctrlUsers; }
-
-	static ResourceManager::Strings columnNames[OnlineUser::COLUMN_LAST];
+	static ResourceManager::Strings columnNames[UserUtil::COLUMN_LAST];
 	static string id;
 private:
+	friend class UserInfoBaseHandler<HubFrame>;
+
+	class ItemInfo : public FastAlloc<ItemInfo>, public UserInfoBase {
+	public:
+		ItemInfo(const OnlineUserPtr& aUser);
+
+		const tstring getText(uint8_t col) const;
+
+		static int compareItems(const ItemInfo* a, const ItemInfo* b, uint8_t col);
+
+		int getImageIndex() const;
+
+		bool update(int sortCol, const tstring& oldText = Util::emptyStringT) noexcept;
+
+
+		const UserPtr& getUser() const { return onlineUser->getUser(); }
+		const string& getHubUrl() const { return onlineUser->getHubUrl(); }
+
+		const OnlineUserPtr onlineUser;
+	private:
+	};
+
+	std::unordered_map<OnlineUserPtr, ItemInfo, OnlineUser::Hash> userInfos;
+
+	ItemInfo* findUserInfo(const OnlineUserPtr& aUser) noexcept;
+	ItemInfo* findUserInfo(const string& aNick) noexcept;
+
+
+	TypedListViewCtrl<ItemInfo, IDC_USERS>& getUserList() { return ctrlUsers; }
+
 	enum Tasks { UPDATE_USER_JOIN, UPDATE_USER, REMOVE_USER, ADD_SILENT_STATUS_LINE, 
 		GET_SHUTDOWN, SET_SHUTDOWN, KICK_MSG, UPDATE_TAB_ICONS, ADD_STATUS_LINE
 	};
@@ -238,7 +266,7 @@ private:
 
 	CButton ctrlShowUsers;
 
-	typedef TypedListViewCtrl<OnlineUser, IDC_USERS> CtrlUsers;
+	typedef TypedListViewCtrl<ItemInfo, IDC_USERS> CtrlUsers;
 	CtrlUsers ctrlUsers;
 	
 	int statusSizes[4];
@@ -267,13 +295,13 @@ private:
 	CIcon tabIcon;
 	tstring cipherPopupTxt;
 	
-	static int columnIndexes[OnlineUser::COLUMN_LAST];
-	static int columnSizes[OnlineUser::COLUMN_LAST];
+	static int columnIndexes[UserUtil::COLUMN_LAST];
+	static int columnSizes[UserUtil::COLUMN_LAST];
 	
 	bool updateUser(const UserTask& u);
 	void removeUser(const OnlineUserPtr& aUser);
 
-	void updateUserList(OnlineUserPtr ui = nullptr);
+	void updateUserList(ItemInfo* ii = nullptr);
 
 	ListFilter filter;
 

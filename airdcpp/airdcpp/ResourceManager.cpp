@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ ResourceManager::ResourceManager() {
 
 void ResourceManager::loadLanguage(const string& aFile) {
 	try {
-		File f(aFile, File::READ, File::OPEN, File::BUFFER_SEQUENTIAL, false);
+		File f(!File::isAbsolutePath(aFile) ? Util::getPath(Util::PATH_LOCALE) + aFile : aFile, File::READ, File::OPEN, File::BUFFER_SEQUENTIAL, false);
 		SimpleXML xml;
 		xml.fromXML(f.read());
 

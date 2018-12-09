@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -83,8 +83,8 @@ namespace dcpp {
 			return baseResult->getSize();
 		}
 
-		const string& getPath() const noexcept {
-			return baseResult->getPath();
+		const string& getAdcPath() const noexcept {
+			return baseResult->getAdcPath();
 		}
 
 		string getFileName() const noexcept {

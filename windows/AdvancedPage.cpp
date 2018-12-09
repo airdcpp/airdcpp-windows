@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,7 +49,6 @@ AdvancedPage::ListItem AdvancedPage::listItems[] = {
 	{ SettingsManager::USE_CTRL_FOR_LINE_HISTORY, ResourceManager::SETTINGS_USE_CTRL_FOR_LINE_HISTORY },
 	{ SettingsManager::MAGNET_ASK, ResourceManager::MAGNET_ASK },
 	{ SettingsManager::OPEN_LOGS_INTERNAL, ResourceManager::OPEN_LOGS_INTERNAL },
-	{ SettingsManager::CORAL, ResourceManager::CORAL },
 	{ SettingsManager::TESTWRITE, ResourceManager::TEST_WRITE }, 
 	{ SettingsManager::USE_ADLS, ResourceManager::SETTINGS_USE_ADLS },
 	{ SettingsManager::USE_FTP_LOGGER, ResourceManager::USE_FTP_LOGGER },

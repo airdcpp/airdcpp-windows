@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
 
 #include <api/SessionApi.h>
 #include <api/SystemApi.h>
@@ -35,7 +35,9 @@
 #include <airdcpp/version.h>
 
 namespace webserver {
-	SessionApi::SessionApi(Session* aSession) : SubscribableApiModule(aSession, Access::ADMIN) {
+	SessionApi::SessionApi(Session* aSession) : 
+		SubscribableApiModule(aSession, Access::ADMIN, { "session_created", "session_removed" }) 
+	{
 		// Just fail these since we have a session already...
 		METHOD_HANDLER(Access::ANY, METHOD_POST, (EXACT_PARAM("authorize")), SessionApi::failAuthenticatedRequest);
 		METHOD_HANDLER(Access::ANY, METHOD_POST, (EXACT_PARAM("socket")), SessionApi::failAuthenticatedRequest);
@@ -52,9 +54,6 @@ namespace webserver {
 		METHOD_HANDLER(Access::ADMIN, METHOD_DELETE, (TOKEN_PARAM), SessionApi::handleRemoveSession);
 
 		aSession->getServer()->getUserManager().addListener(this);
-
-		createSubscription("session_created");
-		createSubscription("session_removed");
 	}
 
 	SessionApi::~SessionApi() {
@@ -91,37 +90,66 @@ namespace webserver {
 	}
 
 	websocketpp::http::status_code::value SessionApi::handleLogin(ApiRequest& aRequest, bool aIsSecure, const WebSocketPtr& aSocket, const string& aIP) {
+		auto& um = WebServerManager::getInstance()->getUserManager();
+
 		const auto& reqJson = aRequest.getRequestBody();
 
-		auto username = JsonUtil::getField<string>("username", reqJson, false);
-		auto password = JsonUtil::getField<string>("password", reqJson, false);
 
+		auto grantType = JsonUtil::getOptionalFieldDefault<string>("grant_type", reqJson, "password");
 		auto inactivityMinutes = JsonUtil::getOptionalFieldDefault<uint64_t>("max_inactivity", reqJson, WEBCFG(DEFAULT_SESSION_IDLE_TIMEOUT).uint64());
 
-		auto session = WebServerManager::getInstance()->getUserManager().authenticateSession(username, password, 
-			aIsSecure, inactivityMinutes, aIP);
 
-		if (!session) {
-			aRequest.setResponseErrorStr("Invalid username or password");
-			return websocketpp::http::status_code::unauthorized;
+		SessionPtr session = nullptr;
+		auto sessionType = aIsSecure ? Session::TYPE_SECURE : Session::TYPE_PLAIN;
+
+		if (grantType == "password") {
+			auto username = JsonUtil::getField<string>("username", reqJson, false);
+			auto password = JsonUtil::getField<string>("password", reqJson, false);
+
+			try {
+				session = um.authenticateSession(username, password,
+					sessionType, inactivityMinutes, aIP);
+			} catch (const std::exception& e) {
+				aRequest.setResponseErrorStr(e.what());
+				return websocketpp::http::status_code::unauthorized;
+			}
+		} else if (grantType == "refresh_token") {
+			auto refreshToken = JsonUtil::getField<string>("refresh_token", reqJson, false);
+
+			try {
+				session = um.authenticateSession(refreshToken,
+					sessionType, inactivityMinutes, aIP);
+			} catch (const std::exception& e) {
+				aRequest.setResponseErrorStr(e.what());
+				return websocketpp::http::status_code::bad_request;
+			}
 		}
 
+		dcassert(session);
 		if (aSocket) {
 			session->onSocketConnected(aSocket);
 			aSocket->setSession(session);
 		}
 
-		aRequest.setResponseBody(serializeLoginInfo(session));
+
+		aRequest.setResponseBody(serializeLoginInfo(session, um.createRefreshToken(session->getUser())));
 		return websocketpp::http::status_code::ok;
 	}
 
-	json SessionApi::serializeLoginInfo(const SessionPtr& aSession) {
-		return {
+	json SessionApi::serializeLoginInfo(const SessionPtr& aSession, const string& aRefreshToken) {
+		json ret = {
 			{ "auth_token", aSession->getAuthToken() },
+			{ "token_type", "Bearer" },
 			{ "user", Serializer::serializeItem(aSession->getUser(), WebUserUtils::propertyHandler) },
 			{ "system_info", SystemApi::getSystemInfo() },
 			{ "wizard_pending", SETTING(WIZARD_PENDING) },
 		};
+
+		if (!aRefreshToken.empty()) {
+			ret.emplace("refresh_token", aRefreshToken);
+		}
+
+		return ret;
 	}
 
 	api_return SessionApi::handleSocketConnect(ApiRequest& aRequest, bool aIsSecure, const WebSocketPtr& aSocket) {
@@ -138,7 +166,7 @@ namespace webserver {
 			return websocketpp::http::status_code::bad_request;
 		}
 
-		if ((session->getSessionType() == Session::TYPE_SECURE)  != aIsSecure) {
+		if ((session->getSessionType() == Session::TYPE_SECURE) != aIsSecure) {
 			aRequest.setResponseErrorStr("Invalid protocol");
 			return websocketpp::http::status_code::bad_request;
 		}
@@ -146,7 +174,7 @@ namespace webserver {
 		session->onSocketConnected(aSocket);
 		aSocket->setSession(session);
 
-		aRequest.setResponseBody(serializeLoginInfo(session));
+		aRequest.setResponseBody(serializeLoginInfo(session, Util::emptyString));
 		return websocketpp::http::status_code::no_content;
 	}
 

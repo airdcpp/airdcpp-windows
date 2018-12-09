@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -25,12 +25,14 @@
 #include "FileServer.h"
 #include "ApiRequest.h"
 
+#include "SystemUtil.h"
 #include "Timer.h"
 #include "WebServerManagerListener.h"
 #include "WebUserManager.h"
 #include "WebSocket.h"
 
 #include <airdcpp/format.h>
+#include <airdcpp/Message.h>
 #include <airdcpp/Singleton.h>
 #include <airdcpp/Speaker.h>
 #include <airdcpp/Util.h>
@@ -164,21 +166,30 @@ namespace webserver {
 			});
 		}
 
+
+		template <typename EndpointType>
+		void logDebugError(EndpointType* s, const string& aMessage, websocketpp::log::level aErrorLevel) {
+			s->get_elog().write(aErrorLevel, aMessage);
+		}
+
 		template <typename EndpointType>
 		void handleHttpRequest(EndpointType* s, websocketpp::connection_hdl hdl, bool aIsSecure) {
 			// Blocking HTTP Handler
 			auto con = s->get_con_from_hdl(hdl);
 			websocketpp::http::status_code::value status;
-			auto ip = con->get_remote_endpoint();
+			auto ip = con->get_raw_socket().remote_endpoint().address().to_string();
 
-			string authError;
-			auto session = userManager->parseHttpSession(con->get_request(), authError, ip);
+			SessionPtr session = nullptr;
 
-			// Catch invalid authentication info
-			if (!authError.empty()) {
-				con->set_body(authError);
-				con->set_status(websocketpp::http::status_code::unauthorized);
-				return;
+			auto authToken = con->get_request().get_header("Authorization");
+			if (authToken != websocketpp::http::empty_header) {
+				try {
+					session = userManager->parseHttpSession(authToken, ip);
+				} catch (const std::exception& e) {
+					con->set_body(e.what());
+					con->set_status(websocketpp::http::status_code::unauthorized);
+					return;
+				}
 			}
 
 			if (con->get_resource().length() >= 4 && con->get_resource().compare(0, 4, "/api") == 0) {
@@ -195,7 +206,20 @@ namespace webserver {
 					session
 				);
 
-				auto data = status != websocketpp::http::status_code::ok ? apiError.dump() : output.dump();
+				const auto& responseJson = !apiError.is_null() ? apiError : output;
+				string data;
+				if (!responseJson.is_null()) {
+					try {
+						data = responseJson.dump();
+					} catch (const std::exception& e) {
+						logDebugError(s, "Failed to convert data to JSON: " + string(e.what()), websocketpp::log::elevel::fatal);
+
+						con->set_body("Failed to convert data to JSON: " + string(e.what()));
+						con->set_status(websocketpp::http::status_code::internal_server_error);
+						return;
+					}
+				}
+
 				onData(con->get_resource() + " (" + Util::toString(status) + "): " + data, TransportType::TYPE_HTTP_API, Direction::OUTGOING, ip);
 
 				con->set_body(data);
@@ -223,6 +247,10 @@ namespace webserver {
 				con->set_body(output);
 			}
 		}
+
+		void log(const string& aMsg, LogMessage::Severity aSeverity) const noexcept;
+
+		string resolveAddress(const string& aHostname, const string& aPort) noexcept;
 	private:
 		context_ptr handleInitTls(websocketpp::connection_hdl hdl);
 

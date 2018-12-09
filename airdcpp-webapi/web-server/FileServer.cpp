@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
 
 #include <web-server/FileServer.h>
 #include <web-server/WebServerManager.h>
@@ -168,11 +168,8 @@ namespace webserver {
 				headers_.emplace_back("Content-Encoding", "gzip");
 			}
 
-			if (extension != "ico") {
-				// There's no hash with favicon.ico...
-				addCacheControlHeader(headers_, 30);
-			} else if (extension != "html") {
-				// One year (file versioning is done with hashes in filenames)
+			if (extension != "html" && aResource != "/sw.js") {
+				// File versioning is done with hashes in filenames (except for the index file and service worker)
 				addCacheControlHeader(headers_, 365);
 			}
 		} else {
@@ -344,6 +341,6 @@ namespace webserver {
 			return websocketpp::http::status_code::partial_content;
 		}
 
-		return partialContent ? websocketpp::http::status_code::partial_content : websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::ok;
 	}
 }

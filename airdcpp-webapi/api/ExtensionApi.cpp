@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
 * along with this program; if not, write to the Free Software
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
+
+#include "stdinc.h"
 
 #include <api/ExtensionApi.h>
 #include <api/common/Serializer.h>
@@ -51,7 +53,6 @@ namespace webserver {
 
 		METHOD_HANDLER(Access::ADMIN, METHOD_POST, (), ExtensionApi::handlePostExtension);
 		METHOD_HANDLER(Access::ADMIN, METHOD_POST, (EXACT_PARAM("download")), ExtensionApi::handleDownloadExtension);
-		METHOD_HANDLER(Access::ADMIN, METHOD_DELETE, (EXTENSION_PARAM), ExtensionApi::handleRemoveExtension);
 
 		METHOD_HANDLER(Access::SETTINGS_VIEW, METHOD_GET, (EXACT_PARAM("engines"), EXACT_PARAM("status")), ExtensionApi::handleGetEngineStatuses);
 		// TODO
@@ -92,6 +93,10 @@ namespace webserver {
 		auto url = JsonUtil::getField<string>("url", reqJson, false);
 		auto sha = JsonUtil::getOptionalFieldDefault<string>("shasum", reqJson, Util::emptyString);
 
+		if (Util::findSubString(url, "http://") != 0 && Util::findSubString(url, "https://") != 0) {
+			JsonUtil::throwError("url", JsonUtil::ERROR_INVALID, "Invalid URL");
+		}
+
 		if (!em.downloadExtension(installId, url, sha)) {
 			aRequest.setResponseErrorStr("Extension is being download already");
 			return websocketpp::http::status_code::conflict;
@@ -100,7 +105,7 @@ namespace webserver {
 		return websocketpp::http::status_code::no_content;
 	}
 
-	api_return ExtensionApi::handleRemoveExtension(ApiRequest& aRequest) {
+	api_return ExtensionApi::handleDeleteSubmodule(ApiRequest& aRequest) {
 		auto extensionInfo = getSubModule(aRequest);
 
 		try {

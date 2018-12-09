@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -601,7 +601,7 @@ void ADLSearchFrame::UpdateSearch(int index, BOOL doDelete)
 	tstring fs;
 	line.push_back(Text::toT(search->getPattern()));
 	line.push_back(search->SourceTypeToDisplayString(search->sourceType));
-	line.push_back(Text::toT(search->destDir));
+	line.push_back(Text::toT(search->getDestDir()));
 
 	fs = _T("");
 	if(search->minFileSize >= 0) {

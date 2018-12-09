@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,6 +16,8 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+#include "stdinc.h"
+
 #include <api/ShareRootApi.h>
 #include <api/common/Serializer.h>
 #include <api/common/Deserializer.h>
@@ -28,21 +30,17 @@
 
 namespace webserver {
 	ShareRootApi::ShareRootApi(Session* aSession) : 
-		SubscribableApiModule(aSession, Access::SETTINGS_VIEW),
+		SubscribableApiModule(aSession, Access::SETTINGS_VIEW, { "share_root_created", "share_root_updated", "share_root_removed" }),
 		roots(ShareManager::getInstance()->getRootInfos()),
 		rootView("share_root_view", this, ShareUtils::propertyHandler, std::bind(&ShareRootApi::getRoots, this)),
-		timer(getTimer([this] { onTimer(); }, 5000)) {
-
+		timer(getTimer([this] { onTimer(); }, 5000)) 
+	{
 		METHOD_HANDLER(Access::SETTINGS_VIEW, METHOD_GET,		(),				ShareRootApi::handleGetRoots);
 
 		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_POST,		(),				ShareRootApi::handleAddRoot);
 		METHOD_HANDLER(Access::SETTINGS_VIEW, METHOD_GET,		(TTH_PARAM),	ShareRootApi::handleGetRoot);
 		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_PATCH,		(TTH_PARAM),	ShareRootApi::handleUpdateRoot);
 		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_DELETE,	(TTH_PARAM),	ShareRootApi::handleRemoveRoot);
-
-		createSubscription("share_root_created");
-		createSubscription("share_root_updated");
-		createSubscription("share_root_removed");
 
 		ShareManager::getInstance()->addListener(this);
 		HashManager::getInstance()->addListener(this);
@@ -84,13 +82,9 @@ namespace webserver {
 			JsonUtil::throwError("path", JsonUtil::ERROR_INVALID, e.what());
 		}
 
-		if (ShareManager::getInstance()->isRealPathShared(path)) {
-			JsonUtil::throwError("path", JsonUtil::ERROR_INVALID, "Path is shared already");
-		}
-
 		auto info = std::make_shared<ShareDirectoryInfo>(path);
 
-		parseRoot(info, reqJson, true);
+		parseRoot(info, reqJson);
 
 		ShareManager::getInstance()->addRootDirectory(info);
 
@@ -101,7 +95,7 @@ namespace webserver {
 	api_return ShareRootApi::handleUpdateRoot(ApiRequest& aRequest) {
 		auto info = getRoot(aRequest);
 
-		parseRoot(info, aRequest.getRequestBody(), false);
+		parseRoot(info, aRequest.getRequestBody());
 		ShareManager::getInstance()->updateRootDirectory(info);
 
 		aRequest.setResponseBody(Serializer::serializeItem(info, ShareUtils::propertyHandler));
@@ -211,32 +205,20 @@ namespace webserver {
 		return *i;
 	}
 
-	void ShareRootApi::parseRoot(ShareDirectoryInfoPtr& aInfo, const json& j, bool aIsNew) {
+	void ShareRootApi::parseRoot(ShareDirectoryInfoPtr& aInfo, const json& j) {
 		auto virtualName = JsonUtil::getOptionalField<string>("virtual_name", j);
 		if (virtualName) {
 			aInfo->virtualName = *virtualName;
 		}
 
+		// Default profile is added for new roots if profiles are not specified
 		auto profiles = JsonUtil::getOptionalField<ProfileTokenSet>("profiles", j);
 		if (profiles) {
-			// Only validate added profiles
-			ProfileTokenSet diff;
-
 			auto newProfiles = *profiles;
 			for (const auto& p : newProfiles) {
 				if (!ShareManager::getInstance()->getShareProfile(p)) {
 					JsonUtil::throwError("profiles", JsonUtil::ERROR_INVALID, "Share profile " +  Util::toString(p)  + " was not found");
 				}
-			}
-
-
-			std::set_difference(newProfiles.begin(), newProfiles.end(),
-				aInfo->profiles.begin(), aInfo->profiles.end(), std::inserter(diff, diff.begin()));
-
-			try {
-				ShareManager::getInstance()->validateNewRootProfiles(aInfo->path, diff);
-			} catch (ShareException& e) {
-				JsonUtil::throwError(aIsNew ? "path" : "profiles", JsonUtil::ERROR_INVALID, e.what());
 			}
 
 			aInfo->profiles = newProfiles;

@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -818,7 +818,7 @@ UsersFrame::UserInfo::UserInfo(const UserPtr& u, const string& aUrl, bool update
 }
 
 void UsersFrame::UserInfo::update(const UserPtr& u) {
-	auto fu = !u->isSet(User::FAVORITE) ? boost::none : FavoriteManager::getInstance()->getFavoriteUser(u);
+	auto fu = !u->isSet(User::FAVORITE) ? nullopt : FavoriteManager::getInstance()->getFavoriteUser(u);
 	if (fu) {
 		isFavorite = true;
 		noLimiter = fu->isSet(FavoriteUser::FLAG_SUPERUSER);

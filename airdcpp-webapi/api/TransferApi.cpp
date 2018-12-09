@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,8 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
+
 #include <web-server/Timer.h>
 
 #include <api/TransferApi.h>
@@ -33,14 +34,23 @@
 
 namespace webserver {
 	TransferApi::TransferApi(Session* aSession) : 
-		SubscribableApiModule(aSession, Access::TRANSFERS),
+		SubscribableApiModule(
+			aSession, Access::TRANSFERS, 
+			{ 
+				"transfer_statistics", 
+				"transfer_added", 
+				"transfer_updated", 
+				"transfer_removed",
+
+				// These are included in transfer_updated events as well
+				"transfer_starting",
+				"transfer_completed",
+				"transfer_failed",
+			}
+		),
 		timer(getTimer([this] { onTimer(); }, 1000)),
 		view("transfer_view", this, TransferUtils::propertyHandler, std::bind(&TransferApi::getTransfers, this))
 	{
-		DownloadManager::getInstance()->addListener(this);
-		UploadManager::getInstance()->addListener(this);
-		ConnectionManager::getInstance()->addListener(this);
-
 		METHOD_HANDLER(Access::TRANSFERS,	METHOD_GET,		(),											TransferApi::handleGetTransfers);
 		METHOD_HANDLER(Access::TRANSFERS,	METHOD_GET,		(TOKEN_PARAM),								TransferApi::handleGetTransfer);
 
@@ -50,20 +60,13 @@ namespace webserver {
 		METHOD_HANDLER(Access::TRANSFERS,	METHOD_GET,		(EXACT_PARAM("tranferred_bytes")),			TransferApi::handleGetTransferredBytes);
 		METHOD_HANDLER(Access::TRANSFERS,	METHOD_GET,		(EXACT_PARAM("stats")),						TransferApi::handleGetTransferStats);
 
-		createSubscription("transfer_statistics");
-
-		createSubscription("transfer_added");
-		createSubscription("transfer_updated");
-		createSubscription("transfer_removed");
-
-		// These are included in transfer_updated events as well
-		createSubscription("transfer_starting");
-		createSubscription("transfer_completed");
-		createSubscription("transfer_failed");
-
 		timer->start(false);
 
 		loadTransfers();
+
+		DownloadManager::getInstance()->addListener(this);
+		UploadManager::getInstance()->addListener(this);
+		ConnectionManager::getInstance()->addListener(this);
 	}
 
 	TransferApi::~TransferApi() {
@@ -191,7 +194,7 @@ namespace webserver {
 		};
 
 		auto uploads = UploadManager::getInstance()->getUploadCount();
-		auto downloads = DownloadManager::getInstance()->getDownloadCount();
+		auto downloads = DownloadManager::getInstance()->getTotalDownloadConnectionCount();
 
 		auto downSpeed = DownloadManager::getInstance()->getLastDownSpeed();
 		if (resetSpeed(downloads, downSpeed)) {

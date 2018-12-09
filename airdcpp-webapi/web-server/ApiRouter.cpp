@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
 #include <web-server/version.h>
 #include <web-server/ApiRouter.h>
 #include <web-server/JsonUtil.h>
@@ -137,9 +137,9 @@ namespace webserver {
 	}
 
 	api_return ApiRouter::routeAuthRequest(ApiRequest& aRequest, bool aIsSecure, const WebSocketPtr& aSocket, const string& aIp) {
-		if (aRequest.getParamAt(0) == "authorize" && aRequest.getMethod() == METHOD_POST) {
+		if (aRequest.getPathTokenAt(0) == "authorize" && aRequest.getMethod() == METHOD_POST) {
 			return SessionApi::handleLogin(aRequest, aIsSecure, aSocket, aIp);
-		} else if (aRequest.getParamAt(0) == "socket" && aRequest.getMethod() == METHOD_POST) {
+		} else if (aRequest.getPathTokenAt(0) == "socket" && aRequest.getMethod() == METHOD_POST) {
 			return SessionApi::handleSocketConnect(aRequest, aIsSecure, aSocket);
 		}
 

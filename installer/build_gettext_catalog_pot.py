@@ -6,13 +6,13 @@ from optparse import OptionParser
 
 parser = OptionParser()
 parser.add_option("-i", "--input", dest="input",
-                  help="nightly.nsi location", default="../Shared/installer/nightly.nsi" )
+                  help="AirDC_installscript.nsi location", default="AirDC_installscript.nsi" )
 parser.add_option("-o", "--output", dest="output",
-                  help="POT file output location", default="installer.pot")
+                  help="POT file output location", default="EN_Installer.pot")
 parser.add_option("-p", "--project", dest="project",
-                  help="Project name to write to the POT file", default="MTA San Andreas Installer" )
+                  help="Project name to write to the POT file", default="AirDC++" )
 parser.add_option("-v", "--version", dest="version",
-                  help="Version to write to the POT file", default="1.x" )
+                  help="Version to write to the POT file", default="1.0" )
 parser.add_option("-l", "--lang", dest="lang",
                   help="Default language of the NSI", default="English" )
 
@@ -24,8 +24,8 @@ metadata = {
     "POT-Creation-Date" : datetime.datetime.now().strftime('%Y-%m-%d %H:%M%z'),
     "PO-Revision-Date" : "YEAR-MO-DA HO:MI+ZONE",
     "Last-Translator" : "FULL NAME <EMAIL@ADDRESS>",
-    "Language-Team" : "LANGUAGE <LL@li.org>",
-    "Language"  : "",
+    "Language-Team" : "AirDC++ <noreply@airdcpp.net>",
+    "Language"  : "en",
     "MIME-Version" : "1.0",
     "Content-Type" : "text/plain; charset=UTF-8",
     "Content-Transfer-Encoding" : "8bit"
@@ -105,7 +105,7 @@ while line != '':
 
 # Now, we loop through our cache and build PO entries for each
 # We use PO comment field to store our NSIS labels, so we can decode it back later
-for msgid,lineOccurances in LangStringCache.iteritems():
+for msgid,lineOccurances in LangStringCache.items():
     entry = polib.POEntry(
         msgid=msgid,
         msgstr='',

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2017 AirDC++ Project
+ * Copyright (C) 2011-2018 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -83,7 +83,7 @@ public:
 
 	/* Menu creation */
 	void appendDownloadMenu(OMenu& aMenu, Type aType, bool isSizeUnknown, const optional<TTHValue>& aTTH, 
-		const optional<string>& aPath, bool appendPrioMenu = true, bool addDefault = true) {
+		const optional<string>& aVirtualPath, bool appendPrioMenu = true, bool addDefault = true) {
 
 		auto volumes = File::getVolumes();
 
@@ -94,7 +94,7 @@ public:
 
 		// Download to
 		auto targetMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_TO), true);
-		appendDownloadTo(*targetMenu, aType == TYPE_SECONDARY, isSizeUnknown, aTTH, aPath, volumes);
+		appendDownloadTo(*targetMenu, aType == TYPE_SECONDARY, isSizeUnknown, aTTH, aVirtualPath, volumes);
 
 		// Download with priority
 		if (appendPrioMenu) {
@@ -106,16 +106,17 @@ public:
 			aMenu.appendItem(CTSTRING(DOWNLOAD_WHOLE_DIR), [=] { onDownload(SETTING(DOWNLOAD_DIRECTORY), true, true, Priority::DEFAULT); });
 			auto targetMenuWhole = aMenu.createSubMenu(TSTRING(DOWNLOAD_WHOLE_DIR_TO), true);
 
-			// If we have a dupe path, pick the dir from it
-			optional<string> pathWhole;
-			if (aPath && !(*aPath).empty() && (*aPath).back() != PATH_SEPARATOR)
-				pathWhole = Util::getFilePath(*aPath);
+			// If we have a dupe path, pick the directory path from it
+			optional<string> virtualFilePath;
+			if (aVirtualPath && !(*aVirtualPath).empty() && (*aVirtualPath).back() != ADC_SEPARATOR) {
+				virtualFilePath = Util::getAdcFilePath(*aVirtualPath);
+			}
 
-			appendDownloadTo(*targetMenuWhole, true, true, boost::none, pathWhole, volumes);
+			appendDownloadTo(*targetMenuWhole, true, true, nullopt, virtualFilePath, volumes);
 		}
 	}
 
-	void appendDownloadTo(OMenu& targetMenu_, bool aWholeDir, bool aIsSizeUnknown, const optional<TTHValue>& aTTH, const optional<string>& aPath, const File::VolumeSet& aVolumes) {
+	void appendDownloadTo(OMenu& targetMenu_, bool aWholeDir, bool aIsSizeUnknown, const optional<TTHValue>& aTTH, const optional<string>& aVirtualPath, const File::VolumeSet& aVolumes) {
 		targetMenu_.appendItem(CTSTRING(BROWSE), [=] { onDownloadTo(aWholeDir, aIsSizeUnknown); });
 
 		//Append shared and favorite directories
@@ -124,14 +125,14 @@ public:
 		}
 		appendVirtualItems(targetMenu_, aWholeDir, FavoriteManager::getInstance()->getGroupedFavoriteDirs(), TSTRING(SETTINGS_FAVORITE_DIRS_PAGE), aIsSizeUnknown, aVolumes);
 
-		appendTargets(targetMenu_, aWholeDir, aIsSizeUnknown, aTTH, aPath);
+		appendTargets(targetMenu_, aWholeDir, aIsSizeUnknown, aTTH, aVirtualPath);
 
 		//Append dir history
 		const auto& historyPaths = SettingsManager::getInstance()->getHistory(SettingsManager::HISTORY_DOWNLOAD_DIR);
 		if(!historyPaths.empty()) {
 			targetMenu_.InsertSeparatorLast(TSTRING(PREVIOUS_FOLDERS));
 			for (const auto& path: historyPaths) {
-				targetMenu_.appendItem(Text::toT(path).c_str(), [=] { onDownload(path, aWholeDir, aIsSizeUnknown, Priority::DEFAULT); });
+				targetMenu_.appendItem(Text::toT(path), [=] { onDownload(path, aWholeDir, aIsSizeUnknown, Priority::DEFAULT); });
 			}
 
 			targetMenu_.appendSeparator();
@@ -144,7 +145,7 @@ private:
 		auto priorityMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_WITH_PRIORITY));
 
 		auto addItem = [&](const tstring& aTitle, Priority p) -> void {
-			priorityMenu->appendItem(aTitle.c_str(), [=] { onDownload(SETTING(DOWNLOAD_DIRECTORY), aWholeDir, aIsSizeUnknown, p); });
+			priorityMenu->appendItem(aTitle, [=] { onDownload(SETTING(DOWNLOAD_DIRECTORY), aWholeDir, aIsSizeUnknown, p); });
 		};
 
 		addItem(CTSTRING(PAUSED_FORCED), Priority::PAUSED_FORCE);
@@ -178,18 +179,18 @@ private:
 			const auto& targets = dp.second;
 
 			if (targets.size() > 1) {
-				auto vMenu = targetMenu.createSubMenu(Text::toT(groupName).c_str(), true);
+				auto vMenu = targetMenu.createSubMenu(Text::toT(groupName), true);
 				for (const auto& target: targets) {
-					vMenu->appendItem(toDisplayTarget(target, aVolumes).c_str(), [=] { onDownload(target, aWholeDir, aIsSizeUnknown, Priority::DEFAULT); });
+					vMenu->appendItem(toDisplayTarget(target, aVolumes), [=] { onDownload(target, aWholeDir, aIsSizeUnknown, Priority::DEFAULT); });
 				}
 			} else if (!targets.empty()) {
 				auto target = *targets.begin();
-				targetMenu.appendItem(Text::toT(groupName).c_str(), [=] { onDownload(target, aWholeDir, aIsSizeUnknown, Priority::DEFAULT); });
+				targetMenu.appendItem(Text::toT(groupName), [=] { onDownload(target, aWholeDir, aIsSizeUnknown, Priority::DEFAULT); });
 			}
 		}
 	}
 
-	void appendTargets(OMenu& targetMenu, bool wholeDir, bool isSizeUnknown, const optional<TTHValue>& aTTH, const optional<string>& aPath) {
+	void appendTargets(OMenu& targetMenu, bool wholeDir, bool isSizeUnknown, const optional<TTHValue>& aTTH, const optional<string>& aVirtualPath) {
 
 
 		// Append TTH locations
@@ -199,14 +200,14 @@ private:
 			if (tthTargets.size()) {
 				targetMenu.InsertSeparatorLast(TSTRING(ADD_AS_SOURCE));
 				for (auto& target : tthTargets) {
-					targetMenu.appendItem(Text::toT(target).c_str(), [=] { onDownload(target, wholeDir, isSizeUnknown, Priority::DEFAULT); });
+					targetMenu.appendItem(Text::toT(target), [=] { onDownload(target, wholeDir, isSizeUnknown, Priority::DEFAULT); });
 				}
 			}
 		}
 
 		// Append directory dupe paths
-		if (aPath) {
-			bool isDir = !(*aPath).empty() && (*aPath).back() == PATH_SEPARATOR;
+		if (aVirtualPath) {
+			bool isDir = !(*aVirtualPath).empty() && (*aVirtualPath).back() == ADC_SEPARATOR;
 
 			StringList targets;
 			auto doAppend = [&](const tstring& aTitle) {
@@ -225,15 +226,15 @@ private:
 						//use the parent if it's a dir
 						//string displayText = isDir ? Util::getParentDir(target) + " (" + Util::getLastDir(target) + ")" : target;
 						string location = isDir ? Util::getParentDir(target) : target;
-						targetMenu.appendItem(Text::toT(location).c_str(), [=] { onDownload(location, wholeDir, isSizeUnknown, Priority::DEFAULT); });
+						targetMenu.appendItem(Text::toT(location), [=] { onDownload(location, wholeDir, isSizeUnknown, Priority::DEFAULT); });
 					}
 				}
 			};
 
-			targets = QueueManager::getInstance()->getNmdcDirPaths(isDir ? *aPath : Util::getFilePath(*aPath));
+			targets = QueueManager::getInstance()->getAdcDirectoryPaths(isDir ? *aVirtualPath : Util::getAdcFilePath(*aVirtualPath));
 			doAppend(TSTRING(QUEUED_DUPE_PATHS));
 
-			targets = ShareManager::getInstance()->getNmdcDirPaths(isDir ? *aPath : Util::getFilePath(*aPath));
+			targets = ShareManager::getInstance()->getAdcDirectoryPaths(isDir ? *aVirtualPath : Util::getAdcFilePath(*aVirtualPath));
 			doAppend(TSTRING(SHARED_DUPE_PATHS));
 		}
 	}

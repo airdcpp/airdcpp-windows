@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
 #include <api/ApiSettingItem.h>
 
 #include <web-server/ExtensionManager.h>
@@ -28,6 +28,7 @@
 
 #include <airdcpp/AirUtil.h>
 #include <airdcpp/CryptoManager.h>
+#include <airdcpp/LogManager.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/SimpleXML.h>
 #include <airdcpp/TimerManager.h>
@@ -41,10 +42,10 @@
 
 namespace webserver {
 	vector<ServerSettingItem> WebServerSettings::settings = {
-		{ "web_plain_port", "Port", 5600, ApiSettingItem::TYPE_NUMBER, false, { 1, 65535 } },
+		{ "web_plain_port", "Port", 5600, ApiSettingItem::TYPE_NUMBER, false, { 0, 65535 } },
 		{ "web_plain_bind_address", "Bind address", "", ApiSettingItem::TYPE_STRING, true },
 
-		{ "web_tls_port", "Port", 5601, ApiSettingItem::TYPE_NUMBER, false, { 1, 65535 } },
+		{ "web_tls_port", "Port", 5601, ApiSettingItem::TYPE_NUMBER, false, { 0, 65535 } },
 		{ "web_tls_bind_address", "Bind address", "", ApiSettingItem::TYPE_STRING, true },
 
 		{ "web_tls_certificate_path", "Certificate path", "", ApiSettingItem::TYPE_FILE_PATH, true },
@@ -67,8 +68,8 @@ namespace webserver {
 
 		fileServer.setResourcePath(Util::getPath(Util::PATH_RESOURCES) + "web-resources" + PATH_SEPARATOR);
 
-		extManager = unique_ptr<ExtensionManager>(new ExtensionManager(this));
-		userManager = unique_ptr<WebUserManager>(new WebUserManager(this));
+		extManager = make_unique<ExtensionManager>(this);
+		userManager = make_unique<WebUserManager>(this);
 
 		ios.stop(); //Prevent io service from running until we load
 	}
@@ -223,7 +224,7 @@ namespace webserver {
 		try {
 			const auto bindAddress = aConfig.bindAddress.str();
 			if (!bindAddress.empty()) {
-				aEndpoint.listen(bindAddress, Util::toString(aConfig.port.num()));
+				aEndpoint.listen(bindAddress, aConfig.port.str());
 			} else {
 				// IPv6 and IPv4-mapped IPv6 addresses are used by default (given that IPv6 is supported by the OS)
 				aEndpoint.listen(WebServerManager::getDefaultListenProtocol(), static_cast<uint16_t>(aConfig.port.num()));
@@ -279,7 +280,10 @@ namespace webserver {
 	}
 
 	void WebServerManager::onData(const string& aData, TransportType aType, Direction aDirection, const string& aIP) noexcept {
-		fire(WebServerManagerListener::Data(), aData, aType, aDirection, aIP);
+		// Avoid possible deadlocks due to possible simultaneous disconnected/server state listener events
+		addAsyncTask([=] {
+			fire(WebServerManagerListener::Data(), aData, aType, aDirection, aIP);
+		});
 	}
 
 	// For debugging only
@@ -437,6 +441,30 @@ namespace webserver {
 
 		dcdebug("Socket disconnected: %s\n", socket->getSession() ? socket->getSession()->getAuthToken().c_str() : "(no session)");
 		fire(WebServerManagerListener::SocketDisconnected(), socket);
+	}
+
+	void WebServerManager::log(const string& aMsg, LogMessage::Severity aSeverity) const noexcept {
+		LogManager::getInstance()->message(aMsg, aSeverity);
+	}
+
+	string WebServerManager::resolveAddress(const string& aHostname, const string& aPort) noexcept {
+		auto ret = aHostname;
+
+		boost::asio::ip::tcp::resolver resolver(ios);
+		boost::asio::ip::tcp::resolver::query query(aHostname, aPort);
+
+		try {
+			boost::asio::ip::tcp::resolver::iterator iter = resolver.resolve(query);
+			ret = iter->endpoint().address().to_string();
+
+			if (iter->endpoint().protocol() == boost::asio::ip::tcp::v6()) {
+				ret = "[" + ret + "]";
+			}
+		} catch (const std::exception& e) {
+			log(e.what(), LogMessage::SEV_ERROR);
+		}
+
+		return ret;
 	}
 
 	bool WebServerManager::hasValidConfig() const noexcept {

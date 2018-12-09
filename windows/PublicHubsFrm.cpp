@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -620,7 +620,7 @@ void PublicHubsFrame::on(HublistManagerListener::DownloadFailed, const string& l
 	callAsync([=] { setStatusText(TSTRING(DOWNLOAD_FAILED) + _T(" ") + Text::toT(l)); });
 }
 
-void PublicHubsFrame::on(HublistManagerListener::DownloadFinished, const string& l, bool /*fromCoral*/) noexcept {
+void PublicHubsFrame::on(HublistManagerListener::DownloadFinished, const string& l) noexcept {
 	callAsync([=] { onFinished(TSTRING(HUB_LIST_DOWNLOADED) + _T(" (") + Text::toT(l) + _T(")")); });
 }
 

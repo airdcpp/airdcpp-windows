@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
 * along with this program; if not, write to the Free Software
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
+
+#include "stdinc.h"
 
 #include <api/FilelistInfo.h>
 
@@ -34,10 +36,13 @@ namespace webserver {
 		dl(aFilelist),
 		directoryView("filelist_view", this, FilelistUtils::propertyHandler, std::bind(&FilelistInfo::getCurrentViewItems, this))
 	{
+		METHOD_HANDLER(Access::FILELISTS_VIEW,	METHOD_PATCH,	(),															FilelistInfo::handleUpdateList);
+
 		METHOD_HANDLER(Access::FILELISTS_VIEW,	METHOD_POST,	(EXACT_PARAM("directory")),									FilelistInfo::handleChangeDirectory);
-		METHOD_HANDLER(Access::VIEW_FILES_VIEW,	METHOD_POST,	(EXACT_PARAM("read")),										FilelistInfo::handleSetRead);
+		METHOD_HANDLER(Access::FILELISTS_VIEW,	METHOD_POST,	(EXACT_PARAM("read")),										FilelistInfo::handleSetRead);
 
 		METHOD_HANDLER(Access::FILELISTS_VIEW,	METHOD_GET,		(EXACT_PARAM("items"), RANGE_START_PARAM, RANGE_MAX_PARAM), FilelistInfo::handleGetItems);
+		METHOD_HANDLER(Access::FILELISTS_VIEW,	METHOD_GET,		(EXACT_PARAM("items"), TOKEN_PARAM),						FilelistInfo::handleGetItem);
 	}
 
 	void FilelistInfo::init() noexcept {
@@ -45,7 +50,7 @@ namespace webserver {
 
 		if (dl->isLoaded()) {
 			addListTask([=] {
-				updateItems(dl->getCurrentLocationInfo().directory->getPath());
+				updateItems(dl->getCurrentLocationInfo().directory->getAdcPath());
 			});
 		}
 	}
@@ -62,6 +67,23 @@ namespace webserver {
 		dl->addAsyncTask(getAsyncWrapper(move(aTask)));
 	}
 
+	api_return FilelistInfo::handleUpdateList(ApiRequest& aRequest) {
+		const auto& reqJson = aRequest.getRequestBody();
+		if (dl->getIsOwnList()) {
+			auto profile = Deserializer::deserializeOptionalShareProfile(reqJson);
+			if (profile) {
+				dl->addShareProfileChangeTask(*profile);
+			}
+		} else {
+			auto hubUrl = JsonUtil::getOptionalField<string>("hub_url", reqJson);
+			if (hubUrl) {
+				dl->addHubUrlChangeTask(*hubUrl);
+			}
+		}
+
+		return websocketpp::http::status_code::no_content;
+	}
+
 	api_return FilelistInfo::handleGetItems(ApiRequest& aRequest) {
 		int start = aRequest.getRangeParam(START_POS);
 		int count = aRequest.getRangeParam(MAX_COUNT);
@@ -75,11 +97,48 @@ namespace webserver {
 			}
 
 			aRequest.setResponseBody({
-				{ "list_path", curDir->getPath() },
+				{ "list_path", curDir->getAdcPath() },
 				{ "items", Serializer::serializeItemList(start, count, FilelistUtils::propertyHandler, currentViewItems) },
 			});
 		}
 
+		return websocketpp::http::status_code::ok;
+	}
+
+
+	api_return FilelistInfo::handleGetItem(ApiRequest& aRequest) {
+		FilelistItemInfoPtr item = nullptr;
+
+		// TODO: refactor filelists and do something better than this
+		{
+			RLock l(cs);
+
+			// Check view items
+			auto i = boost::find_if(currentViewItems, [&aRequest](const FilelistItemInfoPtr& aInfo) {
+				return aInfo->getToken() == aRequest.getTokenParam();
+			});
+
+			if (i == currentViewItems.end()) {
+				// Check current location
+				const auto& location = dl->getCurrentLocationInfo();
+				if (location.directory) {
+					auto dir = std::make_shared<FilelistItemInfo>(location.directory);
+					if (dir->getToken() == aRequest.getTokenParam()) {
+						item = dir;
+					}
+				}
+			} else {
+				item = *i;
+			}
+		}
+
+		if (!item) {
+			aRequest.setResponseErrorStr("Item not found");
+			return websocketpp::http::status_code::not_found;
+		}
+
+		auto j = Serializer::serializeItem(item, FilelistUtils::propertyHandler);
+		aRequest.setResponseBody(j);
 		return websocketpp::http::status_code::ok;
 	}
 
@@ -89,7 +148,7 @@ namespace webserver {
 		auto listPath = JsonUtil::getField<string>("list_path", j, false);
 		auto reload = JsonUtil::getOptionalFieldDefault<bool>("reload", j, false);
 
-		dl->addDirectoryChangeTask(Util::toNmdcFile(listPath), reload);
+		dl->addDirectoryChangeTask(listPath, reload);
 		return websocketpp::http::status_code::no_content;
 	}
 
@@ -126,6 +185,7 @@ namespace webserver {
 	json FilelistInfo::serializeLocation(const DirectoryListingPtr& aListing) noexcept {
 		const auto& location = aListing->getCurrentLocationInfo();
 		if (!location.directory) {
+			// Shouldn't happen
 			return nullptr;
 		}
 
@@ -180,7 +240,7 @@ namespace webserver {
 	}
 
 	void FilelistInfo::on(DirectoryListingListener::LoadingFinished, int64_t /*aStart*/, const string& aPath, bool /*aBackgroundTask*/) noexcept {
-		if (aPath == dl->getCurrentLocationInfo().directory->getPath()) {
+		if (aPath == dl->getCurrentLocationInfo().directory->getAdcPath()) {
 			updateItems(aPath);
 		}
 	}

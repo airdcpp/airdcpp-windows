@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2017 AirDC++ Project
+ * Copyright (C) 2012-2018 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ int WizardLanguage::OnWizardNext() {
 
 bool WizardLanguage::checkLanguage() {
 	auto sel = ctrlLanguage.GetCurSel();
-	Localization::setLanguage(sel);
+	WinUtil::setLanguage(sel);
 	if (sel > 0) {
 		dl = new LanguageDownloadDlg(wizard->m_hWnd, [this] { completeLanguageCheck(); }, wizard->isInitialRun());
 		if (!dl->show()) {
@@ -67,8 +67,9 @@ bool WizardLanguage::checkLanguage() {
 }
 
 void WizardLanguage::completeLanguageCheck() {
-	if (wizard->isInitialRun())
-		Localization::loadLanguage(ctrlLanguage.GetCurSel());
+	if (wizard->isInitialRun()) {
+		ResourceManager::getInstance()->loadLanguage(SETTING(LANGUAGE_FILE));
+	}
 
 	wizard->SetActivePage(SetupWizard::PAGE_GENERAL);
 	dl = nullptr;

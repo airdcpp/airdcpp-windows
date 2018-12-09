@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
 * along with this program; if not, write to the Free Software
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
+
+#include "stdinc.h"
 
 #include <api/SearchEntity.h>
 
@@ -44,6 +46,7 @@ namespace webserver {
 		METHOD_HANDLER(Access::SEARCH,		METHOD_POST,	(EXACT_PARAM("user_search")),									SearchEntity::handlePostUserSearch);
 
 		METHOD_HANDLER(Access::SEARCH,		METHOD_GET,		(EXACT_PARAM("results"), RANGE_START_PARAM, RANGE_MAX_PARAM),	SearchEntity::handleGetResults);
+		METHOD_HANDLER(Access::SEARCH,		METHOD_GET,		(EXACT_PARAM("results"), TTH_PARAM),							SearchEntity::handleGetResult);
 		METHOD_HANDLER(Access::DOWNLOAD,	METHOD_POST,	(EXACT_PARAM("results"), TTH_PARAM, EXACT_PARAM("download")),	SearchEntity::handleDownload);
 		METHOD_HANDLER(Access::SEARCH,		METHOD_GET,		(EXACT_PARAM("results"), TTH_PARAM, EXACT_PARAM("children")),	SearchEntity::handleGetChildren);
 	}
@@ -58,7 +61,7 @@ namespace webserver {
 
 	optional<int64_t> SearchEntity::getTimeToExpiration() const noexcept {
 		if (expirationTick == 0) {
-			return boost::none;
+			return nullopt;
 		}
 
 		return static_cast<int64_t>(expirationTick) - static_cast<int64_t>(GET_TICK());
@@ -87,10 +90,22 @@ namespace webserver {
 		return websocketpp::http::status_code::ok;
 	}
 
+	api_return SearchEntity::handleGetResult(ApiRequest& aRequest) {
+		auto result = search->getResult(aRequest.getTTHParam());
+		if (!result) {
+			aRequest.setResponseErrorStr("Result not found");
+			return websocketpp::http::status_code::not_found;
+		}
+
+		auto j = Serializer::serializeItem(result, SearchUtils::propertyHandler);
+		aRequest.setResponseBody(j);
+		return websocketpp::http::status_code::ok;
+	}
+
 	json SearchEntity::serializeSearchResult(const SearchResultPtr& aSR) noexcept {
 		return {
 			{ "id", aSR->getId() },
-			{ "path", Util::toAdcFile(aSR->getPath()) },
+			{ "path", aSR->getAdcPath() },
 			{ "ip", Serializer::serializeIp(aSR->getIP()) },
 			{ "user", Serializer::serializeHintedUser(aSR->getUser()) },
 			{ "connection", aSR->getConnectionInt() },

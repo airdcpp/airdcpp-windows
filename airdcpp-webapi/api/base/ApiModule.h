@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 
 #ifndef DCPLUSPLUS_DCPP_APIMODULE_H
 #define DCPLUSPLUS_DCPP_APIMODULE_H
-
-#include <web-server/stdinc.h>
 
 #include <web-server/Access.h>
 #include <web-server/ApiRequest.h>
@@ -80,7 +78,7 @@ namespace webserver {
 			const HandlerFunction f;
 			const Access access;
 
-			optional<ApiRequest::NamedParamMap> matchParams(const ApiRequest::ParamList& aParams) const noexcept;
+			optional<ApiRequest::NamedParamMap> matchParams(const ApiRequest::PathTokenList& aPathTokens) const noexcept;
 		};
 
 		typedef std::vector<RequestHandler> RequestHandlerList;
@@ -115,7 +113,7 @@ namespace webserver {
 	
 	class SubscribableApiModule : public ApiModule, protected SessionListener {
 	public:
-		SubscribableApiModule(Session* aSession, Access aSubscriptionAccess, const StringList* aSubscriptions = nullptr);
+		SubscribableApiModule(Session* aSession, Access aSubscriptionAccess, const StringList& aSubscriptions);
 		virtual ~SubscribableApiModule();
 
 		typedef std::map<const string, bool> SubscriptionMap;

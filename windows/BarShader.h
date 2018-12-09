@@ -69,7 +69,7 @@ protected:
 private:
 	CRBMap<uint64_t, COLORREF> m_Spans;
 	double	*m_pdblModifiers;
-	byte	m_used3dlevel;
+	::byte	m_used3dlevel;
 	bool	m_bIsPreview;
 };
 
@@ -216,7 +216,7 @@ private:
 		//};
 	};
 	
-	struct fci_equal_to : public binary_function<FloodCacheItem::FCIMapper, FloodCacheItem::FCIMapper, bool> {
+	struct fci_equal_to {
 		bool operator()(const FloodCacheItem::FCIMapper& __x, const FloodCacheItem::FCIMapper& __y) const {
 			return (__x.c1 == __y.c1) && (__x.c2 == __y.c2);
 		}

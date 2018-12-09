@@ -1,3 +1,93 @@
+3.53
+
+Changed:
+
+- Update to OpenSSL 1.1.1a with a support for TLS 1.3
+- Update the default hublist URLs (DC++)
+- Web UI updated to version 2.5.0 (https://airdcpp-web.github.io/2018/12/08/version-2.5.0.html)
+
+Fixed:
+
+- Fix total queue size being counted incorrectly for file bundles on startup
+- Fixes an issue where file transfer connections weren't created in some cases when the total download limit was reached
+- Fix failed partial filelist download in NMDC hubs blocking all subsequent filelist downloads from the same user
+- Fix possible crashes after failed filelist downloads
+- Validate paths for queued filelists (fixes crashes)
+
+
+3.52
+
+Changed:
+
+- Don't ignore private messages if there is an open chat session 
+- Web UI updated to version 2.4.0 (https://airdcpp-web.github.io/2018/11/03/version-2.4.0.html)
+
+Fixed:
+
+- Fixes queue source removal on "File not available" in NMDC hubs (https://github.com/airdcpp-web/airdcpp-webclient/issues/287)
+- Fix possible active mode detection issues for own user in NMDC hubs (https://github.com/airdcpp-web/airdcpp-webclient/issues/249)
+- Fix a possible crash when closing NMDC hubs
+- Fix possible filelist-related stability issues
+- Fix incorrect total file count in NMDC partial lists
+- Fix HTTPS with hublists
+
+
+3.51
+
+Fixed:
+
+- Fix a crash when receiving invalid ADC search results
+- Fix handling of (invalid) files that were modified more than 48 years ago
+- Retain listview focus when using back and up buttons in browserbar
+- Update OpenSSL (fixes encryption issues on certain CPU architectures)
+
+
+3.50
+
+Added:
+
+- AirDC++ Web UI 2.3.0 with refreshed graphics and other improvements (https://airdcpp-web.github.io/2018/03/11/version-2.3.0.html)
+- Replace the legacy GeoIP IP geolocation library with libmaxminddb
+- Add hubNI logging parameter for transfers
+
+Fixed:
+
+- Fix a possible crash when the hash database is corrupted
+- Fix a possible crash when opening own filelist
+- Various fixes for handling of files that were modified more than 48 years ago
+
+Removed:
+
+- Setting "Don't begin new segment if overall file speed is over X"
+- Coral CDN support
+
+
+3.42
+
+Changed:
+
+- Disable search functionality in own filelist as it wasn't working correctly (https://www.airdcpp.net/forum/viewtopic.php?f=7&t=4642)
+- Switch to the requested directory when trying to browse a filelist that was open already (https://www.airdcpp.net/forum/viewtopic.php?f=7&t=4642)
+- Updated Web API and Web UI (https://airdcpp-web.github.io/2017/08/24/version-2.2.0.html)
+
+Fixed:
+
+- Prevent possible remote crashes caused by malformed data
+- Reject filelists containing problematic file/directory names (forward slashes are no longer allowed in names)
+- Don't show "Find and view NFO" in filelist tree context menu when the feature is not supported
+- Don't add newly added shared directories for monitoring if monitoring is disabled for them
+
+
+
+3.41
+
+Various web-related fixes and improvements:
+
+http://airdcpp-web.github.io/2017/06/04/version-2.1.0.html
+http://airdcpp-web.github.io/2017/05/07/version-2.0.1.html
+
+
+
 3.40
 
 Added:

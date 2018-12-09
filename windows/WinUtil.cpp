@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include <powrprof.h>
 
 #include "WinUtil.h"
+#include "DirectoryListingFrm.h"
 #include "PrivateFrame.h"
 #include "TextFrame.h"
 #include "SearchFrm.h"
@@ -30,7 +31,6 @@
 #include "MainFrm.h"
 
 #include <airdcpp/ClientManager.h>
-#include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/FavoriteManager.h>
 #include <airdcpp/Localization.h>
 #include <airdcpp/LogManager.h>
@@ -46,6 +46,7 @@
 #include <airdcpp/ViewFileManager.h>
 
 #include <airdcpp/modules/PreviewAppManager.h>
+#include <airdcpp/modules/WebShortcuts.h>
 
 #include <airdcpp/version.h>
 
@@ -55,6 +56,12 @@
 #include "BarShader.h"
 #include "BrowseDlg.h"
 #include "ExMessageBox.h"
+#include "SplashWindow.h"
+
+#define byte BYTE // 'byte': ambiguous symbol (C++17)
+#include <atlcomtime.h>
+#undef byte
+
 
 boost::wregex WinUtil::pathReg;
 boost::wregex WinUtil::chatLinkReg;
@@ -181,6 +188,12 @@ COLORREF HLS_TRANSFORM (COLORREF rgb, int percent_L, int percent_S) {
 	return HLS2RGB (HLS(h, l, s));
 }
 
+string WinUtil::getCompileDate() {
+	COleDateTime tCompileDate;
+	tCompileDate.ParseDateTime(_T(__DATE__), LOCALE_NOUSEROVERRIDE, 1033);
+	return Text::fromT(tCompileDate.Format(_T("%d.%m.%Y")).GetString());
+}
+
 double WinUtil::getFontFactor() {
 	return static_cast<float>(::GetDeviceCaps(::GetDC(reinterpret_cast<HWND>(0)), LOGPIXELSX )) / 96.0;
 }
@@ -216,11 +229,7 @@ void WinUtil::GetList::operator()(UserPtr aUser, const string& aUrl) const {
 		return;
 	
 	MainFrame::getMainFrame()->addThreadedTask([=] {
-		try {
-			DirectoryListingManager::getInstance()->createList(HintedUser(aUser, aUrl), QueueItem::FLAG_CLIENT_VIEW);
-		} catch(const Exception& e) {
-			LogManager::getInstance()->message(e.getError(), LogMessage::SEV_ERROR);		
-		}
+		DirectoryListingFrame::openWindow(HintedUser(aUser, aUrl), QueueItem::FLAG_CLIENT_VIEW);
 	});
 }
 
@@ -229,11 +238,7 @@ void WinUtil::BrowseList::operator()(UserPtr aUser, const string& aUrl) const {
 		return;
 
 	MainFrame::getMainFrame()->addThreadedTask([=] {
-		try {
-			DirectoryListingManager::getInstance()->createList(HintedUser(aUser, aUrl), QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
-		} catch (const Exception& e) {
-			LogManager::getInstance()->message(e.getError(), LogMessage::SEV_ERROR);
-		}
+		DirectoryListingFrame::openWindow(HintedUser(aUser, aUrl), QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
 	});
 }
 
@@ -1478,7 +1483,7 @@ void WinUtil::appendPreviewMenu(OMenu& parent, const string& aTarget) {
 			string application = i->getApplication();
 			string arguments = i->getArguments();
 
-			previewMenu->appendItem(Text::toT((i->getName())).c_str(), [=] {
+			previewMenu->appendItem(Text::toT((i->getName())), [=] {
 				string tempTarget = QueueManager::getInstance()->getTempTarget(aTarget);
 				ParamMap ucParams;				
 	
@@ -1674,17 +1679,17 @@ void WinUtil::appendSearchMenu(OMenu& aParent, function<void (const WebShortcut*
 	}
 }
 
-void WinUtil::appendSearchMenu(OMenu& aParent, const string& aPath, bool getReleaseDir /*true*/, bool appendTitle /*true*/) {
-	appendSearchMenu(aParent, [=](const WebShortcut* ws) { searchSite(ws, aPath, getReleaseDir); }, appendTitle);
+void WinUtil::appendSearchMenu(OMenu& aParent, const string& aAdcPath, bool aGetReleaseDir /*true*/, bool aAppendTitle /*true*/) {
+	appendSearchMenu(aParent, [=](const WebShortcut* ws) { searchSite(ws, aAdcPath, aGetReleaseDir); }, aAppendTitle);
 }
 
-void WinUtil::searchSite(const WebShortcut* ws, const string& aSearchTerm, bool getReleaseDir) {
+void WinUtil::searchSite(const WebShortcut* ws, const string& aAdcSearchPath, bool getReleaseDir) {
 	if(!ws)
 		return;
 
-	auto searchTerm = getReleaseDir ? AirUtil::getNmdcReleaseDir(aSearchTerm, true) : Util::getLastDir(aSearchTerm);
+	auto searchTerm = getReleaseDir ? AirUtil::getAdcReleaseDir(aAdcSearchPath, true) : Util::getAdcLastDir(aAdcSearchPath);
 
-	if(ws->clean && !searchTerm.empty()) {
+	if(ws->clean && !aAdcSearchPath.empty()) {
 		searchTerm = AirUtil::getTitle(searchTerm);
 	}
 	
@@ -1900,26 +1905,36 @@ void WinUtil::toSystemTime(const time_t aTime, SYSTEMTIME* sysTime) {
 	sysTime->wMilliseconds = 0;
 }
 
-void WinUtil::appendLanguageMenu(CComboBoxEx& ctrlLanguage) {
+void WinUtil::appendLanguageMenu(CComboBoxEx& ctrlLanguage) noexcept {
 	ctrlLanguage.SetImageList(ResourceLoader::flagImages);
 	int count = 0;
 	
-	for (const auto& l: Localization::languageList){
-		COMBOBOXEXITEM cbli =  {CBEIF_TEXT|CBEIF_IMAGE|CBEIF_SELECTEDIMAGE};
-		CString str = Text::toT(l.languageName).c_str();
-		cbli.iItem = count;
+	const auto languages = Localization::getLanguages();
+	for (const auto& l: languages){
+		COMBOBOXEXITEM cbli =  { CBEIF_TEXT | CBEIF_IMAGE | CBEIF_SELECTEDIMAGE };
+		CString str = Text::toT(l.getLanguageName()).c_str();
+		cbli.iItem = count++;
 		cbli.pszText = (LPTSTR)(LPCTSTR) str;
 		cbli.cchTextMax = str.GetLength();
 
-		auto flagIndex = Localization::getFlagIndexByCode(l.countryFlagCode);
+		auto flagIndex = Localization::getFlagIndexByCode(l.getCountryFlagCode());
 		cbli.iImage = flagIndex;
 		cbli.iSelectedImage = flagIndex;
 		ctrlLanguage.InsertItem(&cbli);
-
-		count = count++;
 	}
 
-	ctrlLanguage.SetCurSel(Localization::getCurLanguageIndex());
+	auto cur = Localization::getLanguageIndex(languages);
+	if (cur) {
+		ctrlLanguage.SetCurSel(*cur);
+	}
+}
+
+
+void WinUtil::setLanguage(int aLanguageIndex) noexcept {
+	auto languages = Localization::getLanguages();
+	if (aLanguageIndex < languages.size()) {
+		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, languages[aLanguageIndex].getLanguageSettingValue());
+	}
 }
 
 void WinUtil::appendHistory(CComboBox& ctrlCombo, SettingsManager::HistoryType aType) {
@@ -2290,20 +2305,20 @@ tstring WinUtil::formatFileType(const string& aFileName) {
 	return Text::toT(type);
 }
 
-void WinUtil::findNfo(const string& aPath, const HintedUser& aUser) noexcept {
+void WinUtil::findNfo(const string& aAdcPath, const HintedUser& aUser) noexcept {
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		SearchInstance searchInstance;
 
 		auto search = make_shared<Search>(Priority::HIGH, Util::toString(Util::rand()));
 		search->maxResults = 1;
-		search->path = Util::toAdcFile(aPath);
+		search->path = aAdcPath;
 		search->exts = { ".nfo" };
 		search->size = 256 * 1024;
 		search->sizeType = Search::SIZE_ATMOST;
 
 		string error;
 		if (!searchInstance.userSearch(aUser, search, error)) {
-			MainFrame::getMainFrame()->ShowPopup(Text::toT(error), Text::toT(Util::getLastDir(aPath)), NIIF_ERROR, true);
+			MainFrame::getMainFrame()->ShowPopup(Text::toT(error), Text::toT(Util::getAdcLastDir(aAdcPath)), NIIF_ERROR, true);
 			return;
 		}
 
@@ -2318,7 +2333,7 @@ void WinUtil::findNfo(const string& aPath, const HintedUser& aUser) noexcept {
 			auto result = searchInstance.getResultList().front();
 			ViewFileManager::getInstance()->addUserFileNotify(result->getFileName(), result->getSize(), result->getTTH(), aUser, true);
 		} else {
-			MainFrame::getMainFrame()->ShowPopup(TSTRING(NO_NFO_FOUND), Text::toT(Util::getLastDir(aPath)), NIIF_INFO, true);
+			MainFrame::getMainFrame()->ShowPopup(TSTRING(NO_NFO_FOUND), Text::toT(Util::getAdcLastDir(aAdcPath)), NIIF_INFO, true);
 		}
 	});
 }

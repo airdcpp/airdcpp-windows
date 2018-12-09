@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,7 +53,8 @@
 
 CAppModule _Module;
 
-CriticalSection cs;
+CriticalSection exceptionCS;
+
 enum { DEBUG_BUFSIZE = 8192 };
 static int recursion = 0;
 static char exeTTH[192*8/(5*8)+2];
@@ -113,7 +114,7 @@ string getExceptionName(DWORD code) {
 
 LONG handleCrash(unsigned long aCode, const string& aError, PCONTEXT aContext)
 {	
-	Lock l(cs);
+	Lock l(exceptionCS);
 
 	if(recursion++ > 30)
 		exit(-1);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -149,8 +149,10 @@ CryptoManager::~CryptoManager() {
 	CRYPTO_set_locking_callback(NULL);
 	delete[] cs;
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 	/* thread-local cleanup */
 	ERR_remove_thread_state(NULL);
+#endif
 
 	clientContext.reset();
 	serverContext.reset();
@@ -180,13 +182,13 @@ optional<ByteVector> CryptoManager::calculateSha1(const string& aData) noexcept 
 
 	auto res = SHA1_Init(&sha_ctx);
 	if (res != 1)
-		return boost::none;
+		return nullopt;
 	res = SHA1_Update(&sha_ctx, aData.c_str(), aData.size());
 	if (res != 1)
-		return boost::none;
+		return nullopt;
 	res = SHA1_Final(ret.data(), &sha_ctx);
 	if (res != 1)
-		return boost::none;
+		return nullopt;
 
 	return ret;
 }
@@ -485,7 +487,7 @@ void CryptoManager::loadCertificates() noexcept{
 		}
 	}
 
-	loadKeyprint(cert.c_str());
+	loadKeyprint(cert);
 
 	certsLoaded = true;
 }

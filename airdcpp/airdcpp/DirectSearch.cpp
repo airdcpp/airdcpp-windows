@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+* Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -84,12 +84,12 @@ namespace dcpp {
 		return false;
 	}
 
-	void DirectSearch::getPaths(OrderedStringSet& paths_, bool aParents) const noexcept {
+	void DirectSearch::getAdcPaths(OrderedStringSet& paths_, bool aParents) const noexcept {
 		for (const auto& sr : results) {
-			auto path = sr->getPath();
+			auto path = sr->getAdcPath();
 			if (aParents && !sr->getUser().user->isSet(User::ASCH)) {
 				//convert the regular search results
-				path = sr->getType() == SearchResult::TYPE_DIRECTORY ? Util::getNmdcParentDir(sr->getPath()) : sr->getFilePath();
+				path = sr->getType() == SearchResult::TYPE_DIRECTORY ? Util::getAdcParentDir(sr->getAdcPath()) : sr->getAdcFilePath();
 			}
 
 			paths_.insert(path);

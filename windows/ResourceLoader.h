@@ -73,12 +73,29 @@ public:
 	static CIcon iSecureGray;
 	static CIcon iCCPMUnSupported;
 
-	enum {
+	enum: uint8_t {
 		DIR_NORMAL,
 		DIR_INCOMPLETE,
 		DIR_LOADING,
 		DIR_STEPBACK,
 		FILE
+	};
+
+
+	enum: uint8_t {
+		// base icons
+		USER_ICON,
+		USER_ICON_AWAY,
+		USER_ICON_BOT,
+
+		// modifiers
+		USER_ICON_MOD_START,
+		USER_ICON_PASSIVE = USER_ICON_MOD_START,
+		USER_ICON_OP,
+		USER_ICON_NOCONNECT,
+		//USER_ICON_FAVORITE,
+
+		USER_ICON_LAST
 	};
 
 	static int getIconIndex(const tstring& aFileName);

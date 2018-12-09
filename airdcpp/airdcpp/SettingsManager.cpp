@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,7 +59,7 @@ SettingsManager::EnumStringMap SettingsManager::getEnumStrings(int aKey, bool aV
 	EnumStringMap ret;
 
 	auto insertStrings = [&](const ResourceManager::Strings* aStrings, int aMax, int aMin = 0) {
-		auto cur = SettingsManager::getInstance()->get(static_cast<SettingsManager::IntSetting>(aKey));
+		auto cur = getInstance()->get(static_cast<IntSetting>(aKey));
 		if (!aValidateCurrentValue || (cur >= aMin && cur < aMax)) {
 			// The string array indexing always starts from 0
 			for (int i = 0; i < aMax; i++) {
@@ -80,12 +80,12 @@ SettingsManager::EnumStringMap SettingsManager::getEnumStrings(int aKey, bool aV
 		insertStrings(refreshStrings, MULTITHREAD_LAST);
 	}
 
-	if (aKey == SettingsManager::TLS_MODE) {
+	if (aKey == TLS_MODE) {
 		insertStrings(encryptionStrings, TLS_LAST);
 	}
 
 	if (aKey == OUTGOING_CONNECTIONS) {
-		insertStrings(outgoingStrings, TLS_LAST);
+		insertStrings(outgoingStrings, OUTGOING_LAST);
 	}
 
 	if (aKey == DL_AUTO_DISCONNECT_MODE) {
@@ -209,7 +209,7 @@ const string SettingsManager::settingTags[] =
 "Progress3DDepth",
 "ProgressTextDown", "ProgressTextUp", "ExtraDownloadSlots", "ErrorColor", "TransferSplitSize",
 "DisconnectSpeed", "DisconnectFileSpeed", "DisconnectTime", "RemoveSpeed", "MenubarLeftColor",
-"MenubarRightColor", "DisconnectFileSize", "NumberOfSegments", "MaxHashSpeed", "PMLogLines", "SearchAlternateColour", "SearchTime", "DontBeginSegmentSpeed",
+"MenubarRightColor", "DisconnectFileSize", "NumberOfSegments", "MaxHashSpeed", "PMLogLines", "SearchAlternateColour", "SearchTime",
 "MagnetAction", "PopupType", "ShutdownAction", "MinimumSearchInterval", "MaxAutoMatchSource", "ReservedSlotColor", "IgnoredColor", "FavoriteColor", "NormalColour",
 "PasiveColor", "OpColor", "ProgressBackColor", "ProgressSegmentColor", "UDPPort",
 "UserListDoubleClick", "TransferListDoubleClick", "ChatDoubleClick", "OutgoingConnections", "SocketInBuffer", "SocketOutBuffer",
@@ -242,7 +242,7 @@ const string SettingsManager::settingTags[] =
 "BoldFinishedDownloads", "BoldFinishedUploads", "BoldHub", "BoldPm",
 "BoldQueue", "BoldSearch", "BoldSystemLog", "ClearSearch",
 "CompressTransfers", "ConfirmADLSRemoval", "ConfirmExit",
-"ConfirmHubRemoval", "ConfirmUserRemoval", "Coral",
+"ConfirmHubRemoval", "ConfirmUserRemoval",
 "DontDlAlreadyQueued", "DontDLAlreadyShared", "FavShowJoins", "FilterMessages",
 "GetUserCountry", "GetUserInfo", "HubUserCommands",
 "KeepLists",
@@ -264,7 +264,7 @@ const string SettingsManager::settingTags[] =
 "UseAutoPriorityByDefault", "UseOldSharingUI", "DefaultSearchFreeSlots",
 
 "TextGeneralBold", "TextGeneralItalic", "TextMyOwnBold", "TextMyOwnItalic", "TextPrivateBold", "TextPrivateItalic", "TextSystemBold", "TextSystemItalic", "TextServerBold", "TextServerItalic", "TextTimestampBold", "TextTimestampItalic",
-"TextMyNickBold", "TextMyNickItalic", "TextFavBold", "TextFavItalic", "TextOPBold", "TextOPItalic", "TextURLBold", "TextURLItalic", "ProgressOverrideColors", "ProgressOverrideColors2", "MenubarTwoColors", "MenubarBumped", "DontBeginSegment",
+"TextMyNickBold", "TextMyNickItalic", "TextFavBold", "TextFavItalic", "TextOPBold", "TextOPItalic", "TextURLBold", "TextURLItalic", "ProgressOverrideColors", "ProgressOverrideColors2", "MenubarTwoColors", "MenubarBumped", 
 
 "AutoDetectionUseLimited", "LogScheduledRefreshes", "AutoCompleteBundles", "SearchSaveHubsState", "ConfirmHubExit", "ConfirmASRemove", "EnableSUDP", "NmdcMagnetWarn",
 "UpdateIPHourly", "OpenTextOnBackground", "LockTB", "PopunderPartialList", "ShowTBStatusBar", "UseSlowDisconnectingDefault", "PrioListHighest",
@@ -336,7 +336,7 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(POPUP_HUB_PMS, true);
 	setDefault(POPUP_BOT_PMS, true);
 	setDefault(BUFFER_SIZE, 64);
-	setDefault(HUBLIST_SERVERS, "http://dchublist.com/hublist.xml.bz2;http://hublist.eu/hublist.xml.bz2;http://www.hublista.hu/hublist.xml.bz2;");
+	setDefault(HUBLIST_SERVERS, "https://www.te-home.net/?do=hublist&get=hublist.xml.bz2;https://dchublist.org/hublist.xml.bz2;https://dchublist.ru/hublist.xml.bz2;http://hublist.eu/hublist.xml.bz2;");
 	setDefault(DOWNLOAD_SLOTS, 50);
 	setDefault(MAX_DOWNLOAD_SPEED, 0);
 	setDefault(LOG_DIRECTORY, Util::getPath(Util::PATH_USER_CONFIG) + "Logs" PATH_SEPARATOR_STR);
@@ -437,7 +437,6 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(ALLOW_UNTRUSTED_HUBS, true);
 	setDefault(ALLOW_UNTRUSTED_CLIENTS, true);		
 	setDefault(SORT_FAVUSERS_FIRST, false);
-	setDefault(CORAL, true);	
 	setDefault(NUMBER_OF_SEGMENTS, 3);
 	setDefault(SEGMENTS_MANUAL, false);
 	setDefault(TEXT_FONT, "Tahoma,-11,400,0");
@@ -611,9 +610,7 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(REPORT_ALTERNATES, true);	
 
 	setDefault(SOUNDS_DISABLED, false);
-	setDefault(UPLOADQUEUEFRAME_SHOW_TREE, true);	
-	setDefault(DONT_BEGIN_SEGMENT, true);
-	setDefault(DONT_BEGIN_SEGMENT_SPEED, 512);
+	setDefault(UPLOADQUEUEFRAME_SHOW_TREE, true);
 
 	setDefault(BUNDLE_SEARCH_TIME, 15);
 	setDefault(AUTO_SLOTS, 5);	

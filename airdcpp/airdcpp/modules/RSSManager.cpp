@@ -1,6 +1,6 @@
 
 /*
-* Copyright (C) 2012-2017 AirDC++ Project
+* Copyright (C) 2012-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -222,9 +222,9 @@ void RSSManager::matchFilters(const RSSPtr& aFeed, const RSSDataPtr& aData) {
 	for (auto& aF : aFeed->getRssFilterList()) {
 		if (aF.match(aData->getTitle())) {
 			if (aF.skipDupes) {
-				if(ShareManager::getInstance()->isNmdcDirShared(aData->getTitle()))
+				if(ShareManager::getInstance()->isAdcDirectoryShared(aData->getTitle()))
 					break; //Need to match other filters?
-				if (QueueManager::getInstance()->isNmdcDirQueued(aData->getTitle(), 0) != DUPE_NONE)
+				if (QueueManager::getInstance()->isAdcDirectoryQueued(aData->getTitle(), 0) != DUPE_NONE)
 					break; //Need to match other filters?
 			}
 			if (aF.getFilterAction() == RSSFilter::DOWNLOAD) {
@@ -310,7 +310,7 @@ void RSSManager::downloadFeed(const RSSPtr& aFeed, bool verbose/*false*/) noexce
 
 	tasks.addTask([=] {
 		aFeed->rssDownload.reset(new HttpDownload(aFeed->getUrl(),
-			[this, aFeed] { downloadComplete(aFeed->getUrl()); }, false));
+			[this, aFeed] { downloadComplete(aFeed->getUrl()); }));
 
 		if(verbose)
 			LogManager::getInstance()->message(STRING(UPDATING) + " " + aFeed->getUrl(), LogMessage::SEV_INFO);
@@ -358,7 +358,7 @@ public:
 			const string& token = getAttrib(attribs, "Token", 1);
 			aFeed = RSSManager::getInstance()->getFeedByToken(Util::toInt(token));
 			if (!aFeed)
-				throw(Exception("No Feed associated with data"));
+				throw Exception("No Feed associated with data");
 			
 		} else if (aName == "item") {
 			const string& title = getAttrib(attribs, "title", 0);

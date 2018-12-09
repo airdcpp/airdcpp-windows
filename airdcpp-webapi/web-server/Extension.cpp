@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
 
 #include <web-server/Extension.h>
 
@@ -112,7 +112,7 @@ namespace webserver {
 			// Engines
 			auto enginesJson = aJson.find("engines");
 			if (enginesJson != aJson.end()) {
-				for (const auto& engine : json::iterator_wrapper(*enginesJson)) {
+				for (const auto& engine : (*enginesJson).items()) {
 					engines.emplace_back(engine.key());
 				}
 			}
@@ -142,7 +142,7 @@ namespace webserver {
 			throw Exception("Extension requires API version " + Util::toString(apiVersion) + " while the application uses version " + Util::toString(API_VERSION));
 		}
 
-		if (minApiFeatureLevel != API_FEATURE_LEVEL) {
+		if (minApiFeatureLevel > API_FEATURE_LEVEL) {
 			throw Exception("Extension requires API feature level " + Util::toString(minApiFeatureLevel) + " or newer while the application uses version " + Util::toString(API_FEATURE_LEVEL));
 		}
 	}
@@ -268,6 +268,8 @@ namespace webserver {
 		if (bindAddress.empty()) {
 			auto protocol = WebServerManager::getDefaultListenProtocol();
 			bindAddress = protocol == boost::asio::ip::tcp::v6() ? "[::1]" : "127.0.0.1";
+		} else {
+			bindAddress = wsm->resolveAddress(bindAddress, serverConfig.port.str());
 		}
 
 		return bindAddress + ":" + Util::toString(serverConfig.port.num()) + "/api/v1/";
@@ -322,11 +324,20 @@ namespace webserver {
 		return true;
 	}
 
+	void Extension::onFailed(uint32_t aExitCode) noexcept {
+		dcdebug("Extension %s failed with code %u\n", name.c_str(), aExitCode);
+
+		timer->stop(false);
+
+		onStopped(true);
+
+		if (errorF) {
+			errorF(this, aExitCode);
+		}
+	}
+
 	void Extension::onStopped(bool aFailed) noexcept {
 		fire(ExtensionListener::ExtensionStopped(), aFailed);
-		if (aFailed) {
-			timer->stop(false);
-		}
 		
 		dcdebug("Extension %s was stopped", name.c_str());
 		if (session) {
@@ -344,9 +355,6 @@ namespace webserver {
 
 		dcassert(running);
 		running = false;
-		if (aFailed && errorF) {
-			errorF(this);
-		}
 	}
 #ifdef _WIN32
 	void Extension::initLog(HANDLE& aHandle, const string& aPath) {
@@ -457,8 +465,7 @@ namespace webserver {
 		DWORD exitCode = 0;
 		if (GetExitCodeProcess(piProcInfo.hProcess, &exitCode) != 0) {
 			if (exitCode != STILL_ACTIVE) {
-				dcdebug("Extension %s exited with code %d\n", name.c_str(), exitCode);
-				onStopped(true);
+				onFailed(exitCode);
 			}
 		} else {
 			dcdebug("Failed to check running state of extension %s (%s)\n", name.c_str(), Util::translateError(::GetLastError()).c_str());
@@ -492,7 +499,12 @@ namespace webserver {
 	void Extension::checkRunningState(WebServerManager* wsm) noexcept {
 		int status = 0;
 		if (waitpid(pid, &status, WNOHANG) != 0) {
-			onStopped(true);
+			int exitCode = 1;
+			if (WIFEXITED(status)) {
+				exitCode = WEXITSTATUS(status);
+			}
+
+			onFailed(exitCode);
 		}
 	}
 
@@ -501,7 +513,7 @@ namespace webserver {
 	}
 
 	unique_ptr<File> Extension::initLog(const string& aPath) {
-		return unique_ptr<File>(new File(aPath, File::RW, File::CREATE | File::TRUNCATE));
+		return make_unique<File>(aPath, File::RW, File::CREATE | File::TRUNCATE);
 	}
 
 	void Extension::createProcess(const string& aEngine, WebServerManager* wsm, const SessionPtr& aSession) {

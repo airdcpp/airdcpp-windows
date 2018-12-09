@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,16 +29,9 @@
 
 namespace dcpp {
 
-static const std::string CORAL_SUFFIX = ".nyud.net";
-
-HttpConnection::HttpConnection(bool coralize, bool aIsUnique, bool aV4only /*false*/) :
+HttpConnection::HttpConnection(bool aIsUnique, bool aV4only /*false*/) :
 port("80"),
-size(-1),
-done(0),
-connState(CONN_UNKNOWN),
-coralizeState(coralize ? CST_DEFAULT : CST_NOCORALIZE),
 isUnique(aIsUnique),
-socket(0),
 v4only(aV4only)
 {
 }
@@ -68,7 +61,6 @@ void HttpConnection::downloadFile(const string& aFile) {
  */
 void HttpConnection::postData(const string& aUrl, const StringMap& aData) {
 	currentUrl = aUrl;
-	coralizeState = CST_NOCORALIZE;
 	requestBody.clear();
 
 	for(StringMap::const_iterator i = aData.begin(); i != aData.end(); ++i)
@@ -107,14 +99,6 @@ void HttpConnection::prepareRequest(RequestType type) {
 
 	if(!query.empty())
 		file += '?' + query;
-
-	if(SETTING(CORAL) && coralizeState != CST_NOCORALIZE) {
-		if(server.length() > CORAL_SUFFIX.length() && server.compare(server.length() - CORAL_SUFFIX.length(), CORAL_SUFFIX.length(), CORAL_SUFFIX) !=0) {
-			server += CORAL_SUFFIX;
-		} else {
-			coralizeState = CST_NOCORALIZE;
-		}
-	}
 
 	if(port.empty())
 		port = "80";
@@ -159,14 +143,13 @@ void HttpConnection::on(BufferedSocketListener::Connected) noexcept {
 	socket->write("Connection: close\r\n");	// we'll only be doing one request
 	socket->write("Cache-Control: no-cache\r\n\r\n");
 	if (connType == TYPE_POST) socket->write(requestBody);
-	if (coralizeState == CST_DEFAULT) coralizeState = CST_CONNECTED;
 }
 
 void HttpConnection::on(BufferedSocketListener::Line, const string& aLine) noexcept {
 	if(connState == CONN_CHUNKED && aLine.size() > 1) {
 		string::size_type i;
 		string chunkSizeStr;
-		if((i = aLine.find(";")) == string::npos) {
+		if((i = aLine.find(';')) == string::npos) {
 			chunkSizeStr = aLine.substr(0, aLine.length() - 1);
 		} else chunkSizeStr = aLine.substr(0, i);
 
@@ -175,7 +158,7 @@ void HttpConnection::on(BufferedSocketListener::Line, const string& aLine) noexc
 			abortRequest(true);
 
 			if(chunkSize == 0) {
-				fire(HttpConnectionListener::Complete(), this, currentUrl, SETTING(CORAL) && coralizeState != CST_NOCORALIZE);
+				fire(HttpConnectionListener::Complete(), this, currentUrl);
 				connState = CONN_OK;
 			} else {
 				fire(HttpConnectionListener::Failed(), this, "Transfer-encoding error (" + currentUrl + ")");
@@ -183,7 +166,6 @@ void HttpConnection::on(BufferedSocketListener::Line, const string& aLine) noexc
 			}
 
 			if (isUnique) { delete this; return; }
-			coralizeState = CST_DEFAULT;
 		} else socket->setDataMode(chunkSize);
 	} else if(connState == CONN_UNKNOWN) {
 		if(aLine.find("200") != string::npos) {
@@ -192,19 +174,10 @@ void HttpConnection::on(BufferedSocketListener::Line, const string& aLine) noexc
 			connState = CONN_MOVED; 
 		} else {
 			abortRequest(true);
-
-			if(SETTING(CORAL) && coralizeState != CST_NOCORALIZE) {
-				fire(HttpConnectionListener::Retried(), this, coralizeState == CST_CONNECTED);		
-				coralizeState = CST_NOCORALIZE;
-				dcdebug("HTTP error with Coral, retrying : %s\n",currentUrl.c_str());
-				downloadFile(currentUrl);
-				return;
-			}
 		
 			fire(HttpConnectionListener::Failed(), this, str(boost::format("%1% (%2%)") % aLine % currentUrl));
 			if (isUnique) { delete this; return; }
 			connState = CONN_FAILED;
-			coralizeState = CST_DEFAULT;
 		}
 	} else if(connState == CONN_MOVED && Util::findSubString(aLine, "Location") != string::npos) {
 		abortRequest(true);
@@ -240,9 +213,6 @@ void HttpConnection::on(BufferedSocketListener::Line, const string& aLine) noexc
 			location += "?" + query;
 		fire(HttpConnectionListener::Redirected(), this, location);
 
-		if (coralizeState != CST_NOCORALIZE)
-			coralizeState = CST_DEFAULT;
-
 		downloadFile(location);
 	} else if(aLine[0] == 0x0d) {
 		if(size != -1) {
@@ -262,16 +232,8 @@ void HttpConnection::on(BufferedSocketListener::Line, const string& aLine) noexc
 
 void HttpConnection::on(BufferedSocketListener::Failed, const string& aLine) noexcept {
 	abortRequest(false);
-	if(SETTING(CORAL) && coralizeState != CST_NOCORALIZE) {
-		fire(HttpConnectionListener::Retried(), this, coralizeState == CST_CONNECTED);
-		coralizeState = CST_NOCORALIZE;
-		dcdebug("Coralized address failed, retrying : %s\n",currentUrl.c_str());
-		downloadFile(currentUrl);
-		return;
-	}
 
 	connState = CONN_FAILED;
-	coralizeState = CST_DEFAULT;
 	fire(HttpConnectionListener::Failed(), this, str(boost::format("%1% (%2%)") % aLine % currentUrl));
 	if (isUnique) delete this;
 }
@@ -280,9 +242,8 @@ void HttpConnection::on(BufferedSocketListener::ModeChange) noexcept {
 	if(connState != CONN_CHUNKED) {
 		abortRequest(true);
 
-		fire(HttpConnectionListener::Complete(), this, currentUrl, SETTING(CORAL) && coralizeState != CST_NOCORALIZE);
+		fire(HttpConnectionListener::Complete(), this, currentUrl);
 		if (isUnique) { delete this; return; }
-		coralizeState = CST_DEFAULT;
 	}
 }
 void HttpConnection::on(BufferedSocketListener::Data, uint8_t* aBuf, size_t aLen) noexcept {
@@ -290,7 +251,6 @@ void HttpConnection::on(BufferedSocketListener::Data, uint8_t* aBuf, size_t aLen
 		abortRequest(true);
 
 		connState = CONN_FAILED;
-		coralizeState = CST_DEFAULT;
 		fire(HttpConnectionListener::Failed(), this, "Too much data in response body (" + currentUrl + ")");
 		if (isUnique) delete this;
 		return;

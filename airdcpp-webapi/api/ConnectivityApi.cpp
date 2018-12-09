@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
 #include <web-server/WebServerManager.h>
 
 #include <api/ConnectivityApi.h>
@@ -27,15 +27,13 @@
 #include <airdcpp/SearchManager.h>
 
 namespace webserver {
-	ConnectivityApi::ConnectivityApi(Session* aSession) : SubscribableApiModule(aSession, Access::SETTINGS_VIEW) {
-		ConnectivityManager::getInstance()->addListener(this);
-
-		createSubscription("connectivity_detection_message");
-		createSubscription("connectivity_detection_started");
-		createSubscription("connectivity_detection_finished");
-
+	ConnectivityApi::ConnectivityApi(Session* aSession) : 
+		SubscribableApiModule(aSession, Access::SETTINGS_VIEW, { "connectivity_detection_message", "connectivity_detection_started", "connectivity_detection_finished" }) 
+	{
 		METHOD_HANDLER(Access::SETTINGS_VIEW, METHOD_GET,	(EXACT_PARAM("status")), ConnectivityApi::handleGetStatus);
 		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_POST,	(EXACT_PARAM("detect")), ConnectivityApi::handleDetect);
+
+		ConnectivityManager::getInstance()->addListener(this);
 	}
 
 	ConnectivityApi::~ConnectivityApi() {
@@ -48,7 +46,7 @@ namespace webserver {
 		auto protocolEnabled = modeValue != SettingsManager::INCOMING_DISABLED;
 
 		string text;
-		auto autoEnabled = v6 ? SETTING(AUTO_DETECT_CONNECTION6) : SETTING(AUTO_DETECT_CONNECTION);
+		auto autoEnabled = protocolEnabled && (v6 ? SETTING(AUTO_DETECT_CONNECTION6) : SETTING(AUTO_DETECT_CONNECTION));
 		if (!autoEnabled) {
 			auto enumStrings = SettingsManager::getEnumStrings(modeKey, true);
 			if (!enumStrings.empty()) {

@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,6 +47,7 @@
 #include "AutoSearchFrm.h"
 #include "QueueFrame.h"
 #include "BrowseDlg.h"
+#include "SplashWindow.h"
 
 #include "Winamp.h"
 #include "Players.h"
@@ -746,7 +747,7 @@ void MainFrame::updateStatus(TStringList* aList) {
 				ctrlStatus.SetIcon(STATUS_SHUTDOWN, hShutdownIcon);
 				isShutdownStatus = true;
 			}
-			if (DownloadManager::getInstance()->getDownloadCount() > 0) {
+			if (DownloadManager::getInstance()->getTotalDownloadConnectionCount() > 0) {
 				iCurrentShutdownTime = iSec;
 				ctrlStatus.SetText(STATUS_SHUTDOWN, _T(""));
 			} else {
@@ -1114,7 +1115,7 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	fMenuShutdown = false;
 
 	if(!closing) {
-		if(UpdateManager::getInstance()->getUpdater().isUpdating()) {
+		if (UpdateManager::getInstance()->getUpdater().isUpdating()) {
 			showMessageBox(CTSTRING(UPDATER_IN_PROGRESS), MB_OK | MB_ICONINFORMATION);
 			bHandled = TRUE;
 			return 0;
@@ -1393,23 +1394,21 @@ void MainFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
 }
 
 LRESULT MainFrame::onOpenOwnList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	addThreadedTask([=] {
-		ProfileToken profile = SETTING(LAST_LIST_PROFILE);
-		auto profiles = ShareManager::getInstance()->getProfiles();
-		if (find_if(profiles.begin(), profiles.end(), [profile](const ShareProfilePtr& aProfile) { return aProfile->getToken() == profile; }) == profiles.end())
-			profile = SETTING(DEFAULT_SP);
+	ProfileToken profile = SETTING(LAST_LIST_PROFILE);
+	auto profiles = ShareManager::getInstance()->getProfiles();
+	if (find_if(profiles.begin(), profiles.end(), [profile](const ShareProfilePtr& aProfile) { return aProfile->getToken() == profile; }) == profiles.end())
+		profile = SETTING(DEFAULT_SP);
 
-		DirectoryListingManager::getInstance()->openOwnList(profile, wID == IDC_OWN_LIST_ADL);
-	});
+	DirectoryListingFrame::openWindow(profile, wID == IDC_OWN_LIST_ADL);
 	return 0;
 }
 
 LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring file;
 	if (WinUtil::browseList(file, m_hWnd)) {
-		UserPtr u = DirectoryListing::getUserFromFilename(Text::fromT(file));
-		if(u) {
-			addThreadedTask([=] { DirectoryListingManager::getInstance()->openFileList(HintedUser(u, Util::emptyString), Text::fromT(file)); });
+		UserPtr user = DirectoryListing::getUserFromFilename(Text::fromT(file));
+		if (user) {
+			DirectoryListingFrame::openWindow(HintedUser(user, Util::emptyString), Text::fromT(file));
 		} else {
 			WinUtil::showMessageBox(TSTRING(INVALID_LISTNAME), MB_ICONWARNING);
 		}
@@ -1444,7 +1443,7 @@ LRESULT MainFrame::onTrayIcon(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 		nid.uID = trayUID;
 		nid.uFlags = NIF_TIP;
 		_tcsncpy(nid.szTip, (_T("D: ") + Util::formatBytesW(DownloadManager::getInstance()->getRunningAverage()) + _T("/s (") + 
-			Util::toStringW(DownloadManager::getInstance()->getDownloadCount()) + _T(")\r\nU: ") +
+			Util::toStringW(DownloadManager::getInstance()->getTotalDownloadConnectionCount()) + _T(")\r\nU: ") +
 			Util::formatBytesW(UploadManager::getInstance()->getRunningAverage()) + _T("/s (") + 
 			Util::toStringW(UploadManager::getInstance()->getUploadCount()) + _T(")")
 			+ _T("\r\nUptime: ") + Util::formatSecondsW(TimerManager::getUptime())
@@ -1763,7 +1762,7 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	if(aTick == lastUpdate)	// FIXME: temp fix for new TimerManager
 		return;
 
-	uint64_t queueSize = QueueManager::getInstance()->getTotalQueueSize();
+	auto queueSize = QueueManager::getInstance()->getTotalQueueSize();
 
 	TStringList* str = new TStringList();
 	str->push_back(Util::formatBytesW(ShareManager::getInstance()->getSharedSize()));
@@ -1773,7 +1772,7 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	str->push_back(Util::formatBytesW(Socket::getTotalDown()));
 	str->push_back(Util::formatBytesW(Socket::getTotalUp()));
 
-	tstring down = _T("[") + Util::toStringW(DownloadManager::getInstance()->getDownloadCount()) + _T("][");
+	tstring down = _T("[") + Util::toStringW(DownloadManager::getInstance()->getTotalDownloadConnectionCount()) + _T("][");
 	tstring up = _T("[") + Util::toStringW(UploadManager::getInstance()->getUploadCount()) + _T("][");
 
 	auto dl = ThrottleManager::getDownLimit();
@@ -2028,14 +2027,14 @@ LRESULT MainFrame::onRefreshDropDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 	auto l = ShareManager::getInstance()->getGroupedDirectories();
 	for(auto& i: l) {
 		if (i.second.size() > 1) {
-			auto vMenu = dropMenu.createSubMenu(Text::toT(i.first).c_str(), true);
+			auto vMenu = dropMenu.createSubMenu(Text::toT(i.first), true);
 			vMenu->appendItem(CTSTRING(ALL), [=] { ShareManager::getInstance()->refreshVirtualName(i.first); }, OMenu::FLAG_THREADED);
 			vMenu->appendSeparator();
 			for(const auto& s: i.second) {
-				vMenu->appendItem(Text::toT(s).c_str(), [=] { ShareManager::getInstance()->refreshPaths({ s }); }, OMenu::FLAG_THREADED);
+				vMenu->appendItem(Text::toT(s), [=] { ShareManager::getInstance()->refreshPaths({ s }); }, OMenu::FLAG_THREADED);
 			}
 		} else {
-			dropMenu.appendItem(Text::toT(i.first).c_str(), [=] { ShareManager::getInstance()->refreshVirtualName(i.first); }, OMenu::FLAG_THREADED);
+			dropMenu.appendItem(Text::toT(i.first), [=] { ShareManager::getInstance()->refreshVirtualName(i.first); }, OMenu::FLAG_THREADED);
 		}
 	}
 

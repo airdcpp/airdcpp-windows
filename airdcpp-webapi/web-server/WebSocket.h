@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 #ifndef DCPLUSPLUS_DCPP_WEBSOCKET_H
 #define DCPLUSPLUS_DCPP_WEBSOCKET_H
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
 
 #include <web-server/Session.h>
 #include <web-server/ApiRequest.h>
@@ -39,7 +39,13 @@ namespace webserver {
 
 		IGETSET(SessionPtr, session, Session, nullptr);
 
-		void sendPlain(const json& aJson) noexcept;
+		// Send raw data
+		// Throws on JSON conversion errors (possibly because of failing UTF-8 validation...)
+		//
+		// The goal is that the data is always fully validated, but especially the legacy
+		// NMDC code can't be trusted to parse the incoming messages without incorrectly 
+		// splitting multibyte character sequences in malformed received data...
+		void sendPlain(const json& aJson);
 		void sendApiResponse(const json& aJsonResponse, const json& aErrorJson, websocketpp::http::status_code::value aCode, int aCallbackId) noexcept;
 
 		WebSocket(WebSocket&) = delete;

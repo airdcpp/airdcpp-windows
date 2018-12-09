@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,6 +65,19 @@ class DirectoryListingFrame : public MDITabChildWindowImpl<DirectoryListingFrame
 
 public:
 	static void openWindow(const DirectoryListingPtr& aList, const string& aDir, const string& aXML);
+
+	// Open own filelist
+	static void openWindow(ProfileToken aProfile, bool aUseADL = false, const string& aDir = ADC_ROOT_STR) noexcept;
+
+	// Open local file
+	static void openWindow(const HintedUser& aUser, const string& aFile, const string& aDir = ADC_ROOT_STR) noexcept;
+
+	// Open remote filelist
+	static void openWindow(const HintedUser& aUser, Flags::MaskType aFlags, const string& aInitialDir = ADC_ROOT_STR) noexcept;
+
+	static DirectoryListingFrame* findFrame(const UserPtr& aUser) noexcept;
+	static void activate(const DirectoryListingPtr& aList) noexcept;
+
 	static void closeAll();
 	static bool getWindowParams(HWND hWnd, StringMap &params);
 	static bool parseWindowParams(StringMap& params);
@@ -186,7 +199,7 @@ public:
 
 	void refreshTree(const string& root, bool aSelectDir);
 
-	void selectItem(const string& name);
+	void selectItem(const string& aPath);
 	
 	LRESULT onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 
@@ -226,6 +239,8 @@ public:
 	bool showDirDialog(string& fileName);
 
 	static string id;
+
+	void activate() noexcept;
 private:
 	void appendTreeContextMenu(CPoint& pt, DirectoryListing::Directory::Ptr& aDir);
 	void appendListContextMenu(CPoint& pt);
@@ -240,7 +255,7 @@ private:
 	void updateStatus(const tstring& aMsg);
 	void updateStatusText(int aTotalCount, int64_t totalSize, int selectedCount, int displayCount, time_t aUpdateDate);
 
-	string curPath;
+	string curPath = ADC_ROOT_STR;
 	
 	void updateItems(const DirectoryListing::Directory::Ptr& d);
 	void insertItems(const optional<string>& selectedName);
@@ -261,7 +276,8 @@ private:
 
 	ChangeType changeType;
 
-	void updateStatus();
+	void updateStatus() noexcept;
+	void updateStatus(const DirectoryListing::Directory::Ptr& aCurrentDir) noexcept;
 	void initStatus();
 	void up();
 	void handleHistoryClick(const string& aPath, bool byHistory);
@@ -296,7 +312,7 @@ private:
 		int getImageIndex() const;
 		DupeType getDupe() const { return type == DIRECTORY ? dir->getDupe() : file->getDupe(); }
 		const string& getName() const { return type == DIRECTORY ? dir->getName() : file->getName(); }
-		string getPath() const { return type == DIRECTORY ? dir->getPath() : file->getPath(); }
+		string getAdcPath() const { return type == DIRECTORY ? dir->getAdcPath() : file->getAdcPath(); }
 		bool isAdl() const { return type == DIRECTORY ? dir->getAdls() : file->getAdls(); }
 
 		struct NameSort {
@@ -365,6 +381,8 @@ private:
 
 	ParamMap ucLineParams;
 
+	void listViewSelectSubDir(const string& aSubPath, const string& aParentPath);
+
 	static int columnIndexes[COLUMN_LAST];
 	static int columnSizes[COLUMN_LAST];
 
@@ -383,7 +401,6 @@ private:
 	void on(DirectoryListingListener::ChangeDirectory, const string& aDir, bool isSearchChange) noexcept;
 	void on(DirectoryListingListener::UpdateStatusMessage, const string& aMessage) noexcept;
 	void on(DirectoryListingListener::RemovedQueue, const string& aDir) noexcept;
-	void on(DirectoryListingListener::SetActive) noexcept;
 	void on(DirectoryListingListener::UserUpdated) noexcept;
 	void on(DirectoryListingListener::ShareProfileChanged) noexcept;
 	void on(DirectoryListingListener::Read) noexcept;
@@ -420,7 +437,7 @@ private:
 	void updateItemCache(const string& aPath);
 protected:
 	/* TypedTreeViewCtrl */
-	TreeType::ChildrenState DirectoryListingFrame::getChildrenState(const ItemInfo* d) const;
+	TreeType::ChildrenState getChildrenState(const ItemInfo* d) const;
 	int getIconIndex(const ItemInfo* d) const;
 	void expandDir(ItemInfo* d, bool /*collapsing*/);
 	void insertTreeItems(const string& aPath, HTREEITEM aParent);

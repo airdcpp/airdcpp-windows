@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -105,10 +105,11 @@ namespace Text {
 	bool validateUtf8(const string& str) noexcept;
 
 	wchar_t toLower(wchar_t c) noexcept;
+	wchar_t toUpper(wchar_t c) noexcept;
+
 	bool isLower(const string& str) noexcept;
 	bool isLower(wchar_t c) noexcept;
 	string toLower(const string& str) noexcept;
-	string uncapitalize(const string& str) noexcept;
 
 	string toUtf8(const string& str, const string& fromCharset = "") noexcept;
 	string fromUtf8(const string& str, const string& toCharset = "") noexcept;
@@ -116,7 +117,6 @@ namespace Text {
 	inline bool isSeparator(char c) noexcept {
 		return (c >= 32 && c <= 47) ||
 			(c >= 58 && c <= 64) ||
-			(c >= 91 && c <= 96) ||
 			(c >= 91 && c <= 96) ||
 			(c >= 123 && c <= 127);
 	};

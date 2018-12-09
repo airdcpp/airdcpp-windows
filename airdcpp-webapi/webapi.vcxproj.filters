@@ -75,9 +75,6 @@
     <ClInclude Include="web-server\Session.h">
       <Filter>Header Files\web-server</Filter>
     </ClInclude>
-    <ClInclude Include="web-server\stdinc.h">
-      <Filter>Header Files\web-server</Filter>
-    </ClInclude>
     <ClInclude Include="web-server\Timer.h">
       <Filter>Header Files\web-server</Filter>
     </ClInclude>
@@ -294,6 +291,12 @@
     <ClInclude Include="microtar\microtar.h">
       <Filter>Header Files\microtar</Filter>
     </ClInclude>
+    <ClInclude Include="web-server\FloodCounter.h">
+      <Filter>Header Files\web-server</Filter>
+    </ClInclude>
+    <ClInclude Include="stdinc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="api\QueueApi.cpp">
@@ -318,9 +321,6 @@
       <Filter>Source Files\web-server</Filter>
     </ClCompile>
     <ClCompile Include="web-server\Session.cpp">
-      <Filter>Source Files\web-server</Filter>
-    </ClCompile>
-    <ClCompile Include="web-server\stdinc.cpp">
       <Filter>Source Files\web-server</Filter>
     </ClCompile>
     <ClCompile Include="web-server\WebServerManager.cpp">
@@ -481,6 +481,12 @@
     </ClCompile>
     <ClCompile Include="microtar\microtar.c">
       <Filter>Source Files\microtar</Filter>
+    </ClCompile>
+    <ClCompile Include="web-server\FloodCounter.cpp">
+      <Filter>Source Files\web-server</Filter>
+    </ClCompile>
+    <ClCompile Include="stdinc.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,6 +16,8 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+#include "stdinc.h"
+
 #include <api/FavoriteDirectoryApi.h>
 #include <api/common/Deserializer.h>
 #include <api/common/Serializer.h>
@@ -26,8 +28,9 @@
 #include <airdcpp/FavoriteManager.h>
 
 namespace webserver {
-	FavoriteDirectoryApi::FavoriteDirectoryApi(Session* aSession) : SubscribableApiModule(aSession, Access::ANY) {
-
+	FavoriteDirectoryApi::FavoriteDirectoryApi(Session* aSession) : 
+		SubscribableApiModule(aSession, Access::ANY, { "favorite_directories_updated" }) 
+	{
 		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(EXACT_PARAM("grouped_paths")),			FavoriteDirectoryApi::handleGetGroupedDirectories);
 		METHOD_HANDLER(Access::ANY,				METHOD_GET,		(),										FavoriteDirectoryApi::handleGetDirectories);
 
@@ -37,8 +40,6 @@ namespace webserver {
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_DELETE,	(TTH_PARAM),							FavoriteDirectoryApi::handleRemoveDirectory);
 
 		FavoriteManager::getInstance()->addListener(this);
-
-		createSubscription("favorite_directories_updated");
 	}
 
 	FavoriteDirectoryApi::~FavoriteDirectoryApi() {

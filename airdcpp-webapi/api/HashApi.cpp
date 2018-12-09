@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,8 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
+
 #include <web-server/JsonUtil.h>
 #include <web-server/Timer.h>
 
@@ -25,9 +26,19 @@
 #include <api/common/Serializer.h>
 
 namespace webserver {
-	HashApi::HashApi(Session* aSession) : SubscribableApiModule(aSession, Access::SETTINGS_VIEW),
-		timer(getTimer([this] { onTimer(); }, 1000)) {
-
+	HashApi::HashApi(Session* aSession) : 
+		SubscribableApiModule(
+			aSession, 
+			Access::SETTINGS_VIEW, 
+			{ 
+				"hash_database_status", 
+				"hash_statistics", 
+				"hasher_directory_finished", 
+				"hasher_finished",
+			}
+		),
+		timer(getTimer([this] { onTimer(); }, 1000)) 
+	{
 		HashManager::getInstance()->addListener(this);
 
 		METHOD_HANDLER(Access::SETTINGS_VIEW, METHOD_GET,	(EXACT_PARAM("database_status")),	HashApi::handleGetDbStatus);
@@ -36,11 +47,6 @@ namespace webserver {
 		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_POST,	(EXACT_PARAM("pause")),				HashApi::handlePause);
 		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_POST,	(EXACT_PARAM("resume")),			HashApi::handleResume);
 		METHOD_HANDLER(Access::SETTINGS_EDIT, METHOD_POST,	(EXACT_PARAM("stop")),				HashApi::handleStop);
-
-		createSubscription("hash_database_status");
-		createSubscription("hash_statistics");
-		createSubscription("hasher_directory_finished");
-		createSubscription("hasher_finished");
 
 		timer->start(false);
 	}
@@ -153,6 +159,6 @@ namespace webserver {
 
 		auto verify = JsonUtil::getField<bool>("verify", aRequest.getRequestBody());
 		HashManager::getInstance()->startMaintenance(verify);
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::no_content;
 	}
 }

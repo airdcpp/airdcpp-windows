@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 
 #ifndef DCPLUSPLUS_DCPP_FILELIST_H
 #define DCPLUSPLUS_DCPP_FILELIST_H
-
-#include <web-server/stdinc.h>
 
 #include <api/FilelistUtils.h>
 #include <api/FilelistItemInfo.h>
@@ -51,9 +49,11 @@ namespace webserver {
 		void init() noexcept override;
 		CID getId() const noexcept override;
 	private:
+		api_return handleUpdateList(ApiRequest& aRequest);
 		api_return handleChangeDirectory(ApiRequest& aRequest);
 		api_return handleSetRead(ApiRequest& aRequest);
 		api_return handleGetItems(ApiRequest& aRequest);
+		api_return handleGetItem(ApiRequest& aRequest);
 
 		void on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool aBackgroundTask) noexcept override;
 		void on(DirectoryListingListener::LoadingFailed, const string& aReason) noexcept override;

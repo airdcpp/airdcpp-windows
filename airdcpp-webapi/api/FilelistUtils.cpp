@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
 * along with this program; if not, write to the Free Software
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
+
+#include "stdinc.h"
 
 #include <api/FilelistUtils.h>
 
@@ -46,7 +48,7 @@ namespace webserver {
 			case PROP_TYPE:
 			{
 				if (!aItem->isDirectory()) {
-					return Serializer::serializeFileType(aItem->getPath());
+					return Serializer::serializeFileType(aItem->getAdcPath());
 				}
 
 				return Serializer::serializeFolderType(aItem->dir->getContentInfo());
@@ -54,7 +56,7 @@ namespace webserver {
 			case PROP_DUPE:
 			{
 				if (aItem->isDirectory()) {
-					return Serializer::serializeDirectoryDupe(aItem->getDupe(), aItem->getPath());
+					return Serializer::serializeDirectoryDupe(aItem->getDupe(), aItem->getAdcPath());
 				}
 
 				return Serializer::serializeFileDupe(aItem->getDupe(), aItem->file->getTTH());
@@ -91,13 +93,13 @@ namespace webserver {
 	std::string FilelistUtils::getStringInfo(const FilelistItemInfoPtr& aItem, int aPropertyName) noexcept {
 		switch (aPropertyName) {
 		case PROP_NAME: return aItem->getName();
-		case PROP_PATH: return Util::toAdcFile(aItem->getPath());
+		case PROP_PATH: return aItem->getAdcPath();
 		case PROP_TYPE: {
 			if (aItem->isDirectory()) {
 				return Util::formatDirectoryContent(aItem->dir->getContentInfo());
 			}
 
-			return Util::formatFileType(aItem->getPath());
+			return Util::formatFileType(aItem->getAdcPath());
 		}
 		case PROP_TTH: return aItem->getType() == FilelistItemInfo::FILE ? aItem->file->getTTH().toBase32() : Util::emptyString;
 		default: dcassert(0); return Util::emptyString;

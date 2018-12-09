@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -311,14 +311,32 @@ void QueueItem::removeSource(const UserPtr& aUser, Flags::MaskType reason) noexc
 }
 
 const string& QueueItem::getTempTarget() noexcept {
-	if (!isFilelist()) {
-		if (isSet(FLAG_OPEN) || isSet(FLAG_CLIENT_VIEW)) {
-			setTempTarget(target);
-		} else if (tempTarget.empty()) {
-			setTempTarget(target + TEMP_EXTENSION);
-		}
+	if (isFilelist()) {
+		// tempTarget is used for the directory path
+		return Util::emptyString;
 	}
 
+	if (isSet(FLAG_OPEN) || isSet(FLAG_CLIENT_VIEW)) {
+		setTempTarget(target);
+	} else if (tempTarget.empty()) {
+		setTempTarget(target + TEMP_EXTENSION);
+	}
+
+	return tempTarget;
+}
+
+void QueueItem::setTempTarget(const string& aTempTarget) noexcept {
+	if (isFilelist()) {
+		// The list path can't be changed
+		return;
+	}
+
+	tempTarget = aTempTarget;
+}
+
+const string& QueueItem::getListDirectoryPath() const noexcept {
+	dcassert(isFilelist());
+	dcassert(!tempTarget.empty());
 	return tempTarget;
 }
 
@@ -388,9 +406,7 @@ Segment QueueItem::getNextSegment(int64_t aBlockSize, int64_t aWantedSize, int64
 		return Segment(start, std::min(size, end) - start);
 	}
 	
-	if(isPausedPrio() || downloads.size() >= maxSegments ||
-		(SETTING(DONT_BEGIN_SEGMENT) && static_cast<uint64_t>(Util::convertSize(SETTING(DONT_BEGIN_SEGMENT_SPEED), Util::KB)) < getAverageSpeed()))
-	{
+	if(isPausedPrio() || downloads.size() >= maxSegments) {
 		// no other segments if we have reached the speed or segment limit
 		return Segment(-1, 0);
 	}

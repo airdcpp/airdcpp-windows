@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by N:\projects\airgit\AirDC.rc
+// Used by C:\Projects\airdc-git\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -633,7 +633,6 @@
 #define IDC_AUTOSEGMENT                 1216
 #define IDC_AUTO_SEARCH_ALT             1216
 #define IDC_COPY_TTH                    1217
-#define IDC_DONTBEGIN                   1217
 #define IDC_SKIPLIST                    1217
 #define IDC_SKIPLIST_DOWNLOAD           1218
 #define IDC_EDIT1                       1218
@@ -758,10 +757,7 @@
 #define CAA                             1258
 #define IDC_SEARCH_SPIN                 1258
 #define IDC_LIST_UP                     1258
-#define IDC_BEGIN_EDIT                  1259
 #define IDC_LIST_DOWN                   1259
-#define IDC_DONTBEGIN_EDIT              1259
-#define IDC_BEGIN_SPIN                  1260
 #define IDC_LIST_REMOVE                 1260
 #define IDC_LIST_DESC                   1261
 #define IDC_MATCH_SPIN2                 1261
@@ -1893,7 +1889,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        485
+#define _APS_NEXT_RESOURCE_VALUE        479
 #define _APS_NEXT_COMMAND_VALUE         32795
 #define _APS_NEXT_CONTROL_VALUE         10237
 #define _APS_NEXT_SYMED_VALUE           136

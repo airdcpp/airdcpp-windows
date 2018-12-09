@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ using std::string;
 class HttpConnection : BufferedSocketListener, public Speaker<HttpConnectionListener>, boost::noncopyable
 {
 public:
-	HttpConnection(bool coralize = true, bool aIsUnique = false, bool v4only = false);
+	HttpConnection(bool aIsUnique = false, bool v4only = false);
 	virtual ~HttpConnection();
 
 	void downloadFile(const string& aUrl);
@@ -44,9 +44,8 @@ public:
 	int64_t getDone() const { return done; }
 
 private:
-	enum RequestType { TYPE_GET, TYPE_POST };
+	enum RequestType { TYPE_GET, TYPE_POST, TYPE_UNKNOWN };
 	enum ConnectionStates { CONN_UNKNOWN, CONN_OK, CONN_FAILED, CONN_MOVED, CONN_CHUNKED };
-	enum CoralizeStates { CST_DEFAULT, CST_CONNECTED, CST_NOCORALIZE };
 
 	string currentUrl;
 	string method;
@@ -58,14 +57,13 @@ private:
 	string requestBody;
 
 	string mimeType;
-	int64_t size;
-	int64_t done;
+	int64_t size = -1;
+	int64_t done = 0;
 
-	ConnectionStates connState;
-	CoralizeStates coralizeState;
-	RequestType connType;
+	ConnectionStates connState = CONN_UNKNOWN;
+	RequestType connType = TYPE_UNKNOWN;
 
-	BufferedSocket* socket;
+	BufferedSocket* socket = nullptr;
 
 	void prepareRequest(RequestType type);
 	void abortRequest(bool disconnect);
@@ -76,8 +74,8 @@ private:
 	void on(Data, uint8_t*, size_t) noexcept;
 	void on(ModeChange) noexcept;
 	void on(Failed, const string&) noexcept;
-	bool isUnique;
-	bool v4only;
+	const bool isUnique;
+	const bool v4only;
 };
 
 } // namespace dcpp

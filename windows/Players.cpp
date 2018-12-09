@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2011-2017 AirDC++ Project
+ * Copyright (C) 2011-2018 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,19 +31,15 @@
 #include "WMPlayerRemoteApi.h"
 #include "winamp.h"
 
-#include <atlwin.h>
-#include <atlcomtime.h>
 #include <control.h>
+
+#define byte BYTE // 'byte': ambiguous symbol (C++17)
 #include <strmif.h>	// error with missing ddraw.h, get it from MS DirectX SDK
+#undef byte
 
 #include "boost/algorithm/string/replace.hpp"
 
-#include <cstdlib>
-#include <iostream>
 #include <fstream>
-#include <cstring>
-
-#include <string>
 
 namespace dcpp {
 
@@ -224,7 +220,7 @@ string Players::getMPCSpam() {
 				// from the file routine
 				ULONG cFetched = 0;
 				for(CComPtr<IBaseFilter> pBF; pEF->Next(1, &pBF, &cFetched) == S_OK; pBF = NULL) {
-					if(CComQIPtr<IFileSourceFilter> pFSF = pBF) {
+					if(CComQIPtr<IFileSourceFilter> pFSF = (CComQIPtr<IFileSourceFilter>)pBF) {
 						LPOLESTR pFileName = NULL;
 						AM_MEDIA_TYPE mt;
 						if(pFSF->GetCurFile(&pFileName, &mt) == S_OK) {
@@ -238,7 +234,7 @@ string Players::getMPCSpam() {
 								params["title"] = Util::getFileName(filename).substr(0, Util::getFileName(filename).size() - 4);
 								params["size"] = Util::formatBytes(File::getSize(filename));
 							}
-							delete test;
+							delete [] test;
 							CoTaskMemFree(pFileName);
 							// alternative to FreeMediaType(mt)
 							// provided by MSDN DirectX 9 help page for FreeMediaType
@@ -282,7 +278,7 @@ string Players::getMPCSpam() {
 			}
 
 			// position routine
-			CComQIPtr<IMediaSeeking> pMS = pFG;
+			CComQIPtr<IMediaSeeking> pMS = (CComQIPtr<IMediaSeeking>)pFG;
 			REFERENCE_TIME pos, dur;
 			if((pMS->GetCurrentPosition(&pos) == S_OK) && (pMS->GetDuration(&dur) == S_OK)) {
 				params["elapsed"] =  Text::fromT(Util::formatSecondsW(pos/10000000));

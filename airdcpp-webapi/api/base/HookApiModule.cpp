@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2017 AirDC++ Project
+* Copyright (C) 2011-2018 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,13 +16,15 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
+
 #include <web-server/JsonUtil.h>
+#include <web-server/Session.h>
 
 #include <api/base/HookApiModule.h>
 
 namespace webserver {
-	HookApiModule::HookApiModule(Session* aSession, Access aSubscriptionAccess, const StringList* aSubscriptions, Access aHookAccess) :
+	HookApiModule::HookApiModule(Session* aSession, Access aSubscriptionAccess, const StringList& aSubscriptions, Access aHookAccess) :
 		SubscribableApiModule(aSession, aSubscriptionAccess, aSubscriptions) 
 	{
 		METHOD_HANDLER(aHookAccess, METHOD_POST, (EXACT_PARAM("hooks"), STR_PARAM(LISTENER_PARAM_ID)), HookApiModule::handleAddHook);
@@ -210,14 +212,15 @@ namespace webserver {
 			pendingHookActions.erase(id);
 		}
 
+		if (!completionData) {
+			session->reportError("Action " + aSubscription + " timed out for subscriber " + session->getUser()->getUserName() + "\n");
+			dcdebug("Action %s (id %d) timed out\n", aSubscription.c_str(), id);
 #ifdef _DEBUG
-		if (completionData) {
+		} else {
 			std::chrono::duration<double> ellapsed = std::chrono::system_clock::now() - start;
 			dcdebug("Action %s (id %d) completed in %f s\n", aSubscription.c_str(), id, ellapsed.count());
-		} else {
-			dcdebug("Action %s (id %d) timed out\n", aSubscription.c_str(), id);
-		}
 #endif
+		}
 
 		return completionData;
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2017 AirDC++ Project
+ * Copyright (C) 2011-2018 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@
 #include <airdcpp/modules/ShareMonitorManager.h>
 #include <airdcpp/modules/ShareScannerManager.h>
 #include <airdcpp/modules/AutoSearchManager.h>
+#include <airdcpp/modules/WebShortcuts.h>
 
 #include <airdcpp/HashManager.h>
 #include <airdcpp/SettingsManager.h>
@@ -698,7 +699,7 @@ void ChatFrameBase::handleSendMessage() {
 	ctrlMessage.SetWindowText(Util::emptyStringT.c_str());
 }
 
-static TCHAR *msgs[] = { _T("\r\n-- I'm a happy AirDC++ user. You could be happy too.\r\n"),
+static const TCHAR *msgs[] = { _T("\r\n-- I'm a happy AirDC++ user. You could be happy too.\r\n"),
 _T("\r\n-- Is it Superman? No, it's AirDC++!\r\n"),
 _T("\r\n-- My files are burning in my computer...download are way too fast!\r\n"),
 _T("\r\n-- STOP!! My client is too fast, slow down with the writings!\r\n"),
@@ -708,12 +709,12 @@ _T("\r\n-- Why bother searching when AirDC++ can take care of everything?\r\n"),
 _T("\r\n-- The only way to stop me from getting your files is to close DC++!\r\n"),
 _T("\r\n-- We love your files soo much, so we try to get them over and over again...\r\n"),
 _T("\r\n-- Let us thru the waiting line, we download faster than the lightning!\r\n"),
-_T("\r\n-- Sometimes we download so fast that we accidently get the whole person on the other side...\r\n"),
+_T("\r\n-- Sometimes we download so fast that we accidentally get the whole person on the other side...\r\n"),
 _T("\r\n-- Holy crap, my download speed is sooooo fast that it made a hole in the hard drive!\r\n"),
 _T("\r\n-- Once you got access to it, don't let it go...\r\n"),
 _T("\r\n-- Do you feel the wind? It's the download that goes too fast...\r\n"),
 _T("\r\n-- No matter what, no matter where, it's always home if AirDC++ is there!\r\n"),
-_T("\r\n-- Knock, knock...we are leaving back the trousers we accidently downloaded...\r\n"),
+_T("\r\n-- Knock, knock...we are leaving back the trousers we accidentally downloaded...\r\n"),
 _T("\r\n-- Are you blind? You have downloaded that movie 4 times already!\r\n"),
 _T("\r\n-- My client has been in jail twice, has yours?\r\n"),
 _T("\r\n-- Keep your downloads close, but keep your uploads even closer!\r\n")
@@ -737,15 +738,15 @@ tstring ChatFrameBase::commands = Text::toT("\n\t\t\t\t\tHELP\n\
 /search <string>\t\t\t\tSearch for...\n\
 /whois [IP]\t\t\t\tFind info about user from the IP address\n\
 ------------------------------------------------------------------------------------------------------------------------------------------------------------\n\
-/slots # \t\t\t\t\tUpload slots\n\
-/extraslots # \t\t\t\tSet extra slots\n\
-/smallfilesize # \t\t\t\tSet smallfile size\n\
-/ts \t\t\t\t\tShow timestamp in mainchat\n\
-/connection \t\t\t\tShow connection settings, IP & ports (only visible to yourself)\n\
-/showjoins \t\t\t\tShow user joins in mainchat\n\
-/shutdown \t\t\t\tSystem shutdown\n\
+/slots #\t\t\t\t\tUpload slots\n\
+/extraslots #\t\t\t\tSet extra slots\n\
+/smallfilesize #\t\t\t\tSet smallfile size\n\
+/ts\t\t\t\t\tShow timestamp in mainchat\n\
+/connection\t\t\t\tShow connection settings, IP & ports (only visible to yourself)\n\
+/showjoins\t\t\t\tShow user joins in mainchat\n\
+/shutdown\t\t\t\tSystem shutdown\n\
 ------------------------------------------------------------------------------------------------------------------------------------------------------------\n\
-/AirDC++ \t\t\t\t\tShow AirDC++ version in mainchat\n\
+/AirDC++\t\t\t\t\tShow AirDC++ version in mainchat\n\
 ------------------------------------------------------------------------------------------------------------------------------------------------------------\n\
 /away <msg>\t\t\t\tSet away message\n\
 /winamp, /w\t\t\t\tShows Winamp spam in mainchat (as public message)\n\
@@ -760,16 +761,16 @@ tstring ChatFrameBase::commands = Text::toT("\n\t\t\t\t\tHELP\n\
 /prvstats\t\t\t\t\tView stats (only visible to yourself)\n\
 /info\t\t\t\t\tView system info (only visible to yourself)\n\
 /log system\t\t\t\tOpen system log\n\
-/log downloads \t\t\t\tOpen downloads log\n\
+/log downloads\t\t\t\tOpen downloads log\n\
 /log uploads\t\t\t\tOpen uploads log\n\
-/df \t\t\t\t\tShow disk space info (only visible to yourself)\n\
-/dfs \t\t\t\t\tShow disk space info (as public message)\n\
-/disks, /di \t\t\t\tShow detailed disk info about all mounted disks (only visible to yourself)\n\
-/uptime \t\t\t\t\tShow uptime info (as public message)\n\
+/df\t\t\t\t\tShow disk space info (only visible to yourself)\n\
+/dfs\t\t\t\t\tShow disk space info (as public message)\n\
+/disks, /di\t\t\t\tShow detailed disk info about all mounted disks (only visible to yourself)\n\
+/uptime\t\t\t\t\tShow uptime info (as public message)\n\
 /topic\t\t\t\t\tShow topic\n\
 /ctopic\t\t\t\t\tOpen link in topic\n\
 /ratio, /r\t\t\t\t\tShow ratio in chat (as public message)\n\
-/close, /r\t\t\t\t\tClose the current tab\n\n");
+/close\t\t\t\t\tClose the current tab\n\n");
 
 string ChatFrameBase::getAwayMessage() {
 	return ctrlClient.getClient() ? ctrlClient.getClient()->get(HubSettings::AwayMsg) : SETTING(DEFAULT_AWAY_MESSAGE);
@@ -849,7 +850,7 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 		} else {
 			status = TSTRING(SPECIFY_SEARCH_STRING);
 		}
-	} else if (stricmp(cmd.c_str(), _T("airdc++")) == 0) {
+	} else if ((stricmp(cmd.c_str(), _T("airdc++")) == 0) || (stricmp(cmd.c_str(), _T("++")) == 0)) {
 		message = msgs[GET_TICK() % MSGS] + Text::toT("-- " + UpdateManager::getInstance()->links.homepage + "  <" + shortVersionString + ">");
 	} else if (stricmp(cmd.c_str(), _T("calcprio")) == 0) {
 		QueueManager::getInstance()->calculateBundlePriorities(true);

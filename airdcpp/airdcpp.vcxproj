@@ -23,31 +23,32 @@
     <RootNamespace>airdcpp</RootNamespace>
     <ProjectName>airdcpp-core</ProjectName>
     <UseNativeEnvironment>true</UseNativeEnvironment>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -84,7 +85,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)\airdcpp;$(SolutionDir)\natpmp;$(SolutionDir);$(SolutionDir)\leveldb\helpers;$(SolutionDir)\leveldb\include;$(SolutionDir)\geoip;$(SolutionDir)\bzip2;$(SolutionDir)\boost;$(SolutionDir)\zlib;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\airdcpp;$(SolutionDir)\natpmp;$(SolutionDir);$(SolutionDir)\leveldb\helpers;$(SolutionDir)\leveldb\include;$(SolutionDir)\maxminddb;$(SolutionDir)\bzip2;$(SolutionDir)\boost;$(SolutionDir)\zlib;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -94,6 +95,8 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessorDefinitions>WIN64;HAVE_NATPMP_H;HAVE_WINUPNP_H;_UNICODE;UNICODE;HAS_PCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
+      <AdditionalOptions>/permissive- %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Lib>
       <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
@@ -106,7 +109,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)\airdcpp;$(SolutionDir)\natpmp;$(SolutionDir);$(SolutionDir)\leveldb\helpers;$(SolutionDir)\leveldb\include;$(SolutionDir)\geoip;$(SolutionDir)\boost;$(SolutionDir)\bzip2;$(SolutionDir)\openssl\include;$(SolutionDir)\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\airdcpp;$(SolutionDir)\natpmp;$(SolutionDir);$(SolutionDir)\leveldb\helpers;$(SolutionDir)\leveldb\include;$(SolutionDir)\maxminddb;$(SolutionDir)\bzip2;$(SolutionDir)\boost;$(SolutionDir)\zlib;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -117,6 +120,8 @@
       <PreprocessorDefinitions>WIN64;HAVE_NATPMP_H;HAVE_WINUPNP_H;_UNICODE;UNICODE;HAS_PCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Cpp0xSupport>true</Cpp0xSupport>
       <MinimalRebuild>false</MinimalRebuild>
+      <AdditionalOptions>/permissive- %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Lib>
       <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
@@ -140,15 +145,14 @@
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <AdditionalIncludeDirectories>$(SolutionDir)\airdcpp;$(SolutionDir)\natpmp;$(SolutionDir);$(SolutionDir)\leveldb\helpers;$(SolutionDir)\leveldb\include;$(SolutionDir)\geoip;$(SolutionDir)\bzip2;$(SolutionDir)\boost;$(SolutionDir)\zlib;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\airdcpp;$(SolutionDir)\natpmp;$(SolutionDir);$(SolutionDir)\leveldb\helpers;$(SolutionDir)\leveldb\include;$(SolutionDir)\maxminddb;$(SolutionDir)\bzip2;$(SolutionDir)\boost;$(SolutionDir)\zlib;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <AdditionalOptions>
-      </AdditionalOptions>
+      <AdditionalOptions>/permissive-</AdditionalOptions>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>stdinc.h</PrecompiledHeaderFile>
@@ -160,6 +164,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessorDefinitions>_UNICODE;UNICODE;HAVE_NATPMP_H;HAVE_WINUPNP_H;HAS_PCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Lib>
       <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
@@ -181,15 +186,14 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <AdditionalIncludeDirectories>$(SolutionDir)\airdcpp;$(SolutionDir)\natpmp;$(SolutionDir)\geoip;$(SolutionDir);$(SolutionDir)\leveldb\helpers;$(SolutionDir)\leveldb\include;$(SolutionDir)\bzip2;$(SolutionDir)\zlib;$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\airdcpp;$(SolutionDir)\natpmp;$(SolutionDir);$(SolutionDir)\leveldb\helpers;$(SolutionDir)\leveldb\include;$(SolutionDir)\maxminddb;$(SolutionDir)\bzip2;$(SolutionDir)\boost;$(SolutionDir)\zlib;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <AdditionalOptions>
-      </AdditionalOptions>
+      <AdditionalOptions>/permissive-</AdditionalOptions>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>stdinc.h</PrecompiledHeaderFile>
@@ -201,6 +205,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessorDefinitions>WIN64;HAVE_NATPMP_H;HAVE_WINUPNP_H;_UNICODE;UNICODE;HAS_PCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Lib>
       <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
@@ -336,6 +341,7 @@
     <ClInclude Include="airdcpp\AdcCommand.h" />
     <ClInclude Include="airdcpp\AdcHub.h" />
     <ClInclude Include="airdcpp\BundleInfo.h" />
+    <ClInclude Include="airdcpp\constants.h" />
     <ClInclude Include="airdcpp\DirectSearch.h" />
     <ClInclude Include="airdcpp\DupeType.h" />
     <ClInclude Include="airdcpp\ErrorCollector.h" />
@@ -560,14 +566,6 @@
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)geoip\geoip.vcxproj">
-      <Project>{40440579-27af-4e34-8374-ca64b340f1d9}</Project>
-      <Private>true</Private>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-      <LinkLibraryDependencies>true</LinkLibraryDependencies>
-      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
-    </ProjectReference>
     <ProjectReference Include="$(SolutionDir)leveldb\LevelDB.vcxproj">
       <Project>{a7ff59d3-eafd-43a1-8aa7-5087229c75d1}</Project>
     </ProjectReference>
@@ -585,6 +583,9 @@
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
+    <ProjectReference Include="..\maxminddb\libmaxminddb.vcxproj">
+      <Project>{82953bda-2960-4ada-a6d5-92e65ccb4a3d}</Project>
     </ProjectReference>
     <ProjectReference Include="..\miniupnpc\miniupnpc.vcxproj">
       <Project>{51015502-c27c-43cf-9fa4-12ab9db5d36e}</Project>

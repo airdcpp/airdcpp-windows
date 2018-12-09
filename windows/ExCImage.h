@@ -19,9 +19,7 @@
 #ifndef EXCIMAGE_H
 #define EXCIMAGE_H
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
 #ifdef __ATLMISC_H__
 #define __ATLTYPES_H__
@@ -29,7 +27,10 @@
 
 #include <airdcpp/Pointer.h>
 #include <airdcpp/FastAlloc.h>
+
+#define byte BYTE // 'byte': ambiguous symbol (C++17)
 #include <atlimage.h>
+#undef byte
 
 class ExCImage : public CImage, public FastAlloc<ExCImage>, public intrusive_ptr_base<ExCImage>, boost::noncopyable
 {
