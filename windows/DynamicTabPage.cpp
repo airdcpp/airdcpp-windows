@@ -18,8 +18,10 @@
 #include <commctrl.h>
 #include "stdafx.h"
 #include "Resource.h"
-#include "WinUtil.h"
+
 #include "DynamicTabPage.h"
+#include "WinUtil.h"
+
 
 
 DynamicTabPage::DynamicTabPage() : loading(true) { }
@@ -30,18 +32,8 @@ LRESULT DynamicTabPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 	for (auto cfg : configs) {
 		cfg->Create(m_hWnd);
 	}
-
 	loading = false;
 	return TRUE;
-}
-
-void DynamicTabPage::resizePage() {
-	CRect windowRect;
-	GetClientRect(&windowRect);
-	if ((prevConfigBottomMargin + 20) >= windowRect.bottom) {
-		windowRect.bottom = prevConfigBottomMargin + 70;
-		MoveWindow(windowRect);
-	}
 }
 
 LRESULT DynamicTabPage::onCtlColor(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
@@ -89,10 +81,18 @@ LRESULT DynamicTabPage::onEraseBackground(UINT /*uMsg*/, WPARAM wParam, LPARAM /
 	return TRUE;
 }
 
-void DynamicTabPage::updateLayout() {
+void DynamicTabPage::resizePage(CRect& windowRect) {
+
+	if ((prevConfigBottomMargin + 20) >= windowRect.bottom) {
+		windowRect.bottom = prevConfigBottomMargin + 70;
+		MoveWindow(windowRect);
+	}
+}
+
+void DynamicTabPage::updateLayout(CRect& windowRect) {
 	for (auto cfg : configs) {
 		prevConfigBottomMargin = cfg->updateLayout(m_hWnd, prevConfigBottomMargin, configSpacing);
-		resizePage();
+		resizePage(windowRect);
 	}
 }
 

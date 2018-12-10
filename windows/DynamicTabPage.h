@@ -29,6 +29,7 @@
 
 #include <airdcpp/Util.h>
 #include "ConfigUtil.h"
+
 using namespace webserver;
 
 class DynamicTabPage : public CDialogImpl<DynamicTabPage> {
@@ -75,7 +76,6 @@ public:
 
 	LRESULT onEraseBackground(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL & /*bHandled*/);
 
-	void resizePage();
 
 	void addConfigItem(webserver::ServerSettingItem& aSetting) {
 		auto item = ConfigUtil::getConfigItem(aSetting);
@@ -97,7 +97,8 @@ public:
 		return true;
 	}
 
-	void updateLayout();
+	void updateLayout(CRect& windowRect);
+	void resizePage(CRect& windowRect);
 	vector<shared_ptr<ConfigUtil::ConfigIem>>& getConfigs() { return configs; }
 
 private:

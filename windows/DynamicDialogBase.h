@@ -46,6 +46,7 @@ public:
 
 	BEGIN_MSG_MAP_EX(DynamicDialogBase)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
+		MESSAGE_HANDLER(WM_MOUSEWHEEL, onMouseWheel)
 		MESSAGE_HANDLER(WM_VSCROLL, onScroll)
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
 		MESSAGE_HANDLER(WM_SIZE, onSize)
@@ -68,9 +69,30 @@ public:
 		return TRUE;
 	}
 
+	LRESULT onMouseWheel(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
+		
+		auto i = GET_WHEEL_DELTA_WPARAM(wParam);
+		if (i > 0) {
+			PostMessage(WM_VSCROLL, MAKELONG(SB_LINEUP, 0), 0);
+		}
+		else if (i < 0) {
+			PostMessage(WM_VSCROLL, MAKELONG(SB_LINEDOWN, 0), 0);
+		}
+
+		bHandled = FALSE;
+		return 0;
+	}
+
 	LRESULT onScroll(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
 		int nDelta = 0;
 		int nPos = HIWORD(wParam);
+		
+		SCROLLINFO si = { 0 };
+		si.cbSize = sizeof(si);
+		si.fMask = SIF_ALL;
+		GetScrollInfo(SB_VERT, &si);
+		int nMaxPos = si.nMax - si.nPage;
+		int nMinPos = si.nMin;
 
 		switch (LOWORD(wParam)) {
 		case SB_THUMBTRACK:
@@ -79,13 +101,23 @@ public:
 		case SB_THUMBPOSITION:
 			nDelta = nPos - curScrollPos;
 			break;
+		case SB_LINEDOWN:
+			if (curScrollPos >= nMaxPos)
+				return 0;
+			nDelta = min(30, nMaxPos - curScrollPos);
+			break;
+		case SB_LINEUP:
+			if (curScrollPos <= nMinPos)
+				return 0;
+			nDelta = -min(30, curScrollPos);
+			break;
 
 		default:
 			return 0;
 		}
 
 		curScrollPos += nDelta;
-		SetScrollPos(SB_VERT, curScrollPos, FALSE);
+		SetScrollPos(SB_VERT, curScrollPos);
 		ScrollWindowEx(0, -nDelta, &scrollRect, &clipRect, NULL, NULL, SW_INVALIDATE | SW_ERASE | SW_SCROLLCHILDREN);
 		UpdateWindow();
 		bHandled = TRUE;
@@ -93,6 +125,7 @@ public:
 	}
 
 	LRESULT onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/) {
+		page->SetFocus();
 		return 0;
 	}
 
@@ -119,17 +152,20 @@ public:
 		CRect baseRect;
 		GetClientRect(&baseRect); // current base dialog rect
 
+		//Size the page, exclude OK button area by button left edge
 		CRect pageRect; 
 		page->GetClientRect(&pageRect);
 		pageRect.top += pageSpacing;
-		pageRect.right = baseRect.right - (OKbtnRect.Width() + 30); //OK button left
+		pageRect.right = baseRect.right - (OKbtnRect.Width() + pageSpacing); //OK button left
 		pageRect.left = baseRect.left + pageSpacing;
+		pageRect.bottom = baseRect.bottom;
 		page->MoveWindow(pageRect);
+		page->updateLayout(pageRect);
 
-		page->updateLayout();
-		page->GetClientRect(&pageRect); //page might have resized, get the rect again...
 
-		//Set the scrolling area, exclude OK button area by button left edge
+		//page->GetClientRect(&pageRect); //page might have resized, get the rect again...
+
+		//Set the scrolling area.
 		scrollRect = pageRect;
 		scrollRect.top = -(pageRect.bottom);
 
@@ -159,7 +195,7 @@ private:
 	// actual scroll position
 	int curScrollPos = 0;
 
-	int pageSpacing = 10;
+	int pageSpacing = 20;
 
 	CEdit ctrlEdit;
 
