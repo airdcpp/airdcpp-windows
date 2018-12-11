@@ -15,7 +15,7 @@
 * along with this program; if not, write to the Free Software
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
-#include <commctrl.h>
+
 #include "stdafx.h"
 #include "Resource.h"
 
@@ -23,10 +23,11 @@
 #include "WinUtil.h"
 
 
+DynamicTabPage::DynamicTabPage() : loading(true) 
+{ };
 
-DynamicTabPage::DynamicTabPage() : loading(true) { }
-
-DynamicTabPage::~DynamicTabPage() { }
+DynamicTabPage::~DynamicTabPage() 
+{ };
 
 LRESULT DynamicTabPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	for (auto cfg : configs) {
@@ -83,15 +84,15 @@ LRESULT DynamicTabPage::onEraseBackground(UINT /*uMsg*/, WPARAM wParam, LPARAM /
 
 void DynamicTabPage::resizePage(CRect& windowRect) {
 
-	if ((prevConfigBottomMargin + 20) >= windowRect.bottom) {
-		windowRect.bottom = prevConfigBottomMargin + 70;
+	if ((m_prevConfigBottomMargin + 5) >= windowRect.bottom) {
+		windowRect.bottom = m_prevConfigBottomMargin + 70;
 		MoveWindow(windowRect);
 	}
 }
 
 void DynamicTabPage::updateLayout(CRect& windowRect) {
 	for (auto cfg : configs) {
-		prevConfigBottomMargin = cfg->updateLayout(m_hWnd, prevConfigBottomMargin, configSpacing);
+		m_prevConfigBottomMargin = cfg->updateLayout(m_hWnd, m_prevConfigBottomMargin, m_configSpacing);
 		resizePage(windowRect);
 	}
 }

@@ -38,7 +38,7 @@ public:
 
 	DynamicDialogBase(const string& aName) : name(aName) {
 		//Create a dummy page to fill in dialog items
-		page = make_shared<DynamicTabPage>(DynamicTabPage());
+		m_page = make_shared<DynamicTabPage>(DynamicTabPage());
 	}
 	~DynamicDialogBase() {
 
@@ -56,10 +56,10 @@ public:
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 
-		page->Create(m_hWnd);
+		m_page->Create(m_hWnd);
 
 		// save the original size
-		GetClientRect(&rcOriginalRect);
+		GetClientRect(&m_rcOriginal);
 
 		updateLayout();
 
@@ -67,6 +67,47 @@ public:
 		SetWindowText(Text::toT(name).c_str());
 
 		return TRUE;
+	}
+
+	void updateLayout() {
+		CRect rcOKbtn;
+		GetDlgItem(IDOK).GetClientRect(&rcOKbtn);
+
+		CRect rcDialog;
+		GetClientRect(&rcDialog); // current base dialog rect
+
+		//Size the page, exclude OK button area by button left edge
+		CRect rcPage;
+		m_page->GetClientRect(&rcPage);
+		rcPage.top += m_pageSpacing;
+		rcPage.right = rcDialog.right - (rcOKbtn.Width() + m_pageSpacing); //OK button left
+		rcPage.left = rcDialog.left + m_pageSpacing;
+		rcPage.bottom = rcDialog.bottom;
+		rcPage.bottom -= m_pageSpacing;
+		m_page->MoveWindow(rcPage);
+
+		//update page setting items layout and resize the page accordingly. Updates the rect.bottom.
+		m_page->updateLayout(rcPage); 
+
+		//Set the scrolling area.
+		m_rcScroll = rcPage;
+		m_rcScroll.top = -(rcPage.bottom);
+
+		m_rcClip.left = rcPage.left;
+		m_rcClip.top = 0;
+		m_rcClip.right = rcPage.right;
+		m_rcClip.bottom = rcPage.bottom;
+
+		//Set scrollbar dimensions.
+		SCROLLINFO si = { 0 };
+		si.cbSize = sizeof(si);
+		si.fMask = SIF_ALL;
+		GetScrollInfo(SB_VERT, &si);
+		si.nMax = m_rcScroll.bottom + m_pageSpacing;
+		si.nPage = rcDialog.bottom;
+		SetScrollInfo(SB_VERT, &si);
+	
+
 	}
 
 	LRESULT onMouseWheel(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
@@ -96,36 +137,36 @@ public:
 
 		switch (LOWORD(wParam)) {
 		case SB_THUMBTRACK:
-			nDelta = nPos - curScrollPos;
+			nDelta = nPos - m_curScrollPos;
 			break;
 		case SB_THUMBPOSITION:
-			nDelta = nPos - curScrollPos;
+			nDelta = nPos - m_curScrollPos;
 			break;
 		case SB_LINEDOWN:
-			if (curScrollPos >= nMaxPos)
+			if (m_curScrollPos >= nMaxPos)
 				return 0;
-			nDelta = min(30, nMaxPos - curScrollPos);
+			nDelta = min(30, nMaxPos - m_curScrollPos);
 			break;
 		case SB_LINEUP:
-			if (curScrollPos <= nMinPos)
+			if (m_curScrollPos <= nMinPos)
 				return 0;
-			nDelta = -min(30, curScrollPos);
+			nDelta = -min(30, m_curScrollPos);
 			break;
 
 		default:
 			return 0;
 		}
 
-		curScrollPos += nDelta;
-		SetScrollPos(SB_VERT, curScrollPos);
-		ScrollWindowEx(0, -nDelta, &scrollRect, &clipRect, NULL, NULL, SW_INVALIDATE | SW_ERASE | SW_SCROLLCHILDREN);
+		m_curScrollPos += nDelta;
+		SetScrollPos(SB_VERT, m_curScrollPos);
+		ScrollWindowEx(0, -nDelta, &m_rcScroll, &m_rcClip, NULL, NULL, SW_INVALIDATE | SW_ERASE | SW_SCROLLCHILDREN);
 		UpdateWindow();
 		bHandled = TRUE;
 		return 0;
 	}
 
 	LRESULT onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/) {
-		page->SetFocus();
+		m_page->SetFocus();
 		return 0;
 	}
 
@@ -136,7 +177,7 @@ public:
 
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& bHandled) {
 		if (wID == IDOK) {
-			if (!page->write()) {
+			if (!m_page->write()) {
 				bHandled = FALSE;
 				return 0;
 			}
@@ -145,66 +186,26 @@ public:
 		return 0;
 	}
 
-	void updateLayout() {
-		CRect OKbtnRect;
-		GetDlgItem(IDOK).GetClientRect(&OKbtnRect);
 
-		CRect baseRect;
-		GetClientRect(&baseRect); // current base dialog rect
-
-		//Size the page, exclude OK button area by button left edge
-		CRect pageRect; 
-		page->GetClientRect(&pageRect);
-		pageRect.top += pageSpacing;
-		pageRect.right = baseRect.right - (OKbtnRect.Width() + pageSpacing); //OK button left
-		pageRect.left = baseRect.left + pageSpacing;
-		pageRect.bottom = baseRect.bottom;
-		page->MoveWindow(pageRect);
-		page->updateLayout(pageRect);
-
-
-		//page->GetClientRect(&pageRect); //page might have resized, get the rect again...
-
-		//Set the scrolling area.
-		scrollRect = pageRect;
-		scrollRect.top = -(pageRect.bottom);
-
-		clipRect.left = pageRect.left;
-		clipRect.top = 0;
-		clipRect.right = pageRect.right;
-		clipRect.bottom = pageRect.bottom;
-
-		//Set scrollbar dimensions.
-		SCROLLINFO si = { 0 };
-		si.cbSize = sizeof(si);
-		si.fMask = SIF_ALL;
-		GetScrollInfo(SB_VERT, &si);
-		si.nMax = scrollRect.bottom;
-		si.nPage = baseRect.bottom;
-		SetScrollInfo(SB_VERT, &si);
-
-	}
-
-	shared_ptr<DynamicTabPage> getPage() { return page; }
+	shared_ptr<DynamicTabPage> getPage() { return m_page; }
 
 private:
 
 	// dialog size in the resource view (original size)
-	CRect rcOriginalRect;
+	CRect m_rcOriginal;
 
 	// actual scroll position
-	int curScrollPos = 0;
-
-	int pageSpacing = 20;
+	int m_curScrollPos = 0;
+	int m_pageSpacing = 20;
 
 	CEdit ctrlEdit;
 
 	string name;
 	bool loading;
-	CRect scrollRect;
-	CRect clipRect;
+	CRect m_rcScroll;
+	CRect m_rcClip;
 
-	shared_ptr<DynamicTabPage> page;
+	shared_ptr<DynamicTabPage> m_page;
 
 };
 #endif

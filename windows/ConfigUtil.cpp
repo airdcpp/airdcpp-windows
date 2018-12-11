@@ -50,10 +50,10 @@ int ConfigUtil::ConfigIem::getParentRightEdge(HWND m_hWnd) {
 	return rc.right;
 }
 
-CRect ConfigUtil::ConfigIem::calculateItemPosition(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing) {
+CRect ConfigUtil::ConfigIem::calculateItemPosition(HWND m_hWnd, int aaPrevConfigBottomMargin, int aConfigSpacing) {
 	CRect rc;
 	rc.left = 20;
-	rc.top = prevConfigBottomMargin + configSpacing;
+	rc.top = aaPrevConfigBottomMargin + aConfigSpacing;
 	rc.right = getParentRightEdge(m_hWnd) -20;
 	rc.bottom = rc.top + WinUtil::getTextHeight(m_hWnd, WinUtil::systemFont) + 2;
 	return rc;
@@ -76,9 +76,9 @@ void ConfigUtil::StringConfigItem::Create(HWND m_hWnd) {
 
 }
 
-int ConfigUtil::StringConfigItem::updateLayout(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing) {
+int ConfigUtil::StringConfigItem::updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing) {
 	//CStatic
-	CRect rc = calculateItemPosition(m_hWnd, prevConfigBottomMargin, configSpacing);
+	CRect rc = calculateItemPosition(m_hWnd, aPrevConfigBottomMargin, aConfigSpacing);
 	ctrlLabel.MoveWindow(rc);
 
 	//CEdit
@@ -114,8 +114,8 @@ void ConfigUtil::BoolConfigItem::Create(HWND m_hWnd) {
 
 }
 
-int ConfigUtil::BoolConfigItem::updateLayout(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing) {
-	CRect rc = calculateItemPosition(m_hWnd, prevConfigBottomMargin, configSpacing);
+int ConfigUtil::BoolConfigItem::updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing) {
+	CRect rc = calculateItemPosition(m_hWnd, aPrevConfigBottomMargin, aConfigSpacing);
 	ctrlCheck.MoveWindow(rc);
 
 	return rc.bottom;
@@ -138,8 +138,8 @@ void ConfigUtil::BrowseConfigItem::Create(HWND m_hWnd) {
 
 }
 
-int ConfigUtil::BrowseConfigItem::updateLayout(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing) {
-	prevConfigBottomMargin = StringConfigItem::updateLayout(m_hWnd, prevConfigBottomMargin, configSpacing);
+int ConfigUtil::BrowseConfigItem::updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing) {
+	aPrevConfigBottomMargin = StringConfigItem::updateLayout(m_hWnd, aPrevConfigBottomMargin, aConfigSpacing);
 
 	CRect rc;
 	ctrlEdit.GetWindowRect(&rc);
@@ -149,10 +149,10 @@ int ConfigUtil::BrowseConfigItem::updateLayout(HWND m_hWnd, int prevConfigBottom
 
 	rc.left = rc.right + 2;
 	rc.right = rc.left + buttonWidth;
-	rc.bottom = prevConfigBottomMargin;
+	rc.bottom = aPrevConfigBottomMargin;
 	ctrlButton.MoveWindow(rc);
 
-	return prevConfigBottomMargin;
+	return aPrevConfigBottomMargin;
 }
 
 
@@ -186,9 +186,9 @@ void ConfigUtil::IntConfigItem::Create(HWND m_hWnd) {
 
 }
 
-int ConfigUtil::IntConfigItem::updateLayout(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing) {
+int ConfigUtil::IntConfigItem::updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing) {
 	//CStatic
-	CRect rc = calculateItemPosition(m_hWnd, prevConfigBottomMargin, configSpacing);
+	CRect rc = calculateItemPosition(m_hWnd, aPrevConfigBottomMargin, aConfigSpacing);
 	rc.right -= 200;
 	ctrlLabel.MoveWindow(rc);
 

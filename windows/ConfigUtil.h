@@ -52,12 +52,12 @@ public:
 		ServerSettingItem& setting;
 
 		virtual void Create(HWND m_hWnd) = 0;
-		virtual int updateLayout(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing) = 0;
+		virtual int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing) = 0;
 		virtual bool handleClick(HWND m_hWnd) = 0;
 		virtual bool write() = 0;
 
 		int getParentRightEdge(HWND m_hWnd);
-		CRect calculateItemPosition(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing);
+		CRect calculateItemPosition(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing);
 
 	};
 
@@ -78,7 +78,7 @@ public:
 		void setLabel();
 
 		void Create(HWND m_hWnd);
-		int updateLayout(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing);
+		int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing);
 
 		bool handleClick(HWND m_hWnd);
 
@@ -102,7 +102,7 @@ public:
 		void setLabel();
 
 		void Create(HWND m_hWnd);
-		int updateLayout(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing);
+		int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing);
 
 		bool handleClick(HWND m_hWnd);
 
@@ -115,7 +115,7 @@ public:
 		BrowseConfigItem(ServerSettingItem& aSetting) : StringConfigItem(aSetting) {}
 
 		void Create(HWND m_hWnd);
-		int updateLayout(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing);
+		int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing);
 
 		bool handleClick(HWND m_hWnd);
 		CButton ctrlButton;
@@ -139,7 +139,7 @@ public:
 		void setLabel();
 
 		void Create(HWND m_hWnd);
-		int updateLayout(HWND m_hWnd, int prevConfigBottomMargin, int configSpacing);
+		int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing);
 
 		bool handleClick(HWND m_hWnd);
 

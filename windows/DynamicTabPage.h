@@ -26,11 +26,9 @@
 #pragma once
 #endif // _MSC_VER > 1000
 #include <atlcrack.h>
+#include "stdafx.h"
 
-#include <airdcpp/Util.h>
 #include "ConfigUtil.h"
-
-using namespace webserver;
 
 class DynamicTabPage : public CDialogImpl<DynamicTabPage> {
 public:
@@ -39,6 +37,9 @@ public:
 
 	DynamicTabPage();
 	~DynamicTabPage();
+
+	void resizePage(CRect & windowRect);
+	void updateLayout(CRect & windowRect);
 
 	BEGIN_MSG_MAP_EX(DynamicTabPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
@@ -50,7 +51,7 @@ public:
 	END_MSG_MAP()
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-
+	LRESULT onEraseBackground(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL & /*bHandled*/);
 	LRESULT onCtlColor(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
 
 	LRESULT onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/) {
@@ -74,9 +75,6 @@ public:
 	}
 
 
-	LRESULT onEraseBackground(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL & /*bHandled*/);
-
-
 	void addConfigItem(webserver::ServerSettingItem& aSetting) {
 		auto item = ConfigUtil::getConfigItem(aSetting);
 		if(item)
@@ -97,8 +95,6 @@ public:
 		return true;
 	}
 
-	void updateLayout(CRect& windowRect);
-	void resizePage(CRect& windowRect);
 	vector<shared_ptr<ConfigUtil::ConfigIem>>& getConfigs() { return configs; }
 
 private:
@@ -106,10 +102,9 @@ private:
 	bool loading;
 	vector<shared_ptr<ConfigUtil::ConfigIem>> configs;
 
-	int prevConfigBottomMargin = 0;
-	int configSpacing = 20;
+	int m_prevConfigBottomMargin = 0;
+	int m_configSpacing = 20;
 
-	int editHeight = 25;
 
 };
 
