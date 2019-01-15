@@ -347,12 +347,10 @@ public:
     , m_dep_collector( dep_collector )
     {}
 
-private:
     // test_tree_visitor interface
     virtual bool    visit( test_unit const& tu )
     {
         const_cast<test_unit&>(tu).p_run_status.value = m_new_status == test_unit::RS_INVALID ? tu.p_default_status : m_new_status;
-
         if( m_dep_collector ) {
             BOOST_TEST_FOREACH( test_unit_id, dep_id, tu.p_dependencies.get() ) {
                 test_unit const& dep = framework::get( dep_id, TUT_ANY );
@@ -369,6 +367,7 @@ private:
         return true;
     }
 
+private:
     // Data members
     test_unit::run_status   m_new_status;
     test_unit_id_list*      m_dep_collector;
@@ -491,7 +490,8 @@ unsigned const TIMEOUT_EXCEEDED = static_cast<unsigned>( -1 );
 class state {
 public:
     state()
-    : m_curr_test_unit( INV_TEST_UNIT_ID )
+    : m_master_test_suite( 0 )
+    , m_curr_test_unit( INV_TEST_UNIT_ID )
     , m_next_test_case_id( MIN_TEST_CASE_ID )
     , m_next_test_suite_id( MIN_TEST_SUITE_ID )
     , m_test_in_progress( false )
@@ -610,13 +610,27 @@ public:
 
             tu_to_enable.pop_back();
 
-            // 35. Ignore test units which already enabled
+            // 35. Ignore test units which are already enabled
             if( tu.is_enabled() )
                 continue;
 
             // set new status and add all dependencies into tu_to_enable
             set_run_status enabler( test_unit::RS_ENABLED, &tu_to_enable );
             traverse_test_tree( tu.p_id, enabler, true );
+
+            // Add the dependencies of the parent suites, see trac #13149
+            test_unit_id parent_id = tu.p_parent_id;
+            while(   parent_id != INV_TEST_UNIT_ID
+                  && parent_id != master_tu_id )
+            {
+                // we do not use the traverse_test_tree as otherwise it would enable the sibblings and subtree
+                // of the test case we want to enable (we need to enable the parent suites and their dependencies only)
+                // the parent_id needs to be enabled in order to be properly parsed by finalize_run_status, the visit
+                // does the job
+                test_unit& tu_parent = framework::get( parent_id, TUT_ANY );
+                enabler.visit( tu_parent );
+                parent_id = tu_parent.p_parent_id;
+            }
         }
 
         // 40. Apply all disablers
@@ -705,6 +719,9 @@ public:
             // 40. We are going to time the execution
             boost::timer tu_timer;
 
+            // we pass the random generator
+            const random_generator_helper& rand_gen = p_random_generator ? *p_random_generator : random_generator_helper();
+
             if( tu.p_type == TUT_SUITE ) {
                 test_suite const& ts = static_cast<test_suite const&>( tu );
 
@@ -714,14 +731,14 @@ public:
                     BOOST_TEST_FOREACH( value_type, chld, ts.m_ranked_children ) {
                         unsigned chld_timeout = child_timeout( timeout, tu_timer.elapsed() );
 
-                        result = (std::min)( result, execute_test_tree( chld.second, chld_timeout ) );
+                        result = (std::min)( result, execute_test_tree( chld.second, chld_timeout, &rand_gen ) );
 
                         if( unit_test_monitor.is_critical_error( result ) )
                             break;
                     }
                 }
                 else {
-                    // Go through ranges of chldren with the same dependency rank and shuffle them
+                    // Go through ranges of children with the same dependency rank and shuffle them
                     // independently. Execute each subtree in this order
                     test_unit_id_list children_with_the_same_rank;
 
@@ -736,8 +753,6 @@ public:
                             children_with_the_same_rank.push_back( it->second );
                             it++;
                         }
-
-                        const random_generator_helper& rand_gen = p_random_generator ? *p_random_generator : random_generator_helper();
 
 #ifdef BOOST_NO_CXX98_RANDOM_SHUFFLE
                         impl::random_shuffle( children_with_the_same_rank.begin(), children_with_the_same_rank.end(), rand_gen );
@@ -895,6 +910,13 @@ struct sum_to_first_only {
 };
 
 void
+shutdown_loggers_and_reports()
+{
+    s_frk_state().m_log_sinks.clear();
+    s_frk_state().m_report_sink.setup( "stderr" );
+}
+
+void
 setup_loggers()
 {
 
@@ -913,8 +935,15 @@ setup_loggers()
             unit_test_log.set_format( format );
 
             runtime_config::stream_holder& stream_logger = s_frk_state().m_log_sinks[format];
-            if( runtime_config::has( runtime_config::btrt_log_sink ) )
-                stream_logger.setup( runtime_config::get<std::string>( runtime_config::btrt_log_sink ) );
+            if( runtime_config::has( runtime_config::btrt_log_sink ) ) {
+                // we remove all streams in this case, so we do not specify the format
+                boost::function< void () > log_cleaner = boost::bind( &unit_test_log_t::set_stream,
+                                                                      &unit_test_log,
+                                                                      boost::ref(std::cout)
+                                                                      );
+                stream_logger.setup( runtime_config::get<std::string>( runtime_config::btrt_log_sink ),
+                                     log_cleaner );
+            }
             unit_test_log.set_stream( stream_logger.ref() );
         }
         else
@@ -1026,7 +1055,6 @@ setup_loggers()
                         }
                     }
 
-
                     BOOST_TEST_I_ASSRT( formatter_log_level != invalid_log_level,
                                         boost::runtime::access_to_missing_argument()
                                             << "Unable to determine the log level from '"
@@ -1041,12 +1069,18 @@ setup_loggers()
                     unit_test_log.set_threshold_level( format, formatter_log_level );
 
                     runtime_config::stream_holder& stream_logger = s_frk_state().m_log_sinks[format];
+                    boost::function< void () > log_cleaner = boost::bind( &unit_test_log_t::set_stream,
+                                                                          &unit_test_log,
+                                                                          format,
+                                                                          boost::ref(std::cout) );
                     if( ++current_format_specs != utils::string_token_iterator() &&
                         current_format_specs->size() ) {
-                        stream_logger.setup( *current_format_specs );
+                        stream_logger.setup( *current_format_specs, 
+                                             log_cleaner );
                     }
                     else {
-                        stream_logger.setup( formatter->get_default_stream_description() );
+                        stream_logger.setup( formatter->get_default_stream_description(),
+                                             log_cleaner );
                     }
                     unit_test_log.set_stream( format, stream_logger.ref() );
                 }
@@ -1092,8 +1126,14 @@ init( init_unit_test_func init_func, int argc, char* argv[] )
     results_reporter::set_level( runtime_config::get<report_level>( runtime_config::btrt_report_level ) );
     results_reporter::set_format( runtime_config::get<output_format>( runtime_config::btrt_report_format ) );
 
-    if( runtime_config::has( runtime_config::btrt_report_sink ) )
-        s_frk_state().m_report_sink.setup( runtime_config::get<std::string>( runtime_config::btrt_report_sink ) );
+    if( runtime_config::has( runtime_config::btrt_report_sink ) ) {
+        boost::function< void () > report_cleaner = boost::bind( &results_reporter::set_stream,
+                                                                 boost::ref(std::cerr)
+                                                                );
+        s_frk_state().m_report_sink.setup( runtime_config::get<std::string>( runtime_config::btrt_report_sink ),
+                                           report_cleaner );
+    }
+    
     results_reporter::set_stream( s_frk_state().m_report_sink.ref() );
 
     // 40. Register default test observers
@@ -1173,6 +1213,7 @@ test_in_progress()
 void
 shutdown()
 {
+    impl::shutdown_loggers_and_reports();
     // eliminating some fake memory leak reports. See for more details:
     // http://connect.microsoft.com/VisualStudio/feedback/details/106937/memory-leaks-reported-by-debug-crt-inside-typeinfo-name
 
@@ -1568,6 +1609,7 @@ run( test_unit_id id, bool continue_test )
             break;
         case 1:
             seed = static_cast<unsigned>( std::rand() ^ std::time( 0 ) ); // better init using std::rand() ^ ...
+            BOOST_FALLTHROUGH;
         default:
             BOOST_TEST_FRAMEWORK_MESSAGE( "Test cases order is shuffled using seed: " << seed );
             std::srand( seed );
@@ -1580,6 +1622,8 @@ run( test_unit_id id, bool continue_test )
     }
 
     impl::s_frk_state().m_test_in_progress = false;
+
+    results_reporter::make_report( INV_REPORT_LEVEL, id );
 
     unit_test::framework_init_observer.clear();
     if( call_start_finish ) {

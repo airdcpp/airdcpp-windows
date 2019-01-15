@@ -1822,7 +1822,7 @@ tstring RichTextBox::WordFromPos(const POINT& p) {
 	len = end - begin;
 	
 	/*a hack, limit to 512, scrolling becomes sad with long words...
-	links longer than 512? set ít higher or maybe just limit the cursor detecting?*/
+	links longer than 512? set ï¿½t higher or maybe just limit the cursor detecting?*/
 	if((len <= 3) || (len >= 512)) 
 		return Util::emptyStringT;
 

@@ -33,12 +33,15 @@
 #include <boost/preprocessor/comparison/equal.hpp>
 
 #include <boost/bind.hpp>
-
 #include <boost/type_traits/is_copy_constructible.hpp>
 
-#include <boost/test/detail/suppress_warnings.hpp>
 #include <boost/test/tools/detail/print_helper.hpp>
 #include <boost/test/utils/string_cast.hpp>
+
+#include <list>
+#include <string>
+
+#include <boost/test/detail/suppress_warnings.hpp>
 
 #if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) \
    && !defined(BOOST_TEST_DATASET_MAX_ARITY)
@@ -161,6 +164,7 @@ public:
 
 #if !defined(BOOST_TEST_DATASET_VARIADIC)
     // see BOOST_TEST_DATASET_MAX_ARITY to increase the default supported arity
+    // there is also a limit on boost::bind
 #define TC_MAKE(z,arity,_)                                                              \
     template<BOOST_PP_ENUM_PARAMS(arity, typename Arg)>                                 \
     void    operator()( BOOST_PP_ENUM_BINARY_PARAMS(arity, Arg, const& arg) ) const     \
@@ -179,8 +183,8 @@ public:
             new test_case( genTestCaseName(),
                            m_tc_file,
                            m_tc_line,
-                           boost::bind( &TestCase::template test_method<Arg...>,
-                                        boost_bind_rvalue_holder_helper(std::forward<Arg>(arg))...)));
+                           std::bind( &TestCase::template test_method<Arg...>,
+                                      boost_bind_rvalue_holder_helper(std::forward<Arg>(arg))...)));
     }
 #endif
 

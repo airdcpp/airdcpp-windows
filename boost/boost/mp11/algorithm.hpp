@@ -22,7 +22,7 @@
 #include <boost/mp11/detail/config.hpp>
 #include <boost/mp11/integer_sequence.hpp>
 #include <boost/config.hpp>
-#include <boost/detail/workaround.hpp>
+#include <boost/config/workaround.hpp>
 #include <type_traits>
 #include <utility>
 
@@ -907,14 +907,10 @@ template<class... T, class F> BOOST_CONSTEXPR F mp_for_each_impl( mp_list<T...>,
     return (void)A{ ((void)f(T()), 0)... }, std::forward<F>(f);
 }
 
-#if BOOST_WORKAROUND( BOOST_MSVC, <= 1800 )
-
 template<class F> BOOST_CONSTEXPR F mp_for_each_impl( mp_list<>, F && f )
 {
     return std::forward<F>(f);
 }
-
-#endif
 
 } // namespace detail
 

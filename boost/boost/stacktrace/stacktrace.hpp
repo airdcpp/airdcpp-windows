@@ -13,6 +13,7 @@
 #endif
 
 #include <boost/core/explicit_operator_bool.hpp>
+#include <boost/container_hash/hash_fwd.hpp>
 
 #include <iosfwd>
 #include <string>
@@ -30,13 +31,6 @@
 #   pragma warning(push)
 #   pragma warning(disable:2196) // warning #2196: routine is both "inline" and "noinline"
 #endif
-
-/// @cond
-namespace boost {
-    // Forward declaration
-    template <class It> std::size_t hash_range(It, It);
-}
-/// @endcond
 
 namespace boost { namespace stacktrace {
 
@@ -87,7 +81,11 @@ class basic_stacktrace {
             }
 
             // Failed to fit in `buffer_size`. Allocating memory:
+#ifdef BOOST_NO_CXX11_ALLOCATOR
             typedef typename Allocator::template rebind<native_frame_ptr_t>::other allocator_void_t;
+#else
+            typedef typename std::allocator_traits<Allocator>::template rebind_alloc<native_frame_ptr_t> allocator_void_t;
+#endif
             std::vector<native_frame_ptr_t, allocator_void_t> buf(buffer_size * 2, 0, impl_.get_allocator());
             do {
                 const std::size_t frames_count = boost::stacktrace::detail::this_thread_frames::collect(&buf[0], buf.size(), frames_to_skip + 1);

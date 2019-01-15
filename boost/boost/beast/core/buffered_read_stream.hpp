@@ -111,8 +111,7 @@ public:
         typename std::remove_reference<Stream>::type;
 
     /// The type of the lowest layer.
-    using lowest_layer_type =
-        typename get_lowest_layer<next_layer_type>::type;
+    using lowest_layer_type = get_lowest_layer<next_layer_type>;
 
     /** Move constructor.
 
@@ -274,8 +273,8 @@ public:
         is retained by the caller, which must guarantee that they
         remain valid until the handler is called.
 
-        @param handler The handler to be called when the operation
-        completes. Copies will be made of the handler as required.
+        @param handler Invoked when the operation completes.
+        The handler may be moved or copied as needed.
         The equivalent function signature of the handler must be:
         @code void handler(
             error_code const& error,      // result of operation
@@ -346,8 +345,8 @@ public:
         retained by the caller, which must guarantee that they
         remain valid until the handler is called.
 
-        @param handler The handler to be called when the operation
-        completes. Copies will be made of the handler as required.
+        @param handler Invoked when the operation completes.
+        The handler may be moved or copied as needed.
         The equivalent function signature of the handler must be:
         @code void handler(
             error_code const& error,      // result of operation

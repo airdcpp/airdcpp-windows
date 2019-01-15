@@ -63,7 +63,7 @@ struct empty_body
     {
         template<bool isRequest, class Fields>
         explicit
-        reader(message<isRequest, empty_body, Fields>&)
+        reader(header<isRequest, Fields>&, value_type&)
         {
         }
 
@@ -100,12 +100,11 @@ struct empty_body
     struct writer
     {
         using const_buffers_type =
-            boost::asio::null_buffers;
+            boost::asio::const_buffer;
 
         template<bool isRequest, class Fields>
         explicit
-        writer(message<isRequest,
-            empty_body, Fields> const&)
+        writer(header<isRequest, Fields> const&, value_type const&)
         {
         }
 

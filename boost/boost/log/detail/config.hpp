@@ -344,9 +344,16 @@ namespace log {
 #   if !defined(BOOST_NO_CXX11_INLINE_NAMESPACES)
 
 inline namespace BOOST_LOG_VERSION_NAMESPACE {}
-}
 
 #       define BOOST_LOG_OPEN_NAMESPACE namespace log { inline namespace BOOST_LOG_VERSION_NAMESPACE {
+#       define BOOST_LOG_CLOSE_NAMESPACE }}
+
+#   elif defined(BOOST_GCC) && (BOOST_GCC+0) >= 40400
+
+// GCC 7 deprecated strong using directives but allows inline namespaces in C++03 mode since GCC 4.4.
+__extension__ inline namespace BOOST_LOG_VERSION_NAMESPACE {}
+
+#       define BOOST_LOG_OPEN_NAMESPACE namespace log { __extension__ inline namespace BOOST_LOG_VERSION_NAMESPACE {
 #       define BOOST_LOG_CLOSE_NAMESPACE }}
 
 #   else
@@ -359,11 +366,11 @@ __attribute__((__strong__))
 #       endif
 ;
 
-}
-
 #       define BOOST_LOG_OPEN_NAMESPACE namespace log { namespace BOOST_LOG_VERSION_NAMESPACE {
 #       define BOOST_LOG_CLOSE_NAMESPACE }}
 #   endif
+
+} // namespace log
 
 #else // !defined(BOOST_LOG_DOXYGEN_PASS)
 

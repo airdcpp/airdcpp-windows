@@ -59,6 +59,7 @@ namespace dcpp {
 boost::regex AirUtil::releaseReg;
 boost::regex AirUtil::subDirRegPlain;
 boost::regex AirUtil::crcReg;
+boost::regex AirUtil::lineBreakRegex;
 
 AirUtil::TimeCounter::TimeCounter(string aMsg) : start(GET_TICK()), msg(move(aMsg)) {
 
@@ -155,6 +156,8 @@ void AirUtil::init() {
 	releaseReg.assign(getReleaseRegBasic());
 	subDirRegPlain.assign(getSubDirReg(), boost::regex::icase);
 	crcReg.assign(R"(.{5,200}\s(\w{8})$)");
+	lineBreakRegex.assign(R"(\n|\r)");
+
 
 #if defined _WIN32 && defined _DEBUG
 	dcassert(AirUtil::isParentOrExactLocal(R"(C:\Projects\)", R"(C:\Projects\)"));

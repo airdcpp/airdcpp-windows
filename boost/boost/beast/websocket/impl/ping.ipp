@@ -19,6 +19,7 @@
 #include <boost/asio/associated_executor.hpp>
 #include <boost/asio/coroutine.hpp>
 #include <boost/asio/handler_continuation_hook.hpp>
+#include <boost/asio/handler_invoke_hook.hpp>
 #include <boost/asio/post.hpp>
 #include <boost/throw_exception.hpp>
 #include <memory>
@@ -32,24 +33,22 @@ namespace websocket {
     It only sends the frames it does not make attempts to read
     any frame data.
 */
-template<class NextLayer>
+template<class NextLayer, bool deflateSupported>
 template<class Handler>
-class stream<NextLayer>::ping_op
+class stream<NextLayer, deflateSupported>::ping_op
     : public boost::asio::coroutine
 {
     struct state
     {
-        stream<NextLayer>& ws;
+        stream<NextLayer, deflateSupported>& ws;
         detail::frame_buffer fb;
-        token tok;
 
         state(
-            Handler&,
-            stream<NextLayer>& ws_,
+            Handler const&,
+            stream<NextLayer, deflateSupported>& ws_,
             detail::opcode op,
             ping_data const& payload)
             : ws(ws_)
-            , tok(ws.tok_.unique())
         {
             // Serialize the control frame
             ws.template write_ping<
@@ -61,13 +60,15 @@ class stream<NextLayer>::ping_op
     handler_ptr<state, Handler> d_;
 
 public:
+    static constexpr int id = 3; // for soft_mutex
+
     ping_op(ping_op&&) = default;
-    ping_op(ping_op const&) = default;
+    ping_op(ping_op const&) = delete;
 
     template<class DeducedHandler>
     ping_op(
         DeducedHandler&& h,
-        stream<NextLayer>& ws,
+        stream<NextLayer, deflateSupported>& ws,
         detail::opcode op,
         ping_data const& payload)
         : d_(std::forward<DeducedHandler>(h),
@@ -81,16 +82,16 @@ public:
     allocator_type
     get_allocator() const noexcept
     {
-        return boost::asio::get_associated_allocator(d_.handler());
+        return (boost::asio::get_associated_allocator)(d_.handler());
     }
 
     using executor_type = boost::asio::associated_executor_t<
-        Handler, decltype(std::declval<stream<NextLayer>&>().get_executor())>;
+        Handler, decltype(std::declval<stream<NextLayer, deflateSupported>&>().get_executor())>;
 
     executor_type
     get_executor() const noexcept
     {
-        return boost::asio::get_associated_executor(
+        return (boost::asio::get_associated_executor)(
             d_.handler(), d_->ws.get_executor());
     }
 
@@ -105,12 +106,21 @@ public:
         return asio_handler_is_continuation(
             std::addressof(op->d_.handler()));
     }
+
+    template<class Function>
+    friend
+    void asio_handler_invoke(Function&& f, ping_op* op)
+    {
+        using boost::asio::asio_handler_invoke;
+        asio_handler_invoke(
+            f, std::addressof(op->d_.handler()));
+    }
 };
 
-template<class NextLayer>
+template<class NextLayer, bool deflateSupported>
 template<class Handler>
 void
-stream<NextLayer>::
+stream<NextLayer, deflateSupported>::
 ping_op<Handler>::
 operator()(error_code ec, std::size_t)
 {
@@ -118,11 +128,8 @@ operator()(error_code ec, std::size_t)
     BOOST_ASIO_CORO_REENTER(*this)
     {
         // Maybe suspend
-        if(! d.ws.wr_block_)
+        if(d.ws.wr_block_.try_lock(this))
         {
-            // Acquire the write block
-            d.ws.wr_block_ = d.tok;
-
             // Make sure the stream is open
             if(! d.ws.check_open(ec))
             {
@@ -136,19 +143,17 @@ operator()(error_code ec, std::size_t)
         else
         {
             // Suspend
-            BOOST_ASSERT(d.ws.wr_block_ != d.tok);
             BOOST_ASIO_CORO_YIELD
             d.ws.paused_ping_.emplace(std::move(*this));
 
             // Acquire the write block
-            BOOST_ASSERT(! d.ws.wr_block_);
-            d.ws.wr_block_ = d.tok;
+            d.ws.wr_block_.lock(this);
 
             // Resume
             BOOST_ASIO_CORO_YIELD
             boost::asio::post(
                 d.ws.get_executor(), std::move(*this));
-            BOOST_ASSERT(d.ws.wr_block_ == d.tok);
+            BOOST_ASSERT(d.ws.wr_block_.is_locked(this));
 
             // Make sure the stream is open
             if(! d.ws.check_open(ec))
@@ -163,8 +168,7 @@ operator()(error_code ec, std::size_t)
             goto upcall;
 
     upcall:
-        BOOST_ASSERT(d.ws.wr_block_ == d.tok);
-        d.ws.wr_block_.reset();
+        d.ws.wr_block_.unlock(this);
         d.ws.paused_close_.maybe_invoke() ||
             d.ws.paused_rd_.maybe_invoke() ||
             d.ws.paused_wr_.maybe_invoke();
@@ -174,9 +178,9 @@ operator()(error_code ec, std::size_t)
 
 //------------------------------------------------------------------------------
 
-template<class NextLayer>
+template<class NextLayer, bool deflateSupported>
 void
-stream<NextLayer>::
+stream<NextLayer, deflateSupported>::
 ping(ping_data const& payload)
 {
     error_code ec;
@@ -185,9 +189,9 @@ ping(ping_data const& payload)
         BOOST_THROW_EXCEPTION(system_error{ec});
 }
 
-template<class NextLayer>
+template<class NextLayer, bool deflateSupported>
 void
-stream<NextLayer>::
+stream<NextLayer, deflateSupported>::
 ping(ping_data const& payload, error_code& ec)
 {
     // Make sure the stream is open
@@ -201,9 +205,9 @@ ping(ping_data const& payload, error_code& ec)
         return;
 }
 
-template<class NextLayer>
+template<class NextLayer, bool deflateSupported>
 void
-stream<NextLayer>::
+stream<NextLayer, deflateSupported>::
 pong(ping_data const& payload)
 {
     error_code ec;
@@ -212,9 +216,9 @@ pong(ping_data const& payload)
         BOOST_THROW_EXCEPTION(system_error{ec});
 }
 
-template<class NextLayer>
+template<class NextLayer, bool deflateSupported>
 void
-stream<NextLayer>::
+stream<NextLayer, deflateSupported>::
 pong(ping_data const& payload, error_code& ec)
 {
     // Make sure the stream is open
@@ -228,38 +232,38 @@ pong(ping_data const& payload, error_code& ec)
         return;
 }
 
-template<class NextLayer>
+template<class NextLayer, bool deflateSupported>
 template<class WriteHandler>
 BOOST_ASIO_INITFN_RESULT_TYPE(
     WriteHandler, void(error_code))
-stream<NextLayer>::
+stream<NextLayer, deflateSupported>::
 async_ping(ping_data const& payload, WriteHandler&& handler)
 {
     static_assert(is_async_stream<next_layer_type>::value,
-        "AsyncStream requirements requirements not met");
-    boost::asio::async_completion<WriteHandler,
-        void(error_code)> init{handler};
+        "AsyncStream requirements not met");
+    BOOST_BEAST_HANDLER_INIT(
+        WriteHandler, void(error_code));
     ping_op<BOOST_ASIO_HANDLER_TYPE(
         WriteHandler, void(error_code))>{
-            init.completion_handler, *this,
+            std::move(init.completion_handler), *this,
                 detail::opcode::ping, payload}();
     return init.result.get();
 }
 
-template<class NextLayer>
+template<class NextLayer, bool deflateSupported>
 template<class WriteHandler>
 BOOST_ASIO_INITFN_RESULT_TYPE(
     WriteHandler, void(error_code))
-stream<NextLayer>::
+stream<NextLayer, deflateSupported>::
 async_pong(ping_data const& payload, WriteHandler&& handler)
 {
     static_assert(is_async_stream<next_layer_type>::value,
-        "AsyncStream requirements requirements not met");
-    boost::asio::async_completion<WriteHandler,
-        void(error_code)> init{handler};
+        "AsyncStream requirements not met");
+    BOOST_BEAST_HANDLER_INIT(
+        WriteHandler, void(error_code));
     ping_op<BOOST_ASIO_HANDLER_TYPE(
         WriteHandler, void(error_code))>{
-            init.completion_handler, *this,
+            std::move(init.completion_handler), *this,
                 detail::opcode::pong, payload}();
     return init.result.get();
 }

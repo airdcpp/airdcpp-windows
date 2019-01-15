@@ -19,12 +19,12 @@
 #include <boost/static_assert.hpp>
 
 /*
-	_MSC_VER and _MSC_FULL_VER by version:
+    _MSC_VER and _MSC_FULL_VER by version:
 
-	14.0 (2015)             1900    	190023026
-	14.0 (2015 Update 1)    1900    	190023506
-	14.0 (2015 Update 2)    1900    	190023918
-	14.0 (2015 Update 3)    1900    	190024210
+    14.0 (2015)             1900        190023026
+    14.0 (2015 Update 1)    1900        190023506
+    14.0 (2015 Update 2)    1900        190023918
+    14.0 (2015 Update 3)    1900        190024210
 */
 
 #if defined(BOOST_MSVC)
@@ -48,10 +48,7 @@
 
 #endif
 
-#if BOOST_VERSION >= 106500 || ! defined(BOOST_GCC) || BOOST_GCC < 70000
-# define BOOST_BEAST_FALLTHROUGH BOOST_FALLTHROUGH
-#else
-# define BOOST_BEAST_FALLTHROUGH __attribute__((fallthrough))
-#endif
+#define BOOST_BEAST_DEPRECATION_STRING \
+    "This is a deprecated interface, #define BOOST_BEAST_ALLOW_DEPRECATED to allow it"
 
 #endif

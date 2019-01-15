@@ -64,7 +64,6 @@ void startup(StepF stepF, MessageF messageF, Callback runWizard, ProgressF progr
 	WSADATA wsaData;
 	WSAStartup(MAKEWORD(2, 2), &wsaData);
 #endif
-	AirUtil::init();
 
 	//create the running flag
 	if (Util::fileExists(RUNNING_FLAG)) {
@@ -75,6 +74,7 @@ void startup(StepF stepF, MessageF messageF, Callback runWizard, ProgressF progr
 
 	ResourceManager::newInstance();
 	SettingsManager::newInstance();
+	AirUtil::init();
 
 	LogManager::newInstance();
 	TimerManager::newInstance();

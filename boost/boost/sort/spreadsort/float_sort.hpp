@@ -23,6 +23,8 @@ Scott McMurray
 #include <boost/static_assert.hpp>
 #include <boost/sort/spreadsort/detail/constants.hpp>
 #include <boost/sort/spreadsort/detail/float_sort.hpp>
+#include <boost/range/begin.hpp>
+#include <boost/range/end.hpp>
 
 namespace boost {
 namespace sort {
@@ -90,6 +92,18 @@ Some performance plots of runtime vs. n and log(range) are provided:\n
       detail::float_sort(first, last);
   }
 
+    /*!
+    \brief Floating-point sort algorithm using range.
+
+    \param[in] range Range [first, last) for sorting.
+
+  */
+  template <class Range>
+  inline void float_sort(Range& range)
+  {
+    float_sort(boost::begin(range), boost::end(range));
+  }
+
   /*!
     \brief Floating-point sort algorithm using random access iterators with just right-shift functor.
 
@@ -106,6 +120,19 @@ Some performance plots of runtime vs. n and log(range) are provided:\n
       std::sort(first, last);
     else
       detail::float_sort(first, last, rshift(*first, 0), rshift);
+  }
+
+    /*!
+    \brief Floating-point sort algorithm using range with just right-shift functor.
+
+    \param[in] range Range [first, last) for sorting.
+    \param[in] rshift Functor that returns the result of shifting the value_type right a specified number of bits.
+
+  */
+  template <class Range, class Right_shift>
+  inline void float_sort(Range& range, Right_shift rshift)
+  {
+      float_sort(boost::begin(range), boost::end(range), rshift);
   }
 
 
@@ -126,6 +153,21 @@ Some performance plots of runtime vs. n and log(range) are provided:\n
       std::sort(first, last, comp);
     else
       detail::float_sort(first, last, rshift(*first, 0), rshift, comp);
+  }
+
+
+    /*!
+   \brief Float sort algorithm using range with both right-shift and user-defined comparison operator.
+
+   \param[in] range Range [first, last) for sorting.
+   \param[in] rshift Functor that returns the result of shifting the value_type right a specified number of bits.
+   \param[in] comp A binary functor that returns whether the first element passed to it should go before the second in order.
+  */
+
+  template <class Range, class Right_shift, class Compare>
+  inline void float_sort(Range& range, Right_shift rshift, Compare comp)
+  {
+      float_sort(boost::begin(range), boost::end(range), rshift, comp);
   }
 }
 }

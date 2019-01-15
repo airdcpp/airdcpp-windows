@@ -21,10 +21,12 @@
 #include <boost/asio/async_result.hpp>
 #include <boost/asio/basic_stream_socket.hpp>
 #include <boost/asio/handler_continuation_hook.hpp>
+#include <boost/asio/handler_invoke_hook.hpp>
 #include <boost/asio/windows/overlapped_ptr.hpp>
 #include <boost/make_unique.hpp>
 #include <boost/smart_ptr/make_shared_array.hpp>
 #include <boost/winapi/basic_types.hpp>
+#include <boost/winapi/get_last_error.hpp>
 #include <algorithm>
 #include <cstring>
 
@@ -123,9 +125,8 @@ struct basic_file_body<file_win32>
             boost::asio::const_buffer;
 
         template<bool isRequest, class Fields>
-        writer(message<isRequest,
-                basic_file_body<file_win32>, Fields>& m)
-            : body_(m.body())
+        writer(header<isRequest, Fields>&, value_type& b)
+            : body_(b)
         {
         }
 
@@ -167,8 +168,8 @@ struct basic_file_body<file_win32>
     public:
         template<bool isRequest, class Fields>
         explicit
-        reader(message<isRequest, basic_file_body, Fields>& m)
-            : body_(m.body())
+        reader(header<isRequest, Fields>&, value_type& b)
+            : body_(b)
         {
         }
 
@@ -344,7 +345,7 @@ class write_some_win32_op
 
 public:
     write_some_win32_op(write_some_win32_op&&) = default;
-    write_some_win32_op(write_some_win32_op const&) = default;
+    write_some_win32_op(write_some_win32_op const&) = delete;
 
     template<class DeducedHandler>
     write_some_win32_op(
@@ -364,7 +365,7 @@ public:
     allocator_type
     get_allocator() const noexcept
     {
-        return boost::asio::get_associated_allocator(h_);
+        return (boost::asio::get_associated_allocator)(h_);
     }
 
     using executor_type =
@@ -374,7 +375,7 @@ public:
     executor_type
     get_executor() const noexcept
     {
-        return boost::asio::get_associated_executor(
+        return (boost::asio::get_associated_executor)(
             h_, sock_.get_executor());
     }
 
@@ -393,6 +394,14 @@ public:
         return asio_handler_is_continuation(
             std::addressof(op->h_));
     }
+
+    template<class Function>
+    friend
+    void asio_handler_invoke(Function&& f, write_some_win32_op* op)
+    {
+        using boost::asio::asio_handler_invoke;
+        asio_handler_invoke(f, std::addressof(op->h_));
+    }
 };
 
 template<
@@ -407,25 +416,28 @@ operator()()
     {
         header_ = true;
         sr_.split(true);
-        return detail::async_write_some(
+        return detail::async_write_some_impl(
             sock_, sr_, std::move(*this));
     }
     if(sr_.get().chunked())
     {
-        return detail::async_write_some(
+        return detail::async_write_some_impl(
             sock_, sr_, std::move(*this));
     }
-    auto& r = sr_.reader_impl();
+    auto& w = sr_.writer_impl();
     boost::winapi::DWORD_ const nNumberOfBytesToWrite =
         static_cast<boost::winapi::DWORD_>(
         (std::min<std::uint64_t>)(
-            (std::min<std::uint64_t>)(r.body_.last_ - r.pos_, sr_.limit()),
+            (std::min<std::uint64_t>)(w.body_.last_ - w.pos_, sr_.limit()),
             (std::numeric_limits<boost::winapi::DWORD_>::max)()));
     boost::asio::windows::overlapped_ptr overlapped{
-        sock_.get_executor().context(), *this};
+        sock_.get_executor().context(), std::move(*this)};
+    // Note that we have moved *this, so we cannot access
+    // the handler since it is now moved-from. We can still
+    // access simple things like references and built-in types.
     auto& ov = *overlapped.get();
-    ov.Offset = lowPart(r.pos_);
-    ov.OffsetHigh = highPart(r.pos_);
+    ov.Offset = lowPart(w.pos_);
+    ov.OffsetHigh = highPart(w.pos_);
     auto const bSuccess = ::TransmitFile(
         sock_.native_handle(),
         sr_.get().body().file_.native_handle(),
@@ -434,14 +446,13 @@ operator()()
         overlapped.get(),
         nullptr,
         0);
-    auto const dwError = ::GetLastError();
+    auto const dwError = boost::winapi::GetLastError();
     if(! bSuccess && dwError !=
         boost::winapi::ERROR_IO_PENDING_)
     {
         // VFALCO This needs review, is 0 the right number?
         // completed immediately (with error?)
-        overlapped.complete(error_code{static_cast<int>(
-            boost::winapi::GetLastError()),
+        overlapped.complete(error_code{static_cast<int>(dwError),
                 system_category()}, 0);
         return;
     }
@@ -465,10 +476,10 @@ operator()(
             header_ = false;
             return (*this)();
         }
-        auto& r = sr_.reader_impl();
-        r.pos_ += bytes_transferred;
-        BOOST_ASSERT(r.pos_ <= r.body_.last_);
-        if(r.pos_ >= r.body_.last_)
+        auto& w = sr_.writer_impl();
+        w.pos_ += bytes_transferred;
+        BOOST_ASSERT(w.pos_ <= w.body_.last_);
+        if(w.pos_ >= w.body_.last_)
         {
             sr_.next(ec, null_lambda{});
             BOOST_ASSERT(! ec);
@@ -496,7 +507,7 @@ write_some(
     {
         sr.split(true);
         auto const bytes_transferred =
-            detail::write_some(sock, sr, ec);
+            detail::write_some_impl(sock, sr, ec);
         if(ec)
             return bytes_transferred;
         return bytes_transferred;
@@ -504,23 +515,23 @@ write_some(
     if(sr.get().chunked())
     {
         auto const bytes_transferred =
-            detail::write_some(sock, sr, ec);
+            detail::write_some_impl(sock, sr, ec);
         if(ec)
             return bytes_transferred;
         return bytes_transferred;
     }
-    auto& r = sr.reader_impl();
-    r.body_.file_.seek(r.pos_, ec);
+    auto& w = sr.writer_impl();
+    w.body_.file_.seek(w.pos_, ec);
     if(ec)
         return 0;
     boost::winapi::DWORD_ const nNumberOfBytesToWrite =
         static_cast<boost::winapi::DWORD_>(
         (std::min<std::uint64_t>)(
-            (std::min<std::uint64_t>)(r.body_.last_ - r.pos_, sr.limit()),
+            (std::min<std::uint64_t>)(w.body_.last_ - w.pos_, sr.limit()),
             (std::numeric_limits<boost::winapi::DWORD_>::max)()));
     auto const bSuccess = ::TransmitFile(
         sock.native_handle(),
-        r.body_.file_.native_handle(),
+        w.body_.file_.native_handle(),
         nNumberOfBytesToWrite,
         0,
         nullptr,
@@ -533,9 +544,9 @@ write_some(
                 system_category());
         return 0;
     }
-    r.pos_ += nNumberOfBytesToWrite;
-    BOOST_ASSERT(r.pos_ <= r.body_.last_);
-    if(r.pos_ < r.body_.last_)
+    w.pos_ += nNumberOfBytesToWrite;
+    BOOST_ASSERT(w.pos_ <= w.body_.last_);
+    if(w.pos_ < w.body_.last_)
     {
         ec.assign(0, ec.category());
     }
@@ -562,14 +573,14 @@ async_write_some(
         basic_file_body<file_win32>, Fields>& sr,
     WriteHandler&& handler)
 {
-    boost::asio::async_completion<WriteHandler,
-        void(error_code)> init{handler};
+    BOOST_BEAST_HANDLER_INIT(
+        WriteHandler, void(error_code, std::size_t));
     detail::write_some_win32_op<
         Protocol,
         BOOST_ASIO_HANDLER_TYPE(WriteHandler,
             void(error_code, std::size_t)),
         isRequest, Fields>{
-            init.completion_handler, sock, sr}();
+            std::move(init.completion_handler), sock, sr}();
     return init.result.get();
 }
 

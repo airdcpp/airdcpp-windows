@@ -35,13 +35,6 @@ namespace boost {
 
 namespace cb_details {
 
-template<class Pointer>
-inline typename boost::pointer_traits<Pointer>::element_type*
-to_address(Pointer p) BOOST_NOEXCEPT
-{
-    return  boost::pointer_traits<Pointer>::to_address(p);
-}
-
 template <class Traits> struct nonconst_traits;
 
 template<class ForwardIterator, class Diff, class T, class Alloc>
@@ -443,10 +436,10 @@ inline ForwardIterator uninitialized_copy(InputIterator first, InputIterator las
     ForwardIterator next = dest;
     BOOST_TRY {
         for (; first != last; ++first, ++dest)
-            boost::container::allocator_traits<Alloc>::construct(a, cb_details::to_address(dest), *first);
+            boost::container::allocator_traits<Alloc>::construct(a, boost::to_address(dest), *first);
     } BOOST_CATCH(...) {
         for (; next != dest; ++next)
-            boost::container::allocator_traits<Alloc>::destroy(a, cb_details::to_address(next));
+            boost::container::allocator_traits<Alloc>::destroy(a, boost::to_address(next));
         BOOST_RETHROW
     }
     BOOST_CATCH_END
@@ -457,7 +450,7 @@ template<class InputIterator, class ForwardIterator, class Alloc>
 ForwardIterator uninitialized_move_if_noexcept_impl(InputIterator first, InputIterator last, ForwardIterator dest, Alloc& a,
     true_type) {
     for (; first != last; ++first, ++dest)
-        boost::container::allocator_traits<Alloc>::construct(a, cb_details::to_address(dest), boost::move(*first));
+        boost::container::allocator_traits<Alloc>::construct(a, boost::to_address(dest), boost::move(*first));
     return dest;
 }
 
@@ -486,10 +479,10 @@ inline void uninitialized_fill_n_with_alloc(ForwardIterator first, Diff n, const
     ForwardIterator next = first;
     BOOST_TRY {
         for (; n > 0; ++first, --n)
-            boost::container::allocator_traits<Alloc>::construct(alloc, cb_details::to_address(first), item);
+            boost::container::allocator_traits<Alloc>::construct(alloc, boost::to_address(first), item);
     } BOOST_CATCH(...) {
         for (; next != first; ++next)
-            boost::container::allocator_traits<Alloc>::destroy(alloc, cb_details::to_address(next));
+            boost::container::allocator_traits<Alloc>::destroy(alloc, boost::to_address(next));
         BOOST_RETHROW
     }
     BOOST_CATCH_END

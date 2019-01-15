@@ -86,13 +86,12 @@ bool DirSFVReader::isCrcValid(const string& aFileName) const {
 	return true;
 }
 
-boost::regex lineBreakRegex(R"(\n|\r)");
 bool DirSFVReader::loadFile(const string& aContent) noexcept {
 	/* Get the filename and crc */
 	bool hasValidLines = false;
 	string line;
 
-	StringTokenizer<string> tokenizer(aContent, lineBreakRegex);
+	StringTokenizer<string> tokenizer(aContent, AirUtil::lineBreakRegex);
 	for (const auto& rawLine: tokenizer.getTokens()) {
 		line = Text::toUtf8(rawLine);
 

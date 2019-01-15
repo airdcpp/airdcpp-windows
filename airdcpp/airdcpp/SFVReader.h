@@ -60,6 +60,7 @@ public:
 		return failedFiles;
 	}
 private:
+
 	bool loaded = false;
 
 	StringList sfvFiles;

@@ -116,6 +116,14 @@ class intercommunicator;
 class graph_communicator;
 
 /**
+ * INTERNAL ONLY
+ *
+ * Forward declaration of @c cartesian_communicator needed for the "cast"
+ * from a communicator to a cartesian communicator.
+ */
+class cartesian_communicator;
+
+/**
  * @brief A communicator that permits communication and
  * synchronization among a set of processes.
  *
@@ -850,29 +858,27 @@ class BOOST_MPI_DECL communicator
   optional<graph_communicator> as_graph_communicator() const;
 
   /**
+   * Determines whether this communicator has a Graph topology.
+   */
+  bool has_graph_topology() const;
+
+  /**
+   * Determine if the communicator has a cartesian topology and, if so,
+   * return that @c cartesian_communicator. Even though the communicators
+   * have different types, they refer to the same underlying
+   * communication space and can be used interchangeably for
+   * communication.
+   *
+   * @returns an @c optional containing the cartesian communicator, if this
+   * communicator does in fact have a cartesian topology. Otherwise, returns
+   * an empty @c optional.
+   */
+  optional<cartesian_communicator> as_cartesian_communicator() const;
+
+  /**
    * Determines whether this communicator has a Cartesian topology.
    */
   bool has_cartesian_topology() const;
-
-#if 0
-  template<typename Extents>
-  communicator 
-  with_cartesian_topology(const Extents& extents, 
-                          bool periodic = false, 
-                          bool reorder = false) const;
-
-  template<typename DimInputIterator, typename PeriodicInputIterator>
-  communicator
-  with_cartesian_topology(DimInputIterator first_dim,
-                          DimInputIterator last_dim,
-                          PeriodicInputIterator first_periodic,
-                          bool reorder = false);
-
-  template<typename Allocator, std::size_t NumDims>
-  communicator
-  with_cartesian_topology(const multi_array<bool, NumDims, Allocator>& periods,
-                          bool reorder = false);
-#endif
 
   /** Abort all tasks in the group of this communicator.
    *
@@ -1122,6 +1128,115 @@ inline bool operator!=(const communicator& comm1, const communicator& comm2)
 /************************************************************************
  * Implementation details                                               *
  ************************************************************************/
+
+/**
+ * INTERNAL ONLY (using the same 'end' name might be considerd unfortunate
+ */
+template<>
+BOOST_MPI_DECL void
+communicator::send<packed_oarchive>(int dest, int tag,
+                                    const packed_oarchive& ar) const;
+
+/**
+ * INTERNAL ONLY
+ */
+template<>
+BOOST_MPI_DECL void
+communicator::send<packed_skeleton_oarchive>
+  (int dest, int tag, const packed_skeleton_oarchive& ar) const;
+
+/**
+ * INTERNAL ONLY
+ */
+template<>
+BOOST_MPI_DECL void
+communicator::send<content>(int dest, int tag, const content& c) const;
+
+/**
+ * INTERNAL ONLY
+ */
+template<>
+BOOST_MPI_DECL status
+communicator::recv<packed_iarchive>(int source, int tag,
+                                    packed_iarchive& ar) const;
+
+/**
+ * INTERNAL ONLY
+ */
+template<>
+BOOST_MPI_DECL status
+communicator::recv<packed_skeleton_iarchive>
+  (int source, int tag, packed_skeleton_iarchive& ar) const;
+
+/**
+ * INTERNAL ONLY
+ */
+template<>
+BOOST_MPI_DECL status
+communicator::recv<const content>(int source, int tag,
+                                  const content& c) const;
+
+/**
+ * INTERNAL ONLY
+ */
+template<>
+inline status
+communicator::recv<content>(int source, int tag,
+                                  content& c) const
+{
+  return recv<const content>(source,tag,c);
+}                                  
+
+/**
+ * INTERNAL ONLY
+ */
+template<>
+BOOST_MPI_DECL request
+communicator::isend<packed_oarchive>(int dest, int tag,
+                                     const packed_oarchive& ar) const;
+
+/**
+ * INTERNAL ONLY
+ */
+template<>
+BOOST_MPI_DECL request
+communicator::isend<packed_skeleton_oarchive>
+  (int dest, int tag, const packed_skeleton_oarchive& ar) const;
+
+/**
+ * INTERNAL ONLY
+ */
+template<>
+BOOST_MPI_DECL request
+communicator::isend<content>(int dest, int tag, const content& c) const;
+
+/**
+ * INTERNAL ONLY
+ */
+template<>
+BOOST_MPI_DECL request
+communicator::irecv<packed_skeleton_iarchive>
+  (int source, int tag, packed_skeleton_iarchive& ar) const;
+
+/**
+ * INTERNAL ONLY
+ */
+template<>
+BOOST_MPI_DECL request
+communicator::irecv<const content>(int source, int tag,
+                                   const content& c) const;
+
+/**
+ * INTERNAL ONLY
+ */
+template<>
+inline request
+communicator::irecv<content>(int source, int tag,
+                             content& c) const
+{
+  return irecv<const content>(source, tag, c);
+}
+
 // Count elements in a message
 template<typename T> 
 inline optional<int> status::count() const
@@ -1741,115 +1856,6 @@ request communicator::irecv(int source, int tag, T* values, int n) const
 {
   return this->array_irecv_impl(source, tag, values, n, is_mpi_datatype<T>());
 }
-
-/**
- * INTERNAL ONLY
- */
-template<>
-BOOST_MPI_DECL void
-communicator::send<packed_oarchive>(int dest, int tag,
-                                    const packed_oarchive& ar) const;
-
-/**
- * INTERNAL ONLY
- */
-template<>
-BOOST_MPI_DECL void
-communicator::send<packed_skeleton_oarchive>
-  (int dest, int tag, const packed_skeleton_oarchive& ar) const;
-
-/**
- * INTERNAL ONLY
- */
-template<>
-BOOST_MPI_DECL void
-communicator::send<content>(int dest, int tag, const content& c) const;
-
-/**
- * INTERNAL ONLY
- */
-template<>
-BOOST_MPI_DECL status
-communicator::recv<packed_iarchive>(int source, int tag,
-                                    packed_iarchive& ar) const;
-
-/**
- * INTERNAL ONLY
- */
-template<>
-BOOST_MPI_DECL status
-communicator::recv<packed_skeleton_iarchive>
-  (int source, int tag, packed_skeleton_iarchive& ar) const;
-
-/**
- * INTERNAL ONLY
- */
-template<>
-BOOST_MPI_DECL status
-communicator::recv<const content>(int source, int tag,
-                                  const content& c) const;
-
-/**
- * INTERNAL ONLY
- */
-template<>
-inline status
-communicator::recv<content>(int source, int tag,
-                                  content& c) const
-{
-  return recv<const content>(source,tag,c);
-}                                  
-
-/**
- * INTERNAL ONLY
- */
-template<>
-BOOST_MPI_DECL request
-communicator::isend<packed_oarchive>(int dest, int tag,
-                                     const packed_oarchive& ar) const;
-
-/**
- * INTERNAL ONLY
- */
-template<>
-BOOST_MPI_DECL request
-communicator::isend<packed_skeleton_oarchive>
-  (int dest, int tag, const packed_skeleton_oarchive& ar) const;
-
-/**
- * INTERNAL ONLY
- */
-template<>
-BOOST_MPI_DECL request
-communicator::isend<content>(int dest, int tag, const content& c) const;
-
-/**
- * INTERNAL ONLY
- */
-template<>
-BOOST_MPI_DECL request
-communicator::irecv<packed_skeleton_iarchive>
-  (int source, int tag, packed_skeleton_iarchive& ar) const;
-
-/**
- * INTERNAL ONLY
- */
-template<>
-BOOST_MPI_DECL request
-communicator::irecv<const content>(int source, int tag,
-                                   const content& c) const;
-
-/**
- * INTERNAL ONLY
- */
-template<>
-inline request
-communicator::irecv<content>(int source, int tag,
-                             content& c) const
-{
-  return irecv<const content>(source, tag, c);
-}
-
 
 } } // end namespace boost::mpi
 

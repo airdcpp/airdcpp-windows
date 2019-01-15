@@ -63,7 +63,7 @@ class parser
         parser<isRequest, Body, Allocator>>;
 
     message<isRequest, Body, basic_fields<Allocator>> m_;
-    typename Body::reader wr_;
+    typename Body::reader rd_;
     bool rd_inited_ = false;
 
     std::function<void(
@@ -84,21 +84,17 @@ public:
     /// Destructor
     ~parser() = default;
 
-    /// Constructor
-    parser();
-
-    /// Constructor
+    /// Constructor (disallowed)
     parser(parser const&) = delete;
 
-    /// Assignment
+    /// Assignment (disallowed)
     parser& operator=(parser const&) = delete;
 
-    /** Constructor
+    /// Constructor (disallowed)
+    parser(parser&& other) = delete;
 
-        After the move, the only valid operation
-        on the moved-from object is destruction.
-    */
-    parser(parser&& other) = default;
+    /// Constructor
+    parser();
 
     /** Constructor
 
@@ -303,6 +299,39 @@ public:
 private:
     friend class basic_parser<isRequest, parser>;
 
+    parser(std::true_type);
+    parser(std::false_type);
+
+    template<class OtherBody, class... Args,
+        class = typename std::enable_if<
+            ! std::is_same<Body, OtherBody>::value>::type>
+    parser(
+        std::true_type,
+        parser<isRequest, OtherBody, Allocator>&& parser,
+        Args&&... args);
+
+    template<class OtherBody, class... Args,
+        class = typename std::enable_if<
+            ! std::is_same<Body, OtherBody>::value>::type>
+    parser(
+        std::false_type,
+        parser<isRequest, OtherBody, Allocator>&& parser,
+        Args&&... args);
+
+    template<class Arg1, class... ArgN,
+        class = typename std::enable_if<
+            ! detail::is_parser<typename
+                std::decay<Arg1>::type>::value>::type>
+    explicit
+    parser(Arg1&& arg1, std::true_type, ArgN&&... argn);
+
+    template<class Arg1, class... ArgN,
+        class = typename std::enable_if<
+            ! detail::is_parser<typename
+                std::decay<Arg1>::type>::value>::type>
+    explicit
+    parser(Arg1&& arg1, std::false_type, ArgN&&... argn);
+
     void
     on_request_impl(
         verb method,
@@ -376,7 +405,7 @@ private:
         boost::optional<std::uint64_t> const& content_length,
         error_code& ec)
     {
-        wr_.init(content_length, ec);
+        rd_.init(content_length, ec);
         rd_inited_ = true;
     }
 
@@ -385,7 +414,7 @@ private:
         string_view body,
         error_code& ec)
     {
-        return wr_.put(boost::asio::buffer(
+        return rd_.put(boost::asio::buffer(
             body.data(), body.size()), ec);
     }
 
@@ -408,14 +437,14 @@ private:
     {
         if(cb_b_)
             return cb_b_(remain, body, ec);
-        return wr_.put(boost::asio::buffer(
+        return rd_.put(boost::asio::buffer(
             body.data(), body.size()), ec);
     }
 
     void
     on_finish_impl(error_code& ec)
     {
-        wr_.finish(ec);
+        rd_.finish(ec);
     }
 };
 

@@ -72,6 +72,10 @@ verb_to_string(verb v)
     }
 
     BOOST_THROW_EXCEPTION(std::invalid_argument{"unknown verb"});
+
+    // Help some compilers which don't know the next line is
+    // unreachable, otherwise spurious warnings are generated.
+    return "<unknown>";
 }
 
 template<class = void>
@@ -159,7 +163,7 @@ string_to_verb(string_view v)
                 return verb::connect;
             if(eq(v, "PY"))
                 return verb::copy;
-            BOOST_BEAST_FALLTHROUGH;
+            BOOST_FALLTHROUGH;
 
         default:
             break;
@@ -220,7 +224,7 @@ string_to_verb(string_view v)
         case 'O':
             if(eq(v, "VE"))
                 return verb::move;
-            BOOST_BEAST_FALLTHROUGH;
+            BOOST_FALLTHROUGH;
 
         default:
             break;
@@ -264,7 +268,7 @@ string_to_verb(string_view v)
                 return verb::purge;
             if(eq(v, "T"))
                 return verb::put;
-            BOOST_BEAST_FALLTHROUGH;
+            BOOST_FALLTHROUGH;
 
         default:
             break;

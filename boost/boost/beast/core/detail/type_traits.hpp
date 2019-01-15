@@ -12,6 +12,7 @@
 
 #include <boost/beast/core/error.hpp>
 #include <boost/asio/buffer.hpp>
+#include <boost/type_traits.hpp>
 #include <iterator>
 #include <tuple>
 #include <type_traits>
@@ -22,25 +23,8 @@ namespace boost {
 namespace beast {
 namespace detail {
 
-//
-// utilities
-//
-
-template<class... Ts>
-struct make_void
-{
-    using type = void;
-};
-
-template<class... Ts>
-using void_t = typename make_void<Ts...>::type;
-
-template<class T>
-inline
-void
-accept_rv(T){}
-
 template<class U>
+inline
 std::size_t constexpr
 max_sizeof()
 {
@@ -48,6 +32,7 @@ max_sizeof()
 }
 
 template<class U0, class U1, class... Us>
+inline
 std::size_t constexpr
 max_sizeof()
 {
@@ -57,6 +42,7 @@ max_sizeof()
 }
 
 template<class U>
+inline
 std::size_t constexpr
 max_alignof()
 {
@@ -71,6 +57,36 @@ max_alignof()
         max_alignof<U0>() > max_alignof<U1, Us...>() ?
         max_alignof<U0>() : max_alignof<U1, Us...>();
 }
+
+// (since C++17)
+template<class... Ts> struct make_void { using type = void; };
+template<class... Ts> using void_t = typename make_void<Ts...>::type;
+
+// (since C++11) missing from g++4.8
+template<std::size_t Len, class... Ts>
+struct aligned_union
+{
+    static
+    std::size_t constexpr alignment_value =
+        max_alignof<Ts...>();
+
+    using type = typename std::aligned_storage<
+        (Len > max_sizeof<Ts...>()) ? Len : (max_sizeof<Ts...>()),
+            alignment_value>::type;
+};
+
+template<std::size_t Len, class... Ts>
+using aligned_union_t =
+    typename aligned_union<Len, Ts...>::type;
+
+//------------------------------------------------------------------------------
+
+template<class T>
+inline
+void
+accept_rv(T){}
+
+//------------------------------------------------------------------------------
 
 template<unsigned N, class T, class... Tn>
 struct repeat_tuple_impl
@@ -97,6 +113,8 @@ struct repeat_tuple<0, T>
 {
     using type = std::tuple<>;
 };
+
+//------------------------------------------------------------------------------
 
 template<class R, class C, class ...A>
 auto
@@ -132,6 +150,8 @@ struct is_invocable<C, R(A...)>
 };
 /** @} */
 
+//------------------------------------------------------------------------------
+
 // for span
 template<class T, class E, class = void>
 struct is_contiguous_container: std::false_type {};
@@ -153,6 +173,8 @@ struct is_contiguous_container<T, E, void_t<
         >::value
     >::type>>: std::true_type
 {};
+
+//------------------------------------------------------------------------------
 
 template<class...>
 struct unwidest_unsigned;
@@ -234,6 +256,21 @@ max_all(U0 u0, U1 u1, UN... un)
 
 //------------------------------------------------------------------------------
 
+template<class T, class = void>
+struct get_lowest_layer_helper
+{
+    using type = T;
+};
+
+template<class T>
+struct get_lowest_layer_helper<T,
+    void_t<typename T::lowest_layer_type>>
+{
+    using type = typename T::lowest_layer_type;
+};
+
+//------------------------------------------------------------------------------
+
 //
 // buffer concepts
 //
@@ -273,7 +310,7 @@ template<class... Bn>
 struct common_buffers_type
 {
     using type = typename std::conditional<
-        std::is_convertible<std::tuple<Bn...>,
+        boost::is_convertible<std::tuple<Bn...>,
             typename repeat_tuple<sizeof...(Bn),
                 boost::asio::mutable_buffer>::type>::value,
                     boost::asio::mutable_buffer,
@@ -299,29 +336,99 @@ using ReadHandler = StreamHandler;
 using WriteHandler = StreamHandler;
 
 template<class Buffers>
-class buffers_range_adapter
+class buffers_range_adaptor
 {
     Buffers const& b_;
 
 public:
     using value_type = typename std::conditional<
-        std::is_convertible<typename std::iterator_traits<
-            typename buffer_sequence_iterator<Buffers>::type>::value_type,
-                boost::asio::const_buffer>::value,
-        boost::asio::const_buffer,
-        boost::asio::mutable_buffer>::type;
+        boost::is_convertible<
+            typename std::iterator_traits<
+                typename buffer_sequence_iterator<
+                    Buffers>::type>::value_type,
+                boost::asio::mutable_buffer>::value,
+            boost::asio::mutable_buffer,
+            boost::asio::const_buffer>::type;
 
-    /* VFALCO This isn't right, because range-for will pick up the iterator's
-              value_type which might not be const_buffer or mutable_buffer. We
-              need to declare our own iterator wrapper that converts the underlying
-              iterator's value_type to const_buffer or mutable_buffer so that
-              range-for sees one of those types.
-    */
-    using const_iterator = typename
-        buffer_sequence_iterator<Buffers>::type;
+    class const_iterator
+    {
+        friend class buffers_range_adaptor;
+
+        using iter_type = typename
+            buffer_sequence_iterator<Buffers>::type;
+
+        iter_type it_;
+
+        const_iterator(iter_type const& it)
+            : it_(it)
+        {
+        }
+
+    public:
+        using value_type = typename
+            buffers_range_adaptor::value_type;
+        using pointer = value_type const*;
+        using reference = value_type;
+        using difference_type = std::ptrdiff_t;
+        using iterator_category =
+            std::bidirectional_iterator_tag;
+        
+        bool
+        operator==(const_iterator const& other) const
+        {
+            return it_ == other.it_;
+        }
+
+        bool
+        operator!=(const_iterator const& other) const
+        {
+            return ! (*this == other);
+        }
+
+        reference
+        operator*() const
+        {
+            return *it_;
+        }
+
+        pointer
+        operator->() const = delete;
+
+        const_iterator&
+        operator++()
+        {
+            ++it_;
+            return *this;
+        }
+
+        const_iterator
+        operator++(int)
+        {
+            auto temp = *this;
+            ++(*this);
+            return temp;
+        }
+
+        // deprecated
+        const_iterator&
+        operator--()
+        {
+            --it_;
+            return *this;
+        }
+
+        // deprecated
+        const_iterator
+        operator--(int)
+        {
+            auto temp = *this;
+            --(*this);
+            return temp;
+        }
+    };
 
     explicit
-    buffers_range_adapter(Buffers const& b)
+    buffers_range_adaptor(Buffers const& b)
         : b_(b)
     {
     }
@@ -340,11 +447,23 @@ public:
 };
 
 template<class Buffers>
-buffers_range_adapter<Buffers>
+buffers_range_adaptor<Buffers>
 buffers_range(Buffers const& buffers)
 {
-    return buffers_range_adapter<Buffers>{buffers};
+    return buffers_range_adaptor<Buffers>{buffers};
 }
+
+/*  If this static assert goes off, it means that the completion
+    handler you provided to an asynchronous initiating function did
+    not have the right signature. Check the parameter types for your
+    completion handler and make sure they match the list of types
+    expected by the initiating function,
+*/
+#define BOOST_BEAST_HANDLER_INIT(type, sig) \
+    static_assert(is_completion_handler< \
+    BOOST_ASIO_HANDLER_TYPE(type, sig), sig>::value, \
+    "CompletionHandler signature requirements not met"); \
+    boost::asio::async_completion<type, sig> init{handler}
 
 } // detail
 } // beast

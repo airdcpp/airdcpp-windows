@@ -19,6 +19,7 @@
 #include <boost/asio/associated_allocator.hpp>
 #include <boost/asio/associated_executor.hpp>
 #include <boost/asio/handler_continuation_hook.hpp>
+#include <boost/asio/handler_invoke_hook.hpp>
 #include <boost/asio/post.hpp>
 #include <boost/asio/write.hpp>
 #include <boost/optional.hpp>
@@ -67,7 +68,7 @@ class write_some_op
 
 public:
     write_some_op(write_some_op&&) = default;
-    write_some_op(write_some_op const&) = default;
+    write_some_op(write_some_op const&) = delete;
 
     template<class DeducedHandler>
     write_some_op(DeducedHandler&& h, Stream& s,
@@ -84,7 +85,7 @@ public:
     allocator_type
     get_allocator() const noexcept
     {
-        return boost::asio::get_associated_allocator(h_);
+        return (boost::asio::get_associated_allocator)(h_);
     }
 
     using executor_type = boost::asio::associated_executor_t<
@@ -93,7 +94,7 @@ public:
     executor_type
     get_executor() const noexcept
     {
-        return boost::asio::get_associated_executor(
+        return (boost::asio::get_associated_executor)(
             h_, s_.get_executor());
     }
 
@@ -111,6 +112,14 @@ public:
         using boost::asio::asio_handler_is_continuation;
         return asio_handler_is_continuation(
             std::addressof(op->h_));
+    }
+
+    template<class Function>
+    friend
+    void asio_handler_invoke(Function&& f, write_some_op* op)
+    {
+        using boost::asio::asio_handler_invoke;
+        asio_handler_invoke(f, std::addressof(op->h_));
     }
 };
 
@@ -203,7 +212,7 @@ class write_op
 
 public:
     write_op(write_op&&) = default;
-    write_op(write_op const&) = default;
+    write_op(write_op const&) = delete;
 
     template<class DeducedHandler>
     write_op(DeducedHandler&& h, Stream& s,
@@ -220,7 +229,7 @@ public:
     allocator_type
     get_allocator() const noexcept
     {
-        return boost::asio::get_associated_allocator(h_);
+        return (boost::asio::get_associated_allocator)(h_);
     }
 
     using executor_type = boost::asio::associated_executor_t<
@@ -229,7 +238,7 @@ public:
     executor_type
     get_executor() const noexcept
     {
-        return boost::asio::get_associated_executor(
+        return (boost::asio::get_associated_executor)(
             h_, s_.get_executor());
     }
 
@@ -245,6 +254,14 @@ public:
         return op->state_ >= 3 ||
             asio_handler_is_continuation(
                 std::addressof(op->h_));
+    }
+
+    template<class Function>
+    friend
+    void asio_handler_invoke(Function&& f, write_op* op)
+    {
+        using boost::asio::asio_handler_invoke;
+        asio_handler_invoke(f, std::addressof(op->h_));
     }
 };
 
@@ -280,7 +297,7 @@ operator()(
 
     case 2:
         state_ = 3;
-        BOOST_BEAST_FALLTHROUGH;
+        BOOST_FALLTHROUGH;
 
     case 3:
     {
@@ -306,7 +323,7 @@ class write_msg_op
         Stream& s;
         serializer<isRequest, Body, Fields> sr;
 
-        data(Handler&, Stream& s_, message<
+        data(Handler const&, Stream& s_, message<
                 isRequest, Body, Fields>& m_)
             : s(s_)
             , sr(m_)
@@ -318,7 +335,7 @@ class write_msg_op
 
 public:
     write_msg_op(write_msg_op&&) = default;
-    write_msg_op(write_msg_op const&) = default;
+    write_msg_op(write_msg_op const&) = delete;
 
     template<class DeducedHandler, class... Args>
     write_msg_op(DeducedHandler&& h, Stream& s, Args&&... args)
@@ -333,7 +350,7 @@ public:
     allocator_type
     get_allocator() const noexcept
     {
-        return boost::asio::get_associated_allocator(d_.handler());
+        return (boost::asio::get_associated_allocator)(d_.handler());
     }
 
     using executor_type = boost::asio::associated_executor_t<
@@ -342,7 +359,7 @@ public:
     executor_type
     get_executor() const noexcept
     {
-        return boost::asio::get_associated_executor(
+        return (boost::asio::get_associated_executor)(
             d_.handler(), d_->s.get_executor());
     }
 
@@ -359,6 +376,14 @@ public:
         using boost::asio::asio_handler_is_continuation;
         return asio_handler_is_continuation(
             std::addressof(op->d_.handler()));
+    }
+
+    template<class Function>
+    friend
+    void asio_handler_invoke(Function&& f, write_msg_op* op)
+    {
+        using boost::asio::asio_handler_invoke;
+        asio_handler_invoke(f, std::addressof(op->d_.handler()));
     }
 };
 
@@ -441,7 +466,7 @@ template<
     class SyncWriteStream,
     bool isRequest, class Body, class Fields>
 std::size_t
-write_some(
+write_some_impl(
     SyncWriteStream& stream,
     serializer<isRequest, Body, Fields>& sr,
     error_code& ec)
@@ -466,20 +491,19 @@ template<
     class WriteHandler>
 BOOST_ASIO_INITFN_RESULT_TYPE(
     WriteHandler, void(error_code, std::size_t))
-async_write_some(
+async_write_some_impl(
     AsyncWriteStream& stream,
     serializer<isRequest, Body, Fields>& sr,
     WriteHandler&& handler)
 {
-    boost::asio::async_completion<
-        WriteHandler,
-        void(error_code, std::size_t)> init{handler};
+    BOOST_BEAST_HANDLER_INIT(
+        WriteHandler, void(error_code, std::size_t));
     detail::write_some_op<
         AsyncWriteStream,
         BOOST_ASIO_HANDLER_TYPE(WriteHandler,
             void(error_code, std::size_t)),
         isRequest, Body, Fields>{
-            init.completion_handler, stream, sr}();
+            std::move(init.completion_handler), stream, sr}();
     return init.result.get();
 }
 
@@ -524,7 +548,7 @@ write_some(
         "Body requirements not met");
     static_assert(is_body_writer<Body>::value,
         "BodyWriter requirements not met");
-    return detail::write_some(stream, sr, ec);
+    return detail::write_some_impl(stream, sr, ec);
 }
 
 template<
@@ -545,7 +569,7 @@ async_write_some(
         "Body requirements not met");
     static_assert(is_body_writer<Body>::value,
         "BodyWriter requirements not met");
-    return detail::async_write_some(stream, sr,
+    return detail::async_write_some_impl(stream, sr,
         std::forward<WriteHandler>(handler));
 }
 
@@ -629,16 +653,15 @@ async_write_header(
     static_assert(is_body_writer<Body>::value,
         "BodyWriter requirements not met");
     sr.split(true);
-    boost::asio::async_completion<
-        WriteHandler,
-        void(error_code, std::size_t)> init{handler};
+    BOOST_BEAST_HANDLER_INIT(
+        WriteHandler, void(error_code, std::size_t));
     detail::write_op<
         AsyncWriteStream,
         BOOST_ASIO_HANDLER_TYPE(WriteHandler,
             void(error_code, std::size_t)),
         detail::serializer_is_header_done,
         isRequest, Body, Fields>{
-        init.completion_handler, stream, sr}();
+        std::move(init.completion_handler), stream, sr}();
     return init.result.get();
 }
 
@@ -706,16 +729,15 @@ async_write(
     static_assert(is_body_writer<Body>::value,
         "BodyWriter requirements not met");
     sr.split(false);
-    boost::asio::async_completion<
-        WriteHandler,
-        void(error_code, std::size_t)> init{handler};
+    BOOST_BEAST_HANDLER_INIT(
+        WriteHandler, void(error_code, std::size_t));
     detail::write_op<
         AsyncWriteStream,
         BOOST_ASIO_HANDLER_TYPE(WriteHandler,
             void(error_code, std::size_t)),
         detail::serializer_is_done,
         isRequest, Body, Fields>{
-            init.completion_handler, stream, sr}();
+            std::move(init.completion_handler), stream, sr}();
     return init.result.get();
 }
 
@@ -780,15 +802,14 @@ async_write(
         "Body requirements not met");
     static_assert(is_body_writer<Body>::value,
         "BodyWriter requirements not met");
-    boost::asio::async_completion<
-        WriteHandler,
-        void(error_code, std::size_t)> init{handler};
+    BOOST_BEAST_HANDLER_INIT(
+        WriteHandler, void(error_code, std::size_t));
     detail::write_msg_op<
         AsyncWriteStream,
         BOOST_ASIO_HANDLER_TYPE(WriteHandler,
             void(error_code, std::size_t)),
         isRequest, Body, Fields>{
-            init.completion_handler, stream, msg}();
+            std::move(init.completion_handler), stream, msg}();
     return init.result.get();
 }
 

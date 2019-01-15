@@ -27,7 +27,7 @@ inline std::string make_pipe_name()
 
     auto pid = ::boost::winapi::GetCurrentProcessId();
 
-    static std::atomic_size_t cnt = 0;
+    static std::atomic_size_t cnt{0};
     name += std::to_string(pid);
     name += "_";
     name += std::to_string(cnt++);
@@ -142,6 +142,18 @@ public:
     std::size_t write_some(const MutableBufferSequence & buffers)
     {
         return _sink.write_some(buffers);
+    }
+
+
+    template<typename MutableBufferSequence>
+    std::size_t read_some(const MutableBufferSequence & buffers, boost::system::error_code & ec) noexcept
+    {
+        return _source.read_some(buffers, ec);
+    }
+    template<typename MutableBufferSequence>
+    std::size_t write_some(const MutableBufferSequence & buffers, boost::system::error_code & ec) noexcept
+    {
+        return _sink.write_some(buffers, ec);
     }
 
     native_handle_type native_source() const {return const_cast<boost::asio::windows::stream_handle&>(_source).native_handle();}
@@ -265,7 +277,11 @@ async_pipe::async_pipe(boost::asio::io_context & ios_source,
     static constexpr int FILE_FLAG_OVERLAPPED_  = 0x40000000; //temporary
 
     ::boost::winapi::HANDLE_ source = ::boost::winapi::create_named_pipe(
+#if defined(BOOST_NO_ANSI_APIS)
+            ::boost::process::detail::convert(name).c_str(),
+#else
             name.c_str(),
+#endif
             ::boost::winapi::PIPE_ACCESS_INBOUND_
             | FILE_FLAG_OVERLAPPED_, //write flag
             0, 1, 8192, 8192, 0, nullptr);
@@ -277,7 +293,11 @@ async_pipe::async_pipe(boost::asio::io_context & ios_source,
     _source.assign(source);
 
     ::boost::winapi::HANDLE_ sink = boost::winapi::create_file(
+#if defined(BOOST_NO_ANSI_APIS)
+            ::boost::process::detail::convert(name).c_str(),
+#else
             name.c_str(),
+#endif
             ::boost::winapi::GENERIC_WRITE_, 0, nullptr,
             ::boost::winapi::OPEN_EXISTING_,
             FILE_FLAG_OVERLAPPED_, //to allow read

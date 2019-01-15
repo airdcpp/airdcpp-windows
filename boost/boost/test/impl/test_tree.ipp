@@ -223,7 +223,7 @@ test_case::test_case( const_string name, const_string file_name, std::size_t lin
 //____________________________________________________________________________//
 
 test_suite::test_suite( const_string name, const_string file_name, std::size_t line_num )
-: test_unit( name, file_name, line_num, static_cast<test_unit_type>(type) )
+: test_unit( ut_detail::normalize_test_case_name( name ), file_name, line_num, static_cast<test_unit_type>(type) )
 {
     framework::register_test_unit( this );
 }
@@ -241,6 +241,14 @@ test_suite::test_suite( const_string module_name )
 void
 test_suite::add( test_unit* tu, counter_t expected_failures, unsigned timeout )
 {
+    // check for clashing names #12597
+    for( test_unit_id_list::const_iterator it(m_children.begin()), ite(m_children.end());
+         it < ite;
+         ++it) {
+        BOOST_TEST_SETUP_ASSERT( tu->p_name != framework::get(*it, TUT_ANY).p_name,
+                                 "test unit with name '" + tu->p_name.value + std::string("' registered multiple times") );
+    }
+
     tu->p_timeout.value = timeout;
 
     m_children.push_back( tu->p_id );
@@ -380,9 +388,25 @@ normalize_test_case_name( const_string name )
 
     if( name[0] == '&' )
         norm_name = norm_name.substr( 1 );
-        
-    std::replace(norm_name.begin(), norm_name.end(), ' ', '_');
-    std::replace(norm_name.begin(), norm_name.end(), ':', '_'); 
+
+    // trim spaces
+    std::size_t first_not_space = norm_name.find_first_not_of(' ');
+    if( first_not_space ) {
+        norm_name.erase(0, first_not_space);
+    }
+
+    std::size_t last_not_space = norm_name.find_last_not_of(' ');
+    if( last_not_space !=std::string::npos ) {
+        norm_name.erase(last_not_space + 1);
+    }
+
+    // sanitize all chars that might be used in runtime filters
+    static const char to_replace[] = { ':', '*', '@', '+', '!', '/' };
+    for(std::size_t index = 0;
+        index < sizeof(to_replace)/sizeof(to_replace[0]);
+        index++) {
+        std::replace(norm_name.begin(), norm_name.end(), to_replace[index], '_');
+    }
 
     return norm_name;
 }

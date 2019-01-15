@@ -19,6 +19,7 @@
 #include <boost/asio/associated_allocator.hpp>
 #include <boost/asio/associated_executor.hpp>
 #include <boost/asio/handler_continuation_hook.hpp>
+#include <boost/asio/handler_invoke_hook.hpp>
 #include <boost/asio/post.hpp>
 #include <boost/throw_exception.hpp>
 
@@ -37,7 +38,7 @@ class buffered_read_stream<
 
 public:
     read_some_op(read_some_op&&) = default;
-    read_some_op(read_some_op const&) = default;
+    read_some_op(read_some_op const&) = delete;
 
     template<class DeducedHandler, class... Args>
     read_some_op(DeducedHandler&& h,
@@ -55,7 +56,7 @@ public:
     allocator_type
     get_allocator() const noexcept
     {
-        return boost::asio::get_associated_allocator(h_);
+        return (boost::asio::get_associated_allocator)(h_);
     }
 
     using executor_type =
@@ -65,7 +66,7 @@ public:
     executor_type
     get_executor() const noexcept
     {
-        return boost::asio::get_associated_executor(
+        return (boost::asio::get_associated_executor)(
             h_, s_.get_executor());
     }
 
@@ -79,6 +80,14 @@ public:
         using boost::asio::asio_handler_is_continuation;
         return asio_handler_is_continuation(
             std::addressof(op->h_));
+    }
+
+    template<class Function>
+    friend
+    void asio_handler_invoke(Function&& f, read_some_op* op)
+    {
+        using boost::asio::asio_handler_invoke;
+        asio_handler_invoke(f, std::addressof(op->h_));
     }
 };
 
@@ -121,7 +130,7 @@ read_some_op<MutableBufferSequence, Handler>::operator()(
 
     case 2:
         s_.buffer_.commit(bytes_transferred);
-        BOOST_BEAST_FALLTHROUGH;
+        BOOST_FALLTHROUGH;
 
     case 3:
         bytes_transferred =
@@ -233,11 +242,11 @@ async_read_some(
     if(buffer_.size() == 0 && capacity_ == 0)
         return next_layer_.async_read_some(buffers,
             std::forward<ReadHandler>(handler));
-    boost::asio::async_completion<ReadHandler,
-        void(error_code, std::size_t)> init{handler};
+    BOOST_BEAST_HANDLER_INIT(
+        ReadHandler, void(error_code, std::size_t));
     read_some_op<MutableBufferSequence, BOOST_ASIO_HANDLER_TYPE(
         ReadHandler, void(error_code, std::size_t))>{
-            init.completion_handler, *this, buffers}(
+            std::move(init.completion_handler), *this, buffers}(
                 error_code{}, 0);
     return init.result.get();
 }
