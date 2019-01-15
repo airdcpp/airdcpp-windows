@@ -10,6 +10,7 @@
 #ifndef BOOST_BEAST_CORE_IMPL_FILE_WIN32_IPP
 #define BOOST_BEAST_CORE_IMPL_FILE_WIN32_IPP
 
+#include <boost/core/exchange.hpp>
 #include <boost/winapi/access_rights.hpp>
 #include <boost/winapi/error_codes.hpp>
 #include <boost/winapi/file_management.hpp>
@@ -61,9 +62,8 @@ file_win32::
 inline
 file_win32::
 file_win32(file_win32&& other)
-    : h_(other.h_)
+    : h_(boost::exchange(other.h_, boost::winapi::INVALID_HANDLE_VALUE_))
 {
-    other.h_ = boost::winapi::INVALID_HANDLE_VALUE_;
 }
 
 inline
@@ -311,7 +311,7 @@ read(void* buffer, std::size_t n, error_code& ec)
             return nread;
         n -= bytesRead;
         nread += bytesRead;
-        buffer = reinterpret_cast<char*>(buffer) + bytesRead;
+        buffer = static_cast<char*>(buffer) + bytesRead;
     }
     ec.assign(0, ec.category());
     return nread;
@@ -352,7 +352,7 @@ write(void const* buffer, std::size_t n, error_code& ec)
             return nwritten;
         n -= bytesWritten;
         nwritten += bytesWritten;
-        buffer = reinterpret_cast<char const*>(buffer) + bytesWritten;
+        buffer = static_cast<char const*>(buffer) + bytesWritten;
     }
     ec.assign(0, ec.category());
     return nwritten;

@@ -81,7 +81,7 @@ public:
     point2        operator>>(std::ptrdiff_t shift)         const   { return point2(x>>shift,y>>shift); }
     point2& operator+=(const point2& p)           { x+=p.x; y+=p.y; return *this; }
     point2& operator-=(const point2& p)           { x-=p.x; y-=p.y; return *this; }
-    point2& operator/=(double t)                  { x/=t; y/=t; return *this; }
+    point2& operator/=(double t)                  { if (t<0 || 0<t) { x/=t; y/=t; } return *this; }
 
     const T& operator[](std::size_t i)          const   { return this->*mem_array[i]; }
           T& operator[](std::size_t i)                  { return this->*mem_array[i]; }
@@ -96,36 +96,36 @@ template <typename T>
 T point2<T>::* const point2<T>::mem_array[point2<T>::num_dimensions] = { &point2<T>::x, &point2<T>::y };
 
 /// \ingroup PointModel
-template <typename T> GIL_FORCEINLINE
+template <typename T> BOOST_FORCEINLINE
 bool operator==(const point2<T>& p1, const point2<T>& p2) { return (p1.x==p2.x && p1.y==p2.y); }
 /// \ingroup PointModel
-template <typename T> GIL_FORCEINLINE
+template <typename T> BOOST_FORCEINLINE
 bool operator!=(const point2<T>& p1, const point2<T>& p2) { return  p1.x!=p2.x || p1.y!=p2.y; }
 /// \ingroup PointModel
-template <typename T> GIL_FORCEINLINE
+template <typename T> BOOST_FORCEINLINE
 point2<T> operator+(const point2<T>& p1, const point2<T>& p2) { return point2<T>(p1.x+p2.x,p1.y+p2.y); }
 /// \ingroup PointModel
-template <typename T> GIL_FORCEINLINE
+template <typename T> BOOST_FORCEINLINE
 point2<T> operator-(const point2<T>& p) { return point2<T>(-p.x,-p.y); }
 /// \ingroup PointModel
-template <typename T> GIL_FORCEINLINE
+template <typename T> BOOST_FORCEINLINE
 point2<T> operator-(const point2<T>& p1, const point2<T>& p2) { return point2<T>(p1.x-p2.x,p1.y-p2.y); }
 /// \ingroup PointModel
-template <typename T> GIL_FORCEINLINE
-point2<double> operator/(const point2<T>& p, double t)      { return t==0 ? point2<double>(0,0):point2<double>(p.x/t,p.y/t); }
+template <typename T> BOOST_FORCEINLINE
+point2<double> operator/(const point2<T>& p, double t)      { return (t<0 || 0<t) ? point2<double>(p.x/t,p.y/t) : point2<double>(0,0); }
 /// \ingroup PointModel
-template <typename T> GIL_FORCEINLINE
+template <typename T> BOOST_FORCEINLINE
 point2<T> operator*(const point2<T>& p, std::ptrdiff_t t)      { return point2<T>(p.x*t,p.y*t); }
 /// \ingroup PointModel
-template <typename T> GIL_FORCEINLINE
+template <typename T> BOOST_FORCEINLINE
 point2<T> operator*(std::ptrdiff_t t, const point2<T>& p)      { return point2<T>(p.x*t,p.y*t); }
 
 /// \ingroup PointModel
-template <std::size_t K, typename T> GIL_FORCEINLINE
+template <std::size_t K, typename T> BOOST_FORCEINLINE
 const T& axis_value(const point2<T>& p) { return p[K]; }
 
 /// \ingroup PointModel
-template <std::size_t K, typename T> GIL_FORCEINLINE
+template <std::size_t K, typename T> BOOST_FORCEINLINE
       T& axis_value(      point2<T>& p) { return p[K]; }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -179,7 +179,9 @@ inline T align(T val, std::size_t alignment) {
 ///
 template <typename ConstT, typename Value, typename Reference, typename ConstReference,
           typename ArgType, typename ResultType, bool IsMutable>
-struct deref_base : public std::unary_function<ArgType, ResultType> {
+struct deref_base {
+    typedef ArgType        argument_type;
+    typedef ResultType     result_type;
     typedef ConstT         const_t;
     typedef Value          value_type;
     typedef Reference      reference;
@@ -213,10 +215,10 @@ public:
 };
 
 // reinterpret_cast is implementation-defined. Static cast is not.
-template <typename OutPtr, typename In> GIL_FORCEINLINE
+template <typename OutPtr, typename In> BOOST_FORCEINLINE
       OutPtr gil_reinterpret_cast(      In* p) { return static_cast<OutPtr>(static_cast<void*>(p)); }
 
-template <typename OutPtr, typename In> GIL_FORCEINLINE
+template <typename OutPtr, typename In> BOOST_FORCEINLINE
 const OutPtr gil_reinterpret_cast_c(const In* p) { return static_cast<const OutPtr>(static_cast<const void*>(p)); }
 
 namespace detail {
@@ -259,8 +261,10 @@ copy_n(InputIter first, Size count, OutputIter result) {
 }
 
 /// \brief identity taken from SGI STL.
-template <typename T> 
-struct identity : public std::unary_function<T,T> {
+template <typename T>
+struct identity {
+    typedef T argument_type;
+    typedef T result_type;
     const T& operator()(const T& val) const { return val; }
 };
 
@@ -268,7 +272,10 @@ struct identity : public std::unary_function<T,T> {
 
 /// \brief plus function object whose arguments may be of different type.
 template <typename T1, typename T2>
-struct plus_asymmetric : public std::binary_function<T1,T2,T1> {
+struct plus_asymmetric {
+    typedef T1 first_argument_type;
+    typedef T2 second_argument_type;
+    typedef T1 result_type;
     T1 operator()(T1 f1, T2 f2) const {
         return f1+f2;
     }
@@ -278,7 +285,9 @@ struct plus_asymmetric : public std::binary_function<T1,T2,T1> {
 
 /// \brief operator++ wrapped in a function object
 template <typename T>
-struct inc : public std::unary_function<T,T> {
+struct inc {
+    typedef T argument_type;
+    typedef T result_type;
     T operator()(T x) const { return ++x; }
 };
 
@@ -286,7 +295,9 @@ struct inc : public std::unary_function<T,T> {
 
 /// \brief operator-- wrapped in a function object
 template <typename T>
-struct dec : public std::unary_function<T,T> {
+struct dec {
+    typedef T argument_type;
+    typedef T result_type;
     T operator()(T x) const { return --x; }
 };
 

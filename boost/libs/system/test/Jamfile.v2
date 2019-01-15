@@ -8,6 +8,7 @@
 # See library home page at http://www.boost.org/libs/system
 
 import testing ;
+import os ;
 
 project
     : requirements
@@ -21,11 +22,18 @@ project
        <link>static:<define>BOOST_SYSTEM_STATIC_LINK=1
      ;
 
+   lib single_instance_lib1 : single_instance_1.cpp : <link>shared:<define>SINGLE_INSTANCE_DYN_LINK ;
+   lib single_instance_lib2 : single_instance_2.cpp : <link>shared:<define>SINGLE_INSTANCE_DYN_LINK ;
+
    rule cxx03 ( properties * )
    {
       local result ;
 
-      if <toolset>gcc in $(properties) || <toolset>clang in $(properties)
+      if <toolset>gcc in $(properties)
+      {
+         result = <cxxflags>-std=c++98 ; # 4.4 has no 03
+      }
+      else if <toolset>clang in $(properties)
       {
          result = <cxxflags>-std=c++03 ;
       }
@@ -41,11 +49,11 @@ project
    {
       local result ;
 
-      if <toolset-gcc:version>4.6 in $(properties)
+      if <toolset>gcc in $(properties)
       {
-         result = <cxxflags>-std=c++0x ;
+         result = <cxxflags>-std=c++0x ; # 4.6 has no 11
       }
-      else if <toolset>gcc in $(properties) || <toolset>clang in $(properties)
+      else if <toolset>clang in $(properties)
       {
          result = <cxxflags>-std=c++11 ;
       }
@@ -57,73 +65,68 @@ project
       return $(result) ;
    }
 
+   rule system-run- ( sources + )
+   {
+      local result ;
+
+      result += [ run $(sources) : : : <link>static : $(sources[1]:B)_static ] ;
+      result += [ run $(sources) : : : <link>shared : $(sources[1]:B)_shared ] ;
+      result += [ run $(sources) : : : -<library>/boost/system//boost_system <define>BOOST_ERROR_CODE_HEADER_ONLY : $(sources[1]:B)_header ] ;
+
+      return $(result) ;
+   }
+
+if [ os.environ UBSAN ]
+{
+   rule system-run ( sources + )
+   {
+      # The 03/11 tests are ODR violations, no point running them under -fsanitize=undefined
+      return [ system-run- $(sources) ] ;
+   }
+}
+else
+{
+   rule system-run ( sources + )
+   {
+      local result = [ system-run- $(sources) ] ;
+
+      # Test a source file built with -std=c++03 linked with a System library built without -std=c++03
+      result += [ run $(sources) : : : <link>static <conditional>@cxx03 : $(sources[1]:B)_static_03 ] ;
+      result += [ run $(sources) : : : <link>shared <conditional>@cxx03 : $(sources[1]:B)_shared_03 ] ;
+
+      # Test a source file built with -std=c++11 linked with a System library built without -std=c++11
+      result += [ run $(sources) : : : <link>static <conditional>@cxx11 : $(sources[1]:B)_static_11 ] ;
+      result += [ run $(sources) : : : <link>shared <conditional>@cxx11 : $(sources[1]:B)_shared_11 ] ;
+
+      return $(result) ;
+   }
+}
+
    test-suite "system"
-       : [ run error_code_test.cpp
-           : # command line
-           : # input files
-           : # requirements
-                   <link>static
-         ]
-         [ run error_code_test.cpp
-           :  :  : <link>shared : error_code_test_shared
-         ]
-         [ run error_code_test.cpp
-           :  :  : <link>static <conditional>@cxx03 : error_code_test_03
-         ]
-         [ run error_code_test.cpp
-           :  :  : <link>shared <conditional>@cxx03 : error_code_test_shared_03
-         ]
-         [ run error_code_test.cpp
-           :  :  : <link>static <conditional>@cxx11 : error_code_test_11
-         ]
-         [ run error_code_test.cpp
-           :  :  : <link>shared <conditional>@cxx11 : error_code_test_shared_11
-         ]
-         [ run error_code_user_test.cpp
-           :  :  : <link>static
-         ]
-         [ run error_code_user_test.cpp
-           :  :  : <link>shared : error_code_user_test_shared
-         ]
-         [ run system_error_test.cpp
-           :  :  : <link>static
-         ]
-         [ run system_error_test.cpp
-            :  :  : <link>shared : system_error_test_shared
-         ]
+       : [ system-run error_code_test.cpp ]
+         [ system-run error_code_user_test.cpp ]
+         [ system-run system_error_test.cpp ]
          [ run dynamic_link_test.cpp throw_test
            :  :  : <link>shared : throw_test_shared
          ]
-         [ run initialization_test.cpp
-            :  :  : <link>shared : initialization_test_shared
+         [ system-run initialization_test.cpp ]
+         [ run header_only_test.cpp
+           :  :  : -<library>/boost/system//boost_system
          ]
          [ run header_only_test.cpp
-           :  :  : <link>static
+           :  :  : -<library>/boost/system//boost_system <define>BOOST_NO_ANSI_APIS : header_only_test_no_ansi
          ]
          [ run config_test.cpp
-           :  :  : <test-info>always_show_run_output 
+           :  :  : <test-info>always_show_run_output
          ]
-         [ run std_interop_test.cpp
-           :  :  : <link>static
-         ]
-         [ run std_interop_test.cpp
-            :  :  : <link>shared : std_interop_test_shared
-         ]
-         [ run std_mismatch_test.cpp
-           :  :  : <link>static <conditional>@cxx03 : std_mismatch_test_03
-         ]
-         [ run std_mismatch_test.cpp
-           :  :  : <link>shared <conditional>@cxx03 : std_mismatch_test_shared_03
-         ]
-         [ run std_mismatch_test.cpp
-           :  :  : <link>static <conditional>@cxx11 : std_mismatch_test_11
-         ]
-         [ run std_mismatch_test.cpp
-           :  :  : <link>shared <conditional>@cxx11 : std_mismatch_test_shared_11
-         ]
-         [ run header_only_test.cpp
-           :  :  : <link>static <define>BOOST_NO_ANSI_APIS : header_only_test_no_ansi
-         ]
+         [ system-run- std_interop_test.cpp ]
+         [ system-run std_mismatch_test.cpp ]
+         [ system-run single_instance_test.cpp single_instance_1.cpp single_instance_2.cpp ]
+         [ run single_instance_test.cpp single_instance_lib1 single_instance_lib2 : : : <link>static : single_instance_lib_static ]
+         [ run single_instance_test.cpp single_instance_lib1 single_instance_lib2 : : : <link>shared : single_instance_lib_shared ]
+         [ system-run before_main_test.cpp ]
+         [ run-fail throws_assign_fail.cpp ]
+         [ system-run- constexpr_test.cpp ]
          ;
 
 # Quick (CI) test

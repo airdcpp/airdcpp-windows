@@ -38,7 +38,7 @@ template <typename View> struct dynamic_xy_step_transposed_type;
 namespace detail {
     struct any_type_get_num_channels {   // works for both image_view and image
         typedef int result_type;
-        template <typename T> result_type operator()(const T& v) const { return num_channels<T>::value; }
+        template <typename T> result_type operator()(const T&) const { return num_channels<T>::value; }
     };
     struct any_type_get_dimensions {    // works for both image_view and image
         typedef point2<std::ptrdiff_t> result_type;
@@ -72,9 +72,11 @@ public:
     any_image_view()                                                          : parent_t() {}
     template <typename T> explicit any_image_view(const T& obj)               : parent_t(obj) {}
     any_image_view(const any_image_view& v)                                   : parent_t((const parent_t&)v)    {}
+    template <typename Types> any_image_view(const any_image_view<Types>& v)  : parent_t((const variant<Types>&)v)    {}
 
-    template <typename T> any_image_view& operator=(const T& obj)             { parent_t::operator=(obj); return *this; }
-    any_image_view&                       operator=(const any_image_view& v)  { parent_t::operator=((const parent_t&)v); return *this;}
+    template <typename T> any_image_view&     operator=(const T& obj)                   { parent_t::operator=(obj); return *this; }
+    any_image_view&                           operator=(const any_image_view& v)        { parent_t::operator=((const parent_t&)v); return *this;}
+    template <typename Types> any_image_view& operator=(const any_image_view<Types>& v) { parent_t::operator=((const variant<Types>&)v); return *this;}
 
     std::size_t num_channels()  const { return apply_operation(*this, detail::any_type_get_num_channels()); }
     point_t     dimensions()    const { return apply_operation(*this, detail::any_type_get_dimensions()); }

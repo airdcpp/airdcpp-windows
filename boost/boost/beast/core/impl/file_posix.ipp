@@ -24,6 +24,7 @@
 # endif
 #endif
 
+#include <boost/core/exchange.hpp>
 #include <limits>
 #include <fcntl.h>
 #include <sys/types.h>
@@ -65,9 +66,8 @@ file_posix::
 inline
 file_posix::
 file_posix(file_posix&& other)
-    : fd_(other.fd_)
+    : fd_(boost::exchange(other.fd_, -1))
 {
-    other.fd_ = -1;
 }
 
 inline
@@ -307,7 +307,7 @@ read(void* buffer, std::size_t n, error_code& ec) const
         }
         n -= result;
         nread += result;
-        buffer = reinterpret_cast<char*>(buffer) + result;
+        buffer = static_cast<char*>(buffer) + result;
     }
     return nread;
 }
@@ -338,7 +338,7 @@ write(void const* buffer, std::size_t n, error_code& ec)
         }
         n -= result;
         nwritten += result;
-        buffer = reinterpret_cast<char const*>(buffer) + result;
+        buffer = static_cast<char const*>(buffer) + result;
     }
     return nwritten;
 }

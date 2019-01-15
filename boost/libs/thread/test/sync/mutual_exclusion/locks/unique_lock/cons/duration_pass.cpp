@@ -26,6 +26,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/detail/lightweight_test.hpp>
 #include <boost/chrono/chrono_io.hpp>
+#include "../../../../../timming.hpp"
 
 #if defined BOOST_THREAD_USES_CHRONO
 
@@ -37,16 +38,16 @@ typedef Clock::duration duration;
 typedef boost::chrono::milliseconds ms;
 typedef boost::chrono::nanoseconds ns;
 
+const ms max_diff(BOOST_THREAD_TEST_TIME_MS);
+
 void f1()
 {
   time_point t0 = Clock::now();
-  // This test is spurious as it depends on the time the thread system switches the threads
-  boost::unique_lock<boost::timed_mutex> lk(m, ms(300)+ms(1000));
+  boost::unique_lock<boost::timed_mutex> lk(m, ms(750));
   BOOST_TEST(lk.owns_lock() == true);
   time_point t1 = Clock::now();
   ns d = t1 - t0 - ms(250);
-  // This test is spurious as it depends on the time the thread system switches the threads
-  BOOST_TEST(d < ns(5000000)+ms(1000)); // within 5ms
+  BOOST_THREAD_TEST_IT(d, ns(max_diff));
 }
 
 void f2()
@@ -56,8 +57,7 @@ void f2()
   BOOST_TEST(lk.owns_lock() == false);
   time_point t1 = Clock::now();
   ns d = t1 - t0 - ms(250);
-  // This test is spurious as it depends on the time the thread system switches the threads
-  BOOST_TEST(d < ns(5000000)+ms(1000)); // within 5ms
+  BOOST_TEST(d < max_diff);
 }
 
 int main()
@@ -72,7 +72,7 @@ int main()
   {
     m.lock();
     boost::thread t(f2);
-    boost::this_thread::sleep_for(ms(300)+ms(1000));
+    boost::this_thread::sleep_for(ms(750));
     m.unlock();
     t.join();
   }

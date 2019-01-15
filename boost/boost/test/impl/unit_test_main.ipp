@@ -174,18 +174,34 @@ private:
     std::set<std::string>   m_labels;
 };
 
+struct framework_shutdown_helper {
+    ~framework_shutdown_helper() {
+        try {
+            framework::shutdown();
+        }
+        catch(...) {
+            std::cerr << "Boost.Test shutdown exception caught" << std::endl;
+        }
+    }
+};
+
 } // namespace ut_detail
 
 // ************************************************************************** //
 // **************                  unit_test_main              ************** //
 // ************************************************************************** //
 
+
+
 int BOOST_TEST_DECL
 unit_test_main( init_unit_test_func init_func, int argc, char* argv[] )
 {
     int result_code = 0;
 
+    ut_detail::framework_shutdown_helper shutdown_helper;
+
     BOOST_TEST_I_TRY {
+        
         framework::init( init_func, argc, argv );
 
         if( runtime_config::get<bool>( runtime_config::btrt_wait_for_debugger ) ) {
@@ -247,13 +263,16 @@ unit_test_main( init_unit_test_func init_func, int argc, char* argv[] )
 
         result_code = boost::exit_exception_failure;
     }
+    BOOST_TEST_I_CATCH( std::logic_error, ex ) {
+        results_reporter::get_stream() << "Test setup error: " << ex.what() << std::endl;
+
+        result_code = boost::exit_exception_failure;
+    }
     BOOST_TEST_I_CATCHALL() {
         results_reporter::get_stream() << "Boost.Test framework internal error: unknown reason" << std::endl;
 
         result_code = boost::exit_exception_failure;
     }
-
-    framework::shutdown();
 
     return result_code;
 }

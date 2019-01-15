@@ -2268,7 +2268,7 @@
     </template><description><para>A class that allows sending messages between processes. </para></description><typedef name="void_pointer"><type>VoidPointer</type></typedef>
 <typedef name="char_ptr"><type>boost::intrusive::pointer_traits&lt; void_pointer &gt;::template rebind_pointer&lt; char &gt;::type</type></typedef>
 <typedef name="difference_type"><type>boost::intrusive::pointer_traits&lt; char_ptr &gt;::difference_type</type></typedef>
-<typedef name="size_type"><type><emphasis>unspecified</emphasis></type></typedef>
+<typedef name="size_type"><type>boost::container::dtl::make_unsigned&lt; difference_type &gt;::type</type></typedef>
 <method-group name="public member functions">
 <method name="send"><type>void</type><parameter name="buffer"><paramtype>const void *</paramtype></parameter><parameter name="buffer_size"><paramtype>size_type</paramtype></parameter><parameter name="priority"><paramtype>unsigned int</paramtype></parameter><description><para>Sends a message stored in buffer "buffer" with size "buffer_size" in the message queue with priority "priority". If the message queue is full the sender is blocked. Throws interprocess_error on error. </para></description></method>
 <method name="try_send"><type>bool</type><parameter name="buffer"><paramtype>const void *</paramtype></parameter><parameter name="buffer_size"><paramtype>size_type</paramtype></parameter><parameter name="priority"><paramtype>unsigned int</paramtype></parameter><description><para>Sends a message stored in buffer "buffer" with size "buffer_size" through the message queue with priority "priority". If the message queue is full the sender is not blocked and returns false, otherwise returns true. Throws interprocess_error on error. </para></description></method>
@@ -2869,7 +2869,7 @@
 <typedef name="void_pointer"><purpose>Pointer type to be used with the rest of the Interprocess framework. </purpose><type>VoidPointer</type></typedef>
 <typedef name="multiallocation_chain"><type><emphasis>unspecified</emphasis></type></typedef>
 <typedef name="difference_type"><type>boost::intrusive::pointer_traits&lt; char_ptr &gt;::difference_type</type></typedef>
-<typedef name="size_type"><type><emphasis>unspecified</emphasis></type></typedef>
+<typedef name="size_type"><type>boost::container::dtl::make_unsigned&lt; difference_type &gt;::type</type></typedef>
 <data-member name="PayloadPerAllocation" specifiers="static"><type>const size_type</type></data-member>
 <method-group name="public member functions">
 <method name="allocate"><type>void *</type><parameter name="nbytes"><paramtype>size_type</paramtype></parameter><purpose>Allocates bytes, returns 0 if there is not more memory. </purpose></method>
@@ -3627,30 +3627,33 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <class name="intrusive_ptr"><template>
       <template-type-parameter name="T"/>
       <template-type-parameter name="VoidPointer"/>
-    </template><description><para>The <classname alt="boost::interprocess::intrusive_ptr">intrusive_ptr</classname> class template stores a pointer to an object with an embedded reference count. <classname alt="boost::interprocess::intrusive_ptr">intrusive_ptr</classname> is parameterized on T (the type of the object pointed to) and VoidPointer(a void pointer type that defines the type of pointer that <classname alt="boost::interprocess::intrusive_ptr">intrusive_ptr</classname> will store). intrusive_ptr&lt;T, void *&gt; defines a class with a T* member whereas <classname alt="boost::interprocess::intrusive_ptr">intrusive_ptr</classname>&lt;T, offset_ptr&lt;void&gt; &gt; defines a class with a offset_ptr&lt;T&gt; member. Relies on unqualified calls to:</para><para>void intrusive_ptr_add_ref(T * p); void intrusive_ptr_release(T * p);</para><para>with (p != 0)</para><para>The object is responsible for destroying itself. </para></description><typedef name="pointer"><purpose>Provides the type of the internal stored pointer. </purpose><type>boost::intrusive::pointer_traits&lt; VoidPointer &gt;::template rebind_pointer&lt; T &gt;::type</type></typedef>
+    </template><description><para>The <classname alt="boost::interprocess::intrusive_ptr">intrusive_ptr</classname> class template stores a pointer to an object with an embedded reference count. <classname alt="boost::interprocess::intrusive_ptr">intrusive_ptr</classname> is parameterized on T (the type of the object pointed to) and VoidPointer(a void pointer type that defines the type of pointer that <classname alt="boost::interprocess::intrusive_ptr">intrusive_ptr</classname> will store). intrusive_ptr&lt;T, void *&gt; defines a class with a T* member whereas <classname alt="boost::interprocess::intrusive_ptr">intrusive_ptr</classname>&lt;T, offset_ptr&lt;void&gt; &gt; defines a class with a offset_ptr&lt;T&gt; member. Relies on unqualified calls to:</para><para>void intrusive_ptr_add_ref(T * p) BOOST_NOEXCEPT; void intrusive_ptr_release(T * p) BOOST_NOEXCEPT;</para><para>with (p != 0)</para><para>The object is responsible for destroying itself. </para></description><typedef name="pointer"><purpose>Provides the type of the internal stored pointer. </purpose><type>boost::intrusive::pointer_traits&lt; VoidPointer &gt;::template rebind_pointer&lt; T &gt;::type</type></typedef>
 <typedef name="element_type"><purpose>Provides the type of the stored pointer. </purpose><type>T</type></typedef>
 <method-group name="public member functions">
-<method name="get"><type>pointer &amp;</type><description><para>Returns a reference to the internal pointer. Does not throw </para></description></method>
-<method name="get" cv="const"><type>const pointer &amp;</type><description><para>Returns a reference to the internal pointer. Does not throw </para></description></method>
-<method name="operator*" cv="const"><type>T &amp;</type><description><para>Returns *get(). Does not throw </para></description></method>
-<method name="operator-&gt;" cv="const"><type>const pointer &amp;</type><description><para>Returns *get(). Does not throw </para></description></method>
-<method name="operator-&gt;"><type>pointer &amp;</type><description><para>Returns get(). Does not throw </para></description></method>
-<method name="conversion-operator" cv="const"><type>unspecified_bool_type</type><description><para>Conversion to boolean. Does not throw </para></description></method>
-<method name="operator!" cv="const"><type>bool</type><description><para>Not operator. Does not throw </para></description></method>
-<method name="swap"><type>void</type><parameter name="rhs"><paramtype><classname>intrusive_ptr</classname> &amp;</paramtype></parameter><description><para>Exchanges the contents of the two smart pointers. Does not throw </para></description></method>
+<method name="reset" cv="noexcept"><type>void</type><description><para>Release internal pointer and set it to 0. If internal pointer is not 0, calls intrusive_ptr_release(to_raw_pointer(m_ptr)). Does not throw </para></description></method>
+<method name="get" cv="noexcept"><type>pointer &amp;</type><description><para>Returns a reference to the internal pointer. Does not throw </para></description></method>
+<method name="get" cv="const noexcept"><type>const pointer &amp;</type><description><para>Returns a reference to the internal pointer. Does not throw </para></description></method>
+<method name="operator*" cv="const noexcept"><type>T &amp;</type><description><para>Returns *get(). Does not throw </para></description></method>
+<method name="operator-&gt;" cv="const noexcept"><type>const pointer &amp;</type><description><para>Returns *get(). Does not throw </para></description></method>
+<method name="operator-&gt;" cv="noexcept"><type>pointer &amp;</type><description><para>Returns get(). Does not throw </para></description></method>
+<method name="conversion-operator" cv="const noexcept"><type>unspecified_bool_type</type><description><para>Conversion to boolean. Does not throw </para></description></method>
+<method name="operator!" cv="const noexcept"><type>bool</type><description><para>Not operator. Does not throw </para></description></method>
+<method name="swap" cv="noexcept"><type>void</type><parameter name="rhs"><paramtype><classname>intrusive_ptr</classname> &amp;</paramtype></parameter><description><para>Exchanges the contents of the two smart pointers. Does not throw </para></description></method>
 </method-group>
-<constructor><description><para>Constructor. Initializes internal pointer to 0. Does not throw </para></description></constructor>
-<constructor><parameter name="p"><paramtype>const pointer &amp;</paramtype></parameter><parameter name="add_ref"><paramtype>bool</paramtype><default>true</default></parameter><description><para>Constructor. Copies pointer and if "p" is not zero and "add_ref" is true calls intrusive_ptr_add_ref(to_raw_pointer(p)). Does not throw </para></description></constructor>
-<constructor><parameter name="rhs"><paramtype><classname>intrusive_ptr</classname> const &amp;</paramtype></parameter><description><para>Copy constructor. Copies the internal pointer and if "p" is not zero calls intrusive_ptr_add_ref(to_raw_pointer(p)). Does not throw </para></description></constructor>
-<constructor><template>
+<constructor cv="noexcept"><description><para>Constructor. Initializes internal pointer to 0. Does not throw </para></description></constructor>
+<constructor cv="noexcept"><parameter name="p"><paramtype>const pointer &amp;</paramtype></parameter><parameter name="add_ref"><paramtype>bool</paramtype><default>true</default></parameter><description><para>Constructor. Copies pointer and if "p" is not zero and "add_ref" is true calls intrusive_ptr_add_ref(to_raw_pointer(p)). Does not throw </para></description></constructor>
+<constructor cv="noexcept"><parameter name="rhs"><paramtype><classname>intrusive_ptr</classname> const &amp;</paramtype></parameter><description><para>Copy constructor. Copies the internal pointer and if "p" is not zero calls intrusive_ptr_add_ref(to_raw_pointer(p)). Does not throw </para></description></constructor>
+<constructor cv="noexcept"><parameter name="rhs"><paramtype><classname>intrusive_ptr</classname> &amp;&amp;</paramtype></parameter><purpose>Move constructor. Moves the internal pointer. Does not throw. </purpose></constructor>
+<constructor cv="noexcept"><template>
           <template-type-parameter name="U"/>
         </template><parameter name="rhs"><paramtype><classname>intrusive_ptr</classname>&lt; U, VP &gt; const &amp;</paramtype></parameter><description><para>Constructor from related. Copies the internal pointer and if "p" is not zero calls intrusive_ptr_add_ref(to_raw_pointer(p)). Does not throw </para></description></constructor>
-<destructor><description><para>Destructor. If internal pointer is not 0, calls intrusive_ptr_release(to_raw_pointer(m_ptr)). Does not throw </para></description></destructor>
-<copy-assignment><type><classname>intrusive_ptr</classname> &amp;</type><parameter name="rhs"><paramtype><classname>intrusive_ptr</classname> const &amp;</paramtype></parameter><description><para>Assignment operator. Equivalent to intrusive_ptr(r).swap(*this). Does not throw </para></description></copy-assignment>
-<copy-assignment><type><classname>intrusive_ptr</classname> &amp;</type><template>
+<destructor><purpose>Destructor. Calls reset(). Does not throw. </purpose></destructor>
+<copy-assignment cv="noexcept"><type><classname>intrusive_ptr</classname> &amp;</type><parameter name="rhs"><paramtype>BOOST_COPY_ASSIGN_REF(<classname>intrusive_ptr</classname>)</paramtype></parameter><description><para>Assignment operator. Equivalent to intrusive_ptr(r).swap(*this). Does not throw </para></description></copy-assignment>
+<copy-assignment cv="noexcept"><type><classname>intrusive_ptr</classname> &amp;</type><parameter name="rhs"><paramtype><classname>intrusive_ptr</classname> &amp;&amp;</paramtype></parameter><description><para>Move Assignment operator Does not throw </para></description></copy-assignment>
+<copy-assignment cv="noexcept"><type><classname>intrusive_ptr</classname> &amp;</type><template>
           <template-type-parameter name="U"/>
         </template><parameter name="rhs"><paramtype><classname>intrusive_ptr</classname>&lt; U, VP &gt; const &amp;</paramtype></parameter><description><para>Assignment from related. Equivalent to intrusive_ptr(r).swap(*this). Does not throw </para></description></copy-assignment>
-<copy-assignment><type><classname>intrusive_ptr</classname> &amp;</type><parameter name="rhs"><paramtype>pointer</paramtype></parameter><description><para>Assignment from pointer. Equivalent to intrusive_ptr(r).swap(*this). Does not throw </para></description></copy-assignment>
+<copy-assignment cv="noexcept"><type><classname>intrusive_ptr</classname> &amp;</type><parameter name="rhs"><paramtype>pointer</paramtype></parameter><description><para>Assignment from pointer. Equivalent to intrusive_ptr(r).swap(*this). Does not throw </para></description></copy-assignment>
 </class>
 
 

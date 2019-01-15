@@ -14,6 +14,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/detail/lightweight_test.hpp>
+#include "../../../../timming.hpp"
 
 #ifdef BOOST_THREAD_USES_CHRONO
 typedef boost::chrono::high_resolution_clock Clock;
@@ -24,6 +25,8 @@ typedef boost::chrono::nanoseconds ns;
 #endif
 
 boost::mutex m;
+
+const ms max_diff(BOOST_THREAD_TEST_TIME_MS);
 
 void f()
 {
@@ -36,8 +39,7 @@ void f()
     t1 = Clock::now();
   }
   ns d = t1 - t0 - ms(250);
-  // This test is spurious as it depends on the time the thread system switches the threads
-  BOOST_TEST(d < ns(2500000)+ms(1000)); // within 2.5ms
+  BOOST_THREAD_TEST_IT(d, ns(max_diff));
 #else
   //time_point t0 = Clock::now();
   //time_point t1;
@@ -47,8 +49,7 @@ void f()
     //t1 = Clock::now();
   }
   //ns d = t1 - t0 - ms(250);
-  // This test is spurious as it depends on the time the thread system switches the threads
-  //BOOST_TEST(d < ns(2500000)+ms(1000)); // within 2.5ms
+  //BOOST_TEST(d < max_diff);
 #endif
 }
 

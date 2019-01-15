@@ -93,8 +93,8 @@ struct is_body_sized<T, beast::detail::void_t<
     typename T::value_type,
         decltype(
     std::declval<std::uint64_t&>() =
-        T::size(std::declval<typename T::value_type const&>()),
-    (void)0)>> : std::true_type {};
+        T::size(std::declval<typename T::value_type const&>())
+    )>> : std::true_type {};
 
 template<class T>
 struct is_fields_helper : T
@@ -193,22 +193,6 @@ struct is_fields_helper : T
          t7::value &&  t8::value && t9::value &&
         t10::value && t11::value && t12::value>;
 };
-
-template<class T>
-using has_deprecated_body_writer =
-    std::integral_constant<bool,
-        std::is_constructible<typename T::writer,
-            message<true, T, detail::fields_model>&>::value &&
-        std::is_constructible<typename T::writer,
-            message<false, T, detail::fields_model>&>::value>;
-
-template<class T>
-using has_deprecated_body_reader =
-    std::integral_constant<bool,
-        std::is_constructible<typename T::reader,
-            message<true, T, detail::fields_model>&>::value &&
-        std::is_constructible<typename T::reader,
-            message<false, T, detail::fields_model>&>::value>;
 
 } // detail
 } // http

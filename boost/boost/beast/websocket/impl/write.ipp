@@ -22,6 +22,7 @@
 #include <boost/asio/associated_allocator.hpp>
 #include <boost/asio/associated_executor.hpp>
 #include <boost/asio/coroutine.hpp>
+#include <boost/asio/executor_work_guard.hpp>
 #include <boost/asio/handler_continuation_hook.hpp>
 #include <boost/asio/handler_invoke_hook.hpp>
 #include <boost/assert.hpp>
@@ -141,6 +142,8 @@ class stream<NextLayer, deflateSupported>::write_some_op
 {
     Handler h_;
     stream<NextLayer, deflateSupported>& ws_;
+    boost::asio::executor_work_guard<decltype(std::declval<
+        stream<NextLayer, deflateSupported>&>().get_executor())> wg_;
     buffers_suffix<Buffers> cb_;
     detail::frame_header fh_;
     detail::prepared_key key_;
@@ -166,6 +169,7 @@ public:
         Buffers const& bs)
         : h_(std::forward<DeducedHandler>(h))
         , ws_(ws)
+        , wg_(ws_.get_executor())
         , cb_(bs)
         , fin_(fin)
     {
@@ -402,7 +406,7 @@ operator()(
             remain_ = buffer_size(cb_);
             fh_.fin = fin_;
             fh_.len = remain_;
-            fh_.key = ws_.wr_gen_();
+            fh_.key = ws_.create_mask();
             detail::prepare_key(key_, fh_.key);
             ws_.wr_fb_.reset();
             detail::write<flat_static_buffer_base>(
@@ -454,7 +458,7 @@ operator()(
                 n = clamp(remain_, ws_.wr_buf_size_);
                 remain_ -= n;
                 fh_.len = n;
-                fh_.key = ws_.wr_gen_();
+                fh_.key = ws_.create_mask();
                 fh_.fin = fin_ ? remain_ == 0 : false;
                 detail::prepare_key(key_, fh_.key);
                 buffer_copy(buffer(
@@ -517,7 +521,7 @@ operator()(
                 }
                 if(fh_.mask)
                 {
-                    fh_.key = ws_.wr_gen_();
+                    fh_.key = ws_.create_mask();
                     detail::prepared_key key;
                     detail::prepare_key(key, fh_.key);
                     detail::mask_inplace(b, key);
@@ -569,9 +573,12 @@ operator()(
             ws_.paused_rd_.maybe_invoke() ||
             ws_.paused_ping_.maybe_invoke();
         if(! cont_)
-            return boost::asio::post(
-                ws_.stream_.get_executor(),
-                bind_handler(std::move(h_), ec, bytes_transferred_));
+        {
+            BOOST_ASIO_CORO_YIELD
+            boost::asio::post(
+                ws_.get_executor(),
+                bind_handler(std::move(*this), ec, bytes_transferred_));
+        }
         h_(ec, bytes_transferred_);
     }
 }
@@ -659,7 +666,7 @@ write_some(bool fin,
             }
             if(fh.mask)
             {
-                fh.key = wr_gen_();
+                fh.key = this->create_mask();
                 detail::prepared_key key;
                 detail::prepare_key(key, fh.key);
                 detail::mask_inplace(b, key);
@@ -733,7 +740,7 @@ write_some(bool fin,
         // mask, no autofrag
         fh.fin = fin;
         fh.len = remain;
-        fh.key = wr_gen_();
+        fh.key = this->create_mask();
         detail::prepared_key key;
         detail::prepare_key(key, fh.key);
         detail::fh_buffer fh_buf;
@@ -777,7 +784,7 @@ write_some(bool fin,
             ConstBufferSequence> cb{buffers};
         for(;;)
         {
-            fh.key = wr_gen_();
+            fh.key = this->create_mask();
             detail::prepared_key key;
             detail::prepare_key(key, fh.key);
             auto const n = clamp(remain, wr_buf_size_);

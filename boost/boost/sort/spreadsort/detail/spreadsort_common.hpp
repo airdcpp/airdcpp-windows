@@ -37,7 +37,7 @@ namespace spreadsort {
       unsigned result = 0;
       //The && is necessary on some compilers to avoid infinite loops
       //it doesn't significantly impair performance
-      while ((input >> result) && (result < (8*sizeof(T)))) ++result;
+      while ((result < (8*sizeof(T))) && (input >> result)) ++result;
       return result;
     }
 

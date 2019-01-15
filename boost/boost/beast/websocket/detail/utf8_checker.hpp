@@ -89,7 +89,7 @@ write(ConstBufferSequence const& bs)
     static_assert(boost::asio::is_const_buffer_sequence<ConstBufferSequence>::value,
         "ConstBufferSequence requirements not met");
     for(auto b : beast::detail::buffers_range(bs))
-        if(! write(reinterpret_cast<
+        if(! write(static_cast<
             std::uint8_t const*>(b.data()),
                 b.size()))
             return false;
@@ -194,7 +194,7 @@ write(std::uint8_t const* in, std::size_t size)
         // Add characters to the code point
         while(n--)
             *p_++ = *in++;
-        BOOST_ASSERT(p_ <= cp_ + 5);
+        BOOST_ASSERT(p_ <= cp_ + 4);
 
         // Still incomplete?
         if(need_ > 0)
@@ -313,7 +313,7 @@ tail:
             while(n--)
                 *p_++ = *in++;
             BOOST_ASSERT(in == end);
-            BOOST_ASSERT(p_ <= cp_ + 5);
+            BOOST_ASSERT(p_ <= cp_ + 4);
 
             // Do partial validation on the incomplete
             // code point, this is called "Fail fast"

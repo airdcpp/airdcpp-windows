@@ -373,6 +373,9 @@ boost::wave::token_id scan(Scanner<Iterator> *s)
     string_type   rawstringdelim;         // for use with C++11 raw string literals
 
 // include the correct Re2C token definition rules
+#if (defined (__FreeBSD__) || defined (__DragonFly__) || defined (__OpenBSD__)) && defined (T_DIVIDE)
+#undef T_DIVIDE
+#endif
 #if BOOST_WAVE_USE_STRICT_LEXER != 0
 #include "strict_cpp_re.inc"
 #else

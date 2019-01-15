@@ -26,9 +26,15 @@
 
 #include <limits>
 #include <cassert>
-#include <boost/cstdint.hpp>
+#include <cstdint>
+
+#include <boost/config.hpp>
+#include <boost/integer/integer_mask.hpp>
+#include <boost/type_traits/remove_cv.hpp>
+
 #include "gil_config.hpp"
 #include "utilities.hpp"
+
 
 namespace boost { namespace gil {
 
@@ -138,7 +144,7 @@ typedef scoped_channel_value<double, double_minus_half, double_plus_half> bits64
 // channel_convert its maximum should map to the maximum
 bits64custom_t x = channel_traits<bits64custom_t>::max_value();
 assert(x == 0.5);
-bits16 y = channel_convert<bits16>(x);
+uint16_t y = channel_convert<uint16_t>(x);
 assert(y == 65535);
 \endcode
 */
@@ -181,9 +187,17 @@ private:
     BaseChannelValue _value;
 };
 
-struct float_zero { static float apply() { return 0.0f; } };
-struct float_one  { static float apply() { return 1.0f; } };
+template <typename T>
+struct float_point_zero
+{
+    static constexpr T apply() { return 0.0f; }
+};
 
+template <typename T>
+struct float_point_one
+{
+    static constexpr T apply() { return 1.0f; }
+};
 
 ///////////////////////////////////////////
 ////
@@ -243,9 +257,6 @@ BOOST_STATIC_ASSERT((boost::is_integral<bits4>::value));
 template <int NumBits>
 class packed_channel_value {
 
-    typedef  typename detail::num_value_fn< NumBits >::type num_value_t;
-    static const num_value_t num_values = static_cast< num_value_t >( 1 ) << NumBits ;
-   
 public:
     typedef typename detail::min_fast_uint<NumBits>::type integer_t;
 
@@ -256,17 +267,17 @@ public:
     typedef value_type*            pointer;
     typedef const value_type*      const_pointer;
 
-    static value_type min_value() { return value_type(0); }
-    static value_type max_value() { return value_type(num_values-1); }
+    static value_type min_value() { return 0; }
+    static value_type max_value() { return low_bits_mask_t< NumBits >::sig_bits; }
+
     BOOST_STATIC_CONSTANT(bool, is_mutable=true);
 
     packed_channel_value() {}
-    packed_channel_value(integer_t v) { _value = static_cast< integer_t >( v % num_values ); }
-    packed_channel_value(const packed_channel_value& v) : _value(v._value) {}
-    template <typename Scalar> packed_channel_value(Scalar v) { _value = static_cast< integer_t >( v ) % num_values; }
+
+    packed_channel_value(integer_t v) { _value = static_cast< integer_t >( v & low_bits_mask_t<NumBits>::sig_bits_fast ); }
+    template <typename Scalar> packed_channel_value(Scalar v) { _value = packed_channel_value( static_cast< integer_t >( v ) ); }
 
     static unsigned int num_bits() { return NumBits; }
-
 
     operator integer_t() const { return _value; }
 private:
@@ -318,10 +329,10 @@ public:
     Derived operator++(int) const { Derived tmp=derived(); this->operator++(); return tmp; }
     Derived operator--(int) const { Derived tmp=derived(); this->operator--(); return tmp; }
 
-    template <typename Scalar2> const Derived& operator+=(Scalar2 v) const { set(get()+v); return derived(); }
-    template <typename Scalar2> const Derived& operator-=(Scalar2 v) const { set(get()-v); return derived(); }
-    template <typename Scalar2> const Derived& operator*=(Scalar2 v) const { set(get()*v); return derived(); }
-    template <typename Scalar2> const Derived& operator/=(Scalar2 v) const { set(get()/v); return derived(); }
+    template <typename Scalar2> const Derived& operator+=(Scalar2 v) const { set( static_cast<integer_t>(  get() + v )); return derived(); }
+    template <typename Scalar2> const Derived& operator-=(Scalar2 v) const { set( static_cast<integer_t>(  get() - v )); return derived(); }
+    template <typename Scalar2> const Derived& operator*=(Scalar2 v) const { set( static_cast<integer_t>(  get() * v )); return derived(); }
+    template <typename Scalar2> const Derived& operator/=(Scalar2 v) const { set( static_cast<integer_t>(  get() / v )); return derived(); }
 
     operator integer_t() const { return get(); }
     data_ptr_t operator &() const {return _data_ptr;}
@@ -333,7 +344,7 @@ protected:
     static const num_value_t num_values = static_cast< num_value_t >( 1 ) << NumBits ;
     static const max_value_t max_val    = static_cast< max_value_t >( num_values - 1 );
     
-#ifdef GIL_NONWORD_POINTER_ALIGNMENT_SUPPORTED
+#if defined(BOOST_GIL_CONFIG_HAS_UNALIGNED_ACCESS)
     const bitfield_t& get_data()                      const { return *static_cast<const bitfield_t*>(_data_ptr); }
     void              set_data(const bitfield_t& val) const {        *static_cast<      bitfield_t*>(_data_ptr) = val; }
 #else
@@ -349,7 +360,6 @@ protected:
 
 private:
     void set(integer_t value) const {     // can this be done faster??
-        const integer_t num_values = max_val+1;
         this->derived().set_unsafe(((value % num_values) + num_values) % num_values); 
     }
     integer_t get() const { return derived().get(); }
@@ -373,12 +383,12 @@ assert(data == 6);                                          // == 3<<1 == 6
 \endcode
 */
 
-template <typename BitField,        // A type that holds the bits of the pixel from which the channel is referenced. Typically an integral type, like boost::uint16_t
+template <typename BitField,        // A type that holds the bits of the pixel from which the channel is referenced. Typically an integral type, like std::uint16_t
           int FirstBit, int NumBits,// Defines the sequence of bits in the data value that contain the channel 
           bool Mutable>             // true if the reference is mutable 
 class packed_channel_reference;
 
-template <typename BitField,        // A type that holds the bits of the pixel from which the channel is referenced. Typically an integral type, like boost::uint16_t
+template <typename BitField,        // A type that holds the bits of the pixel from which the channel is referenced. Typically an integral type, like std::uint16_t
           int NumBits,              // Defines the sequence of bits in the data value that contain the channel 
           bool Mutable>             // true if the reference is mutable 
 class packed_dynamic_channel_reference;
@@ -595,64 +605,6 @@ void swap(const boost::gil::packed_dynamic_channel_reference<BF,NB,M> x, const b
 }
 }   // namespace std
 
-namespace boost { namespace gil {
-///////////////////////////////////////////
-////
-////  Built-in channel models
-////
-///////////////////////////////////////////
-
-/// \defgroup bits8 bits8
-/// \ingroup ChannelModel
-/// \brief 8-bit unsigned integral channel type (typedef from uint8_t). Models ChannelValueConcept
-
-/// \ingroup bits8
-typedef uint8_t  bits8;
-
-/// \defgroup bits16 bits16
-/// \ingroup ChannelModel
-/// \brief 16-bit unsigned integral channel type (typedef from uint16_t). Models ChannelValueConcept
-
-/// \ingroup bits16
-typedef uint16_t bits16;
-
-/// \defgroup bits32 bits32
-/// \ingroup ChannelModel
-/// \brief 32-bit unsigned integral channel type  (typedef from uint32_t). Models ChannelValueConcept
-
-/// \ingroup bits32
-typedef uint32_t bits32;
-
-/// \defgroup bits8s bits8s
-/// \ingroup ChannelModel
-/// \brief 8-bit signed integral channel type (typedef from int8_t). Models ChannelValueConcept
-
-/// \ingroup bits8s
-typedef int8_t   bits8s;
-
-/// \defgroup bits16s bits16s
-/// \ingroup ChannelModel
-/// \brief 16-bit signed integral channel type (typedef from int16_t). Models ChannelValueConcept
-
-/// \ingroup bits16s
-typedef int16_t  bits16s;
-
-/// \defgroup bits32s bits32s
-/// \ingroup ChannelModel
-/// \brief 32-bit signed integral channel type (typedef from int32_t). Models ChannelValueConcept
-
-/// \ingroup bits32s
-typedef int32_t  bits32s;
-
-/// \defgroup bits32f bits32f
-/// \ingroup ChannelModel
-/// \brief 32-bit floating point channel type with range [0.0f ... 1.0f]. Models ChannelValueConcept
-
-/// \ingroup bits32f
-typedef scoped_channel_value<float,float_zero,float_one> bits32f;
-
-} }  // namespace boost::gil
-
 namespace boost {
 
 template <int NumBits>
@@ -667,6 +619,32 @@ struct is_integral<gil::packed_dynamic_channel_reference<BitField,NumBits,IsMuta
 template <typename BaseChannelValue, typename MinVal, typename MaxVal> 
 struct is_integral<gil::scoped_channel_value<BaseChannelValue,MinVal,MaxVal> > : public is_integral<BaseChannelValue> {};
 
-}
+} // namespace boost
+
+// \brief Determines the fundamental type which may be used, e.g., to cast from larger to smaller channel types.
+namespace boost { namespace gil {
+template <typename T>
+struct base_channel_type_impl { typedef T type; };
+
+template <int N>
+struct base_channel_type_impl<packed_channel_value<N> >
+{ typedef typename packed_channel_value<N>::integer_t type; };
+
+template <typename B, int F, int N, bool M>
+struct base_channel_type_impl<packed_channel_reference<B, F, N, M> >
+{ typedef typename packed_channel_reference<B,F,N,M>::integer_t type; };
+
+template <typename B, int N, bool M>
+struct base_channel_type_impl<packed_dynamic_channel_reference<B, N, M> >
+{ typedef typename packed_dynamic_channel_reference<B,N,M>::integer_t type; };
+
+template <typename ChannelValue, typename MinV, typename MaxV>
+struct base_channel_type_impl<scoped_channel_value<ChannelValue, MinV, MaxV> >
+{ typedef ChannelValue type; };
+
+template <typename T>
+struct base_channel_type : base_channel_type_impl<typename remove_cv<T>::type > {};
+
+}} //namespace boost::gil
 
 #endif

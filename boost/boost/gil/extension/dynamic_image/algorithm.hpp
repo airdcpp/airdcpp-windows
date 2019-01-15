@@ -30,7 +30,7 @@ namespace boost { namespace gil {
 namespace detail {
     struct equal_pixels_fn : public binary_operation_obj<equal_pixels_fn,bool> {
         template <typename V1, typename V2>
-        GIL_FORCEINLINE bool apply_compatible(const V1& v1, const V2& v2) const {
+        BOOST_FORCEINLINE bool apply_compatible(const V1& v1, const V2& v2) const {
             return equal_pixels(v1,v2);
         }
     };
@@ -60,7 +60,7 @@ bool equal_pixels(const any_image_view<Types1>& src, const any_image_view<Types2
 namespace detail {
     struct copy_pixels_fn : public binary_operation_obj<copy_pixels_fn> {
         template <typename View1, typename View2>
-        GIL_FORCEINLINE void apply_compatible(const View1& src, const View2& dst) const {
+        BOOST_FORCEINLINE void apply_compatible(const View1& src, const View2& dst) const {
             copy_pixels(src,dst);
         }
     };
@@ -144,7 +144,7 @@ template <bool COMPATIBLE> struct fill_pixels_fn1 {
 
 // copy_pixels invoked on incompatible images
 template <> struct fill_pixels_fn1<false> {
-    template <typename V, typename Value> static void apply(const V& src, const Value& val) { throw std::bad_cast();}
+    template <typename V, typename Value> static void apply(const V&, const Value&) { throw std::bad_cast();}
 };
 
 template <typename Value>

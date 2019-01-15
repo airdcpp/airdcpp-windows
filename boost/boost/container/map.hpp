@@ -1079,12 +1079,42 @@ class map
    //! <b>Complexity</b>: Logarithmic.
    const_iterator find(const key_type& x) const;
 
+   //! <b>Requires</b>: This overload is available only if
+   //! key_compare::is_transparent exists.
+   //!
+   //! <b>Returns</b>: An iterator pointing to an element with the key
+   //!   equivalent to x, or end() if such an element is not found.
+   //!
+   //! <b>Complexity</b>: Logarithmic.
+   template<typename K>
+   iterator find(const K& x);
+
+   //! <b>Requires</b>: This overload is available only if
+   //! key_compare::is_transparent exists.
+   //!
+   //! <b>Returns</b>: A const_iterator pointing to an element with the key
+   //!   equivalent to x, or end() if such an element is not found.
+   //!
+   //! <b>Complexity</b>: Logarithmic.
+   template<typename K>
+   const_iterator find(const K& x) const;
+
    #endif   //#if defined(BOOST_CONTAINER_DOXYGEN_INVOKED)
 
    //! <b>Returns</b>: The number of elements with key equivalent to x.
    //!
    //! <b>Complexity</b>: log(size())+count(k)
    BOOST_CONTAINER_FORCEINLINE size_type count(const key_type& x) const
+   {  return static_cast<size_type>(this->find(x) != this->cend());  }
+
+   //! <b>Requires</b>: This overload is available only if
+   //! key_compare::is_transparent exists.
+   //!
+   //! <b>Returns</b>: The number of elements with key equivalent to x.
+   //!
+   //! <b>Complexity</b>: log(size())+count(k)
+   template<typename K>
+   BOOST_CONTAINER_FORCEINLINE size_type count(const K& x) const
    {  return static_cast<size_type>(this->find(x) != this->cend());  }
 
    #if defined(BOOST_CONTAINER_DOXYGEN_INVOKED)
@@ -1101,6 +1131,26 @@ class map
    //! <b>Complexity</b>: Logarithmic
    const_iterator lower_bound(const key_type& x) const;
 
+   //! <b>Requires</b>: This overload is available only if
+   //! key_compare::is_transparent exists.
+   //!
+   //! <b>Returns</b>: An iterator pointing to the first element with key not less
+   //!   than k, or a.end() if such an element is not found.
+   //!
+   //! <b>Complexity</b>: Logarithmic
+   template<typename K>
+   iterator lower_bound(const K& x);
+
+   //! <b>Requires</b>: This overload is available only if
+   //! key_compare::is_transparent exists.
+   //!
+   //! <b>Returns</b>: A const iterator pointing to the first element with key not
+   //!   less than k, or a.end() if such an element is not found.
+   //!
+   //! <b>Complexity</b>: Logarithmic
+   template<typename K>
+   const_iterator lower_bound(const K& x) const;
+
    //! <b>Returns</b>: An iterator pointing to the first element with key not less
    //!   than x, or end() if such an element is not found.
    //!
@@ -1113,6 +1163,26 @@ class map
    //! <b>Complexity</b>: Logarithmic
    const_iterator upper_bound(const key_type& x) const;
 
+   //! <b>Requires</b>: This overload is available only if
+   //! key_compare::is_transparent exists.
+   //!
+   //! <b>Returns</b>: An iterator pointing to the first element with key not less
+   //!   than x, or end() if such an element is not found.
+   //!
+   //! <b>Complexity</b>: Logarithmic
+   template<typename K>
+   iterator upper_bound(const K& x);
+
+   //! <b>Requires</b>: This overload is available only if
+   //! key_compare::is_transparent exists.
+   //!
+   //! <b>Returns</b>: A const iterator pointing to the first element with key not
+   //!   less than x, or end() if such an element is not found.
+   //!
+   //! <b>Complexity</b>: Logarithmic
+   template<typename K>
+   const_iterator upper_bound(const K& x) const;
+
    //! <b>Effects</b>: Equivalent to std::make_pair(this->lower_bound(k), this->upper_bound(k)).
    //!
    //! <b>Complexity</b>: Logarithmic
@@ -1122,6 +1192,24 @@ class map
    //!
    //! <b>Complexity</b>: Logarithmic
    std::pair<const_iterator,const_iterator> equal_range(const key_type& x) const;
+
+   //! <b>Requires</b>: This overload is available only if
+   //! key_compare::is_transparent exists.
+   //!
+   //! <b>Effects</b>: Equivalent to std::make_pair(this->lower_bound(k), this->upper_bound(k)).
+   //!
+   //! <b>Complexity</b>: Logarithmic
+   template<typename K>
+   std::pair<iterator,iterator> equal_range(const K& x);
+
+   //! <b>Requires</b>: This overload is available only if
+   //! key_compare::is_transparent exists.
+   //!
+   //! <b>Effects</b>: Equivalent to std::make_pair(this->lower_bound(k), this->upper_bound(k)).
+   //!
+   //! <b>Complexity</b>: Logarithmic
+   template<typename K>
+   std::pair<const_iterator,const_iterator> equal_range(const K& x) const;
 
    //! <b>Effects</b>: Rebalances the tree. It's a no-op for Red-Black and AVL trees.
    //!
@@ -1174,6 +1262,60 @@ class map
    }
    #endif   //#ifndef BOOST_CONTAINER_DOXYGEN_INVOKED
 };
+
+#if __cplusplus >= 201703L
+
+template <typename InputIterator>
+map(InputIterator, InputIterator) ->
+   map< typename dtl::remove_const< typename iterator_traits<InputIterator>::value_type::first_type>::type
+           , typename iterator_traits<InputIterator>::value_type::second_type>;
+
+template <typename InputIterator, typename Allocator>
+map(InputIterator, InputIterator, Allocator const&) ->
+   map< typename dtl::remove_const< typename iterator_traits<InputIterator>::value_type::first_type>::type
+           , typename iterator_traits<InputIterator>::value_type::second_type
+           , std::less<typename dtl::remove_const<typename iterator_traits<InputIterator>::value_type::first_type>::type>
+           , Allocator>;
+
+template <typename InputIterator, typename Compare>
+map(InputIterator, InputIterator, Compare const&) ->
+   map< typename dtl::remove_const<typename iterator_traits<InputIterator>::value_type::first_type>::type
+           , typename iterator_traits<InputIterator>::value_type::second_type
+           , Compare>;
+
+template <typename InputIterator, typename Compare, typename Allocator>
+map(InputIterator, InputIterator, Compare const&, Allocator const&) ->
+   map< typename dtl::remove_const<typename iterator_traits<InputIterator>::value_type::first_type>::type
+           , typename iterator_traits<InputIterator>::value_type::second_type
+           , Compare
+           , Allocator>;
+
+template <typename InputIterator>
+map(ordered_unique_range_t, InputIterator, InputIterator) ->
+   map< typename dtl::remove_const<typename iterator_traits<InputIterator>::value_type::first_type>::type
+           , typename iterator_traits<InputIterator>::value_type::second_type>;
+
+template <typename InputIterator, typename Allocator>
+map(ordered_unique_range_t, InputIterator, InputIterator, Allocator const&) ->
+   map< typename dtl::remove_const<typename iterator_traits<InputIterator>::value_type::first_type>::type
+           , typename iterator_traits<InputIterator>::value_type::second_type
+           , std::less<typename dtl::remove_const<typename iterator_traits<InputIterator>::value_type::first_type>::type>
+           , Allocator>;
+
+template <typename InputIterator, typename Compare>
+map(ordered_unique_range_t, InputIterator, InputIterator, Compare const&) ->
+   map< typename dtl::remove_const<typename iterator_traits<InputIterator>::value_type::first_type>::type
+           , typename iterator_traits<InputIterator>::value_type::second_type
+           , Compare>;
+
+template <typename InputIterator, typename Compare, typename Allocator>
+map(ordered_unique_range_t, InputIterator, InputIterator, Compare const&, Allocator const&) ->
+   map< typename dtl::remove_const<typename iterator_traits<InputIterator>::value_type::first_type>::type
+           , typename iterator_traits<InputIterator>::value_type::second_type
+           , Compare
+           , Allocator>;
+
+#endif
 
 
 #ifndef BOOST_CONTAINER_DOXYGEN_INVOKED
@@ -1841,10 +1983,39 @@ class multimap
    //! <b>Complexity</b>: Logarithmic.
    const_iterator find(const key_type& x) const;
 
+   //! <b>Requires</b>: This overload is available only if
+   //! key_compare::is_transparent exists.
+   //!
+   //! <b>Returns</b>: An iterator pointing to an element with the key
+   //!   equivalent to x, or end() if such an element is not found.
+   //!
+   //! <b>Complexity</b>: Logarithmic.
+   template<typename K>
+   iterator find(const K& x);
+
+   //! <b>Requires</b>: This overload is available only if
+   //! key_compare::is_transparent exists.
+   //!
+   //! <b>Returns</b>: A const_iterator pointing to an element with the key
+   //!   equivalent to x, or end() if such an element is not found.
+   //!
+   //! <b>Complexity</b>: Logarithmic.
+   template<typename K>
+   const_iterator find(const K& x) const;
+
    //! <b>Returns</b>: The number of elements with key equivalent to x.
    //!
    //! <b>Complexity</b>: log(size())+count(k)
    size_type count(const key_type& x) const;
+
+   //! <b>Requires</b>: This overload is available only if
+   //! key_compare::is_transparent exists.
+   //!
+   //! <b>Returns</b>: The number of elements with key equivalent to x.
+   //!
+   //! <b>Complexity</b>: log(size())+count(k)
+   template<typename K>
+   size_type count(const K& x) const;
 
    //! <b>Returns</b>: An iterator pointing to the first element with key not less
    //!   than k, or a.end() if such an element is not found.
@@ -1858,6 +2029,26 @@ class multimap
    //! <b>Complexity</b>: Logarithmic
    const_iterator lower_bound(const key_type& x) const;
 
+   //! <b>Requires</b>: This overload is available only if
+   //! key_compare::is_transparent exists.
+   //!
+   //! <b>Returns</b>: An iterator pointing to the first element with key not less
+   //!   than k, or a.end() if such an element is not found.
+   //!
+   //! <b>Complexity</b>: Logarithmic
+   template<typename K>
+   iterator lower_bound(const K& x);
+
+   //! <b>Requires</b>: This overload is available only if
+   //! key_compare::is_transparent exists.
+   //!
+   //! <b>Returns</b>: A const iterator pointing to the first element with key not
+   //!   less than k, or a.end() if such an element is not found.
+   //!
+   //! <b>Complexity</b>: Logarithmic
+   template<typename K>
+   const_iterator lower_bound(const K& x) const;
+
    //! <b>Returns</b>: An iterator pointing to the first element with key not less
    //!   than x, or end() if such an element is not found.
    //!
@@ -1870,6 +2061,26 @@ class multimap
    //! <b>Complexity</b>: Logarithmic
    const_iterator upper_bound(const key_type& x) const;
 
+   //! <b>Requires</b>: This overload is available only if
+   //! key_compare::is_transparent exists.
+   //!
+   //! <b>Returns</b>: An iterator pointing to the first element with key not less
+   //!   than x, or end() if such an element is not found.
+   //!
+   //! <b>Complexity</b>: Logarithmic
+   template<typename K>
+   iterator upper_bound(const K& x);
+
+   //! <b>Requires</b>: This overload is available only if
+   //! key_compare::is_transparent exists.
+   //!
+   //! <b>Returns</b>: A const iterator pointing to the first element with key not
+   //!   less than x, or end() if such an element is not found.
+   //!
+   //! <b>Complexity</b>: Logarithmic
+   template<typename K>
+   const_iterator upper_bound(const K& x) const;
+
    //! <b>Effects</b>: Equivalent to std::make_pair(this->lower_bound(k), this->upper_bound(k)).
    //!
    //! <b>Complexity</b>: Logarithmic
@@ -1879,6 +2090,24 @@ class multimap
    //!
    //! <b>Complexity</b>: Logarithmic
    std::pair<const_iterator,const_iterator> equal_range(const key_type& x) const;
+
+   //! <b>Requires</b>: This overload is available only if
+   //! key_compare::is_transparent exists.
+   //!
+   //! <b>Effects</b>: Equivalent to std::make_pair(this->lower_bound(k), this->upper_bound(k)).
+   //!
+   //! <b>Complexity</b>: Logarithmic
+   template<typename K>
+   std::pair<iterator,iterator> equal_range(const K& x);
+
+   //! <b>Requires</b>: This overload is available only if
+   //! key_compare::is_transparent exists.
+   //!
+   //! <b>Effects</b>: Equivalent to std::make_pair(this->lower_bound(k), this->upper_bound(k)).
+   //!
+   //! <b>Complexity</b>: Logarithmic
+   template<typename K>
+   std::pair<const_iterator,const_iterator> equal_range(const K& x) const;
 
    //! <b>Effects</b>: Rebalances the tree. It's a no-op for Red-Black and AVL trees.
    //!
@@ -1922,6 +2151,60 @@ class multimap
 
    #endif   //#if defined(BOOST_CONTAINER_DOXYGEN_INVOKED)
 };
+
+#if __cplusplus >= 201703L
+
+template <typename InputIterator>
+multimap(InputIterator, InputIterator) ->
+   multimap<typename dtl::remove_const< typename iterator_traits<InputIterator>::value_type::first_type>::type
+                        , typename iterator_traits<InputIterator>::value_type::second_type>;
+
+template <typename InputIterator, typename Allocator>
+multimap(InputIterator, InputIterator, Allocator const&) ->
+   multimap<typename dtl::remove_const< typename iterator_traits<InputIterator>::value_type::first_type>::type
+                        , typename iterator_traits<InputIterator>::value_type::second_type
+                        , std::less<typename dtl::remove_const<typename iterator_traits<InputIterator>::value_type::first_type>::type>
+                        , Allocator>;
+
+template <typename InputIterator, typename Compare>
+multimap(InputIterator, InputIterator, Compare const&) ->
+   multimap< typename dtl::remove_const<typename iterator_traits<InputIterator>::value_type::first_type>::type
+           , typename iterator_traits<InputIterator>::value_type::second_type
+           , Compare>;
+
+template <typename InputIterator, typename Compare, typename Allocator>
+multimap(InputIterator, InputIterator, Compare const&, Allocator const&) ->
+   multimap< typename dtl::remove_const<typename iterator_traits<InputIterator>::value_type::first_type>::type
+           , typename iterator_traits<InputIterator>::value_type::second_type
+           , Compare
+           , Allocator>;
+
+template <typename InputIterator>
+multimap(ordered_range_t, InputIterator, InputIterator) ->
+   multimap< typename dtl::remove_const<typename iterator_traits<InputIterator>::value_type::first_type>::type
+           , typename iterator_traits<InputIterator>::value_type::second_type>;
+
+template <typename InputIterator, typename Allocator>
+multimap(ordered_range_t, InputIterator, InputIterator, Allocator const&) ->
+   multimap< typename dtl::remove_const<typename iterator_traits<InputIterator>::value_type::first_type>::type
+           , typename iterator_traits<InputIterator>::value_type::second_type
+           , std::less<typename dtl::remove_const<typename iterator_traits<InputIterator>::value_type::first_type>::type>
+           , Allocator>;
+
+template <typename InputIterator, typename Compare>
+multimap(ordered_range_t, InputIterator, InputIterator, Compare const&) ->
+   multimap< typename dtl::remove_const<typename iterator_traits<InputIterator>::value_type::first_type>::type
+           , typename iterator_traits<InputIterator>::value_type::second_type
+           , Compare>;
+
+template <typename InputIterator, typename Compare, typename Allocator>
+multimap(ordered_range_t, InputIterator, InputIterator, Compare const&, Allocator const&) ->
+   multimap< typename dtl::remove_const<typename iterator_traits<InputIterator>::value_type::first_type>::type
+           , typename iterator_traits<InputIterator>::value_type::second_type
+           , Compare
+           , Allocator>;
+
+#endif
 
 #ifndef BOOST_CONTAINER_DOXYGEN_INVOKED
 

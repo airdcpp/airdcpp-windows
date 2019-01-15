@@ -78,8 +78,11 @@ void context_entry( transfer_t t) noexcept {
         t = jump_fcontext( t.fctx, nullptr);
         // start executing
         t.fctx = rec->run( t.fctx);
-    } catch ( forced_unwind const& e) {
-        t = { e.fctx, nullptr };
+    } catch ( forced_unwind const& ex) {
+        t = { ex.fctx, nullptr };
+#ifndef BOOST_ASSERT_IS_VOID
+        const_cast< forced_unwind & >( ex).caught = true;
+#endif
     }
     BOOST_ASSERT( nullptr != t.fctx);
     // destroy context-stack of `this`context on next context
@@ -294,28 +297,8 @@ public:
         return nullptr == fctx_;
     }
 
-    bool operator==( continuation const& other) const noexcept {
-        return fctx_ == other.fctx_;
-    }
-
-    bool operator!=( continuation const& other) const noexcept {
-        return fctx_ != other.fctx_;
-    }
-
     bool operator<( continuation const& other) const noexcept {
         return fctx_ < other.fctx_;
-    }
-
-    bool operator>( continuation const& other) const noexcept {
-        return other.fctx_ < fctx_;
-    }
-
-    bool operator<=( continuation const& other) const noexcept {
-        return ! ( * this > other);
-    }
-
-    bool operator>=( continuation const& other) const noexcept {
-        return ! ( * this < other);
     }
 
     template< typename charT, class traitsT >

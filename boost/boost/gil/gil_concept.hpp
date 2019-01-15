@@ -32,6 +32,19 @@
 #include <boost/mpl/size.hpp>
 
 namespace boost { namespace gil {
+
+#if defined(__GNUC__) && (__GNUC__ >= 4)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
+#endif
+
+#if BOOST_WORKAROUND(BOOST_MSVC, >= 1400) 
+#pragma warning(push) 
+#pragma warning(disable:4510) //default constructor could not be generated
+#pragma warning(disable:4512) //assignment operator could not be generated
+#pragma warning(disable:4610) //can never be instantiated - user defined constructor required
+#endif
+
 template <typename T> struct channel_traits;
 template <typename P> struct is_pixel;
 template <typename dstT, typename srcT>
@@ -67,7 +80,6 @@ typename add_reference<E>::type                           at_c(      detail::hom
 template <int K, typename E, typename L, int N>
 typename add_reference<typename add_const<E>::type>::type at_c(const detail::homogeneous_color_base<E,L,N>& p);
 
-#if !defined(_MSC_VER)  || _MSC_VER > 1310
 template <typename P, typename C, typename L> struct packed_pixel;
 template <int K, typename P, typename C, typename L>
 typename kth_element_reference_type<packed_pixel<P,C,L>, K>::type 
@@ -82,7 +94,6 @@ template <typename B, typename C, typename L, bool M> struct bit_aligned_pixel_r
 template <int K, typename B, typename C, typename L, bool M> inline
 typename kth_element_reference_type<bit_aligned_pixel_reference<B,C,L,M>, K>::type
 at_c(const bit_aligned_pixel_reference<B,C,L,M>& p);
-#endif
 
 // Forward-declare semantic_at_c
 template <int K, typename ColorBase>
@@ -96,7 +107,7 @@ template <typename T> struct transposed_type;
 
 namespace detail {
 template <typename T>
-void initialize_it(T& x) {}
+void initialize_it(T&) {}
 } // namespace detail
 
 template <typename T>
@@ -272,8 +283,7 @@ struct PointNDConcept {
         LT lt=axis_value<N-1>(point);
         axis_value<N-1>(point)=lt;
     
-        value_type v=point[0];  ignore_unused_variable_warning(v);
-        point[0]=point[0];
+//        value_type v=point[0];  ignore_unused_variable_warning(v);
     }
     P point;
 };
@@ -456,11 +466,12 @@ namespace detail {
     template <typename T>
     struct ChannelIsMutableConcept {
         void constraints() {
-            c=c;
+            c1=c2;
             using std::swap;
-            swap(c,c);
+            swap(c1,c2);
         }
-        T c;
+        T c1;
+        T c2;
     };
 }
 
@@ -503,7 +514,7 @@ struct ChannelValueConcept {
 Example:
 
 \code
-BOOST_STATIC_ASSERT((channels_are_compatible<bits8, const bits8&>::value));
+BOOST_STATIC_ASSERT((channels_are_compatible<uint8_t, const uint8_t&>::value));
 \endcode
 */
 template <typename T1, typename T2>  // Models GIL Pixel
@@ -614,12 +625,10 @@ struct ColorBaseConcept {
 
         static const std::size_t num_elements = size<ColorBase>::value;
 
-        typedef typename kth_element_type<ColorBase,num_elements-1>::type TN; 
-        typedef typename kth_element_const_reference_type<ColorBase,num_elements-1>::type CR; 
+        typedef typename kth_element_type<ColorBase,num_elements-1>::type TN;
+        typedef typename kth_element_const_reference_type<ColorBase,num_elements-1>::type CR;
 
-#if !defined(_MSC_VER) || _MSC_VER > 1310
-        CR cr=at_c<num_elements-1>(cb);  ignore_unused_variable_warning(cr);
-#endif
+        CR cr=gil::at_c<num_elements-1>(cb);  ignore_unused_variable_warning(cr);
 
         // functions that work for every pixel (no need to require them)
         semantic_at_c<0>(cb);
@@ -654,10 +663,8 @@ struct MutableColorBaseConcept {
 
         typedef typename kth_element_reference_type<ColorBase, 0>::type CR; 
 
-#if !defined(_MSC_VER) || _MSC_VER > 1310
-        CR r=at_c<0>(cb);
-        at_c<0>(cb)=r;
-#endif
+        CR r=gil::at_c<0>(cb);
+        gil::at_c<0>(cb)=r;
     }
 
     ColorBase cb;
@@ -951,8 +958,10 @@ struct MutableHomogeneousPixelConcept {
     void constraints() {
         gil_function_requires<HomogeneousPixelConcept<P> >();
         gil_function_requires<MutableHomogeneousColorBaseConcept<P> >();
-        p[0]=p[0];
+        p[0]=v;
+        v=p[0];
     }
+    typename P::template element_type<P>::type v;
     P p;
 };
 
@@ -1104,13 +1113,15 @@ struct PixelDereferenceAdaptorConcept {
 };
 
 template <typename P>
-struct PixelDereferenceAdaptorArchetype : public std::unary_function<P, P> {
+struct PixelDereferenceAdaptorArchetype {
+    typedef P argument_type;
+    typedef P result_type;
     typedef PixelDereferenceAdaptorArchetype const_t;
     typedef typename remove_reference<P>::type value_type;
     typedef typename add_reference<P>::type reference;
     typedef reference const_reference;
     static const bool is_mutable=false;
-    P operator()(P x) const { throw; }
+    P operator()(P) const { throw; }
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -2181,6 +2192,13 @@ struct ImageConcept {
     Img img;
 };
 
+#if BOOST_WORKAROUND(BOOST_MSVC, >= 1400) 
+#pragma warning(pop) 
+#endif 
+
+#if defined(__GNUC__) && (__GNUC__ >= 4)
+#pragma GCC diagnostic pop
+#endif
 
 } }  // namespace boost::gil
 
