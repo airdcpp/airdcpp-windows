@@ -1686,12 +1686,12 @@ BEGIN
             VALUE "Comments", "http://www.airdcpp.net"
             VALUE "CompanyName", "AirDC++ Team"
             VALUE "FileDescription", "AirDC++"
-            VALUE "FileVersion", "3.52.0.0"
+            VALUE "FileVersion", "3.54.0.0"
             VALUE "InternalName", "AirDC++"
-            VALUE "LegalCopyright", "Copyright 2007-2018 Night and maksis"
+            VALUE "LegalCopyright", "Copyright 2007-2019 Night and maksis"
             VALUE "OriginalFilename", "AirDC.exe"
             VALUE "ProductName", "AirDC++"
-            VALUE "ProductVersion", "3.52"
+            VALUE "ProductVersion", "3.54"
         END
     END
     BLOCK "VarFileInfo"
