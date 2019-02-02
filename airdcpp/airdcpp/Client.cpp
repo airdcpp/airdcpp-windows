@@ -143,7 +143,7 @@ void Client::reloadSettings(bool aUpdateNick) noexcept {
 }
 
 bool Client::changeBoolHubSetting(HubSettings::HubBoolSetting aSetting) noexcept {
-	auto newValue = !get(aSetting);
+	auto newValue = static_cast<bool>(!get(aSetting));
 	get(aSetting) = newValue;
 
 	//save for a favorite hub if needed
