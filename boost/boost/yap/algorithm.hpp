@@ -55,14 +55,14 @@ namespace boost { namespace yap {
 
 #ifdef BOOST_NO_CONSTEXPR_IF
         return detail::deref_impl < Expr,
-               std::is_rvalue_reference<Expr>{} &&
-                   !std::is_const<std::remove_reference_t<Expr>>{} >
+               std::is_rvalue_reference<Expr>::value &&
+                   !std::is_const<std::remove_reference_t<Expr>>::value >
                        {}(static_cast<Expr &&>(expr));
 #else
         using namespace hana::literals;
         if constexpr (
-            std::is_rvalue_reference<Expr>{} &&
-            !std::is_const<std::remove_reference_t<Expr>>{}) {
+            std::is_rvalue_reference<Expr>::value &&
+            !std::is_const<std::remove_reference_t<Expr>>::value) {
             return std::move(*expr.elements[0_c]);
         } else {
             return *expr.elements[0_c];
@@ -152,10 +152,10 @@ namespace boost { namespace yap {
                        (ValueOfTerminalsOnly && kind == expr_kind::terminal) ||
                            (!ValueOfTerminalsOnly &&
                             arity == detail::expr_arity::one),
-                       std::is_lvalue_reference<T>{} ||
+                       std::is_lvalue_reference<T>::value ||
                            detail::lvalue_ref_ith_element<
                                decltype(x.elements),
-                               0>{} > {}(static_cast<T &&>(x));
+                               0>::value > {}(static_cast<T &&>(x));
             }
         };
 
@@ -189,7 +189,7 @@ namespace boost { namespace yap {
                     kind == expr_kind::terminal ||
                     (!ValueOfTerminalsOnly && arity == expr_arity::one)) {
                     if constexpr (
-                        std::is_lvalue_reference<T>{} ||
+                        std::is_lvalue_reference<T>::value ||
                         detail::
                             lvalue_ref_ith_element<decltype(x.elements), 0>{}) {
                         return x.elements[0_c];
@@ -299,14 +299,14 @@ namespace boost { namespace yap {
             I::value,
             Expr,
             kind == expr_kind::expr_ref,
-            std::is_lvalue_reference<Expr>{}>{}(static_cast<Expr &&>(expr), i);
+            std::is_lvalue_reference<Expr>::value>{}(static_cast<Expr &&>(expr), i);
 #else
         using namespace hana::literals;
         if constexpr (kind == expr_kind::expr_ref) {
             return ::boost::yap::get(
                 ::boost::yap::deref(static_cast<Expr &&>(expr)), i);
         } else {
-            if constexpr (std::is_lvalue_reference<Expr>{}) {
+            if constexpr (std::is_lvalue_reference<Expr>::value) {
                 return expr.elements[i];
             } else {
                 return std::move(expr.elements[i]);

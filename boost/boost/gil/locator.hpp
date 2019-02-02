@@ -1,42 +1,29 @@
-/*
-    Copyright 2005-2007 Adobe Systems Incorporated
+//
+// Copyright 2005-2007 Adobe Systems Incorporated
+//
+// Distributed under the Boost Software License, Version 1.0
+// See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt
+//
+#ifndef BOOST_GIL_LOCATOR_HPP
+#define BOOST_GIL_LOCATOR_HPP
 
-    Use, modification and distribution are subject to the Boost Software License,
-    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
-    http://www.boost.org/LICENSE_1_0.txt).
+#include <boost/gil/pixel_iterator.hpp>
+#include <boost/gil/point.hpp>
 
-    See http://opensource.adobe.com/gil for most recent version including documentation.
-*/
-
-/*************************************************************************************************/
-
-#ifndef GIL_LOCATOR_H
-#define GIL_LOCATOR_H
-
-////////////////////////////////////////////////////////////////////////////////////////
-/// \file
-/// \brief pixel 2D locator
-/// \author Lubomir Bourdev and Hailin Jin \n
-///         Adobe Systems Incorporated
-/// \date   2005-2007 \n September 20, 2006
-///
-////////////////////////////////////////////////////////////////////////////////////////
-
-#include <cstddef>
 #include <cassert>
-#include "pixel_iterator.hpp"
-
-////////////////////////////////////////////////////////////////////////////////////////
-///                 Pixel 2D LOCATOR
-////////////////////////////////////////////////////////////////////////////////////////
+#include <cstddef>
 
 namespace boost { namespace gil {
+
+/// Pixel 2D locator
+
 //forward declarations
 template <typename P> std::ptrdiff_t memunit_step(const P*);
 template <typename P> P* memunit_advanced(const P* p, std::ptrdiff_t diff);
 template <typename P> P& memunit_advanced_ref(P* p, std::ptrdiff_t diff);
 template <typename Iterator, typename D> struct iterator_add_deref;
-template <typename T> class point2;
+template <typename T> class point;
 namespace detail {
     // helper class specialized for each axis of pixel_2d_locator
     template <std::size_t D, typename Loc>  class locator_axis;
@@ -125,7 +112,7 @@ public:
     typedef typename std::iterator_traits<x_iterator>::value_type       value_type;
     typedef typename std::iterator_traits<x_iterator>::reference        reference;    // result of dereferencing
     typedef typename std::iterator_traits<x_iterator>::difference_type  coord_t;      // 1D difference type (same for all dimensions)
-    typedef point2<coord_t>                                             difference_type; // result of operator-(locator,locator)
+    typedef point<coord_t>                                              difference_type; // result of operator-(locator,locator)
     typedef difference_type                                             point_t;
     template <std::size_t D> struct axis {
         typedef typename detail::locator_axis<D,Loc>::coord_t           coord_t;

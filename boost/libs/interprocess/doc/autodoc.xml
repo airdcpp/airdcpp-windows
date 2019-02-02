@@ -1712,7 +1712,7 @@
 <para>Describes exceptions thrown by interprocess classes </para><namespace name="boost">
 <namespace name="interprocess">
 <class name="interprocess_exception"><inherit access="public">exception</inherit><description><para>This class is the base class of all exceptions thrown by boost::interprocess </para></description><method-group name="public member functions">
-<method name="what" cv="const" specifiers="virtual"><type>const char *</type></method>
+<method name="what" cv="const noexcept" specifiers="virtual"><type>const char *</type></method>
 <method name="get_native_error" cv="const"><type>native_error_t</type></method>
 <method name="get_error_code" cv="const"><type>error_code_t</type></method>
 </method-group>
@@ -1720,11 +1720,11 @@
 <constructor><parameter name="err_info"><paramtype>const error_info &amp;</paramtype></parameter><parameter name="str"><paramtype>const char *</paramtype><default>0</default></parameter></constructor>
 <destructor/>
 </class><class name="lock_exception"><inherit access="public">boost::interprocess::interprocess_exception</inherit><description><para>This is the exception thrown by shared <classname alt="boost::interprocess::interprocess_mutex">interprocess_mutex</classname> family when a deadlock situation is detected or when using a <classname alt="boost::interprocess::interprocess_condition">interprocess_condition</classname> the <classname alt="boost::interprocess::interprocess_mutex">interprocess_mutex</classname> is not locked </para></description><method-group name="public member functions">
-<method name="what" cv="const" specifiers="virtual"><type>const char *</type></method>
+<method name="what" cv="const noexcept" specifiers="virtual"><type>const char *</type></method>
 </method-group>
 <constructor/>
 </class><class name="bad_alloc"><inherit access="public">boost::interprocess::interprocess_exception</inherit><description><para>This exception is thrown when a memory request can't be fulfilled. </para></description><method-group name="public member functions">
-<method name="what" cv="const" specifiers="virtual"><type>const char *</type></method>
+<method name="what" cv="const noexcept" specifiers="virtual"><type>const char *</type></method>
 </method-group>
 <constructor/>
 </class>

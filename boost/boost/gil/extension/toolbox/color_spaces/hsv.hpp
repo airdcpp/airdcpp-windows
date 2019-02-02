@@ -1,27 +1,21 @@
-/*
-    Copyright 2012 Christian Henning
-    Use, modification and distribution are subject to the Boost Software License,
-    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
-    http://www.boost.org/LICENSE_1_0.txt).
-*/
-
-/*************************************************************************************************/
-
+//
+// Copyright 2012 Christian Henning
+//
+// Distributed under the Boost Software License, Version 1.0
+// See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt
+//
 #ifndef BOOST_GIL_EXTENSION_TOOLBOX_COLOR_SPACES_HSV_HPP
 #define BOOST_GIL_EXTENSION_TOOLBOX_COLOR_SPACES_HSV_HPP
-
-////////////////////////////////////////////////////////////////////////////////////////
-/// \file hsv.hpp
-/// \brief Support for HSV color space
-/// \author Christian Henning \n
-///
-/// \date 2012 \n
-///
-////////////////////////////////////////////////////////////////////////////////////////
 
 #include <boost/numeric/conversion/cast.hpp>
 
 #include <boost/gil/typedefs.hpp>
+
+#include <boost/mpl/vector.hpp>
+
+#include <algorithm>
+#include <cmath>
 
 namespace boost{ namespace gil {
 
@@ -95,7 +89,7 @@ struct default_color_converter_impl< rgb_t, hsv_t >
             hue = ( temp_green - temp_blue )
                 / diff;
          }
-         else if( temp_green == max_color )
+         else if( temp_green >= max_color ) // means == but >= avoids compiler warning; color is never greater than max
          {
             hue = 2.f + ( temp_blue - temp_red ) 
                 / diff;
@@ -234,4 +228,4 @@ struct default_color_converter_impl<hsv_t,rgb_t>
 } // namespace gil
 } // namespace boost
 
-#endif // BOOST_GIL_EXTENSION_TOOLBOX_COLOR_SPACES_HSV_HPP
+#endif

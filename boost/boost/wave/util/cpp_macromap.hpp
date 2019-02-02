@@ -583,7 +583,6 @@ macromap<ContextT>::expand_tokensequence_worker(
 //  analyze the next element of the given sequence, if it is an
 //  T_IDENTIFIER token, try to replace this as a macro etc.
     using namespace boost::wave;
-    typedef unput_queue_iterator<IteratorT, token_type, ContainerT> iterator_type;
 
     if (first != last) {
     token_id id = token_id(*first);

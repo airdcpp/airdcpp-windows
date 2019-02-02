@@ -812,7 +812,7 @@ typename ContextT::position_type pos = act_token.get_position();
 
                 pos.set_column(++column);                 // account for ' '
                 pending.push_back(result_type(T_INTLIT, buffer.c_str(), pos));
-                pos.set_column(column += buffer.size()); // account for <number>
+                pos.set_column(column += (unsigned int)buffer.size()); // account for <number>
                 pending.push_back(result_type(T_SPACE, " ", pos));
                 pos.set_column(++column);                 // account for ' '
 

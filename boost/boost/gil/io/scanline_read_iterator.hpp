@@ -1,29 +1,21 @@
-/*
-    Copyright 2012 Christian Henning
-    Use, modification and distribution are subject to the Boost Software License,
-    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
-    http://www.boost.org/LICENSE_1_0.txt).
-*/
-
-/*************************************************************************************************/
-
+//
+// Copyright 2007-2008 Christian Henning
+//
+// Distributed under the Boost Software License, Version 1.0
+// See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt
+//
 #ifndef BOOST_GIL_IO_SCANLINE_READ_ITERATOR_HPP
 #define BOOST_GIL_IO_SCANLINE_READ_ITERATOR_HPP
 
-////////////////////////////////////////////////////////////////////////////////////////
-/// \file
-/// \brief
-/// \author Christian Henning
-///
-/// \date 2012 \n
-///
-////////////////////////////////////////////////////////////////////////////////////////
+#include <boost/gil/io/error.hpp>
+#include <boost/gil/io/typedefs.hpp>
 
 #include <boost/iterator/iterator_facade.hpp>
 
-#include <boost/gil/io/error.hpp>
-
+#include <iterator>
 #include <memory>
+#include <vector>
 
 namespace boost { namespace gil {
 

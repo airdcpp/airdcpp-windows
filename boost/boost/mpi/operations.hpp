@@ -292,14 +292,12 @@ namespace detail {
   class user_op
   {
   public:
-    explicit user_op(Op& op)
+    user_op()
     {
       BOOST_MPI_CHECK_RESULT(MPI_Op_create,
                              (&user_op<Op, T>::perform,
                               is_commutative<Op, T>::value,
                               &mpi_op));
-
-      op_ptr = &op;
     }
 
     ~user_op()
@@ -321,17 +319,15 @@ namespace detail {
 
   private:
     MPI_Op mpi_op;
-    static Op* op_ptr;
 
     static void BOOST_MPI_CALLING_CONVENTION perform(void* vinvec, void* voutvec, int* plen, MPI_Datatype*)
     {
       T* invec = static_cast<T*>(vinvec);
       T* outvec = static_cast<T*>(voutvec);
-      std::transform(invec, invec + *plen, outvec, outvec, *op_ptr);
+      Op op;
+      std::transform(invec, invec + *plen, outvec, outvec, op);
     }
   };
-
-  template<typename Op, typename T> Op* user_op<Op, T>::op_ptr = 0;
 
 } // end namespace detail
 

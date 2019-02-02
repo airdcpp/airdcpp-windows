@@ -217,7 +217,7 @@ boost
             static
             BOOST_QVM_INLINE_CRITICAL
             scalar_type
-            read_element( this_matrix const & x )
+            read_element( this_matrix const & /*x*/ )
                 {
                 BOOST_QVM_STATIC_ASSERT(Row>=0);
                 BOOST_QVM_STATIC_ASSERT(Row<Dim);
@@ -229,7 +229,7 @@ boost
             static
             BOOST_QVM_INLINE_CRITICAL
             scalar_type
-            read_element_idx( int row, int col, this_matrix const & x )
+            read_element_idx( int row, int col, this_matrix const & /*x*/ )
                 {
                 BOOST_QVM_ASSERT(row>=0);
                 BOOST_QVM_ASSERT(row<Dim);

@@ -427,7 +427,7 @@ namespace bscu = boost::sort::common::util;
 //
 //-----------------------------------------------------------------------------
 //  function : block_indirect_sort
-/// @brief parallel sample sort  algorithm (stable sort)
+/// @brief invocation of block_indirtect_sort with 2 parameters
 ///
 /// @param first : iterator to the first element of the range to sort
 /// @param last : iterator after the last element to the range to sort
@@ -443,7 +443,8 @@ void block_indirect_sort(Iter_t first, Iter_t last)
 //
 //-----------------------------------------------------------------------------
 //  function : block_indirect_sort
-/// @brief parallel sample sort  algorithm (stable sort)
+/// @brief invocation of block_indirtect_sort with 3 parameters. The third is 
+///        the number of threads
 ///
 /// @param first : iterator to the first element of the range to sort
 /// @param last : iterator after the last element to the range to sort
@@ -459,7 +460,8 @@ void block_indirect_sort(Iter_t first, Iter_t last, uint32_t nthread)
 //
 //-----------------------------------------------------------------------------
 //  function : block_indirect_sort
-/// @brief parallel sample sort  algorithm (stable sort)
+/// @brief invocation of block_indirtect_sort with 3 parameters. The third is 
+///        the comparison object
 ///
 /// @param first : iterator to the first element of the range to sort
 /// @param last : iterator after the last element to the range to sort
@@ -477,7 +479,7 @@ void block_indirect_sort(Iter_t first, Iter_t last, Compare comp)
 //
 //-----------------------------------------------------------------------------
 //  function : block_indirect_sort
-/// @brief parallel sample sort  algorithm (stable sort)
+/// @brief invocation of block_indirtect_sort with 4 parameters. 
 ///
 /// @param first : iterator to the first element of the range to sort
 /// @param last : iterator after the last element to the range to sort

@@ -1,37 +1,27 @@
-/*
-    Copyright 2012 Christian Henning
-    Use, modification and distribution are subject to the Boost Software License,
-    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
-    http://www.boost.org/LICENSE_1_0.txt).
-*/
-
-/*************************************************************************************************/
-
+//
+// Copyright 2012 Christian Henning
+//
+// Distributed under the Boost Software License, Version 1.0
+// See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt
+//
 #ifndef BOOST_GIL_EXTENSION_IO_JPEG_DETAIL_READER_BACKEND_HPP
 #define BOOST_GIL_EXTENSION_IO_JPEG_DETAIL_READER_BACKEND_HPP
 
-////////////////////////////////////////////////////////////////////////////////////////
-/// \file
-/// \brief
-/// \author Christian Henning \n
-///
-/// \date 2012 \n
-///
-////////////////////////////////////////////////////////////////////////////////////////
-
 #include <boost/gil/extension/io/jpeg/tags.hpp>
 
+#include <csetjmp>
 #include <memory>
 
 namespace boost { namespace gil {
 
-#if BOOST_WORKAROUND(BOOST_MSVC, >= 1400) 
-#pragma warning(push) 
-#pragma warning(disable:4512) //assignment operator could not be generated 
-#pragma warning(disable:4611) //interaction between '_setjmp' and C++ object destruction is non-portable 
+#if BOOST_WORKAROUND(BOOST_MSVC, >= 1400)
+#pragma warning(push)
+#pragma warning(disable:4512) //assignment operator could not be generated
+#pragma warning(disable:4611) //interaction between '_setjmp' and C++ object destruction is non-portable
 #endif
 
-namespace detail { 
+namespace detail {
 
 ///
 /// Wrapper for libjpeg's decompress object. Implements value semantics.
@@ -116,7 +106,7 @@ public:
         }
 
         _src._jsrc.bytes_in_buffer   = 0;
-        _src._jsrc.next_input_byte   = buffer;
+        _src._jsrc.next_input_byte   = buffer_;
         _src._jsrc.init_source       = reinterpret_cast< void(*)   ( j_decompress_ptr )>( &reader_backend< Device, jpeg_tag >::init_device );
         _src._jsrc.fill_input_buffer = reinterpret_cast< boolean(*)( j_decompress_ptr )>( &reader_backend< Device, jpeg_tag >::fill_buffer );
         _src._jsrc.skip_input_data   = reinterpret_cast< void(*)   ( j_decompress_ptr
@@ -190,7 +180,7 @@ public:
     {
         return _settings;
     }
-    
+
     /// Return image header info.
     const image_read_info< jpeg_tag >& get_info()
     {
@@ -257,23 +247,23 @@ private:
     {
         gil_jpeg_source_mgr* src = reinterpret_cast< gil_jpeg_source_mgr* >( cinfo->src );
         src->_jsrc.bytes_in_buffer = 0;
-        src->_jsrc.next_input_byte = src->_this->buffer;
+        src->_jsrc.next_input_byte = src->_this->buffer_;
     }
 
     static boolean fill_buffer( jpeg_decompress_struct* cinfo )
     {
         gil_jpeg_source_mgr* src = reinterpret_cast< gil_jpeg_source_mgr* >( cinfo->src );
-        size_t count = src->_this->_io_dev.read(src->_this->buffer, sizeof(src->_this->buffer) );
+        size_t count = src->_this->_io_dev.read(src->_this->buffer_, sizeof(src->_this->buffer_) );
 
         if( count <= 0 )
         {
             // libjpeg does that: adding an EOF marker
-            src->_this->buffer[0] = (JOCTET) 0xFF;
-            src->_this->buffer[1] = (JOCTET) JPEG_EOI;
+            src->_this->buffer_[0] = (JOCTET) 0xFF;
+            src->_this->buffer_[1] = (JOCTET) JPEG_EOI;
             count = 2;
         }
 
-        src->_jsrc.next_input_byte = src->_this->buffer;
+        src->_jsrc.next_input_byte = src->_this->buffer_;
         src->_jsrc.bytes_in_buffer = count;
 
         return TRUE;
@@ -316,12 +306,12 @@ public:
     gil_jpeg_source_mgr _src;
 
     // libjpeg default is 4096 - see jdatasrc.c
-    JOCTET buffer[4096];
+    JOCTET buffer_[4096];
 };
 
-#if BOOST_WORKAROUND(BOOST_MSVC, >= 1400) 
-#pragma warning(pop) 
-#endif 
+#if BOOST_WORKAROUND(BOOST_MSVC, >= 1400)
+#pragma warning(pop)
+#endif
 
 } // namespace gil
 } // namespace boost

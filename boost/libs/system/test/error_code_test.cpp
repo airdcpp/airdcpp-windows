@@ -123,17 +123,7 @@ int main( int, char ** )
   BOOST_TEST( generic_category() != system_category() );
   BOOST_TEST( system_category() != generic_category() );
 
-  if ( std::less<const error_category*>()( &generic_category(), &system_category() ) )
-  {
-    BOOST_TEST( generic_category() < system_category() );
-    BOOST_TEST( !(system_category() < generic_category()) );
-  }
-  else
-  {
-    BOOST_TEST( system_category() < generic_category() );
-    BOOST_TEST( !(generic_category() < system_category()) );
-  }
-
+  BOOST_TEST_NE( generic_category() < system_category(), system_category() < generic_category() );
 
   error_code ec;
   error_condition econd;

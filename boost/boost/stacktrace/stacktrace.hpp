@@ -1,4 +1,4 @@
-// Copyright Antony Polukhin, 2016-2017.
+// Copyright Antony Polukhin, 2016-2018.
 //
 // Distributed under the Boost Software License, Version 1.0. (See
 // accompanying file LICENSE_1_0.txt or copy at
@@ -72,10 +72,9 @@ class basic_stacktrace {
         try {
             {   // Fast path without additional allocations
                 native_frame_ptr_t buffer[buffer_size];
-                const std::size_t frames_count = boost::stacktrace::detail::this_thread_frames::collect(buffer, buffer_size, frames_to_skip + 1);
-                if (buffer_size > frames_count || frames_count >= max_depth) {
-                    const std::size_t size = (max_depth < frames_count ? max_depth : frames_count);
-                    fill(buffer, size);
+                const std::size_t frames_count = boost::stacktrace::detail::this_thread_frames::collect(buffer, buffer_size < max_depth ? buffer_size : max_depth, frames_to_skip + 1);
+                if (buffer_size > frames_count || frames_count == max_depth) {
+                    fill(buffer, frames_count);
                     return;
                 }
             }
@@ -88,10 +87,9 @@ class basic_stacktrace {
 #endif
             std::vector<native_frame_ptr_t, allocator_void_t> buf(buffer_size * 2, 0, impl_.get_allocator());
             do {
-                const std::size_t frames_count = boost::stacktrace::detail::this_thread_frames::collect(&buf[0], buf.size(), frames_to_skip + 1);
-                if (buf.size() > frames_count || frames_count >= max_depth) {
-                    const std::size_t size = (max_depth < frames_count ? max_depth : frames_count);
-                    fill(&buf[0], size);
+                const std::size_t frames_count = boost::stacktrace::detail::this_thread_frames::collect(&buf[0], buf.size() < max_depth ? buf.size() : max_depth, frames_to_skip + 1);
+                if (buf.size() > frames_count || frames_count == max_depth) {
+                    fill(&buf[0], frames_count);
                     return;
                 }
 
@@ -319,6 +317,10 @@ public:
 
     /// Constructs stacktrace from raw memory dump. Terminating zero frame is discarded.
     ///
+    /// @param begin Begining of the memory where the stacktrace was saved using the boost::stacktrace::safe_dump_to
+    ///
+    /// @param buffer_size_in_bytes Size of the memory. Usually the same value that was passed to the boost::stacktrace::safe_dump_to
+    ///
     /// @b Complexity: O(size) in worst case
     static basic_stacktrace from_dump(const void* begin, std::size_t buffer_size_in_bytes, const allocator_type& a = allocator_type()) {
         basic_stacktrace ret(0, 0, a);
@@ -390,14 +392,20 @@ std::size_t hash_value(const basic_stacktrace<Allocator>& st) BOOST_NOEXCEPT {
     return boost::hash_range(st.as_vector().begin(), st.as_vector().end());
 }
 
-/// Outputs stacktrace in a human readable format to output stream; unsafe to use in async handlers.
-template <class CharT, class TraitsT, class Allocator>
-std::basic_ostream<CharT, TraitsT>& operator<<(std::basic_ostream<CharT, TraitsT>& os, const basic_stacktrace<Allocator>& bt) {
-    if (bt) {
-        os << boost::stacktrace::detail::to_string(&bt.as_vector()[0], bt.size());
+/// Returns std::string with the stacktrace in a human readable format; unsafe to use in async handlers.
+template <class Allocator>
+std::string to_string(const basic_stacktrace<Allocator>& bt) {
+    if (!bt) {
+        return std::string();
     }
 
-    return os;
+    return boost::stacktrace::detail::to_string(&bt.as_vector()[0], bt.size());
+}
+
+/// Outputs stacktrace in a human readable format to the output stream `os`; unsafe to use in async handlers.
+template <class CharT, class TraitsT, class Allocator>
+std::basic_ostream<CharT, TraitsT>& operator<<(std::basic_ostream<CharT, TraitsT>& os, const basic_stacktrace<Allocator>& bt) {
+    return os << boost::stacktrace::to_string(bt);
 }
 
 /// This is the typedef to use unless you'd like to provide a specific allocator to boost::stacktrace::basic_stacktrace.

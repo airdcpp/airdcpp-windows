@@ -208,7 +208,7 @@ void parallel_sort<Block_size, Iter_t, Compare>
     while (bk.cmp(*c_first, val))   ++c_first;
     while (bk.cmp(val, *c_last))    --c_last;
 
-    while (not (c_first > c_last))
+    while (c_first < c_last)
     {
         std::swap(*(c_first++), *(c_last--));
         while (bk.cmp(*c_first, val))

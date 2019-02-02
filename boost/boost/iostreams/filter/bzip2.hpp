@@ -175,6 +175,7 @@ protected:
     int check_end(const char* src_begin, const char* dest_begin);
     int compress(int action);
     int decompress();
+    int end(bool compress, std::nothrow_t);
     void end(bool compress);
 private:
     void do_init( bool compress, 
@@ -201,6 +202,7 @@ class bzip2_compressor_impl
 {
 public: 
     bzip2_compressor_impl(const bzip2_params&);
+    ~bzip2_compressor_impl();
     bool filter( const char*& src_begin, const char* src_end,
                  char*& dest_begin, char* dest_end, bool flush );
     void close();
@@ -224,6 +226,7 @@ class bzip2_decompressor_impl
 { 
 public:
     bzip2_decompressor_impl(bool small = bzip2::default_small);
+    ~bzip2_decompressor_impl();
     bool filter( const char*& begin_in, const char* end_in,
                  char*& begin_out, char* end_out, bool flush );
     void close();
@@ -314,6 +317,10 @@ bzip2_compressor_impl<Alloc>::bzip2_compressor_impl(const bzip2_params& p)
     : bzip2_base(p), eof_(false) { }
 
 template<typename Alloc>
+bzip2_compressor_impl<Alloc>::~bzip2_compressor_impl()
+{ (void) bzip2_base::end(true, std::nothrow); }
+
+template<typename Alloc>
 bool bzip2_compressor_impl<Alloc>::filter
     ( const char*& src_begin, const char* src_end,
       char*& dest_begin, char* dest_end, bool flush )
@@ -348,6 +355,10 @@ inline void bzip2_compressor_impl<Alloc>::init()
 template<typename Alloc>
 bzip2_decompressor_impl<Alloc>::bzip2_decompressor_impl(bool small)
     : bzip2_base(bzip2_params(small)), eof_(false) { }
+
+template<typename Alloc>
+bzip2_decompressor_impl<Alloc>::~bzip2_decompressor_impl()
+{ (void) bzip2_base::end(false, std::nothrow); }
 
 template<typename Alloc>
 bool bzip2_decompressor_impl<Alloc>::filter

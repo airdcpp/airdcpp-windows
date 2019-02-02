@@ -1,34 +1,26 @@
-/*
-    Copyright 2012 Christian Henning
-    Use, modification and distribution are subject to the Boost Software License,
-    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
-    http://www.boost.org/LICENSE_1_0.txt).
-*/
-
-/*************************************************************************************************/
-
+//
+// Copyright 2012 Christian Henning
+//
+// Distributed under the Boost Software License, Version 1.0
+// See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt
+//
 #ifndef BOOST_GIL_EXTENSION_TOOLBOX_IMAGE_TYPES_INDEXED_IMAGE_HPP
 #define BOOST_GIL_EXTENSION_TOOLBOX_IMAGE_TYPES_INDEXED_IMAGE_HPP
 
-////////////////////////////////////////////////////////////////////////////////////////
-/// \file indexed_image.hpp
-/// \brief Indexed Image extension
-/// \author Christian Henning \n
-///
-/// \date 2012 \n
-///
-////////////////////////////////////////////////////////////////////////////////////////
+#include <boost/gil/extension/toolbox/metafunctions/is_bit_aligned.hpp>
 
+#include <boost/gil/image.hpp>
+#include <boost/gil/point.hpp>
+
+#include <boost/mpl/if.hpp>
 #include <boost/type_traits/is_integral.hpp>
 #include <boost/utility/enable_if.hpp>
 
-#include <boost/gil/image.hpp>
-#include <boost/gil/extension/toolbox/metafunctions/is_bit_aligned.hpp>
-
+#include <cstddef>
+#include <memory>
 
 namespace boost{ namespace gil {
-
-typedef boost::gil::point2< std::ptrdiff_t > point_t;
 
 template< typename Locator >
 struct get_pixel_type_locator : mpl::if_< typename is_bit_aligned< typename Locator::value_type >::type
@@ -211,7 +203,7 @@ private:
 template<typename Index_View, typename Palette_View>
 indexed_image_view
 <
-    typename indexed_image_locator_type   
+    typename indexed_image_locator_type
     <
         typename Index_View::locator
         , typename Palette_View::locator
@@ -219,14 +211,14 @@ indexed_image_view
 >
     view(Index_View iv, Palette_View pv)
 {
-    typedef indexed_image_view< 
+    typedef indexed_image_view<
         typename indexed_image_locator_type<
             typename Index_View::locator
             , typename Palette_View::locator
         >::type
     > view_t;
 
-    typedef indexed_image_deref_fn< 
+    typedef indexed_image_deref_fn<
         typename Index_View::locator
         , typename Palette_View::locator
     > defer_fn_t;
@@ -389,4 +381,4 @@ void fill_pixels( const indexed_image_view< Locator >& view
 } // namespace gil
 } // namespace boost
 
-#endif // BOOST_GIL_EXTENSION_TOOLBOX_IMAGE_TYPES_INDEXED_IMAGE_HPP
+#endif

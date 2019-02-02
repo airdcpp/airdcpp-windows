@@ -1,33 +1,20 @@
-/*
-    Copyright 2005-2007 Adobe Systems Incorporated
+//
+// Copyright 2005-2007 Adobe Systems Incorporated
+//
+// Distributed under the Boost Software License, Version 1.0
+// See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt
+//
+#ifndef BOOST_GIL_PLANAR_PIXEL_ITERATOR_HPP
+#define BOOST_GIL_PLANAR_PIXEL_ITERATOR_HPP
 
-    Use, modification and distribution are subject to the Boost Software License,
-    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
-    http://www.boost.org/LICENSE_1_0.txt).
+#include <boost/gil/pixel.hpp>
+#include <boost/gil/step_iterator.hpp>
 
-    See http://opensource.adobe.com/gil for most recent version including documentation.
-*/
-
-/*************************************************************************************************/
-
-#ifndef GIL_PLANAR_PTR_H
-#define GIL_PLANAR_PTR_H
-
-////////////////////////////////////////////////////////////////////////////////////////
-/// \file
-/// \brief planar pixel pointer class
-/// \author Lubomir Bourdev and Hailin Jin \n
-///         Adobe Systems Incorporated
-/// \date   2005-2007 \n Last updated on February 12, 2007
-///
-////////////////////////////////////////////////////////////////////////////////////////
+#include <boost/iterator/iterator_facade.hpp>
 
 #include <cassert>
 #include <iterator>
-#include <boost/iterator/iterator_facade.hpp>
-#include "gil_config.hpp"
-#include "pixel.hpp"
-#include "step_iterator.hpp"
 
 namespace boost { namespace gil {
 //forward declaration (as this file is included in planar_pixel_reference.hpp)
@@ -114,11 +101,7 @@ private:
 
     void increment()            { static_transform(*this,*this,detail::inc<ChannelPtr>()); }
     void decrement()            { static_transform(*this,*this,detail::dec<ChannelPtr>()); }
-#ifdef BOOST_NO_CXX98_BINDERS
     void advance(std::ptrdiff_t d){ static_transform(*this,*this,std::bind(detail::plus_asymmetric<ChannelPtr,std::ptrdiff_t>(),std::placeholders::_1,d)); }
-#else
-    void advance(std::ptrdiff_t d){ static_transform(*this,*this,std::bind2nd(detail::plus_asymmetric<ChannelPtr,std::ptrdiff_t>(),d)); }
-#endif
     reference dereference() const { return this->template deref<reference>(); }
 
     std::ptrdiff_t distance_to(const planar_pixel_iterator& it) const { return gil::at_c<0>(it)-gil::at_c<0>(*this); }

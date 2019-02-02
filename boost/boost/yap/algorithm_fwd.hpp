@@ -131,10 +131,10 @@ namespace boost { namespace yap {
               std::is_same<
                   std::remove_cv_t<decltype(
                       detail::remove_cv_ref_t<Expr>::kind)>,
-                  expr_kind>{} &&
+                  expr_kind>::value &&
                   hana::is_a<
                       hana::tuple_tag,
-                      decltype(std::declval<Expr>().elements)>()>
+                      decltype(std::declval<Expr>().elements)>>
     {
     };
 

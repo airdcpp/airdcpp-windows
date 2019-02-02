@@ -42,11 +42,12 @@ namespace common
 template < typename Iter_t, typename Compare >
 inline Iter_t mid3 (Iter_t iter_1, Iter_t iter_2, Iter_t iter_3, Compare comp)
 {
-    return comp (*iter_1, *iter_2)
-           ? (comp (*iter_2, *iter_3)?
-             iter_2 : (comp (*iter_1, *iter_3) ? iter_3 : iter_1))
-           : (comp (*iter_3, *iter_2)?
-             iter_2 : (comp (*iter_3, *iter_1) ? iter_3 : iter_1));
+	if (comp (*iter_2, *iter_1)) std::swap ( *iter_2, *iter_1);
+	if (comp (*iter_3, *iter_2))
+	{	std::swap ( *iter_3, *iter_2);
+		if (comp (*iter_2, *iter_1)) std::swap ( *iter_2, *iter_1);
+	};
+	return iter_2;
 };
 //
 //-----------------------------------------------------------------------------
@@ -115,8 +116,8 @@ inline void pivot9 (Iter_t first, Iter_t last, Compare comp)
     std::swap (*first, *itaux);
 };
 //****************************************************************************
-}; //    End namespace common
-}; //    End namespace sort
-}; //    End namespace boost
+};//    End namespace common
+};//    End namespace sort
+};//    End namespace boost
 //****************************************************************************
 #endif

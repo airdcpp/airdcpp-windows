@@ -20,6 +20,9 @@
 #include <boost/test/data/monomorphic/fwd.hpp>
 #include <boost/test/data/monomorphic/sample_merge.hpp>
 
+#include <boost/core/enable_if.hpp>
+#include <boost/mpl/identity.hpp>
+
 #include <boost/test/detail/suppress_warnings.hpp>
 
 
@@ -69,8 +72,6 @@ public:
         dataset1_iter   m_iter1;
         dataset2_iter   m_iter2;
     };
-
-    typedef typename iterator::iterator_sample   sample;
 
     //! Constructor
     //!

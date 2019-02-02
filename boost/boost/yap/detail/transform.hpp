@@ -30,7 +30,7 @@ namespace boost { namespace yap { namespace detail {
     template<int I, typename... Ts>
     using nth_element = typename nth_element_impl<I, Ts...>::type;
 
-    template<typename T, bool RemoveRefs = std::is_rvalue_reference<T>{}>
+    template<typename T, bool RemoveRefs = std::is_rvalue_reference<T>::value>
     struct rvalue_ref_to_value;
 
     template<typename T>
@@ -86,7 +86,7 @@ namespace boost { namespace yap { namespace detail {
                 "Out of range placeholder index,");
             using nth_type = nth_element<I - 1, PlaceholderArgs...>;
             return as_expr<minimal_expr>(
-                rvalue_mover<!std::is_lvalue_reference<nth_type>::value>{}(
+                rvalue_mover<!std::is_lvalue_reference<nth_type>::value>::value(
                     placeholder_args_[hana::llong<I - 1>{}]));
         }
 
@@ -367,7 +367,7 @@ namespace boost { namespace yap { namespace detail {
             // No next transform exists; use the default transform.
             constexpr expr_kind kind = remove_cv_ref_t<Expr>::kind;
             return default_transform<
-                std::is_lvalue_reference<Expr>{},
+                std::is_lvalue_reference<Expr>::value,
                 kind == expr_kind::terminal,
                 Strict>{}(static_cast<Expr &&>(expr), transforms);
         }

@@ -1,30 +1,18 @@
-/*
-    Copyright 2005-2007 Adobe Systems Incorporated
-   
-    Use, modification and distribution are subject to the Boost Software License,
-    Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
-    http://www.boost.org/LICENSE_1_0.txt).
+//
+// Copyright 2005-2007 Adobe Systems Incorporated
+//
+// Distributed under the Boost Software License, Version 1.0
+// See accompanying file LICENSE_1_0.txt or copy at
+// http://www.boost.org/LICENSE_1_0.txt
+//
+#ifndef BOOST_GIL_EXTENSION_DYNAMIC_IMAGE_ANY_IMAGE_VIEW_HPP
+#define BOOST_GIL_EXTENSION_DYNAMIC_IMAGE_ANY_IMAGE_VIEW_HPP
 
-    See http://opensource.adobe.com/gil for most recent version including documentation.
-*/
+#include <boost/gil/extension/dynamic_image/variant.hpp>
 
-/*************************************************************************************************/
-
-#ifndef GIL_DYNAMICIMAGE_ANY_IMAGEVIEW_HPP
-#define GIL_DYNAMICIMAGE_ANY_IMAGEVIEW_HPP
-
-////////////////////////////////////////////////////////////////////////////////////////
-/// \file               
-/// \brief Support for run-time instantiated image view
-/// \author Lubomir Bourdev and Hailin Jin \n
-///         Adobe Systems Incorporated
-///
-///
-////////////////////////////////////////////////////////////////////////////////////////
-
-#include "variant.hpp"
-#include "../../image_view.hpp"
-#include "../../image.hpp"
+#include <boost/gil/image.hpp>
+#include <boost/gil/image_view.hpp>
+#include <boost/gil/point.hpp>
 
 namespace boost { namespace gil {
 
@@ -36,13 +24,21 @@ template <typename View> struct dynamic_xy_step_type;
 template <typename View> struct dynamic_xy_step_transposed_type;
 
 namespace detail {
-    struct any_type_get_num_channels {   // works for both image_view and image
+
+     // works for both image_view and image
+    struct any_type_get_num_channels
+    {
         typedef int result_type;
-        template <typename T> result_type operator()(const T&) const { return num_channels<T>::value; }
+        template <typename T>
+        result_type operator()(const T&) const { return num_channels<T>::value; }
     };
-    struct any_type_get_dimensions {    // works for both image_view and image
-        typedef point2<std::ptrdiff_t> result_type;
-        template <typename T> result_type operator()(const T& v) const { return v.dimensions(); }
+
+    // works for both image_view and image
+    struct any_type_get_dimensions
+    {
+        using result_type = point<std::ptrdiff_t>;
+        template <typename T>
+        result_type operator()(const T& v) const { return v.dimensions(); }
     };
 }
 
@@ -67,7 +63,7 @@ public:
     typedef any_image_view<typename detail::views_get_const_t<ImageViewTypes>::type> const_t;
     typedef std::ptrdiff_t x_coord_t;
     typedef std::ptrdiff_t y_coord_t;
-    typedef point2<std::ptrdiff_t> point_t;
+    typedef point<std::ptrdiff_t> point_t;
 
     any_image_view()                                                          : parent_t() {}
     template <typename T> explicit any_image_view(const T& obj)               : parent_t(obj) {}
@@ -112,6 +108,6 @@ struct dynamic_xy_step_transposed_type<any_image_view<IVTypes> > {
     typedef any_image_view<typename mpl::transform<IVTypes, dynamic_xy_step_transposed_type<mpl::_1> >::type> type;
 };
 
-} }  // namespace boost::gil
+}}  // namespace boost::gil
 
 #endif

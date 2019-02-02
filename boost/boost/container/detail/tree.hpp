@@ -125,10 +125,6 @@ template <class T, class VoidPointer, boost::container::tree_type_enum tree_type
 struct tree_node
    :  public intrusive_tree_hook<VoidPointer, tree_type_value, OptimizeSize>::type
 {
-   private:
-   //BOOST_COPYABLE_AND_MOVABLE(tree_node)
-   tree_node();
-
    public:
    typedef typename intrusive_tree_hook
       <VoidPointer, tree_type_value, OptimizeSize>::type hook_type;
@@ -138,55 +134,86 @@ struct tree_node
    typedef tree_node< T, VoidPointer
                     , tree_type_value, OptimizeSize>     node_t;
 
+   typedef typename boost::container::dtl::aligned_storage
+      <sizeof(T), boost::container::dtl::alignment_of<T>::value>::type storage_t;
+   storage_t m_storage;
+
+   #if defined(BOOST_GCC) && (BOOST_GCC >= 40600) && (BOOST_GCC < 80000)
+      #pragma GCC diagnostic push
+      #pragma GCC diagnostic ignored "-Wstrict-aliasing"
+      #define BOOST_CONTAINER_DISABLE_ALIASING_WARNING
+   #  endif
+
    BOOST_CONTAINER_FORCEINLINE T &get_data()
-   {
-      T* ptr = reinterpret_cast<T*>(&this->m_data);
-      return *ptr;
-   }
+   {  return *reinterpret_cast<T*>(this->m_storage.data);   }
 
    BOOST_CONTAINER_FORCEINLINE const T &get_data() const
-   {
-      const T* ptr = reinterpret_cast<const T*>(&this->m_data);
-      return *ptr;
-   }
+   {  return *reinterpret_cast<const T*>(this->m_storage.data);  }
 
-   internal_type m_data;
+   BOOST_CONTAINER_FORCEINLINE T *get_data_ptr()
+   {  return reinterpret_cast<T*>(this->m_storage.data);  }
+
+   BOOST_CONTAINER_FORCEINLINE const T *get_data_ptr() const
+   {  return reinterpret_cast<T*>(this->m_storage.data);  }
+
+   BOOST_CONTAINER_FORCEINLINE internal_type &get_real_data()
+   {  return *reinterpret_cast<internal_type*>(this->m_storage.data);   }
+
+   BOOST_CONTAINER_FORCEINLINE const internal_type &get_real_data() const
+   {  return *reinterpret_cast<const internal_type*>(this->m_storage.data);  }
+
+   BOOST_CONTAINER_FORCEINLINE internal_type *get_real_data_ptr()
+   {  return reinterpret_cast<internal_type*>(this->m_storage.data);  }
+
+   BOOST_CONTAINER_FORCEINLINE const internal_type *get_real_data_ptr() const
+   {  return reinterpret_cast<internal_type*>(this->m_storage.data);  }
+
+   BOOST_CONTAINER_FORCEINLINE ~tree_node()
+   {  reinterpret_cast<internal_type*>(this->m_storage.data)->~internal_type();  }
+
+   #if defined(BOOST_CONTAINER_DISABLE_ALIASING_WARNING)
+      #pragma GCC diagnostic pop
+      #undef BOOST_CONTAINER_DISABLE_ALIASING_WARNING
+   #  endif
+
+   BOOST_CONTAINER_FORCEINLINE void destroy_header()
+   {  static_cast<hook_type*>(this)->~hook_type();  }
 
    template<class T1, class T2>
    BOOST_CONTAINER_FORCEINLINE void do_assign(const std::pair<const T1, T2> &p)
    {
-      const_cast<T1&>(m_data.first) = p.first;
-      m_data.second  = p.second;
+      const_cast<T1&>(this->get_real_data().first) = p.first;
+      this->get_real_data().second  = p.second;
    }
 
    template<class T1, class T2>
    BOOST_CONTAINER_FORCEINLINE void do_assign(const pair<const T1, T2> &p)
    {
-      const_cast<T1&>(m_data.first) = p.first;
-      m_data.second  = p.second;
+      const_cast<T1&>(this->get_real_data().first) = p.first;
+      this->get_real_data().second  = p.second;
    }
 
    template<class V>
    BOOST_CONTAINER_FORCEINLINE void do_assign(const V &v)
-   {  m_data = v; }
+   {  this->get_real_data() = v; }
 
    template<class T1, class T2>
    BOOST_CONTAINER_FORCEINLINE void do_move_assign(std::pair<const T1, T2> &p)
    {
-      const_cast<T1&>(m_data.first) = ::boost::move(p.first);
-      m_data.second = ::boost::move(p.second);
+      const_cast<T1&>(this->get_real_data().first) = ::boost::move(p.first);
+      this->get_real_data().second = ::boost::move(p.second);
    }
 
    template<class T1, class T2>
    BOOST_CONTAINER_FORCEINLINE void do_move_assign(pair<const T1, T2> &p)
    {
-      const_cast<T1&>(m_data.first) = ::boost::move(p.first);
-      m_data.second  = ::boost::move(p.second);
+      const_cast<T1&>(this->get_real_data().first) = ::boost::move(p.first);
+      this->get_real_data().second  = ::boost::move(p.second);
    }
 
    template<class V>
    BOOST_CONTAINER_FORCEINLINE void do_move_assign(V &v)
-   {  m_data = ::boost::move(v); }
+   {  this->get_real_data() = ::boost::move(v); }
 };
 
 template <class T, class VoidPointer, boost::container::tree_type_enum tree_type_value, bool OptimizeSize>
@@ -361,10 +388,10 @@ class RecyclingCloner
    {}
 
    BOOST_CONTAINER_FORCEINLINE static void do_assign(node_ptr_type &p, const node_t &other, bool_<true>)
-   {  p->do_move_assign(const_cast<node_t &>(other).m_data);   }
+   {  p->do_move_assign(const_cast<node_t &>(other).get_real_data());   }
 
    BOOST_CONTAINER_FORCEINLINE static void do_assign(node_ptr_type &p, const node_t &other, bool_<false>)
-   {  p->do_assign(other.m_data);   }
+   {  p->do_assign(other.get_real_data());   }
 
    node_ptr_type operator()(const node_t &other) const
    {
@@ -386,7 +413,7 @@ class RecyclingCloner
          BOOST_CATCH_END
       }
       else{
-         return m_holder.create_node(other.m_data);
+         return m_holder.create_node(other.get_real_data());
       }
    }
 
@@ -1297,6 +1324,15 @@ class tree
          count(const K& k) const
    {  return size_type(this->icont().count(k, KeyNodeCompare(key_comp()))); }
 
+   BOOST_CONTAINER_FORCEINLINE bool contains(const key_type& x) const
+   {  return this->find(x) != this->cend();  }
+
+   template<typename K>
+   BOOST_CONTAINER_FORCEINLINE
+      typename dtl::enable_if_transparent<key_compare, K, bool>::type
+         contains(const K& x) const
+   {  return this->find(x) != this->cend();  }
+
    BOOST_CONTAINER_FORCEINLINE iterator lower_bound(const key_type& k)
    {  return iterator(this->icont().lower_bound(k, KeyNodeCompare(key_comp())));  }
 
@@ -1427,6 +1463,8 @@ class tree
    {  return !(x < y);  }
 
    BOOST_CONTAINER_FORCEINLINE friend void swap(tree& x, tree& y)
+      BOOST_NOEXCEPT_IF(  allocator_traits_type::is_always_equal::value
+                                 && boost::container::dtl::is_nothrow_swappable<Compare>::value )
    {  x.swap(y);  }
 };
 

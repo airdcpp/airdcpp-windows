@@ -29,7 +29,7 @@ namespace sort {
 namespace spreadsort {
 
 /*! \brief String sort algorithm using random access iterators, allowing character-type overloads.\n
-  (All variants fall back to @c std::sort if the data size is too small, < @c detail::min_sort_size).
+  (All variants fall back to @c boost::sort::pdqsort if the data size is too small, < @c detail::min_sort_size).
 
   \details @c string_sort is a fast templated in-place hybrid radix/comparison algorithm,
 which in testing tends to be roughly 50% to 2X faster than @c std::sort for large tests (>=100kB).\n
@@ -76,13 +76,13 @@ Some performance plots of runtime vs. n and log(range) are provided:\n
   {
     //Don't sort if it's too small to optimize
     if (last - first < detail::min_sort_size)
-      std::sort(first, last);
+      boost::sort::pdqsort(first, last);
     else
       detail::string_sort(first, last, unused);
   }
 
 /*! \brief String sort algorithm using range, allowing character-type overloads.\n
-  (All variants fall back to @c std::sort if the data size is too small, < @c detail::min_sort_size).
+  (All variants fall back to @c boost::sort::pdqsort if the data size is too small, < @c detail::min_sort_size).
 
   \details @c string_sort is a fast templated in-place hybrid radix/comparison algorithm,
 which in testing tends to be roughly 50% to 2X faster than @c std::sort for large tests (>=100kB).\n
@@ -124,7 +124,7 @@ inline void string_sort(Range& range, Unsigned_char_type unused)
 }
 
 /*! \brief String sort algorithm using random access iterators, wraps using default of unsigned char.
-  (All variants fall back to @c std::sort if the data size is too small, < @c detail::min_sort_size).
+  (All variants fall back to @c boost::sort::pdqsort if the data size is too small, < @c detail::min_sort_size).
 
   \details @c string_sort is a fast templated in-place hybrid radix/comparison algorithm,
 which in testing tends to be roughly 50% to 2X faster than @c std::sort for large tests (>=100kB).\n
@@ -169,7 +169,7 @@ Some performance plots of runtime vs. n and log(range) are provided:\n
   }
 
 /*! \brief String sort algorithm using range, wraps using default of unsigned char.
-  (All variants fall back to @c std::sort if the data size is too small, < @c detail::min_sort_size).
+  (All variants fall back to @c boost::sort::pdqsort if the data size is too small, < @c detail::min_sort_size).
 
   \details @c string_sort is a fast templated in-place hybrid radix/comparison algorithm,
 which in testing tends to be roughly 50% to 2X faster than @c std::sort for large tests (>=100kB).\n
@@ -209,7 +209,7 @@ inline void string_sort(Range& range)
 
 /*! \brief String sort algorithm using random access iterators, allowing character-type overloads.
 
-  (All variants fall back to @c std::sort if the data size is too small, < detail::min_sort_size).
+  (All variants fall back to @c boost::sort::pdqsort if the data size is too small, < detail::min_sort_size).
 
   \details @c string_sort is a fast templated in-place hybrid radix/comparison algorithm,
 which in testing tends to be roughly 50% to 2X faster than @c std::sort for large tests (>=100kB).\n
@@ -260,14 +260,14 @@ Some performance plots of runtime vs. n and log(range) are provided:\n
   {
     //Don't sort if it's too small to optimize.
     if (last - first < detail::min_sort_size)
-      std::sort(first, last, comp);
+      boost::sort::pdqsort(first, last, comp);
     else
       detail::reverse_string_sort(first, last, unused);
   }
 
 /*! \brief String sort algorithm using range, allowing character-type overloads.
 
-  (All variants fall back to @c std::sort if the data size is too small, < detail::min_sort_size).
+  (All variants fall back to @c boost::sort::pdqsort if the data size is too small, < detail::min_sort_size).
 
   \details @c string_sort is a fast templated in-place hybrid radix/comparison algorithm,
 which in testing tends to be roughly 50% to 2X faster than @c std::sort for large tests (>=100kB).\n
@@ -314,7 +314,7 @@ inline void reverse_string_sort(Range& range, Compare comp, Unsigned_char_type u
 
 /*! \brief String sort algorithm using random access iterators,  wraps using default of @c unsigned char.
 
-  (All variants fall back to @c std::sort if the data size is too small, < @c detail::min_sort_size).
+  (All variants fall back to @c boost::sort::pdqsort if the data size is too small, < @c detail::min_sort_size).
 
   \details @c string_sort is a fast templated in-place hybrid radix/comparison algorithm,
 which in testing tends to be roughly 50% to 2X faster than @c std::sort for large tests (>=100kB).\n
@@ -363,7 +363,7 @@ Some performance plots of runtime vs. n and log(range) are provided:\n
 
 /*! \brief String sort algorithm using range, wraps using default of @c unsigned char.
 
-  (All variants fall back to @c std::sort if the data size is too small, < @c detail::min_sort_size).
+  (All variants fall back to @c boost::sort::pdqsort if the data size is too small, < @c detail::min_sort_size).
 
   \details @c string_sort is a fast templated in-place hybrid radix/comparison algorithm,
 which in testing tends to be roughly 50% to 2X faster than @c std::sort for large tests (>=100kB).\n
@@ -405,7 +405,7 @@ inline void reverse_string_sort(Range& range, Compare comp)
 
 /*! \brief String sort algorithm using random access iterators,  wraps using default of @c unsigned char.
 
-  (All variants fall back to @c std::sort if the data size is too small, < @c detail::min_sort_size).
+  (All variants fall back to @c boost::sort::pdqsort if the data size is too small, < @c detail::min_sort_size).
 
   \details @c string_sort is a fast templated in-place hybrid radix/comparison algorithm,
 which in testing tends to be roughly 50% to 2X faster than @c std::sort for large tests (>=100kB).\n
@@ -452,7 +452,7 @@ Some performance plots of runtime vs. n and log(range) are provided:\n
   {
     //Don't sort if it's too small to optimize
     if (last - first < detail::min_sort_size)
-      std::sort(first, last);
+      boost::sort::pdqsort(first, last);
     else {
       //skipping past empties, which allows us to get the character type
       //.empty() is not used so as not to require a user declaration of it
@@ -466,7 +466,7 @@ Some performance plots of runtime vs. n and log(range) are provided:\n
 
 /*! \brief String sort algorithm using range, wraps using default of @c unsigned char.
 
-  (All variants fall back to @c std::sort if the data size is too small, < @c detail::min_sort_size).
+  (All variants fall back to @c boost::sort::pdqsort if the data size is too small, < @c detail::min_sort_size).
 
   \details @c string_sort is a fast templated in-place hybrid radix/comparison algorithm,
 which in testing tends to be roughly 50% to 2X faster than @c std::sort for large tests (>=100kB).\n
@@ -511,7 +511,7 @@ inline void string_sort(Range& range, Get_char get_character, Get_length length)
 
 /*! \brief String sort algorithm using random access iterators,  wraps using default of @c unsigned char.
 
-  (All variants fall back to @c std::sort if the data size is too small, < @c detail::min_sort_size).
+  (All variants fall back to @c boost::sort::pdqsort if the data size is too small, < @c detail::min_sort_size).
 
   \details @c string_sort is a fast templated in-place hybrid radix/comparison algorithm,
 which in testing tends to be roughly 50% to 2X faster than @c std::sort for large tests (>=100kB).\n
@@ -560,7 +560,7 @@ Some performance plots of runtime vs. n and log(range) are provided:\n
   {
     //Don't sort if it's too small to optimize
     if (last - first < detail::min_sort_size)
-      std::sort(first, last, comp);
+      boost::sort::pdqsort(first, last, comp);
     else {
       //skipping past empties, which allows us to get the character type
       //.empty() is not used so as not to require a user declaration of it
@@ -575,7 +575,7 @@ Some performance plots of runtime vs. n and log(range) are provided:\n
 
 /*! \brief String sort algorithm using range, wraps using default of @c unsigned char.
 
-  (All variants fall back to @c std::sort if the data size is too small, < @c detail::min_sort_size).
+  (All variants fall back to @c boost::sort::pdqsort if the data size is too small, < @c detail::min_sort_size).
 
   \details @c string_sort is a fast templated in-place hybrid radix/comparison algorithm,
 which in testing tends to be roughly 50% to 2X faster than @c std::sort for large tests (>=100kB).\n
@@ -623,7 +623,7 @@ inline void string_sort(Range& range,
 
 /*! \brief Reverse String sort algorithm using random access iterators.
 
-  (All variants fall back to @c std::sort if the data size is too small, < @c detail::min_sort_size).
+  (All variants fall back to @c boost::sort::pdqsort if the data size is too small, < @c detail::min_sort_size).
 
  \details @c string_sort is a fast templated in-place hybrid radix/comparison algorithm,
 which in testing tends to be roughly 50% to 2X faster than @c std::sort for large tests (>=100kB).\n
@@ -672,7 +672,7 @@ Some performance plots of runtime vs. n and log(range) are provided:\n
   {
     //Don't sort if it's too small to optimize
     if (last - first < detail::min_sort_size)
-      std::sort(first, last, comp);
+      boost::sort::pdqsort(first, last, comp);
     else {
       //skipping past empties, which allows us to get the character type
       //.empty() is not used so as not to require a user declaration of it
@@ -689,7 +689,7 @@ Some performance plots of runtime vs. n and log(range) are provided:\n
 
 /*! \brief Reverse String sort algorithm using range.
 
-  (All variants fall back to @c std::sort if the data size is too small, < @c detail::min_sort_size).
+  (All variants fall back to @c boost::sort::pdqsort if the data size is too small, < @c detail::min_sort_size).
 
  \details @c string_sort is a fast templated in-place hybrid radix/comparison algorithm,
 which in testing tends to be roughly 50% to 2X faster than @c std::sort for large tests (>=100kB).\n

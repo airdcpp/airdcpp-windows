@@ -227,6 +227,21 @@ class set
       : base_t(ordered_range, first, last, comp, a)
    {}
 
+   //! <b>Effects</b>: Constructs an empty set using the specified allocator and
+   //! inserts elements from the ordered unique range [first ,last). This function
+   //! is more efficient than the normal range creation for ordered ranges.
+   //!
+   //! <b>Requires</b>: [first ,last) must be ordered according to the predicate and must be
+   //! unique values.
+   //!
+   //! <b>Complexity</b>: Linear in N.
+   //!
+   //! <b>Note</b>: Non-standard extension.
+   template <class InputIterator>
+   BOOST_CONTAINER_FORCEINLINE set(ordered_unique_range_t, InputIterator first, InputIterator last, const allocator_type& a)
+      : base_t(ordered_range, first, last, Compare(), a)
+   {}
+
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
    //! <b>Effects</b>: Constructs an empty set and
    //! inserts elements from the range [il.begin(), il.end()).
@@ -772,13 +787,23 @@ class set
    BOOST_CONTAINER_FORCEINLINE size_type count(const K& x) const
    {  return static_cast<size_type>(this->find(x) != this->cend());  }
 
-   //! <b>Returns</b>: The number of elements with key equivalent to x.
-   //!
-   //! <b>Complexity</b>: log(size())+count(k)
-   BOOST_CONTAINER_FORCEINLINE size_type count(const key_type& x)
-   {  return static_cast<size_type>(this->base_t::find(x) != this->base_t::end());  }
-
    #if defined(BOOST_CONTAINER_DOXYGEN_INVOKED)
+
+   //! <b>Returns</b>: Returns true if there is an element with key
+   //!   equivalent to key in the container, otherwise false.
+   //!
+   //! <b>Complexity</b>: log(size()).
+   bool contains(const key_type& x) const;
+
+   //! <b>Requires</b>: This overload is available only if
+   //! key_compare::is_transparent exists.
+   //!
+   //! <b>Returns</b>: Returns true if there is an element with key
+   //!   equivalent to key in the container, otherwise false.
+   //!
+   //! <b>Complexity</b>: log(size()).
+   template<typename K>
+   bool contains(const K& x) const;
 
    //! <b>Returns</b>: An iterator pointing to the first element with key not less
    //!   than k, or a.end() if such an element is not found.
@@ -865,7 +890,7 @@ class set
    //!
    //! <b>Complexity</b>: Logarithmic
    template<typename K>
-   std::pair<iterator,iterator> equal_range(const K& x)
+   BOOST_CONTAINER_FORCEINLINE std::pair<iterator,iterator> equal_range(const K& x)
    {  return this->base_t::lower_bound_range(x);  }
 
    //! <b>Requires</b>: This overload is available only if
@@ -875,7 +900,7 @@ class set
    //!
    //! <b>Complexity</b>: Logarithmic
    template<typename K>
-   std::pair<const_iterator,const_iterator> equal_range(const K& x) const
+   BOOST_CONTAINER_FORCEINLINE std::pair<const_iterator,const_iterator> equal_range(const K& x) const
    {  return this->base_t::lower_bound_range(x);  }
 
    #if defined(BOOST_CONTAINER_DOXYGEN_INVOKED)
@@ -934,39 +959,62 @@ class set
    #endif   //#ifndef BOOST_CONTAINER_DOXYGEN_INVOKED
 };
 
-#if __cplusplus >= 201703L
+#ifndef BOOST_CONTAINER_NO_CXX17_CTAD
 
 template <typename InputIterator>
 set(InputIterator, InputIterator) ->
-   set<typename iterator_traits<InputIterator>::value_type>;
+   set< it_based_value_type_t<InputIterator> >;
 
-template <typename InputIterator, typename Allocator>
-set(InputIterator, InputIterator, Allocator const&) ->
-   set<typename iterator_traits<InputIterator>::value_type, std::less<typename iterator_traits<InputIterator>::value_type>, Allocator>;
+template < typename InputIterator, typename AllocatorOrCompare>
+    set(InputIterator, InputIterator, AllocatorOrCompare const&) ->
+    set< it_based_value_type_t<InputIterator>
+            , typename dtl::if_c< // Compare
+                dtl::is_allocator<AllocatorOrCompare>::value
+                , std::less<it_based_value_type_t<InputIterator>>
+                , AllocatorOrCompare
+            >::type
+            , typename dtl::if_c< // Allocator
+                dtl::is_allocator<AllocatorOrCompare>::value
+                , AllocatorOrCompare
+                , new_allocator<it_based_value_type_t<InputIterator>>
+                >::type
+            >;
 
-template <typename InputIterator, typename Compare>
-set(InputIterator, InputIterator, Compare const&) ->
-   set<typename iterator_traits<InputIterator>::value_type, Compare>;
-
-template <typename InputIterator, typename Compare, typename Allocator>
+template < typename InputIterator, typename Compare, typename Allocator
+         , typename = dtl::require_nonallocator_t<Compare>
+         , typename = dtl::require_allocator_t<Allocator>>
 set(InputIterator, InputIterator, Compare const&, Allocator const&) ->
-   set<typename iterator_traits<InputIterator>::value_type, Compare, Allocator>;
+   set< it_based_value_type_t<InputIterator>
+           , Compare
+           , Allocator>;
 
 template <typename InputIterator>
 set(ordered_unique_range_t, InputIterator, InputIterator) ->
-   set<typename iterator_traits<InputIterator>::value_type>;
+   set< it_based_value_type_t<InputIterator>>;
 
-template <typename InputIterator, typename Allocator>
-set(ordered_unique_range_t, InputIterator, InputIterator, Allocator const&) ->
-   set<typename iterator_traits<InputIterator>::value_type, std::less<typename iterator_traits<InputIterator>::value_type>, Allocator>;
 
-template <typename InputIterator, typename Compare>
-set(ordered_unique_range_t, InputIterator, InputIterator, Compare const&) ->
-   set<typename iterator_traits<InputIterator>::value_type, Compare>;
+template < typename InputIterator, typename AllocatorOrCompare>
+    set(ordered_unique_range_t, InputIterator, InputIterator, AllocatorOrCompare const&) ->
+    set< it_based_value_type_t<InputIterator>
+            , typename dtl::if_c< // Compare
+                dtl::is_allocator<AllocatorOrCompare>::value
+                , std::less<it_based_value_type_t<InputIterator>>
+                , AllocatorOrCompare
+            >::type
+            , typename dtl::if_c< // Allocator
+                dtl::is_allocator<AllocatorOrCompare>::value
+                , AllocatorOrCompare
+                , new_allocator<it_based_value_type_t<InputIterator>>
+                >::type
+            >;
 
-template <typename InputIterator, typename Compare, typename Allocator>
+template < typename InputIterator, typename Compare, typename Allocator
+         , typename = dtl::require_nonallocator_t<Compare>
+         , typename = dtl::require_allocator_t<Allocator>>
 set(ordered_unique_range_t, InputIterator, InputIterator, Compare const&, Allocator const&) ->
-   set<typename iterator_traits<InputIterator>::value_type, Compare, Allocator>;
+   set< it_based_value_type_t<InputIterator>
+           , Compare
+           , Allocator>;
 
 #endif
 
@@ -1138,6 +1186,20 @@ class multiset
    template <class InputIterator>
    BOOST_CONTAINER_FORCEINLINE multiset( ordered_range_t, InputIterator first, InputIterator last, const Compare& comp, const allocator_type& a)
       : base_t(ordered_range, first, last, comp, a)
+   {}
+
+   //! <b>Effects</b>: Constructs an empty multiset using the specified allocator and
+   //! inserts elements from the ordered range [first ,last ). This function
+   //! is more efficient than the normal range creation for ordered ranges.
+   //!
+   //! <b>Requires</b>: [first ,last) must be ordered according to the predicate.
+   //!
+   //! <b>Complexity</b>: Linear in N.
+   //!
+   //! <b>Note</b>: Non-standard extension.
+   template <class InputIterator>
+   BOOST_CONTAINER_FORCEINLINE multiset(ordered_range_t, InputIterator first, InputIterator last, const allocator_type &a)
+      : base_t(ordered_range, first, last, Compare(), a)
    {}
 
 #if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
@@ -1461,6 +1523,13 @@ class multiset
    template<typename K>
    size_type count(const K& x) const;
 
+   //! @copydoc ::boost::container::set::contains(const key_type& ) const
+   bool contains(const key_type& x) const;
+
+   //! @copydoc ::boost::container::set::contains(const K& ) const
+   template<typename K>
+   bool contains(const K& x) const;
+
    //! @copydoc ::boost::container::set::lower_bound(const key_type& )
    iterator lower_bound(const key_type& x);
 
@@ -1556,43 +1625,62 @@ class multiset
    #endif   //#ifndef BOOST_CONTAINER_DOXYGEN_INVOKED
 };
 
-#if __cplusplus >= 201703L
+#ifndef BOOST_CONTAINER_NO_CXX17_CTAD
 
 template <typename InputIterator>
 multiset(InputIterator, InputIterator) ->
-   multiset<typename iterator_traits<InputIterator>::value_type>;
+   multiset< it_based_value_type_t<InputIterator> >;
 
-template <typename InputIterator, typename Allocator>
-multiset(InputIterator, InputIterator, Allocator const&) ->
-   multiset< typename iterator_traits<InputIterator>::value_type
-                , std::less<typename iterator_traits<InputIterator>::value_type>
-                , Allocator>;
 
-template <typename InputIterator, typename Compare>
-multiset(InputIterator, InputIterator, Compare const&) ->
-   multiset<typename iterator_traits<InputIterator>::value_type, Compare>;
+template < typename InputIterator, typename AllocatorOrCompare>
+multiset(InputIterator, InputIterator, AllocatorOrCompare const&) ->
+    multiset < it_based_value_type_t<InputIterator>
+                  , typename dtl::if_c< // Compare
+                      dtl::is_allocator<AllocatorOrCompare>::value
+                      , std::less<it_based_value_type_t<InputIterator>>
+                      , AllocatorOrCompare
+                  >::type
+                  , typename dtl::if_c< // Allocator
+                      dtl::is_allocator<AllocatorOrCompare>::value
+                      , AllocatorOrCompare
+                      , new_allocator<it_based_value_type_t<InputIterator>>
+                      >::type
+                  >;
 
-template <typename InputIterator, typename Compare, typename Allocator>
+template < typename InputIterator, typename Compare, typename Allocator
+         , typename = dtl::require_nonallocator_t<Compare>
+         , typename = dtl::require_allocator_t<Allocator>>
 multiset(InputIterator, InputIterator, Compare const&, Allocator const&) ->
-   multiset<typename iterator_traits<InputIterator>::value_type, Compare, Allocator>;
+   multiset< it_based_value_type_t<InputIterator>
+           , Compare
+           , Allocator>;
 
 template <typename InputIterator>
 multiset(ordered_range_t, InputIterator, InputIterator) ->
-   multiset<typename iterator_traits<InputIterator>::value_type>;
+   multiset< it_based_value_type_t<InputIterator>>;
 
-template <typename InputIterator, typename Allocator>
-multiset(ordered_range_t, InputIterator, InputIterator, Allocator const&) ->
-   multiset< typename iterator_traits<InputIterator>::value_type
-                , std::less<typename iterator_traits<InputIterator>::value_type>
-                , Allocator>;
+template < typename InputIterator, typename AllocatorOrCompare>
+multiset(ordered_range_t, InputIterator, InputIterator, AllocatorOrCompare const&) ->
+    multiset < it_based_value_type_t<InputIterator>
+                  , typename dtl::if_c< // Compare
+                      dtl::is_allocator<AllocatorOrCompare>::value
+                      , std::less<it_based_value_type_t<InputIterator>>
+                      , AllocatorOrCompare
+                  >::type
+                  , typename dtl::if_c< // Allocator
+                      dtl::is_allocator<AllocatorOrCompare>::value
+                      , AllocatorOrCompare
+                      , new_allocator<it_based_value_type_t<InputIterator>>
+                      >::type
+                  >;
 
-template <typename InputIterator, typename Compare>
-multiset(ordered_range_t, InputIterator, InputIterator, Compare const&) ->
-   multiset< typename iterator_traits<InputIterator>::value_type, Compare>;
-
-template <typename InputIterator, typename Compare, typename Allocator>
+template < typename InputIterator, typename Compare, typename Allocator
+         , typename = dtl::require_nonallocator_t<Compare>
+         , typename = dtl::require_allocator_t<Allocator>>
 multiset(ordered_range_t, InputIterator, InputIterator, Compare const&, Allocator const&) ->
-   multiset<typename iterator_traits<InputIterator>::value_type, Compare, Allocator>;
+   multiset< it_based_value_type_t<InputIterator>
+           , Compare
+           , Allocator>;
 
 #endif
 
