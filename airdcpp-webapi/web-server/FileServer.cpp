@@ -163,7 +163,7 @@ namespace webserver {
 			dcassert(extension[0] != '.');
 
 			// We have compressed versions only for JS files
-			if (extension == "js") {
+			if (extension == "js" && aRequest.get_header("Accept-Encoding").find("gzip") != string::npos) {
 				request += ".gz";
 				// The Content-Encoding header will be set only after the file has been read successfully
 				// as gzip encoding shouldn't be used in case of errors...
