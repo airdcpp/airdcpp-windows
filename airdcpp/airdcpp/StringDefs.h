@@ -1372,7 +1372,7 @@ enum Strings { // @DontAdd
 	SETTINGS_ENTIRE_WORD, // "Entire word"
 	SETTINGS_EXPAND_BUNDLES, // "Automatically expand bundles in transfer view"
 	SETTINGS_EXPIRY_DAYS, // "The default expiry days for items (0 = won't expire)"
-	SETTINGS_EXTENSIONS, // "Extensions"
+	SETTINGS_EXTENSIONS, // "File extensions"
 	SETTINGS_EXTERNAL_IP, // "External / WAN IP"
 	SETTINGS_FAVORITE_DIRS, // "Favorite download directories"
 	SETTINGS_FAVORITE_DIRS_PAGE, // "Favorites"
