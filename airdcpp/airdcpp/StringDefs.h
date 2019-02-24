@@ -1894,5 +1894,42 @@ enum Strings { // @DontAdd
 	YES, // "Yes"
 	ZERO_BYTE_QUEUE, // "0-bytes items can't be queued"
 	ZERO_BYTE_SHARE, // "0-bytes items are not shared"
+
+	WEB_SERVER_SETUP_FAILED, // "Failed to set up %1% server on port %2%: %3% (is the port in use by another application?)"
+	WEB_SERVER_MULTIPLE_FAILED_ATTEMPTS, // "Multiple failed login attempts detected from IP %1%"
+
+	WEB_CFG_PORT, // "Port"
+	WEB_CFG_BIND_ADDRESS, // "Bind address"
+	WEB_CFG_CERT_PATH, // "Certificate path"
+	WEB_CFG_CERT_KEY_PATH, // "Certificate key path"
+	WEB_CFG_SERVER_THREADS, // "Server threads"
+
+	WEB_CFG_IDLE_TIMEOUT, // "Default session inactivity timeout"
+	WEB_CFG_PING_INTERVAL, // "Socket ping interval"
+	WEB_CFG_PING_TIMEOUT, // "Socket ping timeout"
+	WEB_CFG_EXTENSIONS_DEBUG_MODE, // "Run extensions in debug mode"
+
+	WEB_EXTENSION_LOADED, // "Extension %1% was loaded"
+	WEB_EXTENSION_LOAD_ERROR_X, // "Failed to load the extension %1%: %2%"
+	WEB_EXTENSION_LOAD_ERROR, // "Failed to load the extension"
+	WEB_EXTENSION_START_ERROR, // "Failed to start the extension %1%: %2%"
+	WEB_EXTENSION_INSTALLED, // "Extension %1% was installed successfully"
+	WEB_EXTENSION_UPDATED, // "Extension %1% was updated successfully"
+	WEB_EXTENSION_INSTALLATION_FAILED, // "Extension installation failed: %1%"
+	WEB_EXTENSION_EXISTS, // "Extension with the same name exists already"
+	WEB_EXTENSION_EXITED, // "Extension %1% has exited (see the extension log %2% for error details)"
+	WEB_EXTENSION_TIMED_OUT, // "Extension %1% timed out and was restarted"
+	WEB_EXTENSION_ENGINE_NO_CONFIG, // "Scripting engine %1% is not configured in application settings"
+	WEB_EXTENSION_ENGINE_NOT_INSTALLED, // "Scripting engine %1% is not installed on the system (tested commands: %2%)"
+
+	WEB_EXTENSION_CHECKSUM_MISMATCH, // "Checksum validation mismatch"
+	WEB_EXTENSION_DOWNLOAD_FAILED, // "Download failed"
+	WEB_EXTENSION_PACKAGE_EXTRACT_FAILED, // "Failed to extract the package"
+	WEB_EXTENSION_PACKAGE_SAVE_FAILED, // "Failed to save the package"
+	WEB_EXTENSION_PACKAGE_MALFORMED_CONTENT, // "Malformed package content"
+
+	API_SHARE_REFRESH_PENDING, // "Refresh pending"
+	API_SHARE_REFRESHING, // "Refreshing"
+
 	LAST // @DontAdd
 };
