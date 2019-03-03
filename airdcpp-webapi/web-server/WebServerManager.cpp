@@ -43,6 +43,7 @@
 namespace webserver {
 	using namespace dcpp;
 	WebServerManager::WebServerManager() : 
+		ios(settings.getValue(WebServerSettings::SERVER_THREADS).getDefaultValue()),
 		plainServerConfig(settings.getValue(WebServerSettings::PLAIN_PORT), settings.getValue(WebServerSettings::PLAIN_BIND)),
 		tlsServerConfig(settings.getValue(WebServerSettings::TLS_PORT), settings.getValue(WebServerSettings::TLS_BIND))
 	{
