@@ -28,19 +28,18 @@ LRESULT TempShareDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	ctrlFiles.Attach(GetDlgItem(IDC_TEMPSHARELST));
 	ctrlFiles.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
 
-	auto files = ShareManager::getInstance()->getTempShares();
+	files = ShareManager::getInstance()->getTempShares();
 
 	ctrlFiles.InsertColumn(0, CTSTRING(NAME), LVCFMT_LEFT, 180, 0);
 	ctrlFiles.InsertColumn(1, CTSTRING(SIZE), LVCFMT_RIGHT, 60, 2);
 	ctrlFiles.InsertColumn(2, _T("TTH"), LVCFMT_LEFT, 90, 1);
 	ctrlFiles.InsertColumn(3, CTSTRING(CID), LVCFMT_LEFT, 90, 1);
 
-	for (auto i = files.begin(); i != files.end(); ++i) {
-		int item = ctrlFiles.insert(ctrlFiles.GetItemCount(), Text::toT(i->second.path));
-		ctrlFiles.SetItemText(item, 1, Text::toT(Util::formatBytes(i->second.size)).c_str());
-		ctrlFiles.SetItemText(item, 2, Text::toT(i->first.toBase32()).c_str());
-		ctrlFiles.SetItemText(item, 3, Text::toT(i->second.key).c_str());
-
+	for (const auto& info: files) {
+		int item = ctrlFiles.insert(ctrlFiles.GetItemCount(), Text::toT(info.path), 0, (LPARAM)(&info));
+		ctrlFiles.SetItemText(item, 1, Text::toT(Util::formatBytes(info.size)).c_str());
+		ctrlFiles.SetItemText(item, 2, Text::toT(info.tth.toBase32()).c_str());
+		ctrlFiles.SetItemText(item, 3, Text::toT(info.key).c_str());
 	}
 
 	CenterWindow(GetParent());
@@ -67,22 +66,19 @@ LRESULT TempShareDlg::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	while ((i = ctrlFiles.GetNextItem(-1, LVNI_SELECTED)) != -1) {
 		item.iItem = i;
 
-		item.iSubItem = 2;
-		ctrlFiles.GetItem(&item);
-		TTHValue tth = TTHValue(Text::fromT(buf));
-
-		item.iSubItem = 3;
-		ctrlFiles.GetItem(&item);
-		string key = Text::fromT(buf);
-
-		ShareManager::getInstance()->removeTempShare(key, tth);
-		ctrlFiles.DeleteItem(i);
+		auto file = (TempShareInfo*)ctrlFiles.GetItemData(i);
+		if (ShareManager::getInstance()->removeTempShare(file->id)) {
+			ctrlFiles.DeleteItem(i);
+		}
 	}
 	return 0;
 }
 
 LRESULT TempShareDlg::onRemoveAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	ShareManager::getInstance()->clearTempShares();
+	for (const auto& file : files) {
+		ShareManager::getInstance()->removeTempShare(file.id);
+	}
+
 	ctrlFiles.DeleteAllItems();
 	return 0;
 }

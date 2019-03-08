@@ -442,8 +442,7 @@ LRESULT SystemFrame::onDeleteFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	string msg = STRING_F(DELETE_FILE_CONFIRM, path);
 	if(WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_FILE_DELETIONS, Text::toT(msg))) {
 		MainFrame::getMainFrame()->addThreadedTask([=] { 
-			if (File::deleteFileEx(path, 3))
-				ShareManager::getInstance()->removeTempShare(path); 
+			File::deleteFileEx(path, 3);
 		});
 	}
 

@@ -46,7 +46,7 @@ string TextFrame::readFile(const string& aFilePath) noexcept {
 		text = f.read();
 	}
 	catch (const FileException& e) {
-		LogManager::getInstance()->message(aFilePath + ": " + e.getError().c_str(), LogMessage::SEV_ERROR);
+		LogManager::getInstance()->message(aFilePath + ": " + e.getError().c_str(), LogMessage::SEV_NOTIFY);
 	}
 	return text;
 }

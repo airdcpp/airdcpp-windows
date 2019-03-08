@@ -921,11 +921,8 @@ void WinUtil::copyMagnet(const TTHValue& aHash, const string& aFile, int64_t aSi
  	}
 }
 
-string WinUtil::makeMagnet(const TTHValue& aHash, const string& aFile, int64_t size) {
-	string ret = "magnet:?xt=urn:tree:tiger:" + aHash.toBase32();
-	if(size > 0)
-		ret += "&xl=" + Util::toString(size);
-	return ret + "&dn=" + Util::encodeURI(aFile);
+string WinUtil::makeMagnet(const TTHValue& aHash, const string& aFile, int64_t aSize) {
+	return Magnet::makeMagnet(aHash, aFile, aSize);
 }
 
  void WinUtil::searchHash(const TTHValue& aHash, const string&, int64_t) {

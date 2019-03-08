@@ -1830,7 +1830,9 @@ void MainFrame::on(QueueManagerListener::ItemFinished, const QueueItemPtr& qi, c
 }
 
 void MainFrame::on(ViewFileManagerListener::FileFinished, const ViewFilePtr& aFile) noexcept {
-	callAsync([=] { TextFrame::openFile(aFile); });
+	if (aFile->isText()) {
+		callAsync([=] { TextFrame::openFile(aFile); });
+	}
 }
 
 void MainFrame::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept {
