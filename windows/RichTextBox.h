@@ -158,7 +158,7 @@ public:
 		// We wanna control the scrolling...
 	}
 
-	string getTempShareKey() const;
+	UserPtr getTempShareUser() const noexcept;
 
 	void FormatEmoticonsAndLinks(tstring& sText, /*tstring& sTextLower,*/ LONG lSelBegin, bool bUseEmo);
 	GETSET(ClientPtr, client, Client);

@@ -19,9 +19,13 @@
 #include "stdafx.h"
 #include "Resource.h"
 #include "ExListViewCtrl.h"
-#include <airdcpp/ShareManager.h>
+
 #include "TempShare_dlg.h"
 #include "WinUtil.h"
+
+#include <airdcpp/ClientManager.h>
+#include <airdcpp/ShareManager.h>
+
 
 
 LRESULT TempShareDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
@@ -33,13 +37,13 @@ LRESULT TempShareDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	ctrlFiles.InsertColumn(0, CTSTRING(NAME), LVCFMT_LEFT, 180, 0);
 	ctrlFiles.InsertColumn(1, CTSTRING(SIZE), LVCFMT_RIGHT, 60, 2);
 	ctrlFiles.InsertColumn(2, _T("TTH"), LVCFMT_LEFT, 90, 1);
-	ctrlFiles.InsertColumn(3, CTSTRING(CID), LVCFMT_LEFT, 90, 1);
+	ctrlFiles.InsertColumn(3, CTSTRING(USER), LVCFMT_LEFT, 90, 1);
 
 	for (const auto& info: files) {
 		int item = ctrlFiles.insert(ctrlFiles.GetItemCount(), Text::toT(info.path), 0, (LPARAM)(&info));
 		ctrlFiles.SetItemText(item, 1, Text::toT(Util::formatBytes(info.size)).c_str());
 		ctrlFiles.SetItemText(item, 2, Text::toT(info.tth.toBase32()).c_str());
-		ctrlFiles.SetItemText(item, 3, Text::toT(info.key).c_str());
+		ctrlFiles.SetItemText(item, 3, (info.user ? WinUtil::getNicks(info.user->getCID()) : Util::emptyStringT).c_str());
 	}
 
 	CenterWindow(GetParent());

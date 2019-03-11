@@ -59,7 +59,7 @@ DupeType RichTextBox::ChatLink::updateDupeType(const UserPtr& aUser) {
 	} else if (type == TYPE_MAGNET) {
 		Magnet m = Magnet(url);
 		dupe = m.getDupeType();
-		if (dupe == DUPE_NONE && ShareManager::getInstance()->isTempShared(aUser ? aUser->getCID().toBase32() : Util::emptyString, m.getTTH())) {
+		if (dupe == DUPE_NONE && ShareManager::getInstance()->isTempShared(aUser, m.getTTH())) {
 			dupe = DUPE_SHARE_FULL;
 		}
 	}
@@ -992,7 +992,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 				if (isMagnet) {
 					auto isMyLink = client && Text::toT(client->getMyNick()) == author;
 					Magnet m = Magnet(Text::fromT(selectedWord));
-					if (ShareManager::getInstance()->isTempShared(getTempShareKey(), m.getTTH())) {
+					if (ShareManager::getInstance()->isTempShared(getTempShareUser(), m.getTTH())) {
 						/* show an option to remove the item */
 						menu.appendItem(TSTRING(STOP_SHARING), [this] { handleRemoveTemp(); });
 					} else if (!isMyLink) {
@@ -1260,14 +1260,14 @@ HintedUser RichTextBox::getMagnetSource() {
 	return HintedUser();
 }
 
-string RichTextBox::getTempShareKey() const {
-	return (pmUser && !pmUser->isSet(User::BOT) && !pmUser->isSet(User::NMDC)) ? pmUser->getCID().toBase32() : Util::emptyString;
+UserPtr RichTextBox::getTempShareUser() const noexcept {
+	return (pmUser && !pmUser->isSet(User::BOT) && !pmUser->isSet(User::NMDC)) ? pmUser : nullptr;
 }
 
 void RichTextBox::handleRemoveTemp() {
 	string link = Text::fromT(selectedWord);
 	Magnet m = Magnet(link);
-	ShareManager::getInstance()->removeTempShare(getTempShareKey(), m.getTTH());
+	ShareManager::getInstance()->removeTempShare(getTempShareUser(), m.getTTH());
 	for (auto& cl: links | map_values) {
 		if (cl->getType() == ChatLink::TYPE_MAGNET && cl->url == link) {
 			updateDupeType(cl);
