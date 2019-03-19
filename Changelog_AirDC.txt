@@ -1,3 +1,17 @@
+3.54
+
+Changed:
+
+- Updated AirDC++ Web UI with localizations and file uploading support in chat sessions. For a complete list of changes, see https://airdcpp-web.github.io/2019/02/08/version-2.5.1.html and https://airdcpp-web.github.io/2019/03/13/version-2.6.0.html
+- Group hashed files by device instead of volume when using multithreaded hashing
+- Attempt to associate new private chat sessions with an online hub
+
+Fixed:
+
+- Fix a filelist-related deadlock
+- Fix possible corruption of search type captions
+
+
 3.53
 
 Changed:
