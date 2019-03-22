@@ -1,13 +1,12 @@
 # 
 # Translators:
 # Kcchouette, 2017-2018
-# Kcchouette, 2019
 msgid ""
 msgstr ""
 "Project-Id-Version: AirDC++\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-03-24 21:02\n"
-"PO-Revision-Date: 2019-02-18 22:34+0000\n"
+"PO-Revision-Date: 2018-06-12 21:21+0000\n"
 "Last-Translator: Kcchouette\n"
 "Language-Team: French (France) (http://www.transifex.com/airdcpp/airdcpp/language/fr_FR/)\n"
 "MIME-Version: 1.0\n"
@@ -58,21 +57,21 @@ msgstr "Une installation précédente d'AirDC++ a été trouvée dans le dossier
 msgid ""
 "Settings of an existing DC++ installation has been found in the user "
 "profile, do you want to import settings and queue?"
-msgstr "Les paramètres d'une installation existante de DC++ ont été trouvés dans le profil utilisateur, voulez-vous importer les paramètres et la file d'attente ?"
+msgstr "Les paramètres d'une installation existante DC++ ont été trouvés dans le profil utilisateur, voulez-vous importer les paramètres et la file d'attente ?"
 
 #. Apex
 #: AirDC_installscript.nsi:99
 msgid ""
 "Settings of an existing ApexDC++ installation has been found in the user "
 "profile, do you want to import settings and queue?"
-msgstr "Les paramètres d'une installation existante d'ApexDC++ ont été trouvés dans le profil utilisateur, voulez-vous importer les paramètres et la file d'attente ?"
+msgstr "Les paramètres d'une installation existante ApexDC++ ont été trouvés dans le profil utilisateur, voulez-vous importer les paramètres et la file d'attente ?"
 
 #. Strong
 #: AirDC_installscript.nsi:100
 msgid ""
 "Settings of an existing StrongDC++ installation has been found in the user "
 "profile, do you want to import settings and queue?"
-msgstr "Les paramètres d'une installation existante de StrongDC++ ont été trouvés dans le profil utilisateur, voulez-vous importer les paramètres et la file d'attente ?"
+msgstr "Les paramètres d'une installation existante StrongDC++ ont été trouvés dans le profil utilisateur, voulez-vous importer les paramètres et la file d'attente ?"
 
 #. SecStartMenu
 #: AirDC_installscript.nsi:101
@@ -135,14 +134,14 @@ msgid ""
 "If you want to keep your settings in the program directory, make sure that "
 "you DO NOT install AirDC++ to the 'Program files' folder!!! This can lead to"
 " abnormal behaviour like loss of settings or downloads!"
-msgstr "Si vous souhaitez conserver vos paramètres dans le répertoire du programme, assurez-vous de NE PAS installer AirDC++ dans le dossier 'Program files' ! Cela peut conduire à un comportement anormal comme la perte de paramètres ou de téléchargements !"
+msgstr "Si vous souhaitez conserver vos paramètres dans le répertoire du programme, assurez-vous de NE PAS installer AirDC++ dans le dossier 'Program files' !!! Cela peut conduire à un comportement anormal comme la perte de paramètres ou de téléchargements !"
 
 #. OsUnsupported
 #: AirDC_installscript.nsi:113
 msgid ""
 "This application is compatible with Windows 7 SP1 or newer operating systems"
 " only. The installer will now exit."
-msgstr "Cette application n'est compatible qu'avec Windows 7 SP1 ou ultérieur. Le programme d'installation va maintenant s'arrêter."
+msgstr "Cette application est compatible avec Windows 7 SP1 ou plus récents. Le programme d'installation va maintenant s'arrêter."
 
 #. ^UninstallText
 #: AirDC_installscript.nsi:114
