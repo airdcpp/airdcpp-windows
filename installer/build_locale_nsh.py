@@ -69,7 +69,7 @@ localeToName = {
     "pl-PO" : "Polish",
     "pt" : "Portuguese",
     "pt-BR" : "PortugueseBR",
-    "pt-PT" : "PortuguesePT",
+    "pt-PT" : "Portuguese",
     "ro-RO" : "Romanian",
     "ru-RU" : "Russian",
     "sr" : "Serbian",
