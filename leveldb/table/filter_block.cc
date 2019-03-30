@@ -9,7 +9,7 @@
 
 namespace leveldb {
 
-// See doc/table_format.txt for an explanation of the filter block format.
+// See doc/table_format.md for an explanation of the filter block format.
 
 // Generate new filter every 2KB of data
 static const size_t kFilterBaseLg = 11;
@@ -78,8 +78,8 @@ void FilterBlockBuilder::GenerateFilter() {
 FilterBlockReader::FilterBlockReader(const FilterPolicy* policy,
                                      const Slice& contents)
     : policy_(policy),
-      data_(NULL),
-      offset_(NULL),
+      data_(nullptr),
+      offset_(nullptr),
       num_(0),
       base_lg_(0) {
   size_t n = contents.size();
