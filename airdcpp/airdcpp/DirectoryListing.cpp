@@ -1011,15 +1011,13 @@ void DirectoryListing::onLoadingFinished(int64_t aStartTime, const string& aBase
 		dir = root;
 	}
 
-	if (dir) {
-		dir->setLoading(false);
-		if (!aBackgroundTask) {
-			updateCurrentLocation(dir);
-			read = false;
-		}
-
-		onStateChanged();
+	dir->setLoading(false);
+	if (!aBackgroundTask) {
+		updateCurrentLocation(dir);
+		read = false;
 	}
+
+	onStateChanged();
 	
 	fire(DirectoryListingListener::LoadingFinished(), aStartTime, dir->getAdcPath(), aBackgroundTask);
 }
