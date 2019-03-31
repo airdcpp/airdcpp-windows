@@ -235,7 +235,7 @@ public:
 		::SendMessage(pT->m_hWnd, EM_GETSEL, (WPARAM)&nStartChar, (LPARAM)&nEndChar);
 		POINT point = pT->PosFromChar(nStartChar);
 		::ClientToScreen(pT->GetParent(), &point);
-		RECT rect = { 0 };
+		RECT rect = {};
 		::GetWindowRect(hWndDialog, &rect);
 		if(::PtInRect(&rect, point) != FALSE)
 		{
@@ -549,7 +549,7 @@ public:
 
 		bool isDBCS = false;
 #ifdef _MBCS
-		CPINFO info = { 0 };
+		CPINFO info = {};
 		::GetCPInfo(::GetOEMCP(), &info);
 		isDBCS = (info.MaxCharSize > 1);
 #endif
@@ -805,7 +805,7 @@ public:
 		T* pT = static_cast<T*>(this);
 
 		ATLASSERT(lpszFind != NULL);
-		FINDTEXTEX ft = { 0 };
+		FINDTEXTEX ft = {};
 
 		pT->GetSel(ft.chrg);
 		if(this->m_bFirstSearch)

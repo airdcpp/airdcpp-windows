@@ -27,6 +27,10 @@
 	#error WTL requires that _ATL_NO_COMMODULE is not defined
 #endif
 
+#ifdef _ATL_NO_WIN_SUPPORT
+	#error WTL requires that _ATL_NO_WIN_SUPPORT is not defined
+#endif
+
 #if (_MSC_VER < 1400)
 	#error WTL10 requires C++ compiler version 14 (Visual C++ 2005) or higher
 #endif
@@ -49,6 +53,10 @@
 
 #ifdef _ATL_MIN_CRT
 	#error WTL10 doesn't support _ATL_MIN_CRT
+#endif
+
+#ifdef _ATL_NO_MSIMG
+	#error WTL10 doesn't support _ATL_NO_MSIMG
 #endif
 
 #include <limits.h>
@@ -91,10 +99,11 @@
 // CServerAppModule
 //
 // Global functions:
+//   AtlInitCommonControls()
 //   AtlGetDefaultGuiFont()
 //   AtlCreateControlFont()
 //   AtlCreateBoldFont()
-//   AtlInitCommonControls()
+//   AtlGetStringPtr()
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -148,6 +157,15 @@ DECLARE_TRACE_CATEGORY(atlTraceUI);
   __declspec(selectany) ATL::CTraceCategory atlTraceUI(_T("atlTraceUI"));
 #endif // _DEBUG
 
+// Common Controls initialization helper
+inline BOOL AtlInitCommonControls(DWORD dwFlags)
+{
+	INITCOMMONCONTROLSEX iccx = { sizeof(INITCOMMONCONTROLSEX), dwFlags };
+	BOOL bRet = ::InitCommonControlsEx(&iccx);
+	ATLASSERT(bRet);
+	return bRet;
+}
+
 // Default GUI font helper - "MS Shell Dlg" stock font
 inline HFONT AtlGetDefaultGuiFont()
 {
@@ -180,13 +198,14 @@ inline HFONT AtlCreateBoldFont(HFONT hFont = NULL)
 	return hFontBold;
 }
 
-// Common Controls initialization helper
-inline BOOL AtlInitCommonControls(DWORD dwFlags)
+// Resource string pointer
+inline LPCWSTR AtlGetStringPtr(UINT uID, int* pch = NULL)
 {
-	INITCOMMONCONTROLSEX iccx = { sizeof(INITCOMMONCONTROLSEX), dwFlags };
-	BOOL bRet = ::InitCommonControlsEx(&iccx);
-	ATLASSERT(bRet);
-	return bRet;
+	LPCWSTR lpstr = NULL;
+	int nRet = ::LoadStringW(ATL::_AtlBaseModule.GetResourceInstance(), uID, (LPWSTR)&lpstr, 0);
+	if(pch != NULL)
+		*pch = nRet;
+	return lpstr;
 }
 
 
@@ -379,7 +398,7 @@ namespace ModuleHelper
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// SecureHelper - WTL10 requires use if secure functions
+// SecureHelper - WTL10 requires use of secure functions
 // these are here only for compatibility with existing projects
 
 namespace SecureHelper

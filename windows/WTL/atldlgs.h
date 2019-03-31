@@ -798,7 +798,7 @@ public:
 					// Get the ID-list and attributes of the file.
 					USES_CONVERSION;
 					int nFileNameLength = (int)(DWORD_PTR)(pChar - pAnchor);
-					TCHAR szFileName[MAX_PATH] = { 0 };
+					TCHAR szFileName[MAX_PATH] = {};
 					ATL::Checked::tcsncpy_s(szFileName, MAX_PATH, pAnchor, nFileNameLength);
 #ifdef STRICT_TYPED_ITEMIDS
 					PIDLIST_RELATIVE pidl = NULL;
@@ -816,7 +816,7 @@ public:
 							if (SUCCEEDED(pFolder->BindToObject(pidl, NULL, IID_IShellLink, (void**)&pLink)))
 							{
 								// Get the shortcut's target path.
-								TCHAR szPath[MAX_PATH] = { 0 };
+								TCHAR szPath[MAX_PATH] = {};
 								if (SUCCEEDED(pLink->GetPath(szPath, MAX_PATH, NULL, 0)))
 								{
 									// If the target path is longer than the shortcut name, then add on the number 
@@ -2853,7 +2853,7 @@ public:
 		return hWnd;
 	}
 
-	static const UINT GetFindReplaceMsg()
+	static UINT GetFindReplaceMsg()
 	{
 		static const UINT nMsgFindReplace = ::RegisterWindowMessage(FINDMSGSTRING);
 		return nMsgFindReplace;
@@ -3066,6 +3066,9 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////////
 // CMemDlgTemplate - in-memory dialog template - DLGTEMPLATE or DLGTEMPLATEEX
+
+// traits suitable for dialog controls
+typedef ATL::CWinTraits<WS_CHILD | WS_VISIBLE, 0>	CDlgControlWinTraits;
 
 template <class TWinTraits>
 class CMemDlgTemplateT
@@ -3334,7 +3337,7 @@ public:
 	}
 };
 
-typedef CMemDlgTemplateT<ATL::CControlWinTraits>	CMemDlgTemplate;
+typedef CMemDlgTemplateT<CDlgControlWinTraits>	CMemDlgTemplate;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4853,7 +4856,7 @@ public:
 										(LPWSTR)(((ATL::_DialogSplitHelper::DLGITEMTEMPLATEEX*)pItem) + 1) :
 										(LPWSTR)(pItem + 1);
 								// Get control rect.
-								RECT rect = { 0 };
+								RECT rect = {};
 								rect.left = bDialogEx ? ((ATL::_DialogSplitHelper::DLGITEMTEMPLATEEX*)pItem)->x : pItem->x;
 								rect.top = bDialogEx ? ((ATL::_DialogSplitHelper::DLGITEMTEMPLATEEX*)pItem)->y : pItem->y;
 								rect.right = rect.left + (bDialogEx ? ((ATL::_DialogSplitHelper::DLGITEMTEMPLATEEX*)pItem)->cx : pItem->cx);

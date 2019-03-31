@@ -284,12 +284,12 @@ public:
 
 		m_arrDocs.RemoveAll();
 
-		TCHAR szRetString[t_cchItemLen] = { 0 };
+		TCHAR szRetString[t_cchItemLen] = {};
 		_DocEntry de;
 
 		for(int nItem = m_nMaxEntries; nItem > 0; nItem--)
 		{
-			TCHAR szBuff[m_cchItemNameLen] = { 0 };
+			TCHAR szBuff[m_cchItemNameLen] = {};
 			_stprintf_s(szBuff, m_cchItemNameLen, pT->GetRegItemName(), nItem);
 			ULONG ulCount = t_cchItemLen;
 			lRet = rk.QueryStringValue(szBuff, szRetString, &ulCount);
@@ -327,9 +327,9 @@ public:
 		int nItem;
 		for(nItem = m_arrDocs.GetSize(); nItem > 0; nItem--)
 		{
-			TCHAR szBuff[m_cchItemNameLen] = { 0 };
+			TCHAR szBuff[m_cchItemNameLen] = {};
 			_stprintf_s(szBuff, m_cchItemNameLen, pT->GetRegItemName(), nItem);
-			TCHAR szDocName[t_cchItemLen] = { 0 };
+			TCHAR szDocName[t_cchItemLen] = {};
 			GetFromList(t_nFirstID + nItem - 1, szDocName, t_cchItemLen);
 			lRet = rk.SetStringValue(szBuff, szDocName);
 			ATLASSERT(lRet == ERROR_SUCCESS);
@@ -338,7 +338,7 @@ public:
 		// delete unused keys
 		for(nItem = m_arrDocs.GetSize() + 1; nItem <= m_nMaxEntries_Max; nItem++)
 		{
-			TCHAR szBuff[m_cchItemNameLen] = { 0 };
+			TCHAR szBuff[m_cchItemNameLen] = {};
 			_stprintf_s(szBuff, m_cchItemNameLen, pT->GetRegItemName(), nItem);
 			rk.DeleteValue(szBuff);
 		}
@@ -379,7 +379,7 @@ public:
 				::DeleteMenu(m_hMenu, j, MF_BYCOMMAND);
 		}
 
-		TCHAR szItemText[t_cchItemLen + 6] = { 0 };   // add space for &, 2 digits, and a space
+		TCHAR szItemText[t_cchItemLen + 6] = {};   // add space for &, 2 digits, and a space
 		int nSize = m_arrDocs.GetSize();
 		int nItem = 0;
 		if(nSize > 0)
@@ -392,7 +392,7 @@ public:
 				}
 				else
 				{
-					TCHAR szBuff[t_cchItemLen] = { 0 };
+					TCHAR szBuff[t_cchItemLen] = {};
 					T* pT = static_cast<T*>(this);
 					(void)pT;   // avoid level 4 warning
 					bool bRet = pT->CompactDocumentName(szBuff, m_arrDocs[nSize - 1 - nItem].szDocName, m_cchMaxItemLen);
@@ -481,7 +481,6 @@ public:
 		ATLASSERT(m_hFind != NULL);
 
 		ULARGE_INTEGER nFileSize = {};
-
 		if(m_bFound)
 		{
 			nFileSize.LowPart = m_fd.nFileSizeLow;
@@ -538,7 +537,7 @@ public:
 	{
 		ATLASSERT(m_hFind != NULL);
 
-		TCHAR szBuff[MAX_PATH] = { 0 };
+		TCHAR szBuff[MAX_PATH] = {};
 		if(!GetFileName(szBuff, MAX_PATH))
 			return FALSE;
 

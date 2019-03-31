@@ -416,7 +416,7 @@ public:
 		T* pT = static_cast<T*>(this);
 		BOOL bSuccess = TRUE;
 		const int cchBuff = 32;
-		TCHAR szBuff[cchBuff] = { 0 };
+		TCHAR szBuff[cchBuff] = {};
 
 		if(bSave)
 		{
@@ -459,7 +459,7 @@ public:
 		T* pT = static_cast<T*>(this);
 		BOOL bSuccess = TRUE;
 		const int cchBuff = 32;
-		TCHAR szBuff[cchBuff] = { 0 };
+		TCHAR szBuff[cchBuff] = {};
 
 		if(bSave)
 		{

@@ -145,7 +145,7 @@ public:
 		{
 			for(HWND hWndChild = ::GetWindow(pT->m_hWnd, GW_CHILD); hWndChild != NULL; hWndChild = ::GetWindow(hWndChild, GW_HWNDNEXT))
 			{
-				RECT rect = { 0 };
+				RECT rect = {};
 				::GetWindowRect(hWndChild, &rect);
 				::MapWindowPoints(NULL, pT->m_hWnd, (LPPOINT)&rect, 1);
 				::SetWindowPos(hWndChild, NULL, rect.left + dx, rect.top + dy, 0, 0, SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE);
@@ -220,7 +220,7 @@ public:
 		{
 			for(HWND hWndChild = ::GetWindow(pT->m_hWnd, GW_CHILD); hWndChild != NULL; hWndChild = ::GetWindow(hWndChild, GW_HWNDNEXT))
 			{
-				RECT rect = { 0 };
+				RECT rect = {};
 				::GetWindowRect(hWndChild, &rect);
 				::MapWindowPoints(NULL, pT->m_hWnd, (LPPOINT)&rect, 1);
 				::SetWindowPos(hWndChild, NULL, rect.left + dx, rect.top + dy, 0, 0, SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE);
@@ -383,7 +383,7 @@ public:
 		T* pT = static_cast<T*>(this);
 		ATLASSERT(::IsWindow(pT->m_hWnd));
 
-		RECT rcClient = { 0 };
+		RECT rcClient = {};
 		pT->GetClientRect(&rcClient);
 
 		int x = m_ptOffset.x;
@@ -406,7 +406,7 @@ public:
 		T* pT = static_cast<T*>(this);
 		ATLASSERT(::IsWindow(pT->m_hWnd));
 
-		RECT rect = { 0 };
+		RECT rect = {};
 		::GetWindowRect(hWnd, &rect);
 		::OffsetRect(&rect, m_ptOffset.x, m_ptOffset.y);
 		::MapWindowPoints(NULL, pT->m_hWnd, (LPPOINT)&rect, 2);
@@ -681,7 +681,7 @@ public:
 	void DoScroll(int nType, int nScrollCode, int& cxyOffset, int cxySizeAll, int cxySizePage, int cxySizeLine)
 	{
 		T* pT = static_cast<T*>(this);
-		RECT rect = { 0 };
+		RECT rect = {};
 		pT->GetClientRect(&rect);
 		int cxyClient = (nType == SB_VERT) ? rect.bottom : rect.right;
 		int cxyMax = cxySizeAll - cxyClient;
@@ -863,8 +863,8 @@ public:
 			T* pT = static_cast<T*>(this);
 			pT->GetSystemSettings();
 
-			RECT rect = { 0 };
-			GetClientRect(&rect);
+			RECT rect = {};
+			this->GetClientRect(&rect);
 			pT->DoSize(rect.right, rect.bottom);
 		}
 
@@ -972,7 +972,7 @@ public:
 
 		::SetRect(&m_rectLogAll, xMin, yMin, xMax, yMax);
 
-		SIZE sizeAll = { 0 };
+		SIZE sizeAll = {};
 		sizeAll.cx = xMax - xMin + 1;
 		sizeAll.cy = yMax - yMin + 1;
 		// block: convert logical to device units
@@ -1143,8 +1143,8 @@ public:
 			T* pT = static_cast<T*>(this);
 			pT->GetSystemSettings();
 
-			RECT rect = { 0 };
-			GetClientRect(&rect);
+			RECT rect = {};
+			this->GetClientRect(&rect);
 			pT->DoSize(rect.right, rect.bottom);
 		}
 
@@ -1296,7 +1296,7 @@ public:
 
 		m_sizeLogAll.cx = cxLog;
 		m_sizeLogAll.cy = cyLog;
-		SIZE sizeAll = { 0 };
+		SIZE sizeAll = {};
 		sizeAll.cx = (int)((float)m_sizeLogAll.cx * m_fZoomScale);
 		sizeAll.cy = (int)((float)m_sizeLogAll.cy * m_fZoomScale);
 
@@ -1321,7 +1321,7 @@ public:
 		m_sizeLogLine.cx = cxLogLine;
 		m_sizeLogLine.cy = cyLogLine;
 
-		SIZE sizeLine = { 0 };
+		SIZE sizeLine = {};
 		sizeLine.cx = (int)((float)m_sizeLogLine.cx * m_fZoomScale);
 		sizeLine.cy = (int)((float)m_sizeLogLine.cy * m_fZoomScale);
 		CScrollImpl< T >::SetScrollLine(sizeLine);
@@ -1345,7 +1345,7 @@ public:
 		m_sizeLogPage.cx = cxLogPage;
 		m_sizeLogPage.cy = cyLogPage;
 
-		SIZE sizePage = { 0 };
+		SIZE sizePage = {};
 		sizePage.cx = (int)((float)m_sizeLogPage.cx * m_fZoomScale);
 		sizePage.cy = (int)((float)m_sizeLogPage.cy * m_fZoomScale);
 
@@ -1441,11 +1441,11 @@ public:
 		{
 			for(HWND hWndChild = ::GetWindow(pT->m_hWnd, GW_CHILD); hWndChild != NULL; hWndChild = ::GetWindow(hWndChild, GW_HWNDNEXT))
 			{
-				RECT rect = { 0 };
+				RECT rect = {};
 				::GetWindowRect(hWndChild, &rect);
 				::MapWindowPoints(NULL, pT->m_hWnd, (LPPOINT)&rect, 2);
 
-				_ChildPlacement cp = { 0 };
+				_ChildPlacement cp = {};
 				cp.hWnd = hWndChild;
 				cp.x = rect.left;
 				cp.y = rect.top;
@@ -1519,10 +1519,10 @@ public:
 			fZoomScale = m_fZoomScaleMax;
 
 		T* pT = static_cast<T*>(this);
-		POINT pt = { 0 };
+		POINT pt = { 0, 0 };
 		if(bCenter)
 		{
-			RECT rcClient = { 0 };
+			RECT rcClient = {};
 			::GetClientRect(pT->m_hWnd, &rcClient);
 			pt.x = rcClient.right / 2;
 			pt.y = rcClient.bottom / 2;
@@ -1530,7 +1530,7 @@ public:
 		}
 
 		// Modify the Viewport extent
-		SIZE sizeAll = { 0 };
+		SIZE sizeAll = {};
 		sizeAll.cx = (int)((float)m_sizeLogAll.cx * fZoomScale);
 		sizeAll.cy = (int)((float)m_sizeLogAll.cy * fZoomScale);
 		
@@ -1625,7 +1625,7 @@ public:
 	void CenterOnPoint(POINT pt)
 	{
 		T* pT = static_cast<T*>(this);
-		RECT rect = { 0 };
+		RECT rect = {};
 		pT->GetClientRect(&rect);
 
 		int xOfs = pt.x - (rect.right / 2) + this->m_ptOffset.x;
@@ -1915,8 +1915,8 @@ public:
 			T* pT = static_cast<T*>(this);
 			pT->GetSystemSettings();
 
-			RECT rect = { 0 };
-			GetClientRect(&rect);
+			RECT rect = {};
+			this->GetClientRect(&rect);
 			pT->DoSize(rect.right, rect.bottom);
 		}
 
@@ -1999,10 +1999,10 @@ public:
 
 			if(bClientSizeAsMin)
 			{
-				RECT rect = { 0 };
+				RECT rect = {};
 				m_wndClient.GetWindowRect(&rect);
 				if(((rect.right - rect.left) > 0) && ((rect.bottom - rect.top) > 0))
-					SetScrollSize(rect.right - rect.left, rect.bottom - rect.top, FALSE);
+					this->SetScrollSize(rect.right - rect.left, rect.bottom - rect.top, FALSE);
 			}
 
 			T* pT = static_cast<T*>(this);
@@ -2052,7 +2052,7 @@ public:
 		if(!m_bAutoSizeClient || (m_wndClient.m_hWnd == NULL))
 		{
 			T* pT = static_cast<T*>(this);
-			RECT rect = { 0 };
+			RECT rect = {};
 			pT->GetContainerRect(rect);
 
 			if(m_bDrawEdgeIfEmpty && (m_wndClient.m_hWnd == NULL))
@@ -2079,7 +2079,7 @@ public:
 		ATLASSERT(::IsWindow(pT->m_hWnd));
 		ATLASSERT(m_wndClient.IsWindow());
 
-		RECT rect = { 0 };
+		RECT rect = {};
 		::GetWindowRect(hWnd, &rect);
 		::MapWindowPoints(NULL, m_wndClient.m_hWnd, (LPPOINT)&rect, 2);
 		ScrollToView(rect);
@@ -2093,7 +2093,7 @@ public:
 		if(m_bAutoSizeClient && (m_wndClient.m_hWnd != NULL))
 		{
 			T* pT = static_cast<T*>(this);
-			RECT rect = { 0 };
+			RECT rect = {};
 			pT->GetContainerRect(rect);
 
 			m_wndClient.SetWindowPos(NULL, &rect, SWP_NOZORDER | SWP_NOMOVE);

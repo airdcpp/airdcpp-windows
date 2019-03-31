@@ -461,7 +461,7 @@ public:
 	{
 		T* pT = static_cast<T*>(this);
 		HDC hDCPaint = NULL;
-		RECT rcClient = { 0 };
+		RECT rcClient = {};
 		this->GetClientRect(&rcClient);
 		this->m_BufferedPaint.Begin(hDC, &rcClient, this->m_dwFormat, &this->m_PaintParams, &hDCPaint);
 		ATLASSERT(hDCPaint != NULL);

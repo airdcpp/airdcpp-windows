@@ -467,7 +467,7 @@ inline bool AtlDrawThemeClientEdge(HTHEME hTheme, HWND hWnd, HRGN hRgnUpdate = N
 	if(SUCCEEDED(::GetThemeInt(hTheme, nPartID, nStateID, TMT_SIZINGBORDERWIDTH, &cxBorder)))
 		cyBorder = cxBorder;
 
-	RECT rect = { 0 };
+	RECT rect = {};
 	::GetWindowRect(hWnd, &rect);            
 
 	// Remove the client edge from the update region
@@ -922,7 +922,7 @@ public:
 		T* pT = static_cast<T*>(this);
 		if(wParam != NULL)
 		{
-			RECT rect = { 0 };
+			RECT rect = {};
 			pT->GetClientRect(&rect);
 			pT->DoPaint((HDC)wParam, rect);
 		}
@@ -1097,7 +1097,7 @@ public:
 		T* pT = static_cast<T*>(this);
 		if(wParam != NULL)
 		{
-			RECT rect = { 0 };
+			RECT rect = {};
 			pT->GetClientRect(&rect);
 			pT->DoPaint((HDC)wParam, rect, m_NewState);
 		}
