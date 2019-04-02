@@ -526,7 +526,7 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	
 	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
 	SetSplitterPanes(ctrlTree.m_hWnd, ctrlFiles.m_hWnd);
-	m_nProportionalPos = 2500;
+	SetSplitterPosPct(25);
 
 	browserBar.Init();
 	//Cmd bar

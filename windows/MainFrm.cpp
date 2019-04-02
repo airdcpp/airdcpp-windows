@@ -299,9 +299,10 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	transferView.Create(m_hWnd);
 
-	SetSplitterPanes(m_hWndMDIClient, transferView.m_hWnd);
 	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
-	m_nProportionalPos = SETTING(TRANSFER_SPLIT_SIZE);
+	SetSplitterPanes(m_hWndMDIClient, transferView.m_hWnd);
+	SetSplitterPosPct(SETTING(TRANSFER_SPLIT_SIZE) / 100);
+
 	UIAddToolBar(hWndToolBar);
 	UIAddToolBar(hWndWinampBar);
 	UIAddToolBar(hWndTBStatusBar);
@@ -381,7 +382,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	// We want to pass this one on to the splitter...hope it get's there...
 	bHandled = FALSE;
-	return 0;
+	return 1;
 }
 
 LRESULT MainFrame::onTaskbarButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
@@ -1141,7 +1142,7 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 			CRect rc;
 			GetWindowRect(rc);
 			if(SETTING(SHOW_TRANSFERVIEW)) {
-				SettingsManager::getInstance()->set(SettingsManager::TRANSFER_SPLIT_SIZE, m_nProportionalPos);
+				SettingsManager::getInstance()->set(SettingsManager::TRANSFER_SPLIT_SIZE, GetSplitterPosPct() * 100);
 			}
 			if(wp.showCmd == SW_SHOW || wp.showCmd == SW_SHOWNORMAL) {
 				SettingsManager::getInstance()->set(SettingsManager::MAIN_WINDOW_POS_X, rc.left);

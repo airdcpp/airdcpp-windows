@@ -98,7 +98,7 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
 	SetSplitterPanes(ctrlTree.m_hWnd, ctrlQueue.m_hWnd);
-	m_nProportionalPos = SETTING(QUEUE_SPLITTER_POS);
+	SetSplitterPosPct(25);
 
 	CRect rc(SETTING(QUEUE_LEFT), SETTING(QUEUE_TOP), SETTING(QUEUE_RIGHT), SETTING(QUEUE_BOTTOM));
 	if (!(rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0))
@@ -218,7 +218,7 @@ LRESULT QueueFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 			::ScreenToClient(GetParent(), &rc.TopLeft());
 			::ScreenToClient(GetParent(), &rc.BottomRight());
 			//save the position
-			SettingsManager::getInstance()->set(SettingsManager::QUEUE_SPLITTER_POS, m_nProportionalPos);
+			SettingsManager::getInstance()->set(SettingsManager::QUEUE_SPLITTER_POS, GetSplitterPosPct() * 100);
 			SettingsManager::getInstance()->set(SettingsManager::QUEUE_BOTTOM, (rc.bottom > 0 ? rc.bottom : 0));
 			SettingsManager::getInstance()->set(SettingsManager::QUEUE_TOP, (rc.top > 0 ? rc.top : 0));
 			SettingsManager::getInstance()->set(SettingsManager::QUEUE_LEFT, (rc.left > 0 ? rc.left : 0));

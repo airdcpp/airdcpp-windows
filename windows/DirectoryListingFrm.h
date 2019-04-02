@@ -83,6 +83,7 @@ public:
 	static bool parseWindowParams(StringMap& params);
 
 	typedef MDITabChildWindowImpl<DirectoryListingFrame> baseClass;
+	typedef CSplitterImpl<DirectoryListingFrame> splitBase;
 	typedef UserInfoBaseHandler<DirectoryListingFrame> uibBase;
 
 	enum {
@@ -120,6 +121,7 @@ public:
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
 		MESSAGE_HANDLER(FTM_CONTEXTMENU, onTabContextMenu)
+		MESSAGE_HANDLER(WM_CAPTURECHANGED, onCaptureChanged)
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
@@ -161,8 +163,8 @@ public:
 		CHAIN_MSG_MAP_MEMBER(browserBar)
 
 		CHAIN_COMMANDS(uibBase)
+		CHAIN_MSG_MAP(splitBase)
 		CHAIN_MSG_MAP(baseClass)
-		CHAIN_MSG_MAP(CSplitterImpl<DirectoryListingFrame>)
 		//CHAIN_MSG_MAP_MEMBER(ctrlFiles)
 	ALT_MSG_MAP(HISTORY_MSG_MAP)
 		CHAIN_MSG_MAP_ALT_MEMBER(browserBar, HISTORY_MSG_MAP)
@@ -193,6 +195,11 @@ public:
 	LRESULT onGetFullList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onReloadList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
 	LRESULT onReloadDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
+
+	LRESULT onCaptureChanged(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+		bHandled = TRUE; // Hopefully this fixes weird splitter issues for now
+		return 0;
+	}
 
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	void runUserCommand(UserCommand& uc);

@@ -109,9 +109,9 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlInfo.SetBackgroundColor(WinUtil::bgColor); 
 	ctrlInfo.SetDefaultCharFormat(WinUtil::m_ChatTextGeneral);
 
-	SetSplitterPanes(ctrlUsers.m_hWnd, ctrlInfo.m_hWnd);
-	m_nProportionalPos = SETTING(FAV_USERS_SPLITTER_POS);
 	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
+	SetSplitterPanes(ctrlUsers.m_hWnd, ctrlInfo.m_hWnd);
+	SetSplitterPosPct(SETTING(FAV_USERS_SPLITTER_POS) / 100);
 
 	images.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 2);
 	images.AddIcon(CIcon(ResourceLoader::loadIcon(IDI_FAV_USER, 16)));
@@ -1007,7 +1007,7 @@ LRESULT UsersFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 			SettingsManager::getInstance()->set(SettingsManager::USERS_TOP, (rc.top > 0 ? rc.top : 0));
 			SettingsManager::getInstance()->set(SettingsManager::USERS_LEFT, (rc.left > 0 ? rc.left : 0));
 			SettingsManager::getInstance()->set(SettingsManager::USERS_RIGHT, (rc.right > 0 ? rc.right : 0));
-			SettingsManager::getInstance()->set(SettingsManager::FAV_USERS_SPLITTER_POS, m_nProportionalPos);
+			SettingsManager::getInstance()->set(SettingsManager::FAV_USERS_SPLITTER_POS, GetSplitterPosPct() * 100);
 		}
 
 		ctrlUsers.saveHeaderOrder(SettingsManager::USERS_FRAME_ORDER,SettingsManager::USERS_FRAME_WIDTHS,SettingsManager::USERS_FRAME_VISIBLE);

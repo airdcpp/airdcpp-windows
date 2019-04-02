@@ -164,8 +164,6 @@ public:
 		// Set new position and update if requested
 		bool bRet = (m_xySplitterPos != xyPos);
 		m_xySplitterPos = xyPos;
-		//AirDC!! Set the splitterPosNew to be the same as m_xySplitterPos, its left -1 initially.
-		m_xySplitterPosNew = xyPos;
 
 		if(m_bUpdateProportionalPos)
 		{
