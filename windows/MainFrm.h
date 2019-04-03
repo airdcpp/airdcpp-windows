@@ -101,7 +101,6 @@ public:
 		MESSAGE_HANDLER(WM_APP+242, onTrayIcon)
 		MESSAGE_HANDLER(WM_DESTROY, onDestroy)
 		MESSAGE_HANDLER(WM_SIZE, onSize)
-		MESSAGE_HANDLER(WM_CAPTURECHANGED, onCaptureChanged)
 		MESSAGE_HANDLER(WM_QUERYOPEN, onOpen)
 		MESSAGE_HANDLER(WM_ENDSESSION, onEndSession)
 		MESSAGE_HANDLER(WM_DEVICECHANGE, onDeviceChanged)
@@ -201,11 +200,6 @@ public:
 		UPDATE_ELEMENT(ID_TOGGLE_TBSTATUS, UPDUI_MENUPOPUP)
 		UPDATE_ELEMENT(ID_LOCK_TB, UPDUI_MENUPOPUP)
 	END_UPDATE_UI_MAP()
-
-	LRESULT onCaptureChanged(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
-		bHandled = TRUE; // Hopefully this fixes weird splitter issues for now
-		return 0;
-	}
 
 	LRESULT onOpen(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);

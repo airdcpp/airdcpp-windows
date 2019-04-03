@@ -64,7 +64,6 @@ public:
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
-		MESSAGE_HANDLER(WM_CAPTURECHANGED, onCaptureChanged)
 		MESSAGE_HANDLER(WM_TIMER, onTimer)
 		CHAIN_MSG_MAP_MEMBER(browserBar)
 		CHAIN_MSG_MAP(baseClass)
@@ -90,11 +89,6 @@ public:
 	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 	LRESULT onKeyDownList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onKeyDownTree(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
-
-	LRESULT onCaptureChanged(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
-		bHandled = TRUE; // Hopefully this fixes weird splitter issues for now
-		return 0;
-	}
 
 	LRESULT onSelChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /* bHandled */) {
 		NMTREEVIEW* nmtv = (NMTREEVIEW*)pnmh;

@@ -121,7 +121,6 @@ public:
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
 		MESSAGE_HANDLER(FTM_CONTEXTMENU, onTabContextMenu)
-		MESSAGE_HANDLER(WM_CAPTURECHANGED, onCaptureChanged)
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
@@ -195,11 +194,6 @@ public:
 	LRESULT onGetFullList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onReloadList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
 	LRESULT onReloadDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
-
-	LRESULT onCaptureChanged(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
-		bHandled = TRUE; // Hopefully this fixes weird splitter issues for now
-		return 0;
-	}
 
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	void runUserCommand(UserCommand& uc);
