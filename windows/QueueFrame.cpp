@@ -98,7 +98,7 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
 	SetSplitterPanes(ctrlTree.m_hWnd, ctrlQueue.m_hWnd);
-	SetSplitterPosPct(25);
+	SetSplitterPosPct(SETTING(QUEUE_SPLITTER_POS) / 100);
 
 	CRect rc(SETTING(QUEUE_LEFT), SETTING(QUEUE_TOP), SETTING(QUEUE_RIGHT), SETTING(QUEUE_BOTTOM));
 	if (!(rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0))
