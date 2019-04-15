@@ -932,7 +932,7 @@ LRESULT HubFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 
 	if (client->isSocketSecure() && client->getHubUrl().find("?kp=") == string::npos) {
 		copyHubMenu->appendItem(CTSTRING(ADDRESS_KEYPRINT), [this] {
-			auto url = client->getHubUrl() + "?kp=" + CryptoManager::keyprintToString(client->getKeyprint());
+			auto url = client->getHubUrl() + "/?kp=" + CryptoManager::keyprintToString(client->getKeyprint());
 			WinUtil::setClipboard(Text::toT(url));
 		});
 	}
