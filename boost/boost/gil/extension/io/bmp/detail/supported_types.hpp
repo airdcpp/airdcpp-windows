@@ -8,6 +8,8 @@
 #ifndef BOOST_GIL_EXTENSION_IO_BMP_DETAIL_SUPPORTED_TYPES_HPP
 #define BOOST_GIL_EXTENSION_IO_BMP_DETAIL_SUPPORTED_TYPES_HPP
 
+#include <boost/gil/extension/io/bmp/tags.hpp>
+
 #include <boost/gil/bit_aligned_pixel_reference.hpp>
 #include <boost/gil/channel.hpp>
 #include <boost/gil/color_base.hpp>
@@ -114,9 +116,11 @@ struct is_read_supported< Pixel
                                           >::is_supported
                 >
 {
-    typedef detail::bmp_read_support< typename channel_type< Pixel >::type
-                                    , typename color_space_type< Pixel >::type
-                                    > parent_t;
+    using parent_t = detail::bmp_read_support
+        <
+            typename channel_type<Pixel>::type,
+            typename color_space_type<Pixel>::type
+        >;
 
     static const typename bmp_bits_per_pixel::type bpp = parent_t::bpp;
 };

@@ -626,7 +626,7 @@ constexpr explicit operator bool() const noexcept;
 [none]
 * {blank}
 +
-Returns: :: `failed()`.
+Returns: :: `val_ != 0`.
 
 ```
 operator std::error_code() const;
@@ -789,7 +789,7 @@ constexpr explicit operator bool() const noexcept;
 [none]
 * {blank}
 +
-Returns: :: `failed()`.
+Returns: :: `val_ != 0`.
 
 ```
 operator std::error_condition() const;

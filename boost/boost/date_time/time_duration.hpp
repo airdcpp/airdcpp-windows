@@ -29,8 +29,8 @@ namespace date_time {
       This design allows the subclass duration types to provide custom
       construction policies or other custom features not provided here.
 
-      @param T The subclass type
-      @param rep_type The time resolution traits for this duration type.
+      @tparam T The subclass type
+      @tparam rep_type The time resolution traits for this duration type.
   */
   template<class T, typename rep_type>
   class BOOST_SYMBOL_VISIBLE time_duration : private

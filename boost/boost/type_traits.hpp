@@ -22,6 +22,8 @@
 #include <boost/type_traits/common_type.hpp>
 #include <boost/type_traits/conditional.hpp>
 #include <boost/type_traits/copy_cv.hpp>
+#include <boost/type_traits/copy_cv_ref.hpp>
+#include <boost/type_traits/copy_reference.hpp>
 #include <boost/type_traits/decay.hpp>
 #include <boost/type_traits/declval.hpp>
 #include <boost/type_traits/enable_if.hpp>

@@ -143,6 +143,12 @@ namespace boost {
      }
 
 #if ((defined(BOOST_MSVC) && (BOOST_MSVC >= 1600)) || (defined(__clang__) && defined(__c2__)) || (defined(BOOST_INTEL) && defined(_MSC_VER))) && (defined(_M_IX86) || defined(_M_X64))
+
+/*
+     per https://github.com/boostorg/dynamic_bitset/issues/33
+     this code does not support older cpus properly...
+     it needs to check for cpuid support to avoid undefined behavior
+
      template <>
      BOOST_FORCEINLINE std::size_t popcount<unsigned short>(unsigned short value) BOOST_NOEXCEPT
      {
@@ -162,6 +168,7 @@ namespace boost {
          return static_cast<std::size_t>(__popcnt64(value));
      }
 #endif
+ */
 
 #elif defined(BOOST_GCC) || defined(__clang__) || (defined(BOOST_INTEL) && defined(__GNUC__))
      template <>

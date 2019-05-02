@@ -8,6 +8,7 @@
 #ifndef BOOST_GIL_EXTENSION_IO_BMP_DETAIL_IS_ALLOWED_HPP
 #define BOOST_GIL_EXTENSION_IO_BMP_DETAIL_IS_ALLOWED_HPP
 
+#include <boost/gil/extension/io/bmp/tags.hpp>
 #include <boost/gil/channel.hpp>
 
 #include <boost/mpl/bool_fwd.hpp>
@@ -63,7 +64,7 @@ bool is_allowed( const image_read_info< bmp_tag >& info
         }
     }
 
-    typedef typename channel_traits< typename element_type< typename View::value_type >::type >::value_type channel_t;
+    using channel_t = typename channel_traits<typename element_type<typename View::value_type>::type>::value_type;
     bmp_bits_per_pixel::type dst_bits_per_pixel = detail::unsigned_integral_num_bits< channel_t >::value
                                                 * num_channels< View >::value;
 

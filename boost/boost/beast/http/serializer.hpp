@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2016-2017 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2016-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -15,7 +15,6 @@
 #include <boost/beast/core/buffers_prefix.hpp>
 #include <boost/beast/core/buffers_suffix.hpp>
 #include <boost/beast/core/string.hpp>
-#include <boost/beast/core/type_traits.hpp>
 #include <boost/beast/core/detail/variant.hpp>
 #include <boost/beast/http/message.hpp>
 #include <boost/beast/http/chunk_encode.hpp>
@@ -58,18 +57,18 @@ class serializer
 {
 public:
     static_assert(is_body<Body>::value,
-        "Body requirements not met");
+        "Body type requirements not met");
 
     static_assert(is_body_writer<Body>::value,
-        "BodyWriter requirements not met");
+        "BodyWriter type requirements not met");
 
     /** The type of message this serializer uses
 
         This may be const or non-const depending on the
-        implementation of the corresponding @b BodyWriter.
+        implementation of the corresponding <em>BodyWriter</em>.
     */
 #if BOOST_BEAST_DOXYGEN
-    using value_type = implementation_defined;
+    using value_type = __implementation_defined__;
 #else
     using value_type = typename std::conditional<
         std::is_constructible<typename Body::writer,
@@ -130,7 +129,7 @@ private:
     using cb4_t = buffers_suffix<buffers_cat_view<
         typename Fields::writer::const_buffers_type,// header
         detail::chunk_size,                         // chunk-size
-        boost::asio::const_buffer,               // chunk-ext
+        net::const_buffer,                          // chunk-ext
         chunk_crlf,                                 // crlf
         typename writer::const_buffers_type,        // body
         chunk_crlf>>;                               // crlf
@@ -138,7 +137,7 @@ private:
 
     using cb5_t = buffers_suffix<buffers_cat_view<
         detail::chunk_size,                         // chunk-header
-        boost::asio::const_buffer,               // chunk-ext
+        net::const_buffer,                          // chunk-ext
         chunk_crlf,                                 // crlf
         typename writer::const_buffers_type,        // body
         chunk_crlf>>;                               // crlf
@@ -146,30 +145,30 @@ private:
 
     using cb6_t = buffers_suffix<buffers_cat_view<
         detail::chunk_size,                         // chunk-header
-        boost::asio::const_buffer,               // chunk-size
+        net::const_buffer,                          // chunk-size
         chunk_crlf,                                 // crlf
         typename writer::const_buffers_type,        // body
         chunk_crlf,                                 // crlf
-        boost::asio::const_buffer,               // chunk-final
-        boost::asio::const_buffer,               // trailers 
+        net::const_buffer,                          // chunk-final
+        net::const_buffer,                          // trailers 
         chunk_crlf>>;                               // crlf
     using pcb6_t = buffers_prefix_view<cb6_t const&>;
 
     using cb7_t = buffers_suffix<buffers_cat_view<
         typename Fields::writer::const_buffers_type,// header
         detail::chunk_size,                         // chunk-size
-        boost::asio::const_buffer,               // chunk-ext
+        net::const_buffer,                          // chunk-ext
         chunk_crlf,                                 // crlf
         typename writer::const_buffers_type,        // body
         chunk_crlf,                                 // crlf
-        boost::asio::const_buffer,               // chunk-final
-        boost::asio::const_buffer,               // trailers 
+        net::const_buffer,                          // chunk-final
+        net::const_buffer,                          // trailers 
         chunk_crlf>>;                               // crlf
     using pcb7_t = buffers_prefix_view<cb7_t const&>;
 
     using cb8_t = buffers_suffix<buffers_cat_view<
-        boost::asio::const_buffer,               // chunk-final
-        boost::asio::const_buffer,               // trailers 
+        net::const_buffer,                          // chunk-final
+        net::const_buffer,                          // trailers 
         chunk_crlf>>;                               // crlf
     using pcb8_t = buffers_prefix_view<cb8_t const&>;
 
@@ -187,7 +186,7 @@ private:
     int s_ = do_construct;
     bool split_ = false;
     bool header_done_ = false;
-    bool more_;
+    bool more_ = false;
 
 public:
     /// Constructor
@@ -295,7 +294,7 @@ public:
     /** Returns the next set of buffers in the serialization.
 
         This function will attempt to call the `visit` function
-        object with a @b ConstBufferSequence of unspecified type
+        object with a <em>ConstBufferSequence</em> of unspecified type
         representing the next set of buffers in the serialization
         of the message represented by this object. 
 
@@ -337,7 +336,7 @@ public:
     void
     consume(std::size_t n);
 
-    /** Provides low-level access to the associated @b BodyWriter
+    /** Provides low-level access to the associated <em>BodyWriter</em>
 
         This function provides access to the instance of the writer
         associated with the body and created by the serializer
@@ -366,6 +365,6 @@ using response_serializer = serializer<false, Body, Fields>;
 } // beast
 } // boost
 
-#include <boost/beast/http/impl/serializer.ipp>
+#include <boost/beast/http/impl/serializer.hpp>
 
 #endif

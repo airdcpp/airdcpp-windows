@@ -5,8 +5,8 @@
 // Copyright (c) 2009-2014 Mateusz Loskot, London, UK.
 // Copyright (c) 2013-2014 Adam Wulkiewicz, Lodz, Poland.
 
-// This file was modified by Oracle on 2013-2017.
-// Modifications copyright (c) 2013-2017, Oracle and/or its affiliates.
+// This file was modified by Oracle on 2013-2019.
+// Modifications copyright (c) 2013-2019, Oracle and/or its affiliates.
 
 // Contributed and/or modified by Vissarion Fysikopoulos, on behalf of Oracle
 // Contributed and/or modified by Menelaos Karavelas, on behalf of Oracle
@@ -39,6 +39,9 @@
 
 #include <boost/geometry/geometries/box.hpp>
 
+// Temporary, for envelope_segment_impl
+#include <boost/geometry/strategies/spherical/envelope_segment.hpp>
+
 namespace boost { namespace geometry
 {
 
@@ -50,21 +53,6 @@ namespace detail { namespace disjoint
 template <typename CS_Tag>
 struct disjoint_segment_box_sphere_or_spheroid
 {
-private:
-
-    template <typename CT>
-    static inline void swap(CT& lon1,
-                            CT& lat1,
-                            CT& lon2,
-                            CT& lat2)
-    {
-        std::swap(lon1, lon2);
-        std::swap(lat1, lat2);
-    }
-
-
-public:
-
     struct disjoint_info
     {
         enum type
@@ -82,26 +70,50 @@ public:
         operator T () const;
     };
 
-    template <typename Segment, typename Box, typename Strategy>
+    template
+    <
+        typename Segment, typename Box,
+        typename AzimuthStrategy,
+        typename NormalizeStrategy,
+        typename DisjointPointBoxStrategy,
+        typename DisjointBoxBoxStrategy
+    >
     static inline bool apply(Segment const& segment,
                              Box const& box,
-                             Strategy const& azimuth_strategy)
+                             AzimuthStrategy const& azimuth_strategy,
+                             NormalizeStrategy const& normalize_strategy,
+                             DisjointPointBoxStrategy const& disjoint_point_box_strategy,
+                             DisjointBoxBoxStrategy const& disjoint_box_box_strategy)
     {
         typedef typename point_type<Segment>::type segment_point;
         segment_point vertex;
-        return (apply(segment, box, azimuth_strategy, vertex) != disjoint_info::intersect);
+        return apply(segment, box, vertex,
+                     azimuth_strategy,
+                     normalize_strategy,
+                     disjoint_point_box_strategy,
+                     disjoint_box_box_strategy) != disjoint_info::intersect;
     }
 
-    template <typename Segment, typename Box, typename Strategy, typename P>
+    template
+    <
+        typename Segment, typename Box,
+        typename P,
+        typename AzimuthStrategy,
+        typename NormalizeStrategy,
+        typename DisjointPointBoxStrategy,
+        typename DisjointBoxBoxStrategy
+    >
     static inline disjoint_info apply(Segment const& segment,
                                       Box const& box,
-                                      Strategy const& azimuth_strategy,
-                                      P& vertex)
+                                      P& vertex,
+                                      AzimuthStrategy const& azimuth_strategy,
+                                      NormalizeStrategy const& ,
+                                      DisjointPointBoxStrategy const& disjoint_point_box_strategy,
+                                      DisjointBoxBoxStrategy const& disjoint_box_box_strategy)
     {
         assert_dimension_equal<Segment, Box>();
 
         typedef typename point_type<Segment>::type segment_point_type;
-        typedef typename cs_tag<Segment>::type segment_cs_type;
 
         segment_point_type p0, p1;
         geometry::detail::assign_point_from_index<0>(segment, p0);
@@ -113,7 +125,8 @@ public:
         // Simplest cases first
 
         // Case 1: if box contains one of segment's endpoints then they are not disjoint
-        if (! disjoint_point_box(p0, box) || ! disjoint_point_box(p1, box))
+        if ( ! disjoint_point_box(p0, box, disjoint_point_box_strategy)
+          || ! disjoint_point_box(p1, box, disjoint_point_box_strategy) )
         {
             return disjoint_info::intersect;
         }
@@ -122,10 +135,10 @@ public:
 
         typedef typename coordinate_type<segment_point_type>::type CT;
 
-        segment_point_type p0_normalized =
-                geometry::detail::return_normalized<segment_point_type>(p0);
-        segment_point_type p1_normalized =
-                geometry::detail::return_normalized<segment_point_type>(p1);
+        segment_point_type p0_normalized;
+        NormalizeStrategy::apply(p0, p0_normalized);
+        segment_point_type p1_normalized;
+        NormalizeStrategy::apply(p1, p1_normalized);
 
         CT lon1 = geometry::get_as_radian<0>(p0_normalized);
         CT lat1 = geometry::get_as_radian<1>(p0_normalized);
@@ -134,38 +147,35 @@ public:
 
         if (lon1 > lon2)
         {
-            swap(lon1, lat1, lon2, lat2);
+            std::swap(lon1, lon2);
+            std::swap(lat1, lat2);
         }
-
-        //Compute alp1 outside envelope and pass it to envelope_segment_impl
-        //in order for it to be used later in the algorithm
-        CT alp1;
-
-        azimuth_strategy.apply(lon1, lat1, lon2, lat2, alp1);
 
         geometry::model::box<segment_point_type> box_seg;
 
-        geometry::detail::envelope::envelope_segment_impl<segment_cs_type>
-                ::template apply<geometry::radian>(lon1, lat1,
-                                                   lon2, lat2,
-                                                   box_seg,
-                                                   azimuth_strategy,
-                                                   alp1);
+        strategy::envelope::detail::envelope_segment_impl
+            <
+                CS_Tag
+            >::template apply<geometry::radian>(lon1, lat1,
+                                                lon2, lat2,
+                                                box_seg,
+                                                azimuth_strategy);
 
-        if (disjoint_box_box(box, box_seg))
+        if (disjoint_box_box(box, box_seg, disjoint_box_box_strategy))
         {
             return disjoint_return_value;
         }
 
         // Case 3: test intersection by comparing angles
 
-        CT a_b0, a_b1, a_b2, a_b3;
+        CT alp1, a_b0, a_b1, a_b2, a_b3;
 
         CT b_lon_min = geometry::get_as_radian<geometry::min_corner, 0>(box);
         CT b_lat_min = geometry::get_as_radian<geometry::min_corner, 1>(box);
         CT b_lon_max = geometry::get_as_radian<geometry::max_corner, 0>(box);
         CT b_lat_max = geometry::get_as_radian<geometry::max_corner, 1>(box);
 
+        azimuth_strategy.apply(lon1, lat1, lon2, lat2, alp1);
         azimuth_strategy.apply(lon1, lat1, b_lon_min, b_lat_min, a_b0);
         azimuth_strategy.apply(lon1, lat1, b_lon_max, b_lat_min, a_b1);
         azimuth_strategy.apply(lon1, lat1, b_lon_min, b_lat_max, a_b2);

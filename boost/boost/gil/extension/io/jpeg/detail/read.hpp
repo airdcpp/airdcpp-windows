@@ -15,6 +15,7 @@
 #include <boost/gil/io/base.hpp>
 #include <boost/gil/io/conversion_policies.hpp>
 #include <boost/gil/io/device.hpp>
+#include <boost/gil/io/dynamic_io_new.hpp>
 #include <boost/gil/io/reader_base.hpp>
 #include <boost/gil/io/typedefs.hpp>
 
@@ -48,16 +49,12 @@ class reader< Device
 {
 private:
 
-    typedef reader< Device
-                  , jpeg_tag
-                  , ConversionPolicy
-                  > this_t;
-
-    typedef typename ConversionPolicy::color_converter_type cc_t;
+    using this_t = reader<Device, jpeg_tag, ConversionPolicy>;
+    using cc_t = typename ConversionPolicy::color_converter_type;
 
 public:
 
-    typedef reader_backend< Device, jpeg_tag > backend_t;
+    using backend_t = reader_backend<Device, jpeg_tag>;
 
 public:
 
@@ -102,9 +99,11 @@ public:
 
         this->get()->dct_method = this->_settings._dct_method;
 
-        typedef typename is_same< ConversionPolicy
-                                , detail::read_and_no_convert
-                                >::type is_read_and_convert_t;
+        using is_read_and_convert_t = typename is_same
+            <
+                ConversionPolicy,
+                detail::read_and_no_convert
+            >::type;
 
         io_error_if( !detail::is_allowed< View >( this->_info
                                                 , is_read_and_convert_t()
@@ -161,7 +160,7 @@ private:
             >
     void read_rows( const View& view )
     {
-        typedef std::vector<ImagePixel> buffer_t;
+        using buffer_t = std::vector<ImagePixel>;
         buffer_t buffer( this->_info._width );
 
         // In case of an error we'll jump back to here and fire an exception.
@@ -264,10 +263,7 @@ class dynamic_image_reader< Device
                    , detail::read_and_no_convert
                    >
 {
-    typedef reader< Device
-                  , jpeg_tag
-                  , detail::read_and_no_convert
-                  > parent_t;
+    using parent_t = reader<Device, jpeg_tag, detail::read_and_no_convert>;
 
 public:
 

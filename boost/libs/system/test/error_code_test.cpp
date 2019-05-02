@@ -197,7 +197,8 @@ int main( int, char ** )
 #if defined(BOOST_WINDOWS_API)
   // Borland appends newline, so just check text
   BOOST_TEST( ec.message().substr(0,13) == "Unknown error" );
-  BOOST_TEST( ec_0_system.message().substr(0,36) == "The operation completed successfully" );
+  // Fails when the language isn't US English
+  // BOOST_TEST( ec_0_system.message().substr(0,36) == "The operation completed successfully" );
 #elif  defined(linux) || defined(__linux) || defined(__linux__)
   // Linux appends value to message as unsigned, so it varies with # of bits
   BOOST_TEST( ec.message().substr(0,13) == "Unknown error" );

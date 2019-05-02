@@ -8,8 +8,7 @@
 #ifndef BOOST_GIL_EXTENSION_DYNAMIC_IMAGE_APPLY_OPERATION_HPP
 #define BOOST_GIL_EXTENSION_DYNAMIC_IMAGE_APPLY_OPERATION_HPP
 
-#include <boost/gil/extension/dynamic_image/apply_operation_base.hpp>
-#include <boost/gil/extension/dynamic_image/variant.hpp>
+#include <boost/variant/apply_visitor.hpp>
 
 #ifdef BOOST_GIL_DOXYGEN_ONLY
 #undef BOOST_GIL_REDUCE_CODE_BLOAT
@@ -27,23 +26,42 @@ namespace boost { namespace gil {
 
 /// \ingroup Variant
 /// \brief Invokes a generic mutable operation (represented as a unary function object) on a variant
-template <typename Types, typename UnaryOp> BOOST_FORCEINLINE
-typename UnaryOp::result_type apply_operation(variant<Types>& arg, UnaryOp op) {
-    return apply_operation_base<Types>(arg._bits, arg._index ,op);
+template <typename Types, typename UnaryOp>
+BOOST_FORCEINLINE
+auto apply_operation(variant<Types>& arg, UnaryOp op)
+#if defined(BOOST_NO_CXX14_DECLTYPE_AUTO) || defined(BOOST_NO_CXX11_DECLTYPE_N3276)
+    -> typename UnaryOp::result_type
+#endif
+{
+    return apply_visitor(op, arg);
 }
 
 /// \ingroup Variant
 /// \brief Invokes a generic constant operation (represented as a unary function object) on a variant
-template <typename Types, typename UnaryOp> BOOST_FORCEINLINE
-typename UnaryOp::result_type apply_operation(const variant<Types>& arg, UnaryOp op) {
-    return apply_operation_basec<Types>(arg._bits, arg._index ,op);
+template <typename Types, typename UnaryOp>
+BOOST_FORCEINLINE
+auto apply_operation(variant<Types> const& arg, UnaryOp op)
+#if defined(BOOST_NO_CXX14_DECLTYPE_AUTO) || defined(BOOST_NO_CXX11_DECLTYPE_N3276)
+    -> typename UnaryOp::result_type
+#endif
+{
+    return apply_visitor(op, arg);
 }
 
 /// \ingroup Variant
 /// \brief Invokes a generic constant operation (represented as a binary function object) on two variants
-template <typename Types1, typename Types2, typename BinaryOp> BOOST_FORCEINLINE
-typename BinaryOp::result_type apply_operation(const variant<Types1>& arg1, const variant<Types2>& arg2, BinaryOp op) {    
-    return apply_operation_base<Types1,Types2>(arg1._bits, arg1._index, arg2._bits, arg2._index, op);
+template <typename Types1, typename Types2, typename BinaryOp>
+BOOST_FORCEINLINE
+auto apply_operation(
+    variant<Types1> const& arg1,
+    variant<Types2> const& arg2,
+    BinaryOp op)
+#if defined(BOOST_NO_CXX14_DECLTYPE_AUTO) || defined(BOOST_NO_CXX11_DECLTYPE_N3276)
+    -> typename BinaryOp::result_type
+#endif
+{
+    return apply_visitor(
+        op, arg1, arg2);
 }
 
 }}  // namespace boost::gil

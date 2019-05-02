@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2015-2016 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2015-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -9,6 +9,10 @@
 
 #ifndef BOOST_BEAST_CORE_IMPL_FILE_WIN32_IPP
 #define BOOST_BEAST_CORE_IMPL_FILE_WIN32_IPP
+
+#include <boost/beast/core/file_win32.hpp>
+
+#if BOOST_BEAST_USE_WIN32_FILE
 
 #include <boost/core/exchange.hpp>
 #include <boost/winapi/access_rights.hpp>
@@ -25,7 +29,7 @@ namespace detail {
 
 // VFALCO Can't seem to get boost/detail/winapi to work with
 //        this so use the non-Ex version for now.
-inline
+BOOST_BEAST_DECL
 boost::winapi::BOOL_
 set_file_pointer_ex(
     boost::winapi::HANDLE_ hFile,
@@ -51,7 +55,6 @@ set_file_pointer_ex(
 
 } // detail
 
-inline
 file_win32::
 ~file_win32()
 {
@@ -59,14 +62,13 @@ file_win32::
         boost::winapi::CloseHandle(h_);
 }
 
-inline
 file_win32::
 file_win32(file_win32&& other)
-    : h_(boost::exchange(other.h_, boost::winapi::INVALID_HANDLE_VALUE_))
+    : h_(boost::exchange(other.h_,
+        boost::winapi::INVALID_HANDLE_VALUE_))
 {
 }
 
-inline
 file_win32&
 file_win32::
 operator=(file_win32&& other)
@@ -80,7 +82,6 @@ operator=(file_win32&& other)
     return *this;
 }
 
-inline
 void
 file_win32::
 native_handle(native_handle_type h)
@@ -90,7 +91,6 @@ native_handle(native_handle_type h)
     h_ = h;
 }
 
-inline
 void
 file_win32::
 close(error_code& ec)
@@ -101,16 +101,15 @@ close(error_code& ec)
             ec.assign(boost::winapi::GetLastError(),
                 system_category());
         else
-            ec.assign(0, ec.category());
+            ec = {};
         h_ = boost::winapi::INVALID_HANDLE_VALUE_;
     }
     else
     {
-        ec.assign(0, ec.category());
+        ec = {};
     }
 }
 
-inline
 void
 file_win32::
 open(char const* path, file_mode mode, error_code& ec)
@@ -180,13 +179,6 @@ open(char const* path, file_mode mode, error_code& ec)
         flags_and_attributes = 0x08000000; // FILE_FLAG_SEQUENTIAL_SCAN
         break;
 
-    case file_mode::append_new:     
-        desired_access = boost::winapi::GENERIC_READ_ |
-                         boost::winapi::GENERIC_WRITE_;
-        creation_disposition = boost::winapi::CREATE_NEW_;
-        flags_and_attributes = 0x08000000; // FILE_FLAG_SEQUENTIAL_SCAN
-        break;
-
     case file_mode::append_existing:
         desired_access = boost::winapi::GENERIC_READ_ |
                          boost::winapi::GENERIC_WRITE_;
@@ -206,17 +198,16 @@ open(char const* path, file_mode mode, error_code& ec)
         ec.assign(boost::winapi::GetLastError(),
             system_category());
     else
-        ec.assign(0, ec.category());
+        ec = {};
 }
 
-inline
 std::uint64_t
 file_win32::
 size(error_code& ec) const
 {
     if(h_ == boost::winapi::INVALID_HANDLE_VALUE_)
     {
-        ec = make_error_code(errc::invalid_argument);
+        ec = make_error_code(errc::bad_file_descriptor);
         return 0;
     }
     boost::winapi::LARGE_INTEGER_ fileSize;
@@ -226,18 +217,17 @@ size(error_code& ec) const
             system_category());
         return 0;
     }
-    ec.assign(0, ec.category());
+    ec = {};
     return fileSize.QuadPart;
 }
 
-inline
 std::uint64_t
 file_win32::
 pos(error_code& ec)
 {
     if(h_ == boost::winapi::INVALID_HANDLE_VALUE_)
     {
-        ec = make_error_code(errc::invalid_argument);
+        ec = make_error_code(errc::bad_file_descriptor);
         return 0;
     }
     boost::winapi::LARGE_INTEGER_ in;
@@ -250,18 +240,17 @@ pos(error_code& ec)
             system_category());
         return 0;
     }
-    ec.assign(0, ec.category());
+    ec = {};
     return out.QuadPart;
 }
 
-inline
 void
 file_win32::
 seek(std::uint64_t offset, error_code& ec)
 {
     if(h_ == boost::winapi::INVALID_HANDLE_VALUE_)
     {
-        ec = make_error_code(errc::invalid_argument);
+        ec = make_error_code(errc::bad_file_descriptor);
         return;
     }
     boost::winapi::LARGE_INTEGER_ in;
@@ -273,17 +262,16 @@ seek(std::uint64_t offset, error_code& ec)
             system_category());
         return;
     }
-    ec.assign(0, ec.category());
+    ec = {};
 }
 
-inline
 std::size_t
 file_win32::
 read(void* buffer, std::size_t n, error_code& ec)
 {
     if(h_ == boost::winapi::INVALID_HANDLE_VALUE_)
     {
-        ec = make_error_code(errc::invalid_argument);
+        ec = make_error_code(errc::bad_file_descriptor);
         return 0;
     }
     std::size_t nread = 0;
@@ -304,7 +292,7 @@ read(void* buffer, std::size_t n, error_code& ec)
             if(dwError != boost::winapi::ERROR_HANDLE_EOF_)
                 ec.assign(dwError, system_category());
             else
-                ec.assign(0, ec.category());
+                ec = {};
             return nread;
         }
         if(bytesRead == 0)
@@ -313,18 +301,17 @@ read(void* buffer, std::size_t n, error_code& ec)
         nread += bytesRead;
         buffer = static_cast<char*>(buffer) + bytesRead;
     }
-    ec.assign(0, ec.category());
+    ec = {};
     return nread;
 }
 
-inline
 std::size_t
 file_win32::
 write(void const* buffer, std::size_t n, error_code& ec)
 {
     if(h_ == boost::winapi::INVALID_HANDLE_VALUE_)
     {
-        ec = make_error_code(errc::invalid_argument);
+        ec = make_error_code(errc::bad_file_descriptor);
         return 0;
     }
     std::size_t nwritten = 0;
@@ -345,7 +332,7 @@ write(void const* buffer, std::size_t n, error_code& ec)
             if(dwError != boost::winapi::ERROR_HANDLE_EOF_)
                 ec.assign(dwError, system_category());
             else
-                ec.assign(0, ec.category());
+                ec = {};
             return nwritten;
         }
         if(bytesWritten == 0)
@@ -354,11 +341,13 @@ write(void const* buffer, std::size_t n, error_code& ec)
         nwritten += bytesWritten;
         buffer = static_cast<char const*>(buffer) + bytesWritten;
     }
-    ec.assign(0, ec.category());
+    ec = {};
     return nwritten;
 }
 
 } // beast
 } // boost
+
+#endif
 
 #endif

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2016-2017 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2016-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -64,24 +64,24 @@ iequals(
     auto p1 = lhs.data();
     auto p2 = rhs.data();
     char a, b;
+    // fast loop
     while(n--)
     {
         a = *p1++;
         b = *p2++;
         if(a != b)
-        {
-            // slow loop
-            do
-            {
-                if(ascii_tolower(a) != ascii_tolower(b))
-                    return false;
-                a = *p1++;
-                b = *p2++;
-            }
-            while(n--);
-            return true;
-        }
+            goto slow;
     }
+    return true;
+slow:
+    do
+    {
+        if(ascii_tolower(a) != ascii_tolower(b))
+            return false;
+        a = *p1++;
+        b = *p2++;
+    }
+    while(n--);
     return true;
 }
 

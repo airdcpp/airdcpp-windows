@@ -21,9 +21,8 @@
 #include <boost/gil/io/scanline_read_iterator.hpp>
 #include <boost/gil/io/typedefs.hpp>
 
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
-
+#include <functional>
+#include <type_traits>
 #include <vector>
 
 namespace boost { namespace gil {
@@ -41,11 +40,10 @@ class scanline_reader< Device
 {
 public:
 
-    typedef pnm_tag tag_t;
-    typedef reader_backend < Device, tag_t > backend_t;
-    typedef scanline_reader< Device, tag_t > this_t;
-    typedef scanline_read_iterator< this_t > iterator_t;
-
+    using tag_t = pnm_tag;
+    using backend_t = reader_backend<Device, tag_t>;
+    using this_t = scanline_reader<Device, tag_t>;
+    using iterator_t = scanline_read_iterator<this_t>;
 
 public:
     scanline_reader( Device&                                device
@@ -87,8 +85,8 @@ private:
             {
                 this->_scanline_length = this->_info._width;
 
-                _read_function = boost::mem_fn( &this_t::read_text_row );
-                _skip_function = boost::mem_fn( &this_t::skip_text_row );
+                _read_function = std::mem_fn(&this_t::read_text_row);
+                _skip_function = std::mem_fn(&this_t::skip_text_row);
 
                 break;
             }
@@ -97,8 +95,8 @@ private:
             {
                 this->_scanline_length = this->_info._width * num_channels< rgb8_view_t >::value;
 
-                _read_function = boost::mem_fn( &this_t::read_text_row );
-                _skip_function = boost::mem_fn( &this_t::skip_text_row );
+                _read_function = std::mem_fn(&this_t::read_text_row);
+                _skip_function = std::mem_fn(&this_t::skip_text_row);
 
                 break;
             }
@@ -109,8 +107,8 @@ private:
                 //gray1_image_t
                 this->_scanline_length = ( this->_info._width + 7 ) >> 3;
 
-                _read_function = boost::mem_fn( &this_t::read_binary_bit_row );
-                _skip_function = boost::mem_fn( &this_t::skip_binary_row     );
+                _read_function = std::mem_fn(&this_t::read_binary_bit_row);
+                _skip_function = std::mem_fn(&this_t::skip_binary_row);
 
                 break;
             }
@@ -120,8 +118,8 @@ private:
                 // gray8_image_t
                 this->_scanline_length = this->_info._width;
 
-                _read_function = boost::mem_fn( &this_t::read_binary_byte_row );
-                _skip_function = boost::mem_fn( &this_t::skip_binary_row      );
+                _read_function = std::mem_fn(&this_t::read_binary_byte_row);
+                _skip_function = std::mem_fn(&this_t::skip_binary_row);
 
                 break;
             }
@@ -131,8 +129,8 @@ private:
                 // rgb8_image_t
                 this->_scanline_length = this->_info._width * num_channels< rgb8_view_t >::value;
 
-                _read_function = boost::mem_fn( &this_t::read_binary_byte_row );
-                _skip_function = boost::mem_fn( &this_t::skip_binary_row      );
+                _read_function = std::mem_fn(&this_t::read_binary_byte_row);
+                _skip_function = std::mem_fn(&this_t::skip_binary_row);
 
                 break;
             }
@@ -234,11 +232,11 @@ private:
 
     // For bit_aligned images we need to negate all bytes in the row_buffer
     // to make sure that 0 is black and 255 is white.
-    detail::negate_bits    < std::vector< byte_t >, mpl::true_ > _negate_bits;
-    detail::swap_half_bytes< std::vector< byte_t >, mpl::true_ > _swap_half_bytes;
+    detail::negate_bits<std::vector<byte_t>, std::true_type> _negate_bits;
+    detail::swap_half_bytes<std::vector<byte_t>, std::true_type> _swap_half_bytes;
 
-    boost::function< void ( this_t*, byte_t* ) > _read_function;
-    boost::function< void ( this_t* )          > _skip_function;
+    std::function<void(this_t*, byte_t*)> _read_function;
+    std::function<void(this_t*)> _skip_function;
 };
 
 

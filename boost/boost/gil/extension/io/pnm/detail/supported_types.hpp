@@ -8,8 +8,11 @@
 #ifndef BOOST_GIL_EXTENSION_IO_PNM_DETAIL_SUPPORTED_TYPES_HPP
 #define BOOST_GIL_EXTENSION_IO_PNM_DETAIL_SUPPORTED_TYPES_HPP
 
+#include <boost/gil/extension/io/pnm/tags.hpp>
+
 #include <boost/gil/channel.hpp>
 #include <boost/gil/color_base.hpp>
+#include <boost/gil/io/base.hpp>
 
 #include <boost/mpl/not.hpp>
 #include <boost/type_traits/is_same.hpp>
@@ -111,9 +114,11 @@ struct is_read_supported< Pixel
                                           >::is_supported
                 >
 {
-    typedef detail::pnm_read_support< typename channel_type    < Pixel >::type
-                                    , typename color_space_type< Pixel >::type
-                                    > parent_t;
+    using parent_t = detail::pnm_read_support
+        <
+            typename channel_type<Pixel>::type,
+            typename color_space_type<Pixel>::type
+        >;
 
     static const pnm_image_type::type _asc_type = parent_t::_asc_type;
     static const pnm_image_type::type _bin_type = parent_t::_bin_type;

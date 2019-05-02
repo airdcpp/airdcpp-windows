@@ -8,16 +8,17 @@
 #ifndef BOOST_GIL_EXTENSION_IO_TIFF_DETAIL_DEVICE_HPP
 #define BOOST_GIL_EXTENSION_IO_TIFF_DETAIL_DEVICE_HPP
 
+#include <boost/gil/extension/io/tiff/tags.hpp>
 #include <boost/gil/extension/io/tiff/detail/log.hpp>
 
 #include <boost/gil/io/base.hpp>
 #include <boost/gil/io/device.hpp>
 
 #include <boost/mpl/size.hpp>
-#include <boost/utility/enable_if.hpp>
 
 #include <algorithm>
 #include <memory>
+#include <sstream>
 
 // taken from jpegxx - https://bitbucket.org/edd/jpegxx/src/ea2492a1a4a6/src/ijg_headers.hpp
 #ifndef BOOST_GIL_EXTENSION_IO_TIFF_C_LIB_COMPILED_AS_CPLUSPLUS
@@ -346,7 +347,7 @@ public:
     {
         TIFF* tiff;
 
-        io_error_if( ( tiff = TIFFOpen( file_name.c_str(), "r" )) == NULL
+        io_error_if( ( tiff = TIFFOpen( file_name.c_str(), "r" )) == nullptr
                    , "file_stream_device: failed to open file" );
 
         _tiff_file = tiff_file_t( tiff, TIFFClose );
@@ -356,7 +357,7 @@ public:
     {
         TIFF* tiff;
 
-        io_error_if( ( tiff = TIFFOpen( file_name.c_str(), "w" )) == NULL
+        io_error_if( ( tiff = TIFFOpen( file_name.c_str(), "w" )) == nullptr
                    , "file_stream_device: failed to open file" );
 
         _tiff_file = tiff_file_t( tiff, TIFFClose );
@@ -383,7 +384,7 @@ public:
         io_error_if( ( tiff = TIFFStreamOpen( ""
                                             , &_out
                                             )
-                      ) == NULL
+                      ) == nullptr
                    , "ostream_device: failed to stream"
                    );
 
@@ -414,7 +415,7 @@ public:
         io_error_if( ( tiff = TIFFStreamOpen( ""
                                             , &_in
                                             )
-                     ) == NULL
+                     ) == nullptr
                    , "istream_device: failed to stream"
                    );
 
@@ -441,7 +442,7 @@ struct is_adaptable_input_device< FormatTag
                                 >
     : mpl::true_
 {
-    typedef file_stream_device< FormatTag > device_type;
+    using device_type = file_stream_device<FormatTag>;
 };
 
 template< typename FormatTag >
@@ -451,7 +452,7 @@ struct is_adaptable_output_device< FormatTag
                                  >
     : mpl::true_
 {
-    typedef file_stream_device< FormatTag > device_type;
+    using device_type = file_stream_device<FormatTag>;
 };
 
 

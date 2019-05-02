@@ -1,11 +1,6 @@
 #ifndef BOOST_NUMERIC_SAFE_BASE_HPP
 #define BOOST_NUMERIC_SAFE_BASE_HPP
 
-// MS compatible compilers support #pragma once
-#if defined(_MSC_VER) && (_MSC_VER >= 1020)
-# pragma once
-#endif
-
 //  Copyright (c) 2012 Robert Ramey
 //
 // Distributed under the Boost Software License, Version 1.0. (See
@@ -14,10 +9,7 @@
 
 #include <limits>
 #include <type_traits> // is_integral, enable_if, conditional
-
-#include <boost/mpl/eval_if.hpp>
-#include <boost/mpl/identity.hpp>
-
+#include <boost/config.hpp> // BOOST_CLANG
 #include "concept/exception_policy.hpp"
 #include "concept/promotion_policy.hpp"
 
@@ -106,6 +98,12 @@ template<
 >
 class safe_literal_impl;
 
+// works for both GCC and clang
+#if BOOST_CLANG==1
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmismatched-tags"
+#endif
+
 /////////////////////////////////////////////////////////////////
 // Main implementation
 
@@ -183,25 +181,35 @@ public:
 
     struct skip_validation{};
 
-    constexpr explicit safe_base(const Stored & rhs, skip_validation) :
-        m_t(rhs)
-    {}
+    constexpr explicit safe_base(const Stored & rhs, skip_validation);
 
-    // default constructor
-    /*
-    constexpr explicit safe_base() {
-        // this permits creating of invalid instances.  This is inline
-        // with C++ built-in but violates the premises of the whole library
-        // choice are:
-        // do nothing - violates premise of he library that all safe objects
-        // are valid
-        // initialize to valid value - violates C++ behavior of types.
-        // add "initialized" flag.  Preserves fixes the above, but doubles
-        // "overhead"
-        // still pending on this.
-    }
-    */
-    constexpr safe_base() = default;
+    constexpr safe_base();
+
+    // construct an instance of a safe type
+    // from an instance of a convertible underlying type.
+
+    template<class T>
+    constexpr /*explicit*/ safe_base(
+        const T & t,
+        typename std::enable_if<
+            is_safe<T>::value,
+            bool
+        >::type = true
+    );
+
+    template<class T>
+    constexpr /*explicit*/ safe_base(
+        const T & t,
+        typename std::enable_if<
+            std::is_integral<T>::value,
+            bool
+        >::type = true
+    );
+
+    template<class T, T value>
+    constexpr /*explicit*/ safe_base(
+        const std::integral_constant<T, value> &
+    );
 
     // note: Rule of Five. Supply all or none of the following
     // a) user-defined destructor
@@ -214,31 +222,6 @@ public:
     constexpr safe_base(safe_base &&) = default;
     // e) move assignment operator
     constexpr safe_base & operator=(safe_base &&) = default;
-
-    // construct an instance of a safe type
-    // from an instance of a convertible underlying type.
-
-    template<class T>
-    constexpr /*explicit*/ safe_base(
-        const T & t,
-        typename std::enable_if<
-            is_safe<T>::value,
-            bool
-        >::type = true
-    ) :
-        m_t(validated_cast(t))
-    {}
-
-    template<class T>
-    constexpr /*explicit*/ safe_base(
-        const T & t,
-        typename std::enable_if<
-            std::is_integral<T>::value,
-            bool
-        >::type = true
-    ) :
-        m_t(validated_cast(t))
-    {}
 
     /////////////////////////////////////////////////////////////////
     // casting operators for intrinsic integers
@@ -358,5 +341,9 @@ public:
 };
 
 } // std
+
+#if BOOST_CLANG==1
+#pragma GCC diagnostic pop
+#endif
 
 #endif // BOOST_NUMERIC_SAFE_BASE_HPP

@@ -39,17 +39,17 @@ template< typename Pixel, bool IsPlanar = false, typename Alloc=std::allocator<u
 class image {
 public:
 #if defined(BOOST_NO_CXX11_ALLOCATOR)
-    typedef typename Alloc::template rebind<unsigned char>::other allocator_type;
+    using allocator_type = typename Alloc::template rebind<unsigned char>::other;
 #else
-    typedef typename std::allocator_traits<Alloc>::template rebind_alloc<unsigned char> allocator_type;
+    using allocator_type = typename std::allocator_traits<Alloc>::template rebind_alloc<unsigned char>;
 #endif
-    typedef typename view_type_from_pixel<Pixel, IsPlanar>::type view_t;
-    typedef typename view_t::const_t                 const_view_t;
-    typedef typename view_t::point_t                 point_t;
-    typedef typename view_t::coord_t                 coord_t;
-    typedef typename view_t::value_type              value_type;
-    typedef coord_t                                  x_coord_t;
-    typedef coord_t                                  y_coord_t;
+    using view_t = typename view_type_from_pixel<Pixel, IsPlanar>::type;
+    using const_view_t = typename view_t::const_t;
+    using point_t = typename view_t::point_t;
+    using coord_t = typename view_t::coord_t;
+    using value_type = typename view_t::value_type;
+    using x_coord_t = coord_t;
+    using y_coord_t = coord_t;
 
     const point_t&          dimensions()            const { return _view.dimensions(); }
     x_coord_t               width()                 const { return _view.width(); }
@@ -57,19 +57,19 @@ public:
 
     explicit image(std::size_t alignment=0,
                    const Alloc alloc_in = Alloc()) :
-        _memory(0), _align_in_bytes(alignment), _alloc(alloc_in), _allocated_bytes( 0 ) {}
+        _memory(nullptr), _align_in_bytes(alignment), _alloc(alloc_in), _allocated_bytes( 0 ) {}
 
     // Create with dimensions and optional initial value and alignment
     image(const point_t& dimensions,
           std::size_t alignment=0,
-          const Alloc alloc_in = Alloc()) : _memory(0), _align_in_bytes(alignment), _alloc(alloc_in)
+          const Alloc alloc_in = Alloc()) : _memory(nullptr), _align_in_bytes(alignment), _alloc(alloc_in)
                                           , _allocated_bytes( 0 ) {
         allocate_and_default_construct(dimensions);
     }
 
     image(x_coord_t width, y_coord_t height,
           std::size_t alignment=0,
-          const Alloc alloc_in = Alloc()) : _memory(0), _align_in_bytes(alignment), _alloc(alloc_in)
+          const Alloc alloc_in = Alloc()) : _memory(nullptr), _align_in_bytes(alignment), _alloc(alloc_in)
                                           , _allocated_bytes( 0 ) {
         allocate_and_default_construct(point_t(width,height));
     }
@@ -77,25 +77,25 @@ public:
     image(const point_t& dimensions,
           const Pixel& p_in,
           std::size_t alignment,
-          const Alloc alloc_in = Alloc())  : _memory(0), _align_in_bytes(alignment), _alloc(alloc_in) 
+          const Alloc alloc_in = Alloc())  : _memory(nullptr), _align_in_bytes(alignment), _alloc(alloc_in)
                                            , _allocated_bytes( 0 ) {
         allocate_and_fill(dimensions, p_in);
     }
     image(x_coord_t width, y_coord_t height,
           const Pixel& p_in,
           std::size_t alignment = 0,
-          const Alloc alloc_in = Alloc())  : _memory(0), _align_in_bytes(alignment), _alloc(alloc_in)
+          const Alloc alloc_in = Alloc())  : _memory(nullptr), _align_in_bytes(alignment), _alloc(alloc_in)
                                            , _allocated_bytes ( 0 ) {
         allocate_and_fill(point_t(width,height),p_in);
     }
 
-    image(const image& img) : _memory(0), _align_in_bytes(img._align_in_bytes), _alloc(img._alloc)
+    image(const image& img) : _memory(nullptr), _align_in_bytes(img._align_in_bytes), _alloc(img._alloc)
                             , _allocated_bytes( img._allocated_bytes ) {
         allocate_and_copy(img.dimensions(),img._view);
     }
 
     template <typename P2, bool IP2, typename Alloc2>
-    image(const image<P2,IP2,Alloc2>& img) : _memory(0), _align_in_bytes(img._align_in_bytes), _alloc(img._alloc)
+    image(const image<P2,IP2,Alloc2>& img) : _memory(nullptr), _align_in_bytes(img._align_in_bytes), _alloc(img._alloc)
                                            , _allocated_bytes( img._allocated_bytes ) {
        allocate_and_copy(img.dimensions(),img._view);
     }
@@ -211,7 +211,7 @@ public:
     // with Allocator
     void recreate(const point_t& dims, std::size_t alignment, const Alloc alloc_in )
     {
-        if(  dims            == _view.dimensions() 
+        if(  dims            == _view.dimensions()
           && _align_in_bytes == alignment
           && alloc_in        == _alloc
           )
@@ -245,7 +245,7 @@ public:
 
     void recreate(const point_t& dims, const Pixel& p_in, std::size_t alignment, const Alloc alloc_in )
     {
-        if(  dims            == _view.dimensions() 
+        if(  dims            == _view.dimensions()
           && _align_in_bytes == alignment
           && alloc_in        == _alloc
           )
@@ -335,12 +335,12 @@ private:
 
     std::size_t total_allocated_size_in_bytes(const point_t& dimensions) const {
 
-        typedef typename view_t::x_iterator x_iterator;
+        using x_iterator = typename view_t::x_iterator;
 
         // when value_type is a non-pixel, like int or float, num_channels< ... > doesn't work.
         const std::size_t _channels_in_image = mpl::eval_if< is_pixel< value_type >
                                                            , num_channels< view_t >
-                                                           , mpl::int_< 1 > 
+                                                           , mpl::int_< 1 >
 														   >::type::value;
 
         std::size_t size_in_units = is_planar_impl( get_row_size_in_memunits( dimensions.x ) * dimensions.y
@@ -398,7 +398,7 @@ private:
 
         unsigned char* tmp = ( _align_in_bytes > 0 ) ? (unsigned char*) align( (std::size_t) _memory
                                                                              ,_align_in_bytes
-                                                                             ) 
+                                                                             )
                                                      : _memory;
         typename view_t::x_iterator first;
 

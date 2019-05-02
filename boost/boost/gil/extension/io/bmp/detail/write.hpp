@@ -13,6 +13,7 @@
 
 #include <boost/gil/io/base.hpp>
 #include <boost/gil/io/device.hpp>
+#include <boost/gil/io/dynamic_io_new.hpp>
 
 #include <vector>
 
@@ -36,9 +37,9 @@ struct bmp_write_is_supported
 };
 
 template < int N > struct get_bgr_cs {};
-template <> struct get_bgr_cs< 1 > { typedef gray8_view_t type; };
-template <> struct get_bgr_cs< 3 > { typedef bgr8_view_t type;  };
-template <> struct get_bgr_cs< 4 > { typedef bgra8_view_t type; };
+template <> struct get_bgr_cs< 1 > { using type = gray8_view_t; };
+template <> struct get_bgr_cs< 3 > { using type = bgr8_view_t;  };
+template <> struct get_bgr_cs< 4 > { using type = bgra8_view_t; };
 
 } // namespace detail
 
@@ -71,15 +72,15 @@ public:
 
 private:
 
-    typedef writer_backend< Device, bmp_tag > backend_t;
+    using backend_t = writer_backend<Device, bmp_tag>;
 
     template< typename View >
     void write( const View& view )
     {
-        // typedef typename channel_type<
-        //             typename get_pixel_type< View >::type >::type channel_t;
+        // using channel_t = typename channel_type<
+        //             typename get_pixel_type<View>::type>::type;
 
-        // typedef typename color_space_type< View >::type color_space_t;
+        // using color_space_t = typename color_space_type<View>::type;
 
         // check if supported
 /*
@@ -181,9 +182,7 @@ class dynamic_image_writer< Device
                    , bmp_tag
                    >
 {
-    typedef writer< Device
-                  , bmp_tag
-                  > parent_t;
+    using parent_t = writer<Device, bmp_tag>;
 
 public:
 

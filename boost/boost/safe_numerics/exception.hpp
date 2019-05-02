@@ -1,11 +1,6 @@
 #ifndef BOOST_NUMERIC_EXCEPTION
 #define BOOST_NUMERIC_EXCEPTION
 
-// MS compatible compilers support #pragma once
-#if defined(_MSC_VER) && (_MSC_VER >= 1020)
-# pragma once
-#endif
-
 //  Copyright (c) 2012 Robert Ramey
 //
 // Distributed under the Boost Software License, Version 1.0. (See
@@ -47,7 +42,7 @@ enum class safe_numerics_error : std::uint8_t {
     negative_value_shift,       // negative value in shift operator
     negative_shift,             // shift a negative value
     shift_too_large,            // l/r shift exceeds variable size
-    uninitialized_value         // l/r shift exceeds variable size
+    uninitialized_value         // creating of uninitialized value
 };
 
 const std::uint8_t safe_numerics_casting_error_count =
@@ -63,7 +58,7 @@ namespace std {
     template <>
     struct is_error_code_enum<boost::safe_numerics::safe_numerics_error>
         : public true_type {};
-};
+} // std
 
 namespace boost {
 namespace safe_numerics {
@@ -100,10 +95,10 @@ public:
         }
         return ""; // suppress bogus warning
     }
-} safe_numerics_error_category ;
+} safe_numerics_error_category {};
 
 // constexpr - damn, can't use constexpr due to std::error_code
-std::error_code make_error_code(safe_numerics_error e){
+std::error_code make_error_code(const safe_numerics_error & e){
     return std::error_code(static_cast<int>(e), safe_numerics_error_category);
 }
 
@@ -126,7 +121,7 @@ namespace std {
     template <>
     struct is_error_condition_enum<boost::safe_numerics::safe_numerics_actions>
         : public true_type {};
-};
+} // std
 
 namespace boost {
 namespace safe_numerics {
@@ -172,14 +167,20 @@ public:
         // suppress bogus warning
         return false; 
     }
-} safe_numerics_actions_category ;
+} safe_numerics_actions_category {};
 
-std::error_condition make_error_condition(safe_numerics_error e) {
+// the following function is used to "finish" implementation of conversion
+// of safe_numerics_error to std::error_condition.  At least for now, this
+// isn't being used and defining here it can lead duplicate symbol errors
+// depending on the compiler.  So suppress it until further notice
+#if 0
+std::error_condition make_error_condition(const safe_numerics_error & e) {
     return std::error_condition(
         static_cast<int>(e),
         safe_numerics_error_category
     );
 }
+#endif
 
 } // safe_numerics
 } // boost

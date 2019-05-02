@@ -8,6 +8,7 @@
 #ifndef BOOST_GIL_EXTENSION_TOOLBOX_COLOR_SPACES_XYZ_HPP
 #define BOOST_GIL_EXTENSION_TOOLBOX_COLOR_SPACES_XYZ_HPP
 
+#include <boost/gil/color_convert.hpp>
 #include <boost/gil/typedefs.hpp>
 
 #include <boost/mpl/vector.hpp>
@@ -19,28 +20,30 @@ namespace boost{ namespace gil {
 namespace xyz_color_space
 {
 /// \brief x Color Component
-struct x_t {};    
+struct x_t {};
 /// \brief y Color Component
 struct y_t {};
 /// \brief z Color Component
-struct z_t {}; 
+struct z_t {};
 }
 /// \}
 
 /// \ingroup ColorSpaceModel
-typedef mpl::vector3< xyz_color_space::x_t
-                    , xyz_color_space::y_t
-                    , xyz_color_space::z_t
-                    > xyz_t;
+using xyz_t = mpl::vector3
+    <
+        xyz_color_space::x_t,
+        xyz_color_space::y_t,
+        xyz_color_space::z_t
+    >;
 
 /// \ingroup LayoutModel
-typedef layout<xyz_t> xyz_layout_t;
+using xyz_layout_t = layout<xyz_t>;
 
 GIL_DEFINE_ALL_TYPEDEFS(32f, float32_t, xyz)
 
 /// \ingroup ColorConvert
 /// \brief RGB to XYZ
-/// <a href="http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html">Link</a> 
+/// <a href="http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html">Link</a>
 /// \note rgb_t is assumed to be sRGB D65
 template <>
 struct default_color_converter_impl< rgb_t, xyz_t >

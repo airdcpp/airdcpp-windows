@@ -44,7 +44,7 @@ public:
 
   typedef Type value_type;
 
-  partial_std_allocator_wrapper(){};
+  partial_std_allocator_wrapper(){}
 
   template<typename Other>
   partial_std_allocator_wrapper(const partial_std_allocator_wrapper<Other>&){}
@@ -52,7 +52,7 @@ public:
   partial_std_allocator_wrapper(const std::allocator<Type>& x):
     std::allocator<Type>(x)
   {
-  };
+  }
 
 #if defined(BOOST_DINKUMWARE_STDLIB)
   /* Dinkumware guys didn't provide a means to call allocate() without

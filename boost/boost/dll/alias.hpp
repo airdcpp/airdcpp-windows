@@ -1,5 +1,5 @@
 // Copyright 2014 Renato Tegon Forti, Antony Polukhin.
-// Copyright 2015 Antony Polukhin.
+// Copyright 2015-2019 Antony Polukhin.
 //
 // Distributed under the Boost Software License, Version 1.0.
 // (See accompanying file LICENSE_1_0.txt
@@ -8,11 +8,15 @@
 #ifndef BOOST_DLL_ALIAS_HPP
 #define BOOST_DLL_ALIAS_HPP
 
-#include <boost/config.hpp>
+#include <boost/dll/config.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/predef/compiler.h>
 #include <boost/predef/os.h>
 #include <boost/dll/detail/aggressive_ptr_cast.hpp>
+
+#if BOOST_COMP_GNUC // MSVC does not have <stdint.h> and defines it in some other header, MinGW requires that header.
+#include <stdint.h> // intptr_t
+#endif
 
 #ifdef BOOST_HAS_PRAGMA_ONCE
 # pragma once
@@ -36,14 +40,14 @@ namespace boost { namespace dll {
 #define BOOST_DLL_FORCE_NO_WEAK_EXPORTS
 #endif
 
-#if BOOST_COMP_MSVC || (BOOST_COMP_INTEL && BOOST_OS_WINDOWS)
+#if BOOST_COMP_MSVC || ((BOOST_COMP_INTEL || BOOST_COMP_CLANG) && BOOST_OS_WINDOWS)
 
 #define BOOST_DLL_SELECTANY __declspec(selectany)
 
 #define BOOST_DLL_SECTION(SectionName, Permissions)                                             \
     BOOST_STATIC_ASSERT_MSG(                                                                    \
         sizeof(#SectionName) < 10,                                                              \
-        "Some platforms require section names to be at most 8 bytest"                           \
+        "Some platforms require section names to be at most 8 bytes"                            \
     );                                                                                          \
     __pragma(section(#SectionName, Permissions)) __declspec(allocate(#SectionName))             \
     /**/
@@ -82,7 +86,7 @@ namespace boost { namespace dll {
 #define BOOST_DLL_SECTION(SectionName, Permissions)                                             \
     BOOST_STATIC_ASSERT_MSG(                                                                    \
         sizeof(#SectionName) < 10,                                                              \
-        "Some platforms require section names to be at most 8 bytest"                           \
+        "Some platforms require section names to be at most 8 bytes"                            \
     );                                                                                          \
     __attribute__ ((section (#SectionName)))                                                    \
     /**/
@@ -91,7 +95,7 @@ namespace boost { namespace dll {
 #define BOOST_DLL_SECTION(SectionName, Permissions)                                             \
     BOOST_STATIC_ASSERT_MSG(                                                                    \
         sizeof(#SectionName) < 10,                                                              \
-        "Some platforms require section names to be at most 8 bytest"                           \
+        "Some platforms require section names to be at most 8 bytes"                            \
     );                                                                                          \
     __attribute__ ((section ( "__DATA," #SectionName)))                                         \
     /**/

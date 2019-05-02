@@ -62,7 +62,9 @@ const HANDLE_ INVALID_HANDLE_VALUE_ = (HANDLE_)(-1);
 
 BOOST_CONSTEXPR_OR_CONST DWORD_ duplicate_close_source = DUPLICATE_CLOSE_SOURCE_;
 BOOST_CONSTEXPR_OR_CONST DWORD_ duplicate_same_access = DUPLICATE_SAME_ACCESS_;
-const HANDLE_ invalid_handle_value = INVALID_HANDLE_VALUE_;
+// Note: The "unused" attribute here should not be necessary because the variable is a constant.
+//       However, MinGW gcc 5.3 spams warnings about this particular constant.
+const HANDLE_ invalid_handle_value BOOST_ATTRIBUTE_UNUSED = INVALID_HANDLE_VALUE_;
 
 }
 }

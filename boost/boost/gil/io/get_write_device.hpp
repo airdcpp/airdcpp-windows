@@ -12,52 +12,51 @@
 #include <boost/gil/io/path_spec.hpp>
 
 #include <boost/mpl/and.hpp>
-#include <boost/utility/enable_if.hpp>
+
+#include <type_traits>
 
 namespace boost { namespace gil {
 
-template< typename T
-        , typename FormatTag
-        , class Enable = void
-        >
+template <typename T, typename FormatTag, class Enable = void>
+struct get_write_device {};
+
+template <typename Device, typename FormatTag>
 struct get_write_device
-{};
-
-
-template< typename Device
-        , typename FormatTag
-        >
-struct get_write_device< Device
-                       , FormatTag
-                       , typename enable_if< mpl::and_< detail::is_adaptable_output_device< FormatTag
-                                                                                          , Device
-                                                                                          >
-                                                      , is_format_tag< FormatTag >
-                                                      >
-                                           >::type
-                       >
+<
+    Device,
+    FormatTag,
+    typename std::enable_if
+    <
+        mpl::and_
+        <
+            detail::is_adaptable_output_device<FormatTag, Device>,
+            is_format_tag<FormatTag>
+        >::value
+    >::type
+>
 {
-    typedef typename detail::is_adaptable_output_device< FormatTag
-                                                       , Device
-                                                       >::device_type type;
+    using type =
+        typename detail::is_adaptable_output_device<FormatTag, Device>::device_type;
 };
 
-
-template< typename String
-        , typename FormatTag
-        >
-struct get_write_device< String
-                       , FormatTag
-                       , typename enable_if< mpl::and_< detail::is_supported_path_spec< String >
-                                                      , is_format_tag< FormatTag >
-                                                      >
-                                           >::type
-                       >
+template <typename String, typename FormatTag>
+struct get_write_device
+<
+    String,
+    FormatTag,
+    typename std::enable_if
+    <
+        mpl::and_
+        <
+            detail::is_supported_path_spec<String>,
+            is_format_tag<FormatTag>
+        >::value
+    >::type
+>
 {
-    typedef detail::file_stream_device< FormatTag > type;
+    using type = detail::file_stream_device<FormatTag>;
 };
 
-} // namespace gil
-} // namespace boost
+}} // namespace boost::gil
 
 #endif

@@ -14,6 +14,7 @@
 #include <boost/winapi/access_rights.hpp>
 #include <boost/winapi/process.hpp>
 #include <boost/process/detail/windows/basic_pipe.hpp>
+#include <boost/asio/post.hpp>
 #include <boost/asio/windows/stream_handle.hpp>
 #include <atomic>
 #include <system_error>
@@ -99,12 +100,12 @@ public:
         if (_sink.is_open())
         {
             _sink.close();
-            _sink = handle_type(_sink.get_io_context());
+            _sink = handle_type(_sink.get_executor());
         }
         if (_source.is_open())
         {
             _source.close();
-            _source = handle_type(_source.get_io_context());
+            _source = handle_type(_source.get_executor());
         }
     }
     void close(boost::system::error_code & ec)
@@ -112,12 +113,12 @@ public:
         if (_sink.is_open())
         {
             _sink.close(ec);
-            _sink = handle_type(_sink.get_io_context());
+            _sink = handle_type(_sink.get_executor());
         }
         if (_source.is_open())
         {
             _source.close(ec);
-            _source = handle_type(_source.get_io_context());
+            _source = handle_type(_source.get_executor());
         }
     }
 
@@ -128,9 +129,9 @@ public:
     void async_close()
     {
         if (_sink.is_open())
-            _sink.get_io_context().  post([this]{_sink.close();});
+            boost::asio::post(_sink.get_executor(),   [this]{_sink.close();});
         if (_source.is_open())
-            _source.get_io_context().post([this]{_source.close();});
+            boost::asio::post(_source.get_executor(), [this]{_source.close();});
     }
 
     template<typename MutableBufferSequence>
@@ -189,13 +190,13 @@ public:
 
     handle_type source(::boost::asio::io_context& ios) &&
     {
-        ::boost::asio::windows::stream_handle stolen(ios, _source.native_handle());
+        ::boost::asio::windows::stream_handle stolen(ios.get_executor(), _source.native_handle());
         _source.assign(::boost::winapi::INVALID_HANDLE_VALUE_);
         return stolen;
     }
     handle_type sink  (::boost::asio::io_context& ios) &&
     {
-        ::boost::asio::windows::stream_handle stolen(ios, _sink.native_handle());
+        ::boost::asio::windows::stream_handle stolen(ios.get_executor(), _sink.native_handle());
         _sink.assign(::boost::winapi::INVALID_HANDLE_VALUE_);
         return stolen;
     }
@@ -214,7 +215,7 @@ public:
                  ::boost::winapi::DUPLICATE_SAME_ACCESS_))
             throw_last_error("Duplicate Pipe Failed");
 
-        return ::boost::asio::windows::stream_handle(ios, source);
+        return ::boost::asio::windows::stream_handle(ios.get_executor(), source);
     }
     handle_type sink  (::boost::asio::io_context& ios) const &
     {
@@ -230,15 +231,15 @@ public:
                  ::boost::winapi::DUPLICATE_SAME_ACCESS_))
             throw_last_error("Duplicate Pipe Failed");
 
-        return ::boost::asio::windows::stream_handle(ios, sink);
+        return ::boost::asio::windows::stream_handle(ios.get_executor(), sink);
     }
 };
 
 
 
 async_pipe::async_pipe(const async_pipe& p)  :
-    _source(const_cast<handle_type&>(p._source).get_io_context()),
-    _sink  (const_cast<handle_type&>(p._sink).get_io_context())
+    _source(const_cast<handle_type&>(p._source).get_executor()),
+    _sink  (const_cast<handle_type&>(p._sink).get_executor())
 {
     auto proc = ::boost::winapi::GetCurrentProcess();
 
@@ -337,8 +338,8 @@ async_pipe& async_pipe::operator=(const async_pipe & p)
         throw_last_error("Duplicate Pipe Failed");
 
     //so we also assign the io_context
-    _source = ::boost::asio::windows::stream_handle(source_in.get_io_context(), source);
-    _sink = ::boost::asio::windows::stream_handle(source_in.get_io_context(), sink);
+    _source = ::boost::asio::windows::stream_handle(source_in.get_executor(), source);
+    _sink   = ::boost::asio::windows::stream_handle(source_in.get_executor(), sink);
 
     return *this;
 }

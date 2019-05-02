@@ -1596,7 +1596,7 @@
 <header name="boost/interprocess/creation_tags.hpp">
 <namespace name="boost">
 <namespace name="interprocess">
-<struct name="create_only_t"><description><para>Tag to indicate that the resource must be only created </para></description></struct><struct name="open_only_t"><description><para>Tag to indicate that the resource must be only opened </para></description></struct><struct name="open_read_only_t"><description><para>Tag to indicate that the resource must be only opened for reading </para></description></struct><struct name="open_read_private_t"><description><para>Tag to indicate that the resource must be only opened privately for reading </para></description></struct><struct name="open_copy_on_write_t"><description><para>Tag to indicate that the resource must be only opened for reading </para></description></struct><struct name="open_or_create_t"><description><para>Tag to indicate that the resource must be created. If already created, it must be opened. </para></description></struct><data-member name="create_only" specifiers="static"><type>const <classname>create_only_t</classname></type><description><para>Value to indicate that the resource must be only created </para></description></data-member>
+<struct name="create_only_t"><description><para>Tag to indicate that the resource must be only created </para></description></struct><struct name="open_copy_on_write_t"><description><para>Tag to indicate that the resource must be only opened for reading </para></description></struct><struct name="open_only_t"><description><para>Tag to indicate that the resource must be only opened </para></description></struct><struct name="open_or_create_t"><description><para>Tag to indicate that the resource must be created. If already created, it must be opened. </para></description></struct><struct name="open_read_only_t"><description><para>Tag to indicate that the resource must be only opened for reading </para></description></struct><struct name="open_read_private_t"><description><para>Tag to indicate that the resource must be only opened privately for reading </para></description></struct><data-member name="create_only" specifiers="static"><type>const <classname>create_only_t</classname></type><description><para>Value to indicate that the resource must be only created </para></description></data-member>
 <data-member name="open_only" specifiers="static"><type>const <classname>open_only_t</classname></type><description><para>Value to indicate that the resource must be only opened </para></description></data-member>
 <data-member name="open_read_only" specifiers="static"><type>const <classname>open_read_only_t</classname></type><description><para>Value to indicate that the resource must be only opened for reading </para></description></data-member>
 <data-member name="open_or_create" specifiers="static"><type>const <classname>open_or_create_t</classname></type><description><para>Value to indicate that the resource must be created. If already created, it must be opened. </para></description></data-member>
@@ -1711,7 +1711,11 @@
 <header name="boost/interprocess/exceptions.hpp">
 <para>Describes exceptions thrown by interprocess classes </para><namespace name="boost">
 <namespace name="interprocess">
-<class name="interprocess_exception"><inherit access="public">exception</inherit><description><para>This class is the base class of all exceptions thrown by boost::interprocess </para></description><method-group name="public member functions">
+<class name="bad_alloc"><inherit access="public">boost::interprocess::interprocess_exception</inherit><description><para>This exception is thrown when a memory request can't be fulfilled. </para></description><method-group name="public member functions">
+<method name="what" cv="const noexcept" specifiers="virtual"><type>const char *</type></method>
+</method-group>
+<constructor/>
+</class><class name="interprocess_exception"><inherit access="public">exception</inherit><description><para>This class is the base class of all exceptions thrown by boost::interprocess </para></description><method-group name="public member functions">
 <method name="what" cv="const noexcept" specifiers="virtual"><type>const char *</type></method>
 <method name="get_native_error" cv="const"><type>native_error_t</type></method>
 <method name="get_error_code" cv="const"><type>error_code_t</type></method>
@@ -1720,10 +1724,6 @@
 <constructor><parameter name="err_info"><paramtype>const error_info &amp;</paramtype></parameter><parameter name="str"><paramtype>const char *</paramtype><default>0</default></parameter></constructor>
 <destructor/>
 </class><class name="lock_exception"><inherit access="public">boost::interprocess::interprocess_exception</inherit><description><para>This is the exception thrown by shared <classname alt="boost::interprocess::interprocess_mutex">interprocess_mutex</classname> family when a deadlock situation is detected or when using a <classname alt="boost::interprocess::interprocess_condition">interprocess_condition</classname> the <classname alt="boost::interprocess::interprocess_mutex">interprocess_mutex</classname> is not locked </para></description><method-group name="public member functions">
-<method name="what" cv="const noexcept" specifiers="virtual"><type>const char *</type></method>
-</method-group>
-<constructor/>
-</class><class name="bad_alloc"><inherit access="public">boost::interprocess::interprocess_exception</inherit><description><para>This exception is thrown when a memory request can't be fulfilled. </para></description><method-group name="public member functions">
 <method name="what" cv="const noexcept" specifiers="virtual"><type>const char *</type></method>
 </method-group>
 <constructor/>
@@ -2238,27 +2238,101 @@
 </header>
 <header name="boost/interprocess/interprocess_fwd.hpp">
 <para>This header file forward declares the basic interprocess types:<itemizedlist>
-<listitem><para><classname alt="boost::interprocess::offset_ptr">boost::interprocess::offset_ptr</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::permissions">boost::interprocess::permissions</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::mapped_region">boost::interprocess::mapped_region</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::file_mapping">boost::interprocess::file_mapping</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::shared_memory_object">boost::interprocess::shared_memory_object</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::windows_shared_memory">boost::interprocess::windows_shared_memory</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::xsi_shared_memory">boost::interprocess::xsi_shared_memory</classname>;</para></listitem></itemizedlist>
+<listitem><para><classname alt="boost::interprocess::offset_ptr">boost::interprocess::offset_ptr</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::permissions">boost::interprocess::permissions</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::mapped_region">boost::interprocess::mapped_region</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::file_mapping">boost::interprocess::file_mapping</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::shared_memory_object">boost::interprocess::shared_memory_object</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::windows_shared_memory">boost::interprocess::windows_shared_memory</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::xsi_shared_memory">boost::interprocess::xsi_shared_memory</classname>;</para>
+</listitem></itemizedlist>
 </para><para>The following synchronization mechanisms and locks:<itemizedlist>
-<listitem><para><classname alt="boost::interprocess::null_mutex">boost::interprocess::null_mutex</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::interprocess_mutex">boost::interprocess::interprocess_mutex</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::interprocess_recursive_mutex">boost::interprocess::interprocess_recursive_mutex</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::interprocess_semaphore">boost::interprocess::interprocess_semaphore</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::named_mutex">boost::interprocess::named_mutex</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::named_recursive_mutex">boost::interprocess::named_recursive_mutex</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::named_semaphore">boost::interprocess::named_semaphore</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::interprocess_sharable_mutex">boost::interprocess::interprocess_sharable_mutex</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::interprocess_condition">boost::interprocess::interprocess_condition</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::scoped_lock">boost::interprocess::scoped_lock</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::sharable_lock">boost::interprocess::sharable_lock</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::upgradable_lock">boost::interprocess::upgradable_lock</classname>;</para></listitem></itemizedlist>
+<listitem><para><classname alt="boost::interprocess::null_mutex">boost::interprocess::null_mutex</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::interprocess_mutex">boost::interprocess::interprocess_mutex</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::interprocess_recursive_mutex">boost::interprocess::interprocess_recursive_mutex</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::interprocess_semaphore">boost::interprocess::interprocess_semaphore</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::named_mutex">boost::interprocess::named_mutex</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::named_recursive_mutex">boost::interprocess::named_recursive_mutex</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::named_semaphore">boost::interprocess::named_semaphore</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::interprocess_sharable_mutex">boost::interprocess::interprocess_sharable_mutex</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::interprocess_condition">boost::interprocess::interprocess_condition</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::scoped_lock">boost::interprocess::scoped_lock</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::sharable_lock">boost::interprocess::sharable_lock</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::upgradable_lock">boost::interprocess::upgradable_lock</classname>;</para>
+</listitem></itemizedlist>
 </para><para>The following mutex families:<itemizedlist>
-<listitem><para><classname alt="boost::interprocess::mutex_family">boost::interprocess::mutex_family</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::null_mutex_family">boost::interprocess::null_mutex_family</classname>;</para></listitem></itemizedlist>
+<listitem><para><classname alt="boost::interprocess::mutex_family">boost::interprocess::mutex_family</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::null_mutex_family">boost::interprocess::null_mutex_family</classname>;</para>
+</listitem></itemizedlist>
 </para><para>The following allocators:<itemizedlist>
-<listitem><para><classname alt="boost::interprocess::allocator">boost::interprocess::allocator</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::node_allocator">boost::interprocess::node_allocator</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::private_node_allocator">boost::interprocess::private_node_allocator</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::cached_node_allocator">boost::interprocess::cached_node_allocator</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::adaptive_pool">boost::interprocess::adaptive_pool</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::private_adaptive_pool">boost::interprocess::private_adaptive_pool</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::cached_adaptive_pool">boost::interprocess::cached_adaptive_pool</classname>;</para></listitem></itemizedlist>
+<listitem><para><classname alt="boost::interprocess::allocator">boost::interprocess::allocator</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::node_allocator">boost::interprocess::node_allocator</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::private_node_allocator">boost::interprocess::private_node_allocator</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::cached_node_allocator">boost::interprocess::cached_node_allocator</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::adaptive_pool">boost::interprocess::adaptive_pool</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::private_adaptive_pool">boost::interprocess::private_adaptive_pool</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::cached_adaptive_pool">boost::interprocess::cached_adaptive_pool</classname>;</para>
+</listitem></itemizedlist>
 </para><para>The following allocation algorithms:<itemizedlist>
-<listitem><para><classname alt="boost::interprocess::simple_seq_fit">boost::interprocess::simple_seq_fit</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::rbtree_best_fit">boost::interprocess::rbtree_best_fit</classname>;</para></listitem></itemizedlist>
+<listitem><para><classname alt="boost::interprocess::simple_seq_fit">boost::interprocess::simple_seq_fit</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::rbtree_best_fit">boost::interprocess::rbtree_best_fit</classname>;</para>
+</listitem></itemizedlist>
 </para><para>The following index types:<itemizedlist>
-<listitem><para><classname alt="boost::interprocess::flat_map_index">boost::interprocess::flat_map_index</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::iset_index">boost::interprocess::iset_index</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::iunordered_set_index">boost::interprocess::iunordered_set_index</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::map_index">boost::interprocess::map_index</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::null_index">boost::interprocess::null_index</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::unordered_map_index">boost::interprocess::unordered_map_index</classname>;</para></listitem></itemizedlist>
+<listitem><para><classname alt="boost::interprocess::flat_map_index">boost::interprocess::flat_map_index</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::iset_index">boost::interprocess::iset_index</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::iunordered_set_index">boost::interprocess::iunordered_set_index</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::map_index">boost::interprocess::map_index</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::null_index">boost::interprocess::null_index</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::unordered_map_index">boost::interprocess::unordered_map_index</classname>;</para>
+</listitem></itemizedlist>
 </para><para>The following managed memory types:<itemizedlist>
-<listitem><para><classname alt="boost::interprocess::segment_manager">boost::interprocess::segment_manager</classname>;</para></listitem><listitem><para><classname alt="boost::interprocess::basic_managed_external_buffer">boost::interprocess::basic_managed_external_buffer</classname></para></listitem><listitem><para>boost::interprocess::managed_external_buffer</para></listitem><listitem><para>boost::interprocess::wmanaged_external_buffer</para></listitem><listitem><para><classname alt="boost::interprocess::basic_managed_shared_memory">boost::interprocess::basic_managed_shared_memory</classname></para></listitem><listitem><para>boost::interprocess::managed_shared_memory</para></listitem><listitem><para>boost::interprocess::wmanaged_shared_memory</para></listitem><listitem><para><classname alt="boost::interprocess::basic_managed_windows_shared_memory">boost::interprocess::basic_managed_windows_shared_memory</classname></para></listitem><listitem><para>boost::interprocess::managed_windows_shared_memory</para></listitem><listitem><para>boost::interprocess::wmanaged_windows_shared_memory</para></listitem><listitem><para><classname alt="boost::interprocess::basic_managed_xsi_shared_memory">boost::interprocess::basic_managed_xsi_shared_memory</classname></para></listitem><listitem><para>boost::interprocess::managed_xsi_shared_memory</para></listitem><listitem><para>boost::interprocess::wmanaged_xsi_shared_memory</para></listitem><listitem><para>boost::interprocess::fixed_managed_shared_memory</para></listitem><listitem><para>boost::interprocess::wfixed_managed_shared_memory</para></listitem><listitem><para><classname alt="boost::interprocess::basic_managed_heap_memory">boost::interprocess::basic_managed_heap_memory</classname></para></listitem><listitem><para>boost::interprocess::managed_heap_memory</para></listitem><listitem><para>boost::interprocess::wmanaged_heap_memory</para></listitem><listitem><para><classname alt="boost::interprocess::basic_managed_mapped_file">boost::interprocess::basic_managed_mapped_file</classname></para></listitem><listitem><para>boost::interprocess::managed_mapped_file</para></listitem><listitem><para>boost::interprocess::wmanaged_mapped_file</para></listitem></itemizedlist>
+<listitem><para><classname alt="boost::interprocess::segment_manager">boost::interprocess::segment_manager</classname>;</para>
+</listitem><listitem><para><classname alt="boost::interprocess::basic_managed_external_buffer">boost::interprocess::basic_managed_external_buffer</classname></para>
+</listitem><listitem><para>boost::interprocess::managed_external_buffer</para>
+</listitem><listitem><para>boost::interprocess::wmanaged_external_buffer</para>
+</listitem><listitem><para><classname alt="boost::interprocess::basic_managed_shared_memory">boost::interprocess::basic_managed_shared_memory</classname></para>
+</listitem><listitem><para>boost::interprocess::managed_shared_memory</para>
+</listitem><listitem><para>boost::interprocess::wmanaged_shared_memory</para>
+</listitem><listitem><para><classname alt="boost::interprocess::basic_managed_windows_shared_memory">boost::interprocess::basic_managed_windows_shared_memory</classname></para>
+</listitem><listitem><para>boost::interprocess::managed_windows_shared_memory</para>
+</listitem><listitem><para>boost::interprocess::wmanaged_windows_shared_memory</para>
+</listitem><listitem><para><classname alt="boost::interprocess::basic_managed_xsi_shared_memory">boost::interprocess::basic_managed_xsi_shared_memory</classname></para>
+</listitem><listitem><para>boost::interprocess::managed_xsi_shared_memory</para>
+</listitem><listitem><para>boost::interprocess::wmanaged_xsi_shared_memory</para>
+</listitem><listitem><para>boost::interprocess::fixed_managed_shared_memory</para>
+</listitem><listitem><para>boost::interprocess::wfixed_managed_shared_memory</para>
+</listitem><listitem><para><classname alt="boost::interprocess::basic_managed_heap_memory">boost::interprocess::basic_managed_heap_memory</classname></para>
+</listitem><listitem><para>boost::interprocess::managed_heap_memory</para>
+</listitem><listitem><para>boost::interprocess::wmanaged_heap_memory</para>
+</listitem><listitem><para><classname alt="boost::interprocess::basic_managed_mapped_file">boost::interprocess::basic_managed_mapped_file</classname></para>
+</listitem><listitem><para>boost::interprocess::managed_mapped_file</para>
+</listitem><listitem><para>boost::interprocess::wmanaged_mapped_file</para>
+</listitem></itemizedlist>
 </para><para>The following exception types:<itemizedlist>
-<listitem><para><classname alt="boost::interprocess::interprocess_exception">boost::interprocess::interprocess_exception</classname></para></listitem><listitem><para><classname alt="boost::interprocess::lock_exception">boost::interprocess::lock_exception</classname></para></listitem><listitem><para><classname alt="boost::interprocess::bad_alloc">boost::interprocess::bad_alloc</classname></para></listitem></itemizedlist>
+<listitem><para><classname alt="boost::interprocess::interprocess_exception">boost::interprocess::interprocess_exception</classname></para>
+</listitem><listitem><para><classname alt="boost::interprocess::lock_exception">boost::interprocess::lock_exception</classname></para>
+</listitem><listitem><para><classname alt="boost::interprocess::bad_alloc">boost::interprocess::bad_alloc</classname></para>
+</listitem></itemizedlist>
 </para><para>The following stream types:<itemizedlist>
-<listitem><para><classname alt="boost::interprocess::basic_bufferbuf">boost::interprocess::basic_bufferbuf</classname></para></listitem><listitem><para><classname alt="boost::interprocess::basic_ibufferstream">boost::interprocess::basic_ibufferstream</classname></para></listitem><listitem><para><classname alt="boost::interprocess::basic_obufferstream">boost::interprocess::basic_obufferstream</classname></para></listitem><listitem><para><classname alt="boost::interprocess::basic_bufferstream">boost::interprocess::basic_bufferstream</classname></para></listitem><listitem><para><classname alt="boost::interprocess::basic_vectorbuf">boost::interprocess::basic_vectorbuf</classname></para></listitem><listitem><para><classname alt="boost::interprocess::basic_ivectorstream">boost::interprocess::basic_ivectorstream</classname></para></listitem><listitem><para><classname alt="boost::interprocess::basic_ovectorstream">boost::interprocess::basic_ovectorstream</classname></para></listitem><listitem><para><classname alt="boost::interprocess::basic_vectorstream">boost::interprocess::basic_vectorstream</classname></para></listitem></itemizedlist>
+<listitem><para><classname alt="boost::interprocess::basic_bufferbuf">boost::interprocess::basic_bufferbuf</classname></para>
+</listitem><listitem><para><classname alt="boost::interprocess::basic_ibufferstream">boost::interprocess::basic_ibufferstream</classname></para>
+</listitem><listitem><para><classname alt="boost::interprocess::basic_obufferstream">boost::interprocess::basic_obufferstream</classname></para>
+</listitem><listitem><para><classname alt="boost::interprocess::basic_bufferstream">boost::interprocess::basic_bufferstream</classname></para>
+</listitem><listitem><para><classname alt="boost::interprocess::basic_vectorbuf">boost::interprocess::basic_vectorbuf</classname></para>
+</listitem><listitem><para><classname alt="boost::interprocess::basic_ivectorstream">boost::interprocess::basic_ivectorstream</classname></para>
+</listitem><listitem><para><classname alt="boost::interprocess::basic_ovectorstream">boost::interprocess::basic_ovectorstream</classname></para>
+</listitem><listitem><para><classname alt="boost::interprocess::basic_vectorstream">boost::interprocess::basic_vectorstream</classname></para>
+</listitem></itemizedlist>
 </para><para>The following smart pointer types:<itemizedlist>
-<listitem><para><classname alt="boost::interprocess::scoped_ptr">boost::interprocess::scoped_ptr</classname></para></listitem><listitem><para><classname alt="boost::interprocess::intrusive_ptr">boost::interprocess::intrusive_ptr</classname></para></listitem><listitem><para><classname alt="boost::interprocess::shared_ptr">boost::interprocess::shared_ptr</classname></para></listitem><listitem><para><classname alt="boost::interprocess::weak_ptr">boost::interprocess::weak_ptr</classname></para></listitem></itemizedlist>
+<listitem><para><classname alt="boost::interprocess::scoped_ptr">boost::interprocess::scoped_ptr</classname></para>
+</listitem><listitem><para><classname alt="boost::interprocess::intrusive_ptr">boost::interprocess::intrusive_ptr</classname></para>
+</listitem><listitem><para><classname alt="boost::interprocess::shared_ptr">boost::interprocess::shared_ptr</classname></para>
+</listitem><listitem><para><classname alt="boost::interprocess::weak_ptr">boost::interprocess::weak_ptr</classname></para>
+</listitem></itemizedlist>
 </para><para>The following interprocess communication types:<itemizedlist>
-<listitem><para><classname alt="boost::interprocess::message_queue_t">boost::interprocess::message_queue_t</classname>;</para></listitem><listitem><para>boost::interprocess::message_queue; </para></listitem></itemizedlist>
+<listitem><para><classname alt="boost::interprocess::message_queue_t">boost::interprocess::message_queue_t</classname>;</para>
+</listitem><listitem><para>boost::interprocess::message_queue; </para>
+</listitem></itemizedlist>
 </para></header>
 <header name="boost/interprocess/ipc/message_queue.hpp">
 <para>Describes an inter-process message queue. This class allows sending messages between processes and allows blocking, non-blocking and timed sending and receiving. </para><namespace name="boost">
@@ -3015,7 +3089,9 @@
       <template-nontype-parameter name="OffsetAlignment"><type>std::size_t</type><purpose><para>Alignment of the OffsetType stored inside. In some systems might be necessary to align it to 64 bits in order to communicate 32 and 64 bit processes using 64 bit offsets.</para></purpose></template-nontype-parameter>
     </template><description><para>A smart pointer that stores the offset between between the pointer and the the object it points. This allows offset allows special properties, since the pointer is independent from the address of the pointee, if the pointer and the pointee are still separated by the same offset. This feature converts <classname alt="boost::interprocess::offset_ptr">offset_ptr</classname> in a smart pointer that can be placed in shared memory and memory mapped files mapped in different addresses in every process.</para><para>
 b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classname> uses implementation defined properties, present in most platforms, for performance reasons:<itemizedlist>
-<listitem><para>Assumes that OffsetType representation of nullptr is (OffsetType)zero.</para></listitem><listitem><para>Assumes that incrementing a OffsetType obtained from a pointer is equivalent to incrementing the pointer and then converting it back to OffsetType. </para></listitem></itemizedlist>
+<listitem><para>Assumes that OffsetType representation of nullptr is (OffsetType)zero.</para>
+</listitem><listitem><para>Assumes that incrementing a OffsetType obtained from a pointer is equivalent to incrementing the pointer and then converting it back to OffsetType. </para>
+</listitem></itemizedlist>
 </para></description><typedef name="element_type"><type>PointedType</type></typedef>
 <typedef name="pointer"><type>PointedType *</type></typedef>
 <typedef name="reference"><type><emphasis>unspecified</emphasis></type></typedef>
@@ -3028,11 +3104,11 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <method name="get" cv="const noexcept"><type>pointer</type><description><para>Obtains raw pointer from offset. Never throws. </para></description></method>
 <method name="get_offset" cv="const noexcept"><type>offset_type</type></method>
 <method name="operator-&gt;" cv="const noexcept"><type>pointer</type><description><para>Pointer-like -&gt; operator. It can return 0 pointer. Never throws. </para></description></method>
-<method name="operator*" cv="const noexcept"><type>reference</type><description><para>Dereferencing operator, if it is a null <classname alt="boost::interprocess::offset_ptr">offset_ptr</classname> behavior is undefined. Never throws. </para></description></method>
+<method name="operator *" cv="const noexcept"><type>reference</type><description><para>Dereferencing operator, if it is a null <classname alt="boost::interprocess::offset_ptr">offset_ptr</classname> behavior is undefined. Never throws. </para></description></method>
 <method name="operator[]" cv="const noexcept"><type>reference</type><parameter name="idx"><paramtype>difference_type</paramtype></parameter><description><para>Indexing operator. Never throws. </para></description></method>
 <method name="operator+=" cv="noexcept"><type><classname>offset_ptr</classname> &amp;</type><parameter name="offset"><paramtype>difference_type</paramtype></parameter><description><para><classname alt="boost::interprocess::offset_ptr">offset_ptr</classname> += difference_type. Never throws. </para></description></method>
 <method name="operator-=" cv="noexcept"><type><classname>offset_ptr</classname> &amp;</type><parameter name="offset"><paramtype>difference_type</paramtype></parameter><description><para><classname alt="boost::interprocess::offset_ptr">offset_ptr</classname> -= difference_type. Never throws. </para></description></method>
-<method name="operator++" cv="noexcept"><type><classname>offset_ptr</classname> &amp;</type><parameter name=""><paramtype>void</paramtype></parameter><description><para>++offset_ptr. Never throws. </para></description></method>
+<method name="operator++" cv="noexcept"><type><classname>offset_ptr</classname> &amp;</type><parameter name=""><paramtype>void</paramtype></parameter><description><para>++<classname alt="boost::interprocess::offset_ptr">offset_ptr</classname>. Never throws. </para></description></method>
 <method name="operator++" cv="noexcept"><type><classname>offset_ptr</classname></type><parameter name=""><paramtype>int</paramtype></parameter><description><para>offset_ptr++. Never throws. </para></description></method>
 <method name="operator--" cv="noexcept"><type><classname>offset_ptr</classname> &amp;</type><parameter name=""><paramtype>void</paramtype></parameter><description><para>–<classname alt="boost::interprocess::offset_ptr">offset_ptr</classname>. Never throws. </para></description></method>
 <method name="operator--" cv="noexcept"><type><classname>offset_ptr</classname></type><parameter name=""><paramtype>int</paramtype></parameter><description><para><classname alt="boost::interprocess::offset_ptr">offset_ptr</classname>–. Never throws. </para></description></method>
@@ -3264,33 +3340,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <header name="boost/interprocess/segment_manager.hpp">
 <para>Describes the object placed in a memory segment that provides named object allocation capabilities for single-segment and multi-segment allocations. </para><namespace name="boost">
 <namespace name="interprocess">
-<class name="segment_manager_base"><template>
-      <template-type-parameter name="MemoryAlgorithm"/>
-    </template><inherit access="private">MemoryAlgorithm</inherit><description><para>This object is the public base class of segment manager. This class only depends on the memory allocation algorithm and implements all the allocation features not related to named or unique objects.</para><para>Storing a reference to <classname alt="boost::interprocess::segment_manager">segment_manager</classname> forces the holder class to be dependent on index types and character types. When such dependence is not desirable and only anonymous and raw allocations are needed, <classname alt="boost::interprocess::segment_manager_base">segment_manager_base</classname> is the correct answer. </para></description><typedef name="segment_manager_base_type"><type><classname>segment_manager_base</classname>&lt; MemoryAlgorithm &gt;</type></typedef>
-<typedef name="void_pointer"><type>MemoryAlgorithm::void_pointer</type></typedef>
-<typedef name="mutex_family"><type>MemoryAlgorithm::mutex_family</type></typedef>
-<typedef name="memory_algorithm"><type>MemoryAlgorithm</type></typedef>
-<data-member name="PayloadPerAllocation" specifiers="static"><type>const size_type</type><description><para>This constant indicates the payload size associated with each allocation of the memory algorithm </para></description></data-member>
-<method-group name="public member functions">
-<method name="get_size" cv="const"><type>size_type</type><description><para>Returns the size of the memory segment </para></description></method>
-<method name="get_free_memory" cv="const"><type>size_type</type><description><para>Returns the number of free bytes of the memory segment </para></description></method>
-<method name="allocate"><type>void *</type><parameter name="nbytes"><paramtype>size_type</paramtype></parameter><parameter name=""><paramtype>const std::nothrow_t &amp;</paramtype></parameter><description><para>Allocates nbytes bytes. This function is only used in single-segment management. Never throws </para></description></method>
-<method name="allocate"><type>void *</type><parameter name="nbytes"><paramtype>size_type</paramtype></parameter><description><para>Allocates nbytes bytes. Throws <classname alt="boost::interprocess::bad_alloc">boost::interprocess::bad_alloc</classname> on failure </para></description></method>
-<method name="allocate_aligned"><type>void *</type><parameter name="nbytes"><paramtype>size_type</paramtype></parameter><parameter name="alignment"><paramtype>size_type</paramtype></parameter><parameter name=""><paramtype>const std::nothrow_t &amp;</paramtype></parameter><description><para>Allocates nbytes bytes. This function is only used in single-segment management. Never throws </para></description></method>
-<method name="allocate_aligned"><type>void *</type><parameter name="nbytes"><paramtype>size_type</paramtype></parameter><parameter name="alignment"><paramtype>size_type</paramtype></parameter><description><para>Allocates nbytes bytes. This function is only used in single-segment management. Throws <classname alt="boost::interprocess::bad_alloc">bad_alloc</classname> when fails </para></description></method>
-<method name="deallocate"><type>void</type><parameter name="addr"><paramtype>void *</paramtype></parameter><description><para>Deallocates the bytes allocated with allocate/allocate_many() pointed by addr </para></description></method>
-<method name="grow"><type>void</type><parameter name="extra_size"><paramtype>size_type</paramtype></parameter><description><para>Increases managed memory in extra_size bytes more. This only works with single-segment management. </para></description></method>
-<method name="shrink_to_fit"><type>void</type><description><para>Decreases managed memory to the minimum. This only works with single-segment management. </para></description></method>
-<method name="all_memory_deallocated"><type>bool</type><description><para>Returns the result of "all_memory_deallocated()" function of the used memory algorithm </para></description></method>
-<method name="check_sanity"><type>bool</type><description><para>Returns the result of "check_sanity()" function of the used memory algorithm </para></description></method>
-<method name="zero_free_memory"><type>void</type><description><para>Writes to zero free memory (memory not yet allocated) of the memory algorithm </para></description></method>
-<method name="size" cv="const"><type>size_type</type><parameter name="ptr"><paramtype>const void *</paramtype></parameter><purpose>Returns the size of the buffer previously allocated pointed by ptr. </purpose></method>
-</method-group>
-<constructor><parameter name="sz"><paramtype>size_type</paramtype></parameter><parameter name="reserved_bytes"><paramtype>size_type</paramtype></parameter><description><para>Constructor of the <classname alt="boost::interprocess::segment_manager_base">segment_manager_base</classname></para><para>"size" is the size of the memory segment where the basic segment manager is being constructed.</para><para>"reserved_bytes" is the number of bytes after the end of the memory algorithm object itself that the memory algorithm will exclude from dynamic allocation</para><para>Can throw </para></description></constructor>
-<method-group name="public static functions">
-<method name="get_min_size" specifiers="static"><type>size_type</type><parameter name="size"><paramtype>size_type</paramtype></parameter><description><para>Obtains the minimum size needed by the segment manager </para></description></method>
-</method-group>
-</class><class name="segment_manager"><template>
+<class name="segment_manager"><template>
       <template-type-parameter name="CharType"/>
       <template-type-parameter name="MemoryAlgorithm"/>
       <template-nontype-parameter name="IndexType"><type>template&lt; class IndexConfig &gt; class</type></template-nontype-parameter>
@@ -3381,6 +3431,32 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
           <template-type-parameter name="T"/>
         </template><parameter name="ptr"><paramtype>const T *</paramtype></parameter><description><para>Returns is the the name of an object created with construct/find_or_construct functions. Does not throw </para></description></method>
 <method name="get_min_size" specifiers="static"><type>size_type</type><description><para>Obtains the minimum size needed by the segment manager </para></description></method>
+</method-group>
+</class><class name="segment_manager_base"><template>
+      <template-type-parameter name="MemoryAlgorithm"/>
+    </template><inherit access="private">MemoryAlgorithm</inherit><description><para>This object is the public base class of segment manager. This class only depends on the memory allocation algorithm and implements all the allocation features not related to named or unique objects.</para><para>Storing a reference to <classname alt="boost::interprocess::segment_manager">segment_manager</classname> forces the holder class to be dependent on index types and character types. When such dependence is not desirable and only anonymous and raw allocations are needed, <classname alt="boost::interprocess::segment_manager_base">segment_manager_base</classname> is the correct answer. </para></description><typedef name="segment_manager_base_type"><type><classname>segment_manager_base</classname>&lt; MemoryAlgorithm &gt;</type></typedef>
+<typedef name="void_pointer"><type>MemoryAlgorithm::void_pointer</type></typedef>
+<typedef name="mutex_family"><type>MemoryAlgorithm::mutex_family</type></typedef>
+<typedef name="memory_algorithm"><type>MemoryAlgorithm</type></typedef>
+<data-member name="PayloadPerAllocation" specifiers="static"><type>const size_type</type><description><para>This constant indicates the payload size associated with each allocation of the memory algorithm </para></description></data-member>
+<method-group name="public member functions">
+<method name="get_size" cv="const"><type>size_type</type><description><para>Returns the size of the memory segment </para></description></method>
+<method name="get_free_memory" cv="const"><type>size_type</type><description><para>Returns the number of free bytes of the memory segment </para></description></method>
+<method name="allocate"><type>void *</type><parameter name="nbytes"><paramtype>size_type</paramtype></parameter><parameter name=""><paramtype>const std::nothrow_t &amp;</paramtype></parameter><description><para>Allocates nbytes bytes. This function is only used in single-segment management. Never throws </para></description></method>
+<method name="allocate"><type>void *</type><parameter name="nbytes"><paramtype>size_type</paramtype></parameter><description><para>Allocates nbytes bytes. Throws <classname alt="boost::interprocess::bad_alloc">boost::interprocess::bad_alloc</classname> on failure </para></description></method>
+<method name="allocate_aligned"><type>void *</type><parameter name="nbytes"><paramtype>size_type</paramtype></parameter><parameter name="alignment"><paramtype>size_type</paramtype></parameter><parameter name=""><paramtype>const std::nothrow_t &amp;</paramtype></parameter><description><para>Allocates nbytes bytes. This function is only used in single-segment management. Never throws </para></description></method>
+<method name="allocate_aligned"><type>void *</type><parameter name="nbytes"><paramtype>size_type</paramtype></parameter><parameter name="alignment"><paramtype>size_type</paramtype></parameter><description><para>Allocates nbytes bytes. This function is only used in single-segment management. Throws <classname alt="boost::interprocess::bad_alloc">bad_alloc</classname> when fails </para></description></method>
+<method name="deallocate"><type>void</type><parameter name="addr"><paramtype>void *</paramtype></parameter><description><para>Deallocates the bytes allocated with allocate/allocate_many() pointed by addr </para></description></method>
+<method name="grow"><type>void</type><parameter name="extra_size"><paramtype>size_type</paramtype></parameter><description><para>Increases managed memory in extra_size bytes more. This only works with single-segment management. </para></description></method>
+<method name="shrink_to_fit"><type>void</type><description><para>Decreases managed memory to the minimum. This only works with single-segment management. </para></description></method>
+<method name="all_memory_deallocated"><type>bool</type><description><para>Returns the result of "all_memory_deallocated()" function of the used memory algorithm </para></description></method>
+<method name="check_sanity"><type>bool</type><description><para>Returns the result of "check_sanity()" function of the used memory algorithm </para></description></method>
+<method name="zero_free_memory"><type>void</type><description><para>Writes to zero free memory (memory not yet allocated) of the memory algorithm </para></description></method>
+<method name="size" cv="const"><type>size_type</type><parameter name="ptr"><paramtype>const void *</paramtype></parameter><purpose>Returns the size of the buffer previously allocated pointed by ptr. </purpose></method>
+</method-group>
+<constructor><parameter name="sz"><paramtype>size_type</paramtype></parameter><parameter name="reserved_bytes"><paramtype>size_type</paramtype></parameter><description><para>Constructor of the <classname alt="boost::interprocess::segment_manager_base">segment_manager_base</classname></para><para>"size" is the size of the memory segment where the basic segment manager is being constructed.</para><para>"reserved_bytes" is the number of bytes after the end of the memory algorithm object itself that the memory algorithm will exclude from dynamic allocation</para><para>Can throw </para></description></constructor>
+<method-group name="public static functions">
+<method name="get_min_size" specifiers="static"><type>size_type</type><parameter name="size"><paramtype>size_type</paramtype></parameter><description><para>Obtains the minimum size needed by the segment manager </para></description></method>
 </method-group>
 </class>
 
@@ -3633,7 +3709,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <method name="reset" cv="noexcept"><type>void</type><description><para>Release internal pointer and set it to 0. If internal pointer is not 0, calls intrusive_ptr_release(to_raw_pointer(m_ptr)). Does not throw </para></description></method>
 <method name="get" cv="noexcept"><type>pointer &amp;</type><description><para>Returns a reference to the internal pointer. Does not throw </para></description></method>
 <method name="get" cv="const noexcept"><type>const pointer &amp;</type><description><para>Returns a reference to the internal pointer. Does not throw </para></description></method>
-<method name="operator*" cv="const noexcept"><type>T &amp;</type><description><para>Returns *get(). Does not throw </para></description></method>
+<method name="operator *" cv="const noexcept"><type>T &amp;</type><description><para>Returns *get(). Does not throw </para></description></method>
 <method name="operator-&gt;" cv="const noexcept"><type>const pointer &amp;</type><description><para>Returns *get(). Does not throw </para></description></method>
 <method name="operator-&gt;" cv="noexcept"><type>pointer &amp;</type><description><para>Returns get(). Does not throw </para></description></method>
 <method name="conversion-operator" cv="const noexcept"><type>unspecified_bool_type</type><description><para>Conversion to boolean. Does not throw </para></description></method>
@@ -3753,7 +3829,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <method name="reset"><type>void</type><parameter name="p"><paramtype>const pointer &amp;</paramtype><default>0</default></parameter><description><para>Deletes the object pointed to by the stored pointer and then stores a copy of p. Never throws </para></description></method>
 <method name="reset"><type>void</type><parameter name="p"><paramtype>const pointer &amp;</paramtype></parameter><parameter name="d"><paramtype>const Deleter &amp;</paramtype></parameter><description><para>Deletes the object pointed to by the stored pointer and then stores a copy of p and a copy of d. </para></description></method>
 <method name="release"><type>pointer</type><description><para>Assigns internal pointer as 0 and returns previous pointer. This will avoid deletion on destructor </para></description></method>
-<method name="operator*" cv="const"><type>reference</type><description><para>Returns a reference to the object pointed to by the stored pointer. Never throws. </para></description></method>
+<method name="operator *" cv="const"><type>reference</type><description><para>Returns a reference to the object pointed to by the stored pointer. Never throws. </para></description></method>
 <method name="operator-&gt;"><type>pointer &amp;</type><description><para>Returns the internal stored pointer. Never throws. </para></description></method>
 <method name="operator-&gt;" cv="const"><type>const pointer &amp;</type><description><para>Returns the internal stored pointer. Never throws. </para></description></method>
 <method name="get"><type>pointer &amp;</type><description><para>Returns the stored pointer. Never throws. </para></description></method>
@@ -3826,13 +3902,19 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <namespace name="interprocess">
 <class name="enable_shared_from_this"><template>
       <template-type-parameter name="T"/>
-      <template-type-parameter name="VoidAllocator"/>
-      <template-type-parameter name="Deleter"/>
+      <template-type-parameter name="A"/>
+      <template-type-parameter name="D"/>
     </template><description><para>This class is used as a base class that allows a <classname alt="boost::interprocess::shared_ptr">shared_ptr</classname> to the current object to be obtained from within a member function. <classname alt="boost::interprocess::enable_shared_from_this">enable_shared_from_this</classname> defines two member functions called shared_from_this that return a shared_ptr&lt;T&gt; and shared_ptr&lt;T const&gt;, depending on constness, to this. </para></description><method-group name="public member functions">
 <method name="shared_from_this"><type><classname>shared_ptr</classname>&lt; T, A, D &gt;</type></method>
 <method name="shared_from_this" cv="const"><type><classname>shared_ptr</classname>&lt; T const, A, D &gt;</type></method>
 </method-group>
-</class><class name="shared_ptr"><template>
+</class><struct name="managed_shared_ptr"><template>
+      <template-type-parameter name="T"/>
+      <template-type-parameter name="ManagedMemory"/>
+    </template><description><para>Returns the type of a shared pointer of type T with the allocator <classname alt="boost::interprocess::allocator">boost::interprocess::allocator</classname> allocator and <classname alt="boost::interprocess::deleter">boost::interprocess::deleter</classname> deleter that can be constructed in the given managed segment type. </para></description><typedef name="void_allocator"><type>ManagedMemory::template <classname>allocator</classname>&lt; void &gt;::<classname>type</classname></type></typedef>
+<typedef name="deleter"><type>ManagedMemory::template deleter&lt; T &gt;::<classname>type</classname></type></typedef>
+<typedef name="type"><type><classname>shared_ptr</classname>&lt; T, void_allocator, deleter &gt;</type></typedef>
+</struct><class name="shared_ptr"><template>
       <template-type-parameter name="T"/>
       <template-type-parameter name="VoidAllocator"/>
       <template-type-parameter name="Deleter"/>
@@ -3851,7 +3933,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <method name="reset"><type>void</type><template>
           <template-type-parameter name="Y"/>
         </template><parameter name="r"><paramtype><classname>shared_ptr</classname>&lt; Y, VoidAllocator, Deleter &gt; const &amp;</paramtype></parameter><parameter name="p"><paramtype>const pointer &amp;</paramtype></parameter></method>
-<method name="operator*" cv="const"><type>reference</type><description><para>Returns a reference to the pointed type </para></description></method>
+<method name="operator *" cv="const"><type>reference</type><description><para>Returns a reference to the pointed type </para></description></method>
 <method name="operator-&gt;" cv="const"><type>pointer</type><description><para>Returns the pointer pointing to the owned object </para></description></method>
 <method name="get" cv="const"><type>pointer</type><description><para>Returns the pointer pointing to the owned object </para></description></method>
 <method name="operator!" cv="const"><type>bool</type><description><para>Not operator. Returns true if this-&gt;get() != 0, false otherwise </para></description></method>
@@ -3875,13 +3957,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
         </template><parameter name="r"><paramtype><classname>shared_ptr</classname>&lt; Y, VoidAllocator, Deleter &gt; const &amp;</paramtype></parameter><description><para>Equivalent to shared_ptr(r).swap(*this). Never throws </para></description></copy-assignment>
 <copy-assignment><type><classname>shared_ptr</classname> &amp;</type><parameter name="r"><paramtype>BOOST_COPY_ASSIGN_REF(<classname>shared_ptr</classname>)</paramtype></parameter><description><para>Equivalent to shared_ptr(r).swap(*this). Never throws </para></description></copy-assignment>
 <copy-assignment><type><classname>shared_ptr</classname> &amp;</type><parameter name="other"><paramtype><classname>shared_ptr</classname> &amp;&amp;</paramtype></parameter><description><para>Move-assignment. Equivalent to shared_ptr(other).swap(*this). Never throws </para></description></copy-assignment>
-</class><struct name="managed_shared_ptr"><template>
-      <template-type-parameter name="T"/>
-      <template-type-parameter name="ManagedMemory"/>
-    </template><description><para>Returns the type of a shared pointer of type T with the allocator <classname alt="boost::interprocess::allocator">boost::interprocess::allocator</classname> allocator and <classname alt="boost::interprocess::deleter">boost::interprocess::deleter</classname> deleter that can be constructed in the given managed segment type. </para></description><typedef name="void_allocator"><type>ManagedMemory::template <classname>allocator</classname>&lt; void &gt;::<classname>type</classname></type></typedef>
-<typedef name="deleter"><type>ManagedMemory::template deleter&lt; T &gt;::<classname>type</classname></type></typedef>
-<typedef name="type"><type><classname>shared_ptr</classname>&lt; T, void_allocator, deleter &gt;</type></typedef>
-</struct>
+</class>
 
 
 
@@ -4052,7 +4128,11 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <header name="boost/interprocess/smart_ptr/weak_ptr.hpp">
 <para>Describes the smart pointer weak_ptr. </para><namespace name="boost">
 <namespace name="interprocess">
-<class name="weak_ptr"><template>
+<struct name="managed_weak_ptr"><template>
+      <template-type-parameter name="T"/>
+      <template-type-parameter name="ManagedMemory"/>
+    </template><description><para>Returns the type of a weak pointer of type T with the allocator <classname alt="boost::interprocess::allocator">boost::interprocess::allocator</classname> allocator and <classname alt="boost::interprocess::deleter">boost::interprocess::deleter</classname> deleter that can be constructed in the given managed segment type. </para></description><typedef name="type"><type><classname>weak_ptr</classname>&lt; T, typename ManagedMemory::template <classname>allocator</classname>&lt; void &gt;::<classname>type</classname>, typename ManagedMemory::template <classname>deleter</classname>&lt; T &gt;::<classname>type</classname> &gt;</type></typedef>
+</struct><class name="weak_ptr"><template>
       <template-type-parameter name="T"/>
       <template-type-parameter name="A"/>
       <template-type-parameter name="D"/>
@@ -4078,11 +4158,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <copy-assignment><type><classname>weak_ptr</classname> &amp;</type><template>
           <template-type-parameter name="Y"/>
         </template><parameter name="r"><paramtype><classname>shared_ptr</classname>&lt; Y, A, D &gt; const &amp;</paramtype></parameter><description><para>Effects: Equivalent to weak_ptr(r).swap(*this).</para><para>Throws: nothing.</para><para>Notes: The implementation is free to meet the effects (and the implied guarantees) via different means, without creating a temporary. </para></description></copy-assignment>
-</class><struct name="managed_weak_ptr"><template>
-      <template-type-parameter name="T"/>
-      <template-type-parameter name="ManagedMemory"/>
-    </template><description><para>Returns the type of a weak pointer of type T with the allocator <classname alt="boost::interprocess::allocator">boost::interprocess::allocator</classname> allocator and <classname alt="boost::interprocess::deleter">boost::interprocess::deleter</classname> deleter that can be constructed in the given managed segment type. </para></description><typedef name="type"><type><classname>weak_ptr</classname>&lt; T, typename ManagedMemory::template <classname>allocator</classname>&lt; void &gt;::<classname>type</classname>, typename ManagedMemory::template <classname>deleter</classname>&lt; T &gt;::<classname>type</classname> &gt;</type></typedef>
-</struct>
+</class>
 
 
 
@@ -4166,6 +4242,22 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <constructor specifiers="explicit"><parameter name="mode"><paramtype>std::ios_base::openmode</paramtype><default>std::ios_base::in|std::ios_base::out</default></parameter><description><para>Constructor. Does not throw. </para></description></constructor>
 <constructor specifiers="explicit"><parameter name="buf"><paramtype>CharT *</paramtype></parameter><parameter name="length"><paramtype>std::size_t</paramtype></parameter><parameter name="mode"><paramtype>std::ios_base::openmode</paramtype><default>std::ios_base::in|std::ios_base::out</default></parameter><description><para>Constructor. Assigns formatting buffer. Does not throw. </para></description></constructor>
 <destructor/>
+</class><class name="basic_bufferstream"><template>
+      <template-type-parameter name="CharT"/>
+      <template-type-parameter name="CharTraits"/>
+    </template><inherit access="public">std::basic_iostream&lt; CharT, CharTraits &gt;</inherit><description><para>A basic_iostream class that uses a fixed size character buffer as its formatting buffer. </para></description><typedef name="char_type"><type>std::basic_ios&lt; CharT, CharTraits &gt;::char_type</type></typedef>
+<typedef name="int_type"><type>std::basic_ios&lt; char_type, CharTraits &gt;::int_type</type></typedef>
+<typedef name="pos_type"><type>std::basic_ios&lt; char_type, CharTraits &gt;::pos_type</type></typedef>
+<typedef name="off_type"><type>std::basic_ios&lt; char_type, CharTraits &gt;::off_type</type></typedef>
+<typedef name="traits_type"><type>std::basic_ios&lt; char_type, CharTraits &gt;::traits_type</type></typedef>
+<method-group name="public member functions">
+<method name="rdbuf" cv="const"><type><classname>basic_bufferbuf</classname>&lt; CharT, CharTraits &gt; *</type><description><para>Returns the address of the stored stream buffer. </para></description></method>
+<method name="buffer" cv="const"><type>std::pair&lt; CharT *, std::size_t &gt;</type><description><para>Returns the pointer and size of the internal buffer. Does not throw. </para></description></method>
+<method name="buffer"><type>void</type><parameter name="buf"><paramtype>CharT *</paramtype></parameter><parameter name="length"><paramtype>std::size_t</paramtype></parameter><description><para>Sets the underlying buffer to a new value. Resets stream position. Does not throw. </para></description></method>
+</method-group>
+<constructor><parameter name="mode"><paramtype>std::ios_base::openmode</paramtype><default>std::ios_base::in|std::ios_base::out</default></parameter><description><para>Constructor. Does not throw. </para></description></constructor>
+<constructor><parameter name="buf"><paramtype>CharT *</paramtype></parameter><parameter name="length"><paramtype>std::size_t</paramtype></parameter><parameter name="mode"><paramtype>std::ios_base::openmode</paramtype><default>std::ios_base::in|std::ios_base::out</default></parameter><description><para>Constructor. Assigns formatting buffer. Does not throw. </para></description></constructor>
+<destructor/>
 </class><class name="basic_ibufferstream"><template>
       <template-type-parameter name="CharT"/>
       <template-type-parameter name="CharTraits"/>
@@ -4197,22 +4289,6 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 </method-group>
 <constructor><parameter name="mode"><paramtype>std::ios_base::openmode</paramtype><default>std::ios_base::out</default></parameter><description><para>Constructor. Does not throw. </para></description></constructor>
 <constructor><parameter name="buf"><paramtype>CharT *</paramtype></parameter><parameter name="length"><paramtype>std::size_t</paramtype></parameter><parameter name="mode"><paramtype>std::ios_base::openmode</paramtype><default>std::ios_base::out</default></parameter><description><para>Constructor. Assigns formatting buffer. Does not throw. </para></description></constructor>
-<destructor/>
-</class><class name="basic_bufferstream"><template>
-      <template-type-parameter name="CharT"/>
-      <template-type-parameter name="CharTraits"/>
-    </template><inherit access="public">std::basic_iostream&lt; CharT, CharTraits &gt;</inherit><description><para>A basic_iostream class that uses a fixed size character buffer as its formatting buffer. </para></description><typedef name="char_type"><type>std::basic_ios&lt; CharT, CharTraits &gt;::char_type</type></typedef>
-<typedef name="int_type"><type>std::basic_ios&lt; char_type, CharTraits &gt;::int_type</type></typedef>
-<typedef name="pos_type"><type>std::basic_ios&lt; char_type, CharTraits &gt;::pos_type</type></typedef>
-<typedef name="off_type"><type>std::basic_ios&lt; char_type, CharTraits &gt;::off_type</type></typedef>
-<typedef name="traits_type"><type>std::basic_ios&lt; char_type, CharTraits &gt;::traits_type</type></typedef>
-<method-group name="public member functions">
-<method name="rdbuf" cv="const"><type><classname>basic_bufferbuf</classname>&lt; CharT, CharTraits &gt; *</type><description><para>Returns the address of the stored stream buffer. </para></description></method>
-<method name="buffer" cv="const"><type>std::pair&lt; CharT *, std::size_t &gt;</type><description><para>Returns the pointer and size of the internal buffer. Does not throw. </para></description></method>
-<method name="buffer"><type>void</type><parameter name="buf"><paramtype>CharT *</paramtype></parameter><parameter name="length"><paramtype>std::size_t</paramtype></parameter><description><para>Sets the underlying buffer to a new value. Resets stream position. Does not throw. </para></description></method>
-</method-group>
-<constructor><parameter name="mode"><paramtype>std::ios_base::openmode</paramtype><default>std::ios_base::in|std::ios_base::out</default></parameter><description><para>Constructor. Does not throw. </para></description></constructor>
-<constructor><parameter name="buf"><paramtype>CharT *</paramtype></parameter><parameter name="length"><paramtype>std::size_t</paramtype></parameter><parameter name="mode"><paramtype>std::ios_base::openmode</paramtype><default>std::ios_base::in|std::ios_base::out</default></parameter><description><para>Constructor. Assigns formatting buffer. Does not throw. </para></description></constructor>
 <destructor/>
 </class><typedef name="bufferbuf"><type><classname>basic_bufferbuf</classname>&lt; char &gt;</type></typedef>
 <typedef name="bufferstream"><type><classname>basic_bufferstream</classname>&lt; char &gt;</type></typedef>
@@ -4276,26 +4352,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <header name="boost/interprocess/streams/vectorstream.hpp">
 <para>This file defines basic_vectorbuf, basic_ivectorstream, basic_ovectorstream, and basic_vectorstreamclasses. These classes represent streamsbufs and streams whose sources or destinations are STL-like vectors that can be swapped with external vectors to avoid unnecessary allocations/copies. </para><namespace name="boost">
 <namespace name="interprocess">
-<class name="basic_vectorbuf"><template>
-      <template-type-parameter name="CharVector"/>
-      <template-type-parameter name="CharTraits"/>
-    </template><inherit access="public">std::basic_streambuf&lt; CharVector::value_type, CharTraits &gt;</inherit><description><para>A streambuf class that controls the transmission of elements to and from a <classname alt="boost::interprocess::basic_ivectorstream">basic_ivectorstream</classname>, <classname alt="boost::interprocess::basic_ovectorstream">basic_ovectorstream</classname> or <classname alt="boost::interprocess::basic_vectorstream">basic_vectorstream</classname>. It holds a character vector specified by CharVector template parameter as its formatting buffer. The vector must have contiguous storage, like std::vector, boost::interprocess::vector or boost::interprocess::basic_string </para></description><typedef name="vector_type"><type>CharVector</type></typedef>
-<typedef name="char_type"><type>CharVector::value_type</type></typedef>
-<typedef name="int_type"><type>CharTraits::int_type</type></typedef>
-<typedef name="pos_type"><type>CharTraits::pos_type</type></typedef>
-<typedef name="off_type"><type>CharTraits::off_type</type></typedef>
-<typedef name="traits_type"><type>CharTraits</type></typedef>
-<method-group name="public member functions">
-<method name="swap_vector"><type>void</type><parameter name="vect"><paramtype>vector_type &amp;</paramtype></parameter><description><para>Swaps the underlying vector with the passed vector. This function resets the read/write position in the stream. Does not throw. </para></description></method>
-<method name="vector" cv="const"><type>const vector_type &amp;</type><description><para>Returns a const reference to the internal vector. Does not throw. </para></description></method>
-<method name="reserve"><type>void</type><parameter name="size"><paramtype>typename vector_type::size_type</paramtype></parameter><description><para>Preallocates memory from the internal vector. Resets the stream to the first position. Throws if the internals vector's memory allocation throws. </para></description></method>
-<method name="clear"><type>void</type><description><para>Calls clear() method of the internal vector. Resets the stream to the first position. </para></description></method>
-</method-group>
-<constructor specifiers="explicit"><parameter name="mode"><paramtype>std::ios_base::openmode</paramtype><default>std::ios_base::in|std::ios_base::out</default></parameter><description><para>Constructor. Throws if vector_type default constructor throws. </para></description></constructor>
-<constructor specifiers="explicit"><template>
-          <template-type-parameter name="VectorParameter"/>
-        </template><parameter name="param"><paramtype>const VectorParameter &amp;</paramtype></parameter><parameter name="mode"><paramtype>std::ios_base::openmode</paramtype><default>std::ios_base::in|std::ios_base::out</default></parameter><description><para>Constructor. Throws if vector_type(const VectorParameter &amp;param) throws. </para></description></constructor>
-</class><class name="basic_ivectorstream"><template>
+<class name="basic_ivectorstream"><template>
       <template-type-parameter name="CharVector"/>
       <template-type-parameter name="CharTraits"/>
     </template><inherit access="public">std::basic_istream&lt; CharVector::value_type, CharTraits &gt;</inherit><description><para>A basic_istream class that holds a character vector specified by CharVector template parameter as its formatting buffer. The vector must have contiguous storage, like std::vector, boost::interprocess::vector or boost::interprocess::basic_string </para></description><typedef name="vector_type"><type>CharVector</type></typedef>
@@ -4334,6 +4391,25 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <constructor><template>
           <template-type-parameter name="VectorParameter"/>
         </template><parameter name="param"><paramtype>const VectorParameter &amp;</paramtype></parameter><parameter name="mode"><paramtype>std::ios_base::openmode</paramtype><default>std::ios_base::out</default></parameter><description><para>Constructor. Throws if vector_type(const VectorParameter &amp;param) throws. </para></description></constructor>
+</class><class name="basic_vectorbuf"><template>
+      <template-type-parameter name="CharVector"/>
+      <template-type-parameter name="CharTraits"/>
+    </template><inherit access="public">std::basic_streambuf&lt; CharVector::value_type, CharTraits &gt;</inherit><description><para>A streambuf class that controls the transmission of elements to and from a <classname alt="boost::interprocess::basic_ivectorstream">basic_ivectorstream</classname>, <classname alt="boost::interprocess::basic_ovectorstream">basic_ovectorstream</classname> or <classname alt="boost::interprocess::basic_vectorstream">basic_vectorstream</classname>. It holds a character vector specified by CharVector template parameter as its formatting buffer. The vector must have contiguous storage, like std::vector, boost::interprocess::vector or boost::interprocess::basic_string </para></description><typedef name="vector_type"><type>CharVector</type></typedef>
+<typedef name="char_type"><type>CharVector::value_type</type></typedef>
+<typedef name="int_type"><type>CharTraits::int_type</type></typedef>
+<typedef name="pos_type"><type>CharTraits::pos_type</type></typedef>
+<typedef name="off_type"><type>CharTraits::off_type</type></typedef>
+<typedef name="traits_type"><type>CharTraits</type></typedef>
+<method-group name="public member functions">
+<method name="swap_vector"><type>void</type><parameter name="vect"><paramtype>vector_type &amp;</paramtype></parameter><description><para>Swaps the underlying vector with the passed vector. This function resets the read/write position in the stream. Does not throw. </para></description></method>
+<method name="vector" cv="const"><type>const vector_type &amp;</type><description><para>Returns a const reference to the internal vector. Does not throw. </para></description></method>
+<method name="reserve"><type>void</type><parameter name="size"><paramtype>typename vector_type::size_type</paramtype></parameter><description><para>Preallocates memory from the internal vector. Resets the stream to the first position. Throws if the internals vector's memory allocation throws. </para></description></method>
+<method name="clear"><type>void</type><description><para>Calls clear() method of the internal vector. Resets the stream to the first position. </para></description></method>
+</method-group>
+<constructor specifiers="explicit"><parameter name="mode"><paramtype>std::ios_base::openmode</paramtype><default>std::ios_base::in|std::ios_base::out</default></parameter><description><para>Constructor. Throws if vector_type default constructor throws. </para></description></constructor>
+<constructor specifiers="explicit"><template>
+          <template-type-parameter name="VectorParameter"/>
+        </template><parameter name="param"><paramtype>const VectorParameter &amp;</paramtype></parameter><parameter name="mode"><paramtype>std::ios_base::openmode</paramtype><default>std::ios_base::in|std::ios_base::out</default></parameter><description><para>Constructor. Throws if vector_type(const VectorParameter &amp;param) throws. </para></description></constructor>
 </class><class name="basic_vectorstream"><template>
       <template-type-parameter name="CharVector"/>
       <template-type-parameter name="CharTraits"/>
@@ -4964,7 +5040,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <header name="boost/interprocess/sync/lock_options.hpp">
 <para>Describes the lock options with associated with interprocess_mutex lock constructors. </para><namespace name="boost">
 <namespace name="interprocess">
-<struct name="defer_lock_type"><purpose>Type to indicate to a mutex lock constructor that must not lock the mutex. </purpose></struct><struct name="try_to_lock_type"><purpose>Type to indicate to a mutex lock constructor that must try to lock the mutex. </purpose></struct><struct name="accept_ownership_type"><purpose>Type to indicate to a mutex lock constructor that the mutex is already locked. </purpose></struct><data-member name="defer_lock" specifiers="static"><type>const <classname>defer_lock_type</classname></type><description><para>An object indicating that the locking must be deferred. </para></description></data-member>
+<struct name="accept_ownership_type"><purpose>Type to indicate to a mutex lock constructor that the mutex is already locked. </purpose></struct><struct name="defer_lock_type"><purpose>Type to indicate to a mutex lock constructor that must not lock the mutex. </purpose></struct><struct name="try_to_lock_type"><purpose>Type to indicate to a mutex lock constructor that must try to lock the mutex. </purpose></struct><data-member name="defer_lock" specifiers="static"><type>const <classname>defer_lock_type</classname></type><description><para>An object indicating that the locking must be deferred. </para></description></data-member>
 <data-member name="try_to_lock" specifiers="static"><type>const <classname>try_to_lock_type</classname></type><description><para>An object indicating that a try_lock() operation must be executed. </para></description></data-member>
 <data-member name="accept_ownership" specifiers="static"><type>const <classname>accept_ownership_type</classname></type><description><para>An object indicating that the ownership of lockable object must be accepted by the new owner. </para></description></data-member>
 
@@ -5098,7 +5174,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
         </template><parameter name="lock"><paramtype>L &amp;</paramtype></parameter><parameter name="abs_time"><paramtype>const boost::posix_time::ptime &amp;</paramtype></parameter><parameter name="pred"><paramtype>Pr</paramtype></parameter><description><para>The same as: while (!pred()) { if (!timed_wait(lock, abs_time)) return pred(); } return true; </para></description></method>
 </method-group>
 <constructor><parameter name="create_only"><paramtype><classname>create_only_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Creates a global condition with a name. If the condition can't be created throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> </para></description></constructor>
-<constructor><parameter name="open_or_create"><paramtype><classname>open_or_create_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Opens or creates a global condition with a name. If the condition is created, this call is equivalent to <classname alt="boost::interprocess::named_condition">named_condition</classname>(<classname alt="boost::interprocess::create_only_t">create_only_t</classname>, ... ) If the condition is already created, this call is equivalent <classname alt="boost::interprocess::named_condition">named_condition</classname>(<classname alt="boost::interprocess::open_only_t">open_only_t</classname>, ... ) Does not throw </para></description></constructor>
+<constructor><parameter name="open_or_create"><paramtype><classname>open_or_create_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Opens or creates a global condition with a name. If the condition is created, this call is equivalent to named_condition(create_only_t, ... ) If the condition is already created, this call is equivalent named_condition(open_only_t, ... ) Does not throw </para></description></constructor>
 <constructor><parameter name="open_only"><paramtype><classname>open_only_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><description><para>Opens a global condition with a name if that condition is previously created. If it is not previously created this function throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname>. </para></description></constructor>
 <destructor><description><para>Destroys *this and indicates that the calling process is finished using the resource. The destructor function will deallocate any system resources allocated by the system for use by this process for this resource. The resource can still be opened again calling the open constructor overload. To erase the resource from the system use remove(). </para></description></destructor>
 <method-group name="public static functions">
@@ -5177,7 +5253,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
         </template><parameter name="lock"><paramtype>L &amp;</paramtype></parameter><parameter name="abs_time"><paramtype>const boost::posix_time::ptime &amp;</paramtype></parameter><parameter name="pred"><paramtype>Pr</paramtype></parameter><description><para>The same as: while (!pred()) { if (!timed_wait(lock, abs_time)) return pred(); } return true; </para></description></method>
 </method-group>
 <constructor><parameter name=""><paramtype><classname>create_only_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Creates a global condition with a name. If the condition can't be created throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> </para></description></constructor>
-<constructor><parameter name=""><paramtype><classname>open_or_create_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Opens or creates a global condition with a name. If the condition is created, this call is equivalent to <classname alt="boost::interprocess::named_condition_any">named_condition_any</classname>(<classname alt="boost::interprocess::create_only_t">create_only_t</classname>, ... ) If the condition is already created, this call is equivalent <classname alt="boost::interprocess::named_condition_any">named_condition_any</classname>(<classname alt="boost::interprocess::open_only_t">open_only_t</classname>, ... ) Does not throw </para></description></constructor>
+<constructor><parameter name=""><paramtype><classname>open_or_create_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Opens or creates a global condition with a name. If the condition is created, this call is equivalent to named_condition_any(create_only_t, ... ) If the condition is already created, this call is equivalent named_condition_any(open_only_t, ... ) Does not throw </para></description></constructor>
 <constructor><parameter name=""><paramtype><classname>open_only_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><description><para>Opens a global condition with a name if that condition is previously created. If it is not previously created this function throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname>. </para></description></constructor>
 <destructor><description><para>Destroys *this and indicates that the calling process is finished using the resource. The destructor function will deallocate any system resources allocated by the system for use by this process for this resource. The resource can still be opened again calling the open constructor overload. To erase the resource from the system use remove(). </para></description></destructor>
 <method-group name="public static functions">
@@ -5244,7 +5320,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <method name="timed_lock"><type>bool</type><parameter name="abs_time"><paramtype>const boost::posix_time::ptime &amp;</paramtype></parameter><description><para>Tries to lock the the mutex until time abs_time, Returns false when timeout expires, returns true when locks. Throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> if a severe error is found </para></description></method>
 </method-group>
 <constructor><parameter name="create_only"><paramtype><classname>create_only_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Creates a global mutex with a name. Throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error. </para></description></constructor>
-<constructor><parameter name="open_or_create"><paramtype><classname>open_or_create_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Opens or creates a global mutex with a name. If the mutex is created, this call is equivalent to <classname alt="boost::interprocess::named_mutex">named_mutex</classname>(<classname alt="boost::interprocess::create_only_t">create_only_t</classname>, ... ) If the mutex is already created, this call is equivalent <classname alt="boost::interprocess::named_mutex">named_mutex</classname>(<classname alt="boost::interprocess::open_only_t">open_only_t</classname>, ... ) Does not throw </para></description></constructor>
+<constructor><parameter name="open_or_create"><paramtype><classname>open_or_create_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Opens or creates a global mutex with a name. If the mutex is created, this call is equivalent to named_mutex(create_only_t, ... ) If the mutex is already created, this call is equivalent named_mutex(open_only_t, ... ) Does not throw </para></description></constructor>
 <constructor><parameter name="open_only"><paramtype><classname>open_only_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><description><para>Opens a global mutex with a name if that mutex is previously created. If it is not previously created this function throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname>. </para></description></constructor>
 <destructor><description><para>Destroys *this and indicates that the calling process is finished using the resource. The destructor function will deallocate any system resources allocated by the system for use by this process for this resource. The resource can still be opened again calling the open constructor overload. To erase the resource from the system use remove(). </para></description></destructor>
 <method-group name="public static functions">
@@ -5311,7 +5387,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <method name="timed_lock"><type>bool</type><parameter name="abs_time"><paramtype>const boost::posix_time::ptime &amp;</paramtype></parameter><description><para>Tries to lock the <classname alt="boost::interprocess::named_recursive_mutex">named_recursive_mutex</classname> until time abs_time, Returns false when timeout expires, returns true when locks. Throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> if a severe error is found </para></description></method>
 </method-group>
 <constructor><parameter name="create_only"><paramtype><classname>create_only_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Creates a global recursive_mutex with a name. If the recursive_mutex can't be created throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> </para></description></constructor>
-<constructor><parameter name="open_or_create"><paramtype><classname>open_or_create_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Opens or creates a global recursive_mutex with a name. If the recursive_mutex is created, this call is equivalent to <classname alt="boost::interprocess::named_recursive_mutex">named_recursive_mutex</classname>(<classname alt="boost::interprocess::create_only_t">create_only_t</classname>, ... ) If the recursive_mutex is already created, this call is equivalent <classname alt="boost::interprocess::named_recursive_mutex">named_recursive_mutex</classname>(<classname alt="boost::interprocess::open_only_t">open_only_t</classname>, ... ) Does not throw </para></description></constructor>
+<constructor><parameter name="open_or_create"><paramtype><classname>open_or_create_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Opens or creates a global recursive_mutex with a name. If the recursive_mutex is created, this call is equivalent to named_recursive_mutex(create_only_t, ... ) If the recursive_mutex is already created, this call is equivalent named_recursive_mutex(open_only_t, ... ) Does not throw </para></description></constructor>
 <constructor><parameter name="open_only"><paramtype><classname>open_only_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><description><para>Opens a global recursive_mutex with a name if that recursive_mutex is previously created. If it is not previously created this function throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname>. </para></description></constructor>
 <destructor><description><para>Destroys *this and indicates that the calling process is finished using the resource. The destructor function will deallocate any system resources allocated by the system for use by this process for this resource. The resource can still be opened again calling the open constructor overload. To erase the resource from the system use remove(). </para></description></destructor>
 <method-group name="public static functions">
@@ -5378,7 +5454,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <method name="timed_wait"><type>bool</type><parameter name="abs_time"><paramtype>const boost::posix_time::ptime &amp;</paramtype></parameter><description><para>Decrements the semaphore if the semaphore's value is greater than zero and returns true. Otherwise, waits for the semaphore to the posted or the timeout expires. If the timeout expires, the function returns false. If the semaphore is posted the function returns true. If there is an error throws sem_exception </para></description></method>
 </method-group>
 <constructor><parameter name=""><paramtype><classname>create_only_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="initialCount"><paramtype>unsigned int</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Creates a global semaphore with a name, and an initial count. If the semaphore can't be created throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> </para></description></constructor>
-<constructor><parameter name=""><paramtype><classname>open_or_create_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="initialCount"><paramtype>unsigned int</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Opens or creates a global semaphore with a name, and an initial count. If the semaphore is created, this call is equivalent to <classname alt="boost::interprocess::named_semaphore">named_semaphore</classname>(<classname alt="boost::interprocess::create_only_t">create_only_t</classname>, ...) If the semaphore is already created, this call is equivalent to <classname alt="boost::interprocess::named_semaphore">named_semaphore</classname>(<classname alt="boost::interprocess::open_only_t">open_only_t</classname>, ... ) and initialCount is ignored. </para></description></constructor>
+<constructor><parameter name=""><paramtype><classname>open_or_create_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="initialCount"><paramtype>unsigned int</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Opens or creates a global semaphore with a name, and an initial count. If the semaphore is created, this call is equivalent to named_semaphore(create_only_t, ...) If the semaphore is already created, this call is equivalent to named_semaphore(open_only_t, ... ) and initialCount is ignored. </para></description></constructor>
 <constructor><parameter name=""><paramtype><classname>open_only_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><description><para>Opens a global semaphore with a name if that semaphore is previously. created. If it is not previously created this function throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname>. </para></description></constructor>
 <destructor><description><para>Destroys *this and indicates that the calling process is finished using the resource. The destructor function will deallocate any system resources allocated by the system for use by this process for this resource. The resource can still be opened again calling the open constructor overload. To erase the resource from the system use remove(). </para></description></destructor>
 <method-group name="public static functions">
@@ -5449,7 +5525,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <method name="unlock_sharable"><type>void</type><description><para>Precondition: The thread must have sharable ownership of the mutex. Effects: The calling thread releases the sharable ownership of the mutex. Throws: An exception derived from <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error. </para></description></method>
 </method-group>
 <constructor><parameter name="create_only"><paramtype><classname>create_only_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Creates a global sharable mutex with a name. If the sharable mutex can't be created throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> </para></description></constructor>
-<constructor><parameter name="open_or_create"><paramtype><classname>open_or_create_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Opens or creates a global sharable mutex with a name. If the sharable mutex is created, this call is equivalent to <classname alt="boost::interprocess::named_sharable_mutex">named_sharable_mutex</classname>(<classname alt="boost::interprocess::create_only_t">create_only_t</classname>, ...) If the sharable mutex is already created, this call is equivalent to <classname alt="boost::interprocess::named_sharable_mutex">named_sharable_mutex</classname>(<classname alt="boost::interprocess::open_only_t">open_only_t</classname>, ... ). </para></description></constructor>
+<constructor><parameter name="open_or_create"><paramtype><classname>open_or_create_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Opens or creates a global sharable mutex with a name. If the sharable mutex is created, this call is equivalent to named_sharable_mutex(create_only_t, ...) If the sharable mutex is already created, this call is equivalent to named_sharable_mutex(open_only_t, ... ). </para></description></constructor>
 <constructor><parameter name="open_only"><paramtype><classname>open_only_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><description><para>Opens a global sharable mutex with a name if that sharable mutex is previously. created. If it is not previously created this function throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname>. </para></description></constructor>
 <destructor><description><para>Destroys *this and indicates that the calling process is finished using the resource. The destructor function will deallocate any system resources allocated by the system for use by this process for this resource. The resource can still be opened again calling the open constructor overload. To erase the resource from the system use remove(). </para></description></destructor>
 <method-group name="public static functions">
@@ -5532,7 +5608,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <method name="try_unlock_sharable_and_lock_upgradable"><type>bool</type><description><para>Precondition: The thread must have sharable ownership of the mutex. Effects: The thread atomically releases sharable ownership and tries to acquire upgradable ownership. This operation will fail if there are threads with sharable or upgradable ownership, but it will maintain sharable ownership. Returns: If acquires upgradable ownership, returns true. Otherwise returns false. Throws: An exception derived from <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error. </para></description></method>
 </method-group>
 <constructor><parameter name="create_only"><paramtype><classname>create_only_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Creates a global upgradable mutex with a name. If the upgradable mutex can't be created throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> </para></description></constructor>
-<constructor><parameter name="open_or_create"><paramtype><classname>open_or_create_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Opens or creates a global upgradable mutex with a name. If the upgradable mutex is created, this call is equivalent to <classname alt="boost::interprocess::named_upgradable_mutex">named_upgradable_mutex</classname>(<classname alt="boost::interprocess::create_only_t">create_only_t</classname>, ...) If the upgradable mutex is already created, this call is equivalent to <classname alt="boost::interprocess::named_upgradable_mutex">named_upgradable_mutex</classname>(<classname alt="boost::interprocess::open_only_t">open_only_t</classname>, ... ). </para></description></constructor>
+<constructor><parameter name="open_or_create"><paramtype><classname>open_or_create_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Opens or creates a global upgradable mutex with a name. If the upgradable mutex is created, this call is equivalent to named_upgradable_mutex(create_only_t, ...) If the upgradable mutex is already created, this call is equivalent to named_upgradable_mutex(open_only_t, ... ). </para></description></constructor>
 <constructor><parameter name="open_only"><paramtype><classname>open_only_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><description><para>Opens a global upgradable mutex with a name if that upgradable mutex is previously. created. If it is not previously created this function throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname>. </para></description></constructor>
 <destructor><description><para>Destroys *this and indicates that the calling process is finished using the resource. The destructor function will deallocate any system resources allocated by the system for use by this process for this resource. The resource can still be opened again calling the open constructor overload. To erase the resource from the system use remove(). </para></description></destructor>
 <method-group name="public static functions">

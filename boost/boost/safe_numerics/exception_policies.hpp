@@ -1,18 +1,13 @@
 #ifndef BOOST_NUMERIC_EXCEPTION_POLICIES_HPP
 #define BOOST_NUMERIC_EXCEPTION_POLICIES_HPP
 
-// MS compatible compilers support #pragma once
-#if defined(_MSC_VER) && (_MSC_VER >= 1020)
-# pragma once
-#endif
-
 //  Copyright (c) 2015 Robert Ramey
 //
 // Distributed under the Boost Software License, Version 1.0. (See
 // accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 
-#include <type_traits> // is_convertible
+#include <boost/mp11.hpp>
 
 #include "exception.hpp"
 
@@ -57,7 +52,7 @@ struct exception_policy {
 
 // ignore any error and just return.
 struct ignore_exception {
-    constexpr ignore_exception(const safe_numerics_error &, const char *){}
+    constexpr ignore_exception(const safe_numerics_error &, const char * ){}
 };
 
 // If an exceptional condition is detected at runtime throw the exception.
@@ -89,8 +84,8 @@ make_safe_numerics_action(const safe_numerics_error & e){
     case safe_numerics_error::shift_too_large:
         return safe_numerics_actions::implementation_defined_behavior;
 
-//    case safe_numerics_error::uninitialized_value:
-//        return safe_numerics_actions::uninitialized_value;
+    case safe_numerics_error::uninitialized_value:
+        return safe_numerics_actions::uninitialized_value;
 
     case safe_numerics_error::success:
         return safe_numerics_actions::no_action;
@@ -102,32 +97,69 @@ make_safe_numerics_action(const safe_numerics_error & e){
     return safe_numerics_actions::no_action;
 }
 
-template<class EP>
+////////////////////////////////////////////////////////////////////////////////
+// compile time error dispatcher
+
+// note slightly baroque implementation of a compile time switch statement
+// which instatiates oonly those cases which are actually invoked.  This is
+// motivated to implement the "trap" functionality which will generate a syntax
+// error if and only a function which might fail is called.
+
+namespace dispatch_switch {
+
+    template<class EP, safe_numerics_actions>
+    struct dispatch_case {};
+
+    template<class EP>
+    struct dispatch_case<EP, safe_numerics_actions::uninitialized_value> {
+        constexpr static void invoke(const safe_numerics_error & e, const char * msg){
+            EP::on_uninitialized_value(e, msg);
+        }
+    };
+    template<class EP>
+    struct dispatch_case<EP, safe_numerics_actions::arithmetic_error> {
+        constexpr static void invoke(const safe_numerics_error & e, const char * msg){
+            EP::on_arithmetic_error(e, msg);
+        }
+    };
+    template<class EP>
+    struct dispatch_case<EP, safe_numerics_actions::implementation_defined_behavior> {
+        constexpr static void invoke(const safe_numerics_error & e, const char * msg){
+            EP::on_implementation_defined_behavior(e, msg);
+        }
+    };
+    template<class EP>
+    struct dispatch_case<EP, safe_numerics_actions::undefined_behavior> {
+        constexpr static void invoke(const safe_numerics_error & e, const char * msg){
+            EP::on_undefined_behavior(e, msg);
+        }
+    };
+
+} // dispatch_switch
+
+template<class EP, safe_numerics_error E>
 constexpr void
-dispatch(const safe_numerics_error & e, char const * const & msg){
-    const safe_numerics_actions a = make_safe_numerics_action(e);
-    switch(a){
-    case safe_numerics_actions::uninitialized_value:
-        EP::on_uninitialized_value(e, msg);
-        break;
-    case safe_numerics_actions::arithmetic_error:
-        EP::on_arithmetic_error(e, msg);
-        break;
-    case safe_numerics_actions::implementation_defined_behavior:
-        EP::on_implementation_defined_behavior(e, msg);
-        break;
-    case safe_numerics_actions::undefined_behavior:
-        EP::on_undefined_behavior(e, msg);
-        break;
-    default:
-        assert(false);
-    }
+dispatch(const char * msg){
+    constexpr safe_numerics_actions a = make_safe_numerics_action(E);
+    dispatch_switch::dispatch_case<EP, a>::invoke(E, msg);
 }
+
+template<class EP, class R>
+class dispatch_and_return {
+public:
+    template<safe_numerics_error E>
+    constexpr static checked_result<R> invoke(
+        char const * const & msg
+    ) {
+        dispatch<EP, E>(msg);
+        return checked_result<R>(E, msg);
+    }
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // pre-made error policy classes
 
-// loose policy
+// loose exception
 // - throw on arithmetic errors
 // - ignore other errors.
 // Some applications ignore these issues and still work and we don't
@@ -136,7 +168,7 @@ using loose_exception_policy = exception_policy<
     throw_exception,    // arithmetic error
     ignore_exception,   // implementation defined behavior
     ignore_exception,   // undefined behavior
-    ignore_exception    // uninitialized value
+    ignore_exception     // uninitialized value
 >;
 
 // loose trap
@@ -146,20 +178,12 @@ using loose_exception_policy = exception_policy<
 // bit manipulation operations to work.
 using loose_trap_policy = exception_policy<
     trap_exception,    // arithmetic error
-    ignore_exception,   // implementation defined behavior
-    ignore_exception,   // undefined behavior
-    ignore_exception    // uninitialized value
+    ignore_exception,  // implementation defined behavior
+    ignore_exception,  // undefined behavior
+    ignore_exception   // uninitialized value
 >;
 
-#if 0
-template<>
-constexpr void
-dispatch<loose_trap_policy>(const safe_numerics_error &, char const * const &){// strict exception policy
-    static_assert(false, "trap");
-}
-#endif
-
-// - permit just about anything
+// strict exception
 // - throw at runtime on any kind of error
 // recommended for new code.  Check everything at compile time
 // if possible and runtime if necessary.  Trap or Throw as
@@ -169,7 +193,7 @@ using strict_exception_policy = exception_policy<
     throw_exception,
     throw_exception,
     throw_exception,
-    throw_exception
+    ignore_exception
 >;
 
 // strict trap

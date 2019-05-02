@@ -1,7 +1,7 @@
 #ifndef BOOST_MP11_ALGORITHM_HPP_INCLUDED
 #define BOOST_MP11_ALGORITHM_HPP_INCLUDED
 
-//  Copyright 2015-2017 Peter Dimov.
+//  Copyright 2015-2019 Peter Dimov
 //
 //  Distributed under the Boost Software License, Version 1.0.
 //
@@ -19,9 +19,10 @@
 #include <boost/mp11/detail/mp_with_index.hpp>
 #include <boost/mp11/detail/mp_fold.hpp>
 #include <boost/mp11/detail/mp_min_element.hpp>
+#include <boost/mp11/detail/mp_copy_if.hpp>
+#include <boost/mp11/detail/mp_remove_if.hpp>
 #include <boost/mp11/detail/config.hpp>
 #include <boost/mp11/integer_sequence.hpp>
-#include <boost/mp11/detail/config.hpp>
 #include <type_traits>
 #include <utility>
 
@@ -156,12 +157,12 @@ template<template<class...> class P, template<class...> class F, class... L> str
 
 #if BOOST_MP11_WORKAROUND( BOOST_MP11_MSVC, < 1920 )
 
-    template<class... U> struct _f_ { using type = mp_eval_if_q<mp_not<mp_invoke<Qp, U...>>, mp_first<mp_list<U...>>, Qf, U...>; };
+    template<class... U> struct _f_ { using type = mp_eval_if_q<mp_not<mp_invoke_q<Qp, U...>>, mp_first<mp_list<U...>>, Qf, U...>; };
     template<class... U> using _f = typename _f_<U...>::type;
 
 #else
 
-    template<class... U> using _f = mp_eval_if_q<mp_not<mp_invoke<Qp, U...>>, mp_first<mp_list<U...>>, Qf, U...>;
+    template<class... U> using _f = mp_eval_if_q<mp_not<mp_invoke_q<Qp, U...>>, mp_first<mp_list<U...>>, Qf, U...>;
 
 #endif
 
@@ -172,6 +173,27 @@ template<template<class...> class P, template<class...> class F, class... L> str
 
 template<template<class...> class P, template<class...> class F, class... L> using mp_transform_if = typename detail::mp_transform_if_impl<P, F, L...>::type;
 template<class Qp, class Qf, class... L> using mp_transform_if_q = typename detail::mp_transform_if_impl<Qp::template fn, Qf::template fn, L...>::type;
+
+// mp_filter<P, L...>
+namespace detail
+{
+
+template<template<class...> class P, class L1, class... L> struct mp_filter_impl
+{
+    using Qp = mp_quote<P>;
+
+    template<class T1, class... T> using _f = mp_if< mp_invoke_q<Qp, T1, T...>, mp_list<T1>, mp_list<> >;
+
+    using _t1 = mp_transform<_f, L1, L...>;
+    using _t2 = mp_apply<mp_append, _t1>;
+
+    using type = mp_assign<L1, _t2>;
+};
+
+} // namespace detail
+
+template<template<class...> class P, class... L> using mp_filter = typename detail::mp_filter_impl<P, L...>::type;
+template<class Q, class... L> using mp_filter_q = typename detail::mp_filter_impl<Q::template fn, L...>::type;
 
 // mp_fill<L, V>
 namespace detail
@@ -346,42 +368,86 @@ template<class L, class I> using mp_at = mp_at_c<L, std::size_t{ I::value }>;
 namespace detail
 {
 
-template<class L, std::size_t N, class E = void> struct mp_take_c_impl;
+template<std::size_t N, class L, class E = void> struct mp_take_c_impl
+{
+};
 
-template<template<class...> class L, class... T> struct mp_take_c_impl<L<T...>, 0>
+template<template<class...> class L, class... T>
+struct mp_take_c_impl<0, L<T...>>
 {
     using type = L<>;
 };
 
-template<template<class...> class L, class T1, class... T> struct mp_take_c_impl<L<T1, T...>, 1>
+template<template<class...> class L, class T1, class... T>
+struct mp_take_c_impl<1, L<T1, T...>>
 {
     using type = L<T1>;
 };
 
-template<template<class...> class L, class T1, class T2, class... T> struct mp_take_c_impl<L<T1, T2, T...>, 2>
+template<template<class...> class L, class T1, class T2, class... T>
+struct mp_take_c_impl<2, L<T1, T2, T...>>
 {
     using type = L<T1, T2>;
 };
 
-template<template<class...> class L, class T1, class T2, class T3, class... T> struct mp_take_c_impl<L<T1, T2, T3, T...>, 3>
+template<template<class...> class L, class T1, class T2, class T3, class... T>
+struct mp_take_c_impl<3, L<T1, T2, T3, T...>>
 {
     using type = L<T1, T2, T3>;
 };
 
-template<template<class...> class L, class T1, class T2, class T3, class T4, class... T> struct mp_take_c_impl<L<T1, T2, T3, T4, T...>, 4>
+template<template<class...> class L, class T1, class T2, class T3, class T4, class... T>
+struct mp_take_c_impl<4, L<T1, T2, T3, T4, T...>>
 {
     using type = L<T1, T2, T3, T4>;
 };
 
-template<template<class...> class L, class T1, class T2, class T3, class T4, class T5, class... T, std::size_t N> struct mp_take_c_impl<L<T1, T2, T3, T4, T5, T...>, N, typename std::enable_if<N >= 5>::type>
+template<template<class...> class L, class T1, class T2, class T3, class T4, class T5, class... T>
+struct mp_take_c_impl<5, L<T1, T2, T3, T4, T5, T...>>
 {
-    using type = mp_append<L<T1, T2, T3, T4, T5>, typename mp_take_c_impl<L<T...>, N-5>::type>;
+	using type = L<T1, T2, T3, T4, T5>;
+};
+
+template<template<class...> class L, class T1, class T2, class T3, class T4, class T5, class T6, class... T>
+struct mp_take_c_impl<6, L<T1, T2, T3, T4, T5, T6, T...>>
+{
+	using type = L<T1, T2, T3, T4, T5, T6>;
+};
+
+template<template<class...> class L, class T1, class T2, class T3, class T4, class T5, class T6, class T7, class... T>
+struct mp_take_c_impl<7, L<T1, T2, T3, T4, T5, T6, T7, T...>>
+{
+	using type = L<T1, T2, T3, T4, T5, T6, T7>;
+};
+
+template<template<class...> class L, class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8, class... T>
+struct mp_take_c_impl<8, L<T1, T2, T3, T4, T5, T6, T7, T8, T...>>
+{
+	using type = L<T1, T2, T3, T4, T5, T6, T7, T8>;
+};
+
+template<template<class...> class L, class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8, class T9, class... T>
+struct mp_take_c_impl<9, L<T1, T2, T3, T4, T5, T6, T7, T8, T9, T...>>
+{
+	using type = L<T1, T2, T3, T4, T5, T6, T7, T8, T9>;
+};
+
+template<template<class...> class L, class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8, class T9, class T10, class... T, std::size_t N>
+struct mp_take_c_impl<N, L<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T...>, typename std::enable_if<N >= 10>::type>
+{
+    using type = mp_append<L<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>, typename mp_take_c_impl<N-10, L<T...>>::type>;
 };
 
 } // namespace detail
 
-template<class L, std::size_t N> using mp_take_c = typename detail::mp_take_c_impl<L, N>::type;
-template<class L, class N> using mp_take = typename detail::mp_take_c_impl<L, std::size_t{ N::value }>::type;
+template<class L, std::size_t N> using mp_take_c = typename detail::mp_take_c_impl<N, L>::type;
+template<class L, class N> using mp_take = typename detail::mp_take_c_impl<std::size_t{ N::value }, L>::type;
+
+// mp_back<L>
+template<class L> using mp_back = mp_at_c<L, mp_size<L>::value - 1>;
+
+// mp_pop_back<L>
+template<class L> using mp_pop_back = mp_take_c<L, mp_size<L>::value - 1>;
 
 // mp_replace<L, V, W>
 namespace detail
@@ -427,26 +493,7 @@ template<class L, template<class...> class P, class W> using mp_replace_if = typ
 template<class L, class Q, class W> using mp_replace_if_q = mp_replace_if<L, Q::template fn, W>;
 
 // mp_copy_if<L, P>
-namespace detail
-{
-
-template<class L, template<class...> class P> struct mp_copy_if_impl;
-
-template<template<class...> class L, class... T, template<class...> class P> struct mp_copy_if_impl<L<T...>, P>
-{
-#if BOOST_MP11_WORKAROUND( BOOST_MP11_MSVC, < 1920 )
-    template<class U> struct _f { using type = mp_if<P<U>, mp_list<U>, mp_list<>>; };
-    using type = mp_append<L<>, typename _f<T>::type...>;
-#else
-    template<class U> using _f = mp_if<P<U>, mp_list<U>, mp_list<>>;
-    using type = mp_append<L<>, _f<T>...>;
-#endif
-};
-
-} // namespace detail
-
-template<class L, template<class...> class P> using mp_copy_if = typename detail::mp_copy_if_impl<L, P>::type;
-template<class L, class Q> using mp_copy_if_q = mp_copy_if<L, Q::template fn>;
+//   in detail/mp_copy_if.hpp
 
 // mp_remove<L, V>
 namespace detail
@@ -470,26 +517,7 @@ template<template<class...> class L, class... T, class V> struct mp_remove_impl<
 template<class L, class V> using mp_remove = typename detail::mp_remove_impl<L, V>::type;
 
 // mp_remove_if<L, P>
-namespace detail
-{
-
-template<class L, template<class...> class P> struct mp_remove_if_impl;
-
-template<template<class...> class L, class... T, template<class...> class P> struct mp_remove_if_impl<L<T...>, P>
-{
-#if BOOST_MP11_WORKAROUND( BOOST_MP11_MSVC, < 1920 )
-    template<class U> struct _f { using type = mp_if<P<U>, mp_list<>, mp_list<U>>; };
-    using type = mp_append<L<>, typename _f<T>::type...>;
-#else
-    template<class U> using _f = mp_if<P<U>, mp_list<>, mp_list<U>>;
-    using type = mp_append<L<>, _f<T>...>;
-#endif
-};
-
-} // namespace detail
-
-template<class L, template<class...> class P> using mp_remove_if = typename detail::mp_remove_if_impl<L, P>::type;
-template<class L, class Q> using mp_remove_if_q = mp_remove_if<L, Q::template fn>;
+//   in detail/mp_remove_if.hpp
 
 // mp_partition<L, P>
 namespace detail
@@ -970,10 +998,33 @@ template<class F> BOOST_MP11_CONSTEXPR F mp_for_each_impl( mp_list<>, F && f )
 
 } // namespace detail
 
+#if BOOST_MP11_WORKAROUND( BOOST_MP11_MSVC, >= 1900 )
+
+// msvc has a limit of 1024
+
+template<class L, class F> BOOST_MP11_CONSTEXPR mp_if_c<mp_size<L>::value <= 1024, F> mp_for_each( F && f )
+{
+    return detail::mp_for_each_impl( mp_rename<L, mp_list>(), std::forward<F>(f) );
+}
+
+template<class L, class F> BOOST_MP11_CONSTEXPR mp_if_c<mp_size<L>::value >= 1025, F> mp_for_each( F && f )
+{
+    using L2 = mp_rename<L, mp_list>;
+
+    using L3 = mp_take_c<L2, 1024>;
+    using L4 = mp_drop_c<L2, 1024>;
+
+    return mp_for_each<L4>( mp_for_each<L3>( std::forward<F>(f) ) );
+}
+
+#else
+
 template<class L, class F> BOOST_MP11_CONSTEXPR F mp_for_each( F && f )
 {
     return detail::mp_for_each_impl( mp_rename<L, mp_list>(), std::forward<F>(f) );
 }
+
+#endif
 
 // mp_insert<L, I, T...>
 template<class L, class I, class... T> using mp_insert = mp_append<mp_take<L, I>, mp_push_front<mp_drop<L, I>, T...>>;

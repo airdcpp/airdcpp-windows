@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2016-2017 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2016-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -10,6 +10,7 @@
 #ifndef BOOST_BEAST_WEBSOCKET_DETAIL_FRAME_HPP
 #define BOOST_BEAST_WEBSOCKET_DETAIL_FRAME_HPP
 
+#include <boost/beast/core/buffer_traits.hpp>
 #include <boost/beast/websocket/error.hpp>
 #include <boost/beast/websocket/rfc6455.hpp>
 #include <boost/beast/websocket/detail/utf8_checker.hpp>
@@ -18,7 +19,15 @@
 #include <boost/beast/core/static_string.hpp>
 #include <boost/asio/buffer.hpp>
 #include <boost/assert.hpp>
+// This is for <boost/endian/buffers.hpp>
+#if BOOST_WORKAROUND(BOOST_MSVC, > 0)
+# pragma warning (push)
+# pragma warning (disable: 4127) // conditional expression is constant
+#endif
 #include <boost/endian/buffers.hpp>
+#if BOOST_WORKAROUND(BOOST_MSVC, > 0)
+# pragma warning (pop)
+#endif
 #include <cstdint>
 
 namespace boost {
@@ -184,8 +193,6 @@ template<class DynamicBuffer>
 void
 write(DynamicBuffer& db, frame_header const& fh)
 {
-    using boost::asio::buffer;
-    using boost::asio::buffer_copy;
     using namespace boost::endian;
     std::size_t n;
     std::uint8_t b[14];
@@ -220,8 +227,8 @@ write(DynamicBuffer& db, frame_header const& fh)
         native_to_little_uint32(fh.key, &b[n]);
         n += 4;
     }
-    db.commit(buffer_copy(
-        db.prepare(n), buffer(b)));
+    db.commit(net::buffer_copy(
+        db.prepare(n), net::buffer(b)));
 }
 
 // Read data from buffers
@@ -231,12 +238,9 @@ template<class Buffers>
 void
 read_ping(ping_data& data, Buffers const& bs)
 {
-    using boost::asio::buffer_copy;
-    using boost::asio::buffer_size;
-    using boost::asio::mutable_buffer;
-    BOOST_ASSERT(buffer_size(bs) <= data.max_size());
-    data.resize(buffer_size(bs));
-    buffer_copy(mutable_buffer{
+    BOOST_ASSERT(buffer_bytes(bs) <= data.max_size());
+    data.resize(buffer_bytes(bs));
+    net::buffer_copy(net::mutable_buffer{
         data.data(), data.size()}, bs);
 }
 
@@ -250,16 +254,13 @@ read_close(
     Buffers const& bs,
     error_code& ec)
 {
-    using boost::asio::buffer;
-    using boost::asio::buffer_copy;
-    using boost::asio::buffer_size;
     using namespace boost::endian;
-    auto n = buffer_size(bs);
+    auto n = buffer_bytes(bs);
     BOOST_ASSERT(n <= 125);
     if(n == 0)
     {
         cr = close_reason{};
-        ec.assign(0, ec.category());
+        ec = {};
         return;
     }
     if(n == 1)
@@ -271,7 +272,7 @@ read_close(
     buffers_suffix<Buffers> cb(bs);
     {
         std::uint8_t b[2];
-        buffer_copy(buffer(b), cb);
+        net::buffer_copy(net::buffer(b), cb);
         cr.code = big_uint16_to_native(&b[0]);
         cb.consume(2);
         n -= 2;
@@ -285,7 +286,8 @@ read_close(
     if(n > 0)
     {
         cr.reason.resize(n);
-        buffer_copy(buffer(&cr.reason[0], n), cb);
+        net::buffer_copy(
+            net::buffer(&cr.reason[0], n), cb);
         if(! check_utf8(
             cr.reason.data(), cr.reason.size()))
         {
@@ -298,7 +300,7 @@ read_close(
     {
         cr.reason = "";
     }
-    ec.assign(0, ec.category());
+    ec = {};
 }
 
 } // detail

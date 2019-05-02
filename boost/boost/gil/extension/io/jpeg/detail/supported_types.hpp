@@ -8,6 +8,8 @@
 #ifndef BOOST_GIL_EXTENSION_IO_JPEG_DETAIL_SUPPORTED_TYPES_HPP
 #define BOOST_GIL_EXTENSION_IO_JPEG_DETAIL_SUPPORTED_TYPES_HPP
 
+#include <boost/gil/extension/io/jpeg/tags.hpp>
+
 #include <boost/gil/channel.hpp>
 #include <boost/gil/color_base.hpp>
 
@@ -85,9 +87,11 @@ struct is_read_supported< Pixel
                                            >::is_supported
                 >
 {
-    typedef detail::jpeg_read_support< typename channel_type< Pixel >::type
-                                     , typename color_space_type< Pixel >::type
-                                     > parent_t;
+    using parent_t = detail::jpeg_read_support
+        <
+            typename channel_type<Pixel>::type,
+            typename color_space_type<Pixel>::type
+        >;
 
     static const typename jpeg_color_space::type _color_space = parent_t::_color_space;
 };

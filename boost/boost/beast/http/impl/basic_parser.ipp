@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2016-2017 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2016-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -10,14 +10,14 @@
 #ifndef BOOST_BEAST_HTTP_IMPL_BASIC_PARSER_IPP
 #define BOOST_BEAST_HTTP_IMPL_BASIC_PARSER_IPP
 
-#include <boost/beast/core/static_string.hpp>
-#include <boost/beast/core/type_traits.hpp>
-#include <boost/beast/core/detail/clamp.hpp>
-#include <boost/beast/core/detail/config.hpp>
+#include <boost/beast/http/basic_parser.hpp>
 #include <boost/beast/http/error.hpp>
 #include <boost/beast/http/rfc7230.hpp>
+#include <boost/beast/core/buffer_traits.hpp>
+#include <boost/beast/core/static_string.hpp>
+#include <boost/beast/core/detail/clamp.hpp>
+#include <boost/beast/core/detail/config.hpp>
 #include <boost/asio/buffer.hpp>
-#include <boost/make_unique.hpp>
 #include <algorithm>
 #include <utility>
 
@@ -25,26 +25,9 @@ namespace boost {
 namespace beast {
 namespace http {
 
-template<bool isRequest, class Derived>
-template<class OtherDerived>
-basic_parser<isRequest, Derived>::
-basic_parser(basic_parser<
-        isRequest, OtherDerived>&& other)
-    : body_limit_(other.body_limit_)
-    , len_(other.len_)
-    , buf_(std::move(other.buf_))
-    , buf_len_(other.buf_len_)
-    , skip_(other.skip_)
-    , header_limit_(other.header_limit_)
-    , status_(other.status_)
-    , state_(other.state_)
-    , f_(other.f_)
-{
-}
-
-template<bool isRequest, class Derived>
+template<bool isRequest>
 bool
-basic_parser<isRequest, Derived>::
+basic_parser<isRequest>::
 keep_alive() const
 {
     BOOST_ASSERT(is_header_done());
@@ -61,10 +44,21 @@ keep_alive() const
     return (f_ & flagNeedEOF) == 0;
 }
 
-template<bool isRequest, class Derived>
+template<bool isRequest>
 boost::optional<std::uint64_t>
-basic_parser<isRequest, Derived>::
+basic_parser<isRequest>::
 content_length() const
+{
+    BOOST_ASSERT(is_header_done());
+    if(! (f_ & flagContentLength))
+        return boost::none;
+    return len0_;
+}
+
+template<bool isRequest>
+boost::optional<std::uint64_t>
+basic_parser<isRequest>::
+content_length_remaining() const
 {
     BOOST_ASSERT(is_header_done());
     if(! (f_ & flagContentLength))
@@ -72,9 +66,9 @@ content_length() const
     return len_;
 }
 
-template<bool isRequest, class Derived>
+template<bool isRequest>
 void
-basic_parser<isRequest, Derived>::
+basic_parser<isRequest>::
 skip(bool v)
 {
     BOOST_ASSERT(! got_some());
@@ -84,59 +78,18 @@ skip(bool v)
         f_ &= ~flagSkipBody;
 }
 
-template<bool isRequest, class Derived>
-template<class ConstBufferSequence>
+template<bool isRequest>
 std::size_t
-basic_parser<isRequest, Derived>::
-put(ConstBufferSequence const& buffers,
-    error_code& ec)
-{
-    static_assert(boost::asio::is_const_buffer_sequence<
-        ConstBufferSequence>::value,
-            "ConstBufferSequence requirements not met");
-    using boost::asio::buffer_copy;
-    using boost::asio::buffer_size;
-    auto const p = boost::asio::buffer_sequence_begin(buffers);
-    auto const last = boost::asio::buffer_sequence_end(buffers);
-    if(p == last)
-    {
-        ec.assign(0, ec.category());
-        return 0;
-    }
-    if(std::next(p) == last)
-    {
-        // single buffer
-        return put(boost::asio::const_buffer(*p), ec);
-    }
-    auto const size = buffer_size(buffers);
-    if(size <= max_stack_buffer)
-        return put_from_stack(size, buffers, ec);
-    if(size > buf_len_)
-    {
-        // reallocate
-        buf_ = boost::make_unique_noinit<char[]>(size);
-        buf_len_ = size;
-    }
-    // flatten
-    buffer_copy(boost::asio::buffer(
-        buf_.get(), buf_len_), buffers);
-    return put(boost::asio::const_buffer{
-        buf_.get(), buf_len_}, ec);
-}
-
-template<bool isRequest, class Derived>
-std::size_t
-basic_parser<isRequest, Derived>::
-put(boost::asio::const_buffer const& buffer,
+basic_parser<isRequest>::
+put(net::const_buffer buffer,
     error_code& ec)
 {
     BOOST_ASSERT(state_ != state::complete);
-    using boost::asio::buffer_size;
     auto p = static_cast<char const*>(buffer.data());
     auto n = buffer.size();
     auto const p0 = p;
     auto const p1 = p0 + n;
-    ec.assign(0, ec.category());
+    ec = {};
 loop:
     switch(state_)
     {
@@ -207,7 +160,7 @@ loop:
 
     case state::body0:
         BOOST_ASSERT(! skip_);
-        impl().on_body_init_impl(content_length(), ec);
+        this->on_body_init_impl(content_length(), ec);
         if(ec)
             goto done;
         state_ = state::body;
@@ -222,7 +175,7 @@ loop:
 
     case state::body_to_eof0:
         BOOST_ASSERT(! skip_);
-        impl().on_body_init_impl(content_length(), ec);
+        this->on_body_init_impl(content_length(), ec);
         if(ec)
             goto done;
         state_ = state::body_to_eof;
@@ -236,7 +189,7 @@ loop:
         break;
 
     case state::chunk_header0:
-        impl().on_body_init_impl(content_length(), ec);
+        this->on_body_init_impl(content_length(), ec);
         if(ec)
             goto done;
         state_ = state::chunk_header;
@@ -255,7 +208,7 @@ loop:
         break;
 
     case state::complete:
-        ec.assign(0, ec.category());
+        ec = {};
         goto done;
     }
     if(p < p1 && ! is_done() && eager())
@@ -267,9 +220,9 @@ done:
     return static_cast<std::size_t>(p - p0);
 }
 
-template<bool isRequest, class Derived>
+template<bool isRequest>
 void
-basic_parser<isRequest, Derived>::
+basic_parser<isRequest>::
 put_eof(error_code& ec)
 {
     BOOST_ASSERT(got_some());
@@ -286,35 +239,19 @@ put_eof(error_code& ec)
             ec = error::partial_message;
             return;
         }
-        ec.assign(0, ec.category());
+        ec = {};
         return;
     }
-    impl().on_finish_impl(ec);
+    ec = {};
+    this->on_finish_impl(ec);
     if(ec)
         return;
     state_ = state::complete;
 }
 
-template<bool isRequest, class Derived>
-template<class ConstBufferSequence>
-std::size_t
-basic_parser<isRequest, Derived>::
-put_from_stack(std::size_t size,
-    ConstBufferSequence const& buffers,
-        error_code& ec)
-{
-    char buf[max_stack_buffer];
-    using boost::asio::buffer;
-    using boost::asio::buffer_copy;
-    buffer_copy(buffer(buf, sizeof(buf)), buffers);
-    return put(boost::asio::const_buffer{
-        buf, size}, ec);
-}
-
-template<bool isRequest, class Derived>
-inline
+template<bool isRequest>
 void
-basic_parser<isRequest, Derived>::
+basic_parser<isRequest>::
 maybe_need_more(
     char const* p, std::size_t n,
         error_code& ec)
@@ -344,10 +281,9 @@ maybe_need_more(
     skip_ = 0;
 }
 
-template<bool isRequest, class Derived>
-inline
+template<bool isRequest>
 void
-basic_parser<isRequest, Derived>::
+basic_parser<isRequest>::
 parse_start_line(
     char const*& in, char const* last,
     error_code& ec, std::true_type)
@@ -393,7 +329,7 @@ parse_start_line(
     if(version >= 11)
         f_ |= flagHTTP11;
 
-    impl().on_request_impl(string_to_verb(method),
+    this->on_request_impl(string_to_verb(method),
         method, target, version, ec);
     if(ec)
         return;
@@ -402,10 +338,9 @@ parse_start_line(
     state_ = state::fields;
 }
 
-template<bool isRequest, class Derived>
-inline
+template<bool isRequest>
 void
-basic_parser<isRequest, Derived>::
+basic_parser<isRequest>::
 parse_start_line(
     char const*& in, char const* last,
     error_code& ec, std::false_type)
@@ -452,7 +387,7 @@ parse_start_line(
     if(version >= 11)
         f_ |= flagHTTP11;
 
-    impl().on_response_impl(
+    this->on_response_impl(
         status_, reason, version, ec);
     if(ec)
         return;
@@ -461,9 +396,9 @@ parse_start_line(
     state_ = state::fields;
 }
 
-template<bool isRequest, class Derived>
+template<bool isRequest>
 void
-basic_parser<isRequest, Derived>::
+basic_parser<isRequest>::
 parse_fields(char const*& in,
     char const* last, error_code& ec)
 {
@@ -493,17 +428,16 @@ parse_fields(char const*& in,
         do_field(f, value, ec);
         if(ec)
             return;
-        impl().on_field_impl(f, name, value, ec);
+        this->on_field_impl(f, name, value, ec);
         if(ec)
             return;
         in = p;
     }
 }
 
-template<bool isRequest, class Derived>
-inline
+template<bool isRequest>
 void
-basic_parser<isRequest, Derived>::
+basic_parser<isRequest>::
 finish_header(error_code& ec, std::true_type)
 {
     // RFC 7230 section 3.3
@@ -538,24 +472,25 @@ finish_header(error_code& ec, std::true_type)
     else
     {
         len_ = 0;
+        len0_ = 0;
         state_ = state::complete;
     }
 
-    impl().on_header_impl(ec);
+    ec = {};
+    this->on_header_impl(ec);
     if(ec)
         return;
     if(state_ == state::complete)
     {
-        impl().on_finish_impl(ec);
+        this->on_finish_impl(ec);
         if(ec)
             return;
     }
 }
 
-template<bool isRequest, class Derived>
-inline
+template<bool isRequest>
 void
-basic_parser<isRequest, Derived>::
+basic_parser<isRequest>::
 finish_header(error_code& ec, std::false_type)
 {
     // RFC 7230 section 3.3
@@ -600,25 +535,26 @@ finish_header(error_code& ec, std::false_type)
         state_ = state::body_to_eof0;
     }
 
-    impl().on_header_impl(ec);
+    ec = {};
+    this->on_header_impl(ec);
     if(ec)
         return;
     if(state_ == state::complete)
     {
-        impl().on_finish_impl(ec);
+        this->on_finish_impl(ec);
         if(ec)
             return;
     }
 }
 
-template<bool isRequest, class Derived>
-inline
+template<bool isRequest>
 void
-basic_parser<isRequest, Derived>::
+basic_parser<isRequest>::
 parse_body(char const*& p,
     std::size_t n, error_code& ec)
 {
-    n = impl().on_body_impl(string_view{p,
+    ec = {};
+    n = this->on_body_impl(string_view{p,
         beast::detail::clamp(len_, n)}, ec);
     p += n;
     len_ -= n;
@@ -626,16 +562,15 @@ parse_body(char const*& p,
         return;
     if(len_ > 0)
         return;
-    impl().on_finish_impl(ec);
+    this->on_finish_impl(ec);
     if(ec)
         return;
     state_ = state::complete;
 }
 
-template<bool isRequest, class Derived>
-inline
+template<bool isRequest>
 void
-basic_parser<isRequest, Derived>::
+basic_parser<isRequest>::
 parse_body_to_eof(char const*& p,
     std::size_t n, error_code& ec)
 {
@@ -645,15 +580,16 @@ parse_body_to_eof(char const*& p,
         return;
     }
     body_limit_ = body_limit_ - n;
-    n = impl().on_body_impl(string_view{p, n}, ec);
+    ec = {};
+    n = this->on_body_impl(string_view{p, n}, ec);
     p += n;
     if(ec)
         return;
 }
 
-template<bool isRequest, class Derived>
+template<bool isRequest>
 void
-basic_parser<isRequest, Derived>::
+basic_parser<isRequest>::
 parse_chunk_header(char const*& p0,
     std::size_t n, error_code& ec)
 {
@@ -729,7 +665,7 @@ parse_chunk_header(char const*& p0,
                 return;
             }
             auto const ext = make_string(start, p);
-            impl().on_chunk_header_impl(size, ext, ec);
+            this->on_chunk_header_impl(size, ext, ec);
             if(ec)
                 return;
             len_ = size;
@@ -772,7 +708,7 @@ parse_chunk_header(char const*& p0,
         return;
     }
     auto const ext = make_string(start, p);
-    impl().on_chunk_header_impl(0, ext, ec);
+    this->on_chunk_header_impl(0, ext, ec);
     if(ec)
         return;
     p = eol;
@@ -782,20 +718,20 @@ parse_chunk_header(char const*& p0,
     BOOST_ASSERT(p == eom);
     p0 = eom;
 
-    impl().on_finish_impl(ec);
+    this->on_finish_impl(ec);
     if(ec)
         return;
     state_ = state::complete;
 }
 
-template<bool isRequest, class Derived>
-inline
+template<bool isRequest>
 void
-basic_parser<isRequest, Derived>::
+basic_parser<isRequest>::
 parse_chunk_body(char const*& p,
     std::size_t n, error_code& ec)
 {
-    n = impl().on_chunk_body_impl(
+    ec = {};
+    n = this->on_chunk_body_impl(
         len_, string_view{p,
             beast::detail::clamp(len_, n)}, ec);
     p += n;
@@ -804,9 +740,9 @@ parse_chunk_body(char const*& p,
         state_ = state::chunk_header;
 }
 
-template<bool isRequest, class Derived>
+template<bool isRequest>
 void
-basic_parser<isRequest, Derived>::
+basic_parser<isRequest>::
 do_field(field f,
     string_view value, error_code& ec)
 {
@@ -841,7 +777,7 @@ do_field(field f,
                 continue;
             }
         }
-        ec.assign(0, ec.category());
+        ec = {};
         return;
     }
 
@@ -870,8 +806,9 @@ do_field(field f,
             return;
         }
 
-        ec.assign(0, ec.category());
+        ec = {};
         len_ = v;
+        len0_ = v;
         f_ |= flagContentLength;
         return;
     }
@@ -893,7 +830,7 @@ do_field(field f,
             return;
         }
 
-        ec.assign(0, ec.category());
+        ec = {};
         auto const v = token_list{value};
         auto const p = std::find_if(v.begin(), v.end(),
             [&](typename token_list::value_type const& s)
@@ -912,13 +849,18 @@ do_field(field f,
     // Upgrade
     if(f == field::upgrade)
     {
-        ec.assign(0, ec.category());
+        ec = {};
         f_ |= flagUpgrade;
         return;
     }
 
-    ec.assign(0, ec.category());
+    ec = {};
 }
+
+#ifdef BOOST_BEAST_SOURCE
+template class http::basic_parser<true>;
+template class http::basic_parser<false>;
+#endif
 
 } // http
 } // beast

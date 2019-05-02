@@ -10,6 +10,8 @@
 
 #include <boost/gil/io/base.hpp>
 
+#include <boost/assert.hpp>
+
 namespace boost { namespace gil {
 
 /// Reader Base Class
@@ -54,7 +56,7 @@ public:
     {
         //setup( backend._settings._dim );
 
-        assert( settings._dim.x && settings._dim.y );
+        BOOST_ASSERT(settings._dim.x && settings._dim.y);
 
         img.recreate( settings._dim.x
                     , settings._dim.y
@@ -88,7 +90,7 @@ private:
 
     void check_coordinates( const point_t& /* dim */ )
     {
-       //typedef point_t::value_type int_t;
+       //using int_t = point_t::value_type;
 
        //int_t width  = static_cast< int_t >( _info._width  );
        //int_t height = static_cast< int_t >( _info._height );

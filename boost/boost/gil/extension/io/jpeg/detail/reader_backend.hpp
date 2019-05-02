@@ -9,6 +9,7 @@
 #define BOOST_GIL_EXTENSION_IO_JPEG_DETAIL_READER_BACKEND_HPP
 
 #include <boost/gil/extension/io/jpeg/tags.hpp>
+#include <boost/gil/extension/io/jpeg/detail/base.hpp>
 
 #include <csetjmp>
 #include <memory>
@@ -55,7 +56,7 @@ private:
             jpeg_destroy_decompress( jpeg_decompress_ptr );
 
             delete jpeg_decompress_ptr;
-            jpeg_decompress_ptr = NULL;
+            jpeg_decompress_ptr = nullptr;
         }
     }
 
@@ -79,7 +80,7 @@ struct reader_backend< Device
 {
 public:
 
-    typedef jpeg_tag format_tag_t;
+    using format_tag_t = jpeg_tag;
 
 public:
     //

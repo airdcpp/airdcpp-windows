@@ -26,7 +26,7 @@
 
 # if (defined(_YVALS) || defined(_CPPLIB_VER)) && !defined(__SGI_STL_PORT) && \
      !defined(_STLPORT_VERSION) && !defined(__QNX__) && !defined(_VX_CPU) && !defined(__VXWORKS__) \
-     && !(defined(BOOST_MSVC) && _MSVC_STL_VERSION >= 141)
+     && !((defined(BOOST_MSVC) || defined(BOOST_CLANG)) && _MSVC_STL_VERSION >= 141)
      /**/
 
 #include <boost/iostreams/detail/ios.hpp>

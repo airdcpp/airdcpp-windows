@@ -13,54 +13,53 @@
 
 #include <algorithm>
 #include <iterator>
+#include <type_traits>
 
 namespace boost{namespace gil{ namespace detail {
 
 struct read_and_no_convert
 {
 public:
-    typedef void* color_converter_type;
+    using color_converter_type = void *;
 
-    template< typename InIterator
-            , typename OutIterator
-            >
-    void read( const InIterator& /* begin */
-             , const InIterator& /* end   */
-             , OutIterator       /* out   */
-             , typename disable_if< typename pixels_are_compatible< typename std::iterator_traits<InIterator>::value_type
-                                                                  , typename std::iterator_traits<OutIterator>::value_type
-                                                                  >::type
-                                  >::type* /* ptr */ = 0
-             )
+    template <typename InIterator, typename OutIterator>
+    void read(
+        InIterator const& /*begin*/, InIterator const& /*end*/ , OutIterator /*out*/,
+        typename std::enable_if
+        <
+            mpl::not_
+            <
+                pixels_are_compatible
+                <
+                    typename std::iterator_traits<InIterator>::value_type,
+                    typename std::iterator_traits<OutIterator>::value_type
+                >
+            >::value
+        >::type* /*dummy*/ = nullptr)
     {
-        io_error( "Data cannot be copied because the pixels are incompatible." );
+        io_error("Data cannot be copied because the pixels are incompatible.");
     }
 
-    template< typename InIterator
-            , typename OutIterator
-            >
-    void read( const InIterator& begin
-             , const InIterator& end
-             , OutIterator       out
-             , typename enable_if< typename pixels_are_compatible< typename std::iterator_traits<InIterator>::value_type
-                                                                 , typename std::iterator_traits<OutIterator>::value_type
-                                                                 >::type
-                                 >::type* /* ptr */ = 0
-             )
+    template <typename InIterator, typename OutIterator>
+    void read(InIterator const& begin, InIterator const& end, OutIterator out,
+        typename std::enable_if
+        <
+            pixels_are_compatible
+            <
+                typename std::iterator_traits<InIterator>::value_type,
+                typename std::iterator_traits<OutIterator>::value_type
+            >::value
+        >::type* /*dummy*/ = nullptr)
     {
-        std::copy( begin
-                 , end
-                 , out
-                 );
+        std::copy(begin, end, out);
     }
-
 };
 
 template<typename CC>
 struct read_and_convert
 {
 public:
-    typedef CC color_converter_type;
+    using color_converter_type = default_color_converter;
     CC _cc;
 
     read_and_convert()
@@ -78,10 +77,10 @@ public:
              , OutIterator       out
              )
     {
-        typedef color_convert_deref_fn< typename std::iterator_traits<InIterator>::reference
+        using deref_t = color_convert_deref_fn<typename std::iterator_traits<InIterator>::reference
                                       , typename std::iterator_traits<OutIterator>::value_type //reference?
                                       , CC
-                                      > deref_t;
+                                      >;
 
         std::transform( begin
                       , end

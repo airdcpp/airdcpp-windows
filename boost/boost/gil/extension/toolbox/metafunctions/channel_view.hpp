@@ -20,7 +20,7 @@ struct channel_type_to_index
 {
     static const int value = detail::type_to_index< typename color_space_type< View >::type // color (mpl::vector)
                                                   , Channel                                 // channel type
-                                                  >::type::value;                           //< index of the channel in the color (mpl::vector)
+                                                  >::value;                           //< index of the channel in the color (mpl::vector)
 };
 
 template< typename Channel
@@ -35,13 +35,9 @@ struct channel_view_type : public kth_channel_view_type< channel_type_to_index< 
     static const int index = channel_type_to_index< Channel
                                                   , View
                                                   >::value;
-                                                  
-    typedef kth_channel_view_type< index
-                                 , View
-                                 > parent_t;
 
-    typedef typename parent_t::type type;
-
+    using parent_t = kth_channel_view_type<index, View>;
+    using type = typename parent_t::type;
 
     static type make( const View& src )
     {

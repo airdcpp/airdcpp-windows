@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2016-2017 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2016-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -10,13 +10,20 @@
 #ifndef BOOST_BEAST_CORE_DETAIL_CONFIG_HPP
 #define BOOST_BEAST_CORE_DETAIL_CONFIG_HPP
 
-#include <boost/config.hpp>
-#include <boost/version.hpp>
-
 // Available to every header
 #include <boost/config.hpp>
+#include <boost/version.hpp>
 #include <boost/core/ignore_unused.hpp>
 #include <boost/static_assert.hpp>
+
+namespace boost {
+namespace asio
+{
+} // asio
+namespace beast {
+namespace net = boost::asio;
+} // beast
+} // boost
 
 /*
     _MSC_VER and _MSC_FULL_VER by version:
@@ -50,5 +57,40 @@
 
 #define BOOST_BEAST_DEPRECATION_STRING \
     "This is a deprecated interface, #define BOOST_BEAST_ALLOW_DEPRECATED to allow it"
+
+#ifndef BOOST_BEAST_ASSUME
+# ifdef BOOST_GCC
+#  define BOOST_BEAST_ASSUME(cond) \
+    do { if (!(cond)) __builtin_unreachable(); } while (0)
+# else
+#  define BOOST_BEAST_ASSUME(cond) do { } while(0)
+# endif
+#endif
+
+// Default to a header-only implementation. The user must specifically
+// request separate compilation by defining BOOST_BEAST_SEPARATE_COMPILATION
+#ifndef BOOST_BEAST_HEADER_ONLY
+# ifndef BOOST_BEAST_SEPARATE_COMPILATION
+#   define BOOST_BEAST_HEADER_ONLY 1
+# endif
+#endif
+
+#if BOOST_BEAST_DOXYGEN
+# define BOOST_BEAST_DECL
+#elif defined(BOOST_BEAST_HEADER_ONLY)
+# define BOOST_BEAST_DECL inline
+#else
+# define BOOST_BEAST_DECL
+#endif
+
+#ifndef BOOST_BEAST_ASYNC_RESULT1
+#define BOOST_BEAST_ASYNC_RESULT1(type) \
+    BOOST_ASIO_INITFN_RESULT_TYPE(type, void(::boost::beast::error_code))
+#endif
+
+#ifndef BOOST_BEAST_ASYNC_RESULT2
+#define BOOST_BEAST_ASYNC_RESULT2(type) \
+    BOOST_ASIO_INITFN_RESULT_TYPE(type, void(::boost::beast::error_code, std::size_t))
+#endif
 
 #endif

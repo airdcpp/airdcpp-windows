@@ -1,8 +1,9 @@
 // Boost.Geometry (aka GGL, Generic Geometry Library)
 
-// Copyright (c) 2016-2017, Oracle and/or its affiliates.
+// Copyright (c) 2016-2018, Oracle and/or its affiliates.
 
 // Contributed and/or modified by Vissarion Fysikopoulos, on behalf of Oracle
+// Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
 
 // Use, modification and distribution is subject to the Boost Software License,
 // Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
@@ -27,7 +28,9 @@
 
 #include <boost/geometry/strategies/distance.hpp>
 #include <boost/geometry/strategies/concepts/distance_concept.hpp>
+#include <boost/geometry/strategies/spherical/distance_cross_track.hpp>
 #include <boost/geometry/strategies/spherical/distance_haversine.hpp>
+#include <boost/geometry/strategies/spherical/point_in_point.hpp>
 #include <boost/geometry/strategies/geographic/azimuth.hpp>
 #include <boost/geometry/strategies/geographic/distance.hpp>
 #include <boost/geometry/strategies/geographic/parameters.hpp>
@@ -84,6 +87,8 @@ template
 class geographic_cross_track
 {
 public :
+    typedef within::spherical_point_point equals_point_point_strategy_type;
+
     template <typename Point, typename PointOfSegment>
     struct return_type
         : promote_floating_point
@@ -105,7 +110,7 @@ public :
     inline typename return_type<Point, PointOfSegment>::type
     apply(Point const& p, PointOfSegment const& sp1, PointOfSegment const& sp2) const
     {
-        typedef typename coordinate_system<Point>::type::units units_type;
+        typedef typename geometry::detail::cs_angular_units<Point>::type units_type;
 
         return (apply<units_type>(get<0>(sp1), get<1>(sp1),
                                   get<0>(sp2), get<1>(sp2),
@@ -404,7 +409,7 @@ private :
             return non_iterative_case(lon2, lat2, lon3, lat3, spheroid);
         }
 
-        // Guess s14 (SPHERICAL)
+        // Guess s14 (SPHERICAL) aka along-track distance
         typedef geometry::model::point
                 <
                     CT, 2,
@@ -420,7 +425,12 @@ private :
 
         geometry::strategy::distance::haversine<CT> str(earth_radius);
         CT s13 = str.apply(p1, p3);
-        CT s14 = acos( cos(s13/earth_radius) / cos(s34/earth_radius) ) * earth_radius;
+
+        //CT s14 = acos( cos(s13/earth_radius) / cos(s34/earth_radius) ) * earth_radius;
+        CT cos_frac = cos(s13/earth_radius) / cos(s34/earth_radius);
+        CT s14 = cos_frac >= 1 ? CT(0)
+               : cos_frac <= -1 ? pi * earth_radius
+               : acos(cos_frac) * earth_radius;
 
 #ifdef BOOST_GEOMETRY_DEBUG_GEOGRAPHIC_CROSS_TRACK
         std::cout << "s34=" << s34 << std::endl;
@@ -638,15 +648,11 @@ template
 >
 struct get_comparable<geographic_cross_track<FormulaPolicy, Spheroid, CalculationType> >
 {
-    typedef typename comparable_type
-        <
-            geographic_cross_track<FormulaPolicy, Spheroid, CalculationType>
-        >::type comparable_type;
 public :
-    static inline comparable_type
-    apply(geographic_cross_track<FormulaPolicy, Spheroid, CalculationType> const& )
+    static inline geographic_cross_track<FormulaPolicy, Spheroid, CalculationType>
+    apply(geographic_cross_track<FormulaPolicy, Spheroid, CalculationType> const& strategy)
     {
-        return comparable_type();
+        return strategy;
     }
 };
 

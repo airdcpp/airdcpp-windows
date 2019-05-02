@@ -50,7 +50,6 @@ class delayed_dataset
 public:
     enum { arity = dataset_t::arity };
     using iterator = decltype(std::declval<dataset_t>().begin());
-    using sample = typename dataset_t::sample;
 
     delayed_dataset(Args... args)
     : m_args(std::make_tuple(std::forward<Args>(args)...))
@@ -74,10 +73,10 @@ public:
 private:
 
   dataset_t& get() const {
-    if(!m_dataset) {
-        m_dataset = create(boost::unit_test::data::index_sequence_for<Args...>());
-    }
-    return *m_dataset;
+      if(!m_dataset) {
+          m_dataset = create(boost::unit_test::data::index_sequence_for<Args...>());
+      }
+      return *m_dataset;
   }
 
   template<std::size_t... I>
@@ -101,6 +100,8 @@ struct is_dataset< delayed_dataset<dataset_t, Args...> > : boost::mpl::true_ {};
 
 } // namespace monomorphic
 
+
+//! Delayed dataset instanciation
 template<class dataset_t, class ...Args>
 inline typename std::enable_if<
   monomorphic::is_dataset< dataset_t >::value,

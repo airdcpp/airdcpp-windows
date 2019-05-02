@@ -14,10 +14,11 @@
 #include <boost/config.hpp>
 #include <boost/mpl/at.hpp>
 #include <boost/mpl/contains.hpp>
+#include <boost/mpl/size.hpp>
 #include <boost/type_traits.hpp>
-#include <boost/utility/enable_if.hpp>
 
 #include <algorithm>
+#include <type_traits>
 
 namespace boost { namespace gil {
 
@@ -34,8 +35,8 @@ namespace boost { namespace gil {
 
 Example:
 \code
-BOOST_STATIC_ASSERT((size<rgb8_pixel_t>::value == 3));
-BOOST_STATIC_ASSERT((size<cmyk8_planar_ptr_t>::value == 4));
+static_assert(size<rgb8_pixel_t>::value == 3, "");
+static_assert(size<cmyk8_planar_ptr_t>::value == 4, "");
 \endcode
 */
 
@@ -62,10 +63,10 @@ All GIL color base algorithms taking multiple color bases use semantic indexing 
 Example:
 \code
 // 16-bit BGR pixel, 4 bits for the blue, 3 bits for the green, 2 bits for the red channel and 7 unused bits
-typedef packed_pixel_type<uint16_t, mpl::vector3_c<unsigned,4,3,2>, bgr_layout_t>::type bgr432_pixel_t;
+using bgr432_pixel_t = packed_pixel_type<uint16_t, mpl::vector3_c<unsigned,4,3,2>, bgr_layout_t>::type;
 
 // A reference to its red channel. Although the red channel is the third, its semantic index is 0 in the RGB color space
-typedef kth_semantic_element_reference_type<bgr432_pixel_t, 0>::type red_channel_reference_t;
+using red_channel_reference_t = kth_semantic_element_reference_type<bgr432_pixel_t, 0>::type;
 
 // Initialize the pixel to black
 bgr432_pixel_t red_pixel(0,0,0);
@@ -78,32 +79,55 @@ red_channel = channel_traits<red_channel_reference_t>::max_value();
 */
 /// \brief Specifies the type of the K-th semantic element of a color base
 /// \ingroup ColorBaseAlgorithmSemanticAtC
-template <typename ColorBase, int K> struct kth_semantic_element_type {
-    BOOST_STATIC_CONSTANT(int, semantic_index = (mpl::at_c<typename ColorBase::layout_t::channel_mapping_t,K>::type::value));
-    typedef typename kth_element_type<ColorBase, semantic_index>::type type;
+template <typename ColorBase, int K>
+struct kth_semantic_element_type
+{
+    using channel_mapping_t = typename ColorBase::layout_t::channel_mapping_t;
+    static_assert(K < mpl::size<channel_mapping_t>::value,
+        "K index should be less than size of channel_mapping_t sequence");
+
+    static constexpr int semantic_index = mpl::at_c<channel_mapping_t, K>::type::value;
+    using type = typename kth_element_type<ColorBase, semantic_index>::type;
 };
 
 /// \brief Specifies the return type of the mutable semantic_at_c<K>(color_base);
 /// \ingroup ColorBaseAlgorithmSemanticAtC
-template <typename ColorBase, int K> struct kth_semantic_element_reference_type {
-    BOOST_STATIC_CONSTANT(int, semantic_index = (mpl::at_c<typename ColorBase::layout_t::channel_mapping_t,K>::type::value));
-    typedef typename kth_element_reference_type<ColorBase,semantic_index>::type type;
-    static type       get(ColorBase& cb) { return gil::at_c<semantic_index>(cb); }
+template <typename ColorBase, int K>
+struct kth_semantic_element_reference_type
+{
+    using channel_mapping_t = typename ColorBase::layout_t::channel_mapping_t;
+    static_assert(K < mpl::size<channel_mapping_t>::value,
+        "K index should be less than size of channel_mapping_t sequence");
+
+    static constexpr int semantic_index = mpl::at_c<channel_mapping_t, K>::type::value;
+    using type = typename kth_element_reference_type<ColorBase, semantic_index>::type;
+    static type get(ColorBase& cb) { return gil::at_c<semantic_index>(cb); }
 };
 
 /// \brief Specifies the return type of the constant semantic_at_c<K>(color_base);
 /// \ingroup ColorBaseAlgorithmSemanticAtC
-template <typename ColorBase, int K> struct kth_semantic_element_const_reference_type {
-	BOOST_STATIC_CONSTANT(int, semantic_index = (mpl::at_c<typename ColorBase::layout_t::channel_mapping_t,K>::type::value));
-	typedef typename kth_element_const_reference_type<ColorBase,semantic_index>::type type;
-    static type       get(const ColorBase& cb) { return gil::at_c<semantic_index>(cb); }
+template <typename ColorBase, int K> struct kth_semantic_element_const_reference_type
+{
+    using channel_mapping_t = typename ColorBase::layout_t::channel_mapping_t;
+    static_assert(K < mpl::size<channel_mapping_t>::value,
+        "K index should be less than size of channel_mapping_t sequence");
+
+    static constexpr int semantic_index = mpl::at_c<channel_mapping_t, K>::type::value;
+    using type = typename kth_element_const_reference_type<ColorBase,semantic_index>::type;
+    static type get(const ColorBase& cb) { return gil::at_c<semantic_index>(cb); }
 };
 
 /// \brief A mutable accessor to the K-th semantic element of a color base
 /// \ingroup ColorBaseAlgorithmSemanticAtC
-template <int K, typename ColorBase> inline
-typename disable_if<is_const<ColorBase>,typename kth_semantic_element_reference_type<ColorBase,K>::type>::type
-semantic_at_c(ColorBase& p) {
+template <int K, typename ColorBase>
+inline
+auto semantic_at_c(ColorBase& p)
+    -> typename std::enable_if
+    <
+        !std::is_const<ColorBase>::value,
+        typename kth_semantic_element_reference_type<ColorBase, K>::type
+    >::type
+{
     return kth_semantic_element_reference_type<ColorBase,K>::get(p);
 }
 
@@ -132,9 +156,9 @@ Example: A function that takes a generic pixel containing a red channel and sets
 template <typename Pixel>
 void set_red_to_max(Pixel& pixel) {
     boost::function_requires<MutablePixelConcept<Pixel> >();
-    BOOST_STATIC_ASSERT((contains_color<Pixel, red_t>::value));
+    static_assert(contains_color<Pixel, red_t>::value, "");
 
-    typedef typename color_element_type<Pixel, red_t>::type red_channel_t;
+    using red_channel_t = typename color_element_type<Pixel, red_t>::type;
     get_color(pixel, red_t()) = channel_traits<red_channel_t>::max_value();
 }
 \endcode
@@ -190,8 +214,8 @@ typename color_element_const_reference_type<ColorBase,Color>::type get_color(con
 
 Example:
 \code
-typedef element_type<rgb8c_planar_ptr_t>::type element_t;
-BOOST_STATIC_ASSERT((boost::is_same<element_t, const uint8_t*>::value));
+using element_t = element_type<rgb8c_planar_ptr_t>::type;
+static_assert(std::is_same<element_t, const uint8_t*>::value, "");
 \endcode
 */
 /// \brief Specifies the element type of a homogeneous color base
@@ -217,11 +241,12 @@ template <int N>
 struct element_recursion
 {
 
-#if defined(BOOST_GCC)
+#if defined(BOOST_GCC) && (BOOST_GCC >= 40600)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wconversion"
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 #endif
+
     template <typename P1,typename P2>
     static bool static_equal(const P1& p1, const P2& p2)
     {
@@ -249,7 +274,8 @@ struct element_recursion
         element_recursion<N-1>::static_generate(dst,op);
         semantic_at_c<N-1>(dst)=op();
     }
-#if defined(BOOST_GCC)
+
+#if defined(BOOST_GCC) && (BOOST_GCC >= 40600)
 #pragma GCC diagnostic pop
 #endif
 
@@ -445,21 +471,18 @@ struct min_max_recur<1> {
 };
 }  // namespace detail
 
-
-/**
-\defgroup ColorBaseAlgorithmMinMax static_min, static_max
-\ingroup ColorBaseAlgorithm
-\brief Equivalents to std::min_element and std::max_element for homogeneous color bases
-
-Example:
-\code
-rgb8_pixel_t pixel(10,20,30);
-assert(pixel[2] == 30);
-static_max(pixel) = static_min(pixel);
-assert(pixel[2] == 10);
-\endcode
-\{
-*/
+/// \defgroup ColorBaseAlgorithmMinMax static_min, static_max
+/// \ingroup ColorBaseAlgorithm
+/// \brief Equivalents to std::min_element and std::max_element for homogeneous color bases
+///
+/// Example:
+/// \code
+/// rgb8_pixel_t pixel(10,20,30);
+/// assert(pixel[2] == 30);
+/// static_max(pixel) = static_min(pixel);
+/// assert(pixel[2] == 10);
+/// \endcode
+/// \{
 
 template <typename P>
 BOOST_FORCEINLINE
@@ -478,22 +501,20 @@ BOOST_FORCEINLINE
 typename element_reference_type<P>::type       static_min(      P& p) { return detail::min_max_recur<size<P>::value>::min_(p); }
 /// \}
 
-/**
-\defgroup ColorBaseAlgorithmEqual static_equal
-\ingroup ColorBaseAlgorithm
-\brief Equivalent to std::equal. Pairs the elements semantically
-
-Example:
-\code
-rgb8_pixel_t rgb_red(255,0,0);
-bgr8_pixel_t bgr_red(0,0,255);
-assert(rgb_red[0]==255 && bgr_red[0]==0);
-
-assert(static_equal(rgb_red,bgr_red));
-assert(rgb_red==bgr_red);  // operator== invokes static_equal
-\endcode
-\{
-*/
+/// \defgroup ColorBaseAlgorithmEqual static_equal
+/// \ingroup ColorBaseAlgorithm
+/// \brief Equivalent to std::equal. Pairs the elements semantically
+///
+/// Example:
+/// \code
+/// rgb8_pixel_t rgb_red(255,0,0);
+/// bgr8_pixel_t bgr_red(0,0,255);
+/// assert(rgb_red[0]==255 && bgr_red[0]==0);
+///
+/// assert(static_equal(rgb_red,bgr_red));
+/// assert(rgb_red==bgr_red);  // operator== invokes static_equal
+/// \endcode
+/// \{
 
 template <typename P1,typename P2>
 BOOST_FORCEINLINE
@@ -501,22 +522,20 @@ bool static_equal(const P1& p1, const P2& p2) { return detail::element_recursion
 
 /// \}
 
-/**
-\defgroup ColorBaseAlgorithmCopy static_copy
-\ingroup ColorBaseAlgorithm
-\brief Equivalent to std::copy. Pairs the elements semantically
-
-Example:
-\code
-rgb8_pixel_t rgb_red(255,0,0);
-bgr8_pixel_t bgr_red;
-static_copy(rgb_red, bgr_red);  // same as bgr_red = rgb_red
-
-assert(rgb_red[0] == 255 && bgr_red[0] == 0);
-assert(rgb_red == bgr_red);
-\endcode
-\{
-*/
+/// \defgroup ColorBaseAlgorithmCopy static_copy
+/// \ingroup ColorBaseAlgorithm
+/// \brief Equivalent to std::copy. Pairs the elements semantically
+///
+/// Example:
+/// \code
+/// rgb8_pixel_t rgb_red(255,0,0);
+/// bgr8_pixel_t bgr_red;
+/// static_copy(rgb_red, bgr_red);  // same as bgr_red = rgb_red
+///
+/// assert(rgb_red[0] == 255 && bgr_red[0] == 0);
+/// assert(rgb_red == bgr_red);
+/// \endcode
+/// \{
 
 template <typename Src,typename Dst>
 BOOST_FORCEINLINE
@@ -524,77 +543,72 @@ void static_copy(const Src& src, Dst& dst) {  detail::element_recursion<size<Dst
 
 /// \}
 
-/**
-\defgroup ColorBaseAlgorithmFill static_fill
-\ingroup ColorBaseAlgorithm
-\brief Equivalent to std::fill.
+/// \defgroup ColorBaseAlgorithmFill static_fill
+/// \ingroup ColorBaseAlgorithm
+/// \brief Equivalent to std::fill.
+///
+/// Example:
+/// \code
+/// rgb8_pixel_t p;
+/// static_fill(p, 10);
+/// assert(p == rgb8_pixel_t(10,10,10));
+/// \endcode
+/// \{
 
-Example:
-\code
-rgb8_pixel_t p;
-static_fill(p, 10);
-assert(p == rgb8_pixel_t(10,10,10));
-\endcode
-\{
-*/
 template <typename P,typename V>
 BOOST_FORCEINLINE
 void static_fill(P& p, const V& v) {  detail::element_recursion<size<P>::value>::static_fill(p,v); }
 /// \}
 
-/**
-\defgroup ColorBaseAlgorithmGenerate static_generate
-\ingroup ColorBaseAlgorithm
-\brief Equivalent to std::generate.
-
-Example: Set each channel of a pixel to its semantic index. The channels must be assignable from an integer.
-\code
-struct consecutive_fn {
-    int& _current;
-    consecutive_fn(int& start) : _current(start) {}
-    int operator()() { return _current++; }
-};
-rgb8_pixel_t p;
-int start=0;
-static_generate(p, consecutive_fn(start));
-assert(p == rgb8_pixel_t(0,1,2));
-\endcode
-
-\{
-*/
+/// \defgroup ColorBaseAlgorithmGenerate static_generate
+/// \ingroup ColorBaseAlgorithm
+/// \brief Equivalent to std::generate.
+///
+/// Example: Set each channel of a pixel to its semantic index. The channels must be assignable from an integer.
+/// \code
+/// struct consecutive_fn {
+///     int& _current;
+///     consecutive_fn(int& start) : _current(start) {}
+///     int operator()() { return _current++; }
+/// };
+/// rgb8_pixel_t p;
+/// int start=0;
+/// static_generate(p, consecutive_fn(start));
+/// assert(p == rgb8_pixel_t(0,1,2));
+/// \endcode
+///
+/// \{
 
 template <typename P1,typename Op>
 BOOST_FORCEINLINE
 void static_generate(P1& dst,Op op)                      { detail::element_recursion<size<P1>::value>::static_generate(dst,op); }
 /// \}
 
-/**
-\defgroup ColorBaseAlgorithmTransform static_transform
-\ingroup ColorBaseAlgorithm
-\brief Equivalent to std::transform. Pairs the elements semantically
-
-Example: Write a generic function that adds two pixels into a homogeneous result pixel.
-\code
-template <typename Result>
-struct my_plus {
-    template <typename T1, typename T2>
-    Result operator()(T1 f1, T2 f2) const { return f1+f2; }
-};
-
-template <typename Pixel1, typename Pixel2, typename Pixel3>
-void sum_channels(const Pixel1& p1, const Pixel2& p2, Pixel3& result) {
-    typedef typename channel_type<Pixel3>::type result_channel_t;
-    static_transform(p1,p2,result,my_plus<result_channel_t>());
-}
-
-rgb8_pixel_t p1(1,2,3);
-bgr8_pixel_t p2(3,2,1);
-rgb8_pixel_t result;
-sum_channels(p1,p2,result);
-assert(result == rgb8_pixel_t(2,4,6));
-\endcode
-\{
-*/
+/// \defgroup ColorBaseAlgorithmTransform static_transform
+/// \ingroup ColorBaseAlgorithm
+/// \brief Equivalent to std::transform. Pairs the elements semantically
+///
+/// Example: Write a generic function that adds two pixels into a homogeneous result pixel.
+/// \code
+/// template <typename Result>
+/// struct my_plus {
+///     template <typename T1, typename T2>
+///     Result operator()(T1 f1, T2 f2) const { return f1+f2; }
+/// };
+///
+/// template <typename Pixel1, typename Pixel2, typename Pixel3>
+/// void sum_channels(const Pixel1& p1, const Pixel2& p2, Pixel3& result) {
+///     using result_channel_t = typename channel_type<Pixel3>::type;
+///     static_transform(p1,p2,result,my_plus<result_channel_t>());
+/// }
+///
+/// rgb8_pixel_t p1(1,2,3);
+/// bgr8_pixel_t p2(3,2,1);
+/// rgb8_pixel_t result;
+/// sum_channels(p1,p2,result);
+/// assert(result == rgb8_pixel_t(2,4,6));
+/// \endcode
+/// \{
 
 //static_transform with one source
 template <typename Src,typename Dst,typename Op>
@@ -618,32 +632,30 @@ BOOST_FORCEINLINE
 Op static_transform(const P2& p2,const P3& p3,Dst& dst,Op op) { return detail::element_recursion<size<Dst>::value>::static_transform(p2,p3,dst,op); }
 /// \}
 
-/**
-\defgroup ColorBaseAlgorithmForEach static_for_each
-\ingroup ColorBaseAlgorithm
-\brief Equivalent to std::for_each. Pairs the elements semantically
-
-Example: Use static_for_each to increment a planar pixel iterator
-\code
-struct increment {
-    template <typename Incrementable>
-    void operator()(Incrementable& x) const { ++x; }
-};
-
-template <typename ColorBase>
-void increment_elements(ColorBase& cb) {
-    static_for_each(cb, increment());
-}
-
-uint8_t red[2], green[2], blue[2];
-rgb8c_planar_ptr_t p1(red,green,blue);
-rgb8c_planar_ptr_t p2=p1;
-increment_elements(p1);
-++p2;
-assert(p1 == p2);
-\endcode
-\{
-*/
+/// \defgroup ColorBaseAlgorithmForEach static_for_each
+/// \ingroup ColorBaseAlgorithm
+/// \brief Equivalent to std::for_each. Pairs the elements semantically
+///
+/// Example: Use static_for_each to increment a planar pixel iterator
+/// \code
+/// struct increment {
+///     template <typename Incrementable>
+///     void operator()(Incrementable& x) const { ++x; }
+/// };
+///
+/// template <typename ColorBase>
+/// void increment_elements(ColorBase& cb) {
+///     static_for_each(cb, increment());
+/// }
+///
+/// uint8_t red[2], green[2], blue[2];
+/// rgb8c_planar_ptr_t p1(red,green,blue);
+/// rgb8c_planar_ptr_t p2=p1;
+/// increment_elements(p1);
+/// ++p2;
+/// assert(p1 == p2);
+/// \endcode
+/// \{
 
 //static_for_each with one source
 template <typename P1,typename Op>

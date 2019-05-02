@@ -11,7 +11,6 @@
 
 #include <boost/fusion/support/category_of.hpp>
 #include <boost/spirit/home/x3/support/unused.hpp>
-#include <boost/detail/iterator.hpp>
 #include <boost/fusion/include/deque.hpp>
 #include <boost/tti/has_type.hpp>
 #include <boost/mpl/identity.hpp>
@@ -123,7 +122,7 @@ namespace boost { namespace spirit { namespace x3 { namespace traits
         template <typename T>
         static bool call(Container& c, T&& val)
         {
-            c.insert(c.end(), std::move(val));
+            c.insert(c.end(), static_cast<T&&>(val));
             return true;
         }
     };
@@ -131,7 +130,7 @@ namespace boost { namespace spirit { namespace x3 { namespace traits
     template <typename Container, typename T>
     inline bool push_back(Container& c, T&& val)
     {
-        return push_back_container<Container>::call(c, std::move(val));
+        return push_back_container<Container>::call(c, static_cast<T&&>(val));
     }
 
     template <typename Container>
@@ -277,7 +276,7 @@ namespace boost { namespace spirit { namespace x3 { namespace traits
     template <typename Iterator, typename Enable = void>
     struct deref_iterator
     {
-        typedef typename boost::detail::iterator_traits<Iterator>::reference type;
+        typedef typename std::iterator_traits<Iterator>::reference type;
         static type call(Iterator& it)
         {
             return *it;

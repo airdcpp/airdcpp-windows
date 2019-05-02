@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2016-2017 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2016-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -11,7 +11,7 @@
 #define BOOST_BEAST_WEBSOCKET_DETAIL_MASK_HPP
 
 #include <boost/beast/core/detail/config.hpp>
-#include <boost/beast/core/detail/type_traits.hpp>
+#include <boost/beast/core/buffers_range.hpp>
 #include <boost/asio/buffer.hpp>
 #include <array>
 #include <climits>
@@ -49,7 +49,7 @@ rol(std::array<unsigned char, N>& v, std::size_t n)
 //
 inline
 void
-mask_inplace(boost::asio::mutable_buffer& b, prepared_key& key)
+mask_inplace(net::mutable_buffer& b, prepared_key& key)
 {
     auto n = b.size();
     auto mask = key; // avoid aliasing
@@ -71,12 +71,16 @@ mask_inplace(boost::asio::mutable_buffer& b, prepared_key& key)
 
 // Apply mask in place
 //
-template<class MutableBuffers, class KeyType>
+template<
+    class MutableBufferSequence,
+    class KeyType>
 void
-mask_inplace(MutableBuffers const& bs, KeyType& key)
+mask_inplace(
+    MutableBufferSequence const& buffers,
+    KeyType& key)
 {
-    for(boost::asio::mutable_buffer b :
-            beast::detail::buffers_range(bs))
+    for(net::mutable_buffer b :
+            beast::buffers_range_ref(buffers))
         mask_inplace(b, key);
 }
 

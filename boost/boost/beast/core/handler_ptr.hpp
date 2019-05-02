@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2016-2017 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2016-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -10,12 +10,16 @@
 #ifndef BOOST_BEAST_HANDLER_PTR_HPP
 #define BOOST_BEAST_HANDLER_PTR_HPP
 
-#include <boost/beast/core/detail/allocator.hpp>
 #include <boost/beast/core/detail/config.hpp>
-#include <boost/beast/core/detail/type_traits.hpp>
+#include <boost/beast/core/detail/allocator.hpp>
 #include <boost/assert.hpp>
+#include <boost/config/pragma_message.hpp>
 #include <type_traits>
 #include <utility>
+
+#ifndef BOOST_BEAST_DOXYGEN
+
+BOOST_PRAGMA_MESSAGE("<boost/beast/core/handler_ptr.hpp> is DEPRECATED and will be removed in a future release.")
 
 namespace boost {
 namespace beast {
@@ -50,17 +54,20 @@ namespace beast {
 template<class T, class Handler>
 class handler_ptr
 {
-    using handler_storage_t = typename detail::aligned_union<1, Handler>::type;
+#ifndef BOOST_BEAST_ALLOW_DEPRECATED
+    static_assert(sizeof(T) == 0,
+        BOOST_BEAST_DEPRECATION_STRING);
+#endif
 
     T* t_ = nullptr;
-    handler_storage_t h_;
+    union
+    {
+        Handler h_;
+    };
 
     void clear();
 
 public:
-    static_assert(std::is_nothrow_destructible<T>::value,
-        "T must be nothrow destructible");
-
     /// The type of element stored
     using element_type = T;
 
@@ -106,30 +113,31 @@ public:
             T::T(Handler const&, Args&&...)
         @endcode
 
-        @par Exception Safety
+        @esafe
         Strong guarantee.
 
-        @param handler The handler to associate with the owned
-        object. The argument will be moved if it is an xvalue.
+        @param handler The handler to associate with the owned object.
+        The implementation takes ownership of the handler by performing a decay-copy.
 
         @param args Optional arguments forwarded to
         the owned object's constructor.
     */
     template<class DeducedHandler, class... Args>
-    explicit handler_ptr(DeducedHandler&& handler, Args&&... args);
+    explicit
+    handler_ptr(DeducedHandler&& handler, Args&&... args);
 
     /// Return a reference to the handler
     handler_type const&
-    handler() const
+    handler() const noexcept
     {
-        return *reinterpret_cast<Handler const*>(&h_);
+        return h_;
     }
 
     /// Return a reference to the handler
     handler_type&
-    handler()
+    handler() noexcept
     {
-        return *reinterpret_cast<Handler*>(&h_);
+        return h_;
     }
 
     /// Return `true` if `*this` owns an object
@@ -167,10 +175,11 @@ public:
     T*
     operator->() const
     {
+        BOOST_ASSERT(t_);
         return t_;
     }
 
-    /** Return ownership of the handler
+    /** Returns ownership of the handler
 
         Before this function returns, the owned object is
         destroyed, satisfying the deallocation-before-invocation
@@ -213,6 +222,8 @@ public:
 } // beast
 } // boost
 
-#include <boost/beast/core/impl/handler_ptr.ipp>
+#include <boost/beast/core/impl/handler_ptr.hpp>
+
+#endif
 
 #endif

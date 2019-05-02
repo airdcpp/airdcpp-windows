@@ -8,9 +8,13 @@
 #ifndef BOOST_GIL_EXTENSION_IO_PNG_DETAIL_SUPPORTED_TYPES_HPP
 #define BOOST_GIL_EXTENSION_IO_PNG_DETAIL_SUPPORTED_TYPES_HPP
 
+#include <boost/gil/extension/io/png/tags.hpp>
+
 #ifdef BOOST_GIL_IO_ENABLE_GRAY_ALPHA
 #include <boost/gil/extension/toolbox/color_spaces/gray_alpha.hpp>
 #endif // BOOST_GIL_IO_ENABLE_GRAY_ALPHA
+
+#include <cstddef>
 
 namespace boost { namespace gil { namespace detail {
 
@@ -323,9 +327,11 @@ struct is_read_supported< Pixel
                                           >::is_supported
                 >
 {
-    typedef detail::png_read_support< typename channel_type< Pixel >::type
-                                    , typename color_space_type< Pixel >::type
-                                    > parent_t;
+    using parent_t = detail::png_read_support
+        <
+            typename channel_type<Pixel>::type,
+            typename color_space_type<Pixel>::type
+        >;
 
     static const png_bitdepth::type   _bit_depth  = parent_t::_bit_depth;
     static const png_color_type::type _color_type = parent_t::_color_type;
@@ -340,9 +346,11 @@ struct is_write_supported< Pixel
                                            >::is_supported
                 >
 {
-    typedef detail::png_write_support< typename channel_type< Pixel >::type
-                                     , typename color_space_type< Pixel >::type
-                                     > parent_t;
+    using parent_t = detail::png_write_support
+        <
+            typename channel_type<Pixel>::type,
+            typename color_space_type<Pixel>::type
+        >;
 
     static const png_bitdepth::type   _bit_depth  = parent_t::_bit_depth;
     static const png_color_type::type _color_type = parent_t::_color_type;

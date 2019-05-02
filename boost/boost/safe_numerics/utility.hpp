@@ -1,11 +1,6 @@
 #ifndef BOOST_NUMERIC_UTILITY_HPP
 #define BOOST_NUMERIC_UTILITY_HPP
 
-// MS compatible compilers support #pragma once
-#if defined(_MSC_VER) && (_MSC_VER >= 1020)
-# pragma once
-#endif
-
 //  Copyright (c) 2015 Robert Ramey
 //
 // Distributed under the Boost Software License, Version 1.0. (See
@@ -103,7 +98,7 @@ namespace ilog2_detail {
     constexpr static unsigned int ilog2(const boost::uint_t<8>::exact & t){
         #define LT(n) n, n, n, n, n, n, n, n, n, n, n, n, n, n, n, n
         const char LogTable256[256] = {
-            -1, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3,
+            static_cast<const char>(-1), 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3,
             LT(4), LT(5), LT(5), LT(6), LT(6), LT(6), LT(6),
             LT(7), LT(7), LT(7), LT(7), LT(7), LT(7), LT(7), LT(7)
         };
@@ -128,7 +123,7 @@ namespace ilog2_detail {
             : 32 + ilog2(upper_half);
     }
 
-}; // ilog2_detail
+} // ilog2_detail
 
 template<typename T>
 constexpr unsigned int ilog2(const T & t){
@@ -241,13 +236,13 @@ constexpr T round_out(const T & t){
     if(t >= 0){
         const std::uint8_t sb = utility::significant_bits(t);
         return (sb < sizeof(T) * 8)
-            ? (1ul << sb) - 1
+            ? ((T)1 << sb) - 1
             : std::numeric_limits<T>::max();
     }
     else{
         const std::uint8_t sb = utility::significant_bits(~t);
         return (sb < sizeof(T) * 8)
-            ? ~((1ul << sb) - 1)
+            ? ~(((T)1 << sb) - 1)
             : std::numeric_limits<T>::min();
     }
 }

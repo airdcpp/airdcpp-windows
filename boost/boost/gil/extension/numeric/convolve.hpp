@@ -9,16 +9,19 @@
 #define BOOST_GIL_EXTENSION_NUMERIC_CONVOLVE_HPP
 
 #include <boost/gil/extension/numeric/algorithm.hpp>
+#include <boost/gil/extension/numeric/kernel.hpp>
 #include <boost/gil/extension/numeric/pixel_numeric_operations.hpp>
 
 #include <boost/gil/algorithm.hpp>
 #include <boost/gil/image_view_factory.hpp>
 #include <boost/gil/metafunctions.hpp>
 
+#include <boost/assert.hpp>
+
 #include <algorithm>
-#include <cassert>
 #include <cstddef>
 #include <functional>
+#include <type_traits>
 #include <vector>
 
 namespace boost { namespace gil {
@@ -41,12 +44,11 @@ template <typename PixelAccum,typename SrcView,typename Kernel,typename DstView,
 void correlate_rows_imp(const SrcView& src, const Kernel& ker, const DstView& dst,
                         convolve_boundary_option option,
                         Correlator correlator) {
-    assert(src.dimensions()==dst.dimensions());
-    assert(ker.size()!=0);
+    BOOST_ASSERT(src.dimensions() == dst.dimensions());
+    BOOST_ASSERT(ker.size() != 0);
 
-    typedef typename pixel_proxy<typename SrcView::value_type>::type PIXEL_SRC_REF;
-    typedef typename pixel_proxy<typename DstView::value_type>::type PIXEL_DST_REF;
-    typedef typename Kernel::value_type kernel_type;
+    using PIXEL_SRC_REF = typename pixel_proxy<typename SrcView::value_type>::type;
+    using PIXEL_DST_REF = typename pixel_proxy<typename DstView::value_type>::type;
 
     if(ker.size()==1) {//reduces to a multiplication
         view_multiplies_scalar<PixelAccum>(src,*ker.begin(),dst);
@@ -169,11 +171,18 @@ void convolve_cols(const SrcView& src, const Kernel& ker, const DstView& dst,
 
 /// \ingroup ImageAlgorithms
 ///correlate a 1D fixed-size kernel along the rows of an image
-template <typename PixelAccum,typename SrcView,typename Kernel,typename DstView>
+template <typename PixelAccum, typename SrcView, typename Kernel, typename DstView>
 BOOST_FORCEINLINE
-void correlate_rows_fixed(const SrcView& src, const Kernel& ker, const DstView& dst,
-                          convolve_boundary_option option=convolve_option_extend_zero) {
-    detail::correlate_rows_imp<PixelAccum>(src,ker,dst,option,detail::correlator_k<Kernel::static_size,PixelAccum>());
+void correlate_rows_fixed(const SrcView& src, const Kernel& kernel, const DstView& dst,
+                          convolve_boundary_option option=convolve_option_extend_zero)
+{
+    using correlator = detail::correlator_k
+        <
+            std::extent<Kernel>::value,
+            PixelAccum
+        >;
+    detail::correlate_rows_imp<PixelAccum>(
+        src, kernel, dst, option, correlator{});
 }
 
 /// \ingroup ImageAlgorithms

@@ -23,7 +23,7 @@
 
 #if defined(_MSC_VER)
 # pragma warning(push)
-# pragma warning(disable:4365)  // conversion ... signed/unsigned mismatch
+# pragma warning(disable: 4127)  // conditional expression is constant
 #endif
 
 #ifdef BOOST_ENDIAN_LOG
@@ -240,14 +240,14 @@ namespace endian
       static T load_little(const unsigned char* bytes) BOOST_NOEXCEPT
         { return static_cast<T>(*bytes | (static_cast<U>(next::load_little(bytes + 1)) << 8)); }
 
-      static void store_big(char* bytes, T value) BOOST_NOEXCEPT
+      static void store_big(unsigned char* bytes, T value) BOOST_NOEXCEPT
         {
-          *(bytes - 1) = static_cast<char>(value);
+          *(bytes - 1) = static_cast<unsigned char>(value);
           next::store_big(bytes - 1, static_cast<T>(static_cast<U>(value) >> 8));
         }
-      static void store_little(char* bytes, T value) BOOST_NOEXCEPT
+      static void store_little(unsigned char* bytes, T value) BOOST_NOEXCEPT
         {
-          *bytes = static_cast<char>(value);
+          *bytes = static_cast<unsigned char>(value);
           next::store_little(bytes + 1, static_cast<T>(static_cast<U>(value) >> 8));
         }
     };
@@ -259,10 +259,10 @@ namespace endian
         { return *(bytes - 1); }
       static T load_little(const unsigned char* bytes) BOOST_NOEXCEPT
         { return *bytes; }
-      static void store_big(char* bytes, T value) BOOST_NOEXCEPT
-        { *(bytes - 1) = static_cast<char>(value); }
-      static void store_little(char* bytes, T value) BOOST_NOEXCEPT
-        { *bytes = static_cast<char>(value); }
+      static void store_big(unsigned char* bytes, T value) BOOST_NOEXCEPT
+        { *(bytes - 1) = static_cast<unsigned char>(value); }
+      static void store_little(unsigned char* bytes, T value) BOOST_NOEXCEPT
+        { *bytes = static_cast<unsigned char>(value); }
 
     };
 
@@ -273,16 +273,26 @@ namespace endian
         { return *reinterpret_cast<const signed char*>(bytes - 1); }
       static T load_little(const unsigned char* bytes) BOOST_NOEXCEPT
         { return *reinterpret_cast<const signed char*>(bytes); }
-      static void store_big(char* bytes, T value)  BOOST_NOEXCEPT
-        { *(bytes - 1) = static_cast<char>(value); }
-      static void store_little(char* bytes, T value) BOOST_NOEXCEPT
-        { *bytes = static_cast<char>(value); }
+      static void store_big(unsigned char* bytes, T value)  BOOST_NOEXCEPT
+        { *(bytes - 1) = static_cast<unsigned char>(value); }
+      static void store_little(unsigned char* bytes, T value) BOOST_NOEXCEPT
+        { *bytes = static_cast<unsigned char>(value); }
     };
 
     template <typename T, std::size_t n_bytes>
     inline
     T load_big_endian(const void* bytes) BOOST_NOEXCEPT
     {
+#   if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || defined(_M_IX86)
+      // All major x86 compilers elide this test and optimize out memcpy
+      // (the x86 architecture allows unaligned loads, but -fsanitize=undefined does not)
+      if (sizeof(T) == n_bytes)
+      {
+        T t;
+        std::memcpy( &t, bytes, sizeof(T) );
+        return boost::endian::big_to_native(t);
+      }
+#   endif
       return unrolled_byte_loops<T, n_bytes>::load_big
         (static_cast<const unsigned char*>(bytes) + n_bytes);
     }
@@ -292,18 +302,13 @@ namespace endian
     T load_little_endian(const void* bytes) BOOST_NOEXCEPT
     {
 #   if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || defined(_M_IX86)
-      // On x86 (which is little endian), unaligned loads are permitted
-      if (sizeof(T) == n_bytes)  // GCC 4.9, VC++ 14.0, and probably others, elide this
-                                 // test and generate code only for the applicable return
-                                 // case since sizeof(T) and n_bytes are known at compile
-                                 // time.
+      // All major x86 compilers elide this test and optimize out memcpy
+      // (the x86 architecture allows unaligned loads, but -fsanitize=undefined does not)
+      if (sizeof(T) == n_bytes)
       {
-        // Avoids -fsanitize=undefined violations due to unaligned loads
-        // All major x86 compilers optimize a short-sized memcpy into a single instruction
-
         T t;
         std::memcpy( &t, bytes, sizeof(T) );
-        return t;
+        return t; // or endian::little_to_native(t) if we ever extend the #ifdef to non-x86
       }
 #   endif
       return unrolled_byte_loops<T, n_bytes>::load_little
@@ -314,8 +319,18 @@ namespace endian
     inline
     void store_big_endian(void* bytes, T value) BOOST_NOEXCEPT
     {
+#     if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || defined(_M_IX86)
+      // All major x86 compilers elide this test and optimize out memcpy
+      // (the x86 architecture allows unaligned loads, but -fsanitize=undefined does not)
+      if (sizeof(T) == n_bytes)
+      {
+        boost::endian::native_to_big_inplace(value);
+        std::memcpy( bytes, &value, sizeof(T) );
+        return;
+      }
+#     endif
       unrolled_byte_loops<T, n_bytes>::store_big
-        (static_cast<char*>(bytes) + n_bytes, value);
+        (static_cast<unsigned char*>(bytes) + n_bytes, value);
     }
 
     template <typename T, std::size_t n_bytes>
@@ -323,21 +338,18 @@ namespace endian
     void store_little_endian(void* bytes, T value) BOOST_NOEXCEPT
     {
 #     if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || defined(_M_IX86)
-      // On x86 (which is little endian), unaligned stores are permitted
-      if (sizeof(T) == n_bytes)  // GCC 4.9, VC++ 14.0, and probably others, elide this
-                                 // test and generate code only for the applicable return
-                                 // case since sizeof(T) and n_bytes are known at compile
-                                 // time.
+      // All major x86 compilers elide this test and optimize out memcpy
+      // (the x86 architecture allows unaligned loads, but -fsanitize=undefined does not)
+      if (sizeof(T) == n_bytes)
       {
-        // Avoids -fsanitize=undefined violations due to unaligned stores
-        // All major x86 compilers optimize a short-sized memcpy into a single instruction
-
+        // if we ever extend the #ifdef to non-x86:
+        //   endian::native_to_little_inplace(value);
         std::memcpy( bytes, &value, sizeof(T) );
         return;
       }
 #     endif
       unrolled_byte_loops<T, n_bytes>::store_little
-        (static_cast<char*>(bytes), value);
+        (static_cast<unsigned char*>(bytes), value);
     }
 
   } // namespace detail

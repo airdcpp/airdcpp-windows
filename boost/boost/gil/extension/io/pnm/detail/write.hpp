@@ -12,7 +12,9 @@
 #include <boost/gil/extension/io/pnm/detail/writer_backend.hpp>
 
 #include <boost/gil/io/base.hpp>
+#include <boost/gil/io/bit_operations.hpp>
 #include <boost/gil/io/device.hpp>
+#include <boost/gil/io/dynamic_io_new.hpp>
 
 #include <cstdlib>
 #include <string>
@@ -50,7 +52,7 @@ class writer< Device
                            >
 {
 private:
-    typedef writer_backend< Device, pnm_tag > backend_t;
+    using backend_t = writer_backend<Device, pnm_tag>;
 
 public:
 
@@ -65,7 +67,7 @@ public:
     template< typename View >
     void apply( const View& view )
     {
-        typedef typename get_pixel_type< View >::type pixel_t;
+        using pixel_t = typename get_pixel_type<View>::type;
 
         std::size_t width  = view.width();
         std::size_t height = view.height();
@@ -129,38 +131,23 @@ private:
                    , const mpl::true_&    // bit_aligned
                    )
     {
-        BOOST_STATIC_ASSERT(( is_same< View
-                                     , typename gray1_image_t::view_t
-                                     >::value
-                           ));
+        static_assert(is_same<View, typename gray1_image_t::view_t>::value, "");
 
         byte_vector_t row( pitch / 8 );
 
-        typedef typename View::x_iterator x_it_t;
+        using x_it_t = typename View::x_iterator;
         x_it_t row_it = x_it_t( &( *row.begin() ));
 
-        detail::negate_bits< byte_vector_t
-                           , mpl::true_
-                           > neg;
-
-        detail::mirror_bits< byte_vector_t
-                           , mpl::true_
-                           > mirror;
-
-
-        for( typename View::y_coord_t y = 0; y < src.height(); ++y )
+        detail::negate_bits<byte_vector_t, std::true_type> negate;
+        detail::mirror_bits<byte_vector_t, std::true_type> mirror;
+        for (typename View::y_coord_t y = 0; y < src.height(); ++y)
         {
-            std::copy( src.row_begin( y )
-                     , src.row_end( y )
-                     , row_it
-                     );
+            std::copy(src.row_begin(y), src.row_end(y), row_it);
 
-            mirror( row );
-            neg   ( row );
+            mirror(row);
+            negate(row);
 
-            this->_io_dev.write( &row.front()
-                               , pitch / 8
-                               );
+            this->_io_dev.write(&row.front(), pitch / 8);
         }
     }
 
@@ -175,8 +162,8 @@ private:
                           >
                    > buf( src.width() );
 
-        // typedef typename View::value_type pixel_t;
-        // typedef typename view_type_from_pixel< pixel_t >::type view_t;
+        // using pixel_t = typename View::value_type;
+        // using view_t = typename view_type_from_pixel< pixel_t >::type;
 
         //view_t row = interleaved_view( src.width()
         //                             , 1
@@ -221,9 +208,7 @@ class dynamic_image_writer< Device
                    , pnm_tag
                    >
 {
-    typedef writer< Device
-                  , pnm_tag
-                  > parent_t;
+    using parent_t = writer<Device, pnm_tag>;
 
 public:
 

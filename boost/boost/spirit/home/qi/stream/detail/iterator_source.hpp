@@ -12,7 +12,7 @@
 #endif
 
 #include <boost/iostreams/stream.hpp>
-#include <boost/detail/iterator.hpp>
+#include <iterator> // for std::iterator_traits, std::distance
 
 ///////////////////////////////////////////////////////////////////////////////
 namespace boost { namespace spirit { namespace qi { namespace detail
@@ -21,9 +21,7 @@ namespace boost { namespace spirit { namespace qi { namespace detail
     template <typename Iterator>
     struct base_iterator_source
     {
-        typedef typename
-            boost::detail::iterator_traits<Iterator>::value_type
-        char_type;
+        typedef typename std::iterator_traits<Iterator>::value_type char_type;
         typedef boost::iostreams::seekable_device_tag category;
 
         base_iterator_source (Iterator const& first_, Iterator const& last_)
@@ -62,6 +60,7 @@ namespace boost { namespace spirit { namespace qi { namespace detail
 
         std::streampos seek(boost::iostreams::stream_offset, std::ios_base::seekdir way)
         {
+            (void)way;
             BOOST_ASSERT(way == std::ios_base::cur);    // only support queries
             return pos;                              // return current position
         }
@@ -90,7 +89,7 @@ namespace boost { namespace spirit { namespace qi { namespace detail
     struct iterator_source<
             Iterator, 
             typename boost::enable_if_c<boost::is_convertible<
-                typename boost::detail::iterator_traits<Iterator>::iterator_category, std::random_access_iterator_tag>::value>::type
+                typename std::iterator_traits<Iterator>::iterator_category, std::random_access_iterator_tag>::value>::type
         > : base_iterator_source<Iterator>
     {
         typedef base_iterator_source<Iterator> base_type;
@@ -111,13 +110,13 @@ namespace boost { namespace spirit { namespace qi { namespace detail
             if (first == last)
                 return -1;
 
-            n = std::min BOOST_PREVENT_MACRO_SUBSTITUTION(
-                    static_cast<std::streamsize>(std::distance(first, last)),
-                    n);
+            n = (std::min)(static_cast<std::streamsize>(last - first), n);
+
+            typedef typename std::iterator_traits<Iterator>::difference_type diff_type;
 
             // copy_n is only part of c++11, so emulate it
-            std::copy(first, first + n, s);
-            first += n;
+            std::copy(first, first + static_cast<diff_type>(n), s);
+            first += static_cast<diff_type>(n);
             pos += n;
 
             return n;

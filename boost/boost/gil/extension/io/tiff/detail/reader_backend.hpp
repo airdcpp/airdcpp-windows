@@ -27,7 +27,7 @@ struct reader_backend< Device
 {
 public:
 
-    typedef tiff_tag format_tag_t;
+    using format_tag_t = tiff_tag;
 
 public:
 
@@ -40,9 +40,9 @@ public:
 
     , _scanline_length( 0 )
 
-    , _red  ( NULL )
-    , _green( NULL )
-    , _blue ( NULL )
+    , _red  ( nullptr )
+    , _green( nullptr )
+    , _blue ( nullptr )
     {
         init_multipage_read( settings );
 

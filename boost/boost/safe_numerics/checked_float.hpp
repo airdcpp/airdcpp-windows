@@ -1,11 +1,6 @@
 #ifndef BOOST_NUMERIC_CHECKED_FLOAT_HPP
 #define BOOST_NUMERIC_CHECKED_FLOAT_HPP
 
-// MS compatible compilers support #pragma once
-#if defined(_MSC_VER) && (_MSC_VER >= 1020)
-# pragma once
-#endif
-
 //  Copyright (c) 2017 Robert Ramey
 //
 // Distributed under the Boost Software License, Version 1.0. (See
@@ -27,7 +22,7 @@ namespace checked {
 // layer 0 - implement safe operations for floating
 
 template<typename R, typename T>
-struct checked_unary_operation<R, T,
+struct heterogeneous_checked_operation<R, T, F,
     typename std::enable_if<
         std::is_floating_point<R>::value
         && std::is_floating_point<T>::value
@@ -40,7 +35,7 @@ struct checked_unary_operation<R, T,
 }; // checked_unary_operation
 
 template<typename R, typename T, typename U>
-struct checked_binary_operation<R, T, U,
+struct checked_operation<R, T, U, F,
     typename std::enable_if<
         std::is_floating_point<R>::value
     >::type

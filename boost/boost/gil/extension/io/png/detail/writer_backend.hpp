@@ -35,15 +35,11 @@ struct writer_backend< Device
 
 private:
 
-    typedef writer_backend< Device
-                          , png_tag
-                          > this_t;
+    using this_t = writer_backend<Device, png_tag>;
 
 public:
 
-    typedef png_tag format_tag_t;
-
-public:
+    using format_tag_t = png_tag;
 
     ///
     /// Constructor
@@ -61,22 +57,22 @@ public:
         // the library version is compatible with the one used at compile time,
         // in case we are using dynamically linked libraries.  REQUIRED.
         get()->_struct = png_create_write_struct( PNG_LIBPNG_VER_STRING
-                                                , NULL  // user_error_ptr
-                                                , NULL  // user_error_fn
-                                                , NULL  // user_warning_fn
+                                                , nullptr  // user_error_ptr
+                                                , nullptr  // user_error_fn
+                                                , nullptr  // user_warning_fn
                                                 );
 
-        io_error_if( get_struct() == NULL
+        io_error_if( get_struct() == nullptr
                    , "png_writer: fail to call png_create_write_struct()"
                    );
 
         // Allocate/initialize the image information data.  REQUIRED
         get()->_info = png_create_info_struct( get_struct() );
 
-        if( get_info() == NULL )
+        if( get_info() == nullptr )
         {
             png_destroy_write_struct( &get()->_struct
-                                    , NULL
+                                    , nullptr
                                     );
 
             io_error( "png_writer: fail to call png_create_info_struct()" );
@@ -102,9 +98,11 @@ protected:
     template< typename View >
     void write_header( const View& view )
     {
-        typedef detail::png_write_support< typename channel_type< typename get_pixel_type< View >::type >::type
-                                         , typename color_space_type< View >::type
-                                         > png_rw_info_t;
+        using png_rw_info_t = detail::png_write_support
+            <
+                typename channel_type<typename get_pixel_type<View>::type>::type,
+                typename color_space_type<View>::type
+            >;
 
         // Set the image information here.  Width and height are up to 2^31,
         // bit_depth is one of 1, 2, 4, 8, or 16, but valid values also depend on

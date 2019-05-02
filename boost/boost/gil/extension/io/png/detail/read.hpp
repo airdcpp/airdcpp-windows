@@ -16,6 +16,7 @@
 #include <boost/gil/io/base.hpp>
 #include <boost/gil/io/conversion_policies.hpp>
 #include <boost/gil/io/device.hpp>
+#include <boost/gil/io/dynamic_io_new.hpp>
 #include <boost/gil/io/reader_base.hpp>
 #include <boost/gil/io/row_buffer_helper.hpp>
 #include <boost/gil/io/typedefs.hpp>
@@ -45,16 +46,12 @@ class reader< Device
 {
 private:
 
-    typedef reader< Device
-                  , png_tag
-                  , ConversionPolicy
-                  > this_t;
-
-    typedef typename ConversionPolicy::color_converter_type cc_t;
+    using this_t = reader<Device, png_tag, ConversionPolicy>;
+    using cc_t = typename ConversionPolicy::color_converter_type;
 
 public:
 
-    typedef reader_backend< Device, png_tag > backend_t;
+    using backend_t = reader_backend<Device, png_tag>;
 
 public:
 
@@ -220,7 +217,7 @@ public:
 
         // read rest of file, and get additional chunks in info_ptr
         png_read_end( this->get_struct()
-                    , NULL
+                    , nullptr
                     );
     }
 
@@ -231,13 +228,15 @@ private:
             >
     void read_rows( const View& view )
     {
-        typedef detail::row_buffer_helper_view< ImagePixel > row_buffer_helper_t;
+        using row_buffer_helper_t = detail::row_buffer_helper_view<ImagePixel>;
 
-        typedef typename row_buffer_helper_t::iterator_t it_t;
+        using it_t = typename row_buffer_helper_t::iterator_t;
 
-        typedef typename is_same< ConversionPolicy
-                                , detail::read_and_no_convert
-                                >::type is_read_and_convert_t;
+        using is_read_and_convert_t = typename is_same
+            <
+                ConversionPolicy,
+                detail::read_and_no_convert
+            >::type;
 
         io_error_if( !detail::is_allowed< View >( this->_info
                                                 , is_read_and_convert_t()
@@ -265,7 +264,7 @@ private:
                     // Read the image using the "sparkle" effect.
                     png_read_rows( this->get_struct()
                                  , &row_ptr
-                                 , NULL
+                                 , nullptr
                                  , 1
                                  );
                 }
@@ -278,7 +277,7 @@ private:
                     // Read the image using the "sparkle" effect.
                     png_read_rows( this->get_struct()
                                  , &row_ptr
-                                 , NULL
+                                 , nullptr
                                  , 1
                                  );
 
@@ -302,7 +301,7 @@ private:
                     // Read the image using the "sparkle" effect.
                     png_read_rows( this->get_struct()
                                  , &row_ptr
-                                 , NULL
+                                 , nullptr
                                  , 1
                                  );
                 }
@@ -314,7 +313,7 @@ private:
                     // Read the image using the "sparkle" effect.
                     png_read_rows( this->get_struct()
                                  , &row_ptr
-                                 , NULL
+                                 , nullptr
                                  , 1
                                  );
                 }
@@ -337,9 +336,11 @@ struct png_type_format_checker
     template< typename Image >
     bool apply()
     {
-        typedef is_read_supported< typename get_pixel_type< typename Image::view_t >::type
-                                 , png_tag
-                                 > is_supported_t;
+        using is_supported_t = is_read_supported
+            <
+                typename get_pixel_type<typename Image::view_t>::type,
+                png_tag
+            >;
 
         return is_supported_t::_bit_depth  == _bit_depth
             && is_supported_t::_color_type == _color_type;
@@ -376,10 +377,12 @@ class dynamic_image_reader< Device
                    , detail::read_and_no_convert
                    >
 {
-    typedef reader< Device
-                  , png_tag
-                  , detail::read_and_no_convert
-                  > parent_t;
+    using parent_t = reader
+        <
+            Device,
+            png_tag,
+            detail::read_and_no_convert
+        >;
 
 public:
 
