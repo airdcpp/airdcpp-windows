@@ -1,3 +1,16 @@
+3.55
+
+Changed:
+
+- Updated Web UI and Web API (https://airdcpp-web.github.io/2019/05/17/version-2.6.1.html)
+- Force connect will now work with downloads that are in "Connecting" state
+
+Fixed:
+
+- Fix share monitoring on Windows 7
+- Stability fixes
+
+
 3.54
 
 Changed:
