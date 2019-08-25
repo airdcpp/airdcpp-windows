@@ -10,11 +10,6 @@
 
 import testing ;
 
-lib throw_test : throw_test.cpp : <link>shared:<define>THROW_DYN_LINK=1 ;
-
-lib single_instance_lib1 : single_instance_1.cpp : <link>shared:<define>SINGLE_INSTANCE_DYN_LINK ;
-lib single_instance_lib2 : single_instance_2.cpp : <link>shared:<define>SINGLE_INSTANCE_DYN_LINK ;
-
 rule system-run ( sources + )
 {
     local result ;
@@ -32,6 +27,8 @@ system-run error_code_test.cpp ;
 system-run error_code_user_test.cpp ;
 system-run system_error_test.cpp ;
 
+lib throw_test : throw_test.cpp : <link>shared:<define>THROW_DYN_LINK=1 ;
+
 run dynamic_link_test.cpp throw_test : : : <link>shared : throw_test_shared ;
 
 system-run initialization_test.cpp ;
@@ -41,6 +38,9 @@ run config_test.cpp : : : <test-info>always_show_run_output ;
 
 system-run std_interop_test.cpp ;
 system-run std_mismatch_test.cpp ;
+
+lib single_instance_lib1 : single_instance_1.cpp : <link>shared:<define>SINGLE_INSTANCE_DYN_LINK ;
+lib single_instance_lib2 : single_instance_2.cpp : <link>shared:<define>SINGLE_INSTANCE_DYN_LINK ;
 
 system-run single_instance_test.cpp single_instance_1.cpp single_instance_2.cpp ;
 run single_instance_test.cpp single_instance_lib1 single_instance_lib2 : : : <link>static : single_instance_lib_static ;
@@ -62,3 +62,10 @@ system-run failed_constexpr_test.cpp ;
 run quick.cpp ;
 
 run warnings_test.cpp : : : <warnings>all <warnings-as-errors>on <toolset>gcc:<cxxflags>-Wnon-virtual-dtor <toolset>clang:<cxxflags>-Wnon-virtual-dtor ;
+
+lib std_single_instance_lib1 : std_single_instance_1.cpp : <link>shared:<define>STD_SINGLE_INSTANCE_DYN_LINK ;
+lib std_single_instance_lib2 : std_single_instance_2.cpp : <link>shared:<define>STD_SINGLE_INSTANCE_DYN_LINK ;
+
+system-run std_single_instance_test.cpp std_single_instance_1.cpp std_single_instance_2.cpp ;
+run std_single_instance_test.cpp std_single_instance_lib1 std_single_instance_lib2 : : : <link>static : std_single_instance_lib_static ;
+run std_single_instance_test.cpp std_single_instance_lib1 std_single_instance_lib2 : : : <link>shared <define>STD_SINGLE_INSTANCE_SHARED : std_single_instance_lib_shared ;
