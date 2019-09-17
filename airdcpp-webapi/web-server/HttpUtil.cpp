@@ -226,29 +226,7 @@ namespace webserver {
 		return true;
 	}
 
-	string HttpUtil::parseCookie(const websocketpp::http::parser::request& aRequest, const string& aCookieName) noexcept {
-		for (const auto& header : aRequest.get_headers()) {
-			if (header.first == "Set-Cookie" && header.second.length() > aCookieName.length() && header.second.compare(0, aCookieName.length() + 1, aCookieName + "=") == 0) {
-				auto value = header.second.substr(aCookieName.length() + 1);
-
-				auto separatorPos = value.find(';');
-				if (separatorPos != string::npos) {
-					value = value.substr(separatorPos);
-				}
-
-				return value;
-			}
-		}
-
-		return Util::emptyString;
-	}
-
 	string HttpUtil::parseAuthToken(const websocketpp::http::parser::request& aRequest) noexcept {
-		auto authToken = aRequest.get_header("Authorization");
-		//if (authToken == websocketpp::http::empty_header) {
-		//	authToken = parseCookie(aRequest, "Authorization");
-		//}
-
-		return authToken;
+		return aRequest.get_header("Authorization");
 	}
 }

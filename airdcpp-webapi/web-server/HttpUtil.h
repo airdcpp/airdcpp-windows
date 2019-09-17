@@ -42,7 +42,6 @@ namespace webserver {
 
 		static bool isStatusOk(int aCode) noexcept;
 		static bool parseStatus(const string& aResponse, int& code_, string& text_) noexcept;
-		static string parseCookie(const websocketpp::http::parser::request& aRequest, const string& aCookieName) noexcept;
 		static string parseAuthToken(const websocketpp::http::parser::request& aRequest) noexcept;
 	};
 }
