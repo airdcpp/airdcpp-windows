@@ -558,23 +558,9 @@ tstring QueueFrame::formatUser(const QueueItem::Source& s) const {
 
 template<typename SourceType>
 tstring formatSourceFlags(const SourceType& s) {
-	OrderedStringSet reasons_;
-	if (s.isSet(QueueItem::Source::FLAG_FILE_NOT_AVAILABLE)) {
-		reasons_.insert(STRING(FILE_NOT_AVAILABLE));
-	} else if (s.isSet(QueueItem::Source::FLAG_BAD_TREE)) {
-		reasons_.insert(STRING(INVALID_TREE));
-	} else if (s.isSet(QueueItem::Source::FLAG_NO_NEED_PARTS)) {
-		reasons_.insert(STRING(NO_NEEDED_PART));
-	} else if (s.isSet(QueueItem::Source::FLAG_NO_TTHF)) {
-		reasons_.insert(STRING(SOURCE_TOO_OLD));
-	} else if (s.isSet(QueueItem::Source::FLAG_SLOW_SOURCE)) {
-		reasons_.insert(STRING(SLOW_USER));
-	} else if (s.isSet(QueueItem::Source::FLAG_UNTRUSTED)) {
-		reasons_.insert(STRING(CERTIFICATE_NOT_TRUSTED));
-	}
-
-	if (!reasons_.empty()) {
-		return _T(" (") + Text::toT(Util::listToString(reasons_)) + _T(")");
+	auto reason = QueueItem::Source::formatError(s);
+	if (!reason.empty()) {
+		return _T(" (") + Text::toT(reason) + _T(")");
 	}
 
 	return Util::emptyStringT;

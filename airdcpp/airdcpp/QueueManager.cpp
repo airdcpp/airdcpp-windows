@@ -1916,6 +1916,7 @@ void QueueManager::removeFileSource(const QueueItemPtr& q, const UserPtr& aUser,
 			return;
 	
 		if(q->isSet(QueueItem::FLAG_USER_LIST)) {
+			q->getSource(aUser)->setFlag(aReason);
 			removeCompletely = true;
 			goto endCheck;
 		}
