@@ -67,6 +67,9 @@
 #include <commctrl.h>
 #pragma comment(lib, "comctl32.lib")
 
+#include <commdlg.h>
+#include <shellapi.h>
+
 // Check for VS2005 without newer WinSDK
 #if (_MSC_VER == 1400) && !defined(RB_GETEXTENDEDSTYLE)
 	#error WTL10 requires WinSDK 6.0 ot higher
@@ -136,7 +139,7 @@
 
 // Forward declaration for ATL11 fix
 #if (_ATL_VER >= 0x0B00)
-  namespace ATL { HRESULT AtlGetCommCtrlVersion(LPDWORD pdwMajor, LPDWORD pdwMinor); };
+  namespace ATL { HRESULT AtlGetCommCtrlVersion(LPDWORD pdwMajor, LPDWORD pdwMinor); }
 #endif
 
 #ifndef WM_MOUSEHWHEEL
@@ -152,7 +155,7 @@
 namespace WTL
 {
 
-DECLARE_TRACE_CATEGORY(atlTraceUI);
+DECLARE_TRACE_CATEGORY(atlTraceUI)
 #ifdef _DEBUG
   __declspec(selectany) ATL::CTraceCategory atlTraceUI(_T("atlTraceUI"));
 #endif // _DEBUG
@@ -276,7 +279,7 @@ namespace RunTimeHelper
 #else // !_versionhelpers_H_INCLUDED_
 		OSVERSIONINFO ovi = { sizeof(OSVERSIONINFO) };
 		BOOL bRet = ::GetVersionEx(&ovi);
-		return ((bRet != FALSE) && (ovi.dwMajorVersion == 6) && (ovi.dwMinorVersion >= 1));
+		return ((bRet != FALSE) && ((ovi.dwMajorVersion > 6) || ((ovi.dwMajorVersion == 6) && (ovi.dwMinorVersion >= 1))));
 #endif // _versionhelpers_H_INCLUDED_
 	}
 
@@ -367,7 +370,7 @@ namespace RunTimeHelper
 #endif
 		return uSize;
 	}
-};
+} // namespace RunTimeHelper
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -394,7 +397,7 @@ namespace ModuleHelper
 	{
 		return ATL::_AtlWinModule.ExtractCreateWndData();
 	}
-};
+} // namespace ModuleHelper
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -497,7 +500,7 @@ namespace SecureHelper
 		va_end(args);
 		return nRes;
 	}
-}; // namespace SecureHelper
+} // namespace SecureHelper
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -530,7 +533,7 @@ namespace MinCrtHelper
 	{
 		return _tcsrchr(str, ch);
 	}
-}; // namespace MinCrtHelper
+} // namespace MinCrtHelper
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -563,7 +566,7 @@ namespace GenericWndClass
 	{
 		return ::UnregisterClass(GetName(), ModuleHelper::GetModuleInstance());
 	}
-}; // namespace GenericWndClass
+} // namespace GenericWndClass
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -595,6 +598,12 @@ public:
 	ATL::CSimpleArray<CMessageFilter*> m_aMsgFilter;
 	ATL::CSimpleArray<CIdleHandler*> m_aIdleHandler;
 	MSG m_msg;
+
+	CMessageLoop()
+	{ }
+
+	virtual ~CMessageLoop()
+	{ }
 
 // Message filter operations
 	BOOL AddMessageFilter(CMessageFilter* pMessageFilter)
@@ -1076,7 +1085,7 @@ public:
 
 typedef ATL::CRegKey CRegKeyEx;
 
-}; // namespace WTL
+} // namespace WTL
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1190,7 +1199,7 @@ inline HRESULT AtlGetShellVersion(LPDWORD pdwMajor, LPDWORD pdwMinor)
 	return hRet;
 }
 
-}; // namespace ATL
+} // namespace ATL
 
 #endif // (_ATL_VER >= 0x0B00)
 

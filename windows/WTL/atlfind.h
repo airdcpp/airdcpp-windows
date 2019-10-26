@@ -46,13 +46,6 @@ protected:
 // Typedefs
 	typedef CEditFindReplaceImplBase<T, TFindReplaceDialog> thisClass;
 
-// Data members
-	TFindReplaceDialog* m_pFindReplaceDialog;
-	ATL::CString m_sFindNext, m_sReplaceWith;
-	BOOL m_bFindOnly, m_bFirstSearch, m_bMatchCase, m_bWholeWord, m_bFindDown;
-	LONG m_nInitialSearchPos;
-	HCURSOR m_hOldCursor;
-
 // Enumerations
 	enum TranslationTextItem
 	{
@@ -63,6 +56,13 @@ protected:
 	};
 
 public:
+// Data members
+	TFindReplaceDialog* m_pFindReplaceDialog;
+	ATL::CString m_sFindNext, m_sReplaceWith;
+	BOOL m_bFindOnly, m_bFirstSearch, m_bMatchCase, m_bWholeWord, m_bFindDown;
+	LONG m_nInitialSearchPos;
+	HCURSOR m_hOldCursor;
+
 // Constructors
 	CEditFindReplaceImplBase() :
 		m_pFindReplaceDialog(NULL),
@@ -79,24 +79,11 @@ public:
 // Message Handlers
 	BEGIN_MSG_MAP(thisClass)
 	ALT_MSG_MAP(1)
-		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		MESSAGE_HANDLER(TFindReplaceDialog::GetFindReplaceMsg(), OnFindReplaceCmd)
 		COMMAND_ID_HANDLER(ID_EDIT_FIND, OnEditFind)
 		COMMAND_ID_HANDLER(ID_EDIT_REPEAT, OnEditRepeat)
 		COMMAND_ID_HANDLER(ID_EDIT_REPLACE, OnEditReplace)
 	END_MSG_MAP()
-
-	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
-	{
-		if(m_pFindReplaceDialog != NULL)
-		{
-			m_pFindReplaceDialog->SendMessage(WM_CLOSE);
-			ATLASSERT(m_pFindReplaceDialog == NULL);
-		}
-
-		bHandled = FALSE;
-		return 0;
-	}
 
 	LRESULT OnFindReplaceCmd(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/)
 	{
@@ -234,7 +221,7 @@ public:
 		// (CEdit::GetSel uses int&, and CRichEditCtrlT::GetSel uses LONG&)
 		::SendMessage(pT->m_hWnd, EM_GETSEL, (WPARAM)&nStartChar, (LPARAM)&nEndChar);
 		POINT point = pT->PosFromChar(nStartChar);
-		::ClientToScreen(pT->GetParent(), &point);
+		pT->ClientToScreen(&point);
 		RECT rect = {};
 		::GetWindowRect(hWndDialog, &rect);
 		if(::PtInRect(&rect, point) != FALSE)
@@ -892,6 +879,6 @@ public:
 	}
 };
 
-}; // namespace WTL
+} // namespace WTL
 
 #endif // __ATLFIND_H__

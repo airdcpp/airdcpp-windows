@@ -225,8 +225,8 @@ static WTL::CFrameWndClassInfo& GetWndClassInfo() \
 
 // Client window command chaining macro (only for frame windows)
 #define CHAIN_CLIENT_COMMANDS() \
-	if((uMsg == WM_COMMAND) && (m_hWndClient != NULL)) \
-		::SendMessage(m_hWndClient, uMsg, wParam, lParam);
+	if((uMsg == WM_COMMAND) && (this->m_hWndClient != NULL)) \
+		::SendMessage(this->m_hWndClient, uMsg, wParam, lParam);
 
 // standard toolbar styles
 #define ATL_SIMPLE_TOOLBAR_STYLE \
@@ -1159,7 +1159,7 @@ public:
 #define CHAIN_MDI_CHILD_COMMANDS() \
 	if(uMsg == WM_COMMAND) \
 	{ \
-		HWND hWndChild = MDIGetActive(); \
+		HWND hWndChild = this->MDIGetActive(); \
 		if(hWndChild != NULL) \
 			::SendMessage(hWndChild, uMsg, wParam, lParam); \
 	}
@@ -3572,6 +3572,6 @@ public:
   #undef CBRPOPUPMENU
 #endif // !defined(__ATLCTRLW_H__)
 
-}; // namespace WTL
+} // namespace WTL
 
 #endif // __ATLFRAME_H__

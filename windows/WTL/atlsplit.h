@@ -1124,6 +1124,6 @@ public:
 typedef CSplitterWindowT<true>    CSplitterWindow;
 typedef CSplitterWindowT<false>   CHorSplitterWindow;
 
-}; // namespace WTL
+} // namespace WTL
 
 #endif // __ATLSPLIT_H__

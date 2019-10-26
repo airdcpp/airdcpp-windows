@@ -2326,12 +2326,13 @@ public:
 		return ::TextOut(m_hDC, x, y, lpszString, nCount);
 	}
 
-	BOOL ExtTextOut(int x, int y, UINT nOptions, LPCRECT lpRect, LPCTSTR lpszString, UINT nCount = -1, LPINT lpDxWidths = NULL)
+	BOOL ExtTextOut(int x, int y, UINT nOptions, LPCRECT lpRect, LPCTSTR lpszString, int nCount = -1, LPINT lpDxWidths = NULL)
 	{
 		ATLASSERT(m_hDC != NULL);
 		if(nCount == -1)
 			nCount = lstrlen(lpszString);
-		return ::ExtTextOut(m_hDC, x, y, nOptions, lpRect, lpszString, nCount, lpDxWidths);
+		ATLASSERT((nCount >= 0) && (nCount <= 8192));
+		return ::ExtTextOut(m_hDC, x, y, nOptions, lpRect, lpszString, (UINT)nCount, lpDxWidths);
 	}
 
 	SIZE TabbedTextOut(int x, int y, LPCTSTR lpszString, int nCount = -1, int nTabPositions = 0, LPINT lpnTabStopPositions = NULL, int nTabOrigin = 0)
@@ -3436,6 +3437,6 @@ public:
 	}
 };
 
-}; // namespace WTL
+} // namespace WTL
 
 #endif // __ATLGDI_H__
