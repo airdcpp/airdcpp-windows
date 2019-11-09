@@ -79,7 +79,7 @@ LRESULT SearchTypesPage::onAddMenu(WORD , WORD , HWND , BOOL& ) {
 
 	if(dlg.DoModal() == IDOK) {
 		try {
-			SearchManager::getInstance()->addSearchType(dlg.name, dlg.extList, true);
+			SearchManager::getInstance()->addSearchType(dlg.name, dlg.extList);
 			fillList();
 		} catch(const SearchTypeException& e) {
 			showError(e.getError());
