@@ -88,6 +88,7 @@ LRESULT RssFilterPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	ATTACH(IDC_RSS_FILTER_ACTION, cAction);
 	cAction.InsertString(0, CTSTRING(DOWNLOAD));
 	cAction.InsertString(1, CTSTRING(REMOVE));
+	cAction.InsertString(2, CTSTRING(ADD_AUTO_SEARCH_DISABLED));
 	cAction.SetCurSel(0);
 
 	::SetWindowText(GetDlgItem(IDC_RSS_EXPIRY_DAYS_LABEL), CTSTRING(AUTOSEARCH_EXPIRY_DAYS));
@@ -386,7 +387,7 @@ void RssFilterPage::restoreSelection(const tstring& curSel) {
 }
 
 void RssFilterPage::fixControls() {
-	BOOL enable = cAction.GetCurSel() == 0;
+	BOOL enable = cAction.GetCurSel() == 0 || cAction.GetCurSel() == 2;
 	::EnableWindow(GetDlgItem(IDC_RSS_DOWNLOAD_PATH), enable);
 	::EnableWindow(GetDlgItem(IDC_RSS_BROWSE), enable);
 	::EnableWindow(GetDlgItem(IDC_ASGROUP_BOX), enable);
