@@ -115,7 +115,7 @@ Priority AutoSearch::calculatePriority() const noexcept {
 
 	if (status == STATUS_FAILED_MISSING)
 		prio = Priority::HIGHEST;
-	else if (getLastSearch() == 0)
+	else if (getLastSearch() == 0) //no searches performed
 		prio = Priority::HIGHEST;
 	else if (getAsType() != NORMAL && allowAutoSearch() && (getLastSearch() + 48 * 60 * 60 < GET_TIME()))
 		prio = Priority::HIGH; //48 hours since last search.. consider it high prio?
