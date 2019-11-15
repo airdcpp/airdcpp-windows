@@ -150,7 +150,9 @@ namespace webserver {
 		auto extensions = JsonUtil::getField<StringList>("extensions", reqJson, false);
 
 		SearchManager::getInstance()->addSearchType(name, extensions);
-		return websocketpp::http::status_code::no_content;
+
+		aRequest.setResponseBody(serializeSearchType(name, extensions));
+		return websocketpp::http::status_code::ok;
 	}
 
 	api_return SearchApi::handleUpdateType(ApiRequest& aRequest) {
@@ -169,7 +171,16 @@ namespace webserver {
 			SearchManager::getInstance()->modSearchType(id, *extensions);
 		}
 
-		return websocketpp::http::status_code::no_content;
+		{
+			StringList extList;
+			auto ftype = Search::TYPE_ANY;
+
+			auto newId = name ? *name : id;
+			SearchManager::getInstance()->getSearchType(newId, ftype, extList);
+			aRequest.setResponseBody(serializeSearchType(newId, extList));
+		}
+
+		return websocketpp::http::status_code::ok;
 	}
 
 	api_return SearchApi::handleRemoveType(ApiRequest& aRequest) {
@@ -203,22 +214,6 @@ namespace webserver {
 
 
 	string SearchApi::parseSearchTypeId(ApiRequest& aRequest) noexcept {
-		auto id = aRequest.getStringParam(SEARCH_TYPE_ID);
-
-		if (id == Serializer::getFileTypeId(Util::toString(Search::TYPE_AUDIO))) {
-			return Util::toString(Search::TYPE_AUDIO);
-		} else if (id == Serializer::getFileTypeId(Util::toString(Search::TYPE_COMPRESSED))) {
-			return Util::toString(Search::TYPE_COMPRESSED);
-		} else if (id == Serializer::getFileTypeId(Util::toString(Search::TYPE_DOCUMENT))) {
-			return Util::toString(Search::TYPE_DOCUMENT);
-		} else if (id == Serializer::getFileTypeId(Util::toString(Search::TYPE_EXECUTABLE))) {
-			return Util::toString(Search::TYPE_EXECUTABLE);
-		} else if (id == Serializer::getFileTypeId(Util::toString(Search::TYPE_PICTURE))) {
-			return Util::toString(Search::TYPE_PICTURE);
-		} else if (id == Serializer::getFileTypeId(Util::toString(Search::TYPE_VIDEO))) {
-			return Util::toString(Search::TYPE_VIDEO);
-		}
-
-		return id;
+		return Deserializer::parseSearchType(aRequest.getStringParam(SEARCH_TYPE_ID));
 	}
 }

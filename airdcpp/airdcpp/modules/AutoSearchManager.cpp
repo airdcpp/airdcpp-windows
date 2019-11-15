@@ -422,7 +422,7 @@ void AutoSearchManager::performSearch(AutoSearchPtr& as, StringList& aHubs, Sear
 	StringList extList;
 	auto ftype = Search::TYPE_ANY;
 	try {
-		SearchManager::getInstance()->getSearchType(as->getFileType(), ftype, extList, true);
+		SearchManager::getInstance()->getSearchType(as->getFileType(), ftype, extList);
 	} catch(const SearchTypeException&) {
 		//reset to default
 		as->setFileType(SEARCH_TYPE_ANY);
@@ -724,7 +724,7 @@ void AutoSearchManager::on(SearchManagerListener::SR, const SearchResultPtr& sr)
 			try {
 				Search::TypeModes tmp;
 				StringList exts;
-				SearchManager::getInstance()->getSearchType(as->getFileType(), tmp, exts, true);
+				SearchManager::getInstance()->getSearchType(as->getFileType(), tmp, exts);
 				auto name = sr->getFileName();
 
 				//match

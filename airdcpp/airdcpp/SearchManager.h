@@ -57,8 +57,8 @@ public:
 private:
 	static ResourceManager::Strings types[Search::TYPE_LAST];
 public:
-	static const string& getTypeStr(int type) noexcept;
-	static bool isDefaultTypeStr(const string& type) noexcept;
+	static const string& getTypeStr(int aType) noexcept;
+	static bool isDefaultTypeStr(const string& aType) noexcept;
 	
 	SearchQueueInfo search(const SearchPtr& aSearch) noexcept;
 	SearchQueueInfo search(StringList& aHubUrls, const SearchPtr& aSearch, void* aOwner = nullptr) noexcept;
@@ -92,9 +92,9 @@ public:
 		return searchTypes;
 	}
 
-	void getSearchType(int pos, Search::TypeModes& type_, StringList& extList_, string& name_);
-	void getSearchType(const string& aName, Search::TypeModes& type_, StringList& extList_, bool aLock = false);
-	string getNameByExtension(const string& aExtension, bool defaultsOnly = false) const noexcept;
+	void getSearchType(int aPos, Search::TypeModes& type_, StringList& extList_, string& name_);
+	void getSearchType(const string& aName, Search::TypeModes& type_, StringList& extList_);
+	string getNameByExtension(const string& aExtension, bool aDefaultsOnly = false) const noexcept;
 
 	bool decryptPacket(string& x, size_t aLen, const ByteVector& aBuf);
 private:

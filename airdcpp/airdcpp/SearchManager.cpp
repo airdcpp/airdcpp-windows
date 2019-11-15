@@ -52,8 +52,8 @@ const string& SearchManager::getTypeStr(int aType) noexcept {
 	return ResourceManager::getInstance()->getString(types[aType]);
 }
 
-bool SearchManager::isDefaultTypeStr(const string& type) noexcept {
-	 return type.size() == 1 && type[0] >= '0' && type[0] <= '9';
+bool SearchManager::isDefaultTypeStr(const string& aType) noexcept {
+	 return aType.size() == 1 && aType[0] >= '0' && aType[0] <= '9';
 }
 
 SearchManager::SearchManager() {
@@ -668,10 +668,10 @@ void SearchManager::renameSearchType(const string& aOldName, const string& aNewN
 	fire(SearchManagerListener::SearchTypeRenamed(), aOldName, aNewName);
 }
 
-void SearchManager::modSearchType(const string& name, const StringList& extensions) {
+void SearchManager::modSearchType(const string& aName, const StringList& aExtensions) {
 	{
 		WLock l(cs);
-		getSearchType(name)->second = extensions;
+		getSearchType(aName)->second = aExtensions;
 	}
 	fire(SearchManagerListener::SearchTypesChanged());
 }
@@ -712,7 +712,7 @@ void SearchManager::getSearchType(int pos, Search::TypeModes& type_, StringList&
 	int counter = 0;
 	for(auto& i: searchTypes) {
 		if (counter++ == pos) {
-			if(i.first.size() > 1 || i.first[0] < '1' || i.first[0] > '6') {
+			if (!isDefaultTypeStr(i.first)) {
 				// custom search type
 				type_ = Search::TYPE_ANY;
 			} else {
@@ -728,7 +728,7 @@ void SearchManager::getSearchType(int pos, Search::TypeModes& type_, StringList&
 	throw SearchTypeException("No such search type"); 
 }
 
-void SearchManager::getSearchType(const string& aName, Search::TypeModes& type_, StringList& extList_, bool aLock) {
+void SearchManager::getSearchType(const string& aName, Search::TypeModes& type_, StringList& extList_) {
 	if (aName.empty())
 		throw SearchTypeException("No such search type"); 
 
@@ -738,20 +738,17 @@ void SearchManager::getSearchType(const string& aName, Search::TypeModes& type_,
 		return;
 	}
 
-	ConditionalRLock(cs, aLock);
-	auto p = searchTypes.find(aName);
-	if (p != searchTypes.end()) {
-		extList_ = p->second;
-		if(aName[0] < '1' || aName[0] > '6') {
-			// custom search type
-			type_ = Search::TYPE_ANY;
-		} else {
-			type_ = static_cast<Search::TypeModes>(aName[0] - '0');
-		}
-		return;
+	{
+		RLock l(cs);
+		extList_ = getSearchType(aName)->second;
 	}
 
-	throw SearchTypeException("No such search type"); 
+	if (!isDefaultTypeStr(aName)) {
+		// custom search type
+		type_ = Search::TYPE_ANY;
+	} else {
+		type_ = static_cast<Search::TypeModes>(aName[0] - '0');
+	}
 }
 
 string SearchManager::getNameByExtension(const string& aExtension, bool aDefaultsOnly) const noexcept {
@@ -759,7 +756,7 @@ string SearchManager::getNameByExtension(const string& aExtension, bool aDefault
 
 	RLock l(cs);
 	for (const auto& type : searchTypes) {
-		if (aDefaultsOnly && (type.first.size() > 1 || type.first[0] < '1' || type.first[0] > '6')) {
+		if (aDefaultsOnly && !isDefaultTypeStr(type.first)) {
 			continue;
 		}
 
