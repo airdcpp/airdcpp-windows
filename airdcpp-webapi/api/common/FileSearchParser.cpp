@@ -50,7 +50,8 @@ namespace webserver {
 		auto fileTypeStr = JsonUtil::getOptionalField<string>("file_type", aJson);
 		if (fileTypeStr) {
 			try {
-				SearchManager::getInstance()->getSearchType(Deserializer::parseSearchType(*fileTypeStr), aSearch->fileType, aSearch->exts);
+				string name;
+				SearchManager::getInstance()->getSearchType(Deserializer::parseSearchType(*fileTypeStr), aSearch->fileType, aSearch->exts, name);
 			} catch (...) {
 				throw std::domain_error("Invalid file type");
 			}

@@ -122,24 +122,15 @@ namespace webserver {
 
 	api_return SearchApi::handleGetTypes(ApiRequest& aRequest) {
 		auto types = SearchManager::getInstance()->getSearchTypes();
-
-		json retJ;
-		for (const auto& s : types) {
-			retJ.push_back(serializeSearchType(s.first, s.second));
-		}
-
-		aRequest.setResponseBody(retJ);
+		aRequest.setResponseBody(Serializer::serializeList(types, serializeSearchType));
 		return websocketpp::http::status_code::ok;
 	}
 
 	api_return SearchApi::handleGetType(ApiRequest& aRequest) {
 		auto id = parseSearchTypeId(aRequest);
 
-		StringList extList;
-		auto ftype = Search::TYPE_ANY;
-		SearchManager::getInstance()->getSearchType(id, ftype, extList);
-
-		aRequest.setResponseBody(serializeSearchType(id, extList));
+		auto type = SearchManager::getInstance()->getSearchType(id);
+		aRequest.setResponseBody(serializeSearchType(type));
 		return websocketpp::http::status_code::ok;
 	}
 
@@ -149,9 +140,9 @@ namespace webserver {
 		auto name = JsonUtil::getField<string>("name", reqJson, false);
 		auto extensions = JsonUtil::getField<StringList>("extensions", reqJson, false);
 
-		SearchManager::getInstance()->addSearchType(name, extensions);
+		auto type = SearchManager::getInstance()->addSearchType(name, extensions);
+		aRequest.setResponseBody(serializeSearchType(type));
 
-		aRequest.setResponseBody(serializeSearchType(name, extensions));
 		return websocketpp::http::status_code::ok;
 	}
 
@@ -163,23 +154,8 @@ namespace webserver {
 		auto name = JsonUtil::getOptionalField<string>("name", reqJson);
 		auto extensions = JsonUtil::getOptionalField<StringList>("extensions", reqJson);
 
-		if (name) {
-			SearchManager::getInstance()->renameSearchType(id, *name);
-		}
-
-		if (extensions) {
-			SearchManager::getInstance()->modSearchType(id, *extensions);
-		}
-
-		{
-			StringList extList;
-			auto ftype = Search::TYPE_ANY;
-
-			auto newId = name ? *name : id;
-			SearchManager::getInstance()->getSearchType(newId, ftype, extList);
-			aRequest.setResponseBody(serializeSearchType(newId, extList));
-		}
-
+		auto type = SearchManager::getInstance()->modSearchType(id, name, extensions);
+		aRequest.setResponseBody(serializeSearchType(type));
 		return websocketpp::http::status_code::ok;
 	}
 
@@ -197,18 +173,14 @@ namespace webserver {
 	}
 
 
-	json SearchApi::serializeSearchType(const string& aId, const StringList& aExtensions) noexcept {
-		auto name = aId;
-		if (SearchManager::isDefaultTypeStr(aId)) {
-			name = string(SearchManager::getTypeStr(aId[0] - '0'));
-		}
-
+	json SearchApi::serializeSearchType(const SearchTypePtr& aType) noexcept {
+		auto name = aType->getDisplayName();
 		return {
-			{ "id", Serializer::getFileTypeId(aId) },
+			{ "id", Serializer::getFileTypeId(aType->getId()) },
 			{ "str", name },
 			{ "name", name },
-			{ "extensions", aExtensions },
-			{ "default_type", SearchManager::isDefaultTypeStr(aId) }
+			{ "extensions", aType->getExtensions() },
+			{ "default_type", aType->isDefault() }
 		};
 	}
 

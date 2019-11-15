@@ -31,7 +31,7 @@ struct AutoSearchItemSettings {
 
 	//Default constructor, for adding auto search
 	AutoSearchItemSettings() :
-		as(nullptr), fileTypeStr(SETTING(LAST_AS_FILETYPE)), action(0), matcherType(0), remove(false), target(SETTING(DOWNLOAD_DIRECTORY)),
+		as(nullptr), fileTypeId(SETTING(LAST_AS_FILETYPE)), action(0), matcherType(0), remove(false), target(SETTING(DOWNLOAD_DIRECTORY)),
 		curNumber(1), maxNumber(0), startTime(0, 0),
 		endTime(23, 59), searchDays("1111111"), checkQueued(true), checkShared(true), matchFullPath(false),
 		numberLen(2), useParams(false), groupName(Util::emptyString), userMatcherExclude(false)
@@ -43,7 +43,7 @@ struct AutoSearchItemSettings {
 	AutoSearchItemSettings(const AutoSearchPtr& aAutoSearch, bool isDuplicate) : as(isDuplicate ? nullptr : aAutoSearch),
 		searchString(aAutoSearch->getSearchString()),
 		excludedWords(aAutoSearch->getExcludedString()),
-		fileTypeStr(aAutoSearch->getFileType()),
+		fileTypeId(aAutoSearch->getFileType()),
 		action(aAutoSearch->getAction()),
 		remove(aAutoSearch->getRemove()),
 		target(aAutoSearch->getTarget()),
@@ -74,7 +74,7 @@ public:
 	void setItemProperties(AutoSearchPtr& aAutoSearch, const string& aSearchString) {
 		aAutoSearch->setSearchString(aSearchString);
 		aAutoSearch->setExcludedString(excludedWords);
-		aAutoSearch->setFileType(fileTypeStr);
+		aAutoSearch->setFileType(fileTypeId);
 		aAutoSearch->setAction((AutoSearch::ActionType)action);
 		aAutoSearch->setRemove(remove);
 		aAutoSearch->setTarget(target);
@@ -112,7 +112,7 @@ public:
 
 	int numberLen, curNumber, maxNumber;
 
-	string searchString, target, fileTypeStr;
+	string searchString, target, fileTypeId;
 	string comment, userMatch, matcherString, excludedWords;
 	uint8_t action;
 	uint8_t matcherType;

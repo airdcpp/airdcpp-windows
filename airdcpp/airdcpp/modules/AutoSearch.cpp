@@ -207,7 +207,16 @@ void AutoSearch::updatePattern() noexcept {
 }
 
 string AutoSearch::getDisplayType() const noexcept {
-	return SearchManager::isDefaultTypeStr(fileType) ? SearchManager::getTypeStr(fileType[0] - '0') : fileType;
+	StringList ext;
+	Search::TypeModes mode;
+	string name;
+	try {
+		SearchManager::getInstance()->getSearchType(fileType, mode, ext, name);
+	} catch (...) {
+		return STRING(ANY);
+	}
+
+	return name;
 }
 
 void AutoSearch::addBundle(const BundlePtr& aBundle) noexcept {

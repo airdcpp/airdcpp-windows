@@ -56,15 +56,16 @@ LRESULT AutoSearchGeneralPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LP
 	::SetWindowText(GetDlgItem(IDC_GROUP_LABEL), CTSTRING(GROUP));
 
 	//get the search type so that we can set the initial control states correctly in fixControls
-	StringList ext;
 	try {
-		SearchManager::getInstance()->getSearchType(options.fileTypeStr, options.searchType, ext);
+		StringList ext;
+		string typeName;
+		SearchManager::getInstance()->getSearchType(options.fileTypeId, options.searchType, ext, typeName);
 	} catch (...) {
-		//switch back to default
+		// switch back to default
 		options.searchType = Search::TYPE_ANY;
 	}
 
-	ctrlFileType.fillList(options.fileTypeStr);
+	ctrlFileType.fillList(options.fileTypeId);
 
 	ATTACH(IDC_AS_ACTION, cAction);
 	cAction.AddString(CTSTRING(DOWNLOAD));
@@ -247,9 +248,8 @@ LRESULT AutoSearchGeneralPage::onCheckParams(WORD /*wNotifyCode*/, WORD /*wID*/,
 LRESULT AutoSearchGeneralPage::onTypeChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	StringList extensions;
 	try {
-		SearchManager::getInstance()->getSearchType(ctrlFileType.GetCurSel(), options.searchType, extensions, options.fileTypeStr);
-	}
-	catch (...) {}
+		SearchManager::getInstance()->getSearchType(ctrlFileType.GetCurSel(), options.searchType, extensions, options.fileTypeId);
+	} catch (...) {}
 	fixControls();
 	return 0;
 }

@@ -522,7 +522,7 @@ LRESULT AutoSearchFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	createPages(dlg, options);
 
 	if (dlg.DoModal() == IDOK) {
-		SettingsManager::getInstance()->set(SettingsManager::LAST_AS_FILETYPE, options.fileTypeStr);
+		SettingsManager::getInstance()->set(SettingsManager::LAST_AS_FILETYPE, options.fileTypeId);
 		addFromDialog(options);
 	}
 	return 0;

@@ -32,7 +32,7 @@
 class DirectoryListingDlg : public CDialogImpl<DirectoryListingDlg> {
 public:
 	string searchStr;
-	string fileTypeStr;
+	string fileTypeId;
 	Search::TypeModes fileType = Search::TYPE_ANY;
 	Search::SizeModes sizeMode = Search::SIZE_DONTCARE;
 	int64_t size = 0;

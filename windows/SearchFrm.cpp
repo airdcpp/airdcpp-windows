@@ -523,9 +523,9 @@ void SearchFrame::onEnter() {
 
 
 	// Get ADC search type extensions if any is selected
-	string typeName;
+	string typeId;
 	try {
-		SearchManager::getInstance()->getSearchType(ctrlFileType.GetCurSel(), s->fileType, s->exts, typeName);
+		SearchManager::getInstance()->getSearchType(ctrlFileType.GetCurSel(), s->fileType, s->exts, typeId);
 	} catch(const SearchTypeException&) {
 		dcassert(0);
 	}
@@ -542,8 +542,8 @@ void SearchFrame::onEnter() {
 	}
 	ctrlStatus.SetText(1, 0, SBT_OWNERDRAW);
 
-	if (initialString.empty() && typeName != SETTING(LAST_SEARCH_FILETYPE))
-		SettingsManager::getInstance()->set(SettingsManager::LAST_SEARCH_FILETYPE, typeName);
+	if (initialString.empty() && typeId != SETTING(LAST_SEARCH_FILETYPE))
+		SettingsManager::getInstance()->set(SettingsManager::LAST_SEARCH_FILETYPE, typeId);
 
 	// perform the search
 	auto newSearch = SearchQuery::getSearch(s);
