@@ -349,6 +349,13 @@ public:
 		
 	}
 
+	void unboldTabs() {
+		for (auto t : tabs) {
+			t->dirty = false;
+		}
+		this->Invalidate();
+	}
+
 	int getTabHeight() { return height; }
 	int getHeight() { return (getRows() * getTabHeight())+1; }
 	int getFill() { return (getTabHeight() + 1) / 2; }
