@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -155,6 +155,7 @@ public:
 		COMMAND_ID_HANDLER(ID_LOCK_TB, OnLockTB)
 		COMMAND_ID_HANDLER(ID_WINDOW_MINIMIZE_ALL, onWindowMinimizeAll)
 		COMMAND_ID_HANDLER(ID_WINDOW_RESTORE_ALL, onWindowRestoreAll)
+		COMMAND_ID_HANDLER(IDC_WINDOW_MARK_READ, onWindowMarkAsRead)
 		COMMAND_ID_HANDLER(IDC_UPDATE, onUpdate)
 		COMMAND_ID_HANDLER(IDC_CLOSE_DISCONNECTED, onCloseWindows)
 		COMMAND_ID_HANDLER(IDC_CLOSE_ALL_PM, onCloseWindows)
@@ -182,8 +183,8 @@ public:
 		NOTIFY_CODE_HANDLER(TBN_DROPDOWN, onRefreshDropDown)
 		CHAIN_MDI_CHILD_COMMANDS()
 		CHAIN_MSG_MAP(CUpdateUI<MainFrame>)
+		CHAIN_MSG_MAP(CSplitterImpl<MainFrame>)
 		CHAIN_MSG_MAP(CMDIFrameWindowImpl<MainFrame>)
-		CHAIN_MSG_MAP(splitterBase);
 		ALT_MSG_MAP(STATUS_MESSAGE_MAP)
 			NOTIFY_CODE_HANDLER(TTN_GETDISPINFO, onGetToolTip)
 			MESSAGE_HANDLER(WM_LBUTTONUP, onStatusBarClick)
@@ -302,6 +303,11 @@ public:
 
 	LRESULT onWindowMinimizeAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onWindowRestoreAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);	
+
+	LRESULT onWindowMarkAsRead(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		ctrlTab.unboldTabs();
+		return 0;
+	}
 
 	LRESULT onShutDown(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		setShutDown(!getShutDown());

@@ -1,17 +1,19 @@
 #pragma once
 
+#include <algorithm> // copy
 #include <ciso646> // or, and, not
 #include <iterator> // begin, end
+#include <string> // string
 #include <tuple> // tuple, get
 #include <type_traits> // is_same, is_constructible, is_floating_point, is_enum, underlying_type
 #include <utility> // move, forward, declval, pair
 #include <valarray> // valarray
 #include <vector> // vector
 
+#include <nlohmann/detail/iterators/iteration_proxy.hpp>
 #include <nlohmann/detail/meta/cpp_future.hpp>
 #include <nlohmann/detail/meta/type_traits.hpp>
 #include <nlohmann/detail/value_t.hpp>
-#include <nlohmann/detail/iterators/iteration_proxy.hpp>
 
 namespace nlohmann
 {
@@ -152,7 +154,10 @@ struct external_constructor<value_t::array>
         j.m_type = value_t::array;
         j.m_value = value_t::array;
         j.m_value.array->resize(arr.size());
-        std::copy(std::begin(arr), std::end(arr), j.m_value.array->begin());
+        if (arr.size() > 0)
+        {
+            std::copy(std::begin(arr), std::end(arr), j.m_value.array->begin());
+        }
         j.assert_invariant();
     }
 };
@@ -290,37 +295,37 @@ void to_json(BasicJsonType& j, typename BasicJsonType::object_t&& obj)
 template <
     typename BasicJsonType, typename T, std::size_t N,
     enable_if_t<not std::is_constructible<typename BasicJsonType::string_t,
-                const T (&)[N]>::value,
+                const T(&)[N]>::value,
                 int> = 0 >
-void to_json(BasicJsonType& j, const T (&arr)[N])
+void to_json(BasicJsonType& j, const T(&arr)[N])
 {
     external_constructor<value_t::array>::construct(j, arr);
 }
 
-template<typename BasicJsonType, typename... Args>
-void to_json(BasicJsonType& j, const std::pair<Args...>& p)
+template < typename BasicJsonType, typename T1, typename T2, enable_if_t < std::is_constructible<BasicJsonType, T1>::value&& std::is_constructible<BasicJsonType, T2>::value, int > = 0 >
+void to_json(BasicJsonType& j, const std::pair<T1, T2>& p)
 {
-    j = {p.first, p.second};
+    j = { p.first, p.second };
 }
 
 // for https://github.com/nlohmann/json/pull/1134
-template<typename BasicJsonType, typename T,
-         enable_if_t<std::is_same<T, typename iteration_proxy<typename BasicJsonType::iterator>::iteration_proxy_internal>::value, int> = 0>
+template < typename BasicJsonType, typename T,
+           enable_if_t<std::is_same<T, iteration_proxy_value<typename BasicJsonType::iterator>>::value, int> = 0>
 void to_json(BasicJsonType& j, const T& b)
 {
-    j = {{b.key(), b.value()}};
+    j = { {b.key(), b.value()} };
 }
 
 template<typename BasicJsonType, typename Tuple, std::size_t... Idx>
 void to_json_tuple_impl(BasicJsonType& j, const Tuple& t, index_sequence<Idx...> /*unused*/)
 {
-    j = {std::get<Idx>(t)...};
+    j = { std::get<Idx>(t)... };
 }
 
-template<typename BasicJsonType, typename... Args>
-void to_json(BasicJsonType& j, const std::tuple<Args...>& t)
+template<typename BasicJsonType, typename T, enable_if_t<is_constructible_tuple<BasicJsonType, T>::value, int > = 0>
+void to_json(BasicJsonType& j, const T& t)
 {
-    to_json_tuple_impl(j, t, index_sequence_for<Args...> {});
+    to_json_tuple_impl(j, t, make_index_sequence<std::tuple_size<T>::value> {});
 }
 
 struct to_json_fn
@@ -339,4 +344,4 @@ namespace
 {
 constexpr const auto& to_json = detail::static_const<detail::to_json_fn>::value;
 } // namespace
-}  // namespace nlohmann
+} // namespace nlohmann

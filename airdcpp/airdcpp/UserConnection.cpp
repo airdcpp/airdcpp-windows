@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -236,7 +236,7 @@ void UserConnection::inf(bool withToken, int mcnSlots) {
 bool UserConnection::pm(const string& aMessage, string& error_, bool aThirdPerson) {
 	auto error = ClientManager::getInstance()->outgoingPrivateMessageHook.runHooksError(aMessage, aThirdPerson, getHintedUser(), true);
 	if (error) {
-		error_ = error->formatError(error);
+		error_ = ActionHookRejection::formatError(error);
 		return false;
 	}
 

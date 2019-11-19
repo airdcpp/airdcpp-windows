@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2012-2018 AirDC++ Project
+ * Copyright (C) 2012-2019 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -96,7 +96,6 @@ LRESULT SearchTypeDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 			} catch(const SearchTypeException& e) {
 				MessageBox(Text::toT(e.getError()).c_str());
 				return 0;
-				//showError(e.getError());
 			}
 		}
 	}
@@ -131,7 +130,6 @@ LRESULT SearchTypeDlg::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 }
 
 LRESULT SearchTypeDlg::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	//int sel = ctrlTypes.GetSelectedIndex();
 	int i = -1;
 	while((i = ctrlExtensions.GetNextItem(i, LVNI_SELECTED)) != -1) {
 		ctrlExtensions.DeleteItem(i);
@@ -139,14 +137,6 @@ LRESULT SearchTypeDlg::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 		i--;
 	}
 
-	/*int i = ctrlExtensions.GetCurSel();
-	if (i > 0) {
-		ctrlExtensions.DeleteString(i);
-
-		auto pos = extList.begin();
-		advance(pos, i);
-		extList.erase(pos);
-	}*/
 	return 0;
 }
 
@@ -154,10 +144,9 @@ void SearchTypeDlg::fillList() {
 	sort(extList.begin(), extList.end());
 	ctrlExtensions.DeleteAllItems();
 	int pos = 0;
-	for (auto i = extList.rbegin(); i != extList.rend(); ++i) {
+	for (auto i = extList.begin(); i != extList.end(); ++i) {
 		ctrlExtensions.InsertItem(pos++, Text::toT(*i).c_str());
 	}
 
 	ctrlExtensions.RedrawWindow();
-	//RedrawWindow();
 }

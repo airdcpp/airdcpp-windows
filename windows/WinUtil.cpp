@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -468,6 +468,7 @@ void WinUtil::init(HWND hWnd) {
 	window.AppendMenu(MF_STRING, IDC_CLOSE_ALL_DIR_LIST, CTSTRING(MENU_CLOSE_ALL_DIR_LIST));
 	window.AppendMenu(MF_STRING, IDC_CLOSE_ALL_SEARCH_FRAME, CTSTRING(MENU_CLOSE_ALL_SEARCHFRAME));
 	window.AppendMenu(MF_STRING, IDC_RECONNECT_DISCONNECTED, CTSTRING(MENU_RECONNECT_DISCONNECTED));
+	window.AppendMenu(MF_STRING, IDC_WINDOW_MARK_READ, CTSTRING(MENU_MARK_AS_READ));
 
 	mainMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)window, CTSTRING(MENU_WINDOW));
 
@@ -921,11 +922,8 @@ void WinUtil::copyMagnet(const TTHValue& aHash, const string& aFile, int64_t aSi
  	}
 }
 
-string WinUtil::makeMagnet(const TTHValue& aHash, const string& aFile, int64_t size) {
-	string ret = "magnet:?xt=urn:tree:tiger:" + aHash.toBase32();
-	if(size > 0)
-		ret += "&xl=" + Util::toString(size);
-	return ret + "&dn=" + Util::encodeURI(aFile);
+string WinUtil::makeMagnet(const TTHValue& aHash, const string& aFile, int64_t aSize) {
+	return Magnet::makeMagnet(aHash, aFile, aSize);
 }
 
  void WinUtil::searchHash(const TTHValue& aHash, const string&, int64_t) {

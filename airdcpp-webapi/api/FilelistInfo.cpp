@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include <api/common/Deserializer.h>
 #include <web-server/JsonUtil.h>
 
+#include <airdcpp/Client.h>
 #include <airdcpp/DirectoryListingManager.h>
 
 
@@ -75,9 +76,9 @@ namespace webserver {
 				dl->addShareProfileChangeTask(*profile);
 			}
 		} else {
-			auto hubUrl = JsonUtil::getOptionalField<string>("hub_url", reqJson);
-			if (hubUrl) {
-				dl->addHubUrlChangeTask(*hubUrl);
+			auto client = Deserializer::deserializeClient(reqJson, true);
+			if (client) {
+				dl->addHubUrlChangeTask(client->getHubUrl());
 			}
 		}
 

@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2011-2018 AirDC++ Project
+ * Copyright (C) 2011-2019 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@
 class DirectoryListingDlg : public CDialogImpl<DirectoryListingDlg> {
 public:
 	string searchStr;
-	string fileTypeStr;
+	string fileTypeId;
 	Search::TypeModes fileType = Search::TYPE_ANY;
 	Search::SizeModes sizeMode = Search::SIZE_DONTCARE;
 	int64_t size = 0;

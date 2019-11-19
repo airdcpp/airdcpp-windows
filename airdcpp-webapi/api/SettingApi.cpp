@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@ namespace webserver {
 		json retJson = json::array();
 		parseSettingKeys(requestJson, [&](ApiSettingItem& aItem) {
 			retJson.push_back(SettingUtils::serializeDefinition(aItem));
-		});
+		}, aRequest.getSession()->getServer());
 
 		aRequest.setResponseBody(retJson);
 		return websocketpp::http::status_code::ok;
@@ -66,16 +66,16 @@ namespace webserver {
 			} else {
 				retJson[aItem.name] = aItem.getValue();
 			}
-		});
+		}, aRequest.getSession()->getServer());
 
 		aRequest.setResponseBody(retJson);
 		return websocketpp::http::status_code::ok;
 	}
 
-	void SettingApi::parseSettingKeys(const json& aJson, ParserF aHandler) {
+	void SettingApi::parseSettingKeys(const json& aJson, ParserF aHandler, WebServerManager* aWsm) {
 		auto keys = JsonUtil::getField<StringList>("keys", aJson, true);
 		for (const auto& key : keys) {
-			auto setting = getSettingItem(key);
+			auto setting = getSettingItem(key, aWsm);
 			if (!setting) {
 				JsonUtil::throwError(key, JsonUtil::ERROR_INVALID, "Setting not found");
 			}
@@ -89,7 +89,7 @@ namespace webserver {
 
 		parseSettingKeys(requestJson, [&](ApiSettingItem& aItem) {
 			aItem.unset();
-		});
+		}, aRequest.getSession()->getServer());
 
 		return websocketpp::http::status_code::no_content;
 	}
@@ -99,7 +99,7 @@ namespace webserver {
 
 		bool hasSet = false;
 		for (const auto& elem : aRequest.getRequestBody().items()) {
-			auto setting = getSettingItem(elem.key());
+			auto setting = getSettingItem(elem.key(), aRequest.getSession()->getServer());
 			if (!setting) {
 				JsonUtil::throwError(elem.key(), JsonUtil::ERROR_INVALID, "Setting not found");
 			}
@@ -111,17 +111,17 @@ namespace webserver {
 		dcassert(hasSet);
 
 		SettingsManager::getInstance()->save();
-		WebServerManager::getInstance()->save(nullptr);
+		WebServerManager::getInstance()->setDirty();
 
 		return websocketpp::http::status_code::no_content;
 	}
 
-	ApiSettingItem* SettingApi::getSettingItem(const string& aKey) noexcept {
+	ApiSettingItem* SettingApi::getSettingItem(const string& aKey, WebServerManager* aWsm) noexcept {
 		auto p = ApiSettingItem::findSettingItem<CoreSettingItem>(coreSettings, aKey);
 		if (p) {
 			return p;
 		}
 
-		return WebServerSettings::getSettingItem(aKey);
+		return aWsm->getSettings().getSettingItem(aKey);
 	}
 }

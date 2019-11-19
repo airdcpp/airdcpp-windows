@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2016-2017 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2016-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -186,21 +186,21 @@ public:
     {
         return data_;
     }
-                
+
     /// Returns an iterator to the beginning of the span
     const_iterator
     cbegin() const
     {
         return data_;
     }
-       
+
     /// Returns an iterator to one past the end of the span
     const_iterator
     end() const
     {
         return data_ + size_;
     }
-        
+
     /// Returns an iterator to one past the end of the span
     const_iterator
     cend() const

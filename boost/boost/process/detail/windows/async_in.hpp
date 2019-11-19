@@ -17,19 +17,20 @@
 
 #include <boost/asio/write.hpp>
 #include <boost/process/detail/handler_base.hpp>
+#include <boost/process/detail/used_handles.hpp>
 #include <boost/process/detail/windows/async_handler.hpp>
 #include <boost/process/detail/windows/asio_fwd.hpp>
 #include <boost/process/async_pipe.hpp>
 #include <memory>
 #include <future>
 
-
 namespace boost { namespace process { namespace detail { namespace windows {
 
 
 template<typename Buffer>
 struct async_in_buffer : ::boost::process::detail::windows::handler_base_ext,
-                         ::boost::process::detail::windows::require_io_context
+                         ::boost::process::detail::windows::require_io_context,
+                         ::boost::process::detail::uses_handles
 {
     Buffer & buf;
 
@@ -42,34 +43,39 @@ struct async_in_buffer : ::boost::process::detail::windows::handler_base_ext,
 
     std::shared_ptr<boost::process::async_pipe> pipe;
 
+    ::boost::winapi::HANDLE_ get_used_handles() const
+    {
+        return std::move(*pipe).source().native_handle();
+    }
+
     async_in_buffer(Buffer & buf) : buf(buf)
     {
     }
     template <typename Executor>
     inline void on_success(Executor&)
     {
-        auto pipe = this->pipe;
+        auto pipe_ = this->pipe;
 
         if (this->promise)
         {
-            auto promise = this->promise;
+            auto promise_ = this->promise;
 
-            boost::asio::async_write(*pipe, buf,
-                [promise](const boost::system::error_code & ec, std::size_t)
+            boost::asio::async_write(*pipe_, buf,
+                [promise_](const boost::system::error_code & ec, std::size_t)
                 {
                     if (ec && (ec.value() != ::boost::winapi::ERROR_BROKEN_PIPE_))
                     {
                         std::error_code e(ec.value(), std::system_category());
-                        promise->set_exception(std::make_exception_ptr(process_error(e)));
+                        promise_->set_exception(std::make_exception_ptr(process_error(e)));
                     }
-                    promise->set_value();
+                    promise_->set_value();
                 });
         }
         else
-            boost::asio::async_write(*pipe, buf,
-                [pipe](const boost::system::error_code&, std::size_t){});
+            boost::asio::async_write(*pipe_, buf,
+                [pipe_](const boost::system::error_code&, std::size_t){});
 
-        std::move(*pipe).source().close();
+        std::move(*pipe_).source().close();
 
 
         this->pipe = nullptr;

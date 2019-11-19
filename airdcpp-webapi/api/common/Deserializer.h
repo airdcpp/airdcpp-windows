@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ namespace webserver {
 
 		static TTHValue parseTTH(const string& aTTH);
 
-		static UserPtr deserializeUser(const json& aJson, bool aAllowMe = false, const string& aFieldName = "user");
+		static UserPtr deserializeUser(const json& aJson, bool aAllowMe, bool aOptional = false);
 		static HintedUser deserializeHintedUser(const json& aJson, bool aAllowMe = false, const string& aFieldName = "user");
 		static OnlineUserPtr deserializeOnlineUser(const json& aJson, bool aAllowMe = false, const string& aFieldName = "user");
 		static TTHValue deserializeTTH(const json& aJson);
@@ -48,6 +48,7 @@ namespace webserver {
 
 		// Returns all connected hubs if the list is not found from the JSON
 		static StringList deserializeHubUrls(const json& aJson);
+		static ClientPtr deserializeClient(const json& aJson, bool aOptional = false);
 
 		static pair<string, bool> deserializeChatMessage(const json& aJson);
 		static pair<string, LogMessage::Severity> deserializeStatusMessage(const json& aJson);
@@ -56,9 +57,9 @@ namespace webserver {
 		static ProfileToken deserializeShareProfile(const json& aJson);
 
 		static OptionalProfileToken deserializeOptionalShareProfile(const json& aJson);
+		static string parseSearchType(const string& aType);
 	private:
 		static LogMessage::Severity parseSeverity(const string& aText);
-		static UserPtr parseUser(const json& aJson, bool aAllowMe);
 	};
 }
 

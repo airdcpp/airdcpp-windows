@@ -30,7 +30,7 @@ int main()
 
     BOOST_TEST( bt.equivalent( ev, bn ) );
 
-    BOOST_TEST_EQ( bc, bn );
+    BOOST_TEST( bc == bn );
 
     return boost::report_errors();
 }

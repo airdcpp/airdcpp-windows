@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -231,36 +231,36 @@ string QueueItem::getListName() const noexcept {
 
 /* INTERNAL */
 uint8_t QueueItem::getMaxSegments(int64_t aFileSize) noexcept {
-	uint8_t maxSegments = 1;
+	uint8_t ret = 1;
 
 	if(SETTING(SEGMENTS_MANUAL)) {
-		maxSegments = min((uint8_t)SETTING(NUMBER_OF_SEGMENTS), (uint8_t)10);
+		ret = min((uint8_t)SETTING(NUMBER_OF_SEGMENTS), (uint8_t)10);
 	} else {
 		if ((aFileSize >= 2*1048576) && (aFileSize < 15*1048576)) {
-			maxSegments = 2;
+			ret = 2;
 		} else if((aFileSize >= (int64_t)15*1048576) && (aFileSize < (int64_t)30*1048576)) {
-			maxSegments = 3;
+			ret = 3;
 		} else if((aFileSize >= (int64_t)30*1048576) && (aFileSize < (int64_t)60*1048576)) {
-			maxSegments = 4;
+			ret = 4;
 		} else if((aFileSize >= (int64_t)60*1048576) && (aFileSize < (int64_t)120*1048576)) {
-			maxSegments = 5;
+			ret = 5;
 		} else if((aFileSize >= (int64_t)120*1048576) && (aFileSize < (int64_t)240*1048576)) {
-			maxSegments = 6;
+			ret = 6;
 		} else if((aFileSize >= (int64_t)240*1048576) && (aFileSize < (int64_t)480*1048576)) {
-			maxSegments = 7;
+			ret = 7;
 		} else if((aFileSize >= (int64_t)480*1048576) && (aFileSize < (int64_t)960*1048576)) {
-			maxSegments = 8;
+			ret = 8;
 		} else if((aFileSize >= (int64_t)960*1048576) && (aFileSize < (int64_t)1920*1048576)) {
-			maxSegments = 9;
+			ret = 9;
 		} else if(aFileSize >= (int64_t)1920*1048576) {
-			maxSegments = 10;
+			ret = 10;
 		}
 	}
 
 #ifdef _DEBUG
 	return 88;
 #else
-	return maxSegments;
+	return ret;
 #endif
 }
 
@@ -852,6 +852,24 @@ bool QueueItem::Source::updateHubUrl(const OrderedStringSet& aOnlineHubs, string
 	}
 
 	return false;
+}
+
+string QueueItem::Source::formatError(const Flags& aFlags) noexcept {
+	if (aFlags.isSet(QueueItem::Source::FLAG_FILE_NOT_AVAILABLE)) {
+		return STRING(FILE_NOT_AVAILABLE);
+	} else if (aFlags.isSet(QueueItem::Source::FLAG_BAD_TREE)) {
+		return STRING(INVALID_TREE);
+	} else if (aFlags.isSet(QueueItem::Source::FLAG_NO_NEED_PARTS)) {
+		return STRING(NO_NEEDED_PART);
+	} else if (aFlags.isSet(QueueItem::Source::FLAG_NO_TTHF)) {
+		return STRING(SOURCE_TOO_OLD);
+	} else if (aFlags.isSet(QueueItem::Source::FLAG_SLOW_SOURCE)) {
+		return STRING(SLOW_USER);
+	} else if (aFlags.isSet(QueueItem::Source::FLAG_UNTRUSTED)) {
+		return STRING(CERTIFICATE_NOT_TRUSTED);
+	}
+
+	return Util::emptyString;
 }
 
 void QueueItem::resetDownloaded() noexcept {

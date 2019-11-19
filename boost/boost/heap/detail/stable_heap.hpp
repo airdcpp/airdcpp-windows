@@ -173,19 +173,21 @@ struct heap_base:
     heap_base(heap_base && rhs) BOOST_NOEXCEPT_IF(boost::is_nothrow_move_constructible<Cmp>::value):
 #ifndef BOOST_MSVC
         Cmp(std::move(static_cast<Cmp&>(rhs))),
-#else
-        cmp_(std::move(rhs.cmp_)),
 #endif
         size_holder_type(std::move(static_cast<size_holder_type&>(rhs)))
+#ifdef BOOST_MSVC
+        , cmp_(std::move(rhs.cmp_))
+#endif
     {}
 
     heap_base(heap_base const & rhs):
 #ifndef BOOST_MSVC
         Cmp(static_cast<Cmp const &>(rhs)),
-#else
-        cmp_(rhs.value_comp()),
 #endif
         size_holder_type(static_cast<size_holder_type const &>(rhs))
+#ifdef BOOST_MSVC
+        , cmp_(rhs.value_comp())
+#endif
     {}
 
     heap_base & operator=(heap_base && rhs) BOOST_NOEXCEPT_IF(boost::is_nothrow_move_assignable<Cmp>::value)
@@ -566,12 +568,22 @@ struct make_heap_base
 template <typename Alloc>
 struct extract_allocator_types
 {
+#ifdef BOOST_NO_CXX11_ALLOCATOR
     typedef typename Alloc::size_type size_type;
     typedef typename Alloc::difference_type difference_type;
     typedef typename Alloc::reference reference;
     typedef typename Alloc::const_reference const_reference;
     typedef typename Alloc::pointer pointer;
     typedef typename Alloc::const_pointer const_pointer;
+#else
+    typedef std::allocator_traits<Alloc> traits;
+    typedef typename traits::size_type size_type;
+    typedef typename traits::difference_type difference_type;
+    typedef typename Alloc::value_type& reference;
+    typedef typename Alloc::value_type const& const_reference;
+    typedef typename traits::pointer pointer;
+    typedef typename traits::const_pointer const_pointer;
+#endif
 };
 
 

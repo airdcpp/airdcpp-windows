@@ -297,6 +297,9 @@
     <ClInclude Include="stdinc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="web-server\HttpUtil.h">
+      <Filter>Header Files\web-server</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="api\QueueApi.cpp">
@@ -487,6 +490,12 @@
     </ClCompile>
     <ClCompile Include="stdinc.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="web-server\WebServerSettings.cpp">
+      <Filter>Source Files\web-server</Filter>
+    </ClCompile>
+    <ClCompile Include="web-server\HttpUtil.cpp">
+      <Filter>Source Files\web-server</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

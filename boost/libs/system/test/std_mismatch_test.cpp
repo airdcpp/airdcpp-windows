@@ -11,10 +11,14 @@
 // Avoid spurious VC++ warnings
 # define _CRT_SECURE_NO_WARNINGS
 
+#include <boost/system/error_code.hpp>
 #include <boost/config.hpp>
+#include <boost/config/pragma_message.hpp>
 #include <iostream>
 
-#if defined(BOOST_NO_CXX11_HDR_SYSTEM_ERROR)
+#if !defined(BOOST_SYSTEM_HAS_SYSTEM_ERROR)
+
+BOOST_PRAGMA_MESSAGE( "BOOST_SYSTEM_HAS_SYSTEM_ERROR not defined, test will be skipped" )
 
 int main()
 {
@@ -25,7 +29,6 @@ int main()
 
 #else
 
-#include <boost/system/error_code.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <system_error>
 #include <cerrno>
@@ -38,7 +41,6 @@ static void test_generic_category()
     std::error_category const & st = bt;
 
     BOOST_TEST_CSTR_EQ( bt.name(), st.name() );
-    BOOST_TEST_EQ( bt.name(), st.name() );
 }
 
 static void test_system_category()
@@ -47,7 +49,6 @@ static void test_system_category()
     std::error_category const & st = bt;
 
     BOOST_TEST_CSTR_EQ( bt.name(), st.name() );
-    BOOST_TEST_EQ( bt.name(), st.name() );
 }
 
 int main()

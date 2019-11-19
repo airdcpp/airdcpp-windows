@@ -537,25 +537,10 @@ namespace std{ using ::type_info; }
 
 // ---------------------------------------------------------------------------//
 
-//
 // Helper macro BOOST_STRINGIZE:
-// Converts the parameter X to a string after macro replacement
-// on X has been performed.
-//
-#define BOOST_STRINGIZE(X) BOOST_DO_STRINGIZE(X)
-#define BOOST_DO_STRINGIZE(X) #X
-
-//
 // Helper macro BOOST_JOIN:
-// The following piece of macro magic joins the two
-// arguments together, even when one of the arguments is
-// itself a macro (see 16.3.1 in C++ standard).  The key
-// is that macro expansion of macro arguments does not
-// occur in BOOST_DO_JOIN2 but does in BOOST_DO_JOIN.
-//
-#define BOOST_JOIN( X, Y ) BOOST_DO_JOIN( X, Y )
-#define BOOST_DO_JOIN( X, Y ) BOOST_DO_JOIN2(X,Y)
-#define BOOST_DO_JOIN2( X, Y ) X##Y
+
+#include <boost/config/helper_macros.hpp>
 
 //
 // Set some default values for compiler/library/platform names.
@@ -700,6 +685,11 @@ namespace std{ using ::type_info; }
 // Lack of non-public defaulted functions is implied by the lack of any defaulted functions
 #if !defined(BOOST_NO_CXX11_NON_PUBLIC_DEFAULTED_FUNCTIONS) && defined(BOOST_NO_CXX11_DEFAULTED_FUNCTIONS)
 #  define BOOST_NO_CXX11_NON_PUBLIC_DEFAULTED_FUNCTIONS
+#endif
+
+// Lack of defaulted moves is implied by the lack of either rvalue references or any defaulted functions
+#if !defined(BOOST_NO_CXX11_DEFAULTED_MOVES) && (defined(BOOST_NO_CXX11_DEFAULTED_FUNCTIONS) || defined(BOOST_NO_CXX11_RVALUE_REFERENCES))
+#  define BOOST_NO_CXX11_DEFAULTED_MOVES
 #endif
 
 // Defaulted and deleted function declaration helpers
@@ -1002,6 +992,23 @@ namespace std{ using ::type_info; }
 #ifndef BOOST_ATTRIBUTE_UNUSED
 #  define BOOST_ATTRIBUTE_UNUSED
 #endif
+//
+// [[nodiscard]]:
+//
+#ifdef __has_cpp_attribute
+#if __has_cpp_attribute(nodiscard)
+# define BOOST_ATTRIBUTE_NODISCARD [[nodiscard]]
+#endif
+#if __has_cpp_attribute(no_unique_address) && !(defined(__GNUC__) && (__cplusplus < 201100))
+# define BOOST_ATTRIBUTE_NO_UNIQUE_ADDRESS [[no_unique_address]]
+#endif
+#endif
+#ifndef BOOST_ATTRIBUTE_NODISCARD
+# define BOOST_ATTRIBUTE_NODISCARD
+#endif
+#ifndef BOOST_ATTRIBUTE_NO_UNIQUE_ADDRESS
+# define BOOST_ATTRIBUTE_NO_UNIQUE_ADDRESS
+#endif
 
 #define BOOST_STATIC_CONSTEXPR  static BOOST_CONSTEXPR_OR_CONST
 
@@ -1031,6 +1038,23 @@ namespace std{ using ::type_info; }
 //
 #if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) && !defined(BOOST_NO_CXX11_FIXED_LENGTH_VARIADIC_TEMPLATE_EXPANSION_PACKS)
 #  define BOOST_NO_CXX11_FIXED_LENGTH_VARIADIC_TEMPLATE_EXPANSION_PACKS
+#endif
+
+// This is a catch all case for obsolete compilers / std libs:
+#if !defined(__has_include)
+#  define BOOST_NO_CXX17_HDR_OPTIONAL
+#  define BOOST_NO_CXX17_HDR_STRING_VIEW
+#  define BOOST_NO_CXX17_HDR_VARIANT
+#else
+#if !__has_include(<optional>)
+#  define BOOST_NO_CXX17_HDR_OPTIONAL
+#endif
+#if !__has_include(<string_view>)
+#  define BOOST_NO_CXX17_HDR_STRING_VIEW
+#endif
+#if !__has_include(<variant>)
+#  define BOOST_NO_CXX17_HDR_VARIANT
+#endif
 #endif
 
 //

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2012-2018 AirDC++ Project
+* Copyright (C) 2012-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@ LRESULT RssFeedsPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	::SetWindowText(GetDlgItem(IDC_RSS_NAME_TEXT), CTSTRING(NAME));
 
 	ATTACH(IDC_RSS_INTERVAL, ctrlInterval);
-	::SetWindowText(GetDlgItem(IDC_INTERVAL_TEXT), CTSTRING(MINIMUM_UPDATE_INTERVAL_MIN));
+	::SetWindowText(GetDlgItem(IDC_RSS_INTERVAL_TEXT), CTSTRING(MINIMUM_UPDATE_INTERVAL_MIN));
 	setMinMax(IDC_RSS_INT_SPIN, 10, 999);
 	ctrlInterval.SetWindowText(_T("60"));
 

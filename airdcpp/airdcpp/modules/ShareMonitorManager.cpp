@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -46,6 +46,12 @@ namespace dcpp {
 		monitor.addListener(this);
 
 		monitor.callAsync([=] { rebuildMonitoring(); });
+	}
+
+	void ShareMonitorManager::setMonitorDebug(bool aEnabled) noexcept {
+		monitorDebug = aEnabled;
+
+		monitor.setDebug(aEnabled);
 	}
 
 	string ShareMonitorManager::printStats() const noexcept {

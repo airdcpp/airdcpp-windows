@@ -123,17 +123,7 @@ int main( int, char ** )
   BOOST_TEST( generic_category() != system_category() );
   BOOST_TEST( system_category() != generic_category() );
 
-  if ( std::less<const error_category*>()( &generic_category(), &system_category() ) )
-  {
-    BOOST_TEST( generic_category() < system_category() );
-    BOOST_TEST( !(system_category() < generic_category()) );
-  }
-  else
-  {
-    BOOST_TEST( system_category() < generic_category() );
-    BOOST_TEST( !(generic_category() < system_category()) );
-  }
-
+  BOOST_TEST_NE( generic_category() < system_category(), system_category() < generic_category() );
 
   error_code ec;
   error_condition econd;
@@ -207,7 +197,8 @@ int main( int, char ** )
 #if defined(BOOST_WINDOWS_API)
   // Borland appends newline, so just check text
   BOOST_TEST( ec.message().substr(0,13) == "Unknown error" );
-  BOOST_TEST( ec_0_system.message().substr(0,36) == "The operation completed successfully" );
+  // Fails when the language isn't US English
+  // BOOST_TEST( ec_0_system.message().substr(0,36) == "The operation completed successfully" );
 #elif  defined(linux) || defined(__linux) || defined(__linux__)
   // Linux appends value to message as unsigned, so it varies with # of bits
   BOOST_TEST( ec.message().substr(0,13) == "Unknown error" );

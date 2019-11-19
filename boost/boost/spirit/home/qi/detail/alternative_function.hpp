@@ -30,9 +30,7 @@ namespace boost { namespace spirit { namespace qi { namespace detail
         typedef typename variant_type::types types;
         typedef typename mpl::end<types>::type end;
 
-        typedef typename
-            mpl::find_if<types, is_same<mpl::_1, Expected> >::type
-        iter_1;
+        typedef typename mpl::find<types, Expected>::type iter_1;
 
         typedef typename
             mpl::eval_if<
@@ -138,9 +136,8 @@ namespace boost { namespace spirit { namespace qi { namespace detail
         template <typename Component>
         bool call(Component const& component, mpl::false_) const
         {
-            // fix for alternative.cpp test case, FHE 2016-07-28
             return call_optional_or_variant(
-                component, mpl::not_<spirit::traits::not_is_optional<Attribute, qi::domain> >());
+                component, spirit::traits::not_is_variant<Attribute, qi::domain>());
         }
 
         template <typename Component>
@@ -177,9 +174,8 @@ namespace boost { namespace spirit { namespace qi { namespace detail
         Skipper const& skipper;
         Attribute& attr;
 
-    private:
         // silence MSVC warning C4512: assignment operator could not be generated
-        alternative_function& operator= (alternative_function const&);
+        BOOST_DELETED_FUNCTION(alternative_function& operator= (alternative_function const&))
     };
 
     template <typename Iterator, typename Context, typename Skipper>
@@ -205,9 +201,8 @@ namespace boost { namespace spirit { namespace qi { namespace detail
         Context& context;
         Skipper const& skipper;
 
-    private:
         // silence MSVC warning C4512: assignment operator could not be generated
-        alternative_function& operator= (alternative_function const&);
+        BOOST_DELETED_FUNCTION(alternative_function& operator= (alternative_function const&))
     };
 
 }}}}

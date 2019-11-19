@@ -431,7 +431,7 @@ public:
    {
       if(v < 0)
       {
-         from_unsigned_long_long(-v);
+         from_unsigned_long_long(1u - boost::ulong_long_type(v + 1)); // Avoid undefined behaviour in negation of minimum value for long long
          negate();
       }
       else
@@ -608,11 +608,11 @@ public:
    void serialize(Archive & ar, const unsigned int /*version*/)
    {
       for(unsigned i = 0; i < data.size(); ++i)
-         ar & data[i];
-      ar & exp;
-      ar & neg;
-      ar & fpclass;
-      ar & prec_elem;
+         ar & boost::serialization::make_nvp("digit", data[i]);
+      ar & boost::serialization::make_nvp("exponent", exp);
+      ar & boost::serialization::make_nvp("sign", neg);
+      ar & boost::serialization::make_nvp("class-type", fpclass);
+      ar & boost::serialization::make_nvp("precision", prec_elem);
    }
 
 private:
@@ -1308,7 +1308,7 @@ cpp_dec_float<Digits10, ExponentType, Allocator>& cpp_dec_float<Digits10, Expone
    // the run-time.
    //
    // Book references:
-   // http://www.jjj.de/pibook/pibook.html
+   // https://doi.org/10.1007/978-3-642-56735-3
    // http://www.amazon.com/exec/obidos/tg/detail/-/3540665722/qid=1035535482/sr=8-7/ref=sr_8_7/104-3357872-6059916?v=glance&n=507846
 
    static const boost::uint32_t double_digits10_minus_a_few = std::numeric_limits<double>::digits10 - 3;
@@ -1802,17 +1802,16 @@ std::string cpp_dec_float<Digits10, ExponentType, Allocator>::str(boost::intmax_
    // Extract the remaining digits from cpp_dec_float<Digits10, ExponentType, Allocator> after the decimal point.
    str = boost::lexical_cast<std::string>(data[0]);
 
+   std::stringstream ss;
    // Extract all of the digits from cpp_dec_float<Digits10, ExponentType, Allocator>, beginning with the first data element.
    for(std::size_t i = static_cast<std::size_t>(1u); i < number_of_elements; i++)
    {
-      std::stringstream ss;
-
       ss << std::setw(static_cast<std::streamsize>(cpp_dec_float_elem_digits10))
          << std::setfill(static_cast<char>('0'))
          << data[i];
 
-      str += ss.str();
    }
+   str += ss.str();
 
    bool have_leading_zeros = false;
 

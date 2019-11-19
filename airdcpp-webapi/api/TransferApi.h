@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -77,6 +77,7 @@ namespace webserver {
 		void on(ConnectionManagerListener::Removed, const ConnectionQueueItem* aCqi) noexcept override;
 		void on(ConnectionManagerListener::Failed, const ConnectionQueueItem* aCqi, const string &reason) noexcept override;
 		void on(ConnectionManagerListener::Connecting, const ConnectionQueueItem* aCqi) noexcept override;
+		void on(ConnectionManagerListener::Forced, const ConnectionQueueItem* aCqi) noexcept override;
 		void on(ConnectionManagerListener::UserUpdated, const ConnectionQueueItem* aCqi) noexcept override;
 
 		void on(DownloadManagerListener::Starting, const Download* aDownload) noexcept override;

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 #include "stdinc.h"
 
-#include <web-server/FileServer.h>
+#include <web-server/HttpUtil.h>
 #include <web-server/JsonUtil.h>
 
 #include <api/ViewFileApi.h>
@@ -70,7 +70,7 @@ namespace webserver {
 	}
 
 	json ViewFileApi::serializeFile(const ViewFilePtr& aFile) noexcept {
-		auto mimeType = FileServer::getMimeType(aFile->getPath());
+		auto mimeType = HttpUtil::getMimeType(aFile->getPath());
 		return{
 			{ "id", aFile->getTTH().toBase32() },
 			{ "tth", aFile->getTTH().toBase32() },

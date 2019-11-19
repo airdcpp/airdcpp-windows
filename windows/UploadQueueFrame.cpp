@@ -1,6 +1,6 @@
 /* 
  * Copyright (C) 2001-2003 BlackClaw, blackclaw@parsoma.net
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,8 +55,9 @@ LRESULT UploadQueueFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	ctrlQueued.SetImageList(ResourceLoader::getFileImages(), TVSIL_NORMAL);
 	ctrlList.SetImageList(ResourceLoader::getFileImages(), LVSIL_SMALL);
 
-	m_nProportionalPos = 2500;
+	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
 	SetSplitterPanes(ctrlQueued.m_hWnd, ctrlList.m_hWnd);
+	SetSplitterPosPct(25);
 
 	// Create listview columns
 	WinUtil::splitTokens(columnIndexes, SETTING(UPLOADQUEUEFRAME_ORDER), UploadQueueItem::COLUMN_LAST);

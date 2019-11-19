@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2011-2018 AirDC++ Project
+ * Copyright (C) 2011-2019 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
-DirectoryListingDlg::DirectoryListingDlg(const DirectoryListingPtr& aDl) : fileTypeStr(SEARCH_TYPE_ANY), dl(aDl) { }
+DirectoryListingDlg::DirectoryListingDlg(const DirectoryListingPtr& aDl) : fileTypeId(SEARCH_TYPE_ANY), dl(aDl) { }
 
 DirectoryListingDlg::~DirectoryListingDlg() {
 	//ctrlSearch.Detach();
@@ -69,8 +69,8 @@ LRESULT DirectoryListingDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPAR
 		}
 	}
 
-	fileTypeStr = SETTING(LAST_FL_FILETYPE);
-	ctrlFileType.fillList(fileTypeStr);
+	fileTypeId = SETTING(LAST_FL_FILETYPE);
+	ctrlFileType.fillList(fileTypeId);
 
 
 	CenterWindow(GetParent());
@@ -91,8 +91,8 @@ LRESULT DirectoryListingDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*h
 		size = WinUtil::parseSize(ctrlSize, ctrlSizeUnit);
 		useCurDir = IsDlgButtonChecked(IDC_USE_CUR_DIR) == BST_CHECKED;
 
-		SearchManager::getInstance()->getSearchType(ctrlFileType.GetCurSel(), fileType, extList, fileTypeStr);
-		SettingsManager::getInstance()->set(SettingsManager::LAST_FL_FILETYPE, fileTypeStr);
+		SearchManager::getInstance()->getSearchType(ctrlFileType.GetCurSel(), fileType, extList, fileTypeId);
+		SettingsManager::getInstance()->set(SettingsManager::LAST_FL_FILETYPE, fileTypeId);
 	}
 	EndDialog(wID);
 	return 0;

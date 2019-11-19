@@ -1882,6 +1882,7 @@
 #define ID_WINDOW_MINIMIZE_ALL          57654
 #define ID_WINDOW_RESTORE_ALL           57655
 #define IDC_WINAMP_START                57666
+#define IDC_WINDOW_MARK_READ			57667
 #define IDC_CHATCOLORS                  65535
 
 // Next default values for new objects

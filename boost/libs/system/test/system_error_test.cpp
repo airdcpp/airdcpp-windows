@@ -37,7 +37,7 @@ namespace
     BOOST_TEST( ex.code().category() == system_category() );
 # ifdef BOOST_WINDOWS_API
     LANGID language_id;
-#   if !defined(__MINGW32__) && !defined(__CYGWIN__) && !BOOST_PLAT_WINDOWS_RUNTIME
+#   if !BOOST_PLAT_WINDOWS_RUNTIME
       language_id = ::GetUserDefaultUILanguage();
 #   else
       language_id = 0x0409; // Assume US English

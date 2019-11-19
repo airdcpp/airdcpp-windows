@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,9 +48,9 @@ class HubFrame : private ClientListener, public CSplitterImpl<HubFrame>, private
 public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("HubFrame"), IDR_HUB, 0, COLOR_3DFACE);
 
+	typedef ChatFrameBase chatBase;
 	typedef CSplitterImpl<HubFrame> splitBase;
 	typedef UserInfoBaseHandler<HubFrame> uibBase;
-	typedef ChatFrameBase chatBase;
 	
 	BEGIN_MSG_MAP(HubFrame)
 		NOTIFY_HANDLER(IDC_USERS, LVN_GETDISPINFO, ctrlUsers.onGetDispInfo)
@@ -87,9 +87,9 @@ public:
 		COMMAND_ID_HANDLER(IDC_IGNORE, onIgnore)
 		COMMAND_ID_HANDLER(IDC_UNIGNORE, onUnignore)
 		MESSAGE_HANDLER(WM_LBUTTONDBLCLK, onLButton)
-		CHAIN_MSG_MAP(chatBase)
 		CHAIN_COMMANDS(uibBase)
 		CHAIN_MSG_MAP(splitBase)
+		CHAIN_MSG_MAP(chatBase)
 		CHAIN_MSG_MAP_MEMBER(filter)
 	ALT_MSG_MAP(EDIT_MESSAGE_MAP)
 		MESSAGE_HANDLER(WM_CHAR, onChar)

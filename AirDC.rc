@@ -1677,8 +1677,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,5,2,0
- PRODUCTVERSION 3,5,2,0
+ FILEVERSION 3,6,0,0
+ PRODUCTVERSION 3,6,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -1696,12 +1696,12 @@ BEGIN
             VALUE "Comments", "http://www.airdcpp.net"
             VALUE "CompanyName", "AirDC++ Team"
             VALUE "FileDescription", "AirDC++"
-            VALUE "FileVersion", "3.52.0.0"
+            VALUE "FileVersion", "3.60.0.0"
             VALUE "InternalName", "AirDC++"
-            VALUE "LegalCopyright", "Copyright 2007-2018 Night and maksis"
+            VALUE "LegalCopyright", "Copyright 2007-2019 Night and maksis"
             VALUE "OriginalFilename", "AirDC.exe"
             VALUE "ProductName", "AirDC++"
-            VALUE "ProductVersion", "3.52"
+            VALUE "ProductVersion", "3.60"
         END
     END
     BLOCK "VarFileInfo"
@@ -2343,7 +2343,7 @@ BEGIN
     RTEXT           "RSS url",IDC_RSS_URL_TEXT,11,25,41,8
     EDITTEXT        IDC_RSS_INTERVAL,217,74,35,14,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_RSS_INT_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,243,74,12,14
-    RTEXT           "Minimum update interval ( minutes )",IDC_RSS_INTERVAL_TEXT,54,77,158,8
+    RTEXT           "Minimum update interval (in minutes)",IDC_RSS_INTERVAL_TEXT,54,77,158,8,WS_TABSTOP
     CONTROL         "Enable auto update",IDC_RSS_ENABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,89,61,164,10
 END
 

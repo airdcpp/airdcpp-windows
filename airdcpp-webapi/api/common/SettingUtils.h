@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -32,8 +32,8 @@ namespace webserver {
 
 		static json validateObjectListValue(const ApiSettingItem::PtrList& aPropertyDefinitions, const json& aValue);
 
-		static ServerSettingItem deserializeDefinition(const json& aJson, bool aIsListValue = false);
-		static ServerSettingItem::List deserializeDefinitions(const json& aJson);
+		static ExtensionSettingItem deserializeDefinition(const json& aJson, bool aIsListValue = false);
+		static ExtensionSettingItem::List deserializeDefinitions(const json& aJson);
 
 		static json serializeDefinition(const ApiSettingItem& aItem) noexcept;
 		static string typeToStr(ApiSettingItem::Type aType) noexcept;

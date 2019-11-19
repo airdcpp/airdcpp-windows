@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -25,11 +25,13 @@
 #include "FileServer.h"
 #include "ApiRequest.h"
 
+#include "HttpUtil.h"
 #include "SystemUtil.h"
 #include "Timer.h"
 #include "WebServerManagerListener.h"
 #include "WebUserManager.h"
 #include "WebSocket.h"
+#include "WebServerSettings.h"
 
 #include <airdcpp/format.h>
 #include <airdcpp/Message.h>
@@ -71,6 +73,7 @@ namespace webserver {
 	public:
 		TimerPtr addTimer(CallBack&& aCallBack, time_t aIntervalMillis, const Timer::CallbackWrapper& aCallbackWrapper = nullptr) noexcept;
 		void addAsyncTask(CallBack&& aCallBack) noexcept;
+		void setDirty() noexcept;
 
 		WebServerManager();
 		~WebServerManager();
@@ -181,7 +184,7 @@ namespace webserver {
 
 			SessionPtr session = nullptr;
 
-			auto authToken = con->get_request().get_header("Authorization");
+			auto authToken = HttpUtil::parseAuthToken(con->get_request());
 			if (authToken != websocketpp::http::empty_header) {
 				try {
 					session = userManager->parseHttpSession(authToken, ip);
@@ -230,28 +233,64 @@ namespace webserver {
 
 				StringPairList headers;
 				std::string output;
-				status = fileServer.handleRequest(con->get_resource(), con->get_request(), output, headers, session);
 
-				for (const auto& p : headers) {
-					con->append_header(p.first, p.second);
+
+				const auto responseF = [this, con, ip](websocketpp::http::status_code::value aStatus, const string& aOutput, const StringPairList& aHeaders = StringPairList()) {
+					onData(
+						con->get_request().get_method() + " " + con->get_resource() + ": " + Util::toString(aStatus) + " (" + Util::formatBytes(aOutput.length()) + ")",
+						TransportType::TYPE_HTTP_FILE,
+						Direction::OUTGOING,
+						ip
+					);
+
+					if (HttpUtil::isStatusOk(aStatus)) {
+						// Don't set any incomplete/invalid headers in case of errors...
+						for (const auto& p : aHeaders) {
+							con->append_header(p.first, p.second);
+						}
+
+						con->set_status(aStatus);
+						con->set_body(aOutput);
+					} else {
+						con->set_status(aStatus, aOutput);
+						con->set_body(aOutput);
+					}
+				};
+
+				bool isDeferred = false;
+				const auto deferredF = [&]() {
+					con->defer_http_response();
+					isDeferred = true;
+
+					return [=](websocketpp::http::status_code::value aStatus, const string& aOutput, const StringPairList& aHeaders) {
+						responseF(aStatus, aOutput, aHeaders);
+						con->send_http_response();
+					};
+				};
+
+				status = fileServer.handleRequest(con->get_request(), output, headers, session, deferredF);
+
+				if (!isDeferred) {
+					responseF(status, output, headers);
 				}
-
-				onData(
-					con->get_request().get_method() + " " + con->get_resource() + ": " + Util::toString(status) + " (" + Util::formatBytes(output.length()) + ")",
-					TransportType::TYPE_HTTP_FILE,
-					Direction::OUTGOING,
-					ip
-				);
-
-				con->set_status(status);
-				con->set_body(output);
 			}
 		}
 
 		void log(const string& aMsg, LogMessage::Severity aSeverity) const noexcept;
+		ErrorF getDefaultErrorLogger() const noexcept;
 
 		string resolveAddress(const string& aHostname, const string& aPort) noexcept;
+
+		WebServerSettings& getSettings() noexcept {
+			return settings;
+		}
+
+		const FileServer& getFileServer() const noexcept {
+			return fileServer;
+		}
 	private:
+		WebServerSettings settings;
+
 		context_ptr handleInitTls(websocketpp::connection_hdl hdl);
 
 		void addSocket(websocketpp::connection_hdl hdl, const WebSocketPtr& aSocket) noexcept;
@@ -282,7 +321,8 @@ namespace webserver {
 		unique_ptr<WebUserManager> userManager;
 		unique_ptr<ExtensionManager> extManager;
 
-		TimerPtr socketTimer;
+		TimerPtr minuteTimer;
+		TimerPtr socketPingTimer;
 
 		server_plain endpoint_plain;
 		server_tls endpoint_tls;
@@ -290,6 +330,7 @@ namespace webserver {
 		boost::thread_group worker_threads;
 
 		CallBack shutdownF;
+		bool isDirty = false;
 	};
 }
 

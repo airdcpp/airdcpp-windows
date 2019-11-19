@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -97,7 +97,7 @@ LRESULT RssInfoFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 
 	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
 	SetSplitterPanes(ctrlTree.m_hWnd, ctrlRss.m_hWnd);
-	m_nProportionalPos = 1500;
+	SetSplitterPosPct(15);
 
 	treeParent = addTreeItem(TVI_ROOT, 0, TSTRING(RSS_FEEDS));
 	ctrlTree.SelectItem(treeParent);

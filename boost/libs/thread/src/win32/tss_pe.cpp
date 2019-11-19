@@ -7,10 +7,10 @@
 // Boost Software License, Version 1.0. (See accompanying file
 // LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#include <boost/detail/winapi/config.hpp>
+#include <boost/winapi/config.hpp>
 #include <boost/thread/detail/config.hpp>
 
-#if defined(BOOST_HAS_WINTHREADS) && defined(BOOST_THREAD_BUILD_LIB)
+#if defined(BOOST_THREAD_WIN32) && defined(BOOST_THREAD_BUILD_LIB)
 
 #if (defined(__MINGW32__) && !defined(_WIN64)) || defined(__MINGW64__) || (__MINGW64_VERSION_MAJOR)
 
@@ -98,11 +98,11 @@ extern BOOL (WINAPI * const _pRawDllMainOrig)(HINSTANCE, DWORD, LPVOID);
 extern BOOL (WINAPI * const _pDefaultRawDllMainOrig)(HINSTANCE, DWORD, LPVOID) = NULL;
 #if defined (_M_IX86)
 #pragma comment(linker, "/alternatename:__pRawDllMainOrig=__pDefaultRawDllMainOrig")
-#elif defined (_M_X64) || defined (_M_ARM)
+#elif defined (_M_X64) || defined (_M_ARM) || defined (_M_ARM64)
 #pragma comment(linker, "/alternatename:_pRawDllMainOrig=_pDefaultRawDllMainOrig")
-#else  /* defined (_M_X64) || defined (_M_ARM) */
+#else  /* unknown Windows target (not x86, x64, ARM, ARM64) */
 #error Unsupported platform
-#endif  /* defined (_M_X64) || defined (_M_ARM) */
+#endif  /* defined (_M_X64) || defined (_M_ARM) || defined (_M_ARM64) */
 }
 
 #endif
@@ -334,4 +334,4 @@ namespace boost
 
 #endif //defined(_MSC_VER) && !defined(UNDER_CE)
 
-#endif //defined(BOOST_HAS_WINTHREADS) && defined(BOOST_THREAD_BUILD_LIB)
+#endif //defined(BOOST_THREAD_WIN32) && defined(BOOST_THREAD_BUILD_LIB)

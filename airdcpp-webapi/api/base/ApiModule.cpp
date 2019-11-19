@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ namespace webserver {
 			if (aPathTokens.size() < params.size()) {
 				return nullopt;
 			}
-		} else if (method != METHOD_FORWARD && aPathTokens.size() != params.size()) {
+		} else if (aPathTokens.size() != params.size()) {
 			return nullopt;
 		}
 

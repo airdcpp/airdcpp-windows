@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2011-2018 AirDC++ Project
+ * Copyright (C) 2011-2019 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -89,13 +89,13 @@ LRESULT SearchTypeCombo::onDrawItem(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPa
 void SearchTypeCombo::fillList(const string& aSelection, COLORREF aTextColor, COLORREF aBgColor) {
 	auto types = SearchManager::getInstance()->getSearchTypes();
 
-	int selection=0;
-	auto addListItem = [&] (int imagePos, const tstring& title, const string& nameStr) -> void {
-		if (nameStr == aSelection)
-			selection = imageIndexes.size();
+	int selectionIndex = 0;
+	auto addListItem = [&] (int aImagePos, const tstring& aTitle, const string& aId) -> void {
+		if (aId == aSelection)
+			selectionIndex = imageIndexes.size();
 
-		auto ii = new ItemInfo(title, imagePos, aTextColor, aBgColor);
-		AddString(const_cast<TCHAR*>(title.c_str()));
+		auto ii = new ItemInfo(aTitle, aImagePos, aTextColor, aBgColor);
+		AddString(const_cast<TCHAR*>(aTitle.c_str()));
 		SetItemData(imageIndexes.size(), (DWORD_PTR)ii);
 
 		imageIndexes.push_back(unique_ptr<ItemInfo>(ii));
@@ -106,20 +106,13 @@ void SearchTypeCombo::fillList(const string& aSelection, COLORREF aTextColor, CO
 	addListItem(8, _T("TTH"), SEARCH_TYPE_TTH);
 	addListItem(9, TSTRING(FILE), SEARCH_TYPE_FILE);
 
-	for(auto& id: types | map_keys) {
-		string name = id;
-		int imagePos = 0;
-		if(name.size() == 1 && name[0] >= '1' && name[0] <= '6') {
-			imagePos = name[0] - '0';
-			name = SearchManager::getTypeStr(name[0] - '0');
-		} else {
-			imagePos = 10;
-		}
-
-		addListItem(imagePos, Text::toT(name), id);
+	for (auto& type: types) {
+		auto name = type->getDisplayName();
+		int imagePos = type->isDefault() ? type->getId()[0] - '0' : 10;
+		addListItem(imagePos, Text::toT(name), type->getId());
 	}
 
-	SetCurSel(selection);
+	SetCurSel(selectionIndex);
 }
 
 }

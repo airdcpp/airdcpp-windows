@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2011-2018 AirDC++ Project
+ * Copyright (C) 2011-2019 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -158,7 +158,7 @@ public:
 		// We wanna control the scrolling...
 	}
 
-	string getTempShareKey() const;
+	UserPtr getTempShareUser() const noexcept;
 
 	void FormatEmoticonsAndLinks(tstring& sText, /*tstring& sTextLower,*/ LONG lSelBegin, bool bUseEmo);
 	GETSET(ClientPtr, client, Client);

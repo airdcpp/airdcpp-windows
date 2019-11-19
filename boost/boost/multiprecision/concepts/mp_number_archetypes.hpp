@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////
 //  Copyright 2012 John Maddock. Distributed under the Boost
 //  Software License, Version 1.0. (See accompanying file
-//  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_
+//  LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt
 
 #ifndef BOOST_MATH_CONCEPTS_ER_HPP
 #define BOOST_MATH_CONCEPTS_ER_HPP
@@ -14,6 +14,7 @@
 #include <boost/multiprecision/number.hpp>
 #include <boost/math/special_functions/fpclassify.hpp>
 #include <boost/mpl/list.hpp>
+#include <boost/container_hash/hash.hpp>
 
 namespace boost{
 namespace multiprecision{
@@ -197,6 +198,12 @@ inline void eval_sqrt(number_backend_float_architype& result, const number_backe
 inline int eval_fpclassify(const number_backend_float_architype& arg)
 {
    return (boost::math::fpclassify)(arg.m_value);
+}
+
+inline std::size_t hash_value(const number_backend_float_architype& v)
+{
+   boost::hash<long double> hasher;
+   return hasher(v.m_value);
 }
 
 typedef boost::multiprecision::number<number_backend_float_architype> mp_number_float_architype;

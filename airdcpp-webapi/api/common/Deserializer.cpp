@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -60,18 +60,18 @@ namespace webserver {
 		return TTHValue(aTTH);
 	}
 
-	UserPtr Deserializer::parseUser(const json& aJson, bool aAllowMe) {
-		return getUser(JsonUtil::getField<string>("cid", aJson, false), aAllowMe);
-	}
+	UserPtr Deserializer::deserializeUser(const json& aJson, bool aAllowMe, bool aOptional) {
+		const auto cid = JsonUtil::getOptionalField<string>("cid", aJson, !aOptional);
+		if (!cid) {
+			return nullptr;
+		}
 
-	UserPtr Deserializer::deserializeUser(const json& aJson, bool aAllowMe, const string& aFieldName) {
-		auto userJson = JsonUtil::getRawField(aFieldName, aJson);
-		return parseUser(userJson, aAllowMe);
+		return getUser(*cid, aAllowMe);
 	}
 
 	HintedUser Deserializer::deserializeHintedUser(const json& aJson, bool aAllowMe, const string& aFieldName) {
 		auto userJson = JsonUtil::getRawField(aFieldName, aJson);
-		auto user = parseUser(userJson, aAllowMe);
+		auto user = deserializeUser(userJson, aAllowMe, false);
 		return HintedUser(user, JsonUtil::getField<string>("hub_url", userJson, aAllowMe && user == ClientManager::getInstance()->getMe()));
 	}
 
@@ -127,6 +127,25 @@ namespace webserver {
 		return hubUrls;
 	}
 
+
+	ClientPtr Deserializer::deserializeClient(const json& aJson, bool aOptional) {
+		const auto hubUrl = JsonUtil::getOptionalField<string>("hub_url", aJson, !aOptional);
+		if (!hubUrl) {
+			return nullptr;
+		}
+
+		auto client = ClientManager::getInstance()->getClient(*hubUrl);
+		if (!client) {
+			//if (aOptional) {
+			//	return nullptr;
+			//}
+
+			throw std::invalid_argument("Hub " + *hubUrl + " was not found");
+		}
+
+		return client;
+	}
+
 	pair<string, bool> Deserializer::deserializeChatMessage(const json& aJson) {
 		return { 
 			JsonUtil::getField<string>("text", aJson, false),
@@ -173,5 +192,24 @@ namespace webserver {
 		}
 
 		return profile;
+	}
+
+
+	const map<string, string> fileTypeMappings = {
+		{ "any", "0" },
+		{ "audio", "1" },
+		{ "compressed", "2" },
+		{ "document", "3" },
+		{ "executable", "4" },
+		{ "picture", "5" },
+		{ "video", "6" },
+		{ "directory", "7" },
+		{ "tth", "8" },
+		{ "file", "9" },
+	};
+
+	string Deserializer::parseSearchType(const string& aType) {
+		auto i = fileTypeMappings.find(aType);
+		return i != fileTypeMappings.end() ? i->second : aType;
 	}
 }

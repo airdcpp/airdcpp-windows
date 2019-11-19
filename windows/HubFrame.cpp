@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -76,14 +76,9 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 		WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS, WS_EX_CLIENTEDGE, IDC_USERS);
 	ctrlUsers.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_HEADERDRAGDROP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP);
 
-	SetSplitterPanes(ctrlClient.m_hWnd, ctrlUsers.m_hWnd, false);
 	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
-	
-	if(hubchatusersplit) {
-		m_nProportionalPos = hubchatusersplit;
-	} else {
-		m_nProportionalPos = 7500;
-	}
+	SetSplitterPanes(ctrlClient.m_hWnd, ctrlUsers.m_hWnd);
+	SetSplitterPosPct((hubchatusersplit ? hubchatusersplit : 7500) / 100);
 
 	ctrlShowUsers.Create(ctrlStatus.m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	ctrlShowUsers.SetButtonStyle(BS_AUTOCHECKBOX, false);
@@ -151,7 +146,6 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 			MoveWindow(rc, TRUE);
 	}
 	
-	bHandled = FALSE;
 
 	client->addListener(this);
 	client->connect();
@@ -160,6 +154,8 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	SettingsManager::getInstance()->addListener(this);
 
 	::SetTimer(m_hWnd, 0, 500, 0);
+
+	bHandled = FALSE;
 	return 1;
 }
 
@@ -737,7 +733,7 @@ LRESULT HubFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 				fhe->setRight((uint16_t)(rc.right > 0 ? rc.right : 0));
 			}
 
-			fhe->setChatUserSplit(m_nProportionalPos);
+			fhe->setChatUserSplit(GetSplitterPosPct() * 100);
 			fhe->setUserListState(showUsers);
 			fhe->setHeaderOrder(tmp);
 			fhe->setHeaderWidths(tmp2);
@@ -936,7 +932,7 @@ LRESULT HubFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 
 	if (client->isSocketSecure() && client->getHubUrl().find("?kp=") == string::npos) {
 		copyHubMenu->appendItem(CTSTRING(ADDRESS_KEYPRINT), [this] {
-			auto url = client->getHubUrl() + "?kp=" + CryptoManager::keyprintToString(client->getKeyprint());
+			auto url = client->getHubUrl() + "/?kp=" + CryptoManager::keyprintToString(client->getKeyprint());
 			WinUtil::setClipboard(Text::toT(url));
 		});
 	}
@@ -1021,7 +1017,9 @@ LRESULT HubFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOO
 
 		prepareMenu(menu, ::UserCommand::CONTEXT_USER, client->getHubUrl());
 		menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
+		return TRUE;
 	}
+
 	bHandled = FALSE;
 	return 0; 
 }
@@ -1697,7 +1695,7 @@ LRESULT HubFrame::onStyleChange(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/,
 }
 
 LRESULT HubFrame::onStyleChanged(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
-	bHandled = FALSE;
+	bHandled = TRUE; // Hopefully this fixes weird splitter issues for now
 	UpdateLayout(FALSE);
 	return 0;
 }

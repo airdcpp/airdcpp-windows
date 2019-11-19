@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -138,6 +138,10 @@ class SearchResult;
 typedef std::shared_ptr<SearchResult> SearchResultPtr;
 typedef std::vector<SearchResultPtr> SearchResultList;
 
+class SearchType;
+typedef shared_ptr<SearchType> SearchTypePtr;
+typedef vector<SearchTypePtr> SearchTypeList;
+
 class GroupedSearchResult;
 typedef std::shared_ptr<GroupedSearchResult> GroupedSearchResultPtr;
 typedef std::vector<GroupedSearchResultPtr> GroupedSearchResultList;
@@ -148,6 +152,9 @@ class ShareProfile;
 typedef std::shared_ptr<ShareProfile> ShareProfilePtr;
 typedef vector<ShareProfilePtr> ShareProfileList;
 typedef set<string> RefreshPathList;
+
+struct TempShareInfo;
+typedef vector<TempShareInfo> TempShareInfoList;
 
 class SimpleXML;
 

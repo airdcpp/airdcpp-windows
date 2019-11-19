@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -36,8 +36,8 @@ namespace webserver {
 		api_return handleResetValues(ApiRequest& aRequest);
 
 		typedef function<void(ApiSettingItem&)> ParserF;
-		void parseSettingKeys(const json& aJson, ParserF aHandler);
-		static ApiSettingItem* getSettingItem(const string& aKey) noexcept;
+		void parseSettingKeys(const json& aJson, ParserF aHandler, WebServerManager* aWsm);
+		static ApiSettingItem* getSettingItem(const string& aKey, WebServerManager* aWsm) noexcept;
 	};
 }
 

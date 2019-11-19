@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2012-2018 AirDC++ Project
+ * Copyright (C) 2012-2019 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,13 +63,11 @@ void SearchTypesPage::fillList() {
 	auto typeList = SearchManager::getInstance()->getSearchTypes();
 
 	int pos = 0;
-	for(const auto& i: typeList) {
-		auto isDefault = SearchManager::isDefaultTypeStr(i.first);
-
+	for(const auto& t: typeList) {
 		TStringList lst;
-		lst.push_back(Text::toT(isDefault ? SearchManager::getTypeStr(i.first[0] - '0') : i.first));
-		lst.push_back(Text::toT(Util::toString(";", i.second)));
-		lst.push_back(isDefault ? CTSTRING(YES) : CTSTRING(NO));
+		lst.push_back(Text::toT(t->getDisplayName()));
+		lst.push_back(Text::toT(Util::toString(";", t->getExtensions())));
+		lst.push_back(t->isDefault() ? CTSTRING(YES) : CTSTRING(NO));
 		ctrlTypes.insert(pos++, lst, 0);
 	}
 }
@@ -79,7 +77,7 @@ LRESULT SearchTypesPage::onAddMenu(WORD , WORD , HWND , BOOL& ) {
 
 	if(dlg.DoModal() == IDOK) {
 		try {
-			SearchManager::getInstance()->addSearchType(dlg.name, dlg.extList, true);
+			SearchManager::getInstance()->addSearchType(dlg.name, dlg.extList);
 			fillList();
 		} catch(const SearchTypeException& e) {
 			showError(e.getError());
@@ -95,31 +93,26 @@ LRESULT SearchTypesPage::onChangeMenu(WORD , WORD , HWND , BOOL& ) {
 
 		auto pos = lst.begin();
 		advance(pos, sel);
+		auto type = *pos;
 
 		SearchTypeDlg dlg;
-		auto isDefault = SearchManager::isDefaultTypeStr(pos->first);
 
-		dlg.name = isDefault ? SearchManager::getTypeStr(pos->first[0] - '0') : pos->first;
-		dlg.extList = pos->second;
-		dlg.isDefault = isDefault;
+		dlg.name = type->getDisplayName();
+		dlg.extList = type->getExtensions();
+		dlg.isDefault = type->isDefault();
 
 		if(dlg.DoModal() == IDOK) {
 			try {
-				SearchManager::getInstance()->modSearchType(pos->first, dlg.extList);
+				SearchManager::getInstance()->modSearchType(
+					type->getId(), 
+					!dlg.isDefault && type->getId() != dlg.name ? optional(dlg.name) : nullopt,
+					dlg.extList
+				);
 			} catch(const SearchTypeException& e) {
 				showError(e.getError());
 			}
 
-			if (!isDefault && pos->first != dlg.name) {
-				try {
-					SearchManager::getInstance()->renameSearchType(pos->first, dlg.name);
-				} catch(const SearchTypeException& e) {
-					showError(e.getError());
-				}
-				fillList();
-			} else {
-				ctrlTypes.SetItemText(sel, 1, Text::toT(Util::toString(";", dlg.extList)).c_str());
-			}
+			fillList();
 		}
 	}
 	return 0;
@@ -133,12 +126,13 @@ LRESULT SearchTypesPage::onRemoveMenu(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 		auto pos = lst.begin();
 		advance(pos, sel);
 
-		if (SearchManager::isDefaultTypeStr(pos->first)) {
+		auto type = *pos;
+		if (type->isDefault()) {
 			return 0;
 		}
 
 		try {
-			SearchManager::getInstance()->delSearchType(pos->first);
+			SearchManager::getInstance()->delSearchType(type->getId());
 			ctrlTypes.DeleteItem(sel);
 		} catch(const SearchTypeException& e) {
 			showError(e.getError());
@@ -152,13 +146,18 @@ LRESULT SearchTypesPage::onSelectionChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& 
 	NM_LISTVIEW* lv = (NM_LISTVIEW*) pnmh;
 	if (lv->uNewState & LVIS_FOCUSED) {
 		int sel = ctrlTypes.GetNextItem(-1, LVNI_SELECTED);
-		auto lst = SearchManager::getInstance()->getSearchTypes();
+		if (sel != -1) {
+			auto lst = SearchManager::getInstance()->getSearchTypes();
 
-		auto pos = lst.begin();
-		advance(pos, sel);
+			auto pos = lst.begin();
+			advance(pos, sel);
 
-		::EnableWindow(GetDlgItem(IDC_REMOVE_MENU), !SearchManager::isDefaultTypeStr(pos->first));
+			::EnableWindow(GetDlgItem(IDC_REMOVE_MENU), !(*pos)->isDefault());
+		}
+	} else {
+		::EnableWindow(GetDlgItem(IDC_REMOVE_MENU), FALSE);
 	}
+
 	::EnableWindow(GetDlgItem(IDC_CHANGE_MENU), (lv->uNewState & LVIS_FOCUSED));
 	return 0;
 }

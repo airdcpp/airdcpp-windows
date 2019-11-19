@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -41,6 +41,11 @@ namespace webserver {
 		api_return handleRemoveExclude(ApiRequest& aRequest);
 		api_return handleGetExcludes(ApiRequest& aRequest);
 
+		static json serializeTempShare(const TempShareInfo& aInfo) noexcept;
+		api_return handleAddTempShare(ApiRequest& aRequest);
+		api_return handleRemoveTempShare(ApiRequest& aRequest);
+		api_return handleGetTempShares(ApiRequest& aRequest);
+
 		api_return handleGetStats(ApiRequest& aRequest);
 		api_return handleSearch(ApiRequest& aRequest);
 
@@ -53,6 +58,9 @@ namespace webserver {
 
 		void on(ShareManagerListener::ExcludeAdded, const string& aPath) noexcept override;
 		void on(ShareManagerListener::ExcludeRemoved, const string& aPath) noexcept override;
+
+		void on(ShareManagerListener::TempFileAdded, const TempShareInfo& aFile) noexcept override;
+		void on(ShareManagerListener::TempFileRemoved, const TempShareInfo& aFile) noexcept override;
 
 		void onShareRefreshed(const RefreshPathList& aRealPaths, uint8_t aTaskType, const string& aSubscription) noexcept;
 

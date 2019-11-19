@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+* Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -140,6 +140,7 @@ namespace dcpp {
 	}
 
 	string TrackableDownloadItem::formatRunningStatus() const noexcept {
+		RLock l(cs);
 		auto p = find_if(downloads | map_values, PathInfo::IsRunning());
 
 		if (p.base() != downloads.end() && p->trackProgress()) {

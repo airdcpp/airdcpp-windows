@@ -18,6 +18,9 @@
 
 # bring in rules for testing
 import testing ;
+import regex ;
+import path ;
+import os ;
 
 project
     : requirements
@@ -180,7 +183,6 @@ rule thread-run2-h ( sources : name )
     sources = $(sources) winrt_init.cpp ;
     return
     [ run $(sources) : : :
-      <library>/boost/system//boost_system
       <define>BOOST_THREAD_DONT_PROVIDE_INTERRUPTIONS
       <define>BOOST_THREAD_VERSION=3
     : $(name)_h ]
@@ -208,6 +210,36 @@ rule thread-compile-fail ( sources : reqs * : name )
     ;
 }
 
+rule clang-thread-safety ( properties * )
+{
+    if <toolset>clang in $(properties)
+    {
+        return <cxxflags>-Werror=thread-safety  <define>BOOST_THREAD_ENABLE_THREAD_SAFETY_ANALYSIS ;
+    }
+    else
+    {
+        return <build>no ;
+    }
+}
+
+rule thread-safety-compile ( sources : reqs * : name )
+{
+    return
+    [ compile $(sources)
+        : $(reqs) <conditional>@clang-thread-safety
+        : $(name) ]
+    ;
+}
+
+rule thread-safety-compile-fail ( sources : reqs * : name )
+{
+    return
+    [ compile-fail $(sources)
+        : $(reqs) <conditional>@clang-thread-safety
+        : $(name) ]
+    ;
+}
+
 rule thread-compile ( sources : reqs * : name )
 {
     return
@@ -215,6 +247,42 @@ rule thread-compile ( sources : reqs * : name )
         : $(reqs)
         : $(name) ]
     ;
+}
+
+rule windows-cygwin-specific ( properties * )
+{
+    if <target-os>windows in $(properties) || <target-os>cygwin in $(properties)
+    {
+        return <build>yes ;
+    }
+    else
+    {
+        return <build>no ;
+    }
+}
+
+rule generate_self_contained_header_tests
+{
+    local all_rules ;
+    local file ;
+
+    if ! [ os.environ BOOST_THREAD_TEST_WITHOUT_SELF_CONTAINED_HEADER_TESTS ]
+    {
+        local headers_path = [ path.make $(BOOST_ROOT)/libs/thread/include/boost/thread ] ;
+        for file in [ path.glob-tree $(headers_path) : *.hpp : detail pthread win32 ]
+        {
+            local rel_file = [ path.relative-to $(headers_path) $(file) ] ;
+            # Note: The test name starts with '~' in order to group these tests in the test report table, preferably at the end.
+            #       All '/' are replaced with '-' because apparently test scripts have a problem with test names containing slashes.
+            local test_name = [ regex.replace ~hdr/$(rel_file) "/" "-" ] ;
+            #ECHO $(rel_file) ;
+            all_rules += [ compile self_contained_header.cpp : <define>"BOOST_THREAD_TEST_HEADER=$(rel_file)" <dependency>$(file) : $(test_name) ] ;
+            all_rules += [ compile self_contained_header.cpp : <define>"BOOST_THREAD_TEST_HEADER=$(rel_file)" <define>"BOOST_THREAD_TEST_POST_WINDOWS_H" <dependency>$(file) <conditional>@windows-cygwin-specific : $(test_name)-post_winh ] ;
+        }
+    }
+
+    #ECHO All rules: $(all_rules) ;
+    return $(all_rules) ;
 }
 
 {
@@ -266,8 +334,8 @@ rule thread-compile ( sources : reqs * : name )
           #[ thread-test test_vhh_shared_mutex_timed_locks.cpp ]
     ;
 
-    #explicit t_futures ;
-    test-suite t_futures
+    explicit t_futures_too_long ;
+    test-suite t_futures_too_long
     :
           [ thread-test test_futures.cpp ]
     ;
@@ -325,6 +393,7 @@ rule thread-compile ( sources : reqs * : name )
           [ thread-run2-noit ./sync/conditions/condition_variable/wait_for_pred_pass.cpp : condition_variable__wait_for_pred_p ]
           [ thread-run2-noit ./sync/conditions/condition_variable/wait_until_pass.cpp : condition_variable__wait_until_p ]
           [ thread-run2-noit ./sync/conditions/condition_variable/wait_until_pred_pass.cpp : condition_variable__wait_until_pred_p ]
+          [ thread-run2-noit ./sync/conditions/condition_variable/lost_notif_pass.cpp : condition_variable__lost_notif_p ]
 
           [ thread-compile-fail ./sync/conditions/condition_variable_any/assign_fail.cpp : : condition_variable_any__assign_f ]
           [ thread-compile-fail ./sync/conditions/condition_variable_any/copy_fail.cpp : : condition_variable_any__copy_f ]
@@ -334,6 +403,7 @@ rule thread-compile ( sources : reqs * : name )
           [ thread-run2-noit ./sync/conditions/condition_variable_any/wait_for_pred_pass.cpp : condition_variable_any__wait_for_pred_p ]
           [ thread-run2-noit ./sync/conditions/condition_variable_any/wait_until_pass.cpp : condition_variable_any__wait_until_p ]
           [ thread-run2-noit ./sync/conditions/condition_variable_any/wait_until_pred_pass.cpp : condition_variable_any__wait_until_pred_p ]
+          [ thread-run2-noit ./sync/conditions/condition_variable_any/lost_notif_pass.cpp : condition_variable_any__lost_notif_p ]
           [ thread-run2-noit ./sync/conditions/cv_status/cv_status_pass.cpp : cv_status__cv_status_p ]
           [ thread-run2-noit ./sync/conditions/notify_all_at_thread_exit_pass.cpp : notify_all_at_thread_exit_p ]
     ;
@@ -459,6 +529,10 @@ rule thread-compile ( sources : reqs * : name )
     :
           [ thread-compile-fail ./sync/mutual_exclusion/locks/lock_guard/copy_assign_fail.cpp : : lock_guard__cons__copy_assign_f ]
           [ thread-compile-fail ./sync/mutual_exclusion/locks/lock_guard/copy_ctor_fail.cpp : : lock_guard__cons__copy_ctor_f ]
+          [ thread-safety-compile ./sync/mutual_exclusion/locks/lock_guard/lock_guard_compile_pass.cpp : : lock_guard__lock_compile_p ]
+          [ thread-safety-compile-fail ./sync/mutual_exclusion/locks/lock_guard/lock_guard_compile_fail.cpp : : lock_guard__lock_compile_f ]
+          [ thread-safety-compile ./sync/mutual_exclusion/locks/lock_guard/lock_guard_adopt_lock_compile_pass.cpp : : lock_guard__adopt_lock_compile_p ]
+          [ thread-safety-compile-fail ./sync/mutual_exclusion/locks/lock_guard/lock_guard_adopt_lock_compile_fail.cpp : : lock_guard__adopt_lock_compile_f ]
           [ thread-run2-noit ./sync/mutual_exclusion/locks/lock_guard/adopt_lock_pass.cpp : lock_guard__cons__adopt_lock_p ]
           [ thread-run2-noit ./sync/mutual_exclusion/locks/lock_guard/default_pass.cpp : lock_guard__cons__default_p ]
           [ thread-run2-noit ./sync/mutual_exclusion/locks/lock_guard/types_pass.cpp : lock_guard__types_p ]
@@ -613,6 +687,12 @@ rule thread-compile ( sources : reqs * : name )
     :
           [ thread-compile-fail ./sync/mutual_exclusion/mutex/assign_fail.cpp : : mutex__assign_f ]
           [ thread-compile-fail ./sync/mutual_exclusion/mutex/copy_fail.cpp : : mutex__copy_f ]
+          [ thread-safety-compile ./sync/mutual_exclusion/mutex/lock_compile_pass.cpp : : mutex__lock_compile_p ]
+          [ thread-safety-compile-fail ./sync/mutual_exclusion/mutex/lock_compile_fail.cpp : : mutex__lock_compile_f ]
+          # https://bugs.llvm.org/show_bug.cgi?id=32954
+          # http://clang-developers.42468.n3.nabble.com/thread-safety-warnings-specifically-try-acquire-capability-td4059337.html
+          #[ thread-safety-compile ./sync/mutual_exclusion/mutex/try_lock_compile_pass.cpp : : mutex__try_lock_compile_p ]
+          [ thread-safety-compile-fail ./sync/mutual_exclusion/mutex/try_lock_compile_fail.cpp : : mutex__try_lock_compile_f ]
           [ thread-run2-noit ./sync/mutual_exclusion/mutex/default_pass.cpp : mutex__default_p ]
           [ thread-run2-noit ./sync/mutual_exclusion/mutex/lock_pass.cpp : mutex__lock_p ]
           [ thread-run2-noit-pthread ./sync/mutual_exclusion/mutex/native_handle_pass.cpp : mutex__native_handle_p ]
@@ -709,7 +789,7 @@ rule thread-compile ( sources : reqs * : name )
     test-suite ts_sync_tq
     :
           [ thread-run2-noit ./sync/mutual_exclusion/sync_pq/tq_single_thread_pass.cpp : sync_tq_single_thread_p ]
-          #[ thread-run2-noit ./sync/mutual_exclusion/sync_pq/tq_multi_thread_pass.cpp : sync_tq_multi_thread_p ]
+          [ thread-run2-noit ./sync/mutual_exclusion/sync_pq/tq_multi_thread_pass.cpp : sync_tq_multi_thread_p ]
     ;
 
     test-suite ts_scheduler
@@ -773,6 +853,12 @@ rule thread-compile ( sources : reqs * : name )
           [ thread-run2-noit ./threads/container/thread_ptr_list_pass.cpp : container__thread_ptr_list_p ]
     ;
 
+    explicit ts_examples_too_long ;
+    test-suite ts_examples_too_long
+    :
+          [ thread-run2 ../example/shared_mutex.cpp : ex_shared_mutex ]
+    ;
+
     #explicit ts_examples ;
     test-suite ts_examples
     :
@@ -788,7 +874,6 @@ rule thread-compile ( sources : reqs * : name )
           [ thread-run2-noit ../example/tss.cpp : ex_tss ]
           [ thread-run2 ../example/xtime.cpp : ex_xtime ]
           [ thread-run2 ../example/shared_monitor.cpp : ex_shared_monitor ]
-          [ thread-run2 ../example/shared_mutex.cpp : ex_shared_mutex ]
           #[ thread-run ../example/vhh_shared_monitor.cpp ]
           #[ thread-run ../example/vhh_shared_mutex.cpp ]
           [ thread-run2 ../example/make_future.cpp : ex_make_future ]
@@ -968,9 +1053,46 @@ rule thread-compile ( sources : reqs * : name )
           #[ thread-run test_11818.cpp ]
           #[ thread-run test_11796.cpp ]
           #[ thread-run test_12293.cpp ]
-          [ thread-run test_12949.cpp ]
+          #[ thread-run test_12949.cpp ]
+          #[ thread-run test_13480b.cpp ]
+          [ thread-run test_13561.cpp ]
           
     ;
 
+    explicit test_time_jumps_1_obj ;
+    obj test_time_jumps_1_obj : test_time_jumps.cpp :
+        # BOOST_THREAD_USES_MOVE is required to prevent ambiguity between the two definitions
+        # of boost::move when using sync_priority_queue/sync_timed_queue with POD data types.
+        <define>BOOST_THREAD_USES_MOVE
+        <define>BOOST_THREAD_PROVIDES_FUTURE
+    ;
 
+    explicit test_time_jumps_2_obj ;
+    obj test_time_jumps_2_obj : test_time_jumps.cpp :
+        # BOOST_THREAD_USES_MOVE is required to prevent ambiguity between the two definitions
+        # of boost::move when using sync_priority_queue/sync_timed_queue with POD data types.
+        <define>BOOST_THREAD_USES_MOVE
+        <define>BOOST_THREAD_PROVIDES_FUTURE
+        <define>BOOST_THREAD_PROVIDES_SHARED_MUTEX_UPWARDS_CONVERSIONS
+    ;
+
+    explicit test_time_jumps_3_obj ;
+    obj test_time_jumps_3_obj : test_time_jumps.cpp :
+        # BOOST_THREAD_USES_MOVE is required to prevent ambiguity between the two definitions
+        # of boost::move when using sync_priority_queue/sync_timed_queue with POD data types.
+        <define>BOOST_THREAD_USES_MOVE
+        <define>BOOST_THREAD_PROVIDES_FUTURE
+        <define>BOOST_THREAD_PROVIDES_SHARED_MUTEX_UPWARDS_CONVERSIONS
+        <define>BOOST_THREAD_V2_SHARED_MUTEX
+    ;
+
+    explicit test_time_jumps ;
+    test-suite test_time_jumps
+    :
+          [ exe test_time_jumps_1 : test_time_jumps_1_obj ../build//boost_thread ]
+          [ exe test_time_jumps_2 : test_time_jumps_2_obj ../build//boost_thread ]
+          [ exe test_time_jumps_3 : test_time_jumps_3_obj ../build//boost_thread ]
+    ;
+
+    test-suite test_self_contained_headers : [ generate_self_contained_header_tests ] ;
 }

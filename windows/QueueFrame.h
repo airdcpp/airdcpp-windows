@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ class QueueFrame : public MDITabChildWindowImpl<QueueFrame>, public StaticFrame<
 	private QueueManagerListener, private DownloadManagerListener, private SettingsManagerListener, private Async<QueueFrame>
 {
 public:
-	DECLARE_FRAME_WND_CLASS_EX(_T("QueueFrame"), IDR_QUEUE2, 0, COLOR_3DFACE);
+	DECLARE_FRAME_WND_CLASS_EX(_T("QueueFrame"), IDR_QUEUE2, CS_DBLCLKS, COLOR_3DFACE);
 
 	QueueFrame();
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -86,6 +86,10 @@ public:
 	// URL won't be changed for offline users
 	HintedUser checkDownloadUrl(const HintedUser& aUser) const noexcept;
 
+	// Updates the hinted URL in case the user is not online in the original one
+	// URL won't be changed for offline users
+	HintedUser checkOnlineUrl(const HintedUser& aUser) const noexcept;
+
 	StringList getNicks(const HintedUser& user) const noexcept;
 	StringList getHubNames(const HintedUser& user) const noexcept;
 	StringList getHubUrls(const HintedUser& user) const noexcept;
@@ -144,6 +148,7 @@ public:
 	bool cancelSearch(const void* aOwner) noexcept;
 	optional<uint64_t> getMaxSearchQueueTime(const void* aOwner) const noexcept;
 	bool hasSearchQueueOverflow() const noexcept;
+	int getMaxSearchQueueSize() const noexcept;
 		
 	void infoUpdated() noexcept;
 

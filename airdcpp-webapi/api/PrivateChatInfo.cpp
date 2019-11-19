@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 
 #include <web-server/JsonUtil.h>
 
+#include <airdcpp/Client.h>
 #include <airdcpp/PrivateChat.h>
 
 namespace webserver {
@@ -60,9 +61,10 @@ namespace webserver {
 
 	api_return PrivateChatInfo::handleUpdateSession(ApiRequest& aRequest) {
 		const auto& reqJson = aRequest.getRequestBody();
-		auto hubUrl = JsonUtil::getOptionalField<string>("hub_url", reqJson);
-		if (hubUrl) {
-			chat->setHubUrl(*hubUrl);
+
+		auto client = Deserializer::deserializeClient(reqJson, true);
+		if (client) {
+			chat->setHubUrl(client->getHubUrl());
 		}
 
 		return websocketpp::http::status_code::no_content;

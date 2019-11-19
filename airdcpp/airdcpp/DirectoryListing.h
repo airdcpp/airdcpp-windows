@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -275,6 +275,8 @@ protected:
 	void onStateChanged() noexcept;
 
 private:
+	void setDirectoryLoadingState(const Directory::Ptr& aDir, bool aLoading) noexcept;
+
 	// Returns the number of loaded dirs
 	// Throws AbortException
 	int loadXML(InputStream& aXml, bool aUpdating, const string& aBase, time_t aListDate = GET_TIME());
@@ -282,11 +284,10 @@ private:
 	// Create and insert a base directory with the given path (or return an existing one)
 	Directory::Ptr createBaseDirectory(const string& aPath, time_t aDownloadDate = GET_TIME()) noexcept;
 
-	// Returns false if the directory was not found from the list
-	bool changeDirectory(const string& aPath, bool aReload, bool aIsSearchChange = false, bool aForceQueue = false) noexcept;
+	void changeDirectoryImpl(const string& aPath, bool aReload, bool aIsSearchChange = false, bool aForceQueue = false) noexcept;
 
-	void setShareProfile(ProfileToken aProfile) noexcept;
-	void setHubUrl(const string& aHubUrl) noexcept;
+	void setShareProfileImpl(ProfileToken aProfile) noexcept;
+	void setHubUrlImpl(const string& aHubUrl) noexcept;
 
 	LocationInfo currentLocation;
 	void updateCurrentLocation(const Directory::Ptr& aCurrentDirectory) noexcept;

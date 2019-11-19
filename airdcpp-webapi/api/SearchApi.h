@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -24,10 +24,10 @@
 #include <api/base/HierarchicalApiModule.h>
 
 #include <airdcpp/typedefs.h>
-
+#include <airdcpp/SearchManagerListener.h>
 
 namespace webserver {
-	class SearchApi : public ParentApiModule<SearchInstanceToken, SearchEntity> {
+	class SearchApi: public ParentApiModule<SearchInstanceToken, SearchEntity>, public SearchManagerListener {
 	public:
 		static StringList subscriptionList;
 
@@ -38,14 +38,23 @@ namespace webserver {
 		SearchEntity::Ptr createInstance(uint64_t aExpirationTick);
 
 		api_return handleCreateInstance(ApiRequest& aRequest);
-		api_return handleDeleteSubmodule(ApiRequest& aRequest);
+		api_return handleDeleteSubmodule(ApiRequest& aRequest) override;
 
 		api_return handleGetTypes(ApiRequest& aRequest);
+		api_return handlePostType(ApiRequest& aRequest);
+		api_return handleGetType(ApiRequest& aRequest);
+		api_return handleUpdateType(ApiRequest& aRequest);
+		api_return handleRemoveType(ApiRequest& aRequest);
 
 		void onTimer() noexcept;
 
 		atomic<SearchInstanceToken> instanceIdCounter { 0 };
 		TimerPtr timer;
+
+		void on(SearchManagerListener::SearchTypesChanged) noexcept override;
+
+		static json serializeSearchType(const SearchTypePtr& aType) noexcept;
+		static string parseSearchTypeId(ApiRequest& aRequest) noexcept;
 	};
 }
 

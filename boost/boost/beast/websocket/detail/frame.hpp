@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2016-2017 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2016-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -10,14 +10,14 @@
 #ifndef BOOST_BEAST_WEBSOCKET_DETAIL_FRAME_HPP
 #define BOOST_BEAST_WEBSOCKET_DETAIL_FRAME_HPP
 
+#include <boost/beast/core/buffer_traits.hpp>
+#include <boost/beast/websocket/error.hpp>
 #include <boost/beast/websocket/rfc6455.hpp>
 #include <boost/beast/websocket/detail/utf8_checker.hpp>
-#include <boost/beast/core/buffers_suffix.hpp>
 #include <boost/beast/core/flat_static_buffer.hpp>
-#include <boost/beast/core/static_string.hpp>
 #include <boost/asio/buffer.hpp>
 #include <boost/assert.hpp>
-#include <boost/endian/buffers.hpp>
+#include <boost/endian/conversion.hpp>
 #include <cstdint>
 
 namespace boost {
@@ -25,57 +25,7 @@ namespace beast {
 namespace websocket {
 namespace detail {
 
-inline
-std::uint16_t
-big_uint16_to_native(void const* buf)
-{
-    auto const p = reinterpret_cast<
-        std::uint8_t const*>(buf);
-    return (p[0]<<8) + p[1];
-}
-
-inline
-std::uint64_t
-big_uint64_to_native(void const* buf)
-{
-    auto const p = reinterpret_cast<
-        std::uint8_t const*>(buf);
-    return
-        (static_cast<std::uint64_t>(p[0])<<56) +
-        (static_cast<std::uint64_t>(p[1])<<48) +
-        (static_cast<std::uint64_t>(p[2])<<40) +
-        (static_cast<std::uint64_t>(p[3])<<32) +
-        (static_cast<std::uint64_t>(p[4])<<24) +
-        (static_cast<std::uint64_t>(p[5])<<16) +
-        (static_cast<std::uint64_t>(p[6])<< 8) +
-                                    p[7];
-}
-
-inline
-std::uint32_t
-little_uint32_to_native(void const* buf)
-{
-    auto const p = reinterpret_cast<
-        std::uint8_t const*>(buf);
-    return
-                                    p[0] +
-        (static_cast<std::uint32_t>(p[1])<< 8) +
-        (static_cast<std::uint32_t>(p[2])<<16) +
-        (static_cast<std::uint32_t>(p[3])<<24);
-}
-
-inline
-void
-native_to_little_uint32(std::uint32_t v, void* buf)
-{
-    auto p = reinterpret_cast<std::uint8_t*>(buf);
-    p[0] =  v        & 0xff;
-    p[1] = (v >>  8) & 0xff;
-    p[2] = (v >> 16) & 0xff;
-    p[3] = (v >> 24) & 0xff;
-}
-
-/** WebSocket frame header opcodes. */
+// frame header opcodes
 enum class opcode : std::uint8_t
 {
     cont    = 0,
@@ -110,8 +60,7 @@ struct frame_header
 };
 
 // holds the largest possible frame header
-using fh_buffer =
-    flat_static_buffer<14>;
+using fh_buffer = flat_static_buffer<14>;
 
 // holds the largest possible control frame
 using frame_buffer =
@@ -184,9 +133,6 @@ template<class DynamicBuffer>
 void
 write(DynamicBuffer& db, frame_header const& fh)
 {
-    using boost::asio::buffer;
-    using boost::asio::buffer_copy;
-    using namespace boost::endian;
     std::size_t n;
     std::uint8_t b[14];
     b[0] = (fh.fin ? 0x80 : 0x00) | static_cast<std::uint8_t>(fh.op);
@@ -205,23 +151,28 @@ write(DynamicBuffer& db, frame_header const& fh)
     else if(fh.len <= 65535)
     {
         b[1] |= 126;
-        ::new(&b[2]) big_uint16_buf_t{
-            (std::uint16_t)fh.len};
+        auto len_be = endian::native_to_big(
+            static_cast<std::uint16_t>(fh.len));
+        std::memcpy(&b[2], &len_be, sizeof(len_be));
         n = 4;
     }
     else
     {
         b[1] |= 127;
-        ::new(&b[2]) big_uint64_buf_t{fh.len};
+        auto len_be = endian::native_to_big(
+            static_cast<std::uint64_t>(fh.len));
+        std::memcpy(&b[2], &len_be, sizeof(len_be));
         n = 10;
     }
     if(fh.mask)
     {
-        native_to_little_uint32(fh.key, &b[n]);
+        auto key_le = endian::native_to_little(
+            static_cast<std::uint32_t>(fh.key));
+        std::memcpy(&b[n], &key_le, sizeof(key_le));
         n += 4;
     }
-    db.commit(buffer_copy(
-        db.prepare(n), buffer(b)));
+    db.commit(net::buffer_copy(
+        db.prepare(n), net::buffer(b)));
 }
 
 // Read data from buffers
@@ -231,12 +182,9 @@ template<class Buffers>
 void
 read_ping(ping_data& data, Buffers const& bs)
 {
-    using boost::asio::buffer_copy;
-    using boost::asio::buffer_size;
-    using boost::asio::mutable_buffer;
-    BOOST_ASSERT(buffer_size(bs) <= data.max_size());
-    data.resize(buffer_size(bs));
-    buffer_copy(mutable_buffer{
+    BOOST_ASSERT(buffer_bytes(bs) <= data.max_size());
+    data.resize(buffer_bytes(bs));
+    net::buffer_copy(net::mutable_buffer{
         data.data(), data.size()}, bs);
 }
 
@@ -245,55 +193,50 @@ read_ping(ping_data& data, Buffers const& bs)
 //
 template<class Buffers>
 void
-read_close(close_reason& cr,
-    Buffers const& bs, close_code& code)
+read_close(
+    close_reason& cr,
+    Buffers const& bs,
+    error_code& ec)
 {
-    using boost::asio::buffer;
-    using boost::asio::buffer_copy;
-    using boost::asio::buffer_size;
-    using namespace boost::endian;
-    auto n = buffer_size(bs);
+    auto const n = buffer_bytes(bs);
     BOOST_ASSERT(n <= 125);
     if(n == 0)
     {
         cr = close_reason{};
-        code = close_code::none;
+        ec = {};
         return;
     }
     if(n == 1)
     {
-        code = close_code::protocol_error;
+        // invalid payload size == 1
+        ec = error::bad_close_size;
         return;
     }
-    buffers_suffix<Buffers> cb(bs);
+
+    std::uint16_t code_be;
+    cr.reason.resize(n - 2);
+    std::array<net::mutable_buffer, 2> out_bufs{{
+        net::mutable_buffer(&code_be, sizeof(code_be)),
+        net::mutable_buffer(&cr.reason[0], n - 2)}};
+
+    net::buffer_copy(out_bufs, bs);
+
+    cr.code = endian::big_to_native(code_be);
+    if(! is_valid_close_code(cr.code))
     {
-        std::uint8_t b[2];
-        buffer_copy(buffer(b), cb);
-        cr.code = big_uint16_to_native(&b[0]);
-        cb.consume(2);
-        n -= 2;
-        if(! is_valid_close_code(cr.code))
-        {
-            code = close_code::protocol_error;
-            return;
-        }
+        // invalid close code
+        ec = error::bad_close_code;
+        return;
     }
-    if(n > 0)
+
+    if(n > 2 && !check_utf8(
+        cr.reason.data(), cr.reason.size()))
     {
-        cr.reason.resize(n);
-        buffer_copy(buffer(&cr.reason[0], n), cb);
-        if(! check_utf8(
-            cr.reason.data(), cr.reason.size()))
-        {
-            code = close_code::protocol_error;
-            return;
-        }
+        // not valid utf-8
+        ec = error::bad_close_payload;
+        return;
     }
-    else
-    {
-        cr.reason = "";
-    }
-    code = close_code::none;
+    ec = {};
 }
 
 } // detail

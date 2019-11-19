@@ -1,3 +1,48 @@
+3.60
+
+Added:
+
+- Add option for disabled auto search in RSS filter
+- Display calculated priority and recent item status for auto search items
+
+Changed:
+
+- Updated Web UI and Web API (https://airdcpp-web.github.io/2019/11/16/version-2.7.0.html)
+- Override download skiplist for private magnet downloads
+- TLS 1.3: prefer TLS_AES_128_GCM_SHA256 over TLS_AES_256_GCM_SHA384
+
+Fixed:
+
+- Fix possible connection failures when connecting to ADCS hubs/HTTPS servers
+
+
+3.55
+
+Changed:
+
+- Updated Web UI and Web API (https://airdcpp-web.github.io/2019/05/17/version-2.6.1.html)
+- Force connect will now work with downloads that are in "Connecting" state
+
+Fixed:
+
+- Fix share monitoring on Windows 7
+- Stability fixes
+
+
+3.54
+
+Changed:
+
+- Updated AirDC++ Web UI with localizations and file uploading support in chat sessions. For a complete list of changes, see https://airdcpp-web.github.io/2019/02/08/version-2.5.1.html and https://airdcpp-web.github.io/2019/03/13/version-2.6.0.html
+- Group hashed files by device instead of volume when using multithreaded hashing
+- Attempt to associate new private chat sessions with an online hub
+
+Fixed:
+
+- Fix a filelist-related deadlock
+- Fix possible corruption of search type captions
+
+
 3.53
 
 Changed:

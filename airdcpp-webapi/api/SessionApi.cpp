@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -123,6 +123,9 @@ namespace webserver {
 				aRequest.setResponseErrorStr(e.what());
 				return websocketpp::http::status_code::bad_request;
 			}
+		} else {
+			JsonUtil::throwError("grant_type", JsonUtil::ERROR_INVALID, "Invalid grant_type");
+			return websocketpp::http::status_code::bad_request;
 		}
 
 		dcassert(session);

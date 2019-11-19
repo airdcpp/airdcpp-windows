@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2018 AirDC++ Project
+ * Copyright (C) 2011-2019 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -491,7 +491,7 @@ void ChatFrameBase::addMagnet(const StringList& aPaths) {
 
 			callAsync([=] {
 				if (getClient()) {
-					ShareManager::getInstance()->addTempShare(ctrlClient.getTempShareKey(), tth, path, size, getClient()->get(HubSettings::ShareProfile));
+					ShareManager::getInstance()->addTempShare(tth, Util::getFileName(path), path, size, getClient()->get(HubSettings::ShareProfile), ctrlClient.getTempShareUser());
 				}
 			});
 

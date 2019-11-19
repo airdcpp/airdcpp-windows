@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -42,7 +42,8 @@ namespace dcpp {
 		PrivateChatManager() noexcept;
 		~PrivateChatManager() noexcept;
 
-		PrivateChatPtr addChat(const HintedUser& user, bool aReceivedMessage) noexcept;
+		// Returns the chat session and boolean whether the session was newly created
+		pair<PrivateChatPtr, bool> addChat(const HintedUser& user, bool aReceivedMessage) noexcept;
 		PrivateChatPtr getChat(const UserPtr& aUser) const noexcept;
 
 		void DisconnectCCPM(const UserPtr& aUser);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -149,6 +149,7 @@ public:
 		//GETSET(string, remotePath, RemotePath);
 		OrderedStringSet blockedHubs;
 		bool updateHubUrl(const OrderedStringSet& aOnlineHubs, string& hubUrl_, bool aIsFileList) noexcept;
+		static string formatError(const Flags& aFlags) noexcept;
 	};
 
 	typedef vector<Source> SourceList;

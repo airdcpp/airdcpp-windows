@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -157,7 +157,7 @@ void DownloadManager::on(TimerManagerListener::Second, uint64_t aTick) noexcept 
 		QueueManager::getInstance()->handleSlowDisconnect(dtp.user, dtp.target, dtp.bundle);
 }
 
-void DownloadManager::sendSizeUpdate(BundlePtr& aBundle) const noexcept {
+void DownloadManager::sendSizeUpdate(const BundlePtr& aBundle) const noexcept {
 	RLock l (cs);
 	aBundle->sendSizeUpdate();
 }
@@ -611,7 +611,7 @@ void DownloadManager::removeRunningUser(UserConnection* aSource, bool sendRemove
 	aSource->setLastBundle(Util::emptyString);
 }
 
-void DownloadManager::disconnectBundle(BundlePtr& aBundle, const UserPtr& aUser) {
+void DownloadManager::disconnectBundle(const BundlePtr& aBundle, const UserPtr& aUser) {
 	//UserConnectionList u;
 	{
 		RLock l(cs);

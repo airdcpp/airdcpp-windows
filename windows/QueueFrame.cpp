@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -98,7 +98,7 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
 	SetSplitterPanes(ctrlTree.m_hWnd, ctrlQueue.m_hWnd);
-	m_nProportionalPos = SETTING(QUEUE_SPLITTER_POS);
+	SetSplitterPosPct(SETTING(QUEUE_SPLITTER_POS) / 100);
 
 	CRect rc(SETTING(QUEUE_LEFT), SETTING(QUEUE_TOP), SETTING(QUEUE_RIGHT), SETTING(QUEUE_BOTTOM));
 	if (!(rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0))
@@ -218,7 +218,7 @@ LRESULT QueueFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 			::ScreenToClient(GetParent(), &rc.TopLeft());
 			::ScreenToClient(GetParent(), &rc.BottomRight());
 			//save the position
-			SettingsManager::getInstance()->set(SettingsManager::QUEUE_SPLITTER_POS, m_nProportionalPos);
+			SettingsManager::getInstance()->set(SettingsManager::QUEUE_SPLITTER_POS, GetSplitterPosPct() * 100);
 			SettingsManager::getInstance()->set(SettingsManager::QUEUE_BOTTOM, (rc.bottom > 0 ? rc.bottom : 0));
 			SettingsManager::getInstance()->set(SettingsManager::QUEUE_TOP, (rc.top > 0 ? rc.top : 0));
 			SettingsManager::getInstance()->set(SettingsManager::QUEUE_LEFT, (rc.left > 0 ? rc.left : 0));
@@ -556,23 +556,9 @@ tstring QueueFrame::formatUser(const QueueItem::Source& s) const {
 
 template<typename SourceType>
 tstring formatSourceFlags(const SourceType& s) {
-	OrderedStringSet reasons_;
-	if (s.isSet(QueueItem::Source::FLAG_FILE_NOT_AVAILABLE)) {
-		reasons_.insert(STRING(FILE_NOT_AVAILABLE));
-	} else if (s.isSet(QueueItem::Source::FLAG_BAD_TREE)) {
-		reasons_.insert(STRING(INVALID_TREE));
-	} else if (s.isSet(QueueItem::Source::FLAG_NO_NEED_PARTS)) {
-		reasons_.insert(STRING(NO_NEEDED_PART));
-	} else if (s.isSet(QueueItem::Source::FLAG_NO_TTHF)) {
-		reasons_.insert(STRING(SOURCE_TOO_OLD));
-	} else if (s.isSet(QueueItem::Source::FLAG_SLOW_SOURCE)) {
-		reasons_.insert(STRING(SLOW_USER));
-	} else if (s.isSet(QueueItem::Source::FLAG_UNTRUSTED)) {
-		reasons_.insert(STRING(CERTIFICATE_NOT_TRUSTED));
-	}
-
-	if (!reasons_.empty()) {
-		return _T(" (") + Text::toT(Util::listToString(reasons_)) + _T(")");
+	auto reason = QueueItem::Source::formatError(s);
+	if (!reason.empty()) {
+		return _T(" (") + Text::toT(reason) + _T(")");
 	}
 
 	return Util::emptyStringT;

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,8 @@
 */
 
 #include "stdinc.h"
+
+#include <web-server/HttpUtil.h>
 #include <web-server/WebServerManager.h>
 #include <web-server/WebSocket.h>
 
@@ -77,7 +79,7 @@ namespace webserver {
 		
 		j["code"] = aCode;
 
-		if (aCode < 200 || aCode > 299) {
+		if (!HttpUtil::isStatusOk(aCode)) {
 			dcdebug("Socket request %d failed: %s\n", aCallbackId, aErrorJson.dump().c_str());
 			j["error"] = aErrorJson;
 		} else if (!aResponseJson.is_null()) {
@@ -158,6 +160,14 @@ namespace webserver {
 			}
 		} catch (const std::exception& e) {
 			debugMessage("WebSocket::close failed: " + string(e.what()));
+		}
+	}
+
+	const websocketpp::http::parser::request& WebSocket::getRequest() noexcept {
+		if (secure) {
+			return tlsServer->get_con_from_hdl(hdl)->get_request();
+		} else {
+			return plainServer->get_con_from_hdl(hdl)->get_request();
 		}
 	}
 }

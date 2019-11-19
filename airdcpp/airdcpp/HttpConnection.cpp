@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -175,7 +175,12 @@ void HttpConnection::on(BufferedSocketListener::Line, const string& aLine) noexc
 		} else {
 			abortRequest(true);
 		
-			fire(HttpConnectionListener::Failed(), this, str(boost::format("%1% (%2%)") % aLine % currentUrl));
+			auto error = aLine;
+			if (error.length() > 1 && error.back() == '\r') {
+				error.pop_back(); // These would cause issues in HTTP messages
+			}
+
+			fire(HttpConnectionListener::Failed(), this, str(boost::format("%1% (%2%)") % error % currentUrl));
 			if (isUnique) { delete this; return; }
 			connState = CONN_FAILED;
 		}

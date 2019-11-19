@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -83,6 +83,7 @@ public:
 	static bool parseWindowParams(StringMap& params);
 
 	typedef MDITabChildWindowImpl<DirectoryListingFrame> baseClass;
+	typedef CSplitterImpl<DirectoryListingFrame> splitBase;
 	typedef UserInfoBaseHandler<DirectoryListingFrame> uibBase;
 
 	enum {
@@ -161,8 +162,8 @@ public:
 		CHAIN_MSG_MAP_MEMBER(browserBar)
 
 		CHAIN_COMMANDS(uibBase)
+		CHAIN_MSG_MAP(splitBase)
 		CHAIN_MSG_MAP(baseClass)
-		CHAIN_MSG_MAP(CSplitterImpl<DirectoryListingFrame>)
 		//CHAIN_MSG_MAP_MEMBER(ctrlFiles)
 	ALT_MSG_MAP(HISTORY_MSG_MAP)
 		CHAIN_MSG_MAP_ALT_MEMBER(browserBar, HISTORY_MSG_MAP)

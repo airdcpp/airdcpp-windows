@@ -1,11 +1,11 @@
 // Boost basic_name_generator.hpp header file  -----------------------//
 
 // Copyright 2010 Andy Tompkins.
-// Copyright 2017 James E. King, III
+// Copyright 2017 James E. King III
 
 // Distributed under the Boost Software License, Version 1.0. (See
 // accompanying file LICENSE_1_0.txt or copy at
-//  http://www.boost.org/LICENSE_1_0.txt)
+//  https://www.boost.org/LICENSE_1_0.txt)
 
 #ifndef BOOST_UUID_BASIC_NAME_GENERATOR_HPP
 #define BOOST_UUID_BASIC_NAME_GENERATOR_HPP
@@ -73,7 +73,7 @@ class basic_name_generator
         hash.process_bytes(namespace_uuid.begin(), namespace_uuid.size());
         hash.process_bytes(buffer, byte_count);
         return hash_to_uuid(hash);
-    };
+    }
 
 private:
     // we convert all characters to uint32_t so that each

@@ -23,9 +23,11 @@
 #include <boost/detail/lightweight_test.hpp>
 #include <iostream>
 #include <cassert>
+#include "../../../timming.hpp"
 
 #if defined BOOST_THREAD_USES_CHRONO
-
+typedef boost::chrono::milliseconds ms;
+typedef boost::chrono::nanoseconds ns;
 struct Clock
 {
   typedef boost::chrono::milliseconds duration;
@@ -44,10 +46,13 @@ struct Clock
 boost::condition_variable cv;
 boost::mutex mut;
 
+
 int test1 = 0;
 int test2 = 0;
 
 int runs = 0;
+
+const ms max_diff(BOOST_THREAD_TEST_TIME_MS);
 
 void f()
 {
@@ -58,19 +63,18 @@ void f()
     cv.notify_one();
     Clock::time_point t0 = Clock::now();
     Clock::time_point t = t0 + Clock::duration(250);
-    int count=0;
-    while (test2 == 0 && cv.wait_until(lk, t) == boost::cv_status::no_timeout)
-      count++;
+    while (test2 == 0 && cv.wait_until(lk, t) == boost::cv_status::no_timeout) {}
     Clock::time_point t1 = Clock::now();
     if (runs == 0)
     {
-      assert(t1 - t0 < Clock::duration(250));
+      ns d = t1 - t0;
+      BOOST_THREAD_TEST_IT(d, ns(max_diff));
       assert(test2 != 0);
     }
     else
     {
-      // This test is spurious as it depends on the time the thread system switches the threads
-      assert(t1 - t0 - Clock::duration(250) < Clock::duration(count*250+5+1000));
+      ns d = t1 - t0 - Clock::duration(250);
+      BOOST_THREAD_TEST_IT(d, ns(max_diff));
       assert(test2 == 0);
     }
     ++runs;

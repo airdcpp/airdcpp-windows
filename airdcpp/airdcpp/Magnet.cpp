@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2018 AirDC++ Project
+ * Copyright (C) 2012-2019 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,14 @@
 namespace dcpp {
 
 using std::map;
+
+
+string Magnet::makeMagnet(const TTHValue& aHash, const string& aFile, int64_t aSize) noexcept {
+	string ret = "magnet:?xt=urn:tree:tiger:" + aHash.toBase32();
+	if (aSize > 0)
+		ret += "&xl=" + Util::toString(aSize);
+	return ret + "&dn=" + Util::encodeURI(aFile);
+}
 
 Magnet::Magnet(const string& aLink) { 
 	// official types that are of interest to us

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #ifndef DCPLUSPLUS_DCPP_SEARCH_MANAGER_H
 #define DCPLUSPLUS_DCPP_SEARCH_MANAGER_H
 
+#include "ResourceManager.h"
 #include "SearchManagerListener.h"
 #include "SettingsManagerListener.h"
 #include "TimerManagerListener.h"
@@ -46,18 +47,31 @@ struct SearchQueueInfo {
 	string error;
 };
 
+class SearchType {
+public:
+	SearchType(const string& aId, const string& aName, const StringList& aExtensions) :
+		id(aId), name(aName), extensions(aExtensions) {
+
+	}
+
+	string getDisplayName() const noexcept;
+	bool isDefault() const noexcept;
+	Search::TypeModes getTypeMode() const noexcept;
+
+	GETSET(string, id, Id);
+	GETSET(string, name, Name);
+	GETSET(StringList, extensions, Extensions);
+};
+
 class SearchManager : public Speaker<SearchManagerListener>, public Singleton<SearchManager>, private TimerManagerListener, private SettingsManagerListener
 {
 public:
-
-	typedef map<string, StringList> SearchTypes;
-	typedef SearchTypes::iterator SearchTypesIter;
-	typedef SearchTypes::const_iterator SearchTypesIterC;
+	typedef map<string, SearchTypePtr> SearchTypes;
 private:
-	static const char* types[Search::TYPE_LAST];
+	static ResourceManager::Strings types[Search::TYPE_LAST];
 public:
-	static const char* getTypeStr(int type);
-	static bool isDefaultTypeStr(const string& type);
+	static const string& getTypeStr(int aType) noexcept;
+	static bool isDefaultTypeStr(const string& aType) noexcept;
 	
 	SearchQueueInfo search(const SearchPtr& aSearch) noexcept;
 	SearchQueueInfo search(StringList& aHubUrls, const SearchPtr& aSearch, void* aOwner = nullptr) noexcept;
@@ -78,22 +92,19 @@ public:
 
 
 	// Search types
-	void validateSearchTypeName(const string& name) const;
+	static void validateSearchTypeName(const string& aName);
 	void setSearchTypeDefaults();
-	void addSearchType(const string& name, const StringList& extensions, bool validated = false);
-	void delSearchType(const string& name);
-	void renameSearchType(const string& oldName, const string& newName);
-	void modSearchType(const string& name, const StringList& extensions);
+	SearchTypePtr addSearchType(const string& aName, const StringList& aExtensions);
+	void delSearchType(const string& aId);
+	SearchTypePtr modSearchType(const string& aId, const optional<string>& aName, const optional<StringList>& aExtensions);
 
-	const StringList& getExtensions(const string& name);
+	SearchTypeList getSearchTypes() const noexcept;
 
-	const SearchTypes& getSearchTypes() const {
-		return searchTypes;
-	}
+	void getSearchType(int aPos, Search::TypeModes& type_, StringList& extList_, string& typeId_);
+	void getSearchType(const string& aId, Search::TypeModes& type_, StringList& extList_, string& name_);
 
-	void getSearchType(int pos, Search::TypeModes& type_, StringList& extList_, string& name_);
-	void getSearchType(const string& aName, Search::TypeModes& type_, StringList& extList_, bool aLock = false);
-	string getNameByExtension(const string& aExtension, bool defaultsOnly = false) const noexcept;
+	SearchTypePtr getSearchType(const string& aId) const;
+	string getTypeIdByExtension(const string& aExtension, bool aDefaultsOnly = false) const noexcept;
 
 	bool decryptPacket(string& x, size_t aLen, const ByteVector& aBuf);
 private:
@@ -118,8 +129,6 @@ private:
 
 	// Search types
 	SearchTypes searchTypes; // name, extlist
-
-	SearchTypesIter getSearchType(const string& name);
 
 	UDPServer udpServer;
 };

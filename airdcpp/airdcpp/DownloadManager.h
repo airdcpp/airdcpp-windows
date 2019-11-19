@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,12 +48,12 @@ public:
 	void addConnection(UserConnection* conn);
 	bool checkIdle(const UserPtr& user, bool smallSlot, bool reportOnly = false);
 
-	void sendSizeUpdate(BundlePtr& aBundle) const noexcept;
+	void sendSizeUpdate(const BundlePtr& aBundle) const noexcept;
 	BundlePtr findRunningBundle(QueueToken bundleToken) const noexcept;
 
 	/** @internal */
 	void abortDownload(const string& aTarget, const UserPtr& aUser = nullptr);
-	void disconnectBundle(BundlePtr& aBundle, const UserPtr& aUser = nullptr);
+	void disconnectBundle(const BundlePtr& aBundle, const UserPtr& aUser = nullptr);
 
 	/** @return Running average download speed in Bytes/s */
 	int64_t getRunningAverage() const;

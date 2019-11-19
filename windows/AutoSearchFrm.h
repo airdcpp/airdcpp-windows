@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2018 AirDC++ Project
+ * Copyright (C) 2012-2019 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -115,6 +115,7 @@ private:
 		COLUMN_REMOVE,
 		COLUMN_USERMATCH,
 		COLUMN_ERROR,
+		COLUMN_PRIORITY,
 		COLUMN_LAST
 	};
 

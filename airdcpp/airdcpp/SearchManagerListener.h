@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,12 +32,9 @@ public:
 
 	typedef X<0> SR;
 	typedef X<1> SearchTypesChanged;
-	typedef X<2> SearchTypeRenamed;
 
 	virtual void on(SR, const SearchResultPtr&) noexcept { }
-
 	virtual void on(SearchTypesChanged) noexcept { }
-	virtual void on(SearchTypeRenamed, const string&, const string&) noexcept { }
 };
 
 } // namespace dcpp

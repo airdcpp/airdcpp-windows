@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2016-2017 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2016-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -66,7 +66,7 @@ public:
 
     /// A constant iterator to the list
 #if BOOST_BEAST_DOXYGEN
-    using const_iterator = implementation_defined;
+    using const_iterator = __implementation_defined__;
 #else
     class const_iterator;
 #endif
@@ -155,7 +155,7 @@ public:
 
     /// A constant iterator to the list
 #if BOOST_BEAST_DOXYGEN
-    using const_iterator = implementation_defined;
+    using const_iterator = __implementation_defined__;
 #else
     class const_iterator;
 #endif
@@ -190,17 +190,17 @@ public:
         @return An iterator to the matching token, or `end()` if no
         token exists.
     */
-    template<class T>
+    BOOST_BEAST_DECL
     const_iterator
-    find(T const& s);
+    find(string_view const& s);
 
     /** Return `true` if a token is present in the list.
 
         @param s The token to find. A case-insensitive comparison is used.
     */
-    template<class T>
+    BOOST_BEAST_DECL
     bool
-    exists(T const& s);
+    exists(string_view const& s);
 };
 
 //------------------------------------------------------------------------------
@@ -243,7 +243,7 @@ public:
 
     /// A constant iterator to the list
 #if BOOST_BEAST_DOXYGEN
-    using const_iterator = implementation_defined;
+    using const_iterator = __implementation_defined__;
 #else
     class const_iterator;
 #endif
@@ -275,9 +275,9 @@ public:
 
         @param s The token to find. A case-insensitive comparison is used.
     */
-    template<class T>
+    BOOST_BEAST_DECL
     bool
-    exists(T const& s);
+    exists(string_view const& s);
 };
 
 /** A list of tokens in a comma separated HTTP field value.
@@ -324,6 +324,6 @@ validate_list(detail::basic_parsed_list<
 } // beast
 } // boost
 
-#include <boost/beast/http/impl/rfc7230.ipp>
+#include <boost/beast/http/impl/rfc7230.hpp>
 
 #endif

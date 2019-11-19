@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2018 AirDC++ Project
+ * Copyright (C) 2011-2019 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -136,8 +136,6 @@ private:
 
 	void on(TimerManagerListener::Minute, uint64_t aTick) noexcept override;
 	void on(TimerManagerListener::Second, uint64_t aTick) noexcept override;
-
-	void on(SearchManagerListener::SearchTypeRenamed, const string& oldName, const string& newName) noexcept override;
 
 	void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept override { onRemoveBundle(aBundle, false); }
 	void on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept override;

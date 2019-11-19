@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -93,13 +93,13 @@ namespace webserver {
 
 	api_return PrivateChatApi::handlePostChat(ApiRequest& aRequest) {
 		auto user = Deserializer::deserializeHintedUser(aRequest.getRequestBody());
-		auto chat = PrivateChatManager::getInstance()->addChat(user, false);
-		if (!chat) {
+		auto res = PrivateChatManager::getInstance()->addChat(user, false);
+		if (!res.second) {
 			aRequest.setResponseErrorStr("Chat session exists");
 			return websocketpp::http::status_code::conflict;
 		}
 
-		aRequest.setResponseBody(serializeChat(chat));
+		aRequest.setResponseBody(serializeChat(res.first));
 		return websocketpp::http::status_code::ok;
 	}
 

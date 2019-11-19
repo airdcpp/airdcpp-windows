@@ -122,7 +122,7 @@ int ShellExecAsUser(const TCHAR *pcOperation, const TCHAR *pcFileName, const TCH
 											variant_t file(pcFileName);
 											variant_t para(pcParameters);
 											variant_t show(SW_SHOWNORMAL);
-											hr = psd->ShellExecute(file.get().bstrVal, para.get(), vEmpty.get(), verb.get(), show.get());
+											hr = psd->ShellExecuteW(file.get().bstrVal, para.get(), vEmpty.get(), verb.get(), show.get());
 											if(SUCCEEDED(hr)) bSuccess = 1;
 											psd->Release();
 											psd = NULL;

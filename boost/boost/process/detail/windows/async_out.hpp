@@ -16,6 +16,7 @@
 #include <boost/winapi/error_codes.hpp>
 #include <boost/asio/read.hpp>
 #include <boost/process/detail/handler_base.hpp>
+#include <boost/process/detail/used_handles.hpp>
 #include <boost/process/detail/windows/asio_fwd.hpp>
 
 #include <istream>
@@ -80,10 +81,10 @@ struct async_out_buffer : ::boost::process::detail::windows::handler_base_ext,
     template <typename Executor>
     inline void on_success(Executor&)
     {
-        auto pipe = this->pipe;
-        boost::asio::async_read(*pipe, buf,
-                [pipe](const boost::system::error_code&, std::size_t){});
-        std::move(*pipe).sink().close();
+        auto pipe_ = this->pipe;
+        boost::asio::async_read(*pipe_, buf,
+                [pipe_](const boost::system::error_code&, std::size_t){});
+        std::move(*pipe_).sink().close();
         this->pipe       = nullptr;
 
     }
@@ -108,11 +109,17 @@ struct async_out_buffer : ::boost::process::detail::windows::handler_base_ext,
 
 template<int p1, int p2, typename Type>
 struct async_out_future : ::boost::process::detail::windows::handler_base_ext,
-                          ::boost::process::detail::windows::require_io_context
+                          ::boost::process::detail::windows::require_io_context,
+                          ::boost::process::detail::uses_handles
 {
     std::shared_ptr<boost::process::async_pipe> pipe;
     std::shared_ptr<std::promise<Type>> promise = std::make_shared<std::promise<Type>>();
     std::shared_ptr<boost::asio::streambuf> buffer = std::make_shared<boost::asio::streambuf>();
+
+    ::boost::winapi::HANDLE_ get_used_handles() const
+    {
+        return std::move(*pipe).sink().native_handle();
+    }
 
 
     async_out_future(std::future<Type> & fut)
@@ -122,34 +129,34 @@ struct async_out_future : ::boost::process::detail::windows::handler_base_ext,
     template <typename Executor>
     inline void on_success(Executor&)
     {
-        auto pipe    = this->pipe;
-        auto buffer  = this->buffer;
-        auto promise = this->promise;
-        std::move(*pipe).sink().close();
-        boost::asio::async_read(*pipe, *buffer,
-                [pipe, buffer, promise](const boost::system::error_code& ec, std::size_t)
+        auto pipe_    = this->pipe;
+        auto buffer_  = this->buffer;
+        auto promise_ = this->promise;
+        std::move(*pipe_).sink().close();
+        boost::asio::async_read(*pipe_, *buffer_,
+                [pipe_, buffer_, promise_](const boost::system::error_code& ec, std::size_t)
                 {
                     if (ec && (ec.value() != ::boost::winapi::ERROR_BROKEN_PIPE_))
                     {
                         std::error_code e(ec.value(), std::system_category());
-                        promise->set_exception(std::make_exception_ptr(process_error(e)));
+                        promise_->set_exception(std::make_exception_ptr(process_error(e)));
                     }
                     else
                     {
-                        std::istream is (buffer.get());
+                        std::istream is (buffer_.get());
                         Type arg;
-                        if (buffer->size() > 0)
+                        if (buffer_->size() > 0)
                         {
-                        	arg.resize(buffer->size());
-                        	is.read(&*arg.begin(), buffer->size());
+                          arg.resize(buffer_->size());
+                          is.read(&*arg.begin(), buffer_->size());
                         }
 
-                        promise->set_value(std::move(arg));
+                        promise_->set_value(std::move(arg));
 
 
                     }
                 });
-        this->pipe       = nullptr;
+        this->pipe    = nullptr;
         this->buffer  = nullptr;
         this->promise = nullptr;
 

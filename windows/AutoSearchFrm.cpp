@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2018 AirDC++ Project
+ * Copyright (C) 2012-2019 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,11 +36,11 @@
 //static ColumnType columnTypes [] = { COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_NUMERIC_OTHER, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TIME, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT };
 
 int AutoSearchFrame::columnIndexes[] = { COLUMN_VALUE, COLUMN_TYPE, COLUMN_SEARCH_STATUS, COLUMN_LASTSEARCH, COLUMN_BUNDLES, COLUMN_ACTION, COLUMN_EXPIRATION,
-COLUMN_PATH, COLUMN_REMOVE, COLUMN_USERMATCH, COLUMN_ERROR };
+COLUMN_PATH, COLUMN_REMOVE, COLUMN_USERMATCH, COLUMN_ERROR, COLUMN_PRIORITY };
 
-int AutoSearchFrame::columnSizes[] = { 300, 125, 150, 125, 500, 100, 100, 300, 100, 200, 300 };
+int AutoSearchFrame::columnSizes[] = { 300, 125, 150, 125, 500, 100, 100, 300, 100, 200, 300, 125 };
 static ResourceManager::Strings columnNames[] = { ResourceManager::SETTINGS_VALUE, ResourceManager::TYPE, ResourceManager::SEARCHING_STATUS, ResourceManager::LAST_SEARCH, 
-ResourceManager::BUNDLES, ResourceManager::ACTION, ResourceManager::EXPIRATION, ResourceManager::PATH, ResourceManager::AUTO_REMOVE, ResourceManager::USER_MATCH, ResourceManager::LAST_ERROR };
+ResourceManager::BUNDLES, ResourceManager::ACTION, ResourceManager::EXPIRATION, ResourceManager::PATH, ResourceManager::AUTO_REMOVE, ResourceManager::USER_MATCH, ResourceManager::LAST_ERROR, ResourceManager::PRIORITY };
 
 string AutoSearchFrame::id = "AutoSearch";
 
@@ -522,7 +522,7 @@ LRESULT AutoSearchFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	createPages(dlg, options);
 
 	if (dlg.DoModal() == IDOK) {
-		SettingsManager::getInstance()->set(SettingsManager::LAST_AS_FILETYPE, options.fileTypeStr);
+		SettingsManager::getInstance()->set(SettingsManager::LAST_AS_FILETYPE, options.fileTypeId);
 		addFromDialog(options);
 	}
 	return 0;
@@ -694,6 +694,7 @@ void AutoSearchFrame::ItemInfo::update(const AutoSearchPtr& as) {
 	columns[COLUMN_REMOVE] = as->getRemove() ? TSTRING(YES) : TSTRING(NO);
 	columns[COLUMN_PATH] = Text::toT(target);
 	columns[COLUMN_USERMATCH] = Text::toT(as->getNickPattern());
+	columns[COLUMN_PRIORITY] = Text::toT(AirUtil::getPrioText(as->getPriority()) + (as->isRecent() ? " ( " + STRING(RECENT) + " )" : ""));
 
 	setGroupId(AutoSearchManager::getInstance()->getGroupIndex(as));
 

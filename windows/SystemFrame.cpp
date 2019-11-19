@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -442,8 +442,7 @@ LRESULT SystemFrame::onDeleteFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	string msg = STRING_F(DELETE_FILE_CONFIRM, path);
 	if(WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_FILE_DELETIONS, Text::toT(msg))) {
 		MainFrame::getMainFrame()->addThreadedTask([=] { 
-			if (File::deleteFileEx(path, 3))
-				ShareManager::getInstance()->removeTempShare(path); 
+			File::deleteFileEx(path, 3);
 		});
 	}
 
