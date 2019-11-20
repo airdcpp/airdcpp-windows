@@ -75,7 +75,7 @@ public:
 	}
 
 
-	void addConfigItem(webserver::ServerSettingItem& aSetting) {
+	void addConfigItem(webserver::ExtensionSettingItem& aSetting) {
 		auto item = ConfigUtil::getConfigItem(aSetting);
 		if(item)
 			configs.emplace_back(item);

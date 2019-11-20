@@ -26,7 +26,7 @@
 
 using namespace webserver;
 
-shared_ptr<ConfigUtil::ConfigIem> ConfigUtil::getConfigItem(ServerSettingItem& aSetting) {
+shared_ptr<ConfigUtil::ConfigIem> ConfigUtil::getConfigItem(ExtensionSettingItem& aSetting) {
 	auto aType = aSetting.type;
 
 	if (aType == ApiSettingItem::TYPE_STRING)

@@ -39,7 +39,7 @@ class ConfigUtil {
 public:
 
 	struct ConfigIem {
-		ConfigIem(ServerSettingItem& aSetting) : setting(aSetting) {}
+		ConfigIem(ExtensionSettingItem& aSetting) : setting(aSetting) {}
 
 		string getId() const {
 			return setting.name;
@@ -49,7 +49,7 @@ public:
 		}
 		
 
-		ServerSettingItem& setting;
+		ExtensionSettingItem& setting;
 
 		virtual void Create(HWND m_hWnd) = 0;
 		virtual int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing) = 0;
@@ -61,12 +61,12 @@ public:
 
 	};
 
-	static shared_ptr<ConfigIem> getConfigItem(ServerSettingItem& aSetting);
+	static shared_ptr<ConfigIem> getConfigItem(ExtensionSettingItem& aSetting);
 
 	//Combines CStatic as setting label and CEdit as setting field
 	struct StringConfigItem : public ConfigIem {
 
-		StringConfigItem(ServerSettingItem& aSetting) : ConfigIem(aSetting) {}
+		StringConfigItem(ExtensionSettingItem& aSetting) : ConfigIem(aSetting) {}
 
 		//todo handle errors
 		bool write() {
@@ -89,7 +89,7 @@ public:
 	//CheckBox type config
 	struct BoolConfigItem : public ConfigIem {
 
-		BoolConfigItem(ServerSettingItem& aSetting) : ConfigIem(aSetting) {}
+		BoolConfigItem(ExtensionSettingItem& aSetting) : ConfigIem(aSetting) {}
 
 
 		//todo handle errors
@@ -112,7 +112,7 @@ public:
 	//Extends StringConfigItem by adding a browse button after CEdit field
 	struct BrowseConfigItem : public StringConfigItem {
 
-		BrowseConfigItem(ServerSettingItem& aSetting) : StringConfigItem(aSetting) {}
+		BrowseConfigItem(ExtensionSettingItem& aSetting) : StringConfigItem(aSetting) {}
 
 		void Create(HWND m_hWnd);
 		int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing);
@@ -127,7 +127,7 @@ public:
 	//Combines CStatic as setting label and CEdit as setting field with spin control
 	struct IntConfigItem : public ConfigIem {
 
-		IntConfigItem(ServerSettingItem& aSetting) : ConfigIem(aSetting) {}
+		IntConfigItem(ExtensionSettingItem& aSetting) : ConfigIem(aSetting) {}
 
 		//todo handle errors
 		bool write() {

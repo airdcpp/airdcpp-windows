@@ -95,14 +95,14 @@ LRESULT ExtensionsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 			if (!ii->item) {
 				menu.appendItem(TSTRING(INSTALL), [=] { downloadExtensionInfo(ii); });
 			} else {
-				/*if (!ii->item->isRunning())
+				if (!ii->item->isRunning())
 					menu.appendItem(TSTRING(START), [=] { onStartExtension(ii); });
 				else
 					menu.appendItem(TSTRING(STOP), [=] { onStopExtension(ii); });
 
-				menu.appendSeparator();*/
+				menu.appendSeparator();
 				menu.appendItem(TSTRING(REMOVE), [=] { onRemoveExtension(ii); });
-				if(ii->item->hasSettings())
+				//if(ii->item->hasSettings())
 					menu.appendItem(TSTRING(SETTINGS_CHANGE), [=] { onConfigExtension(ii); });
 			}
 			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
@@ -137,11 +137,16 @@ void ExtensionsFrame::updateEntry(const ItemInfo* ii) {
 }
 
 void ExtensionsFrame::onStopExtension(const ItemInfo* ii) {
+
+	ii->item->stop();
 	//getExtensionManager().stopExtension(ii->item);
 	updateEntry(ii);
 }
 
 void ExtensionsFrame::onStartExtension(const ItemInfo* ii) {
+
+	auto wsm = WebServerManager::getInstance();
+	ii->item->start(getExtensionManager().getStartCommand(ii->item->getEngines()), wsm);
 	//getExtensionManager().startExtension(ii->item);
 	updateEntry(ii);
 }
@@ -162,7 +167,7 @@ void ExtensionsFrame::onConfigExtension(const ItemInfo* ii) {
 	webserver::SettingValueMap values;
 	if (dlg.DoModal() == IDOK) {
 		for (auto& s : settings) {
-			if (s.getDefaultValue() != s.getValue())
+			//if (s.getDefaultValue(). != s.getValue())
 				values.emplace(s.name, s.getValue());
 		}
 		ii->item->setSettingValues(values);
