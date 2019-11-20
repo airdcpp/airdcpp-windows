@@ -515,7 +515,6 @@ void SearchFrame::onEnter() {
 	if (ctrlSearchBox.GetCount())
 		ctrlSearchBox.SetCurSel(0);
 	SetWindowText((TSTRING(SEARCH) + _T(" - ") + target).c_str());
-	initialString = target;
 	
 	// stop old search
 	ClientManager::getInstance()->cancelSearch((void*)this);	
@@ -542,9 +541,10 @@ void SearchFrame::onEnter() {
 	}
 	ctrlStatus.SetText(1, 0, SBT_OWNERDRAW);
 
-	if (initialString.empty() && typeId != SETTING(LAST_SEARCH_FILETYPE))
+	if (initialString.empty() && (typeId != SETTING(LAST_SEARCH_FILETYPE)))
 		SettingsManager::getInstance()->set(SettingsManager::LAST_SEARCH_FILETYPE, typeId);
 
+	initialString = target;
 	// perform the search
 	auto newSearch = SearchQuery::getSearch(s);
 	if (newSearch) {
