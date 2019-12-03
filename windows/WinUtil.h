@@ -54,62 +54,6 @@ namespace dcpp {
 	class WebShortcut;
 }
 
-template<class T, int title, int ID = -1>
-class StaticFrame {
-public:
-	virtual ~StaticFrame() { 
-		frame = NULL; 
-	}
-
-	static T* frame;
-	static void openWindow() {
-		if(frame == NULL) {
-			frame = new T();
-			frame->CreateEx(WinUtil::mdiClient, frame->rcDefault, CTSTRING_I(ResourceManager::Strings(title)));
-			WinUtil::setButtonPressed(ID, true);
-		} else {
-			// match the behavior of MainFrame::onSelected()
-			HWND hWnd = frame->m_hWnd;
-			if(isMDIChildActive(hWnd)) {
-				::PostMessage(hWnd, WM_CLOSE, NULL, NULL);
-			} else if(frame->MDIGetActive() != hWnd) {
-				MainFrame::getMainFrame()->MDIActivate(hWnd);
-				WinUtil::setButtonPressed(ID, true);
-			} else if(SETTING(TOGGLE_ACTIVE_WINDOW)) {
-				::SetWindowPos(hWnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
-				frame->MDINext(hWnd);
-				hWnd = frame->MDIGetActive();
-				WinUtil::setButtonPressed(ID, true);
-			}
-			if(::IsIconic(hWnd))
-				::ShowWindow(hWnd, SW_RESTORE);
-		}
-	}
-	static bool isMDIChildActive(HWND hWnd) {
-		HWND wnd = MainFrame::getMainFrame()->MDIGetActive();
-		dcassert(wnd != NULL);
-		return (hWnd == wnd);
-	}
-
-	static bool parseWindowParams(StringMap& params) {
-		if (params["id"] == T::id) {
-			MainFrame::getMainFrame()->callAsync([=] { T::openWindow(); });
-			return true;
-		}
-		return false;
-	}
-
-	static bool getWindowParams(HWND hWnd, StringMap& params) {
-		if (frame != NULL && hWnd == frame->m_hWnd) {
-			params["id"] = T::id;
-			return true;
-		}
-		return false;
-	}
-};
-
-template<class T, int title, int ID> T* StaticFrame<T, title, ID>::frame = NULL;
-
 struct toolbarButton {
 	int id, image;
 	int nIcon;

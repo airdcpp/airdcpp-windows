@@ -31,7 +31,7 @@
 #include "RichTextBox.h"
 #include "ResourceLoader.h"
 #include "ExCImage.h"
-#include "FlatTabCtrl.h"
+#include "StaticFrame.h"
 
 
 #define EDIT_MESSAGE_MAP 10		// This could be any number, really...

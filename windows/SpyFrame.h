@@ -26,7 +26,7 @@
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/TimerManagerListener.h>
 
-#include "FlatTabCtrl.h"
+#include "StaticFrame.h"
 #include "ExListViewCtrl.h"
 
 #define IGNORETTH_MESSAGE_MAP 7

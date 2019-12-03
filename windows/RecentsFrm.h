@@ -22,7 +22,7 @@
 #pragma once
 
 #include "Async.h"
-#include "FlatTabCtrl.h"
+#include "StaticFrame.h"
 #include "FilteredListViewCtrl.h"
 
 #include <airdcpp/RecentManager.h>

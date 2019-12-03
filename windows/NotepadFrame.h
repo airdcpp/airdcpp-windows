@@ -23,7 +23,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include "FlatTabCtrl.h"
+#include "StaticFrame.h"
 
 #define NOTEPAD_MESSAGE_MAP 13
 

@@ -845,6 +845,9 @@
     <ClInclude Include="windows\UserUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="windows\StaticFrame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\AutoSearch\Collecting.ico">

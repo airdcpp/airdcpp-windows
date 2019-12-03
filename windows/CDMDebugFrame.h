@@ -14,7 +14,7 @@
 #define CLEAR_MESSAGE_MAP 20
 #define API_COMMAND_MESSAGE_MAP 21
 
-#include "FlatTabCtrl.h"
+#include "StaticFrame.h"
 
 #include <airdcpp/DebugManager.h>
 #include <airdcpp-webapi/web-server/WebServerManagerListener.h>
