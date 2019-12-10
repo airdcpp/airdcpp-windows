@@ -2997,7 +2997,7 @@ void ShareManager::validatePath(const string& aRealPath, bool aSkipQueueCheck) c
 			throw ShareException(STRING(DIRECTORY_NOT_FOUND));
 		}
 
-		if (tokens.empty()) {
+		if (!isDirectoryPath && tokens.empty()) {
 			auto i = baseDirectory->files.find(Text::toLower(Util::getFileName(aRealPath)));
 			isFileShared = i != baseDirectory->files.end();
 		}
