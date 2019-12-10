@@ -2993,6 +2993,9 @@ void ShareManager::validatePath(const string& aRealPath, bool aSkipQueueCheck) c
 	{
 		RLock l(cs);
 		baseDirectory = findDirectory(!isDirectoryPath ? Util::getFilePath(aRealPath) : aRealPath, tokens);
+		if (!baseDirectory) {
+			throw ShareException(STRING(DIRECTORY_NOT_FOUND));
+		}
 
 		if (tokens.empty()) {
 			auto i = baseDirectory->files.find(Text::toLower(Util::getFileName(aRealPath)));
@@ -3000,9 +3003,6 @@ void ShareManager::validatePath(const string& aRealPath, bool aSkipQueueCheck) c
 		}
 	}
 
-	if (!baseDirectory) {
-		throw ShareException(STRING(DIRECTORY_NOT_FOUND));
-	}
 
 	// Validate missing directory path tokens
 	validator->validateDirectoryPathTokens(baseDirectory->getRealPath(), tokens, aSkipQueueCheck);
