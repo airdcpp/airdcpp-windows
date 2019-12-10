@@ -1099,7 +1099,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 		menu.appendItem(TSTRING(ADD_AUTO_SEARCH_DIR), [this] { handleAddAutoSearchDir(); });
 
 		auto path = Text::fromT(selectedWord);
-		if (path.back() != PATH_SEPARATOR) {
+		if (!Util::isDirectoryPath(path)) {
 			menu.appendSeparator();
 			menu.appendItem(TSTRING(SEARCH_FILENAME), [this] { handleSearch(); });
 			if (Util::fileExists(path)) {
@@ -1146,7 +1146,7 @@ void RichTextBox::handleAddAutoSearchFile() {
 
 void RichTextBox::handleAddAutoSearchDir() {
 	string targetPath = Util::getParentDir(Text::fromT(selectedWord), PATH_SEPARATOR, true);
-	string dirName = Util::getLastDir(selectedWord[selectedWord.length()-1] != PATH_SEPARATOR ? Util::getFilePath(Text::fromT(selectedWord)) : Text::fromT(selectedWord));
+	string dirName = Util::getLastDir(!Util::isDirectoryPath(selectedWord) ? Util::getFilePath(Text::fromT(selectedWord)) : Text::fromT(selectedWord));
 
 	AutoSearchManager::getInstance()->addAutoSearch(dirName, targetPath, true, AutoSearch::CHAT_DOWNLOAD, true);
 
@@ -1305,7 +1305,7 @@ void RichTextBox::handleDownload(const string& aTarget, Priority p, bool aIsRele
 				return;
 		}
 
-		WinUtil::addFileDownload(aTarget + (aTarget[aTarget.length() - 1] != PATH_SEPARATOR ? Util::emptyString : m.fname), m.fsize, m.getTTH(), u, 0, pmUser ? QueueItem::FLAG_PRIVATE : 0, p);
+		WinUtil::addFileDownload((!Util::isDirectoryPath(aTarget) ? Util::emptyString : m.fname), m.fsize, m.getTTH(), u, 0, pmUser ? QueueItem::FLAG_PRIVATE : 0, p);
 	} else {
 		AutoSearchManager::getInstance()->addAutoSearch(Text::fromT(selectedWord), aTarget, true, AutoSearch::CHAT_DOWNLOAD);
 	}

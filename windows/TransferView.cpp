@@ -860,7 +860,7 @@ const tstring TransferView::ItemInfo::getText(uint8_t col) const {
 			return (status == STATUS_RUNNING) ? (Util::formatBytesW(speed) + _T("/s")) : Util::emptyStringT;
 		case COLUMN_FILE:
 			if (isBundle) {
-				if (!target.empty() && target.back() == PATH_SEPARATOR) {
+				if (Util::isDirectoryPath(target)) {
 					return Util::getLastDir(target); //directory bundle
 				}
 

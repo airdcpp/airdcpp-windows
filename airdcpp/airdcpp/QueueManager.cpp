@@ -507,7 +507,7 @@ bool QueueManager::hasDownloadedBytes(const string& aTarget) {
 }
 
 QueueItemPtr QueueManager::addList(const HintedUser& aUser, Flags::MaskType aFlags, const string& aInitialDir /* = ADC_ROOT */, const BundlePtr& aBundle /*nullptr*/) {
-	if (!Util::isAdcPath(aInitialDir)) {
+	if (!Util::isAdcDirectoryPath(aInitialDir)) {
 		throw QueueException(STRING_F(INVALID_PATH, aInitialDir));
 	}
 

@@ -113,7 +113,7 @@ void ShareScannerManager::runSfvCheck(const StringList& rootPaths) {
 	SFVScanList sfvDirPaths;
 	StringList sfvFilePaths;
 	for (auto& path : rootPaths) {
-		if (path.back() == PATH_SEPARATOR) {
+		if (Util::isDirectoryPath(path)) {
 			prepareSFVScanDir(path, sfvDirPaths);
 		} else {
 			prepareSFVScanFile(path, sfvFilePaths);

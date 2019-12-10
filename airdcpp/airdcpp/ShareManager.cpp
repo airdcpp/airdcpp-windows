@@ -644,7 +644,7 @@ bool ShareManager::isRealPathShared(const string& aPath) const noexcept {
 	RLock l (cs);
 	auto d = findDirectory(Util::getFilePath(aPath));
 	if (d) {
-		if (!aPath.empty() && aPath.back() == PATH_SEPARATOR) {
+		if (Util::isDirectoryPath(aPath)) {
 			// It's a directory
 			return true;
 		}
@@ -667,7 +667,7 @@ string ShareManager::realToVirtualAdc(const string& aPath, const OptionalProfile
 	}
 
 	auto vPathAdc = d->getAdcPath();
-	if (aPath.back() == PATH_SEPARATOR) {
+	if (Util::isDirectoryPath(aPath)) {
 		// Directory
 		return vPathAdc;
 	}

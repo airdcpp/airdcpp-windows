@@ -1557,7 +1557,7 @@ void DirectoryListingFrame::handleItemAction(bool usingTree, std::function<void 
 void DirectoryListingFrame::handleDownload(const string& aTarget, Priority aPriority, bool aUsingTree) {
 	handleItemAction(aUsingTree, [&](const ItemInfo* ii) {
 		if (ii->type == ItemInfo::FILE) {
-			WinUtil::addFileDownload(aTarget + (aTarget[aTarget.length() - 1] != PATH_SEPARATOR ? Util::emptyString : ii->getName()), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), ii->file->getRemoteDate(),
+			WinUtil::addFileDownload(aTarget + (!Util::isDirectoryPath(aTarget) ? Util::emptyString : ii->getName()), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), ii->file->getRemoteDate(),
 				0, aPriority);
 		} else {
 			dl->addAsyncTask([=] {
