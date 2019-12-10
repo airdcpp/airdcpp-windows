@@ -262,14 +262,7 @@ public:
 	static bool isAdcDirectoryPath(const string& aPath) noexcept;
 	static bool isAdcRoot(const string& aPath) noexcept;
 
-	static inline string validatePath(const string& aPath, bool aRequireEndSeparator = false) noexcept {
-		auto path = cleanPathChars(aPath, false);
-		if (aRequireEndSeparator) {
-			path = Util::ensureTrailingSlash(path);
-		}
-
-		return path; 
-	}
+	static string validatePath(const string& aPath, bool aRequireEndSeparator = false) noexcept;
 	static inline string validateFileName(const string& aFileName) noexcept { return cleanPathChars(aFileName, true); }
 	static string cleanPathSeparators(const string& str) noexcept;
 	static bool checkExtension(const string& tmp) noexcept;

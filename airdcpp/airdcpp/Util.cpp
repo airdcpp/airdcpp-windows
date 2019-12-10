@@ -1504,11 +1504,20 @@ string Util::joinDirectory(const string& aPath, const string& aDirectoryName, co
 }
 
 string Util::ensureTrailingSlash(const string& aPath, const char aSeparator) noexcept {
-	if (!isDirectoryPath(aPath, aSeparator)) {
+	if (!aPath.empty() && !isDirectoryPath(aPath, aSeparator)) {
 		return aPath + aSeparator;
 	}
 
 	return aPath;
+}
+
+string Util::validatePath(const string& aPath, bool aRequireEndSeparator) noexcept {
+	auto path = cleanPathChars(aPath, false);
+	if (aRequireEndSeparator) {
+		path = Util::ensureTrailingSlash(path);
+	}
+
+	return path;
 }
 
 wstring Util::getFilePath(const wstring& path) noexcept {
