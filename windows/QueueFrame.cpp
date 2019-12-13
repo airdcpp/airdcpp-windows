@@ -1503,9 +1503,7 @@ void QueueFrame::QueueItemInfo::getChildQueueItems(QueueItemList& ret) {
 QueueFrame::QueueItemInfoPtr QueueFrame::QueueItemInfo::findChild(const string& aKey) {
 	string::size_type i = 0, j = 0;
 
-	string itemTarget = getTarget();
-	if (itemTarget[itemTarget.length() - 1] != PATH_SEPARATOR)
-		itemTarget += PATH_SEPARATOR;
+	string itemTarget = Util::ensureTrailingSlash(getTarget());
 
 	string tmp = aKey.substr(itemTarget.size());
 
@@ -1517,7 +1515,7 @@ QueueFrame::QueueItemInfoPtr QueueFrame::QueueItemInfo::findChild(const string& 
 		j = i + 1;
 	}
 
-	if (aKey[aKey.length() - 1] == PATH_SEPARATOR) //its a Directory
+	if (Util::isDirectoryPath(aKey))
 		return dir;
 
 	auto ret = dir->children.find(aKey);
@@ -1528,9 +1526,7 @@ QueueFrame::QueueItemInfoPtr QueueFrame::QueueItemInfo::findChild(const string& 
 }
 
 QueueFrame::QueueItemInfoPtr QueueFrame::QueueItemInfo::addChild(const QueueItemPtr& aQI) {
-	string itemTarget = getTarget();
-	if (itemTarget[itemTarget.length() - 1] != PATH_SEPARATOR)
-		itemTarget += PATH_SEPARATOR;
+	string itemTarget = Util::ensureTrailingSlash(getTarget());
 	
 	string tmp = aQI->getTarget().substr(itemTarget.size());
 

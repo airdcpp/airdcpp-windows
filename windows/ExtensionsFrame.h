@@ -23,7 +23,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include "FlatTabCtrl.h"
+#include "StaticFrame.h"
 #include "TypedListViewCtrl.h"
 #include "Async.h"
 

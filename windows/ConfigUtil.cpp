@@ -41,6 +41,7 @@ shared_ptr<ConfigUtil::ConfigIem> ConfigUtil::getConfigItem(ExtensionSettingItem
 	if (aType == ApiSettingItem::TYPE_FILE_PATH || aType == ApiSettingItem::TYPE_DIRECTORY_PATH)
 		return make_shared<ConfigUtil::BrowseConfigItem>(aSetting);
 
+
 	return nullptr;
 }
 
@@ -170,11 +171,11 @@ void ConfigUtil::IntConfigItem::setLabel() {
 
 void ConfigUtil::IntConfigItem::Create(HWND m_hWnd) {
 	RECT rcDefault = { 0,0,0,0 };
-	ctrlLabel.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | SS_RIGHT, NULL);
+	ctrlLabel.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | SS_LEFT, NULL);
 	ctrlLabel.SetFont(WinUtil::systemFont);
 	ctrlLabel.SetWindowText(Text::toT(getLabel()).c_str());
 
-	ctrlEdit.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | ES_NUMBER, WS_EX_CLIENTEDGE);
+	ctrlEdit.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | ES_NUMBER | ES_RIGHT, WS_EX_CLIENTEDGE);
 	ctrlEdit.SetFont(WinUtil::systemFont);
 	ctrlEdit.SetWindowText(Text::toT(Util::toString(JsonUtil::parseValue<int>(setting.name, setting.getValue()))).c_str());
 	ctrlEdit.SetWindowLongPtr(GWL_EXSTYLE, ctrlEdit.GetWindowLongPtr(GWL_EXSTYLE) & ~WS_EX_NOPARENTNOTIFY);
@@ -187,20 +188,23 @@ void ConfigUtil::IntConfigItem::Create(HWND m_hWnd) {
 }
 
 int ConfigUtil::IntConfigItem::updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing) {
-	//CStatic
+	
 	CRect rc = calculateItemPosition(m_hWnd, aPrevConfigBottomMargin, aConfigSpacing);
-	rc.right -= 200;
+
+	//CStatic
+	rc.right = rc.left + WinUtil::getTextWidth(Text::toT(getLabel()), ctrlLabel.m_hWnd) +1;
 	ctrlLabel.MoveWindow(rc);
 
+	rc.left = rc.right;
+
 	//CEdit
-	rc.left = rc.right + 2;
-	rc.right += 30;
+	rc.right = rc.left + max(WinUtil::getTextWidth(Text::toT(Util::toString(setting.getMinMax().max)), ctrlEdit.m_hWnd), 30);
 	int height = max(WinUtil::getTextHeight(m_hWnd, WinUtil::systemFont) + 5, 22);
 	rc.top = rc.bottom - (rc.bottom - rc.top) / 2 - height / 2;
 	rc.bottom = rc.top + height;
-	 
 	ctrlEdit.MoveWindow(rc);
 
+	//spin
 	rc.left = rc.right - 1;
 	rc.right += 20;
 	spin.MoveWindow(rc);

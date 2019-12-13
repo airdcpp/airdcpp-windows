@@ -574,6 +574,7 @@
     <ClInclude Include="windows\FavHubOptionsPage.h" />
     <ClInclude Include="windows\ResizeableDialog.h" />
     <ClInclude Include="windows\RssFilterPage.h" />
+    <ClInclude Include="windows\StaticFrame.h" />
     <ClInclude Include="windows\TabbedDialog.h" />
     <ClInclude Include="windows\AutosearchParams.h" />
     <ClInclude Include="windows\AutosearchSearchTimesPage.h" />

@@ -21,10 +21,11 @@
 #define QUEUE_FRAME_H
 
 #include "Async.h"
-#include "FlatTabCtrl.h"
+#include "StaticFrame.h"
 #include "TypedListViewCtrl.h"
 #include "FilteredListViewCtrl.h"
 #include "BrowserBar.h"
+#include "PrivateFrame.h"
 
 #include <airdcpp/Bundle.h>
 #include <airdcpp/DownloadManagerListener.h>

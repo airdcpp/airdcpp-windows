@@ -345,7 +345,7 @@ LRESULT SystemFrame::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 		menu.AppendMenu(MF_SEPARATOR);
 		menu.AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
 		menu.AppendMenu(MF_STRING, IDC_ADD_AUTO_SEARCH_DIR, CTSTRING(ADD_AUTO_SEARCH_DIR));
-		if (selWord[selWord.length() - 1] != PATH_SEPARATOR) {
+		if (!Util::isDirectoryPath(selWord)) {
 			menu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH_FILENAME));
 			auto path = Text::fromT(selWord);
 			if (Util::fileExists(path)) {
@@ -464,7 +464,7 @@ LRESULT SystemFrame::onAddAutoSearchFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 
 LRESULT SystemFrame::onAddAutoSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	auto targetPath = Util::getParentDir(Text::fromT(selWord), PATH_SEPARATOR, true);
-	auto dirName = Util::getLastDir(selWord[selWord.length() - 1] != PATH_SEPARATOR ? Util::getFilePath(Text::fromT(selWord)) : Text::fromT(selWord));
+	auto dirName = Util::getLastDir(!Util::isDirectoryPath(selWord) ? Util::getFilePath(Text::fromT(selWord)) : Text::fromT(selWord));
 
 	AutoSearchManager::getInstance()->addAutoSearch(dirName, targetPath, true, AutoSearch::CHAT_DOWNLOAD, true);
 

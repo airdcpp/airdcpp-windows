@@ -20,6 +20,10 @@
 #define BROWSERBAR_H
 
 #include "stdafx.h"
+
+#include "ResourceLoader.h"
+
+
 #define HISTORY_MSG_MAP 9
 
 struct tButton {

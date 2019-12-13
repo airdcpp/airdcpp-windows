@@ -24,7 +24,7 @@
 #endif // _MSC_VER > 1000
 
 #include "Async.h"
-#include "FlatTabCtrl.h"
+#include "StaticFrame.h"
 #include "WinUtil.h"
 #include "FilteredListViewCtrl.h"
 #include "RssFeedsPage.h"

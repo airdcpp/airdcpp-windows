@@ -102,7 +102,7 @@ LRESULT ExtensionsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 
 				menu.appendSeparator();
 				menu.appendItem(TSTRING(REMOVE), [=] { onRemoveExtension(ii); });
-				//if(ii->item->hasSettings())
+				if(ii->item->hasSettings())
 					menu.appendItem(TSTRING(SETTINGS_CHANGE), [=] { onConfigExtension(ii); });
 			}
 			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
