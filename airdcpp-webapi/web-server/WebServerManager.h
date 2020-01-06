@@ -158,15 +158,7 @@ namespace webserver {
 			}
 
 			onData(msg->get_payload(), TransportType::TYPE_SOCKET, Direction::INCOMING, socket->getIp());
-
-			// Messages received from each socket will always use the same thread
-			// This will also help with hooks getting timed out when they are being run and
-			// resolved by the same socket
-			// TODO: use different threads for handling requests that involve running of hooks
-			addAsyncTask([=] {
-				auto s = socket;
-				api.handleSocketRequest(msg->get_payload(), s, aIsSecure); 
-			});
+			api.handleSocketRequest(msg->get_payload(), socket, aIsSecure);
 		}
 
 
@@ -345,7 +337,8 @@ namespace webserver {
 		server_plain endpoint_plain;
 		server_tls endpoint_tls;
 
-		boost::thread_group worker_threads;
+		unique_ptr<boost::thread_group> ios_threads;
+		unique_ptr<boost::asio::thread_pool> task_threads;
 
 		CallBack shutdownF;
 		bool isDirty = false;

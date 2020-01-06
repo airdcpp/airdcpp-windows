@@ -239,9 +239,12 @@ namespace webserver {
 			return false;
 		}
 
+		task_threads = make_unique<boost::asio::thread_pool>(std::max(WEBCFG(SERVER_THREADS).num() / 2, 1));
+		ios_threads = make_unique<boost::thread_group>();
+
 		// Start the ASIO io_service run loop running both endpoints
 		for (int x = 0; x < WEBCFG(SERVER_THREADS).num(); ++x) {
-			worker_threads.create_thread(boost::bind(&boost::asio::io_service::run, &ios));
+			ios_threads->create_thread(boost::bind(&boost::asio::io_service::run, &ios));
 		}
 
 		// Add timers
@@ -398,7 +401,11 @@ namespace webserver {
 
 		ios.stop();
 
-		worker_threads.join_all();
+		task_threads->join();
+		ios_threads->join_all();
+
+		task_threads.reset();
+		ios_threads.reset();
 
 		fire(WebServerManagerListener::Stopped());
 	}
@@ -417,7 +424,8 @@ namespace webserver {
 	}
 
 	void WebServerManager::addAsyncTask(CallBack&& aCallBack) noexcept {
-		ios.post(aCallBack);
+		// ios.post(aCallBack);
+		boost::asio::post(*task_threads, aCallBack);
 	}
 
 	void WebServerManager::setDirty() noexcept {
