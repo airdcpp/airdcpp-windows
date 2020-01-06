@@ -1305,7 +1305,7 @@ void RichTextBox::handleDownload(const string& aTarget, Priority p, bool aIsRele
 				return;
 		}
 
-		WinUtil::addFileDownload((!Util::isDirectoryPath(aTarget) ? Util::emptyString : m.fname), m.fsize, m.getTTH(), u, 0, pmUser ? QueueItem::FLAG_PRIVATE : 0, p);
+		WinUtil::addFileDownload(aTarget + (!Util::isDirectoryPath(aTarget) ? Util::emptyString : m.fname), m.fsize, m.getTTH(), u, 0, pmUser ? QueueItem::FLAG_PRIVATE : 0, p);
 	} else {
 		AutoSearchManager::getInstance()->addAutoSearch(Text::fromT(selectedWord), aTarget, true, AutoSearch::CHAT_DOWNLOAD);
 	}
