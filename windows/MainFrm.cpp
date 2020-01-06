@@ -1826,7 +1826,7 @@ void MainFrame::on(QueueManagerListener::ItemFinished, const QueueItemPtr& qi, c
 	}
 
 	if (qi->isSet(QueueItem::FLAG_OPEN)) {
-		addThreadedTask([=] { WinUtil::openFile(Text::toT(qi->getTarget())); });
+		WinUtil::openFile(Text::toT(qi->getTarget()));
 	}
 }
 

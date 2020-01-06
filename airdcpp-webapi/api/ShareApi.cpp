@@ -289,12 +289,7 @@ namespace webserver {
 
 	api_return ShareApi::handleRefreshPaths(ApiRequest& aRequest) {
 		auto paths = JsonUtil::getField<StringList>("paths", aRequest.getRequestBody(), false);
-
-		auto ret = ShareManager::getInstance()->refreshPaths(paths);
-		if (ret == ShareManager::RefreshResult::REFRESH_PATH_NOT_FOUND) {
-			aRequest.setResponseErrorStr("Invalid paths were supplied");
-			return websocketpp::http::status_code::bad_request;
-		}
+		ShareManager::getInstance()->refreshPaths(paths);
 
 		return websocketpp::http::status_code::no_content;
 	}
@@ -367,7 +362,7 @@ namespace webserver {
 		const auto complete = aRequest.defer();
 		addAsyncTask([=] {
 			try {
-				ShareManager::getInstance()->validatePath(path, skipCheckQueue);
+				ShareManager::getInstance()->validatePathHooked(path, skipCheckQueue);
 			} catch (const QueueException& e) {
 				complete(websocketpp::http::status_code::conflict, nullptr, ApiRequest::toResponseErrorStr(e.getError()));
 				return;

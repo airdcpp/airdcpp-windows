@@ -1477,7 +1477,7 @@ LRESULT RichTextBox::onBanIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 		tstring s = _T("!banip ") + selectedIP;
 
 		string error;
-		client->sendMessage(Text::fromT(s), error);
+		client->sendMessageHooked(Text::fromT(s), error);
 	}
 	SetSelNone();
 	return 0;
@@ -1488,7 +1488,7 @@ LRESULT RichTextBox::onUnBanIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 		tstring s = _T("!unban ") + selectedIP;
 
 		string error;
-		client->sendMessage(Text::fromT(s), error);
+		client->sendMessageHooked(Text::fromT(s), error);
 	}
 	SetSelNone();
 	return 0;

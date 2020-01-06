@@ -108,7 +108,7 @@ namespace webserver {
 			string lastError;
 			for (const auto& url: hubs) {
 				auto c = ClientManager::getInstance()->getClient(url);
-				if (c && c->isConnected() && c->sendMessage(message.first, lastError, message.second)) {
+				if (c && c->isConnected() && c->sendMessageHooked(message.first, lastError, message.second)) {
 					succeed++;
 				}
 			}

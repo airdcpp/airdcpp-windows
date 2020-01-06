@@ -218,8 +218,8 @@ HubFrame::HubFrame(const tstring& aServer) :
 	memset(statusSizes, 0, sizeof(statusSizes));
 }
 
-bool HubFrame::sendMessage(const tstring& aMessage, string& error_, bool isThirdPerson) {
-	return client->sendMessage(Text::fromT(aMessage), error_, isThirdPerson);
+bool HubFrame::sendMessageHooked(const tstring& aMessage, string& error_, bool isThirdPerson) {
+	return client->sendMessageHooked(Text::fromT(aMessage), error_, isThirdPerson);
 }
 
 bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*message*/, tstring& status, bool& /*thirdPerson*/) {	

@@ -120,7 +120,7 @@ namespace webserver {
 		const auto complete = aRequest.defer();
 		addAsyncTask([=] {
 			string error_;
-			if (!ClientManager::getInstance()->privateMessage(user, message.first, error_, message.second, echo)) {
+			if (!ClientManager::getInstance()->privateMessageHooked(user, message.first, error_, message.second, echo)) {
 				complete(websocketpp::http::status_code::internal_server_error, nullptr, ApiRequest::toResponseErrorStr(error_));
 			} else {
 				complete(websocketpp::http::status_code::no_content, nullptr, nullptr);

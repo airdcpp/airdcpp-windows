@@ -547,16 +547,17 @@ LRESULT ChatFrameBase::onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	return 0;
 }
 
-bool ChatFrameBase::sendFrameMessage(const tstring& aMsg, bool thirdPerson /*false*/) {
+void ChatFrameBase::sendFrameMessage(const tstring& aMsg, bool aThirdPerson /*false*/) {
 	if (!aMsg.empty()) {
-		string error;
-		if (sendMessage(aMsg, error, thirdPerson)) {
-			return true;
-		} else if (!error.empty()) {
-			addStatusLine(Text::toT(error),  LogMessage::SEV_ERROR);
-		}
+		MainFrame::getMainFrame()->addThreadedTask([=] {
+			string error;
+			if (!sendMessageHooked(aMsg, error, aThirdPerson)) {
+				callAsync([=] { 
+					addStatusLine(Text::toT(error), LogMessage::SEV_ERROR); 
+				});
+			}
+		});
 	}
-	return false;
 }
 
 void ChatFrameBase::appendTextLine(const tstring& aText, bool addSpace) {
