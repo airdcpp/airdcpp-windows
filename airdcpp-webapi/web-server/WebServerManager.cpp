@@ -43,7 +43,9 @@
 namespace webserver {
 	using namespace dcpp;
 	WebServerManager::WebServerManager() : 
-		ios(settings.getValue(WebServerSettings::SERVER_THREADS).getDefaultValue()),
+		ios(BOOST_ASIO_CONCURRENCY_HINT_SAFE),
+		tasks(BOOST_ASIO_CONCURRENCY_HINT_SAFE),
+		work(tasks),
 		plainServerConfig(settings.getValue(WebServerSettings::PLAIN_PORT), settings.getValue(WebServerSettings::PLAIN_BIND)),
 		tlsServerConfig(settings.getValue(WebServerSettings::TLS_PORT), settings.getValue(WebServerSettings::TLS_BIND))
 	{
@@ -53,7 +55,8 @@ namespace webserver {
 		extManager = make_unique<ExtensionManager>(this);
 		userManager = make_unique<WebUserManager>(this);
 
-		ios.stop(); //Prevent io service from running until we load
+		// Prevent io service from running until we load
+		ios.stop();
 	}
 
 	WebServerManager::~WebServerManager() {
@@ -67,7 +70,7 @@ namespace webserver {
 	}
 
 	bool WebServerManager::isRunning() const noexcept {
-		return !ios.stopped();
+		return !ios.stopped() || !tasks.stopped();
 	}
 
 #if defined _MSC_VER && defined _DEBUG
@@ -144,6 +147,7 @@ namespace webserver {
 		}
 
 		ios.reset();
+		tasks.reset();
 		if (!has_io_service) {
 			has_io_service = initialize(errorF);
 		}
@@ -239,12 +243,16 @@ namespace webserver {
 			return false;
 		}
 
-		task_threads = make_unique<boost::asio::thread_pool>(std::max(WEBCFG(SERVER_THREADS).num() / 2, 1));
 		ios_threads = make_unique<boost::thread_group>();
+		task_threads = make_unique<boost::thread_group>();
 
 		// Start the ASIO io_service run loop running both endpoints
 		for (int x = 0; x < WEBCFG(SERVER_THREADS).num(); ++x) {
 			ios_threads->create_thread(boost::bind(&boost::asio::io_service::run, &ios));
+		}
+
+		for (int x = 0; x < std::max(WEBCFG(SERVER_THREADS).num() / 2, 1); ++x) {
+			task_threads->create_thread(boost::bind(&boost::asio::io_service::run, &tasks));
 		}
 
 		// Add timers
@@ -400,8 +408,9 @@ namespace webserver {
 		}
 
 		ios.stop();
+		tasks.stop();
 
-		task_threads->join();
+		task_threads->join_all();
 		ios_threads->join_all();
 
 		task_threads.reset();
@@ -420,12 +429,11 @@ namespace webserver {
 	}
 
 	TimerPtr WebServerManager::addTimer(CallBack&& aCallBack, time_t aIntervalMillis, const Timer::CallbackWrapper& aCallbackWrapper) noexcept {
-		return make_shared<Timer>(move(aCallBack), ios, aIntervalMillis, aCallbackWrapper);
+		return make_shared<Timer>(move(aCallBack), tasks, aIntervalMillis, aCallbackWrapper);
 	}
 
 	void WebServerManager::addAsyncTask(CallBack&& aCallBack) noexcept {
-		// ios.post(aCallBack);
-		boost::asio::post(*task_threads, aCallBack);
+		tasks.post(aCallBack);
 	}
 
 	void WebServerManager::setDirty() noexcept {

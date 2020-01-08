@@ -320,6 +320,8 @@ namespace webserver {
 		// set up an external io_service to run both endpoints on. This is not
 		// strictly necessary, but simplifies thread management a bit.
 		boost::asio::io_service ios;
+		boost::asio::io_service tasks;
+		boost::asio::io_service::work work;
 		bool has_io_service = false;
 
 		typedef vector<WebSocketPtr> WebSocketList;
@@ -338,7 +340,7 @@ namespace webserver {
 		server_tls endpoint_tls;
 
 		unique_ptr<boost::thread_group> ios_threads;
-		unique_ptr<boost::asio::thread_pool> task_threads;
+		unique_ptr<boost::thread_group> task_threads;
 
 		CallBack shutdownF;
 		bool isDirty = false;
