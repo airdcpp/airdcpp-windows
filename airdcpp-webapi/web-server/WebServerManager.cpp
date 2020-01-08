@@ -43,8 +43,8 @@
 namespace webserver {
 	using namespace dcpp;
 	WebServerManager::WebServerManager() : 
-		ios(BOOST_ASIO_CONCURRENCY_HINT_SAFE),
-		tasks(BOOST_ASIO_CONCURRENCY_HINT_SAFE),
+		ios(settings.getValue(WebServerSettings::SERVER_THREADS).getDefaultValue()),
+		tasks(settings.getValue(WebServerSettings::SERVER_THREADS).getDefaultValue()),
 		work(tasks),
 		plainServerConfig(settings.getValue(WebServerSettings::PLAIN_PORT), settings.getValue(WebServerSettings::PLAIN_BIND)),
 		tlsServerConfig(settings.getValue(WebServerSettings::TLS_PORT), settings.getValue(WebServerSettings::TLS_BIND))
