@@ -33,16 +33,16 @@ namespace webserver {
 		"hub_removed"
 	};
 
-	ActionHookRejectionPtr HubApi::incomingMessageHook(const ChatMessagePtr& aMessage, const HookRejectionGetter& aRejectionGetter) {
+	ActionHookResult<> HubApi::incomingMessageHook(const ChatMessagePtr& aMessage, const ActionHookResultGetter<>& aResultGetter) {
 		return HookCompletionData::toResult(
 			fireHook("hub_incoming_message_hook", 2, [&]() {
 				return Serializer::serializeChatMessage(aMessage);
 			}),
-			aRejectionGetter
+			aResultGetter
 		);
 	};
 
-	ActionHookRejectionPtr HubApi::outgoingMessageHook(const string& aMessage, bool aThirdPerson, const Client& aClient, const HookRejectionGetter& aRejectionGetter) {
+	ActionHookResult<> HubApi::outgoingMessageHook(const string& aMessage, bool aThirdPerson, const Client& aClient, const ActionHookResultGetter<>& aResultGetter) {
 		return HookCompletionData::toResult(
 			fireHook("hub_outgoing_message_hook", 2, [&]() {
 				return json({
@@ -52,7 +52,7 @@ namespace webserver {
 					{ "session_id", aClient.getClientId() },
 				});
 			}),
-			aRejectionGetter
+			aResultGetter
 		);
 	}
 

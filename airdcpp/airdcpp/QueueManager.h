@@ -65,8 +65,8 @@ class QueueManager : public Singleton<QueueManager>, public Speaker<QueueManager
 	private SearchManagerListener, private ClientManagerListener, private ShareManagerListener
 {
 public:
-	ActionHook<const BundlePtr> bundleCompletionHook;
-	ActionHook<const QueueItemPtr> fileCompletionHook;
+	ActionHook<nullptr_t, const BundlePtr> bundleCompletionHook;
+	ActionHook<nullptr_t, const QueueItemPtr> fileCompletionHook;
 
 	// Add all queued TTHs in the supplied bloom filter
 	void getBloom(HashBloom& bloom) const noexcept;
