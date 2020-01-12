@@ -956,7 +956,7 @@ enum Strings { // @DontAdd
 	OPEN_LOGS_INTERNAL, // "Open log files internally (performance may decrease when opening huge log files)"
 	OPEN_LOG_DIR, // "Open log directory"
 	OPEN_NFO_EXTERNAL, // "Open .nfo files externally"
-	OPEN_SETTINGS_DIR, // "Open settings directory"
+	OPEN_SETTINGS_DIR, // "Open settings directory\tCtrl+Y"
 	OPEN_SYSTEM_LOG, // "Open system log"
 	OPEN_USER_LOG, // "Open user log"
 	OPTIMIZE_CONFIRMATION, // "This operation will delete all hash information for files that aren't currently in share. If you are sharing files from network disks or from a removable storage, make sure that the files are currently shown in share (otherwise they have to be rehashed).\r\n\r\nDo you want to continue?"
