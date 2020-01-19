@@ -29,6 +29,7 @@
 #include "ResourceLoader.h"
 
 #include <airdcpp/AirUtil.h>
+#include <airdcpp/ContextMenuManager.h>
 #include <airdcpp/DownloadManager.h>
 
 string QueueFrame::id = "Queue";
@@ -625,6 +626,29 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 	if (bl.size() == 1) {
 		b = bl.front();
 	}
+
+	{
+		vector<QueueToken> tokens;
+		for (const auto& bundle : bl) {
+			tokens.push_back(bundle->getToken());
+		}
+
+		auto extMenuItems = ContextMenuManager::getInstance()->getQueueBundleMenu(tokens);
+		if (!extMenuItems.empty()) {
+			for (const auto& extItem: extMenuItems) {
+				bundleMenu.appendItem(
+					Text::toT(extItem->getTitle()),
+					[=]() {
+						ContextMenuManager::getInstance()->onClickQueueBundleItem(tokens, extItem->getHookId(), extItem->getId());
+					},
+					OMenu::FLAG_THREADED
+				);
+			}
+
+			bundleMenu.appendSeparator();
+		}
+	}
+
 	if (!allFinished) {
 		WinUtil::appendBundlePrioMenu(bundleMenu, bl);
 		WinUtil::appendBundlePauseMenu(bundleMenu, bl);

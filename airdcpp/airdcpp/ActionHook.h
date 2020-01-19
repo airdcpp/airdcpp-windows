@@ -105,21 +105,26 @@ namespace dcpp {
 			HookCallback callback;
 		};
 
-		template<typename CallbackT, typename ObjectT>
-		bool addSubscriber(const string& aId, const string& aName, CallbackT aCallback, ObjectT& aObject) noexcept {
+		using CallbackFunc = std::function<ActionHookResult<DataT>(ArgT &... aArgs, const ActionHookResultGetter<DataT> & aResultGetter)>;
+		bool addSubscriber(const string& aId, const string& aName, CallbackFunc aCallback) noexcept {
 			Lock l(cs);
 			if (findById(aId) != subscribers.end()) {
 				return false;
 			}
 
-			subscribers.push_back(ActionHookHandler(
-				aId, 
-				aName, 
+			subscribers.push_back(ActionHookHandler(aId, aName, aCallback));
+			return true;
+		}
+
+		template<typename CallbackT, typename ObjectT>
+		bool addSubscriber(const string& aId, const string& aName, CallbackT aCallback, ObjectT& aObject) noexcept {
+			return addSubscriber(
+				aId,
+				aName,
 				[&, aCallback](ArgT&... aArgs, const ActionHookResultGetter<DataT>& aResultGetter) {
 					return (aObject.*aCallback)(aArgs..., aResultGetter);
-				} 
-			));
-			return true;
+				}
+			);
 		}
 
 		bool removeSubscriber(const string& aId) noexcept {
