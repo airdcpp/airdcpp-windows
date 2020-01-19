@@ -42,13 +42,6 @@ namespace webserver {
 		static json toHookData(const json& aSelectedIds, const json& aData = json());
 		static json serializeMenuItem(const ContextMenuItemPtr& aMenuItem);
 
-		// api_return handleGetBundleMenuItems(ApiRequest& aRequest);
-		// api_return handleClickItem(ApiRequest& aRequest);
-
-		// ActionHookResult<ContextMenuItemList> bundleMenuItemHook(const vector<uint32_t>& aSelections, const ActionHookResultGetter<ContextMenuItemList>& aResultGetter);
-
-		// void on(ContextMenuManagerListener::MenuItemSelected, const vector<uint32_t>& aSelectedItems, const string& aHookId, const string& aMenuItemId) noexcept;
-
 
 		template<typename IdT>
 		using IdSerializer = std::function<json(const IdT& aId)>;

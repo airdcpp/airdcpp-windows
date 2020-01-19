@@ -32,19 +32,6 @@
 #include <airdcpp/SearchManager.h>
 
 
-/*#define CONTEXT_MENU_HANDLER(menuId, hook, hookHandler, clickHandler, listHandler, access) \
-	createHook(menuId, [this](const string& aId, const string& aName) { \
-		return ContextMenuManager::getInstance()->hook.addSubscriber(aId, aName, HOOK_HANDLER(hookHandler)); \
-	}, [this](const string& aId) { \
-		ContextMenuManager::getInstance()->hook.removeSubscriber(aId); \
-	}); \
-	METHOD_HANDLER(access, METHOD_POST, (EXACT_PARAM(menuId), EXACT_PARAM("select")), clickHandler); \
-	METHOD_HANDLER(access, METHOD_POST, (EXACT_PARAM(menuId), EXACT_PARAM("list")), listHandler);
-*/
-
-#define INLINE_MODULE_METHOD_HANDLER(access, method, params, func) (this->getRequestHandlers().push_back(ApiModule::RequestHandler(access, method, BRACED_INIT_LIST params, func)))
-
-
 #define CONTEXT_MENU_HANDLER(menuId, hook, hook2, idType, idDeserializerFunc, idSerializerFunc, access) \
 	createHook(menuId, [this](const string& aId, const string& aName) { \
 		return ContextMenuManager::getInstance()->hook##MenuHook.addSubscriber( \
@@ -114,7 +101,6 @@ namespace webserver {
 			aSession,
 			Access::ANY,
 			{
-				// "menu_item_selected",
 				"queue_bundle_menuitem_selected",
 				"queue_file_menuitem_selected",
 				"transfer_menuitem_selected",
@@ -133,16 +119,6 @@ namespace webserver {
 		CONTEXT_MENU_HANDLER("queue_file", queueFile, QueueFile, uint32_t, defaultArrayValueParser<uint32_t>, defaultArrayValueSerializer<uint32_t>, Access::ANY);
 		CONTEXT_MENU_HANDLER("transfer", transfer, Transfer, uint32_t, defaultArrayValueParser<uint32_t>, defaultArrayValueSerializer<uint32_t>, Access::ANY);
 		CONTEXT_MENU_HANDLER("favorite_hub", favoriteHub, FavoriteHub, uint32_t, defaultArrayValueParser<uint32_t>, defaultArrayValueSerializer<uint32_t>, Access::ANY);
-
-		/*CONTEXT_MENU_HANDLER2("share_root", shareRoot, ShareRoot, TTHValue, [](const json& aJson, const string& aFieldName) {
-			auto tthStr = JsonUtil::parseValue<string>(aFieldName, aJson, false);
-			return Deserializer::parseTTH(tthStr);
-		}, Access::ANY);
-
-		CONTEXT_MENU_HANDLER2("user", user, User, CID, [](const json& aJson, const string& aFieldName) {
-			auto cidStr = JsonUtil::parseValue<string>(aFieldName, aJson, false);
-			return Deserializer::getUser(cidStr, true)->getCID();
-		}, Access::ANY);*/
 
 		CONTEXT_MENU_HANDLER("share_root", shareRoot, ShareRoot, TTHValue, tthArrayValueParser, defaultArrayValueSerializer<TTHValue>, Access::ANY);
 		CONTEXT_MENU_HANDLER("user", user, User, CID, cidArrayValueParser, defaultArrayValueSerializer<CID>, Access::ANY);
@@ -180,44 +156,6 @@ namespace webserver {
 			{ "data", aData },
 		});
 	}
-
-	/*ActionHookResult<ContextMenuItemList> MenuApi::bundleMenuItemHook(const vector<uint32_t>& aSelections, const ActionHookResultGetter<ContextMenuItemList>& aResultGetter) {
-		return HookCompletionData::toResult<ContextMenuItemList>(
-			fireHook("queue_bundle", 1, [&]() {
-				return toHookData(
-					aSelections
-				);
-			}),
-			aResultGetter,
-			MenuApi::deserializeMenuItems
-		);
-	}
-
-	api_return MenuApi::handleGetBundleMenuItems(ApiRequest& aRequest) {
-		const auto selectedIds = JsonUtil::getField<vector<uint32_t>>("selectedIds", aRequest.getRequestBody(), false);
-
-		const auto complete = aRequest.defer();
-		addAsyncTask([=] {
-			const auto items = ContextMenuManager::getInstance()->getQueueBundleMenu(selectedIds);
-			complete(
-				websocketpp::http::status_code::ok, 
-				Serializer::serializeList(items, MenuApi::serializeMenuItem),
-				nullptr
-			);
-		});
-
-		return websocketpp::http::status_code::see_other;
-	}
-
-	api_return MenuApi::handleClickItem(ApiRequest& aRequest) {
-		const auto selectedIds = JsonUtil::getField<vector<uint32_t>>("selectedIds", aRequest.getRequestBody(), false);
-		const auto hookId = JsonUtil::getField<string>("hookId", aRequest.getRequestBody(), false);
-		const auto menuItemId = JsonUtil::getField<string>("menuItemId", aRequest.getRequestBody(), false);
-		const auto entityId = JsonUtil::getOptionalField<string>("entityId", aRequest.getRequestBody(), false);
-
-		ContextMenuManager::getInstance()->onClickItem(selectedIds, hookId, menuItemId);
-		return websocketpp::http::status_code::no_content;
-	}*/
 
 	TTHValue MenuApi::tthArrayValueParser(const json& aJson, const string& aFieldName) {
 		auto tthStr = JsonUtil::parseValue<string>(aFieldName, aJson, false);
@@ -260,16 +198,6 @@ namespace webserver {
 
 		return make_shared<ContextMenuItem>(id, title, icon, aResultGetter.getId());
 	}
-
-	/*void MenuApi::on(ContextMenuManagerListener::MenuItemSelected, const vector<uint32_t>& aSelectedItems, const string& aHookId, const string& aMenuItemId) noexcept {
-		maybeSend("menu_item_selected", [&]() {
-			return json({
-				{ "hook_id", aHookId },
-				{ "menu_item_id", aMenuItemId },
-				{ "selected_ids", aSelectedItems },
-			});
-		});
-	}*/
 
 	void MenuApi::onMenuItemSelected(const string& aMenuId, const json& aSelectedIds, const string& aHookId, const string& aMenuItemId) noexcept {
 		maybeSend(aMenuId + "_menuitem_selected", [&]() {
