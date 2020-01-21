@@ -219,9 +219,6 @@
     <ClInclude Include="api\UserApi.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="api\TransferInfo.h">
-      <Filter>Header Files\api</Filter>
-    </ClInclude>
     <ClInclude Include="api\TransferUtils.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>

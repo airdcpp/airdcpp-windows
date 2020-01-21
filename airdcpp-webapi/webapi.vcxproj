@@ -230,7 +230,6 @@
     <ClInclude Include="api\ShareUtils.h" />
     <ClInclude Include="api\SystemApi.h" />
     <ClInclude Include="api\TransferApi.h" />
-    <ClInclude Include="api\TransferInfo.h" />
     <ClInclude Include="api\TransferUtils.h" />
     <ClInclude Include="api\UserApi.h" />
     <ClInclude Include="api\ViewFileApi.h" />

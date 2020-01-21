@@ -28,11 +28,13 @@
 #include <airdcpp/ConnectionManager.h>
 #include <airdcpp/ConnectionManagerListener.h>
 #include <airdcpp/QueueManagerListener.h>
+#include <airdcpp/TransferInfoManager.h>
 #include <airdcpp/TaskQueue.h>
 #include <airdcpp/forward.h>
 #include <airdcpp/Util.h>
 #include <airdcpp/Download.h>
 #include <airdcpp/Upload.h>
+#include <airdcpp/TransferInfo.h>
 
 #include "OMenu.h"
 #include "UCHandler.h"
@@ -43,7 +45,7 @@
 class TransferView : public CWindowImpl<TransferView>, private DownloadManagerListener, 
 	private UploadManagerListener, private ConnectionManagerListener, private QueueManagerListener,
 	public UserInfoBaseHandler<TransferView>, public UCHandler<TransferView>,
-	private SettingsManagerListener
+	private SettingsManagerListener, private TransferInfoManagerListener
 {
 public:
 	DECLARE_WND_CLASS(_T("TransferView"))
@@ -221,6 +223,8 @@ private:
 			updateMask(0), user(HintedUser()), download(isDownload), token(move(aToken)), transferFailed(isTransferFailed), flagIndex(0), type(Transfer::TYPE_LAST)
 		{ }
 
+		void setUpdateFlags(const TransferInfoPtr& aInfo, int aUpdateFlags) noexcept;
+
 		uint32_t updateMask;
 
 		string token;
@@ -294,31 +298,10 @@ private:
 	void handleDisconnect();
 
 	/* Listeners */
-
-	void on(ConnectionManagerListener::Added, const ConnectionQueueItem* aCqi) noexcept;
-	void on(ConnectionManagerListener::Failed, const ConnectionQueueItem* aCqi, const string& aReason) noexcept;
-	void on(ConnectionManagerListener::Removed, const ConnectionQueueItem* aCqi) noexcept;
-	void on(ConnectionManagerListener::Connecting, const ConnectionQueueItem* aCqi) noexcept { onUpdateFileInfo(aCqi->getUser(), aCqi->getToken(), true); };
-	void on(ConnectionManagerListener::UserUpdated, const ConnectionQueueItem* aCqi) noexcept;
-	void on(ConnectionManagerListener::Forced, const ConnectionQueueItem* aCqi) noexcept;
-
-	void on(DownloadManagerListener::Requesting, const Download* aDownload, bool hubChanged) noexcept;	
-	void on(DownloadManagerListener::Complete, const Download* aDownload, bool isTree) noexcept { 
-		onTransferComplete(aDownload, false, Util::getFileName(aDownload->getPath()), isTree, aDownload->getBundleStringToken());
-	}
-	void on(DownloadManagerListener::Failed, const Download* aDownload, const string& aReason) noexcept;
-	void on(DownloadManagerListener::Starting, const Download* aDownload) noexcept;
-	void on(DownloadManagerListener::Tick, const DownloadList& aDownload) noexcept;
 	void on(DownloadManagerListener::BundleTick, const BundleList& bundles, uint64_t aTick) noexcept;
-	void on(DownloadManagerListener::Status, const UserConnection*, const string&) noexcept;
 	void on(DownloadManagerListener::BundleWaiting, const BundlePtr& aBundle) noexcept { onBundleStatus(aBundle, false); }
 
-	void on(UploadManagerListener::Starting, const Upload* aUpload) noexcept;
-	void on(UploadManagerListener::Tick, const UploadList& aUpload) noexcept;
 	void on(UploadManagerListener::BundleTick, const UploadBundleList& bundles) noexcept;
-	void on(UploadManagerListener::Complete, const Upload* aUpload) noexcept { 
-		onTransferComplete(aUpload, true, aUpload->getPath(), false, (aUpload->getBundle() ? aUpload->getBundle()->getToken() : Util::emptyString)); 
-	}
 	void on(UploadManagerListener::BundleComplete, const string& bundleToken, const string& bundleName) noexcept { onBundleComplete(bundleToken, bundleName, true); }
 	void on(UploadManagerListener::BundleSizeName, const string& bundleToken, const string& newTarget, int64_t aSize) noexcept;
 
@@ -326,21 +309,23 @@ private:
 	void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept;
 	void on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) noexcept;
 
-	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
+	void on(TransferInfoManagerListener::Added, const TransferInfoPtr& aInfo) noexcept;
+	void on(TransferInfoManagerListener::Updated, const TransferInfoPtr& aInfo, int aUpdatedProperties, bool aTick) noexcept;
+	void on(TransferInfoManagerListener::Removed, const TransferInfoPtr& aInfo) noexcept;
+	void on(TransferInfoManagerListener::Failed, const TransferInfoPtr& aInfo) noexcept;
+	void on(TransferInfoManagerListener::Tick, const TransferInfo::List& aTransfers, int aUpdatedProperties) noexcept;
+	void on(TransferInfoManagerListener::Completed, const TransferInfoPtr& aInfo) noexcept;
 
-	void onUpdateFileInfo(const HintedUser& aUser, const string& aToken, bool updateStatus);
+	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
 	void onBundleName(const BundlePtr& aBundle);
 	void onBundleComplete(const string& bundleToken, const string& bundleName, bool isUpload);
 	void onBundleStatus(const BundlePtr& aBundle, bool removed);
-	void onTransferComplete(const Transfer* aTransfer, bool isUpload, const string& aFileName, bool isTree, const string& bundleToken);
-	void starting(UpdateInfo* ui, const Transfer* t);
 
 	ItemInfo* findItem(const UpdateInfo& ui, int& pos) const;
 	void updateItem(const ItemInfo* aII, uint32_t updateMask);
 	void setDefaultItem(OMenu& aMenu);
 
-	static tstring getRunningStatus(const Transfer* aTransfer) noexcept;
 	static tstring getRunningStatus(const OrderedStringSet& aFlags) noexcept;
 };
 

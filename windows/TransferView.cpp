@@ -92,6 +92,7 @@ LRESULT TransferView::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	UploadManager::getInstance()->addListener(this);
 	QueueManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
+	TransferInfoManager::getInstance()->addListener(this);
 	return 0;
 }
 
@@ -104,6 +105,7 @@ void TransferView::prepareClose() {
 	UploadManager::getInstance()->removeListener(this);
 	QueueManager::getInstance()->removeListener(this);
 	SettingsManager::getInstance()->removeListener(this);
+	TransferInfoManager::getInstance()->removeListener(this);
 	
 }
 
@@ -687,111 +689,71 @@ void TransferView::updateItem(const ItemInfo* aII, uint32_t updateMask) {
 	}
 }
 
-void TransferView::on(ConnectionManagerListener::UserUpdated, const ConnectionQueueItem* aCqi) noexcept {
-	if (aCqi->getConnType() == CONNECTION_TYPE_PM)
-		return;
+void TransferView::UpdateInfo::setUpdateFlags(const TransferInfoPtr& aInfo, int aUpdatedProperties) noexcept {
+	if (aUpdatedProperties & TransferInfo::UpdateFlags::TARGET)
+		setTarget(Text::toT(aInfo->getTarget()));
+	if (aUpdatedProperties & TransferInfo::UpdateFlags::TYPE)
+		setType(aInfo->getType());
+	if (aUpdatedProperties & TransferInfo::UpdateFlags::SIZE)
+		setSize(aInfo->getSize());
+	if (aUpdatedProperties & TransferInfo::UpdateFlags::STATUS || aUpdatedProperties & TransferInfo::UpdateFlags::FLAGS) {
+		if (aInfo->getState() == TransferInfo::STATE_RUNNING) {
+			auto posStr = Util::formatBytesW(aInfo->getBytesTransferred());
+			auto percent = (double)aInfo->getBytesTransferred() * 100.0 / (double)aInfo->getSize();
+			auto elapsed = Util::formatSecondsW((GET_TICK() - aInfo->getStarted()) / 1000);
+			auto statusStr = getRunningStatus(aInfo->getFlags());
 
-	auto ui = new UpdateInfo(aCqi->getToken(), aCqi->getConnType() == CONNECTION_TYPE_DOWNLOAD);
-	ui->setUser(aCqi->getUser());
-	speak(UPDATE_ITEM, ui);
-}
+			statusStr += aInfo->isDownload() ?
+				CTSTRING_F(DOWNLOADED_BYTES, posStr.c_str() % percent % elapsed) :
+				CTSTRING_F(UPLOADED_BYTES, posStr.c_str() % percent % elapsed);
 
-void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueItem* aCqi) noexcept {
-	if (aCqi->getConnType() == CONNECTION_TYPE_PM)
-		return;
-
-	auto ui = new UpdateInfo(aCqi->getToken(), aCqi->getConnType() == CONNECTION_TYPE_DOWNLOAD);
-	if(ui->download) {
-		auto qi = QueueManager::getInstance()->getQueueInfo(aCqi->getUser());
-		if (qi) {
-			auto type = Transfer::TYPE_FILE;
-			if(qi->getFlags() & QueueItem::FLAG_USER_LIST)
-				type = Transfer::TYPE_FULL_LIST;
-			else if(qi->getFlags() & QueueItem::FLAG_PARTIAL_LIST)
-				type = Transfer::TYPE_PARTIAL_LIST;
-			
-			ui->setType(type);
-			ui->setTarget(Text::toT(qi->getTarget()));
-			ui->setSize(qi->getSize());
-			ui->setBundle(qi->getBundle() ? qi->getBundle()->getToken() : 0);
+			setStatusString(statusStr);
+		} else {
+			setStatusString(Text::toT(aInfo->getStatusString()));
 		}
 	}
-
-	ui->setUser(aCqi->getUser());
-	ui->setStatus(ItemInfo::STATUS_WAITING);
-	ui->setStatusString(TSTRING(CONNECTING));
-
-	speak(ADD_ITEM, ui);
-}
-
-void TransferView::on(ConnectionManagerListener::Forced, const ConnectionQueueItem* aCqi) noexcept {
-	if (aCqi->getConnType() == CONNECTION_TYPE_PM)
-		return;
-
-	auto ui = new UpdateInfo(aCqi->getToken(), aCqi->getConnType() == CONNECTION_TYPE_DOWNLOAD, false);
-	ui->setStatusString(TSTRING(CONNECTING_FORCED));
-	speak(UPDATE_ITEM, ui);
-}
-
-void TransferView::onUpdateFileInfo(const HintedUser& aUser, const string& aToken, bool updateStatus) {
-	auto qi = QueueManager::getInstance()->getQueueInfo(aUser);
-	if (qi) {
-		auto ui = new UpdateInfo(aToken, true);
-		auto type = Transfer::TYPE_FILE;
-		if (qi->getFlags() & QueueItem::FLAG_USER_LIST)
-			type = Transfer::TYPE_FULL_LIST;
-		else if(qi->getFlags() & QueueItem::FLAG_PARTIAL_LIST)
-			type = Transfer::TYPE_PARTIAL_LIST;
-	
-		ui->setType(type);
-		ui->setTarget(Text::toT(qi->getTarget()));
-		ui->setSize(qi->getSize());
-		ui->setBundle(qi->getBundle() ? qi->getBundle()->getToken() : 0);
-		if (updateStatus) {
-			ui->setStatusString(TSTRING(CONNECTING));
-			ui->setStatus(ItemInfo::STATUS_WAITING);
+	if (aUpdatedProperties & TransferInfo::UpdateFlags::STATE) {
+		if (aInfo->getState() == TransferInfo::STATE_RUNNING) {
+			setStatus(ItemInfo::STATUS_RUNNING);
+		} else {
+			setStatus(ItemInfo::STATUS_WAITING);
 		}
-		speak(UPDATE_ITEM, ui);
 	}
-}
-
-void TransferView::on(ConnectionManagerListener::Removed, const ConnectionQueueItem* aCqi) noexcept {
-	if (aCqi->getConnType() == CONNECTION_TYPE_PM)
-		return;
-
-	speak(REMOVE_ITEM, new UpdateInfo(aCqi->getToken(), aCqi->getConnType() == CONNECTION_TYPE_DOWNLOAD));
-}
-
-void TransferView::on(ConnectionManagerListener::Failed, const ConnectionQueueItem* aCqi, const string& aReason) noexcept {
-	if (aCqi->getConnType() == CONNECTION_TYPE_PM)
-		return;
-
-	auto ui = new UpdateInfo(aCqi->getToken(), aCqi->getConnType() == CONNECTION_TYPE_DOWNLOAD);
-	if(aCqi->getUser().user->isSet(User::OLD_CLIENT)) {
-		ui->setStatusString(TSTRING(SOURCE_TOO_OLD));
-	} else {
-		ui->setStatusString(Text::toT(aReason));
+	if (aUpdatedProperties & TransferInfo::UpdateFlags::BYTES_TRANSFERRED)
+		setActual(aInfo->getBytesTransferred());
+	if (aUpdatedProperties & TransferInfo::UpdateFlags::USER)
+		setUser(aInfo->getHintedUser());
+	if (aUpdatedProperties & TransferInfo::UpdateFlags::SPEED)
+		setSpeed(aInfo->getSpeed());
+	if (aUpdatedProperties & TransferInfo::UpdateFlags::SECONDS_LEFT)
+		setTimeLeft(aInfo->getTimeLeft());
+	if (aUpdatedProperties & TransferInfo::UpdateFlags::IP) {
+		auto ip = aInfo->getIp();
+		const auto& country = GeoManager::getInstance()->getCountry(ip);
+		if (country.empty()) {
+			setIP(Text::toT(aInfo->getIp()), 0);
+		} else {
+			setIP(Text::toT(country + " (" + ip + ")"), Localization::getFlagIndexByCode(country.c_str()));
+		}
 	}
-	ui->setBundle(aCqi->getLastBundle());
-	ui->setStatus(ItemInfo::STATUS_WAITING);
-	speak(UPDATE_ITEM, ui);
+	if (aUpdatedProperties & TransferInfo::UpdateFlags::ENCRYPTION)
+		setEncryptionInfo(Text::toT(aInfo->getEncryption()));
 }
 
 static tstring getFile(const Transfer::Type& type, const tstring& fileName) {
 	tstring file;
-
-	if(type == Transfer::TYPE_TREE) {
+	if (type == Transfer::TYPE_TREE) {
 		file = _T("TTH: ") + fileName;
-	} else if(type == Transfer::TYPE_FULL_LIST) {
+	} else if (type == Transfer::TYPE_FULL_LIST) {
 		file = TSTRING(TYPE_FILE_LIST);
-	} else if(type == Transfer::TYPE_PARTIAL_LIST) {
+	} else if (type == Transfer::TYPE_PARTIAL_LIST) {
 		file = TSTRING(TYPE_FILE_LIST_PARTIAL);
 	} else {
 		file = fileName;
 	}
+
 	return file;
 }
-
 
 TransferView::ItemInfo* TransferView::ItemInfo::createParent() {
 	auto ii = new ItemInfo(user, bundle, download);
@@ -874,52 +836,6 @@ const tstring TransferView::ItemInfo::getText(uint8_t col) const {
 		default: return Util::emptyStringT;
 	}
 }
-		
-void TransferView::starting(UpdateInfo* ui, const Transfer* t) {
-	ui->setPos(t->getPos());
-	ui->setTarget(Text::toT(t->getPath()));
-	ui->setType(t->getType());
-	const auto& uc = t->getUserConnection();
-	ui->setEncryptionInfo(Text::toT(uc.getEncryptionInfo()));
-
-	const auto& ip = uc.getRemoteIp();
-	const auto& country = GeoManager::getInstance()->getCountry(uc.getRemoteIp());
-	if(country.empty()) {
-		ui->setIP(Text::toT(ip), 0);
-	} else {
-		ui->setIP(Text::toT(country + " (" + ip + ")"), Localization::getFlagIndexByCode(country.c_str()));
-	}
-}
-
-void TransferView::on(DownloadManagerListener::Requesting, const Download* d, bool hubChanged) noexcept {
-	//LogManager::getInstance()->message("Requesting " + d->getToken());
-	auto ui = new UpdateInfo(d->getToken(), true);
-	if (hubChanged)
-		ui->setUser(d->getHintedUser());
-
-	starting(ui, d);
-	
-	ui->setActual(d->getActual());
-	ui->setSize(d->getSegmentSize());
-	ui->setStatus(ItemInfo::STATUS_RUNNING);	ui->updateMask &= ~UpdateInfo::MASK_STATUS; // hack to avoid changing item status
-	ui->setStatusString(TSTRING(REQUESTING) + _T(" ") + getFile(d->getType(), Text::toT(Util::getFileName(d->getPath()))) + _T("..."));
-	ui->setBundle(d->getBundleStringToken());
-
-	speak(UPDATE_ITEM, ui);
-}
-
-void TransferView::on(DownloadManagerListener::Starting, const Download* aDownload) noexcept {
-	//LogManager::getInstance()->message("Starting " + aDownload->getToken());
-	auto ui = new UpdateInfo(aDownload->getToken(), true);
-
-	ui->setStatus(ItemInfo::STATUS_RUNNING);
-	ui->setStatusString(TSTRING(DOWNLOAD_STARTING));
-	ui->setTarget(Text::toT(aDownload->getPath()));
-	ui->setType(aDownload->getType());
-
-	ui->setBundle(aDownload->getBundleStringToken());
-	speak(UPDATE_ITEM, ui);
-}
 
 void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bundles, uint64_t /*aTick*/) noexcept {
 	for(const auto& b: bundles) {
@@ -968,114 +884,8 @@ void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bun
 	}
 }
 
-tstring TransferView::getRunningStatus(const OrderedStringSet& aFlags) noexcept {
-	tstring ret;
-	for (const auto& f : aFlags) {
-		ret += _T("[") + Text::toT(f) + _T("]");
-	}
-
-	if (!aFlags.empty()) {
-		ret += _T(" ");
-	}
-
-	return ret;
-}
-
-tstring TransferView::getRunningStatus(const Transfer* aTransfer) noexcept {
-	OrderedStringSet flags;
-	aTransfer->appendFlags(flags);
-
-	return getRunningStatus(flags);
-}
-
-void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) noexcept {
-	for(const auto& d: dl) {
-		auto ui = new UpdateInfo(d->getToken(), true);
-		ui->setStatus(ItemInfo::STATUS_RUNNING);
-		ui->setActual(d->getActual());
-		ui->setPos(d->getPos());
-		ui->setSize(d->getSegmentSize());
-		ui->setTimeLeft(d->getSecondsLeft());
-		ui->setBundle(d->getBundleStringToken());
-		
-		
-		ui->setSpeed(static_cast<int64_t>(d->getAverageSpeed()));
-		ui->setType(d->getType());
-
-		tstring pos = Util::formatBytesW(d->getPos());
-		double percent = (double) d->getPos()*100.0 / (double) d->getSegmentSize();
-		tstring elapsed = Util::formatSecondsW((GET_TICK() - d->getStart())/1000);
-
-		auto statusString = getRunningStatus(d);
-		statusString += CTSTRING_F(DOWNLOADED_BYTES, pos.c_str() % percent % elapsed);
-		ui->setStatusString(statusString);
-			
-		tasks.add(UPDATE_ITEM, unique_ptr<Task>(ui));
-	}
-
-	PostMessage(WM_SPEAKER);
-}
-
-void TransferView::on(DownloadManagerListener::Failed, const Download* aDownload, const string& aReason) noexcept {
-	//LogManager::getInstance()->message("Failed " + aDownload->getToken());
-	auto ui = new UpdateInfo(aDownload->getToken(), true, true);
-	ui->setStatus(ItemInfo::STATUS_WAITING);
-	ui->setPos(0);
-	ui->setSize(aDownload->getSegmentSize());
-	ui->setTarget(Text::toT(aDownload->getPath()));
-	ui->setType(aDownload->getType());
-	ui->setBundle(aDownload->getBundleStringToken());
-
-	tstring tmpReason = Text::toT(aReason);
-	if(aDownload->isSet(Download::FLAG_SLOWUSER)) {
-		tmpReason += _T(": ") + TSTRING(SLOW_USER);
-	} else if(aDownload->getOverlapped() && !aDownload->isSet(Download::FLAG_OVERLAP)) {
-		tmpReason += _T(": ") + TSTRING(OVERLAPPED_SLOW_SEGMENT);
-	}
-
-	ui->setStatusString(tmpReason);
-
-	if(SETTING(POPUP_DOWNLOAD_FAILED)) {
-		WinUtil::showPopup(
-			TSTRING(FILE) + _T(": ") + Util::getFileName(ui->target) + _T("\n")+
-			TSTRING(USER) + _T(": ") + WinUtil::getNicks(aDownload->getHintedUser()) + _T("\n")+
-			TSTRING(REASON) + _T(": ") + Text::toT(aReason), TSTRING(DOWNLOAD_FAILED), NIIF_WARNING);
-	}
-
-	speak(UPDATE_ITEM, ui);
-}
-
-void TransferView::on(DownloadManagerListener::Status, const UserConnection* uc, const string& aReason) noexcept {
-	//LogManager::getInstance()->message("Status " + uc->getToken());
-	dcassert(!uc->getToken().empty());
-	auto ui = new UpdateInfo(uc->getToken(), true);
-	ui->setStatus(ItemInfo::STATUS_WAITING);
-	ui->setPos(0);
-	ui->setStatusString(Text::toT(aReason));
-	ui->setBundle(uc->getLastBundle());
-
-	speak(UPDATE_ITEM, ui);
-}
-
-void TransferView::on(UploadManagerListener::Starting, const Upload* aUpload) noexcept {
-	UpdateInfo* ui = new UpdateInfo(aUpload->getToken(), false);
-	starting(ui, aUpload);
-	
-	ui->setStatus(ItemInfo::STATUS_RUNNING);
-	ui->setActual(aUpload->getStartPos() + aUpload->getActual());
-	ui->setSize(aUpload->getType() == Transfer::TYPE_TREE ? aUpload->getSegmentSize() : aUpload->getFileSize());
-	ui->setRunning(1);
-	ui->setBundle(aUpload->getBundle() ? aUpload->getBundle()->getToken() : Util::emptyString);
-	
-	if(!aUpload->isSet(Upload::FLAG_RESUMED)) {
-		ui->setStatusString(TSTRING(UPLOAD_STARTING));
-	}
-
-	speak(UPDATE_ITEM, ui);
-}
-
 void TransferView::on(UploadManagerListener::BundleTick, const UploadBundleList& bundles) noexcept {
-	for(const auto& b: bundles) {
+	for (const auto& b : bundles) {
 		auto ui = new UpdateInfo(b->getToken(), false);
 
 
@@ -1083,8 +893,8 @@ void TransferView::on(UploadManagerListener::BundleTick, const UploadBundleList&
 		int64_t totalSpeed = 0;
 
 		OrderedStringSet flags;
-		for(const auto& u: b->getUploads()) {
-			if(u->getStart() > 0) {
+		for (const auto& u : b->getUploads()) {
+			if (u->getStart() > 0) {
 				u->appendFlags(flags);
 
 				totalSpeed += static_cast<int64_t>(u->getAverageSpeed());
@@ -1092,7 +902,7 @@ void TransferView::on(UploadManagerListener::BundleTick, const UploadBundleList&
 			}
 		}
 
-		if(b->getRunning() > 0) {
+		if (b->getRunning() > 0) {
 			ratio = ratio / b->getRunning();
 
 			ui->setStatus(ItemInfo::STATUS_RUNNING);
@@ -1114,69 +924,31 @@ void TransferView::on(UploadManagerListener::BundleTick, const UploadBundleList&
 				ui->setStatusString(TSTRING(UPLOAD_STARTING));
 			} else {
 				tstring pos = Text::toT(Util::formatBytes(ui->pos));
-				double percent = (double)ui->pos*100.0/(double)ui->size;
+				double percent = (double)ui->pos * 100.0 / (double)ui->size;
 				dcassert(percent <= 100.00);
 				tstring elapsed = Util::formatSecondsW(timeSinceStarted / 1000);
 
 				ui->setStatusString(getRunningStatus(flags) + TSTRING_F(UPLOADED_BYTES, pos.c_str() % percent % elapsed.c_str()));
 			}
 		}
-			
+
 		speak(UPDATE_BUNDLE, ui);
 	}
 }
 
-void TransferView::on(UploadManagerListener::Tick, const UploadList& ul) noexcept {
-	for(const auto& u: ul) {
-		if (u->getPos() == 0) continue;
-		if (u->getToken().empty()) {
-			continue;
-		}
-
-		auto ui = new UpdateInfo(u->getToken(), false);
-		ui->setActual(u->getStartPos() + u->getActual());
-		ui->setPos(u->getStartPos() + u->getPos());
-		ui->setTimeLeft(u->getSecondsLeft(true)); // we are interested when whole file is finished and not only one chunk
-		ui->setSpeed(static_cast<int64_t>(u->getAverageSpeed()));
-		ui->setBundle(u->getBundle() ? u->getBundle()->getToken() : Util::emptyString);
-
-		tstring pos = Util::formatBytesW(ui->pos);
-		double percent = (double) ui->pos*100.0 / (double) (u->getType() == Transfer::TYPE_TREE ? u->getSegmentSize() : u->getFileSize());
-		tstring elapsed = Util::formatSecondsW((GET_TICK() - u->getStart())/1000); 
-		
-		auto statusString = getRunningStatus(u);
-		statusString += CTSTRING_F(UPLOADED_BYTES, pos.c_str() % percent % elapsed);
-
-		ui->setStatusString(statusString);
-					
-		tasks.add(UPDATE_ITEM, unique_ptr<Task>(ui));
+tstring TransferView::getRunningStatus(const OrderedStringSet& aFlags) noexcept {
+	tstring ret;
+	for (const auto& f : aFlags) {
+		ret += _T("[") + Text::toT(f) + _T("]");
 	}
 
-	PostMessage(WM_SPEAKER);
-}
-
-void TransferView::onTransferComplete(const Transfer* aTransfer, bool isUpload, const string& aFileName, bool isTree, const string& bundleToken) {
-	//LogManager::getInstance()->message("Transfer complete " + aTransfer->getToken());
-	auto ui = new UpdateInfo(aTransfer->getToken(), !isUpload);
-
-	ui->setStatus(ItemInfo::STATUS_WAITING);	
-	ui->setPos(0);
-	ui->setStatusString(isUpload ? TSTRING(UPLOAD_FINISHED_IDLE) : TSTRING(DOWNLOAD_FINISHED_IDLE));
-	ui->setRunning(0);
-	ui->setBundle(bundleToken);
-
-	if(isUpload && SETTING(POPUP_UPLOAD_FINISHED) && !isTree) {
-		if(!SETTING(UPLOADFILE).empty() && !SETTING(SOUNDS_DISABLED))
-			WinUtil::playSound(Text::toT(SETTING(UPLOADFILE)));
-
-		if (SETTING(POPUP_UPLOAD_FINISHED)) {
-			WinUtil::showPopup(TSTRING(FILE) + _T(": ") + Text::toT(aFileName) + _T("\n") +
-				TSTRING(USER) + _T(": ") + WinUtil::getNicks(aTransfer->getHintedUser()), TSTRING(UPLOAD_FINISHED_IDLE));
-		}
+	if (!aFlags.empty()) {
+		ret += _T(" ");
 	}
-	
-	speak(UPDATE_ITEM, ui);
+
+	return ret;
 }
+
 
 void TransferView::onBundleComplete(const string& bundleToken, const string& bundleName, bool isUpload) {
 	auto ui = new UpdateInfo(bundleToken, !isUpload);
@@ -1239,6 +1011,79 @@ void TransferView::onBundleName(const BundlePtr& aBundle) {
 	ui->setTarget(Text::toT(aBundle->getTarget()));
 	speak(UPDATE_BUNDLE, ui);
 }
+
+void TransferView::on(TransferInfoManagerListener::Added, const TransferInfoPtr& aInfo) noexcept {
+	auto ui = new UpdateInfo(aInfo->getStringToken(), aInfo->isDownload());
+	if (aInfo->isDownload()) {
+		auto qi = QueueManager::getInstance()->getQueueInfo(aInfo->getHintedUser());
+		if (qi) {
+			auto type = Transfer::TYPE_FILE;
+			if (qi->getFlags() & QueueItem::FLAG_USER_LIST)
+				type = Transfer::TYPE_FULL_LIST;
+			else if (qi->getFlags() & QueueItem::FLAG_PARTIAL_LIST)
+				type = Transfer::TYPE_PARTIAL_LIST;
+
+			ui->setType(type);
+			ui->setTarget(Text::toT(qi->getTarget()));
+			ui->setSize(qi->getSize());
+			ui->setBundle(qi->getBundle() ? qi->getBundle()->getToken() : 0);
+		}
+	}
+
+	ui->setUser(aInfo->getHintedUser());
+	ui->setStatus(ItemInfo::STATUS_WAITING);
+	ui->setStatusString(TSTRING(CONNECTING));
+	speak(ADD_ITEM, ui);
+}
+
+void TransferView::on(TransferInfoManagerListener::Updated, const TransferInfoPtr& aInfo, int aUpdatedProperties, bool aTick) noexcept {
+	if (aTick) {
+		return;
+	}
+
+	UpdateInfo* ui = new UpdateInfo(aInfo->getStringToken(), aInfo->isDownload());
+	ui->setUpdateFlags(aInfo, aUpdatedProperties);
+	ui->setBundle(aInfo->getBundle());
+
+	speak(UPDATE_ITEM, ui);
+}
+
+void TransferView::on(TransferInfoManagerListener::Removed, const TransferInfoPtr& aInfo) noexcept {
+	speak(REMOVE_ITEM, new UpdateInfo(aInfo->getStringToken(), aInfo->isDownload()));
+}
+
+void TransferView::on(TransferInfoManagerListener::Failed, const TransferInfoPtr& aInfo) noexcept {
+	if (SETTING(POPUP_DOWNLOAD_FAILED)) {
+		WinUtil::showPopup(
+			TSTRING(FILE) + _T(": ") + Text::toT(Util::getFileName(aInfo->getTarget())) + _T("\n") +
+			TSTRING(USER) + _T(": ") + WinUtil::getNicks(aInfo->getHintedUser()) + _T("\n") +
+			TSTRING(REASON) + _T(": ") + Text::toT(aInfo->getStatusString()), TSTRING(DOWNLOAD_FAILED), NIIF_WARNING);
+	}
+}
+
+void TransferView::on(TransferInfoManagerListener::Completed, const TransferInfoPtr& aInfo) noexcept {
+	if (!aInfo->isDownload() && SETTING(POPUP_UPLOAD_FINISHED) && aInfo->getType() != Transfer::TYPE_TREE) {
+		if (!SETTING(UPLOADFILE).empty() && !SETTING(SOUNDS_DISABLED))
+			WinUtil::playSound(Text::toT(SETTING(UPLOADFILE)));
+
+		if (SETTING(POPUP_UPLOAD_FINISHED)) {
+			WinUtil::showPopup(TSTRING(FILE) + _T(": ") + Text::toT(aInfo->getName()) + _T("\n") +
+				TSTRING(USER) + _T(": ") + WinUtil::getNicks(aInfo->getHintedUser()), TSTRING(UPLOAD_FINISHED_IDLE));
+		}
+	}
+}
+
+void TransferView::on(TransferInfoManagerListener::Tick, const TransferInfo::List& aTransfers, int aUpdatedProperties) noexcept {
+	for (const auto& t : aTransfers) {
+		auto ui = new UpdateInfo(t->getStringToken(), t->isDownload());
+		ui->setBundle(t->getBundle());
+		ui->setUpdateFlags(t, aUpdatedProperties);
+		tasks.add(UPDATE_ITEM, unique_ptr<Task>(ui));
+	}
+
+	PostMessage(WM_SPEAKER);
+}
+
 
 LRESULT TransferView::onKeyDownTransfers(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 	NMLVKEYDOWN* kd = (NMLVKEYDOWN*) pnmh;
