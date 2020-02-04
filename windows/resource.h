@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airdc-git\AirDC.rc
+// Used by C:\Projects\airgit\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -1435,6 +1435,7 @@
 #define IDC_CHECK3                      1742
 #define IDC_IGNORE_PM                   1742
 #define IDC_AS_USERMATCHER_EXCLUDE      1742
+#define IDC_FORMAT_TIME                 1742
 #define IDC_USER_LIST_COLOR_DESC        1744
 #define IDC_TB_PROGRESS_STYLE           1745
 #define IDC_COLOR_LIST                  1751
@@ -1875,7 +1876,7 @@
 #define ID_WINDOW_MINIMIZE_ALL          57654
 #define ID_WINDOW_RESTORE_ALL           57655
 #define IDC_WINAMP_START                57666
-#define IDC_WINDOW_MARK_READ			57667
+#define IDC_WINDOW_MARK_READ            57667
 #define IDC_CHATCOLORS                  65535
 
 // Next default values for new objects

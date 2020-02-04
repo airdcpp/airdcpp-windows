@@ -1183,6 +1183,7 @@ enum Strings { // @DontAdd
 	RSS_CONFIG, // "RSS config"
 	RSS_MATCH_PATTERN, // "Match pattern"
 	RSS_FEEDS, // "RSS feeds"
+	RSS_FORMAT_TIME_PARAMS, // "Format time params(ex. %m %d) for location before adding to auto search"
 	RUNNING_PCT, // "Running (%.01f%%)"
 	RUN_SFV_CHECK, // "Perform SFV check"
 	SAMPLE_TEXT, // "Sample text"
