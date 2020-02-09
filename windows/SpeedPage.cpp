@@ -142,26 +142,10 @@ LRESULT SpeedPage::onSlotsChanged(WORD wNotifyCode, WORD wID, HWND /*hWndCtl*/, 
 
 void SpeedPage::updateValues(WORD wNotifyCode) {
 
-	//upload
-	TCHAR buf[64];
-	if (wNotifyCode == CBN_SELENDOK) {
-		ctrlUpload.GetLBText(ctrlUpload.GetCurSel(), buf);
-	} else {
-		GetDlgItemText(IDC_CONNECTION, buf, sizeof(buf) +1);
-	}
+	double uploadvalue = Util::toDouble(Text::fromT(WinUtil::getComboText(ctrlUpload, wNotifyCode)));
+	double downloadvalue = Util::toDouble(Text::fromT(WinUtil::getComboText(ctrlDownload, wNotifyCode)));
 
-	double uploadvalue = Util::toDouble(Text::fromT(buf));
 	setUploadLimits(uploadvalue);
-
-	//download
-	TCHAR buf2[64];
-	if (wNotifyCode == CBN_SELENDOK) {
-		ctrlDownload.GetLBText(ctrlDownload.GetCurSel(), buf2);
-	} else {
-		GetDlgItemText(IDC_DL_SPEED, buf2, sizeof(buf2) +1);
-	}
-
-	double downloadvalue = Util::toDouble(Text::fromT(buf2));
 	setDownloadLimits(downloadvalue);
 }
 
@@ -180,21 +164,9 @@ void SpeedPage::validateMCNLimits(WORD wNotifyCode) {
 
 	// We don't allow setting per user download slots higher from the default value if upload slots have been lowered from the default
 
-	TCHAR buf[64];
-	if (wNotifyCode == CBN_SELENDOK) {
-		ctrlUpload.GetLBText(ctrlUpload.GetCurSel(), buf);
-	} else {
-		GetDlgItemText(IDC_CONNECTION, buf, sizeof(buf) +1);
-	}
-	double uploadvalue = Util::toDouble(Text::fromT(buf));
+	double uploadvalue = Util::toDouble(Text::fromT(WinUtil::getComboText(ctrlUpload, wNotifyCode)));
 
-	TCHAR buf2[64];
-	if (wNotifyCode == CBN_SELENDOK) {
-		ctrlDownload.GetLBText(ctrlDownload.GetCurSel(), buf2);
-	} else {
-		GetDlgItemText(IDC_DL_SPEED, buf2, sizeof(buf2) +1);
-	}
-	double downloadvalue = Util::toDouble(Text::fromT(buf2));
+	double downloadvalue = Util::toDouble(Text::fromT(WinUtil::getComboText(ctrlDownload, wNotifyCode)));
 
 	int downloadAutoSlots = AirUtil::getSlotsPerUser(true, downloadvalue);
 	int uploadAutoSlots = AirUtil::getSlotsPerUser(false, uploadvalue);
@@ -202,19 +174,12 @@ void SpeedPage::validateMCNLimits(WORD wNotifyCode) {
 	int mcnExtrasDL = maxMCNExtras(downloadvalue);
 	int mcnExtrasUL = maxMCNExtras(uploadvalue);
 
+	TCHAR buf[64];
 	ctrlMcnDL.GetWindowText(buf, 40);
 	int fieldDlSlots = Util::toInt(Text::fromT(buf));
 
 	ctrlMcnUL.GetWindowText(buf, 40);
 	int fieldUlSlots = Util::toInt(Text::fromT(buf));
-
-	/*if (fieldDlSlots == 0 && ctrlMcnDL.GetWindowTextLength() > 0) {
-		ctrlMcnDL.SetWindowText(_T(""));
-	}
-
-	if (fieldUlSlots == 0 && ctrlMcnUL.GetWindowTextLength() > 0) {
-		ctrlMcnUL.SetWindowText(_T(""));
-	}*/
 
 	if (fieldDlSlots == 0 || (fieldDlSlots > downloadAutoSlots + mcnExtrasDL)) {
 		if ((downloadAutoSlots + mcnExtrasDL) > 0) {

@@ -2135,6 +2135,18 @@ tstring WinUtil::getEditText(CEdit& edit) {
 	return tmp;
 }
 
+tstring WinUtil::getComboText(CComboBox& aCombo, WORD wNotifyCode) {
+	tstring tmp;
+	if (wNotifyCode == CBN_SELENDOK) {
+		tmp.resize(aCombo.GetLBTextLen(aCombo.GetCurSel()));
+		tmp.resize(aCombo.GetLBText(aCombo.GetCurSel(), &tmp[0]));
+	} else {
+		tmp.resize(aCombo.GetWindowTextLength());
+		tmp.resize(aCombo.GetWindowText(&tmp[0], tmp.size() + 1));
+	}
+	return tmp;
+}
+
 
 void WinUtil::handleTab(HWND focus, HWND* ctrlHwnds, int hwndCount) {
 	bool shift = isShift();
