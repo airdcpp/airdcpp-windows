@@ -22,7 +22,6 @@
 #include "HubFrame.h"
 #include "LineDlg.h"
 #include "DirectoryListingFrm.h"
-#include "SearchFrm.h"
 #include "PrivateFrame.h"
 #include "TextFrame.h"
 #include "ResourceLoader.h"
@@ -39,8 +38,6 @@
 #include <airdcpp/FavoriteManager.h>
 #include <airdcpp/LogManager.h>
 #include <airdcpp/SettingsManager.h>
-#include <airdcpp/Localization.h>
-#include <airdcpp/GeoManager.h>
 
 #include <airdcpp/modules/HighlightManager.h>
 
@@ -1797,17 +1794,9 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 				POINT p = { rc.left, top };
 
 				const auto ii = (ItemInfo*)cd->nmcd.lItemlParam;
-				const auto ip = ii->onlineUser->getIdentity().getIp();
-				uint8_t flagIndex = 0;
-				if (!ip.empty()) {
-					// Only attempt to grab a country mapping if we actually have an IP address
-					string tmpCountry = GeoManager::getInstance()->getCountry(ip);
-					if(!tmpCountry.empty()) {
-						flagIndex = Localization::getFlagIndexByCode(tmpCountry.c_str());
-					}
-				}
+				auto countryInfo = WinUtil::toCountryInfo(ii->onlineUser->getIdentity().getIp());
+				ResourceLoader::flagImages.Draw(cd->nmcd.hdc, countryInfo.flagIndex, p, LVSIL_SMALL);
 
-				ResourceLoader::flagImages.Draw(cd->nmcd.hdc, flagIndex, p, LVSIL_SMALL);
 				top = rc.top + (rc.Height() - WinUtil::getTextHeight(cd->nmcd.hdc) - 1)/2;
 				::ExtTextOut(cd->nmcd.hdc, rc.left + 30, top + 1, ETO_CLIPPED, rc, buf, _tcslen(buf), NULL);
 				return CDRF_SKIPDEFAULT;

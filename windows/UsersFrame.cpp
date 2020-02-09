@@ -25,7 +25,6 @@
 #include "LineDlg.h"
 
 #include <airdcpp/ClientManager.h>
-#include <airdcpp/GeoManager.h>
 #include <airdcpp/IgnoreManager.h>
 #include <airdcpp/Localization.h>
 #include <airdcpp/LogManager.h>
@@ -393,17 +392,9 @@ LRESULT UsersFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 
 					POINT p = { rc.left, top };
 
-					const string& ip = ui->getIp();
-					uint8_t flagIndex = 0;
-					if (!ip.empty()) {
-						// Only attempt to grab a country mapping if we actually have an IP address
-						const string& tmpCountry = GeoManager::getInstance()->getCountry(ip);
-						if (!tmpCountry.empty()) {
-							flagIndex = Localization::getFlagIndexByCode(tmpCountry.c_str());
-						}
-					}
+					auto countryInfo = WinUtil::toCountryInfo(ui->getIp());
+					ResourceLoader::flagImages.Draw(cd->nmcd.hdc, countryInfo.flagIndex, p, LVSIL_SMALL);
 
-					ResourceLoader::flagImages.Draw(cd->nmcd.hdc, flagIndex, p, LVSIL_SMALL);
 					top = rc.top + (rc.Height() - WinUtil::getTextHeight(cd->nmcd.hdc) - 1) / 2;
 					::ExtTextOut(cd->nmcd.hdc, rc.left + 30, top + 1, ETO_CLIPPED, rc, buf, _tcslen(buf), NULL);
 					return CDRF_SKIPDEFAULT;

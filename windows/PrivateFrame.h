@@ -23,7 +23,7 @@
 
 #include <airdcpp/User.h>
 #include <airdcpp/UserInfoBase.h>
-#include <airdcpp/PrivateChat.h>
+#include <airdcpp/PrivateChatListener.h>
 
 #include "UserInfoBaseHandler.h"
 #include "ChatFrameBase.h"
@@ -172,8 +172,8 @@ private:
 	void updateOnlineStatus();
 
 
-	const UserPtr& getUser() const { return chat->getUser(); }
-	const string& getHubUrl() const { return chat->getHubUrl(); }
+	const UserPtr& getUser() const;
+	const string& getHubUrl() const;
 	
 	CContainedWindow ctrlMessageContainer;
 	CContainedWindow ctrlClientContainer;

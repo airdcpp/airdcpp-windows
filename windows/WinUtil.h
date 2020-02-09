@@ -477,6 +477,12 @@ public:
 	static void findNfo(const string& aAdcPath, const HintedUser& aUser) noexcept;
 	static bool allowGetFullList(const HintedUser& aUser) noexcept;
 
+	struct CountryFlagInfo {
+		tstring text;
+		uint8_t flagIndex = 0;
+	};
+
+	static CountryFlagInfo toCountryInfo(const string& aIP) noexcept;
 private:
 	static string paths[PATH_LAST];
 };

@@ -30,12 +30,9 @@
 #include <airdcpp/LogManager.h>
 #include <airdcpp/UploadManager.h>
 #include <airdcpp/FavoriteManager.h>
-#include <airdcpp/StringTokenizer.h>
 #include <airdcpp/ResourceManager.h>
 #include <airdcpp/PrivateChatManager.h>
-#include <airdcpp/Adchub.h>
-#include <airdcpp/GeoManager.h>
-#include <airdcpp/Localization.h>
+
 
 PrivateFrame::FrameMap PrivateFrame::frames;
 string PrivateFrame::id = "PM";
@@ -362,6 +359,15 @@ void PrivateFrame::addStatusLine(const tstring& aLine, uint8_t severity) {
 	}
 	addClientLine(status, severity);
 	
+}
+
+
+const UserPtr& PrivateFrame::getUser() const {
+	return chat->getUser(); 
+}
+
+const string& PrivateFrame::getHubUrl() const {
+	return chat->getHubUrl(); 
 }
 
 void PrivateFrame::updateOnlineStatus() {
@@ -773,15 +779,10 @@ void PrivateFrame::setCountryFlag() {
 
 	OnlineUserPtr ou = ClientManager::getInstance()->findOnlineUser(chat->getHintedUser());
 	if (ou && getUser() && !getUser()->isSet(User::BOT)) {
-		string ip = ou->getIdentity().getIp();
-		uint8_t flagIndex = 0;
-		if (!ip.empty()) {
-			string tmpCountry = GeoManager::getInstance()->getCountry(ip);
-			if (!tmpCountry.empty()) {
-				countryPopup = Text::toT(tmpCountry) + _T(" (") + Text::toT(ip) + _T(")");
-				flagIndex = Localization::getFlagIndexByCode(tmpCountry.c_str());
-				ctrlStatus.SetIcon(STATUS_COUNTRY, ResourceLoader::flagImages.GetIcon(flagIndex));
-			}
+		auto countryInfo = WinUtil::toCountryInfo(ou->getIdentity().getIp());
+		if (!countryInfo.text.empty()) {
+			countryPopup = countryInfo.text;
+			ctrlStatus.SetIcon(STATUS_COUNTRY, ResourceLoader::flagImages.GetIcon(countryInfo.flagIndex));
 		}
 	}
 }

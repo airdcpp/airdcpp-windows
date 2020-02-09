@@ -25,15 +25,12 @@
 
 #include <airdcpp/DownloadManagerListener.h>
 #include <airdcpp/UploadManagerListener.h>
-#include <airdcpp/ConnectionManager.h>
 #include <airdcpp/ConnectionManagerListener.h>
 #include <airdcpp/QueueManagerListener.h>
 #include <airdcpp/TransferInfoManager.h>
 #include <airdcpp/TaskQueue.h>
 #include <airdcpp/forward.h>
 #include <airdcpp/Util.h>
-#include <airdcpp/Download.h>
-#include <airdcpp/Upload.h>
 #include <airdcpp/TransferInfo.h>
 
 #include "OMenu.h"
@@ -252,7 +249,7 @@ private:
 		tstring statusString;
 		void setTarget(const tstring& aTarget) { target = aTarget; updateMask |= MASK_FILE; }
 		tstring target;
-		void setIP(const tstring& aIP, uint8_t aFlagIndex) { IP = aIP; flagIndex = aFlagIndex, updateMask |= MASK_IP; }
+		void setIP(const WinUtil::CountryFlagInfo& aInfo) { IP = aInfo.text; flagIndex = aInfo.flagIndex, updateMask |= MASK_IP; }
 		tstring IP;
 		void setEncryptionInfo(const tstring& aInfo) { Encryption = aInfo; updateMask |= MASK_ENCRYPTION; }
 		tstring Encryption;

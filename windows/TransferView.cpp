@@ -21,17 +21,17 @@
 
 #include <airdcpp/ResourceManager.h>
 #include <airdcpp/SettingsManager.h>
+#include <airdcpp/ConnectionManager.h>
 #include <airdcpp/DownloadManager.h>
 #include <airdcpp/UploadManager.h>
 #include <airdcpp/QueueManager.h>
-#include <airdcpp/QueueItem.h>
-#include <airdcpp/GeoManager.h>
+
 #include <airdcpp/AirUtil.h>
-#include <airdcpp/Localization.h>
-#include <airdcpp/version.h>
+#include <airdcpp/Download.h>
+#include <airdcpp/QueueItem.h>
+#include <airdcpp/UploadBundle.h>
 
 #include <boost/range/algorithm/for_each.hpp>
-#include <boost/range/algorithm_ext/for_each.hpp>
 
 #include "WinUtil.h"
 #include "TransferView.h"
@@ -728,13 +728,7 @@ void TransferView::UpdateInfo::setUpdateFlags(const TransferInfoPtr& aInfo, int 
 	if (aUpdatedProperties & TransferInfo::UpdateFlags::SECONDS_LEFT)
 		setTimeLeft(aInfo->getTimeLeft());
 	if (aUpdatedProperties & TransferInfo::UpdateFlags::IP) {
-		auto ip = aInfo->getIp();
-		const auto& country = GeoManager::getInstance()->getCountry(ip);
-		if (country.empty()) {
-			setIP(Text::toT(aInfo->getIp()), 0);
-		} else {
-			setIP(Text::toT(country + " (" + ip + ")"), Localization::getFlagIndexByCode(country.c_str()));
-		}
+		setIP(WinUtil::toCountryInfo(aInfo->getIp()));
 	}
 	if (aUpdatedProperties & TransferInfo::UpdateFlags::ENCRYPTION)
 		setEncryptionInfo(Text::toT(aInfo->getEncryption()));

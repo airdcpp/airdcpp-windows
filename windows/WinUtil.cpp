@@ -32,6 +32,7 @@
 
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/FavoriteManager.h>
+#include <airdcpp/GeoManager.h>
 #include <airdcpp/Localization.h>
 #include <airdcpp/LogManager.h>
 #include <airdcpp/Magnet.h>
@@ -2343,4 +2344,22 @@ bool WinUtil::allowGetFullList(const HintedUser& aUser) noexcept {
 
 	auto shareInfo = ClientManager::getInstance()->getShareInfo(HintedUser(aUser));
 	return shareInfo && (*shareInfo).fileCount > SETTING(FULL_LIST_DL_LIMIT);
+}
+
+WinUtil::CountryFlagInfo WinUtil::toCountryInfo(const string& aIP) noexcept {
+	auto ip = aIP;
+	uint8_t flagIndex = 0;
+	if (!ip.empty()) {
+		// Only attempt to grab a country mapping if we actually have an IP address
+		string tmpCountry = GeoManager::getInstance()->getCountry(aIP);
+		if (!tmpCountry.empty()) {
+			ip = tmpCountry + " (" + ip + ")";
+			flagIndex = Localization::getFlagIndexByCode(tmpCountry.c_str());
+		}
+	}
+
+	return {
+		Text::toT(ip),
+		flagIndex
+	};
 }
