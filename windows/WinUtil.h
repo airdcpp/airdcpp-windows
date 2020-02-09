@@ -466,6 +466,8 @@ public:
 
 	static tstring getEditText(CEdit& edit);
 
+	static tstring getComboText(CComboBox& aCombo, WORD wNotifyCode);
+
 	static void handleTab(HWND aCurFocus, HWND* ctrlHwnds, int hwndCount);
 	static void addFileDownload(const string& aTarget, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, time_t aDate, Flags::MaskType aFlags = 0, Priority aPrio = Priority::DEFAULT);
 	//static void addFileDownloads(BundleFileList& aFiles, const HintedUser& aUser, Flags::MaskType aFlags = 0, bool addBad = true);
