@@ -619,6 +619,7 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 	bool hasFinished = any_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isDownloaded(); });
 	bool filesOnly = all_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isFileBundle(); });
 	bool allFinished = all_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isDownloaded(); });
+	bool hasFailed = any_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->getHookError(); });
 
 	/* Insert sub menus */
 	BundlePtr b = nullptr;
@@ -680,12 +681,6 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 		WinUtil::appendSearchMenu(bundleMenu, b->getName());
 		bundleMenu.appendItem(TSTRING(SEARCH_DIRECTORY), [this] { handleSearchDirectory(); });
 
-		if (b->getHookError()) {
-			bundleMenu.appendSeparator();
-			bundleMenu.appendItem(TSTRING(RESCAN_BUNDLE), [=] { QueueManager::getInstance()->shareBundle(b, false); }, OMenu::FLAG_THREADED);
-			bundleMenu.appendItem(TSTRING(FORCE_SHARING), [=] { QueueManager::getInstance()->shareBundle(b, true); }, OMenu::FLAG_THREADED);
-		}
-
 		if (!b->isDownloaded()) {
 			bundleMenu.appendSeparator();
 			readdMenu->appendThis(TSTRING(READD_SOURCE), true);
@@ -700,6 +695,23 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 				QueueManager::getInstance()->onUseSeqOrder(bundle);
 			}, b->getSeqOrder() ? OMenu::FLAG_CHECKED : 0 | OMenu::FLAG_THREADED);
 		}
+	}
+
+	if (hasFailed) {
+		bundleMenu.appendSeparator();
+		bundleMenu.appendItem(TSTRING(RESCAN_BUNDLE), [=] {
+			for (auto i : bl) {
+				if (i->getHookError())
+					QueueManager::getInstance()->shareBundle(i, false);
+			}
+			}, OMenu::FLAG_THREADED);
+
+		bundleMenu.appendItem(TSTRING(FORCE_SHARING), [=] {
+			for (auto i : bl) {
+				if (i->getHookError())
+					QueueManager::getInstance()->shareBundle(i, true);
+			}
+			}, OMenu::FLAG_THREADED);
 	}
 
 	bundleMenu.appendSeparator();
