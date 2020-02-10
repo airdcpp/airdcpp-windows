@@ -155,6 +155,8 @@ typedef shared_ptr<Search> SearchPtr;
 
 class SearchInstance;
 typedef shared_ptr<SearchInstance> SearchInstancePtr;
+typedef vector<SearchInstancePtr> SearchInstanceList;
+typedef uint32_t SearchInstanceToken;
 
 class SearchResult;
 typedef std::shared_ptr<SearchResult> SearchResultPtr;
