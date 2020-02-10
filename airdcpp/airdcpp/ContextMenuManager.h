@@ -43,7 +43,7 @@
 	ContextMenuItemList get##name2##Menu(const vector<type>& aItems, const entityType& aEntity) const noexcept { \
 		return normalizeMenuItems(name##MenuHook.runHooksData(aItems, aEntity)); \
 	} \
-	void onClick##name2##Item(const vector<type>& aItems, const entityType& aEntity, const string& aHookId, const string& aMenuItemId) noexcept { \
+	void onClick##name2##Item(const vector<type>& aItems, const string& aHookId, const string& aMenuItemId, const entityType& aEntity) noexcept { \
 		fire(ContextMenuManagerListener::name2##MenuSelected(), aItems, aEntity, aHookId, aMenuItemId); \
 	}
 
@@ -75,7 +75,7 @@ namespace dcpp {
 		virtual void on(HintedUserMenuSelected, const vector<HintedUser>&, const string& /*aHookId*/, const string& /*aMenuItemId*/) noexcept { }
 		virtual void on(HubUserMenuSelected, const vector<HintedUser>&, const string& /*aHookId*/, const string& /*aMenuItemId*/) noexcept { }
 
-		virtual void on(FilelistItemMenuSelected, const vector<TTHValue>&, const DirectoryListingPtr&, const string& /*aHookId*/, const string& /*aMenuItemId*/) noexcept { }
+		virtual void on(FilelistItemMenuSelected, const vector<uint32_t>&, const DirectoryListingPtr&, const string& /*aHookId*/, const string& /*aMenuItemId*/) noexcept { }
 		virtual void on(GroupedSearchResultMenuSelected, const vector<TTHValue>&, const SearchInstancePtr&, const string& /*aHookId*/, const string& /*aMenuItemId*/) noexcept { }
 	};
 
@@ -105,7 +105,7 @@ namespace dcpp {
 		CONTEXT_MENU(HintedUser, hintedUser, HintedUser);
 		CONTEXT_MENU(HintedUser, hubUser, HubUser);
 
-		ENTITY_CONTEXT_MENU(TTHValue, filelistItem, FilelistItem, DirectoryListingPtr);
+		ENTITY_CONTEXT_MENU(uint32_t, filelistItem, FilelistItem, DirectoryListingPtr);
 		ENTITY_CONTEXT_MENU(TTHValue, groupedSearchResult, GroupedSearchResult, SearchInstancePtr);
 
 		typedef vector<ContextMenuItem> MenuItemList;

@@ -61,14 +61,13 @@ namespace webserver {
 		static ProfileToken deserializeShareProfile(const json& aJson);
 
 		static OptionalProfileToken deserializeOptionalShareProfile(const json& aJson);
-		static string parseSearchType(const string& aType);
 
 		template <typename ItemT>
 		using ArrayDeserializerFunc = std::function<ItemT(const json& aJson, const string& aFieldName)>;
 
 		template <typename ItemT>
-		static vector<ItemT> deserializeList(const string& aFieldName, const json& aList, const ArrayDeserializerFunc<ItemT>& aF) {
-			const auto arrayJson = JsonUtil::getArrayField(aFieldName, aList);
+		static vector<ItemT> deserializeList(const string& aFieldName, const json& aList, const ArrayDeserializerFunc<ItemT>& aF, bool aAllowEmpty) {
+			const auto arrayJson = JsonUtil::getArrayField(aFieldName, aList, aAllowEmpty);
 
 			vector<ItemT> ret;
 			for (const auto& item: arrayJson) {
