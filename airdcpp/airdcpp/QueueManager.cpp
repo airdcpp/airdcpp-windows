@@ -1221,7 +1221,8 @@ bool QueueManager::allowStartQI(const QueueItemPtr& aQI, const QueueTokenSet& ru
 	//LogManager::getInstance()->message("Speedlimit: " + Util::toString(Util::getSpeedLimit(true)*1024) + " slots: " + Util::toString(Util::getSlots(true)) + " (avg: " + Util::toString(getRunningAverage()) + ")");
 
 	if (slotsFull || speedFull) {
-		bool extraFull = (AirUtil::getSlots(true) != 0) && (downloadCount >= static_cast<size_t>(AirUtil::getSlots(true) + SETTING(EXTRA_DOWNLOAD_SLOTS)));
+		size_t slots = AirUtil::getSlots(true);
+		bool extraFull = (slots != 0) && (downloadCount >= (slots + static_cast<size_t>(SETTING(EXTRA_DOWNLOAD_SLOTS))));
 		if (extraFull || mcn || aQI->getPriority() != Priority::HIGHEST) {
 			lastError_ = slotsFull ? STRING(ALL_DOWNLOAD_SLOTS_TAKEN) : STRING(MAX_DL_SPEED_REACHED);
 			return false;
@@ -1471,6 +1472,10 @@ void QueueManager::sendFileCompletionNotifications(const QueueItemPtr& qi) noexc
 
 bool QueueManager::checkBundleFinishedHooked(const BundlePtr& aBundle) noexcept {
 	bool hasNotifications = false, isPrivate = false;
+
+	if (aBundle->getStatus() == Bundle::STATUS_SHARED)
+		return true;
+
 	if (!aBundle->isDownloaded()) {
 		return false;
 	}
@@ -1478,6 +1483,7 @@ bool QueueManager::checkBundleFinishedHooked(const BundlePtr& aBundle) noexcept 
 	if (!checkFailedBundleFilesHooked(aBundle, false)) {
 		return false;
 	}
+
 
 	{
 		RLock l (cs);
@@ -1513,6 +1519,10 @@ bool QueueManager::checkBundleFinishedHooked(const BundlePtr& aBundle) noexcept 
 }
 
 void QueueManager::shareBundle(BundlePtr aBundle, bool aSkipScan) noexcept {
+	
+	if (aBundle->getStatus() == Bundle::STATUS_SHARED)
+		return;
+
 	tasks.addTask([=] {
 		if (!aSkipScan && !runBundleCompletionHooks(aBundle)) {
 			return;
@@ -2824,7 +2834,7 @@ void QueueManager::calculatePriorities(uint64_t aTick) noexcept {
 		return;
 	}
 
-	if (lastAutoPrio != 0 && lastAutoPrio + (SETTING(AUTOPRIO_INTERVAL) * 1000) > aTick) {
+	if (lastAutoPrio != 0 && (lastAutoPrio + (SETTING(AUTOPRIO_INTERVAL) * 1000) > aTick)) {
 		return;
 	}
 
@@ -3654,7 +3664,7 @@ void QueueManager::addBundleTTHList(const HintedUser& aUser, const string& aRemo
 	//LogManager::getInstance()->message("ADD TTHLIST");
 	auto b = findBundle(aTTH);
 	if (b) {
-		addList(aUser, QueueItem::FLAG_TTHLIST_BUNDLE | QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_MATCH_QUEUE, aRemoteBundleToken, b);
+		addList(aUser, (QueueItem::FLAG_TTHLIST_BUNDLE | QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_MATCH_QUEUE), aRemoteBundleToken, b);
 	}
 }
 

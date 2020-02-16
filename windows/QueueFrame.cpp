@@ -703,7 +703,7 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 		bundleMenu.appendSeparator();
 
 		WinUtil::appendSearchMenu(bundleMenu, b->getName());
-		bundleMenu.appendItem(TSTRING(SEARCH_DIRECTORY), [this] { handleSearchDirectory(); });
+		bundleMenu.appendItem(TSTRING(SEARCH_DIRECTORY), [=] { handleSearchDirectory(); });
 
 		if (!b->isDownloaded()) {
 			bundleMenu.appendSeparator();
@@ -752,13 +752,6 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 /*QueueItem Menu*/
 void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 
-	/* Do we need to control segment counts??
-	OMenu segmentsMenu;
-	segmentsMenu.CreatePopupMenu();
-	segmentsMenu.InsertSeparatorFirst(TSTRING(MAX_SEGMENTS_NUMBER));
-	for (int i = IDC_SEGMENTONE; i <= IDC_SEGMENTTEN; i++)
-	segmentsMenu.AppendMenu(MF_STRING, i, (Util::toStringW(i - 109) + _T(" ") + TSTRING(SEGMENTS)).c_str());
-	*/
 	bool hasFinished = any_of(ql.begin(), ql.end(), [](const QueueItemPtr& q) { return q->isDownloaded(); });
 	bool hasBundleItems = any_of(ql.begin(), ql.end(), [](const QueueItemPtr& q) { return q->getBundle(); });
 
@@ -784,8 +777,6 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 		OMenu* readdMenu = fileMenu.getMenu();
 
 		/* Create submenus */
-		//segmentsMenu.CheckMenuItem(qi->getMaxSegments(), MF_BYPOSITION | MF_CHECKED);
-
 		auto sources = QueueManager::getInstance()->getSources(qi);
 
 		//remove all sources from this file
@@ -822,8 +813,6 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 			auto u = s.getUser();
 			readdMenu->appendItem(formatUser(s), [=] { QueueManager::getInstance()->readdQISource(qi->getTarget(), u); });
 		}
-
-		//fileMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)segmentsMenu, CTSTRING(MAX_SEGMENTS_NUMBER));
 		/* Submenus end */
 
 		fileMenu.InsertSeparatorFirst(TSTRING(FILE));
