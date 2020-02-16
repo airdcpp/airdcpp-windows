@@ -1699,7 +1699,7 @@ LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled
 					if (colorSetting->usingRegexp()) {
 						try {
 							//have to have $Re:
-							if (boost::regex_search(si->sr->getFileName().begin(), si->sr->getFileName().end(), colorSetting->regexp)) {
+							if (boost::regex_search(Text::toT(si->sr->getFileName()), colorSetting->regexp)) {
 								if (colorSetting->getHasFgColor()) { cd->clrText = colorSetting->getFgColor(); }
 								if (colorSetting->getHasBgColor()) { cd->clrTextBk = colorSetting->getBgColor(); }
 								break;

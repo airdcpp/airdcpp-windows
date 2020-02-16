@@ -2154,7 +2154,7 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 					if (cs->usingRegexp()) {
 						try {
 							//have to have $Re:
-							if (boost::regex_search(ii->dir->getName().begin(), ii->dir->getName().end(), cs->regexp)) {
+							if (boost::regex_search(Text::toT(ii->dir->getName()), cs->regexp)) {
 								if (cs->getHasFgColor()) { cd->clrText = cs->getFgColor(); }
 								if (cs->getHasBgColor()) { cd->clrTextBk = cs->getBgColor(); }
 								break;
