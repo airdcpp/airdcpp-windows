@@ -34,6 +34,7 @@ ListFilter::ListFilter(size_t colCount, UpdateFunction updateF) :
 	usingTypedMethod(false),
 	mode(LAST)
 {
+	matcher.setVerbosePatternErrors(false);
 }
 void ListFilter::addFilterBox(HWND parent) {
 	RECT rc = { 0, 0, 100, 120 };
