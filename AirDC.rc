@@ -3081,6 +3081,11 @@ BEGIN
     0
 END
 
+IDD_PROTOCOLBASE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 #endif    // Finnish (Finland) resources
 /////////////////////////////////////////////////////////////////////////////
 
