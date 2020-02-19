@@ -668,9 +668,9 @@ void ChatFrameBase::handleSendMessage() {
 				addStatusLine(_T("Client command: ") + s, LogMessage::SEV_INFO);
 			}
 			isCommand = checkCommand(cmd, param, message, status, thirdPerson);
-			if(message.empty()) {
-				message = s;
-			} 
+			//if(message.empty()) {
+				//message = s;
+			//} 
 		} else {
 			if(SETTING(SERVER_COMMANDS)) {
 				if(s[0] == '!' || s[0] == '+' || s[0] == '-')
