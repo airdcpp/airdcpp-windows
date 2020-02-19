@@ -855,7 +855,7 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 	} else if (stricmp(cmd.c_str(), _T("calcprio")) == 0) {
 		QueueManager::getInstance()->calculateBundlePriorities(true);
 	} else if (stricmp(cmd.c_str(), _T("generatelist")) == 0) {
-		ShareManager::getInstance()->generateOwnList(0);
+		MainFrame::getMainFrame()->addThreadedTask([this] { ShareManager::getInstance()->generateOwnList(0); });
 	} else if (stricmp(cmd.c_str(), _T("as")) == 0) {
 		//AutoSearchManager::getInstance()->runSearches();
 	} else if (stricmp(cmd.c_str(), _T("clientstats")) == 0) {
