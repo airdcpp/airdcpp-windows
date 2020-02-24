@@ -54,6 +54,7 @@ public:
 	static CImageList& getFilelistTbImages();
 	static CImageList& getHubImages();
 	static CImageList& getQueueTreeImages();
+	static CImageList& getThumbBarImages();
 
 	//Loads icon with resource id, returned handle is unmanaged.
 	static HICON loadIcon(int aDefault, int size);
@@ -131,6 +132,7 @@ private:
 	static CImageList autoSearchStatuses;
 	static CImageList hubImages;
 	static CImageList queueTreeImages;
+	static CImageList thumbBarImages;
 	
 	static tstring m_IconPath;
 
