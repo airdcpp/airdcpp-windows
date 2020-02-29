@@ -1667,8 +1667,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,6,0,0
- PRODUCTVERSION 3,6,0,0
+ FILEVERSION 3,6,1,0
+ PRODUCTVERSION 3,6,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -1686,12 +1686,12 @@ BEGIN
             VALUE "Comments", "http://www.airdcpp.net"
             VALUE "CompanyName", "AirDC++ Team"
             VALUE "FileDescription", "AirDC++"
-            VALUE "FileVersion", "3.60.0.0"
+            VALUE "FileVersion", "3.6.1.0"
             VALUE "InternalName", "AirDC++"
-            VALUE "LegalCopyright", "Copyright 2007-2019 Night and maksis"
+            VALUE "LegalCopyright", "Copyright 2007-2020 Night and maksis"
             VALUE "OriginalFilename", "AirDC.exe"
             VALUE "ProductName", "AirDC++"
-            VALUE "ProductVersion", "3.60"
+            VALUE "ProductVersion", "3.6.1.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -1712,6 +1712,8 @@ BEGIN
     "Q",            ID_FILE_QUICK_CONNECT,  VIRTKEY, CONTROL, NOINVERT
     "R",            ID_FILE_RECONNECT,      VIRTKEY, CONTROL, NOINVERT
     "S",            ID_FILE_SEARCH,         VIRTKEY, CONTROL, NOINVERT
+    "I",            ID_FILE_SETTINGS,       VIRTKEY, CONTROL, NOINVERT
+    "6",            ID_LOCK_TB,             VIRTKEY, CONTROL, NOINVERT
     "5",            ID_TOGGLE_TBSTATUS,     VIRTKEY, CONTROL, NOINVERT
     "4",            ID_TOGGLE_TOOLBAR,      VIRTKEY, CONTROL, NOINVERT
     "2",            ID_VIEW_STATUS_BAR,     VIRTKEY, CONTROL, NOINVERT
@@ -1725,12 +1727,11 @@ BEGIN
     "N",            IDC_NOTEPAD,            VIRTKEY, CONTROL, NOINVERT
     "Y",            IDC_OPEN_CONFIG_DIR,    VIRTKEY, CONTROL, NOINVERT
     "L",            IDC_OPEN_FILE_LIST,     VIRTKEY, CONTROL, NOINVERT
+    "M",            IDC_OWN_LIST_ADL,       VIRTKEY, CONTROL, NOINVERT
     "D",            IDC_QUEUE,              VIRTKEY, CONTROL, NOINVERT
     "E",            IDC_REFRESH_FILE_LIST,  VIRTKEY, CONTROL, NOINVERT
     "S",            IDC_SEND_MESSAGE,       VIRTKEY, ALT, NOINVERT
-    "I",            ID_FILE_SETTINGS,       VIRTKEY, CONTROL, NOINVERT
-    "6",            ID_LOCK_TB,             VIRTKEY, CONTROL, NOINVERT
-    "M",            IDC_OWN_LIST_ADL,       VIRTKEY, CONTROL, NOINVERT
+    "B",            IDC_WINDOW_MARK_READ,   VIRTKEY, CONTROL, NOINVERT
 END
 
 IDR_PUBLICHUBS ACCELERATORS
@@ -3077,6 +3078,11 @@ BEGIN
 END
 
 IDD_CHATFILTERITEM_DLG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_PROTOCOLBASE AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

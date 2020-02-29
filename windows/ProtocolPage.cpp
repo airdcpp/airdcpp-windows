@@ -64,6 +64,9 @@ PropPage::Item ProtocolBase::items[] = {
 
 void ProtocolBase::write()
 {
+	if (!validatePorts())
+		GetDlgItem(IDC_PORT_TLS).SetWindowText(_T(""));
+
 	SettingTab::write((HWND)(*this), items);
 	if (ipv4Page)
 		ipv4Page->write();
@@ -82,6 +85,9 @@ LRESULT ProtocolBase::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	tabs.InsertItem(IPV6, TCIF_TEXT, _T("IPv6"), -1, NULL);
 	tabs.SetCurSel(0);
 	showProtocol(false);
+
+	created = true;
+
 	return TRUE;
 }
 
@@ -122,6 +128,34 @@ void ProtocolBase::showProtocol(bool v6) {
 	tabs.SetWindowPos(HWND_BOTTOM, 0, 0, 0, 0, SWP_NOSIZE);
 }
 
+LRESULT ProtocolBase::onPortsUpdated(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWnd, BOOL& bHandled) {
+
+	if (created && (hWnd == GetDlgItem(IDC_PORT_TLS).m_hWnd || hWnd == GetDlgItem(IDC_PORT_TCP).m_hWnd)) {
+		if (!validatePorts()) {
+			WinUtil::showMessageBox(TSTRING(INVALID_PORTS), MB_ICONERROR);
+		}
+	}
+
+	bHandled = FALSE;
+	return 0;
+}
+
+bool ProtocolBase::validatePorts() {
+	CEdit tmp;
+	tmp.Attach(GetDlgItem(IDC_PORT_TLS));
+	tstring tls = WinUtil::getEditText(tmp);
+	tmp.Detach();
+
+	tmp.Attach(GetDlgItem(IDC_PORT_TCP));
+	tstring tcp = WinUtil::getEditText(tmp);
+	tmp.Detach();
+
+	if (tls == tcp) {
+		return false;
+	}
+
+	return true;
+}
 
 
 ProtocolPage::ProtocolPage(SettingsManager *s, bool v6) :  SettingTab(s), v6(v6) {

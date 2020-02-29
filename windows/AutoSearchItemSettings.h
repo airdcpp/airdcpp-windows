@@ -71,7 +71,14 @@ struct AutoSearchItemSettings {
 public:
 
 	//seed the modified properties into auto search
-	void setItemProperties(AutoSearchPtr& aAutoSearch, const string& aSearchString) {
+	void setItemProperties(AutoSearchPtr& aAutoSearch, string& aSearchString) {
+		
+		if (aSearchString[0] == '$') {
+			aAutoSearch->setEnabled(false);
+			aSearchString = aSearchString.substr(1);
+		}
+
+
 		aAutoSearch->setSearchString(aSearchString);
 		aAutoSearch->setExcludedString(excludedWords);
 		aAutoSearch->setFileType(fileTypeId);

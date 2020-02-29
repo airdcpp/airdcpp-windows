@@ -7,6 +7,7 @@ set ftpaddress=ftp.airdcpp.net
 set ftpdir=nightly
 set updaterdir=updater
 set versiondir=version
+set startupdir=%CD%
 
 cd ..
 
@@ -120,5 +121,5 @@ echo FTP uploading has been disabled, please edit sendrelease.bat to enable it
 goto :end
 
 :end
-
-timeout /t 3
+cd %startupdir%
+if %0 == "%~0" timeout /t 5
