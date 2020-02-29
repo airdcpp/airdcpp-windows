@@ -1657,15 +1657,14 @@ LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled
 					if (colorSetting->usingRegexp()) {
 						try {
 							//have to have $Re:
-							if (boost::regex_search(si->getFileName().begin(), si->getFileName().end(), colorSetting->regexp)) {
+							if (boost::regex_search(Text::toT(si->getFileName()), colorSetting->regexp)) {
 								if (colorSetting->getHasFgColor()) { cd->clrText = colorSetting->getFgColor(); }
 								if (colorSetting->getHasBgColor()) { cd->clrTextBk = colorSetting->getBgColor(); }
 								break;
 							}
 						}
 						catch (...) {}
-					}
-					else {
+					} else {
 						if (Wildcard::patternMatch(Text::utf8ToAcp(si->getFileName()), Text::utf8ToAcp(Text::fromT(colorSetting->getMatch())), '|')){
 							if (colorSetting->getHasFgColor()) { cd->clrText = colorSetting->getFgColor(); }
 							if (colorSetting->getHasBgColor()) { cd->clrTextBk = colorSetting->getBgColor(); }

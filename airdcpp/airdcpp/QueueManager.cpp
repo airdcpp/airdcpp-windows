@@ -3518,12 +3518,15 @@ void QueueManager::removeBundleItem(const QueueItemPtr& qi, bool aFinished) noex
 			removeBundleLists(bundle);
 		}
 	} else if (!aFinished ) {
-		tasks.addTask([=] {
-			if (!checkBundleFinishedHooked(bundle)) {
-				bundle->setFlag(Bundle::FLAG_UPDATE_SIZE);
-				addBundleUpdate(bundle);
-			}
-		});
+		//Delay event to prevent multiple scans when removing files...
+		delayEvents.addEvent(bundle->getToken(), [=] { 
+			tasks.addTask([=] {
+				if (!checkBundleFinishedHooked(bundle)) {
+					bundle->setFlag(Bundle::FLAG_UPDATE_SIZE);
+					addBundleUpdate(bundle);
+				}
+			});
+		}, 3000);
 	}
 
 	for (auto& u : sources)

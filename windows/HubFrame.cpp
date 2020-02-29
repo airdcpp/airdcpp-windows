@@ -1756,7 +1756,7 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 						if(cs->usingRegexp()) {
 							try {
 								//have to have $Re:
-								if(boost::regex_search(match.begin(), match.end(), cs->regexp)){
+								if(boost::regex_search(match, cs->regexp)){
 									if(cs->getHasFgColor()) cd->clrText = cs->getFgColor();
 									break;
 								}
