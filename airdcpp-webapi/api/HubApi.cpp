@@ -49,7 +49,7 @@ namespace webserver {
 					{ "text", aMessage },
 					{ "third_person", aThirdPerson },
 					{ "hub_url", aClient.getHubUrl() },
-					{ "session_id", aClient.getClientId() },
+					{ "session_id", aClient.getToken() },
 				});
 			}),
 			aResultGetter
@@ -185,7 +185,7 @@ namespace webserver {
 			{ "identity", HubInfo::serializeIdentity(aClient) },
 			{ "connect_state", HubInfo::serializeConnectState(aClient) },
 			{ "hub_url", aClient->getHubUrl() },
-			{ "id", aClient->getClientId() },
+			{ "id", aClient->getToken() },
 			{ "favorite_hub", aClient->getFavToken() },
 			{ "share_profile", Serializer::serializeShareProfileSimple(aClient->get(HubSettings::ShareProfile)) },
 			{ "message_counts", Serializer::serializeCacheInfo(aClient->getCache(), Serializer::serializeUnreadChat) },
@@ -194,7 +194,7 @@ namespace webserver {
 	}
 
 	void HubApi::addHub(const ClientPtr& aClient) noexcept {
-		addSubModule(aClient->getClientId(), std::make_shared<HubInfo>(this, aClient));
+		addSubModule(aClient->getToken(), std::make_shared<HubInfo>(this, aClient));
 	}
 
 	// Use async tasks because adding/removing HubInfos require calls to ClientListener (which is likely 
@@ -212,7 +212,7 @@ namespace webserver {
 
 	void HubApi::on(ClientManagerListener::ClientRemoved, const ClientPtr& aClient) noexcept {
 		addAsyncTask([=] {
-			removeSubModule(aClient->getClientId());
+			removeSubModule(aClient->getToken());
 
 			if (!subscriptionActive("hub_removed")) {
 				return;
