@@ -29,6 +29,7 @@
 #include <airdcpp/Bundle.h>
 
 #include <airdcpp/DirectoryListingManager.h>
+#include <airdcpp/ClientManager.h>
 #include <airdcpp/SearchManager.h>
 #include <airdcpp/SearchInstance.h>
 #include <airdcpp/DirectoryListing.h>
@@ -130,7 +131,7 @@ namespace webserver {
 		CONTEXT_MENU_HANDLER("share_root", shareRoot, ShareRoot, TTHValue, tthArrayValueParser, defaultArrayValueSerializer<TTHValue>, Access::ANY);
 		CONTEXT_MENU_HANDLER("user", user, User, CID, cidArrayValueParser, defaultArrayValueSerializer<CID>, Access::ANY);
 		CONTEXT_MENU_HANDLER("hinted_user", hintedUser, HintedUser, HintedUser, hintedUserArrayValueParser, Serializer::serializeHintedUser, Access::ANY);
-		CONTEXT_MENU_HANDLER("hub_user", hubUser, HubUser, HintedUser, hintedUserArrayValueParser, Serializer::serializeHintedUser, Access::ANY);
+		// CONTEXT_MENU_HANDLER("hub_user", hubUser, HubUser, HintedUser, hintedUserArrayValueParser, Serializer::serializeHintedUser, Access::ANY);
 
 		const auto parseFilelist = [](const json& aJson, const string& aFieldName) {
 			auto cidStr = JsonUtil::parseValue<string>(aFieldName, aJson, false);
@@ -147,13 +148,24 @@ namespace webserver {
 		const auto parseSearchInstance = [](const json& aJson, const string& aFieldName) {
 			auto instanceId = JsonUtil::parseValue<uint32_t>(aFieldName, aJson, false);
 			auto instance = SearchManager::getInstance()->getSearchInstance(instanceId);
-			if (!instanceId) {
+			if (!instance) {
 				JsonUtil::throwError(aFieldName, JsonUtil::ERROR_INVALID, "Invalid session ID");
 			}
 
 			return instance;
 		};
 
+		const auto parseClient = [](const json& aJson, const string& aFieldName) {
+			auto sessionId = JsonUtil::parseValue<uint32_t>(aFieldName, aJson, false);
+			auto instance = ClientManager::getInstance()->getClient(sessionId);
+			if (!instance) {
+				JsonUtil::throwError(aFieldName, JsonUtil::ERROR_INVALID, "Invalid session ID");
+			}
+
+			return instance;
+		};
+
+		ENTITY_CONTEXT_MENU_HANDLER("hub_user", hubUser, HubUser, uint32_t, defaultArrayValueParser<uint32_t>, defaultArrayValueSerializer<uint32_t>, ClientPtr, parseClient, Access::ANY);
 		ENTITY_CONTEXT_MENU_HANDLER("filelist_item", filelistItem, FilelistItem, uint32_t, defaultArrayValueParser<uint32_t>, defaultArrayValueSerializer<uint32_t>, DirectoryListingPtr, parseFilelist, Access::ANY);
 		ENTITY_CONTEXT_MENU_HANDLER("grouped_search_result", groupedSearchResult, GroupedSearchResult, TTHValue, tthArrayValueParser, defaultArrayValueSerializer<TTHValue>, SearchInstancePtr, parseSearchInstance, Access::ANY);
 	}
@@ -257,8 +269,8 @@ namespace webserver {
 		onMenuItemSelected("hinted_user", Serializer::serializeList(aSelectedIds, Serializer::serializeHintedUser), aHookId, aMenuItemId);
 	}
 
-	void MenuApi::on(ContextMenuManagerListener::HubUserMenuSelected, const vector<HintedUser>& aSelectedIds, const string& aHookId, const string& aMenuItemId) noexcept {
-		onMenuItemSelected("hub_user", Serializer::serializeList(aSelectedIds, Serializer::serializeHintedUser), aHookId, aMenuItemId);
+	void MenuApi::on(ContextMenuManagerListener::HubUserMenuSelected, const vector<uint32_t>& aSelectedIds, const ClientPtr& aClient, const string& aHookId, const string& aMenuItemId) noexcept {
+		onMenuItemSelected("hub_user", aSelectedIds, aHookId, aMenuItemId, aClient->getToken());
 	}
 
 	void MenuApi::on(ContextMenuManagerListener::GroupedSearchResultMenuSelected, const vector<TTHValue>& aSelectedIds, const SearchInstancePtr& aInstance, const string& aHookId, const string& aMenuItemId) noexcept {

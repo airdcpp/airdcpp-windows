@@ -73,10 +73,10 @@ namespace dcpp {
 		virtual void on(FavoriteHubMenuSelected, const vector<uint32_t>&, const string& /*aHookId*/, const string& /*aMenuItemId*/) noexcept { }
 		virtual void on(UserMenuSelected, const vector<CID>&, const string& /*aHookId*/, const string& /*aMenuItemId*/) noexcept { }
 		virtual void on(HintedUserMenuSelected, const vector<HintedUser>&, const string& /*aHookId*/, const string& /*aMenuItemId*/) noexcept { }
-		virtual void on(HubUserMenuSelected, const vector<HintedUser>&, const string& /*aHookId*/, const string& /*aMenuItemId*/) noexcept { }
 
 		virtual void on(FilelistItemMenuSelected, const vector<uint32_t>&, const DirectoryListingPtr&, const string& /*aHookId*/, const string& /*aMenuItemId*/) noexcept { }
 		virtual void on(GroupedSearchResultMenuSelected, const vector<TTHValue>&, const SearchInstancePtr&, const string& /*aHookId*/, const string& /*aMenuItemId*/) noexcept { }
+		virtual void on(HubUserMenuSelected, const vector<uint32_t>&, const ClientPtr&, const string& /*aHookId*/, const string& /*aMenuItemId*/) noexcept { }
 	};
 
 	class ContextMenuItem {
@@ -103,10 +103,10 @@ namespace dcpp {
 		CONTEXT_MENU(uint32_t, transfer, Transfer);
 		CONTEXT_MENU(uint32_t, favoriteHub, FavoriteHub);
 		CONTEXT_MENU(HintedUser, hintedUser, HintedUser);
-		CONTEXT_MENU(HintedUser, hubUser, HubUser);
 
 		ENTITY_CONTEXT_MENU(uint32_t, filelistItem, FilelistItem, DirectoryListingPtr);
 		ENTITY_CONTEXT_MENU(TTHValue, groupedSearchResult, GroupedSearchResult, SearchInstancePtr);
+		ENTITY_CONTEXT_MENU(uint32_t, hubUser, HubUser, ClientPtr);
 
 		typedef vector<ContextMenuItem> MenuItemList;
 
