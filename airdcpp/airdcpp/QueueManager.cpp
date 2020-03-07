@@ -1205,12 +1205,14 @@ bool QueueManager::allowStartQI(const QueueItemPtr& aQI, const QueueTokenSet& ru
 	if (aQI->isPausedPrio())
 		return false;
 
-	//Download was failed for writing errors, check if we have enough free space to continue the downloading now...
-	if (aQI->getBundle() && aQI->getBundle()->getStatus() == Bundle::STATUS_DOWNLOAD_ERROR) {
+
+	//check if we have free space to continue the download now... otherwise results in paused priority..
+	if (aQI->getBundle() && (aQI->getBundle()->getStatus() == Bundle::STATUS_DOWNLOAD_ERROR)) {
 		if (File::getFreeSpace(aQI->getBundle()->getTarget()) >= static_cast<int64_t>(aQI->getSize() - aQI->getDownloadedBytes())) {
 			setBundleStatus(aQI->getBundle(), Bundle::STATUS_QUEUED);
 		} else {
 			lastError_ = aQI->getBundle()->getError();
+			onDownloadError(aQI->getBundle(), lastError_);
 			return false;
 		}
 	}
@@ -1623,9 +1625,14 @@ bool QueueManager::runFileCompletionHooks(const QueueItemPtr& aQI) noexcept {
 	return true;
 }
 
-void QueueManager::bundleDownloadFailed(const BundlePtr& aBundle, const string& aError) {
+void QueueManager::onDownloadError(const BundlePtr& aBundle, const string& aError) {
 	if (!aBundle) {
 		return;
+	}
+
+	//Pause bundle, to give other bundles a chance to get downloaded...
+	if (aBundle->getStatus() == Bundle::STATUS_QUEUED || aBundle->getStatus() == Bundle::STATUS_DOWNLOAD_ERROR) {
+		tasks.addTask([=] { setBundlePriority(aBundle, Priority::PAUSED_FORCE, false); });
 	}
 
 	aBundle->setError(aError);
@@ -1717,7 +1724,7 @@ void QueueManager::onDownloadFailed(const QueueItemPtr& aQI, Download* aDownload
 	}
 
 	for (const auto& u : getConn) {
-		if (u.user != aDownload->getUser())
+		if (u.user != aDownload->getUser()) //trying a different user? we rotated queue, shouldnt we try another file?
 			ConnectionManager::getInstance()->getDownloadConnection(u);
 	}
 
@@ -2903,10 +2910,21 @@ void QueueManager::checkResumeBundles() noexcept {
 			if (b->getResumeTime() > 0 && GET_TIME() > b->getResumeTime()) {
 				resumeBundles.push_back(b);
 			}
+
+			//check if we have free space to continue the download...
+			if (b->getStatus() == Bundle::STATUS_DOWNLOAD_ERROR) {
+				if (File::getFreeSpace(b->getTarget()) >= static_cast<int64_t>(b->getSize() - b->getDownloadedBytes())) {
+					resumeBundles.push_back(b);
+				}
+			}
 		}
 	}
 
 	for (auto& b : resumeBundles) {
+
+		if (b->getStatus() == Bundle::STATUS_DOWNLOAD_ERROR)
+			setBundleStatus(b, Bundle::STATUS_QUEUED);
+
 		setBundlePriority(b, Priority::DEFAULT, false);
 	}
 }
