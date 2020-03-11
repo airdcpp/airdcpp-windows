@@ -278,8 +278,8 @@ public:
 	// Throws QueueException
 	MemoryInputStream* generateTTHList(QueueToken aBundleToken, bool isInSharingHub, BundlePtr& bundle_);
 
-	//Bundle download failed due to Ex. disk full
-	void bundleDownloadFailed(const BundlePtr& aBundle, const string& aError);
+	//Bundle download failed due to Ex. disk full, or TTH_INCONSISTENCY
+	void onDownloadError(const BundlePtr& aBundle, const string& aError);
 
 	/* Priorities */
 	// Use DEFAULT priority to enable auto priority
