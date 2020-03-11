@@ -102,9 +102,6 @@ namespace webserver {
 			return websocketpp::http::status_code::not_found;
 		}
 
-		// auto user = Deserializer::getUser(aRequest.getCIDParam(), true);
-		// auto ou = ClientManager::getInstance()->findOnlineUser(user->getCID(), client->getHubUrl(), false);
-
 		aRequest.setResponseBody(Serializer::serializeOnlineUser(ou));
 		return websocketpp::http::status_code::ok;
 	}

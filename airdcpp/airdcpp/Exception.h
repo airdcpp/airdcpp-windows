@@ -57,7 +57,7 @@ protected:
 public:\
 	name() : Exception(#name) { } \
 	name(const string& aError) : Exception(#name ": " + aError) { } \
-	name(const string& aError, int& eCode) : Exception(#name ": " + aError, eCode) { } \
+	name(const string& aError, int eCode) : Exception(#name ": " + aError, eCode) { } \
 	virtual ~name() noexcept { } \
 }
 
