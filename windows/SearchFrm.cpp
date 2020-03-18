@@ -544,9 +544,6 @@ void SearchFrame::onEnter() {
 	}
 
 	ctrlStatus.SetText(2, (TSTRING(TIME_LEFT) + _T(" ") + Util::formatSecondsW((searchEndTime - searchStartTime) / 1000)).c_str());
-
-	if(SETTING(CLEAR_SEARCH)) // Only clear if the search was sent
-		ctrlSearch.SetWindowText(_T(""));
 }
 
 
@@ -558,7 +555,13 @@ void SearchFrame::onSearchStarted(const string& aSearchString, uint64_t aQueueTi
 	waiting = true;
 	firstResultTime = 0;
 
-	ctrlSearch.SetWindowText(target.c_str());
+	if (!SETTING(CLEAR_SEARCH)) {
+		ctrlSearch.SetWindowText(target.c_str());
+		ctrlSearch.SetSelAll();
+	} else {
+		ctrlSearch.SetWindowText(_T(""));
+	}
+
 	ctrlSizeMode.SetCurSel(initialMode);
 	ctrlSize.SetWindowText(Util::toStringW(initialSize).c_str());
 	SetWindowText((TSTRING(SEARCH) + _T(" - ") + target).c_str());
@@ -566,9 +569,6 @@ void SearchFrame::onSearchStarted(const string& aSearchString, uint64_t aQueueTi
 
 	running = true; 
 	initialString = target;
-
-	if (ctrlSearchBox.GetCount())
-		ctrlSearchBox.SetCurSel(0);
 
 	SetWindowText((TSTRING(SEARCH) + _T(" - ") + target).c_str());
 }
