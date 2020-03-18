@@ -83,6 +83,7 @@ namespace webserver {
 		auto expiration = aSearch->getTimeToExpiration();
 		return {
 			{ "id", aSearch->getToken() },
+			{ "owner", aSearch->getOwnerId() },
 			{ "expires_in", expiration ? json(*expiration) : json() },
 			{ "current_search_id", aSearch->getCurrentSearchToken() },
 			{ "searches_sent_ago", aSearch->getTimeFromLastSearch() },
@@ -93,10 +94,39 @@ namespace webserver {
 		};
 	}
 
+
+	string SearchApi::createOwnerId(const SessionPtr& aSession, const string& aSuffix) noexcept {
+		string ret;
+
+		switch (aSession->getSessionType()) {
+		case Session::TYPE_EXTENSION:
+			ret = "extension:" + aSession->getUser()->getUserName();
+			break;
+		case Session::TYPE_BASIC_AUTH:
+			ret = "basic_auth";
+		default:
+			ret = "session:" + Util::toString(aSession->getId());
+		}
+
+		if (!aSuffix.empty()) {
+			ret += ":" + aSuffix;
+		}
+
+		return ret;
+	}
+
 	api_return SearchApi::handleCreateInstance(ApiRequest& aRequest) {
 		auto expirationMinutes = JsonUtil::getOptionalFieldDefault<int>("expiration", aRequest.getRequestBody(), DEFAULT_INSTANCE_EXPIRATION_MINUTES);
+		auto ownerIdSuffix = JsonUtil::getOptionalFieldDefault<string>(
+			"owner_suffix", aRequest.getRequestBody(), 
+			""
+		);
 
-		auto instance = SearchManager::getInstance()->createSearchInstance(GET_TICK() + expirationMinutes * 60 * 1000);
+		auto instance = SearchManager::getInstance()->createSearchInstance(
+			createOwnerId(aRequest.getSession(), ownerIdSuffix), 
+			GET_TICK() + expirationMinutes * 60 * 1000
+		);
+
 		aRequest.setResponseBody(serializeSearchInstance(instance));
 		return websocketpp::http::status_code::ok;
 	}

@@ -51,6 +51,7 @@ namespace webserver {
 
 		static json serializeSearchType(const SearchTypePtr& aType) noexcept;
 		static string parseSearchTypeId(ApiRequest& aRequest) noexcept;
+		static string createOwnerId(const SessionPtr& aSession, const string& aSuffix) noexcept;
 	};
 }
 

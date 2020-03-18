@@ -140,15 +140,16 @@ SearchQueueInfo SearchManager::search(StringList& aHubUrls, const SearchPtr& aSe
 }
 
 
-SearchInstancePtr SearchManager::createSearchInstance(uint64_t aExpirationTick) noexcept {
-	auto searchinstance = make_shared<SearchInstance>(aExpirationTick);
+SearchInstancePtr SearchManager::createSearchInstance(const string& aOwnerId, uint64_t aExpirationTick) noexcept {
+	auto searchInstance = make_shared<SearchInstance>(aOwnerId, aExpirationTick);
 
 	{
 		WLock l(cs);
-		searchInstances.emplace(searchinstance->getToken(), searchinstance);
+		searchInstances.emplace(searchInstance->getToken(), searchInstance);
 	}
 
-	return searchinstance;
+	fire(SearchManagerListener::SearchInstanceCreated(), searchInstance);
+	return searchInstance;
 }
 
 
@@ -166,6 +167,7 @@ SearchInstancePtr SearchManager::removeSearchInstance(SearchInstanceToken aToken
 		searchInstances.erase(i);
 	}
 
+	fire(SearchManagerListener::SearchInstanceRemoved(), ret);
 	return ret;
 }
 

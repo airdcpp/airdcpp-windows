@@ -108,7 +108,7 @@ public:
 
 	bool decryptPacket(string& x, size_t aLen, const ByteVector& aBuf);
 
-	SearchInstancePtr createSearchInstance(uint64_t aExpirationTick = 0) noexcept;
+	SearchInstancePtr createSearchInstance(const string& aOwnerId, uint64_t aExpirationTick = 0) noexcept;
 	SearchInstancePtr removeSearchInstance(SearchInstanceToken aToken) noexcept;
 	SearchInstancePtr getSearchInstance(SearchInstanceToken aToken) const noexcept;
 	SearchInstanceList getSearchInstances() const noexcept;

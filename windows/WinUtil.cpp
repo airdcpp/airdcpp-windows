@@ -2318,7 +2318,7 @@ tstring WinUtil::formatFileType(const string& aFileName) {
 
 void WinUtil::findNfo(const string& aAdcPath, const HintedUser& aUser) noexcept {
 	MainFrame::getMainFrame()->addThreadedTask([=] {
-		SearchInstance searchInstance;
+		SearchInstance searchInstance("windows_find_nfo");
 
 		auto search = make_shared<Search>(Priority::HIGH, Util::toString(Util::rand()));
 		search->maxResults = 1;

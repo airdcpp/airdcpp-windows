@@ -33,7 +33,7 @@ namespace dcpp {
 	struct SearchQueueInfo;
 	class SearchInstance : public Speaker<SearchInstanceListener>, private SearchManagerListener, private ClientManagerListener {
 	public:
-		SearchInstance(uint64_t aExpirationTick = 0);
+		SearchInstance(const string& aOwnerId, uint64_t aExpirationTick = 0);
 		~SearchInstance();
 
 		SearchQueueInfo hubSearch(StringList& aHubUrls, const SearchPtr& aSearch) noexcept;
@@ -68,6 +68,10 @@ namespace dcpp {
 			return token;
 		}
 
+		const string& getOwnerId() const noexcept {
+			return ownerId;
+		}
+
 		optional<int64_t> getTimeToExpiration() const noexcept;
 
 		IGETSET(bool, freeSlotsOnly, FreeSlotsOnly, false);
@@ -92,6 +96,7 @@ namespace dcpp {
 
 		const SearchInstanceToken token;
 		const uint64_t expirationTick;
+		const string ownerId;
 	};
 }
 
