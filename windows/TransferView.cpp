@@ -1008,22 +1008,6 @@ void TransferView::onBundleName(const BundlePtr& aBundle) {
 
 void TransferView::on(TransferInfoManagerListener::Added, const TransferInfoPtr& aInfo) noexcept {
 	auto ui = new UpdateInfo(aInfo->getStringToken(), aInfo->isDownload());
-	if (aInfo->isDownload()) {
-		auto qi = QueueManager::getInstance()->getQueueInfo(aInfo->getHintedUser());
-		if (qi) {
-			auto type = Transfer::TYPE_FILE;
-			if (qi->getFlags() & QueueItem::FLAG_USER_LIST)
-				type = Transfer::TYPE_FULL_LIST;
-			else if (qi->getFlags() & QueueItem::FLAG_PARTIAL_LIST)
-				type = Transfer::TYPE_PARTIAL_LIST;
-
-			ui->setType(type);
-			ui->setTarget(Text::toT(qi->getTarget()));
-			ui->setSize(qi->getSize());
-			ui->setBundle(qi->getBundle() ? qi->getBundle()->getToken() : 0);
-		}
-	}
-
 	ui->setUser(aInfo->getHintedUser());
 	ui->setStatus(ItemInfo::STATUS_WAITING);
 	ui->setStatusString(TSTRING(CONNECTING));
