@@ -28,6 +28,7 @@
 #include "Wildcards.h"
 
 #include <airdcpp/ClientManager.h>
+#include <airdcpp/ContextMenuManager.h>
 #include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/QueueManager.h>
 #include <airdcpp/Search.h>
@@ -1473,6 +1474,17 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			appendUserItems(resultsMenu, false);
 			prepareMenu(resultsMenu, UserCommand::CONTEXT_SEARCH, tthInfo.hubs);
 			resultsMenu.appendSeparator();
+
+			{
+				vector<TTHValue> tokens;
+				ctrlResults.list.forEachSelectedT([&tokens](const SearchInfo* ii) {
+					if (!ii->parent) {
+						tokens.push_back(ii->getTTH());
+					}
+				});
+
+				EXT_CONTEXT_MENU_ENTITY(resultsMenu, GroupedSearchResult, tokens, search);
+			}
 
 			resultsMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
 

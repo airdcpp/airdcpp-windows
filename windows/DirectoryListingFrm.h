@@ -243,7 +243,7 @@ public:
 
 	void activate() noexcept;
 private:
-	void appendTreeContextMenu(CPoint& pt, DirectoryListing::Directory::Ptr& aDir);
+	void appendTreeContextMenu(CPoint& pt, const HTREEITEM& aTreeItem);
 	void appendListContextMenu(CPoint& pt);
 
 	bool checkCommonKey(int key);
@@ -298,6 +298,10 @@ private:
 		ItemInfo(const DirectoryListing::File::Ptr& f);
 		ItemInfo(const DirectoryListing::Directory::Ptr& d);
 		~ItemInfo();
+
+		DirectoryListingToken getToken() const noexcept {
+			return hash<string>()(type == DIRECTORY ? dir->getName() : file->getName());
+		}
 
 		const tstring getText(uint8_t col) const;
 		const string getTextNormal(uint8_t col) const;

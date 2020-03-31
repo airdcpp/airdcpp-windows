@@ -34,6 +34,7 @@
 
 #include <airdcpp/ADLSearch.h>
 #include <airdcpp/ClientManager.h>
+#include <airdcpp/ContextMenuManager.h>
 #include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/File.h>
 #include <airdcpp/QueueManager.h>
@@ -1352,7 +1353,9 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 			appendListContextMenu(*pt);
 			return TRUE;
 		}
-	} if(reinterpret_cast<HWND>(wParam) == ctrlTree && ctrlTree.GetSelectedItem() != NULL) { 
+	} 
+	
+	if(reinterpret_cast<HWND>(wParam) == ctrlTree && ctrlTree.GetSelectedItem() != NULL) { 
 		CPoint pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 		if (pt.x == -1 && pt.y == -1) {
 			WinUtil::getContextMenuPos(ctrlTree, pt);
@@ -1370,9 +1373,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 			ctrlTree.ClientToScreen(&pt);
 			changeType = CHANGE_TREE_SINGLE;
 
-			auto dir = ((ItemInfo*) ctrlTree.GetItemData(ht))->dir;
-
-			appendTreeContextMenu(pt, dir);
+			appendTreeContextMenu(pt, ht);
 			return TRUE;
 		}
 	} 
@@ -1450,6 +1451,15 @@ void DirectoryListingFrame::appendListContextMenu(CPoint& pt) {
 
 	fileMenu.appendSeparator();
 
+	{
+		vector<DirectoryListingToken> tokens;
+		ctrlFiles.list.forEachSelectedT([&tokens](const ItemInfo* ii) {
+			tokens.push_back(ii->getToken());
+		});
+
+		EXT_CONTEXT_MENU_ENTITY(fileMenu, FilelistItem, tokens, dl);
+	}
+
 	// copy menu
 	ListBaseType::MenuItemList customItems{
 		{ TSTRING(DIRECTORY), &handleCopyDirectory },
@@ -1493,7 +1503,10 @@ void DirectoryListingFrame::appendListContextMenu(CPoint& pt) {
 	fileMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 }
 
-void DirectoryListingFrame::appendTreeContextMenu(CPoint& pt, DirectoryListing::Directory::Ptr& dir) {
+void DirectoryListingFrame::appendTreeContextMenu(CPoint& pt, const HTREEITEM& aTreeItem) {
+	auto ii = ((ItemInfo*)ctrlTree.GetItemData(aTreeItem));
+	auto dir = ii->dir;
+
 	ShellMenu directoryMenu;
 	directoryMenu.CreatePopupMenu();
 
@@ -1504,6 +1517,11 @@ void DirectoryListingFrame::appendTreeContextMenu(CPoint& pt, DirectoryListing::
 
 	WinUtil::appendSearchMenu(directoryMenu, curPath);
 	directoryMenu.appendSeparator();
+
+	{
+		vector<DirectoryListingToken> tokens({ ii->getToken() });
+		EXT_CONTEXT_MENU_ENTITY(directoryMenu, FilelistItem, tokens, dl);
+	}
 
 	if (dir && dir->getAdls() && dir->getParent() != dl->getRoot().get()) {
 		directoryMenu.appendItem(TSTRING(GO_TO_DIRECTORY), [this] { handleGoToDirectory(true); });

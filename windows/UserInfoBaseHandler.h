@@ -23,6 +23,7 @@
 #include "OMenu.h"
 
 #include <airdcpp/ClientManager.h>
+#include <airdcpp/ContextMenuManager.h>
 #include <airdcpp/FavoriteManager.h>
 #include <airdcpp/UserInfoBase.h>
 #include <airdcpp/Util.h>
@@ -192,7 +193,7 @@ public:
 				//if(!traits.nonFavOnly)
 				//	appendListMenu<WinUtil::ConnectFav>(aUser, list, menu.createSubMenu(CTSTRING(CONNECT_FAVUSER_HUB)), false);
 			}
-		} 
+		}
 		
 		if (!multipleHubs) {
 			if (pmItems)
@@ -203,6 +204,15 @@ public:
 
 			//if(!traits.nonFavOnly)
 			//	menu.AppendMenu(MF_STRING, IDC_CONNECT, CTSTRING(CONNECT_FAVUSER_HUB));
+		}
+
+		{
+			vector<HintedUser> tokens;
+			((T*)this)->getUserList().forEachSelectedT([&tokens](const UserInfoBase* uib) {
+				tokens.push_back(HintedUser(uib->getUser(), uib->getHubUrl()));
+			});
+
+			EXT_CONTEXT_MENU(menu, HintedUser, tokens);
 		}
 
 		if(!traits.favOnly) {

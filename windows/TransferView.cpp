@@ -19,6 +19,7 @@
 #include "stdafx.h"
 #include "Resource.h"
 
+#include <airdcpp/ContextMenuManager.h>
 #include <airdcpp/ResourceManager.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/ConnectionManager.h>
@@ -183,6 +184,21 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 
 			ctrlTransfers.appendCopyMenu(transferMenu);
 			transferMenu.appendSeparator();
+
+			{
+				vector<uint32_t> tokens;
+				ctrlTransfers.forEachSelectedT([&tokens](const ItemInfo* ii) {
+					if (!ii->isBundle) {
+						auto ti = TransferInfoManager::getInstance()->findTransfer(ii->token);
+						if (ti) {
+							tokens.push_back(ti->getToken());
+						}
+					}
+					});
+
+				EXT_CONTEXT_MENU(transferMenu, Transfer, tokens);
+			}
+
 			transferMenu.appendItem(TSTRING(CLOSE_CONNECTION), [=] { handleDisconnect(); });
 		} else {
 			transferMenu.InsertSeparatorFirst(TSTRING(BUNDLE));

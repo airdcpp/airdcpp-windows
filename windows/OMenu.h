@@ -45,6 +45,42 @@ struct OMenuItem {
 	Dispatcher::F f;
 };
 
+
+#define EXT_CONTEXT_MENU(menu, menuId, tokens) \
+if (!tokens.empty()) { \
+	auto extMenuItems = ContextMenuManager::getInstance()->get##menuId##Menu(tokens); \
+	if (!extMenuItems.empty()) { \
+		for (const auto& extItem : extMenuItems) { \
+			menu.appendItem( \
+				Text::toT(extItem->getTitle()), \
+				[=]() { \
+					ContextMenuManager::getInstance()->onClick##menuId##Item(tokens, extItem->getHookId(), extItem->getId()); \
+				}, \
+				OMenu::FLAG_THREADED \
+			); \
+		} \
+		menu.appendSeparator(); \
+	} \
+}
+
+#define EXT_CONTEXT_MENU_ENTITY(menu, menuId, tokens, entity) \
+if (!tokens.empty()) { \
+	auto extMenuItems = ContextMenuManager::getInstance()->get##menuId##Menu(tokens, entity); \
+	if (!extMenuItems.empty()) { \
+		for (const auto& extItem : extMenuItems) { \
+			menu.appendItem( \
+				Text::toT(extItem->getTitle()), \
+				[=]() { \
+					ContextMenuManager::getInstance()->onClick##menuId##Item(tokens, extItem->getHookId(), extItem->getId(), entity); \
+				}, \
+				OMenu::FLAG_THREADED \
+			); \
+		} \
+		menu.appendSeparator(); \
+	} \
+}
+
+
 /*
  * Wouldn't it be Wonderful if WTL made their functions virtual? Yes it would...
  */

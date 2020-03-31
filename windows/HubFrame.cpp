@@ -28,6 +28,7 @@
 #include "MainFrm.h"
 #include "Wildcards.h"
 
+#include <airdcpp/ContextMenuManager.h>
 #include <airdcpp/CryptoManager.h>
 #include <airdcpp/Message.h>
 #include <airdcpp/IgnoreManager.h>
@@ -1008,6 +1009,15 @@ LRESULT HubFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOO
 			}
 
 			menu.AppendMenu(MF_SEPARATOR);
+		}
+
+		{
+			vector<uint32_t> tokens;
+			ctrlUsers.forEachSelectedT([&tokens](const ItemInfo* ii) {
+				tokens.push_back(ii->onlineUser->getToken());
+				});
+
+			EXT_CONTEXT_MENU_ENTITY(menu, HubUser, tokens, client);
 		}
 
 		ctrlUsers.appendCopyMenu(menu);

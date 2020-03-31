@@ -634,20 +634,7 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 			tokens.push_back(bundle->getToken());
 		}
 
-		auto extMenuItems = ContextMenuManager::getInstance()->getQueueBundleMenu(tokens);
-		if (!extMenuItems.empty()) {
-			for (const auto& extItem: extMenuItems) {
-				bundleMenu.appendItem(
-					Text::toT(extItem->getTitle()),
-					[=]() {
-						ContextMenuManager::getInstance()->onClickQueueBundleItem(tokens, extItem->getHookId(), extItem->getId());
-					},
-					OMenu::FLAG_THREADED
-				);
-			}
-
-			bundleMenu.appendSeparator();
-		}
+		EXT_CONTEXT_MENU(bundleMenu, QueueBundle, tokens);
 	}
 
 	if (!allFinished) {
@@ -824,7 +811,6 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 
 		if (hasBundleItems) {
 			WinUtil::appendSearchMenu(fileMenu, Util::toAdcFile(Util::getFilePath(qi->getTarget())));
-			//fileMenu.appendSeparator();
 		}
 
 		if (!qi->isDownloaded()) {
@@ -837,24 +823,28 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 			fileMenu.appendSeparator();
 			appendUserMenu<QueueItem::Source>(fileMenu, sources);
 			fileMenu.appendSeparator();
-		}
-		else if (hasBundleItems) {
+		} else if (hasBundleItems) {
 			fileMenu.appendSeparator();
 			fileMenu.appendItem(TSTRING(OPEN), [=] { handleOpenFile(qi); }, OMenu::FLAG_DEFAULT);
-		}
-		else {
+		} else {
 			fileMenu.appendSeparator();
 		}
 	} else {
 		fileMenu.InsertSeparatorFirst(TSTRING(FILES));
 
-		//if (hasBundleItems)
-		//	WinUtil::appendFilePrioMenu(fileMenu, ql);
-
 		fileMenu.AppendMenu(MF_SEPARATOR);
 		fileMenu.appendItem(TSTRING(REMOVE_OFFLINE), [=] { handleRemoveOffline(ql); });
 		fileMenu.appendItem(TSTRING(READD_ALL), [=] { handleReaddAll(ql); });
 		fileMenu.appendSeparator();
+	}
+
+	{
+		vector<QueueToken> tokens;
+		for (const auto& q: ql) {
+			tokens.push_back(q->getToken());
+		}
+
+		EXT_CONTEXT_MENU(fileMenu, QueueFile, tokens);
 	}
 
 	if (hasBundleItems) {

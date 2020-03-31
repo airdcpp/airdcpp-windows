@@ -25,6 +25,7 @@
 #include "LineDlg.h"
 
 #include <airdcpp/ClientManager.h>
+#include <airdcpp/ContextMenuManager.h>
 #include <airdcpp/IgnoreManager.h>
 #include <airdcpp/Localization.h>
 #include <airdcpp/LogManager.h>
