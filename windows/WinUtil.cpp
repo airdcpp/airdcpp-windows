@@ -1948,14 +1948,10 @@ void WinUtil::appendHistory(CComboBox& ctrlCombo, SettingsManager::HistoryType a
 }
 
 string WinUtil::addHistory(CComboBox& ctrlCombo, SettingsManager::HistoryType aType) {
-	string ret;
-	TCHAR *buf = new TCHAR[ctrlCombo.GetWindowTextLength()+1];
-	ctrlCombo.GetWindowText(buf, ctrlCombo.GetWindowTextLength()+1);
-	ret = Text::fromT(buf);
+	string ret = Text::fromT(getComboText(ctrlCombo, -1));
 	if(!ret.empty() && SettingsManager::getInstance()->addToHistory(ret, aType))
 		appendHistory(ctrlCombo, aType);
 
-	delete[] buf;
 	return ret;
 }
 
