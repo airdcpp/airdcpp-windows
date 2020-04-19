@@ -36,6 +36,10 @@ namespace webserver {
 		MenuApi(Session* aSession);
 		~MenuApi();
 	private:
+		static string toHookId(const string& aMenuId) noexcept {
+			return aMenuId + "_list_menuitems";
+		}
+
 		static StringMap deserializeIconInfo(const json& aJson);
 
 		static ContextMenuItemPtr toMenuItem(const json& aData, const ActionHookResultGetter<ContextMenuItemList>& aResultGetter);
@@ -49,7 +53,7 @@ namespace webserver {
 		template<typename IdT>
 		ActionHookResult<ContextMenuItemList> menuListHookHandler(const vector<IdT>& aSelections, const ActionHookResultGetter<ContextMenuItemList>& aResultGetter, const string& aMenuId, const IdSerializer<IdT>& aIdSerializer, const json& aEntityId = nullptr) {
 			return HookCompletionData::toResult<ContextMenuItemList>(
-				fireHook(aMenuId, 1, [&]() {
+				fireHook(toHookId(aMenuId), 1, [&]() {
 					return json({
 						{ "selected_ids", Serializer::serializeList(aSelections, aIdSerializer) },
 						{ "entity_id", aEntityId },

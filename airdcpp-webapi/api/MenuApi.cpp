@@ -36,7 +36,7 @@
 
 
 #define CONTEXT_MENU_HANDLER(menuId, hook, hook2, idType, idDeserializerFunc, idSerializerFunc, access) \
-	createHook(string(menuId) + "_list_menuitems", [this](const string& aId, const string& aName) { \
+	createHook(toHookId(menuId), [this](const string& aId, const string& aName) { \
 		return ContextMenuManager::getInstance()->hook##MenuHook.addSubscriber( \
 			aId, \
 			aName, \
@@ -64,7 +64,7 @@
 	});
 
 #define ENTITY_CONTEXT_MENU_HANDLER(menuId, hook, hook2, idType, idDeserializerFunc, idSerializerFunc, entityType, entityDeserializerFunc, access) \
-	createHook(string(menuId) + "_list_menuitems", [this](const string& aId, const string& aName) { \
+	createHook(toHookId(menuId), [this](const string& aId, const string& aName) { \
 		return ContextMenuManager::getInstance()->hook##MenuHook.addSubscriber( \
 			aId, \
 			aName, \
