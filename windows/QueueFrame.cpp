@@ -114,10 +114,10 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		auto qm = QueueManager::getInstance();
 
 		RLock l(qm->getCS());
-		for (const auto& b : qm->getBundles() | map_values)
+		for (const auto& b : qm->getBundlesUnsafe() | map_values)
 			onBundleAdded(b);
 
-		for (const auto& q : qm->getFileQueue() | map_values) {
+		for (const auto& q : qm->getFileQueueUnsafe() | map_values) {
 			if (!q->getBundle())
 				onQueueItemAdded(q);
 		}
@@ -1294,7 +1294,7 @@ void QueueFrame::updateStatus() {
 		auto qm = QueueManager::getInstance();
 		{
 			RLock l(qm->getCS());
-			totalItems = qm->getFileQueue().size();
+			totalItems = qm->getFileQueueUnsafe().size();
 		}
 
 		ctrlTree.SetRedraw(FALSE);

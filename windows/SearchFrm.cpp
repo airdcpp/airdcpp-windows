@@ -1508,12 +1508,12 @@ void SearchFrame::initHubs() {
 	ctrlHubs.insertItem(new HubInfo(Util::emptyStringT, TSTRING(ONLY_WHERE_OP), false), 0);
 	ctrlHubs.SetCheckState(0, false);
 
-	ClientManager* cm = ClientManager::getInstance();
+	auto cm = ClientManager::getInstance();
 	{
 		RLock l(cm->getCS());
 		cm->addListener(this);
 
-		const auto& clients = cm->getClients();
+		const auto& clients = cm->getClientsUnsafe();
 		for (auto& c : clients | map_values) {
 			if (!c->isConnected())
 				continue;
