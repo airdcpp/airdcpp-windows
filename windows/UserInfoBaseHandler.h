@@ -29,7 +29,6 @@
 #include <airdcpp/Util.h>
 
 #include "WinUtil.h"
-#include <boost/bind.hpp>
 
 // emulation for non-list objects
 template<class T>
@@ -59,26 +58,26 @@ public:
 	bool pmItems;
 	bool listItems;
 
-	UserInfoBaseHandler(bool appendPmItems=true, bool appendListItems=true) : pmItems(appendPmItems), listItems(appendListItems) { }
+	UserInfoBaseHandler(bool aAppendPmItems = true, bool aAppendListItems = true) : pmItems(aAppendPmItems), listItems(aAppendListItems) { }
 
 	virtual void handleMatchQueue() {
-		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::matchQueue, _1));
+		((T*)this)->getUserList().forEachSelectedT(bind(&UserInfoBase::matchQueue, std::placeholders::_1));
 	}
 	virtual void handleGetList() {
-		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::getList, _1));
+		((T*)this)->getUserList().forEachSelectedT(bind(&UserInfoBase::getList, std::placeholders::_1));
 	}
 	virtual void handleBrowseList() {
-		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::browseList, _1));
+		((T*)this)->getUserList().forEachSelectedT(bind(&UserInfoBase::browseList, std::placeholders::_1));
 	}
 	virtual void handleGetBrowseList() {
-		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::getBrowseList, _1));
+		((T*)this)->getUserList().forEachSelectedT(bind(&UserInfoBase::getBrowseList, std::placeholders::_1));
 	}
 
 	virtual void handleFavorites() {
 		((T*)this)->getUserList().forEachSelected(&UserInfoBase::handleFav);
 	}
 	virtual void handlePrivateMessage() {
-		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::pm, _1));
+		((T*)this)->getUserList().forEachSelectedT(bind(&UserInfoBase::pm, std::placeholders::_1));
 	}
 
 	virtual void handleConnectFav() {
@@ -86,10 +85,10 @@ public:
 	}
 	LRESULT onGrantSlot(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		switch(wID) {
-			case IDC_GRANTSLOT:		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::grant, _1)); break;
-			case IDC_GRANTSLOT_DAY:	((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::grantDay, _1)); break;
-			case IDC_GRANTSLOT_HOUR:	((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::grantHour, _1)); break;
-			case IDC_GRANTSLOT_WEEK:	((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::grantWeek, _1)); break;
+			case IDC_GRANTSLOT:		((T*)this)->getUserList().forEachSelectedT(bind(&UserInfoBase::grant, std::placeholders::_1)); break;
+			case IDC_GRANTSLOT_DAY:	((T*)this)->getUserList().forEachSelectedT(bind(&UserInfoBase::grantDay, std::placeholders::_1)); break;
+			case IDC_GRANTSLOT_HOUR:	((T*)this)->getUserList().forEachSelectedT(bind(&UserInfoBase::grantHour, std::placeholders::_1)); break;
+			case IDC_GRANTSLOT_WEEK:	((T*)this)->getUserList().forEachSelectedT(bind(&UserInfoBase::grantWeek, std::placeholders::_1)); break;
 			case IDC_UNGRANTSLOT:	((T*)this)->getUserList().forEachSelected(&UserInfoBase::ungrant); break;
 		}
 		return 0;
@@ -108,11 +107,12 @@ public:
 					noFullList = false;
 				}
 
-				bool fav = ui->getUser()->isFavorite();
-				if(fav)
+				auto fav = ui->getUser()->isFavorite();
+				if (fav) {
 					nonFavOnly = false;
-				if(!fav)
+				} else {
 					favOnly = false;
+				}
 			}
 		}
 
@@ -123,15 +123,15 @@ public:
 	};
 
 	template<class K>
-	void appendListMenu(const UserPtr& aUser, const User::UserInfoList& list, OMenu* subMenu, bool addShareInfo) {
+	void appendListMenu(const UserPtr& aUser, const User::UserInfoList& list, OMenu* subMenu, bool aAddShareInfo) {
 		for (auto& i: list) {
 			auto url = i.hubUrl;
-			auto title = Text::toT(i.hubName) + (addShareInfo ? (_T(" (") + Util::formatBytesW(i.shared) + _T(")")) : Util::emptyStringT);
+			auto title = Text::toT(i.hubName) + (aAddShareInfo ? (_T(" (") + Util::formatBytesW(i.shared) + _T(")")) : Util::emptyStringT);
 			subMenu->appendItem(title, [=] { K()(aUser, url); });
 		}
 	}
 
-	void appendUserItems(OMenu& menu, bool showFullList = true, const UserPtr& aUser = nullptr, bool allowOffline = false) {
+	void appendUserItems(OMenu& menu, bool aShowFullList = true, const UserPtr& aUser = nullptr, bool aAllowOffline = false) {
 		UserTraits traits = ((T*)this)->getUserList().forEachSelectedT(UserTraits());
 		bool multipleHubs = false;
 
@@ -140,7 +140,7 @@ public:
 			int defaultFlag = commonFlags > 0 ? commonFlags : OMenu::FLAG_DEFAULT;
 
 			menu.appendSeparator();
-			if (showFullList || traits.allFullList) {
+			if (aShowFullList || traits.allFullList) {
 				menu.appendItem(TSTRING(GET_FILE_LIST), [=] { handleGetList(); }, defaultFlag);
 			}
 			if (!traits.noFullList && !traits.allFullList) {
@@ -180,7 +180,7 @@ public:
 					if (shareList.size() > 1) {
 						menu.appendSeparator();
 						appendListMenu<WinUtil::BrowseList>(aUser, shareList, menu.createSubMenu(TSTRING(BROWSE_FILE_LIST)), true);
-						if (showFullList || traits.allFullList)
+						if (aShowFullList || traits.allFullList)
 							appendListMenu<WinUtil::GetList>(aUser, shareList, menu.createSubMenu(TSTRING(GET_FILE_LIST)), true);
 						if (!traits.noFullList && !traits.allFullList)
 							appendListMenu<WinUtil::GetBrowseList>(aUser, shareList, menu.createSubMenu(TSTRING(GET_BROWSE_LIST)), true);
@@ -189,9 +189,6 @@ public:
 						appendSingleDownloadItems(false);
 					}
 				}
-
-				//if(!traits.nonFavOnly)
-				//	appendListMenu<WinUtil::ConnectFav>(aUser, list, menu.createSubMenu(CTSTRING(CONNECT_FAVUSER_HUB)), false);
 			}
 		}
 		
@@ -200,10 +197,7 @@ public:
 				menu.appendItem(TSTRING(SEND_PRIVATE_MESSAGE), [=] { handlePrivateMessage(); }, !listItems ? OMenu::FLAG_DEFAULT : 0);
 
 			if (listItems)
-				appendSingleDownloadItems(list.empty() && !allowOffline ? true : false);
-
-			//if(!traits.nonFavOnly)
-			//	menu.AppendMenu(MF_STRING, IDC_CONNECT, CTSTRING(CONNECT_FAVUSER_HUB));
+				appendSingleDownloadItems(list.empty() && !aAllowOffline ? true : false);
 		}
 
 		{
@@ -215,13 +209,14 @@ public:
 			EXT_CONTEXT_MENU(menu, HintedUser, tokens);
 		}
 
-		if(!traits.favOnly) {
+		if (!traits.favOnly) {
 			menu.appendItem(TSTRING(ADD_TO_FAVORITES), [=] { handleFavorites(); });
 			menu.appendSeparator();
 		} else if (!traits.nonFavOnly) {
 			menu.appendItem(TSTRING(REMOVE_FAVORITE_USER), [=] { handleFavorites(); });
 			menu.appendSeparator();
 		}
+
 		menu.appendItem(TSTRING(REMOVE_FROM_ALL), [=] { handleRemoveAll(); });
 		menu.AppendMenu(MF_POPUP, (HMENU)WinUtil::grantMenu, CTSTRING(GRANT_SLOTS_MENU));
 	}	
