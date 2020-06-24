@@ -21,9 +21,10 @@
 #ifndef _ZLIBIOAPI64_H
 #define _ZLIBIOAPI64_H
 
-#if defined(linux) || defined(__linux) || defined(__linux__)
+#if (!defined(_WIN32)) && (!defined(WIN32)) && (!defined(__APPLE__))
 
   // Linux needs this to support file operation on files larger then 4+GB
+  // But might need better if/def to select just the platforms that needs them.
 
         #ifndef __USE_FILE_OFFSET64
                 #define __USE_FILE_OFFSET64
@@ -37,20 +38,23 @@
         #ifndef _FILE_OFFSET_BIT
                 #define _FILE_OFFSET_BIT 64
         #endif
+
 #endif
 
 #include <stdio.h>
 #include <stdlib.h>
-
-#ifndef ZLIB_H
 #include "zlib.h"
-#endif
 
 #if defined(USE_FILE32API)
 #define fopen64 fopen
 #define ftello64 ftell
 #define fseeko64 fseek
 #else
+#ifdef __FreeBSD__
+#define fopen64 fopen
+#define ftello64 ftello
+#define fseeko64 fseeko
+#endif
 #ifdef _MSC_VER
  #define fopen64 fopen
  #if (_MSC_VER >= 1400) && (!(defined(NO_MSCVER_FILE64_FUNC)))
@@ -60,10 +64,6 @@
   #define ftello64 ftell
   #define fseeko64 fseek
  #endif
-#elif defined __FreeBSD__ || defined __DragonFly__ || defined __APPLE__ || defined __APPLE_CC__
- #define fopen64 fopen
- #define ftello64 ftell
- #define fseeko64 fseek
 #endif
 #endif
 
@@ -91,6 +91,8 @@ typedef  64BIT_INT_CUSTOM_TYPE ZPOS64_T;
 typedef uint64_t ZPOS64_T;
 #else
 
+/* Maximum unsigned 32-bit value used as placeholder for zip64 */
+#define MAXU32 0xffffffff
 
 #if defined(_MSC_VER) || defined(__BORLANDC__)
 typedef unsigned __int64 ZPOS64_T;
