@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 
 #ifndef DCPLUSPLUS_DCPP_WINDOWS_FILESYSTEM_H
 #define DCPLUSPLUS_DCPP_WINDOWS_FILESYSTEM_H
-
-#include <web-server/stdinc.h>
 
 #include <airdcpp/typedefs.h>
 
@@ -64,10 +62,10 @@ namespace webserver {
 		static string driveTypeToString(UINT aDriveType) {
 			switch (aDriveType) {
 				case DRIVE_RAMDISK:
+				case DRIVE_CDROM:
 				case DRIVE_REMOVABLE: return "removable";
 				case DRIVE_FIXED: return "drive_fixed";
 				case DRIVE_REMOTE: return "drive_remote";
-				case DRIVE_CDROM: return "drive_cdrom";
 			}
 
 			return Util::emptyString;

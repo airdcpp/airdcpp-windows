@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 #ifndef DCPLUSPLUS_DCPP_APIROUTER_H
 #define DCPLUSPLUS_DCPP_APIROUTER_H
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
 
 #include <airdcpp/typedefs.h>
 
@@ -31,7 +31,7 @@ namespace webserver {
 
 		void handleSocketRequest(const std::string& aMessage, WebSocketPtr& aSocket, bool aIsSecure) noexcept;
 		api_return handleHttpRequest(const std::string& aRequestPath, const websocketpp::http::parser::request& aRequest,
-			json& output_, json& error_, bool aIsSecure, const string& aIp, const SessionPtr& aSession) noexcept;
+			json& output_, json& error_, bool aIsSecure, const string& aIp, const SessionPtr& aSession, const ApiDeferredHandler& aDeferredHandler) noexcept;
 	private:
 		api_return handleRequest(ApiRequest& aRequest, bool aIsSecure, const WebSocketPtr& aSocket, const string& aIp) noexcept;
 

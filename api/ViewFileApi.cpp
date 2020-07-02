@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,8 +16,9 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <web-server/stdinc.h>
-#include <web-server/FileServer.h>
+#include "stdinc.h"
+
+#include <web-server/HttpUtil.h>
 #include <web-server/JsonUtil.h>
 
 #include <api/ViewFileApi.h>
@@ -33,15 +34,18 @@
 #include <boost/range/algorithm/copy.hpp>
 
 namespace webserver {
-	ViewFileApi::ViewFileApi(Session* aSession) : SubscribableApiModule(aSession, Access::VIEW_FILES_VIEW) {
-
-		ViewFileManager::getInstance()->addListener(this);
-
-		createSubscription("view_file_added");
-		createSubscription("view_file_removed");
-		createSubscription("view_file_updated");
-		createSubscription("view_file_finished");
-
+	ViewFileApi::ViewFileApi(Session* aSession) : 
+		SubscribableApiModule(
+			aSession, 
+			Access::VIEW_FILES_VIEW, 
+			{ 
+				"view_file_added", 
+				"view_file_removed", 
+				"view_file_updated", 
+				"view_file_finished" 
+			}
+		) 
+	{
 		METHOD_HANDLER(Access::VIEW_FILES_VIEW, METHOD_GET,		(),									ViewFileApi::handleGetFiles);
 		METHOD_HANDLER(Access::VIEW_FILES_EDIT, METHOD_POST,	(),									ViewFileApi::handleAddFile);
 		METHOD_HANDLER(Access::VIEW_FILES_VIEW, METHOD_GET,		(TTH_PARAM),						ViewFileApi::handleGetFile);
@@ -49,6 +53,8 @@ namespace webserver {
 		METHOD_HANDLER(Access::VIEW_FILES_EDIT, METHOD_DELETE,	(TTH_PARAM),						ViewFileApi::handleRemoveFile);
 
 		METHOD_HANDLER(Access::VIEW_FILES_VIEW, METHOD_POST,	(TTH_PARAM, EXACT_PARAM("read")),	ViewFileApi::handleSetRead);
+
+		ViewFileManager::getInstance()->addListener(this);
 	}
 
 	ViewFileApi::~ViewFileApi() {
@@ -64,7 +70,7 @@ namespace webserver {
 	}
 
 	json ViewFileApi::serializeFile(const ViewFilePtr& aFile) noexcept {
-		auto mimeType = FileServer::getMimeType(aFile->getPath());
+		auto mimeType = HttpUtil::getMimeType(aFile->getPath());
 		return{
 			{ "id", aFile->getTTH().toBase32() },
 			{ "tth", aFile->getTTH().toBase32() },

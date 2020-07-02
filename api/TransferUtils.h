@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,10 +19,9 @@
 #ifndef DCPLUSPLUS_DCPP_TRANSFERUTILS_H
 #define DCPLUSPLUS_DCPP_TRANSFERUTILS_H
 
-#include <web-server/stdinc.h>
-
-#include <api/TransferInfo.h>
 #include <api/common/Property.h>
+
+#include <airdcpp/TransferInfo.h>
 
 namespace webserver {
 	class TransferUtils {
@@ -56,7 +55,7 @@ namespace webserver {
 
 		static std::string getStringInfo(const TransferInfoPtr& aItem, int aPropertyName) noexcept;
 		static double getNumericInfo(const TransferInfoPtr& aItem, int aPropertyName) noexcept;
-
+		static string serializeStateKey(TransferInfo::ItemState aState) noexcept;
 	private:
 
 	};

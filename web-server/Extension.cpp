@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
 
 #include <web-server/Extension.h>
 
@@ -106,13 +106,13 @@ namespace webserver {
 		version = packageVersion;
 
 		// Optional fields
-		homepage = aJson.value("homepage", Util::emptyString);
+		homepage = aJson.value("homepage", "");
 
 		{
 			// Engines
 			auto enginesJson = aJson.find("engines");
 			if (enginesJson != aJson.end()) {
-				for (const auto& engine : json::iterator_wrapper(*enginesJson)) {
+				for (const auto& engine : (*enginesJson).items()) {
 					engines.emplace_back(engine.key());
 				}
 			}
@@ -129,7 +129,7 @@ namespace webserver {
 				const StringList osList = *osJson;
 				auto currentOs = SystemUtil::getPlatform();
 				if (std::find(osList.begin(), osList.end(), currentOs) == osList.end() && currentOs != "other") {
-					throw Exception("Extension is not compatible with your operating system, please the extension documentation for more information");
+					throw Exception("Extension is not compatible with your operating system (check the extension documentation for more information)");
 				}
 			}
 		}
@@ -142,7 +142,7 @@ namespace webserver {
 			throw Exception("Extension requires API version " + Util::toString(apiVersion) + " while the application uses version " + Util::toString(API_VERSION));
 		}
 
-		if (minApiFeatureLevel != API_FEATURE_LEVEL) {
+		if (minApiFeatureLevel > API_FEATURE_LEVEL) {
 			throw Exception("Extension requires API feature level " + Util::toString(minApiFeatureLevel) + " or newer while the application uses version " + Util::toString(API_FEATURE_LEVEL));
 		}
 	}
@@ -168,9 +168,9 @@ namespace webserver {
 		return ret;
 	}
 
-	ServerSettingItem* Extension::getSetting(const string& aKey) noexcept {
+	ExtensionSettingItem* Extension::getSetting(const string& aKey) noexcept {
 		RLock l(cs);
-		return ApiSettingItem::findSettingItem<ServerSettingItem>(settings, aKey);
+		return ApiSettingItem::findSettingItem<ExtensionSettingItem>(settings, aKey);
 	}
 
 	bool Extension::hasSettings() const noexcept {
@@ -178,12 +178,12 @@ namespace webserver {
 		return !settings.empty(); 
 	}
 
-	ServerSettingItem::List Extension::getSettings() const noexcept {
+	ExtensionSettingItem::List Extension::getSettings() const noexcept {
 		RLock l(cs);
 		return settings;
 	}
 
-	void Extension::swapSettingDefinitions(ServerSettingItem::List& aDefinitions) {
+	void Extension::swapSettingDefinitions(ExtensionSettingItem::List& aDefinitions) {
 		{
 			WLock l(cs);
 			settings.swap(aDefinitions);
@@ -205,7 +205,7 @@ namespace webserver {
 		{
 			WLock l(cs);
 			for (const auto& vp: aValues) {
-				auto setting = ApiSettingItem::findSettingItem<ServerSettingItem>(settings, vp.first);
+				auto setting = ApiSettingItem::findSettingItem<ExtensionSettingItem>(settings, vp.first);
 				if (!setting) {
 					throw Exception("Setting " + vp.first + " was not found");
 				}
@@ -268,6 +268,8 @@ namespace webserver {
 		if (bindAddress.empty()) {
 			auto protocol = WebServerManager::getDefaultListenProtocol();
 			bindAddress = protocol == boost::asio::ip::tcp::v6() ? "[::1]" : "127.0.0.1";
+		} else {
+			bindAddress = wsm->resolveAddress(bindAddress, serverConfig.port.str());
 		}
 
 		return bindAddress + ":" + Util::toString(serverConfig.port.num()) + "/api/v1/";

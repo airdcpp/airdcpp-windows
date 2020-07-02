@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -25,11 +25,13 @@
 #include "FileServer.h"
 #include "ApiRequest.h"
 
+#include "HttpUtil.h"
 #include "SystemUtil.h"
 #include "Timer.h"
 #include "WebServerManagerListener.h"
 #include "WebUserManager.h"
 #include "WebSocket.h"
+#include "WebServerSettings.h"
 
 #include <airdcpp/format.h>
 #include <airdcpp/Message.h>
@@ -71,6 +73,7 @@ namespace webserver {
 	public:
 		TimerPtr addTimer(CallBack&& aCallBack, time_t aIntervalMillis, const Timer::CallbackWrapper& aCallbackWrapper = nullptr) noexcept;
 		void addAsyncTask(CallBack&& aCallBack) noexcept;
+		void setDirty() noexcept;
 
 		WebServerManager();
 		~WebServerManager();
@@ -155,27 +158,24 @@ namespace webserver {
 			}
 
 			onData(msg->get_payload(), TransportType::TYPE_SOCKET, Direction::INCOMING, socket->getIp());
+			api.handleSocketRequest(msg->get_payload(), socket, aIsSecure);
+		}
 
-			// Messages received from each socket will always use the same thread
-			// This will also help with hooks getting timed out when they are being run and
-			// resolved by the same socket
-			// TODO: use different threads for handling requests that involve running of hooks
-			addAsyncTask([=] {
-				auto s = socket;
-				api.handleSocketRequest(msg->get_payload(), s, aIsSecure); 
-			});
+
+		template <typename EndpointType>
+		void logDebugError(EndpointType* s, const string& aMessage, websocketpp::log::level aErrorLevel) {
+			s->get_elog().write(aErrorLevel, aMessage);
 		}
 
 		template <typename EndpointType>
 		void handleHttpRequest(EndpointType* s, websocketpp::connection_hdl hdl, bool aIsSecure) {
 			// Blocking HTTP Handler
 			auto con = s->get_con_from_hdl(hdl);
-			websocketpp::http::status_code::value status;
 			auto ip = con->get_raw_socket().remote_endpoint().address().to_string();
 
 			SessionPtr session = nullptr;
 
-			auto authToken = con->get_request().get_header("Authorization");
+			auto authToken = HttpUtil::parseAuthToken(con->get_request());
 			if (authToken != websocketpp::http::empty_header) {
 				try {
 					session = userManager->parseHttpSession(authToken, ip);
@@ -189,48 +189,121 @@ namespace webserver {
 			if (con->get_resource().length() >= 4 && con->get_resource().compare(0, 4, "/api") == 0) {
 				onData(con->get_resource() + ": " + con->get_request().get_body(), TransportType::TYPE_HTTP_API, Direction::INCOMING, ip);
 
+
+				const auto responseF = [this, s, con, ip](websocketpp::http::status_code::value aStatus, const json& aResponseJsonData, const json& aResponseErrorJson) {
+					string data;
+					const auto& responseJson = !aResponseErrorJson.is_null() ? aResponseErrorJson : aResponseJsonData;
+					if (!responseJson.is_null()) {
+						try {
+							data = responseJson.dump();
+						} catch (const std::exception & e) {
+							logDebugError(s, "Failed to convert data to JSON: " + string(e.what()), websocketpp::log::elevel::fatal);
+
+							con->set_body("Failed to convert data to JSON: " + string(e.what()));
+							con->set_status(websocketpp::http::status_code::internal_server_error);
+							return;
+						}
+					}
+
+					onData(con->get_resource() + " (" + Util::toString(aStatus) + "): " + data, TransportType::TYPE_HTTP_API, Direction::OUTGOING, ip);
+
+					con->set_body(data);
+					con->append_header("Content-Type", "application/json");
+					con->append_header("Connection", "close"); // Workaround for https://github.com/zaphoyd/websocketpp/issues/890
+					con->set_status(aStatus);
+				};
+
+
+				bool isDeferred = false;
+				const auto deferredF = [&]() {
+					con->defer_http_response();
+					isDeferred = true;
+
+					return [=](websocketpp::http::status_code::value aStatus, const json& aResponseJsonData, const json& aResponseErrorJson) {
+						responseF(aStatus, aResponseJsonData, aResponseErrorJson);
+						con->send_http_response();
+					};
+				};
+
 				json output, apiError;
-				status = api.handleHttpRequest(
+				auto status = api.handleHttpRequest(
 					con->get_resource(),
 					con->get_request(),
 					output,
 					apiError,
 					aIsSecure,
 					ip,
-					session
+					session,
+					deferredF
 				);
 
-				auto data = status != websocketpp::http::status_code::ok ? apiError.dump() : output.dump();
-				onData(con->get_resource() + " (" + Util::toString(status) + "): " + data, TransportType::TYPE_HTTP_API, Direction::OUTGOING, ip);
-
-				con->set_body(data);
-				con->append_header("Content-Type", "application/json");
-				con->set_status(status);
+				if (!isDeferred) {
+					responseF(status, output, apiError);
+				}
 			} else {
 				onData(con->get_request().get_method() + " " + con->get_resource(), TransportType::TYPE_HTTP_FILE, Direction::INCOMING, ip);
 
 				StringPairList headers;
 				std::string output;
-				status = fileServer.handleRequest(con->get_resource(), con->get_request(), output, headers, session);
 
-				for (const auto& p : headers) {
-					con->append_header(p.first, p.second);
+
+				const auto responseF = [this, con, ip](websocketpp::http::status_code::value aStatus, const string& aOutput, const StringPairList& aHeaders = StringPairList()) {
+					onData(
+						con->get_request().get_method() + " " + con->get_resource() + ": " + Util::toString(aStatus) + " (" + Util::formatBytes(aOutput.length()) + ")",
+						TransportType::TYPE_HTTP_FILE,
+						Direction::OUTGOING,
+						ip
+					);
+
+					con->append_header("Connection", "close"); // Workaround for https://github.com/zaphoyd/websocketpp/issues/890
+
+					if (HttpUtil::isStatusOk(aStatus)) {
+						// Don't set any incomplete/invalid headers in case of errors...
+						for (const auto& p : aHeaders) {
+							con->append_header(p.first, p.second);
+						}
+
+						con->set_status(aStatus);
+						con->set_body(aOutput);
+					} else {
+						con->set_status(aStatus, aOutput);
+						con->set_body(aOutput);
+					}
+				};
+
+				bool isDeferred = false;
+				const auto deferredF = [&]() {
+					con->defer_http_response();
+					isDeferred = true;
+
+					return [=](websocketpp::http::status_code::value aStatus, const string& aOutput, const StringPairList& aHeaders) {
+						responseF(aStatus, aOutput, aHeaders);
+						con->send_http_response();
+					};
+				};
+
+				auto status = fileServer.handleRequest(con->get_request(), output, headers, session, deferredF);
+				if (!isDeferred) {
+					responseF(status, output, headers);
 				}
-
-				onData(
-					con->get_request().get_method() + " " + con->get_resource() + ": " + Util::toString(status) + " (" + Util::formatBytes(output.length()) + ")",
-					TransportType::TYPE_HTTP_FILE,
-					Direction::OUTGOING,
-					ip
-				);
-
-				con->set_status(status);
-				con->set_body(output);
 			}
 		}
 
 		void log(const string& aMsg, LogMessage::Severity aSeverity) const noexcept;
+		ErrorF getDefaultErrorLogger() const noexcept;
+
+		string resolveAddress(const string& aHostname, const string& aPort) noexcept;
+
+		WebServerSettings& getSettings() noexcept {
+			return settings;
+		}
+
+		const FileServer& getFileServer() const noexcept {
+			return fileServer;
+		}
 	private:
+		WebServerSettings settings;
+
 		context_ptr handleInitTls(websocketpp::connection_hdl hdl);
 
 		void addSocket(websocketpp::connection_hdl hdl, const WebSocketPtr& aSocket) noexcept;
@@ -250,6 +323,8 @@ namespace webserver {
 		// set up an external io_service to run both endpoints on. This is not
 		// strictly necessary, but simplifies thread management a bit.
 		boost::asio::io_service ios;
+		boost::asio::io_service tasks;
+		boost::asio::io_service::work work;
 		bool has_io_service = false;
 
 		typedef vector<WebSocketPtr> WebSocketList;
@@ -261,14 +336,17 @@ namespace webserver {
 		unique_ptr<WebUserManager> userManager;
 		unique_ptr<ExtensionManager> extManager;
 
-		TimerPtr socketTimer;
+		TimerPtr minuteTimer;
+		TimerPtr socketPingTimer;
 
 		server_plain endpoint_plain;
 		server_tls endpoint_tls;
 
-		boost::thread_group worker_threads;
+		unique_ptr<boost::thread_group> ios_threads;
+		unique_ptr<boost::thread_group> task_threads;
 
 		CallBack shutdownF;
+		bool isDirty = false;
 	};
 }
 

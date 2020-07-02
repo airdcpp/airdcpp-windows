@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
 #include <web-server/JsonUtil.h>
 
 #include <api/QueueApi.h>
@@ -30,15 +30,43 @@
 
 #include <boost/range/algorithm/copy.hpp>
 
+
+
 namespace webserver {
 #define SEGMENT_START "segment_start"
 #define SEGMENT_SIZE "segment_size"
 
-	QueueApi::QueueApi(Session* aSession) : HookApiModule(aSession, Access::QUEUE_VIEW, nullptr, Access::QUEUE_EDIT),
-			bundleView("queue_bundle_view", this, QueueBundleUtils::propertyHandler, getBundleList), fileView("queue_file_view", this, QueueFileUtils::propertyHandler, getFileList) {
+	QueueApi::QueueApi(Session* aSession) : 
+		HookApiModule(
+			aSession, 
+			Access::QUEUE_VIEW, 
+			{
+				"queue_bundle_added",
+				"queue_bundle_removed",
+				"queue_bundle_updated",
 
-		QueueManager::getInstance()->addListener(this);
-		DownloadManager::getInstance()->addListener(this);
+				// These are included in queue_bundle_updated events as well
+				"queue_bundle_tick",
+				"queue_bundle_content",
+				"queue_bundle_priority",
+				"queue_bundle_status",
+				"queue_bundle_sources",
+
+				"queue_file_added",
+				"queue_file_removed",
+				"queue_file_updated",
+
+				// These are included in queue_file_updated events as well
+				"queue_file_priority",
+				"queue_file_status",
+				"queue_file_sources",
+				"queue_file_tick",
+			}, 
+			Access::QUEUE_EDIT
+		), 
+		bundleView("queue_bundle_view", this, QueueBundleUtils::propertyHandler, getBundleList), 
+		fileView("queue_file_view", this, QueueFileUtils::propertyHandler, getFileList) 
+	{
 
 		createHook("queue_file_finished_hook", [this](const string& aId, const string& aName) {
 			return QueueManager::getInstance()->fileCompletionHook.addSubscriber(aId, aName, HOOK_HANDLER(QueueApi::fileCompletionHook));
@@ -51,28 +79,6 @@ namespace webserver {
 		}, [this](const string& aId) {
 			QueueManager::getInstance()->bundleCompletionHook.removeSubscriber(aId);
 		});
-
-		createSubscription("queue_bundle_added");
-		createSubscription("queue_bundle_removed");
-		createSubscription("queue_bundle_updated");
-
-		// These are included in queue_bundle_updated events as well
-		createSubscription("queue_bundle_tick");
-		createSubscription("queue_bundle_content");
-		createSubscription("queue_bundle_priority");
-		createSubscription("queue_bundle_status");
-		createSubscription("queue_bundle_sources");
-
-		createSubscription("queue_file_added");
-		createSubscription("queue_file_removed");
-		createSubscription("queue_file_updated");
-
-		// These are included in queue_file_updated events as well
-		createSubscription("queue_file_priority");
-		createSubscription("queue_file_status");
-		createSubscription("queue_file_sources");
-		createSubscription("queue_file_tick");
-
 
 		METHOD_HANDLER(Access::QUEUE_VIEW,	METHOD_GET,		(EXACT_PARAM("bundles"), RANGE_START_PARAM, RANGE_MAX_PARAM),			QueueApi::handleGetBundles);
 		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_POST,	(EXACT_PARAM("bundles"), EXACT_PARAM("remove_completed")),				QueueApi::handleRemoveCompletedBundles);
@@ -105,6 +111,9 @@ namespace webserver {
 
 		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_DELETE,	(EXACT_PARAM("sources"), CID_PARAM),									QueueApi::handleRemoveSource);
 		METHOD_HANDLER(Access::ANY,			METHOD_POST,	(EXACT_PARAM("find_dupe_paths")),										QueueApi::handleFindDupePaths);
+
+		QueueManager::getInstance()->addListener(this);
+		DownloadManager::getInstance()->addListener(this);
 	}
 
 	QueueApi::~QueueApi() {
@@ -112,21 +121,21 @@ namespace webserver {
 		DownloadManager::getInstance()->removeListener(this);
 	}
 
-	ActionHookRejectionPtr QueueApi::fileCompletionHook(const QueueItemPtr& aFile, const HookRejectionGetter& aErrorGetter) noexcept {
+	ActionHookResult<> QueueApi::fileCompletionHook(const QueueItemPtr& aFile, const ActionHookResultGetter<>& aResultGetter) noexcept {
 		return HookCompletionData::toResult(
 			fireHook("queue_file_finished_hook", 60, [&]() {
 				return Serializer::serializeItem(aFile, QueueFileUtils::propertyHandler);
 			}),
-			aErrorGetter
+			aResultGetter
 		);
 	}
 
-	ActionHookRejectionPtr QueueApi::bundleCompletionHook(const BundlePtr& aBundle, const HookRejectionGetter& aErrorGetter) noexcept {
+	ActionHookResult<> QueueApi::bundleCompletionHook(const BundlePtr& aBundle, const ActionHookResultGetter<>& aResultGetter) noexcept {
 		return HookCompletionData::toResult(
 			fireHook("queue_bundle_finished_hook", 60, [&]() {
 				return Serializer::serializeItem(aBundle, QueueBundleUtils::propertyHandler);
 			}),
-			aErrorGetter
+			aResultGetter
 		);
 	}
 
@@ -135,7 +144,7 @@ namespace webserver {
 		auto qm = QueueManager::getInstance();
 
 		RLock l(qm->getCS());
-		boost::range::copy(qm->getBundles() | map_values, back_inserter(bundles));
+		boost::range::copy(qm->getBundlesUnsafe() | map_values, back_inserter(bundles));
 		return bundles;
 	}
 
@@ -144,7 +153,7 @@ namespace webserver {
 		auto qm = QueueManager::getInstance();
 
 		RLock l(qm->getCS());
-		boost::range::copy(qm->getFileQueue() | map_values, back_inserter(items));
+		boost::range::copy(qm->getFileQueueUnsafe() | map_values, back_inserter(items));
 		return items;
 	}
 

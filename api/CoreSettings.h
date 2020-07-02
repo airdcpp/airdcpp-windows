@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,6 @@
 #ifndef DCPLUSPLUS_DCPP_CORESETTINGS_H
 #define DCPLUSPLUS_DCPP_CORESETTINGS_H
 
-#include <web-server/stdinc.h>
-
 #include <api/ApiSettingItem.h>
 #include <airdcpp/SettingsManager.h>
 
@@ -31,6 +29,7 @@ namespace webserver {
 		{ "nick", SettingsManager::NICK, ResourceManager::NICK },
 		{ "description", SettingsManager::DESCRIPTION, ResourceManager::DESCRIPTION },
 		{ "email", SettingsManager::EMAIL, ResourceManager::EMAIL },
+		{ "language_file", SettingsManager::LANGUAGE_FILE, ResourceManager::SETTINGS_LANGUAGE },
 
 		{ "upload_speed", SettingsManager::UPLOAD_SPEED, ResourceManager::SETCZDC_UPLOAD_SPEED, ApiSettingItem::TYPE_LAST, ResourceManager::Strings::MBITS },
 		{ "download_speed", SettingsManager::DOWNLOAD_SPEED, ResourceManager::SETCZDC_DOWNLOAD_SPEED, ApiSettingItem::TYPE_LAST, ResourceManager::Strings::MBITS },
@@ -219,6 +218,8 @@ namespace webserver {
 		{ "tls_certificate_file", SettingsManager::TLS_CERTIFICATE_FILE, ResourceManager::OWN_CERTIFICATE, ApiSettingItem::TYPE_FILE_PATH },
 		{ "tls_private_key_file", SettingsManager::TLS_PRIVATE_KEY_FILE, ResourceManager::PRIVATE_KEY_FILE, ApiSettingItem::TYPE_FILE_PATH },
 		{ "always_ccpm", SettingsManager::ALWAYS_CCPM, ResourceManager::ALWAYS_CCPM },
+		{ "tls_allow_untrusted_clients", SettingsManager::ALLOW_UNTRUSTED_CLIENTS, ResourceManager::SETTINGS_ALLOW_UNTRUSTED_CLIENTS },
+		{ "tls_allow_untrusted_hubs", SettingsManager::ALLOW_UNTRUSTED_HUBS, ResourceManager::SETTINGS_ALLOW_UNTRUSTED_HUBS },
 		{ "tls_mode", SettingsManager::TLS_MODE, ResourceManager::TRANSFER_ENCRYPTION },
 	};
 }

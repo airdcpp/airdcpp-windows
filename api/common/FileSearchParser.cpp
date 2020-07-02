@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
 
 #include <api/common/Deserializer.h>
 #include <api/common/FileSearchParser.h>
@@ -50,7 +50,8 @@ namespace webserver {
 		auto fileTypeStr = JsonUtil::getOptionalField<string>("file_type", aJson);
 		if (fileTypeStr) {
 			try {
-				SearchManager::getInstance()->getSearchType(parseFileType(*fileTypeStr), aSearch->fileType, aSearch->exts, true);
+				string name;
+				SearchManager::getInstance()->getSearchType(parseSearchType(*fileTypeStr), aSearch->fileType, aSearch->exts, name);
 			} catch (...) {
 				throw std::domain_error("Invalid file type");
 			}
@@ -101,6 +102,18 @@ namespace webserver {
 		aSearch->requireReply = true;
 	}
 
+	Search::MatchType FileSearchParser::parseMatchType(const string& aTypeStr) {
+		if (aTypeStr == "path_partial") {
+			return Search::MATCH_PATH_PARTIAL;
+		} else if (aTypeStr == "name_exact") {
+			return Search::MATCH_NAME_EXACT;
+		} else if (aTypeStr == "name_partial") {
+			return Search::MATCH_NAME_PARTIAL;
+		}
+
+		throw std::domain_error("Invalid match type");
+	}
+
 	const map<string, string> fileTypeMappings = {
 		{ "any", "0" },
 		{ "audio", "1" },
@@ -114,20 +127,13 @@ namespace webserver {
 		{ "file", "9" },
 	};
 
-	const string& FileSearchParser::parseFileType(const string& aType) noexcept {
+	string FileSearchParser::parseSearchType(const string& aType) {
 		auto i = fileTypeMappings.find(aType);
 		return i != fileTypeMappings.end() ? i->second : aType;
 	}
 
-	Search::MatchType FileSearchParser::parseMatchType(const string& aTypeStr) {
-		if (aTypeStr == "path_partial") {
-			return Search::MATCH_PATH_PARTIAL;
-		} else if (aTypeStr == "name_exact") {
-			return Search::MATCH_NAME_EXACT;
-		} else if (aTypeStr == "name_partial") {
-			return Search::MATCH_NAME_PARTIAL;
-		}
-
-		throw std::domain_error("Invalid match type");
+	string FileSearchParser::serializeSearchType(const string& aType) {
+		auto i = boost::find(fileTypeMappings | map_values, aType);
+		return i.base() != fileTypeMappings.end() ? i.base()->first : aType;
 	}
 }

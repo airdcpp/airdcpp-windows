@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 
 #ifndef DCPLUSPLUS_DCPP_USER_API_H
 #define DCPLUSPLUS_DCPP_USER_API_H
-
-#include <web-server/stdinc.h>
 
 #include <api/base/ApiModule.h>
 
@@ -42,6 +40,7 @@ namespace webserver {
 
 		api_return handleGetUser(ApiRequest& aRequest);
 		api_return handleSearchNicks(ApiRequest& aRequest);
+		api_return handleSearchHintedUser(ApiRequest& aRequest);
 
 		void on(IgnoreManagerListener::IgnoreAdded, const UserPtr& aUser) noexcept override;
 		void on(IgnoreManagerListener::IgnoreRemoved, const UserPtr& aUser) noexcept override;

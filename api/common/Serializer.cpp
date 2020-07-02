@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
 
 #include <api/common/Serializer.h>
 #include <api/common/Format.h>
@@ -104,6 +104,7 @@ namespace webserver {
 
 	json Serializer::serializeUser(const UserPtr& aUser) noexcept {
 		return {
+			{ "id", aUser->getCID().toBase32() },
 			{ "cid", aUser->getCID().toBase32() },
 			{ "nicks", Util::listToString(ClientManager::getInstance()->getNicks(aUser->getCID())) },
 			{ "hub_names", Util::listToString(ClientManager::getInstance()->getHubNames(aUser->getCID())) },
@@ -146,6 +147,7 @@ namespace webserver {
 	json Serializer::serializeShareProfileSimple(ProfileToken aProfile) noexcept {
 		auto sp = ShareManager::getInstance()->getShareProfile(aProfile);
 		if (!sp) {
+			// Shouldn't happen
 			return nullptr;
 		}
 
@@ -242,21 +244,25 @@ namespace webserver {
 		return serializeItem(aUser, OnlineUserUtils::propertyHandler);
 	}
 
-	std::string Serializer::getFileTypeId(const string& aName) noexcept {
-		switch (aName[0]) {
+	std::string Serializer::getFileTypeId(const string& aId) noexcept {
+		if (aId.length() != 1) {
+			return aId;
+		}
+
+		switch (aId[0]) {
 			case '1': return "audio";
 			case '2': return "compressed";
 			case '3': return "document";
 			case '4': return "executable";
 			case '5': return "picture";
 			case '6': return "video";
-			default: return aName.empty() ? "other" : aName;
+			default: return aId;
 		}
 	}
 
 	json Serializer::serializeFileType(const string& aPath) noexcept {
 		auto ext = Util::formatFileType(aPath);
-		auto typeName = getFileTypeId(SearchManager::getInstance()->getNameByExtension(ext, true));
+		auto typeName = getFileTypeId(SearchManager::getInstance()->getTypeIdByExtension(ext, true));
 
 		return{
 			{ "id", "file" },
@@ -297,6 +303,17 @@ namespace webserver {
 			case TrackableDownloadItem::STATE_DOWNLOAD_PENDING: return "download_pending";
 			case TrackableDownloadItem::STATE_DOWNLOADING: return "downloading";
 			case TrackableDownloadItem::STATE_DOWNLOADED: return "downloaded";
+		}
+
+		dcassert(0);
+		return Util::emptyString;
+	}
+
+	string Serializer::getDirectoryDownloadStateId(DirectoryDownload::State aState) noexcept {
+		switch (aState) {
+			case DirectoryDownload::State::PENDING: return "pending";
+			case DirectoryDownload::State::QUEUED: return "queued";
+			case DirectoryDownload::State::FAILED: return "failed";
 		}
 
 		dcassert(0);
@@ -380,6 +397,9 @@ namespace webserver {
 			{ "target_directory", aDownload->getTarget() },
 			{ "priority", Serializer::serializePriorityId(aDownload->getPriority()) },
 			{ "list_path", aDownload->getListPath() },
+			{ "state", getDirectoryDownloadStateId(aDownload->getState()) },
+			{ "queue_info", aDownload->getQueueInfo() ? serializeDirectoryBundleAddInfo(*aDownload->getQueueInfo(), aDownload->getError()) : json() },
+			{ "error", aDownload->getError() },
 		};
 	}
 

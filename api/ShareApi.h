@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,6 @@
 #ifndef DCPLUSPLUS_DCPP_SHAREAPI_H
 #define DCPLUSPLUS_DCPP_SHAREAPI_H
 
-#include <web-server/stdinc.h>
-
 #include <api/base/HookApiModule.h>
 
 #include <airdcpp/typedefs.h>
@@ -32,8 +30,10 @@ namespace webserver {
 		ShareApi(Session* aSession);
 		~ShareApi();
 	private:
-		ActionHookRejectionPtr fileValidationHook(const string& aPath, int64_t aSize, const HookRejectionGetter& aErrorGetter) noexcept;
-		ActionHookRejectionPtr directoryValidationHook(const string& aPath, const HookRejectionGetter& aErrorGetter) noexcept;
+		ActionHookResult<> fileValidationHook(const string& aPath, int64_t aSize, const ActionHookResultGetter<>& aResultGetter) noexcept;
+		ActionHookResult<> directoryValidationHook(const string& aPath, const ActionHookResultGetter<>& aResultGetter) noexcept;
+		ActionHookResult<> newDirectoryValidationHook(const string& aPath, bool aNewParent, const ActionHookResultGetter<>& aResultGetter) noexcept;
+		ActionHookResult<> newFileValidationHook(const string& aPath, int64_t aSize, bool aNewParent, const ActionHookResultGetter<>& aResultGetter) noexcept;
 
 		api_return handleRefreshShare(ApiRequest& aRequest);
 		api_return handleRefreshPaths(ApiRequest& aRequest);
@@ -42,6 +42,11 @@ namespace webserver {
 		api_return handleAddExclude(ApiRequest& aRequest);
 		api_return handleRemoveExclude(ApiRequest& aRequest);
 		api_return handleGetExcludes(ApiRequest& aRequest);
+
+		static json serializeTempShare(const TempShareInfo& aInfo) noexcept;
+		api_return handleAddTempShare(ApiRequest& aRequest);
+		api_return handleRemoveTempShare(ApiRequest& aRequest);
+		api_return handleGetTempShares(ApiRequest& aRequest);
 
 		api_return handleGetStats(ApiRequest& aRequest);
 		api_return handleSearch(ApiRequest& aRequest);
@@ -55,6 +60,9 @@ namespace webserver {
 
 		void on(ShareManagerListener::ExcludeAdded, const string& aPath) noexcept override;
 		void on(ShareManagerListener::ExcludeRemoved, const string& aPath) noexcept override;
+
+		void on(ShareManagerListener::TempFileAdded, const TempShareInfo& aFile) noexcept override;
+		void on(ShareManagerListener::TempFileRemoved, const TempShareInfo& aFile) noexcept override;
 
 		void onShareRefreshed(const RefreshPathList& aRealPaths, uint8_t aTaskType, const string& aSubscription) noexcept;
 

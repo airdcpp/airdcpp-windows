@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,6 +16,8 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+#include "stdinc.h"
+
 #include <api/HubApi.h>
 
 #include <api/common/Serializer.h>
@@ -31,26 +33,26 @@ namespace webserver {
 		"hub_removed"
 	};
 
-	ActionHookRejectionPtr HubApi::incomingMessageHook(const ChatMessagePtr& aMessage, const HookRejectionGetter& aRejectionGetter) {
+	ActionHookResult<> HubApi::incomingMessageHook(const ChatMessagePtr& aMessage, const ActionHookResultGetter<>& aResultGetter) {
 		return HookCompletionData::toResult(
 			fireHook("hub_incoming_message_hook", 2, [&]() {
 				return Serializer::serializeChatMessage(aMessage);
 			}),
-			aRejectionGetter
+			aResultGetter
 		);
 	};
 
-	ActionHookRejectionPtr HubApi::outgoingMessageHook(const string& aMessage, bool aThirdPerson, const Client& aClient, const HookRejectionGetter& aRejectionGetter) {
+	ActionHookResult<> HubApi::outgoingMessageHook(const string& aMessage, bool aThirdPerson, const Client& aClient, const ActionHookResultGetter<>& aResultGetter) {
 		return HookCompletionData::toResult(
 			fireHook("hub_outgoing_message_hook", 2, [&]() {
 				return json({
 					{ "text", aMessage },
 					{ "third_person", aThirdPerson },
 					{ "hub_url", aClient.getHubUrl() },
-					{ "session_id", aClient.getClientId() },
+					{ "session_id", aClient.getToken() },
 				});
 			}),
-			aRejectionGetter
+			aResultGetter
 		);
 	}
 
@@ -84,9 +86,14 @@ namespace webserver {
 		METHOD_HANDLER(Access::HUBS_SEND,	METHOD_POST,	(EXACT_PARAM("chat_message")),			HubApi::handlePostMessage);
 		METHOD_HANDLER(Access::HUBS_EDIT,	METHOD_POST,	(EXACT_PARAM("status_message")),		HubApi::handlePostStatus);
 
-		auto rawHubs = ClientManager::getInstance()->getClients();
-		for (const auto& c : rawHubs | map_values) {
-			addHub(c);
+		{
+			auto cm = ClientManager::getInstance();
+
+			RLock l(cm->getCS());
+			auto rawHubs = cm->getClientsUnsafe();
+			for (const auto& c : rawHubs | map_values) {
+				addHub(c);
+			}
 		}
 	}
 
@@ -99,21 +106,28 @@ namespace webserver {
 
 		auto message = Deserializer::deserializeChatMessage(reqJson);
 		auto hubs = Deserializer::deserializeHubUrls(reqJson);
-		int succeed = 0;
 
-		string lastError;
-		for (const auto& url : hubs) {
-			auto c = ClientManager::getInstance()->getClient(url);
-			if (c && c->isConnected() && c->sendMessage(message.first, lastError, message.second)) {
-				succeed++;
+		const auto complete = aRequest.defer();
+		addAsyncTask([=] {
+			int succeed = 0;
+			string lastError;
+			for (const auto& url: hubs) {
+				auto c = ClientManager::getInstance()->getClient(url);
+				if (c && c->isConnected() && c->sendMessageHooked(message.first, lastError, message.second)) {
+					succeed++;
+				}
 			}
-		}
 
-		aRequest.setResponseBody({
-			{ "sent", succeed },
+			complete(
+				websocketpp::http::status_code::ok, 
+				{
+					{ "sent", succeed },
+				}, 
+				nullptr
+			);
 		});
 
-		return websocketpp::http::status_code::ok;
+		return websocketpp::http::status_code::see_other;
 	}
 
 	api_return HubApi::handlePostStatus(ApiRequest& aRequest) {
@@ -176,7 +190,7 @@ namespace webserver {
 			{ "identity", HubInfo::serializeIdentity(aClient) },
 			{ "connect_state", HubInfo::serializeConnectState(aClient) },
 			{ "hub_url", aClient->getHubUrl() },
-			{ "id", aClient->getClientId() },
+			{ "id", aClient->getToken() },
 			{ "favorite_hub", aClient->getFavToken() },
 			{ "share_profile", Serializer::serializeShareProfileSimple(aClient->get(HubSettings::ShareProfile)) },
 			{ "message_counts", Serializer::serializeCacheInfo(aClient->getCache(), Serializer::serializeUnreadChat) },
@@ -185,7 +199,7 @@ namespace webserver {
 	}
 
 	void HubApi::addHub(const ClientPtr& aClient) noexcept {
-		addSubModule(aClient->getClientId(), std::make_shared<HubInfo>(this, aClient));
+		addSubModule(aClient->getToken(), std::make_shared<HubInfo>(this, aClient));
 	}
 
 	// Use async tasks because adding/removing HubInfos require calls to ClientListener (which is likely 
@@ -203,7 +217,7 @@ namespace webserver {
 
 	void HubApi::on(ClientManagerListener::ClientRemoved, const ClientPtr& aClient) noexcept {
 		addAsyncTask([=] {
-			removeSubModule(aClient->getClientId());
+			removeSubModule(aClient->getToken());
 
 			if (!subscriptionActive("hub_removed")) {
 				return;
@@ -235,14 +249,7 @@ namespace webserver {
 	}
 
 	api_return HubApi::handleFindByUrl(ApiRequest& aRequest) {
-		auto address = JsonUtil::getField<string>("hub_url", aRequest.getRequestBody(), false);
-
-		auto client = ClientManager::getInstance()->getClient(address);
-		if (!client) {
-			aRequest.setResponseErrorStr("Hub was not found");
-			return websocketpp::http::status_code::not_found;
-		}
-
+		auto client = Deserializer::deserializeClient(aRequest.getRequestBody());
 		aRequest.setResponseBody(serializeClient(client));
 		return websocketpp::http::status_code::ok;
 	}

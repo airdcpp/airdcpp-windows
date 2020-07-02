@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 #ifndef DCPLUSPLUS_DCPP_WEBUSERMANAGER_H
 #define DCPLUSPLUS_DCPP_WEBUSERMANAGER_H
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
 
 #include <airdcpp/CriticalSection.h>
 #include <airdcpp/Speaker.h>
@@ -43,6 +43,7 @@ namespace webserver {
 
 		// Throws on errors
 		SessionPtr authenticateSession(const string& aUserName, const string& aPassword, Session::SessionType aType, uint64_t aMaxInactivityMinutes, const string& aIP);
+		SessionPtr authenticateSession(const string& aRefreshToken, Session::SessionType aType, uint64_t aMaxInactivityMinutes, const string& aIP);
 
 		SessionPtr createExtensionSession(const string& aExtensionName) noexcept;
 
@@ -56,7 +57,7 @@ namespace webserver {
 		WebUserPtr getUser(const string& aUserName) const noexcept;
 
 		bool addUser(const WebUserPtr& aUser) noexcept;
-		bool updateUser(const WebUserPtr& aUser) noexcept;
+		bool updateUser(const WebUserPtr& aUser, bool aRemoveSessions) noexcept;
 		bool removeUser(const string& aUserName) noexcept;
 
 		WebUserList getUsers() const noexcept;
@@ -65,7 +66,22 @@ namespace webserver {
 		StringList getUserNames() const noexcept;
 
 		size_t getUserSessionCount() const noexcept;
+		string createRefreshToken(const WebUserPtr& aUser) noexcept;
 	private:
+		enum AuthType {
+			AUTH_UNKNOWN,
+			AUTH_BASIC,
+			AUTH_BEARER,
+		};
+
+		struct TokenInfo {
+			const string token;
+			const WebUserPtr user;
+			const time_t expiresOn;
+
+			typedef vector<TokenInfo> List;
+		};
+
 		FloodCounter authFloodCounter;
 
 		mutable SharedMutex cs;
@@ -74,10 +90,14 @@ namespace webserver {
 
 		std::map<std::string, SessionPtr> sessionsRemoteId;
 		std::map<LocalSessionId, SessionPtr> sessionsLocalId;
+		std::map<string, TokenInfo> refreshTokens;
 
 		void checkExpiredSessions() noexcept;
+		void checkExpiredTokens() noexcept;
 		void resetSocketSession(const WebSocketPtr& aSocket) noexcept;
 		void removeSession(const SessionPtr& aSession, bool aTimedOut) noexcept;
+		void removeRefreshTokens(const WebUserPtr& aUser) noexcept;
+		void removeSessions(const WebUserPtr& aUser) noexcept;
 		TimerPtr expirationTimer;
 
 		// Throws on errors
@@ -94,6 +114,7 @@ namespace webserver {
 		void on(WebServerManagerListener::SaveSettings, SimpleXML& aXml) noexcept override;
 
 		WebServerManager* server;
+		void setDirty() noexcept;
 	};
 }
 

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,6 @@
 #ifndef DCPLUSPLUS_DCPP_FILESEARCH_PARSER_H
 #define DCPLUSPLUS_DCPP_FILESEARCH_PARSER_H
 
-#include <web-server/stdinc.h>
-
 #include <airdcpp/typedefs.h>
 #include <airdcpp/Search.h>
 
@@ -28,12 +26,14 @@ namespace webserver {
 	class FileSearchParser {
 	public:
 		static SearchPtr parseSearch(const json& aJson, bool aIsDirectSearch, const string& aToken);
+
+		static string parseSearchType(const string& aType);
+		static string serializeSearchType(const string& aType);
 	private:
 		static void parseMatcher(const json& aJson, const SearchPtr& aSearch);
 		static void parseOptions(const json& aJson, const SearchPtr& aSearch);
 
 		static Search::MatchType parseMatchType(const string& aTypeStr);
-		static const string& parseFileType(const string& aType) noexcept;
 	};
 }
 

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 #ifndef DCPLUSPLUS_DCPP_EXTENSION_H
 #define DCPLUSPLUS_DCPP_EXTENSION_H
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
 #include <web-server/ExtensionListener.h>
 
 #include <api/ApiSettingItem.h>
@@ -90,8 +90,8 @@ namespace webserver {
 		}
 
 		bool hasSettings() const noexcept;
-		ServerSettingItem::List getSettings() const noexcept;
-		ServerSettingItem* getSetting(const string& aKey) noexcept;
+		ExtensionSettingItem::List getSettings() const noexcept;
+		ExtensionSettingItem* getSetting(const string& aKey) noexcept;
 		void resetSettings() noexcept;
 
 		typedef map<string, json> SettingValueMap;
@@ -99,7 +99,7 @@ namespace webserver {
 		SettingValueMap getSettingValues() noexcept;
 
 		// Throws on errors
-		void swapSettingDefinitions(ServerSettingItem::List& aDefinitions);
+		void swapSettingDefinitions(ExtensionSettingItem::List& aDefinitions);
 
 		FilesystemItemList getLogs() const noexcept;
 	private:
@@ -111,7 +111,7 @@ namespace webserver {
 		void initialize(const string& aPackageDirectory, bool aSkipPathValidation);
 
 		static SharedMutex cs;
-		ServerSettingItem::List settings;
+		ExtensionSettingItem::List settings;
 
 		// Load package JSON
 		// Throws on errors

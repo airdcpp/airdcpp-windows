@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 #ifndef DCPLUSPLUS_DCPP_JSONUTIL_H
 #define DCPLUSPLUS_DCPP_JSONUTIL_H
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
 
 namespace webserver {
 	class JsonUtil {
@@ -33,10 +33,30 @@ namespace webserver {
 
 		// Return enum field with range validation
 		template <typename T, typename JsonT>
-		static optional<T> getEnumField(const string& aFieldName, const JsonT& aJson, bool aRequired, int aMin, int aMax) {
-			auto value = getOptionalField<T>(aFieldName, aJson, aRequired);
+		static optional<T> getOptionalRangeField(const string& aFieldName, const JsonT& aJson, bool aRequired, int aMin, int aMax = std::numeric_limits<T>::max()) {
+			auto value = getOptionalField<T, JsonT>(aFieldName, aJson, aRequired);
 			if (value) {
 				validateRange(aFieldName, *value, aMin, aMax);
+			}
+
+			return value;
+		}
+
+		// Return enum field with range validation
+		template <typename T, typename JsonT>
+		static optional<T> getOptionalEnumField(const string& aFieldName, const JsonT& aJson, bool aRequired, const std::vector<T>& aAllowedValues) {
+			auto value = getOptionalField<T, JsonT>(aFieldName, aJson, aRequired);
+			if (value && find(aAllowedValues.begin(), aAllowedValues.end(), *value) == aAllowedValues.end()) {
+				string allowedValuesStr;
+				for (const auto& v: aAllowedValues) {
+					if (!allowedValuesStr.empty()) {
+						allowedValuesStr += ", ";
+					}
+
+					allowedValuesStr += "\"" + v + "\"";
+				}
+
+				throwError(aFieldName, ERROR_INVALID, "Value \"" + string(*value) + "\" isn't valid (allowed values: " + allowedValuesStr + ")");
 			}
 
 			return value;
@@ -52,8 +72,21 @@ namespace webserver {
 		}
 
 		template <typename T, typename JsonT>
-		static T getEnumFieldDefault(const string& aFieldName, const JsonT& aJson, T aDefault, int aMin, int aMax) {
-			auto value = getEnumField<T, JsonT>(aFieldName, aJson, false, aMin, aMax);
+		static T getRangeField(const string& aFieldName, const JsonT& aJson, int aMin, int aMax = std::numeric_limits<T>::max()) {
+			auto value = getField<T, JsonT>(aFieldName, aJson, false);
+			validateRange(aFieldName, value, aMin, aMax);
+			return value;
+		}
+
+		template <typename T, typename JsonT>
+		static T getEnumFieldDefault(const string& aFieldName, const JsonT& aJson, T aDefault, const std::vector<T>& aAllowedValues) {
+			auto value = getOptionalEnumField<T, JsonT>(aFieldName, aJson, false, aAllowedValues);
+			return value ? *value : aDefault;
+		}
+
+		template <typename T, typename JsonT>
+		static T getRangeFieldDefault(const string& aFieldName, const JsonT& aJson, T aDefault, int aMin, int aMax = std::numeric_limits<T>::max()) {
+			auto value = getOptionalRangeField<T, JsonT>(aFieldName, aJson, false, aMin, aMax);
 			return value ? *value : aDefault;
 		}
 
@@ -61,30 +94,25 @@ namespace webserver {
 		template <typename T, typename JsonT>
 		static optional<T> getOptionalField(const string& aFieldName, const JsonT& aJson, bool aThrowIfMissing = false) {
 			if (aThrowIfMissing) {
-				return getField<T>(aFieldName, aJson, false);
+				return getField<T, JsonT>(aFieldName, aJson, false);
 			}
 
 			if (aJson.is_null()) {
-				return boost::none;
+				return nullopt;
 			}
 
 			auto p = aJson.find(aFieldName);
 			if (p == aJson.end()) {
-				return boost::none;
+				return nullopt;
 			}
 
-			auto value = parseValue<T>(aFieldName, *p, true);
-			if (isEmpty<T>(value, *p)) {
-				return boost::none;
-			}
-
-			return value;
+			return parseOptionalValue<T, JsonT>(aFieldName, *p);
 		}
 
 		// Get the field value if it exists and return the default otherwise
 		template <typename T, typename JsonT>
 		static T getOptionalFieldDefault(const string& aFieldName, const JsonT& aJson, const T& aDefault) {
-			auto v = getOptionalField<T>(aFieldName, aJson);
+			auto v = getOptionalField<T, JsonT>(aFieldName, aJson);
 			if (v) {
 				return *v;
 			}
@@ -110,6 +138,20 @@ namespace webserver {
 			return parseValue<T>(aFieldName, getRawValue(aFieldName, aJson, true), aAllowEmpty);
 		}
 
+		template <typename JsonT>
+		static json getArrayField(const string& aFieldName, const JsonT& aJson, bool aAllowEmpty) {
+			auto ret = getRawValue<JsonT>(aFieldName, aJson, true);
+			if (!ret.is_array()) {
+				throwError(aFieldName, ERROR_INVALID, "Field must be an array");
+			}
+
+			if (!aAllowEmpty && ret.empty()) {
+				throwError(aFieldName, ERROR_INVALID, "Array can't be empty");
+			}
+
+			return ret;
+		}
+
 		// Get value from the given JSON element
 		template <typename T, typename JsonT>
 		static T parseValue(const string& aFieldName, const JsonT& aJson, bool aAllowEmpty = true) {
@@ -122,7 +164,8 @@ namespace webserver {
 					return T(); // avoid MSVC warning
 				}
 
-				if (!aAllowEmpty && isEmpty<T>(ret, aJson)) {
+				validateValue<T>(ret);
+				if (!aAllowEmpty && isEmpty<T, JsonT>(ret, aJson)) {
 					throwError(aFieldName, ERROR_INVALID, "Field can't be empty");
 					return T(); // avoid MSVC warning
 				}
@@ -137,8 +180,38 @@ namespace webserver {
 			return convertNullValue<T>(aFieldName);
 		}
 
+		template <typename T, typename JsonT>
+		static optional<T> parseOptionalValue(const string& aFieldName, const JsonT& aJson) {
+			if (aJson.is_null()) {
+				return nullopt;
+			}
+
+			auto value = parseValue<T, JsonT>(aFieldName, aJson, true);
+			if (isEmpty<T, JsonT>(value, aJson)) {
+				return nullopt;
+			}
+
+			return value;
+		}
+
+		template <typename T, typename JsonT>
+		static optional<T> parseOptionalRangeValue(const string& aFieldName, const JsonT& aJson, int aMin, int aMax) {
+			auto value = parseOptionalValue<T, JsonT>(aFieldName, aJson);
+			if (value) {
+				validateRange(aFieldName, *value, aMin, aMax);
+			}
+
+			return value;
+		}
+
+		template <typename T, typename JsonT>
+		static T parseRangeValueDefault(const string& aFieldName, const JsonT& aJson, T aDefault, int aMin, int aMax) {
+			auto value = parseOptionalRangeValue<T, JsonT>(aFieldName, aJson, aMin, aMax);
+			return value ? *value : aDefault;
+		}
+
 		static void throwError(const string& aFieldName, ErrorType aType, const string& aMessage)  {
-			throw ArgumentException(getError(aFieldName, aType, aMessage));
+			throw ArgumentException(getError(aFieldName, aType, aMessage), aMessage);
 		}
 
 		static json getError(const string& aFieldName, ErrorType aType, const string& aMessage) noexcept;
@@ -187,7 +260,20 @@ namespace webserver {
 
 		template <class T>
 		static typename std::enable_if<std::is_integral<T>::value, T>::type convertNullValue(const string& aFieldName) {
-			throw ArgumentException(getError(aFieldName, ERROR_INVALID, "Field can't be empty"));
+			throwError(aFieldName, ERROR_INVALID, "Field can't be empty");
+			return T(); // Not used
+		}
+
+
+		template <class T>
+		static void validateValue(typename std::enable_if<std::is_same<std::string, T>::value, T>::type& value_) {
+			// Remove null characters as they may cause issues as string terminators
+			value_.erase(std::find(value_.begin(), value_.end(), '\0'), value_.end());
+		}
+
+		template <class T>
+		static void validateValue(typename std::enable_if<!std::is_same<std::string, T>::value, T>::type& value_) {
+
 		}
 
 		static string errorTypeToString(ErrorType aType) noexcept;

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 
 #ifndef DCPLUSPLUS_DCPP_QUEUEAPI_H
 #define DCPLUSPLUS_DCPP_QUEUEAPI_H
-
-#include <web-server/stdinc.h>
 
 #include <airdcpp/typedefs.h>
 
@@ -42,8 +40,8 @@ namespace webserver {
 		QueueApi(Session* aSession);
 		~QueueApi();
 	private:
-		ActionHookRejectionPtr bundleCompletionHook(const BundlePtr& aBundle, const HookRejectionGetter& aErrorGetter) noexcept;
-		ActionHookRejectionPtr fileCompletionHook(const QueueItemPtr& aFile, const HookRejectionGetter& aErrorGetter) noexcept;
+		ActionHookResult<> bundleCompletionHook(const BundlePtr& aBundle, const ActionHookResultGetter<>& aResultGetter) noexcept;
+		ActionHookResult<> fileCompletionHook(const QueueItemPtr& aFile, const ActionHookResultGetter<>& aResultGetter) noexcept;
 
 		// COMMON
 		api_return handleFindDupePaths(ApiRequest& aRequest);

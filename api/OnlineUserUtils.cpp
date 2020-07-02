@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
 * along with this program; if not, write to the Free Software
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
+
+#include "stdinc.h"
 
 #include <api/OnlineUserUtils.h>
 #include <api/HubInfo.h>
@@ -34,6 +36,7 @@ namespace webserver {
 		{ PROP_IP6, "ip6", TYPE_TEXT, SERIALIZE_CUSTOM, SORT_TEXT },
 		{ PROP_EMAIL, "email", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
 		{ PROP_FILES, "file_count", TYPE_NUMERIC_OTHER, SERIALIZE_NUMERIC, SORT_NUMERIC },
+		{ PROP_HUB_ID, "hub_session_id", TYPE_NUMERIC_OTHER, SERIALIZE_NUMERIC, SORT_NUMERIC },
 		{ PROP_HUB_URL, "hub_url", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
 		{ PROP_HUB_NAME , "hub_name", TYPE_TEXT, SERIALIZE_TEXT, SORT_TEXT },
 		{ PROP_FLAGS, "flags", TYPE_LIST_TEXT, SERIALIZE_CUSTOM, SORT_NONE },
@@ -103,6 +106,7 @@ namespace webserver {
 		case PROP_UPLOAD_SPEED: return (double)aUser->getIdentity().getAdcConnectionSpeed(false);
 		case PROP_DOWNLOAD_SPEED: return (double)aUser->getIdentity().getAdcConnectionSpeed(true);
 		case PROP_FILES: return Util::toDouble(aUser->getIdentity().getSharedFiles());
+		case PROP_HUB_ID: return aUser->getClient()->getToken();
 		case PROP_UPLOAD_SLOTS: return aUser->getIdentity().getSlots();
 		default: dcassert(0); return 0;
 		}

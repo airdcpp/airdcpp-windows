@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@
 
 #include <api/base/ApiModule.h>
 
-#include <web-server/stdinc.h>
 #include <web-server/ApiRequest.h>
 #include <web-server/Session.h>
 #include <web-server/WebServerManager.h>
@@ -41,7 +40,7 @@ namespace webserver {
 
 		template<typename... ArgT>
 		ParentApiModule(ApiModule::RequestHandler::Param&& aParamMatcher, Access aAccess, Session* aSession, const StringList& aSubscriptions, const StringList& aChildSubscription, IdConvertF aIdConvertF, ChildSerializeF aChildSerializeF, ArgT&&... args) :
-			BaseType(aSession, aAccess, &aSubscriptions, std::forward<ArgT>(args)...), idConvertF(aIdConvertF), childSerializeF(aChildSerializeF), paramId(aParamMatcher.id) {
+			BaseType(aSession, aAccess, aSubscriptions, std::forward<ArgT>(args)...), idConvertF(aIdConvertF), childSerializeF(aChildSerializeF), paramId(aParamMatcher.id) {
 
 			// Get module
 			METHOD_HANDLER(aAccess, METHOD_GET, (aParamMatcher), Type::handleGetSubmodule);
@@ -73,7 +72,7 @@ namespace webserver {
 			{
 				WLock l(cs);
 				dcassert(boost::find_if(subModules | map_values, [](const typename ItemType::Ptr& subModule) {
-					return !subModule.unique();
+					return subModule.use_count() != 1;
 				}).base() == subModules.end());
 
 				subModules.swap(subModulesCopy);
@@ -182,7 +181,7 @@ namespace webserver {
 		// aId = ID of the entity owning this module
 		// Will inherit access from the parent module
 		SubApiModule(ParentType* aParentModule, const IdJsonType& aJsonId, const StringList& aSubscriptions) :
-			SubscribableApiModule(aParentModule->getSession(), aParentModule->getSubscriptionAccess(), &aSubscriptions), parentModule(aParentModule), jsonId(aJsonId) { }
+			SubscribableApiModule(aParentModule->getSession(), aParentModule->getSubscriptionAccess(), aSubscriptions), parentModule(aParentModule), jsonId(aJsonId) { }
 
 		bool send(const string& aSubscription, const json& aJson) override {
 			return SubscribableApiModule::send({

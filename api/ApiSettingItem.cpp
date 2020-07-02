@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,13 +16,15 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
+
 #include <api/ApiSettingItem.h>
 #include <web-server/JsonUtil.h>
 
 #include <airdcpp/AirUtil.h>
 #include <airdcpp/ConnectionManager.h>
 #include <airdcpp/ConnectivityManager.h>
+#include <airdcpp/Localization.h>
 #include <airdcpp/ResourceManager.h>
 #include <airdcpp/SearchManager.h>
 #include <airdcpp/SettingHolder.h>
@@ -31,6 +33,16 @@
 #include <airdcpp/StringTokenizer.h>
 
 namespace webserver {
+	string ApiSettingItem::formatTitle(ResourceManager::Strings aDesc, ResourceManager::Strings aUnit) noexcept {
+		auto title = ResourceManager::getInstance()->getString(aDesc);
+
+		if (aUnit != ResourceManager::LAST) {
+			title += " (" + ResourceManager::getInstance()->getString(aUnit) + ")";
+		}
+
+		return title;
+	}
+
 	const ApiSettingItem::MinMax ApiSettingItem::defaultMinMax = { 0, MAX_INT_VALUE };
 
 	ApiSettingItem::ApiSettingItem(const string& aName, Type aType, Type aItemType) :
@@ -47,37 +59,58 @@ namespace webserver {
 		return getValue();
 	}
 
-	ServerSettingItem::ServerSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType,
-		bool aOptional, const MinMax& aMinMax, const List& aObjectValues, const string& aHelp, Type aItemType, const EnumOption::List& aEnumOptions) :
+	JsonSettingItem::JsonSettingItem(const string& aKey, const json& aDefaultValue, Type aType,
+		bool aOptional, const MinMax& aMinMax, const string& aHelp, Type aItemType, const EnumOption::List& aEnumOptions) :
 
-		ApiSettingItem(aKey, aType, aItemType), desc(aTitle), defaultValue(aDefaultValue),
-		optional(aOptional), minMax(aMinMax), objectValues(aObjectValues), help(aHelp), enumOptions(aEnumOptions)
+		ApiSettingItem(aKey, aType, aItemType), defaultValue(aDefaultValue),
+		optional(aOptional), minMax(aMinMax), help(aHelp), enumOptions(aEnumOptions)
 	{
 		dcassert(aType != TYPE_NUMBER || minMax.min != minMax.max);
 	}
 
-	// Returns the value and bool indicating whether it's an auto detected value
-	json ServerSettingItem::getValue() const noexcept {
-		return getValueRef();
-	}
 
-	const json& ServerSettingItem::getValueRef() const noexcept {
-		return isDefault() ? defaultValue : value;
+	ServerSettingItem::ServerSettingItem(const string& aKey, const ResourceManager::Strings aTitleKey, const json& aDefaultValue, Type aType, bool aOptional,
+		const MinMax& aMinMax, const ResourceManager::Strings aUnit): JsonSettingItem(aKey, aDefaultValue, aType, aOptional, aMinMax), titleKey(aTitleKey) {
+
 	}
 
 	ApiSettingItem::PtrList ServerSettingItem::getValueTypes() const noexcept {
+		return ApiSettingItem::PtrList();
+	}
+
+	string ServerSettingItem::getTitle() const noexcept {
+		return ResourceManager::getInstance()->getString(titleKey);
+	}
+
+	ExtensionSettingItem::ExtensionSettingItem(const string& aKey, const string& aTitle, const json& aDefaultValue, Type aType,
+		bool aOptional, const MinMax& aMinMax, const List& aObjectValues, const string& aHelp, Type aItemType, const EnumOption::List& aEnumOptions) : 
+
+		JsonSettingItem(aKey, aDefaultValue, aType, aOptional, aMinMax, aHelp, aItemType, aEnumOptions), title(aTitle), objectValues(aObjectValues) {
+
+	}
+
+	ApiSettingItem::PtrList ExtensionSettingItem::getValueTypes() const noexcept {
 		return valueTypesToPtrList(objectValues);
 	}
 
-	const string& ServerSettingItem::getHelpStr() const noexcept {
+	// Returns the value and bool indicating whether it's an auto detected value
+	json JsonSettingItem::getValue() const noexcept {
+		return getValueRef();
+	}
+
+	const json& JsonSettingItem::getValueRef() const noexcept {
+		return isDefault() ? defaultValue : value;
+	}
+
+	const string& JsonSettingItem::getHelpStr() const noexcept {
 		return help;
 	}
 
-	void ServerSettingItem::unset() noexcept {
+	void JsonSettingItem::unset() noexcept {
 		value = nullptr;
 	}
 
-	bool ServerSettingItem::setValue(const json& aJson) {
+	bool JsonSettingItem::setValue(const json& aJson) {
 		if (aJson.is_null()) {
 			unset();
 		} else {
@@ -88,23 +121,23 @@ namespace webserver {
 		return true;
 	}
 
-	int ServerSettingItem::num() const {
+	int JsonSettingItem::num() const {
 		return getValueRef().get<int>();
 	}
 
-	ApiSettingItem::ListNumber ServerSettingItem::numList() const {
+	ApiSettingItem::ListNumber JsonSettingItem::numList() const {
 		return getValueRef().get<vector<int>>();
 	}
 
-	ApiSettingItem::ListString ServerSettingItem::strList() const {
+	ApiSettingItem::ListString JsonSettingItem::strList() const {
 		return getValueRef().get<vector<string>>();
 	}
 
-	uint64_t ServerSettingItem::uint64() const {
+	uint64_t JsonSettingItem::uint64() const {
 		return getValueRef().get<uint64_t>();
 	}
 
-	string ServerSettingItem::str() const {
+	string JsonSettingItem::str() const {
 		if (getValueRef().is_number()) {
 			return Util::toString(num());
 		}
@@ -112,24 +145,24 @@ namespace webserver {
 		return getValueRef().get<string>();
 	}
 
-	bool ServerSettingItem::boolean() const {
+	bool JsonSettingItem::boolean() const {
 		return getValueRef().get<bool>();
 	}
 
-	bool ServerSettingItem::isDefault() const noexcept {
+	bool JsonSettingItem::isDefault() const noexcept {
 		return value.is_null();
 	}
 
-	json ServerSettingItem::getDefaultValue() const noexcept {
+	json JsonSettingItem::getDefaultValue() const noexcept {
 		return defaultValue;
 	}
 
-	ApiSettingItem::EnumOption::List ServerSettingItem::getEnumOptions() const noexcept {
+	ApiSettingItem::EnumOption::List JsonSettingItem::getEnumOptions() const noexcept {
 		return enumOptions;
 	}
 
 
-	const ApiSettingItem::MinMax& ServerSettingItem::getMinMax() const noexcept {
+	const ApiSettingItem::MinMax& JsonSettingItem::getMinMax() const noexcept {
 		return minMax;
 	}
 
@@ -145,7 +178,7 @@ namespace webserver {
 		{ SettingsManager::MINIMUM_SEARCH_INTERVAL, { 5, 1000 } },
 
 		{ SettingsManager::UPLOAD_SLOTS, { 1, 250 } },
-		{ SettingsManager::DOWNLOAD_SLOTS, { 1, 250 } },
+		{ SettingsManager::DOWNLOAD_SLOTS, { 0, 250 } },
 		{ SettingsManager::SET_MINISLOT_SIZE, { 64, MAX_INT_VALUE } },
 		{ SettingsManager::EXTRA_SLOTS, { 1, 100 } },
 
@@ -168,6 +201,13 @@ namespace webserver {
 		SettingsManager::SKIPLIST_DOWNLOAD,
 		SettingsManager::SKIPLIST_SHARE,
 		SettingsManager::FREE_SLOTS_EXTENSIONS,
+
+		SettingsManager::HTTP_PROXY,
+		SettingsManager::SOCKS_SERVER,
+		SettingsManager::SOCKS_USER,
+		SettingsManager::SOCKS_PASSWORD,
+
+		SettingsManager::LANGUAGE_FILE,
 	};
 
 	map<int, CoreSettingItem::Group> groupMappings = {
@@ -329,13 +369,17 @@ namespace webserver {
 		} else if (si.key == SettingsManager::BIND_ADDRESS || si.key == SettingsManager::BIND_ADDRESS6) {
 			auto bindAddresses = AirUtil::getBindAdapters(si.key == SettingsManager::BIND_ADDRESS6);
 			for (const auto& adapter : bindAddresses) {
-				auto name = adapter.ip + (!adapter.adapterName.empty() ? " (" + adapter.adapterName + ")" : Util::emptyString);
-				ret.emplace_back(EnumOption({ adapter.ip, name }));
+				auto title = adapter.ip + (!adapter.adapterName.empty() ? " (" + adapter.adapterName + ")" : Util::emptyString);
+				ret.emplace_back(EnumOption({ adapter.ip, title }));
 			}
 		} else if (si.key == SettingsManager::MAPPER) {
 			auto mappers = ConnectivityManager::getInstance()->getMappers(false);
 			for (const auto& mapper : mappers) {
 				ret.emplace_back(EnumOption({ mapper, mapper }));
+			}
+		} else if (si.key == SettingsManager::LANGUAGE_FILE) {
+			for (const auto& language: Localization::getLanguages()) {
+				ret.emplace_back(EnumOption({ language.getLanguageSettingValue(), language.getLanguageName() }));
 			}
 		}
 
@@ -343,13 +387,7 @@ namespace webserver {
 	}
 
 	string CoreSettingItem::getTitle() const noexcept {
-		auto title = si.getDescription();
-
-		if (unit != ResourceManager::LAST) {
-			title += " (" + ResourceManager::getInstance()->getString(unit) + ")";
-		}
-
-		return title;
+		return ApiSettingItem::formatTitle(si.desc, unit);
 	}
 
 	void CoreSettingItem::unset() noexcept {

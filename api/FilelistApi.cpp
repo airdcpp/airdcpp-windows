@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
 * along with this program; if not, write to the Free Software
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
+
+#include "stdinc.h"
 
 #include <api/FilelistApi.h>
 
@@ -48,6 +50,7 @@ namespace webserver {
 
 		METHOD_HANDLER(Access::DOWNLOAD,		METHOD_GET,		(EXACT_PARAM("directory_downloads")),				FilelistApi::handleGetDirectoryDownloads);
 		METHOD_HANDLER(Access::DOWNLOAD,		METHOD_POST,	(EXACT_PARAM("directory_downloads")),				FilelistApi::handlePostDirectoryDownload);
+		METHOD_HANDLER(Access::DOWNLOAD,		METHOD_GET ,	(EXACT_PARAM("directory_downloads"), TOKEN_PARAM),	FilelistApi::handleGetDirectoryDownload);
 		METHOD_HANDLER(Access::DOWNLOAD,		METHOD_DELETE,	(EXACT_PARAM("directory_downloads"), TOKEN_PARAM),	FilelistApi::handleDeleteDirectoryDownload);
 
 		METHOD_HANDLER(Access::QUEUE_EDIT,		METHOD_POST,	(EXACT_PARAM("match_queue")),						FilelistApi::handleMatchQueue);
@@ -221,6 +224,18 @@ namespace webserver {
 		return websocketpp::http::status_code::ok;
 	}
 
+
+	api_return FilelistApi::handleGetDirectoryDownload(ApiRequest& aRequest) {
+		auto download = DirectoryListingManager::getInstance()->getDirectoryDownload(aRequest.getTokenParam());
+		if (!download) {
+			aRequest.setResponseErrorStr("Directory download not found");
+			return websocketpp::http::status_code::not_found;
+		}
+
+		aRequest.setResponseBody(Serializer::serializeDirectoryDownload(download));
+		return websocketpp::http::status_code::ok;
+	}
+
 	api_return FilelistApi::handlePostDirectoryDownload(ApiRequest& aRequest) {
 		const auto& reqJson = aRequest.getRequestBody();
 		auto listPath = JsonUtil::getField<string>("list_path", aRequest.getRequestBody(), false);
@@ -243,7 +258,7 @@ namespace webserver {
 	}
 
 	api_return FilelistApi::handleDeleteDirectoryDownload(ApiRequest& aRequest) {
-		auto removed = DirectoryListingManager::getInstance()->removeDirectoryDownload(aRequest.getTokenParam());
+		auto removed = DirectoryListingManager::getInstance()->cancelDirectoryDownload(aRequest.getTokenParam());
 		if (!removed) {
 			aRequest.setResponseErrorStr("Directory download not found");
 			return websocketpp::http::status_code::not_found;

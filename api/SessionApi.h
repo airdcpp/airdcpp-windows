@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 #ifndef DCPLUSPLUS_DCPP_SESSIONAPI_H
 #define DCPLUSPLUS_DCPP_SESSIONAPI_H
 
-#include <web-server/stdinc.h>
 #include <web-server/WebUserManagerListener.h>
 
 #include <api/base/ApiModule.h>
@@ -49,7 +48,7 @@ namespace webserver {
 
 		api_return logout(ApiRequest& aRequest, const SessionPtr& aSession);
 
-		static json serializeLoginInfo(const SessionPtr& aSession);
+		static json serializeLoginInfo(const SessionPtr& aSession, const string& aRefreshToken);
 		static json serializeSession(const SessionPtr& aSession) noexcept;
 		static string getSessionType(const SessionPtr& aSession) noexcept;
 

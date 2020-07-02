@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,6 +16,8 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+#include "stdinc.h"
+
 #include <api/PrivateChatApi.h>
 
 #include <api/common/Deserializer.h>
@@ -31,16 +33,16 @@ namespace webserver {
 		"private_chat_removed"
 	};
 
-	ActionHookRejectionPtr PrivateChatApi::incomingMessageHook(const ChatMessagePtr& aMessage, const HookRejectionGetter& aRejectionGetter) {
+	ActionHookResult<> PrivateChatApi::incomingMessageHook(const ChatMessagePtr& aMessage, const ActionHookResultGetter<>& aResultGetter) {
 		return HookCompletionData::toResult(
 			fireHook("private_chat_incoming_message_hook", 2, [&]() {
 				return Serializer::serializeChatMessage(aMessage);
 			}),
-			aRejectionGetter
+			aResultGetter
 		);
 	}
 
-	ActionHookRejectionPtr PrivateChatApi::outgoingMessageHook(const string& aMessage, bool aThirdPerson, const HintedUser& aUser, bool aEcho, const HookRejectionGetter& aRejectionGetter) {
+	ActionHookResult<> PrivateChatApi::outgoingMessageHook(const string& aMessage, bool aThirdPerson, const HintedUser& aUser, bool aEcho, const ActionHookResultGetter<>& aResultGetter) {
 		return HookCompletionData::toResult(
 			fireHook("private_chat_outgoing_message_hook", 2, [&]() {
 				return json({
@@ -50,7 +52,7 @@ namespace webserver {
 					{ "user", Serializer::serializeHintedUser(aUser) },
 				});
 			}),
-			aRejectionGetter
+			aResultGetter
 		);
 	}
 
@@ -91,13 +93,13 @@ namespace webserver {
 
 	api_return PrivateChatApi::handlePostChat(ApiRequest& aRequest) {
 		auto user = Deserializer::deserializeHintedUser(aRequest.getRequestBody());
-		auto chat = PrivateChatManager::getInstance()->addChat(user, false);
-		if (!chat) {
+		auto res = PrivateChatManager::getInstance()->addChat(user, false);
+		if (!res.second) {
 			aRequest.setResponseErrorStr("Chat session exists");
 			return websocketpp::http::status_code::conflict;
 		}
 
-		aRequest.setResponseBody(serializeChat(chat));
+		aRequest.setResponseBody(serializeChat(res.first));
 		return websocketpp::http::status_code::ok;
 	}
 
@@ -115,13 +117,17 @@ namespace webserver {
 		auto message = Deserializer::deserializeChatMessage(reqJson);
 		auto echo = JsonUtil::getOptionalFieldDefault<bool>("echo", reqJson, false);
 
-		string error_;
-		if (!ClientManager::getInstance()->privateMessage(user, message.first, error_, message.second, echo)) {
-			aRequest.setResponseErrorStr(error_);
-			return websocketpp::http::status_code::internal_server_error;
-		}
+		const auto complete = aRequest.defer();
+		addAsyncTask([=] {
+			string error_;
+			if (!ClientManager::getInstance()->privateMessageHooked(user, message.first, error_, message.second, echo)) {
+				complete(websocketpp::http::status_code::internal_server_error, nullptr, ApiRequest::toResponseErrorStr(error_));
+			} else {
+				complete(websocketpp::http::status_code::no_content, nullptr, nullptr);
+			}
+		});
 
-		return websocketpp::http::status_code::no_content;
+		return websocketpp::http::status_code::see_other;
 	}
 
 	void PrivateChatApi::on(PrivateChatManagerListener::ChatRemoved, const PrivateChatPtr& aChat) noexcept {

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,14 +16,15 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
+
 #include <web-server/JsonUtil.h>
 #include <web-server/Session.h>
 
 #include <api/base/HookApiModule.h>
 
 namespace webserver {
-	HookApiModule::HookApiModule(Session* aSession, Access aSubscriptionAccess, const StringList* aSubscriptions, Access aHookAccess) :
+	HookApiModule::HookApiModule(Session* aSession, Access aSubscriptionAccess, const StringList& aSubscriptions, Access aHookAccess) :
 		SubscribableApiModule(aSession, aSubscriptionAccess, aSubscriptions) 
 	{
 		METHOD_HANDLER(aHookAccess, METHOD_POST, (EXACT_PARAM("hooks"), STR_PARAM(LISTENER_PARAM_ID)), HookApiModule::handleAddHook);
@@ -127,14 +128,6 @@ namespace webserver {
 		} else {
 			resolveJson = aJson;
 		}
-	}
-
-	ActionHookRejectionPtr HookApiModule::HookCompletionData::toResult(const HookCompletionData::Ptr& aData, const HookRejectionGetter& aRejectionGetter) noexcept {
-		if (!aData || !aData->rejected) {
-			return nullptr;
-		}
-
-		return aRejectionGetter(aData->rejectId, aData->rejectMessage);
 	}
 
 	void HookApiModule::createHook(const string& aSubscription, HookAddF&& aAddHandler, HookRemoveF&& aRemoveF) noexcept {

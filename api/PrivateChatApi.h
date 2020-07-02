@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,6 @@
 #ifndef DCPLUSPLUS_DCPP_PRIVATEMESSAGEAPI_H
 #define DCPLUSPLUS_DCPP_PRIVATEMESSAGEAPI_H
 
-#include <web-server/stdinc.h>
-
 #include <api/base/HookApiModule.h>
 #include <api/base/HierarchicalApiModule.h>
 #include <api/PrivateChatInfo.h>
@@ -36,8 +34,8 @@ namespace webserver {
 		PrivateChatApi(Session* aSession);
 		~PrivateChatApi();
 	private:
-		ActionHookRejectionPtr incomingMessageHook(const ChatMessagePtr& aMessage, const HookRejectionGetter& aRejectionGetter);
-		ActionHookRejectionPtr outgoingMessageHook(const string& aMessage, bool aThirdPerson, const HintedUser& aUser, bool aEcho, const HookRejectionGetter& aRejectionGetter);
+		ActionHookResult<> incomingMessageHook(const ChatMessagePtr& aMessage, const ActionHookResultGetter<>& aResultGetter);
+		ActionHookResult<> outgoingMessageHook(const string& aMessage, bool aThirdPerson, const HintedUser& aUser, bool aEcho, const ActionHookResultGetter<>& aResultGetter);
 
 		void addChat(const PrivateChatPtr& aChat) noexcept;
 

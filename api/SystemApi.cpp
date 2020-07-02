@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
 #include <web-server/version.h>
 
 #include <web-server/JsonUtil.h>
@@ -36,7 +36,7 @@
 #include <airdcpp/TimerManager.h>
 
 namespace webserver {
-	SystemApi::SystemApi(Session* aSession) : SubscribableApiModule(aSession, Access::ANY) {
+	SystemApi::SystemApi(Session* aSession) : SubscribableApiModule(aSession, Access::ANY, { "away_state" }) {
 
 		METHOD_HANDLER(Access::ANY, METHOD_GET,		(EXACT_PARAM("stats")),			SystemApi::handleGetStats);
 
@@ -47,8 +47,6 @@ namespace webserver {
 		METHOD_HANDLER(Access::ADMIN, METHOD_POST,	(EXACT_PARAM("shutdown")),		SystemApi::handleShutdown);
 
 		METHOD_HANDLER(Access::ANY, METHOD_GET,		(EXACT_PARAM("system_info")),	SystemApi::handleGetSystemInfo);
-
-		createSubscription("away_state");
 
 		ActivityManager::getInstance()->addListener(this);
 	}
@@ -94,7 +92,9 @@ namespace webserver {
 	}
 
 	void SystemApi::on(ActivityManagerListener::AwayModeChanged, AwayMode /*aNewMode*/) noexcept {
-		send("away_state", serializeAwayState());
+		maybeSend("away_state", [] {
+			return serializeAwayState();
+		});
 	}
 
 	string SystemApi::getAwayState(AwayMode aAwayMode) noexcept {

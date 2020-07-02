@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 #ifndef DCPLUSPLUS_DCPP_MESSAGECACHE_MODULE_H
 #define DCPLUSPLUS_DCPP_MESSAGECACHE_MODULE_H
 
-#include <web-server/stdinc.h>
 #include <web-server/JsonUtil.h>
 
 #include <api/base/ApiModule.h>
@@ -83,13 +82,17 @@ namespace webserver {
 			const auto& reqJson = aRequest.getRequestBody();
 			auto message = Deserializer::deserializeChatMessage(reqJson);
 
-			string error;
-			if (!chatF()->sendMessage(message.first, error, message.second) && !error.empty()) {
-				aRequest.setResponseErrorStr(error);
-				return websocketpp::http::status_code::internal_server_error;
-			}
+			const auto complete = aRequest.defer();
+			module->addAsyncTask([=] {
+				string error;
+				if (!chatF()->sendMessageHooked(message.first, error, message.second) && !error.empty()) {
+					complete(websocketpp::http::status_code::internal_server_error, nullptr, ApiRequest::toResponseErrorStr(error));
+				} else {
+					complete(websocketpp::http::status_code::no_content, nullptr, nullptr);
+				}
+			});
 
-			return websocketpp::http::status_code::no_content;
+			return websocketpp::http::status_code::see_other;
 		}
 
 		api_return handlePostStatusMessage(ApiRequest& aRequest) {

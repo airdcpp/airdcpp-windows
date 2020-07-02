@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 
 #ifndef DCPLUSPLUS_DCPP_APIMODULE_H
 #define DCPLUSPLUS_DCPP_APIMODULE_H
-
-#include <web-server/stdinc.h>
 
 #include <web-server/Access.h>
 #include <web-server/ApiRequest.h>
@@ -52,6 +50,8 @@ namespace webserver {
 
 #define BRACED_INIT_LIST(...) {__VA_ARGS__}
 #define MODULE_METHOD_HANDLER(module, access, method, params, func) (module->getRequestHandlers().push_back(ApiModule::RequestHandler(access, method, BRACED_INIT_LIST params, std::bind(&func, this, placeholders::_1))))
+#define INLINE_MODULE_METHOD_HANDLER(access, method, params, func) (this->getRequestHandlers().push_back(ApiModule::RequestHandler(access, method, BRACED_INIT_LIST params, func)))
+
 #define METHOD_HANDLER(access, method, params, func) MODULE_METHOD_HANDLER(this, access, method, params, func)
 
 		ApiModule(Session* aSession);
@@ -80,7 +80,7 @@ namespace webserver {
 			const HandlerFunction f;
 			const Access access;
 
-			optional<ApiRequest::NamedParamMap> matchParams(const ApiRequest::ParamList& aParams) const noexcept;
+			optional<ApiRequest::NamedParamMap> matchParams(const ApiRequest::PathTokenList& aPathTokens) const noexcept;
 		};
 
 		typedef std::vector<RequestHandler> RequestHandlerList;
@@ -115,7 +115,7 @@ namespace webserver {
 	
 	class SubscribableApiModule : public ApiModule, protected SessionListener {
 	public:
-		SubscribableApiModule(Session* aSession, Access aSubscriptionAccess, const StringList* aSubscriptions = nullptr);
+		SubscribableApiModule(Session* aSession, Access aSubscriptionAccess, const StringList& aSubscriptions);
 		virtual ~SubscribableApiModule();
 
 		typedef std::map<const string, bool> SubscriptionMap;

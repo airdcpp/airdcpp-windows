@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 
 #ifndef DCPLUSPLUS_DCPP_FILELISTAPI_H
 #define DCPLUSPLUS_DCPP_FILELISTAPI_H
-
-#include <web-server/stdinc.h>
 
 #include <api/base/HierarchicalApiModule.h>
 #include <api/FilelistInfo.h>
@@ -45,6 +43,7 @@ namespace webserver {
 		api_return handlePostDirectoryDownload(ApiRequest& aRequest);
 		api_return handleDeleteDirectoryDownload(ApiRequest& aRequest);
 		api_return handleGetDirectoryDownloads(ApiRequest& aRequest);
+		api_return handleGetDirectoryDownload(ApiRequest& aRequest);
 
 		api_return handleMatchQueue(ApiRequest& aRequest);
 

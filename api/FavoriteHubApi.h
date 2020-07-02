@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 
 #ifndef DCPLUSPLUS_DCPP_FAVORITEHUBAPI_H
 #define DCPLUSPLUS_DCPP_FAVORITEHUBAPI_H
-
-#include <web-server/stdinc.h>
 
 #include <api/FavoriteHubUtils.h>
 
@@ -53,7 +51,6 @@ namespace webserver {
 		HubView view;
 
 		static FavoriteHubEntryList getEntryList() noexcept;
-		static optional<int> deserializeIntHubSetting(const string& aFieldName, const json& aJson);
 	};
 }
 

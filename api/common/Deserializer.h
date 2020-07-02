@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,12 +19,13 @@
 #ifndef DCPLUSPLUS_DCPP_DESERIALIZER_H
 #define DCPLUSPLUS_DCPP_DESERIALIZER_H
 
-#include <web-server/stdinc.h>
-
 #include <airdcpp/typedefs.h>
 #include <airdcpp/MerkleTree.h>
 #include <airdcpp/Message.h>
 #include <airdcpp/Priority.h>
+
+#include <web-server/JsonUtil.h>
+
 
 namespace webserver {
 	typedef std::function<api_return(const string& aTarget, Priority aPriority)> DownloadHandler;
@@ -39,8 +40,9 @@ namespace webserver {
 		static UserPtr getUser(const CID& aCID, bool aAllowMe);
 
 		static TTHValue parseTTH(const string& aTTH);
+		static HintedUser parseHintedUser(const json& aJson, const string& aFieldName, bool aAllowMe = false);
 
-		static UserPtr deserializeUser(const json& aJson, bool aAllowMe = false, const string& aFieldName = "user");
+		static UserPtr deserializeUser(const json& aJson, bool aAllowMe, bool aOptional = false);
 		static HintedUser deserializeHintedUser(const json& aJson, bool aAllowMe = false, const string& aFieldName = "user");
 		static OnlineUserPtr deserializeOnlineUser(const json& aJson, bool aAllowMe = false, const string& aFieldName = "user");
 		static TTHValue deserializeTTH(const json& aJson);
@@ -50,6 +52,7 @@ namespace webserver {
 
 		// Returns all connected hubs if the list is not found from the JSON
 		static StringList deserializeHubUrls(const json& aJson);
+		static ClientPtr deserializeClient(const json& aJson, bool aOptional = false);
 
 		static pair<string, bool> deserializeChatMessage(const json& aJson);
 		static pair<string, LogMessage::Severity> deserializeStatusMessage(const json& aJson);
@@ -58,9 +61,33 @@ namespace webserver {
 		static ProfileToken deserializeShareProfile(const json& aJson);
 
 		static OptionalProfileToken deserializeOptionalShareProfile(const json& aJson);
+
+		template <typename ItemT>
+		using ArrayDeserializerFunc = std::function<ItemT(const json& aJson, const string& aFieldName)>;
+
+		template <typename ItemT>
+		static vector<ItemT> deserializeList(const string& aFieldName, const json& aList, const ArrayDeserializerFunc<ItemT>& aF, bool aAllowEmpty) {
+			const auto arrayJson = JsonUtil::getArrayField(aFieldName, aList, aAllowEmpty);
+
+			vector<ItemT> ret;
+			for (const auto& item: arrayJson) {
+				// ret.push_back(aF ? aF(item) : JsonUtil::parseValue<ItemT>(aFieldName, item, false));
+				ret.push_back(aF(item, aFieldName));
+			}
+
+			return ret;
+		}
+
+		static TTHValue tthArrayValueParser(const json& aJson, const string& aFieldName);
+		static CID cidArrayValueParser(const json& aJson, const string& aFieldName);
+		static HintedUser hintedUserArrayValueParser(const json& aJson, const string& aFieldName);
+
+		template<typename IdT>
+		static IdT defaultArrayValueParser(const json& aJson, const string& aFieldName) {
+			return JsonUtil::parseValue<IdT>(aFieldName, aJson, false);
+		}
 	private:
 		static LogMessage::Severity parseSeverity(const string& aText);
-		static UserPtr parseUser(const json& aJson, bool aAllowMe);
 	};
 }
 

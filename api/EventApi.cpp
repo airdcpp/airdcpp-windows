@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
 
 #include <api/EventApi.h>
 #include <api/common/Deserializer.h>
@@ -25,18 +25,17 @@
 #include <airdcpp/LogManager.h>
 
 namespace webserver {
-	EventApi::EventApi(Session* aSession) : SubscribableApiModule(aSession, Access::EVENTS_VIEW) {
-		LogManager::getInstance()->addListener(this);
-
-		createSubscription("event_message");
-		createSubscription("event_counts");
-
+	EventApi::EventApi(Session* aSession) : 
+		SubscribableApiModule(aSession, Access::EVENTS_VIEW, { "event_message", "event_counts" }) 
+	{
 		METHOD_HANDLER(Access::EVENTS_VIEW, METHOD_POST,	(EXACT_PARAM("read")),		EventApi::handleRead);
 		METHOD_HANDLER(Access::EVENTS_VIEW, METHOD_GET,		(EXACT_PARAM("counts")),	EventApi::handleGetInfo);
 
 		METHOD_HANDLER(Access::EVENTS_VIEW, METHOD_GET,		(RANGE_MAX_PARAM),			EventApi::handleGetMessages);
 		METHOD_HANDLER(Access::EVENTS_EDIT, METHOD_DELETE,	(),							EventApi::handleClearMessages);
 		METHOD_HANDLER(Access::EVENTS_EDIT, METHOD_POST,	(),							EventApi::handlePostMessage);
+
+		LogManager::getInstance()->addListener(this);
 	}
 
 	EventApi::~EventApi() {

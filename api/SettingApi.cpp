@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
 * along with this program; if not, write to the Free Software
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
+
+#include "stdinc.h"
 
 #include <api/SettingApi.h>
 #include <api/ApiSettingItem.h>
@@ -46,7 +48,7 @@ namespace webserver {
 		json retJson = json::array();
 		parseSettingKeys(requestJson, [&](ApiSettingItem& aItem) {
 			retJson.push_back(SettingUtils::serializeDefinition(aItem));
-		});
+		}, aRequest.getSession()->getServer());
 
 		aRequest.setResponseBody(retJson);
 		return websocketpp::http::status_code::ok;
@@ -55,25 +57,28 @@ namespace webserver {
 	api_return SettingApi::handleGetValues(ApiRequest& aRequest) {
 		const auto& requestJson = aRequest.getRequestBody();
 
-		auto forceAutoValues = JsonUtil::getOptionalFieldDefault<bool>("force_auto_values", requestJson, false);
+		auto valueMode = JsonUtil::getEnumFieldDefault<string>("value_mode", requestJson, "current", { "current", "force_auto", "force_manual" });
+		if (JsonUtil::getOptionalFieldDefault<bool>("force_auto_values", requestJson, false)) { // Deprecated
+			valueMode = "force_auto";
+		}
 
 		auto retJson = json::object();
 		parseSettingKeys(requestJson, [&](ApiSettingItem& aItem) {
-			if (aItem.usingAutoValue(forceAutoValues)) {
+			if (valueMode != "force_manual" && aItem.usingAutoValue(valueMode == "force_auto")) {
 				retJson[aItem.name] = aItem.getAutoValue();
 			} else {
 				retJson[aItem.name] = aItem.getValue();
 			}
-		});
+		}, aRequest.getSession()->getServer());
 
 		aRequest.setResponseBody(retJson);
 		return websocketpp::http::status_code::ok;
 	}
 
-	void SettingApi::parseSettingKeys(const json& aJson, ParserF aHandler) {
+	void SettingApi::parseSettingKeys(const json& aJson, ParserF aHandler, WebServerManager* aWsm) {
 		auto keys = JsonUtil::getField<StringList>("keys", aJson, true);
 		for (const auto& key : keys) {
-			auto setting = getSettingItem(key);
+			auto setting = getSettingItem(key, aWsm);
 			if (!setting) {
 				JsonUtil::throwError(key, JsonUtil::ERROR_INVALID, "Setting not found");
 			}
@@ -87,7 +92,7 @@ namespace webserver {
 
 		parseSettingKeys(requestJson, [&](ApiSettingItem& aItem) {
 			aItem.unset();
-		});
+		}, aRequest.getSession()->getServer());
 
 		return websocketpp::http::status_code::no_content;
 	}
@@ -96,8 +101,8 @@ namespace webserver {
 		SettingHolder h(nullptr);
 
 		bool hasSet = false;
-		for (const auto& elem : json::iterator_wrapper(aRequest.getRequestBody())) {
-			auto setting = getSettingItem(elem.key());
+		for (const auto& elem : aRequest.getRequestBody().items()) {
+			auto setting = getSettingItem(elem.key(), aRequest.getSession()->getServer());
 			if (!setting) {
 				JsonUtil::throwError(elem.key(), JsonUtil::ERROR_INVALID, "Setting not found");
 			}
@@ -109,17 +114,17 @@ namespace webserver {
 		dcassert(hasSet);
 
 		SettingsManager::getInstance()->save();
-		WebServerManager::getInstance()->save(nullptr);
+		WebServerManager::getInstance()->setDirty();
 
 		return websocketpp::http::status_code::no_content;
 	}
 
-	ApiSettingItem* SettingApi::getSettingItem(const string& aKey) noexcept {
+	ApiSettingItem* SettingApi::getSettingItem(const string& aKey, WebServerManager* aWsm) noexcept {
 		auto p = ApiSettingItem::findSettingItem<CoreSettingItem>(coreSettings, aKey);
 		if (p) {
 			return p;
 		}
 
-		return WebServerSettings::getSettingItem(aKey);
+		return aWsm->getSettings().getSettingItem(aKey);
 	}
 }

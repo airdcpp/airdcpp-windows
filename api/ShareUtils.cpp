@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
 * along with this program; if not, write to the Free Software
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
+
+#include "stdinc.h"
 
 #include <api/ShareUtils.h>
 
@@ -75,8 +77,8 @@ namespace webserver {
 	string ShareUtils::formatDisplayStatus(const ShareDirectoryInfoPtr& aItem) noexcept {
 		switch (static_cast<ShareManager::RefreshState>(aItem->refreshState)) {
 			case ShareManager::RefreshState::STATE_NORMAL: return STRING(NORMAL);
-			case ShareManager::RefreshState::STATE_PENDING: return "Refresh pending";
-			case ShareManager::RefreshState::STATE_RUNNING: return "Refreshing";
+			case ShareManager::RefreshState::STATE_PENDING: return STRING(API_SHARE_REFRESH_PENDING);
+			case ShareManager::RefreshState::STATE_RUNNING: return STRING(API_SHARE_REFRESHING);
 		}
 
 		return Util::emptyString;

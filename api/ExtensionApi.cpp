@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,6 +15,8 @@
 * along with this program; if not, write to the Free Software
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
+
+#include "stdinc.h"
 
 #include <api/ExtensionApi.h>
 #include <api/common/Serializer.h>
@@ -90,6 +92,10 @@ namespace webserver {
 		auto installId = JsonUtil::getField<string>("install_id", reqJson, false);
 		auto url = JsonUtil::getField<string>("url", reqJson, false);
 		auto sha = JsonUtil::getOptionalFieldDefault<string>("shasum", reqJson, Util::emptyString);
+
+		if (Util::findSubString(url, "http://") != 0 && Util::findSubString(url, "https://") != 0) {
+			JsonUtil::throwError("url", JsonUtil::ERROR_INVALID, "Invalid URL");
+		}
 
 		if (!em.downloadExtension(installId, url, sha)) {
 			aRequest.setResponseErrorStr("Extension is being download already");

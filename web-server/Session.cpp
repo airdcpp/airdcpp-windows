@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
 #include <web-server/Session.h>
 #include <web-server/ApiRequest.h>
 
@@ -30,6 +30,7 @@
 #include <api/HashApi.h>
 #include <api/HistoryApi.h>
 #include <api/HubApi.h>
+#include <api/MenuApi.h>
 #include <api/PrivateChatApi.h>
 #include <api/QueueApi.h>
 #include <api/SearchApi.h>
@@ -66,6 +67,7 @@ namespace webserver {
 		ADD_MODULE("hash", HashApi);
 		ADD_MODULE("histories", HistoryApi);
 		ADD_MODULE("hubs", HubApi);
+		ADD_MODULE("menus", MenuApi);
 		ADD_MODULE("private_chat", PrivateChatApi);
 		ADD_MODULE("queue", QueueApi);
 		ADD_MODULE("search", SearchApi);

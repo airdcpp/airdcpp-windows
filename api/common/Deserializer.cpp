@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,8 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
+
 #include <web-server/JsonUtil.h>
 #include <web-server/Session.h>
 
@@ -59,19 +60,24 @@ namespace webserver {
 		return TTHValue(aTTH);
 	}
 
-	UserPtr Deserializer::parseUser(const json& aJson, bool aAllowMe) {
-		return getUser(JsonUtil::getField<string>("cid", aJson, false), aAllowMe);
-	}
+	UserPtr Deserializer::deserializeUser(const json& aJson, bool aAllowMe, bool aOptional) {
+		const auto cid = JsonUtil::getOptionalField<string>("cid", aJson, !aOptional);
+		if (!cid) {
+			return nullptr;
+		}
 
-	UserPtr Deserializer::deserializeUser(const json& aJson, bool aAllowMe, const string& aFieldName) {
-		auto userJson = JsonUtil::getRawField(aFieldName, aJson);
-		return parseUser(userJson, aAllowMe);
+		return getUser(*cid, aAllowMe);
 	}
 
 	HintedUser Deserializer::deserializeHintedUser(const json& aJson, bool aAllowMe, const string& aFieldName) {
 		auto userJson = JsonUtil::getRawField(aFieldName, aJson);
-		auto user = parseUser(userJson, aAllowMe);
-		return HintedUser(user, JsonUtil::getField<string>("hub_url", userJson, aAllowMe && user == ClientManager::getInstance()->getMe()));
+		return parseHintedUser(userJson, aFieldName, aAllowMe);
+	}
+
+	HintedUser Deserializer::parseHintedUser(const json& aJson, const string& aFieldName, bool aAllowMe) {
+		auto user = deserializeUser(aJson, aAllowMe, false);
+		auto hubUrl = JsonUtil::getField<string>("hub_url", aJson, aAllowMe && user == ClientManager::getInstance()->getMe());
+		return HintedUser(user, hubUrl);
 	}
 
 	OnlineUserPtr Deserializer::deserializeOnlineUser(const json& aJson, bool aAllowMe, const string& aFieldName) {
@@ -92,7 +98,7 @@ namespace webserver {
 	Priority Deserializer::deserializePriority(const json& aJson, bool aAllowDefault) {
 		auto minAllowed = aAllowDefault ? Priority::DEFAULT : Priority::PAUSED_FORCE;
 
-		auto priority = JsonUtil::getEnumField<int>("priority", aJson, !aAllowDefault, static_cast<int>(minAllowed), static_cast<int>(Priority::HIGHEST));
+		auto priority = JsonUtil::getOptionalRangeField<int>("priority", aJson, !aAllowDefault, static_cast<int>(minAllowed), static_cast<int>(Priority::HIGHEST));
 		if (!priority) {
 			return Priority::DEFAULT;
 		}
@@ -124,6 +130,25 @@ namespace webserver {
 		}
 
 		return hubUrls;
+	}
+
+
+	ClientPtr Deserializer::deserializeClient(const json& aJson, bool aOptional) {
+		const auto hubUrl = JsonUtil::getOptionalField<string>("hub_url", aJson, !aOptional);
+		if (!hubUrl) {
+			return nullptr;
+		}
+
+		auto client = ClientManager::getInstance()->getClient(*hubUrl);
+		if (!client) {
+			//if (aOptional) {
+			//	return nullptr;
+			//}
+
+			throw std::invalid_argument("Hub " + *hubUrl + " was not found");
+		}
+
+		return client;
 	}
 
 	pair<string, bool> Deserializer::deserializeChatMessage(const json& aJson) {
@@ -172,5 +197,19 @@ namespace webserver {
 		}
 
 		return profile;
+	}
+
+	TTHValue Deserializer::tthArrayValueParser(const json& aJson, const string& aFieldName) {
+		auto tthStr = JsonUtil::parseValue<string>(aFieldName, aJson, false);
+		return parseTTH(tthStr);
+	}
+
+	CID Deserializer::cidArrayValueParser(const json& aJson, const string& aFieldName) {
+		auto cidStr = JsonUtil::parseValue<string>(aFieldName, aJson, false);
+		return getUser(cidStr, true)->getCID();
+	}
+
+	HintedUser Deserializer::hintedUserArrayValueParser(const json& aJson, const string& aFieldName) {
+		return parseHintedUser(aJson, aFieldName, true);
 	}
 }

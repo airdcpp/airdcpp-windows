@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
 #include <api/ApiSettingItem.h>
 
 #include <web-server/ExtensionManager.h>
@@ -41,37 +41,23 @@
 #define HANDSHAKE_TIMEOUT 0 // disabled, affects HTTP downloads
 
 namespace webserver {
-	vector<ServerSettingItem> WebServerSettings::settings = {
-		{ "web_plain_port", "Port", 5600, ApiSettingItem::TYPE_NUMBER, false, { 0, 65535 } },
-		{ "web_plain_bind_address", "Bind address", "", ApiSettingItem::TYPE_STRING, true },
-
-		{ "web_tls_port", "Port", 5601, ApiSettingItem::TYPE_NUMBER, false, { 0, 65535 } },
-		{ "web_tls_bind_address", "Bind address", "", ApiSettingItem::TYPE_STRING, true },
-
-		{ "web_tls_certificate_path", "Certificate path", "", ApiSettingItem::TYPE_FILE_PATH, true },
-		{ "web_tls_certificate_key_path", "Certificate key path", "", ApiSettingItem::TYPE_FILE_PATH, true },
-
-		{ "web_server_threads", "Server threads", 4, ApiSettingItem::TYPE_NUMBER, false, { 1, 100 } },
-
-		{ "default_idle_timeout", "Default session inactivity timeout (minutes)", 20, ApiSettingItem::TYPE_NUMBER, false, { 0, MAX_INT_VALUE } },
-		{ "ping_interval", "Socket ping interval (seconds)", 30, ApiSettingItem::TYPE_NUMBER, false, { 1, 10000 } },
-		{ "ping_timeout", "Socket ping timeout (seconds)", 10, ApiSettingItem::TYPE_NUMBER, false, { 1, 10000 } },
-
-		{ "extensions_debug_mode", "Run extensions in debug mode", false, ApiSettingItem::TYPE_BOOLEAN, false },
-	};
-
 	using namespace dcpp;
-	WebServerManager::WebServerManager() : has_io_service(false), 
-		ios(WEBCFG(SERVER_THREADS).num()), 
-		plainServerConfig(WEBCFG(PLAIN_PORT), WEBCFG(PLAIN_BIND)),
-		tlsServerConfig(WEBCFG(TLS_PORT), WEBCFG(TLS_BIND)) {
+	WebServerManager::WebServerManager() : 
+		ios(settings.getValue(WebServerSettings::SERVER_THREADS).getDefaultValue()),
+		tasks(settings.getValue(WebServerSettings::SERVER_THREADS).getDefaultValue()),
+		work(tasks),
+		plainServerConfig(settings.getValue(WebServerSettings::PLAIN_PORT), settings.getValue(WebServerSettings::PLAIN_BIND)),
+		tlsServerConfig(settings.getValue(WebServerSettings::TLS_PORT), settings.getValue(WebServerSettings::TLS_BIND))
+	{
 
 		fileServer.setResourcePath(Util::getPath(Util::PATH_RESOURCES) + "web-resources" + PATH_SEPARATOR);
 
 		extManager = make_unique<ExtensionManager>(this);
 		userManager = make_unique<WebUserManager>(this);
 
-		ios.stop(); //Prevent io service from running until we load
+		// Prevent io service from running until we load
+		ios.stop();
+		tasks.stop();
 	}
 
 	WebServerManager::~WebServerManager() {
@@ -85,7 +71,7 @@ namespace webserver {
 	}
 
 	bool WebServerManager::isRunning() const noexcept {
-		return !ios.stopped();
+		return !ios.stopped() || !tasks.stopped();
 	}
 
 #if defined _MSC_VER && defined _DEBUG
@@ -162,6 +148,7 @@ namespace webserver {
 		}
 
 		ios.reset();
+		tasks.reset();
 		if (!has_io_service) {
 			has_io_service = initialize(errorF);
 		}
@@ -224,7 +211,7 @@ namespace webserver {
 		try {
 			const auto bindAddress = aConfig.bindAddress.str();
 			if (!bindAddress.empty()) {
-				aEndpoint.listen(bindAddress, Util::toString(aConfig.port.num()));
+				aEndpoint.listen(bindAddress, aConfig.port.str());
 			} else {
 				// IPv6 and IPv4-mapped IPv6 addresses are used by default (given that IPv6 is supported by the OS)
 				aEndpoint.listen(WebServerManager::getDefaultListenProtocol(), static_cast<uint16_t>(aConfig.port.num()));
@@ -233,9 +220,9 @@ namespace webserver {
 			aEndpoint.start_accept();
 			return true;
 		} catch (const std::exception& e) {
-			auto message = boost::format("Failed to set up %1% server on port %2%: %3% (is the port in use by another application?)") % aProtocol % aConfig.port.num() % string(e.what());
+			auto message = STRING_F(WEB_SERVER_SETUP_FAILED, aProtocol % aConfig.port.num() % string(e.what()));
 			if (errorF) {
-				errorF(message.str());
+				errorF(message);
 			}
 		}
 
@@ -257,13 +244,38 @@ namespace webserver {
 			return false;
 		}
 
+		ios_threads = make_unique<boost::thread_group>();
+		task_threads = make_unique<boost::thread_group>();
+
 		// Start the ASIO io_service run loop running both endpoints
 		for (int x = 0; x < WEBCFG(SERVER_THREADS).num(); ++x) {
-			worker_threads.create_thread(boost::bind(&boost::asio::io_service::run, &ios));
+			ios_threads->create_thread(boost::bind(&boost::asio::io_service::run, &ios));
 		}
 
-		socketTimer = addTimer([this] { pingTimer(); }, WEBCFG(PING_INTERVAL).num() * 1000);
-		socketTimer->start(false);
+		for (int x = 0; x < std::max(WEBCFG(SERVER_THREADS).num() / 2, 1); ++x) {
+			task_threads->create_thread(boost::bind(&boost::asio::io_service::run, &tasks));
+		}
+
+		// Add timers
+		{
+			const auto logger = getDefaultErrorLogger();
+			minuteTimer = addTimer(
+				[this, logger] {
+					save(logger);
+				},
+				30 * 1000
+			);
+
+			socketPingTimer = addTimer(
+				[this] {
+					pingTimer();
+				},
+				WEBCFG(PING_INTERVAL).num() * 1000
+			);
+
+			minuteTimer->start(false);
+			socketPingTimer->start(false);
+		}
 
 		fire(WebServerManagerListener::Started());
 		return true;
@@ -302,6 +314,10 @@ namespace webserver {
 			return;
 		}
 
+		if (socket->getSession() && socket->getSession()->getSessionType() == Session::SessionType::TYPE_EXTENSION && WEBCFG(EXTENSIONS_DEBUG_MODE).boolean()) {
+			log("Disconnecting extension " + socket->getSession()->getUser()->getUserName() + " because of ping timeout", LogMessage::SEV_INFO);
+		}
+
 		socket->debugMessage("PONG timed out");
 
 		socket->close(websocketpp::close::status::internal_endpoint_error, "PONG timed out");
@@ -331,12 +347,14 @@ namespace webserver {
 
 	context_ptr WebServerManager::handleInitTls(websocketpp::connection_hdl hdl) {
 		//std::cout << "on_tls_init called with hdl: " << hdl.lock().get() << std::endl;
-		context_ptr ctx(new boost::asio::ssl::context(boost::asio::ssl::context::tlsv12));
+		context_ptr ctx(new boost::asio::ssl::context(boost::asio::ssl::context::tls));
 
 		try {
 			ctx->set_options(boost::asio::ssl::context::default_workarounds |
 				boost::asio::ssl::context::no_sslv2 |
 				boost::asio::ssl::context::no_sslv3 |
+				boost::asio::ssl::context::no_tlsv1 |
+				boost::asio::ssl::context::no_tlsv1_1 |
 				boost::asio::ssl::context::single_dh_use |
 				boost::asio::ssl::context::no_compression
 			);
@@ -365,8 +383,13 @@ namespace webserver {
 	}
 
 	void WebServerManager::stop() {
-		if(socketTimer)
-			socketTimer->stop(true);
+		fileServer.stop();
+
+		if (minuteTimer)
+			minuteTimer->stop(true);
+		if (socketPingTimer)
+			socketPingTimer->stop(true);
+
 		fire(WebServerManagerListener::Stopping());
 
 		if(endpoint_plain.is_listening())
@@ -392,8 +415,16 @@ namespace webserver {
 		}
 
 		ios.stop();
+		tasks.stop();
 
-		worker_threads.join_all();
+		if (task_threads)
+			task_threads->join_all();
+
+		if (ios_threads)
+			ios_threads->join_all();
+
+		task_threads.reset();
+		ios_threads.reset();
 
 		fire(WebServerManagerListener::Stopped());
 	}
@@ -408,11 +439,15 @@ namespace webserver {
 	}
 
 	TimerPtr WebServerManager::addTimer(CallBack&& aCallBack, time_t aIntervalMillis, const Timer::CallbackWrapper& aCallbackWrapper) noexcept {
-		return make_shared<Timer>(move(aCallBack), ios, aIntervalMillis, aCallbackWrapper);
+		return make_shared<Timer>(move(aCallBack), tasks, aIntervalMillis, aCallbackWrapper);
 	}
 
 	void WebServerManager::addAsyncTask(CallBack&& aCallBack) noexcept {
-		ios.post(aCallBack);
+		tasks.post(aCallBack);
+	}
+
+	void WebServerManager::setDirty() noexcept {
+		isDirty = true;
 	}
 
 	void WebServerManager::addSocket(websocketpp::connection_hdl hdl, const WebSocketPtr& aSocket) noexcept {
@@ -444,7 +479,38 @@ namespace webserver {
 	}
 
 	void WebServerManager::log(const string& aMsg, LogMessage::Severity aSeverity) const noexcept {
+		if (!LogManager::getInstance()) {
+			// Core is not initialized yet
+			return;
+		}
+
 		LogManager::getInstance()->message(aMsg, aSeverity);
+	}
+
+	WebServerManager::ErrorF WebServerManager::getDefaultErrorLogger() const noexcept {
+		return [this](const string& aMessage) {
+			log(aMessage, LogMessage::SEV_ERROR);
+		};
+	}
+
+	string WebServerManager::resolveAddress(const string& aHostname, const string& aPort) noexcept {
+		auto ret = aHostname;
+
+		boost::asio::ip::tcp::resolver resolver(ios);
+		boost::asio::ip::tcp::resolver::query query(aHostname, aPort);
+
+		try {
+			boost::asio::ip::tcp::resolver::iterator iter = resolver.resolve(query);
+			ret = iter->endpoint().address().to_string();
+
+			if (iter->endpoint().protocol() == boost::asio::ip::tcp::v6()) {
+				ret = "[" + ret + "]";
+			}
+		} catch (const std::exception& e) {
+			log(e.what(), LogMessage::SEV_ERROR);
+		}
+
+		return ret;
 	}
 
 	bool WebServerManager::hasValidConfig() const noexcept {
@@ -502,6 +568,14 @@ namespace webserver {
 	}
 
 	bool WebServerManager::save(const ErrorF& aCustomErrorF) noexcept {
+		{
+			if (!isDirty) {
+				return false;
+			}
+
+			isDirty = false;
+		}
+
 		SimpleXML xml;
 
 		xml.addTag("WebServer");

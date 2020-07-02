@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,6 @@
 #ifndef DCPLUSPLUS_DCPP_HUBAPI_H
 #define DCPLUSPLUS_DCPP_HUBAPI_H
 
-#include <web-server/stdinc.h>
-
 #include <api/base/HierarchicalApiModule.h>
 #include <api/base/HookApiModule.h>
 #include <api/HubInfo.h>
@@ -39,8 +37,8 @@ namespace webserver {
 
 		static json serializeClient(const ClientPtr& aClient) noexcept;
 	private:
-		ActionHookRejectionPtr incomingMessageHook(const ChatMessagePtr& aMessage, const HookRejectionGetter& aRejectionGetter);
-		ActionHookRejectionPtr outgoingMessageHook(const string& aMessage, bool aThirdPerson, const Client& aClient, const HookRejectionGetter& aRejectionGetter);
+		ActionHookResult<> incomingMessageHook(const ChatMessagePtr& aMessage, const ActionHookResultGetter<>& aResultGetter);
+		ActionHookResult<> outgoingMessageHook(const string& aMessage, bool aThirdPerson, const Client& aClient, const ActionHookResultGetter<>& aResultGetter);
 
 		void addHub(const ClientPtr& aClient) noexcept;
 

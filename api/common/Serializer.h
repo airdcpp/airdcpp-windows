@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,12 +19,11 @@
 #ifndef DCPLUSPLUS_DCPP_SERIALIZER_H
 #define DCPLUSPLUS_DCPP_SERIALIZER_H
 
-#include <web-server/stdinc.h>
-
 #include <api/common/Property.h>
 
 #include <airdcpp/typedefs.h>
 
+#include <airdcpp/DirectoryDownload.h>
 #include <airdcpp/DupeType.h>
 #include <airdcpp/MessageCache.h>
 #include <airdcpp/QueueItemBase.h>
@@ -69,7 +68,8 @@ namespace webserver {
 		static json serializeFileDupe(DupeType aDupeType, const TTHValue& aTTH) noexcept;
 		static json serializeDirectoryDupe(DupeType aDupeType, const string& aAdcPath) noexcept;
 		static json serializeSlots(int aFree, int aTotal) noexcept;
-
+		
+		static string getDirectoryDownloadStateId(DirectoryDownload::State aState) noexcept;
 		static json serializeDirectoryDownload(const DirectoryDownloadPtr& aDownload) noexcept;
 		static json serializeDirectoryBundleAddInfo(const DirectoryBundleAddInfo& aInfo, const string& aError) noexcept;
 		static json serializeBundleAddInfo(const BundleAddInfo& aInfo) noexcept;
@@ -211,6 +211,11 @@ namespace webserver {
 			}
 
 			return j;
+		}
+
+		template<typename IdT>
+		static json defaultArrayValueSerializer(const IdT& aJson) {
+			return aJson;
 		}
 	private:
 		static void appendOnlineUserFlags(const OnlineUserPtr& aUser, StringSet& flags_) noexcept;

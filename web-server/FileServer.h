@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,11 @@
 #ifndef DCPLUSPLUS_DCPP_FILESERVER_H
 #define DCPLUSPLUS_DCPP_FILESERVER_H
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
 
 #include <airdcpp/typedefs.h>
+#include <airdcpp/CriticalSection.h>
+
 
 namespace webserver {
 	class FileServer {
@@ -32,11 +34,21 @@ namespace webserver {
 		void setResourcePath(const string& aPath) noexcept;
 		const string& getResourcePath() const noexcept;
 
-		websocketpp::http::status_code::value handleRequest(const string& aResource, const websocketpp::http::parser::request& aRequest, 
+		websocketpp::http::status_code::value handleRequest(const websocketpp::http::parser::request& aRequest, 
+			std::string& output_, StringPairList& headers_, const SessionPtr& aSession, const FileDeferredHandler& aDeferF);
+
+		string getTempFilePath(const string& fileId) const noexcept;
+		void stop() noexcept;
+	private:
+		websocketpp::http::status_code::value handleGetRequest(const websocketpp::http::parser::request& aRequest,
+			std::string& output_, StringPairList& headers_, const SessionPtr& aSession, const FileDeferredHandler& aDeferF);
+
+		websocketpp::http::status_code::value handleProxyDownload(const string& aUrl, string& output_, const FileDeferredHandler& aDeferF) noexcept;
+		void onProxyDownloadCompleted(int64_t aDownloadId, const HTTPFileCompletionF& aCompletionF) noexcept;
+
+		websocketpp::http::status_code::value handlePostRequest(const websocketpp::http::parser::request& aRequest,
 			std::string& output_, StringPairList& headers_, const SessionPtr& aSession) noexcept;
 
-		static const char* getMimeType(const string& aFileName) noexcept;
-	private:
 		string resourcePath;
 
 		string parseResourcePath(const string& aResource, const websocketpp::http::parser::request& aRequest, StringPairList& headers_) const;
@@ -44,14 +56,11 @@ namespace webserver {
 
 		static string getExtension(const string& aResource) noexcept;
 
-		// Parses start and end position from a range HTTP request field
-		// Initial value of end_ should be the file size
-		// Returns true if the partial range was parsed successfully
-		static bool parsePartialRange(const string& aHeaderData, int64_t& start_, int64_t& end_) noexcept;
+		mutable SharedMutex cs;
+		StringMap tempFiles;
 
-		static string formatPartialRange(int64_t aStart, int64_t aEnd, int64_t aFileSize) noexcept;
-
-		static void addCacheControlHeader(StringPairList& headers_, int aDaysValid) noexcept;
+		int64_t proxyDownloadCounter = 0;
+		map<int64_t, std::shared_ptr<HttpDownload>> proxyDownloads;
 	};
 }
 

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 #ifndef DCPLUSPLUS_WEBSERVER_EXCEPTION_H
 #define DCPLUSPLUS_WEBSERVER_EXCEPTION_H
 
-#include <json/json.hpp>
+#include <nlohmann/json.hpp>
 #include <websocketpp/http/constants.hpp>
 #include <string>
 
@@ -28,11 +28,11 @@
 namespace webserver {
 	using json = nlohmann::json;
 
-	class JsonException : public std::exception
+	class JsonException : public std::runtime_error
 	{
 	public:
-		JsonException(const json& aError) : error(aError) { }
-		JsonException(json&& aError) : error(move(aError)) { }
+		JsonException(const json& aError, const std::string& aMessage) : error(aError), std::runtime_error(aMessage.c_str()) { }
+		JsonException(json&& aError, const std::string& aMessage) : error(move(aError)), std::runtime_error(aMessage.c_str()) { }
 
 		virtual ~JsonException() noexcept { }
 		const json& getErrorJson() const { return error; }

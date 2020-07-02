@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 #ifndef DCPLUSPLUS_DCPP_ONLINEUSER_UTILS_H
 #define DCPLUSPLUS_DCPP_ONLINEUSER_UTILS_H
 
-#include <web-server/stdinc.h>
+#include "stdinc.h"
 
 #include <api/common/Property.h>
 
@@ -44,6 +44,7 @@ namespace webserver {
 			PROP_IP6,
 			PROP_EMAIL,
 			PROP_FILES,
+			PROP_HUB_ID,
 			PROP_HUB_URL,
 			PROP_HUB_NAME,
 			PROP_FLAGS,

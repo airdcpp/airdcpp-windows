@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 
 #ifndef DCPLUSPLUS_DCPP_HUBINFO_H
 #define DCPLUSPLUS_DCPP_HUBINFO_H
-
-#include <web-server/stdinc.h>
 
 #include <airdcpp/typedefs.h>
 #include <airdcpp/GetSet.h>
@@ -64,7 +62,8 @@ namespace webserver {
 
 		api_return handleGetCounts(ApiRequest& aRequest);
 		api_return handleGetUsers(ApiRequest& aRequest);
-		api_return handleGetUser(ApiRequest& aRequest);
+		api_return handleGetUserCid(ApiRequest& aRequest);
+		api_return handleGetUserId(ApiRequest& aRequest);
 
 		void on(ClientListener::Redirect, const Client*, const string&) noexcept override;
 		void on(ClientListener::Disconnected, const string&, const string&) noexcept override;
