@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,6 +63,8 @@ public:
 	virtual ByteVector getKeyprint() const noexcept override;
 	virtual bool verifyKeyprint(const string& expKeyp, bool allowUntrusted) noexcept override;
 
+	virtual void connect(const AddressInfo& aAddr, const string& aPort, const string& aLocalPort = Util::emptyString) override;
+
 	virtual bool waitConnected(uint64_t millis) override;
 	virtual bool waitAccepted(uint64_t millis) override;
 
@@ -75,6 +77,7 @@ private:
 
 	int checkSSL(int ret);
 	bool waitWant(int ret, uint64_t millis);
+	string hostname;
 };
 
 } // namespace dcpp

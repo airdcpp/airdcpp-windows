@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -157,7 +157,7 @@ void DownloadManager::on(TimerManagerListener::Second, uint64_t aTick) noexcept 
 		QueueManager::getInstance()->handleSlowDisconnect(dtp.user, dtp.target, dtp.bundle);
 }
 
-void DownloadManager::sendSizeUpdate(BundlePtr& aBundle) const noexcept {
+void DownloadManager::sendSizeUpdate(const BundlePtr& aBundle) const noexcept {
 	RLock l (cs);
 	aBundle->sendSizeUpdate();
 }
@@ -183,9 +183,9 @@ void DownloadManager::startBundle(UserConnection* aSource, BundlePtr aBundle) {
 bool DownloadManager::checkIdle(const UserPtr& user, bool smallSlot, bool reportOnly) {
 
 	RLock l(cs);
-	for(auto uc: idlers) {
-		if(uc->getUser() == user) {
-			if (((!smallSlot && uc->isSet(UserConnection::FLAG_SMALL_SLOT)) || (smallSlot && !uc->isSet(UserConnection::FLAG_SMALL_SLOT))) && uc->isSet(UserConnection::FLAG_MCN1))
+	for (auto uc: idlers) {
+		if (uc->getUser() == user) {
+			if (smallSlot != uc->isSet(UserConnection::FLAG_SMALL_SLOT) && uc->isSet(UserConnection::FLAG_MCN1))
 				continue;
 			if (!reportOnly)
 				uc->callAsync([this, uc] { revive(uc); });
@@ -389,8 +389,7 @@ void DownloadManager::startData(UserConnection* aSource, int64_t start, int64_t 
 			d->open(bytes, z, hasDownloadedBytes);
 		}
 	} catch(const FileException& e) {
-		auto b = d->getBundle();
-		QueueManager::getInstance()->bundleDownloadFailed(b, e.getError());
+		QueueManager::getInstance()->onDownloadError(d->getBundle(), e.getError());
 	
 		failDownload(aSource, STRING(COULD_NOT_OPEN_TARGET_FILE) + " " + e.getError(), true);
 		return;
@@ -440,7 +439,16 @@ void DownloadManager::on(UserConnectionListener::Data, UserConnection* aSource, 
 			aSource->setLineMode(0);
 		}
 	} catch(const Exception& e) {
-		//d->resetPos(); // is there a better way than resetting the position?
+
+		//TTH inconsistency, do we get other errors here?
+		if (e.getErrorCode() == Exception::TTH_INCONSISTENCY) {
+			QueueManager::getInstance()->removeFileSource(d->getPath(), aSource->getUser(), QueueItem::Source::FLAG_TTH_INCONSISTENCY, false);
+			//Pause temporarily to give other bundles a chance to get downloaded, this one wont complete anyway...
+			//Might be enough to just remove this source? 
+			QueueManager::getInstance()->onDownloadError(d->getBundle(), e.getError()); 
+			//d->resetPos(); // is there a better way than resetting the position?
+		}
+
 		failDownload(aSource, e.getError(), true);
 	}
 }
@@ -503,10 +511,28 @@ int64_t DownloadManager::getRunningAverage() const {
 	return avg;
 }
 
+size_t DownloadManager::getTotalDownloadConnectionCount() const noexcept {
+	RLock l(cs);
+	return downloads.size();
+}
+
+size_t DownloadManager::getFileDownloadConnectionCount() const noexcept {
+	RLock l(cs);
+	return std::accumulate(downloads.begin(), downloads.end(), static_cast<size_t>(0), [](size_t aOld, const Download* aDownload) {
+		return aDownload->getUserConnection().isSet(UserConnection::FLAG_SMALL_SLOT) ? aOld : aOld + 1;
+	});
+}
+
+size_t DownloadManager::getBundleDownloadConnectionCount(const BundlePtr& aBundle) const noexcept {
+	RLock l(cs);
+	return aBundle->getDownloads().size();
+}
+
 void DownloadManager::on(UserConnectionListener::MaxedOut, UserConnection* aSource, const string& param) noexcept {
 	noSlots(aSource, param);
 }
-void DownloadManager::noSlots(UserConnection* aSource, string param) {
+
+void DownloadManager::noSlots(UserConnection* aSource, const string& param) {
 	if(aSource->getState() != UserConnection::STATE_SND) {
 		dcdebug("DM::noSlots Bad state, disconnecting\n");
 		aSource->disconnect();
@@ -593,7 +619,7 @@ void DownloadManager::removeRunningUser(UserConnection* aSource, bool sendRemove
 	aSource->setLastBundle(Util::emptyString);
 }
 
-void DownloadManager::disconnectBundle(BundlePtr& aBundle, const UserPtr& aUser) {
+void DownloadManager::disconnectBundle(const BundlePtr& aBundle, const UserPtr& aUser) {
 	//UserConnectionList u;
 	{
 		RLock l(cs);
@@ -640,20 +666,21 @@ void DownloadManager::on(AdcCommand::STA, UserConnection* aSource, const AdcComm
 		return;
 	}
 
-	const string& err = cmd.getParameters()[0];
-	if(err.length() != 3) {
+	const string& errorCode = cmd.getParam(0);
+	const string& errorMessage = cmd.getParam(1);
+	if(errorCode.length() != 3) {
 		aSource->disconnect();
 		return;
 	}
 
-	switch(Util::toInt(err.substr(0, 1))) {
+	switch(Util::toInt(errorCode.substr(0, 1))) {
 		case AdcCommand::SEV_FATAL:
 			aSource->disconnect();
 			return;
 		case AdcCommand::SEV_RECOVERABLE:
-			switch(Util::toInt(err.substr(1))) {
+			switch(Util::toInt(errorCode.substr(1))) {
 				case AdcCommand::ERROR_FILE_NOT_AVAILABLE:
-					fileNotAvailable(aSource, false);
+					fileNotAvailable(aSource, false, errorMessage);
 					return;
 				case AdcCommand::ERROR_SLOTS_FULL:
 					{
@@ -670,13 +697,13 @@ void DownloadManager::on(AdcCommand::STA, UserConnection* aSource, const AdcComm
 			}
 		case AdcCommand::SEV_SUCCESS:
 			// We don't know any messages that would give us these...
-			dcdebug("Unknown success message %s %s", err.c_str(), cmd.getParam(1).c_str());
+			dcdebug("Unknown success message %s %s", errorCode.c_str(), errorMessage.c_str());
 			return;
 	}
 	aSource->disconnect();
 }
 
-void DownloadManager::fileNotAvailable(UserConnection* aSource, bool aNoAccess) {
+void DownloadManager::fileNotAvailable(UserConnection* aSource, bool aNoAccess, const string& aMessage) {
 	if(aSource->getState() != UserConnection::STATE_SND) {
 		dcdebug("DM::fileNotAvailable Invalid state, disconnecting");
 		aSource->disconnect();
@@ -690,19 +717,16 @@ void DownloadManager::fileNotAvailable(UserConnection* aSource, bool aNoAccess) 
 	removeDownload(d);
 	removeRunningUser(aSource);
 
-	bool isNmdc = aSource->isSet(UserConnection::FLAG_NMDC);
-	if (d->getType() == Transfer::TYPE_PARTIAL_LIST && isNmdc) {
-		//partial lists should be only used for client viewing in NMDC
-		dcassert(d->isSet(Download::FLAG_VIEW));
-		fire(DownloadManagerListener::Failed(), d, STRING(NO_PARTIAL_SUPPORT));
-		QueueManager::getInstance()->putDownload(d, true); // true, false is not used in putDownload for partial
-		removeConnection(aSource);
-		return;
-	}
-
-	string error = d->getType() == Transfer::TYPE_TREE ? STRING(NO_FULL_TREE) : STRING(FILE_NOT_AVAILABLE);
+	string error;
 	if (aNoAccess) {
 		error = STRING(NO_FILE_ACCESS);
+	} else {
+		error = d->getType() == Transfer::TYPE_TREE ? STRING(NO_FULL_TREE) : STRING(FILE_NOT_AVAILABLE);
+		if (d->getType() == Transfer::TYPE_PARTIAL_LIST && aSource->isSet(UserConnection::FLAG_NMDC)) {
+			error += " / " + STRING(NO_PARTIAL_SUPPORT);
+		} else if (!aMessage.empty() && aMessage != UserConnection::FILE_NOT_AVAILABLE) {
+			error += " (" + aMessage + ")";
+		}
 	}
 
 	fire(DownloadManagerListener::Failed(), d, error);

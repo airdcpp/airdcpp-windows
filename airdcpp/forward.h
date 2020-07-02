@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,9 +28,27 @@
 
 namespace dcpp {
 
+
+template<typename DataT>
+class ActionHookSubscriber;
+
 struct ActionHookRejection;
 typedef std::shared_ptr<ActionHookRejection> ActionHookRejectionPtr;
-typedef std::function<ActionHookRejectionPtr(const string& aReasonId, const string& aMessage)> HookRejectionGetter;
+
+template<typename DataT = nullptr_t>
+struct ActionHookData;
+
+template<typename DataT = nullptr_t>
+using ActionHookDataPtr = std::shared_ptr<ActionHookData<DataT>>;
+
+template<typename DataT = nullptr_t>
+struct ActionHookResult;
+
+template<typename DataT = nullptr_t>
+using ActionHookDataList = vector<ActionHookDataPtr<DataT>>;
+
+template<typename DataT = nullptr_t>
+using ActionHookResultGetter = ActionHookSubscriber<DataT>;
 
 class AdcCommand;
 
@@ -60,6 +78,10 @@ typedef uint32_t ClientToken;
 class ClientManager;
 
 class ConnectionQueueItem;
+
+class ContextMenuItem;
+typedef std::shared_ptr<ContextMenuItem> ContextMenuItemPtr;
+typedef std::vector<ContextMenuItemPtr> ContextMenuItemList;
 
 class DirectoryListing;
 typedef std::shared_ptr<DirectoryListing> DirectoryListingPtr;
@@ -133,10 +155,16 @@ typedef shared_ptr<Search> SearchPtr;
 
 class SearchInstance;
 typedef shared_ptr<SearchInstance> SearchInstancePtr;
+typedef vector<SearchInstancePtr> SearchInstanceList;
+typedef uint32_t SearchInstanceToken;
 
 class SearchResult;
 typedef std::shared_ptr<SearchResult> SearchResultPtr;
 typedef std::vector<SearchResultPtr> SearchResultList;
+
+class SearchType;
+typedef shared_ptr<SearchType> SearchTypePtr;
+typedef vector<SearchTypePtr> SearchTypeList;
 
 class GroupedSearchResult;
 typedef std::shared_ptr<GroupedSearchResult> GroupedSearchResultPtr;
@@ -148,6 +176,9 @@ class ShareProfile;
 typedef std::shared_ptr<ShareProfile> ShareProfilePtr;
 typedef vector<ShareProfilePtr> ShareProfileList;
 typedef set<string> RefreshPathList;
+
+struct TempShareInfo;
+typedef vector<TempShareInfo> TempShareInfoList;
 
 class SimpleXML;
 

@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ atomic<ClientToken> idCounter { 0 };
 Client::Client(const string& aHubUrl, char aSeparator, const ClientPtr& aOldClient) :
 	hubUrl(aHubUrl), separator(aSeparator), 
 	myIdentity(ClientManager::getInstance()->getMe(), 0),
-	clientId(aOldClient ? aOldClient->getClientId() : ++idCounter),
+	clientId(aOldClient ? aOldClient->getToken() : ++idCounter),
 	lastActivity(GET_TICK()),
 	cache(SettingsManager::HUB_MESSAGE_CACHE)
 {
@@ -78,6 +78,8 @@ void Client::shutdown(ClientPtr& aClient, bool aRedirect) {
 
 	if(sock) {
 		destroySocket([=] { // Ensure that the pointer won't be deleted too early
+			sock = nullptr;
+
 			// Users store a reference that prevents the client from being deleted
 			// so the lists must be cleared manually 
 			if (!aRedirect) {
@@ -141,7 +143,7 @@ void Client::reloadSettings(bool aUpdateNick) noexcept {
 }
 
 bool Client::changeBoolHubSetting(HubSettings::HubBoolSetting aSetting) noexcept {
-	auto newValue = !get(aSetting);
+	auto newValue = static_cast<bool>(!get(aSetting));
 	get(aSetting) = newValue;
 
 	//save for a favorite hub if needed
@@ -188,11 +190,9 @@ bool Client::isActiveV6() const noexcept {
 }
 
 void Client::destroySocket(const AsyncF& aShutdownAction) noexcept {
-	auto socket = sock;
 	state = STATE_DISCONNECTED;
-	sock = nullptr;
 
-	BufferedSocket::putSocket(socket, aShutdownAction);
+	BufferedSocket::putSocket(sock, aShutdownAction);
 }
 
 void Client::connect(bool withKeyprint) noexcept {
@@ -361,7 +361,7 @@ bool Client::isCommand(const string& aMessage) noexcept {
 	return !aMessage.empty() && aMessage.front() == '/';
 }
 
-bool Client::sendMessage(const string& aMessage, string& error_, bool aThirdPerson) noexcept {
+bool Client::sendMessageHooked(const string& aMessage, string& error_, bool aThirdPerson) noexcept {
 	if (!stateNormal() && !isCommand(aMessage)) {
 		error_ = STRING(CONNECTING_IN_PROGRESS);
 		return false;
@@ -369,7 +369,7 @@ bool Client::sendMessage(const string& aMessage, string& error_, bool aThirdPers
 
 	auto error = ClientManager::getInstance()->outgoingHubMessageHook.runHooksError(aMessage, aThirdPerson, *this);
 	if (error) {
-		error_ = error->formatError(error);
+		error_ = ActionHookRejection::formatError(error);
 		return false;
 	}
 
@@ -381,7 +381,7 @@ bool Client::sendMessage(const string& aMessage, string& error_, bool aThirdPers
 	return hubMessage(aMessage, error_, aThirdPerson);
 }
 
-bool Client::sendPrivateMessage(const OnlineUserPtr& aUser, const string& aMessage, string& error_, bool aThirdPerson, bool aEcho) noexcept {
+bool Client::sendPrivateMessageHooked(const OnlineUserPtr& aUser, const string& aMessage, string& error_, bool aThirdPerson, bool aEcho) noexcept {
 	if (!stateNormal() && !isCommand(aMessage)) {
 		error_ = STRING(CONNECTING_IN_PROGRESS);
 		return false;
@@ -389,7 +389,7 @@ bool Client::sendPrivateMessage(const OnlineUserPtr& aUser, const string& aMessa
 
 	auto error = ClientManager::getInstance()->outgoingPrivateMessageHook.runHooksError(aMessage, aThirdPerson, HintedUser(aUser->getUser(), aUser->getHubUrl()), aEcho);
 	if (error) {
-		error_ = error->formatError(error);
+		error_ = ActionHookRejection::formatError(error);
 		return false;
 	}
 

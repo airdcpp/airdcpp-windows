@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,6 +35,8 @@ public:
 
 	string toBase32() const;
 	string& toBase32(string& tmp) const;
+
+	operator std::string() const { return toBase32(); }
 
 	size_t toHash() const {
 		// RVO should handle this as efficiently as reinterpret_cast version

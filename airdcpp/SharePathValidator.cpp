@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+* Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -186,7 +186,7 @@ void SharePathValidator::saveExcludes(SimpleXML& aXml) const noexcept {
 	aXml.stepOut();
 }
 
-void SharePathValidator::validate(FileFindIter& aIter, const string& aPath, bool aSkipQueueCheck) const {
+void SharePathValidator::validateHooked(FileFindIter& aIter, const string& aPath, bool aSkipQueueCheck) const {
 	if (!SETTING(SHARE_HIDDEN) && aIter->isHidden()) {
 		throw FileException("File is hidden");
 	}
@@ -211,7 +211,7 @@ void SharePathValidator::validate(FileFindIter& aIter, const string& aPath, bool
 
 		auto error = directoryValidationHook.runHooksError(aPath);
 		if (error) {
-			throw ShareException(error->formatError(error));
+			throw ShareException(ActionHookRejection::formatError(error));
 		}
 	} else {
 		auto size = aIter->getSize();
@@ -219,7 +219,7 @@ void SharePathValidator::validate(FileFindIter& aIter, const string& aPath, bool
 
 		auto error = fileValidationHook.runHooksError(aPath, size);
 		if (error) {
-			throw ShareException(error->formatError(error));
+			throw ShareException(ActionHookRejection::formatError(error));
 		}
 	}
 }
@@ -251,7 +251,7 @@ void SharePathValidator::reloadSkiplist() {
 	skipList.prepare();
 }
 
-void SharePathValidator::validatePathTokens(const string& aBasePath, const StringList& aTokens, bool aSkipQueueCheck) const {
+void SharePathValidator::validateDirectoryPathTokensHooked(const string& aBasePath, const StringList& aTokens, bool aSkipQueueCheck) const {
 	if (aTokens.empty()) {
 		return;
 	}
@@ -260,13 +260,17 @@ void SharePathValidator::validatePathTokens(const string& aBasePath, const Strin
 
 	for (const auto& currentName : aTokens) {
 		curPath += currentName + PATH_SEPARATOR;
+		validatePathHooked(curPath, aSkipQueueCheck);
+	}
+}
 
-		FileFindIter i(curPath);
-		if (i != FileFindIter()) {
-			validate(i, curPath, aSkipQueueCheck);
-		} else {
-			throw FileException(STRING(FILE_NOT_FOUND));
-		}
+
+void SharePathValidator::validatePathHooked(const string& aPath, bool aSkipQueueCheck) const {
+	FileFindIter i(aPath);
+	if (i != FileFindIter()) {
+		validateHooked(i, aPath, aSkipQueueCheck);
+	} else {
+		throw FileException(STRING(FILE_NOT_FOUND));
 	}
 }
 

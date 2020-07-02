@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -121,19 +121,19 @@ namespace dcpp {
 		void load();
 
 	private:
-		ActionHookRejectionPtr onPrivateMessage(const ChatMessagePtr& aMessage, const HookRejectionGetter& aRejectionGetter) noexcept;
-		ActionHookRejectionPtr onHubMessage(const ChatMessagePtr& aMessage, const HookRejectionGetter& aRejectionGetter) noexcept;
+		ActionHookResult<> onPrivateMessage(const ChatMessagePtr& aMessage, const ActionHookResultGetter<>& aResultGetter) noexcept;
+		ActionHookResult<> onHubMessage(const ChatMessagePtr& aMessage, const ActionHookResultGetter<>& aResultGetter) noexcept;
 
 		mutable SharedMutex cs;
 
 		IgnoreMap ignoredUsers;
-		bool checkIgnored(const OnlineUserPtr& aUser) noexcept;
+		bool checkIgnored(const OnlineUserPtr& aUser, bool aPM) noexcept;
 
 		bool dirty = false;
 		// contains the ignored nicks and patterns 
 		vector<ChatFilterItem> ChatFilterItems;
 
-		ActionHookRejectionPtr isIgnoredOrFiltered(const ChatMessagePtr& msg, const HookRejectionGetter& aRejectionGetter, bool PM) noexcept;
+		ActionHookResult<> isIgnoredOrFiltered(const ChatMessagePtr& msg, const ActionHookResultGetter<>& aResultGetter, bool aPM) noexcept;
 
 		// chat filter
 		bool isChatFiltered(const string& aNick, const string& aText, ChatFilterItem::Context aContext = ChatFilterItem::ALL) const noexcept;

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2012-2018 AirDC++ Project
+* Copyright (C) 2012-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -49,8 +49,9 @@ typedef std::shared_ptr<RSSData> RSSDataPtr;
 class RSSFilter : public StringMatch {
 public:
 
-	RSSFilter(const string& aFilterPattern, const string& aDownloadTarget, int aMethod, const string& aGroup, bool aSkipDupes, int aAction, int aExpireDays) noexcept :
-		filterPattern(aFilterPattern), downloadTarget(aDownloadTarget), autosearchGroup(aGroup), skipDupes(aSkipDupes), filterAction(aAction), expireDays(aExpireDays)
+	RSSFilter(const string& aFilterPattern, const string& aDownloadTarget, int aMethod, const string& aGroup, bool aSkipDupes, int aAction, int aExpireDays, bool aFormatTime) noexcept :
+		filterPattern(aFilterPattern), downloadTarget(aDownloadTarget), autosearchGroup(aGroup), skipDupes(aSkipDupes), filterAction(aAction), expireDays(aExpireDays),
+		formatTimeParams(aFormatTime)
 	{
 		pattern = aFilterPattern;
 		setMethod((StringMatch::Method)aMethod);
@@ -63,11 +64,14 @@ public:
 	IGETSET(string, autosearchGroup, AutosearchGroup, Util::emptyString);
 	IGETSET(int, filterAction, FilterAction, DOWNLOAD);
 	IGETSET(int, expireDays, ExpireDays, 3);
+	IGETSET(bool, formatTimeParams, FormatTimeParams, false);
+
 	bool skipDupes = true;
 
 	enum filterActions {
 		DOWNLOAD = 0,
 		REMOVE = 1,
+		ADD_AUTOSEARCH = 2,
 	};
 
 };

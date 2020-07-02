@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -92,27 +92,27 @@ File::File(const string& aFileName, int access, int mode, BufferMode aBufferMode
 #endif
 }
 
-uint64_t File::getLastModified() const noexcept {
+time_t File::getLastModified() const noexcept {
 	FILETIME f = {0};
 	::GetFileTime(h, NULL, NULL, &f);
 	return convertTime(&f);
 }
 
-uint64_t File::convertTime(FILETIME* f) {
+time_t File::convertTime(FILETIME* f) {
 	SYSTEMTIME s = { 1970, 1, 0, 1, 0, 0, 0, 0 };
 	FILETIME f2 = {0};
 	if(::SystemTimeToFileTime(&s, &f2)) {
 		ULARGE_INTEGER a,b;
-		a.LowPart =f->dwLowDateTime;
-		a.HighPart=f->dwHighDateTime;
-		b.LowPart =f2.dwLowDateTime;
-		b.HighPart=f2.dwHighDateTime;
-		return (a.QuadPart - b.QuadPart) / (10000000LL); // 100ns > s
+		a.LowPart = f->dwLowDateTime;
+		a.HighPart = f->dwHighDateTime;
+		b.LowPart = f2.dwLowDateTime;
+		b.HighPart = f2.dwHighDateTime;
+		return (static_cast<time_t>(a.QuadPart) - static_cast<time_t>(b.QuadPart)) / (10000000LL); // 100ns > s
 	}
 	return 0;
 }
 
-FILETIME File::convertTime(uint64_t f) {
+FILETIME File::convertTime(time_t f) {
 	FILETIME ft;
 
 	ft.dwLowDateTime = (DWORD)f;
@@ -242,7 +242,7 @@ void File::copyFile(const string& src, const string& target) {
 	}
 }
 
-uint64_t File::getLastModified(const string& aPath) noexcept {
+time_t File::getLastModified(const string& aPath) noexcept {
 	if (aPath.empty())
 		return 0;
 
@@ -318,6 +318,12 @@ bool File::isAbsolutePath(const string& path) noexcept {
 	return path.size() > 2 && (path[1] == ':' || path[0] == '/' || path[0] == '\\');
 }
 
+int64_t File::getDeviceId(const string& aPath) noexcept {
+	DWORD dwSerialNumber;
+	auto ret = GetVolumeInformation(Text::toT(getMountPath(aPath)).c_str(), NULL, 0, &dwSerialNumber, NULL, NULL, NULL, 0);
+	return ret > 0 ? dwSerialNumber : -1;
+}
+
 string File::getMountPath(const string& aPath) noexcept {
 	unique_ptr<TCHAR[]> buf(new TCHAR[aPath.length()+1]);
 	GetVolumePathName(Text::toT(Util::formatPath(aPath)).c_str(), buf.get(), aPath.length());
@@ -380,7 +386,7 @@ File::File(const string& aFileName, int access, int mode, BufferMode aBufferMode
 #endif
 }
 
-uint64_t File::getLastModified() const noexcept {
+time_t File::getLastModified() const noexcept {
 	struct stat s;
 	if (::fstat(h, &s) == -1)
 		return 0;
@@ -525,8 +531,9 @@ void File::renameFile(const string& source, const string& target) {
 	if(ret != 0 && errno == EXDEV) {
 		copyFile(source, target);
 		deleteFile(source);
-	} else if(ret != 0)
-		throw FileException(source + Util::translateError(errno));
+	} else if (ret != 0) {
+		throw FileException(Util::translateError(errno));
+	}
 }
 
 // This doesn't assume all bytes are written in one write call, it is a bit safer
@@ -612,15 +619,21 @@ int64_t File::getBlockSize(const string& aFileName) noexcept {
 }
 
 string File::getMountPath(const string& aPath) noexcept {
-	struct stat statbuf;
-	if (stat(aPath.c_str(), &statbuf) == -1) {
-		return Util::emptyString;
-	}
-
-	return Util::toString((uint32_t)statbuf.st_dev);
+	auto volumes = File::getVolumes();
+	return getMountPath(aPath, volumes, false);
 }
 
-uint64_t File::getLastModified(const string& aPath) noexcept {
+
+int64_t File::getDeviceId(const string& aPath) noexcept {
+	struct stat statbuf;
+	if (stat(aPath.c_str(), &statbuf) == -1) {
+		return -1;
+	}
+
+	return (int64_t)statbuf.st_dev;
+}
+
+time_t File::getLastModified(const string& aPath) noexcept {
 	struct stat statbuf;
 	if (stat(aPath.c_str(), &statbuf) == -1) {
 		return 0;
@@ -761,7 +774,7 @@ StringList File::findFiles(const string& aPath, const string& aNamePattern, int 
 
 void File::forEachFile(const string& aPath, const string& aNamePattern, FileIterF aHandlerF, bool aSkipHidden) {
 	for (FileFindIter i(aPath, aNamePattern); i != FileFindIter(); ++i) {
-		if ((!aSkipHidden || !i->isHidden())) {
+		if (!aSkipHidden || !i->isHidden()) {
 			aHandlerF({
 				i->getFileName(),
 				i->getSize(),
@@ -822,7 +835,7 @@ string File::getMountPath(const string& aPath, const VolumeSet& aVolumes, bool a
 	}
 #else
 	// Return the root
-	return PATH_SEPARATOR_STR;
+	return aVolumes.empty() ? Util::emptyString : PATH_SEPARATOR_STR;
 #endif
 	return Util::emptyString;
 }
@@ -864,10 +877,7 @@ File::VolumeSet File::getVolumes() noexcept {
 
 	while (drives != 0) {
 		if (drives & 1 && (GetDriveType(drive) != DRIVE_CDROM && GetDriveType(drive) == DRIVE_REMOTE)) {
-			string path = Text::fromT(drive);
-			if (path[path.length() - 1] != PATH_SEPARATOR) {
-				path += PATH_SEPARATOR;
-			}
+			string path = Util::ensureTrailingSlash(Text::fromT(drive));
 			volumes.insert(path);
 		}
 
@@ -899,7 +909,7 @@ FileFindIter::FileFindIter(const string& aPath, const string& aPattern, bool aDi
 	auto path = Util::formatPath(aPath);
 
 	// An attempt to open a search with a trailing backslash always fails
-	if (aPattern.empty() && !path.empty() && path.back() == PATH_SEPARATOR) {
+	if (aPattern.empty() && Util::isDirectoryPath(path)) {
 		path.pop_back();
 	}
 
@@ -955,7 +965,7 @@ int64_t FileFindIter::DirData::getSize() {
 	return (int64_t)nFileSizeLow | ((int64_t)nFileSizeHigh)<<32;
 }
 
-uint64_t FileFindIter::DirData::getLastWriteTime() {
+time_t FileFindIter::DirData::getLastWriteTime() {
 	return File::convertTime(&ftLastWriteTime);
 }
 
@@ -1055,7 +1065,7 @@ int64_t FileFindIter::DirData::getSize() {
 	return inode.st_size;
 }
 
-uint64_t FileFindIter::DirData::getLastWriteTime() {
+time_t FileFindIter::DirData::getLastWriteTime() {
 	struct stat inode;
 	if (!ent) return false;
 	if (stat((base + PATH_SEPARATOR + ent->d_name).c_str(), &inode) == -1) return 0;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@ string GeoManager::getCountry(const string& ip) const {
 }
 
 string GeoManager::getDbPath() {
-	return Util::getPath(Util::PATH_USER_LOCAL) + "GeoLite2-Country.mmdb";
+	return Util::getPath(Util::PATH_USER_LOCAL) + "country_ip_db.mmdb";
 }
 
 } // namespace dcpp

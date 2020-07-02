@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -159,15 +159,7 @@ public:
 	string getSearchingStatus() const noexcept;
 	string getExpiration() const noexcept;
 
-	Priority calculatePriority() const noexcept {
-		auto prio = Priority::LOW;
-		if (status == STATUS_FAILED_MISSING)
-			prio = Priority::HIGHEST;
-		else if (getLastSearch() == 0)
-			prio = Priority::HIGH;
-
-		return prio;
-	}
+	Priority calculatePriority() const noexcept;
 
 	bool isRecent() const noexcept { return recent; }
 	bool checkRecent();

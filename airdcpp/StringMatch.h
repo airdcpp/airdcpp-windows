@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,9 @@ using std::string;
 
 /** Provides ways of matching a pattern against strings. */
 struct StringMatch {
+
+	StringMatch(bool aVerboseErrors = true) : verbosePatternErrors(aVerboseErrors) {}
+
 	enum Method {
 		PARTIAL, /// case-insensitive pattern matching (multiple patterns separated with spaces)
 		REGEX, /// regular expression
@@ -54,14 +57,19 @@ struct StringMatch {
 	//Method getMethod() const { return m; }
 	Method getMethod() const;
 	void setMethod(Method method);
+	void setVerbosePatternErrors(bool v) { verbosePatternErrors = v; }
 
 	bool operator==(const StringMatch& rhs) const;
 
 	bool prepare();
 	bool match(const string& str) const;
+
+
 private:
 	boost::variant<StringSearch, string, boost::regex> search;
 	bool isWildCard;
+	bool verbosePatternErrors = true;
+
 	//Method m;
 };
 

@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -443,7 +443,7 @@ void ADLSearchManager::MatchesFile(DestDirList& destDirVector, const DirectoryLi
 		return;
 	}
 
-	dcassert(Util::isAdcPath(aAdcPath));
+	dcassert(Util::isAdcDirectoryPath(aAdcPath));
 
 	// Use NMDC path for matching due to compatibility reasons
 	const auto nmdcPath = Util::toNmdcFile(aAdcPath + currentFile->getName());
@@ -474,7 +474,7 @@ void ADLSearchManager::MatchesFile(DestDirList& destDirVector, const DirectoryLi
 }
 
 void ADLSearchManager::MatchesDirectory(DestDirList& destDirVector, const DirectoryListing::Directory::Ptr& currentDir, const string& aAdcPath) noexcept {
-	dcassert(Util::isAdcPath(aAdcPath));
+	dcassert(Util::isAdcDirectoryPath(aAdcPath));
 
 	// Add to any substructure being stored
 	for (auto& id: destDirVector) {

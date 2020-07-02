@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -109,7 +109,8 @@ CryptoManager::CryptoManager()
 }
 
 void CryptoManager::setContextOptions(SSL_CTX* aCtx, bool aServer) {
-	const char ciphersuites[] =
+	// TLS <= 1.2 ciphers
+	const char ciphersuitesTls12[] =
 		"ECDHE-ECDSA-AES128-GCM-SHA256:"
 		"ECDHE-RSA-AES128-GCM-SHA256:"
 		"ECDHE-ECDSA-AES128-SHA256:"
@@ -128,7 +129,16 @@ void CryptoManager::setContextOptions(SSL_CTX* aCtx, bool aServer) {
 		"AES256-SHA256:"
 		"AES256-SHA";
 
-	SSL_CTX_set_cipher_list(aCtx, ciphersuites);
+	SSL_CTX_set_cipher_list(aCtx, ciphersuitesTls12);
+
+#if OPENSSL_VERSION_NUMBER >= 0x1010100fL
+	// TLS 1.3 ciphers
+	const char ciphersuitesTls13[] =
+		"TLS_AES_128_GCM_SHA256:"
+		"TLS_AES_256_GCM_SHA384";
+
+	SSL_CTX_set_ciphersuites(aCtx, ciphersuitesTls13);
+#endif
 
 #if OPENSSL_VERSION_NUMBER >= 0x1000201fL
 	SSL_CTX_set1_curves_list(aCtx, "P-256");
@@ -182,13 +192,13 @@ optional<ByteVector> CryptoManager::calculateSha1(const string& aData) noexcept 
 
 	auto res = SHA1_Init(&sha_ctx);
 	if (res != 1)
-		return boost::none;
+		return nullopt;
 	res = SHA1_Update(&sha_ctx, aData.c_str(), aData.size());
 	if (res != 1)
-		return boost::none;
+		return nullopt;
 	res = SHA1_Final(ret.data(), &sha_ctx);
 	if (res != 1)
-		return boost::none;
+		return nullopt;
 
 	return ret;
 }
@@ -262,8 +272,9 @@ void CryptoManager::generateCertificate() {
 		File::ensureDirectory(SETTING(TLS_PRIVATE_KEY_FILE));
 		FILE* f = dcpp_fopen(SETTING(TLS_PRIVATE_KEY_FILE).c_str(), "w");
 		if (!f) {
-			return;
+			throw CryptoException(Util::formatLastError() + " (" + SETTING(TLS_PRIVATE_KEY_FILE) + ")");
 		}
+
 		PEM_write_RSAPrivateKey(f, rsa, NULL, NULL, 0, NULL, NULL);
 		fclose(f);
 	}
@@ -272,7 +283,7 @@ void CryptoManager::generateCertificate() {
 		FILE* f = dcpp_fopen(SETTING(TLS_CERTIFICATE_FILE).c_str(), "w");
 		if (!f) {
 			File::deleteFile(SETTING(TLS_PRIVATE_KEY_FILE));
-			return;
+			throw CryptoException(Util::formatLastError() + " (" + SETTING(TLS_CERTIFICATE_FILE) + ")");
 		}
 		PEM_write_X509(f, x509ss);
 		fclose(f);

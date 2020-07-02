@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -46,6 +46,12 @@ namespace dcpp {
 		monitor.addListener(this);
 
 		monitor.callAsync([=] { rebuildMonitoring(); });
+	}
+
+	void ShareMonitorManager::setMonitorDebug(bool aEnabled) noexcept {
+		monitorDebug = aEnabled;
+
+		monitor.setDebug(aEnabled);
 	}
 
 	string ShareMonitorManager::printStats() const noexcept {
@@ -235,18 +241,18 @@ namespace dcpp {
 			auto path = isDirectory ? aPath + PATH_SEPARATOR : aPath;
 
 			try {
-				ShareManager::getInstance()->validatePath(path, false);
+				ShareManager::getInstance()->validatePathHooked(path, false);
 			} catch (const ShareException& e) {
 				reportFile(e.getError());
-				return boost::none;
+				return nullopt;
 			} catch (...) {
-				return boost::none;
+				return nullopt;
 			}
 
 			return FileItem({ path, isDirectory });
 		}
 
-		return boost::none;
+		return nullopt;
 	}
 
 	void ShareMonitorManager::addModifyInfo(const string& aPath) noexcept {

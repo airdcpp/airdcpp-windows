@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -106,7 +106,11 @@ string GeoIP::getCountry(const string& ip) const {
 			return Util::formatParams(setting, params);
 		} else {
 			if (gai_error != 0) {
+#ifdef WIN32
+				dcdebug("Error from getaddrinfo for %s - %ls\n",
+#else
 				dcdebug("Error from getaddrinfo for %s - %s\n",
+#endif
 					ip.c_str(), gai_strerror(gai_error));
 			}
 

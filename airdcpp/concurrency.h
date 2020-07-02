@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2018 AirDC++ Project
+ * Copyright (C) 2011-2019 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 #include <tbb/task_group.h>
 #include <tbb/parallel_for_each.h>
 #include <tbb/concurrent_queue.h>
-#include "tbb/task_scheduler_init.h"
+#include <tbb/task_arena.h>
 
 namespace dcpp
 {
@@ -41,7 +41,7 @@ public:
 
 	~TaskScheduler() { }
 private:
-	tbb::task_scheduler_init init;
+	tbb::task_arena init;
 };
 
 }

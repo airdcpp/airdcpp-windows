@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ using std::string;
 class HttpConnection : BufferedSocketListener, public Speaker<HttpConnectionListener>, boost::noncopyable
 {
 public:
-	HttpConnection(bool coralize = true, bool aIsUnique = false, bool v4only = false);
+	HttpConnection(bool aIsUnique = false, bool v4only = false);
 	virtual ~HttpConnection();
 
 	void downloadFile(const string& aUrl);
@@ -46,7 +46,6 @@ public:
 private:
 	enum RequestType { TYPE_GET, TYPE_POST, TYPE_UNKNOWN };
 	enum ConnectionStates { CONN_UNKNOWN, CONN_OK, CONN_FAILED, CONN_MOVED, CONN_CHUNKED };
-	enum CoralizeStates { CST_DEFAULT, CST_CONNECTED, CST_NOCORALIZE };
 
 	string currentUrl;
 	string method;
@@ -62,7 +61,6 @@ private:
 	int64_t done = 0;
 
 	ConnectionStates connState = CONN_UNKNOWN;
-	CoralizeStates coralizeState;
 	RequestType connType = TYPE_UNKNOWN;
 
 	BufferedSocket* socket = nullptr;

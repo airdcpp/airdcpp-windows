@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -143,12 +143,12 @@ void PrivateChat::CCPMDisconnected() {
 	}
 }
 
-bool PrivateChat::sendMessage(const string& aMessage, string& error_, bool aThirdPerson) {
+bool PrivateChat::sendMessageHooked(const string& aMessage, string& error_, bool aThirdPerson) {
 	if (ccReady()) {
-		return uc->pm(aMessage, error_, aThirdPerson);
+		return uc->sendPrivateMessageHooked(aMessage, error_, aThirdPerson);
 	}
 
-	return ClientManager::getInstance()->privateMessage(replyTo, aMessage, error_, aThirdPerson);
+	return ClientManager::getInstance()->privateMessageHooked(replyTo, aMessage, error_, aThirdPerson);
 }
 
 void PrivateChat::closeCC(bool now, bool noAutoConnect) {

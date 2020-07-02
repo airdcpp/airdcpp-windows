@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -129,8 +129,9 @@ void ConnectivityManager::clearAutoSettings(bool v6, bool resetDefaults) {
 }
 
 void ConnectivityManager::detectConnection() {
-	if(isRunning())
+	if (isRunning()) {
 		return;
+	}
 
 	bool detectV4 = false;
 	if (SETTING(AUTO_DETECT_CONNECTION) && SETTING(INCOMING_CONNECTIONS) != SettingsManager::INCOMING_DISABLED) {
@@ -142,6 +143,10 @@ void ConnectivityManager::detectConnection() {
 	if (SETTING(AUTO_DETECT_CONNECTION6) && SETTING(INCOMING_CONNECTIONS6) != SettingsManager::INCOMING_DISABLED) {
 		detectV6 = true;
 		runningV6 = true;
+	}
+
+	if (!detectV6 && !detectV4) {
+		return;
 	}
 
 	if (detectV4) {
@@ -364,8 +369,8 @@ string ConnectivityManager::getInformation() const {
 		"\tBound interface (v4): %7%\n"
 		"\tBound interface (v6): %8%\n"
 		"\tTransfer port: %9%\n"
-		"\tEncrypted transfer port: %10%\n"
-		"\tSearch port: %11%") % autoStatusV4 % autoStatusV6 % getMode(false) % getMode(true) %
+		"\tSearch port: %11%\n"
+		"\tEncrypted transfer port: %10%") % autoStatusV4 % autoStatusV6 % getMode(false) % getMode(true) %
 		field(CONNSETTING(EXTERNAL_IP)) % field(CONNSETTING(EXTERNAL_IP6)) %
 		field(CONNSETTING(BIND_ADDRESS)) % field(CONNSETTING(BIND_ADDRESS6)) %
 		field(ConnectionManager::getInstance()->getPort()) % field(ConnectionManager::getInstance()->getSecurePort()) %

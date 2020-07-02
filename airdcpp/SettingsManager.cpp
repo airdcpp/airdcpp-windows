@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -242,7 +242,7 @@ const string SettingsManager::settingTags[] =
 "BoldFinishedDownloads", "BoldFinishedUploads", "BoldHub", "BoldPm",
 "BoldQueue", "BoldSearch", "BoldSystemLog", "ClearSearch",
 "CompressTransfers", "ConfirmADLSRemoval", "ConfirmExit",
-"ConfirmHubRemoval", "ConfirmUserRemoval", "Coral",
+"ConfirmHubRemoval", "ConfirmUserRemoval",
 "DontDlAlreadyQueued", "DontDLAlreadyShared", "FavShowJoins", "FilterMessages",
 "GetUserCountry", "GetUserInfo", "HubUserCommands",
 "KeepLists",
@@ -336,7 +336,7 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(POPUP_HUB_PMS, true);
 	setDefault(POPUP_BOT_PMS, true);
 	setDefault(BUFFER_SIZE, 64);
-	setDefault(HUBLIST_SERVERS, "http://dchublist.com/hublist.xml.bz2;http://hublist.eu/hublist.xml.bz2;http://www.hublista.hu/hublist.xml.bz2;");
+	setDefault(HUBLIST_SERVERS, "https://www.te-home.net/?do=hublist&get=hublist.xml.bz2;https://dchublist.org/hublist.xml.bz2;https://dchublist.ru/hublist.xml.bz2;http://hublist.eu/hublist.xml.bz2;https://dcnf.github.io/Hublist/hublist.xml.bz2;");
 	setDefault(DOWNLOAD_SLOTS, 50);
 	setDefault(MAX_DOWNLOAD_SPEED, 0);
 	setDefault(LOG_DIRECTORY, Util::getPath(Util::PATH_USER_CONFIG) + "Logs" PATH_SEPARATOR_STR);
@@ -437,7 +437,6 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(ALLOW_UNTRUSTED_HUBS, true);
 	setDefault(ALLOW_UNTRUSTED_CLIENTS, true);		
 	setDefault(SORT_FAVUSERS_FIRST, false);
-	setDefault(CORAL, true);	
 	setDefault(NUMBER_OF_SEGMENTS, 3);
 	setDefault(SEGMENTS_MANUAL, false);
 	setDefault(TEXT_FONT, "Tahoma,-11,400,0");

@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -84,15 +84,6 @@ int64_t HashManager::Hasher::getTimeLeft() const noexcept {
 	return lastSpeed > 0 ? (totalBytesLeft / lastSpeed) : 0;
 }
 
-bool HashManager::Hasher::getPathVolume(const string& aPath, string& vol_) const noexcept { 
-	auto p = find_if(devices | map_keys, [&aPath](const string& aVol) { return aPath.compare(0, aVol.length(), aVol.c_str()) == 0; });
-	if (p.base() != devices.end()) {
-		vol_ = *p;
-		return true;
-	}
-	return false;
-}
-
 bool HashManager::Hasher::hasFile(const string& aPath) const noexcept {
 	return w.find(aPath) != w.end();
 }
@@ -105,15 +96,7 @@ bool HashManager::hashFile(const string& filePath, const string& pathLower, int6
 
 	WLock l(Hasher::hcs);
 
-	//get the volume name
-	string vol;
-	if (none_of(hashers.begin(), hashers.end(), [&](const Hasher* h) { return h->getPathVolume(pathLower, vol); })) {
-		// Case-sensitive because of Linux
-		vol = Text::toLower(File::getMountPath(filePath));
-	}
-
-	//dcassert(!vol.empty());
-
+	auto deviceId = File::getDeviceId(filePath);
 	if (hashers.size() == 1 && !hashers.front()->hasDevices()) {
 		//always use the first hasher if it's idle
 		h = hashers.front();
@@ -124,7 +107,7 @@ bool HashManager::hashFile(const string& filePath, const string& pathLower, int6
 
 		if (SETTING(HASHERS_PER_VOLUME) == 1) {
 			//do we have files for this volume queued already? always use the same one in that case
-			auto p = find_if(hashers, [&vol](const Hasher* aHasher) { return aHasher->hasDevice(vol); });
+			auto p = find_if(hashers, [&deviceId](const Hasher* aHasher) { return aHasher->hasDevice(deviceId); });
 			if (p != hashers.end()) {
 				h = *p;
 			} else if (static_cast<int>(hashers.size()) >= SETTING(MAX_HASHING_THREADS)) {
@@ -134,7 +117,7 @@ bool HashManager::hashFile(const string& filePath, const string& pathLower, int6
 		} else {
 			//get the hashers with this volume
 			HasherList volHashers;
-			copy_if(hashers.begin(), hashers.end(), back_inserter(volHashers), [&vol](const Hasher* aHasher) { return aHasher->hasDevice(vol); });
+			copy_if(hashers.begin(), hashers.end(), back_inserter(volHashers), [deviceId](const Hasher* aHasher) { return aHasher->hasDevice(deviceId); });
 
 			if (volHashers.empty() && static_cast<int>(hashers.size()) >= SETTING(MAX_HASHING_THREADS)) {
 				//we just need choose from all hashers
@@ -174,7 +157,7 @@ bool HashManager::hashFile(const string& filePath, const string& pathLower, int6
 	}
 
 	//queue the file for hashing
-	return h->hashFile(filePath, pathLower, size, vol);
+	return h->hashFile(filePath, pathLower, size, deviceId);
 }
 
 void HashManager::getFileTTH(const string& aFile, int64_t aSize, bool addStore, TTHValue& tth_, int64_t& sizeLeft_, const bool& aCancel, std::function<void(int64_t, const string&)> updateF/*nullptr*/) {
@@ -184,7 +167,11 @@ void HashManager::getFileTTH(const string& aFile, int64_t aSize, bool addStore, 
 	if (!store.checkTTH(pathLower, fi)) {
 		File f(aFile, File::READ, File::OPEN);
 		int64_t bs = max(TigerTree::calcBlockSize(aSize, 10), MIN_BLOCK_SIZE);
-		uint64_t timestamp = f.getLastModified();
+		auto timestamp = f.getLastModified();
+		if (timestamp < 0) {
+			throw FileException(STRING(INVALID_MODIFICATION_DATE));
+		}
+
 		TigerTree tt(bs);
 
 		auto start = GET_TICK();
@@ -438,7 +425,7 @@ void HashManager::HashStore::saveFileInfo(void *dest, const HashedFile& aFile) {
 
 	int64_t fileSize = aFile.getSize();
 	memcpy(p, &fileSize, sizeof(int64_t));
-	p += sizeof(int64_t);
+	//p += sizeof(int64_t);
 }
 
 uint32_t HashManager::HashStore::getFileInfoSize(const HashedFile& /*aTree*/) {
@@ -882,7 +869,7 @@ void HashLoader::startTag(const string& name, StringPairList& attribs, bool simp
 			}
 		} else if (inFiles && name == sFile) {
 			file = getAttrib(attribs, sName, 0);
-			auto timeStamp = Util::toUInt32(getAttrib(attribs, sTimeStamp, 1));
+			auto timeStamp = Util::toTimeT(getAttrib(attribs, sTimeStamp, 1));
 			const string& root = getAttrib(attribs, sRoot, 2);
 
 			if (!file.empty() && timeStamp > 0 && !root.empty()) {
@@ -921,11 +908,11 @@ HashManager::HashStore::~HashStore() {
 	closeDb();
 }
 
-bool HashManager::Hasher::hashFile(const string& fileName, const string& filePathLower, int64_t size, const string& devID) noexcept {
+bool HashManager::Hasher::hashFile(const string& fileName, const string& filePathLower, int64_t size, devid aDeviceId) noexcept {
 	//always locked
-	auto ret = w.emplace_sorted(filePathLower, fileName, size, devID);
+	auto ret = w.emplace_sorted(filePathLower, fileName, size, aDeviceId);
 	if (ret.second) {
-		devices[(*ret.first).devID]++; 
+		devices[(*ret.first).deviceId]++; 
 		totalBytesLeft += size;
 		s.signal();
 		return true;
@@ -948,9 +935,9 @@ bool HashManager::Hasher::isPaused() const noexcept {
 	return paused;
 }
 
-void HashManager::Hasher::removeDevice(const string& aID) noexcept {
-	dcassert(!aID.empty());
-	auto dp = devices.find(aID);
+void HashManager::Hasher::removeDevice(devid aDevice) noexcept {
+	dcassert(aDevice >= 0);
+	auto dp = devices.find(aDevice);
 	if (dp != devices.end()) {
 		dp->second--;
 		if (dp->second == 0)
@@ -962,7 +949,7 @@ void HashManager::Hasher::stopHashing(const string& baseDir) noexcept {
 	for (auto i = w.begin(); i != w.end();) {
 		if (Util::strnicmp(baseDir, i->filePath, baseDir.length()) == 0) {
 			totalBytesLeft -= i->fileSize;
-			removeDevice(i->devID);
+			removeDevice(i->deviceId);
 			i = w.erase(i);
 		} else {
 			++i;
@@ -1102,17 +1089,18 @@ int HashManager::Hasher::run() {
 		int64_t originalSize = 0;
 		bool failed = true;
 		bool dirChanged = false;
-		string curDevID, pathLower;
+		devid curDevID = -1;
+		string pathLower;
 		{
 			WLock l(hcs);
 			if(!w.empty()) {
 				auto& wi = w.front();
 				dirChanged = initialDir.empty() || compare(Util::getFilePath(wi.filePath), Util::getFilePath(fname)) != 0;
 				currentFile = fname = move(wi.filePath);
-				curDevID = move(wi.devID);
+				curDevID = move(wi.deviceId);
 				pathLower = move(wi.filePathLower);
 				originalSize = wi.fileSize;
-				dcassert(!curDevID.empty());
+				dcassert(curDevID >= 0);
 				w.pop_front();
 			} else {
 				fname.clear();
@@ -1140,7 +1128,12 @@ int HashManager::Hasher::run() {
 				totalBytesLeft += size - originalSize;
 
 				int64_t bs = max(TigerTree::calcBlockSize(size, 10), MIN_BLOCK_SIZE);
-				uint64_t timestamp = f.getLastModified();
+
+				auto timestamp = f.getLastModified();
+				if (timestamp < 0) {
+					throw FileException(STRING(INVALID_MODIFICATION_DATE));
+				}
+
 				TigerTree tt(bs);
 
 				CRC32Filter crc32;

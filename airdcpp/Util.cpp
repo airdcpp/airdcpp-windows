@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -286,8 +286,6 @@ void Util::initialize(const string& aConfigPath) {
 		paths[PATH_USER_LOCAL] = ::SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL, SHGFP_TYPE_CURRENT, buf) == S_OK ? Text::fromT(buf) + "\\AirDC++\\" : paths[PATH_USER_CONFIG];
 		paths[PATH_RESOURCES] = exeDirectoryPath;
 	}
-
-	paths[PATH_LOCALE] = (localMode ? exeDirectoryPath : paths[PATH_USER_LOCAL]) + "Language\\";
 #else
 	// Usually /etc/airdcpp/
 	paths[PATH_GLOBAL_CONFIG] = GLOBAL_CONFIG_DIRECTORY;
@@ -306,10 +304,9 @@ void Util::initialize(const string& aConfigPath) {
 		paths[PATH_USER_LOCAL] = paths[PATH_USER_CONFIG];
 		paths[PATH_RESOURCES] = RESOURCE_DIRECTORY;
 	}
-
-	paths[PATH_LOCALE] = paths[PATH_RESOURCES] + "locale/";
 #endif
 
+	paths[PATH_LOCALE] = (localMode ? exeDirectoryPath : paths[PATH_USER_LOCAL]) + "Language" PATH_SEPARATOR_STR;
 	paths[PATH_FILE_LISTS] = paths[PATH_USER_CONFIG] + "FileLists" PATH_SEPARATOR_STR;
 	paths[PATH_BUNDLES] = paths[PATH_USER_CONFIG] + "Bundles" PATH_SEPARATOR_STR;
 	paths[PATH_SHARECACHE] = paths[PATH_USER_LOCAL] + "ShareCache" PATH_SEPARATOR_STR;
@@ -695,24 +692,23 @@ string Util::formatSeconds(int64_t aSec, bool supressHours /*false*/) noexcept {
 	return buf;
 }
 
-string Util::formatTime(int64_t aSec, bool translate, bool perMinute) noexcept {
+string Util::formatTime(uint64_t aSec, bool aTranslate, bool aPerMinute) noexcept {
 	string formatedTime;
 
-	uint64_t n, i;
-	i = 0;
+	decltype(aSec) n, added = 0;
 
 	auto appendTime = [&] (const string& aTranslatedS, const string& aEnglishS, const string& aTranslatedP, const string& aEnglishP) -> void {
-		if (perMinute && i == 2) //add max 2 values
+		if (aPerMinute && added == 2) //add max 2 values
 			return;
 
 		char buf[128];
 		if(n >= 2) {
-			snprintf(buf, sizeof(buf), ("%d " + ((translate ? Text::toLower(aTranslatedP) : aEnglishP) + " ")).c_str(), n);
+			snprintf(buf, sizeof(buf), (U64_FMT " " + ((aTranslate ? Text::toLower(aTranslatedP) : aEnglishP) + " ")).c_str(), n);
 		} else {
-			snprintf(buf, sizeof(buf), ("%d " + ((translate ? Text::toLower(aTranslatedS) : aEnglishS) + " ")).c_str(), n);
+			snprintf(buf, sizeof(buf), (U64_FMT " " + ((aTranslate ? Text::toLower(aTranslatedS) : aEnglishS) + " ")).c_str(), n);
 		}
 		formatedTime += (string)buf;
-		i++;
+		added++;
 	};
 
 	n = aSec / (24*3600*365);
@@ -747,12 +743,12 @@ string Util::formatTime(int64_t aSec, bool translate, bool perMinute) noexcept {
 
 	n = aSec / (60);
 	aSec %= (60);
-	if(n || perMinute) {
+	if(n || aPerMinute) {
 		appendTime(STRING(MINUTE), "min", STRING(MINUTES_LOWER), "min");
 	}
 
 	n = aSec;
-	if(++i <= 3 && !perMinute) {
+	if(++added <= 3 && !aPerMinute) {
 		appendTime(STRING(SECOND), "sec", STRING(SECONDS_LOWER), "sec");
 	}
 
@@ -1220,7 +1216,7 @@ string Util::formatParams(const string& aMsg, const ParamMap& aParams, FilterF a
 	return result;
 }
 
-bool Util::isAdcPath(const string& aPath) noexcept {
+bool Util::isAdcDirectoryPath(const string& aPath) noexcept {
 	return !aPath.empty() && aPath.front() == ADC_ROOT && aPath.back() == ADC_SEPARATOR;
 }
 
@@ -1363,27 +1359,54 @@ int Util::randInt(int min, int max) noexcept {
     return dist(gen);
 }
 
+#ifdef _WIN32
 string Util::getDateTime(time_t t) noexcept {
 	if (t == 0)
 		return Util::emptyString;
 
 	char buf[64];
-	tm _tm = *localtime(&t);
+	tm _tm;
+	auto err = localtime_s(&_tm, &t);
+	if (err > 0) {
+		dcdebug("Failed to parse date " I64_FMT ": %s\n", static_cast<int64_t>(t), translateError(err).c_str());
+		return Util::emptyString;
+	}
+
 	strftime(buf, 64, SETTING(DATE_FORMAT).c_str(), &_tm);
 
 	return buf;
 }
 
-#ifdef _WIN32
 wstring Util::getDateTimeW(time_t t) noexcept {
 	if (t == 0)
 		return Util::emptyStringT;
 
 	TCHAR buf[64];
 	tm _tm;
-	localtime_s(&_tm, &t);
+	auto err = localtime_s(&_tm, &t);
+	if (err > 0) {
+		dcdebug("Failed to parse date " I64_FMT ": %s\n", static_cast<int64_t>(t), translateError(err).c_str());
+		return Util::emptyStringW;
+	}
+
 	wcsftime(buf, 64, Text::toT(SETTING(DATE_FORMAT)).c_str(), &_tm);
 	
+	return buf;
+}
+#else
+string Util::getDateTime(time_t t) noexcept {
+	if (t == 0)
+		return Util::emptyString;
+
+	char buf[64];
+	tm _tm;
+	if (!localtime_r(&t, &_tm)) {
+		dcdebug("Failed to parse date " I64_FMT ": %s\n", static_cast<int64_t>(t), translateError(errno).c_str());
+		return Util::emptyString;
+	}
+
+	strftime(buf, 64, SETTING(DATE_FORMAT).c_str(), &_tm);
+
 	return buf;
 }
 #endif
@@ -1480,6 +1503,23 @@ string Util::joinDirectory(const string& aPath, const string& aDirectoryName, co
 	return aPath + aDirectoryName + separator;
 }
 
+string Util::ensureTrailingSlash(const string& aPath, const char aSeparator) noexcept {
+	if (!aPath.empty() && !isDirectoryPath(aPath, aSeparator)) {
+		return aPath + aSeparator;
+	}
+
+	return aPath;
+}
+
+string Util::validatePath(const string& aPath, bool aRequireEndSeparator) noexcept {
+	auto path = cleanPathChars(aPath, false);
+	if (aRequireEndSeparator) {
+		path = Util::ensureTrailingSlash(path);
+	}
+
+	return path;
+}
+
 wstring Util::getFilePath(const wstring& path) noexcept {
 	wstring::size_type i = path.rfind(PATH_SEPARATOR);
 	return (i != wstring::npos) ? path.substr(0, i + 1) : path;
@@ -1533,6 +1573,15 @@ string Util::translateError(int aError) noexcept {
 #else // _WIN32
 	return strerror(aError);
 #endif // _WIN32
+}
+
+string Util::formatLastError() noexcept {
+#ifdef _WIN32
+	int error = GetLastError();
+#else
+	int error = errno;
+#endif
+	return translateError(error);
 }
 
 int Util::pathSort(const string& a, const string& b) noexcept {

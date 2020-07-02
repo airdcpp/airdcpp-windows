@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 20 01-2018 Jacek Sieka, arnetheduck on gmailpoint com
+ * Copyright (C) 20 01-2019 Jacek Sieka, arnetheduck on gmailpoint com
  *
  * This program is free software; you can redistribute it and/or modif
  * it under the terms of the GU Genera Public License as ubished by
@@ -128,7 +128,7 @@ public:
 		BOLD_FINISHED_DOWNLOADS, BOLD_FINISHED_UPLOADS, BOLD_HUB, BOLD_PM,
 		BOLD_QUEUE, BOLD_SEARCH, BOLD_SYSTEM_LOG, CLEAR_SEARCH,
 		COMPRESS_TRANSFERS, CONFIRM_ADLS_REMOVAL, CONFIRM_EXIT,
-		CONFIRM_HUB_REMOVAL, CONFIRM_USER_REMOVAL, CORAL,
+		CONFIRM_HUB_REMOVAL, CONFIRM_USER_REMOVAL,
 		DONT_DL_ALREADY_QUEUED, DONT_DL_ALREADY_SHARED, FAV_SHOW_JOINS, FILTER_MESSAGES,
 		GET_USER_COUNTRY, GET_USER_INFO, HUB_USER_COMMANDS,
 		KEEP_LISTS,

@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -100,7 +100,8 @@ void UserConnection::on(BufferedSocketListener::Line, const string& aLine) noexc
 			fire(UserConnectionListener::Direction(), this, param.substr(0, x), param.substr(x+1));
 		}
 	} else if(cmd == "Error") {
-		if(Util::stricmp(param.c_str(), FILE_NOT_AVAILABLE)) { 
+		if (Util::stricmp(param.c_str(), FILE_NOT_AVAILABLE) == 0 ||
+			param.rfind(/*path/file*/" no more exists") != string::npos) {
     		fire(UserConnectionListener::FileNotAvailable(), this);
     	} else {
 			fire(UserConnectionListener::ProtocolError(), this, param);
@@ -232,10 +233,10 @@ void UserConnection::inf(bool withToken, int mcnSlots) {
 	send(c);
 }
 
-bool UserConnection::pm(const string& aMessage, string& error_, bool aThirdPerson) {
+bool UserConnection::sendPrivateMessageHooked(const string& aMessage, string& error_, bool aThirdPerson) {
 	auto error = ClientManager::getInstance()->outgoingPrivateMessageHook.runHooksError(aMessage, aThirdPerson, getHintedUser(), true);
 	if (error) {
-		error_ = error->formatError(error);
+		error_ = ActionHookRejection::formatError(error);
 		return false;
 	}
 
@@ -269,18 +270,13 @@ void UserConnection::handle(AdcCommand::PMI t, const AdcCommand& c) {
 
 void UserConnection::handlePM(const AdcCommand& c, bool echo) noexcept{
 	const string& message = c.getParam(0);
-	OnlineUserPtr peer = nullptr;
-	OnlineUserPtr me = nullptr;
 
 	auto cm = ClientManager::getInstance();
-	{
-		RLock l(cm->getCS());
-		peer = cm->findOnlineUser(user->getCID(), getHubUrl());
-		//try to use the same hub so nicks match to a hub, not the perfect solution for CCPM, nicks keep changing when hubs go offline.
-		if(peer && peer->getHubUrl() != hubUrl) 
-			setHubUrl(peer->getHubUrl());
-		me = cm->findOnlineUser(cm->getMe()->getCID(), getHubUrl());
-	}
+	auto peer = cm->findOnlineUser(user->getCID(), getHubUrl());
+	//try to use the same hub so nicks match to a hub, not the perfect solution for CCPM, nicks keep changing when hubs go offline.
+	if(peer && peer->getHubUrl() != hubUrl) 
+		setHubUrl(peer->getHubUrl());
+	auto me = cm->findOnlineUser(cm->getMe()->getCID(), getHubUrl());
 
 	if (!me || !peer){ //ChatMessage cant be formatted without the OnlineUser!
 		disconnect(true);
@@ -296,7 +292,7 @@ void UserConnection::handlePM(const AdcCommand& c, bool echo) noexcept{
 	auto msg = std::make_shared<ChatMessage>(message, peer, me, peer);
 	msg->setThirdPerson(c.hasFlag("ME", 1));
 	if (c.getParam("TS", 1, tmp)) {
-		msg->setTime(Util::toInt64(tmp));
+		msg->setTime(Util::toTimeT(tmp));
 	}
 
 	if (!ClientManager::getInstance()->incomingPrivateMessageHook.runHooksBasic(msg)) {

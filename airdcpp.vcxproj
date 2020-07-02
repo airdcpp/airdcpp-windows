@@ -23,32 +23,32 @@
     <RootNamespace>airdcpp</RootNamespace>
     <ProjectName>airdcpp-core</ProjectName>
     <UseNativeEnvironment>true</UseNativeEnvironment>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -96,6 +96,7 @@
       <PreprocessorDefinitions>WIN64;HAVE_NATPMP_H;HAVE_WINUPNP_H;_UNICODE;UNICODE;HAS_PCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <AdditionalOptions>/permissive- %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Lib>
       <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
@@ -120,6 +121,7 @@
       <Cpp0xSupport>true</Cpp0xSupport>
       <MinimalRebuild>false</MinimalRebuild>
       <AdditionalOptions>/permissive- %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Lib>
       <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
@@ -162,6 +164,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessorDefinitions>_UNICODE;UNICODE;HAVE_NATPMP_H;HAVE_WINUPNP_H;HAS_PCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Lib>
       <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
@@ -202,6 +205,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessorDefinitions>WIN64;HAVE_NATPMP_H;HAVE_WINUPNP_H;_UNICODE;UNICODE;HAS_PCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Lib>
       <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
@@ -212,6 +216,7 @@
     <ClCompile Include="airdcpp\ActivityManager.cpp" />
     <ClCompile Include="airdcpp\AdcCommand.cpp" />
     <ClCompile Include="airdcpp\AdcHub.cpp" />
+    <ClCompile Include="airdcpp\ContextMenuManager.cpp" />
     <ClCompile Include="airdcpp\DirectSearch.cpp" />
     <ClCompile Include="airdcpp\ErrorCollector.cpp" />
     <ClCompile Include="airdcpp\GroupedSearchResult.cpp" />
@@ -229,7 +234,6 @@
     <ClCompile Include="airdcpp\modules\RSSManager.cpp" />
     <ClCompile Include="airdcpp\modules\ShareMonitorManager.cpp" />
     <ClCompile Include="airdcpp\modules\ShareScannerManager.cpp" />
-    <ClCompile Include="airdcpp\modules\TargetUtil.cpp" />
     <ClCompile Include="airdcpp\modules\WebShortcuts.cpp" />
     <ClCompile Include="airdcpp\PrivateChat.cpp" />
     <ClCompile Include="airdcpp\RecentManager.cpp" />
@@ -314,6 +318,7 @@
     <ClCompile Include="airdcpp\TimerManager.cpp" />
     <ClCompile Include="airdcpp\TrackableDownloadItem.cpp" />
     <ClCompile Include="airdcpp\Transfer.cpp" />
+    <ClCompile Include="airdcpp\TransferInfoManager.cpp" />
     <ClCompile Include="airdcpp\UDPServer.cpp" />
     <ClCompile Include="airdcpp\UpdateManager.cpp" />
     <ClCompile Include="airdcpp\Updater.cpp" />
@@ -338,11 +343,14 @@
     <ClInclude Include="airdcpp\AdcHub.h" />
     <ClInclude Include="airdcpp\BundleInfo.h" />
     <ClInclude Include="airdcpp\constants.h" />
+    <ClInclude Include="airdcpp\ContextMenuManager.h" />
+    <ClInclude Include="airdcpp\DirectoryDownload.h" />
     <ClInclude Include="airdcpp\DirectSearch.h" />
     <ClInclude Include="airdcpp\DupeType.h" />
     <ClInclude Include="airdcpp\ErrorCollector.h" />
     <ClInclude Include="airdcpp\GroupedSearchResult.h" />
     <ClInclude Include="airdcpp\HashManagerListener.h" />
+    <ClInclude Include="airdcpp\TransferInfo.h" />
     <ClInclude Include="airdcpp\IgnoreManager.h" />
     <ClInclude Include="airdcpp\IgnoreManagerListener.h" />
     <ClInclude Include="airdcpp\modules\AutoSearch.h" />
@@ -362,7 +370,6 @@
     <ClInclude Include="airdcpp\modules\RSSManager.h" />
     <ClInclude Include="airdcpp\modules\ShareMonitorManager.h" />
     <ClInclude Include="airdcpp\modules\ShareScannerManager.h" />
-    <ClInclude Include="airdcpp\modules\TargetUtil.h" />
     <ClInclude Include="airdcpp\modules\WebShortcuts.h" />
     <ClInclude Include="airdcpp\Priority.h" />
     <ClInclude Include="airdcpp\RecentEntry.h" />
@@ -373,6 +380,7 @@
     <ClInclude Include="airdcpp\SettingsManagerListener.h" />
     <ClInclude Include="airdcpp\SharePathValidator.h" />
     <ClInclude Include="airdcpp\TimerManagerListener.h" />
+    <ClInclude Include="airdcpp\TransferInfoManager.h" />
     <ClInclude Include="airdcpp\ViewFileManagerListener.h" />
     <ClInclude Include="airdcpp\MessageCache.h" />
     <ClInclude Include="airdcpp\ConnectionType.h" />
@@ -592,6 +600,9 @@
     <ProjectReference Include="..\snappy\Snappy.vcxproj">
       <Project>{b60e6ad9-779d-4cb4-8dab-f86d7dae0752}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

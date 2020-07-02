@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -271,8 +271,8 @@ void AdcHub::handle(AdcCommand::INF, AdcCommand& c) noexcept {
 
 			if (isSocketSecure()) {
 				auto encryption = getEncryptionInfo();
-				if (encryption.find("TLSv1.2") == string::npos) {
-					statusMessage("This hub uses an outdated cryptographic protocol that has known security issues. For more information, please see https://www.airdcpp.net/hubsoft-warnings", LogMessage::SEV_WARNING);
+				if (encryption.find("TLSv1.2") == string::npos && encryption.find("TLSv1.3") == string::npos) {
+					statusMessage("This hub uses an outdated cryptographic protocol (" + encryption + ") with known security issues. Support for this protocol version will be removed in future, thus preventing you from connecting to this hub. For more information, please see https://www.airdcpp.net/hubsoft-warnings", LogMessage::SEV_WARNING);
 				}
 			}
 
@@ -368,7 +368,7 @@ void AdcHub::handle(AdcCommand::MSG, AdcCommand& c) noexcept {
 
 	string temp;
 	if (c.getParam("TS", 1, temp))
-		message->setTime(Util::toInt64(temp));
+		message->setTime(Util::toTimeT(temp));
 
 	if(c.getParam("PM", 1, temp)) { // add PM<group-cid> as well
 		message->setTo(findUser(c.getTo()));
@@ -1033,11 +1033,11 @@ AdcCommand::Error AdcHub::allowConnect(const OnlineUser& aUser, bool aSecure, st
 
 	//check the IP protocol
 	if (aUser.getIdentity().getConnectMode() == Identity::MODE_NOCONNECT_IP) {
-		if ((!getMyIdentity().getIp6().empty() && !aUser.getIdentity().allowV6Connections())) {
+		if (!getMyIdentity().getIp6().empty() && !aUser.getIdentity().allowV6Connections()) {
 			failedProtocol_ = "IPv6";
 			return AdcCommand::ERROR_PROTOCOL_UNSUPPORTED;
 		}
-		if ((!getMyIdentity().getIp4().empty() && !aUser.getIdentity().allowV4Connections())) {
+		if (!getMyIdentity().getIp4().empty() && !aUser.getIdentity().allowV4Connections()) {
 			failedProtocol_ = "IPv4";
 			return AdcCommand::ERROR_PROTOCOL_UNSUPPORTED;
 		}
@@ -1184,7 +1184,7 @@ bool AdcHub::directSearch(const OnlineUser& user, const SearchPtr& aSearch, stri
 
 	if (user.getUser()->isSet(User::ASCH)) {
 		if (!Util::isAdcRoot(aSearch->path)) {
-			dcassert(Util::isAdcPath(aSearch->path));
+			dcassert(Util::isAdcDirectoryPath(aSearch->path));
 			c.addParam("PA", aSearch->path);
 		}
 
@@ -1213,7 +1213,7 @@ bool AdcHub::directSearch(const OnlineUser& user, const SearchPtr& aSearch, stri
 
 void AdcHub::constructSearch(AdcCommand& c, const SearchPtr& aSearch, bool isDirect) noexcept {
 	if(!aSearch->token.empty())
-		c.addParam("TO", Util::toString(getClientId()) + "/" + aSearch->token);
+		c.addParam("TO", Util::toString(getToken()) + "/" + aSearch->token);
 
 	if(aSearch->fileType == Search::TYPE_TTH) {
 		c.addParam("TR", aSearch->query);

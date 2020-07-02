@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,8 +64,8 @@ public:
 	virtual void disconnect(bool graceless) noexcept;
 
 	// Default message method
-	bool sendMessage(const string& aMessage, string& error_, bool aThirdPerson = false) noexcept;
-	bool sendPrivateMessage(const OnlineUserPtr& aUser, const string& aMessage, string& error_, bool aThirdPerson = false, bool aEcho = true) noexcept;
+	bool sendMessageHooked(const string& aMessage, string& error_, bool aThirdPerson = false) noexcept;
+	bool sendPrivateMessageHooked(const OnlineUserPtr& aUser, const string& aMessage, string& error_, bool aThirdPerson = false, bool aEcho = true) noexcept;
 
 	virtual int connect(const OnlineUser& user, const string& token, string& lastError_) noexcept = 0;
 	virtual void sendUserCmd(const UserCommand& command, const ParamMap& params) = 0;
@@ -97,6 +97,7 @@ public:
 	virtual void refreshUserList(bool) noexcept = 0;
 	virtual void getUserList(OnlineUserList& list, bool aListHidden) const noexcept = 0;
 	virtual OnlineUserPtr findUser(const string& aNick) const noexcept = 0;
+	virtual OnlineUser* findUser(const uint32_t aSID) const noexcept = 0;
 	
 	const string& getPort() const noexcept { return port; }
 	const string& getAddress() const noexcept { return address; }
@@ -137,7 +138,7 @@ public:
 	IGETSET(bool, autoReconnect, AutoReconnect, false);
 	IGETSET(ProfileToken, favToken, FavToken, 0);
 
-	ClientToken getClientId() const noexcept {
+	ClientToken getToken() const noexcept {
 		return clientId;
 	}
 

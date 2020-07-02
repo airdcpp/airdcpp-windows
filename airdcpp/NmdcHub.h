@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -89,6 +89,7 @@ private:
 
 	OnlineUser& getUser(const string& aNick) noexcept;
 	OnlineUserPtr findUser(const string& aNick) const noexcept override;
+	OnlineUser* findUser(const uint32_t aSID) const noexcept override;
 	void putUser(const string& aNick) noexcept;
 	
 	// don't convert to UTF-8 if string is already in this encoding

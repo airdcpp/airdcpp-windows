@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -183,6 +183,15 @@ OnlineUserPtr NmdcHub::findUser(const string& aNick) const noexcept {
 	return i == users.end() ? NULL : i->second;
 }
 
+
+OnlineUser* NmdcHub::findUser(const uint32_t aSID) const noexcept {
+	auto i = find_if(users | map_values, [=](const OnlineUser* u) {
+		return u->getIdentity().getSID() == aSID;
+	});
+
+	return i.base() != users.end() ? *i : nullptr;
+}
+
 void NmdcHub::putUser(const string& aNick) noexcept {
 	OnlineUser* ou = NULL;
 	{
@@ -283,7 +292,7 @@ void NmdcHub::onLine(const string& aLine) noexcept {
 		}
 		string nick = line.substr(1, i-1);
 		string message;
-		if((line.length()-1) > i) {
+		if((line.length()-1) > i && line[i+1] == ' ') {
 			message = line.substr(i+2);
 		} else {
 			statusMessage(unescape(line), LogMessage::SEV_INFO);
@@ -1103,6 +1112,8 @@ string NmdcHub::validateMessage(string tmp, bool reverse) {
 			i += 5;
 		}
 	}
+
+	dcassert(Text::validateUtf8(tmp));
 	return tmp;
 }
 

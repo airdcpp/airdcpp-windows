@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@
 #include "ClientManager.h"
 #include "ConnectionManager.h"
 #include "ConnectivityManager.h"
+#include "ContextMenuManager.h"
 #include "CryptoManager.h"
 #include "DebugManager.h"
 #include "DirectoryListingManager.h"
@@ -46,6 +47,7 @@
 #include "SearchManager.h"
 #include "SettingsManager.h"
 #include "ThrottleManager.h"
+#include "TransferInfoManager.h"
 #include "UpdateManager.h"
 #include "UploadManager.h"
 #include "ViewFileManager.h"
@@ -64,7 +66,6 @@ void startup(StepF stepF, MessageF messageF, Callback runWizard, ProgressF progr
 	WSADATA wsaData;
 	WSAStartup(MAKEWORD(2, 2), &wsaData);
 #endif
-	AirUtil::init();
 
 	//create the running flag
 	if (Util::fileExists(RUNNING_FLAG)) {
@@ -75,6 +76,7 @@ void startup(StepF stepF, MessageF messageF, Callback runWizard, ProgressF progr
 
 	ResourceManager::newInstance();
 	SettingsManager::newInstance();
+	AirUtil::init();
 
 	LogManager::newInstance();
 	TimerManager::newInstance();
@@ -100,6 +102,8 @@ void startup(StepF stepF, MessageF messageF, Callback runWizard, ProgressF progr
 	ActivityManager::newInstance();
 	RecentManager::newInstance();
 	IgnoreManager::newInstance();
+	ContextMenuManager::newInstance();
+	TransferInfoManager::newInstance();
 
 	if (moduleInitF) {
 		moduleInitF();
@@ -117,10 +121,7 @@ void startup(StepF stepF, MessageF messageF, Callback runWizard, ProgressF progr
 
 
 	if(!SETTING(LANGUAGE_FILE).empty()) {
-		string languageFile = SETTING(LANGUAGE_FILE);
-		if(!File::isAbsolutePath(languageFile))
-			languageFile = Util::getPath(Util::PATH_LOCALE) + languageFile;
-		ResourceManager::getInstance()->loadLanguage(languageFile);
+		ResourceManager::getInstance()->loadLanguage(SETTING(LANGUAGE_FILE));
 	}
 
 	CryptoManager::getInstance()->loadCertificates();
@@ -194,6 +195,8 @@ void shutdown(StepF stepF, ProgressF progressF, Callback moduleDestroyF) {
 
 	announce(STRING(SHUTTING_DOWN));
 
+	TransferInfoManager::deleteInstance();
+	ContextMenuManager::deleteInstance();
 	IgnoreManager::deleteInstance();
 	RecentManager::deleteInstance();
 	ActivityManager::deleteInstance();

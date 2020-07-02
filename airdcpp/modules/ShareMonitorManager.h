@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2018 AirDC++ Project
+* Copyright (C) 2011-2019 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -52,8 +52,11 @@ namespace dcpp {
 		// Called when the monitoring mode has been changed
 		void rebuildMonitoring() noexcept;
 
-		IGETSET(bool, monitorDebug, MonitorDebug, false);
+		bool getMonitorDebug() const noexcept { return monitorDebug; }
+		void setMonitorDebug(bool aEnabled) noexcept;
 	private:
+		bool monitorDebug = false;
+
 		DirectoryMonitor monitor;
 
 		static bool useMonitoring(const ShareDirectoryInfoPtr& aRootInfo) noexcept;

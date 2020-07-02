@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2018 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -71,7 +71,8 @@ public:
 
 	void getStats(string& curFile, int64_t& bytesLeft, size_t& filesLeft, int64_t& speed, int& hashers) const noexcept;
 
-	// Throws HashException
+	// Get TTH for a file synchronously (and optionally stores the hash information)
+	// Throws HashException/FileException
 	void getFileTTH(const string& aFile, int64_t aSize, bool addStore, TTHValue& tth_, int64_t& sizeLeft_, const bool& aCancel, std::function<void(int64_t /*timeLeft*/, const string& /*fileName*/)> updateF = nullptr);
 
 	/**
@@ -106,12 +107,14 @@ public:
 	// Throws HashException
 	bool addFile(const string& aFilePathLower, const HashedFile& fi_);
 private:
+	typedef int64_t devid;
+
 	int pausers = 0;
 	class Hasher : public Thread {
 	public:
 		Hasher(bool isPaused, int aHasherID);
 
-		bool hashFile(const string& filePath, const string& filePathLower, int64_t size, const string& devID) noexcept;
+		bool hashFile(const string& filePath, const string& filePathLower, int64_t size, devid aDeviceId) noexcept;
 
 		/// @return whether hashing was already paused
 		bool pause() noexcept;
@@ -126,8 +129,7 @@ private:
 		void shutdown();
 
 		bool hasFile(const string& aPath) const noexcept;
-		bool getPathVolume(const string& aPath, string& vol_) const noexcept;
-		bool hasDevice(const string& aID) const noexcept { return devices.find(aID) != devices.end(); }
+		bool hasDevice(int64_t aDeviceId) const noexcept { return devices.find(aDeviceId) != devices.end(); }
 		bool hasDevices() const noexcept { return !devices.empty(); }
 		int64_t getTimeLeft() const noexcept;
 
@@ -138,8 +140,8 @@ private:
 	private:
 		class WorkItem {
 		public:
-			WorkItem(const string& aFilePathLower, const string& aFilePath, int64_t aSize, const string& aDevID) noexcept 
-				: filePath(aFilePath), fileSize(aSize), devID(aDevID), filePathLower(aFilePathLower) { }
+			WorkItem(const string& aFilePathLower, const string& aFilePath, int64_t aSize, devid aDeviceId) noexcept
+				: filePath(aFilePath), fileSize(aSize), deviceId(aDeviceId), filePathLower(aFilePathLower) { }
 			WorkItem(WorkItem&& rhs) = default;
 			WorkItem& operator=(WorkItem&&) = default;
 			WorkItem(const WorkItem&) = delete;
@@ -147,7 +149,7 @@ private:
 
 			string filePath;
 			int64_t fileSize;
-			string devID;
+			devid deviceId;
 			string filePathLower;
 
 			struct NameLower {
@@ -158,7 +160,7 @@ private:
 		SortedVector<WorkItem, std::deque, string, Util::PathSortOrderInt, WorkItem::NameLower> w;
 
 		Semaphore s;
-		void removeDevice(const string& aID) noexcept;
+		void removeDevice(devid aDevice) noexcept;
 
 		bool closing = false;
 		bool running = false;
@@ -182,7 +184,7 @@ private:
 
 		DirSFVReader sfv;
 
-		StringIntMap devices;
+		map<devid, int> devices;
 	};
 
 	friend class Hasher;
