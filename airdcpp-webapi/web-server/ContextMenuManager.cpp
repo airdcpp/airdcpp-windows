@@ -19,12 +19,13 @@
 #include "stdinc.h"
 
 #include "ContextMenuManager.h"
-#include "DirectoryListingManager.h"
-#include "QueueManager.h"
-#include "SearchManager.h"
+
+#include <airdcpp/DirectoryListingManager.h>
+#include <airdcpp/QueueManager.h>
+#include <airdcpp/SearchManager.h>
 
 
-namespace dcpp {
+namespace webserver {
 	ContextMenuManager::ContextMenuManager() {
 
 	}
@@ -44,4 +45,4 @@ namespace dcpp {
 		return ret;
 	}
 
-} // namespace dcpp
+} // namespace webserver
