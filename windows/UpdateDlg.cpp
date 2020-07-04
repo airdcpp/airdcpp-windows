@@ -27,6 +27,7 @@
 #include <airdcpp/UpdateManager.h>
 
 #include "WinUtil.h"
+#include "ActionUtil.h"
 #include "MainFrm.h"
 
 UpdateDlg::UpdateDlg(const string& aTitle, const string& aMessage, const string& aVersionString, const string& infoUrl, bool bAutoUpdate, int aBuildID, const string& bAutoUpdateUrl)
@@ -135,7 +136,7 @@ LRESULT UpdateDlg::OnDownload(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, 
 	if(autoUpdate && canAutoUpdate(autoUpdateUrl)) {
 		EndDialog(wID);
 	} else {
-		WinUtil::openLink(Text::toT(infoLink));
+		ActionUtil::openLink(Text::toT(infoLink));
 	}
 	return S_OK;
 }

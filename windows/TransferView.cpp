@@ -19,7 +19,6 @@
 #include "stdafx.h"
 #include "Resource.h"
 
-#include <airdcpp/ContextMenuManager.h>
 #include <airdcpp/ResourceManager.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/ConnectionManager.h>
@@ -32,12 +31,16 @@
 #include <airdcpp/QueueItem.h>
 #include <airdcpp/UploadBundle.h>
 
+#include <web-server/ContextMenuManager.h>
+#include <web-server/WebServerManager.h>
+
 #include <boost/range/algorithm/for_each.hpp>
 
 #include "WinUtil.h"
 #include "TransferView.h"
 #include "MainFrm.h"
 #include "ResourceLoader.h"
+#include "ActionUtil.h"
 
 #include "BarShader.h"
 
@@ -171,7 +174,7 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 				transferMenu.appendItem(TSTRING(SEARCH_FOR_ALTERNATES), [=] { handleSearchAlternates(); });
 
 				if(!ii->target.empty() && selCount == 1) {
-					WinUtil::appendPreviewMenu(transferMenu, Text::fromT(ii->target));
+					ActionUtil::appendPreviewMenu(transferMenu, Text::fromT(ii->target));
 				}
 			}
 
@@ -251,7 +254,7 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 }
 
 void TransferView::runUserCommand(UserCommand& uc) {
-	if(!WinUtil::getUCParams(m_hWnd, uc, ucLineParams))
+	if (!ActionUtil::getUCParams(m_hWnd, uc, ucLineParams))
 		return;
 
 	auto ucParams = ucLineParams;
@@ -744,7 +747,7 @@ void TransferView::UpdateInfo::setUpdateFlags(const TransferInfoPtr& aInfo, int 
 	if (aUpdatedProperties & TransferInfo::UpdateFlags::SECONDS_LEFT)
 		setTimeLeft(aInfo->getTimeLeft());
 	if (aUpdatedProperties & TransferInfo::UpdateFlags::IP) {
-		setIP(WinUtil::toCountryInfo(aInfo->getIp()));
+		setIP(FormatUtil::toCountryInfo(aInfo->getIp()));
 	}
 	if (aUpdatedProperties & TransferInfo::UpdateFlags::ENCRYPTION)
 		setEncryptionInfo(Text::toT(aInfo->getEncryption()));
@@ -808,12 +811,12 @@ const tstring TransferView::ItemInfo::getText(uint8_t col) const {
 		case COLUMN_USER:
 			if (isBundle && download) {
 				if ((users == 1 || hits == 2) && user.user) {
-					return WinUtil::getNicks(user);
+					return FormatUtil::getNicks(user);
 				} else {
 					return TSTRING_F(X_USERS_WAITING, users % ((hits-running-1) > 0 ? hits-running-1 : 0));
 				}
 			} else if (hits == -1 || isBundle) {
-				return WinUtil::getNicks(user);
+				return FormatUtil::getNicks(user);
 			} else {
 				return TSTRING_F(X_USERS, hits);
 			}
@@ -821,7 +824,7 @@ const tstring TransferView::ItemInfo::getText(uint8_t col) const {
 			if (isBundle) {
 				return TSTRING_F(X_CONNECTIONS, running);
 			} else {
-				return WinUtil::getHubNames(user);
+				return FormatUtil::getHubNames(user);
 			}
 		case COLUMN_STATUS: return statusString;
 		case COLUMN_TIMELEFT: return (status == STATUS_RUNNING) ? Util::formatSecondsW(timeLeft) : Util::emptyStringT;
@@ -1050,7 +1053,7 @@ void TransferView::on(TransferInfoManagerListener::Failed, const TransferInfoPtr
 	if (SETTING(POPUP_DOWNLOAD_FAILED)) {
 		WinUtil::showPopup(
 			TSTRING(FILE) + _T(": ") + Text::toT(Util::getFileName(aInfo->getTarget())) + _T("\n") +
-			TSTRING(USER) + _T(": ") + WinUtil::getNicks(aInfo->getHintedUser()) + _T("\n") +
+			TSTRING(USER) + _T(": ") + FormatUtil::getNicks(aInfo->getHintedUser()) + _T("\n") +
 			TSTRING(REASON) + _T(": ") + Text::toT(aInfo->getStatusString()), TSTRING(DOWNLOAD_FAILED), NIIF_WARNING);
 	}
 }
@@ -1062,7 +1065,7 @@ void TransferView::on(TransferInfoManagerListener::Completed, const TransferInfo
 
 		if (SETTING(POPUP_UPLOAD_FINISHED)) {
 			WinUtil::showPopup(TSTRING(FILE) + _T(": ") + Text::toT(aInfo->getName()) + _T("\n") +
-				TSTRING(USER) + _T(": ") + WinUtil::getNicks(aInfo->getHintedUser()), TSTRING(UPLOAD_FINISHED_IDLE));
+				TSTRING(USER) + _T(": ") + FormatUtil::getNicks(aInfo->getHintedUser()), TSTRING(UPLOAD_FINISHED_IDLE));
 		}
 	}
 }
@@ -1153,7 +1156,7 @@ void TransferView::handleRemoveFile() {
 
 void TransferView::handleSearchDir() {
 	auto search = [=](const ItemInfo* ii) {
-		WinUtil::search(Util::getLastDir(ii->target), true);
+		ActionUtil::search(Util::getLastDir(ii->target), true);
 	};
 
 	performActionBundles(search);
@@ -1165,7 +1168,7 @@ void TransferView::handleSearchAlternates() {
 		TTHValue tth;
 		int64_t size = 0;
 		if(QueueManager::getInstance()->getSearchInfo(Text::fromT(ii->target), tth, size)) {
-			WinUtil::searchHash(tth, Util::getFileName(Text::fromT(ii->target)), size);
+			ActionUtil::searchHash(tth, Util::getFileName(Text::fromT(ii->target)), size);
 		}
 	};
 
@@ -1182,7 +1185,7 @@ void TransferView::handleForced() {
 
 void TransferView::handleRemoveBundle() {
 	auto removeBundle = [=](const ItemInfo* ii) {
-		WinUtil::removeBundle(ii->getLocalBundleToken());
+		ActionUtil::removeBundle(ii->getLocalBundleToken());
 	};
 
 	performActionBundles(removeBundle);
@@ -1207,7 +1210,7 @@ void TransferView::handleDisconnect() {
 void TransferView::handleOpenFolder() {
 	auto ii = ctrlTransfers.getItemData(ctrlTransfers.GetNextItem(-1, LVNI_SELECTED));
 	if (ii) {
-		WinUtil::openFolder(ii->target);
+		ActionUtil::openFolder(ii->target);
 	}
 }
 

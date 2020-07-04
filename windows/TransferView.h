@@ -38,6 +38,7 @@
 #include "TypedListViewCtrl.h"
 #include "resource.h"
 #include "UserInfoBaseHandler.h"
+#include "FormatUtil.h"
 
 class TransferView : public CWindowImpl<TransferView>, private DownloadManagerListener, 
 	private UploadManagerListener, private ConnectionManagerListener, private QueueManagerListener,
@@ -249,7 +250,7 @@ private:
 		tstring statusString;
 		void setTarget(const tstring& aTarget) { target = aTarget; updateMask |= MASK_FILE; }
 		tstring target;
-		void setIP(const WinUtil::CountryFlagInfo& aInfo) { IP = aInfo.text; flagIndex = aInfo.flagIndex, updateMask |= MASK_IP; }
+		void setIP(const FormatUtil::CountryFlagInfo& aInfo) { IP = aInfo.text; flagIndex = aInfo.flagIndex, updateMask |= MASK_IP; }
 		tstring IP;
 		void setEncryptionInfo(const tstring& aInfo) { Encryption = aInfo; updateMask |= MASK_ENCRYPTION; }
 		tstring Encryption;

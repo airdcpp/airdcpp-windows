@@ -23,6 +23,7 @@
 #include "ResourceLoader.h"
 
 #include "BarShader.h"
+#include "FormatUtil.h"
 
 string UploadQueueFrame::id = "UploadQueue";
 
@@ -340,7 +341,7 @@ void UploadQueueFrame::AddFile(UploadQueueItem* aUQI) {
 	}
 
 	auto formatTitle = [aUQI] {
-		return WinUtil::getNicks(aUQI->getHintedUser()) + _T(" - ") + WinUtil::getHubNames(aUQI->getHintedUser());
+		return FormatUtil::getNicks(aUQI->getHintedUser()) + _T(" - ") + FormatUtil::getHubNames(aUQI->getHintedUser());
 	};
 
 	if(add) {
@@ -405,8 +406,8 @@ const tstring UploadQueueItem::getText(uint8_t col) const {
 	switch(col) {
 		case COLUMN_FILE: return Text::toT(Util::getFileName(file));
 		case COLUMN_PATH: return Text::toT(Util::getFilePath(file));
-		case COLUMN_NICK: return WinUtil::getNicks(user);
-		case COLUMN_HUB: return WinUtil::getHubNames(user);
+		case COLUMN_NICK: return FormatUtil::getNicks(user);
+		case COLUMN_HUB: return FormatUtil::getHubNames(user);
 		case COLUMN_SIZE: return Util::formatBytesW(size);
 		case COLUMN_ADDED: return Text::toT(Util::formatTime("%Y-%m-%d %H:%M", time));
 		case COLUMN_TRANSFERRED: return Util::formatBytesW(pos) + _T(" (") + (size > 0 ? Util::toStringW((double)pos*100.0/(double)size) : _T("0")) + _T("%)");

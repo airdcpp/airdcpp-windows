@@ -20,8 +20,10 @@
 
 #include <airdcpp/Util.h>
 #include <airdcpp/ClientManager.h>
-#include <airdcpp/ContextMenuManager.h>
 #include <airdcpp/FavoriteManager.h>
+
+#include <web-server/ContextMenuManager.h>
+#include <web-server/WebServerManager.h>
 
 #include "BrowseDlg.h"
 #include "Resource.h"
@@ -32,6 +34,7 @@
 #include "TempShare_dlg.h"
 #include "SharePageDlg.h"
 #include "MainFrm.h"
+#include "ActionUtil.h"
 
 #include <boost/range/adaptor/filtered.hpp>
 using boost::adaptors::filtered;
@@ -131,7 +134,7 @@ LRESULT ShareDirectories::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPa
 			menu.AppendMenu(MF_STRING, IDC_REMOVE_DIR, CTSTRING(REMOVE));
 			if (selectedDirs == 1) {
 				auto path = Text::toT(((ProfileDirectoryInfo*)ctrlDirectories.GetItemData(ctrlDirectories.GetNextItem(i, LVNI_SELECTED)))->dir->path);
-				menu.appendItem(TSTRING(OPEN_FOLDER), [path] { WinUtil::openFolder(path); });
+				menu.appendItem(TSTRING(OPEN_FOLDER), [path] { ActionUtil::openFolder(path); });
 			}
 
 			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);

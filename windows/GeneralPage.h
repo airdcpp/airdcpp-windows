@@ -25,6 +25,7 @@
 
 #include <atlcrack.h>
 #include "PropPage.h"
+#include "ActionUtil.h"
 #include "WinUtil.h"
 
 class GeneralPage : public CPropertyPage<IDD_GENERALPAGE>, public PropPage
@@ -38,9 +39,9 @@ public:
 
 	BEGIN_MSG_MAP_EX(GeneralPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
-		COMMAND_HANDLER(IDC_NICK, EN_CHANGE, WinUtil::onUserFieldChar)
-		COMMAND_HANDLER(IDC_EMAIL, EN_CHANGE, WinUtil::onUserFieldChar)
-		COMMAND_HANDLER(IDC_USERDESC, EN_CHANGE, WinUtil::onUserFieldChar)
+		COMMAND_HANDLER(IDC_NICK, EN_CHANGE, ActionUtil::onUserFieldChar)
+		COMMAND_HANDLER(IDC_EMAIL, EN_CHANGE, ActionUtil::onUserFieldChar)
+		COMMAND_HANDLER(IDC_USERDESC, EN_CHANGE, ActionUtil::onUserFieldChar)
 		COMMAND_ID_HANDLER(IDC_NORMAL, onSelProfile)
 		COMMAND_ID_HANDLER(IDC_RAR, onSelProfile)
 		COMMAND_ID_HANDLER(IDC_LAN, onSelProfile)

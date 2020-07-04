@@ -31,10 +31,11 @@
 #include "TextFrame.h"
 #include "Wildcards.h"
 #include "WinUtil.h"
+#include "ActionUtil.h"
+#include "FormatUtil.h"
 
 #include <airdcpp/ADLSearch.h>
 #include <airdcpp/ClientManager.h>
-#include <airdcpp/ContextMenuManager.h>
 #include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/File.h>
 #include <airdcpp/QueueManager.h>
@@ -44,6 +45,9 @@
 
 #include <airdcpp/modules/HighlightManager.h>
 #include <airdcpp/modules/ShareScannerManager.h>
+
+#include <web-server/ContextMenuManager.h>
+#include <web-server/WebServerManager.h>
 
 #include <boost/move/algorithm.hpp>
 #include <boost/range/algorithm/copy.hpp>
@@ -1263,7 +1267,7 @@ LRESULT DirectoryListingFrame::onListDiff(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*
 
 	sMenu.appendItem(TSTRING(BROWSE), [this] { 	
 		tstring file;
-		if (WinUtil::browseList(file, m_hWnd)) {
+		if (ActionUtil::browseList(file, m_hWnd)) {
 			ctrlStatus.SetText(0, CTSTRING(MATCHING_FILE_LIST));
 			dl->addListDiffTask(Text::fromT(file), false);
 		}; 
@@ -1443,9 +1447,9 @@ void DirectoryListingFrame::appendListContextMenu(CPoint& pt) {
 	fileMenu.appendSeparator();
 
 	// web shortcuts
-	WinUtil::appendSearchMenu(fileMenu, [=](const WebShortcut* ws) {
+	ActionUtil::appendSearchMenu(fileMenu, [=](const WebShortcut* ws) {
 		ctrlFiles.list.forEachSelectedT([=](const ItemInfo* ii) {
-			WinUtil::searchSite(ws, ii->getAdcPath());
+			ActionUtil::searchSite(ws, ii->getAdcPath());
 		});
 	});
 
@@ -1515,7 +1519,7 @@ void DirectoryListingFrame::appendTreeContextMenu(CPoint& pt, const HTREEITEM& a
 		directoryMenu.appendSeparator();
 	}
 
-	WinUtil::appendSearchMenu(directoryMenu, curPath);
+	ActionUtil::appendSearchMenu(directoryMenu, curPath);
 	directoryMenu.appendSeparator();
 
 	{
@@ -1575,7 +1579,7 @@ void DirectoryListingFrame::handleItemAction(bool usingTree, std::function<void 
 void DirectoryListingFrame::handleDownload(const string& aTarget, Priority aPriority, bool aUsingTree) {
 	handleItemAction(aUsingTree, [&](const ItemInfo* ii) {
 		if (ii->type == ItemInfo::FILE) {
-			WinUtil::addFileDownload(aTarget + (!Util::isDirectoryPath(aTarget) ? Util::emptyString : ii->getName()), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), ii->file->getRemoteDate(),
+			ActionUtil::addFileDownload(aTarget + (!Util::isDirectoryPath(aTarget) ? Util::emptyString : ii->getName()), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), ii->file->getRemoteDate(),
 				0, aPriority);
 		} else {
 			dl->addAsyncTask([=] {
@@ -1604,7 +1608,7 @@ void DirectoryListingFrame::handleViewAsText() {
 void DirectoryListingFrame::handleSearchByTTH() {
 	handleItemAction(false, [this](const ItemInfo* ii) {
 		if (ii->type == ItemInfo::FILE) {
-			WinUtil::searchHash(ii->file->getTTH(), ii->file->getName(), ii->file->getSize());
+			ActionUtil::searchHash(ii->file->getTTH(), ii->file->getName(), ii->file->getSize());
 		}
 	});
 }
@@ -1632,7 +1636,7 @@ void DirectoryListingFrame::handleGoToDirectory(bool usingTree) {
 void DirectoryListingFrame::handleViewNFO(bool usingTree) {
 	handleItemAction(usingTree, [this](const ItemInfo* ii) {
 		if (ii->type == ItemInfo::DIRECTORY) {
-			WinUtil::findNfo(ii->getAdcPath(), dl->getHintedUser());
+			ActionUtil::findNfo(ii->getAdcPath(), dl->getHintedUser());
 		}
 	});
 }
@@ -1646,7 +1650,7 @@ void DirectoryListingFrame::handleOpenFile() {
 		if (dl->getIsOwnList() || AirUtil::allowOpenDupe(ii->file->getDupe())) {
 			openDupe(ii->file, false);
 		} else {
-			WinUtil::openFile(ii->file->getName(), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), false);
+			ActionUtil::openFile(ii->file->getName(), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), false);
 		}
 	});
 }
@@ -1655,7 +1659,7 @@ void DirectoryListingFrame::openDupe(const DirectoryListing::Directory::Ptr& d) 
 		StringList paths;
 		dl->getLocalPaths(d, paths);
 		if (!paths.empty()) {
-			WinUtil::openFolder(Text::toT(paths.front()));
+			ActionUtil::openFolder(Text::toT(paths.front()));
 		}
 	} catch (const ShareException& e) {
 		updateStatus(Text::toT(e.getError()));
@@ -1670,10 +1674,10 @@ void DirectoryListingFrame::openDupe(const DirectoryListing::File::Ptr& f, bool 
 		if (!paths.empty()) {
 			auto path = Text::toT(paths.front());
 			if (!openDir) {
-				WinUtil::openFile(path);
+				ActionUtil::openFile(path);
 			}
 			else {
-				WinUtil::openFolder(path);
+				ActionUtil::openFolder(path);
 			}
 		} else {
 			updateStatus(TSTRING(FILE_NOT_FOUND));
@@ -1708,7 +1712,7 @@ void DirectoryListingFrame::handleSearchByName(bool usingTree, bool dirsOnly) {
 			name = ii->getName();
 		}
 
-		WinUtil::search(Text::toT(name), dirsOnly);
+		ActionUtil::search(Text::toT(name), dirsOnly);
 	});
 }
 
@@ -1769,7 +1773,7 @@ bool DirectoryListingFrame::getLocalPaths(StringList& paths_, bool usingTree, bo
 }
 
 void DirectoryListingFrame::runUserCommand(UserCommand& uc) {
-	if (!WinUtil::getUCParams(m_hWnd, uc, ucLineParams))
+	if (!ActionUtil::getUCParams(m_hWnd, uc, ucLineParams))
 		return;
 
 	auto ucParams = ucLineParams;
@@ -1793,7 +1797,7 @@ void DirectoryListingFrame::runUserCommand(UserCommand& uc) {
 			ucParams["fileSI"] = [ii] { return Util::toString(ii->file->getSize()); };
 			ucParams["fileSIshort"] = [ii] { return Util::formatBytes(ii->file->getSize()); };
 			ucParams["fileTR"] = [ii] { return ii->file->getTTH().toBase32(); };
-			ucParams["fileMN"] = [ii] { return WinUtil::makeMagnet(ii->file->getTTH(), ii->file->getName(), ii->file->getSize()); };
+			ucParams["fileMN"] = [ii] { return ActionUtil::makeMagnet(ii->file->getTTH(), ii->file->getName(), ii->file->getSize()); };
 		} else {
 			ucParams["type"] = [] { return "Directory"; };
 			ucParams["fileFN"] = [this, ii] { return Util::toNmdcFile(ii->getAdcPath()); };
@@ -1814,7 +1818,7 @@ void DirectoryListingFrame::runUserCommand(UserCommand& uc) {
 
 tstring DirectoryListingFrame::handleCopyMagnet(const ItemInfo* ii) {
 	if (ii->type == ItemInfo::FILE) {
-		return Text::toT(WinUtil::makeMagnet(ii->file->getTTH(), ii->file->getName(), ii->file->getSize()));
+		return Text::toT(ActionUtil::makeMagnet(ii->file->getTTH(), ii->file->getName(), ii->file->getSize()));
 	} 
 		
 	return Util::emptyStringT;
@@ -2300,13 +2304,13 @@ void DirectoryListingFrame::updateSelCombo(bool init) {
 		dcassert(!hint.empty() || !dl->getPartialList());
 
 		//get the hub and online status
-		auto hubsInfoNew = move(WinUtil::getHubNames(cid));
+		auto hubsInfoNew = move(FormatUtil::getHubNames(cid));
 		if (!hubsInfoNew.second && !online) {
 			//nothing to update... probably a delayed event
 			return;
 		}
 
-		auto tmp = WinUtil::getHubNames(cid);
+		auto tmp = FormatUtil::getHubNames(cid);
 
 		auto oldSel = selCombo.GetStyle() & WS_VISIBLE ? selCombo.GetCurSel() : 0;
 		StringPair oldHubPair;
@@ -2322,8 +2326,8 @@ void DirectoryListingFrame::updateSelCombo(bool init) {
 		if (hubsInfoNew.second) {
 			//the user is online
 
-			onlineHubNames = WinUtil::getHubNames(dl->getHintedUser());
-			onlineNicks = WinUtil::getNicks(dl->getHintedUser());
+			onlineHubNames = FormatUtil::getHubNames(dl->getHintedUser());
+			onlineNicks = FormatUtil::getNicks(dl->getHintedUser());
 			setDisconnected(false);
 
 		} else {

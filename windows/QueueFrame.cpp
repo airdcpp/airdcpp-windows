@@ -27,10 +27,15 @@
 #include "MainFrm.h"
 #include "PrivateFrame.h"
 #include "ResourceLoader.h"
+#include "FormatUtil.h"
+#include "ActionUtil.h"
 
 #include <airdcpp/AirUtil.h>
-#include <airdcpp/ContextMenuManager.h>
 #include <airdcpp/DownloadManager.h>
+
+#include <web-server/ContextMenuManager.h>
+#include <web-server/WebServerManager.h>
+
 
 string QueueFrame::id = "Queue";
 
@@ -403,7 +408,7 @@ void QueueFrame::handleItemClick(const QueueItemInfoPtr& aII, bool byHistory/*fa
 	
 	if (aII->qi || aII->bundle && aII->bundle->isFileBundle()) {
 		if (aII->isFinished()) 
-			WinUtil::openFile(Text::toT(aII->getTarget()));
+			ActionUtil::openFile(Text::toT(aII->getTarget()));
 		return;
 	}
 
@@ -511,7 +516,7 @@ void QueueFrame::AppendDirectoryMenu(QueueItemInfoList& dirs, QueueItemList& ql,
 	bool hasBundleItems = any_of(ql.begin(), ql.end(), [](const QueueItemPtr& q) { return q->getBundle(); });
 	
 	if (hasBundleItems)
-		WinUtil::appendFilePrioMenu(dirMenu, ql);
+		ActionUtil::appendFilePrioMenu(dirMenu, ql);
 
 	dirMenu.InsertSeparatorFirst(TSTRING(DIRECTORY));
 	ctrlQueue.list.appendCopyMenu(dirMenu);
@@ -519,7 +524,7 @@ void QueueFrame::AppendDirectoryMenu(QueueItemInfoList& dirs, QueueItemList& ql,
 
 	dirMenu.appendItem(TSTRING(SEARCH), [this] { handleSearchDirectory(); });
 	if (dirs.size() == 1)
-		WinUtil::appendSearchMenu(dirMenu, Text::fromT(dirs.front()->name));
+		ActionUtil::appendSearchMenu(dirMenu, Text::fromT(dirs.front()->name));
 
 	dirMenu.AppendMenu(MF_SEPARATOR);
 	dirMenu.appendItem(TSTRING(REMOVE_OFFLINE), [=] { handleRemoveOffline(ql); });
@@ -539,7 +544,7 @@ void QueueFrame::AppendDirectoryMenu(QueueItemInfoList& dirs, QueueItemList& ql,
 
 tstring QueueFrame::formatUser(const Bundle::BundleSource& bs) const {
 	auto& u = bs.getUser();
-	tstring nick = WinUtil::escapeMenu(WinUtil::getNicks(u));
+	tstring nick = WinUtil::escapeMenu(FormatUtil::getNicks(u));
 	bool addSpeed = u.user->getSpeed() > 0;
 	nick += _T(" (") + TSTRING(FILES) + _T(": ") + Util::toStringW(bs.files);
 	if (addSpeed) {
@@ -553,7 +558,7 @@ tstring QueueFrame::formatUser(const Bundle::BundleSource& bs) const {
 }
 
 tstring QueueFrame::formatUser(const QueueItem::Source& s) const {
-	tstring nick = WinUtil::escapeMenu(WinUtil::getNicks(s.getUser()));
+	tstring nick = WinUtil::escapeMenu(FormatUtil::getNicks(s.getUser()));
 	return nick;
 }
 
@@ -575,8 +580,8 @@ void QueueFrame::AppendTreeMenu(BundleList& bl, QueueItemList& ql, OMenu& aMenu)
 		aMenu.InsertSeparatorFirst(CTSTRING_F(X_BUNDLES, bl.size()));
 
 		if (!allFinished) {
-			WinUtil::appendBundlePrioMenu(aMenu, bl);
-			WinUtil::appendBundlePauseMenu(aMenu, bl);
+			ActionUtil::appendBundlePrioMenu(aMenu, bl);
+			ActionUtil::appendBundlePauseMenu(aMenu, bl);
 			aMenu.appendSeparator();
 		}
 
@@ -638,8 +643,8 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 	}
 
 	if (!allFinished) {
-		WinUtil::appendBundlePrioMenu(bundleMenu, bl);
-		WinUtil::appendBundlePauseMenu(bundleMenu, bl);
+		ActionUtil::appendBundlePrioMenu(bundleMenu, bl);
+		ActionUtil::appendBundlePauseMenu(bundleMenu, bl);
 		bundleMenu.appendSeparator();
 	}
 
@@ -689,7 +694,7 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 		}
 		bundleMenu.appendSeparator();
 
-		WinUtil::appendSearchMenu(bundleMenu, b->getName());
+		ActionUtil::appendSearchMenu(bundleMenu, b->getName());
 		bundleMenu.appendItem(TSTRING(SEARCH_DIRECTORY), [=] { handleSearchDirectory(); });
 
 		if (!b->isDownloaded()) {
@@ -743,7 +748,7 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 	bool hasBundleItems = any_of(ql.begin(), ql.end(), [](const QueueItemPtr& q) { return q->getBundle(); });
 
 	if (hasBundleItems)
-		WinUtil::appendFilePrioMenu(fileMenu, ql);
+		ActionUtil::appendFilePrioMenu(fileMenu, ql);
 
 
 	ListBaseType::MenuItemList customItems{
@@ -806,11 +811,11 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 		if (!qi->isSet(QueueItem::FLAG_USER_LIST)) {
 			fileMenu.appendItem(CTSTRING(SEARCH), [=] { handleSearchQI(qi, true); });
 			fileMenu.appendItem(CTSTRING(SEARCH_FOR_ALTERNATES), [=] { handleSearchQI(qi, false); });
-			WinUtil::appendPreviewMenu(fileMenu, qi->getTarget());
+			ActionUtil::appendPreviewMenu(fileMenu, qi->getTarget());
 		}
 
 		if (hasBundleItems) {
-			WinUtil::appendSearchMenu(fileMenu, Util::toAdcFile(Util::getFilePath(qi->getTarget())));
+			ActionUtil::appendSearchMenu(fileMenu, Util::toAdcFile(Util::getFilePath(qi->getTarget())));
 		}
 
 		if (!qi->isDownloaded()) {
@@ -862,22 +867,22 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 }
 
 void QueueFrame::handleOpenFile(const QueueItemPtr& aQI) {
-	WinUtil::openFile(Text::toT(aQI->getTarget()));
+	ActionUtil::openFile(Text::toT(aQI->getTarget()));
 }
 
 void QueueFrame::handleOpenFolder() {
 	ctrlQueue.list.forEachSelectedT([&](const QueueItemInfoPtr qii) {
 		if (!qii->isTempItem())
-			WinUtil::openFolder(Text::toT(qii->getTarget()));
+			ActionUtil::openFolder(Text::toT(qii->getTarget()));
 	});
 }
 
 void QueueFrame::handleSearchDirectory() {
 	ctrlQueue.list.forEachSelectedT([&](const QueueItemInfoPtr qii) {
 		if (qii->bundle)
-			WinUtil::search(qii->bundle->isFileBundle() ? Util::getLastDir(Text::toT(qii->bundle->getTarget())) : Text::toT(qii->bundle->getName()), true);
+			ActionUtil::search(qii->bundle->isFileBundle() ? Util::getLastDir(Text::toT(qii->bundle->getTarget())) : Text::toT(qii->bundle->getName()), true);
 		else if ( qii->isDirectory && qii != iBack)
-			WinUtil::search(qii->name, true);
+			ActionUtil::search(qii->name, true);
 	});
 }
 
@@ -1016,7 +1021,7 @@ bool QueueFrame::show(QueueItemInfoPtr& Qii) {
 
 tstring QueueFrame::handleCopyMagnet(const QueueItemInfo* aII) {
 	if (aII->qi && !aII->isFilelist())
-		return Text::toT(WinUtil::makeMagnet(aII->qi->getTTH(), Util::getFileName(aII->qi->getTarget()), aII->qi->getSize()));
+		return Text::toT(ActionUtil::makeMagnet(aII->qi->getTTH(), Util::getFileName(aII->qi->getTarget()), aII->qi->getSize()));
 
 	return Util::emptyStringT;
 }
@@ -1084,9 +1089,9 @@ void QueueFrame::handleRemoveFiles(QueueItemList queueitems, bool removeFinished
 void QueueFrame::handleSearchQI(const QueueItemPtr& aQI, bool byName) {
 	if (aQI) {
 		if (byName)
-			WinUtil::search(Text::toT(Util::getFileName(aQI->getTarget())));
+			ActionUtil::search(Text::toT(Util::getFileName(aQI->getTarget())));
 		else
-			WinUtil::searchHash(aQI->getTTH(), Util::getFileName(aQI->getTarget()), aQI->getSize());
+			ActionUtil::searchHash(aQI->getTTH(), Util::getFileName(aQI->getTarget()), aQI->getSize());
 	}
 }
 

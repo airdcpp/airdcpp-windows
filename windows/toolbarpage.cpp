@@ -130,7 +130,6 @@ void ToolbarPage::BrowseForPic(int DLGITEM) {
 	}
 }
 
-string name;
 void ToolbarPage::makeItem(LPLVITEM lvi, int item){
 	if((item >= 0) && (item < sizeof(ToolbarButtons) / sizeof(ToolbarButtons[0]))) {
 		lvi->iImage = ToolbarButtons[item].image;

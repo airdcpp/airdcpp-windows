@@ -22,7 +22,7 @@
 
 
 #include "MiscPage.h"
-#include "WinUtil.h"
+#include "ActionUtil.h"
 #include "LineDlg.h"
 #include "PropertiesDlg.h"
 
@@ -213,7 +213,7 @@ LRESULT MiscPage::onBrowsew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 	GetDlgItemText(IDC_WINAMP_PATH, buf, MAX_PATH);
 	tstring x = buf;
 
-	if (WinUtil::browseApplication(x, m_hWnd)) {
+	if (ActionUtil::browseApplication(x, m_hWnd)) {
 		SetDlgItemText(IDC_WINAMP_PATH, x.c_str());
 	}
 

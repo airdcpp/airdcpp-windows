@@ -19,6 +19,7 @@
 #include "stdafx.h"
 
 #include "WizardProfile.h"
+#include "ActionUtil.h"
 
 #include <airdcpp/AirUtil.h>
 #include <airdcpp/SettingHolder.h>
@@ -64,7 +65,7 @@ WizardProfile::WizardProfile(SettingsManager *s, SetupWizard* aWizard) : PropPag
 int WizardProfile::OnWizardNext() {
 	auto newProfile = getCurProfile();
 	if (newProfile != lastProfile) {
-		WinUtil::getProfileConflicts(m_hWnd, newProfile, conflicts);
+		ActionUtil::getProfileConflicts(m_hWnd, newProfile, conflicts);
 		lastProfile = newProfile;
 	}
 	return 0;

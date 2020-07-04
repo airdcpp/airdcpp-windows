@@ -21,18 +21,10 @@
 
 #include "resource.h"
 
-#include "OMenu.h"
-
 #include <airdcpp/DupeType.h>
-#include <airdcpp/HintedUser.h>
 #include <airdcpp/MerkleTree.h>
-#include <airdcpp/QueueItemBase.h>
-#include <airdcpp/SettingItem.h>
 #include <airdcpp/SettingsManager.h>
-#include <airdcpp/User.h>
-#include <airdcpp/Util.h>
 
-class RichTextBox;
 
 // Some utilities for handling HLS colors, taken from Jean-Michel LE FOL's codeproject
 // article on WTL OfficeXP Menus
@@ -143,7 +135,6 @@ public:
 	static HFONT progressFont;
 	static HFONT listViewFont;
 	static CMenu mainMenu;
-	static OMenu grantMenu;
 	static int lastSettingPage;
 	static HWND mainWnd;
 	static HWND mdiClient;
@@ -188,22 +179,16 @@ public:
 	/** Path of configuration files */
 	static const string& getPath(Paths path) noexcept { return paths[path]; }
 
-	static bool isElevated();
 	static void addUpdate(const string& aUpdaterFile, bool aTesting = false) noexcept;
 	static bool runPendingUpdate() noexcept;
 	static void preInit(); // init required for the wizard
 	static void init(HWND hWnd);
+	static void initMenus();
 	static void uninit();
 	static void initColors();
 	static void setFonts();
 	static void FlashWindow();
-	static void search(const tstring& aSearch, bool searchDirectory = false);
 	static void SetIcon(HWND hWnd, int aDefault, bool big = false);
-
-	static void searchSite(const WebShortcut* ws, const string& aAdcSearchPath, bool aGetReleaseDir = true);
-
-	static void appendSearchMenu(OMenu& aParent, function<void (const WebShortcut* ws)> f, bool aAppendTitle = true);
-	static void appendSearchMenu(OMenu& aParent, const string& aAdcPath, bool aGetReleaseDir = true, bool aAppendTitle = true);
 
 	static void loadReBarSettings(HWND bar);
 	static void saveReBarSettings(HWND bar);
@@ -216,36 +201,6 @@ public:
 
 	static void showMessageBox(const tstring& aText, int icon = MB_ICONINFORMATION);
 	static bool showQuestionBox(const tstring& aText, int icon = MB_ICONQUESTION, int defaultButton = MB_DEFBUTTON2);
-
-	struct ConnectFav {
-		void operator()(UserPtr aUser, const string& aUrl) const;
-	};
-
-	struct GetList {
-		void operator()(UserPtr aUser, const string& aUrl) const;
-	};
-
-	struct BrowseList {
-		void operator()(UserPtr aUser, const string& aUrl) const;
-	};
-
-	struct GetBrowseList {
-		void operator()(UserPtr aUser, const string& aUrl) const;
-	};
-
-	struct MatchQueue {
-		void operator()(UserPtr aUser, const string& aUrl) const;
-	};
-
-	struct PM {
-		void operator()(UserPtr aUser, const string& aUrl) const;
-	};
-
-	/*void getList(UserPtr aUser, const string& aUrl);
-	void browseList(UserPtr aUser, const string& aUrl);
-	void getBrowseList(UserPtr aUser, const string& aUrl);
-	void matchQueue(UserPtr aUser, const string& aUrl);
-	void pm(UserPtr aUser, const string& aUrl);*/
 
 	static void decodeFont(const tstring& setting, LOGFONT &dest);
 
@@ -312,14 +267,6 @@ public:
 
 	static tstring encodeFont(LOGFONT const& aFont);
 
-	static bool browseList(tstring& target, HWND aOwner);
-	static bool browseApplication(tstring& target, HWND aOwner);
-
-	// Hash related
-	static void copyMagnet(const TTHValue& /*aHash*/, const string& /*aFile*/, int64_t);
-	static void searchHash(const TTHValue& aHash, const string& aFileName, int64_t aSize);
-	static string makeMagnet(const TTHValue& aHash, const string& aFile, int64_t size);
-
 	// URL related
 	static void registerDchubHandler();
 	static void registerADChubHandler();
@@ -330,25 +277,13 @@ public:
 	static void unRegisterADCShubHandler();
 	static void unRegisterMagnetHandler();
 
-	static bool parseDBLClick(const tstring& aString);
-	static void parseMagnetUri(const tstring& aUrl, const HintedUser& aUser, RichTextBox* ctrlEdit = nullptr);
-
 	static bool urlDcADCRegistered;
 	static bool urlMagnetRegistered;
 	static int textUnderCursor(POINT p, CEdit& ctrl, tstring& x);
 	static int textUnderCursor(POINT p, CRichEditCtrl& ctrl, tstring& x);
-
-	static void openLink(const tstring& url);
-	static void openFile(const tstring& file);
-	static void openFolder(const tstring& file);
-	static bool openFile(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsClientView) noexcept;
 	
 	static double toBytes(TCHAR* aSize);
 
-	static void appendBundlePrioMenu(OMenu& aParent, const BundleList& aBundles);
-	static void appendBundlePauseMenu(OMenu& aParent, const BundleList& aBundles);
-	static void appendFilePrioMenu(OMenu& aParent, const QueueItemList& aFiles);
-	
 	template<typename T1>
 	static optional<CPoint> getMenuPosition(CPoint pt, T1& aWindow) {
 		if (pt.x == -1 && pt.y == -1) {
@@ -375,16 +310,6 @@ public:
 	static void getContextMenuPos(CEdit& aEdit,			POINT& aPt);
 
 	static bool isOnScrollbar(HWND aHWND, POINT& aPt);
-	
-	static bool getUCParams(HWND parent, const UserCommand& cmd, ParamMap& params) noexcept;
-
-	static tstring getNicks(const CID& cid);
-	static tstring getNicks(const HintedUser& user);
-
-	/** @return Pair of hubnames as a string and a bool representing the user's online status */
-	static pair<tstring, bool> getHubNames(const CID& cid);
-	static pair<tstring, bool> getHubNames(const UserPtr& u) { return getHubNames(u->getCID()); }
-	static tstring getHubNames(const HintedUser& user);
 	
 	static void splitTokens(int* array, const string& tokens, int maxItems = -1) noexcept;
 	static void saveHeaderOrder(CListViewCtrl& ctrl, SettingsManager::StrSetting order, 
@@ -427,64 +352,25 @@ public:
 		}
 	}
 
-	static void ClearPreviewMenu(OMenu &previewMenu);
-	static void appendPreviewMenu(OMenu& parent, const string& aTarget);
-	static bool shutDown(int action);
 	static int getFirstSelectedIndex(CListViewCtrl& list);
 	static int setButtonPressed(int nID, bool bPressed = true);
 
-	static void appendLanguageMenu(CComboBoxEx& ctrlLanguage) noexcept;
-	static void setLanguage(int aLanguageIndex) noexcept;
-
-	static void appendHistory(CComboBox& ctrlExcluded, SettingsManager::HistoryType aType);
-	static string addHistory(CComboBox& ctrlExcluded, SettingsManager::HistoryType aType);
-
-	static void viewLog(const string& path, bool aHistory=false);
-
-	static string getCompileDate();
-
-	static time_t fromSystemTime(const SYSTEMTIME* pTime);
-	static void toSystemTime(const time_t aTime, SYSTEMTIME* sysTime);
 	static void addCue(HWND hwnd, LPCWSTR text, BOOL drawFocus);
 
-	static void removeBundle(QueueToken aBundleToken);
-
 	static HWND findDialog;
-	static LRESULT onUserFieldChar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	static LRESULT onAddressFieldChar(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
-	static bool onConnSpeedChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/);
+
 	static void setUserFieldLimits(HWND hWnd);
 
-	static void getProfileConflicts(HWND aParent, int aProfile, ProfileSettingItem::List& conflicts);
-
-	static void appendSpeedCombo(CComboBox& aCombo, SettingsManager::StrSetting aSetting);
-	static void appendDateUnitCombo(CComboBox& aCombo, int aSel = 1);
 	static time_t parseDate(CEdit& aDate, CComboBox& aCombo);
-
-	static void appendSizeCombos(CComboBox& aUnitCombo, CComboBox& aModeCombo, int aUnitSel = 2, int aModeSel = 1);
 	static int64_t parseSize(CEdit& aSize, CComboBox& aSizeUnit);
 
 	static tstring getEditText(CEdit& edit);
-
 	static tstring getComboText(CComboBox& aCombo, WORD wNotifyCode);
 
 	static void handleTab(HWND aCurFocus, HWND* ctrlHwnds, int hwndCount);
-	static void addFileDownload(const string& aTarget, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, time_t aDate, Flags::MaskType aFlags = 0, Priority aPrio = Priority::DEFAULT);
-	//static void addFileDownloads(BundleFileList& aFiles, const HintedUser& aUser, Flags::MaskType aFlags = 0, bool addBad = true);
 
-	static void connectHub(const string& aUrl);
 	static tstring formatFolderContent(const DirectoryContentInfo& aContentInfo);
 	static tstring formatFileType(const string& aFileName);
-
-	static void findNfo(const string& aAdcPath, const HintedUser& aUser) noexcept;
-	static bool allowGetFullList(const HintedUser& aUser) noexcept;
-
-	struct CountryFlagInfo {
-		tstring text;
-		uint8_t flagIndex = 0;
-	};
-
-	static CountryFlagInfo toCountryInfo(const string& aIP) noexcept;
 private:
 	static string paths[PATH_LAST];
 };

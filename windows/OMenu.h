@@ -29,32 +29,17 @@
 
 #include "Dispatchers.h"
 
-namespace dcpp {
-
-class OMenu;
-
-struct OMenuItem {
-	typedef vector<unique_ptr<OMenuItem>> List;
-
-	OMenuItem() : ownerdrawn(true), text(), parent(nullptr), data(nullptr) {}
-
-	tstring text;
-	OMenu* parent;
-	void* data;
-	bool ownerdrawn;
-	Dispatcher::F f;
-};
-
 
 #define EXT_CONTEXT_MENU(menu, menuId, tokens) \
 if (!tokens.empty()) { \
-	auto extMenuItems = ContextMenuManager::getInstance()->get##menuId##Menu(tokens); \
+	auto cmm = &webserver::WebServerManager::getInstance()->getContextMenuManager(); \
+	auto extMenuItems = cmm->get##menuId##Menu(tokens, { webserver::Access::ADMIN }); \
 	if (!extMenuItems.empty()) { \
 		for (const auto& extItem : extMenuItems) { \
 			menu.appendItem( \
 				Text::toT(extItem->getTitle()), \
 				[=]() { \
-					ContextMenuManager::getInstance()->onClick##menuId##Item(tokens, extItem->getHookId(), extItem->getId()); \
+					cmm->onClick##menuId##Item(tokens, { webserver::Access::ADMIN }, extItem->getHookId(), extItem->getId()); \
 				}, \
 				OMenu::FLAG_THREADED \
 			); \
@@ -65,13 +50,14 @@ if (!tokens.empty()) { \
 
 #define EXT_CONTEXT_MENU_ENTITY(menu, menuId, tokens, entity) \
 if (!tokens.empty()) { \
-	auto extMenuItems = ContextMenuManager::getInstance()->get##menuId##Menu(tokens, entity); \
+	auto cmm = &webserver::WebServerManager::getInstance()->getContextMenuManager(); \
+	auto extMenuItems = cmm->get##menuId##Menu(tokens, { webserver::Access::ADMIN }, entity); \
 	if (!extMenuItems.empty()) { \
 		for (const auto& extItem : extMenuItems) { \
 			menu.appendItem( \
 				Text::toT(extItem->getTitle()), \
 				[=]() { \
-					ContextMenuManager::getInstance()->onClick##menuId##Item(tokens, extItem->getHookId(), extItem->getId(), entity); \
+					cmm->onClick##menuId##Item(tokens, { webserver::Access::ADMIN }, extItem->getHookId(), extItem->getId(), entity); \
 				}, \
 				OMenu::FLAG_THREADED \
 			); \
@@ -86,6 +72,18 @@ if (!tokens.empty()) { \
  */
 class OMenu : public CMenu {
 public:
+	struct OMenuItem {
+		typedef vector<unique_ptr<OMenuItem>> List;
+
+		OMenuItem() : ownerdrawn(true), text(), parent(nullptr), data(nullptr) {}
+
+		tstring text;
+		OMenu* parent;
+		void* data;
+		bool ownerdrawn;
+		Dispatcher::F f;
+	};
+
 	enum {
 		FLAG_DEFAULT	= 0x01,
 		FLAG_THREADED	= 0x02,
@@ -177,7 +175,5 @@ private:
 		if(bHandled) \
 			return TRUE; \
 	}
-
-} // namespace dcpp
 
 #endif // __OMENU_H

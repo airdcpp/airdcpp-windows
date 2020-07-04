@@ -425,7 +425,10 @@
     <ClCompile Include="windows\AutoSearchGroupDlg.cpp" />
     <ClCompile Include="windows\FavHubGeneralPage.cpp" />
     <ClCompile Include="windows\FavHubOptionsPage.cpp" />
+    <ClCompile Include="windows\FormatUtil.cpp" />
     <ClCompile Include="windows\RssFilterPage.cpp" />
+    <ClCompile Include="windows\ActionUtil.cpp" />
+    <ClCompile Include="windows\SystemUtil.cpp" />
     <ClCompile Include="windows\TabbedDialog.cpp" />
     <ClCompile Include="windows\AutosearchSearchTimesPage.cpp" />
     <ClCompile Include="windows\BrowseDlg.cpp" />
@@ -565,8 +568,11 @@
     <ClInclude Include="windows\AutoSearchItemSettings.h" />
     <ClInclude Include="windows\FavHubGeneralPage.h" />
     <ClInclude Include="windows\FavHubOptionsPage.h" />
+    <ClInclude Include="windows\FormatUtil.h" />
     <ClInclude Include="windows\RssFilterPage.h" />
     <ClInclude Include="windows\StaticFrame.h" />
+    <ClInclude Include="windows\ActionUtil.h" />
+    <ClInclude Include="windows\SystemUtil.h" />
     <ClInclude Include="windows\TabbedDialog.h" />
     <ClInclude Include="windows\AutosearchParams.h" />
     <ClInclude Include="windows\AutosearchSearchTimesPage.h" />

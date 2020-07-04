@@ -21,6 +21,7 @@
 
 #include "PublicHubsFrm.h"
 #include "HubFrame.h"
+#include "ActionUtil.h"
 #include "WinUtil.h"
 #include "PublicHubsListDlg.h"
 
@@ -238,7 +239,7 @@ void PublicHubsFrame::connectHub(int pos) {
 	TCHAR buf[256];
 
 	ctrlHubs.GetItemText(pos, COLUMN_SERVER, buf, 256);
-	WinUtil::connectHub(Text::fromT(buf));
+	ActionUtil::connectHub(Text::fromT(buf));
 }
 
 LRESULT PublicHubsFrame::onClickedConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

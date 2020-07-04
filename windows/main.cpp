@@ -30,10 +30,12 @@
 #endif
 
 #include "ExtendedTrace.h"
+#include "ActionUtil.h"
 #include "MainFrm.h"
 #include "PopupManager.h"
 #include "Resource.h"
 #include "ResourceLoader.h"
+#include "RichTextBox.h"
 #include "ShellExecAsUser.h"
 #include "SingleInstance.h"
 #include "SplashWindow.h"
@@ -204,7 +206,7 @@ LONG handleCrash(unsigned long aCode, const string& aError, PCONTEXT aContext)
 
 	auto msg = "AirDC++ just encountered a fatal bug and details have been written to " + exceptionFilePath + "\n\nYou can upload this file at http://www.airdcpp.net to help us find out what happened. Go there now?";
 	if (::MessageBox(WinUtil::mainWnd, Text::toT(msg).c_str(), _T("AirDC++ has crashed"), MB_YESNO | MB_ICONERROR) == IDYES) {
-		WinUtil::openLink(_T("http://crash.airdcpp.net"));
+		ActionUtil::openLink(_T("http://crash.airdcpp.net"));
 	}
 
 #ifndef _DEBUG

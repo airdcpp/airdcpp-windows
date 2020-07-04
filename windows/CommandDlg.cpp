@@ -22,6 +22,7 @@
 #include <airdcpp/ResourceManager.h>
 #include <airdcpp/UserCommand.h>
 
+#include "ActionUtil.h"
 #include "WinUtil.h"
 #include "CommandDlg.h"
 
@@ -232,6 +233,6 @@ void CommandDlg::updateControls() {
 
 LRESULT CommandDlg::onHelp(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
-	WinUtil::openLink(_T("http://dcplusplus.sourceforge.net/webhelp/dialog_user_command.html"));
+	ActionUtil::openLink(_T("http://dcplusplus.sourceforge.net/webhelp/dialog_user_command.html"));
 	return 0;
 }

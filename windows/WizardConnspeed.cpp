@@ -19,7 +19,8 @@
 #include "stdafx.h"
 
 #include "WizardConnspeed.h"
-#include "WinUtil.h"
+#include "WizardProfile.h"
+#include "ActionUtil.h"
 
 #include <airdcpp/AirUtil.h>
 
@@ -88,8 +89,8 @@ LRESULT WizardConnspeed::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARA
 
 
 	//fill the speed combos
-	WinUtil::appendSpeedCombo(ctrlDownload, SettingsManager::DOWNLOAD_SPEED);
-	WinUtil::appendSpeedCombo(ctrlUpload, SettingsManager::UPLOAD_SPEED);
+	ActionUtil::appendSpeedCombo(ctrlDownload, SettingsManager::DOWNLOAD_SPEED);
+	ActionUtil::appendSpeedCombo(ctrlUpload, SettingsManager::UPLOAD_SPEED);
 
 
 	//Set current values
@@ -128,7 +129,7 @@ void WizardConnspeed::write() {
 }
 	
 LRESULT WizardConnspeed::onSpeedtest(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	WinUtil::openLink(_T("http://www.speedtest.net"));
+	ActionUtil::openLink(_T("http://www.speedtest.net"));
 	return 0;
 }
 
@@ -153,7 +154,7 @@ void WizardConnspeed::updateAutoValues() {
 }
 
 LRESULT WizardConnspeed::OnDownSpeed(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& /*bHandled*/) {
-	WinUtil::onConnSpeedChanged(wNotifyCode, wID, hWndCtl);
+	ActionUtil::onConnSpeedChanged(wNotifyCode, wID, hWndCtl);
 	TCHAR buf2[64];
 	switch(wNotifyCode) {
 		case CBN_EDITCHANGE:
@@ -174,7 +175,7 @@ LRESULT WizardConnspeed::OnDownSpeed(WORD wNotifyCode, WORD wID, HWND hWndCtl, B
 
 LRESULT WizardConnspeed::OnUploadSpeed(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& /*bHandled*/)
 {
-	WinUtil::onConnSpeedChanged(wNotifyCode, wID, hWndCtl);
+	ActionUtil::onConnSpeedChanged(wNotifyCode, wID, hWndCtl);
 	TCHAR buf2[64];
 	switch(wNotifyCode) {
 		case CBN_EDITCHANGE:

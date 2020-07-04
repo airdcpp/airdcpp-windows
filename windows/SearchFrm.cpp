@@ -26,9 +26,9 @@
 #include "BarShader.h"
 #include "ResourceLoader.h"
 #include "Wildcards.h"
+#include "ActionUtil.h"
 
 #include <airdcpp/ClientManager.h>
-#include <airdcpp/ContextMenuManager.h>
 #include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/QueueManager.h>
 #include <airdcpp/Search.h>
@@ -38,6 +38,9 @@
 #include <airdcpp/TimerManager.h>
 
 #include <airdcpp/modules/HighlightManager.h>
+
+#include <web-server/ContextMenuManager.h>
+#include <web-server/WebServerManager.h>
 
 #include <boost/range/numeric.hpp>
 
@@ -165,8 +168,8 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlExcluded.SetFont(WinUtil::systemFont);
 	excludedContainer.SubclassWindow(ctrlExcluded.m_hWnd);
 
-	WinUtil::appendHistory(ctrlSearchBox, SettingsManager::HISTORY_SEARCH);
-	WinUtil::appendHistory(ctrlExcluded, SettingsManager::HISTORY_EXCLUDE);
+	ActionUtil::appendHistory(ctrlSearchBox, SettingsManager::HISTORY_SEARCH);
+	ActionUtil::appendHistory(ctrlExcluded, SettingsManager::HISTORY_EXCLUDE);
 
 	auto pos = ctrlExcluded.FindStringExact(0, Text::toT(SETTING(LAST_SEARCH_EXCLUDED)).c_str());
 	if (pos != -1)
@@ -281,8 +284,8 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlDate.SetFont(WinUtil::systemFont, FALSE);
 	ctrlDateUnit.SetFont(WinUtil::systemFont, FALSE);
 	
-	WinUtil::appendSizeCombos(ctrlSizeUnit, ctrlSizeMode);
-	WinUtil::appendDateUnitCombo(ctrlDateUnit, 1);
+	ActionUtil::appendSizeCombos(ctrlSizeUnit, ctrlSizeMode);
+	ActionUtil::appendDateUnitCombo(ctrlDateUnit, 1);
 
 	ctrlFileType.fillList(!initialString.empty() ? initialType : SETTING(LAST_SEARCH_FILETYPE), WinUtil::textColor, WinUtil::bgColor);
 
@@ -488,7 +491,7 @@ void SearchFrame::onEnter() {
 	auto token = Util::toString(Util::rand());
 	auto s = make_shared<Search>(Priority::HIGH, token);
 
-	s->query = WinUtil::addHistory(ctrlSearchBox, SettingsManager::HISTORY_SEARCH);
+	s->query = ActionUtil::addHistory(ctrlSearchBox, SettingsManager::HISTORY_SEARCH);
 	if (s->query.empty() || SearchQuery::parseSearchString(s->query).empty()) {
 		ctrlStatus.SetText(1, CTSTRING(ENTER_SEARCH_STRING));
 		return;
@@ -507,7 +510,7 @@ void SearchFrame::onEnter() {
 	usingExcludes = ctrlExcludedBool.GetCheck() == TRUE;
 	SettingsManager::getInstance()->set(SettingsManager::SEARCH_USE_EXCLUDED, usingExcludes);
 	if (usingExcludes) {
-		auto excluded = WinUtil::addHistory(ctrlExcluded, SettingsManager::HISTORY_EXCLUDE);
+		auto excluded = ActionUtil::addHistory(ctrlExcluded, SettingsManager::HISTORY_EXCLUDE);
 		if (!excluded.empty()) {
 			SettingsManager::getInstance()->set(SettingsManager::LAST_SEARCH_EXCLUDED, excluded);
 		}
@@ -638,11 +641,11 @@ void SearchFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 }
 
 SearchFrame::SearchInfo::SearchInfo(const GroupedSearchResultPtr& aGroupedResult, const SearchResultPtr& aSR) : groupedResult(aGroupedResult), sr(aSR) {
-	setCountryInfo(WinUtil::toCountryInfo(aSR->getIP()));
+	setCountryInfo(FormatUtil::toCountryInfo(aSR->getIP()));
 }
 
 SearchFrame::SearchInfo::SearchInfo(const GroupedSearchResultPtr& aGroupedResult) : groupedResult(aGroupedResult) {
-	setCountryInfo(WinUtil::toCountryInfo(aGroupedResult->getBaseUserIP()));
+	setCountryInfo(FormatUtil::toCountryInfo(aGroupedResult->getBaseUserIP()));
 }
 
 const UserPtr& SearchFrame::SearchInfo::getUser() const noexcept {
@@ -705,7 +708,7 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 		case COLUMN_FILENAME: return Text::toT(getFileName());
 		case COLUMN_RELEVANCE: return Util::toStringW(getTotalRelevance());
 		case COLUMN_HITS: return sr ? Util::emptyStringW : TSTRING_F(X_USERS, groupedResult->getHits());
-		case COLUMN_USERS: return WinUtil::getNicks(getHintedUser());
+		case COLUMN_USERS: return FormatUtil::getNicks(getHintedUser());
 		case COLUMN_TYPE:
 			if (!isDirectory()) {
 				return WinUtil::formatFileType(getAdcPath());
@@ -727,7 +730,7 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 
 			return Util::formatConnectionSpeedW(getConnectionNumeric());
 		};
-		case COLUMN_HUB: return WinUtil::getHubNames(getHintedUser());
+		case COLUMN_HUB: return FormatUtil::getHubNames(getHintedUser());
 		case COLUMN_EXACT_SIZE: return getSize() > 0 ? Util::formatExactSizeW(getSize()) : Util::emptyStringT;
 		case COLUMN_IP: return countryInfo.text;
 		case COLUMN_TTH: return (!isDirectory() && !SettingsManager::lanMode) ? Text::toT(getTTH().toBase32()) : Util::emptyStringT;
@@ -759,7 +762,7 @@ void SearchFrame::performAction(std::function<void (const SearchInfo* aInfo)> f,
 void SearchFrame::handleOpenItem(bool isClientView) {
 	auto open = [=](const SearchInfo* si) {
 		if (!si->isDirectory()) {
-			WinUtil::openFile(si->getFileName(), si->getSize(), si->getTTH(), si->getHintedUser(), isClientView);
+			ActionUtil::openFile(si->getFileName(), si->getSize(), si->getTTH(), si->getHintedUser(), isClientView);
 		}
 	};
 
@@ -769,7 +772,7 @@ void SearchFrame::handleOpenItem(bool isClientView) {
 void SearchFrame::handleViewNfo() {
 	auto viewNfo = [=](const SearchInfo* si) {
 		if (si->isDirectory() && si->getUser()->isSet(User::ASCH)) {
-			WinUtil::findNfo(si->getAdcPath(), si->getHintedUser());
+			ActionUtil::findNfo(si->getAdcPath(), si->getHintedUser());
 		}
 	};
 
@@ -787,7 +790,7 @@ void SearchFrame::handleDownload(const string& aTarget, Priority p, bool useWhol
 				if (!targetName) {
 					targetName = aTarget.back() == PATH_SEPARATOR ? aTarget + aSI->getFileName() : aTarget;
 				}
-				WinUtil::addFileDownload(*targetName, aSR->getSize(), aSR->getTTH(), aSR->getUser(), aSR->getDate(), 0, p);
+				ActionUtil::addFileDownload(*targetName, aSR->getSize(), aSR->getTTH(), aSR->getUser(), aSR->getDate(), 0, p);
 			} else {
 				if (!targetName) {
 					// Only pick the directory name, different paths are always needed
@@ -814,7 +817,7 @@ void SearchFrame::handleDownload(const string& aTarget, Priority p, bool useWhol
 void SearchFrame::handleGetList(ListType aType) {
 	auto getList = [&, aType](const SearchInfo* si) {
 		int flags = aType == TYPE_PARTIAL ? QueueItem::FLAG_PARTIAL_LIST : 0;
-		if (aType == TYPE_MIXED && !WinUtil::allowGetFullList(si->getHintedUser())) {
+		if (aType == TYPE_MIXED && !ActionUtil::allowGetFullList(si->getHintedUser())) {
 			flags = QueueItem::FLAG_PARTIAL_LIST;
 		}
 
@@ -840,7 +843,7 @@ void SearchFrame::handleMatchPartial() {
 void SearchFrame::handleSearchDir() {
 	if(ctrlResults.list.GetSelectedCount() == 1) {
 		const SearchInfo* si = ctrlResults.list.getSelectedItem();
-		WinUtil::search(Text::toT(AirUtil::getAdcReleaseDir(si->getAdcPath(), true)), true);
+		ActionUtil::search(Text::toT(AirUtil::getAdcReleaseDir(si->getAdcPath(), true)), true);
 	}
 }
 
@@ -848,7 +851,7 @@ void SearchFrame::handleSearchTTH() {
 	if(ctrlResults.list.GetSelectedCount() == 1) {
 		const SearchInfo* si = ctrlResults.list.getSelectedItem();
 		if (!si->isDirectory()) {
-			WinUtil::searchHash(si->getTTH(), si->getFileName(), si->getSize());
+			ActionUtil::searchHash(si->getTTH(), si->getFileName(), si->getSize());
 		}
 	}
 }
@@ -1204,7 +1207,7 @@ LRESULT SearchFrame::onEraseBackground(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lP
 }
 
 void SearchFrame::runUserCommand(UserCommand& uc) {
-	if(!WinUtil::getUCParams(m_hWnd, uc, ucLineParams))
+	if (!ActionUtil::getUCParams(m_hWnd, uc, ucLineParams))
 		return;
 
 	auto ucParams = ucLineParams;
@@ -1231,7 +1234,7 @@ void SearchFrame::runUserCommand(UserCommand& uc) {
 		if (!si->isDirectory()) {
 			ucParams["fileTR"] = [si] { return si->getTTH().toBase32(); };
 		}
-		ucParams["fileMN"] = [si] { return WinUtil::makeMagnet(si->getTTH(), si->getFileName(), si->getSize()); };
+		ucParams["fileMN"] = [si] { return ActionUtil::makeMagnet(si->getTTH(), si->getFileName(), si->getSize()); };
 
 		// compatibility with 0.674 and earlier
 		ucParams["file"] = ucParams["fileFN"];
@@ -1458,9 +1461,9 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 
 			resultsMenu.appendItem(TSTRING(SEARCH_DIRECTORY), [&] { handleSearchDir(); });
 
-			WinUtil::appendSearchMenu(resultsMenu, [=](const WebShortcut* ws) {
+			ActionUtil::appendSearchMenu(resultsMenu, [=](const WebShortcut* ws) {
 				performAction([=](const SearchInfo* ii) { 
-					WinUtil::searchSite(ws, ii->getAdcPath());
+					ActionUtil::searchSite(ws, ii->getAdcPath());
 				}, true);
 			});
 
@@ -1633,7 +1636,7 @@ LRESULT SearchFrame::onPurge(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 
 tstring SearchFrame::handleCopyMagnet(const SearchInfo* si) {
 	if (!si->isDirectory()) {
-		return Text::toT(WinUtil::makeMagnet(si->getTTH(), si->getFileName(), si->getSize()));
+		return Text::toT(ActionUtil::makeMagnet(si->getTTH(), si->getFileName(), si->getSize()));
 	} else {
 		return Text::toT("Directories don't have Magnet links");
 	}

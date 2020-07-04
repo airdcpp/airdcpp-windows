@@ -22,6 +22,7 @@
 #include "RecentsFrm.h"
 #include "HubFrame.h"
 #include "LineDlg.h"
+#include "ActionUtil.h"
 
 #include <airdcpp/RecentManager.h>
 
@@ -146,15 +147,15 @@ void RecentsFrame::updateList() {
 void RecentsFrame::handleOpen(const ItemInfo* aItem) {
 	switch (aItem->recentType) {
 	case RecentEntry::TYPE_HUB: {
-		WinUtil::connectHub(aItem->item->getUrl());
+		ActionUtil::connectHub(aItem->item->getUrl());
 		break;
 	}
 	case RecentEntry::TYPE_PRIVATE_CHAT: {
-		WinUtil::PM()(aItem->item->getUser(), aItem->item->getUrl());
+		ActionUtil::PM()(aItem->item->getUser(), aItem->item->getUrl());
 		break;
 	}
 	case RecentEntry::TYPE_FILELIST: {
-		WinUtil::GetBrowseList()(aItem->item->getUser(), aItem->item->getUrl());
+		ActionUtil::GetBrowseList()(aItem->item->getUser(), aItem->item->getUrl());
 		break;
 	}
 	default:

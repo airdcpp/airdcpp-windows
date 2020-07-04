@@ -20,6 +20,7 @@
 #include "Resource.h"
 
 #include "NotepadFrame.h"
+#include "ActionUtil.h"
 #include "WinUtil.h"
 #include <airdcpp/File.h>
 
@@ -128,7 +129,7 @@ LRESULT NotepadFrame::onLButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 		if(end == string::npos)
 			end = x.length();
 		
-		bHandled = WinUtil::parseDBLClick(x.substr(start, end-start));
+		bHandled = ActionUtil::parseDBLClick(x.substr(start, end-start));
 	}
 	return 0;
 }

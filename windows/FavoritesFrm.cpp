@@ -25,12 +25,15 @@
 #include "FavHubGeneralPage.h"
 #include "FavHubOptionsPage.h"
 #include "FavHubGroupsDlg.h"
+#include "ActionUtil.h"
 
 #include <airdcpp/ConnectivityManager.h>
-#include <airdcpp/ContextMenuManager.h>
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/LogManager.h>
 #include <airdcpp/version.h>
+
+#include <web-server/ContextMenuManager.h>
+#include <web-server/WebServerManager.h>
 
 int FavoriteHubsFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_DESCRIPTION, COLUMN_NICK, COLUMN_PASSWORD, COLUMN_SERVER, COLUMN_USERDESCRIPTION, 
 	COLUMN_SHAREPROFILE };
@@ -601,7 +604,7 @@ LRESULT FavoriteHubsFrame::onOpenHubLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 		params["myNI"] = entry->get(HubSettings::Nick); 
 		string file = LogManager::getInstance()->getPath(LogManager::CHAT, params);
 		if(Util::fileExists(file)){
-			WinUtil::viewLog(file);
+			ActionUtil::viewLog(file);
 		} else {
 			WinUtil::showMessageBox(TSTRING(NO_LOG_FOR_HUB));	  
 		}

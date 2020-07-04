@@ -21,6 +21,7 @@
 
 #include "SystemFrame.h"
 #include "WinUtil.h"
+#include "ActionUtil.h"
 #include "TextFrame.h"
 #include "MainFrm.h"
 #include "ResourceLoader.h"
@@ -135,7 +136,7 @@ LRESULT SystemFrame::onLButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, 
 		if(end == tstring::npos)
 			end = x.length();
 		
-		bHandled = WinUtil::parseDBLClick(x.substr(start, end-start));
+		bHandled = ActionUtil::parseDBLClick(x.substr(start, end-start));
 	}
 	return 0;
 }
@@ -283,7 +284,7 @@ LRESULT SystemFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM l
 LRESULT SystemFrame::onSystemLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	string filename = LogManager::getInstance()->getPath(LogManager::SYSTEM);
 	if(Util::fileExists(filename)){
-		WinUtil::viewLog(filename);
+		ActionUtil::viewLog(filename);
 	} else {
 		WinUtil::showMessageBox(TSTRING(NO_LOG_EXISTS));
 	}
@@ -431,7 +432,7 @@ LRESULT SystemFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& b
 LRESULT SystemFrame::onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring tmp = Util::getFilePath(selWord); //need to pick up the path here if we have a missing file, they dont exist :)
 	if(Util::fileExists(Text::fromT(tmp)))
-		WinUtil::openFolder(tmp);
+		ActionUtil::openFolder(tmp);
 
 	ctrlPad.SetSelNone();
 	return 0;
@@ -494,11 +495,11 @@ LRESULT SystemFrame::onEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 }
 
 LRESULT SystemFrame::onSearchFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	WinUtil::search(Util::getFileName(selWord));
+	ActionUtil::search(Util::getFileName(selWord));
 	return 0;
 }
 
 LRESULT SystemFrame::onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	WinUtil::search(Text::toT(AirUtil::getReleaseDirLocal(Text::fromT(selWord), true)), true);
+	ActionUtil::search(Text::toT(AirUtil::getReleaseDirLocal(Text::fromT(selWord), true)), true);
 	return 0;
 }

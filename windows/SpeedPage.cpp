@@ -25,6 +25,7 @@
 #include "SpeedPage.h"
 #include "PropertiesDlg.h"
 #include "WinUtil.h"
+#include "ActionUtil.h"
 
 PropPage::TextItem SpeedPage::texts[] = {
 	{ IDC_LINE_SPEED, ResourceManager::LINE_SPEED },
@@ -125,7 +126,7 @@ LRESULT SpeedPage::onSpeedChanged(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL
 	if (loading)
 		return FALSE;
 
-	if (WinUtil::onConnSpeedChanged(wNotifyCode, wID, hWndCtl)) {
+	if (ActionUtil::onConnSpeedChanged(wNotifyCode, wID, hWndCtl)) {
 		updateValues(wNotifyCode);
 		//validateMCNLimits(wNotifyCode);
 	}
@@ -284,8 +285,8 @@ LRESULT SpeedPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	ctrlMcnUL.Attach(GetDlgItem(IDC_MCNULSLOTS));
 	ctrlMcnDL.Attach(GetDlgItem(IDC_MCNDLSLOTS));
 
-	WinUtil::appendSpeedCombo(ctrlDownload, SettingsManager::DOWNLOAD_SPEED);
-	WinUtil::appendSpeedCombo(ctrlUpload, SettingsManager::UPLOAD_SPEED);
+	ActionUtil::appendSpeedCombo(ctrlDownload, SettingsManager::DOWNLOAD_SPEED);
+	ActionUtil::appendSpeedCombo(ctrlUpload, SettingsManager::UPLOAD_SPEED);
 
 
 	PropPage::read((HWND)*this, items);

@@ -27,8 +27,9 @@
 #include "ResourceLoader.h"
 #include "MainFrm.h"
 #include "Wildcards.h"
+#include "FormatUtil.h"
+#include "ActionUtil.h"
 
-#include <airdcpp/ContextMenuManager.h>
 #include <airdcpp/CryptoManager.h>
 #include <airdcpp/Message.h>
 #include <airdcpp/IgnoreManager.h>
@@ -41,6 +42,9 @@
 #include <airdcpp/SettingsManager.h>
 
 #include <airdcpp/modules/HighlightManager.h>
+
+#include <web-server/ContextMenuManager.h>
+#include <web-server/WebServerManager.h>
 
 HubFrame::FrameMap HubFrame::frames;
 bool HubFrame::shutdown = false;
@@ -223,7 +227,7 @@ bool HubFrame::sendMessageHooked(const tstring& aMessage, string& error_, bool i
 bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*message*/, tstring& status, bool& /*thirdPerson*/) {	
 	if(stricmp(cmd.c_str(), _T("join"))==0) {
 		if(!param.empty()) {
-			WinUtil::connectHub(Text::fromT(param));
+			ActionUtil::connectHub(Text::fromT(param));
 		} else {
 			status = TSTRING(SPECIFY_SERVER);
 		}
@@ -265,7 +269,7 @@ bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*messag
 			}
 		}
 	} else if(stricmp(cmd.c_str(), _T("log")) == 0) {
-		WinUtil::openFile(Text::toT(getLogPath(stricmp(param.c_str(), _T("status")) == 0)));
+		ActionUtil::openFile(Text::toT(getLogPath(stricmp(param.c_str(), _T("status")) == 0)));
 	} else if(stricmp(cmd.c_str(), _T("help")) == 0) {
 		status = _T("*** ") + ChatFrameBase::commands + _T("Additional commands for the hub tab: /join <hub-ip>, /ts, /showjoins, /favshowjoins, /close, /userlist, /favorite, /pm <user> [message], /getlist <user>, /removefavorite");
 	} else if(stricmp(cmd.c_str(), _T("pm")) == 0) {
@@ -1015,7 +1019,7 @@ LRESULT HubFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOO
 			vector<uint32_t> tokens;
 			ctrlUsers.forEachSelectedT([&tokens](const ItemInfo* ii) {
 				tokens.push_back(ii->onlineUser->getToken());
-				});
+			});
 
 			EXT_CONTEXT_MENU_ENTITY(menu, HubUser, tokens, client);
 		}
@@ -1032,7 +1036,7 @@ LRESULT HubFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOO
 }
 
 void HubFrame::runUserCommand(::UserCommand& uc) {
-	if(!WinUtil::getUCParams(m_hWnd, uc, ucLineParams))
+	if (!ActionUtil::getUCParams(m_hWnd, uc, ucLineParams))
 		return;
 
 	auto ucParams = ucLineParams;
@@ -1185,7 +1189,7 @@ LRESULT HubFrame::onEnterUsers(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHand
 	int item = ctrlUsers.GetNextItem(-1, LVNI_FOCUSED);
 	if(item != -1) {
 		auto user = HintedUser((ctrlUsers.getItemData(item))->onlineUser->getUser(), client->getHubUrl());
-		WinUtil::GetList()(user.user, user.hint);
+		ActionUtil::GetList()(user.user, user.hint);
 	}
 	return 0;
 }
@@ -1494,7 +1498,7 @@ void HubFrame::openLinksInTopic() {
 
 	for(auto& url: urls) {
 		Util::sanitizeUrl(url);
-		WinUtil::openLink(Text::toT(url));
+		ActionUtil::openLink(Text::toT(url));
 	}
 }
 
@@ -1668,7 +1672,7 @@ LRESULT HubFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/
 
 	string file = ui->onlineUser->getLogPath();
 	if(Util::fileExists(file)) {
-		WinUtil::viewLog(file, wID == IDC_USER_HISTORY);
+		ActionUtil::viewLog(file, wID == IDC_USER_HISTORY);
 	} else {
 		WinUtil::showMessageBox(TSTRING(NO_LOG_FOR_USER));
 	}
@@ -1686,7 +1690,7 @@ string HubFrame::getLogPath(bool status) const {
 LRESULT HubFrame::onOpenHubLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	string filename = getLogPath(false);
 	if(Util::fileExists(filename)){
-		WinUtil::viewLog(filename, wID == IDC_HISTORY);
+		ActionUtil::viewLog(filename, wID == IDC_HISTORY);
 	} else {
 		WinUtil::showMessageBox(TSTRING(NO_LOG_FOR_HUB));	  
 	}
@@ -1804,7 +1808,7 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 				POINT p = { rc.left, top };
 
 				const auto ii = (ItemInfo*)cd->nmcd.lItemlParam;
-				auto countryInfo = WinUtil::toCountryInfo(ii->onlineUser->getIdentity().getIp());
+				auto countryInfo = FormatUtil::toCountryInfo(ii->onlineUser->getIdentity().getIp());
 				ResourceLoader::flagImages.Draw(cd->nmcd.hdc, countryInfo.flagIndex, p, LVSIL_SMALL);
 
 				top = rc.top + (rc.Height() - WinUtil::getTextHeight(cd->nmcd.hdc) - 1)/2;

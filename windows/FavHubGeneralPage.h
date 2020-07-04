@@ -24,7 +24,7 @@
 #include <atlcrack.h>
 
 #include <airdcpp/HubEntry.h>
-#include "WinUtil.h"
+#include "ActionUtil.h"
 #include "TabbedDialog.h"
 
 class FavHubGeneralPage : public CDialogImpl<FavHubGeneralPage>, public TabPage {
@@ -39,10 +39,10 @@ public:
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)
 		MESSAGE_HANDLER(WM_CTLCOLORDLG, onCtlColor)
-		COMMAND_HANDLER(IDC_NICK, EN_CHANGE, WinUtil::onUserFieldChar)
-		COMMAND_HANDLER(IDC_USERDESC, EN_CHANGE, WinUtil::onUserFieldChar)
-		COMMAND_HANDLER(IDC_EMAIL, EN_CHANGE, WinUtil::onUserFieldChar)
-		COMMAND_HANDLER(IDC_HUBADDR, EN_CHANGE, WinUtil::onAddressFieldChar)
+		COMMAND_HANDLER(IDC_NICK, EN_CHANGE, ActionUtil::onUserFieldChar)
+		COMMAND_HANDLER(IDC_USERDESC, EN_CHANGE, ActionUtil::onUserFieldChar)
+		COMMAND_HANDLER(IDC_EMAIL, EN_CHANGE, ActionUtil::onUserFieldChar)
+		COMMAND_HANDLER(IDC_HUBADDR, EN_CHANGE, ActionUtil::onAddressFieldChar)
 		COMMAND_HANDLER(IDC_HUBADDR, EN_CHANGE, OnTextChanged)
 		COMMAND_ID_HANDLER(IDC_HIDE_SHARE, onClickedHideShare)
 		COMMAND_ID_HANDLER(IDC_EDIT_PROFILES, OnEditProfiles)

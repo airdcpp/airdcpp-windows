@@ -23,12 +23,15 @@
 #include "OMenu.h"
 
 #include <airdcpp/ClientManager.h>
-#include <airdcpp/ContextMenuManager.h>
 #include <airdcpp/FavoriteManager.h>
+#include <airdcpp/HintedUser.h>
 #include <airdcpp/UserInfoBase.h>
 #include <airdcpp/Util.h>
 
-#include "WinUtil.h"
+#include <web-server/ContextMenuManager.h>
+#include <web-server/WebServerManager.h>
+
+#include "ActionUtil.h"
 
 // emulation for non-list objects
 template<class T>
@@ -101,7 +104,7 @@ public:
 		UserTraits() { }
 		void operator()(const UserInfoBase* ui) {
 			if(ui->getUser()) {
-				if (!WinUtil::allowGetFullList(HintedUser(ui->getUser(), ui->getHubUrl()))) {
+				if (!ActionUtil::allowGetFullList(HintedUser(ui->getUser(), ui->getHubUrl()))) {
 					allFullList = false;
 				} else {
 					noFullList = false;
@@ -157,7 +160,7 @@ public:
 			if (list.size() > 1) {
 				multipleHubs = true;
 				if (pmItems)
-					appendListMenu<WinUtil::PM>(aUser, list, menu.createSubMenu(TSTRING(SEND_PRIVATE_MESSAGE)), false);
+					appendListMenu<ActionUtil::PM>(aUser, list, menu.createSubMenu(TSTRING(SEND_PRIVATE_MESSAGE)), false);
 
 				if (listItems) {
 					//combine items in the list based on the share size
@@ -179,12 +182,12 @@ public:
 
 					if (shareList.size() > 1) {
 						menu.appendSeparator();
-						appendListMenu<WinUtil::BrowseList>(aUser, shareList, menu.createSubMenu(TSTRING(BROWSE_FILE_LIST)), true);
+						appendListMenu<ActionUtil::BrowseList>(aUser, shareList, menu.createSubMenu(TSTRING(BROWSE_FILE_LIST)), true);
 						if (aShowFullList || traits.allFullList)
-							appendListMenu<WinUtil::GetList>(aUser, shareList, menu.createSubMenu(TSTRING(GET_FILE_LIST)), true);
+							appendListMenu<ActionUtil::GetList>(aUser, shareList, menu.createSubMenu(TSTRING(GET_FILE_LIST)), true);
 						if (!traits.noFullList && !traits.allFullList)
-							appendListMenu<WinUtil::GetBrowseList>(aUser, shareList, menu.createSubMenu(TSTRING(GET_BROWSE_LIST)), true);
-						appendListMenu<WinUtil::MatchQueue>(aUser, shareList, menu.createSubMenu(TSTRING(MATCH_QUEUE)), true);
+							appendListMenu<ActionUtil::GetBrowseList>(aUser, shareList, menu.createSubMenu(TSTRING(GET_BROWSE_LIST)), true);
+						appendListMenu<ActionUtil::MatchQueue>(aUser, shareList, menu.createSubMenu(TSTRING(MATCH_QUEUE)), true);
 					} else {
 						appendSingleDownloadItems(false);
 					}
@@ -218,7 +221,17 @@ public:
 		}
 
 		menu.appendItem(TSTRING(REMOVE_FROM_ALL), [=] { handleRemoveAll(); });
-		menu.AppendMenu(MF_POPUP, (HMENU)WinUtil::grantMenu, CTSTRING(GRANT_SLOTS_MENU));
+
+		OMenu grantMenu;
+		grantMenu.CreatePopupMenu();
+		grantMenu.InsertSeparatorFirst(CTSTRING(GRANT_SLOTS_MENU));
+		grantMenu.AppendMenu(MF_STRING, IDC_GRANTSLOT, CTSTRING(GRANT_EXTRA_SLOT));
+		grantMenu.AppendMenu(MF_STRING, IDC_GRANTSLOT_HOUR, CTSTRING(GRANT_EXTRA_SLOT_HOUR));
+		grantMenu.AppendMenu(MF_STRING, IDC_GRANTSLOT_DAY, CTSTRING(GRANT_EXTRA_SLOT_DAY));
+		grantMenu.AppendMenu(MF_STRING, IDC_GRANTSLOT_WEEK, CTSTRING(GRANT_EXTRA_SLOT_WEEK));
+		grantMenu.AppendMenu(MF_SEPARATOR);
+		grantMenu.AppendMenu(MF_STRING, IDC_UNGRANTSLOT, CTSTRING(REMOVE_EXTRA_SLOT));
+		menu.AppendMenu(MF_POPUP, (HMENU)grantMenu, CTSTRING(GRANT_SLOTS_MENU));
 	}	
 };
 

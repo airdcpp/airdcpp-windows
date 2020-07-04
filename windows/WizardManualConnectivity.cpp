@@ -19,6 +19,8 @@
 #include "stdafx.h"
 
 #include "WizardManualConnectivity.h"
+#include "WinUtil.h"
+
 
 PropPage::TextItem WizardManualConnectivity::texts[] = {
 	{ IDC_MANUALCONN_INTRO, ResourceManager::WIZARD_MANUAL_CONNECTIVITY_INTRO },

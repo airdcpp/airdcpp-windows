@@ -23,13 +23,17 @@
 #include "ResourceLoader.h"
 #include "UsersFrame.h"
 #include "LineDlg.h"
+#include "FormatUtil.h"
+#include "ActionUtil.h"
 
 #include <airdcpp/ClientManager.h>
-#include <airdcpp/ContextMenuManager.h>
 #include <airdcpp/IgnoreManager.h>
 #include <airdcpp/Localization.h>
 #include <airdcpp/LogManager.h>
 #include <airdcpp/QueueManager.h>
+
+#include <web-server/ContextMenuManager.h>
+#include <web-server/WebServerManager.h>
 
 string UsersFrame::id = "Users";
 
@@ -393,7 +397,7 @@ LRESULT UsersFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 
 					POINT p = { rc.left, top };
 
-					auto countryInfo = WinUtil::toCountryInfo(ui->getIp());
+					auto countryInfo = FormatUtil::toCountryInfo(ui->getIp());
 					ResourceLoader::flagImages.Draw(cd->nmcd.hdc, countryInfo.flagIndex, p, LVSIL_SMALL);
 
 					top = rc.top + (rc.Height() - WinUtil::getTextHeight(cd->nmcd.hdc) - 1) / 2;
@@ -963,7 +967,7 @@ LRESULT UsersFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 
 		string file = LogManager::getInstance()->getPath(ui->getUser(), params);
 		if(Util::fileExists(file)) {
-			WinUtil::viewLog(file);
+			ActionUtil::viewLog(file);
 		} else {
 			WinUtil::showMessageBox(TSTRING(NO_LOG_FOR_USER));	  
 		}	

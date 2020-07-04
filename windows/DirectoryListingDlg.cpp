@@ -18,6 +18,7 @@
 
 #include "stdafx.h"
 #include "Resource.h"
+#include "ActionUtil.h"
 #include "WinUtil.h"
 #include "DirectoryListingDlg.h"
 
@@ -42,7 +43,7 @@ LRESULT DirectoryListingDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPAR
 	ATTACH(IDC_SEARCH_STRING, ctrlSearch);
 	ctrlSearch.SetFocus();
 	//ctrlSearch.SetWindowText(Text::toT(searchStr).c_str());
-	WinUtil::appendHistory(ctrlSearch, SettingsManager::HISTORY_SEARCH);
+	ActionUtil::appendHistory(ctrlSearch, SettingsManager::HISTORY_SEARCH);
 
 	//ctrlSearch.SetSelAll(TRUE);
 
@@ -51,7 +52,7 @@ LRESULT DirectoryListingDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPAR
 
 	ATTACH(IDC_SIZE_MODE, ctrlSizeMode);
 	ATTACH(IDC_SIZE_UNIT, ctrlSizeUnit);
-	WinUtil::appendSizeCombos(ctrlSizeUnit, ctrlSizeMode);
+	ActionUtil::appendSizeCombos(ctrlSizeUnit, ctrlSizeMode);
 
 	::SetWindowText(GetDlgItem(IDCANCEL), CTSTRING(CANCEL));
 	::SetWindowText(GetDlgItem(IDC_DL_SEARCH_DESC), CTSTRING(SEARCH_STRING));
@@ -87,7 +88,7 @@ LRESULT DirectoryListingDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*h
 		}
 
 		sizeMode = static_cast<Search::SizeModes>(ctrlSizeMode.GetCurSel());
-		searchStr = WinUtil::addHistory(ctrlSearch, SettingsManager::HISTORY_SEARCH);
+		searchStr = ActionUtil::addHistory(ctrlSearch, SettingsManager::HISTORY_SEARCH);
 		size = WinUtil::parseSize(ctrlSize, ctrlSizeUnit);
 		useCurDir = IsDlgButtonChecked(IDC_USE_CUR_DIR) == BST_CHECKED;
 

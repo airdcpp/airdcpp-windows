@@ -44,6 +44,7 @@
 #include "SearchTypeCombo.h"
 #include "ListFilter.h"
 #include "MainFrm.h"
+#include "FormatUtil.h"
 
 #define SEARCH_MESSAGE_MAP 6		// This could be any number, really...
 #define SHOWUI_MESSAGE_MAP 7
@@ -379,7 +380,7 @@ private:
 
 		size_t hits = 0;
 
-		GETSET(WinUtil::CountryFlagInfo, countryInfo, CountryInfo);
+		GETSET(FormatUtil::CountryFlagInfo, countryInfo, CountryInfo);
 	};
 	
 	void performAction(std::function<void (const SearchInfo* aInfo)> f, bool oncePerParent=false);

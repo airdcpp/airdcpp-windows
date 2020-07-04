@@ -48,6 +48,8 @@
 #include "QueueFrame.h"
 #include "BrowseDlg.h"
 #include "SplashWindow.h"
+#include "ActionUtil.h"
+#include "SystemUtil.h"
 
 #include "Winamp.h"
 #include "Players.h"
@@ -108,13 +110,13 @@ statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP), settingsWindowOpen(f
 LRESULT MainFrame::onOpenDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	switch (wID) {
 	case IDC_OPEN_LOG_DIR:
-		WinUtil::openFolder(Text::toT(SETTING(LOG_DIRECTORY)));
+		ActionUtil::openFolder(Text::toT(SETTING(LOG_DIRECTORY)));
 		break;
 	case IDC_OPEN_CONFIG_DIR:
-		WinUtil::openFolder(Text::toT(Util::getPath(Util::PATH_USER_CONFIG)));
+		ActionUtil::openFolder(Text::toT(Util::getPath(Util::PATH_USER_CONFIG)));
 		break;
 	case IDC_OPEN_DOWNLOADS:
-		WinUtil::openFile(Text::toT(SETTING(DOWNLOAD_DIRECTORY)));
+		ActionUtil::openFile(Text::toT(SETTING(DOWNLOAD_DIRECTORY)));
 		break;
 	default: break;
 	}
@@ -372,7 +374,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	WinUtil::splash->destroy();
 
-	if (Util::IsOSVersionOrGreater(6, 2) && !IsWindowsServer() && WinUtil::isElevated()) {
+	if (Util::IsOSVersionOrGreater(6, 2) && !IsWindowsServer() && ::SystemUtil::isElevated()) {
 		callAsync([=] { WinUtil::ShowMessageBox(SettingsManager::WARN_ELEVATED, TSTRING(ELEVATED_WARNING)); });
 	}
 
@@ -753,7 +755,7 @@ void MainFrame::updateStatus(TStringList* aList) {
 				ctrlStatus.SetText(STATUS_SHUTDOWN, (_T(" ") + Util::formatSecondsW(timeLeft, timeLeft < 3600)).c_str(), SBT_POPOUT);
 				if (iCurrentShutdownTime + SETTING(SHUTDOWN_TIMEOUT) <= iSec) {
 					bool bDidShutDown = false;
-					bDidShutDown = WinUtil::shutDown(SETTING(SHUTDOWN_ACTION));
+					bDidShutDown = ::SystemUtil::shutdown(SETTING(SHUTDOWN_ACTION));
 					if (bDidShutDown) {
 						// Should we go faster here and force termination?
 						// We "could" do a manual shutdown of this app...
@@ -855,7 +857,7 @@ void MainFrame::parseCommandLine(const tstring& cmdLine)
 		(j = cmdLine.find(_T("adcs://"), i)) != string::npos ||
 		(j = cmdLine.find(_T("magnet:?"), i)) != string::npos )
 	{
-		WinUtil::parseDBLClick(cmdLine.substr(j));
+		ActionUtil::parseDBLClick(cmdLine.substr(j));
 	}
 }
 
@@ -1194,9 +1196,9 @@ LRESULT MainFrame::onLink(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL
 	}
 
 	if(isFile)
-		WinUtil::openFile(site);
+		ActionUtil::openFile(site);
 	else
-		WinUtil::openLink(site);
+		ActionUtil::openLink(site);
 
 	return 0;
 }
@@ -1336,7 +1338,7 @@ void MainFrame::getMagnetForFile() {
 				if (closing)
 					return;
 
-				string magnetlink = WinUtil::makeMagnet(tth, Util::getFileName(path), size);
+				string magnetlink = ActionUtil::makeMagnet(tth, Util::getFileName(path), size);
 
 				CInputBox ibox(m_hWnd);
 				ibox.DoModal(_T("Tiger Tree Hash"), file.c_str(), Text::toT(tth.toBase32()).c_str(), Text::toT(magnetlink).c_str());
@@ -1402,7 +1404,7 @@ LRESULT MainFrame::onOpenOwnList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 
 LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring file;
-	if (WinUtil::browseList(file, m_hWnd)) {
+	if (ActionUtil::browseList(file, m_hWnd)) {
 		UserPtr user = DirectoryListing::getUserFromFilename(Text::fromT(file));
 		if (user) {
 			DirectoryListingFrame::openWindow(HintedUser(user, Util::emptyString), Text::fromT(file));
@@ -1729,7 +1731,7 @@ LRESULT MainFrame::onCloseWindows(WORD , WORD wID, HWND , BOOL& ) {
 LRESULT MainFrame::onOpenSysLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	string filename = LogManager::getInstance()->getPath(LogManager::SYSTEM);
 	if(Util::fileExists(filename)){
-		WinUtil::viewLog(filename);
+		ActionUtil::viewLog(filename);
 	} else {
 		MessageBox(CTSTRING(NO_LOG_FOR_HUB),CTSTRING(NO_LOG_FOR_HUB), MB_OK );	  
 	}
@@ -1750,7 +1752,7 @@ LRESULT MainFrame::onQuickConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		if(SETTING(NICK).empty())
 			return 0;
 
-		WinUtil::connectHub(Text::fromT(dlg.line));
+		ActionUtil::connectHub(Text::fromT(dlg.line));
 	}
 	return 0;
 }
@@ -1824,7 +1826,7 @@ void MainFrame::on(QueueManagerListener::ItemFinished, const QueueItemPtr& qi, c
 	}
 
 	if (qi->isSet(QueueItem::FLAG_OPEN)) {
-		WinUtil::openFile(Text::toT(qi->getTarget()));
+		ActionUtil::openFile(Text::toT(qi->getTarget()));
 	}
 }
 
@@ -2098,7 +2100,7 @@ void MainFrame::onBadVersion(const string& message, const string& infoUrl, const
 
 	if(!canAutoUpdate) {
 		if(!infoUrl.empty())
-			WinUtil::openLink(Text::toT(infoUrl));
+			ActionUtil::openLink(Text::toT(infoUrl));
 
 		shutdown();
 	} else {

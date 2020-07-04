@@ -21,7 +21,7 @@
 #include "ExListViewCtrl.h"
 
 #include "TempShare_dlg.h"
-#include "WinUtil.h"
+#include "FormatUtil.h"
 
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/ShareManager.h>
@@ -43,7 +43,7 @@ LRESULT TempShareDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 		int item = ctrlFiles.insert(ctrlFiles.GetItemCount(), Text::toT(info.path), 0, (LPARAM)(&info));
 		ctrlFiles.SetItemText(item, 1, Text::toT(Util::formatBytes(info.size)).c_str());
 		ctrlFiles.SetItemText(item, 2, Text::toT(info.tth.toBase32()).c_str());
-		ctrlFiles.SetItemText(item, 3, (info.user ? WinUtil::getNicks(info.user->getCID()) : Util::emptyStringT).c_str());
+		ctrlFiles.SetItemText(item, 3, (info.user ? FormatUtil::getNicks(info.user->getCID()) : Util::emptyStringT).c_str());
 	}
 
 	CenterWindow(GetParent());
