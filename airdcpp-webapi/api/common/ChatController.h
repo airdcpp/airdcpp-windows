@@ -25,6 +25,8 @@
 #include <api/common/Deserializer.h>
 #include <api/common/Serializer.h>
 
+#include <airdcpp/StringTokenizer.h>
+
 namespace webserver {
 	template<class T>
 	class ChatController {
@@ -66,6 +68,31 @@ namespace webserver {
 		void onMessagesUpdated() {
 			sendUnread();
 		}
+
+		void onChatCommand(const OutgoingChatMessage& aMessage) {
+			auto s = toListenerName("text_command");
+			if (!module->subscriptionActive(s)) {
+				return;
+			}
+
+			auto tokens = CommandTokenizer<std::string, std::deque>(aMessage.text).getTokens();
+			if (tokens.empty()) {
+				return;
+			}
+
+			auto command = tokens.front();
+			if (command.length() == 1) {
+				return;
+			}
+
+			tokens.pop_front();
+
+			module->send(s, {
+				{ "command", command.substr(1) },
+				{ "args", tokens },
+				{ "permissions",  Serializer::serializePermissions(parseMessageAuthorAccess(aMessage)) },
+			});
+		}
 	private:
 		void sendUnread() noexcept {
 			auto s = toListenerName("updated");
@@ -76,6 +103,23 @@ namespace webserver {
 			module->send(s, {
 				{ "message_counts",  Serializer::serializeCacheInfo(chatF()->getCache(), Serializer::serializeUnreadChat) },
 			});
+		}
+
+		AccessList parseMessageAuthorAccess(const OutgoingChatMessage& aMessage) {
+			const auto sessions = module->getSession()->getServer()->getUserManager().getSessions();
+			const auto ownerSessionIter = std::find_if(sessions.begin(), sessions.end(), [&aMessage](const SessionPtr& aSession) {
+				return aSession.get() == aMessage.owner;
+			});
+
+			AccessList permissions;
+			if (ownerSessionIter != sessions.end()) {
+				permissions = (*ownerSessionIter)->getUser()->getPermissions();
+			} else {
+				// GUI/extension etc
+				permissions.push_back(Access::ADMIN);
+			}
+
+			return permissions;
 		}
 
 		api_return handlePostChatMessage(ApiRequest& aRequest) {

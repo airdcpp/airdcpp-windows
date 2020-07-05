@@ -144,6 +144,11 @@ void PrivateChat::CCPMDisconnected() {
 }
 
 bool PrivateChat::sendMessageHooked(const OutgoingChatMessage& aMessage, string& error_) {
+	if (Util::isChatCommand(aMessage.text)) {
+		fire(PrivateChatListener::ChatCommand(), this, aMessage);
+		// TODO: don't continue and run hooks after this with API v2
+	}
+
 	if (ccReady()) {
 		return uc->sendPrivateMessageHooked(aMessage, error_);
 	}

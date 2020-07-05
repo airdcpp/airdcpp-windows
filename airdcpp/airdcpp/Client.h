@@ -194,8 +194,6 @@ public:
 
 	void allowUntrustedConnect() noexcept;
 	bool isKeyprintMismatch() const noexcept;
-
-	static bool isCommand(const string& aMessage) noexcept;
 protected:
 	virtual bool hubMessage(const string& aMessage, string& error_, bool aThirdPerson = false) noexcept = 0;
 	virtual bool privateMessage(const OnlineUserPtr& aUser, const string& aMessage, string& error_, bool aThirdPerson, bool aEcho) noexcept = 0;

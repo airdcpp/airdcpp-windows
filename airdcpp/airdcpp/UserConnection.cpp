@@ -240,7 +240,7 @@ bool UserConnection::sendPrivateMessageHooked(const OutgoingChatMessage& aMessag
 		return false;
 	}
 
-	if (!aMessage.text.empty() && aMessage.text.front() == '/') {
+	if (Util::isChatCommand(aMessage.text)) {
 		return false;
 	}
 

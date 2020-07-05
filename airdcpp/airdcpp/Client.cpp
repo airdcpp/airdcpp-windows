@@ -357,12 +357,11 @@ void Client::allowUntrustedConnect() noexcept {
 	connect(false);
 }
 
-bool Client::isCommand(const string& aMessage) noexcept {
-	return !aMessage.empty() && aMessage.front() == '/';
-}
-
 bool Client::sendMessageHooked(const OutgoingChatMessage& aMessage, string& error_) noexcept {
-	if (!stateNormal() && !isCommand(aMessage.text)) {
+	if (Util::isChatCommand(aMessage.text)) {
+		fire(ClientListener::ChatCommand(), this, aMessage);
+		// TODO: don't continue and run hooks after this with API v2
+	} else if (!stateNormal()) {
 		error_ = STRING(CONNECTING_IN_PROGRESS);
 		return false;
 	}
@@ -374,7 +373,7 @@ bool Client::sendMessageHooked(const OutgoingChatMessage& aMessage, string& erro
 	}
 
 
-	if (isCommand(aMessage.text)) {
+	if (Util::isChatCommand(aMessage.text)) {
 		return false;
 	}
 
@@ -382,7 +381,7 @@ bool Client::sendMessageHooked(const OutgoingChatMessage& aMessage, string& erro
 }
 
 bool Client::sendPrivateMessageHooked(const OnlineUserPtr& aUser, const OutgoingChatMessage& aMessage, string& error_, bool aEcho) noexcept {
-	if (!stateNormal() && !isCommand(aMessage.text)) {
+	if (!stateNormal() && !Util::isChatCommand(aMessage.text)) {
 		error_ = STRING(CONNECTING_IN_PROGRESS);
 		return false;
 	}
@@ -393,7 +392,7 @@ bool Client::sendPrivateMessageHooked(const OnlineUserPtr& aUser, const Outgoing
 		return false;
 	}
 
-	if (isCommand(aMessage.text)) {
+	if (Util::isChatCommand(aMessage.text)) {
 		return false;
 	}
 
