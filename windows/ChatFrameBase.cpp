@@ -552,7 +552,7 @@ void ChatFrameBase::sendFrameMessage(const tstring& aMsg, bool aThirdPerson /*fa
 	if (!aMsg.empty()) {
 		MainFrame::getMainFrame()->addThreadedTask([=] {
 			string error;
-			if (!sendMessageHooked(aMsg, error, aThirdPerson)) {
+			if (!sendMessageHooked(OutgoingChatMessage(Text::fromT(aMsg), this, aThirdPerson), error)) {
 				callAsync([=] { 
 					addStatusLine(Text::toT(error), LogMessage::SEV_ERROR); 
 				});

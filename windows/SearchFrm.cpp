@@ -67,7 +67,7 @@ static ColumnType columnTypes[] = { COLUMN_TEXT, COLUMN_NUMERIC_OTHER, COLUMN_NU
 SearchFrame::FrameMap SearchFrame::frames;
 
 void SearchFrame::openWindow(const tstring& str /* = Util::emptyString */, LONGLONG size /* = 0 */, Search::SizeModes mode /* = SearchManager::SIZE_ATLEAST */, const string& type /* = SEARCH_TYPE_ANY */) {
-	auto instance = SearchManager::getInstance()->createSearchInstance("windows_gui");
+	auto instance = SearchManager::getInstance()->createSearchInstance(WinUtil::ownerId);
 
 	SearchFrame* pChild = new SearchFrame(instance);
 	pChild->setInitial(str, size, mode, type);

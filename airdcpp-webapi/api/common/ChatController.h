@@ -85,7 +85,7 @@ namespace webserver {
 			const auto complete = aRequest.defer();
 			module->addAsyncTask([=] {
 				string error;
-				if (!chatF()->sendMessageHooked(message.first, error, message.second) && !error.empty()) {
+				if (!chatF()->sendMessageHooked(OutgoingChatMessage(message.first, aRequest.getSession().get(), message.second), error) && !error.empty()) {
 					complete(websocketpp::http::status_code::internal_server_error, nullptr, ApiRequest::toResponseErrorStr(error));
 				} else {
 					complete(websocketpp::http::status_code::no_content, nullptr, nullptr);

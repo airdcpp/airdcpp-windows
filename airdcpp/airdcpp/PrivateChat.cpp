@@ -143,12 +143,12 @@ void PrivateChat::CCPMDisconnected() {
 	}
 }
 
-bool PrivateChat::sendMessageHooked(const string& aMessage, string& error_, bool aThirdPerson) {
+bool PrivateChat::sendMessageHooked(const OutgoingChatMessage& aMessage, string& error_) {
 	if (ccReady()) {
-		return uc->sendPrivateMessageHooked(aMessage, error_, aThirdPerson);
+		return uc->sendPrivateMessageHooked(aMessage, error_);
 	}
 
-	return ClientManager::getInstance()->privateMessageHooked(replyTo, aMessage, error_, aThirdPerson);
+	return ClientManager::getInstance()->privateMessageHooked(replyTo, aMessage, error_);
 }
 
 void PrivateChat::closeCC(bool now, bool noAutoConnect) {

@@ -150,7 +150,7 @@ public:
 	}
 
 	void UpdateLayout(BOOL bResizeBars = TRUE);
-	bool sendMessageHooked(const tstring& aMessage, string& error_, bool isThirdPerson);
+	bool sendMessageHooked(const OutgoingChatMessage& aMessage, string& error_);
 	void addLine(const tstring& aLine);
 	void addLine(const tstring& aLine, CHARFORMAT2& cf, bool bUseEmo = true);
 	void addLine(const Identity& i, const tstring& aLine, CHARFORMAT2& cf, bool bUseEmo = true);

@@ -141,6 +141,7 @@ public:
 	static FlatTabCtrl* tabCtrl;
 	static HHOOK hook;
 	static tstring tth;
+	static const string ownerId;
 	static DWORD helpCookie;	
 	static bool isAppActive;
 	static COLORREF TBprogressTextColor;

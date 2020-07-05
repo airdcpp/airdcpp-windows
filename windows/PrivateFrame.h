@@ -118,7 +118,7 @@ public:
 	void runUserCommand(UserCommand& uc);
 	
 	void addClientLine(const tstring& aLine, uint8_t severity);
-	bool sendMessageHooked(const tstring& msg, string& error_, bool thirdPerson = false);
+	bool sendMessageHooked(const OutgoingChatMessage& aMessage, string& error_);
 
 	struct UserListHandler {
 		UserListHandler(PrivateFrame* _pf) : pf(_pf) { }

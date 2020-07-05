@@ -69,6 +69,7 @@ HWND WinUtil::mdiClient = NULL;
 FlatTabCtrl* WinUtil::tabCtrl = NULL;
 HHOOK WinUtil::hook = NULL;
 tstring WinUtil::tth;
+const string WinUtil::ownerId = "windows_gui";
 bool WinUtil::urlDcADCRegistered = false;
 bool WinUtil::urlMagnetRegistered = false;
 bool WinUtil::isAppActive = false;
