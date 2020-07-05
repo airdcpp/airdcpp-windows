@@ -162,7 +162,7 @@ SearchQuery* SearchQuery::getSearch(const SearchPtr& aSearch) noexcept {
 }
 
 StringList SearchQuery::parseSearchString(const string& aString) noexcept {
-	return CommandTokenizer(aString).getTokens();
+	return CommandTokenizer<string, vector>(aString).getTokens();
 }
 
 SearchQuery::SearchQuery(const string& nmdcString, Search::SizeModes aSizeMode, int64_t size, Search::TypeModes aFileType, size_t aMaxResults) noexcept : maxResults(aMaxResults) {
