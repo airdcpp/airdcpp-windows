@@ -646,6 +646,7 @@ LRESULT ChatFrameBase::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam
 void ChatFrameBase::handleSendMessage() {
 	tstring message;
 	tstring status;
+	tstring cmd;
 	bool thirdPerson = false;
 	bool isCommand = false;
 
@@ -663,7 +664,7 @@ void ChatFrameBase::handleSendMessage() {
 
 		// Special command
 		if(s[0] == _T('/')) {
-			tstring cmd = s;
+			cmd = s;
 			tstring param;
 			if(SETTING(CLIENT_COMMANDS)) {
 				addStatusLine(_T("Client command: ") + s, LogMessage::SEV_INFO);
@@ -695,6 +696,9 @@ void ChatFrameBase::handleSendMessage() {
 
 	if (!message.empty()) {
 		sendFrameMessage(message, thirdPerson);
+	} else if (isCommand) {
+		// Let the extensions handle it too
+		sendFrameMessage(cmd, false);
 	}
 
 	ctrlMessage.SetWindowText(Util::emptyStringT.c_str());
@@ -789,7 +793,9 @@ size_t crashWithRecursion(int aCurCount, int aMaxCount, Dummy1 d1, Dummy2 d2) {
 	return crashWithRecursion<T, AllocT, Dummy1, Dummy2>(aCurCount + 1, aMaxCount, d1, d2);
 }
 
-bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson) {
+bool ChatFrameBase::checkCommand(const tstring& aCmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson) {
+	auto cmd = aCmd;
+
 	string::size_type i = cmd.find(' ');
 	if (i != string::npos) {
 		param = cmd.substr(i + 1);

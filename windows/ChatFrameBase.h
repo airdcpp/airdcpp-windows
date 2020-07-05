@@ -130,7 +130,7 @@ private:
 	 * @param status Message that should be shown in the status line.
 	 * @return True if the command was processed, false otherwise.
 	 */
-	bool checkCommand(tstring& cmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson);
+	bool checkCommand(const tstring& aCmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson);
 	UserPtr getUser() { return ctrlClient.getPmUser(); }
 	ClientPtr getClient() { return ctrlClient.getClient(); }
 	const tstring& getSendFileTitle();
