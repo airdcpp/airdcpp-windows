@@ -222,16 +222,13 @@ public:
 
 		menu.appendItem(TSTRING(REMOVE_FROM_ALL), [=] { handleRemoveAll(); });
 
-		OMenu grantMenu;
-		grantMenu.CreatePopupMenu();
-		grantMenu.InsertSeparatorFirst(CTSTRING(GRANT_SLOTS_MENU));
+		auto& grantMenu = *menu.createSubMenu(TSTRING(GRANT_SLOTS_MENU), true);
 		grantMenu.AppendMenu(MF_STRING, IDC_GRANTSLOT, CTSTRING(GRANT_EXTRA_SLOT));
 		grantMenu.AppendMenu(MF_STRING, IDC_GRANTSLOT_HOUR, CTSTRING(GRANT_EXTRA_SLOT_HOUR));
 		grantMenu.AppendMenu(MF_STRING, IDC_GRANTSLOT_DAY, CTSTRING(GRANT_EXTRA_SLOT_DAY));
 		grantMenu.AppendMenu(MF_STRING, IDC_GRANTSLOT_WEEK, CTSTRING(GRANT_EXTRA_SLOT_WEEK));
 		grantMenu.AppendMenu(MF_SEPARATOR);
 		grantMenu.AppendMenu(MF_STRING, IDC_UNGRANTSLOT, CTSTRING(REMOVE_EXTRA_SLOT));
-		menu.AppendMenu(MF_POPUP, (HMENU)grantMenu, CTSTRING(GRANT_SLOTS_MENU));
 	}	
 };
 
