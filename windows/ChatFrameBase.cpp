@@ -552,7 +552,7 @@ void ChatFrameBase::sendFrameMessage(const tstring& aMsg, bool aThirdPerson /*fa
 	if (!aMsg.empty()) {
 		MainFrame::getMainFrame()->addThreadedTask([=] {
 			string error;
-			if (!sendMessageHooked(OutgoingChatMessage(Text::fromT(aMsg), this, aThirdPerson), error)) {
+			if (!sendMessageHooked(OutgoingChatMessage(Text::fromT(aMsg), this, aThirdPerson), error) && !error.empty()) {
 				callAsync([=] { 
 					addStatusLine(Text::toT(error), LogMessage::SEV_ERROR); 
 				});
@@ -696,7 +696,9 @@ void ChatFrameBase::handleSendMessage() {
 
 	if (!message.empty()) {
 		sendFrameMessage(message, thirdPerson);
-	} else if (isCommand) {
+	}
+	
+	if (!cmd.empty()) {
 		// Let the extensions handle it too
 		sendFrameMessage(cmd, false);
 	}
