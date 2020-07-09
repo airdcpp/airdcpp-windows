@@ -7,6 +7,7 @@
 #include <airdcpp/File.h>
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/ResourceManager.h>
+#include <airdcpp/SettingsManager.h>
 #include <airdcpp/version.h>
 
 SettingsManager* Singleton<SettingsManager>::instance = 0;
