@@ -80,12 +80,12 @@ LRESULT WizardConnspeed::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARA
 	ctrlUpload.Attach(GetDlgItem(IDC_CONNECTION));
 
 	setMinMax(IDC_DOWN_SPEED_SPIN, 0, 100000);
-	setMinMax(IDC_DOWNLOAD_S_SPIN, 0, 999);
+	setMinMax(IDC_DOWNLOAD_S_SPIN, 0, 100);
 
 	setMinMax(IDC_UPLOAD_S_SPIN, 1, 100);
-	setMinMax(IDC_UP_SPEED_SPIN, 1, 100);
+	setMinMax(IDC_UP_SPEED_SPIN, 0, 100000);
 
-	setMinMax(IDC_AUTO_SLOTS_SPIN, 1, 100);
+	setMinMax(IDC_AUTO_SLOTS_SPIN, 0, 100);
 
 
 	//fill the speed combos
