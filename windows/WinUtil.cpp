@@ -597,9 +597,9 @@ tstring WinUtil::encodeFont(LOGFONT const& aFont)
 {
 	tstring res(aFont.lfFaceName);
 	res += L',';
-	res += Util::toStringW(aFont.lfHeight);
+	res += Util::toStringW((int64_t)aFont.lfHeight);
 	res += L',';
-	res += Util::toStringW(aFont.lfWeight);
+	res += Util::toStringW((int64_t)aFont.lfWeight);
 	res += L',';
 	res += Util::toStringW(aFont.lfItalic);
 	return res;
