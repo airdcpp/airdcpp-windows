@@ -606,7 +606,7 @@ File::DiskInfo File::getDiskInfo(const string& aFileName) noexcept {
 		return { -1LL, -1LL };
 	}
 
-	int64_t freeSpace = (int64_t)sfs.f_bsize * (int64_t)sfs.f_bfree;
+	int64_t freeSpace = (int64_t)sfs.f_bsize * (int64_t)sfs.f_bavail;
 	int64_t totalSpace = (int64_t)sfs.f_bsize * (int64_t)sfs.f_blocks;
 	return { freeSpace, totalSpace };
 }
