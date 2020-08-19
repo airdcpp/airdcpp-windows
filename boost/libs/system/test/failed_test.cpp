@@ -123,13 +123,13 @@ template<class Ec> void test()
 
     {
         Ec ec( 0, http_category() );
-        BOOST_TEST( ec.failed() );
+        TEST_FAILED( ec );
 
         ec.assign( 200, http_category() );
-        BOOST_TEST( !ec.failed() );
+        TEST_NOT_FAILED( ec );
 
         ec = Ec( 404, http_category() );
-        BOOST_TEST( ec.failed() );
+        TEST_FAILED( ec );
     }
 
 }

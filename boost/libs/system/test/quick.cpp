@@ -8,6 +8,7 @@
 
 // See library home page at http://www.boost.org/libs/system
 
+#include <boost/system/system_error.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <cerrno>
@@ -31,6 +32,11 @@ int main()
     BOOST_TEST( bt.equivalent( ev, bn ) );
 
     BOOST_TEST( bc == bn );
+
+    boost::system::system_error x( bc, "prefix" );
+
+    BOOST_TEST_EQ( x.code(), bc );
+    BOOST_TEST_EQ( std::string( x.what() ), "prefix: " + bc.message() );
 
     return boost::report_errors();
 }

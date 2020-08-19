@@ -8,8 +8,12 @@ http://www.boost.org/LICENSE_1_0.txt
 ////
 
 [#changes]
-# Release History
+# Revision History
 :idprefix:
+
+## Changes in Boost 1.74
+
+* `operator bool()` now returns `failed()` instead of `value() != 0`.
 
 ## Changes in Boost 1.69
 

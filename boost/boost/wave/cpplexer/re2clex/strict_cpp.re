@@ -28,7 +28,7 @@ ExponentPart       = [Ee] [+-]? Digit+;
 FractionalConstant = (Digit* "." Digit+) | (Digit+ ".");
 FloatingSuffix     = [fF] [lL]? | [lL] [fF]?;
 IntegerSuffix      = [uU] [lL]? | [lL] [uU]?;
-LongIntegerSuffix  = [uU] ([lL] [lL]) | ([lL] [lL]) [uU]?;
+LongIntegerSuffix  = [uU] ("ll" | "LL") | ("ll" | "LL") [uU]?;
 Backslash          = [\\] | "??/";
 EscapeSequence     = Backslash ([abfnrtv?'"] | Backslash | "x" HexDigit+ | OctalDigit OctalDigit? OctalDigit?);
 HexQuad            = HexDigit HexDigit HexDigit HexDigit;
@@ -447,6 +447,8 @@ pp_number:
     /*!re2c
         "."? Digit (Digit | NonDigit | ExponentStart | ".")*
             { BOOST_WAVE_RET(T_PP_NUMBER); }
+
+        * { BOOST_ASSERT(false); }
     */
     }
     else {
@@ -455,6 +457,8 @@ pp_number:
             { BOOST_WAVE_RET(T_FLOATLIT); }
 
         Integer { goto integer_suffix; }
+
+        * { BOOST_ASSERT(false); }
     */
     }
 }
@@ -480,12 +484,21 @@ integer_suffix:
             { BOOST_WAVE_RET(T_INTLIT); }
     */
     }
+
+    // re2c will complain about -Wmatch-empty-string above
+    // it's OK because we've already matched an integer
+    // and will return T_INTLIT
 }
 
 /* this subscanner is invoked for C++0x extended character literals */
 extcharlit:
 {
     /*!re2c
+        * {
+            (*s->error_proc)(s, lexing_exception::generic_lexing_error,
+                "Invalid character in raw string delimiter ('%c')", yych);
+        }
+
         ((EscapeSequence | UniversalChar | any\[\n\r\\']) ['])
             { BOOST_WAVE_RET(T_CHARLIT); }
 
@@ -498,6 +511,11 @@ extcharlit:
 extstringlit:
 {
     /*!re2c
+        * {
+            (*s->error_proc)(s, lexing_exception::generic_lexing_error,
+                "Invalid character in raw string delimiter ('%c')", yych);
+        }
+
         ((EscapeSequence | UniversalChar | any\[\n\r\\"])* ["])
             { BOOST_WAVE_RET(T_STRINGLIT); }
 
