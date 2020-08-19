@@ -896,7 +896,16 @@ File::VolumeSet File::getVolumes() noexcept {
 	}
 
 	while ((ent = getmntent(aFile)) != NULL) {
-		volumes.insert(Util::validatePath(ent->mnt_dir, true));
+		auto mountPath = Util::validatePath(ent->mnt_dir, true);
+
+		// Workaround for some standard C libraries not unescaping whitespaces and certain other characters in mount points
+		// https://github.com/airdcpp-web/airdcpp-webclient/issues/362
+		Util::replace("\\040", " ", mountPath);
+		Util::replace("\\011", "\t", mountPath);
+		Util::replace("\\012", "\n", mountPath);
+		Util::replace("\\134", "\\", mountPath);
+
+		volumes.insert(mountPath);
 	}
 	endmntent(aFile);
 #endif
