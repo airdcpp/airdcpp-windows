@@ -279,8 +279,6 @@ private:
 	void socksConnect(addr& addr_, std::function<void(ByteVector& connStr_)>&& aConstructConnStr, uint64_t aTimeout);
 	void appendSocksAddress(const string& aName, const string& aPort, ByteVector& connStr_) const;
 
-	static uint16_t validateSocksResponse(const ByteVector& aData, size_t aDataLength);
-
 	/**
 	 * Sends data, will block until all data has been sent or an exception occurs
 	 * @param aBuffer Buffer with data
