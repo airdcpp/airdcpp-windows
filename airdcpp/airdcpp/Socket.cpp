@@ -482,7 +482,7 @@ void Socket::socksConnect(addr& addr_, std::function<void(ByteVector& connStr_)>
 	socksParseResponseAddress(connStr, len, addr_);
 }
 
-void Socket::socksConnect(const Socket::AddressInfo& aAddr, const string& aPort, uint64_t aTimeout) {
+void Socket::socksConnect(const AddressInfo& aAddr, const string& aPort, uint64_t aTimeout) {
 	addr sock_addr;
 	socksConnect(
 		sock_addr,
