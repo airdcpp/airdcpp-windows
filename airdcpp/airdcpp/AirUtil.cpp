@@ -294,31 +294,17 @@ AirUtil::AdapterInfoList AirUtil::getNetworkAdapters(bool v6) {
 			struct sockaddr *sa = i->ifa_addr;
 
 			// If the interface is up, is not a loopback and it has an address
-			if ((i->ifa_flags & IFF_UP) && !(i->ifa_flags & IFF_LOOPBACK) && sa != NULL) {
-				void* src = nullptr;
-				socklen_t len;
-
-				if (!v6 && sa->sa_family == AF_INET) {
-					// IPv4 address
-					struct sockaddr_in* sai = (struct sockaddr_in*)sa;
-					src = (void*) &(sai->sin_addr);
-					len = INET_ADDRSTRLEN;
-				} else if (v6 && sa->sa_family == AF_INET6) {
-					// IPv6 address
-					struct sockaddr_in6* sai6 = (struct sockaddr_in6*)sa;
-					src = (void*) &(sai6->sin6_addr);
-					len = INET6_ADDRSTRLEN;
-				}
-
-				// Convert the binary address to a string and add it to the output list
-				if (src) {
-					char address[len];
-					inet_ntop(sa->sa_family, src, address, len);
-					// TODO: get the prefix
-					adapterInfos.emplace_back("Unknown", (string)address, 0);
-				}
+			if (
+				(i->ifa_flags & IFF_UP) && 
+				!(i->ifa_flags & IFF_LOOPBACK) && 
+				(sa != NULL) && 
+				(v6 == (sa->sa_family == AF_INET6))
+			{
+				auto str = Socket::resolveName(sa, sizeof(sa));
+				adapterInfos.emplace_back("Unknown", str, 0);
 			}
 		}
+
 		freeifaddrs(ifap);
 	}
 #endif

@@ -337,12 +337,6 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		File::ensureDirectory(SETTING(LOG_DIRECTORY));
 	} catch (const FileException) {	}
 
-	try {
-		ConnectivityManager::getInstance()->setup(true, true);
-	} catch (const Exception& e) {
-		showPortsError(e.getError());
-	}
-
 	UpdateManager::getInstance()->init();
 		
 	WinUtil::SetIcon(m_hWnd, IDR_MAINFRAME, true);
@@ -438,11 +432,6 @@ HWND MainFrame::createTBStatusBar() {
 	refreshing = false;
 
 	return TBStatusCtrl.m_hWnd;
-}
-
-
-void MainFrame::showPortsError(const string& port) {
-	showMessageBox(Text::toT(STRING_F(PORT_BYSY, port)), MB_OK | MB_ICONEXCLAMATION);
 }
 
 HWND MainFrame::createWinampToolbar() {
@@ -940,8 +929,13 @@ LRESULT MainFrame::OnFileSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 	if (settingsWindowOpen)
 		return;
-	// TODO: use move captures instead when those are available
-	auto holder = make_shared<SettingHolder>([this](const string& e) { showPortsError(e); });
+
+	auto holder = make_shared<SettingHolder>([this](const string& e) {
+		callAsync([=] {
+			showMessageBox(Text::toT(e), MB_OK | MB_ICONEXCLAMATION);
+		});
+	});
+
 	auto dlg = make_shared<PropertiesDlg>(m_hWnd, SettingsManager::getInstance(), initialPage);
 
 	bool lastSortFavUsersFirst = SETTING(SORT_FAVUSERS_FIRST);
@@ -957,6 +951,7 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 			}
 
 			SettingsManager::getInstance()->save();
+			holder->apply();
 		});
  
 		if(SETTING(SORT_FAVUSERS_FIRST) != lastSortFavUsersFirst)

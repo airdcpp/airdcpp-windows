@@ -88,6 +88,8 @@ void WizardProfile::write() {
 	for (const auto& setting: conflicts) {
 		setting.setProfileToDefault(true);
 	}
+
+	h.apply();
 }
 
 int WizardProfile::getCurProfile() {
