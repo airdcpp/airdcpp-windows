@@ -494,12 +494,15 @@ void Socket::socksConnect(const Socket::AddressInfo& aAddr, const string& aPort,
 		aTimeout
 	);
 
-	const auto ip = resolveName(&sock_addr.sa, sizeof(sock_addr));
-	if (sock_addr.sa.sa_family == AF_INET) {
-		setIp4(ip);
-	} else {
+	auto isV6 = sock_addr.sa.sa_family == AF_INET6;
+	const auto ip = resolveName(&sock_addr.sa, isV6 ? sizeof(sock_addr.sai6) : sizeof(sock_addr.sai));
+	if (isV6) {
 		setIp6(ip);
+	} else {
+		setIp4(ip);
 	}
+
+	dcdebug("SOCKS5: resolved address %s:%d (v6: %s)\n", ip.c_str(), isV6 ? sock_addr.sai6.sin6_port : sock_addr.sai.sin_port, isV6 ? "true" : "false");
 }
 
 void Socket::socksAuth(uint64_t timeout) {
@@ -611,7 +614,7 @@ int Socket::read(void* aBuffer, int aBufLen, string &aIP) {
 
 int Socket::socksRead(ByteVector& aBuffer, int aBufLen, std::function<bool(const ByteVector& aBuffer, int aBufLen)>&& aIsComplete, uint64_t aTimeout) {
 	int i = 0;
-	while (!aIsComplete(aBuffer, i)) {
+	while (i <= 0 || !aIsComplete(aBuffer, i)) {
 		int j = Socket::read(&aBuffer[i], aBufLen - i);
 		if (j == 0) {
 			return i;
@@ -885,7 +888,7 @@ string Socket::resolveName(const sockaddr* sa, socklen_t sa_len, int flags) {
 	char buf[1024];
 
 	auto err = ::getnameinfo(sa, sa_len, buf, sizeof(buf), NULL, 0, flags);
-	if(err) {
+	if (err) {
 		throw SocketException(err);
 	}
 
@@ -955,24 +958,28 @@ void Socket::socksUpdated() {
 			throw SocketException(STRING_F(SOCKS_SETUP_ERROR, e.getError()));
 		}
 
-		dcdebug("SOCKS5: UDP initialized with address %s:%d\n", resolveName(&udpAddr.sa, sizeof(udpAddr)).c_str(), udpAddr.sai.sin_port);
+		auto isV6 = udpAddr.sa.sa_family == AF_INET6;
+		udpAddrLen = isV6 ? sizeof(udpAddr.sai6) : sizeof(udpAddr.sai);
 
-		udpAddrLen = sizeof(udpAddr.sai);
+		dcdebug("SOCKS5: UDP initialized with address %s:%d (v6: %s)\n", resolveName(&udpAddr.sa, udpAddrLen).c_str(), isV6 ? udpAddr.sai6.sin6_port : udpAddr.sai.sin_port, isV6 ? "true" : "false");
 	}
 }
 
 
 uint16_t Socket::validateSocksResponse(const ByteVector& aData, size_t aDataLength) {
 	if (aDataLength < 3) {
+		dcdebug("SOCKS5: not enough bytes in the response (" SIZET_FMT ")\n", aDataLength);
 		throw SocketException(STRING(SOCKS_UNSUPPORTED_RESPONSE));
 	}
 
 	if (aData[0] != 5) {
+		dcdebug("SOCKS5: invalid SOCKS version received (%d)\n", aData[0]);
 		throw SocketException(STRING(SOCKS_UNSUPPORTED_RESPONSE));
 	}
 
 	if (aData[1] != 0) {
 		// Connection failed
+		dcdebug("SOCKS5: error received (%d)\n", aData[1]);
 		throw SocketException(STRING(SOCKS_FAILED));
 	}
 
@@ -982,11 +989,13 @@ uint16_t Socket::validateSocksResponse(const ByteVector& aData, size_t aDataLeng
 	} else if (aData[3] == SocksAddrType::TYPE_V6) {
 		af = AF_INET6;
 	} else {
+		dcdebug("SOCKS5: unsupported protocol (%d)\n", aData[3]);
 		throw SocketException(STRING(SOCKS_UNSUPPORTED_RESPONSE));
 	}
 
-	auto expectedDataLength = af == AF_INET ? 10 : 22;
+	size_t expectedDataLength = af == AF_INET ? 10 : 22;
 	if (aDataLength != expectedDataLength) {
+		dcdebug("SOCKS5: received " SIZET_FMT " bytes while " SIZET_FMT " bytes were expected\n", aDataLength, expectedDataLength);
 		throw SocketException(STRING(SOCKS_UNSUPPORTED_RESPONSE));
 	}
 
@@ -997,7 +1006,12 @@ void Socket::socksParseResponseAddress(const ByteVector& aData, size_t aDataLeng
 	auto af = validateSocksResponse(aData, aDataLength);
 	addr_.sa.sa_family = af;
 
-	addr_.sai.sin_port = *((uint16_t*)(&aData[aData.size() - 2])); // 2 bytes
+	const auto port = *((uint16_t*)(&aData[aData.size() - 2])); // 2 bytes
+	if (addr_.sa.sa_family == AF_INET6) {
+		addr_.sai6.sin6_port = port;
+	} else {
+		addr_.sai.sin_port = port;
+	}
 #ifdef _WIN32
 	if (addr_.sa.sa_family == AF_INET6) {
 		memcpy(addr_.sai6.sin6_addr.u.Byte, &aData[4], 16);
@@ -1006,9 +1020,9 @@ void Socket::socksParseResponseAddress(const ByteVector& aData, size_t aDataLeng
 	}
 #else
 	if (udpAddr.sa.sa_family == AF_INET6) {
-		memcpy(addr_.sai6.sin6_addr.s6_addr, &connStr[4], 16);
+		memcpy(addr_.sai6.sin6_addr.s6_addr, &aData[4], 16);
 	} else {
-		addr_.sai.sin_addr.s_addr = *((long*)(&connStr[4]));
+		addr_.sai.sin_addr.s_addr = *((long*)(&aData[4]));
 	}
 #endif
 }
