@@ -28,7 +28,7 @@
 
 namespace webserver {
 	CID Deserializer::parseCID(const string& aCID) {
-		if (!Encoder::isBase32(aCID.c_str())) {
+		if (aCID.length() != 39 || !Encoder::isBase32(aCID.c_str())) {
 			throw std::invalid_argument("Invalid CID");
 		}
 
@@ -47,6 +47,15 @@ namespace webserver {
 		auto u = ClientManager::getInstance()->findUser(aCID);
 		if (!u) {
 			throw std::invalid_argument("User not found");
+		}
+
+		return u;
+	}
+
+	UserPtr Deserializer::getOfflineUser(const string& aCID, const string& aNicks, const string& aHubUrl, bool aAllowMe) {
+		auto u = ClientManager::getInstance()->loadUser(aCID, aHubUrl, aNicks);
+		if (!aAllowMe && u->getCID() == ClientManager::getInstance()->getMyCID()) {
+			throw std::invalid_argument("Own CID isn't allowed for this command");
 		}
 
 		return u;
@@ -78,6 +87,26 @@ namespace webserver {
 		auto user = deserializeUser(aJson, aAllowMe, false);
 		auto hubUrl = JsonUtil::getField<string>("hub_url", aJson, aAllowMe && user == ClientManager::getInstance()->getMe());
 		return HintedUser(user, hubUrl);
+	}
+
+	UserPtr Deserializer::parseOfflineUser(const json& aJson, const string& aFieldName, bool aAllowMe, const string& aHubUrl) {
+		const auto cid = JsonUtil::getField<string>("cid", aJson, false);
+		const auto nicks = JsonUtil::getField<string>("nicks", aJson, false);
+		auto user = getOfflineUser(cid, nicks, aHubUrl, aAllowMe);
+		return user;
+	}
+
+	Deserializer::OfflineHintedUser Deserializer::parseOfflineHintedUser(const json& aJson, const string& aFieldName, bool aAllowMe) {
+		const auto cid = JsonUtil::getField<string>("cid", aJson, false);
+		const auto hubUrl = JsonUtil::getField<string>("hub_url", aJson, aAllowMe);
+		const auto nicks = JsonUtil::getField<string>("nicks", aJson, false);
+
+		auto user = getOfflineUser(cid, nicks, hubUrl, aAllowMe);
+		if (hubUrl.empty() && user != ClientManager::getInstance()->getMe()) {
+			throw std::invalid_argument("hub_url missing");
+		}
+
+		return OfflineHintedUser(user, hubUrl, nicks);
 	}
 
 	OnlineUserPtr Deserializer::deserializeOnlineUser(const json& aJson, bool aAllowMe, const string& aFieldName) {
