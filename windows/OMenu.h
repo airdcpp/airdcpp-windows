@@ -33,13 +33,19 @@
 #define EXT_CONTEXT_MENU(menu, menuId, tokens) \
 if (!tokens.empty()) { \
 	auto cmm = &webserver::WebServerManager::getInstance()->getContextMenuManager(); \
-	auto extMenuItems = cmm->get##menuId##Menu(tokens, { webserver::Access::ADMIN }); \
+	auto extMenuItems = cmm->get##menuId##Menu(tokens, { webserver::Access::ADMIN }, { webserver::ContextMenuManager::URLS_SUPPORT }); \
 	if (!extMenuItems.empty()) { \
 		for (const auto& extItem : extMenuItems) { \
 			menu.appendItem( \
 				Text::toT(extItem->getTitle()), \
 				[=]() { \
-					cmm->onClick##menuId##Item(tokens, { webserver::Access::ADMIN }, extItem->getHookId(), extItem->getId()); \
+					if (!extItem->getUrls().empty()) { \
+						for (const auto& url: extItem->getUrls()) { \
+							ActionUtil::openLink(Text::toT(url)); \
+						} \
+						return; \
+					} \
+					cmm->onClick##menuId##Item(tokens, { webserver::Access::ADMIN }, extItem->getHookId(), extItem->getId(), { webserver::ContextMenuManager::URLS_SUPPORT }); \
 				}, \
 				OMenu::FLAG_THREADED \
 			); \
@@ -51,13 +57,19 @@ if (!tokens.empty()) { \
 #define EXT_CONTEXT_MENU_ENTITY(menu, menuId, tokens, entity) \
 if (!tokens.empty()) { \
 	auto cmm = &webserver::WebServerManager::getInstance()->getContextMenuManager(); \
-	auto extMenuItems = cmm->get##menuId##Menu(tokens, { webserver::Access::ADMIN }, entity); \
+	auto extMenuItems = cmm->get##menuId##Menu(tokens, { webserver::Access::ADMIN }, { webserver::ContextMenuManager::URLS_SUPPORT }, entity); \
 	if (!extMenuItems.empty()) { \
 		for (const auto& extItem : extMenuItems) { \
 			menu.appendItem( \
 				Text::toT(extItem->getTitle()), \
 				[=]() { \
-					cmm->onClick##menuId##Item(tokens, { webserver::Access::ADMIN }, extItem->getHookId(), extItem->getId(), entity); \
+					if (!extItem->getUrls().empty()) { \
+						for (const auto& url: extItem->getUrls()) { \
+							ActionUtil::openLink(Text::toT(url)); \
+						} \
+						return; \
+					} \
+					cmm->onClick##menuId##Item(tokens, { webserver::Access::ADMIN }, extItem->getHookId(), extItem->getId(), { webserver::ContextMenuManager::URLS_SUPPORT }, entity); \
 				}, \
 				OMenu::FLAG_THREADED \
 			); \
