@@ -195,6 +195,7 @@ namespace webserver {
 			{ "share_profile", Serializer::serializeShareProfileSimple(aClient->get(HubSettings::ShareProfile)) },
 			{ "message_counts", Serializer::serializeCacheInfo(aClient->getCache(), Serializer::serializeUnreadChat) },
 			{ "encryption", Serializer::serializeEncryption(aClient->getEncryptionInfo(), aClient->isTrusted()) },
+			{ "settings", HubInfo::serializeSettings(aClient) },
 		};
 	}
 

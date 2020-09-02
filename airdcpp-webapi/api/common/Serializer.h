@@ -221,6 +221,10 @@ namespace webserver {
 		static json defaultArrayValueSerializer(const IdT& aJson) {
 			return aJson;
 		}
+
+		static json serializeHubSetting(tribool aSetting) noexcept;
+		static json serializeHubSetting(int aSetting) noexcept;
+		static string serializeHubSetting(const string& aSetting) noexcept;
 	private:
 		static void appendOnlineUserFlags(const OnlineUserPtr& aUser, StringSet& flags_) noexcept;
 

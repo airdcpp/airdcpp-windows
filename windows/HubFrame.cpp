@@ -242,13 +242,13 @@ bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*messag
 		client->password(Text::fromT(param));
 		waitingForPW = false;
 	} else if( stricmp(cmd.c_str(), _T("showjoins")) == 0 ) {
-		if(client->changeBoolHubSetting(HubSettings::ShowJoins)) {
+		if(client->toggleHubBoolSetting(HubSettings::ShowJoins)) {
 			status = TSTRING(JOIN_SHOWING_ON);
 		} else {
 			status = TSTRING(JOIN_SHOWING_OFF);
 		}
 	} else if( stricmp(cmd.c_str(), _T("favshowjoins")) == 0 ) {
-		if(client->changeBoolHubSetting(HubSettings::FavShowJoins)) {
+		if(client->toggleHubBoolSetting(HubSettings::FavShowJoins)) {
 			status = TSTRING(FAV_JOIN_SHOWING_ON);
 		} else {
 			status = TSTRING(FAV_JOIN_SHOWING_OFF);
@@ -953,7 +953,7 @@ void HubFrame::handleOpenOwnList(){
 }
 
 LRESULT HubFrame::onSetNotify(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
-	client->changeBoolHubSetting(HubSettings::ChatNotify);
+	client->toggleHubBoolSetting(HubSettings::ChatNotify);
 	return 0;
 }
 

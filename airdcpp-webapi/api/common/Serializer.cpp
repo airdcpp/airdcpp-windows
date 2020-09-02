@@ -468,4 +468,28 @@ namespace webserver {
 	StringList Serializer::serializePermissions(const AccessList& aPermissions) noexcept {
 		return WebUser::permissionsToStringList(aPermissions);
 	}
+
+	json Serializer::serializeHubSetting(tribool aSetting) noexcept {
+		if (!HubSettings::defined(aSetting)) {
+			return nullptr;
+		}
+
+		return aSetting.value ? true : false;
+	}
+
+	json Serializer::serializeHubSetting(int aSetting) noexcept {
+		if (!HubSettings::defined(aSetting)) {
+			return nullptr;
+		}
+
+		return aSetting;
+	}
+
+	string Serializer::serializeHubSetting(const string& aSetting) noexcept {
+		if (!HubSettings::defined(aSetting)) {
+			return Util::emptyString;
+		}
+
+		return aSetting;
+	}
 }
