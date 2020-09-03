@@ -228,11 +228,7 @@ namespace webserver {
 
 	json Serializer::serializeUnreadChat(const MessageCache& aCache) noexcept {
 		MessageCache::ChatMessageFilterF isBot = [](const ChatMessagePtr& aMessage) {
-			if (aMessage->getFrom()->getIdentity().isBot() || aMessage->getFrom()->getIdentity().isHub()) {
-				return true;
-			}
-
-			return aMessage->getReplyTo() && aMessage->getReplyTo()->getIdentity().isBot(); 
+			return aMessage->getFrom()->getIdentity().isBot() || aMessage->getFrom()->getIdentity().isHub();
 		};
 
 		return {
