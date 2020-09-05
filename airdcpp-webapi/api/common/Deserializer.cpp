@@ -78,8 +78,12 @@ namespace webserver {
 		return getUser(*cid, aAllowMe);
 	}
 
-	HintedUser Deserializer::deserializeHintedUser(const json& aJson, bool aAllowMe, const string& aFieldName) {
-		auto userJson = JsonUtil::getRawField(aFieldName, aJson);
+	HintedUser Deserializer::deserializeHintedUser(const json& aJson, bool aAllowMe, bool aOptional, const string& aFieldName) {
+		auto userJson = JsonUtil::getOptionalRawField(aFieldName, aJson);
+		if (userJson.is_null()) {
+			return HintedUser();
+		}
+
 		return parseHintedUser(userJson, aFieldName, aAllowMe);
 	}
 
@@ -110,7 +114,7 @@ namespace webserver {
 	}
 
 	OnlineUserPtr Deserializer::deserializeOnlineUser(const json& aJson, bool aAllowMe, const string& aFieldName) {
-		auto hintedUser = deserializeHintedUser(aJson, aAllowMe, aFieldName);
+		auto hintedUser = deserializeHintedUser(aJson, aAllowMe, false, aFieldName);
 
 		auto onlineUser = ClientManager::getInstance()->findOnlineUser(hintedUser, false);
 		if (!onlineUser) {
