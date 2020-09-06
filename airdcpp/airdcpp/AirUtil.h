@@ -65,7 +65,6 @@ public:
 	static void init();
 
 	static string toOpenFileName(const string& aFileName, const TTHValue& aTTH) noexcept;
-	static string fromOpenFileName(const string& aFileName) noexcept;
 
 	struct AdapterInfo {
 		AdapterInfo(const string& aName, const string& aIP, uint8_t aPrefix) : adapterName(aName), ip(aIP), prefix(aPrefix) { }

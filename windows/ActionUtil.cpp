@@ -921,7 +921,7 @@ void ActionUtil::findNfo(const string& aAdcPath, const HintedUser& aUser) noexce
 		else {
 			MainFrame::getMainFrame()->ShowPopup(TSTRING(NO_NFO_FOUND), Text::toT(Util::getAdcLastDir(aAdcPath)), NIIF_INFO, true);
 		}
-		});
+	});
 }
 
 bool ActionUtil::allowGetFullList(const HintedUser& aUser) noexcept {

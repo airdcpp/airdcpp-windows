@@ -1597,7 +1597,7 @@ void DirectoryListingFrame::handleViewAsText() {
 	handleItemAction(false, [this](const ItemInfo* ii) {
 		if (ii->type == ItemInfo::FILE) {
 			if (dl->getIsOwnList()) {
-				ViewFileManager::getInstance()->addLocalFile(ii->file->getTTH(), true);
+				ViewFileManager::getInstance()->addLocalFileNotify(ii->file->getTTH(), true, ii->getName());
 			} else {
 				ViewFileManager::getInstance()->addUserFileNotify(ii->file->getName(), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), true);
 			}

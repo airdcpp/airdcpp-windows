@@ -66,7 +66,7 @@ void TextFrame::openFile(const ViewFilePtr& aFile) {
 	if (aText.empty())
 		return;
 
-	auto frm = new TextFrame(aFile->getDisplayName(), aText, aFile);
+	auto frm = new TextFrame(aFile->getFileName(), aText, aFile);
 	frm->setNfo(Util::getFileExt(aFile->getPath()) == ".nfo");
 	frm->openWindow();
 }
