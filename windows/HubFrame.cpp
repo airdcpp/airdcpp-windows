@@ -1493,7 +1493,7 @@ void HubFrame::on(KeyprintMismatch, const Client*) noexcept {
 void HubFrame::openLinksInTopic() {
 	StringList urls;
 	
-	boost::regex linkReg(AirUtil::getLinkUrl());
+	boost::regex linkReg(AirUtil::getUrlReg());
 	AirUtil::getRegexMatches(client->getHubDescription(), urls, linkReg);
 
 	for(auto& url: urls) {

@@ -302,7 +302,7 @@ bool ActionUtil::parseDBLClick(const tstring& aStr) {
 	if (AirUtil::isRelease(url)) {
 		search(Text::toT(url));
 		return true;
-	} else if (AirUtil::stringRegexMatch(AirUtil::getLinkUrl(), url)) {
+	} else if (AirUtil::stringRegexMatch(AirUtil::getUrlReg(), url)) {
 		if (aStr.find(_T("magnet:?")) != tstring::npos) {
 			parseMagnetUri(aStr, HintedUser());
 			return true;

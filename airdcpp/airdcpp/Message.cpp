@@ -63,4 +63,15 @@ string ChatMessage::format() const noexcept {
 	return tmp;
 }
 
+
+void ChatMessage::updateMentions(const Identity& aMe) noexcept {
+	if (from->getIdentity().getSID() == aMe.getSID()) {
+		return;
+	}
+
+	if (text.find(aMe.getNick()) != string::npos) {
+		mentionedNick = aMe.getNick();
+	}
+}
+
 } // namespace dcpp
