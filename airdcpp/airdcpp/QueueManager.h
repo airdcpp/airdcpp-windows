@@ -384,6 +384,7 @@ public:
 	// The bundle will be paused if running
 	void recheckBundle(QueueToken aBundleToken) noexcept;
 
+	// Update download URL for a viewed filelist
 	void updateFilelistUrl(const HintedUser& aUser) noexcept;
 private:
 	IGETSET(uint64_t, lastXmlSave, LastXmlSave, 0);

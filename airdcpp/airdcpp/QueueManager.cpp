@@ -1395,7 +1395,7 @@ void QueueManager::updateFilelistUrl(const HintedUser& aUser) noexcept {
 		userQueue.getUserQIs(aUser, ql);
 
 		for (const auto& q : ql) {
-			if (q->isFilelist()) {
+			if (q->isFilelist() && q->isSet(QueueItem::FLAG_CLIENT_VIEW)) {
 				auto source = q->getSource(aUser);
 				source->setHubUrl(aUser.hint);
 				updated.push_back(q);
@@ -1403,11 +1403,13 @@ void QueueManager::updateFilelistUrl(const HintedUser& aUser) noexcept {
 		}
 	}
 
-	for (const auto& q: updated) {
-		fire(QueueManagerListener::ItemSources(), q);
-	}
+	if (!updated.empty()) {
+		for (const auto& q: updated) {
+			fire(QueueManagerListener::ItemSources(), q);
+		}
 
-	ConnectionManager::getInstance()->getDownloadConnection(aUser);
+		ConnectionManager::getInstance()->getDownloadConnection(aUser);
+	}
 }
 
 void QueueManager::onFileFinished(const QueueItemPtr& aQI, Download* aDownload, const string& aListDirectory) noexcept {
