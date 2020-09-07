@@ -36,17 +36,14 @@ namespace webserver {
 		return compare(a, b);
 	}
 
-	MessageHighlight::List MessageHighlight::parseHighlights(const string& aTextUtf8, const string& aMyNick, const UserPtr& aUser) {
+	MessageHighlight::List MessageHighlight::parseHighlights(const string& aText, const string& aMyNick, const UserPtr& aUser) {
 		MessageHighlight::List ret;
-
-		const auto textW = Text::utf8ToWide(aTextUtf8);
 
 		// My nick
 		if (!aMyNick.empty()) {
-			const auto myNick = Text::utf8ToWide(aMyNick);
 			size_t lMyNickStart = string::npos;
 			size_t lSearchFrom = 0;
-			while ((lMyNickStart = textW.find(myNick, lSearchFrom)) != string::npos) {
+			while ((lMyNickStart = aText.find(aMyNick, lSearchFrom)) != string::npos) {
 				auto lMyNickEnd = lMyNickStart + aMyNick.size();
 				lSearchFrom = lMyNickEnd;
 
@@ -57,33 +54,32 @@ namespace webserver {
 
 		// Parse release names
 		if (SETTING(FORMAT_RELEASE) || SETTING(DUPES_IN_CHAT)) {
-			auto start = textW.cbegin();
-			auto end = textW.cend();
+			auto start = aText.cbegin();
+			auto end = aText.cend();
+			boost::match_results<string::const_iterator> result;
+			int pos = 0;
 
-			boost::match_results<wstring::const_iterator> result;
-			boost::regex::difference_type pos = 0;
-
-			while (boost::regex_search(start, end, result, AirUtil::releaseRegChatW, boost::match_default)) {
-				auto link = Text::wideToUtf8(tstring(result[0].first, result[0].second));
+			while (boost::regex_search(start, end, result, AirUtil::releaseRegChat, boost::match_default)) {
+				std::string link(result[0].first, result[0].second);
 
 				auto dupe = AirUtil::checkAdcDirectoryDupe(link, 0);
 
 				ret.insert_sorted(MessageHighlight(pos + result.position(), link, MessageHighlight::HighlightType::TYPE_RELEASE, dupe));
 				start = result[0].second;
-				pos += result.position() + result.length();
+				pos += result.position() + link.length();
 			}
 		}
 
 		// Parse links
 		{
 			try {
-				auto start = textW.cbegin();
-				auto end = textW.cend();
-				boost::match_results<wstring::const_iterator> result;
-				boost::regex::difference_type pos = 0;
+				auto start = aText.cbegin();
+				auto end = aText.cend();
+				boost::match_results<string::const_iterator> result;
+				int pos = 0;
 
-				while (boost::regex_search(start, end, result, AirUtil::urlRegW, boost::match_default)) {
-					auto link = Text::wideToUtf8(tstring(result[0].first, result[0].second));
+				while (boost::regex_search(start, end, result, AirUtil::urlReg, boost::match_default)) {
+					string link(result[0].first, result[0].second);
 
 					auto highlight = MessageHighlight(pos + result.position(), link, MessageHighlight::HighlightType::TYPE_URL);
 
@@ -105,7 +101,7 @@ namespace webserver {
 					ret.insert_sorted(std::move(highlight));
 
 					start = result[0].second;
-					pos += result.position() + result.length();
+					pos += result.position() + link.length();
 				}
 
 			} catch (...) {

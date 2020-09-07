@@ -56,12 +56,11 @@
 namespace dcpp {
 
 boost::regex AirUtil::releaseRegBasic;
+boost::regex AirUtil::releaseRegChat;
 boost::regex AirUtil::subDirRegPlain;
 boost::regex AirUtil::crcReg;
 boost::regex AirUtil::lineBreakRegex;
-
-boost::wregex AirUtil::releaseRegChatW;
-boost::wregex AirUtil::urlRegW;
+boost::regex AirUtil::urlReg;
 
 AirUtil::TimeCounter::TimeCounter(string aMsg) : start(GET_TICK()), msg(move(aMsg)) {
 
@@ -147,12 +146,11 @@ TTHValue AirUtil::getPathId(const string& aPath) noexcept {
 
 void AirUtil::init() {
 	releaseRegBasic.assign(getReleaseRegBasic());
+	releaseRegChat.assign(getReleaseRegLong(true));
+	urlReg.assign(getUrlReg());
 	subDirRegPlain.assign(getSubDirReg(), boost::regex::icase);
 	crcReg.assign(R"(.{5,200}\s(\w{8})$)");
 	lineBreakRegex.assign(R"(\n|\r)");
-
-	releaseRegChatW.assign(Text::utf8ToWide(getReleaseRegLong(true)));
-	urlRegW.assign(Text::utf8ToWide(getUrlReg()));
 
 
 #if defined _WIN32 && defined _DEBUG
