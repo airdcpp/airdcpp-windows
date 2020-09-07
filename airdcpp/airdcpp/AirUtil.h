@@ -40,11 +40,12 @@ public:
 	};
 
 	static boost::regex releaseRegBasic;
-	static boost::regex releaseRegChat;
 	static boost::regex subDirRegPlain;
 	static boost::regex crcReg;
 	static boost::regex lineBreakRegex;
-	static boost::regex urlReg;
+
+	static boost::wregex releaseRegChatW;
+	static boost::wregex urlRegW;
 
 	// Check directory dupe status by name or ADC path
 	static DupeType checkAdcDirectoryDupe(const string& aAdcPath, int64_t aSize);
