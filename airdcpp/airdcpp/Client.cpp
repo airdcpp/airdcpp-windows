@@ -138,7 +138,7 @@ void Client::reloadSettings(bool aUpdateNick) noexcept {
 		return;
 	}
 
-	// Something has changes
+	// Something has changed
 	if (fav) {
 		if (!fav->getPassword().empty()) {
 			setPassword(fav->getPassword());
