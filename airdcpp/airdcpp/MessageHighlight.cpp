@@ -20,15 +20,16 @@
 
 #include "MessageHighlight.h"
 
-#include <airdcpp/AirUtil.h>
-#include <airdcpp/Magnet.h>
-#include <airdcpp/MessageCache.h>
-#include <airdcpp/ShareManager.h>
-#include <airdcpp/OnlineUser.h>
+#include "AirUtil.h"
+#include "ShareManager.h"
+#include "OnlineUser.h"
 
 
-namespace webserver {
-	MessageHighlight::MessageHighlight(size_t aStart, const string& aText, HighlightType aType, DupeType aDupeType) : start(aStart), end(aStart + aText.size()), text(aText), type(aType), dupe(aDupeType) {
+namespace dcpp {
+
+	atomic<MessageHighlightToken> messageHighlightIdCounter { 1 };
+
+	MessageHighlight::MessageHighlight(size_t aStart, const string& aText, HighlightType aType) : token(messageHighlightIdCounter++), start(aStart), end(aStart + aText.size()), text(aText), type(aType) {
 
 	}
 
@@ -47,7 +48,7 @@ namespace webserver {
 				auto lMyNickEnd = lMyNickStart + aMyNick.size();
 				lSearchFrom = lMyNickEnd;
 
-				ret.insert_sorted(MessageHighlight(lMyNickStart, aMyNick, MessageHighlight::HighlightType::TYPE_ME));
+				ret.insert_sorted(make_shared<MessageHighlight>(lMyNickStart, aMyNick, MessageHighlight::HighlightType::TYPE_ME));
 			}
 		}
 
@@ -62,9 +63,7 @@ namespace webserver {
 			while (boost::regex_search(start, end, result, AirUtil::releaseRegChat, boost::match_default)) {
 				std::string link(result[0].first, result[0].second);
 
-				auto dupe = AirUtil::checkAdcDirectoryDupe(link, 0);
-
-				ret.insert_sorted(MessageHighlight(pos + result.position(), link, MessageHighlight::HighlightType::TYPE_RELEASE, dupe));
+				ret.insert_sorted(make_shared<MessageHighlight>(pos + result.position(), link, MessageHighlight::HighlightType::TYPE_RELEASE));
 				start = result[0].second;
 				pos += result.position() + link.length();
 			}
@@ -81,22 +80,18 @@ namespace webserver {
 				while (boost::regex_search(start, end, result, AirUtil::urlReg, boost::match_default)) {
 					string link(result[0].first, result[0].second);
 
-					auto highlight = MessageHighlight(pos + result.position(), link, MessageHighlight::HighlightType::TYPE_URL);
+					auto highlight = make_shared<MessageHighlight>(pos + result.position(), link, MessageHighlight::HighlightType::TYPE_URL);
 
-					auto dupe = DupeType::DUPE_NONE;
 					if (link.find("magnet:?") == 0) {
 						auto m = Magnet::parseMagnet(link);
 						if (m) {
-							dupe = (*m).getDupeType();
-							highlight.setMagnet(m);
+							highlight->setMagnet(m);
 
-							if (dupe == DUPE_NONE && ShareManager::getInstance()->isTempShared(aUser, (*m).getTTH())) {
-								dupe = DUPE_SHARE_FULL;
-								highlight.setType(MessageHighlight::HighlightType::TYPE_TEMP_SHARE);
+							if (ShareManager::getInstance()->isTempShared(aUser, (*m).getTTH())) {
+								highlight->setType(MessageHighlight::HighlightType::TYPE_TEMP_SHARE);
 							}
 						}
 					}
-					highlight.setDupe(dupe);
 
 					ret.insert_sorted(std::move(highlight));
 
@@ -110,5 +105,21 @@ namespace webserver {
 		}
 
 		return ret;
+	}
+
+	DupeType MessageHighlight::getDupe() const noexcept {
+		switch (type) {
+			case TYPE_RELEASE: {
+				return AirUtil::checkAdcDirectoryDupe(text, 0);
+			}
+			case TYPE_URL: {
+				if (magnet) {
+					return (*magnet).getDupeType();
+				}
+				break;
+			}
+		}
+
+		return DUPE_NONE;
 	}
 }
