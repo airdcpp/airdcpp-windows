@@ -29,16 +29,25 @@ namespace dcpp {
 
 	atomic<MessageHighlightToken> messageHighlightIdCounter { 1 };
 
-	MessageHighlight::MessageHighlight(size_t aStart, const string& aText, HighlightType aType) : token(messageHighlightIdCounter++), start(aStart), end(aStart + aText.size()), text(aText), type(aType) {
+	MessageHighlight::MessageHighlight(size_t aStart, const string& aText, HighlightType aType) : token(messageHighlightIdCounter++), Position({ aStart, aStart + aText.size() }), text(aText), type(aType) {
 
 	}
 
-	int MessageHighlight::LinkSortOrder::operator()(size_t a, size_t b) const noexcept {
-		return compare(a, b);
+	int MessageHighlight::HighlightSort::operator()(const MessageHighlight::KeyT& a, const MessageHighlight::KeyT& b) const noexcept {
+		// Overlapping ranges can't be added
+		if (a.getStart() <= b.getEnd() && b.getStart() <= a.getEnd()) {
+			return 0;
+		}
+
+		return compare(a.getStart(), b.getStart());
 	}
 
-	MessageHighlight::List MessageHighlight::parseHighlights(const string& aText, const string& aMyNick, const UserPtr& aUser) {
-		MessageHighlight::List ret;
+	const MessageHighlight::KeyT& MessageHighlight::HighlightPosition::operator()(const MessageHighlightPtr& aHighlight) const noexcept {
+		return *aHighlight;
+	}
+
+	MessageHighlight::SortedList MessageHighlight::parseHighlights(const string& aText, const string& aMyNick, const UserPtr& aUser) {
+		MessageHighlight::SortedList ret;
 
 		// My nick
 		if (!aMyNick.empty()) {

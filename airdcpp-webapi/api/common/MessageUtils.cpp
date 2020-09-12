@@ -19,6 +19,9 @@
 #include "stdinc.h"
 
 #include "MessageUtils.h"
+#include "Serializer.h"
+
+#include <web-server/JsonUtil.h>
 
 #include <airdcpp/AirUtil.h>
 #include <airdcpp/Magnet.h>
@@ -26,7 +29,6 @@
 #include <airdcpp/ShareManager.h>
 #include <airdcpp/OnlineUser.h>
 
-#include "Serializer.h"
 
 
 namespace webserver {
@@ -38,6 +40,16 @@ namespace webserver {
 			case MessageHighlight::HighlightType::TYPE_URL: return "url";
 			default: return Util::emptyString;
 		}
+	}
+
+	MessageHighlight::HighlightType MessageUtils::parseHighlightType(const string& aTypeStr) {
+		if (aTypeStr == "release") {
+			return MessageHighlight::HighlightType::TYPE_RELEASE;
+		} else if (aTypeStr == "url") {
+			return MessageHighlight::HighlightType::TYPE_URL;
+		}
+
+		throw std::domain_error("Invalid highlight type");
 	}
 
 	// MESSAGES
@@ -133,7 +145,7 @@ namespace webserver {
 		};
 	}
 
-	json MessageUtils::getContentType(const MessageHighlight::Ptr& aHighlight) noexcept {
+	json MessageUtils::getContentType(const MessageHighlightPtr& aHighlight) noexcept {
 		if (!aHighlight->getMagnet()) {
 			return json();
 		}
@@ -142,7 +154,7 @@ namespace webserver {
 		return Serializer::toFileContentType(ext);
 	}
 
-	json MessageUtils::serializeMessageHighlight(const MessageHighlight::Ptr& aHighlight) {
+	json MessageUtils::serializeMessageHighlight(const MessageHighlightPtr& aHighlight) {
 		return {
 			{ "id", aHighlight->getToken() },
 			{ "text", aHighlight->getText() },
@@ -154,5 +166,36 @@ namespace webserver {
 			{ "dupe", Serializer::serializeFileDupe(aHighlight->getDupe(), aHighlight->getMagnet() ? (*aHighlight->getMagnet()).getTTH() : TTHValue()) },
 			{ "content_type", getContentType(aHighlight) },
 		};
+	}
+
+	MessageHighlightPtr MessageUtils::deserializeMessageHighlight(const json& aJson, const string& aMessageText) {
+		const auto type = parseHighlightType(JsonUtil::getField<string>("type", aJson, false));
+
+		const auto start = JsonUtil::getField<size_t>("start", aJson, false);
+		const auto end = JsonUtil::getField<size_t>("end", aJson, false);
+
+
+		if (end > aMessageText.size() || start < 0 || end <= start) {
+			throw std::domain_error("Invalid range");
+		}
+
+		return make_shared<MessageHighlight>(start, aMessageText.substr(start, end - start), type);
+	}
+
+	MessageUtils::MessageHighlightDeserializer MessageUtils::getMessageHookHighlightDeserializer(const string& aMessageText) {
+		return [=](const json& aData, const ActionHookResultGetter<MessageHighlightList>& aResultGetter) {
+			return deserializeHookMessageHighlights(aData, aMessageText);
+		};
+	}
+
+	MessageHighlightList MessageUtils::deserializeHookMessageHighlights(const json& aData, const string& aMessageText) {
+		const auto highlightItems = JsonUtil::getArrayField("highlights", aData, true);
+
+		MessageHighlightList ret;
+		for (const auto& hl : highlightItems) {
+			ret.push_back(MessageUtils::deserializeMessageHighlight(hl, aMessageText));
+		}
+
+		return ret;
 	}
 }
