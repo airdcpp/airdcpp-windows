@@ -40,13 +40,13 @@ namespace dcpp {
 	class MessageHighlight : public Position {
 	public:
 		enum HighlightType {
-			TYPE_URL,
-			TYPE_RELEASE,
-			TYPE_TEMP_SHARE,
-			TYPE_ME,
+			TYPE_LINK_URL,
+			TYPE_LINK_TEXT,
+			TYPE_BOLD,
+			TYPE_USER,
 		};
 
-		explicit MessageHighlight(size_t aStart, const string& aText, HighlightType aType);
+		explicit MessageHighlight(size_t aStart, const string& aText, HighlightType aType, const string& aTag);
 
 		MessageHighlightToken getToken() const noexcept {
 			return token;
@@ -56,6 +56,7 @@ namespace dcpp {
 			return text;
 		}
 
+		GETSET(string, tag, Tag);
 		GETSET(HighlightType, type, Type);
 		GETSET(optional<Magnet>, magnet, Magnet);
 

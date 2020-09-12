@@ -57,8 +57,8 @@ namespace webserver {
 		static string getHighlighType(MessageHighlight::HighlightType aType) noexcept;
 		static json getContentType(const MessageHighlightPtr& aHighlight) noexcept;
 	private:
-		static MessageHighlightList deserializeHookMessageHighlights(const json& aData, const string& aMessageText);
-		static MessageHighlightPtr deserializeMessageHighlight(const json& aJson, const string& aMessageText);
+		static MessageHighlightList deserializeHookMessageHighlights(const json& aData, const ActionHookResultGetter<MessageHighlightList>& aResultGetter, const string& aMessageText);
+		static MessageHighlightPtr deserializeMessageHighlight(const json& aJson, const string& aMessageText, const string& aDefaultDescriptionId);
 		static MessageHighlight::HighlightType parseHighlightType(const string& aTypeStr);
 	};
 }
