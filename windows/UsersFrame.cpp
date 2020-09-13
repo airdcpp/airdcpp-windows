@@ -911,7 +911,7 @@ UsersFrame::UserInfo::userData UsersFrame::UserInfo::getUserInfo(const UserPtr& 
 			nick += Util::listToStringT<OnlineUserList, OnlineUser::Nick>(ouList, hinted ? true : false, hinted ? false : true);
 
 		if (hinted) {
-			setIp(hinted->getIdentity().getIp());
+			setIp(hinted->getIdentity().getTcpConnectIp());
 			ip4 = hinted->getIdentity().getIp4();
 			ip6 = hinted->getIdentity().getIp6();
 			tag = hinted->getIdentity().getTag();

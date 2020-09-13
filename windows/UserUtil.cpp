@@ -28,7 +28,7 @@
 
 uint8_t UserUtil::getUserImageIndex(const OnlineUserPtr& aUser) noexcept {
 	const auto& identity = aUser->getIdentity();
-	return getIdentityImage(identity, identity.isTcpActive(aUser->getClient()));
+	return getIdentityImage(identity, identity.hasActiveTcpConnectivity(aUser->getClient()));
 }
 
 uint8_t UserUtil::getIdentityImage(const Identity& identity, bool aIsClientTcpActive) {
@@ -42,7 +42,7 @@ uint8_t UserUtil::getIdentityImage(const Identity& identity, bool aIsClientTcpAc
 			image += 1 << (ResourceLoader::USER_ICON_PASSIVE - ResourceLoader::USER_ICON_MOD_START);
 		}
 	} else {
-		const auto cm = identity.getConnectMode();
+		const auto cm = identity.getTcpConnectMode();
 		if (!bot && (cm == Identity::MODE_PASSIVE_V6 || cm == Identity::MODE_PASSIVE_V4)) {
 			image += 1 << (ResourceLoader::USER_ICON_PASSIVE - ResourceLoader::USER_ICON_MOD_START);
 		}

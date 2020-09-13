@@ -780,7 +780,7 @@ void PrivateFrame::setCountryFlag() {
 
 	OnlineUserPtr ou = ClientManager::getInstance()->findOnlineUser(chat->getHintedUser());
 	if (ou && getUser() && !getUser()->isSet(User::BOT)) {
-		auto countryInfo = FormatUtil::toCountryInfo(ou->getIdentity().getIp());
+		auto countryInfo = FormatUtil::toCountryInfo(ou->getIdentity().getTcpConnectIp());
 		if (!countryInfo.text.empty()) {
 			countryPopup = countryInfo.text;
 			ctrlStatus.SetIcon(STATUS_COUNTRY, ResourceLoader::flagImages.GetIcon(countryInfo.flagIndex));

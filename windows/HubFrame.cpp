@@ -1751,9 +1751,9 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 				cd->clrText = SETTING(RESERVED_SLOT_COLOR);
 			} else if (ui->getUser()->isIgnored()) {
 				cd->clrText = SETTING(IGNORED_COLOR);
-			} else if(ui->onlineUser->getIdentity().isOp()) {
+			} else if (ui->onlineUser->getIdentity().isOp()) {
 				cd->clrText = SETTING(OP_COLOR);
-			} else if(!ui->onlineUser->getIdentity().isTcpActive(client)) {
+			} else if (!ui->onlineUser->getIdentity().hasActiveTcpConnectivity(client)) {
 				cd->clrText = SETTING(PASIVE_COLOR);
 			} else {
 				cd->clrText = SETTING(NORMAL_COLOUR);
@@ -1808,7 +1808,7 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 				POINT p = { rc.left, top };
 
 				const auto ii = (ItemInfo*)cd->nmcd.lItemlParam;
-				auto countryInfo = FormatUtil::toCountryInfo(ii->onlineUser->getIdentity().getIp());
+				auto countryInfo = FormatUtil::toCountryInfo(ii->onlineUser->getIdentity().getTcpConnectIp());
 				ResourceLoader::flagImages.Draw(cd->nmcd.hdc, countryInfo.flagIndex, p, LVSIL_SMALL);
 
 				top = rc.top + (rc.Height() - WinUtil::getTextHeight(cd->nmcd.hdc) - 1)/2;
