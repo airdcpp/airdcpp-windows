@@ -45,7 +45,8 @@ if (!tokens.empty()) { \
 						} \
 						return; \
 					} \
-					cmm->onClick##menuId##Item(tokens, { webserver::Access::ADMIN }, extItem->getHookId(), extItem->getId(), { webserver::ContextMenuManager::URLS_SUPPORT }); \
+					auto clickData = webserver::ContextMenuItemClickData(extItem->getHookId(), extItem->getId(), { webserver::ContextMenuManager::URLS_SUPPORT }, { webserver::Access::ADMIN }, webserver::SettingValueMap()); \
+					cmm->onClick##menuId##Item(tokens, clickData); \
 				}, \
 				OMenu::FLAG_THREADED \
 			); \
@@ -69,7 +70,8 @@ if (!tokens.empty()) { \
 						} \
 						return; \
 					} \
-					cmm->onClick##menuId##Item(tokens, { webserver::Access::ADMIN }, extItem->getHookId(), extItem->getId(), { webserver::ContextMenuManager::URLS_SUPPORT }, entity); \
+					auto clickData = webserver::ContextMenuItemClickData(extItem->getHookId(), extItem->getId(), { webserver::ContextMenuManager::URLS_SUPPORT }, { webserver::Access::ADMIN }, webserver::SettingValueMap()); \
+					cmm->onClick##menuId##Item(tokens, clickData, entity); \
 				}, \
 				OMenu::FLAG_THREADED \
 			); \
