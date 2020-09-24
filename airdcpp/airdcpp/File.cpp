@@ -401,12 +401,6 @@ File::File(const string& aFileName, int access, int mode, BufferMode aBufferMode
 		m |= O_DIRECT;
 	}
 #endif
-	struct stat s;
-	if(lstat(aFileName.c_str(), &s) != -1) {
-		if(!S_ISREG(s.st_mode) && !S_ISLNK(s.st_mode))
-			throw FileException("Invalid file type");
-	}
-
 	h = open(aFileName.c_str(), m, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 	if(h == -1)
 		throw FileException(Util::translateError(errno));
@@ -417,6 +411,11 @@ File::File(const string& aFileName, int access, int mode, BufferMode aBufferMode
 			throw FileException(Util::translateError(errno));
 		}
 	}
+#endif
+
+#ifdef _DEBUG
+	auto isDirectoryPath = aFileName.back() == PATH_SEPARATOR;
+	dcassert(isDirectory() == isDirectoryPath);
 #endif
 }
 
