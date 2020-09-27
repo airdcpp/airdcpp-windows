@@ -62,6 +62,7 @@ namespace webserver {
 		METHOD_HANDLER(Access::ANY,				METHOD_POST,	(EXACT_PARAM("validate_path")),						ShareApi::handleValidatePath);
 
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(EXACT_PARAM("refresh")),							ShareApi::handleRefreshShare);
+		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_DELETE,	(EXACT_PARAM("refresh")),							ShareApi::handleAbortRefreshShare);
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(EXACT_PARAM("refresh"), EXACT_PARAM("paths")),		ShareApi::handleRefreshPaths);
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(EXACT_PARAM("refresh"), EXACT_PARAM("virtual")),	ShareApi::handleRefreshVirtual);
 
@@ -317,6 +318,11 @@ namespace webserver {
 		maybeSend("share_temp_item_removed", [&] {
 			return serializeTempShare(aFile);
 		});
+	}
+
+	api_return ShareApi::handleAbortRefreshShare(ApiRequest& aRequest) {
+		ShareManager::getInstance()->abortRefresh();
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return ShareApi::handleRefreshShare(ApiRequest& aRequest) {

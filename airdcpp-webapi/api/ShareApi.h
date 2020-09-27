@@ -38,6 +38,7 @@ namespace webserver {
 		api_return handleRefreshShare(ApiRequest& aRequest);
 		api_return handleRefreshPaths(ApiRequest& aRequest);
 		api_return handleRefreshVirtual(ApiRequest& aRequest);
+		api_return handleAbortRefreshShare(ApiRequest& aRequest);
 
 		api_return handleAddExclude(ApiRequest& aRequest);
 		api_return handleRemoveExclude(ApiRequest& aRequest);
