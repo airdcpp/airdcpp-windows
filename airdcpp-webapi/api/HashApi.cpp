@@ -83,14 +83,18 @@ namespace webserver {
 		string curFile;
 		int64_t bytesLeft = 0, speed = 0;
 		size_t filesLeft = 0;
-		int hashers = 0;
-		HashManager::getInstance()->getStats(curFile, bytesLeft, filesLeft, speed, hashers);
+		int hashers = 0, hashersRunning = 0;
+		bool paused = false;
+
+		HashManager::getInstance()->getStats(curFile, bytesLeft, filesLeft, speed, hashers, paused, hashersRunning);
 
 		return {
 			{ "hash_speed", speed },
 			{ "hash_bytes_left", bytesLeft },
 			{ "hash_files_left", filesLeft },
 			{ "hashers", hashers },
+			{ "hashers_running", hashersRunning },
+			{ "paused", paused },
 		};
 	}
 

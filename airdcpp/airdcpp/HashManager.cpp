@@ -935,6 +935,10 @@ bool HashManager::Hasher::isPaused() const noexcept {
 	return paused;
 }
 
+bool HashManager::Hasher::isRunning() const noexcept {
+	return running;
+}
+
 void HashManager::Hasher::removeDevice(devid aDevice) noexcept {
 	dcassert(aDevice >= 0);
 	auto dp = devices.find(aDevice);
@@ -969,11 +973,20 @@ void HashManager::setPriority(Thread::Priority p) noexcept {
 		h->setThreadPriority(p); 
 }
 
-void HashManager::getStats(string& curFile, int64_t& bytesLeft, size_t& filesLeft, int64_t& speed, int& hasherCount) const noexcept {
+void HashManager::getStats(string& curFile_, int64_t& bytesLeft_, size_t& filesLeft_, int64_t& speed_, int& hasherCount_, bool& isPaused_, int& hashersRunning_) const noexcept {
 	RLock l(Hasher::hcs);
-	hasherCount = hashers.size();
-	for (auto i: hashers)
-		i->getStats(curFile, bytesLeft, filesLeft, speed);
+	hasherCount_ = hashers.size();
+	isPaused_ = true;
+	for (auto i: hashers) {
+		i->getStats(curFile_, bytesLeft_, filesLeft_, speed_);
+		if (!i->isPaused()) {
+			isPaused_ = false;
+		}
+
+		if (i->isRunning()) {
+			hashersRunning_++;
+		}
+	}
 }
 
 void HashManager::startMaintenance(bool verify){
@@ -1064,7 +1077,7 @@ void HashManager::Hasher::instantPause() {
 	}
 }
 
-HashManager::Hasher::Hasher(bool isPaused, int aHasherID) : paused(isPaused), hasherID(aHasherID), totalBytesLeft(0), lastSpeed(0) {
+HashManager::Hasher::Hasher(bool aIsPaused, int aHasherID) : paused(aIsPaused), hasherID(aHasherID), totalBytesLeft(0), lastSpeed(0) {
 	start();
 }
 

@@ -108,9 +108,10 @@ void HashProgressDlg::updateStats() {
 	int64_t bytes = 0;
 	size_t files = 0;
 	int64_t speed = 0;
+	int hashersRunning = 0;
+	bool paused = false;
 
-	HashManager::getInstance()->getStats(file, bytes, files, speed, hashers);
-	bool paused = HashManager::getInstance()->isHashingPaused();
+	HashManager::getInstance()->getStats(file, bytes, files, speed, hashers, paused, hashersRunning);
 
 	if(files > 0 && stopped) {
 		::EnableWindow(GetDlgItem(IDC_STOP), true);
