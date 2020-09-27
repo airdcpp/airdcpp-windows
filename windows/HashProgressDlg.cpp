@@ -27,7 +27,7 @@
 #include <airdcpp/TimerManager.h>
 
 
-HashProgressDlg::HashProgressDlg(bool aAutoClose /*false*/) : autoClose(aAutoClose), startBytes(0), startFiles(0), init(false), hashers(0), startTime(0), stopped(false) { }
+HashProgressDlg::HashProgressDlg(bool aAutoClose /*false*/) : autoClose(aAutoClose) { }
 
 LRESULT HashProgressDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	// Translate static strings
@@ -41,8 +41,6 @@ LRESULT HashProgressDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 	SetDlgItemText(IDC_MAX_HASH_SPEED, Text::toT(Util::toString(SETTING(MAX_HASH_SPEED))).c_str());
 	SetDlgItemText(IDC_PAUSE, HashManager::getInstance()->isHashingPaused() ? CTSTRING(RESUME) : CTSTRING(PAUSE));
 	SetDlgItemText(IDC_STOP, CTSTRING(STOP));
-
-	hashers = 0;
 
 	CUpDownCtrl hashspin; 
 	hashspin.Attach(GetDlgItem(IDC_HASH_SPIN));
@@ -64,12 +62,13 @@ void HashProgressDlg::setAutoClose(bool val) {
 }
 
 LRESULT HashProgressDlg::onMaxHashSpeed(WORD /*wNotifyCode*/, WORD, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if(!init)
+	if (!init) {
 		return 0;
+	}
 
-		TCHAR buf[256];
-		GetDlgItemText(IDC_MAX_HASH_SPEED, buf, 256);
-		SettingsManager::getInstance()->set(SettingsManager::MAX_HASH_SPEED, Util::toInt(Text::fromT(buf)));
+	TCHAR buf[256];
+	GetDlgItemText(IDC_MAX_HASH_SPEED, buf, 256);
+	SettingsManager::getInstance()->set(SettingsManager::MAX_HASH_SPEED, Util::toInt(Text::fromT(buf)));
 		
 	return 0;
 }
@@ -108,10 +107,10 @@ void HashProgressDlg::updateStats() {
 	int64_t bytes = 0;
 	size_t files = 0;
 	int64_t speed = 0;
-	int hashersRunning = 0;
 	bool paused = false;
+	hashersRunning = 0;
 
-	HashManager::getInstance()->getStats(file, bytes, files, speed, hashers, paused, hashersRunning);
+	HashManager::getInstance()->getStats(file, bytes, files, speed, hashersRunning, paused);
 
 	if(files > 0 && stopped) {
 		::EnableWindow(GetDlgItem(IDC_STOP), true);
@@ -166,8 +165,8 @@ void HashProgressDlg::updateStats() {
 
 	if(files == 0) {
 		SetDlgItemText(IDC_CURRENT_FILE, CTSTRING(DONE));
-	} else if (hashers > 1) {
-		SetDlgItemText(IDC_CURRENT_FILE, Text::toT(Util::toString(hashers) + " threads").c_str());
+	} else if (hashersRunning > 1) {
+		SetDlgItemText(IDC_CURRENT_FILE, CTSTRING_F(X_THREADS, hashersRunning));
 	} else {
 		SetDlgItemText(IDC_CURRENT_FILE, Text::toT(file).c_str());
 	}
@@ -175,7 +174,7 @@ void HashProgressDlg::updateStats() {
 	if(startFiles == 0 || startBytes == 0) {
 		progress.SetPos(0);
 	} else {
-		progress.SetPos((int)(10000 * ((0.5 * (startFiles - files)/startFiles) + 0.5 * (startBytes - bytes) / startBytes)));
+		progress.SetPos((int)(10000 * ((0.5 * (startFiles - files) / startFiles) + 0.5 * (startBytes - bytes) / startBytes)));
 	}
 		
 	SetDlgItemText(IDC_PAUSE, paused ? CTSTRING(RESUME) : CTSTRING(PAUSE)); // KUL - hash progress dialog patch

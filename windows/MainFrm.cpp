@@ -1796,11 +1796,10 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 			int64_t bytes = 0;
 			size_t files = 0;
 			int64_t speed = 0;
-			int hashers = 0;
 			bool paused = false;
 			int hashersRunning = 0;
-			HashManager::getInstance()->getStats(file, bytes, files, speed, hashers, paused, hashersRunning);
-			callAsync([=] { updateTBStatusHashing(file, bytes, files, speed, hashers, paused); });
+			HashManager::getInstance()->getStats(file, bytes, files, speed, hashersRunning, paused);
+			callAsync([=] { updateTBStatusHashing(file, bytes, files, speed, hashersRunning, paused); });
 		}
 	}
 

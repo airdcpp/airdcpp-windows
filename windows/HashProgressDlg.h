@@ -63,14 +63,14 @@ public:
 	void setAutoClose(bool val);
 
 private:
-	bool stopped;
+	bool stopped = false;
 	bool autoClose;
-	int64_t startBytes;
-	size_t startFiles;
-	uint64_t startTime;
+	int64_t startBytes = 0;
+	size_t startFiles = 0;
+	uint64_t startTime = 0;
 	CProgressBarCtrl progress;
-	bool init;
-	int hashers;
+	bool init = false;
+	int hashersRunning = 0;
 };
 
 #endif // !defined(HASH_PROGRESS_DLG_H)
