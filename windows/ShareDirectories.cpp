@@ -133,8 +133,11 @@ LRESULT ShareDirectories::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPa
 
 			menu.AppendMenu(MF_STRING, IDC_REMOVE_DIR, CTSTRING(REMOVE));
 			if (selectedDirs == 1) {
-				auto path = Text::toT(((ProfileDirectoryInfo*)ctrlDirectories.GetItemData(ctrlDirectories.GetNextItem(i, LVNI_SELECTED)))->dir->path);
-				menu.appendItem(TSTRING(OPEN_FOLDER), [path] { ActionUtil::openFolder(path); });
+				auto path = ((ProfileDirectoryInfo*)ctrlDirectories.GetItemData(ctrlDirectories.GetNextItem(i, LVNI_SELECTED)))->dir->path;
+				menu.appendItem(TSTRING(OPEN_FOLDER), [path] { ActionUtil::openFolder(Text::toT(path)); });
+				menu.appendItem(TSTRING(REFRESH), [path] {
+					ShareManager::getInstance()->refreshPaths({ path });
+				});
 			}
 
 			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
