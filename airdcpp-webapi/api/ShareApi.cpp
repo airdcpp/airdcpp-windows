@@ -456,22 +456,22 @@ namespace webserver {
 		return Util::emptyString;
 	}
 
-	void ShareApi::onShareRefreshed(const RefreshPathList& aRealPaths, uint8_t aTaskType, const string& aSubscription) noexcept {
-		if (!subscriptionActive(aSubscription)) {
-			return;
-		}
-
-		send(aSubscription, {
-			{ "real_paths", aRealPaths },
-			{ "type", refreshTypeToString(aTaskType) }
+	void ShareApi::on(ShareManagerListener::RefreshQueued, uint8_t aTaskType, const RefreshPathList& aPaths) noexcept {
+		maybeSend("share_refresh_queued", [&] {
+			return json({
+				{ "real_paths", aPaths },
+				{ "type", refreshTypeToString(aTaskType) },
+			});
 		});
 	}
 
-	void ShareApi::on(ShareManagerListener::RefreshQueued, uint8_t aTaskType, const RefreshPathList& aPaths) noexcept {
-		onShareRefreshed(aPaths, aTaskType, "share_refresh_queued");
-	}
-
-	void ShareApi::on(ShareManagerListener::RefreshCompleted, uint8_t aTaskType, const RefreshPathList& aPaths) noexcept {
-		onShareRefreshed(aPaths, aTaskType, "share_refresh_completed");
+	void ShareApi::on(ShareManagerListener::RefreshCompleted, uint8_t aTaskType, const RefreshPathList& aPaths, int64_t aTotalHash) noexcept {
+		maybeSend("share_refresh_completed", [&] {
+			return json({
+				{ "real_paths", aPaths },
+				{ "type", refreshTypeToString(aTaskType) },
+				{ "hash_bytes_queued", aTotalHash },
+			});
+		});
 	}
 }

@@ -2180,7 +2180,7 @@ void ShareManager::runTasks(function<void (float)> progressF /*nullptr*/) noexce
 		}
 
 		reportTaskStatus(t.first, dirs, true, totalHash, task->displayName, task->type);
-		fire(ShareManagerListener::RefreshCompleted(), t.first, dirs);
+		fire(ShareManagerListener::RefreshCompleted(), t.first, dirs, totalHash);
 	}
 
 #ifdef _DEBUG
