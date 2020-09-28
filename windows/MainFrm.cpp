@@ -1411,7 +1411,7 @@ LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 }
 
 LRESULT MainFrame::onRefreshFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	addThreadedTask([] { ShareManager::getInstance()->refresh(false, ShareManager::TYPE_MANUAL); });
+	addThreadedTask([] { ShareManager::getInstance()->refresh(ShareRefreshType::REFRESH_ALL, ShareRefreshPriority::MANUAL); });
 	return 0;
 }
 
@@ -2016,8 +2016,8 @@ LRESULT MainFrame::onRefreshDropDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 	LPNMTOOLBAR tb = (LPNMTOOLBAR)pnmh;
 	OMenu dropMenu;
 	dropMenu.CreatePopupMenu();
-	dropMenu.appendItem(CTSTRING(ALL), [] { ShareManager::getInstance()->refresh(false, ShareManager::TYPE_MANUAL); }, OMenu::FLAG_THREADED);
-	dropMenu.appendItem(CTSTRING(INCOMING), [] { ShareManager::getInstance()->refresh(true, ShareManager::TYPE_MANUAL); }, OMenu::FLAG_THREADED);
+	dropMenu.appendItem(CTSTRING(ALL), [] { ShareManager::getInstance()->refresh(ShareRefreshType::REFRESH_ALL, ShareRefreshPriority::MANUAL); }, OMenu::FLAG_THREADED);
+	dropMenu.appendItem(CTSTRING(INCOMING), [] { ShareManager::getInstance()->refresh(ShareRefreshType::REFRESH_INCOMING, ShareRefreshPriority::MANUAL); }, OMenu::FLAG_THREADED);
 	dropMenu.appendSeparator();
 
 	auto l = ShareManager::getInstance()->getGroupedDirectories();
@@ -2027,7 +2027,7 @@ LRESULT MainFrame::onRefreshDropDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 			vMenu->appendItem(CTSTRING(ALL), [=] { ShareManager::getInstance()->refreshVirtualName(i.first); }, OMenu::FLAG_THREADED);
 			vMenu->appendSeparator();
 			for(const auto& s: i.second) {
-				vMenu->appendItem(Text::toT(s), [=] { ShareManager::getInstance()->refreshPaths({ s }); }, OMenu::FLAG_THREADED);
+				vMenu->appendItem(Text::toT(s), [=] { ShareManager::getInstance()->refreshPathsHooked(ShareRefreshPriority::MANUAL, { s }); }, OMenu::FLAG_THREADED);
 			}
 		} else {
 			dropMenu.appendItem(Text::toT(i.first), [=] { ShareManager::getInstance()->refreshVirtualName(i.first); }, OMenu::FLAG_THREADED);

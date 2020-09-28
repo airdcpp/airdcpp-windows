@@ -834,12 +834,15 @@ bool ChatFrameBase::checkCommand(const tstring& aCmd, tstring& param, tstring& m
 		try {
 			if (!param.empty()) {
 				if (stricmp(param.c_str(), _T("incoming")) == 0) {
-					ShareManager::getInstance()->refresh(true);
-				} else if (ShareManager::RefreshResult::REFRESH_PATH_NOT_FOUND == ShareManager::getInstance()->refreshVirtualName(Text::fromT(param))) {
-					status = TSTRING(DIRECTORY_NOT_FOUND);
+					ShareManager::getInstance()->refresh(ShareRefreshType::REFRESH_INCOMING, ShareRefreshPriority::MANUAL);
+				} else {
+					auto refreshQueueInfo = ShareManager::getInstance()->refreshVirtualName(Text::fromT(param));
+					if (!refreshQueueInfo) {
+						status = TSTRING(DIRECTORY_NOT_FOUND);
+					}
 				}
 			} else {
-				ShareManager::getInstance()->refresh(false);
+				ShareManager::getInstance()->refresh(ShareRefreshType::REFRESH_ALL, ShareRefreshPriority::MANUAL);
 			}
 		} catch (const ShareException& e) {
 			status = Text::toT(e.getError());

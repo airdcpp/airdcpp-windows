@@ -177,6 +177,24 @@ namespace webserver {
 		};
 	}
 
+	json ShareApi::serializeRefreshQueueInfo(const ShareManager::RefreshTaskQueueInfo& aRefreshQueueInfo) noexcept {
+		return {
+			{ "id", aRefreshQueueInfo.token ? json(*aRefreshQueueInfo.token) : JsonUtil::emptyJson },
+			{ "result", refreshResultToString(aRefreshQueueInfo.result) },
+		};
+	}
+
+	string ShareApi::refreshResultToString(ShareManager::RefreshTaskQueueResult aRefreshQueueResult) noexcept {
+		switch (aRefreshQueueResult) {
+			case ShareManager::RefreshTaskQueueResult::EXISTS: return "exists";
+			case ShareManager::RefreshTaskQueueResult::QUEUED: return "queued";
+			case ShareManager::RefreshTaskQueueResult::STARTED: return "started";
+		}
+
+		dcassert(0);
+		return Util::emptyString;
+	}
+
 	api_return ShareApi::handleSearch(ApiRequest& aRequest) {
 		const auto& reqJson = aRequest.getRequestBody();
 
@@ -327,30 +345,45 @@ namespace webserver {
 
 	api_return ShareApi::handleRefreshShare(ApiRequest& aRequest) {
 		auto incoming = JsonUtil::getOptionalFieldDefault<bool>("incoming", aRequest.getRequestBody(), false);
-		ShareManager::getInstance()->refresh(incoming);
-		return websocketpp::http::status_code::no_content;
+		auto priority = parseRefreshPriority(aRequest.getRequestBody());
+
+		auto refreshInfo = ShareManager::getInstance()->refresh(incoming ? ShareRefreshType::REFRESH_INCOMING : ShareRefreshType::REFRESH_ALL, priority);
+		aRequest.setResponseBody(serializeRefreshQueueInfo(refreshInfo));
+
+		return websocketpp::http::status_code::ok;
 	}
 
 	api_return ShareApi::handleRefreshPaths(ApiRequest& aRequest) {
 		auto paths = JsonUtil::getField<StringList>("paths", aRequest.getRequestBody(), false);
-		ShareManager::getInstance()->refreshPaths(paths);
+		auto priority = parseRefreshPriority(aRequest.getRequestBody());
 
-		return websocketpp::http::status_code::no_content;
+		try {
+			auto refreshInfo = ShareManager::getInstance()->refreshPathsHookedThrow(priority, paths);
+			aRequest.setResponseBody(serializeRefreshQueueInfo(refreshInfo));
+		} catch (const Exception& e) {
+			aRequest.setResponseErrorStr(e.getError());
+			return websocketpp::http::status_code::bad_request;
+		}
+
+		return websocketpp::http::status_code::ok;
 	}
 
 	api_return ShareApi::handleRefreshVirtual(ApiRequest& aRequest) {
-		auto path = JsonUtil::getField<string>("path", aRequest.getRequestBody(), false);
+		auto virtualPath = JsonUtil::getField<string>("path", aRequest.getRequestBody(), false);
+		auto priority = parseRefreshPriority(aRequest.getRequestBody());
 
 		StringList refreshPaths;
 		try {
-			ShareManager::getInstance()->getRealPaths(path, refreshPaths);
+			ShareManager::getInstance()->getRealPaths(virtualPath, refreshPaths);
+
+			auto refreshInfo = ShareManager::getInstance()->refreshPathsHookedThrow(priority, refreshPaths);
+			aRequest.setResponseBody(serializeRefreshQueueInfo(refreshInfo));
 		} catch (const ShareException& e) {
 			aRequest.setResponseErrorStr(e.getError());
 			return websocketpp::http::status_code::bad_request;
 		}
 
-		ShareManager::getInstance()->refreshPaths(refreshPaths);
-		return websocketpp::http::status_code::no_content;
+		return websocketpp::http::status_code::ok;
 	}
 
 	api_return ShareApi::handleGetStats(ApiRequest& aRequest) {
@@ -443,33 +476,50 @@ namespace webserver {
 		return websocketpp::http::status_code::ok;
 	}
 
-	string ShareApi::refreshTypeToString(uint8_t aTaskType) noexcept {
-		switch (aTaskType) {
-			case ShareManager::ADD_DIR: return "add_directory";
-			case ShareManager::REFRESH_ALL: return "refresh_all";
-			case ShareManager::REFRESH_DIRS: return "refresh_directories";
-			case ShareManager::REFRESH_INCOMING: return "refresh_incoming";
-			case ShareManager::ADD_BUNDLE: return "add_bundle";
+	string ShareApi::refreshTypeToString(ShareRefreshType aType) noexcept {
+		switch (aType) {
+			case ShareRefreshType::ADD_DIR: return "add_directory";
+			case ShareRefreshType::STARTUP:
+			case ShareRefreshType::REFRESH_ALL: return "refresh_all";
+			case ShareRefreshType::REFRESH_DIRS: return "refresh_directories";
+			case ShareRefreshType::REFRESH_INCOMING: return "refresh_incoming";
+			case ShareRefreshType::BUNDLE: return "add_bundle";
 		}
 
 		dcassert(0);
 		return Util::emptyString;
 	}
 
-	void ShareApi::on(ShareManagerListener::RefreshQueued, uint8_t aTaskType, const RefreshPathList& aPaths) noexcept {
+	ShareRefreshPriority ShareApi::parseRefreshPriority(const json& aJson) {
+		auto priority = JsonUtil::getOptionalFieldDefault<string>("priority", aJson, "normal");
+		if (priority == "normal") {
+			return ShareRefreshPriority::NORMAL;
+		} else if (priority == "scheduled") {
+			return ShareRefreshPriority::SCHEDULED;
+		} else if (priority == "manual") {
+			return ShareRefreshPriority::MANUAL;
+		}
+
+		JsonUtil::throwError("priority", JsonUtil::ERROR_INVALID, "Refresh priority " + priority + "doesn't exist");
+		return ShareRefreshPriority::NORMAL;
+	}
+
+	void ShareApi::on(ShareManagerListener::RefreshQueued, const ShareRefreshTask& aTask) noexcept {
 		maybeSend("share_refresh_queued", [&] {
 			return json({
-				{ "real_paths", aPaths },
-				{ "type", refreshTypeToString(aTaskType) },
+				{ "id", aTask.token },
+				{ "real_paths", aTask.dirs },
+				{ "type", refreshTypeToString(aTask.type) },
 			});
 		});
 	}
 
-	void ShareApi::on(ShareManagerListener::RefreshCompleted, uint8_t aTaskType, const RefreshPathList& aPaths, int64_t aTotalHash) noexcept {
+	void ShareApi::on(ShareManagerListener::RefreshCompleted, const ShareRefreshTask& aTask, bool aSucceed, int64_t aTotalHash) noexcept {
 		maybeSend("share_refresh_completed", [&] {
 			return json({
-				{ "real_paths", aPaths },
-				{ "type", refreshTypeToString(aTaskType) },
+				{ "id", aTask.token },
+				{ "real_paths", aTask.dirs },
+				{ "type", refreshTypeToString(aTask.type) },
 				{ "hash_bytes_queued", aTotalHash },
 			});
 		});
