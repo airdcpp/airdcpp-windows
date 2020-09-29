@@ -66,6 +66,9 @@ namespace webserver {
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(EXACT_PARAM("refresh"), EXACT_PARAM("paths")),		ShareApi::handleRefreshPaths);
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(EXACT_PARAM("refresh"), EXACT_PARAM("virtual")),	ShareApi::handleRefreshVirtual);
 
+		METHOD_HANDLER(Access::SETTINGS_VIEW,	METHOD_GET,		(EXACT_PARAM("refresh"), EXACT_PARAM("tasks")),					ShareApi::handleGetRefreshTasks);
+		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_DELETE,	(EXACT_PARAM("refresh"), EXACT_PARAM("tasks"), TOKEN_PARAM),	ShareApi::handleAbortRefreshTask);
+
 		METHOD_HANDLER(Access::SETTINGS_VIEW,	METHOD_GET,		(EXACT_PARAM("excludes")),							ShareApi::handleGetExcludes);
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(EXACT_PARAM("excludes"), EXACT_PARAM("add")),		ShareApi::handleAddExclude);
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(EXACT_PARAM("excludes"), EXACT_PARAM("remove")),	ShareApi::handleRemoveExclude);
@@ -179,8 +182,22 @@ namespace webserver {
 
 	json ShareApi::serializeRefreshQueueInfo(const ShareManager::RefreshTaskQueueInfo& aRefreshQueueInfo) noexcept {
 		return {
-			{ "id", aRefreshQueueInfo.token ? json(*aRefreshQueueInfo.token) : JsonUtil::emptyJson },
+			{ "task", !aRefreshQueueInfo.token ? JsonUtil::emptyJson : json({
+				{ "id", json(*aRefreshQueueInfo.token) },
+			}) },
 			{ "result", refreshResultToString(aRefreshQueueInfo.result) },
+		};
+	}
+
+
+	json ShareApi::serializeRefreshTask(const ShareRefreshTask& aRefreshTask) noexcept {
+		return {
+			{ "id", aRefreshTask.token },
+			{ "real_paths", aRefreshTask.dirs },
+			{ "type", refreshTypeToString(aRefreshTask.type) },
+			{ "canceled", aRefreshTask.canceled },
+			{ "running", aRefreshTask.running },
+			{ "priority_type", refreshPriorityToString(aRefreshTask.priority) },
 		};
 	}
 
@@ -189,6 +206,18 @@ namespace webserver {
 			case ShareManager::RefreshTaskQueueResult::EXISTS: return "exists";
 			case ShareManager::RefreshTaskQueueResult::QUEUED: return "queued";
 			case ShareManager::RefreshTaskQueueResult::STARTED: return "started";
+		}
+
+		dcassert(0);
+		return Util::emptyString;
+	}
+
+	string ShareApi::refreshPriorityToString(ShareRefreshPriority aPriority) noexcept {
+		switch (aPriority) {
+			case ShareRefreshPriority::BLOCKING: return "blocking";
+			case ShareRefreshPriority::MANUAL: return "manual";
+			case ShareRefreshPriority::NORMAL: return "normal";
+			case ShareRefreshPriority::SCHEDULED: return "scheduled";
 		}
 
 		dcassert(0);
@@ -343,6 +372,22 @@ namespace webserver {
 		return websocketpp::http::status_code::no_content;
 	}
 
+	api_return ShareApi::handleGetRefreshTasks(ApiRequest& aRequest) {
+		auto tasks = ShareManager::getInstance()->getRefreshTasks();
+		aRequest.setResponseBody(Serializer::serializeList(tasks, serializeRefreshTask));
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return ShareApi::handleAbortRefreshTask(ApiRequest& aRequest) {
+		const auto token = aRequest.getTokenParam();
+		if (!ShareManager::getInstance()->abortRefresh(token)) {
+			aRequest.setResponseErrorStr("Refresh task was not found");
+			return websocketpp::http::status_code::bad_request;
+		}
+
+		return websocketpp::http::status_code::no_content;
+	}
+
 	api_return ShareApi::handleRefreshShare(ApiRequest& aRequest) {
 		auto incoming = JsonUtil::getOptionalFieldDefault<bool>("incoming", aRequest.getRequestBody(), false);
 		auto priority = parseRefreshPriority(aRequest.getRequestBody());
@@ -491,7 +536,7 @@ namespace webserver {
 	}
 
 	ShareRefreshPriority ShareApi::parseRefreshPriority(const json& aJson) {
-		auto priority = JsonUtil::getOptionalFieldDefault<string>("priority", aJson, "normal");
+		auto priority = JsonUtil::getOptionalFieldDefault<string>("priority_type", aJson, "normal");
 		if (priority == "normal") {
 			return ShareRefreshPriority::NORMAL;
 		} else if (priority == "scheduled") {
@@ -500,7 +545,7 @@ namespace webserver {
 			return ShareRefreshPriority::MANUAL;
 		}
 
-		JsonUtil::throwError("priority", JsonUtil::ERROR_INVALID, "Refresh priority " + priority + "doesn't exist");
+		JsonUtil::throwError("priority_type", JsonUtil::ERROR_INVALID, "Refresh priority " + priority + "doesn't exist");
 		return ShareRefreshPriority::NORMAL;
 	}
 

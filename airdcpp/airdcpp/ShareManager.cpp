@@ -116,15 +116,6 @@ void ShareManager::startup(function<void(const string&)> splashF, function<void(
 	});
 }
 
-bool ShareManager::abortRefresh() noexcept {
-	if (tasks.empty()) {
-		return false;
-	}
-
-	stopping = true;
-	return true;
-}
-
 void ShareManager::shutdown(function<void(float)> progressF) noexcept {
 	saveXmlList(progressF);
 
@@ -1448,9 +1439,9 @@ ShareManager::ShareBuilder::ShareBuilder(const string& aPath, const Directory::P
 
 }
 
-bool ShareManager::ShareBuilder::buildTree() noexcept {
+bool ShareManager::ShareBuilder::buildTree(const bool& aStopping) noexcept {
 	try {
-		buildTree(path, Text::toLower(path), newShareDirectory, oldShareDirectory);
+		buildTree(path, Text::toLower(path), newShareDirectory, oldShareDirectory, aStopping);
 	} catch (const std::bad_alloc&) {
 		LogManager::getInstance()->message(STRING_F(DIR_REFRESH_FAILED, path % STRING(OUT_OF_MEMORY)), LogMessage::SEV_ERROR);
 		return false;
@@ -1459,13 +1450,13 @@ bool ShareManager::ShareBuilder::buildTree() noexcept {
 		return false;
 	}
 
-	return !sm.stopping;
+	return !aStopping;
 }
 
-void ShareManager::ShareBuilder::buildTree(const string& aPath, const string& aPathLower, const Directory::Ptr& aParent, const Directory::Ptr& aOldParent) {
+void ShareManager::ShareBuilder::buildTree(const string& aPath, const string& aPathLower, const Directory::Ptr& aParent, const Directory::Ptr& aOldParent, const bool& aStopping) {
 	ErrorCollector errors;
 	FileFindIter end;
-	for(FileFindIter i(aPath, "*"); i != end && !sm.stopping; ++i) {
+	for(FileFindIter i(aPath, "*"); i != end && !aStopping; ++i) {
 		const auto name = i->getFileName();
 		if(name.empty()) {
 			return;
@@ -1518,7 +1509,7 @@ void ShareManager::ShareBuilder::buildTree(const string& aPath, const string& aP
 
 			auto curDir = Directory::createNormal(move(dualName), aParent, i->getLastWriteTime(), lowerDirNameMapNew, bloom);
 			if (curDir) {
-				buildTree(curPath, curPathLower, curDir, oldDir);
+				buildTree(curPath, curPathLower, curDir, oldDir, aStopping);
 				checkContent(curDir);
 			}
 		} else {
@@ -1721,15 +1712,20 @@ ShareManager::RefreshTaskQueueInfo ShareManager::refreshPathsHookedThrow(ShareRe
 
 void ShareManager::validateRefreshTask(StringList& dirs_) noexcept {
 	Lock l(tasks.cs);
-	auto& tq = tasks.getTasks();
+	const auto& tq = tasks.getTasks();
 
-	//remove directories that have already been queued for refreshing
+	// Remove the exact directories that have already been queued for refreshing
 	for (const auto& i : tq) {
 		if (i.first != ASYNC) {
 			auto t = static_cast<ShareRefreshTask*>(i.second.get());
-			dirs_.erase(boost::remove_if(dirs_, [t](const string& p) {
-				return boost::find(t->dirs, p) != t->dirs.end();
-			}), dirs_.end());
+			if (!t->canceled) {
+				dirs_.erase(
+					boost::remove_if(dirs_, [t](const string& p) {
+						return boost::find(t->dirs, p) != t->dirs.end();
+					}), 
+					dirs_.end()
+				);
+			}
 		}
 	}
 }
@@ -1784,13 +1780,13 @@ ShareManager::RefreshTaskQueueInfo ShareManager::addRefreshTask(ShareRefreshPrio
 		};
 	}
 
+	auto token = Util::rand();
 	RefreshPathList paths;
 	for (auto& path : dirs) {
-		setRefreshState(path, RefreshState::STATE_PENDING, false);
+		setRefreshState(path, RefreshState::STATE_PENDING, false, token);
 		paths.insert(path);
 	}
 
-	auto token = Util::rand();
 
 	{
 		auto task = make_unique<ShareRefreshTask>(token, paths, aDisplayName, aRefreshType, aPriority);
@@ -2101,7 +2097,6 @@ void ShareManager::runTasks(function<void (float)> progressF /*nullptr*/) noexce
 	for (;;) {
 		TaskQueue::TaskPair t;
 		if (!tasks.getFront(t)) {
-			stopping = false;
 			break;
 		}
 
@@ -2118,6 +2113,8 @@ void ShareManager::runTasks(function<void (float)> progressF /*nullptr*/) noexce
 			if (task->type == ShareRefreshType::STARTUP && task->priority == ShareRefreshPriority::SCHEDULED) {
 				Thread::sleep(5000); // let the client start first
 			}
+
+			task->running = true;
 
 			setThreadPriority(task->priority == ShareRefreshPriority::MANUAL ? Thread::NORMAL : Thread::IDLE);
 			if (!pauser) {
@@ -2136,7 +2133,7 @@ void ShareManager::runTasks(function<void (float)> progressF /*nullptr*/) noexce
 #endif
 }
 
-void ShareManager::runRefreshTask(const ShareRefreshTask aTask, function<void(float)> progressF) noexcept {
+void ShareManager::runRefreshTask(const ShareRefreshTask& aTask, function<void(float)> progressF) noexcept {
 
 	refreshRunning = true;
 	ScopedFunctor([this] { refreshRunning = false; });
@@ -2176,22 +2173,28 @@ void ShareManager::runRefreshTask(const ShareRefreshTask aTask, function<void(fl
 
 	auto doRefresh = [&](const ShareBuilderPtr& i) {
 		auto& ri = *i.get();
+		if (!aTask.canceled) {
+			setRefreshState(ri.path, RefreshState::STATE_RUNNING, false, aTask.token);
 
-		setRefreshState(ri.path, RefreshState::STATE_RUNNING, false);
+			// Build the tree
+			auto succeed = ri.buildTree(aTask.canceled);
 
-		// Build the tree
-		auto succeed = ri.buildTree();
+			// Apply the changes
+			if (succeed) {
+				WLock l(cs);
+				applyRefreshChanges(ri, totalHash, &dirtyProfiles);
+			} else {
+				allBuildersSucceed = false;
+			}
 
-		// Apply the changes
-		if (succeed) {
-			WLock l(cs);
-			applyRefreshChanges(ri, totalHash, &dirtyProfiles);
+			// Finish up
+			if (!aTask.canceled) {
+				setRefreshState(ri.path, RefreshState::STATE_NORMAL, succeed, nullopt);
+			}
 		} else {
 			allBuildersSucceed = false;
 		}
 
-		// Finish up
-		setRefreshState(ri.path, RefreshState::STATE_NORMAL, succeed);
 		if (progressF) {
 			progressF(static_cast<float>(progressCounter++) / static_cast<float>(refreshDirs.size()));
 		}
@@ -2204,7 +2207,7 @@ void ShareManager::runRefreshTask(const ShareRefreshTask aTask, function<void(fl
 		} else {
 			for_each(refreshDirs, doRefresh);
 		}
-	} catch (std::exception& e) {
+	} catch (const std::exception& e) {
 		LogManager::getInstance()->message(STRING(FILE_LIST_REFRESH_FAILED) + string(e.what()), LogMessage::SEV_INFO);
 		return;
 	}
@@ -2257,7 +2260,7 @@ void ShareManager::RefreshInfo::mergeRefreshChanges(Directory::MultiMap& lowerDi
 	newShareDirectory = nullptr;
 }
 
-void ShareManager::setRefreshState(const string& aRefreshPath, RefreshState aState, bool aUpdateRefreshTime) noexcept {
+void ShareManager::setRefreshState(const string& aRefreshPath, RefreshState aState, bool aUpdateRefreshTime, const optional<ShareRefreshTaskToken>& aRefreshTaskToken) noexcept {
 	RootDirectory::Ptr rootDir;
 
 	{
@@ -2277,12 +2280,55 @@ void ShareManager::setRefreshState(const string& aRefreshPath, RefreshState aSta
 	// but don't change the refresh state
 	if (aRefreshPath == rootDir->getPath()) {
 		rootDir->setRefreshState(aState);
+		rootDir->setRefreshTaskToken(aRefreshTaskToken);
 		if (aUpdateRefreshTime) {
 			rootDir->setLastRefreshTime(GET_TIME());
 		}
 	}
 
 	fire(ShareManagerListener::RootRefreshState(), rootDir->getPath());
+}
+
+ShareRefreshTaskList ShareManager::getRefreshTasks() const noexcept {
+	ShareRefreshTaskList ret;
+
+	{
+		Lock l(tasks.cs);
+		for (const auto& t : tasks.getTasks()) {
+			if (t.first == TaskType::REFRESH) {
+				auto refreshTask = static_cast<ShareRefreshTask*>(t.second.get());
+				ret.push_back(*refreshTask);
+			}
+		}
+	}
+
+	return ret;
+}
+
+bool ShareManager::abortRefresh(optional<ShareRefreshTaskToken> aToken) noexcept {
+	RefreshPathList paths;
+
+	{
+		Lock l(tasks.cs);
+
+		auto& tl = tasks.getTasks();
+
+		for (const auto& t : tl) {
+			if (t.first == TaskType::REFRESH) {
+				auto refreshTask = static_cast<ShareRefreshTask*>(t.second.get());
+				if (!aToken || refreshTask->token == *aToken) {
+					refreshTask->canceled = true;
+					boost::copy(refreshTask->dirs, inserter(paths, paths.begin()));
+				}
+			}
+		}
+	}
+
+	for (const auto& d: paths) {
+		setRefreshState(d, RefreshState::STATE_NORMAL, false, nullopt);
+	}
+
+	return !paths.empty();
 }
 
 bool ShareManager::applyRefreshChanges(RefreshInfo& ri, int64_t& totalHash_, ProfileTokenSet* aDirtyProfiles) {
@@ -2358,6 +2404,7 @@ ShareDirectoryInfoPtr ShareManager::getRootInfo(const Directory::Ptr& aDir) cons
 	info->virtualName = rootDir->getName();
 	info->refreshState = static_cast<uint8_t>(rootDir->getRefreshState());
 	info->lastRefreshTime = rootDir->getLastRefreshTime();
+	info->refreshTaskToken = rootDir->getRefreshTaskToken();
 	return info;
 }
 

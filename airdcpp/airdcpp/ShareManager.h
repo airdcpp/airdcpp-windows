@@ -85,7 +85,6 @@ enum class ShareRefreshPriority : uint8_t {
 	NORMAL,
 	BLOCKING,
 };
-typedef uint32_t ShareRefreshTaskToken;
 
 struct ShareRefreshTask : public Task {
 	ShareRefreshTask(ShareRefreshTaskToken aToken, const RefreshPathList& aDirs, const string& aDisplayName, ShareRefreshType aRefreshType, ShareRefreshPriority aPriority);
@@ -95,7 +94,12 @@ struct ShareRefreshTask : public Task {
 	const string displayName;
 	const ShareRefreshType type;
 	const ShareRefreshPriority priority;
+
+	bool canceled = false;
+	bool running = false;
 };
+
+typedef vector<ShareRefreshTask> ShareRefreshTaskList;
 
 class ShareManager : public Singleton<ShareManager>, public Speaker<ShareManagerListener>, private Thread, private SettingsManagerListener, 
 	private TimerManagerListener, private HashManagerListener
@@ -137,7 +141,6 @@ public:
 
 	enum class RefreshTaskQueueResult : uint8_t {
 		STARTED,
-		// REFRESH_PATH_NOT_FOUND = 1,
 		QUEUED,
 		EXISTS,
 	};
@@ -170,8 +173,10 @@ public:
 	void startup(function<void(const string&)> stepF, function<void(float)> progressF) noexcept;
 	void shutdown(function<void(float)> progressF) noexcept;
 
-	// Abort filelist refresh
-	bool abortRefresh() noexcept;
+	// Abort filelist refresh (or an individual refresh task)
+	bool abortRefresh(optional<ShareRefreshTaskToken> aToken = nullopt) noexcept;
+
+	ShareRefreshTaskList getRefreshTasks() const noexcept;
 
 	void nmdcSearch(SearchResultList& l, const string& aString, int aSearchType, int64_t aSize, int aFileType, StringList::size_type maxResults, bool aHideShare) noexcept;
 
@@ -370,6 +375,7 @@ private:
 			IGETSET(bool, cacheDirty, CacheDirty, false);
 			IGETSET(bool, incoming, Incoming, false);
 			IGETSET(RefreshState, refreshState, RefreshState, RefreshState::STATE_NORMAL);
+			IGETSET(optional<ShareRefreshTaskToken>, refreshTaskToken, RefreshTaskToken, nullopt);
 			IGETSET(time_t, lastRefreshTime, LastRefreshTime, 0);
 
 			bool hasRootProfile(ProfileToken aProfile) const noexcept;
@@ -651,8 +657,6 @@ private:
 	FileList* getFileList(ProfileToken aProfile) const;
 
 	bool loadCache(function<void(float)> progressF) noexcept;
-
-	bool stopping = false;
 	
 	static atomic_flag tasksRunning;
 	bool refreshRunning = false;
@@ -696,9 +700,9 @@ private:
 		ShareBuilder(const string& aPath, const Directory::Ptr& aOldRoot, time_t aLastWrite, ShareBloom& bloom_, ShareManager* sm);
 
 		// Recursive function for building a new share tree from a path
-		bool buildTree() noexcept;
+		bool buildTree(const bool& aStopping) noexcept;
 	private:
-		void buildTree(const string& aPath, const string& aPathLower, const Directory::Ptr& aCurrentDirectory, const Directory::Ptr& aOldDirectory);
+		void buildTree(const string& aPath, const string& aPathLower, const Directory::Ptr& aCurrentDirectory, const Directory::Ptr& aOldDirectory, const bool& aStopping);
 
 		const ShareManager& sm;
 	};
@@ -719,7 +723,7 @@ private:
 
 	// Change the refresh status for a directory and its subroots
 	// Safe to call with non-root directories
-	void setRefreshState(const string& aPath, RefreshState aState, bool aUpdateRefreshTime) noexcept;
+	void setRefreshState(const string& aPath, RefreshState aState, bool aUpdateRefreshTime, const optional<ShareRefreshTaskToken>& aRefreshTaskToken) noexcept;
 
 	static void addFile(DualString&& aName, const Directory::Ptr& aDir, const HashedFile& fi, HashFileMap& tthIndex_, ShareBloom& aBloom_, int64_t& sharedSize_, ProfileTokenSet* dirtyProfiles_ = nullptr) noexcept;
 
@@ -807,7 +811,7 @@ private:
 	int run() override;
 
 	void runTasks(function<void (float)> progressF = nullptr) noexcept;
-	void runRefreshTask(const ShareRefreshTask aTask, function<void(float)> progressF) noexcept;
+	void runRefreshTask(const ShareRefreshTask& aTask, function<void(float)> progressF) noexcept;
 
 	// HashManagerListener
 	void on(HashManagerListener::FileHashed, const string& aPath, HashedFile& fi) noexcept override { onFileHashed(aPath, fi); }
