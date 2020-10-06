@@ -42,16 +42,17 @@ namespace webserver {
 		HookApiModule(
 			aSession, 
 			Access::SETTINGS_VIEW, 
-			{ 
-				"share_refresh_queued", 
-				"share_refresh_completed", 
+			{
+				"share_refresh_queued",
+				"share_refresh_started",
+				"share_refresh_completed",
 				
-				"share_exclude_added", 
+				"share_exclude_added",
 				"share_exclude_removed",
 
 				"share_temp_item_added",
 				"share_temp_item_removed",
-			}, 
+			},
 			Access::SETTINGS_EDIT
 		) 
 	{
@@ -551,6 +552,16 @@ namespace webserver {
 
 	void ShareApi::on(ShareManagerListener::RefreshQueued, const ShareRefreshTask& aTask) noexcept {
 		maybeSend("share_refresh_queued", [&] {
+			return json({
+				{ "id", aTask.token },
+				{ "real_paths", aTask.dirs },
+				{ "type", refreshTypeToString(aTask.type) },
+			});
+		});
+	}
+
+	void ShareApi::on(ShareManagerListener::RefreshStarted, const ShareRefreshTask& aTask) noexcept {
+		maybeSend("share_refresh_started", [&] {
 			return json({
 				{ "id", aTask.token },
 				{ "real_paths", aTask.dirs },
