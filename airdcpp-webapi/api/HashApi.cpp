@@ -18,6 +18,8 @@
 
 #include "stdinc.h"
 
+#include <airdcpp/SettingsManager.h>
+
 #include <web-server/JsonUtil.h>
 #include <web-server/Timer.h>
 
@@ -94,6 +96,7 @@ namespace webserver {
 			{ "hash_files_left", filesLeft },
 			{ "hashers", hashersRunning },
 			{ "pause_forced", paused },
+			{ "max_hash_speed", SETTING(MAX_HASH_SPEED) },
 		};
 	}
 
