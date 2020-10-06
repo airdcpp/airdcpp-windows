@@ -1065,10 +1065,12 @@ void HashManager::Hasher::clear() noexcept {
 void HashManager::Hasher::getStats(string& curFile, int64_t& bytesLeft, size_t& filesLeft, int64_t& speed) const noexcept {
 	curFile = currentFile;
 	filesLeft += w.size();
-	if (running)
+	if (running) {
 		filesLeft++;
+		speed += lastSpeed;
+	}
+
 	bytesLeft += totalBytesLeft;
-	speed += lastSpeed;
 }
 
 void HashManager::Hasher::instantPause() {
