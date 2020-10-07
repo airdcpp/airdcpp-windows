@@ -1792,14 +1792,8 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 		if(ShareManager::getInstance()->isRefreshing()){
 			callAsync([=] { updateTBStatusRefreshing(); });
 		} else {
-			string file;
-			int64_t bytes = 0;
-			size_t files = 0;
-			int64_t speed = 0;
-			bool paused = false;
-			int hashersRunning = 0;
-			HashManager::getInstance()->getStats(file, bytes, files, speed, hashersRunning, paused);
-			callAsync([=] { updateTBStatusHashing(file, bytes, files, speed, hashersRunning, paused); });
+			auto stats = HashManager::getInstance()->getStats();
+			callAsync([=] { updateTBStatusHashing(stats.curFile, stats.bytesLeft, stats.filesLeft, stats.speed, stats.hashersRunning, stats.isPaused); });
 		}
 	}
 

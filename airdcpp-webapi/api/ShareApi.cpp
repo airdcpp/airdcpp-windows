@@ -553,9 +553,10 @@ namespace webserver {
 	void ShareApi::on(ShareManagerListener::RefreshQueued, const ShareRefreshTask& aTask) noexcept {
 		maybeSend("share_refresh_queued", [&] {
 			return json({
-				{ "id", aTask.token },
-				{ "real_paths", aTask.dirs },
-				{ "type", refreshTypeToString(aTask.type) },
+				{ "task", serializeRefreshTask(aTask) },
+
+				{ "real_paths", aTask.dirs }, // DEPRECATED
+				{ "type", refreshTypeToString(aTask.type) }, // DEPRECATED
 			});
 		});
 	}
@@ -563,9 +564,7 @@ namespace webserver {
 	void ShareApi::on(ShareManagerListener::RefreshStarted, const ShareRefreshTask& aTask) noexcept {
 		maybeSend("share_refresh_started", [&] {
 			return json({
-				{ "id", aTask.token },
-				{ "real_paths", aTask.dirs },
-				{ "type", refreshTypeToString(aTask.type) },
+				{ "task", serializeRefreshTask(aTask) },
 			});
 		});
 	}
@@ -573,10 +572,11 @@ namespace webserver {
 	void ShareApi::on(ShareManagerListener::RefreshCompleted, const ShareRefreshTask& aTask, bool aSucceed, int64_t aTotalHash) noexcept {
 		maybeSend("share_refresh_completed", [&] {
 			return json({
-				{ "id", aTask.token },
-				{ "real_paths", aTask.dirs },
-				{ "type", refreshTypeToString(aTask.type) },
+				{ "task", serializeRefreshTask(aTask) },
 				{ "hash_bytes_queued", aTotalHash },
+
+				{ "real_paths", aTask.dirs }, // DEPRECATED 
+				{ "type", refreshTypeToString(aTask.type) }, // DEPRECATED
 			});
 		});
 	}
