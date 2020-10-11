@@ -257,23 +257,46 @@ void SharePathValidator::reloadSkiplist() {
 	skipList.prepare();
 }
 
-void SharePathValidator::validateDirectoryPathTokensHooked(const string& aBasePath, const StringList& aTokens, bool aSkipQueueCheck) const {
-	if (aTokens.empty()) {
+void SharePathValidator::validateNewDirectoryPathTokensHooked(const string& aBasePath, const StringList& aNewTokens, bool aSkipQueueCheck) const {
+	if (aNewTokens.empty()) {
 		return;
 	}
 
 	auto curPath = aBasePath;
-
-	for (const auto& currentName : aTokens) {
+	auto newParent = false;
+	for (const auto& currentName: aNewTokens) {
 		curPath += currentName + PATH_SEPARATOR;
-		validatePathHooked(curPath, aSkipQueueCheck);
+
+		{
+			File f(curPath, File::READ, File::OPEN, File::BUFFER_NONE);
+			dcassert(f.isDirectory());
+			validateHooked(f, curPath, aSkipQueueCheck);
+		}
+
+		auto error = newDirectoryValidationHook.runHooksError(curPath, newParent);
+		if (error) {
+			throw ShareValidatorException(ActionHookRejection::formatError(error), ShareValidatorErrorType::TYPE_HOOK);
+		}
+
+		newParent = false;
 	}
 }
 
+void SharePathValidator::validateNewFilePathHooked(const string& aPath, bool aSkipQueueCheck, bool aNewParent) const {
+	int64_t size;
 
-void SharePathValidator::validatePathHooked(const string& aPath, bool aSkipQueueCheck) const {
-	File f(aPath, File::READ, File::OPEN, File::BUFFER_NONE);
-	validateHooked(f, aPath, aSkipQueueCheck);
+	{
+		File f(aPath, File::READ, File::OPEN, File::BUFFER_NONE);
+		dcassert(!f.isDirectory());
+		validateHooked(f, aPath, aSkipQueueCheck);
+
+		size = f.getSize();
+	}
+
+	auto error = newFileValidationHook.runHooksError(aPath, size, aNewParent);
+	if (error) {
+		throw ShareValidatorException(ActionHookRejection::formatError(error), ShareValidatorErrorType::TYPE_HOOK);
+	}
 }
 
 }

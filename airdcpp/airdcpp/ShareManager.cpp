@@ -3154,11 +3154,11 @@ void ShareManager::validatePathHooked(const string& aRealPath, bool aSkipQueueCh
 
 
 	// Validate missing directory path tokens
-	validator->validateDirectoryPathTokensHooked(baseDirectory->getRealPath(), tokens, aSkipQueueCheck);
+	validator->validateNewDirectoryPathTokensHooked(baseDirectory->getRealPath(), tokens, aSkipQueueCheck);
 
 	if (!isDirectoryPath && !isFileShared) {
 		// Validate the file
-		validator->validatePathHooked(aRealPath, aSkipQueueCheck);
+		validator->validateNewFilePathHooked(aRealPath, aSkipQueueCheck, !tokens.empty());
 	}
 }
 

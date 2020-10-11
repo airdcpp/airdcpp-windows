@@ -86,14 +86,15 @@ public:
 	// Use checkSharedName for non-root directories
 	void validateRootPath(const string& aRealPath) const;
 
-	// Check the list of directory path tokens relative to the base path
+	// Check the list of new directory path tokens relative to the base path
 	// Throws ShareValidatorException/QueueException in case of errors
-	void validateDirectoryPathTokensHooked(const string& aBasePath, const StringList& aTokens, bool aSkipQueueCheck) const;
+	// FileException is thrown if some of the directories don't exist
+	void validateNewDirectoryPathTokensHooked(const string& aBasePath, const StringList& aTokens, bool aSkipQueueCheck) const;
 
-	// Check a single directory/file path
-	// Throws ShareValidatorException/QueueException in case of validation errors
-	// FileException is thrown if the path doesn't exist
-	void validatePathHooked(const string& aPath, bool aSkipQueueCheck) const;
+	// Check a new file path
+	// Throws ShareValidatorException/QueueException in case of errors
+	// FileException is thrown if the file doesn't exist
+	void validateNewFilePathHooked(const string& aPath, bool aSkipQueueCheck, bool aNewParent) const;
 
 	// Check a single directory/file item
 	// Throws ShareValidatorException/QueueException in case of errors
