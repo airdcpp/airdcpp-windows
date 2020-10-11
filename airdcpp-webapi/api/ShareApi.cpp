@@ -400,9 +400,10 @@ namespace webserver {
 	}
 
 	api_return ShareApi::handleRefreshPaths(ApiRequest& aRequest) {
+		const auto& reqJson = aRequest.getRequestBody();
 		addAsyncTask([
-			paths = JsonUtil::getField<StringList>("paths", aRequest.getRequestBody(), false),
-			priority = parseRefreshPriority(aRequest.getRequestBody()),
+			paths = JsonUtil::getField<StringList>("paths", reqJson, false),
+			priority = parseRefreshPriority(reqJson),
 			complete = aRequest.defer(),
 			callerPtr = aRequest.getOwnerPtr()
 		] {
@@ -418,12 +419,10 @@ namespace webserver {
 	}
 
 	api_return ShareApi::handleRefreshVirtual(ApiRequest& aRequest) {
-		auto virtualPath = JsonUtil::getField<string>("path", aRequest.getRequestBody(), false);
-		auto priority = parseRefreshPriority(aRequest.getRequestBody());
-
+		const auto& reqJson = aRequest.getRequestBody();
 		addAsyncTask([
-			virtualPath = JsonUtil::getField<string>("path", aRequest.getRequestBody(), false),
-			priority = parseRefreshPriority(aRequest.getRequestBody()),
+			virtualPath = JsonUtil::getField<string>("path", reqJson, false),
+			priority = parseRefreshPriority(reqJson),
 			complete = aRequest.defer(),
 			callerPtr = aRequest.getOwnerPtr()
 		] {
