@@ -113,6 +113,10 @@ namespace webserver {
 			return session;
 		}
 
+		const void* getOwnerPtr() const noexcept {
+			return session.get();
+		}
+
 		const string& getRequestPath() const noexcept {
 			return path;
 		}

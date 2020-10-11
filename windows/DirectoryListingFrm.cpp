@@ -1729,7 +1729,7 @@ void DirectoryListingFrame::handleRefreshShare(bool usingTree) {
 	StringList refresh;
 	if (getLocalPaths(refresh, usingTree, true)) {
 		dl->addAsyncTask([=] {
-			ShareManager::getInstance()->refreshPathsHooked(ShareRefreshPriority::MANUAL, refresh);
+			ShareManager::getInstance()->refreshPathsHooked(ShareRefreshPriority::MANUAL, refresh, this);
 		});
 	}
 }

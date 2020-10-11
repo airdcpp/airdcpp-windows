@@ -33,7 +33,8 @@
 #define EXT_CONTEXT_MENU(menu, menuId, tokens) \
 if (!tokens.empty()) { \
 	auto cmm = &webserver::WebServerManager::getInstance()->getContextMenuManager(); \
-	auto extMenuItems = cmm->get##menuId##Menu(tokens, { webserver::Access::ADMIN }, { webserver::ContextMenuManager::URLS_SUPPORT }); \
+	auto listData = webserver::ContextMenuItemListData({ webserver::ContextMenuManager::URLS_SUPPORT }, { webserver::Access::ADMIN }, this); \
+	auto extMenuItems = cmm->get##menuId##Menu(tokens, listData); \
 	if (!extMenuItems.empty()) { \
 		for (const auto& extItem : extMenuItems) { \
 			menu.appendItem( \
@@ -58,7 +59,8 @@ if (!tokens.empty()) { \
 #define EXT_CONTEXT_MENU_ENTITY(menu, menuId, tokens, entity) \
 if (!tokens.empty()) { \
 	auto cmm = &webserver::WebServerManager::getInstance()->getContextMenuManager(); \
-	auto extMenuItems = cmm->get##menuId##Menu(tokens, { webserver::Access::ADMIN }, { webserver::ContextMenuManager::URLS_SUPPORT }, entity); \
+	auto listData = webserver::ContextMenuItemListData({ webserver::ContextMenuManager::URLS_SUPPORT }, { webserver::Access::ADMIN }, this); \
+	auto extMenuItems = cmm->get##menuId##Menu(tokens, listData, entity); \
 	if (!extMenuItems.empty()) { \
 		for (const auto& extItem : extMenuItems) { \
 			menu.appendItem( \

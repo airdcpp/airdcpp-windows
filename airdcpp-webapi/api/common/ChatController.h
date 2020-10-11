@@ -130,7 +130,7 @@ namespace webserver {
 			auto message = Deserializer::deserializeChatMessage(reqJson);
 
 			string error;
-			if (!chatF()->sendMessageHooked(OutgoingChatMessage(message.first, aRequest.getSession().get(), message.second), error) && !error.empty()) {
+			if (!chatF()->sendMessageHooked(OutgoingChatMessage(message.first, aRequest.getOwnerPtr(), message.second), error) && !error.empty()) {
 				aRequest.setResponseErrorStr(error);
 				return websocketpp::http::status_code::internal_server_error;
 			}

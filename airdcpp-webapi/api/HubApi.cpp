@@ -68,14 +68,14 @@ namespace webserver {
 
 		ClientManager::getInstance()->addListener(this);
 
-		createHook("hub_incoming_message_hook", [this](const string& aId, const string& aName) {
-			return ClientManager::getInstance()->incomingHubMessageHook.addSubscriber(aId, aName, HOOK_HANDLER(HubApi::incomingMessageHook));
+		createHook("hub_incoming_message_hook", [this](ActionHookSubscriber&& aSubscriber) {
+			return ClientManager::getInstance()->incomingHubMessageHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(HubApi::incomingMessageHook));
 		}, [this](const string& aId) {
 			ClientManager::getInstance()->incomingHubMessageHook.removeSubscriber(aId);
 		});
 
-		createHook("hub_outgoing_message_hook", [this](const string& aId, const string& aName) {
-			return ClientManager::getInstance()->outgoingHubMessageHook.addSubscriber(aId, aName, HOOK_HANDLER(HubApi::outgoingMessageHook));
+		createHook("hub_outgoing_message_hook", [this](ActionHookSubscriber&& aSubscriber) {
+			return ClientManager::getInstance()->outgoingHubMessageHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(HubApi::outgoingMessageHook));
 		}, [this](const string& aId) {
 			ClientManager::getInstance()->outgoingHubMessageHook.removeSubscriber(aId);
 		});
@@ -113,7 +113,7 @@ namespace webserver {
 		string lastError;
 		for (const auto& url: hubs) {
 			auto c = ClientManager::getInstance()->getClient(url);
-			if (c && c->isConnected() && c->sendMessageHooked(OutgoingChatMessage(message.first, aRequest.getSession().get(), message.second), lastError)) {
+			if (c && c->isConnected() && c->sendMessageHooked(OutgoingChatMessage(message.first, aRequest.getOwnerPtr(), message.second), lastError)) {
 				succeed++;
 			}
 		}

@@ -78,26 +78,26 @@ namespace webserver {
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(EXACT_PARAM("temp_shares")),						ShareApi::handleAddTempShare);
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_DELETE,	(EXACT_PARAM("temp_shares"), TOKEN_PARAM),			ShareApi::handleRemoveTempShare);
 
-		createHook("share_file_validation_hook", [this](const string& aId, const string& aName) {
-			return ShareManager::getInstance()->getValidator().fileValidationHook.addSubscriber(aId, aName, HOOK_HANDLER(ShareApi::fileValidationHook));
+		createHook("share_file_validation_hook", [this](ActionHookSubscriber&& aSubscriber) {
+			return ShareManager::getInstance()->getValidator().fileValidationHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(ShareApi::fileValidationHook));
 		}, [this](const string& aId) {
 			ShareManager::getInstance()->getValidator().fileValidationHook.removeSubscriber(aId);
 		});
 
-		createHook("share_directory_validation_hook", [this](const string& aId, const string& aName) {
-			return ShareManager::getInstance()->getValidator().directoryValidationHook.addSubscriber(aId, aName, HOOK_HANDLER(ShareApi::directoryValidationHook));
+		createHook("share_directory_validation_hook", [this](ActionHookSubscriber&& aSubscriber) {
+			return ShareManager::getInstance()->getValidator().directoryValidationHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(ShareApi::directoryValidationHook));
 		}, [this](const string& aId) {
 			ShareManager::getInstance()->getValidator().directoryValidationHook.removeSubscriber(aId);
 		});
 
-		createHook("new_share_directory_validation_hook", [this](const string& aId, const string& aName) {
-			return ShareManager::getInstance()->getValidator().newDirectoryValidationHook.addSubscriber(aId, aName, HOOK_HANDLER(ShareApi::newDirectoryValidationHook));
+		createHook("new_share_directory_validation_hook", [this](ActionHookSubscriber&& aSubscriber) {
+			return ShareManager::getInstance()->getValidator().newDirectoryValidationHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(ShareApi::newDirectoryValidationHook));
 		}, [this](const string& aId) {
 			ShareManager::getInstance()->getValidator().newDirectoryValidationHook.removeSubscriber(aId);
 		});
 
-		createHook("new_share_file_validation_hook", [this](const string& aId, const string& aName) {
-			return ShareManager::getInstance()->getValidator().newFileValidationHook.addSubscriber(aId, aName, HOOK_HANDLER(ShareApi::newFileValidationHook));
+		createHook("new_share_file_validation_hook", [this](ActionHookSubscriber&& aSubscriber) {
+			return ShareManager::getInstance()->getValidator().newFileValidationHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(ShareApi::newFileValidationHook));
 		}, [this](const string& aId) {
 			ShareManager::getInstance()->getValidator().newFileValidationHook.removeSubscriber(aId);
 		});
@@ -404,7 +404,7 @@ namespace webserver {
 		auto priority = parseRefreshPriority(aRequest.getRequestBody());
 
 		try {
-			auto refreshInfo = ShareManager::getInstance()->refreshPathsHookedThrow(priority, paths);
+			auto refreshInfo = ShareManager::getInstance()->refreshPathsHookedThrow(priority, paths, aRequest.getOwnerPtr());
 			aRequest.setResponseBody(serializeRefreshQueueInfo(refreshInfo));
 		} catch (const Exception& e) {
 			aRequest.setResponseErrorStr(e.getError());
@@ -422,7 +422,7 @@ namespace webserver {
 		try {
 			ShareManager::getInstance()->getRealPaths(virtualPath, refreshPaths);
 
-			auto refreshInfo = ShareManager::getInstance()->refreshPathsHookedThrow(priority, refreshPaths);
+			auto refreshInfo = ShareManager::getInstance()->refreshPathsHookedThrow(priority, refreshPaths, aRequest.getOwnerPtr());
 			aRequest.setResponseBody(serializeRefreshQueueInfo(refreshInfo));
 		} catch (const ShareException& e) {
 			aRequest.setResponseErrorStr(e.getError());
@@ -483,7 +483,7 @@ namespace webserver {
 		auto skipCheckQueue = JsonUtil::getOptionalFieldDefault<bool>("skip_check_queue", reqJson, false);
 
 		try {
-			ShareManager::getInstance()->validatePathHooked(path, skipCheckQueue);
+			ShareManager::getInstance()->validatePathHooked(path, skipCheckQueue, aRequest.getOwnerPtr());
 		} catch (const QueueException& e) {
 			// Queued bundle
 			aRequest.setResponseErrorStr(e.getError());

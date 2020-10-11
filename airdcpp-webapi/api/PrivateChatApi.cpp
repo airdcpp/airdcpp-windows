@@ -67,14 +67,14 @@ namespace webserver {
 
 		PrivateChatManager::getInstance()->addListener(this);
 
-		createHook("private_chat_incoming_message_hook", [this](const string& aId, const string& aName) {
-			return ClientManager::getInstance()->incomingPrivateMessageHook.addSubscriber(aId, aName, HOOK_HANDLER(PrivateChatApi::incomingMessageHook));
+		createHook("private_chat_incoming_message_hook", [this](ActionHookSubscriber&& aSubscriber) {
+			return ClientManager::getInstance()->incomingPrivateMessageHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(PrivateChatApi::incomingMessageHook));
 		}, [this](const string& aId) {
 			ClientManager::getInstance()->incomingPrivateMessageHook.removeSubscriber(aId);
 		});
 
-		createHook("private_chat_outgoing_message_hook", [this](const string& aId, const string& aName) {
-			return ClientManager::getInstance()->outgoingPrivateMessageHook.addSubscriber(aId, aName, HOOK_HANDLER(PrivateChatApi::outgoingMessageHook));
+		createHook("private_chat_outgoing_message_hook", [this](ActionHookSubscriber&& aSubscriber) {
+			return ClientManager::getInstance()->outgoingPrivateMessageHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(PrivateChatApi::outgoingMessageHook));
 		}, [this](const string& aId) {
 			ClientManager::getInstance()->outgoingPrivateMessageHook.removeSubscriber(aId);
 		});
@@ -120,7 +120,7 @@ namespace webserver {
 		auto echo = JsonUtil::getOptionalFieldDefault<bool>("echo", reqJson, false);
 
 		string error_;
-		if (!ClientManager::getInstance()->privateMessageHooked(user, OutgoingChatMessage(message.first, aRequest.getSession().get(), message.second), error_, echo)) {
+		if (!ClientManager::getInstance()->privateMessageHooked(user, OutgoingChatMessage(message.first, aRequest.getOwnerPtr(), message.second), error_, echo)) {
 			aRequest.setResponseErrorStr(error_);
 			return websocketpp::http::status_code::internal_server_error;
 		}

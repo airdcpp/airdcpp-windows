@@ -2021,7 +2021,7 @@ LRESULT MainFrame::onRefreshDropDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 			vMenu->appendItem(CTSTRING(ALL), [=] { ShareManager::getInstance()->refreshVirtualName(i.first); }, OMenu::FLAG_THREADED);
 			vMenu->appendSeparator();
 			for(const auto& s: i.second) {
-				vMenu->appendItem(Text::toT(s), [=] { ShareManager::getInstance()->refreshPathsHooked(ShareRefreshPriority::MANUAL, { s }); }, OMenu::FLAG_THREADED);
+				vMenu->appendItem(Text::toT(s), [=] { ShareManager::getInstance()->refreshPathsHooked(ShareRefreshPriority::MANUAL, { s }, this); }, OMenu::FLAG_THREADED);
 			}
 		} else {
 			dropMenu.appendItem(Text::toT(i.first), [=] { ShareManager::getInstance()->refreshVirtualName(i.first); }, OMenu::FLAG_THREADED);

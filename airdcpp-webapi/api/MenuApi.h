@@ -57,14 +57,14 @@ namespace webserver {
 		using IdSerializer = std::function<json(const IdT& aId)>;
 
 		template<typename IdT>
-		ActionHookResult<ContextMenuItemList> menuListHookHandler(const vector<IdT>& aSelections, const AccessList& aAccessList, const ActionHookResultGetter<ContextMenuItemList>& aResultGetter, const string& aMenuId, const IdSerializer<IdT>& aIdSerializer, const StringList& aSupports, const json& aEntityId = nullptr) {
+		ActionHookResult<ContextMenuItemList> menuListHookHandler(const vector<IdT>& aSelections, const ContextMenuItemListData& aListData, const ActionHookResultGetter<ContextMenuItemList>& aResultGetter, const string& aMenuId, const IdSerializer<IdT>& aIdSerializer, const json& aEntityId = nullptr) {
 			return HookCompletionData::toResult<ContextMenuItemList>(
 				fireHook(toHookId(aMenuId), 1, [&]() {
 					return json({
 						{ "selected_ids", Serializer::serializeList(aSelections, aIdSerializer) },
-						{ "permissions", Serializer::serializePermissions(aAccessList) },
+						{ "permissions", Serializer::serializePermissions(aListData.access) },
 						{ "entity_id", aEntityId },
-						{ "supports", aSupports },
+						{ "supports", aListData.supports },
 					});
 				}),
 				aResultGetter,
@@ -93,7 +93,7 @@ namespace webserver {
 		ContextMenuItemClickData deserializeClickData(const json& aJson, const AccessList& aPermissions);
 
 		template<typename IdT>
-		using ListHandlerFunc = std::function<ContextMenuItemList(const vector<IdT>& aId, const AccessList& aAccessList, const StringList& aSupports)>;
+		using ListHandlerFunc = std::function<ContextMenuItemList(const vector<IdT>& aId, const ContextMenuItemListData& aListData)>;
 
 		template<typename IdT>
 		api_return handleListItems(ApiRequest& aRequest, const ListHandlerFunc<IdT>& aHandler, const Deserializer::ArrayDeserializerFunc<IdT>& aIdDeserializerFunc) {
@@ -101,7 +101,7 @@ namespace webserver {
 			const auto supports = JsonUtil::getOptionalFieldDefault<StringList>("supports", aRequest.getRequestBody(), StringList());
 			const auto accessList = aRequest.getSession()->getUser()->getPermissions();
 
-			const auto items = aHandler(selectedIds, accessList, supports);
+			const auto items = aHandler(selectedIds, ContextMenuItemListData(supports, accessList, aRequest.getOwnerPtr()));
 			aRequest.setResponseBody(Serializer::serializeList(items, MenuApi::serializeMenuItem));
 
 			return websocketpp::http::status_code::ok;

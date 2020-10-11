@@ -135,8 +135,8 @@ LRESULT ShareDirectories::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPa
 			if (selectedDirs == 1) {
 				auto path = ((ProfileDirectoryInfo*)ctrlDirectories.GetItemData(ctrlDirectories.GetNextItem(i, LVNI_SELECTED)))->dir->path;
 				menu.appendItem(TSTRING(OPEN_FOLDER), [path] { ActionUtil::openFolder(Text::toT(path)); });
-				menu.appendItem(TSTRING(REFRESH), [path] {
-					ShareManager::getInstance()->refreshPathsHooked(ShareRefreshPriority::MANUAL, { path });
+				menu.appendItem(TSTRING(REFRESH), [=] {
+					ShareManager::getInstance()->refreshPathsHooked(ShareRefreshPriority::MANUAL, { path }, this);
 				}, OMenu::FLAG_THREADED);
 			}
 
