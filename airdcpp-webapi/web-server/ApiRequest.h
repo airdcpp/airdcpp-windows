@@ -28,6 +28,8 @@
 #define TTH_PARAM_ID "tth_param"
 #define CID_PARAM_ID "cid_param"
 
+#define CODE_DEFERRED websocketpp::http::status_code::see_other
+
 namespace webserver {
 	enum RequestMethod {
 		METHOD_POST,

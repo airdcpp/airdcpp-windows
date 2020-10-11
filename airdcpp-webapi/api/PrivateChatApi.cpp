@@ -114,18 +114,22 @@ namespace webserver {
 
 	api_return PrivateChatApi::handlePostMessage(ApiRequest& aRequest) {
 		const auto& reqJson = aRequest.getRequestBody();
+		addAsyncTask([
+			message = Deserializer::deserializeChatMessage(reqJson),
+			user = Deserializer::deserializeHintedUser(reqJson),
+			echo = JsonUtil::getOptionalFieldDefault<bool>("echo", reqJson, false),
+			callerPtr = aRequest.getOwnerPtr(),
+			complete = aRequest.defer()
+		] {
+			string error_;
+			if (!ClientManager::getInstance()->privateMessageHooked(user, OutgoingChatMessage(message.first, callerPtr, message.second), error_, echo)) {
+				complete(websocketpp::http::status_code::internal_server_error, nullptr, ApiRequest::toResponseErrorStr(error_));
+			} else {
+				complete(websocketpp::http::status_code::no_content, nullptr, nullptr);
+			}
+		});
 
-		auto user = Deserializer::deserializeHintedUser(reqJson);
-		auto message = Deserializer::deserializeChatMessage(reqJson);
-		auto echo = JsonUtil::getOptionalFieldDefault<bool>("echo", reqJson, false);
-
-		string error_;
-		if (!ClientManager::getInstance()->privateMessageHooked(user, OutgoingChatMessage(message.first, aRequest.getOwnerPtr(), message.second), error_, echo)) {
-			aRequest.setResponseErrorStr(error_);
-			return websocketpp::http::status_code::internal_server_error;
-		}
-
-		return websocketpp::http::status_code::no_content;
+		return CODE_DEFERRED;
 	}
 
 	void PrivateChatApi::on(PrivateChatManagerListener::ChatRemoved, const PrivateChatPtr& aChat) noexcept {

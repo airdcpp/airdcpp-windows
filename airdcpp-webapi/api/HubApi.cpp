@@ -106,23 +106,31 @@ namespace webserver {
 	api_return HubApi::handlePostMessage(ApiRequest& aRequest) {
 		const auto& reqJson = aRequest.getRequestBody();
 
-		auto message = Deserializer::deserializeChatMessage(reqJson);
-		auto hubs = Deserializer::deserializeHubUrls(reqJson);
-
-		int succeed = 0;
-		string lastError;
-		for (const auto& url: hubs) {
-			auto c = ClientManager::getInstance()->getClient(url);
-			if (c && c->isConnected() && c->sendMessageHooked(OutgoingChatMessage(message.first, aRequest.getOwnerPtr(), message.second), lastError)) {
-				succeed++;
+		addAsyncTask([
+			message = Deserializer::deserializeChatMessage(reqJson),
+			hubs = Deserializer::deserializeHubUrls(reqJson),
+			complete = aRequest.defer(),
+			callerPtr = aRequest.getOwnerPtr()
+		] {
+			int succeed = 0;
+			string lastError;
+			for (const auto& url: hubs) {
+				auto c = ClientManager::getInstance()->getClient(url);
+				if (c && c->isConnected() && c->sendMessageHooked(OutgoingChatMessage(message.first, callerPtr, message.second), lastError)) {
+					succeed++;
+				}
 			}
-		}
 
-		aRequest.setResponseBody({
-			{ "sent", succeed },
+			complete(
+				websocketpp::http::status_code::ok,
+				{
+					{ "sent", succeed },
+				},
+				nullptr
+			);
 		});
 
-		return websocketpp::http::status_code::ok;
+		return CODE_DEFERRED;
 	}
 
 	api_return HubApi::handlePostStatus(ApiRequest& aRequest) {

@@ -400,36 +400,45 @@ namespace webserver {
 	}
 
 	api_return ShareApi::handleRefreshPaths(ApiRequest& aRequest) {
-		auto paths = JsonUtil::getField<StringList>("paths", aRequest.getRequestBody(), false);
-		auto priority = parseRefreshPriority(aRequest.getRequestBody());
+		addAsyncTask([
+			paths = JsonUtil::getField<StringList>("paths", aRequest.getRequestBody(), false),
+			priority = parseRefreshPriority(aRequest.getRequestBody()),
+			complete = aRequest.defer(),
+			callerPtr = aRequest.getOwnerPtr()
+		] {
+			try {
+				auto refreshInfo = ShareManager::getInstance()->refreshPathsHookedThrow(priority, paths, callerPtr);
+				complete(websocketpp::http::status_code::ok, serializeRefreshQueueInfo(refreshInfo), nullptr);
+			} catch (const Exception& e) {
+				complete(websocketpp::http::status_code::bad_request, nullptr, e.getError());
+			}
+		});
 
-		try {
-			auto refreshInfo = ShareManager::getInstance()->refreshPathsHookedThrow(priority, paths, aRequest.getOwnerPtr());
-			aRequest.setResponseBody(serializeRefreshQueueInfo(refreshInfo));
-		} catch (const Exception& e) {
-			aRequest.setResponseErrorStr(e.getError());
-			return websocketpp::http::status_code::bad_request;
-		}
-
-		return websocketpp::http::status_code::ok;
+		return CODE_DEFERRED;
 	}
 
 	api_return ShareApi::handleRefreshVirtual(ApiRequest& aRequest) {
 		auto virtualPath = JsonUtil::getField<string>("path", aRequest.getRequestBody(), false);
 		auto priority = parseRefreshPriority(aRequest.getRequestBody());
 
-		StringList refreshPaths;
-		try {
-			ShareManager::getInstance()->getRealPaths(virtualPath, refreshPaths);
+		addAsyncTask([
+			virtualPath = JsonUtil::getField<string>("path", aRequest.getRequestBody(), false),
+			priority = parseRefreshPriority(aRequest.getRequestBody()),
+			complete = aRequest.defer(),
+			callerPtr = aRequest.getOwnerPtr()
+		] {
+			StringList refreshPaths;
+			try {
+				ShareManager::getInstance()->getRealPaths(virtualPath, refreshPaths);
 
-			auto refreshInfo = ShareManager::getInstance()->refreshPathsHookedThrow(priority, refreshPaths, aRequest.getOwnerPtr());
-			aRequest.setResponseBody(serializeRefreshQueueInfo(refreshInfo));
-		} catch (const ShareException& e) {
-			aRequest.setResponseErrorStr(e.getError());
-			return websocketpp::http::status_code::bad_request;
-		}
+				auto refreshInfo = ShareManager::getInstance()->refreshPathsHookedThrow(priority, refreshPaths, callerPtr);
+				complete(websocketpp::http::status_code::ok, serializeRefreshQueueInfo(refreshInfo), nullptr);
+			} catch (const ShareException& e) {
+				complete(websocketpp::http::status_code::bad_request, nullptr, e.getError());
+			}
+		});
 
-		return websocketpp::http::status_code::ok;
+		return CODE_DEFERRED;
 	}
 
 	api_return ShareApi::handleGetStats(ApiRequest& aRequest) {
@@ -479,30 +488,36 @@ namespace webserver {
 
 	api_return ShareApi::handleValidatePath(ApiRequest& aRequest) {
 		const auto& reqJson = aRequest.getRequestBody();
-		auto path = JsonUtil::getField<string>("path", reqJson);
-		auto skipCheckQueue = JsonUtil::getOptionalFieldDefault<bool>("skip_check_queue", reqJson, false);
+		addAsyncTask([
+			path = JsonUtil::getField<string>("path", reqJson),
+			skipCheckQueue = JsonUtil::getOptionalFieldDefault<bool>("skip_check_queue", reqJson, false),
+			complete = aRequest.defer(),
+			callerPtr = aRequest.getOwnerPtr()
+		] {
+			try {
+				ShareManager::getInstance()->validatePathHooked(path, skipCheckQueue, callerPtr);
+			} catch (const QueueException& e) {
+				// Queued bundle
+				complete(websocketpp::http::status_code::conflict, nullptr, ApiRequest::toResponseErrorStr(e.getError()));
+				return;
+			} catch (const ShareValidatorException& e) {
+				// Validation error
+				complete(websocketpp::http::status_code::forbidden, nullptr, ApiRequest::toResponseErrorStr(e.getError()));
+				return;
+			} catch (const ShareException& e) {
+				// Path not inside a shared directory
+				complete(websocketpp::http::status_code::expectation_failed, nullptr, ApiRequest::toResponseErrorStr(e.getError()));
+				return;
+			} catch (const FileException& e) {
+				// File doesn't exist
+				complete(websocketpp::http::status_code::not_found, nullptr, ApiRequest::toResponseErrorStr(e.getError()));
+				return;
+			}
 
-		try {
-			ShareManager::getInstance()->validatePathHooked(path, skipCheckQueue, aRequest.getOwnerPtr());
-		} catch (const QueueException& e) {
-			// Queued bundle
-			aRequest.setResponseErrorStr(e.getError());
-			return websocketpp::http::status_code::conflict;
-		} catch (const ShareValidatorException& e) {
-			// Validation error
-			aRequest.setResponseErrorStr(e.getError());
-			return websocketpp::http::status_code::forbidden;
-		} catch (const ShareException& e) {
-			// Path not inside a shared directory
-			aRequest.setResponseErrorStr(e.getError());
-			return websocketpp::http::status_code::expectation_failed;
-		} catch (const FileException& e) {
-			// File doesn't exist
-			aRequest.setResponseErrorStr(e.getError());
-			return websocketpp::http::status_code::not_found;
-		}
+			complete(websocketpp::http::status_code::no_content, nullptr, nullptr);
+		});
 
-		return websocketpp::http::status_code::no_content;
+		return CODE_DEFERRED;
 	}
 
 	api_return ShareApi::handleFindDupePaths(ApiRequest& aRequest) {
