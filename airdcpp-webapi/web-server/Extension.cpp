@@ -288,28 +288,41 @@ namespace webserver {
 		StringList ret;
 
 		// Script to launch
-		ret.push_back(Util::joinDirectory(getRootPath(), EXT_PACKAGE_DIR) + entry);
+		ret.push_back("\"" + Util::joinDirectory(getRootPath(), EXT_PACKAGE_DIR) + entry + "\"");
 
 		// Params
-		auto addParam = [&ret](const string& aName, const string& aParam = Util::emptyString) {
-			ret.push_back("--" + aName + (!aParam.empty() ? "=" + aParam : Util::emptyString));
+		auto addStrParam = [&ret](const string& aName, const string& aParam = Util::emptyString) {
+			auto arg = "--" + aName;
+			if (!aParam.empty()) {
+				arg += "=\"" + aParam;
+
+				// At least Windows has problems with backslashes before double quotes (it won't be escaped properly in argv)
+				if (arg.back() == '\\') {
+					// Make it double backslash
+					arg += "\\";
+				}
+
+				arg += "\"";
+			}
+
+			ret.push_back(arg);
 		};
 
 		// Name
-		addParam("name", name);
+		addStrParam("name", name);
 
 		// Connect URL
-		addParam("apiUrl", getConnectUrl(wsm));
+		addStrParam("apiUrl", getConnectUrl(wsm));
 
 		// Session token
-		addParam("authToken", aSession->getAuthToken());
+		addStrParam("authToken", aSession->getAuthToken());
 
 		// Paths
-		addParam("logPath", Util::joinDirectory(getRootPath(), EXT_LOG_DIR));
-		addParam("settingsPath", Util::joinDirectory(getRootPath(), EXT_CONFIG_DIR));
+		addStrParam("logPath", Util::joinDirectory(getRootPath(), EXT_LOG_DIR));
+		addStrParam("settingsPath", Util::joinDirectory(getRootPath(), EXT_CONFIG_DIR));
 
 		if (WEBCFG(EXTENSIONS_DEBUG_MODE).boolean()) {
-			addParam("debug");
+			addStrParam("debug");
 		}
 
 		return ret;
