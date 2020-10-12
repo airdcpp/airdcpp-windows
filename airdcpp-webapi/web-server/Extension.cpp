@@ -284,45 +284,55 @@ namespace webserver {
 		return bindAddress + ":" + Util::toString(serverConfig.port.num()) + "/api/v1/";
 	}
 
-	StringList Extension::getLaunchParams(WebServerManager* wsm, const SessionPtr& aSession) const noexcept {
+	StringList Extension::getLaunchParams(WebServerManager* wsm, const SessionPtr& aSession, bool aEscape) const noexcept {
 		StringList ret;
 
-		// Script to launch
-		ret.push_back("\"" + Util::joinDirectory(getRootPath(), EXT_PACKAGE_DIR) + entry + "\"");
+		// Wrap strings possibly containing whitespaces in doube quotes
+		auto maybeEscape = [aEscape](const string& aStr) {
+			if (!aEscape || aStr.empty()) {
+				return aStr;
+			}
 
-		// Params
-		auto addStrParam = [&ret](const string& aName, const string& aParam = Util::emptyString) {
+			string ret = "\"" + aStr;
+
+			// At least Windows has problems with backslashes before double quotes 
+			// (the slash won't be escaped properly in argv)
+			if (ret.back() == '\\') {
+				// Make it double backslash
+				ret += "\\";
+			}
+
+			return ret + "\"";
+		};
+
+		// Script to launch
+		ret.push_back(maybeEscape(Util::joinDirectory(getRootPath(), EXT_PACKAGE_DIR) + entry));
+
+		// Params (string/flag)
+		auto addParam = [&ret, &maybeEscape](const string& aName, const string& aParam = Util::emptyString) {
 			auto arg = "--" + aName;
 			if (!aParam.empty()) {
-				arg += "=\"" + aParam;
-
-				// At least Windows has problems with backslashes before double quotes (it won't be escaped properly in argv)
-				if (arg.back() == '\\') {
-					// Make it double backslash
-					arg += "\\";
-				}
-
-				arg += "\"";
+				arg += "=" + maybeEscape(aParam);
 			}
 
 			ret.push_back(arg);
 		};
 
 		// Name
-		addStrParam("name", name);
+		addParam("name", name);
 
 		// Connect URL
-		addStrParam("apiUrl", getConnectUrl(wsm));
+		addParam("apiUrl", getConnectUrl(wsm));
 
 		// Session token
-		addStrParam("authToken", aSession->getAuthToken());
+		addParam("authToken", aSession->getAuthToken());
 
 		// Paths
-		addStrParam("logPath", Util::joinDirectory(getRootPath(), EXT_LOG_DIR));
-		addStrParam("settingsPath", Util::joinDirectory(getRootPath(), EXT_CONFIG_DIR));
+		addParam("logPath", Util::joinDirectory(getRootPath(), EXT_LOG_DIR));
+		addParam("settingsPath", Util::joinDirectory(getRootPath(), EXT_CONFIG_DIR));
 
 		if (WEBCFG(EXTENSIONS_DEBUG_MODE).boolean()) {
-			addStrParam("debug");
+			addParam("debug");
 		}
 
 		return ret;
@@ -436,7 +446,7 @@ namespace webserver {
 
 		ZeroMemory(&piProcInfo, sizeof(PROCESS_INFORMATION));
 
-		auto paramList = getLaunchParams(wsm, aSession);
+		auto paramList = getLaunchParams(wsm, aSession, true);
 
 		string command(aEngine + " ");
 		for (const auto& p: paramList) {
@@ -550,7 +560,7 @@ namespace webserver {
 		vector<char*> argv;
 		argv.push_back(app);
 
-		auto paramList = getLaunchParams(wsm, aSession);
+		auto paramList = getLaunchParams(wsm, aSession, false);
 		for (const auto& p : paramList) {
 			argv.push_back((char*)p.c_str());
 		}
