@@ -1459,6 +1459,26 @@ bool ShareManager::ShareBuilder::buildTree(const bool& aStopping) noexcept {
 	return !aStopping;
 }
 
+bool ShareManager::ShareBuilder::validateFileItem(const FileItem& aFileItem, const string& aPath, bool aIsNew, bool aNewParent, ErrorCollector& aErrorCollector) noexcept {
+	try {
+		sm.validator->validateHooked(aFileItem, aPath, false, &sm, aIsNew, aNewParent);
+	} catch (const ShareValidatorException& e) {
+		if (SETTING(REPORT_BLOCKED_SHARE) && ShareValidatorException::isReportableError(e.getType())) {
+			if (aFileItem.isDirectory()) {
+				LogManager::getInstance()->message(STRING_F(SHARE_DIRECTORY_BLOCKED, aPath % e.getError()), LogMessage::SEV_INFO);
+			} else {
+				aErrorCollector.add(e.getError(), Util::getFileName(aPath), false);
+			}
+		}
+
+		return false;
+	} catch (...) {
+		return false;
+	}
+
+	return true;
+}
+
 void ShareManager::ShareBuilder::buildTree(const string& aPath, const string& aPathLower, const Directory::Ptr& aParent, const Directory::Ptr& aOldParent, const bool& aStopping) {
 	ErrorCollector errors;
 	FileFindIter end;
@@ -1477,23 +1497,8 @@ void ShareManager::ShareBuilder::buildTree(const string& aPath, const string& aP
 		auto curPath = aPath + name + (isDirectory ? PATH_SEPARATOR_STR : Util::emptyString);
 		auto curPathLower = aPathLower + dualName.getLower() + (isDirectory ? PATH_SEPARATOR_STR : Util::emptyString);
 
-		try {
-			sm.validator->validateHooked(*i, curPath, false, &sm);
-		} catch (const ShareValidatorException& e) {
-			if (SETTING(REPORT_BLOCKED_SHARE) && ShareValidatorException::isReportableError(e.getType())) {
-				if (isDirectory) {
-					LogManager::getInstance()->message(STRING_F(SHARE_DIRECTORY_BLOCKED, curPath % e.getError()), LogMessage::SEV_INFO);
-				} else {
-					errors.add(e.getError(), name, false);
-				}
-			}
-
-			continue;
-		} catch (...) {
-			continue;
-		}
-
 		if (isDirectory) {
+			// Check whether it's shared already
 			Directory::Ptr oldDir = nullptr;
 			if (aOldParent) {
 				RLock l(sm.cs);
@@ -1503,16 +1508,20 @@ void ShareManager::ShareBuilder::buildTree(const string& aPath, const string& aP
 				}
 			}
 
-			if (!oldDir) {
+			// Validations
+			{
+				auto isNew = !oldDir;
 				auto newParent = !aOldParent;
-				auto error = sm.validator->newDirectoryValidationHook.runHooksError(&sm, curPath, newParent);
-				if (error) {
+				if (!validateFileItem(*i, curPath, isNew, newParent, errors)) {
 					continue;
 				}
-			} else {
-				newDirectoriesCount++;
+
+				if (isNew) {
+					newDirectoriesCount++;
+				}
 			}
 
+			// Add it
 			auto curDir = Directory::createNormal(move(dualName), aParent, i->getLastWriteTime(), lowerDirNameMapNew, bloom);
 			if (curDir) {
 				buildTree(curPath, curPathLower, curDir, oldDir, aStopping);
@@ -1520,9 +1529,9 @@ void ShareManager::ShareBuilder::buildTree(const string& aPath, const string& aP
 			}
 		} else {
 			// Not a directory, assume it's a file...
-			auto size = i->getSize();
 
-			if (sm.validator->newFileValidationHook.hasSubscribers()) {
+			{
+				// Check whether it's shared already
 				auto isNew = !aOldParent;
 				if (aOldParent) {
 					RLock l(sm.cs);
@@ -1530,15 +1539,20 @@ void ShareManager::ShareBuilder::buildTree(const string& aPath, const string& aP
 					isNew = fileIter != aOldParent->files.end();
 				}
 
+
+				// Validations
+				auto newParent = !aOldParent;
+				if (!validateFileItem(*i, curPath, isNew, newParent, errors)) {
+					continue;
+				}
+
 				if (isNew) {
-					auto newParent = !aOldParent;
-					auto error = sm.validator->newFileValidationHook.runHooksError(&sm, curPath, size, newParent);
-					if (error) {
-						continue;
-					}
+					newFilesCount++;
 				}
 			}
 
+			// Add it
+			auto size = i->getSize();
 			try {
 				HashedFile fi(i->getLastWriteTime(), size);
 				if(HashManager::getInstance()->checkTTH(aPathLower + dualName.getLower(), aPath + name, fi)) {
@@ -3158,7 +3172,7 @@ void ShareManager::validatePathHooked(const string& aRealPath, bool aSkipQueueCh
 
 	if (!isDirectoryPath && !isFileShared) {
 		// Validate the file
-		validator->validateNewFilePathHooked(aRealPath, aSkipQueueCheck, !tokens.empty(), aCaller);
+		validator->validateNewPathHooked(aRealPath, aSkipQueueCheck, !tokens.empty(), aCaller);
 	}
 }
 

@@ -48,6 +48,7 @@
 namespace dcpp {
 
 class File;
+class ErrorCollector;
 class OutputStream;
 class MemoryInputStream;
 class SearchQuery;
@@ -683,6 +684,7 @@ private:
 		int64_t hashSize = 0;
 		int64_t addedSize = 0;
 		size_t newDirectoriesCount = 0;
+		size_t newFilesCount = 0;
 		Directory::Map rootPathsNew;
 		Directory::MultiMap lowerDirNameMapNew;
 		HashFileMap tthIndexNew;
@@ -703,6 +705,9 @@ private:
 		bool buildTree(const bool& aStopping) noexcept;
 	private:
 		void buildTree(const string& aPath, const string& aPathLower, const Directory::Ptr& aCurrentDirectory, const Directory::Ptr& aOldDirectory, const bool& aStopping);
+
+		typedef function<void()> ValidatorF;
+		bool validateFileItem(const FileItem& aFileItem, const string& aPath, bool aIsNew, bool aNewParent, ErrorCollector& aErrorCollector) noexcept;
 
 		const ShareManager& sm;
 	};
