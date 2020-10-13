@@ -2269,8 +2269,8 @@ void ShareRefreshStats::merge(const ShareRefreshStats& aOther) noexcept {
 	newDirectoryCount += aOther.newDirectoryCount;
 	newFileCount += aOther.newFileCount;
 
-	failedFileCount += aOther.failedFileCount;
-	failedDirectoryCount += aOther.failedDirectoryCount;
+	skippedFileCount += aOther.skippedFileCount;
+	skippedDirectoryCount += aOther.skippedDirectoryCount;
 
 	existingFileCount += aOther.existingFileCount;
 	existingDirectoryCount += aOther.existingDirectoryCount;
