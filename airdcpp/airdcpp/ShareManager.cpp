@@ -942,9 +942,9 @@ struct ShareManager::ShareLoader : public SimpleXMLReader::ThreadedCallBack, pub
 				DualString name(fname);
 				HashedFile fi;
 				HashManager::getInstance()->getFileInfo(curDirPathLower + name.getLower(), curDirPath + fname, fi);
-				addFile(move(name), cur, fi, tthIndexNew, bloom, addedSize);
+				addFile(move(name), cur, fi, tthIndexNew, bloom, stats.addedSize);
 			} catch(Exception& e) {
-				hashSize += File::getSize(curDirPath + fname);
+				stats.hashSize += File::getSize(curDirPath + fname);
 				dcdebug("Error loading file list %s \n", e.getError().c_str());
 			}
 		} else if (compare(aName, SHARE) == 0) {
@@ -1057,18 +1057,18 @@ bool ShareManager::loadCache(function<void(float)> progressF) noexcept{
 	}
 
 	// Apply the changes
-	int64_t hashSize = 0;
-
+	ShareRefreshStats stats;
 	for (const auto& l : cacheLoaders) {
-		applyRefreshChanges(*l, hashSize, nullptr);
+		applyRefreshChanges(*l, nullptr);
+		stats.merge(l->stats);
 	}
 
 #ifdef _DEBUG
 	//validateDirectoryTreeDebug();
 #endif
 
-	if (hashSize > 0) {
-		LogManager::getInstance()->message(STRING_F(FILES_ADDED_FOR_HASH_STARTUP, Util::formatBytes(hashSize)), LogMessage::SEV_INFO);
+	if (stats.hashSize > 0) {
+		LogManager::getInstance()->message(STRING_F(FILES_ADDED_FOR_HASH_STARTUP, Util::formatBytes(stats.hashSize)), LogMessage::SEV_INFO);
 	}
 
 	return true;
@@ -1433,7 +1433,7 @@ bool ShareManager::isFileShared(const TTHValue& aTTH, ProfileToken aProfile) con
 bool ShareManager::RefreshInfo::checkContent(const Directory::Ptr& aDirectory) noexcept {
 	if (SETTING(SKIP_EMPTY_DIRS_SHARE) && aDirectory->getDirectories().empty() && aDirectory->files.empty()) {
 		// Remove from parent
-		Directory::cleanIndices(*aDirectory.get(), addedSize, tthIndexNew, lowerDirNameMapNew);
+		Directory::cleanIndices(*aDirectory.get(), stats.addedSize, tthIndexNew, lowerDirNameMapNew);
 		return false;
 	}
 
@@ -1508,24 +1508,29 @@ void ShareManager::ShareBuilder::buildTree(const string& aPath, const string& aP
 				}
 			}
 
+			auto isNew = !oldDir;
+
 			// Validations
 			{
-				auto isNew = !oldDir;
 				auto newParent = !aOldParent;
 				if (!validateFileItem(*i, curPath, isNew, newParent, errors)) {
+					stats.skippedDirectoryCount++;
 					continue;
 				}
 
-				if (isNew) {
-					newDirectoriesCount++;
-				}
 			}
 
 			// Add it
 			auto curDir = Directory::createNormal(move(dualName), aParent, i->getLastWriteTime(), lowerDirNameMapNew, bloom);
 			if (curDir) {
 				buildTree(curPath, curPathLower, curDir, oldDir, aStopping);
-				checkContent(curDir);
+				if (checkContent(curDir)) {
+					if (isNew) {
+						stats.newDirectoryCount++;
+					} else {
+						stats.existingDirectoryCount++;
+					}
+				}
 			}
 		} else {
 			// Not a directory, assume it's a file...
@@ -1536,18 +1541,21 @@ void ShareManager::ShareBuilder::buildTree(const string& aPath, const string& aP
 				if (aOldParent) {
 					RLock l(sm.cs);
 					auto fileIter = aOldParent->files.find(dualName.getLower());
-					isNew = fileIter != aOldParent->files.end();
+					isNew = fileIter == aOldParent->files.end();
 				}
 
 
 				// Validations
 				auto newParent = !aOldParent;
 				if (!validateFileItem(*i, curPath, isNew, newParent, errors)) {
+					stats.skippedFileCount++;
 					continue;
 				}
 
 				if (isNew) {
-					newFilesCount++;
+					stats.newFileCount++;
+				} else {
+					stats.existingFileCount++;
 				}
 			}
 
@@ -1556,9 +1564,9 @@ void ShareManager::ShareBuilder::buildTree(const string& aPath, const string& aP
 			try {
 				HashedFile fi(i->getLastWriteTime(), size);
 				if(HashManager::getInstance()->checkTTH(aPathLower + dualName.getLower(), aPath + name, fi)) {
-					addFile(move(dualName), aParent, fi, tthIndexNew, bloom, addedSize);
+					addFile(move(dualName), aParent, fi, tthIndexNew, bloom, stats.addedSize);
 				} else {
-					hashSize += size;
+					stats.hashSize += size;
 				}
 			} catch(const HashException&) {
 			}
@@ -2047,7 +2055,7 @@ void ShareManager::updateRootDirectories(const ShareDirectoryInfoList& changedDi
 #endif
 }
 
-void ShareManager::reportTaskStatus(const ShareRefreshTask& aTask, bool aFinished, int64_t aHashSize) const noexcept {
+void ShareManager::reportTaskStatus(const ShareRefreshTask& aTask, bool aFinished, const ShareRefreshStats* aStats) const noexcept {
 	string msg;
 	switch (aTask.type) {
 		case (ShareRefreshType::STARTUP):
@@ -2080,8 +2088,8 @@ void ShareManager::reportTaskStatus(const ShareRefreshTask& aTask, bool aFinishe
 	};
 
 	if (!msg.empty()) {
-		if (aHashSize > 0) {
-			msg += " " + STRING_F(FILES_ADDED_FOR_HASH, Util::formatBytes(aHashSize));
+		if (aStats) {
+			msg += " " + STRING_F(FILES_ADDED_FOR_HASH, Util::formatBytes(aStats->hashSize));
 		} else if (aTask.priority == ShareRefreshPriority::SCHEDULED && !SETTING(LOG_SCHEDULED_REFRESHES)) {
 			return;
 		}
@@ -2178,7 +2186,7 @@ void ShareManager::runRefreshTask(const ShareRefreshTask& aTask, function<void(f
 		}
 	}
 
-	reportTaskStatus(aTask, false, 0);
+	reportTaskStatus(aTask, false, nullptr);
 	if (aTask.type == ShareRefreshType::REFRESH_INCOMING) {
 		lastIncomingUpdate = GET_TICK();
 	} else if (aTask.type == ShareRefreshType::REFRESH_ALL) {
@@ -2189,7 +2197,8 @@ void ShareManager::runRefreshTask(const ShareRefreshTask& aTask, function<void(f
 	// Refresh
 	atomic<long> progressCounter(0);
 
-	int64_t totalHash = 0;
+	ShareRefreshStats totalStats;
+	// int64_t totalHash = 0;
 	ProfileTokenSet dirtyProfiles;
 	bool allBuildersSucceed = true;
 
@@ -2203,8 +2212,12 @@ void ShareManager::runRefreshTask(const ShareRefreshTask& aTask, function<void(f
 
 			// Apply the changes
 			if (succeed) {
-				WLock l(cs);
-				applyRefreshChanges(ri, totalHash, &dirtyProfiles);
+				{
+					WLock l(cs);
+					applyRefreshChanges(ri, &dirtyProfiles);
+				}
+
+				totalStats.merge(ri.stats);
 			} else {
 				allBuildersSucceed = false;
 			}
@@ -2245,11 +2258,25 @@ void ShareManager::runRefreshTask(const ShareRefreshTask& aTask, function<void(f
 		setProfilesDirty(dirtyProfiles, aTask.priority == ShareRefreshPriority::MANUAL || aTask.type == ShareRefreshType::REFRESH_ALL || aTask.type == ShareRefreshType::BUNDLE);
 	}
 
-	reportTaskStatus(aTask, true, totalHash);
-	fire(ShareManagerListener::RefreshCompleted(), aTask, allBuildersSucceed, totalHash);
+	reportTaskStatus(aTask, true, &totalStats);
+	fire(ShareManagerListener::RefreshCompleted(), aTask, allBuildersSucceed, totalStats);
 }
 
-void ShareManager::RefreshInfo::mergeRefreshChanges(Directory::MultiMap& lowerDirNameMap_, Directory::Map& rootPaths_, HashFileMap& tthIndex_, int64_t& totalHash_, int64_t& totalAdded_, ProfileTokenSet* dirtyProfiles_) noexcept {
+void ShareRefreshStats::merge(const ShareRefreshStats& aOther) noexcept {
+	hashSize += aOther.hashSize;
+	addedSize += aOther.addedSize;
+
+	newDirectoryCount += aOther.newDirectoryCount;
+	newFileCount += aOther.newFileCount;
+
+	failedFileCount += aOther.failedFileCount;
+	failedDirectoryCount += aOther.failedDirectoryCount;
+
+	existingFileCount += aOther.existingFileCount;
+	existingDirectoryCount += aOther.existingDirectoryCount;
+}
+
+void ShareManager::RefreshInfo::applyRefreshChanges(Directory::MultiMap& lowerDirNameMap_, Directory::Map& rootPaths_, HashFileMap& tthIndex_, int64_t& sharedBytes_, ProfileTokenSet* dirtyProfiles_) noexcept {
 #ifdef _DEBUG
 	for (const auto& d: lowerDirNameMapNew | map_values) {
 		checkAddedDirNameDebug(d, lowerDirNameMap_);
@@ -2268,8 +2295,7 @@ void ShareManager::RefreshInfo::mergeRefreshChanges(Directory::MultiMap& lowerDi
 		rootPaths_[rp.first] = rp.second;
 	}
 
-	totalHash_ += hashSize;
-	totalAdded_ += addedSize;
+	sharedBytes_ += stats.addedSize;
 
 	if (dirtyProfiles_) {
 		newShareDirectory->copyRootProfiles(*dirtyProfiles_, true);
@@ -2353,7 +2379,7 @@ bool ShareManager::abortRefresh(optional<ShareRefreshTaskToken> aToken) noexcept
 	return !paths.empty();
 }
 
-bool ShareManager::applyRefreshChanges(RefreshInfo& ri, int64_t& totalHash_, ProfileTokenSet* aDirtyProfiles) {
+bool ShareManager::applyRefreshChanges(RefreshInfo& ri, ProfileTokenSet* aDirtyProfiles) {
 	Directory::Ptr parent = nullptr;
 
 	// Recursively remove the content of this dir from TTHIndex and directory name map
@@ -2391,7 +2417,7 @@ bool ShareManager::applyRefreshChanges(RefreshInfo& ri, int64_t& totalHash_, Pro
 		}
 	}
 
-	ri.mergeRefreshChanges(lowerDirNameMap, rootPaths, tthIndex, totalHash_, sharedSize, aDirtyProfiles);
+	ri.applyRefreshChanges(lowerDirNameMap, rootPaths, tthIndex, sharedSize, aDirtyProfiles);
 	dcdebug("Share changes applied for the directory %s\n", ri.path.c_str());
 	return true;
 }
