@@ -836,7 +836,7 @@ bool ChatFrameBase::checkCommand(const tstring& aCmd, tstring& param, tstring& m
 				if (stricmp(param.c_str(), _T("incoming")) == 0) {
 					ShareManager::getInstance()->refresh(ShareRefreshType::REFRESH_INCOMING, ShareRefreshPriority::MANUAL);
 				} else {
-					auto refreshQueueInfo = ShareManager::getInstance()->refreshVirtualName(Text::fromT(param));
+					auto refreshQueueInfo = ShareManager::getInstance()->refreshVirtualName(Text::fromT(param), ShareRefreshPriority::MANUAL);
 					if (!refreshQueueInfo) {
 						status = TSTRING(DIRECTORY_NOT_FOUND);
 					}

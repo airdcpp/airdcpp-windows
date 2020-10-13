@@ -2018,13 +2018,13 @@ LRESULT MainFrame::onRefreshDropDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 	for(auto& i: l) {
 		if (i.second.size() > 1) {
 			auto vMenu = dropMenu.createSubMenu(Text::toT(i.first), true);
-			vMenu->appendItem(CTSTRING(ALL), [=] { ShareManager::getInstance()->refreshVirtualName(i.first); }, OMenu::FLAG_THREADED);
+			vMenu->appendItem(CTSTRING(ALL), [=] { ShareManager::getInstance()->refreshVirtualName(i.first, ShareRefreshPriority::MANUAL); }, OMenu::FLAG_THREADED);
 			vMenu->appendSeparator();
 			for(const auto& s: i.second) {
 				vMenu->appendItem(Text::toT(s), [=] { ShareManager::getInstance()->refreshPathsHooked(ShareRefreshPriority::MANUAL, { s }, this); }, OMenu::FLAG_THREADED);
 			}
 		} else {
-			dropMenu.appendItem(Text::toT(i.first), [=] { ShareManager::getInstance()->refreshVirtualName(i.first); }, OMenu::FLAG_THREADED);
+			dropMenu.appendItem(Text::toT(i.first), [=] { ShareManager::getInstance()->refreshVirtualName(i.first, ShareRefreshPriority::MANUAL); }, OMenu::FLAG_THREADED);
 		}
 	}
 
