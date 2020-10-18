@@ -1790,6 +1790,8 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 
 	case CDDS_SUBITEM | CDDS_ITEMPREPAINT: {
 		if(SETTING(GET_USER_COUNTRY) && (ctrlUsers.findColumn(cd->iSubItem) == UserUtil::COLUMN_IP4 || ctrlUsers.findColumn(cd->iSubItem) == UserUtil::COLUMN_IP6)) {
+			auto isV6 = ctrlUsers.findColumn(cd->iSubItem) == UserUtil::COLUMN_IP6;
+
 			CRect rc;
 			ctrlUsers.GetSubItemRect((int)cd->nmcd.dwItemSpec, cd->iSubItem, LVIR_BOUNDS, rc);
 
@@ -1808,7 +1810,8 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 				POINT p = { rc.left, top };
 
 				const auto ii = (ItemInfo*)cd->nmcd.lItemlParam;
-				auto countryInfo = FormatUtil::toCountryInfo(ii->onlineUser->getIdentity().getTcpConnectIp());
+				const auto userIp = isV6 ? ii->onlineUser->getIdentity().getIp6() : ii->onlineUser->getIdentity().getIp4();
+				auto countryInfo = FormatUtil::toCountryInfo(userIp);
 				ResourceLoader::flagImages.Draw(cd->nmcd.hdc, countryInfo.flagIndex, p, LVSIL_SMALL);
 
 				top = rc.top + (rc.Height() - WinUtil::getTextHeight(cd->nmcd.hdc) - 1)/2;
