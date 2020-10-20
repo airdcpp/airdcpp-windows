@@ -1,3 +1,50 @@
+3.70
+
+API and Web UI changes:
+
+- https://airdcpp-web.github.io/2020/10/18/version-2.9.0.html
+- https://airdcpp-web.github.io/2020/08/20/version-2.8.1.html
+- https://airdcpp-web.github.io/2020/07/11/version-2.8.0.html
+
+Added:
+
+- Add full IPv6 support for SOCKS5
+- Allow adding disabled auto searches by using $ in front of the string (https://bugs.launchpad.net/airdcpp/+bug/1211083)
+- RSS: add an option to format time params before adding to auto search
+- Add Window menu item for marking all tabs as read (unbolding tabs)
+
+Changed:
+
+- Require TLS 1.2 or newer TLS version for all encrypted connections after 1st of January 2021
+- Update various dependencies (bzip2, OpenSSL, Boost, libmaxminddb, minizip, WTL, Snappy)
+- Don’t send full filelists when sharing more than 20 million files (filelists larger than 1 GB were previously corrupted)
+- Update default hublist URLs (https://bugs.launchpad.net/airdcpp/+bug/1829064)
+- Pause bundle on download errors (e.g. disk full) to give other bundles a chance to get downloaded
+- Validate TLS and TCP ports (https://bugs.launchpad.net/airdcpp/+bug/363092)
+- Disable "Invalid pattern" errors when using list filter (https://bugs.launchpad.net/airdcpp/+bug/1855207)
+- Only allow adding failed "release" bundles to auto search (avoids adding searches for too generic bundle names)
+
+
+Fixes:
+
+- Fix launching of extension if the setting path contains whitespace characters
+- Fix incorrect country information being shown for IP addresses in some cases
+- Fix cases where outgoing search results would not be sent in case of mixed IPv4/IPv6 connectivity
+- SOCKS5: fix secure connections and sending of search results to active users (https://bugs.launchpad.net/dcplusplus/+bug/1856087)
+- Fix a few incorrectly reported connection errors
+- Fix possible crashes when queuing files/directories without a source
+- Private chat: fix CCPM state getting stuck at "Establishing connection" if the connection times out
+- Update hub name in transfer view if the hub to connect through changes
+- Fix issues when changing the hub URL for filelists if a previous filelist download is pending
+- Avoid silent failures if new client certificates can’t be written on disk
+- Fix various possible crashes related to user/hub management because of unsafe thread access
+- Auto search: avoid adding duplicate failed items at startup
+- Fix missing taskbar action icons (https://github.com/airdcpp/airgit/issues/18)
+- Fix possible crashes when using highlights (https://bugs.launchpad.net/airdcpp/+bug/1863444)
+- Prevent multiple bundle validation scans when removing files from a bundle
+- Don't scan bundles with shared status again when removing files from them
+- Fix restoring the previous search file type (https://bugs.launchpad.net/airdcpp/+bug/1708969)
+
 3.60
 
 Added:
