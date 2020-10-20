@@ -399,7 +399,7 @@ enum Strings { // @DontAdd
 	ERROR_CREATING_REGISTRY_KEY_MAGNET, // "Error creating magnet registry key"
 	ERROR_HASHING, // "Error hashing "
 	ERROR_HASHING_CRC32, // "calculated CRC32 does not match the one found in SFV file."
-	ERROR_TLS_PORT, // "The encrypted transfers port (TLS/TCP) cannot be the as transfers port (TCP)"
+	ERROR_TLS_PORT, // "The encrypted transfers port (TLS/TCP) cannot be the same as the transfers port (TCP)"
 	ERROR_UPDATING_FEED, // "Error updating the feed : %1%"
 	EXACT_MATCH, // "Exact match"
 	EXACT_SHARED, // "Exact share"
