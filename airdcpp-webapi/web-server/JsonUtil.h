@@ -284,7 +284,7 @@ namespace webserver {
 		}
 
 		template <class T>
-		static void validateValue(typename std::enable_if<!std::is_same<std::string, T>::value, T>::type& value_) {
+		static void validateValue(typename std::enable_if<!std::is_same<std::string, T>::value, T>::type&) {
 
 		}
 
