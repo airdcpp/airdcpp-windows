@@ -72,6 +72,7 @@
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/ThrottleManager.h>
 #include <airdcpp/UpdateManager.h>
+#include <airdcpp/Updater.h>
 #include <airdcpp/UploadManager.h>
 #include <airdcpp/ViewFileManager.h>
 
@@ -211,7 +212,7 @@ public:
 				int matches=0, newFiles=0;
 				BundleList bundles;
 				QueueManager::getInstance()->matchListing(*dl, matches, newFiles, bundles);
-				LogManager::getInstance()->message(dl->getNick(false) + ": " + AirUtil::formatMatchResults(matches, newFiles, bundles), LogMessage::SEV_INFO);
+				LogManager::getInstance()->message(dl->getNick(false) + ": " + AirUtil::formatMatchResults(matches, newFiles, bundles), LogMessage::SEV_INFO, STRING(SETTINGS_QUEUE));
 			} catch(const Exception&) {
 
 			}
@@ -749,7 +750,7 @@ void MainFrame::updateStatus(TStringList* aList) {
 						// Should we go faster here and force termination?
 						// We "could" do a manual shutdown of this app...
 					} else {
-						LogManager::getInstance()->message(STRING(FAILED_TO_SHUTDOWN), LogMessage::SEV_ERROR);
+						LogManager::getInstance()->message(STRING(FAILED_TO_SHUTDOWN), LogMessage::SEV_ERROR, STRING(APPLICATION));
 						ctrlStatus.SetText(STATUS_SHUTDOWN, _T(""));
 					}
 					// We better not try again. It WON'T work...

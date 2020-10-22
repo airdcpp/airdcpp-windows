@@ -1069,7 +1069,7 @@ void AdcHub::connect(const OnlineUser& aUser, const string& aToken, bool aSecure
 		const string& ownPort = aSecure ? ConnectionManager::getInstance()->getSecurePort() : ConnectionManager::getInstance()->getPort();
 		if(ownPort.empty()) {
 			// Oops?
-			LogManager::getInstance()->message(STRING(NOT_LISTENING), LogMessage::SEV_ERROR);
+			LogManager::getInstance()->message(STRING(NOT_LISTENING), LogMessage::SEV_ERROR, STRING(CONNECTIVITY));
 			return;
 		}
 

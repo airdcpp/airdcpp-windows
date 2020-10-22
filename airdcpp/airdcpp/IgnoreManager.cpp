@@ -176,7 +176,7 @@ ActionHookResult<MessageHighlightList> IgnoreManager::isIgnoredOrFiltered(const 
 				tmp = (filter ? STRING(MC_MESSAGE_FILTERED) : STRING(MC_MESSAGE_IGNORED));
 			}
 			tmp += "<" + fromIdentity.getNick() + "> " + msg->getText();
-			LogManager::getInstance()->message(tmp, LogMessage::SEV_INFO);
+			LogManager::getInstance()->message(tmp, LogMessage::SEV_INFO, STRING(SETTINGS_CHATFILTER));
 		}
 	};
 

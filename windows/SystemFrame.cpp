@@ -173,8 +173,9 @@ void SystemFrame::addLine(const LogMessagePtr& aMessageData) {
 
 
 	tstring Text = Text::toT(aMessageData->getText()) + _T(" \r\n");
+	tstring label = Text::toT(aMessageData->getLabel()) + _T(": ");
 	tstring time = Text::toT(" [" + Util::getTimeStamp(aMessageData->getTime()) + "] ");
-	tstring line = time + Text;
+	tstring line = time + label +  Text;
 
 	LONG limitText = ctrlPad.GetLimitText();
 	LONG TextLength = End + line.size();
@@ -199,10 +200,22 @@ void SystemFrame::addLine(const LogMessagePtr& aMessageData) {
 
 	ctrlPad.AppendText(line.c_str());
 	
-	End += time.size() -1;
-	ctrlPad.SetSel(Begin, End);
-	ctrlPad.SetSelectionCharFormat(WinUtil::m_TextStyleTimestamp);
+	// Format time
+	{
+		End += time.size() - 1;
+		ctrlPad.SetSel(Begin, End);
+		ctrlPad.SetSelectionCharFormat(WinUtil::m_TextStyleTimestamp);
+	}
 
+	// Format label
+	{
+		auto labelStart = End;
+		End += label.size();
+		ctrlPad.SetSel(labelStart, End);
+		ctrlPad.SetSelectionCharFormat(WinUtil::m_ChatTextServer);
+	}
+
+	// Format text
 	if (aMessageData->getSeverity() == LogMessage::SEV_ERROR) {
 		ctrlPad.SetSel(End, End+Text.length()-1);
 		CHARFORMAT2 ec = WinUtil::m_ChatTextGeneral;
@@ -212,6 +225,7 @@ void SystemFrame::addLine(const LogMessagePtr& aMessageData) {
 
 	Colorize(Text, End+1); //timestamps should always be timestamps right?
 
+	// Add severity icon
 	ctrlPad.SetSel(Begin, Begin);
 
 	switch(aMessageData->getSeverity()) {

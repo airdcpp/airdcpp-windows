@@ -44,7 +44,7 @@ PrivateChat::PrivateChat(const HintedUser& aUser, UserConnection* aUc) :
 
 	auto lastLogLines = LogManager::readFromEnd(getLogPath(), SETTING(MAX_PM_HISTORY_LINES), Util::convertSize(16, Util::KB));
 	if (!lastLogLines.empty()) {
-		cache.addMessage(std::make_shared<LogMessage>(lastLogLines, LogMessage::SEV_INFO, true));
+		cache.addMessage(std::make_shared<LogMessage>(lastLogLines, LogMessage::SEV_INFO, Util::emptyString, true));
 	}
 
 	checkIgnored();
@@ -213,7 +213,7 @@ int PrivateChat::clearCache() noexcept {
 }
 
 void PrivateChat::statusMessage(const string& aMessage, LogMessage::Severity aSeverity) noexcept {
-	auto message = std::make_shared<LogMessage>(aMessage, aSeverity);
+	auto message = std::make_shared<LogMessage>(aMessage, aSeverity, Util::emptyString);
 
 	cache.addMessage(message);
 	fire(PrivateChatListener::StatusMessage(), this, message);

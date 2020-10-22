@@ -26,6 +26,7 @@
 #include "FastAlloc.h"
 #include "HintedUser.h"
 #include "MerkleTree.h"
+#include "Message.h"
 #include "Singleton.h"
 #include "Speaker.h"
 #include "StringMatch.h"
@@ -135,6 +136,7 @@ public:
 		return uploads;
 	}
 private:
+	static void log(const string& aMsg, LogMessage::Severity aSeverity) noexcept;
 	StringMatch freeSlotMatcher;
 
 	uint8_t running;

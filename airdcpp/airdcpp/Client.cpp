@@ -280,7 +280,7 @@ void Client::setConnectState(State aState) noexcept {
 }
 
 void Client::statusMessage(const string& aMessage, LogMessage::Severity aSeverity, int aFlag) noexcept {
-	auto message = std::make_shared<LogMessage>(aMessage, aSeverity);
+	auto message = std::make_shared<LogMessage>(aMessage, aSeverity, Util::emptyString);
 
 	if (aFlag != ClientListener::FLAG_IS_SPAM) {
 		cache.addMessage(message);

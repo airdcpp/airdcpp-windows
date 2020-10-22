@@ -26,6 +26,7 @@
 #include "HashedFile.h"
 #include "HashManagerListener.h"
 #include "MerkleTree.h"
+#include "Message.h"
 #include "Semaphore.h"
 #include "SFVReader.h"
 #include "Singleton.h"
@@ -217,7 +218,8 @@ private:
 
 	friend class Hasher;
 	void removeHasher(Hasher* aHasher);
-	void log(const string& aMessage, int hasherID, bool isError, bool lock);
+	void logHasher(const string& aMessage, int aHasherID, bool aIsError, bool aLock);
+	static void log(const string& aMsg, LogMessage::Severity aSeverity) noexcept;
 
 	void optimize(bool doVerify) noexcept { store.optimize(doVerify); }
 
@@ -288,7 +290,7 @@ private:
 	/** Single node tree where node = root, no storage in HashData.dat */
 	static const int64_t SMALL_TREE = -1;
 
-	void hashDone(const string& aFileName, const string& pathLower, const TigerTree& tt, int64_t speed, HashedFile& aFileInfo, int hasherID = 0) noexcept;
+	void hasherDone(const string& aFileName, const string& pathLower, const TigerTree& tt, int64_t speed, HashedFile& aFileInfo, int hasherID = 0) noexcept;
 
 	class Optimizer : public Thread {
 	public:

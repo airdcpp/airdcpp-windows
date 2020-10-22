@@ -26,7 +26,16 @@
 
 namespace dcpp {
 
-StringMatch::Method StringMatch::getMethod() const {
+
+StringMatch StringMatch::getSearch(const string& aPattern, Method aMethod) {
+	StringMatch m;
+	m.pattern = aPattern;
+	m.setMethod(aMethod);
+	m.prepare();
+	return m;
+}
+
+StringMatch::Method StringMatch::getMethod() const noexcept {
 	return boost::get<StringSearch>(&search) ? PARTIAL : boost::get<string>(&search) ? EXACT : isWildCard ? WILDCARD : REGEX;
 }
 
@@ -44,7 +53,7 @@ void StringMatch::setMethod(Method method) {
 	//m = method;
 }
 
-bool StringMatch::operator==(const StringMatch& rhs) const {
+bool StringMatch::operator==(const StringMatch& rhs) const noexcept {
 	return pattern == rhs.pattern && getMethod() == rhs.getMethod();
 }
 
@@ -76,8 +85,10 @@ struct Prepare : boost::static_visitor<bool> {
 			}
 			return true;
 		} catch(const std::runtime_error&) {
-			if(verbosePatternErrors)
-				LogManager::getInstance()->message(STRING_F(INVALID_PATTERN, pattern), LogMessage::SEV_ERROR);
+			if (verbosePatternErrors) {
+				LogManager::getInstance()->message(STRING_F(INVALID_PATTERN, pattern), LogMessage::SEV_ERROR, STRING(APPLICATION));
+			}
+
 			return false;
 		}
 	}

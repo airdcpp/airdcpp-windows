@@ -46,9 +46,13 @@ namespace webserver {
 		LogManager::getInstance()->removeListener(this);
 	}
 
+	string EventApi::parseMessageSection(const SessionPtr& aSession) noexcept {
+		return aSession->getUser()->getUserName();
+	}
+
 	api_return EventApi::handlePostMessage(ApiRequest& aRequest) {
 		auto message = Deserializer::deserializeStatusMessage(aRequest.getRequestBody());
-		LogManager::getInstance()->message(message.first, message.second);
+		LogManager::getInstance()->message(message.first, message.second, parseMessageSection(aRequest.getSession()));
 		return websocketpp::http::status_code::no_content;
 	}
 

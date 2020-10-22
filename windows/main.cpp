@@ -262,7 +262,7 @@ public:
 };
 
 void webErrorF(const string& aError) {
-	LogManager::getInstance()->message(aError, LogMessage::SEV_ERROR);
+	LogManager::getInstance()->message(aError, LogMessage::SEV_ERROR, STRING(WEB_SERVER));
 };
 
 #include <airdcpp/modules/AutoSearchManager.h>
@@ -378,16 +378,16 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 				);
 				
 				if (started) {
-					LogManager::getInstance()->message("Web server started", LogMessage::SEV_INFO);
+					LogManager::getInstance()->message(STRING(WEB_SERVER_STARTED), LogMessage::SEV_INFO, STRING(WEB_SERVER));
 				}
 			}
 
 			WinUtil::splash->update(STRING(LOADING_GUI));
 
 			if (Util::hasStartupParam("/updated")) {
-				LogManager::getInstance()->message(STRING(UPDATE_SUCCEEDED), LogMessage::SEV_INFO);
+				Updater::log(STRING(UPDATE_SUCCEEDED), LogMessage::SEV_INFO);
 			} else if (Util::hasStartupParam("/updatefailed")) {
-				LogManager::getInstance()->message(STRING_F(UPDATE_FAILED, string(FINAL_UPDATER_LOG)), LogMessage::SEV_ERROR);
+				Updater::log(STRING_F(UPDATE_FAILED, string(FINAL_UPDATER_LOG)), LogMessage::SEV_ERROR);
 			}
 		} catch (...) {
 			ExitProcess(1);

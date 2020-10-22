@@ -1324,7 +1324,7 @@ HubSettings SettingsManager::getHubSettings() const noexcept {
 
 void settingXmlMessage(const string& aMessage, LogMessage::Severity aSeverity, const SettingsManager::CustomReportF& aCustomErrorF) noexcept {
 	if (!aCustomErrorF) {
-		LogManager::getInstance()->message(aMessage, aSeverity);
+		LogManager::getInstance()->message(aMessage, aSeverity, STRING(SETTINGS));
 	} else {
 		aCustomErrorF(aMessage);
 	}

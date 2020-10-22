@@ -59,7 +59,7 @@ AutoSearchManager::~AutoSearchManager() noexcept {
 }
 
 void AutoSearchManager::logMessage(const string& aMsg, LogMessage::Severity aSeverity) const noexcept {
-	LogManager::getInstance()->message(STRING(AUTO_SEARCH) + ": " +  aMsg, aSeverity);
+	LogManager::getInstance()->message(aMsg, aSeverity, STRING(AUTO_SEARCH));
 }
 
 /* Adding new items for external use */

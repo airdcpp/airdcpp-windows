@@ -34,6 +34,7 @@
 
 #include <airdcpp/DispatcherQueue.h>
 #include <airdcpp/HttpDownload.h>
+#include <airdcpp/Message.h>
 #include <airdcpp/StringMatch.h>
 
 #include <airdcpp/TimerManager.h>
@@ -207,6 +208,7 @@ public:
 	void saveFilters(SimpleXML& aXml, const vector<RSSFilter>& aList);
 
 private:
+	static void log(const string& aMsg, LogMessage::Severity aSeverity) noexcept;
 
 	void savedatabase(const RSSPtr& aFeed);
 

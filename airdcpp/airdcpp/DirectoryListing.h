@@ -32,9 +32,9 @@
 #include "DupeType.h"
 #include "GetSet.h"
 #include "HintedUser.h"
+#include "Message.h"
 #include "MerkleTree.h"
 #include "Priority.h"
-#include "SearchQuery.h"
 #include "TaskQueue.h"
 #include "UserInfoBase.h"
 #include "Streams.h"
@@ -43,6 +43,7 @@
 namespace dcpp {
 
 class ListLoader;
+class SearchQuery;
 typedef uint32_t DirectoryListingToken;
 
 class DirectoryListing : public UserInfoBase, public TrackableDownloadItem,
@@ -279,6 +280,8 @@ protected:
 	void onStateChanged() noexcept override;
 
 private:
+	static void log(const string& aMsg, LogMessage::Severity aSeverity) noexcept;
+
 	void setDirectoryLoadingState(const Directory::Ptr& aDir, bool aLoading) noexcept;
 
 	// Returns the number of loaded dirs

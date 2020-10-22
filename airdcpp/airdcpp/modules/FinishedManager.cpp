@@ -106,7 +106,11 @@ void FinishedManager::on(UploadManagerListener::Complete, const Upload* u) noexc
 
 		fire(FinishedManagerListener::AddedUl(), item);
 		if(SETTING(SYSTEM_SHOW_UPLOADS)) {
-			LogManager::getInstance()->message(STRING_F(FINISHED_UPLOAD, u->getPath() % ClientManager::getInstance()->getFormatedNicks(u->getHintedUser())), LogMessage::SEV_INFO);		
+			LogManager::getInstance()->message(
+				STRING_F(FINISHED_UPLOAD, u->getPath() % ClientManager::getInstance()->getFormatedNicks(u->getHintedUser())), 
+				LogMessage::SEV_INFO, 
+				STRING(MENU_TRANSFERS)
+			);		
 		}
 	}
 }

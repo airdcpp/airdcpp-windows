@@ -75,7 +75,7 @@ ShareScannerManager::~ShareScannerManager() {
 
 void ShareScannerManager::scanShare(const StringList& paths) noexcept{
 	if (scanning.test_and_set()) {
-		LogManager::getInstance()->message(STRING(SCAN_RUNNING), LogMessage::SEV_INFO);
+		log(STRING(SCAN_RUNNING), LogMessage::SEV_INFO);
 		return;
 	}
 
@@ -83,12 +83,12 @@ void ShareScannerManager::scanShare(const StringList& paths) noexcept{
 
 	start();
 
-	LogManager::getInstance()->message(STRING(SCAN_STARTED), LogMessage::SEV_INFO);
+	log(STRING(SCAN_STARTED), LogMessage::SEV_INFO);
 }
 
 void ShareScannerManager::checkSfv(const StringList& paths) noexcept{
 	if (scanning.test_and_set()) {
-		LogManager::getInstance()->message(STRING(SCAN_RUNNING), LogMessage::SEV_INFO);
+		log(STRING(SCAN_RUNNING), LogMessage::SEV_INFO);
 		return;
 	}
 
@@ -96,7 +96,7 @@ void ShareScannerManager::checkSfv(const StringList& paths) noexcept{
 
 	start();
 
-	LogManager::getInstance()->message(STRING(CRC_STARTED), LogMessage::SEV_INFO);
+	log(STRING(CRC_STARTED), LogMessage::SEV_INFO);
 }
 
 void ShareScannerManager::Stop() {
@@ -147,9 +147,9 @@ void ShareScannerManager::runSfvCheck(const StringList& rootPaths) {
 
 	/* Report */
 	if (stop) {
-		LogManager::getInstance()->message(STRING(CRC_STOPPED), LogMessage::SEV_INFO);
+		log(STRING(CRC_STOPPED), LogMessage::SEV_INFO);
 	} else {
-		LogManager::getInstance()->message(STRING_F(CRC_FINISHED, crcOk % crcInvalid % checkFailed), LogMessage::SEV_INFO);
+		log(STRING_F(CRC_FINISHED, crcOk % crcInvalid % checkFailed), LogMessage::SEV_INFO);
 	}
 }
 
@@ -185,7 +185,7 @@ void ShareScannerManager::runShareScan(const StringList& aPaths) {
 			}
 		});
 	} catch (std::exception& e) {
-		LogManager::getInstance()->message("Scanning the share failed: " + string(e.what()), LogMessage::SEV_INFO);
+		log("Scanning the share failed: " + string(e.what()), LogMessage::SEV_INFO);
 	}
 
 	if (!stop) {
@@ -220,7 +220,7 @@ void ShareScannerManager::runShareScan(const StringList& aPaths) {
 
 				}
 				catch (const FileException& e) {
-					LogManager::getInstance()->message(STRING_F(SAVE_FAILED_X, path % e.getError()), LogMessage::SEV_ERROR);
+					log(STRING_F(SAVE_FAILED_X, path % e.getError()), LogMessage::SEV_ERROR);
 				}
 			}
 
@@ -235,7 +235,7 @@ void ShareScannerManager::runShareScan(const StringList& aPaths) {
 			report += CSTRING(SCAN_NO_PROBLEMS);
 		}
 
-		LogManager::getInstance()->message(report, LogMessage::SEV_INFO);
+		log(report, LogMessage::SEV_INFO);
 	}
 
 	dupeDirs.clear();
@@ -581,6 +581,10 @@ void ShareScannerManager::scanDir(const string& aPath, ScanInfo& aScan) noexcept
 	}
 }
 
+void ShareScannerManager::log(const string& aMsg, LogMessage::Severity aSeverity) noexcept {
+	LogManager::getInstance()->message(aMsg, aSeverity, STRING(SHARE_SCANNER));
+}
+
 void ShareScannerManager::prepareSFVScanDir(const string& aPath, SFVScanList& dirs) noexcept {
 	DirSFVReader sfv(aPath);
 
@@ -592,7 +596,7 @@ void ShareScannerManager::prepareSFVScanDir(const string& aPath, SFVScanList& di
 			if (Util::fileExists(aPath + fileName)) {
 				scanFolderSize = scanFolderSize + File::getSize(aPath + fileName);
 			} else {
-				LogManager::getInstance()->message(STRING(FILE_MISSING) + " " + aPath + fileName, LogMessage::SEV_WARNING);
+				log(STRING(FILE_MISSING) + " " + aPath + fileName, LogMessage::SEV_WARNING);
 				checkFailed++;
 			}
 		});
@@ -612,7 +616,7 @@ void ShareScannerManager::prepareSFVScanFile(const string& aPath, StringList& fi
 		scanFolderSize += File::getSize(aPath);
 		files.push_back(Util::getFileName(aPath));
 	} else {
-		LogManager::getInstance()->message(STRING(FILE_MISSING) + " " + aPath, LogMessage::SEV_WARNING);
+		log(STRING(FILE_MISSING) + " " + aPath, LogMessage::SEV_WARNING);
 		checkFailed++;
 	}
 }
@@ -632,7 +636,7 @@ void ShareScannerManager::checkFileSFV(const string& aFileName, DirSFVReader& aS
 			checkEnd = GET_TICK();
 		} catch(const FileException& ) {
 			// Couldn't read the file to get the CRC(!!!)
-			LogManager::getInstance()->message(STRING_F(CRC_FILE_ERROR, (aSfvReader.getPath() + aFileName)), LogMessage::SEV_ERROR);
+			log(STRING_F(CRC_FILE_ERROR, (aSfvReader.getPath() + aFileName)), LogMessage::SEV_ERROR);
 		}
 
 		// Update the results
@@ -652,21 +656,22 @@ void ShareScannerManager::checkFileSFV(const string& aFileName, DirSFVReader& aS
 
 		// Report
 		if (SETTING(LOG_CRC_OK)) {
-			LogManager::getInstance()->message(STRING_F(CRC_FILE_DONE,
+			log(STRING_F(CRC_FILE_DONE,
 				(crcMatch ? STRING(CRC_OK) : STRING(CRC_FAILED)) %
 				(aSfvReader.getPath() + aFileName) %
 				Util::formatBytes(speed) %
 				Util::formatBytes(scanFolderSize)), (crcMatch ? LogMessage::SEV_INFO : LogMessage::SEV_ERROR));
 		} else if (!crcMatch) {
-				LogManager::getInstance()->message(STRING_F(CRC_FILE_FAILED,
-				(aSfvReader.getPath() + aFileName) %
-				Util::formatBytes(speed) %
-				Util::formatBytes(scanFolderSize)), LogMessage::SEV_ERROR);
+			log(STRING_F(
+				CRC_FILE_FAILED, 
+				(aSfvReader.getPath() + aFileName) % Util::formatBytes(speed) % Util::formatBytes(scanFolderSize)), 
+				LogMessage::SEV_ERROR
+			);
 		}
 
 
 	} else if (!aIsDirScan || regex_match(aFileName, rarMp3Reg)) {
-		LogManager::getInstance()->message(STRING_F(CRC_NO_SFV, (aSfvReader.getPath() + aFileName)), LogMessage::SEV_WARNING);
+		log(STRING_F(CRC_NO_SFV, (aSfvReader.getPath() + aFileName)), LogMessage::SEV_WARNING);
 		checkFailed++;
 	}
 }
@@ -681,11 +686,11 @@ ActionHookResult<> ShareScannerManager::fileCompletionHook(const QueueItemPtr&, 
 
 	try {
 		if (!sfv.isCrcValid(fileNameLower)) {
-			LogManager::getInstance()->message(STRING(CRC_FAILED) + ": " + aFile->getTarget(), LogMessage::SEV_ERROR);
+			log(STRING(CRC_FAILED) + ": " + aFile->getTarget(), LogMessage::SEV_ERROR);
 			return aErrorGetter(SFV_CHECKER_ERROR_CRC, STRING(CRC_FAILED));
 		}
 	} catch (const FileException&) {
-		LogManager::getInstance()->message(STRING_F(CRC_FILE_ERROR, aFile->getTarget()), LogMessage::SEV_ERROR);
+		log(STRING_F(CRC_FILE_ERROR, aFile->getTarget()), LogMessage::SEV_ERROR);
 	}*/
 
 	return { nullptr, nullptr };
@@ -708,7 +713,7 @@ ActionHookResult<> ShareScannerManager::bundleCompletionHook(const BundlePtr& aB
 	auto hasInvalidSFV = scanner.invalidSFVFiles > 0;
 
 	if (hasMissing || hasExtras || hasInvalidSFV) {
-		LogManager::getInstance()->message(STRING_F(SCAN_FAILED_BUNDLE_FINISHED, aBundle->getName()) + scanner.getResults(), LogMessage::SEV_ERROR);
+		log(STRING_F(SCAN_FAILED_BUNDLE_FINISHED, aBundle->getName()) + scanner.getResults(), LogMessage::SEV_ERROR);
 
 		auto errorId = (hasExtras || hasInvalidSFV) ? SHARE_SCANNER_ERROR_INVALID_CONTENT : SHARE_SCANNER_ERROR_MISSING;
 		return aResultGetter.getRejection(errorId, scanner.getResults());
@@ -738,7 +743,7 @@ ActionHookResult<> ShareScannerManager::bundleCompletionHook(const BundlePtr& aB
 			logMsg += ". ";
 			logMsg += STRING(FORCE_SHARE_SCAN);
 
-			LogManager::getInstance()->message(logMsg, LogMessage::SEV_ERROR);
+			log(logMsg, LogMessage::SEV_ERROR);
 		}
 		return false;
 	}
@@ -748,7 +753,7 @@ ActionHookResult<> ShareScannerManager::bundleCompletionHook(const BundlePtr& aB
 
 void ShareScannerManager::reportMessage(const string& aMessage, ScanInfo& aScan, bool warning /*true*/) noexcept {
 	if (aScan.reportType == ScanInfo::TYPE_SYSLOG) {
-		LogManager::getInstance()->message(aMessage, warning ? LogMessage::SEV_WARNING : LogMessage::SEV_INFO);
+		log(aMessage, warning ? LogMessage::SEV_WARNING : LogMessage::SEV_INFO);
 	} else if (aScan.reportType == ScanInfo::TYPE_COLLECT_LOG) {
 		aScan.scanMessage += aMessage + "\r\n";
 	}

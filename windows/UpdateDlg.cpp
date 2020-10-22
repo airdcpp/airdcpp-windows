@@ -25,6 +25,7 @@
 
 #include <airdcpp/Util.h>
 #include <airdcpp/UpdateManager.h>
+#include <airdcpp/Updater.h>
 
 #include "WinUtil.h"
 #include "ActionUtil.h"

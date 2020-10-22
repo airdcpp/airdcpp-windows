@@ -68,7 +68,7 @@ AirUtil::TimeCounter::TimeCounter(string aMsg) : start(GET_TICK()), msg(move(aMs
 
 AirUtil::TimeCounter::~TimeCounter() {
 	auto end = GET_TICK();
-	LogManager::getInstance()->message(msg + ", took " + Util::toString(end - start) + " ms", LogMessage::SEV_INFO);
+	LogManager::getInstance()->message(msg + ", took " + Util::toString(end - start) + " ms", LogMessage::SEV_INFO, "Debug");
 }
 
 StringList AirUtil::getAdcDirectoryDupePaths(DupeType aType, const string& aAdcPath) {
@@ -721,13 +721,13 @@ string AirUtil::getReleaseDir(const string& aDir, bool cut, const char separator
 	return p.second == string::npos ? aDir : aDir.substr(0, p.second);
 }
 
-bool AirUtil::removeDirectoryIfEmptyRe(const string& aPath, int aMaxAttempts, int aAttempts) {
+bool AirUtil::removeDirectoryIfEmptyRecursive(const string& aPath, int aMaxAttempts, int aAttempts) {
 	/* recursive check for empty dirs */
 	for(FileFindIter i(aPath, "*"); i != FileFindIter(); ++i) {
 		try {
 			if(i->isDirectory()) {
 				string dir = aPath + i->getFileName() + PATH_SEPARATOR;
-				if (!removeDirectoryIfEmptyRe(dir, aMaxAttempts, 0))
+				if (!removeDirectoryIfEmptyRecursive(dir, aMaxAttempts, 0))
 					return false;
 			} else if (Util::getFileExt(i->getFileName()) == ".dctmp") {
 				if (aAttempts == aMaxAttempts) {
@@ -735,7 +735,7 @@ bool AirUtil::removeDirectoryIfEmptyRe(const string& aPath, int aMaxAttempts, in
 				}
 
 				Thread::sleep(500);
-				return removeDirectoryIfEmptyRe(aPath, aMaxAttempts, aAttempts + 1);
+				return removeDirectoryIfEmptyRecursive(aPath, aMaxAttempts, aAttempts + 1);
 			} else {
 				return false;
 			}
@@ -746,10 +746,8 @@ bool AirUtil::removeDirectoryIfEmptyRe(const string& aPath, int aMaxAttempts, in
 	return true;
 }
 
-void AirUtil::removeDirectoryIfEmpty(const string& aPath, int aMaxAttempts /*3*/, bool aSilent /*false*/) {
-	if (!removeDirectoryIfEmptyRe(aPath, aMaxAttempts, 0) && !aSilent) {
-		LogManager::getInstance()->message(STRING_F(DIRECTORY_NOT_REMOVED, aPath), LogMessage::SEV_INFO);
-	}
+bool AirUtil::removeDirectoryIfEmpty(const string& aPath, int aMaxAttempts) {
+	return removeDirectoryIfEmptyRecursive(aPath, aMaxAttempts, 0);
 }
 
 bool AirUtil::isAdcHub(const string& aHubUrl) noexcept {

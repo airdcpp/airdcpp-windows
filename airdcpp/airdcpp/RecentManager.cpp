@@ -21,6 +21,7 @@
 
 #include "AirUtil.h"
 #include "ClientManager.h"
+#include "DirectoryListing.h"
 #include "DirectoryListingManager.h"
 #include "LogManager.h"
 #include "PrivateChatManager.h"

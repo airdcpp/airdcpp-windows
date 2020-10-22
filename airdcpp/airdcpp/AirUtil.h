@@ -134,7 +134,7 @@ public:
 	inline static string getAdcReleaseDir(const string& aDir, bool aCut) noexcept { return getReleaseDir(aDir, aCut, ADC_SEPARATOR); };
 	static string getReleaseDir(const string& dir, bool cut, const char separator) noexcept;
 
-	static void removeDirectoryIfEmpty(const string& tgt, int maxAttempts, bool silent);
+	static bool removeDirectoryIfEmpty(const string& aPath, int aMaxAttempts);
 
 	static bool isAdcHub(const string& aHubUrl) noexcept;
 	static bool isSecure(const string& aHubUrl) noexcept;
@@ -185,7 +185,7 @@ private:
 	static string subtractCommonDirs(const string& toCompare, const string& toSubtract, char separator) noexcept;
 	static size_t compareFromEnd(const string& aMainPath, const string& aSubPath, char aSubSeparator) noexcept;
 
-	static bool removeDirectoryIfEmptyRe(const string& tgt, int maxAttempts, int curAttempts);
+	static bool removeDirectoryIfEmptyRecursive(const string& aTarget, int aMaxAttempts, int aCurAttempts);
 };
 
 class IsParentOrExact {

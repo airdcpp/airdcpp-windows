@@ -127,7 +127,7 @@ namespace dcpp {
 	void ShareMonitorManager::restoreFailedMonitoredPaths() {
 		auto restored = monitor.restoreFailedPaths();
 		for (const auto& dir : restored) {
-			LogManager::getInstance()->message(STRING_F(MONITORING_RESTORED_X, dir), LogMessage::SEV_INFO);
+			log(STRING_F(MONITORING_RESTORED_X, dir), LogMessage::SEV_INFO);
 		}
 	}
 
@@ -149,12 +149,12 @@ namespace dcpp {
 				if (monitor.addDirectory(p))
 					added++;
 			} catch (const MonitorException& e) {
-				LogManager::getInstance()->message(STRING_F(FAILED_ADD_MONITORING, p % e.getError()), LogMessage::SEV_ERROR);
+				log(STRING_F(FAILED_ADD_MONITORING, p % e.getError()), LogMessage::SEV_ERROR);
 			}
 		}
 
 		if (added > 0) {
-			LogManager::getInstance()->message(STRING_F(X_MONITORING_ADDED, added), LogMessage::SEV_INFO);
+			log(STRING_F(X_MONITORING_ADDED, added), LogMessage::SEV_INFO);
 		}
 	}
 
@@ -165,12 +165,12 @@ namespace dcpp {
 				if (monitor.removeDirectory(p))
 					removed++;
 			} catch (const MonitorException& e) {
-				LogManager::getInstance()->message("Error occurred when trying to remove the folder " + p + " from monitoring: " + e.getError(), LogMessage::SEV_ERROR);
+				log("Error occurred when trying to remove the folder " + p + " from monitoring: " + e.getError(), LogMessage::SEV_ERROR);
 			}
 		}
 
 		if (removed > 0) {
-			LogManager::getInstance()->message(STRING_F(X_MONITORING_REMOVED, removed), LogMessage::SEV_INFO);
+			log(STRING_F(X_MONITORING_REMOVED, removed), LogMessage::SEV_INFO);
 		}
 	}
 
@@ -225,10 +225,14 @@ namespace dcpp {
 		}
 	}
 
+	void ShareMonitorManager::log(const string& aMsg, LogMessage::Severity aSeverity) noexcept {
+		LogManager::getInstance()->message(aMsg, aSeverity, "Share monitoring");
+	}
+
 	void ShareMonitorManager::reportFile(const string& aMsg) noexcept {
 		// There may be sequential modification notifications so don't spam the same message many times
 		if (lastMessage != aMsg || messageTick + 3000 < GET_TICK()) {
-			LogManager::getInstance()->message(aMsg, LogMessage::SEV_INFO);
+			log(aMsg, LogMessage::SEV_INFO);
 			lastMessage = aMsg;
 			messageTick = GET_TICK();
 		}
@@ -241,7 +245,7 @@ namespace dcpp {
 			if (SETTING(REPORT_BLOCKED_SHARE) && ShareValidatorException::isReportableError(e.getType())) {
 				reportFile(e.getError());
 			} else if (monitorDebug) {
-				LogManager::getInstance()->message("Modification for path " + aPath + " ignored: " + e.getError(), LogMessage::SEV_INFO);
+				log("Modification for path " + aPath + " ignored: " + e.getError(), LogMessage::SEV_INFO);
 			}
 
 			return false;
@@ -282,12 +286,12 @@ namespace dcpp {
 	}
 
 	void ShareMonitorManager::on(DirectoryMonitorListener::DirectoryFailed, const string& aPath, const string& aError) noexcept {
-		LogManager::getInstance()->message(STRING_F(MONITOR_DIR_FAILED, aPath % aError), LogMessage::SEV_ERROR);
+		log(STRING_F(MONITOR_DIR_FAILED, aPath % aError), LogMessage::SEV_ERROR);
 	}
 
 	void ShareMonitorManager::on(DirectoryMonitorListener::FileCreated, const string& aPath) noexcept {
 		if (monitorDebug) {
-			LogManager::getInstance()->message("File added: " + aPath, LogMessage::SEV_INFO);
+			log("File added: " + aPath, LogMessage::SEV_INFO);
 		}
 
 		auto fileItem = checkModifiedPath(aPath);
@@ -299,7 +303,7 @@ namespace dcpp {
 
 	void ShareMonitorManager::on(DirectoryMonitorListener::FileModified, const string& aPath) noexcept {
 		if (monitorDebug) {
-			LogManager::getInstance()->message("File modified: " + aPath, LogMessage::SEV_INFO);
+			log("File modified: " + aPath, LogMessage::SEV_INFO);
 		}
 
 		auto fileItem = checkModifiedPath(aPath);
@@ -314,7 +318,7 @@ namespace dcpp {
 
 	void ShareMonitorManager::on(DirectoryMonitorListener::FileRenamed, const string& aOldPath, const string& aNewPath) noexcept {
 		if (monitorDebug) {
-			LogManager::getInstance()->message("File renamed, old: " + aOldPath + " new: " + aNewPath, LogMessage::SEV_INFO);
+			log("File renamed, old: " + aOldPath + " new: " + aNewPath, LogMessage::SEV_INFO);
 		}
 
 		addModifyInfo(Util::getFilePath(aNewPath));
@@ -322,7 +326,7 @@ namespace dcpp {
 
 	void ShareMonitorManager::on(DirectoryMonitorListener::FileDeleted, const string& aPath) noexcept {
 		if (monitorDebug) {
-			LogManager::getInstance()->message("File deleted: " + aPath, LogMessage::SEV_INFO);
+			log("File deleted: " + aPath, LogMessage::SEV_INFO);
 		}
 
 		// Refresh the parent
@@ -331,7 +335,7 @@ namespace dcpp {
 
 	void ShareMonitorManager::on(DirectoryMonitorListener::Overflow, const string& aRootPath) noexcept {
 		if (monitorDebug) {
-			LogManager::getInstance()->message("Monitoring overflow: " + aRootPath, LogMessage::SEV_INFO);
+			log("Monitoring overflow: " + aRootPath, LogMessage::SEV_INFO);
 		}
 
 		// Refresh the root

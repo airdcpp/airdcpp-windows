@@ -21,7 +21,6 @@
 
 #include "AirUtil.h"
 #include "ClientManager.h"
-#include "LogManager.h"
 #include "RelevanceSearch.h"
 #include "ResourceManager.h"
 #include "ShareManager.h"
@@ -688,7 +687,7 @@ void FavoriteManager::loadFavoriteHubs(SimpleXML& aXml) {
 
 			auto server = aXml.getChildAttrib("Server");
 			if (server.empty()) {
-				LogManager::getInstance()->message("A favorite hub with an empty address wasn't loaded: " + e->getName(), LogMessage::SEV_WARNING);
+				dcdebug("A favorite hub with an empty address wasn't loaded: %s\n", e->getName().c_str());
 				continue;
 			}
 

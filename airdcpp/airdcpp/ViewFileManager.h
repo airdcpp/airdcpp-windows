@@ -26,6 +26,7 @@
 #include "ViewFile.h"
 
 #include "CriticalSection.h"
+#include "Message.h"
 #include "QueueManagerListener.h"
 #include "Singleton.h"
 #include "Speaker.h"
@@ -59,6 +60,8 @@ namespace dcpp {
 
 		ViewFilePtr getFile(const TTHValue& aTTH) const noexcept;
 		bool setRead(const TTHValue& aTTH) noexcept;
+
+		static void log(const string& aMsg, LogMessage::Severity aSeverity) noexcept;
 	private:
 		ViewFilePtr createFile(const string& aFileName, const string& aPath, const TTHValue& aTTH, bool aIsText, bool aIsLocalFile) noexcept;
 		static bool isViewedItem(const QueueItemPtr& aQI) noexcept;

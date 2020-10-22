@@ -280,7 +280,7 @@ int DirectoryMonitor::Server::read() {
 				}
 			} catch (const MonitorException& e) {
 				if (debug) {
-					LogManager::getInstance()->message("Monitoring error for path " + (*mon)->path + ": " + e.getError(), LogMessage::SEV_WARNING);
+					LogManager::getInstance()->message("Monitoring error for path " + (*mon)->path + ": " + e.getError(), LogMessage::SEV_WARNING, "Share monitoring");
 				}
 
 				(*mon)->errorCount++;

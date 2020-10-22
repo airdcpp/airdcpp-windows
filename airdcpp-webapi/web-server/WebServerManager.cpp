@@ -486,7 +486,7 @@ namespace webserver {
 			return;
 		}
 
-		LogManager::getInstance()->message(aMsg, aSeverity);
+		LogManager::getInstance()->message(aMsg, aSeverity, STRING(WEB_SERVER));
 	}
 
 	WebServerManager::ErrorF WebServerManager::getDefaultErrorLogger() const noexcept {

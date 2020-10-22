@@ -64,11 +64,10 @@ void ActionUtil::MatchQueue::operator()(UserPtr aUser, const string& aUrl) const
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		try {
 			QueueManager::getInstance()->addList(HintedUser(aUser, aUrl), QueueItem::FLAG_MATCH_QUEUE);
+		} catch (const Exception& e) {
+			LogManager::getInstance()->message(e.getError(), LogMessage::SEV_ERROR, STRING(SETTINGS_QUEUE));
 		}
-		catch (const Exception& e) {
-			LogManager::getInstance()->message(e.getError(), LogMessage::SEV_ERROR);
-		}
-		});
+	});
 }
 
 void ActionUtil::GetList::operator()(UserPtr aUser, const string& aUrl) const {
@@ -359,20 +358,20 @@ void ActionUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aUser, Ri
 				}
 			}
 
-			try {
-				if (sel == SettingsManager::MAGNET_SEARCH) {
-					searchHash(m.getTTH(), m.fname, m.fsize);
-				} else if (sel == SettingsManager::MAGNET_DOWNLOAD) {
+			if (sel == SettingsManager::MAGNET_SEARCH) {
+				searchHash(m.getTTH(), m.fname, m.fsize);
+			} else if (sel == SettingsManager::MAGNET_DOWNLOAD) {
+				try {
 					if (aCtrlEdit) {
 						aCtrlEdit->handleDownload(SETTING(DOWNLOAD_DIRECTORY), Priority::DEFAULT, false);
 					} else {
 						addFileDownload(SETTING(DOWNLOAD_DIRECTORY) + m.fname, m.fsize, m.getTTH(), aUser, 0);
 					}
-				} else if (sel == SettingsManager::MAGNET_OPEN) {
-					openFile(m.fname, m.fsize, m.getTTH(), aUser, false);
+				} catch (const Exception& e) {
+					LogManager::getInstance()->message(e.getError(), LogMessage::SEV_ERROR, STRING(SETTINGS_QUEUE));
 				}
-			} catch (const Exception& e) {
-				LogManager::getInstance()->message(e.getError(), LogMessage::SEV_ERROR);
+			} else if (sel == SettingsManager::MAGNET_OPEN) {
+				openFile(m.fname, m.fsize, m.getTTH(), aUser, false);
 			}
 		} else {
 			MessageBox(WinUtil::mainWnd, CTSTRING(MAGNET_DLG_TEXT_BAD), CTSTRING(MAGNET_DLG_TITLE), MB_OK | MB_ICONEXCLAMATION);
@@ -390,7 +389,7 @@ bool ActionUtil::openFile(const string& aFileName, int64_t aSize, const TTHValue
 		return true;
 	} catch (const Exception& e) {
 		auto nicks = aUser.user ? ClientManager::getInstance()->getFormatedNicks(aUser) : STRING(UNKNOWN);
-		LogManager::getInstance()->message(STRING_F(ADD_FILE_ERROR, aFileName % nicks % e.getError()), LogMessage::SEV_NOTIFY);
+		LogManager::getInstance()->message(STRING_F(ADD_FILE_ERROR, aFileName % nicks % e.getError()), LogMessage::SEV_NOTIFY, STRING(SETTINGS_QUEUE));
 	}
 
 	return false;
@@ -856,10 +855,9 @@ void ActionUtil::addFileDownload(const string& aTarget, int64_t aSize, const TTH
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		try {
 			QueueManager::getInstance()->createFileBundle(aTarget, aSize, aTTH, aUser, aDate, aFlags, aPriority);
-		}
-		catch (const Exception& e) {
+		} catch (const Exception& e) {
 			auto nick = aUser ? Text::fromT(FormatUtil::getNicks(aUser)) : STRING(UNKNOWN);
-			LogManager::getInstance()->message(STRING_F(ADD_FILE_ERROR, aTarget % nick % e.getError()), LogMessage::SEV_ERROR);
+			LogManager::getInstance()->message(STRING_F(ADD_FILE_ERROR, aTarget % nick % e.getError()), LogMessage::SEV_ERROR, STRING(SETTINGS_QUEUE));
 		}
 	});
 }

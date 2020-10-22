@@ -82,7 +82,7 @@ public:
 		SEV_LAST 
 	};
 
-	LogMessage(const string& aMessage, Severity sev, bool aHistory = false) noexcept;
+	LogMessage(const string& aMessage, Severity sev, const string& aLabel, bool aHistory = false) noexcept;
 
 	uint64_t getId() const noexcept {
 		return id;
@@ -109,9 +109,14 @@ public:
 	const MessageHighlight::SortedList& getHighlights() const noexcept {
 		return highlights;
 	}
+
+	const string& getLabel() const noexcept {
+		return label;
+	}
 private:
 	const uint64_t id;
 	string text;
+	const string label;
 	const time_t time;
 	const Severity severity;
 	MessageHighlight::SortedList highlights;

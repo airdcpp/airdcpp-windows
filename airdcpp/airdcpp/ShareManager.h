@@ -32,6 +32,7 @@
 #include "Exception.h"
 #include "HashBloom.h"
 #include "HashedFile.h"
+#include "Message.h"
 #include "MerkleTree.h"
 #include "Pointer.h"
 #include "SearchQuery.h"
@@ -120,6 +121,8 @@ class ShareManager : public Singleton<ShareManager>, public Speaker<ShareManager
 	private TimerManagerListener, private HashManagerListener
 {
 public:
+	static void log(const string& aMsg, LogMessage::Severity aSeverity) noexcept;
+
 	const unique_ptr<SharePathValidator> validator;
 
 	SharePathValidator& getValidator() noexcept {

@@ -687,7 +687,7 @@ void WinUtil::splitTokens(int* array, const string& tokens, int maxItems /* = -1
 
 	if(stricmp(app.c_str(), Buf) != 0) {
 		if (::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\dchub"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL))  {
-			LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_DCHUB), LogMessage::SEV_ERROR);
+			LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_DCHUB), LogMessage::SEV_ERROR, STRING(APPLICATION));
 			return;
 		}
 	
@@ -726,7 +726,7 @@ void WinUtil::splitTokens(int* array, const string& tokens, int maxItems /* = -1
 
 	 if(stricmp(app.c_str(), Buf) != 0) {
 		 if (::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\adc"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL))  {
-			 LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_ADC), LogMessage::SEV_ERROR);
+			 LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_ADC), LogMessage::SEV_ERROR, STRING(APPLICATION));
 			 return;
 		 }
 
@@ -769,7 +769,7 @@ void WinUtil::registerADCShubHandler() {
 	
 	if(stricmp(app.c_str(), Buf) != 0) {
 		if(::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\adcs"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL))  {
-			 LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_ADC), LogMessage::SEV_ERROR);
+			 LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_ADC), LogMessage::SEV_ERROR, STRING(APPLICATION));
 			return;
 			}
 
@@ -814,7 +814,7 @@ void WinUtil::registerMagnetHandler() {
 	if(SETTING(MAGNET_REGISTER) && (strnicmp(openCmd, appName, appName.size()) != 0)) {
 		SHDeleteKey(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\magnet"));
 		if (::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\magnet"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL))  {
-			LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_MAGNET), LogMessage::SEV_ERROR);
+			LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_MAGNET), LogMessage::SEV_ERROR, STRING(APPLICATION));
 			return;
 		}
 		::RegSetValueEx(hk, NULL, NULL, REG_SZ, (LPBYTE)CTSTRING(MAGNET_SHELL_DESC), sizeof(TCHAR)*(TSTRING(MAGNET_SHELL_DESC).length()+1));

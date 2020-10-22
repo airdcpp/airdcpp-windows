@@ -26,6 +26,7 @@
 #include <airdcpp/HttpDownload.h>
 #include <airdcpp/SimpleXML.h>
 #include <airdcpp/version.h>
+#include <airdcpp/Updater.h>
 #include <airdcpp/UpdateManager.h>
 
 static const TCHAR Airthanks[] = 

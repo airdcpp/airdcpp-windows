@@ -32,8 +32,8 @@ ChatMessage::ChatMessage(const string& aText, const OnlineUserPtr& aFrom, const 
 	read = aFrom && aFrom->getUser() == ClientManager::getInstance()->getMe();
 }
 
-LogMessage::LogMessage(const string& aMessage, LogMessage::Severity aSeverity, bool aHistory) noexcept : 
-	id(messageIdCounter++), text(aMessage), time(aHistory ? 0 : GET_TIME()), severity(aSeverity), read(aHistory) {
+LogMessage::LogMessage(const string& aMessage, LogMessage::Severity aSeverity, const string& aLabel, bool aHistory) noexcept : 
+	id(messageIdCounter++), text(aMessage), label(aLabel), time(aHistory ? 0 : GET_TIME()), severity(aSeverity), read(aHistory) {
 
 	highlights = MessageHighlight::parseHighlights(aMessage, Util::emptyString, nullptr);
 }

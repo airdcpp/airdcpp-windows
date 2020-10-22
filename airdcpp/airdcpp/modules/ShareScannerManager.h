@@ -21,6 +21,7 @@
 
 #include <airdcpp/CriticalSection.h>
 #include <airdcpp/DispatcherQueue.h>
+#include <airdcpp/Message.h>
 #include <airdcpp/SFVReader.h>
 #include <airdcpp/Speaker.h>
 #include <airdcpp/Singleton.h>
@@ -67,6 +68,8 @@ public:
 	void Stop();
 
 private:
+	static void log(const string& aMsg, LogMessage::Severity aSeverity) noexcept;
+
 	friend class Singleton<ShareScannerManager>;
 	typedef vector<pair<string, DirSFVReader>> SFVScanList;
 

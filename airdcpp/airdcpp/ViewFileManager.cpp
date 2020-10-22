@@ -37,6 +37,10 @@ namespace dcpp {
 		QueueManager::getInstance()->removeListener(this);
 	}
 
+	void ViewFileManager::log(const string& aMsg, LogMessage::Severity aSeverity) noexcept {
+		LogManager::getInstance()->message(aMsg, aSeverity, STRING(FILES));
+	}
+
 	ViewFileManager::ViewFileList ViewFileManager::getFiles() const noexcept {
 		ViewFileList ret;
 
@@ -180,9 +184,9 @@ namespace dcpp {
 				return file;
 			}
 
-			LogManager::getInstance()->message(STRING_F(FILE_ALREADY_VIEWED, aFileName), LogMessage::SEV_NOTIFY);
+			log(STRING_F(FILE_ALREADY_VIEWED, aFileName), LogMessage::SEV_NOTIFY);
 		} catch (const Exception& e) {
-			LogManager::getInstance()->message(STRING_F(ADD_FILE_ERROR, aFileName % ClientManager::getInstance()->getFormatedNicks(aUser) % e.getError()), LogMessage::SEV_NOTIFY);
+			log(STRING_F(ADD_FILE_ERROR, aFileName % ClientManager::getInstance()->getFormatedNicks(aUser) % e.getError()), LogMessage::SEV_NOTIFY);
 		}
 
 		return nullptr;
@@ -195,9 +199,9 @@ namespace dcpp {
 				return file;
 			}
 
-			LogManager::getInstance()->message(STRING_F(FILE_ALREADY_VIEWED, aFileName), LogMessage::SEV_NOTIFY);
+			log(STRING_F(FILE_ALREADY_VIEWED, aFileName), LogMessage::SEV_NOTIFY);
 		} catch (const Exception& e) {
-			LogManager::getInstance()->message(STRING_F(FAILED_TO_OPEN_FILE, aFileName % e.getError()), LogMessage::SEV_NOTIFY);
+			log(STRING_F(FAILED_TO_OPEN_FILE, aFileName % e.getError()), LogMessage::SEV_NOTIFY);
 		}
 
 		return nullptr;

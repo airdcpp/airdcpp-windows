@@ -26,6 +26,7 @@
 #include <airdcpp/ShareManagerListener.h>
 #include <airdcpp/TimerManagerListener.h>
 
+#include <airdcpp/Message.h>
 #include <airdcpp/ShareDirectoryInfo.h>
 #include <airdcpp/Singleton.h>
 
@@ -55,6 +56,8 @@ namespace dcpp {
 		bool getMonitorDebug() const noexcept { return monitorDebug; }
 		void setMonitorDebug(bool aEnabled) noexcept;
 	private:
+		static void log(const string& aMsg, LogMessage::Severity aSeverity) noexcept;
+
 		bool monitorDebug = false;
 
 		DirectoryMonitor monitor;
