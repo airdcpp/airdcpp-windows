@@ -8,7 +8,7 @@
 // http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/mp11.hpp>
-
+#include <boost/config.hpp> // BOOST_NO_EXCEPTIONS
 #include "exception.hpp"
 
 namespace boost {
@@ -55,15 +55,26 @@ struct ignore_exception {
     constexpr ignore_exception(const safe_numerics_error &, const char * ){}
 };
 
+// emit compile time error if this is invoked.
+struct trap_exception {
+#if 1
+    //constexpr trap_exception(const safe_numerics_error & e, const char * );
+    trap_exception() = delete;
+    trap_exception(const trap_exception &) = delete;
+    trap_exception(trap_exception &&) = delete;
+#endif
+};
+
 // If an exceptional condition is detected at runtime throw the exception.
 struct throw_exception {
+    #ifndef BOOST_NO_EXCEPTIONS
     throw_exception(const safe_numerics_error & e, const char * message){
         throw std::system_error(std::error_code(e), message);
     }
+    #else
+    trap_exception(const safe_numerics_error & e, const char * message);
+    #endif
 };
-
-// emit compile time error if this is invoked.
-struct trap_exception {};
 
 // given an error code - return the action code which it corresponds to.
 constexpr safe_numerics_actions
@@ -101,7 +112,7 @@ make_safe_numerics_action(const safe_numerics_error & e){
 // compile time error dispatcher
 
 // note slightly baroque implementation of a compile time switch statement
-// which instatiates oonly those cases which are actually invoked.  This is
+// which instatiates only those cases which are actually invoked.  This is
 // motivated to implement the "trap" functionality which will generate a syntax
 // error if and only a function which might fail is called.
 

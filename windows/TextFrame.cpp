@@ -44,10 +44,10 @@ string TextFrame::readFile(const string& aFilePath) noexcept {
 
 		File f(aFilePath, File::READ, File::OPEN);
 		text = f.read();
+	} catch (const FileException& e) {
+		ViewFileManager::log(aFilePath + ": " + e.getError().c_str(), LogMessage::SEV_NOTIFY);
 	}
-	catch (const FileException& e) {
-		LogManager::getInstance()->message(aFilePath + ": " + e.getError().c_str(), LogMessage::SEV_NOTIFY);
-	}
+
 	return text;
 }
 
@@ -66,7 +66,7 @@ void TextFrame::openFile(const ViewFilePtr& aFile) {
 	if (aText.empty())
 		return;
 
-	auto frm = new TextFrame(aFile->getDisplayName(), aText, aFile);
+	auto frm = new TextFrame(aFile->getFileName(), aText, aFile);
 	frm->setNfo(Util::getFileExt(aFile->getPath()) == ".nfo");
 	frm->openWindow();
 }

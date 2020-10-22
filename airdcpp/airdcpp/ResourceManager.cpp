@@ -84,7 +84,8 @@ void ResourceManager::loadLanguage(const string& aFile) {
 		createWide();
 #endif
 	} catch(const Exception& e) {
-		LogManager::getInstance()->message("Failed to load the language file " + aFile + ": " + e.getError(), LogMessage::SEV_ERROR);
+		// No translated strings in here
+		LogManager::getInstance()->message("Failed to load the language file " + aFile + ": " + e.getError(), LogMessage::SEV_ERROR, "Localizations");
 	}
 }
 

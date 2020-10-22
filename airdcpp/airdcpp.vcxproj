@@ -221,6 +221,7 @@
     <ClCompile Include="airdcpp\GroupedSearchResult.cpp" />
     <ClCompile Include="airdcpp\IgnoreManager.cpp" />
     <ClCompile Include="airdcpp\MessageCache.cpp" />
+    <ClCompile Include="airdcpp\MessageHighlight.cpp" />
     <ClCompile Include="airdcpp\PrivateChatManager.cpp" />
     <ClCompile Include="airdcpp\modules\AutoSearch.cpp" />
     <ClCompile Include="airdcpp\modules\AutoSearchManager.cpp" />
@@ -317,6 +318,7 @@
     <ClCompile Include="airdcpp\TimerManager.cpp" />
     <ClCompile Include="airdcpp\TrackableDownloadItem.cpp" />
     <ClCompile Include="airdcpp\Transfer.cpp" />
+    <ClCompile Include="airdcpp\TransferInfoManager.cpp" />
     <ClCompile Include="airdcpp\UDPServer.cpp" />
     <ClCompile Include="airdcpp\UpdateManager.cpp" />
     <ClCompile Include="airdcpp\Updater.cpp" />
@@ -339,6 +341,7 @@
     <ClInclude Include="airdcpp\ActivityManager.h" />
     <ClInclude Include="airdcpp\AdcCommand.h" />
     <ClInclude Include="airdcpp\AdcHub.h" />
+    <ClInclude Include="airdcpp\AddressInfo.h" />
     <ClInclude Include="airdcpp\BundleInfo.h" />
     <ClInclude Include="airdcpp\constants.h" />
     <ClInclude Include="airdcpp\DirectoryDownload.h" />
@@ -347,6 +350,9 @@
     <ClInclude Include="airdcpp\ErrorCollector.h" />
     <ClInclude Include="airdcpp\GroupedSearchResult.h" />
     <ClInclude Include="airdcpp\HashManagerListener.h" />
+    <ClInclude Include="airdcpp\MessageHighlight.h" />
+    <ClInclude Include="airdcpp\StreamBase.h" />
+    <ClInclude Include="airdcpp\TransferInfo.h" />
     <ClInclude Include="airdcpp\IgnoreManager.h" />
     <ClInclude Include="airdcpp\IgnoreManagerListener.h" />
     <ClInclude Include="airdcpp\modules\AutoSearch.h" />
@@ -376,6 +382,7 @@
     <ClInclude Include="airdcpp\SettingsManagerListener.h" />
     <ClInclude Include="airdcpp\SharePathValidator.h" />
     <ClInclude Include="airdcpp\TimerManagerListener.h" />
+    <ClInclude Include="airdcpp\TransferInfoManager.h" />
     <ClInclude Include="airdcpp\ViewFileManagerListener.h" />
     <ClInclude Include="airdcpp\MessageCache.h" />
     <ClInclude Include="airdcpp\ConnectionType.h" />

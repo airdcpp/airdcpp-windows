@@ -29,27 +29,77 @@
 
 #include "Dispatchers.h"
 
-namespace dcpp {
 
-class OMenu;
+#define EXT_CONTEXT_MENU(menu, menuId, tokens) \
+if (!tokens.empty()) { \
+	auto cmm = &webserver::WebServerManager::getInstance()->getContextMenuManager(); \
+	auto listData = webserver::ContextMenuItemListData({ webserver::ContextMenuManager::URLS_SUPPORT }, { webserver::Access::ADMIN }, this); \
+	auto extMenuItems = cmm->get##menuId##Menu(tokens, listData); \
+	if (!extMenuItems.empty()) { \
+		for (const auto& extItem : extMenuItems) { \
+			menu.appendItem( \
+				Text::toT(extItem->getTitle()), \
+				[=]() { \
+					if (!extItem->getUrls().empty()) { \
+						for (const auto& url: extItem->getUrls()) { \
+							ActionUtil::openLink(Text::toT(url)); \
+						} \
+						return; \
+					} \
+					auto clickData = webserver::ContextMenuItemClickData(extItem->getHookId(), extItem->getId(), { webserver::ContextMenuManager::URLS_SUPPORT }, { webserver::Access::ADMIN }, webserver::SettingValueMap()); \
+					cmm->onClick##menuId##Item(tokens, clickData); \
+				}, \
+				OMenu::FLAG_THREADED \
+			); \
+		} \
+		menu.appendSeparator(); \
+	} \
+}
 
-struct OMenuItem {
-	typedef vector<unique_ptr<OMenuItem>> List;
+#define EXT_CONTEXT_MENU_ENTITY(menu, menuId, tokens, entity) \
+if (!tokens.empty()) { \
+	auto cmm = &webserver::WebServerManager::getInstance()->getContextMenuManager(); \
+	auto listData = webserver::ContextMenuItemListData({ webserver::ContextMenuManager::URLS_SUPPORT }, { webserver::Access::ADMIN }, this); \
+	auto extMenuItems = cmm->get##menuId##Menu(tokens, listData, entity); \
+	if (!extMenuItems.empty()) { \
+		for (const auto& extItem : extMenuItems) { \
+			menu.appendItem( \
+				Text::toT(extItem->getTitle()), \
+				[=]() { \
+					if (!extItem->getUrls().empty()) { \
+						for (const auto& url: extItem->getUrls()) { \
+							ActionUtil::openLink(Text::toT(url)); \
+						} \
+						return; \
+					} \
+					auto clickData = webserver::ContextMenuItemClickData(extItem->getHookId(), extItem->getId(), { webserver::ContextMenuManager::URLS_SUPPORT }, { webserver::Access::ADMIN }, webserver::SettingValueMap()); \
+					cmm->onClick##menuId##Item(tokens, clickData, entity); \
+				}, \
+				OMenu::FLAG_THREADED \
+			); \
+		} \
+		menu.appendSeparator(); \
+	} \
+}
 
-	OMenuItem() : ownerdrawn(true), text(), parent(nullptr), data(nullptr) {}
-
-	tstring text;
-	OMenu* parent;
-	void* data;
-	bool ownerdrawn;
-	Dispatcher::F f;
-};
 
 /*
  * Wouldn't it be Wonderful if WTL made their functions virtual? Yes it would...
  */
 class OMenu : public CMenu {
 public:
+	struct OMenuItem {
+		typedef vector<unique_ptr<OMenuItem>> List;
+
+		OMenuItem() : ownerdrawn(true), text(), parent(nullptr), data(nullptr) {}
+
+		tstring text;
+		OMenu* parent;
+		void* data;
+		bool ownerdrawn;
+		Dispatcher::F f;
+	};
+
 	enum {
 		FLAG_DEFAULT	= 0x01,
 		FLAG_THREADED	= 0x02,
@@ -141,7 +191,5 @@ private:
 		if(bHandled) \
 			return TRUE; \
 	}
-
-} // namespace dcpp
 
 #endif // __OMENU_H

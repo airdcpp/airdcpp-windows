@@ -23,13 +23,17 @@
 #include "ResourceLoader.h"
 #include "UsersFrame.h"
 #include "LineDlg.h"
+#include "FormatUtil.h"
+#include "ActionUtil.h"
 
 #include <airdcpp/ClientManager.h>
-#include <airdcpp/GeoManager.h>
 #include <airdcpp/IgnoreManager.h>
 #include <airdcpp/Localization.h>
 #include <airdcpp/LogManager.h>
 #include <airdcpp/QueueManager.h>
+
+#include <web-server/ContextMenuManager.h>
+#include <web-server/WebServerManager.h>
 
 string UsersFrame::id = "Users";
 
@@ -191,7 +195,7 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	auto cm = ClientManager::getInstance();
 	{
 		RLock l(cm->getCS());
-		for (auto& u : cm->getUsers() | map_values) {
+		for (auto& u : cm->getUsersUnsafe() | map_values) {
 			if (u->getCID() == CID()) // hub
 				continue;
 			userInfos.emplace(u, UserInfo(u, Util::emptyString, false));
@@ -393,17 +397,9 @@ LRESULT UsersFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 
 					POINT p = { rc.left, top };
 
-					const string& ip = ui->getIp();
-					uint8_t flagIndex = 0;
-					if (!ip.empty()) {
-						// Only attempt to grab a country mapping if we actually have an IP address
-						const string& tmpCountry = GeoManager::getInstance()->getCountry(ip);
-						if (!tmpCountry.empty()) {
-							flagIndex = Localization::getFlagIndexByCode(tmpCountry.c_str());
-						}
-					}
+					auto countryInfo = FormatUtil::toCountryInfo(ui->getIp());
+					ResourceLoader::flagImages.Draw(cd->nmcd.hdc, countryInfo.flagIndex, p, LVSIL_SMALL);
 
-					ResourceLoader::flagImages.Draw(cd->nmcd.hdc, flagIndex, p, LVSIL_SMALL);
 					top = rc.top + (rc.Height() - WinUtil::getTextHeight(cd->nmcd.hdc) - 1) / 2;
 					::ExtTextOut(cd->nmcd.hdc, rc.left + 30, top + 1, ETO_CLIPPED, rc, buf, _tcslen(buf), NULL);
 					return CDRF_SKIPDEFAULT;
@@ -915,7 +911,7 @@ UsersFrame::UserInfo::userData UsersFrame::UserInfo::getUserInfo(const UserPtr& 
 			nick += Util::listToStringT<OnlineUserList, OnlineUser::Nick>(ouList, hinted ? true : false, hinted ? false : true);
 
 		if (hinted) {
-			setIp(hinted->getIdentity().getIp());
+			setIp(hinted->getIdentity().getTcpConnectIp());
 			ip4 = hinted->getIdentity().getIp4();
 			ip6 = hinted->getIdentity().getIp6();
 			tag = hinted->getIdentity().getTag();
@@ -971,7 +967,7 @@ LRESULT UsersFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 
 		string file = LogManager::getInstance()->getPath(ui->getUser(), params);
 		if(Util::fileExists(file)) {
-			WinUtil::viewLog(file);
+			ActionUtil::viewLog(file);
 		} else {
 			WinUtil::showMessageBox(TSTRING(NO_LOG_FOR_USER));	  
 		}	

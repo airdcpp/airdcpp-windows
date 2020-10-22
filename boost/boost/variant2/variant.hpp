@@ -18,12 +18,14 @@
 #endif
 #include <boost/config.hpp>
 #include <boost/detail/workaround.hpp>
+#include <boost/cstdint.hpp>
 #include <cstddef>
 #include <type_traits>
 #include <exception>
 #include <cassert>
 #include <initializer_list>
 #include <utility>
+#include <functional> // std::hash
 
 //
 
@@ -547,6 +549,88 @@ template<class T1, class... T> union variant_storage_impl<mp11::mp_false, T1, T.
     template<std::size_t I> constexpr mp11::mp_at_c<mp11::mp_list<T...>, I-1> const& get( mp11::mp_size_t<I> ) const noexcept { return rest_.get( mp11::mp_size_t<I-1>() ); }
 };
 
+template<class T0, class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8, class T9, class... T> union variant_storage_impl<mp11::mp_false, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T...>
+{
+    T0 t0_;
+    T1 t1_;
+    T2 t2_;
+    T3 t3_;
+    T4 t4_;
+    T5 t5_;
+    T6 t6_;
+    T7 t7_;
+    T8 t8_;
+    T9 t9_;
+
+    variant_storage<T...> rest_;
+
+    template<class... A> constexpr explicit variant_storage_impl( mp11::mp_size_t<0>, A&&... a ): t0_( std::forward<A>(a)... ) {}
+    template<class... A> constexpr explicit variant_storage_impl( mp11::mp_size_t<1>, A&&... a ): t1_( std::forward<A>(a)... ) {}
+    template<class... A> constexpr explicit variant_storage_impl( mp11::mp_size_t<2>, A&&... a ): t2_( std::forward<A>(a)... ) {}
+    template<class... A> constexpr explicit variant_storage_impl( mp11::mp_size_t<3>, A&&... a ): t3_( std::forward<A>(a)... ) {}
+    template<class... A> constexpr explicit variant_storage_impl( mp11::mp_size_t<4>, A&&... a ): t4_( std::forward<A>(a)... ) {}
+    template<class... A> constexpr explicit variant_storage_impl( mp11::mp_size_t<5>, A&&... a ): t5_( std::forward<A>(a)... ) {}
+    template<class... A> constexpr explicit variant_storage_impl( mp11::mp_size_t<6>, A&&... a ): t6_( std::forward<A>(a)... ) {}
+    template<class... A> constexpr explicit variant_storage_impl( mp11::mp_size_t<7>, A&&... a ): t7_( std::forward<A>(a)... ) {}
+    template<class... A> constexpr explicit variant_storage_impl( mp11::mp_size_t<8>, A&&... a ): t8_( std::forward<A>(a)... ) {}
+    template<class... A> constexpr explicit variant_storage_impl( mp11::mp_size_t<9>, A&&... a ): t9_( std::forward<A>(a)... ) {}
+
+    template<std::size_t I, class... A> constexpr explicit variant_storage_impl( mp11::mp_size_t<I>, A&&... a ): rest_( mp11::mp_size_t<I-10>(), std::forward<A>(a)... ) {}
+
+    ~variant_storage_impl()
+    {
+    }
+
+    template<class... A> void emplace( mp11::mp_size_t<0>, A&&... a ) { ::new( &t0_ ) T0( std::forward<A>(a)... ); }
+    template<class... A> void emplace( mp11::mp_size_t<1>, A&&... a ) { ::new( &t1_ ) T1( std::forward<A>(a)... ); }
+    template<class... A> void emplace( mp11::mp_size_t<2>, A&&... a ) { ::new( &t2_ ) T2( std::forward<A>(a)... ); }
+    template<class... A> void emplace( mp11::mp_size_t<3>, A&&... a ) { ::new( &t3_ ) T3( std::forward<A>(a)... ); }
+    template<class... A> void emplace( mp11::mp_size_t<4>, A&&... a ) { ::new( &t4_ ) T4( std::forward<A>(a)... ); }
+    template<class... A> void emplace( mp11::mp_size_t<5>, A&&... a ) { ::new( &t5_ ) T5( std::forward<A>(a)... ); }
+    template<class... A> void emplace( mp11::mp_size_t<6>, A&&... a ) { ::new( &t6_ ) T6( std::forward<A>(a)... ); }
+    template<class... A> void emplace( mp11::mp_size_t<7>, A&&... a ) { ::new( &t7_ ) T7( std::forward<A>(a)... ); }
+    template<class... A> void emplace( mp11::mp_size_t<8>, A&&... a ) { ::new( &t8_ ) T8( std::forward<A>(a)... ); }
+    template<class... A> void emplace( mp11::mp_size_t<9>, A&&... a ) { ::new( &t9_ ) T9( std::forward<A>(a)... ); }
+
+    template<std::size_t I, class... A> void emplace( mp11::mp_size_t<I>, A&&... a )
+    {
+        rest_.emplace( mp11::mp_size_t<I-10>(), std::forward<A>(a)... );
+    }
+
+    BOOST_CXX14_CONSTEXPR T0& get( mp11::mp_size_t<0> ) noexcept { return t0_; }
+    constexpr T0 const& get( mp11::mp_size_t<0> ) const noexcept { return t0_; }
+
+    BOOST_CXX14_CONSTEXPR T1& get( mp11::mp_size_t<1> ) noexcept { return t1_; }
+    constexpr T1 const& get( mp11::mp_size_t<1> ) const noexcept { return t1_; }
+
+    BOOST_CXX14_CONSTEXPR T2& get( mp11::mp_size_t<2> ) noexcept { return t2_; }
+    constexpr T2 const& get( mp11::mp_size_t<2> ) const noexcept { return t2_; }
+
+    BOOST_CXX14_CONSTEXPR T3& get( mp11::mp_size_t<3> ) noexcept { return t3_; }
+    constexpr T3 const& get( mp11::mp_size_t<3> ) const noexcept { return t3_; }
+
+    BOOST_CXX14_CONSTEXPR T4& get( mp11::mp_size_t<4> ) noexcept { return t4_; }
+    constexpr T4 const& get( mp11::mp_size_t<4> ) const noexcept { return t4_; }
+
+    BOOST_CXX14_CONSTEXPR T5& get( mp11::mp_size_t<5> ) noexcept { return t5_; }
+    constexpr T5 const& get( mp11::mp_size_t<5> ) const noexcept { return t5_; }
+
+    BOOST_CXX14_CONSTEXPR T6& get( mp11::mp_size_t<6> ) noexcept { return t6_; }
+    constexpr T6 const& get( mp11::mp_size_t<6> ) const noexcept { return t6_; }
+
+    BOOST_CXX14_CONSTEXPR T7& get( mp11::mp_size_t<7> ) noexcept { return t7_; }
+    constexpr T7 const& get( mp11::mp_size_t<7> ) const noexcept { return t7_; }
+
+    BOOST_CXX14_CONSTEXPR T8& get( mp11::mp_size_t<8> ) noexcept { return t8_; }
+    constexpr T8 const& get( mp11::mp_size_t<8> ) const noexcept { return t8_; }
+
+    BOOST_CXX14_CONSTEXPR T9& get( mp11::mp_size_t<9> ) noexcept { return t9_; }
+    constexpr T9 const& get( mp11::mp_size_t<9> ) const noexcept { return t9_; }
+
+    template<std::size_t I> BOOST_CXX14_CONSTEXPR mp11::mp_at_c<mp11::mp_list<T...>, I-10>& get( mp11::mp_size_t<I> ) noexcept { return rest_.get( mp11::mp_size_t<I-10>() ); }
+    template<std::size_t I> constexpr mp11::mp_at_c<mp11::mp_list<T...>, I-10> const& get( mp11::mp_size_t<I> ) const noexcept { return rest_.get( mp11::mp_size_t<I-10>() ); }
+};
+
 // all trivially destructible
 template<class T1, class... T> union variant_storage_impl<mp11::mp_true, T1, T...>
 {
@@ -586,6 +670,105 @@ template<class T1, class... T> union variant_storage_impl<mp11::mp_true, T1, T..
 
     template<std::size_t I> BOOST_CXX14_CONSTEXPR mp11::mp_at_c<mp11::mp_list<T...>, I-1>& get( mp11::mp_size_t<I> ) noexcept { return rest_.get( mp11::mp_size_t<I-1>() ); }
     template<std::size_t I> constexpr mp11::mp_at_c<mp11::mp_list<T...>, I-1> const& get( mp11::mp_size_t<I> ) const noexcept { return rest_.get( mp11::mp_size_t<I-1>() ); }
+};
+
+template<class T0, class T1, class T2, class T3, class T4, class T5, class T6, class T7, class T8, class T9, class... T> union variant_storage_impl<mp11::mp_true, T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T...>
+{
+    T0 t0_;
+    T1 t1_;
+    T2 t2_;
+    T3 t3_;
+    T4 t4_;
+    T5 t5_;
+    T6 t6_;
+    T7 t7_;
+    T8 t8_;
+    T9 t9_;
+
+    variant_storage<T...> rest_;
+
+    template<class... A> constexpr explicit variant_storage_impl( mp11::mp_size_t<0>, A&&... a ): t0_( std::forward<A>(a)... ) {}
+    template<class... A> constexpr explicit variant_storage_impl( mp11::mp_size_t<1>, A&&... a ): t1_( std::forward<A>(a)... ) {}
+    template<class... A> constexpr explicit variant_storage_impl( mp11::mp_size_t<2>, A&&... a ): t2_( std::forward<A>(a)... ) {}
+    template<class... A> constexpr explicit variant_storage_impl( mp11::mp_size_t<3>, A&&... a ): t3_( std::forward<A>(a)... ) {}
+    template<class... A> constexpr explicit variant_storage_impl( mp11::mp_size_t<4>, A&&... a ): t4_( std::forward<A>(a)... ) {}
+    template<class... A> constexpr explicit variant_storage_impl( mp11::mp_size_t<5>, A&&... a ): t5_( std::forward<A>(a)... ) {}
+    template<class... A> constexpr explicit variant_storage_impl( mp11::mp_size_t<6>, A&&... a ): t6_( std::forward<A>(a)... ) {}
+    template<class... A> constexpr explicit variant_storage_impl( mp11::mp_size_t<7>, A&&... a ): t7_( std::forward<A>(a)... ) {}
+    template<class... A> constexpr explicit variant_storage_impl( mp11::mp_size_t<8>, A&&... a ): t8_( std::forward<A>(a)... ) {}
+    template<class... A> constexpr explicit variant_storage_impl( mp11::mp_size_t<9>, A&&... a ): t9_( std::forward<A>(a)... ) {}
+
+    template<std::size_t I, class... A> constexpr explicit variant_storage_impl( mp11::mp_size_t<I>, A&&... a ): rest_( mp11::mp_size_t<I-10>(), std::forward<A>(a)... ) {}
+
+    template<class... A> void emplace_impl( mp11::mp_false, mp11::mp_size_t<0>, A&&... a ) { ::new( &t0_ ) T0( std::forward<A>(a)... ); }
+    template<class... A> void emplace_impl( mp11::mp_false, mp11::mp_size_t<1>, A&&... a ) { ::new( &t1_ ) T1( std::forward<A>(a)... ); }
+    template<class... A> void emplace_impl( mp11::mp_false, mp11::mp_size_t<2>, A&&... a ) { ::new( &t2_ ) T2( std::forward<A>(a)... ); }
+    template<class... A> void emplace_impl( mp11::mp_false, mp11::mp_size_t<3>, A&&... a ) { ::new( &t3_ ) T3( std::forward<A>(a)... ); }
+    template<class... A> void emplace_impl( mp11::mp_false, mp11::mp_size_t<4>, A&&... a ) { ::new( &t4_ ) T4( std::forward<A>(a)... ); }
+    template<class... A> void emplace_impl( mp11::mp_false, mp11::mp_size_t<5>, A&&... a ) { ::new( &t5_ ) T5( std::forward<A>(a)... ); }
+    template<class... A> void emplace_impl( mp11::mp_false, mp11::mp_size_t<6>, A&&... a ) { ::new( &t6_ ) T6( std::forward<A>(a)... ); }
+    template<class... A> void emplace_impl( mp11::mp_false, mp11::mp_size_t<7>, A&&... a ) { ::new( &t7_ ) T7( std::forward<A>(a)... ); }
+    template<class... A> void emplace_impl( mp11::mp_false, mp11::mp_size_t<8>, A&&... a ) { ::new( &t8_ ) T8( std::forward<A>(a)... ); }
+    template<class... A> void emplace_impl( mp11::mp_false, mp11::mp_size_t<9>, A&&... a ) { ::new( &t9_ ) T9( std::forward<A>(a)... ); }
+
+    template<std::size_t I, class... A> BOOST_CXX14_CONSTEXPR void emplace_impl( mp11::mp_false, mp11::mp_size_t<I>, A&&... a )
+    {
+        rest_.emplace( mp11::mp_size_t<I-10>(), std::forward<A>(a)... );
+    }
+
+    template<std::size_t I, class... A> BOOST_CXX14_CONSTEXPR void emplace_impl( mp11::mp_true, mp11::mp_size_t<I>, A&&... a )
+    {
+        *this = variant_storage_impl( mp11::mp_size_t<I>(), std::forward<A>(a)... );
+    }
+
+    template<std::size_t I, class... A> BOOST_CXX14_CONSTEXPR void emplace( mp11::mp_size_t<I>, A&&... a )
+    {
+        this->emplace_impl( mp11::mp_all<
+            detail::is_trivially_move_assignable<T0>,
+            detail::is_trivially_move_assignable<T1>,
+            detail::is_trivially_move_assignable<T2>,
+            detail::is_trivially_move_assignable<T3>,
+            detail::is_trivially_move_assignable<T4>,
+            detail::is_trivially_move_assignable<T5>,
+            detail::is_trivially_move_assignable<T6>,
+            detail::is_trivially_move_assignable<T7>,
+            detail::is_trivially_move_assignable<T8>,
+            detail::is_trivially_move_assignable<T9>,
+            detail::is_trivially_move_assignable<T>...>(), mp11::mp_size_t<I>(), std::forward<A>(a)... );
+    }
+
+    BOOST_CXX14_CONSTEXPR T0& get( mp11::mp_size_t<0> ) noexcept { return t0_; }
+    constexpr T0 const& get( mp11::mp_size_t<0> ) const noexcept { return t0_; }
+
+    BOOST_CXX14_CONSTEXPR T1& get( mp11::mp_size_t<1> ) noexcept { return t1_; }
+    constexpr T1 const& get( mp11::mp_size_t<1> ) const noexcept { return t1_; }
+
+    BOOST_CXX14_CONSTEXPR T2& get( mp11::mp_size_t<2> ) noexcept { return t2_; }
+    constexpr T2 const& get( mp11::mp_size_t<2> ) const noexcept { return t2_; }
+
+    BOOST_CXX14_CONSTEXPR T3& get( mp11::mp_size_t<3> ) noexcept { return t3_; }
+    constexpr T3 const& get( mp11::mp_size_t<3> ) const noexcept { return t3_; }
+
+    BOOST_CXX14_CONSTEXPR T4& get( mp11::mp_size_t<4> ) noexcept { return t4_; }
+    constexpr T4 const& get( mp11::mp_size_t<4> ) const noexcept { return t4_; }
+
+    BOOST_CXX14_CONSTEXPR T5& get( mp11::mp_size_t<5> ) noexcept { return t5_; }
+    constexpr T5 const& get( mp11::mp_size_t<5> ) const noexcept { return t5_; }
+
+    BOOST_CXX14_CONSTEXPR T6& get( mp11::mp_size_t<6> ) noexcept { return t6_; }
+    constexpr T6 const& get( mp11::mp_size_t<6> ) const noexcept { return t6_; }
+
+    BOOST_CXX14_CONSTEXPR T7& get( mp11::mp_size_t<7> ) noexcept { return t7_; }
+    constexpr T7 const& get( mp11::mp_size_t<7> ) const noexcept { return t7_; }
+
+    BOOST_CXX14_CONSTEXPR T8& get( mp11::mp_size_t<8> ) noexcept { return t8_; }
+    constexpr T8 const& get( mp11::mp_size_t<8> ) const noexcept { return t8_; }
+
+    BOOST_CXX14_CONSTEXPR T9& get( mp11::mp_size_t<9> ) noexcept { return t9_; }
+    constexpr T9 const& get( mp11::mp_size_t<9> ) const noexcept { return t9_; }
+
+    template<std::size_t I> BOOST_CXX14_CONSTEXPR mp11::mp_at_c<mp11::mp_list<T...>, I-10>& get( mp11::mp_size_t<I> ) noexcept { return rest_.get( mp11::mp_size_t<I-10>() ); }
+    template<std::size_t I> constexpr mp11::mp_at_c<mp11::mp_list<T...>, I-10> const& get( mp11::mp_size_t<I> ) const noexcept { return rest_.get( mp11::mp_size_t<I-10>() ); }
 };
 
 // resolve_overload_*
@@ -1050,20 +1233,317 @@ template<class T> struct is_nothrow_swappable: mp11::mp_valid<det2::is_nothrow_s
 
 #endif
 
+// variant_cc_base
+
+template<bool CopyConstructible, bool TriviallyCopyConstructible, class... T> struct variant_cc_base_impl;
+
+template<class... T> using variant_cc_base = variant_cc_base_impl<
+    mp11::mp_all<std::is_copy_constructible<T>...>::value,
+    mp11::mp_all<detail::is_trivially_copy_constructible<T>...>::value,
+    T...>;
+
+template<class... T> struct variant_cc_base_impl<true, true, T...>: public variant_base<T...>
+{
+    using variant_base = detail::variant_base<T...>;
+    using variant_base::variant_base;
+
+    variant_cc_base_impl() = default;
+    variant_cc_base_impl( variant_cc_base_impl const& ) = default;
+    variant_cc_base_impl( variant_cc_base_impl && ) = default;
+    variant_cc_base_impl& operator=( variant_cc_base_impl const& ) = default;
+    variant_cc_base_impl& operator=( variant_cc_base_impl && ) = default;
+};
+
+template<bool B, class... T> struct variant_cc_base_impl<false, B, T...>: public variant_base<T...>
+{
+    using variant_base = detail::variant_base<T...>;
+    using variant_base::variant_base;
+
+    variant_cc_base_impl() = default;
+    variant_cc_base_impl( variant_cc_base_impl const& ) = delete;
+    variant_cc_base_impl( variant_cc_base_impl && ) = default;
+    variant_cc_base_impl& operator=( variant_cc_base_impl const& ) = default;
+    variant_cc_base_impl& operator=( variant_cc_base_impl && ) = default;
+};
+
+template<class... T> struct variant_cc_base_impl<true, false, T...>: public variant_base<T...>
+{
+    using variant_base = detail::variant_base<T...>;
+    using variant_base::variant_base;
+
+public:
+
+    // constructors
+
+    variant_cc_base_impl() = default;
+
+    // copy constructor
+
+private:
+
+    struct L1
+    {
+        variant_base * this_;
+        variant_base const & r;
+
+        template<class I> void operator()( I i ) const
+        {
+            this_->_replace( i, r._get_impl( i ) );
+        }
+    };
+
+public:
+
+    variant_cc_base_impl( variant_cc_base_impl const& r )
+        noexcept( mp11::mp_all<std::is_nothrow_copy_constructible<T>...>::value )
+        : variant_base()
+    {
+        mp11::mp_with_index<sizeof...(T)>( r.index(), L1{ this, r } );
+    }
+
+    // move constructor
+
+    variant_cc_base_impl( variant_cc_base_impl && ) = default;
+
+    // assignment
+
+    variant_cc_base_impl& operator=( variant_cc_base_impl const & ) = default;
+    variant_cc_base_impl& operator=( variant_cc_base_impl && ) = default;
+};
+
+// variant_ca_base
+
+template<bool CopyAssignable, bool TriviallyCopyAssignable, class... T> struct variant_ca_base_impl;
+
+template<class... T> using variant_ca_base = variant_ca_base_impl<
+    mp11::mp_all<std::is_copy_constructible<T>..., std::is_copy_assignable<T>...>::value,
+    mp11::mp_all<std::is_trivially_destructible<T>..., detail::is_trivially_copy_constructible<T>..., detail::is_trivially_copy_assignable<T>...>::value,
+    T...>;
+
+template<class... T> struct variant_ca_base_impl<true, true, T...>: public variant_cc_base<T...>
+{
+    using variant_base = detail::variant_cc_base<T...>;
+    using variant_base::variant_base;
+
+    variant_ca_base_impl() = default;
+    variant_ca_base_impl( variant_ca_base_impl const& ) = default;
+    variant_ca_base_impl( variant_ca_base_impl && ) = default;
+    variant_ca_base_impl& operator=( variant_ca_base_impl const& ) = default;
+    variant_ca_base_impl& operator=( variant_ca_base_impl && ) = default;
+};
+
+template<bool B, class... T> struct variant_ca_base_impl<false, B, T...>: public variant_cc_base<T...>
+{
+    using variant_base = detail::variant_cc_base<T...>;
+    using variant_base::variant_base;
+
+    variant_ca_base_impl() = default;
+    variant_ca_base_impl( variant_ca_base_impl const& ) = default;
+    variant_ca_base_impl( variant_ca_base_impl && ) = default;
+    variant_ca_base_impl& operator=( variant_ca_base_impl const& ) = delete;
+    variant_ca_base_impl& operator=( variant_ca_base_impl && ) = default;
+};
+
+template<class... T> struct variant_ca_base_impl<true, false, T...>: public variant_cc_base<T...>
+{
+    using variant_base = detail::variant_cc_base<T...>;
+    using variant_base::variant_base;
+
+public:
+
+    // constructors
+
+    variant_ca_base_impl() = default;
+    variant_ca_base_impl( variant_ca_base_impl const& ) = default;
+    variant_ca_base_impl( variant_ca_base_impl && ) = default;
+
+    // copy assignment
+
+private:
+
+    struct L3
+    {
+        variant_base * this_;
+        variant_base const & r;
+
+        template<class I> void operator()( I i ) const
+        {
+            this_->template emplace<I::value>( r._get_impl( i ) );
+        }
+    };
+
+public:
+
+    BOOST_CXX14_CONSTEXPR variant_ca_base_impl& operator=( variant_ca_base_impl const & r )
+        noexcept( mp11::mp_all<std::is_nothrow_copy_constructible<T>...>::value )
+    {
+        mp11::mp_with_index<sizeof...(T)>( r.index(), L3{ this, r } );
+        return *this;
+    }
+
+    // move assignment
+
+    variant_ca_base_impl& operator=( variant_ca_base_impl && ) = default;
+};
+
+// variant_mc_base
+
+template<bool MoveConstructible, bool TriviallyMoveConstructible, class... T> struct variant_mc_base_impl;
+
+template<class... T> using variant_mc_base = variant_mc_base_impl<
+    mp11::mp_all<std::is_move_constructible<T>...>::value,
+    mp11::mp_all<detail::is_trivially_move_constructible<T>...>::value,
+    T...>;
+
+template<class... T> struct variant_mc_base_impl<true, true, T...>: public variant_ca_base<T...>
+{
+    using variant_base = detail::variant_ca_base<T...>;
+    using variant_base::variant_base;
+
+    variant_mc_base_impl() = default;
+    variant_mc_base_impl( variant_mc_base_impl const& ) = default;
+    variant_mc_base_impl( variant_mc_base_impl && ) = default;
+    variant_mc_base_impl& operator=( variant_mc_base_impl const& ) = default;
+    variant_mc_base_impl& operator=( variant_mc_base_impl && ) = default;
+};
+
+template<bool B, class... T> struct variant_mc_base_impl<false, B, T...>: public variant_ca_base<T...>
+{
+    using variant_base = detail::variant_ca_base<T...>;
+    using variant_base::variant_base;
+
+    variant_mc_base_impl() = default;
+    variant_mc_base_impl( variant_mc_base_impl const& ) = default;
+    variant_mc_base_impl( variant_mc_base_impl && ) = delete;
+    variant_mc_base_impl& operator=( variant_mc_base_impl const& ) = default;
+    variant_mc_base_impl& operator=( variant_mc_base_impl && ) = default;
+};
+
+template<class... T> struct variant_mc_base_impl<true, false, T...>: public variant_ca_base<T...>
+{
+    using variant_base = detail::variant_ca_base<T...>;
+    using variant_base::variant_base;
+
+public:
+
+    // constructors
+
+    variant_mc_base_impl() = default;
+    variant_mc_base_impl( variant_mc_base_impl const& ) = default;
+
+    // move constructor
+
+private:
+
+    struct L2
+    {
+        variant_base * this_;
+        variant_base & r;
+
+        template<class I> void operator()( I i ) const
+        {
+            this_->_replace( i, std::move( r._get_impl( i ) ) );
+        }
+    };
+
+public:
+
+    variant_mc_base_impl( variant_mc_base_impl && r )
+        noexcept( mp11::mp_all<std::is_nothrow_move_constructible<T>...>::value )
+    {
+        mp11::mp_with_index<sizeof...(T)>( r.index(), L2{ this, r } );
+    }
+
+    // assignment
+
+    variant_mc_base_impl& operator=( variant_mc_base_impl const & ) = default;
+    variant_mc_base_impl& operator=( variant_mc_base_impl && ) = default;
+};
+
+// variant_ma_base
+
+template<bool MoveAssignable, bool TriviallyMoveAssignable, class... T> struct variant_ma_base_impl;
+
+template<class... T> using variant_ma_base = variant_ma_base_impl<
+    mp11::mp_all<std::is_move_constructible<T>..., std::is_move_assignable<T>...>::value,
+    mp11::mp_all<std::is_trivially_destructible<T>..., detail::is_trivially_move_constructible<T>..., detail::is_trivially_move_assignable<T>...>::value,
+    T...>;
+
+template<class... T> struct variant_ma_base_impl<true, true, T...>: public variant_mc_base<T...>
+{
+    using variant_base = detail::variant_mc_base<T...>;
+    using variant_base::variant_base;
+
+    variant_ma_base_impl() = default;
+    variant_ma_base_impl( variant_ma_base_impl const& ) = default;
+    variant_ma_base_impl( variant_ma_base_impl && ) = default;
+    variant_ma_base_impl& operator=( variant_ma_base_impl const& ) = default;
+    variant_ma_base_impl& operator=( variant_ma_base_impl && ) = default;
+};
+
+template<bool B, class... T> struct variant_ma_base_impl<false, B, T...>: public variant_mc_base<T...>
+{
+    using variant_base = detail::variant_mc_base<T...>;
+    using variant_base::variant_base;
+
+    variant_ma_base_impl() = default;
+    variant_ma_base_impl( variant_ma_base_impl const& ) = default;
+    variant_ma_base_impl( variant_ma_base_impl && ) = default;
+    variant_ma_base_impl& operator=( variant_ma_base_impl const& ) = default;
+    variant_ma_base_impl& operator=( variant_ma_base_impl && ) = delete;
+};
+
+template<class... T> struct variant_ma_base_impl<true, false, T...>: public variant_mc_base<T...>
+{
+    using variant_base = detail::variant_mc_base<T...>;
+    using variant_base::variant_base;
+
+public:
+
+    // constructors
+
+    variant_ma_base_impl() = default;
+    variant_ma_base_impl( variant_ma_base_impl const& ) = default;
+    variant_ma_base_impl( variant_ma_base_impl && ) = default;
+
+    // copy assignment
+
+    variant_ma_base_impl& operator=( variant_ma_base_impl const & ) = default;
+
+    // move assignment
+
+private:
+
+    struct L4
+    {
+        variant_base * this_;
+        variant_base & r;
+
+        template<class I> void operator()( I i ) const
+        {
+            this_->template emplace<I::value>( std::move( r._get_impl( i ) ) );
+        }
+    };
+
+public:
+
+    variant_ma_base_impl& operator=( variant_ma_base_impl && r )
+        noexcept( mp11::mp_all<std::is_nothrow_move_constructible<T>...>::value )
+    {
+        mp11::mp_with_index<sizeof...(T)>( r.index(), L4{ this, r } );
+        return *this;
+    }
+};
+
 } // namespace detail
 
 // variant
 
-template<class... T> class variant: private detail::variant_base<T...>
+template<class... T> class variant: private detail::variant_ma_base<T...>
 {
 private:
 
-    using variant_base = detail::variant_base<T...>;
-
-private:
-
-    variant( variant const volatile& r ) = delete;
-    variant& operator=( variant const volatile& r ) = delete;
+    using variant_base = detail::variant_ma_base<T...>;
 
 public:
 
@@ -1076,71 +1556,8 @@ public:
     {
     }
 
-    template<class E1 = void,
-        class E2 = mp11::mp_if<mp11::mp_all<detail::is_trivially_copy_constructible<T>...>, E1>
-    >
-    constexpr variant( variant const& r ) noexcept
-        : variant_base( static_cast<variant_base const&>(r) )
-    {
-    }
-
-private:
-
-    struct L1
-    {
-        variant_base * this_;
-        variant const & r;
-
-        template<class I> void operator()( I i ) const
-        {
-            this_->_replace( i, r._get_impl( i ) );
-        }
-    };
-
-public:
-
-    template<class E1 = void,
-        class E2 = mp11::mp_if<mp11::mp_not<mp11::mp_all<detail::is_trivially_copy_constructible<T>...>>, E1>,
-        class E3 = mp11::mp_if<mp11::mp_all<std::is_copy_constructible<T>...>, E1>
-    >
-    variant( variant const& r )
-        noexcept( mp11::mp_all<std::is_nothrow_copy_constructible<T>...>::value )
-    {
-        mp11::mp_with_index<sizeof...(T)>( r.index(), L1{ this, r } );
-    }
-
-    template<class E1 = void,
-        class E2 = mp11::mp_if<mp11::mp_all<detail::is_trivially_move_constructible<T>...>, E1>
-    >
-    constexpr variant( variant && r ) noexcept
-        : variant_base( static_cast<variant_base&&>(r) )
-    {
-    }
-
-private:
-
-    struct L2
-    {
-        variant_base * this_;
-        variant & r;
-
-        template<class I> void operator()( I i ) const
-        {
-            this_->_replace( i, std::move( r._get_impl( i ) ) );
-        }
-    };
-
-public:
-
-    template<class E1 = void,
-        class E2 = mp11::mp_if<mp11::mp_not<mp11::mp_all<detail::is_trivially_move_constructible<T>...>>, E1>,
-        class E3 = mp11::mp_if<mp11::mp_all<std::is_move_constructible<T>...>, E1>
-    >
-    variant( variant && r )
-        noexcept( mp11::mp_all<std::is_nothrow_move_constructible<T>...>::value )
-    {
-        mp11::mp_with_index<sizeof...(T)>( r.index(), L2{ this, r } );
-    }
+    // variant( variant const& ) = default;
+    // variant( variant && ) = default;
 
     template<class U,
         class Ud = typename std::decay<U>::type,
@@ -1175,75 +1592,9 @@ public:
     }
 
     // assignment
-    template<class E1 = void,
-        class E2 = mp11::mp_if<mp11::mp_all<std::is_trivially_destructible<T>..., detail::is_trivially_copy_constructible<T>..., detail::is_trivially_copy_assignable<T>...>, E1>
-    >
-    BOOST_CXX14_CONSTEXPR variant& operator=( variant const & r ) noexcept
-    {
-        static_cast<variant_base&>( *this ) = static_cast<variant_base const&>( r );
-        return *this;
-    }
 
-private:
-
-    struct L3
-    {
-        variant * this_;
-        variant const & r;
-
-        template<class I> void operator()( I i ) const
-        {
-            this_->variant_base::template emplace<I::value>( r._get_impl( i ) );
-        }
-    };
-
-public:
-
-    template<class E1 = void,
-        class E2 = mp11::mp_if<mp11::mp_not<mp11::mp_all<std::is_trivially_destructible<T>..., detail::is_trivially_copy_constructible<T>..., detail::is_trivially_copy_assignable<T>...>>, E1>,
-        class E3 = mp11::mp_if<mp11::mp_all<std::is_copy_constructible<T>..., std::is_copy_assignable<T>...>, E1>
-    >
-    BOOST_CXX14_CONSTEXPR variant& operator=( variant const & r )
-        noexcept( mp11::mp_all<std::is_nothrow_copy_constructible<T>...>::value )
-    {
-        mp11::mp_with_index<sizeof...(T)>( r.index(), L3{ this, r } );
-        return *this;
-    }
-
-    template<class E1 = void,
-        class E2 = mp11::mp_if<mp11::mp_all<std::is_trivially_destructible<T>..., detail::is_trivially_move_constructible<T>..., detail::is_trivially_move_assignable<T>...>, E1>
-    >
-    BOOST_CXX14_CONSTEXPR variant& operator=( variant && r ) noexcept
-    {
-        static_cast<variant_base&>( *this ) = static_cast<variant_base&&>( r );
-        return *this;
-    }
-
-private:
-
-    struct L4
-    {
-        variant * this_;
-        variant & r;
-
-        template<class I> void operator()( I i ) const
-        {
-            this_->variant_base::template emplace<I::value>( std::move( r._get_impl( i ) ) );
-        }
-    };
-
-public:
-
-    template<class E1 = void,
-        class E2 = mp11::mp_if<mp11::mp_not<mp11::mp_all<std::is_trivially_destructible<T>..., detail::is_trivially_move_constructible<T>..., detail::is_trivially_move_assignable<T>...>>, E1>,
-        class E3 = mp11::mp_if<mp11::mp_all<std::is_move_constructible<T>..., std::is_move_assignable<T>...>, E1>
-    >
-    variant& operator=( variant && r )
-        noexcept( mp11::mp_all<std::is_nothrow_move_constructible<T>...>::value )
-    {
-        mp11::mp_with_index<sizeof...(T)>( r.index(), L4{ this, r } );
-        return *this;
-    }
+    // variant& operator=( variant const& ) = default;
+    // variant& operator=( variant && ) = default;
 
     template<class U,
         class E1 = typename std::enable_if<!std::is_same<typename std::decay<U>::type, variant>::value>::type,
@@ -1598,6 +1949,25 @@ namespace detail
 
 template<class T> using remove_cv_ref_t = typename std::remove_cv<typename std::remove_reference<T>::type>::type;
 
+template<class... T> variant<T...> const & extract_variant_base_( variant<T...> const & );
+
+#if BOOST_WORKAROUND( BOOST_MSVC, < 1930 )
+
+template<class V> struct extract_vbase_impl
+{
+    using type = decltype( extract_variant_base_( std::declval<V>() ) );
+};
+
+template<class V> using extract_variant_base = remove_cv_ref_t< typename extract_vbase_impl<V>::type >;
+
+#else
+
+template<class V> using extract_variant_base = remove_cv_ref_t< decltype( extract_variant_base_( std::declval<V>() ) ) >;
+
+#endif
+
+template<class V> using variant_base_size = variant_size< extract_variant_base<V> >;
+
 template<class T, class U> struct copy_cv_ref
 {
     using type = T;
@@ -1637,13 +2007,28 @@ template<class F> struct Qret
 
 template<class L> using front_if_same = mp11::mp_if<mp11::mp_apply<mp11::mp_same, L>, mp11::mp_front<L>>;
 
-template<class V> using apply_cv_ref = mp11::mp_product<copy_cv_ref_t, remove_cv_ref_t<V>, mp11::mp_list<V>>;
+template<class V> using apply_cv_ref = mp11::mp_product<copy_cv_ref_t, extract_variant_base<V>, mp11::mp_list<V>>;
 
-template<class F, class... V> using Vret = front_if_same<mp11::mp_product_q<Qret<F>, apply_cv_ref<V>...>>;
+struct deduced {};
+
+#if !BOOST_WORKAROUND( BOOST_MSVC, < 1920 )
+
+template<class R, class F, class... V> using Vret = mp11::mp_eval_if_not< std::is_same<R, deduced>, R, front_if_same, mp11::mp_product_q<Qret<F>, apply_cv_ref<V>...> >;
+
+#else
+
+template<class R, class F, class... V> struct Vret_impl
+{
+    using type = mp11::mp_eval_if_not< std::is_same<R, deduced>, R, front_if_same, mp11::mp_product_q<Qret<F>, apply_cv_ref<V>...> >;
+};
+
+template<class R, class F, class... V> using Vret = typename Vret_impl<R, F, V...>::type;
+
+#endif
 
 } // namespace detail
 
-template<class F> constexpr auto visit( F&& f ) -> decltype(std::forward<F>(f)())
+template<class R = detail::deduced, class F> constexpr auto visit( F&& f ) -> detail::Vret<R, F>
 {
     return std::forward<F>(f)();
 }
@@ -1651,12 +2036,12 @@ template<class F> constexpr auto visit( F&& f ) -> decltype(std::forward<F>(f)()
 namespace detail
 {
 
-template<class F, class V1> struct visit_L1
+template<class R, class F, class V1> struct visit_L1
 {
     F&& f;
     V1&& v1;
 
-    template<class I> auto operator()( I ) const -> Vret<F, V1>
+    template<class I> auto operator()( I ) const -> Vret<R, F, V1>
     {
         return std::forward<F>(f)( unsafe_get<I::value>( std::forward<V1>(v1) ) );
     }
@@ -1664,9 +2049,9 @@ template<class F, class V1> struct visit_L1
 
 } // namespace detail
 
-template<class F, class V1> constexpr auto visit( F&& f, V1&& v1 ) -> detail::Vret<F, V1>
+template<class R = detail::deduced, class F, class V1> constexpr auto visit( F&& f, V1&& v1 ) -> detail::Vret<R, F, V1>
 {
-    return mp11::mp_with_index<variant_size<V1>>( v1.index(), detail::visit_L1<F, V1>{ std::forward<F>(f), std::forward<V1>(v1) } );
+    return mp11::mp_with_index<detail::variant_base_size<V1>>( v1.index(), detail::visit_L1<R, F, V1>{ std::forward<F>(f), std::forward<V1>(v1) } );
 }
 
 #if defined(BOOST_NO_CXX14_GENERIC_LAMBDAS) || BOOST_WORKAROUND( BOOST_MSVC, < 1920 )
@@ -1690,31 +2075,31 @@ template<class F, class A> bind_front_<F, A> bind_front( F&& f, A&& a )
     return bind_front_<F, A>{ std::forward<F>(f), std::forward<A>(a) };
 }
 
-template<class F, class V1, class V2> struct visit_L2
+template<class R, class F, class V1, class V2> struct visit_L2
 {
     F&& f;
 
     V1&& v1;
     V2&& v2;
 
-    template<class I> auto operator()( I ) const -> Vret<F, V1, V2>
+    template<class I> auto operator()( I ) const -> Vret<R, F, V1, V2>
     {
         auto f2 = bind_front( std::forward<F>(f), unsafe_get<I::value>( std::forward<V1>(v1) ) );
-        return visit( f2, std::forward<V2>(v2) );
+		return visit<R>( f2, std::forward<V2>(v2) );
     }
 };
 
 } // namespace detail
 
-template<class F, class V1, class V2> constexpr auto visit( F&& f, V1&& v1, V2&& v2 ) -> detail::Vret<F, V1, V2>
+template<class R = detail::deduced, class F, class V1, class V2> constexpr auto visit( F&& f, V1&& v1, V2&& v2 ) -> detail::Vret<R, F, V1, V2>
 {
-    return mp11::mp_with_index<variant_size<V1>>( v1.index(), detail::visit_L2<F, V1, V2>{ std::forward<F>(f), std::forward<V1>(v1), std::forward<V2>(v2) } );
+    return mp11::mp_with_index<detail::variant_base_size<V1>>( v1.index(), detail::visit_L2<R, F, V1, V2>{ std::forward<F>(f), std::forward<V1>(v1), std::forward<V2>(v2) } );
 }
 
 namespace detail
 {
 
-template<class F, class V1, class V2, class V3> struct visit_L3
+template<class R, class F, class V1, class V2, class V3> struct visit_L3
 {
     F&& f;
 
@@ -1722,24 +2107,24 @@ template<class F, class V1, class V2, class V3> struct visit_L3
     V2&& v2;
     V3&& v3;
 
-    template<class I> auto operator()( I ) const -> Vret<F, V1, V2, V3>
+    template<class I> auto operator()( I ) const -> Vret<R, F, V1, V2, V3>
     {
         auto f2 = bind_front( std::forward<F>(f), unsafe_get<I::value>( std::forward<V1>(v1) ) );
-        return visit( f2, std::forward<V2>(v2), std::forward<V3>(v3) );
+        return visit<R>( f2, std::forward<V2>(v2), std::forward<V3>(v3) );
     }
 };
 
 } // namespace detail
 
-template<class F, class V1, class V2, class V3> constexpr auto visit( F&& f, V1&& v1, V2&& v2, V3&& v3 ) -> detail::Vret<F, V1, V2, V3>
+template<class R = detail::deduced, class F, class V1, class V2, class V3> constexpr auto visit( F&& f, V1&& v1, V2&& v2, V3&& v3 ) -> detail::Vret<R, F, V1, V2, V3>
 {
-    return mp11::mp_with_index<variant_size<V1>>( v1.index(), detail::visit_L3<F, V1, V2, V3>{ std::forward<F>(f), std::forward<V1>(v1), std::forward<V2>(v2), std::forward<V3>(v3) } );
+    return mp11::mp_with_index<detail::variant_base_size<V1>>( v1.index(), detail::visit_L3<R, F, V1, V2, V3>{ std::forward<F>(f), std::forward<V1>(v1), std::forward<V2>(v2), std::forward<V3>(v3) } );
 }
 
 namespace detail
 {
 
-template<class F, class V1, class V2, class V3, class V4> struct visit_L4
+template<class R, class F, class V1, class V2, class V3, class V4> struct visit_L4
 {
     F&& f;
 
@@ -1748,28 +2133,28 @@ template<class F, class V1, class V2, class V3, class V4> struct visit_L4
     V3&& v3;
     V4&& v4;
 
-    template<class I> auto operator()( I ) const -> Vret<F, V1, V2, V3, V4>
+    template<class I> auto operator()( I ) const -> Vret<R, F, V1, V2, V3, V4>
     {
         auto f2 = bind_front( std::forward<F>(f), unsafe_get<I::value>( std::forward<V1>(v1) ) );
-        return visit( f2, std::forward<V2>(v2), std::forward<V3>(v3), std::forward<V4>(v4) );
+        return visit<R>( f2, std::forward<V2>(v2), std::forward<V3>(v3), std::forward<V4>(v4) );
     }
 };
 
 } // namespace detail
 
-template<class F, class V1, class V2, class V3, class V4> constexpr auto visit( F&& f, V1&& v1, V2&& v2, V3&& v3, V4&& v4 ) -> detail::Vret<F, V1, V2, V3, V4>
+template<class R = detail::deduced, class F, class V1, class V2, class V3, class V4> constexpr auto visit( F&& f, V1&& v1, V2&& v2, V3&& v3, V4&& v4 ) -> detail::Vret<R, F, V1, V2, V3, V4>
 {
-    return mp11::mp_with_index<variant_size<V1>>( v1.index(), detail::visit_L4<F, V1, V2, V3, V4>{ std::forward<F>(f), std::forward<V1>(v1), std::forward<V2>(v2), std::forward<V3>(v3), std::forward<V4>(v4) } );
+    return mp11::mp_with_index<detail::variant_base_size<V1>>( v1.index(), detail::visit_L4<R, F, V1, V2, V3, V4>{ std::forward<F>(f), std::forward<V1>(v1), std::forward<V2>(v2), std::forward<V3>(v3), std::forward<V4>(v4) } );
 }
 
 #else
 
-template<class F, class V1, class V2, class... V> constexpr auto visit( F&& f, V1&& v1, V2&& v2, V&&... v ) -> detail::Vret<F, V1, V2, V...>
+template<class R = detail::deduced, class F, class V1, class V2, class... V> constexpr auto visit( F&& f, V1&& v1, V2&& v2, V&&... v ) -> detail::Vret<R, F, V1, V2, V...>
 {
-    return mp11::mp_with_index<variant_size<V1>>( v1.index(), [&]( auto I ){
+    return mp11::mp_with_index<detail::variant_base_size<V1>>( v1.index(), [&]( auto I ){
 
         auto f2 = [&]( auto&&... a ){ return std::forward<F>(f)( detail::unsafe_get<I.value>( std::forward<V1>(v1) ), std::forward<decltype(a)>(a)... ); };
-        return visit( f2, std::forward<V2>(v2), std::forward<V>(v)... );
+        return visit<R>( f2, std::forward<V2>(v2), std::forward<V>(v)... );
 
     });
 }
@@ -1785,8 +2170,91 @@ void swap( variant<T...> & v, variant<T...> & w )
     v.swap( w );
 }
 
+// hashing support
+
+namespace detail
+{
+
+template<class V> struct hash_value_L
+{
+    V const & v;
+
+    template<class I> std::size_t operator()( I ) const
+    {
+        boost::ulong_long_type hv = ( boost::ulong_long_type( 0xCBF29CE4 ) << 32 ) + 0x84222325;
+        boost::ulong_long_type const prime = ( boost::ulong_long_type( 0x00000100 ) << 32 ) + 0x000001B3;
+
+        // index
+
+        hv ^= I::value;
+        hv *= prime;
+
+        // value
+
+        auto const & t = unsafe_get<I::value>( v );
+
+        hv ^= std::hash<remove_cv_ref_t<decltype(t)>>()( t );
+        hv *= prime;
+
+        return static_cast<std::size_t>( hv );
+    }
+};
+
+} // namespace detail
+
+inline std::size_t hash_value( monostate const & )
+{
+    return 0xA7EE4757u;
+}
+
+template<class... T> std::size_t hash_value( variant<T...> const & v )
+{
+    return mp11::mp_with_index<sizeof...(T)>( v.index(), detail::hash_value_L< variant<T...> >{ v } );
+}
+
+namespace detail
+{
+
+template<class T> using is_hash_enabled = std::is_default_constructible< std::hash<typename std::remove_const<T>::type> >;
+
+template<class V, bool E = mp11::mp_all_of<V, is_hash_enabled>::value> struct std_hash_impl;
+
+template<class V> struct std_hash_impl<V, false>
+{
+    std_hash_impl() = delete;
+    std_hash_impl( std_hash_impl const& ) = delete;
+    std_hash_impl& operator=( std_hash_impl const& ) = delete;
+};
+
+template<class V> struct std_hash_impl<V, true>
+{
+    std::size_t operator()( V const & v ) const
+    {
+        return hash_value( v );
+    }
+};
+
+} // namespace detail
+
 } // namespace variant2
 } // namespace boost
+
+namespace std
+{
+
+template<class... T> struct hash< ::boost::variant2::variant<T...> >: public ::boost::variant2::detail::std_hash_impl< ::boost::variant2::variant<T...> >
+{
+};
+
+template<> struct hash< ::boost::variant2::monostate >
+{
+    std::size_t operator()( ::boost::variant2::monostate const & v ) const
+    {
+        return hash_value( v );
+    }
+};
+
+} // namespace std
 
 #if defined(_MSC_VER) && _MSC_VER < 1910
 # pragma warning( pop )

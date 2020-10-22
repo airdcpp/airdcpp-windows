@@ -34,6 +34,7 @@ namespace webserver {
 		"hub_counts_updated",
 		"hub_message",
 		"hub_status",
+		"hub_text_command",
 
 		"hub_user_connected",
 		"hub_user_updated",
@@ -41,11 +42,12 @@ namespace webserver {
 	};
 
 	HubInfo::HubInfo(ParentType* aParentModule, const ClientPtr& aClient) :
-		SubApiModule(aParentModule, aClient->getClientId(), subscriptionList), client(aClient),
+		SubApiModule(aParentModule, aClient->getToken(), subscriptionList), client(aClient),
 		chatHandler(this, std::bind(&HubInfo::getClient, this), "hub", Access::HUBS_VIEW, Access::HUBS_EDIT, Access::HUBS_SEND), 
 		view("hub_user_view", this, OnlineUserUtils::propertyHandler, std::bind(&HubInfo::getUsers, this), 500), 
 		timer(getTimer([this] { onTimer(); }, 1000)) 
 	{
+		METHOD_HANDLER(Access::HUBS_EDIT, METHOD_PATCH, (),							HubInfo::handleUpdateHub);
 
 		METHOD_HANDLER(Access::HUBS_EDIT, METHOD_POST,	(EXACT_PARAM("reconnect")),	HubInfo::handleReconnect);
 		METHOD_HANDLER(Access::HUBS_EDIT, METHOD_POST,	(EXACT_PARAM("favorite")),	HubInfo::handleFavorite);
@@ -55,7 +57,8 @@ namespace webserver {
 		METHOD_HANDLER(Access::HUBS_VIEW, METHOD_GET,	(EXACT_PARAM("counts")),	HubInfo::handleGetCounts);
 
 		METHOD_HANDLER(Access::HUBS_VIEW, METHOD_GET,	(EXACT_PARAM("users"), RANGE_START_PARAM, RANGE_MAX_PARAM), HubInfo::handleGetUsers);
-		METHOD_HANDLER(Access::HUBS_VIEW, METHOD_GET,	(EXACT_PARAM("users"), CID_PARAM),							HubInfo::handleGetUser);
+		METHOD_HANDLER(Access::HUBS_VIEW, METHOD_GET,	(EXACT_PARAM("users"), CID_PARAM),							HubInfo::handleGetUserCid);
+		METHOD_HANDLER(Access::HUBS_VIEW, METHOD_GET,	(EXACT_PARAM("users"), TOKEN_PARAM),						HubInfo::handleGetUserId);
 	}
 
 	HubInfo::~HubInfo() {
@@ -71,7 +74,24 @@ namespace webserver {
 	}
 
 	ClientToken HubInfo::getId() const noexcept {
-		return client->getClientId();
+		return client->getToken();
+	}
+
+	api_return HubInfo::handleUpdateHub(ApiRequest& aRequest) {
+		const auto& reqJson = aRequest.getRequestBody();
+
+		for (const auto& i : reqJson.items()) {
+			auto key = i.key();
+			if (key == "use_main_chat_notify") {
+				client->setHubSetting(HubSettings::ChatNotify, JsonUtil::parseValue<bool>("chat_notify", i.value()));
+			} else if (key == "show_joins") {
+				client->setHubSetting(HubSettings::ShowJoins, JsonUtil::parseValue<bool>("show_joins", i.value()));
+			} else if (key == "fav_show_joins") {
+				client->setHubSetting(HubSettings::FavShowJoins, JsonUtil::parseValue<bool>("fav_show_joins", i.value()));
+			}
+		}
+
+		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return HubInfo::handleGetUsers(ApiRequest& aRequest) {
@@ -86,9 +106,25 @@ namespace webserver {
 		return websocketpp::http::status_code::ok;
 	}
 
-	api_return HubInfo::handleGetUser(ApiRequest& aRequest) {
+	api_return HubInfo::handleGetUserCid(ApiRequest& aRequest) {
 		auto user = Deserializer::getUser(aRequest.getCIDParam(), true);
+
 		auto ou = ClientManager::getInstance()->findOnlineUser(user->getCID(), client->getHubUrl(), false);
+		if (!ou) {
+			aRequest.setResponseErrorStr("User was not found");
+			return websocketpp::http::status_code::not_found;
+		}
+
+		aRequest.setResponseBody(Serializer::serializeOnlineUser(ou));
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return HubInfo::handleGetUserId(ApiRequest& aRequest) {
+		auto ou = client->findUser(aRequest.getTokenParam());
+		if (!ou) {
+			aRequest.setResponseErrorStr("User was not found");
+			return websocketpp::http::status_code::not_found;
+		}
 
 		aRequest.setResponseBody(Serializer::serializeOnlineUser(ou));
 		return websocketpp::http::status_code::ok;
@@ -131,6 +167,16 @@ namespace webserver {
 		return {
 			{ "name", aClient->getHubName() },
 			{ "description", aClient->getHubDescription() },
+		};
+	}
+
+
+	json HubInfo::serializeSettings(const ClientPtr& aClient) noexcept {
+		return {
+			{ "nick", Serializer::serializeHubSetting(aClient->get(HubSettings::Nick)) },
+			{ "use_main_chat_notify", Serializer::serializeHubSetting(aClient->get(HubSettings::ChatNotify)) },
+			{ "show_joins", Serializer::serializeHubSetting(aClient->get(HubSettings::ShowJoins)) },
+			{ "fav_show_joins", Serializer::serializeHubSetting(aClient->get(HubSettings::FavShowJoins)) },
 		};
 	}
 
@@ -224,6 +270,12 @@ namespace webserver {
 		}
 
 		sendConnectState();
+	}
+
+	void HubInfo::on(ClientListener::SettingsUpdated, const Client*) noexcept {
+		onHubUpdated({
+			{ "settings", serializeSettings(client) }
+		});
 	}
 
 	void HubInfo::on(ClientListener::GetPassword, const Client*) noexcept {

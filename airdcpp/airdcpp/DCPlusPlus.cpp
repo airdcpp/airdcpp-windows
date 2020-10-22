@@ -46,6 +46,7 @@
 #include "SearchManager.h"
 #include "SettingsManager.h"
 #include "ThrottleManager.h"
+#include "TransferInfoManager.h"
 #include "UpdateManager.h"
 #include "UploadManager.h"
 #include "ViewFileManager.h"
@@ -100,6 +101,7 @@ void startup(StepF stepF, MessageF messageF, Callback runWizard, ProgressF progr
 	ActivityManager::newInstance();
 	RecentManager::newInstance();
 	IgnoreManager::newInstance();
+	TransferInfoManager::newInstance();
 
 	if (moduleInitF) {
 		moduleInitF();
@@ -149,6 +151,9 @@ void startup(StepF stepF, MessageF messageF, Callback runWizard, ProgressF progr
 		GeoManager::getInstance()->init();
 	}
 
+	announce(STRING(CONNECTIVITY));
+	ConnectivityManager::getInstance()->startup(messageF);
+
 	// Modules may depend on data loaded in other sections
 	// Initialization should still be performed before loading SettingsManager as some modules save their config there
 	if (moduleLoadF) {
@@ -191,6 +196,7 @@ void shutdown(StepF stepF, ProgressF progressF, Callback moduleDestroyF) {
 
 	announce(STRING(SHUTTING_DOWN));
 
+	TransferInfoManager::deleteInstance();
 	IgnoreManager::deleteInstance();
 	RecentManager::deleteInstance();
 	ActivityManager::deleteInstance();

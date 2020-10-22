@@ -19,48 +19,29 @@
 #include "stdafx.h"
 #include "Resource.h"
 
-#include <mmsystem.h>
-#include <powrprof.h>
-
 #include "WinUtil.h"
-#include "DirectoryListingFrm.h"
-#include "PrivateFrame.h"
-#include "TextFrame.h"
-#include "SearchFrm.h"
-#include "LineDlg.h"
+#include "SystemUtil.h"
+#include "ResourceLoader.h"
 #include "MainFrm.h"
+#include "LineDlg.h"
+#include "OMenu.h"
 
-#include <airdcpp/ClientManager.h>
-#include <airdcpp/FavoriteManager.h>
-#include <airdcpp/Localization.h>
-#include <airdcpp/LogManager.h>
-#include <airdcpp/Magnet.h>
-#include <airdcpp/QueueManager.h>
-#include <airdcpp/ResourceManager.h>
-#include <airdcpp/ScopedFunctor.h>
-#include <airdcpp/SearchInstance.h>
-#include <airdcpp/StringTokenizer.h>
-#include <airdcpp/TimerManager.h>
-#include <airdcpp/UploadManager.h>
-#include <airdcpp/Util.h>
-#include <airdcpp/ViewFileManager.h>
-
-#include <airdcpp/modules/PreviewAppManager.h>
-#include <airdcpp/modules/WebShortcuts.h>
-
-#include <airdcpp/version.h>
-
-#include <boost/format.hpp>
-
-#include "HubFrame.h"
 #include "BarShader.h"
 #include "BrowseDlg.h"
 #include "ExMessageBox.h"
 #include "SplashWindow.h"
 
-#define byte BYTE // 'byte': ambiguous symbol (C++17)
-#include <atlcomtime.h>
-#undef byte
+#include <airdcpp/LogManager.h>
+#include <airdcpp/ResourceManager.h>
+#include <airdcpp/ScopedFunctor.h>
+#include <airdcpp/StringTokenizer.h>
+#include <airdcpp/Util.h>
+
+#include <airdcpp/version.h>
+
+#include <boost/format.hpp>
+
+#include <mmsystem.h>
 
 
 boost::wregex WinUtil::pathReg;
@@ -82,13 +63,13 @@ HFONT WinUtil::progressFont = NULL;
 HFONT WinUtil::listViewFont = NULL;
 COLORREF WinUtil::TBprogressTextColor = NULL;
 CMenu WinUtil::mainMenu;
-OMenu WinUtil::grantMenu;
 int WinUtil::lastSettingPage = 0;
 HWND WinUtil::mainWnd = NULL;
 HWND WinUtil::mdiClient = NULL;
 FlatTabCtrl* WinUtil::tabCtrl = NULL;
 HHOOK WinUtil::hook = NULL;
 tstring WinUtil::tth;
+const string WinUtil::ownerId = "windows_gui";
 bool WinUtil::urlDcADCRegistered = false;
 bool WinUtil::urlMagnetRegistered = false;
 bool WinUtil::isAppActive = false;
@@ -188,152 +169,17 @@ COLORREF HLS_TRANSFORM (COLORREF rgb, int percent_L, int percent_S) {
 	return HLS2RGB (HLS(h, l, s));
 }
 
-string WinUtil::getCompileDate() {
-	COleDateTime tCompileDate;
-	tCompileDate.ParseDateTime(_T(__DATE__), LOCALE_NOUSEROVERRIDE, 1033);
-	return Text::fromT(tCompileDate.Format(_T("%d.%m.%Y")).GetString());
-}
-
 double WinUtil::getFontFactor() {
 	return static_cast<float>(::GetDeviceCaps(::GetDC(reinterpret_cast<HWND>(0)), LOGPIXELSX )) / 96.0;
 }
 
 void WinUtil::playSound(const tstring& sound) {
-	if(sound == _T("beep")) {
+	if (sound == _T("beep")) {
 		::MessageBeep(MB_OK);
-	} else {
+	}
+	else {
 		::PlaySound(sound.c_str(), 0, SND_FILENAME | SND_ASYNC);
 	}
-}
-
-void WinUtil::PM::operator()(UserPtr aUser, const string& aUrl) const {
-	if (aUser)
-		PrivateFrame::openWindow(HintedUser(aUser, aUrl));
-}
-
-void WinUtil::MatchQueue::operator()(UserPtr aUser, const string& aUrl) const {
-	if (!aUser)
-		return;
-
-	MainFrame::getMainFrame()->addThreadedTask([=] {
-		try {
-			QueueManager::getInstance()->addList(HintedUser(aUser, aUrl), QueueItem::FLAG_MATCH_QUEUE);
-		} catch(const Exception& e) {
-			LogManager::getInstance()->message(e.getError(), LogMessage::SEV_ERROR);
-		}
-	});
-}
-
-void WinUtil::GetList::operator()(UserPtr aUser, const string& aUrl) const {
-	if (!aUser)
-		return;
-	
-	MainFrame::getMainFrame()->addThreadedTask([=] {
-		DirectoryListingFrame::openWindow(HintedUser(aUser, aUrl), QueueItem::FLAG_CLIENT_VIEW);
-	});
-}
-
-void WinUtil::BrowseList::operator()(UserPtr aUser, const string& aUrl) const {
-	if(!aUser)
-		return;
-
-	MainFrame::getMainFrame()->addThreadedTask([=] {
-		DirectoryListingFrame::openWindow(HintedUser(aUser, aUrl), QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
-	});
-}
-
-void WinUtil::GetBrowseList::operator()(UserPtr aUser, const string& aUrl) const {
-	if(!aUser)
-		return;
-
-	if (allowGetFullList(HintedUser(aUser, aUrl))) {
-		GetList()(aUser, aUrl);
-	} else {
-		BrowseList()(aUser, aUrl);
-	}
-}
-
-void WinUtil::ConnectFav::operator()(UserPtr aUser, const string& aUrl) const {
-	if(aUser) {
-		if(!aUrl.empty()) {
-			connectHub(aUrl);
-		}
-	}
-}
-
-
-void UserInfoBase::pm() {
-	WinUtil::PM()(getUser(), getHubUrl());
-}
-
-void UserInfoBase::matchQueue() {
-	WinUtil::MatchQueue()(getUser(), getHubUrl());
-}
-
-void UserInfoBase::getList() {
-	WinUtil::GetList()(getUser(), getHubUrl());
-}
-void UserInfoBase::browseList() {
-	WinUtil::BrowseList()(getUser(), getHubUrl());
-}
-void UserInfoBase::getBrowseList() {
-	WinUtil::GetBrowseList()(getUser(), getHubUrl());
-}
-
-void UserInfoBase::connectFav() {
-	WinUtil::ConnectFav()(getUser(), getHubUrl());
-}
-
-void UserInfoBase::handleFav() {
-	if(getUser() && !getUser()->isFavorite()) {
-		FavoriteManager::getInstance()->addFavoriteUser(HintedUser(getUser(), getHubUrl()));
-	} else if (getUser()) {
-		FavoriteManager::getInstance()->removeFavoriteUser(getUser());
-	}
-}
-void UserInfoBase::grant() {
-	if(getUser()) {
-		UploadManager::getInstance()->reserveSlot(HintedUser(getUser(), getHubUrl()), 600);
-	}
-}
-
-void UserInfoBase::grantTimeless() {
-	if(getUser()) {
-		UploadManager::getInstance()->reserveSlot(HintedUser(getUser(), getHubUrl()), 0);
-	}
-}
-void UserInfoBase::removeAll() {
-	MainFrame::getMainFrame()->addThreadedTask([=] { 
-		if(getUser()) {
-			QueueManager::getInstance()->removeSource(getUser(), QueueItem::Source::FLAG_REMOVED);
-		}
-	});
-}
-void UserInfoBase::grantHour() {
-	if(getUser()) {
-		UploadManager::getInstance()->reserveSlot(HintedUser(getUser(), getHubUrl()), 3600);
-	}
-}
-void UserInfoBase::grantDay() {
-	if(getUser()) {
-		UploadManager::getInstance()->reserveSlot(HintedUser(getUser(), getHubUrl()), 24*3600);
-	}
-}
-void UserInfoBase::grantWeek() {
-	if(getUser()) {
-		UploadManager::getInstance()->reserveSlot(HintedUser(getUser(), getHubUrl()), 7*24*3600);
-	}
-}
-void UserInfoBase::ungrant() {
-	if(getUser()) {
-		UploadManager::getInstance()->unreserveSlot(getUser());
-	}
-}
-bool UserInfoBase::hasReservedSlot() {
-	if(getUser()) {
-		return UploadManager::getInstance()->hasReservedSlot(getUser());
-	}
-	return false;
 }
 
 bool WinUtil::getVersionInfo(OSVERSIONINFOEX& ver) {
@@ -377,10 +223,32 @@ void WinUtil::init(HWND hWnd) {
 
 	pathReg.assign(_T("((?<=\\s)(([A-Za-z0-9]:)|(\\\\))(\\\\[^\\\\:]+)(\\\\([^\\s:])([^\\\\:])*)*((\\.[a-z0-9]{2,10})|(\\\\))(?=(\\s|$|:|,)))"));
 	chatReleaseReg.assign(Text::toT(AirUtil::getReleaseRegLong(true)));
-	chatLinkReg.assign(Text::toT(AirUtil::getLinkUrl()), boost::regex_constants::icase);
+	chatLinkReg.assign(Text::toT(AirUtil::getUrlReg()), boost::regex_constants::icase);
 
 	mainWnd = hWnd;
 
+	if (SETTING(URL_HANDLER)) {
+		registerDchubHandler();
+		registerADChubHandler();
+		registerADCShubHandler();
+		urlDcADCRegistered = true;
+	}
+
+	if (SETTING(MAGNET_REGISTER)) {
+		registerMagnetHandler();
+		urlMagnetRegistered = true;
+	}
+
+	hook = SetWindowsHookEx(WH_KEYBOARD, &KeyboardProc, NULL, GetCurrentThreadId());
+
+	setFonts();
+	initColors();
+	initMenus();
+}
+
+
+void WinUtil::initMenus() {
+	// Main menu
 	mainMenu.CreateMenu();
 
 	CMenuHandle file;
@@ -483,58 +351,6 @@ void WinUtil::init(HWND hWnd) {
 	help.AppendMenu(MF_STRING, IDC_HELP_CUSTOMIZE, CTSTRING(MENU_CUSTOMIZE));
 
 	mainMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)help, CTSTRING(MENU_HELP));
-
-	setFonts();
-
-	bgBrush = CreateSolidBrush(SETTING(BACKGROUND_COLOR));
-	textColor = SETTING(TEXT_COLOR);
-	bgColor = SETTING(BACKGROUND_COLOR);
-
-	systemFont = (HFONT)::GetStockObject(DEFAULT_GUI_FONT);
-	OEMFont = (HFONT)::GetStockObject(OEM_FIXED_FONT);
-
-	LOGFONT lf3;
-	::GetObject((HFONT)GetStockObject(DEFAULT_GUI_FONT), sizeof(lf3), &lf3);
-	decodeFont(Text::toT(SETTING(TB_PROGRESS_FONT)), lf3);
-	progressFont = CreateFontIndirect(&lf3);
-	TBprogressTextColor = SETTING(TB_PROGRESS_TEXT_COLOR);
-
-	//default to system theme Font like it was before, only load if changed...
-	//should we use this as systemFont?
-	NONCLIENTMETRICS ncm;
-	ncm.cbSize = sizeof(ncm);
-	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, ncm.cbSize, &ncm, 0);
-	listViewFont = CreateFontIndirect(&(ncm.lfMessageFont)); 
-
-	if(!SETTING(LIST_VIEW_FONT).empty()){
-		::GetObject((HFONT)GetStockObject(DEFAULT_GUI_FONT), sizeof(lf3), &lf3);
-		decodeFont(Text::toT(SETTING(LIST_VIEW_FONT)), lf3);
-		listViewFont = CreateFontIndirect(&lf3);
-	}
-
-	if(SETTING(URL_HANDLER)) {
-		registerDchubHandler();
-		registerADChubHandler();
-		registerADCShubHandler();
-		urlDcADCRegistered = true;
-	}
-	if(SETTING(MAGNET_REGISTER)) {
-		registerMagnetHandler();
-		urlMagnetRegistered = true; 
-	}
-	
-	hook = SetWindowsHookEx(WH_KEYBOARD, &KeyboardProc, NULL, GetCurrentThreadId());
-	
-	grantMenu.CreatePopupMenu();
-	grantMenu.InsertSeparatorFirst(CTSTRING(GRANT_SLOTS_MENU));
-	grantMenu.AppendMenu(MF_STRING, IDC_GRANTSLOT, CTSTRING(GRANT_EXTRA_SLOT));
-	grantMenu.AppendMenu(MF_STRING, IDC_GRANTSLOT_HOUR, CTSTRING(GRANT_EXTRA_SLOT_HOUR));
-	grantMenu.AppendMenu(MF_STRING, IDC_GRANTSLOT_DAY, CTSTRING(GRANT_EXTRA_SLOT_DAY));
-	grantMenu.AppendMenu(MF_STRING, IDC_GRANTSLOT_WEEK, CTSTRING(GRANT_EXTRA_SLOT_WEEK));
-	grantMenu.AppendMenu(MF_SEPARATOR);
-	grantMenu.AppendMenu(MF_STRING, IDC_UNGRANTSLOT, CTSTRING(REMOVE_EXTRA_SLOT));
-
-	initColors();
 }
 
 void WinUtil::setFonts() {
@@ -551,6 +367,29 @@ void WinUtil::setFonts() {
 	lf.lfHeight *= 5;
 	lf.lfHeight /= 6;
 	tabFont = ::CreateFontIndirect(&lf);
+
+
+	systemFont = (HFONT)::GetStockObject(DEFAULT_GUI_FONT);
+	OEMFont = (HFONT)::GetStockObject(OEM_FIXED_FONT);
+
+	LOGFONT lf3;
+	::GetObject((HFONT)GetStockObject(DEFAULT_GUI_FONT), sizeof(lf3), &lf3);
+	decodeFont(Text::toT(SETTING(TB_PROGRESS_FONT)), lf3);
+	progressFont = CreateFontIndirect(&lf3);
+	TBprogressTextColor = SETTING(TB_PROGRESS_TEXT_COLOR);
+
+	//default to system theme Font like it was before, only load if changed...
+	//should we use this as systemFont?
+	NONCLIENTMETRICS ncm;
+	ncm.cbSize = sizeof(ncm);
+	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, ncm.cbSize, &ncm, 0);
+	listViewFont = CreateFontIndirect(&(ncm.lfMessageFont));
+
+	if (!SETTING(LIST_VIEW_FONT).empty()) {
+		::GetObject((HFONT)GetStockObject(DEFAULT_GUI_FONT), sizeof(lf3), &lf3);
+		decodeFont(Text::toT(SETTING(LIST_VIEW_FONT)), lf3);
+		listViewFont = CreateFontIndirect(&lf3);
+	}
 
 }
 void WinUtil::initColors() {
@@ -688,13 +527,15 @@ void WinUtil::initColors() {
 }
 
 void WinUtil::uninit() {
+	// Menus
+	mainMenu.DestroyMenu();
+
+	// Fonts
 	::DeleteObject(font);
 	::DeleteObject(boldFont);
 	::DeleteObject(bgBrush);
 	::DeleteObject(tabFont);
 
-	mainMenu.DestroyMenu();
-	grantMenu.DestroyMenu();
 	::DeleteObject(OEMFont);
 	::DeleteObject(systemFont);
 	::DeleteObject(progressFont);
@@ -752,37 +593,13 @@ bool WinUtil::showQuestionBox(const tstring& aText, int icon, int defaultButton 
 	return ::MessageBox(WinUtil::splash ? WinUtil::splash->m_hWnd : WinUtil::mainWnd, aText.c_str(), Text::toT(shortVersionString).c_str(), MB_YESNO | icon | defaultButton) == IDYES;
 }
 
-bool WinUtil::browseList(tstring& target, HWND aOwner) {
-	const BrowseDlg::ExtensionList types[] = {
-		{ CTSTRING(FILE_LISTS), _T("*.xml;*.xml.bz2") },
-		{ CTSTRING(ALL_FILES), _T("*.*") }
-	};
-
-	BrowseDlg dlg(aOwner, BrowseDlg::TYPE_FILELIST, BrowseDlg::DIALOG_OPEN_FILE);
-	dlg.setTitle(TSTRING(OPEN_FILE_LIST));
-	dlg.setPath(Text::toT(Util::getListPath()));
-	dlg.setTypes(2, types);
-	return dlg.show(target);
-}
-
-bool WinUtil::browseApplication(tstring& target, HWND aOwner) {
-	const BrowseDlg::ExtensionList types[] = {
-		{ CTSTRING(APPLICATION), _T("*.exe") }
-	};
-
-	BrowseDlg dlg(aOwner, BrowseDlg::TYPE_APP, BrowseDlg::DIALOG_SELECT_FILE);
-	dlg.setPath(target, true);
-	dlg.setTypes(1, types);
-	return dlg.show(target);
-}
-
 tstring WinUtil::encodeFont(LOGFONT const& aFont)
 {
 	tstring res(aFont.lfFaceName);
 	res += L',';
-	res += Util::toStringW(aFont.lfHeight);
+	res += Util::toStringW((int64_t)aFont.lfHeight);
 	res += L',';
-	res += Util::toStringW(aFont.lfWeight);
+	res += Util::toStringW((int64_t)aFont.lfWeight);
 	res += L',';
 	res += Util::toStringW(aFont.lfItalic);
 	return res;
@@ -855,84 +672,6 @@ void WinUtil::splitTokens(int* array, const string& tokens, int maxItems /* = -1
 	}
 }
 
-bool WinUtil::getUCParams(HWND parent, const UserCommand& uc, ParamMap& params) noexcept {
-	string::size_type i = 0;
-	StringMap done;
-
-	while( (i = uc.getCommand().find("%[line:", i)) != string::npos) {
-		i += 7;
-		string::size_type j = uc.getCommand().find(']', i);
-		if(j == string::npos)
-			break;
-
-		string name = uc.getCommand().substr(i, j-i);
-		if(done.find(name) == done.end()) {
-			LineDlg dlg;
-			dlg.title = Text::toT(Util::toString(" > ", uc.getDisplayName()));
-			dlg.description = Text::toT(name);
-			dlg.line = Text::toT(boost::get<string>(params["line:" + name]));
-
-			if(uc.adc()) {
-				Util::replace(_T("\\\\"), _T("\\"), dlg.description);
-				Util::replace(_T("\\s"), _T(" "), dlg.description);
-			}
-
-			if(dlg.DoModal(parent) == IDOK) {
-				params["line:" + name] = Text::fromT(dlg.line);
-				done[name] = Text::fromT(dlg.line);
-			} else {
-				return false;
-			}
-		}
-		i = j + 1;
-	}
-	i = 0;
-	while( (i = uc.getCommand().find("%[kickline:", i)) != string::npos) {
-		i += 11;
-		string::size_type j = uc.getCommand().find(']', i);
-		if(j == string::npos)
-			break;
-
-		string name = uc.getCommand().substr(i, j-i);
-		if(done.find(name) == done.end()) {
-			KickDlg dlg;
-			dlg.title = Text::toT(Util::toString(" > ", uc.getDisplayName()));
-			dlg.description = Text::toT(name);
-
-			if(uc.adc()) {
-				Util::replace(_T("\\\\"), _T("\\"), dlg.description);
-				Util::replace(_T("\\s"), _T(" "), dlg.description);
-			}
-
-			if(dlg.DoModal(parent) == IDOK) {
-				params["kickline:" + name] = Text::fromT(dlg.line);
-				done[name] = Text::fromT(dlg.line);
-			} else {
-				return false;
-			}
-		}
-		i = j + 1;
-	}
-	return true;
-}
-
-void WinUtil::copyMagnet(const TTHValue& aHash, const string& aFile, int64_t aSize) {
-	if(!aFile.empty()) {
-		setClipboard(Text::toT(makeMagnet(aHash, aFile, aSize)));
- 	}
-}
-
-string WinUtil::makeMagnet(const TTHValue& aHash, const string& aFile, int64_t aSize) {
-	return Magnet::makeMagnet(aHash, aFile, aSize);
-}
-
- void WinUtil::searchHash(const TTHValue& aHash, const string&, int64_t) {
-	//if (SettingsManager::lanMode)
-	//	SearchFrame::openWindow(Text::toT(aFileName), aSize, Search::SIZE_EXACT, SEARCH_TYPE_ANY);
-	//else
-		SearchFrame::openWindow(Text::toT(aHash.toBase32()), 0, Search::SIZE_DONTCARE, SEARCH_TYPE_TTH);
- }
-
  void WinUtil::registerDchubHandler() {
 	HKEY hk;
 	TCHAR Buf[512];
@@ -948,7 +687,7 @@ string WinUtil::makeMagnet(const TTHValue& aHash, const string& aFile, int64_t a
 
 	if(stricmp(app.c_str(), Buf) != 0) {
 		if (::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\dchub"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL))  {
-			LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_DCHUB), LogMessage::SEV_ERROR);
+			LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_DCHUB), LogMessage::SEV_ERROR, STRING(APPLICATION));
 			return;
 		}
 	
@@ -987,7 +726,7 @@ string WinUtil::makeMagnet(const TTHValue& aHash, const string& aFile, int64_t a
 
 	 if(stricmp(app.c_str(), Buf) != 0) {
 		 if (::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\adc"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL))  {
-			 LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_ADC), LogMessage::SEV_ERROR);
+			 LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_ADC), LogMessage::SEV_ERROR, STRING(APPLICATION));
 			 return;
 		 }
 
@@ -1030,7 +769,7 @@ void WinUtil::registerADCShubHandler() {
 	
 	if(stricmp(app.c_str(), Buf) != 0) {
 		if(::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\adcs"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL))  {
-			 LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_ADC), LogMessage::SEV_ERROR);
+			 LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_ADC), LogMessage::SEV_ERROR, STRING(APPLICATION));
 			return;
 			}
 
@@ -1075,7 +814,7 @@ void WinUtil::registerMagnetHandler() {
 	if(SETTING(MAGNET_REGISTER) && (strnicmp(openCmd, appName, appName.size()) != 0)) {
 		SHDeleteKey(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\magnet"));
 		if (::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\magnet"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL))  {
-			LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_MAGNET), LogMessage::SEV_ERROR);
+			LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_MAGNET), LogMessage::SEV_ERROR, STRING(APPLICATION));
 			return;
 		}
 		::RegSetValueEx(hk, NULL, NULL, REG_SZ, (LPBYTE)CTSTRING(MAGNET_SHELL_DESC), sizeof(TCHAR)*(TSTRING(MAGNET_SHELL_DESC).length()+1));
@@ -1095,122 +834,9 @@ void WinUtil::unRegisterMagnetHandler() {
 	SHDeleteKey(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\magnet"));
 }
 
-void WinUtil::openLink(const tstring& url) {
-	parseDBLClick(url);
-}
-
-bool WinUtil::parseDBLClick(const tstring& str) {
-
-	if (str.empty())
-		return false;
-
-	auto url = Text::fromT(str);
-
-	if (AirUtil::isHubLink(url)) {
-		connectHub(url);
-		return true;
-	}
-
-	if(AirUtil::isRelease(url)) {
-		WinUtil::search(Text::toT(url));
-		return true;
-	} else if(AirUtil::stringRegexMatch(AirUtil::getLinkUrl(), url)) {
-		if(str.find(_T("magnet:?")) != tstring::npos) {
-			parseMagnetUri(str, HintedUser());
-			return true;
-		}
-		::ShellExecute(NULL, NULL, Text::toT(url).c_str(), NULL, NULL, SW_SHOWNORMAL);
-		return true;
-	} else if (str.size() > 3 && (str.substr(1, 2) == _T(":\\")) || (str.substr(0, 2) == _T("\\\\"))) {
-		::ShellExecute(NULL, NULL, str.c_str(), NULL, NULL, SW_SHOWNORMAL);
-		return true;
-	}
-
-	return false;
-}
-
 void WinUtil::SetIcon(HWND hWnd, int aDefault, bool big) {
 	int size = big ? ::GetSystemMetrics(SM_CXICON) : ::GetSystemMetrics(SM_CXSMICON);
 	::SendMessage(hWnd, WM_SETICON, big ? ICON_BIG : ICON_SMALL, (LPARAM)GET_ICON(aDefault, size));
-}
-
-void WinUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aUser, RichTextBox* ctrlEdit /*nullptr*/) {
-	if (strnicmp(aUrl.c_str(), _T("magnet:?"), 8) == 0) {
-		Magnet m = Magnet(Text::fromT(aUrl));
-		if(!m.hash.empty() && Encoder::isBase32(m.hash.c_str())){
-			auto sel = SETTING(MAGNET_ACTION);
-			BOOL remember = false;
-			if (SETTING(MAGNET_ASK)) {
-				CTaskDialog taskdlg;
-
-				tstring msg = CTSTRING_F(MAGNET_INFOTEXT, Text::toT(m.fname) % Util::formatBytesW(m.fsize));
-				taskdlg.SetContentText(msg.c_str());
-				TASKDIALOG_BUTTON buttons[] =
-				{
-					{ IDC_MAGNET_OPEN, CTSTRING(DOWNLOAD_OPEN), },
-					{ IDC_MAGNET_QUEUE, CTSTRING(SAVE_DEFAULT), },
-					{ IDC_MAGNET_SEARCH, CTSTRING(MAGNET_DLG_SEARCH), },
-				};
-				taskdlg.ModifyFlags(0, TDF_ALLOW_DIALOG_CANCELLATION | TDF_USE_COMMAND_LINKS);
-				taskdlg.SetWindowTitle(CTSTRING(MAGNET_DLG_TITLE));
-				taskdlg.SetCommonButtons(TDCBF_CANCEL_BUTTON);
-
-
-				taskdlg.SetButtons(buttons, _countof(buttons));
-				//taskdlg.SetExpandedInformationText(_T("More information"));
-				taskdlg.SetMainIcon(IDI_MAGNET);
-				taskdlg.SetVerificationText(CTSTRING(MAGNET_DLG_REMEMBER));
-
-				//if (!aUser.user)
-				//	taskdlg.EnableButton(0, FALSE);
-
-                taskdlg.DoModal(mainWnd, &sel, 0, &remember);
-				if (sel == IDCANCEL) {
-					return;
-				}
-
-				sel = sel - IDC_MAGNET_SEARCH;
-				if (remember) {
-					SettingsManager::getInstance()->set(SettingsManager::MAGNET_ASK,  false);
-					SettingsManager::getInstance()->set(SettingsManager::MAGNET_ACTION, sel);
-				}
-			}
-
-			try {
-				if (sel == SettingsManager::MAGNET_SEARCH) {
-					WinUtil::searchHash(m.getTTH(), m.fname, m.fsize);
-				} else if (sel == SettingsManager::MAGNET_DOWNLOAD) {
-					if (ctrlEdit) {
-						ctrlEdit->handleDownload(SETTING(DOWNLOAD_DIRECTORY), Priority::DEFAULT, false);
-					} else {
-						addFileDownload(SETTING(DOWNLOAD_DIRECTORY) + m.fname, m.fsize, m.getTTH(), aUser, 0);
-					}
-				} else if (sel == SettingsManager::MAGNET_OPEN) {
-					openFile(m.fname, m.fsize, m.getTTH(), aUser, false);
-				}
-			} catch(const Exception& e) {
-				LogManager::getInstance()->message(e.getError(), LogMessage::SEV_ERROR);
-			}
-		} else {
-			MessageBox(mainWnd, CTSTRING(MAGNET_DLG_TEXT_BAD), CTSTRING(MAGNET_DLG_TITLE), MB_OK | MB_ICONEXCLAMATION);
-		}
-	}
-}
-
-bool WinUtil::openFile(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsClientView) noexcept {
-	if (aIsClientView && (!SETTING(NFO_EXTERNAL) || Util::getFileExt(aFileName) != ".nfo")) {
-		return ViewFileManager::getInstance()->addUserFileNotify(aFileName, aSize, aTTH, aUser, true) ? true : false;
-	}
-
-	try {
-		QueueManager::getInstance()->addOpenedItem(aFileName, aSize, aTTH, aUser, false, true);
-		return true;
-	} catch (const Exception& e) {
-		auto nicks = aUser.user ? ClientManager::getInstance()->getFormatedNicks(aUser) : STRING(UNKNOWN);
-		LogManager::getInstance()->message(STRING_F(ADD_FILE_ERROR, aFileName % nicks % e.getError()), LogMessage::SEV_NOTIFY);
-	}
-
-	return false;
 }
 
 int WinUtil::textUnderCursor(POINT p, CEdit& ctrl, tstring& x) {
@@ -1301,30 +927,6 @@ double WinUtil::toBytes(TCHAR* aSize) {
 	}
 }
 
-tstring WinUtil::getNicks(const CID& cid) {
-	return Text::toT(Util::listToString(ClientManager::getInstance()->getNicks(cid)));
-}
-
-tstring WinUtil::getNicks(const HintedUser& user) {
-	return Text::toT(ClientManager::getInstance()->getFormatedNicks(user));
-}
-
-static pair<tstring, bool> formatHubNames(const StringList& hubs) {
-	if(hubs.empty()) {
-		return make_pair(CTSTRING(OFFLINE), false);
-	} else {
-		return make_pair(Text::toT(Util::listToString(hubs)), true);
-	}
-}
-
-pair<tstring, bool> WinUtil::getHubNames(const CID& cid) {
-	return formatHubNames(ClientManager::getInstance()->getHubNames(cid));
-}
-
-tstring WinUtil::getHubNames(const HintedUser& aUser) {
-	return Text::toT(ClientManager::getInstance()->getFormatedHubNames(aUser));
-}
-
 void WinUtil::getContextMenuPos(CListViewCtrl& aList, POINT& aPt) {
 	int pos = aList.GetNextItem(-1, LVNI_SELECTED | LVNI_FOCUSED);
 	if(pos >= 0) {
@@ -1378,22 +980,6 @@ bool WinUtil::isOnScrollbar(HWND m_hWnd, POINT& pt) {
 	return false;
 }
 
-void WinUtil::openFile(const tstring& file) {
-	MainFrame::getMainFrame()->addThreadedTask([=] {
-		if (Util::fileExists(Text::fromT(file)))
-			::ShellExecute(NULL, NULL, Util::formatPathW(file).c_str(), NULL, NULL, SW_SHOWNORMAL);
-	});
-}
-
-void WinUtil::openFolder(const tstring& file) {
-	if(file.empty() )
-		return;
-
-	MainFrame::getMainFrame()->addThreadedTask([=] {
-		if(Util::fileExists(Text::fromT(file)))
-			::ShellExecute(NULL, Text::toT("explore").c_str(), Util::formatPathW(Util::getFilePath(file)).c_str(), NULL, NULL, SW_SHOWNORMAL);
-	});
-}
 void WinUtil::FlashWindow() {
 	if( GetForegroundWindow() != WinUtil::mainWnd ) {
 		DWORD flashCount;
@@ -1406,11 +992,6 @@ void WinUtil::FlashWindow() {
 		flash.dwTimeout = 0;
 
 		FlashWindowEx(&flash);
-	}
-}
-void WinUtil::ClearPreviewMenu(OMenu &previewMenu){
-	while(previewMenu.GetMenuItemCount() > 0) {
-		previewMenu.RemoveMenu(0, MF_BYPOSITION);
 	}
 }
 
@@ -1463,182 +1044,6 @@ void WinUtil::saveReBarSettings(HWND bar) {
 	SettingsManager::getInstance()->set(SettingsManager::TOOLBAR_POS, toolbarSettings);
 }
 
-
-void WinUtil::appendPreviewMenu(OMenu& parent, const string& aTarget) {
-	auto previewMenu = parent.createSubMenu(TSTRING(PREVIEW), true);
-
-	auto lst = PreviewAppManager::getInstance()->getPreviewApps();
-	auto ext = Util::getFileExt(aTarget);
-	if (ext.empty()) return;
-
-	ext = ext.substr(1); //remove the dot
-
-	for(auto& i: lst){
-		auto tok = StringTokenizer<string>(i->getExtension(), ';').getTokens();
-
-		if (tok.size() == 0 || any_of(tok.begin(), tok.end(), [&ext](const string& si) { return _stricmp(ext.c_str(), si.c_str())==0; })) {
-
-			string application = i->getApplication();
-			string arguments = i->getArguments();
-
-			previewMenu->appendItem(Text::toT((i->getName())), [=] {
-				string tempTarget = QueueManager::getInstance()->getTempTarget(aTarget);
-				ParamMap ucParams;				
-	
-				ucParams["file"] = "\"" + tempTarget + "\"";
-				ucParams["dir"] = "\"" + Util::getFilePath(tempTarget) + "\"";
-
-				::ShellExecute(NULL, NULL, Text::toT(application).c_str(), Text::toT(Util::formatParams(arguments, ucParams)).c_str(), Text::toT(Util::getFilePath(tempTarget)).c_str(), SW_SHOWNORMAL);
-			});
-		}
-	}
-}
-
-template<typename T> 
-static void appendPrioMenu(OMenu& aParent, const vector<T>& aBase, bool isBundle, function<void (Priority aPrio)> prioF, function<void ()> autoPrioF) {
-	if (aBase.empty())
-		return;
-
-	tstring text;
-
-	if (isBundle) {
-		text = aBase.size() == 1 ? TSTRING(SET_BUNDLE_PRIORITY) : TSTRING(SET_BUNDLE_PRIORITIES);
-	} else {
-		text = aBase.size() == 1 ? TSTRING(SET_FILE_PRIORITY) : TSTRING(SET_FILE_PRIORITIES);
-	}
-
-	Priority p = Priority::DEFAULT;
-	for (auto& aItem: aBase) {
-		if (aItem->getPriority() != p && p != Priority::DEFAULT) {
-			p = Priority::DEFAULT;
-			break;
-		}
-
-		p = aItem->getPriority();
-	}
-
-	auto priorityMenu = aParent.createSubMenu(text, true);
-
-	int curItem = 0;
-	auto appendItem = [=, &curItem](const tstring& aString, Priority aPrio) {
-		curItem++;
-		priorityMenu->appendItem(aString, [=] { 		
-			prioF(aPrio);
-		}, OMenu::FLAG_THREADED | (p == aPrio ? OMenu::FLAG_CHECKED /*| OMenu::FLAG_DISABLED*/ : 0));
-	};
-
-	if (isBundle)
-		appendItem(TSTRING(PAUSED_FORCED), Priority::PAUSED_FORCE);
-	appendItem(TSTRING(PAUSED), Priority::PAUSED);
-	appendItem(TSTRING(LOWEST), Priority::LOWEST);
-	appendItem(TSTRING(LOW), Priority::LOW);
-	appendItem(TSTRING(NORMAL), Priority::NORMAL);
-	appendItem(TSTRING(HIGH), Priority::HIGH);
-	appendItem(TSTRING(HIGHEST), Priority::HIGHEST);
-
-	curItem++;
-	//priorityMenu->appendSeparator();
-
-	auto usingAutoPrio = all_of(aBase.begin(), aBase.end(), [](const T& item) { return item->getAutoPriority(); });
-	priorityMenu->appendItem(TSTRING(AUTO), autoPrioF, OMenu::FLAG_THREADED | (usingAutoPrio ? OMenu::FLAG_CHECKED : 0));
-}
-	
-void WinUtil::appendBundlePrioMenu(OMenu& aParent, const BundleList& aBundles) {
-	auto prioF = [=](Priority aPrio) {
-		for (auto& b: aBundles)
-			QueueManager::getInstance()->setBundlePriority(b->getToken(), aPrio);
-	};
-
-	auto autoPrioF = [=] {
-		for (auto& b: aBundles)
-			QueueManager::getInstance()->toggleBundleAutoPriority(b->getToken());
-	};
-
-	appendPrioMenu<BundlePtr>(aParent, aBundles, true, prioF, autoPrioF);
-}
-
-void WinUtil::appendBundlePauseMenu(OMenu& aParent, const BundleList& aBundles) {
-	
-	//Maybe move this to priority menu??
-	auto pauseMenu = aParent.createSubMenu(TSTRING(PAUSE_BUNDLE_FOR), true);
-	auto pauseTimes = { 5, 10, 30, 60, 90, 120, 180 };
-	for (auto t : pauseTimes) {
-		pauseMenu->appendItem(Util::toStringW(t) + _T(" ") + TSTRING(MINUTES_LOWER), [=] {
-			for (auto b : aBundles)
-				QueueManager::getInstance()->setBundlePriority(b, Priority::PAUSED_FORCE, false, GET_TIME() + (t * 60));
-		}, OMenu::FLAG_THREADED);
-	}
-	pauseMenu->appendSeparator();
-	pauseMenu->appendItem(TSTRING(CUSTOM), [=] {
-		LineDlg dlg;
-		dlg.title = TSTRING(PAUSE_BUNDLE_FOR);
-		dlg.description = CTSTRING(PAUSE_TIME);
-		if (dlg.DoModal() == IDOK) {
-			for (auto b : aBundles)
-				QueueManager::getInstance()->setBundlePriority(b, Priority::PAUSED_FORCE, false, GET_TIME() + (Util::toUInt(Text::fromT(dlg.line)) * 60));
-		}
-	}, OMenu::FLAG_THREADED);
-
-}
-
-
-void WinUtil::appendFilePrioMenu(OMenu& aParent, const QueueItemList& aFiles) {
-	auto prioF = [=](Priority aPrio) {
-		for (auto& qi: aFiles)
-			QueueManager::getInstance()->setQIPriority(qi->getTarget(), aPrio);
-	};
-
-	auto autoPrioF = [=] {
-		for (auto& qi: aFiles)
-			QueueManager::getInstance()->setQIAutoPriority(qi->getTarget());
-	};
-
-	appendPrioMenu<QueueItemPtr>(aParent, aFiles, false, prioF, autoPrioF);
-}
-
-bool WinUtil::shutDown(int action) {
-	// Prepare for shutdown
-	UINT iForceIfHung = 0;
-	OSVERSIONINFO osvi;
-	osvi.dwOSVersionInfoSize = sizeof(osvi);
-	if (GetVersionEx(&osvi) != 0 && osvi.dwPlatformId == VER_PLATFORM_WIN32_NT) {
-		iForceIfHung = 0x00000010;
-		HANDLE hToken;
-		OpenProcessToken(GetCurrentProcess(), (TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY), &hToken);
-
-		LUID luid;
-		LookupPrivilegeValue(NULL, SE_SHUTDOWN_NAME, &luid);
-		
-		TOKEN_PRIVILEGES tp;
-		tp.PrivilegeCount = 1;
-		tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
-		tp.Privileges[0].Luid = luid;
-		AdjustTokenPrivileges(hToken, FALSE, &tp, 0, (PTOKEN_PRIVILEGES)NULL, (PDWORD)NULL);
-		CloseHandle(hToken);
-	}
-
-	// Shutdown
-	switch(action) {
-		case 0: { action = EWX_POWEROFF; break; }
-		case 1: { action = EWX_LOGOFF; break; }
-		case 2: { action = EWX_REBOOT; break; }
-		case 3: { SetSuspendState(false, false, false); return true; }
-		case 4: { SetSuspendState(true, false, false); return true; }
-		case 5: { 
-			typedef bool (CALLBACK* LPLockWorkStation)(void);
-			LPLockWorkStation _d_LockWorkStation = (LPLockWorkStation)GetProcAddress(LoadLibrary(_T("user32")), "LockWorkStation");
-			_d_LockWorkStation();
-			return true;
-		}
-	}
-
-	if (ExitWindowsEx(action | iForceIfHung, 0) == 0) {
-		return false;
-	} else {
-		return true;
-	}
-}
-
 int WinUtil::getFirstSelectedIndex(CListViewCtrl& list) {
 	for(int i = 0; i < list.GetItemCount(); ++i) {
 		if (list.GetItemState(i, LVIS_SELECTED) == LVIS_SELECTED) {
@@ -1657,49 +1062,6 @@ int WinUtil::setButtonPressed(int nID, bool bPressed /* = true */) {
 	MainFrame::getMainFrame()->getToolBar().CheckButton(nID, bPressed);
 
 	return 0;
-}
-
-
-
-void WinUtil::search(const tstring& aSearch, bool searchDirectory) {
-	tstring searchTerm = aSearch;
-	searchTerm.erase(std::remove(searchTerm.begin(), searchTerm.end(), '\r'), searchTerm.end());
-	searchTerm.erase(std::remove(searchTerm.begin(), searchTerm.end(), '\n'), searchTerm.end());
-	if(!searchTerm.empty()) {
-		SearchFrame::openWindow(searchTerm, 0, Search::SIZE_DONTCARE, searchDirectory ? SEARCH_TYPE_DIRECTORY : SEARCH_TYPE_ANY);
-	}
-}
-
-void WinUtil::appendSearchMenu(OMenu& aParent, function<void (const WebShortcut* ws)> f, bool appendTitle /*true*/) {
-	OMenu* searchMenu = aParent.createSubMenu(TSTRING(SEARCH_SITES), appendTitle);
-	for(auto ws: WebShortcuts::getInstance()->list) {
-		searchMenu->appendItem(Text::toT(ws->name), [=] { f(ws); });
-	}
-}
-
-void WinUtil::appendSearchMenu(OMenu& aParent, const string& aAdcPath, bool aGetReleaseDir /*true*/, bool aAppendTitle /*true*/) {
-	appendSearchMenu(aParent, [=](const WebShortcut* ws) { searchSite(ws, aAdcPath, aGetReleaseDir); }, aAppendTitle);
-}
-
-void WinUtil::searchSite(const WebShortcut* ws, const string& aAdcSearchPath, bool getReleaseDir) {
-	if(!ws)
-		return;
-
-	auto searchTerm = getReleaseDir ? AirUtil::getAdcReleaseDir(aAdcSearchPath, true) : Util::getAdcLastDir(aAdcSearchPath);
-
-	if(ws->clean && !aAdcSearchPath.empty()) {
-		searchTerm = AirUtil::getTitle(searchTerm);
-	}
-	
-	if (!searchTerm.empty()) {
-		if (ws->url.find("%s") != string::npos) {
-			WinUtil::openLink(Text::toT(str(boost::format(ws->url) % Util::encodeURI(searchTerm))));
-		} else {
-			WinUtil::openLink(Text::toT(ws->url + Util::encodeURI(searchTerm)));
-		}
-	} else {
-		WinUtil::openLink(Text::toT(ws->url));
-	}
 }
 
 void WinUtil::drawProgressBar(HDC& drawDC, CRect& rc, COLORREF clr, COLORREF textclr, COLORREF backclr, const tstring& aText, 
@@ -1793,20 +1155,6 @@ void WinUtil::drawProgressBar(HDC& drawDC, CRect& rc, COLORREF clr, COLORREF tex
 
 }
 
-void WinUtil::removeBundle(QueueToken aBundleToken) {
-	BundlePtr aBundle = QueueManager::getInstance()->findBundle(aBundleToken);
-	if (aBundle) {
-		if(::MessageBox(0, CTSTRING_F(CONFIRM_REMOVE_DIR_BUNDLE, Text::toT(aBundle->getName())), Text::toT(shortVersionString).c_str(), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
-			return;
-		}
-
-		MainFrame::getMainFrame()->addThreadedTask([=] {
-			auto b = aBundle;
-			QueueManager::getInstance()->removeBundle(b, false);
-		});
-	}
-}
-
 /* Only returns the text color */
 COLORREF WinUtil::getDupeColor(DupeType aType) {
 	if (aType == DUPE_SHARE_FULL) {
@@ -1859,105 +1207,6 @@ COLORREF WinUtil::blendColors(COLORREF aForeGround, COLORREF aBackGround) {
 	return RGB(r, g, b);
 }
 
-void WinUtil::viewLog(const string& path, bool aHistory /*false*/) {
-	if (aHistory) {
-		auto aText = LogManager::readFromEnd(path, SETTING(LOG_LINES), Util::convertSize(64, Util::KB));
-		if(!aText.empty())
-			TextFrame::viewText(Util::getFileName(path), aText, true, true);
-	} else if(SETTING(OPEN_LOGS_INTERNAL)) {
-		TextFrame::openFile(path);
-	} else {
-		ShellExecute(NULL, NULL, Text::toT(path).c_str(), NULL, NULL, SW_SHOWNORMAL);
-	}
-}
-
-time_t WinUtil::fromSystemTime(const SYSTEMTIME * pTime) {
-	struct tm tm;
-	memset(&tm, 0, sizeof(tm));
-
-	tm.tm_year = pTime->wYear - 1900;
-	tm.tm_mon = pTime->wMonth - 1;
-	tm.tm_mday = pTime->wDay;
-
-	tm.tm_hour = pTime->wHour;
-	tm.tm_min = pTime->wMinute;
-	tm.tm_sec = pTime->wSecond;
-	tm.tm_wday = pTime->wDayOfWeek;
-
-	return mktime(&tm);
-}
-
-void WinUtil::toSystemTime(const time_t aTime, SYSTEMTIME* sysTime) {
-	tm _tm;
-	localtime_s(&_tm, &aTime);
-
-	sysTime->wYear = _tm.tm_year + 1900;
-	sysTime->wMonth = _tm.tm_mon + 1;
-	sysTime->wDay = _tm.tm_mday;
-
-	sysTime->wHour = _tm.tm_hour;
-
-	sysTime->wMinute = _tm.tm_min;
-	sysTime->wSecond = _tm.tm_sec;
-	sysTime->wDayOfWeek = _tm.tm_wday;
-	sysTime->wMilliseconds = 0;
-}
-
-void WinUtil::appendLanguageMenu(CComboBoxEx& ctrlLanguage) noexcept {
-	ctrlLanguage.SetImageList(ResourceLoader::flagImages);
-	int count = 0;
-	
-	const auto languages = Localization::getLanguages();
-	for (const auto& l: languages){
-		COMBOBOXEXITEM cbli =  { CBEIF_TEXT | CBEIF_IMAGE | CBEIF_SELECTEDIMAGE };
-		CString str = Text::toT(l.getLanguageName()).c_str();
-		cbli.iItem = count++;
-		cbli.pszText = (LPTSTR)(LPCTSTR) str;
-		cbli.cchTextMax = str.GetLength();
-
-		auto flagIndex = Localization::getFlagIndexByCode(l.getCountryFlagCode());
-		cbli.iImage = flagIndex;
-		cbli.iSelectedImage = flagIndex;
-		ctrlLanguage.InsertItem(&cbli);
-	}
-
-	auto cur = Localization::getLanguageIndex(languages);
-	if (cur) {
-		ctrlLanguage.SetCurSel(*cur);
-	}
-}
-
-
-void WinUtil::setLanguage(int aLanguageIndex) noexcept {
-	auto languages = Localization::getLanguages();
-	if (aLanguageIndex < languages.size()) {
-		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, languages[aLanguageIndex].getLanguageSettingValue());
-	}
-}
-
-void WinUtil::appendHistory(CComboBox& ctrlCombo, SettingsManager::HistoryType aType) {
-	// Add new items to the history dropdown list
-	while (ctrlCombo.GetCount())
-		ctrlCombo.DeleteString(0);
-
-	const auto& lastSearches = SettingsManager::getInstance()->getHistory(aType);
-	for(const auto& s: lastSearches) {
-		ctrlCombo.InsertString(0, Text::toT(s).c_str());
-	}
-}
-
-string WinUtil::addHistory(CComboBox& ctrlCombo, SettingsManager::HistoryType aType) {
-	string ret;
-	TCHAR *buf = new TCHAR[ctrlCombo.GetWindowTextLength()+1];
-	ctrlCombo.GetWindowText(buf, ctrlCombo.GetWindowTextLength()+1);
-	ret = Text::fromT(buf);
-	if(!ret.empty() && SettingsManager::getInstance()->addToHistory(ret, aType))
-		appendHistory(ctrlCombo, aType);
-
-	delete[] buf;
-	return ret;
-}
-
 void WinUtil::addCue(HWND hwnd, LPCWSTR text, BOOL drawFocus) {
 	Edit_SetCueBannerTextFocused(hwnd, text, drawFocus);
 }
@@ -1967,7 +1216,7 @@ void WinUtil::addUpdate(const string& aUpdater, bool aTesting) noexcept {
 	auto appPath = Util::getAppFilePath();
 
 	auto updateCmd = Text::toT("/update \"" + appPath + "\\\""); // The extra end slash is required!
-	if (isElevated()) {
+	if (SystemUtil::isElevated()) {
 		updateCmd += _T(" /elevation");
 	}
 
@@ -1996,79 +1245,6 @@ void WinUtil::showPopup(tstring szMsg, tstring szTitle, DWORD dwInfoFlags, bool 
 	MainFrame::getMainFrame()->ShowPopup(szMsg, szTitle, dwInfoFlags, force); 
 }
 
-bool WinUtil::isElevated() {
-	BOOL fRet = FALSE;
-	HANDLE hToken = NULL;
-	if( OpenProcessToken( GetCurrentProcess( ),TOKEN_QUERY,&hToken ) ) {
-		TOKEN_ELEVATION Elevation;
-		DWORD cbSize = sizeof( TOKEN_ELEVATION );
-		if( GetTokenInformation( hToken, TokenElevation, &Elevation, sizeof( Elevation ), &cbSize ) ) {
-			fRet = Elevation.TokenIsElevated;
-		}
-	}
-	if( hToken ) {
-		CloseHandle( hToken );
-	}
-	return fRet ? true : false;
-}
-
-bool WinUtil::onConnSpeedChanged(WORD wNotifyCode, WORD /*wID*/, HWND hWndCtl) {
-	tstring speed;
-	speed.resize(1024);
-	speed.resize(::GetWindowText(hWndCtl, &speed[0], 1024));
-	if (!speed.empty() && wNotifyCode != CBN_SELENDOK) {
-		boost::wregex reg;
-		if(speed[speed.size() -1] == '.')
-			reg.assign(_T("(\\d+\\.)"));
-		else
-			reg.assign(_T("(\\d+(\\.\\d+)?)"));
-		if (!regex_match(speed, reg)) {
-			CComboBox tmp;
-			tmp.Attach(hWndCtl);
-			DWORD dwSel;
-			if ((dwSel = tmp.GetEditSel()) != CB_ERR && dwSel > 0) {
-				auto it = speed.begin() +  HIWORD(dwSel)-1;
-				speed.erase(it);
-				tmp.SetEditSel(0,-1);
-				tmp.SetWindowText(speed.c_str());
-				tmp.SetEditSel(HIWORD(dwSel)-1, HIWORD(dwSel)-1);
-				tmp.Detach();
-				return false;
-			}
-		}
-	}
-
-	return true;
-}
-
-void WinUtil::appendSpeedCombo(CComboBox& aCombo, SettingsManager::StrSetting aSetting) {
-	auto curSpeed = SettingsManager::getInstance()->get(aSetting);
-	bool found=false;
-
-	//add the speed strings	
-	for(const auto& speed: SettingsManager::connectionSpeeds) {
-		if (Util::toDouble(curSpeed) < Util::toDouble(speed) && !found) {
-			aCombo.AddString(Text::toT(curSpeed).c_str());
-			found=true;
-		} else if (curSpeed == speed) {
-			found=true;
-		}
-		aCombo.AddString(Text::toT(speed).c_str());
-	}
-
-	//set current upload speed setting
-	aCombo.SetCurSel(aCombo.FindString(0, Text::toT(curSpeed).c_str()));
-}
-
-void WinUtil::appendDateUnitCombo(CComboBox& ctrlDateUnit, int aSel /*= 1*/) {
-	ctrlDateUnit.AddString(CTSTRING(HOURS));
-	ctrlDateUnit.AddString(CTSTRING(DAYS));
-	ctrlDateUnit.AddString(CTSTRING(WEEKS));
-	ctrlDateUnit.AddString(CTSTRING(MONTHS));
-	ctrlDateUnit.AddString(CTSTRING(YEARS));
-	ctrlDateUnit.SetCurSel(aSel);
-}
-
 time_t WinUtil::parseDate(CEdit& ctrlDate, CComboBox& ctrlDateUnit) {
 	tstring date(ctrlDate.GetWindowTextLength() + 1, _T('\0'));
 	ctrlDate.GetWindowText(&date[0], date.size());
@@ -2095,21 +1271,6 @@ time_t WinUtil::parseDate(CEdit& ctrlDate, CComboBox& ctrlDateUnit) {
 	return ldate;
 }
 
-void WinUtil::appendSizeCombos(CComboBox& aUnitCombo, CComboBox& aModeCombo, int aUnitSel /*= 2*/, int aModeSel /*= 1*/) {
-	aUnitCombo.AddString(CTSTRING(B));
-	aUnitCombo.AddString(CTSTRING(KiB));
-	aUnitCombo.AddString(CTSTRING(MiB));
-	aUnitCombo.AddString(CTSTRING(GiB));
-	aUnitCombo.SetCurSel(aUnitSel);
-
-
-	aModeCombo.AddString(CTSTRING(NORMAL));
-	aModeCombo.AddString(CTSTRING(AT_LEAST));
-	aModeCombo.AddString(CTSTRING(AT_MOST));
-	aModeCombo.AddString(CTSTRING(EXACT_SIZE));
-	aModeCombo.SetCurSel(aModeSel);
-}
-
 int64_t WinUtil::parseSize(CEdit& ctrlSize, CComboBox& ctrlSizeMode) {
 	tstring size(ctrlSize.GetWindowTextLength() + 1, _T('\0'));
 	ctrlSize.GetWindowText(&size[0], size.size());
@@ -2132,6 +1293,18 @@ tstring WinUtil::getEditText(CEdit& edit) {
 	tstring tmp;
 	tmp.resize(edit.GetWindowTextLength());
 	tmp.resize(edit.GetWindowText(&tmp[0], tmp.size() + 1));
+	return tmp;
+}
+
+tstring WinUtil::getComboText(CComboBox& aCombo, WORD wNotifyCode) {
+	tstring tmp;
+	if (wNotifyCode == CBN_SELENDOK) {
+		tmp.resize(aCombo.GetLBTextLen(aCombo.GetCurSel()));
+		tmp.resize(aCombo.GetLBText(aCombo.GetCurSel(), &tmp[0]));
+	} else {
+		tmp.resize(aCombo.GetWindowTextLength());
+		tmp.resize(aCombo.GetWindowText(&tmp[0], tmp.size() + 1));
+	}
 	return tmp;
 }
 
@@ -2170,108 +1343,6 @@ void WinUtil::setUserFieldLimits(HWND hWnd) {
 	tmp.Detach();
 }
 
-LRESULT WinUtil::onAddressFieldChar(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled) {
-	return onUserFieldChar(wNotifyCode, wID, hWndCtl, bHandled);
-}
-
-LRESULT WinUtil::onUserFieldChar(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, BOOL& bHandled) {
-	TCHAR buf[1024];
-
-	::GetWindowText(hWndCtl, buf, 1024);
-	tstring old = buf;
-
-
-	// Strip '$', '|', '<', '>' and ' ' from text
-	TCHAR *b = buf, *f = buf, c;
-	while( (c = *b++) != 0 )
-	{
-		if(c != '$' && c != '|' && (wID == IDC_USERDESC || c != ' ') && ( (wID != IDC_NICK && wID != IDC_USERDESC && wID != IDC_EMAIL) || (c != '<' && c != '>') ) )
-			*f++ = c;
-	}
-
-	*f = '\0';
-
-	if(old != buf)
-	{
-		// Something changed; update window text without changing cursor pos
-		CEdit tmp;
-		tmp.Attach(hWndCtl);
-		int start, end;
-		tmp.GetSel(start, end);
-		tmp.SetWindowText(buf);
-		if(start > 0) start--;
-		if(end > 0) end--;
-		tmp.SetSel(start, end);
-		tmp.Detach();
-	}
-
-	bHandled = FALSE;
-	return FALSE;
-}
-
-void WinUtil::getProfileConflicts(HWND aParent, int aProfile, ProfileSettingItem::List& conflicts) {
-	conflicts.clear();
-
-	// a custom set value that differs from the one used by the profile? don't replace those without confirmation
-	for (const auto& newSetting: SettingsManager::profileSettings[aProfile]) {
-		if (newSetting.isSet() && !newSetting.isProfileCurrent()) {
-			conflicts.push_back(newSetting);
-		}
-	}
-
-	if (!conflicts.empty()) {
-		string msg;
-		for (const auto& setting: conflicts) {
-			msg += STRING_F(SETTING_NAME_X, setting.getDescription()) + "\r\n";
-			msg += STRING_F(CURRENT_VALUE_X, setting.currentToString()) + "\r\n";
-			msg += STRING_F(PROFILE_VALUE_X, setting.profileToString()) + "\r\n\r\n";
-		}
-
-		CTaskDialog taskdlg;
-
-		tstring tmp1 = TSTRING_F(MANUALLY_CONFIGURED_MSG, conflicts.size() % Text::toT(SettingsManager::getInstance()->getProfileName(aProfile)).c_str());
-		taskdlg.SetContentText(tmp1.c_str());
-
-		auto tmp2 = Text::toT(msg);
-		taskdlg.SetExpandedInformationText(tmp2.c_str());
-		taskdlg.SetExpandedControlText(CTSTRING(SHOW_CONFLICTING));
-		TASKDIALOG_BUTTON buttons[] =
-		{
-			{ IDC_USE_PROFILE, CTSTRING(USE_PROFILE_SETTINGS), },
-			{ IDC_USE_OWN, CTSTRING(USE_CURRENT_SETTINGS), },
-		};
-		taskdlg.ModifyFlags(0, TDF_USE_COMMAND_LINKS | TDF_EXPAND_FOOTER_AREA);
-		taskdlg.SetWindowTitle(CTSTRING(MANUALLY_CONFIGURED_DETECTED));
-		taskdlg.SetCommonButtons(TDCBF_CANCEL_BUTTON);
-		taskdlg.SetMainIcon(TD_INFORMATION_ICON);
-
-		taskdlg.SetButtons(buttons, _countof(buttons));
-
-		int sel = 0;
-		taskdlg.DoModal(aParent, &sel, 0, 0);
-		if (sel == IDC_USE_OWN) {
-			conflicts.clear();
-		}
-	}
-}
-
-void WinUtil::addFileDownload(const string& aTarget, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, time_t aDate, Flags::MaskType aFlags /*0*/, Priority aPriority /*DEFAULT*/) {
-	MainFrame::getMainFrame()->addThreadedTask([=] {
-		try {
-			QueueManager::getInstance()->createFileBundle(aTarget, aSize, aTTH, aUser, aDate, aFlags, aPriority);
-		} catch (const Exception& e) {
-			auto nick = aUser ? Text::fromT(getNicks(aUser)) : STRING(UNKNOWN);
-			LogManager::getInstance()->message(STRING_F(ADD_FILE_ERROR, aTarget % nick % e.getError()), LogMessage::SEV_ERROR);
-		}
-	});
-}
-
-void WinUtil::connectHub(const string& aUrl) {
-	MainFrame::getMainFrame()->addThreadedTask([=] {
-		ClientManager::getInstance()->createClient(aUrl);
-	});
-}
-
 bool WinUtil::checkClientPassword() {
 	if (hasPassDlg)
 		return false;
@@ -2301,46 +1372,4 @@ tstring WinUtil::formatFileType(const string& aFileName) {
 	if (type.size() > 0 && type[0] == '.')
 		type.erase(0, 1);
 	return Text::toT(type);
-}
-
-void WinUtil::findNfo(const string& aAdcPath, const HintedUser& aUser) noexcept {
-	MainFrame::getMainFrame()->addThreadedTask([=] {
-		SearchInstance searchInstance;
-
-		auto search = make_shared<Search>(Priority::HIGH, Util::toString(Util::rand()));
-		search->maxResults = 1;
-		search->path = aAdcPath;
-		search->exts = { ".nfo" };
-		search->size = 256 * 1024;
-		search->sizeType = Search::SIZE_ATMOST;
-
-		string error;
-		if (!searchInstance.userSearch(aUser, search, error)) {
-			MainFrame::getMainFrame()->ShowPopup(Text::toT(error), Text::toT(Util::getAdcLastDir(aAdcPath)), NIIF_ERROR, true);
-			return;
-		}
-
-		for (auto i = 0; i < 5; i++) {
-			Thread::sleep(500);
-			if (searchInstance.getResultCount() > 0) {
-				break;
-			}
-		}
-
-		if (searchInstance.getResultCount() > 0) {
-			auto result = searchInstance.getResultList().front();
-			ViewFileManager::getInstance()->addUserFileNotify(result->getFileName(), result->getSize(), result->getTTH(), aUser, true);
-		} else {
-			MainFrame::getMainFrame()->ShowPopup(TSTRING(NO_NFO_FOUND), Text::toT(Util::getAdcLastDir(aAdcPath)), NIIF_INFO, true);
-		}
-	});
-}
-
-bool WinUtil::allowGetFullList(const HintedUser& aUser) noexcept {
-	if (aUser.user->isNMDC()) {
-		return true;
-	}
-
-	auto shareInfo = ClientManager::getInstance()->getShareInfo(HintedUser(aUser));
-	return shareInfo && (*shareInfo).fileCount > SETTING(FULL_LIST_DL_LIMIT);
 }

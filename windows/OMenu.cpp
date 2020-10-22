@@ -25,8 +25,6 @@
 #include "MainFrm.h"
 
 
-namespace dcpp {
-
 OMenu::~OMenu() {
 	if (::IsMenu(m_hMenu)) {
 		while(GetMenuItemCount() != 0)
@@ -316,5 +314,3 @@ LRESULT OMenu::onDrawItem(HWND /*hWnd*/, UINT /*uMsg*/, WPARAM wParam, LPARAM lP
 
 	return S_OK;
 }
-
-} // namespace dcpp

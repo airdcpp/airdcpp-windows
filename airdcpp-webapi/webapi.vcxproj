@@ -180,7 +180,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="api\ApiSettingItem.h" />
     <ClInclude Include="api\base\ApiModule.h" />
     <ClInclude Include="api\base\HierarchicalApiModule.h" />
     <ClInclude Include="api\base\HookApiModule.h" />
@@ -189,6 +188,7 @@
     <ClInclude Include="api\common\Format.h" />
     <ClInclude Include="api\common\ListViewController.h" />
     <ClInclude Include="api\common\ChatController.h" />
+    <ClInclude Include="api\common\MessageUtils.h" />
     <ClInclude Include="api\common\Property.h" />
     <ClInclude Include="api\common\PropertyFilter.h" />
     <ClInclude Include="api\common\Serializer.h" />
@@ -211,6 +211,7 @@
     <ClInclude Include="api\HubApi.h" />
     <ClInclude Include="api\HubInfo.h" />
     <ClInclude Include="api\EventApi.h" />
+    <ClInclude Include="api\MenuApi.h" />
     <ClInclude Include="api\OnlineUserUtils.h" />
     <ClInclude Include="api\platform\windows\Filesystem.h" />
     <ClInclude Include="api\PrivateChatInfo.h" />
@@ -229,7 +230,6 @@
     <ClInclude Include="api\ShareUtils.h" />
     <ClInclude Include="api\SystemApi.h" />
     <ClInclude Include="api\TransferApi.h" />
-    <ClInclude Include="api\TransferInfo.h" />
     <ClInclude Include="api\TransferUtils.h" />
     <ClInclude Include="api\UserApi.h" />
     <ClInclude Include="api\ViewFileApi.h" />
@@ -239,6 +239,8 @@
     <ClInclude Include="stdinc.h" />
     <ClInclude Include="web-server\ApiRequest.h" />
     <ClInclude Include="web-server\ApiRouter.h" />
+    <ClInclude Include="web-server\ApiSettingItem.h" />
+    <ClInclude Include="web-server\ContextMenuManager.h" />
     <ClInclude Include="web-server\Exception.h" />
     <ClInclude Include="web-server\Extension.h" />
     <ClInclude Include="web-server\ExtensionListener.h" />
@@ -270,9 +272,9 @@
     <ClCompile Include="api\common\Deserializer.cpp" />
     <ClCompile Include="api\common\FileSearchParser.cpp" />
     <ClCompile Include="api\common\Format.cpp" />
+    <ClCompile Include="api\common\MessageUtils.cpp" />
     <ClCompile Include="api\common\PropertyFilter.cpp" />
     <ClCompile Include="api\common\Serializer.cpp" />
-    <ClCompile Include="api\ApiSettingItem.cpp" />
     <ClCompile Include="api\common\SettingUtils.cpp" />
     <ClCompile Include="api\ConnectivityApi.cpp" />
     <ClCompile Include="api\ExtensionApi.cpp" />
@@ -290,6 +292,7 @@
     <ClCompile Include="api\HubApi.cpp" />
     <ClCompile Include="api\HubInfo.cpp" />
     <ClCompile Include="api\EventApi.cpp" />
+    <ClCompile Include="api\MenuApi.cpp" />
     <ClCompile Include="api\OnlineUserUtils.cpp" />
     <ClCompile Include="api\PrivateChatApi.cpp" />
     <ClCompile Include="api\PrivateChatInfo.cpp" />
@@ -330,6 +333,8 @@
     </ClCompile>
     <ClCompile Include="web-server\ApiRequest.cpp" />
     <ClCompile Include="web-server\ApiRouter.cpp" />
+    <ClCompile Include="web-server\ApiSettingItem.cpp" />
+    <ClCompile Include="web-server\ContextMenuManager.cpp" />
     <ClCompile Include="web-server\Extension.cpp" />
     <ClCompile Include="web-server\ExtensionManager.cpp" />
     <ClCompile Include="web-server\FileServer.cpp" />

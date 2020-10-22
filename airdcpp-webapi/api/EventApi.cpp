@@ -21,6 +21,10 @@
 #include <api/EventApi.h>
 #include <api/common/Deserializer.h>
 #include <api/common/Serializer.h>
+#include <api/common/MessageUtils.h>
+
+#include <web-server/Session.h>
+#include <web-server/WebServerManager.h>
 
 #include <airdcpp/LogManager.h>
 
@@ -42,9 +46,13 @@ namespace webserver {
 		LogManager::getInstance()->removeListener(this);
 	}
 
+	string EventApi::parseMessageSection(const SessionPtr& aSession) noexcept {
+		return aSession->getUser()->getUserName();
+	}
+
 	api_return EventApi::handlePostMessage(ApiRequest& aRequest) {
 		auto message = Deserializer::deserializeStatusMessage(aRequest.getRequestBody());
-		LogManager::getInstance()->message(message.first, message.second);
+		LogManager::getInstance()->message(message.first, message.second, parseMessageSection(aRequest.getSession()));
 		return websocketpp::http::status_code::no_content;
 	}
 
@@ -62,23 +70,27 @@ namespace webserver {
 		auto j = Serializer::serializeFromEnd(
 			aRequest.getRangeParam(MAX_COUNT),
 			LogManager::getInstance()->getCache().getLogMessages(),
-			Serializer::serializeLogMessage);
+			MessageUtils::serializeLogMessage
+		);
 
 		aRequest.setResponseBody(j);
 		return websocketpp::http::status_code::ok;
 	}
 
 	api_return EventApi::handleGetInfo(ApiRequest& aRequest) {
-		aRequest.setResponseBody(Serializer::serializeCacheInfo(LogManager::getInstance()->getCache(), Serializer::serializeUnreadLog));
+		aRequest.setResponseBody(MessageUtils::serializeCacheInfo(LogManager::getInstance()->getCache(), MessageUtils::serializeUnreadLog));
 		return websocketpp::http::status_code::ok;
 	}
 
 	void EventApi::on(LogManagerListener::Message, const LogMessagePtr& aMessageData) noexcept {
-		if (subscriptionActive("event_message")) {
-			send("event_message", Serializer::serializeLogMessage(aMessageData));
-		}
+		// Avoid deadlocks if the event is fired from inside a lock
+		addAsyncTask([=] {
+			if (subscriptionActive("event_message")) {
+				send("event_message", MessageUtils::serializeLogMessage(aMessageData));
+			}
 
-		onMessagesChanged();
+			onMessagesChanged();
+		});
 	}
 
 	void EventApi::onMessagesChanged() noexcept {
@@ -86,7 +98,7 @@ namespace webserver {
 			return;
 		}
 
-		send("event_counts", Serializer::serializeCacheInfo(LogManager::getInstance()->getCache(), Serializer::serializeUnreadLog));
+		send("event_counts", MessageUtils::serializeCacheInfo(LogManager::getInstance()->getCache(), MessageUtils::serializeUnreadLog));
 	}
 
 	void EventApi::on(LogManagerListener::Cleared) noexcept {

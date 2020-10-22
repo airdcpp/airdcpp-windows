@@ -30,7 +30,6 @@
 #include <boost/endian/detail/endian_store.hpp>
 #include <boost/endian/detail/endian_load.hpp>
 #include <boost/core/scoped_enum.hpp>
-#include <boost/predef/other/endian.h>
 #include <boost/static_assert.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/config.hpp>
@@ -39,7 +38,7 @@
 #include <climits>
 #include <cstring>
 
-#if defined(__BORLANDC__) || defined( __CODEGEARC__)
+#if defined(BOOST_BORLANDC) || defined(BOOST_CODEGEARC)
 # pragma pack(push, 1)
 #endif
 
@@ -100,6 +99,12 @@ namespace endian
   typedef endian_buffer<order::little, uint32_t, 32, align::yes> little_uint32_buf_at;
   typedef endian_buffer<order::little, uint64_t, 64, align::yes> little_uint64_buf_at;
 
+  // aligned floating point buffers
+  typedef endian_buffer<order::big, float, 32, align::yes>       big_float32_buf_at;
+  typedef endian_buffer<order::big, double, 64, align::yes>      big_float64_buf_at;
+  typedef endian_buffer<order::little, float, 32, align::yes>    little_float32_buf_at;
+  typedef endian_buffer<order::little, double, 64, align::yes>   little_float64_buf_at;
+
   // aligned native endian typedefs are not provided because
   // <cstdint> types are superior for this use case
 
@@ -143,47 +148,33 @@ namespace endian
   typedef endian_buffer<order::little, uint_least64_t, 56>  little_uint56_buf_t;
   typedef endian_buffer<order::little, uint_least64_t, 64>  little_uint64_buf_t;
 
-# if BOOST_ENDIAN_BIG_BYTE
   // unaligned native endian signed integer buffers
-  typedef big_int8_buf_t   native_int8_buf_t;
-  typedef big_int16_buf_t  native_int16_buf_t;
-  typedef big_int24_buf_t  native_int24_buf_t;
-  typedef big_int32_buf_t  native_int32_buf_t;
-  typedef big_int40_buf_t  native_int40_buf_t;
-  typedef big_int48_buf_t  native_int48_buf_t;
-  typedef big_int56_buf_t  native_int56_buf_t;
-  typedef big_int64_buf_t  native_int64_buf_t;
+  typedef endian_buffer<order::native, int_least8_t, 8>     native_int8_buf_t;
+  typedef endian_buffer<order::native, int_least16_t, 16>   native_int16_buf_t;
+  typedef endian_buffer<order::native, int_least32_t, 24>   native_int24_buf_t;
+  typedef endian_buffer<order::native, int_least32_t, 32>   native_int32_buf_t;
+  typedef endian_buffer<order::native, int_least64_t, 40>   native_int40_buf_t;
+  typedef endian_buffer<order::native, int_least64_t, 48>   native_int48_buf_t;
+  typedef endian_buffer<order::native, int_least64_t, 56>   native_int56_buf_t;
+  typedef endian_buffer<order::native, int_least64_t, 64>   native_int64_buf_t;
 
   // unaligned native endian unsigned integer buffers
-  typedef big_uint8_buf_t   native_uint8_buf_t;
-  typedef big_uint16_buf_t  native_uint16_buf_t;
-  typedef big_uint24_buf_t  native_uint24_buf_t;
-  typedef big_uint32_buf_t  native_uint32_buf_t;
-  typedef big_uint40_buf_t  native_uint40_buf_t;
-  typedef big_uint48_buf_t  native_uint48_buf_t;
-  typedef big_uint56_buf_t  native_uint56_buf_t;
-  typedef big_uint64_buf_t  native_uint64_buf_t;
-# else
-  // unaligned native endian signed integer buffers
-  typedef little_int8_buf_t   native_int8_buf_t;
-  typedef little_int16_buf_t  native_int16_buf_t;
-  typedef little_int24_buf_t  native_int24_buf_t;
-  typedef little_int32_buf_t  native_int32_buf_t;
-  typedef little_int40_buf_t  native_int40_buf_t;
-  typedef little_int48_buf_t  native_int48_buf_t;
-  typedef little_int56_buf_t  native_int56_buf_t;
-  typedef little_int64_buf_t  native_int64_buf_t;
+  typedef endian_buffer<order::native, uint_least8_t, 8>    native_uint8_buf_t;
+  typedef endian_buffer<order::native, uint_least16_t, 16>  native_uint16_buf_t;
+  typedef endian_buffer<order::native, uint_least32_t, 24>  native_uint24_buf_t;
+  typedef endian_buffer<order::native, uint_least32_t, 32>  native_uint32_buf_t;
+  typedef endian_buffer<order::native, uint_least64_t, 40>  native_uint40_buf_t;
+  typedef endian_buffer<order::native, uint_least64_t, 48>  native_uint48_buf_t;
+  typedef endian_buffer<order::native, uint_least64_t, 56>  native_uint56_buf_t;
+  typedef endian_buffer<order::native, uint_least64_t, 64>  native_uint64_buf_t;
 
-  // unaligned native endian unsigned integer buffers
-  typedef little_uint8_buf_t   native_uint8_buf_t;
-  typedef little_uint16_buf_t  native_uint16_buf_t;
-  typedef little_uint24_buf_t  native_uint24_buf_t;
-  typedef little_uint32_buf_t  native_uint32_buf_t;
-  typedef little_uint40_buf_t  native_uint40_buf_t;
-  typedef little_uint48_buf_t  native_uint48_buf_t;
-  typedef little_uint56_buf_t  native_uint56_buf_t;
-  typedef little_uint64_buf_t  native_uint64_buf_t;
-# endif
+  // unaligned floating point buffers
+  typedef endian_buffer<order::big, float, 32, align::no>       big_float32_buf_t;
+  typedef endian_buffer<order::big, double, 64, align::no>      big_float64_buf_t;
+  typedef endian_buffer<order::little, float, 32, align::no>    little_float32_buf_t;
+  typedef endian_buffer<order::little, double, 64, align::no>   little_float64_buf_t;
+  typedef endian_buffer<order::native, float, 32, align::no>    native_float32_buf_t;
+  typedef endian_buffer<order::native, double, 64, align::no>   native_float64_buf_t;
 
   // Stream inserter
   template <class charT, class traits, BOOST_SCOPED_ENUM(order) Order, class T,
@@ -259,9 +250,14 @@ public:
         return boost::endian::endian_load<T, n_bits / 8, Order>( value_ );
     }
 
-    char const * data() const BOOST_NOEXCEPT
+    unsigned char const * data() const BOOST_NOEXCEPT
     {
-        return reinterpret_cast< char const* >( value_ );
+        return value_;
+    }
+
+    unsigned char * data() BOOST_NOEXCEPT
+    {
+        return value_;
     }
 };
 
@@ -309,9 +305,14 @@ public:
         return boost::endian::endian_load<T, n_bits / 8, Order>( value_ );
     }
 
-    char const * data() const BOOST_NOEXCEPT
+    unsigned char const * data() const BOOST_NOEXCEPT
     {
-        return reinterpret_cast< char const* >( value_ );
+        return value_;
+    }
+
+    unsigned char * data() BOOST_NOEXCEPT
+    {
+        return value_;
     }
 };
 
@@ -352,16 +353,21 @@ public:
         return value_;
     }
 
-    char const * data() const BOOST_NOEXCEPT
+    unsigned char const * data() const BOOST_NOEXCEPT
     {
-        return reinterpret_cast< char const* >( &value_ );
+        return reinterpret_cast< unsigned char const* >( &value_ );
+    }
+
+    unsigned char * data() BOOST_NOEXCEPT
+    {
+        return reinterpret_cast< unsigned char* >( &value_ );
     }
 };
 
 } // namespace endian
 } // namespace boost
 
-#if defined(__BORLANDC__) || defined( __CODEGEARC__)
+#if defined(BOOST_BORLANDC) || defined(BOOST_CODEGEARC)
 # pragma pack(pop)
 #endif
 

@@ -25,11 +25,15 @@
 #include "FavHubGeneralPage.h"
 #include "FavHubOptionsPage.h"
 #include "FavHubGroupsDlg.h"
+#include "ActionUtil.h"
 
 #include <airdcpp/ConnectivityManager.h>
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/LogManager.h>
 #include <airdcpp/version.h>
+
+#include <web-server/ContextMenuManager.h>
+#include <web-server/WebServerManager.h>
 
 int FavoriteHubsFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_DESCRIPTION, COLUMN_NICK, COLUMN_PASSWORD, COLUMN_SERVER, COLUMN_USERDESCRIPTION, 
 	COLUMN_SHAREPROFILE };
@@ -113,19 +117,6 @@ LRESULT FavoriteHubsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	ClientManager::getInstance()->addListener(this);
 
 	fillList();
-
-	hubsMenu.CreatePopupMenu();
-	hubsMenu.AppendMenu(MF_STRING, IDC_OPEN_HUB_LOG, CTSTRING(OPEN_HUB_LOG));
-	hubsMenu.AppendMenu(MF_SEPARATOR);
-	hubsMenu.AppendMenu(MF_STRING, IDC_CONNECT, CTSTRING(CONNECT));
-	hubsMenu.AppendMenu(MF_STRING, IDC_NEWFAV, CTSTRING(NEW_DOTS));
-	hubsMenu.AppendMenu(MF_STRING, IDC_MOVE_UP, CTSTRING(MOVE_UP));
-	hubsMenu.AppendMenu(MF_STRING, IDC_MOVE_DOWN, CTSTRING(MOVE_DOWN));
-	hubsMenu.AppendMenu(MF_SEPARATOR);
-	hubsMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
-	hubsMenu.AppendMenu(MF_SEPARATOR);
-	hubsMenu.AppendMenu(MF_STRING, IDC_EDIT, CTSTRING(PROPERTIES));
-	hubsMenu.SetMenuDefaultItem(IDC_CONNECT);
 
 	CRect rc(SETTING(FAV_LEFT), SETTING(FAV_TOP), SETTING(FAV_RIGHT), SETTING(FAV_BOTTOM));
 	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
@@ -260,6 +251,33 @@ LRESULT FavoriteHubsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lP
 			WinUtil::getContextMenuPos(ctrlHubs, pt);
 		}
 
+
+		OMenu hubsMenu;
+		hubsMenu.CreatePopupMenu();
+		hubsMenu.AppendMenu(MF_STRING, IDC_OPEN_HUB_LOG, CTSTRING(OPEN_HUB_LOG));
+		hubsMenu.AppendMenu(MF_SEPARATOR);
+
+		{
+			vector<QueueToken> tokens;
+
+			int i = -1;
+			while ((i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1) {
+				tokens.push_back(((FavoriteHubEntry*)ctrlHubs.GetItemData(i))->getToken());
+			}
+
+			EXT_CONTEXT_MENU(hubsMenu, FavoriteHub, tokens);
+		}
+
+		hubsMenu.AppendMenu(MF_STRING, IDC_CONNECT, CTSTRING(CONNECT));
+		hubsMenu.AppendMenu(MF_STRING, IDC_NEWFAV, CTSTRING(NEW_DOTS));
+		hubsMenu.AppendMenu(MF_STRING, IDC_MOVE_UP, CTSTRING(MOVE_UP));
+		hubsMenu.AppendMenu(MF_STRING, IDC_MOVE_DOWN, CTSTRING(MOVE_DOWN));
+		hubsMenu.AppendMenu(MF_SEPARATOR);
+		hubsMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
+		hubsMenu.AppendMenu(MF_SEPARATOR);
+		hubsMenu.AppendMenu(MF_STRING, IDC_EDIT, CTSTRING(PROPERTIES));
+		hubsMenu.SetMenuDefaultItem(IDC_CONNECT);
+
 		int status = ctrlHubs.GetSelectedCount() > 0 ? MFS_ENABLED : MFS_DISABLED;
 		hubsMenu.EnableMenuItem(IDC_OPEN_HUB_LOG, status);
 		hubsMenu.EnableMenuItem(IDC_CONNECT, status);
@@ -270,7 +288,7 @@ LRESULT FavoriteHubsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lP
 
 		tstring x;
 		if (ctrlHubs.GetSelectedCount() == 1) {
-			FavoriteHubEntry* f = (FavoriteHubEntry*)ctrlHubs.GetItemData(WinUtil::getFirstSelectedIndex(ctrlHubs));
+			auto f = (FavoriteHubEntry*)ctrlHubs.GetItemData(WinUtil::getFirstSelectedIndex(ctrlHubs));
 			x = Text::toT(f->getName());
 		} else {
 			x = _T("");
@@ -278,11 +296,7 @@ LRESULT FavoriteHubsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lP
 		if (!x.empty())
 			hubsMenu.InsertSeparatorFirst(x);
 
-		hubsMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
-
-		if (!x.empty())
-			hubsMenu.RemoveFirstItem();
-
+		hubsMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 		return TRUE; 
 	}
 	
@@ -590,7 +604,7 @@ LRESULT FavoriteHubsFrame::onOpenHubLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 		params["myNI"] = entry->get(HubSettings::Nick); 
 		string file = LogManager::getInstance()->getPath(LogManager::CHAT, params);
 		if(Util::fileExists(file)){
-			WinUtil::viewLog(file);
+			ActionUtil::viewLog(file);
 		} else {
 			WinUtil::showMessageBox(TSTRING(NO_LOG_FOR_HUB));	  
 		}

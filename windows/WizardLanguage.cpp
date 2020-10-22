@@ -19,7 +19,7 @@
 #include "stdafx.h"
 
 #include "WizardLanguage.h"
-#include "WinUtil.h"
+#include "ActionUtil.h"
 
 #include <airdcpp/AirUtil.h>
 #include <airdcpp/Localization.h>
@@ -27,7 +27,7 @@
 
 LRESULT WizardLanguage::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) { 
 	ctrlLanguage.Attach(GetDlgItem(IDC_LANGUAGE));
-	WinUtil::appendLanguageMenu(ctrlLanguage);
+	ActionUtil::appendLanguageMenu(ctrlLanguage);
 
 	return TRUE; 
 }
@@ -52,7 +52,7 @@ int WizardLanguage::OnWizardNext() {
 
 bool WizardLanguage::checkLanguage() {
 	auto sel = ctrlLanguage.GetCurSel();
-	WinUtil::setLanguage(sel);
+	ActionUtil::setLanguage(sel);
 	if (sel > 0) {
 		dl = new LanguageDownloadDlg(wizard->m_hWnd, [this] { completeLanguageCheck(); }, wizard->isInitialRun());
 		if (!dl->show()) {

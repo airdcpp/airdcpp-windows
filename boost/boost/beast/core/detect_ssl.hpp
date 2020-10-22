@@ -316,7 +316,9 @@ detect_ssl(
 template<
     class AsyncReadStream,
     class DynamicBuffer,
-    class CompletionToken>
+    class CompletionToken =
+        net::default_completion_token_t<beast::executor_type<AsyncReadStream>>
+>
 #if BOOST_BEAST_DOXYGEN
 BOOST_ASIO_INITFN_RESULT_TYPE(CompletionToken, void(error_code, bool))
 #else
@@ -325,7 +327,8 @@ auto
 async_detect_ssl(
     AsyncReadStream& stream,
     DynamicBuffer& buffer,
-    CompletionToken&& token) ->
+    CompletionToken&& token = net::default_completion_token_t<
+            beast::executor_type<AsyncReadStream>>{}) ->
         typename net::async_result<
             typename std::decay<CompletionToken>::type, /*< `async_result` customizes the return value based on the completion token >*/
             void(error_code, bool)>::return_type; /*< This is the signature for the completion handler >*/
@@ -371,13 +374,13 @@ struct run_detect_ssl_op
     void operator()(
         DetectHandler&& h,
         AsyncReadStream* s, // references are passed as pointers
-        DynamicBuffer& b)
+        DynamicBuffer* b)
     {
         detect_ssl_op<
             typename std::decay<DetectHandler>::type,
             AsyncReadStream,
             DynamicBuffer>(
-                std::forward<DetectHandler>(h), *s, b);
+                std::forward<DetectHandler>(h), *s, *b);
     }
 };
 
@@ -436,7 +439,7 @@ async_detect_ssl(
             detail::run_detect_ssl_op{},
             token,
             &stream, // pass the reference by pointer
-            buffer);
+            &buffer);
 }
 
 //]

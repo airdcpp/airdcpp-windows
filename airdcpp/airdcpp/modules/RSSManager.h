@@ -34,6 +34,7 @@
 
 #include <airdcpp/DispatcherQueue.h>
 #include <airdcpp/HttpDownload.h>
+#include <airdcpp/Message.h>
 #include <airdcpp/StringMatch.h>
 
 #include <airdcpp/TimerManager.h>
@@ -49,8 +50,9 @@ typedef std::shared_ptr<RSSData> RSSDataPtr;
 class RSSFilter : public StringMatch {
 public:
 
-	RSSFilter(const string& aFilterPattern, const string& aDownloadTarget, int aMethod, const string& aGroup, bool aSkipDupes, int aAction, int aExpireDays) noexcept :
-		filterPattern(aFilterPattern), downloadTarget(aDownloadTarget), autosearchGroup(aGroup), skipDupes(aSkipDupes), filterAction(aAction), expireDays(aExpireDays)
+	RSSFilter(const string& aFilterPattern, const string& aDownloadTarget, int aMethod, const string& aGroup, bool aSkipDupes, int aAction, int aExpireDays, bool aFormatTime) noexcept :
+		filterPattern(aFilterPattern), downloadTarget(aDownloadTarget), autosearchGroup(aGroup), skipDupes(aSkipDupes), filterAction(aAction), expireDays(aExpireDays),
+		formatTimeParams(aFormatTime)
 	{
 		pattern = aFilterPattern;
 		setMethod((StringMatch::Method)aMethod);
@@ -63,6 +65,8 @@ public:
 	IGETSET(string, autosearchGroup, AutosearchGroup, Util::emptyString);
 	IGETSET(int, filterAction, FilterAction, DOWNLOAD);
 	IGETSET(int, expireDays, ExpireDays, 3);
+	IGETSET(bool, formatTimeParams, FormatTimeParams, false);
+
 	bool skipDupes = true;
 
 	enum filterActions {
@@ -204,6 +208,7 @@ public:
 	void saveFilters(SimpleXML& aXml, const vector<RSSFilter>& aList);
 
 private:
+	static void log(const string& aMsg, LogMessage::Severity aSeverity) noexcept;
 
 	void savedatabase(const RSSPtr& aFeed);
 

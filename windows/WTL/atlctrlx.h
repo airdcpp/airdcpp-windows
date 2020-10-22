@@ -3940,7 +3940,9 @@ public:
 		this->SetRedraw(TRUE);
 		this->RedrawWindow(NULL, NULL, RDW_FRAME | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 
-		if(::GetFocus() != m_tab.m_hWnd)
+		HWND hWndFocus = ::GetFocus();
+		ATL::CWindow wndTop = this->GetTopLevelWindow();
+		if((hWndFocus == wndTop.m_hWnd) || ((wndTop.IsChild(hWndFocus) != FALSE) && (hWndFocus != m_tab.m_hWnd)))
 			::SetFocus(GetPageHWND(m_nActivePage));
 
 		pT->UpdateTitleBar();
@@ -4307,7 +4309,7 @@ public:
 			CMenuItemInfo mii;
 			mii.fMask = MIIM_TYPE;
 			menu.GetMenuItemInfo(nFirstPos - 1, TRUE, &mii);
-			if((nFirstPos <= 0) || ((mii.fType & MFT_SEPARATOR) == 0))
+			if((mii.fType & MFT_SEPARATOR) == 0)
 			{
 				menu.AppendMenu(MF_SEPARATOR);
 				nFirstPos++;
@@ -4725,8 +4727,10 @@ public:
 		return 0;
 	}
 
-	LRESULT OnTabMouseLeave(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+	LRESULT OnTabMouseLeave(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 	{
+		bHandled = FALSE;
+
 		if(m_btnClose.m_hWnd != NULL)
 		{
 			POINT pt = {};
@@ -4738,6 +4742,10 @@ public:
 				m_nCloseItem = -1;
 				T* pT = static_cast<T*>(this);
 				pT->DestroyCloseButton();
+			}
+			else
+			{
+				bHandled = TRUE;
 			}
 		}
 
@@ -4751,11 +4759,7 @@ public:
 		m_tab.ScreenToClient(&thti.pt);
 		int nItem = m_tab.HitTest(&thti);
 		if(nItem == -1)
-		{
-				m_nCloseItem = -1;
-				T* pT = static_cast<T*>(this);
-				pT->DestroyCloseButton();
-		}
+			m_tab.SendMessage(WM_MOUSELEAVE);
 
 		return 0;
 	}

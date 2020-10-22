@@ -52,6 +52,10 @@ HashManager::~HashManager() {
 	optimizer.join();
 }
 
+void HashManager::log(const string& aMsg, LogMessage::Severity aSeverity) noexcept {
+	LogManager::getInstance()->message(aMsg, aSeverity, STRING(FILE_LISTS));
+}
+
 bool HashManager::checkTTH(const string& aFileLower, const string& aFileName, HashedFile& fi_) {
 	dcassert(Text::isLower(aFileLower));
 	if (!store.checkTTH(aFileLower, fi_)) {
@@ -150,7 +154,7 @@ bool HashManager::hashFile(const string& filePath, const string& pathLower, int6
 				id++;
 			}
 
-			LogManager::getInstance()->message(STRING_F(HASHER_X_CREATED, id), LogMessage::SEV_INFO);
+			log(STRING_F(HASHER_X_CREATED, id), LogMessage::SEV_INFO);
 			h = new Hasher(pausers > 0, id);
 			hashers.push_back(h);
 		}
@@ -210,11 +214,11 @@ void HashManager::getFileTTH(const string& aFile, int64_t aSize, bool addStore, 
 	}
 }
 
-void HashManager::hashDone(const string& aFileName, const string& pathLower, const TigerTree& tt, int64_t speed, HashedFile& aFileInfo, int hasherID /*0*/) noexcept {
+void HashManager::hasherDone(const string& aFileName, const string& pathLower, const TigerTree& tt, int64_t speed, HashedFile& aFileInfo, int hasherID /*0*/) noexcept {
 	try {
 		store.addHashedFile(pathLower, tt, aFileInfo);
 	} catch (const Exception& e) {
-		log(STRING_F(HASHING_FAILED_X, e.getError()), hasherID, true, true);
+		logHasher(STRING_F(HASHING_FAILED_X, e.getError()), hasherID, true, true);
 	}
 	
 	if(SETTING(LOG_HASHING)) {
@@ -227,9 +231,9 @@ void HashManager::hashDone(const string& aFileName, const string& pathLower, con
 		}
 	
 		if (speed > 0) {
-			log(STRING_F(HASHING_FINISHED_X, fn) + " (" + Util::formatBytes(speed) + "/s)", hasherID, false, true);
+			logHasher(STRING_F(HASHING_FINISHED_X, fn) + " (" + Util::formatBytes(speed) + "/s)", hasherID, false, true);
 		} else {
-			log(STRING_F(HASHING_FINISHED_X, fn), hasherID, false, true);
+			logHasher(STRING_F(HASHING_FINISHED_X, fn), hasherID, false, true);
 		}
 	}
 }
@@ -322,7 +326,7 @@ bool HashManager::HashStore::getTree(const TTHValue& aRoot, TigerTree& tt) {
 			return loadTree(aValue, valueLen, aRoot, tt, true);
 		});
 	} catch(DbException& e) {
-		LogManager::getInstance()->message(STRING_F(READ_FAILED_X, hashDb->getNameLower() % e.getError()), LogMessage::SEV_ERROR);
+		log(STRING_F(READ_FAILED_X, hashDb->getNameLower() % e.getError()), LogMessage::SEV_ERROR);
 	}
 
 	return false;
@@ -368,7 +372,7 @@ bool HashManager::HashStore::loadTree(const void* src, size_t len, const TTHValu
 		aTree = TigerTree(fileSize, blockSize, &buf[0]);
 		if (aTree.getRoot() != aRoot) {
 			if (aReportCorruption) {
-				LogManager::getInstance()->message(STRING_F(TREE_LOAD_FAILED_DB, aRoot.toBase32() % STRING(INVALID_TREE) % "/verifydb"), LogMessage::SEV_ERROR);
+				log(STRING_F(TREE_LOAD_FAILED_DB, aRoot.toBase32() % STRING(INVALID_TREE) % "/verifydb"), LogMessage::SEV_ERROR);
 			}
 			return false;
 		}
@@ -465,7 +469,7 @@ int64_t HashManager::HashStore::getRootInfo(const TTHValue& root, InfoType aType
 			return true;
 		});
 	} catch(DbException& e) {
-		LogManager::getInstance()->message(STRING_F(READ_FAILED_X, hashDb->getNameLower() % e.getError()), LogMessage::SEV_ERROR);
+		log(STRING_F(READ_FAILED_X, hashDb->getNameLower() % e.getError()), LogMessage::SEV_ERROR);
 	}
 	return ret;
 }
@@ -489,7 +493,7 @@ bool HashManager::HashStore::getFileInfo(const string& aFileLower, HashedFile& f
 			return loadFileInfo(aValue, valueLen, fi_);
 		});
 	} catch(const DbException& e) {
-		LogManager::getInstance()->message(STRING_F(READ_FAILED_X, fileDb->getNameLower() % e.getError()), LogMessage::SEV_ERROR);
+		log(STRING_F(READ_FAILED_X, fileDb->getNameLower() % e.getError()), LogMessage::SEV_ERROR);
 	}
 
 	return false;
@@ -507,7 +511,7 @@ void HashManager::HashStore::optimize(bool doVerify) noexcept {
 	int removedFiles = 0;
 	int64_t failedSize = 0;
 
-	LogManager::getInstance()->message(STRING(HASHDB_MAINTENANCE_STARTED), LogMessage::SEV_INFO);
+	log(STRING(HASHDB_MAINTENANCE_STARTED), LogMessage::SEV_INFO);
 	{
 		unordered_set<TTHValue> usedRoots;
 
@@ -535,8 +539,8 @@ void HashManager::HashStore::optimize(bool doVerify) noexcept {
 				}
 			}, fileSnapshot.get());
 		} catch(DbException& e) {
-			LogManager::getInstance()->message(STRING_F(READ_FAILED_X, fileDb->getNameLower() % e.getError()), LogMessage::SEV_ERROR);
-			LogManager::getInstance()->message(STRING(HASHDB_MAINTENANCE_FAILED), LogMessage::SEV_ERROR);
+			log(STRING_F(READ_FAILED_X, fileDb->getNameLower() % e.getError()), LogMessage::SEV_ERROR);
+			log(STRING(HASHDB_MAINTENANCE_FAILED), LogMessage::SEV_ERROR);
 			getInstance()->fire(HashManagerListener::MaintananceFinished());
 			return;
 		}
@@ -567,8 +571,8 @@ void HashManager::HashStore::optimize(bool doVerify) noexcept {
 				return true;
 			}, hashSnapshot.get());
 		} catch(DbException& e) {
-			LogManager::getInstance()->message(STRING_F(READ_FAILED_X, hashDb->getNameLower() % e.getError()), LogMessage::SEV_ERROR);
-			LogManager::getInstance()->message(STRING(HASHDB_MAINTENANCE_FAILED), LogMessage::SEV_ERROR);
+			log(STRING_F(READ_FAILED_X, hashDb->getNameLower() % e.getError()), LogMessage::SEV_ERROR);
+			log(STRING(HASHDB_MAINTENANCE_FAILED), LogMessage::SEV_ERROR);
 			getInstance()->fire(HashManagerListener::MaintananceFinished());
 			return;
 		}
@@ -589,8 +593,8 @@ void HashManager::HashStore::optimize(bool doVerify) noexcept {
 					return false;
 				}, fileSnapshot.get());
 			} catch(DbException& e) {
-				LogManager::getInstance()->message(STRING_F(READ_FAILED_X, fileDb->getNameLower() % e.getError()), LogMessage::SEV_ERROR);
-				LogManager::getInstance()->message(STRING(HASHDB_MAINTENANCE_FAILED), LogMessage::SEV_ERROR);
+				log(STRING_F(READ_FAILED_X, fileDb->getNameLower() % e.getError()), LogMessage::SEV_ERROR);
+				log(STRING(HASHDB_MAINTENANCE_FAILED), LogMessage::SEV_ERROR);
 				getInstance()->fire(HashManagerListener::MaintananceFinished());
 				return;
 			}
@@ -599,14 +603,14 @@ void HashManager::HashStore::optimize(bool doVerify) noexcept {
 
 	SettingsManager::getInstance()->set(SettingsManager::CUR_REMOVED_FILES, SETTING(CUR_REMOVED_FILES) + unusedFiles + missingTrees);
 	if (validFiles == 0 || (static_cast<double>(SETTING(CUR_REMOVED_FILES)) / static_cast<double>(validFiles)) > 0.05) {
-		LogManager::getInstance()->message(STRING_F(COMPACTING_X, fileDb->getNameLower()), LogMessage::SEV_INFO);
+		log(STRING_F(COMPACTING_X, fileDb->getNameLower()), LogMessage::SEV_INFO);
 		fileDb->compact();
 		SettingsManager::getInstance()->set(SettingsManager::CUR_REMOVED_FILES, 0);
 	}
 
 	SettingsManager::getInstance()->set(SettingsManager::CUR_REMOVED_TREES, SETTING(CUR_REMOVED_TREES) + unusedTrees + failedTrees);
 	if (validTrees == 0 || (static_cast<double>(SETTING(CUR_REMOVED_TREES)) / static_cast<double>(validTrees)) > 0.05) {
-		LogManager::getInstance()->message(STRING_F(COMPACTING_X, hashDb->getNameLower()), LogMessage::SEV_INFO);
+		log(STRING_F(COMPACTING_X, hashDb->getNameLower()), LogMessage::SEV_INFO);
 		hashDb->compact();
 		SettingsManager::getInstance()->set(SettingsManager::CUR_REMOVED_TREES, 0);
 	}
@@ -618,7 +622,7 @@ void HashManager::HashStore::optimize(bool doVerify) noexcept {
 		msg = STRING(HASHDB_MAINTENANCE_NO_UNUSED);
 	}
 
-	LogManager::getInstance()->message(msg, LogMessage::SEV_INFO);
+	log(msg, LogMessage::SEV_INFO);
 
 	if (failedTrees > 0 || missingTrees > 0) {
 		if (doVerify) {
@@ -628,18 +632,18 @@ void HashManager::HashStore::optimize(bool doVerify) noexcept {
 		}
 
 		msg += ". " + STRING_F(REBUILD_REFRESH_PROMPT, Util::formatBytes(failedSize));
-		LogManager::getInstance()->message(msg, LogMessage::SEV_ERROR);
+		log(msg, LogMessage::SEV_ERROR);
 	}
 
 	getInstance()->fire(HashManagerListener::MaintananceFinished());
 }
 
 void HashManager::HashStore::compact() noexcept {
-	LogManager::getInstance()->message(STRING_F(COMPACTING_X, fileDb->getNameLower()), LogMessage::SEV_INFO);
+	log(STRING_F(COMPACTING_X, fileDb->getNameLower()), LogMessage::SEV_INFO);
 	fileDb->compact();
-	LogManager::getInstance()->message(STRING_F(COMPACTING_X, hashDb->getNameLower()), LogMessage::SEV_INFO);
+	log(STRING_F(COMPACTING_X, hashDb->getNameLower()), LogMessage::SEV_INFO);
 	hashDb->compact();
-	LogManager::getInstance()->message("Done", LogMessage::SEV_INFO);
+	log("Done", LogMessage::SEV_INFO);
 }
 
 string HashManager::HashStore::getDbStats() noexcept {
@@ -914,6 +918,8 @@ bool HashManager::Hasher::hashFile(const string& fileName, const string& filePat
 	if (ret.second) {
 		devices[(*ret.first).deviceId]++; 
 		totalBytesLeft += size;
+		totalBytesAdded += size;
+		totalFilesAdded++;
 		s.signal();
 		return true;
 	}
@@ -933,6 +939,10 @@ void HashManager::Hasher::resume() {
 
 bool HashManager::Hasher::isPaused() const noexcept {
 	return paused;
+}
+
+bool HashManager::Hasher::isRunning() const noexcept {
+	return running;
 }
 
 void HashManager::Hasher::removeDevice(devid aDevice) noexcept {
@@ -969,11 +979,22 @@ void HashManager::setPriority(Thread::Priority p) noexcept {
 		h->setThreadPriority(p); 
 }
 
-void HashManager::getStats(string& curFile, int64_t& bytesLeft, size_t& filesLeft, int64_t& speed, int& hasherCount) const noexcept {
+HashManager::HashStats HashManager::getStats() const noexcept {
+	HashStats stats;
+
 	RLock l(Hasher::hcs);
-	hasherCount = hashers.size();
-	for (auto i: hashers)
-		i->getStats(curFile, bytesLeft, filesLeft, speed);
+	for (auto i: hashers) {
+		i->getStats(stats.curFile, stats.bytesLeft, stats.filesLeft, stats.speed, stats.filesAdded, stats.bytesAdded);
+		if (!i->isPaused()) {
+			stats.isPaused = false;
+		}
+
+		if (i->isRunning()) {
+			stats.hashersRunning++;
+		}
+	}
+
+	return stats;
 }
 
 void HashManager::startMaintenance(bool verify){
@@ -1046,31 +1067,49 @@ void HashManager::shutdown(ProgressFunction progressF) noexcept {
 void HashManager::Hasher::clear() noexcept {
 	w.clear();
 	devices.clear();
-	totalBytesLeft = 0;
+
+	clearStats();
 }
 
-void HashManager::Hasher::getStats(string& curFile, int64_t& bytesLeft, size_t& filesLeft, int64_t& speed) const noexcept {
-	curFile = currentFile;
-	filesLeft += w.size();
-	if (running)
-		filesLeft++;
-	bytesLeft += totalBytesLeft;
-	speed += lastSpeed;
+void HashManager::Hasher::clearStats() noexcept {
+	totalBytesLeft = 0;
+	totalBytesAdded = 0;
+	totalFilesAdded = 0;
+	totalHashTime = 0;
+	totalSizeHashed = 0;
+	totalDirsHashed = 0;
+	totalFilesHashed = 0;
+	lastSpeed = 0;
+}
+
+void HashManager::Hasher::getStats(string& curFile_, int64_t& bytesLeft_, size_t& filesLeft_, int64_t& speed_, size_t& filesAdded_, int64_t& bytesAdded_) const noexcept {
+	curFile_ = currentFile;
+	filesLeft_ += w.size();
+	if (running) {
+		filesLeft_++;
+		speed_ += lastSpeed;
+	}
+
+	bytesLeft_ += totalBytesLeft;
+
+	filesAdded_ += totalFilesAdded;
+	bytesAdded_ += totalBytesAdded;
 }
 
 void HashManager::Hasher::instantPause() {
-	if(paused) {
+	if (paused) {
+		running = false;
 		t_suspend();
 	}
 }
 
-HashManager::Hasher::Hasher(bool isPaused, int aHasherID) : paused(isPaused), hasherID(aHasherID), totalBytesLeft(0), lastSpeed(0) {
+HashManager::Hasher::Hasher(bool aIsPaused, int aHasherID) : paused(aIsPaused), hasherID(aHasherID), totalBytesLeft(0), lastSpeed(0), totalBytesAdded(0), totalFilesAdded(0) {
 	start();
 }
 
-void HashManager::log(const string& aMessage, int hasherID, bool isError, bool lock) {
+void HashManager::logHasher(const string& aMessage, int hasherID, bool isError, bool lock) {
 	ConditionalRLock l(Hasher::hcs, lock);
-	LogManager::getInstance()->message((hashers.size() > 1 ? "[" + STRING_F(HASHER_X, hasherID) + "] " + ": " : Util::emptyString) + aMessage, isError ? LogMessage::SEV_ERROR : LogMessage::SEV_INFO);
+	log((hashers.size() > 1 ? "[" + STRING_F(HASHER_X, hasherID) + "] " + ": " : Util::emptyString) + aMessage, isError ? LogMessage::SEV_ERROR : LogMessage::SEV_INFO);
 }
 
 int HashManager::Hasher::run() {
@@ -1106,10 +1145,13 @@ int HashManager::Hasher::run() {
 				fname.clear();
 			}
 		}
-		running = true;
 
 		HashedFile fi;
-		if(!fname.empty()) {
+		if (fname.empty()) {
+			running = false;
+		} else {
+			running = true;
+
 			int64_t sizeLeft = originalSize;
 			try {
 				if (initialDir.empty()) {
@@ -1193,15 +1235,15 @@ int HashManager::Hasher::run() {
 				}
 
 				if(failed) {
-					getInstance()->log(STRING(ERROR_HASHING) + fname + ": " + STRING(ERROR_HASHING_CRC32), hasherID, true, true);
+					getInstance()->logHasher(STRING(ERROR_HASHING) + fname + ": " + STRING(ERROR_HASHING_CRC32), hasherID, true, true);
 					getInstance()->fire(HashManagerListener::FileFailed(), fname, fi);
 				} else {
 					fi = HashedFile(tt.getRoot(), timestamp, size);
-					getInstance()->hashDone(fname, pathLower, tt, averageSpeed, fi, hasherID);
+					getInstance()->hasherDone(fname, pathLower, tt, averageSpeed, fi, hasherID);
 				}
 			} catch(const FileException& e) {
 				totalBytesLeft -= sizeLeft;
-				getInstance()->log(STRING(ERROR_HASHING) + " " + fname + ": " + e.getError(), hasherID, true, true);
+				getInstance()->logHasher(STRING(ERROR_HASHING) + " " + fname + ": " + e.getError(), hasherID, true, true);
 				getInstance()->fire(HashManagerListener::FileFailed(), fname, fi);
 				failed = true;
 			}
@@ -1212,12 +1254,12 @@ int HashManager::Hasher::run() {
 			if ((SETTING(HASHERS_PER_VOLUME) == 1 || w.empty()) && (dirFilesHashed > 1 || !failed)) {
 				getInstance()->fire(HashManagerListener::DirectoryHashed(), initialDir, dirFilesHashed, dirSizeHashed, dirHashTime, hasherID);
 				if (dirFilesHashed == 1) {
-					getInstance()->log(STRING_F(HASHING_FINISHED_FILE, currentFile % 
+					getInstance()->logHasher(STRING_F(HASHING_FINISHED_FILE, currentFile %
 						Util::formatBytes(dirSizeHashed) % 
 						Util::formatTime(dirHashTime / 1000, true) % 
 						(Util::formatBytes(dirHashTime > 0 ? ((dirSizeHashed * 1000) / dirHashTime) : 0) + "/s" )), hasherID, false, false);
 				} else {
-					getInstance()->log(STRING_F(HASHING_FINISHED_DIR, Util::getFilePath(initialDir) % 
+					getInstance()->logHasher(STRING_F(HASHING_FINISHED_DIR, Util::getFilePath(initialDir) %
 						dirFilesHashed %
 						Util::formatBytes(dirSizeHashed) % 
 						Util::formatTime(dirHashTime / 1000, true) % 
@@ -1239,30 +1281,30 @@ int HashManager::Hasher::run() {
 				removeDevice(curDevID);
 
 			if (w.empty()) {
+				// Finished hashing
+				running = false;
 				getInstance()->fire(HashManagerListener::HasherFinished(), totalDirsHashed, totalFilesHashed, totalSizeHashed, totalHashTime, hasherID);
+
 				if (totalSizeHashed > 0) {
 					if (totalDirsHashed == 0) {
 						onDirHashed();
-						//LogManager::getInstance()->message(STRING(HASHING_FINISHED_TOTAL_PLAIN), LogMessage::SEV_INFO);
+						//log(STRING(HASHING_FINISHED_TOTAL_PLAIN), LogMessage::SEV_INFO);
 					} else {
 						onDirHashed();
-						getInstance()->log(STRING_F(HASHING_FINISHED_TOTAL, totalFilesHashed % Util::formatBytes(totalSizeHashed) % totalDirsHashed %
+						getInstance()->logHasher(STRING_F(HASHING_FINISHED_TOTAL, totalFilesHashed % Util::formatBytes(totalSizeHashed) % totalDirsHashed %
 							Util::formatTime(totalHashTime / 1000, true) %
 							(Util::formatBytes(totalHashTime > 0 ? ((totalSizeHashed * 1000) / totalHashTime) : 0)  + "/s" )), hasherID, false, false);
 					}
 				} else if(!fname.empty()) {
-					//all files failed to hash?
-					getInstance()->log(STRING(HASHING_FINISHED), hasherID, false, false);
+					// All files failed to hash?
+					getInstance()->logHasher(STRING(HASHING_FINISHED), hasherID, false, false);
 
-					//always clear the directory so that the will be a fresh start when more files are added for hashing
+					// Always clear the directory so that there will be a fresh start when more files are added for hashing
 					initialDir.clear();
 				}
 
-				totalHashTime = 0;
-				totalSizeHashed = 0;
-				totalDirsHashed = 0;
-				totalFilesHashed = 0;
-				lastSpeed = 0;
+				clearStats();
+
 				deleteThis = hasherID != 0;
 				sfv.unload();
 			} else if (!AirUtil::isParentOrExactLocal(initialDir, w.front().filePath)) {
@@ -1272,21 +1314,20 @@ int HashManager::Hasher::run() {
 			currentFile.clear();
 		}
 
-		if (!failed && !fname.empty())
+		if (!failed && !fname.empty()) {
 			getInstance()->fire(HashManagerListener::FileHashed(), fname, fi);
+		}
 
 		if (deleteThis) {
-			//check again if we have added new items while this was unlocked
+			// Check again if we have added new items while this was unlocked
 
 			WLock l(hcs);
 			if (w.empty()) {
-				//Nothing more to hash, delete this hasher
+				// Nothing more to hash, delete this hasher
 				getInstance()->removeHasher(this);
 				break;
 			}
 		}
-
-		running = false;
 	}
 
 	delete this;

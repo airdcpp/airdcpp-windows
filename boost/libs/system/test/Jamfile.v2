@@ -61,7 +61,11 @@ system-run failed_constexpr_test.cpp ;
 # Quick (CI) test
 run quick.cpp ;
 
-run warnings_test.cpp : : : <warnings>all <warnings-as-errors>on <toolset>gcc:<cxxflags>-Wnon-virtual-dtor <toolset>clang:<cxxflags>-Wnon-virtual-dtor ;
+compile warnings_test.cpp
+  : <warnings>pedantic
+    <toolset>msvc:<warnings-as-errors>on
+    <toolset>gcc:<warnings-as-errors>on
+    <toolset>clang:<warnings-as-errors>on ;
 
 lib std_single_instance_lib1 : std_single_instance_1.cpp : <link>shared:<define>STD_SINGLE_INSTANCE_DYN_LINK ;
 lib std_single_instance_lib2 : std_single_instance_2.cpp : <link>shared:<define>STD_SINGLE_INSTANCE_DYN_LINK ;

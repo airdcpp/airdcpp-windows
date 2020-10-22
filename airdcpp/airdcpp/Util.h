@@ -198,6 +198,7 @@ public:
 	static string getBundlePath() noexcept { return getPath(PATH_BUNDLES); }
 
 	static string translateError(int aError) noexcept;
+	static string formatLastError() noexcept;
 
 	static string getFilePath(const string& aPath, const char aSeparator = PATH_SEPARATOR) noexcept;
 	inline static string getAdcFilePath(const string& aPath) noexcept { return getFilePath(aPath, ADC_SEPARATOR); }
@@ -211,8 +212,8 @@ public:
 	static string getParentDir(const string& aPath, const char aSeparator = PATH_SEPARATOR, bool allowEmpty = false) noexcept;
 	inline static string getAdcParentDir(const string& aPath) noexcept { return getParentDir(aPath, ADC_SEPARATOR, false); };
 
-	inline static bool isDirectoryPath(const string& aPath, const char aSeparator = PATH_SEPARATOR) noexcept { return !aPath.empty() && aPath.back() == aSeparator; }
-	inline static bool isDirectoryPath(const tstring& aPath, const char aSeparator = PATH_SEPARATOR) noexcept { return !aPath.empty() && aPath.back() == aSeparator; }
+	template<typename string_t>
+	inline static bool isDirectoryPath(const string_t& aPath, const char aSeparator = PATH_SEPARATOR) noexcept { return !aPath.empty() && aPath.back() == aSeparator; }
 	static string ensureTrailingSlash(const string& aPath, const char aSeparator = PATH_SEPARATOR) noexcept;
 
 	static string joinDirectory(const string& aPath, const string& aDirectoryName, const char separator = PATH_SEPARATOR) noexcept;
@@ -621,6 +622,8 @@ public:
 
 	static bool usingLocalMode() noexcept { return localMode; }
 	static bool wasUncleanShutdown;
+
+	static bool isChatCommand(const string& aText) noexcept;
 private:
 	static string cleanPathChars(string aPath, bool isFileName) noexcept;
 

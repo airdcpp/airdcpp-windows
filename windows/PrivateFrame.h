@@ -23,7 +23,7 @@
 
 #include <airdcpp/User.h>
 #include <airdcpp/UserInfoBase.h>
-#include <airdcpp/PrivateChat.h>
+#include <airdcpp/PrivateChatListener.h>
 
 #include "UserInfoBaseHandler.h"
 #include "ChatFrameBase.h"
@@ -118,7 +118,7 @@ public:
 	void runUserCommand(UserCommand& uc);
 	
 	void addClientLine(const tstring& aLine, uint8_t severity);
-	bool sendMessage(const tstring& msg, string& error_, bool thirdPerson = false);
+	bool sendMessageHooked(const OutgoingChatMessage& aMessage, string& error_);
 
 	struct UserListHandler {
 		UserListHandler(PrivateFrame* _pf) : pf(_pf) { }
@@ -172,8 +172,8 @@ private:
 	void updateOnlineStatus();
 
 
-	const UserPtr& getUser() const { return chat->getUser(); }
-	const string& getHubUrl() const { return chat->getHubUrl(); }
+	const UserPtr& getUser() const;
+	const string& getHubUrl() const;
 	
 	CContainedWindow ctrlMessageContainer;
 	CContainedWindow ctrlClientContainer;

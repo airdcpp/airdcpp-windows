@@ -108,15 +108,34 @@ namespace webserver {
 			} else if (key == "nmdc_encoding") {
 				aEntry->get(HubSettings::NmdcEncoding) = JsonUtil::parseValue<string>("nmdc_encoding", i.value());
 			} else if (key == "connection_mode_v4") {
-				aEntry->get(HubSettings::Connection) = JsonUtil::parseEnumValueDefault<int>("connection_mode_v4", i.value(), HUB_SETTING_DEFAULT_INT, SettingsManager::INCOMING_DISABLED, SettingsManager::INCOMING_PASSIVE);
+				aEntry->get(HubSettings::Connection) = JsonUtil::parseRangeValueDefault<int>("connection_mode_v4", i.value(), HUB_SETTING_DEFAULT_INT, SettingsManager::INCOMING_DISABLED, SettingsManager::INCOMING_PASSIVE);
 			} else if (key == "connection_mode_v6") {
-				aEntry->get(HubSettings::Connection6) = JsonUtil::parseEnumValueDefault<int>("connection_mode_v6", i.value(), HUB_SETTING_DEFAULT_INT, SettingsManager::INCOMING_DISABLED, SettingsManager::INCOMING_PASSIVE);
+				aEntry->get(HubSettings::Connection6) = JsonUtil::parseRangeValueDefault<int>("connection_mode_v6", i.value(), HUB_SETTING_DEFAULT_INT, SettingsManager::INCOMING_DISABLED, SettingsManager::INCOMING_PASSIVE);
 			} else if (key == "connection_ip_v4") {
 				aEntry->get(HubSettings::UserIp) = JsonUtil::parseValue<string>("connection_ip_v4", i.value());
 			} else if (key == "connection_ip_v6") {
 				aEntry->get(HubSettings::UserIp6) = JsonUtil::parseValue<string>("connection_ip_v6", i.value());
+			} else if (key == "show_joins") {
+				aEntry->get(HubSettings::ShowJoins) = deserializeTribool("show_joins", i.value());
+			} else if (key == "fav_show_joins") {
+				aEntry->get(HubSettings::FavShowJoins) = deserializeTribool("fav_show_joins", i.value());
+			} else if (key == "use_main_chat_notify") {
+				aEntry->get(HubSettings::ChatNotify) = deserializeTribool("use_main_chat_notify", i.value());
+			} else if (key == "log_main") {
+				aEntry->get(HubSettings::LogMainChat) = deserializeTribool("log_main", i.value());
+			} else if (key == "away_message") {
+				aEntry->get(HubSettings::AwayMsg) = JsonUtil::parseValue<string>("away_message", i.value());
 			}
 		}
+	}
+
+	tribool FavoriteHubApi::deserializeTribool(const string& aFieldName, const json& aJson) {
+		auto value = JsonUtil::parseOptionalValue<bool>(aFieldName, aJson);
+		if (!value) {
+			return tribool(indeterminate);
+		}
+
+		return *value;
 	}
 
 	api_return FavoriteHubApi::handleAddHub(ApiRequest& aRequest) {

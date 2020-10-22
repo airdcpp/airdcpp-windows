@@ -111,6 +111,60 @@ struct base_turn_handler
         both(ti, condition ? operation_union : operation_intersection);
     }
 
+
+#if ! defined(BOOST_GEOMETRY_USE_RESCALING)
+    template
+    <
+        typename UniqueSubRange1,
+        typename UniqueSubRange2
+    >
+    static inline int side_with_distance_measure(UniqueSubRange1 const& range_p,
+            UniqueSubRange2 const& range_q,
+            int range_index, int point_index)
+    {
+        if (range_index >= 1 && range_p.is_last_segment())
+        {
+            return 0;
+        }
+        if (point_index >= 2 && range_q.is_last_segment())
+        {
+            return 0;
+        }
+
+        typedef typename select_coordinate_type
+            <
+                typename UniqueSubRange1::point_type,
+                typename UniqueSubRange2::point_type
+            >::type coordinate_type;
+
+        typedef detail::distance_measure<coordinate_type> dm_type;
+
+        dm_type const dm = get_distance_measure(range_p.at(range_index), range_p.at(range_index + 1), range_q.at(point_index));
+        return dm.measure == 0 ? 0 : dm.measure > 0 ? 1 : -1;
+    }
+
+    template
+    <
+        typename UniqueSubRange1,
+        typename UniqueSubRange2
+    >
+    static inline int verified_side(int side,
+                                    UniqueSubRange1 const& range_p,
+                                    UniqueSubRange2 const& range_q,
+                                    int range_index,
+                                    int point_index)
+    {
+        return side == 0 ? side_with_distance_measure(range_p, range_q, range_index, point_index) : side;
+    }
+#else
+    template <typename T1, typename T2>
+    static inline int verified_side(int side, T1 const& , T2 const& , int , int)
+    {
+        return side;
+    }
+#endif
+
+
     template <typename TurnInfo, typename IntersectionInfo>
     static inline void assign_point(TurnInfo& ti,
                 method_type method,
@@ -178,7 +232,7 @@ struct base_turn_handler
                 <
                     typename UniqueSubRange1::point_type,
                     typename UniqueSubRange2::point_type
-                    >::type
+                >::type
             > dm_type;
 
         const bool p_closer =
@@ -186,9 +240,9 @@ struct base_turn_handler
                 <  ti.operations[IndexQ].remaining_distance;
         dm_type const dm
                 = p_closer
-                ? get_distance_measure<typename UmbrellaStrategy::cs_tag>(range_q.at(index_q - 1),
+                ? get_distance_measure(range_q.at(index_q - 1),
                     range_q.at(index_q), range_p.at(index_p))
-                : get_distance_measure<typename UmbrellaStrategy::cs_tag>(range_p.at(index_p - 1),
+                : get_distance_measure(range_p.at(index_p - 1),
                     range_p.at(index_p), range_q.at(index_q));
 
         if (! dm.is_zero())
@@ -369,14 +423,80 @@ struct touch : public base_turn_handler
         return side1 == side2 && ! opposite(side1, turn);
     }
 
-    /*static inline void block_second(bool block, TurnInfo& ti)
+#if ! defined(BOOST_GEOMETRY_USE_RESCALING)
+    template
+    <
+        typename UniqueSubRange1,
+        typename UniqueSubRange2
+    >
+    static inline bool handle_imperfect_touch(UniqueSubRange1 const& range_p,
+            UniqueSubRange2 const& range_q, TurnInfo& ti)
     {
-        if (block)
-        {
-            ti.operations[1].operation = operation_blocked;
-        }
-    }*/
+        //  Q
+        //  ^
+        // ||
+        // ||
+        // |^----
+        // >----->P
+        // *            * they touch here (P/Q are (nearly) on top)
+        //
+        // Q continues from where P comes.
+        // P continues from where Q comes
+        // This is often a blocking situation,
+        // unless there are FP issues: there might be a distance
+        // between Pj and Qj, in that case handle it as a union.
+        //
+        // Exaggerated:
+        //  Q
+        //  ^           Q is nearly vertical
+        //   \          but not completely - and still ends above P
+        // |  \qj       In this case it should block P and
+        // |  ^------   set Q to Union
+        // >----->P     qj is LEFT of P1 and pi is LEFT of Q2
+        //              (the other way round is also possible)
 
+        typedef typename select_coordinate_type
+            <
+                typename UniqueSubRange1::point_type,
+                typename UniqueSubRange2::point_type
+            >::type coordinate_type;
+
+        typedef detail::distance_measure<coordinate_type> dm_type;
+
+        dm_type const dm_qj_p1 = get_distance_measure(range_p.at(0), range_p.at(1), range_q.at(1));
+        dm_type const dm_pi_q2 = get_distance_measure(range_q.at(1), range_q.at(2), range_p.at(0));
+
+        if (dm_qj_p1.measure > 0 && dm_pi_q2.measure > 0)
+        {
+            // Even though there is a touch, Q(j) is left of P1
+            // and P(i) is still left from Q2.
+            // It can continue.
+            ti.operations[0].operation = operation_blocked;
+            // Q turns right -> union (both independent),
+            // Q turns left -> intersection
+            ti.operations[1].operation = operation_union;
+            ti.touch_only = true;
+            return true;
+        }
+
+        dm_type const dm_pj_q1 = get_distance_measure(range_q.at(0), range_q.at(1), range_p.at(1));
+        dm_type const dm_qi_p2 = get_distance_measure(range_p.at(1), range_p.at(2), range_q.at(0));
+
+        if (dm_pj_q1.measure > 0 && dm_qi_p2.measure > 0)
+        {
+            // Even though there is a touch, Q(j) is left of P1
+            // and P(i) is still left from Q2.
+            // It can continue.
+            ti.operations[0].operation = operation_union;
+            // Q turns right -> union (both independent),
+            // Q turns left -> intersection
+            ti.operations[1].operation = operation_blocked;
+            ti.touch_only = true;
+            return true;
+        }
+        return false;
+    }
+#endif
 
     template
     <
@@ -400,9 +520,10 @@ struct touch : public base_turn_handler
         bool const has_pk = ! range_p.is_last_segment();
         bool const has_qk = ! range_q.is_last_segment();
 
-        int const side_qi_p1 = dir_info.sides.template get<1, 0>();
-        int const side_qk_p1 = has_qk ? side.qk_wrt_p1() : 0;
+        int const side_pk_q1 = has_pk ? side.pk_wrt_q1() : 0;
 
+        int const side_qi_p1 = verified_side(dir_info.sides.template get<1, 0>(), range_p, range_q, 0, 0);
+        int const side_qk_p1 = has_qk ? verified_side(side.qk_wrt_p1(), range_p, range_q, 0, 2) : 0;
 
         // If Qi and Qk are both at same side of Pi-Pj,
         // or collinear (so: not opposite sides)
@@ -413,6 +534,7 @@ struct touch : public base_turn_handler
             int const side_qk_q  = has_qk ? side.qk_wrt_q1() : 0;
 
             bool const q_turns_left = side_qk_q == 1;
+
             bool const block_q = side_qk_p1 == 0
                         && ! same(side_qi_p1, side_qk_q)
                         ;
@@ -422,9 +544,18 @@ struct touch : public base_turn_handler
             // or Q is fully collinear && P turns not to left
             if (side_pk_p == side_qi_p1
                 || side_pk_p == side_qk_p1
-                || (side_qi_p1 == 0 && side_qk_p1 == 0 && side_pk_p != -1)
-                )
+                || (side_qi_p1 == 0 && side_qk_p1 == 0 && side_pk_p != -1))
             {
+#if ! defined(BOOST_GEOMETRY_USE_RESCALING)
+                if (side_qk_p1 == 0 && side_pk_q1 == 0
+                    && has_qk && has_qk
+                    && handle_imperfect_touch(range_p, range_q, ti))
+                {
+                    // If q continues collinearly (opposite) with p, it should be blocked
+                    // but (FP) not if there is just a tiny space in between
+                    return;
+                }
+#endif
                 // Collinear -> lines join, continue
                 // (#BRL2)
                 if (side_pk_q2 == 0 && ! block_q)
@@ -432,8 +563,6 @@ struct touch : public base_turn_handler
                     both_collinear<0, 1>(range_p, range_q, umbrella_strategy, 2, 2, ti);
                     return;
                 }
-
-                int const side_pk_q1 = has_pk && has_qk ? side.pk_wrt_q1() : 0;
 
                 // Collinear opposite case -> block P
                 // (#BRL4, #BLR8)
@@ -457,7 +586,6 @@ struct touch : public base_turn_handler
                     {
                         ti.operations[1].operation = operation_blocked;
                     }
-                    //block_second(block_q, ti);
                     return;
                 }
 
@@ -483,7 +611,6 @@ struct touch : public base_turn_handler
                     {
                         ti.touch_only = true;
                     }
-                    //block_second(block_q, ti);
                     return;
                 }
             }
@@ -508,8 +635,9 @@ struct touch : public base_turn_handler
         }
         else
         {
+            // The qi/qk are opposite to each other, w.r.t. p1
             // From left to right or from right to left
-            int const side_pk_p = has_pk ? side.pk_wrt_p1() : 0;
+            int const side_pk_p = has_pk ? verified_side(side.pk_wrt_p1(), range_p, range_p, 0, 2) : 0;
             bool const right_to_left = side_qk_p1 == 1;
 
             // If p turns into direction of qi (1,2)
@@ -593,6 +721,36 @@ struct equal : public base_turn_handler
         int const side_pk_p = has_pk ? side.pk_wrt_p1() : 0;
         int const side_qk_p = has_qk ? side.qk_wrt_p1() : 0;
 
+#if ! defined(BOOST_GEOMETRY_USE_RESCALING)
+
+        if (has_pk && has_qk && side_pk_p == side_qk_p)
+        {
+            // They turn to the same side, or continue both collinearly
+            // Without rescaling, to check for union/intersection,
+            // try to check side values (without any thresholds)
+            typedef typename select_coordinate_type
+                <
+                    typename UniqueSubRange1::point_type,
+                    typename UniqueSubRange2::point_type
+                >::type coordinate_type;
+
+            typedef detail::distance_measure<coordinate_type> dm_type;
+
+            dm_type const dm_pk_q2
+               = get_distance_measure(range_q.at(1), range_q.at(2), range_p.at(2));
+            dm_type const dm_qk_p2
+               = get_distance_measure(range_p.at(1), range_p.at(2), range_q.at(2));
+
+            if (dm_qk_p2.measure != dm_pk_q2.measure)
+            {
+                // A (possibly very small) difference is detected, which
+                // can be used to distinguish between union/intersection
+                ui_else_iu(dm_qk_p2.measure < dm_pk_q2.measure, ti);
+                return;
+            }
+        }
+#endif
+
         // If pk is collinear with qj-qk, they continue collinearly.
         // This can be on either side of p1 (== q1), or collinear
         // The second condition checks if they do not continue
@@ -618,133 +776,6 @@ struct equal : public base_turn_handler
         }
     }
 };
-
-
-template
-<
-    typename TurnInfo
->
-struct start : public base_turn_handler
-{
-    template
-    <
-        typename UniqueSubRange1,
-        typename UniqueSubRange2,
-        typename IntersectionInfo,
-        typename DirInfo,
-        typename SideCalculator,
-        typename UmbrellaStrategy
-    >
-    static inline bool apply(UniqueSubRange1 const& range_p,
-                UniqueSubRange2 const& range_q,
-                TurnInfo& ti,
-                IntersectionInfo const& info,
-                DirInfo const& dir_info,
-                SideCalculator const& side,
-                UmbrellaStrategy const& )
-    {
-        // For now disabled. TODO: remove all code or fix inconsistencies
-        // within validity and relations
-        return false;
-
-        if (dir_info.opposite)
-        {
-            // They should not be collinear
-            return false;
-        }
-
-        int const side_pj_q1 = side.pj_wrt_q1();
-        int const side_qj_p1 = side.qj_wrt_p1();
-
-        // Get side values at starting point
-        typedef detail::distance_measure
-            <
-                typename select_coordinate_type
-                    <
-                        typename UniqueSubRange1::point_type,
-                        typename UniqueSubRange2::point_type
-                    >::type
-            > dm_type;
-
-        typedef typename UmbrellaStrategy::cs_tag cs_tag;
-        dm_type const dm_pi_q1 = get_distance_measure<cs_tag>(range_q.at(0), range_q.at(1), range_p.at(0));
-        dm_type const dm_qi_p1 = get_distance_measure<cs_tag>(range_p.at(0), range_p.at(1), range_q.at(0));
-
-        if (dir_info.how_a == -1 && dir_info.how_b == -1)
-        {
-            // Both p and q leave
-            if (dm_pi_q1.is_zero() && dm_qi_p1.is_zero())
-            {
-                // Exactly collinear, not necessary to handle it
-                return false;
-            }
-
-            if (! (dm_pi_q1.is_small() && dm_qi_p1.is_small()))
-            {
-                // Not nearly collinear
-                return false;
-            }
-
-           if (side_qj_p1 == 0)
-            {
-                // Collinear is not handled
-                return false;
-            }
-
-            ui_else_iu(side_qj_p1 == -1, ti);
-        }
-        else if (dir_info.how_b == -1)
-        {
-            // p --------------->
-            //             |
-            //             | q         q leaves
-            //             v
-            //
-
-            if (dm_qi_p1.is_zero() || ! dm_qi_p1.is_small())
-            {
-                // Exactly collinear
-                return false;
-            }
-
-            if (side_qj_p1 == 0)
-            {
-                // Collinear is not handled
-                return false;
-            }
-
-            ui_else_iu(side_qj_p1 == -1, ti);
-        }
-        else if (dir_info.how_a == -1)
-        {
-            if (dm_pi_q1.is_zero() || ! dm_pi_q1.is_small())
-            {
-                // It starts exactly, not necessary to handle it
-                return false;
-            }
-
-            // p leaves
-            if (side_pj_q1 == 0)
-            {
-                // Collinear is not handled
-                return false;
-            }
-
-            ui_else_iu(side_pj_q1 == 1, ti);
-        }
-        else
-        {
-            // Not supported
-            return false;
-        }
-
-        // Copy intersection point
-        assign_point(ti, method_start, info, 0);
-        return true;
-    }
-
-};
-
 
 template
 <
@@ -1169,6 +1200,8 @@ struct get_turn_info
         switch(method)
         {
             case 'a' : // "angle"
+            case 'f' : // "from"
+            case 's' : // "start"
                 do_only_convert = true;
                 break;
 
@@ -1208,20 +1241,6 @@ struct get_turn_info
                 // Both touch (both arrive there)
                 touch<TurnInfo>::apply(range_p, range_q, tp, inters.i_info(), inters.d_info(), inters.sides(), umbrella_strategy);
                 *out++ = tp;
-            }
-            break;
-            case 'f' :
-            case 's' :
-            {
-                // "from" or "start" without rescaling, it is in some cases necessary to handle
-                if (start<TurnInfo>::apply(range_p, range_q, tp, inters.i_info(), inters.d_info(), inters.sides(), umbrella_strategy))
-                {
-                    *out++ = tp;
-                }
-                else
-                {
-                    do_only_convert = true;
-                }
             }
             break;
             case 'e':

@@ -21,8 +21,17 @@
 
 #include "forward.h"
 #include "GetSet.h"
+#include "MessageHighlight.h"
 
 namespace dcpp {
+
+struct OutgoingChatMessage {
+	OutgoingChatMessage(const string& aMessage, const void* aOwner, bool aThirdPerson) noexcept : text(aMessage), owner(aOwner), thirdPerson(aThirdPerson) {}
+
+	const string text;
+	const void* owner;
+	const bool thirdPerson;
+};
 
 class ChatMessage {
 public:
@@ -38,6 +47,8 @@ public:
 	GETSET(bool, read, Read);
 
 	string format() const noexcept;
+	void parseMention(const Identity& aMe) noexcept;
+	void parseHighlights(const Identity& aMe, const MessageHighlightList& aHighlights) noexcept;
 
 	const string& getText() const noexcept {
 		return text;
@@ -46,7 +57,17 @@ public:
 	uint64_t getId() const noexcept {
 		return id;
 	}
+
+	const string& getMentionedNick() const noexcept {
+		return mentionedNick;
+	}
+
+	const MessageHighlight::SortedList& getHighlights() const noexcept {
+		return highlights;
+	}
 private:
+	MessageHighlight::SortedList highlights;
+	string mentionedNick;
 	string text;
 	const uint64_t id;
 };
@@ -61,7 +82,7 @@ public:
 		SEV_LAST 
 	};
 
-	LogMessage(const string& aMessage, Severity sev, bool aHistory = false) noexcept;
+	LogMessage(const string& aMessage, Severity sev, const string& aLabel, bool aHistory = false) noexcept;
 
 	uint64_t getId() const noexcept {
 		return id;
@@ -84,11 +105,21 @@ public:
 	}
 
 	IGETSET(bool, read, Read, false);
+
+	const MessageHighlight::SortedList& getHighlights() const noexcept {
+		return highlights;
+	}
+
+	const string& getLabel() const noexcept {
+		return label;
+	}
 private:
 	const uint64_t id;
 	string text;
+	const string label;
 	const time_t time;
 	const Severity severity;
+	MessageHighlight::SortedList highlights;
 };
 
 struct Message {
@@ -102,6 +133,9 @@ struct Message {
 
 	const ChatMessagePtr chatMessage = nullptr;
 	const LogMessagePtr logMessage = nullptr;
+	const MessageHighlight::SortedList& getHighlights() const noexcept {
+		return type == TYPE_CHAT ? chatMessage->getHighlights() : logMessage->getHighlights();
+	}
 
 	const Type type;
 };

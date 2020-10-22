@@ -21,7 +21,6 @@
 
 #include "AirUtil.h"
 #include "ClientManager.h"
-#include "LogManager.h"
 #include "RelevanceSearch.h"
 #include "ResourceManager.h"
 #include "ShareManager.h"
@@ -200,22 +199,18 @@ FavoriteUser FavoriteManager::createUser(const UserPtr& aUser, const string& aUr
 	string hubUrl = aUrl;
 
 	//prefer to use the add nick
-	ClientManager* cm = ClientManager::getInstance();
-	{
-		RLock l(cm->getCS());
-		auto ou = cm->findOnlineUser(aUser->getCID(), aUrl);
-		if (!ou) {
-			//offline
-			auto ofu = ClientManager::getInstance()->getOfflineUser(aUser->getCID());
-			if (ofu) {
-				nick = ofu->getNick();
-				seen = ofu->getLastSeen();
-				hubUrl = ofu->getUrl();
-			}
+	auto ou = ClientManager::getInstance()->findOnlineUser(aUser->getCID(), aUrl);
+	if (!ou) {
+		//offline
+		auto ofu = ClientManager::getInstance()->getOfflineUser(aUser->getCID());
+		if (ofu) {
+			nick = ofu->getNick();
+			seen = ofu->getLastSeen();
+			hubUrl = ofu->getUrl();
 		}
-		else {
-			nick = ou->getIdentity().getNick();
-		}
+	}
+	else {
+		nick = ou->getIdentity().getNick();
 	}
 
 	auto fu = FavoriteUser(aUser, nick, hubUrl, aUser->getCID().toBase32());
@@ -692,7 +687,7 @@ void FavoriteManager::loadFavoriteHubs(SimpleXML& aXml) {
 
 			auto server = aXml.getChildAttrib("Server");
 			if (server.empty()) {
-				LogManager::getInstance()->message("A favorite hub with an empty address wasn't loaded: " + e->getName(), LogMessage::SEV_WARNING);
+				dcdebug("A favorite hub with an empty address wasn't loaded: %s\n", e->getName().c_str());
 				continue;
 			}
 
@@ -820,11 +815,20 @@ FavoriteHubEntryList FavoriteManager::getFavoriteHubs(const string& group) const
 }
 
 void FavoriteManager::setHubSetting(const string& aUrl, HubSettings::HubBoolSetting aSetting, bool aNewValue) noexcept {
-	RLock l(cs);
-	auto p = getFavoriteHub(aUrl);
-	if (p != favoriteHubs.end()) {
+	FavoriteHubEntryPtr hub;
+
+	{
+		RLock l(cs);
+		auto p = getFavoriteHub(aUrl);
+		if (p == favoriteHubs.end()) {
+			return;
+		}
+
+		hub = *p;
 		(*p)->get(aSetting) = aNewValue;
 	}
+
+	fire(FavoriteManagerListener::FavoriteHubUpdated(), hub);
 }
 
 bool FavoriteManager::hasSlot(const UserPtr& aUser) const noexcept {
@@ -1002,7 +1006,7 @@ void FavoriteManager::setConnectState(const FavoriteHubEntryPtr& aEntry) noexcep
 	auto client = ClientManager::getInstance()->getClient(aEntry->getServer());
 	if (client) {
 		aEntry->setConnectState(client->isConnected() ? FavoriteHubEntry::STATE_CONNECTED : FavoriteHubEntry::STATE_CONNECTING);
-		aEntry->setCurrentHubToken(client->getClientId());
+		aEntry->setCurrentHubToken(client->getToken());
 	} else {
 		aEntry->setCurrentHubToken(0);
 		aEntry->setConnectState(FavoriteHubEntry::STATE_DISCONNECTED);
@@ -1016,7 +1020,7 @@ void FavoriteManager::onConnectStateChanged(const ClientPtr& aClient, FavoriteHu
 		if (aState == FavoriteHubEntry::STATE_DISCONNECTED) {
 			hub->setCurrentHubToken(0);
 		} else {
-			hub->setCurrentHubToken(aClient->getClientId());
+			hub->setCurrentHubToken(aClient->getToken());
 		}
 
 		fire(FavoriteManagerListener::FavoriteHubUpdated(), hub);

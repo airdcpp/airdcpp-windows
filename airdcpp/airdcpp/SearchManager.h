@@ -26,10 +26,12 @@
 
 #include "AdcCommand.h"
 #include "CriticalSection.h"
+#include "GetSet.h"
 #include "Search.h"
 #include "Singleton.h"
 #include "Speaker.h"
 #include "UDPServer.h"
+#include "Util.h"
 
 
 namespace dcpp {
@@ -107,6 +109,11 @@ public:
 	string getTypeIdByExtension(const string& aExtension, bool aDefaultsOnly = false) const noexcept;
 
 	bool decryptPacket(string& x, size_t aLen, const ByteVector& aBuf);
+
+	SearchInstancePtr createSearchInstance(const string& aOwnerId, uint64_t aExpirationTick = 0) noexcept;
+	SearchInstancePtr removeSearchInstance(SearchInstanceToken aToken) noexcept;
+	SearchInstancePtr getSearchInstance(SearchInstanceToken aToken) const noexcept;
+	SearchInstanceList getSearchInstances() const noexcept;
 private:
 	vector<pair<uint8_t*, uint64_t>> searchKeys;
 
@@ -131,6 +138,9 @@ private:
 	SearchTypes searchTypes; // name, extlist
 
 	UDPServer udpServer;
+
+	typedef map<SearchInstanceToken, SearchInstancePtr> SearchInstanceMap;
+	SearchInstanceMap searchInstances;
 };
 
 } // namespace dcpp

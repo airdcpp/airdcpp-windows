@@ -16,6 +16,8 @@
 /* Force MPICH not to define SEEK_SET, SEEK_CUR, and SEEK_END, which
    conflict with the versions in <stdio.h> and <cstdio>. */
 #define MPICH_IGNORE_CXX_SEEK 1
+/* We do not want to link in the OpenMPI CXX stuff */
+#define OMPI_SKIP_MPICXX
 
 #include <mpi.h>
 #include <boost/config.hpp>
@@ -45,7 +47,7 @@
 #endif
 
 #if defined MPI_SUBVERSION
-/** @brief Major version of the underlying MPI implementation supproted standard.
+/** @brief Major version of the underlying MPI implementation supported standard.
  * 
  * If, for some reason, MPI_SUBVERSION is not supported, you should probably set that
  * according to your MPI documentation
@@ -116,13 +118,27 @@
 #  define BOOST_MPI_HAS_MEMORY_ALLOCATION
 #  define BOOST_MPI_HAS_NOARG_INITIALIZATION
 #  undef  BOOST_MPI_BCAST_BOTTOM_WORKS_FINE
-#elif defined(MPICH_NAME)
+#endif
+
+#if defined(MPICH_NAME)
 // Configuration for MPICH
 #endif
 
-#if BOOST_MPI_VERSION >= 3 && (!defined(I_MPI_NUMVERSION))
-// This is intel
-#define BOOST_MPI_USE_IMPROBE 1
+#if defined(OPEN_MPI)
+// Configuration for Open MPI
+#endif
+
+#if BOOST_MPI_VERSION >= 3 
+// MPI_Probe an friends should work
+#  if defined(I_MPI_NUMVERSION)
+// Excepted for some Intel versions.
+// Note that I_MPI_NUMVERSION is not always defined with Intel.
+#    if I_MPI_NUMVERSION > 20190004000
+#      define BOOST_MPI_USE_IMPROBE 1
+#    endif
+#  else
+#    define BOOST_MPI_USE_IMPROBE 1
+#  endif
 #endif
 
 /*****************************************************************************

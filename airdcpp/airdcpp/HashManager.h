@@ -26,6 +26,7 @@
 #include "HashedFile.h"
 #include "HashManagerListener.h"
 #include "MerkleTree.h"
+#include "Message.h"
 #include "Semaphore.h"
 #include "SFVReader.h"
 #include "Singleton.h"
@@ -69,7 +70,30 @@ public:
 	// Throws HashException
 	void addTree(const TigerTree& tree) { store.addTree(tree); }
 
-	void getStats(string& curFile, int64_t& bytesLeft, size_t& filesLeft, int64_t& speed, int& hashers) const noexcept;
+	struct HashStats {
+		string curFile;
+		int64_t bytesLeft = 0;
+		size_t filesLeft = 0;
+		int64_t speed = 0;
+		size_t filesAdded = 0;
+		int64_t bytesAdded = 0;
+		int hashersRunning = 0;
+		bool isPaused = true;
+
+		bool operator==(const HashStats& rhs) const noexcept {
+			return 
+				curFile == rhs.curFile && 
+				bytesLeft == rhs.bytesLeft &&
+				filesLeft == rhs.filesLeft &&
+				speed == rhs.speed &&
+				filesAdded == rhs.filesLeft &&
+				bytesAdded == rhs.bytesAdded &&
+				hashersRunning == rhs.hashersRunning &&
+				isPaused == rhs.isPaused;
+		}
+	};
+
+	HashStats getStats() const noexcept;
 
 	// Get TTH for a file synchronously (and optionally stores the hash information)
 	// Throws HashException/FileException
@@ -120,12 +144,13 @@ private:
 		bool pause() noexcept;
 		void resume();
 		bool isPaused() const noexcept;
+		bool isRunning() const noexcept;
 		
 		void clear() noexcept;
 
 		void stopHashing(const string& baseDir) noexcept;
 		int run();
-		void getStats(string& curFile, int64_t& bytesLeft, size_t& filesLeft, int64_t& speed) const noexcept;
+		void getStats(string& curFile_, int64_t& bytesLeft_, size_t& filesLeft_, int64_t& speed_, size_t& filesAdded_, int64_t& bytesAdded_) const noexcept;
 		void shutdown();
 
 		bool hasFile(const string& aPath) const noexcept;
@@ -138,6 +163,8 @@ private:
 
 		const int hasherID;
 	private:
+		void clearStats() noexcept;
+
 		class WorkItem {
 		public:
 			WorkItem(const string& aFilePathLower, const string& aFilePath, int64_t aSize, devid aDeviceId) noexcept
@@ -168,7 +195,9 @@ private:
 
 		string currentFile;
 		atomic<int64_t> totalBytesLeft;
+		atomic<int64_t> totalBytesAdded;
 		atomic<int64_t> lastSpeed;
+		atomic<int64_t> totalFilesAdded;
 
 		void instantPause();
 
@@ -189,7 +218,8 @@ private:
 
 	friend class Hasher;
 	void removeHasher(Hasher* aHasher);
-	void log(const string& aMessage, int hasherID, bool isError, bool lock);
+	void logHasher(const string& aMessage, int aHasherID, bool aIsError, bool aLock);
+	static void log(const string& aMsg, LogMessage::Severity aSeverity) noexcept;
 
 	void optimize(bool doVerify) noexcept { store.optimize(doVerify); }
 
@@ -260,7 +290,7 @@ private:
 	/** Single node tree where node = root, no storage in HashData.dat */
 	static const int64_t SMALL_TREE = -1;
 
-	void hashDone(const string& aFileName, const string& pathLower, const TigerTree& tt, int64_t speed, HashedFile& aFileInfo, int hasherID = 0) noexcept;
+	void hasherDone(const string& aFileName, const string& pathLower, const TigerTree& tt, int64_t speed, HashedFile& aFileInfo, int hasherID = 0) noexcept;
 
 	class Optimizer : public Thread {
 	public:

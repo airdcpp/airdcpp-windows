@@ -146,7 +146,7 @@ void DirSFVReader::load() noexcept {
 		}
 
 		if (!error.empty()) {
-			LogManager::getInstance()->message(curPath + ": " + error, LogMessage::SEV_ERROR);
+			LogManager::getInstance()->message(curPath + ": " + error, LogMessage::SEV_ERROR, STRING(SFV_READER));
 			failedFiles.push_back(curPath);
 		}
 	}

@@ -54,7 +54,11 @@ namespace dcpp {
 		PrivateChat(const HintedUser& aUser, UserConnection* aUc = nullptr);
 		~PrivateChat();
 
-		bool sendMessage(const string& msg, string& error_, bool thirdPerson);
+		const CID& getToken() const noexcept {
+			return replyTo.user->getCID();
+		}
+
+		bool sendMessageHooked(const OutgoingChatMessage& aMessage, string& error_);
 		void handleMessage(const ChatMessagePtr& aMessage) noexcept;
 		void statusMessage(const string& aMessage, LogMessage::Severity aSeverity) noexcept;
 

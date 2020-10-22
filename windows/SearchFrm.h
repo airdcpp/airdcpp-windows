@@ -29,13 +29,14 @@
 #include "UserInfoBaseHandler.h"
 #include "DownloadBaseHandler.h"
 
-#include <airdcpp/Client.h>
 #include <airdcpp/CriticalSection.h>
+#include <airdcpp/GroupedSearchResult.h>
 #include <airdcpp/SearchManager.h>
-#include <airdcpp/SearchQuery.h>
 #include <airdcpp/SearchResult.h>
 
 #include <airdcpp/ClientManagerListener.h>
+
+#include <airdcpp/SearchInstanceListener.h>
 #include <airdcpp/SettingsManagerListener.h>
 #include <airdcpp/TimerManagerListener.h>
 
@@ -43,12 +44,13 @@
 #include "SearchTypeCombo.h"
 #include "ListFilter.h"
 #include "MainFrm.h"
+#include "FormatUtil.h"
 
 #define SEARCH_MESSAGE_MAP 6		// This could be any number, really...
 #define SHOWUI_MESSAGE_MAP 7
 
 class SearchFrame : public MDITabChildWindowImpl<SearchFrame>, 
-	private SearchManagerListener, private ClientManagerListener,
+	private SearchInstanceListener, private ClientManagerListener,
 	public UCHandler<SearchFrame>, public UserInfoBaseHandler<SearchFrame>, public DownloadBaseHandler<SearchFrame>,
 	private SettingsManagerListener, private TimerManagerListener, private Async<SearchFrame>
 {
@@ -121,9 +123,8 @@ public:
 		MESSAGE_HANDLER(BM_SETCHECK, onShowUI)
 	END_MSG_MAP()
 
-	SearchFrame();
-	~SearchFrame() {
-	}
+	SearchFrame(const SearchInstancePtr& aSearch);
+	~SearchFrame();
 
 	LRESULT onEditChange(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
 	LRESULT onEraseBackground(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL & /*bHandled*/);
@@ -180,10 +181,7 @@ public:
 		return 0;
 	}
 
-	LRESULT onFreeSlots(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		onlyFree = (ctrlSlots.GetCheck() == 1);
-		return 0;
-	}
+	LRESULT onFreeSlots(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT onAschOnly(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/) {
 		aschOnly = (ctrlRequireAsch.GetCheck() == 1);
@@ -240,7 +238,7 @@ private:
 	class SearchInfo;
 	
 public:	
-	typedef TypedTreeListViewCtrl < SearchInfo, IDC_RESULTS, TTHValue, hash<TTHValue*>, equal_to < TTHValue*>, NO_GROUP_UNIQUE_CHILDREN> SearchInfoList;
+	typedef TypedTreeListViewCtrl<SearchInfo, IDC_RESULTS, TTHValue, hash<TTHValue*>, equal_to < TTHValue*>, NO_GROUP_UNIQUE_CHILDREN> SearchInfoList;
 	typedef FilteredListViewCtrl<SearchInfoList, SearchFrame, IDC_RESULTS> FilteredList;
 	SearchInfoList& getUserList() { return ctrlResults.list; }
 	
@@ -283,14 +281,73 @@ private:
 
 		SearchInfo::List subItems;
 
-		SearchInfo(const SearchResultPtr& aSR, const SearchResult::RelevanceInfo& aRelevance);
+		SearchInfo(const GroupedSearchResultPtr& aGroupedResult);
+		SearchInfo(const GroupedSearchResultPtr& aGroupedResult, const SearchResultPtr& aSR);
 		~SearchInfo() {	}
 
-		const UserPtr& getUser() const { return sr->getUser().user; }
-		const string& getHubUrl() const { return sr->getUser().hint; }
+		const HintedUser& getHintedUser() const noexcept {
+			return sr ? sr->getUser() : groupedResult->getBaseUser();
+		}
+
+		const UserPtr& getUser() const noexcept;
+		const string& getHubUrl() const noexcept;
+		time_t getDate() const noexcept {
+			return sr ? sr->getDate() : groupedResult->getOldestDate();
+		}
+
+		size_t getFreeSlots() const noexcept {
+			return sr ? sr->getFreeSlots() : groupedResult->getSlots().free;
+		}
+
+		size_t getTotalSlots() const noexcept {
+			return sr ? sr->getTotalSlots() : groupedResult->getSlots().total;
+		}
+
+		const string& getAdcPath() const noexcept {
+			return sr ? sr->getAdcPath() : groupedResult->getAdcPath();
+		}
+
+		const TTHValue& getTTH() const noexcept {
+			return groupedResult->getTTH();
+		}
+
+		bool isDirectory() const noexcept {
+			return groupedResult->isDirectory();
+		}
+
+		string getFileName() const noexcept {
+			return sr ? sr->getFileName() : groupedResult->getFileName();
+		}
+
+		string getAdcFilePath() const noexcept {
+			return Util::getAdcFilePath(getAdcPath());
+		}
+
+		DupeType getDupe() const noexcept {
+			return groupedResult->getDupe();
+		}
+
+		const DirectoryContentInfo& getContentInfo() const noexcept {
+			return sr ? sr->getContentInfo() : groupedResult->getContentInfo();
+		}
+
+		double getTotalRelevance() const noexcept {
+			return groupedResult->getTotalRelevance();
+		}
+
+		int64_t getSize() const noexcept {
+			return sr ? sr->getSize() : groupedResult->getSize();
+		}
+
+		int getHits() const noexcept {
+			return groupedResult->getHits();
+		}
+
+		double getConnectionNumeric() const noexcept {
+			return sr ? sr->getConnectionInt() : groupedResult->getConnectionSpeed();
+		}
 
 		bool collapsed = true;
-		size_t hits = 0;
 		SearchInfo* parent = nullptr;
 
 		struct CheckTTH {
@@ -308,30 +365,22 @@ private:
 		};
 	
 		const tstring getText(uint8_t col) const;
-	
 		static int compareItems(const SearchInfo* a, const SearchInfo* b, uint8_t col);
-
 		int getImageIndex() const;
 		
-		//inline SearchInfo* createParent() { return new SearchInfo(*this); }
 		inline SearchInfo* createParent() { return this; }
-		inline const TTHValue& getGroupCond() const { return sr->getTTH(); }
+		inline const TTHValue& getGroupCond() const { return getTTH(); }
 
-		bool isDupe() const { return dupe != DUPE_NONE; }
-		/*bool isShareDupe() const { return dupe == DUPE_SHARE_FULL || dupe == DUPE_SHARE_PARTIAL; }
-		bool isQueueDupe() const { return dupe == DUPE_QUEUE_FULL || dupe == DUPE_FINISHED; }*/
+		bool isDupe() const { return groupedResult->getDupe() != DUPE_NONE; }
 		StringList getDupePaths() const;
 
-		SearchResultPtr sr;
-		IGETSET(uint8_t, flagIndex, FlagIndex, 0);
-		IGETSET(DupeType, dupe, Dupe, DUPE_NONE);
-		GETSET(tstring, ipText, IpText);
+		IGETSET(GroupedSearchResultPtr, groupedResult, GroupedResult, nullptr);
+		IGETSET(SearchResultPtr, sr, SR, nullptr);
 
-		double getTotalRelevance() const;
-		double getMatchRelevance() const { return matchRelevance; }
-	private:
-		double matchRelevance = 0;
-		double sourceScoreFactor = 0.01;
+
+		size_t hits = 0;
+
+		GETSET(FormatUtil::CountryFlagInfo, countryInfo, CountryInfo);
 	};
 	
 	void performAction(std::function<void (const SearchInfo* aInfo)> f, bool oncePerParent=false);
@@ -357,8 +406,8 @@ private:
 	};
 
 	tstring initialString;
-	int64_t initialSize;
-	Search::SizeModes initialMode;
+	int64_t initialSize = 0;
+	Search::SizeModes initialMode = Search::SIZE_ATLEAST;
 	string initialType;
 
 	CStatusBarCtrl ctrlStatus;
@@ -395,14 +444,12 @@ private:
 	
 	CStatic searchLabel, sizeLabel, optionLabel, typeLabel, hubsLabel, dateLabel, aschLabel;
 	CButton ctrlSlots, ctrlShowUI, ctrlCollapsed, ctrlExcludedBool, ctrlRequireAsch;
-	bool showUI;
+	bool showUI = true;
 
 	CImageListManaged images;
 	FilteredList ctrlResults;
 	TypedListViewCtrl<HubInfo, IDC_HUB> ctrlHubs;
 
-	unique_ptr<SearchQuery> curSearch;
-	StringList wholeTargets;
 	SearchInfo::List pausedResults;
 
 	CComboBox ctrlExcluded;
@@ -412,27 +459,23 @@ private:
 	uint64_t cycleResults = 0;
 	bool collecting = false;
 
-	bool statusDirty;
-	bool usingExcludes;
-	bool onlyFree;
-	bool expandSR;
-	bool running;
-	bool waiting;
-	bool aschOnly;
-	int64_t resultsCount;
+	bool statusDirty = false;
+	bool usingExcludes = false;
+	bool expandSR = false;
+	bool running = false;
+	bool waiting = false;
+	bool aschOnly = false;
+	int64_t resultsCount = 0;
 
-	uint64_t searchEndTime;
-	uint64_t searchStartTime;
+	uint64_t searchEndTime = 0;
+	uint64_t searchStartTime = 0;
 	tstring target;
 	
 	SharedMutex cs;
-	size_t droppedResults;
 
-	bool closed;
+	bool closed = false;
 
 	ParamMap ucLineParams;
-	
-	std::string token;
 		
 	static int columnIndexes[];
 	static int columnSizes[];
@@ -445,14 +488,21 @@ private:
 
 	StringList lastDisabledHubs;
 
+	void onSearchStarted(const string& aSearchString, uint64_t aQueueTime) noexcept;
 	void onEnter();
+	void reset();
 	void fixControls();
 
-	void onResultFiltered();
-
 	void onTab();
-	
-	void on(SearchManagerListener::SR, const SearchResultPtr& aResult) noexcept;
+
+	// SearchInstanceListener
+	void on(SearchInstanceListener::GroupedResultAdded, const GroupedSearchResultPtr& aResult) noexcept override;
+	void on(SearchInstanceListener::ChildResultAdded, const GroupedSearchResultPtr& aParent, const SearchResultPtr& aChild) noexcept override;
+	void on(SearchInstanceListener::Reset) noexcept override;
+	void on(SearchInstanceListener::ResultFiltered) noexcept override;
+	void on(SearchInstanceListener::HubSearchQueued, const string& aSearchToken, uint64_t aQueueTime, size_t aQueuedCount) noexcept override;
+
+	// TimerManagerListener
 	void on(TimerManagerListener::Second, uint64_t aTick) noexcept;
 
 	// ClientManagerListener
@@ -472,6 +522,8 @@ private:
 	LRESULT onItemChangedHub(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
 	void updateHubInfoString();
 	bool created = false;
+
+	SearchInstancePtr search;
 };
 
 #endif // !defined(SEARCH_FRM_H)

@@ -26,6 +26,7 @@
 #include "FilteredListViewCtrl.h"
 #include "BrowserBar.h"
 #include "PrivateFrame.h"
+#include "ActionUtil.h"
 
 #include <airdcpp/Bundle.h>
 #include <airdcpp/DownloadManagerListener.h>
@@ -384,12 +385,12 @@ private:
 
 			// get list
 			getListMenu->appendItem(nick, [=] {
-				WinUtil::GetList()(u.user, u.hint);
+				ActionUtil::GetList()(u.user, u.hint);
 			});
 
 			// browse list
 			browseMenu->appendItem(nick, [=] {
-				WinUtil::BrowseList()(u.user, u.hint);
+				ActionUtil::BrowseList()(u.user, u.hint);
 			});
 
 			// PM

@@ -22,7 +22,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "PropPage.h"
-#include "WinUtil.h"
+#include "ActionUtil.h"
 
 #include "Wizard.h"
 
@@ -34,9 +34,9 @@ public:
 	typedef CAeroWizardPageImpl<WizardGeneral> baseClass;
 	BEGIN_MSG_MAP(WizardGeneral) 
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
-		COMMAND_HANDLER(IDC_NICK, EN_CHANGE, WinUtil::onUserFieldChar)
-		COMMAND_HANDLER(IDC_EMAIL, EN_CHANGE, WinUtil::onUserFieldChar)
-		COMMAND_HANDLER(IDC_USERDESC, EN_CHANGE, WinUtil::onUserFieldChar)
+		COMMAND_HANDLER(IDC_NICK, EN_CHANGE, ActionUtil::onUserFieldChar)
+		COMMAND_HANDLER(IDC_EMAIL, EN_CHANGE, ActionUtil::onUserFieldChar)
+		COMMAND_HANDLER(IDC_USERDESC, EN_CHANGE, ActionUtil::onUserFieldChar)
 		CHAIN_MSG_MAP(baseClass) 
 	END_MSG_MAP() 
 			

@@ -48,7 +48,7 @@ struct unsafe_access {
   */
   template <class Histogram, unsigned I = 0>
   static decltype(auto) axis(Histogram& hist, std::integral_constant<unsigned, I> = {}) {
-    detail::axis_index_is_valid(hist.axes_, I);
+    assert(I < hist.rank());
     return detail::axis_get<I>(hist.axes_);
   }
 
@@ -59,7 +59,7 @@ struct unsafe_access {
   */
   template <class Histogram>
   static decltype(auto) axis(Histogram& hist, unsigned i) {
-    detail::axis_index_is_valid(hist.axes_, i);
+    assert(i < hist.rank());
     return detail::axis_get(hist.axes_, i);
   }
 
@@ -69,13 +69,28 @@ struct unsafe_access {
   */
   template <class Histogram>
   static auto& storage(Histogram& hist) {
-    return hist.storage_and_mutex_.first();
+    return hist.storage_;
   }
 
   /// @copydoc storage()
   template <class Histogram>
   static const auto& storage(const Histogram& hist) {
-    return hist.storage_and_mutex_.first();
+    return hist.storage_;
+  }
+
+  /**
+    Get index offset.
+    @param hist histogram
+    */
+  template <class Histogram>
+  static auto& offset(Histogram& hist) {
+    return hist.offset_;
+  }
+
+  /// @copydoc offset()
+  template <class Histogram>
+  static const auto& offset(const Histogram& hist) {
+    return hist.offset_;
   }
 
   /**

@@ -102,7 +102,7 @@ int NmdcHub::connect(const OnlineUser& aUser, const string&, string& /*lastError
 void NmdcHub::refreshLocalIp() noexcept {
 	if((!CONNSETTING(NO_IP_OVERRIDE) || getUserIp4().empty()) && !getMyIdentity().getIp4().empty()) {
 		// Best case - the server detected it
-		localIp = getMyIdentity().getIp();
+		localIp = getMyIdentity().getIp4();
 	} else {
 		localIp.clear();
 	}
@@ -161,7 +161,6 @@ OnlineUser& NmdcHub::getUser(const string& aNick) noexcept {
 		u->getIdentity().setNick(aNick);
 		if(u->getUser() == getMyIdentity().getUser()) {
 			setMyIdentity(u->getIdentity());
-			u->getIdentity().setConnectMode(isActive() ? Identity::MODE_ACTIVE_V4 : Identity::MODE_PASSIVE_V4);
 		}
 	}
 	
@@ -181,6 +180,15 @@ OnlineUserPtr NmdcHub::findUser(const string& aNick) const noexcept {
 	Lock l(cs);
 	NickIter i = users.find(aNick);
 	return i == users.end() ? NULL : i->second;
+}
+
+
+OnlineUser* NmdcHub::findUser(const uint32_t aSID) const noexcept {
+	auto i = find_if(users | map_values, [=](const OnlineUser* u) {
+		return u->getIdentity().getSID() == aSID;
+	});
+
+	return i.base() != users.end() ? *i : nullptr;
 }
 
 void NmdcHub::putUser(const string& aNick) noexcept {

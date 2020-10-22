@@ -20,6 +20,15 @@
 
 #include "Wizard.h"
 
+#include "WizardAutoConnectivity.h"
+#include "WizardManualConnectivity.h"
+#include "WizardGeneral.h"
+#include "WizardConnspeed.h"
+#include "WizardProfile.h"
+#include "WizardSharing.h"
+#include "WizardFinish.h"
+#include "WizardLanguage.h"
+
 
 SetupWizard::SetupWizard(bool isInitial /*false*/) : CAeroWizardFrameImpl<SetupWizard>(CTSTRING(WIZARD)), initial(isInitial), saved(false), pagesDeleted(false) {
 	//m_psh.pfnCallback = &PropSheetProc;

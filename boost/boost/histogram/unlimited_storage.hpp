@@ -9,18 +9,19 @@
 #define BOOST_HISTOGRAM_UNLIMTED_STORAGE_HPP
 
 #include <algorithm>
-#include <boost/assert.hpp>
 #include <boost/core/alloc_construct.hpp>
 #include <boost/core/exchange.hpp>
+#include <boost/core/nvp.hpp>
+#include <boost/histogram/detail/array_wrapper.hpp>
 #include <boost/histogram/detail/iterator_adaptor.hpp>
 #include <boost/histogram/detail/large_int.hpp>
 #include <boost/histogram/detail/operators.hpp>
 #include <boost/histogram/detail/safe_comparison.hpp>
-#include <boost/histogram/detail/static_if.hpp>
 #include <boost/histogram/fwd.hpp>
 #include <boost/mp11/algorithm.hpp>
 #include <boost/mp11/list.hpp>
 #include <boost/mp11/utility.hpp>
+#include <cassert>
 #include <cmath>
 #include <cstdint>
 #include <functional>
@@ -82,7 +83,7 @@ void* buffer_create(Allocator& a, std::size_t n) {
 
 template <class Allocator, class Iterator>
 auto buffer_create(Allocator& a, std::size_t n, Iterator iter) {
-  BOOST_ASSERT(n > 0u);
+  assert(n > 0u);
   auto ptr = a.allocate(n); // may throw
   static_assert(std::is_trivially_copyable<decltype(ptr)>::value,
                 "ptr must be trivially copyable");
@@ -103,8 +104,8 @@ auto buffer_create(Allocator& a, std::size_t n, Iterator iter) {
 template <class Allocator>
 void buffer_destroy(Allocator& a, typename std::allocator_traits<Allocator>::pointer p,
                     std::size_t n) {
-  BOOST_ASSERT(p);
-  BOOST_ASSERT(n > 0u);
+  assert(p);
+  assert(n > 0u);
   boost::alloc_destroy_n(a, p, n);
   a.deallocate(p, n);
 }
@@ -201,7 +202,7 @@ public:
     ~buffer_type() noexcept { destroy(); }
 
     void destroy() noexcept {
-      BOOST_ASSERT((ptr == nullptr) == (size == 0));
+      assert((ptr == nullptr) == (size == 0));
       if (ptr == nullptr) return;
       visit([this](auto* p) {
         using T = std::decay_t<decltype(*p)>;
@@ -261,7 +262,7 @@ public:
       : detail::partially_ordered<const_reference, const_reference, void> {
   public:
     const_reference(buffer_type& b, std::size_t i) noexcept : bref_(b), idx_(i) {
-      BOOST_ASSERT(idx_ < bref_.size);
+      assert(idx_ < bref_.size);
     }
 
     const_reference(const const_reference&) noexcept = default;
@@ -439,13 +440,14 @@ public:
     auto s_begin = begin(s);
     auto s_end = end(s);
     using V = typename std::iterator_traits<decltype(begin(s))>::value_type;
-    constexpr auto ti = buffer_type::template type_index<V>();
-    constexpr auto nt = mp11::mp_size<typename buffer_type::types>::value;
+    // must be non-const to avoid msvc warning about if constexpr
+    auto ti = buffer_type::template type_index<V>();
+    auto nt = mp11::mp_size<typename buffer_type::types>::value;
     const std::size_t size = static_cast<std::size_t>(std::distance(s_begin, s_end));
-    detail::static_if_c<(ti < nt)>(
-        [this, &size, &s_begin](auto) { buffer_.template make<V>(size, s_begin); },
-        [this, &size, &s_begin](auto) { buffer_.template make<double>(size, s_begin); },
-        0);
+    if (ti < nt)
+      buffer_.template make<V>(size, s_begin);
+    else
+      buffer_.template make<double>(size, s_begin);
   }
 
   template <class Iterable, class = detail::requires_iterable<Iterable>>
@@ -498,11 +500,33 @@ public:
     buffer_.template make<T>(s, p);
   }
 
+  template <class Archive>
+  void serialize(Archive& ar, unsigned /* version */) {
+    if (Archive::is_loading::value) {
+      buffer_type tmp(buffer_.alloc);
+      std::size_t size;
+      ar& make_nvp("type", tmp.type);
+      ar& make_nvp("size", size);
+      tmp.visit([this, size](auto* tp) {
+        assert(tp == nullptr);
+        using T = std::decay_t<decltype(*tp)>;
+        buffer_.template make<T>(size);
+      });
+    } else {
+      ar& make_nvp("type", buffer_.type);
+      ar& make_nvp("size", buffer_.size);
+    }
+    buffer_.visit([this, &ar](auto* tp) {
+      auto w = detail::make_array_wrapper(tp, this->buffer_.size);
+      ar& make_nvp("buffer", w);
+    });
+  }
+
 private:
   struct incrementor {
     template <class T>
     void operator()(T* tp, buffer_type& b, std::size_t i) {
-      BOOST_ASSERT(tp && i < b.size);
+      assert(tp && i < b.size);
       if (!detail::safe_increment(tp[i])) {
         using U = detail::next_type<typename buffer_type::types, T>;
         b.template make<U>(b.size, tp);

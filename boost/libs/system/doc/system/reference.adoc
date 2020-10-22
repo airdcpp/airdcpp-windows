@@ -568,7 +568,8 @@ constexpr void clear() noexcept;
 [none]
 * {blank}
 +
-Ensures: :: `val_ == 0`; `*cat_ == system_category()`.
+Ensures: ::
+  `val_ == 0`; `*cat_ == system_category()`.
 
 #### Observers
 
@@ -626,7 +627,7 @@ constexpr explicit operator bool() const noexcept;
 [none]
 * {blank}
 +
-Returns: :: `val_ != 0`.
+Returns: :: `failed()`.
 
 ```
 operator std::error_code() const;
@@ -634,7 +635,8 @@ operator std::error_code() const;
 [none]
 * {blank}
 +
-Returns: :: `std::error_code( val_, *cat_ )`.
+Returns: ::
+  `std::error_code( val_, *cat_ )`.
 
 ### Class error_condition
 
@@ -711,7 +713,8 @@ template <class ErrorConditionEnum>
 * {blank}
 +
 Ensures: :: `*this == make_error_condition( e )`.
-Remarks: :: This constructor is only enabled when `is_error_condition_enum<ErrorConditionEnum>::value` is `true`.
+Remarks: ::
+  This constructor is only enabled when `is_error_condition_enum<ErrorConditionEnum>::value` is `true`.
 
 #### Modifiers
 
@@ -739,7 +742,8 @@ constexpr void clear() noexcept;
 [none]
 * {blank}
 +
-Ensures: :: `val_ == 0`; `*cat_ == generic_category()`.
+Ensures: ::
+  `val_ == 0`; `*cat_ == generic_category()`.
 
 #### Observers
 
@@ -789,7 +793,7 @@ constexpr explicit operator bool() const noexcept;
 [none]
 * {blank}
 +
-Returns: :: `val_ != 0`.
+Returns: :: `failed()`.
 
 ```
 operator std::error_condition() const;
@@ -797,7 +801,8 @@ operator std::error_condition() const;
 [none]
 * {blank}
 +
-Returns: :: `std::error_condition( val_, *cat_ )`.
+Returns: ::
+  `std::error_condition( val_, *cat_ )`.
 
 ### Nonmember functions
 
@@ -882,7 +887,8 @@ std::size_t hash_value( const error_code & ec );
 [none]
 * {blank}
 +
-Returns: :: A hash value representing `ec`.
+Returns: ::
+  A hash value representing `ec`.
 
 ## <boost/system/system_error.hpp>
 
@@ -941,7 +947,8 @@ system_error( int ev, const error_category & ecat );
 [none]
 * {blank}
 +
-Ensures: :: `code() == error_code( ev, ecat )`.
+Ensures: ::
+  `code() == error_code( ev, ecat )`.
 
 #### Observers
 

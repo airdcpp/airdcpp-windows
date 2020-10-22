@@ -69,18 +69,18 @@ public:
 		StringConfigItem(ExtensionSettingItem& aSetting) : ConfigIem(aSetting) {}
 
 		//todo handle errors
-		bool write() {
-			auto val = SettingUtils::validateValue(Text::fromT(WinUtil::getEditText(ctrlEdit)), setting);
+		bool write() override {
+			auto val = SettingUtils::validateValue(Text::fromT(WinUtil::getEditText(ctrlEdit)), setting, nullptr);
 			setting.setValue(val);
 			return true;
 		}
 
 		void setLabel();
 
-		void Create(HWND m_hWnd);
-		int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing);
+		void Create(HWND m_hWnd) override;
+		int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing) override;
 
-		bool handleClick(HWND m_hWnd);
+		bool handleClick(HWND m_hWnd) override;
 
 		CStatic ctrlLabel;
 		CEdit ctrlEdit;
@@ -93,18 +93,18 @@ public:
 
 
 		//todo handle errors
-		bool write() {
-			auto val = SettingUtils::validateValue((ctrlCheck.GetCheck() == 1), setting);
+		bool write() override {
+			auto val = SettingUtils::validateValue((ctrlCheck.GetCheck() == 1), setting, nullptr);
 			setting.setValue(val);
 			return true;
 		}
 
 		void setLabel();
 
-		void Create(HWND m_hWnd);
-		int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing);
+		void Create(HWND m_hWnd) override;
+		int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing) override;
 
-		bool handleClick(HWND m_hWnd);
+		bool handleClick(HWND m_hWnd) override;
 
 		CButton ctrlCheck;
 	};
@@ -114,10 +114,10 @@ public:
 
 		BrowseConfigItem(ExtensionSettingItem& aSetting) : StringConfigItem(aSetting) {}
 
-		void Create(HWND m_hWnd);
-		int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing);
+		void Create(HWND m_hWnd) override;
+		int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing) override;
 
-		bool handleClick(HWND m_hWnd);
+		bool handleClick(HWND m_hWnd) override;
 		CButton ctrlButton;
 		int buttonWidth = 80;
 
@@ -130,18 +130,18 @@ public:
 		IntConfigItem(ExtensionSettingItem& aSetting) : ConfigIem(aSetting) {}
 
 		//todo handle errors
-		bool write() {
-			auto val = SettingUtils::validateValue(Util::toInt(Text::fromT(WinUtil::getEditText(ctrlEdit))), setting);
+		bool write() override {
+			auto val = SettingUtils::validateValue(Util::toInt(Text::fromT(WinUtil::getEditText(ctrlEdit))), setting, nullptr);
 			setting.setValue(val);
 			return true;
 		}
 
 		void setLabel();
 
-		void Create(HWND m_hWnd);
-		int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing);
+		void Create(HWND m_hWnd) override;
+		int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing) override;
 
-		bool handleClick(HWND m_hWnd);
+		bool handleClick(HWND m_hWnd) override;
 
 		CStatic ctrlLabel;
 		CEdit ctrlEdit;

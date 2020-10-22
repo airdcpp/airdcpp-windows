@@ -22,6 +22,7 @@
 #include "AutoSearchGeneralPage.h"
 #include "AutosearchParams.h"
 
+#include "SystemUtil.h"
 #include <airdcpp/SearchManager.h>
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
@@ -80,7 +81,7 @@ LRESULT AutoSearchGeneralPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LP
 	ATTACH(IDC_DATETIMEPICKER, ctrlExpire);
 	if (options.expireTime > 0) {
 		SYSTEMTIME time;
-		WinUtil::toSystemTime(options.expireTime, &time);
+		SystemUtil::toSystemTime(options.expireTime, &time);
 		ctrlExpire.SetSystemTime(0, &time);
 		CheckDlgButton(IDC_USE_EXPIRY, true);
 	}
@@ -205,7 +206,7 @@ bool AutoSearchGeneralPage::write() {
 	if (IsDlgButtonChecked(IDC_USE_EXPIRY) == BST_CHECKED) {
 		SYSTEMTIME exp;
 		ctrlExpire.GetSystemTime(&exp);
-		options.expireTime = WinUtil::fromSystemTime(&exp);
+		options.expireTime = SystemUtil::fromSystemTime(&exp);
 	}
 	else {
 		options.expireTime = 0;

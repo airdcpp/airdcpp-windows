@@ -19,16 +19,18 @@
 #ifndef DCPLUSPLUS_DCPP_UPDATE_MANAGER_H
 #define DCPLUSPLUS_DCPP_UPDATE_MANAGER_H
 
-#include "HttpDownload.h"
+#include "Message.h"
 #include "Singleton.h"
 #include "Speaker.h"
 #include "TimerManagerListener.h"
-#include "Updater.h"
 #include "UpdateManagerListener.h"
 
 #include "version.h"
 
 namespace dcpp {
+
+struct HttpDownload;
+class Updater;
 
 class UpdateManager : public Singleton<UpdateManager>, public Speaker<UpdateManagerListener>, private TimerManagerListener
 {
@@ -49,6 +51,7 @@ public:
 		string ipcheck6;
 	} links;
 
+	static void log(const string& aMsg, LogMessage::Severity aSeverity) noexcept;
 	static bool verifyVersionData(const string& data, const ByteVector& singature);
 
 	enum {

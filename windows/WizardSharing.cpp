@@ -19,6 +19,7 @@
 #include "stdafx.h"
 
 #include "WizardSharing.h"
+#include "WizardAutoConnectivity.h"
 
 PropPage::TextItem WizardSharing::texts[] = {
 	{ IDC_SHARING_INTRO, ResourceManager::WIZARD_SHARING_INTRO },

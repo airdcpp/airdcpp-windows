@@ -19,6 +19,7 @@
 #include "stdafx.h"
 #include "Resource.h"
 #include "MainFrm.h"
+#include "ActionUtil.h"
 
 #include "AutoSearchFrm.h"
 #include "ResourceLoader.h"
@@ -377,7 +378,7 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 					auto bundleMenu = asMenu.createSubMenu(CTSTRING(REMOVE_BUNDLE), true);
 					for(auto& b: bundles) {
 						auto token = b->getToken();
-						bundleMenu->appendItem(Text::toT(b->getName()), [=] { WinUtil::removeBundle(token); });
+						bundleMenu->appendItem(Text::toT(b->getName()), [=] { ActionUtil::removeBundle(token); });
 					}
 				}
 
@@ -386,7 +387,7 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 					pathMenu->InsertSeparatorFirst(CTSTRING(QUEUED_BUNDLES));
 					for(auto& b: bundles) {
 						string path = b->getTarget();
-						pathMenu->appendItem(Text::toT(path), [=] { WinUtil::openFolder(Text::toT(path)); });
+						pathMenu->appendItem(Text::toT(path), [=] { ActionUtil::openFolder(Text::toT(path)); });
 					}
 				}
 
@@ -394,7 +395,7 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 					pathMenu->InsertSeparatorLast(CTSTRING(FINISHED_BUNDLES));
 					for(auto j=fpl.begin(); j != fpl.end(); j++) {
 						string path = j->first;
-						pathMenu->appendItem(Text::toT(path) + (j->second > 0 ? _T(" (") + Text::toT(Util::formatTime("%Y-%m-%d %H:%M", j->second)) + _T(")") : Util::emptyStringT), [=] { WinUtil::openFolder(Text::toT(path)); });
+						pathMenu->appendItem(Text::toT(path) + (j->second > 0 ? _T(" (") + Text::toT(Util::formatTime("%Y-%m-%d %H:%M", j->second)) + _T(")") : Util::emptyStringT), [=] { ActionUtil::openFolder(Text::toT(path)); });
 					}
 
 					pathMenu->appendSeparator();

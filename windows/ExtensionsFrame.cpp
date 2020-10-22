@@ -170,7 +170,9 @@ void ExtensionsFrame::onConfigExtension(const ItemInfo* ii) {
 			//if (s.getDefaultValue(). != s.getValue())
 				values.emplace(s.name, s.getValue());
 		}
-		ii->item->setSettingValues(values);
+
+		UserList userReferences;
+		ii->item->setSettingValues(values, userReferences);
 	}
 }
 

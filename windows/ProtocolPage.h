@@ -44,12 +44,14 @@ public:
 		COMMAND_ID_HANDLER(IDC_ACTIVE_UPNP, onClickedActive)
 		COMMAND_ID_HANDLER(IDC_PROTOCOL_ENABLED, onClickedActive)
 		COMMAND_ID_HANDLER(IDC_GETIP, onGetIP)
+
 	END_MSG_MAP()
 
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onClickedActive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedAutoDetect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onGetIP(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */);
+
 
 	void write();
 private:
@@ -62,6 +64,8 @@ private:
 	void fixControls();
 	void getAddresses();
 
+
+
 	AirUtil::AdapterInfoList bindAdapters;
 	bool v6;
 
@@ -70,6 +74,7 @@ private:
 
 	// ConnectivityManagerListener
 	void on(SettingChanged) noexcept;
+
 };
 
 class ProtocolBase : public CDialogImpl<ProtocolBase>, public SettingTab
@@ -87,15 +92,20 @@ public:
 	BEGIN_MSG_MAP(ProtocolBase)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
 		NOTIFY_HANDLER(IDC_TAB1, TCN_SELCHANGE, onProtocolChanged)
+		COMMAND_CODE_HANDLER(EN_CHANGE, onPortsUpdated)
+		//COMMAND_HANDLER(IDC_PORT_TLS, EN_CHANGE, onPortsUpdated)
+		//COMMAND_HANDLER(IDC_PORT_TCP, EN_CHANGE, onPortsUpdated)
 
 	END_MSG_MAP()
 
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onProtocolChanged(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHandled*/);
+	LRESULT onPortsUpdated(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	// Common PropPage interface
 	void write();
-	
+	bool validatePorts();
+
 private:
 	static Item items[];
 	static TextItem texts[];
@@ -106,6 +116,7 @@ private:
 	CTabCtrl tabs;
 
 	void showProtocol(bool v6);
+	bool created = false;
 };
 
 #endif // !defined(NETWORK_PAGE_H)

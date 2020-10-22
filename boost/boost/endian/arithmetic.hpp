@@ -29,7 +29,6 @@
 
 #include <boost/endian/buffers.hpp>
 #include <boost/core/scoped_enum.hpp>
-#include <boost/predef/other/endian.h>
 #include <boost/static_assert.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/config.hpp>
@@ -37,7 +36,7 @@
 #include <iosfwd>
 #include <climits>
 
-#if defined(__BORLANDC__) || defined( __CODEGEARC__)
+#if defined(BOOST_BORLANDC) || defined(BOOST_CODEGEARC)
 # pragma pack(push, 1)
 #endif
 
@@ -97,6 +96,12 @@ namespace endian
   typedef endian_arithmetic<order::little, uint32_t, 32, align::yes>  little_uint32_at;
   typedef endian_arithmetic<order::little, uint64_t, 64, align::yes>  little_uint64_at;
 
+  // aligned floating point types
+  typedef endian_arithmetic<order::big, float, 32, align::yes>        big_float32_at;
+  typedef endian_arithmetic<order::big, double, 64, align::yes>       big_float64_at;
+  typedef endian_arithmetic<order::little, float, 32, align::yes>     little_float32_at;
+  typedef endian_arithmetic<order::little, double, 64, align::yes>    little_float64_at;
+
   // aligned native endian typedefs are not provided because
   // <cstdint> types are superior for this use case
 
@@ -140,47 +145,33 @@ namespace endian
   typedef endian_arithmetic<order::little, uint_least64_t, 56>  little_uint56_t;
   typedef endian_arithmetic<order::little, uint_least64_t, 64>  little_uint64_t;
 
-# if BOOST_ENDIAN_BIG_BYTE
   // native endian signed integer unaligned types
-  typedef big_int8_t   native_int8_t;
-  typedef big_int16_t  native_int16_t;
-  typedef big_int24_t  native_int24_t;
-  typedef big_int32_t  native_int32_t;
-  typedef big_int40_t  native_int40_t;
-  typedef big_int48_t  native_int48_t;
-  typedef big_int56_t  native_int56_t;
-  typedef big_int64_t  native_int64_t;
+  typedef endian_arithmetic<order::native, int_least8_t, 8>     native_int8_t;
+  typedef endian_arithmetic<order::native, int_least16_t, 16>   native_int16_t;
+  typedef endian_arithmetic<order::native, int_least32_t, 24>   native_int24_t;
+  typedef endian_arithmetic<order::native, int_least32_t, 32>   native_int32_t;
+  typedef endian_arithmetic<order::native, int_least64_t, 40>   native_int40_t;
+  typedef endian_arithmetic<order::native, int_least64_t, 48>   native_int48_t;
+  typedef endian_arithmetic<order::native, int_least64_t, 56>   native_int56_t;
+  typedef endian_arithmetic<order::native, int_least64_t, 64>   native_int64_t;
 
   // native endian unsigned integer unaligned types
-  typedef big_uint8_t   native_uint8_t;
-  typedef big_uint16_t  native_uint16_t;
-  typedef big_uint24_t  native_uint24_t;
-  typedef big_uint32_t  native_uint32_t;
-  typedef big_uint40_t  native_uint40_t;
-  typedef big_uint48_t  native_uint48_t;
-  typedef big_uint56_t  native_uint56_t;
-  typedef big_uint64_t  native_uint64_t;
-# else
-  // native endian signed integer unaligned types
-  typedef little_int8_t   native_int8_t;
-  typedef little_int16_t  native_int16_t;
-  typedef little_int24_t  native_int24_t;
-  typedef little_int32_t  native_int32_t;
-  typedef little_int40_t  native_int40_t;
-  typedef little_int48_t  native_int48_t;
-  typedef little_int56_t  native_int56_t;
-  typedef little_int64_t  native_int64_t;
+  typedef endian_arithmetic<order::native, uint_least8_t, 8>    native_uint8_t;
+  typedef endian_arithmetic<order::native, uint_least16_t, 16>  native_uint16_t;
+  typedef endian_arithmetic<order::native, uint_least32_t, 24>  native_uint24_t;
+  typedef endian_arithmetic<order::native, uint_least32_t, 32>  native_uint32_t;
+  typedef endian_arithmetic<order::native, uint_least64_t, 40>  native_uint40_t;
+  typedef endian_arithmetic<order::native, uint_least64_t, 48>  native_uint48_t;
+  typedef endian_arithmetic<order::native, uint_least64_t, 56>  native_uint56_t;
+  typedef endian_arithmetic<order::native, uint_least64_t, 64>  native_uint64_t;
 
-  // native endian unsigned integer unaligned types
-  typedef little_uint8_t   native_uint8_t;
-  typedef little_uint16_t  native_uint16_t;
-  typedef little_uint24_t  native_uint24_t;
-  typedef little_uint32_t  native_uint32_t;
-  typedef little_uint40_t  native_uint40_t;
-  typedef little_uint48_t  native_uint48_t;
-  typedef little_uint56_t  native_uint56_t;
-  typedef little_uint64_t  native_uint64_t;
-# endif
+  // unaligned floating point types
+  typedef endian_arithmetic<order::big, float, 32, align::no>        big_float32_t;
+  typedef endian_arithmetic<order::big, double, 64, align::no>       big_float64_t;
+  typedef endian_arithmetic<order::little, float, 32, align::no>     little_float32_t;
+  typedef endian_arithmetic<order::little, double, 64, align::no>    little_float64_t;
+  typedef endian_arithmetic<order::native, float, 32, align::no>     native_float32_t;
+  typedef endian_arithmetic<order::native, double, 64, align::no>    native_float64_t;
 
 //----------------------------------  end synopsis  ------------------------------------//
 
@@ -336,7 +327,7 @@ public:
 } // namespace endian
 } // namespace boost
 
-#if defined(__BORLANDC__) || defined( __CODEGEARC__)
+#if defined(BOOST_BORLANDC) || defined(BOOST_CODEGEARC)
 # pragma pack(pop)
 #endif
 

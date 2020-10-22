@@ -26,9 +26,11 @@
 #include <airdcpp/HttpDownload.h>
 #include <airdcpp/SimpleXML.h>
 #include <airdcpp/version.h>
+#include <airdcpp/Updater.h>
 #include <airdcpp/UpdateManager.h>
 
 static const TCHAR Airthanks[] = 
+_T("IP Geolocation by DB-IP.com.\r\n\r\n")
 _T("Thanks to Absolon, Alehk, en_dator, Charlie, Freebow, Herman, Juckpuck, Mad, Peken, PeTaKe, Sepenoob, Skalman, Sopor, steve72, Toans, whinner and Zoolut1oN for testing the client and helping to make it better.\r\n")
 _T("Thanks also to all other Test users.\r\n")
 _T("Thanks savone, spaljeni for the graphic works.\r\n")

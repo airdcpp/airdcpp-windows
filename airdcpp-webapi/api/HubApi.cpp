@@ -20,6 +20,7 @@
 
 #include <api/HubApi.h>
 
+#include <api/common/MessageUtils.h>
 #include <api/common/Serializer.h>
 
 #include <web-server/JsonUtil.h>
@@ -33,26 +34,27 @@ namespace webserver {
 		"hub_removed"
 	};
 
-	ActionHookRejectionPtr HubApi::incomingMessageHook(const ChatMessagePtr& aMessage, const HookRejectionGetter& aRejectionGetter) {
-		return HookCompletionData::toResult(
+	ActionHookResult<MessageHighlightList> HubApi::incomingMessageHook(const ChatMessagePtr& aMessage, const ActionHookResultGetter<MessageHighlightList>& aResultGetter) {
+		return HookCompletionData::toResult<MessageHighlightList>(
 			fireHook("hub_incoming_message_hook", 2, [&]() {
-				return Serializer::serializeChatMessage(aMessage);
+				return MessageUtils::serializeChatMessage(aMessage);
 			}),
-			aRejectionGetter
+			aResultGetter,
+			MessageUtils::getMessageHookHighlightDeserializer(aMessage->getText())
 		);
 	};
 
-	ActionHookRejectionPtr HubApi::outgoingMessageHook(const string& aMessage, bool aThirdPerson, const Client& aClient, const HookRejectionGetter& aRejectionGetter) {
+	ActionHookResult<> HubApi::outgoingMessageHook(const OutgoingChatMessage& aMessage, const Client& aClient, const ActionHookResultGetter<>& aResultGetter) {
 		return HookCompletionData::toResult(
 			fireHook("hub_outgoing_message_hook", 2, [&]() {
 				return json({
-					{ "text", aMessage },
-					{ "third_person", aThirdPerson },
+					{ "text", aMessage.text },
+					{ "third_person", aMessage.thirdPerson },
 					{ "hub_url", aClient.getHubUrl() },
-					{ "session_id", aClient.getClientId() },
+					{ "session_id", aClient.getToken() },
 				});
 			}),
-			aRejectionGetter
+			aResultGetter
 		);
 	}
 
@@ -66,14 +68,14 @@ namespace webserver {
 
 		ClientManager::getInstance()->addListener(this);
 
-		createHook("hub_incoming_message_hook", [this](const string& aId, const string& aName) {
-			return ClientManager::getInstance()->incomingHubMessageHook.addSubscriber(aId, aName, HOOK_HANDLER(HubApi::incomingMessageHook));
+		createHook("hub_incoming_message_hook", [this](ActionHookSubscriber&& aSubscriber) {
+			return ClientManager::getInstance()->incomingHubMessageHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(HubApi::incomingMessageHook));
 		}, [this](const string& aId) {
 			ClientManager::getInstance()->incomingHubMessageHook.removeSubscriber(aId);
 		});
 
-		createHook("hub_outgoing_message_hook", [this](const string& aId, const string& aName) {
-			return ClientManager::getInstance()->outgoingHubMessageHook.addSubscriber(aId, aName, HOOK_HANDLER(HubApi::outgoingMessageHook));
+		createHook("hub_outgoing_message_hook", [this](ActionHookSubscriber&& aSubscriber) {
+			return ClientManager::getInstance()->outgoingHubMessageHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(HubApi::outgoingMessageHook));
 		}, [this](const string& aId) {
 			ClientManager::getInstance()->outgoingHubMessageHook.removeSubscriber(aId);
 		});
@@ -86,9 +88,14 @@ namespace webserver {
 		METHOD_HANDLER(Access::HUBS_SEND,	METHOD_POST,	(EXACT_PARAM("chat_message")),			HubApi::handlePostMessage);
 		METHOD_HANDLER(Access::HUBS_EDIT,	METHOD_POST,	(EXACT_PARAM("status_message")),		HubApi::handlePostStatus);
 
-		auto rawHubs = ClientManager::getInstance()->getClients();
-		for (const auto& c : rawHubs | map_values) {
-			addHub(c);
+		{
+			auto cm = ClientManager::getInstance();
+
+			RLock l(cm->getCS());
+			auto rawHubs = cm->getClientsUnsafe();
+			for (const auto& c : rawHubs | map_values) {
+				addHub(c);
+			}
 		}
 	}
 
@@ -99,23 +106,31 @@ namespace webserver {
 	api_return HubApi::handlePostMessage(ApiRequest& aRequest) {
 		const auto& reqJson = aRequest.getRequestBody();
 
-		auto message = Deserializer::deserializeChatMessage(reqJson);
-		auto hubs = Deserializer::deserializeHubUrls(reqJson);
-		int succeed = 0;
-
-		string lastError;
-		for (const auto& url : hubs) {
-			auto c = ClientManager::getInstance()->getClient(url);
-			if (c && c->isConnected() && c->sendMessage(message.first, lastError, message.second)) {
-				succeed++;
+		addAsyncTask([
+			message = Deserializer::deserializeChatMessage(reqJson),
+			hubs = Deserializer::deserializeHubUrls(reqJson),
+			complete = aRequest.defer(),
+			callerPtr = aRequest.getOwnerPtr()
+		] {
+			int succeed = 0;
+			string lastError;
+			for (const auto& url: hubs) {
+				auto c = ClientManager::getInstance()->getClient(url);
+				if (c && c->isConnected() && c->sendMessageHooked(OutgoingChatMessage(message.first, callerPtr, message.second), lastError)) {
+					succeed++;
+				}
 			}
-		}
 
-		aRequest.setResponseBody({
-			{ "sent", succeed },
+			complete(
+				websocketpp::http::status_code::ok,
+				{
+					{ "sent", succeed },
+				},
+				nullptr
+			);
 		});
 
-		return websocketpp::http::status_code::ok;
+		return CODE_DEFERRED;
 	}
 
 	api_return HubApi::handlePostStatus(ApiRequest& aRequest) {
@@ -178,16 +193,17 @@ namespace webserver {
 			{ "identity", HubInfo::serializeIdentity(aClient) },
 			{ "connect_state", HubInfo::serializeConnectState(aClient) },
 			{ "hub_url", aClient->getHubUrl() },
-			{ "id", aClient->getClientId() },
+			{ "id", aClient->getToken() },
 			{ "favorite_hub", aClient->getFavToken() },
 			{ "share_profile", Serializer::serializeShareProfileSimple(aClient->get(HubSettings::ShareProfile)) },
-			{ "message_counts", Serializer::serializeCacheInfo(aClient->getCache(), Serializer::serializeUnreadChat) },
+			{ "message_counts", MessageUtils::serializeCacheInfo(aClient->getCache(), MessageUtils::serializeUnreadChat) },
 			{ "encryption", Serializer::serializeEncryption(aClient->getEncryptionInfo(), aClient->isTrusted()) },
+			{ "settings", HubInfo::serializeSettings(aClient) },
 		};
 	}
 
 	void HubApi::addHub(const ClientPtr& aClient) noexcept {
-		addSubModule(aClient->getClientId(), std::make_shared<HubInfo>(this, aClient));
+		addSubModule(aClient->getToken(), std::make_shared<HubInfo>(this, aClient));
 	}
 
 	// Use async tasks because adding/removing HubInfos require calls to ClientListener (which is likely 
@@ -205,7 +221,7 @@ namespace webserver {
 
 	void HubApi::on(ClientManagerListener::ClientRemoved, const ClientPtr& aClient) noexcept {
 		addAsyncTask([=] {
-			removeSubModule(aClient->getClientId());
+			removeSubModule(aClient->getToken());
 
 			if (!subscriptionActive("hub_removed")) {
 				return;

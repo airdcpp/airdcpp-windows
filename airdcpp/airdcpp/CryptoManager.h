@@ -21,6 +21,7 @@
 
 #include "CriticalSection.h"
 #include "Exception.h"
+#include "Message.h"
 #include "Singleton.h"
 #include "SSL.h"
 
@@ -91,6 +92,7 @@ private:
 	ssl::SSL_CTX serverContext;
 	ssl::SSL_CTX serverVerContext;
 
+	static void log(const string& aMsg, LogMessage::Severity aSeverity) noexcept;
 	void sslRandCheck();
 
 	int getKeyLength(TLSTmpKeys key);

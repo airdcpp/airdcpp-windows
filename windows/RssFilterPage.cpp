@@ -74,6 +74,7 @@ LRESULT RssFilterPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	::SetWindowText(GetDlgItem(IDC_RSS_FILTER_ACTION_TEXT), CTSTRING(ACTION));
 	::SetWindowText(GetDlgItem(IDC_RSS_BROWSE), CTSTRING(BROWSE));
 	::SetWindowText(GetDlgItem(IDC_TYPE), CTSTRING(SETTINGS_ST_MATCH_TYPE));
+	::SetWindowText(GetDlgItem(IDC_FORMAT_TIME), CTSTRING(RSS_FORMAT_TIME_PARAMS));
 
 
 	::EnableWindow(GetDlgItem(IDC_FILTER_REMOVE), false);
@@ -227,6 +228,7 @@ LRESULT RssFilterPage::onSelectionChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*
 		int g = cGroups.FindString(0, Text::toT(item->getAutosearchGroup()).c_str());
 		cGroups.SetCurSel(g > 0 ? g : 0);
 		CheckDlgButton(IDC_SKIP_DUPES, item->skipDupes ? TRUE : FALSE);
+		CheckDlgButton(IDC_FORMAT_TIME, item->getFormatTimeParams() ? TRUE : FALSE);
 
 	} else {
 		ctrlAutoSearchPattern.SetWindowText(_T(""));
@@ -236,6 +238,7 @@ LRESULT RssFilterPage::onSelectionChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*
 		cAction.SetCurSel(0);
 		ctrlExpireDays.SetWindowText(_T("3"));
 		CheckDlgButton(IDC_SKIP_DUPES, TRUE);
+		CheckDlgButton(IDC_FORMAT_TIME, FALSE);
 	}
 	fixControls();
 	loading = false;
@@ -327,10 +330,11 @@ void RssFilterPage::add(const string& aPattern, const string& aTarget, int aMeth
 		grp.resize(cGroups.GetWindowText(&grp[0], grp.size() + 1));
 	}
 	bool skipDupes = IsDlgButtonChecked(IDC_SKIP_DUPES) ? true : false;
+	bool formatTime = IsDlgButtonChecked(IDC_FORMAT_TIME) ? true : false;
 	int action = cAction.GetCurSel();
 	int expireDays = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlExpireDays)));
 
-	filterList.emplace_back(RSSFilter(aPattern, aTarget, aMethod, Text::fromT(grp), skipDupes, action, expireDays));
+	filterList.emplace_back(RSSFilter(aPattern, aTarget, aMethod, Text::fromT(grp), skipDupes, action, expireDays, formatTime));
 	fillList();
 	restoreSelection(Text::toT(aPattern));
 }
@@ -396,5 +400,6 @@ void RssFilterPage::fixControls() {
 	::EnableWindow(GetDlgItem(IDC_RSS_EXPIRY_DAYS_LABEL), enable);
 	::EnableWindow(GetDlgItem(IDC_EXPIRE_INT), enable);
 	::EnableWindow(GetDlgItem(IDC_EXPIRE_INT_SPIN), enable);
+	::EnableWindow(GetDlgItem(IDC_FORMAT_TIME), enable);
 
 }

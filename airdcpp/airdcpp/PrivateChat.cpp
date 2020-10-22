@@ -44,7 +44,7 @@ PrivateChat::PrivateChat(const HintedUser& aUser, UserConnection* aUc) :
 
 	auto lastLogLines = LogManager::readFromEnd(getLogPath(), SETTING(MAX_PM_HISTORY_LINES), Util::convertSize(16, Util::KB));
 	if (!lastLogLines.empty()) {
-		cache.addMessage(std::make_shared<LogMessage>(lastLogLines, LogMessage::SEV_INFO, true));
+		cache.addMessage(std::make_shared<LogMessage>(lastLogLines, LogMessage::SEV_INFO, Util::emptyString, true));
 	}
 
 	checkIgnored();
@@ -143,12 +143,17 @@ void PrivateChat::CCPMDisconnected() {
 	}
 }
 
-bool PrivateChat::sendMessage(const string& aMessage, string& error_, bool aThirdPerson) {
-	if (ccReady()) {
-		return uc->pm(aMessage, error_, aThirdPerson);
+bool PrivateChat::sendMessageHooked(const OutgoingChatMessage& aMessage, string& error_) {
+	if (Util::isChatCommand(aMessage.text)) {
+		fire(PrivateChatListener::ChatCommand(), this, aMessage);
+		// TODO: don't continue and run hooks after this with API v2
 	}
 
-	return ClientManager::getInstance()->privateMessage(replyTo, aMessage, error_, aThirdPerson);
+	if (ccReady()) {
+		return uc->sendPrivateMessageHooked(aMessage, error_);
+	}
+
+	return ClientManager::getInstance()->privateMessageHooked(replyTo, aMessage, error_);
 }
 
 void PrivateChat::closeCC(bool now, bool noAutoConnect) {
@@ -208,10 +213,10 @@ int PrivateChat::clearCache() noexcept {
 }
 
 void PrivateChat::statusMessage(const string& aMessage, LogMessage::Severity aSeverity) noexcept {
-	auto message = std::make_shared<LogMessage>(aMessage, aSeverity);
+	auto message = std::make_shared<LogMessage>(aMessage, aSeverity, Util::emptyString);
 
-	fire(PrivateChatListener::StatusMessage(), this, message);
 	cache.addMessage(message);
+	fire(PrivateChatListener::StatusMessage(), this, message);
 }
 
 void PrivateChat::close() {
@@ -275,8 +280,8 @@ void PrivateChat::checkAlwaysCCPM() {
 void PrivateChat::checkCCPMTimeout() {
 	if (ccpmState == CONNECTING) {
 		statusMessage(STRING(CCPM_TIMEOUT), LogMessage::SEV_INFO);
-		fire(PrivateChatListener::CCPMStatusUpdated(), this);
 		ccpmState = DISCONNECTED;
+		fire(PrivateChatListener::CCPMStatusUpdated(), this);
 	} 
 }
 

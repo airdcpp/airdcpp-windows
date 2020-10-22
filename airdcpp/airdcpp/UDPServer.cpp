@@ -26,6 +26,7 @@
 #include "ResourceManager.h"
 #include "SearchManager.h"
 #include "SettingsManager.h"
+#include "Socket.h"
 #include "UDPServer.h"
 #include "UploadManager.h"
 
@@ -91,7 +92,7 @@ int UDPServer::run() {
 				socket->disconnect();
 				port = socket->listen(Util::toString(CONNSETTING(UDP_PORT)));
 				if(failed) {
-					LogManager::getInstance()->message("Search enabled again", LogMessage::SEV_INFO);
+					LogManager::getInstance()->message("Search enabled again", LogMessage::SEV_INFO, STRING(CONNECTIVITY));
 					failed = false;
 				}
 				break;
@@ -99,7 +100,7 @@ int UDPServer::run() {
 				dcdebug("SearchManager::run Stopped listening: %s\n", e.getError().c_str());
 
 				if(!failed) {
-					LogManager::getInstance()->message(STRING_F(SEARCH_DISABLED_X, e.getError()), LogMessage::SEV_ERROR);
+					LogManager::getInstance()->message(STRING_F(SEARCH_DISABLED_X, e.getError()), LogMessage::SEV_ERROR, STRING(CONNECTIVITY));
 					failed = true;
 				}
 

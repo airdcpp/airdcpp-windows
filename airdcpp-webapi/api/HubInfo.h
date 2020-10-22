@@ -50,11 +50,14 @@ namespace webserver {
 
 		static json serializeConnectState(const ClientPtr& aClient) noexcept;
 		static json serializeIdentity(const ClientPtr& aClient) noexcept;
+		static json serializeSettings(const ClientPtr& aClient) noexcept;
 		static json serializeCounts(const ClientPtr& aClient) noexcept;
 
 		void init() noexcept override;
 		ClientToken getId() const noexcept override;
 	private:
+		api_return handleUpdateHub(ApiRequest& aRequest);
+
 		api_return handleReconnect(ApiRequest& aRequest);
 		api_return handleFavorite(ApiRequest& aRequest);
 		api_return handlePassword(ApiRequest& aRequest);
@@ -62,7 +65,8 @@ namespace webserver {
 
 		api_return handleGetCounts(ApiRequest& aRequest);
 		api_return handleGetUsers(ApiRequest& aRequest);
-		api_return handleGetUser(ApiRequest& aRequest);
+		api_return handleGetUserCid(ApiRequest& aRequest);
+		api_return handleGetUserId(ApiRequest& aRequest);
 
 		void on(ClientListener::Redirect, const Client*, const string&) noexcept override;
 		void on(ClientListener::Disconnected, const string&, const string&) noexcept override;
@@ -70,6 +74,7 @@ namespace webserver {
 		void on(ClientListener::HubUpdated, const Client*) noexcept override;
 		void on(ClientListener::HubTopic, const Client*, const string&) noexcept override;
 		void on(ClientListener::ConnectStateChanged, const Client*, uint8_t) noexcept override;
+		void on(ClientListener::SettingsUpdated, const Client*) noexcept override;
 
 		void on(ClientListener::UserConnected, const Client*, const OnlineUserPtr&) noexcept override;
 		void on(ClientListener::UserUpdated, const Client*, const OnlineUserPtr&) noexcept override;
@@ -90,6 +95,9 @@ namespace webserver {
 		}
 		void on(ClientListener::MessagesCleared, const Client*) noexcept override {
 			chatHandler.onMessagesUpdated();
+		}
+		void on(ClientListener::ChatCommand, const Client*, const OutgoingChatMessage& aMessage) noexcept override {
+			chatHandler.onChatCommand(aMessage);
 		}
 
 		OnlineUserList getUsers() noexcept;

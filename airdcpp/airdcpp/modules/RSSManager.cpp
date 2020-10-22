@@ -169,7 +169,7 @@ void RSSManager::downloadComplete(const string& aUrl) {
 	ScopedFunctor([&] { feed->rssDownload.reset(); });
 
 	if (feed->rssDownload->buf.empty()) {
-		LogManager::getInstance()->message(feed->rssDownload->status, LogMessage::SEV_ERROR);
+		log(feed->rssDownload->status, LogMessage::SEV_ERROR);
 		return;
 	}
 
@@ -184,10 +184,15 @@ void RSSManager::downloadComplete(const string& aUrl) {
 			parseAtomFeed(xml, feed);
 		}
 	} catch(const Exception& e) {
-		LogManager::getInstance()->message(STRING_F(ERROR_UPDATING_FEED, aUrl) + " : " + e.getError().c_str(), LogMessage::SEV_ERROR);
+		log(STRING_F(ERROR_UPDATING_FEED, aUrl) + " : " + e.getError().c_str(), LogMessage::SEV_ERROR);
 	}
 
 	fire(RSSManagerListener::RSSFeedUpdated(), feed);
+}
+
+
+void RSSManager::log(const string& aMsg, LogMessage::Severity aSeverity) noexcept {
+	LogManager::getInstance()->message(aMsg, aSeverity, STRING(RSS_FEEDS));
 }
 
 bool RSSManager::checkTitle(const RSSPtr& aFeed, string& aTitle) {
@@ -254,6 +259,10 @@ bool RSSManager::addAutoSearchItem(const RSSFilter& aFilter, const RSSDataPtr& a
 
 	AutoSearchPtr as = new AutoSearch(aFilter.getFilterAction() == RSSFilter::DOWNLOAD, aData->getTitle(), SEARCH_TYPE_DIRECTORY, AutoSearch::ACTION_DOWNLOAD, true, aFilter.getDownloadTarget(),
 		StringMatch::PARTIAL, Util::emptyString, Util::emptyString, expireTime, true, true, false, Util::emptyString, AutoSearch::RSS_DOWNLOAD, false);
+
+	//format time params, befora adding to autosearch, so we can use RSS date for folder
+	if(aFilter.getFormatTimeParams())
+		as->setTarget(Util::formatTime(aFilter.getDownloadTarget(), GET_TIME()));
 
 	as->setGroup(aFilter.getAutosearchGroup());
 
@@ -326,7 +335,7 @@ void RSSManager::downloadFeed(const RSSPtr& aFeed, bool verbose/*false*/) noexce
 			[this, aFeed] { downloadComplete(aFeed->getUrl()); }));
 
 		if(verbose)
-			LogManager::getInstance()->message(STRING(UPDATING) + " " + aFeed->getUrl(), LogMessage::SEV_INFO);
+			log(STRING(UPDATING) + " " + aFeed->getUrl(), LogMessage::SEV_INFO);
 	});
 
 	//Lets resort the list to get a better chance for all other items to update and not end up updating the same one.
@@ -429,7 +438,7 @@ void RSSManager::load() {
 					SimpleXMLReader(&loader).parse(f);
 				}
 				catch (const Exception& e) {
-					LogManager::getInstance()->message(e.getError(), LogMessage::SEV_INFO);
+					log(e.getError(), LogMessage::SEV_INFO);
 					File::deleteFile(path);
 				}
 			}
@@ -452,7 +461,8 @@ void RSSManager::loadFilters(SimpleXML& xml, vector<RSSFilter>& aList) {
 				xml.getChildAttrib("AutoSearchGroup"),
 				xml.getBoolChildAttrib("SkipDupes"),
 				Util::toInt(xml.getChildAttrib("FilterAction", "0")),
-				Util::toInt(xml.getChildAttrib("ExpireDays", "3")));
+				Util::toInt(xml.getChildAttrib("ExpireDays", "3")),
+				xml.getBoolChildAttrib("FormatTimeParams"));
 		}
 		xml.stepOut();
 	}
@@ -498,6 +508,7 @@ void RSSManager::saveFilters(SimpleXML& aXml, const vector<RSSFilter>& aList) {
 			aXml.addChildAttrib("SkipDupes", f.skipDupes);
 			aXml.addChildAttrib("FilterAction", f.getFilterAction());
 			aXml.addChildAttrib("ExpireDays", f.getExpireDays());
+			aXml.addChildAttrib("FormatTimeParams", f.getFormatTimeParams());
 		}
 		aXml.stepOut();
 	}
@@ -552,7 +563,7 @@ void RSSManager::savedatabase(const RSSPtr& aFeed) {
 		File::renameFile(path + ".tmp", path);
 	}
 	catch (Exception& e) {
-		LogManager::getInstance()->message("Saving RSSDatabase failed: " + e.getError(), LogMessage::SEV_WARNING);
+		log("Saving RSSDatabase failed: " + e.getError(), LogMessage::SEV_WARNING);
 	}
 	
 }

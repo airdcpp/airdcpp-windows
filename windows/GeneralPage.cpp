@@ -53,7 +53,7 @@ PropPage::Item GeneralPage::items[] = {
 };
 
 void GeneralPage::write() {
-	WinUtil::setLanguage(ctrlLanguage.GetCurSel());
+	ActionUtil::setLanguage(ctrlLanguage.GetCurSel());
 	PropPage::write((HWND)(*this), items);
 }
 
@@ -96,7 +96,7 @@ LRESULT GeneralPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 
 	::SetWindowText(GetDlgItem(IDC_CURRENT_PROFILE_NAME), Text::toT(SettingsManager::getInstance()->getProfileName(SETTING(SETTINGS_PROFILE))).c_str());
 
-	WinUtil::appendLanguageMenu(ctrlLanguage);
+	ActionUtil::appendLanguageMenu(ctrlLanguage);
 
 	WinUtil::setUserFieldLimits(m_hWnd);
 	updateCurProfile();
@@ -107,7 +107,7 @@ LRESULT GeneralPage::onSelProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	auto lastProfile = curProfile;
 	updateCurProfile();
 	if (curProfile != lastProfile) {
-		WinUtil::getProfileConflicts(m_hWnd, curProfile, conflicts);
+		ActionUtil::getProfileConflicts(m_hWnd, curProfile, conflicts);
 	}
 
 	return TRUE;

@@ -123,8 +123,8 @@ struct basic_pipebuf : std::basic_streambuf<CharT, Traits>
     ///Destructor -> writes the frest of the data
     ~basic_pipebuf()
     {
-        if (is_open())
-            overflow(Traits::eof());
+        if (basic_pipebuf::is_open())
+            basic_pipebuf::overflow(Traits::eof());
     }
 
     ///Move construct from a pipe.
@@ -167,10 +167,12 @@ struct basic_pipebuf : std::basic_streambuf<CharT, Traits>
             if (this->pptr() == this->epptr())
             {
                 bool wr = this->_write_impl();
-                *this->pptr() = ch;
-                this->pbump(1);
                 if (wr)
+                {
+                    *this->pptr() = ch;
+                    this->pbump(1);
                     return ch;
+                }
             }
             else
             {
@@ -340,8 +342,9 @@ public:
     basic_ipstream& operator=(basic_ipstream && lhs)
     {
         std::basic_istream<CharT, Traits>::operator=(std::move(lhs));
-        _buf = std::move(lhs);
+        _buf = std::move(lhs._buf);
         std::basic_istream<CharT, Traits>::rdbuf(&_buf);
+        return *this;
     };
     ///Move assignment of a pipe.
     basic_ipstream& operator=(pipe_type && p)
@@ -366,7 +369,7 @@ public:
     ///Get a rvalue reference to the pipe. Qualified as rvalue.
     pipe_type &&     pipe()  &&     {return std::move(_buf).pipe();}
     ///Check if the pipe is open
-    bool is_open() const {return _buf->is_open();}
+    bool is_open() const {return _buf.is_open();}
 
     ///Open a new pipe
     void open()
@@ -448,8 +451,9 @@ public:
     basic_opstream& operator=(basic_opstream && lhs)
     {
         std::basic_ostream<CharT, Traits>::operator=(std::move(lhs));
-        _buf = std::move(lhs);
+        _buf = std::move(lhs._buf);
         std::basic_ostream<CharT, Traits>::rdbuf(&_buf);
+        return *this;
     };
 
     ///Move assignment of a pipe.
@@ -556,8 +560,9 @@ public:
     basic_pstream& operator=(basic_pstream && lhs)
     {
         std::basic_istream<CharT, Traits>::operator=(std::move(lhs));
-        _buf = std::move(lhs);
+        _buf = std::move(lhs._buf);
         std::basic_iostream<CharT, Traits>::rdbuf(&_buf);
+        return *this;
     };
     ///Move assignment of a pipe.
     basic_pstream& operator=(pipe_type && p)

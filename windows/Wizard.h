@@ -26,15 +26,6 @@
 
 #include <atldlgs.h>
 
-#include "WizardAutoConnectivity.h"
-#include "WizardManualConnectivity.h"
-#include "WizardGeneral.h"
-#include "WizardConnspeed.h"
-#include "WizardProfile.h"
-#include "WizardSharing.h"
-#include "WizardFinish.h"
-#include "WizardLanguage.h"
-
 class SetupWizard : public CAeroWizardFrameImpl<SetupWizard>, public Async<SetupWizard> { 
 public: 
 	enum { WM_USER_INITDIALOG = WM_APP + 501 };

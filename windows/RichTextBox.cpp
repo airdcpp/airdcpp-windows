@@ -41,6 +41,7 @@
 #include "MainFrm.h"
 #include "TextFrame.h"
 #include "ResourceLoader.h"
+#include "ActionUtil.h"
 
 #include "HtmlToRtf.h"
 
@@ -1008,7 +1009,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 			}
 		}
 
-		WinUtil::appendSearchMenu(menu, Text::fromT(selectedWord), false);
+		ActionUtil::appendSearchMenu(menu, Text::fromT(selectedWord), false);
 	} else {
 		bool isMe = (selectedUser == Text::toT(client->getMyNick()));
 
@@ -1120,7 +1121,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 }
 
 void RichTextBox::handleSearchDir() {
-	WinUtil::search(Text::toT(AirUtil::getReleaseDirLocal(Text::fromT(selectedWord), true)), true);
+	ActionUtil::search(Text::toT(AirUtil::getReleaseDirLocal(Text::fromT(selectedWord), true)), true);
 }
 
 void RichTextBox::handleDeleteFile() {
@@ -1236,9 +1237,9 @@ void RichTextBox::handleOpenFile() {
 		if (dupeType > 0) {
 			auto p = AirUtil::getFileDupePaths(dupeType, m.getTTH());
 			if (!p.empty())
-				WinUtil::openFile(Text::toT(p.front()));
+				ActionUtil::openFile(Text::toT(p.front()));
 		} else {
-			WinUtil::openFile(m.fname, m.fsize, m.getTTH(), u, false);
+			ActionUtil::openFile(m.fname, m.fsize, m.getTTH(), u, false);
 		}
 	});
 }
@@ -1293,7 +1294,7 @@ void RichTextBox::handleOpenFolder() {
 	} catch(...) {}
 
 	if (!paths.empty())
-		WinUtil::openFolder(Text::toT(paths.front()));
+		ActionUtil::openFolder(Text::toT(paths.front()));
 }
 
 void RichTextBox::handleDownload(const string& aTarget, Priority p, bool aIsRelease) {
@@ -1305,7 +1306,7 @@ void RichTextBox::handleDownload(const string& aTarget, Priority p, bool aIsRele
 				return;
 		}
 
-		WinUtil::addFileDownload((!Util::isDirectoryPath(aTarget) ? Util::emptyString : m.fname), m.fsize, m.getTTH(), u, 0, pmUser ? QueueItem::FLAG_PRIVATE : 0, p);
+		ActionUtil::addFileDownload(aTarget + (!Util::isDirectoryPath(aTarget) ? Util::emptyString : m.fname), m.fsize, m.getTTH(), u, 0, pmUser ? QueueItem::FLAG_PRIVATE : 0, p);
 	} else {
 		AutoSearchManager::getInstance()->addAutoSearch(Text::fromT(selectedWord), aTarget, true, AutoSearch::CHAT_DOWNLOAD);
 	}
@@ -1440,14 +1441,14 @@ bool RichTextBox::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 void RichTextBox::openLink(const ChatLink* cl) {
 	if (cl->getType() == ChatLink::TYPE_MAGNET) {
 		auto u = getMagnetSource();
-		WinUtil::parseMagnetUri(Text::toT(cl->url), u, this);
+		ActionUtil::parseMagnetUri(Text::toT(cl->url), u, this);
 	} else {
 		//the url regex also detects web links without any protocol part
 		auto link = cl->url;
 		if (cl->getType() == ChatLink::TYPE_URL && link.find(':') == string::npos)
 			link = "http://" + link;
 
-		WinUtil::openLink(Text::toT(link));
+		ActionUtil::openLink(Text::toT(link));
 	}
 }
 
@@ -1477,7 +1478,7 @@ LRESULT RichTextBox::onBanIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 		tstring s = _T("!banip ") + selectedIP;
 
 		string error;
-		client->sendMessage(Text::fromT(s), error);
+		client->sendMessageHooked(OutgoingChatMessage(Text::fromT(s), this, false), error);
 	}
 	SetSelNone();
 	return 0;
@@ -1488,7 +1489,7 @@ LRESULT RichTextBox::onUnBanIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 		tstring s = _T("!unban ") + selectedIP;
 
 		string error;
-		client->sendMessage(Text::fromT(s), error);
+		client->sendMessageHooked(OutgoingChatMessage(Text::fromT(s), this, false), error);
 	}
 	SetSelNone();
 	return 0;
@@ -1497,7 +1498,7 @@ LRESULT RichTextBox::onUnBanIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 
 LRESULT RichTextBox::onWhoisIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(!selectedIP.empty()) {
- 		WinUtil::openLink(_T("http://www.ripe.net/perl/whois?form_type=simple&full_query_string=&searchtext=") + selectedIP);
+		ActionUtil::openLink(_T("http://www.ripe.net/perl/whois?form_type=simple&full_query_string=&searchtext=") + selectedIP);
  	}
 	SetSelNone();
 	return 0;
@@ -1508,7 +1509,7 @@ LRESULT RichTextBox::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCt
 	if(ou) {
 		auto file = ou->getLogPath();
 		if(Util::fileExists(file)) {
-			WinUtil::viewLog(file, wID == IDC_USER_HISTORY);
+			ActionUtil::viewLog(file, wID == IDC_USER_HISTORY);
 		} else {
 			MessageBox(CTSTRING(NO_LOG_FOR_USER),CTSTRING(NO_LOG_FOR_USER), MB_OK );	  
 		}
@@ -1548,7 +1549,7 @@ LRESULT RichTextBox::onCopyUserInfo(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndC
 void RichTextBox::runUserCommand(UserCommand& uc) {
 	ParamMap ucParams;
 
-	if(!WinUtil::getUCParams(m_hWnd, uc, ucParams))
+	if (!ActionUtil::getUCParams(m_hWnd, uc, ucParams))
 		return;
 
 	client->getMyIdentity().getParams(ucParams, "my", true);
@@ -1870,7 +1871,7 @@ LRESULT RichTextBox::handleLink(ENLINK& link) {
 			if(link.lParam != clickPos)
 				break;
 
-			WinUtil::openLink(getLinkText(link));
+			ActionUtil::openLink(getLinkText(link));
 			break;
 		}
 
@@ -1892,11 +1893,11 @@ LRESULT RichTextBox::handleLink(ENLINK& link) {
 void RichTextBox::handleSearch() {
 	if (isMagnet) {
 		Magnet m = Magnet(Text::fromT(selectedWord));
-		WinUtil::search(Text::toT(m.fname));
+		ActionUtil::search(Text::toT(m.fname));
 	} else if (isPath) {
-		WinUtil::search(Util::getFileName(selectedWord));
+		ActionUtil::search(Util::getFileName(selectedWord));
 	} else {
-		WinUtil::search(selectedWord);
+		ActionUtil::search(selectedWord);
 	}
 	SetSelNone();
 }
@@ -1904,9 +1905,9 @@ void RichTextBox::handleSearch() {
 void RichTextBox::handleSearchTTH() {
 	if (isMagnet) {
 		Magnet m = Magnet(Text::fromT(selectedWord));
-		WinUtil::searchHash(m.getTTH(), m.fname, m.fsize);
+		ActionUtil::searchHash(m.getTTH(), m.fname, m.fsize);
 	} else if (!SettingsManager::lanMode) {
-		WinUtil::searchHash(TTHValue(Text::fromT(selectedWord)), Util::emptyString, 0);
+		ActionUtil::searchHash(TTHValue(Text::fromT(selectedWord)), Util::emptyString, 0);
 	}
 	SetSelNone();
 }

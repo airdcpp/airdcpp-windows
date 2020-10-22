@@ -219,7 +219,7 @@ ADLSearch::SourceType ADLSearchManager::StringToSourceType(const string& s) {
 
 void ADLSearchManager::load() noexcept {
 	if (running > 0) {
-		LogManager::getInstance()->message(CSTRING(ADLSEARCH_IN_PROGRESS), LogMessage::SEV_ERROR);
+		log(CSTRING(ADLSEARCH_IN_PROGRESS), LogMessage::SEV_ERROR);
 		return;
 	}
 
@@ -336,7 +336,7 @@ void ADLSearchManager::load() noexcept {
 
 bool ADLSearchManager::addCollection(ADLSearch& search, int index) noexcept {
 	if (running > 0) {
-		LogManager::getInstance()->message(CSTRING(ADLSEARCH_IN_PROGRESS), LogMessage::SEV_ERROR);
+		log(CSTRING(ADLSEARCH_IN_PROGRESS), LogMessage::SEV_ERROR);
 		return false;
 	}
 
@@ -350,9 +350,13 @@ bool ADLSearchManager::addCollection(ADLSearch& search, int index) noexcept {
 	return true;
 }
 
+void ADLSearchManager::log(const string& aMsg, LogMessage::Severity aSeverity) noexcept {
+	LogManager::getInstance()->message(aMsg, aSeverity, STRING(ADL_SEARCH));
+}
+
 bool ADLSearchManager::removeCollection(int index) noexcept {
 	if (running > 0) {
-		LogManager::getInstance()->message(CSTRING(ADLSEARCH_IN_PROGRESS), LogMessage::SEV_ERROR);
+		log(CSTRING(ADLSEARCH_IN_PROGRESS), LogMessage::SEV_ERROR);
 		return false;
 	}
 
@@ -363,7 +367,7 @@ bool ADLSearchManager::removeCollection(int index) noexcept {
 
 bool ADLSearchManager::changeState(int index, bool aIsActive) noexcept {
 	if (running > 0) {
-		LogManager::getInstance()->message(CSTRING(ADLSEARCH_IN_PROGRESS), LogMessage::SEV_ERROR);
+		log(CSTRING(ADLSEARCH_IN_PROGRESS), LogMessage::SEV_ERROR);
 		return false;
 	}
 
@@ -374,7 +378,7 @@ bool ADLSearchManager::changeState(int index, bool aIsActive) noexcept {
 
 bool ADLSearchManager::updateCollection(ADLSearch& search, int index) noexcept {
 	if (running > 0) {
-		LogManager::getInstance()->message(CSTRING(ADLSEARCH_IN_PROGRESS), LogMessage::SEV_ERROR);
+		log(CSTRING(ADLSEARCH_IN_PROGRESS), LogMessage::SEV_ERROR);
 		return false;
 	}
 

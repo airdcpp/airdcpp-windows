@@ -2118,7 +2118,7 @@ public:
 		{
 			if(nID == (int)pMap->m_nID)
 			{
-				if((pUIData->m_lpstrText == NULL) || lstrcmp(pUIData->m_lpstrText, lpstrText))
+				if((pUIData->m_lpstrText == NULL) || (lstrcmp(pUIData->m_lpstrText, lpstrText) != 0))
 				{
 					delete [] pUIData->m_lpstrText;
 					pUIData->m_lpstrText = NULL;

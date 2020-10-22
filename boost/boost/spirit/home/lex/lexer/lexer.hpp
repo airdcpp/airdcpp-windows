@@ -22,7 +22,9 @@
 #include <boost/noncopyable.hpp>
 #include <boost/fusion/include/vector.hpp>
 #include <boost/mpl/assert.hpp>
-#include <boost/range/iterator_range.hpp>
+#include <boost/proto/extends.hpp>
+#include <boost/proto/traits.hpp>
+#include <boost/range/iterator_range_core.hpp>
 #include <iterator> // for std::iterator_traits
 #include <string>
 

@@ -441,8 +441,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
 <li><a href="#introduction">Introduction</a></li>
-<li><a href="#changes">Release History</a>
+<li><a href="#changes">Revision History</a>
 <ul class="sectlevel2">
+<li><a href="#changes_in_boost_1_74">Changes in Boost 1.74</a></li>
 <li><a href="#changes_in_boost_1_69">Changes in Boost 1.69</a></li>
 <li><a href="#changes_in_boost_1_68">Changes in Boost 1.68</a></li>
 <li><a href="#changes_in_boost_1_65">Changes in Boost 1.65</a></li>
@@ -527,8 +528,18 @@ breakage of existing user code.</p>
 </div>
 </div>
 <div class="sect1">
-<h2 id="changes">Release History</h2>
+<h2 id="changes">Revision History</h2>
 <div class="sectionbody">
+<div class="sect2">
+<h3 id="changes_in_boost_1_74">Changes in Boost 1.74</h3>
+<div class="ulist">
+<ul>
+<li>
+<p><code>operator bool()</code> now returns <code>failed()</code> instead of <code>value() != 0</code>.</p>
+</li>
+</ul>
+</div>
+</div>
 <div class="sect2">
 <h3 id="changes_in_boost_1_69">Changes in Boost 1.69</h3>
 <div class="ulist">
@@ -1716,7 +1727,7 @@ by exception.</p>
 <dl>
 <dt class="hdlist1">Returns: </dt>
 <dd>
-<p><code>val_ != 0</code>.</p>
+<p><code>failed()</code>.</p>
 </dd>
 </dl>
 </div>
@@ -2046,7 +2057,7 @@ by exception.</p>
 <dl>
 <dt class="hdlist1">Returns: </dt>
 <dd>
-<p><code>val_ != 0</code>.</p>
+<p><code>failed()</code>.</p>
 </dd>
 </dl>
 </div>
@@ -2457,12 +2468,13 @@ paper. Johan Nilsson&#8217;s comments led to several of the refinements in N2066
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2019-08-14 12:03:53 UTC
+Last updated 2020-08-11 14:57:22 UTC
 </div>
 </div>
 <style>
 
 *:not(pre)>code { background: none; color: #600000; }
+:not(pre):not([class^=L])>code { background: none; color: #600000; }
 
 </style>
 </body>

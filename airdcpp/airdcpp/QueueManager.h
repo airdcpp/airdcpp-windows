@@ -35,8 +35,8 @@
 #include "FileQueue.h"
 #include "HashBloom.h"
 #include "MerkleTree.h"
+#include "Message.h"
 #include "Singleton.h"
-#include "Socket.h"
 #include "StringMatch.h"
 #include "TaskQueue.h"
 #include "UserQueue.h"
@@ -65,8 +65,8 @@ class QueueManager : public Singleton<QueueManager>, public Speaker<QueueManager
 	private SearchManagerListener, private ClientManagerListener, private ShareManagerListener
 {
 public:
-	ActionHook<const BundlePtr> bundleCompletionHook;
-	ActionHook<const QueueItemPtr> fileCompletionHook;
+	ActionHook<nullptr_t, const BundlePtr> bundleCompletionHook;
+	ActionHook<nullptr_t, const QueueItemPtr> fileCompletionHook;
 
 	// Add all queued TTHs in the supplied bloom filter
 	void getBloom(HashBloom& bloom) const noexcept;
@@ -163,6 +163,12 @@ public:
 	// Set the maximum number of segments for the specified target
 	void setSegments(const string& aTarget, uint8_t aSegments) noexcept;
 
+	void getChunksVisualisation(const QueueItemPtr& qi, vector<Segment>& running, vector<Segment>& downloaded, vector<Segment>& done) const noexcept { RLock l(cs); qi->getChunksVisualisation(running, downloaded, done); }
+
+	void addDoneSegment(const QueueItemPtr& aQI, const Segment& aSegment) noexcept;
+	void resetDownloadedSegments(const QueueItemPtr& aQI) noexcept;
+
+
 	bool isWaiting(const QueueItemPtr& qi) const noexcept { RLock l(cs); return qi->isWaiting(); }
 
 	uint64_t getDownloadedBytes(const QueueItemPtr& qi) const noexcept { RLock l(cs); return qi->getDownloadedBytes(); }
@@ -174,9 +180,6 @@ public:
 
 	Bundle::SourceList getBundleSources(const BundlePtr& b) const noexcept { RLock l(cs); return b->getSources(); }
 	Bundle::SourceList getBadBundleSources(const BundlePtr& b) const noexcept { RLock l(cs); return b->getBadSources(); }
-
-	void getChunksVisualisation(const QueueItemPtr& qi, vector<Segment>& running, vector<Segment>& downloaded, vector<Segment>& done) const noexcept { RLock l(cs); qi->getChunksVisualisation(running, downloaded, done); }
-
 
 	// Get information about the next valid file in the queue
 	// Used for displaying initial information for a transfer before the connection has been established and the real download is created
@@ -224,9 +227,9 @@ public:
 
 	SharedMutex& getCS() { return cs; }
 	// Locking must be handled by the caller
-	const Bundle::TokenMap& getBundles() const { return bundleQueue.getBundles(); }
+	const Bundle::TokenMap& getBundlesUnsafe() const { return bundleQueue.getBundles(); }
 	// Locking must be handled by the caller
-	const QueueItem::StringMap& getFileQueue() const { return fileQueue.getPathQueue(); }
+	const QueueItem::StringMap& getFileQueueUnsafe() const { return fileQueue.getPathQueue(); }
 
 	// Create a directory bundle with the supplied target path and files
 	// 
@@ -278,8 +281,8 @@ public:
 	// Throws QueueException
 	MemoryInputStream* generateTTHList(QueueToken aBundleToken, bool isInSharingHub, BundlePtr& bundle_);
 
-	//Bundle download failed due to Ex. disk full
-	void bundleDownloadFailed(const BundlePtr& aBundle, const string& aError);
+	//Bundle download failed due to Ex. disk full, or TTH_INCONSISTENCY
+	void onDownloadError(const BundlePtr& aBundle, const string& aError);
 
 	/* Priorities */
 	// Use DEFAULT priority to enable auto priority
@@ -384,7 +387,12 @@ public:
 	// The integrity of all finished segments will be verified and SFV will be validated for finished files
 	// The bundle will be paused if running
 	void recheckBundle(QueueToken aBundleToken) noexcept;
+
+	// Update download URL for a viewed filelist
+	void updateFilelistUrl(const HintedUser& aUser) noexcept;
 private:
+	static void log(const string& aMsg, LogMessage::Severity aSeverity) noexcept;
+
 	IGETSET(uint64_t, lastXmlSave, LastXmlSave, 0);
 	IGETSET(uint64_t, lastAutoPrio, LastAutoPrio, 0);
 
@@ -398,7 +406,7 @@ private:
 	
 	mutable SharedMutex cs;
 
-	Socket udp;
+	unique_ptr<Socket> udp;
 
 	/** QueueItems by target and TTH */
 	FileQueue fileQueue;
@@ -484,11 +492,11 @@ private:
 
 	// Returns whether the bundle has completed download
 	// Will also attempt to validate and share completed bundles 
-	bool checkBundleFinished(const BundlePtr& aBundle) noexcept;
+	bool checkBundleFinishedHooked(const BundlePtr& aBundle) noexcept;
 
 	// Returns true if any of the bundle files has failed validation
 	// Optionally also rechecks failed files
-	bool checkFailedBundleFiles(const BundlePtr& aBundle, bool aRevalidateFailed) noexcept;
+	bool checkFailedBundleFilesHooked(const BundlePtr& aBundle, bool aRevalidateFailed) noexcept;
 
 	// Returns true if the bundle passes possible completion hooks (e.g. scan for missing/extra files)
 	// Blocking call
@@ -520,8 +528,8 @@ private:
 	StringMatch skipList;
 
 	// TimerManagerListener
-	void on(TimerManagerListener::Second, uint64_t aTick) noexcept;
-	void on(TimerManagerListener::Minute, uint64_t aTick) noexcept;
+	void on(TimerManagerListener::Second, uint64_t aTick) noexcept override;
+	void on(TimerManagerListener::Minute, uint64_t aTick) noexcept override;
 
 	// Request information about finished segments from all partial sources
 	void requestPartialSourceInfo(uint64_t aTick) noexcept;
@@ -537,15 +545,16 @@ private:
 	void calculatePriorities(uint64_t aTick) noexcept;
 	
 	// SearchManagerListener
-	void on(SearchManagerListener::SR, const SearchResultPtr&) noexcept;
+	void on(SearchManagerListener::SR, const SearchResultPtr&) noexcept override;
 
 	// ClientManagerListener
-	void on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool wasOffline) noexcept;
-	void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool wentOffline) noexcept;
+	void on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool wasOffline) noexcept override;
+	void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool wentOffline) noexcept override;
 
 	// ShareManagerListener
-	void on(ShareManagerListener::RefreshCompleted, uint8_t, const RefreshPathList& aPaths) noexcept;
-	void on(ShareLoaded) noexcept;
+	void on(ShareManagerListener::RefreshCompleted, const ShareRefreshTask& aTask, bool aSucceed, const ShareRefreshStats&) noexcept override;
+	void on(ShareLoaded) noexcept override;
+
 	void onPathRefreshed(const string& aPath, bool startup) noexcept;
 
 	DelayedEvents<QueueToken> delayEvents;

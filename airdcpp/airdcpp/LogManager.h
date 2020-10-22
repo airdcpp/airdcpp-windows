@@ -41,7 +41,7 @@ public:
 	enum: uint8_t { FILE, FORMAT };
 
 	void log(Area area, ParamMap& params) noexcept;
-	void message(const string& msg, LogMessage::Severity severity) noexcept;
+	void message(const string& aMsg, LogMessage::Severity aSeverity, const string& aLabel) noexcept;
 
 	string getPath(Area area, ParamMap& params) const noexcept;
 	string getPath(Area area) const noexcept;

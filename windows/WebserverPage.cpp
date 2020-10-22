@@ -281,7 +281,7 @@ void WebServerPage::write() {
 	auto needServerRestart = WEBCFG(PLAIN_PORT).num() != plainserverPort || WEBCFG(TLS_PORT).num() != tlsServerPort;
 
 	const auto errorF = [](const string& aError) {
-		LogManager::getInstance()->message(aError, LogMessage::SEV_ERROR);
+		LogManager::getInstance()->message(aError, LogMessage::SEV_ERROR, STRING(WEB_SERVER));
 	};
 
 	applySettings();

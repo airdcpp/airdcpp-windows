@@ -18,7 +18,7 @@
 #include <commctrl.h>
 #include "stdafx.h"
 #include "Resource.h"
-#include "WinUtil.h"
+#include "ActionUtil.h"
 #include "AutosearchAdvancedPage.h"
 
 #include <airdcpp/Search.h>
@@ -67,7 +67,7 @@ LRESULT AutoSearchAdvancedPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, L
 	}
 
 	ATTACH(IDC_AS_EXCLUDED, cExcludedWords);
-	WinUtil::appendHistory(cExcludedWords, SettingsManager::HISTORY_EXCLUDE);
+	ActionUtil::appendHistory(cExcludedWords, SettingsManager::HISTORY_EXCLUDE);
 	cExcludedWords.SetWindowText(Text::toT(options.excludedWords).c_str());
 
 	CheckDlgButton(IDC_CHECK_QUEUED, options.checkQueued);
@@ -108,7 +108,7 @@ bool AutoSearchAdvancedPage::write() {
 		options.matcherType = cMatcherType.GetCurSel();
 	}
 
-	options.excludedWords = WinUtil::addHistory(cExcludedWords, SettingsManager::HISTORY_EXCLUDE);
+	options.excludedWords = ActionUtil::addHistory(cExcludedWords, SettingsManager::HISTORY_EXCLUDE);
 
 	GetDlgItemText(IDC_U_MATCH, buf, 512);
 	options.userMatch = Text::fromT(buf);

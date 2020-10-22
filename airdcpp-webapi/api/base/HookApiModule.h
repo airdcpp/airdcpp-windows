@@ -22,6 +22,7 @@
 #include <web-server/Access.h>
 #include <web-server/SessionListener.h>
 
+#include <airdcpp/ActionHook.h>
 #include <airdcpp/CriticalSection.h>
 #include <airdcpp/Semaphore.h>
 
@@ -30,14 +31,14 @@
 namespace webserver {
 	class HookApiModule : public SubscribableApiModule {
 	public:
-		typedef std::function<bool(const string& aSubscriberId, const string& aSubscriberName)> HookAddF;
+		typedef std::function<bool(ActionHookSubscriber&& aSubscriber)> HookAddF;
 		typedef std::function<void(const string& aSubscriberId)> HookRemoveF;
 
 		class HookSubscriber {
 		public:
 			HookSubscriber(HookAddF&& aAddHandler, HookRemoveF&& aRemoveF) : addHandler(std::move(aAddHandler)), removeHandler(aRemoveF) {}
 
-			bool enable(const json& aJson);
+			bool enable(const void* aOwner, const json& aJson);
 			void disable();
 
 			bool isActive() const noexcept {
@@ -66,7 +67,27 @@ namespace webserver {
 
 			typedef std::shared_ptr<HookCompletionData> Ptr;
 
-			static ActionHookRejectionPtr toResult(const HookCompletionData::Ptr& aData, const HookRejectionGetter& aRejectionGetter) noexcept;
+			template<typename DataT>
+			using HookDataGetter = std::function<DataT(const json& aDataJson, const ActionHookResultGetter<DataT>& aResultGetter)>;
+
+			template <typename DataT = nullptr_t>
+			static ActionHookResult<DataT> toResult(const HookCompletionData::Ptr& aData, const ActionHookResultGetter<DataT>& aResultGetter, const HookDataGetter<DataT>& aDataGetter = nullptr) noexcept {
+				if (aData) {
+					if (aData->rejected) {
+						return aResultGetter.getRejection(aData->rejectId, aData->rejectMessage);
+					} else if (aDataGetter) {
+						try {
+							const auto data = aResultGetter.getData(aDataGetter(aData->resolveJson, aResultGetter));
+							return data;
+						} catch (const std::exception& e) {
+							dcdebug("Failed to deserialize hook data for subscriber %s: %s\n", aResultGetter.getSubscriber().getId().c_str(), e.what());
+							return aResultGetter.getDataRejection(e);
+						}
+					}
+				}
+
+				return { nullptr, nullptr };
+			}
 		};
 		typedef HookCompletionData::Ptr HookCompletionDataPtr;
 

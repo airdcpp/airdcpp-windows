@@ -22,6 +22,7 @@
 #include "RSSinfoFrame.h"
 #include "MainFrm.h"
 #include "WinUtil.h"
+#include "ActionUtil.h"
 #include "ResourceLoader.h"
 
 #include <airdcpp/File.h>
@@ -208,7 +209,7 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 
 			menu.InsertSeparatorFirst(Text::toT(title));
 
-			menu.appendItem(TSTRING(OPEN_LINK), [=] { for_each(items.begin(), items.end(), [=](const ItemInfo* a) { WinUtil::openLink(Text::toT(a->item->getLink())); }); }, OMenu::FLAG_DEFAULT);
+			menu.appendItem(TSTRING(OPEN_LINK), [=] { for_each(items.begin(), items.end(), [=](const ItemInfo* a) { ActionUtil::openLink(Text::toT(a->item->getLink())); }); }, OMenu::FLAG_DEFAULT);
 			menu.appendSeparator();
 
 			ListBaseType::MenuItemList customItems;
@@ -223,14 +224,14 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 			}
 
 			if (items.size() == 1) {
-				menu.appendItem(TSTRING(SEARCH), [=] { WinUtil::search(Text::toT(items.front()->item->getTitle())); });
-				WinUtil::appendSearchMenu(menu, items.front()->item->getTitle());
+				menu.appendItem(TSTRING(SEARCH), [=] { ActionUtil::search(Text::toT(items.front()->item->getTitle())); });
+				ActionUtil::appendSearchMenu(menu, items.front()->item->getTitle());
 				if (AirUtil::allowOpenDupe(items.front()->getDupe())) {
 					menu.appendSeparator();
 					menu.appendItem(TSTRING(OPEN_FOLDER), [=] {
 						auto paths = AirUtil::getAdcDirectoryDupePaths(items.front()->getDupe(), items.front()->item->getTitle());
 						if (!paths.empty())
-							WinUtil::openFolder(Text::toT(paths.front()));
+							ActionUtil::openFolder(Text::toT(paths.front()));
 					});
 				}
 				menu.appendSeparator();
@@ -372,7 +373,7 @@ LRESULT RssInfoFrame::onTreeItemClick(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*
 LRESULT RssInfoFrame::onDoubleClickList(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
 	auto list = getSelectedListitems();
 	if (!list.empty()) {
-		WinUtil::openLink(Text::toT(list.front()->item->getLink()));
+		ActionUtil::openLink(Text::toT(list.front()->item->getLink()));
 	}
 	return 0;
 }

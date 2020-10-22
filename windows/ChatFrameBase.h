@@ -68,7 +68,7 @@ public:
 	LRESULT onResize(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled);
 
 	virtual bool checkFrameCommand(tstring& cmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson) = 0;
-	virtual bool sendMessage(const tstring& aMessage, string& error_, bool thirdPerson) = 0;
+	virtual bool sendMessageHooked(const OutgoingChatMessage& aMessage, string& error_) = 0;
 	virtual void addStatusLine(const tstring& aStatus, uint8_t sev) = 0;
 	virtual void addPrivateLine(const tstring& aLine, CHARFORMAT2& cf) = 0;
 	virtual void onTab() { };
@@ -119,7 +119,7 @@ protected:
 
 	CStatusBarCtrl ctrlStatus;
 
-	bool sendFrameMessage(const tstring& aMsg, bool thirdPerson = false);
+	void sendFrameMessage(const tstring& aMsg, bool aThirdPerson = false);
 	string getAwayMessage();
 private:
 	/**
@@ -130,7 +130,7 @@ private:
 	 * @param status Message that should be shown in the status line.
 	 * @return True if the command was processed, false otherwise.
 	 */
-	bool checkCommand(tstring& cmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson);
+	bool checkCommand(const tstring& aCmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson);
 	UserPtr getUser() { return ctrlClient.getPmUser(); }
 	ClientPtr getClient() { return ctrlClient.getClient(); }
 	const tstring& getSendFileTitle();

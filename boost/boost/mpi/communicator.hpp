@@ -509,7 +509,7 @@ class BOOST_MPI_DECL communicator
    */
   status recv(int source, int tag) const;
 
-  /** @brief Send a message to remote process nd receive another message 
+  /** @brief Send a message to remote process and receive another message
    *  from another process.
    */
   template<typename T>
@@ -1254,38 +1254,6 @@ communicator::irecv<content>(int source, int tag,
                              content& c) const
 {
   return irecv<const content>(source, tag, c);
-}
-
-// Count elements in a message
-template<typename T> 
-inline optional<int> status::count() const
-{
-  return count_impl<T>(is_mpi_datatype<T>());
-}
-
-template<typename T> 
-optional<int> status::count_impl(mpl::true_) const
-{
-  if (m_count != -1)
-    return m_count;
-
-  int return_value;
-  BOOST_MPI_CHECK_RESULT(MPI_Get_count,
-                         (&m_status, get_mpi_datatype<T>(T()), &return_value));
-  if (return_value == MPI_UNDEFINED)
-    return optional<int>();
-  else
-    /* Cache the result. */
-    return m_count = return_value;
-}
-
-template<typename T> 
-inline optional<int> status::count_impl(mpl::false_) const
-{
-  if (m_count == -1)
-    return optional<int>();
-  else
-    return m_count;
 }
 
 // We're sending a type that has an associated MPI datatype, so we

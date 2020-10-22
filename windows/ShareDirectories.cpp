@@ -22,6 +22,9 @@
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/FavoriteManager.h>
 
+#include <web-server/ContextMenuManager.h>
+#include <web-server/WebServerManager.h>
+
 #include "BrowseDlg.h"
 #include "Resource.h"
 #include "ShareDirectories.h"
@@ -31,6 +34,7 @@
 #include "TempShare_dlg.h"
 #include "SharePageDlg.h"
 #include "MainFrm.h"
+#include "ActionUtil.h"
 
 #include <boost/range/adaptor/filtered.hpp>
 using boost::adaptors::filtered;
@@ -114,22 +118,28 @@ LRESULT ShareDirectories::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPa
 		int selectedDirs = ctrlDirectories.GetSelectedCount();
 		if (selectedDirs > 0) {
 			int i = -1;
-			bool hasRemoved=false, hasAdded=false;
-			while((i = ctrlDirectories.GetNextItem(i, LVNI_SELECTED)) != -1) {
-				//auto sdi = (ProfileDirectoryInfo*)ctrlDirectories.GetItemData(i);
-				hasAdded = true;
-			}
 
 			OMenu menu;
 			menu.CreatePopupMenu();
-			if (hasAdded)
-				menu.AppendMenu(MF_STRING, IDC_REMOVE_DIR, CTSTRING(REMOVE));
-			if (hasRemoved)
-				menu.AppendMenu(MF_STRING, IDC_ADD_DIR, CTSTRING(ADD_THIS_PROFILE));
-			if (selectedDirs == 1) {
-				auto path = Text::toT(((ProfileDirectoryInfo*)ctrlDirectories.GetItemData(ctrlDirectories.GetNextItem(i, LVNI_SELECTED)))->dir->path);
-				menu.appendItem(TSTRING(OPEN_FOLDER), [path] { WinUtil::openFolder(path); });
+
+			{
+				vector<TTHValue> tokens;
+				while ((i = ctrlDirectories.GetNextItem(i, LVNI_SELECTED)) != -1) {
+					auto sdi = (ProfileDirectoryInfo*)ctrlDirectories.GetItemData(i);
+					tokens.push_back(AirUtil::getPathId(sdi->dir->path));
+				}
+				EXT_CONTEXT_MENU(menu, ShareRoot, tokens);
 			}
+
+			menu.AppendMenu(MF_STRING, IDC_REMOVE_DIR, CTSTRING(REMOVE));
+			if (selectedDirs == 1) {
+				auto path = ((ProfileDirectoryInfo*)ctrlDirectories.GetItemData(ctrlDirectories.GetNextItem(i, LVNI_SELECTED)))->dir->path;
+				menu.appendItem(TSTRING(OPEN_FOLDER), [path] { ActionUtil::openFolder(Text::toT(path)); });
+				menu.appendItem(TSTRING(REFRESH), [=] {
+					ShareManager::getInstance()->refreshPathsHooked(ShareRefreshPriority::MANUAL, { path }, this);
+				}, OMenu::FLAG_THREADED);
+			}
+
 			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 			return TRUE;
 		}

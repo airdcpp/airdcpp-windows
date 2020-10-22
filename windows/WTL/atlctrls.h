@@ -4473,10 +4473,10 @@ public:
 		return (HTREEITEM)::SendMessage(this->m_hWnd, TVM_GETNEXTITEM, TVGN_LASTVISIBLE, 0L);
 	}
 
-	HTREEITEM GetNextSelectedItem() const
+	HTREEITEM GetNextSelectedItem(HTREEITEM hItem) const
 	{
 		ATLASSERT(::IsWindow(this->m_hWnd));
-		return (HTREEITEM)::SendMessage(this->m_hWnd, TVM_GETNEXTITEM, TVGN_NEXTSELECTED, 0L);
+		return (HTREEITEM)::SendMessage(this->m_hWnd, TVM_GETNEXTITEM, TVGN_NEXTSELECTED, (LPARAM)hItem);
 	}
 
 	BOOL Select(HTREEITEM hItem, UINT nCode)
@@ -4824,10 +4824,10 @@ public:
 		return CTreeItemT<TBase>(hTreeItem, (CTreeViewCtrlExT<TBase>*)this);
 	}
 
-	CTreeItemT<TBase> GetNextSelectedItem() const
+	CTreeItemT<TBase> GetNextSelectedItem(HTREEITEM hItem) const
 	{
 		ATLASSERT(::IsWindow(this->m_hWnd));
-		HTREEITEM hTreeItem = (HTREEITEM)::SendMessage(this->m_hWnd, TVM_GETNEXTITEM, TVGN_NEXTSELECTED, 0L);
+		HTREEITEM hTreeItem = (HTREEITEM)::SendMessage(this->m_hWnd, TVM_GETNEXTITEM, TVGN_NEXTSELECTED, (LPARAM)hItem);
 		return CTreeItemT<TBase>(hTreeItem, (CTreeViewCtrlExT<TBase>*)this);
 	}
 
@@ -4975,7 +4975,7 @@ template <class TBase>
 inline CTreeItemT<TBase> CTreeItemT<TBase>::GetNextSelected() const
 {
 	ATLASSERT(m_pTreeView != NULL);
-	return m_pTreeView->GetNextSelectedItem();
+	return m_pTreeView->GetNextSelectedItem(m_hTreeItem);
 }
 
 template <class TBase>

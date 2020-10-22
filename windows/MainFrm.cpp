@@ -48,6 +48,8 @@
 #include "QueueFrame.h"
 #include "BrowseDlg.h"
 #include "SplashWindow.h"
+#include "ActionUtil.h"
+#include "SystemUtil.h"
 
 #include "Winamp.h"
 #include "Players.h"
@@ -71,6 +73,7 @@
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/ThrottleManager.h>
 #include <airdcpp/UpdateManager.h>
+#include <airdcpp/Updater.h>
 #include <airdcpp/UploadManager.h>
 #include <airdcpp/ViewFileManager.h>
 
@@ -109,13 +112,13 @@ statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP), settingsWindowOpen(f
 LRESULT MainFrame::onOpenDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	switch (wID) {
 	case IDC_OPEN_LOG_DIR:
-		WinUtil::openFolder(Text::toT(SETTING(LOG_DIRECTORY)));
+		ActionUtil::openFolder(Text::toT(SETTING(LOG_DIRECTORY)));
 		break;
 	case IDC_OPEN_CONFIG_DIR:
-		WinUtil::openFolder(Text::toT(Util::getPath(Util::PATH_USER_CONFIG)));
+		ActionUtil::openFolder(Text::toT(Util::getPath(Util::PATH_USER_CONFIG)));
 		break;
 	case IDC_OPEN_DOWNLOADS:
-		WinUtil::openFile(Text::toT(SETTING(DOWNLOAD_DIRECTORY)));
+		ActionUtil::openFile(Text::toT(SETTING(DOWNLOAD_DIRECTORY)));
 		break;
 	default: break;
 	}
@@ -210,7 +213,7 @@ public:
 				int matches=0, newFiles=0;
 				BundleList bundles;
 				QueueManager::getInstance()->matchListing(*dl, matches, newFiles, bundles);
-				LogManager::getInstance()->message(dl->getNick(false) + ": " + AirUtil::formatMatchResults(matches, newFiles, bundles), LogMessage::SEV_INFO);
+				LogManager::getInstance()->message(dl->getNick(false) + ": " + AirUtil::formatMatchResults(matches, newFiles, bundles), LogMessage::SEV_INFO, STRING(SETTINGS_QUEUE));
 			} catch(const Exception&) {
 
 			}
@@ -336,12 +339,6 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		File::ensureDirectory(SETTING(LOG_DIRECTORY));
 	} catch (const FileException) {	}
 
-	try {
-		ConnectivityManager::getInstance()->setup(true, true);
-	} catch (const Exception& e) {
-		showPortsError(e.getError());
-	}
-
 	UpdateManager::getInstance()->init();
 		
 	WinUtil::SetIcon(m_hWnd, IDR_MAINFRAME, true);
@@ -373,7 +370,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	WinUtil::splash->destroy();
 
-	if (Util::IsOSVersionOrGreater(6, 2) && !IsWindowsServer() && WinUtil::isElevated()) {
+	if (Util::IsOSVersionOrGreater(6, 2) && !IsWindowsServer() && ::SystemUtil::isElevated()) {
 		callAsync([=] { WinUtil::ShowMessageBox(SettingsManager::WARN_ELEVATED, TSTRING(ELEVATED_WARNING)); });
 	}
 
@@ -393,22 +390,20 @@ LRESULT MainFrame::onTaskbarButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 		taskbarList->SetOverlayIcon(m_hWnd, NULL, NULL);
 
 		THUMBBUTTON buttons[2];
-		buttons[0].dwMask = THB_ICON | THB_TOOLTIP | THB_FLAGS;
+		buttons[0].dwMask = THB_BITMAP | THB_TOOLTIP | THB_FLAGS;
 		buttons[0].iId = IDC_OPEN_DOWNLOADS;
-		buttons[0].hIcon = GET_ICON(IDI_OPEN_DOWNLOADS, 16);
+		buttons[0].iBitmap = 0;
 		wcscpy(buttons[0].szTip, CWSTRING(MENU_OPEN_DOWNLOADS_DIR));
 		buttons[0].dwFlags = THBF_ENABLED;
 
-		buttons[1].dwMask = THB_ICON | THB_TOOLTIP | THB_FLAGS;
+		buttons[1].dwMask = THB_BITMAP | THB_TOOLTIP | THB_FLAGS;
 		buttons[1].iId = ID_FILE_SETTINGS;
-		buttons[1].hIcon = GET_ICON(IDI_SETTINGS, 16);
+		buttons[1].iBitmap = 1;
 		wcscpy(buttons[1].szTip, CWSTRING(SETTINGS));
 		buttons[1].dwFlags = THBF_ENABLED;
 
+		taskbarList->ThumbBarSetImageList(m_hWnd, ResourceLoader::getThumbBarImages());
 		taskbarList->ThumbBarAddButtons(m_hWnd, sizeof(buttons) / sizeof(THUMBBUTTON), buttons);
-
-		for (int i = 0; i < sizeof(buttons) / sizeof(THUMBBUTTON); ++i)
-			DestroyIcon(buttons[i].hIcon);
 
 	}
 	return 0;
@@ -439,11 +434,6 @@ HWND MainFrame::createTBStatusBar() {
 	refreshing = false;
 
 	return TBStatusCtrl.m_hWnd;
-}
-
-
-void MainFrame::showPortsError(const string& port) {
-	showMessageBox(Text::toT(STRING_F(PORT_BYSY, port)), MB_OK | MB_ICONEXCLAMATION);
 }
 
 HWND MainFrame::createWinampToolbar() {
@@ -756,12 +746,12 @@ void MainFrame::updateStatus(TStringList* aList) {
 				ctrlStatus.SetText(STATUS_SHUTDOWN, (_T(" ") + Util::formatSecondsW(timeLeft, timeLeft < 3600)).c_str(), SBT_POPOUT);
 				if (iCurrentShutdownTime + SETTING(SHUTDOWN_TIMEOUT) <= iSec) {
 					bool bDidShutDown = false;
-					bDidShutDown = WinUtil::shutDown(SETTING(SHUTDOWN_ACTION));
+					bDidShutDown = ::SystemUtil::shutdown(SETTING(SHUTDOWN_ACTION));
 					if (bDidShutDown) {
 						// Should we go faster here and force termination?
 						// We "could" do a manual shutdown of this app...
 					} else {
-						LogManager::getInstance()->message(STRING(FAILED_TO_SHUTDOWN), LogMessage::SEV_ERROR);
+						LogManager::getInstance()->message(STRING(FAILED_TO_SHUTDOWN), LogMessage::SEV_ERROR, STRING(APPLICATION));
 						ctrlStatus.SetText(STATUS_SHUTDOWN, _T(""));
 					}
 					// We better not try again. It WON'T work...
@@ -858,7 +848,7 @@ void MainFrame::parseCommandLine(const tstring& cmdLine)
 		(j = cmdLine.find(_T("adcs://"), i)) != string::npos ||
 		(j = cmdLine.find(_T("magnet:?"), i)) != string::npos )
 	{
-		WinUtil::parseDBLClick(cmdLine.substr(j));
+		ActionUtil::parseDBLClick(cmdLine.substr(j));
 	}
 }
 
@@ -942,8 +932,13 @@ LRESULT MainFrame::OnFileSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 	if (settingsWindowOpen)
 		return;
-	// TODO: use move captures instead when those are available
-	auto holder = make_shared<SettingHolder>([this](const string& e) { showPortsError(e); });
+
+	auto holder = make_shared<SettingHolder>([this](const string& e) {
+		callAsync([=] {
+			showMessageBox(Text::toT(e), MB_OK | MB_ICONEXCLAMATION);
+		});
+	});
+
 	auto dlg = make_shared<PropertiesDlg>(m_hWnd, SettingsManager::getInstance(), initialPage);
 
 	bool lastSortFavUsersFirst = SETTING(SORT_FAVUSERS_FIRST);
@@ -959,6 +954,7 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 			}
 
 			SettingsManager::getInstance()->save();
+			holder->apply();
 		});
  
 		if(SETTING(SORT_FAVUSERS_FIRST) != lastSortFavUsersFirst)
@@ -1198,9 +1194,9 @@ LRESULT MainFrame::onLink(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL
 	}
 
 	if(isFile)
-		WinUtil::openFile(site);
+		ActionUtil::openFile(site);
 	else
-		WinUtil::openLink(site);
+		ActionUtil::openLink(site);
 
 	return 0;
 }
@@ -1340,7 +1336,7 @@ void MainFrame::getMagnetForFile() {
 				if (closing)
 					return;
 
-				string magnetlink = WinUtil::makeMagnet(tth, Util::getFileName(path), size);
+				string magnetlink = ActionUtil::makeMagnet(tth, Util::getFileName(path), size);
 
 				CInputBox ibox(m_hWnd);
 				ibox.DoModal(_T("Tiger Tree Hash"), file.c_str(), Text::toT(tth.toBase32()).c_str(), Text::toT(magnetlink).c_str());
@@ -1406,7 +1402,7 @@ LRESULT MainFrame::onOpenOwnList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 
 LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring file;
-	if (WinUtil::browseList(file, m_hWnd)) {
+	if (ActionUtil::browseList(file, m_hWnd)) {
 		UserPtr user = DirectoryListing::getUserFromFilename(Text::fromT(file));
 		if (user) {
 			DirectoryListingFrame::openWindow(HintedUser(user, Util::emptyString), Text::fromT(file));
@@ -1418,7 +1414,7 @@ LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 }
 
 LRESULT MainFrame::onRefreshFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	addThreadedTask([] { ShareManager::getInstance()->refresh(false, ShareManager::TYPE_MANUAL); });
+	addThreadedTask([] { ShareManager::getInstance()->refresh(ShareRefreshType::REFRESH_ALL, ShareRefreshPriority::MANUAL); });
 	return 0;
 }
 
@@ -1733,7 +1729,7 @@ LRESULT MainFrame::onCloseWindows(WORD , WORD wID, HWND , BOOL& ) {
 LRESULT MainFrame::onOpenSysLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	string filename = LogManager::getInstance()->getPath(LogManager::SYSTEM);
 	if(Util::fileExists(filename)){
-		WinUtil::viewLog(filename);
+		ActionUtil::viewLog(filename);
 	} else {
 		MessageBox(CTSTRING(NO_LOG_FOR_HUB),CTSTRING(NO_LOG_FOR_HUB), MB_OK );	  
 	}
@@ -1754,7 +1750,7 @@ LRESULT MainFrame::onQuickConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		if(SETTING(NICK).empty())
 			return 0;
 
-		WinUtil::connectHub(Text::fromT(dlg.line));
+		ActionUtil::connectHub(Text::fromT(dlg.line));
 	}
 	return 0;
 }
@@ -1799,14 +1795,8 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 		if(ShareManager::getInstance()->isRefreshing()){
 			callAsync([=] { updateTBStatusRefreshing(); });
 		} else {
-			string file;
-			int64_t bytes = 0;
-			size_t files = 0;
-			int64_t speed = 0;
-			int hashers = 0;
-			bool paused = HashManager::getInstance()->isHashingPaused();
-			HashManager::getInstance()->getStats(file, bytes, files, speed, hashers);
-			callAsync([=] { updateTBStatusHashing(file, bytes, files, speed, hashers, paused); });
+			auto stats = HashManager::getInstance()->getStats();
+			callAsync([=] { updateTBStatusHashing(stats.curFile, stats.bytesLeft, stats.filesLeft, stats.speed, stats.hashersRunning, stats.isPaused); });
 		}
 	}
 
@@ -1828,7 +1818,7 @@ void MainFrame::on(QueueManagerListener::ItemFinished, const QueueItemPtr& qi, c
 	}
 
 	if (qi->isSet(QueueItem::FLAG_OPEN)) {
-		addThreadedTask([=] { WinUtil::openFile(Text::toT(qi->getTarget())); });
+		ActionUtil::openFile(Text::toT(qi->getTarget()));
 	}
 }
 
@@ -2023,21 +2013,21 @@ LRESULT MainFrame::onRefreshDropDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 	LPNMTOOLBAR tb = (LPNMTOOLBAR)pnmh;
 	OMenu dropMenu;
 	dropMenu.CreatePopupMenu();
-	dropMenu.appendItem(CTSTRING(ALL), [] { ShareManager::getInstance()->refresh(false, ShareManager::TYPE_MANUAL); }, OMenu::FLAG_THREADED);
-	dropMenu.appendItem(CTSTRING(INCOMING), [] { ShareManager::getInstance()->refresh(true, ShareManager::TYPE_MANUAL); }, OMenu::FLAG_THREADED);
+	dropMenu.appendItem(CTSTRING(ALL), [] { ShareManager::getInstance()->refresh(ShareRefreshType::REFRESH_ALL, ShareRefreshPriority::MANUAL); }, OMenu::FLAG_THREADED);
+	dropMenu.appendItem(CTSTRING(INCOMING), [] { ShareManager::getInstance()->refresh(ShareRefreshType::REFRESH_INCOMING, ShareRefreshPriority::MANUAL); }, OMenu::FLAG_THREADED);
 	dropMenu.appendSeparator();
 
 	auto l = ShareManager::getInstance()->getGroupedDirectories();
 	for(auto& i: l) {
 		if (i.second.size() > 1) {
 			auto vMenu = dropMenu.createSubMenu(Text::toT(i.first), true);
-			vMenu->appendItem(CTSTRING(ALL), [=] { ShareManager::getInstance()->refreshVirtualName(i.first); }, OMenu::FLAG_THREADED);
+			vMenu->appendItem(CTSTRING(ALL), [=] { ShareManager::getInstance()->refreshVirtualName(i.first, ShareRefreshPriority::MANUAL); }, OMenu::FLAG_THREADED);
 			vMenu->appendSeparator();
 			for(const auto& s: i.second) {
-				vMenu->appendItem(Text::toT(s), [=] { ShareManager::getInstance()->refreshPaths({ s }); }, OMenu::FLAG_THREADED);
+				vMenu->appendItem(Text::toT(s), [=] { ShareManager::getInstance()->refreshPathsHooked(ShareRefreshPriority::MANUAL, { s }, this); }, OMenu::FLAG_THREADED);
 			}
 		} else {
-			dropMenu.appendItem(Text::toT(i.first), [=] { ShareManager::getInstance()->refreshVirtualName(i.first); }, OMenu::FLAG_THREADED);
+			dropMenu.appendItem(Text::toT(i.first), [=] { ShareManager::getInstance()->refreshVirtualName(i.first, ShareRefreshPriority::MANUAL); }, OMenu::FLAG_THREADED);
 		}
 	}
 
@@ -2102,7 +2092,7 @@ void MainFrame::onBadVersion(const string& message, const string& infoUrl, const
 
 	if(!canAutoUpdate) {
 		if(!infoUrl.empty())
-			WinUtil::openLink(Text::toT(infoUrl));
+			ActionUtil::openLink(Text::toT(infoUrl));
 
 		shutdown();
 	} else {

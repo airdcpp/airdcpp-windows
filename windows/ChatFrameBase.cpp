@@ -28,6 +28,7 @@
 #include "Players.h"
 #include "ExMessageBox.h"
 #include "ChatCommands.h"
+#include "ActionUtil.h"
 #include "ExtensionsFrame.h"
 
 #include <airdcpp/modules/ShareMonitorManager.h>
@@ -497,7 +498,7 @@ void ChatFrameBase::addMagnet(const StringList& aPaths) {
 
 			if (!ret.empty())
 				ret += _T(" ");
-			ret += Text::toT(WinUtil::makeMagnet(tth, Util::getFileName(path), size));
+			ret += Text::toT(ActionUtil::makeMagnet(tth, Util::getFileName(path), size));
 			pos++;
 		}
 
@@ -548,16 +549,17 @@ LRESULT ChatFrameBase::onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	return 0;
 }
 
-bool ChatFrameBase::sendFrameMessage(const tstring& aMsg, bool thirdPerson /*false*/) {
+void ChatFrameBase::sendFrameMessage(const tstring& aMsg, bool aThirdPerson /*false*/) {
 	if (!aMsg.empty()) {
-		string error;
-		if (sendMessage(aMsg, error, thirdPerson)) {
-			return true;
-		} else if (!error.empty()) {
-			addStatusLine(Text::toT(error),  LogMessage::SEV_ERROR);
-		}
+		MainFrame::getMainFrame()->addThreadedTask([=] {
+			string error;
+			if (!sendMessageHooked(OutgoingChatMessage(Text::fromT(aMsg), this, aThirdPerson), error) && !error.empty()) {
+				callAsync([=] { 
+					addStatusLine(Text::toT(error), LogMessage::SEV_ERROR); 
+				});
+			}
+		});
 	}
-	return false;
 }
 
 void ChatFrameBase::appendTextLine(const tstring& aText, bool addSpace) {
@@ -645,6 +647,7 @@ LRESULT ChatFrameBase::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam
 void ChatFrameBase::handleSendMessage() {
 	tstring message;
 	tstring status;
+	tstring cmd;
 	bool thirdPerson = false;
 	bool isCommand = false;
 
@@ -662,15 +665,15 @@ void ChatFrameBase::handleSendMessage() {
 
 		// Special command
 		if(s[0] == _T('/')) {
-			tstring cmd = s;
+			cmd = s;
 			tstring param;
 			if(SETTING(CLIENT_COMMANDS)) {
 				addStatusLine(_T("Client command: ") + s, LogMessage::SEV_INFO);
 			}
 			isCommand = checkCommand(cmd, param, message, status, thirdPerson);
-			if(message.empty()) {
-				message = s;
-			} 
+			//if(message.empty()) {
+				//message = s;
+			//} 
 		} else {
 			if(SETTING(SERVER_COMMANDS)) {
 				if(s[0] == '!' || s[0] == '+' || s[0] == '-')
@@ -694,6 +697,11 @@ void ChatFrameBase::handleSendMessage() {
 
 	if (!message.empty()) {
 		sendFrameMessage(message, thirdPerson);
+	}
+	
+	if (!cmd.empty()) {
+		// Let the extensions handle it too
+		sendFrameMessage(cmd, false);
 	}
 
 	ctrlMessage.SetWindowText(Util::emptyStringT.c_str());
@@ -788,7 +796,9 @@ size_t crashWithRecursion(int aCurCount, int aMaxCount, Dummy1 d1, Dummy2 d2) {
 	return crashWithRecursion<T, AllocT, Dummy1, Dummy2>(aCurCount + 1, aMaxCount, d1, d2);
 }
 
-bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson) {
+bool ChatFrameBase::checkCommand(const tstring& aCmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson) {
+	auto cmd = aCmd;
+
 	string::size_type i = cmd.find(' ');
 	if (i != string::npos) {
 		param = cmd.substr(i + 1);
@@ -799,11 +809,11 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 
 	if (stricmp(cmd.c_str(), _T("log")) == 0) {
 		if (stricmp(param.c_str(), _T("system")) == 0) {
-			WinUtil::openFile(Text::toT(LogManager::getInstance()->getPath(LogManager::SYSTEM)));
+			ActionUtil::openFile(Text::toT(LogManager::getInstance()->getPath(LogManager::SYSTEM)));
 		} else if (stricmp(param.c_str(), _T("downloads")) == 0) {
-			WinUtil::openFile(Text::toT(LogManager::getInstance()->getPath(LogManager::DOWNLOAD)));
+			ActionUtil::openFile(Text::toT(LogManager::getInstance()->getPath(LogManager::DOWNLOAD)));
 		} else if (stricmp(param.c_str(), _T("uploads")) == 0) {
-			WinUtil::openFile(Text::toT(LogManager::getInstance()->getPath(LogManager::UPLOAD)));
+			ActionUtil::openFile(Text::toT(LogManager::getInstance()->getPath(LogManager::UPLOAD)));
 		} else {
 			return false;
 		}
@@ -825,12 +835,15 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 		try {
 			if (!param.empty()) {
 				if (stricmp(param.c_str(), _T("incoming")) == 0) {
-					ShareManager::getInstance()->refresh(true);
-				} else if (ShareManager::RefreshResult::REFRESH_PATH_NOT_FOUND == ShareManager::getInstance()->refreshVirtualName(Text::fromT(param))) {
-					status = TSTRING(DIRECTORY_NOT_FOUND);
+					ShareManager::getInstance()->refresh(ShareRefreshType::REFRESH_INCOMING, ShareRefreshPriority::MANUAL);
+				} else {
+					auto refreshQueueInfo = ShareManager::getInstance()->refreshVirtualName(Text::fromT(param), ShareRefreshPriority::MANUAL);
+					if (!refreshQueueInfo) {
+						status = TSTRING(DIRECTORY_NOT_FOUND);
+					}
 				}
 			} else {
-				ShareManager::getInstance()->refresh(false);
+				ShareManager::getInstance()->refresh(ShareRefreshType::REFRESH_ALL, ShareRefreshPriority::MANUAL);
 			}
 		} catch (const ShareException& e) {
 			status = Text::toT(e.getError());
@@ -855,7 +868,7 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 	} else if (stricmp(cmd.c_str(), _T("calcprio")) == 0) {
 		QueueManager::getInstance()->calculateBundlePriorities(true);
 	} else if (stricmp(cmd.c_str(), _T("generatelist")) == 0) {
-		ShareManager::getInstance()->generateOwnList(0);
+		MainFrame::getMainFrame()->addThreadedTask([this] { ShareManager::getInstance()->generateOwnList(0); });
 	} else if (stricmp(cmd.c_str(), _T("as")) == 0) {
 		//AutoSearchManager::getInstance()->runSearches();
 	} else if (stricmp(cmd.c_str(), _T("clientstats")) == 0) {
@@ -889,10 +902,10 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 			status = TSTRING(AWAY_MODE_ON) + _T(" ") + Text::toT(am->getAwayMessage(getAwayMessage(), sm));
 		}
 	} else if (WebShortcuts::getInstance()->getShortcutByKey(Text::fromT(cmd))) {
-		WinUtil::searchSite(WebShortcuts::getInstance()->getShortcutByKey(Text::fromT(cmd)), Text::fromT(param), false);
+		ActionUtil::searchSite(WebShortcuts::getInstance()->getShortcutByKey(Text::fromT(cmd)), Text::fromT(param), false);
 	} else if (stricmp(cmd.c_str(), _T("u")) == 0) {
 		if (!param.empty()) {
-			WinUtil::openLink(Text::toT(Util::encodeURI(Text::fromT(param))));
+			ActionUtil::openLink(Text::toT(Util::encodeURI(Text::fromT(param))));
 		}
 	} else if (stricmp(cmd.c_str(), _T("optimizedb")) == 0) {
 		HashManager::getInstance()->startMaintenance(false);
@@ -935,7 +948,7 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 	} else if (stricmp(cmd.c_str(), _T("f")) == 0) {
 		ctrlClient.findText();
 	} else if (stricmp(cmd.c_str(), _T("whois")) == 0) {
-		WinUtil::openLink(_T("http://www.ripe.net/perl/whois?form_type=simple&full_query_string=&searchtext=") + Text::toT(Util::encodeURI(Text::fromT(param))));
+		ActionUtil::openLink(_T("http://www.ripe.net/perl/whois?form_type=simple&full_query_string=&searchtext=") + Text::toT(Util::encodeURI(Text::fromT(param))));
 	} else if ((stricmp(cmd.c_str(), _T("clear")) == 0) || (stricmp(cmd.c_str(), _T("cls")) == 0)) {
 		ctrlClient.handleEditClearAll();
 	} else if (Util::stricmp(cmd.c_str(), _T("conn")) == 0 || Util::stricmp(cmd.c_str(), _T("connection")) == 0) {

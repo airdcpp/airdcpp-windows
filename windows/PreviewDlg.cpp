@@ -19,6 +19,7 @@
 #include "stdafx.h"
 #include "Resource.h"
 
+#include "ActionUtil.h"
 #include "PreviewDlg.h"
 #include "WinUtil.h"
 
@@ -55,7 +56,7 @@ LRESULT PreviewDlg::OnBrowse(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, 
 
 	GetDlgItemText(IDC_PREVIEW_APPLICATION, buf, MAX_PATH);
 	tstring x = buf;
-	if (WinUtil::browseApplication(x, m_hWnd)) {
+	if (ActionUtil::browseApplication(x, m_hWnd)) {
 		SetDlgItemText(IDC_PREVIEW_APPLICATION, x.c_str());
 	}
 

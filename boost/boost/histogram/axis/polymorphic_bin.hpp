@@ -7,9 +7,6 @@
 #ifndef BOOST_HISTOGRAM_AXIS_POLYMORPHIC_BIN_HPP
 #define BOOST_HISTOGRAM_AXIS_POLYMORPHIC_BIN_HPP
 
-#include <boost/histogram/detail/detect.hpp>
-#include <type_traits>
-
 namespace boost {
 namespace histogram {
 namespace axis {
@@ -31,7 +28,7 @@ namespace axis {
     result in a dangling reference. Rather than specialing the code to handle
     this, it seems easier to just use a value instead of a view.
 */
-template <typename RealType>
+template <class RealType>
 class polymorphic_bin {
   using value_type = RealType;
 
@@ -51,12 +48,12 @@ public:
   /// Return width of bin.
   value_type width() const noexcept { return upper() - lower(); }
 
-  template <typename BinType>
+  template <class BinType>
   bool operator==(const BinType& rhs) const noexcept {
-    return equal_impl(detail::has_method_lower<BinType>(), rhs);
+    return equal_impl(rhs, 0);
   }
 
-  template <typename BinType>
+  template <class BinType>
   bool operator!=(const BinType& rhs) const noexcept {
     return !operator==(rhs);
   }
@@ -65,17 +62,17 @@ public:
   bool is_discrete() const noexcept { return lower_or_value_ == upper_; }
 
 private:
-  bool equal_impl(std::true_type, const polymorphic_bin& rhs) const noexcept {
+  bool equal_impl(const polymorphic_bin& rhs, int) const noexcept {
     return lower_or_value_ == rhs.lower_or_value_ && upper_ == rhs.upper_;
   }
 
-  template <typename BinType>
-  bool equal_impl(std::true_type, const BinType& rhs) const noexcept {
+  template <class BinType>
+  auto equal_impl(const BinType& rhs, decltype(rhs.lower(), 0)) const noexcept {
     return lower() == rhs.lower() && upper() == rhs.upper();
   }
 
-  template <typename BinType>
-  bool equal_impl(std::false_type, const BinType& rhs) const noexcept {
+  template <class BinType>
+  bool equal_impl(const BinType& rhs, float) const noexcept {
     return is_discrete() && static_cast<value_type>(*this) == rhs;
   }
 

@@ -28,7 +28,7 @@
 
 namespace webserver {
 	CID Deserializer::parseCID(const string& aCID) {
-		if (!Encoder::isBase32(aCID.c_str())) {
+		if (aCID.length() != 39 || !Encoder::isBase32(aCID.c_str())) {
 			throw std::invalid_argument("Invalid CID");
 		}
 
@@ -52,6 +52,15 @@ namespace webserver {
 		return u;
 	}
 
+	UserPtr Deserializer::getOfflineUser(const string& aCID, const string& aNicks, const string& aHubUrl, bool aAllowMe) {
+		auto u = ClientManager::getInstance()->loadUser(aCID, aHubUrl, aNicks);
+		if (!aAllowMe && u->getCID() == ClientManager::getInstance()->getMyCID()) {
+			throw std::invalid_argument("Own CID isn't allowed for this command");
+		}
+
+		return u;
+	}
+
 	TTHValue Deserializer::parseTTH(const string& aTTH) {
 		if (!Encoder::isBase32(aTTH.c_str())) {
 			throw std::invalid_argument("Invalid TTH");
@@ -69,14 +78,43 @@ namespace webserver {
 		return getUser(*cid, aAllowMe);
 	}
 
-	HintedUser Deserializer::deserializeHintedUser(const json& aJson, bool aAllowMe, const string& aFieldName) {
-		auto userJson = JsonUtil::getRawField(aFieldName, aJson);
-		auto user = deserializeUser(userJson, aAllowMe, false);
-		return HintedUser(user, JsonUtil::getField<string>("hub_url", userJson, aAllowMe && user == ClientManager::getInstance()->getMe()));
+	HintedUser Deserializer::deserializeHintedUser(const json& aJson, bool aAllowMe, bool aOptional, const string& aFieldName) {
+		auto userJson = JsonUtil::getOptionalRawField(aFieldName, aJson);
+		if (userJson.is_null()) {
+			return HintedUser();
+		}
+
+		return parseHintedUser(userJson, aFieldName, aAllowMe);
+	}
+
+	HintedUser Deserializer::parseHintedUser(const json& aJson, const string& aFieldName, bool aAllowMe) {
+		auto user = deserializeUser(aJson, aAllowMe, false);
+		auto hubUrl = JsonUtil::getField<string>("hub_url", aJson, aAllowMe && user == ClientManager::getInstance()->getMe());
+		return HintedUser(user, hubUrl);
+	}
+
+	UserPtr Deserializer::parseOfflineUser(const json& aJson, const string& aFieldName, bool aAllowMe, const string& aHubUrl) {
+		const auto cid = JsonUtil::getField<string>("cid", aJson, false);
+		const auto nicks = JsonUtil::getField<string>("nicks", aJson, false);
+		auto user = getOfflineUser(cid, nicks, aHubUrl, aAllowMe);
+		return user;
+	}
+
+	Deserializer::OfflineHintedUser Deserializer::parseOfflineHintedUser(const json& aJson, const string& aFieldName, bool aAllowMe) {
+		const auto cid = JsonUtil::getField<string>("cid", aJson, false);
+		const auto hubUrl = JsonUtil::getField<string>("hub_url", aJson, aAllowMe);
+		const auto nicks = JsonUtil::getField<string>("nicks", aJson, false);
+
+		auto user = getOfflineUser(cid, nicks, hubUrl, aAllowMe);
+		if (hubUrl.empty() && user != ClientManager::getInstance()->getMe()) {
+			throw std::invalid_argument("hub_url missing");
+		}
+
+		return OfflineHintedUser(user, hubUrl, nicks);
 	}
 
 	OnlineUserPtr Deserializer::deserializeOnlineUser(const json& aJson, bool aAllowMe, const string& aFieldName) {
-		auto hintedUser = deserializeHintedUser(aJson, aAllowMe, aFieldName);
+		auto hintedUser = deserializeHintedUser(aJson, aAllowMe, false, aFieldName);
 
 		auto onlineUser = ClientManager::getInstance()->findOnlineUser(hintedUser, false);
 		if (!onlineUser) {
@@ -93,7 +131,7 @@ namespace webserver {
 	Priority Deserializer::deserializePriority(const json& aJson, bool aAllowDefault) {
 		auto minAllowed = aAllowDefault ? Priority::DEFAULT : Priority::PAUSED_FORCE;
 
-		auto priority = JsonUtil::getOptionalEnumField<int>("priority", aJson, !aAllowDefault, static_cast<int>(minAllowed), static_cast<int>(Priority::HIGHEST));
+		auto priority = JsonUtil::getOptionalRangeField<int>("priority", aJson, !aAllowDefault, static_cast<int>(minAllowed), static_cast<int>(Priority::HIGHEST));
 		if (!priority) {
 			return Priority::DEFAULT;
 		}
@@ -194,22 +232,17 @@ namespace webserver {
 		return profile;
 	}
 
+	TTHValue Deserializer::tthArrayValueParser(const json& aJson, const string& aFieldName) {
+		auto tthStr = JsonUtil::parseValue<string>(aFieldName, aJson, false);
+		return parseTTH(tthStr);
+	}
 
-	const map<string, string> fileTypeMappings = {
-		{ "any", "0" },
-		{ "audio", "1" },
-		{ "compressed", "2" },
-		{ "document", "3" },
-		{ "executable", "4" },
-		{ "picture", "5" },
-		{ "video", "6" },
-		{ "directory", "7" },
-		{ "tth", "8" },
-		{ "file", "9" },
-	};
+	CID Deserializer::cidArrayValueParser(const json& aJson, const string& aFieldName) {
+		auto cidStr = JsonUtil::parseValue<string>(aFieldName, aJson, false);
+		return getUser(cidStr, true)->getCID();
+	}
 
-	string Deserializer::parseSearchType(const string& aType) {
-		auto i = fileTypeMappings.find(aType);
-		return i != fileTypeMappings.end() ? i->second : aType;
+	HintedUser Deserializer::hintedUserArrayValueParser(const json& aJson, const string& aFieldName) {
+		return parseHintedUser(aJson, aFieldName, true);
 	}
 }

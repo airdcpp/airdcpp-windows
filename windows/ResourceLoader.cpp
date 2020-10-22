@@ -35,6 +35,7 @@ CImageList ResourceLoader::arrowImages;
 CImageList ResourceLoader::filelistTbImages;
 CImageList ResourceLoader::hubImages;
 CImageList ResourceLoader::queueTreeImages;
+CImageList ResourceLoader::thumbBarImages;
 COLORREF ResourceLoader::GrayPalette[256];
 CIcon ResourceLoader::infoIcon = NULL;
 CIcon ResourceLoader::warningIcon = NULL;
@@ -67,7 +68,7 @@ void ResourceLoader::unload() {
 	arrowImages.Destroy();
 	filelistTbImages.Destroy();
 	queueTreeImages.Destroy();
-	
+	thumbBarImages.Destroy();
 }
 
 CImageList& ResourceLoader::getUserImages() {
@@ -516,6 +517,18 @@ CImageList&  ResourceLoader::getAutoSearchStatuses() {
 	}
 
 	return autoSearchStatuses;
+}
+
+//Yes, could use settings cmdBar list but, decided to do this anyway...
+CImageList& ResourceLoader::getThumbBarImages() {
+
+	if (thumbBarImages.IsNull()) {
+		const int size = 16;
+		thumbBarImages.Create(size, size, ILC_COLOR32 | ILC_MASK, 0, 3);
+		thumbBarImages.AddIcon(CIcon(loadIcon(IDI_OPEN_DOWNLOADS, size)));
+		thumbBarImages.AddIcon(CIcon(loadIcon(IDI_SETTINGS, size)));
+	}
+	return thumbBarImages;
 }
 
 int ResourceLoader::getIconIndex(const tstring& aFileName) {

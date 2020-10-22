@@ -110,6 +110,24 @@ CryptoManager::CryptoManager()
 
 void CryptoManager::setContextOptions(SSL_CTX* aCtx, bool aServer) {
 	// TLS <= 1.2 ciphers
+#ifdef _DEBUG
+	bool useStrictConfig = true;
+#else
+	bool useStrictConfig = GET_TIME() > 1609459200; // 1.1.2021
+#endif
+	if (useStrictConfig) {
+		// Only require TLS 1.2 => for now, other requirements need to be tested first for compatibility issues
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+		SSL_CTX_set_min_proto_version(aCtx, TLS1_2_VERSION);
+		// SSL_CTX_set_security_level(aCtx, 2);
+#endif
+		// From DC++
+		// Connections with an unsupported cipher would just time out without any error, so don't use these yet
+
+		// const char ciphersuitesTls12[] = "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA256";
+		// SSL_CTX_set_cipher_list(aCtx, ciphersuitesTls12);
+	}
+
 	const char ciphersuitesTls12[] =
 		"ECDHE-ECDSA-AES128-GCM-SHA256:"
 		"ECDHE-RSA-AES128-GCM-SHA256:"
@@ -272,8 +290,9 @@ void CryptoManager::generateCertificate() {
 		File::ensureDirectory(SETTING(TLS_PRIVATE_KEY_FILE));
 		FILE* f = dcpp_fopen(SETTING(TLS_PRIVATE_KEY_FILE).c_str(), "w");
 		if (!f) {
-			return;
+			throw CryptoException(Util::formatLastError() + " (" + SETTING(TLS_PRIVATE_KEY_FILE) + ")");
 		}
+
 		PEM_write_RSAPrivateKey(f, rsa, NULL, NULL, 0, NULL, NULL);
 		fclose(f);
 	}
@@ -282,7 +301,7 @@ void CryptoManager::generateCertificate() {
 		FILE* f = dcpp_fopen(SETTING(TLS_CERTIFICATE_FILE).c_str(), "w");
 		if (!f) {
 			File::deleteFile(SETTING(TLS_PRIVATE_KEY_FILE));
-			return;
+			throw CryptoException(Util::formatLastError() + " (" + SETTING(TLS_CERTIFICATE_FILE) + ")");
 		}
 		PEM_write_X509(f, x509ss);
 		fclose(f);
@@ -439,6 +458,10 @@ RSA* CryptoManager::getTmpRSA(int keyLen) {
 	return tmpRSA;
 }
 
+void CryptoManager::log(const string& aMsg, LogMessage::Severity aSeverity) noexcept {
+	LogManager::getInstance()->message(aMsg, aSeverity, STRING(ENCRYPTION));
+}
+
 void CryptoManager::loadCertificates() noexcept{
 	setCertPaths();
 	if (!clientContext || !serverContext)
@@ -451,7 +474,7 @@ void CryptoManager::loadCertificates() noexcept{
 	const string& key = SETTING(TLS_PRIVATE_KEY_FILE);
 
 	if (cert.empty() || key.empty()) {
-		LogManager::getInstance()->message(STRING(NO_CERTIFICATE_FILE_SET), LogMessage::SEV_WARNING);
+		log(STRING(NO_CERTIFICATE_FILE_SET), LogMessage::SEV_WARNING);
 		return;
 	}
 
@@ -459,28 +482,28 @@ void CryptoManager::loadCertificates() noexcept{
 		// Try to generate them...
 		try {
 			generateCertificate();
-			LogManager::getInstance()->message(STRING(CERTIFICATE_GENERATED), LogMessage::SEV_INFO);
+			log(STRING(CERTIFICATE_GENERATED), LogMessage::SEV_INFO);
 		}
 		catch (const CryptoException& e) {
-			LogManager::getInstance()->message(STRING(CERTIFICATE_GENERATION_FAILED) + " " + e.getError(), LogMessage::SEV_ERROR);
+			log(STRING(CERTIFICATE_GENERATION_FAILED) + " " + e.getError(), LogMessage::SEV_ERROR);
 		}
 	}
 
 	if (!ssl::SSL_CTX_use_certificate_file(serverContext, cert.c_str(), SSL_FILETYPE_PEM)) {
-		LogManager::getInstance()->message(STRING(FAILED_TO_LOAD_CERTIFICATE), LogMessage::SEV_WARNING);
+		log(STRING(FAILED_TO_LOAD_CERTIFICATE), LogMessage::SEV_WARNING);
 		return;
 	}
 	if (!ssl::SSL_CTX_use_certificate_file(clientContext, cert.c_str(), SSL_FILETYPE_PEM)) {
-		LogManager::getInstance()->message(STRING(FAILED_TO_LOAD_CERTIFICATE), LogMessage::SEV_WARNING);
+		log(STRING(FAILED_TO_LOAD_CERTIFICATE), LogMessage::SEV_WARNING);
 		return;
 	}
 
 	if (!ssl::SSL_CTX_use_PrivateKey_file(serverContext, key.c_str(), SSL_FILETYPE_PEM)) {
-		LogManager::getInstance()->message(STRING(FAILED_TO_LOAD_PRIVATE_KEY), LogMessage::SEV_WARNING);
+		log(STRING(FAILED_TO_LOAD_PRIVATE_KEY), LogMessage::SEV_WARNING);
 		return;
 	}
 	if (!ssl::SSL_CTX_use_PrivateKey_file(clientContext, key.c_str(), SSL_FILETYPE_PEM)) {
-		LogManager::getInstance()->message(STRING(FAILED_TO_LOAD_PRIVATE_KEY), LogMessage::SEV_WARNING);
+		log(STRING(FAILED_TO_LOAD_PRIVATE_KEY), LogMessage::SEV_WARNING);
 		return;
 	}
 
@@ -493,7 +516,7 @@ void CryptoManager::loadCertificates() noexcept{
 			SSL_CTX_load_verify_locations(clientContext, i.c_str(), NULL) != SSL_SUCCESS ||
 			SSL_CTX_load_verify_locations(serverContext, i.c_str(), NULL) != SSL_SUCCESS
 		) {
-			LogManager::getInstance()->message("Failed to load trusted certificate from " + Util::addBrackets(i), LogMessage::SEV_WARNING);
+			log("Failed to load trusted certificate from " + Util::addBrackets(i), LogMessage::SEV_WARNING);
 		}
 	}
 
@@ -706,8 +729,9 @@ int CryptoManager::verify_callback(int preverify_ok, X509_STORE_CTX *ctx) {
 		}
 
 		auto fullError = formatError(ctx, error);
-		if (!fullError.empty() && (!keyp.empty() || !allowUntrusted))
-			LogManager::getInstance()->message(fullError, LogMessage::SEV_ERROR);
+		if (!fullError.empty() && (!keyp.empty() || !allowUntrusted)) {
+			log(fullError, LogMessage::SEV_ERROR);
+		}
 	}
 
 	// Don't allow untrusted connections on keyprint mismatch

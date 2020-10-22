@@ -28,7 +28,7 @@
 
 uint8_t UserUtil::getUserImageIndex(const OnlineUserPtr& aUser) noexcept {
 	const auto& identity = aUser->getIdentity();
-	return getIdentityImage(identity, identity.isTcpActive(aUser->getClient()));
+	return getIdentityImage(identity, identity.hasActiveTcpConnectivity(aUser->getClient()));
 }
 
 uint8_t UserUtil::getIdentityImage(const Identity& identity, bool aIsClientTcpActive) {
@@ -37,12 +37,14 @@ uint8_t UserUtil::getIdentityImage(const Identity& identity, bool aIsClientTcpAc
 	uint8_t image = bot ? ResourceLoader::USER_ICON_BOT : identity.isAway() ? ResourceLoader::USER_ICON_AWAY : ResourceLoader::USER_ICON;
 	image *= (ResourceLoader::USER_ICON_LAST - ResourceLoader::USER_ICON_MOD_START) * (ResourceLoader::USER_ICON_LAST - ResourceLoader::USER_ICON_MOD_START);
 
-	if (identity.getUser()->isNMDC()) {
+	if (identity.getUser()->isNMDC() || identity.isMe()) {
+		// NMDC / me
 		if (!bot && !aIsClientTcpActive) {
 			image += 1 << (ResourceLoader::USER_ICON_PASSIVE - ResourceLoader::USER_ICON_MOD_START);
 		}
 	} else {
-		const auto cm = identity.getConnectMode();
+		// ADC
+		const auto cm = identity.getTcpConnectMode();
 		if (!bot && (cm == Identity::MODE_PASSIVE_V6 || cm == Identity::MODE_PASSIVE_V4)) {
 			image += 1 << (ResourceLoader::USER_ICON_PASSIVE - ResourceLoader::USER_ICON_MOD_START);
 		}

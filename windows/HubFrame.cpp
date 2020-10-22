@@ -22,12 +22,13 @@
 #include "HubFrame.h"
 #include "LineDlg.h"
 #include "DirectoryListingFrm.h"
-#include "SearchFrm.h"
 #include "PrivateFrame.h"
 #include "TextFrame.h"
 #include "ResourceLoader.h"
 #include "MainFrm.h"
 #include "Wildcards.h"
+#include "FormatUtil.h"
+#include "ActionUtil.h"
 
 #include <airdcpp/CryptoManager.h>
 #include <airdcpp/Message.h>
@@ -39,10 +40,11 @@
 #include <airdcpp/FavoriteManager.h>
 #include <airdcpp/LogManager.h>
 #include <airdcpp/SettingsManager.h>
-#include <airdcpp/Localization.h>
-#include <airdcpp/GeoManager.h>
 
 #include <airdcpp/modules/HighlightManager.h>
+
+#include <web-server/ContextMenuManager.h>
+#include <web-server/WebServerManager.h>
 
 HubFrame::FrameMap HubFrame::frames;
 bool HubFrame::shutdown = false;
@@ -218,14 +220,14 @@ HubFrame::HubFrame(const tstring& aServer) :
 	memset(statusSizes, 0, sizeof(statusSizes));
 }
 
-bool HubFrame::sendMessage(const tstring& aMessage, string& error_, bool isThirdPerson) {
-	return client->sendMessage(Text::fromT(aMessage), error_, isThirdPerson);
+bool HubFrame::sendMessageHooked(const OutgoingChatMessage& aMessage, string& error_) {
+	return client->sendMessageHooked(aMessage, error_);
 }
 
 bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*message*/, tstring& status, bool& /*thirdPerson*/) {	
 	if(stricmp(cmd.c_str(), _T("join"))==0) {
 		if(!param.empty()) {
-			WinUtil::connectHub(Text::fromT(param));
+			ActionUtil::connectHub(Text::fromT(param));
 		} else {
 			status = TSTRING(SPECIFY_SERVER);
 		}
@@ -240,13 +242,13 @@ bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*messag
 		client->password(Text::fromT(param));
 		waitingForPW = false;
 	} else if( stricmp(cmd.c_str(), _T("showjoins")) == 0 ) {
-		if(client->changeBoolHubSetting(HubSettings::ShowJoins)) {
+		if(client->toggleHubBoolSetting(HubSettings::ShowJoins)) {
 			status = TSTRING(JOIN_SHOWING_ON);
 		} else {
 			status = TSTRING(JOIN_SHOWING_OFF);
 		}
 	} else if( stricmp(cmd.c_str(), _T("favshowjoins")) == 0 ) {
-		if(client->changeBoolHubSetting(HubSettings::FavShowJoins)) {
+		if(client->toggleHubBoolSetting(HubSettings::FavShowJoins)) {
 			status = TSTRING(FAV_JOIN_SHOWING_ON);
 		} else {
 			status = TSTRING(FAV_JOIN_SHOWING_OFF);
@@ -267,7 +269,7 @@ bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*messag
 			}
 		}
 	} else if(stricmp(cmd.c_str(), _T("log")) == 0) {
-		WinUtil::openFile(Text::toT(getLogPath(stricmp(param.c_str(), _T("status")) == 0)));
+		ActionUtil::openFile(Text::toT(getLogPath(stricmp(param.c_str(), _T("status")) == 0)));
 	} else if(stricmp(cmd.c_str(), _T("help")) == 0) {
 		status = _T("*** ") + ChatFrameBase::commands + _T("Additional commands for the hub tab: /join <hub-ip>, /ts, /showjoins, /favshowjoins, /close, /userlist, /favorite, /pm <user> [message], /getlist <user>, /removefavorite");
 	} else if(stricmp(cmd.c_str(), _T("pm")) == 0) {
@@ -951,7 +953,7 @@ void HubFrame::handleOpenOwnList(){
 }
 
 LRESULT HubFrame::onSetNotify(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
-	client->changeBoolHubSetting(HubSettings::ChatNotify);
+	client->toggleHubBoolSetting(HubSettings::ChatNotify);
 	return 0;
 }
 
@@ -1013,6 +1015,15 @@ LRESULT HubFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOO
 			menu.AppendMenu(MF_SEPARATOR);
 		}
 
+		{
+			vector<uint32_t> tokens;
+			ctrlUsers.forEachSelectedT([&tokens](const ItemInfo* ii) {
+				tokens.push_back(ii->onlineUser->getToken());
+			});
+
+			EXT_CONTEXT_MENU_ENTITY(menu, HubUser, tokens, client);
+		}
+
 		ctrlUsers.appendCopyMenu(menu);
 
 		prepareMenu(menu, ::UserCommand::CONTEXT_USER, client->getHubUrl());
@@ -1025,7 +1036,7 @@ LRESULT HubFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOO
 }
 
 void HubFrame::runUserCommand(::UserCommand& uc) {
-	if(!WinUtil::getUCParams(m_hWnd, uc, ucLineParams))
+	if (!ActionUtil::getUCParams(m_hWnd, uc, ucLineParams))
 		return;
 
 	auto ucParams = ucLineParams;
@@ -1178,7 +1189,7 @@ LRESULT HubFrame::onEnterUsers(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHand
 	int item = ctrlUsers.GetNextItem(-1, LVNI_FOCUSED);
 	if(item != -1) {
 		auto user = HintedUser((ctrlUsers.getItemData(item))->onlineUser->getUser(), client->getHubUrl());
-		WinUtil::GetList()(user.user, user.hint);
+		ActionUtil::GetList()(user.user, user.hint);
 	}
 	return 0;
 }
@@ -1482,12 +1493,12 @@ void HubFrame::on(KeyprintMismatch, const Client*) noexcept {
 void HubFrame::openLinksInTopic() {
 	StringList urls;
 	
-	boost::regex linkReg(AirUtil::getLinkUrl());
+	boost::regex linkReg(AirUtil::getUrlReg());
 	AirUtil::getRegexMatches(client->getHubDescription(), urls, linkReg);
 
 	for(auto& url: urls) {
 		Util::sanitizeUrl(url);
-		WinUtil::openLink(Text::toT(url));
+		ActionUtil::openLink(Text::toT(url));
 	}
 }
 
@@ -1661,7 +1672,7 @@ LRESULT HubFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/
 
 	string file = ui->onlineUser->getLogPath();
 	if(Util::fileExists(file)) {
-		WinUtil::viewLog(file, wID == IDC_USER_HISTORY);
+		ActionUtil::viewLog(file, wID == IDC_USER_HISTORY);
 	} else {
 		WinUtil::showMessageBox(TSTRING(NO_LOG_FOR_USER));
 	}
@@ -1679,7 +1690,7 @@ string HubFrame::getLogPath(bool status) const {
 LRESULT HubFrame::onOpenHubLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	string filename = getLogPath(false);
 	if(Util::fileExists(filename)){
-		WinUtil::viewLog(filename, wID == IDC_HISTORY);
+		ActionUtil::viewLog(filename, wID == IDC_HISTORY);
 	} else {
 		WinUtil::showMessageBox(TSTRING(NO_LOG_FOR_HUB));	  
 	}
@@ -1740,9 +1751,9 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 				cd->clrText = SETTING(RESERVED_SLOT_COLOR);
 			} else if (ui->getUser()->isIgnored()) {
 				cd->clrText = SETTING(IGNORED_COLOR);
-			} else if(ui->onlineUser->getIdentity().isOp()) {
+			} else if (ui->onlineUser->getIdentity().isOp()) {
 				cd->clrText = SETTING(OP_COLOR);
-			} else if(!ui->onlineUser->getIdentity().isTcpActive(client)) {
+			} else if (!ui->onlineUser->getIdentity().hasActiveTcpConnectivity(client)) {
 				cd->clrText = SETTING(PASIVE_COLOR);
 			} else {
 				cd->clrText = SETTING(NORMAL_COLOUR);
@@ -1759,7 +1770,7 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 						if(cs->usingRegexp()) {
 							try {
 								//have to have $Re:
-								if(boost::regex_search(match.begin(), match.end(), cs->regexp)){
+								if(boost::regex_search(match, cs->regexp)){
 									if(cs->getHasFgColor()) cd->clrText = cs->getFgColor();
 									break;
 								}
@@ -1779,6 +1790,8 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 
 	case CDDS_SUBITEM | CDDS_ITEMPREPAINT: {
 		if(SETTING(GET_USER_COUNTRY) && (ctrlUsers.findColumn(cd->iSubItem) == UserUtil::COLUMN_IP4 || ctrlUsers.findColumn(cd->iSubItem) == UserUtil::COLUMN_IP6)) {
+			auto isV6 = ctrlUsers.findColumn(cd->iSubItem) == UserUtil::COLUMN_IP6;
+
 			CRect rc;
 			ctrlUsers.GetSubItemRect((int)cd->nmcd.dwItemSpec, cd->iSubItem, LVIR_BOUNDS, rc);
 
@@ -1797,17 +1810,10 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 				POINT p = { rc.left, top };
 
 				const auto ii = (ItemInfo*)cd->nmcd.lItemlParam;
-				const auto ip = ii->onlineUser->getIdentity().getIp();
-				uint8_t flagIndex = 0;
-				if (!ip.empty()) {
-					// Only attempt to grab a country mapping if we actually have an IP address
-					string tmpCountry = GeoManager::getInstance()->getCountry(ip);
-					if(!tmpCountry.empty()) {
-						flagIndex = Localization::getFlagIndexByCode(tmpCountry.c_str());
-					}
-				}
+				const auto userIp = isV6 ? ii->onlineUser->getIdentity().getIp6() : ii->onlineUser->getIdentity().getIp4();
+				auto countryInfo = FormatUtil::toCountryInfo(userIp);
+				ResourceLoader::flagImages.Draw(cd->nmcd.hdc, countryInfo.flagIndex, p, LVSIL_SMALL);
 
-				ResourceLoader::flagImages.Draw(cd->nmcd.hdc, flagIndex, p, LVSIL_SMALL);
 				top = rc.top + (rc.Height() - WinUtil::getTextHeight(cd->nmcd.hdc) - 1)/2;
 				::ExtTextOut(cd->nmcd.hdc, rc.left + 30, top + 1, ETO_CLIPPED, rc, buf, _tcslen(buf), NULL);
 				return CDRF_SKIPDEFAULT;

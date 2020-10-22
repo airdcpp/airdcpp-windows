@@ -68,14 +68,14 @@ namespace webserver {
 		fileView("queue_file_view", this, QueueFileUtils::propertyHandler, getFileList) 
 	{
 
-		createHook("queue_file_finished_hook", [this](const string& aId, const string& aName) {
-			return QueueManager::getInstance()->fileCompletionHook.addSubscriber(aId, aName, HOOK_HANDLER(QueueApi::fileCompletionHook));
+		createHook("queue_file_finished_hook", [this](ActionHookSubscriber&& aSubscriber) {
+			return QueueManager::getInstance()->fileCompletionHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(QueueApi::fileCompletionHook));
 		}, [this](const string& aId) {
 			QueueManager::getInstance()->fileCompletionHook.removeSubscriber(aId);
 		});
 
-		createHook("queue_bundle_finished_hook", [this](const string& aId, const string& aName) {
-			return QueueManager::getInstance()->bundleCompletionHook.addSubscriber(aId, aName, HOOK_HANDLER(QueueApi::bundleCompletionHook));
+		createHook("queue_bundle_finished_hook", [this](ActionHookSubscriber&& aSubscriber) {
+			return QueueManager::getInstance()->bundleCompletionHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(QueueApi::bundleCompletionHook));
 		}, [this](const string& aId) {
 			QueueManager::getInstance()->bundleCompletionHook.removeSubscriber(aId);
 		});
@@ -107,7 +107,8 @@ namespace webserver {
 		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_DELETE,	(EXACT_PARAM("files"), TOKEN_PARAM, EXACT_PARAM("sources"), CID_PARAM),	QueueApi::handleRemoveFileSource);
 
 		METHOD_HANDLER(Access::QUEUE_VIEW,	METHOD_GET,		(EXACT_PARAM("files"), TOKEN_PARAM, EXACT_PARAM("segments")),														QueueApi::handleGetFileSegments);
-		//METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_POST,	(EXACT_PARAM("files"), TOKEN_PARAM, EXACT_PARAM("segments"), NUM_PARAM(SEGMENT_START), NUM_PARAM(SEGMENT_SIZE)),	QueueApi::handleAddFileSegment);
+		// METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_POST,	(EXACT_PARAM("files"), TOKEN_PARAM, EXACT_PARAM("segments"), NUM_PARAM(SEGMENT_START), NUM_PARAM(SEGMENT_SIZE)),	QueueApi::handleAddFileSegment);
+		// METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_DELETE,	(EXACT_PARAM("files"), TOKEN_PARAM, EXACT_PARAM("segments")),														QueueApi::handleResetFileSegments);
 
 		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_DELETE,	(EXACT_PARAM("sources"), CID_PARAM),									QueueApi::handleRemoveSource);
 		METHOD_HANDLER(Access::ANY,			METHOD_POST,	(EXACT_PARAM("find_dupe_paths")),										QueueApi::handleFindDupePaths);
@@ -121,21 +122,21 @@ namespace webserver {
 		DownloadManager::getInstance()->removeListener(this);
 	}
 
-	ActionHookRejectionPtr QueueApi::fileCompletionHook(const QueueItemPtr& aFile, const HookRejectionGetter& aErrorGetter) noexcept {
+	ActionHookResult<> QueueApi::fileCompletionHook(const QueueItemPtr& aFile, const ActionHookResultGetter<>& aResultGetter) noexcept {
 		return HookCompletionData::toResult(
 			fireHook("queue_file_finished_hook", 60, [&]() {
 				return Serializer::serializeItem(aFile, QueueFileUtils::propertyHandler);
 			}),
-			aErrorGetter
+			aResultGetter
 		);
 	}
 
-	ActionHookRejectionPtr QueueApi::bundleCompletionHook(const BundlePtr& aBundle, const HookRejectionGetter& aErrorGetter) noexcept {
+	ActionHookResult<> QueueApi::bundleCompletionHook(const BundlePtr& aBundle, const ActionHookResultGetter<>& aResultGetter) noexcept {
 		return HookCompletionData::toResult(
 			fireHook("queue_bundle_finished_hook", 60, [&]() {
 				return Serializer::serializeItem(aBundle, QueueBundleUtils::propertyHandler);
 			}),
-			aErrorGetter
+			aResultGetter
 		);
 	}
 
@@ -144,7 +145,7 @@ namespace webserver {
 		auto qm = QueueManager::getInstance();
 
 		RLock l(qm->getCS());
-		boost::range::copy(qm->getBundles() | map_values, back_inserter(bundles));
+		boost::range::copy(qm->getBundlesUnsafe() | map_values, back_inserter(bundles));
 		return bundles;
 	}
 
@@ -153,7 +154,7 @@ namespace webserver {
 		auto qm = QueueManager::getInstance();
 
 		RLock l(qm->getCS());
-		boost::range::copy(qm->getFileQueue() | map_values, back_inserter(items));
+		boost::range::copy(qm->getFileQueueUnsafe() | map_values, back_inserter(items));
 		return items;
 	}
 
@@ -175,6 +176,7 @@ namespace webserver {
 
 		auto path = JsonUtil::getOptionalField<string>("path", reqJson);
 		if (path) {
+			// Note: non-standard/partial paths are allowed, no strict directory path validation
 			ret = QueueManager::getInstance()->getAdcDirectoryPaths(*path);
 		} else {
 			auto tth = Deserializer::deserializeTTH(reqJson);
@@ -317,7 +319,7 @@ namespace webserver {
 				targetDirectory + targetFileName,
 				JsonUtil::getField<int64_t>("size", reqJson, false),
 				Deserializer::deserializeTTH(reqJson),
-				Deserializer::deserializeHintedUser(reqJson),
+				Deserializer::deserializeHintedUser(reqJson, false, true),
 				JsonUtil::getOptionalFieldDefault<time_t>("time", reqJson, GET_TIME()),
 				0,
 				prio
@@ -355,7 +357,7 @@ namespace webserver {
 		string errorMsg;
 		auto info = QueueManager::getInstance()->createDirectoryBundle(
 			targetDirectory + targetFileName,
-			Deserializer::deserializeHintedUser(bundleJson),
+			Deserializer::deserializeHintedUser(bundleJson, false, true),
 			files,
 			prio,
 			JsonUtil::getOptionalFieldDefault<time_t>("time", bundleJson, GET_TIME()),
@@ -422,16 +424,15 @@ namespace webserver {
 		auto qi = getFile(aRequest, true);
 		auto segment = parseSegment(qi, aRequest);
 
-		// TODO
+		QueueManager::getInstance()->addDoneSegment(qi, segment);
 
 		return websocketpp::http::status_code::ok;
 	}
 
-	api_return QueueApi::handleRemoveFileSegment(ApiRequest& aRequest) {
+	api_return QueueApi::handleResetFileSegments(ApiRequest& aRequest) {
 		auto qi = getFile(aRequest, true);
-		auto segment = parseSegment(qi, aRequest);
 
-		// TODO
+		QueueManager::getInstance()->resetDownloadedSegments(qi);
 
 		return websocketpp::http::status_code::ok;
 	}

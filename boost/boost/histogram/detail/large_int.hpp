@@ -7,13 +7,13 @@
 #ifndef BOOST_HISTOGRAM_DETAIL_LARGE_INT_HPP
 #define BOOST_HISTOGRAM_DETAIL_LARGE_INT_HPP
 
-#include <boost/assert.hpp>
 #include <boost/histogram/detail/operators.hpp>
 #include <boost/histogram/detail/safe_comparison.hpp>
 #include <boost/mp11/algorithm.hpp>
 #include <boost/mp11/function.hpp>
 #include <boost/mp11/list.hpp>
 #include <boost/mp11/utility.hpp>
+#include <cassert>
 #include <cmath>
 #include <cstdint>
 #include <limits>
@@ -30,7 +30,7 @@ using is_unsigned_integral = mp11::mp_and<std::is_integral<T>, std::is_unsigned<
 
 template <class T>
 bool safe_increment(T& t) {
-  if (t < std::numeric_limits<T>::max()) {
+  if (t < (std::numeric_limits<T>::max)()) {
     ++t;
     return true;
   }
@@ -41,7 +41,7 @@ template <class T, class U>
 bool safe_radd(T& t, const U& u) {
   static_assert(is_unsigned_integral<T>::value, "T must be unsigned integral type");
   static_assert(is_unsigned_integral<U>::value, "T must be unsigned integral type");
-  if (static_cast<T>(std::numeric_limits<T>::max() - t) >= u) {
+  if (static_cast<T>((std::numeric_limits<T>::max)() - t) >= u) {
     t += static_cast<T>(u); // static_cast to suppress conversion warning
     return true;
   }
@@ -68,7 +68,7 @@ struct large_int : totally_ordered<large_int<Allocator>, large_int<Allocator>>,
   }
 
   large_int& operator++() {
-    BOOST_ASSERT(data.size() > 0u);
+    assert(data.size() > 0u);
     std::size_t i = 0;
     while (!safe_increment(data[i])) {
       data[i] = 0;
@@ -114,7 +114,7 @@ struct large_int : totally_ordered<large_int<Allocator>, large_int<Allocator>>,
   }
 
   large_int& operator+=(std::uint64_t o) {
-    BOOST_ASSERT(data.size() > 0u);
+    assert(data.size() > 0u);
     if (safe_radd(data[0], o)) return *this;
     add_remainder(data[0], o);
     // carry the one, data may grow several times
@@ -129,7 +129,7 @@ struct large_int : totally_ordered<large_int<Allocator>, large_int<Allocator>>,
   }
 
   explicit operator double() const noexcept {
-    BOOST_ASSERT(data.size() > 0u);
+    assert(data.size() > 0u);
     double result = static_cast<double>(data[0]);
     std::size_t i = 0;
     while (++i < data.size())
@@ -138,11 +138,11 @@ struct large_int : totally_ordered<large_int<Allocator>, large_int<Allocator>>,
   }
 
   bool operator<(const large_int& o) const noexcept {
-    BOOST_ASSERT(data.size() > 0u);
-    BOOST_ASSERT(o.data.size() > 0u);
+    assert(data.size() > 0u);
+    assert(o.data.size() > 0u);
     // no leading zeros allowed
-    BOOST_ASSERT(data.size() == 1 || data.back() > 0u);
-    BOOST_ASSERT(o.data.size() == 1 || o.data.back() > 0u);
+    assert(data.size() == 1 || data.back() > 0u);
+    assert(o.data.size() == 1 || o.data.back() > 0u);
     if (data.size() < o.data.size()) return true;
     if (data.size() > o.data.size()) return false;
     auto s = data.size();
@@ -155,11 +155,11 @@ struct large_int : totally_ordered<large_int<Allocator>, large_int<Allocator>>,
   }
 
   bool operator==(const large_int& o) const noexcept {
-    BOOST_ASSERT(data.size() > 0u);
-    BOOST_ASSERT(o.data.size() > 0u);
+    assert(data.size() > 0u);
+    assert(o.data.size() > 0u);
     // no leading zeros allowed
-    BOOST_ASSERT(data.size() == 1 || data.back() > 0u);
-    BOOST_ASSERT(o.data.size() == 1 || o.data.back() > 0u);
+    assert(data.size() == 1 || data.back() > 0u);
+    assert(o.data.size() == 1 || o.data.back() > 0u);
     if (data.size() != o.data.size()) return false;
     return std::equal(data.begin(), data.end(), o.data.begin());
   }
@@ -167,22 +167,22 @@ struct large_int : totally_ordered<large_int<Allocator>, large_int<Allocator>>,
   template <class U>
   std::enable_if_t<std::is_integral<U>::value, bool> operator<(const U& o) const
       noexcept {
-    BOOST_ASSERT(data.size() > 0u);
+    assert(data.size() > 0u);
     return data.size() == 1 && safe_less()(data[0], o);
   }
 
   template <class U>
   std::enable_if_t<std::is_integral<U>::value, bool> operator>(const U& o) const
       noexcept {
-    BOOST_ASSERT(data.size() > 0u);
-    BOOST_ASSERT(data.size() == 1 || data.back() > 0u); // no leading zeros allowed
+    assert(data.size() > 0u);
+    assert(data.size() == 1 || data.back() > 0u); // no leading zeros allowed
     return data.size() > 1 || safe_less()(o, data[0]);
   }
 
   template <class U>
   std::enable_if_t<std::is_integral<U>::value, bool> operator==(const U& o) const
       noexcept {
-    BOOST_ASSERT(data.size() > 0u);
+    assert(data.size() > 0u);
     return data.size() == 1 && safe_equal()(data[0], o);
   }
 
@@ -208,13 +208,18 @@ struct large_int : totally_ordered<large_int<Allocator>, large_int<Allocator>>,
   }
 
   static void add_remainder(std::uint64_t& d, const std::uint64_t o) noexcept {
-    BOOST_ASSERT(d > 0u);
+    assert(d > 0u);
     // in decimal system it would look like this:
     // 8 + 8 = 6 = 8 - (9 - 8) - 1
     // 9 + 1 = 0 = 9 - (9 - 1) - 1
-    auto tmp = std::numeric_limits<std::uint64_t>::max();
+    auto tmp = (std::numeric_limits<std::uint64_t>::max)();
     tmp -= o;
     --d -= tmp;
+  }
+
+  template <class Archive>
+  void serialize(Archive& ar, unsigned /* version */) {
+    ar& make_nvp("data", data);
   }
 
   std::vector<std::uint64_t, Allocator> data;

@@ -42,6 +42,23 @@ mapperV4(false)
 {
 }
 
+
+void ConnectivityManager::startup(const function<bool(const string& /*Message*/, bool /*isQuestion*/, bool /*isError*/)>& aMessageF) noexcept {
+	try {
+		ConnectivityManager::getInstance()->setup(true, true);
+	} catch (const Exception& e) {
+		aMessageF(STRING_F(PORT_BYSY, e.getError()), false, true);
+	}
+
+	if (CONNSETTING(OUTGOING_CONNECTIONS) == SettingsManager::OUTGOING_SOCKS5) {
+		try {
+			Socket::socksUpdated();
+		} catch (const SocketException& e) {
+			aMessageF(e.getError(), false, true);
+		}
+	}
+}
+
 bool ConnectivityManager::get(SettingsManager::BoolSetting setting) const {
 	if(SETTING(AUTO_DETECT_CONNECTION) || SETTING(AUTO_DETECT_CONNECTION6)) {
 		RLock l(cs);
@@ -369,8 +386,8 @@ string ConnectivityManager::getInformation() const {
 		"\tBound interface (v4): %7%\n"
 		"\tBound interface (v6): %8%\n"
 		"\tTransfer port: %9%\n"
-		"\tEncrypted transfer port: %10%\n"
-		"\tSearch port: %11%") % autoStatusV4 % autoStatusV6 % getMode(false) % getMode(true) %
+		"\tSearch port: %11%\n"
+		"\tEncrypted transfer port: %10%") % autoStatusV4 % autoStatusV6 % getMode(false) % getMode(true) %
 		field(CONNSETTING(EXTERNAL_IP)) % field(CONNSETTING(EXTERNAL_IP6)) %
 		field(CONNSETTING(BIND_ADDRESS)) % field(CONNSETTING(BIND_ADDRESS6)) %
 		field(ConnectionManager::getInstance()->getPort()) % field(ConnectionManager::getInstance()->getSecurePort()) %
@@ -414,7 +431,7 @@ void ConnectivityManager::mappingFinished(const string& mapper, bool v6) {
 
 void ConnectivityManager::log(const string& aMessage, LogMessage::Severity sev, LogType aType) {
 	if (aType == TYPE_NORMAL) {
-		LogManager::getInstance()->message(aMessage, sev);
+		LogManager::getInstance()->message(aMessage, sev, STRING(CONNECTIVITY));
 	} else {
 		string proto;
 		if (aType == TYPE_BOTH && runningV4 && runningV6) {
@@ -429,7 +446,7 @@ void ConnectivityManager::log(const string& aMessage, LogMessage::Severity sev, 
 			statusV6 = aMessage;
 		}
 
-		LogManager::getInstance()->message(STRING(CONNECTIVITY) + " (" + proto + "): " + aMessage, sev);
+		LogManager::getInstance()->message(aMessage, sev, STRING(CONNECTIVITY) + " (" + proto + ")");
 		fire(ConnectivityManagerListener::Message(), proto + ": " + aMessage);
 	}
 }

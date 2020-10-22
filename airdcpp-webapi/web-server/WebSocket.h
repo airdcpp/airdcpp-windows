@@ -51,7 +51,10 @@ namespace webserver {
 		WebSocket(WebSocket&) = delete;
 		WebSocket& operator=(WebSocket&) = delete;
 
-		string getIp() const noexcept;
+		const string& getIp() const noexcept {
+			return ip;
+		}
+
 		void ping() noexcept;
 
 		void logError(const string& aMessage, websocketpp::log::level aErrorLevel) const noexcept;
@@ -66,6 +69,7 @@ namespace webserver {
 		}
 
 		const websocketpp::http::parser::request& getRequest() noexcept;
+		static void parseRequest(const string& aRequest, int& callbackId_, string& method_, string& path_, json& data_);
 	protected:
 		WebSocket(bool aIsSecure, websocketpp::connection_hdl aHdl, const websocketpp::http::parser::request& aRequest, WebServerManager* aWsm);
 	private:
@@ -79,6 +83,7 @@ namespace webserver {
 		const bool secure;
 		const time_t timeCreated;
 		string url;
+		string ip;
 	};
 }
 

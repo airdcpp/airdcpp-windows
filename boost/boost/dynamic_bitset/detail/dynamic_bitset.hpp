@@ -20,6 +20,7 @@
 #include <cstddef>
 #include "boost/config.hpp"
 #include "boost/detail/workaround.hpp"
+#include <boost/core/allocator_access.hpp>
 
 #if ((defined(BOOST_MSVC) && (BOOST_MSVC >= 1600)) || (defined(__clang__) && defined(__c2__)) || (defined(BOOST_INTEL) && defined(_MSC_VER))) && (defined(_M_IX86) || defined(_M_X64))
 #include <intrin.h>
@@ -29,6 +30,14 @@ namespace boost {
 
   namespace detail {
   namespace dynamic_bitset_impl {
+
+    template<class T>
+    struct max_limit {
+        BOOST_STATIC_CONSTEXPR T value = static_cast<T>(-1);
+    };
+
+    template<class T>
+    BOOST_CONSTEXPR_OR_CONST T max_limit<T>::value;
 
     // Gives (read-)access to the object representation
     // of an object of type T (3.9p4). CANNOT be used
@@ -229,14 +238,8 @@ namespace boost {
 
         const allocator_type& alloc = v.get_allocator();
 
-#if !defined(BOOST_NO_CXX11_ALLOCATOR)
-        typedef std::allocator_traits<allocator_type> allocator_traits;
-
-        const typename allocator_traits::size_type alloc_max =
-            allocator_traits::max_size(alloc);
-#else
-        const typename allocator_type::size_type alloc_max = alloc.max_size();
-#endif
+        typename boost::allocator_size_type<allocator_type>::type alloc_max =
+            boost::allocator_max_size(alloc);
 
         const typename T::size_type container_max = v.max_size();
 

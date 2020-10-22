@@ -336,7 +336,7 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(POPUP_HUB_PMS, true);
 	setDefault(POPUP_BOT_PMS, true);
 	setDefault(BUFFER_SIZE, 64);
-	setDefault(HUBLIST_SERVERS, "https://www.te-home.net/?do=hublist&get=hublist.xml.bz2;https://dchublist.org/hublist.xml.bz2;https://dchublist.ru/hublist.xml.bz2;http://hublist.eu/hublist.xml.bz2;");
+	setDefault(HUBLIST_SERVERS, "https://www.te-home.net/?do=hublist&get=hublist.xml.bz2;https://dchublist.org/hublist.xml.bz2;https://dchublist.ru/hublist.xml.bz2;https://tankafett.biz/?do=hublist&get=hublist.xml.bz2;https://dcnf.github.io/Hublist/hublist.xml.bz2;");
 	setDefault(DOWNLOAD_SLOTS, 50);
 	setDefault(MAX_DOWNLOAD_SPEED, 0);
 	setDefault(LOG_DIRECTORY, Util::getPath(Util::PATH_USER_CONFIG) + "Logs" PATH_SEPARATOR_STR);
@@ -774,7 +774,7 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(ALLOW_MATCH_FULL_LIST, true);
 	setDefault(REPORT_ADDED_SOURCES, false);
 	setDefault(EXPAND_BUNDLES, false);
-	setDefault(COUNTRY_FORMAT, "%[2code] - %[name]");
+	setDefault(COUNTRY_FORMAT, "%[2code]");
 	setDefault(FORMAT_DIR_REMOTE_TIME, false);
 	setDefault(DISCONNECT_MIN_SOURCES, 2);
 	setDefault(USE_SLOW_DISCONNECTING_DEFAULT, true);
@@ -1324,7 +1324,7 @@ HubSettings SettingsManager::getHubSettings() const noexcept {
 
 void settingXmlMessage(const string& aMessage, LogMessage::Severity aSeverity, const SettingsManager::CustomReportF& aCustomErrorF) noexcept {
 	if (!aCustomErrorF) {
-		LogManager::getInstance()->message(aMessage, aSeverity);
+		LogManager::getInstance()->message(aMessage, aSeverity, STRING(SETTINGS));
 	} else {
 		aCustomErrorF(aMessage);
 	}

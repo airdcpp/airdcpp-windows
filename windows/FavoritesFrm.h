@@ -145,7 +145,6 @@ private:
 	CButton ctrlUp;
 	CButton ctrlDown;
 	CButton ctrlManageGroups;
-	OMenu hubsMenu;
 
 	CImageListManaged onlineStatusImg;
 	StringList onlineHubs;

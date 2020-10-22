@@ -23,8 +23,10 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include <airdcpp/Pointer.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/StringTokenizer.h>
+
 #include "ListViewArrows.h"
 #include "OMenu.h"
 

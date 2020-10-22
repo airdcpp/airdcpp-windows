@@ -177,9 +177,6 @@
     <ClInclude Include="api\SettingApi.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
-    <ClInclude Include="api\ApiSettingItem.h">
-      <Filter>Header Files\api</Filter>
-    </ClInclude>
     <ClInclude Include="api\ConnectivityApi.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
@@ -217,9 +214,6 @@
       <Filter>Header Files\api</Filter>
     </ClInclude>
     <ClInclude Include="api\UserApi.h">
-      <Filter>Header Files\api</Filter>
-    </ClInclude>
-    <ClInclude Include="api\TransferInfo.h">
       <Filter>Header Files\api</Filter>
     </ClInclude>
     <ClInclude Include="api\TransferUtils.h">
@@ -298,6 +292,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="web-server\HttpUtil.h">
+      <Filter>Header Files\web-server</Filter>
+    </ClInclude>
+    <ClInclude Include="api\MenuApi.h">
+      <Filter>Header Files\api</Filter>
+    </ClInclude>
+    <ClInclude Include="web-server\ContextMenuManager.h">
+      <Filter>Header Files\web-server</Filter>
+    </ClInclude>
+    <ClInclude Include="api\common\MessageUtils.h">
+      <Filter>Header Files\api\common</Filter>
+    </ClInclude>
+    <ClInclude Include="web-server\ApiSettingItem.h">
       <Filter>Header Files\web-server</Filter>
     </ClInclude>
   </ItemGroup>
@@ -398,9 +404,6 @@
     <ClCompile Include="api\SettingApi.cpp">
       <Filter>Source Files\api</Filter>
     </ClCompile>
-    <ClCompile Include="api\ApiSettingItem.cpp">
-      <Filter>Source Files\api</Filter>
-    </ClCompile>
     <ClCompile Include="api\ConnectivityApi.cpp">
       <Filter>Source Files\api</Filter>
     </ClCompile>
@@ -495,6 +498,18 @@
       <Filter>Source Files\web-server</Filter>
     </ClCompile>
     <ClCompile Include="web-server\HttpUtil.cpp">
+      <Filter>Source Files\web-server</Filter>
+    </ClCompile>
+    <ClCompile Include="api\MenuApi.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="web-server\ContextMenuManager.cpp">
+      <Filter>Source Files\web-server</Filter>
+    </ClCompile>
+    <ClCompile Include="api\common\MessageUtils.cpp">
+      <Filter>Source Files\api\common</Filter>
+    </ClCompile>
+    <ClCompile Include="web-server\ApiSettingItem.cpp">
       <Filter>Source Files\web-server</Filter>
     </ClCompile>
   </ItemGroup>

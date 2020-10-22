@@ -23,6 +23,8 @@
 #include "WinUtil.h"
 #include "MainFrm.h"
 #include "HubFrame.h"
+#include "FormatUtil.h"
+#include "ActionUtil.h"
 
 #include <airdcpp/Client.h>
 #include <airdcpp/ClientManager.h>
@@ -30,12 +32,9 @@
 #include <airdcpp/LogManager.h>
 #include <airdcpp/UploadManager.h>
 #include <airdcpp/FavoriteManager.h>
-#include <airdcpp/StringTokenizer.h>
 #include <airdcpp/ResourceManager.h>
 #include <airdcpp/PrivateChatManager.h>
-#include <airdcpp/Adchub.h>
-#include <airdcpp/GeoManager.h>
-#include <airdcpp/Localization.h>
+
 
 PrivateFrame::FrameMap PrivateFrame::frames;
 string PrivateFrame::id = "PM";
@@ -364,6 +363,15 @@ void PrivateFrame::addStatusLine(const tstring& aLine, uint8_t severity) {
 	
 }
 
+
+const UserPtr& PrivateFrame::getUser() const {
+	return chat->getUser(); 
+}
+
+const string& PrivateFrame::getHubUrl() const {
+	return chat->getHubUrl(); 
+}
+
 void PrivateFrame::updateOnlineStatus() {
 	if (!chat->isOnline()) {
 		setDisconnected(true);
@@ -386,8 +394,8 @@ void PrivateFrame::updateOnlineStatus() {
 		}
 	}
 
-	auto nicks = WinUtil::getNicks(chat->getHintedUser());
-	auto hubNames = chat->isOnline() ? WinUtil::getHubNames(chat->getHintedUser()) : TSTRING(OFFLINE);
+	auto nicks = FormatUtil::getNicks(chat->getHintedUser());
+	auto hubNames = chat->isOnline() ? FormatUtil::getHubNames(chat->getHintedUser()) : TSTRING(OFFLINE);
 
 	ctrlClient.setClient(chat->isOnline() ? chat->getClient() : nullptr);
 	updateStatusBar();
@@ -431,7 +439,7 @@ void PrivateFrame::handleNotifications(bool windowOpened, const tstring& aMessag
 			WinUtil::FlashWindow();
 
 		if (!SETTING(POPUP_PM) && SETTING(POPUP_NEW_PM))
-			WinUtil::showPopup(WinUtil::getNicks(chat->getHintedUser()) + _T(" - ") + WinUtil::getHubNames(chat->getHintedUser()), TSTRING(PRIVATE_MESSAGE));
+			WinUtil::showPopup(FormatUtil::getNicks(chat->getHintedUser()) + _T(" - ") + FormatUtil::getHubNames(chat->getHintedUser()), TSTRING(PRIVATE_MESSAGE));
 
 		if (!SETTING(PRIVATE_MESSAGE_BEEP) && SETTING(PRIVATE_MESSAGE_BEEP_OPEN))
 			handleBeep();
@@ -446,8 +454,8 @@ void PrivateFrame::handleNotifications(bool windowOpened, const tstring& aMessag
 				tstring message = aMessage.substr(0, 250);
 				WinUtil::showPopup(message.c_str(), CTSTRING(PRIVATE_MESSAGE));
 			} else {
-				WinUtil::showPopup(WinUtil::getNicks(chat->getHintedUser()) +
-					_T(" - ") + WinUtil::getHubNames(chat->getHintedUser()), TSTRING(PRIVATE_MESSAGE));
+				WinUtil::showPopup(FormatUtil::getNicks(chat->getHintedUser()) +
+					_T(" - ") + FormatUtil::getHubNames(chat->getHintedUser()), TSTRING(PRIVATE_MESSAGE));
 			}
 		}
 
@@ -471,7 +479,7 @@ bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& /*param*/, tstring& 
 	} else if(stricmp(cmd.c_str(), _T("getlist")) == 0) {
 		handleGetList();
 	} else if(stricmp(cmd.c_str(), _T("log")) == 0) {
-		WinUtil::openFile(Text::toT(chat->getLogPath()));
+		ActionUtil::openFile(Text::toT(chat->getLogPath()));
 	}
 	else if (Util::stricmp(cmd.c_str(), _T("direct")) == 0 || Util::stricmp(cmd.c_str(), _T("encrypted")) == 0) {
 		chat->startCC();
@@ -487,8 +495,8 @@ bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& /*param*/, tstring& 
 	return true;
 }
 
-bool PrivateFrame::sendMessage(const tstring& msg, string& error_, bool thirdPerson) {
-	return chat->sendMessage(Text::fromT(msg), error_, thirdPerson);
+bool PrivateFrame::sendMessageHooked(const OutgoingChatMessage& aMessage, string& error_) {
+	return chat->sendMessageHooked(aMessage, error_);
 }
 
 void PrivateFrame::on(PrivateChatListener::Close, PrivateChat*) noexcept {
@@ -605,8 +613,7 @@ LRESULT PrivateFrame::onCopyUserInfo(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 }
 
 void PrivateFrame::runUserCommand(UserCommand& uc) {
-
-	if(!WinUtil::getUCParams(m_hWnd, uc, ucLineParams))
+	if (!ActionUtil::getUCParams(m_hWnd, uc, ucLineParams))
 		return;
 
 	auto ucParams = ucLineParams;
@@ -773,15 +780,10 @@ void PrivateFrame::setCountryFlag() {
 
 	OnlineUserPtr ou = ClientManager::getInstance()->findOnlineUser(chat->getHintedUser());
 	if (ou && getUser() && !getUser()->isSet(User::BOT)) {
-		string ip = ou->getIdentity().getIp();
-		uint8_t flagIndex = 0;
-		if (!ip.empty()) {
-			string tmpCountry = GeoManager::getInstance()->getCountry(ip);
-			if (!tmpCountry.empty()) {
-				countryPopup = Text::toT(tmpCountry) + _T(" (") + Text::toT(ip) + _T(")");
-				flagIndex = Localization::getFlagIndexByCode(tmpCountry.c_str());
-				ctrlStatus.SetIcon(STATUS_COUNTRY, ResourceLoader::flagImages.GetIcon(flagIndex));
-			}
+		auto countryInfo = FormatUtil::toCountryInfo(ou->getIdentity().getTcpConnectIp());
+		if (!countryInfo.text.empty()) {
+			countryPopup = countryInfo.text;
+			ctrlStatus.SetIcon(STATUS_COUNTRY, ResourceLoader::flagImages.GetIcon(countryInfo.flagIndex));
 		}
 	}
 }
@@ -800,7 +802,7 @@ void PrivateFrame::setAway() {
 LRESULT PrivateFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {	
 	string file = chat->getLogPath();
 	if(Util::fileExists(file)) {
-		WinUtil::viewLog(file, wID == IDC_USER_HISTORY);
+		ActionUtil::viewLog(file, wID == IDC_USER_HISTORY);
 	} else {
 		MessageBox(CTSTRING(NO_LOG_FOR_USER), CTSTRING(NO_LOG_FOR_USER), MB_OK );	  
 	}	

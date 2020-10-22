@@ -28,6 +28,7 @@
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"
 #include "ShellContextMenu.h"
+#include "ActionUtil.h"
 #include "WinUtil.h"
 #include "ResourceLoader.h"
 #include "TextFrame.h"
@@ -153,7 +154,7 @@ LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHand
 
 		if(item->iItem != -1) {
 			FinishedItem *ii = ctrlList.getItemData(item->iItem);
-			WinUtil::openFile(Text::toT(ii->getTarget()));
+			ActionUtil::openFile(Text::toT(ii->getTarget()));
 		}
 		return 0;
 	}
@@ -271,7 +272,7 @@ LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHand
 		if((i = ctrlList.GetNextItem(-1, LVNI_SELECTED)) != -1) {
 			FinishedItem *ii = ctrlList.getItemData(i);
 			if(ii->getUser().user->isOnline()) {
-				WinUtil::GetList()(ii->getUser().user, ii->getUser().hint);
+				ActionUtil::GetList()(ii->getUser().user, ii->getUser().hint);
 			} else {
 				addStatusLine(TSTRING(USER_OFFLINE));
 			}
