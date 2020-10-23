@@ -45,6 +45,8 @@ ResourceManager::BUNDLES, ResourceManager::ACTION, ResourceManager::EXPIRATION, 
 
 string AutoSearchFrame::id = "AutoSearch";
 
+AutoSearchFrame::AutoSearchFrame() : ctrlStatusContainer((LPTSTR)STATUSCLASSNAME, this, AS_STATUS_MSG_MAP), statusTextHandler(ctrlStatus, 0, MAX_STATUS_LINES) { }
+
 LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	
 	CreateSimpleStatusBar(ATL_IDS_IDLEMESSAGE, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | SBARS_SIZEGRIP);
@@ -98,11 +100,7 @@ LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	ctrlManageGroups.SetWindowText(CTSTRING(MANAGE_GROUPS));
 	ctrlManageGroups.SetFont(WinUtil::systemFont);
 
-	ctrlTooltips.Create(m_hWnd, rcDefault, NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);
-	CToolInfo ti_1(TTF_SUBCLASS, ctrlStatus.m_hWnd, 0 + POPUP_UID, 0, LPSTR_TEXTCALLBACK);
-	ctrlTooltips.AddTool(&ti_1);
-	ctrlTooltips.SetDelayTime(TTDT_AUTOPOP, 15000);
-	ctrlTooltips.Activate(TRUE);
+	statusTextHandler.init(*this);
 
 	AutoSearchManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
@@ -148,10 +146,7 @@ void AutoSearchFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 
 	ctrlStatus.SetParts(4, w);
 
-	CRect r;
-	ctrlStatus.GetRect(0, r);
-	ctrlTooltips.SetMaxTipWidth(w[0]);
-	ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, 0 + POPUP_UID, r);
+	statusTextHandler.onUpdateLayout(w[0]);
 
 	CRect rc = rect;
 	int tmp = sr.top + 32;
@@ -223,42 +218,9 @@ void AutoSearchFrame::updateStatus() {
 
 }
 
-void AutoSearchFrame::addStatusText(const string& aText, uint8_t sev) {
-	tstring line = _T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + Text::toT(aText);
-	TCHAR* sLine = (TCHAR*)line.c_str();
-
-	if (line.size() > 512) {
-		sLine[512] = NULL;
-	}
-
-	ctrlStatus.SetText(0, sLine, SBT_NOTABPARSING);
-	ctrlStatus.SetIcon(0, ResourceLoader::getSeverityIcon(sev));
-	while (lastLinesList.size() + 1 > MAX_STATUS_LINES)
-		lastLinesList.pop_front();
-	lastLinesList.push_back(sLine);
-
-}
-
-LRESULT AutoSearchFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/) {
-	NMTTDISPINFO* nm = (NMTTDISPINFO*)pnmh;
-	LPNMTTDISPINFO pDispInfo = (LPNMTTDISPINFO)pnmh;
-	pDispInfo->szText[0] = 0;
-
-	if (idCtrl == 0 + POPUP_UID) {
-		lastLines.clear();
-		for (auto& i : lastLinesList) {
-			lastLines += i;
-			lastLines += _T("\r\n");
-		}
-
-		if (lastLines.size() > 2) {
-			lastLines.erase(lastLines.size() - 2);
-		}
-
-		nm->lpszText = const_cast<TCHAR*>(lastLines.c_str());
-	}
-	return 0;
-}
+/*void AutoSearchFrame::addStatusText(const string& aText, uint8_t sev) {
+	
+}*/
 
 LRESULT AutoSearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 	NMLVCUSTOMDRAW* cd = (NMLVCUSTOMDRAW*)pnmh;
@@ -725,7 +687,9 @@ void AutoSearchFrame::on(AutoSearchManagerListener::ItemUpdated, const AutoSearc
 }
 
 void AutoSearchFrame::on(AutoSearchManagerListener::ItemSearched, const AutoSearchPtr& /*as*/, const string& aMsg) noexcept {
-	callAsync([=] { addStatusText(aMsg, LogMessage::SEV_INFO); });
+	callAsync([=] { 
+		statusTextHandler.addStatusText(Text::toT(aMsg), LogMessage::SEV_INFO); 
+	});
 }
 
 LRESULT AutoSearchFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {

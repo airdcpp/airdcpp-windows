@@ -19,13 +19,10 @@
 #ifndef EXTENSIONS_FRAME
 #define EXTENSIONS_FRAME
 
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
-
-#include "StaticFrame.h"
-#include "TypedListViewCtrl.h"
 #include "Async.h"
+#include "StaticFrame.h"
+#include "StatusBarTextHandler.h"
+#include "TypedListViewCtrl.h"
 
 #include <airdcpp/HttpDownload.h>
 
@@ -34,6 +31,8 @@
 #include <web-server/Extension.h>
 
 using namespace webserver;
+
+#define EXT_STATUS_MSG_MAP 17
 
 class ExtensionsFrame : public MDITabChildWindowImpl<ExtensionsFrame>, public StaticFrame<ExtensionsFrame, ResourceManager::EXTENSIONS, IDC_EXTENSIONS>,
 	private SettingsManagerListener, private webserver::ExtensionManagerListener, private Async<ExtensionsFrame>
@@ -68,6 +67,8 @@ public:
 		COMMAND_ID_HANDLER(IDC_OPEN_LINK, onClickedReadMore)
 
 		CHAIN_MSG_MAP(baseClass)
+		ALT_MSG_MAP(EXT_STATUS_MSG_MAP)
+		NOTIFY_CODE_HANDLER(TTN_GETDISPINFO, statusTextHandler.onGetToolTip)
 	END_MSG_MAP()
 
 	LRESULT onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
@@ -87,8 +88,11 @@ public:
 
 	static string id;
 private:
+	StatusBarTextHandler statusTextHandler;
+	CContainedWindow ctrlStatusContainer;
+
 	class ItemInfo;
-	TypedListViewCtrl<ItemInfo, IDC_EXTENSIONS_LIST> ctrlList;
+	TypedListViewCtrl<ItemInfo, IDC_EXTENSIONS_LIST, LVITEM_GROUPING> ctrlList;
 
 	LRESULT onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT onCustomDraw(int idCtrl, LPNMHDR pnmh, BOOL& bHandled); 

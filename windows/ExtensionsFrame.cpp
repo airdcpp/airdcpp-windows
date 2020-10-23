@@ -29,18 +29,20 @@
 
 #include <api/common/SettingUtils.h>
 
+#define MAX_STATUS_LINES 10
+
 string ExtensionsFrame::id = "Extensions";
 
 int ExtensionsFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_DESCRIPTION, COLUMN_INSTALLED_VERSION, COLUMN_LATEST_VERSION };
 int ExtensionsFrame::columnSizes[] = { 300, 900};
 static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::DESCRIPTION, ResourceManager::CURRENT_VERSION, ResourceManager::LATEST_VERSION };
 
-ExtensionsFrame::ExtensionsFrame() { };
+ExtensionsFrame::ExtensionsFrame() : ctrlStatusContainer((LPTSTR)STATUSCLASSNAME, this, EXT_STATUS_MSG_MAP), statusTextHandler(ctrlStatus, 1, MAX_STATUS_LINES) { };
 
 LRESULT ExtensionsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	CreateSimpleStatusBar(ATL_IDS_IDLEMESSAGE, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | SBARS_SIZEGRIP);
 	ctrlStatus.Attach(m_hWndStatusBar);
-	//ctrlStatusContainer.SubclassWindow(ctrlStatus.m_hWnd);
+	ctrlStatusContainer.SubclassWindow(ctrlStatus.m_hWnd);
 
 	ctrlList.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 		WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_SHOWSELALWAYS, WS_EX_CLIENTEDGE, IDC_EXTENSIONS_LIST);
@@ -94,6 +96,8 @@ LRESULT ExtensionsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	memzero(statusSizes, sizeof(statusSizes));
 	statusSizes[0] = 16;
 	ctrlStatus.SetParts(1, statusSizes);
+
+	statusTextHandler.init(*this);
 
 	WinUtil::SetIcon(m_hWnd, IDI_QCONNECT);
 	bHandled = FALSE;
@@ -362,8 +366,7 @@ webserver::ExtensionManager& ExtensionsFrame::getExtensionManager() noexcept {
 
 void ExtensionsFrame::updateStatusAsync(const tstring& aMessage, uint8_t aSeverity) noexcept {
 	callAsync([=] {
-		ctrlStatus.SetText(1, aMessage.c_str());
-		ctrlStatus.SetIcon(1, ResourceLoader::getSeverityIcon(aSeverity));
+		statusTextHandler.addStatusText(aMessage, aSeverity);
 	});
 }
 
@@ -499,6 +502,8 @@ void ExtensionsFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		w[0] = 16;
 
 		ctrlStatus.SetParts(2, w);
+
+		statusTextHandler.onUpdateLayout(w[1]);
 	}
 
 	CRect rc = rect;
@@ -533,7 +538,6 @@ void ExtensionsFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	rc.OffsetRect(button_width + 4, 0);
 	rc.right = rc.left + button_width + 40;
 	ctrlReload.MoveWindow(rc);
-
 	// CRect rc = rect;
 	// ctrlList.MoveWindow(rc);
 }

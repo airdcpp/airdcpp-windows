@@ -21,11 +21,6 @@
 #ifndef CONFIG_UTIL_H
 #define CONFIG_UTIL_H
 
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
-
-
 #include <api/ExtensionInfo.h>
 #include <api/common/Serializer.h>
 #include <api/common/SettingUtils.h>

@@ -30,6 +30,7 @@
 #include "TabbedDialog.h"
 #include "AutoSearchItemSettings.h"
 #include "Async.h"
+#include "StatusBarTextHandler.h"
 
 #include <airdcpp/modules/AutoSearchManager.h>
 
@@ -42,7 +43,7 @@ public:
 	
 	typedef MDITabChildWindowImpl<AutoSearchFrame> baseClass;
 
-	AutoSearchFrame() : loading(true), closed(false), ctrlStatusContainer((LPTSTR)STATUSCLASSNAME, this, AS_STATUS_MSG_MAP) { }
+	AutoSearchFrame();
 	~AutoSearchFrame() { }
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("AutoSearchFrame"), IDR_AUTOSEARCH, 0, COLOR_3DFACE);
@@ -68,7 +69,7 @@ public:
 		NOTIFY_HANDLER(IDC_AUTOSEARCH, LVN_GETINFOTIP, ctrlAutoSearch.onInfoTip)
 		CHAIN_MSG_MAP(baseClass)
 		ALT_MSG_MAP(AS_STATUS_MSG_MAP)
-		NOTIFY_CODE_HANDLER(TTN_GETDISPINFO, onGetToolTip)
+		NOTIFY_CODE_HANDLER(TTN_GETDISPINFO, statusTextHandler.onGetToolTip)
 	END_MSG_MAP()
 
 	LRESULT onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
@@ -102,6 +103,8 @@ public:
 	TypedListViewCtrl<ItemInfo, IDC_AUTOSEARCH, LVITEM_GROUPING>& getList() { return ctrlAutoSearch; }
 
 private:
+	StatusBarTextHandler statusTextHandler;
+
 	enum {
 		COLUMN_FIRST,
 		COLUMN_VALUE = COLUMN_FIRST,
@@ -158,10 +161,7 @@ private:
 		AutoSearchManager::getInstance()->save();
 	}
 
-	void addStatusText(const string& aText, uint8_t sev);
-	deque<tstring> lastLinesList;
-	tstring lastLines;
-
+	// void addStatusText(const string& aText, uint8_t sev);
 	void addListEntry(ItemInfo* ii);
 	void updateItem(const AutoSearchPtr as);
 
@@ -169,11 +169,10 @@ private:
 
 	CButton ctrlAdd, ctrlRemove, ctrlChange, ctrlDuplicate, ctrlManageGroups;
 	CStatusBarCtrl ctrlStatus;
-	CToolTipCtrl ctrlTooltips;
 	CContainedWindow ctrlStatusContainer;
 	int statusSizes[4];
-	bool closed;
-	bool loading;
+	bool closed = false;
+	bool loading = true;
 	std::unordered_map<ProfileToken, ItemInfo> itemInfos;
 
 	void createPages(TabbedDialog& dlg, AutoSearchItemSettings& options);

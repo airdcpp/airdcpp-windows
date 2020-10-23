@@ -575,11 +575,12 @@
     <ClInclude Include="windows\ExtensionsFrame.h" />
     <ClInclude Include="windows\FavHubGeneralPage.h" />
     <ClInclude Include="windows\FavHubOptionsPage.h" />
-
     <ClInclude Include="windows\ResizeableDialog.h" />
-    <ClInclude Include="windows\FormatUtil.h" />    <ClInclude Include="windows\RssFilterPage.h" />
+    <ClInclude Include="windows\FormatUtil.h" />
+    <ClInclude Include="windows\RssFilterPage.h" />
     <ClInclude Include="windows\StaticFrame.h" />
     <ClInclude Include="windows\ActionUtil.h" />
+    <ClInclude Include="windows\StatusBarTextHandler.h" />
     <ClInclude Include="windows\SystemUtil.h" />
     <ClInclude Include="windows\TabbedDialog.h" />
     <ClInclude Include="windows\AutosearchParams.h" />
