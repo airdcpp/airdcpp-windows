@@ -38,9 +38,9 @@ namespace webserver {
 		virtual void on(ExtensionAdded, const ExtensionPtr&) noexcept { }
 		virtual void on(ExtensionRemoved, const ExtensionPtr&) noexcept { }
 
-		virtual void on(InstallationStarted, const string&) noexcept { }
-		virtual void on(InstallationSucceeded, const string&) noexcept { }
-		virtual void on(InstallationFailed, const string&, const string&) noexcept { }
+		virtual void on(InstallationStarted, const string& /*installId*/) noexcept { }
+		virtual void on(InstallationSucceeded, const string& /*installId*/, const ExtensionPtr&, bool /*updated*/) noexcept { }
+		virtual void on(InstallationFailed, const string& /*installId*/, const string& /*error*/) noexcept { }
 	};
 
 }

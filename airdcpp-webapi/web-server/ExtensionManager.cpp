@@ -297,7 +297,8 @@ namespace webserver {
 			return;
 		}
 
-		if (extension) {
+		bool updated = !!extension;
+		if (updated) {
 			// Updating
 			try {
 				extension->reload();
@@ -322,7 +323,7 @@ namespace webserver {
 		}
 
 		startExtensionImpl(extension);
-		fire(ExtensionManagerListener::InstallationSucceeded(), aInstallId);
+		fire(ExtensionManagerListener::InstallationSucceeded(), aInstallId, extension, updated);
 	}
 
 	void ExtensionManager::failInstallation(const string& aInstallId, const string& aMessage, const string& aException) noexcept {

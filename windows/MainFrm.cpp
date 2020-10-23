@@ -1231,6 +1231,7 @@ void MainFrame::saveOpenWindows() {
 		save(PublicHubsFrame)
 		save(CDMDebugFrame)
 		save(RecentsFrame)
+		save(ExtensionsFrame)
 	}
 #undef save
 
@@ -1294,6 +1295,7 @@ void MainFrame::loadOpenWindows() {
 					load(UploadQueueFrame, id);
 					load(CDMDebugFrame, id);
 					load(RecentsFrame, id);
+					load(ExtensionsFrame, id);
 
 					hasSavedState = true;
 				}

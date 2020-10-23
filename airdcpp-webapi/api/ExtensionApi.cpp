@@ -156,7 +156,7 @@ namespace webserver {
 		});
 	}
 
-	void ExtensionApi::on(ExtensionManagerListener::InstallationSucceeded, const string& aInstallId) noexcept {
+	void ExtensionApi::on(ExtensionManagerListener::InstallationSucceeded, const string& aInstallId, const ExtensionPtr&, bool) noexcept {
 		maybeSend("extension_installation_succeeded", [&] {
 			return json({
 				{ "install_id", aInstallId },

@@ -35,7 +35,7 @@
 
 using namespace webserver;
 
-class ExtensionsFrame : public MDITabChildWindowImpl<ExtensionsFrame>, public StaticFrame<ExtensionsFrame, ResourceManager::SETTINGS_EXTENSIONS, IDC_EXTENSIONS>,
+class ExtensionsFrame : public MDITabChildWindowImpl<ExtensionsFrame>, public StaticFrame<ExtensionsFrame, ResourceManager::EXTENSIONS, IDC_EXTENSIONS>,
 	private SettingsManagerListener, private webserver::ExtensionManagerListener, private Async<ExtensionsFrame>
 {
 public:
@@ -51,16 +51,33 @@ public:
 		NOTIFY_HANDLER(IDC_EXTENSIONS_LIST, LVN_GETDISPINFO, ctrlList.onGetDispInfo)
 		NOTIFY_HANDLER(IDC_EXTENSIONS_LIST, LVN_COLUMNCLICK, ctrlList.onColumnClick)
 		NOTIFY_HANDLER(IDC_EXTENSIONS_LIST, LVN_GETINFOTIP, ctrlList.onInfoTip)
+		NOTIFY_HANDLER(IDC_EXTENSIONS_LIST, LVN_ITEMCHANGED, onItemChanged)
+		// NOTIFY_HANDLER(IDC_AUTOSEARCH, NM_DBLCLK, onDoubleClick)
+		NOTIFY_HANDLER(IDC_EXTENSIONS_LIST, NM_CUSTOMDRAW, onCustomDraw)
+
 		MESSAGE_HANDLER(WM_CREATE, onCreate)
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
+		MESSAGE_HANDLER(WM_EXITMENULOOP, onExitMenuLoop)
+
+		COMMAND_ID_HANDLER(IDC_UPDATE, onClickedInstall)
+		COMMAND_ID_HANDLER(IDC_ACTIONS, onClickedExtensionActions)
+		COMMAND_ID_HANDLER(IDC_RELOAD, onClickedReload)
+		COMMAND_ID_HANDLER(IDC_OPEN_LINK, onClickedReadMore)
+
 		CHAIN_MSG_MAP(baseClass)
 	END_MSG_MAP()
 
 	LRESULT onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
+
+	LRESULT onClickedExtensionActions(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onClickedInstall(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onClickedReadMore(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onClickedReload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL & /*bHandled*/);
@@ -73,62 +90,86 @@ private:
 	class ItemInfo;
 	TypedListViewCtrl<ItemInfo, IDC_EXTENSIONS_LIST> ctrlList;
 
+	LRESULT onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
+	LRESULT onCustomDraw(int idCtrl, LPNMHDR pnmh, BOOL& bHandled); 
+	LRESULT onExitMenuLoop(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+
 	class ItemInfo {
 	public:
-		ItemInfo(const webserver::ExtensionPtr& aExtension) : item(aExtension) { }
-		ItemInfo(const string& aName, const string& aDescription) : name(aName),
-		description(aDescription) { }
+		ItemInfo(const webserver::ExtensionPtr& aExtension) : ext(aExtension) { }
+		ItemInfo(const string& aName, const string& aDescription, const string& aVersion) : name(aName),
+			description(aDescription), latestVersion(aVersion) { }
 		~ItemInfo() { }
 
-		GETSET(string, name, Name);
-		GETSET(string, description, Description);
+		const string& getName() const noexcept {
+			return ext ? ext->getName() : name;
+		}
+
+		const string& getDescription() const noexcept {
+			return ext ? ext->getDescription() : description;
+		}
 
 		const tstring getText(int col) const;
 
-		static int compareItems(const ItemInfo* a, const ItemInfo* b, int col) {
+		static int compareItems(const ItemInfo* a, const ItemInfo* b, int col) noexcept {
 			return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str());
-		
 		}
 
-		int getImageIndex() const { return !item ? 2 : item->isRunning() ? 0 : 1; }
+		int getImageIndex() const noexcept {
+			return !ext ? 2 : ext->isRunning() ? 0 : 1; 
+		}
 
-		webserver::ExtensionPtr item = nullptr;
+		bool hasUpdate() const noexcept;
 
+		GETSET(string, latestVersion, LatestVersion);
+
+		webserver::ExtensionPtr ext = nullptr;
+	private:
+		const string name;
+		const string description;
 	};
 
 	typedef unordered_map<string, unique_ptr<ItemInfo>> ItemInfoMap;
 	ItemInfoMap itemInfos;
+	typedef vector<const ItemInfo*> ItemInfoList;
 
 	enum {
 		COLUMN_FIRST,
 		COLUMN_NAME = COLUMN_FIRST,
 		COLUMN_DESCRIPTION,
+		COLUMN_INSTALLED_VERSION,
+		COLUMN_LATEST_VERSION,
 		COLUMN_LAST
 	};
 
-	bool closed;
+	bool closed = false;
 
 	static int columnSizes[COLUMN_LAST];
 	static int columnIndexes[COLUMN_LAST];
 
-	void updateList();
-	void addEntry(const ItemInfo* ii);
-	void updateEntry(const ItemInfo* ii);
+	void appendLocalExtensionActions(const ItemInfoList& aItems, OMenu& menu_) noexcept;
+	ItemInfoList getSelectedLocalExtensions() noexcept;
+	void fixControls() noexcept;
 
-	void onStopExtension(const ItemInfo* ii);
-	void onStartExtension(const ItemInfo* ii);
-	void onRemoveExtension(const ItemInfo* ii);
-	void onConfigExtension(const ItemInfo* ii);
+	void initLocalExtensions() noexcept;
+	void updateList() noexcept;
+	void addEntry(const ItemInfo* ii) noexcept;
+	void updateEntry(const ItemInfo* ii) noexcept;
 
-	void downloadExtensionList();
-	void onExtensionListDownloaded();
+	void onStopExtension(const ItemInfo* ii) noexcept;
+	void onStartExtension(const ItemInfo* ii) noexcept;
+	void onRemoveExtension(const ItemInfo* ii) noexcept;
+	void onConfigExtension(const ItemInfo* ii) noexcept;
+	void onUpdateExtension(const ItemInfo* ii) noexcept;
+	void onReadMore(const ItemInfo* ii) noexcept;
 
-	void downloadExtensionInfo(const ItemInfo* ii);
-	void onExtensionInfoDownloaded();
+	void downloadExtensionList() noexcept;
+	void onExtensionListDownloaded() noexcept;
 
-	webserver::ExtensionManager& getExtensionManager() {
-		return webserver::WebServerManager::getInstance()->getExtensionManager();
-	}
+	void installExtension(const ItemInfo* ii) noexcept;
+	void onExtensionInfoDownloaded() noexcept;
+
+	webserver::ExtensionManager& getExtensionManager() noexcept;
 
 	const string extensionUrl = "https://airdcpp-npm.herokuapp.com/-/v1/search?text=keywords:airdcpp-extensions-public&size=100";
 	const string packageUrl = "https://airdcpp-npm.herokuapp.com/";
@@ -137,14 +178,20 @@ private:
 	CStatusBarCtrl ctrlStatus;
 	int statusSizes[2];
 
-	string getData(const string& aData, const string& aEntry, size_t& pos);
+	CButton ctrlInstall, ctrlActions, ctrlReadMore, ctrlReload;
+
+	string getData(const string& aData, const string& aEntry, size_t& pos) noexcept;
+	void updateStatus(const tstring& aMessage) noexcept;
 
 	unique_ptr<HttpDownload> httpDownload;
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept override;
-	void on(webserver::ExtensionManagerListener::ExtensionAdded, const webserver::ExtensionPtr& e) noexcept;
-	void on(webserver::ExtensionManagerListener::ExtensionRemoved, const webserver::ExtensionPtr& e) noexcept;
-	void on(webserver::ExtensionManagerListener::InstallationSucceeded, const string& /*aInstallId*/) noexcept;
+
+	void on(webserver::ExtensionManagerListener::ExtensionAdded, const webserver::ExtensionPtr& e) noexcept override;
+	void on(webserver::ExtensionManagerListener::ExtensionRemoved, const webserver::ExtensionPtr& e) noexcept override;
+	void on(webserver::ExtensionManagerListener::InstallationStarted, const string& aInstallId) noexcept override;
+	void on(webserver::ExtensionManagerListener::InstallationFailed, const string& aInstallId, const string& aError) noexcept override;
+	void on(webserver::ExtensionManagerListener::InstallationSucceeded, const string& aInstallId, const ExtensionPtr& aExtension, bool aUpdated) noexcept override;
 
 
 };

@@ -47,7 +47,7 @@ namespace webserver {
 		void on(ExtensionManagerListener::ExtensionRemoved, const ExtensionPtr& aExtension) noexcept override;
 
 		void on(ExtensionManagerListener::InstallationStarted, const string& aInstallId) noexcept override;
-		void on(ExtensionManagerListener::InstallationSucceeded, const string& aInstallId) noexcept override;
+		void on(ExtensionManagerListener::InstallationSucceeded, const string& aInstallId, const ExtensionPtr&, bool aUpdated) noexcept override;
 		void on(ExtensionManagerListener::InstallationFailed, const string& aInstallId, const string& aError) noexcept override;
 
 		ExtensionManager& em;
