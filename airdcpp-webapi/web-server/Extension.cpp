@@ -48,11 +48,11 @@ namespace webserver {
 		return Util::joinDirectory(getRootPath(), EXT_LOG_DIR) + "error.log";
 	}
 
-	Extension::Extension(const string& aPackageDirectory, ErrorF&& aErrorF, bool aSkipPathValidation) : errorF(std::move(aErrorF)), managed(true) {
+	Extension::Extension(const string& aPackageDirectory, ErrorF&& aErrorF, StateUpdatedF&& aStateUpdatedF, bool aSkipPathValidation) : stateUpdatedF(aStateUpdatedF), errorF(std::move(aErrorF)), managed(true) {
 		initialize(aPackageDirectory, aSkipPathValidation);
 	}
 
-	Extension::Extension(const SessionPtr& aSession, const json& aPackageJson) : managed(false), session(aSession) {
+	Extension::Extension(const SessionPtr& aSession, const json& aPackageJson, StateUpdatedF&& aStateUpdatedF) : stateUpdatedF(aStateUpdatedF), managed(false), session(aSession) {
 		initialize(aPackageJson);
 	}
 
@@ -265,6 +265,10 @@ namespace webserver {
 		running = true;
 		fire(ExtensionListener::ExtensionStarted());
 
+		if (stateUpdatedF) {
+			stateUpdatedF(this);
+		}
+
 		// Monitor the running state of the script
 		timer = wsm->addTimer([this, wsm] { checkRunningState(wsm); }, 2500);
 		timer->start(false);
@@ -387,6 +391,10 @@ namespace webserver {
 
 		dcassert(running);
 		running = false;
+
+		if (stateUpdatedF) {
+			stateUpdatedF(this);
+		}
 	}
 #ifdef _WIN32
 	void Extension::initLog(HANDLE& aHandle, const string& aPath) {

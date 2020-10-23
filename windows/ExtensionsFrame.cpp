@@ -101,10 +101,22 @@ LRESULT ExtensionsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 }
 
 void ExtensionsFrame::initLocalExtensions() noexcept {
+
+	ctrlList.insertGroup(static_cast<int>(ExtensionGroupEnum::INSTALLED), TSTRING(INSTALLED), LVGA_HEADER_LEFT);
+	ctrlList.insertGroup(static_cast<int>(ExtensionGroupEnum::NOT_INSTALLED), TSTRING(NOT_INSTALLED), LVGA_HEADER_LEFT);
+
 	auto list = getExtensionManager().getExtensions();
 	for (const auto& i : list) {
 		itemInfos.emplace(i->getName(), make_unique<ItemInfo>(i));
 	}
+}
+
+int ExtensionsFrame::ItemInfo::compareItems(const ItemInfo* a, const ItemInfo* b, int col) noexcept {
+	return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str());
+}
+
+int ExtensionsFrame::ItemInfo::getImageIndex() const noexcept {
+	return !ext ? 2 : ext->isRunning() ? 0 : 1;
 }
 
 bool ExtensionsFrame::ItemInfo::hasUpdate() const noexcept {
@@ -148,12 +160,6 @@ LRESULT ExtensionsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 					menu.appendItem(TSTRING(UPDATE), [=] { onUpdateExtension(ii); }, hasDownload ? OMenu::FLAG_DISABLED : 0);
 				}
 
-				if (!ii->ext->isRunning()) {
-					menu.appendItem(TSTRING(START), [=] { onStartExtension(ii); });
-				} else {
-					menu.appendItem(TSTRING(STOP), [=] { onStopExtension(ii); });
-				}
-
 				appendLocalExtensionActions({ ii }, menu);
 			}
 
@@ -177,15 +183,41 @@ void ExtensionsFrame::appendLocalExtensionActions(const ItemInfoList& aItems, OM
 	}
 
 	menu_.appendSeparator();
+
+
+	bool hasRunningExtensions = any_of(aItems.begin(), aItems.end(), [](const ItemInfo* ii) { return ii->ext->isRunning(); });
+	bool hasStoppedExtensions = any_of(aItems.begin(), aItems.end(), [](const ItemInfo* ii) { return !ii->ext->isRunning(); });
+
+	if (hasStoppedExtensions) {
+		menu_.appendItem(TSTRING(START), [=] {
+			for (const auto& ii : aItems) {
+				if (!ii->ext->isRunning()) {
+					onStartExtension(ii);
+				}
+			}
+		});
+	}
+	
+	if (hasRunningExtensions) {
+		menu_.appendItem(TSTRING(STOP), [=] {
+			for (const auto& ii: aItems) {
+				if (ii->ext->isRunning()) {
+					onStopExtension(ii);
+				}
+			}
+		});
+	}
+
+	if (aItems.size() == 1 && aItems.front()->ext->hasSettings()) {
+		menu_.appendItem(TSTRING(CONFIGURE) + _T("..."), [=] { onConfigExtension(aItems.front()); });
+	}
+
+	menu_.appendSeparator();
 	menu_.appendItem(TSTRING(UNINSTALL), [=] {
 		for (const auto& ii: aItems) {
 			onRemoveExtension(ii);
 		}
 	});
-
-	if (aItems.size() == 1 && aItems.front()->ext->hasSettings()) {
-		menu_.appendItem(TSTRING(CONFIGURE) + _T("..."), [=] { onConfigExtension(aItems.front()); });
-	}
 }
 
 
@@ -263,7 +295,7 @@ void ExtensionsFrame::updateList() noexcept {
 }
 
 void ExtensionsFrame::addEntry(const ItemInfo* ii) noexcept {
-	ctrlList.insertItem(ctrlList.getSortPos(ii), ii, ii->getImageIndex());
+	ctrlList.insertItem(ctrlList.getSortPos(ii), ii, ii->getImageIndex(), static_cast<int>(ii->getGroupId()));
 }
 
 void ExtensionsFrame::updateEntry(const ItemInfo* ii) noexcept {
@@ -272,18 +304,12 @@ void ExtensionsFrame::updateEntry(const ItemInfo* ii) noexcept {
 }
 
 void ExtensionsFrame::onStopExtension(const ItemInfo* ii) noexcept {
-
 	ii->ext->stop();
-	//getExtensionManager().stopExtension(ii->item);
-	updateEntry(ii);
 }
 
 void ExtensionsFrame::onStartExtension(const ItemInfo* ii) noexcept {
-
 	auto wsm = WebServerManager::getInstance();
 	ii->ext->start(getExtensionManager().getStartCommand(ii->ext->getEngines()), wsm);
-	//getExtensionManager().startExtension(ii->item);
-	updateEntry(ii);
 }
 
 void ExtensionsFrame::onRemoveExtension(const ItemInfo* ii) noexcept {
@@ -299,7 +325,7 @@ void ExtensionsFrame::onReadMore(const ItemInfo* ii) noexcept {
 }
 
 void ExtensionsFrame::onConfigExtension(const ItemInfo* ii) noexcept {
-	DynamicDialogBase dlg(STRING(SETTINGS_EXTENSIONS));
+	DynamicDialogBase dlg(TSTRING(CONFIGURE) + _T(" ") + Text::toT(ii->getName()));
 
 	auto settings = ii->ext->getSettings();
 
@@ -321,6 +347,7 @@ void ExtensionsFrame::onConfigExtension(const ItemInfo* ii) noexcept {
 
 
 void ExtensionsFrame::downloadExtensionList() noexcept {
+	updateStatusAsync(TSTRING(EXTENSION_CATALOG_DOWNLOADING), LogMessage::SEV_INFO);
 	httpDownload.reset(new HttpDownload(
 		extensionUrl,
 		[this] { onExtensionListDownloaded(); }, 
@@ -333,9 +360,10 @@ webserver::ExtensionManager& ExtensionsFrame::getExtensionManager() noexcept {
 	return webserver::WebServerManager::getInstance()->getExtensionManager();
 }
 
-void ExtensionsFrame::updateStatus(const tstring& aMessage) noexcept {
+void ExtensionsFrame::updateStatusAsync(const tstring& aMessage, uint8_t aSeverity) noexcept {
 	callAsync([=] {
-		ctrlStatus.SetText(0, aMessage.c_str());
+		ctrlStatus.SetText(1, aMessage.c_str());
+		ctrlStatus.SetIcon(1, ResourceLoader::getSeverityIcon(aSeverity));
 	});
 }
 
@@ -349,10 +377,11 @@ void ExtensionsFrame::onExtensionListDownloaded() noexcept {
 	});
 
 	if (httpDownload->buf.empty()) {
-		updateStatus(TSTRING_F(X_DOWNLOAD_FAILED_X, TSTRING(EXTENSION_CATALOG) % Text::toT(httpDownload->status)));
+		updateStatusAsync(TSTRING_F(X_DOWNLOAD_FAILED_X, TSTRING(EXTENSION_CATALOG) % Text::toT(httpDownload->status)), LogMessage::SEV_ERROR);
 		return;
 	}
-
+	
+	updateStatusAsync(TSTRING(EXTENSION_CATALOG_DOWNLOADED), LogMessage::SEV_INFO);
 	try {
 
 		json listJson = json::parse(httpDownload->buf);
@@ -376,12 +405,14 @@ void ExtensionsFrame::onExtensionListDownloaded() noexcept {
 			updateList();
 		});
 	} catch (const std::exception& e) {
-		updateStatus(TSTRING_F(X_PARSING_FAILED_X, TSTRING(EXTENSION_CATALOG) % Text::toT(e.what())));
+		updateStatusAsync(TSTRING_F(X_PARSING_FAILED_X, TSTRING(EXTENSION_CATALOG) % Text::toT(e.what())), LogMessage::SEV_ERROR);
 	}
 
 }
 
 void ExtensionsFrame::installExtension(const ItemInfo* ii) noexcept {
+	const auto name = Text::toT(ii->getName());
+	updateStatusAsync(ii->ext ? TSTRING_F(EXTENSION_UPDATING_X, name) : TSTRING_F(EXTENSION_INSTALLING_X, name), LogMessage::SEV_INFO);
 	httpDownload.reset(new HttpDownload(
 		packageUrl + ii->getName() + "/latest",
 		[this] {
@@ -403,7 +434,7 @@ void ExtensionsFrame::onExtensionInfoDownloaded() noexcept {
 	});
 
 	if (httpDownload->buf.empty()) {
-		updateStatus(TSTRING_F(X_DOWNLOAD_FAILED_X, TSTRING(EXTENSION_DATA) % Text::toT(httpDownload->status)));
+		updateStatusAsync(TSTRING_F(X_DOWNLOAD_FAILED_X, TSTRING(EXTENSION_DATA) % Text::toT(httpDownload->status)), LogMessage::SEV_ERROR);
 		return;
 	}
 
@@ -419,7 +450,7 @@ void ExtensionsFrame::onExtensionInfoDownloaded() noexcept {
 
 		getExtensionManager().downloadExtension(aInstallId, aUrl, aSha);
 	} catch (const std::exception& e) {
-		updateStatus(TSTRING_F(X_PARSING_FAILED_X, TSTRING(EXTENSION_DATA) % Text::toT(e.what())));
+		updateStatusAsync(TSTRING_F(X_PARSING_FAILED_X, TSTRING(EXTENSION_DATA) % Text::toT(e.what())), LogMessage::SEV_ERROR);
 	}
 
 }
@@ -543,6 +574,16 @@ void ExtensionsFrame::on(webserver::ExtensionManagerListener::ExtensionAdded, co
 	});
 }
 
+void ExtensionsFrame::on(webserver::ExtensionManagerListener::ExtensionStateUpdated, const Extension* aExtension) noexcept {
+	callAsync([this, extensionName = aExtension->getName()] {
+		auto i = itemInfos.find(extensionName);
+		if (i != itemInfos.end()) {
+			auto& ii = i->second;
+			updateEntry(ii.get());
+		}
+	});
+}
+
 void ExtensionsFrame::on(webserver::ExtensionManagerListener::ExtensionRemoved, const webserver::ExtensionPtr& e) noexcept {
 	callAsync([=] {
 		ctrlList.SetRedraw(FALSE);
@@ -557,9 +598,10 @@ void ExtensionsFrame::on(webserver::ExtensionManagerListener::ExtensionRemoved, 
 }
 
 void ExtensionsFrame::on(webserver::ExtensionManagerListener::InstallationSucceeded, const string& /*aInstallId*/, const ExtensionPtr& aExtension, bool aUpdated) noexcept {
+	const auto name = Text::toT(aExtension->getName());
+	updateStatusAsync(aUpdated ? TSTRING_F(WEB_EXTENSION_UPDATED, name) : TSTRING_F(WEB_EXTENSION_INSTALLED, name), LogMessage::SEV_INFO);
+
 	callAsync([=] {
-		const auto name = Text::toT(aExtension->getName());
-		updateStatus(aUpdated ? TSTRING_F(WEB_EXTENSION_UPDATED, name) : TSTRING_F(WEB_EXTENSION_INSTALLED, name));
 		updateList();
 	});
 }
@@ -571,9 +613,7 @@ void ExtensionsFrame::on(webserver::ExtensionManagerListener::InstallationStarte
 }
 
 void ExtensionsFrame::on(webserver::ExtensionManagerListener::InstallationFailed, const string& /*aInstallId*/, const string& aError) noexcept {
-	callAsync([=] {
-		updateStatus(TSTRING_F(WEB_EXTENSION_INSTALLATION_FAILED, Text::toT(aError)));
-	});
+	updateStatusAsync(TSTRING_F(WEB_EXTENSION_INSTALLATION_FAILED, Text::toT(aError)), LogMessage::SEV_ERROR);
 }
 
 const tstring ExtensionsFrame::ItemInfo::getText(int col) const {
@@ -592,10 +632,10 @@ const tstring ExtensionsFrame::ItemInfo::getText(int col) const {
 void ExtensionsFrame::fixControls() noexcept {
 	const auto installedExtensions = getSelectedLocalExtensions();
 
-	const auto showUpdate = ctrlList.GetSelectedCount() == 1 && installedExtensions.front()->hasUpdate();
-	ctrlInstall.SetWindowTextW(showUpdate ? CTSTRING(UPDATE) : CTSTRING(INSTALL));
+	const auto isLocalExtension = ctrlList.GetSelectedCount() == 1 && installedExtensions.size() == 1;
+	ctrlInstall.SetWindowTextW(isLocalExtension ? CTSTRING(UPDATE) : CTSTRING(INSTALL));
 
-	::EnableWindow(GetDlgItem(IDC_UPDATE), !httpDownload && ctrlList.GetSelectedCount() == 1);
+	::EnableWindow(GetDlgItem(IDC_UPDATE), !httpDownload && ctrlList.GetSelectedCount() == 1 && ((isLocalExtension && installedExtensions.front()->hasUpdate()) || installedExtensions.empty()));
 	::EnableWindow(GetDlgItem(IDC_OPEN_LINK), ctrlList.GetSelectedCount() == 1);
 	::EnableWindow(GetDlgItem(IDC_ACTIONS), !installedExtensions.empty());
 	::EnableWindow(GetDlgItem(IDC_RELOAD), !httpDownload);

@@ -36,7 +36,7 @@ public:
 
 	enum { IDD = IDD_DYNAMIC_DIALOG };
 
-	DynamicDialogBase(const string& aName) : name(aName) {
+	DynamicDialogBase(const tstring& aName) : name(aName) {
 		//Create a dummy page to fill in dialog items
 		m_page = make_shared<DynamicTabPage>(DynamicTabPage());
 	}
@@ -64,7 +64,7 @@ public:
 		updateLayout();
 
 		CenterWindow(GetParent());
-		SetWindowText(Text::toT(name).c_str());
+		SetWindowText(name.c_str());
 
 		return TRUE;
 	}
@@ -200,7 +200,7 @@ private:
 
 	CEdit ctrlEdit;
 
-	string name;
+	tstring name;
 	bool loading;
 	CRect m_rcScroll;
 	CRect m_rcClip;

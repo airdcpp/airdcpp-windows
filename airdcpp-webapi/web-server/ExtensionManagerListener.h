@@ -29,13 +29,15 @@ namespace webserver {
 		template<int I>	struct X { enum { TYPE = I }; };
 
 		typedef X<0> ExtensionAdded;
-		typedef X<1> ExtensionRemoved;
+		typedef X<1> ExtensionStateUpdated;
+		typedef X<2> ExtensionRemoved;
 
-		typedef X<2> InstallationStarted;
-		typedef X<3> InstallationSucceeded;
-		typedef X<4> InstallationFailed;
+		typedef X<3> InstallationStarted;
+		typedef X<4> InstallationSucceeded;
+		typedef X<5> InstallationFailed;
 
 		virtual void on(ExtensionAdded, const ExtensionPtr&) noexcept { }
+		virtual void on(ExtensionStateUpdated, const Extension*) noexcept { }
 		virtual void on(ExtensionRemoved, const ExtensionPtr&) noexcept { }
 
 		virtual void on(InstallationStarted, const string& /*installId*/) noexcept { }

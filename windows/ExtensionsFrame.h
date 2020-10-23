@@ -94,6 +94,11 @@ private:
 	LRESULT onCustomDraw(int idCtrl, LPNMHDR pnmh, BOOL& bHandled); 
 	LRESULT onExitMenuLoop(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
+	enum class ExtensionGroupEnum {
+		INSTALLED = 0,
+		NOT_INSTALLED = 1,
+	};
+
 	class ItemInfo {
 	public:
 		ItemInfo(const webserver::ExtensionPtr& aExtension) : ext(aExtension) { }
@@ -109,15 +114,14 @@ private:
 			return ext ? ext->getDescription() : description;
 		}
 
+		ExtensionGroupEnum getGroupId() const noexcept {
+			return ext ? ExtensionGroupEnum::INSTALLED : ExtensionGroupEnum::NOT_INSTALLED;
+		}
+
 		const tstring getText(int col) const;
 
-		static int compareItems(const ItemInfo* a, const ItemInfo* b, int col) noexcept {
-			return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str());
-		}
-
-		int getImageIndex() const noexcept {
-			return !ext ? 2 : ext->isRunning() ? 0 : 1; 
-		}
+		static int compareItems(const ItemInfo* a, const ItemInfo* b, int col) noexcept;
+		int getImageIndex() const noexcept;
 
 		bool hasUpdate() const noexcept;
 
@@ -181,14 +185,16 @@ private:
 	CButton ctrlInstall, ctrlActions, ctrlReadMore, ctrlReload;
 
 	string getData(const string& aData, const string& aEntry, size_t& pos) noexcept;
-	void updateStatus(const tstring& aMessage) noexcept;
+	void updateStatusAsync(const tstring& aMessage, uint8_t aSeverity) noexcept;
 
 	unique_ptr<HttpDownload> httpDownload;
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept override;
 
 	void on(webserver::ExtensionManagerListener::ExtensionAdded, const webserver::ExtensionPtr& e) noexcept override;
+	void on(webserver::ExtensionManagerListener::ExtensionStateUpdated, const Extension*) noexcept override;
 	void on(webserver::ExtensionManagerListener::ExtensionRemoved, const webserver::ExtensionPtr& e) noexcept override;
+
 	void on(webserver::ExtensionManagerListener::InstallationStarted, const string& aInstallId) noexcept override;
 	void on(webserver::ExtensionManagerListener::InstallationFailed, const string& aInstallId, const string& aError) noexcept override;
 	void on(webserver::ExtensionManagerListener::InstallationSucceeded, const string& aInstallId, const ExtensionPtr& aExtension, bool aUpdated) noexcept override;

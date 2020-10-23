@@ -70,6 +70,7 @@ namespace webserver {
 		// Parses the engine command param (command1;command2;...) and tests each token for an existing application
 		static string selectEngineCommand(const string& aEngineCommands) noexcept;
 	private:
+		void onExtensionStateUpdated(const Extension* aExtension) noexcept;
 		void onExtensionFailed(const Extension* aExtension, uint32_t aExitCode) noexcept;
 		bool startExtensionImpl(const ExtensionPtr& aExtension) noexcept;
 
