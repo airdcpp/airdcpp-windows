@@ -97,4 +97,40 @@ void DynamicTabPage::updateLayout(CRect& windowRect) {
 	}
 }
 
+LRESULT DynamicTabPage::OnClick(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 
+	if (LOWORD(wParam) == WM_LBUTTONDOWN) {
+		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+		HWND hWndCtrl = ChildWindowFromPoint(pt);
+		if (hWndCtrl != NULL && hWndCtrl != m_hWnd && hWndCtrl != GetParent().m_hWnd) {
+			for (auto cfg : configs) {
+				if (cfg->handleClick(hWndCtrl))
+					break;
+			}
+		}
+	}
+	bHandled = FALSE;
+	return 0;
+}
+
+
+void DynamicTabPage::addConfigItem(webserver::ExtensionSettingItem& aSetting) {
+	auto item = ConfigUtil::getConfigItem(aSetting);
+	if (item)
+		configs.emplace_back(item);
+}
+
+bool DynamicTabPage::write() {
+
+	try {
+		for (auto cfg : configs) {
+			cfg->write();
+		}
+	}
+	catch (const ArgumentException& e) {
+		string error = e.getErrorJson().at("field") + " : " + e.getErrorJson().at("message");
+		MessageBox(Text::toT(error).c_str());
+		return false;
+	}
+	return true;
+}

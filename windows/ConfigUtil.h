@@ -33,8 +33,8 @@ using namespace webserver;
 class ConfigUtil {
 public:
 
-	struct ConfigIem {
-		ConfigIem(ExtensionSettingItem& aSetting) : setting(aSetting) {}
+	struct ConfigItem {
+		ConfigItem(ExtensionSettingItem& aSetting) : setting(aSetting) {}
 
 		string getId() const {
 			return setting.name;
@@ -56,12 +56,12 @@ public:
 
 	};
 
-	static shared_ptr<ConfigIem> getConfigItem(ExtensionSettingItem& aSetting);
+	static shared_ptr<ConfigItem> getConfigItem(ExtensionSettingItem& aSetting);
 
 	//Combines CStatic as setting label and CEdit as setting field
-	struct StringConfigItem : public ConfigIem {
+	struct StringConfigItem : public ConfigItem {
 
-		StringConfigItem(ExtensionSettingItem& aSetting) : ConfigIem(aSetting) {}
+		StringConfigItem(ExtensionSettingItem& aSetting) : ConfigItem(aSetting) {}
 
 		//todo handle errors
 		bool write() override {
@@ -82,9 +82,9 @@ public:
 	};
 
 	//CheckBox type config
-	struct BoolConfigItem : public ConfigIem {
+	struct BoolConfigItem : public ConfigItem {
 
-		BoolConfigItem(ExtensionSettingItem& aSetting) : ConfigIem(aSetting) {}
+		BoolConfigItem(ExtensionSettingItem& aSetting) : ConfigItem(aSetting) {}
 
 
 		//todo handle errors
@@ -116,13 +116,13 @@ public:
 		CButton ctrlButton;
 		int buttonWidth = 80;
 
-		int clickCounter = 0; //for testing...
+		// int clickCounter = 0; //for testing...
 	};
 
 	//Combines CStatic as setting label and CEdit as setting field with spin control
-	struct IntConfigItem : public ConfigIem {
+	struct IntConfigItem : public ConfigItem {
 
-		IntConfigItem(ExtensionSettingItem& aSetting) : ConfigIem(aSetting) {}
+		IntConfigItem(ExtensionSettingItem& aSetting) : ConfigItem(aSetting) {}
 
 		//todo handle errors
 		bool write() override {
@@ -141,9 +141,23 @@ public:
 		CStatic ctrlLabel;
 		CEdit ctrlEdit;
 		CUpDownCtrl spin;
-
 	};
 
+	struct EnumConfigItem : public ConfigItem {
+
+		EnumConfigItem(ExtensionSettingItem& aSetting) : ConfigItem(aSetting) {}
+
+		void Create(HWND m_hWnd) override;
+		int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing) override;
+
+		//todo handle errors
+		bool write() override;
+		bool handleClick(HWND m_hWnd) override;
+
+		CStatic ctrlLabel;
+		CComboBox ctrlSelect;
+		int buttonWidth = 80;
+	};
 };
 
 

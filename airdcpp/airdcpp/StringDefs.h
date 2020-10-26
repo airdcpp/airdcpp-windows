@@ -1158,6 +1158,7 @@ enum Strings { // @DontAdd
 	RELEVANCE, // "Relevance"
 	RELIABILITY, // "Reliability"
 	RELOAD, // "Reload"
+	REMOTE, // "Remote"
 	REMOTE_PROTOCOL_UNSUPPORTED, // "The remote user doesn't support %1% protocol"
 	REMOVE, // "Remove"
 	REMOVE_AFTER_COMPLETED, // "Remove after completed"

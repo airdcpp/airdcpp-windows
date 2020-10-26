@@ -20,41 +20,52 @@
 
 #include "stdafx.h"
 
+#include "BrowseDlg.h"
 #include "WinUtil.h"
 #include "ConfigUtil.h"
 
 
 using namespace webserver;
 
-shared_ptr<ConfigUtil::ConfigIem> ConfigUtil::getConfigItem(ExtensionSettingItem& aSetting) {
+shared_ptr<ConfigUtil::ConfigItem> ConfigUtil::getConfigItem(ExtensionSettingItem& aSetting) {
 	auto aType = aSetting.type;
 
-	if (aType == ApiSettingItem::TYPE_STRING)
+	if (aType == ApiSettingItem::TYPE_STRING) {
+		if (!aSetting.getEnumOptions().empty()) {
+			return make_shared<ConfigUtil::EnumConfigItem>(aSetting);
+		}
+
 		return make_shared<ConfigUtil::StringConfigItem>(aSetting);
+	}
 
 	if (aType == ApiSettingItem::TYPE_BOOLEAN)
 		return make_shared<ConfigUtil::BoolConfigItem>(aSetting);
 
-	if (aType == ApiSettingItem::TYPE_NUMBER)
-		return make_shared<ConfigUtil::IntConfigItem>(aSetting);
+	if (aType == ApiSettingItem::TYPE_NUMBER) {
+		if (!aSetting.getEnumOptions().empty()) {
+			return make_shared<ConfigUtil::EnumConfigItem>(aSetting);
+		}
 
-	if (aType == ApiSettingItem::TYPE_FILE_PATH || aType == ApiSettingItem::TYPE_DIRECTORY_PATH)
+		return make_shared<ConfigUtil::IntConfigItem>(aSetting);
+	}
+
+	if (aType == ApiSettingItem::TYPE_FILE_PATH || aType == ApiSettingItem::TYPE_DIRECTORY_PATH || aType == ApiSettingItem::TYPE_EXISTING_FILE_PATH)
 		return make_shared<ConfigUtil::BrowseConfigItem>(aSetting);
 
 
 	return nullptr;
 }
 
-int ConfigUtil::ConfigIem::getParentRightEdge(HWND m_hWnd) {
+int ConfigUtil::ConfigItem::getParentRightEdge(HWND m_hWnd) {
 	CRect rc;
 	GetClientRect(m_hWnd, &rc);
 	return rc.right;
 }
 
-CRect ConfigUtil::ConfigIem::calculateItemPosition(HWND m_hWnd, int aaPrevConfigBottomMargin, int aConfigSpacing) {
+CRect ConfigUtil::ConfigItem::calculateItemPosition(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing) {
 	CRect rc;
 	rc.left = 20;
-	rc.top = aaPrevConfigBottomMargin + aConfigSpacing;
+	rc.top = aPrevConfigBottomMargin + aConfigSpacing;
 	rc.right = getParentRightEdge(m_hWnd) -20;
 	rc.bottom = rc.top + WinUtil::getTextHeight(m_hWnd, WinUtil::systemFont) + 2;
 	return rc;
@@ -158,8 +169,31 @@ int ConfigUtil::BrowseConfigItem::updateLayout(HWND m_hWnd, int aPrevConfigBotto
 
 
 bool ConfigUtil::BrowseConfigItem::handleClick(HWND m_hWnd) {
+	const auto getDialogType = [](const ExtensionSettingItem& aSetting) {
+		switch (aSetting.type) {
+			case ApiSettingItem::TYPE_DIRECTORY_PATH:
+				return BrowseDlg::DIALOG_SELECT_FOLDER;
+			case ApiSettingItem::TYPE_EXISTING_FILE_PATH:
+				return BrowseDlg::DIALOG_OPEN_FILE;
+			case ApiSettingItem::TYPE_FILE_PATH:
+				return BrowseDlg::DIALOG_SAVE_FILE;
+			default: {
+				dcassert(0);
+				return BrowseDlg::DIALOG_OPEN_FILE;
+			}
+		}
+	};
+
 	if (m_hWnd == ctrlButton.m_hWnd) {
-		ctrlButton.SetWindowText(Text::toT("Clicked " + Util::toString(++clickCounter) + " times").c_str());
+		BrowseDlg dlg(ctrlButton.GetParent().m_hWnd, BrowseDlg::TYPE_GENERIC, getDialogType(setting));
+		dlg.setPath(Text::toT(setting.getValue()), true);
+
+		tstring target;
+		if (!dlg.show(target)) {
+			return false;
+		}
+
+		ctrlEdit.SetWindowTextW(target.c_str());
 		return true;
 	}
 	return false;
@@ -217,4 +251,65 @@ bool ConfigUtil::IntConfigItem::handleClick(HWND m_hWnd) {
 		return true;
 	}
 	return false;
+}
+
+
+void ConfigUtil::EnumConfigItem::Create(HWND m_hWnd) {
+	RECT rcDefault = { 0,0,0,0 };
+	ctrlLabel.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | SS_LEFT, NULL);
+	ctrlLabel.SetFont(WinUtil::systemFont);
+	ctrlLabel.SetWindowText(Text::toT(getLabel()).c_str());
+
+	ctrlSelect.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_HSCROLL | WS_VSCROLL | CBS_DROPDOWNLIST | ES_RIGHT, WS_EX_CLIENTEDGE);
+	ctrlSelect.SetFont(WinUtil::systemFont);
+
+	{
+		const auto& options = setting.getEnumOptions();
+		for (const auto& option : options) {
+			ctrlSelect.AddString(Text::toT(option.text).c_str());
+		}
+
+		auto curSel = find_if(options.begin(), options.end(), [this](const auto& aOption) {
+			return aOption.id == setting.getValue();
+		});
+
+		if (curSel != options.end()) {
+			ctrlSelect.SetCurSel(std::distance(options.begin(), curSel));
+		}
+	}
+
+}
+
+int ConfigUtil::EnumConfigItem::updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing) {
+
+	CRect rc = calculateItemPosition(m_hWnd, aPrevConfigBottomMargin, aConfigSpacing);
+
+	//CStatic
+	rc.right = rc.left + WinUtil::getTextWidth(Text::toT(getLabel()), ctrlLabel.m_hWnd) + 1;
+	ctrlLabel.MoveWindow(rc);
+
+	//CComboBox
+	rc.top = rc.bottom + 2;
+	rc.bottom = rc.top + max(WinUtil::getTextHeight(m_hWnd, WinUtil::systemFont) + 5, 22);
+
+	ctrlSelect.MoveWindow(rc);
+
+	return rc.bottom;
+}
+
+bool ConfigUtil::EnumConfigItem::handleClick(HWND m_hWnd) {
+	if (m_hWnd == ctrlSelect.m_hWnd) {
+		return true;
+	}
+
+	return false;
+}
+
+bool ConfigUtil::EnumConfigItem::write() {
+	auto selIndex = ctrlSelect.GetCurSel();
+	const auto selectValue = selIndex == -1 ? JsonUtil::emptyJson : setting.getEnumOptions().at(ctrlSelect.GetCurSel()).id;
+
+	auto val = SettingUtils::validateValue(selectValue, setting, nullptr);
+	setting.setValue(val);
+	return true;
 }

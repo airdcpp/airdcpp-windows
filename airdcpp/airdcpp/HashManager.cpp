@@ -53,7 +53,7 @@ HashManager::~HashManager() {
 }
 
 void HashManager::log(const string& aMsg, LogMessage::Severity aSeverity) noexcept {
-	LogManager::getInstance()->message(aMsg, aSeverity, STRING(FILE_LISTS));
+	LogManager::getInstance()->message(aMsg, aSeverity, STRING(HASHING));
 }
 
 bool HashManager::checkTTH(const string& aFileLower, const string& aFileName, HashedFile& fi_) {

@@ -59,7 +59,8 @@ LRESULT ExtensionsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	listImages.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 3);
 	listImages.AddIcon(CIcon(ResourceLoader::loadIcon(IDI_ONLINE, 16))); //extension running
 	listImages.AddIcon(CIcon(ResourceLoader::convertGrayscaleIcon(ResourceLoader::loadIcon(IDI_ONLINE, 16)))); //extension stopped
-	listImages.AddIcon(CIcon(ResourceLoader::convertGrayscaleIcon(ResourceLoader::loadIcon(IDI_QCONNECT, 16))));  // remote extension, not installed
+	listImages.AddIcon(CIcon(ResourceLoader::convertGrayscaleIcon(ResourceLoader::loadIcon(IDI_QCONNECT, 16))));  // not installed
+	listImages.AddIcon(CIcon(ResourceLoader::loadIcon(IDI_GET_TTH, 16)));  // remote extension
 	ctrlList.SetImageList(listImages, LVSIL_SMALL);
 
 
@@ -107,6 +108,7 @@ LRESULT ExtensionsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 void ExtensionsFrame::initLocalExtensions() noexcept {
 
 	ctrlList.insertGroup(static_cast<int>(ExtensionGroupEnum::INSTALLED), TSTRING(INSTALLED), LVGA_HEADER_LEFT);
+	ctrlList.insertGroup(static_cast<int>(ExtensionGroupEnum::REMOTE), TSTRING(REMOTE), LVGA_HEADER_LEFT);
 	ctrlList.insertGroup(static_cast<int>(ExtensionGroupEnum::NOT_INSTALLED), TSTRING(NOT_INSTALLED), LVGA_HEADER_LEFT);
 
 	auto list = getExtensionManager().getExtensions();
@@ -120,7 +122,23 @@ int ExtensionsFrame::ItemInfo::compareItems(const ItemInfo* a, const ItemInfo* b
 }
 
 int ExtensionsFrame::ItemInfo::getImageIndex() const noexcept {
-	return !ext ? 2 : ext->isRunning() ? 0 : 1;
+	if (!ext) {
+		return static_cast<int>(ExtensionIconEnum::NOT_INSTALLED);
+	}
+
+	if (!ext->isManaged()) {
+		return static_cast<int>(ExtensionIconEnum::REMOTE);
+	}
+
+	return static_cast<int>(ext->isRunning() ? ExtensionIconEnum::RUNNING : ExtensionIconEnum::NOT_RUNNING);
+}
+
+ExtensionsFrame::ExtensionGroupEnum ExtensionsFrame::ItemInfo::getGroupId() const noexcept {
+	if (!ext) {
+		return ExtensionGroupEnum::NOT_INSTALLED;
+	}
+
+	return ext->isManaged() ? ExtensionGroupEnum::INSTALLED : ExtensionGroupEnum::REMOTE;
 }
 
 bool ExtensionsFrame::ItemInfo::hasUpdate() const noexcept {
@@ -189,8 +207,9 @@ void ExtensionsFrame::appendLocalExtensionActions(const ItemInfoList& aItems, OM
 	menu_.appendSeparator();
 
 
-	bool hasRunningExtensions = any_of(aItems.begin(), aItems.end(), [](const ItemInfo* ii) { return ii->ext->isRunning(); });
-	bool hasStoppedExtensions = any_of(aItems.begin(), aItems.end(), [](const ItemInfo* ii) { return !ii->ext->isRunning(); });
+	bool hasManagedExtensions = any_of(aItems.begin(), aItems.end(), [](const ItemInfo* ii) { return ii->ext->isManaged(); });
+	bool hasRunningExtensions = any_of(aItems.begin(), aItems.end(), [](const ItemInfo* ii) { return ii->ext->isManaged() && ii->ext->isRunning(); });
+	bool hasStoppedExtensions = any_of(aItems.begin(), aItems.end(), [](const ItemInfo* ii) { return ii->ext->isManaged() && !ii->ext->isRunning(); });
 
 	if (hasStoppedExtensions) {
 		menu_.appendItem(TSTRING(START), [=] {
@@ -216,12 +235,14 @@ void ExtensionsFrame::appendLocalExtensionActions(const ItemInfoList& aItems, OM
 		menu_.appendItem(TSTRING(CONFIGURE) + _T("..."), [=] { onConfigExtension(aItems.front()); });
 	}
 
-	menu_.appendSeparator();
-	menu_.appendItem(TSTRING(UNINSTALL), [=] {
-		for (const auto& ii: aItems) {
-			onRemoveExtension(ii);
-		}
-	});
+	if (hasManagedExtensions) {
+		menu_.appendSeparator();
+		menu_.appendItem(TSTRING(UNINSTALL), [=] {
+			for (const auto& ii : aItems) {
+				onRemoveExtension(ii);
+			}
+		});
+	}
 }
 
 
@@ -664,7 +685,7 @@ LRESULT ExtensionsFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHan
 
 		int colIndex = ctrlList.findColumn(cd->iSubItem);
 		dcassert(ii);
-		if (colIndex == COLUMN_INSTALLED_VERSION) {
+		if (colIndex == COLUMN_INSTALLED_VERSION && ii->ext && ii->ext->isManaged()) {
 			if (ii->hasUpdate()) {
 				cd->clrText = SETTING(ERROR_COLOR);
 			} else {

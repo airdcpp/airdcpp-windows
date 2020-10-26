@@ -128,14 +128,14 @@ bool FavHubOptionsPage::write() {
 
 	// connection modes
 	auto getConnMode = [](const CComboBox& combo) -> int {
-	if (combo.GetCurSel() == 1)
-	return SettingsManager::INCOMING_DISABLED;
-	else if (combo.GetCurSel() == 2)
-	return SettingsManager::INCOMING_ACTIVE;
-	else if (combo.GetCurSel() == 3)
-	return SettingsManager::INCOMING_PASSIVE;
+		if (combo.GetCurSel() == 1)
+			return SettingsManager::INCOMING_DISABLED;
+		else if (combo.GetCurSel() == 2)
+			return SettingsManager::INCOMING_ACTIVE;
+		else if (combo.GetCurSel() == 3)
+			return SettingsManager::INCOMING_PASSIVE;
 
-	return HUB_SETTING_DEFAULT_INT;
+		return HUB_SETTING_DEFAULT_INT;
 	};
 
 	entry->get(HubSettings::Connection) = getConnMode(modeCombo4);

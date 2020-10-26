@@ -100,7 +100,15 @@ private:
 
 	enum class ExtensionGroupEnum {
 		INSTALLED = 0,
-		NOT_INSTALLED = 1,
+		REMOTE = 1,
+		NOT_INSTALLED = 2,
+	};
+
+	enum class ExtensionIconEnum {
+		NOT_RUNNING = 0,
+		RUNNING = 1,
+		NOT_INSTALLED = 2,
+		REMOTE = 3,
 	};
 
 	class ItemInfo {
@@ -118,9 +126,7 @@ private:
 			return ext ? ext->getDescription() : description;
 		}
 
-		ExtensionGroupEnum getGroupId() const noexcept {
-			return ext ? ExtensionGroupEnum::INSTALLED : ExtensionGroupEnum::NOT_INSTALLED;
-		}
+		ExtensionGroupEnum getGroupId() const noexcept;
 
 		const tstring getText(int col) const;
 
