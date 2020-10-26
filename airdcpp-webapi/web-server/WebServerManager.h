@@ -107,7 +107,8 @@ namespace webserver {
 			return *contextMenuManager.get();
 		}
 
-		bool hasValidConfig() const noexcept;
+		bool hasValidServerConfig() const noexcept;
+		bool hasUsers() const noexcept;
 
 		ServerConfig& getPlainServerConfig() noexcept {
 			return plainServerConfig;

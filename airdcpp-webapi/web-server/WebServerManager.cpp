@@ -145,7 +145,7 @@ namespace webserver {
 	}
 
 	bool WebServerManager::start(const ErrorF& errorF) {
-		if (!hasValidConfig()) {
+		if (!hasValidServerConfig()) {
 			return false;
 		}
 
@@ -515,8 +515,12 @@ namespace webserver {
 		return ret;
 	}
 
-	bool WebServerManager::hasValidConfig() const noexcept {
-		return (plainServerConfig.hasValidConfig() || tlsServerConfig.hasValidConfig()) && userManager->hasUsers();
+	bool WebServerManager::hasValidServerConfig() const noexcept {
+		return plainServerConfig.hasValidConfig() || tlsServerConfig.hasValidConfig();
+	}
+
+	bool WebServerManager::hasUsers() const noexcept {
+		return userManager->hasUsers();
 	}
 
 	bool WebServerManager::load(const ErrorF& aErrorF) noexcept {
@@ -552,7 +556,7 @@ namespace webserver {
 			}
 		}, aErrorF);
 
-		return hasValidConfig();
+		return hasValidServerConfig();
 	}
 
 	void WebServerManager::loadServer(SimpleXML& aXml, const string& aTagName, ServerConfig& config_, bool aTls) noexcept {
