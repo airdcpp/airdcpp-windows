@@ -78,6 +78,8 @@ protected:
 	CButton ctrlAdd;
 	CButton ctrlChange;
 	CButton ctrlStart;
+	CComboBox ctrlBindHttp;
+	CComboBox ctrlBindHttps;
 
 	CStatic ctrlStatus;
 	CEdit ctrlPort;
@@ -85,6 +87,9 @@ protected:
 	ExListViewCtrl ctrlWebUsers;
 
 	CHyperLink url;
+
+	AdapterInfoList bindAdapters;
+	void initBindAddresses() noexcept;
 
 	void applySettings() noexcept;
 

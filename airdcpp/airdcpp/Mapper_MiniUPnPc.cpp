@@ -127,7 +127,7 @@ bool Mapper_MiniUPnPc::init() {
 				auto adapters = AirUtil::getNetworkAdapters(v6);
 
 				// Find a local IP that is within the same subnet
-				auto p = boost::find_if(adapters, [&routerIp, this](const AirUtil::AdapterInfo& aInfo) { return isIPInRange(aInfo.ip, routerIp, aInfo.prefix, v6); });
+				auto p = boost::find_if(adapters, [&routerIp, this](const AdapterInfo& aInfo) { return isIPInRange(aInfo.ip, routerIp, aInfo.prefix, v6); });
 				if (p != adapters.end()) {
 					localIp = p->ip;
 				}

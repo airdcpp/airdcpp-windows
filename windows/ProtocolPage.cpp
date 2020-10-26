@@ -300,14 +300,10 @@ void ProtocolPage::fixControls() {
 
 void ProtocolPage::getAddresses() {
 	// fill the combo
-	bindAdapters = AirUtil::getBindAdapters(v6);
-	for (const auto& addr : bindAdapters)
-		BindCombo.AddString(Text::toT(addr.adapterName + " (" + addr.ip + ")").c_str());
+	bindAdapters = AirUtil::getCoreBindAdapters(v6);
 
-	// select the current address
-	const auto& setting = v6 ? SETTING(BIND_ADDRESS6) : SETTING(BIND_ADDRESS);
-	auto cur = boost::find_if(bindAdapters, [&setting](const AirUtil::AdapterInfo& aInfo) { return aInfo.ip == setting; });
-	BindCombo.SetCurSel(distance(bindAdapters.begin(), cur));
+	const auto& curSetting = v6 ? SETTING(BIND_ADDRESS6) : SETTING(BIND_ADDRESS);
+	WinUtil::insertBindAddresses(bindAdapters, BindCombo, curSetting);
 }
 
 LRESULT ProtocolPage::onClickedActive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

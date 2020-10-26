@@ -373,6 +373,8 @@ public:
 
 	static tstring formatFolderContent(const DirectoryContentInfo& aContentInfo);
 	static tstring formatFileType(const string& aFileName);
+
+	static void insertBindAddresses(const AdapterInfoList& aBindAdapters, CComboBox& combo_, const string& aCurValue) noexcept;
 private:
 	static string paths[PATH_LAST];
 };

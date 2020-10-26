@@ -370,6 +370,8 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 					webResourcePath = Util::getParentDir(Util::getParentDir(Util::getAppFilePath())) + "installer\\Web-resources\\";
 				}
 #endif
+				WEBCFG(PLAIN_BIND).setDefaultValue("127.0.0.1");
+				WEBCFG(TLS_BIND).setDefaultValue("127.0.0.1");
 
 				auto started = webserver::WebServerManager::getInstance()->startup(
 					webErrorF,

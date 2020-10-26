@@ -36,12 +36,16 @@ PropPage::TextItem WebServerPage::texts[] = {
 	{ IDC_WEBSERVER_CHANGE,						ResourceManager::SETTINGS_CHANGE },
 
 	{ IDC_ADMIN_ACCOUNTS,						ResourceManager::ADMIN_ACCOUNTS },
-	{ IDC_WEBSERVER_LABEL,						ResourceManager::SERVER_SETTINGS },
+	{ IDC_WEBSERVER_PORT,						ResourceManager::WEB_SERVER_PORT },
+	{ IDC_WEBSERVER_TLSPORT,					ResourceManager::WEB_SERVER_PORT },
 	{ IDC_WEB_SERVER_USERS_NOTE,				ResourceManager::WEB_ACCOUNTS_NOTE },
 
 	{ IDC_WEB_SERVER_HELP,						ResourceManager::WEB_SERVER_HELP },
 	{ IDC_LINK,									ResourceManager::MORE_INFORMATION },
 	{ IDC_SERVER_STATE,							ResourceManager::SERVER_STATE },
+
+	{ IDC_SETTINGS_BIND_ADDRESS_HTTP_LABEL,		ResourceManager::WEB_CFG_BIND_ADDRESS },
+	{ IDC_SETTINGS_BIND_ADDRESS_HTTPS_LABEL,	ResourceManager::SETTINGS_BIND_ADDRESS },
 	{ 0, ResourceManager::LAST }
 };
 
@@ -49,17 +53,45 @@ WebServerPage::WebServerPage(SettingsManager *s) : PropPage(s), webMgr(webserver
 	SetTitle(CTSTRING(WEB_SERVER));
 };
 
+void WebServerPage::initBindAddresses() noexcept {
+	// Network interfaces
+	const auto insertProtocolAdapters = [this](bool v6) {
+		auto protocolAdapters = AirUtil::getNetworkAdapters(v6);
+
+		copy(protocolAdapters.begin(), protocolAdapters.end(), back_inserter(bindAdapters));
+	};
+
+	insertProtocolAdapters(false);
+	insertProtocolAdapters(true);
+	sort(bindAdapters.begin(), bindAdapters.end(), AirUtil::adapterSort);
+
+	// Any/localhost (reverse order)
+	bindAdapters.emplace(bindAdapters.begin(), "Localhost", "::", static_cast<uint8_t>(0));
+	bindAdapters.emplace(bindAdapters.begin(), "Localhost", "127.0.0.1", static_cast<uint8_t>(0));
+	bindAdapters.emplace(bindAdapters.begin(), STRING(ANY), Util::emptyString, static_cast<uint8_t>(0));
+
+	// Ensure that we have the current values
+	AirUtil::ensureBindAddress(bindAdapters, WEBCFG(PLAIN_BIND).str());
+	AirUtil::ensureBindAddress(bindAdapters, WEBCFG(TLS_BIND).str());
+
+	// Combo
+	WinUtil::insertBindAddresses(bindAdapters, ctrlBindHttp, WEBCFG(PLAIN_BIND).str());
+	WinUtil::insertBindAddresses(bindAdapters, ctrlBindHttps, WEBCFG(TLS_BIND).str());
+}
+
 LRESULT WebServerPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	PropPage::translate((HWND)(*this), texts);
-
-	::SetWindowText(GetDlgItem(IDC_WEBSERVER_PORT_LABEL), CTSTRING_F(WEB_SERVER_PORT, "HTTP"));
-	::SetWindowText(GetDlgItem(IDC_WEBSERVER_TLSPORT_LABEL), CTSTRING_F(WEB_SERVER_PORT, "HTTPS"));
 
 	::SetWindowText(GetDlgItem(IDC_WEBSERVER_PORT), Util::toStringW(WEBCFG(PLAIN_PORT).num()).c_str());
 	::SetWindowText(GetDlgItem(IDC_WEBSERVER_TLSPORT), Util::toStringW(WEBCFG(TLS_PORT).num()).c_str());
 
 	ctrlTlsPort.Attach(GetDlgItem(IDC_WEBSERVER_TLSPORT));
 	ctrlPort.Attach(GetDlgItem(IDC_WEBSERVER_PORT));
+
+	// Bind address
+	ctrlBindHttp.Attach(GetDlgItem(IDC_BIND_ADDRESS_HTTP));
+	ctrlBindHttps.Attach(GetDlgItem(IDC_BIND_ADDRESS_HTTPS));
+	initBindAddresses();
 
 	url.SubclassWindow(GetDlgItem(IDC_LINK));
 	url.SetHyperLinkExtendedStyle(HLINK_UNDERLINEHOVER);
@@ -103,6 +135,20 @@ void WebServerPage::applySettings() noexcept {
 
 	WEBCFG(PLAIN_PORT).setValue(plainserverPort);
 	WEBCFG(TLS_PORT).setValue(tlsServerPort);
+
+	{
+		const auto sel = ctrlBindHttp.GetCurSel();
+		if (sel != -1) {
+			WEBCFG(PLAIN_BIND).setValue(bindAdapters[sel].ip);
+		}
+	}
+
+	{
+		const auto sel = ctrlBindHttps.GetCurSel();
+		if (sel != -1) {
+			WEBCFG(TLS_BIND).setValue(bindAdapters[sel].ip);
+		}
+	}
 
 	webMgr->getUserManager().replaceWebUsers(webUserList);
 }

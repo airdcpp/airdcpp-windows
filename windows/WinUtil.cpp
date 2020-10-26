@@ -1373,3 +1373,18 @@ tstring WinUtil::formatFileType(const string& aFileName) {
 		type.erase(0, 1);
 	return Text::toT(type);
 }
+
+void WinUtil::insertBindAddresses(const AdapterInfoList& aBindAdapters, CComboBox& combo_, const string& aCurValue) noexcept {
+	for (const auto& addr : aBindAdapters) {
+		auto caption = Text::toT(addr.adapterName);
+		if (!addr.ip.empty()) {
+			caption += _T(" (") + Text::toT(addr.ip) + _T(")");
+		}
+
+		combo_.AddString(caption.c_str());
+	}
+
+	// Select the current address
+	auto curItem = boost::find_if(aBindAdapters, [&aCurValue](const AdapterInfo& aInfo) { return aInfo.ip == aCurValue; });
+	combo_.SetCurSel(distance(aBindAdapters.begin(), curItem));
+}

@@ -66,7 +66,7 @@ private:
 
 
 
-	AirUtil::AdapterInfoList bindAdapters;
+	AdapterInfoList bindAdapters;
 	bool v6;
 
 	// UpdateManagerListener

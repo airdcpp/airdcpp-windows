@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by c:\Projects\airdc-git\AirDC.rc
+// Used by C:\Projects\airdc-git\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -830,8 +830,11 @@
 #define IDC_MAPPER                      1288
 #define IDC_PRIV_KEY_LBL2               1288
 #define IDC_TRUSTED_CERT_NOTE           1288
+#define IDC_SETTINGS_BIND_ADDRESS_HTTPS_HELP 1288
+#define IDC_SETTINGS_BIND_ADDRESS_HTTPS_LABEL 1288
 #define IDC_TRUSTED_CERT_NOTE2          1289
 #define IDC_GENERATE_CERTS_NOTE         1289
+#define IDC_BIND_ADDRESS_HTTPS          1289
 #define IDC_S                           1290
 #define IDC_FLAT                        1291
 #define IDC_S2                          1291
@@ -1649,6 +1652,7 @@
 #define IDC_WEBUSER_NAME_LABEL          10209
 #define IDC_WEBUSER_PWD_LABEL           10210
 #define IDC_WEBSERVER_LABEL             10211
+#define IDC_WEBSERVER_HTTP_LABEL        10211
 #define IDC_WEBSERVER_STATUS            10212
 #define IDC_WEBSERVER_START             10213
 #define IDC_WEB_SERVER_HELP             10214
@@ -1657,6 +1661,7 @@
 #define IDC_WEB_SERVER_USERS_NOTE       10216
 #define IDC_RSS_URL_TEXT                10216
 #define IDC_RSS_NAME_TEXT               10217
+#define IDC_WEBSERVER_HTTPS_LABEL       10217
 #define IDC_WEBSERVER_LABEL2            10218
 #define IDC_SERVER_STATE                10218
 #define IDC_RSS_GROUP_TEXT              10218
@@ -1678,6 +1683,8 @@
 #define IDC_EXPIRE_INT_SPIN             10232
 #define IDC_EXPIRE_INT                  10233
 #define IDC_PLACEHOLDER                 10236
+#define IDC_SETTINGS_BIND_ADDRESS_HTTP_LABEL 10237
+#define IDC_BIND_ADDRESS_HTTP           10238
 #define IDC_REFRESH_WINAMP              11011
 #define IDC_WINAMP_LIST                 11012
 #define IDC_POSITION                    11013
@@ -1893,7 +1900,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        479
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         10237
+#define _APS_NEXT_CONTROL_VALUE         10239
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

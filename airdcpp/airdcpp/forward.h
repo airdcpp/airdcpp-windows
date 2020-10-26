@@ -50,6 +50,9 @@ using ActionHookDataList = vector<ActionHookDataPtr<DataT>>;
 template<typename DataT = nullptr_t>
 using ActionHookResultGetter = ActionHookDataGetter<DataT>;
 
+struct AdapterInfo;
+typedef vector<AdapterInfo> AdapterInfoList;
+
 class AdcCommand;
 
 class SearchQuery;

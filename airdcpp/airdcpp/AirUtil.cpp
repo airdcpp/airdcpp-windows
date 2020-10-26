@@ -210,32 +210,38 @@ void AirUtil::init() {
 #endif
 }
 
-AirUtil::AdapterInfoList AirUtil::getBindAdapters(bool v6) {
+AdapterInfoList AirUtil::getCoreBindAdapters(bool v6) {
 	// Get the addresses and sort them
 	auto bindAddresses = getNetworkAdapters(v6);
-	sort(bindAddresses.begin(), bindAddresses.end(), [](const AdapterInfo& lhs, const AdapterInfo& rhs) {
-		if (lhs.adapterName.empty() && rhs.adapterName.empty()) {
-			return Util::stricmp(lhs.ip, rhs.ip) < 0;
-		}
-
-		return Util::stricmp(lhs.adapterName, rhs.adapterName) < 0;
-	});
+	sort(bindAddresses.begin(), bindAddresses.end(), adapterSort);
 
 	// "Any" adapter
 	bindAddresses.emplace(bindAddresses.begin(), STRING(ANY), v6 ? "::" : "0.0.0.0", static_cast<uint8_t>(0));
 
 	// Current address not listed?
 	const auto& setting = v6 ? SETTING(BIND_ADDRESS6) : SETTING(BIND_ADDRESS);
-	auto cur = boost::find_if(bindAddresses, [&setting](const AirUtil::AdapterInfo& aInfo) { return aInfo.ip == setting; });
-	if (cur == bindAddresses.end()) {
-		bindAddresses.emplace_back(STRING(UNKNOWN), setting, static_cast<uint8_t>(0));
-		cur = bindAddresses.end() - 1;
-	}
+	ensureBindAddress(bindAddresses, setting);
 
 	return bindAddresses;
 }
 
-AirUtil::AdapterInfoList AirUtil::getNetworkAdapters(bool v6) {
+int AirUtil::adapterSort(const AdapterInfo& lhs, const AdapterInfo& rhs) noexcept {
+	if (lhs.adapterName.empty() && rhs.adapterName.empty()) {
+		return Util::stricmp(lhs.ip, rhs.ip) < 0;
+	}
+
+	return Util::stricmp(lhs.adapterName, rhs.adapterName) < 0;
+}
+
+void AirUtil::ensureBindAddress(AdapterInfoList& adapters_, const string& aBindAddress) noexcept {
+	auto cur = boost::find_if(adapters_, [&aBindAddress](const AdapterInfo& aInfo) { return aInfo.ip == aBindAddress; });
+	if (cur == adapters_.end()) {
+		adapters_.emplace_back(STRING(UNKNOWN), aBindAddress, static_cast<uint8_t>(0));
+		cur = adapters_.end() - 1;
+	}
+}
+
+AdapterInfoList AirUtil::getNetworkAdapters(bool v6) {
 	AdapterInfoList adapterInfos;
 
 #ifdef _WIN32

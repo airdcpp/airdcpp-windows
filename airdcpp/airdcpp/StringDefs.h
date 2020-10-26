@@ -1838,7 +1838,7 @@ enum Strings { // @DontAdd
 	WEB_SERVER, // "Web server"
 	WEB_SERVER_STARTED, // "Web server started"
 	WEB_SERVER_RUNNING, // "Web server running"
-	WEB_SERVER_PORT, // "%1% port (0 = disabled)"
+	WEB_SERVER_PORT, // "Port (0 = disabled)"
 	WEB_SERVER_STOPPED, // "Web server stopped"
 	WEB_SERVER_START_FAILED, // "Failed to start web server: %1%"
 	WEB_SERVER_HELP, // "Web server enables managing the client via web browser and running scripts via AirDC++ Web API"

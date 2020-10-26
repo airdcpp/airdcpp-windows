@@ -1072,7 +1072,7 @@ void SettingsManager::load(function<bool (const string& /*Message*/, bool /*isQu
 	auto checkBind = [&] (SettingsManager::StrSetting aSetting, bool v6) {
 		if (!isDefault(aSetting)) {
 			auto adapters = AirUtil::getNetworkAdapters(v6);
-			auto p = boost::find_if(adapters, [this, aSetting](const AirUtil::AdapterInfo& aInfo) { return aInfo.ip == get(aSetting); });
+			auto p = boost::find_if(adapters, [this, aSetting](const AdapterInfo& aInfo) { return aInfo.ip == get(aSetting); });
 			if (p == adapters.end() && messageF(STRING_F(BIND_ADDRESS_MISSING, (v6 ? "IPv6" : "IPv4") % get(aSetting)), true, false)) {
 				unsetKey(aSetting);
 			}
