@@ -105,8 +105,8 @@ private:
 	};
 
 	enum class ExtensionIconEnum {
-		NOT_RUNNING = 0,
-		RUNNING = 1,
+		RUNNING = 0,
+		NOT_RUNNING = 1,
 		NOT_INSTALLED = 2,
 		REMOTE = 3,
 	};
