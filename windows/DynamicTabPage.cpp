@@ -23,7 +23,7 @@
 #include "WinUtil.h"
 
 
-DynamicTabPage::DynamicTabPage() : loading(true) 
+DynamicTabPage::DynamicTabPage()
 { };
 
 DynamicTabPage::~DynamicTabPage() 

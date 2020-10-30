@@ -66,7 +66,7 @@ public:
 	const vector<shared_ptr<ConfigUtil::ConfigItem>>& getConfigs() const noexcept { return configs; }
 private:
 
-	bool loading;
+	bool loading = true;
 	vector<shared_ptr<ConfigUtil::ConfigItem>> configs;
 
 	int m_prevConfigBottomMargin = 0;

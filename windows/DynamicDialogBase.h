@@ -48,6 +48,7 @@ public:
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
 		MESSAGE_HANDLER(WM_SIZE, onSize)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
+		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
 	END_MSG_MAP()
 
 
@@ -62,6 +63,8 @@ public:
 
 		CenterWindow(GetParent());
 		SetWindowText(name.c_str());
+
+		::SetWindowText(GetDlgItem(IDCANCEL), CTSTRING(CANCEL));
 
 		return TRUE;
 	}
