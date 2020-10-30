@@ -149,7 +149,7 @@ namespace webserver {
 			const auto& reqJson = aRequest.getRequestBody();
 
 			auto message = Deserializer::deserializeStatusMessage(reqJson);
-			chatF()->statusMessage(message.first, message.second);
+			chatF()->statusMessage(message.first, message.second, MessageUtils::parseStatusMessageLabel(aRequest.getSession()));
 			return websocketpp::http::status_code::no_content;
 		}
 

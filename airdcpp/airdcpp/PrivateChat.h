@@ -60,7 +60,7 @@ namespace dcpp {
 
 		bool sendMessageHooked(const OutgoingChatMessage& aMessage, string& error_);
 		void handleMessage(const ChatMessagePtr& aMessage) noexcept;
-		void statusMessage(const string& aMessage, LogMessage::Severity aSeverity) noexcept;
+		void statusMessage(const string& aMessage, LogMessage::Severity aSeverity, const string& aLabel = Util::emptyString) noexcept;
 
 		void close();
 

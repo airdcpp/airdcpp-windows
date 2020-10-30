@@ -22,6 +22,7 @@
 #include "Serializer.h"
 
 #include <web-server/JsonUtil.h>
+#include <web-server/Session.h>
 
 #include <airdcpp/ActionHook.h>
 #include <airdcpp/AirUtil.h>
@@ -206,5 +207,9 @@ namespace webserver {
 		}
 
 		return ret;
+	}
+
+	string MessageUtils::parseStatusMessageLabel(const SessionPtr& aSession) noexcept {
+		return aSession->getUser()->getUserName();
 	}
 }

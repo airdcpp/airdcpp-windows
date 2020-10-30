@@ -279,8 +279,8 @@ void Client::setConnectState(State aState) noexcept {
 	fire(ClientListener::ConnectStateChanged(), this, aState);
 }
 
-void Client::statusMessage(const string& aMessage, LogMessage::Severity aSeverity, int aFlag) noexcept {
-	auto message = std::make_shared<LogMessage>(aMessage, aSeverity, Util::emptyString);
+void Client::statusMessage(const string& aMessage, LogMessage::Severity aSeverity, const string& aLabel, int aFlag) noexcept {
+	auto message = std::make_shared<LogMessage>(aMessage, aSeverity, aLabel);
 
 	if (aFlag != ClientListener::FLAG_IS_SPAM) {
 		cache.addMessage(message);
@@ -345,7 +345,7 @@ void Client::onUserConnected(const OnlineUserPtr& aUser) noexcept {
 
 		if (aUser->getUser() != ClientManager::getInstance()->getMe()) {
 			if (!aUser->isHidden() && get(HubSettings::ShowJoins) || (get(HubSettings::FavShowJoins) && aUser->getUser()->isFavorite())) {
-				statusMessage("*** " + STRING(JOINS) + ": " + aUser->getIdentity().getNick(), LogMessage::SEV_INFO, ClientListener::FLAG_IS_SYSTEM);
+				statusMessage("*** " + STRING(JOINS) + ": " + aUser->getIdentity().getNick(), LogMessage::SEV_INFO, Util::emptyString, ClientListener::FLAG_IS_SYSTEM);
 			}
 		}
 	}
@@ -359,7 +359,7 @@ void Client::onUserDisconnected(const OnlineUserPtr& aUser, bool aDisconnectTran
 
 		if (aUser->getUser() != ClientManager::getInstance()->getMe()) {
 			if (!aUser->isHidden() && get(HubSettings::ShowJoins) || (get(HubSettings::FavShowJoins) && aUser->getUser()->isFavorite())) {
-				statusMessage("*** " + STRING(PARTS) + ": " + aUser->getIdentity().getNick(), LogMessage::SEV_INFO, ClientListener::FLAG_IS_SYSTEM);
+				statusMessage("*** " + STRING(PARTS) + ": " + aUser->getIdentity().getNick(), LogMessage::SEV_INFO, Util::emptyString, ClientListener::FLAG_IS_SYSTEM);
 			}
 		}
 	}

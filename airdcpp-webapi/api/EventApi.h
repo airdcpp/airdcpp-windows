@@ -43,8 +43,6 @@ namespace webserver {
 		void on(LogManagerListener::Message, const LogMessagePtr& aMessageData) noexcept override;
 		void on(LogManagerListener::Cleared) noexcept override;
 		void on(LogManagerListener::MessagesRead) noexcept override;
-
-		static string parseMessageSection(const SessionPtr& aSession) noexcept;
 	};
 }
 
