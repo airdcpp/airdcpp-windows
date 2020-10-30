@@ -44,14 +44,12 @@ StringList SettingsManager::connectionSpeeds = { "0.1", "0.2", "0.5", "1", "2", 
 
 
 const ResourceManager::Strings SettingsManager::encryptionStrings[TLS_LAST] { ResourceManager::DISABLED, ResourceManager::ENABLED, ResourceManager::ENCRYPTION_FORCED };
-const ResourceManager::Strings SettingsManager::delayStrings[DELAY_LAST] { ResourceManager::MONITOR_DELAY_DIR, ResourceManager::MONITOR_DELAY_VOLUME, ResourceManager::MONITOR_DELAY_ANY };
 const ResourceManager::Strings SettingsManager::bloomStrings[BLOOM_LAST] { ResourceManager::DISABLED, ResourceManager::ENABLED, ResourceManager::AUTO };
 const ResourceManager::Strings SettingsManager::profileStrings[PROFILE_LAST] { ResourceManager::NORMAL, ResourceManager::RAR_HUBS, ResourceManager::LAN_HUBS };
 const ResourceManager::Strings SettingsManager::refreshStrings[MULTITHREAD_LAST] { ResourceManager::NEVER, ResourceManager::MANUAL_REFRESHES, ResourceManager::ALWAYS };
 const ResourceManager::Strings SettingsManager::prioStrings[PRIO_LAST] { ResourceManager::DISABLED, ResourceManager::PRIOPAGE_ORDER_BALANCED, ResourceManager::PRIOPAGE_ORDER_PROGRESS };
 const ResourceManager::Strings SettingsManager::incomingStrings[INCOMING_LAST] { ResourceManager::DISABLED, ResourceManager::SETTINGS_ACTIVE, ResourceManager::SETTINGS_ACTIVE_UPNP, ResourceManager::SETTINGS_PASSIVE };
 const ResourceManager::Strings SettingsManager::outgoingStrings[OUTGOING_LAST] { ResourceManager::SETTINGS_DIRECT, ResourceManager::SETTINGS_SOCKS5 };
-const ResourceManager::Strings SettingsManager::monitoringStrings[MONITORING_LAST] { ResourceManager::DISABLED, ResourceManager::INCOMING_ONLY, ResourceManager::ALL_DIRS };
 const ResourceManager::Strings SettingsManager::dropStrings[QUEUE_LAST] { ResourceManager::FILE, ResourceManager::BUNDLE, ResourceManager::ALL };
 const ResourceManager::Strings SettingsManager::updateStrings[VERSION_LAST] { ResourceManager::CHANNEL_STABLE, ResourceManager::CHANNEL_BETA, ResourceManager::CHANNEL_NIGHTLY };
 
@@ -72,10 +70,6 @@ SettingsManager::EnumStringMap SettingsManager::getEnumStrings(int aKey, bool aV
 		insertStrings(incomingStrings, INCOMING_LAST, -1);
 	}
 
-	if (aKey == MONITORING_MODE) {
-		insertStrings(monitoringStrings, MONITORING_LAST);
-	}
-
 	if (aKey == REFRESH_THREADING) {
 		insertStrings(refreshStrings, MULTITHREAD_LAST);
 	}
@@ -94,10 +88,6 @@ SettingsManager::EnumStringMap SettingsManager::getEnumStrings(int aKey, bool aV
 
 	if (aKey == BLOOM_MODE) {
 		insertStrings(bloomStrings, BLOOM_LAST);
-	}
-
-	if (aKey == DELAY_COUNT_MODE) {
-		insertStrings(delayStrings, DELAY_LAST);
 	}
 
 	if (aKey == AUTOPRIO_TYPE) {
@@ -215,8 +205,8 @@ const string SettingsManager::settingTags[] =
 "DirlistLeft", "DirlistRight", "StatsTop", "StatsBottom", "StatsLeft", "StatsRight", "MaxMCNDownloads", "MaxMCNUploads", "ListHighlightBackColor", "ListHighlightColor", "QueueColor", "TextQueueBackColor",
 "RecentBundleHours", "DisconnectMinSources", "AutoprioType", "AutoprioInterval", "AutosearchExpireDays", "WinampBarIconSize", "TBProgressTextColor", "TLSMode", "UpdateMethod",
 "QueueSplitterPosition", "FullListDLLimit", "ASDelayHours", "LastListProfile", "MaxHashingThreads", "HashersPerVolume", "SubtractlistSkip", "BloomMode", "FavUsersSplitterPos", "AwayIdleTime",
-"SearchHistoryMax", "ExcludeHistoryMax", "DirectoryHistoryMax", "MinDupeCheckSize", "DbCacheSize", "DLAutoDisconnectMode", "RemovedTrees", "RemovedFiles", "MultithreadedRefresh", "MonitoringMode",
-"MonitoringDelay", "DelayCountMode", "MaxRunningBundles", "DefaultShareProfile", "UpdateChannel", "ColorStatusFinished", "ColorStatusShared", "ProgressLighten",
+"SearchHistoryMax", "ExcludeHistoryMax", "DirectoryHistoryMax", "MinDupeCheckSize", "DbCacheSize", "DLAutoDisconnectMode", "RemovedTrees", "RemovedFiles", "MultithreadedRefresh",
+"MaxRunningBundles", "DefaultShareProfile", "UpdateChannel", "ColorStatusFinished", "ColorStatusShared", "ProgressLighten",
 "ConfigBuildNumber", "PmMessageCache", "HubMessageCache", "LogMessageCache", "MaxRecentHubs", "MaxRecentPrivateChats", "MaxRecentFilelists",
 "SENTRY",
 
@@ -414,7 +404,7 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(BOLD_PM, true);
 	setDefault(BOLD_SEARCH, true);
 	setDefault(BOLD_WAITING_USERS, true);
-	setDefault(AUTO_REFRESH_TIME, 0);
+	setDefault(AUTO_REFRESH_TIME, 60);
 	setDefault(AUTO_SEARCH_LIMIT, 15);
 	setDefault(AUTO_KICK_NO_FAVS, false);
 	setDefault(PROMPT_PASSWORD, true);
@@ -706,7 +696,7 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(AUTO_ADD_SOURCE, true);
 	setDefault(USE_EXPLORER_THEME, true);
 	setDefault(TESTWRITE, true);
-	setDefault(INCOMING_REFRESH_TIME, 0);
+	setDefault(INCOMING_REFRESH_TIME, 60);
 	setDefault(USE_ADLS, true);
 	setDefault(DONT_DL_ALREADY_QUEUED, false);
 	setDefault(SYSTEM_SHOW_UPLOADS, false);
@@ -821,16 +811,6 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(PM_LOG_GROUP_CID, true);
 	setDefault(SHARE_FOLLOW_SYMLINKS, true);
 	setDefault(AS_FAILED_DEFAULT_GROUP, "Failed Bundles");
-
-#ifdef _WIN32
-	setDefault(MONITORING_MODE, MONITORING_ALL);
-#else
-	// TODO: implement monitoring
-	setDefault(MONITORING_MODE, MONITORING_DISABLED);
-#endif
-
-	setDefault(MONITORING_DELAY, 30);
-	setDefault(DELAY_COUNT_MODE, DELAY_VOLUME);
 
 	setDefault(CONFIRM_FILE_DELETIONS, true);
 	setDefault(USE_DEFAULT_CERT_PATHS, true);
@@ -1004,13 +984,6 @@ void SettingsManager::load(function<bool (const string& /*Message*/, bool /*isQu
 
 #ifdef _WIN32
 			auto prevVersion = Util::toDouble(SETTING(CONFIG_VERSION));
-			//auto prevBuild = SETTING(CONFIG_BUILD_NUMBER);
-
-			if (prevVersion <= 2.50 && SETTING(MONITORING_MODE) != MONITORING_DISABLED) {
-				set(MONITORING_MODE, MONITORING_ALL);
-				set(INCOMING_REFRESH_TIME, 0);
-				set(AUTO_REFRESH_TIME, 0);
-			}
 
 			if (prevVersion < 2.70) {
 				unsetKey(SEARCHFRAME_ORDER);

@@ -102,7 +102,6 @@ public:
 		MESSAGE_HANDLER(WM_SIZE, onSize)
 		MESSAGE_HANDLER(WM_QUERYOPEN, onOpen)
 		MESSAGE_HANDLER(WM_ENDSESSION, onEndSession)
-		MESSAGE_HANDLER(WM_DEVICECHANGE, onDeviceChanged)
 		MESSAGE_HANDLER(trayMessage, onTray)
 		MESSAGE_HANDLER(tbButtonMessage, onTaskbarButton);
 		MESSAGE_HANDLER(WM_COPYDATA, onCopyData)
@@ -257,7 +256,6 @@ public:
 	LRESULT onTaskbarButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onTray(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onRowsChanged(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-	LRESULT onDeviceChanged(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 
 	void shutdown();
 

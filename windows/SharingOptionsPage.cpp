@@ -25,7 +25,6 @@
 #include "PropertiesDlg.h"
 
 #include <airdcpp/ShareManager.h>
-#include <airdcpp/modules/ShareMonitorManager.h>
 
 
 PropPage::ListItem SharingOptionsPage::listItems[] = {
@@ -52,11 +51,6 @@ PropPage::TextItem SharingOptionsPage::texts[] = {
 	{ IDC_MULTITHREADED_REFRESH_LBL, ResourceManager::MULTITHREADED_REFRESH },
 	{ IDC_STARTUP_REFRESH, ResourceManager::SETTINGS_STARTUP_REFRESH },
 
-	{ IDC_MONITORING_MODE_LBL, ResourceManager::MONITORING_CHANGES },
-	{ IDC_MONITORING_OPTIONS, ResourceManager::MONITORING_OPTIONS },
-	{ IDC_DELAY_MODE_LBL, ResourceManager::SETTINGS_DELAY_MODE },
-	{ IDC_MONITORING_SECONDS_LBL, ResourceManager::SETTINGS_MONITORING_SECONDS },
-
 	{ IDC_DONT_SHARE_BIGGER_THAN, ResourceManager::DONT_SHARE_BIGGER_THAN },
 	{ 0, ResourceManager::LAST }
 };
@@ -70,9 +64,6 @@ PropPage::Item SharingOptionsPage::items[] = {
 	{ IDC_AUTO_REFRESH_TIME, SettingsManager::AUTO_REFRESH_TIME, PropPage::T_INT },
 	{ IDC_INCOMING_REFRESH_TIME, SettingsManager::INCOMING_REFRESH_TIME, PropPage::T_INT },
 	{ IDC_STARTUP_REFRESH, SettingsManager::STARTUP_REFRESH, PropPage::T_BOOL },
-
-	//monitoring
-	{ IDC_MONITORING_SECONDS, SettingsManager::MONITORING_DELAY, PropPage::T_INT },
 
 	//general
 	{ IDC_DONT_SHARE_BIGGER_VALUE, SettingsManager::MAX_FILE_SIZE_SHARED, PropPage::T_INT },
@@ -89,25 +80,12 @@ LRESULT SharingOptionsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 	//refresh
 	setMinMax(IDC_REFRESH_SPIN, 0, 3000);
 	setMinMax(IDC_INCOMING_SPIN, 0, 1000);
-	setMinMax(IDC_MONITORING_SECONDS_SPIN, 1, 1000);
 
 	ctrlThreadedRefresh.Attach(GetDlgItem(IDC_MULTITHREADED_REFRESH));
 	ctrlThreadedRefresh.InsertString(0, CTSTRING(NEVER));
 	ctrlThreadedRefresh.InsertString(1, CTSTRING(MANUAL_REFRESHES));
 	ctrlThreadedRefresh.InsertString(2, CTSTRING(ALWAYS));
 	ctrlThreadedRefresh.SetCurSel(SETTING(REFRESH_THREADING));
-
-	ctrlDelayMode.Attach(GetDlgItem(IDC_DELAY_MODE));
-	ctrlDelayMode.InsertString(0, CTSTRING(MONITOR_DELAY_DIR));
-	ctrlDelayMode.InsertString(1, CTSTRING(MONITOR_DELAY_VOLUME));
-	ctrlDelayMode.InsertString(2, CTSTRING(MONITOR_DELAY_ANY));
-	ctrlDelayMode.SetCurSel(SETTING(DELAY_COUNT_MODE));
-
-	ctrlMonitoringMode.Attach(GetDlgItem(IDC_MONITORING_MODE));
-	ctrlMonitoringMode.InsertString(0, CTSTRING(DISABLED));
-	ctrlMonitoringMode.InsertString(1, CTSTRING(INCOMING_ONLY));
-	ctrlMonitoringMode.InsertString(2, CTSTRING(ALL_DIRS));
-	ctrlMonitoringMode.SetCurSel(SETTING(MONITORING_MODE));
 
 	// Do specialized reading here
 	return TRUE;
@@ -117,24 +95,9 @@ void SharingOptionsPage::write() {
 	PropPage::write((HWND)*this, items, listItems, GetDlgItem(IDC_SHARINGLIST));
 	
 	settings->set(SettingsManager::REFRESH_THREADING, ctrlThreadedRefresh.GetCurSel());
-	settings->set(SettingsManager::DELAY_COUNT_MODE, ctrlDelayMode.GetCurSel());
 
 	monitoringMode = ctrlMonitoringMode.GetCurSel();
 	//set to the defaults
 	//if(SETTING(SKIPLIST_SHARE).empty())
 	//	settings->set(SettingsManager::SHARE_SKIPLIST_USE_REGEXP, true);
 }
-
-Dispatcher::F SharingOptionsPage::getThreadedTask() {
-	if (monitoringMode >= 0 && SETTING(MONITORING_MODE) != monitoringMode) {
-		settings->set(SettingsManager::MONITORING_MODE, monitoringMode);
-		return Dispatcher::F([this] { 
-			ShareMonitorManager::getInstance()->rebuildMonitoring();
-		});
-	}
-
-	return nullptr;
-}
- 
-
-

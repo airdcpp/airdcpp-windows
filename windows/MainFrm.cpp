@@ -77,8 +77,6 @@
 #include <airdcpp/UploadManager.h>
 #include <airdcpp/ViewFileManager.h>
 
-#include <airdcpp/modules/ShareMonitorManager.h>
-
 #include <airdcpp/version.h>
 
 #include <VersionHelpers.h>
@@ -137,23 +135,6 @@ char FirstDriveFromMask(ULONG unitmask)
 	}
 
 	return(i + 'A');
-}
-
-
-LRESULT MainFrame::onDeviceChanged(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-	if (wParam == DBT_DEVICEREMOVECOMPLETE) {
-		// Notify share monitoring about removed volumes as it 
-		// would happily continue monitoring it otherwise (but no changes are detected after
-		// the volume has been readded) ...
-		PDEV_BROADCAST_HDR lpdb = (PDEV_BROADCAST_HDR)lParam;
-		if (lpdb->dbch_devicetype == DBT_DEVTYP_VOLUME) {
-			PDEV_BROADCAST_VOLUME lpdbv = (PDEV_BROADCAST_VOLUME)lpdb;
-			auto drive = string(1, FirstDriveFromMask(lpdbv->dbcv_unitmask));
-			ShareMonitorManager::getInstance()->deviceRemoved(drive + ":\\");
-		}
-	}
-
-	return 0;
 }
 
 MainFrame::~MainFrame() {

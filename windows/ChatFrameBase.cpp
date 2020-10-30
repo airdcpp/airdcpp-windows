@@ -31,7 +31,6 @@
 #include "ActionUtil.h"
 #include "ExtensionsFrame.h"
 
-#include <airdcpp/modules/ShareMonitorManager.h>
 #include <airdcpp/modules/AutoSearchManager.h>
 #include <airdcpp/modules/WebShortcuts.h>
 
@@ -870,14 +869,6 @@ bool ChatFrameBase::checkCommand(const tstring& aCmd, tstring& param, tstring& m
 		//AutoSearchManager::getInstance()->runSearches();
 	} else if (stricmp(cmd.c_str(), _T("clientstats")) == 0) {
 		status = Text::toT(ClientManager::getInstance()->printClientStats());
-	} else if (stricmp(cmd.c_str(), _T("monitordebug")) == 0) {
-		auto cur = ShareMonitorManager::getInstance()->getMonitorDebug();
-		ShareMonitorManager::getInstance()->setMonitorDebug(!cur);
-		status = cur ? _T("Debug disabled") : _T("Debug enabled");
-	} else if (stricmp(cmd.c_str(), _T("handlechanges")) == 0) {
-		ShareMonitorManager::getInstance()->handleChangedFiles();
-	} else if (stricmp(cmd.c_str(), _T("monitorstats")) == 0) {
-		status = Text::toT(ShareMonitorManager::getInstance()->printStats());
 	} else if (stricmp(cmd.c_str(), _T("compact")) == 0) {
 		MainFrame::getMainFrame()->addThreadedTask([this] { HashManager::getInstance()->compact(); });
 	} else if (stricmp(cmd.c_str(), _T("setlistdirty")) == 0) {

@@ -57,8 +57,6 @@ protected:
 	CComboBox ctrlMonitoringMode;
 	CComboBox ctrlDelayMode;
 
-	Dispatcher::F getThreadedTask();
-
 	static Item items[];
 	static TextItem texts[];
 	static ListItem listItems[];

@@ -635,7 +635,6 @@
 #define IDC_EDIT1                       1218
 #define IDC_CLIENT_NAME                 1218
 #define IDC_CHUNKCOUNT                  1218
-#define IDC_REFRESH_DELAY               1218
 #define IDC_SKIPLIST_PRESET1            1218
 #define IDC_MAX_DOWNLOAD_SP             1218
 #define IDC_SKIP_SUBTRACT               1218
@@ -654,7 +653,6 @@
 #define IDC_WEBUSER_PWD                 1219
 #define IDC_WEBSERVER_TLSPORT           1219
 #define IDC_CLIENT_TAG                  1220
-#define IDC_REFRESH_DELAY3              1220
 #define IDC_DONT_SHARE_BIGGER_VALUE     1220
 #define IDC_ALLOW_MATCH_FULL            1220
 #define IDC_STATIC2                     1221
@@ -885,7 +883,6 @@
 #define IDC_PRIO_LOW_SIZE               1303
 #define IDC_SHUTDOWNACTION              1303
 #define IDC_HASHING_THREADS_SPIN        1303
-#define IDC_MONITORING_SECONDS_SPIN     1303
 #define IDC_SETTINGS_PRIO_HIGHEST       1304
 #define IDC_READ_SPIN                   1304
 #define IDC_POPUPGROUP                  1304
@@ -1030,7 +1027,6 @@
 #define IDC_SETTINGS_INCOMING_REFRESH_TIME 1342
 #define IDC_WINAMP_HELP                 1343
 #define IDC_STATIC_M                    1343
-#define IDC_MONITORING_SECONDS_LBL      1343
 #define IDC_POPUP_TIME                  1344
 #define IDC_SYS_LOG                     1344
 #define IDC_POPUP_TIME_STR              1345
@@ -1170,10 +1166,8 @@
 #define IDC_CLOSE_ALL_OFFLINE_PM        1424
 #define IDC_BROWSE_CERTIFICATE          1424
 #define IDC_DOWNCONN                    1424
-#define IDC_MONITORING_MODE_LBL         1424
 #define IDC_CLOSE_ALL_DIR_LIST          1425
 #define IDC_BROWSE_TRUSTED_PATH         1425
-#define IDC_DELAY_MODE_LBL              1425
 #define IDC_CLOSE_ALL_SEARCH_FRAME      1426
 #define IDC_SETTINGS_PORT_TLS           1427
 #define IDC_MATCH_ALL                   1428
@@ -1362,7 +1356,6 @@
 #define IDC_AUTO_DETECTION_USE_LIMITED  1690
 #define IDC_REFRESHING_OPTIONS          1691
 #define IDC_HASHING_OPTIONS             1692
-#define IDC_MONITORING_OPTIONS          1692
 #define IDC_MAINTENANCE                 1693
 #define IDC_AWAY_MINS                   1694
 #define IDC_AWAY_IDLE_TEXT_END          1694
@@ -1393,10 +1386,7 @@
 #define IDC_MULTITHREADED_REFRESH       1713
 #define IDC_REMOVE_EXPIRED_AS           1714
 #define IDC_MULTITHREADED_REFRESH2      1714
-#define IDC_MONITORING_MODE             1714
 #define IDC_AUTO_DETECT                 1715
-#define IDC_MONITORING_MODE2            1715
-#define IDC_DELAY_MODE                  1715
 #define IDC_CONNECTIVITY_LOG            1716
 #define IDC_AUTOCONN_INTRO              1717
 #define IDC_GENERAL_INTRO               1718
@@ -1708,7 +1698,6 @@
 #define IDC_MINISLOTS_EXTENSIONS        15021
 #define IDC_INCOMING_REFRESH_TIME       15022
 #define IDC_SHARE_REFRESH_TIME          15023
-#define IDC_MONITORING_SECONDS          15023
 #define IDC_SB_SKIPLIST_SHARE           15024
 #define IDC_STATIC4                     15024
 #define IDC_ST_SKIPLIST_SHARE_EXT       15025
