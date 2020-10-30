@@ -2006,21 +2006,6 @@ BEGIN
     LTEXT           "The number will be incremented only after the previous bundle has finished downloading, only one bundle can be queued at time. ",IDC_INCR_NUM_DESC,10,20,249,24
 END
 
-IDD_SCANNING_OPTIONS DIALOGEX 0, 0, 309, 310
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Dialog"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    GROUPBOX        "Options for scan for missing/extra files",IDC_SETTINGS_SCAN_OPTIONS,7,79,296,156
-    CONTROL         "",IDC_SCANLIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,12,95,284,131
-    CONTROL         "",IDC_BUNDLE_OPTIONS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,15,21,280,39
-    GROUPBOX        "Finished bundles",IDC_BUNDLE_OPTIONS_LBL,7,7,295,63
-    CONTROL         "Save results in a log file",IDC_LOG_SCANS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,255,276,10
-    EDITTEXT        IDC_SCAN_LOG_PATH,19,280,261,14,ES_AUTOHSCROLL
-    LTEXT           "Log path",IDC_LOG_SCAN_PATH_LBL,20,268,239,10
-    GROUPBOX        "Logging",IDC_SETTINGS_LOGGING,7,244,288,63
-END
-
 IDD_SHAREDIRS DIALOGEX 0, 0, 277, 184
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_BORDER
 EXSTYLE WS_EX_ACCEPTFILES
@@ -2802,7 +2787,7 @@ IDI_LOGS                ICON                    "res\\ToolbarImages\\SystemLog.i
 
 IDI_UPLOAD_QUEUE        ICON                    "res\\ToolbarImages\\uQueue.ico"
 
-IDI_SCAN                ICON                    "res\\ToolbarImages\\ScanMissing.ico"
+IDI_EXTENSIONS          ICON                    "res\\ToolbarImages\\Extensions.ico"
 
 IDI_AUTOSEARCH          ICON                    "res\\ToolbarImages\\AutoSearch.ico"
 

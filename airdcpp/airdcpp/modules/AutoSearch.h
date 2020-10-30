@@ -195,6 +195,9 @@ public:
 	bool removeOnCompleted() const noexcept;
 	bool maxNumberReached() const noexcept;
 	bool expirationTimeReached() const noexcept;
+
+	static bool hasHookFilesMissing(const ActionHookRejectionPtr& aRejection) noexcept;
+	static bool hasHookInvalidContent(const ActionHookRejectionPtr& aRejection) noexcept;
 private:
 	StringMatch userMatcher;
 	time_t nextSearchChange = 0;

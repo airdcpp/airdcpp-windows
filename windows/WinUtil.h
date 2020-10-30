@@ -77,7 +77,7 @@ static const toolbarButton ToolbarButtons[] = {
 	{ IDC_SYSTEM_LOG, 14, IDI_LOGS, true, ResourceManager::SYSTEM_LOG },
 	//separator
 	{ IDC_REFRESH_FILE_LIST, 15, IDI_REFRESH, false, ResourceManager::REFRESH_FILE_LIST },
-	{ IDC_SCAN_MISSING, 16, IDI_SCAN, false, ResourceManager::MENU_SCAN_MISSING },
+	{ IDC_EXTENSIONS, 16, IDI_EXTENSIONS, true, ResourceManager::EXTENSIONS },
 	//separator
 	{ IDC_OPEN_FILE_LIST, 17, IDI_OPEN_LIST, false, ResourceManager::MENU_OPEN_FILE_LIST },
 	{ IDC_OPEN_DOWNLOADS, 18, IDI_OPEN_DOWNLOADS, false, ResourceManager::MENU_OPEN_DOWNLOADS_DIR },
@@ -86,7 +86,6 @@ static const toolbarButton ToolbarButtons[] = {
 	//separator
 	{ ID_FILE_SETTINGS, 20, IDI_SETTINGS, false, ResourceManager::MENU_SETTINGS },
 	{ IDC_RSSFRAME, 21, IDI_RSS, true, ResourceManager::RSS_FEEDS },
-	{ IDC_EXTENSIONS, 22, IDI_QCONNECT, true, ResourceManager::SETTINGS_EXTENSIONS }, //TODO; add icon
 };
 
 

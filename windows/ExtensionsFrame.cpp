@@ -100,7 +100,7 @@ LRESULT ExtensionsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 
 	statusTextHandler.init(*this);
 
-	WinUtil::SetIcon(m_hWnd, IDI_QCONNECT);
+	WinUtil::SetIcon(m_hWnd, IDI_EXTENSIONS);
 	bHandled = FALSE;
 	return TRUE;
 }

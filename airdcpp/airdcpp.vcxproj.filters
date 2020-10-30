@@ -347,9 +347,6 @@
     <ClCompile Include="airdcpp\modules\ShareMonitorManager.cpp">
       <Filter>Source Files\modules</Filter>
     </ClCompile>
-    <ClCompile Include="airdcpp\modules\ShareScannerManager.cpp">
-      <Filter>Source Files\modules</Filter>
-    </ClCompile>
     <ClCompile Include="airdcpp\SharePathValidator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -935,9 +932,6 @@
       <Filter>Header Files\modules</Filter>
     </ClInclude>
     <ClInclude Include="airdcpp\modules\ShareMonitorManager.h">
-      <Filter>Header Files\modules</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\modules\ShareScannerManager.h">
       <Filter>Header Files\modules</Filter>
     </ClInclude>
     <ClInclude Include="airdcpp\SharePathValidator.h">

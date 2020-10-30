@@ -78,7 +78,6 @@
 #include <airdcpp/ViewFileManager.h>
 
 #include <airdcpp/modules/ShareMonitorManager.h>
-#include <airdcpp/modules/ShareScannerManager.h>
 
 #include <airdcpp/version.h>
 
@@ -247,7 +246,6 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	LogManager::getInstance()->addListener(this);
 	DirectoryListingManager::getInstance()->addListener(this);
 	UpdateManager::getInstance()->addListener(this);
-	ShareScannerManager::getInstance()->addListener(this);
 	ClientManager::getInstance()->addListener(this);
 	PrivateChatManager::getInstance()->addListener(this);
 	ActivityManager::getInstance()->addListener(this);
@@ -1420,11 +1418,6 @@ LRESULT MainFrame::onRefreshFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	return 0;
 }
 
-LRESULT MainFrame::onScanMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	addThreadedTask([] { ShareScannerManager::getInstance()->scanShare(); });
-	return 0;
-}
-
 LRESULT MainFrame::onTrayIcon(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	if (lParam == WM_LBUTTONDBLCLK ||( SETTING(SINGLE_CLICK_TRAY) && lParam == WM_LBUTTONUP)) {
 		if (bAppMinimized) {
@@ -1849,10 +1842,6 @@ void MainFrame::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle
 	};
 }
 
-void MainFrame::on(ScannerManagerListener::ScanFinished, const string& aText, const string& aTitle) noexcept {
-	callAsync([=] { TextFrame::viewText(aTitle, aText, true, false); });
-}
-
 void MainFrame::on(DirectoryListingManagerListener::OpenListing, const DirectoryListingPtr& aList, const string& aDir, const string& aXML) noexcept {
 	callAsync([=] { DirectoryListingFrame::openWindow(aList, aDir, aXML); });
 }
@@ -1999,7 +1988,6 @@ LRESULT MainFrame::onDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	TimerManager::getInstance()->removeListener(this);
 	DirectoryListingManager::getInstance()->removeListener(this);
 	UpdateManager::getInstance()->removeListener(this);
-	ShareScannerManager::getInstance()->removeListener(this);
 	ClientManager::getInstance()->removeListener(this);
 	PrivateChatManager::getInstance()->removeListener(this);
 	ActivityManager::getInstance()->removeListener(this);
@@ -2145,7 +2133,6 @@ void MainFrame::initCmdBar() {
 	m_CmdBar.m_arrCommand.Add(IDC_OWN_LIST_ADL);
 	m_CmdBar.m_arrCommand.Add(IDC_MATCH_ALL);
 	m_CmdBar.m_arrCommand.Add(IDC_REFRESH_FILE_LIST);
-	m_CmdBar.m_arrCommand.Add(IDC_SCAN_MISSING);
 	m_CmdBar.m_arrCommand.Add(IDC_OPEN_DOWNLOADS);
 	m_CmdBar.m_arrCommand.Add(ID_FILE_QUICK_CONNECT);
 	m_CmdBar.m_arrCommand.Add(ID_FILE_SETTINGS);

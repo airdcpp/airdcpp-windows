@@ -26,7 +26,6 @@
 #include <airdcpp/concurrency.h>
 
 #include <airdcpp/modules/AutoSearchManagerListener.h>
-#include <airdcpp/modules/ShareScannerManager.h>
 
 #include <airdcpp/ClientManagerListener.h>
 #include <airdcpp/TimerManagerListener.h>
@@ -57,7 +56,7 @@
 class MainFrame : public CMDIFrameWindowImpl<MainFrame>, public CUpdateUI<MainFrame>,
 		public CMessageFilter, public CIdleHandler, public CSplitterImpl<MainFrame>,
 		private TimerManagerListener, private QueueManagerListener, public Async<MainFrame>,
-		private LogManagerListener, private DirectoryListingManagerListener, private UpdateManagerListener, private ScannerManagerListener, private ClientManagerListener,
+		private LogManagerListener, private DirectoryListingManagerListener, private UpdateManagerListener, private ClientManagerListener,
 		private AutoSearchManagerListener, private PrivateChatManagerListener, private ActivityManagerListener, private ViewFileManagerListener
 {
 public:
@@ -167,7 +166,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_OPEN_LOG_DIR, onOpenDir)
 		COMMAND_ID_HANDLER(IDC_OPEN_CONFIG_DIR, onOpenDir)
 		COMMAND_ID_HANDLER(IDC_REFRESH_FILE_LIST, onRefreshFileList)
-		COMMAND_ID_HANDLER(IDC_SCAN_MISSING, onScanMissing)
+		COMMAND_ID_HANDLER(IDC_EXTENSIONS, onOpenWindows)
 		COMMAND_ID_HANDLER(ID_FILE_QUICK_CONNECT, onQuickConnect)
 		COMMAND_ID_HANDLER(IDC_HASH_PROGRESS, onHashProgress)
 		COMMAND_ID_HANDLER(IDC_HASH_PROGRESS_AUTO_CLOSE, onHashProgress)
@@ -225,8 +224,7 @@ public:
 	LRESULT onCopyData(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT onCloseWindows(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onReconnectDisconnected(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onRefreshFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);	
-	LRESULT onScanMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onRefreshFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onQuickConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onActivateApp(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onAppCommand(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
@@ -501,8 +499,6 @@ private:
 	void on(UpdateManagerListener::BadVersion, const string& message, const string& url, const string& update, int buildID, bool canAutoUpdate) noexcept;
 	void on(UpdateManagerListener::UpdateComplete, const string& updater) noexcept;
 	void on(UpdateManagerListener::UpdateFailed, const string& line) noexcept;
-
-	void on(ScannerManagerListener::ScanFinished, const string& aText, const string& aTitle) noexcept;
 
 	void on(ClientManagerListener::ClientCreated, const ClientPtr&) noexcept;
 };

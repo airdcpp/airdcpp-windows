@@ -297,9 +297,6 @@
     <ClCompile Include="windows\PopupDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\ScanPage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="windows\ShareDirectories.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -753,9 +750,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\UserInfoBaseHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\ScanPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\ShareDirectories.h">

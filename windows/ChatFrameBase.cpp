@@ -32,7 +32,6 @@
 #include "ExtensionsFrame.h"
 
 #include <airdcpp/modules/ShareMonitorManager.h>
-#include <airdcpp/modules/ShareScannerManager.h>
 #include <airdcpp/modules/AutoSearchManager.h>
 #include <airdcpp/modules/WebShortcuts.h>
 
@@ -817,8 +816,6 @@ bool ChatFrameBase::checkCommand(const tstring& aCmd, tstring& param, tstring& m
 		} else {
 			return false;
 		}
-	} else if (stricmp(cmd.c_str(), _T("stop")) == 0) {
-		ShareScannerManager::getInstance()->Stop();
 	} else if (stricmp(cmd.c_str(), _T("me")) == 0) {
 		message = param;
 		thirdPerson = true;

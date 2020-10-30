@@ -64,7 +64,6 @@ PropPage::ListItem LogPage::systemItems[] = {
 	{ SettingsManager::LOG_SCHEDULED_REFRESHES,		ResourceManager::SETTINGS_LOG_SCHEDULED_REFRESHES }, 
 	{ SettingsManager::FL_REPORT_FILE_DUPES,		ResourceManager::REPORT_DUPLICATE_FILES },
 	{ SettingsManager::LOG_IGNORED,					ResourceManager::REPORT_IGNORED },
-	{ SettingsManager::LOG_CRC_OK,					ResourceManager::LOG_CRC_OK },
 	
 	{ 0, ResourceManager::LAST }
 };

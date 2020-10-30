@@ -19,7 +19,6 @@
 #include "stdinc.h"
 
 #include "AutoSearchManager.h"
-#include "ShareScannerManager.h"
 
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/LogManager.h>
@@ -319,7 +318,7 @@ void AutoSearchManager::on(QueueManagerListener::BundleStatusChanged, const Bund
 		return;
 	}
 
-	auto filesMissing = ActionHookRejection::matches(aBundle->getHookError(), SHARE_SCANNER_HOOK_ID, SHARE_SCANNER_ERROR_MISSING);
+	auto filesMissing = AutoSearch::hasHookFilesMissing(aBundle->getHookError());
 	auto items = getSearchesByBundle(aBundle);
 	bool found = false, searched = false;
 	for (auto& as : items) {

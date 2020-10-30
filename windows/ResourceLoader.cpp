@@ -223,7 +223,7 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_OPEN_DOWNLOADS:return _T("ToolbarImages\\OpenDLDir.ico");
 		case IDI_LOGS :			return _T("ToolbarImages\\SystemLog.ico");
 		case IDI_UPLOAD_QUEUE:	return _T("ToolbarImages\\uQueue.ico");
-		case IDI_SCAN :			return _T("ToolbarImages\\ScanMissing.ico");
+		case IDI_EXTENSIONS:	return _T("ToolbarImages\\Extensions.ico");
 		case IDI_AUTOSEARCH:	return _T("ToolbarImages\\AutoSearch.ico");
 		case IDI_LOGDIR:		return _T("ToolbarImages\\LogDir.ico");
 		case IDI_RSS:			return _T("ToolbarImages\\RSS.ico");
@@ -478,7 +478,6 @@ CImageList& ResourceLoader::getSettingsTreeIcons() {
 		settingsTreeImages.AddIcon(CIcon(loadDefaultIcon(IDI_IGNORE, size)));
 		settingsTreeImages.AddIcon(CIcon(loadDefaultIcon(IDI_SEARCH, size)));
 		settingsTreeImages.AddIcon(CIcon(loadDefaultIcon(IDI_SEARCHTYPES, size)));
-		settingsTreeImages.AddIcon(CIcon(loadDefaultIcon(IDI_SCAN, size)));
 	}
 	return settingsTreeImages;
 }
@@ -572,7 +571,7 @@ void ResourceLoader::loadCmdBarImageList(CImageList& images){
 	images.AddIcon(CIcon(loadIcon(IDI_ADLSEARCH, 16)));
 	images.AddIcon(CIcon(loadIcon(IDI_MATCHLIST, 16)));
 	images.AddIcon(CIcon(loadIcon(IDI_REFRESH, 16)));
-	images.AddIcon(CIcon(loadIcon(IDI_SCAN, 16)));
+	images.AddIcon(CIcon(loadIcon(IDI_EXTENSIONS, 16)));
 	images.AddIcon(CIcon(loadIcon(IDI_OPEN_DOWNLOADS, 16)));
 	images.AddIcon(CIcon(loadIcon(IDI_QCONNECT, 16)));
 	images.AddIcon(CIcon(loadIcon(IDI_SETTINGS, 16)));

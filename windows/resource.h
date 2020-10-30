@@ -52,7 +52,6 @@
 #define IDC_LOGMAINCHAT                 134
 #define IDC_FILES                       135
 #define IDC_LOGMAINCHAT2                135
-#define IDC_SETTINGS_SCAN_OPTIONS       135
 #define IDC_SERVER6                     135
 #define IDC_COPY_STATUS                 136
 #define IDC_AWAY_MSG                    136
@@ -182,7 +181,6 @@
 #define IDD_DIALOG3                     345
 #define IDD_LIMITPAGE                   345
 #define IDD_AUTOSEARCH_PARAMS           346
-#define IDD_SCANNING_OPTIONS            347
 #define IDD_SHAREDIRS                   348
 #define IDD_WIZARD_GENERAL              349
 #define IDD_WIZARD_CONNSPEED            350
@@ -211,7 +209,7 @@
 #define IDD_DIALOG4                     368
 #define IDD_AS_ADVANCED                 368
 #define IDI_UPLOAD_QUEUE                369
-#define IDI_SCAN                        370
+#define IDI_EXTENSIONS                  370
 #define IDD_DIALOG5                     370
 #define IDD_AS_SEARCH_TIMES             370
 #define IDI_AUTOSEARCH                  371
@@ -624,7 +622,6 @@
 #define IDC_MOVEUP                      1209
 #define IDC_REFRESH_FILE_LIST           1210
 #define IDC_PRESET                      1210
-#define IDC_SCAN_MISSING                1212
 #define IDC_SETTINGS_ONCE               1212
 #define IDC_OPEN_DOWNLOADS              1213
 #define IDC_PREVIEW_ARGUMENTS           1214
@@ -1384,17 +1381,12 @@
 #define IDC_SEARCH_HIST                 1702
 #define IDC_SEARCH_HIST_SPIN            1703
 #define IDC_EXCLUDE_HIST_LBL            1704
-#define IDC_BUNDLE_OPTIONS              1704
 #define IDC_EXCLUDE_HIST                1705
-#define IDC_BUNDLE_OPTIONS_LBL          1705
 #define IDC_EXCLUDE_HIST_SPIN           1706
 #define IDC_SHARINGLIST                 1706
 #define IDC_DIR_HIST_LBL                1707
-#define IDC_LOG_SCANS                   1707
 #define IDC_DIR_HIST                    1708
-#define IDC_SCAN_LOG_PATH               1708
 #define IDC_DIR_HIST_SPIN               1709
-#define IDC_LOG_SCAN_PATH_LBL           1709
 #define IDC_LOGGING                     1710
 #define IDC_DB_CACHE_AUTOSET            1711
 #define IDC_AUTO_DISCONNECT_MODE        1712
@@ -1819,7 +1811,6 @@
 #define IDC_UPDATE_LANGUAGELANG_CURRENT 15101
 #define IDR_HUB_OP                      15103
 #define IDR_HUB_REG                     15104
-#define IDC_SCANLIST                    15105
 #define IDC_VIEW_NFO                    15106
 #define IDC_HELP_FAQ                    15107
 #define IDC_DL_SEARCH_DESC              15108

@@ -44,7 +44,6 @@
 #include <airdcpp/ViewFileManager.h>
 
 #include <airdcpp/modules/HighlightManager.h>
-#include <airdcpp/modules/ShareScannerManager.h>
 
 #include <web-server/ContextMenuManager.h>
 #include <web-server/WebServerManager.h>
@@ -1491,10 +1490,6 @@ void DirectoryListingFrame::appendListContextMenu(CPoint& pt) {
 	if (dl->getIsOwnList() && !hasFiles) {
 		fileMenu.appendItem(TSTRING(REFRESH_IN_SHARE), [this] { handleRefreshShare(false); });
 	}
-	if (dl->getIsOwnList() && !(ii->type == ItemInfo::DIRECTORY && ii->dir->getAdls())) {
-		fileMenu.appendItem(TSTRING(SCAN_FOLDER_MISSING), [this] { handleScanShare(false); });
-		fileMenu.appendItem(TSTRING(RUN_SFV_CHECK), [this] { handleCheckSfv(false); });
-	}
 
 	// shell menu
 	if (isDupeOrOwnlist) {
@@ -1551,8 +1546,6 @@ void DirectoryListingFrame::appendTreeContextMenu(CPoint& pt, const HTREEITEM& a
 				// shared
 				directoryMenu.appendSeparator();
 				directoryMenu.appendItem(TSTRING(REFRESH_IN_SHARE), [this] { handleRefreshShare(true); });
-				directoryMenu.appendItem(TSTRING(SCAN_FOLDER_MISSING), [this] { handleScanShare(true); });
-				directoryMenu.appendItem(TSTRING(RUN_SFV_CHECK), [this] { handleCheckSfv(true); });
 			}
 		}
 	}
@@ -1731,24 +1724,6 @@ void DirectoryListingFrame::handleRefreshShare(bool usingTree) {
 		dl->addAsyncTask([=] {
 			ShareManager::getInstance()->refreshPathsHooked(ShareRefreshPriority::MANUAL, refresh, this);
 		});
-	}
-}
-
-void DirectoryListingFrame::handleScanShare(bool usingTree) {
-	ctrlStatus.SetText(0, CTSTRING(SEE_SYSLOG_FOR_RESULTS));
-
-	StringList scanList;
-	if (getLocalPaths(scanList, usingTree, false)) {
-		ShareScannerManager::getInstance()->scanShare(scanList);
-	}
-}
-
-void DirectoryListingFrame::handleCheckSfv(bool usingTree) {
-	ctrlStatus.SetText(0, CTSTRING(SEE_SYSLOG_FOR_RESULTS));
-
-	StringList scanList;
-	if (getLocalPaths(scanList, usingTree, false)) {
-		ShareScannerManager::getInstance()->checkSfv(scanList);
 	}
 }
 

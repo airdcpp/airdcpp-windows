@@ -111,16 +111,11 @@ SettingsManager::EnumStringMap SettingsManager::getEnumStrings(int aKey, bool aV
 	return ret;
 }
 
-const ProfileSettingItem SettingsManager::profileSettings[SettingsManager::PROFILE_LAST][10] = {
+const ProfileSettingItem SettingsManager::profileSettings[SettingsManager::PROFILE_LAST][5] = {
 
 { 
 	// profile normal
 	{ SettingsManager::MULTI_CHUNK, true, ResourceManager::SEGMENTS },
-	{ SettingsManager::CHECK_SFV, false, ResourceManager::CHECK_SFV },
-	{ SettingsManager::CHECK_NFO, false, ResourceManager::CHECK_NFO },
-	{ SettingsManager::CHECK_EXTRA_SFV_NFO, false, ResourceManager::CHECK_EXTRA_SFV_NFO },
-	{ SettingsManager::CHECK_EXTRA_FILES, false, ResourceManager::CHECK_EXTRA_FILES },
-	{ SettingsManager::CHECK_DUPES, false, ResourceManager::CHECK_DUPES },
 	{ SettingsManager::MAX_FILE_SIZE_SHARED, 0, ResourceManager::DONT_SHARE_BIGGER_THAN },
 	{ SettingsManager::MINIMUM_SEARCH_INTERVAL, 15, ResourceManager::MINIMUM_SEARCH_INTERVAL },
 	//{ SettingsManager::AUTO_SEARCH_LIMIT, 5 },
@@ -129,11 +124,6 @@ const ProfileSettingItem SettingsManager::profileSettings[SettingsManager::PROFI
 }, {
 	// profile RAR
 	{ SettingsManager::MULTI_CHUNK, false, ResourceManager::SEGMENTS },
-	{ SettingsManager::CHECK_SFV, true, ResourceManager::CHECK_SFV },
-	{ SettingsManager::CHECK_NFO, true, ResourceManager::CHECK_NFO },
-	{ SettingsManager::CHECK_EXTRA_SFV_NFO, true, ResourceManager::CHECK_EXTRA_SFV_NFO },
-	{ SettingsManager::CHECK_EXTRA_FILES, true, ResourceManager::CHECK_EXTRA_FILES },
-	{ SettingsManager::CHECK_DUPES, true, ResourceManager::CHECK_DUPES },
 	{ SettingsManager::MAX_FILE_SIZE_SHARED, 600, ResourceManager::DONT_SHARE_BIGGER_THAN },
 	{ SettingsManager::MINIMUM_SEARCH_INTERVAL, 10, ResourceManager::MINIMUM_SEARCH_INTERVAL },
 	//{ SettingsManager::AUTO_SEARCH_LIMIT, 5 },
@@ -142,11 +132,6 @@ const ProfileSettingItem SettingsManager::profileSettings[SettingsManager::PROFI
 }, {
 	// profile LAN
 	{ SettingsManager::MULTI_CHUNK, true, ResourceManager::SEGMENTS },
-	{ SettingsManager::CHECK_SFV, false, ResourceManager::CHECK_SFV },
-	{ SettingsManager::CHECK_NFO, false, ResourceManager::CHECK_NFO },
-	{ SettingsManager::CHECK_EXTRA_SFV_NFO, false, ResourceManager::CHECK_EXTRA_SFV_NFO },
-	{ SettingsManager::CHECK_EXTRA_FILES, false, ResourceManager::CHECK_EXTRA_FILES },
-	{ SettingsManager::CHECK_DUPES, false, ResourceManager::CHECK_DUPES },
 	{ SettingsManager::MAX_FILE_SIZE_SHARED, 0, ResourceManager::DONT_SHARE_BIGGER_THAN },
 	{ SettingsManager::MINIMUM_SEARCH_INTERVAL, 10, ResourceManager::MINIMUM_SEARCH_INTERVAL },
 	//{ SettingsManager::AUTO_SEARCH_LIMIT, 5 },
@@ -188,7 +173,7 @@ const string SettingsManager::settingTags[] =
 "PopupFont", "PopupTitleFont", "PopupFile", "SkiplistDownload", "HighPrioFiles",
 "MediaToolbar", "password", "DownloadSpeed", "HighlightList", "IconPath",
 "AutoSearchFrame2Order", "AutoSearchFrame2Widths", "ToolbarPos", "TBProgressFont", "LastSearchFiletype", "LastSearchDisabledHubs", "LastASFiletype", "LastSearchExcluded",
-"UsersFrmVisible2", "ListViewFont", "LogShareScanPath", "LastFilelistFiletype", "NmdcEncoding", "AsDefaultFailedGroup", "AutosearchFrmVisible",
+"UsersFrmVisible2", "ListViewFont", "LastFilelistFiletype", "NmdcEncoding", "AsDefaultFailedGroup", "AutosearchFrmVisible",
 "RssFrameOrder", "RssFrameWidths", "RssFrameVisible",
 
 "SENTRY",
@@ -269,17 +254,17 @@ const string SettingsManager::settingTags[] =
 "AutoDetectionUseLimited", "LogScheduledRefreshes", "AutoCompleteBundles", "SearchSaveHubsState", "ConfirmHubExit", "ConfirmASRemove", "EnableSUDP", "NmdcMagnetWarn",
 "UpdateIPHourly", "OpenTextOnBackground", "LockTB", "PopunderPartialList", "ShowTBStatusBar", "UseSlowDisconnectingDefault", "PrioListHighest",
 "UseFTPLogger", "QIAutoPrio", "ShowSharedDirsFav", "ReportAddedSources", "ExpandBundles", "OverlapSlowUser", "FormatDirRemoteTime", "TextQueueBold", "TextQueueItalic", "UnderlineQueue", "LogHashedFiles",
-"UsePartialSharing", "PopupBundleDLs", "PopupBundleULs", "ListHighlightBold", "ListHighlightItalic", "ReportBlockedShare", "ScanDLBundles", "MCNAutoDetect", "DLAutoDetect", "ULAutoDetect", "CheckUseSkiplist", "CheckIgnoreZeroByte",
-"TextDupeBold", "TextDupeItalic", "UnderlineLinks", "UnderlineDupes", "DupesInFilelists", "DupesInChat", "NoZeroByte", "CheckEmptyDirs", "CheckEmptyReleases", "CheckMissing", "CheckInvalidSFV", "CheckSfv",
-"CheckNfo", "CheckMp3Dir", "CheckExtraSfvNfo", "CheckExtraFiles", "CheckDupes", "CheckDiskCounts", "SortDirs", "WizardRunNew", "FormatRelease", "TextNormBold", "TextNormItalic", "SystemShowUploads", "SystemShowDownloads",
+"UsePartialSharing", "PopupBundleDLs", "PopupBundleULs", "ListHighlightBold", "ListHighlightItalic", "ReportBlockedShare", "MCNAutoDetect", "DLAutoDetect", "ULAutoDetect",
+"TextDupeBold", "TextDupeItalic", "UnderlineLinks", "UnderlineDupes", "DupesInFilelists", "DupesInChat", "NoZeroByte",
+"SortDirs", "WizardRunNew", "FormatRelease", "TextNormBold", "TextNormItalic", "SystemShowUploads", "SystemShowDownloads",
 "UseAdls", "DupeSearch", "passwd_protect", "passwd_protect_tray", "DisAllowConnectionToPassedHubs", "BoldHubTabsOnKick",
 "AutoAddSource", "UseExplorerTheme", "TestWrite", "OpenSystemLog", "OpenLogsInternal", "UcSubMenu", "ShowQueueBars", "ExpandDefault",
 "ShareSkiplistUseRegexp", "DownloadSkiplistUseRegexp", "HighestPriorityUseRegexp", "UseHighlight", "FlashWindowOnPm", "FlashWindowOnNewPm", "FlashWindowOnMyNick", "IPUpdate", "serverCommands", "ClientCommands",
 "PreviewPm", "IgnoreUseRegexpOrWc", "HubBoldTabs", "showWinampControl", "BlendTabs", "TabShowIcons", "AllowMatchFullList", "ShowChatNotify", "FreeSpaceWarn", "FavUsersShowInfo",
-"ClearDirectoryHistory", "ClearExcludeHistory", "ClearDirHistory", "NoIpOverride6", "IPUpdate6", "SearchUseExcluded", "AutoSearchBold", "ShowEmoticon", "ShowMultiline", "ShowMagnet", "ShowSendMessage", "WarnElevated", "SkipEmptyDirsShare", "LogShareScans",
-	"RemoveExpiredAs", "AdcLogGroupCID", "ShareFollowSymlinks", "ScanMonitoredFolders", "ConfirmFileDeletions", "UseDefaultCertPaths", "StartupRefresh", "FLReportDupeFiles",
+"ClearDirectoryHistory", "ClearExcludeHistory", "ClearDirHistory", "NoIpOverride6", "IPUpdate6", "SearchUseExcluded", "AutoSearchBold", "ShowEmoticon", "ShowMultiline", "ShowMagnet", "ShowSendMessage", "WarnElevated", "SkipEmptyDirsShare",
+	"RemoveExpiredAs", "AdcLogGroupCID", "ShareFollowSymlinks", "ConfirmFileDeletions", "UseDefaultCertPaths", "StartupRefresh", "FLReportDupeFiles",
 	"FilterFLShared", "FilterFLQueued", "FilterFLInversed", "FilterFLTop", "FilterFLPartialDupes", "FilterFLResetChange", "FilterSearchShared", "FilterSearchQueued", "FilterSearchInversed", "FilterSearchTop", "FilterSearchPartialDupes", "FilterSearchResetChange",
-	"SearchAschOnlyMan", "UseUploadBundles", "CloseMinimize", "LogIgnored", "UsersFilterIgnore", "NfoExternal", "SingleClickTray", "QueueShowFinished", "RemoveFinishedBundles", "LogCRCOk",
+	"SearchAschOnlyMan", "UseUploadBundles", "CloseMinimize", "LogIgnored", "UsersFilterIgnore", "NfoExternal", "SingleClickTray", "QueueShowFinished", "RemoveFinishedBundles",
 	"FilterQueueInverse", "FilterQueueTop", "FilterQueueReset", "AlwaysCCPM", "OpenAutoSearch", "SaveLastState",
 	"SENTRY",
 	// Int64
@@ -732,20 +717,6 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(FORMAT_RELEASE, true);
 	setDefault(LOG_LINES, 500);
 
-	setDefault(CHECK_MISSING, true);
-	setDefault(CHECK_INVALID_SFV, true);
-	setDefault(CHECK_SFV, false);
-	setDefault(CHECK_NFO, false);
-	setDefault(CHECK_MP3_DIR, false);
-	setDefault(CHECK_EXTRA_SFV_NFO, false);
-	setDefault(CHECK_EXTRA_FILES, false);
-	setDefault(CHECK_DUPES, false);
-	setDefault(CHECK_EMPTY_DIRS, true);
-	setDefault(CHECK_EMPTY_RELEASES, true);
-	setDefault(CHECK_USE_SKIPLIST, false);
-	setDefault(CHECK_IGNORE_ZERO_BYTE, false);
-	setDefault(CHECK_DISK_COUNTS, true);
-
 	setDefault(SORT_DIRS, false);
 	setDefault(MAX_FILE_SIZE_SHARED, 0);
 	setDefault(MAX_MCN_DOWNLOADS, 1);
@@ -761,7 +732,6 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(REPORT_BLOCKED_SHARE, true);
 
 
-	setDefault(SCAN_DL_BUNDLES, true);
 	setDefault(USE_PARTIAL_SHARING, true);
 	setDefault(POPUP_BUNDLE_DLS, true);
 	setDefault(POPUP_BUNDLE_ULS, false);
@@ -837,9 +807,6 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(WARN_ELEVATED, true);
 	setDefault(SKIP_EMPTY_DIRS_SHARE, true);
 
-	setDefault(LOG_SHARE_SCANS, false);
-	setDefault(LOG_SHARE_SCAN_PATH, "Scan Results" + string(PATH_SEPARATOR_STR) + "Scan %Y-%m-%d %H:%M.log");
-
 	setDefault(LAST_FL_FILETYPE, "0");
 
 	setDefault(DB_CACHE_SIZE, 8);
@@ -853,7 +820,6 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 
 	setDefault(PM_LOG_GROUP_CID, true);
 	setDefault(SHARE_FOLLOW_SYMLINKS, true);
-	setDefault(SCAN_MONITORED_FOLDERS, true);
 	setDefault(AS_FAILED_DEFAULT_GROUP, "Failed Bundles");
 
 #ifdef _WIN32
@@ -903,7 +869,6 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(QUEUE_SHOW_FINISHED, true);
 	setDefault(PROGRESS_LIGHTEN, 25);
 	setDefault(REMOVE_FINISHED_BUNDLES, false);
-	setDefault(LOG_CRC_OK, false);
 	setDefault(ALWAYS_CCPM, false);
 	setDefault(AUTOSEARCHFRAME_VISIBLE, "1,1,1,1,1,1,1,1,1,1,1");
 	setDefault(SAVE_LAST_STATE, true);
