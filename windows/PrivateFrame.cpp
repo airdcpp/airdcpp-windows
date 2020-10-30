@@ -487,7 +487,7 @@ bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& /*param*/, tstring& 
 	else if (Util::stricmp(cmd.c_str(), _T("disconnect")) == 0) {
 		closeCC();
 	} else if(stricmp(cmd.c_str(), _T("help")) == 0) {
-		status = _T("*** ") + ChatFrameBase::commands + _T("Additional commands for private message tabs: /getlist, /grant, /favorite");
+		status = _T("*** ") + ChatFrameBase::commands + _T("Additional commands for private message tabs: /getlist, /grant, /favorite, /direct or /encrypted");
 	} else {
 		return false;
 	}
