@@ -571,7 +571,6 @@ void ResourceLoader::loadCmdBarImageList(CImageList& images){
 	images.AddIcon(CIcon(loadIcon(IDI_ADLSEARCH, 16)));
 	images.AddIcon(CIcon(loadIcon(IDI_MATCHLIST, 16)));
 	images.AddIcon(CIcon(loadIcon(IDI_REFRESH, 16)));
-	images.AddIcon(CIcon(loadIcon(IDI_EXTENSIONS, 16)));
 	images.AddIcon(CIcon(loadIcon(IDI_OPEN_DOWNLOADS, 16)));
 	images.AddIcon(CIcon(loadIcon(IDI_QCONNECT, 16)));
 	images.AddIcon(CIcon(loadIcon(IDI_SETTINGS, 16)));
@@ -582,6 +581,7 @@ void ResourceLoader::loadCmdBarImageList(CImageList& images){
 	images.AddIcon(CIcon(loadIcon(IDI_CDM, 16)));
 	images.AddIcon(CIcon(loadIcon(IDI_LOGS, 16)));
 	images.AddIcon(CIcon(loadIcon(IDI_AUTOSEARCH, 16)));
+	images.AddIcon(CIcon(loadIcon(IDI_EXTENSIONS, 16)));
 	images.AddIcon(CIcon(loadIcon(IDI_INDEXING, 16)));
 	images.AddIcon(CIcon(loadIcon(IDR_MAINFRAME, 16)));
 	images.AddIcon(CIcon(loadIcon(IDI_WIZARD, 16)));

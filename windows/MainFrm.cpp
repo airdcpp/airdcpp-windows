@@ -2124,6 +2124,7 @@ void MainFrame::initCmdBar() {
 	m_CmdBar.m_arrCommand.Add(IDC_CDMDEBUG_WINDOW);
 	m_CmdBar.m_arrCommand.Add(IDC_SYSTEM_LOG);
 	m_CmdBar.m_arrCommand.Add(IDC_AUTOSEARCH);
+	m_CmdBar.m_arrCommand.Add(IDC_EXTENSIONS);
 	m_CmdBar.m_arrCommand.Add(IDC_HASH_PROGRESS);
 	m_CmdBar.m_arrCommand.Add(ID_APP_ABOUT);
 	m_CmdBar.m_arrCommand.Add(ID_WIZARD);

@@ -1026,9 +1026,7 @@ bool ChatFrameBase::checkCommand(const tstring& aCmd, tstring& param, tstring& m
 	else if (stricmp(cmd.c_str(), _T("aspopnext")) == 0) {
 		AutoSearchManager::getInstance()->maybePopSearchItem(GET_TICK(), true);
 	}
-	else if (stricmp(cmd.c_str(), _T("extensions")) == 0) {
-		ExtensionsFrame::openWindow();
-	} else {
+	else {
 		return checkFrameCommand(cmd, param, message, status, thirdPerson);
 	}
 
