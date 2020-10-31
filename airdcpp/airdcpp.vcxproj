@@ -219,6 +219,7 @@
     <ClCompile Include="airdcpp\DirectSearch.cpp" />
     <ClCompile Include="airdcpp\ErrorCollector.cpp" />
     <ClCompile Include="airdcpp\GroupedSearchResult.cpp" />
+    <ClCompile Include="airdcpp\Hasher.cpp" />
     <ClCompile Include="airdcpp\IgnoreManager.cpp" />
     <ClCompile Include="airdcpp\MessageCache.cpp" />
     <ClCompile Include="airdcpp\MessageHighlight.cpp" />
@@ -346,6 +347,7 @@
     <ClInclude Include="airdcpp\DupeType.h" />
     <ClInclude Include="airdcpp\ErrorCollector.h" />
     <ClInclude Include="airdcpp\GroupedSearchResult.h" />
+    <ClInclude Include="airdcpp\Hasher.h" />
     <ClInclude Include="airdcpp\HashManagerListener.h" />
     <ClInclude Include="airdcpp\MessageHighlight.h" />
     <ClInclude Include="airdcpp\StreamBase.h" />

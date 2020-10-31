@@ -36,6 +36,7 @@
 #include "ScopedFunctor.h"
 #include "SearchManager.h"
 #include "SearchResult.h"
+#include "SFVReader.h"
 #include "ShareManager.h"
 #include "SimpleXMLReader.h"
 #include "Transfer.h"
