@@ -245,7 +245,7 @@ public:
 
 	bool nextResult(bool prev) noexcept;
 
-	unique_ptr<SearchQuery> curSearch = nullptr;
+	unique_ptr<SearchQuery> curSearch;
 
 	bool isCurrentSearchPath(const string& path) const noexcept;
 	size_t getResultCount() const noexcept { return searchResults.size(); }
