@@ -167,6 +167,7 @@ private:
 
 	void initLocalExtensions() noexcept;
 	void updateList() noexcept;
+	void reload() noexcept;
 	void addEntry(const ItemInfo* ii) noexcept;
 	void updateEntry(const ItemInfo* ii) noexcept;
 
@@ -200,6 +201,9 @@ private:
 	unique_ptr<HttpDownload> httpDownload;
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept override;
+
+	void on(webserver::ExtensionManagerListener::Started) noexcept override;
+	void on(webserver::ExtensionManagerListener::Stopped) noexcept override;
 
 	void on(webserver::ExtensionManagerListener::ExtensionAdded, const webserver::ExtensionPtr& e) noexcept override;
 	void on(webserver::ExtensionManagerListener::ExtensionStateUpdated, const Extension*) noexcept override;
