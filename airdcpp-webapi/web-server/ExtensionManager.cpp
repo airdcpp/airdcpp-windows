@@ -60,7 +60,14 @@ namespace webserver {
 			RLock l(cs);
 			for (const auto& ext: extensions) {
 				ext->removeListeners();
-				ext->stop();
+
+				if (ext->isManaged()) {
+					continue;
+				}
+
+				if (!ext->stop()) {
+					wsm->log("Failed to stop the extension " + ext->getName(), LogMessage::SEV_ERROR);
+				}
 			}
 		}
 

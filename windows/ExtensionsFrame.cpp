@@ -332,7 +332,9 @@ void ExtensionsFrame::updateEntry(const ItemInfo* ii) noexcept {
 }
 
 void ExtensionsFrame::onStopExtension(const ItemInfo* ii) noexcept {
-	ii->ext->stop();
+	if (!ii->ext->stop()) {
+		updateStatusAsync(Text::toT("Failed to stop the extension"), LogMessage::SEV_ERROR);
+	}
 }
 
 void ExtensionsFrame::onStartExtension(const ItemInfo* ii) noexcept {
@@ -346,7 +348,11 @@ void ExtensionsFrame::onStartExtension(const ItemInfo* ii) noexcept {
 }
 
 void ExtensionsFrame::onRemoveExtension(const ItemInfo* ii) noexcept {
-	getExtensionManager().removeExtension(ii->ext);
+	try {
+		getExtensionManager().removeExtension(ii->ext);
+	} catch (const Exception& e) {
+		updateStatusAsync(Text::toT(e.what()), LogMessage::SEV_ERROR);
+	}
 }
 
 void ExtensionsFrame::onUpdateExtension(const ItemInfo* ii) noexcept {
