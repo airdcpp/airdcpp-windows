@@ -399,7 +399,7 @@ namespace webserver {
 		if(endpoint_tls.is_listening())
 			endpoint_tls.stop_listening();
 
-		disconnectSockets("Shutting down");
+		disconnectSockets(STRING(WEB_SERVER_SHUTTING_DOWN));
 
 		bool hasSockets = false;
 

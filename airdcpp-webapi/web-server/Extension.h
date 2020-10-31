@@ -98,6 +98,7 @@ namespace webserver {
 		ExtensionSettingItem::List getSettings() const noexcept;
 		ExtensionSettingItem* getSetting(const string& aKey) noexcept;
 		void resetSettings() noexcept;
+		void resetSession() noexcept;
 
 		typedef map<string, json> SettingValueMap;
 		void setSettingValues(const SettingValueMap& aValues, const UserList& aUserReferences);

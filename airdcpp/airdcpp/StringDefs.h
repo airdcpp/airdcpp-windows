@@ -1858,6 +1858,11 @@ enum Strings { // @DontAdd
 
 	WEB_SERVER_SETUP_FAILED, // "Failed to set up %1% server on port %2%: %3% (is the port in use by another application?)"
 	WEB_SERVER_MULTIPLE_FAILED_ATTEMPTS, // "Multiple failed login attempts detected from IP %1%"
+	WEB_SERVER_SHUTTING_DOWN, // "Shutting down"
+
+	WEB_SESSIONS_INVALID_USER_PW, // "Invalid username or password"
+	WEB_SESSIONS_TOO_MANY_ATTEMPTS, // "Too many failed login attempts detected (wait for a while before retrying)"
+	WEB_SESSIONS_INVALID_TOKEN, // "Invalid authorization token (session expired?)"
 
 	WEB_CFG_PORT, // "Port"
 	WEB_CFG_BIND_ADDRESS, // "Bind address"
@@ -1882,6 +1887,11 @@ enum Strings { // @DontAdd
 	WEB_EXTENSION_TIMED_OUT, // "Extension %1% timed out and was restarted"
 	WEB_EXTENSION_ENGINE_NO_CONFIG, // "Scripting engine %1% is not configured in application settings"
 	WEB_EXTENSION_ENGINE_NOT_INSTALLED, // "Scripting engine %1% is not installed on the system (tested commands: %2%)"
+	WEB_EXTENSION_SERVER_NOT_RUNNING, // "Web server is not running"
+	WEB_EXTENSION_HTTP_NOT_ENABLED, // "Extensions require the (plain) HTTP protocol to be enabled"
+	WEB_EXTENSION_OS_UNSUPPORTED, // "Extension is not compatible with your operating system (check the extension documentation for more information)"
+	WEB_EXTENSION_API_VERSION_UNSUPPORTED, // "Extension requires API version %1% while the application uses version %2%"
+	WEB_EXTENSION_API_FEATURES_UNSUPPORTED, // "Extension requires API feature level %1% or newer while the application supports feature level %2%"
 
 	WEB_EXTENSION_CHECKSUM_MISMATCH, // "Checksum validation mismatch"
 	WEB_EXTENSION_DOWNLOAD_FAILED, // "Download failed"

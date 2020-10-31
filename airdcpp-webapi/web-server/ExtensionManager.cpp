@@ -73,14 +73,15 @@ namespace webserver {
 			return;
 		}
 
-		aSocket->getSession()->getServer()->addAsyncTask([=] {
+		const auto session = aSocket->getSession();
+		aSocket->getSession()->getServer()->addAsyncTask([session, this] {
 			ExtensionPtr extension = nullptr;
 
 			// Remove possible unmanaged extensions matching this session
 			{
 				RLock l(cs);
 				auto i = find_if(extensions.begin(), extensions.end(), [&](const ExtensionPtr& aExtension) {
-					return aExtension->getSession() == aSocket->getSession();
+					return aExtension->getSession() == session;
 				});
 
 				if (i == extensions.end() || (*i)->isManaged()) {
@@ -121,6 +122,8 @@ namespace webserver {
 
 			// Remove from disk
 			File::removeDirectoryForced(aExtension->getRootPath());
+		} else {
+			aExtension->resetSession();
 		}
 
 		// Remove from list

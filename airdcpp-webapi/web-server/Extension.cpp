@@ -135,7 +135,7 @@ namespace webserver {
 				const StringList osList = *osJson;
 				auto currentOs = SystemUtil::getPlatform();
 				if (std::find(osList.begin(), osList.end(), currentOs) == osList.end() && currentOs != "other") {
-					throw Exception("Extension is not compatible with your operating system (check the extension documentation for more information)");
+					throw Exception(STRING(WEB_EXTENSION_OS_UNSUPPORTED));
 				}
 			}
 		}
@@ -145,11 +145,11 @@ namespace webserver {
 
 	void Extension::checkCompatibility() {
 		if (apiVersion != API_VERSION) {
-			throw Exception("Extension requires API version " + Util::toString(apiVersion) + " while the application uses version " + Util::toString(API_VERSION));
+			throw Exception(STRING_F(WEB_EXTENSION_API_VERSION_UNSUPPORTED, Util::toString(apiVersion) % Util::toString(API_VERSION)));
 		}
 
 		if (minApiFeatureLevel > API_FEATURE_LEVEL) {
-			throw Exception("Extension requires API feature level " + Util::toString(minApiFeatureLevel) + " or newer while the application uses version " + Util::toString(API_FEATURE_LEVEL));
+			throw Exception(STRING_F(WEB_EXTENSION_API_FEATURES_UNSUPPORTED, Util::toString(minApiFeatureLevel) % Util::toString(API_FEATURE_LEVEL)));
 		}
 	}
 
@@ -244,8 +244,12 @@ namespace webserver {
 			return;
 		}
 
+		if (!wsm->isRunning()) {
+			throw Exception(STRING(WEB_EXTENSION_SERVER_NOT_RUNNING));
+		}
+
 		if (!wsm->isListeningPlain()) {
-			throw Exception("Extensions require the (plain) HTTP protocol to be enabled");
+			throw Exception(STRING(WEB_EXTENSION_HTTP_NOT_ENABLED));
 		}
 
 		if (isRunning()) {
@@ -372,6 +376,13 @@ namespace webserver {
 		}
 	}
 
+	void Extension::resetSession() noexcept {
+		if (session) {
+			session->getServer()->getUserManager().logout(session);
+			session = nullptr;
+		}
+	}
+
 	void Extension::onStopped(bool aFailed) noexcept {
 		fire(ExtensionListener::ExtensionStopped(), aFailed);
 		
@@ -381,11 +392,7 @@ namespace webserver {
 		}
 		dcdebug("\n");
 
-		if (session) {
-			session->getServer()->getUserManager().logout(session);
-			session = nullptr;
-		}
-
+		resetSession();
 		resetProcessState();
 		resetSettings();
 
