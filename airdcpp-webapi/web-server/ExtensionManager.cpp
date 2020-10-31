@@ -52,14 +52,19 @@ namespace webserver {
 
 	void ExtensionManager::on(WebServerManagerListener::Started) noexcept {
 		load();
+		fire(ExtensionManagerListener::Started());
 	}
 
 	void ExtensionManager::on(WebServerManagerListener::Stopping) noexcept {
-		RLock l(cs);
-		for (const auto& ext: extensions) {
-			ext->removeListeners();
-			ext->stop();
+		{
+			RLock l(cs);
+			for (const auto& ext: extensions) {
+				ext->removeListeners();
+				ext->stop();
+			}
 		}
+
+		fire(ExtensionManagerListener::Stopped());
 	}
 
 	void ExtensionManager::on(WebServerManagerListener::Stopped) noexcept {

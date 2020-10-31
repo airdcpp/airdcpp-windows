@@ -36,6 +36,9 @@ namespace webserver {
 		typedef X<4> InstallationSucceeded;
 		typedef X<5> InstallationFailed;
 
+		typedef X<6> Started;
+		typedef X<7> Stopped;
+
 		virtual void on(ExtensionAdded, const ExtensionPtr&) noexcept { }
 		virtual void on(ExtensionStateUpdated, const Extension*) noexcept { }
 		virtual void on(ExtensionRemoved, const ExtensionPtr&) noexcept { }
@@ -43,6 +46,9 @@ namespace webserver {
 		virtual void on(InstallationStarted, const string& /*installId*/) noexcept { }
 		virtual void on(InstallationSucceeded, const string& /*installId*/, const ExtensionPtr&, bool /*updated*/) noexcept { }
 		virtual void on(InstallationFailed, const string& /*installId*/, const string& /*error*/) noexcept { }
+
+		virtual void on(Started) noexcept { }
+		virtual void on(Stopped) noexcept { }
 	};
 
 }
