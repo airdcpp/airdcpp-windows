@@ -203,8 +203,7 @@ namespace dcpp {
 					originalSize = wi.fileSize;
 					dcassert(curDevID >= 0);
 					w.pop_front();
-				}
-				else {
+				} else {
 					fname.clear();
 				}
 			}
@@ -259,10 +258,10 @@ namespace dcpp {
 								Thread::sleep(minTime - (now - lastRead));
 							}
 							lastRead = lastRead + minTime;
-						}
-						else {
+						} else {
 							lastRead = GET_TICK();
 						}
+
 						tt.update(buf, n);
 
 						if (fileCRC) {
@@ -278,16 +277,16 @@ namespace dcpp {
 							lastSpeed = (size - sizeLeft) * 1000 / (end - start);
 
 						return !stopping;
-						});
+					});
 
 					tt.finalize();
 
-					failed = fileCRC && crc32.getValue() != *fileCRC;
+					failed = (fileCRC && crc32.getValue() != *fileCRC) || stopping;
 
 					uint64_t end = GET_TICK();
 					int64_t averageSpeed = 0;
 
-					if (!failed && !stopping) {
+					if (!failed) {
 						totalSizeHashed += size;
 						dirSizeHashed += size;
 
@@ -305,8 +304,7 @@ namespace dcpp {
 						if (failed) {
 							HashManager::getInstance()->logHasher(STRING(ERROR_HASHING) + fname + ": " + STRING(ERROR_HASHING_CRC32), hasherID, true, true);
 							HashManager::getInstance()->fire(HashManagerListener::FileFailed(), fname, fi);
-						}
-						else {
+						} else {
 							fi = HashedFile(tt.getRoot(), timestamp, size);
 							HashManager::getInstance()->hasherDone(fname, pathLower, tt, averageSpeed, fi, hasherID);
 						}
@@ -360,8 +358,7 @@ namespace dcpp {
 						if (totalDirsHashed == 0) {
 							onDirHashed();
 							//log(STRING(HASHING_FINISHED_TOTAL_PLAIN), LogMessage::SEV_INFO);
-						}
-						else {
+						} else {
 							onDirHashed();
 							HashManager::getInstance()->logHasher(STRING_F(HASHING_FINISHED_TOTAL, totalFilesHashed % Util::formatBytes(totalSizeHashed) % totalDirsHashed %
 								Util::formatTime(totalHashTime / 1000, true) %
