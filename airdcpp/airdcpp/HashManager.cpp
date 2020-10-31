@@ -92,9 +92,18 @@ bool HashManager::Hasher::hasFile(const string& aPath) const noexcept {
 	return w.find(aPath) != w.end();
 }
 
+bool HashManager::Hasher::hasDevice(int64_t aDeviceId) const noexcept {
+	return devices.find(aDeviceId) != devices.end(); 
+}
+
+bool HashManager::Hasher::hasDevices() const noexcept {
+	return !devices.empty(); 
+}
+
 bool HashManager::hashFile(const string& filePath, const string& pathLower, int64_t size) {
-	if(aShutdown) //we cant allow adding more hashers if we are shutting down, it will result in infinite loop
+	if (isShutdown) { //we cant allow adding more hashers if we are shutting down, it will result in infinite loop
 		return false;
+	}
 
 	Hasher* h = nullptr;
 
@@ -913,7 +922,7 @@ HashManager::HashStore::~HashStore() {
 }
 
 bool HashManager::Hasher::hashFile(const string& fileName, const string& filePathLower, int64_t size, devid aDeviceId) noexcept {
-	//always locked
+	// always locked
 	auto ret = w.emplace_sorted(filePathLower, fileName, size, aDeviceId);
 	if (ret.second) {
 		devices[(*ret.first).deviceId]++; 
@@ -1030,20 +1039,27 @@ void HashManager::startup(StepFunction stepF, ProgressFunction progressF, Messag
 
 void HashManager::stop() noexcept {
 	WLock l(Hasher::hcs);
-	for (auto h: hashers)
-		h->clear();
+	for (auto h: hashers) {
+		h->stop();
+	}
+}
+
+void HashManager::Hasher::stop() noexcept {
+	clear();
+	stopping = true;
 }
 
 void HashManager::Hasher::shutdown() { 
-	closing = true; 
-	clear();
-	if(paused) 
-		resume(); 
+	stop();
+	if (paused) {
+		resume();
+	}
+
 	s.signal(); 
 }
 
 void HashManager::shutdown(ProgressFunction progressF) noexcept {
-	aShutdown = true;
+	isShutdown = true;
 
 	{
 		WLock l(Hasher::hcs);
@@ -1119,10 +1135,14 @@ int HashManager::Hasher::run() {
 	for(;;) {
 		s.wait();
 		instantPause(); //suspend the thread...
-		if(closing) {
-			WLock l(hcs);
-			HashManager::getInstance()->removeHasher(this);
-			break;
+		if (stopping) {
+			if (HashManager::getInstance()->isShutdown) {
+				WLock l(hcs);
+				HashManager::getInstance()->removeHasher(this);
+				break;
+			} else {
+				stopping = false;
+			}
 		}
 		
 		int64_t originalSize = 0;
@@ -1158,8 +1178,10 @@ int HashManager::Hasher::run() {
 					initialDir = Util::getFilePath(fname);
 				}
 
-				if (dirChanged)
+				if (dirChanged) {
 					sfv.loadPath(Util::getFilePath(fname));
+				}
+
 				uint64_t start = GET_TICK();
 
 				File f(fname, File::READ, File::OPEN);
@@ -1199,8 +1221,9 @@ int HashManager::Hasher::run() {
 					}
 					tt.update(buf, n);
 				
-					if(fileCRC)
+					if (fileCRC) {
 						crc32(buf, n);
+					}
 
 					sizeLeft -= n;
 					uint64_t end = GET_TICK();
@@ -1210,7 +1233,7 @@ int HashManager::Hasher::run() {
 					if(end > start)
 						lastSpeed = (size - sizeLeft)*1000 / (end -start);
 
-					return !closing;
+					return !stopping;
 				});
 
 				tt.finalize();
@@ -1220,7 +1243,7 @@ int HashManager::Hasher::run() {
 				uint64_t end = GET_TICK();
 				int64_t averageSpeed = 0;
 
-				if (!failed) {
+				if (!failed && !stopping) {
 					totalSizeHashed += size;
 					dirSizeHashed += size;
 
@@ -1234,12 +1257,14 @@ int HashManager::Hasher::run() {
 					averageSpeed = size * 1000 / (end - start);
 				}
 
-				if(failed) {
-					getInstance()->logHasher(STRING(ERROR_HASHING) + fname + ": " + STRING(ERROR_HASHING_CRC32), hasherID, true, true);
-					getInstance()->fire(HashManagerListener::FileFailed(), fname, fi);
-				} else {
-					fi = HashedFile(tt.getRoot(), timestamp, size);
-					getInstance()->hasherDone(fname, pathLower, tt, averageSpeed, fi, hasherID);
+				if (!stopping) {
+					if (failed) {
+						getInstance()->logHasher(STRING(ERROR_HASHING) + fname + ": " + STRING(ERROR_HASHING_CRC32), hasherID, true, true);
+						getInstance()->fire(HashManagerListener::FileFailed(), fname, fi);
+					} else {
+						fi = HashedFile(tt.getRoot(), timestamp, size);
+						getInstance()->hasherDone(fname, pathLower, tt, averageSpeed, fi, hasherID);
+					}
 				}
 			} catch(const FileException& e) {
 				totalBytesLeft -= sizeLeft;
@@ -1334,7 +1359,7 @@ int HashManager::Hasher::run() {
 	return 0;
 }
 
-void HashManager::removeHasher(Hasher* aHasher) {
+void HashManager::removeHasher(const Hasher* aHasher) {
 	hashers.erase(remove(hashers.begin(), hashers.end(), aHasher), hashers.end());
 }
 

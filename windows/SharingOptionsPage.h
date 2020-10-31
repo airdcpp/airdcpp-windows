@@ -54,8 +54,6 @@ public:
 	
 protected:
 	CComboBox ctrlThreadedRefresh;
-	CComboBox ctrlMonitoringMode;
-	CComboBox ctrlDelayMode;
 
 	static Item items[];
 	static TextItem texts[];

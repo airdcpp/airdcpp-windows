@@ -147,6 +147,7 @@ private:
 		bool isRunning() const noexcept;
 		
 		void clear() noexcept;
+		void stop() noexcept;
 
 		void stopHashing(const string& baseDir) noexcept;
 		int run();
@@ -154,14 +155,14 @@ private:
 		void shutdown();
 
 		bool hasFile(const string& aPath) const noexcept;
-		bool hasDevice(int64_t aDeviceId) const noexcept { return devices.find(aDeviceId) != devices.end(); }
-		bool hasDevices() const noexcept { return !devices.empty(); }
+		bool hasDevice(int64_t aDeviceId) const noexcept;
+		bool hasDevices() const noexcept;
 		int64_t getTimeLeft() const noexcept;
 
 		int64_t getBytesLeft() const noexcept { return totalBytesLeft; }
-		static SharedMutex hcs;
 
 		const int hasherID;
+		static SharedMutex hcs;
 	private:
 		void clearStats() noexcept;
 
@@ -189,7 +190,7 @@ private:
 		Semaphore s;
 		void removeDevice(devid aDevice) noexcept;
 
-		bool closing = false;
+		bool stopping = false;
 		bool running = false;
 		bool paused;
 
@@ -216,8 +217,8 @@ private:
 		map<devid, int> devices;
 	};
 
-	friend class Hasher;
-	void removeHasher(Hasher* aHasher);
+	// friend class Hasher;
+	void removeHasher(const Hasher* aHasher);
 	void logHasher(const string& aMessage, int aHasherID, bool aIsError, bool aLock);
 	static void log(const string& aMsg, LogMessage::Severity aSeverity) noexcept;
 
@@ -280,7 +281,7 @@ private:
 	friend class HashLoader;
 
 	bool hashFile(const string& filePath, const string& pathLower, int64_t size);
-	bool aShutdown = false;
+	bool isShutdown = false;
 
 	typedef vector<Hasher*> HasherList;
 	HasherList hashers;

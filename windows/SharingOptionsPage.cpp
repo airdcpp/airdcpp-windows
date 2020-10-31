@@ -95,9 +95,4 @@ void SharingOptionsPage::write() {
 	PropPage::write((HWND)*this, items, listItems, GetDlgItem(IDC_SHARINGLIST));
 	
 	settings->set(SettingsManager::REFRESH_THREADING, ctrlThreadedRefresh.GetCurSel());
-
-	monitoringMode = ctrlMonitoringMode.GetCurSel();
-	//set to the defaults
-	//if(SETTING(SKIPLIST_SHARE).empty())
-	//	settings->set(SettingsManager::SHARE_SKIPLIST_USE_REGEXP, true);
 }
