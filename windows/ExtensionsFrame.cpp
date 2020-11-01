@@ -332,8 +332,10 @@ void ExtensionsFrame::updateEntry(const ItemInfo* ii) noexcept {
 }
 
 void ExtensionsFrame::onStopExtension(const ItemInfo* ii) noexcept {
-	if (!ii->ext->stop()) {
-		updateStatusAsync(Text::toT("Failed to stop the extension"), LogMessage::SEV_ERROR);
+	try {
+		ii->ext->stopThrow();
+	} catch (const Exception& e) {
+		updateStatusAsync(Text::toT(e.what()), LogMessage::SEV_ERROR);
 	}
 }
 
@@ -341,7 +343,7 @@ void ExtensionsFrame::onStartExtension(const ItemInfo* ii) noexcept {
 	auto wsm = WebServerManager::getInstance();
 
 	try {
-		ii->ext->start(getExtensionManager().getStartCommand(ii->ext->getEngines()), wsm);
+		ii->ext->startThrow(getExtensionManager().getStartCommandThrow(ii->ext->getEngines()), wsm);
 	} catch (const Exception& e) {
 		updateStatusAsync(Text::toT(e.what()), LogMessage::SEV_ERROR);
 	}
@@ -349,7 +351,7 @@ void ExtensionsFrame::onStartExtension(const ItemInfo* ii) noexcept {
 
 void ExtensionsFrame::onRemoveExtension(const ItemInfo* ii) noexcept {
 	try {
-		getExtensionManager().removeExtension(ii->ext);
+		getExtensionManager().uninstallLocalExtensionThrow(ii->ext);
 	} catch (const Exception& e) {
 		updateStatusAsync(Text::toT(e.what()), LogMessage::SEV_ERROR);
 	}
@@ -380,7 +382,7 @@ void ExtensionsFrame::onConfigExtension(const ItemInfo* ii) noexcept {
 		}
 
 		UserList userReferences;
-		ii->ext->setSettingValues(values, userReferences);
+		ii->ext->setValidatedSettingValues(values, userReferences);
 	}
 }
 

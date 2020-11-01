@@ -982,44 +982,40 @@ private:
 typedef shared_ptr<ShareManager::ShareLoader> ShareLoaderPtr;
 typedef vector<ShareLoaderPtr> LoaderList;
 
-bool ShareManager::loadCache(function<void(float)> progressF) noexcept{
+bool ShareManager::loadCache(function<void(float)> progressF) noexcept {
 	HashManager::HashPauser pauser;
 
 	Util::migrate(Util::getPath(Util::PATH_SHARECACHE), "ShareCache_*");
 
-	// Get all cache XMLs
-	StringList fileList = File::findFiles(Util::getPath(Util::PATH_SHARECACHE), "ShareCache_*", File::TYPE_FILE);
-
-	if (fileList.empty()) {
-		return rootPaths.empty();
-	}
-
 	LoaderList cacheLoaders;
 
 	// Create loaders
-	for (const auto& p : fileList) {
-		if (Util::getFileExt(p) == ".xml") {
-			// Find the corresponding directory pointer for this path
-			auto rp = find_if(rootPaths | map_values, [&p](const Directory::Ptr& aDir) {
-				return Util::stricmp(aDir->getRoot()->getCacheXmlPath(), p) == 0; 
-			});
-
-			if (rp.base() != rootPaths.end()) {
-				try {
-					auto loader = std::make_shared<ShareLoader>(rp.base()->first, *rp, *bloom.get());
-					cacheLoaders.emplace_back(loader);
-					continue;
-				} catch (...) {}
-			}
+	for (const auto& rp: rootPaths) {
+		try {
+			auto loader = std::make_shared<ShareLoader>(rp.first, rp.second, *bloom.get());
+			cacheLoaders.emplace_back(loader);
+		} catch (const FileException&) {
+			log(STRING_F(SHARE_CACHE_FILE_MISSING, rp.first), LogMessage::SEV_ERROR);
+			return false;
 		}
-
-		// No use for this cache file
-		File::deleteFile(p);
 	}
 
-	// XML missing for some of the roots?
-	if (cacheLoaders.size() < rootPaths.size()) {
-		return false;
+	{
+		// Remove obsolete cache files
+		auto fileList = File::findFiles(Util::getPath(Util::PATH_SHARECACHE), "ShareCache_*", File::TYPE_FILE);
+		for (const auto& p: fileList) {
+			auto rp = find_if(cacheLoaders, [&p](const ShareLoaderPtr& aLoader) {
+				return p == aLoader->xmlPath;
+			});
+
+			if (rp == cacheLoaders.end()) {
+				File::deleteFile(p);
+			}
+		}
+	}
+
+	if (cacheLoaders.empty()) {
+		return true;
 	}
 
 	{

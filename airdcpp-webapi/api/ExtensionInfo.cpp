@@ -69,7 +69,7 @@ namespace webserver {
 	api_return ExtensionInfo::handleStartExtension(ApiRequest& aRequest) {
 		try {
 			auto server = aRequest.getSession()->getServer();
-			extension->start(server->getExtensionManager().getStartCommand(extension->getEngines()), server);
+			extension->startThrow(server->getExtensionManager().getStartCommandThrow(extension->getEngines()), server);
 		} catch (const Exception& e) {
 			aRequest.setResponseErrorStr(e.what());
 			return websocketpp::http::status_code::internal_server_error;
@@ -79,7 +79,13 @@ namespace webserver {
 	}
 
 	api_return ExtensionInfo::handleStopExtension(ApiRequest& aRequest) {
-		extension->stop();
+		try {
+			extension->stopThrow();
+		} catch (const Exception& e) {
+			aRequest.setResponseErrorStr(e.what());
+			return websocketpp::http::status_code::internal_server_error;
+		}
+
 		return websocketpp::http::status_code::no_content;
 	}
 
@@ -123,7 +129,8 @@ namespace webserver {
 			settings[elem.key()] = SettingUtils::validateValue(elem.value(), *setting, &userReferences);
 		}
 
-		extension->setSettingValues(settings, userReferences);
+		// Update
+		extension->setValidatedSettingValues(settings, userReferences);
 		return websocketpp::http::status_code::no_content;
 	}
 
