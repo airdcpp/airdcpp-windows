@@ -4661,6 +4661,14 @@ public:
 
 // Note: You must #include <atlhost.h> to use these classes
 
+#ifdef __cpp_concepts
+  template<typename T>
+  concept has__GetSinkMapFinder = requires(T t)
+  {
+	t._GetSinkMapFinder();
+  };
+#endif
+
 template <class T, class TBase = CPropertyPageWindow>
 class ATL_NO_VTABLE CAxPropertyPageImpl : public CPropertyPageImpl< T, TBase >
 {
@@ -4941,7 +4949,11 @@ public:
 			return S_OK;
 		}
 		HRESULT hRet = E_NOTIMPL;
+#ifdef __cpp_concepts
+		if constexpr(has__GetSinkMapFinder<T>)
+#else
 		__if_exists(T::_GetSinkMapFinder)
+#endif
 		{
 			T* pT = static_cast<T*>(this);
 			hRet = AtlAdviseSinkMap(pT, bAdvise);

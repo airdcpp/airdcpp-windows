@@ -24,11 +24,11 @@
 #endif
 
 #ifdef _ATL_NO_COMMODULE
-	#error WTL requires that _ATL_NO_COMMODULE is not defined
+	#error WTL doesn't support _ATL_NO_COMMODULE
 #endif
 
 #ifdef _ATL_NO_WIN_SUPPORT
-	#error WTL requires that _ATL_NO_WIN_SUPPORT is not defined
+	#error WTL doesn't support _ATL_NO_WIN_SUPPORT
 #endif
 
 #if (_MSC_VER < 1400)
@@ -572,7 +572,7 @@ namespace GenericWndClass
 ///////////////////////////////////////////////////////////////////////////////
 // CMessageFilter - Interface for message filter support
 
-class CMessageFilter
+class ATL_NO_VTABLE CMessageFilter
 {
 public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg) = 0;
@@ -582,7 +582,7 @@ public:
 ///////////////////////////////////////////////////////////////////////////////
 // CIdleHandler - Interface for idle processing
 
-class CIdleHandler
+class ATL_NO_VTABLE CIdleHandler
 {
 public:
 	virtual BOOL OnIdle() = 0;

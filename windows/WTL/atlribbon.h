@@ -3152,6 +3152,14 @@ typedef struct
 ///////////////////////////////////////////////////////////////////////////////
 // Ribbon frame classes
 
+#ifdef __cpp_concepts
+  template<typename T>
+  concept has_m_CmdBar = requires(T t)
+  {
+	t.m_CmdBar;
+  };
+#endif
+
 // CRibbonFrameWindowImplBase
 //
 template <class T, class TFrameImpl>
@@ -3166,7 +3174,11 @@ public:
 	CRibbonFrameWindowImplBase(bool bUseCommandBarBitmaps = true) : 
 			m_bUseCommandBarBitmaps(bUseCommandBarBitmaps), m_bWin7Fix(false)
 	{
+#ifdef __cpp_concepts
+		if constexpr(!has_m_CmdBar<T>)
+#else
 		__if_not_exists(T::m_CmdBar)
+#endif
 		{
 			m_bUseCommandBarBitmaps = false;
 		}
@@ -3196,11 +3208,19 @@ public:
 // Operations
 	bool UseCommandBarBitmaps(bool bUse)
 	{
+#ifdef __cpp_concepts
+		if constexpr(has_m_CmdBar<T>)
+#else
 		__if_exists(T::m_CmdBar)
+#endif
 		{
 			return m_bUseCommandBarBitmaps = bUse;
 		}
+#ifdef __cpp_concepts
+		else
+#else
 		__if_not_exists(T::m_CmdBar)
+#endif
 		{
 			(void)bUse;   // avoid level 4 warning
 			return false;
@@ -3359,14 +3379,22 @@ public:
 	// Implementation
 	HBITMAP GetCommandBarBitmap(UINT nCmdID)
 	{
+#ifdef __cpp_concepts
+		if constexpr(has_m_CmdBar<T>)
+#else
 		__if_exists (T::m_CmdBar)
+#endif
 		{
 			ATLASSERT(RunTimeHelper::IsVista());
 			T* pT =static_cast<T*>(this);
 			int nIndex = pT->m_CmdBar.m_arrCommand.Find((WORD&)nCmdID);
 			return (nIndex == -1) ? NULL : pT->m_CmdBar.m_arrVistaBitmap[nIndex];
 		}
+#ifdef __cpp_concepts
+		else
+#else
 		__if_not_exists (T::m_CmdBar)
+#endif
 		{
 			(void)nCmdID;   // avoid level 4 warning
 			return NULL;
