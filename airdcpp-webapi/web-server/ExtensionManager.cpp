@@ -115,7 +115,12 @@ namespace webserver {
 		for (const auto& path : directories) {
 			auto ext = loadLocalExtension(path);
 			if (ext && startExtensionImpl(ext)) {
-				wsm->log(STRING_F(WEB_EXTENSION_LOADED, ext->getName()), LogMessage::SEV_INFO);
+				auto isDebug = WEBCFG(EXTENSIONS_DEBUG_MODE).boolean();
+				auto message = isDebug ? 
+					STRING_F(WEB_EXTENSION_LOADED_DBG, ext->getName()) : 
+					STRING_F(WEB_EXTENSION_LOADED, ext->getName());
+
+				wsm->log(message, LogMessage::SEV_INFO);
 			}
 		}
 	}

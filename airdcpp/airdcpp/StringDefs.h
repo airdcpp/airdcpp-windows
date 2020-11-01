@@ -1873,6 +1873,7 @@ enum Strings { // @DontAdd
 	WEB_CFG_EXTENSIONS_DEBUG_MODE, // "Run extensions in debug mode"
 
 	WEB_EXTENSION_LOADED, // "Extension %1% was loaded"
+	WEB_EXTENSION_LOADED_DBG, // "Extension %1% was loaded (debug mode)"
 	WEB_EXTENSION_LOAD_ERROR_X, // "Failed to load the extension %1%: %2%"
 	WEB_EXTENSION_LOAD_ERROR, // "Failed to load the extension"
 	WEB_EXTENSION_START_ERROR, // "Failed to start the extension %1%: %2%"
