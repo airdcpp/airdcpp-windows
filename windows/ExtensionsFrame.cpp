@@ -316,7 +316,7 @@ LRESULT ExtensionsFrame::onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /
 void ExtensionsFrame::updateList() noexcept {
 	ctrlList.SetRedraw(FALSE);
 	ctrlList.DeleteAllItems();
-	for (auto& i : itemInfos) {
+	for (auto& i: itemInfos) {
 		addEntry(i.second.get());
 	}
 	ctrlList.SetRedraw(TRUE);
@@ -332,29 +332,34 @@ void ExtensionsFrame::updateEntry(const ItemInfo* ii) noexcept {
 }
 
 void ExtensionsFrame::onStopExtension(const ItemInfo* ii) noexcept {
-	try {
-		ii->ext->stopThrow();
-	} catch (const Exception& e) {
-		updateStatusAsync(Text::toT(e.what()), LogMessage::SEV_ERROR);
-	}
+	MainFrame::getMainFrame()->addThreadedTask([ext = ii->ext, this]{
+		try {
+			ext->stopThrow();
+		} catch (const Exception& e) {
+			updateStatusAsync(Text::toT(e.what()), LogMessage::SEV_ERROR);
+		}
+	});
 }
 
 void ExtensionsFrame::onStartExtension(const ItemInfo* ii) noexcept {
-	auto wsm = WebServerManager::getInstance();
-
-	try {
-		ii->ext->startThrow(getExtensionManager().getStartCommandThrow(ii->ext->getEngines()), wsm);
-	} catch (const Exception& e) {
-		updateStatusAsync(Text::toT(e.what()), LogMessage::SEV_ERROR);
-	}
+	MainFrame::getMainFrame()->addThreadedTask([ext = ii->ext, this] {
+		auto wsm = WebServerManager::getInstance();
+		try {
+			ext->startThrow(getExtensionManager().getStartCommandThrow(ext->getEngines()), wsm);
+		} catch (const Exception& e) {
+		  updateStatusAsync(Text::toT(e.what()), LogMessage::SEV_ERROR);
+		}
+	});
 }
 
 void ExtensionsFrame::onRemoveExtension(const ItemInfo* ii) noexcept {
-	try {
-		getExtensionManager().uninstallLocalExtensionThrow(ii->ext);
-	} catch (const Exception& e) {
-		updateStatusAsync(Text::toT(e.what()), LogMessage::SEV_ERROR);
-	}
+	MainFrame::getMainFrame()->addThreadedTask([ext = ii->ext, this] {
+		try {
+			getExtensionManager().uninstallLocalExtensionThrow(ext);
+		} catch (const Exception& e) {
+			updateStatusAsync(Text::toT(e.what()), LogMessage::SEV_ERROR);
+		}
+	});
 }
 
 void ExtensionsFrame::onUpdateExtension(const ItemInfo* ii) noexcept {
@@ -388,6 +393,10 @@ void ExtensionsFrame::onConfigExtension(const ItemInfo* ii) noexcept {
 
 
 void ExtensionsFrame::downloadExtensionList() noexcept {
+	if (httpDownload) {
+		return;
+	}
+
 	updateStatusAsync(TSTRING(EXTENSION_CATALOG_DOWNLOADING), LogMessage::SEV_INFO);
 	httpDownload.reset(new HttpDownload(
 		extensionUrl,
@@ -451,6 +460,10 @@ void ExtensionsFrame::onExtensionListDownloaded() noexcept {
 }
 
 void ExtensionsFrame::installExtension(const ItemInfo* ii) noexcept {
+	if (httpDownload) {
+		return;
+	}
+
 	auto wsm = WebServerManager::getInstance();
 	if (!wsm->isRunning()) {
 		updateStatusAsync(TSTRING(WEB_EXTENSION_SERVER_NOT_RUNNING), LogMessage::SEV_ERROR);
@@ -622,21 +635,16 @@ void ExtensionsFrame::on(webserver::ExtensionManagerListener::Stopped) noexcept 
 
 void ExtensionsFrame::on(webserver::ExtensionManagerListener::ExtensionAdded, const webserver::ExtensionPtr& e) noexcept {
 	callAsync([=] {
-		if (e->isManaged()) {
-			// Local extension
-			updateList();
+		auto i = itemInfos.find(e->getName());
+		if (i == itemInfos.end()) {
+			itemInfos.emplace(e->getName(), make_unique<ItemInfo>(e));
 		} else {
-			// Remote extension
-			auto i = itemInfos.find(e->getName());
-			if (i == itemInfos.end()) {
-				auto ret = itemInfos.emplace(e->getName(), make_unique<ItemInfo>(e));
-				addEntry(ret.first->second.get());
-			} else {
-				auto& ii = i->second;
-				ii->ext = e;
-				updateEntry(ii.get());
-			}
+			auto& ii = i->second;
+			ii->ext = e;
 		}
+
+		// Update grouping
+		updateList();
 	});
 }
 
