@@ -21,6 +21,7 @@
 #include "Resource.h"
 
 #include "LineDlg.h"
+#include "MainFrm.h"
 #include "WebServerPage.h"
 #include "WebUserDlg.h"
 
@@ -129,28 +130,43 @@ LRESULT WebServerPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	return TRUE;
 }
 
-void WebServerPage::applySettings() noexcept {
-	auto plainserverPort = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlPort)));
-	auto tlsServerPort = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlTlsPort)));
+bool WebServerPage::applySettings() noexcept {
+	bool needsRestart = false;
 
-	WEBCFG(PLAIN_PORT).setValue(plainserverPort);
-	WEBCFG(TLS_PORT).setValue(tlsServerPort);
+	{
+		auto plainserverPort = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlPort)));
+		if (plainserverPort != WEBCFG(PLAIN_PORT).num()) {
+			WEBCFG(PLAIN_PORT).setValue(plainserverPort);
+			needsRestart = true;
+		}
+	}
+
+	{
+		auto tlsServerPort = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlTlsPort)));
+		if (tlsServerPort != WEBCFG(TLS_PORT).num()) {
+			WEBCFG(TLS_PORT).setValue(tlsServerPort);
+			needsRestart = true;
+		}
+	}
 
 	{
 		const auto sel = ctrlBindHttp.GetCurSel();
-		if (sel != -1) {
+		if (sel != -1 && bindAdapters[sel].ip != WEBCFG(PLAIN_BIND).str()) {
 			WEBCFG(PLAIN_BIND).setValue(bindAdapters[sel].ip);
+			needsRestart = true;
 		}
 	}
 
 	{
 		const auto sel = ctrlBindHttps.GetCurSel();
-		if (sel != -1) {
+		if (sel != -1 && bindAdapters[sel].ip != WEBCFG(TLS_BIND).str()) {
 			WEBCFG(TLS_BIND).setValue(bindAdapters[sel].ip);
+			needsRestart = true;
 		}
 	}
 
 	webMgr->getUserManager().replaceWebUsers(webUserList);
+	return needsRestart;
 }
 
 LRESULT WebServerPage::onServerState(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -160,21 +176,27 @@ LRESULT WebServerPage::onServerState(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 
 		applySettings();
 
-		bool started = webMgr->start([this](const string& aError) { 
-			setLastError(aError);
+		MainFrame::getMainFrame()->addThreadedTask([this] {
+			bool started = webMgr->start([this](const string& aError) {
+				setLastError(aError);
+			});
+
+			if (!started) {
+				// There can be endpoint-specific listening errors already
+				if (lastError.empty()) {
+					setLastError(STRING(WEB_SERVER_INVALID_CONFIG));
+				}
+
+				updateState(STATE_STOPPED);
+			}
 		});
 
-		if (!started) {
-			// There can be endpoint-specific listening errors already
-			if (lastError.empty()) {
-				setLastError(STRING(WEB_SERVER_INVALID_CONFIG));
-			}
-			
-			updateState(STATE_STOPPED);
-		}
 	} else {
 		lastError.clear();
-		webserver::WebServerManager::getInstance()->stop();
+
+		MainFrame::getMainFrame()->addThreadedTask([this] {
+			webserver::WebServerManager::getInstance()->stop();
+		});
 	}
 
 	return 0;
@@ -249,7 +271,9 @@ LRESULT WebServerPage::onRemoveUser(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 }
 
 void WebServerPage::setLastError(const string& aError) noexcept {
-	lastError = Text::toT(aError);
+	callAsync([=] {
+		lastError = Text::toT(aError);
+	});
 }
 
 LRESULT WebServerPage::onSelChange(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
@@ -321,25 +345,7 @@ void WebServerPage::updateState(ServerState aNewState) noexcept {
 }
 
 void WebServerPage::write() {
-	auto plainserverPort = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlPort)));
-	auto tlsServerPort = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlTlsPort)));
-
-	auto needServerRestart = WEBCFG(PLAIN_PORT).num() != plainserverPort || WEBCFG(TLS_PORT).num() != tlsServerPort;
-
-	const auto errorF = [](const string& aError) {
-		LogManager::getInstance()->message(aError, LogMessage::SEV_ERROR, STRING(WEB_SERVER));
-	};
-
-	applySettings();
-	webMgr->save(errorF);
-
-	if (needServerRestart) {
-		if (webMgr->isRunning()) {
-			webMgr->getInstance()->stop();
-		}
-
-		webMgr->getInstance()->start(errorF);
-	}
+	needsRestartTask = applySettings();
 }
 
 void WebServerPage::addListItem(const webserver::WebUserPtr& aUser) noexcept {
@@ -354,6 +360,24 @@ webserver::WebUserList::iterator WebServerPage::getListUser(int aPos) noexcept {
 
 	return find_if(webUserList.begin(), webUserList.end(), [&data](const webserver::WebUserPtr& aUser) { 
 		return aUser.get() == data; 
+	});
+}
+
+Dispatcher::F WebServerPage::getThreadedTask() {
+	return Dispatcher::F([=] {
+		const auto errorF = [](const string& aError) {
+			LogManager::getInstance()->message(aError, LogMessage::SEV_ERROR, STRING(WEB_SERVER));
+		};
+
+		webMgr->save(errorF);
+
+		if (needsRestartTask) {
+			if (webMgr->isRunning()) {
+				webMgr->getInstance()->stop();
+			}
+
+			webMgr->getInstance()->start(errorF);
+		}
 	});
 }
 

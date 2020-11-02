@@ -61,7 +61,7 @@ namespace webserver {
 			for (const auto& ext: extensions) {
 				ext->removeListeners();
 
-				if (ext->isManaged()) {
+				if (!ext->isManaged()) {
 					continue;
 				}
 

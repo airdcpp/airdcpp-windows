@@ -59,8 +59,8 @@ public:
 	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 
 	// Common PropPage interface
-	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
-	void write();
+	PROPSHEETPAGE *getPSP() override { return (PROPSHEETPAGE *)*this; }
+	void write() override;
 protected:
 
 	enum ServerState {
@@ -91,7 +91,7 @@ protected:
 	AdapterInfoList bindAdapters;
 	void initBindAddresses() noexcept;
 
-	void applySettings() noexcept;
+	bool applySettings() noexcept;
 
 	void setLastError(const string& aError) noexcept;
 	void updateState(ServerState aNewState) noexcept;
@@ -104,9 +104,13 @@ protected:
 	void addListItem(const webserver::WebUserPtr& aUser) noexcept;
 	webserver::WebUserList::iterator getListUser(int aPos) noexcept;
 
-	void on(webserver::WebServerManagerListener::Started) noexcept;
-	void on(webserver::WebServerManagerListener::Stopped) noexcept;
-	void on(webserver::WebServerManagerListener::Stopping) noexcept;
+	void on(webserver::WebServerManagerListener::Started) noexcept override;
+	void on(webserver::WebServerManagerListener::Stopped) noexcept override;
+	void on(webserver::WebServerManagerListener::Stopping) noexcept override;
+
+	Dispatcher::F getThreadedTask() override;
+
+	bool needsRestartTask = false;
 };
 
 #endif
