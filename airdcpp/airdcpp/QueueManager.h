@@ -214,7 +214,7 @@ public:
 	void putDownload(Download* aDownload, bool aFinished, bool aNoAccess = false, bool aRotateQueue = false);
 	
 
-	void loadQueue(function<void (float)> progressF) noexcept;
+	void loadQueue(StartupLoader& aLoader) noexcept;
 
 	// Force will force bundle to be saved even when it's not dirty (not recommended as it may take a long time with huge queues)
 	void saveQueue(bool aForce) noexcept;

@@ -281,11 +281,7 @@ void initModules() {
 	RSSManager::newInstance();
 	PreviewAppManager::newInstance();
 	HublistManager::newInstance();
-}
-
-void loadModules() {
-	AutoSearchManager::getInstance()->load();
-	RSSManager::getInstance()->load();
+	webserver::WebServerManager::newInstance();
 }
 
 void destroyModules() {
@@ -314,6 +310,53 @@ void splashProgressF(float progress) {
 	WinUtil::splash->update(progress); 
 }
 
+Callback wizardFGetter(unique_ptr<SetupWizard>& wizard) {
+	return [&]() {
+		Semaphore s;
+		WinUtil::splash->callAsync([&] {
+			wizard = make_unique<SetupWizard>(true);
+			if (wizard->DoModal(/*m_hWnd*/) != IDOK) {
+				//the wizard was cancelled
+				wizard.reset(nullptr);
+			}
+			s.signal();
+		});
+
+		// wait for the wizard to finish
+		s.wait();
+	};
+}
+
+Callback moduleLoadFGetter(unique_ptr<MainFrame>& wndMain) {
+	return [&] {
+		// Core modules
+		AutoSearchManager::getInstance()->load();
+		RSSManager::getInstance()->load();
+
+		// Web server
+		if (webserver::WebServerManager::getInstance()->load(webErrorF)) {
+			auto webResourcePath = Util::getStartupParam("--web-resources");
+#ifdef _DEBUG
+			if (!webResourcePath) {
+				webResourcePath = Util::getParentDir(Util::getParentDir(Util::getAppFilePath())) + "installer\\Web-resources\\";
+			}
+#endif
+			WEBCFG(PLAIN_BIND).setDefaultValue("127.0.0.1");
+			WEBCFG(TLS_BIND).setDefaultValue("127.0.0.1");
+
+			auto started = webserver::WebServerManager::getInstance()->startup(
+				webErrorF,
+				webResourcePath ? *webResourcePath : Util::emptyString,
+				[&]() { wndMain->shutdown(); }
+			);
+
+			if (started) {
+				LogManager::getInstance()->message(STRING(WEB_SERVER_STARTED), LogMessage::SEV_INFO, STRING(WEB_SERVER));
+			}
+		}
+	};
+}
+
 #define FINAL_UPDATER_LOG Util::getPath(Util::PATH_USER_LOCAL) + "updater.log"
 static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 {
@@ -336,46 +379,11 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 			startup(
 				splashStrF,
 				questionF,
-				[&]() {
-					Semaphore s;
-					WinUtil::splash->callAsync([&] {
-						wizard = make_unique<SetupWizard>(true);
-						if (wizard->DoModal(/*m_hWnd*/) != IDOK) {
-							//the wizard was cancelled
-							wizard.reset(nullptr);
-						}
-						s.signal();
-					});
-
-					// wait for the wizard to finish
-					s.wait();
-				},
+				wizardFGetter(wizard),
 				splashProgressF,
 				initModules,
-				loadModules
+				moduleLoadFGetter(wndMain)
 			);
-
-			webserver::WebServerManager::newInstance();
-			if (webserver::WebServerManager::getInstance()->load(webErrorF)) {
-				auto webResourcePath = Util::getStartupParam("--web-resources");
-#ifdef _DEBUG
-				if (!webResourcePath) {
-					webResourcePath = Util::getParentDir(Util::getParentDir(Util::getAppFilePath())) + "installer\\Web-resources\\";
-				}
-#endif
-				WEBCFG(PLAIN_BIND).setDefaultValue("127.0.0.1");
-				WEBCFG(TLS_BIND).setDefaultValue("127.0.0.1");
-
-				auto started = webserver::WebServerManager::getInstance()->startup(
-					webErrorF,
-					webResourcePath ? *webResourcePath : Util::emptyString,
-					[&]() { wndMain->shutdown(); }
-				);
-				
-				if (started) {
-					LogManager::getInstance()->message(STRING(WEB_SERVER_STARTED), LogMessage::SEV_INFO, STRING(WEB_SERVER));
-				}
-			}
 
 			WinUtil::splash->update(STRING(LOADING_GUI));
 

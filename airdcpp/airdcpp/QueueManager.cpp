@@ -23,6 +23,7 @@
 #include "Bundle.h"
 #include "ClientManager.h"
 #include "ConnectionManager.h"
+#include "DCPlusPlus.h"
 #include "DebugManager.h"
 #include "DirectoryListing.h"
 #include "DirectoryListingManager.h"
@@ -1524,12 +1525,14 @@ bool QueueManager::checkBundleFinishedHooked(const BundlePtr& aBundle) noexcept 
 	{
 		RLock l (cs);
 		// Check if there are queued or non-moved files remaining
-		if (!aBundle->filesCompleted())
+		if (!aBundle->filesCompleted()) {
 			return false;
+		}
 
 		// In order to avoid notifications about adding the file in share...
-		if (aBundle->isFileBundle() && !aBundle->getFinishedFiles().empty())
+		if (aBundle->isFileBundle() && !aBundle->getFinishedFiles().empty()) {
 			isPrivate = aBundle->getFinishedFiles().front()->isSet(QueueItem::FLAG_PRIVATE);
+		}
 
 		hasNotifications = !aBundle->getFinishedNotifications().empty();
 	}
@@ -2372,7 +2375,7 @@ private:
 	QueueManager* qm;
 };
 
-void QueueManager::loadQueue(function<void (float)> progressF) noexcept {
+void QueueManager::loadQueue(StartupLoader& aLoader) noexcept {
 	setMatchers();
 
 	// migrate old bundles
@@ -2394,7 +2397,7 @@ void QueueManager::loadQueue(function<void (float)> progressF) noexcept {
 				}
 			}
 			loaded++;
-			progressF(static_cast<float>(loaded) / static_cast<float>(fileList.size()));
+			aLoader.progressF(static_cast<float>(loaded) / static_cast<float>(fileList.size()));
 		});
 	} catch (std::exception& e) {
 		log("Loading the queue failed: " + string(e.what()), LogMessage::SEV_INFO);
@@ -2423,9 +2426,9 @@ void QueueManager::loadQueue(function<void (float)> progressF) noexcept {
 	ShareManager::getInstance()->addListener(this);
 
 	auto finishedCount = getFinishedBundlesCount();
-	if (finishedCount > 500)
+	if (finishedCount > 500) {
 		log(STRING_F(BUNDLE_X_FINISHED_WARNING, finishedCount), LogMessage::SEV_WARNING);
-
+	}
 }
 
 static const string sFile = "File";
@@ -2633,14 +2636,14 @@ void QueueLoader::loadFinishedFile(StringPairList& attribs, bool) {
 }
 
 void QueueLoader::startTag(const string& name, StringPairList& attribs, bool simple) {
-	if(!inLegacyQueue && name == "Downloads") {
+	if (!inLegacyQueue && name == "Downloads") {
 		inLegacyQueue = true;
 	} else if (!inFileBundle && name == sFile) {
 		loadFileBundle(attribs, simple);
 	} else if (!inDirBundle && name == sBundle) {
 		loadDirectoryBundle(attribs, simple);
 	} else if (inLegacyQueue || inDirBundle || inFileBundle) {
-		if(!curFile && name == sDownload) {
+		if (!curFile && name == sDownload) {
 			loadQueueFile(attribs, simple);
 		} else if(curFile && name == sSegment) {
 			auto start = Util::toInt64(getAttrib(attribs, sStart, 0));
@@ -2683,7 +2686,7 @@ void QueueLoader::startTag(const string& name, StringPairList& attribs, bool sim
 
 void QueueLoader::endTag(const string& name) {
 	if (inLegacyQueue || inDirBundle || inFileBundle) {
-		if(name == "Downloads") {
+		if (name == "Downloads") {
 			inLegacyQueue = false;
 		} else if(name == sBundle) {
 			// Directory bundle
@@ -2695,8 +2698,8 @@ void QueueLoader::endTag(const string& name) {
 				qm->addLoadedBundle(curBundle);
 			}
 		} else if(name == sFile) {
-			// File bundle
 			ScopedFunctor([this] { curBundle = nullptr; });
+			// File bundle
 			curFileBundleInfo = FileBundleInfo();
 			inFileBundle = false;
 			if (!curBundle || curBundle->isEmpty())
@@ -2721,7 +2724,7 @@ string QueueManager::getBundlePath(QueueToken aBundleToken) const noexcept{
 }
 
 void QueueManager::noDeleteFileList(const string& path) noexcept {
-	if(!SETTING(KEEP_LISTS)) {
+	if (!SETTING(KEEP_LISTS)) {
 		protectedFileLists.push_back(path);
 	}
 }
@@ -2736,12 +2739,12 @@ void QueueManager::on(SearchManagerListener::SR, const SearchResultPtr& sr) noex
 		RLock l(cs);
 		fileQueue.findFiles(sr->getTTH(), matches);
 
-		for(const auto& q: matches) {
+		for (const auto& q: matches) {
 			if (!q->getBundle())
 				continue;
 
 			// Size compare to avoid popular spoof
-			if((SETTING(AUTO_ADD_SOURCE) || (q->getBundle()->getLastSearch() != 0 && static_cast<uint64_t>(q->getBundle()->getLastSearch() + 15*60*1000) > GET_TICK())) && q->getSize() == sr->getSize() && !q->isSource(sr->getUser())) {
+			if ((SETTING(AUTO_ADD_SOURCE) || (q->getBundle()->getLastSearch() != 0 && static_cast<uint64_t>(q->getBundle()->getLastSearch() + 15*60*1000) > GET_TICK())) && q->getSize() == sr->getSize() && !q->isSource(sr->getUser())) {
 				if (q->getBundle()->isDownloaded()) {
 					continue;
 				}

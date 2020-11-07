@@ -30,6 +30,12 @@ typedef function<void(float)> ProgressF;
 typedef function<void()> Callback;
 typedef function<bool(const string& /*Message*/, bool /*isQuestion*/, bool /*isError*/)> MessageF;
 
+struct StartupLoader {
+	StepF stepF;
+	ProgressF progressF;
+	MessageF messageF;
+};
+
 // This will throw Exception on fatal errors (such as hash database initialization errors)
 extern void startup(StepF stepF, MessageF messageF, Callback runWizard, ProgressF progressF, Callback moduleInitF = nullptr, Callback moduleLoadF = nullptr);
 

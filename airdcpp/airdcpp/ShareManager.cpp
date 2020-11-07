@@ -23,6 +23,7 @@
 #include "Bundle.h"
 #include "BZUtils.h"
 #include "ClientManager.h"
+#include "DCPlusPlus.h"
 #include "ErrorCollector.h"
 #include "File.h"
 #include "FilteredFile.h"
@@ -101,12 +102,12 @@ void ShareManager::log(const string& aMsg, LogMessage::Severity aSeverity) noexc
 
 // Note that settings are loaded before this function is called
 // This function shouldn't initialize anything that is needed by the startup wizard
-void ShareManager::startup(function<void(const string&)> splashF, function<void(float)> progressF) noexcept {
+void ShareManager::startup(StartupLoader& aLoader) noexcept {
 	bool refreshed = false;
-	if(!loadCache(progressF)) {
-		if (splashF)
-			splashF(STRING(REFRESHING_SHARE));
-		refresh(ShareRefreshType::STARTUP, ShareRefreshPriority::BLOCKING, progressF);
+	if(!loadCache(aLoader.progressF)) {
+		aLoader.stepF(STRING(REFRESHING_SHARE));
+
+		refresh(ShareRefreshType::STARTUP, ShareRefreshPriority::BLOCKING, aLoader.progressF);
 		refreshed = true;
 	}
 
