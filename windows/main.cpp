@@ -297,12 +297,13 @@ void destroyModules() {
 	WebShortcuts::deleteInstance();
 }
 
-void unloadModules() {
-	webserver::WebServerManager::getInstance()->stop();
-	webserver::WebServerManager::getInstance()->save(webErrorF);
-
+void unloadModules(StepF& aStepF, ProgressF&) {
 	AutoSearchManager::getInstance()->save();
 	RSSManager::getInstance()->save(true);
+
+	aStepF(STRING(WEB_SERVER));
+	webserver::WebServerManager::getInstance()->stop();
+	webserver::WebServerManager::getInstance()->save(webErrorF);
 }
 
 bool questionF(const string& aStr, bool aIsQuestion, bool aIsError) {
@@ -335,14 +336,18 @@ Callback wizardFGetter(unique_ptr<SetupWizard>& wizard) {
 	};
 }
 
-Callback moduleLoadFGetter(unique_ptr<MainFrame>& wndMain) {
-	return [&] {
+StartupLoadCallback moduleLoadFGetter(unique_ptr<MainFrame>& wndMain) {
+	return [&](StartupLoader& aLoader) {
 		// Core modules
 		AutoSearchManager::getInstance()->load();
 		RSSManager::getInstance()->load();
 
 		// Web server
-		if (webserver::WebServerManager::getInstance()->load(webErrorF)) {
+		auto wsm = webserver::WebServerManager::getInstance();
+		if (wsm->load(webErrorF)) {
+			aLoader.stepF(STRING(WEB_SERVER));
+
+			// Determine config
 			auto webResourcePath = Util::getStartupParam("--web-resources");
 #ifdef _DEBUG
 			if (!webResourcePath) {
@@ -352,12 +357,14 @@ Callback moduleLoadFGetter(unique_ptr<MainFrame>& wndMain) {
 			WEBCFG(PLAIN_BIND).setDefaultValue("127.0.0.1");
 			WEBCFG(TLS_BIND).setDefaultValue("127.0.0.1");
 
-			auto started = webserver::WebServerManager::getInstance()->startup(
+			// Run
+			auto started = wsm->startup(
 				webErrorF,
 				webResourcePath ? *webResourcePath : Util::emptyString,
 				[&]() { wndMain->shutdown(); }
 			);
 
+			wsm->waitExtensionsLoaded();
 			if (started) {
 				LogManager::getInstance()->message(STRING(WEB_SERVER_STARTED), LogMessage::SEV_INFO, STRING(WEB_SERVER));
 			}
@@ -400,7 +407,9 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 			} else if (Util::hasStartupParam("/updatefailed")) {
 				Updater::log(STRING_F(UPDATE_FAILED, string(FINAL_UPDATER_LOG)), LogMessage::SEV_ERROR);
 			}
-		} catch (...) {
+		} catch (const std::exception& e) {
+			dcassert(0);
+			::MessageBox(WinUtil::mainWnd, Text::toT("Error happened while initializing the application (" + string(e.what()) + "). AirDC++ will now exit.").c_str(), _T("AirDC++ has crashed"), MB_OK);
 			ExitProcess(1);
 		}
 

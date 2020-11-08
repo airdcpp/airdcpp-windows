@@ -529,6 +529,10 @@ namespace webserver {
 		return userManager->hasUsers();
 	}
 
+	bool WebServerManager::waitExtensionsLoaded() const noexcept {
+		return extManager->waitLoaded();
+	}
+
 	bool WebServerManager::load(const ErrorF& aErrorF) noexcept {
 		SettingsManager::loadSettingFile(CONFIG_DIR, CONFIG_NAME, [this](SimpleXML& xml) {
 			if (xml.findChild("WebServer")) {

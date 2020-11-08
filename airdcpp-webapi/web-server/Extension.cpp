@@ -156,6 +156,7 @@ namespace webserver {
 	void Extension::parseApiDataThrow(const json& aJson) {
 		apiVersion = aJson.at("apiVersion");
 		minApiFeatureLevel = aJson.value("minApiFeatureLevel", 0);
+		signalReady = aJson.value("signalReady", false);
 	}
 
 	FilesystemItemList Extension::getLogs() const noexcept {
@@ -342,6 +343,10 @@ namespace webserver {
 
 		if (WEBCFG(EXTENSIONS_DEBUG_MODE).boolean()) {
 			addParam("debug");
+		}
+
+		if (signalReady) {
+			addParam("signalReady");
 		}
 
 		return ret;

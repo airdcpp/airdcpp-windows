@@ -29,6 +29,8 @@
 #include <airdcpp/File.h>
 #include <airdcpp/HttpDownload.h>
 #include <airdcpp/ScopedFunctor.h>
+#include <airdcpp/Thread.h>
+#include <airdcpp/TimerManager.h>
 #include <airdcpp/ZUtils.h>
 
 
@@ -123,6 +125,35 @@ namespace webserver {
 				wsm->log(message, LogMessage::SEV_INFO);
 			}
 		}
+	}
+
+	bool ExtensionManager::waitLoaded() const noexcept {
+		const auto timeout = GET_TICK() + (WEBCFG(EXTENSIONS_INIT_TIMEOUT).num() * 1000);
+		const auto isReady = [](const ExtensionPtr& aExt) {
+			return !aExt->getSignalReady() || aExt->getReady();
+		};
+
+		while (GET_TICK() < timeout) {
+			{
+				RLock l(cs);
+				if (all_of(extensions.begin(), extensions.end(), isReady)) {
+					return true;
+				}
+			}
+
+			Thread::sleep(50);
+		}
+
+		{
+			RLock l(cs);
+			for (const auto& ext: extensions) {
+				if (!isReady(ext)) {
+					wsm->log(STRING_F(WEB_EXTENSION_INIT_TIMED_OUT, ext->getName()), LogMessage::SEV_WARNING);
+				}
+			}
+		}
+
+		return false;
 	}
 
 	ExtensionList ExtensionManager::getExtensions() const noexcept {

@@ -34,7 +34,7 @@ class StartupLoader {
 public:
 	StartupLoader(const StepF& aStepF, const ProgressF& aProgressF, const MessageF& aMessageF) : stepF(aStepF), progressF(aProgressF), messageF(aMessageF) {}
 
-	const StepF& stepF;
+	const StepF stepF;
 	const ProgressF& progressF;
 	const MessageF& messageF;
 
@@ -48,13 +48,16 @@ public:
 		return postLoadTasks;
 	}
 private:
-	vector<Callback> postLoadTasks = vector<Callback>();
+	vector<Callback> postLoadTasks;
 };
 
-// This will throw Exception on fatal errors (such as hash database initialization errors)
-extern void startup(StepF stepF, MessageF messageF, Callback runWizard, ProgressF progressF, Callback moduleInitF = nullptr, Callback moduleLoadF = nullptr);
+typedef function<void(StartupLoader&)> StartupLoadCallback;
+typedef function<void(StepF&, ProgressF&)> ShutdownUnloadCallback;
 
-extern void shutdown(StepF stepF, ProgressF progressF, Callback moduleUnloadF = nullptr, Callback moduleDestroyF = nullptr);
+// This will throw Exception on fatal errors (such as hash database initialization errors)
+extern void startup(StepF stepF, MessageF messageF, Callback runWizard, ProgressF progressF, Callback moduleInitF = nullptr, StartupLoadCallback moduleLoadF = nullptr);
+
+extern void shutdown(StepF stepF, ProgressF progressF, ShutdownUnloadCallback moduleUnloadF = nullptr, Callback moduleDestroyF = nullptr);
 
 } // namespace dcpp
 

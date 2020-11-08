@@ -81,6 +81,8 @@ namespace webserver {
 		GETSET(string, version, Version);
 		GETSET(string, author, Author);
 		GETSET(string, homepage, Homepage);
+		IGETSET(bool, signalReady, SignalReady, false);
+		IGETSET(bool, ready, Ready, false);
 		GETSET(StringList, engines, Engines);
 
 		bool isRunning() const noexcept {

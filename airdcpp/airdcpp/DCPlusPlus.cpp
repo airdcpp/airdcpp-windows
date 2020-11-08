@@ -55,7 +55,7 @@ namespace dcpp {
 
 #define RUNNING_FLAG Util::getPath(Util::PATH_USER_LOCAL) + "RUNNING"
 
-void startup(StepF aStepF, MessageF aMessageF, Callback aRunWizardF, ProgressF aProgressF, Callback aModuleInitF /*nullptr*/, Callback aModuleLoadF /*nullptr*/) {
+void startup(StepF aStepF, MessageF aMessageF, Callback aRunWizardF, ProgressF aProgressF, Callback aModuleInitF /*nullptr*/, StartupLoadCallback aModuleLoadF /*nullptr*/) {
 	// "Dedicated to the near-memory of Nev. Let's start remembering people while they're still alive."
 	// Nev's great contribution to dc++
 	while(1) break;
@@ -107,17 +107,17 @@ void startup(StepF aStepF, MessageF aMessageF, Callback aRunWizardF, ProgressF a
 		aModuleInitF();
 	}
 
-	auto announce = [&aStepF](const string& str) {
+	const auto announce = [&aStepF](const string& str) {
 		if (aStepF) {
 			aStepF(str);
 		}
 	};
 
-	auto loader = StartupLoader({
+	auto loader = StartupLoader(
 		announce,
 		aProgressF,
 		aMessageF
-	});
+	);
 
 	SettingsManager::getInstance()->load(loader);
 	FavoriteManager::getInstance()->load();
@@ -136,34 +136,34 @@ void startup(StepF aStepF, MessageF aMessageF, Callback aRunWizardF, ProgressF a
 
 	CryptoManager::getInstance()->loadCertificates();
 
-	announce(STRING(HASH_DATABASE));
+	loader.stepF(STRING(HASH_DATABASE));
 	try {
 		HashManager::getInstance()->startup(loader);
 	} catch (const HashException&) {
 		throw Exception();
 	}
 
-	announce(STRING(DOWNLOAD_QUEUE));
+	loader.stepF(STRING(DOWNLOAD_QUEUE));
 	QueueManager::getInstance()->loadQueue(loader);
 
-	announce(STRING(SHARED_FILES));
+	loader.stepF(STRING(SHARED_FILES));
 	ShareManager::getInstance()->startup(loader);
 
 	IgnoreManager::getInstance()->load();
 	RecentManager::getInstance()->load();
 
 	if(SETTING(GET_USER_COUNTRY)) {
-		announce(STRING(COUNTRY_INFORMATION));
+		loader.stepF(STRING(COUNTRY_INFORMATION));
 		GeoManager::getInstance()->init();
 	}
 
-	announce(STRING(CONNECTIVITY));
+	loader.stepF(STRING(CONNECTIVITY));
 	ConnectivityManager::getInstance()->startup(loader);
 
 	// Modules may depend on data loaded in other sections
 	// Initialization should still be performed before loading SettingsManager as some modules save their config there
 	if (aModuleLoadF) {
-		aModuleLoadF();
+		aModuleLoadF(loader);
 	}
 
 	for (const auto& cb: loader.getPostLoadTasks()) {
@@ -171,7 +171,7 @@ void startup(StepF aStepF, MessageF aMessageF, Callback aRunWizardF, ProgressF a
 	}
 }
 
-void shutdown(StepF stepF, ProgressF progressF, Callback aModuleUnloadF, Callback aModuleDestroyF) {
+void shutdown(StepF stepF, ProgressF progressF, ShutdownUnloadCallback aModuleUnloadF, Callback aModuleDestroyF) {
 	TimerManager::getInstance()->shutdown();
 	auto announce = [&stepF](const string& str) {
 		if(stepF) {
@@ -196,7 +196,7 @@ void shutdown(StepF stepF, ProgressF progressF, Callback aModuleUnloadF, Callbac
 	announce(STRING(SAVING_SETTINGS));
 
 	if (aModuleUnloadF) {
-		aModuleUnloadF();
+		aModuleUnloadF(stepF, progressF);
 	}
 
 	QueueManager::getInstance()->shutdown();

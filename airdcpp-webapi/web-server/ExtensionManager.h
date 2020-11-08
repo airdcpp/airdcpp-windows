@@ -39,7 +39,12 @@ namespace webserver {
 		ExtensionManager(WebServerManager* aWsm);
 		~ExtensionManager();
 
+		// Load and start all managed extensions from disk
 		void load() noexcept;
+
+		// Wait for the extensions to be ready
+		// (allow them to connect the socket, add listeners etc.)
+		bool waitLoaded() const noexcept;
 
 		// Download extension from the given URL and install it
 		// SHA1 checksum is optional
