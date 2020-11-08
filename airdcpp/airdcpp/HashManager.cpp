@@ -703,7 +703,8 @@ void HashManager::HashStore::openDb(StartupLoader& aLoader) {
 		hashDb->open(aLoader.stepF, aLoader.messageF);
 		fileDb->open(aLoader.stepF, aLoader.messageF);
 	} catch (const DbException& e) {
-		throw HashException(e.getError());
+		// Can't continue without hash database, abort startup
+		throw AbortException(e.getError());
 	}
 }
 

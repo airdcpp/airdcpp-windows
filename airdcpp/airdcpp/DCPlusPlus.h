@@ -54,7 +54,7 @@ private:
 typedef function<void(StartupLoader&)> StartupLoadCallback;
 typedef function<void(StepF&, ProgressF&)> ShutdownUnloadCallback;
 
-// This will throw Exception on fatal errors (such as hash database initialization errors)
+// This will throw AbortException in case of fatal errors (such as hash database initialization errors)
 extern void startup(StepF stepF, MessageF messageF, Callback runWizard, ProgressF progressF, Callback moduleInitF = nullptr, StartupLoadCallback moduleLoadF = nullptr);
 
 extern void shutdown(StepF stepF, ProgressF progressF, ShutdownUnloadCallback moduleUnloadF = nullptr, Callback moduleDestroyF = nullptr);

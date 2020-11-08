@@ -407,7 +407,11 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 			} else if (Util::hasStartupParam("/updatefailed")) {
 				Updater::log(STRING_F(UPDATE_FAILED, string(FINAL_UPDATER_LOG)), LogMessage::SEV_ERROR);
 			}
+		} catch (const AbortException&) {
+			// Critical error, exit
+			ExitProcess(1);
 		} catch (const std::exception& e) {
+			// Crashed
 			dcassert(0);
 			::MessageBox(WinUtil::mainWnd, Text::toT("Error happened while initializing the application (" + string(e.what()) + "). AirDC++ will now exit.").c_str(), _T("AirDC++ has crashed"), MB_OK);
 			ExitProcess(1);
