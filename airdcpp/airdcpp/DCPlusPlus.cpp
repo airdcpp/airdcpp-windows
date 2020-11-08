@@ -165,9 +165,13 @@ void startup(StepF aStepF, MessageF aMessageF, Callback aRunWizardF, ProgressF a
 	if (aModuleLoadF) {
 		aModuleLoadF();
 	}
+
+	for (const auto& cb: loader.getPostLoadTasks()) {
+		cb();
+	}
 }
 
-void shutdown(StepF stepF, ProgressF progressF, Callback moduleDestroyF) {
+void shutdown(StepF stepF, ProgressF progressF, Callback aModuleUnloadF, Callback aModuleDestroyF) {
 	TimerManager::getInstance()->shutdown();
 	auto announce = [&stepF](const string& str) {
 		if(stepF) {
@@ -190,17 +194,22 @@ void shutdown(StepF stepF, ProgressF progressF, Callback moduleDestroyF) {
 	BufferedSocket::waitShutdown();
 	
 	announce(STRING(SAVING_SETTINGS));
+
+	if (aModuleUnloadF) {
+		aModuleUnloadF();
+	}
+
 	QueueManager::getInstance()->shutdown();
 	RecentManager::getInstance()->save();
 	IgnoreManager::getInstance()->save();
 	FavoriteManager::getInstance()->shutdown();
 	SettingsManager::getInstance()->save();
 
-	if (moduleDestroyF) {
-		moduleDestroyF();
-	}
-
 	announce(STRING(SHUTTING_DOWN));
+
+	if (aModuleDestroyF) {
+		aModuleDestroyF();
+	}
 
 	TransferInfoManager::deleteInstance();
 	IgnoreManager::deleteInstance();

@@ -1557,13 +1557,13 @@ bool QueueManager::checkBundleFinishedHooked(const BundlePtr& aBundle) noexcept 
 	return true;
 }
 
-void QueueManager::shareBundle(BundlePtr aBundle, bool aSkipScan) noexcept {
+void QueueManager::shareBundle(BundlePtr aBundle, bool aSkipValidations) noexcept {
 	
 	if (aBundle->getStatus() == Bundle::STATUS_SHARED)
 		return;
 
 	tasks.addTask([=] {
-		if (!aSkipScan && !runBundleCompletionHooks(aBundle)) {
+		if (!aSkipValidations && !runBundleCompletionHooks(aBundle)) {
 			return;
 		}
 
@@ -2429,6 +2429,11 @@ void QueueManager::loadQueue(StartupLoader& aLoader) noexcept {
 	if (finishedCount > 500) {
 		log(STRING_F(BUNDLE_X_FINISHED_WARNING, finishedCount), LogMessage::SEV_WARNING);
 	}
+
+	// Completion checks involve hooks, let everything load first
+	aLoader.addPostLoadTask([this] {
+		checkCompletedBundles(Util::emptyString, true);
+	});
 }
 
 static const string sFile = "File";
@@ -3336,15 +3341,15 @@ void QueueManager::on(ShareManagerListener::RefreshCompleted, const ShareRefresh
 	}
 
 	if (aTask.type == ShareRefreshType::REFRESH_ALL) {
-		onPathRefreshed(Util::emptyString, false);
+		checkCompletedBundles(Util::emptyString, false);
 	} else {
 		for (const auto& p : aTask.dirs) {
-			onPathRefreshed(p, false);
+			checkCompletedBundles(p, false);
 		}
 	}
 }
 
-void QueueManager::onPathRefreshed(const string& aPath, bool aStartup) noexcept{
+void QueueManager::checkCompletedBundles(const string& aPath, bool aValidateCompleted) noexcept{
 	BundleList bundles;
 
 	{
@@ -3356,18 +3361,14 @@ void QueueManager::onPathRefreshed(const string& aPath, bool aStartup) noexcept{
 		}
 	}
 
-	for (auto& b : bundles) {
+	for (auto& b: bundles) {
 		if (ShareManager::getInstance()->isRealPathShared(b->getTarget())) {
 			setBundleStatus(b, Bundle::STATUS_SHARED);
-		} else if (aStartup) {
+		} else if (aValidateCompleted) {
 			// In case it's a failed bundle
 			shareBundle(b, false);
 		}
 	}
-}
-
-void QueueManager::on(ShareManagerListener::ShareLoaded) noexcept {
-	tasks.addTask([=] { onPathRefreshed(Util::emptyString, true); });
 }
 
 void QueueManager::setBundleStatus(const BundlePtr& aBundle, Bundle::Status aNewStatus) noexcept {

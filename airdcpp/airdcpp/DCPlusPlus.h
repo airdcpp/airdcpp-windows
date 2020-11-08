@@ -30,16 +30,31 @@ typedef function<void(float)> ProgressF;
 typedef function<void()> Callback;
 typedef function<bool(const string& /*Message*/, bool /*isQuestion*/, bool /*isError*/)> MessageF;
 
-struct StartupLoader {
-	StepF stepF;
-	ProgressF progressF;
-	MessageF messageF;
+class StartupLoader {
+public:
+	StartupLoader(const StepF& aStepF, const ProgressF& aProgressF, const MessageF& aMessageF) : stepF(aStepF), progressF(aProgressF), messageF(aMessageF) {}
+
+	const StepF& stepF;
+	const ProgressF& progressF;
+	const MessageF& messageF;
+
+	// Tasks to run after everything has finished loading
+	// Use for task involving hooks
+	void addPostLoadTask(Callback&& aCallback) noexcept {
+		postLoadTasks.push_back(aCallback);
+	}
+
+	const vector<Callback>& getPostLoadTasks() const noexcept {
+		return postLoadTasks;
+	}
+private:
+	vector<Callback> postLoadTasks = vector<Callback>();
 };
 
 // This will throw Exception on fatal errors (such as hash database initialization errors)
 extern void startup(StepF stepF, MessageF messageF, Callback runWizard, ProgressF progressF, Callback moduleInitF = nullptr, Callback moduleLoadF = nullptr);
 
-extern void shutdown(StepF stepF, ProgressF progressF, Callback moduleDestroyF = nullptr);
+extern void shutdown(StepF stepF, ProgressF progressF, Callback moduleUnloadF = nullptr, Callback moduleDestroyF = nullptr);
 
 } // namespace dcpp
 

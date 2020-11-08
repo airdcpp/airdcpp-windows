@@ -376,7 +376,7 @@ public:
 	// Attempt to add a bundle in share
 	// Share scanning will be skipped if skipScan is true
 	// Blocking call
-	void shareBundle(BundlePtr aBundle, bool skipScan) noexcept;
+	void shareBundle(BundlePtr aBundle, bool aSkipValidations) noexcept;
 
 	// Performs recheck for the supplied files. Recheck will be done in the calling thread.
 	// The integrity of all finished segments will be verified and SFV will be validated for finished files
@@ -553,9 +553,9 @@ private:
 
 	// ShareManagerListener
 	void on(ShareManagerListener::RefreshCompleted, const ShareRefreshTask& aTask, bool aSucceed, const ShareRefreshStats&) noexcept override;
-	void on(ShareLoaded) noexcept override;
 
-	void onPathRefreshed(const string& aPath, bool startup) noexcept;
+	// Update the status for shared bundles and optionally attempt to share bundles that aren't shared yet
+	void checkCompletedBundles(const string& aPath, bool aValidateCompleted) noexcept;
 
 	DelayedEvents<QueueToken> delayEvents;
 

@@ -281,12 +281,12 @@ void initModules() {
 	RSSManager::newInstance();
 	PreviewAppManager::newInstance();
 	HublistManager::newInstance();
+
 	webserver::WebServerManager::newInstance();
 }
 
 void destroyModules() {
-	AutoSearchManager::getInstance()->save();
-	RSSManager::getInstance()->save(true);
+	webserver::WebServerManager::deleteInstance();
 
 	HublistManager::deleteInstance();
 	PreviewAppManager::deleteInstance();
@@ -295,6 +295,14 @@ void destroyModules() {
 	RSSManager::deleteInstance();
 	FinishedManager::deleteInstance();
 	WebShortcuts::deleteInstance();
+}
+
+void unloadModules() {
+	webserver::WebServerManager::getInstance()->stop();
+	webserver::WebServerManager::getInstance()->save(webErrorF);
+
+	AutoSearchManager::getInstance()->save();
+	RSSManager::getInstance()->save(true);
 }
 
 bool questionF(const string& aStr, bool aIsQuestion, bool aIsError) {
@@ -456,16 +464,13 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	dcassert(WinUtil::splash);
 	loader = std::async(std::launch::async, [=] {
 		PopupManager::deleteInstance();
-		webserver::WebServerManager::getInstance()->stop();
-		webserver::WebServerManager::getInstance()->save(webErrorF);
 
 		shutdown(
 			splashStrF,
 			splashProgressF,
+			unloadModules,
 			destroyModules
 		);
-
-		webserver::WebServerManager::deleteInstance();
 
 		WinUtil::splash->callAsync([=] { PostQuitMessage(0); });
 	});

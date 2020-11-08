@@ -104,17 +104,17 @@ void ShareManager::log(const string& aMsg, LogMessage::Severity aSeverity) noexc
 // This function shouldn't initialize anything that is needed by the startup wizard
 void ShareManager::startup(StartupLoader& aLoader) noexcept {
 	bool refreshed = false;
-	if(!loadCache(aLoader.progressF)) {
-		aLoader.stepF(STRING(REFRESHING_SHARE));
+	if (!loadCache(aLoader.progressF)) {
+		// Refresh involves hooks, let everything load first
+		aLoader.addPostLoadTask([this, &aLoader] {
+			aLoader.stepF(STRING(REFRESHING_SHARE));
+			refresh(ShareRefreshType::STARTUP, ShareRefreshPriority::BLOCKING, aLoader.progressF);
+		});
 
-		refresh(ShareRefreshType::STARTUP, ShareRefreshPriority::BLOCKING, aLoader.progressF);
 		refreshed = true;
 	}
 
 	addAsyncTask([=] {
-		if (!refreshed)
-			fire(ShareManagerListener::ShareLoaded());
-
 		TimerManager::getInstance()->addListener(this);
 
 		if (SETTING(STARTUP_REFRESH) && !refreshed) {
