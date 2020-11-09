@@ -23,7 +23,7 @@
 #include "ResourceLoader.h"
 #include "DynamicDialogBase.h"
 
-#include "semver/semver.hpp"
+#include <semver/semver.hpp>
 
 #include <airdcpp/ScopedFunctor.h>
 

@@ -80,6 +80,7 @@ namespace webserver {
 		GETSET(string, entry, Entry);
 		GETSET(string, version, Version);
 		GETSET(string, author, Author);
+		GETSET(string, repository, Repository);
 		GETSET(string, homepage, Homepage);
 		IGETSET(bool, signalReady, SignalReady, false);
 		IGETSET(bool, ready, Ready, false);

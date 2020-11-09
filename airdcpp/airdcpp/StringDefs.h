@@ -1872,6 +1872,7 @@ enum Strings { // @DontAdd
 	WEB_CFG_PING_TIMEOUT, // "Socket ping timeout"
 	WEB_CFG_EXTENSIONS_DEBUG_MODE, // "Run extensions in debug mode"
 	WEB_CFG_EXTENSIONS_INIT_TIMEOUT, // "Initialization timeout for extensions"
+	WEB_CFG_EXTENSIONS_AUTO_UPDATE, // "Automatically install updates for installed extensions"
 
 	WEB_EXTENSION_INIT_TIMED_OUT, // "Initialization timed out for an extension %1%"
 	WEB_EXTENSION_LOADED, // "Extension %1% was loaded"
@@ -1894,6 +1895,9 @@ enum Strings { // @DontAdd
 	WEB_EXTENSION_OS_UNSUPPORTED, // "Extension is not compatible with your operating system (check the extension documentation for more information)"
 	WEB_EXTENSION_API_VERSION_UNSUPPORTED, // "Extension requires API version %1% while the application uses version %2%"
 	WEB_EXTENSION_API_FEATURES_UNSUPPORTED, // "Extension requires API feature level %1% or newer while the application supports feature level %2%"
+
+	WEB_EXTENSION_MAJOR_UPDATE, // "A new major version %1% is available for an extension %2%. It needs to be installed manually."
+	WEB_EXTENSION_UPDATE_CHECK_FAILED, // "Could not check updates for an extension %1%: %2%"
 
 	WEB_EXTENSION_CHECKSUM_MISMATCH, // "Checksum validation mismatch"
 	WEB_EXTENSION_DOWNLOAD_FAILED, // "Download failed"

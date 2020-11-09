@@ -20,6 +20,7 @@
 
 #include <web-server/ExtensionManager.h>
 #include <web-server/Extension.h>
+#include <web-server/NpmRepository.h>
 #include <web-server/TarFile.h>
 #include <web-server/WebServerManager.h>
 #include <web-server/WebSocket.h>
@@ -28,15 +29,19 @@
 #include <airdcpp/Encoder.h>
 #include <airdcpp/File.h>
 #include <airdcpp/HttpDownload.h>
+#include <airdcpp/LogManager.h>
 #include <airdcpp/ScopedFunctor.h>
 #include <airdcpp/Thread.h>
 #include <airdcpp/TimerManager.h>
+#include <airdcpp/UpdateManager.h>
 #include <airdcpp/ZUtils.h>
 
 
 namespace webserver {
 	ExtensionManager::ExtensionManager(WebServerManager* aWsm) : wsm(aWsm) {
 		wsm->addListener(this);
+
+		UpdateManager::getInstance()->addListener(this);
 
 		engines = {
 #ifdef _WIN32
@@ -46,10 +51,21 @@ namespace webserver {
 #endif
 			{ "python3", "python3;python" },
 		};
+
+		npmRepository = make_unique<NpmRepository>(
+			std::bind(&ExtensionManager::downloadExtension, this, placeholders::_1, placeholders::_2, placeholders::_3),
+			std::bind(&ExtensionManager::log, this, placeholders::_1, placeholders::_2)
+		);
 	}
 
 	ExtensionManager::~ExtensionManager() {
 		wsm->removeListener(this);
+		UpdateManager::getInstance()->removeListener(this);
+	}
+
+	void ExtensionManager::log(const string& aMsg, LogMessage::Severity aSeverity) const noexcept {
+		// wsm->log(aMsg, aSeverity);
+		LogManager::getInstance()->message(aMsg, aSeverity, STRING(EXTENSIONS));
 	}
 
 	void ExtensionManager::on(WebServerManagerListener::Started) noexcept {
@@ -70,7 +86,7 @@ namespace webserver {
 				try {
 					ext->stopThrow();
 				} catch (const Exception& e) {
-					wsm->log(STRING_F(WEB_EXTENSION_STOP_FAILED, ext->getName() % e.what()), LogMessage::SEV_ERROR);
+					log(STRING_F(WEB_EXTENSION_STOP_FAILED, ext->getName() % e.what()), LogMessage::SEV_ERROR);
 				}
 			}
 		}
@@ -111,6 +127,12 @@ namespace webserver {
 		});
 	}
 
+	void ExtensionManager::on(UpdateManagerListener::VersionFileDownloaded, SimpleXML& aXml) noexcept {
+		if (WEBCFG(EXTENSIONS_AUTO_UPDATE).boolean()) {
+			checkExtensionUpdates();
+		}
+	}
+
 	void ExtensionManager::load() noexcept {
 		auto directories = File::findFiles(EXTENSION_DIR_ROOT, "*", File::TYPE_DIRECTORY);
 
@@ -122,7 +144,21 @@ namespace webserver {
 					STRING_F(WEB_EXTENSION_LOADED_DBG, ext->getName()) : 
 					STRING_F(WEB_EXTENSION_LOADED, ext->getName());
 
-				wsm->log(message, LogMessage::SEV_INFO);
+				log(message, LogMessage::SEV_INFO);
+			}
+		}
+	}
+
+	void ExtensionManager::checkExtensionUpdates() const noexcept {
+		RLock l(cs);
+
+		for (const auto& ext : extensions) {
+			if (!ext->isManaged() || ext->isPrivate()) {
+				continue;
+			}
+
+			if (ext->getRepository() == NpmRepository::repository) {
+				npmRepository->checkUpdates(ext->getName(), ext->getVersion());
 			}
 		}
 	}
@@ -148,7 +184,7 @@ namespace webserver {
 			RLock l(cs);
 			for (const auto& ext: extensions) {
 				if (!isReady(ext)) {
-					wsm->log(STRING_F(WEB_EXTENSION_INIT_TIMED_OUT, ext->getName()), LogMessage::SEV_WARNING);
+					log(STRING_F(WEB_EXTENSION_INIT_TIMED_OUT, ext->getName()), LogMessage::SEV_WARNING);
 				}
 			}
 		}
@@ -213,7 +249,7 @@ namespace webserver {
 		WLock l(cs);
 		auto ret = httpDownloads.emplace(aUrl, make_shared<HttpDownload>(aUrl, [=]() {
 			onExtensionDownloadCompleted(aInstallId, aUrl, aSha1);
-		}, false));
+		}));
 
 		return ret.second;
 	}
@@ -378,7 +414,7 @@ namespace webserver {
 				return;
 			}
 
-			wsm->log(STRING_F(WEB_EXTENSION_UPDATED, extension->getName()), LogMessage::SEV_INFO);
+			log(STRING_F(WEB_EXTENSION_UPDATED, extension->getName()), LogMessage::SEV_INFO);
 		} else {
 			// Install new
 			extension = loadLocalExtension(Extension::getRootPath(extensionName));
@@ -388,7 +424,7 @@ namespace webserver {
 			}
 
 			fire(ExtensionManagerListener::ExtensionAdded(), extension);
-			wsm->log(STRING_F(WEB_EXTENSION_INSTALLED, extension->getName()), LogMessage::SEV_INFO);
+			log(STRING_F(WEB_EXTENSION_INSTALLED, extension->getName()), LogMessage::SEV_INFO);
 		}
 
 		startExtensionImpl(extension);
@@ -403,7 +439,7 @@ namespace webserver {
 
 		fire(ExtensionManagerListener::InstallationFailed(), aInstallId, msg);
 
-		wsm->log(STRING_F(WEB_EXTENSION_INSTALLATION_FAILED, msg), LogMessage::SEV_ERROR);
+		log(STRING_F(WEB_EXTENSION_INSTALLATION_FAILED, msg), LogMessage::SEV_ERROR);
 	}
 
 	ExtensionPtr ExtensionManager::registerRemoteExtensionThrow(const SessionPtr& aSession, const json& aPackageJson) {
@@ -439,18 +475,18 @@ namespace webserver {
 			wsm->addAsyncTask([=] {
 				auto extension = getExtension(name);
 				if (extension && startExtensionImpl(extension)) {
-					wsm->log(STRING_F(WEB_EXTENSION_TIMED_OUT, aExtension->getName()), LogMessage::SEV_INFO);
+					log(STRING_F(WEB_EXTENSION_TIMED_OUT, aExtension->getName()), LogMessage::SEV_INFO);
 				}
 			});
 		} else {
 			if (WEBCFG(EXTENSIONS_DEBUG_MODE).boolean()) {
-				wsm->log(
+				log(
 					"Extension " + aExtension->getName() + " exited with code " + Util::toString(aExitCode), 
 					LogMessage::SEV_ERROR
 				);
 			}
 
-			wsm->log(
+			log(
 				STRING_F(WEB_EXTENSION_EXITED, aExtension->getName() % aExtension->getErrorLogPath()),
 				LogMessage::SEV_ERROR
 			);
@@ -467,13 +503,13 @@ namespace webserver {
 				std::bind(&ExtensionManager::onExtensionStateUpdated, this, std::placeholders::_1)
 			);
 		} catch (const Exception& e) {
-			wsm->log(STRING_F(WEB_EXTENSION_LOAD_ERROR_X, aPath % e.what()), LogMessage::SEV_ERROR);
+			log(STRING_F(WEB_EXTENSION_LOAD_ERROR_X, aPath % e.what()), LogMessage::SEV_ERROR);
 			return nullptr;
 		}
 
 		if (getExtension(ext->getName())) {
 			dcassert(0);
-			wsm->log(STRING_F(WEB_EXTENSION_LOAD_ERROR_X, aPath % STRING(WEB_EXTENSION_EXISTS)), LogMessage::SEV_ERROR);
+			log(STRING_F(WEB_EXTENSION_LOAD_ERROR_X, aPath % STRING(WEB_EXTENSION_EXISTS)), LogMessage::SEV_ERROR);
 			return nullptr;
 		}
 
@@ -491,7 +527,7 @@ namespace webserver {
 			auto command = getStartCommandThrow(aExtension->getEngines());
 			aExtension->startThrow(command, wsm);
 		} catch (const Exception& e) {
-			wsm->log(STRING_F(WEB_EXTENSION_START_ERROR, aExtension->getName() % e.what()), LogMessage::SEV_ERROR);
+			log(STRING_F(WEB_EXTENSION_START_ERROR, aExtension->getName() % e.what()), LogMessage::SEV_ERROR);
 			return false;
 		}
 

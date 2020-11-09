@@ -157,6 +157,7 @@ namespace webserver {
 		apiVersion = aJson.at("apiVersion");
 		minApiFeatureLevel = aJson.value("minApiFeatureLevel", 0);
 		signalReady = aJson.value("signalReady", false);
+		repository = aJson.value("repository", Util::emptyString);
 	}
 
 	FilesystemItemList Extension::getLogs() const noexcept {

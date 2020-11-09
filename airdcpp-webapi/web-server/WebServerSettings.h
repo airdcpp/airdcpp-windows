@@ -47,6 +47,7 @@ namespace webserver {
 
 			EXTENSIONS_DEBUG_MODE,
 			EXTENSIONS_INIT_TIMEOUT,
+			EXTENSIONS_AUTO_UPDATE,
 		};
 
 		ServerSettingItem& getValue(ServerSettings aSetting) noexcept {
