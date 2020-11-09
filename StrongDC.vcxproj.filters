@@ -887,6 +887,9 @@
     <ClInclude Include="windows\StatusBarTextHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="windows\ResourceLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\AutoSearch\Collecting.ico">

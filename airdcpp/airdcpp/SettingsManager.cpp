@@ -111,7 +111,7 @@ const ProfileSettingItem SettingsManager::profileSettings[SettingsManager::PROFI
 	{ SettingsManager::MINIMUM_SEARCH_INTERVAL, 15, ResourceManager::MINIMUM_SEARCH_INTERVAL },
 	//{ SettingsManager::AUTO_SEARCH_LIMIT, 5 },
 	{ SettingsManager::AUTO_FOLLOW, true, ResourceManager::SETTINGS_AUTO_FOLLOW },
-	{ SettingsManager::TOOLBAR_ORDER, (string)"0,-1,1,2,-1,3,4,5,-1,6,7,8,-1,9,10,12,-1,13,14,-1,15,16,-1,17,18,-1,20", ResourceManager::TOOLBAR_ORDER },
+	{ SettingsManager::TOOLBAR_ORDER, SettingsManager::buildToolbarOrder(SettingsManager::getDefaultToolbarOrder()), ResourceManager::TOOLBAR_ORDER },
 }, {
 	// profile RAR
 	{ SettingsManager::MULTI_CHUNK, false, ResourceManager::SEGMENTS },
@@ -119,7 +119,38 @@ const ProfileSettingItem SettingsManager::profileSettings[SettingsManager::PROFI
 	{ SettingsManager::MINIMUM_SEARCH_INTERVAL, 10, ResourceManager::MINIMUM_SEARCH_INTERVAL },
 	//{ SettingsManager::AUTO_SEARCH_LIMIT, 5 },
 	{ SettingsManager::AUTO_FOLLOW, false, ResourceManager::SETTINGS_AUTO_FOLLOW },
-	{ SettingsManager::TOOLBAR_ORDER, (string)"1,-1,3,4,-1,6,7,8,-1,9,10,12,-1,13,14,-1,15,16,-1,17,18,-1,20", ResourceManager::TOOLBAR_ORDER },
+	{ SettingsManager::TOOLBAR_ORDER, SettingsManager::buildToolbarOrder({
+		ToolbarIconEnum::RECONNECT,
+		ToolbarIconEnum::DIVIDER,
+
+		ToolbarIconEnum::FAVORITE_HUBS,
+		ToolbarIconEnum::USERS,
+		ToolbarIconEnum::DIVIDER,
+
+		ToolbarIconEnum::QUEUE,
+		ToolbarIconEnum::UPLOAD_QUEUE,
+		ToolbarIconEnum::FINISHED_UPLOADS,
+		ToolbarIconEnum::DIVIDER,
+
+		ToolbarIconEnum::SEARCH,
+		ToolbarIconEnum::ADL_SEARCH,
+		ToolbarIconEnum::AUTO_SEARCH,
+		ToolbarIconEnum::DIVIDER,
+
+		ToolbarIconEnum::NOTEPAD,
+		ToolbarIconEnum::SYSTEM_LOG,
+		ToolbarIconEnum::DIVIDER,
+
+		ToolbarIconEnum::REFRESH_FILELIST,
+		ToolbarIconEnum::EXTENSIONS,
+		ToolbarIconEnum::DIVIDER,
+
+		ToolbarIconEnum::OPEN_FILELIST,
+		ToolbarIconEnum::OPEN_DOWNLOADS,
+		ToolbarIconEnum::DIVIDER,
+
+		ToolbarIconEnum::SETTINGS
+	}), ResourceManager::TOOLBAR_ORDER },
 }, {
 	// profile LAN
 	{ SettingsManager::MULTI_CHUNK, true, ResourceManager::SEGMENTS },
@@ -127,7 +158,7 @@ const ProfileSettingItem SettingsManager::profileSettings[SettingsManager::PROFI
 	{ SettingsManager::MINIMUM_SEARCH_INTERVAL, 10, ResourceManager::MINIMUM_SEARCH_INTERVAL },
 	//{ SettingsManager::AUTO_SEARCH_LIMIT, 5 },
 	{ SettingsManager::AUTO_FOLLOW, true, ResourceManager::SETTINGS_AUTO_FOLLOW },
-	{ SettingsManager::TOOLBAR_ORDER, (string)"0,-1,1,2,-1,3,4,5,-1,6,7,8,-1,9,10,12,-1,13,14,-1,15,16,-1,17,18,-1,20", ResourceManager::TOOLBAR_ORDER },
+	{ SettingsManager::TOOLBAR_ORDER, SettingsManager::buildToolbarOrder(SettingsManager::getDefaultToolbarOrder()), ResourceManager::TOOLBAR_ORDER },
 } 
 
 };
@@ -420,7 +451,7 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(EXTRA_PARTIAL_SLOTS, 1);
 	setDefault(SHUTDOWN_TIMEOUT, 150);
 	setDefault(SEARCH_PASSIVE, false);
-	setDefault(TOOLBAR_ORDER, "0,-1,1,2,-1,3,4,5,-1,6,7,8,-1,9,10,12,-1,13,14,-1,15,16,-1,17,18,-1,20");
+	setDefault(TOOLBAR_ORDER, SettingsManager::buildToolbarOrder(SettingsManager::getDefaultToolbarOrder()));
 	setDefault(MEDIATOOLBAR, "0,-1,1,-1,2,3,4,5,6,7,8,9,-1");
 	setDefault(AUTO_PRIORITY_DEFAULT, false);
 	setDefault(REMOVE_FORBIDDEN, true);
@@ -1267,6 +1298,59 @@ void settingXmlMessage(const string& aMessage, LogMessage::Severity aSeverity, c
 	} else {
 		aCustomErrorF(aMessage);
 	}
+}
+
+string SettingsManager::buildToolbarOrder(const vector<ToolbarIconEnum>& aIcons) noexcept {
+	string ret;
+	for (const auto& i: aIcons) {
+		if (!ret.empty()) {
+			ret += ',';
+		}
+
+		ret += Util::toString(static_cast<int>(i));
+	}
+
+	return ret;
+}
+
+vector<ToolbarIconEnum> SettingsManager::getDefaultToolbarOrder() noexcept {
+	return vector<ToolbarIconEnum>({
+		ToolbarIconEnum::PUBLIC_HUBS,
+		ToolbarIconEnum::DIVIDER,
+
+		ToolbarIconEnum::RECONNECT,
+		ToolbarIconEnum::FOLLOW_REDIRECT,
+		ToolbarIconEnum::DIVIDER,
+
+		ToolbarIconEnum::FAVORITE_HUBS,
+		ToolbarIconEnum::USERS,
+		ToolbarIconEnum::RECENT_HUBS,
+		ToolbarIconEnum::DIVIDER,
+
+		ToolbarIconEnum::QUEUE,
+		ToolbarIconEnum::UPLOAD_QUEUE,
+		ToolbarIconEnum::FINISHED_UPLOADS,
+		ToolbarIconEnum::DIVIDER,
+
+		ToolbarIconEnum::SEARCH,
+		ToolbarIconEnum::ADL_SEARCH,
+		ToolbarIconEnum::AUTO_SEARCH,
+		ToolbarIconEnum::DIVIDER,
+
+		ToolbarIconEnum::NOTEPAD,
+		ToolbarIconEnum::SYSTEM_LOG,
+		ToolbarIconEnum::DIVIDER,
+
+		ToolbarIconEnum::REFRESH_FILELIST,
+		ToolbarIconEnum::EXTENSIONS,
+		ToolbarIconEnum::DIVIDER,
+
+		ToolbarIconEnum::OPEN_FILELIST,
+		ToolbarIconEnum::OPEN_DOWNLOADS,
+		ToolbarIconEnum::DIVIDER,
+
+		ToolbarIconEnum::SETTINGS
+	});
 }
 
 bool SettingsManager::loadSettingFile(Util::Paths aPath, const string& aFileName, ParseCallback&& aParseCallback, const CustomReportF& aCustomReportF) noexcept {

@@ -30,6 +30,34 @@
 
 namespace dcpp {
 
+// Shouldn't really be in core...
+enum class ToolbarIconEnum {
+	DIVIDER = -1,
+	PUBLIC_HUBS,
+	RECONNECT,
+	FOLLOW_REDIRECT,
+	FAVORITE_HUBS,
+	USERS,
+	RECENT_HUBS,
+	QUEUE,
+	UPLOAD_QUEUE,
+	FINISHED_UPLOADS,
+	SEARCH,
+	ADL_SEARCH,
+	SEARCH_SPY,
+	AUTO_SEARCH,
+	NOTEPAD,
+	SYSTEM_LOG,
+	REFRESH_FILELIST,
+	EXTENSIONS,
+	OPEN_FILELIST,
+	OPEN_DOWNLOADS,
+	AWAY,
+	SETTINGS,
+	RSS,
+	LAST,
+};
+
 class SettingsManager : public Singleton<SettingsManager>, public Speaker<SettingsManagerListener>
 {
 public:
@@ -356,6 +384,9 @@ private:
 	StringPairList fileEvents;
 
 	mutable SharedMutex cs;
+
+	static string buildToolbarOrder(const vector<ToolbarIconEnum>& aIcons) noexcept;
+	static vector<ToolbarIconEnum> getDefaultToolbarOrder() noexcept;
 };
 
 // Shorthand accessor macros

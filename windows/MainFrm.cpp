@@ -601,7 +601,7 @@ HWND MainFrame::createToolbar() {
 			nTB.fsStyle = TBSTYLE_SEP;			
 		} else if(i >= 0 && i < buttonsCount) {
 			nTB.iBitmap = ToolbarButtons[i].image;
-			nTB.idCommand = ToolbarButtons[i].id;
+			nTB.idCommand = ToolbarButtons[i].commandId;
 			nTB.fsState = TBSTATE_ENABLED;
 			nTB.fsStyle = TBSTYLE_AUTOSIZE | ((ToolbarButtons[i].check == true)? TBSTYLE_CHECK : TBSTYLE_BUTTON);
 			nTB.iString = ctrlToolbar.AddStrings(CTSTRING_I((ResourceManager::Strings)ToolbarButtons[i].tooltip));

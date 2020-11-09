@@ -47,45 +47,47 @@ namespace dcpp {
 }
 
 struct toolbarButton {
-	int id, image;
-	int nIcon;
-	bool check;
-	ResourceManager::Strings tooltip;
+	const ToolbarIconEnum id;
+	const int commandId;
+	const int image;
+	const int nIcon;
+	const bool check;
+	const ResourceManager::Strings tooltip;
 };
 
 static const toolbarButton ToolbarButtons[] = {
 	
-	{ ID_FILE_CONNECT, 0, IDI_PUBLICHUBS, true, ResourceManager::MENU_PUBLIC_HUBS },
+	{ ToolbarIconEnum::PUBLIC_HUBS, ID_FILE_CONNECT, 0, IDI_PUBLICHUBS, true, ResourceManager::MENU_PUBLIC_HUBS },
 	//separator
-	{ ID_FILE_RECONNECT, 1, IDI_RECONNECT, false, ResourceManager::MENU_RECONNECT },
-	{ IDC_FOLLOW, 2, IDI_FOLLOW, false, ResourceManager::MENU_FOLLOW_REDIRECT },
+	{ ToolbarIconEnum::RECONNECT, ID_FILE_RECONNECT, 1, IDI_RECONNECT, false, ResourceManager::MENU_RECONNECT },
+	{ ToolbarIconEnum::FOLLOW_REDIRECT, IDC_FOLLOW, 2, IDI_FOLLOW, false, ResourceManager::MENU_FOLLOW_REDIRECT },
 	//separator
-	{ IDC_FAVORITES, 3, IDI_FAVORITEHUBS, true, ResourceManager::MENU_FAVORITE_HUBS },
-	{ IDC_FAVUSERS, 4, IDI_USERS, true, ResourceManager::MENU_FAVORITE_USERS },
-	{ IDC_RECENTS, 5, IDI_RECENTS, true, ResourceManager::RECENTS },
+	{ ToolbarIconEnum::FAVORITE_HUBS, IDC_FAVORITES, 3, IDI_FAVORITEHUBS, true, ResourceManager::MENU_FAVORITE_HUBS },
+	{ ToolbarIconEnum::USERS, IDC_FAVUSERS, 4, IDI_USERS, true, ResourceManager::MENU_FAVORITE_USERS },
+	{ ToolbarIconEnum::RECENT_HUBS, IDC_RECENTS, 5, IDI_RECENTS, true, ResourceManager::RECENTS },
 	//separator
-	{ IDC_QUEUE, 6, IDI_QUEUE, true, ResourceManager::MENU_DOWNLOAD_QUEUE },
-	{ IDC_UPLOAD_QUEUE, 7, IDI_UPLOAD_QUEUE, true, ResourceManager::UPLOAD_QUEUE },
-	{ IDC_FINISHED_UL, 8, IDI_FINISHED_UL, true, ResourceManager::FINISHED_UPLOADS },
+	{ ToolbarIconEnum::QUEUE, IDC_QUEUE, 6, IDI_QUEUE, true, ResourceManager::MENU_DOWNLOAD_QUEUE },
+	{ ToolbarIconEnum::UPLOAD_QUEUE, IDC_UPLOAD_QUEUE, 7, IDI_UPLOAD_QUEUE, true, ResourceManager::UPLOAD_QUEUE },
+	{ ToolbarIconEnum::FINISHED_UPLOADS, IDC_FINISHED_UL, 8, IDI_FINISHED_UL, true, ResourceManager::FINISHED_UPLOADS },
 	//separator
-	{ ID_FILE_SEARCH, 9, IDI_SEARCH, false, ResourceManager::MENU_SEARCH },
-	{ IDC_FILE_ADL_SEARCH, 10, IDI_ADLSEARCH, true, ResourceManager::MENU_ADL_SEARCH },
-	{ IDC_SEARCH_SPY, 11, IDI_SEARCHSPY, true, ResourceManager::MENU_SEARCH_SPY },
-	{ IDC_AUTOSEARCH, 12, IDI_AUTOSEARCH, false, ResourceManager::AUTO_SEARCH },
+	{ ToolbarIconEnum::SEARCH, ID_FILE_SEARCH, 9, IDI_SEARCH, false, ResourceManager::MENU_SEARCH },
+	{ ToolbarIconEnum::ADL_SEARCH, IDC_FILE_ADL_SEARCH, 10, IDI_ADLSEARCH, true, ResourceManager::MENU_ADL_SEARCH },
+	{ ToolbarIconEnum::SEARCH_SPY, IDC_SEARCH_SPY, 11, IDI_SEARCHSPY, true, ResourceManager::MENU_SEARCH_SPY },
+	{ ToolbarIconEnum::AUTO_SEARCH, IDC_AUTOSEARCH, 12, IDI_AUTOSEARCH, false, ResourceManager::AUTO_SEARCH },
 	//separator
-	{ IDC_NOTEPAD, 13, IDI_NOTEPAD, true, ResourceManager::MENU_NOTEPAD },
-	{ IDC_SYSTEM_LOG, 14, IDI_LOGS, true, ResourceManager::SYSTEM_LOG },
+	{ ToolbarIconEnum::NOTEPAD, IDC_NOTEPAD, 13, IDI_NOTEPAD, true, ResourceManager::MENU_NOTEPAD },
+	{ ToolbarIconEnum::SYSTEM_LOG, IDC_SYSTEM_LOG, 14, IDI_LOGS, true, ResourceManager::SYSTEM_LOG },
 	//separator
-	{ IDC_REFRESH_FILE_LIST, 15, IDI_REFRESH, false, ResourceManager::REFRESH_FILE_LIST },
-	{ IDC_EXTENSIONS, 16, IDI_EXTENSIONS, true, ResourceManager::EXTENSIONS },
+	{ ToolbarIconEnum::REFRESH_FILELIST, IDC_REFRESH_FILE_LIST, 15, IDI_REFRESH, false, ResourceManager::REFRESH_FILE_LIST },
+	{ ToolbarIconEnum::EXTENSIONS, IDC_EXTENSIONS, 16, IDI_EXTENSIONS, true, ResourceManager::EXTENSIONS },
 	//separator
-	{ IDC_OPEN_FILE_LIST, 17, IDI_OPEN_LIST, false, ResourceManager::MENU_OPEN_FILE_LIST },
-	{ IDC_OPEN_DOWNLOADS, 18, IDI_OPEN_DOWNLOADS, false, ResourceManager::MENU_OPEN_DOWNLOADS_DIR },
+	{ ToolbarIconEnum::OPEN_FILELIST, IDC_OPEN_FILE_LIST, 17, IDI_OPEN_LIST, false, ResourceManager::MENU_OPEN_FILE_LIST },
+	{ ToolbarIconEnum::OPEN_DOWNLOADS, IDC_OPEN_DOWNLOADS, 18, IDI_OPEN_DOWNLOADS, false, ResourceManager::MENU_OPEN_DOWNLOADS_DIR },
 	//separator
-	{ IDC_AWAY, 19, IDI_AWAY, true, ResourceManager::AWAY },
+	{ ToolbarIconEnum::AWAY, IDC_AWAY, 19, IDI_AWAY, true, ResourceManager::AWAY },
 	//separator
-	{ ID_FILE_SETTINGS, 20, IDI_SETTINGS, false, ResourceManager::MENU_SETTINGS },
-	{ IDC_RSSFRAME, 21, IDI_RSS, true, ResourceManager::RSS_FEEDS },
+	{ ToolbarIconEnum::SETTINGS, ID_FILE_SETTINGS, 20, IDI_SETTINGS, false, ResourceManager::MENU_SETTINGS },
+	{ ToolbarIconEnum::RSS, IDC_RSSFRAME, 21, IDI_RSS, true, ResourceManager::RSS_FEEDS },
 };
 
 

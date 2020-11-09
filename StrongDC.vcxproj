@@ -576,6 +576,7 @@
     <ClInclude Include="windows\FavHubOptionsPage.h" />
     <ClInclude Include="windows\ResizeableDialog.h" />
     <ClInclude Include="windows\FormatUtil.h" />
+    <ClInclude Include="windows\ResourceLoader.h" />
     <ClInclude Include="windows\RssFilterPage.h" />
     <ClInclude Include="windows\StaticFrame.h" />
     <ClInclude Include="windows\ActionUtil.h" />
