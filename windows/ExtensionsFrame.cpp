@@ -367,7 +367,7 @@ void ExtensionsFrame::onUpdateExtension(const ItemInfo* ii) noexcept {
 }
 
 void ExtensionsFrame::onReadMore(const ItemInfo* ii) noexcept {
-	ActionUtil::openLink(Text::toT(ii->ext->getHomepage()));
+	ActionUtil::openLink(Text::toT(ii->getHomepage()));
 }
 
 void ExtensionsFrame::onConfigExtension(const ItemInfo* ii) noexcept {
@@ -400,8 +400,7 @@ void ExtensionsFrame::downloadExtensionList() noexcept {
 	updateStatusAsync(TSTRING(EXTENSION_CATALOG_DOWNLOADING), LogMessage::SEV_INFO);
 	httpDownload.reset(new HttpDownload(
 		extensionUrl,
-		[this] { onExtensionListDownloaded(); }, 
-		false
+		[this] { onExtensionListDownloaded(); }
 	));
 }
 
@@ -432,31 +431,40 @@ void ExtensionsFrame::onExtensionListDownloaded() noexcept {
 	
 	updateStatusAsync(TSTRING(EXTENSION_CATALOG_DOWNLOADED), LogMessage::SEV_INFO);
 	try {
-
-		json listJson = json::parse(httpDownload->buf);
+		auto listJson = json::parse(httpDownload->buf);
 		auto pJson = listJson.at("objects");
 
-		callAsync([this, list = std::move(pJson)] {
-			for (const auto i: list) {
-				json package = i.at("package");
-				string name = package.at("name");
-				string desc = package.at("description");
-				string version = package.at("version");
-
-				auto existing = itemInfos.find(name);
-				if (existing != itemInfos.end()) {
-					existing->second->setLatestVersion(version);
-				} else {
-					itemInfos.emplace(name, make_unique<ItemInfo>(name, desc, version));
-				}
-			}
-
-			updateList();
+		callAsync([this, list = std::move(pJson)]{
+			parseExtensionCatalogItems(list);
 		});
 	} catch (const std::exception& e) {
 		updateStatusAsync(TSTRING_F(X_PARSING_FAILED_X, TSTRING(EXTENSION_CATALOG) % Text::toT(e.what())), LogMessage::SEV_ERROR);
 	}
+}
 
+void ExtensionsFrame::parseExtensionCatalogItems(const json& aListJson) noexcept {
+	try {
+		for (const auto i: aListJson) {
+			json package = i.at("package");
+			string name = package.at("name");
+			string desc = package.at("description");
+			string version = package.at("version");
+
+			json links = package.at("links");
+			string homepage = package.value("homepage", "https://www.npmjs.com/package/" + name);
+
+			auto existing = itemInfos.find(name);
+			if (existing != itemInfos.end()) {
+				existing->second->setLatestVersion(version);
+			} else {
+				itemInfos.emplace(name, make_unique<ItemInfo>(name, desc, version, homepage));
+			}
+		}
+	} catch (const std::exception& e) {
+		updateStatusAsync(TSTRING_F(X_PARSING_FAILED_X, TSTRING(EXTENSION_DATA) % Text::toT(e.what())), LogMessage::SEV_ERROR);
+	}
+
+	updateList();
 }
 
 void ExtensionsFrame::installExtension(const ItemInfo* ii) noexcept {
@@ -476,8 +484,7 @@ void ExtensionsFrame::installExtension(const ItemInfo* ii) noexcept {
 		packageUrl + ii->getName() + "/latest",
 		[this] {
 			onExtensionInfoDownloaded(); 
-		}, 
-		false
+		}
 	));
 
 	fixControls();
@@ -706,7 +713,7 @@ void ExtensionsFrame::fixControls() noexcept {
 	ctrlInstall.SetWindowTextW(isLocalExtension ? CTSTRING(UPDATE) : CTSTRING(INSTALL));
 
 	::EnableWindow(GetDlgItem(IDC_UPDATE), !httpDownload && ctrlList.GetSelectedCount() == 1 && ((isLocalExtension && installedExtensions.front()->hasUpdate()) || installedExtensions.empty()));
-	::EnableWindow(GetDlgItem(IDC_OPEN_LINK), ctrlList.GetSelectedCount() == 1);
+	::EnableWindow(GetDlgItem(IDC_OPEN_LINK), ctrlList.GetSelectedCount() == 1 && !ctrlList.getSelectedItem()->getHomepage().empty());
 	::EnableWindow(GetDlgItem(IDC_ACTIONS), !installedExtensions.empty());
 	::EnableWindow(GetDlgItem(IDC_RELOAD), !httpDownload);
 }

@@ -114,8 +114,8 @@ private:
 	class ItemInfo {
 	public:
 		ItemInfo(const webserver::ExtensionPtr& aExtension) : ext(aExtension) { }
-		ItemInfo(const string& aName, const string& aDescription, const string& aVersion) : name(aName),
-			description(aDescription), latestVersion(aVersion) { }
+		ItemInfo(const string& aName, const string& aDescription, const string& aVersion, const string& aHomepage) : name(aName),
+			description(aDescription), latestVersion(aVersion), homepage(aHomepage) { }
 		~ItemInfo() { }
 
 		const string& getName() const noexcept {
@@ -124,6 +124,10 @@ private:
 
 		const string& getDescription() const noexcept {
 			return ext ? ext->getDescription() : description;
+		}
+
+		const string& getHomepage() const noexcept {
+			return ext ? ext->getHomepage() : homepage;
 		}
 
 		ExtensionGroupEnum getGroupId() const noexcept;
@@ -141,6 +145,7 @@ private:
 	private:
 		const string name;
 		const string description;
+		const string homepage;
 	};
 
 	typedef unordered_map<string, unique_ptr<ItemInfo>> ItemInfoMap;
@@ -183,6 +188,7 @@ private:
 
 	void installExtension(const ItemInfo* ii) noexcept;
 	void onExtensionInfoDownloaded() noexcept;
+	void parseExtensionCatalogItems(const json& aJson) noexcept;
 
 	webserver::ExtensionManager& getExtensionManager() noexcept;
 
