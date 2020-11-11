@@ -53,6 +53,10 @@ namespace webserver {
 		}, options));
 	}
 
+	void NpmRepository::install(const string& aName) noexcept {
+		checkUpdates(aName, Util::emptyString);
+	}
+
 	void NpmRepository::onPackageInfoDownloaded(const string& aName, const string& aCurrentVersion) noexcept {
 		// Don't allow the same download to be initiated again until the installation has finished
 		ScopedFunctor([&]() {
@@ -88,42 +92,44 @@ namespace webserver {
 
 	// https://github.com/npm/registry/blob/master/docs/responses/package-metadata.md
 	void NpmRepository::checkPackageData(const string& aPackageData, const string& aName, const string& aCurrentVersion) {
-		semver::version curSemver { aCurrentVersion };
+		optional<semver::version> curSemver = !aCurrentVersion.empty() ? optional(semver::version(aCurrentVersion)) : nullopt;
 
 		const auto packageJson = json::parse(aPackageData);
 		auto versions = packageJson.at("versions");
 
+		// Versions are listed from oldest to newest, start with the newest ones
 		for (auto elem = versions.rbegin(); elem != versions.rend(); ++elem) {
-			semver::version remoteSemver{ elem.key() };
+			semver::version remoteSemver { elem.key() };
 			if (remoteSemver.prerelease_type != semver::prerelease::none) {
 				// Don't update to pre-release versions
 				continue;
 			}
 
-			if (remoteSemver.major != curSemver.major) {
-				loggerF(STRING_F(WEB_EXTENSION_MAJOR_UPDATE, elem.key() % aName), LogMessage::SEV_INFO);
+			if (curSemver) {
+				if (remoteSemver.major != (*curSemver).major) {
+					loggerF(STRING_F(WEB_EXTENSION_MAJOR_UPDATE, elem.key() % aName), LogMessage::SEV_INFO);
 
-				// Don't perform major upgrades
-				continue;
+					// Don't perform major upgrades
+					continue;
+				}
+
+				auto comp = (*curSemver).compare(remoteSemver);
+				if (comp >= 0) {
+					// No new version available
+					dcdebug("No updates available for extension %s", aName.c_str());
+					return;
+				} else {
+					dcdebug("New update available for extension %s (current version %s, available version %s)", aName.c_str(), aCurrentVersion.c_str(), elem.key().c_str());
+				}
 			}
 
-			auto comp = curSemver.compare(remoteSemver);
-			if (comp < 0) {
-				dcdebug("New update available for extension %s (current version %s, available version %s)", aName.c_str(), aCurrentVersion.c_str(), elem.key().c_str());
+			// Install
+			const auto dist = elem.value().at("dist");
 
-				// Has newer
-				const auto dist = elem.value().at("dist");
+			const auto url = dist.at("tarball");
+			const auto sha = dist.at("shasum");
 
-				const auto url = dist.at("tarball");
-				const auto sha = dist.at("shasum");
-
-				// Download
-				installF(aName, url, sha);
-			} else {
-				// No new version available
-				dcdebug("No updates available for extension %s", aName.c_str());
-				return;
-			}
+			installF(aName, url, sha);
 		}
 	}
 }

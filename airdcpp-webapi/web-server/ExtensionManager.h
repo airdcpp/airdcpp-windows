@@ -80,6 +80,10 @@ namespace webserver {
 
 		// Parses the engine command param (command1;command2;...) and tests each token for an existing application
 		static string selectEngineCommand(const string& aEngineCommands) noexcept;
+
+		NpmRepository& getNpmRepository() noexcept {
+			return *npmRepository.get();
+		}
 	private:
 		bool removeExtension(const ExtensionPtr& aExtension) noexcept;
 		void onExtensionStateUpdated(const Extension* aExtension) noexcept;

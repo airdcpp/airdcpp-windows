@@ -411,6 +411,9 @@
     <ClCompile Include="windows\DynamicTabPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\WinClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -888,6 +891,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\ResourceLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\WinClient.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
