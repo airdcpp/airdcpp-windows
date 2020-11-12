@@ -69,20 +69,30 @@ LRESULT ExtensionsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	ctrlInstall.SetWindowText(CTSTRING(INSTALL));
 	ctrlInstall.SetFont(WinUtil::systemFont);
 
-	ctrlReload.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
-		BS_PUSHBUTTON, 0, IDC_RELOAD);
-	ctrlReload.SetWindowText(CTSTRING(RELOAD));
-	ctrlReload.SetFont(WinUtil::systemFont);
+	ctrlConfigure.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
+		BS_PUSHBUTTON, 0, IDC_CONFIGURE);
+	ctrlConfigure.SetWindowText(CTSTRING(CONFIGURE));
+	ctrlConfigure.SetFont(WinUtil::systemFont);
+
+	ctrlReadMore.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
+		BS_PUSHBUTTON, 0, IDC_OPEN_LINK);
+	ctrlReadMore.SetWindowText(CTSTRING(OPEN_HOMEPAGE));
+	ctrlReadMore.SetFont(WinUtil::systemFont);
 
 	ctrlActions.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 		BS_PUSHBUTTON, 0, IDC_ACTIONS);
 	ctrlActions.SetWindowText(CTSTRING(ACTIONS_DOTS));
 	ctrlActions.SetFont(WinUtil::systemFont);
 
-	ctrlReadMore.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
-		BS_PUSHBUTTON, 0, IDC_OPEN_LINK);
-	ctrlReadMore.SetWindowText(CTSTRING(OPEN_HOMEPAGE));
-	ctrlReadMore.SetFont(WinUtil::systemFont);
+	ctrlReload.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
+		BS_PUSHBUTTON, 0, IDC_RELOAD);
+	ctrlReload.SetWindowText(CTSTRING(RELOAD));
+	ctrlReload.SetFont(WinUtil::systemFont);
+
+	ctrlOptions.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
+		BS_PUSHBUTTON, 0, IDC_SETTINGS_OPTIONS);
+	ctrlOptions.SetWindowText(CTSTRING(OPTIONS_DOTS));
+	ctrlOptions.SetFont(WinUtil::systemFont);
 
 	SettingsManager::getInstance()->addListener(this);
 
@@ -141,14 +151,44 @@ ExtensionsFrame::ExtensionGroupEnum ExtensionsFrame::ItemInfo::getGroupId() cons
 	return ext->isManaged() ? ExtensionGroupEnum::INSTALLED : ExtensionGroupEnum::REMOTE;
 }
 
+string ExtensionsFrame::ItemInfo::getHomepage() const noexcept {
+	const auto ret = catalogItem ? catalogItem->homepage : ext->getHomepage();
+	if (!ret.empty()) {
+		return ret;
+	}
+
+	if (catalogItem) {
+		return "https://www.npmjs.com/package/" + getName();
+	}
+
+	return Util::emptyString;
+}
+
+const string& ExtensionsFrame::ItemInfo::getName() const noexcept {
+	return ext ? ext->getName() : catalogItem->name;
+}
+
+const string& ExtensionsFrame::ItemInfo::getDescription() const noexcept {
+	return ext ? ext->getDescription() : catalogItem->description;
+}
+
+void ExtensionsFrame::ItemInfo::setCatalogItem(const string& aName, const string& aDescription, const string& aVersion, const string& aHomepage) noexcept {
+	catalogItem = make_unique<ExtensionCatalogItem>(ExtensionCatalogItem({
+		aName,
+		aDescription,
+		aVersion,
+		aHomepage
+	}));
+}
+
 bool ExtensionsFrame::ItemInfo::hasUpdate() const noexcept {
-	if (!ext || latestVersion.empty()) {
+	if (!ext || !catalogItem) {
 		return false;
 	}
 
 	try {
 		semver::version installedSemver{ ext->getVersion() };
-		semver::version latestSemver{ latestVersion };
+		semver::version latestSemver{ catalogItem->version };
 
 		auto comp = installedSemver.compare(latestSemver);
 		return comp < 0;
@@ -167,8 +207,7 @@ LRESULT ExtensionsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 		}
 		
 		if (ctrlList.GetSelectedCount() == 1) {
-			int sel = ctrlList.GetNextItem(-1, LVNI_SELECTED);
-			auto ii = ctrlList.getItemData(sel);
+			auto ii = ctrlList.getSelectedItem();
 			string title = ii->ext ? ii->ext->getName() : ii->getName();
 			OMenu menu;
 			menu.CreatePopupMenu();
@@ -182,11 +221,29 @@ LRESULT ExtensionsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 					menu.appendItem(TSTRING(UPDATE), [=] { onUpdateExtension(ii); }, hasDownload ? OMenu::FLAG_DISABLED : 0);
 				}
 
+				if (ii->ext->hasSettings()) {
+					menu.appendItem(TSTRING(CONFIGURE) + _T("..."), [=] { onConfigExtension(ii); });
+				}
+
+				if (!ii->getHomepage().empty()) {
+					menu.appendItem(TSTRING(OPEN_HOMEPAGE), [=] { onReadMore(ii); });
+				}
+
 				appendLocalExtensionActions({ ii }, menu);
 			}
 
 			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 			return TRUE;
+		} else {
+			const auto localExtensions = getSelectedLocalExtensions();
+			if (!localExtensions.empty()) {
+				OMenu menu;
+				menu.CreatePopupMenu();
+				menu.InsertSeparatorFirst(TSTRING(EXTENSIONS));
+				appendLocalExtensionActions(localExtensions, menu);
+				menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
+				return TRUE;
+			}
 		}
 	}
 
@@ -231,10 +288,6 @@ void ExtensionsFrame::appendLocalExtensionActions(const ItemInfoList& aItems, OM
 		});
 	}
 
-	if (aItems.size() == 1 && aItems.front()->ext->hasSettings()) {
-		menu_.appendItem(TSTRING(CONFIGURE) + _T("..."), [=] { onConfigExtension(aItems.front()); });
-	}
-
 	if (hasManagedExtensions) {
 		menu_.appendSeparator();
 		menu_.appendItem(TSTRING(UNINSTALL), [=] {
@@ -255,6 +308,12 @@ LRESULT ExtensionsFrame::onClickedInstall(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 LRESULT ExtensionsFrame::onClickedReadMore(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	auto ii = ctrlList.getSelectedItem();
 	onReadMore(ii);
+	return TRUE;
+}
+
+LRESULT ExtensionsFrame::onClickedConfigure(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	auto ii = ctrlList.getSelectedItem();
+	onConfigExtension(ii);
 	return TRUE;
 }
 
@@ -303,8 +362,40 @@ LRESULT ExtensionsFrame::onClickedExtensionActions(WORD /*wNotifyCode*/, WORD /*
 	return 0;
 }
 
+LRESULT ExtensionsFrame::onClickedSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	CRect rect;
+	ctrlOptions.GetWindowRect(rect);
+	auto pt = rect.BottomRight();
+	pt.x = pt.x - rect.Width();
+	ctrlOptions.SetState(true);
+
+	OMenu targetMenu;
+	targetMenu.CreatePopupMenu();
+
+	{
+		const auto addSettingMenuItem = [&](ApiSettingItem& aItem) {
+			targetMenu.appendItem(Text::toT(aItem.getTitle()), [&aItem] {
+				aItem.setValue(!aItem.getValue());
+			}, aItem.getValue() ? OMenu::FLAG_CHECKED : 0);
+		};
+
+		addSettingMenuItem(WEBCFG(EXTENSIONS_AUTO_UPDATE));
+		addSettingMenuItem(WEBCFG(EXTENSIONS_DEBUG_MODE));
+	}
+
+	targetMenu.appendSeparator();
+
+	targetMenu.appendItem(CTSTRING(EXTENSIONS_DEV_HELP), [=] {
+		ActionUtil::openLink(_T("https://github.com/airdcpp-web/airdcpp-extensions"));
+	});
+
+	targetMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_VERPOSANIMATION, pt);
+	return 0;
+}
+
 LRESULT ExtensionsFrame::onExitMenuLoop(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	ctrlActions.SetState(false);
+	ctrlOptions.SetState(false);
 	return 0;
 }
 
@@ -451,11 +542,11 @@ void ExtensionsFrame::parseExtensionCatalogItems(const json& aListJson) noexcept
 			string version = package.at("version");
 
 			json links = package.at("links");
-			string homepage = package.value("homepage", "https://www.npmjs.com/package/" + name);
+			string homepage = package.value("homepage", Util::emptyString);
 
 			auto existing = itemInfos.find(name);
 			if (existing != itemInfos.end()) {
-				existing->second->setLatestVersion(version);
+				existing->second->setCatalogItem(name, desc, version, homepage);
 			} else {
 				itemInfos.emplace(name, make_unique<ItemInfo>(name, desc, version, homepage));
 			}
@@ -569,40 +660,55 @@ void ExtensionsFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		statusTextHandler.onUpdateLayout(w[1]);
 	}
 
-	CRect rc = rect;
-	int tmp = sr.top + 32;
-	rc.bottom -= tmp;
-	ctrlList.MoveWindow(rc);
-
-	rc = rect;
-
 	const int button_width = 100;
-	// const int textbox_width = 30;
 
-	const long bottom = rc.bottom - 2;
-	const long top = rc.bottom - 28;
+	{
+		// List
+		CRect rc = rect;
+		int tmp = sr.top + 32;
+		rc.bottom -= tmp;
+		ctrlList.MoveWindow(rc);
+	}
 
-	//buttons
-	rc.bottom = bottom;
-	rc.top = bottom - 22;
-	rc.left = 20;
-	rc.right = rc.left + button_width;
-	ctrlInstall.MoveWindow(rc);
+	const long bottom = rect.bottom - 2;
+	const long top = rect.bottom - 28;
 
-	// rc.OffsetRect(button_width + 2, 0);
-	//ctrlInstall.MoveWindow(rc);
+	{
+		// Extension-specific actions
+		CRect rc = rect;
 
-	rc.OffsetRect(button_width + 2, 0);
-	ctrlActions.MoveWindow(rc);
+		// buttons
+		rc.bottom = bottom;
+		rc.top = bottom - 22;
+		rc.left = 20;
+		rc.right = rc.left + button_width;
+		ctrlInstall.MoveWindow(rc);
 
-	rc.OffsetRect(button_width + 2, 0);
-	ctrlReadMore.MoveWindow(rc);
+		rc.OffsetRect(button_width + 2, 0);
+		ctrlConfigure.MoveWindow(rc);
 
-	rc.OffsetRect(button_width + 4, 0);
-	rc.right = rc.left + button_width + 40;
-	ctrlReload.MoveWindow(rc);
-	// CRect rc = rect;
-	// ctrlList.MoveWindow(rc);
+		rc.OffsetRect(button_width + 2, 0);
+		ctrlReadMore.MoveWindow(rc);
+
+		rc.OffsetRect(button_width + 2, 0);
+		ctrlActions.MoveWindow(rc);
+	}
+
+	{
+		// Tab actions
+		CRect rc = rect;
+		rc.bottom = bottom;
+		rc.top = bottom - 22;
+		rc.right -= 20;
+
+		rc.left = rc.right - button_width;
+
+		ctrlOptions.MoveWindow(rc);
+		rc.OffsetRect(-(button_width + 4), 0);
+
+		ctrlReload.MoveWindow(rc);
+		rc.OffsetRect(-(button_width + 4), 0);
+	}
 }
 
 void ExtensionsFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
@@ -700,7 +806,7 @@ const tstring ExtensionsFrame::ItemInfo::getText(int col) const {
 	case COLUMN_NAME: return Text::toT(getName());
 	case COLUMN_DESCRIPTION: return Text::toT(getDescription());
 	case COLUMN_INSTALLED_VERSION: return ext == nullptr ? Util::emptyStringT : Text::toT(ext->getVersion());
-	case COLUMN_LATEST_VERSION: return Text::toT(getLatestVersion());
+	case COLUMN_LATEST_VERSION: return catalogItem ? Text::toT(catalogItem->version) : Util::emptyStringT;
 
 	default: return Util::emptyStringT;
 	}
@@ -713,8 +819,10 @@ void ExtensionsFrame::fixControls() noexcept {
 	ctrlInstall.SetWindowTextW(isLocalExtension ? CTSTRING(UPDATE) : CTSTRING(INSTALL));
 
 	::EnableWindow(GetDlgItem(IDC_UPDATE), !httpDownload && ctrlList.GetSelectedCount() == 1 && ((isLocalExtension && installedExtensions.front()->hasUpdate()) || installedExtensions.empty()));
+	::EnableWindow(GetDlgItem(IDC_CONFIGURE), isLocalExtension && installedExtensions.front()->ext->hasSettings());
 	::EnableWindow(GetDlgItem(IDC_OPEN_LINK), ctrlList.GetSelectedCount() == 1 && !ctrlList.getSelectedItem()->getHomepage().empty());
 	::EnableWindow(GetDlgItem(IDC_ACTIONS), !installedExtensions.empty());
+
 	::EnableWindow(GetDlgItem(IDC_RELOAD), !httpDownload);
 }
 

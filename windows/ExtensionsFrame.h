@@ -62,9 +62,11 @@ public:
 		MESSAGE_HANDLER(WM_EXITMENULOOP, onExitMenuLoop)
 
 		COMMAND_ID_HANDLER(IDC_UPDATE, onClickedInstall)
+		COMMAND_ID_HANDLER(IDC_CONFIGURE, onClickedExtensionActions)
 		COMMAND_ID_HANDLER(IDC_ACTIONS, onClickedExtensionActions)
 		COMMAND_ID_HANDLER(IDC_RELOAD, onClickedReload)
 		COMMAND_ID_HANDLER(IDC_OPEN_LINK, onClickedReadMore)
+		COMMAND_ID_HANDLER(IDC_SETTINGS_OPTIONS, onClickedSettings)
 
 		CHAIN_MSG_MAP(baseClass)
 		ALT_MSG_MAP(EXT_STATUS_MSG_MAP)
@@ -76,8 +78,10 @@ public:
 
 	LRESULT onClickedExtensionActions(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedInstall(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onClickedConfigure(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedReadMore(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedReload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onClickedSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 
@@ -111,24 +115,24 @@ private:
 		REMOTE = 3,
 	};
 
+	struct ExtensionCatalogItem {
+		const string name;
+		const string description;
+		const string version;
+		const string homepage;
+	};
+
 	class ItemInfo {
 	public:
 		ItemInfo(const webserver::ExtensionPtr& aExtension) : ext(aExtension) { }
-		ItemInfo(const string& aName, const string& aDescription, const string& aVersion, const string& aHomepage) : name(aName),
-			description(aDescription), latestVersion(aVersion), homepage(aHomepage) { }
+		ItemInfo(const string& aName, const string& aDescription, const string& aVersion, const string& aHomepage) { 
+			setCatalogItem(aName, aDescription, aVersion, aHomepage);
+		}
 		~ItemInfo() { }
 
-		const string& getName() const noexcept {
-			return ext ? ext->getName() : name;
-		}
-
-		const string& getDescription() const noexcept {
-			return ext ? ext->getDescription() : description;
-		}
-
-		const string& getHomepage() const noexcept {
-			return ext ? ext->getHomepage() : homepage;
-		}
+		const string& getName() const noexcept;
+		const string& getDescription() const noexcept;
+		string getHomepage() const noexcept;
 
 		ExtensionGroupEnum getGroupId() const noexcept;
 
@@ -139,13 +143,11 @@ private:
 
 		bool hasUpdate() const noexcept;
 
-		GETSET(string, latestVersion, LatestVersion);
+		void setCatalogItem(const string& aName, const string& aDescription, const string& aVersion, const string& aHomepage) noexcept;
 
 		webserver::ExtensionPtr ext = nullptr;
+		unique_ptr<ExtensionCatalogItem> catalogItem = nullptr;
 	private:
-		const string name;
-		const string description;
-		const string homepage;
 	};
 
 	typedef unordered_map<string, unique_ptr<ItemInfo>> ItemInfoMap;
@@ -199,7 +201,7 @@ private:
 	CStatusBarCtrl ctrlStatus;
 	int statusSizes[2];
 
-	CButton ctrlInstall, ctrlActions, ctrlReadMore, ctrlReload;
+	CButton ctrlInstall, ctrlActions, ctrlReadMore, ctrlReload, ctrlOptions, ctrlConfigure;
 
 	string getData(const string& aData, const string& aEntry, size_t& pos) noexcept;
 	void updateStatusAsync(const tstring& aMessage, uint8_t aSeverity) noexcept;

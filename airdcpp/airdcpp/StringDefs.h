@@ -399,6 +399,7 @@ enum Strings { // @DontAdd
 	EXTENSION_CATALOG_DOWNLOADING, // "Downloading extension catalog..."
 	EXTENSION_CATALOG_DOWNLOADED, // "Extension catalog downloaded"
 	EXTENSIONS_EMPTY, // "No extensions have been defined"
+	EXTENSIONS_DEV_HELP, // "How to write a new extension?"
 	EXTRA_SLOTS_SET, // "Extra slots set"
 	EiB, // "EiB"
 	FAILED, // "Failed"
@@ -1869,7 +1870,7 @@ enum Strings { // @DontAdd
 	WEB_CFG_PING_TIMEOUT, // "Socket ping timeout"
 	WEB_CFG_EXTENSIONS_DEBUG_MODE, // "Run extensions in debug mode"
 	WEB_CFG_EXTENSIONS_INIT_TIMEOUT, // "Initialization timeout for extensions"
-	WEB_CFG_EXTENSIONS_AUTO_UPDATE, // "Automatically install updates for installed extensions"
+	WEB_CFG_EXTENSIONS_AUTO_UPDATE, // "Update extensions automatically"
 
 	WEB_EXTENSION_INIT_TIMED_OUT, // "Initialization timed out for an extension %1%"
 	WEB_EXTENSION_LOADED, // "Extension %1% was loaded"

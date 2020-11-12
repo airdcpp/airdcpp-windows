@@ -1667,6 +1667,7 @@
 #define IDC_PLACEHOLDER                 10236
 #define IDC_SETTINGS_BIND_ADDRESS_HTTP_LABEL 10237
 #define IDC_BIND_ADDRESS_HTTP           10238
+#define IDC_CONFIGURE					10239
 #define IDC_REFRESH_WINAMP              11011
 #define IDC_WINAMP_LIST                 11012
 #define IDC_POSITION                    11013
