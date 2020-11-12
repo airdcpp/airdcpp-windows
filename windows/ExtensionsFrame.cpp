@@ -229,6 +229,7 @@ LRESULT ExtensionsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 					menu.appendItem(TSTRING(OPEN_HOMEPAGE), [=] { onReadMore(ii); });
 				}
 
+				menu.appendSeparator();
 				appendLocalExtensionActions({ ii }, menu);
 			}
 

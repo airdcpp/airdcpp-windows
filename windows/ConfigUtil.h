@@ -33,8 +33,14 @@ using namespace webserver;
 class ConfigUtil {
 public:
 
-	struct ConfigItem {
-		ConfigItem(ExtensionSettingItem& aSetting) : setting(aSetting) {}
+	class ConfigItem {
+	public:
+		enum {
+			FLAG_DISABLE_LABEL = 0x01,
+			FLAG_DISABLE_HELP = 0x02,
+		};
+
+		ConfigItem(ExtensionSettingItem& aSetting, int aFlags = 0);
 
 		string getId() const {
 			return setting.name;
@@ -46,15 +52,28 @@ public:
 
 		ExtensionSettingItem& setting;
 
-		virtual void Create(HWND m_hWnd) = 0;
-		virtual int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing) = 0;
+		void Create(HWND m_hWnd);
+		int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing);
+
 		virtual bool handleClick(HWND m_hWnd) = 0;
 		virtual bool write() = 0;
 		virtual tstring valueToString() noexcept;
 
 		int getParentRightEdge(HWND m_hWnd);
+
+		static int calculateTextRows(const tstring& aText, HWND m_hWndControl) noexcept;
+	protected:
+		virtual void Create(HWND m_hWnd, RECT rcDefault) = 0;
+		virtual void updateLayout(HWND m_hWnd, CRect& rect_) = 0;
+	private:
 		CRect calculateItemPosition(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing);
 
+		void addLabel(HWND m_hWnd, CRect& rect_) noexcept;
+		void addHelpText(HWND m_hWnd, CRect& rect_) noexcept;
+
+		CStatic ctrlLabel;
+		CStatic ctrlHelp;
+		const int flags;
 	};
 
 	static shared_ptr<ConfigItem> getConfigItem(ExtensionSettingItem& aSetting);
@@ -71,21 +90,18 @@ public:
 			return true;
 		}
 
-		void setLabel();
-
-		void Create(HWND m_hWnd) override;
-		int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing) override;
+		void Create(HWND m_hWnd, RECT rcDefault) override;
+		void updateLayout(HWND m_hWnd, CRect& rect_) override;
 
 		bool handleClick(HWND m_hWnd) override;
 
-		CStatic ctrlLabel;
 		CEdit ctrlEdit;
 	};
 
 	//CheckBox type config
 	struct BoolConfigItem : public ConfigItem {
 
-		BoolConfigItem(ExtensionSettingItem& aSetting) : ConfigItem(aSetting) {}
+		BoolConfigItem(ExtensionSettingItem& aSetting) : ConfigItem(aSetting, FLAG_DISABLE_LABEL) {}
 
 
 		//todo handle errors
@@ -96,10 +112,9 @@ public:
 		}
 
 		tstring valueToString() noexcept override;
-		void setLabel();
 
-		void Create(HWND m_hWnd) override;
-		int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing) override;
+		void Create(HWND m_hWnd, RECT rcDefault) override;
+		void updateLayout(HWND m_hWnd, CRect& rect_) override;
 
 		bool handleClick(HWND m_hWnd) override;
 
@@ -111,8 +126,8 @@ public:
 
 		BrowseConfigItem(ExtensionSettingItem& aSetting) : StringConfigItem(aSetting) {}
 
-		void Create(HWND m_hWnd) override;
-		int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing) override;
+		void Create(HWND m_hWnd, RECT rcDefault) override;
+		void updateLayout(HWND m_hWnd, CRect& rect_) override;
 
 		bool handleClick(HWND m_hWnd) override;
 		CButton ctrlButton;
@@ -131,14 +146,11 @@ public:
 			return true;
 		}
 
-		void setLabel();
-
-		void Create(HWND m_hWnd) override;
-		int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing) override;
+		void Create(HWND m_hWnd, RECT rcDefault) override;
+		void updateLayout(HWND m_hWnd, CRect& rect_) override;
 
 		bool handleClick(HWND m_hWnd) override;
 
-		CStatic ctrlLabel;
 		CEdit ctrlEdit;
 		CUpDownCtrl spin;
 	};
@@ -147,31 +159,29 @@ public:
 
 		EnumConfigItem(ExtensionSettingItem& aSetting) : ConfigItem(aSetting) {}
 
-		void Create(HWND m_hWnd) override;
-		int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing) override;
+		void Create(HWND m_hWnd, RECT rcDefault) override;
+		void updateLayout(HWND m_hWnd, CRect& rect_) override;
 		tstring valueToString() noexcept override;
 
 		//todo handle errors
 		bool write() override;
 		bool handleClick(HWND m_hWnd) override;
 
-		CStatic ctrlLabel;
 		CComboBox ctrlSelect;
 		int buttonWidth = 80;
 	};
 
 	struct WebConfigItem : public ConfigItem {
 
-		WebConfigItem(ExtensionSettingItem& aSetting) : ConfigItem(aSetting) {}
+		WebConfigItem(ExtensionSettingItem& aSetting) : ConfigItem(aSetting, FLAG_DISABLE_HELP) {}
 
-		void Create(HWND m_hWnd) override;
-		int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing) override;
+		void Create(HWND m_hWnd, RECT rcDefault) override;
+		void updateLayout(HWND m_hWnd, CRect& rect_) override;
 
 		//todo handle errors
 		bool write() override;
 		bool handleClick(HWND m_hWnd) override;
 
-		CStatic ctrlLabel;
 		CStatic ctrlValue;
 		CHyperLink url;
 	};

@@ -13,7 +13,6 @@
 /installer/.transifexrc
 /installer/dummy.transifexrc
 /scripts/ftp_credentials.txt
-/scripts/send_updater_spr.cmd
 /ipch
 /.vs
 *.suo
