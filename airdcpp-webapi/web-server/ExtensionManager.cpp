@@ -219,6 +219,7 @@ namespace webserver {
 			}
 		}
 
+		aExtension->removeListener(this);
 		fire(ExtensionManagerListener::ExtensionRemoved(), aExtension);
 		return true;
 	}
@@ -365,7 +366,7 @@ namespace webserver {
 		string extensionName;
 		try {
 			// Validate the package content
-			Extension extensionInfo(tempPackageDirectory, nullptr, nullptr, true);
+			Extension extensionInfo(tempPackageDirectory, nullptr, true);
 
 			extensionInfo.checkCompatibilityThrow();
 			extensionName = extensionInfo.getName();
@@ -447,7 +448,7 @@ namespace webserver {
 	}
 
 	ExtensionPtr ExtensionManager::registerRemoteExtensionThrow(const SessionPtr& aSession, const json& aPackageJson) {
-		auto ext = std::make_shared<Extension>(aSession, aPackageJson, std::bind(&ExtensionManager::onExtensionStateUpdated, this, std::placeholders::_1));
+		auto ext = std::make_shared<Extension>(aSession, aPackageJson);
 
 		auto existing = getExtension(ext->getName());
 		if (existing) {
@@ -463,12 +464,35 @@ namespace webserver {
 			extensions.push_back(ext);
 		}
 
+		ext->addListener(this);
+
 		fire(ExtensionManagerListener::ExtensionAdded(), ext);
 		return ext;
 	}
 
 	void ExtensionManager::onExtensionStateUpdated(const Extension* aExtension) noexcept {
 		fire(ExtensionManagerListener::ExtensionStateUpdated(), aExtension);
+	}
+
+
+	void ExtensionManager::on(ExtensionListener::ExtensionStarted, const Extension* aExt) noexcept {
+		onExtensionStateUpdated(aExt);
+	}
+
+	void ExtensionManager::on(ExtensionListener::ExtensionStopped, const Extension* aExt, bool /*aFailed*/) noexcept {
+		onExtensionStateUpdated(aExt);
+	}
+
+	void ExtensionManager::on(ExtensionListener::SettingValuesUpdated, const Extension* aExt, const SettingValueMap&) noexcept {
+		onExtensionStateUpdated(aExt);
+	}
+
+	void ExtensionManager::on(ExtensionListener::SettingDefinitionsUpdated, const Extension* aExt) noexcept {
+		onExtensionStateUpdated(aExt);
+	}
+
+	void ExtensionManager::on(ExtensionListener::PackageUpdated, const Extension* aExt) noexcept {
+		onExtensionStateUpdated(aExt);
 	}
 
 #define EXIT_CODE_TIMEOUT 124
@@ -503,8 +527,7 @@ namespace webserver {
 		try {
 			ext = std::make_shared<Extension>(
 				Util::joinDirectory(aPath, EXT_PACKAGE_DIR),
-				std::bind(&ExtensionManager::onExtensionFailed, this, std::placeholders::_1, std::placeholders::_2),
-				std::bind(&ExtensionManager::onExtensionStateUpdated, this, std::placeholders::_1)
+				std::bind(&ExtensionManager::onExtensionFailed, this, std::placeholders::_1, std::placeholders::_2)
 			);
 		} catch (const Exception& e) {
 			log(STRING_F(WEB_EXTENSION_LOAD_ERROR_X, aPath % e.what()), LogMessage::SEV_ERROR);
@@ -523,6 +546,7 @@ namespace webserver {
 			extensions.push_back(ext);
 		}
 
+		ext->addListener(this);
 		return ext;
 	}
 

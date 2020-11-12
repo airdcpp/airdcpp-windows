@@ -28,6 +28,7 @@
 #include <airdcpp/UpdateManagerListener.h>
 #include <airdcpp/Util.h>
 
+#include <web-server/ExtensionListener.h>
 #include <web-server/ExtensionManagerListener.h>
 #include <web-server/WebServerManagerListener.h>
 
@@ -37,7 +38,7 @@ namespace dcpp {
 
 namespace webserver {
 	class NpmRepository;
-	class ExtensionManager: public Speaker<ExtensionManagerListener>, private WebServerManagerListener, private UpdateManagerListener {
+	class ExtensionManager: public Speaker<ExtensionManagerListener>, private WebServerManagerListener, private UpdateManagerListener, ExtensionListener {
 	public:
 
 #ifdef _WIN32
@@ -119,6 +120,13 @@ namespace webserver {
 		void on(WebServerManagerListener::Stopping) noexcept override;
 		void on(WebServerManagerListener::Stopped) noexcept override;
 		void on(WebServerManagerListener::SocketDisconnected, const WebSocketPtr& aSocket) noexcept override;
+
+		virtual void on(ExtensionListener::ExtensionStarted, const Extension*) noexcept override;
+		virtual void on(ExtensionListener::ExtensionStopped, const Extension*, bool /*aFailed*/) noexcept override;
+
+		virtual void on(ExtensionListener::SettingValuesUpdated, const Extension*, const SettingValueMap&) noexcept override;
+		virtual void on(ExtensionListener::SettingDefinitionsUpdated, const Extension*) noexcept override;
+		virtual void on(ExtensionListener::PackageUpdated, const Extension*) noexcept override;
 
 		void on(UpdateManagerListener::VersionFileDownloaded, SimpleXML& aXml) noexcept override;
 

@@ -62,7 +62,7 @@ public:
 		MESSAGE_HANDLER(WM_EXITMENULOOP, onExitMenuLoop)
 
 		COMMAND_ID_HANDLER(IDC_UPDATE, onClickedInstall)
-		COMMAND_ID_HANDLER(IDC_CONFIGURE, onClickedExtensionActions)
+		COMMAND_ID_HANDLER(IDC_CONFIGURE, onClickedConfigure)
 		COMMAND_ID_HANDLER(IDC_ACTIONS, onClickedExtensionActions)
 		COMMAND_ID_HANDLER(IDC_RELOAD, onClickedReload)
 		COMMAND_ID_HANDLER(IDC_OPEN_LINK, onClickedReadMore)

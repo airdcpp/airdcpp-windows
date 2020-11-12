@@ -349,7 +349,6 @@ void WebServerPage::updateState(ServerState aNewState) noexcept {
 		}
 	}
 
-	// ctrlStatus.SetWindowText(statusText.c_str());
 	ctrlStatus.handleEditClearAll();
 	ctrlStatus.AppendText(statusText, false);
 	ctrlStatus.RedrawWindow();

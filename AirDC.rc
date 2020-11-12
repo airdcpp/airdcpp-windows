@@ -1367,8 +1367,8 @@ BEGIN
     LTEXT           "Note; Custom search types will only be applied to ADC hubs! On NMDC hubs, using a predefined search type will only search for a set of predefined, unconfigurable extensions; using a custom type will default to searching for any extension.",IDC_SEARCHTYPES_NOTE,8,264,254,43
 END
 
-IDD_LINE DIALOGEX 0, 0, 258, 46
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_CAPTION | WS_VSCROLL | WS_SYSMENU | WS_THICKFRAME
+IDD_LINE DIALOGEX 0, 0, 239, 46
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Title"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
@@ -1630,15 +1630,6 @@ END
 IDD_SHARING_OPTIONS AFX_DIALOG_LAYOUT
 BEGIN
     0
-END
-
-IDD_LINE AFX_DIALOG_LAYOUT
-BEGIN
-    0,
-    100, 100, 100, 100,
-    100, 100, 100, 100,
-    100, 100, 100, 100,
-    100, 100, 100, 100
 END
 
 

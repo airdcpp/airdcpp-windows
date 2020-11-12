@@ -768,6 +768,8 @@ void ExtensionsFrame::on(webserver::ExtensionManagerListener::ExtensionStateUpda
 			auto& ii = i->second;
 			updateEntry(ii.get());
 		}
+
+		fixControls();
 	});
 }
 
