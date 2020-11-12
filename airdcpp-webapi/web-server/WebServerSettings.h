@@ -50,7 +50,7 @@ namespace webserver {
 			EXTENSIONS_AUTO_UPDATE,
 		};
 
-		ServerSettingItem& getValue(ServerSettings aSetting) noexcept {
+		ServerSettingItem& getSettingItem(ServerSettings aSetting) noexcept {
 			return settings[aSetting];
 		}
 
@@ -62,7 +62,7 @@ namespace webserver {
 		vector<ServerSettingItem> settings;
 	};
 
-#define WEBCFG(k) (webserver::WebServerManager::getInstance()->getSettings().getValue(webserver::WebServerSettings::k))
+#define WEBCFG(k) (webserver::WebServerManager::getInstance()->getSettings().getSettingItem(webserver::WebServerSettings::k))
 }
 
 #endif

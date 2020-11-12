@@ -1,7 +1,8 @@
 @echo off
 
-for /f "delims=" %%x in (ftp_credentials.txt) do (set "%%x")
+:: for /f "delims=" %%x in (ftp_credentials.txt) do (set "%%x")
 
+set dryrun=true
 set send=true
 set ftpaddress=ftp.airdcpp.net
 set ftpdir=nightly
@@ -9,14 +10,17 @@ set updaterdir=updater
 set versiondir=version
 set startupdir=%CD%
 
-cd ..
+SET SOLUTION_DIR=%~dp0\..\
+
+cd %SOLUTION_DIR%
+
+for /f "delims=" %%x in (%SOLUTION_DIR%\scripts\ftp_credentials.txt) do (set "%%x")
 
 ::Pre checks
 IF %send%==false goto :SendDisabled 
 IF [%1]==[] goto :invalidParameters
 set arch=%1
 IF NOT EXIST compiled\%arch%\AirDC.exe goto :exeNotFound
-set solutionDir=%CD%
 
 
 ::Check revision
@@ -70,10 +74,18 @@ ECHO Y | DEL dir
 ECHO Y | DEL open
 ECHO Y | DEL quit
 
+:: Install Node.js
+echo Installing Node.js...
+call %SOLUTION_DIR%\scripts\update_node.bat > nul
+
+:: Create updater
 echo Creating the updater file...
 cd %arch%
 AirDC.exe /createupdate
 cd ..
+
+:: Send (if enabled)
+IF %dryrun%==true goto :end 
 call :SendFTP %fileName%
 goto :end
 

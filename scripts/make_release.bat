@@ -15,7 +15,7 @@ cd installer
 "%ProgramFiles%\7-Zip\7z.exe" a -t7z %solutionDir%\releases\%~1\%fileName% Web-resources EmoPacks Themes popup.bmp dcppboot.xml
 cd ..
 cd compiled\Win32
-"%ProgramFiles%\7-Zip\7z.exe" a -t7z %solutionDir%\releases\%~1\%fileName% AirDC.exe AirDC.pdb
+"%ProgramFiles%\7-Zip\7z.exe" a -t7z %solutionDir%\releases\%~1\%fileName% AirDC.exe AirDC.pdb Node.js
 cd %solutionDir%
 
 :: 64 bit portable
@@ -24,7 +24,7 @@ cd installer
 "%ProgramFiles%\7-Zip\7z.exe" a -t7z %solutionDir%\releases\%~1\%fileName% Web-resources EmoPacks Themes popup.bmp dcppboot.xml
 cd ..
 cd compiled\x64
-"%ProgramFiles%\7-Zip\7z.exe" a -t7z %solutionDir%\releases\%~1\%fileName% AirDC.exe AirDC.pdb
+"%ProgramFiles%\7-Zip\7z.exe" a -t7z %solutionDir%\releases\%~1\%fileName% AirDC.exe AirDC.pdb Node.js
 cd %solutionDir%
 
 :: Installer

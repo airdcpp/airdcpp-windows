@@ -34,14 +34,13 @@
 #include "MainFrm.h"
 #include "Resource.h"
 #include "RichTextBox.h"
-#include "ShellExecAsUser.h"
 #include "SingleInstance.h"
 #include "SplashWindow.h"
 #include "WinClient.h"
 #include "WinUtil.h"
 
 #include <airdcpp/MerkleTree.h>
-#include <airdcpp/Updater.h>
+
 #include <airdcpp/version.h>
 
 #include <delayimp.h>
@@ -264,146 +263,39 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 		handleCrash(0, "std::terminate was called", nullptr);
 	});
 #endif
-	
-	LPTSTR* argv = __targv;
-	int argc = --__argc;
 	Util::initialize();
 
-	auto addStartupParams = [&argc, &argv] () -> void {
-		while (argc > 0) {
-			Util::addStartupParam(Text::fromT(*argv));
-			argc--;
-			argv++;
-		}
-	};
-
-	if (argc > 0) {
-		argv++;
-		if(_tcscmp(*argv, _T("/createupdate")) == 0) {
-			SplashWindow::create();
-			WinUtil::splash->update("Creating updater");
-
-			auto updaterFilePath = Updater::createUpdate();
-
-			addStartupParams();
-			if (Util::hasStartupParam("/test")) {
-				WinUtil::splash->update("Extracting updater");
-				auto updaterExeFile = Updater::extractUpdater(updaterFilePath, BUILD_NUMBER + 1, Util::toString(Util::rand()));
-
-				WinUtil::addUpdate(updaterExeFile, true);
-				WinUtil::runPendingUpdate();
-
-				if (Util::hasStartupParam("/fail")) {
-					WinUtil::splash->update("Testing failure");
-					Sleep(15000); // Prevent overwriting the exe
-				}
-			}
-
-			WinUtil::splash->destroy();
-			return FALSE;
-		} else if(_tcscmp(*argv, _T("/sign")) == 0 && --argc >= 2) {
-			string xmlPath = Text::fromT(*++argv);
-			string keyPath = Text::fromT(*++argv);
-			bool genHeader = (argc > 2 && (_tcscmp(*++argv, _T("-pubout")) == 0));
-			if(Util::fileExists(xmlPath) && Util::fileExists(keyPath))
-				Updater::signVersionFile(xmlPath, keyPath, genHeader);
-			return FALSE;
-		} else if(_tcscmp(*argv, _T("/update")) == 0) {
-			if(--argc >= 1) {
-				SplashWindow::create();
-				WinUtil::splash->update("Updating");
-				string sourcePath = Util::getAppFilePath();
-				string installPath = Text::fromT(*++argv); argc--;
-
-				SetPriorityClass(GetCurrentProcess(), IDLE_PRIORITY_CLASS);
-				SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_IDLE);
-
-				bool success = false;
-
-				for (;;) {
-					string error;
-					success = Updater::applyUpdate(sourcePath, installPath, error, 10);
-					if (!success) {
-						if (::MessageBox(NULL, Text::toT("Updating failed:\n\n" + error + "\n\nDo you want to retry installing the update?").c_str(), 
-							Text::toT(shortVersionString).c_str(), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2 | MB_TOPMOST) == IDYES) {
-								continue;
-						}
-					}
-					break;
-				}
-
-				SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
-				SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
-
-				//add new startup params
-				Util::addStartupParam(success ? "/updated" : "/updatefailed");
-				Util::addStartupParam("/silent");
-
-				//append the passed params (but leave out the update commands...)
-				argv++;
-				addStartupParams();
-
-				//start the updated instance
-				auto path = Text::toT(installPath + Util::getAppFileName());
-				auto startupParams = Text::toT(Util::getStartupParams(true));
-
-				if (!Util::hasStartupParam("/elevation")) {
-					ShellExecAsUser(NULL, path.c_str(), startupParams.c_str(), NULL);
-				} else {
-					ShellExecute(NULL, NULL, path.c_str(), startupParams.c_str(), NULL, SW_SHOWNORMAL);
-				}
-
-				WinUtil::splash->destroy();
-				return FALSE;
-			}
-			return FALSE;
-		} else {
-			addStartupParams();
-		}
-	}
-
-	string updaterFile;
-	auto updated = Util::hasStartupParam("/updated") || Util::hasStartupParam("/updatefailed");
-	if (Updater::checkPendingUpdates(Util::getAppFilePath(), updaterFile, updated)) {
-		WinUtil::addUpdate(updaterFile);
-		WinUtil::runPendingUpdate();
+	// Startup args
+	if (!WinClient::checkStartupParams()) {
 		return FALSE;
 	}
 
-	if (updated) {
-		// Updating finished, don't leave files in the temp directory
-		try {
-			File::renameFile(UPDATE_TEMP_LOG, UPDATE_FINAL_LOG);
-		} catch (...) {
-
-		}
-	}
-
+	// Other instances
 	bool multiple = Util::hasStartupParam("/silent");
-
-	if(dcapp.IsAnotherInstanceRunning()) {
+	if (dcapp.IsAnotherInstanceRunning()) {
 		// Allow for more than one instance...
-		if(_tcslen(lpstrCmdLine) == 0) {
-			if (::MessageBox(NULL, _T("There is already an instance of AirDC++ running.\nDo you want to launch another instance anyway?"), 
-				Text::toT(shortVersionString).c_str(), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2 | MB_TOPMOST) == IDYES) {
-					multiple = true;
+		if (_tcslen(lpstrCmdLine) == 0) {
+			auto title = _T("There is already an instance of AirDC++ running.\nDo you want to launch another instance anyway?");
+			if (::MessageBox(NULL, title, Text::toT(shortVersionString).c_str(), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2 | MB_TOPMOST) == IDYES) {
+				multiple = true;
 			}
 		}
 
-		if(multiple == false) {
+		if (multiple == false) {
 			HWND hOther = NULL;
 			EnumWindows(searchOtherInstance, (LPARAM)&hOther);
 
-			if( hOther != NULL ) {
+			if (hOther != NULL ) {
 				// pop up
 				::SetForegroundWindow(hOther);
 
-				if( IsIconic(hOther)) {
+				if (IsIconic(hOther)) {
 					// restore
 					::ShowWindow(hOther, SW_RESTORE);
 				}
 				sendCmdLine(hOther, lpstrCmdLine);
 			}
+
 			return FALSE;
 		}
 	}

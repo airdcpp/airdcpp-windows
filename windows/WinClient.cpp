@@ -24,9 +24,7 @@
 #include "PopupManager.h"
 #include "Resource.h"
 #include "ResourceLoader.h"
-#include "RichTextBox.h"
 #include "ShellExecAsUser.h"
-#include "SingleInstance.h"
 #include "SplashWindow.h"
 #include "WinUtil.h"
 #include "Wizard.h"
@@ -42,6 +40,7 @@
 #include <airdcpp/modules/PreviewAppManager.h>
 #include <airdcpp/modules/RSSManager.h>
 #include <airdcpp/modules/WebShortcuts.h>
+#include <airdcpp/ZipFile.h>
 
 #include <web-server/ExtensionManager.h>
 #include <web-server/NpmRepository.h>
@@ -194,6 +193,152 @@ void WinClient::installExtensions() {
 	if (SETTING(SETTINGS_PROFILE) == SettingsManager::PROFILE_RAR && !extMgr.getExtension(RELEASE_VALIDATOR_EXT)) {
 		extMgr.getNpmRepository().install("airdcpp-release-validator");
 	}
+}
+
+void WinClient::listUpdaterFiles(StringPairList& files_, const string& aUpdateFilePath) noexcept {
+	auto assertFiles = [](string&& title, int minExpected, int added) {
+		if (added < minExpected) {
+			questionF(title + ": added " + Util::toString(added) + " files while at least " + Util::toString(minExpected) + " were expected", false, true);
+			ExitProcess(1);
+		}
+	};
+
+	// Node
+	// Note: secondary executables must be added before the application because of an extraction issue in version before 4.00
+	assertFiles("Node.js", 1, ZipFile::CreateZipFileList(files_, Util::getFilePath(Util::getAppFilePath()), Util::emptyString, "^(" + webserver::ExtensionManager::localNodeDirectoryName + ")$"));
+
+	// Application
+	assertFiles("Exe", 2, ZipFile::CreateZipFileList(files_, Util::getAppFilePath(), Util::emptyString, "^(AirDC.exe|AirDC.pdb)$"));
+
+	// Additional resources
+	auto installerDirectory = Util::getParentDir(aUpdateFilePath) + "installer" + PATH_SEPARATOR;
+	assertFiles("Themes", 1, ZipFile::CreateZipFileList(files_, installerDirectory, Util::emptyString, "^(Themes)$"));
+	assertFiles("Web resources", 10, ZipFile::CreateZipFileList(files_, installerDirectory, Util::emptyString, "^(Web-resources)$"));
+	assertFiles("Emopacks", 10, ZipFile::CreateZipFileList(files_, installerDirectory, Util::emptyString, "^(EmoPacks)$"));
+}
+
+bool WinClient::checkStartupParams() noexcept {
+	LPTSTR* argv = __targv;
+	int argc = --__argc;
+
+	auto addStartupParams = [&argc, &argv]() -> void {
+		while (argc > 0) {
+			Util::addStartupParam(Text::fromT(*argv));
+			argc--;
+			argv++;
+		}
+	};
+
+	if (argc > 0) {
+		argv++;
+
+		if (_tcscmp(*argv, _T("/createupdate")) == 0) {
+			// AirDC++.exe /createupdate [/test]
+			SplashWindow::create();
+			WinUtil::splash->update("Creating updater");
+
+			auto updaterFilePath = Updater::createUpdate(listUpdaterFiles);
+
+			addStartupParams();
+			if (Util::hasStartupParam("/test")) {
+				WinUtil::splash->update("Extracting updater");
+				auto updaterExeFile = Updater::extractUpdater(updaterFilePath, BUILD_NUMBER + 1, Util::toString(Util::rand()));
+
+				WinUtil::addUpdate(updaterExeFile, true);
+				WinUtil::runPendingUpdate();
+
+				if (Util::hasStartupParam("/fail")) {
+					WinUtil::splash->update("Testing failure");
+					Sleep(15000); // Prevent overwriting the exe
+				}
+			}
+
+			WinUtil::splash->destroy();
+			return false;
+		} else if (_tcscmp(*argv, _T("/sign")) == 0 && --argc >= 2) {
+			// AirDC++.exe /sign version_file_path private_key_file_path [-pubout]
+			string xmlPath = Text::fromT(*++argv);
+			string keyPath = Text::fromT(*++argv);
+			bool genHeader = (argc > 2 && (_tcscmp(*++argv, _T("-pubout")) == 0));
+			if (Util::fileExists(xmlPath) && Util::fileExists(keyPath)) {
+				Updater::signVersionFile(xmlPath, keyPath, genHeader);
+			}
+
+			return false;
+		} else if (_tcscmp(*argv, _T("/update")) == 0) {
+			// AirDC++.exe /update version_file_path private_key_file_path [-pubout]
+			if (--argc >= 1) {
+				SplashWindow::create();
+				WinUtil::splash->update("Updating");
+				string sourcePath = Util::getAppFilePath();
+				string installPath = Text::fromT(*++argv); argc--;
+
+				SetPriorityClass(GetCurrentProcess(), IDLE_PRIORITY_CLASS);
+				SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_IDLE);
+
+				bool success = false;
+
+				for (;;) {
+					string error;
+					success = Updater::applyUpdate(sourcePath, installPath, error, 10);
+					if (!success) {
+						auto message = Text::toT("Updating failed:\n\n" + error + "\n\nDo you want to retry installing the update?").c_str();
+						if (::MessageBox(NULL, message, Text::toT(shortVersionString).c_str(), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2 | MB_TOPMOST) == IDYES) {
+							continue;
+						}
+					}
+					break;
+				}
+
+				SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
+				SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
+
+				//add new startup params
+				Util::addStartupParam(success ? "/updated" : "/updatefailed");
+				Util::addStartupParam("/silent");
+
+				//append the passed params (but leave out the update commands...)
+				argv++;
+				addStartupParams();
+
+				//start the updated instance
+				auto path = Text::toT(installPath + Util::getAppFileName());
+				auto startupParams = Text::toT(Util::getStartupParams(true));
+
+				if (!Util::hasStartupParam("/elevation")) {
+					ShellExecAsUser(NULL, path.c_str(), startupParams.c_str(), NULL);
+				} else {
+					ShellExecute(NULL, NULL, path.c_str(), startupParams.c_str(), NULL, SW_SHOWNORMAL);
+				}
+
+				WinUtil::splash->destroy();
+				return false;
+			}
+
+			return false;
+		} else {
+			addStartupParams();
+		}
+	}
+
+	string updaterFile;
+	auto updated = Util::hasStartupParam("/updated") || Util::hasStartupParam("/updatefailed");
+	if (Updater::checkPendingUpdates(Util::getAppFilePath(), updaterFile, updated)) {
+		WinUtil::addUpdate(updaterFile);
+		WinUtil::runPendingUpdate();
+		return false;
+	}
+
+	if (updated) {
+		// Updating finished, don't leave files in the temp directory
+		try {
+			File::renameFile(UPDATE_TEMP_LOG, UPDATE_FINAL_LOG);
+		} catch (...) {
+
+		}
+	}
+
+	return true;
 }
 
 int WinClient::run(LPTSTR /*lpstrCmdLine*/, int nCmdShow) {

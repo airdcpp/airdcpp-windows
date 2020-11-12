@@ -38,6 +38,10 @@
 
 
 namespace webserver {
+#ifdef _WIN32
+	const string ExtensionManager::localNodeDirectoryName = "Node.js";
+#endif
+
 	ExtensionManager::ExtensionManager(WebServerManager* aWsm) : wsm(aWsm) {
 		wsm->addListener(this);
 
@@ -45,7 +49,7 @@ namespace webserver {
 
 		engines = {
 #ifdef _WIN32
-			{ "node", "./nodejs/node.exe;node" },
+			{ "node", "./" + localNodeDirectoryName + "/node.exe;node" },
 #else
 			{ "node", "nodejs;node" },
 #endif

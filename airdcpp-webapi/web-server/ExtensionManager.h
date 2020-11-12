@@ -39,6 +39,11 @@ namespace webserver {
 	class NpmRepository;
 	class ExtensionManager: public Speaker<ExtensionManagerListener>, private WebServerManagerListener, private UpdateManagerListener {
 	public:
+
+#ifdef _WIN32
+		static const string localNodeDirectoryName;
+#endif
+
 		ExtensionManager(WebServerManager* aWsm);
 		~ExtensionManager();
 

@@ -44,11 +44,11 @@
 namespace webserver {
 	using namespace dcpp;
 	WebServerManager::WebServerManager() : 
-		ios(settings.getValue(WebServerSettings::SERVER_THREADS).getDefaultValue()),
-		tasks(settings.getValue(WebServerSettings::SERVER_THREADS).getDefaultValue()),
+		ios(settings.getSettingItem(WebServerSettings::SERVER_THREADS).getDefaultValue()),
+		tasks(settings.getSettingItem(WebServerSettings::SERVER_THREADS).getDefaultValue()),
 		work(tasks),
-		plainServerConfig(settings.getValue(WebServerSettings::PLAIN_PORT), settings.getValue(WebServerSettings::PLAIN_BIND)),
-		tlsServerConfig(settings.getValue(WebServerSettings::TLS_PORT), settings.getValue(WebServerSettings::TLS_BIND))
+		plainServerConfig(settings.getSettingItem(WebServerSettings::PLAIN_PORT), settings.getSettingItem(WebServerSettings::PLAIN_BIND)),
+		tlsServerConfig(settings.getSettingItem(WebServerSettings::TLS_PORT), settings.getSettingItem(WebServerSettings::TLS_BIND))
 	{
 
 		fileServer.setResourcePath(Util::getPath(Util::PATH_RESOURCES) + "web-resources" + PATH_SEPARATOR);

@@ -28,9 +28,14 @@ class MainFrame;
 class WinClient {
 public:
 	static int run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT);
+
+	// Handle startup arguments
+	// Returns false if the application should exit
+	static bool checkStartupParams() noexcept;
 private:
 	static void installExtensions();
 
+	static void listUpdaterFiles(StringPairList& files_, const string& aUpdateFilePath) noexcept;
 
 	static void webErrorF(const string& aError);
 

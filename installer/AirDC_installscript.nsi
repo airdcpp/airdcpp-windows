@@ -104,6 +104,7 @@ LangString SM_AIRDCPP_DESCUN ${LANG_ENGLISH} "Uninstall AirDC++"
 LangString SM_UNINSTALL ${LANG_ENGLISH} "Uninstall"
 LangString WR_REMOVEONLY ${LANG_ENGLISH} "(remove only)"
 LangString SecEmopack ${LANG_ENGLISH} "Default emoticon pack"
+LangString SecNode ${LANG_ENGLISH} "Default extension engine (node.js)"
 LangString SecThemes ${LANG_ENGLISH} "Themes"
 LangString SecWebResources ${LANG_ENGLISH} "Web user interface"
 LangString SecStore ${LANG_ENGLISH} "Store settings in the user profile directory"
@@ -117,6 +118,7 @@ LangString NotEmpty ${LANG_ENGLISH} "Installation directory is NOT empty. Do you
 LangString DESC_dcpp ${LANG_ENGLISH} "AirDC++ main program."
 LangString DESC_StartMenu ${LANG_ENGLISH} "A shortcut of AirDC++ will be placed in your start menu."
 LangString DESC_Emopack ${LANG_ENGLISH} "Display emoticons as images in chat windows."
+LangString DESC_Node ${LANG_ENGLISH} "Allows installing and running third-party extensions."
 LangString DESC_Themes ${LANG_ENGLISH} "If you don't like the default theme you can try these two extra themes, Dark Skull and Zoolution."
 LangString DESC_WebResorces ${LANG_ENGLISH} "Allows accessing the client from other devices via a web browser."
 LangString DESC_loc ${LANG_ENGLISH} "Normally you should not change this because it can lead to abnormal behaviour like loss of settings or downloads. If you unselect it, read the warning message carefully."
@@ -195,8 +197,8 @@ no_backup:
     File "..\compiled\x64\AirDC.pdb"
     File "..\compiled\x64\AirDC.exe"
   ${Else}
-  File "..\compiled\Win32\AirDC.pdb"
-  File "..\compiled\Win32\AirDC.exe"
+	File "..\compiled\Win32\AirDC.pdb"
+	File "..\compiled\Win32\AirDC.exe"
   ${EndIf}
   ; Uncomment to get DCPP core version from AirDC.exe we just installed and store in $1
   ;Function GetDCPlusPlusVersion
@@ -256,6 +258,17 @@ Section "$(SecEmopack)" DescEmopack
   File /r EmoPacks
 SectionEnd
 
+Section "$(SecNode)" DescNode
+  SetOutPath $INSTDIR
+   ${If} $TargetArch64 == "1"
+	File /r "..\compiled\x64\Node.js"
+    ; File /oname=nodejs\node.exe "nodejs\node64.exe"
+  ${Else}
+	File /r "..\compiled\Win32\Node.js"
+    ; File /oname=nodejs\node.exe "nodejs\node32.exe"
+  ${EndIf}
+SectionEnd 
+
 Section "$(SecThemes)" DescThemes
   SetOutPath $INSTDIR
   File /r Themes
@@ -286,6 +299,7 @@ SectionEnd
     !insertmacro MUI_DESCRIPTION_TEXT ${dcpp} $(DESC_dcpp)
     !insertmacro MUI_DESCRIPTION_TEXT ${DescStartMenu} $(DESC_StartMenu)
     !insertmacro MUI_DESCRIPTION_TEXT ${DescEmopack} $(DESC_Emopack)
+    !insertmacro MUI_DESCRIPTION_TEXT ${DescNode} $(DESC_Node)
     !insertmacro MUI_DESCRIPTION_TEXT ${DescThemes} $(DESC_Themes)
     !insertmacro MUI_DESCRIPTION_TEXT ${DescWebResorces} $(DESC_WebResorces)
     !insertmacro MUI_DESCRIPTION_TEXT ${loc} $(DESC_loc)
@@ -424,6 +438,7 @@ Section "un.Uninstall"
   Delete "$INSTDIR\popup.bmp"
   Delete "$INSTDIR\AirDC.pdb"
   Delete "$INSTDIR\AirDC.exe"
+  Delete "$INSTDIR\Node.js\node.exe"
   Delete "$INSTDIR\dcppboot.xml"
 
 ; remove EmoPacks dir
