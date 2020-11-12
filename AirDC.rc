@@ -2299,7 +2299,6 @@ BEGIN
     RTEXT           "Port (0 = disabled)",IDC_WEBSERVER_TLSPORT_LABEL,165,126,97,8
     GROUPBOX        "HTTP",IDC_WEBSERVER_HTTP_LABEL,7,113,144,79
     PUSHBUTTON      "Start",IDC_WEBSERVER_START,245,65,50,14
-    LTEXT           "Running...",IDC_WEBSERVER_STATUS,12,67,224,29,SS_SUNKEN
     LTEXT           "Web server allows managing the client with a web browser and running scripts via AirDC++ Web API",IDC_WEB_SERVER_HELP,7,7,258,18
     LTEXT           "More information...",IDC_LINK,7,35,91,12
     LTEXT           "Note: you will be able to create users with restricted permissions from the Web UI",IDC_WEB_SERVER_USERS_NOTE,16,289,276,18
@@ -2309,6 +2308,7 @@ BEGIN
     LTEXT           "Network interface for all connections",IDC_SETTINGS_BIND_ADDRESS_HTTPS_LABEL,161,151,134,8
     COMBOBOX        IDC_BIND_ADDRESS_HTTPS,160,163,140,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "HTTPS",IDC_WEBSERVER_HTTPS_LABEL,156,113,147,79
+    CONTROL         "",IDC_WEBSERVER_STATUS,"RichEdit50W",WS_BORDER | WS_VSCROLL | WS_TABSTOP | 0x804,13,66,225,29
 END
 
 IDD_WEB_USER_DLG DIALOGEX 0, 0, 206, 106

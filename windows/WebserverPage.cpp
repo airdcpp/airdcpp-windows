@@ -113,7 +113,15 @@ LRESULT WebServerPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	ctrlAdd.Attach(GetDlgItem(IDC_WEBSERVER_ADD_USER));
 	ctrlChange.Attach(GetDlgItem(IDC_WEBSERVER_CHANGE));
 	ctrlStart.Attach(GetDlgItem(IDC_WEBSERVER_START));
+
 	ctrlStatus.Attach(GetDlgItem(IDC_WEBSERVER_STATUS));
+	ctrlStatus.Subclass();	
+	ctrlStatus.SetFont(WinUtil::font);
+	ctrlStatus.SetBackgroundColor(WinUtil::bgColor);
+	ctrlStatus.SetDefaultCharFormat(WinUtil::m_ChatTextGeneral);
+
+	ctrlStatus.SetAutoURLDetect(true);
+	ctrlStatus.SetEventMask(ctrlStatus.GetEventMask() | ENM_LINK);
 
 	updateState(webMgr->isRunning() ? STATE_STARTED : STATE_STOPPED);
 
@@ -324,6 +332,10 @@ void WebServerPage::updateState(ServerState aNewState) noexcept {
 		}
 
 		statusText += TSTRING(WEB_SERVER_RUNNING);
+
+		if (File::isDirectory(webMgr->getResourcePath())) {
+			statusText += _T(". ") + TSTRING_F(WEB_UI_ACCESS_URL, Text::toT(webMgr->getLocalServerHttpUrl()));
+		}
 	} else if(aNewState == STATE_STOPPING) {
 		statusText += TSTRING(STOPPING);
 		//ctrlStatus.SetWindowText(_T("Stopping..."));
@@ -337,7 +349,10 @@ void WebServerPage::updateState(ServerState aNewState) noexcept {
 		}
 	}
 
-	ctrlStatus.SetWindowText(statusText.c_str());
+	// ctrlStatus.SetWindowText(statusText.c_str());
+	ctrlStatus.handleEditClearAll();
+	ctrlStatus.AppendText(statusText, false);
+	ctrlStatus.RedrawWindow();
 
 
 	ctrlStart.EnableWindow(aNewState == STATE_STOPPING ? FALSE : TRUE);

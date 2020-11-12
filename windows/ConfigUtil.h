@@ -50,6 +50,7 @@ public:
 		virtual int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing) = 0;
 		virtual bool handleClick(HWND m_hWnd) = 0;
 		virtual bool write() = 0;
+		virtual tstring valueToString() noexcept;
 
 		int getParentRightEdge(HWND m_hWnd);
 		CRect calculateItemPosition(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing);
@@ -94,6 +95,7 @@ public:
 			return true;
 		}
 
+		tstring valueToString() noexcept override;
 		void setLabel();
 
 		void Create(HWND m_hWnd) override;
@@ -115,8 +117,6 @@ public:
 		bool handleClick(HWND m_hWnd) override;
 		CButton ctrlButton;
 		int buttonWidth = 80;
-
-		// int clickCounter = 0; //for testing...
 	};
 
 	//Combines CStatic as setting label and CEdit as setting field with spin control
@@ -149,6 +149,7 @@ public:
 
 		void Create(HWND m_hWnd) override;
 		int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing) override;
+		tstring valueToString() noexcept override;
 
 		//todo handle errors
 		bool write() override;
@@ -157,6 +158,22 @@ public:
 		CStatic ctrlLabel;
 		CComboBox ctrlSelect;
 		int buttonWidth = 80;
+	};
+
+	struct WebConfigItem : public ConfigItem {
+
+		WebConfigItem(ExtensionSettingItem& aSetting) : ConfigItem(aSetting) {}
+
+		void Create(HWND m_hWnd) override;
+		int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing) override;
+
+		//todo handle errors
+		bool write() override;
+		bool handleClick(HWND m_hWnd) override;
+
+		CStatic ctrlLabel;
+		CStatic ctrlValue;
+		CHyperLink url;
 	};
 };
 

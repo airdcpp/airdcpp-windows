@@ -501,6 +501,24 @@ namespace webserver {
 		};
 	}
 
+	string WebServerManager::getLocalServerHttpUrl() noexcept {
+		bool isPlain = isListeningPlain();
+		decltype(auto) config = isPlain ? plainServerConfig : tlsServerConfig;
+		return (isPlain ? "http://" : "https://") + getLocalServerAddress(config);
+	}
+
+	string WebServerManager::getLocalServerAddress(const ServerConfig& aConfig) noexcept {
+		auto bindAddress = aConfig.bindAddress.str();
+		if (bindAddress.empty()) {
+			auto protocol = WebServerManager::getDefaultListenProtocol();
+			bindAddress = protocol == boost::asio::ip::tcp::v6() ? "[::1]" : "127.0.0.1";
+		} else {
+			bindAddress = resolveAddress(bindAddress, aConfig.port.str());
+		}
+
+		return bindAddress + ":" + Util::toString(aConfig.port.num());
+	}
+
 	string WebServerManager::resolveAddress(const string& aHostname, const string& aPort) noexcept {
 		auto ret = aHostname;
 

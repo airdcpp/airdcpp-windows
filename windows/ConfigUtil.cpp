@@ -52,14 +52,21 @@ shared_ptr<ConfigUtil::ConfigItem> ConfigUtil::getConfigItem(ExtensionSettingIte
 	if (aType == ApiSettingItem::TYPE_FILE_PATH || aType == ApiSettingItem::TYPE_DIRECTORY_PATH || aType == ApiSettingItem::TYPE_EXISTING_FILE_PATH)
 		return make_shared<ConfigUtil::BrowseConfigItem>(aSetting);
 
-
-	return nullptr;
+	return make_shared<ConfigUtil::WebConfigItem>(aSetting);
 }
 
 int ConfigUtil::ConfigItem::getParentRightEdge(HWND m_hWnd) {
 	CRect rc;
 	GetClientRect(m_hWnd, &rc);
 	return rc.right;
+}
+
+tstring ConfigUtil::ConfigItem::valueToString() noexcept {
+	if (setting.getValue().is_null()) {
+		return Util::emptyStringT;
+	}
+
+	return Text::toT(setting.str());
 }
 
 CRect ConfigUtil::ConfigItem::calculateItemPosition(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing) {
@@ -131,6 +138,14 @@ int ConfigUtil::BoolConfigItem::updateLayout(HWND m_hWnd, int aPrevConfigBottomM
 	ctrlCheck.MoveWindow(rc);
 
 	return rc.bottom;
+}
+
+tstring ConfigUtil::BoolConfigItem::valueToString() noexcept {
+	if (setting.getValue().is_null()) {
+		return Util::emptyStringT;
+	}
+
+	return setting.boolean() ? TSTRING(ENABLED) : TSTRING(DISABLED);
 }
 
 bool ConfigUtil::BoolConfigItem::handleClick(HWND m_hWnd) {
@@ -254,6 +269,7 @@ bool ConfigUtil::IntConfigItem::handleClick(HWND m_hWnd) {
 }
 
 
+// ENUMS
 void ConfigUtil::EnumConfigItem::Create(HWND m_hWnd) {
 	RECT rcDefault = { 0,0,0,0 };
 	ctrlLabel.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | SS_LEFT, NULL);
@@ -297,6 +313,19 @@ int ConfigUtil::EnumConfigItem::updateLayout(HWND m_hWnd, int aPrevConfigBottomM
 	return rc.bottom;
 }
 
+tstring ConfigUtil::EnumConfigItem::valueToString() noexcept {
+	const auto& options = setting.getEnumOptions();
+	auto curSel = find_if(options.begin(), options.end(), [this](const auto& aOption) {
+		return aOption.id == setting.getValue();
+	});
+
+	if (curSel != options.end()) {
+		return Text::toT(curSel->text);
+	}
+
+	return Util::emptyStringT;
+}
+
 bool ConfigUtil::EnumConfigItem::handleClick(HWND m_hWnd) {
 	if (m_hWnd == ctrlSelect.m_hWnd) {
 		return true;
@@ -311,5 +340,63 @@ bool ConfigUtil::EnumConfigItem::write() {
 
 	auto val = SettingUtils::validateValue(selectValue, setting, nullptr);
 	setting.setValue(val);
+	return true;
+}
+
+
+// LISTS
+void ConfigUtil::WebConfigItem::Create(HWND m_hWnd) {
+	RECT rcDefault = { 0,0,0,0 };
+	ctrlLabel.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | SS_LEFT, NULL);
+	ctrlLabel.SetFont(WinUtil::systemFont);
+	ctrlLabel.SetWindowText(Text::toT(getLabel()).c_str());
+
+	ctrlValue.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | /*WS_CLIPSIBLINGS | WS_CLIPCHILDREN |*/ SS_LEFT, NULL);
+	ctrlValue.SetFont(WinUtil::systemFont);
+	ctrlValue.SetWindowText(CTSTRING(EXTENSION_WEB_CFG_DESC));
+
+	url.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | SS_LEFT, NULL);
+	url.SetHyperLinkExtendedStyle(HLINK_UNDERLINEHOVER);
+	url.SetHyperLink(Text::toT(WebServerManager::getInstance()->getLocalServerHttpUrl() + "/settings/extensions").c_str());
+	url.SetLabel(CTSTRING(OPEN_IN_BROWSER));
+}
+
+int ConfigUtil::WebConfigItem::updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing) {
+
+	CRect rc = calculateItemPosition(m_hWnd, aPrevConfigBottomMargin, aConfigSpacing);
+
+	// Label
+	rc.right = rc.left + WinUtil::getTextWidth(Text::toT(getLabel()), ctrlLabel.m_hWnd) + 1;
+	ctrlLabel.MoveWindow(rc);
+
+	// Value
+	rc.top = rc.bottom + 2;
+
+	rc.right = rc.left + 420;
+	const auto width = WinUtil::getTextWidth(TSTRING(EXTENSION_WEB_CFG_DESC), ctrlValue.m_hWnd);
+	rc.bottom = rc.top + max(WinUtil::getTextHeight(m_hWnd, WinUtil::systemFont), 17) * (width > 420 ? 2 : 1);
+
+	ctrlValue.MoveWindow(rc);
+
+	// URL
+	// auto tmp = url.GetWindowText();
+	rc.top = rc.bottom + 2;
+	rc.right = rc.left + max(WinUtil::getTextWidth(TSTRING(OPEN_IN_BROWSER), url.m_hWnd), 30);
+	rc.bottom = rc.top + max(WinUtil::getTextHeight(m_hWnd, WinUtil::systemFont), 17) * 2;
+
+	url.MoveWindow(rc);
+
+	return rc.bottom;
+}
+
+bool ConfigUtil::WebConfigItem::handleClick(HWND m_hWnd) {
+	if (m_hWnd == ctrlValue.m_hWnd || m_hWnd == url.m_hWnd) {
+		return true;
+	}
+
+	return false;
+}
+
+bool ConfigUtil::WebConfigItem::write() {
 	return true;
 }

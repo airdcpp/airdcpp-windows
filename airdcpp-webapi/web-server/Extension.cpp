@@ -282,17 +282,7 @@ namespace webserver {
 	}
 
 	string Extension::getConnectUrl(WebServerManager* wsm) noexcept {
-		const auto& serverConfig = wsm->getPlainServerConfig();
-
-		auto bindAddress = serverConfig.bindAddress.str();
-		if (bindAddress.empty()) {
-			auto protocol = WebServerManager::getDefaultListenProtocol();
-			bindAddress = protocol == boost::asio::ip::tcp::v6() ? "[::1]" : "127.0.0.1";
-		} else {
-			bindAddress = wsm->resolveAddress(bindAddress, serverConfig.port.str());
-		}
-
-		return bindAddress + ":" + Util::toString(serverConfig.port.num()) + "/api/v1/";
+		return wsm->getLocalServerAddress(wsm->getPlainServerConfig()) + "/api/v1/";
 	}
 
 	StringList Extension::getLaunchParams(WebServerManager* wsm, const SessionPtr& aSession, bool aEscape) const noexcept {
