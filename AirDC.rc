@@ -181,9 +181,9 @@ BEGIN
     PUSHBUTTON      "Download",IDC_UPDATE_DOWNLOAD,151,222,60,14,WS_DISABLED
     GROUPBOX        "Version",IDC_UPDATE_VERSION,7,7,272,64
     LTEXT           "Current version:",IDC_UPDATE_VERSION_CURRENT_LBL,43,19,89,12
-    LTEXT           "2.30",IDC_UPDATE_VERSION_CURRENT,131,19,112,12
+    LTEXT           "3.70",IDC_UPDATE_VERSION_CURRENT,131,19,112,12
     LTEXT           "Latest version:",IDC_UPDATE_VERSION_LATEST_LBL,43,32,86,12
-    LTEXT           "2.50",IDC_UPDATE_VERSION_LATEST,131,31,111,12
+    LTEXT           "4.00",IDC_UPDATE_VERSION_LATEST,131,31,111,12
     GROUPBOX        "History",IDC_UPDATE_HISTORY,7,75,272,134
     ICON            IDR_UPDATE,IDC_UPDATE_ICON,14,19,20,20
     LTEXT           "More information...",IDC_LINK,18,215,91,12
@@ -863,11 +863,11 @@ BEGIN
     GROUPBOX        "",IDC_STATIC,7,4,234,101
     GROUPBOX        "Greetz && contributors",IDC_STATIC,7,108,234,82,BS_CENTER
     GROUPBOX        "Latest version",IDC_STATIC,5,194,238,24,BS_CENTER
-    CTEXT           "2.50",IDC_LATEST,10,205,227,8
+    CTEXT           "4.00",IDC_LATEST,10,205,227,8
     GROUPBOX        "Totals",IDC_STATIC,5,223,238,39,BS_CENTER
     CTEXT           "Upload: xx.xx MiB, Download: xx.xx MiB",IDC_TOTALS,11,234,227,8
     CTEXT           "Ratio (up/down): x.xx",IDC_RATIO,11,247,227,8
-    CTEXT           "AirDC++ v2.50 By Night and maksalaatikko",IDC_VERSION,13,34,225,18
+    CTEXT           "AirDC++ v4.00 By Night and maksalaatikko",IDC_VERSION,13,34,225,18
     EDITTEXT        IDC_TTH,50,89,188,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
     LTEXT           "TTH:",IDC_STATIC,16,89,18,12
     EDITTEXT        IDC_AIRTHANKS,12,119,225,66,ES_MULTILINE | ES_READONLY | WS_VSCROLL
@@ -1665,8 +1665,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,7,0,0
- PRODUCTVERSION 3,7,0,0
+ FILEVERSION 4,0,0,0
+ PRODUCTVERSION 4,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -1684,12 +1684,12 @@ BEGIN
             VALUE "Comments", "http://www.airdcpp.net"
             VALUE "CompanyName", "AirDC++ Team"
             VALUE "FileDescription", "AirDC++"
-            VALUE "FileVersion", "3.70.0.0"
+            VALUE "FileVersion", "4.00.0.0"
             VALUE "InternalName", "AirDC++"
             VALUE "LegalCopyright", "Copyright 2007-2020 Night and maksis"
             VALUE "OriginalFilename", "AirDC.exe"
             VALUE "ProductName", "AirDC++"
-            VALUE "ProductVersion", "3.70"
+            VALUE "ProductVersion", "4.00"
         END
     END
     BLOCK "VarFileInfo"

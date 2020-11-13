@@ -1,3 +1,29 @@
+4.00
+
+Added:
+
+- Extension tab for installing and managing extensions
+- Include node.js extension engine in the updater and installer
+- Add labels for event log messages
+- Allow changing web server bind addresses from the settings, show a link to the Web UI
+
+Changed:
+
+- Bind web server to localhost (127.0.0.1) by default
+- Don't wait until the current file has finished completed when stopping hashing
+
+Fixed:
+
+- Fix incorrect TTH data being added in hash store when shutting down while hashing is in progress
+
+Removed:
+
+- Inbuilt check for missing/extra files (replaced with the airdcpp-release-validator extension)
+- Inbuilt share monitoring (replaced with the airdcpp-share-monitor extension)
+- Manual SFV checker (can be implemented with an extension)
+- Support for migrating legacy XML hash databases from DC++ (or other compatible applications)
+
+
 3.70
 
 API and Web UI changes:
@@ -25,7 +51,7 @@ Changed:
 - Only allow adding failed "release" bundles to auto search (avoids adding searches for too generic bundle names)
 
 
-Fixes:
+Fixed:
 
 - Fix launching of extension if the setting path contains whitespace characters
 - Fix incorrect country information being shown for IP addresses in some cases
