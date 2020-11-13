@@ -49,9 +49,9 @@ namespace webserver {
 
 		engines = {
 #ifdef _WIN32
-			{ "node", "./" + localNodeDirectoryName + "/node.exe;node" },
+			{ EXT_ENGINE_NODE, "./" + localNodeDirectoryName + "/node.exe;node" },
 #else
-			{ "node", "nodejs;node" },
+			{ EXT_ENGINE_NODE, "nodejs;node" },
 #endif
 			{ "python3", "python3;python" },
 		};
@@ -161,9 +161,7 @@ namespace webserver {
 				continue;
 			}
 
-			if (ext->getRepository() == NpmRepository::repository) {
-				npmRepository->checkUpdates(ext->getName(), ext->getVersion());
-			}
+			npmRepository->checkUpdates(ext->getName(), ext->getVersion());
 		}
 	}
 

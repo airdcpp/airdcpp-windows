@@ -124,7 +124,7 @@ namespace webserver {
 			}
 
 			if (engines.empty()) {
-				engines.emplace_back("node");
+				engines.emplace_back(EXT_ENGINE_NODE);
 			}
 		}
 
@@ -157,7 +157,6 @@ namespace webserver {
 		apiVersion = aJson.at("apiVersion");
 		minApiFeatureLevel = aJson.value("minApiFeatureLevel", 0);
 		signalReady = aJson.value("signalReady", false);
-		repository = aJson.value("repository", Util::emptyString);
 	}
 
 	FilesystemItemList Extension::getLogs() const noexcept {

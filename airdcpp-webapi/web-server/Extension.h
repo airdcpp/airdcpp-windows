@@ -61,6 +61,8 @@ namespace webserver {
 		// Throws on errors
 		void checkCompatibilityThrow();
 
+#define EXT_ENGINE_NODE "node"
+
 #define EXT_PACKAGE_DIR "package"
 #define EXT_CONFIG_DIR "settings"
 #define EXT_LOG_DIR "logs"
@@ -79,7 +81,6 @@ namespace webserver {
 		GETSET(string, entry, Entry);
 		GETSET(string, version, Version);
 		GETSET(string, author, Author);
-		GETSET(string, repository, Repository);
 		GETSET(string, homepage, Homepage);
 		IGETSET(bool, signalReady, SignalReady, false);
 		IGETSET(bool, ready, Ready, false);
