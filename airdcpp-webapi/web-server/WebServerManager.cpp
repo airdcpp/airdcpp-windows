@@ -155,7 +155,13 @@ namespace webserver {
 			has_io_service = initialize(errorF);
 		}
 
-		return listen(errorF);
+		if (!listen(errorF)) {
+			// Stop possible running ios services
+			stop();
+			return false;
+		}
+
+		return true;
 	}
 
 	bool WebServerManager::initialize(const ErrorF& errorF) {
@@ -209,7 +215,11 @@ namespace webserver {
 			return false;
 		}
 
+		// Keep reuse disabled on Windows to avoid hiding errors when multiple instances are being run with the same ports
+#ifndef _WIN32
+		// https://github.com/airdcpp-web/airdcpp-webclient/issues/39
 		aEndpoint.set_reuse_addr(true);
+#endif
 		try {
 			const auto bindAddress = aConfig.bindAddress.str();
 			if (!bindAddress.empty()) {
@@ -507,11 +517,33 @@ namespace webserver {
 		return (isPlain ? "http://" : "https://") + getLocalServerAddress(config);
 	}
 
+	bool WebServerManager::isAnyAddress(const string& aAddress) noexcept {
+		if (aAddress.empty()) {
+			return true;
+		}
+
+		try {
+			auto ip = boost::asio::ip::make_address(aAddress);
+			if (ip == boost::asio::ip::address_v4::any() || ip == boost::asio::ip::address_v6::any()) {
+				return true;
+			}
+		} catch (...) {
+			return true;
+		}
+
+		return false;
+	}
+
 	string WebServerManager::getLocalServerAddress(const ServerConfig& aConfig) noexcept {
 		auto bindAddress = aConfig.bindAddress.str();
-		if (bindAddress.empty()) {
-			auto protocol = WebServerManager::getDefaultListenProtocol();
-			bindAddress = protocol == boost::asio::ip::tcp::v6() ? "[::1]" : "127.0.0.1";
+		if (isAnyAddress(bindAddress)) {
+			websocketpp::lib::asio::error_code ec;
+			auto isV6 = endpoint_plain.get_local_endpoint(ec).protocol().family() == AF_INET6;
+			if (ec) {
+				dcassert(0);
+			}
+
+			bindAddress = isV6 ? "[::1]" : "127.0.0.1";
 		} else {
 			bindAddress = resolveAddress(bindAddress, aConfig.port.str());
 		}

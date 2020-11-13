@@ -302,6 +302,7 @@ namespace webserver {
 		string resolveAddress(const string& aHostname, const string& aPort) noexcept;
 		string getLocalServerHttpUrl() noexcept;
 		string getLocalServerAddress(const ServerConfig& aConfig) noexcept;
+		static bool isAnyAddress(const string& aAddress) noexcept;
 
 		WebServerSettings& getSettings() noexcept {
 			return settings;

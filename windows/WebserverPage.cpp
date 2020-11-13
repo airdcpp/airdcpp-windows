@@ -67,7 +67,7 @@ void WebServerPage::initBindAddresses() noexcept {
 	sort(bindAdapters.begin(), bindAdapters.end(), AirUtil::adapterSort);
 
 	// Any/localhost (reverse order)
-	bindAdapters.emplace(bindAdapters.begin(), "Localhost", "::", static_cast<uint8_t>(0));
+	bindAdapters.emplace(bindAdapters.begin(), "Localhost", "::1", static_cast<uint8_t>(0));
 	bindAdapters.emplace(bindAdapters.begin(), "Localhost", "127.0.0.1", static_cast<uint8_t>(0));
 	bindAdapters.emplace(bindAdapters.begin(), STRING(ANY), Util::emptyString, static_cast<uint8_t>(0));
 

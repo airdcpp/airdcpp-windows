@@ -170,7 +170,7 @@ namespace webserver {
 	bool ExtensionManager::waitLoaded() const noexcept {
 		const auto timeout = GET_TICK() + (WEBCFG(EXTENSIONS_INIT_TIMEOUT).num() * 1000);
 		const auto isReady = [](const ExtensionPtr& aExt) {
-			return !aExt->getSignalReady() || aExt->getReady();
+			return !aExt->isRunning() || !aExt->getSignalReady() || aExt->getReady();
 		};
 
 		while (GET_TICK() < timeout) {

@@ -2,8 +2,8 @@
 
 :: for /f "delims=" %%x in (ftp_credentials.txt) do (set "%%x")
 
-set dryrun=true
-set send=true
+set dryrun=false
+set disabled=false
 set ftpaddress=ftp.airdcpp.net
 set ftpdir=nightly
 set updaterdir=updater
@@ -17,7 +17,7 @@ cd %SOLUTION_DIR%
 for /f "delims=" %%x in (%SOLUTION_DIR%\scripts\ftp_credentials.txt) do (set "%%x")
 
 ::Pre checks
-IF %send%==false goto :SendDisabled 
+IF %disabled%==true goto :SendDisabled 
 IF [%1]==[] goto :invalidParameters
 set arch=%1
 IF NOT EXIST compiled\%arch%\AirDC.exe goto :exeNotFound
