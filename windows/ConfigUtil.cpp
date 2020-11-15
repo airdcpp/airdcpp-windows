@@ -133,7 +133,7 @@ int ConfigUtil::ConfigItem::updateLayout(HWND m_hWnd, int aPrevConfigBottomMargi
 	return rc.bottom;
 }
 
-void ConfigUtil::ConfigItem::addLabel(HWND m_hWnd, CRect& rect_) noexcept {
+void ConfigUtil::ConfigItem::addLabel(HWND /*m_hWnd*/, CRect& rect_) noexcept {
 	rect_.right = rect_.left + WinUtil::getTextWidth(Text::toT(getLabel()), ctrlLabel.m_hWnd) + 1;
 	ctrlLabel.MoveWindow(rect_);
 }
