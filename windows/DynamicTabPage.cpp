@@ -86,18 +86,25 @@ LRESULT DynamicTabPage::onEraseBackground(UINT /*uMsg*/, WPARAM wParam, LPARAM /
 	return TRUE;
 }
 
-void DynamicTabPage::resizePage(CRect& windowRect) {
-
-	if ((m_prevConfigBottomMargin + 5) >= windowRect.bottom) {
+void DynamicTabPage::resizePage(CRect& windowRect, int aBottomMargin) {
+	if ((aBottomMargin + 5) >= windowRect.bottom) {
 		windowRect.bottom = m_prevConfigBottomMargin + 70;
 		MoveWindow(windowRect);
 	}
 }
 
 void DynamicTabPage::updateLayout(CRect& windowRect) {
+	int bottomMargin = 0;
 	for (auto cfg : configs) {
-		m_prevConfigBottomMargin = cfg->updateLayout(m_hWnd, m_prevConfigBottomMargin, m_configSpacing);
-		resizePage(windowRect);
+		bottomMargin = cfg->updateLayout(m_hWnd, bottomMargin, m_configSpacing);
+		resizePage(windowRect, bottomMargin);
+	}
+
+	if (bottomMargin != m_prevConfigBottomMargin) {
+		m_prevConfigBottomMargin = bottomMargin;
+		if (bottomMargin >= windowRect.bottom) {
+			SetWindowLongPtr(GWL_STYLE, GetWindowLongPtr(GWL_STYLE) | WS_VSCROLL);
+		}
 	}
 }
 

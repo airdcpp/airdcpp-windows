@@ -25,7 +25,6 @@
 #include "stdafx.h"
 
 #include "DynamicTabPage.h"
-#include <airdcpp/Util.h>
 
 
 class DynamicDialogBase : public CDialogImpl<DynamicDialogBase> {
@@ -33,10 +32,7 @@ public:
 
 	enum { IDD = IDD_DYNAMIC_DIALOG };
 
-	DynamicDialogBase(const tstring& aName) : name(aName) {
-		//Create a dummy page to fill in dialog items
-		m_page = make_shared<DynamicTabPage>(DynamicTabPage());
-	}
+	DynamicDialogBase(const tstring& aName);
 	~DynamicDialogBase() {
 
 	}
@@ -51,145 +47,19 @@ public:
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
 	END_MSG_MAP()
 
-
-	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-
-		m_page->Create(m_hWnd);
-
-		// save the original size
-		GetClientRect(&m_rcOriginal);
-
-		updateLayout();
-
-		CenterWindow(GetParent());
-		SetWindowText(name.c_str());
-
-		::SetWindowText(GetDlgItem(IDCANCEL), CTSTRING(CANCEL));
-
-		return TRUE;
-	}
-
-	void updateLayout() {
-		CRect rcOKbtn;
-		GetDlgItem(IDOK).GetClientRect(&rcOKbtn);
-
-		CRect rcDialog;
-		GetClientRect(&rcDialog); // current base dialog rect
-
-		//Size the page, exclude OK button area by button left edge
-		CRect rcPage;
-		m_page->GetClientRect(&rcPage);
-		rcPage.top += m_pageSpacing;
-		rcPage.right = rcDialog.right - (rcOKbtn.Width() + m_pageSpacing); //OK button left
-		rcPage.left = rcDialog.left + m_pageSpacing;
-		rcPage.bottom = rcDialog.bottom;
-		rcPage.bottom -= m_pageSpacing;
-		m_page->MoveWindow(rcPage);
-
-		//update page setting items layout and resize the page accordingly. Updates the rect.bottom.
-		m_page->updateLayout(rcPage); 
-
-		//Set the scrolling area.
-		m_rcScroll = rcPage;
-		m_rcScroll.top = -(rcPage.bottom);
-
-		m_rcClip.left = rcPage.left;
-		m_rcClip.top = 0;
-		m_rcClip.right = rcPage.right;
-		m_rcClip.bottom = rcPage.bottom;
-
-		//Set scrollbar dimensions.
-		SCROLLINFO si = { 0 };
-		si.cbSize = sizeof(si);
-		si.fMask = SIF_ALL;
-		GetScrollInfo(SB_VERT, &si);
-		si.nMax = m_rcScroll.bottom + m_pageSpacing;
-		si.nPage = rcDialog.bottom;
-		SetScrollInfo(SB_VERT, &si);
-	
-
-	}
-
-	LRESULT onMouseWheel(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
-		
-		auto i = GET_WHEEL_DELTA_WPARAM(wParam);
-		if (i > 0) {
-			PostMessage(WM_VSCROLL, MAKELONG(SB_LINEUP, 0), 0);
-		}
-		else if (i < 0) {
-			PostMessage(WM_VSCROLL, MAKELONG(SB_LINEDOWN, 0), 0);
-		}
-
-		bHandled = FALSE;
-		return 0;
-	}
-
-	LRESULT onScroll(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
-		int nDelta = 0;
-		int nPos = HIWORD(wParam);
-		
-		SCROLLINFO si = { 0 };
-		si.cbSize = sizeof(si);
-		si.fMask = SIF_ALL;
-		GetScrollInfo(SB_VERT, &si);
-		int nMaxPos = si.nMax - si.nPage;
-		int nMinPos = si.nMin;
-
-		switch (LOWORD(wParam)) {
-		case SB_THUMBTRACK:
-			nDelta = nPos - m_curScrollPos;
-			break;
-		case SB_THUMBPOSITION:
-			nDelta = nPos - m_curScrollPos;
-			break;
-		case SB_LINEDOWN:
-			if (m_curScrollPos >= nMaxPos)
-				return 0;
-			nDelta = min(30, nMaxPos - m_curScrollPos);
-			break;
-		case SB_LINEUP:
-			if (m_curScrollPos <= nMinPos)
-				return 0;
-			nDelta = -min(30, m_curScrollPos);
-			break;
-
-		default:
-			return 0;
-		}
-
-		m_curScrollPos += nDelta;
-		SetScrollPos(SB_VERT, m_curScrollPos);
-		ScrollWindowEx(0, -nDelta, &m_rcScroll, &m_rcClip, NULL, NULL, SW_INVALIDATE | SW_ERASE | SW_SCROLLCHILDREN);
-		UpdateWindow();
-		bHandled = TRUE;
-		return 0;
-	}
-
-	LRESULT onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/) {
-		m_page->SetFocus();
-		return 0;
-	}
-
-	LRESULT onSize(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/) {
-		updateLayout();
-		return 0;
-	}
-
-	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& bHandled) {
-		if (wID == IDOK) {
-			if (!m_page->write()) {
-				bHandled = FALSE;
-				return 0;
-			}
-		}
-		EndDialog(wID);
-		return 0;
-	}
-
-
 	shared_ptr<DynamicTabPage> getPage() { return m_page; }
 
 private:
+	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+
+	void updateLayout();
+
+	LRESULT onMouseWheel(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
+	LRESULT onScroll(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
+	LRESULT onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT onSize(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+
+	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& bHandled);
 
 	// dialog size in the resource view (original size)
 	CRect m_rcOriginal;
@@ -201,7 +71,6 @@ private:
 	CEdit ctrlEdit;
 
 	tstring name;
-	bool loading;
 	CRect m_rcScroll;
 	CRect m_rcClip;
 

@@ -38,33 +38,32 @@ public:
 	DynamicTabPage();
 	~DynamicTabPage();
 
-	void resizePage(CRect & windowRect);
-	void updateLayout(CRect & windowRect);
-
 	BEGIN_MSG_MAP_EX(DynamicTabPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)
-		//MESSAGE_HANDLER(WM_CTLCOLORDLG, onCtlColor)
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
 		MESSAGE_HANDLER(WM_ERASEBKGND, onEraseBackground)
 		MESSAGE_HANDLER(WM_PARENTNOTIFY, OnClick)
 	END_MSG_MAP()
 
-	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-	LRESULT onEraseBackground(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL & /*bHandled*/);
-	LRESULT onCtlColor(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
-
-	LRESULT onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/) {
-		return 0;
-	}
-
-	LRESULT OnClick(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	void updateLayout(CRect& windowRect);
 
 	void addConfigItem(webserver::ExtensionSettingItem& aSetting);
 	bool write();
 
 	const vector<shared_ptr<ConfigUtil::ConfigItem>>& getConfigs() const noexcept { return configs; }
 private:
+	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT onEraseBackground(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT onCtlColor(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
+
+	void resizePage(CRect& windowRect, int aBottomMargin);
+
+	LRESULT onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+		return 0;
+	}
+
+	LRESULT OnClick(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 
 	bool loading = true;
 	vector<shared_ptr<ConfigUtil::ConfigItem>> configs;
