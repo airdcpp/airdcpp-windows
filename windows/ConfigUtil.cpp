@@ -79,6 +79,12 @@ void ConfigUtil::ConfigItem::Create(HWND m_hWnd) {
 	Create(m_hWnd, rcDefault);
 }
 
+void ConfigUtil::ConfigItem::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam) {
+	if ((HWND)lParam == ctrlHelp.m_hWnd) {
+		HDC hDC = (HDC)wParam;
+		::SetTextColor(hDC, RGB(104, 104, 104)); // grey
+	}
+}
 
 int ConfigUtil::ConfigItem::calculateTextRows(const tstring& aText, HWND m_hWndControl) noexcept {
 	const auto width = WinUtil::getTextWidth(aText, m_hWndControl);

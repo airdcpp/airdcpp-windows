@@ -354,38 +354,47 @@ void WinUtil::initMenus() {
 }
 
 void WinUtil::setFonts() {
-		
-	LOGFONT lf;
-	::GetObject((HFONT)GetStockObject(DEFAULT_GUI_FONT), sizeof(lf), &lf);
-	SettingsManager::getInstance()->setDefault(SettingsManager::TEXT_FONT, Text::fromT(encodeFont(lf)));
-	decodeFont(Text::toT(SETTING(TEXT_FONT)), lf);
-
-	font = ::CreateFontIndirect(&lf);
-	fontHeight = WinUtil::getTextHeight(mainWnd, font);
-	lf.lfWeight = FW_BOLD;
-	boldFont = ::CreateFontIndirect(&lf);
-	lf.lfHeight *= 5;
-	lf.lfHeight /= 6;
-	tabFont = ::CreateFontIndirect(&lf);
-
-
+	// System fonts
 	systemFont = (HFONT)::GetStockObject(DEFAULT_GUI_FONT);
 	OEMFont = (HFONT)::GetStockObject(OEM_FIXED_FONT);
+	
+	// Default app font with variants
+	{
+		LOGFONT lf;
+		::GetObject((HFONT)GetStockObject(DEFAULT_GUI_FONT), sizeof(lf), &lf);
+		SettingsManager::getInstance()->setDefault(SettingsManager::TEXT_FONT, Text::fromT(encodeFont(lf)));
+		decodeFont(Text::toT(SETTING(TEXT_FONT)), lf);
 
-	LOGFONT lf3;
-	::GetObject((HFONT)GetStockObject(DEFAULT_GUI_FONT), sizeof(lf3), &lf3);
-	decodeFont(Text::toT(SETTING(TB_PROGRESS_FONT)), lf3);
-	progressFont = CreateFontIndirect(&lf3);
-	TBprogressTextColor = SETTING(TB_PROGRESS_TEXT_COLOR);
+		font = ::CreateFontIndirect(&lf);
+		fontHeight = WinUtil::getTextHeight(mainWnd, font);
+		lf.lfWeight = FW_BOLD;
+		boldFont = ::CreateFontIndirect(&lf);
+		lf.lfHeight *= 5;
+		lf.lfHeight /= 6;
+		tabFont = ::CreateFontIndirect(&lf);
+	}
 
-	//default to system theme Font like it was before, only load if changed...
-	//should we use this as systemFont?
-	NONCLIENTMETRICS ncm;
-	ncm.cbSize = sizeof(ncm);
-	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, ncm.cbSize, &ncm, 0);
-	listViewFont = CreateFontIndirect(&(ncm.lfMessageFont));
+	// Toolbar font
+	{
+		LOGFONT lf3;
+		::GetObject((HFONT)GetStockObject(DEFAULT_GUI_FONT), sizeof(lf3), &lf3);
+		decodeFont(Text::toT(SETTING(TB_PROGRESS_FONT)), lf3);
+		progressFont = CreateFontIndirect(&lf3);
+		TBprogressTextColor = SETTING(TB_PROGRESS_TEXT_COLOR);
+	}
+
+	// List view font
+	{
+		//default to system theme Font like it was before, only load if changed...
+		//should we use this as systemFont?
+		NONCLIENTMETRICS ncm;
+		ncm.cbSize = sizeof(ncm);
+		SystemParametersInfo(SPI_GETNONCLIENTMETRICS, ncm.cbSize, &ncm, 0);
+		listViewFont = CreateFontIndirect(&(ncm.lfMessageFont));
+	}
 
 	if (!SETTING(LIST_VIEW_FONT).empty()) {
+		LOGFONT lf3;
 		::GetObject((HFONT)GetStockObject(DEFAULT_GUI_FONT), sizeof(lf3), &lf3);
 		decodeFont(Text::toT(SETTING(LIST_VIEW_FONT)), lf3);
 		listViewFont = CreateFontIndirect(&lf3);

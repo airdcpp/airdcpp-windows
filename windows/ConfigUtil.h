@@ -54,6 +54,7 @@ public:
 
 		void Create(HWND m_hWnd);
 		int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing);
+		void onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam);
 
 		virtual bool handleClick(HWND m_hWnd) = 0;
 		virtual bool write() = 0;

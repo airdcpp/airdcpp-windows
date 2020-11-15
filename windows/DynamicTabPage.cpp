@@ -33,18 +33,22 @@ LRESULT DynamicTabPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 	for (auto cfg : configs) {
 		cfg->Create(m_hWnd);
 	}
+
 	loading = false;
 	return TRUE;
 }
 
-LRESULT DynamicTabPage::onCtlColor(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
+LRESULT DynamicTabPage::onCtlColor(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+	for (auto cfg : configs) {
+		cfg->onCtlColor(uMsg, wParam, lParam);
+	}
+
 	if (uMsg == WM_CTLCOLORSTATIC) {
 		HDC hdc = (HDC)wParam;
 		SetBkMode(hdc, TRANSPARENT);
 		SetBkColor(hdc, ::GetSysColor(COLOR_3DFACE));
 		return (LRESULT)GetStockObject(COLOR_3DFACE);
-	}
-	else if (uMsg == WM_CTLCOLORDLG) {
+	} else if (uMsg == WM_CTLCOLORDLG) {
 		HDC hdc = (HDC)wParam;
 		SetBkColor(hdc, ::GetSysColor(COLOR_WINDOW));
 		return (LRESULT)GetStockObject(COLOR_WINDOW);
