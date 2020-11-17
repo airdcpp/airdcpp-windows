@@ -1876,9 +1876,10 @@ enum Strings { // @DontAdd
 	WEB_CFG_EXTENSIONS_INIT_TIMEOUT, // "Initialization timeout for extensions"
 	WEB_CFG_EXTENSIONS_AUTO_UPDATE, // "Update extensions automatically"
 
+	X_EXTENSIONS_LOADED, // "%1% extensions were loaded"
+	X_DEBUG_MODE, // "%1% (debug mode)"
+
 	WEB_EXTENSION_INIT_TIMED_OUT, // "Initialization timed out for an extension %1%"
-	WEB_EXTENSION_LOADED, // "Extension %1% was loaded"
-	WEB_EXTENSION_LOADED_DBG, // "Extension %1% was loaded (debug mode)"
 	WEB_EXTENSION_LOAD_ERROR_X, // "Failed to load the extension %1%: %2%"
 	WEB_EXTENSION_LOAD_ERROR, // "Failed to load the extension"
 	WEB_EXTENSION_START_ERROR, // "Failed to start the extension %1%: %2%"
