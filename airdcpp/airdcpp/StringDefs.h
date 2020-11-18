@@ -1842,7 +1842,6 @@ enum Strings { // @DontAdd
 	X_FINISHED_BUNDLES, // "%1% finished bundle(s)"
 	X_FOLDERS, // "%1% folders"
 	X_MISSING_FILES, // "%1% (missing files)"
-	X_NO_RELEASE_FILES, // "%1% folders with no release files"
 	X_PARSING_FAILED_X, // "%1%: parsing failed (%2%)"
 	X_PROFILE_DIRS_EXISTS, // "This directory also exists in %1% other profile(s)"
 	X_RESULTS_FOUND, // "Results were found from %1% directories"

@@ -955,7 +955,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 			menu.InsertSeparatorFirst(selectedIP);
 			menu.AppendMenu(MF_STRING, IDC_WHOIS_IP, (TSTRING(WHO_IS) + _T(" ") + selectedIP).c_str() );
 			if (client)
-				prepareMenu(menu, ::UserCommand::CONTEXT_USER, client->getHubUrl());
+				prepareMenu(menu, ::UserCommand::CONTEXT_USER, getHubUrl());
 
 			if (client && client->isOp()) {
 				menu.AppendMenu(MF_SEPARATOR);
@@ -1057,7 +1057,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 		menu.AppendMenu(MF_POPUP, (HMENU)copyMenu, CTSTRING(COPY));
 		
 		// add user commands
-		prepareMenu(menu, ::UserCommand::CONTEXT_USER, client->getHubUrl());
+		prepareMenu(menu, ::UserCommand::CONTEXT_USER, getHubUrl());
 
 		/*// default doubleclick action
 		switch(SETTING(CHAT_DBLCLICK)) {
@@ -1081,7 +1081,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 			break;
 		} */ 
 			//Bold the Best solution for getting user users list instead.
-			if(AirUtil::isAdcHub(client->getHubUrl())) {
+			if(AirUtil::isAdcHub(getHubUrl())) {
 				menu.SetMenuDefaultItem(IDC_BROWSELIST);
 			} else {
 				menu.SetMenuDefaultItem(IDC_GETLIST);
@@ -1256,7 +1256,7 @@ HintedUser RichTextBox::getMagnetSource() {
 	}
 
 	if (u && client)
-		return HintedUser(u, client->getHubUrl());
+		return HintedUser(u, getHubUrl());
 
 	return HintedUser();
 }
@@ -1906,7 +1906,7 @@ void RichTextBox::handleSearchTTH() {
 	if (isMagnet) {
 		Magnet m = Magnet(Text::fromT(selectedWord));
 		ActionUtil::searchHash(m.getTTH(), m.fname, m.fsize);
-	} else if (!SettingsManager::lanMode) {
+	} else {
 		ActionUtil::searchHash(TTHValue(Text::fromT(selectedWord)), Util::emptyString, 0);
 	}
 	SetSelNone();

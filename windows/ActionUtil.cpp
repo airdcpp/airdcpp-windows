@@ -316,13 +316,13 @@ bool ActionUtil::parseDBLClick(const tstring& aStr) {
 	return false;
 }
 
-void ActionUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aUser, RichTextBox* aCtrlEdit /*nullptr*/) {
+void ActionUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aOptionalUser, RichTextBox* aCtrlEdit /*nullptr*/) {
 	if (strnicmp(aUrl.c_str(), _T("magnet:?"), 8) == 0) {
 		Magnet m = Magnet(Text::fromT(aUrl));
 		if (!m.hash.empty() && Encoder::isBase32(m.hash.c_str())) {
-			auto sel = SETTING(MAGNET_ACTION);
+			auto sel = !aOptionalUser ? SettingsManager::MAGNET_SEARCH : SETTING(MAGNET_ACTION);
 			BOOL remember = false;
-			if (SETTING(MAGNET_ASK)) {
+			if (SETTING(MAGNET_ASK) && aOptionalUser) {
 				CTaskDialog taskdlg;
 
 				tstring msg = CTSTRING_F(MAGNET_INFOTEXT, Text::toT(m.fname) % Util::formatBytesW(m.fsize));
@@ -365,13 +365,13 @@ void ActionUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aUser, Ri
 					if (aCtrlEdit) {
 						aCtrlEdit->handleDownload(SETTING(DOWNLOAD_DIRECTORY), Priority::DEFAULT, false);
 					} else {
-						addFileDownload(SETTING(DOWNLOAD_DIRECTORY) + m.fname, m.fsize, m.getTTH(), aUser, 0);
+						addFileDownload(SETTING(DOWNLOAD_DIRECTORY) + m.fname, m.fsize, m.getTTH(), aOptionalUser, 0);
 					}
 				} catch (const Exception& e) {
 					LogManager::getInstance()->message(e.getError(), LogMessage::SEV_ERROR, STRING(SETTINGS_QUEUE));
 				}
 			} else if (sel == SettingsManager::MAGNET_OPEN) {
-				openFile(m.fname, m.fsize, m.getTTH(), aUser, false);
+				openFile(m.fname, m.fsize, m.getTTH(), aOptionalUser, false);
 			}
 		} else {
 			MessageBox(WinUtil::mainWnd, CTSTRING(MAGNET_DLG_TEXT_BAD), CTSTRING(MAGNET_DLG_TITLE), MB_OK | MB_ICONEXCLAMATION);
@@ -380,6 +380,11 @@ void ActionUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aUser, Ri
 }
 
 bool ActionUtil::openFile(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsClientView) noexcept {
+	if (!aUser) {
+		dcassert(0);
+		return false;
+	}
+
 	if (aIsClientView && (!SETTING(NFO_EXTERNAL) || Util::getFileExt(aFileName) != ".nfo")) {
 		return ViewFileManager::getInstance()->addUserFileNotify(aFileName, aSize, aTTH, aUser, true) ? true : false;
 	}
@@ -388,7 +393,7 @@ bool ActionUtil::openFile(const string& aFileName, int64_t aSize, const TTHValue
 		QueueManager::getInstance()->addOpenedItem(aFileName, aSize, aTTH, aUser, false, true);
 		return true;
 	} catch (const Exception& e) {
-		auto nicks = aUser.user ? ClientManager::getInstance()->getFormatedNicks(aUser) : STRING(UNKNOWN);
+		auto nicks = ClientManager::getInstance()->getFormatedNicks(aUser);
 		LogManager::getInstance()->message(STRING_F(ADD_FILE_ERROR, aFileName % nicks % e.getError()), LogMessage::SEV_NOTIFY, STRING(SETTINGS_QUEUE));
 	}
 
@@ -851,12 +856,12 @@ void ActionUtil::getProfileConflicts(HWND aParent, int aProfile, ProfileSettingI
 	}
 }
 
-void ActionUtil::addFileDownload(const string& aTarget, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, time_t aDate, Flags::MaskType aFlags /*0*/, Priority aPriority /*DEFAULT*/) {
+void ActionUtil::addFileDownload(const string& aTarget, int64_t aSize, const TTHValue& aTTH, const HintedUser& aOptionalUser, time_t aDate, Flags::MaskType aFlags /*0*/, Priority aPriority /*DEFAULT*/) {
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		try {
-			QueueManager::getInstance()->createFileBundle(aTarget, aSize, aTTH, aUser, aDate, aFlags, aPriority);
+			QueueManager::getInstance()->createFileBundle(aTarget, aSize, aTTH, aOptionalUser, aDate, aFlags, aPriority);
 		} catch (const Exception& e) {
-			auto nick = aUser ? Text::fromT(FormatUtil::getNicks(aUser)) : STRING(UNKNOWN);
+			auto nick = aOptionalUser ? Text::fromT(FormatUtil::getNicks(aOptionalUser)) : STRING(UNKNOWN);
 			LogManager::getInstance()->message(STRING_F(ADD_FILE_ERROR, aTarget % nick % e.getError()), LogMessage::SEV_ERROR, STRING(SETTINGS_QUEUE));
 		}
 	});
@@ -927,7 +932,7 @@ bool ActionUtil::allowGetFullList(const HintedUser& aUser) noexcept {
 		return true;
 	}
 
-	auto shareInfo = ClientManager::getInstance()->getShareInfo(HintedUser(aUser));
+	auto shareInfo = ClientManager::getInstance()->getShareInfo(aUser);
 	return shareInfo && (*shareInfo).fileCount > SETTING(FULL_LIST_DL_LIMIT);
 }
 

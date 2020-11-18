@@ -1554,8 +1554,8 @@ void DirectoryListingFrame::appendTreeContextMenu(CPoint& pt, const HTREEITEM& a
 	directoryMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 }
 
-void DirectoryListingFrame::handleItemAction(bool usingTree, std::function<void (const ItemInfo* ii)> aF, bool firstOnly /*false*/) {
-	if (usingTree) {
+void DirectoryListingFrame::handleItemAction(bool aUsingTree, std::function<void (const ItemInfo* ii)> aF, bool aFirstOnly /*false*/) {
+	if (aUsingTree) {
 		auto dir = ctrlTree.getSelectedItemData();
 		aF(dir);
 	} else if (ctrlFiles.list.GetSelectedCount() >= 1) {
@@ -1563,7 +1563,7 @@ void DirectoryListingFrame::handleItemAction(bool usingTree, std::function<void 
 		while ((sel = ctrlFiles.list.GetNextItem(sel, LVNI_SELECTED)) != -1) {
 			const ItemInfo* ii = ctrlFiles.list.getItemData(sel);
 			aF(ii);
-			if (firstOnly)
+			if (aFirstOnly)
 				break;
 		}
 	}
@@ -1572,8 +1572,9 @@ void DirectoryListingFrame::handleItemAction(bool usingTree, std::function<void 
 void DirectoryListingFrame::handleDownload(const string& aTarget, Priority aPriority, bool aUsingTree) {
 	handleItemAction(aUsingTree, [&](const ItemInfo* ii) {
 		if (ii->type == ItemInfo::FILE) {
-			ActionUtil::addFileDownload(aTarget + (!Util::isDirectoryPath(aTarget) ? Util::emptyString : ii->getName()), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), ii->file->getRemoteDate(),
-				0, aPriority);
+			auto target = aTarget + (!Util::isDirectoryPath(aTarget) ? Util::emptyString : ii->getName());
+			decltype(auto) f = ii->file;
+			ActionUtil::addFileDownload(target, f->getSize(), f->getTTH(), dl->getDownloadSourceUser(), f->getRemoteDate(), 0, aPriority);
 		} else {
 			dl->addAsyncTask([=] {
 				try {
@@ -1718,20 +1719,25 @@ void DirectoryListingFrame::handleCopyDir() {
 	});
 }
 
-void DirectoryListingFrame::handleRefreshShare(bool usingTree) {
-	StringList refresh;
-	if (getLocalPaths(refresh, usingTree, true)) {
+void DirectoryListingFrame::handleRefreshShare(bool aUsingTree) {
+	StringList refreshPaths;
+	if (getLocalPaths(refreshPaths, aUsingTree, true)) {
+		string displayName = Util::emptyString;
+		if (refreshPaths.size() > 1 && aUsingTree) {
+			displayName = ctrlTree.getSelectedItemData()->getName();
+		}
+
 		dl->addAsyncTask([=] {
-			ShareManager::getInstance()->refreshPathsHooked(ShareRefreshPriority::MANUAL, refresh, this);
+			ShareManager::getInstance()->refreshPathsHooked(ShareRefreshPriority::MANUAL, refreshPaths, this, displayName);
 		});
 	}
 }
 
-bool DirectoryListingFrame::getLocalPaths(StringList& paths_, bool usingTree, bool dirsOnly) {
+bool DirectoryListingFrame::getLocalPaths(StringList& paths_, bool aUsingTree, bool aDirsOnly) {
 	string error;
-	handleItemAction(usingTree, [&](const ItemInfo* ii) {
+	handleItemAction(aUsingTree, [&](const ItemInfo* ii) {
 		try {
-			if (!dirsOnly && ii->type == ItemInfo::FILE) {
+			if (!aDirsOnly && ii->type == ItemInfo::FILE) {
 				dl->getLocalPaths(ii->file, paths_);
 			} else if (ii->type == ItemInfo::DIRECTORY)  {
 				dl->getLocalPaths(ii->dir, paths_);

@@ -733,7 +733,7 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 		case COLUMN_HUB: return FormatUtil::getHubNames(getHintedUser());
 		case COLUMN_EXACT_SIZE: return getSize() > 0 ? Util::formatExactSizeW(getSize()) : Util::emptyStringT;
 		case COLUMN_IP: return countryInfo.text;
-		case COLUMN_TTH: return (!isDirectory() && !SettingsManager::lanMode) ? Text::toT(getTTH().toBase32()) : Util::emptyStringT;
+		case COLUMN_TTH: return !isDirectory() ? Text::toT(getTTH().toBase32()) : Util::emptyStringT;
 		case COLUMN_DATE: return Util::getDateTimeW(getDate());
 		default: return Util::emptyStringT;
 	}
@@ -1457,7 +1457,7 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 
 			resultsMenu.appendSeparator();
 			if (hasFiles)
-				resultsMenu.appendItem(SettingsManager::lanMode ? TSTRING(SEARCH_FOR_ALTERNATES) : TSTRING(SEARCH_TTH), [&] { handleSearchTTH(); });
+				resultsMenu.appendItem(TSTRING(SEARCH_TTH), [&] { handleSearchTTH(); });
 
 			resultsMenu.appendItem(TSTRING(SEARCH_DIRECTORY), [&] { handleSearchDir(); });
 
