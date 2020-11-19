@@ -76,7 +76,7 @@ ECHO Y | DEL quit
 
 :: Install Node.js
 echo Installing Node.js...
-call %SOLUTION_DIR%\scripts\update_node.bat > nul
+call %SOLUTION_DIR%\scripts\update_node.bat %arch%  > nul
 
 :: Create updater
 echo Creating the updater file...
