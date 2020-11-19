@@ -19,9 +19,10 @@
 #include "stdafx.h"
 #include "Resource.h"
 
-#include "ExtensionsFrame.h"
-#include "ResourceLoader.h"
 #include "DynamicDialogBase.h"
+#include "ExtensionsFrame.h"
+#include "HttpLinks.h"
+#include "ResourceLoader.h"
 
 #include <semver/semver.hpp>
 
@@ -151,17 +152,17 @@ ExtensionsFrame::ExtensionGroupEnum ExtensionsFrame::ItemInfo::getGroupId() cons
 	return ext->isManaged() ? ExtensionGroupEnum::INSTALLED : ExtensionGroupEnum::REMOTE;
 }
 
-string ExtensionsFrame::ItemInfo::getHomepage() const noexcept {
-	const auto ret = catalogItem ? catalogItem->homepage : ext->getHomepage();
+tstring ExtensionsFrame::ItemInfo::getHomepage() const noexcept {
+	const auto ret = Text::toT(catalogItem ? catalogItem->homepage : ext->getHomepage());
 	if (!ret.empty()) {
 		return ret;
 	}
 
 	if (catalogItem) {
-		return "https://www.npmjs.com/package/" + getName();
+		return HttpLinks::extensionHomepageBase + Text::toT(getName());
 	}
 
-	return Util::emptyString;
+	return Util::emptyStringT;
 }
 
 const string& ExtensionsFrame::ItemInfo::getName() const noexcept {
@@ -387,7 +388,7 @@ LRESULT ExtensionsFrame::onClickedSettings(WORD /*wNotifyCode*/, WORD /*wID*/, H
 	targetMenu.appendSeparator();
 
 	targetMenu.appendItem(CTSTRING(EXTENSIONS_DEV_HELP), [=] {
-		ActionUtil::openLink(_T("https://github.com/airdcpp-web/airdcpp-extensions"));
+		ActionUtil::openLink(HttpLinks::extensionsDevHelp);
 	});
 
 	targetMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_VERPOSANIMATION, pt);
@@ -459,7 +460,7 @@ void ExtensionsFrame::onUpdateExtension(const ItemInfo* ii) noexcept {
 }
 
 void ExtensionsFrame::onReadMore(const ItemInfo* ii) noexcept {
-	ActionUtil::openLink(Text::toT(ii->getHomepage()));
+	ActionUtil::openLink(ii->getHomepage());
 }
 
 void ExtensionsFrame::onConfigExtension(const ItemInfo* ii) noexcept {
@@ -491,7 +492,7 @@ void ExtensionsFrame::downloadExtensionList() noexcept {
 
 	updateStatusAsync(TSTRING(EXTENSION_CATALOG_DOWNLOADING), LogMessage::SEV_INFO);
 	httpDownload.reset(new HttpDownload(
-		extensionUrl,
+		Text::fromT(HttpLinks::extensionCatalog),
 		[this] { onExtensionListDownloaded(); }
 	));
 }
@@ -573,7 +574,7 @@ void ExtensionsFrame::installExtension(const ItemInfo* ii) noexcept {
 	const auto name = Text::toT(ii->getName());
 	updateStatusAsync(ii->ext ? TSTRING_F(EXTENSION_UPDATING_X, name) : TSTRING_F(EXTENSION_INSTALLING_X, name), LogMessage::SEV_INFO);
 	httpDownload.reset(new HttpDownload(
-		packageUrl + ii->getName() + "/latest",
+		Text::fromT(HttpLinks::extensionPackageBase) + ii->getName() + "/latest",
 		[this] {
 			onExtensionInfoDownloaded(); 
 		}

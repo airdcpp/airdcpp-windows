@@ -417,6 +417,9 @@
     <ClCompile Include="windows\DynamicDialogBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\HttpLinks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -897,6 +900,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\WinClient.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\HttpLinks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

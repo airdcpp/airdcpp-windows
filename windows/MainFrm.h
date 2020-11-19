@@ -497,6 +497,7 @@ private:
 	void on(UpdateManagerListener::BadVersion, const string& message, const string& url, const string& update, int buildID, bool canAutoUpdate) noexcept;
 	void on(UpdateManagerListener::UpdateComplete, const string& updater) noexcept;
 	void on(UpdateManagerListener::UpdateFailed, const string& line) noexcept;
+	void on(UpdateManagerListener::VersionFileDownloaded, SimpleXML&) noexcept;
 
 	void on(ClientManagerListener::ClientCreated, const ClientPtr&) noexcept;
 };

@@ -51,6 +51,7 @@
 #include "ActionUtil.h"
 #include "SystemUtil.h"
 
+#include "HttpLinks.h"
 #include "Winamp.h"
 #include "Players.h"
 #include "iTunesCOMInterface.h"
@@ -1165,10 +1166,10 @@ LRESULT MainFrame::onLink(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL
 	tstring site;
 	bool isFile = false;
 	switch(wID) {
-		case IDC_HELP_HOMEPAGE: site = Text::toT(UpdateManager::getInstance()->links.homepage); break;
-		case IDC_HELP_GUIDES: site = Text::toT(UpdateManager::getInstance()->links.guides); break;
-		case IDC_HELP_DISCUSS: site = Text::toT(UpdateManager::getInstance()->links.discuss); break;
-		case IDC_HELP_CUSTOMIZE: site = Text::toT(UpdateManager::getInstance()->links.customize); break;
+		case IDC_HELP_HOMEPAGE: site = HttpLinks::homepage; break;
+		case IDC_HELP_GUIDES: site = HttpLinks::guides; break;
+		case IDC_HELP_DISCUSS: site = HttpLinks::discuss; break;
+		case IDC_HELP_CUSTOMIZE: site = HttpLinks::customize; break;
 		default: dcassert(0);
 	}
 
@@ -2047,6 +2048,14 @@ void MainFrame::on(UpdateManagerListener::UpdateComplete, const string& aUpdater
 	callAsync([=] { onUpdateComplete(aUpdater); });
 }
 
+void MainFrame::on(UpdateManagerListener::VersionFileDownloaded, SimpleXML& xml) noexcept {
+	try {
+		HttpLinks::updateLinks(xml);
+	} catch (const SimpleXMLException& e) {
+		ShowPopup(Text::toT(e.what()), _T("Links"), NIIF_INFO, true);
+	}
+}
+
 void MainFrame::onUpdateAvailable(const string& title, const string& message, const string& version, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept {
 	UpdateDlg dlg(title, message, version, infoUrl, autoUpdate, build, autoUpdateUrl);
 	if (dlg.DoModal(m_hWnd)  == IDC_UPDATE_DOWNLOAD) {
@@ -2061,13 +2070,13 @@ void MainFrame::onBadVersion(const string& message, const string& infoUrl, const
 	tstring title = Text::toT(STRING(MANDATORY_UPDATE) + " - " + shortVersionString);
 	showMessageBox(Text::toT(message + "\r\n\r\n" + (canAutoUpdate ? STRING(ATTEMPT_AUTO_UPDATE) : STRING(MANUAL_UPDATE_MSG))).c_str(), MB_OK | MB_ICONEXCLAMATION, title);
 
-	if(!canAutoUpdate) {
-		if(!infoUrl.empty())
+	if (!canAutoUpdate) {
+		if (!infoUrl.empty())
 			ActionUtil::openLink(Text::toT(infoUrl));
 
 		shutdown();
 	} else {
-		if(!UpdateManager::getInstance()->getUpdater().isUpdating()) {
+		if (!UpdateManager::getInstance()->getUpdater().isUpdating()) {
 			addThreadedTask([=] { UpdateManager::getInstance()->getUpdater().downloadUpdate(updateUrl, buildID, true); });
 			ShowPopup(CTSTRING(UPDATER_START), CTSTRING(UPDATER), NIIF_INFO, true);
 		} else {

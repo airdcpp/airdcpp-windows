@@ -19,6 +19,7 @@
 #ifndef SEARCH_AUTOSEARCH_PARAMS_H
 #define SEARCH_AUTOSEARCH_PARAMS_H
 
+#include "HttpLinks.h"
 #include "TabbedDialog.h"
 
 class AutoSearchParams : public CDialogImpl<AutoSearchParams>
@@ -85,7 +86,7 @@ public:
 		url.SubclassWindow(GetDlgItem(IDC_TIMEVAR_LINK));
 		url.SetHyperLinkExtendedStyle(HLINK_UNDERLINEHOVER);
 
-		url.SetHyperLink(_T("http://www.cplusplus.com/reference/clibrary/ctime/strftime/"));
+		url.SetHyperLink(HttpLinks::timeVariablesHelp.c_str());
 		url.SetLabel(CTSTRING(AS_TIMEVAR_AVAILABLE));
 
 		CenterWindow(GetParent());

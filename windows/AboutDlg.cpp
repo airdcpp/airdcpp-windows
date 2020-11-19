@@ -17,10 +17,12 @@
  */
 
 #include "stdafx.h"
-
 #include "Resource.h"
-#include "WinUtil.h"
+
 #include "AboutDlg.h"
+
+#include "HttpLinks.h"
+#include "WinUtil.h"
 
 #include <airdcpp/format.h>
 #include <airdcpp/HttpDownload.h>
@@ -64,8 +66,8 @@ LRESULT AboutDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	url.SubclassWindow(GetDlgItem(IDC_LINK));
 	url.SetHyperLinkExtendedStyle(HLINK_UNDERLINEHOVER);
 
-	url.SetHyperLink(Text::toT(UpdateManager::getInstance()->links.homepage).c_str());
-	url.SetLabel(Text::toT(UpdateManager::getInstance()->links.homepage).c_str());
+	url.SetHyperLink(HttpLinks::homepage.c_str());
+	url.SetLabel(HttpLinks::homepage.c_str());
 
 	CenterWindow(GetParent());
 	c.addListener(this);

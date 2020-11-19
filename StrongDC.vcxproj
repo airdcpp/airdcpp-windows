@@ -430,6 +430,7 @@
     <ClCompile Include="windows\FavHubGeneralPage.cpp" />
     <ClCompile Include="windows\FavHubOptionsPage.cpp" />
     <ClCompile Include="windows\FormatUtil.cpp" />
+    <ClCompile Include="windows\HttpLinks.cpp" />
     <ClCompile Include="windows\RssFilterPage.cpp" />
     <ClCompile Include="windows\ActionUtil.cpp" />
     <ClCompile Include="windows\SystemUtil.cpp" />
@@ -576,6 +577,7 @@
     <ClInclude Include="windows\ExtensionsFrame.h" />
     <ClInclude Include="windows\FavHubGeneralPage.h" />
     <ClInclude Include="windows\FavHubOptionsPage.h" />
+    <ClInclude Include="windows\HttpLinks.h" />
     <ClInclude Include="windows\ResizeableDialog.h" />
     <ClInclude Include="windows\FormatUtil.h" />
     <ClInclude Include="windows\ResourceLoader.h" />

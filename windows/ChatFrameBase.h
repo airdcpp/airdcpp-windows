@@ -80,10 +80,10 @@ protected:
 	//CContainedWindow ctrlMessageContainer;
 	//CContainedWindow clientContainer;
 
-	int menuItems;
+	int menuItems = 0;
 	tstring complete;
 	bool inHistory = false;
-	int lineCount; //ApexDC
+	int lineCount = 1; //ApexDC
 
 	OMenu emoMenu;
 
@@ -93,13 +93,13 @@ protected:
 	CButton ctrlResize;
 	CButton ctrlSendMessage;
 	CToolTipCtrl ctrlTooltips;
-	bool resizePressed;
+	bool resizePressed = false;
 
 	RichTextBox ctrlClient;
 
 	TStringList prevCommands;
 	tstring currentCommand;
-	TStringList::size_type curCommandPosition;		//can't use an iterator because StringList is a vector, and vector iterators become invalid after resizing
+	TStringList::size_type curCommandPosition = 0;		//can't use an iterator because StringList is a vector, and vector iterators become invalid after resizing
 
 	void addMagnet(const StringList& aPaths);
 	void init(HWND aHWND, RECT aRcDefault);
@@ -111,7 +111,7 @@ protected:
 
 	void getLineText(tstring& s);
 
-	bool cancelHashing;
+	bool cancelHashing = false;
 	task_group tasks;
 
 	void setStatusText(const tstring& aLine, uint8_t severity);

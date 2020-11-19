@@ -132,7 +132,7 @@ private:
 
 		const string& getName() const noexcept;
 		const string& getDescription() const noexcept;
-		string getHomepage() const noexcept;
+		tstring getHomepage() const noexcept;
 
 		ExtensionGroupEnum getGroupId() const noexcept;
 
@@ -193,9 +193,6 @@ private:
 	void parseExtensionCatalogItems(const json& aJson) noexcept;
 
 	webserver::ExtensionManager& getExtensionManager() noexcept;
-
-	const string extensionUrl = "https://airdcpp-npm.herokuapp.com/-/v1/search?text=keywords:airdcpp-extensions-public&size=100";
-	const string packageUrl = "https://airdcpp-npm.herokuapp.com/";
 
 	CImageList listImages;
 	CStatusBarCtrl ctrlStatus;

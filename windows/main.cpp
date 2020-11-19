@@ -31,6 +31,7 @@
 
 #include "ActionUtil.h"
 #include "ExtendedTrace.h"
+#include "HttpLinks.h"
 #include "MainFrm.h"
 #include "Resource.h"
 #include "RichTextBox.h"
@@ -198,7 +199,7 @@ LONG handleCrash(unsigned long aCode, const string& aError, PCONTEXT aContext)
 
 	auto msg = "AirDC++ just encountered a fatal bug and details have been written to " + exceptionFilePath + "\n\nYou can upload this file at http://www.airdcpp.net to help us find out what happened. Go there now?";
 	if (::MessageBox(WinUtil::mainWnd, Text::toT(msg).c_str(), _T("AirDC++ has crashed"), MB_YESNO | MB_ICONERROR) == IDYES) {
-		ActionUtil::openLink(_T("http://crash.airdcpp.net"));
+		ActionUtil::openLink(HttpLinks::appCrash);
 	}
 
 #ifndef _DEBUG

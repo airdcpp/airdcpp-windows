@@ -19,6 +19,8 @@
 #include "stdafx.h"
 #include "ChatCommands.h"
 
+#include "HttpLinks.h"
+
 #define COMPILE_MULTIMON_STUBS 1
 
 #include <MultiMon.h>
@@ -332,7 +334,7 @@ string ChatCommands::generateStats() {
 	int64_t userTime = userTimeFT.dwLowDateTime | (((int64_t)userTimeFT.dwHighDateTime) << 32);  
 
 	string ret = boost::str(boost::format(
-"\r\n\t-=[ %s   http://www.airdcpp.net ]=-\r\n\
+"\r\n\t-=[ %s   %s ]=-\r\n\
 \t-=[ Uptime: %s ][ CPU time: %s ]=-\r\n\
 \t-=[ Memory usage (peak): %s (%s) ]=-\r\n\
 \t-=[ Virtual Memory usage (peak): %s (%s) ]=-\r\n\
@@ -342,6 +344,7 @@ string ChatCommands::generateStats() {
 \t-=[ CPU: %s ]=-")
 
 		% fullVersionString
+		% Text::fromT(HttpLinks::homepage)
 		% Util::formatTime(TimerManager::getUptime(), false)
 		% Util::formatSeconds((kernelTime + userTime) / (10I64 * 1000I64 * 1000I64))
 		% Util::formatBytes(pmc.WorkingSetSize)

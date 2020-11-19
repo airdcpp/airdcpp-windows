@@ -17,38 +17,38 @@
  */
 
 #include "stdafx.h"
-#include <airdcpp/stdinc.h>
-#include "ChatFrameBase.h"
+
+#include "ActionUtil.h"
 #include "BrowseDlg.h"
-#include "WinUtil.h"
+#include "ChatFrameBase.h"
+#include "ChatCommands.h"
 #include "EmoticonsDlg.h"
 #include "EmoticonsManager.h"
-#include "SearchFrm.h"
+#include "ExMessageBox.h"
+#include "HttpLinks.h"
 #include "MainFrm.h"
 #include "Players.h"
-#include "ExMessageBox.h"
-#include "ChatCommands.h"
-#include "ActionUtil.h"
-#include "ExtensionsFrame.h"
+#include "SearchFrm.h"
+#include "WinUtil.h"
 
 #include <airdcpp/modules/AutoSearchManager.h>
 #include <airdcpp/modules/WebShortcuts.h>
 
-#include <airdcpp/HashManager.h>
-#include <airdcpp/SettingsManager.h>
-#include <airdcpp/Util.h>
-#include <airdcpp/LogManager.h>
-#include <airdcpp/QueueManager.h>
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/ConnectivityManager.h>
+#include <airdcpp/HashManager.h>
+#include <airdcpp/LogManager.h>
+#include <airdcpp/QueueManager.h>
+#include <airdcpp/SettingsManager.h>
 #include <airdcpp/ThrottleManager.h>
 #include <airdcpp/UpdateManager.h>
+#include <airdcpp/Util.h>
+
 #include <airdcpp/version.h>
 
 extern EmoticonsManager* emoticonsManager;
 
-ChatFrameBase::ChatFrameBase() : /*clientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP)*/ menuItems(0),
-		lineCount(1), curCommandPosition(0), cancelHashing(false), resizePressed(false) {
+ChatFrameBase::ChatFrameBase() {
 }
 
 ChatFrameBase::~ChatFrameBase() { }
@@ -860,7 +860,7 @@ bool ChatFrameBase::checkCommand(const tstring& aCmd, tstring& param, tstring& m
 			status = TSTRING(SPECIFY_SEARCH_STRING);
 		}
 	} else if ((stricmp(cmd.c_str(), _T("airdc++")) == 0) || (stricmp(cmd.c_str(), _T("++")) == 0)) {
-		message = msgs[GET_TICK() % MSGS] + Text::toT("-- " + UpdateManager::getInstance()->links.homepage + "  <" + shortVersionString + ">");
+		message = msgs[GET_TICK() % MSGS] + Text::toT("-- " + Text::fromT(HttpLinks::homepage) + "  <" + shortVersionString + ">");
 	} else if (stricmp(cmd.c_str(), _T("calcprio")) == 0) {
 		QueueManager::getInstance()->calculateBundlePriorities(true);
 	} else if (stricmp(cmd.c_str(), _T("generatelist")) == 0) {
@@ -936,7 +936,7 @@ bool ChatFrameBase::checkCommand(const tstring& aCmd, tstring& param, tstring& m
 	} else if (stricmp(cmd.c_str(), _T("f")) == 0) {
 		ctrlClient.findText();
 	} else if (stricmp(cmd.c_str(), _T("whois")) == 0) {
-		ActionUtil::openLink(_T("http://www.ripe.net/perl/whois?form_type=simple&full_query_string=&searchtext=") + Text::toT(Util::encodeURI(Text::fromT(param))));
+		ctrlClient.handleSearchIP(Text::toT(Util::encodeURI(Text::fromT(param))));
 	} else if ((stricmp(cmd.c_str(), _T("clear")) == 0) || (stricmp(cmd.c_str(), _T("cls")) == 0)) {
 		ctrlClient.handleEditClearAll();
 	} else if (Util::stricmp(cmd.c_str(), _T("conn")) == 0 || Util::stricmp(cmd.c_str(), _T("connection")) == 0) {

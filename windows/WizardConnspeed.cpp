@@ -20,7 +20,9 @@
 
 #include "WizardConnspeed.h"
 #include "WizardProfile.h"
+
 #include "ActionUtil.h"
+#include "HttpLinks.h"
 
 #include <airdcpp/AirUtil.h>
 
@@ -129,7 +131,7 @@ void WizardConnspeed::write() {
 }
 	
 LRESULT WizardConnspeed::onSpeedtest(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	ActionUtil::openLink(_T("http://www.speedtest.net"));
+	ActionUtil::openLink(HttpLinks::speedTest);
 	return 0;
 }
 

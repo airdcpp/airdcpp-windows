@@ -16,6 +16,7 @@
 
 #include "stdafx.h"
 #include "Resource.h"
+#include "atlstr.h"
 
 #include <airdcpp/modules/AutoSearchManager.h>
 #include <airdcpp/FavoriteManager.h>
@@ -27,23 +28,23 @@
 #include <airdcpp/Util.h>
 #include <airdcpp/version.h>
 
-#include <algorithm>
 #include <boost/lambda/lambda.hpp>
 #include <boost/format.hpp>
 #include <boost/scoped_array.hpp>
 
 #include "RichTextBox.h"
-#include "EmoticonsManager.h"
-#include "HubFrame.h"
-#include "PrivateFrame.h"
-#include "LineDlg.h"
-#include "atlstr.h"
-#include "MainFrm.h"
-#include "TextFrame.h"
-#include "ResourceLoader.h"
-#include "ActionUtil.h"
 
+#include "ActionUtil.h"
+#include "EmoticonsManager.h"
 #include "HtmlToRtf.h"
+#include "HttpLinks.h"
+#include "HubFrame.h"
+#include "LineDlg.h"
+#include "MainFrm.h"
+#include "PrivateFrame.h"
+#include "ResourceLoader.h"
+#include "TextFrame.h"
+
 
 EmoticonsManager* emoticonsManager = NULL;
 
@@ -1497,11 +1498,15 @@ LRESULT RichTextBox::onUnBanIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 
 
 LRESULT RichTextBox::onWhoisIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if(!selectedIP.empty()) {
-		ActionUtil::openLink(_T("http://www.ripe.net/perl/whois?form_type=simple&full_query_string=&searchtext=") + selectedIP);
- 	}
+	handleSearchIP(selectedIP);
 	SetSelNone();
 	return 0;
+}
+
+void RichTextBox::handleSearchIP(const tstring& aIP) noexcept {
+	if (!aIP.empty()) {
+		ActionUtil::openLink(HttpLinks::ipSearchBase + aIP);
+	}
 }
 
 LRESULT RichTextBox::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

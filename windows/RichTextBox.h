@@ -109,6 +109,7 @@ public:
 
 	LRESULT onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
+	void handleSearchIP(const tstring& aIP) noexcept;
 	void handleEditSelectAll();
 	void handleEditClearAll();
 

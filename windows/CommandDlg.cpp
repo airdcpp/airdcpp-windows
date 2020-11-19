@@ -23,8 +23,9 @@
 #include <airdcpp/UserCommand.h>
 
 #include "ActionUtil.h"
-#include "WinUtil.h"
 #include "CommandDlg.h"
+#include "HttpLinks.h"
+#include "WinUtil.h"
 
 WinUtil::TextItem CommandDlg::texts[] = {
 	{ IDCANCEL, ResourceManager::CANCEL },
@@ -231,8 +232,7 @@ void CommandDlg::updateControls() {
 	}
 }
 
-LRESULT CommandDlg::onHelp(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
-{
-	ActionUtil::openLink(_T("http://dcplusplus.sourceforge.net/webhelp/dialog_user_command.html"));
+LRESULT CommandDlg::onHelp(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	ActionUtil::openLink(HttpLinks::userCommandsHelp);
 	return 0;
 }
