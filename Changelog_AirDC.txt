@@ -11,10 +11,12 @@ Changed:
 
 - Bind web server to localhost (127.0.0.1) by default
 - Don't wait until the current file has finished completed when stopping hashing
+- Don't allow adding bundle sources without a known hub
 
 Fixed:
 
 - Fix incorrect TTH data being added in hash store when shutting down while hashing is in progress
+- Fix fetching the list of downloaded files for partial bundle sharing
 
 Removed:
 

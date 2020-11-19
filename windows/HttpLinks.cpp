@@ -34,7 +34,7 @@ tstring HttpLinks::extensionHomepageBase = _T("https://www.npmjs.com/package/");
 tstring HttpLinks::extensionCatalog = _T("https://registry.npmjs.org/-/v1/search?text=keywords:airdcpp-extensions-public&size=100");
 tstring HttpLinks::extensionPackageBase = _T("https://registry.npmjs.org/");
 tstring HttpLinks::webServerHelp = _T("http://www.airdcpp.net/component/k2/24-web-server");
-tstring HttpLinks::extensionsDevHelp = _T("https://github.com/airdcpp-web/airdcpp-extensions");
+tstring HttpLinks::extensionsDevHelp = _T("https://airdcpp-web.github.io/docs/advanced/scripting.html");
 
 tstring HttpLinks::ipSearchBase = _T("https://apps.db.ripe.net/db-web-ui/query?form_type=simple&full_query_string=&searchtext=");
 tstring HttpLinks::speedTest = _T("https://www.speedtest.net");
