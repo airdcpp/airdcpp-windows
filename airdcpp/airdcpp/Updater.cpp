@@ -412,7 +412,7 @@ string Updater::extractUpdater(const string& aUpdaterPath, int aBuildID, const s
 	if (zip.GoToFirstFile()) {
 		do {
 			zip.OpenCurrentFile();
-			if (zip.GetCurrentFileName().find(Util::getFileExt(updaterExeFile)) != string::npos) {
+			if (zip.GetCurrentFileName().find(Util::getFileExt(updaterExeFile)) != string::npos && zip.GetCurrentFileName().find('/') == string::npos) {
 				zip.ReadCurrentFile(updaterExeFile);
 			} else zip.ReadCurrentFile(srcPath);
 			zip.CloseCurrentFile();
