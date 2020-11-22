@@ -437,7 +437,7 @@ int WinClient::run(LPTSTR /*lpstrCmdLine*/, int nCmdShow) {
 				wndMain->ShowWindow(((nCmdShow == SW_SHOWDEFAULT) || (nCmdShow == SW_SHOWNORMAL)) ? SETTING(MAIN_WINDOW_STATE) : nCmdShow);
 			}
 
-			if (SettingsManager::getInstance()->isKeySet(SettingsManager::CONFIG_VERSION) && Util::toDouble(SETTING(CONFIG_VERSION)) <= 3.70) {
+			if (SettingsManager::getInstance()->isKeySet(SettingsManager::CONFIG_VERSION) && Util::toDouble(SETTING(CONFIG_VERSION)) < 4.00) {
 				wndMain->addThreadedTask([] {
 					Thread::sleep(3000);
 					installExtensions();
