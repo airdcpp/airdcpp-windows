@@ -437,7 +437,9 @@ int WinClient::run(LPTSTR /*lpstrCmdLine*/, int nCmdShow) {
 				wndMain->ShowWindow(((nCmdShow == SW_SHOWDEFAULT) || (nCmdShow == SW_SHOWNORMAL)) ? SETTING(MAIN_WINDOW_STATE) : nCmdShow);
 			}
 
-			if (SettingsManager::getInstance()->isKeySet(SettingsManager::CONFIG_VERSION) && Util::toDouble(SETTING(CONFIG_VERSION)) < 4.00) {
+			// Install replacement extensions for previously inbuilt functionality when migrating from a previous version
+			auto configVersion = Util::toDouble(SETTING(CONFIG_VERSION));
+			if (configVersion == 3.70 || configVersion == 3.71) {
 				wndMain->addThreadedTask([] {
 					Thread::sleep(3000);
 					installExtensions();

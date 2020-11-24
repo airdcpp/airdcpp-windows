@@ -174,7 +174,7 @@ const string SettingsManager::settingTags[] =
 	// Generic
 	"Nick", "UploadSpeed", "DownloadSpeed", "Description", "DownloadDirectory", "EMail", "ExternalIp", "ExternalIp6",
 	"LanguageFile", "HublistServers",  "HttpProxy", "Mapper",
-	"BindAddress", "BindAddress6", "SocksServer", "SocksUser", "SocksPassword", "ConfigVersion", 
+	"BindAddress", "BindAddress6", "SocksServer", "SocksUser", "SocksPassword", "ConfigVersion", "ConfigName",
 	"DefaultAwayMessage", "TimeStampsFormat", "CID", "NmdcEncoding",
 
 	"LogDirectory", "LogFormatPostDownload", "LogFormatPostUpload", "LogFormatMainChat", "LogFormatPrivateChat",
@@ -1306,6 +1306,9 @@ void SettingsManager::save() noexcept {
 	{
 		if (i == CONFIG_VERSION) {
 			xml.addTag(settingTags[i], VERSIONSTRING);
+			xml.addChildAttrib(type, curType);
+		} else if (i == CONFIG_APP) {
+			xml.addTag(settingTags[i], APPID);
 			xml.addChildAttrib(type, curType);
 		} else if(isSet[i]) {
 			xml.addTag(settingTags[i], get(StrSetting(i), false));

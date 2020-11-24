@@ -6,11 +6,17 @@ cd %1
 
 for /F "tokens=*" %%a in ('git describe --abbrev"="4  --dirty"="-d') do echo #define GIT_TAG "%%a" >> %tmpfile%
 
+:: Commit count
 for /F "tokens=*" %%a in ('git rev-list HEAD --count') do echo #define GIT_COMMIT_COUNT %%a >> %tmpfile%
 
+:: Commit date
 for /F "tokens=*" %%a in ('git log -1 --format"="%%at') do echo #define VERSION_DATE %%a >> %tmpfile%
 
+:: App name
 echo #define APPNAME_INC "AirDC++" >> %tmpfile%
+
+:: App ID
+echo #define APPID_INC "airdcpp-win32" >> %tmpfile%
 
 fc /b %tmpfile% %file% > nul
 if errorlevel 1 goto :versionChanged
