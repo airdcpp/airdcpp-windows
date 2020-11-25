@@ -67,6 +67,7 @@ PropPage::ListItem AppearancePage::listItems[] = {
 	{ SettingsManager::SORT_FAVUSERS_FIRST, ResourceManager::SETTINGS_SORT_FAVUSERS_FIRST },
 	{ SettingsManager::USE_SYSTEM_ICONS, ResourceManager::SETTINGS_USE_SYSTEM_ICONS },
 	{ SettingsManager::GET_USER_COUNTRY, ResourceManager::SETTINGS_GET_USER_COUNTRY },
+	{ SettingsManager::SHOW_USER_IP_COUNTRY, ResourceManager::SETTINGS_SHOW_USER_IP_COUNTRY },
 	{ SettingsManager::TABS_ON_TOP, ResourceManager::TABS_ON_TOP },
 	{ SettingsManager::UC_SUBMENU, ResourceManager::UC_SUBMENU },
 	{ SettingsManager::USE_EXPLORER_THEME, ResourceManager::USE_EXPLORER_THEME },

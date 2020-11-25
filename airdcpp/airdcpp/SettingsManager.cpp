@@ -295,7 +295,7 @@ const string SettingsManager::settingTags[] =
 	"CompressTransfers",
 
 	"DontDlAlreadyQueued", "DontDLAlreadyShared", "FavShowJoins", "FilterMessages",
-	"GetUserCountry", "GetUserInfo", "HubUserCommands", "KeepLists",
+	"GetUserCountry", "ShowUserIpCountry", "GetUserInfo", "HubUserCommands", "KeepLists",
 	"LogDownloads", "LogFilelistTransfers", "LogFinishedDownloads", "LogMainChat",
 	"LogPrivateChat", "LogStatusMessages", "LogSystem", "LogUploads",
 
@@ -468,6 +468,7 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(LOG_SYSTEM, true);
 	setDefault(MAX_HASH_SPEED, 0);
 	setDefault(GET_USER_COUNTRY, true);
+	setDefault(SHOW_USER_IP_COUNTRY, false);
 	setDefault(FAV_SHOW_JOINS, false);
 	setDefault(LOG_STATUS_MESSAGES, false);
 

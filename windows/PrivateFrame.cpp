@@ -544,9 +544,17 @@ void PrivateFrame::addLine(const Identity& from, const tstring& aLine) {
 void PrivateFrame::addLine(const Identity& from, const tstring& aLine, CHARFORMAT2& cf) {
 	CRect r;
 	ctrlClient.GetClientRect(r);
+	string extra;
+
+	if (SETTING(SHOW_USER_IP_COUNTRY)) {
+		extra = from.getIp4(); // todo: ipv6
+
+		if (extra.size())
+			extra = " | " + extra + " | " + from.getCountry();
+	}
 
 	auto myNick = Text::toT(ctrlClient.getClient() ? ctrlClient.getClient()->get(HubSettings::Nick) : SETTING(NICK));
-	bool notify = ctrlClient.AppendChat(from, myNick, SETTING(TIME_STAMPS) ? Text::toT("[" + Util::getShortTimeString() + "] ") : _T(""), aLine + _T('\n'), cf);
+	bool notify = ctrlClient.AppendChat(from, myNick, SETTING(TIME_STAMPS) ? Text::toT("[" + Util::getShortTimeString() + extra + "] ") : _T(""), aLine + _T('\n'), cf);
 	//addClientLine(TSTRING(LAST_CHANGE) + _T(" ") + Text::toT(Util::getTimeString()), LogMessage::SEV_INFO);
 
 	if(notify)

@@ -1348,6 +1348,7 @@ enum Strings { // @DontAdd
 	SETTINGS_FORMAT_REMOTE_TIME, // "Use the date of the remote directory for time parameters"
 	SETTINGS_GENERAL, // "General"
 	SETTINGS_GET_USER_COUNTRY, // "Get user country"
+	SETTINGS_SHOW_USER_IP_COUNTRY, // "Show user IP and country in chat when available"
 	SETTINGS_HIGH_PRIO_FILES, // "High priority files (separate files with '|', wildcards allowed)"
 	SETTINGS_HTTP_PROXY, // "HTTP Proxy"
 	SETTINGS_HUB_USER_COMMANDS, // "Accept custom user commands from hub"
