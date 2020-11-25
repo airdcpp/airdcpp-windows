@@ -371,9 +371,11 @@ namespace webserver {
 
 	void Extension::resetSession() noexcept {
 		if (session) {
-			session->getServer()->getUserManager().logout(session);
+			if (managed) {
+				session->getServer()->getUserManager().logout(session);
+				dcassert(session.use_count() == 1);
+			}
 
-			dcassert(session.use_count() == 1);
 			session = nullptr;
 		}
 	}
