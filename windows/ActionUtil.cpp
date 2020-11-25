@@ -63,7 +63,7 @@ void ActionUtil::MatchQueue::operator()(UserPtr aUser, const string& aUrl) const
 
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		try {
-			QueueManager::getInstance()->addList(HintedUser(aUser, aUrl), QueueItem::FLAG_MATCH_QUEUE);
+			QueueManager::getInstance()->addListHooked(HintedUser(aUser, aUrl), QueueItem::FLAG_MATCH_QUEUE);
 		} catch (const Exception& e) {
 			LogManager::getInstance()->message(e.getError(), LogMessage::SEV_ERROR, STRING(SETTINGS_QUEUE));
 		}
@@ -379,25 +379,25 @@ void ActionUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aOptional
 	}
 }
 
-bool ActionUtil::openFile(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsClientView) noexcept {
+void ActionUtil::openFile(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsClientView) noexcept {
 	if (!aUser) {
 		dcassert(0);
-		return false;
+		return;
 	}
 
-	if (aIsClientView && (!SETTING(NFO_EXTERNAL) || Util::getFileExt(aFileName) != ".nfo")) {
-		return ViewFileManager::getInstance()->addUserFileNotify(aFileName, aSize, aTTH, aUser, true) ? true : false;
-	}
+	MainFrame::getMainFrame()->addThreadedTask([=] {
+		if (aIsClientView && (!SETTING(NFO_EXTERNAL) || Util::getFileExt(aFileName) != ".nfo")) {
+			ViewFileManager::getInstance()->addUserFileHookedNotify(aFileName, aSize, aTTH, aUser, true);
+			return;
+		}
 
-	try {
-		QueueManager::getInstance()->addOpenedItem(aFileName, aSize, aTTH, aUser, false, true);
-		return true;
-	} catch (const Exception& e) {
-		auto nicks = ClientManager::getInstance()->getFormatedNicks(aUser);
-		LogManager::getInstance()->message(STRING_F(ADD_FILE_ERROR, aFileName % nicks % e.getError()), LogMessage::SEV_NOTIFY, STRING(SETTINGS_QUEUE));
-	}
-
-	return false;
+		try {
+			QueueManager::getInstance()->addOpenedItemHooked(aFileName, aSize, aTTH, aUser, false, true);
+		} catch (const Exception& e) {
+			auto nicks = ClientManager::getInstance()->getFormatedNicks(aUser);
+			LogManager::getInstance()->message(STRING_F(ADD_FILE_ERROR, aFileName % nicks % e.getError()), LogMessage::SEV_NOTIFY, STRING(SETTINGS_QUEUE));
+		}
+	});
 }
 
 void ActionUtil::openFile(const tstring& aFileName) {
@@ -859,7 +859,8 @@ void ActionUtil::getProfileConflicts(HWND aParent, int aProfile, ProfileSettingI
 void ActionUtil::addFileDownload(const string& aTarget, int64_t aSize, const TTHValue& aTTH, const HintedUser& aOptionalUser, time_t aDate, Flags::MaskType aFlags /*0*/, Priority aPriority /*DEFAULT*/) {
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		try {
-			QueueManager::getInstance()->createFileBundle(aTarget, aSize, aTTH, aOptionalUser, aDate, aFlags, aPriority);
+			auto fileInfo = BundleFileInfo(Util::getFileName(aTarget), aTTH, aSize, aPriority, aDate);
+			QueueManager::getInstance()->createFileBundleHooked(Util::getParentDir(aTarget), fileInfo, aOptionalUser, aFlags);
 		} catch (const Exception& e) {
 			auto nick = aOptionalUser ? Text::fromT(FormatUtil::getNicks(aOptionalUser)) : STRING(UNKNOWN);
 			LogManager::getInstance()->message(STRING_F(ADD_FILE_ERROR, aTarget % nick % e.getError()), LogMessage::SEV_ERROR, STRING(SETTINGS_QUEUE));
@@ -919,7 +920,7 @@ void ActionUtil::findNfo(const string& aAdcPath, const HintedUser& aUser) noexce
 
 		if (searchInstance.getResultCount() > 0) {
 			auto result = searchInstance.getResultList().front();
-			ViewFileManager::getInstance()->addUserFileNotify(result->getFileName(), result->getSize(), result->getTTH(), aUser, true);
+			ViewFileManager::getInstance()->addUserFileHookedNotify(result->getFileName(), result->getSize(), result->getTTH(), aUser, true);
 		}
 		else {
 			MainFrame::getMainFrame()->ShowPopup(TSTRING(NO_NFO_FOUND), Text::toT(Util::getAdcLastDir(aAdcPath)), NIIF_INFO, true);

@@ -797,11 +797,15 @@ void SearchFrame::handleDownload(const string& aTarget, Priority p, bool useWhol
 					targetName = aSR->getType() == SearchResult::TYPE_DIRECTORY ? aSR->getFileName() : Util::getAdcLastDir(aSR->getAdcFilePath());
 				}
 
-				try {
-					DirectoryListingManager::getInstance()->addDirectoryDownload(aSR->getUser(), *targetName, aSR->getAdcFilePath(), aTarget, p);
-				} catch (const Exception& e) {
-					ctrlStatus.SetText(1, Text::toT(e.getError()).c_str());
-				}
+				MainFrame::getMainFrame()->addThreadedTask([=] {
+					try {
+						DirectoryListingManager::getInstance()->addDirectoryDownloadHooked(aSR->getUser(), *targetName, aSR->getAdcFilePath(), aTarget, p);
+					} catch (const Exception& e) {
+						callAsync([=] {
+							ctrlStatus.SetText(1, Text::toT(e.getError()).c_str());
+						});
+					}
+				});
 			}
 		};
 
@@ -829,12 +833,17 @@ void SearchFrame::handleGetList(ListType aType) {
 
 void SearchFrame::handleMatchPartial() {
 	auto matchPartial = [&](const SearchInfo* si) {
-		auto path = AirUtil::getAdcReleaseDir(si->getAdcFilePath(), false);
-		try {
-			QueueManager::getInstance()->addList(si->getHintedUser(), QueueItem::FLAG_MATCH_QUEUE | (si->getHintedUser().user->isNMDC() ? 0 : QueueItem::FLAG_RECURSIVE_LIST) | QueueItem::FLAG_PARTIAL_LIST, path);
-		} catch(const Exception&) {
-			//...
-		}
+		MainFrame::getMainFrame()->addThreadedTask([
+			user = si->getHintedUser(),
+			flags = QueueItem::FLAG_MATCH_QUEUE | (si->getHintedUser().user->isNMDC() ? 0 : QueueItem::FLAG_RECURSIVE_LIST) | QueueItem::FLAG_PARTIAL_LIST,
+			path = AirUtil::getAdcReleaseDir(si->getAdcFilePath(), false)
+		] {
+			try {
+				QueueManager::getInstance()->addListHooked(user, flags, path);
+			} catch (const Exception&) {
+				//...
+			}
+		});
 	};
 
 	performAction(matchPartial, true);

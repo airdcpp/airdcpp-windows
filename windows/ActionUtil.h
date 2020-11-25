@@ -88,7 +88,7 @@ public:
 	static void openLink(const tstring& aUrl);
 	static void openFile(const tstring& aFileName);
 	static void openFolder(const tstring& aFileName);
-	static bool openFile(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsClientView) noexcept;
+	static void openFile(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsClientView) noexcept;
 
 	static void appendBundlePrioMenu(OMenu& aParent, const BundleList& aBundles);
 	static void appendBundlePauseMenu(OMenu& aParent, const BundleList& aBundles);

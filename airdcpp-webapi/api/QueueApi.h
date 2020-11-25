@@ -42,10 +42,15 @@ namespace webserver {
 	private:
 		ActionHookResult<> bundleCompletionHook(const BundlePtr& aBundle, const ActionHookResultGetter<>& aResultGetter) noexcept;
 		ActionHookResult<> fileCompletionHook(const QueueItemPtr& aFile, const ActionHookResultGetter<>& aResultGetter) noexcept;
+		ActionHookResult<> bundleFileValidationHook(const string& aTarget, BundleFileInfo& aInfo, const ActionHookResultGetter<>& aResultGetter) noexcept;
+		ActionHookResult<> sourceValidationHook(const HintedUser& aUser, const ActionHookResultGetter<>& aResultGetter) noexcept;
 
 		// COMMON
 		api_return handleFindDupePaths(ApiRequest& aRequest);
 		api_return handleRemoveSource(ApiRequest& aRequest);
+
+		static BundleFileInfo deserializeBundleFileInfo(const json& aJson);
+		static json serializeBundleFileInfo(const BundleFileInfo& aInfo) noexcept;
 
 		// BUNDLES
 

@@ -581,13 +581,13 @@ void DirectoryListing::Directory::getContentInfo(size_t& directories_, size_t& f
 	}
 }
 
-BundleDirectoryItemInfo::List DirectoryListing::Directory::toBundleInfoList() const noexcept {
-	BundleDirectoryItemInfo::List bundleFiles;
+BundleFileInfo::List DirectoryListing::Directory::toBundleInfoList() const noexcept {
+	BundleFileInfo::List bundleFiles;
 	toBundleInfoList(Util::emptyString, bundleFiles);
 	return bundleFiles;
 }
 
-void DirectoryListing::Directory::toBundleInfoList(const string& aTarget, BundleDirectoryItemInfo::List& aFiles) const noexcept {
+void DirectoryListing::Directory::toBundleInfoList(const string& aTarget, BundleFileInfo::List& aFiles) const noexcept {
 	// First, recurse over the directories
 	for (const auto& d: directories | map_values) {
 		d->toBundleInfoList(aTarget + d->getName() + PATH_SEPARATOR, aFiles);
@@ -597,7 +597,7 @@ void DirectoryListing::Directory::toBundleInfoList(const string& aTarget, Bundle
 
 	//sort(files.begin(), files.end(), File::Sort());
 	for (const auto& f: files) {
-		aFiles.emplace_back(aTarget + f->getName(), f->getTTH(), f->getSize());
+		aFiles.emplace_back(aTarget + f->getName(), f->getTTH(), f->getSize(), Priority::DEFAULT, f->getRemoteDate());
 	}
 }
 
@@ -609,11 +609,11 @@ HintedUser DirectoryListing::getDownloadSourceUser() const noexcept {
 	return hintedUser;
 }
 
-optional<DirectoryBundleAddInfo> DirectoryListing::createBundle(const Directory::Ptr& aDir, const string& aTarget, Priority aPriority, string& errorMsg_) noexcept {
+optional<DirectoryBundleAddInfo> DirectoryListing::createBundleHooked(const Directory::Ptr& aDir, const string& aTarget, Priority aPriority, string& errorMsg_) noexcept {
 	auto bundleFiles = aDir->toBundleInfoList();
 
 	try {
-		auto info = QueueManager::getInstance()->createDirectoryBundle(aTarget, getDownloadSourceUser(),
+		auto info = QueueManager::getInstance()->createDirectoryBundleHooked(aTarget, getDownloadSourceUser(),
 			bundleFiles, aPriority, aDir->getRemoteDate(), errorMsg_);
 
 		return info;
@@ -1209,7 +1209,7 @@ void DirectoryListing::changeDirectoryImpl(const string& aAdcPath, bool aReload,
 				if (isOwnList) {
 					addPartialListTask(Util::emptyString, aAdcPath, false);
 				} else {
-					QueueManager::getInstance()->addList(hintedUser, QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_CLIENT_VIEW, aAdcPath);
+					QueueManager::getInstance()->addListHooked(hintedUser, QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_CLIENT_VIEW, aAdcPath);
 				}
 			} catch (const Exception& e) {
 				fire(DirectoryListingListener::LoadingFailed(), e.getError());

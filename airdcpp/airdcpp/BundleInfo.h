@@ -47,21 +47,22 @@ struct DirectoryBundleAddInfo {
 	typedef vector<DirectoryBundleAddInfo> List;
 };
 
-struct BundleDirectoryItemInfo {
-	BundleDirectoryItemInfo(BundleDirectoryItemInfo&& rhs) = default;
-	BundleDirectoryItemInfo& operator=(BundleDirectoryItemInfo&& rhs) = default;
-	BundleDirectoryItemInfo(BundleDirectoryItemInfo&) = delete;
-	BundleDirectoryItemInfo& operator=(BundleDirectoryItemInfo&) = delete;
+struct BundleFileInfo {
+	BundleFileInfo(BundleFileInfo&& rhs) = default;
+	BundleFileInfo& operator=(BundleFileInfo&& rhs) = default;
+	BundleFileInfo(BundleFileInfo&) = delete;
+	BundleFileInfo& operator=(BundleFileInfo&) = delete;
 
-	BundleDirectoryItemInfo(string aFile, const TTHValue& aTTH, int64_t aSize, Priority aPrio = Priority::DEFAULT) noexcept :
-		file(move(aFile)), tth(aTTH), size(aSize), prio(aPrio) { }
+	BundleFileInfo(string aFile, const TTHValue& aTTH, int64_t aSize, Priority aPrio, time_t aDate) noexcept :
+		file(move(aFile)), tth(aTTH), size(aSize), prio(aPrio), date(aDate) { }
 
 	string file;
 	TTHValue tth;
 	int64_t size;
 	Priority prio;
+	time_t date;
 
-	typedef vector<BundleDirectoryItemInfo> List;
+	typedef vector<BundleFileInfo> List;
 };
 
 }

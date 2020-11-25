@@ -108,11 +108,13 @@ void DirectoryListingFrame::openWindow(const HintedUser& aUser, Flags::MaskType 
 		return;
 	}
 
-	try {
-		DirectoryListingManager::getInstance()->openRemoteFileList(aUser, QueueItem::FLAG_CLIENT_VIEW | aFlags, aInitialDir);
-	} catch (const Exception& e) {
-		MainFrame::getMainFrame()->ShowPopup(Text::toT(e.getError()), _T(""), NIIF_INFO | NIIF_NOSOUND, true);
-	}
+	MainFrame::getMainFrame()->addThreadedTask([=] {
+		try {
+			DirectoryListingManager::getInstance()->openRemoteFileListHooked(aUser, QueueItem::FLAG_CLIENT_VIEW | aFlags, aInitialDir);
+		} catch (const Exception& e) {
+			MainFrame::getMainFrame()->ShowPopup(Text::toT(e.getError()), _T(""), NIIF_INFO | NIIF_NOSOUND, true);
+		}
+	});
 }
 
 DirectoryListingFrame* DirectoryListingFrame::findFrame(const UserPtr& aUser) noexcept {
@@ -622,7 +624,7 @@ void DirectoryListingFrame::convertToFull() {
 
 	dl->addAsyncTask([=] {
 		try {
-			QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_CLIENT_VIEW, ADC_ROOT_STR);
+			QueueManager::getInstance()->addListHooked(dl->getHintedUser(), QueueItem::FLAG_CLIENT_VIEW, ADC_ROOT_STR);
 		} catch (...) {}
 	});
 }
@@ -1578,7 +1580,7 @@ void DirectoryListingFrame::handleDownload(const string& aTarget, Priority aPrio
 		} else {
 			dl->addAsyncTask([=] {
 				try {
-					DirectoryListingManager::getInstance()->addDirectoryDownload(dl->getHintedUser(), ii->getName(), ii->getAdcPath(), aTarget, aPriority);
+					DirectoryListingManager::getInstance()->addDirectoryDownloadHooked(dl->getHintedUser(), ii->getName(), ii->getAdcPath(), aTarget, aPriority);
 				} catch (const Exception& e) {
 					ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
 				}
@@ -1593,7 +1595,14 @@ void DirectoryListingFrame::handleViewAsText() {
 			if (dl->getIsOwnList()) {
 				ViewFileManager::getInstance()->addLocalFileNotify(ii->file->getTTH(), true, ii->getName());
 			} else {
-				ViewFileManager::getInstance()->addUserFileNotify(ii->file->getName(), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), true);
+				dl->addAsyncTask([
+					name = ii->file->getName(),
+					size = ii->file->getSize(),
+					tth = ii->file->getTTH(),
+					user = dl->getHintedUser()
+				] {
+					ViewFileManager::getInstance()->addUserFileHookedNotify(name, size, tth, user, true);
+				});
 			}
 		}
 	});
@@ -2246,7 +2255,7 @@ void DirectoryListingFrame::onComboSelChanged(bool aUserChange) {
 					if (WinUtil::showQuestionBox(msg, MB_ICONQUESTION)) {
 						dl->addAsyncTask([=] {
 							try {
-								QueueManager::getInstance()->addList(HintedUser(dl->getUser(), newHub.hubUrl), (dl->getPartialList() ? QueueItem::FLAG_PARTIAL_LIST : 0) | QueueItem::FLAG_CLIENT_VIEW, ADC_ROOT_STR);
+								QueueManager::getInstance()->addListHooked(HintedUser(dl->getUser(), newHub.hubUrl), (dl->getPartialList() ? QueueItem::FLAG_PARTIAL_LIST : 0) | QueueItem::FLAG_CLIENT_VIEW, ADC_ROOT_STR);
 							} catch (...) {}
 						});
 					}

@@ -149,7 +149,7 @@ DirectoryDownloadPtr DirectoryListingManager::getDirectoryDownload(DirectoryDown
 	return i == dlDirectories.end() ? nullptr : *i;
 }
 
-DirectoryDownloadPtr DirectoryListingManager::addDirectoryDownload(const HintedUser& aUser, const string& aBundleName, const string& aListPath, const string& aTarget, Priority p, const void* aOwner) {
+DirectoryDownloadPtr DirectoryListingManager::addDirectoryDownloadHooked(const HintedUser& aUser, const string& aBundleName, const string& aListPath, const string& aTarget, Priority p, const void* aOwner) {
 	dcassert(!aTarget.empty() && !aListPath.empty() && !aBundleName.empty());
 	auto downloadInfo = make_shared<DirectoryDownload>(aUser, Util::cleanPathSeparators(aBundleName), aListPath, aTarget, p, aOwner);
 	
@@ -182,15 +182,15 @@ DirectoryDownloadPtr DirectoryListingManager::addDirectoryDownload(const HintedU
 	fire(DirectoryListingManagerListener::DirectoryDownloadAdded(), downloadInfo);
 
 	if (!dl && needList) {
-		queueList(downloadInfo);
+		queueListHooked(downloadInfo);
 	} else if(dl) {
-		dl->addAsyncTask([=] { handleDownload(downloadInfo, dl, false); });
+		dl->addAsyncTask([=] { handleDownloadHooked(downloadInfo, dl, false); });
 	}
 
 	return downloadInfo;
 }
 
-void DirectoryListingManager::queueList(const DirectoryDownloadPtr& aDownloadInfo) {
+void DirectoryListingManager::queueListHooked(const DirectoryDownloadPtr& aDownloadInfo) {
 	auto user = aDownloadInfo->getUser();
 
 	Flags flags = QueueItem::FLAG_DIRECTORY_DOWNLOAD;
@@ -199,7 +199,7 @@ void DirectoryListingManager::queueList(const DirectoryDownloadPtr& aDownloadInf
 	}
 
 	try {
-		auto qi = QueueManager::getInstance()->addList(user, flags.getFlags(), aDownloadInfo->getListPath());
+		auto qi = QueueManager::getInstance()->addListHooked(user, flags.getFlags(), aDownloadInfo->getListPath());
 		aDownloadInfo->setQueueItem(qi);
 	} catch(const DupeException&) {
 		// We have a list queued already
@@ -215,7 +215,7 @@ DirectoryListingManager::DirectoryListingMap DirectoryListingManager::getLists()
 	return viewedLists;
 }
 
-void DirectoryListingManager::processList(const string& aFileName, const string& aXml, const HintedUser& aUser, const string& aRemotePath, int aFlags) noexcept {
+void DirectoryListingManager::processListHooked(const string& aFileName, const string& aXml, const HintedUser& aUser, const string& aRemotePath, int aFlags) noexcept {
 	auto isPartialList = (aFlags & QueueItem::FLAG_PARTIAL_LIST) > 0;
 
 	{
@@ -224,32 +224,32 @@ void DirectoryListingManager::processList(const string& aFileName, const string&
 		if (p != viewedLists.end()) {
 			if (p->second->getPartialList() && isPartialList) {
 				//we don't want multiple threads to load those simultaneously. load in the list thread and return here after that
-				p->second->addPartialListTask(aXml, aRemotePath, true, [=] { processListAction(p->second, aRemotePath, aFlags); });
+				p->second->addPartialListTask(aXml, aRemotePath, true, [=] { processListActionHooked(p->second, aRemotePath, aFlags); });
 				return;
 			}
 		}
 	}
 
-	auto dirList = make_shared<DirectoryListing>(aUser, isPartialList, aFileName, false, false);
+	auto dl = make_shared<DirectoryListing>(aUser, isPartialList, aFileName, false, false);
 	try {
 		if (isPartialList) {
-			dirList->loadPartialXml(aXml, aRemotePath);
+			dl->loadPartialXml(aXml, aRemotePath);
 		} else {
-			dirList->loadFile();
+			dl->loadFile();
 		}
 	} catch (const Exception& e) {
 		log(STRING_F(LIST_LOAD_FAILED, aFileName % e.getError()), LogMessage::SEV_ERROR);
 		return;
 	}
 
-	processListAction(dirList, aRemotePath, aFlags);
+	processListActionHooked(dl, aRemotePath, aFlags);
 }
 
 void DirectoryListingManager::log(const string& aMsg, LogMessage::Severity aSeverity) noexcept {
 	LogManager::getInstance()->message(aMsg, aSeverity, STRING(FILE_LISTS));
 }
 
-void DirectoryListingManager::handleDownload(const DirectoryDownloadPtr& aDownloadInfo, const DirectoryListingPtr& aList, bool aListDownloaded/* = true*/) noexcept {
+void DirectoryListingManager::handleDownloadHooked(const DirectoryDownloadPtr& aDownloadInfo, const DirectoryListingPtr& aList, bool aListDownloaded/* = true*/) noexcept {
 	auto dir = aList->findDirectory(aDownloadInfo->getListPath());
 
 	// Check the content
@@ -257,23 +257,23 @@ void DirectoryListingManager::handleDownload(const DirectoryDownloadPtr& aDownlo
 		if (!dir) {
 			// Downloading directory for an open list? Try to download a list from the dir...
 			if (!aListDownloaded) {
-				queueList(aDownloadInfo);
+				queueListHooked(aDownloadInfo);
 			}
 			return;
 		}
 
 		if (aList->getPartialList() && dir->findIncomplete()) {
 			// Non-recursive partial list
-			queueList(aDownloadInfo);
+			queueListHooked(aDownloadInfo);
 			return;
 		}
 	}
 
 	// Queue the directory
-	auto target = aDownloadInfo->getTarget() + aDownloadInfo->getBundleName() + PATH_SEPARATOR;
+	auto target = Util::joinDirectory(aDownloadInfo->getTarget(), aDownloadInfo->getBundleName());
 
 	string errorMsg;
-	auto queueInfo = aList->createBundle(dir, target, aDownloadInfo->getPriority(), errorMsg);
+	auto queueInfo = aList->createBundleHooked(dir, target, aDownloadInfo->getPriority(), errorMsg);
 
 	// Owner, when available, is responsible for error reporting
 	if (!aDownloadInfo->getOwner() && !errorMsg.empty()) {
@@ -293,7 +293,7 @@ void DirectoryListingManager::handleDownload(const DirectoryDownloadPtr& aDownlo
 	}
 }
 
-void DirectoryListingManager::processListAction(DirectoryListingPtr aList, const string& aPath, int aFlags) noexcept {
+void DirectoryListingManager::processListActionHooked(DirectoryListingPtr aList, const string& aPath, int aFlags) noexcept {
 	if(aFlags & QueueItem::FLAG_DIRECTORY_DOWNLOAD) {
 		DirectoryDownloadList downloadItems;
 
@@ -312,7 +312,7 @@ void DirectoryListingManager::processListAction(DirectoryListingPtr aList, const
 		}
 
 		for (const auto& ddl: downloadItems) {
-			handleDownload(ddl, aList);
+			handleDownloadHooked(ddl, aList);
 		}
 	}
 
@@ -501,7 +501,7 @@ DirectoryListingPtr DirectoryListingManager::findList(const UserPtr& aUser) noex
 	return nullptr;
 }
 
-DirectoryListingPtr DirectoryListingManager::openRemoteFileList(const HintedUser& aUser, Flags::MaskType aFlags, const string& aInitialDir) {
+DirectoryListingPtr DirectoryListingManager::openRemoteFileListHooked(const HintedUser& aUser, Flags::MaskType aFlags, const string& aInitialDir) {
 	{
 		auto dl = findList(aUser);
 		if (dl) {
@@ -510,7 +510,7 @@ DirectoryListingPtr DirectoryListingManager::openRemoteFileList(const HintedUser
 	}
 
 	auto user = ClientManager::getInstance()->checkDownloadUrl(aUser);
-	auto qi = QueueManager::getInstance()->addList(user, aFlags, aInitialDir);
+	auto qi = QueueManager::getInstance()->addListHooked(user, aFlags, aInitialDir);
 	if (!qi) {
 		return nullptr;
 	}

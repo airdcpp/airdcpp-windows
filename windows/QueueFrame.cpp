@@ -671,14 +671,14 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 		if (!badBundleSources.empty()) {
 			readdMenu->appendItem(TSTRING(ALL), [=] {
 				for (auto& si : badBundleSources)
-					QueueManager::getInstance()->readdBundleSource(b, si.getUser());
+					QueueManager::getInstance()->readdBundleSourceHooked(b, si.getUser());
 			}, OMenu::FLAG_THREADED);
 			readdMenu->appendSeparator();
 		}
 
 		for (auto& bs : badBundleSources) {
 			auto u = bs.getUser();
-			readdMenu->appendItem(formatUser(bs) + formatSourceFlags(bs), [=] { QueueManager::getInstance()->readdBundleSource(b, u); }, OMenu::FLAG_THREADED);
+			readdMenu->appendItem(formatUser(bs) + formatSourceFlags(bs), [=] { QueueManager::getInstance()->readdBundleSourceHooked(b, u); }, OMenu::FLAG_THREADED);
 		}
 		/* Sub menus end */
 
@@ -794,14 +794,14 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 			readdMenu->appendItem(TSTRING(ALL), [=] {
 				auto sources = QueueManager::getInstance()->getBadSources(qi);
 				for (auto& si : sources)
-					QueueManager::getInstance()->readdQISource(qi->getTarget(), si.getUser());
+					QueueManager::getInstance()->readdQISourceHooked(qi->getTarget(), si.getUser());
 			}, OMenu::FLAG_THREADED);
 			readdMenu->appendSeparator();
 		}
 
 		for (auto& s : badSources) {
 			auto u = s.getUser();
-			readdMenu->appendItem(formatUser(s), [=] { QueueManager::getInstance()->readdQISource(qi->getTarget(), u); });
+			readdMenu->appendItem(formatUser(s), [=] { QueueManager::getInstance()->readdQISourceHooked(qi->getTarget(), u); });
 		}
 		/* Submenus end */
 
@@ -891,7 +891,7 @@ void QueueFrame::handleReaddAll(QueueItemList ql) {
 			// re-add all sources
 			const auto badSources = QueueManager::getInstance()->getBadSources(q);
 			for (const auto& bs : badSources) {
-				QueueManager::getInstance()->readdQISource(q->getTarget(), bs.getUser());
+				QueueManager::getInstance()->readdQISourceHooked(q->getTarget(), bs.getUser());
 			}
 		}
 	});

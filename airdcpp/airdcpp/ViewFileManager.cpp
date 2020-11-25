@@ -154,7 +154,7 @@ namespace dcpp {
 		return file;
 	}
 	
-	ViewFilePtr ViewFileManager::addUserFileThrow(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsText) {
+	ViewFilePtr ViewFileManager::addUserFileHookedThrow(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsText) {
 		if (ShareManager::getInstance()->isFileShared(aTTH) || ShareManager::getInstance()->isTempShared(nullptr, aTTH)) {
 			return addLocalFileThrow(aTTH, aIsText);
 		}
@@ -167,7 +167,7 @@ namespace dcpp {
 			return nullptr;
 		}
 
-		auto qi = QueueManager::getInstance()->addOpenedItem(aFileName, aSize, aTTH, aUser, true, aIsText);
+		auto qi = QueueManager::getInstance()->addOpenedItemHooked(aFileName, aSize, aTTH, aUser, true, aIsText);
 
 		auto file = createFile(aFileName, qi->getTarget(), qi->getTTH(), aIsText, false);
 		if (file) {
@@ -177,9 +177,9 @@ namespace dcpp {
 		return file;
 	}
 
-	ViewFilePtr ViewFileManager::addUserFileNotify(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsText) noexcept {
+	ViewFilePtr ViewFileManager::addUserFileHookedNotify(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsText) noexcept {
 		try {
-			auto file = addUserFileThrow(aFileName, aSize, aTTH, aUser, aIsText);
+			auto file = addUserFileHookedThrow(aFileName, aSize, aTTH, aUser, aIsText);
 			if (file) {
 				return file;
 			}

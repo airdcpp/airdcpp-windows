@@ -61,7 +61,7 @@ class ADLSearch;
 
 class BufferedSocket;
 
-struct BundleDirectoryItemInfo;
+struct BundleFileInfo;
 
 struct BundleAddInfo;
 struct DirectoryBundleAddInfo;
