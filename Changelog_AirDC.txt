@@ -13,6 +13,8 @@ Changed:
 - Bind web server to localhost (127.0.0.1) by default
 - Don't wait until the current file has finished completed when stopping hashing
 - Don't allow adding bundle sources without a known hub
+- Save application identifier in the settings file for more reliable future settings migration
+- Improve handling of directory downloading errors
 
 Fixed:
 

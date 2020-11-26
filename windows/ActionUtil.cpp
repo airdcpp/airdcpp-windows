@@ -863,7 +863,7 @@ void ActionUtil::addFileDownload(const string& aTarget, int64_t aSize, const TTH
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		try {
 			auto fileInfo = BundleFileAddData(Util::getFileName(aTarget), aTTH, aSize, aPriority, aDate);
-			auto options = BundleAddOptions(Util::getParentDir(aTarget), aOptionalUser, nullptr);
+			auto options = BundleAddOptions(Util::getFilePath(aTarget), aOptionalUser, nullptr);
 			QueueManager::getInstance()->createFileBundleHooked(options, fileInfo, aFlags);
 		} catch (const Exception& e) {
 			auto nick = aOptionalUser ? Text::fromT(FormatUtil::getNicks(aOptionalUser)) : STRING(UNKNOWN);
