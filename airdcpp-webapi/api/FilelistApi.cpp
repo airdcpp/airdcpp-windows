@@ -258,6 +258,7 @@ namespace webserver {
 
 		addAsyncTask([
 			hintedUser = Deserializer::deserializeHintedUser(reqJson),
+			logBundleErrors = JsonUtil::getOptionalFieldDefault<bool>("log_bundle_errors", reqJson, true),
 			complete = aRequest.defer(),
 			caller = aRequest.getOwnerPtr(),
 			targetDirectory,
@@ -267,7 +268,8 @@ namespace webserver {
 		] {
 			try {
 				auto listData = FilelistAddData(hintedUser, caller, listPath);
-				auto directoryDownload = DirectoryListingManager::getInstance()->addDirectoryDownloadHooked(listData, targetBundleName, listPath, prio, DirectoryDownload::ErrorMethod::LOG);
+				auto errorMethod = logBundleErrors ? DirectoryDownload::ErrorMethod::LOG : DirectoryDownload::ErrorMethod::NONE;
+				auto directoryDownload = DirectoryListingManager::getInstance()->addDirectoryDownloadHooked(listData, targetBundleName, listPath, prio, errorMethod);
 				complete(websocketpp::http::status_code::ok, Serializer::serializeDirectoryDownload(directoryDownload), nullptr);
 				return;
 			} catch (const Exception& e) {
