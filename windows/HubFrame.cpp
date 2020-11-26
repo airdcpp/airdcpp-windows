@@ -879,7 +879,16 @@ void HubFrame::addLine(const tstring& aLine, CHARFORMAT2& cf, bool bUseEmo/* = t
 }
 
 void HubFrame::addLine(const Identity& i, const tstring& aLine, CHARFORMAT2& cf, bool bUseEmo/* = true*/) {
-	bool notify = ctrlClient.AppendChat(i, Text::toT(client->get(HubSettings::Nick)), timeStamps ? Text::toT("[" + Util::getShortTimeString() + "] ") : Util::emptyStringT, aLine + _T('\n'), cf, bUseEmo);
+	string extra;
+
+	if (SETTING(SHOW_USER_IP_COUNTRY)) {
+		extra = i.getIp4(); // todo: ipv6
+
+		if (extra.size())
+			extra = " | " + extra + " | " + i.getCountry();
+	}
+
+	bool notify = ctrlClient.AppendChat(i, Text::toT(client->get(HubSettings::Nick)), timeStamps ? Text::toT("[" + Util::getShortTimeString() + extra + "] ") : Util::emptyStringT, aLine + _T('\n'), cf, bUseEmo);
 	if(notify)
 		setNotify();
 
