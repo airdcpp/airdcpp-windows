@@ -546,7 +546,7 @@ void PrivateFrame::addLine(const Identity& from, const tstring& aLine, CHARFORMA
 	ctrlClient.GetClientRect(r);
 	string extra;
 
-	if (SETTING(SHOW_USER_IP_COUNTRY)) {
+	if (SETTING(SHOW_IP_COUNTRY_CHAT)) {
 		extra = from.getIp4(); // todo: ipv6
 
 		if (extra.size())

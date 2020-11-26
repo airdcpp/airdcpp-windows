@@ -295,7 +295,7 @@ const string SettingsManager::settingTags[] =
 	"CompressTransfers",
 
 	"DontDlAlreadyQueued", "DontDLAlreadyShared", "FavShowJoins", "FilterMessages",
-	"GetUserCountry", "ShowUserIpCountry", "GetUserInfo", "HubUserCommands", "KeepLists",
+	"GetUserCountry", "GetUserInfo", "HubUserCommands", "KeepLists",
 	"LogDownloads", "LogFilelistTransfers", "LogFinishedDownloads", "LogMainChat",
 	"LogPrivateChat", "LogStatusMessages", "LogSystem", "LogUploads",
 
@@ -333,7 +333,7 @@ const string SettingsManager::settingTags[] =
 	"MagnetAsk", "MagnetRegister", "MinimizeToTray",
 	"PopunderFilelist", "PopunderPm", "PromptPassword",
 	"ShowMenuBar", "ShowStatusbar", "ShowToolbar",
-	"ShowTransferview", "StatusInChat",
+	"ShowTransferview", "StatusInChat", "ShowIpCountryChat",
 
 	"ToggleActiveTab", "UrlHandler", "UseCTRLForLineHistory", "UseSystemIcons",
 	"UsersFilterFavorite", "UsersFilterOnline", "UsersFilterQueue", "UsersFilterWaiting",
@@ -468,7 +468,6 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(LOG_SYSTEM, true);
 	setDefault(MAX_HASH_SPEED, 0);
 	setDefault(GET_USER_COUNTRY, true);
-	setDefault(SHOW_USER_IP_COUNTRY, false);
 	setDefault(FAV_SHOW_JOINS, false);
 	setDefault(LOG_STATUS_MESSAGES, false);
 
@@ -663,6 +662,7 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(MINIMIZE_TRAY, false);
 	setDefault(CLEAR_SEARCH, true);
 	setDefault(STATUS_IN_CHAT, true);
+	setDefault(SHOW_IP_COUNTRY_CHAT, false);
 	setDefault(PRIVATE_MESSAGE_BEEP, false);
 	setDefault(SHOW_PROGRESS_BARS, true);
 	setDefault(PRIVATE_MESSAGE_BEEP_OPEN, false);

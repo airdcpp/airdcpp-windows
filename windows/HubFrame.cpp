@@ -881,7 +881,7 @@ void HubFrame::addLine(const tstring& aLine, CHARFORMAT2& cf, bool bUseEmo/* = t
 void HubFrame::addLine(const Identity& i, const tstring& aLine, CHARFORMAT2& cf, bool bUseEmo/* = true*/) {
 	string extra;
 
-	if (SETTING(SHOW_USER_IP_COUNTRY)) {
+	if (SETTING(SHOW_IP_COUNTRY_CHAT)) {
 		extra = i.getIp4(); // todo: ipv6
 
 		if (extra.size())
