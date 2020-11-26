@@ -1884,6 +1884,8 @@ enum Strings { // @DontAdd
 	WEB_EXTENSION_LOAD_ERROR, // "Failed to load the extension"
 	WEB_EXTENSION_START_ERROR, // "Failed to start the extension %1%: %2%"
 	WEB_EXTENSION_INSTALLED, // "Extension %1% was installed successfully"
+	WEB_EXTENSION_UNINSTALLED, // "Extension %1% was uninstalled"
+	WEB_EXTENSION_UNINSTALL_BLOCKED, // "Uninstalling a blocked extension %1% (%2%)..."
 	WEB_EXTENSION_UPDATED, // "Extension %1% was updated successfully"
 	WEB_EXTENSION_INSTALLATION_FAILED, // "Failed to install the extension %1%: %2%"
 	WEB_EXTENSION_EXISTS, // "Extension with the same name exists already"
