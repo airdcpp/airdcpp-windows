@@ -6,6 +6,7 @@ Added:
 - Include node.js extension engine in the updater and installer
 - Add labels for event log messages
 - Allow changing web server bind addresses from the settings, show a link to the Web UI
+- Add an option to show user IP and country in chat (RoLex)
 
 Changed:
 
@@ -23,6 +24,7 @@ Removed:
 - Inbuilt check for missing/extra files (replaced with the airdcpp-release-validator extension)
 - Inbuilt share monitoring (replaced with the airdcpp-share-monitor extension)
 - Manual SFV checker (can be implemented with an extension)
+- fulDC FTP logger (can be implemented with an extension)
 - Support for migrating legacy XML hash databases from DC++ (or other compatible applications)
 
 

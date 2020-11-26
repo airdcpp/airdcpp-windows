@@ -1580,10 +1580,14 @@ void DirectoryListingFrame::handleDownload(const string& aTarget, Priority aPrio
 			decltype(auto) f = ii->file;
 			ActionUtil::addFileDownload(target, f->getSize(), f->getTTH(), dl->getDownloadSourceUser(), f->getRemoteDate(), 0, aPriority);
 		} else {
-			dl->addAsyncTask([=] {
+			dl->addAsyncTask([
+				listPath = ii->getAdcPath(),
+				name = ii->getName(),
+				this, aTarget, aPriority
+			] {
 				try {
-					auto listData = FilelistAddData(dl->getHintedUser(), this, ADC_ROOT_STR);
-					DirectoryListingManager::getInstance()->addDirectoryDownloadHooked(listData, ii->getName(), aTarget, aPriority, DirectoryDownload::ErrorMethod::LOG);
+					auto listData = FilelistAddData(dl->getHintedUser(), this, listPath);
+					DirectoryListingManager::getInstance()->addDirectoryDownloadHooked(listData, name, aTarget, aPriority, DirectoryDownload::ErrorMethod::LOG);
 				} catch (const Exception& e) {
 					ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
 				}
@@ -1598,16 +1602,7 @@ void DirectoryListingFrame::handleViewAsText() {
 			if (dl->getIsOwnList()) {
 				ViewFileManager::getInstance()->addLocalFileNotify(ii->file->getTTH(), true, ii->getName());
 			} else {
-				/*dl->addAsyncTask([
-					name = ii->file->getName(),
-					size = ii->file->getSize(),
-					tth = ii->file->getTTH(),
-					user = dl->getHintedUser(),
-					caller = dl.get()
-				]{*/
-					ActionUtil::openTextFile(ii->file->getName(), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), true);
-					// ViewFileManager::getInstance()->addUserFileHookedNotify(name, size, tth, user, true, caller);
-				// });
+				ActionUtil::openTextFile(ii->file->getName(), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), true);
 			}
 		}
 	});
