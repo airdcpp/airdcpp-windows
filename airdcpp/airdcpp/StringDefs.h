@@ -1747,7 +1747,6 @@ enum Strings { // @DontAdd
 	USE_DEFAULT_CERT_PATHS, // "Store in the default location"
 	USE_EXPIRY_DAY, // "Use an expiry day for this item"
 	USE_EXPLORER_THEME, // "Use Explorer theme in listviews and treeviews"
-	USE_FTP_LOGGER, // "Use external SFV checking (enable this only if you know what you are doing)"
 	USE_HIGHLIGHT, // "Use highlights"
 	USE_PROFILE_SETTINGS, // "Use the profile settings"
 	USE_REGEXP, // "Use regexp"

@@ -669,10 +669,6 @@ void QueueManager::validateBundleFileHooked(const string& aBundleDir, BundleFile
 		}
 	}
 
-	if (SETTING(USE_FTP_LOGGER)) {
-		AirUtil::fileEvent(aBundleDir + fileInfo_.file);
-	}
-
 	{
 		auto error = bundleFileValidationHook.runHooksError(aCaller, aBundleDir, fileInfo_);
 		if (error) {
@@ -1475,11 +1471,6 @@ void QueueManager::renameDownloadedFile(const string& source, const string& targ
 	}
 
 	tasks.addTask([=] {
-		if (SETTING(USE_FTP_LOGGER)) {
-			// REMOVE
-			AirUtil::fileEvent(target, true);
-		}
-
 		// Handle the results later...
 		runFileCompletionHooks(aQI);
 

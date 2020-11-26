@@ -203,7 +203,7 @@ public:
 		AUTO_DETECTION_USE_LIMITED, LOG_SCHEDULED_REFRESHES, AUTO_COMPLETE_BUNDLES,
 		ENABLE_SUDP, NMDC_MAGNET_WARN, UPDATE_IP_HOURLY,
 		USE_SLOW_DISCONNECTING_DEFAULT, PRIO_LIST_HIGHEST,
-		USE_FTP_LOGGER, QI_AUTOPRIO, REPORT_ADDED_SOURCES, OVERLAP_SLOW_SOURCES, FORMAT_DIR_REMOTE_TIME,
+		QI_AUTOPRIO, REPORT_ADDED_SOURCES, OVERLAP_SLOW_SOURCES, FORMAT_DIR_REMOTE_TIME,
 		LOG_HASHING, USE_PARTIAL_SHARING,
 		REPORT_BLOCKED_SHARE, MCN_AUTODETECT, DL_AUTODETECT, UL_AUTODETECT,
 		DUPES_IN_FILELIST, DUPES_IN_CHAT, NO_ZERO_BYTE,
@@ -305,8 +305,6 @@ public:
 	enum { TLS_DISABLED, TLS_ENABLED, TLS_FORCED, TLS_LAST };
 
 	enum { BLOOM_DISABLED, BLOOM_ENABLED, BLOOM_AUTO, BLOOM_LAST };
-
-	enum FileEvents { ON_FILE_COMPLETE, ON_DIR_CREATED};
 
 	static const ResourceManager::Strings encryptionStrings[TLS_LAST];
 	static const ResourceManager::Strings bloomStrings[BLOOM_LAST];
@@ -417,10 +415,6 @@ public:
 	void clearHistory(HistoryType aType) noexcept;
 	HistoryList getHistory(HistoryType aType) const noexcept;
 
-	StringPair getFileEvent(SettingsManager::FileEvents fe) noexcept {
-		return fileEvents[fe];
-	}
-
 	void setProfile(int aProfile, const ProfileSettingItem::List& conflicts) noexcept;
 	static const ProfileSettingItem::List profileSettings[SettingsManager::PROFILE_LAST];
 	void applyProfileDefaults() noexcept;
@@ -457,8 +451,6 @@ private:
 
 	HistoryList history[HISTORY_LAST];
 	static const string historyTags[HISTORY_LAST];
-
-	StringPairList fileEvents;
 
 	mutable SharedMutex cs;
 

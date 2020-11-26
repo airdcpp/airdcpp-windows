@@ -308,7 +308,7 @@ const string SettingsManager::settingTags[] =
 	"AutoDetectionUseLimited", "LogScheduledRefreshes", "AutoCompleteBundles",
 	"EnableSUDP", "NmdcMagnetWarn", "UpdateIPHourly",
 	"UseSlowDisconnectingDefault", "PrioListHighest",
-	"UseFTPLogger", "QIAutoPrio", "ReportAddedSources", "OverlapSlowUser", "FormatDirRemoteTime",
+	"QIAutoPrio", "ReportAddedSources", "OverlapSlowUser", "FormatDirRemoteTime",
 	"LogHashedFiles", "UsePartialSharing",
 	"ReportBlockedShare", "MCNAutoDetect", "DLAutoDetect", "ULAutoDetect",
 	"DupesInFilelists", "DupesInChat", "NoZeroByte",
@@ -386,10 +386,6 @@ const string SettingsManager::settingTags[] =
 
 SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 {
-	//make sure it can fit our events without using push_back since
-	//that might cause them to be in the wrong position.
-	fileEvents.resize(2);
-
 	setDefault(NICK, Util::getSystemUsername());
 
 	setDefault(MAX_UPLOAD_SPEED_MAIN, 0);
@@ -564,7 +560,6 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(USE_PARTIAL_SHARING, true);
 	setDefault(LOG_HASHING, false);
 	setDefault(RECENT_BUNDLE_HOURS, 24);
-	setDefault(USE_FTP_LOGGER, false);
 	setDefault(QI_AUTOPRIO, true);
 	setDefault(ALLOW_MATCH_FULL_LIST, true);
 	setDefault(REPORT_ADDED_SOURCES, false);
@@ -1102,25 +1097,6 @@ void SettingsManager::load(StartupLoader& aLoader) noexcept {
 				xml.resetCurrentChild();
 			}
 
-			if (xml.findChild("FileEvents")) {
-				xml.stepIn();
-				if (xml.findChild("OnFileComplete")) {
-					StringPair sp;
-					sp.first = xml.getChildAttrib("Command");
-					sp.second = xml.getChildAttrib("CommandLine");
-					fileEvents[ON_FILE_COMPLETE] = sp;
-				}
-				xml.resetCurrentChild();
-				if (xml.findChild("OnDirCreated")) {
-					StringPair sp;
-					sp.first = xml.getChildAttrib("Command");
-					sp.second = xml.getChildAttrib("CommandLine");
-					fileEvents[ON_DIR_CREATED] = sp;
-				}
-				xml.stepOut();
-			}
-			xml.resetCurrentChild();
-
 			fire(SettingsManagerListener::Load(), xml);
 
 			xml.stepOut();
@@ -1360,17 +1336,6 @@ void SettingsManager::save() noexcept {
 			xml.stepOut();
 		}
 	}
-
-	xml.addTag("FileEvents");
-	xml.stepIn();
-	xml.addTag("OnFileComplete");
-	xml.addChildAttrib("Command", fileEvents[ON_FILE_COMPLETE].first);
-	xml.addChildAttrib("CommandLine", fileEvents[ON_FILE_COMPLETE].second);
-	xml.addTag("OnDirCreated");
-	xml.addChildAttrib("Command", fileEvents[ON_DIR_CREATED].first);
-	xml.addChildAttrib("CommandLine", fileEvents[ON_DIR_CREATED].second);
-	xml.stepOut();
-
 
 	fire(SettingsManagerListener::Save(), xml);
 	saveSettingFile(xml, CONFIG_DIR, CONFIG_NAME);
