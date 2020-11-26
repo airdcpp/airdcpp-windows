@@ -270,7 +270,7 @@ void AutoSearchManager::clearError(AutoSearchPtr& as) noexcept {
 	fire(AutoSearchManagerListener::ItemUpdated(), as, true);
 }
 
-void AutoSearchManager::on(DirectoryListingManagerListener::DirectoryDownloadProcessed, const DirectoryDownloadPtr& aDirectoryInfo, const DirectoryBundleAddInfo& aQueueInfo, const string& /*aError*/) noexcept {
+void AutoSearchManager::on(DirectoryListingManagerListener::DirectoryDownloadProcessed, const DirectoryDownloadPtr& aDirectoryInfo, const DirectoryBundleAddResult& aQueueInfo, const string& /*aError*/) noexcept {
 	onBundleCreated(aQueueInfo.bundleInfo.bundle, aDirectoryInfo->getOwner());
 
 	//if (aQueueInfo.bundle) {
@@ -297,8 +297,9 @@ void AutoSearchManager::onBundleCreated(const BundlePtr& aBundle, const void* aS
 		}
 	}
 
-	if(found)
+	if (found) {
 		delayEvents.addEvent(RECALCULATE_SEARCH, [=] { resetSearchTimes(GET_TICK()); }, 1000);
+	}
 }
 
 void AutoSearchManager::onBundleError(const void* aSearch, const string& aError, const string& aBundleName, const HintedUser& aUser) noexcept {
@@ -879,17 +880,19 @@ void AutoSearchManager::downloadList(SearchResultList& srl, AutoSearchPtr& as, i
 void AutoSearchManager::handleAction(const SearchResultPtr& sr, AutoSearchPtr& as) noexcept {
 	if (as->getAction() == AutoSearch::ACTION_QUEUE || as->getAction() == AutoSearch::ACTION_DOWNLOAD) {
 		try {
-			if(sr->getType() == SearchResult::TYPE_DIRECTORY) {
+			if (sr->getType() == SearchResult::TYPE_DIRECTORY) {
 				if ((as->getRemove() || as->usingIncrementation()) && DirectoryListingManager::getInstance()->hasDirectoryDownload(sr->getFileName(), as.get())) {
 					return;
 				}
 
+				auto listData = FilelistAddData(sr->getUser(), as.get(), sr->getAdcFilePath());
 				auto priority = as->getAction() == AutoSearch::ACTION_QUEUE ? Priority::PAUSED : Priority::DEFAULT;
-				DirectoryListingManager::getInstance()->addDirectoryDownloadHooked(sr->getUser(), sr->getFileName(), sr->getAdcFilePath(), as->getTarget(), priority, as.get());
+				DirectoryListingManager::getInstance()->addDirectoryDownloadHooked(listData, sr->getFileName(), as->getTarget(), priority, DirectoryDownload::ErrorMethod::NONE);
 			} else {
 				auto prio = as->getAction() == AutoSearch::ACTION_QUEUE ? Priority::PAUSED : Priority::DEFAULT;
-				auto fileInfo = BundleFileInfo(sr->getFileName(), sr->getTTH(), sr->getSize(), prio, sr->getDate());
-				auto result = QueueManager::getInstance()->createFileBundleHooked(as->getTarget(), fileInfo, sr->getUser(), 0);
+				auto fileInfo = BundleFileAddData(sr->getFileName(), sr->getTTH(), sr->getSize(), prio, sr->getDate());
+				auto options = BundleAddOptions(as->getTarget(), sr->getUser(), as.get());
+				auto result = QueueManager::getInstance()->createFileBundleHooked(options, fileInfo);
 
 				onBundleCreated(result.bundle, as.get());
 			}

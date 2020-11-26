@@ -24,6 +24,7 @@
 #include "QueueManagerListener.h"
 #include "DirectoryListingManagerListener.h"
 
+#include "QueueAddInfo.h"
 #include "CriticalSection.h"
 #include "DirectoryDownload.h"
 #include "Message.h"
@@ -43,7 +44,7 @@ namespace dcpp {
 		
 		// Add a managed filelist session from remove user, throws queueing errors
 		// Returns nullptr on duplicates
-		DirectoryListingPtr openRemoteFileListHooked(const HintedUser& HintedUser, Flags::MaskType aFlags, const string& aInitialDir = ADC_ROOT_STR);
+		DirectoryListingPtr openRemoteFileListHooked(const FilelistAddData& aListData, Flags::MaskType aFlags);
 		bool removeList(const UserPtr& aUser) noexcept;
 
 		DirectoryListingManager() noexcept;
@@ -54,7 +55,7 @@ namespace dcpp {
 
 		// Throws on queueing errors (such as invalid source)
 		// If owner is specified, no errors are logged if queueing of the directory fails
-		DirectoryDownloadPtr addDirectoryDownloadHooked(const HintedUser& aUser, const string& aBundleName, const string& aListPath, const string& aTarget, Priority p, const void* aOwner = nullptr);
+		DirectoryDownloadPtr addDirectoryDownloadHooked(const FilelistAddData& aListData, const string& aBundleName, const string& aTarget, Priority p, DirectoryDownload::ErrorMethod aErrorMethod);
 		DirectoryDownloadList getDirectoryDownloads() const noexcept;
 		DirectoryDownloadPtr getDirectoryDownload(DirectoryDownloadId aId) const noexcept;
 

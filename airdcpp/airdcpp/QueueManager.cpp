@@ -508,18 +508,18 @@ bool QueueManager::hasDownloadedBytes(const string& aTarget) {
 	return q->getDownloadedBytes() > 0;
 }
 
-QueueItemPtr QueueManager::addListHooked(const HintedUser& aUser, Flags::MaskType aFlags, const string& aInitialDir /* = ADC_ROOT */, const BundlePtr& aBundle /*nullptr*/) {
-	if (!(aFlags & QueueItem::FLAG_TTHLIST_BUNDLE) && !Util::isAdcDirectoryPath(aInitialDir)) {
-		throw QueueException(STRING_F(INVALID_PATH, aInitialDir));
+QueueItemPtr QueueManager::addListHooked(const FilelistAddData& aListData, Flags::MaskType aFlags, const BundlePtr& aBundle /*nullptr*/) {
+	if (!(aFlags & QueueItem::FLAG_TTHLIST_BUNDLE) && !Util::isAdcDirectoryPath(aListData.listPath)) {
+		throw QueueException(STRING_F(INVALID_PATH, aListData.listPath));
 	}
 
 	// Pre-checks
-	checkSourceHooked(aUser);
+	checkSourceHooked(aListData.user, aListData.caller);
 
 	// Format the target
-	auto target = getListPath(aUser);
+	auto target = getListPath(aListData.user);
 	if((aFlags & QueueItem::FLAG_PARTIAL_LIST)) {
-		target += ".partial[" + Util::validateFileName(aInitialDir) + "]";
+		target += ".partial[" + Util::validateFileName(aListData.listPath) + "]";
 	}
 
 
@@ -528,14 +528,14 @@ QueueItemPtr QueueManager::addListHooked(const HintedUser& aUser, Flags::MaskTyp
 	QueueItemPtr q = nullptr;
 	{
 		WLock l(cs);
-		auto ret = fileQueue.add(target, -1, (Flags::MaskType)(QueueItem::FLAG_USER_LIST | aFlags), Priority::HIGHEST, aInitialDir, GET_TIME(), TTHValue());
+		auto ret = fileQueue.add(target, -1, (Flags::MaskType)(QueueItem::FLAG_USER_LIST | aFlags), Priority::HIGHEST, aListData.listPath, GET_TIME(), TTHValue());
 		if (!ret.second) {
 			//exists already
 			throw DupeException(STRING(LIST_ALREADY_QUEUED));
 		}
 
 		q = std::move(ret.first);
-		addValidatedSource(q, aUser, QueueItem::Source::FLAG_MASK);
+		addValidatedSource(q, aListData.user, QueueItem::Source::FLAG_MASK);
 		if (aBundle) {
 			matchLists.insert(TokenStringMultiBiMap::value_type(aBundle->getToken(), q->getTarget()));
 		}
@@ -544,8 +544,8 @@ QueueItemPtr QueueManager::addListHooked(const HintedUser& aUser, Flags::MaskTyp
 	fire(QueueManagerListener::ItemAdded(), q);
 
 	//connect
-	if (aUser.user->isOnline()) {
-		ConnectionManager::getInstance()->getDownloadConnection(aUser, (aFlags & QueueItem::FLAG_PARTIAL_LIST) || (aFlags & QueueItem::FLAG_TTHLIST_BUNDLE));
+	if (aListData.user.user->isOnline()) {
+		ConnectionManager::getInstance()->getDownloadConnection(aListData.user, (aFlags & QueueItem::FLAG_PARTIAL_LIST) || (aFlags & QueueItem::FLAG_TTHLIST_BUNDLE));
 	}
 
 	return q;
@@ -593,7 +593,7 @@ void QueueManager::setMatchers() noexcept {
 	highPrioFiles.prepare();
 }
 
-void QueueManager::checkSourceHooked(const HintedUser& aUser, bool aCheckTLS) const {
+void QueueManager::checkSourceHooked(const HintedUser& aUser, const void* aCaller) const {
 	if (!aUser.user) { //atleast magnet links can cause this to happen.
 		throw QueueException(STRING(UNKNOWN_USER));
 	}
@@ -609,19 +609,19 @@ void QueueManager::checkSourceHooked(const HintedUser& aUser, bool aCheckTLS) co
 	}
 
 	// Check the encryption
-	if (aCheckTLS && aUser.user && aUser.user->isOnline() && !aUser.user->isNMDC() && !aUser.user->isSet(User::TLS) && SETTING(TLS_MODE) == SettingsManager::TLS_FORCED) {
+	if (aUser.user->isOnline() && !aUser.user->isNMDC() && !aUser.user->isSet(User::TLS) && SETTING(TLS_MODE) == SettingsManager::TLS_FORCED) {
 		throw QueueException(ClientManager::getInstance()->getFormatedNicks(aUser) + ": " + STRING(SOURCE_NO_ENCRYPTION));
 	}
 
 	{
-		auto error = sourceValidationHook.runHooksError(this, aUser);
+		auto error = sourceValidationHook.runHooksError(aCaller, aUser);
 		if (error) {
 			throw QueueException(ActionHookRejection::formatError(error));
 		}
 	}
 }
 
-void QueueManager::validateBundleFileHooked(const string& aBundleDir, BundleFileInfo& fileInfo_, Flags::MaskType aFlags/*=0*/) const {
+void QueueManager::validateBundleFileHooked(const string& aBundleDir, BundleFileAddData& fileInfo_, const void* aCaller, Flags::MaskType aFlags/*=0*/) const {
 	if (fileInfo_.size <= 0) {
 		throw QueueException(STRING(ZERO_BYTE_QUEUE));
 	}
@@ -674,7 +674,7 @@ void QueueManager::validateBundleFileHooked(const string& aBundleDir, BundleFile
 	}
 
 	{
-		auto error = bundleFileValidationHook.runHooksError(this, aBundleDir, fileInfo_);
+		auto error = bundleFileValidationHook.runHooksError(aCaller, aBundleDir, fileInfo_);
 		if (error) {
 			throw QueueException(ActionHookRejection::formatError(error));
 		}
@@ -689,24 +689,24 @@ void QueueManager::validateBundleFileHooked(const string& aBundleDir, BundleFile
 	}
 }
 
-QueueItemPtr QueueManager::addOpenedItemHooked(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsClientView, bool aIsText) {
-	dcassert(aUser);
+QueueItemPtr QueueManager::addOpenedItemHooked(const ViewedFileAddData& aFileInfo, bool aIsClientView) {
+	dcassert(aFileInfo.user);
 
 	// Check source
-	checkSourceHooked(aUser);
+	checkSourceHooked(aFileInfo.user, aFileInfo.caller);
 
 	// Check size
-	if (aSize == 0) {
+	if (aFileInfo.size == 0) {
 		//can't view this...
 		throw QueueException(STRING(CANT_OPEN_EMPTY_FILE));
-	} else if (aIsClientView && aIsText && aSize > Util::convertSize(1, Util::MB)) {
-		auto msg = STRING_F(VIEWED_FILE_TOO_BIG, aFileName % Util::formatBytes(aSize));
+	} else if (aIsClientView && aFileInfo.isText && aFileInfo.size > Util::convertSize(1, Util::MB)) {
+		auto msg = STRING_F(VIEWED_FILE_TOO_BIG, aFileInfo.file % Util::formatBytes(aFileInfo.size));
 		log(msg, LogMessage::SEV_ERROR);
 		throw QueueException(msg);
 	}
 
 	// Check target
-	auto target = Util::getOpenPath() + AirUtil::toOpenFileName(aFileName, aTTH);
+	auto target = Util::getOpenPath() + AirUtil::toOpenFileName(aFileInfo.file, aFileInfo.tth);
 
 	// Add in queue
 	QueueItemPtr qi = nullptr;
@@ -721,12 +721,12 @@ QueueItemPtr QueueManager::addOpenedItemHooked(const string& aFileName, int64_t 
 
 	{
 		WLock l(cs);
-		auto ret = fileQueue.add(target, aSize, flags, Priority::HIGHEST, Util::emptyString, GET_TIME(), aTTH);
+		auto ret = fileQueue.add(target, aFileInfo.size, flags, Priority::HIGHEST, Util::emptyString, GET_TIME(), aFileInfo.tth);
 
 		qi = std::move(ret.first);
 		added = ret.second;
 
-		wantConnection = addValidatedSource(qi, aUser, QueueItem::Source::FLAG_MASK);
+		wantConnection = addValidatedSource(qi, aFileInfo.user, QueueItem::Source::FLAG_MASK);
 	}
 
 	if (added) {
@@ -735,7 +735,7 @@ QueueItemPtr QueueManager::addOpenedItemHooked(const string& aFileName, int64_t 
 
 	// Connect
 	if(wantConnection || qi->usesSmallSlot()) {
-		ConnectionManager::getInstance()->getDownloadConnection(aUser, qi->usesSmallSlot());
+		ConnectionManager::getInstance()->getDownloadConnection(aFileInfo.user, qi->usesSmallSlot());
 	}
 
 	return qi;
@@ -758,9 +758,9 @@ void QueueManager::log(const string& aMsg, LogMessage::Severity aSeverity) noexc
 	LogManager::getInstance()->message(aMsg, aSeverity, STRING(SETTINGS_QUEUE));
 }
 
-optional<DirectoryBundleAddInfo> QueueManager::createDirectoryBundleHooked(const string& aTarget, const HintedUser& aOptionalUser, BundleFileInfo::List& aFiles, Priority aPrio, time_t aDate, string& errorMsg_) noexcept {
-	// Generic validations that will throw
-	auto target = formatBundleTarget(aTarget, aDate);
+optional<DirectoryBundleAddResult> QueueManager::createDirectoryBundleHooked(const BundleAddOptions& aOptions, DirectoryBundleAddData& aDirectory, BundleFileAddData::List& aFiles, string& errorMsg_) noexcept {
+	// Generic validations
+	auto target = Util::joinDirectory(formatBundleTarget(aOptions.target, aDirectory.date), Util::validatePath(aDirectory.name));
 
 	{
 		// There can't be existing bundles inside this directory
@@ -777,29 +777,37 @@ optional<DirectoryBundleAddInfo> QueueManager::createDirectoryBundleHooked(const
 		}
 	}
 
-	if (aOptionalUser) {
+	if (aFiles.empty()) {
+		errorMsg_ = STRING(DIR_EMPTY);
+		return nullopt;
+	}
+
+	// Source
+	if (aOptions.optionalUser) {
 		try {
-			checkSourceHooked(aOptionalUser);
+			checkSourceHooked(aOptions.optionalUser, aOptions.caller);
 		} catch (const QueueException& e) {
 			errorMsg_ = e.getError();
 			return nullopt;
 		}
 	}
 
-	if (aFiles.empty()) {
-		errorMsg_ = STRING(DIR_EMPTY);
+	// Bundle validation
+	auto error = directoryBundleValidationHook.runHooksError(this, aOptions.target, aDirectory, aOptions.optionalUser);
+	if (error) {
+		errorMsg_ = ActionHookRejection::formatError(error);
 		return nullopt;
 	}
 
 	// File validation
 	int smallDupes = 0, fileCount = aFiles.size(), filesExist = 0;
 
-	DirectoryBundleAddInfo info;
+	DirectoryBundleAddResult info;
 	ErrorCollector errors(fileCount);
 
-	aFiles.erase(boost::remove_if(aFiles, [&](BundleFileInfo& bfi) {
+	aFiles.erase(boost::remove_if(aFiles, [&](BundleFileAddData& bfi) {
 		try {
-			validateBundleFileHooked(target, bfi);
+			validateBundleFileHooked(target, bfi, aOptions.caller);
 			return false; // valid
 		} catch(const QueueException& e) {
 			errors.add(e.getError(), bfi.file, false);
@@ -846,13 +854,13 @@ optional<DirectoryBundleAddInfo> QueueManager::createDirectoryBundleHooked(const
 	QueueItem::ItemBoolList queueItems;
 	{
 		WLock l(cs);
-		b = getBundle(target, aPrio, aDate, false);
+		b = getBundle(target, aDirectory.prio, aDirectory.date, false);
 		oldStatus = b->getStatus();
 
 		//add the files
 		for (auto& bfi: aFiles) {
 			try {
-				auto addInfo = addBundleFile(target + bfi.file, bfi.size, bfi.tth, aOptionalUser, 0, true, bfi.prio, wantConnection, b);
+				auto addInfo = addBundleFile(target + bfi.file, bfi.size, bfi.tth, aOptions.optionalUser, 0, true, bfi.prio, wantConnection, b);
 				if (addInfo.second) {
 					info.filesAdded++;
 				} else {
@@ -883,7 +891,7 @@ optional<DirectoryBundleAddInfo> QueueManager::createDirectoryBundleHooked(const
 	// Those don't need to be reported to the user
 	errors.clearMinor();
 
-	onBundleAdded(b, oldStatus, queueItems, aOptionalUser, wantConnection);
+	onBundleAdded(b, oldStatus, queueItems, aOptions.optionalUser, wantConnection);
 	info.bundleInfo = BundleAddInfo(b, oldStatus != Bundle::STATUS_NEW);
 
 	if (info.filesAdded > 0) {
@@ -974,16 +982,16 @@ string QueueManager::formatBundleTarget(const string& aPath, time_t aRemoteDate)
 	return Util::validatePath(formatedPath);
 }
 
-BundleAddInfo QueueManager::createFileBundleHooked(const string& aTarget, BundleFileInfo& aFileInfo, const HintedUser& aOptionalUser, Flags::MaskType aFlags) {
+BundleAddInfo QueueManager::createFileBundleHooked(const BundleAddOptions& aOptions, BundleFileAddData& aFileInfo, Flags::MaskType aFlags) {
 
-	string filePath = formatBundleTarget(aTarget, aFileInfo.date);
+	string filePath = formatBundleTarget(aOptions.target, aFileInfo.date);
 
 	//check the source
-	if (aOptionalUser) {
-		checkSourceHooked(aOptionalUser);
+	if (aOptions.optionalUser) {
+		checkSourceHooked(aOptions.optionalUser, aOptions.caller);
 	}
 
-	validateBundleFileHooked(filePath, aFileInfo, aFlags);
+	validateBundleFileHooked(filePath, aFileInfo, aOptions.caller, aFlags);
 
 	BundlePtr b = nullptr;
 	bool wantConnection = false;
@@ -998,12 +1006,12 @@ BundleAddInfo QueueManager::createFileBundleHooked(const string& aTarget, Bundle
 		b = getBundle(target, aFileInfo.prio, aFileInfo.date, true);
 		oldStatus = b->getStatus();
 
-		fileAddInfo = addBundleFile(target, aFileInfo.size, aFileInfo.tth, aOptionalUser, aFlags, true, aFileInfo.prio, wantConnection, b);
+		fileAddInfo = addBundleFile(target, aFileInfo.size, aFileInfo.tth, aOptions.optionalUser, aFlags, true, aFileInfo.prio, wantConnection, b);
 
 		addBundle(b, fileAddInfo.second ? 1 : 0);
 	}
 
-	onBundleAdded(b, oldStatus, { fileAddInfo }, aOptionalUser, wantConnection);
+	onBundleAdded(b, oldStatus, { fileAddInfo }, aOptions.optionalUser, wantConnection);
 
 	if (fileAddInfo.second) {
 		if (oldStatus == Bundle::STATUS_NEW) {
@@ -2686,10 +2694,11 @@ void QueueLoader::startTag(const string& name, StringPairList& attribs, bool sim
 			}
 
 			try {
-				HintedUser hintedUser(user, hubHint);
-			
-				// TODOODODODODO
+				if (hubHint.empty()) {
+					throw QueueException(nick + ": " + STRING(HUB_UNKNOWN));
+				}
 
+				HintedUser hintedUser(user, hubHint);
 				WLock l(qm->cs);
 				qm->addValidatedSource(curFile, hintedUser, 0);
 			} catch (const Exception& e) {
@@ -2849,14 +2858,16 @@ void QueueManager::matchBundleHooked(const QueueItemPtr& aQI, const SearchResult
 		} else {
 			//An ADC directory bundle, match recursive partial list
 			try {
-				addListHooked(aResult->getUser(), QueueItem::FLAG_MATCH_QUEUE | QueueItem::FLAG_RECURSIVE_LIST | QueueItem::FLAG_PARTIAL_LIST, path, aQI->getBundle());
+				auto info = FilelistAddData(aResult->getUser(), this, path);
+				addListHooked(info, QueueItem::FLAG_MATCH_QUEUE | QueueItem::FLAG_RECURSIVE_LIST | QueueItem::FLAG_PARTIAL_LIST, aQI->getBundle());
 			} catch(...) { }
 		}
 	} else if (SETTING(ALLOW_MATCH_FULL_LIST)) {
 		// No path to match, use full filelist
 		dcassert(isNmdc);
 		try {
-			addListHooked(aResult->getUser(), QueueItem::FLAG_MATCH_QUEUE, ADC_ROOT_STR, aQI->getBundle());
+			auto info = FilelistAddData(aResult->getUser(), this, ADC_ROOT_STR);
+			addListHooked(info, QueueItem::FLAG_MATCH_QUEUE, aQI->getBundle());
 		} catch(const Exception&) {
 			// ...
 		}
@@ -3226,7 +3237,7 @@ bool QueueManager::handlePartialResultHooked(const HintedUser& aUser, const TTHV
 
 	// Check source
 	try {
-		checkSourceHooked(aUser);
+		checkSourceHooked(aUser, nullptr);
 	} catch (const QueueException& e) {
 		log(STRING_F(SOURCE_ADD_ERROR, e.what()), LogMessage::SEV_WARNING);
 		return false;
@@ -3444,7 +3455,7 @@ void QueueManager::getSourceInfo(const UserPtr& aUser, Bundle::SourceBundleList&
 
 int QueueManager::addSourcesHooked(const HintedUser& aUser, const QueueItemList& aItems, Flags::MaskType aAddBad) noexcept {
 	try {
-		checkSourceHooked(aUser);
+		checkSourceHooked(aUser, nullptr);
 	} catch (const QueueException& e) {
 		log(STRING_F(SOURCE_ADD_ERROR, e.what()), LogMessage::SEV_WARNING);
 		return 0;
@@ -3787,7 +3798,8 @@ void QueueManager::addBundleTTHListHooked(const HintedUser& aUser, const string&
 	//log("ADD TTHLIST");
 	auto b = findBundle(aTTH);
 	if (b) {
-		addListHooked(aUser, (QueueItem::FLAG_TTHLIST_BUNDLE | QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_MATCH_QUEUE), aRemoteBundleToken, b);
+		auto info = FilelistAddData(aUser, this, aRemoteBundleToken);
+		addListHooked(info, (QueueItem::FLAG_TTHLIST_BUNDLE | QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_MATCH_QUEUE), b);
 	}
 }
 

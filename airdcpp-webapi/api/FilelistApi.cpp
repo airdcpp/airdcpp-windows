@@ -74,11 +74,13 @@ namespace webserver {
 		addAsyncTask([
 			hintedUser = Deserializer::deserializeHintedUser(reqJson),
 			directory = JsonUtil::getOptionalFieldDefault<string>("directory", reqJson, ADC_ROOT_STR),
-			complete = aRequest.defer()
+			complete = aRequest.defer(),
+			caller = aRequest.getOwnerPtr()
 		]{
 			DirectoryListingPtr dl = nullptr;
 			try {
-				dl = DirectoryListingManager::getInstance()->openRemoteFileListHooked(hintedUser, QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_CLIENT_VIEW, directory);
+				auto listData = FilelistAddData(hintedUser, caller, directory);
+				dl = DirectoryListingManager::getInstance()->openRemoteFileListHooked(listData, QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_CLIENT_VIEW);
 			} catch (const Exception& e) {
 				complete(websocketpp::http::status_code::bad_request, nullptr, ApiRequest::toResponseErrorStr(e.getError()));
 				return;
@@ -101,7 +103,8 @@ namespace webserver {
 		addAsyncTask([
 			hintedUser = Deserializer::deserializeHintedUser(reqJson),
 			directory = JsonUtil::getOptionalFieldDefault<string>("directory", reqJson, ADC_ROOT_STR),
-			complete = aRequest.defer()
+			complete = aRequest.defer(),
+			caller = aRequest.getOwnerPtr()
 		] {
 			QueueItem::Flags flags = QueueItem::FLAG_MATCH_QUEUE;
 			if (directory != ADC_ROOT_STR) {
@@ -110,7 +113,8 @@ namespace webserver {
 			}
 
 			try {
-				QueueManager::getInstance()->addListHooked(hintedUser, flags.getFlags(), directory);
+				auto listData = FilelistAddData(hintedUser, caller, directory);
+				QueueManager::getInstance()->addListHooked(listData, flags.getFlags());
 			} catch (const Exception& e) {
 				complete(websocketpp::http::status_code::bad_request, nullptr, ApiRequest::toResponseErrorStr(e.getError()));
 				return;
@@ -178,14 +182,14 @@ namespace webserver {
 		send("filelist_directory_download_removed", Serializer::serializeDirectoryDownload(aDownload));
 	}
 
-	void FilelistApi::on(DirectoryListingManagerListener::DirectoryDownloadProcessed, const DirectoryDownloadPtr& aDirectoryInfo, const DirectoryBundleAddInfo& aQueueInfo, const string& aError) noexcept {
+	void FilelistApi::on(DirectoryListingManagerListener::DirectoryDownloadProcessed, const DirectoryDownloadPtr& aDirectoryInfo, const DirectoryBundleAddResult& aQueueInfo, const string& aError) noexcept {
 		if (!subscriptionActive("filelist_directory_download_processed")) {
 			return;
 		}
 
 		send("filelist_directory_download_processed", {
 			{ "directory_download", Serializer::serializeDirectoryDownload(aDirectoryInfo) },
-			{ "result", Serializer::serializeDirectoryBundleAddInfo(aQueueInfo, aError) }
+			{ "result", Serializer::serializeDirectoryBundleAddResult(aQueueInfo, aError) }
 		});
 	}
 
@@ -255,13 +259,15 @@ namespace webserver {
 		addAsyncTask([
 			hintedUser = Deserializer::deserializeHintedUser(reqJson),
 			complete = aRequest.defer(),
+			caller = aRequest.getOwnerPtr(),
 			targetDirectory,
 			targetBundleName,
 			prio,
 			listPath
 		] {
 			try {
-				auto directoryDownload = DirectoryListingManager::getInstance()->addDirectoryDownloadHooked(hintedUser, targetBundleName, listPath, targetDirectory, prio);
+				auto listData = FilelistAddData(hintedUser, caller, listPath);
+				auto directoryDownload = DirectoryListingManager::getInstance()->addDirectoryDownloadHooked(listData, targetBundleName, listPath, prio, DirectoryDownload::ErrorMethod::LOG);
 				complete(websocketpp::http::status_code::ok, Serializer::serializeDirectoryDownload(directoryDownload), nullptr);
 				return;
 			} catch (const Exception& e) {

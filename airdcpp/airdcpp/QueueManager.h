@@ -27,7 +27,7 @@
 #include "TimerManagerListener.h"
 
 #include "ActionHook.h"
-#include "BundleInfo.h"
+#include "QueueAddInfo.h"
 #include "BundleQueue.h"
 #include "DelayedEvents.h"
 #include "DupeType.h"
@@ -67,7 +67,8 @@ class QueueManager : public Singleton<QueueManager>, public Speaker<QueueManager
 public:
 	ActionHook<nullptr_t, const BundlePtr> bundleCompletionHook;
 	ActionHook<nullptr_t, const QueueItemPtr> fileCompletionHook;
-	ActionHook<nullptr_t, const string& /*aTarget*/, BundleFileInfo&> bundleFileValidationHook;
+	ActionHook<nullptr_t, const string& /*aTarget*/, BundleFileAddData&> bundleFileValidationHook;
+	ActionHook<nullptr_t, const string& /*aTarget*/, DirectoryBundleAddData& /*aDirectory*/, const HintedUser& /*aUser*/> directoryBundleValidationHook;
 	ActionHook<nullptr_t, const HintedUser& /*aUser*/> sourceValidationHook;
 
 	// Add all queued TTHs in the supplied bloom filter
@@ -89,12 +90,12 @@ public:
 	// Add a user's filelist to the queue.
 	// New managed filelist sessions should be created via DirectoryListingManager instead
 	// Throws QueueException, DupeException
-	QueueItemPtr addListHooked(const HintedUser& aUser, Flags::MaskType aFlags, const string& aInitialDir = ADC_ROOT_STR, const BundlePtr& aBundle = nullptr);
+	QueueItemPtr addListHooked(const FilelistAddData& aListData, Flags::MaskType aFlags, const BundlePtr& aBundle = nullptr);
 
 	// Add an item that is opened in the client or with an external program
 	// Files that are viewed in the client should be added from ViewFileManager
 	// Throws QueueException, FileException
-	QueueItemPtr addOpenedItemHooked(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsClientView, bool aIsText = true);
+	QueueItemPtr addOpenedItemHooked(const ViewedFileAddData& aFileInfo, bool aIsClientView);
 
 	/** Readd a source that was removed */
 	bool readdQISourceHooked(const string& target, const HintedUser& aUser) noexcept;
@@ -239,8 +240,7 @@ public:
 	// No result is returned if no bundle was added or used for merging
 	// Source can be nullptr
 	// errorMsg_ will contain errors related to queueing the files
-	optional<DirectoryBundleAddInfo> createDirectoryBundleHooked(const string& aTarget, const HintedUser& aUser, BundleFileInfo::List& aFiles,
-		Priority aPrio, time_t aDate, string& errorMsg_) noexcept;
+	optional<DirectoryBundleAddResult> createDirectoryBundleHooked(const BundleAddOptions& aOptions, DirectoryBundleAddData& aDirectory, BundleFileAddData::List& aFiles, string& errorMsg_) noexcept;
 
 	// Create a file bundle with the supplied target path
 	// 
@@ -250,7 +250,7 @@ public:
 	//
 	// Returns the bundle and bool whether it's a newly created bundle
 	// Throws QueueException, FileException, DupeException
-	BundleAddInfo createFileBundleHooked(const string& aTarget, BundleFileInfo& aFileInfo, const HintedUser& aUser, Flags::MaskType aFlags = 0);
+	BundleAddInfo createFileBundleHooked(const BundleAddOptions& aOptions, BundleFileAddData& aFileInfo, Flags::MaskType aFlags = 0);
 
 	bool removeBundle(QueueToken aBundleToken, bool removeFinishedFiles) noexcept;
 	void removeBundle(const BundlePtr& aBundle, bool removeFinishedFiles) noexcept;
@@ -464,11 +464,11 @@ private:
 
 	// Check that we can download from this user
 	// Throws QueueException in case of errors
-	void checkSourceHooked(const HintedUser& aUser, bool aCheckTLS = true) const;
+	void checkSourceHooked(const HintedUser& aUser, const void* aCaller) const;
 
 	// Validate bundle file against ignore and dupe options + performs target validity check (see checkTarget)
 	// Throws QueueException, FileException, DupeException
-	void validateBundleFileHooked(const string& aBundleDir, BundleFileInfo& aFileInfo, Flags::MaskType aFlags = 0) const;
+	void validateBundleFileHooked(const string& aBundleDir, BundleFileAddData& aFileInfo, const void* aCaller, Flags::MaskType aFlags = 0) const;
 
 	// Sanity check for the target filename
 	// Throws QueueException on invalid path format and FileException if the target file exists

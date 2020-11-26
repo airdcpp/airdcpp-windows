@@ -1240,7 +1240,7 @@ void RichTextBox::handleOpenFile() {
 			if (!p.empty())
 				ActionUtil::openFile(Text::toT(p.front()));
 		} else {
-			ActionUtil::openFile(m.fname, m.fsize, m.getTTH(), u, false);
+			ActionUtil::openTextFile(m.fname, m.fsize, m.getTTH(), u, false);
 		}
 	});
 }

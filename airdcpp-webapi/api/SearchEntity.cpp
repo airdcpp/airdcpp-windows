@@ -23,7 +23,7 @@
 #include <api/common/Deserializer.h>
 #include <api/common/FileSearchParser.h>
 
-#include <airdcpp/BundleInfo.h>
+#include <airdcpp/QueueAddInfo.h>
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/SearchManager.h>
 #include <airdcpp/SearchInstance.h>
@@ -137,20 +137,21 @@ namespace webserver {
 		Deserializer::deserializeDownloadParams(aRequest.getRequestBody(), aRequest.getSession(), targetDirectory, targetName, prio);
 		addAsyncTask([
 			result,
-				targetName,
-				targetDirectory,
-				prio,
-				complete = aRequest.defer()
+			targetName,
+			targetDirectory,
+			prio,
+			complete = aRequest.defer(),
+			caller = aRequest.getOwnerPtr()
 		] {
 			try {
 				json responseData;
 				if (result->isDirectory()) {
-					auto directoryDownloads = result->downloadDirectoryHooked(targetDirectory, targetName, prio);
+					auto directoryDownloads = result->downloadDirectoryHooked(targetDirectory, targetName, prio, caller);
 					responseData = {
 						{ "directory_download_ids", Serializer::serializeList(directoryDownloads, Serializer::serializeDirectoryDownload) }
 					};
 				} else {
-					auto bundleAddInfo = result->downloadFileHooked(targetDirectory, targetName, prio);
+					auto bundleAddInfo = result->downloadFileHooked(targetDirectory, targetName, prio, caller);
 					responseData = {
 						{ "bundle_info", Serializer::serializeBundleAddInfo(bundleAddInfo) },
 					};

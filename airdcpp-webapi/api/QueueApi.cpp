@@ -38,6 +38,7 @@ namespace webserver {
 
 #define HOOK_FILE_FINISHED "queue_file_finished_hook"
 #define HOOK_BUNDLE_FINISHED "queue_bundle_finished_hook"
+#define HOOK_ADD_DIRECTORY_BUNDLE "queue_add_directory_bundle_hook"
 #define HOOK_ADD_BUNDLE_FILE "queue_add_bundle_file_hook"
 #define HOOK_ADD_SOURCE "queue_add_source_hook"
 
@@ -85,14 +86,20 @@ namespace webserver {
 			QueueManager::getInstance()->bundleCompletionHook.removeSubscriber(aId);
 		});
 
+		createHook(HOOK_ADD_DIRECTORY_BUNDLE, [this](ActionHookSubscriber&& aSubscriber) {
+			return QueueManager::getInstance()->directoryBundleValidationHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(QueueApi::directoryBundleAddHook));
+		}, [this](const string& aId) {
+			QueueManager::getInstance()->directoryBundleValidationHook.removeSubscriber(aId);
+		});
+
 		createHook(HOOK_ADD_BUNDLE_FILE, [this](ActionHookSubscriber&& aSubscriber) {
-			return QueueManager::getInstance()->bundleFileValidationHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(QueueApi::bundleFileValidationHook));
+			return QueueManager::getInstance()->bundleFileValidationHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(QueueApi::bundleFileAddHook));
 		}, [this](const string& aId) {
 			QueueManager::getInstance()->bundleFileValidationHook.removeSubscriber(aId);
 		});
 
 		createHook(HOOK_ADD_SOURCE, [this](ActionHookSubscriber&& aSubscriber) {
-			return QueueManager::getInstance()->sourceValidationHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(QueueApi::sourceValidationHook));
+			return QueueManager::getInstance()->sourceValidationHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(QueueApi::sourceAddHook));
 		}, [this](const string& aId) {
 			QueueManager::getInstance()->sourceValidationHook.removeSubscriber(aId);
 		});
@@ -148,19 +155,35 @@ namespace webserver {
 		);
 	}
 
-	ActionHookResult<> QueueApi::bundleFileValidationHook(const string& aTarget, BundleFileInfo& aInfo, const ActionHookResultGetter<>& aResultGetter) noexcept {
+	ActionHookResult<> QueueApi::bundleFileAddHook(const string& aTarget, BundleFileAddData& aInfo, const ActionHookResultGetter<>& aResultGetter) noexcept {
 		return HookCompletionData::toResult(
 			fireHook(HOOK_ADD_BUNDLE_FILE, 5, [&]() {
 				return json({
-					{ "bundle_target_path", aTarget },
-					{ "file", serializeBundleFileInfo(aInfo) },
+					{ "target_directory", aTarget },
+					{ "file_data", serializeBundleFileInfo(aInfo) },
 				});
 			}),
 			aResultGetter
 		);
 	}
 
-	ActionHookResult<> QueueApi::sourceValidationHook(const HintedUser& aUser, const ActionHookResultGetter<>& aResultGetter) noexcept {
+	ActionHookResult<> QueueApi::directoryBundleAddHook(const string& aTarget, DirectoryBundleAddData& aDirectory, const HintedUser& aUser, const ActionHookResultGetter<>& aResultGetter) noexcept {
+		return HookCompletionData::toResult(
+			fireHook(HOOK_ADD_DIRECTORY_BUNDLE, 10, [&]() {
+				return json({
+					{ "target_directory", aTarget },
+					{ "bundle_data", {
+						{ "name", aDirectory.name },
+						{ "time", aDirectory.date },
+						{ "priority", Serializer::serializePriorityId(aDirectory.prio) },
+					} },
+				});
+			}),
+			aResultGetter
+		);
+	}
+
+	ActionHookResult<> QueueApi::sourceAddHook(const HintedUser& aUser, const ActionHookResultGetter<>& aResultGetter) noexcept {
 		return HookCompletionData::toResult(
 			fireHook(HOOK_ADD_SOURCE, 5, [&]() {
 				return json({
@@ -359,17 +382,18 @@ namespace webserver {
 				hintedUser = Deserializer::deserializeHintedUser(reqJson, false, true),
 				time = JsonUtil::getOptionalFieldDefault<time_t>("time", reqJson, GET_TIME()),
 				complete = aRequest.defer(),
+				caller = aRequest.getOwnerPtr(),
 				targetDirectory,
 				targetFileName,
 				prio
 		]{
 			BundleAddInfo bundleAddInfo;
 			try {
-				auto fileInfo = BundleFileInfo(targetFileName, tth, size, prio, time);
+				auto options = BundleAddOptions(targetDirectory, hintedUser, caller);
+				auto fileInfo = BundleFileAddData(targetFileName, tth, size, prio, time);
 				bundleAddInfo = QueueManager::getInstance()->createFileBundleHooked(
-					targetDirectory,
+					options,
 					fileInfo,
-					hintedUser,
 					0
 				);
 			} catch (const Exception& e) {
@@ -384,8 +408,8 @@ namespace webserver {
 		return CODE_DEFERRED;
 	}
 
-	BundleFileInfo QueueApi::deserializeBundleFileInfo(const json& aJson) {
-		return BundleFileInfo(
+	BundleFileAddData QueueApi::deserializeBundleFileInfo(const json& aJson) {
+		return BundleFileAddData(
 			JsonUtil::getField<string>("name", aJson),
 			Deserializer::deserializeTTH(aJson),
 			JsonUtil::getField<int64_t>("size", aJson),
@@ -394,7 +418,7 @@ namespace webserver {
 		);
 	}
 
-	json QueueApi::serializeBundleFileInfo(const BundleFileInfo& aInfo) noexcept {
+	json QueueApi::serializeBundleFileInfo(const BundleFileAddData& aInfo) noexcept {
 		return {
 			{ "name", aInfo.file },
 			{ "size", aInfo.size },
@@ -415,13 +439,14 @@ namespace webserver {
 			hintedUser = Deserializer::deserializeHintedUser(bundleJson, false, true),
 			time = JsonUtil::getOptionalFieldDefault<time_t>("time", bundleJson, GET_TIME()),
 			complete = aRequest.defer(),
+			caller = aRequest.getOwnerPtr(),
 			targetDirectory,
 			targetFileName,
 			prio,
 			filesJson = JsonUtil::getArrayField("files", bundleJson, false)
 		] {
 			// Parse files
-			BundleFileInfo::List files;
+			BundleFileAddData::List files;
 			try {
 				for (const auto& fileJson : filesJson) {
 					files.push_back(deserializeBundleFileInfo(fileJson));
@@ -433,22 +458,22 @@ namespace webserver {
 
 			// Queue
 			string errorMsg;
-			auto info = QueueManager::getInstance()->createDirectoryBundleHooked(
-				Util::joinDirectory(targetDirectory, targetFileName),
-				hintedUser,
+			auto addInfo = DirectoryBundleAddData(targetFileName, prio, time);
+			auto options = BundleAddOptions(targetDirectory, hintedUser, caller);
+			auto result = QueueManager::getInstance()->createDirectoryBundleHooked(
+				options,
+				addInfo,
 				files,
-				prio,
-				time,
 				errorMsg
 			);
 
 			// Handle results
-			if (!info) {
+			if (!result) {
 				complete(websocketpp::http::status_code::bad_request, nullptr, ApiRequest::toResponseErrorStr(errorMsg));
 				return;
 			}
 
-			complete(websocketpp::http::status_code::ok, Serializer::serializeDirectoryBundleAddInfo(*info, errorMsg), nullptr);
+			complete(websocketpp::http::status_code::ok, Serializer::serializeDirectoryBundleAddResult(*result, errorMsg), nullptr);
 			return;
 		});
 

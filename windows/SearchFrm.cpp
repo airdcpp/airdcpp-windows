@@ -762,7 +762,7 @@ void SearchFrame::performAction(std::function<void (const SearchInfo* aInfo)> f,
 void SearchFrame::handleOpenItem(bool isClientView) {
 	auto open = [=](const SearchInfo* si) {
 		if (!si->isDirectory()) {
-			ActionUtil::openFile(si->getFileName(), si->getSize(), si->getTTH(), si->getHintedUser(), isClientView);
+			ActionUtil::openTextFile(si->getFileName(), si->getSize(), si->getTTH(), si->getHintedUser(), isClientView);
 		}
 	};
 
@@ -799,7 +799,8 @@ void SearchFrame::handleDownload(const string& aTarget, Priority p, bool useWhol
 
 				MainFrame::getMainFrame()->addThreadedTask([=] {
 					try {
-						DirectoryListingManager::getInstance()->addDirectoryDownloadHooked(aSR->getUser(), *targetName, aSR->getAdcFilePath(), aTarget, p);
+						auto listData = FilelistAddData(aSR->getUser(), this, aSR->getAdcFilePath());
+						DirectoryListingManager::getInstance()->addDirectoryDownloadHooked(listData, *targetName, aTarget, p, DirectoryDownload::ErrorMethod::LOG);
 					} catch (const Exception& e) {
 						callAsync([=] {
 							ctrlStatus.SetText(1, Text::toT(e.getError()).c_str());
@@ -836,10 +837,12 @@ void SearchFrame::handleMatchPartial() {
 		MainFrame::getMainFrame()->addThreadedTask([
 			user = si->getHintedUser(),
 			flags = QueueItem::FLAG_MATCH_QUEUE | (si->getHintedUser().user->isNMDC() ? 0 : QueueItem::FLAG_RECURSIVE_LIST) | QueueItem::FLAG_PARTIAL_LIST,
-			path = AirUtil::getAdcReleaseDir(si->getAdcFilePath(), false)
+			path = AirUtil::getAdcReleaseDir(si->getAdcFilePath(), false),
+			caller = this
 		] {
 			try {
-				QueueManager::getInstance()->addListHooked(user, flags, path);
+				auto listData = FilelistAddData(user, caller, path);
+				QueueManager::getInstance()->addListHooked(listData, flags);
 			} catch (const Exception&) {
 				//...
 			}

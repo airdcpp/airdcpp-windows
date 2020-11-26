@@ -99,11 +99,13 @@ namespace webserver {
 			size = JsonUtil::getField<int64_t>("size", j),
 			user = Deserializer::deserializeHintedUser(j),
 			isText = JsonUtil::getOptionalFieldDefault<bool>("text", j, false),
-			complete = aRequest.defer()
+			complete = aRequest.defer(),
+			caller = aRequest.getOwnerPtr()
 		] {
 			ViewFilePtr file = nullptr;
 			try {
-				file = ViewFileManager::getInstance()->addUserFileHookedThrow(name, size, tth, user, isText);
+				auto fileData = ViewedFileAddData(name, tth, size, caller, user, isText);
+				file = ViewFileManager::getInstance()->addUserFileHookedThrow(fileData);
 			} catch (const Exception& e) {
 				complete(websocketpp::http::status_code::bad_request, nullptr, ApiRequest::toResponseErrorStr(e.getError()));
 				return;

@@ -63,7 +63,8 @@ void ActionUtil::MatchQueue::operator()(UserPtr aUser, const string& aUrl) const
 
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		try {
-			QueueManager::getInstance()->addListHooked(HintedUser(aUser, aUrl), QueueItem::FLAG_MATCH_QUEUE);
+			auto listData = FilelistAddData(HintedUser(aUser, aUrl), nullptr, ADC_ROOT_STR);
+			QueueManager::getInstance()->addListHooked(listData, QueueItem::FLAG_MATCH_QUEUE);
 		} catch (const Exception& e) {
 			LogManager::getInstance()->message(e.getError(), LogMessage::SEV_ERROR, STRING(SETTINGS_QUEUE));
 		}
@@ -371,7 +372,7 @@ void ActionUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aOptional
 					LogManager::getInstance()->message(e.getError(), LogMessage::SEV_ERROR, STRING(SETTINGS_QUEUE));
 				}
 			} else if (sel == SettingsManager::MAGNET_OPEN) {
-				openFile(m.fname, m.fsize, m.getTTH(), aOptionalUser, false);
+				openTextFile(m.fname, m.fsize, m.getTTH(), aOptionalUser, false);
 			}
 		} else {
 			MessageBox(WinUtil::mainWnd, CTSTRING(MAGNET_DLG_TEXT_BAD), CTSTRING(MAGNET_DLG_TITLE), MB_OK | MB_ICONEXCLAMATION);
@@ -379,7 +380,7 @@ void ActionUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aOptional
 	}
 }
 
-void ActionUtil::openFile(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsClientView) noexcept {
+void ActionUtil::openTextFile(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsClientView) noexcept {
 	if (!aUser) {
 		dcassert(0);
 		return;
@@ -387,12 +388,14 @@ void ActionUtil::openFile(const string& aFileName, int64_t aSize, const TTHValue
 
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		if (aIsClientView && (!SETTING(NFO_EXTERNAL) || Util::getFileExt(aFileName) != ".nfo")) {
-			ViewFileManager::getInstance()->addUserFileHookedNotify(aFileName, aSize, aTTH, aUser, true);
+			auto fileData = ViewedFileAddData(aFileName, aTTH, aSize, nullptr, aUser, true);
+			ViewFileManager::getInstance()->addUserFileHookedNotify(fileData);
 			return;
 		}
 
 		try {
-			QueueManager::getInstance()->addOpenedItemHooked(aFileName, aSize, aTTH, aUser, false, true);
+			auto fileData = ViewedFileAddData(aFileName, aTTH, aSize, nullptr, aUser, false);
+			QueueManager::getInstance()->addOpenedItemHooked(fileData, false);
 		} catch (const Exception& e) {
 			auto nicks = ClientManager::getInstance()->getFormatedNicks(aUser);
 			LogManager::getInstance()->message(STRING_F(ADD_FILE_ERROR, aFileName % nicks % e.getError()), LogMessage::SEV_NOTIFY, STRING(SETTINGS_QUEUE));
@@ -859,8 +862,9 @@ void ActionUtil::getProfileConflicts(HWND aParent, int aProfile, ProfileSettingI
 void ActionUtil::addFileDownload(const string& aTarget, int64_t aSize, const TTHValue& aTTH, const HintedUser& aOptionalUser, time_t aDate, Flags::MaskType aFlags /*0*/, Priority aPriority /*DEFAULT*/) {
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		try {
-			auto fileInfo = BundleFileInfo(Util::getFileName(aTarget), aTTH, aSize, aPriority, aDate);
-			QueueManager::getInstance()->createFileBundleHooked(Util::getParentDir(aTarget), fileInfo, aOptionalUser, aFlags);
+			auto fileInfo = BundleFileAddData(Util::getFileName(aTarget), aTTH, aSize, aPriority, aDate);
+			auto options = BundleAddOptions(Util::getParentDir(aTarget), aOptionalUser, nullptr);
+			QueueManager::getInstance()->createFileBundleHooked(options, fileInfo, aFlags);
 		} catch (const Exception& e) {
 			auto nick = aOptionalUser ? Text::fromT(FormatUtil::getNicks(aOptionalUser)) : STRING(UNKNOWN);
 			LogManager::getInstance()->message(STRING_F(ADD_FILE_ERROR, aTarget % nick % e.getError()), LogMessage::SEV_ERROR, STRING(SETTINGS_QUEUE));
@@ -920,9 +924,10 @@ void ActionUtil::findNfo(const string& aAdcPath, const HintedUser& aUser) noexce
 
 		if (searchInstance.getResultCount() > 0) {
 			auto result = searchInstance.getResultList().front();
-			ViewFileManager::getInstance()->addUserFileHookedNotify(result->getFileName(), result->getSize(), result->getTTH(), aUser, true);
-		}
-		else {
+
+			auto fileData = ViewedFileAddData(result->getFileName(), result->getTTH(), result->getSize(), nullptr, aUser, true);
+			ViewFileManager::getInstance()->addUserFileHookedNotify(fileData);
+		} else {
 			MainFrame::getMainFrame()->ShowPopup(TSTRING(NO_NFO_FOUND), Text::toT(Util::getAdcLastDir(aAdcPath)), NIIF_INFO, true);
 		}
 	});
