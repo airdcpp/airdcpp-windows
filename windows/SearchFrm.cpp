@@ -788,7 +788,7 @@ void SearchFrame::handleDownload(const string& aTarget, Priority p, bool useWhol
 		auto download = [&](const SearchResultPtr& aSR) {
 			if (fileDownload) {
 				if (!targetName) {
-					targetName = aTarget.back() == PATH_SEPARATOR ? aTarget + aSI->getFileName() : aTarget;
+					targetName = Util::isDirectoryPath(aTarget) ? aTarget + aSI->getFileName() : aTarget;
 				}
 				ActionUtil::addFileDownload(*targetName, aSR->getSize(), aSR->getTTH(), aSR->getUser(), aSR->getDate(), 0, p);
 			} else {
@@ -800,7 +800,7 @@ void SearchFrame::handleDownload(const string& aTarget, Priority p, bool useWhol
 				MainFrame::getMainFrame()->addThreadedTask([=] {
 					try {
 						auto listData = FilelistAddData(aSR->getUser(), this, aSR->getAdcFilePath());
-						DirectoryListingManager::getInstance()->addDirectoryDownloadHooked(listData, *targetName, aTarget, p, DirectoryDownload::ErrorMethod::LOG);
+						DirectoryListingManager::getInstance()->addDirectoryDownloadHookedThrow(listData, *targetName, aTarget, p, DirectoryDownload::ErrorMethod::LOG);
 					} catch (const Exception& e) {
 						callAsync([=] {
 							ctrlStatus.SetText(1, Text::toT(e.getError()).c_str());

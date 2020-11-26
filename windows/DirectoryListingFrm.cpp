@@ -111,7 +111,7 @@ void DirectoryListingFrame::openWindow(const HintedUser& aUser, Flags::MaskType 
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		try {
 			auto listData = FilelistAddData(aUser, MainFrame::getMainFrame(), aInitialDir);
-			DirectoryListingManager::getInstance()->openRemoteFileListHooked(listData, QueueItem::FLAG_CLIENT_VIEW | aFlags);
+			DirectoryListingManager::getInstance()->openRemoteFileListHookedThrow(listData, QueueItem::FLAG_CLIENT_VIEW | aFlags);
 		} catch (const Exception& e) {
 			MainFrame::getMainFrame()->ShowPopup(Text::toT(e.getError()), _T(""), NIIF_INFO | NIIF_NOSOUND, true);
 		}
@@ -1587,7 +1587,7 @@ void DirectoryListingFrame::handleDownload(const string& aTarget, Priority aPrio
 			] {
 				try {
 					auto listData = FilelistAddData(dl->getHintedUser(), this, listPath);
-					DirectoryListingManager::getInstance()->addDirectoryDownloadHooked(listData, name, aTarget, aPriority, DirectoryDownload::ErrorMethod::LOG);
+					DirectoryListingManager::getInstance()->addDirectoryDownloadHookedThrow(listData, name, aTarget, aPriority, DirectoryDownload::ErrorMethod::LOG);
 				} catch (const Exception& e) {
 					ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
 				}
