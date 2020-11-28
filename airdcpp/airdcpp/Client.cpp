@@ -435,6 +435,14 @@ void Client::onChatMessage(const ChatMessagePtr& aMessage) noexcept {
 		getHubIdentity().getParams(params, "hub", false);
 		params["hubURL"] = getHubUrl();
 		getMyIdentity().getParams(params, "my", true);
+		auto ou = ClientManager::getInstance()->findOnlineUser(HintedUser(aMessage->getFrom()->getUser(), getHubUrl()), false);
+
+		if (ou) {
+			params["userI4"] = ou->getIdentity().getIp4();
+			params["2code"] = ou->getIdentity().getCountry();
+			params["userCID"] = ou->getUser()->getCID().toBase32();
+		}
+
 		LOG(LogManager::CHAT, params);
 	}
 

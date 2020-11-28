@@ -82,7 +82,7 @@ namespace dcpp {
 
 		string getLastCCPMError();
 	
-		void logMessage(const string& aMessage) const noexcept;
+		void logMessage(const ChatMessagePtr& aMessage) const noexcept;
 		void fillLogParams(ParamMap& params) const noexcept;
 		string getLogPath() const noexcept;
 		bool isOnline() const noexcept { return online; }

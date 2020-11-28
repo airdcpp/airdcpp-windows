@@ -31,7 +31,7 @@ namespace dcpp {
 PrivateChat::PrivateChat(const HintedUser& aUser, UserConnection* aUc) :
 	uc(aUc), replyTo(aUser), ccpmAttempts(0), allowAutoCCPM(true), lastCCPMAttempt(0), ccpmState(DISCONNECTED),
 	online(aUser.user->isOnline()), hubName(ClientManager::getInstance()->getHubName(aUser.hint)), cache(SettingsManager::PM_MESSAGE_CACHE) {
-		
+
 	if (aUc) {
 		ccpmState = CONNECTED;
 		aUc->addListener(this);
@@ -184,7 +184,7 @@ void PrivateChat::handleMessage(const ChatMessagePtr& aMessage) noexcept {
 	}
 
 	if (SETTING(LOG_PRIVATE_CHAT)) {
-		logMessage(aMessage->format());
+		logMessage(aMessage);
 	}
 
 	cache.addMessage(aMessage);
@@ -437,17 +437,24 @@ void PrivateChat::on(AdcCommand::PMI, UserConnection*, const AdcCommand& cmd) no
 		fire(PrivateChatListener::PMStatus(), this, type);
 }
 
-void PrivateChat::logMessage(const string& aMessage) const noexcept {
+void PrivateChat::logMessage(const ChatMessagePtr& aMessage) const noexcept {
 	if (SETTING(LOG_PRIVATE_CHAT)) {
 		ParamMap params;
-		params["message"] = aMessage;
+		params["message"] = aMessage->format();
+		auto ou = ClientManager::getInstance()->findOnlineUser(HintedUser(aMessage->getFrom()->getUser(), getHubUrl()), false);
+
+		if (ou) {
+			params["userI4"] = ou->getIdentity().getIp4();
+			params["2code"] = ou->getIdentity().getCountry();
+		}
+
 		fillLogParams(params);
 		LogManager::getInstance()->log(getUser(), params);
 	}
 }
 
 void PrivateChat::fillLogParams(ParamMap& params) const noexcept {
-	const CID& cid = getUser()->getCID();;
+	const CID& cid = getUser()->getCID();
 	params["hubNI"] = [&] { return Util::listToString(ClientManager::getInstance()->getHubNames(cid)); };
 	params["hubURL"] = [&] { return getHubUrl(); };
 	params["userCID"] = [&cid] { return cid.toBase32(); };
