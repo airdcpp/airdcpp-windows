@@ -441,13 +441,8 @@ void PrivateChat::logMessage(const ChatMessagePtr& aMessage) const noexcept {
 	if (SETTING(LOG_PRIVATE_CHAT)) {
 		ParamMap params;
 		params["message"] = aMessage->format();
-		auto ou = ClientManager::getInstance()->findOnlineUser(HintedUser(aMessage->getFrom()->getUser(), getHubUrl()), false);
-
-		if (ou) {
-			params["userI4"] = ou->getIdentity().getIp4();
-			params["2code"] = ou->getIdentity().getCountry();
-		}
-
+		params["userI4"] = aMessage->getFrom()->getIdentity().getIp4();
+		params["2code"] = aMessage->getFrom()->getIdentity().getCountry();
 		fillLogParams(params);
 		LogManager::getInstance()->log(getUser(), params);
 	}
