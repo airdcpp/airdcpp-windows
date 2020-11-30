@@ -467,27 +467,25 @@ void PrivateFrame::handleNotifications(bool windowOpened, const tstring& aMessag
 	}
 }
 
-bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& /*param*/, tstring& /*message*/, tstring& status, bool& /*thirdPerson*/) { 
-	if(stricmp(cmd.c_str(), _T("grant")) == 0) {
+bool PrivateFrame::checkFrameCommand(const tstring& aCmd, const tstring& /*aParam*/, tstring& /*message_*/, tstring& status_, bool& /*thirdPerson*/) {
+	if (stricmp(aCmd.c_str(), _T("grant")) == 0) {
 		UploadManager::getInstance()->reserveSlot(HintedUser(chat->getHintedUser()), 600);
 		addClientLine(TSTRING(SLOT_GRANTED), LogMessage::SEV_INFO);
-	} else if(stricmp(cmd.c_str(), _T("close")) == 0) {
+	} else if (stricmp(aCmd.c_str(), _T("close")) == 0) {
 		PostMessage(WM_CLOSE);
-	} else if((stricmp(cmd.c_str(), _T("favorite")) == 0) || (stricmp(cmd.c_str(), _T("fav")) == 0)) {
+	} else if ((stricmp(aCmd.c_str(), _T("favorite")) == 0) || (stricmp(aCmd.c_str(), _T("fav")) == 0)) {
 		FavoriteManager::getInstance()->addFavoriteUser(chat->getHintedUser());
 		addClientLine(TSTRING(FAVORITE_USER_ADDED), LogMessage::SEV_INFO);
-	} else if(stricmp(cmd.c_str(), _T("getlist")) == 0) {
+	} else if (stricmp(aCmd.c_str(), _T("getlist")) == 0) {
 		handleGetList();
-	} else if(stricmp(cmd.c_str(), _T("log")) == 0) {
+	} else if (stricmp(aCmd.c_str(), _T("log")) == 0) {
 		ActionUtil::openFile(Text::toT(chat->getLogPath()));
-	}
-	else if (Util::stricmp(cmd.c_str(), _T("direct")) == 0 || Util::stricmp(cmd.c_str(), _T("encrypted")) == 0) {
+	} else if (Util::stricmp(aCmd.c_str(), _T("direct")) == 0 || Util::stricmp(aCmd.c_str(), _T("encrypted")) == 0) {
 		chat->startCC();
-	}
-	else if (Util::stricmp(cmd.c_str(), _T("disconnect")) == 0) {
+	} else if (Util::stricmp(aCmd.c_str(), _T("disconnect")) == 0) {
 		closeCC();
-	} else if(stricmp(cmd.c_str(), _T("help")) == 0) {
-		status = _T("*** ") + ChatFrameBase::commands + _T("Additional commands for private message tabs: /getlist, /grant, /favorite, /direct or /encrypted");
+	} else if (stricmp(aCmd.c_str(), _T("help")) == 0) {
+		status_ = _T("*** ") + ChatFrameBase::commands + _T("Additional commands for private message tabs: /getlist, /grant, /favorite, /direct or /encrypted");
 	} else {
 		return false;
 	}

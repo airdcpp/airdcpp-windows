@@ -67,7 +67,7 @@ public:
 	LRESULT onSendMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled);
 	LRESULT onResize(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled);
 
-	virtual bool checkFrameCommand(tstring& cmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson) = 0;
+	virtual bool checkFrameCommand(const tstring& aCmd, const tstring& aParam, tstring& message_, tstring& status_, bool& thirdPerson_) = 0;
 	virtual bool sendMessageHooked(const OutgoingChatMessage& aMessage, string& error_) = 0;
 	virtual void addStatusLine(const tstring& aStatus, uint8_t sev) = 0;
 	virtual void addPrivateLine(const tstring& aLine, CHARFORMAT2& cf) = 0;
@@ -130,7 +130,7 @@ private:
 	 * @param status Message that should be shown in the status line.
 	 * @return True if the command was processed, false otherwise.
 	 */
-	bool checkCommand(const tstring& aCmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson);
+	bool checkCommand(const tstring& aCmd, tstring& message_, tstring& status_, bool& thirdPerson_);
 	UserPtr getUser() { return ctrlClient.getPmUser(); }
 	ClientPtr getClient() { return ctrlClient.getClient(); }
 	const tstring& getSendFileTitle();

@@ -149,16 +149,16 @@ public:
 		return 0;
 	}
 
-	void UpdateLayout(BOOL bResizeBars = TRUE);
-	bool sendMessageHooked(const OutgoingChatMessage& aMessage, string& error_);
+	void UpdateLayout(BOOL bResizeBars = TRUE) override;
+	bool sendMessageHooked(const OutgoingChatMessage& aMessage, string& error_) override;
 	void addLine(const tstring& aLine);
 	void addLine(const tstring& aLine, CHARFORMAT2& cf, bool bUseEmo = true);
 	void addLine(const Identity& i, const tstring& aLine, CHARFORMAT2& cf, bool bUseEmo = true);
-	void addPrivateLine(const tstring& aLine, CHARFORMAT2& cf) { addLine(aLine, cf, false); }
-	void addStatusLine(const tstring& aLine, uint8_t sev) { addStatus(aLine, sev); }
+	void addPrivateLine(const tstring& aLine, CHARFORMAT2& cf) override { addLine(aLine, cf, false); }
+	void addStatusLine(const tstring& aLine, uint8_t sev) override { addStatus(aLine, sev); }
 	void addStatus(const tstring& aLine, uint8_t sev, CHARFORMAT2& cf = WinUtil::m_ChatTextSystem, bool inChat = true);
-	bool checkFrameCommand(tstring& cmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson);
-	void onTab();
+	bool checkFrameCommand(const tstring& aCmd, const tstring& aParam, tstring& message_, tstring& status_, bool& thirdPerson_) override;
+	void onTab() override;
 	void handleTab(bool reverse);
 	void runUserCommand(::UserCommand& uc);
 	static void ShutDown() {
@@ -331,34 +331,34 @@ private:
 	void execTasks();
 
 	// FavoriteManagerListener
-	void on(FavoriteManagerListener::FavoriteUserAdded, const FavoriteUser& /*aUser*/) noexcept;
-	void on(FavoriteManagerListener::FavoriteUserRemoved, const FavoriteUser& /*aUser*/) noexcept;
+	void on(FavoriteManagerListener::FavoriteUserAdded, const FavoriteUser& /*aUser*/) noexcept override;
+	void on(FavoriteManagerListener::FavoriteUserRemoved, const FavoriteUser& /*aUser*/) noexcept override;
 	void resortForFavsFirst(bool justDoIt = false);
 
-	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
+	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept override;
 
 	// ClientListener
-	void on(ClientListener::Connecting, const Client*) noexcept;
-	void on(ClientListener::Connected, const Client*) noexcept;
-	void on(ClientListener::UserConnected, const Client*, const OnlineUserPtr&) noexcept;
-	void on(ClientListener::UserUpdated, const Client*, const OnlineUserPtr&) noexcept;
-	void on(ClientListener::UsersUpdated, const Client*, const OnlineUserList&) noexcept;
-	void on(ClientListener::UserRemoved, const Client*, const OnlineUserPtr&) noexcept;
-	void on(ClientListener::Redirect, const Client*, const string&) noexcept;
-	void on(ClientListener::Disconnected, const string&, const string&) noexcept;
-	void on(ClientListener::GetPassword, const Client*) noexcept;
-	void on(ClientListener::HubUpdated, const Client*) noexcept;
-	void on(ClientListener::ChatMessage, const Client*, const ChatMessagePtr&) noexcept;
-	void on(ClientListener::StatusMessage, const Client*, const LogMessagePtr&, int = ClientListener::FLAG_NORMAL) noexcept;
-	void on(ClientListener::NickTaken, const Client*) noexcept;
-	void on(ClientListener::SearchFlood, const Client*, const string&) noexcept;
-	void on(ClientListener::HubTopic, const Client*, const string&) noexcept;
-	void on(ClientListener::AddLine, const Client*, const string&) noexcept;
-	void on(ClientListener::SetActive, const Client*) noexcept;
-	void on(ClientListener::Close, const Client*) noexcept;
-	void on(ClientListener::Redirected, const string&, const ClientPtr& aNewClient) noexcept;
-	void on(ClientListener::MessagesRead) noexcept;
-	void on(ClientListener::KeyprintMismatch, const Client*) noexcept;
+	void on(ClientListener::Connecting, const Client*) noexcept override;
+	void on(ClientListener::Connected, const Client*) noexcept override;
+	void on(ClientListener::UserConnected, const Client*, const OnlineUserPtr&) noexcept override;
+	void on(ClientListener::UserUpdated, const Client*, const OnlineUserPtr&) noexcept override;
+	void on(ClientListener::UsersUpdated, const Client*, const OnlineUserList&) noexcept override;
+	void on(ClientListener::UserRemoved, const Client*, const OnlineUserPtr&) noexcept override;
+	void on(ClientListener::Redirect, const Client*, const string&) noexcept override;
+	void on(ClientListener::Disconnected, const string&, const string&) noexcept override;
+	void on(ClientListener::GetPassword, const Client*) noexcept override;
+	void on(ClientListener::HubUpdated, const Client*) noexcept override;
+	void on(ClientListener::ChatMessage, const Client*, const ChatMessagePtr&) noexcept override;
+	void on(ClientListener::StatusMessage, const Client*, const LogMessagePtr&, int = ClientListener::FLAG_NORMAL) noexcept override;
+	void on(ClientListener::NickTaken, const Client*) noexcept override;
+	void on(ClientListener::SearchFlood, const Client*, const string&) noexcept override;
+	void on(ClientListener::HubTopic, const Client*, const string&) noexcept override;
+	void on(ClientListener::AddLine, const Client*, const string&) noexcept override;
+	void on(ClientListener::SetActive, const Client*) noexcept override;
+	void on(ClientListener::Close, const Client*) noexcept override;
+	void on(ClientListener::Redirected, const string&, const ClientPtr& aNewClient) noexcept override;
+	void on(ClientListener::MessagesRead, const Client*) noexcept override;
+	void on(ClientListener::KeyprintMismatch, const Client*) noexcept override;
 
 	void speak(Tasks s, const OnlineUserPtr& u) { tasks.add(static_cast<uint8_t>(s), unique_ptr<Task>(new UserTask(u))); updateUsers = true; }
 	void openLinksInTopic();

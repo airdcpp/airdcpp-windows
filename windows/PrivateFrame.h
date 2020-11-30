@@ -110,15 +110,15 @@ public:
 	void addLine(const tstring& aLine, CHARFORMAT2& cf);
 	void addLine(const Identity&, const tstring& aLine);
 	void addLine(const Identity&, const tstring& aLine, CHARFORMAT2& cf);
-	void addPrivateLine(const tstring& aLine, CHARFORMAT2& cf) { addLine(aLine, cf); }
-	void addStatusLine(const tstring& aLine, uint8_t aSeverity);
+	void addPrivateLine(const tstring& aLine, CHARFORMAT2& cf) override { addLine(aLine, cf); }
+	void addStatusLine(const tstring& aLine, uint8_t aSeverity) override;
 
-	bool checkFrameCommand(tstring& cmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson);
-	void UpdateLayout(BOOL bResizeBars = TRUE);	
+	bool checkFrameCommand(const tstring& aCmd, const tstring& aParam, tstring& message_, tstring& status_, bool& thirdPerson_) override;
+	void UpdateLayout(BOOL bResizeBars = TRUE) override;
 	void runUserCommand(UserCommand& uc);
 	
 	void addClientLine(const tstring& aLine, uint8_t severity);
-	bool sendMessageHooked(const OutgoingChatMessage& aMessage, string& error_);
+	bool sendMessageHooked(const OutgoingChatMessage& aMessage, string& error_) override;
 
 	struct UserListHandler {
 		UserListHandler(PrivateFrame* _pf) : pf(_pf) { }
@@ -172,8 +172,8 @@ private:
 	void updateOnlineStatus();
 
 
-	const UserPtr& getUser() const;
-	const string& getHubUrl() const;
+	const UserPtr& getUser() const override;
+	const string& getHubUrl() const override;
 	
 	CContainedWindow ctrlMessageContainer;
 	CContainedWindow ctrlClientContainer;
@@ -211,17 +211,17 @@ private:
 
 	void activate() noexcept;
 	
-	void on(PrivateChatListener::StatusMessage, PrivateChat*, const LogMessagePtr& aMessage) noexcept;
-	void on(PrivateChatListener::PrivateMessage, PrivateChat*, const ChatMessagePtr& aMessage) noexcept;
-	void on(PrivateChatListener::UserUpdated, PrivateChat*) noexcept;
-	void on(PrivateChatListener::PMStatus, PrivateChat*, uint8_t aType) noexcept;
-	void on(PrivateChatListener::Close, PrivateChat*) noexcept;
+	void on(PrivateChatListener::StatusMessage, PrivateChat*, const LogMessagePtr& aMessage) noexcept override;
+	void on(PrivateChatListener::PrivateMessage, PrivateChat*, const ChatMessagePtr& aMessage) noexcept override;
+	void on(PrivateChatListener::UserUpdated, PrivateChat*) noexcept override;
+	void on(PrivateChatListener::PMStatus, PrivateChat*, uint8_t aType) noexcept override;
+	void on(PrivateChatListener::Close, PrivateChat*) noexcept override;
 
-	void on(PrivateChatListener::CCPMStatusUpdated, PrivateChat* aChat) noexcept{
+	void on(PrivateChatListener::CCPMStatusUpdated, PrivateChat* aChat) noexcept override {
 		on(UserUpdated(), aChat);
 	}
 
-	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
+	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept override;
 
 	void handleNotifications(bool newWindow, const tstring& aMessage);
 	void updateStatusBar();
