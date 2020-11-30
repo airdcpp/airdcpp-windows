@@ -105,7 +105,7 @@ LRESULT AppearancePage::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	TCHAR buf[MAX_PATH];
 	const BrowseDlg::ExtensionList types[] = {
 		{ _T("Language Files"), _T("*.xml") },
-		{ _T("All Files"), _T("*.*") }
+		{ CTSTRING(ALL_FILES), _T("*.*") }
 	};
 
 	GetDlgItemText(IDC_LANGUAGE, buf, MAX_PATH);
@@ -128,6 +128,7 @@ LRESULT AppearancePage::onClickedTimeHelp(WORD /* wNotifyCode */, WORD /*wID*/, 
 }
 
 LRESULT AppearancePage::onClickedCountryHelp(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */) {
-	MessageBox(CTSTRING(SETTINGS_COUNTRY_FORMAT_HELP), CTSTRING(SETTINGS_COUNTRY_FORMAT_HELP_DESC), MB_OK | MB_ICONINFORMATION);
+	decltype(auto) defaultFormat = SettingsManager::getInstance()->getDefault(SettingsManager::COUNTRY_FORMAT);
+	MessageBox(CTSTRING_F(SETTINGS_COUNTRY_FORMAT_HELP, Text::toT(defaultFormat)), CTSTRING(SETTINGS_COUNTRY_FORMAT_HELP_DESC), MB_OK | MB_ICONINFORMATION);
 	return S_OK;
 }
