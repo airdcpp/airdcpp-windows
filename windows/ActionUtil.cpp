@@ -602,8 +602,9 @@ void ActionUtil::searchSite(const WebShortcut* ws, const string& aAdcSearchPath,
 void ActionUtil::viewLog(const string& aPath, bool aHistory /*false*/) {
 	if (aHistory) {
 		auto aText = LogManager::readFromEnd(aPath, SETTING(LOG_LINES), Util::convertSize(64, Util::KB));
-		if (!aText.empty())
-			TextFrame::viewText(Util::getFileName(aPath), aText, true, true);
+		if (!aText.empty()) {
+			TextFrame::viewText(Util::getFileName(aPath), aText, TextFrame::FileType::LOG);
+		}
 	} else if (SETTING(OPEN_LOGS_INTERNAL)) {
 		TextFrame::openFile(aPath);
 	} else {

@@ -27,9 +27,12 @@
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/ViewFileManager.h>
 
-//#define MAX_TEXT_LEN 32768
+
 string TextFrame::id = "TextFrame";
 TextFrame::FrameMap TextFrame::frames;
+
+#define MAX_FORMAT_TEXT_LEN 32768
+#define MAX_SIZE_MB 50
 
 string TextFrame::readFile(const string& aFilePath) noexcept {
 	string text;
@@ -38,7 +41,7 @@ string TextFrame::readFile(const string& aFilePath) noexcept {
 		auto aSize = File::getSize(aFilePath);
 		if (aSize == 0) {
 			throw FileException(STRING(CANT_OPEN_EMPTY_FILE));
-		} else if (aSize > Util::convertSize(50, Util::MB)) {
+		} else if (aSize > Util::convertSize(MAX_SIZE_MB, Util::MB)) {
 			throw FileException(STRING_F(VIEWED_FILE_TOO_BIG, aFilePath % Util::formatBytes(aSize)));
 		}
 
@@ -51,34 +54,35 @@ string TextFrame::readFile(const string& aFilePath) noexcept {
 	return text;
 }
 
-void TextFrame::openFile(const string& aFilePath) {
-	string aText = TextFrame::readFile(aFilePath);
-	if (aText.empty())
-		return;
+TextFrame::FileType TextFrame::parseFileType(const string& aName) noexcept {
+	auto ext = Util::getFileExt(aName);
+	if (ext == ".nfo") {
+		return FileType::NFO;
+	} else if (ext == ".log") {
+		return FileType::LOG;
+	}
 
-	auto frm = new TextFrame(Util::getFileName(aFilePath), aText);
-	frm->setNfo(Util::getFileExt(aFilePath) == ".nfo");
-	frm->openWindow();
+	return FileType::OTHER;
+}
+
+void TextFrame::openFile(const string& aFilePath) {
+	auto text = TextFrame::readFile(aFilePath);
+	viewText(Util::getFileName(aFilePath), text, parseFileType(aFilePath));
 }
 
 void TextFrame::openFile(const ViewFilePtr& aFile) {
-	string aText = TextFrame::readFile(aFile->getPath());
-	if (aText.empty())
-		return;
-
-	auto frm = new TextFrame(aFile->getFileName(), aText, aFile);
-	frm->setNfo(Util::getFileExt(aFile->getPath()) == ".nfo");
-	frm->openWindow();
+	auto text = TextFrame::readFile(aFile->getPath());
+	viewText(aFile->getFileName(), text, parseFileType(aFile->getPath()));
 }
 
-void TextFrame::viewText(const string& aTitle, const string& aText, bool aFormatText, bool aUseEmo) {
-	if (aText.empty())
-		return;
+TextFrame* TextFrame::viewText(const string& aTitle, const string& aText, FileType aType, const ViewFilePtr& aViewFile) {
+	if (aText.empty()) {
+		return nullptr;
+	}
 
-	auto frm = new TextFrame(aTitle, aText);
-	frm->setUseTextFormatting(aFormatText);
-	frm->setUseEmoticons(aUseEmo);
+	auto frm = new TextFrame(aTitle, aText, aType, aViewFile);
 	frm->openWindow();
+	return frm;
 }
 
 void TextFrame::openWindow() {
@@ -90,9 +94,7 @@ void TextFrame::openWindow() {
 	frames.emplace(this->m_hWnd, this);
 }
 
-TextFrame::TextFrame(const string& aTitle, const string& aText, const ViewFilePtr& aFile/*nullptr*/) : title(Text::toT(aTitle)), text(aText) {
-
-	viewFile = aFile;
+TextFrame::TextFrame(const string& aTitle, const string& aText, FileType aType, const ViewFilePtr& aFile/*nullptr*/) : title(Text::toT(aTitle)), text(aText), viewFile(aFile), type(aType) {
 	SettingsManager::getInstance()->addListener(this);
 
 	if(viewFile)
@@ -113,6 +115,14 @@ void TextFrame::on(ViewFileManagerListener::FileRead, const ViewFilePtr& aFile) 
 	}
 }
 
+bool TextFrame::useTextFormatting() const noexcept {
+	return text.length() < MAX_FORMAT_TEXT_LEN;
+}
+
+bool TextFrame::useEmoticons() const noexcept {
+	return type != FileType::NFO;
+}
+
 LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
 	ctrlPad.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
@@ -121,7 +131,7 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	ctrlPad.Subclass();
 	ctrlPad.LimitText(0);
 
-	if (getNfo()) {
+	if (type == FileType::NFO) {
 		setViewModeNfo();
 	} else {
 		ctrlPad.SetFont(WinUtil::font);
@@ -129,12 +139,12 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		ctrlPad.SetDefaultCharFormat(WinUtil::m_ChatTextGeneral);
 	}
 
-	if (getUseTextFormatting()) {
+	if (useTextFormatting()) {
 		ctrlPad.setFormatPaths(true);
 		ctrlPad.setFormatLinks(true);
 		ctrlPad.setFormatReleases(true);
 		tstring aText = Text::toT(text);
-		ctrlPad.AppendText(aText, getUseEmoticons());
+		ctrlPad.AppendText(aText, useEmoticons());
 	} else {
 		ctrlPad.SetWindowText(Text::toT(text).c_str());
 	}
@@ -181,9 +191,7 @@ void TextFrame::setViewModeNfo() {
 	ctrlPad.SetBackgroundColor(WinUtil::bgColor);
 	ctrlPad.SetDefaultCharFormat(cf);
 
-	setUseTextFormatting(true);
 	setAutoScroll(false);
-
 }
 
 LRESULT TextFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {

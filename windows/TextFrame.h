@@ -33,10 +33,16 @@
 class TextFrame : public MDITabChildWindowImpl<TextFrame>, private SettingsManagerListener, private ViewFileManagerListener
 {
 public:
+	enum class FileType {
+		NFO,
+		LOG,
+		OTHER,
+	};
 
 	static void openFile(const string& aFilePath);
 	static void openFile(const ViewFilePtr& aFile);
-	static void viewText(const string& aTitle, const string& aText, bool aFormatText, bool aUseEmo);
+	static TextFrame* viewText(const string& aTitle, const string& aText, FileType aType, const ViewFilePtr& aFile = nullptr);
+	static FileType parseFileType(const string& aName) noexcept;
 
 	static bool getWindowParams(HWND hWnd, StringMap&/*params*/) {
 		auto f = frames.find(hWnd);
@@ -49,7 +55,7 @@ public:
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("TextFrame"), IDR_NOTEPAD, 0, COLOR_3DFACE);
 
-	TextFrame(const string& aTitle, const string& aText, const ViewFilePtr& aFile = nullptr);
+	TextFrame(const string& aTitle, const string& aText, FileType aType, const ViewFilePtr& aFile);
 	~TextFrame() { }
 	
 	typedef MDITabChildWindowImpl<TextFrame> baseClass;
@@ -92,10 +98,11 @@ private:
 	tstring title;
 	string text;
 	RichTextBox ctrlPad;
+	const FileType type;
 
-	IGETSET(bool, nfo, Nfo, false);
-	IGETSET(bool, useTextFormatting, UseTextFormatting, false);
-	IGETSET(bool, useEmoticons, UseEmoticons, false);
+	bool useTextFormatting() const noexcept;
+	bool useEmoticons() const noexcept;
+
 	IGETSET(bool, autoScroll, AutoScroll, true);
 
 	void setViewModeNfo();
