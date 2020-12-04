@@ -12,6 +12,8 @@
 
 	<!-- 
 	ConfigPath specifies where settings, queue and other runtime data should be saved.
+	TempPath specifies the path for temp shared files, files opened in the application and other temporary data.
+
 	Relative paths are relative to the DC++ executable.
 	You may use the following variables, which are interpreted on a per-user basis:
 
@@ -22,6 +24,7 @@
 	http://msdn.microsoft.com/library/en-us/vclib/html/_crt_strftime.2c_.wcsftime.asp
 
 	<ConfigPath>.\</ConfigPath>
+	<TempPath>.\Temp\</TempPath>
 	-->
 
 </Boot>
