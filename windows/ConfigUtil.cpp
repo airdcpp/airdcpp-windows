@@ -155,6 +155,12 @@ void ConfigUtil::ConfigItem::addHelpText(HWND m_hWnd, CRect& rect_) noexcept {
 	ctrlHelp.MoveWindow(rect_);
 }
 
+bool ConfigUtil::StringConfigItem::write() {
+	auto val = SettingUtils::validateValue(Text::fromT(WinUtil::getEditText(ctrlEdit)), setting, nullptr);
+	setting.setValue(val);
+	return true;
+}
+
 void ConfigUtil::StringConfigItem::Create(HWND m_hWnd, RECT rcDefault) {
 	ctrlEdit.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | ES_AUTOHSCROLL, WS_EX_CLIENTEDGE);
 	ctrlEdit.SetFont(WinUtil::systemFont);
@@ -177,6 +183,13 @@ bool ConfigUtil::StringConfigItem::handleClick(HWND m_hWnd) {
 	}
 
 	return false;
+}
+
+
+bool ConfigUtil::BoolConfigItem::write() {
+	auto val = SettingUtils::validateValue((ctrlCheck.GetCheck() == 1), setting, nullptr);
+	setting.setValue(val);
+	return true;
 }
 
 void ConfigUtil::BoolConfigItem::Create(HWND m_hWnd, RECT rcDefault) {
@@ -265,6 +278,12 @@ bool ConfigUtil::BrowseConfigItem::handleClick(HWND m_hWnd) {
 		return true;
 	}
 	return false;
+}
+
+bool ConfigUtil::IntConfigItem::write() {
+	auto val = SettingUtils::validateValue(Util::toInt(Text::fromT(WinUtil::getEditText(ctrlEdit))), setting, nullptr);
+	setting.setValue(val);
+	return true;
 }
 
 void ConfigUtil::IntConfigItem::Create(HWND m_hWnd, RECT rcDefault) {

@@ -218,6 +218,8 @@ LRESULT ExtensionsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 			if (!ii->ext) {
 				menu.appendItem(TSTRING(INSTALL), [=] { installExtension(ii); }, hasDownload ? OMenu::FLAG_DISABLED : 0);
 			} else {
+				appendRemoteMenuItems({ ii }, menu);
+
 				if (ii->hasUpdate()) {
 					menu.appendItem(TSTRING(UPDATE), [=] { onUpdateExtension(ii); }, hasDownload ? OMenu::FLAG_DISABLED : 0);
 				}
@@ -230,7 +232,6 @@ LRESULT ExtensionsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 					menu.appendItem(TSTRING(OPEN_HOMEPAGE), [=] { onReadMore(ii); });
 				}
 
-				menu.appendSeparator();
 				appendLocalExtensionActions({ ii }, menu);
 			}
 
@@ -242,6 +243,7 @@ LRESULT ExtensionsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 				OMenu menu;
 				menu.CreatePopupMenu();
 				menu.InsertSeparatorFirst(TSTRING(EXTENSIONS));
+				appendRemoteMenuItems(localExtensions, menu);
 				appendLocalExtensionActions(localExtensions, menu);
 				menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 				return TRUE;
@@ -253,22 +255,23 @@ LRESULT ExtensionsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 }
 
 
-void ExtensionsFrame::appendLocalExtensionActions(const ItemInfoList& aItems, OMenu& menu_) noexcept {
-	{
-		StringList tokens;
-		for (const auto& ii: aItems) {
-			tokens.push_back(ii->getName());
-		}
-
-		EXT_CONTEXT_MENU(menu_, Extension, tokens);
+void ExtensionsFrame::appendRemoteMenuItems(const ItemInfoList& aItems, OMenu& menu_) noexcept {
+	StringList tokens;
+	for (const auto& ii : aItems) {
+		tokens.push_back(ii->getName());
 	}
 
-	menu_.appendSeparator();
+	EXT_CONTEXT_MENU(menu_, Extension, tokens);
+}
 
-
+void ExtensionsFrame::appendLocalExtensionActions(const ItemInfoList& aItems, OMenu& menu_) noexcept {
 	bool hasManagedExtensions = any_of(aItems.begin(), aItems.end(), [](const ItemInfo* ii) { return ii->ext->isManaged(); });
 	bool hasRunningExtensions = any_of(aItems.begin(), aItems.end(), [](const ItemInfo* ii) { return ii->ext->isManaged() && ii->ext->isRunning(); });
 	bool hasStoppedExtensions = any_of(aItems.begin(), aItems.end(), [](const ItemInfo* ii) { return ii->ext->isManaged() && !ii->ext->isRunning(); });
+
+	if (hasManagedExtensions && menu_.hasItems()) {
+		menu_.appendSeparator();
+	}
 
 	if (hasStoppedExtensions) {
 		menu_.appendItem(TSTRING(START), [=] {
@@ -359,6 +362,7 @@ LRESULT ExtensionsFrame::onClickedExtensionActions(WORD /*wNotifyCode*/, WORD /*
 
 	OMenu targetMenu;
 	targetMenu.CreatePopupMenu();
+	appendRemoteMenuItems(localExtensions, targetMenu);
 	appendLocalExtensionActions(localExtensions, targetMenu);
 	targetMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_VERPOSANIMATION, pt);
 	return 0;
@@ -469,14 +473,14 @@ void ExtensionsFrame::onConfigExtension(const ItemInfo* ii) noexcept {
 	auto settings = ii->ext->getSettings();
 
 	//use reference to setting item...
-	for (auto& s : settings) {
+	for (auto& s: settings) {
 		dlg.getPage()->addConfigItem(s);
 	}
-	webserver::SettingValueMap values;
+
 	if (dlg.DoModal() == IDOK) {
-		for (auto& s : settings) {
-			//if (s.getDefaultValue(). != s.getValue())
-				values.emplace(s.name, s.getValue());
+		webserver::SettingValueMap values;
+		for (const auto& s: settings) {
+			values.emplace(s.name, s.getValue());
 		}
 
 		UserList userReferences;

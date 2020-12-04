@@ -169,6 +169,8 @@ private:
 	static int columnIndexes[COLUMN_LAST];
 
 	void appendLocalExtensionActions(const ItemInfoList& aItems, OMenu& menu_) noexcept;
+	void appendRemoteMenuItems(const ItemInfoList& aItems, OMenu& menu_) noexcept;
+
 	ItemInfoList getSelectedLocalExtensions() noexcept;
 	void fixControls() noexcept;
 

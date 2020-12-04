@@ -85,11 +85,7 @@ public:
 		StringConfigItem(ExtensionSettingItem& aSetting) : ConfigItem(aSetting) {}
 
 		//todo handle errors
-		bool write() override {
-			auto val = SettingUtils::validateValue(Text::fromT(WinUtil::getEditText(ctrlEdit)), setting, nullptr);
-			setting.setValue(val);
-			return true;
-		}
+		bool write() override;
 
 		void Create(HWND m_hWnd, RECT rcDefault) override;
 		void updateLayout(HWND m_hWnd, CRect& rect_) override;
@@ -106,11 +102,7 @@ public:
 
 
 		//todo handle errors
-		bool write() override {
-			auto val = SettingUtils::validateValue((ctrlCheck.GetCheck() == 1), setting, nullptr);
-			setting.setValue(val);
-			return true;
-		}
+		bool write() override;
 
 		tstring valueToString() noexcept override;
 
@@ -141,11 +133,7 @@ public:
 		IntConfigItem(ExtensionSettingItem& aSetting) : ConfigItem(aSetting) {}
 
 		//todo handle errors
-		bool write() override {
-			auto val = SettingUtils::validateValue(Util::toInt(Text::fromT(WinUtil::getEditText(ctrlEdit))), setting, nullptr);
-			setting.setValue(val);
-			return true;
-		}
+		bool write() override;
 
 		void Create(HWND m_hWnd, RECT rcDefault) override;
 		void updateLayout(HWND m_hWnd, CRect& rect_) override;
