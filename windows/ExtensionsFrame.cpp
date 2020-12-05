@@ -22,6 +22,7 @@
 #include "DynamicDialogBase.h"
 #include "ExtensionsFrame.h"
 #include "HttpLinks.h"
+#include "LineDlg.h"
 #include "ResourceLoader.h"
 
 #include <semver/semver.hpp>
@@ -391,12 +392,25 @@ LRESULT ExtensionsFrame::onClickedSettings(WORD /*wNotifyCode*/, WORD /*wID*/, H
 
 	targetMenu.appendSeparator();
 
+	targetMenu.appendItem(CTSTRING(EXTENSIONS_INSTALL_URL), [=] {
+		installFromUrl();
+	});
+
 	targetMenu.appendItem(CTSTRING(EXTENSIONS_DEV_HELP), [=] {
 		ActionUtil::openLink(HttpLinks::extensionsDevHelp);
 	});
 
 	targetMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_VERPOSANIMATION, pt);
 	return 0;
+}
+
+void ExtensionsFrame::installFromUrl() noexcept {
+	LineDlg installDlg;
+	installDlg.title = CTSTRING(EXTENSIONS_INSTALL_URL);
+	if (installDlg.DoModal(m_hWnd) == IDOK) {
+		auto url = Text::fromT(installDlg.line);
+		getExtensionManager().downloadExtension(url, url, Util::emptyString);
+	}
 }
 
 LRESULT ExtensionsFrame::onExitMenuLoop(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {

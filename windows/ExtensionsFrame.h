@@ -177,6 +177,7 @@ private:
 	void initLocalExtensions() noexcept;
 	void updateList() noexcept;
 	void reload() noexcept;
+	void installFromUrl() noexcept;
 	void addEntry(const ItemInfo* ii) noexcept;
 	void updateEntry(const ItemInfo* ii) noexcept;
 
