@@ -23,7 +23,6 @@
 #include "DirectoryListingFrm.h"
 #include "DirectoryListingDlg.h"
 
-#include "LineDlg.h"
 #include "ListFilter.h"
 #include "MainFrm.h"
 #include "ResourceLoader.h"

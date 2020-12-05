@@ -22,7 +22,6 @@
 #include "DirectoryListingFrm.h"
 #include "MainFrm.h"
 #include "SearchFrm.h"
-#include "LineDlg.h"
 #include "BarShader.h"
 #include "ResourceLoader.h"
 #include "Wildcards.h"

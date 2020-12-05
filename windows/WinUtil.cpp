@@ -20,17 +20,20 @@
 #include "Resource.h"
 
 #include "WinUtil.h"
-#include "SystemUtil.h"
-#include "ResourceLoader.h"
-#include "MainFrm.h"
+
 #include "LineDlg.h"
+#include "MainFrm.h"
 #include "OMenu.h"
+#include "ResourceLoader.h"
+#include "SystemUtil.h"
 
 #include "BarShader.h"
 #include "BrowseDlg.h"
 #include "ExMessageBox.h"
 #include "SplashWindow.h"
 
+#include <airdcpp/AirUtil.h>
+#include <airdcpp/File.h>
 #include <airdcpp/LogManager.h>
 #include <airdcpp/ResourceManager.h>
 #include <airdcpp/ScopedFunctor.h>

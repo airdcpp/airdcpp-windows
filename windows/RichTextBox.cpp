@@ -39,7 +39,6 @@
 #include "HtmlToRtf.h"
 #include "HttpLinks.h"
 #include "HubFrame.h"
-#include "LineDlg.h"
 #include "MainFrm.h"
 #include "PrivateFrame.h"
 #include "ResourceLoader.h"

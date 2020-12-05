@@ -20,7 +20,6 @@
 #include "Resource.h"
 
 #include "DownloadingOptionsPage.h"
-#include "LineDlg.h"
 
 #include "WinUtil.h"
 #include "PropertiesDlg.h"

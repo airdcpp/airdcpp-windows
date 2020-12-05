@@ -22,13 +22,11 @@
 #include "resource.h"
 
 #include <airdcpp/DupeType.h>
-#include <airdcpp/HintedUser.h>
 #include <airdcpp/MerkleTree.h>
 #include <airdcpp/QueueItemBase.h>
 #include <airdcpp/SettingItem.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/User.h>
-#include <airdcpp/Util.h>
 
 
 namespace dcpp {

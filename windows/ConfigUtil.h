@@ -21,10 +21,7 @@
 #ifndef CONFIG_UTIL_H
 #define CONFIG_UTIL_H
 
-#include <api/ExtensionInfo.h>
-#include <api/common/Serializer.h>
-#include <api/common/SettingUtils.h>
-#include <web-server/JsonUtil.h>
+#include <web-server/ApiSettingItem.h>
 
 #include "WinUtil.h"
 

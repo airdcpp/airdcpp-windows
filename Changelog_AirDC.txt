@@ -7,6 +7,7 @@ Added:
 - Add labels for event log messages
 - Allow changing web server bind addresses from the settings, show a link to the Web UI
 - Add an option to show user IP and country in chat (RoLex)
+- Allow setting a custom temp file path via dcppboot.xml
 
 Changed:
 
