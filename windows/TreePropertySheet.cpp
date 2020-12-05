@@ -19,9 +19,10 @@
 #include "stdafx.h"
 
 #include "TreePropertySheet.h"
-#include <airdcpp/ResourceManager.h>
-#include "WinUtil.h"
 #include "ResourceLoader.h"
+
+#include <airdcpp/ResourceManager.h>
+
 
 static const TCHAR SEPARATOR = _T('\\');
 

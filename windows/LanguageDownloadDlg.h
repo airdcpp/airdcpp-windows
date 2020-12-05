@@ -22,7 +22,6 @@
 #include "Async.h"
 #include "stdafx.h"
 #include "resource.h"
-#include "WinUtil.h"
 
 #include <atldlgs.h>
 

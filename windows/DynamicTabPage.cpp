@@ -20,7 +20,8 @@
 #include "Resource.h"
 
 #include "DynamicTabPage.h"
-#include "WinUtil.h"
+
+#include <airdcpp/Text.h>
 
 
 DynamicTabPage::DynamicTabPage()

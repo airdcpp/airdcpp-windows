@@ -23,7 +23,7 @@
 
 #include <web-server/ApiSettingItem.h>
 
-#include "WinUtil.h"
+#include <airdcpp/typedefs.h>
 
 using namespace webserver;
 

@@ -20,8 +20,6 @@
 #include "Resource.h"
 
 #include "DynamicDialogBase.h"
-// #include "MainFrm.h"
-// #include "WinUtil.h"
 
 
 DynamicDialogBase::DynamicDialogBase(const tstring& aName) : name(aName) {

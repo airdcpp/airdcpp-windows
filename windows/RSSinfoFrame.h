@@ -25,7 +25,6 @@
 
 #include "Async.h"
 #include "StaticFrame.h"
-#include "WinUtil.h"
 #include "FilteredListViewCtrl.h"
 #include "RssFeedsPage.h"
 #include "TabbedDialog.h"

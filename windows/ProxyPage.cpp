@@ -19,12 +19,10 @@
 #include "stdafx.h"
 
 #include <airdcpp/SettingsManager.h>
-#include <airdcpp/AirUtil.h>
 #include <airdcpp/Socket.h>
 
 #include "Resource.h"
 #include "ProxyPage.h"
-#include "WinUtil.h"
 
 ProxyPage::ProxyPage(SettingsManager *s) : PropPage(s) {
 	title = _tcsdup((TSTRING(SETTINGS_NETWORK) + _T('\\') + TSTRING(PROXIES)).c_str());

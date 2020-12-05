@@ -20,7 +20,6 @@
 
 #include "Resource.h"
 #include "AppearancePage.h"
-#include "WinUtil.h"
 #include "PropertiesDlg.h"
 #include "BrowseDlg.h"
 

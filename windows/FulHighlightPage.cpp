@@ -27,7 +27,6 @@
 #include "Resource.h"
 #include "FulHighlightPage.h"
 #include "FulHighlightDialog.h"
-#include "WinUtil.h"
 #include "PropertiesDlg.h"
 
 PropPage::TextItem FulHighlightPage::texts[] = {

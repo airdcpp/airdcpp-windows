@@ -26,7 +26,6 @@
 #include <airdcpp/UploadManager.h>
 #include <airdcpp/QueueManager.h>
 
-#include <airdcpp/AirUtil.h>
 #include <airdcpp/Download.h>
 #include <airdcpp/QueueItem.h>
 #include <airdcpp/UploadBundle.h>

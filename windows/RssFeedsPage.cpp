@@ -20,7 +20,6 @@
 #include "Resource.h"
 #include "WinUtil.h"
 #include "RssFeedsPage.h"
-#include "BrowseDlg.h"
 
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/ResourceManager.h>

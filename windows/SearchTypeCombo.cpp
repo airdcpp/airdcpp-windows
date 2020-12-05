@@ -18,9 +18,9 @@
 
 #include "stdafx.h"
 
-#include "WinUtil.h"
 #include "SearchTypeCombo.h"
 #include "ResourceLoader.h"
+
 #include <airdcpp/SearchManager.h>
 
 

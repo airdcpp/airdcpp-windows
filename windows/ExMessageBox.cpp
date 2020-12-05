@@ -21,7 +21,6 @@
 #include "stdafx.h"
 
 #include "ExMessageBox.h"
-#include "WinUtil.h"
 
 ExMessageBox::MessageBoxValues ExMessageBox::mbv = {0};
 

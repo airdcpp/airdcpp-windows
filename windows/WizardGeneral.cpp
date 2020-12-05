@@ -21,7 +21,6 @@
 #include "WizardGeneral.h"
 #include "WinUtil.h"
 
-#include <airdcpp/AirUtil.h>
 #include <airdcpp/Localization.h>
 
 PropPage::TextItem WizardGeneral::texts[] = {

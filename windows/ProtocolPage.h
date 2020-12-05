@@ -24,7 +24,6 @@
 #include "Async.h"
 #include "PropPage.h"
 
-#include <airdcpp/AirUtil.h>
 #include <airdcpp/ConnectivityManager.h>
 #include <airdcpp/UpdateManagerListener.h>
 

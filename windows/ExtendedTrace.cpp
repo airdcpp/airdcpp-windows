@@ -20,7 +20,6 @@
 #if defined(_WIN32)
 
 #include <airdcpp/File.h>
-#include "WinUtil.h"
 
 #include <tchar.h>
 #include <DbgHelp.h>

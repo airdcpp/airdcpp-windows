@@ -18,7 +18,6 @@
 
 #include "stdafx.h"
 #include "Resource.h"
-#include "WinUtil.h"
 
 #include "FavHubOptionsPage.h"
 

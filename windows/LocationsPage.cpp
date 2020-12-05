@@ -23,12 +23,10 @@
 #include <airdcpp/Util.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/FavoriteManager.h>
-#include <airdcpp/AirUtil.h>
 
 #include "BrowseDlg.h"
 #include "Resource.h"
 #include "LocationsPage.h"
-#include "WinUtil.h"
 #include "LineDlg.h"
 
 

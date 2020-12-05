@@ -16,7 +16,6 @@ Copyright (c) 1999 - 2003 by PJ Naughter.  (Web: www.naughter.com, Email: pjna@n
 
 #include "LineDlg.h"
 #include "ShareDirectories.h"
-#include "WinUtil.h"
 
 #include <airdcpp/ResourceManager.h>
 #include <airdcpp/Util.h>

@@ -20,7 +20,8 @@
 
 #include "BrowseDlg.h"
 
-#include "WinUtil.h"
+#include <airdcpp/Text.h>
+#include <airdcpp/Util.h>
 
 
 const GUID BrowseDlg::browseGuids[TYPE_LAST] = {

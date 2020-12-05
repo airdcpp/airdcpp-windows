@@ -23,7 +23,6 @@
 #include "Resource.h"
 #include "UCPage.h"
 #include "CommandDlg.h"
-#include "WinUtil.h"
 
 PropPage::TextItem UCPage::texts[] = {
 	{ IDC_MOVE_UP, ResourceManager::MOVE_UP },

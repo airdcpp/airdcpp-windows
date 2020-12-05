@@ -21,7 +21,6 @@
 
 #include "SharingOptionsPage.h"
 
-#include "WinUtil.h"
 #include "PropertiesDlg.h"
 
 #include <airdcpp/ShareManager.h>

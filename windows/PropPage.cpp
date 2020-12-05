@@ -22,7 +22,6 @@
 
 #include "Resource.h"
 #include "PropPage.h"
-#include "WinUtil.h"
 
 #define SETTING_STR_MAXLEN 1024
 

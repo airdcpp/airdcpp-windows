@@ -28,7 +28,6 @@
 #include "SystemUtil.h"
 
 #include "BarShader.h"
-#include "BrowseDlg.h"
 #include "ExMessageBox.h"
 #include "SplashWindow.h"
 
