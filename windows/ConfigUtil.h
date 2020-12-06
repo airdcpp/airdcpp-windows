@@ -28,6 +28,10 @@
 using namespace webserver;
 
 class ConfigUtil {
+
+#define MAX_TEXT_WIDTH 400
+#define MARGIN_LEFT 20
+
 public:
 
 	class ConfigItem {
@@ -59,18 +63,19 @@ public:
 
 		int getParentRightEdge(HWND m_hWnd);
 
-		static int calculateTextRows(const tstring& aText, HWND m_hWndControl) noexcept;
+		static int calculateTextRows(const tstring& aText, HWND m_hWndControl, int aMaxWidth = MAX_TEXT_WIDTH) noexcept;
 	protected:
 		virtual void Create(HWND m_hWnd, RECT rcDefault) = 0;
 		virtual void updateLayout(HWND m_hWnd, CRect& rect_) = 0;
-	private:
-		CRect calculateItemPosition(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing);
-
-		void addLabel(HWND m_hWnd, CRect& rect_) noexcept;
-		void addHelpText(HWND m_hWnd, CRect& rect_) noexcept;
 
 		CStatic ctrlLabel;
 		CStatic ctrlHelp;
+
+		void addLabel(HWND m_hWnd, CRect& rect_) noexcept;
+		void addHelpText(HWND m_hWnd, CRect& rect_) noexcept;
+	private:
+		CRect calculateItemPosition(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing);
+
 		const int flags;
 	};
 

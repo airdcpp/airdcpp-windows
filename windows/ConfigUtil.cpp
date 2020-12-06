@@ -32,9 +32,6 @@
 
 using namespace webserver;
 
-#define MAX_TEXT_WIDTH 420
-#define MARGIN_LEFT 20
-
 shared_ptr<ConfigUtil::ConfigItem> ConfigUtil::getConfigItem(ExtensionSettingItem& aSetting) {
 	auto aType = aSetting.type;
 
@@ -91,13 +88,13 @@ void ConfigUtil::ConfigItem::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lPa
 	}
 }
 
-int ConfigUtil::ConfigItem::calculateTextRows(const tstring& aText, HWND m_hWndControl) noexcept {
+int ConfigUtil::ConfigItem::calculateTextRows(const tstring& aText, HWND m_hWndControl, int aMaxWidth) noexcept {
 	const auto width = WinUtil::getTextWidth(aText, m_hWndControl);
-	if (width <= MAX_TEXT_WIDTH) {
+	if (width <= aMaxWidth) {
 		return 1;
 	}
 
-	const auto rows = std::ceil(static_cast<double>(width) / static_cast<double>(MAX_TEXT_WIDTH));
+	const auto rows = std::ceil(static_cast<double>(width) / static_cast<double>(aMaxWidth));
 	return rows;
 }
 
@@ -145,7 +142,7 @@ int ConfigUtil::ConfigItem::updateLayout(HWND m_hWnd, int aPrevConfigBottomMargi
 }
 
 void ConfigUtil::ConfigItem::addLabel(HWND /*m_hWnd*/, CRect& rect_) noexcept {
-	rect_.right = rect_.left + WinUtil::getTextWidth(Text::toT(getLabel()), ctrlLabel.m_hWnd) + 1;
+	rect_.right = rect_.left + min(WinUtil::getTextWidth(Text::toT(getLabel()), ctrlLabel.m_hWnd) + 1, MAX_TEXT_WIDTH);
 	ctrlLabel.MoveWindow(rect_);
 }
 
@@ -178,7 +175,7 @@ void ConfigUtil::StringConfigItem::updateLayout(HWND m_hWnd, CRect& rc) {
 	//CEdit
 	rc.top = rc.bottom + 2;
 	rc.bottom = rc.top + max(WinUtil::getTextHeight(m_hWnd, WinUtil::systemFont) + 5, 22);
-	rc.right = MAX_TEXT_WIDTH;
+	rc.right = rc.left + MAX_TEXT_WIDTH;
 	ctrlEdit.MoveWindow(rc);
 }
 
@@ -204,7 +201,6 @@ void ConfigUtil::BoolConfigItem::Create(HWND m_hWnd, RECT rcDefault) {
 	ctrlCheck.SetWindowText(Text::toT(getLabel()).c_str());
 
 	ctrlCheck.SetCheck(JsonUtil::parseValue<bool>(setting.name, setting.getValue()));
-
 }
 
 void ConfigUtil::BoolConfigItem::updateLayout(HWND /*m_hWnd*/, CRect& rc) {
@@ -304,17 +300,31 @@ void ConfigUtil::IntConfigItem::Create(HWND m_hWnd, RECT rcDefault) {
 }
 
 void ConfigUtil::IntConfigItem::updateLayout(HWND m_hWnd, CRect& rc) {
-	rc.top = rc.bottom + 2;
+	auto labelWidth = WinUtil::getTextWidth(Text::toT(getLabel()), ctrlLabel.m_hWnd);
+	auto valueWidth = max(WinUtil::getTextWidth(Text::toT(Util::toString(setting.getMinMax().max)), ctrlEdit.m_hWnd), 30);
+	auto spinWidth = 20;
+
+	// Adjust the label if the text is really long so that the value will fit
+	if (labelWidth + valueWidth > MAX_TEXT_WIDTH) {
+		rc.right = rc.left + MAX_TEXT_WIDTH - valueWidth - spinWidth;
+
+		const auto rows = calculateTextRows(Text::toT(getLabel()), ctrlLabel.m_hWnd, MAX_TEXT_WIDTH - valueWidth - spinWidth);
+		rc.bottom = rc.top + WinUtil::getTextHeight(m_hWnd, WinUtil::systemFont) * rows;
+
+		ctrlLabel.MoveWindow(rc);
+	}
 
 	//CEdit
-	rc.right = rc.left + max(WinUtil::getTextWidth(Text::toT(Util::toString(setting.getMinMax().max)), ctrlEdit.m_hWnd), 30);
+	rc.right = rc.left + MAX_TEXT_WIDTH - spinWidth;
+	rc.left = rc.right - valueWidth;
 	int height = max(WinUtil::getTextHeight(m_hWnd, WinUtil::systemFont) + 5, 22);
+	rc.top = rc.bottom - (rc.bottom - rc.top) / 2 - height / 2;
 	rc.bottom = rc.top + height;
 	ctrlEdit.MoveWindow(rc);
 
 	//spin
 	rc.left = rc.right - 1;
-	rc.right += 20;
+	rc.right += spinWidth;
 	spin.MoveWindow(rc);
 }
 
