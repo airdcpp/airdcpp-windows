@@ -1,13 +1,13 @@
 # 
 # Translators:
-# Kaas Hub, 2015-2017
+# Kaas Hub, 2015-2017,2020
 # Sopor, 2016
 msgid ""
 msgstr ""
 "Project-Id-Version: AirDC++\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-03-24 21:02\n"
-"PO-Revision-Date: 2017-03-24 20:13+0000\n"
+"POT-Creation-Date: 2020-11-12 19:38\n"
+"PO-Revision-Date: 2020-11-13 18:21+0000\n"
 "Last-Translator: Kaas Hub\n"
 "Language-Team: Dutch (Netherlands) (http://www.transifex.com/airdcpp/airdcpp/language/nl_NL/)\n"
 "MIME-Version: 1.0\n"
@@ -104,33 +104,38 @@ msgstr "(alleen verwijderen)"
 msgid "Default emoticon pack"
 msgstr "Standaard emoticons pakket"
 
-#. SecThemes
+#. SecNode
 #: AirDC_installscript.nsi:107
+msgid "Default extension engine (node.js)"
+msgstr "Standaard plugin engine (node.js)"
+
+#. SecThemes
+#: AirDC_installscript.nsi:108
 msgid "Themes"
 msgstr "Thema's"
 
 #. SecWebResources
-#: AirDC_installscript.nsi:108
+#: AirDC_installscript.nsi:109
 msgid "Web user interface"
 msgstr "Web gebruikers omgeving"
 
 #. SecStore
-#: AirDC_installscript.nsi:109
+#: AirDC_installscript.nsi:110
 msgid "Store settings in the user profile directory"
 msgstr "Sla instellingen op in de gebruikers profiel map"
 
 #. DeskShort
-#: AirDC_installscript.nsi:110
+#: AirDC_installscript.nsi:111
 msgid "Desktop shortcut"
 msgstr "Bureaublad snelkoppeling"
 
 #. SecInstall32
-#: AirDC_installscript.nsi:111
+#: AirDC_installscript.nsi:112
 msgid "Install the 32-bit version"
 msgstr "Installeer de 32-bit versie"
 
 #. XPOrOlder
-#: AirDC_installscript.nsi:112
+#: AirDC_installscript.nsi:113
 msgid ""
 "If you want to keep your settings in the program directory, make sure that "
 "you DO NOT install AirDC++ to the 'Program files' folder!!! This can lead to"
@@ -138,56 +143,61 @@ msgid ""
 msgstr "Als je je instellingen wilt behouden in de huidige AirDC++ map, zorg dan dat je AirDC++ NIET installeerd in de Program Files map!!! Dit kan leiden tot abnormaal gedrag zoals verlies van instellingen of downloads!"
 
 #. OsUnsupported
-#: AirDC_installscript.nsi:113
+#: AirDC_installscript.nsi:114
 msgid ""
 "This application is compatible with Windows 7 SP1 or newer operating systems"
 " only. The installer will now exit."
 msgstr "Deze applicatie is compatible met Windows 7 SP1 of nieuwer. De installer zal nu sluiten."
 
 #. ^UninstallText
-#: AirDC_installscript.nsi:114
+#: AirDC_installscript.nsi:115
 msgid "This will uninstall AirDC++. Hit the Uninstall button to continue."
 msgstr "Dit zal AirDC++ verwijderen, klik op de Verwijder knop om door te gaan."
 
 #. RemoveQueue
-#: AirDC_installscript.nsi:115
+#: AirDC_installscript.nsi:116
 msgid "Do you also want to remove queue, themes and all settings?"
 msgstr "Wil je ook je queue, thema's en alle instellingen verwijderen?"
 
 #. NotEmpty
-#: AirDC_installscript.nsi:116
+#: AirDC_installscript.nsi:117
 msgid "Installation directory is NOT empty. Do you still want to remove it?"
 msgstr "Installatie map is NIET leeg. Weet je zeker dat je hem wilt verwijderen?"
 
 #. DESC_dcpp
-#: AirDC_installscript.nsi:117
+#: AirDC_installscript.nsi:118
 msgid "AirDC++ main program."
 msgstr "AirDC++ hoofd programma."
 
 #. DESC_StartMenu
-#: AirDC_installscript.nsi:118
+#: AirDC_installscript.nsi:119
 msgid "A shortcut of AirDC++ will be placed in your start menu."
 msgstr "Een snelkoppeling naar AirDC++ zal in het start menu geplaatst worden."
 
 #. DESC_Emopack
-#: AirDC_installscript.nsi:119
+#: AirDC_installscript.nsi:120
 msgid "Display emoticons as images in chat windows."
 msgstr "Geef emoticons weer als afbeelding in chat schermen."
 
+#. DESC_Node
+#: AirDC_installscript.nsi:121
+msgid "Allows installing and running third-party extensions."
+msgstr "Sta toe om third-party plugings te installeren en draaien."
+
 #. DESC_Themes
-#: AirDC_installscript.nsi:120
+#: AirDC_installscript.nsi:122
 msgid ""
 "If you don't like the default theme you can try these two extra themes, Dark"
 " Skull and Zoolution."
 msgstr "Als het standaard thema niet bevalt, kan je een van de twee extra thema's proberen, Dark Skull of Zoolution."
 
 #. DESC_WebResorces
-#: AirDC_installscript.nsi:121
+#: AirDC_installscript.nsi:123
 msgid "Allows accessing the client from other devices via a web browser."
 msgstr "Staat benadering van de client vanaf andere apparaten viabrowsers toe."
 
 #. DESC_loc
-#: AirDC_installscript.nsi:122
+#: AirDC_installscript.nsi:124
 msgid ""
 "Normally you should not change this because it can lead to abnormal "
 "behaviour like loss of settings or downloads. If you unselect it, read the "
@@ -195,12 +205,12 @@ msgid ""
 msgstr "Normaal moet je dit niet aanpassen omdat het kan leiden tot abnormaal gedrag zoals verlies van instellingen of downloads. Als je het uitvinkt, lees dan de waarschuwing aandachtig."
 
 #. DESC_desk
-#: AirDC_installscript.nsi:123
+#: AirDC_installscript.nsi:125
 msgid "Do you often run AirDC++? Then this is definitely something for you!"
 msgstr "Gebruik je AirDC++ vaak? Dan is dit zeker iets voor je!"
 
 #. DESC_arch
-#: AirDC_installscript.nsi:124
+#: AirDC_installscript.nsi:126
 msgid ""
 "If you want to use the 32-bits version of AirDC++ on your 64-bits operating "
 "system you need to select this. If this is selected and grayed out you can "
