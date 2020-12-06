@@ -304,12 +304,11 @@ void ConfigUtil::IntConfigItem::Create(HWND m_hWnd, RECT rcDefault) {
 }
 
 void ConfigUtil::IntConfigItem::updateLayout(HWND m_hWnd, CRect& rc) {
-	rc.left = rc.right;
+	rc.top = rc.bottom + 2;
 
 	//CEdit
 	rc.right = rc.left + max(WinUtil::getTextWidth(Text::toT(Util::toString(setting.getMinMax().max)), ctrlEdit.m_hWnd), 30);
 	int height = max(WinUtil::getTextHeight(m_hWnd, WinUtil::systemFont) + 5, 22);
-	rc.top = rc.bottom - (rc.bottom - rc.top) / 2 - height / 2;
 	rc.bottom = rc.top + height;
 	ctrlEdit.MoveWindow(rc);
 
