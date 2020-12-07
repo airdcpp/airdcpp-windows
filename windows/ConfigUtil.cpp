@@ -362,6 +362,9 @@ void ConfigUtil::EnumConfigItem::updateLayout(HWND m_hWnd, CRect& rc) {
 	//CComboBox
 	rc.top = rc.bottom + 2;
 	rc.bottom = rc.top + max(WinUtil::getTextHeight(m_hWnd, WinUtil::systemFont) + 5, 22);
+
+	rc.right = rc.left + MAX_TEXT_WIDTH;
+
 	ctrlSelect.MoveWindow(rc);
 }
 
