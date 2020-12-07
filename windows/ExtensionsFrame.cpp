@@ -817,8 +817,8 @@ void ExtensionsFrame::on(webserver::ExtensionManagerListener::InstallationStarte
 	});*/
 }
 
-void ExtensionsFrame::on(webserver::ExtensionManagerListener::InstallationFailed, const string& /*aInstallId*/, const string& aError) noexcept {
-	updateStatusAsync(TSTRING_F(WEB_EXTENSION_INSTALLATION_FAILED, Text::toT(aError)), LogMessage::SEV_ERROR);
+void ExtensionsFrame::on(webserver::ExtensionManagerListener::InstallationFailed, const string& aInstallId, const string& aError) noexcept {
+	updateStatusAsync(TSTRING_F(WEB_EXTENSION_INSTALLATION_FAILED, Text::toT(aInstallId) % Text::toT(aError)), LogMessage::SEV_ERROR);
 }
 
 const tstring ExtensionsFrame::ItemInfo::getText(int col) const {

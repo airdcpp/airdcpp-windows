@@ -438,3 +438,12 @@ bool ConfigUtil::WebConfigItem::handleClick(HWND m_hWnd) {
 bool ConfigUtil::WebConfigItem::write() {
 	return true;
 }
+
+void ConfigUtil::WebConfigItem::onCtlColor(UINT uMsg, WPARAM wParam, LPARAM lParam) {
+	if ((HWND)lParam == ctrlValue.m_hWnd) {
+		HDC hDC = (HDC)wParam;
+		::SetTextColor(hDC, RGB(104, 104, 104)); // grey
+	}
+
+	ConfigItem::onCtlColor(uMsg, wParam, lParam);
+}

@@ -1,5 +1,9 @@
 4.00
 
+API and Web UI changes:
+
+- https://airdcpp-web.github.io/2020/12/05/version-2.10.0.html
+
 Added:
 
 - Extension tab for installing and managing extensions
