@@ -669,8 +669,8 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		ctrlStatus.GetClientRect(sr);
 
 		int w[STATUS_LAST];
-		int desclen = WinUtil::getTextWidth(TSTRING(SEND_PM_VIA), ctrlStatus.m_hWnd) +2;
-		int desclen2 = WinUtil::getTextWidth(TSTRING(DIRECT_ENCRYPTED_CHANNEL), ctrlStatus.m_hWnd) +2;
+		int desclen = WinUtil::getStatusTextWidth(TSTRING(SEND_PM_VIA), ctrlStatus.m_hWnd) +2;
+		int desclen2 = WinUtil::getStatusTextWidth(TSTRING(DIRECT_ENCRYPTED_CHANNEL), ctrlStatus.m_hWnd) +2;
 		const int status_away_size = 22;
 		const int status_country_size = 32;
 

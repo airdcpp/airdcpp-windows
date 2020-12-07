@@ -1075,6 +1075,73 @@ int WinUtil::setButtonPressed(int nID, bool bPressed /* = true */) {
 	return 0;
 }
 
+tstring WinUtil::escapeMenu(tstring str) {
+	string::size_type i = 0;
+	while ((i = str.find(_T('&'), i)) != string::npos) {
+		str.insert(str.begin() + i, 1, _T('&'));
+		i += 2;
+	}
+	return str;
+}
+
+void WinUtil::translate(HWND page, TextItem* textItems) {
+	if (textItems != NULL) {
+		for (int i = 0; textItems[i].itemID != 0; i++) {
+			::SetDlgItemText(page, textItems[i].itemID,
+				Text::toT(ResourceManager::getInstance()->getString(textItems[i].translatedString)).c_str());
+		}
+	}
+}
+
+int WinUtil::getStatusTextWidth(const tstring& aStr, HWND hWnd) {
+	auto width = getTextWidth(aStr, hWnd);
+	return (width == 0) ? 0 : (width + 10); // Status bar adds an extra margin
+}
+
+int WinUtil::getTextWidth(const tstring& aStr, HWND hWnd) {
+	HDC dc = ::GetDC(hWnd);
+	HFONT hFont = (HFONT)SendMessage(hWnd, WM_GETFONT, 0, 0);
+	HGDIOBJ old = ::SelectObject(dc, hFont);
+
+	SIZE sz = { 0, 0 };
+	::GetTextExtentPoint32(dc, aStr.c_str(), aStr.length(), &sz);
+	::SelectObject(dc, old);
+	::ReleaseDC(mainWnd, dc);
+
+	return sz.cx;
+}
+
+int WinUtil::getTextWidth(const tstring& aStr, HDC dc) {
+	SIZE sz = { 0, 0 };
+	::GetTextExtentPoint32(dc, aStr.c_str(), aStr.length(), &sz);
+	return sz.cx;
+}
+
+int WinUtil::getTextWidth(HWND wnd, HFONT fnt) {
+	HDC dc = ::GetDC(wnd);
+	HGDIOBJ old = ::SelectObject(dc, fnt);
+	TEXTMETRIC tm;
+	::GetTextMetrics(dc, &tm);
+	::SelectObject(dc, old);
+	::ReleaseDC(wnd, dc);
+	return tm.tmAveCharWidth;
+}
+
+int WinUtil::getTextHeight(HWND wnd, HFONT fnt) {
+	HDC dc = ::GetDC(wnd);
+	HGDIOBJ old = ::SelectObject(dc, fnt);
+	int h = getTextHeight(dc);
+	::SelectObject(dc, old);
+	::ReleaseDC(wnd, dc);
+	return h;
+}
+
+int WinUtil::getTextHeight(HDC dc) {
+	TEXTMETRIC tm;
+	::GetTextMetrics(dc, &tm);
+	return tm.tmHeight;
+}
+
 void WinUtil::drawProgressBar(HDC& drawDC, CRect& rc, COLORREF clr, COLORREF textclr, COLORREF backclr, const tstring& aText, 
 	double size, double done, bool odcStyle, bool colorOverride, int depth, int lighten, DWORD tAlign/*DT_LEFT*/) {
 	// fixes issues with double border

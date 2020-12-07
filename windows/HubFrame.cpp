@@ -1341,7 +1341,7 @@ void HubFrame::updateStatusBar() {
 
 	bool update = false;
 	for(int i = 0; i < 3; i++) {
-		int size = WinUtil::getTextWidth(text[i], ctrlStatus.m_hWnd);
+		int size = WinUtil::getStatusTextWidth(text[i], ctrlStatus.m_hWnd);
 		if(size != statusSizes[i + 1]) {
 			statusSizes[i + 1] = size;
 			update = true;

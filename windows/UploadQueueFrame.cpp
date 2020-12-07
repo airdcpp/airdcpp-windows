@@ -374,7 +374,7 @@ void UploadQueueFrame::updateStatus() {
 		bool u = false;
 
 		for(int i = 1; i < 3; i++) {
-			int w = WinUtil::getTextWidth(tmp[i-1], ctrlStatus.m_hWnd);
+			int w = WinUtil::getStatusTextWidth(tmp[i-1], ctrlStatus.m_hWnd);
 				
 			if(statusSizes[i] < w) {
 				statusSizes[i] = w + 50;

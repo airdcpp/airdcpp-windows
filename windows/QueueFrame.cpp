@@ -1357,7 +1357,7 @@ void QueueFrame::updateStatus() {
 			}
 
 			tstring tmp = TSTRING(FINISHED_BUNDLES) + _T(": ") + Util::toStringW(finishedBundles);
-			int w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
+			int w = WinUtil::getStatusTextWidth(tmp, ctrlStatus.m_hWnd);
 			if (statusSizes[1] < w) {
 				statusSizes[1] = w;
 				u = true;
@@ -1365,7 +1365,7 @@ void QueueFrame::updateStatus() {
 			ctrlStatus.SetText(2, (tmp).c_str());
 
 			tmp = TSTRING(QUEUED_BUNDLES) + _T(": ") + Util::toStringW(queuedBundles);
-			w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
+			w = WinUtil::getStatusTextWidth(tmp, ctrlStatus.m_hWnd);
 			if (statusSizes[2] < w) {
 				statusSizes[2] = w;
 				u = true;
@@ -1373,7 +1373,7 @@ void QueueFrame::updateStatus() {
 			ctrlStatus.SetText(3, (tmp).c_str());
 
 			tmp = TSTRING_F(TOTAL_FILES, totalItems);
-			w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
+			w = WinUtil::getStatusTextWidth(tmp, ctrlStatus.m_hWnd);
 			if (statusSizes[3] < w) {
 				statusSizes[3] = w;
 				u = true;

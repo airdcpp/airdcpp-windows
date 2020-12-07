@@ -554,7 +554,7 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	
 	memzero(statusSizes, sizeof(statusSizes));
 
-	int desclen = WinUtil::getTextWidth(getComboDesc(), ctrlStatus.m_hWnd);
+	int desclen = WinUtil::getStatusTextWidth(getComboDesc(), ctrlStatus.m_hWnd);
 	statusSizes[STATUS_HUB] = 180 + desclen;
 
 	ctrlStatus.SetParts(STATUS_LAST, statusSizes);
@@ -912,7 +912,7 @@ void DirectoryListingFrame::updateStatusText(int aTotalCount, int64_t aTotalSize
 	}
 	bool u = false;
 
-	int w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
+	int w = WinUtil::getStatusTextWidth(tmp, ctrlStatus.m_hWnd);
 	if (statusSizes[STATUS_SELECTED_FILES] < w) {
 		statusSizes[STATUS_SELECTED_FILES] = w;
 		u = true;
@@ -920,7 +920,7 @@ void DirectoryListingFrame::updateStatusText(int aTotalCount, int64_t aTotalSize
 	ctrlStatus.SetText(STATUS_SELECTED_FILES, tmp.c_str());
 
 	tmp = TSTRING(SIZE) + _T(": ") + Util::formatBytesW(aTotalSize);
-	w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
+	w = WinUtil::getStatusTextWidth(tmp, ctrlStatus.m_hWnd);
 	if (statusSizes[STATUS_SELECTED_SIZE] < w) {
 		statusSizes[STATUS_SELECTED_SIZE] = w;
 		u = true;
@@ -928,7 +928,7 @@ void DirectoryListingFrame::updateStatusText(int aTotalCount, int64_t aTotalSize
 	ctrlStatus.SetText(STATUS_SELECTED_SIZE, tmp.c_str());
 
 	tmp = aUpdateDate > 0 ? TSTRING_F(UPDATED_ON_X, Text::toT(Util::formatTime("%c", aUpdateDate))) : Util::emptyStringT;
-	w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
+	w = WinUtil::getStatusTextWidth(tmp, ctrlStatus.m_hWnd);
 	if (statusSizes[STATUS_UPDATED] < w) {
 		statusSizes[STATUS_UPDATED] = w;
 		u = true;
@@ -970,11 +970,11 @@ void DirectoryListingFrame::initStatus() {
 
 		callAsync([=] {
 			tstring tmp = TSTRING_F(TOTAL_SIZE, Util::formatBytesW(totalSize));
-			statusSizes[STATUS_TOTAL_SIZE] = WinUtil::getTextWidth(tmp, m_hWnd);
+			statusSizes[STATUS_TOTAL_SIZE] = WinUtil::getStatusTextWidth(tmp, m_hWnd);
 			ctrlStatus.SetText(STATUS_TOTAL_SIZE, tmp.c_str());
 
 			tmp = TSTRING_F(TOTAL_FILES, totalFiles);
-			statusSizes[STATUS_TOTAL_FILES] = WinUtil::getTextWidth(tmp, m_hWnd);
+			statusSizes[STATUS_TOTAL_FILES] = WinUtil::getStatusTextWidth(tmp, m_hWnd);
 			ctrlStatus.SetText(STATUS_TOTAL_FILES, tmp.c_str());
 
 			UpdateLayout(FALSE);
@@ -1897,7 +1897,7 @@ void DirectoryListingFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		sr.bottom -= 1;
 
 		if (selCombo.GetStyle() & WS_VISIBLE) {
-			int desclen = WinUtil::getTextWidth(getComboDesc(), ctrlStatus.m_hWnd);
+			int desclen = WinUtil::getStatusTextWidth(getComboDesc(), ctrlStatus.m_hWnd);
 			sr.left = w[STATUS_HUB - 1] + desclen;
 			sr.right = w[STATUS_HUB];
 			selCombo.MoveWindow(sr);

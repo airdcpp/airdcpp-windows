@@ -691,7 +691,7 @@ void MainFrame::updateStatus(TStringList* aList) {
 		auto pos = 0;
 		for(int i = STATUS_SHARED; i < STATUS_SHUTDOWN; i++) {
 
-			const int w = WinUtil::getTextWidth(str[pos], ctrlStatus.m_hWnd);
+			const int w = WinUtil::getStatusTextWidth(str[pos], ctrlStatus.m_hWnd);
 
 			if(i == STATUS_SLOTS) {
 				if(str[pos][0] == '0') // a hack, do this some other way.
