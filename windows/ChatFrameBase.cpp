@@ -865,7 +865,7 @@ bool ChatFrameBase::checkCommand(const tstring& aCmd, tstring& message_, tstring
 			status_ = TSTRING(SPECIFY_SEARCH_STRING);
 		}
 	} else if ((stricmp(cmd.c_str(), _T("airdc++")) == 0) || (stricmp(cmd.c_str(), _T("++")) == 0)) {
-		status_ = msgs[GET_TICK() % MSGS] + Text::toT("-- " + Text::fromT(HttpLinks::homepage) + "  <" + shortVersionString + ">");
+		message_ = msgs[GET_TICK() % MSGS] + Text::toT("-- " + Text::fromT(HttpLinks::homepage) + "  <" + shortVersionString + ">");
 	} else if (stricmp(cmd.c_str(), _T("calcprio")) == 0) {
 		QueueManager::getInstance()->calculateBundlePriorities(true);
 	} else if (stricmp(cmd.c_str(), _T("generatelist")) == 0) {
