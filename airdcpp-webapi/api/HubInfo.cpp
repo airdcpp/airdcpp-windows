@@ -248,6 +248,7 @@ namespace webserver {
 	void HubInfo::on(ClientListener::Redirected, const string&, const ClientPtr& aNewClient) noexcept {
 		client->removeListener(this);
 		client = aNewClient;
+		chatHandler.setChat(client.get());
 		aNewClient->addListener(this);
 
 		sendConnectState();
