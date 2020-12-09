@@ -122,7 +122,7 @@ namespace webserver {
 	api_return HubInfo::handleGetUserId(ApiRequest& aRequest) {
 		auto ou = client->findUser(aRequest.getTokenParam());
 		if (!ou) {
-			aRequest.setResponseErrorStr("User was not found");
+			aRequest.setResponseErrorStr("User " + Util::toString(aRequest.getTokenParam()) + " was not found");
 			return websocketpp::http::status_code::not_found;
 		}
 
