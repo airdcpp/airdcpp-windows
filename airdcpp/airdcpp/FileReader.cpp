@@ -264,6 +264,10 @@ size_t FileReader::readMapped(const string& /*file*/, const DataCallback& /*call
 
 #else
 
+size_t FileReader::readDirect(const string& file, const DataCallback& callback) {
+	return READ_FAILED;
+}
+
 /*#include <sys/mman.h> // mmap, munmap, madvise
 #include <signal.h>  // for handling read errors from previous trio
 #include <setjmp.h>
@@ -271,10 +275,6 @@ size_t FileReader::readMapped(const string& /*file*/, const DataCallback& /*call
 #include <sys/stat.h>
 #include <unistd.h>
 
-
-size_t FileReader::readDirect(const string& file, const DataCallback& callback) {
-	return READ_FAILED;
-}
 
 static const int64_t BUF_SIZE = 0x1000000 - (0x1000000 % getpagesize());
 static sigjmp_buf sb_env;
