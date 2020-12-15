@@ -54,6 +54,9 @@
     <ClCompile Include="minissdpc.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="addr_is_reserved.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="codelength.h">
@@ -105,6 +108,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="miniupnpc_declspec.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="win32_snprintf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="addr_is_reserved.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

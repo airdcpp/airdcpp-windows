@@ -1,8 +1,8 @@
-/* $Id: miniwget.c,v 1.79 2018/04/06 10:53:15 nanard Exp $ */
+/* $Id: miniwget.c,v 1.84 2020/11/09 19:41:18 nanard Exp $ */
 /* Project : miniupnp
- * Website : http://miniupnp.free.fr/
+ * Website : http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * Author : Thomas Bernard
- * Copyright (c) 2005-2018 Thomas Bernard
+ * Copyright (c) 2005-2020 Thomas Bernard
  * This software is subject to the conditions detailed in the
  * LICENCE file provided in this distribution. */
 
@@ -15,7 +15,7 @@
 #include <ws2tcpip.h>
 #include <io.h>
 #define MAXHOSTNAMELEN 64
-#define snprintf _snprintf
+#include "win32_snprintf.h"
 #define socklen_t int
 #ifndef strncasecmp
 #if defined(_MSC_VER) && (_MSC_VER >= 1400)
@@ -176,11 +176,14 @@ getHTTPResponse(SOCKET s, int * size, int * status_code)
 						/* Status line
 						 * HTTP-Version SP Status-Code SP Reason-Phrase CRLF */
 						int sp;
-						for(sp = 0; sp < i; sp++)
+						for(sp = 0; sp < i - 1; sp++)
 							if(header_buf[sp] == ' ')
 							{
 								if(*status_code < 0)
-									*status_code = atoi(header_buf + sp + 1);
+								{
+									if (header_buf[sp+1] >= '1' && header_buf[sp+1] <= '9')
+										*status_code = atoi(header_buf + sp + 1);
+								}
 								else
 								{
 #ifdef DEBUG
@@ -243,7 +246,7 @@ getHTTPResponse(SOCKET s, int * size, int * status_code)
 					/* reading chunk size */
 					if(chunksize_buf_index == 0) {
 						/* skipping any leading CR LF */
-						if(i<n && buf[i] == '\r') i++;
+						if(buf[i] == '\r') i++;
 						if(i<n && buf[i] == '\n') i++;
 					}
 					while(i<n && isxdigit(buf[i])
@@ -350,7 +353,7 @@ getHTTPResponse(SOCKET s, int * size, int * status_code)
 		}
 	}
 end_of_stream:
-	free(header_buf); header_buf = NULL;
+	free(header_buf);
 	*size = content_buf_used;
 	if(content_buf_used == 0)
 	{
@@ -371,7 +374,7 @@ miniwget3(const char * host,
           int * status_code)
 {
 	char buf[2048];
-    SOCKET s;
+	SOCKET s;
 	int n;
 	int len;
 	int sent;
@@ -559,7 +562,7 @@ parseURL(const char * url,
 #else
 			/* under windows, scope is numerical */
 			char tmp[8];
-			int l;
+			size_t l;
 			scope++;
 			/* "%25" is just '%' in URL encoding */
 			if(scope[0] == '2' && scope[1] == '5')
@@ -659,4 +662,3 @@ miniwget_getaddr(const char * url, int * size,
 #endif
 	return miniwget2(hostname, port, path, size, addr, addrlen, scope_id, status_code);
 }
-
