@@ -11,6 +11,23 @@ http://www.boost.org/LICENSE_1_0.txt
 # Revision History
 :idprefix:
 
+## Changes in Boost 1.75
+
+* The platform-specific headers `windows_error.hpp`, `linux_error.hpp`,
+  and `cygwin_error.hpp` emit deprecation messages and are slated for
+  removal.
+* The old names for `generic_category()` and `system_category()` emit
+  deprecation messages and are slated for removal.
+* `error_condition::failed` is deprecated and is slated for removal.
+  `operator bool()` for `error_condition` has been reverted to its old
+  meaning of `value() != 0`. This is done for compatibility with
+  `std::error_condition` as the next release is expected to improve
+  interoperability with `<system_error>` even further. _Note that this
+  does not affect_ `error_code::failed`, which is still alive and well.
+* The overload of `error_condition::message` that takes a buffer is
+  deprecated and is slated for removal, for the same reasons. _Note that
+  this does not affect_ `error_code::message`.
+
 ## Changes in Boost 1.74
 
 * `operator bool()` now returns `failed()` instead of `value() != 0`.

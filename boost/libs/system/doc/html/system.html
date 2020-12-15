@@ -443,6 +443,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#introduction">Introduction</a></li>
 <li><a href="#changes">Revision History</a>
 <ul class="sectlevel2">
+<li><a href="#changes_in_boost_1_75">Changes in Boost 1.75</a></li>
 <li><a href="#changes_in_boost_1_74">Changes in Boost 1.74</a></li>
 <li><a href="#changes_in_boost_1_69">Changes in Boost 1.69</a></li>
 <li><a href="#changes_in_boost_1_68">Changes in Boost 1.68</a></li>
@@ -530,6 +531,35 @@ breakage of existing user code.</p>
 <div class="sect1">
 <h2 id="changes">Revision History</h2>
 <div class="sectionbody">
+<div class="sect2">
+<h3 id="changes_in_boost_1_75">Changes in Boost 1.75</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>The platform-specific headers <code>windows_error.hpp</code>, <code>linux_error.hpp</code>,
+and <code>cygwin_error.hpp</code> emit deprecation messages and are slated for
+removal.</p>
+</li>
+<li>
+<p>The old names for <code>generic_category()</code> and <code>system_category()</code> emit
+deprecation messages and are slated for removal.</p>
+</li>
+<li>
+<p><code>error_condition::failed</code> is deprecated and is slated for removal.
+<code>operator bool()</code> for <code>error_condition</code> has been reverted to its old
+meaning of <code>value() != 0</code>. This is done for compatibility with
+<code>std::error_condition</code> as the next release is expected to improve
+interoperability with <code>&lt;system_error&gt;</code> even further. <em>Note that this
+does not affect</em> <code>error_code::failed</code>, which is still alive and well.</p>
+</li>
+<li>
+<p>The overload of <code>error_condition::message</code> that takes a buffer is
+deprecated and is slated for removal, for the same reasons. <em>Note that
+this does not affect</em> <code>error_code::message</code>.</p>
+</li>
+</ul>
+</div>
+</div>
 <div class="sect2">
 <h3 id="changes_in_boost_1_74">Changes in Boost 1.74</h3>
 <div class="ulist">
@@ -1789,12 +1819,15 @@ by exception.</p>
       constexpr const error_category &amp; category() const noexcept;
 
       std::string message() const;
-      char const * message( char * buffer, std::size_t len ) const noexcept;
 
-      constexpr bool failed() const noexcept;
       constexpr explicit operator bool() const noexcept;
 
       operator std::error_condition() const;
+
+      // deprecated members; do not use
+
+      char const * message( char * buffer, std::size_t len ) const noexcept;
+      constexpr bool failed() const noexcept;
 
     private: // exposition only
 
@@ -2006,46 +2039,6 @@ by exception.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code>char const * message( char * buffer, std::size_t len ) const noexcept;</code></pre>
-</div>
-</div>
-<div class="ulist none">
-<ul class="none">
-<li>
-<p></p>
-<div class="dlist">
-<dl>
-<dt class="hdlist1">Returns: </dt>
-<dd>
-<p><code>cat_-&gt;message( val_, buffer, len )</code>.</p>
-</dd>
-</dl>
-</div>
-</li>
-</ul>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code>constexpr bool failed() const noexcept;</code></pre>
-</div>
-</div>
-<div class="ulist none">
-<ul class="none">
-<li>
-<p></p>
-<div class="dlist">
-<dl>
-<dt class="hdlist1">Returns: </dt>
-<dd>
-<p><code>cat_-&gt;failed( val_ )</code>.</p>
-</dd>
-</dl>
-</div>
-</li>
-</ul>
-</div>
-<div class="listingblock">
-<div class="content">
 <pre class="highlight"><code>constexpr explicit operator bool() const noexcept;</code></pre>
 </div>
 </div>
@@ -2057,7 +2050,7 @@ by exception.</p>
 <dl>
 <dt class="hdlist1">Returns: </dt>
 <dd>
-<p><code>failed()</code>.</p>
+<p><code>value() != 0</code>.</p>
 </dd>
 </dl>
 </div>
@@ -2083,6 +2076,79 @@ by exception.</p>
 </div>
 </li>
 </ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="ref_deprecated_members">Deprecated members</h5>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>char const * message( char * buffer, std::size_t len ) const noexcept;</code></pre>
+</div>
+</div>
+<div class="ulist none">
+<ul class="none">
+<li>
+<p></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<p><code>cat_-&gt;message( val_, buffer, len )</code>.</p>
+</dd>
+</dl>
+</div>
+</li>
+</ul>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Warning</div>
+</td>
+<td class="content">
+This member function is deprecated and will be removed. This is done
+      for compatibility with <code>std::error_condition</code> as the next release is
+      expected to improve interoperability with <code>&lt;system_error&gt;</code> even further.
+      <em>Note that this does not affect</em> <code>error_code::message</code>.
+</td>
+</tr>
+</table>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>constexpr bool failed() const noexcept;</code></pre>
+</div>
+</div>
+<div class="ulist none">
+<ul class="none">
+<li>
+<p></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<p><code>cat_-&gt;failed( val_ )</code>.</p>
+</dd>
+</dl>
+</div>
+</li>
+</ul>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Warning</div>
+</td>
+<td class="content">
+This member function is deprecated and will be removed. This is done
+      for compatibility with <code>std::error_condition</code> as the next release is
+      expected to improve interoperability with <code>&lt;system_error&gt;</code> even further.
+      <em>Note that this does not affect</em> <code>error_code::failed</code>.
+</td>
+</tr>
+</table>
 </div>
 </div>
 </div>
@@ -2468,7 +2534,7 @@ paper. Johan Nilsson&#8217;s comments led to several of the refinements in N2066
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2020-08-11 14:57:22 UTC
+Last updated 2020-12-03 05:02:56 UTC
 </div>
 </div>
 <style>

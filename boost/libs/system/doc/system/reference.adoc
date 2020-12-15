@@ -670,12 +670,15 @@ namespace boost {
       constexpr const error_category & category() const noexcept;
 
       std::string message() const;
-      char const * message( char * buffer, std::size_t len ) const noexcept;
 
-      constexpr bool failed() const noexcept;
       constexpr explicit operator bool() const noexcept;
 
       operator std::error_condition() const;
+
+      // deprecated members; do not use
+
+      char const * message( char * buffer, std::size_t len ) const noexcept;
+      constexpr bool failed() const noexcept;
 
     private: // exposition only
 
@@ -772,28 +775,12 @@ std::string message() const;
 Returns: :: `cat_\->message( val_ )`.
 
 ```
-char const * message( char * buffer, std::size_t len ) const noexcept;
-```
-[none]
-* {blank}
-+
-Returns: :: `cat_\->message( val_, buffer, len )`.
-
-```
-constexpr bool failed() const noexcept;
-```
-[none]
-* {blank}
-+
-Returns: :: `cat_\->failed( val_ )`.
-
-```
 constexpr explicit operator bool() const noexcept;
 ```
 [none]
 * {blank}
 +
-Returns: :: `failed()`.
+Returns: :: `value() != 0`.
 
 ```
 operator std::error_condition() const;
@@ -803,6 +790,34 @@ operator std::error_condition() const;
 +
 Returns: ::
   `std::error_condition( val_, *cat_ )`.
+
+#### Deprecated members
+
+```
+char const * message( char * buffer, std::size_t len ) const noexcept;
+```
+[none]
+* {blank}
++
+Returns: :: `cat_\->message( val_, buffer, len )`.
+
+WARNING: This member function is deprecated and will be removed. This is done
+      for compatibility with `std::error_condition` as the next release is
+      expected to improve interoperability with `<system_error>` even further.
+      _Note that this does not affect_ `error_code::message`.
+
+```
+constexpr bool failed() const noexcept;
+```
+[none]
+* {blank}
++
+Returns: :: `cat_\->failed( val_ )`.
+
+WARNING: This member function is deprecated and will be removed. This is done
+      for compatibility with `std::error_condition` as the next release is
+      expected to improve interoperability with `<system_error>` even further.
+      _Note that this does not affect_ `error_code::failed`.
 
 ### Nonmember functions
 

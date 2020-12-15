@@ -120,18 +120,30 @@ template<class Ec> void test()
         ec.assign( 0, generic_category() );
         TEST_NOT_FAILED( ec );
     }
+}
 
-    {
-        Ec ec( 0, http_category() );
-        TEST_FAILED( ec );
+template<class Ec> void test2()
+{
+    Ec ec( 0, http_category() );
+    TEST_FAILED( ec );
 
-        ec.assign( 200, http_category() );
-        TEST_NOT_FAILED( ec );
+    ec.assign( 200, http_category() );
+    TEST_NOT_FAILED( ec );
 
-        ec = Ec( 404, http_category() );
-        TEST_FAILED( ec );
-    }
+    ec = Ec( 404, http_category() );
+    TEST_FAILED( ec );
+}
 
+template<class Ec> void test3()
+{
+    Ec ec( 0, http_category() );
+    BOOST_TEST( ec.failed() );
+
+    ec.assign( 200, http_category() );
+    BOOST_TEST( !ec.failed() );
+
+    ec = Ec( 404, http_category() );
+    BOOST_TEST( ec.failed() );
 }
 
 int main()
@@ -147,7 +159,9 @@ int main()
     BOOST_TEST( http_category().failed( 404 ) );
 
     test<error_code>();
+    test2<error_code>();
     test<error_condition>();
+    test3<error_condition>();
 
     {
         error_condition ec( errc::success );
