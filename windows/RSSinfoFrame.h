@@ -149,7 +149,7 @@ private:
 	HTREEITEM addTreeItem(const HTREEITEM& parent, int img, const tstring& name, HTREEITEM insertAfter = TVI_SORT);
 
 	TaskQueue tasks;
-	void addGuiTask(std::function<void()> f) {
+	void addGuiTask(Callback f) {
 		tasks.add(0, unique_ptr<AsyncTask>(new AsyncTask(f)));
 	}
 

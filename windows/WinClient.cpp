@@ -88,7 +88,7 @@ void WinClient::destroyModules() {
 	WebShortcuts::deleteInstance();
 }
 
-void WinClient::unloadModules(StepF& aStepF, ProgressF&) {
+void WinClient::unloadModules(StepFunction& aStepF, ProgressFunction&) {
 	AutoSearchManager::getInstance()->save();
 	RSSManager::getInstance()->save(true);
 

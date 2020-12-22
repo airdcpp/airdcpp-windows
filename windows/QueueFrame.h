@@ -315,7 +315,7 @@ private:
 
 	TaskQueue tasks;
 
-	void addGuiTask(uint8_t task, std::function<void()> f) {
+	void addGuiTask(uint8_t task, Callback f) {
 		tasks.add(task, unique_ptr<AsyncTask>(new AsyncTask(f)));
 	}
 

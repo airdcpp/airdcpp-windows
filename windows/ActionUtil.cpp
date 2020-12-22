@@ -454,7 +454,7 @@ void ActionUtil::appendPreviewMenu(OMenu& parent_, const string& aTarget) {
 }
 
 template<typename T>
-static void appendPrioMenu(OMenu& aParent, const vector<T>& aBase, bool aIsBundle, function<void(Priority aPrio)> aPrioF, function<void()> aAutoPrioF) {
+static void appendPrioMenu(OMenu& aParent, const vector<T>& aBase, bool aIsBundle, function<void(Priority aPrio)> aPrioF, Callback aAutoPrioF) {
 	if (aBase.empty())
 		return;
 
