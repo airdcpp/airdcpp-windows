@@ -64,7 +64,7 @@ namespace webserver {
 		}) {}
 
 
-	bool WebServerSettings::loadSettingFile(Util::Paths aPath, const string& aFileName, JsonParseCallback&& aParseCallback, const MessageCallback& aCustomErrorF) noexcept {
+	bool WebServerSettings::loadSettingFile(Util::Paths aPath, const string& aFileName, JsonParseCallback&& aParseCallback, const MessageCallback& aCustomErrorF, int aMaxConfigVersion) noexcept {
 		const auto parseJsonFile = [&](const string& aPath) {
 			// SimpleXML xml;
 			try {
@@ -73,7 +73,12 @@ namespace webserver {
 				// xml.fromXML(File(aPath, File::READ, File::OPEN).read(), SimpleXMLReader::FLAG_REPLACE_INVALID_UTF8);
 
 				auto parsed = json::parse(File(aPath, File::READ, File::OPEN).read());
-				aParseCallback(parsed);
+				int configVersion = parsed.at("version");
+				if (configVersion > aMaxConfigVersion) {
+					throw std::invalid_argument("Config version " + Util::toString(configVersion) + " is not supported");
+				}
+
+				aParseCallback(parsed.at("settings"), configVersion);
 			} catch (const std::exception& e) {
 				aCustomErrorF(STRING_F(LOAD_FAILED_X, aPath % e.what()));
 				return false;
@@ -85,8 +90,13 @@ namespace webserver {
 		return SettingsManager::loadSettingFile(aPath, aFileName, parseJsonFile, aCustomErrorF);
 	}
 
-	bool WebServerSettings::saveSettingFile(const json& aJson, Util::Paths aPath, const string& aFileName, const MessageCallback& aCustomErrorF) noexcept {
-		return SettingsManager::saveSettingFile(aJson.dump(2), aPath, aFileName, aCustomErrorF);
+	bool WebServerSettings::saveSettingFile(const json& aJson, Util::Paths aPath, const string& aFileName, const MessageCallback& aCustomErrorF, int aConfigVersion) noexcept {
+		auto data = json({
+			{ "version", aConfigVersion },
+			{ "settings", aJson },
+		});
+
+		return SettingsManager::saveSettingFile(data.dump(2), aPath, aFileName, aCustomErrorF);
 	}
 
 	json WebServerSettings::toJson() const noexcept {

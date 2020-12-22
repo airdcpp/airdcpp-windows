@@ -46,6 +46,7 @@
 
 #define CONFIG_NAME_JSON "web-users.json"
 #define CONFIG_DIR Util::PATH_USER_CONFIG
+#define CONFIG_VERSION 1
 
 namespace webserver {
 	WebUserManager::WebUserManager(WebServerManager* aServer) : server(aServer), authFloodCounter(FLOOD_COUNT, FLOOD_PERIOD) {
@@ -324,7 +325,7 @@ namespace webserver {
 	}
 
 	void WebUserManager::setDirty() noexcept {
-		server->setDirty();
+		isDirty = true;
 	}
 
 	bool WebUserManager::hasUsers() const noexcept {
@@ -530,10 +531,11 @@ namespace webserver {
 		}
 
 		xml_.resetCurrentChild();
+		setDirty();
 	}
 
 	void WebUserManager::on(WebServerManagerListener::LoadSettings, const MessageCallback& aErrorF) noexcept {
-		WebServerSettings::loadSettingFile(CONFIG_DIR, CONFIG_NAME_JSON, [this](const json& aJson) {
+		WebServerSettings::loadSettingFile(CONFIG_DIR, CONFIG_NAME_JSON, [this](const json& aJson, int) {
 			{
 				auto usersJson = aJson.at("users");
 				if (!usersJson.is_null()) {
@@ -580,10 +582,16 @@ namespace webserver {
 					}
 				}
 			}
-		}, aErrorF);
+		}, aErrorF, CONFIG_VERSION);
 	}
 
 	void WebUserManager::on(WebServerManagerListener::SaveSettings, const MessageCallback& aErrorF) noexcept {
+		if (!isDirty) {
+			return;
+		}
+		isDirty = false;
+
+		// Save
 		json settings;
 
 		{
@@ -610,6 +618,6 @@ namespace webserver {
 			}
 		}
 
-		WebServerSettings::saveSettingFile(settings, CONFIG_DIR, CONFIG_NAME_JSON, aErrorF);
+		WebServerSettings::saveSettingFile(settings, CONFIG_DIR, CONFIG_NAME_JSON, aErrorF, CONFIG_VERSION);
 	}
 }

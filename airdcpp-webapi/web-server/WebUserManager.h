@@ -117,6 +117,8 @@ namespace webserver {
 
 		WebServerManager* server;
 		void setDirty() noexcept;
+
+		bool isDirty = false;
 	};
 }
 

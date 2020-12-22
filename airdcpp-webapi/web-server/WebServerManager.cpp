@@ -37,6 +37,7 @@
 #define CONFIG_NAME_XML "WebServer.xml"
 #define CONFIG_NAME_JSON "web-server.json"
 #define CONFIG_DIR Util::PATH_USER_CONFIG
+#define CONFIG_VERSION 1
 
 #define AUTHENTICATION_TIMEOUT 60 // seconds
 
@@ -615,11 +616,12 @@ namespace webserver {
 			}, aErrorF);
 
 			File::deleteFile(legacyXmlPath);
+			setDirty();
 		}
 
-		WebServerSettings::loadSettingFile(CONFIG_DIR, CONFIG_NAME_JSON, [this, &aErrorF](const json& aJson) {
+		WebServerSettings::loadSettingFile(CONFIG_DIR, CONFIG_NAME_JSON, [this, &aErrorF](const json& aJson, int) {
 			settings.fromJsonThrow(aJson);
-		}, aErrorF);
+		}, aErrorF, CONFIG_VERSION);
 
 		fire(WebServerManagerListener::LoadSettings(), aErrorF);
 		return hasValidServerConfig();
@@ -645,14 +647,6 @@ namespace webserver {
 	}
 
 	bool WebServerManager::save(const MessageCallback& aCustomErrorF) noexcept {
-		{
-			if (!isDirty) {
-				return false;
-			}
-
-			isDirty = false;
-		}
-
 		auto errorF = aCustomErrorF;
 		if (!errorF) {
 			// Avoid crashes if the file is saved when core is not loaded
@@ -660,7 +654,13 @@ namespace webserver {
 		}
 
 		fire(WebServerManagerListener::SaveSettings(), errorF);
-		return WebServerSettings::saveSettingFile(settings.toJson(), CONFIG_DIR, CONFIG_NAME_JSON, errorF);
+
+		if (isDirty) {
+			isDirty = false;
+			return WebServerSettings::saveSettingFile(settings.toJson(), CONFIG_DIR, CONFIG_NAME_JSON, errorF, CONFIG_VERSION);
+		}
+
+		return true;
 	}
 
 	bool ServerConfig::hasValidConfig() const noexcept {
