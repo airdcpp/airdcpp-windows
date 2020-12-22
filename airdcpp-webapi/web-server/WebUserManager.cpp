@@ -128,7 +128,7 @@ namespace webserver {
 		}
 
 		auto user = getUser(aUserName);
-		if (!user || user->getPassword() != aPassword) {
+		if (!user || !user->matchPassword(aPassword)) {
 			authFloodCounter.addAttempt(aIP);
 			throw std::domain_error(STRING(WEB_SESSIONS_INVALID_USER_PW));
 		}
@@ -592,7 +592,7 @@ namespace webserver {
 			for (const auto& u : users | map_values) {
 				settings["users"].push_back({
 					{ "username", u->getUserName() },
-					{ "password", u->getPassword() },
+					{ "password", u->getPasswordHash() },
 					{ "last_login", u->getLastLogin() },
 					{ "permissions", WebUser::permissionsToStringList(u->getPermissions()) },
 				});
