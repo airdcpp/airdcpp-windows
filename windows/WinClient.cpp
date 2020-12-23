@@ -205,7 +205,7 @@ void WinClient::listUpdaterFiles(StringPairList& files_, const string& aUpdateFi
 
 	// Node
 	// Note: secondary executables must be added before the application because of an extraction issue in version before 4.00
-	assertFiles("Node.js", 1, ZipFile::CreateZipFileList(files_, Util::getFilePath(Util::getAppFilePath()), Util::emptyString, "^(" + webserver::ExtensionManager::localNodeDirectoryName + ")$"));
+	assertFiles("Node.js", 1, ZipFile::CreateZipFileList(files_, Util::getFilePath(Util::getAppFilePath()), Util::emptyString, "^(" + webserver::WebServerSettings::localNodeDirectoryName + ")$"));
 
 	// Application
 	assertFiles("Exe", 2, ZipFile::CreateZipFileList(files_, Util::getAppFilePath(), Util::emptyString, "^(AirDC.exe|AirDC.pdb)$"));

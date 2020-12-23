@@ -38,13 +38,19 @@ namespace dcpp {
 
 namespace webserver {
 	class NpmRepository;
+
+	struct ExtensionEngine {
+		string name;
+		string command;
+		StringList arguments;
+
+		typedef vector<ExtensionEngine> List;
+	};
+
+	NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ExtensionEngine, name, command, arguments);
+
 	class ExtensionManager: public Speaker<ExtensionManagerListener>, private WebServerManagerListener, private UpdateManagerListener, ExtensionListener {
 	public:
-
-#ifdef _WIN32
-		static const string localNodeDirectoryName;
-#endif
-
 		ExtensionManager(WebServerManager* aWsm);
 		~ExtensionManager();
 
@@ -76,13 +82,16 @@ namespace webserver {
 		ExtensionPtr getExtension(const string& aName) const noexcept;
 		ExtensionList getExtensions() const noexcept;
 
-		typedef map<string, string> EngineMap;
-
 		// Get the engine start command for extension
 		// Throws on errors
-		string getStartCommandThrow(const StringList& aEngines) const;
+		struct ExtensionLaunchInfo {
+			string command;
+			StringList arguments;
+		};
 
-		EngineMap getEngines() const noexcept;
+		ExtensionLaunchInfo getStartCommandThrow(const StringList& aSupportedExtEngines, const ExtensionEngine::List& aInstalledEngines) const;
+
+		ExtensionEngine::List getEngines() const noexcept;
 
 		// Parses the engine command param (command1;command2;...) and tests each token for an existing application
 		static string selectEngineCommand(const string& aEngineCommands) noexcept;
@@ -94,9 +103,7 @@ namespace webserver {
 		bool removeExtension(const ExtensionPtr& aExtension) noexcept;
 		void onExtensionStateUpdated(const Extension* aExtension) noexcept;
 		void onExtensionFailed(const Extension* aExtension, uint32_t aExitCode) noexcept;
-		bool startExtensionImpl(const ExtensionPtr& aExtension) noexcept;
-
-		EngineMap engines;
+		bool startExtensionImpl(const ExtensionPtr& aExtension, const ExtensionEngine::List& aInstalledEngines) noexcept;
 
 		typedef map<string, string> BlockedExtensionMap;
 		BlockedExtensionMap blockedExtensions;

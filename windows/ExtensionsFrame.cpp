@@ -456,7 +456,8 @@ void ExtensionsFrame::onStartExtension(const ItemInfo* ii) noexcept {
 	MainFrame::getMainFrame()->addThreadedTask([ext = ii->ext, this] {
 		auto wsm = WebServerManager::getInstance();
 		try {
-			ext->startThrow(getExtensionManager().getStartCommandThrow(ext->getEngines()), wsm);
+			auto launchInfo = getExtensionManager().getStartCommandThrow(ext->getEngines(), getExtensionManager().getEngines());
+			ext->startThrow(launchInfo.command, wsm, launchInfo.arguments);
 		} catch (const Exception& e) {
 		  updateStatusAsync(Text::toT(e.what()), LogMessage::SEV_ERROR);
 		}

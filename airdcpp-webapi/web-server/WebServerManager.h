@@ -59,7 +59,6 @@ namespace webserver {
 		ServerSettingItem& bindAddress;
 
 		bool hasValidConfig() const noexcept;
-		void save(SimpleXML& aXml, const string& aTagName) noexcept;
 	};
 
 	// alias some of the bind related functions as they are a bit long

@@ -28,6 +28,10 @@
 namespace webserver {
 	class WebServerSettings {
 	public:
+#ifdef _WIN32
+		static const string localNodeDirectoryName;
+#endif
+
 		WebServerSettings();
 
 		enum ServerSettings {
@@ -41,6 +45,8 @@ namespace webserver {
 			TLS_CERT_KEY_PATH,
 
 			SERVER_THREADS,
+			EXTENSION_ENGINES,
+
 			DEFAULT_SESSION_IDLE_TIMEOUT,
 			PING_INTERVAL,
 			PING_TIMEOUT,
@@ -81,7 +87,10 @@ namespace webserver {
 		json toJson() const noexcept;
 		void fromJsonThrow(const json& aJson);
 	private:
-		vector<ServerSettingItem> settings;
+		ServerSettingItem::List settings;
+		ServerSettingItem::List extensionEngines;
+
+		json getDefaultExtensionEngines() noexcept;
 	};
 
 #define WEBCFG(k) (webserver::WebServerManager::getInstance()->getSettings().getSettingItem(webserver::WebServerSettings::k))
