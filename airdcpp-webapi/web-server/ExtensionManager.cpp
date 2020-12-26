@@ -32,6 +32,7 @@
 #include <airdcpp/LogManager.h>
 #include <airdcpp/ScopedFunctor.h>
 #include <airdcpp/SimpleXML.h>
+#include <airdcpp/StringTokenizer.h>
 #include <airdcpp/Thread.h>
 #include <airdcpp/TimerManager.h>
 #include <airdcpp/UpdateManager.h>

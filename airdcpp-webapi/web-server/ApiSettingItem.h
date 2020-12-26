@@ -16,10 +16,11 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef DCPLUSPLUS_DCPP_APISETTINGITEM_H
-#define DCPLUSPLUS_DCPP_APISETTINGITEM_H
+#ifndef DCPLUSPLUS_WEBSERVER_APISETTINGITEM_H
+#define DCPLUSPLUS_WEBSERVER_APISETTINGITEM_H
 
-#include "stdinc.h"
+#include "forward.h"
+#include "json.h"
 
 #include <airdcpp/GetSet.h>
 #include <airdcpp/SettingItem.h>
