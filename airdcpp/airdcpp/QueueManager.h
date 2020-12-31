@@ -359,6 +359,9 @@ public:
 	// Return dupe information about the directory
 	DupeType isAdcDirectoryQueued(const string& aDir, int64_t aSize) const noexcept;
 
+	// Return bundle with a file/directory matching the supplied path (directory/file must exist in the bundle)
+	BundlePtr isRealPathQueued(const string& aPath) const noexcept;
+
 	// Get bundle by (exact) real path
 	BundlePtr findDirectoryBundle(const string& aPath) const noexcept;
 
@@ -368,10 +371,10 @@ public:
 	StringList getAdcDirectoryPaths(const string& aDir) const noexcept;
 
 	// Get the paths of all bundles
-	void getBundlePaths(OrderedStringSet& bundles) const noexcept;
+	void getBundlePaths(OrderedStringSet& bundles_) const noexcept;
 
 	// Set size for a file list its size is known
-	void setFileListSize(const string& path, int64_t newSize) noexcept;
+	void setFileListSize(const string& aPath, int64_t aNewSize) noexcept;
 
 
 	// Attempt to add a bundle in share

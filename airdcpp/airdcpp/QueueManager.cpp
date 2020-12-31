@@ -3552,6 +3552,17 @@ DupeType QueueManager::isAdcDirectoryQueued(const string& aDir, int64_t aSize) c
 	return bundleQueue.isAdcDirectoryQueued(aDir, aSize);
 }
 
+BundlePtr QueueManager::isRealPathQueued(const string& aPath) const noexcept {
+	RLock l(cs);
+	if (!aPath.empty() && aPath.back() == PATH_SEPARATOR) {
+		auto b = bundleQueue.isLocalDirectoryQueued(aPath);
+		return b;
+	} else {
+		auto qi = fileQueue.findFile(aPath);
+		return qi ? qi->getBundle() : nullptr;
+	}
+}
+
 BundlePtr QueueManager::findDirectoryBundle(const string& aPath) const noexcept {
 	RLock l(cs);
 	return bundleQueue.findBundle(aPath);

@@ -47,6 +47,7 @@ namespace webserver {
 		ActionHookResult<> sourceAddHook(const HintedUser& aUser, const ActionHookResultGetter<>& aResultGetter) noexcept;
 
 		// COMMON
+		api_return handleIsPathQueued(ApiRequest& aRequest);
 		api_return handleFindDupePaths(ApiRequest& aRequest);
 		api_return handleRemoveSource(ApiRequest& aRequest);
 

@@ -136,6 +136,7 @@ namespace webserver {
 
 		METHOD_HANDLER(Access::QUEUE_EDIT,	METHOD_DELETE,	(EXACT_PARAM("sources"), CID_PARAM),									QueueApi::handleRemoveSource);
 		METHOD_HANDLER(Access::ANY,			METHOD_POST,	(EXACT_PARAM("find_dupe_paths")),										QueueApi::handleFindDupePaths);
+		METHOD_HANDLER(Access::ANY,			METHOD_POST,	(EXACT_PARAM("check_path_queued")),										QueueApi::handleIsPathQueued);
 
 		QueueManager::getInstance()->addListener(this);
 		DownloadManager::getInstance()->addListener(this);
@@ -227,6 +228,19 @@ namespace webserver {
 		auto removed = QueueManager::getInstance()->removeSource(user, QueueItem::Source::FLAG_REMOVED);
 		aRequest.setResponseBody({
 			{ "count", removed }
+		});
+
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return QueueApi::handleIsPathQueued(ApiRequest& aRequest) {
+		auto path = JsonUtil::getField<string>("path", aRequest.getRequestBody());
+		auto b = QueueManager::getInstance()->isRealPathQueued(path);
+		aRequest.setResponseBody({
+			{ "bundle", !b ? JsonUtil::emptyJson : json({
+				{ "id", b->getToken() },
+				{ "completed", b->isCompleted() },
+			}) }
 		});
 
 		return websocketpp::http::status_code::ok;
