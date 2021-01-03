@@ -39,7 +39,6 @@ public:
 
 	enum Strategy {
 		DIRECT,
-		MAPPED,
 		CACHED
 	};
 
@@ -63,7 +62,6 @@ public:
 
 private:
 	static const size_t DEFAULT_BLOCK_SIZE = 256*1024;
-	static const size_t DEFAULT_MMAP_SIZE = 64*1024*1024;
 
 	string file;
 	bool direct;
@@ -76,7 +74,6 @@ private:
 	void* align(void* buf, size_t alignment);
 
 	size_t readDirect(const string& aFile, const DataCallback& callback);
-	size_t readMapped(const string& aFile, const DataCallback& callback);
 	size_t readCached(const string& aFile, const DataCallback& callback);
 };
 
