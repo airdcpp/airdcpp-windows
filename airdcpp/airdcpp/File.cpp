@@ -34,6 +34,10 @@
 #include <utime.h>
 #endif
 
+#ifdef F_NOCACHE
+#include <fcntl.h>
+#endif
+
 #ifdef HAVE_MNTENT_H
 #include <mntent.h>
 #endif
@@ -391,6 +395,13 @@ File::File(const string& aFileName, int access, int mode, BufferMode aBufferMode
 		if (posix_fadvise(h, 0, 0, aBufferMode) != 0) {
 			throw FileException(Util::translateError(errno));
 		}
+	}
+#endif
+
+#ifdef F_NOCACHE
+	// macOS
+	if (aBufferMode == BUFFER_NONE) {
+		fcntl(h, F_NOCACHE, 1);
 	}
 #endif
 

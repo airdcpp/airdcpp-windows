@@ -43,7 +43,8 @@ size_t FileReader::read(const string& aPath, const DataCallback& callback) {
 	}
 
 	if (ret == READ_FAILED) {
-		ret = readCached(aPath, callback);
+		// Buffered
+		ret = read(aPath, callback, true);
 	}
 
 	return ret;
@@ -51,11 +52,11 @@ size_t FileReader::read(const string& aPath, const DataCallback& callback) {
 
 
 /** Read entire file, never returns READ_FAILED */
-size_t FileReader::readCached(const string& aPath, const DataCallback& callback) {
+size_t FileReader::read(const string& aPath, const DataCallback& callback, bool aBuffered) {
 	buffer.resize(getBlockSize(0));
 
 	auto buf = &buffer[0];
-	File f(aPath, File::READ, File::OPEN | File::SHARED_WRITE, File::BUFFER_SEQUENTIAL);
+	File f(aPath, File::READ, File::OPEN | File::SHARED_WRITE, aBuffered ? File::BUFFER_SEQUENTIAL : File::BUFFER_NONE);
 
 	size_t total = 0;
 	size_t n = buffer.size();
@@ -192,7 +193,7 @@ size_t FileReader::readDirect(const string& aPath, const DataCallback& callback)
 #else
 
 size_t FileReader::readDirect(const string& file, const DataCallback& callback) {
-	return READ_FAILED;
+	return read(file, callback, false);
 }
 
 #endif

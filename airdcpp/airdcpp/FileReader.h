@@ -74,7 +74,7 @@ private:
 	void* align(void* buf, size_t alignment);
 
 	size_t readDirect(const string& aFile, const DataCallback& callback);
-	size_t readCached(const string& aFile, const DataCallback& callback);
+	size_t read(const string& aFile, const DataCallback& callback, bool aBuffered);
 };
 
 }
