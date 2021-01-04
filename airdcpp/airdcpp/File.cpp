@@ -687,6 +687,12 @@ bool File::isLink(const string& aPath) noexcept {
 	return S_ISLNK(inode.st_mode);
 }
 
+time_t File::getLastWriteTime(const string& aPath) noexcept {
+	struct stat inode;
+	if (stat(aPath.c_str(), &inode) == -1) return 0;
+	return inode.st_mtime;
+}
+
 #endif // !_WIN32
 
 File::~File() {
@@ -1039,6 +1045,10 @@ int64_t FileItem::getSize() const noexcept {
 	return ff->getSize();
 }
 
+time_t FileItem::getLastWriteTime() const noexcept {
+	return ff->getLastWriteTime();
+}
+
 #else // _WIN32
 
 FileFindIter::FileFindIter() {
@@ -1138,10 +1148,8 @@ int64_t FileFindIter::DirData::getSize() const noexcept {
 }
 
 time_t FileFindIter::DirData::getLastWriteTime() const noexcept {
-	struct stat inode;
 	if (!ent) return 0;
-	if (stat((base + PATH_SEPARATOR + ent->d_name).c_str(), &inode) == -1) return 0;
-	return inode.st_mtime;
+	return File::getLastWriteTime(base + PATH_SEPARATOR + ent->d_name);
 }
 
 FileItem::FileItem(const string& aPath) : path(aPath) {
@@ -1165,6 +1173,10 @@ bool FileItem::isLink() const noexcept {
 
 int64_t FileItem::getSize() const noexcept {
 	return File::getSize(path);
+}
+
+time_t FileItem::getLastWriteTime() const noexcept {
+	return File::getLastWriteTime(path);
 }
 
 #endif // _WIN32

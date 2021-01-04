@@ -42,6 +42,7 @@ struct FileItemInfoBase {
 	virtual bool isHidden() const noexcept = 0;
 	virtual bool isLink() const noexcept = 0;
 	virtual int64_t getSize() const noexcept = 0;
+	virtual time_t getLastWriteTime() const noexcept = 0;
 };
 
 class File: public IOStream {
@@ -216,6 +217,7 @@ public:
 #else
 #define HandleType int
 	static bool isLink(const string& aPath) noexcept;
+	static time_t getLastWriteTime(const string& aPath) noexcept;
 #endif
 
 	HandleType getNativeHandle() const noexcept { return h; }
@@ -281,6 +283,7 @@ public:
 	bool isHidden() const noexcept override;
 	bool isLink() const noexcept override;
 	int64_t getSize() const noexcept override;
+	time_t getLastWriteTime() const noexcept override;
 private:
 #ifdef _WIN32
 	FileFindIter ff;
