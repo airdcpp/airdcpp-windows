@@ -1321,7 +1321,7 @@ enum Strings { // @DontAdd
 	SETTINGS_DIRECTORIES, // "Directories"
 	SETTINGS_DISPLAY_DC_UPDATE, // "Don't announce new AirDC++ versions (version.xml is still downloaded)"
 	SETTINGS_DONT_DL_ALREADY_SHARED, // "Don't download files already in share"
-	SETTINGS_DOWNCONN, // "Dwnld attempts/second"
+	SETTINGS_DOWNCONN, // "Download attempts/second"
 	SETTINGS_DOWNLOADS, // "Downloads"
 	SETTINGS_DOWNLOADS_MAX, // "Maximum simultaneous downloads (0 = infinite)"
 	SETTINGS_DOWNLOADS_SPEED_PAUSE, // "No new downloads if speed exceeds (0 = disable)"
