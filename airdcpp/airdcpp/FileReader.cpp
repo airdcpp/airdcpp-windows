@@ -35,34 +35,48 @@ namespace {
 static const size_t READ_FAILED = static_cast<size_t>(-1);
 }
 
+const size_t FileReader::DEFAULT_BLOCK_SIZE = 256 * 1024;
+
 size_t FileReader::read(const string& aPath, const DataCallback& callback) {
 	size_t ret = READ_FAILED;
 
-	if (direct) {
-		ret = readDirect(aPath, callback);
+	if (preferredStrategy == ASYNC) {
+		ret = readAsync(aPath, callback);
 	}
 
 	if (ret == READ_FAILED) {
-		// Buffered
-		ret = read(aPath, callback, true);
+		ret = readSync(aPath, callback);
 	}
 
 	return ret;
 }
 
-
 /** Read entire file, never returns READ_FAILED */
-size_t FileReader::read(const string& aPath, const DataCallback& callback, bool aBuffered) {
+size_t FileReader::readSync(const string& aPath, const DataCallback& callback) {
 	buffer.resize(getBlockSize(0));
 
 	auto buf = &buffer[0];
-	File f(aPath, File::READ, File::OPEN | File::SHARED_WRITE, aBuffered ? File::BUFFER_SEQUENTIAL : File::BUFFER_NONE);
+	File f(aPath, File::READ, File::OPEN | File::SHARED_WRITE, File::BUFFER_SEQUENTIAL);
+
+#ifdef F_NOCACHE
+	// macOS
+	// Avoid memory caching (fadvise is not available)
+	fcntl(f.getNativeHandle(), F_NOCACHE, 1);
+#endif
 
 	size_t total = 0;
 	size_t n = buffer.size();
 	bool go = true;
-	while(f.read(buf, n) > 0 && go) {
+	while (f.read(buf, n) > 0 && go) {
 		go = callback(buf, n);
+
+#ifdef POSIX_FADV_DONTNEED
+		// Allow read bytes to be purged from the memory cache
+		if (posix_fadvise(f.getNativeHandle(), total, n, POSIX_FADV_DONTNEED) != 0) {
+			throw FileException(Util::translateError(errno));
+		}
+#endif
+
 		total += n;
 		n = buffer.size();
 	}
@@ -95,7 +109,7 @@ struct Handle : boost::noncopyable {
 	HANDLE h;
 };
 
-size_t FileReader::readDirect(const string& aPath, const DataCallback& callback) {
+size_t FileReader::readAsync(const string& aPath, const DataCallback& callback) {
 	DWORD sector = 0, y;
 
 	auto tfile = Text::toT(aPath);
@@ -192,8 +206,10 @@ size_t FileReader::readDirect(const string& aPath, const DataCallback& callback)
 
 #else
 
-size_t FileReader::readDirect(const string& file, const DataCallback& callback) {
-	return read(file, callback, false);
+size_t FileReader::readAsync(const string& file, const DataCallback& callback) {
+	// Not implemented yet
+	// https://bugs.launchpad.net/dcplusplus/+bug/1909861
+	return READ_FAILED;
 }
 
 #endif

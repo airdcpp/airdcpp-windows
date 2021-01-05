@@ -210,7 +210,7 @@ void HashManager::getFileTTH(const string& aFile, int64_t aSize, bool addStore, 
 		auto start = GET_TICK();
 		int64_t tickHashed = 0;
 
-		FileReader fr(true);
+		FileReader fr(FileReader::ASYNC);
 		fr.read(aFile, [&](const void* buf, size_t n) -> bool {
 			tt.update(buf, n);
 
