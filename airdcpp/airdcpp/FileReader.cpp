@@ -35,7 +35,8 @@ namespace {
 static const size_t READ_FAILED = static_cast<size_t>(-1);
 }
 
-const size_t FileReader::DEFAULT_BLOCK_SIZE = 256 * 1024;
+// Benchmarking: https://bugs.launchpad.net/dcplusplus/+bug/1909861/comments/9
+const size_t FileReader::DEFAULT_BLOCK_SIZE = 1024 * 1024;
 
 size_t FileReader::read(const string& aPath, const DataCallback& callback) {
 	size_t ret = READ_FAILED;
