@@ -1074,7 +1074,7 @@ LRESULT MainFrame::onEndSession(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	
 	QueueManager::getInstance()->saveQueue(false);
 	SettingsManager::getInstance()->save();
-	HashManager::getInstance()->closeDB();
+	HashManager::getInstance()->close();
 
 	return 0;
 }
