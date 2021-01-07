@@ -1,3 +1,20 @@
+4.01
+
+API and Web UI changes:
+
+- ...
+
+Changed:
+
+- Let the operating system set the optimal socket write/read buffer sizes by default (can multiply per-connection transfer speeds with faster connections, https://bugs.launchpad.net/dcplusplus/+bug/1909853)
+- Improve hashing speed by increasing the read buffer from 256 kilobytes to 1024 kilobytes (https://bugs.launchpad.net/dcplusplus/+bug/1909861/comments/9)
+- Increase the default file write buffer from 64 kilobytes to 256 kilobytes
+
+Fixed:
+
+- Fix inconsistencies with filelist transfer logging
+
+
 4.00
 
 API and Web UI changes:
