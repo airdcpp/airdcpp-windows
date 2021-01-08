@@ -1665,8 +1665,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 4,0,1,0
- PRODUCTVERSION 4,0,1,0
+ FILEVERSION 4,1,0,0
+ PRODUCTVERSION 4,1,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -1684,12 +1684,12 @@ BEGIN
             VALUE "Comments", "http://www.airdcpp.net"
             VALUE "CompanyName", "AirDC++ Team"
             VALUE "FileDescription", "AirDC++"
-            VALUE "FileVersion", "4.01.0.0"
+            VALUE "FileVersion", "4.10.0.0"
             VALUE "InternalName", "AirDC++"
             VALUE "LegalCopyright", "Copyright 2007-2021 Night and maksis"
             VALUE "OriginalFilename", "AirDC.exe"
             VALUE "ProductName", "AirDC++"
-            VALUE "ProductVersion", "4.01"
+            VALUE "ProductVersion", "4.10"
         END
     END
     BLOCK "VarFileInfo"

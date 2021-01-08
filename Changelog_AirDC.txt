@@ -1,8 +1,6 @@
-4.01
+4.10
 
-API and Web UI changes:
-
-- ...
+API and Web UI changes: https://airdcpp-web.github.io/2021/01/08/version-2.11.0.html
 
 Changed:
 
