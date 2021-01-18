@@ -33,6 +33,7 @@
 #include <airdcpp/Updater.h>
 #include <airdcpp/version.h>
 
+#include <airdcpp/modules/ADLSearch.h>
 #include <airdcpp/modules/AutoSearchManager.h>
 #include <airdcpp/modules/FinishedManager.h>
 #include <airdcpp/modules/HighlightManager.h>
@@ -65,6 +66,7 @@ void WinClient::webErrorF(const string& aError) {
 };
 
 void WinClient::initModules() {
+	ADLSearchManager::newInstance();
 	WebShortcuts::newInstance();
 	HighlightManager::newInstance();
 	FinishedManager::newInstance();
@@ -79,6 +81,7 @@ void WinClient::initModules() {
 void WinClient::destroyModules() {
 	webserver::WebServerManager::deleteInstance();
 
+	ADLSearchManager::deleteInstance();
 	HublistManager::deleteInstance();
 	PreviewAppManager::deleteInstance();
 	HighlightManager::deleteInstance();
@@ -91,6 +94,7 @@ void WinClient::destroyModules() {
 void WinClient::unloadModules(StepFunction& aStepF, ProgressFunction&) {
 	AutoSearchManager::getInstance()->save();
 	RSSManager::getInstance()->save(true);
+	ADLSearchManager::getInstance()->save(true);
 
 	aStepF(STRING(WEB_SERVER));
 	webserver::WebServerManager::getInstance()->stop();
@@ -132,6 +136,7 @@ StartupLoadCallback WinClient::moduleLoadFGetter(unique_ptr<MainFrame>& wndMain)
 		// Core modules
 		AutoSearchManager::getInstance()->load();
 		RSSManager::getInstance()->load();
+		ADLSearchManager::getInstance()->load();
 
 		// Web server
 		auto wsm = webserver::WebServerManager::getInstance();

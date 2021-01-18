@@ -16,14 +16,10 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#if !defined(ADLS_PROPERTIES_H)
+#ifndef ADLS_PROPERTIES_H
 #define ADLS_PROPERTIES_H
 
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
-
-#include <airdcpp/ADLSearch.h>
+#include <airdcpp/modules/ADLSearch.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 //

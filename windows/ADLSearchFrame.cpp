@@ -26,6 +26,7 @@
 #include "ADLSearchFrame.h"
 #include "AdlsProperties.h"
 
+#include <airdcpp/modules/ADLSearch.h>
 #include <airdcpp/LogManager.h>
 
 string ADLSearchFrame::id = "ADLSearch";

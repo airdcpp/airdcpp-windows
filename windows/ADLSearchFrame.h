@@ -21,17 +21,11 @@
  * Henrik Engström, henrikengstrom on home point se
  */
 
-#if !defined(ADL_SEARCH_FRAME_H)
+#ifndef ADL_SEARCH_FRAME_H
 #define ADL_SEARCH_FRAME_H
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
 
 #include "StaticFrame.h"
 #include "ExListViewCtrl.h"
-
-#include <airdcpp/ADLSearch.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -47,7 +41,7 @@ public:
 	typedef MDITabChildWindowImpl<ADLSearchFrame> baseClass;
 
 	// Constructor/destructor
-	ADLSearchFrame() : closed(false), created(false) {}
+	ADLSearchFrame() {}
 	~ADLSearchFrame() { }
 
 	// Frame window declaration
@@ -113,8 +107,8 @@ private:
 	CButton ctrlHelp;
 	CMenu contextMenu;
 
-	bool closed;
-	bool created;
+	bool closed = false;
+	bool created = false;
 
 	// Column order
 	enum 

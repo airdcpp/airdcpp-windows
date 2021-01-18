@@ -1378,7 +1378,7 @@ LRESULT MainFrame::onOpenOwnList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 	if (find_if(profiles.begin(), profiles.end(), [profile](const ShareProfilePtr& aProfile) { return aProfile->getToken() == profile; }) == profiles.end())
 		profile = SETTING(DEFAULT_SP);
 
-	DirectoryListingFrame::openWindow(profile, wID == IDC_OWN_LIST_ADL);
+	DirectoryListingFrame::openWindow(profile);
 	return 0;
 }
 
@@ -2120,7 +2120,6 @@ void MainFrame::initCmdBar() {
 	m_CmdBar.m_arrCommand.Add(IDC_SEARCH_SPY);
 	m_CmdBar.m_arrCommand.Add(IDC_OPEN_FILE_LIST);
 	m_CmdBar.m_arrCommand.Add(IDC_BROWSE_OWN_LIST);
-	m_CmdBar.m_arrCommand.Add(IDC_OWN_LIST_ADL);
 	m_CmdBar.m_arrCommand.Add(IDC_MATCH_ALL);
 	m_CmdBar.m_arrCommand.Add(IDC_REFRESH_FILE_LIST);
 	m_CmdBar.m_arrCommand.Add(IDC_OPEN_DOWNLOADS);

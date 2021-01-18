@@ -20,8 +20,8 @@
 #include "Resource.h"
 
 #include "ADLSProperties.h"
-#include <airdcpp/ADLSearch.h>
 #include "WinUtil.h"
+
 #define GET_TEXT(id, var) \
 	GetDlgItemText(id, buf, 1024); \
 	var = buf;
