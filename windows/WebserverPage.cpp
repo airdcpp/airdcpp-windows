@@ -147,6 +147,7 @@ bool WebServerPage::applySettings() noexcept {
 		if (plainserverPort != WEBCFG(PLAIN_PORT).num()) {
 			WEBCFG(PLAIN_PORT).setValue(plainserverPort);
 			needsRestart = true;
+			webMgr->setDirty();
 		}
 	}
 
@@ -155,6 +156,7 @@ bool WebServerPage::applySettings() noexcept {
 		if (tlsServerPort != WEBCFG(TLS_PORT).num()) {
 			WEBCFG(TLS_PORT).setValue(tlsServerPort);
 			needsRestart = true;
+			webMgr->setDirty();
 		}
 	}
 
@@ -163,6 +165,7 @@ bool WebServerPage::applySettings() noexcept {
 		if (sel != -1 && bindAdapters[sel].ip != WEBCFG(PLAIN_BIND).str()) {
 			WEBCFG(PLAIN_BIND).setValue(bindAdapters[sel].ip);
 			needsRestart = true;
+			webMgr->setDirty();
 		}
 	}
 
@@ -171,6 +174,7 @@ bool WebServerPage::applySettings() noexcept {
 		if (sel != -1 && bindAdapters[sel].ip != WEBCFG(TLS_BIND).str()) {
 			WEBCFG(TLS_BIND).setValue(bindAdapters[sel].ip);
 			needsRestart = true;
+			webMgr->setDirty();
 		}
 	}
 
