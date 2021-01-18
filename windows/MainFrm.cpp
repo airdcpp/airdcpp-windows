@@ -1372,7 +1372,7 @@ void MainFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
 	SetSplitterRect(rc2);
 }
 
-LRESULT MainFrame::onOpenOwnList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT MainFrame::onOpenOwnList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	ProfileToken profile = SETTING(LAST_LIST_PROFILE);
 	auto profiles = ShareManager::getInstance()->getProfiles();
 	if (find_if(profiles.begin(), profiles.end(), [profile](const ShareProfilePtr& aProfile) { return aProfile->getToken() == profile; }) == profiles.end())

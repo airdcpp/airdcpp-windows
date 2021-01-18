@@ -235,7 +235,6 @@ public:
 	GETSET(string, fileName, FileName);
 	IGETSET(bool, closing, Closing, false);
 
-	// void addMatchADLTask() noexcept;
 	void addListDiffTask(const string& aFile, bool aOwnList) noexcept;
 
 	void addPartialListTask(const string& aXml, const string& aBase, bool aBackgroundTask = false, const AsyncF& aCompletionF = nullptr) noexcept;
@@ -352,8 +351,6 @@ private:
 	// Throws Exception, AbortException
 	void loadPartialImpl(const string& aXml, const string& aBasePath, bool aBackgroundTask, const AsyncF& aCompletionF);
 
-	// Throws AbortException
-	// void matchAdlImpl();
 	void matchQueueImpl() noexcept;
 
 	HintedUser hintedUser;

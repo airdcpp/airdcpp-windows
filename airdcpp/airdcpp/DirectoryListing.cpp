@@ -902,10 +902,6 @@ void DirectoryListing::checkShareDupes() noexcept {
 	root->setDupe(DUPE_NONE); //never show the root as a dupe or partial dupe.
 }
 
-/*void DirectoryListing::addMatchADLTask() noexcept {
-	addAsyncTask([=] { matchAdlImpl(); });
-}*/
-
 void DirectoryListing::addListDiffTask(const string& aFile, bool aOwnList) noexcept {
 	addAsyncTask([=] { listDiffImpl(aFile, aOwnList); });
 }
