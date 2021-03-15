@@ -57,8 +57,8 @@ LRESULT SDCPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	PropPage::read((HWND)*this, items);
 
 	setMinMax(IDC_BUFFER_SPIN, 0, 4096);
-	setMinMax(IDC_READ_SPIN, 1024, 1024*1024);
-	setMinMax(IDC_WRITE_SPIN, 1024, 1024*1024);
+	setMinMax(IDC_READ_SPIN, 0, 1024*1024);
+	setMinMax(IDC_WRITE_SPIN, 0, 1024*1024);
 
 	setMinMax(IDC_DOWNCONN_SPIN, 0, 5);
 	setMinMax(IDC_MAX_COMP_SPIN, 0, 9);
