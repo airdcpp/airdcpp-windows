@@ -45,6 +45,7 @@ public:
 		MESSAGE_HANDLER(WM_CTLCOLOREDIT, onCtlColor)
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)
 		CHAIN_MSG_MAP(baseClass)
+		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
 	ALT_MSG_MAP(TCP_COMMAND_MESSAGE_MAP)
 		MESSAGE_HANDLER(BM_SETCHECK, onSetTCPCheckCommand)
 	ALT_MSG_MAP(UDP_COMMAND_MESSAGE_MAP)
@@ -76,6 +77,11 @@ public:
 	LRESULT onSetCheckFilter(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
 
 	LRESULT onChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
+	LRESULT onCloseWindow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		PostMessage(WM_CLOSE);
+		return 0;
+	}
 
 	void addLine(const string& aLine);
 	static string id;
