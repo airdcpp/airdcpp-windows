@@ -70,6 +70,13 @@
 //
 #  define BOOST_MATH_NO_LONG_DOUBLE_MATH_FUNCTIONS
 #endif
+#if !defined(BOOST_MATH_NO_LONG_DOUBLE_MATH_FUNCTIONS) && (LDBL_MANT_DIG == 106) && (LDBL_MIN_EXP > DBL_MIN_EXP)
+//
+// Generic catch all case for gcc's "double-double" long double type.
+// We do not support this as it's not even remotely IEEE conforming:
+//
+#  define BOOST_MATH_NO_LONG_DOUBLE_MATH_FUNCTIONS
+#endif
 #if defined(unix) && defined(__INTEL_COMPILER) && (__INTEL_COMPILER <= 1000) && !defined(BOOST_MATH_NO_LONG_DOUBLE_MATH_FUNCTIONS)
 //
 // Intel compiler prior to version 10 has sporadic problems
@@ -470,6 +477,14 @@ namespace boost{ namespace math{
 #else
 #  define BOOST_MATH_THREAD_LOCAL
 #endif
+//
+// Some mingw flavours have issues with thread_local and types with non-trivial destructors
+// See https://sourceforge.net/p/mingw-w64/bugs/527/
+//
+#if !defined(BOOST_NO_CXX11_THREAD_LOCAL) && (defined(__MINGW32__) || defined(__MINGW64__)) && !defined(_REENTRANT) && !defined(__clang__)
+#  define BOOST_MATH_NO_THREAD_LOCAL_WITH_NON_TRIVIAL_TYPES
+#endif
+
 
 //
 // Can we have constexpr tables?

@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2020 Antony Polukhin
+// Copyright (c) 2016-2021 Antony Polukhin
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -29,7 +29,11 @@ namespace boost { namespace pfr { namespace detail {
 ///////////////////// Structure that can be converted to reference to anything
 struct ubiq_lref_constructor {
     std::size_t ignore;
-    template <class Type> constexpr operator Type&() const && noexcept {  // Allows initialization of reference fields (T& and const T&)
+    template <class Type> constexpr operator Type&() const && noexcept {  // tweak for template_unconstrained.cpp like cases
+        return detail::unsafe_declval<Type&>();
+    };
+
+    template <class Type> constexpr operator Type&() const & noexcept {  // tweak for optional_chrono.cpp like cases
         return detail::unsafe_declval<Type&>();
     };
 };

@@ -60,6 +60,8 @@
 # endif
 #elif defined(_MSC_VER)
 #  define BOOST_SYSTEM_DEPRECATED(msg) __declspec(deprecated(msg))
+#else
+# define BOOST_SYSTEM_DEPRECATED(msg)
 #endif
 
 #endif // BOOST_SYSTEM_DETAIL_CONFIG_HPP_INCLUDED

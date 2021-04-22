@@ -26,7 +26,7 @@
 
 #include <boost/config.hpp>
 #include <boost/cstdint.hpp>
-#include <boost/cstdlib.hpp>
+#include <cstdlib>
 
 
 #   if (defined(_WIN32) || defined(__WIN32__) || defined(WIN32))

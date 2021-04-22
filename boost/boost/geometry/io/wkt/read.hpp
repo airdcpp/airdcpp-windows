@@ -4,6 +4,7 @@
 // Copyright (c) 2008-2012 Bruno Lalande, Paris, France.
 // Copyright (c) 2009-2012 Mateusz Loskot, London, UK.
 // Copyright (c) 2017 Adam Wulkiewicz, Lodz, Poland.
+// Copyright (c) 2020 Baidyanath Kundu, Haldia, India
 
 // This file was modified by Oracle on 2014-2020.
 // Modifications copyright (c) 2014-2020 Oracle and/or its affiliates.
@@ -52,6 +53,10 @@
 #include <boost/geometry/geometries/concepts/check.hpp>
 
 #include <boost/geometry/io/wkt/detail/prefix.hpp>
+
+#include <boost/geometry/strategies/io/cartesian.hpp>
+#include <boost/geometry/strategies/io/geographic.hpp>
+#include <boost/geometry/strategies/io/spherical.hpp>
 
 #include <boost/geometry/util/coordinate_cast.hpp>
 #include <boost/geometry/util/type_traits.hpp>
@@ -303,9 +308,9 @@ private:
     static inline bool disjoint(point_type const& p1, point_type const& p2)
     {
         // TODO: pass strategy
-        typedef typename strategy::disjoint::services::default_strategy
+        typedef typename strategies::io::services::default_strategy
             <
-                point_type, point_type
+                point_type
             >::type strategy_type;
 
         return detail::disjoint::disjoint_point_point(p1, p2, strategy_type());
@@ -905,6 +910,23 @@ inline void read_wkt(std::string const& wkt, Geometry& geometry)
 {
     geometry::concepts::check<Geometry>();
     dispatch::read_wkt<typename tag<Geometry>::type, Geometry>::apply(wkt, geometry);
+}
+
+/*!
+\brief Parses OGC Well-Known Text (\ref WKT) into a geometry (any geometry) and returns it
+\ingroup wkt
+\tparam Geometry \tparam_geometry
+\param wkt string containing \ref WKT
+\ingroup wkt
+\qbk{[include reference/io/from_wkt.qbk]}
+*/
+template <typename Geometry>
+inline Geometry from_wkt(std::string const& wkt)
+{
+    Geometry geometry;
+    geometry::concepts::check<Geometry>();
+    dispatch::read_wkt<typename tag<Geometry>::type, Geometry>::apply(wkt, geometry);
+    return geometry;
 }
 
 }} // namespace boost::geometry

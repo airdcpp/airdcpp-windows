@@ -39,7 +39,6 @@
 #include <cstddef>
 #include <boost/intrusive/detail/minimal_less_equal_header.hpp>
 #include <boost/intrusive/detail/minimal_pair_header.hpp>   //std::pair
-#include <cmath>
 #include <cstddef>
 
 #if defined(BOOST_HAS_PRAGMA_ONCE)

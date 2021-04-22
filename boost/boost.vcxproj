@@ -168,23 +168,11 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="libs\regex\src\c_regex_traits.cpp" />
-    <ClCompile Include="libs\regex\src\cpp_regex_traits.cpp" />
-    <ClCompile Include="libs\regex\src\cregex.cpp" />
-    <ClCompile Include="libs\regex\src\fileiter.cpp" />
-    <ClCompile Include="libs\regex\src\icu.cpp" />
-    <ClCompile Include="libs\regex\src\instances.cpp" />
     <ClCompile Include="libs\regex\src\posix_api.cpp" />
     <ClCompile Include="libs\regex\src\regex.cpp" />
     <ClCompile Include="libs\regex\src\regex_debug.cpp" />
-    <ClCompile Include="libs\regex\src\regex_raw_buffer.cpp" />
-    <ClCompile Include="libs\regex\src\regex_traits_defaults.cpp" />
     <ClCompile Include="libs\regex\src\static_mutex.cpp" />
-    <ClCompile Include="libs\regex\src\usinstances.cpp" />
-    <ClCompile Include="libs\regex\src\w32_regex_traits.cpp" />
-    <ClCompile Include="libs\regex\src\wc_regex_traits.cpp" />
     <ClCompile Include="libs\regex\src\wide_posix_api.cpp" />
-    <ClCompile Include="libs\regex\src\winstances.cpp" />
     <ClCompile Include="libs\system\src\error_code.cpp" />
     <ClCompile Include="libs\thread\src\tss_null.cpp" />
     <ClCompile Include="libs\thread\src\win32\thread.cpp" />

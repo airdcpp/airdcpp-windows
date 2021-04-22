@@ -304,10 +304,12 @@ namespace detail
     extern "C" ptrdiff_t write(int, const void *, size_t);
 #elif defined(_MSC_VER)
     extern ptrdiff_t write(int, const void *, size_t);
-#if defined(_WIN64)
+#if(defined(__x86_64__) || defined(_M_X64)) || (defined(__aarch64__) || defined(_M_ARM64)) || (defined(__arm__) || defined(_M_ARM))
 #pragma comment(linker, "/alternatename:?write@avoid_stdio_include@detail@system_error2@@YA_JHPEBX_K@Z=write")
-#else
+#elif defined(__x86__) || defined(_M_IX86) || defined(__i386__)
 #pragma comment(linker, "/alternatename:?write@avoid_stdio_include@detail@system_error2@@YAHHPBXI@Z=_write")
+#else
+#error Unknown architecture
 #endif
 #endif
   }  // namespace avoid_stdio_include

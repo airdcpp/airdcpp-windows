@@ -1,9 +1,8 @@
 index.html
 boost_regex/configuration.html
 boost_regex/configuration/compiler.html
+boost_regex/configuration/standalone.html
 boost_regex/configuration/locale.html
-boost_regex/configuration/linkage.html
-boost_regex/configuration/algorithm.html
 boost_regex/configuration/tuning.html
 boost_regex/install.html
 boost_regex/intro.html
