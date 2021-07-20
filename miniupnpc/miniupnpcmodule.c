@@ -1,9 +1,9 @@
-/* $Id: miniupnpcmodule.c,v 1.35 2020/09/28 21:02:08 nanard Exp $*/
+/* $Id: miniupnpcmodule.c,v 1.36 2021/03/02 23:34:33 nanard Exp $*/
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * Project : miniupnp
  * Author : Thomas BERNARD
  * website : https://miniupnp.tuxfamily.org/
- * copyright (c) 2007-2020 Thomas Bernard
+ * copyright (c) 2007-2021 Thomas Bernard
  * This software is subjet to the conditions detailed in the
  * provided LICENCE file. */
 #include <Python.h>
@@ -122,9 +122,9 @@ UPnPObject_dealloc(UPnPObject *self)
 static PyObject *
 UPnP_discover(UPnPObject *self)
 {
-	struct UPNPDev * dev;
-	int i;
+	int error = 0;
 	PyObject *res = NULL;
+
 	if(self->devlist)
 	{
 		freeUPNPDevlist(self->devlist);
@@ -137,13 +137,21 @@ UPnP_discover(UPnPObject *self)
 	                             (int)self->localport,
 	                             0/*ip v6*/,
 	                             2/* TTL */,
-	                             0/*error */);
+	                             &error);
 	Py_END_ALLOW_THREADS
 	/* Py_RETURN_NONE ??? */
-	for(dev = self->devlist, i = 0; dev; dev = dev->pNext)
-		i++;
-	res = Py_BuildValue("i", i);
-	return res;
+	if (self->devlist != NULL) {
+		struct UPNPDev * dev;
+		int i = 0;
+
+		for(dev = self->devlist; dev; dev = dev->pNext)
+			i++;
+		res = Py_BuildValue("i", i);
+		return res;
+	} else {
+		PyErr_SetString(PyExc_Exception, strupnperror(error));
+		return NULL;
+	}
 }
 
 static PyObject *

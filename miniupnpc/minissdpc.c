@@ -1,9 +1,9 @@
-/* $Id: minissdpc.c,v 1.46 2020/11/09 19:28:05 nanard Exp $ */
+/* $Id: minissdpc.c,v 1.47 2021/03/02 23:38:30 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * Project : miniupnp
  * Web : http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * Author : Thomas BERNARD
- * copyright (c) 2005-2020 Thomas Bernard
+ * copyright (c) 2005-2021 Thomas Bernard
  * This software is subjet to the conditions detailed in the
  * provided LICENCE file. */
 #include <stdio.h>
@@ -33,6 +33,12 @@ typedef unsigned short uint16_t;
 #define strncasecmp memicmp
 #endif /* defined(_MSC_VER) && (_MSC_VER >= 1400) */
 #endif /* #ifndef strncasecmp */
+#if defined(WINAPI_FAMILY) && defined(WINAPI_FAMILY_PARTITION)
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP) && WINAPI_FAMILY != WINAPI_FAMILY_DESKTOP_APP
+#define in6addr_any in6addr_any_init
+static const IN6_ADDR in6addr_any_init = {0};
+#endif
+#endif
 #endif /* _WIN32 */
 #if defined(__amigaos__) || defined(__amigaos4__)
 #include <sys/socket.h>
@@ -66,7 +72,7 @@ struct sockaddr_un {
 #define HAS_IP_MREQN
 #endif
 
-#if !defined(HAS_IP_MREQN) && !defined(_WIN32)
+#ifndef _WIN32
 #include <sys/ioctl.h>
 #if defined(__sun) || defined(__HAIKU__)
 #include <sys/sockio.h>
@@ -697,6 +703,13 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 			 * MS Windows Vista and MS Windows Server 2008.
 			 * http://msdn.microsoft.com/en-us/library/bb408409%28v=vs.85%29.aspx */
 			unsigned int ifindex = if_nametoindex(multicastif); /* eth0, etc. */
+			if(ifindex == 0)
+			{
+				if(error)
+					*error = MINISSDPC_INVALID_INPUT;
+				fprintf(stderr, "Invalid multicast interface name %s\n", multicastif);
+				goto error;
+			}
 			if(setsockopt(sudp, IPPROTO_IPV6, IPV6_MULTICAST_IF, &ifindex, sizeof(ifindex)) < 0)
 			{
 				PRINT_SOCKET_ERROR("setsockopt IPV6_MULTICAST_IF");
@@ -716,7 +729,7 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 #endif
 #else
 			/* was : mc_if.s_addr = inet_addr(multicastif); */ /* ex: 192.168.x.x */
-			if (inet_pton(AF_INET, multicastif, &mc_if.s_addr) < 0) {
+			if (inet_pton(AF_INET, multicastif, &mc_if.s_addr) <= 0) {
 				mc_if.s_addr = INADDR_NONE;
 			}
 #endif
@@ -728,16 +741,11 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 					PRINT_SOCKET_ERROR("setsockopt IP_MULTICAST_IF");
 				}
 			} else {
-#ifdef HAS_IP_MREQN
 				/* was not an ip address, try with an interface name */
+#ifndef _WIN32
+#ifdef HAS_IP_MREQN
 				struct ip_mreqn reqn;	/* only defined with -D_BSD_SOURCE or -D_GNU_SOURCE */
-				memset(&reqn, 0, sizeof(struct ip_mreqn));
-				reqn.imr_ifindex = if_nametoindex(multicastif);
-				if(setsockopt(sudp, IPPROTO_IP, IP_MULTICAST_IF, (const char *)&reqn, sizeof(reqn)) < 0)
-				{
-					PRINT_SOCKET_ERROR("setsockopt IP_MULTICAST_IF");
-				}
-#elif !defined(_WIN32)
+#endif
 				struct ifreq ifr;
 				int ifrlen = sizeof(ifr);
 				strncpy(ifr.ifr_name, multicastif, IFNAMSIZ);
@@ -745,12 +753,30 @@ ssdpDiscoverDevices(const char * const deviceTypes[],
 				if(ioctl(sudp, SIOCGIFADDR, &ifr, &ifrlen) < 0)
 				{
 					PRINT_SOCKET_ERROR("ioctl(...SIOCGIFADDR...)");
+					goto error;
 				}
 				mc_if.s_addr = ((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr.s_addr;
+#ifdef HAS_IP_MREQN
+				memset(&reqn, 0, sizeof(struct ip_mreqn));
+				reqn.imr_address.s_addr = mc_if.s_addr;
+				reqn.imr_ifindex = if_nametoindex(multicastif);
+				if(reqn.imr_ifindex == 0)
+				{
+					if(error)
+						*error = MINISSDPC_INVALID_INPUT;
+					fprintf(stderr, "Invalid multicast ip address / interface name %s\n", multicastif);
+					goto error;
+				}
+				if(setsockopt(sudp, IPPROTO_IP, IP_MULTICAST_IF, (const char *)&reqn, sizeof(reqn)) < 0)
+				{
+					PRINT_SOCKET_ERROR("setsockopt IP_MULTICAST_IF");
+				}
+#else
 				if(setsockopt(sudp, IPPROTO_IP, IP_MULTICAST_IF, (const char *)&mc_if, sizeof(mc_if)) < 0)
 				{
 					PRINT_SOCKET_ERROR("setsockopt IP_MULTICAST_IF");
 				}
+#endif
 #else /* _WIN32 */
 #ifdef DEBUG
 				printf("Setting of multicast interface not supported with interface name.\n");
@@ -966,4 +992,3 @@ error:
 	closesocket(sudp);
 	return devlist;
 }
-

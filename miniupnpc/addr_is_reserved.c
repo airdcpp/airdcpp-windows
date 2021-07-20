@@ -1,9 +1,9 @@
-/* $Id: addr_is_reserved.c,v 1.3 2020/11/09 19:42:42 nanard Exp $ */
+/* $Id: addr_is_reserved.c,v 1.4 2021/03/02 23:40:32 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * Project : miniupnp
  * Web : http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * Author : Thomas BERNARD
- * copyright (c) 2005-2020 Thomas Bernard
+ * copyright (c) 2005-2021 Thomas Bernard
  * This software is subjet to the conditions detailed in the
  * provided LICENSE file. */
 #ifdef _WIN32
@@ -62,7 +62,7 @@ int addr_is_reserved(const char * addr_str)
 		return 1;
 #else
 	/* was : addr_n = inet_addr(addr_str); */
-	if (inet_pton(AF_INET, addr_str, &addr_n) < 0) {
+	if (inet_pton(AF_INET, addr_str, &addr_n) <= 0) {
 		/* error */
 		return 1;
 	}
