@@ -247,12 +247,13 @@ private:
 	bool getLocalPaths(StringList& paths_, bool usingTree, bool dirsOnly);
 	void openDupe(const DirectoryListing::Directory::Ptr& d);
 	void openDupe(const DirectoryListing::File::Ptr& f, bool openDir) noexcept;
+	const string getCurrentPath() const noexcept;
 
 	// safe to be called from any thread
 	void updateStatus(const tstring& aMsg);
 	void updateStatusText(int aTotalCount, int64_t totalSize, int selectedCount, int displayCount, time_t aUpdateDate);
 
-	string curPath = ADC_ROOT_STR;
+	// string curPath = ADC_ROOT_STR;
 	
 	void updateItems(const DirectoryListing::Directory::Ptr& d);
 	void insertItems(const optional<string>& selectedName);
@@ -330,7 +331,7 @@ private:
 
 	void handleItemAction(bool usingTree, std::function<void (const ItemInfo* ii)> aF, bool firstOnly = false);
 	void onListItemAction();
-	void changeDir(const ItemInfo* d, bool aReloadDir = false);
+	void loadPath(const ItemInfo* d, DirectoryListing::DirectoryLoadType aChangeType);
 
 	static tstring handleCopyMagnet(const ItemInfo* ii);
 	static tstring handleCopyPath(const ItemInfo* ii);
@@ -388,26 +389,26 @@ private:
 	typedef map<HWND, DirectoryListingFrame*> FrameMap;
 	static FrameMap frames;
 
-	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
+	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept override;
 
-	void on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool aBackgroundTask) noexcept;
-	void on(DirectoryListingListener::LoadingFailed, const string& aReason) noexcept;
-	void on(DirectoryListingListener::LoadingStarted, bool changeDir) noexcept;
-	void on(DirectoryListingListener::QueueMatched, const string& aMessage) noexcept;
-	void on(DirectoryListingListener::Close) noexcept;
-	void on(DirectoryListingListener::SearchStarted) noexcept;
-	void on(DirectoryListingListener::SearchFailed, bool timedOut) noexcept;
-	void on(DirectoryListingListener::ChangeDirectory, const string& aDir, bool isSearchChange) noexcept;
-	void on(DirectoryListingListener::UpdateStatusMessage, const string& aMessage) noexcept;
-	void on(DirectoryListingListener::RemovedQueue, const string& aDir) noexcept;
-	void on(DirectoryListingListener::UserUpdated) noexcept;
-	void on(DirectoryListingListener::ShareProfileChanged) noexcept;
-	void on(DirectoryListingListener::Read) noexcept;
+	void on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, uint8_t aType) noexcept override;
+	void on(DirectoryListingListener::LoadingFailed, const string& aReason) noexcept override;
+	void on(DirectoryListingListener::LoadingStarted, bool changeDir) noexcept override;
+	void on(DirectoryListingListener::QueueMatched, const string& aMessage) noexcept override;
+	void on(DirectoryListingListener::Close) noexcept override;
+	void on(DirectoryListingListener::SearchStarted) noexcept override;
+	void on(DirectoryListingListener::SearchFailed, bool aTimedOut) noexcept override;
+	void on(DirectoryListingListener::ChangeDirectory, const string& aDir, uint8_t aChangeType) noexcept override;
+	void on(DirectoryListingListener::UpdateStatusMessage, const string& aMessage) noexcept override;
+	void on(DirectoryListingListener::RemovedQueue, const string& aDir) noexcept override;
+	void on(DirectoryListingListener::UserUpdated) noexcept override;
+	void on(DirectoryListingListener::ShareProfileChanged) noexcept override;
+	void on(DirectoryListingListener::Read) noexcept override;
 
 	void filterList();
 	void createRoot();
 	void convertToFull();
-	void onLoadingFinished(int64_t aStart, const string& aDir, bool aBackgroundTask);
+	void onLoadingFinished(int64_t aStart, const string& aDir, uint8_t aType);
 
 
 	CComboBox selCombo;
