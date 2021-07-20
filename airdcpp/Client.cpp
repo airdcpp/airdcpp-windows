@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -113,44 +113,61 @@ void Client::on(ShareManagerListener::ProfileRemoved, ProfileToken aProfile) noe
 	}
 }
 
+/// @todo update the nick in ADC hubs?
 void Client::reloadSettings(bool aUpdateNick) noexcept {
-	/// @todo update the nick in ADC hubs?
-	string prevNick;
-	if(!aUpdateNick)
-		prevNick = get(Nick);
+	HubSettings oldHubSettings = *static_cast<HubSettings*>(this);
 
-	auto fav = FavoriteManager::getInstance()->getFavoriteHubEntry(getHubUrl());
-
+	// Merging
 	*static_cast<HubSettings*>(this) = SettingsManager::getInstance()->getHubSettings();
 
+	auto fav = FavoriteManager::getInstance()->getFavoriteHubEntry(getHubUrl());
 	if(fav) {
 		FavoriteManager::getInstance()->mergeHubSettings(fav, *this);
+		favToken = fav->getToken();
+	}
+
+	// Restore the old nick if nick change is not allowed
+	if (aUpdateNick) {
+		checkNick(get(Nick));
+	} else {
+		get(Nick) = oldHubSettings.get(Nick);
+	}
+
+	// Avoid unnecessary listener updates
+	if (oldHubSettings == *static_cast<HubSettings*>(this)) {
+		return;
+	}
+
+	// Something has changed
+	if (fav) {
 		if (!fav->getPassword().empty()) {
 			setPassword(fav->getPassword());
 		}
-
-		favToken = fav->getToken();
 	} else {
 		setPassword(Util::emptyString);
 	}
 
 	searchQueue.setMinInterval(get(HubSettings::SearchInterval) * 1000); //convert from seconds
-	if (aUpdateNick) {
-		checkNick(get(Nick));
-	} else {
-		get(Nick) = prevNick;
-	}
+
+	fire(ClientListener::SettingsUpdated(), this);
 }
 
-bool Client::changeBoolHubSetting(HubSettings::HubBoolSetting aSetting) noexcept {
+
+bool Client::toggleHubBoolSetting(HubSettings::HubBoolSetting aSetting) noexcept {
 	auto newValue = static_cast<bool>(!get(aSetting));
-	get(aSetting) = newValue;
+	setHubSetting(aSetting, newValue);
+	return newValue;
+}
+
+void Client::setHubSetting(HubSettings::HubBoolSetting aSetting, bool aNewValue) noexcept {
+	get(aSetting) = aNewValue;
 
 	//save for a favorite hub if needed
 	if (favToken > 0) {
-		FavoriteManager::getInstance()->setHubSetting(hubUrl, aSetting, newValue);
+		FavoriteManager::getInstance()->setHubSetting(hubUrl, aSetting, aNewValue);
 	}
-	return newValue;
+
+	fire(ClientListener::SettingsUpdated(), this);
 }
 
 void Client::updated(const OnlineUserPtr& aUser) noexcept {
@@ -214,7 +231,7 @@ void Client::connect(bool withKeyprint) noexcept {
 		sock = BufferedSocket::getSocket(separator, v4only());
 		sock->addListener(this);
 		sock->connect(
-			Socket::AddressInfo(address, Socket::AddressInfo::TYPE_URL), 
+			AddressInfo(address, AddressInfo::TYPE_URL), 
 			port, 
 			AirUtil::isSecure(hubUrl), 
 			SETTING(ALLOW_UNTRUSTED_HUBS), 
@@ -262,8 +279,8 @@ void Client::setConnectState(State aState) noexcept {
 	fire(ClientListener::ConnectStateChanged(), this, aState);
 }
 
-void Client::statusMessage(const string& aMessage, LogMessage::Severity aSeverity, int aFlag) noexcept {
-	auto message = std::make_shared<LogMessage>(aMessage, aSeverity);
+void Client::statusMessage(const string& aMessage, LogMessage::Severity aSeverity, const string& aLabel, int aFlag) noexcept {
+	auto message = std::make_shared<LogMessage>(aMessage, aSeverity, aLabel);
 
 	if (aFlag != ClientListener::FLAG_IS_SPAM) {
 		cache.addMessage(message);
@@ -328,7 +345,7 @@ void Client::onUserConnected(const OnlineUserPtr& aUser) noexcept {
 
 		if (aUser->getUser() != ClientManager::getInstance()->getMe()) {
 			if (!aUser->isHidden() && get(HubSettings::ShowJoins) || (get(HubSettings::FavShowJoins) && aUser->getUser()->isFavorite())) {
-				statusMessage("*** " + STRING(JOINS) + ": " + aUser->getIdentity().getNick(), LogMessage::SEV_INFO, ClientListener::FLAG_IS_SYSTEM);
+				statusMessage("*** " + STRING(JOINS) + ": " + aUser->getIdentity().getNick(), LogMessage::SEV_INFO, Util::emptyString, ClientListener::FLAG_IS_SYSTEM);
 			}
 		}
 	}
@@ -342,7 +359,7 @@ void Client::onUserDisconnected(const OnlineUserPtr& aUser, bool aDisconnectTran
 
 		if (aUser->getUser() != ClientManager::getInstance()->getMe()) {
 			if (!aUser->isHidden() && get(HubSettings::ShowJoins) || (get(HubSettings::FavShowJoins) && aUser->getUser()->isFavorite())) {
-				statusMessage("*** " + STRING(PARTS) + ": " + aUser->getIdentity().getNick(), LogMessage::SEV_INFO, ClientListener::FLAG_IS_SYSTEM);
+				statusMessage("*** " + STRING(PARTS) + ": " + aUser->getIdentity().getNick(), LogMessage::SEV_INFO, Util::emptyString, ClientListener::FLAG_IS_SYSTEM);
 			}
 		}
 	}
@@ -357,51 +374,50 @@ void Client::allowUntrustedConnect() noexcept {
 	connect(false);
 }
 
-bool Client::isCommand(const string& aMessage) noexcept {
-	return !aMessage.empty() && aMessage.front() == '/';
-}
-
-bool Client::sendMessageHooked(const string& aMessage, string& error_, bool aThirdPerson) noexcept {
-	if (!stateNormal() && !isCommand(aMessage)) {
+bool Client::sendMessageHooked(const OutgoingChatMessage& aMessage, string& error_) noexcept {
+	if (Util::isChatCommand(aMessage.text)) {
+		fire(ClientListener::ChatCommand(), this, aMessage);
+		// TODO: don't continue and run hooks after this with API v2
+	} else if (!stateNormal()) {
 		error_ = STRING(CONNECTING_IN_PROGRESS);
 		return false;
 	}
 
-	auto error = ClientManager::getInstance()->outgoingHubMessageHook.runHooksError(aMessage, aThirdPerson, *this);
+	auto error = ClientManager::getInstance()->outgoingHubMessageHook.runHooksError(this, aMessage, *this);
 	if (error) {
 		error_ = ActionHookRejection::formatError(error);
 		return false;
 	}
 
 
-	if (isCommand(aMessage)) {
+	if (Util::isChatCommand(aMessage.text)) {
 		return false;
 	}
 
-	return hubMessage(aMessage, error_, aThirdPerson);
+	return hubMessage(aMessage.text, error_, aMessage.thirdPerson);
 }
 
-bool Client::sendPrivateMessageHooked(const OnlineUserPtr& aUser, const string& aMessage, string& error_, bool aThirdPerson, bool aEcho) noexcept {
-	if (!stateNormal() && !isCommand(aMessage)) {
+bool Client::sendPrivateMessageHooked(const OnlineUserPtr& aUser, const OutgoingChatMessage& aMessage, string& error_, bool aEcho) noexcept {
+	if (!stateNormal() && !Util::isChatCommand(aMessage.text)) {
 		error_ = STRING(CONNECTING_IN_PROGRESS);
 		return false;
 	}
 
-	auto error = ClientManager::getInstance()->outgoingPrivateMessageHook.runHooksError(aMessage, aThirdPerson, HintedUser(aUser->getUser(), aUser->getHubUrl()), aEcho);
+	auto error = ClientManager::getInstance()->outgoingPrivateMessageHook.runHooksError(this, aMessage, HintedUser(aUser->getUser(), aUser->getHubUrl()), aEcho);
 	if (error) {
 		error_ = ActionHookRejection::formatError(error);
 		return false;
 	}
 
-	if (isCommand(aMessage)) {
+	if (Util::isChatCommand(aMessage.text)) {
 		return false;
 	}
 
-	return privateMessage(aUser, aMessage, error_, aThirdPerson, aEcho);
+	return privateMessage(aUser, aMessage.text, error_, aMessage.thirdPerson, aEcho);
 }
 
 void Client::onPrivateMessage(const ChatMessagePtr& aMessage) noexcept {
-	if (!ClientManager::getInstance()->incomingPrivateMessageHook.runHooksBasic(aMessage)) {
+	if (!ClientManager::processChatMessage(aMessage, getMyIdentity(), ClientManager::getInstance()->incomingPrivateMessageHook)) {
 		return;
 	}
 
@@ -409,7 +425,7 @@ void Client::onPrivateMessage(const ChatMessagePtr& aMessage) noexcept {
 }
 
 void Client::onChatMessage(const ChatMessagePtr& aMessage) noexcept {
-	if (!ClientManager::getInstance()->incomingHubMessageHook.runHooksBasic(aMessage)) {
+	if (!ClientManager::processChatMessage(aMessage, getMyIdentity(), ClientManager::getInstance()->incomingHubMessageHook)) {
 		return;
 	}
 

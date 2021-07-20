@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@ namespace dcpp {
 
 
 template<typename DataT>
-class ActionHookSubscriber;
+class ActionHookDataGetter;
 
 struct ActionHookRejection;
 typedef std::shared_ptr<ActionHookRejection> ActionHookRejectionPtr;
@@ -48,7 +48,10 @@ template<typename DataT = nullptr_t>
 using ActionHookDataList = vector<ActionHookDataPtr<DataT>>;
 
 template<typename DataT = nullptr_t>
-using ActionHookResultGetter = ActionHookSubscriber<DataT>;
+using ActionHookResultGetter = ActionHookDataGetter<DataT>;
+
+struct AdapterInfo;
+typedef vector<AdapterInfo> AdapterInfoList;
 
 class AdcCommand;
 
@@ -58,10 +61,10 @@ class ADLSearch;
 
 class BufferedSocket;
 
-struct BundleDirectoryItemInfo;
+struct BundleFileInfo;
 
 struct BundleAddInfo;
-struct DirectoryBundleAddInfo;
+struct DirectoryBundleAddResult;
 
 class Bundle;
 typedef std::shared_ptr<Bundle> BundlePtr;
@@ -78,10 +81,6 @@ typedef uint32_t ClientToken;
 class ClientManager;
 
 class ConnectionQueueItem;
-
-class ContextMenuItem;
-typedef std::shared_ptr<ContextMenuItem> ContextMenuItemPtr;
-typedef std::vector<ContextMenuItemPtr> ContextMenuItemList;
 
 class DirectoryListing;
 typedef std::shared_ptr<DirectoryListing> DirectoryListingPtr;
@@ -126,6 +125,11 @@ class InputStream;
 class LogManager;
 
 struct Message;
+struct OutgoingChatMessage;
+
+class MessageHighlight;
+typedef shared_ptr<MessageHighlight> MessageHighlightPtr;
+typedef vector<MessageHighlightPtr> MessageHighlightList;
 
 class ChatMessage;
 typedef std::shared_ptr<ChatMessage> ChatMessagePtr;
@@ -175,7 +179,12 @@ class ServerSocket;
 class ShareProfile;
 typedef std::shared_ptr<ShareProfile> ShareProfilePtr;
 typedef vector<ShareProfilePtr> ShareProfileList;
+
 typedef set<string> RefreshPathList;
+struct ShareRefreshStats;
+
+struct ShareRefreshTask;
+typedef uint32_t ShareRefreshTaskToken;
 
 struct TempShareInfo;
 typedef vector<TempShareInfo> TempShareInfoList;
@@ -185,6 +194,7 @@ class SimpleXML;
 class Socket;
 class SocketException;
 
+class StartupLoader;
 class StringSearch;
 
 class TigerHash;
@@ -218,6 +228,15 @@ typedef std::vector<UserConnectionPtr> UserConnectionList;
 class ViewFile;
 typedef shared_ptr<ViewFile> ViewFilePtr;
 typedef vector<ViewFilePtr> ViewFileList;
+
+// Generic callbacks
+typedef function<void()> Callback;
+typedef function<void(const string&)> MessageCallback;
+
+// Startup callbacks
+typedef std::function<void(const string&)> StepFunction;
+typedef std::function<bool(const string& /*aMessage*/, bool /*aIsQuestion*/, bool /*aIsError*/)> MessageFunction;
+typedef std::function<void(float)> ProgressFunction;
 
 } // namespace dcpp
 

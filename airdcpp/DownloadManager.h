@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,10 +64,11 @@ public:
 
 	// This will ignore bundles with no downloads and 
 	// bundles using highest priority
-	void getRunningBundles(QueueTokenSet& bundles_) const;
+	void getRunningBundles(QueueTokenSet& bundles_) const noexcept;
+	size_t getRunningBundleCount() const noexcept;
 
-	SharedMutex& getCS() { return cs; }
-	const DownloadList& getDownloads() const {
+	SharedMutex& getCS() noexcept { return cs; }
+	const DownloadList& getDownloads() const noexcept {
 		return downloads;
 	}
 
@@ -108,17 +109,17 @@ private:
 	void onFailed(UserConnection* aSource, const string& aError);
 
 	// UserConnectionListener
-	void on(Data, UserConnection*, const uint8_t*, size_t) noexcept;
-	void on(Failed, UserConnection* aSource, const string& aError) noexcept { onFailed(aSource, aError); }
-	void on(ProtocolError, UserConnection* aSource, const string& aError) noexcept { onFailed(aSource, aError); }
-	void on(MaxedOut, UserConnection*, const string& param) noexcept;
-	void on(FileNotAvailable, UserConnection*) noexcept;
+	void on(Data, UserConnection*, const uint8_t*, size_t) noexcept override;
+	void on(Failed, UserConnection* aSource, const string& aError) noexcept override { onFailed(aSource, aError); }
+	void on(ProtocolError, UserConnection* aSource, const string& aError) noexcept override { onFailed(aSource, aError); }
+	void on(MaxedOut, UserConnection*, const string& param) noexcept override;
+	void on(FileNotAvailable, UserConnection*) noexcept override;
 		
-	void on(AdcCommand::SND, UserConnection*, const AdcCommand&) noexcept;
-	void on(AdcCommand::STA, UserConnection*, const AdcCommand&) noexcept;
+	void on(AdcCommand::SND, UserConnection*, const AdcCommand&) noexcept override;
+	void on(AdcCommand::STA, UserConnection*, const AdcCommand&) noexcept override;
 
 	// TimerManagerListener
-	void on(TimerManagerListener::Second, uint64_t aTick) noexcept;
+	void on(TimerManagerListener::Second, uint64_t aTick) noexcept override;
 
 	typedef pair< string, int64_t > StringIntPair;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -144,11 +144,11 @@ public:
 	void setDataMode(int64_t aBytes = -1) noexcept { dcassert(socket); socket->setDataMode(aBytes); }
 	void setLineMode(size_t rollback) noexcept { dcassert(socket); socket->setLineMode(rollback); }
 
-	void connect(const Socket::AddressInfo& aServer, const string& aPort, const string& localPort, BufferedSocket::NatRoles natRole, const UserPtr& aUser = nullptr);
+	void connect(const AddressInfo& aServer, const string& aPort, const string& localPort, BufferedSocket::NatRoles natRole, const UserPtr& aUser = nullptr);
 	void accept(const Socket& aServer);
 
 	void handlePM(const AdcCommand& c, bool echo) noexcept;
-	bool sendPrivateMessageHooked(const string& aMessage, string& error_, bool aThirdPerson = false);
+	bool sendPrivateMessageHooked(const OutgoingChatMessage& aMessage, string& error_);
 
 	template<typename F>
 	void callAsync(F f) { if(socket) socket->callAsync(f); }

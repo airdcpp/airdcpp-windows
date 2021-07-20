@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2019 AirDC++ Project
+ * Copyright (C) 2011-2021 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,16 @@
 
 namespace dcpp {
 
+struct AdapterInfo {
+	AdapterInfo(const string& aName, const string& aIP, uint8_t aPrefix) : adapterName(aName), ip(aIP), prefix(aPrefix) { }
+
+	string adapterName;
+	string ip;
+	uint8_t prefix;
+};
+
+typedef vector<AdapterInfo> AdapterInfoList;
+
 class AirUtil {
 	
 public:
@@ -39,10 +49,12 @@ public:
 		string msg;
 	};
 
-	static boost::regex releaseReg;
+	static boost::regex releaseRegBasic;
+	static boost::regex releaseRegChat;
 	static boost::regex subDirRegPlain;
 	static boost::regex crcReg;
 	static boost::regex lineBreakRegex;
+	static boost::regex urlReg;
 
 	// Check directory dupe status by name or ADC path
 	static DupeType checkAdcDirectoryDupe(const string& aAdcPath, int64_t aSize);
@@ -65,23 +77,16 @@ public:
 	static void init();
 
 	static string toOpenFileName(const string& aFileName, const TTHValue& aTTH) noexcept;
-	static string fromOpenFileName(const string& aFileName) noexcept;
-
-	struct AdapterInfo {
-		AdapterInfo(const string& aName, const string& aIP, uint8_t aPrefix) : adapterName(aName), ip(aIP), prefix(aPrefix) { }
-
-		string adapterName;
-		string ip;
-		uint8_t prefix;
-	};
-	typedef vector<AdapterInfo> AdapterInfoList;
 
 	// Get a list of network adapters for the wanted protocol
 	static AdapterInfoList getNetworkAdapters(bool v6);
 
 	// Get a sorted list of available bind adapters for the wanted protocol
 	// Ensures that the current bind address is listed as well
-	static AdapterInfoList getBindAdapters(bool v6);
+	static AdapterInfoList getCoreBindAdapters(bool v6);
+
+	static void ensureBindAddress(AdapterInfoList& adapters_, const string& aBindAddress) noexcept;
+	static int adapterSort(const AdapterInfo& a, const AdapterInfo& b) noexcept;
 
 	// Get current bind address
 	// The best adapter address is returned if no bind address is configured
@@ -109,8 +114,6 @@ public:
 
 	static string formatMatchResults(int aMatchingFiles, int aNewFiles, const BundleList& aBundles) noexcept;
 
-	static void fileEvent(const string& tgt, bool file=false);
-
 	// Returns true if aDir is a sub directory of aParent
 	// Note: matching is always case insensitive. This will also handle directory paths in aParent without the trailing slash to work with Windows limitations (share monitoring)
 	inline static bool isSubAdc(const string& aDir, const string& aParent) noexcept { return isSub(aDir, aParent, ADC_SEPARATOR);	}
@@ -121,19 +124,19 @@ public:
 	// Note: matching is always case insensitive. This will also handle directory paths in aSub without the trailing slash to work with Windows limitations (share monitoring)
 	inline static bool isParentOrExactAdc(const string& aDir, const string& aSub) noexcept { return isParentOrExact(aDir, aSub, ADC_SEPARATOR); }
 	inline static bool isParentOrExactLocal(const string& aDir, const string& aSub) noexcept { return isParentOrExact(aDir, aSub, PATH_SEPARATOR); }
-	static bool isParentOrExact(const string& aDir, const string& aSub, const char separator) noexcept;
+	static bool isParentOrExact(const string& aDir, const string& aSub, const char aSeparator) noexcept;
+	static bool isParentOrExactLower(const string& aParentLower, const string& aSubLower, const char aSeparator) noexcept;
 
 	static const string getReleaseRegLong(bool chat) noexcept;
 	static const string getReleaseRegBasic() noexcept;
 	static const string getSubDirReg() noexcept;
+	static const string getUrlReg() noexcept;
 
 	inline static string getReleaseDirLocal(const string& aDir, bool aCut) noexcept { return getReleaseDir(aDir, aCut, PATH_SEPARATOR); };
 	inline static string getAdcReleaseDir(const string& aDir, bool aCut) noexcept { return getReleaseDir(aDir, aCut, ADC_SEPARATOR); };
 	static string getReleaseDir(const string& dir, bool cut, const char separator) noexcept;
 
-	static const string getLinkUrl() noexcept;
-
-	static void removeDirectoryIfEmpty(const string& tgt, int maxAttempts, bool silent);
+	static bool removeDirectoryIfEmpty(const string& aPath, int aMaxAttempts);
 
 	static bool isAdcHub(const string& aHubUrl) noexcept;
 	static bool isSecure(const string& aHubUrl) noexcept;
@@ -171,20 +174,25 @@ public:
 		return getLastCommonDirectoryPathFromSub(aMainPath, aSubPath, ADC_SEPARATOR, aMainBaseLength);
 	}
 
-	/* Returns the name without subdirs and possible position from where the subdir starts */
+	// Returns the name without subdirs and possible position from where the subdir starts
 	static pair<string, string::size_type> getAdcDirectoryName(const string& aName) noexcept {
-		return getDirName(aName, ADC_SEPARATOR);
+		return getDirectoryName(aName, ADC_SEPARATOR);
+	}
+
+	// Returns the name without subdirs and possible position from where the subdir starts
+	static pair<string, string::size_type> getLocalDirectoryName(const string& aName) noexcept {
+		return getDirectoryName(aName, PATH_SEPARATOR);
 	}
 
 	static string getTitle(const string& searchTerm) noexcept;
 private:
-	static pair<string, string::size_type> getDirName(const string& aName, char separator) noexcept;
+	static pair<string, string::size_type> getDirectoryName(const string& aName, char aSeparator) noexcept;
 	static string getLastCommonDirectoryPathFromSub(const string& aMainPath, const string& aSubPath, char aSubSeparator, size_t aMainBaseLength) noexcept;
 
-	static string subtractCommonDirs(const string& toCompare, const string& toSubtract, char separator) noexcept;
+	static string subtractCommonDirs(const string& toCompare, const string& toSubtract, char aSeparator) noexcept;
 	static size_t compareFromEnd(const string& aMainPath, const string& aSubPath, char aSubSeparator) noexcept;
 
-	static bool removeDirectoryIfEmptyRe(const string& tgt, int maxAttempts, int curAttempts);
+	static bool removeDirectoryIfEmptyRecursive(const string& aTarget, int aMaxAttempts, int aCurAttempts);
 };
 
 class IsParentOrExact {

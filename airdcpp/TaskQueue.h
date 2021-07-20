@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -74,8 +74,11 @@ public:
 		return false;
 	}
 
+	void get(List& list) noexcept { 
+		Lock l(cs); 
+		swap(tasks, list); 
+	}
 
-	void get(List& list) { Lock l(cs); swap(tasks, list); }
 	bool getFront(TaskPair& t) { 
 		Lock l(cs); 
 		if (tasks.empty())
@@ -90,17 +93,29 @@ public:
 		tasks.pop_front();
 	}
 
-	void clear() {
+	void clear() noexcept {
 		List tmp;
 		get(tmp);
 	}
 
-	List& getTasks() { return tasks; }
-	CriticalSection cs;
-private:
-	TaskQueue(const TaskQueue&);
-	TaskQueue& operator=(const TaskQueue&);
+	bool empty() const noexcept {
+		Lock l(cs);
+		return tasks.empty();
+	}
 
+	List& getTasks() noexcept { 
+		return tasks; 
+	}
+
+	const List& getTasks() const noexcept {
+		return tasks;
+	}
+
+	mutable CriticalSection cs;
+	TaskQueue(const TaskQueue&) = delete;
+	TaskQueue& operator=(const TaskQueue&) = delete;
+
+private:
 	List tasks;
 };
 

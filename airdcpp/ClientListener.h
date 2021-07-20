@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,6 +57,8 @@ public:
 	typedef X<25> KeyprintMismatch;
 	typedef X<26> OutgoingSearch;
 	typedef X<27> PrivateMessage;
+	typedef X<28> ChatCommand;
+	typedef X<29> SettingsUpdated;
 
 	enum StatusFlags {
 		FLAG_NORMAL = 0x00,
@@ -92,6 +94,8 @@ public:
 	virtual void on(KeyprintMismatch, const Client*) noexcept {}
 	virtual void on(OutgoingSearch, const Client*, const SearchPtr&) noexcept {}
 	virtual void on(PrivateMessage, const Client*, const ChatMessagePtr&) noexcept { }
+	virtual void on(ChatCommand, const Client*, const OutgoingChatMessage&) noexcept { }
+	virtual void on(SettingsUpdated, const Client*) noexcept { }
 };
 
 } // namespace dcpp

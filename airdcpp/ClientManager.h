@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,6 @@
 #include "CriticalSection.h"
 #include "OfflineUser.h"
 #include "Singleton.h"
-#include "Socket.h"
 #include "TimerManager.h"
 
 
@@ -46,9 +45,11 @@ class ClientManager : public Speaker<ClientManagerListener>,
 	typedef UserMap::iterator UserIter;
 
 public:
-	ActionHook<nullptr_t, const ChatMessagePtr> incomingHubMessageHook, incomingPrivateMessageHook;
-	ActionHook<nullptr_t, const string, const bool, const HintedUser, const bool> outgoingPrivateMessageHook;
-	ActionHook<nullptr_t, const string, const bool, const Client&> outgoingHubMessageHook;
+	ActionHook<MessageHighlightList, const ChatMessagePtr> incomingHubMessageHook, incomingPrivateMessageHook;
+	ActionHook<nullptr_t, const OutgoingChatMessage&, const HintedUser, const bool /*echo*/> outgoingPrivateMessageHook;
+	ActionHook<nullptr_t, const OutgoingChatMessage&, const Client&> outgoingHubMessageHook;
+
+	static bool processChatMessage(const ChatMessagePtr& aMessage, const Identity& aMyIdentity, const ActionHook<MessageHighlightList, const ChatMessagePtr>& aHook);
 
 	// Returns the new ClientPtr
 	// NOTE: the main app should perform connecting to the new hub
@@ -219,7 +220,7 @@ public:
 	bool sendUDP(AdcCommand& c, const CID& to, bool aNoCID = false, bool aNoPassive = false, const string& aEncryptionKey = Util::emptyString, const string& aHubUrl = Util::emptyString) noexcept;
 
 	bool connect(const UserPtr& aUser, const string& aToken, bool aAllowUrlChange, string& lastError_, string& hubHint_, bool& isProtocolError_, ConnectionType type = CONNECTION_TYPE_LAST) const noexcept;
-	bool privateMessageHooked(const HintedUser& aUser, const string& aMsg, string& error_, bool aThirdPerson, bool aEcho = true) noexcept;
+	bool privateMessageHooked(const HintedUser& aUser, const OutgoingChatMessage& aMessage, string& error_, bool aEcho = true) noexcept;
 	void userCommand(const HintedUser& aUser, const UserCommand& uc, ParamMap& params_, bool aCompatibility) noexcept;
 
 	bool isActive() const noexcept;
@@ -234,7 +235,19 @@ public:
 	const CID& getMyPID() noexcept;
 
 	bool connectADCSearchResult(const CID& aCID, string& token_, string& hubUrl_, string& connection_, uint8_t& slots_) const noexcept;
-	bool connectNMDCSearchResult(const string& aUserIP, const string& aHubIpPort, HintedUser& user_, string& aNick, string& connection_, string& file_, string& hubName_) noexcept;
+	bool connectNMDCSearchResult(const string& aUserIP, const string& aHubIpPort, const string& aNick, HintedUser& user_, string& connection_, string& hubEncoding_) noexcept;
+
+	// Get ADC hub URL for UDP commands
+	// Returns empty string in case of errors
+	string getADCSearchHubUrl(const CID& aCID, const string& aHubIpPort) const noexcept;
+
+	// Get NMDC user + hub URL for UDP commands encoded in legacy encoding
+	// Returns null user in case of errors
+	HintedUser getNmdcSearchHintedUserEncoded(const string& aNick, const string& aHubIpPort, const string& aUserIP, string& encoding_) noexcept;
+
+	// Get NMDC user + hub URL for UDP commands encoded in UTF-8
+	// Returns null user in case of errors
+	HintedUser getNmdcSearchHintedUserUtf8(const string& aUtf8Nick, const string& aHubIpPort, const string& aUserIP) noexcept;
 
 	//return users supporting the ASCH extension (and total users)
 	pair<size_t, size_t> countAschSupport(const OrderedStringSet& aHubs) const noexcept;
@@ -260,7 +273,7 @@ private:
 
 	UserPtr me;
 
-	Socket udp;
+	unique_ptr<Socket> udp;
 	
 	CID pid;
 	uint64_t lastOfflineUserCleanup;

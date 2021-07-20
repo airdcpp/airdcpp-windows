@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -150,7 +150,7 @@ void UserConnection::on(BufferedSocketListener::Line, const string& aLine) noexc
 	}
 }
 
-void UserConnection::connect(const Socket::AddressInfo& aServer, const string& aPort, const string& localPort, BufferedSocket::NatRoles natRole, const UserPtr& aUser /*nullptr*/) {
+void UserConnection::connect(const AddressInfo& aServer, const string& aPort, const string& localPort, BufferedSocket::NatRoles natRole, const UserPtr& aUser /*nullptr*/) {
 	dcassert(!socket);
 
 	socket = BufferedSocket::getSocket(0);
@@ -233,20 +233,20 @@ void UserConnection::inf(bool withToken, int mcnSlots) {
 	send(c);
 }
 
-bool UserConnection::sendPrivateMessageHooked(const string& aMessage, string& error_, bool aThirdPerson) {
-	auto error = ClientManager::getInstance()->outgoingPrivateMessageHook.runHooksError(aMessage, aThirdPerson, getHintedUser(), true);
+bool UserConnection::sendPrivateMessageHooked(const OutgoingChatMessage& aMessage, string& error_) {
+	auto error = ClientManager::getInstance()->outgoingPrivateMessageHook.runHooksError(aMessage.owner, aMessage, getHintedUser(), true);
 	if (error) {
 		error_ = ActionHookRejection::formatError(error);
 		return false;
 	}
 
-	if (!aMessage.empty() && aMessage.front() == '/') {
+	if (Util::isChatCommand(aMessage.text)) {
 		return false;
 	}
 
 	AdcCommand c(AdcCommand::CMD_MSG);
-	c.addParam(aMessage);
-	if (aThirdPerson) {
+	c.addParam(aMessage.text);
+	if (aMessage.thirdPerson) {
 		c.addParam("ME", "1");
 	}
 
@@ -268,7 +268,7 @@ void UserConnection::handle(AdcCommand::PMI t, const AdcCommand& c) {
 }
 
 
-void UserConnection::handlePM(const AdcCommand& c, bool echo) noexcept{
+void UserConnection::handlePM(const AdcCommand& c, bool aEcho) noexcept{
 	const string& message = c.getParam(0);
 
 	auto cm = ClientManager::getInstance();
@@ -283,7 +283,7 @@ void UserConnection::handlePM(const AdcCommand& c, bool echo) noexcept{
 		return;
 	}
 
-	if (echo) {
+	if (aEcho) {
 		std::swap(peer, me);
 	}
 
@@ -295,7 +295,7 @@ void UserConnection::handlePM(const AdcCommand& c, bool echo) noexcept{
 		msg->setTime(Util::toTimeT(tmp));
 	}
 
-	if (!ClientManager::getInstance()->incomingPrivateMessageHook.runHooksBasic(msg)) {
+	if (!ClientManager::processChatMessage(msg, me->getIdentity(), ClientManager::getInstance()->incomingPrivateMessageHook)) {
 		disconnect(true);
 		return;
 	}

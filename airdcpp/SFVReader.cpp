@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -77,7 +77,7 @@ bool DirSFVReader::isCrcValid(const string& aFileName) const {
 	auto p = content.find(aFileName);
 	if (p != content.end()) {
 		CRC32Filter crc32;
-		FileReader(true).read(path + aFileName, [&](const void* x, size_t n) {
+		FileReader(FileReader::ASYNC).read(path + aFileName, [&](const void* x, size_t n) {
 			return crc32(x, n), true;
 		});
 		return crc32.getValue() == p->second;
@@ -146,7 +146,7 @@ void DirSFVReader::load() noexcept {
 		}
 
 		if (!error.empty()) {
-			LogManager::getInstance()->message(curPath + ": " + error, LogMessage::SEV_ERROR);
+			LogManager::getInstance()->message(curPath + ": " + error, LogMessage::SEV_ERROR, STRING(SFV_READER));
 			failedFiles.push_back(curPath);
 		}
 	}

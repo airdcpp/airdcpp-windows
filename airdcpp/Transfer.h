@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -89,6 +89,8 @@ public:
 	IGETSET(uint64_t, start, Start, 0);
 
 	virtual void appendFlags(OrderedStringSet& flags_) const noexcept;
+
+	bool isFilelist() const noexcept;
 private:
 	typedef std::pair<uint64_t, int64_t> Sample;
 	typedef deque<Sample> SampleList;

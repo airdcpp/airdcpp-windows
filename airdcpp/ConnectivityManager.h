@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,6 +54,8 @@ public:
 class ConnectivityManager : public Singleton<ConnectivityManager>, public Speaker<ConnectivityManagerListener>
 {
 public:
+	void startup(StartupLoader& aLoader) noexcept;
+
 	bool get(SettingsManager::BoolSetting setting) const;
 	int get(SettingsManager::IntSetting setting) const;
 	const string& get(SettingsManager::StrSetting setting) const;

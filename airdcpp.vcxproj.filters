@@ -23,9 +23,6 @@
     <ClCompile Include="airdcpp\AdcHub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="airdcpp\ADLSearch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="airdcpp\BufferedSocket.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -341,15 +338,6 @@
     <ClCompile Include="airdcpp\GroupedSearchResult.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="airdcpp\modules\DirectoryMonitor.cpp">
-      <Filter>Source Files\modules</Filter>
-    </ClCompile>
-    <ClCompile Include="airdcpp\modules\ShareMonitorManager.cpp">
-      <Filter>Source Files\modules</Filter>
-    </ClCompile>
-    <ClCompile Include="airdcpp\modules\ShareScannerManager.cpp">
-      <Filter>Source Files\modules</Filter>
-    </ClCompile>
     <ClCompile Include="airdcpp\SharePathValidator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -362,11 +350,20 @@
     <ClCompile Include="airdcpp\ErrorCollector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="airdcpp\ContextMenuManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="airdcpp\TransferInfoManager.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\MessageHighlight.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\Hasher.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\HashStore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\modules\ADLSearch.cpp">
+      <Filter>Source Files\modules</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -374,9 +371,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="airdcpp\AdcHub.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\ADLSearch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="airdcpp\BloomFilter.h">
@@ -859,9 +853,6 @@
     <ClInclude Include="airdcpp\SettingsManagerListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="airdcpp\BundleInfo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="airdcpp\Priority.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -928,18 +919,6 @@
     <ClInclude Include="airdcpp\ActionHook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="airdcpp\modules\DirectoryMonitorListener.h">
-      <Filter>Header Files\modules</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\modules\DirectoryMonitor.h">
-      <Filter>Header Files\modules</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\modules\ShareMonitorManager.h">
-      <Filter>Header Files\modules</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\modules\ShareScannerManager.h">
-      <Filter>Header Files\modules</Filter>
-    </ClInclude>
     <ClInclude Include="airdcpp\SharePathValidator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -964,14 +943,32 @@
     <ClInclude Include="airdcpp\DirectoryDownload.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="airdcpp\ContextMenuManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="airdcpp\TransferInfoManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="airdcpp\TransferInfo.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\StreamBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\AddressInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\MessageHighlight.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\Hasher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\QueueAddInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\HashStore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\modules\ADLSearch.h">
+      <Filter>Header Files\modules</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

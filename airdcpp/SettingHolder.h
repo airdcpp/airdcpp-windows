@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2013-2019 AirDC++ Project
+* Copyright (C) 2013-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 #ifndef DCPLUSPLUS_DCPP_SETTINGHOLDER_
 #define DCPLUSPLUS_DCPP_SETTINGHOLDER_
 
-#include "ConnectivityManager.h"
 #include "SettingsManager.h"
 
 namespace dcpp {
@@ -27,11 +26,11 @@ namespace dcpp {
 
 class SettingHolder {
 public:
-	typedef std::function < void(const string&)> ErrorFunction;
-
-	SettingHolder(ErrorFunction errorF);
+	SettingHolder(MessageCallback errorF);
 	~SettingHolder();
 
+	void apply();
+private:
 	const int prevTCP = SETTING(TCP_PORT);
 	const int prevUDP = SETTING(UDP_PORT);
 	const int prevTLS = SETTING(TLS_PORT);
@@ -41,7 +40,12 @@ public:
 	const string prevMapper = SETTING(MAPPER);
 	const string prevBind = SETTING(BIND_ADDRESS);
 	const string prevBind6 = SETTING(BIND_ADDRESS6);
-	const int prevProxy = CONNSETTING(OUTGOING_CONNECTIONS);
+
+	const int prevOutConn = SETTING(OUTGOING_CONNECTIONS);
+	const string prevSocksServer = SETTING(SOCKS_SERVER);
+	const int prevSocksPort = SETTING(SOCKS_PORT);
+	const string prevSocksUser = SETTING(SOCKS_USER);
+	const string prevSocksPassword = SETTING(SOCKS_PASSWORD);
 
 
 	const bool prevGeo = SETTING(GET_USER_COUNTRY);
@@ -60,8 +64,8 @@ public:
 	const string prevTranslation = SETTING(LANGUAGE_FILE);
 
 	const int prevUpdateChannel = SETTING(UPDATE_CHANNEL);
-private:
-	ErrorFunction errorF;
+
+	MessageCallback errorF;
 	void showError(const string& aError) const noexcept;
 };
 

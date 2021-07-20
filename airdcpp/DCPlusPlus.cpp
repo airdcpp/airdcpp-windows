@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,12 +24,10 @@
 #include "StringTokenizer.h"
 
 #include "ActivityManager.h"
-#include "ADLSearch.h"
 #include "AirUtil.h"
 #include "ClientManager.h"
 #include "ConnectionManager.h"
 #include "ConnectivityManager.h"
-#include "ContextMenuManager.h"
 #include "CryptoManager.h"
 #include "DebugManager.h"
 #include "DirectoryListingManager.h"
@@ -56,7 +54,7 @@ namespace dcpp {
 
 #define RUNNING_FLAG Util::getPath(Util::PATH_USER_LOCAL) + "RUNNING"
 
-void startup(StepF stepF, MessageF messageF, Callback runWizard, ProgressF progressF, Callback moduleInitF /*nullptr*/, Callback moduleLoadF /*nullptr*/) {
+void startup(StepFunction aStepF, MessageFunction aMessageF, Callback aRunWizardF, ProgressFunction aProgressF, Callback aModuleInitF /*nullptr*/, StartupLoadCallback aModuleLoadF /*nullptr*/) {
 	// "Dedicated to the near-memory of Nev. Let's start remembering people while they're still alive."
 	// Nev's great contribution to dc++
 	while(1) break;
@@ -92,7 +90,6 @@ void startup(StepF stepF, MessageF messageF, Callback runWizard, ProgressF progr
 	ThrottleManager::newInstance();
 	QueueManager::newInstance();
 	FavoriteManager::newInstance();
-	ADLSearchManager::newInstance();
 	ConnectivityManager::newInstance();
 	DirectoryListingManager::newInstance();
 	DebugManager::newInstance();
@@ -102,20 +99,31 @@ void startup(StepF stepF, MessageF messageF, Callback runWizard, ProgressF progr
 	ActivityManager::newInstance();
 	RecentManager::newInstance();
 	IgnoreManager::newInstance();
-	ContextMenuManager::newInstance();
 	TransferInfoManager::newInstance();
 
-	if (moduleInitF) {
-		moduleInitF();
+	if (aModuleInitF) {
+		aModuleInitF();
 	}
 
-	SettingsManager::getInstance()->load(messageF);
+	const auto announce = [&aStepF](const string& str) {
+		if (aStepF) {
+			aStepF(str);
+		}
+	};
+
+	auto loader = StartupLoader(
+		announce,
+		aProgressF,
+		aMessageF
+	);
+
+	SettingsManager::getInstance()->load(loader);
 	FavoriteManager::getInstance()->load();
 
 	UploadManager::getInstance()->setFreeSlotMatcher();
 	Localization::init();
-	if(SETTING(WIZARD_PENDING) && runWizard) {
-		runWizard();
+	if (SETTING(WIZARD_PENDING) && aRunWizardF) {
+		aRunWizardF();
 		SettingsManager::getInstance()->set(SettingsManager::WIZARD_PENDING, false); //wizard has run on startup
 	}
 
@@ -126,41 +134,42 @@ void startup(StepF stepF, MessageF messageF, Callback runWizard, ProgressF progr
 
 	CryptoManager::getInstance()->loadCertificates();
 
-	auto announce = [&stepF](const string& str) {
-		if(stepF) {
-			stepF(str);
-		}
-	};
-
-	announce(STRING(HASH_DATABASE));
+	loader.stepF(STRING(HASH_DATABASE));
 	try {
-		HashManager::getInstance()->startup(stepF, progressF, messageF);
+		HashManager::getInstance()->startup(loader);
 	} catch (const HashException&) {
 		throw Exception();
 	}
 
-	announce(STRING(DOWNLOAD_QUEUE));
-	QueueManager::getInstance()->loadQueue(progressF);
+	loader.stepF(STRING(DOWNLOAD_QUEUE));
+	QueueManager::getInstance()->loadQueue(loader);
 
-	announce(STRING(SHARED_FILES));
-	ShareManager::getInstance()->startup(stepF, progressF); 
+	loader.stepF(STRING(SHARED_FILES));
+	ShareManager::getInstance()->startup(loader);
 
 	IgnoreManager::getInstance()->load();
 	RecentManager::getInstance()->load();
 
 	if(SETTING(GET_USER_COUNTRY)) {
-		announce(STRING(COUNTRY_INFORMATION));
+		loader.stepF(STRING(COUNTRY_INFORMATION));
 		GeoManager::getInstance()->init();
 	}
 
+	loader.stepF(STRING(CONNECTIVITY));
+	ConnectivityManager::getInstance()->startup(loader);
+
 	// Modules may depend on data loaded in other sections
 	// Initialization should still be performed before loading SettingsManager as some modules save their config there
-	if (moduleLoadF) {
-		moduleLoadF();
+	if (aModuleLoadF) {
+		aModuleLoadF(loader);
+	}
+
+	for (const auto& cb: loader.getPostLoadTasks()) {
+		cb();
 	}
 }
 
-void shutdown(StepF stepF, ProgressF progressF, Callback moduleDestroyF) {
+void shutdown(StepFunction stepF, ProgressFunction progressF, ShutdownUnloadCallback aModuleUnloadF, Callback aModuleDestroyF) {
 	TimerManager::getInstance()->shutdown();
 	auto announce = [&stepF](const string& str) {
 		if(stepF) {
@@ -183,20 +192,24 @@ void shutdown(StepF stepF, ProgressF progressF, Callback moduleDestroyF) {
 	BufferedSocket::waitShutdown();
 	
 	announce(STRING(SAVING_SETTINGS));
+
+	if (aModuleUnloadF) {
+		aModuleUnloadF(stepF, progressF);
+	}
+
 	QueueManager::getInstance()->shutdown();
 	RecentManager::getInstance()->save();
 	IgnoreManager::getInstance()->save();
 	FavoriteManager::getInstance()->shutdown();
 	SettingsManager::getInstance()->save();
 
-	if (moduleDestroyF) {
-		moduleDestroyF();
-	}
-
 	announce(STRING(SHUTTING_DOWN));
 
+	if (aModuleDestroyF) {
+		aModuleDestroyF();
+	}
+
 	TransferInfoManager::deleteInstance();
-	ContextMenuManager::deleteInstance();
 	IgnoreManager::deleteInstance();
 	RecentManager::deleteInstance();
 	ActivityManager::deleteInstance();
@@ -205,7 +218,6 @@ void shutdown(StepF stepF, ProgressF progressF, Callback moduleDestroyF) {
 	GeoManager::deleteInstance();
 	ConnectivityManager::deleteInstance();
 	DebugManager::deleteInstance();
-	ADLSearchManager::deleteInstance();
 	CryptoManager::deleteInstance();
 	ThrottleManager::deleteInstance();
 	DirectoryListingManager::deleteInstance();

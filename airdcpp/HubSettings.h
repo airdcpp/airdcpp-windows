@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -93,6 +93,7 @@ struct HubSettings
 	void load(SimpleXML& xml);
 	void save(SimpleXML& xml) const;
 
+	bool operator==(const HubSettings& aOther) const noexcept;
 private:
 	enum { StringCount = HubStrLast - HubStrFirst,
 		BoolCount = HubBoolLast - HubBoolFirst,

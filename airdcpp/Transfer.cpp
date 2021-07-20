@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -119,6 +119,10 @@ HintedUser Transfer::getHintedUser() const noexcept {
 
 const string& Transfer::getToken() const noexcept {
 	return getUserConnection().getToken(); 
+}
+
+bool Transfer::isFilelist() const noexcept {
+	return type == TYPE_FULL_LIST || type == TYPE_PARTIAL_LIST;
 }
 
 void Transfer::appendFlags(OrderedStringSet& flags_) const noexcept {

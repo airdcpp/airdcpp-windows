@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -187,7 +187,13 @@ int SSLSocket::checkSSL(int ret) {
 				}
 				sys_err = getLastError();
 			}
-			throw SSLSocketException(sys_err);
+
+			if (sys_err != 0) {
+				throw SSLSocketException(sys_err);
+			} else {
+				// See the BUGS section at https://www.openssl.org/docs/man1.1.1/man3/SSL_get_error.html
+				throw SSLSocketException(STRING(TLS_ERROR) + ": connection reset by the peer");
+			}
 		}
 		default:
 			//display the cert errors as first choice, if the error is not the certs display the error from the ssl.

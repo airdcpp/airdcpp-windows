@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -110,6 +110,10 @@ namespace dcpp {
 			return user;
 		}
 
+		void setHubUrl(const string& aHubUrl) noexcept {
+			user.hint = aHubUrl;
+		}
+
 		string getName() {
 			switch (type) {
 			case Transfer::TYPE_TREE: return "TTH: " + Util::getFileName(target);
@@ -119,7 +123,7 @@ namespace dcpp {
 			}
 		}
 	private:
-		const HintedUser user;
+		HintedUser user;
 		const bool download;
 
 		const TransferToken token = Util::rand();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -93,7 +93,7 @@ string GeoIP::getCountry(const string& ip) const {
 			&mmdb_error
 		);
 
-		if (mmdb_error == MMDB_SUCCESS && gai_error == 0) {
+		if (res.found_entry && mmdb_error == MMDB_SUCCESS && gai_error == 0) {
 			const string& setting = SETTING(COUNTRY_FORMAT);
 
 			ParamMap params;

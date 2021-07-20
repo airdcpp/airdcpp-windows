@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -69,7 +69,7 @@ Download::Download(UserConnection& conn, QueueItem& qi) noexcept : Transfer(conn
 			setTreeValid(true);
 			setSegment(qi.getNextSegment(getTigerTree().getBlockSize(), conn.getChunkSize(), conn.getSpeed(), source->getPartialSource(), true));
 			qi.setBlockSize(getTigerTree().getBlockSize());
-		} else if(conn.isSet(UserConnection::FLAG_SUPPORTS_TTHL) && !source->isSet(QueueItem::Source::FLAG_NO_TREE) && qi.getSize() > HashManager::MIN_BLOCK_SIZE) {
+		} else if(conn.isSet(UserConnection::FLAG_SUPPORTS_TTHL) && !source->isSet(QueueItem::Source::FLAG_NO_TREE) && qi.getSize() > HashManager::getMinBlockSize()) {
 			// Get the tree unless the file is small (for small files, we'd probably only get the root anyway)
 			setType(TYPE_TREE);
 			getTigerTree().setFileSize(qi.getSize());
@@ -174,10 +174,6 @@ void Download::getParams(const UserConnection& aSource, ParamMap& params) const 
 	params["target"] = getPath();
 }
 
-bool Download::isFileList() const noexcept {
-	return getType() == Transfer::TYPE_FULL_LIST || getType() == Transfer::TYPE_PARTIAL_LIST;
-}
-
 string Download::getTargetFileName() const noexcept {
 	return Util::getFileName(getPath());
 }
@@ -263,7 +259,7 @@ void Download::open(int64_t bytes, bool z, bool hasDownloadedBytes) {
 		output.reset(new BufferedOutputStream<true>(output.release()));
 	}
 
-	if(getType() == Transfer::TYPE_FILE && !SettingsManager::lanMode) {
+	if (getType() == Transfer::TYPE_FILE) {
 		typedef MerkleCheckOutputStream<TigerTree, true> MerkleStream;
 
 		output.reset(new MerkleStream(tt, output.release(), getStartPos()));

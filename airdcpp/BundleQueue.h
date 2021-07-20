@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2019 AirDC++ Project
+ * Copyright (C) 2011-2021 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,7 +62,7 @@ public:
 	BundleQueue();
 	~BundleQueue();
 	void addBundleItem(const QueueItemPtr& aQI, const BundlePtr& aBundle) noexcept;
-	void removeBundleItem(const QueueItemPtr& aQI, bool finished) noexcept;
+	void removeBundleItem(const QueueItemPtr& aQI, bool aFinished) noexcept;
 
 	size_t getTotalFiles() const noexcept;
 
@@ -72,14 +72,15 @@ public:
 	BundlePtr findBundle(const string& aPath) const noexcept;
 
 	BundlePtr getMergeBundle(const string& aTarget) const noexcept;
-	void getSubBundles(const string& aTarget, BundleList& retBundles) const noexcept;
+	void getSubBundles(const string& aTarget, BundleList& retBundles_) const noexcept;
 
 	void removeBundle(const BundlePtr& aBundle) noexcept;
 
-	void saveQueue(bool force) noexcept;
+	void saveQueue(bool aForce) noexcept;
 	QueueItemList getSearchItems(const BundlePtr& aBundle) const noexcept;
 
 	DupeType isAdcDirectoryQueued(const string& aPath, int64_t aSize) const noexcept;
+	BundlePtr isLocalDirectoryQueued(const string& aPath) const noexcept;
 
 	StringList getAdcDirectoryPaths(const string& aDirName) const noexcept;
 	size_t getDirectoryCount(const BundlePtr& aBundle) const noexcept;
@@ -91,7 +92,9 @@ public:
 
 	int64_t getTotalQueueSize() const noexcept { return queueSize; }
 private:
-	void findAdcDirectories(const string& aPath, PathInfoPtrList& paths_) const noexcept;
+	void findAdcDirectoryPathInfos(const string& aAdcPath, PathInfoPtrList& pathInfos_) const noexcept;
+	const PathInfo* findLocalDirectoryPathInfo(const string& aRealPath) const noexcept;
+
 	const PathInfo* getAdcSubDirectoryInfo(const string& aSubPath, const BundlePtr& aBundle) const noexcept;
 
 	// Get path infos by bundle path

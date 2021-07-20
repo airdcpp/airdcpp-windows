@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 #include "GetSet.h"
 #include "SimpleXML.h"
 #include "Singleton.h"
+#include "Speaker.h"
 #include "StringMatch.h"
 #include "User.h"
 
@@ -121,8 +122,8 @@ namespace dcpp {
 		void load();
 
 	private:
-		ActionHookResult<> onPrivateMessage(const ChatMessagePtr& aMessage, const ActionHookResultGetter<>& aResultGetter) noexcept;
-		ActionHookResult<> onHubMessage(const ChatMessagePtr& aMessage, const ActionHookResultGetter<>& aResultGetter) noexcept;
+		ActionHookResult<MessageHighlightList> onPrivateMessage(const ChatMessagePtr& aMessage, const ActionHookResultGetter<MessageHighlightList>& aResultGetter) noexcept;
+		ActionHookResult<MessageHighlightList> onHubMessage(const ChatMessagePtr& aMessage, const ActionHookResultGetter<MessageHighlightList>& aResultGetter) noexcept;
 
 		mutable SharedMutex cs;
 
@@ -133,7 +134,7 @@ namespace dcpp {
 		// contains the ignored nicks and patterns 
 		vector<ChatFilterItem> ChatFilterItems;
 
-		ActionHookResult<> isIgnoredOrFiltered(const ChatMessagePtr& msg, const ActionHookResultGetter<>& aResultGetter, bool aPM) noexcept;
+		ActionHookResult<MessageHighlightList> isIgnoredOrFiltered(const ChatMessagePtr& msg, const ActionHookResultGetter<MessageHighlightList>& aResultGetter, bool aPM) noexcept;
 
 		// chat filter
 		bool isChatFiltered(const string& aNick, const string& aText, ChatFilterItem::Context aContext = ChatFilterItem::ALL) const noexcept;

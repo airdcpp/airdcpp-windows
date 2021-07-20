@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -139,17 +139,34 @@ public:
 		};
 
 		Source(const HintedUser& aUser) : user(aUser), partialSource(nullptr) { }
-		//Source(const Source& aSource) : Flags(aSource), user(aSource.user), partialSource(aSource.partialSource), remotePath(aSource.remotePath) { }
 
 		bool operator==(const UserPtr& aUser) const { return user == aUser; }
 		PartialSource::Ptr& getPartialSource() { return partialSource; }
 
-		GETSET(HintedUser, user, User);
 		IGETSET(PartialSource::Ptr, partialSource, PartialSource, nullptr);
-		//GETSET(string, remotePath, RemotePath);
-		OrderedStringSet blockedHubs;
-		bool updateHubUrl(const OrderedStringSet& aOnlineHubs, string& hubUrl_, bool aIsFileList) noexcept;
+
+		// Update the hinted download hub URL based if the provided one can't be used
+		bool updateDownloadHubUrl(const OrderedStringSet& aOnlineHubs, string& hubUrl_, bool aIsFileList) const noexcept;
+
+		// Update the hinted source URL
+		void setHubUrl(const string& aHubUrl) noexcept;
+
 		static string formatError(const Flags& aFlags) noexcept;
+		const HintedUser& getUser() const noexcept {
+			return user;
+		}
+
+		const OrderedStringSet& getBlockedHubs() const noexcept {
+			return blockedHubs;
+		}
+
+		void addBlockedHub(const string& aHubUrl) noexcept {
+			blockedHubs.insert(aHubUrl);
+		}
+	private:
+		HintedUser user;
+
+		OrderedStringSet blockedHubs;
 	};
 
 	typedef vector<Source> SourceList;
@@ -180,8 +197,8 @@ public:
 	SourceList& getBadSources() noexcept { return badSources; }
 	const SourceList& getBadSources() const noexcept { return badSources; }
 
-	string getTargetFileName() const noexcept { return Util::getFileName(target); }
-	string getFilePath() const noexcept { return Util::getFilePath(target); }
+	string getTargetFileName() const noexcept;
+	string getFilePath() const noexcept;
 
 	SourceIter getSource(const UserPtr& aUser) noexcept { return find(sources.begin(), sources.end(), aUser); }
 	SourceIter getBadSource(const UserPtr& aUser) noexcept { return find(badSources.begin(), badSources.end(), aUser); }
@@ -258,7 +275,7 @@ public:
 	IGETSET(uint64_t, nextPublishingTime, NextPublishingTime, 0);
 	IGETSET(uint8_t, maxSegments, MaxSegments, 1);
 	IGETSET(BundlePtr, bundle, Bundle, nullptr);
-	IGETSET(string, lastSource, LastSource, Util::emptyString);
+	GETSET(string, lastSource, LastSource);
 	IGETSET(Status, status, Status, STATUS_NEW);
 	IGETSET(ActionHookRejectionPtr, hookError, HookError, nullptr);
 	

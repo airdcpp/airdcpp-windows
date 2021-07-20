@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@ namespace dcpp {
 
 using boost::find_if;
 
-ClientManager::ClientManager() : udp(Socket::TYPE_UDP), lastOfflineUserCleanup(GET_TICK()) {
+ClientManager::ClientManager() : udp(make_unique<Socket>(Socket::TYPE_UDP)), lastOfflineUserCleanup(GET_TICK()) {
 	TimerManager::getInstance()->addListener(this);
 }
 
@@ -830,14 +830,14 @@ bool ClientManager::connect(const UserPtr& aUser, const string& aToken, bool aAl
 	return false;
 }
 
-bool ClientManager::privateMessageHooked(const HintedUser& aUser, const string& aMsg, string& error_, bool aThirdPerson, bool aEcho) noexcept {
+bool ClientManager::privateMessageHooked(const HintedUser& aUser, const OutgoingChatMessage& aMessage, string& error_, bool aEcho) noexcept {
 	auto user = findOnlineUser(aUser);
 	if (!user) {
 		error_ = STRING(USER_OFFLINE);
 		return false;
 	}
 	
-	return user->getClient()->sendPrivateMessageHooked(user, aMsg, error_, aThirdPerson, aEcho);
+	return user->getClient()->sendPrivateMessageHooked(user, aMessage, error_, aEcho);
 }
 
 void ClientManager::userCommand(const HintedUser& user, const UserCommand& uc, ParamMap& params_, bool aCompatibility) noexcept {
@@ -869,7 +869,7 @@ bool ClientManager::sendUDP(AdcCommand& cmd, const CID& aCID, bool aNoCID /*fals
 		u->getClient()->send(cmd);
 	} else {
 		try {
-			COMMAND_DEBUG(cmd.toString(), DebugManager::TYPE_CLIENT_UDP, DebugManager::OUTGOING, u->getIdentity().getIp() + ":" + u->getIdentity().getUdpPort());
+			COMMAND_DEBUG(cmd.toString(), DebugManager::TYPE_CLIENT_UDP, DebugManager::OUTGOING, u->getIdentity().getUdpIp() + ":" + u->getIdentity().getUdpPort());
 			auto cmdStr = aNoCID ? cmd.toString() : cmd.toString(getMe()->getCID());
 			if (!aKey.empty() && Encoder::isBase32(aKey.c_str())) {
 				uint8_t keyChar[16];
@@ -900,7 +900,8 @@ bool ClientManager::sendUDP(AdcCommand& cmd, const CID& aCID, bool aNoCID /*fals
 				cmdStr.insert(0, (char*)out, aLen);
 				delete[] out;
 			}
-			udp.writeTo(u->getIdentity().getIp(), u->getIdentity().getUdpPort(), cmdStr);
+
+			udp->writeTo(u->getIdentity().getUdpIp(), u->getIdentity().getUdpPort(), cmdStr);
 		} catch(const SocketException&) {
 			dcdebug("Socket exception sending ADC UDP command\n");
 		}
@@ -986,9 +987,11 @@ void ClientManager::on(ClientListener::NmdcSearch, Client* aClient, const string
 				if(port.empty()) 
 					port = "412";
 
-				for(const auto& sr: l)
-					udp.writeTo(ip, port, sr->toSR(*aClient));
-
+				for (const auto& sr: l) {
+					auto data = sr->toSR(*aClient);
+					COMMAND_DEBUG(data, DebugManager::TYPE_CLIENT_UDP, DebugManager::OUTGOING, ip + ":" + port);
+					udp->writeTo(ip, port, data);
+				}
 			} catch(...) {
 				dcdebug("Search caught error\n");
 			}
@@ -1013,7 +1016,9 @@ void ClientManager::on(ClientListener::NmdcSearch, Client* aClient, const string
 		
 		try {
 			AdcCommand cmd = SearchManager::getInstance()->toPSR(true, aClient->getMyNick(), aClient->getIpPort(), aTTH.toBase32(), partialInfo);
-			udp.writeTo(Socket::resolve(ip), port, cmd.toString(getMe()->getCID()));
+			auto data = cmd.toString(getMe()->getCID());
+			COMMAND_DEBUG(data, DebugManager::TYPE_CLIENT_UDP, DebugManager::OUTGOING, ip + ":" + port);
+			udp->writeTo(Socket::resolve(ip), port, data);
 		} catch(...) {
 			dcdebug("Partial search caught error\n");		
 		}
@@ -1203,7 +1208,7 @@ optional<ClientManager::ClientStats> ClientManager::getClientStats() const noexc
 				stats.operators++;
 			}
 
-			if (ou->getIdentity().isTcpActive()) {
+			if (ou->getIdentity().hasActiveTcpConnectivity()) {
 				stats.activeUsers++;
 			}
 
@@ -1238,7 +1243,7 @@ optional<ClientManager::ClientStats> ClientManager::getClientStats() const noexc
 			if (pos != string::npos) {
 				clientNames[app.substr(0, pos)]++;
 			} else {
-				clientNames["Unknown"]++;
+				clientNames[STRING(UNKNOWN)]++;
 			}
 		}
 	}
@@ -1446,33 +1451,92 @@ bool ClientManager::connectADCSearchResult(const CID& aCID, string& token_, stri
 	return true;
 }
 
-bool ClientManager::connectNMDCSearchResult(const string& aUserIP, const string& hubIpPort, HintedUser& user_, string& nick_, string& connection_, string& file_, string& hubName_) noexcept {
-	user_.hint = findHub(hubIpPort, true);
-	if(user_.hint.empty()) {
+string ClientManager::getADCSearchHubUrl(const CID& aCID, const string& aHubIpPort) const noexcept {
+	auto hubUrl = findHub(aHubIpPort, false);
+	if (hubUrl.empty()) {
+		// Pick any hub where the user is online
+		auto hubUrls = getHubUrls(aCID);
+		if (!hubUrls.empty()) {
+			return hubUrls.front();
+		}
+	}
+
+	return hubUrl;
+}
+
+HintedUser ClientManager::getNmdcSearchHintedUserEncoded(const string& aNick, const string& aHubIpPort, const string& aUserIP, string& encoding_) noexcept {
+	HintedUser ret;
+	ret.hint = findHub(aHubIpPort, true);
+	if (ret.hint.empty()) {
 		// Could happen if hub has multiple URLs / IPs
-		user_ = findLegacyUser(nick_);
-		if (!user_) {
-			return false;
+		ret = findLegacyUser(aNick);
+		if (!ret || ret.hint.empty()) {
+			return ret;
 		}
 	}
 
-	auto encoding = findHubEncoding(user_.hint);
-	nick_ = Text::toUtf8(nick_, encoding);
-	file_ = Text::toUtf8(file_, encoding);
-	hubName_ = Text::toUtf8(hubName_, encoding);
+	encoding_ = findHubEncoding(ret.hint);
+	if (!ret.user) {
+		auto utf8Nick = Text::toUtf8(aNick, encoding_);
 
-	if (!user_.user) {
-		user_.user = findUser(nick_, user_.hint);
-		if (!user_.user) {
-			return false;
+		ret.user = findUser(utf8Nick, ret.hint);
+		if (!ret.user) {
+			return ret;
 		}
 	}
 
-	setIPUser(user_, aUserIP);
+	setIPUser(ret, aUserIP);
+	return ret;
+}
+
+HintedUser ClientManager::getNmdcSearchHintedUserUtf8(const string& aUtf8Nick, const string& aHubIpPort, const string& aUserIP) noexcept {
+	auto hubUrl = ClientManager::getInstance()->findHub(aHubIpPort, true);
+	if (!hubUrl.empty()) {
+		auto u = ClientManager::getInstance()->findUser(aUtf8Nick, hubUrl);
+		if (u) {
+			setIPUser(u, aUserIP);
+			return HintedUser(u, hubUrl);
+		}
+	}
+
+	// Could happen if hub has multiple URLs / IPs
+	auto ret = ClientManager::getInstance()->findLegacyUser(aUtf8Nick);
+	if (ret) {
+		setIPUser(ret, aUserIP);
+	}
+
+	return ret;
+}
+
+bool ClientManager::connectNMDCSearchResult(const string& aUserIP, const string& aHubIpPort, const string& aNick, HintedUser& user_, string& connection_, string& hubEncoding_) noexcept {
+	user_ = getNmdcSearchHintedUserEncoded(aNick, aHubIpPort, aUserIP, hubEncoding_);
+	if (!user_) {
+		return false;
+	}
 
 	auto ou = findOnlineUser(user_);
 	if (ou) {
 		connection_ = ou->getIdentity().getConnectionString();
+	}
+
+	return true;
+}
+
+
+bool ClientManager::processChatMessage(const ChatMessagePtr& aMessage, const Identity& aMyIdentity, const ActionHook<MessageHighlightList, const ChatMessagePtr>& aHook) {
+	aMessage->parseMention(aMyIdentity);
+
+	{
+		MessageHighlightList highlights;
+
+		try {
+			auto results = aHook.runHooksDataThrow(ClientManager::getInstance(), aMessage);
+			highlights = ActionHook<MessageHighlightList>::normalizeListItems(results);
+		} catch (const HookRejectException&) {
+			return false;
+		}
+
+		aMessage->parseHighlights(aMyIdentity, highlights);
 	}
 
 	return true;

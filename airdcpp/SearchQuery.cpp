@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2019 AirDC++ Project
+ * Copyright (C) 2011-2021 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,11 +17,11 @@
  */
 
 #include "stdinc.h"
-#include "SearchQuery.h"
-#include "Util.h"
+
 #include "AdcHub.h"
+#include "SearchQuery.h"
 #include "StringTokenizer.h"
-#include "AirUtil.h"
+#include "Util.h"
 
 
 namespace {
@@ -43,7 +43,7 @@ double SearchQuery::getRelevanceScore(const SearchQuery& aSearch, int aLevel, bo
 
 	dcassert(boost::find_if(positions, CompareFirst<size_t, int>(string::npos)) == positions.end());
 
-	// check the recursion level (ignore recurions if the last item was fully matched)
+	// check the recursion level (ignore recursions if the last item was fully matched)
 	int recursionLevel = 0;
 	if (aSearch.recursion && aSearch.getLastIncludeMatches() != static_cast<int>(aSearch.include.count())) {
 		recursionLevel = aSearch.recursion->recursionLevel;
@@ -162,39 +162,7 @@ SearchQuery* SearchQuery::getSearch(const SearchPtr& aSearch) noexcept {
 }
 
 StringList SearchQuery::parseSearchString(const string& aString) noexcept {
-	// similar to StringTokenizer but handles quotation marks (and doesn't create empty tokens)
-
-	StringList ret;
-	string::size_type i = 0, prev=0;
-	auto addString = [&] {
-		if (prev != i) {
-			ret.push_back(aString.substr(prev, i-prev));
-		}
-		prev = i+1;
-	};
-
-	bool quote = false;
-	while( (i = aString.find_first_of(" \"", i)) != string::npos) {
-		switch(aString[i]) {
-			case ' ': {
-				if (!quote) addString();
-				break;
-			}
-			case '\"': {
-				quote = !quote;
-				addString();
-				break;
-			}
-		}
-		i++;
-	}
-
-	if(prev < aString.size()) {
-		i = aString.size();
-		addString();
-	}
-		
-	return ret;
+	return CommandTokenizer<string, vector>(aString).getTokens();
 }
 
 SearchQuery::SearchQuery(const string& nmdcString, Search::SizeModes aSizeMode, int64_t size, Search::TypeModes aFileType, size_t aMaxResults) noexcept : maxResults(aMaxResults) {

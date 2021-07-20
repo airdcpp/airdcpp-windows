@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -115,6 +115,26 @@ void HubSettings::save(SimpleXML& xml) const {
 			xml.addChildAttrib(intNames[i], ints[i]);
 		}
 	}
+}
+
+bool HubSettings::operator==(const HubSettings& aOther) const noexcept {
+	for (uint8_t i = 0; i < StringCount; ++i) {
+		if (strings[i] != aOther.strings[i]) {
+			return false;
+		}
+	}
+	for (uint8_t i = 0; i < BoolCount; ++i) {
+		if (bools[i] != aOther.bools[i]) {
+			return false;
+		}
+	}
+	for (uint8_t i = 0; i < IntCount; ++i) {
+		if (ints[i] != aOther.ints[i]) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 } // namespace dcpp

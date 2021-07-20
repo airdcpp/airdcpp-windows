@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@
 #include "FileQueue.h"
 #include "SettingsManager.h"
 #include "Text.h"
-#include "Util.h"
 
 #include <boost/range/algorithm/copy.hpp>
 
@@ -98,7 +97,7 @@ void FileQueue::matchListing(const DirectoryListing& dl, QueueItemList& ql_) con
 
 void FileQueue::matchDir(const DirectoryListing::Directory::Ptr& aDir, QueueItemList& ql_) const noexcept{
 	for(const auto& d: aDir->directories | map_values) {
-		if (!d->getAdls()) {
+		if (!d->isVirtual()) {
 			matchDir(d, ql_);
 		}
 	}

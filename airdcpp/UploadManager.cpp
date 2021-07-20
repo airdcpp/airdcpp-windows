@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,6 +35,9 @@
 #include "Upload.h"
 #include "UploadBundle.h"
 #include "UserConnection.h"
+
+#include <boost/range/numeric.hpp>
+
 
 namespace dcpp {
 
@@ -370,8 +373,10 @@ checkslots:
 		aSource.sendError(e.getError());
 		return false;
 	} catch(const Exception& e) {
-		if (!e.getError().empty())
-			LogManager::getInstance()->message(STRING(UNABLE_TO_SEND_FILE) + " " + sourceFile + ": " + e.getError() + " (" + (ClientManager::getInstance()->getFormatedNicks(aSource.getHintedUser()) + ")"), LogMessage::SEV_ERROR);
+		if (!e.getError().empty()) {
+			log(STRING(UNABLE_TO_SEND_FILE) + " " + sourceFile + ": " + e.getError() + " (" + (ClientManager::getInstance()->getFormatedNicks(aSource.getHintedUser()) + ")"), LogMessage::SEV_ERROR);
+		}
+
 		aSource.sendError();
 		return false;
 	}
@@ -1023,7 +1028,7 @@ void UploadManager::on(UserConnectionListener::TransmitDone, UserConnection* aSo
 }
 
 void UploadManager::logUpload(const Upload* u) {
-	if(SETTING(LOG_UPLOADS) && u->getType() != Transfer::TYPE_TREE && (SETTING(LOG_FILELIST_TRANSFERS) || u->getType() != Transfer::TYPE_FULL_LIST)) {
+	if(SETTING(LOG_UPLOADS) && u->getType() != Transfer::TYPE_TREE && (SETTING(LOG_FILELIST_TRANSFERS) || !u->isFilelist())) {
 		ParamMap params;
 		u->getParams(u->getUserConnection(), params);
 		LOG(LogManager::UPLOAD, params);
@@ -1166,7 +1171,7 @@ void UploadManager::on(TimerManagerListener::Minute, uint64_t aTick) noexcept {
 	}
 		
 	for(auto& u: disconnects) {
-		LogManager::getInstance()->message(STRING(DISCONNECTED_USER) + " " + Util::listToString(ClientManager::getInstance()->getNicks(u->getCID())), LogMessage::SEV_INFO);
+		log(STRING(DISCONNECTED_USER) + " " + Util::listToString(ClientManager::getInstance()->getNicks(u->getCID())), LogMessage::SEV_INFO);
 		ConnectionManager::getInstance()->disconnect(u, CONNECTION_TYPE_UPLOAD);
 	}
 
@@ -1184,9 +1189,22 @@ void UploadManager::on(GetListLength, UserConnection* conn) noexcept {
 	conn->disconnect(false);
 }
 
-size_t UploadManager::getUploadCount() const { 
+size_t UploadManager::getUploadCount() const noexcept { 
 	RLock l(cs); 
 	return uploads.size(); 
+}
+
+size_t UploadManager::getRunningBundleCount() const noexcept {
+	RLock l(cs);
+	auto ret = accumulate(bundles | map_values, (size_t)0, [&](size_t old, const UploadBundlePtr& b) {
+		if (b->getSpeed() == 0) {
+			return old;
+		}
+
+		return old + 1;
+	});
+
+	return ret;
 }
 
 bool UploadManager::hasReservedSlot(const UserPtr& aUser) const { 
@@ -1301,6 +1319,10 @@ void UploadManager::removeDelayUpload(const UserConnection& aSource) {
 	//dcassert(find_if(uploads.begin(), uploads.end(), [&](Upload* up) { return &aSource == &up->getUserConnection(); }) != uploads.end());
 }
 
+void UploadManager::log(const string& aMsg, LogMessage::Severity aSeverity) noexcept {
+	LogManager::getInstance()->message(aMsg, aSeverity, STRING(MENU_TRANSFERS));
+}
+
 /**
  * Abort upload of specific file
  */
@@ -1356,9 +1378,10 @@ void UploadManager::abortUpload(const string& aFile, bool waiting){
 		}
 	}
 	
-	if(fileRunning)
-		LogManager::getInstance()->message("Aborting an upload " + aFile + " timed out", LogMessage::SEV_ERROR);
+	if (fileRunning) {
+		log("Aborting an upload " + aFile + " timed out", LogMessage::SEV_ERROR);
 		//dcdebug("abort upload timeout %s\n", aFile.c_str());
+	}
 
 	//LogManager::getInstance()->message("Aborting an upload " + aFile + " timed out", LogMessage::SEV_ERROR);
 }

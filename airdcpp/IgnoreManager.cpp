@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include "FavoriteManager.h"
 #include "LogManager.h"
 #include "PrivateChatManager.h"
+#include "SettingsManager.h"
 
 #include "Message.h"
 #include "Util.h"
@@ -37,19 +38,19 @@ namespace dcpp {
 IgnoreManager::IgnoreManager() noexcept {
 	SettingsManager::getInstance()->addListener(this);
 
-	ClientManager::getInstance()->incomingPrivateMessageHook.addSubscriber(IGNORE_HOOK_ID, STRING(SETTINGS_IGNORE), HOOK_HANDLER(IgnoreManager::onPrivateMessage));
-	ClientManager::getInstance()->incomingHubMessageHook.addSubscriber(IGNORE_HOOK_ID, STRING(SETTINGS_IGNORE), HOOK_HANDLER(IgnoreManager::onHubMessage));
+	ClientManager::getInstance()->incomingPrivateMessageHook.addSubscriber(ActionHookSubscriber(IGNORE_HOOK_ID, STRING(SETTINGS_IGNORE), nullptr), HOOK_HANDLER(IgnoreManager::onPrivateMessage));
+	ClientManager::getInstance()->incomingHubMessageHook.addSubscriber(ActionHookSubscriber(IGNORE_HOOK_ID, STRING(SETTINGS_IGNORE), nullptr), HOOK_HANDLER(IgnoreManager::onHubMessage));
 }
 
 IgnoreManager::~IgnoreManager() noexcept {
 	SettingsManager::getInstance()->removeListener(this);
 }
 
-ActionHookResult<> IgnoreManager::onPrivateMessage(const ChatMessagePtr& aMessage, const ActionHookResultGetter<>& aResultGetter) noexcept {
+ActionHookResult<MessageHighlightList> IgnoreManager::onPrivateMessage(const ChatMessagePtr& aMessage, const ActionHookResultGetter<MessageHighlightList>& aResultGetter) noexcept {
 	return isIgnoredOrFiltered(aMessage, aResultGetter, true);
 }
 
-ActionHookResult<> IgnoreManager::onHubMessage(const ChatMessagePtr& aMessage, const ActionHookResultGetter<>& aResultGetter) noexcept {
+ActionHookResult<MessageHighlightList> IgnoreManager::onHubMessage(const ChatMessagePtr& aMessage, const ActionHookResultGetter<MessageHighlightList>& aResultGetter) noexcept {
 	return isIgnoredOrFiltered(aMessage, aResultGetter, false);
 }
 
@@ -159,7 +160,7 @@ bool IgnoreManager::checkIgnored(const OnlineUserPtr& aUser, bool aPM) noexcept 
 	return true;
 }
 
-ActionHookResult<> IgnoreManager::isIgnoredOrFiltered(const ChatMessagePtr& msg, const ActionHookResultGetter<>& aResultGetter, bool aPM) noexcept {
+ActionHookResult<MessageHighlightList> IgnoreManager::isIgnoredOrFiltered(const ChatMessagePtr& msg, const ActionHookResultGetter<MessageHighlightList>& aResultGetter, bool aPM) noexcept {
 	const auto& fromIdentity = msg->getFrom()->getIdentity();
 
 	//Don't filter own messages
@@ -175,7 +176,7 @@ ActionHookResult<> IgnoreManager::isIgnoredOrFiltered(const ChatMessagePtr& msg,
 				tmp = (filter ? STRING(MC_MESSAGE_FILTERED) : STRING(MC_MESSAGE_IGNORED));
 			}
 			tmp += "<" + fromIdentity.getNick() + "> " + msg->getText();
-			LogManager::getInstance()->message(tmp, LogMessage::SEV_INFO);
+			LogManager::getInstance()->message(tmp, LogMessage::SEV_INFO, STRING(SETTINGS_CHATFILTER));
 		}
 	};
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -291,12 +291,12 @@ void QueueItem::addSource(const HintedUser& aUser) noexcept {
 void QueueItem::blockSourceHub(const HintedUser& aUser) noexcept {
 	dcassert(isSource(aUser.user));
 	auto s = getSource(aUser.user);
-	s->blockedHubs.insert(aUser.hint);
+	s->addBlockedHub(aUser.hint);
 }
 
 bool QueueItem::isHubBlocked(const UserPtr& aUser, const string& aUrl) const noexcept {
 	auto s = getSource(aUser);
-	return !s->blockedHubs.empty() && s->blockedHubs.find(aUrl) != s->blockedHubs.end();
+	return !s->getBlockedHubs().empty() && s->getBlockedHubs().find(aUrl) != s->getBlockedHubs().end();
 }
 
 void QueueItem::removeSource(const UserPtr& aUser, Flags::MaskType reason) noexcept {
@@ -651,7 +651,7 @@ bool QueueItem::hasSegment(const UserPtr& aUser, const OrderedStringSet& aOnline
 		return false;
 
 	auto source = getSource(aUser);
-	if (!source->blockedHubs.empty() && includes(source->blockedHubs.begin(), source->blockedHubs.end(), aOnlineHubs.begin(), aOnlineHubs.end())) {
+	if (!source->getBlockedHubs().empty() && includes(source->getBlockedHubs().begin(), source->getBlockedHubs().end(), aOnlineHubs.begin(), aOnlineHubs.end())) {
 		lastError_ = STRING(NO_ACCESS_ONLINE_HUBS);
 		return false;
 	}
@@ -714,6 +714,15 @@ bool QueueItem::isPausedPrio() const noexcept {
 
 bool QueueItem::usesSmallSlot() const noexcept {
 	return (isSet(FLAG_PARTIAL_LIST) || (size <= 65792 && !isSet(FLAG_USER_LIST) && isSet(FLAG_CLIENT_VIEW)));
+}
+
+
+string QueueItem::getTargetFileName() const noexcept {
+	return Util::getFileName(target); 
+}
+
+string QueueItem::getFilePath() const noexcept {
+	return Util::getFilePath(target); 
 }
 
 QueueItemPtr QueueItem::pickSearchItem(const QueueItemList& aItems) noexcept {
@@ -837,9 +846,9 @@ void QueueItem::save(OutputStream &f, string tmp, string b32tmp) {
 	f.write(LIT("</Download>\r\n"));
 }
 
-bool QueueItem::Source::updateHubUrl(const OrderedStringSet& aOnlineHubs, string& hubUrl_, bool aIsFileList) noexcept {
+bool QueueItem::Source::updateDownloadHubUrl(const OrderedStringSet& aOnlineHubs, string& hubUrl_, bool aIsFileList) const noexcept {
 	if (aIsFileList) {
-		//we already know that the hub is online
+		// we already know that the hub is online
 		dcassert(aOnlineHubs.find(user.hint) != aOnlineHubs.end());
 		hubUrl_ = user.hint;
 		return true;
@@ -852,6 +861,10 @@ bool QueueItem::Source::updateHubUrl(const OrderedStringSet& aOnlineHubs, string
 	}
 
 	return false;
+}
+
+void QueueItem::Source::setHubUrl(const string& aHubUrl) noexcept {
+	user.hint = aHubUrl;
 }
 
 string QueueItem::Source::formatError(const Flags& aFlags) noexcept {

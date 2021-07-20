@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,10 +68,6 @@ private:
  */
 template<typename T1>
 inline int compare(const T1& v1, const T1& v2) noexcept { return (v1 < v2) ? -1 : ((v1 == v2) ? 0 : 1); }
-
-typedef std::function<void (const string&)> StepFunction;
-typedef std::function<bool (const string& /*Message*/, bool /*isQuestion*/, bool /*isError*/)> MessageFunction;
-typedef std::function<void (float)> ProgressFunction;
 
 // Recursively collected information about directory content
 struct DirectoryContentInfo {
@@ -149,6 +145,8 @@ public:
 		PATH_BUNDLES,
 		/** XML files for cached share structure */
 		PATH_SHARECACHE,
+		/** Temp files (viewed files, temp shared items...) */
+		PATH_TEMP,
 
 		PATH_LAST
 	};
@@ -182,7 +180,6 @@ public:
 #endif
 
 	/** Path of temporary storage */
-	static string getTempPath() noexcept;
 	static string getOpenPath() noexcept;
 
 	/** Path of configuration files */
@@ -224,6 +221,8 @@ public:
 	static wstring getFileName(const wstring& aPath) noexcept;
 	static wstring getFileExt(const wstring& aPath) noexcept;
 	static wstring getLastDir(const wstring& aPath) noexcept;
+
+	static string truncate(const string& aStr, int aMaxLength) noexcept;
 
 	template<typename string_t>
 	static void replace(const string_t& search, const string_t& replacement, string_t& str) noexcept {
@@ -622,6 +621,8 @@ public:
 
 	static bool usingLocalMode() noexcept { return localMode; }
 	static bool wasUncleanShutdown;
+
+	static bool isChatCommand(const string& aText) noexcept;
 private:
 	static string cleanPathChars(string aPath, bool isFileName) noexcept;
 

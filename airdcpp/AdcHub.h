@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@
 #include "Client.h"
 #include "CriticalSection.h"
 #include "AdcCommand.h"
-#include "Socket.h"
 
 #include <future>
 
@@ -97,13 +96,16 @@ private:
 
 	void connect(const OnlineUser& aUser, const string& aToken, bool aSecure, bool aReplyingRCM = false) noexcept;
 
+	// Can we accept incoming connections from the other user?
+	bool acceptUserConnections(const OnlineUser& aUser) noexcept;
+
 	/* Checks if we are allowed to connect to the user */
 	AdcCommand::Error allowConnect(const OnlineUser& aUser, bool aSecure, string& failedProtocol_, bool checkBase) const noexcept;
 	/* Does the same thing but also sends the error to the remote user */
 	bool checkProtocol(const OnlineUser& aUser, bool& secure_, const string& aRemoteProtocol, const string& aToken) noexcept;
 
 	bool oldPassword = false;
-	Socket udp;
+	unique_ptr<Socket> udp;
 	SIDMap users;
 	StringMap lastInfoMap;
 	mutable SharedMutex cs;

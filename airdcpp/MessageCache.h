@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@
 #include "stdinc.h"
 
 #include "typedefs.h"
-#include "Message.h"
 #include "CriticalSection.h"
+#include "Message.h"
 #include "SettingsManager.h"
 
 namespace dcpp {
@@ -68,13 +68,26 @@ namespace dcpp {
 		MessageCount setRead() noexcept;
 
 		SharedMutex& getCS() const noexcept { return cs; }
+		MessageHighlightPtr findMessageHighlight(MessageHighlightToken aToken) const noexcept;
 	private:
 		void add(Message&& aMessage) noexcept;
 
 		SettingsManager::IntSetting setting;
 		MessageList messages;
+		map<MessageHighlightToken, MessageHighlightPtr> highlights;
 
 		mutable SharedMutex cs;
+	};
+
+	class ChatHandlerBase {
+	public:
+		virtual const string& getHubUrl() const noexcept = 0;
+		virtual int clearCache() noexcept = 0;
+		virtual void setRead() noexcept = 0;
+
+		virtual const MessageCache& getCache() const noexcept = 0;
+		virtual bool sendMessageHooked(const OutgoingChatMessage& aMessage, string& error_) = 0;
+		virtual void statusMessage(const string& aMessage, LogMessage::Severity aSeverity, const string& aLabel = Util::emptyString) noexcept = 0;
 	};
 }
 

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
+* Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -30,14 +30,16 @@ namespace dcpp {
 
 	typedef std::function<void(const TTHValue&)> UpdateF;
 	public:
-		ViewFile(const string& aTarget, const TTHValue& aTTH, bool aIsText, bool aIsLocalFile, UpdateF&& aUpdateFunction) noexcept;
+		ViewFile(const string& aFileName, const string& aPath, const TTHValue& aTTH, bool aIsText, bool aIsLocalFile, UpdateF&& aUpdateFunction) noexcept;
 		~ViewFile() noexcept;
 
 		const string& getPath() const noexcept {
 			return path;
 		}
 
-		string getDisplayName() const noexcept;
+		const string& getFileName() const noexcept {
+			return fileName;
+		}
 
 		bool isText() const noexcept {
 			return text;
@@ -59,6 +61,7 @@ namespace dcpp {
 	protected:
 		void onStateChanged() noexcept;
 	private:
+		const string fileName;
 		const string path;
 		const UpdateF updateFunction;
 		const TTHValue tth;

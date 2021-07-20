@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,6 @@ namespace dcpp {
 
 class DispatcherQueue : public Thread {
 public:
-	typedef std::function<void()> Callback;
 	typedef std::function<void(Callback&)> DispatchF;
 
 	// You may pass an optional function that will handle executing the callbacks (can be used for exception handling)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2019 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2021 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
 
 #include "stdinc.h"
 #include "File.h"
+
+#include "Exception.h"
 #include "Thread.h"
 
 #ifdef _WIN32
@@ -32,6 +34,10 @@
 #include <utime.h>
 #endif
 
+#ifdef F_NOCACHE
+#include <fcntl.h>
+#endif
+
 #ifdef HAVE_MNTENT_H
 #include <mntent.h>
 #endif
@@ -44,42 +50,46 @@
 namespace dcpp {
 
 #ifdef _WIN32
-File::File(const string& aFileName, int access, int mode, BufferMode aBufferMode, bool isAbsolute /*true*/, bool isDirectory /*false*/) {
-	dcassert(access == WRITE || access == READ || access == (READ | WRITE));
+File::File(const string& aFileName, int aAccess, int aMode, BufferMode aBufferMode, bool aIsAbsolute /*true*/) {
+	dcassert(aAccess == WRITE || aAccess == READ || aAccess == (READ | WRITE));
 
 	int m = 0;
-	if (mode & OPEN) {
-		if (mode & CREATE) {
-			m = (mode & TRUNCATE) ? CREATE_ALWAYS : OPEN_ALWAYS;
+	if (aMode & OPEN) {
+		if (aMode & CREATE) {
+			m = (aMode & TRUNCATE) ? CREATE_ALWAYS : OPEN_ALWAYS;
 		} else {
-			m = (mode & TRUNCATE) ? TRUNCATE_EXISTING : OPEN_EXISTING;
+			m = (aMode & TRUNCATE) ? TRUNCATE_EXISTING : OPEN_EXISTING;
 		}
 	} else {
-		if (mode & CREATE) {
-			m = (mode & TRUNCATE) ? CREATE_ALWAYS : CREATE_NEW;
+		if (aMode & CREATE) {
+			m = (aMode & TRUNCATE) ? CREATE_ALWAYS : CREATE_NEW;
 		} else {
 			dcassert(0);
 		}
 	}
 
-	DWORD shared = FILE_SHARE_READ | (mode & SHARED_WRITE ? (FILE_SHARE_WRITE) : 0);
-	if (mode & SHARED_DELETE)
+	DWORD shared = FILE_SHARE_READ | (aMode & SHARED_WRITE ? (FILE_SHARE_WRITE) : 0);
+	if (aMode & SHARED_DELETE)
 		shared |= FILE_SHARE_DELETE;
 
 	DWORD dwFlags = aBufferMode;
 	string path = aFileName;
-	if (isAbsolute)
+	if (aIsAbsolute) {
 		path = Util::formatPath(aFileName);
+	}
 
-	if (isDirectory)
+	auto isDirectoryPath = path.back() == PATH_SEPARATOR;
+	if (isDirectoryPath)
 		dwFlags |= FILE_FLAG_BACKUP_SEMANTICS;
 
-	h = ::CreateFile(Text::toT(path).c_str(), access, shared, NULL, m, dwFlags, NULL);
+	h = ::CreateFile(Text::toT(path).c_str(), aAccess, shared, NULL, m, dwFlags, NULL);
 	if(h == INVALID_HANDLE_VALUE) {
 		throw FileException(Util::translateError(GetLastError()));
 	}
 
 #ifdef _DEBUG
+	dcassert(isDirectory(aFileName) == isDirectoryPath);
+
 	// Strip possible network path prefix
 	auto fileName = aFileName.size() > 2 && aFileName.substr(0, 2) == "\\\\" ? aFileName.substr(2) : aFileName;
 	auto realPath = getRealPath();
@@ -98,7 +108,7 @@ time_t File::getLastModified() const noexcept {
 	return convertTime(&f);
 }
 
-time_t File::convertTime(FILETIME* f) {
+time_t File::convertTime(const FILETIME* f) noexcept {
 	SYSTEMTIME s = { 1970, 1, 0, 1, 0, 0, 0, 0 };
 	FILETIME f2 = {0};
 	if(::SystemTimeToFileTime(&s, &f2)) {
@@ -112,7 +122,7 @@ time_t File::convertTime(FILETIME* f) {
 	return 0;
 }
 
-FILETIME File::convertTime(time_t f) {
+FILETIME File::convertTime(time_t f) noexcept {
 	FILETIME ft;
 
 	ft.dwLowDateTime = (DWORD)f;
@@ -266,6 +276,15 @@ bool File::isHidden(const string& aPath) noexcept {
 	return false;
 }
 
+bool File::isDirectory(const string& aPath) noexcept {
+	FileFindIter ff = FileFindIter(aPath);
+	if (ff != FileFindIter()) {
+		return ff->isDirectory();
+	}
+
+	return false;
+}
+
 void File::deleteFileThrow(const string& aFileName) {
 	if (!::DeleteFile(Text::toT(Util::formatPath(aFileName)).c_str())) {
 		throw FileException(Util::translateError(GetLastError()));
@@ -344,7 +363,7 @@ int64_t File::getBlockSize(const string& aFileName) noexcept {
 
 #else // !_WIN32
 
-File::File(const string& aFileName, int access, int mode, BufferMode aBufferMode, bool /*isAbsolute*/, bool /*isDirectory*/) {
+File::File(const string& aFileName, int access, int mode, BufferMode aBufferMode, bool /*isAbsolute*/) {
 	dcassert(access == WRITE || access == READ || access == (READ | WRITE));
 
 	int m = 0;
@@ -367,12 +386,6 @@ File::File(const string& aFileName, int access, int mode, BufferMode aBufferMode
 		m |= O_DIRECT;
 	}
 #endif
-	struct stat s;
-	if(lstat(aFileName.c_str(), &s) != -1) {
-		if(!S_ISREG(s.st_mode) && !S_ISLNK(s.st_mode))
-			throw FileException("Invalid file type");
-	}
-
 	h = open(aFileName.c_str(), m, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 	if(h == -1)
 		throw FileException(Util::translateError(errno));
@@ -383,6 +396,18 @@ File::File(const string& aFileName, int access, int mode, BufferMode aBufferMode
 			throw FileException(Util::translateError(errno));
 		}
 	}
+#endif
+
+#ifdef F_NOCACHE
+	// macOS
+	if (aBufferMode == BUFFER_NONE) {
+		fcntl(h, F_NOCACHE, 1);
+	}
+#endif
+
+#ifdef _DEBUG
+	auto isDirectoryPath = aFileName.back() == PATH_SEPARATOR;
+	dcassert(isDirectory(aFileName) == isDirectoryPath);
 #endif
 }
 
@@ -604,7 +629,7 @@ File::DiskInfo File::getDiskInfo(const string& aFileName) noexcept {
 		return { -1LL, -1LL };
 	}
 
-	int64_t freeSpace = (int64_t)sfs.f_bsize * (int64_t)sfs.f_bfree;
+	int64_t freeSpace = (int64_t)sfs.f_bsize * (int64_t)sfs.f_bavail;
 	int64_t totalSpace = (int64_t)sfs.f_bsize * (int64_t)sfs.f_blocks;
 	return { freeSpace, totalSpace };
 }
@@ -650,18 +675,36 @@ bool File::isHidden(const string& aPath) noexcept {
 	return aPath.find("/.") != string::npos;
 }
 
+bool File::isDirectory(const string& aPath) noexcept {
+	struct stat inode;
+	if (stat(aPath.c_str(), &inode) == -1) return false;
+	return S_ISDIR(inode.st_mode);
+}
+
+bool File::isLink(const string& aPath) noexcept {
+	struct stat inode;
+	if (lstat(aPath.c_str(), &inode) == -1) return false;
+	return S_ISLNK(inode.st_mode);
+}
+
+time_t File::getLastWriteTime(const string& aPath) noexcept {
+	struct stat inode;
+	if (stat(aPath.c_str(), &inode) == -1) return 0;
+	return inode.st_mtime;
+}
+
 #endif // !_WIN32
 
 File::~File() {
 	File::close();
 }
 
-std::string File::makeAbsolutePath(const std::string& filename) {
-	return makeAbsolutePath(Util::getAppFilePath(), filename);
+std::string File::makeAbsolutePath(const std::string& aFilename) {
+	return makeAbsolutePath(Util::getAppFilePath(), aFilename);
 }
 
-std::string File::makeAbsolutePath(const std::string& path, const std::string& filename) {
-	return isAbsolutePath(filename) ? filename : path + filename;
+std::string File::makeAbsolutePath(const std::string& aPath, const std::string& aFilename) {
+	return isAbsolutePath(aFilename) ? aFilename : aPath + aFilename;
 }
 
 void File::removeDirectoryForced(const string& aPath) {
@@ -894,7 +937,16 @@ File::VolumeSet File::getVolumes() noexcept {
 	}
 
 	while ((ent = getmntent(aFile)) != NULL) {
-		volumes.insert(Util::validatePath(ent->mnt_dir, true));
+		auto mountPath = Util::validatePath(ent->mnt_dir, true);
+
+		// Workaround for some standard C libraries not unescaping whitespaces and certain other characters in mount points
+		// https://github.com/airdcpp-web/airdcpp-webclient/issues/362
+		Util::replace("\\040", " ", mountPath);
+		Util::replace("\\011", "\t", mountPath);
+		Util::replace("\\012", "\n", mountPath);
+		Util::replace("\\134", "\\", mountPath);
+
+		volumes.insert(mountPath);
 	}
 	endmntent(aFile);
 #endif
@@ -905,7 +957,7 @@ File::VolumeSet File::getVolumes() noexcept {
 
 FileFindIter::FileFindIter() : handle(INVALID_HANDLE_VALUE) { }
 
-FileFindIter::FileFindIter(const string& aPath, const string& aPattern, bool aDirsOnly /*false*/) : handle(INVALID_HANDLE_VALUE) {
+FileFindIter::FileFindIter(const string& aPath, const string& aPattern, bool aDirsOnlyHint /*false*/) : handle(INVALID_HANDLE_VALUE) {
 	auto path = Util::formatPath(aPath);
 
 	// An attempt to open a search with a trailing backslash always fails
@@ -913,7 +965,7 @@ FileFindIter::FileFindIter(const string& aPath, const string& aPattern, bool aDi
 		path.pop_back();
 	}
 
-	handle = ::FindFirstFileEx(Text::toT(path + aPattern).c_str(), FindExInfoBasic, &data, aDirsOnly ? FindExSearchLimitToDirectories : FindExSearchNameMatch, NULL, NULL);
+	handle = ::FindFirstFileEx(Text::toT(path + aPattern).c_str(), FindExInfoBasic, &data.fd, aDirsOnlyHint ? FindExSearchLimitToDirectories : FindExSearchNameMatch, NULL, NULL);
 	validateCurrent();
 }
 
@@ -924,7 +976,7 @@ FileFindIter::~FileFindIter() {
 }
 
 FileFindIter& FileFindIter::validateCurrent() {
-	if (wcscmp((*this)->cFileName, _T(".")) == 0 || wcscmp((*this)->cFileName, _T("..")) == 0) {
+	if (wcscmp((*this)->fd.cFileName, _T(".")) == 0 || wcscmp((*this)->fd.cFileName, _T("..")) == 0) {
 		return this->operator++();
 	}
 
@@ -932,7 +984,7 @@ FileFindIter& FileFindIter::validateCurrent() {
 }
 
 FileFindIter& FileFindIter::operator++() {
-	if(!::FindNextFile(handle, &data)) {
+	if(!::FindNextFile(handle, &data.fd)) {
 		::FindClose(handle);
 		handle = INVALID_HANDLE_VALUE;
 		return *this;
@@ -945,28 +997,56 @@ bool FileFindIter::operator!=(const FileFindIter& rhs) const { return handle != 
 
 FileFindIter::DirData::DirData() { }
 
-string FileFindIter::DirData::getFileName() {
-	return Text::fromT(cFileName);
+string FileFindIter::DirData::getFileName() const noexcept {
+	return Text::fromT(fd.cFileName);
 }
 
-bool FileFindIter::DirData::isDirectory() {
-	return (dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) > 0;
+bool FileFindIter::DirData::isDirectory() const noexcept {
+	return (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) > 0;
 }
 
-bool FileFindIter::DirData::isHidden() {
-	return ((dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) || (cFileName[0] == L'.') || (dwFileAttributes & FILE_ATTRIBUTE_SYSTEM) || (dwFileAttributes & FILE_ATTRIBUTE_OFFLINE));
+bool FileFindIter::DirData::isHidden() const noexcept {
+	return ((fd.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) || (fd.cFileName[0] == L'.') || (fd.dwFileAttributes & FILE_ATTRIBUTE_SYSTEM) || (fd.dwFileAttributes & FILE_ATTRIBUTE_OFFLINE));
 }
 
-bool FileFindIter::DirData::isLink() {
-	return (dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) > 0;
+bool FileFindIter::DirData::isLink() const noexcept {
+	return (fd.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) > 0;
 }
 
-int64_t FileFindIter::DirData::getSize() {
-	return (int64_t)nFileSizeLow | ((int64_t)nFileSizeHigh)<<32;
+int64_t FileFindIter::DirData::getSize() const noexcept {
+	return (int64_t)fd.nFileSizeLow | ((int64_t)fd.nFileSizeHigh)<<32;
 }
 
-time_t FileFindIter::DirData::getLastWriteTime() {
-	return File::convertTime(&ftLastWriteTime);
+time_t FileFindIter::DirData::getLastWriteTime() const noexcept {
+	return File::convertTime(&fd.ftLastWriteTime);
+}
+
+FileItem::FileItem(const string& aPath) : ff(aPath) {
+	if (ff != FileFindIter()) {
+		// ...
+	} else {
+		throw FileException(Util::translateError(GetLastError()));
+	}
+}
+
+bool FileItem::isDirectory() const noexcept {
+	return ff->isDirectory();
+}
+
+bool FileItem::isHidden() const noexcept {
+	return ff->isHidden();
+}
+
+bool FileItem::isLink() const noexcept {
+	return ff->isLink();
+}
+
+int64_t FileItem::getSize() const noexcept {
+	return ff->getSize();
+}
+
+time_t FileItem::getLastWriteTime() const noexcept {
+	return ff->getLastWriteTime();
 }
 
 #else // _WIN32
@@ -976,14 +1056,19 @@ FileFindIter::FileFindIter() {
 	data.ent = NULL;
 }
 
-FileFindIter::FileFindIter(const string& aPath, const string& aPattern, bool dirsOnly /*false*/) {
+FileFindIter::FileFindIter(const string& aPath, const string& aPattern, bool aDirsOnlyHint /*false*/) {
 	dir = opendir(aPath.c_str());
 	if (!dir)
 		return;
 
+	if (aPattern.empty()) {
+		throw FileException("Invalid use of FileFindIter (pattern missing)");
+	}
+
 	data.base = aPath;
 	data.ent = readdir(dir);
-	if (!aPattern.empty() && aPattern != "*") {
+
+	if (aPattern != "*") {
 		pattern.reset(new string(aPattern));
 	}
 
@@ -1006,6 +1091,11 @@ FileFindIter& FileFindIter::validateCurrent() {
 	}
 
 	if (pattern && fnmatch(pattern->c_str(), data.ent->d_name, 0) != 0) {
+		return this->operator++();
+	}
+
+	if (!Text::validateUtf8((*this)->ent->d_name)) {
+		dcdebug("FileFindIter: UTF-8 validation failed for the item name (%s)\n", Text::sanitizeUtf8((*this)->ent->d_name).c_str());
 		return this->operator++();
 	}
 
@@ -1032,44 +1122,66 @@ bool FileFindIter::operator!=(const FileFindIter& rhs) const {
 
 FileFindIter::DirData::DirData() : ent(NULL) {}
 
-string FileFindIter::DirData::getFileName() {
+string FileFindIter::DirData::getFileName() const noexcept {
 	if (!ent) return Util::emptyString;
 	return ent->d_name;
 }
 
-bool FileFindIter::DirData::isDirectory() {
+bool FileFindIter::DirData::isDirectory() const noexcept {
 	struct stat inode;
 	if (!ent) return false;
 	if (stat((base + PATH_SEPARATOR + ent->d_name).c_str(), &inode) == -1) return false;
 	return S_ISDIR(inode.st_mode);
 }
 
-bool FileFindIter::DirData::isHidden() {
+bool FileFindIter::DirData::isHidden() const noexcept {
 	if (!ent) return false;
 	// Check if the parent directory is hidden for '.'
 	if (strcmp(ent->d_name, ".") == 0 && base[0] == '.') return true;
 	return ent->d_name[0] == '.' && strlen(ent->d_name) > 1;
 }
 
-bool FileFindIter::DirData::isLink() {
+bool FileFindIter::DirData::isLink() const noexcept {
 	struct stat inode;
 	if (!ent) return false;
-	if (lstat((base + PATH_SEPARATOR + ent->d_name).c_str(), &inode) == -1) return false;
-	return S_ISLNK(inode.st_mode);
+	return File::isLink(base + PATH_SEPARATOR + ent->d_name);
 }
 
-int64_t FileFindIter::DirData::getSize() {
-	struct stat inode;
-	if (!ent) return false;
-	if (stat((base + PATH_SEPARATOR + ent->d_name).c_str(), &inode) == -1) return 0;
-	return inode.st_size;
+int64_t FileFindIter::DirData::getSize() const noexcept {
+	if (!ent) return 0;
+	return File::getSize(base + PATH_SEPARATOR + ent->d_name);
 }
 
-time_t FileFindIter::DirData::getLastWriteTime() {
+time_t FileFindIter::DirData::getLastWriteTime() const noexcept {
+	if (!ent) return 0;
+	return File::getLastWriteTime(base + PATH_SEPARATOR + ent->d_name);
+}
+
+FileItem::FileItem(const string& aPath) : path(aPath) {
 	struct stat inode;
-	if (!ent) return false;
-	if (stat((base + PATH_SEPARATOR + ent->d_name).c_str(), &inode) == -1) return 0;
-	return inode.st_mtime;
+	if (stat(aPath.c_str(), &inode) == -1) {
+		throw FileException(Util::translateError(errno));
+	}
+}
+
+bool FileItem::isDirectory() const noexcept {
+	return File::isDirectory(path);
+}
+
+bool FileItem::isHidden() const noexcept {
+	return File::isHidden(path);
+}
+
+bool FileItem::isLink() const noexcept {
+	return File::isLink(path);
+}
+
+int64_t FileItem::getSize() const noexcept {
+	return File::getSize(path);
+}
+
+time_t FileItem::getLastWriteTime() const noexcept {
+	return File::getLastWriteTime(path);
 }
 
 #endif // _WIN32

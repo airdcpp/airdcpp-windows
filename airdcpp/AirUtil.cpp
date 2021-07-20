@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2019 AirDC++ Project
+ * Copyright (C) 2011-2021 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,6 @@
 #include "SettingsManager.h"
 #include "ShareManager.h"
 #include "SimpleXML.h"
-#include "Socket.h"
 #include "StringTokenizer.h"
 #include "ThrottleManager.h"
 #include "Util.h"
@@ -56,10 +55,12 @@
 
 namespace dcpp {
 
-boost::regex AirUtil::releaseReg;
+boost::regex AirUtil::releaseRegBasic;
+boost::regex AirUtil::releaseRegChat;
 boost::regex AirUtil::subDirRegPlain;
 boost::regex AirUtil::crcReg;
 boost::regex AirUtil::lineBreakRegex;
+boost::regex AirUtil::urlReg;
 
 AirUtil::TimeCounter::TimeCounter(string aMsg) : start(GET_TICK()), msg(move(aMsg)) {
 
@@ -67,7 +68,7 @@ AirUtil::TimeCounter::TimeCounter(string aMsg) : start(GET_TICK()), msg(move(aMs
 
 AirUtil::TimeCounter::~TimeCounter() {
 	auto end = GET_TICK();
-	LogManager::getInstance()->message(msg + ", took " + Util::toString(end - start) + " ms", LogMessage::SEV_INFO);
+	LogManager::getInstance()->message(msg + ", took " + Util::toString(end - start) + " ms", LogMessage::SEV_INFO, "Debug");
 }
 
 StringList AirUtil::getAdcDirectoryDupePaths(DupeType aType, const string& aAdcPath) {
@@ -117,15 +118,6 @@ string AirUtil::toOpenFileName(const string& aFileName, const TTHValue& aTTH) no
 	return aTTH.toBase32() + "_" + Util::validateFileName(aFileName);
 }
 
-string AirUtil::fromOpenFileName(const string& aFileName) noexcept {
-	if (aFileName.size() <= 40) {
-		dcassert(0);
-		return aFileName;
-	}
-
-	return aFileName.substr(40);
-}
-
 DupeType AirUtil::checkFileDupe(const TTHValue& aTTH) {
 	if (ShareManager::getInstance()->isFileShared(aTTH)) {
 		return DUPE_SHARE_FULL;
@@ -153,7 +145,9 @@ TTHValue AirUtil::getPathId(const string& aPath) noexcept {
 }
 
 void AirUtil::init() {
-	releaseReg.assign(getReleaseRegBasic());
+	releaseRegBasic.assign(getReleaseRegBasic());
+	releaseRegChat.assign(getReleaseRegLong(true));
+	urlReg.assign(getUrlReg());
 	subDirRegPlain.assign(getSubDirReg(), boost::regex::icase);
 	crcReg.assign(R"(.{5,200}\s(\w{8})$)");
 	lineBreakRegex.assign(R"(\n|\r)");
@@ -216,32 +210,38 @@ void AirUtil::init() {
 #endif
 }
 
-AirUtil::AdapterInfoList AirUtil::getBindAdapters(bool v6) {
+AdapterInfoList AirUtil::getCoreBindAdapters(bool v6) {
 	// Get the addresses and sort them
 	auto bindAddresses = getNetworkAdapters(v6);
-	sort(bindAddresses.begin(), bindAddresses.end(), [](const AdapterInfo& lhs, const AdapterInfo& rhs) {
-		if (lhs.adapterName.empty() && rhs.adapterName.empty()) {
-			return Util::stricmp(lhs.ip, rhs.ip) < 0;
-		}
-
-		return Util::stricmp(lhs.adapterName, rhs.adapterName) < 0;
-	});
+	sort(bindAddresses.begin(), bindAddresses.end(), adapterSort);
 
 	// "Any" adapter
 	bindAddresses.emplace(bindAddresses.begin(), STRING(ANY), v6 ? "::" : "0.0.0.0", static_cast<uint8_t>(0));
 
 	// Current address not listed?
 	const auto& setting = v6 ? SETTING(BIND_ADDRESS6) : SETTING(BIND_ADDRESS);
-	auto cur = boost::find_if(bindAddresses, [&setting](const AirUtil::AdapterInfo& aInfo) { return aInfo.ip == setting; });
-	if (cur == bindAddresses.end()) {
-		bindAddresses.emplace_back(STRING(UNKNOWN), setting, static_cast<uint8_t>(0));
-		cur = bindAddresses.end() - 1;
-	}
+	ensureBindAddress(bindAddresses, setting);
 
 	return bindAddresses;
 }
 
-AirUtil::AdapterInfoList AirUtil::getNetworkAdapters(bool v6) {
+int AirUtil::adapterSort(const AdapterInfo& lhs, const AdapterInfo& rhs) noexcept {
+	if (lhs.adapterName.empty() && rhs.adapterName.empty()) {
+		return Util::stricmp(lhs.ip, rhs.ip) < 0;
+	}
+
+	return Util::stricmp(lhs.adapterName, rhs.adapterName) < 0;
+}
+
+void AirUtil::ensureBindAddress(AdapterInfoList& adapters_, const string& aBindAddress) noexcept {
+	auto cur = boost::find_if(adapters_, [&aBindAddress](const AdapterInfo& aInfo) { return aInfo.ip == aBindAddress; });
+	if (cur == adapters_.end()) {
+		adapters_.emplace_back(STRING(UNKNOWN), aBindAddress, static_cast<uint8_t>(0));
+		cur = adapters_.end() - 1;
+	}
+}
+
+AdapterInfoList AirUtil::getNetworkAdapters(bool v6) {
 	AdapterInfoList adapterInfos;
 
 #ifdef _WIN32
@@ -287,11 +287,11 @@ AirUtil::AdapterInfoList AirUtil::getNetworkAdapters(bool v6) {
 #else
 
 #ifdef HAVE_IFADDRS_H
-	struct ifaddrs *ifap;
+	struct ifaddrs* ifap;
 
 	if (getifaddrs(&ifap) == 0) {
-		for (struct ifaddrs *i = ifap; i != NULL; i = i->ifa_next) {
-			struct sockaddr *sa = i->ifa_addr;
+		for (struct ifaddrs* i = ifap; i != NULL; i = i->ifa_next) {
+			struct sockaddr* sa = i->ifa_addr;
 
 			// If the interface is up, is not a loopback and it has an address
 			if ((i->ifa_flags & IFF_UP) && !(i->ifa_flags & IFF_LOOPBACK) && sa != NULL) {
@@ -301,12 +301,13 @@ AirUtil::AdapterInfoList AirUtil::getNetworkAdapters(bool v6) {
 				if (!v6 && sa->sa_family == AF_INET) {
 					// IPv4 address
 					struct sockaddr_in* sai = (struct sockaddr_in*)sa;
-					src = (void*) &(sai->sin_addr);
+					src = (void*)&(sai->sin_addr);
 					len = INET_ADDRSTRLEN;
-				} else if (v6 && sa->sa_family == AF_INET6) {
+				}
+				else if (v6 && sa->sa_family == AF_INET6) {
 					// IPv6 address
 					struct sockaddr_in6* sai6 = (struct sockaddr_in6*)sa;
-					src = (void*) &(sai6->sin6_addr);
+					src = (void*)&(sai6->sin6_addr);
 					len = INET6_ADDRSTRLEN;
 				}
 
@@ -317,7 +318,7 @@ AirUtil::AdapterInfoList AirUtil::getNetworkAdapters(bool v6) {
 					// TODO: get the prefix
 					adapterInfos.emplace_back("Unknown", (string)address, 0);
 				}
-			}
+}
 		}
 		freeifaddrs(ifap);
 	}
@@ -561,93 +562,6 @@ string AirUtil::formatMatchResults(int aMatchingFiles, int aNewFiles, const Bund
 	return STRING(NO_MATCHED_FILES);;
 }
 
-//fuldc ftp logger support
-void AirUtil::fileEvent(const string& tgt, bool file /*false*/) {
-#ifdef _WIN32
-	string target = tgt;
-	if(file) {
-		if(File::getSize(target) != -1) {
-			StringPair sp = SettingsManager::getInstance()->getFileEvent(SettingsManager::ON_FILE_COMPLETE);
-			if(sp.first.length() > 0) {
-				STARTUPINFO si = { sizeof(si), 0 };
-				PROCESS_INFORMATION pi = { 0 };
-				ParamMap params;
-				params["file"] = target;
-				wstring cmdLine = Text::toT(Util::formatParams(sp.second, params));
-				wstring cmd = Text::toT(sp.first);
-
-				boost::scoped_array<TCHAR> cmdLineBuf(new TCHAR[cmdLine.length() + 1]);
-				_tcscpy(&cmdLineBuf[0], cmdLine.c_str());
-
-				boost::scoped_array<TCHAR> cmdBuf(new TCHAR[cmd.length() + 1]);
-				_tcscpy(&cmdBuf[0], cmd.c_str());
-
-				if(::CreateProcess(&cmdBuf[0], &cmdLineBuf[0], NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi)) {
-					::CloseHandle(pi.hThread);
-					::CloseHandle(pi.hProcess);
-				}
-			}
-		}
-	} else {
-	if(File::createDirectory(target)) {
-		StringPair sp = SettingsManager::getInstance()->getFileEvent(SettingsManager::ON_DIR_CREATED);
-		if(sp.first.length() > 0) {
-			STARTUPINFO si = { sizeof(si), 0 };
-			PROCESS_INFORMATION pi = { 0 };
-			ParamMap params;
-			params["dir"] = target;
-			wstring cmdLine = Text::toT(Util::formatParams(sp.second, params));
-			wstring cmd = Text::toT(sp.first);
-
-			boost::scoped_array<TCHAR> cmdLineBuf(new TCHAR[cmdLine.length() + 1]);
-			_tcscpy(&cmdLineBuf[0], cmdLine.c_str());
-
-			boost::scoped_array<TCHAR> cmdBuf(new TCHAR[cmd.length() + 1]);
-			_tcscpy(&cmdBuf[0], cmd.c_str());
-
-			if(::CreateProcess(&cmdBuf[0], &cmdLineBuf[0], NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi)) {
-				//wait for the process to finish executing
-				if(WAIT_OBJECT_0 == WaitForSingleObject(pi.hProcess, INFINITE)) {
-					DWORD code = 0;
-					//retrieve the error code to check if we should stop this download.
-					if(0 != GetExitCodeProcess(pi.hProcess, &code)) {
-						if(code != 0) { //assume 0 is the only valid return code, everything else is an error
-							string::size_type end = target.find_last_of("\\/");
-							if(end != string::npos) {
-								tstring tmp = Text::toT(target.substr(0, end));
-								RemoveDirectory(tmp.c_str());
-
-								//the directory we removed might be a sub directory of
-								//the real one, check to see if that's the case.
-								end = tmp.find_last_of(_T("\\/"));
-								if(end != string::npos) {
-									tstring dir = tmp.substr(end+1);
-									if(Util::strnicmp(dir, _T("sample"), 6) == 0 ||
-										Util::strnicmp(dir, _T("subs"), 4) == 0 ||
-										Util::strnicmp(dir, _T("cover"), 5) == 0 ||
-										Util::strnicmp(dir, _T("cd"), 2) == 0) {
-											RemoveDirectory(tmp.substr(0, end).c_str());
-									}
-								}
-								
-								::CloseHandle(pi.hThread);
-								::CloseHandle(pi.hProcess);
-
-								throw QueueException("An external sfv tool stopped the download of this file");
-							}
-						}
-					}
-				}
-				
-				::CloseHandle(pi.hThread);
-				::CloseHandle(pi.hProcess);
-				}
-			}
-		}
-	}
-#endif
-}
-
 bool AirUtil::stringRegexMatch(const string& aReg, const string& aString) {
 	if (aReg.empty())
 		return false;
@@ -662,7 +576,7 @@ bool AirUtil::stringRegexMatch(const string& aReg, const string& aString) {
 bool AirUtil::isRelease(const string& aString) {
 
 	try {
-		return boost::regex_match(aString, releaseReg);
+		return boost::regex_match(aString, releaseRegBasic);
 	}
 	catch (...) {}
 
@@ -697,7 +611,7 @@ void AirUtil::getRegexMatches(const string& aString, StringList& l, const boost:
 	}
 }
 
-const string AirUtil::getLinkUrl() noexcept {
+const string AirUtil::getUrlReg() noexcept {
 	return R"(((?:[a-z][\w-]{0,10})?:/{1,3}|www\d{0,3}[.]|magnet:\?[^\s=]+=|spotify:|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`()\[\]{};:'\".,<>?«»“”‘’]))";
 }
 
@@ -716,9 +630,9 @@ const string AirUtil::getSubDirReg() noexcept {
 	return R"((((S(eason)?)|DVD|CD|(D|DIS(K|C))).?([0-9](0-9)?))|Sample.?|Proof.?|Cover.?|.{0,5}Sub(s|pack)?)";
 }
 
-string AirUtil::getReleaseDir(const string& aDir, bool cut, const char separator) noexcept {
-	auto p = getDirName(Util::getFilePath(aDir, separator), separator);
-	if (cut) {
+string AirUtil::getReleaseDir(const string& aDir, bool aCut, const char aSeparator) noexcept {
+	auto p = getDirectoryName(Util::getFilePath(aDir, aSeparator), aSeparator);
+	if (aCut) {
 		return p.first;
 	}
 
@@ -726,13 +640,13 @@ string AirUtil::getReleaseDir(const string& aDir, bool cut, const char separator
 	return p.second == string::npos ? aDir : aDir.substr(0, p.second);
 }
 
-bool AirUtil::removeDirectoryIfEmptyRe(const string& aPath, int aMaxAttempts, int aAttempts) {
+bool AirUtil::removeDirectoryIfEmptyRecursive(const string& aPath, int aMaxAttempts, int aAttempts) {
 	/* recursive check for empty dirs */
 	for(FileFindIter i(aPath, "*"); i != FileFindIter(); ++i) {
 		try {
 			if(i->isDirectory()) {
 				string dir = aPath + i->getFileName() + PATH_SEPARATOR;
-				if (!removeDirectoryIfEmptyRe(dir, aMaxAttempts, 0))
+				if (!removeDirectoryIfEmptyRecursive(dir, aMaxAttempts, 0))
 					return false;
 			} else if (Util::getFileExt(i->getFileName()) == ".dctmp") {
 				if (aAttempts == aMaxAttempts) {
@@ -740,7 +654,7 @@ bool AirUtil::removeDirectoryIfEmptyRe(const string& aPath, int aMaxAttempts, in
 				}
 
 				Thread::sleep(500);
-				return removeDirectoryIfEmptyRe(aPath, aMaxAttempts, aAttempts + 1);
+				return removeDirectoryIfEmptyRecursive(aPath, aMaxAttempts, aAttempts + 1);
 			} else {
 				return false;
 			}
@@ -751,10 +665,8 @@ bool AirUtil::removeDirectoryIfEmptyRe(const string& aPath, int aMaxAttempts, in
 	return true;
 }
 
-void AirUtil::removeDirectoryIfEmpty(const string& aPath, int aMaxAttempts /*3*/, bool aSilent /*false*/) {
-	if (!removeDirectoryIfEmptyRe(aPath, aMaxAttempts, 0) && !aSilent) {
-		LogManager::getInstance()->message(STRING_F(DIRECTORY_NOT_REMOVED, aPath), LogMessage::SEV_INFO);
-	}
+bool AirUtil::removeDirectoryIfEmpty(const string& aPath, int aMaxAttempts) {
+	return removeDirectoryIfEmptyRecursive(aPath, aMaxAttempts, 0);
 }
 
 bool AirUtil::isAdcHub(const string& aHubUrl) noexcept {
@@ -802,13 +714,13 @@ string AirUtil::subtractCommonParents(const string& aToCompare, const StringList
 	return Util::listToString(converted);
 }
 
-string AirUtil::subtractCommonDirs(const string& toCompare, const string& toSubtract, char separator) noexcept {
-	auto res = compareFromEnd(toCompare, toSubtract, separator);
+string AirUtil::subtractCommonDirs(const string& aToCompare, const string& aToSubtract, char aSeparator) noexcept {
+	auto res = compareFromEnd(aToCompare, aToSubtract, aSeparator);
 	if (res == string::npos) {
-		return toSubtract;
+		return aToSubtract;
 	}
 
-	return toSubtract.substr(0, res);
+	return aToSubtract.substr(0, res);
 }
 
 string AirUtil::getLastCommonDirectoryPathFromSub(const string& aMainPath, const string& aSubPath, char aSubSeparator, size_t aMainBaseLength) noexcept {
@@ -875,7 +787,7 @@ string AirUtil::getAdcMatchPath(const string& aRemoteFile, const string& aLocalF
 	return AirUtil::getLastCommonAdcDirectoryPathFromSub(localBundleFileDir, remoteFileDir, aLocalBundlePath.length());
 }
 
-pair<string, string::size_type> AirUtil::getDirName(const string& aPath, char aSeparator) noexcept {
+pair<string, string::size_type> AirUtil::getDirectoryName(const string& aPath, char aSeparator) noexcept {
 	if (aPath.size() < 3)
 		return { aPath, false };
 
@@ -945,15 +857,15 @@ string AirUtil::getTitle(const string& searchTerm) noexcept {
 }
 
 /* returns true if aDir is a subdir of aParent */
-bool AirUtil::isSub(const string& aTestSub, const string& aParent, const char separator) noexcept {
+bool AirUtil::isSub(const string& aTestSub, const string& aParent, const char aSeparator) noexcept {
 	if (aTestSub.length() <= aParent.length())
 		return false;
 
-	if (Util::stricmp(aTestSub.substr(0, aParent.length()), aParent) != 0)
+	if (Util::strnicmp(aTestSub, aParent, aParent.length()) != 0)
 		return false;
 
 	// either the parent must end with a separator or it must follow in the subdirectory
-	return aParent.empty() || aParent.back() == separator || aTestSub[aParent.length()] == separator;
+	return aParent.empty() || aParent.back() == aSeparator || aTestSub[aParent.length()] == aSeparator;
 }
 
 /* returns true if aSub is a subdir of aDir OR both are the same dir */
@@ -961,11 +873,24 @@ bool AirUtil::isParentOrExact(const string& aTestParent, const string& aSub, con
 	if (aSub.length() < aTestParent.length())
 		return false;
 
-	if (Util::stricmp(aSub.substr(0, aTestParent.length()), aTestParent) != 0)
+	if (Util::strnicmp(aSub, aTestParent, aTestParent.length()) != 0)
 		return false;
 
 	// either the parent must end with a separator or it must follow in the subdirectory
 	return aTestParent.empty() || aTestParent.length() == aSub.length() || aTestParent.back() == aSeparator || aSub[aTestParent.length()] == aSeparator;
+}
+
+
+bool AirUtil::isParentOrExactLower(const string& aParentLower, const string& aSubLower, const char aSeparator) noexcept {
+	if (aSubLower.length() < aParentLower.length())
+		return false;
+
+	if (strncmp(aSubLower.c_str(), aParentLower.c_str(), aParentLower.length()) != 0) {
+		return false;
+	}
+
+	// either the parent must end with a separator or it must follow in the subdirectory
+	return aParentLower.empty() || aParentLower.length() == aSubLower.length() || aParentLower.back() == aSeparator || aSubLower[aParentLower.length()] == aSeparator;
 }
 
 }
