@@ -141,40 +141,37 @@ LRESULT WebServerPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 
 bool WebServerPage::applySettings() noexcept {
 	bool needsRestart = false;
+	auto webSettings = webMgr->getSettingsManager();
 
 	{
 		auto plainserverPort = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlPort)));
 		if (plainserverPort != WEBCFG(PLAIN_PORT).num()) {
-			WEBCFG(PLAIN_PORT).setValue(plainserverPort);
+			webSettings.setValue(WEBCFG(PLAIN_PORT), plainserverPort);
 			needsRestart = true;
-			webMgr->setDirty();
 		}
 	}
 
 	{
 		auto tlsServerPort = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlTlsPort)));
 		if (tlsServerPort != WEBCFG(TLS_PORT).num()) {
-			WEBCFG(TLS_PORT).setValue(tlsServerPort);
+			webSettings.setValue(WEBCFG(TLS_PORT), tlsServerPort);
 			needsRestart = true;
-			webMgr->setDirty();
 		}
 	}
 
 	{
 		const auto sel = ctrlBindHttp.GetCurSel();
 		if (sel != -1 && bindAdapters[sel].ip != WEBCFG(PLAIN_BIND).str()) {
-			WEBCFG(PLAIN_BIND).setValue(bindAdapters[sel].ip);
+			webSettings.setValue(WEBCFG(PLAIN_BIND), bindAdapters[sel].ip);
 			needsRestart = true;
-			webMgr->setDirty();
 		}
 	}
 
 	{
 		const auto sel = ctrlBindHttps.GetCurSel();
 		if (sel != -1 && bindAdapters[sel].ip != WEBCFG(TLS_BIND).str()) {
-			WEBCFG(TLS_BIND).setValue(bindAdapters[sel].ip);
+			webSettings.setValue(WEBCFG(TLS_BIND), bindAdapters[sel].ip);
 			needsRestart = true;
-			webMgr->setDirty();
 		}
 	}
 

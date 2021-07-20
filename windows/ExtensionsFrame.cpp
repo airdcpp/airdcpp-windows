@@ -382,7 +382,8 @@ LRESULT ExtensionsFrame::onClickedSettings(WORD /*wNotifyCode*/, WORD /*wID*/, H
 	{
 		const auto addSettingMenuItem = [&](ApiSettingItem& aItem) {
 			targetMenu.appendItem(Text::toT(aItem.getTitle()), [&aItem] {
-				aItem.setValue(!aItem.getValue());
+				auto wsm = WebServerManager::getInstance();
+				wsm->getSettingsManager().setValue(aItem, !aItem.getValue());
 			}, aItem.getValue() ? OMenu::FLAG_CHECKED : 0);
 		};
 
