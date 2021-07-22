@@ -196,7 +196,7 @@ public:
 
 	void refreshTree(const string& root, bool aSelectDir);
 
-	void selectItem(const string& aPath);
+	HTREEITEM selectItem(const string& aPath);
 	
 	LRESULT onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 

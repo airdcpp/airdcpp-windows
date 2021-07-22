@@ -361,13 +361,10 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir
 			dl->setRead();
 		}
 
-		// onLoadingFinished(aStart, aDir, aBackgroundTask);
-
-
-		auto searching = dl->isCurrentSearchPath(aDir);
 		if (!dl->getPartialList())
 			updateStatus(CTSTRING(UPDATING_VIEW));
 
+		auto searching = dl->isCurrentSearchPath(aDir);
 		if (searching)
 			ctrlFiles.filter.clear();
 
@@ -381,8 +378,7 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir
 				if (aDir == ADC_ROOT_STR) {
 					msg = STRING(PARTIAL_LIST_LOADED);
 				}
-			}
-			else {
+			} else {
 				msg = STRING_F(FILELIST_LOADED_IN, Util::formatSeconds(loadTime, true));
 			}
 
@@ -473,16 +469,22 @@ void DirectoryListingFrame::on(DirectoryListingListener::SearchFailed, bool time
 	changeWindowState(true);
 }
 
-void DirectoryListingFrame::on(DirectoryListingListener::ChangeDirectory, const string& aDir, uint8_t aChangeType) noexcept {
+void DirectoryListingFrame::on(DirectoryListingListener::ChangeDirectory, const string& aNewPath, uint8_t aChangeType) noexcept {
 	//dcdebug("DirectoryListingListener::ChangeDirectory %s\n", aDir.c_str());
+
+	auto searching = dl->isCurrentSearchPath(aNewPath);
 	callAsync([=] {
-		auto isSearchType = static_cast<DirectoryListing::DirectoryLoadType>(aChangeType) == DirectoryListing::DirectoryLoadType::CHANGE_SEARCH;
-		if (isSearchType) {
+		if (searching) {
 			ctrlFiles.filter.clear();
 		}
 
-		selectItem(aDir);
-		if (isSearchType) {
+		auto loadedTreeItem = selectItem(aNewPath);
+		if (loadedTreeItem) {
+			auto loadedDirectory = ((ItemInfo*)ctrlTree.GetItemData(loadedTreeItem))->dir;
+			updateItems(loadedDirectory);
+		}
+
+		if (searching) {
 			updateStatus(TSTRING_F(X_RESULTS_FOUND, dl->getResultCount()));
 			findSearchHit(true);
 		}
@@ -710,8 +712,8 @@ void DirectoryListingFrame::createRoot() {
 }
 
 const string DirectoryListingFrame::getCurrentPath() const noexcept {
-	// return curPath;
-	return dl->getCurrentLocationInfo().directory ? dl->getCurrentLocationInfo().directory->getAdcPath() : ADC_ROOT_STR;
+	const auto ret = dl->getCurrentLocationInfo().directory ? dl->getCurrentLocationInfo().directory->getAdcPath() : ADC_ROOT_STR;
+	return ret;
 }
 
 void DirectoryListingFrame::refreshTree(const string& aLoadedPath, bool aSelectDir) {
@@ -724,7 +726,7 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedPath, bool aSelectD
 	}
 
 	// Get the item for our newly loaded directory
-	auto loadedTreeItem = aLoadedPath == ADC_ROOT_STR ? treeRoot : ctrlTree.findItemByPath(treeRoot, Text::toT(aLoadedPath));
+	auto loadedTreeItem = ctrlTree.findItemByPath(treeRoot, Text::toT(aLoadedPath));
 	dcassert(loadedTreeItem);
 	if (!loadedTreeItem) {
 		loadedTreeItem = treeRoot;
@@ -762,7 +764,7 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedPath, bool aSelectD
 			updateItems(loadedDirectory);
 			selectItem(loadedDirectory->getAdcPath());
 		} else {
-			// Subdirectory is selected
+			// Subdirectory of the loaded directory is selected
 			auto currentTreeItem = ctrlTree.findItemByPath(treeRoot, Text::toT(getCurrentPath()));
 			dcassert(currentTreeItem);
 
@@ -1167,10 +1169,6 @@ void DirectoryListingFrame::loadPath(const ItemInfo* ii, DirectoryListing::Direc
 		return;
 	}
 
-	if (aType != DirectoryListing::DirectoryLoadType::CHANGE_RELOAD) {
-		updateItems(ii->dir);
-	}
-
 	auto path = ii->getAdcPath();
 	//dcdebug("DirectoryListingFrame::changeDir %s\n", path.c_str());
 
@@ -1386,11 +1384,11 @@ LRESULT DirectoryListingFrame::onChar(UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*
 	return 0;
 }
 
-void DirectoryListingFrame::selectItem(const string& aPath) {
+HTREEITEM DirectoryListingFrame::selectItem(const string& aPath) {
 	HTREEITEM ht = ctrlTree.findItemByPath(treeRoot, Text::toT(aPath));
 	if (!ht) {
-		//dcassert(0);
-		return;
+		// dcassert(0);
+		return nullptr;
 	}
 
 	if (ctrlTree.GetSelectedItem() != ht) {
@@ -1400,6 +1398,8 @@ void DirectoryListingFrame::selectItem(const string& aPath) {
 			ctrlTree.EnsureVisible(ht);
 		ctrlTree.SelectItem(ht);
 	}
+
+	return ht;
 }
 
 LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
