@@ -469,7 +469,7 @@ void DirectoryListingFrame::on(DirectoryListingListener::SearchFailed, bool time
 	changeWindowState(true);
 }
 
-void DirectoryListingFrame::on(DirectoryListingListener::ChangeDirectory, const string& aNewPath, uint8_t aChangeType) noexcept {
+void DirectoryListingFrame::on(DirectoryListingListener::ChangeDirectory, const string& aNewPath, uint8_t /*aChangeType*/) noexcept {
 	//dcdebug("DirectoryListingListener::ChangeDirectory %s\n", aDir.c_str());
 
 	auto searching = dl->isCurrentSearchPath(aNewPath);
