@@ -1,3 +1,24 @@
+4.11
+
+API and Web UI changes: ...
+
+Changed:
+
+- Print better error messages when updating the country database fails
+- Encryption: accept TLS_CHACHA20_POLY1305_SHA256 cipher
+- Allow closing various tab with Ctrl+W
+
+Fixed:
+
+- Fix possible filelist-related crashes
+- Fix issues with saving of options on the extension tab
+- Fix warnings with hubs that are blocking direct private messages (shown only for AirDC++ users)
+
+Removed:
+
+- Main menu item to match own filelist with ADL search (you can still match your own filelist after it has been opened)
+
+
 4.10
 
 API and Web UI changes: https://airdcpp-web.github.io/2021/01/08/version-2.11.0.html
