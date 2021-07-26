@@ -105,7 +105,7 @@ LangString DESC_StartMenu ${LANG_Dutch} "Een snelkoppeling naar AirDC++ zal in h
 LangString DESC_Emopack ${LANG_Dutch} "Geef emoticons weer als afbeelding in chat schermen."
 LangString DESC_Node ${LANG_Dutch} "Sta toe om third-party plugings te installeren en draaien."
 LangString DESC_Themes ${LANG_Dutch} "Als het standaard thema niet bevalt, kan je een van de twee extra thema's proberen, Dark Skull of Zoolution."
-LangString DESC_WebResorces ${LANG_Dutch} "Staat benadering van de client vanaf andere apparaten viabrowsers toe."
+LangString DESC_WebResorces ${LANG_Dutch} "Staat benadering van de client vanaf andere apparaten via browsers toe."
 LangString DESC_loc ${LANG_Dutch} "Normaal moet je dit niet aanpassen omdat het kan leiden tot abnormaal gedrag zoals verlies van instellingen of downloads. Als je het uitvinkt, lees dan de waarschuwing aandachtig."
 LangString DESC_desk ${LANG_Dutch} "Gebruik je AirDC++ vaak? Dan is dit zeker iets voor je!"
 LangString DESC_arch ${LANG_Dutch} "Als je de 32 bits versie van AirDC++ op je 64 bits OS wilt gebruiken, kies dit. Als je keuze reeds is geselecteerd en je het niet kan veranderen dan is dat omdat je OS al 32 bits is."
