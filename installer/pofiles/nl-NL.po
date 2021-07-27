@@ -1,13 +1,13 @@
 # 
 # Translators:
-# Kaas Hub, 2015-2017,2020
+# Kaas Hub, 2015-2017,2020-2021
 # Sopor, 2016
 msgid ""
 msgstr ""
 "Project-Id-Version: AirDC++\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-11-12 19:38\n"
-"PO-Revision-Date: 2020-11-13 18:21+0000\n"
+"PO-Revision-Date: 2021-03-23 14:47+0000\n"
 "Last-Translator: Kaas Hub\n"
 "Language-Team: Dutch (Netherlands) (http://www.transifex.com/airdcpp/airdcpp/language/nl_NL/)\n"
 "MIME-Version: 1.0\n"
@@ -194,7 +194,7 @@ msgstr "Als het standaard thema niet bevalt, kan je een van de twee extra thema'
 #. DESC_WebResorces
 #: AirDC_installscript.nsi:123
 msgid "Allows accessing the client from other devices via a web browser."
-msgstr "Staat benadering van de client vanaf andere apparaten viabrowsers toe."
+msgstr "Staat benadering van de client vanaf andere apparaten via browsers toe."
 
 #. DESC_loc
 #: AirDC_installscript.nsi:124
