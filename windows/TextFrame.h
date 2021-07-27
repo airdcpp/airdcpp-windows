@@ -41,7 +41,7 @@ public:
 
 	static void openFile(const string& aFilePath);
 	static void openFile(const ViewFilePtr& aFile);
-	static TextFrame* viewText(const string& aTitle, const string& aText, FileType aType, const ViewFilePtr& aFile = nullptr);
+	static TextFrame* viewText(const string& aTitle, const string& aText, FileType aType, const ViewFilePtr& aFile);
 	static FileType parseFileType(const string& aName) noexcept;
 
 	static bool getWindowParams(HWND hWnd, StringMap&/*params*/) {

@@ -603,7 +603,7 @@ void ActionUtil::viewLog(const string& aPath, bool aHistory /*false*/) {
 	if (aHistory) {
 		auto aText = LogManager::readFromEnd(aPath, SETTING(LOG_LINES), Util::convertSize(64, Util::KB));
 		if (!aText.empty()) {
-			TextFrame::viewText(Util::getFileName(aPath), aText, TextFrame::FileType::LOG);
+			TextFrame::viewText(Util::getFileName(aPath), aText, TextFrame::FileType::LOG, nullptr);
 		}
 	} else if (SETTING(OPEN_LOGS_INTERNAL)) {
 		TextFrame::openFile(aPath);

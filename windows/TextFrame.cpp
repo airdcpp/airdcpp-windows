@@ -67,12 +67,12 @@ TextFrame::FileType TextFrame::parseFileType(const string& aName) noexcept {
 
 void TextFrame::openFile(const string& aFilePath) {
 	auto text = TextFrame::readFile(aFilePath);
-	viewText(Util::getFileName(aFilePath), text, parseFileType(aFilePath));
+	viewText(Util::getFileName(aFilePath), text, parseFileType(aFilePath), nullptr);
 }
 
 void TextFrame::openFile(const ViewFilePtr& aFile) {
 	auto text = TextFrame::readFile(aFile->getPath());
-	viewText(aFile->getFileName(), text, parseFileType(aFile->getPath()));
+	viewText(aFile->getFileName(), text, parseFileType(aFile->getPath()), aFile);
 }
 
 TextFrame* TextFrame::viewText(const string& aTitle, const string& aText, FileType aType, const ViewFilePtr& aViewFile) {
