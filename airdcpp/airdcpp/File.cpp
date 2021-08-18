@@ -416,15 +416,6 @@ time_t File::getLastModified() const noexcept {
 	return (uint32_t)s.st_mtime;
 }
 
-bool File::isDirectory(const string& aPath) noexcept {
-	FileFindIter ff = FileFindIter(aPath);
-	if (ff != FileFindIter()) {
-		return ff->isDirectory();
-	}
-
-	return false;
-}
-
 string File::getRealPath() const {
 	char buf[PATH_MAX + 1];
 
