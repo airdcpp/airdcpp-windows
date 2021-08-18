@@ -108,6 +108,12 @@ time_t File::getLastModified() const noexcept {
 	return convertTime(&f);
 }
 
+bool File::isDirectory(const string& aPath) noexcept {
+	// FileFindIter doesn't work for drive paths
+	DWORD attr = GetFileAttributes(Text::toT(Util::formatPath(aPath)).c_str());
+	return (attr & FILE_ATTRIBUTE_DIRECTORY) > 0;
+}
+
 time_t File::convertTime(const FILETIME* f) noexcept {
 	SYSTEMTIME s = { 1970, 1, 0, 1, 0, 0, 0, 0 };
 	FILETIME f2 = {0};
@@ -276,15 +282,6 @@ bool File::isHidden(const string& aPath) noexcept {
 	return false;
 }
 
-bool File::isDirectory(const string& aPath) noexcept {
-	FileFindIter ff = FileFindIter(aPath);
-	if (ff != FileFindIter()) {
-		return ff->isDirectory();
-	}
-
-	return false;
-}
-
 void File::deleteFileThrow(const string& aFileName) {
 	if (!::DeleteFile(Text::toT(Util::formatPath(aFileName)).c_str())) {
 		throw FileException(Util::translateError(GetLastError()));
@@ -417,6 +414,15 @@ time_t File::getLastModified() const noexcept {
 		return 0;
 
 	return (uint32_t)s.st_mtime;
+}
+
+bool File::isDirectory(const string& aPath) noexcept {
+	FileFindIter ff = FileFindIter(aPath);
+	if (ff != FileFindIter()) {
+		return ff->isDirectory();
+	}
+
+	return false;
 }
 
 string File::getRealPath() const {
