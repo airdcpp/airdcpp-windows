@@ -1,6 +1,6 @@
 4.11
 
-API and Web UI changes: ...
+API and Web UI changes: http://airdcpp-web.github.io/2021/07/27/version-2.11.1.html
 
 Changed:
 
@@ -13,6 +13,9 @@ Fixed:
 - Fix possible filelist-related crashes
 - Fix issues with saving of options on the extension tab
 - Fix warnings with hubs that are blocking direct private messages (shown only for AirDC++ users)
+- Fix reopening of previously viewed text files (https://bugs.launchpad.net/airdcpp/+bug/1917271)
+- Fix sending of UDP data when connecting to a SOCKS5 server via IPv4
+- Fix listing of drive content when browsing local file system in the Web UI
 
 Removed:
 
