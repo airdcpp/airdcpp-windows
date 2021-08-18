@@ -89,3 +89,22 @@ run system_category_test3.cpp ;
 run windows_error_test.cpp ;
 run cygwin_error_test.cpp ;
 run linux_error_test.cpp ;
+
+link errc_test3.cpp ;
+
+run snprintf_test.cpp ;
+
+run std_interop_test2.cpp ;
+run std_interop_test3.cpp ;
+run std_interop_test4.cpp ;
+run std_interop_test5.cpp
+  : : :
+  # crash on xenial, but the real g++ 4.8 on both centos 7 and trusty works
+  <toolset>gcc-4.8:<build>no
+  <toolset>gcc-4.9:<build>no
+  ;
+
+run std_interop_test6.cpp ;
+run std_interop_test7.cpp ;
+run std_interop_test8.cpp ;
+run std_interop_test9.cpp ;

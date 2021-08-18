@@ -13,6 +13,7 @@
 #include <boost/json/object.hpp>
 #include <boost/json/detail/digest.hpp>
 #include <boost/json/detail/except.hpp>
+#include <boost/json/detail/hash_combine.hpp>
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -821,5 +822,30 @@ destroy(
 }
 
 BOOST_JSON_NS_END
+
+//----------------------------------------------------------
+//
+// std::hash specialization
+//
+//----------------------------------------------------------
+
+std::size_t
+std::hash<::boost::json::object>::operator()(
+    ::boost::json::object const& jo) const noexcept
+{
+    std::size_t seed = jo.size();
+    for (const auto& kv_pair : jo) {
+        auto const hk = ::boost::json::detail::digest(
+            kv_pair.key().data(), kv_pair.key().size(), 0);
+        auto const hkv = ::boost::json::detail::hash_combine(
+            hk,
+            std::hash<::boost::json::value>{}(kv_pair.value()));
+        seed = ::boost::json::detail::hash_combine_commutative(seed, hkv);
+    }
+    return seed;
+}
+
+//----------------------------------------------------------
+
 
 #endif

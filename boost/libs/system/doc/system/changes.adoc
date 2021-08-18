@@ -1,5 +1,5 @@
 ////
-Copyright 2018 Peter Dimov
+Copyright 2018-2021 Peter Dimov
 
 Distributed under the Boost Software License, Version 1.0.
 
@@ -10,6 +10,32 @@ http://www.boost.org/LICENSE_1_0.txt
 [#changes]
 # Revision History
 :idprefix:
+
+## Changes in Boost 1.77
+
+* The conversion operator from `error_category` to `std::error_category`
+  has been improved and no longer requires `<map>` or `<mutex>`.
+* The comparison operators of `error_category` are now inline friends
+  instead of member functions (a side effect of the previous change.)
+* `error_condition` now defers calling `generic_category()` to avoid
+  instantiating the object until it's actually needed.
+* `error_condition::failed` and `error_condition::message` have been
+  undeprecated, and `operator bool()` now once again returns `failed()`.
+* The system category now doesn't call `generic_category()`, to avoid
+  instantiating the object.
+* The return value of `default_error_condition` changes in some cases into
+  an `error_condition` from the generic category, instead of from the system
+  category. This happens on POSIX when the input `error_code` is from
+  the system category and does not correspond to any `errc_t` value.
+* The interoperability of `error_code` and `std::error_code` has been
+  improved substantially. It is now possible to construct
+  `boost::system::error_code` from `std::error_code`, and it's possible
+  to pass `boost::system::error_code` to functions taking `std::error_code&`.
+* A stream insertion operator for `error_condition` has been added.
+
+## Changes in Boost 1.76
+
+* `windows_error.hpp` is no longer deprecated.
 
 ## Changes in Boost 1.75
 

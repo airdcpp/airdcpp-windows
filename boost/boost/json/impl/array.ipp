@@ -13,6 +13,7 @@
 #include <boost/json/array.hpp>
 #include <boost/json/pilfer.hpp>
 #include <boost/json/detail/except.hpp>
+#include <boost/json/detail/hash_combine.hpp>
 #include <cstdlib>
 #include <limits>
 #include <new>
@@ -753,5 +754,26 @@ equal(
 }
 
 BOOST_JSON_NS_END
+
+//----------------------------------------------------------
+//
+// std::hash specialization
+//
+//----------------------------------------------------------
+
+std::size_t
+std::hash<::boost::json::array>::operator()(
+    ::boost::json::array const& ja) const noexcept
+{
+  std::size_t seed = ja.size();
+  for (const auto& jv : ja) {
+    seed = ::boost::json::detail::hash_combine(
+        seed,
+        std::hash<::boost::json::value>{}(jv));
+  }
+  return seed;
+}
+
+//----------------------------------------------------------
 
 #endif

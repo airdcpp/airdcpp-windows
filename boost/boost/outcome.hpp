@@ -28,12 +28,6 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 */
 
-#if !defined(__cpp_modules) || defined(GENERATING_OUTCOME_MODULE_INTERFACE) || BOOST_OUTCOME_DISABLE_BOOST_OUTCOME_C_MODULES
 #include "outcome/coroutine_support.hpp"
 #include "outcome/iostream_support.hpp"
 #include "outcome/try.hpp"
-#else
-#include "outcome/try.hpp"
-
-import BOOST_OUTCOME_V2_BOOST_OUTCOME_C_MODULE_NAME;
-#endif

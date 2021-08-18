@@ -12,8 +12,8 @@
 
 #include <boost/multiprecision/detail/constexpr.hpp>
 #include <boost/multiprecision/detail/bitscan.hpp> // lsb etc
+#include <boost/multiprecision/detail/hash.hpp>
 #include <boost/integer/common_factor_rt.hpp>      // gcd/lcm
-#include <boost/functional/hash_fwd.hpp>
 #include <numeric> // std::gcd
 
 #ifdef BOOST_MSVC
@@ -818,15 +818,19 @@ void eval_gcd_lehmer(cpp_int_backend<MinBits1, MaxBits1, SignType1, Checked1, Al
       }
       v = tu - t;
       ++i;
+      BOOST_ASSERT((u <= v) || (t / q == old_v));
+      if (u <= v)
+      {
+         // We've gone terribly wrong, probably numeric overflow:
+         break;
+      }
       if ((i & 1u) == 0)
       {
-         BOOST_ASSERT(u > v);
          if ((static_cast<limb_type>(v >> bits_per_limb) < x[2]) || ((static_cast<limb_type>(u >> bits_per_limb) - static_cast<limb_type>(v >> bits_per_limb)) < (y[2] + y[1])))
             break;
       }
       else
       {
-         BOOST_ASSERT(u > v);
          if ((static_cast<limb_type>(v >> bits_per_limb) < y[2]) || ((static_cast<limb_type>(u >> bits_per_limb) - static_cast<limb_type>(v >> bits_per_limb)) < (x[2] + x[1])))
             break;
       }
@@ -1278,9 +1282,9 @@ inline BOOST_MP_CXX14_CONSTEXPR std::size_t hash_value(const cpp_int_backend<Min
    std::size_t result = 0;
    for (unsigned i = 0; i < val.size(); ++i)
    {
-      boost::hash_combine(result, val.limbs()[i]);
+      boost::multiprecision::detail::hash_combine(result, val.limbs()[i]);
    }
-   boost::hash_combine(result, val.sign());
+   boost::multiprecision::detail::hash_combine(result, val.sign());
    return result;
 }
 

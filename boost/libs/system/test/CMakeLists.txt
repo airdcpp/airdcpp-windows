@@ -69,3 +69,32 @@ lib(boost_system_std_single_instance_lib2 STD_SINGLE_INSTANCE_DYN_LINK std_singl
 
 system_run(std_single_instance_test.cpp std_single_instance_1.cpp std_single_instance_2.cpp)
 boost_test(SOURCES std_single_instance_test.cpp NAME std_single_instance_test_lib LINK_LIBRARIES boost_system_std_single_instance_lib1 boost_system_std_single_instance_lib2)
+
+boost_test(TYPE run SOURCES is_error_code_enum_test.cpp)
+boost_test(TYPE run SOURCES is_error_condition_enum_test.cpp)
+boost_test(TYPE run SOURCES errc_test.cpp)
+boost_test(TYPE run SOURCES errc_test2.cpp)
+boost_test(TYPE run SOURCES error_category_test2.cpp)
+boost_test(TYPE run SOURCES error_condition_test.cpp)
+boost_test(TYPE run SOURCES error_condition_test2.cpp)
+boost_test(TYPE run SOURCES generic_category_test2.cpp)
+boost_test(TYPE run SOURCES generic_category_test3.cpp)
+boost_test(TYPE run SOURCES system_category_test2.cpp)
+boost_test(TYPE run SOURCES system_category_test3.cpp)
+
+boost_test(TYPE run SOURCES windows_error_test.cpp)
+boost_test(TYPE run SOURCES cygwin_error_test.cpp)
+boost_test(TYPE run SOURCES linux_error_test.cpp)
+
+boost_test(TYPE link SOURCES errc_test3.cpp)
+
+boost_test(TYPE run SOURCES snprintf_test.cpp)
+
+boost_test(TYPE run SOURCES std_interop_test2.cpp)
+boost_test(TYPE run SOURCES std_interop_test3.cpp)
+boost_test(TYPE run SOURCES std_interop_test4.cpp)
+boost_test(TYPE run SOURCES std_interop_test5.cpp)
+boost_test(TYPE run SOURCES std_interop_test6.cpp)
+boost_test(TYPE run SOURCES std_interop_test7.cpp)
+boost_test(TYPE run SOURCES std_interop_test8.cpp)
+boost_test(TYPE run SOURCES std_interop_test9.cpp)

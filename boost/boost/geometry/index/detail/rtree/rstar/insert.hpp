@@ -4,8 +4,8 @@
 //
 // Copyright (c) 2011-2015 Adam Wulkiewicz, Lodz, Poland.
 //
-// This file was modified by Oracle on 2019-2020.
-// Modifications copyright (c) 2019-2020 Oracle and/or its affiliates.
+// This file was modified by Oracle on 2019-2021.
+// Modifications copyright (c) 2019-2021 Oracle and/or its affiliates.
 // Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
 //
 // Use, modification and distribution is subject to the Boost Software License,
@@ -33,14 +33,12 @@ struct comparable_distance
 {
     typedef typename geometry::comparable_distance_result
         <
-            Point1, Point2, 
-            decltype(std::declval<Strategy>().comparable_distance(
-                        std::declval<Point1>(), std::declval<Point2>()))
+            Point1, Point2, Strategy
         >::type result_type;
 
     static inline result_type call(Point1 const& p1, Point2 const& p2, Strategy const& s)
     {
-        return geometry::comparable_distance(p1, p2, s.comparable_distance(p1, p2));
+        return geometry::comparable_distance(p1, p2, s);
     }
 };
 
@@ -103,9 +101,12 @@ public:
         BOOST_GEOMETRY_INDEX_ASSERT(elements.size() == elements_count, "unexpected elements number");
         BOOST_GEOMETRY_INDEX_ASSERT(0 < reinserted_elements_count, "wrong value of elements to reinsert");
 
+        auto const& strategy = index::detail::get_strategy(parameters);
+
         // calculate current node's center
         point_type node_center;
-        geometry::centroid(rtree::elements(*parent)[current_child_index].first, node_center);
+        geometry::centroid(rtree::elements(*parent)[current_child_index].first, node_center,
+                           strategy);
 
         // fill the container of centers' distances of children from current node's center
         typedef typename index::detail::rtree::container_from_elements_type<
@@ -117,13 +118,12 @@ public:
         // If constructor is used instead of resize() MS implementation leaks here
         sorted_elements.reserve(elements_count);                                                         // MAY THROW, STRONG (V, E: alloc, copy)
         
-        auto const& strategy = index::detail::get_strategy(parameters);
-
         for ( typename elements_type::const_iterator it = elements.begin() ;
               it != elements.end() ; ++it )
         {
             point_type element_center;
-            geometry::centroid( rtree::element_indexable(*it, translator), element_center);
+            geometry::centroid(rtree::element_indexable(*it, translator), element_center,
+                               strategy);
             sorted_elements.push_back(std::make_pair(
                 comparable_distance_pp::call(node_center, element_center, strategy),
                 *it));                                                                                  // MAY THROW (V, E: copy)

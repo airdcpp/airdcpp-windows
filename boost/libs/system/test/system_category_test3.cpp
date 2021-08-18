@@ -18,7 +18,9 @@ int main()
 
     // default_error_condition
     BOOST_TEST( cat.default_error_condition( 0 ) == sys::error_condition() );
-    BOOST_TEST( cat.default_error_condition( -1 ) == sys::error_condition( -1, cat ) );
+
+    // No longer holds; returns a generic condition
+    // BOOST_TEST( cat.default_error_condition( -1 ) == sys::error_condition( -1, cat ) );
 
 #if defined(BOOST_WINDOWS_API)
 
