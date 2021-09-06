@@ -147,7 +147,7 @@ void DirectoryListingFrame::openWindow(const DirectoryListingPtr& aList, const s
 	}
 
 	if (aList->getPartialList()) {
-		aList->addPartialListTask(aXML, aDir);
+		aList->addPartialListLoadTask(aXML, aDir);
 	} else {
 		frame->ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
 		aList->addFullListTask(aDir);
