@@ -126,11 +126,11 @@ public:
 
 	/** @internal */
 	void addConnection(UserConnectionPtr conn);
-	void abortUpload(const string& aFile, bool waiting = true);
+	void abortUpload(const string& aFile, bool aWaitDisconnected = true);
 		
-	GETSET(uint8_t, extraPartial, ExtraPartial);
-	GETSET(uint8_t, extra, Extra);
-	GETSET(uint64_t, lastGrant, LastGrant);
+	IGETSET(uint8_t, extraPartial, ExtraPartial, 0);
+	IGETSET(uint8_t, extra, Extra, 0);
+	IGETSET(uint64_t, lastGrant, LastGrant, 0);
 
 	SharedMutex& getCS() noexcept { return cs; }
 	const UploadList& getUploads() const noexcept {
@@ -140,15 +140,15 @@ private:
 	static void log(const string& aMsg, LogMessage::Severity aSeverity) noexcept;
 	StringMatch freeSlotMatcher;
 
-	uint8_t running;
-	uint8_t mcnSlots;
-	uint8_t smallSlots;
+	uint8_t running = 0;
+	uint8_t mcnSlots = 0;
+	uint8_t smallSlots = 0;
 
 	UploadList uploads;
 	UploadList delayUploads;
 	mutable SharedMutex cs;
 
-	int lastFreeSlots; /// amount of free slots at the previous minute
+	int lastFreeSlots = -1; /// amount of free slots at the previous minute
 	
 	typedef unordered_map<UserPtr, uint16_t, User::Hash> MultiConnMap;
 	MultiConnMap multiUploads;
@@ -167,7 +167,7 @@ private:
 	bool getMultiConn(const UserConnection& aSource);
 	void changeMultiConnSlot(const UserPtr& aUser, bool remove);
 	void checkMultiConn();
-	void UpdateSlotCounts(UserConnection& aSource, uint8_t slotType);
+	void updateSlotCounts(UserConnection& aSource, uint8_t slotType);
 
 	/* bundles */
 	typedef unordered_map<string, UploadBundlePtr> RemoteBundleTokenMap;
