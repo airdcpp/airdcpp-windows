@@ -84,8 +84,10 @@ bool UploadBundle::removeUpload(Upload* u) noexcept {
 	if (s != uploads.end()) {
 		addUploadedSegment(u->getPos());
 		uploads.erase(s);
+
+		auto isEmpty = uploads.empty();
 		u->setBundle(nullptr);
-		return uploads.empty();
+		return isEmpty;
 	}
 	dcassert(0);
 	return uploads.empty();

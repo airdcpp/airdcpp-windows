@@ -757,15 +757,7 @@ void UploadManager::finishBundle(const AdcCommand& cmd) {
 	}
 
 	auto bundle = findBundle(bundleToken);
-	//dcassert(!bundle);
-
 	if (bundle) {
-		{
-			WLock l (cs);
-			bundles.erase(bundle->getToken());
-		}
-
-		ConnectionManager::getInstance()->tokens.removeToken(bundle->getToken());
 		fire(UploadManagerListener::BundleComplete(), bundle->getToken(), bundle->getName());
 	}
 }
