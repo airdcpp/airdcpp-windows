@@ -29,7 +29,7 @@ UploadBundle::UploadBundle(const string& aTarget, const string& aToken, int64_t 
 		uploadedSegments = size;
 }
 
-void UploadBundle::addUploadedSegment(int64_t aSize) {
+void UploadBundle::addUploadedSegment(int64_t aSize) noexcept {
 	dcassert(aSize + uploadedSegments <= size);
 	if (singleUser && aSize + uploadedSegments <= size) {
 		countSpeed();
@@ -38,7 +38,7 @@ void UploadBundle::addUploadedSegment(int64_t aSize) {
 	}
 }
 
-void UploadBundle::setSingleUser(bool aSingleUser, int64_t aUploadedSegments) {
+void UploadBundle::setSingleUser(bool aSingleUser, int64_t aUploadedSegments) noexcept {
 	if (aSingleUser) {
 		singleUser = true;
 		totalSpeed = 0;
@@ -50,32 +50,35 @@ void UploadBundle::setSingleUser(bool aSingleUser, int64_t aUploadedSegments) {
 	}
 }
 
-uint64_t UploadBundle::getSecondsLeft() const {
+uint64_t UploadBundle::getSecondsLeft() const noexcept {
 	auto avg = totalSpeed > 0 ? totalSpeed : speed;
 	int64_t bytesLeft =  getSize() - getUploaded();
 	return (avg > 0) ? static_cast<int64_t>(bytesLeft / avg) : 0;
 }
 
-string UploadBundle::getName() const {
+string UploadBundle::getName() const noexcept {
 	if(target.back() == PATH_SEPARATOR)
 		return Util::getLastDir(target);
 	else
 		return Util::getFilePath(target);
 }
 
-void UploadBundle::addUpload(Upload* u) {
+void UploadBundle::addUpload(Upload* u) noexcept {
 	//can't have multiple bundles for it
-	if (u->getBundle())
+	if (u->getBundle()) {
 		u->getBundle()->removeUpload(u);
+	}
+
 	uploads.push_back(u);
 	u->setBundle(this);
+
 	if (uploads.size() == 1) {
 		findBundlePath(target);
 		delayTime = 0;
 	}
 }
 
-bool UploadBundle::removeUpload(Upload* u) {
+bool UploadBundle::removeUpload(Upload* u) noexcept {
 	auto s = find(uploads.begin(), uploads.end(), u);
 	dcassert(s != uploads.end());
 	if (s != uploads.end()) {
@@ -88,7 +91,7 @@ bool UploadBundle::removeUpload(Upload* u) {
 	return uploads.empty();
 }
 
-uint64_t UploadBundle::countSpeed() {
+uint64_t UploadBundle::countSpeed() noexcept {
 	double bundleRatio = 0;
 	int64_t bundleSpeed = 0, bundlePos = 0;
 	int up = 0;
@@ -115,7 +118,7 @@ uint64_t UploadBundle::countSpeed() {
 	return bundleSpeed;
 }
 
-void UploadBundle::findBundlePath(const string& aName) {
+void UploadBundle::findBundlePath(const string& aName) noexcept {
 	if (uploads.empty())
 		return;
 

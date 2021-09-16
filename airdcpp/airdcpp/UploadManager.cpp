@@ -84,15 +84,15 @@ void UploadManager::setFreeSlotMatcher() {
 	freeSlotMatcher.prepare();
 }
 
-uint8_t UploadManager::getSlots() const { 
+uint8_t UploadManager::getSlots() const noexcept {
 	return static_cast<uint8_t>(AirUtil::getSlots(false)); 
 }
 
-uint8_t UploadManager::getFreeSlots() const { 
+uint8_t UploadManager::getFreeSlots() const noexcept {
 	return (uint8_t)max((getSlots() - running), 0); 
 }
 
-int UploadManager::getFreeExtraSlots() const { 
+int UploadManager::getFreeExtraSlots() const noexcept {
 	return max(SETTING(EXTRA_SLOTS) - getExtra(), 0); 
 }
 
@@ -210,7 +210,7 @@ checkslots:
 			if ((type==Transfer::TYPE_PARTIAL_LIST || (type != Transfer::TYPE_FULL_LIST && fileSize <= 65792)) && smallSlots <= 8) {
 				slotType = UserConnection::SMALLSLOT;
 			} else if (aSource.isSet(UserConnection::FLAG_MCN1)) {
-				if (getMultiConn(aSource) || ((hasReserved || isFavorite|| getAutoSlot()) && !isUploading(aSource.getUser()))) {
+				if (getMultiConnLocked(aSource) || ((hasReserved || isFavorite|| getAutoSlot()) && !isUploadingLocked(aSource.getUser()))) {
 					slotType = UserConnection::MCNSLOT;
 				} else {
 					noSlots = true;
@@ -229,11 +229,11 @@ checkslots:
 
 			if (miniSlot && supportsFree && allowedFree) {
 				slotType = UserConnection::EXTRASLOT;
-			} else if(partialFree) {
+			} else if (partialFree) {
 				slotType = UserConnection::PARTIALSLOT;
 			} else {
-				auto isUploadingLocked = [&] { RLock l(cs); return isUploading(aSource.getUser()); }();
-				if (aSource.isSet(UserConnection::FLAG_MCN1) && isUploadingLocked) {
+				auto isUploadingF = [&] { RLock l(cs); return isUploadingLocked(aSource.getUser()); };
+				if (aSource.isSet(UserConnection::FLAG_MCN1) && isUploadingF()) {
 					//don't queue MCN requests for existing uploaders
 					aSource.maxedOut();
 				} else {
@@ -268,12 +268,13 @@ checkslots:
 			WLock l(cs);
 			auto i = find_if(delayUploads, [&aSource](const Upload* up) { return &aSource == &up->getUserConnection(); });
 			if (i != delayUploads.end()) {
-				Upload* up = *i;
+				auto up = *i;
 				delayUploads.erase(i);
 
 				if(sourceFile != up->getPath()) {
-					if (up->isSet(Upload::FLAG_CHUNKED) && up->getSegment().getEnd() != up->getFileSize())
+					if (up->isSet(Upload::FLAG_CHUNKED) && up->getSegment().getEnd() != up->getFileSize()) {
 						logUpload(up);
+					}
 				} else if (up->getType() == Transfer::TYPE_FILE && type == Transfer::TYPE_FILE && up->getSegment().getEnd() != fileSize) {
 					//we are resuming the same file, reuse the existing upload
 					countFilePositions();
@@ -417,7 +418,7 @@ end:
 	return true;
 }
 
-void UploadManager::updateSlotCounts(UserConnection& aSource, uint8_t aSlotType){
+void UploadManager::updateSlotCounts(UserConnection& aSource, uint8_t aSlotType) noexcept {
 	if(aSource.getSlotType() != aSlotType) {
 		// remove old count
 		switch(aSource.getSlotType()) {
@@ -466,7 +467,7 @@ void UploadManager::updateSlotCounts(UserConnection& aSource, uint8_t aSlotType)
 	}
 }
 
-void UploadManager::changeMultiConnSlot(const UserPtr& aUser, bool aRemove) {
+void UploadManager::changeMultiConnSlot(const UserPtr& aUser, bool aRemove) noexcept {
 	WLock l(cs);
 	auto uis = multiUploads.find(aUser);
 	if (uis != multiUploads.end()) {
@@ -490,20 +491,20 @@ void UploadManager::changeMultiConnSlot(const UserPtr& aUser, bool aRemove) {
 	}
 }
 
-bool UploadManager::getMultiConn(const UserConnection& aSource) {
+bool UploadManager::getMultiConnLocked(const UserConnection& aSource) noexcept {
 	//inside a lock.
-	UserPtr u = aSource.getUser();
+	auto u = aSource.getUser();
 
 	bool hasFreeSlot = false;
 	if ((int)(getSlots() - running - mcnSlots + multiUploads.size()) > 0) {
 		if ((uploadQueue.empty() && notifiedUsers.empty()) || isNotifiedUser(aSource.getUser())) {
-			hasFreeSlot=true;
+			hasFreeSlot = true;
 		}
 	}
 
 	if (!multiUploads.empty()) {
 		uint16_t highest = 0;
-		for(const auto& i: multiUploads) {
+		for (const auto& i: multiUploads) {
 			if (i.first == u) {
 				continue;
 			}
@@ -522,7 +523,7 @@ bool UploadManager::getMultiConn(const UserConnection& aSource) {
 	return (getFreeSlots() > 0) && ((uploadQueue.empty() && notifiedUsers.empty()) || isNotifiedUser(aSource.getUser()));
 }
 
-void UploadManager::checkMultiConn() {
+void UploadManager::checkMultiConn() noexcept {
 	RLock l(cs);
 	if ((int)(getSlots() - running - mcnSlots + multiUploads.size()) >= 0 || getAutoSlot() || multiUploads.empty()) {
 		return; //no reason to remove anything
@@ -545,8 +546,8 @@ void UploadManager::onUBN(const AdcCommand& cmd) {
 	float percent = -1;
 	string speedStr;
 
-	for(const auto& str: cmd.getParameters()) {
-		if(str.compare(0, 2, "BU") == 0) {
+	for (const auto& str: cmd.getParameters()) {
+		if (str.compare(0, 2, "BU") == 0) {
 			bundleToken = str.substr(2);
 		} else if(str.compare(0, 2, "DS") == 0) {
 			speedStr = str.substr(2);
@@ -561,7 +562,7 @@ void UploadManager::onUBN(const AdcCommand& cmd) {
 		return;
 	}
 
-	UploadBundlePtr bundle = findBundle(bundleToken);
+	auto bundle = findBundle(bundleToken);
 	if (bundle) {
 		if (bundle->getSingleUser()) {
 			//LogManager::getInstance()->message("SINGLEUSER, RETURN");
@@ -569,7 +570,7 @@ void UploadManager::onUBN(const AdcCommand& cmd) {
 		}
 
 		if (!speedStr.empty() && speedStr.length() > 2) {
-			size_t length = speedStr.length();
+			auto length = speedStr.length();
 			double downloaded = Util::toDouble(speedStr.substr(0, length-1));
 			if (downloaded > 0) {
 				double speed = 0.0;
@@ -659,8 +660,8 @@ void UploadManager::updateBundleInfo(const AdcCommand& cmd) {
 	int64_t size = 0, downloaded = 0;
 	bool singleUser = false, multiUser = false;
 
-	for(const auto& str: cmd.getParameters()) {
-		if(str.compare(0, 2, "BU") == 0) {
+	for (const auto& str: cmd.getParameters()) {
+		if (str.compare(0, 2, "BU") == 0) {
 			bundleToken = str.substr(2);
 		} else if(str.compare(0, 2, "SI") == 0) {
 			size = Util::toInt64(str.substr(2));
@@ -720,13 +721,13 @@ void UploadManager::changeBundle(const AdcCommand& cmd) {
 		return;
 	}
 
-	UploadBundlePtr b = findBundle(bundleToken);
+	auto b = findBundle(bundleToken);
 	dcassert(b);
 
 	if (b) {
 		{
 			WLock l (cs);
-			Upload* u = findUpload(token);
+			auto u = findUpload(token);
 			if (u) {
 				b->addUpload(u);
 				u->getUserConnection().setLastBundle(bundleToken);
@@ -780,7 +781,7 @@ void UploadManager::removeBundleConnection(const AdcCommand& cmd) {
 
 	if (!token.empty()) {
 		WLock l (cs);
-		Upload* u = findUpload(token);
+		auto u = findUpload(token);
 		if (u && u->getBundle()) {
 			u->getBundle()->removeUpload(u);
 			u->getUserConnection().setLastBundle(Util::emptyString);
@@ -810,7 +811,7 @@ void UploadManager::onUBD(const AdcCommand& cmd) {
 	}
 }
 
-UploadBundlePtr UploadManager::findBundle(const string& aBundleToken) {
+UploadBundlePtr UploadManager::findBundle(const string& aBundleToken) const noexcept {
 	RLock l(cs);
 	auto s = bundles.find(aBundleToken);
 	if (s != bundles.end()) {
@@ -819,7 +820,7 @@ UploadBundlePtr UploadManager::findBundle(const string& aBundleToken) {
 	return nullptr;
 }
 
-Upload* UploadManager::findUpload(const string& aToken) {
+Upload* UploadManager::findUpload(const string& aToken) noexcept {
 	auto u = find_if(uploads.begin(), uploads.end(), [&](Upload* up) { return compare(up->getToken(), aToken) == 0; });
 	if (u != uploads.end()) {
 		return *u;
@@ -834,30 +835,30 @@ Upload* UploadManager::findUpload(const string& aToken) {
 }
 
 
-int64_t UploadManager::getRunningAverage(bool lock) {
+int64_t UploadManager::getRunningAverage(bool aLock) const noexcept {
 	int64_t avg = 0;
 
-	ConditionalRLock l(cs, lock);
+	ConditionalRLock l(cs, aLock);
 	for (auto u: uploads)
 		avg += static_cast<int64_t>(u->getAverageSpeed()); 
 	return avg;
 }
 
-bool UploadManager::getAutoSlot() {
+bool UploadManager::getAutoSlot() const noexcept {
 	/** A 0 in settings means disable */
-	if(AirUtil::getSpeedLimit(false) == 0)
+	if (AirUtil::getSpeedLimit(false) == 0)
 		return false;
 	/** Max slots */
-	if(getSlots() + AirUtil::getMaxAutoOpened() <= running)
+	if (getSlots() + AirUtil::getMaxAutoOpened() <= running)
 		return false;		
 	/** Only grant one slot per 30 sec */
-	if(GET_TICK() < getLastGrant() + 30*1000)
+	if (GET_TICK() < getLastGrant() + 30*1000)
 		return false;
 	/** Grant if upload speed is less than the threshold speed */
 	return getRunningAverage(false) < Util::convertSize(AirUtil::getSpeedLimit(false), Util::KB);
 }
 
-void UploadManager::removeUpload(Upload* aUpload, bool aDelay) {
+void UploadManager::removeUpload(Upload* aUpload, bool aDelay) noexcept {
 	WLock l(cs);
 
 	{
@@ -881,31 +882,31 @@ void UploadManager::removeUpload(Upload* aUpload, bool aDelay) {
 	}
 }
 
-void UploadManager::reserveSlot(const HintedUser& aUser, uint64_t aTime) {
+void UploadManager::reserveSlot(const HintedUser& aUser, uint64_t aTime) noexcept {
 	bool connect = false;
 	string token;
 	{
 		WLock l(cs);
 		reservedSlots[aUser] = aTime > 0 ? (GET_TICK() + aTime*1000) : 0;
 	
-		if(aUser.user->isOnline()){
+		if (aUser.user->isOnline()){
 			// find user in uploadqueue to connect with correct token
 			auto it = find_if(uploadQueue.cbegin(), uploadQueue.cend(), [&](const UserPtr& u) { return u == aUser.user; });
-			if(it != uploadQueue.cend()) {
+			if (it != uploadQueue.cend()) {
 				token = it->token;
 				connect = true;
 			}
 		}
 	}
 
-	if(connect) {
+	if (connect) {
 		connectUser(aUser, token);
 	}
 
 	fire(UploadManagerListener::SlotsUpdated(), aUser);
 }
 
-void UploadManager::connectUser(const HintedUser& aUser, const string& aToken) {
+void UploadManager::connectUser(const HintedUser& aUser, const string& aToken) noexcept {
 	string lastError;
 	string hubUrl = aUser.hint;
 	bool protocolError = false;
@@ -914,40 +915,42 @@ void UploadManager::connectUser(const HintedUser& aUser, const string& aToken) {
 	//TODO: report errors?
 }
 
-void UploadManager::unreserveSlot(const UserPtr& aUser) {
+void UploadManager::unreserveSlot(const UserPtr& aUser) noexcept {
 	bool found = false;
 	{
 		WLock l(cs);
 		auto uis = reservedSlots.find(aUser);
-		if(uis != reservedSlots.end()){
+		if (uis != reservedSlots.end()){
 			reservedSlots.erase(uis);
 			found = true;
 		}
 	}
-	if(found)
+
+	if (found) {
 		fire(UploadManagerListener::SlotsUpdated(), aUser);
+	}
 }
 
 void UploadManager::on(UserConnectionListener::Get, UserConnection* aSource, const string& aFile, int64_t aResume) noexcept {
-	if(aSource->getState() != UserConnection::STATE_GET) {
+	if (aSource->getState() != UserConnection::STATE_GET) {
 		dcdebug("UM::onGet Bad state, ignoring\n");
 		return;
 	}
 	
 	int64_t bytes = -1;
-	if(prepareFile(*aSource, Transfer::names[Transfer::TYPE_FILE], aFile, aResume, bytes, Util::emptyString)) {
+	if (prepareFile(*aSource, Transfer::names[Transfer::TYPE_FILE], aFile, aResume, bytes, Util::emptyString)) {
 		aSource->setState(UserConnection::STATE_SEND);
 		aSource->fileLength(Util::toString(aSource->getUpload()->getSegmentSize()));
 	}
 }
 
 void UploadManager::on(UserConnectionListener::Send, UserConnection* aSource) noexcept {
-	if(aSource->getState() != UserConnection::STATE_SEND) {
+	if (aSource->getState() != UserConnection::STATE_SEND) {
 		dcdebug("UM::onSend Bad state, ignoring\n");
 		return;
 	}
 
-	Upload* u = aSource->getUpload();
+	auto u = aSource->getUpload();
 	dcassert(u);
 
 	u->setStart(GET_TICK());
@@ -974,7 +977,7 @@ void UploadManager::on(AdcCommand::GET, UserConnection* aSource, const AdcComman
 
 
 	if(prepareFile(*aSource, type, fname, aStartPos, aBytes, userSID, c.hasFlag("RE", 4), c.hasFlag("TL", 4))) {
-		Upload* u = aSource->getUpload();
+		auto u = aSource->getUpload();
 		dcassert(u);
 
 		AdcCommand cmd(AdcCommand::CMD_SND);
@@ -1029,15 +1032,15 @@ void UploadManager::on(UserConnectionListener::TransmitDone, UserConnection* aSo
 
 	aSource->setState(UserConnection::STATE_GET);
 
-	bool partialSegmentFinished = u->isSet(Upload::FLAG_CHUNKED) && u->getSegment().getEnd() != u->getFileSize();
-	if(!partialSegmentFinished) {
+	auto partialSegmentFinished = u->isSet(Upload::FLAG_CHUNKED) && u->getSegment().getEnd() != u->getFileSize();
+	if (!partialSegmentFinished) {
 		logUpload(u);
 	}
 
 	removeUpload(u, partialSegmentFinished || u->getBundle());
 }
 
-void UploadManager::logUpload(const Upload* u) {
+void UploadManager::logUpload(const Upload* u) noexcept {
 	if(SETTING(LOG_UPLOADS) && u->getType() != Transfer::TYPE_TREE && (SETTING(LOG_FILELIST_TRANSFERS) || !u->isFilelist())) {
 		ParamMap params;
 		u->getParams(u->getUserConnection(), params);
@@ -1047,13 +1050,13 @@ void UploadManager::logUpload(const Upload* u) {
 	fire(UploadManagerListener::Complete(), u);
 }
 
-size_t UploadManager::addFailedUpload(const UserConnection& aSource, const string& aFile, int64_t aPos, int64_t aSize) {
+size_t UploadManager::addFailedUpload(const UserConnection& aSource, const string& aFile, int64_t aPos, int64_t aSize) noexcept {
 	size_t queue_position = 0;
 	WLock l(cs);
 	auto it = find_if(uploadQueue.begin(), uploadQueue.end(), [&](const UserPtr& u) -> bool { ++queue_position; return u == aSource.getUser(); });
-	if(it != uploadQueue.end()) {
+	if (it != uploadQueue.end()) {
 		it->token = aSource.getToken();
-		for(const auto f: it->files) {
+		for (const auto f: it->files) {
 			if(f->getFile() == aFile) {
 				f->setPos(aPos);
 				return queue_position;
@@ -1061,8 +1064,8 @@ size_t UploadManager::addFailedUpload(const UserConnection& aSource, const strin
 		}
 	}
 
-	UploadQueueItem* uqi = new UploadQueueItem(aSource.getHintedUser(), aFile, aPos, aSize);
-	if(it == uploadQueue.end()) {
+	auto uqi = new UploadQueueItem(aSource.getHintedUser(), aFile, aPos, aSize);
+	if (it == uploadQueue.end()) {
 		++queue_position;
 
 		WaitingUser wu(aSource.getHintedUser(), aSource.getToken());
@@ -1076,7 +1079,7 @@ size_t UploadManager::addFailedUpload(const UserConnection& aSource, const strin
 	return queue_position;
 }
 
-void UploadManager::clearUserFiles(const UserPtr& aUser, bool aLock) {
+void UploadManager::clearUserFiles(const UserPtr& aUser, bool aLock) noexcept {
 	
 	ConditionalWLock l (cs, aLock);
 	auto it = find_if(uploadQueue, [&](const UserPtr& u) { return u == aUser; });
@@ -1090,12 +1093,12 @@ void UploadManager::clearUserFiles(const UserPtr& aUser, bool aLock) {
 	}
 }
 
-void UploadManager::addConnection(UserConnectionPtr conn) {
+void UploadManager::addConnection(UserConnectionPtr conn) noexcept {
 	conn->addListener(this);
 	conn->setState(UserConnection::STATE_GET);
 }
 	
-void UploadManager::removeConnection(UserConnection* aSource) {
+void UploadManager::removeConnection(UserConnection* aSource) noexcept {
 	dcassert(!aSource->getUpload());
 	aSource->removeListener(this);
 
@@ -1111,7 +1114,7 @@ void UploadManager::removeConnection(UserConnection* aSource) {
 	aSource->setSlotType(UserConnection::NOSLOT);
 }
 
-void UploadManager::notifyQueuedUsers() {
+void UploadManager::notifyQueuedUsers() noexcept {
 	vector<WaitingUser> notifyList;
 	{
 		WLock l(cs);
@@ -1217,16 +1220,16 @@ size_t UploadManager::getRunningBundleCount() const noexcept {
 	return ret;
 }
 
-bool UploadManager::hasReservedSlot(const UserPtr& aUser) const { 
+bool UploadManager::hasReservedSlot(const UserPtr& aUser) const noexcept {
 	RLock l(cs); 
 	return reservedSlots.find(aUser) != reservedSlots.end(); 
 }
 
-bool UploadManager::isNotifiedUser(const UserPtr& aUser) const { 
+bool UploadManager::isNotifiedUser(const UserPtr& aUser) const noexcept {
 	return notifiedUsers.find(aUser) != notifiedUsers.end(); 
 }
 
-UploadManager::SlotQueue UploadManager::getUploadQueue() const { 
+UploadManager::SlotQueue UploadManager::getUploadQueue() const noexcept {
 	RLock l(cs); 
 	return uploadQueue; 
 }
@@ -1323,7 +1326,7 @@ void UploadManager::log(const string& aMsg, LogMessage::Severity aSeverity) noex
 /**
  * Abort upload of specific file
  */
-void UploadManager::abortUpload(const string& aFile, bool aWaitDisconnected) {
+void UploadManager::abortUpload(const string& aFile, bool aWaitDisconnected) noexcept {
 	bool fileRunning = false;
 
 	{

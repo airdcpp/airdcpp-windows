@@ -388,7 +388,7 @@ void UploadQueueFrame::updateStatus() {
 	}
 }
 
-int UploadQueueItem::getImageIndex() const {
+int UploadQueueItem::getImageIndex() const noexcept {
 	return ResourceLoader::getIconIndex(Text::toT(file));
 }
 
@@ -402,7 +402,7 @@ int UploadQueueItem::compareItems(const UploadQueueItem* a, const UploadQueueIte
 	}
 }
 
-const tstring UploadQueueItem::getText(uint8_t col) const {
+const tstring UploadQueueItem::getText(uint8_t col) const noexcept {
 	switch(col) {
 		case COLUMN_FILE: return Text::toT(Util::getFileName(file));
 		case COLUMN_PATH: return Text::toT(Util::getFilePath(file));
