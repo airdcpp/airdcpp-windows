@@ -1,6 +1,9 @@
 4.11
 
-API and Web UI changes: http://airdcpp-web.github.io/2021/07/27/version-2.11.1.html
+API and Web UI changes:
+
+- http://airdcpp-web.github.io/2021/07/27/version-2.11.1.html
+- http://airdcpp-web.github.io/2021/09/19/version-2.11.2.html
 
 Changed:
 
@@ -10,6 +13,7 @@ Changed:
 
 Fixed:
 
+- Fix a possible crash when uploading files
 - Fix possible filelist-related crashes
 - Fix issues with saving of options on the extension tab
 - Fix warnings with hubs that are blocking direct private messages (shown only for AirDC++ users)
