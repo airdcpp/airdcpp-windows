@@ -247,7 +247,9 @@ private:
 	bool getLocalPaths(StringList& paths_, bool usingTree, bool dirsOnly);
 	void openDupe(const DirectoryListing::Directory::Ptr& d);
 	void openDupe(const DirectoryListing::File::Ptr& f, bool openDir) noexcept;
-	const string getCurrentPath() const noexcept;
+
+	// Current list path in the core (may not match the current view path during directory changes)
+	const string getCurrentListPath() const noexcept;
 
 	// safe to be called from any thread
 	void updateStatus(const tstring& aMsg);
@@ -256,7 +258,7 @@ private:
 	// string curPath = ADC_ROOT_STR;
 	
 	void updateItems(const DirectoryListing::Directory::Ptr& d);
-	void insertItems(const optional<string>& selectedName);
+	void insertItems(const string& aPath, const optional<string>& aSelectedName);
 
 	void findSearchHit(bool newDir = false);
 	int searchPos;

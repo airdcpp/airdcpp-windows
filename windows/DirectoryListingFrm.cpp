@@ -161,7 +161,7 @@ bool DirectoryListingFrame::getWindowParams(HWND hWnd, StringMap &params) {
 		params["id"] = DirectoryListingFrame::id;
 		params["CID"] = dl->getUser()->getCID().toBase32();
 		params["url"] = dl->getHubUrl();
-		params["dir"] = f->second->getCurrentPath();
+		params["dir"] = f->second->getCurrentListPath();
 		params["file"] = dl->getFileName();
 		params["partial"] = Util::toString(dl->getPartialList());
 		params["profileToken"] = Util::toString(dl->getIsOwnList() ? dl->getShareProfile() : 0);
@@ -341,12 +341,12 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_
 	});*/
 }
 
-void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir, uint8_t aType) {
+void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aPath, uint8_t aType) {
 
 	// Get ownership of all item infos so that they won't be deleted before we finish loading
 	vector<unique_ptr<ItemInfoCache>> removedInfos;
 	for (auto i = itemInfos.begin(); i != itemInfos.end();) {
-		if (AirUtil::isParentOrExactAdc(aDir, i->first)) {
+		if (AirUtil::isParentOrExactAdc(aPath, i->first)) {
 			removedInfos.push_back(move(i->second));
 			i = itemInfos.erase(i);
 		} else {
@@ -354,7 +354,8 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir
 		}
 	}
 
-	updateItemCache(getCurrentPath());
+	// Update the current location in case of reload
+	updateItemCache(getCurrentListPath());
 
 	callAsync([=] {
 		if (getActive()) {
@@ -364,18 +365,18 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir
 		if (!dl->getPartialList())
 			updateStatus(CTSTRING(UPDATING_VIEW));
 
-		auto searching = dl->isCurrentSearchPath(aDir);
+		auto searching = dl->isCurrentSearchPath(aPath);
 		if (searching)
 			ctrlFiles.filter.clear();
 
-		refreshTree(aDir, static_cast<DirectoryListing::DirectoryLoadType>(aType) != DirectoryListing::DirectoryLoadType::LOAD_CONTENT);
+		refreshTree(aPath, static_cast<DirectoryListing::DirectoryLoadType>(aType) != DirectoryListing::DirectoryLoadType::LOAD_CONTENT);
 
 		changeWindowState(true);
 		if (!searching) {
 			int64_t loadTime = (GET_TICK() - aStart) / 1000;
 			string msg;
 			if (dl->getPartialList()) {
-				if (aDir == ADC_ROOT_STR) {
+				if (aPath == ADC_ROOT_STR) {
 					msg = STRING(PARTIAL_LIST_LOADED);
 				}
 			} else {
@@ -711,7 +712,14 @@ void DirectoryListingFrame::createRoot() {
 	dcassert(treeRoot); 
 }
 
-const string DirectoryListingFrame::getCurrentPath() const noexcept {
+const string DirectoryListingFrame::getCurrentListPath() const noexcept {
+	/*auto ii = ctrlTree.getSelectedItemData();
+	if (!ii) {
+		return ADC_ROOT_STR;
+	}
+
+	return ii->dir->getAdcPath();*/
+
 	const auto ret = dl->getCurrentLocationInfo().directory ? dl->getCurrentLocationInfo().directory->getAdcPath() : ADC_ROOT_STR;
 	return ret;
 }
@@ -741,7 +749,7 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedPath, bool aSelectD
 	if (initialChange || isExpanded || changeType == CHANGE_TREE_EXPAND || changeType == CHANGE_TREE_DOUBLE)
 		ctrlTree.Expand(loadedTreeItem);
 
-	if (!aSelectDir && getCurrentPath() == Util::getAdcParentDir(aLoadedPath)) {
+	if (!aSelectDir && getCurrentListPath() == Util::getAdcParentDir(aLoadedPath)) {
 		// Find the loaded directory and set it as complete
 		int j = ctrlFiles.list.GetItemCount();        
 		for(int i = 0; i < j; i++) {
@@ -753,19 +761,17 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedPath, bool aSelectD
 				break;
 			}
 		}
-	} else if (aSelectDir || AirUtil::isParentOrExactAdc(aLoadedPath, getCurrentPath())) {
+	} else if (aSelectDir || AirUtil::isParentOrExactAdc(aLoadedPath, getCurrentListPath())) {
 		// insert the new items
 		ctrlTree.SelectItem(nullptr);
 
 		// tweak to insert the items in the current thread
 		if (aSelectDir) {
-			// curPath = loadedDirectory->getAdcPath();
-
 			updateItems(loadedDirectory);
 			selectItem(loadedDirectory->getAdcPath());
 		} else {
 			// Subdirectory of the loaded directory is selected
-			auto currentTreeItem = ctrlTree.findItemByPath(treeRoot, Text::toT(getCurrentPath()));
+			auto currentTreeItem = ctrlTree.findItemByPath(treeRoot, Text::toT(getCurrentListPath()));
 			dcassert(currentTreeItem);
 
 			auto currentDirectory = ((ItemInfo*)ctrlTree.GetItemData(currentTreeItem))->dir;
@@ -875,7 +881,7 @@ void DirectoryListingFrame::onFind() {
 	s->requireReply = true;
 
 	if (dlg.useCurDir) {
-		s->path = getCurrentPath();
+		s->path = getCurrentListPath();
 	}
 
 	dl->addSearchTask(s);
@@ -894,23 +900,23 @@ LRESULT DirectoryListingFrame::onPrev(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 }
 
 size_t DirectoryListingFrame::getTotalListItemCount() const noexcept {
-	auto ii = itemInfos.find(getCurrentPath());
-	if (ii != itemInfos.end()) {
-		return ii->second->directories.size() + ii->second->files.size();
+	auto ii = ctrlTree.getSelectedItemData();
+	if (!ii) {
+		return 0;
 	}
 
-	dcassert(0);
-	return 0;
+	auto dir = ii->dir;
+	return dir->directories.size() + dir->files.size();
 }
 
 
 void DirectoryListingFrame::updateStatus() noexcept {
-	auto currentDir = ctrlTree.getSelectedItemData();
-	if (!currentDir) {
+	auto ii = ctrlTree.getSelectedItemData();
+	if (!ii) {
 		return;
 	}
 
-	updateStatus(currentDir->dir);
+	updateStatus(ii->dir);
 }
 
 void DirectoryListingFrame::updateStatus(const DirectoryListing::Directory::Ptr& aCurrentDir) noexcept {
@@ -1041,16 +1047,16 @@ LRESULT DirectoryListingFrame::onSelChangedDirectories(int /*idCtrl*/, LPNMHDR p
 	NMTREEVIEW* p = (NMTREEVIEW*) pnmh;
 
 	if(p->itemNew.state & TVIS_SELECTED) {
-		auto ii = (ItemInfo*)p->itemNew.lParam;
+		auto selectedItemInfo = (ItemInfo*)p->itemNew.lParam;
 
 		// Don't cause an infinite loop when changing directories in the GUI faster than the
 		// list thread is able to handle (= don't send another changeDir for previously queued changes)
-		if (getCurrentPath() != ii->getAdcPath() && dl->getCurrentLocationInfo().directory != ii->dir) {
+		if (getCurrentListPath() != selectedItemInfo->getAdcPath() && dl->getCurrentLocationInfo().directory != selectedItemInfo->dir) {
 			if (changeType != CHANGE_HISTORY)
-				browserBar.addHistory(ii->getAdcPath());
+				browserBar.addHistory(selectedItemInfo->getAdcPath());
 
 			// curPath = ii->getAdcPath();
-			loadPath(ii, DirectoryListing::DirectoryLoadType::CHANGE_NORMAL);
+			loadPath(selectedItemInfo, DirectoryListing::DirectoryLoadType::CHANGE_NORMAL);
 		}
 	}
 
@@ -1082,21 +1088,21 @@ void DirectoryListingFrame::filterList() {
 	updating = true;
 	ctrlFiles.list.SetRedraw(FALSE);
 
-	insertItems(nullopt);
+	insertItems(getCurrentListPath(), nullopt);
 
 	ctrlFiles.list.SetRedraw(TRUE);
 	updating = false;
 	updateStatus();
 }
 
-void DirectoryListingFrame::insertItems(const optional<string>& selectedName) {
+void DirectoryListingFrame::insertItems(const string& aPath, const optional<string>& aSelectedName) {
 	ctrlFiles.list.DeleteAllItems();
 
 	int curPos = 0;
 	int selectedPos = -1;
 
-	dcassert(itemInfos.find(getCurrentPath()) != itemInfos.end());
-	const auto& dirs = itemInfos[getCurrentPath()]->directories;
+	dcassert(itemInfos.find(aPath) != itemInfos.end());
+	const auto& dirs = itemInfos[aPath]->directories;
 	auto i = dirs.crbegin();
 
 	auto filterInfo = [this, &i](int column) { return (*i).getTextNormal(column); };
@@ -1115,7 +1121,7 @@ void DirectoryListingFrame::insertItems(const optional<string>& selectedName) {
 	auto doInsert = [&](const decltype(dirs)& map) {
 		for (; i != map.crend(); ++i) {
 			if (ctrlFiles.checkDupe((*i).getDupe()) && (ctrlFiles.filter.empty() || ctrlFiles.filter.match(filterPrep))) {
-				if (selectedName && compare(*selectedName, (*i).getName()) == 0) {
+				if (aSelectedName && compare(*aSelectedName, (*i).getName()) == 0) {
 					selectedPos = curPos;
 				}
 
@@ -1125,7 +1131,7 @@ void DirectoryListingFrame::insertItems(const optional<string>& selectedName) {
 	};
 
 	doInsert(dirs);
-	const auto& files = itemInfos[getCurrentPath()]->files;
+	const auto& files = itemInfos[aPath]->files;
 	i = files.crbegin();
 	doInsert(files);
 
@@ -1156,7 +1162,7 @@ void DirectoryListingFrame::updateItems(const DirectoryListing::Directory::Ptr& 
 	}
 
 	ctrlFiles.onListChanged(false);
-	insertItems(selectedName);
+	insertItems(d->getAdcPath(), selectedName);
 
 	ctrlFiles.list.SetRedraw(TRUE);
 	updating = false;
@@ -1176,27 +1182,32 @@ void DirectoryListingFrame::loadPath(const ItemInfo* ii, DirectoryListing::Direc
 }
 
 void DirectoryListingFrame::up() {
-	HTREEITEM t = ctrlTree.GetSelectedItem();
-	if(t == NULL)
+	auto t = ctrlTree.GetSelectedItem();
+	if (!t) {
 		return;
+	}
+
 	t = ctrlTree.GetParentItem(t);
-	if(t == NULL)
+	if (!t)
 		return;
-	auto aPrevPath = getCurrentPath();
+
+	auto aPrevPath = getCurrentListPath();
 	ctrlTree.SelectItem(t);
 	
-	callAsync([=] { listViewSelectSubDir(aPrevPath, getCurrentPath()); });
+	callAsync([=] { 
+		listViewSelectSubDir(aPrevPath, getCurrentListPath()); 
+	});
 }
 
 
 
-void DirectoryListingFrame::handleHistoryClick(const string& aPath, bool byHistory) {
-	if(byHistory) 
+void DirectoryListingFrame::handleHistoryClick(const string& aPath, bool aByHistory) {
+	if (aByHistory)
 		changeType = CHANGE_HISTORY;
-	auto aPrevPath = getCurrentPath();
-	selectItem(aPath);
-	listViewSelectSubDir(aPrevPath, aPath);
 
+	auto prevPath = getCurrentListPath();
+	selectItem(aPath);
+	listViewSelectSubDir(prevPath, aPath);
 }
 
 void DirectoryListingFrame::listViewSelectSubDir(const string& aSubPath, const string& aParentPath) {
@@ -1567,7 +1578,7 @@ void DirectoryListingFrame::appendTreeContextMenu(CPoint& pt, const HTREEITEM& a
 		directoryMenu.appendSeparator();
 	}
 
-	ActionUtil::appendSearchMenu(directoryMenu, getCurrentPath());
+	ActionUtil::appendSearchMenu(directoryMenu, getCurrentListPath());
 	directoryMenu.appendSeparator();
 
 	{

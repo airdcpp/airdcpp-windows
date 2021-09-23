@@ -28,7 +28,7 @@
 template<class T>
 class TypedTreeCtrl : public CTreeViewCtrl {
 public:
-	bool IsExpanded(HTREEITEM hItem) {
+	bool IsExpanded(HTREEITEM hItem) const noexcept {
 		TVITEM tvItem;
 		tvItem.hItem = hItem;
 		tvItem.mask = TVIF_HANDLE | TVIF_STATE;
@@ -58,7 +58,7 @@ public:
 		REFLECTED_NOTIFY_CODE_HANDLER(TVN_ITEMEXPANDING, OnItemExpanding)
 	END_MSG_MAP();*/
 
-	LRESULT OnGetChildInfo(int /*idCtrl*/, NMHDR* pNMHDR, BOOL &bHandled) {
+	LRESULT OnGetChildInfo(int /*idCtrl*/, NMHDR* pNMHDR, BOOL &bHandled) const noexcept {
 		NMTVDISPINFO *pDispInfo = reinterpret_cast<NMTVDISPINFO*>(pNMHDR);
 		TVITEM* pItem = &(pDispInfo)->item;
     
@@ -70,7 +70,7 @@ public:
 		return 0;
 	}
 
-	T* getSelectedItemData() noexcept {
+	const T* getSelectedItemData() const noexcept {
 		auto t = this->GetSelectedItem();
 		if (!t) {
 			return nullptr;
@@ -79,7 +79,7 @@ public:
 		return (T*)this->GetItemData(t);
 	}
 
-	LRESULT OnGetItemDispInfo(int /*idCtrl*/, NMHDR *pNMHDR, BOOL &bHandled) {
+	LRESULT OnGetItemDispInfo(int /*idCtrl*/, NMHDR *pNMHDR, BOOL &bHandled) const noexcept {
 		NMTVDISPINFO *pDispInfo = reinterpret_cast<NMTVDISPINFO*>(pNMHDR);
 		TVITEM* pItem = &(pDispInfo)->item;
     
@@ -104,7 +104,7 @@ public:
 		return 0;
 	}
 
-	LRESULT OnItemExpanding(int /*idCtrl*/, NMHDR *pNMHDR, BOOL &bHandled) {
+	LRESULT OnItemExpanding(int /*idCtrl*/, NMHDR *pNMHDR, BOOL &bHandled) noexcept {
 		NMTREEVIEW *pNMTreeView = (NMTREEVIEW*)pNMHDR;
 		if(pNMTreeView->action == TVE_COLLAPSE || pNMTreeView->action == TVE_COLLAPSERESET) {
 			//Get the currently selected item
@@ -138,7 +138,7 @@ public:
 		return 0;
 	}
 
-	void setHasChildren(HTREEITEM hItem, bool bHavePlus) {
+	void setHasChildren(HTREEITEM hItem, bool bHavePlus) noexcept {
 		TV_ITEM tvItem;
 		tvItem.hItem = hItem;
 		tvItem.mask = TVIF_HANDLE | TVIF_CHILDREN;
@@ -146,14 +146,14 @@ public:
 		this->SetItem(&tvItem);
 	}
 
-	bool hasChildren(HTREEITEM hItem) {
+	bool hasChildren(HTREEITEM hItem) const noexcept {
 		TVITEM tvItem;
 		tvItem.hItem = hItem;
 		tvItem.mask = TVIF_HANDLE | TVIF_CHILDREN;
 		return this->GetItem(&tvItem) && (tvItem.cChildren != 0);
 	}
 
-	void insertItem(const T* aDir, HTREEITEM aParent, bool bold) {
+	void insertItem(const T* aDir, HTREEITEM aParent, bool aBold) noexcept {
 		TVINSERTSTRUCT tvs = {0};
  
 		tvs.item.mask = TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE|TVIF_CHILDREN|TVIF_PARAM;
@@ -162,7 +162,7 @@ public:
 		tvs.item.iSelectedImage = I_IMAGECALLBACK ;
 		tvs.item.cChildren = I_CHILDRENCALLBACK;
 		tvs.item.lParam = (LPARAM)aDir;
-		if (bold) {
+		if (aBold) {
 			tvs.item.mask |= TVIF_STATE;
 			tvs.item.state = TVIS_BOLD;
 			tvs.item.stateMask = TVIS_BOLD;
@@ -173,27 +173,27 @@ public:
 		this->InsertItem(&tvs) ;
 	}
 
-	void updateItemImage(const T* item) { 
+	void updateItemImage(const T* item) noexcept { 
 		HTREEITEM ht = findItem(this->GetRootItem(), item->getAdcPath());
 		if (ht) {
 			updateItemImage(ht);
 		}
 	}
 
-	void updateItemImage(HTREEITEM ht) {
+	void updateItemImage(HTREEITEM ht) noexcept {
 		this->SetItemImage(ht, I_IMAGECALLBACK, I_IMAGECALLBACK);
 		this->RedrawWindow();
 	}
 
-	HTREEITEM findItemByPath(HTREEITEM ht, const tstring& aPath) {
+	HTREEITEM findItemByPath(HTREEITEM ht, const tstring& aPath) noexcept {
 		return findItem(ht, aPath, true);
 	}
 
-	HTREEITEM findItemByName(HTREEITEM ht, const tstring& aPath) {
+	HTREEITEM findItemByName(HTREEITEM ht, const tstring& aPath) noexcept {
 		return findItem(ht, _T(ADC_SEPARATOR) + aPath + _T(ADC_SEPARATOR), true);
 	}
 private:
-	HTREEITEM findItem(HTREEITEM ht, const tstring& aPath, bool aIsFirst) {
+	HTREEITEM findItem(HTREEITEM ht, const tstring& aPath, bool aIsFirst) noexcept {
 		dcassert(!aPath.empty() && aPath.front() == ADC_SEPARATOR);
 		dcassert(aPath.back() == ADC_SEPARATOR);
 
