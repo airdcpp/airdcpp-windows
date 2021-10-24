@@ -314,14 +314,14 @@ LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				if (!badSourceBundles.empty()) {
 					for (auto& bs : badSourceBundles) {
 						readdMenu->appendItem(formatBundle(bs), [=] {
-							QueueManager::getInstance()->readdBundleSource(bs.first, bs.second.getUser());
+							QueueManager::getInstance()->readdBundleSourceHooked(bs.first, bs.second.getUser());
 						}, OMenu::FLAG_THREADED);
 					}
 
 					readdMenu->appendSeparator();
 					readdMenu->appendItem(TSTRING(ALL), [=] {
 						for (auto& bs : badSourceBundles) {
-							QueueManager::getInstance()->readdBundleSource(bs.first, bs.second.getUser());
+							QueueManager::getInstance()->readdBundleSourceHooked(bs.first, bs.second.getUser());
 						}
 					}, OMenu::FLAG_THREADED);
 				}

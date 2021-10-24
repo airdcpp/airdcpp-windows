@@ -25,7 +25,6 @@
 
 #include "Async.h"
 #include "StaticFrame.h"
-#include "WinUtil.h"
 #include "FilteredListViewCtrl.h"
 #include "RssFeedsPage.h"
 #include "TabbedDialog.h"
@@ -69,6 +68,7 @@ public:
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		MESSAGE_HANDLER(WM_TIMER, onTimer)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
+		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
 		CHAIN_MSG_MAP(baseClass)
 		CHAIN_MSG_MAP(CSplitterImpl<RssInfoFrame>)
 		ALT_MSG_MAP(RSS_STATUS_MSG_MAP)
@@ -89,6 +89,11 @@ public:
 
 	LRESULT OnFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		ctrlRss.list.SetFocus();
+		return 0;
+	}
+
+	LRESULT onCloseWindow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		PostMessage(WM_CLOSE);
 		return 0;
 	}
 
@@ -150,7 +155,7 @@ private:
 	HTREEITEM addTreeItem(const HTREEITEM& parent, int img, const tstring& name, HTREEITEM insertAfter = TVI_SORT);
 
 	TaskQueue tasks;
-	void addGuiTask(std::function<void()> f) {
+	void addGuiTask(Callback f) {
 		tasks.add(0, unique_ptr<AsyncTask>(new AsyncTask(f)));
 	}
 

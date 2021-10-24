@@ -21,7 +21,6 @@
 #include "Resource.h"
 
 #include "PriorityPage.h"
-#include "WinUtil.h"
 #include "PropertiesDlg.h"
 
 PropPage::TextItem PriorityPage::texts[] = {

@@ -21,7 +21,6 @@
 #include "WizardProfile.h"
 #include "ActionUtil.h"
 
-#include <airdcpp/AirUtil.h>
 #include <airdcpp/SettingHolder.h>
 
 PropPage::TextItem WizardProfile::texts[] = {

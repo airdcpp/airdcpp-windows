@@ -21,16 +21,17 @@
 #ifndef CONFIG_UTIL_H
 #define CONFIG_UTIL_H
 
-#include <api/ExtensionInfo.h>
-#include <api/common/Serializer.h>
-#include <api/common/SettingUtils.h>
-#include <web-server/JsonUtil.h>
+#include <web-server/ApiSettingItem.h>
 
-#include "WinUtil.h"
+#include <airdcpp/typedefs.h>
 
 using namespace webserver;
 
 class ConfigUtil {
+
+#define MAX_TEXT_WIDTH 400
+#define MARGIN_LEFT 20
+
 public:
 
 	class ConfigItem {
@@ -54,7 +55,7 @@ public:
 
 		void Create(HWND m_hWnd);
 		int updateLayout(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing);
-		void onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam);
+		virtual void onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam);
 
 		virtual bool handleClick(HWND m_hWnd) = 0;
 		virtual bool write() = 0;
@@ -62,18 +63,19 @@ public:
 
 		int getParentRightEdge(HWND m_hWnd);
 
-		static int calculateTextRows(const tstring& aText, HWND m_hWndControl) noexcept;
+		static int calculateTextRows(const tstring& aText, HWND m_hWndControl, int aMaxWidth = MAX_TEXT_WIDTH) noexcept;
 	protected:
 		virtual void Create(HWND m_hWnd, RECT rcDefault) = 0;
 		virtual void updateLayout(HWND m_hWnd, CRect& rect_) = 0;
-	private:
-		CRect calculateItemPosition(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing);
-
-		void addLabel(HWND m_hWnd, CRect& rect_) noexcept;
-		void addHelpText(HWND m_hWnd, CRect& rect_) noexcept;
 
 		CStatic ctrlLabel;
 		CStatic ctrlHelp;
+
+		void addLabel(HWND m_hWnd, CRect& rect_) noexcept;
+		void addHelpText(HWND m_hWnd, CRect& rect_) noexcept;
+	private:
+		CRect calculateItemPosition(HWND m_hWnd, int aPrevConfigBottomMargin, int aConfigSpacing);
+
 		const int flags;
 	};
 
@@ -85,11 +87,7 @@ public:
 		StringConfigItem(ExtensionSettingItem& aSetting) : ConfigItem(aSetting) {}
 
 		//todo handle errors
-		bool write() override {
-			auto val = SettingUtils::validateValue(Text::fromT(WinUtil::getEditText(ctrlEdit)), setting, nullptr);
-			setting.setValue(val);
-			return true;
-		}
+		bool write() override;
 
 		void Create(HWND m_hWnd, RECT rcDefault) override;
 		void updateLayout(HWND m_hWnd, CRect& rect_) override;
@@ -106,11 +104,7 @@ public:
 
 
 		//todo handle errors
-		bool write() override {
-			auto val = SettingUtils::validateValue((ctrlCheck.GetCheck() == 1), setting, nullptr);
-			setting.setValue(val);
-			return true;
-		}
+		bool write() override;
 
 		tstring valueToString() noexcept override;
 
@@ -141,11 +135,7 @@ public:
 		IntConfigItem(ExtensionSettingItem& aSetting) : ConfigItem(aSetting) {}
 
 		//todo handle errors
-		bool write() override {
-			auto val = SettingUtils::validateValue(Util::toInt(Text::fromT(WinUtil::getEditText(ctrlEdit))), setting, nullptr);
-			setting.setValue(val);
-			return true;
-		}
+		bool write() override;
 
 		void Create(HWND m_hWnd, RECT rcDefault) override;
 		void updateLayout(HWND m_hWnd, CRect& rect_) override;
@@ -185,6 +175,8 @@ public:
 
 		CStatic ctrlValue;
 		CHyperLink url;
+
+		void onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam) override;
 	};
 };
 

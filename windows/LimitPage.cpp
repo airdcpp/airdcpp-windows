@@ -22,7 +22,6 @@
 #include <airdcpp/SettingsManager.h>
 
 #include "LimitPage.h"
-#include "WinUtil.h"
 
 PropPage::TextItem LimitPage::texts[] = {
 	//limiter

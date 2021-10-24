@@ -374,7 +374,7 @@ void UploadQueueFrame::updateStatus() {
 		bool u = false;
 
 		for(int i = 1; i < 3; i++) {
-			int w = WinUtil::getTextWidth(tmp[i-1], ctrlStatus.m_hWnd);
+			int w = WinUtil::getStatusTextWidth(tmp[i-1], ctrlStatus.m_hWnd);
 				
 			if(statusSizes[i] < w) {
 				statusSizes[i] = w + 50;
@@ -388,7 +388,7 @@ void UploadQueueFrame::updateStatus() {
 	}
 }
 
-int UploadQueueItem::getImageIndex() const {
+int UploadQueueItem::getImageIndex() const noexcept {
 	return ResourceLoader::getIconIndex(Text::toT(file));
 }
 
@@ -402,7 +402,7 @@ int UploadQueueItem::compareItems(const UploadQueueItem* a, const UploadQueueIte
 	}
 }
 
-const tstring UploadQueueItem::getText(uint8_t col) const {
+const tstring UploadQueueItem::getText(uint8_t col) const noexcept {
 	switch(col) {
 		case COLUMN_FILE: return Text::toT(Util::getFileName(file));
 		case COLUMN_PATH: return Text::toT(Util::getFilePath(file));

@@ -1,13 +1,14 @@
 # 
 # Translators:
 # Sopor, 2015-2017
+# Sopor, 2020
 # steve72, 2016-2017
 msgid ""
 msgstr ""
 "Project-Id-Version: AirDC++\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-03-24 21:02\n"
-"PO-Revision-Date: 2017-09-23 20:53+0000\n"
+"POT-Creation-Date: 2020-11-12 19:38\n"
+"PO-Revision-Date: 2020-11-12 19:09+0000\n"
 "Last-Translator: Sopor\n"
 "Language-Team: Swedish (Sweden) (http://www.transifex.com/airdcpp/airdcpp/language/sv_SE/)\n"
 "MIME-Version: 1.0\n"
@@ -104,33 +105,38 @@ msgstr "(endast avinstallation)"
 msgid "Default emoticon pack"
 msgstr "Standard uttryckssymbolspaketet"
 
-#. SecThemes
+#. SecNode
 #: AirDC_installscript.nsi:107
+msgid "Default extension engine (node.js)"
+msgstr "Standard tilläggsmotor (node.js)"
+
+#. SecThemes
+#: AirDC_installscript.nsi:108
 msgid "Themes"
 msgstr "Teman"
 
 #. SecWebResources
-#: AirDC_installscript.nsi:108
+#: AirDC_installscript.nsi:109
 msgid "Web user interface"
 msgstr "Webbgränssnitt"
 
 #. SecStore
-#: AirDC_installscript.nsi:109
+#: AirDC_installscript.nsi:110
 msgid "Store settings in the user profile directory"
 msgstr "Lagra inställningarna i användarprofilen"
 
 #. DeskShort
-#: AirDC_installscript.nsi:110
+#: AirDC_installscript.nsi:111
 msgid "Desktop shortcut"
 msgstr "Genväg på skrivbordet"
 
 #. SecInstall32
-#: AirDC_installscript.nsi:111
+#: AirDC_installscript.nsi:112
 msgid "Install the 32-bit version"
 msgstr "Installera 32-bitarsversion"
 
 #. XPOrOlder
-#: AirDC_installscript.nsi:112
+#: AirDC_installscript.nsi:113
 msgid ""
 "If you want to keep your settings in the program directory, make sure that "
 "you DO NOT install AirDC++ to the 'Program files' folder!!! This can lead to"
@@ -138,56 +144,61 @@ msgid ""
 msgstr "Om du vill behålla dina inställningsfiler i programkatalogen, se då till att du INTE installerar AirDC++ i katalogen 'Program'!!! Detta kan leda till onormalt beteende som förlust av inställningar eller nedladdningar!"
 
 #. OsUnsupported
-#: AirDC_installscript.nsi:113
+#: AirDC_installscript.nsi:114
 msgid ""
 "This application is compatible with Windows 7 SP1 or newer operating systems"
 " only. The installer will now exit."
 msgstr "Detta programmet stöder endast operativsystem Windows 7 SP1 eller nyare. Installationen kommer nu att avbrytas."
 
 #. ^UninstallText
-#: AirDC_installscript.nsi:114
+#: AirDC_installscript.nsi:115
 msgid "This will uninstall AirDC++. Hit the Uninstall button to continue."
 msgstr "Detta kommer att avinstallera AirDC++. Tryck på knappen Avinstallera för att fortsätta."
 
 #. RemoveQueue
-#: AirDC_installscript.nsi:115
+#: AirDC_installscript.nsi:116
 msgid "Do you also want to remove queue, themes and all settings?"
 msgstr "Vill du även ta bort kön, teman och alla andra inställningar?"
 
 #. NotEmpty
-#: AirDC_installscript.nsi:116
+#: AirDC_installscript.nsi:117
 msgid "Installation directory is NOT empty. Do you still want to remove it?"
 msgstr "Installationskatalogen är INTE tom. Vill du ändå ta bort den?"
 
 #. DESC_dcpp
-#: AirDC_installscript.nsi:117
+#: AirDC_installscript.nsi:118
 msgid "AirDC++ main program."
 msgstr "AirDC++ huvudprogrammet."
 
 #. DESC_StartMenu
-#: AirDC_installscript.nsi:118
+#: AirDC_installscript.nsi:119
 msgid "A shortcut of AirDC++ will be placed in your start menu."
 msgstr "En genväg till AirDC++ kommer att placeras i startmenyn."
 
 #. DESC_Emopack
-#: AirDC_installscript.nsi:119
+#: AirDC_installscript.nsi:120
 msgid "Display emoticons as images in chat windows."
 msgstr "Visa uttryckssymboler som bilder i chattfönster."
 
+#. DESC_Node
+#: AirDC_installscript.nsi:121
+msgid "Allows installing and running third-party extensions."
+msgstr "Tillåter installation och körning av tillägg från tredjepart."
+
 #. DESC_Themes
-#: AirDC_installscript.nsi:120
+#: AirDC_installscript.nsi:122
 msgid ""
 "If you don't like the default theme you can try these two extra themes, Dark"
 " Skull and Zoolution."
 msgstr "Om du inte gillar standardtemat kan du alltid prova en av dessa extra teman, Dark Skull och Zoolution."
 
 #. DESC_WebResorces
-#: AirDC_installscript.nsi:121
+#: AirDC_installscript.nsi:123
 msgid "Allows accessing the client from other devices via a web browser."
 msgstr "Tillåter dig att ansluta till klienter från andra enheter via en webbläsare."
 
 #. DESC_loc
-#: AirDC_installscript.nsi:122
+#: AirDC_installscript.nsi:124
 msgid ""
 "Normally you should not change this because it can lead to abnormal "
 "behaviour like loss of settings or downloads. If you unselect it, read the "
@@ -195,12 +206,12 @@ msgid ""
 msgstr "Normalt ska du inte ändra denna då det kan leda till onormalt beteende som förlust av inställningar eller nedladdningar. Om du avmarkerar den, se till att du läser varningsmeddelandet noga."
 
 #. DESC_desk
-#: AirDC_installscript.nsi:123
+#: AirDC_installscript.nsi:125
 msgid "Do you often run AirDC++? Then this is definitely something for you!"
 msgstr "Startar du ofta AirDC++? Då är detta definitivt något för dig!"
 
 #. DESC_arch
-#: AirDC_installscript.nsi:124
+#: AirDC_installscript.nsi:126
 msgid ""
 "If you want to use the 32-bits version of AirDC++ on your 64-bits operating "
 "system you need to select this. If this is selected and grayed out you can "

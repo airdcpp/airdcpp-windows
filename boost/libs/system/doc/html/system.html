@@ -443,6 +443,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#introduction">Introduction</a></li>
 <li><a href="#changes">Revision History</a>
 <ul class="sectlevel2">
+<li><a href="#changes_in_boost_1_77">Changes in Boost 1.77</a></li>
+<li><a href="#changes_in_boost_1_76">Changes in Boost 1.76</a></li>
+<li><a href="#changes_in_boost_1_75">Changes in Boost 1.75</a></li>
 <li><a href="#changes_in_boost_1_74">Changes in Boost 1.74</a></li>
 <li><a href="#changes_in_boost_1_69">Changes in Boost 1.69</a></li>
 <li><a href="#changes_in_boost_1_68">Changes in Boost 1.68</a></li>
@@ -455,21 +458,83 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#ref_use_of_c11_and_c14_features">Use of C&#43;&#43;11 and C&#43;&#43;14 Features</a></li>
 <li><a href="#ref_macros">Macros</a></li>
 <li><a href="#ref_deprecated_names">Deprecated Names</a></li>
-<li><a href="#ref_boostsystemerror_code_hpp">&lt;boost/system/error_code.hpp&gt;</a>
+<li><a href="#ref_boostsystemis_error_code_enum_hpp">&lt;boost/system/&#8203;is_error_code_enum.hpp&gt;</a>
 <ul class="sectlevel3">
-<li><a href="#ref_synopsis">Synopsis</a></li>
-<li><a href="#ref_class_error_category">Class error_category</a></li>
-<li><a href="#ref_predefined_categories">Predefined Categories</a></li>
-<li><a href="#ref_class_error_code">Class error_code</a></li>
-<li><a href="#ref_class_error_condition">Class error_condition</a></li>
-<li><a href="#ref_nonmember_functions">Nonmember functions</a></li>
+<li><a href="#ref_is_error_code_enum">is_error_code_enum</a></li>
 </ul>
 </li>
-<li><a href="#ref_boostsystemsystem_error_hpp">&lt;boost/system/system_error.hpp&gt;</a>
+<li><a href="#ref_boostsystemis_error_condition_enum_hpp">&lt;boost/system/&#8203;is_error_condition_enum.hpp&gt;</a>
 <ul class="sectlevel3">
-<li><a href="#ref_class_system_error">Class system_error</a></li>
+<li><a href="#ref_is_error_condition_enum">is_error_condition_enum</a></li>
 </ul>
 </li>
+<li><a href="#ref_boostsystemerrc_hpp">&lt;boost/system/&#8203;errc.hpp&gt;</a>
+<ul class="sectlevel3">
+<li><a href="#ref_errc">errc</a></li>
+</ul>
+</li>
+<li><a href="#ref_boostsystemerror_category_hpp">&lt;boost/system/&#8203;error_category.hpp&gt;</a>
+<ul class="sectlevel3">
+<li><a href="#ref_error_category">error_category</a>
+<ul class="sectlevel4">
+<li><a href="#ref_constructors">Constructors</a></li>
+<li><a href="#ref_virtuals">Virtuals</a></li>
+<li><a href="#ref_comparisons">Comparisons</a></li>
+<li><a href="#ref_conversions">Conversions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#ref_boostsystemsystem_category_hpp">&lt;boost/system/&#8203;system_category.hpp&gt;</a>
+<ul class="sectlevel3">
+<li><a href="#ref_system_category">system_category</a></li>
+</ul>
+</li>
+<li><a href="#ref_boostsystemgeneric_category_hpp">&lt;boost/system/&#8203;generic_category.hpp&gt;</a>
+<ul class="sectlevel3">
+<li><a href="#ref_generic_category">generic_category</a></li>
+</ul>
+</li>
+<li><a href="#ref_boostsystemerror_code_hpp">&lt;boost/system/&#8203;error_code.hpp&gt;</a>
+<ul class="sectlevel3">
+<li><a href="#ref_error_code">error_code</a>
+<ul class="sectlevel4">
+<li><a href="#ref_constructors_2">Constructors</a></li>
+<li><a href="#ref_modifiers">Modifiers</a></li>
+<li><a href="#ref_observers">Observers</a></li>
+<li><a href="#ref_comparisons_2">Comparisons</a></li>
+<li><a href="#ref_conversions_2">Conversions</a></li>
+<li><a href="#ref_stream_insertion">Stream Insertion</a></li>
+<li><a href="#ref_nonmembers">Nonmembers</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#ref_boostsystemerror_condition_hpp">&lt;boost/system/&#8203;error_condition.hpp&gt;</a>
+<ul class="sectlevel3">
+<li><a href="#ref_error_condition">error_condition</a>
+<ul class="sectlevel4">
+<li><a href="#ref_constructors_3">Constructors</a></li>
+<li><a href="#ref_modifiers_2">Modifiers</a></li>
+<li><a href="#ref_observers_2">Observers</a></li>
+<li><a href="#ref_comparisons_3">Comparisons</a></li>
+<li><a href="#ref_conversions_3">Conversions</a></li>
+<li><a href="#ref_stream_insertion_2">Stream Insertion</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#ref_boostsystemsystem_error_hpp">&lt;boost/system/&#8203;system_error.hpp&gt;</a>
+<ul class="sectlevel3">
+<li><a href="#ref_class_system_error">Class system_error</a>
+<ul class="sectlevel4">
+<li><a href="#ref_constructors_4">Constructors</a></li>
+<li><a href="#ref_observers_3">Observers</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#ref_boostsystem_hpp">&lt;boost/system.hpp&gt;</a></li>
 </ul>
 </li>
 <li><a href="#history">History</a></li>
@@ -530,6 +595,87 @@ breakage of existing user code.</p>
 <div class="sect1">
 <h2 id="changes">Revision History</h2>
 <div class="sectionbody">
+<div class="sect2">
+<h3 id="changes_in_boost_1_77">Changes in Boost 1.77</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>The conversion operator from <code>error_category</code> to <code>std::error_category</code>
+has been improved and no longer requires <code>&lt;map&gt;</code> or <code>&lt;mutex&gt;</code>.</p>
+</li>
+<li>
+<p>The comparison operators of <code>error_category</code> are now inline friends
+instead of member functions (a side effect of the previous change.)</p>
+</li>
+<li>
+<p><code>error_condition</code> now defers calling <code>generic_category()</code> to avoid
+instantiating the object until it&#8217;s actually needed.</p>
+</li>
+<li>
+<p><code>error_condition::failed</code> and <code>error_condition::message</code> have been
+undeprecated, and <code>operator bool()</code> now once again returns <code>failed()</code>.</p>
+</li>
+<li>
+<p>The system category now doesn&#8217;t call <code>generic_category()</code>, to avoid
+instantiating the object.</p>
+</li>
+<li>
+<p>The return value of <code>default_error_condition</code> changes in some cases into
+an <code>error_condition</code> from the generic category, instead of from the system
+category. This happens on POSIX when the input <code>error_code</code> is from
+the system category and does not correspond to any <code>errc_t</code> value.</p>
+</li>
+<li>
+<p>The interoperability of <code>error_code</code> and <code>std::error_code</code> has been
+improved substantially. It is now possible to construct
+<code>boost::system::error_code</code> from <code>std::error_code</code>, and it&#8217;s possible
+to pass <code>boost::system::error_code</code> to functions taking <code>std::error_code&amp;</code>.</p>
+</li>
+<li>
+<p>A stream insertion operator for <code>error_condition</code> has been added.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="changes_in_boost_1_76">Changes in Boost 1.76</h3>
+<div class="ulist">
+<ul>
+<li>
+<p><code>windows_error.hpp</code> is no longer deprecated.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="changes_in_boost_1_75">Changes in Boost 1.75</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>The platform-specific headers <code>windows_error.hpp</code>, <code>linux_error.hpp</code>,
+and <code>cygwin_error.hpp</code> emit deprecation messages and are slated for
+removal.</p>
+</li>
+<li>
+<p>The old names for <code>generic_category()</code> and <code>system_category()</code> emit
+deprecation messages and are slated for removal.</p>
+</li>
+<li>
+<p><code>error_condition::failed</code> is deprecated and is slated for removal.
+<code>operator bool()</code> for <code>error_condition</code> has been reverted to its old
+meaning of <code>value() != 0</code>. This is done for compatibility with
+<code>std::error_condition</code> as the next release is expected to improve
+interoperability with <code>&lt;system_error&gt;</code> even further. <em>Note that this
+does not affect</em> <code>error_code::failed</code>, which is still alive and well.</p>
+</li>
+<li>
+<p>The overload of <code>error_condition::message</code> that takes a buffer is
+deprecated and is slated for removal, for the same reasons. <em>Note that
+this does not affect</em> <code>error_code::message</code>.</p>
+</li>
+</ul>
+</div>
+</div>
 <div class="sect2">
 <h3 id="changes_in_boost_1_74">Changes in Boost 1.74</h3>
 <div class="ulist">
@@ -729,31 +875,61 @@ the old names, but will provide them when the macro <code>BOOST_SYSTEM_ENABLE_DE
 </table>
 </div>
 <div class="sect2">
-<h3 id="ref_boostsystemerror_code_hpp">&lt;boost/system/error_code.hpp&gt;</h3>
+<h3 id="ref_boostsystemis_error_code_enum_hpp">&lt;boost/system/&#8203;is_error_code_enum.hpp&gt;</h3>
 <div class="sect3">
-<h4 id="ref_synopsis">Synopsis</h4>
+<h4 id="ref_is_error_code_enum">is_error_code_enum</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code>namespace boost {
   namespace system {
 
-    class error_category;
-
-    constexpr const error_category &amp; system_category() noexcept;
-    constexpr const error_category &amp; generic_category() noexcept;
-
-    class error_code;
-    class error_condition;
-
-    // "Concept" helpers
-
     template&lt;class T&gt;
       struct is_error_code_enum { static const bool value = false; };
+
+  } // namespace system
+} // namespace boost</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Users may specialize <code>is_error_code_enum</code> for their error enumeration
+types to indicate that they should be eligible for automatic conversions
+to <code>error_code</code>. This conversion calls <code>make_error_code(e)</code>, which should
+be provided in the same namespace as the enumeration type.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="ref_boostsystemis_error_condition_enum_hpp">&lt;boost/system/&#8203;is_error_condition_enum.hpp&gt;</h3>
+<div class="sect3">
+<h4 id="ref_is_error_condition_enum">is_error_condition_enum</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>namespace boost {
+  namespace system {
 
     template&lt;class T&gt;
       struct is_error_condition_enum { static const bool value = false; };
 
-    // generic error conditions
+  } // namespace system
+} // namespace boost</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Users may specialize <code>is_error_condition_enum</code> for their error enumeration
+types to indicate that they should be eligible for automatic conversions
+to <code>error_condition</code>. This conversion calls <code>make_error_condition(e)</code>, which
+should be provided in the same namespace as the enumeration type.</p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="ref_boostsystemerrc_hpp">&lt;boost/system/&#8203;errc.hpp&gt;</h3>
+<div class="sect3">
+<h4 id="ref_errc">errc</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>namespace boost {
+  namespace system {
 
     namespace errc {
       enum errc_t
@@ -844,56 +1020,118 @@ the old names, but will provide them when the macro <code>BOOST_SYSTEM_ENABLE_DE
     template&lt;&gt; struct is_error_condition_enum&lt;errc::errc_t&gt;
       { static const bool value = true; };
 
-    // non-member functions
-
-    constexpr bool operator==( const error_code &amp; lhs,
-      const error_code &amp; rhs ) noexcept;
-    bool operator==( const error_code &amp; code,
-      const error_condition &amp; condition ) noexcept;
-    bool operator==( const error_condition &amp; condition,
-      const error_code &amp; code ) noexcept;
-    constexpr bool operator==( const error_condition &amp; lhs,
-      const error_condition &amp; rhs ) noexcept;
-
-    constexpr bool operator!=( const error_code &amp; lhs,
-      const error_code &amp; rhs ) noexcept;
-    bool operator!=( const error_code &amp; code,
-      const error_condition &amp; condition ) noexcept;
-    bool operator!=( const error_condition &amp; condition,
-      const error_code &amp; code ) noexcept;
-    constexpr bool operator!=( const error_condition &amp; lhs,
-      const error_condition &amp; rhs ) noexcept;
-
-    constexpr bool operator&lt;( const error_code &amp; lhs,
-      const error_code &amp; rhs ) noexcept;
-    constexpr bool operator&lt;( const error_condition &amp; lhs,
-      const error_condition &amp; rhs ) noexcept;
-
     constexpr error_code make_error_code( errc::errc_t e ) noexcept;
     constexpr error_condition make_error_condition( errc::errc_t e ) noexcept;
-
-    template &lt;class charT, class traits&gt;
-      std::basic_ostream&lt;charT, traits&gt;&amp;
-        operator&lt;&lt;( basic_ostream&lt;charT, traits&gt;&amp; os, const error_code &amp; ec );
-
-    std::size_t hash_value( const error_code &amp; ec );
 
   } // namespace system
 } // namespace boost</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>The value of each <code>errc_t</code> constant is the same as the value of the <code>&lt;cerrno&gt;</code>
-macro shown in the above synopsis.</p>
+<p>The predefined enumeration type <code>errc::errc_t</code> provides named constants
+corresponding to the values of the <code>&lt;cerrno&gt;</code> macros.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>constexpr error_condition make_error_condition( errc::errc_t e ) noexcept;</code></pre>
+</div>
+</div>
+<div class="ulist none">
+<ul class="none">
+<li>
+<p></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<p><code>error_condition( e, generic_category() )</code>.</p>
+</dd>
+</dl>
+</div>
+</li>
+</ul>
 </div>
 <div class="paragraph">
-<p>Users may specialize <code>is_error_code_enum</code> and <code>is_error_condition_enum</code>
-templates to indicate that a type is eligible for class <code>error_code</code> and
-<code>error_condition</code> automatic conversions respectively.</p>
+<p>Since <code>errc::errc_t</code> provides a specialization of <code>is_error_condition_enum</code>
+and an overload of <code>make_error_condition</code>, it can be converted implicitly to
+an <code>error_condition</code>. This is typically useful when comparing <code>error_code</code>
+values returned from APIs to a portable condition, as in the below example:
+* </p>
+</div>
+<div class="paragraph">
+<p>+</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>void api_function( boost::system::error_code&amp; ec );
+
+void my_function()
+{
+    boost::system::error_code ec;
+    api_function( ec );
+
+    if( ec == boost::system::errc::no_such_file_or_directory )
+    {
+        // an entity wasn't found (ENOENT)
+        // handle this condition
+    }
+}</code></pre>
 </div>
 </div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>constexpr error_code make_error_code( errc::errc_t e ) noexcept;</code></pre>
+</div>
+</div>
+<div class="ulist none">
+<ul class="none">
+<li>
+<p></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<p><code>error_code( e, generic_category() )</code>.</p>
+</dd>
+</dl>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>In addition to <code>make_error_condition</code>, <code>errc::errc_t</code> provides an overload of
+<code>make_error_code</code>. This allows the creation of generic error codes, an
+operation typically useful when a function needs to signal a generic failure
+that does not come from an underlying API, such as for instance an out of
+memory condition:
+* </p>
+</div>
+<div class="paragraph">
+<p>+</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>void my_api_function( boost::system::error_code&amp; ec )
+{
+    void* p = std::malloc( 16 );
+
+    if( p == 0 )
+    {
+        // return ENOMEM
+        ec = make_error_code( boost::system::errc::out_of_memory );
+        return;
+    }
+
+    // use p
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="ref_boostsystemerror_category_hpp">&lt;boost/system/&#8203;error_category.hpp&gt;</h3>
 <div class="sect3">
-<h4 id="ref_class_error_category">Class error_category</h4>
+<h4 id="ref_error_category">error_category</h4>
 <div class="paragraph">
 <p>The class <code>error_category</code> defines the base class for types used
 to identify the source and encoding of a particular category of error code.</p>
@@ -938,9 +1176,13 @@ errors in addition to those defined in Boost.System.</p>
 
       virtual bool failed( int ev ) const noexcept;
 
-      constexpr bool operator==( const error_category &amp; rhs ) const noexcept;
-      constexpr bool operator!=( const error_category &amp; rhs ) const noexcept;
-      constexpr bool operator&lt; ( const error_category &amp; rhs ) const noexcept;
+      friend constexpr bool operator==( const error_category &amp; lhs,
+        const error_category &amp; rhs ) noexcept;
+      friend constexpr bool operator!=( const error_category &amp; lhs,
+        const error_category &amp; rhs ) noexcept;
+
+      friend constexpr bool operator&lt; ( const error_category &amp; lhs,
+        const error_category &amp; rhs ) noexcept;
 
       operator std::error_category const &amp; () const;
 
@@ -1249,10 +1491,11 @@ exception, the string <code>"Message text unavailable"</code> is used.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="ref_nonvirtuals">Nonvirtuals</h5>
+<h5 id="ref_comparisons">Comparisons</h5>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code>constexpr bool operator==( const error_category &amp; rhs ) const noexcept;</code></pre>
+<pre class="highlight"><code>friend constexpr bool operator==( const error_category &amp; lhs,
+  const error_category &amp; rhs ) noexcept;</code></pre>
 </div>
 </div>
 <div class="ulist none">
@@ -1263,12 +1506,12 @@ exception, the string <code>"Message text unavailable"</code> is used.</p>
 <dl>
 <dt class="hdlist1">Returns: </dt>
 <dd>
-<p><code>rhs.id_ == 0? this == &amp;rhs: id_ == rhs.id_</code>.</p>
+<p><code>rhs.id_ == 0? &amp;lhs == &amp;rhs: lhs.id_ == rhs.id_</code>.</p>
 </dd>
 <dt class="hdlist1">Remarks: </dt>
 <dd>
-<p>Two category objects are considered equivalent when they have matching
-nonzero identifiers, or are the same object.</p>
+<p>Two category objects are considered equivalent when they have
+matching nonzero identifiers, or are the same object.</p>
 </dd>
 </dl>
 </div>
@@ -1277,7 +1520,8 @@ nonzero identifiers, or are the same object.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code>constexpr bool operator!=( const error_category &amp; rhs ) const noexcept;</code></pre>
+<pre class="highlight"><code>friend constexpr bool operator!=( const error_category &amp; lhs,
+  const error_category &amp; rhs ) noexcept;</code></pre>
 </div>
 </div>
 <div class="ulist none">
@@ -1288,7 +1532,7 @@ nonzero identifiers, or are the same object.</p>
 <dl>
 <dt class="hdlist1">Returns: </dt>
 <dd>
-<p><code>!( *this == rhs )</code>.</p>
+<p><code>!( lhs == rhs )</code>.</p>
 </dd>
 </dl>
 </div>
@@ -1297,7 +1541,8 @@ nonzero identifiers, or are the same object.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code>constexpr bool operator&lt; ( const error_category &amp; rhs ) const noexcept;</code></pre>
+<pre class="highlight"><code>constexpr bool operator&lt; ( const error_category &amp; lhs,
+  const error_category &amp; rhs ) const noexcept;</code></pre>
 </div>
 </div>
 <div class="ulist none">
@@ -1311,16 +1556,16 @@ nonzero identifiers, or are the same object.</p>
 <div class="ulist">
 <ul>
 <li>
-<p>If <code>id_ &lt; rhs.id_</code>, <code>true</code>;</p>
+<p>If <code>lhs.id_ &lt; rhs.id_</code>, <code>true</code>;</p>
 </li>
 <li>
-<p>Otherwise, if <code>id_ &gt; rhs.id_</code>, <code>false</code>;</p>
+<p>Otherwise, if <code>lhs.id_ &gt; rhs.id_</code>, <code>false</code>;</p>
 </li>
 <li>
 <p>Otherwise, if <code>rhs.id_ != 0</code>, <code>false</code>;</p>
 </li>
 <li>
-<p>Otherwise, <code>std::less&lt;error_category const *&gt;()( this, &amp;rhs )</code>.</p>
+<p>Otherwise, <code>std::less&lt;error_category const *&gt;()( &amp;lhs, &amp;rhs )</code>.</p>
 </li>
 </ul>
 </div>
@@ -1330,6 +1575,9 @@ nonzero identifiers, or are the same object.</p>
 </li>
 </ul>
 </div>
+</div>
+<div class="sect4">
+<h5 id="ref_conversions">Conversions</h5>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code>operator std::error_category const &amp; () const;</code></pre>
@@ -1353,8 +1601,22 @@ to <code>*this</code>.</p>
 </div>
 </div>
 </div>
+</div>
+<div class="sect2">
+<h3 id="ref_boostsystemsystem_category_hpp">&lt;boost/system/&#8203;system_category.hpp&gt;</h3>
 <div class="sect3">
-<h4 id="ref_predefined_categories">Predefined Categories</h4>
+<h4 id="ref_system_category">system_category</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>namespace boost {
+  namespace system {
+
+    constexpr const error_category &amp; system_category() noexcept;
+
+  } // namespace system
+} // namespace boost</code></pre>
+</div>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code>constexpr const error_category &amp; system_category() noexcept;</code></pre>
@@ -1368,13 +1630,30 @@ to <code>*this</code>.</p>
 <dl>
 <dt class="hdlist1">Returns: </dt>
 <dd>
-<p>A reference to an <code>error_category</code> object identifying errors
-originating from the operating system.</p>
+<p>A reference to a predefined <code>error_category</code> object identifying
+errors originating from the operating system.</p>
 </dd>
 </dl>
 </div>
 </li>
 </ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="ref_boostsystemgeneric_category_hpp">&lt;boost/system/&#8203;generic_category.hpp&gt;</h3>
+<div class="sect3">
+<h4 id="ref_generic_category">generic_category</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>namespace boost {
+  namespace system {
+
+    constexpr const error_category &amp; generic_category() noexcept;
+
+  } // namespace system
+} // namespace boost</code></pre>
+</div>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1389,8 +1668,8 @@ originating from the operating system.</p>
 <dl>
 <dt class="hdlist1">Returns: </dt>
 <dd>
-<p>A reference to an <code>error_category</code> object identifying portable
-error conditions.</p>
+<p>A reference to a predefined <code>error_category</code> object identifying
+portable error codes and conditions.</p>
 </dd>
 </dl>
 </div>
@@ -1398,8 +1677,11 @@ error conditions.</p>
 </ul>
 </div>
 </div>
+</div>
+<div class="sect2">
+<h3 id="ref_boostsystemerror_code_hpp">&lt;boost/system/&#8203;error_code.hpp&gt;</h3>
 <div class="sect3">
-<h4 id="ref_class_error_code">Class error_code</h4>
+<h4 id="ref_error_code">error_code</h4>
 <div class="paragraph">
 <p>The class <code>error_code</code> describes an object used to hold error code
 values, such as those originating from the operating system or other
@@ -1421,6 +1703,8 @@ by exception.</p>
 
       template &lt;class ErrorCodeEnum&gt;
         constexpr error_code( ErrorCodeEnum e ) noexcept;
+
+      error_code( std::error_code const&amp; ec ) noexcept;
 
       // modifiers:
 
@@ -1444,14 +1728,64 @@ by exception.</p>
       constexpr bool failed() const noexcept;
       constexpr explicit operator bool() const noexcept;
 
+      // comparisons:
+
+      friend constexpr bool operator==( const error_code &amp; lhs,
+        const error_code &amp; rhs ) noexcept;
+
+      friend constexpr bool operator!=( const error_code &amp; lhs,
+        const error_code &amp; rhs ) noexcept;
+
+      friend constexpr bool operator&lt;( const error_code &amp; lhs,
+        const error_code &amp; rhs ) noexcept;
+
+      friend bool operator==( const error_code &amp; code,
+        const error_condition &amp; condition ) noexcept;
+      friend bool operator==( const error_condition &amp; condition,
+        const error_code &amp; code ) noexcept;
+
+      friend bool operator!=( const error_code &amp; code,
+        const error_condition &amp; condition ) noexcept;
+      friend bool operator!=( const error_condition &amp; condition,
+        const error_code &amp; code ) noexcept;
+
+      friend bool operator==( const error_code &amp; lhs,
+        const std::error_code &amp; rhs ) noexcept;
+      friend bool operator==( const std::error_code &amp; lhs,
+        const error_code &amp; rhs ) noexcept;
+
+      friend bool operator!=( const error_code &amp; lhs,
+        const std::error_code &amp; rhs ) noexcept;
+      friend bool operator!=( const std::error_code &amp; lhs,
+        const error_code &amp; rhs ) noexcept;
+
+      template&lt;class E&gt;
+      friend constexpr bool operator==( const error_code &amp; lhs, E rhs ) noexcept;
+      template&lt;class E&gt;
+      friend constexpr bool operator==( E lhs, const error_code &amp; rhs ) noexcept;
+
+      template&lt;class E&gt;
+      friend constexpr bool operator!=( const error_code &amp; lhs, E rhs ) noexcept;
+      template&lt;class E&gt;
+      friend constexpr bool operator!=( E lhs, const error_code &amp; rhs ) noexcept;
+
+      // conversions:
+
       operator std::error_code() const;
+      operator std::error_code();
+      template&lt;class T&gt; operator T&amp; (); // only when T=std::error_code
 
-    private: // exposition only
+      // stream insertion:
 
-      int val_;
-      const error_category * cat_;
-
+      template &lt;class charT, class traits&gt;
+        std::basic_ostream&lt;charT, traits&gt;&amp;
+          operator&lt;&lt;( basic_ostream&lt;charT, traits&gt;&amp; os, const error_code &amp; ec );
     };
+
+    // non-member functions
+
+    std::size_t hash_value( const error_code &amp; ec );
+
   }
 }</code></pre>
 </div>
@@ -1471,7 +1805,7 @@ by exception.</p>
 <dl>
 <dt class="hdlist1">Ensures: </dt>
 <dd>
-<p><code>val_ == 0</code>; <code>*cat_ == system_category()</code>.</p>
+<p><code>value() == 0</code>; <code>category() == system_category()</code>.</p>
 </dd>
 </dl>
 </div>
@@ -1491,7 +1825,7 @@ by exception.</p>
 <dl>
 <dt class="hdlist1">Ensures: </dt>
 <dd>
-<p><code>val_ == val</code>; <code>cat_ == &amp;cat</code>.</p>
+<p><code>value() == val</code>; <code>category() == cat</code>.</p>
 </dd>
 </dl>
 </div>
@@ -1523,6 +1857,30 @@ by exception.</p>
 </li>
 </ul>
 </div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>error_code( std::error_code const &amp; ec ) noexcept;</code></pre>
+</div>
+</div>
+<div class="ulist none">
+<ul class="none">
+<li>
+<p></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Effects: </dt>
+<dd>
+<p>Construct an <code>error_code</code> that wraps <code>ec</code>.</p>
+</dd>
+<dt class="hdlist1">Remarks: </dt>
+<dd>
+<p><code>value()</code> and <code>category()</code> are unspecified.</p>
+</dd>
+</dl>
+</div>
+</li>
+</ul>
+</div>
 </div>
 <div class="sect4">
 <h5 id="ref_modifiers">Modifiers</h5>
@@ -1539,7 +1897,7 @@ by exception.</p>
 <dl>
 <dt class="hdlist1">Ensures: </dt>
 <dd>
-<p><code>val_ == val</code>; <code>cat_ == &amp;cat</code>.</p>
+<p><code>value() == val</code>; <code>category() == cat</code>.</p>
 </dd>
 </dl>
 </div>
@@ -1584,7 +1942,7 @@ by exception.</p>
 <dl>
 <dt class="hdlist1">Ensures: </dt>
 <dd>
-<p><code>val_ == 0</code>; <code>*cat_ == system_category()</code>.</p>
+<p><code>value() == 0</code>; <code>category() == system_category()</code>.</p>
 </dd>
 </dl>
 </div>
@@ -1607,7 +1965,7 @@ by exception.</p>
 <dl>
 <dt class="hdlist1">Returns: </dt>
 <dd>
-<p><code>val_</code>.</p>
+<p>the error value.</p>
 </dd>
 </dl>
 </div>
@@ -1627,7 +1985,7 @@ by exception.</p>
 <dl>
 <dt class="hdlist1">Returns: </dt>
 <dd>
-<p><code>*cat_</code>.</p>
+<p>the error category.</p>
 </dd>
 </dl>
 </div>
@@ -1647,7 +2005,7 @@ by exception.</p>
 <dl>
 <dt class="hdlist1">Returns: </dt>
 <dd>
-<p><code>cat_-&gt;default_error_condition( val_ )</code>.</p>
+<p><code>category().default_error_condition( value() )</code>.</p>
 </dd>
 </dl>
 </div>
@@ -1667,7 +2025,8 @@ by exception.</p>
 <dl>
 <dt class="hdlist1">Returns: </dt>
 <dd>
-<p><code>cat_-&gt;message( val_ )</code>.</p>
+<p>If <code>*this</code> wraps a <code>std::error_code</code> object <code>ec</code>, <code>ec.message()</code>.
+Otherwise, <code>category().message( value() )</code>.</p>
 </dd>
 </dl>
 </div>
@@ -1685,9 +2044,11 @@ by exception.</p>
 <p></p>
 <div class="dlist">
 <dl>
-<dt class="hdlist1">Returns: </dt>
+<dt class="hdlist1">Effects: </dt>
 <dd>
-<p><code>cat_-&gt;message( val_, buffer, len )</code>.</p>
+<p>If <code>*this</code> wraps a <code>std::error_code</code> object <code>ec</code>, copies the
+string returned from <code>ec.message()</code> into <code>buffer</code> and returns <code>buffer</code>.
+Otherwise, returns <code>category().message( value(), buffer, len )</code>.</p>
 </dd>
 </dl>
 </div>
@@ -1707,7 +2068,8 @@ by exception.</p>
 <dl>
 <dt class="hdlist1">Returns: </dt>
 <dd>
-<p><code>cat_-&gt;failed( val_ )</code>.</p>
+<p>If <code>*this</code> wraps a <code>std::error_code</code> object <code>ec</code>, <code>ec.value() != 0</code>.
+Otherwise, <code>category().failed( value() )</code>.</p>
 </dd>
 </dl>
 </div>
@@ -1734,9 +2096,13 @@ by exception.</p>
 </li>
 </ul>
 </div>
+</div>
+<div class="sect4">
+<h5 id="ref_comparisons_2">Comparisons</h5>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code>operator std::error_code() const;</code></pre>
+<pre class="highlight"><code>friend constexpr bool operator==( const error_code &amp; lhs,
+  const error_code &amp; rhs ) noexcept;</code></pre>
 </div>
 </div>
 <div class="ulist none">
@@ -1747,7 +2113,380 @@ by exception.</p>
 <dl>
 <dt class="hdlist1">Returns: </dt>
 <dd>
-<p><code>std::error_code( val_, *cat_ )</code>.</p>
+<p>If both <code>lhs</code> and <code>rhs</code> wrap <code>std::error_code</code> objects <code>e1</code> and <code>e2</code>, <code>e1 == e2</code>.
+Otherwise, <code>lhs.value() == rhs.value() &amp;&amp; lhs.category() == rhs.category()</code>.</p>
+</dd>
+</dl>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>friend constexpr bool operator!=( const error_code &amp; lhs,
+  const error_code &amp; rhs ) noexcept;</code></pre>
+</div>
+</div>
+<div class="ulist none">
+<ul class="none">
+<li>
+<p></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<p><code>!( lhs == rhs )</code>.</p>
+</dd>
+</dl>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>friend constexpr bool operator&lt;( const error_code &amp; lhs,
+  const error_code &amp; rhs ) noexcept;</code></pre>
+</div>
+</div>
+<div class="ulist none">
+<ul class="none">
+<li>
+<p></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<p>If both <code>lhs</code> and <code>rhs</code> wrap <code>std::error_code</code> objects <code>e1</code> and <code>e2</code>, <code>e1 &lt; e2</code>.
+Otherwise, <code>lhs.category() &lt; rhs.category() || (lhs.category() == rhs.category() &amp;&amp; lhs.value() &lt; rhs.value())</code>.</p>
+</dd>
+</dl>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>friend bool operator==( const error_code &amp; code,
+  const error_condition &amp; condition ) noexcept;</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>friend bool operator==( const error_condition &amp; condition,
+  const error_code &amp; code ) noexcept;</code></pre>
+</div>
+</div>
+<div class="ulist none">
+<ul class="none">
+<li>
+<p></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<p>If <code>code</code> wraps a <code>std::error_code</code> object <code>ec</code>, <code>ec == static_cast&lt;std::error_condition&gt;( condition )</code>.
+Otherwise, <code>code.category().equivalent( code.value(), condition ) || condition.category().equivalent( code, condition.value() )</code>.</p>
+</dd>
+</dl>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>friend bool operator!=( const error_code &amp; lhs,
+  const error_condition &amp; rhs ) noexcept;</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>friend bool operator!=( const error_condition &amp; lhs,
+  const error_code &amp; rhs ) noexcept;</code></pre>
+</div>
+</div>
+<div class="ulist none">
+<ul class="none">
+<li>
+<p></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<p><code>!( lhs == rhs )</code>.</p>
+</dd>
+</dl>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>friend bool operator==( const error_code &amp; lhs,
+  const std::error_code &amp; rhs ) noexcept;</code></pre>
+</div>
+</div>
+<div class="ulist none">
+<ul class="none">
+<li>
+<p></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<p><code>static_cast&lt;std::error_code&gt;(lhs) == rhs</code>.</p>
+</dd>
+</dl>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>friend bool operator==( const std::error_code &amp; lhs,
+  const error_code &amp; rhs ) noexcept;</code></pre>
+</div>
+</div>
+<div class="ulist none">
+<ul class="none">
+<li>
+<p></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<p><code>lhs == static_cast&lt;std::error_code&gt;(rhs)</code>.</p>
+</dd>
+</dl>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>friend bool operator!=( const error_code &amp; lhs,
+  const std::error_code &amp; rhs ) noexcept;</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>friend bool operator!=( const std::error_code &amp; lhs,
+  const error_code &amp; rhs ) noexcept;</code></pre>
+</div>
+</div>
+<div class="ulist none">
+<ul class="none">
+<li>
+<p></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<p><code>!( lhs == rhs )</code>.</p>
+</dd>
+</dl>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>template&lt;class E&gt;
+friend constexpr bool operator==( const error_code &amp; lhs, E rhs ) noexcept;</code></pre>
+</div>
+</div>
+<div class="ulist none">
+<ul class="none">
+<li>
+<p></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Effects: </dt>
+</dl>
+</div>
+<div class="ulist disc">
+<ul class="disc">
+<li>
+<p>When <code>is_error_code_enum&lt;E&gt;::value</code> is <code>true</code>, returns <code>lhs == make_error_code(rhs)</code>;</p>
+</li>
+<li>
+<p>When <code>is_error_condition_enum&lt;E&gt;::value</code> is <code>true</code>, returns <code>lhs == make_error_condition(rhs)</code>;</p>
+</li>
+<li>
+<p>Otherwise, this overload is disabled.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>template&lt;class E&gt;
+friend constexpr bool operator==( E lhs, const error_code &amp; rhs ) noexcept;</code></pre>
+</div>
+</div>
+<div class="ulist none">
+<ul class="none">
+<li>
+<p></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Effects: </dt>
+</dl>
+</div>
+<div class="ulist disc">
+<ul class="disc">
+<li>
+<p>When <code>is_error_code_enum&lt;E&gt;::value</code> is <code>true</code>, returns <code>make_error_code(lhs) == rhs</code>;</p>
+</li>
+<li>
+<p>When <code>is_error_condition_enum&lt;E&gt;::value</code> is <code>true</code>, returns <code>make_error_condition(lhs) == rhs</code>;</p>
+</li>
+<li>
+<p>Otherwise, this overload is disabled.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>template&lt;class E&gt;
+friend constexpr bool operator!=( const error_code &amp; lhs, E rhs ) noexcept;</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>template&lt;class E&gt;
+friend constexpr bool operator!=( E lhs, const error_code &amp; rhs ) noexcept;</code></pre>
+</div>
+</div>
+<div class="ulist none">
+<ul class="none">
+<li>
+<p></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<p><code>!( lhs == rhs )</code>.</p>
+</dd>
+<dt class="hdlist1">Remarks: </dt>
+<dd>
+<p>These overloads are only enabled when
+<code>is_error_code_enum&lt;E&gt;::value</code> is <code>true</code> or
+<code>is_error_condition_enum&lt;E&gt;::value</code> is <code>true</code>.</p>
+</dd>
+</dl>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="ref_conversions_2">Conversions</h5>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>operator std::error_code() const;</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>operator std::error_code();</code></pre>
+</div>
+</div>
+<div class="ulist none">
+<ul class="none">
+<li>
+<p></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<p>If <code>*this</code> wraps a <code>std::error_code</code> object <code>ec</code>, <code>ec</code>.
+Otherwise, <code>std::error_code( value(), category() )</code>.</p>
+</dd>
+</dl>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>template&lt;class T&gt; operator T&amp;();</code></pre>
+</div>
+</div>
+<div class="ulist none">
+<ul class="none">
+<li>
+<p></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Effects: </dt>
+<dd>
+<p>If <code>*this</code> wraps a <code>std::error_code</code> object <code>ec</code>,
+returns a reference to <code>ec</code>.
+Otherwise, makes <code>*this</code> wrap <code>std::error_code( *this )</code>,
+then returns a reference to it.</p>
+</dd>
+<dt class="hdlist1">Remarks: </dt>
+<dd>
+<p>This operator is only enabled when <code>T</code> is <code>std::error_code</code>.</p>
+</dd>
+</dl>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="ref_stream_insertion">Stream Insertion</h5>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>template &lt;class charT, class traits&gt;
+  std::basic_ostream&lt;charT, traits&gt;&amp;
+    operator&lt;&lt;( basic_ostream&lt;charT, traits&gt;&amp; os, const error_code &amp; ec );</code></pre>
+</div>
+</div>
+<div class="ulist none">
+<ul class="none">
+<li>
+<p></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Effects: </dt>
+<dd>
+<p>If <code>ec</code> wraps a <code>std::error_code</code> object <code>e2</code>, <code>os &lt;&lt; "std:" &lt;&lt; e2</code>.
+Otherwise, <code>os &lt;&lt; ec.category().name() &lt;&lt; ':' &lt;&lt; ec.value()</code>.</p>
+</dd>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<p><code>os</code>.</p>
+</dd>
+</dl>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="ref_nonmembers">Nonmembers</h5>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>std::size_t hash_value( const error_code &amp; ec );</code></pre>
+</div>
+</div>
+<div class="ulist none">
+<ul class="none">
+<li>
+<p></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<p>If <code>ec</code> wraps a <code>std::error_code</code> object <code>e2</code>, <code>std::hash&lt;std::error_code&gt;()(e2)</code>.
+Otherwise, a hash value representing <code>ec</code>.</p>
 </dd>
 </dl>
 </div>
@@ -1756,8 +2495,11 @@ by exception.</p>
 </div>
 </div>
 </div>
+</div>
+<div class="sect2">
+<h3 id="ref_boostsystemerror_condition_hpp">&lt;boost/system/&#8203;error_condition.hpp&gt;</h3>
 <div class="sect3">
-<h4 id="ref_class_error_condition">Class error_condition</h4>
+<h4 id="ref_error_condition">error_condition</h4>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code>namespace boost {
@@ -1794,13 +2536,36 @@ by exception.</p>
       constexpr bool failed() const noexcept;
       constexpr explicit operator bool() const noexcept;
 
+      // comparisons:
+
+      friend constexpr bool operator==( const error_condition &amp; lhs,
+        const error_condition &amp; rhs ) noexcept;
+
+      friend constexpr bool operator!=( const error_condition &amp; lhs,
+        const error_condition &amp; rhs ) noexcept;
+
+      friend constexpr bool operator&lt;( const error_condition &amp; lhs,
+        const error_condition &amp; rhs ) noexcept;
+
+      friend bool operator==( const std::error_code &amp; code,
+        const error_condition &amp; condition ) noexcept;
+      friend bool operator==( const error_condition &amp; condition,
+        const std::error_code &amp; code ) noexcept;
+
+      friend bool operator!=( const std::error_code &amp; code,
+        const error_condition &amp; condition ) noexcept;
+      friend bool operator!=( const error_condition &amp; condition,
+        const std::error_code &amp; code ) noexcept;
+
+      // conversions:
+
       operator std::error_condition() const;
 
-    private: // exposition only
+      // stream insertion:
 
-      int val_;
-      const error_category * cat_;
-
+      template &lt;class charT, class traits&gt;
+        std::basic_ostream&lt;charT, traits&gt;&amp;
+          operator&lt;&lt;( basic_ostream&lt;charT, traits&gt;&amp; os, const error_condition &amp; en );
     };
   }
 }</code></pre>
@@ -1821,7 +2586,7 @@ by exception.</p>
 <dl>
 <dt class="hdlist1">Ensures: </dt>
 <dd>
-<p><code>val_ == 0</code>; <code>*cat_ == generic_category()</code>.</p>
+<p><code>value() == 0</code>; <code>category() == generic_category()</code>.</p>
 </dd>
 </dl>
 </div>
@@ -1841,7 +2606,7 @@ by exception.</p>
 <dl>
 <dt class="hdlist1">Ensures: </dt>
 <dd>
-<p><code>val_ == val</code>; <code>cat_ == &amp;cat</code>.</p>
+<p><code>value() == val</code>; <code>category() == cat</code>.</p>
 </dd>
 </dl>
 </div>
@@ -1889,7 +2654,7 @@ by exception.</p>
 <dl>
 <dt class="hdlist1">Ensures: </dt>
 <dd>
-<p><code>val_ == val</code>; <code>cat_ == &amp;cat</code>.</p>
+<p><code>value() == val</code>; <code>category() == cat</code>.</p>
 </dd>
 </dl>
 </div>
@@ -1934,7 +2699,7 @@ by exception.</p>
 <dl>
 <dt class="hdlist1">Ensures: </dt>
 <dd>
-<p><code>val_ == 0</code>; <code>*cat_ == generic_category()</code>.</p>
+<p><code>value() == 0</code>; <code>category() == generic_category()</code>.</p>
 </dd>
 </dl>
 </div>
@@ -1957,7 +2722,7 @@ by exception.</p>
 <dl>
 <dt class="hdlist1">Returns: </dt>
 <dd>
-<p><code>val_</code>.</p>
+<p>the error value.</p>
 </dd>
 </dl>
 </div>
@@ -1977,7 +2742,7 @@ by exception.</p>
 <dl>
 <dt class="hdlist1">Returns: </dt>
 <dd>
-<p><code>*cat_</code>.</p>
+<p>the error category.</p>
 </dd>
 </dl>
 </div>
@@ -1997,7 +2762,7 @@ by exception.</p>
 <dl>
 <dt class="hdlist1">Returns: </dt>
 <dd>
-<p><code>cat_-&gt;message( val_ )</code>.</p>
+<p><code>category().message( value() )</code>.</p>
 </dd>
 </dl>
 </div>
@@ -2017,7 +2782,7 @@ by exception.</p>
 <dl>
 <dt class="hdlist1">Returns: </dt>
 <dd>
-<p><code>cat_-&gt;message( val_, buffer, len )</code>.</p>
+<p><code>category().message( value(), buffer, len )</code>.</p>
 </dd>
 </dl>
 </div>
@@ -2037,7 +2802,7 @@ by exception.</p>
 <dl>
 <dt class="hdlist1">Returns: </dt>
 <dd>
-<p><code>cat_-&gt;failed( val_ )</code>.</p>
+<p><code>category().failed( value() )</code>.</p>
 </dd>
 </dl>
 </div>
@@ -2064,35 +2829,12 @@ by exception.</p>
 </li>
 </ul>
 </div>
+</div>
+<div class="sect4">
+<h5 id="ref_comparisons_3">Comparisons</h5>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code>operator std::error_condition() const;</code></pre>
-</div>
-</div>
-<div class="ulist none">
-<ul class="none">
-<li>
-<p></p>
-<div class="dlist">
-<dl>
-<dt class="hdlist1">Returns: </dt>
-<dd>
-<p><code>std::error_condition( val_, *cat_ )</code>.</p>
-</dd>
-</dl>
-</div>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="ref_nonmember_functions">Nonmember functions</h4>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code>constexpr bool operator==( const error_code &amp; lhs,
-  const error_code &amp; rhs ) noexcept;
-constexpr bool operator==( const error_condition &amp; lhs,
+<pre class="highlight"><code>friend constexpr bool operator==( const error_condition &amp; lhs,
   const error_condition &amp; rhs ) noexcept;</code></pre>
 </div>
 </div>
@@ -2113,37 +2855,8 @@ constexpr bool operator==( const error_condition &amp; lhs,
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code>bool operator==( const error_code &amp; code,
-  const error_condition &amp; condition ) noexcept;
-bool operator==( const error_condition &amp; condition,
-  const error_code &amp; code ) noexcept;</code></pre>
-</div>
-</div>
-<div class="ulist none">
-<ul class="none">
-<li>
-<p></p>
-<div class="dlist">
-<dl>
-<dt class="hdlist1">Returns: </dt>
-<dd>
-<p><code>code.category().equivalent( code.value(), condition ) || condition.category().equivalent( code, condition.value() )</code>.</p>
-</dd>
-</dl>
-</div>
-</li>
-</ul>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code>constexpr bool operator!=( const error_code &amp; lhs,
-  const error_code &amp; rhs ) noexcept;
-constexpr bool operator!=( const error_condition &amp; lhs,
-  const error_condition &amp; rhs ) noexcept;
-bool operator!=( const error_code &amp; code,
-  const error_condition &amp; condition ) noexcept;
-bool operator!=( const error_condition &amp; condition,
-  const error_code &amp; code ) noexcept;</code></pre>
+<pre class="highlight"><code>friend constexpr bool operator!=( const error_condition &amp; lhs,
+  const error_condition &amp; rhs ) noexcept;</code></pre>
 </div>
 </div>
 <div class="ulist none">
@@ -2163,9 +2876,7 @@ bool operator!=( const error_condition &amp; condition,
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code>constexpr bool operator&lt;( const error_code &amp; lhs,
-  const error_code &amp; rhs ) noexcept;
-constexpr bool operator&lt;( const error_condition &amp; lhs,
+<pre class="highlight"><code>friend constexpr bool operator&lt;( const error_condition &amp; lhs,
   const error_condition &amp; rhs ) noexcept;</code></pre>
 </div>
 </div>
@@ -2177,7 +2888,7 @@ constexpr bool operator&lt;( const error_condition &amp; lhs,
 <dl>
 <dt class="hdlist1">Returns: </dt>
 <dd>
-<p><code>lhs.category() &lt; rhs.category() || ( lhs.category() == rhs.category() &amp;&amp; lhs.value() &lt; rhs.value() )</code>.</p>
+<p><code>lhs.category() &lt; rhs.category() || (lhs.category() == rhs.category() &amp;&amp; lhs.value() &lt; rhs.value())</code>.</p>
 </dd>
 </dl>
 </div>
@@ -2186,7 +2897,14 @@ constexpr bool operator&lt;( const error_condition &amp; lhs,
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code>constexpr error_code make_error_code( errc::errc_t e ) noexcept;</code></pre>
+<pre class="highlight"><code>friend bool operator==( const std::error_code &amp; code,
+  const error_condition &amp; condition ) noexcept;</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>friend bool operator==( const error_condition &amp; condition,
+  const std::error_code &amp; code ) noexcept;</code></pre>
 </div>
 </div>
 <div class="ulist none">
@@ -2197,7 +2915,7 @@ constexpr bool operator&lt;( const error_condition &amp; lhs,
 <dl>
 <dt class="hdlist1">Returns: </dt>
 <dd>
-<p><code>error_code( e, generic_category() )</code>.</p>
+<p><code>code == static_cast&lt;std::error_condition&gt;( rhs )</code>.</p>
 </dd>
 </dl>
 </div>
@@ -2206,7 +2924,14 @@ constexpr bool operator&lt;( const error_condition &amp; lhs,
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code>constexpr error_condition make_error_condition( errc::errc_t e ) noexcept;</code></pre>
+<pre class="highlight"><code>friend constexpr bool operator!=( const std::error_code &amp; lhs,
+  const error_condition &amp; rhs ) noexcept;</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>friend constexpr bool operator!=( const error_condition &amp; lhs,
+  const std::error_code &amp; rhs ) noexcept;</code></pre>
 </div>
 </div>
 <div class="ulist none">
@@ -2217,18 +2942,44 @@ constexpr bool operator&lt;( const error_condition &amp; lhs,
 <dl>
 <dt class="hdlist1">Returns: </dt>
 <dd>
-<p><code>error_condition( e, generic_category() )</code>.</p>
+<p><code>!( lhs == rhs )</code>.</p>
 </dd>
 </dl>
 </div>
 </li>
 </ul>
 </div>
+</div>
+<div class="sect4">
+<h5 id="ref_conversions_3">Conversions</h5>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>operator std::error_condition() const;</code></pre>
+</div>
+</div>
+<div class="ulist none">
+<ul class="none">
+<li>
+<p></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<p><code>std::error_condition( value(), category() )</code>.</p>
+</dd>
+</dl>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="ref_stream_insertion_2">Stream Insertion</h5>
 <div class="listingblock">
 <div class="content">
 <pre class="highlight"><code>template &lt;class charT, class traits&gt;
   std::basic_ostream&lt;charT, traits&gt;&amp;
-    operator&lt;&lt;( basic_ostream&lt;charT, traits&gt;&amp; os, const error_code &amp; ec );</code></pre>
+    operator&lt;&lt;( basic_ostream&lt;charT, traits&gt;&amp; os, const error_condition &amp; en );</code></pre>
 </div>
 </div>
 <div class="ulist none">
@@ -2239,7 +2990,7 @@ constexpr bool operator&lt;( const error_condition &amp; lhs,
 <dl>
 <dt class="hdlist1">Effects: </dt>
 <dd>
-<p><code>os &lt;&lt; ec.category().name() &lt;&lt; ':' &lt;&lt; ec.value()</code>.</p>
+<p><code>os &lt;&lt; "cond:" &lt;&lt; en.category().name() &lt;&lt; ':' &lt;&lt; en.value()</code>.</p>
 </dd>
 <dt class="hdlist1">Returns: </dt>
 <dd>
@@ -2250,30 +3001,11 @@ constexpr bool operator&lt;( const error_condition &amp; lhs,
 </li>
 </ul>
 </div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code>std::size_t hash_value( const error_code &amp; ec );</code></pre>
-</div>
-</div>
-<div class="ulist none">
-<ul class="none">
-<li>
-<p></p>
-<div class="dlist">
-<dl>
-<dt class="hdlist1">Returns: </dt>
-<dd>
-<p>A hash value representing <code>ec</code>.</p>
-</dd>
-</dl>
-</div>
-</li>
-</ul>
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="ref_boostsystemsystem_error_hpp">&lt;boost/system/system_error.hpp&gt;</h3>
+<h3 id="ref_boostsystemsystem_error_hpp">&lt;boost/system/&#8203;system_error.hpp&gt;</h3>
 <div class="sect3">
 <h4 id="ref_class_system_error">Class system_error</h4>
 <div class="paragraph">
@@ -2394,7 +3126,7 @@ system_error( int ev, const error_category &amp; ecat );</code></pre>
 <dt class="hdlist1">Returns: </dt>
 <dd>
 <p>A null-terminated character string incorporating the arguments supplied
-in the constructor, typically of the form <code>what_arg + ": " + code.message()</code>.</p>
+in the constructor, typically of the form <code>what_arg + ": " + code().message()</code>.</p>
 </dd>
 </dl>
 </div>
@@ -2402,6 +3134,12 @@ in the constructor, typically of the form <code>what_arg + ": " + code.message()
 </ul>
 </div>
 </div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="ref_boostsystem_hpp">&lt;boost/system.hpp&gt;</h3>
+<div class="paragraph">
+<p>This convenience header includes all the headers previously described.</p>
 </div>
 </div>
 </div>
@@ -2456,7 +3194,7 @@ paper. Johan Nilsson&#8217;s comments led to several of the refinements in N2066
 <p>Copyright 2003-2017 Beman Dawes</p>
 </li>
 <li>
-<p>Copyright 2018 Peter Dimov</p>
+<p>Copyright 2018-2021 Peter Dimov</p>
 </li>
 </ul>
 </div>
@@ -2468,7 +3206,7 @@ paper. Johan Nilsson&#8217;s comments led to several of the refinements in N2066
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2020-08-11 14:57:22 UTC
+Last updated 2021-08-05 09:42:29 UTC
 </div>
 </div>
 <style>

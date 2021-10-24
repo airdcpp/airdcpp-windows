@@ -18,7 +18,6 @@
 #include <commctrl.h>
 #include "stdafx.h"
 #include "Resource.h"
-#include "WinUtil.h"
 #include "AutosearchSearchTimesPage.h"
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))

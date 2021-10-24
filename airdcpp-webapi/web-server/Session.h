@@ -16,10 +16,10 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef DCPLUSPLUS_DCPP_SESSION_H
-#define DCPLUSPLUS_DCPP_SESSION_H
+#ifndef DCPLUSPLUS_WEBSERVER_SESSION_H
+#define DCPLUSPLUS_WEBSERVER_SESSION_H
 
-#include "stdinc.h"
+#include "forward.h"
 
 #include <web-server/LazyInitWrapper.h>
 #include <web-server/SessionListener.h>
@@ -54,11 +54,11 @@ namespace webserver {
 			return id;
 		}
 
-		WebUserPtr getUser() {
+		WebUserPtr getUser() const noexcept {
 			return user;
 		}
 
-		SessionType getSessionType() const {
+		SessionType getSessionType() const noexcept {
 			return sessionType;
 		}
 
@@ -91,9 +91,6 @@ namespace webserver {
 
 		void reportError(const string& aError) noexcept;
 	private:
-		typedef LazyInitWrapper<ApiModule> LazyModuleWrapper;
-		std::map<std::string , LazyModuleWrapper> apiHandlers;
-
 		const uint64_t maxInactivity;
 		const time_t started;
 		uint64_t lastActivity;
@@ -107,6 +104,9 @@ namespace webserver {
 		WebServerManager* server;
 
 		mutable CriticalSection cs;
+
+		typedef LazyInitWrapper<ApiModule> LazyModuleWrapper;
+		std::map<std::string, LazyModuleWrapper> apiHandlers;
 	};
 }
 

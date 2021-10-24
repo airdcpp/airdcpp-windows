@@ -562,93 +562,6 @@ string AirUtil::formatMatchResults(int aMatchingFiles, int aNewFiles, const Bund
 	return STRING(NO_MATCHED_FILES);;
 }
 
-//fuldc ftp logger support
-void AirUtil::fileEvent(const string& tgt, bool file /*false*/) {
-#ifdef _WIN32
-	string target = tgt;
-	if(file) {
-		if(File::getSize(target) != -1) {
-			StringPair sp = SettingsManager::getInstance()->getFileEvent(SettingsManager::ON_FILE_COMPLETE);
-			if(sp.first.length() > 0) {
-				STARTUPINFO si = { sizeof(si), 0 };
-				PROCESS_INFORMATION pi = { 0 };
-				ParamMap params;
-				params["file"] = target;
-				wstring cmdLine = Text::toT(Util::formatParams(sp.second, params));
-				wstring cmd = Text::toT(sp.first);
-
-				boost::scoped_array<TCHAR> cmdLineBuf(new TCHAR[cmdLine.length() + 1]);
-				_tcscpy(&cmdLineBuf[0], cmdLine.c_str());
-
-				boost::scoped_array<TCHAR> cmdBuf(new TCHAR[cmd.length() + 1]);
-				_tcscpy(&cmdBuf[0], cmd.c_str());
-
-				if(::CreateProcess(&cmdBuf[0], &cmdLineBuf[0], NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi)) {
-					::CloseHandle(pi.hThread);
-					::CloseHandle(pi.hProcess);
-				}
-			}
-		}
-	} else {
-	if(File::createDirectory(target)) {
-		StringPair sp = SettingsManager::getInstance()->getFileEvent(SettingsManager::ON_DIR_CREATED);
-		if(sp.first.length() > 0) {
-			STARTUPINFO si = { sizeof(si), 0 };
-			PROCESS_INFORMATION pi = { 0 };
-			ParamMap params;
-			params["dir"] = target;
-			wstring cmdLine = Text::toT(Util::formatParams(sp.second, params));
-			wstring cmd = Text::toT(sp.first);
-
-			boost::scoped_array<TCHAR> cmdLineBuf(new TCHAR[cmdLine.length() + 1]);
-			_tcscpy(&cmdLineBuf[0], cmdLine.c_str());
-
-			boost::scoped_array<TCHAR> cmdBuf(new TCHAR[cmd.length() + 1]);
-			_tcscpy(&cmdBuf[0], cmd.c_str());
-
-			if(::CreateProcess(&cmdBuf[0], &cmdLineBuf[0], NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi)) {
-				//wait for the process to finish executing
-				if(WAIT_OBJECT_0 == WaitForSingleObject(pi.hProcess, INFINITE)) {
-					DWORD code = 0;
-					//retrieve the error code to check if we should stop this download.
-					if(0 != GetExitCodeProcess(pi.hProcess, &code)) {
-						if(code != 0) { //assume 0 is the only valid return code, everything else is an error
-							string::size_type end = target.find_last_of("\\/");
-							if(end != string::npos) {
-								tstring tmp = Text::toT(target.substr(0, end));
-								RemoveDirectory(tmp.c_str());
-
-								//the directory we removed might be a sub directory of
-								//the real one, check to see if that's the case.
-								end = tmp.find_last_of(_T("\\/"));
-								if(end != string::npos) {
-									tstring dir = tmp.substr(end+1);
-									if(Util::strnicmp(dir, _T("sample"), 6) == 0 ||
-										Util::strnicmp(dir, _T("subs"), 4) == 0 ||
-										Util::strnicmp(dir, _T("cover"), 5) == 0 ||
-										Util::strnicmp(dir, _T("cd"), 2) == 0) {
-											RemoveDirectory(tmp.substr(0, end).c_str());
-									}
-								}
-								
-								::CloseHandle(pi.hThread);
-								::CloseHandle(pi.hProcess);
-
-								throw QueueException("An external sfv tool stopped the download of this file");
-							}
-						}
-					}
-				}
-				
-				::CloseHandle(pi.hThread);
-				::CloseHandle(pi.hProcess);
-				}
-			}
-		}
-	}
-#endif
-}
-
 bool AirUtil::stringRegexMatch(const string& aReg, const string& aString) {
 	if (aReg.empty())
 		return false;
@@ -717,9 +630,9 @@ const string AirUtil::getSubDirReg() noexcept {
 	return R"((((S(eason)?)|DVD|CD|(D|DIS(K|C))).?([0-9](0-9)?))|Sample.?|Proof.?|Cover.?|.{0,5}Sub(s|pack)?)";
 }
 
-string AirUtil::getReleaseDir(const string& aDir, bool cut, const char separator) noexcept {
-	auto p = getDirName(Util::getFilePath(aDir, separator), separator);
-	if (cut) {
+string AirUtil::getReleaseDir(const string& aDir, bool aCut, const char aSeparator) noexcept {
+	auto p = getDirectoryName(Util::getFilePath(aDir, aSeparator), aSeparator);
+	if (aCut) {
 		return p.first;
 	}
 
@@ -801,13 +714,13 @@ string AirUtil::subtractCommonParents(const string& aToCompare, const StringList
 	return Util::listToString(converted);
 }
 
-string AirUtil::subtractCommonDirs(const string& toCompare, const string& toSubtract, char separator) noexcept {
-	auto res = compareFromEnd(toCompare, toSubtract, separator);
+string AirUtil::subtractCommonDirs(const string& aToCompare, const string& aToSubtract, char aSeparator) noexcept {
+	auto res = compareFromEnd(aToCompare, aToSubtract, aSeparator);
 	if (res == string::npos) {
-		return toSubtract;
+		return aToSubtract;
 	}
 
-	return toSubtract.substr(0, res);
+	return aToSubtract.substr(0, res);
 }
 
 string AirUtil::getLastCommonDirectoryPathFromSub(const string& aMainPath, const string& aSubPath, char aSubSeparator, size_t aMainBaseLength) noexcept {
@@ -874,7 +787,7 @@ string AirUtil::getAdcMatchPath(const string& aRemoteFile, const string& aLocalF
 	return AirUtil::getLastCommonAdcDirectoryPathFromSub(localBundleFileDir, remoteFileDir, aLocalBundlePath.length());
 }
 
-pair<string, string::size_type> AirUtil::getDirName(const string& aPath, char aSeparator) noexcept {
+pair<string, string::size_type> AirUtil::getDirectoryName(const string& aPath, char aSeparator) noexcept {
 	if (aPath.size() < 3)
 		return { aPath, false };
 
@@ -944,7 +857,7 @@ string AirUtil::getTitle(const string& searchTerm) noexcept {
 }
 
 /* returns true if aDir is a subdir of aParent */
-bool AirUtil::isSub(const string& aTestSub, const string& aParent, const char separator) noexcept {
+bool AirUtil::isSub(const string& aTestSub, const string& aParent, const char aSeparator) noexcept {
 	if (aTestSub.length() <= aParent.length())
 		return false;
 
@@ -952,7 +865,7 @@ bool AirUtil::isSub(const string& aTestSub, const string& aParent, const char se
 		return false;
 
 	// either the parent must end with a separator or it must follow in the subdirectory
-	return aParent.empty() || aParent.back() == separator || aTestSub[aParent.length()] == separator;
+	return aParent.empty() || aParent.back() == aSeparator || aTestSub[aParent.length()] == aSeparator;
 }
 
 /* returns true if aSub is a subdir of aDir OR both are the same dir */

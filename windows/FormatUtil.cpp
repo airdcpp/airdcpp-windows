@@ -25,36 +25,6 @@
 #include <airdcpp/Localization.h>
 #include <airdcpp/Util.h>
 
-/*#include "DirectoryListingFrm.h"
-#include "PrivateFrame.h"
-#include "TextFrame.h"
-#include "SearchFrm.h"
-#include "LineDlg.h"
-#include "MainFrm.h"
-
-#include "HubFrame.h"
-#include "BrowseDlg.h"
-#include "ExMessageBox.h"
-
-#include <airdcpp/FavoriteManager.h>
-#include <airdcpp/LogManager.h>
-#include <airdcpp/Magnet.h>
-#include <airdcpp/QueueManager.h>
-#include <airdcpp/ResourceManager.h>
-#include <airdcpp/ScopedFunctor.h>
-#include <airdcpp/SearchInstance.h>
-#include <airdcpp/StringTokenizer.h>
-#include <airdcpp/UploadManager.h>
-
-#include <airdcpp/ViewFileManager.h>
-
-#include <airdcpp/modules/PreviewAppManager.h>
-#include <airdcpp/modules/WebShortcuts.h>
-
-#include <airdcpp/version.h>
-
-#include <boost/format.hpp>*/
-
 
 tstring FormatUtil::getNicks(const CID& cid) {
 	return Text::toT(Util::listToString(ClientManager::getInstance()->getNicks(cid)));

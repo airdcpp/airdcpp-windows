@@ -174,7 +174,7 @@ const string SettingsManager::settingTags[] =
 	// Generic
 	"Nick", "UploadSpeed", "DownloadSpeed", "Description", "DownloadDirectory", "EMail", "ExternalIp", "ExternalIp6",
 	"LanguageFile", "HublistServers",  "HttpProxy", "Mapper",
-	"BindAddress", "BindAddress6", "SocksServer", "SocksUser", "SocksPassword", "ConfigVersion", 
+	"BindAddress", "BindAddress6", "SocksServer", "SocksUser", "SocksPassword", "ConfigVersion", "ConfigName",
 	"DefaultAwayMessage", "TimeStampsFormat", "CID", "NmdcEncoding",
 
 	"LogDirectory", "LogFormatPostDownload", "LogFormatPostUpload", "LogFormatMainChat", "LogFormatPrivateChat",
@@ -295,7 +295,7 @@ const string SettingsManager::settingTags[] =
 	"CompressTransfers",
 
 	"DontDlAlreadyQueued", "DontDLAlreadyShared", "FavShowJoins", "FilterMessages",
-	"GetUserCountry", "ShowUserIpCountry", "GetUserInfo", "HubUserCommands", "KeepLists",
+	"GetUserCountry", "GetUserInfo", "HubUserCommands", "KeepLists",
 	"LogDownloads", "LogFilelistTransfers", "LogFinishedDownloads", "LogMainChat",
 	"LogPrivateChat", "LogStatusMessages", "LogSystem", "LogUploads",
 
@@ -308,7 +308,7 @@ const string SettingsManager::settingTags[] =
 	"AutoDetectionUseLimited", "LogScheduledRefreshes", "AutoCompleteBundles",
 	"EnableSUDP", "NmdcMagnetWarn", "UpdateIPHourly",
 	"UseSlowDisconnectingDefault", "PrioListHighest",
-	"UseFTPLogger", "QIAutoPrio", "ReportAddedSources", "OverlapSlowUser", "FormatDirRemoteTime",
+	"QIAutoPrio", "ReportAddedSources", "OverlapSlowUser", "FormatDirRemoteTime",
 	"LogHashedFiles", "UsePartialSharing",
 	"ReportBlockedShare", "MCNAutoDetect", "DLAutoDetect", "ULAutoDetect",
 	"DupesInFilelists", "DupesInChat", "NoZeroByte",
@@ -333,7 +333,7 @@ const string SettingsManager::settingTags[] =
 	"MagnetAsk", "MagnetRegister", "MinimizeToTray",
 	"PopunderFilelist", "PopunderPm", "PromptPassword",
 	"ShowMenuBar", "ShowStatusbar", "ShowToolbar",
-	"ShowTransferview", "StatusInChat",
+	"ShowTransferview", "StatusInChat", "ShowIpCountryChat",
 
 	"ToggleActiveTab", "UrlHandler", "UseCTRLForLineHistory", "UseSystemIcons",
 	"UsersFilterFavorite", "UsersFilterOnline", "UsersFilterQueue", "UsersFilterWaiting",
@@ -386,10 +386,6 @@ const string SettingsManager::settingTags[] =
 
 SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 {
-	//make sure it can fit our events without using push_back since
-	//that might cause them to be in the wrong position.
-	fileEvents.resize(2);
-
 	setDefault(NICK, Util::getSystemUsername());
 
 	setDefault(MAX_UPLOAD_SPEED_MAIN, 0);
@@ -427,7 +423,7 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(FILTER_MESSAGES, true);
 	setDefault(AUTO_SEARCH, true);
 	setDefault(TIME_STAMPS, true);
-	setDefault(BUFFER_SIZE, 64);
+	setDefault(BUFFER_SIZE, 256);
 	setDefault(HUBLIST_SERVERS, "https://www.te-home.net/?do=hublist&get=hublist.xml.bz2;https://dchublist.org/hublist.xml.bz2;https://dchublist.ru/hublist.xml.bz2;https://tankafett.biz/?do=hublist&get=hublist.xml.bz2;https://dcnf.github.io/Hublist/hublist.xml.bz2;");
 	setDefault(DOWNLOAD_SLOTS, 50);
 	setDefault(MAX_DOWNLOAD_SPEED, 0);
@@ -468,7 +464,6 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(LOG_SYSTEM, true);
 	setDefault(MAX_HASH_SPEED, 0);
 	setDefault(GET_USER_COUNTRY, true);
-	setDefault(SHOW_USER_IP_COUNTRY, false);
 	setDefault(FAV_SHOW_JOINS, false);
 	setDefault(LOG_STATUS_MESSAGES, false);
 
@@ -482,8 +477,8 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(PRIO_LOWEST, false);
 	setDefault(NO_IP_OVERRIDE, false);
 	setDefault(NO_IP_OVERRIDE6, false);
-	setDefault(SOCKET_IN_BUFFER, 64*1024);
-	setDefault(SOCKET_OUT_BUFFER, 64*1024);
+	setDefault(SOCKET_IN_BUFFER, 0); // OS default
+	setDefault(SOCKET_OUT_BUFFER, 0); // OS default
 	setDefault(TLS_TRUSTED_CERTIFICATES_PATH, Util::getPath(Util::PATH_USER_CONFIG) + "Certificates" PATH_SEPARATOR_STR);
 	setDefault(TLS_PRIVATE_KEY_FILE, Util::getPath(Util::PATH_USER_CONFIG) + "Certificates" PATH_SEPARATOR_STR "client.key");
 	setDefault(TLS_CERTIFICATE_FILE, Util::getPath(Util::PATH_USER_CONFIG) + "Certificates" PATH_SEPARATOR_STR "client.crt");
@@ -565,7 +560,6 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(USE_PARTIAL_SHARING, true);
 	setDefault(LOG_HASHING, false);
 	setDefault(RECENT_BUNDLE_HOURS, 24);
-	setDefault(USE_FTP_LOGGER, false);
 	setDefault(QI_AUTOPRIO, true);
 	setDefault(ALLOW_MATCH_FULL_LIST, true);
 	setDefault(REPORT_ADDED_SOURCES, false);
@@ -663,6 +657,7 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(MINIMIZE_TRAY, false);
 	setDefault(CLEAR_SEARCH, true);
 	setDefault(STATUS_IN_CHAT, true);
+	setDefault(SHOW_IP_COUNTRY_CHAT, false);
 	setDefault(PRIVATE_MESSAGE_BEEP, false);
 	setDefault(SHOW_PROGRESS_BARS, true);
 	setDefault(PRIVATE_MESSAGE_BEEP_OPEN, false);
@@ -1102,25 +1097,6 @@ void SettingsManager::load(StartupLoader& aLoader) noexcept {
 				xml.resetCurrentChild();
 			}
 
-			if (xml.findChild("FileEvents")) {
-				xml.stepIn();
-				if (xml.findChild("OnFileComplete")) {
-					StringPair sp;
-					sp.first = xml.getChildAttrib("Command");
-					sp.second = xml.getChildAttrib("CommandLine");
-					fileEvents[ON_FILE_COMPLETE] = sp;
-				}
-				xml.resetCurrentChild();
-				if (xml.findChild("OnDirCreated")) {
-					StringPair sp;
-					sp.first = xml.getChildAttrib("Command");
-					sp.second = xml.getChildAttrib("CommandLine");
-					fileEvents[ON_DIR_CREATED] = sp;
-				}
-				xml.stepOut();
-			}
-			xml.resetCurrentChild();
-
 			fire(SettingsManagerListener::Load(), xml);
 
 			xml.stepOut();
@@ -1308,6 +1284,9 @@ void SettingsManager::save() noexcept {
 		if (i == CONFIG_VERSION) {
 			xml.addTag(settingTags[i], VERSIONSTRING);
 			xml.addChildAttrib(type, curType);
+		} else if (i == CONFIG_APP) {
+			xml.addTag(settingTags[i], APPID);
+			xml.addChildAttrib(type, curType);
 		} else if(isSet[i]) {
 			xml.addTag(settingTags[i], get(StrSetting(i), false));
 			xml.addChildAttrib(type, curType);
@@ -1358,17 +1337,6 @@ void SettingsManager::save() noexcept {
 		}
 	}
 
-	xml.addTag("FileEvents");
-	xml.stepIn();
-	xml.addTag("OnFileComplete");
-	xml.addChildAttrib("Command", fileEvents[ON_FILE_COMPLETE].first);
-	xml.addChildAttrib("CommandLine", fileEvents[ON_FILE_COMPLETE].second);
-	xml.addTag("OnDirCreated");
-	xml.addChildAttrib("Command", fileEvents[ON_DIR_CREATED].first);
-	xml.addChildAttrib("CommandLine", fileEvents[ON_DIR_CREATED].second);
-	xml.stepOut();
-
-
 	fire(SettingsManagerListener::Save(), xml);
 	saveSettingFile(xml, CONFIG_DIR, CONFIG_NAME);
 }
@@ -1391,7 +1359,7 @@ HubSettings SettingsManager::getHubSettings() const noexcept {
 	return ret;
 }
 
-void settingXmlMessage(const string& aMessage, LogMessage::Severity aSeverity, const SettingsManager::CustomReportF& aCustomErrorF) noexcept {
+void settingXmlMessage(const string& aMessage, LogMessage::Severity aSeverity, const MessageCallback& aCustomErrorF) noexcept {
 	if (!aCustomErrorF) {
 		LogManager::getInstance()->message(aMessage, aSeverity, STRING(SETTINGS));
 	} else {
@@ -1452,18 +1420,9 @@ vector<ToolbarIconEnum> SettingsManager::getDefaultToolbarOrder() noexcept {
 	});
 }
 
-bool SettingsManager::loadSettingFile(Util::Paths aPath, const string& aFileName, ParseCallback&& aParseCallback, const CustomReportF& aCustomReportF) noexcept {
-	const auto fullPath = Util::getPath(aPath) + aFileName;
-
-	Util::migrate(fullPath);
-
-	if (!Util::fileExists(fullPath)) {
-		return false;
-	}
-
-	const auto parseFile = [&](const string& aPath) {
+bool SettingsManager::loadSettingFile(Util::Paths aPath, const string& aFileName, XMLParseCallback&& aParseCallback, const MessageCallback& aCustomReportF) noexcept {
+	const auto parseXmlFile = [&](const string& aPath) {
 		SimpleXML xml;
-
 		try {
 			// Some legacy config files (such as favorites and recent hubs) may contain invalid UTF-8 data
 			// so don't throw in case of validation errors
@@ -1478,10 +1437,22 @@ bool SettingsManager::loadSettingFile(Util::Paths aPath, const string& aFileName
 		return true;
 	};
 
+	return loadSettingFile(aPath, aFileName, parseXmlFile, aCustomReportF);
+}
+
+bool SettingsManager::loadSettingFile(Util::Paths aPath, const string& aFileName, PathParseCallback&& aParseCallback, const MessageCallback& aCustomReportF) noexcept {
+	const auto fullPath = Util::getPath(aPath) + aFileName;
+
+	Util::migrate(fullPath);
+
+	if (!Util::fileExists(fullPath)) {
+		return false;
+	}
+
 	const auto backupPath = fullPath + ".bak";
-	if (!parseFile(fullPath)) {
+	if (!aParseCallback(fullPath)) {
 		// Try to load the file that was previously loaded succesfully
-		if (!Util::fileExists(backupPath) || !parseFile(backupPath)) {
+		if (!Util::fileExists(backupPath) || !aParseCallback(backupPath)) {
 			return false;
 		}
 
@@ -1510,17 +1481,19 @@ bool SettingsManager::loadSettingFile(Util::Paths aPath, const string& aFileName
 	return true;
 }
 
-bool SettingsManager::saveSettingFile(SimpleXML& aXML, Util::Paths aPath, const string& aFileName, const CustomReportF& aCustomErrorF) noexcept {
-	string fname = Util::getPath(aPath) + aFileName;
+bool SettingsManager::saveSettingFile(SimpleXML& aXML, Util::Paths aPath, const string& aFileName, const MessageCallback& aCustomErrorF) noexcept {
+	return saveSettingFile(SimpleXML::utf8Header + aXML.toXML(), aPath, aFileName, aCustomErrorF);
+}
 
+bool SettingsManager::saveSettingFile(const string& aContent, Util::Paths aPath, const string& aFileName, const MessageCallback& aCustomErrorF) noexcept {
+	auto fname = Util::getPath(aPath) + aFileName;
 	try {
 		{
 			File f(fname + ".tmp", File::WRITE, File::CREATE | File::TRUNCATE, File::BUFFER_WRITE_THROUGH);
-			f.write(SimpleXML::utf8Header);
-			f.write(aXML.toXML());
+			f.write(aContent);
 		}
 
-		//dont overWrite with empty file.
+		// Dont overwrite with empty file.
 		if (File::getSize(fname + ".tmp") > 0) {
 			File::deleteFile(fname);
 			File::renameFile(fname + ".tmp", fname);

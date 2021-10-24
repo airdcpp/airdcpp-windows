@@ -20,9 +20,7 @@
 #include "Resource.h"
 
 #include "DownloadingOptionsPage.h"
-#include "LineDlg.h"
 
-#include "WinUtil.h"
 #include "PropertiesDlg.h"
 
 PropPage::TextItem DownloadingOptionsPage::texts[] = {
@@ -91,9 +89,6 @@ LRESULT DownloadingOptionsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, L
 	disconnectMode.AddString(CTSTRING(FILE));
 	disconnectMode.AddString(CTSTRING(BUNDLE));
 	disconnectMode.AddString(CTSTRING(WHOLE_QUEUE));
-	/*disconnectMode.AddString(Text::toLower(TSTRING(FILE)).c_str());
-	disconnectMode.AddString(Text::toLower(TSTRING(BUNDLE)).c_str());
-	disconnectMode.AddString(Text::toLower(TSTRING(WHOLE_QUEUE)).c_str());*/
 	disconnectMode.SetCurSel(SETTING(DL_AUTO_DISCONNECT_MODE));
 
 	// Do specialized reading here

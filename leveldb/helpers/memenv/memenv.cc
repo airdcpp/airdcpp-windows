@@ -4,8 +4,7 @@
 
 #include "helpers/memenv/memenv.h"
 
-#include <string.h>
-
+#include <cstring>
 #include <limits>
 #include <map>
 #include <string>
@@ -94,7 +93,7 @@ class FileState {
       if (avail > bytes_to_copy) {
         avail = bytes_to_copy;
       }
-      memcpy(dst, blocks_[block] + block_offset, avail);
+      std::memcpy(dst, blocks_[block] + block_offset, avail);
 
       bytes_to_copy -= avail;
       dst += avail;
@@ -127,7 +126,7 @@ class FileState {
       if (avail > src_len) {
         avail = src_len;
       }
-      memcpy(blocks_.back() + offset, src, avail);
+      std::memcpy(blocks_.back() + offset, src, avail);
       src_len -= avail;
       src += avail;
       size_ += avail;
@@ -156,9 +155,9 @@ class SequentialFileImpl : public SequentialFile {
     file_->Ref();
   }
 
-  ~SequentialFileImpl() { file_->Unref(); }
+  ~SequentialFileImpl() override { file_->Unref(); }
 
-  virtual Status Read(size_t n, Slice* result, char* scratch) {
+  Status Read(size_t n, Slice* result, char* scratch) override {
     Status s = file_->Read(pos_, n, result, scratch);
     if (s.ok()) {
       pos_ += result->size();
@@ -166,7 +165,7 @@ class SequentialFileImpl : public SequentialFile {
     return s;
   }
 
-  virtual Status Skip(uint64_t n) {
+  Status Skip(uint64_t n) override {
     if (pos_ > file_->Size()) {
       return Status::IOError("pos_ > file_->Size()");
     }
@@ -187,10 +186,10 @@ class RandomAccessFileImpl : public RandomAccessFile {
  public:
   explicit RandomAccessFileImpl(FileState* file) : file_(file) { file_->Ref(); }
 
-  ~RandomAccessFileImpl() { file_->Unref(); }
+  ~RandomAccessFileImpl() override { file_->Unref(); }
 
-  virtual Status Read(uint64_t offset, size_t n, Slice* result,
-                      char* scratch) const {
+  Status Read(uint64_t offset, size_t n, Slice* result,
+              char* scratch) const override {
     return file_->Read(offset, n, result, scratch);
   }
 
@@ -202,13 +201,13 @@ class WritableFileImpl : public WritableFile {
  public:
   WritableFileImpl(FileState* file) : file_(file) { file_->Ref(); }
 
-  ~WritableFileImpl() { file_->Unref(); }
+  ~WritableFileImpl() override { file_->Unref(); }
 
-  virtual Status Append(const Slice& data) { return file_->Append(data); }
+  Status Append(const Slice& data) override { return file_->Append(data); }
 
-  virtual Status Close() { return Status::OK(); }
-  virtual Status Flush() { return Status::OK(); }
-  virtual Status Sync() { return Status::OK(); }
+  Status Close() override { return Status::OK(); }
+  Status Flush() override { return Status::OK(); }
+  Status Sync() override { return Status::OK(); }
 
  private:
   FileState* file_;
@@ -216,7 +215,7 @@ class WritableFileImpl : public WritableFile {
 
 class NoOpLogger : public Logger {
  public:
-  virtual void Logv(const char* format, va_list ap) {}
+  void Logv(const char* format, std::va_list ap) override {}
 };
 
 class InMemoryEnv : public EnvWrapper {
@@ -309,7 +308,7 @@ class InMemoryEnv : public EnvWrapper {
     return Status::OK();
   }
 
-  void DeleteFileInternal(const std::string& fname)
+  void RemoveFileInternal(const std::string& fname)
       EXCLUSIVE_LOCKS_REQUIRED(mutex_) {
     if (file_map_.find(fname) == file_map_.end()) {
       return;
@@ -319,19 +318,19 @@ class InMemoryEnv : public EnvWrapper {
     file_map_.erase(fname);
   }
 
-  Status DeleteFile(const std::string& fname) override {
+  Status RemoveFile(const std::string& fname) override {
     MutexLock lock(&mutex_);
     if (file_map_.find(fname) == file_map_.end()) {
       return Status::IOError(fname, "File not found");
     }
 
-    DeleteFileInternal(fname);
+    RemoveFileInternal(fname);
     return Status::OK();
   }
 
   Status CreateDir(const std::string& dirname) override { return Status::OK(); }
 
-  Status DeleteDir(const std::string& dirname) override { return Status::OK(); }
+  Status RemoveDir(const std::string& dirname) override { return Status::OK(); }
 
   Status GetFileSize(const std::string& fname, uint64_t* file_size) override {
     MutexLock lock(&mutex_);
@@ -350,7 +349,7 @@ class InMemoryEnv : public EnvWrapper {
       return Status::IOError(src, "File not found");
     }
 
-    DeleteFileInternal(target);
+    RemoveFileInternal(target);
     file_map_[target] = file_map_[src];
     file_map_.erase(src);
     return Status::OK();

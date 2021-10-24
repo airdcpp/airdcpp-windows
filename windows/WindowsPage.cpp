@@ -20,7 +20,6 @@
 
 #include "Resource.h"
 #include "WindowsPage.h"
-#include "WinUtil.h"
 
 PropPage::Item WindowsPage::items[] = { { 0, 0, PropPage::T_END } };
 

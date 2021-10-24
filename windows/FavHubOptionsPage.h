@@ -24,7 +24,6 @@
 #include <atlcrack.h>
 
 #include <airdcpp/HubEntry.h>
-#include "WinUtil.h"
 #include "TabbedDialog.h"
 
 class FavHubOptionsPage : public CDialogImpl<FavHubOptionsPage>, public TabPage {

@@ -20,17 +20,19 @@
 #include "Resource.h"
 
 #include "WinUtil.h"
-#include "SystemUtil.h"
-#include "ResourceLoader.h"
-#include "MainFrm.h"
+
 #include "LineDlg.h"
+#include "MainFrm.h"
 #include "OMenu.h"
+#include "ResourceLoader.h"
+#include "SystemUtil.h"
 
 #include "BarShader.h"
-#include "BrowseDlg.h"
 #include "ExMessageBox.h"
 #include "SplashWindow.h"
 
+#include <airdcpp/AirUtil.h>
+#include <airdcpp/File.h>
 #include <airdcpp/LogManager.h>
 #include <airdcpp/ResourceManager.h>
 #include <airdcpp/ScopedFunctor.h>
@@ -256,8 +258,6 @@ void WinUtil::initMenus() {
 
 	file.AppendMenu(MF_STRING, IDC_OPEN_FILE_LIST, CTSTRING(MENU_OPEN_FILE_LIST));
 	file.AppendMenu(MF_STRING, IDC_BROWSE_OWN_LIST, CTSTRING(MENU_BROWSE_OWN_LIST));
-	if (SETTING(SETTINGS_PROFILE) == SettingsManager::PROFILE_RAR)
-		file.AppendMenu(MF_STRING, IDC_OWN_LIST_ADL, CTSTRING(OWN_LIST_ADL));
 
 	file.AppendMenu(MF_STRING, IDC_MATCH_ALL, CTSTRING(MENU_OPEN_MATCH_ALL));
 	file.AppendMenu(MF_STRING, IDC_REFRESH_FILE_LIST, CTSTRING(MENU_REFRESH_FILE_LIST));
@@ -1071,6 +1071,73 @@ int WinUtil::setButtonPressed(int nID, bool bPressed /* = true */) {
 	MainFrame::getMainFrame()->getToolBar().CheckButton(nID, bPressed);
 
 	return 0;
+}
+
+tstring WinUtil::escapeMenu(tstring str) {
+	string::size_type i = 0;
+	while ((i = str.find(_T('&'), i)) != string::npos) {
+		str.insert(str.begin() + i, 1, _T('&'));
+		i += 2;
+	}
+	return str;
+}
+
+void WinUtil::translate(HWND page, TextItem* textItems) {
+	if (textItems != NULL) {
+		for (int i = 0; textItems[i].itemID != 0; i++) {
+			::SetDlgItemText(page, textItems[i].itemID,
+				Text::toT(ResourceManager::getInstance()->getString(textItems[i].translatedString)).c_str());
+		}
+	}
+}
+
+int WinUtil::getStatusTextWidth(const tstring& aStr, HWND hWnd) {
+	auto width = getTextWidth(aStr, hWnd);
+	return (width == 0) ? 0 : (width + 10); // Status bar adds an extra margin
+}
+
+int WinUtil::getTextWidth(const tstring& aStr, HWND hWnd) {
+	HDC dc = ::GetDC(hWnd);
+	HFONT hFont = (HFONT)SendMessage(hWnd, WM_GETFONT, 0, 0);
+	HGDIOBJ old = ::SelectObject(dc, hFont);
+
+	SIZE sz = { 0, 0 };
+	::GetTextExtentPoint32(dc, aStr.c_str(), aStr.length(), &sz);
+	::SelectObject(dc, old);
+	::ReleaseDC(mainWnd, dc);
+
+	return sz.cx;
+}
+
+int WinUtil::getTextWidth(const tstring& aStr, HDC dc) {
+	SIZE sz = { 0, 0 };
+	::GetTextExtentPoint32(dc, aStr.c_str(), aStr.length(), &sz);
+	return sz.cx;
+}
+
+int WinUtil::getTextWidth(HWND wnd, HFONT fnt) {
+	HDC dc = ::GetDC(wnd);
+	HGDIOBJ old = ::SelectObject(dc, fnt);
+	TEXTMETRIC tm;
+	::GetTextMetrics(dc, &tm);
+	::SelectObject(dc, old);
+	::ReleaseDC(wnd, dc);
+	return tm.tmAveCharWidth;
+}
+
+int WinUtil::getTextHeight(HWND wnd, HFONT fnt) {
+	HDC dc = ::GetDC(wnd);
+	HGDIOBJ old = ::SelectObject(dc, fnt);
+	int h = getTextHeight(dc);
+	::SelectObject(dc, old);
+	::ReleaseDC(wnd, dc);
+	return h;
+}
+
+int WinUtil::getTextHeight(HDC dc) {
+	TEXTMETRIC tm;
+	::GetTextMetrics(dc, &tm);
+	return tm.tmHeight;
 }
 
 void WinUtil::drawProgressBar(HDC& drawDC, CRect& rc, COLORREF clr, COLORREF textclr, COLORREF backclr, const tstring& aText, 

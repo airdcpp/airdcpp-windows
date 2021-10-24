@@ -16,10 +16,11 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef DCPLUSPLUS_DCPP_APIREQUEST_H
-#define DCPLUSPLUS_DCPP_APIREQUEST_H
+#ifndef DCPLUSPLUS_WEBSERVER_APIREQUEST_H
+#define DCPLUSPLUS_WEBSERVER_APIREQUEST_H
 
-#include "stdinc.h"
+#include "forward.h"
+#include "json.h"
 
 #include <airdcpp/typedefs.h>
 #include <airdcpp/GetSet.h>
@@ -87,6 +88,10 @@ namespace webserver {
 
 		bool hasRequestBody() const noexcept {
 			return !requestJson.is_null();
+		}
+
+		bool hasErrorMessage() const noexcept {
+			return !responseJsonError.is_null();
 		}
 
 		const json& getRequestBody() const noexcept {

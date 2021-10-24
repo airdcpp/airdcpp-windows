@@ -12,7 +12,8 @@ Copyright (c) 1999 - 2003 by PJ Naughter.  (Web: www.naughter.com, Email: pjna@n
 #pragma once
 #include <shlobj.h>
 #include <lm.h>
-#include "ShareDirectories.h"
+
+#include <airdcpp/typedefs.h>
 
 class ShareDirectories;
 

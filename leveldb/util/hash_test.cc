@@ -3,18 +3,17 @@
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
 #include "util/hash.h"
-#include "util/testharness.h"
+
+#include "gtest/gtest.h"
 
 namespace leveldb {
 
-class HASH {};
-
 TEST(HASH, SignedUnsignedIssue) {
-  const unsigned char data1[1] = {0x62};
-  const unsigned char data2[2] = {0xc3, 0x97};
-  const unsigned char data3[3] = {0xe2, 0x99, 0xa5};
-  const unsigned char data4[4] = {0xe1, 0x80, 0xb9, 0x32};
-  const unsigned char data5[48] = {
+  const uint8_t data1[1] = {0x62};
+  const uint8_t data2[2] = {0xc3, 0x97};
+  const uint8_t data3[3] = {0xe2, 0x99, 0xa5};
+  const uint8_t data4[4] = {0xe1, 0x80, 0xb9, 0x32};
+  const uint8_t data5[48] = {
       0x01, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00, 0x14, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x00,
       0x00, 0x00, 0x00, 0x14, 0x00, 0x00, 0x00, 0x18, 0x28, 0x00, 0x00, 0x00,
@@ -41,4 +40,7 @@ TEST(HASH, SignedUnsignedIssue) {
 
 }  // namespace leveldb
 
-int main(int argc, char** argv) { return leveldb::test::RunAllTests(); }
+int main(int argc, char** argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

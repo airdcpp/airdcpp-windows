@@ -25,7 +25,6 @@
 #include <web-server/Session.h>
 
 #include <airdcpp/ActionHook.h>
-#include <airdcpp/AirUtil.h>
 #include <airdcpp/Magnet.h>
 #include <airdcpp/MessageCache.h>
 #include <airdcpp/ShareManager.h>
@@ -184,7 +183,7 @@ namespace webserver {
 		const auto descriptionId = JsonUtil::getOptionalFieldDefault<string>("tag", aJson, aDefaultDescriptionId);
 
 		if (end > aMessageText.size() || start < 0 || end <= start) {
-			throw std::domain_error("Invalid range");
+			throw RequestException(websocketpp::http::status_code::bad_request, "Invalid range");
 		}
 
 		return make_shared<MessageHighlight>(start, aMessageText.substr(start, end - start), type, descriptionId);

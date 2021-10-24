@@ -34,6 +34,10 @@
 #include <utime.h>
 #endif
 
+#ifdef F_NOCACHE
+#include <fcntl.h>
+#endif
+
 #ifdef HAVE_MNTENT_H
 #include <mntent.h>
 #endif
@@ -102,6 +106,12 @@ time_t File::getLastModified() const noexcept {
 	FILETIME f = {0};
 	::GetFileTime(h, NULL, NULL, &f);
 	return convertTime(&f);
+}
+
+bool File::isDirectory(const string& aPath) noexcept {
+	// FileFindIter doesn't work for drive paths
+	DWORD attr = GetFileAttributes(Text::toT(Util::formatPath(aPath)).c_str());
+	return (attr & FILE_ATTRIBUTE_DIRECTORY) > 0;
 }
 
 time_t File::convertTime(const FILETIME* f) noexcept {
@@ -272,15 +282,6 @@ bool File::isHidden(const string& aPath) noexcept {
 	return false;
 }
 
-bool File::isDirectory(const string& aPath) noexcept {
-	FileFindIter ff = FileFindIter(aPath);
-	if (ff != FileFindIter()) {
-		return ff->isDirectory();
-	}
-
-	return false;
-}
-
 void File::deleteFileThrow(const string& aFileName) {
 	if (!::DeleteFile(Text::toT(Util::formatPath(aFileName)).c_str())) {
 		throw FileException(Util::translateError(GetLastError()));
@@ -394,9 +395,16 @@ File::File(const string& aFileName, int access, int mode, BufferMode aBufferMode
 	}
 #endif
 
+#ifdef F_NOCACHE
+	// macOS
+	if (aBufferMode == BUFFER_NONE) {
+		fcntl(h, F_NOCACHE, 1);
+	}
+#endif
+
 #ifdef _DEBUG
 	auto isDirectoryPath = aFileName.back() == PATH_SEPARATOR;
-	dcassert(isDirectory() == isDirectoryPath);
+	dcassert(isDirectory(aFileName) == isDirectoryPath);
 #endif
 }
 
@@ -676,18 +684,24 @@ bool File::isLink(const string& aPath) noexcept {
 	return S_ISLNK(inode.st_mode);
 }
 
+time_t File::getLastWriteTime(const string& aPath) noexcept {
+	struct stat inode;
+	if (stat(aPath.c_str(), &inode) == -1) return 0;
+	return inode.st_mtime;
+}
+
 #endif // !_WIN32
 
 File::~File() {
 	File::close();
 }
 
-std::string File::makeAbsolutePath(const std::string& filename) {
-	return makeAbsolutePath(Util::getAppFilePath(), filename);
+std::string File::makeAbsolutePath(const std::string& aFilename) {
+	return makeAbsolutePath(Util::getAppFilePath(), aFilename);
 }
 
-std::string File::makeAbsolutePath(const std::string& path, const std::string& filename) {
-	return isAbsolutePath(filename) ? filename : path + filename;
+std::string File::makeAbsolutePath(const std::string& aPath, const std::string& aFilename) {
+	return isAbsolutePath(aFilename) ? aFilename : aPath + aFilename;
 }
 
 void File::removeDirectoryForced(const string& aPath) {
@@ -1028,6 +1042,10 @@ int64_t FileItem::getSize() const noexcept {
 	return ff->getSize();
 }
 
+time_t FileItem::getLastWriteTime() const noexcept {
+	return ff->getLastWriteTime();
+}
+
 #else // _WIN32
 
 FileFindIter::FileFindIter() {
@@ -1070,6 +1088,11 @@ FileFindIter& FileFindIter::validateCurrent() {
 	}
 
 	if (pattern && fnmatch(pattern->c_str(), data.ent->d_name, 0) != 0) {
+		return this->operator++();
+	}
+
+	if (!Text::validateUtf8((*this)->ent->d_name)) {
+		dcdebug("FileFindIter: UTF-8 validation failed for the item name (%s)\n", Text::sanitizeUtf8((*this)->ent->d_name).c_str());
 		return this->operator++();
 	}
 
@@ -1127,10 +1150,8 @@ int64_t FileFindIter::DirData::getSize() const noexcept {
 }
 
 time_t FileFindIter::DirData::getLastWriteTime() const noexcept {
-	struct stat inode;
 	if (!ent) return 0;
-	if (stat((base + PATH_SEPARATOR + ent->d_name).c_str(), &inode) == -1) return 0;
-	return inode.st_mtime;
+	return File::getLastWriteTime(base + PATH_SEPARATOR + ent->d_name);
 }
 
 FileItem::FileItem(const string& aPath) : path(aPath) {
@@ -1154,6 +1175,10 @@ bool FileItem::isLink() const noexcept {
 
 int64_t FileItem::getSize() const noexcept {
 	return File::getSize(path);
+}
+
+time_t FileItem::getLastWriteTime() const noexcept {
+	return File::getLastWriteTime(path);
 }
 
 #endif // _WIN32

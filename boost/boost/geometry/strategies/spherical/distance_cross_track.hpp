@@ -2,8 +2,8 @@
 
 // Copyright (c) 2007-2014 Barend Gehrels, Amsterdam, the Netherlands.
 
-// This file was modified by Oracle on 2014-2019.
-// Modifications copyright (c) 2014-2019, Oracle and/or its affiliates.
+// This file was modified by Oracle on 2014-2021.
+// Modifications copyright (c) 2014-2021, Oracle and/or its affiliates.
 
 // Contributed and/or modified by Vissarion Fysikopoulos, on behalf of Oracle
 // Contributed and/or modified by Menelaos Karavelas, on behalf of Oracle
@@ -17,11 +17,10 @@
 #define BOOST_GEOMETRY_STRATEGIES_SPHERICAL_DISTANCE_CROSS_TRACK_HPP
 
 #include <algorithm>
+#include <type_traits>
 
 #include <boost/config.hpp>
 #include <boost/concept_check.hpp>
-#include <boost/mpl/if.hpp>
-#include <boost/type_traits/is_void.hpp>
 
 #include <boost/geometry/core/cs.hpp>
 #include <boost/geometry/core/access.hpp>
@@ -330,29 +329,7 @@ template
 >
 class cross_track
 {
-public :
-    typedef within::spherical_point_point equals_point_point_strategy_type;
-
-    typedef intersection::spherical_segments
-        <
-            CalculationType
-        > relate_segment_segment_strategy_type;
-
-    static inline relate_segment_segment_strategy_type get_relate_segment_segment_strategy()
-    {
-        return relate_segment_segment_strategy_type();
-    }
-
-    typedef within::spherical_winding
-        <
-            void, void, CalculationType
-        > point_in_geometry_strategy_type;
-
-    static inline point_in_geometry_strategy_type get_point_in_geometry_strategy()
-    {
-        return point_in_geometry_strategy_type();
-    }
-
+public:
     template <typename Point, typename PointOfSegment>
     struct return_type
         : promote_floating_point
@@ -368,8 +345,7 @@ public :
 
     typedef typename Strategy::radius_type radius_type;
 
-    inline cross_track()
-    {}
+    cross_track() = default;
 
     explicit inline cross_track(typename Strategy::radius_type const& r)
         : m_strategy(r)
@@ -785,16 +761,16 @@ struct default_strategy
     typedef cross_track
         <
             void,
-            typename boost::mpl::if_
+            std::conditional_t
                 <
-                    boost::is_void<Strategy>,
+                    std::is_void<Strategy>::value,
                     typename default_strategy
                         <
                             point_tag, Point, PointOfSegment,
                             spherical_polar_tag, spherical_polar_tag
                         >::type,
                     Strategy
-                >::type
+                >
         > type;
 };
 */
@@ -810,16 +786,16 @@ struct default_strategy
     typedef cross_track
         <
             void,
-            typename boost::mpl::if_
+            std::conditional_t
                 <
-                    boost::is_void<Strategy>,
+                    std::is_void<Strategy>::value,
                     typename default_strategy
                         <
                             point_tag, point_tag, Point, PointOfSegment,
                             spherical_equatorial_tag, spherical_equatorial_tag
                         >::type,
                     Strategy
-                >::type
+                >
         > type;
 };
 

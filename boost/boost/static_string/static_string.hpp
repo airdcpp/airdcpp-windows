@@ -5616,6 +5616,31 @@ operator+(
 
 //------------------------------------------------------------------------------
 //
+// erase_if
+//
+//------------------------------------------------------------------------------
+
+template<
+    std::size_t N, typename CharT,
+    typename Traits, typename UnaryPredicate>
+BOOST_STATIC_STRING_CPP14_CONSTEXPR
+typename
+basic_static_string<N, CharT, Traits>::size_type
+erase_if(
+    basic_static_string<N, CharT, Traits>& str,
+    UnaryPredicate pred)
+{
+  auto first = str.begin();
+  for (auto it = first; it != str.end(); ++it)
+    if (!pred(*it))
+      *first++ = std::move(*it);
+  const auto count = str.end() - first;
+  str.erase(first, str.end());
+  return count;
+}
+
+//------------------------------------------------------------------------------
+//
 // swap
 //
 //------------------------------------------------------------------------------
@@ -5845,7 +5870,7 @@ to_static_wstring(long double value) noexcept
 
 #ifdef BOOST_STATIC_STRING_USE_DEDUCT
 template<std::size_t N, typename CharT>
-basic_static_string(CharT(&)[N]) -> 
+basic_static_string(const CharT(&)[N]) -> 
   basic_static_string<N, CharT, std::char_traits<CharT>>;
 #endif
 

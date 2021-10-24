@@ -21,17 +21,11 @@
  * Henrik Engström, henrikengstrom on home point se
  */
 
-#if !defined(ADL_SEARCH_FRAME_H)
+#ifndef ADL_SEARCH_FRAME_H
 #define ADL_SEARCH_FRAME_H
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
 
 #include "StaticFrame.h"
 #include "ExListViewCtrl.h"
-
-#include <airdcpp/ADLSearch.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -47,7 +41,7 @@ public:
 	typedef MDITabChildWindowImpl<ADLSearchFrame> baseClass;
 
 	// Constructor/destructor
-	ADLSearchFrame() : closed(false), created(false) {}
+	ADLSearchFrame() {}
 	~ADLSearchFrame() { }
 
 	// Frame window declaration
@@ -60,6 +54,7 @@ public:
 		MESSAGE_HANDLER(WM_CTLCOLOREDIT, onCtlColor)
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
+		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
 		COMMAND_ID_HANDLER(IDC_ADD, onAdd)
 		COMMAND_ID_HANDLER(IDC_EDIT, onEdit)
 		COMMAND_ID_HANDLER(IDC_REMOVE, onRemove)
@@ -91,6 +86,11 @@ public:
 	// Update colors
 	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 
+    LRESULT onCloseWindow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		PostMessage(WM_CLOSE);
+		return 0;
+	}
+
 	// Update control layouts
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	
@@ -113,8 +113,8 @@ private:
 	CButton ctrlHelp;
 	CMenu contextMenu;
 
-	bool closed;
-	bool created;
+	bool closed = false;
+	bool created = false;
 
 	// Column order
 	enum 

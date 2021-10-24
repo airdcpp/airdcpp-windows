@@ -1,6 +1,5 @@
 
 #include "stdafx.h"
-#include <airdcpp/stdinc.h>
 #include "ShellExecAsUser.h"
 
 #include <exdisp.h>
@@ -8,8 +7,8 @@
 #include <Shlwapi.h>
 #include <SHLGUID.h>
 
+#include <airdcpp/stdinc.h>
 #include <airdcpp/Text.h>
-#include "WinUtil.h"
 
 #include <sddl.h>
 

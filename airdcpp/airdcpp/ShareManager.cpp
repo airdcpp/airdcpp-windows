@@ -161,6 +161,10 @@ void ShareManager::setProfilesDirty(const ProfileTokenSet& aProfiles, bool aIsMa
 	}
 }
 
+bool ShareManager::Directory::RootIsParentOrExact::operator()(const Directory::Ptr& aDirectory) const noexcept {
+	return AirUtil::isParentOrExactLower(aDirectory->getRoot()->getPathLower(), compareToLower, separator);
+}
+
 ShareManager::Directory::Directory(DualString&& aRealName, const ShareManager::Directory::Ptr& aParent, time_t aLastWrite, const RootDirectory::Ptr& aRoot) :
 	parent(aParent.get()),
 	root(aRoot),
@@ -1473,6 +1477,7 @@ bool ShareManager::ShareBuilder::validateFileItem(const FileItemInfoBase& aFileI
 			}
 		}
 
+		dcdebug("Item %s won't be shared: %s\n", aPath.c_str(), e.what());
 		return false;
 	} catch (...) {
 		return false;

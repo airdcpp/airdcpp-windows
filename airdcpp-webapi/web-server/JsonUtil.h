@@ -16,10 +16,10 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef DCPLUSPLUS_DCPP_JSONUTIL_H
-#define DCPLUSPLUS_DCPP_JSONUTIL_H
+#ifndef DCPLUSPLUS_WEBSERVER_JSONUTIL_H
+#define DCPLUSPLUS_WEBSERVER_JSONUTIL_H
 
-#include "stdinc.h"
+#include "forward.h"
 
 namespace webserver {
 	class JsonUtil {
@@ -227,9 +227,6 @@ namespace webserver {
 		}
 
 		static json getError(const string& aFieldName, ErrorType aType, const string& aMessage) noexcept;
-
-		// Return a new JSON object with exact key-value pairs removed
-		static json filterExactValues(const json& aNew, const json& aCompareTo) noexcept;
 	private:
 		// Returns raw JSON value and optionally throws
 		template <typename JsonT>

@@ -21,7 +21,6 @@
 
 #include "RecentsFrm.h"
 #include "HubFrame.h"
-#include "LineDlg.h"
 #include "ActionUtil.h"
 
 #include <airdcpp/RecentManager.h>

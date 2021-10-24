@@ -1,6 +1,6 @@
 // Boost.Geometry (aka GGL, Generic Geometry Library)
 
-// Copyright (c) 2014-2019, Oracle and/or its affiliates.
+// Copyright (c) 2014-2020, Oracle and/or its affiliates.
 
 // Contributed and/or modified by Menelaos Karavelas, on behalf of Oracle
 // Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
@@ -16,7 +16,10 @@
 
 #include <boost/core/ignore_unused.hpp>
 #include <boost/iterator/filter_iterator.hpp>
-#include <boost/range.hpp>
+#include <boost/range/begin.hpp>
+#include <boost/range/end.hpp>
+#include <boost/range/size.hpp>
+#include <boost/range/value_type.hpp>
 
 #include <boost/geometry/core/exterior_ring.hpp>
 #include <boost/geometry/core/interior_rings.hpp>
@@ -115,14 +118,6 @@ private:
             }
         }
 
-        // prepare strategies
-        typedef typename Strategy::envelope_strategy_type envelope_strategy_type;
-        envelope_strategy_type const envelope_strategy
-            = strategy.get_envelope_strategy();
-        typedef typename Strategy::disjoint_box_box_strategy_type disjoint_box_box_strategy_type;
-        disjoint_box_box_strategy_type const disjoint_strategy
-            = strategy.get_disjoint_box_box_strategy();
-
         // call partition to check if polygons are disjoint from each other
         typename base::template item_visitor_type<Strategy> item_visitor(strategy);
 
@@ -130,15 +125,8 @@ private:
             <
                 geometry::model::box<typename point_type<MultiPolygon>::type>
             >::apply(polygon_iterators, item_visitor,
-                     typename base::template expand_box
-                        <
-                            envelope_strategy_type
-                        >(envelope_strategy),
-                     typename base::template overlaps_box
-                        <
-                            envelope_strategy_type,
-                            disjoint_box_box_strategy_type
-                        >(envelope_strategy, disjoint_strategy));
+                     typename base::template expand_box<Strategy>(strategy),
+                     typename base::template overlaps_box<Strategy>(strategy));
 
         if (item_visitor.items_overlap)
         {

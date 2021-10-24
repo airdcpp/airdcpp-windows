@@ -4,12 +4,13 @@
 // Copyright (c) 2008-2015 Bruno Lalande, Paris, France.
 // Copyright (c) 2009-2015 Mateusz Loskot, London, UK.
 
-// This file was modified by Oracle on 2014, 2015, 2018, 2019.
-// Modifications copyright (c) 2014-2019, Oracle and/or its affiliates.
+// This file was modified by Oracle on 2014-2021.
+// Modifications copyright (c) 2014-2021, Oracle and/or its affiliates.
 
+// Contributed and/or modified by Adeel Ahmad, as part of Google Summer of Code 2018 program
+// Contributed and/or modified by Vissarion Fysikopoulos, on behalf of Oracle
 // Contributed and/or modified by Menelaos Karavelas, on behalf of Oracle
 // Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
-// Contributed and/or modified by Adeel Ahmad, as part of Google Summer of Code 2018 program
 
 // Parts of Boost.Geometry are redesigned from Geodan's Geographic Library
 // (geolib/GGL), copyright (c) 1995-2010 Geodan, Amsterdam, the Netherlands.
@@ -23,6 +24,7 @@
 
 #include <cmath>
 #include <limits>
+#include <type_traits>
 
 #include <boost/core/ignore_unused.hpp>
 
@@ -30,8 +32,6 @@
 #include <boost/math/special_functions/fpclassify.hpp>
 //#include <boost/math/special_functions/round.hpp>
 #include <boost/numeric/conversion/cast.hpp>
-#include <boost/type_traits/is_fundamental.hpp>
-#include <boost/type_traits/is_integral.hpp>
 
 #include <boost/geometry/core/cs.hpp>
 
@@ -86,7 +86,7 @@ inline T bounded(T const& v, T const& lower)
 
 
 template <typename T,
-          bool IsFloatingPoint = boost::is_floating_point<T>::value>
+          bool IsFloatingPoint = std::is_floating_point<T>::value>
 struct abs
 {
     static inline T apply(T const& value)
@@ -120,7 +120,7 @@ struct equals_default_policy
 };
 
 template <typename T,
-          bool IsFloatingPoint = boost::is_floating_point<T>::value>
+          bool IsFloatingPoint = std::is_floating_point<T>::value>
 struct equals_factor_policy
 {
     equals_factor_policy()
@@ -156,7 +156,7 @@ struct equals_factor_policy<T, false>
 };
 
 template <typename Type,
-          bool IsFloatingPoint = boost::is_floating_point<Type>::value>
+          bool IsFloatingPoint = std::is_floating_point<Type>::value>
 struct equals
 {
     template <typename Policy>
@@ -203,7 +203,7 @@ inline bool equals_by_policy(T1 const& a, T2 const& b, Policy const& policy)
 }
 
 template <typename Type,
-          bool IsFloatingPoint = boost::is_floating_point<Type>::value>
+          bool IsFloatingPoint = std::is_floating_point<Type>::value>
 struct smaller
 {
     static inline bool apply(Type const& a, Type const& b)
@@ -227,7 +227,7 @@ struct smaller<Type, true>
 };
 
 template <typename Type,
-          bool IsFloatingPoint = boost::is_floating_point<Type>::value>
+          bool IsFloatingPoint = std::is_floating_point<Type>::value>
 struct smaller_or_equals
 {
     static inline bool apply(Type const& a, Type const& b)
@@ -252,7 +252,7 @@ struct smaller_or_equals<Type, true>
 
 
 template <typename Type,
-          bool IsFloatingPoint = boost::is_floating_point<Type>::value>
+          bool IsFloatingPoint = std::is_floating_point<Type>::value>
 struct equals_with_epsilon
     : public equals<Type, IsFloatingPoint>
 {};
@@ -260,7 +260,7 @@ struct equals_with_epsilon
 template
 <
     typename T,
-    bool IsFundemantal = boost::is_fundamental<T>::value /* false */
+    bool IsFundemantal = std::is_fundamental<T>::value /* false */
 >
 struct square_root
 {
@@ -352,7 +352,7 @@ struct square_root<T, true>
 template
 <
     typename T,
-    bool IsFundemantal = boost::is_fundamental<T>::value /* false */
+    bool IsFundemantal = std::is_fundamental<T>::value /* false */
 >
 struct modulo
 {
@@ -371,7 +371,7 @@ struct modulo
 template
 <
     typename Fundamental,
-    bool IsIntegral = boost::is_integral<Fundamental>::value
+    bool IsIntegral = std::is_integral<Fundamental>::value
 >
 struct modulo_for_fundamental
 {
@@ -453,7 +453,7 @@ struct relaxed_epsilon
 // compared values but here is only one value, though it should work the same way.
 // (a-a) <= max(a, a) * EPS       -> 0 <= a*EPS
 // (a+da-a) <= max(a+da, a) * EPS -> da <= (a+da)*EPS
-template <typename T, bool IsIntegral = boost::is_integral<T>::value>
+template <typename T, bool IsIntegral = std::is_integral<T>::value>
 struct scaled_epsilon
 {
     static inline T apply(T const& val)
@@ -730,7 +730,7 @@ sqrt(T const& value)
 {
     return detail::square_root
         <
-            T, boost::is_fundamental<T>::value
+            T, std::is_fundamental<T>::value
         >::apply(value);
 }
 
@@ -748,7 +748,7 @@ mod(T const& value1, T const& value2)
 {
     return detail::modulo
         <
-            T, boost::is_fundamental<T>::value
+            T, std::is_fundamental<T>::value
         >::apply(value1, value2);
 }
 
@@ -846,24 +846,6 @@ inline T round_angle(T const& x) {
     y = y < z ? z - (z - y) : y;
 
     return x < 0 ? -y : y;
-}
-
-
-/*!
-\brief The error-free sum of two numbers.
-*/
-template<typename T>
-inline T sum_error(T const& u, T const& v, T& t)
-{
-    volatile T s = u + v;
-    volatile T up = s - v;
-    volatile T vpp = s - up;
-
-    up -= u;
-    vpp -= v;
-    t = -(up + vpp);
-
-    return s;
 }
 
 /*!

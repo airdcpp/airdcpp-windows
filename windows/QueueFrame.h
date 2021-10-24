@@ -66,6 +66,7 @@ public:
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
+		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
 		MESSAGE_HANDLER(WM_TIMER, onTimer)
 		CHAIN_MSG_MAP_MEMBER(browserBar)
 		CHAIN_MSG_MAP(baseClass)
@@ -88,6 +89,12 @@ public:
 		ctrlQueue.list.SetFocus();
 		return 0;
 	}
+
+	LRESULT onCloseWindow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		PostMessage(WM_CLOSE);
+		return 0;
+	}
+
 	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 	LRESULT onKeyDownList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onKeyDownTree(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
@@ -315,7 +322,7 @@ private:
 
 	TaskQueue tasks;
 
-	void addGuiTask(uint8_t task, std::function<void()> f) {
+	void addGuiTask(uint8_t task, Callback f) {
 		tasks.add(task, unique_ptr<AsyncTask>(new AsyncTask(f)));
 	}
 

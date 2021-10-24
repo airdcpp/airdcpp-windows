@@ -33,6 +33,7 @@
 #include <airdcpp/Updater.h>
 #include <airdcpp/version.h>
 
+#include <airdcpp/modules/ADLSearch.h>
 #include <airdcpp/modules/AutoSearchManager.h>
 #include <airdcpp/modules/FinishedManager.h>
 #include <airdcpp/modules/HighlightManager.h>
@@ -65,6 +66,7 @@ void WinClient::webErrorF(const string& aError) {
 };
 
 void WinClient::initModules() {
+	ADLSearchManager::newInstance();
 	WebShortcuts::newInstance();
 	HighlightManager::newInstance();
 	FinishedManager::newInstance();
@@ -79,6 +81,7 @@ void WinClient::initModules() {
 void WinClient::destroyModules() {
 	webserver::WebServerManager::deleteInstance();
 
+	ADLSearchManager::deleteInstance();
 	HublistManager::deleteInstance();
 	PreviewAppManager::deleteInstance();
 	HighlightManager::deleteInstance();
@@ -88,9 +91,10 @@ void WinClient::destroyModules() {
 	WebShortcuts::deleteInstance();
 }
 
-void WinClient::unloadModules(StepF& aStepF, ProgressF&) {
+void WinClient::unloadModules(StepFunction& aStepF, ProgressFunction&) {
 	AutoSearchManager::getInstance()->save();
 	RSSManager::getInstance()->save(true);
+	ADLSearchManager::getInstance()->save(true);
 
 	aStepF(STRING(WEB_SERVER));
 	webserver::WebServerManager::getInstance()->stop();
@@ -132,6 +136,7 @@ StartupLoadCallback WinClient::moduleLoadFGetter(unique_ptr<MainFrame>& wndMain)
 		// Core modules
 		AutoSearchManager::getInstance()->load();
 		RSSManager::getInstance()->load();
+		ADLSearchManager::getInstance()->load();
 
 		// Web server
 		auto wsm = webserver::WebServerManager::getInstance();
@@ -205,7 +210,7 @@ void WinClient::listUpdaterFiles(StringPairList& files_, const string& aUpdateFi
 
 	// Node
 	// Note: secondary executables must be added before the application because of an extraction issue in version before 4.00
-	assertFiles("Node.js", 1, ZipFile::CreateZipFileList(files_, Util::getFilePath(Util::getAppFilePath()), Util::emptyString, "^(" + webserver::ExtensionManager::localNodeDirectoryName + ")$"));
+	assertFiles("Node.js", 1, ZipFile::CreateZipFileList(files_, Util::getFilePath(Util::getAppFilePath()), Util::emptyString, "^(" + webserver::WebServerSettings::localNodeDirectoryName + ")$"));
 
 	// Application
 	assertFiles("Exe", 2, ZipFile::CreateZipFileList(files_, Util::getAppFilePath(), Util::emptyString, "^(AirDC.exe|AirDC.pdb)$"));
@@ -437,7 +442,9 @@ int WinClient::run(LPTSTR /*lpstrCmdLine*/, int nCmdShow) {
 				wndMain->ShowWindow(((nCmdShow == SW_SHOWDEFAULT) || (nCmdShow == SW_SHOWNORMAL)) ? SETTING(MAIN_WINDOW_STATE) : nCmdShow);
 			}
 
-			if (SettingsManager::getInstance()->isKeySet(SettingsManager::CONFIG_VERSION) && Util::toDouble(SETTING(CONFIG_VERSION)) <= 3.70) {
+			// Install replacement extensions for previously inbuilt functionality when migrating from a previous version
+			auto configVersion = Util::toDouble(SETTING(CONFIG_VERSION));
+			if (configVersion == 3.70 || configVersion == 3.71) {
 				wndMain->addThreadedTask([] {
 					Thread::sleep(3000);
 					installExtensions();

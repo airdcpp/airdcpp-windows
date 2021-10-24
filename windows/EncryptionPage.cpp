@@ -22,7 +22,6 @@
 
 #include "Resource.h"
 #include "EncryptionPage.h"
-#include "WinUtil.h"
 #include "BrowseDlg.h"
 
 PropPage::TextItem EncryptionPage::texts[] = {

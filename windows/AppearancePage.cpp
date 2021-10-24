@@ -20,7 +20,6 @@
 
 #include "Resource.h"
 #include "AppearancePage.h"
-#include "WinUtil.h"
 #include "PropertiesDlg.h"
 #include "BrowseDlg.h"
 
@@ -67,7 +66,7 @@ PropPage::ListItem AppearancePage::listItems[] = {
 	{ SettingsManager::SORT_FAVUSERS_FIRST, ResourceManager::SETTINGS_SORT_FAVUSERS_FIRST },
 	{ SettingsManager::USE_SYSTEM_ICONS, ResourceManager::SETTINGS_USE_SYSTEM_ICONS },
 	{ SettingsManager::GET_USER_COUNTRY, ResourceManager::SETTINGS_GET_USER_COUNTRY },
-	{ SettingsManager::SHOW_USER_IP_COUNTRY, ResourceManager::SETTINGS_SHOW_USER_IP_COUNTRY },
+	{ SettingsManager::SHOW_IP_COUNTRY_CHAT, ResourceManager::SETTINGS_SHOW_IP_COUNTRY_CHAT },
 	{ SettingsManager::TABS_ON_TOP, ResourceManager::TABS_ON_TOP },
 	{ SettingsManager::UC_SUBMENU, ResourceManager::UC_SUBMENU },
 	{ SettingsManager::USE_EXPLORER_THEME, ResourceManager::USE_EXPLORER_THEME },
@@ -105,7 +104,7 @@ LRESULT AppearancePage::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	TCHAR buf[MAX_PATH];
 	const BrowseDlg::ExtensionList types[] = {
 		{ _T("Language Files"), _T("*.xml") },
-		{ _T("All Files"), _T("*.*") }
+		{ CTSTRING(ALL_FILES), _T("*.*") }
 	};
 
 	GetDlgItemText(IDC_LANGUAGE, buf, MAX_PATH);
@@ -128,6 +127,7 @@ LRESULT AppearancePage::onClickedTimeHelp(WORD /* wNotifyCode */, WORD /*wID*/, 
 }
 
 LRESULT AppearancePage::onClickedCountryHelp(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */) {
-	MessageBox(CTSTRING(SETTINGS_COUNTRY_FORMAT_HELP), CTSTRING(SETTINGS_COUNTRY_FORMAT_HELP_DESC), MB_OK | MB_ICONINFORMATION);
+	decltype(auto) defaultFormat = SettingsManager::getInstance()->getDefault(SettingsManager::COUNTRY_FORMAT);
+	MessageBox(CTSTRING_F(SETTINGS_COUNTRY_FORMAT_HELP, Text::toT(defaultFormat)), CTSTRING(SETTINGS_COUNTRY_FORMAT_HELP_DESC), MB_OK | MB_ICONINFORMATION);
 	return S_OK;
 }

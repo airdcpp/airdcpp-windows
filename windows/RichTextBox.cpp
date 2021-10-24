@@ -39,7 +39,6 @@
 #include "HtmlToRtf.h"
 #include "HttpLinks.h"
 #include "HubFrame.h"
-#include "LineDlg.h"
 #include "MainFrm.h"
 #include "PrivateFrame.h"
 #include "ResourceLoader.h"
@@ -1240,7 +1239,7 @@ void RichTextBox::handleOpenFile() {
 			if (!p.empty())
 				ActionUtil::openFile(Text::toT(p.front()));
 		} else {
-			ActionUtil::openFile(m.fname, m.fsize, m.getTTH(), u, false);
+			ActionUtil::openTextFile(m.fname, m.fsize, m.getTTH(), u, false);
 		}
 	});
 }

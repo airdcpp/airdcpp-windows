@@ -67,6 +67,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_RELOAD, onClickedReload)
 		COMMAND_ID_HANDLER(IDC_OPEN_LINK, onClickedReadMore)
 		COMMAND_ID_HANDLER(IDC_SETTINGS_OPTIONS, onClickedSettings)
+		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
 
 		CHAIN_MSG_MAP(baseClass)
 		ALT_MSG_MAP(EXT_STATUS_MSG_MAP)
@@ -101,6 +102,11 @@ private:
 	LRESULT onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT onCustomDraw(int idCtrl, LPNMHDR pnmh, BOOL& bHandled); 
 	LRESULT onExitMenuLoop(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+
+	LRESULT onCloseWindow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		PostMessage(WM_CLOSE);
+		return 0;
+	}
 
 	enum class ExtensionGroupEnum {
 		INSTALLED = 0,
@@ -169,12 +175,15 @@ private:
 	static int columnIndexes[COLUMN_LAST];
 
 	void appendLocalExtensionActions(const ItemInfoList& aItems, OMenu& menu_) noexcept;
+	void appendRemoteMenuItems(const ItemInfoList& aItems, OMenu& menu_) noexcept;
+
 	ItemInfoList getSelectedLocalExtensions() noexcept;
 	void fixControls() noexcept;
 
 	void initLocalExtensions() noexcept;
 	void updateList() noexcept;
 	void reload() noexcept;
+	void installFromUrl() noexcept;
 	void addEntry(const ItemInfo* ii) noexcept;
 	void updateEntry(const ItemInfo* ii) noexcept;
 

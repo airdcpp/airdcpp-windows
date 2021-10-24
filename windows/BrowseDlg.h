@@ -20,11 +20,8 @@
 #define DCPLUSPLUS_BROWSE_DLG
 
 #include "stdafx.h"
-#include "WinUtil.h"
 
-#include <airdcpp/UpdateManagerListener.h>
-#include <airdcpp/UpdateManager.h>
-#include <airdcpp/TimerManager.h>
+#include <airdcpp/typedefs.h>
 
 class BrowseDlg {
 public:

@@ -22,13 +22,11 @@
 #include "resource.h"
 
 #include <airdcpp/DupeType.h>
-#include <airdcpp/HintedUser.h>
 #include <airdcpp/MerkleTree.h>
 #include <airdcpp/QueueItemBase.h>
 #include <airdcpp/SettingItem.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/User.h>
-#include <airdcpp/Util.h>
 
 
 namespace dcpp {
@@ -88,7 +86,7 @@ public:
 	static void openLink(const tstring& aUrl);
 	static void openFile(const tstring& aFileName);
 	static void openFolder(const tstring& aFileName);
-	static bool openFile(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsClientView) noexcept;
+	static void openTextFile(const string& aFileName, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, bool aIsClientView) noexcept;
 
 	static void appendBundlePrioMenu(OMenu& aParent, const BundleList& aBundles);
 	static void appendBundlePauseMenu(OMenu& aParent, const BundleList& aBundles);

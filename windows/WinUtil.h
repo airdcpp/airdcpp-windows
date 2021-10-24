@@ -218,49 +218,13 @@ public:
 	static void drawProgressBar(HDC& drawDC, CRect& rc, COLORREF crl, COLORREF textclr, COLORREF backclr, const tstring& aText, 
 		double size, double done, bool odcStyle, bool colorOverride, int depth, int lighten, DWORD tAlign = DT_LEFT);
 
-	static int getTextWidth(const tstring& str, HWND hWnd) {
-		HDC dc = ::GetDC(hWnd);
-		HFONT hFont = (HFONT)SendMessage(hWnd, WM_GETFONT, 0, 0);
-		HGDIOBJ old = ::SelectObject(dc, hFont);
-		
-		SIZE sz = { 0, 0 };
-		::GetTextExtentPoint32(dc, str.c_str(), str.length(), &sz);
-		::SelectObject(dc, old);
-		::ReleaseDC(mainWnd, dc);
-		
-		return (sz.cx == 0) ? 0 : (sz.cx + 10);
-	}
+	static int getStatusTextWidth(const tstring& str, HWND hWnd);
+	static int getTextWidth(const tstring& str, HWND hWnd);
+	static int getTextWidth(const tstring& str, HDC dc);
+	static int getTextWidth(HWND wnd, HFONT fnt);
 
-	static int getTextWidth(const tstring& str, HDC dc) {
-		SIZE sz = { 0, 0 };
-		::GetTextExtentPoint32(dc, str.c_str(), str.length(), &sz);
-		return (sz.cx == 0) ? 0 : (sz.cx + 10);
-	}
-
-	static int getTextWidth(HWND wnd, HFONT fnt) {
-		HDC dc = ::GetDC(wnd);
-		HGDIOBJ old = ::SelectObject(dc, fnt);
-		TEXTMETRIC tm;
-		::GetTextMetrics(dc, &tm);
-		::SelectObject(dc, old);
-		::ReleaseDC(wnd, dc);
-		return tm.tmAveCharWidth;
-	}
-
-	static int getTextHeight(HWND wnd, HFONT fnt) {
-		HDC dc = ::GetDC(wnd);
-		HGDIOBJ old = ::SelectObject(dc, fnt);
-		int h = getTextHeight(dc);
-		::SelectObject(dc, old);
-		::ReleaseDC(wnd, dc);
-		return h;
-	}
-
-	static int getTextHeight(HDC dc) {
-		TEXTMETRIC tm;
-		::GetTextMetrics(dc, &tm);
-		return tm.tmHeight;
-	}
+	static int getTextHeight(HWND wnd, HFONT fnt);
+	static int getTextHeight(HDC dc);
 
 	static void setClipboard(const tstring& str);
 
@@ -324,14 +288,8 @@ public:
 	static bool isAlt() { return (GetKeyState(VK_MENU) & 0x8000) > 0; }
 	static bool isCtrl() { return (GetKeyState(VK_CONTROL) & 0x8000) > 0; }
 
-	static tstring escapeMenu(tstring str) { 
-		string::size_type i = 0;
-		while( (i = str.find(_T('&'), i)) != string::npos) {
-			str.insert(str.begin()+i, 1, _T('&'));
-			i += 2;
-		}
-		return str;
-	}
+	static tstring escapeMenu(tstring str);
+
 	template<class T> static HWND hiddenCreateEx(T& p) noexcept {
 		HWND active = (HWND)::SendMessage(mdiClient, WM_MDIGETACTIVE, 0, 0);
 		::LockWindowUpdate(mdiClient);
@@ -345,15 +303,7 @@ public:
 		return hiddenCreateEx(*p);
 	}
 	
-	static void translate(HWND page, TextItem* textItems) 
-	{
-		if (textItems != NULL) {
-			for(int i = 0; textItems[i].itemID != 0; i++) {
-				::SetDlgItemText(page, textItems[i].itemID,
-					Text::toT(ResourceManager::getInstance()->getString(textItems[i].translatedString)).c_str());
-			}
-		}
-	}
+	static void translate(HWND page, TextItem* textItems);
 
 	static int getFirstSelectedIndex(CListViewCtrl& list);
 	static int setButtonPressed(int nID, bool bPressed = true);

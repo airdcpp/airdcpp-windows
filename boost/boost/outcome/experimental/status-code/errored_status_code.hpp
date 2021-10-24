@@ -1,5 +1,5 @@
 /* Proposed SG14 status_code
-(C) 2018-2020 Niall Douglas <http://www.nedproductions.biz/> (5 commits)
+(C) 2018-2021 Niall Douglas <http://www.nedproductions.biz/> (5 commits)
 File Created: Jun 2018
 
 
@@ -154,6 +154,8 @@ public:
     _check();
   }
 
+  //! Always false (including at compile time), as errored status codes are never successful.
+  constexpr bool success() const noexcept { return false; }
   //! Return a const reference to the `value_type`.
   constexpr const value_type &value() const &noexcept { return this->_value; }
 };
@@ -271,6 +273,9 @@ public:
   {
     _check();
   }
+
+  //! Always false (including at compile time), as errored status codes are never successful.
+  constexpr bool success() const noexcept { return false; }
   //! Return the erased `value_type` by value.
   constexpr value_type value() const noexcept { return this->_value; }
 };

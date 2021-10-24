@@ -17,12 +17,6 @@
 #ifndef BOOST_LOG_DETAIL_CONFIG_HPP_INCLUDED_
 #define BOOST_LOG_DETAIL_CONFIG_HPP_INCLUDED_
 
-// This check must be before any system headers are included, or __MSVCRT_VERSION__ may get defined to 0x0600
-#if defined(__MINGW32__) && !defined(__MSVCRT_VERSION__)
-// Target MinGW headers to at least MSVC 7.0 runtime by default. This will enable some useful functions.
-#define __MSVCRT_VERSION__ 0x0700
-#endif
-
 #include <boost/predef/os.h>
 
 // Try including WinAPI config as soon as possible so that any other headers don't include Windows SDK headers
@@ -171,6 +165,14 @@
 // An MS-like compilers' extension that allows to optimize away the needless code
 #if defined(_MSC_VER)
 #   define BOOST_LOG_ASSUME(expr) __assume(expr)
+#elif defined(__has_builtin)
+// Clang 3.6 adds __builtin_assume, but enabling it causes weird compilation errors, where the compiler
+// doesn't see one of attachable_sstream_buf::append overloads. It works fine with Clang 3.7 and later.
+#   if __has_builtin(__builtin_assume) && (!defined(__clang__) || (__clang_major__ * 100 + __clang_minor__) >= 307)
+#       define BOOST_LOG_ASSUME(expr) __builtin_assume(expr)
+#   else
+#       define BOOST_LOG_ASSUME(expr)
+#   endif
 #else
 #   define BOOST_LOG_ASSUME(expr)
 #endif

@@ -41,7 +41,7 @@ private:
 
 	static void initModules();
 	static void destroyModules();
-	static void unloadModules(StepF& aStepF, ProgressF&);
+	static void unloadModules(StepFunction& aStepF, ProgressFunction&);
 	static bool questionF(const string& aStr, bool aIsQuestion, bool aIsError);
 	static void splashStrF(const string& str);
 	static void splashProgressF(float progress);

@@ -10,13 +10,16 @@ Copyright (c) 1999 - 2003 by PJ Naughter.  (Web: www.naughter.com, Email: pjna@n
 */
 
 #include "stdafx.h"
-#include <airdcpp/Util.h>
 #include "Resource.h"
-#include <airdcpp/ResourceManager.h>
-#include <airdcpp/version.h>
+
+#include "FolderTree.h"
+
 #include "LineDlg.h"
-#include "WinUtil.h"
-#include "foldertree.h"
+#include "ShareDirectories.h"
+
+#include <airdcpp/ResourceManager.h>
+#include <airdcpp/Util.h>
+#include <airdcpp/version.h>
 
 //Pull in the WNet Lib automatically
 #pragma comment(lib, "mpr.lib")

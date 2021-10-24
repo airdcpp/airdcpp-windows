@@ -71,7 +71,7 @@ public:
 		// Generic
 		NICK = STR_FIRST, UPLOAD_SPEED, DOWNLOAD_SPEED, DESCRIPTION, DOWNLOAD_DIRECTORY, EMAIL, EXTERNAL_IP, EXTERNAL_IP6,
 		LANGUAGE_FILE, HUBLIST_SERVERS, HTTP_PROXY, MAPPER,
-		BIND_ADDRESS, BIND_ADDRESS6, SOCKS_SERVER, SOCKS_USER, SOCKS_PASSWORD, CONFIG_VERSION,
+		BIND_ADDRESS, BIND_ADDRESS6, SOCKS_SERVER, SOCKS_USER, SOCKS_PASSWORD, CONFIG_VERSION, CONFIG_APP,
 		DEFAULT_AWAY_MESSAGE, TIME_STAMPS_FORMAT, PRIVATE_ID, NMDC_ENCODING,
 
 		LOG_DIRECTORY, LOG_FORMAT_POST_DOWNLOAD, LOG_FORMAT_POST_UPLOAD, LOG_FORMAT_MAIN_CHAT, LOG_FORMAT_PRIVATE_CHAT,
@@ -190,7 +190,7 @@ public:
 		COMPRESS_TRANSFERS,
 
 		DONT_DL_ALREADY_QUEUED, DONT_DL_ALREADY_SHARED, FAV_SHOW_JOINS, FILTER_MESSAGES,
-		GET_USER_COUNTRY, SHOW_USER_IP_COUNTRY, GET_USER_INFO, HUB_USER_COMMANDS, KEEP_LISTS,
+		GET_USER_COUNTRY, GET_USER_INFO, HUB_USER_COMMANDS, KEEP_LISTS,
 		LOG_DOWNLOADS, LOG_FILELIST_TRANSFERS, LOG_FINISHED_DOWNLOADS, LOG_MAIN_CHAT,
 		LOG_PRIVATE_CHAT, LOG_STATUS_MESSAGES, LOG_SYSTEM, LOG_UPLOADS,
 
@@ -203,7 +203,7 @@ public:
 		AUTO_DETECTION_USE_LIMITED, LOG_SCHEDULED_REFRESHES, AUTO_COMPLETE_BUNDLES,
 		ENABLE_SUDP, NMDC_MAGNET_WARN, UPDATE_IP_HOURLY,
 		USE_SLOW_DISCONNECTING_DEFAULT, PRIO_LIST_HIGHEST,
-		USE_FTP_LOGGER, QI_AUTOPRIO, REPORT_ADDED_SOURCES, OVERLAP_SLOW_SOURCES, FORMAT_DIR_REMOTE_TIME,
+		QI_AUTOPRIO, REPORT_ADDED_SOURCES, OVERLAP_SLOW_SOURCES, FORMAT_DIR_REMOTE_TIME,
 		LOG_HASHING, USE_PARTIAL_SHARING,
 		REPORT_BLOCKED_SHARE, MCN_AUTODETECT, DL_AUTODETECT, UL_AUTODETECT,
 		DUPES_IN_FILELIST, DUPES_IN_CHAT, NO_ZERO_BYTE,
@@ -228,7 +228,7 @@ public:
 		MAGNET_ASK, MAGNET_REGISTER, MINIMIZE_TRAY,
 		POPUNDER_FILELIST, POPUNDER_PM, PROMPT_PASSWORD,
 		SHOW_MENU_BAR, SHOW_STATUSBAR, SHOW_TOOLBAR,
-		SHOW_TRANSFERVIEW, STATUS_IN_CHAT,
+		SHOW_TRANSFERVIEW, STATUS_IN_CHAT, SHOW_IP_COUNTRY_CHAT,
 
 		TOGGLE_ACTIVE_WINDOW, URL_HANDLER, USE_CTRL_FOR_LINE_HISTORY, USE_SYSTEM_ICONS,
 		USERS_FILTER_FAVORITE, USERS_FILTER_ONLINE, USERS_FILTER_QUEUE, USERS_FILTER_WAITING,
@@ -305,8 +305,6 @@ public:
 	enum { TLS_DISABLED, TLS_ENABLED, TLS_FORCED, TLS_LAST };
 
 	enum { BLOOM_DISABLED, BLOOM_ENABLED, BLOOM_AUTO, BLOOM_LAST };
-
-	enum FileEvents { ON_FILE_COMPLETE, ON_DIR_CREATED};
 
 	static const ResourceManager::Strings encryptionStrings[TLS_LAST];
 	static const ResourceManager::Strings bloomStrings[BLOOM_LAST];
@@ -417,23 +415,21 @@ public:
 	void clearHistory(HistoryType aType) noexcept;
 	HistoryList getHistory(HistoryType aType) const noexcept;
 
-	StringPair getFileEvent(SettingsManager::FileEvents fe) noexcept {
-		return fileEvents[fe];
-	}
-
 	void setProfile(int aProfile, const ProfileSettingItem::List& conflicts) noexcept;
 	static const ProfileSettingItem::List profileSettings[SettingsManager::PROFILE_LAST];
 	void applyProfileDefaults() noexcept;
 	string getProfileName(int profile) const noexcept;
 
 	// Reports errors to system log if no custom error function is supplied
-	typedef std::function<void(const string&)> CustomReportF;
-	static bool saveSettingFile(SimpleXML& aXML, Util::Paths aPath, const string& aFileName, const CustomReportF& aCustomErrorF = nullptr) noexcept;
+	static bool saveSettingFile(SimpleXML& aXML, Util::Paths aPath, const string& aFileName, const MessageCallback& aCustomErrorF = nullptr) noexcept;
+	static bool saveSettingFile(const string& aContent, Util::Paths aPath, const string& aFileName, const MessageCallback& aCustomErrorF = nullptr) noexcept;
 
 	// Attempts to load the setting file and creates a backup after completion
 	// Settings are recovered automatically from the backup file in case the main setting file is malformed/corrupted
-	typedef std::function<void(SimpleXML&)> ParseCallback;
-	static bool loadSettingFile(Util::Paths aPath, const string& aFileName, ParseCallback&& aParseCallback, const CustomReportF& aCustomErrorF = nullptr) noexcept;
+	typedef std::function<void(SimpleXML&)> XMLParseCallback;
+	typedef std::function<bool(const string&)> PathParseCallback;
+	static bool loadSettingFile(Util::Paths aPath, const string& aFileName, XMLParseCallback&& aParseCallback, const MessageCallback& aCustomErrorF = nullptr) noexcept;
+	static bool loadSettingFile(Util::Paths aPath, const string& aFileName, PathParseCallback&& aParseCallback, const MessageCallback& aCustomErrorF = nullptr) noexcept;
 private:
 	boost::regex connectionRegex;
 
@@ -457,8 +453,6 @@ private:
 
 	HistoryList history[HISTORY_LAST];
 	static const string historyTags[HISTORY_LAST];
-
-	StringPairList fileEvents;
 
 	mutable SharedMutex cs;
 

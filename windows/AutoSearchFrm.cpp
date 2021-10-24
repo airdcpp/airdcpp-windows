@@ -206,7 +206,7 @@ void AutoSearchFrame::updateStatus() {
 	}
 
 	bool u = false;
-	int w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
+	int w = WinUtil::getStatusTextWidth(tmp, ctrlStatus.m_hWnd);
 	if (statusSizes[0] < w) {
 		statusSizes[0] = w;
 		u = true;

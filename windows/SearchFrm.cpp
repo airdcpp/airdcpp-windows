@@ -22,7 +22,6 @@
 #include "DirectoryListingFrm.h"
 #include "MainFrm.h"
 #include "SearchFrm.h"
-#include "LineDlg.h"
 #include "BarShader.h"
 #include "ResourceLoader.h"
 #include "Wildcards.h"
@@ -762,7 +761,7 @@ void SearchFrame::performAction(std::function<void (const SearchInfo* aInfo)> f,
 void SearchFrame::handleOpenItem(bool isClientView) {
 	auto open = [=](const SearchInfo* si) {
 		if (!si->isDirectory()) {
-			ActionUtil::openFile(si->getFileName(), si->getSize(), si->getTTH(), si->getHintedUser(), isClientView);
+			ActionUtil::openTextFile(si->getFileName(), si->getSize(), si->getTTH(), si->getHintedUser(), isClientView);
 		}
 	};
 
@@ -788,7 +787,7 @@ void SearchFrame::handleDownload(const string& aTarget, Priority p, bool useWhol
 		auto download = [&](const SearchResultPtr& aSR) {
 			if (fileDownload) {
 				if (!targetName) {
-					targetName = aTarget.back() == PATH_SEPARATOR ? aTarget + aSI->getFileName() : aTarget;
+					targetName = Util::isDirectoryPath(aTarget) ? aTarget + aSI->getFileName() : aTarget;
 				}
 				ActionUtil::addFileDownload(*targetName, aSR->getSize(), aSR->getTTH(), aSR->getUser(), aSR->getDate(), 0, p);
 			} else {
@@ -797,11 +796,16 @@ void SearchFrame::handleDownload(const string& aTarget, Priority p, bool useWhol
 					targetName = aSR->getType() == SearchResult::TYPE_DIRECTORY ? aSR->getFileName() : Util::getAdcLastDir(aSR->getAdcFilePath());
 				}
 
-				try {
-					DirectoryListingManager::getInstance()->addDirectoryDownload(aSR->getUser(), *targetName, aSR->getAdcFilePath(), aTarget, p);
-				} catch (const Exception& e) {
-					ctrlStatus.SetText(1, Text::toT(e.getError()).c_str());
-				}
+				MainFrame::getMainFrame()->addThreadedTask([=] {
+					try {
+						auto listData = FilelistAddData(aSR->getUser(), this, aSR->getAdcFilePath());
+						DirectoryListingManager::getInstance()->addDirectoryDownloadHookedThrow(listData, *targetName, aTarget, p, DirectoryDownload::ErrorMethod::LOG);
+					} catch (const Exception& e) {
+						callAsync([=] {
+							ctrlStatus.SetText(1, Text::toT(e.getError()).c_str());
+						});
+					}
+				});
 			}
 		};
 
@@ -829,12 +833,19 @@ void SearchFrame::handleGetList(ListType aType) {
 
 void SearchFrame::handleMatchPartial() {
 	auto matchPartial = [&](const SearchInfo* si) {
-		auto path = AirUtil::getAdcReleaseDir(si->getAdcFilePath(), false);
-		try {
-			QueueManager::getInstance()->addList(si->getHintedUser(), QueueItem::FLAG_MATCH_QUEUE | (si->getHintedUser().user->isNMDC() ? 0 : QueueItem::FLAG_RECURSIVE_LIST) | QueueItem::FLAG_PARTIAL_LIST, path);
-		} catch(const Exception&) {
-			//...
-		}
+		MainFrame::getMainFrame()->addThreadedTask([
+			user = si->getHintedUser(),
+			flags = QueueItem::FLAG_MATCH_QUEUE | (si->getHintedUser().user->isNMDC() ? 0 : QueueItem::FLAG_RECURSIVE_LIST) | QueueItem::FLAG_PARTIAL_LIST,
+			path = AirUtil::getAdcReleaseDir(si->getAdcFilePath(), false),
+			caller = this
+		] {
+			try {
+				auto listData = FilelistAddData(user, caller, path);
+				QueueManager::getInstance()->addListHooked(listData, flags);
+			} catch (const Exception&) {
+				//...
+			}
+		});
 	};
 
 	performAction(matchPartial, true);

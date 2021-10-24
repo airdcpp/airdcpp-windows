@@ -26,7 +26,7 @@
 #include "ShareManagerListener.h"
 #include "TimerManagerListener.h"
 
-#include "BundleInfo.h"
+#include "QueueAddInfo.h"
 #include "DirectSearch.h"
 #include "DispatcherQueue.h"
 #include "DupeType.h"
@@ -63,7 +63,7 @@ public:
 		typedef List::const_iterator Iter;
 		
 		File(Directory* aDir, const string& aName, int64_t aSize, const TTHValue& aTTH, bool checkDupe, time_t aRemoteDate) noexcept;
-		File(const File& rhs, bool _adls = false) noexcept;
+		File(const File& rhs, const void* aOwner) noexcept;
 
 		~File() { }
 
@@ -76,11 +76,23 @@ public:
 		GETSET(int64_t, size, Size);
 		GETSET(Directory*, parent, Parent);
 		GETSET(TTHValue, tthRoot, TTH);
-		IGETSET(bool, adls, Adls, false);
 		IGETSET(DupeType, dupe, Dupe, DUPE_NONE);
 		IGETSET(time_t, remoteDate, RemoteDate, 0);
 
 		bool isInQueue() const noexcept;
+
+		const void* getOwner() const noexcept {
+			return owner;
+		}
+	private:
+		const void* owner = nullptr;
+	};
+
+	enum class DirectoryLoadType {
+		CHANGE_NORMAL,
+		CHANGE_RELOAD,
+		LOAD_CONTENT,
+		NONE,
 	};
 
 	class Directory : boost::noncopyable {
@@ -89,7 +101,7 @@ public:
 			TYPE_NORMAL,
 			TYPE_INCOMPLETE_CHILD,
 			TYPE_INCOMPLETE_NOCHILD,
-			TYPE_ADLS,
+			TYPE_VIRTUAL,
 		};
 
 		typedef std::shared_ptr<Directory> Ptr;
@@ -109,12 +121,12 @@ public:
 
 		virtual ~Directory();
 
-		size_t getTotalFileCount(bool countAdls) const noexcept;
-		int64_t getTotalSize(bool countAdls) const noexcept;
+		size_t getTotalFileCount(bool aCountVirtual) const noexcept;
+		int64_t getTotalSize(bool aCountVirtual) const noexcept;
 		void filterList(DirectoryListing& dirList) noexcept;
 		void filterList(TTHSet& l) noexcept;
 		void getHashList(TTHSet& l) const noexcept;
-		void clearAdls() noexcept;
+		void clearVirtualDirectories() noexcept;
 		void clearAll() noexcept;
 
 		bool findIncomplete() const noexcept;
@@ -132,21 +144,21 @@ public:
 		IGETSET(DupeType, dupe, Dupe, DUPE_NONE);
 		IGETSET(time_t, remoteDate, RemoteDate, 0);
 		IGETSET(time_t, lastUpdateDate, LastUpdateDate, 0);
-		IGETSET(bool, loading, Loading, false);
+		IGETSET(DirectoryLoadType, loading, Loading, DirectoryLoadType::NONE);
 
-		bool isComplete() const noexcept { return type == TYPE_ADLS || type == TYPE_NORMAL; }
+		bool isComplete() const noexcept { return type == TYPE_VIRTUAL || type == TYPE_NORMAL; }
 		void setComplete() noexcept { type = TYPE_NORMAL; }
-		bool getAdls() const noexcept { return type == TYPE_ADLS; }
+		bool isVirtual() const noexcept { return type == TYPE_VIRTUAL; }
 
 		// Create recursive bundle file info listing with relative paths
-		BundleDirectoryItemInfo::List toBundleInfoList() const noexcept;
+		BundleFileAddData::List toBundleInfoList() const noexcept;
 
 		const string& getName() const noexcept {
 			return name;
 		}
 
 		// This function not thread safe as it will go through all complete directories
-		DirectoryContentInfo getContentInfoRecursive(bool aCountAdls) const noexcept;
+		DirectoryContentInfo getContentInfoRecursive(bool aCountVirtual) const noexcept;
 
 		// Partial list content info only
 		const DirectoryContentInfo& getContentInfo() const noexcept {
@@ -158,26 +170,26 @@ public:
 			contentInfo.directories = aContentInfo.directories;
 		}
 	protected:
-		void toBundleInfoList(const string& aTarget, BundleDirectoryItemInfo::List& aFiles) const noexcept;
+		void toBundleInfoList(const string& aTarget, BundleFileAddData::List& aFiles) const noexcept;
 
 		Directory(Directory* aParent, const string& aName, DirType aType, time_t aUpdateDate, bool aCheckDupe, const DirectoryContentInfo& aContentInfo, const string& aSize, time_t aRemoteDate);
 
-		void getContentInfo(size_t& directories_, size_t& files_, bool aCountAdls) const noexcept;
+		void getContentInfo(size_t& directories_, size_t& files_, bool aCountVirtual) const noexcept;
 
 		DirectoryContentInfo contentInfo;
 		const string name;
 	};
 
-	class AdlDirectory : public Directory {
+	class VirtualDirectory : public Directory {
 	public:
-		typedef shared_ptr<AdlDirectory> Ptr;
+		typedef shared_ptr<VirtualDirectory> Ptr;
 		GETSET(string, fullAdcPath, FullAdcPath);
 		static Ptr create(const string& aFullAdcPath, Directory* aParent, const string& aName);
 	private:
-		AdlDirectory(const string& aFullPath, Directory* aParent, const string& aName);
+		VirtualDirectory(const string& aFullPath, Directory* aParent, const string& aName);
 	};
 
-	DirectoryListing(const HintedUser& aUser, bool aPartial, const string& aFileName, bool isClientView, bool aIsOwnList=false);
+	DirectoryListing(const HintedUser& aUser, bool aPartial, const string& aFileName, bool aIsClientView, bool aIsOwnList = false);
 	~DirectoryListing();
 	
 	const CID& getToken() const noexcept {
@@ -193,13 +205,13 @@ public:
 	// Throws AbortException
 	int loadPartialXml(const string& aXml, const string& aAdcBase);
 
-	optional<DirectoryBundleAddInfo> createBundle(const Directory::Ptr& aDir, const string& aTarget, Priority aPrio, string& errorMsg_) noexcept;
+	optional<DirectoryBundleAddResult> createBundleHooked(const Directory::Ptr& aDir, const string& aTarget, const string& aName, Priority aPrio, string& errorMsg_) noexcept;
 
 	HintedUser getDownloadSourceUser() const noexcept;
 
-	int64_t getTotalListSize(bool adls = false) const noexcept { return root->getTotalSize(adls); }
+	int64_t getTotalListSize() const noexcept { return root->getTotalSize(false); }
 	int64_t getDirSize(const string& aDir) const noexcept;
-	size_t getTotalFileCount(bool adls = false) const noexcept { return root->getTotalFileCount(adls); }
+	size_t getTotalFileCount() const noexcept { return root->getTotalFileCount(false); }
 
 	const Directory::Ptr getRoot() const noexcept { return root; }
 	Directory::Ptr getRoot() noexcept { return root; }
@@ -227,20 +239,18 @@ public:
 	const string& getHubUrl() const noexcept override { return hintedUser.hint; }
 		
 	GETSET(bool, partialList, PartialList);
-	GETSET(bool, isOwnList, IsOwnList);
-	GETSET(bool, isClientView, IsClientView);
 	GETSET(string, fileName, FileName);
-	GETSET(bool, matchADL, MatchADL);
 	IGETSET(bool, closing, Closing, false);
 
-	void addMatchADLTask() noexcept;
 	void addListDiffTask(const string& aFile, bool aOwnList) noexcept;
 
-	void addPartialListTask(const string& aXml, const string& aBase, bool aBackgroundTask = false, const AsyncF& aCompletionF = nullptr) noexcept;
+	void addPartialListLoadTask(const string& aXml, const string& aBasePath, bool aBackgroundTask = false, const AsyncF& aCompletionF = nullptr) noexcept;
+	void addOwnListLoadTask(const string& aBasePath, bool aBackgroundTask = false) noexcept;
+
 	void addFullListTask(const string& aDir) noexcept;
 	void addQueueMatchTask() noexcept;
 
-	void addAsyncTask(DispatcherQueue::Callback&& f) noexcept;
+	void addAsyncTask(Callback&& f) noexcept;
 	void close() noexcept;
 
 	void addSearchTask(const SearchPtr& aSearch) noexcept;
@@ -277,14 +287,25 @@ public:
 
 	void setRead() noexcept;
 
-	void addDirectoryChangeTask(const string& aPath, bool aReload, bool aIsSearchChange = false, bool aForceQueue = false) noexcept;
+	void addDirectoryChangeTask(const string& aPath, DirectoryLoadType aType, bool aForceQueue = false) noexcept;
+
+	bool getIsOwnList() const noexcept {
+		return isOwnList;
+	}
+
+	bool getIsClientView() const noexcept {
+		return isClientView;
+	}
 protected:
 	void onStateChanged() noexcept override;
 
 private:
+	const bool isOwnList;
+	const bool isClientView;
+
 	static void log(const string& aMsg, LogMessage::Severity aSeverity) noexcept;
 
-	void setDirectoryLoadingState(const Directory::Ptr& aDir, bool aLoading) noexcept;
+	void setDirectoryLoadingState(const Directory::Ptr& aDir, DirectoryLoadType aLoading) noexcept;
 
 	// Returns the number of loaded dirs
 	// Throws AbortException
@@ -293,7 +314,7 @@ private:
 	// Create and insert a base directory with the given path (or return an existing one)
 	Directory::Ptr createBaseDirectory(const string& aPath, time_t aDownloadDate = GET_TIME()) noexcept;
 
-	void changeDirectoryImpl(const string& aPath, bool aReload, bool aIsSearchChange = false, bool aForceQueue = false) noexcept;
+	void changeDirectoryImpl(const string& aPath, DirectoryLoadType aType, bool aForceQueue = false) noexcept;
 
 	void setShareProfileImpl(ProfileToken aProfile) noexcept;
 	void setHubUrlImpl(const string& aHubUrl) noexcept;
@@ -305,7 +326,7 @@ private:
 
 	Directory::Ptr root;
 
-	void dispatch(DispatcherQueue::Callback& aCallback) noexcept;
+	void dispatch(Callback& aCallback) noexcept;
 
 	atomic_flag running;
 
@@ -339,15 +360,13 @@ private:
 	// Throws Exception, AbortException
 	void loadPartialImpl(const string& aXml, const string& aBasePath, bool aBackgroundTask, const AsyncF& aCompletionF);
 
-	// Throws AbortException
-	void matchAdlImpl();
 	void matchQueueImpl() noexcept;
 
 	HintedUser hintedUser;
 	bool read = false;
 
 	void checkShareDupes() noexcept;
-	void onLoadingFinished(int64_t aStartTime, const string& aDir, bool aBackgroundTask) noexcept;
+	void onLoadingFinished(int64_t aStartTime, const string& aLoadedPath, const string& aCurrentPath, bool aBackgroundTask) noexcept;
 
 	unique_ptr<DirectSearch> directSearch;
 	DispatcherQueue tasks;

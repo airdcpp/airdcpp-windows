@@ -17,16 +17,18 @@
  */
 
 #include "stdafx.h"
-#include <airdcpp/SettingsManager.h>
-#include "Resource.h"
 #include "LineDlg.h"
+
+#include <airdcpp/SettingsManager.h>
+
+#include "Resource.h"
+#include "WinUtil.h"
 #include "atlstr.h"
 
 
 tstring KickDlg::m_sLastMsg = _T("");
 
-LRESULT KickDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
-{
+LRESULT KickDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	Msgs[0] = Text::toT(SETTING(KICK_MSG_RECENT_01));
 	Msgs[1] = Text::toT(SETTING(KICK_MSG_RECENT_02));
 	Msgs[2] = Text::toT(SETTING(KICK_MSG_RECENT_03));
@@ -67,8 +69,7 @@ LRESULT KickDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	return FALSE;
 }
 	
-LRESULT KickDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
-{
+LRESULT KickDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(wID == IDOK) {
 		int iLen = ctrlLine.GetWindowTextLength();
 		CAtlString sText( ' ', iLen+1 );
@@ -117,6 +118,222 @@ LRESULT KickDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BO
 		SettingsManager::getInstance()->set(SettingsManager::KICK_MSG_RECENT_20, Text::fromT(Msgs[19]));
 	}
   
+	EndDialog(wID);
+	return 0;
+}
+
+
+LRESULT LineDlg::onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	ctrlLine.SetFocus();
+	return FALSE;
+}
+
+LRESULT LineDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	ctrlLine.Attach(GetDlgItem(IDC_LINE));
+	ctrlLine.SetFocus();
+	ctrlLine.SetWindowText(line.c_str());
+	ctrlLine.SetSelAll(TRUE);
+	if (password) {
+		ctrlLine.SetWindowLongPtr(GWL_STYLE, ctrlLine.GetWindowLongPtr(GWL_STYLE) | ES_PASSWORD);
+		ctrlLine.SetPasswordChar('*');
+	}
+
+	ctrlDescription.Attach(GetDlgItem(IDC_DESCRIPTION));
+	ctrlDescription.SetWindowText(description.c_str());
+
+	SetWindowText(title.c_str());
+
+
+	CenterWindow(GetParent());
+	return FALSE;
+}
+
+LRESULT LineDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if (wID == IDOK) {
+		if (!allowEmpty && ctrlLine.GetWindowTextLength() == 0) {
+			WinUtil::showMessageBox(TSTRING(LINE_EMPTY), MB_ICONINFORMATION);
+			return 0;
+		}
+
+		line.resize(ctrlLine.GetWindowTextLength() + 1);
+		line.resize(GetDlgItemText(IDC_LINE, &line[0], line.size()));
+	}
+
+	EndDialog(wID);
+	return 0;
+}
+
+
+
+ComboDlg::ComboDlg(const StringList& aStrings) {
+	for (auto j = aStrings.begin(); j != aStrings.end(); j++) {
+		ctrlCombo.AddString(Text::toT(*j).c_str());
+	}
+}
+
+LRESULT ComboDlg::onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	ctrlCombo.SetFocus();
+	return FALSE;
+}
+
+LRESULT ComboDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	ctrlCombo.Attach(GetDlgItem(IDC_COMBO));
+	ctrlCombo.SetFocus();
+	int n = 0;
+	for (auto j = strings.begin(); j != strings.end(); j++) {
+		ctrlCombo.InsertString(n, Text::toT(*j).c_str());
+		n++;
+	}
+
+	ctrlCombo.SetCurSel(curSel);
+
+	ctrlDescription.Attach(GetDlgItem(IDC_DESCRIPTION));
+	ctrlDescription.SetWindowText(description.c_str());
+
+	SetWindowText(title.c_str());
+
+	CenterWindow(GetParent());
+	return FALSE;
+}
+
+
+ChngPassDlg::ChngPassDlg() : hideold(false), okexit(true), ok(_T("OK")), cancel(TSTRING(CANCEL)) { };
+
+LRESULT ComboDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if (wID == IDOK) {
+		curSel = ctrlCombo.GetCurSel();
+	}
+
+	EndDialog(wID);
+	return 0;
+}
+
+LRESULT ChngPassDlg::onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	if (hideold) {
+		ctrlNewLine.SetFocus();
+	} else {
+		ctrlOldLine.SetFocus();
+	}
+
+	return FALSE;
+}
+
+LRESULT ChngPassDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	ctrlOldLine.Attach(GetDlgItem(IDC_LINE));
+	ctrlOldLine.SetWindowText(_T(""));
+	if (hideold) {
+		ctrlOldLine.EnableWindow(FALSE);
+	} else {
+		ctrlOldLine.EnableWindow(TRUE);
+		ctrlOldLine.SetWindowLong(GWL_STYLE, ctrlOldLine.GetWindowLong(GWL_STYLE) | ES_PASSWORD);
+		ctrlOldLine.SetPasswordChar('*');
+		ctrlOldLine.SetFocus();
+		ctrlOldLine.SetSelAll(TRUE);
+	}
+
+	ctrlNewLine.Attach(GetDlgItem(IDC_LINE2));
+	ctrlNewLine.SetWindowLong(GWL_STYLE, ctrlNewLine.GetWindowLong(GWL_STYLE) | ES_PASSWORD);
+	ctrlNewLine.SetPasswordChar('*');
+	ctrlNewLine.SetWindowText(_T(""));
+	if (hideold) ctrlNewLine.SetFocus();
+
+	ctrlConfirmLine.Attach(GetDlgItem(IDC_LINE3));
+	ctrlConfirmLine.SetWindowLong(GWL_STYLE, ctrlConfirmLine.GetWindowLong(GWL_STYLE) | ES_PASSWORD);
+	ctrlConfirmLine.SetPasswordChar('*');
+	ctrlConfirmLine.SetWindowText(_T(""));
+
+	ctrlOldDescription.Attach(GetDlgItem(IDC_PSWD_CHNG_OLD));
+	ctrlOldDescription.SetWindowText(CTSTRING(OLD));
+
+	ctrlNewDescription.Attach(GetDlgItem(IDC_PSWD_CHNG_NEW));
+	ctrlNewDescription.SetWindowText(CTSTRING(NEW));
+
+	ctrlConfirmDescription.Attach(GetDlgItem(IDC_PSWD_CHNG_CONFIRM_NEW));
+	ctrlConfirmDescription.SetWindowText(CTSTRING(CONFIRM_NEW));
+
+	ctrlOK.Attach(GetDlgItem(IDOK));
+	ctrlOK.SetWindowText(ok.c_str());
+
+	ctrlCancel.Attach(GetDlgItem(IDCANCEL));
+	ctrlCancel.SetWindowText(cancel.c_str());
+
+	SetWindowText(title.c_str());
+
+	CenterWindow(GetParent());
+	return FALSE;
+}
+
+LRESULT ChngPassDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if (wID == IDOK && okexit) {
+		int len = ctrlOldLine.GetWindowTextLength() + 1;
+		TCHAR buf1[128];
+		GetDlgItemText(IDC_LINE, buf1, len);
+		Oldline = buf1;
+
+		len = ctrlNewLine.GetWindowTextLength() + 1;
+		TCHAR buf2[128];
+		GetDlgItemText(IDC_LINE2, buf2, len);
+		Newline = buf2;
+
+		len = ctrlConfirmLine.GetWindowTextLength() + 1;
+		TCHAR buf3[128];
+		GetDlgItemText(IDC_LINE3, buf3, len);
+		Confirmline = buf3;
+
+		if (Newline.empty()) {
+			WinUtil::showMessageBox(TSTRING(LINE_EMPTY), MB_ICONINFORMATION);
+			return 0;
+		}
+
+		if (Confirmline != Newline) {
+			WinUtil::showMessageBox(TSTRING(PASS_NO_MATCH), MB_ICONINFORMATION);
+			return 0;
+		}
+	}
+
+	EndDialog(wID);
+	return 0;
+}
+
+LRESULT PassDlg::onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	ctrlLine.SetFocus();
+	return FALSE;
+}
+
+LRESULT PassDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	ctrlLine.Attach(GetDlgItem(IDC_LINE));
+	ctrlLine.SetFocus();
+	ctrlLine.SetWindowText(line.c_str());
+	ctrlLine.SetSelAll(TRUE);
+	if (password) {
+		ctrlLine.SetWindowLong(GWL_STYLE, ctrlLine.GetWindowLong(GWL_STYLE) | ES_PASSWORD);
+		ctrlLine.SetPasswordChar('*');
+	}
+
+	ctrlDescription.Attach(GetDlgItem(IDC_DESCRIPTION));
+	ctrlDescription.SetWindowText(description.c_str());
+
+	ctrlOK.Attach(GetDlgItem(IDOK));
+	ctrlOK.SetWindowText(ok.c_str());
+
+	SetWindowText(title.c_str());
+
+	::EnableWindow(GetDlgItem(IDCANCEL), false);
+
+	CenterWindow(GetParent());
+	SetWindowPos(HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+	SetForegroundWindow(m_hWnd);
+	return FALSE;
+}
+
+LRESULT PassDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if (wID == IDOK) {
+		int len = ctrlLine.GetWindowTextLength() + 1;
+		TCHAR buf[128];
+		GetDlgItemText(IDC_LINE, buf, len);
+		line = buf;
+	}
+
 	EndDialog(wID);
 	return 0;
 }

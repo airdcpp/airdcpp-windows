@@ -1,4 +1,51 @@
+4.11
+
+API and Web UI changes:
+
+- http://airdcpp-web.github.io/2021/07/27/version-2.11.1.html
+- http://airdcpp-web.github.io/2021/09/19/version-2.11.2.html
+
+Changed:
+
+- Print better error messages when updating the country database fails
+- Encryption: accept TLS_CHACHA20_POLY1305_SHA256 cipher
+- Allow closing various tab with Ctrl+W
+
+Fixed:
+
+- Fix a possible crash when uploading files
+- Fix possible filelist-related crashes
+- Fix issues with saving of options on the extension tab
+- Fix warnings with hubs that are blocking direct private messages (shown only for AirDC++ users)
+- Fix reopening of previously viewed text files (https://bugs.launchpad.net/airdcpp/+bug/1917271)
+- Fix sending of UDP data when connecting to a SOCKS5 server via IPv4
+- Fix listing of drive content when browsing local file system in the Web UI
+
+Removed:
+
+- Main menu item to match own filelist with ADL search (you can still match your own filelist after it has been opened)
+
+
+4.10
+
+API and Web UI changes: https://airdcpp-web.github.io/2021/01/08/version-2.11.0.html
+
+Changed:
+
+- Let the operating system set the optimal socket write/read buffer sizes by default (can multiply per-connection transfer speeds with faster connections, https://bugs.launchpad.net/dcplusplus/+bug/1909853)
+- Improve hashing speed by increasing the read buffer from 256 kilobytes to 1024 kilobytes (https://bugs.launchpad.net/dcplusplus/+bug/1909861/comments/9)
+- Increase the default file write buffer from 64 kilobytes to 256 kilobytes
+
+Fixed:
+
+- Fix inconsistencies with filelist transfer logging
+
+
 4.00
+
+API and Web UI changes:
+
+- https://airdcpp-web.github.io/2020/12/05/version-2.10.0.html
 
 Added:
 
@@ -6,12 +53,16 @@ Added:
 - Include node.js extension engine in the updater and installer
 - Add labels for event log messages
 - Allow changing web server bind addresses from the settings, show a link to the Web UI
+- Add an option to show user IP and country in chat (RoLex)
+- Allow setting a custom temp file path via dcppboot.xml
 
 Changed:
 
 - Bind web server to localhost (127.0.0.1) by default
 - Don't wait until the current file has finished completed when stopping hashing
 - Don't allow adding bundle sources without a known hub
+- Save application identifier in the settings file for more reliable future settings migration
+- Improve handling of directory downloading errors
 
 Fixed:
 
@@ -23,6 +74,7 @@ Removed:
 - Inbuilt check for missing/extra files (replaced with the airdcpp-release-validator extension)
 - Inbuilt share monitoring (replaced with the airdcpp-share-monitor extension)
 - Manual SFV checker (can be implemented with an extension)
+- fulDC FTP logger (can be implemented with an extension)
 - Support for migrating legacy XML hash databases from DC++ (or other compatible applications)
 
 

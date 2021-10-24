@@ -16,7 +16,6 @@
 #include <cstring>
 #include <vector>
 #include <iostream>
-#include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <stdio.h>
 
 namespace boost {
@@ -103,11 +102,13 @@ static int vectorstream_test()
          std_stringstream << "testline: " << i << std::endl;
       }
       //Add final null to form a c string
+      my_vectorstream.swap_vector(myvector);
       myvector.push_back(0);
-      if(std::strcmp(&(my_vectorstream.vector()[0]), std_stringstream.str().c_str()) != 0){
+      if(std::strcmp(&(myvector[0]), std_stringstream.str().c_str()) != 0){
          return 1;
       }
       myvector.pop_back();
+      my_vectorstream.swap_vector(myvector);
       for(int i = 0; i < 100; ++i){
          my_vectorstream  >> str1 >> number1;
          std_stringstream >> str2 >> number2;

@@ -26,7 +26,6 @@
 #include <atlcrack.h>
 #include "PropPage.h"
 #include "ActionUtil.h"
-#include "WinUtil.h"
 
 class GeneralPage : public CPropertyPage<IDD_GENERALPAGE>, public PropPage
 {

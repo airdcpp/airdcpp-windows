@@ -21,7 +21,6 @@
 #include "Resource.h"
 
 #include "DownloadPage.h"
-#include "WinUtil.h"
 #include "PropertiesDlg.h"
 
 PropPage::TextItem DownloadPage::texts[] = {

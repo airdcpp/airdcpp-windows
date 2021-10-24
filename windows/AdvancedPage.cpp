@@ -51,7 +51,6 @@ AdvancedPage::ListItem AdvancedPage::listItems[] = {
 	{ SettingsManager::OPEN_LOGS_INTERNAL, ResourceManager::OPEN_LOGS_INTERNAL },
 	{ SettingsManager::TESTWRITE, ResourceManager::TEST_WRITE }, 
 	{ SettingsManager::USE_ADLS, ResourceManager::SETTINGS_USE_ADLS },
-	{ SettingsManager::USE_FTP_LOGGER, ResourceManager::USE_FTP_LOGGER },
 	{ SettingsManager::USE_PARTIAL_SHARING, ResourceManager::PARTIAL_SHARING },
 	{ SettingsManager::UPDATE_IP_HOURLY, ResourceManager::UPDATE_IP_EVERY },
 	{ SettingsManager::SEARCH_SAVE_HUBS_STATE, ResourceManager::SAVE_HUBS_STATE },

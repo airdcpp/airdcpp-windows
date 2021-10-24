@@ -224,73 +224,73 @@ bool HubFrame::sendMessageHooked(const OutgoingChatMessage& aMessage, string& er
 	return client->sendMessageHooked(aMessage, error_);
 }
 
-bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*message*/, tstring& status, bool& /*thirdPerson*/) {	
-	if(stricmp(cmd.c_str(), _T("join"))==0) {
-		if(!param.empty()) {
-			ActionUtil::connectHub(Text::fromT(param));
+bool HubFrame::checkFrameCommand(const tstring& aCmd, const tstring& aParam, tstring& /*message*/, tstring& status_, bool& /*thirdPerson*/) {
+	if(stricmp(aCmd.c_str(), _T("join"))==0) {
+		if (!aParam.empty()) {
+			ActionUtil::connectHub(Text::fromT(aParam));
 		} else {
-			status = TSTRING(SPECIFY_SERVER);
+			status_ = TSTRING(SPECIFY_SERVER);
 		}
-	} else if(stricmp(cmd.c_str(), _T("ts")) == 0) {
+	} else if (stricmp(aCmd.c_str(), _T("ts")) == 0) {
 		timeStamps = !timeStamps;
 		if(timeStamps) {
-			status = TSTRING(TIMESTAMPS_ENABLED);
+			status_ = TSTRING(TIMESTAMPS_ENABLED);
 		} else {
-			status = TSTRING(TIMESTAMPS_DISABLED);
+			status_ = TSTRING(TIMESTAMPS_DISABLED);
 		}
-	} else if( (stricmp(cmd.c_str(), _T("password")) == 0) && waitingForPW ) {
-		client->password(Text::fromT(param));
+	} else if ((stricmp(aCmd.c_str(), _T("password")) == 0) && waitingForPW) {
+		client->password(Text::fromT(aParam));
 		waitingForPW = false;
-	} else if( stricmp(cmd.c_str(), _T("showjoins")) == 0 ) {
+	} else if (stricmp(aCmd.c_str(), _T("showjoins")) == 0) {
 		if(client->toggleHubBoolSetting(HubSettings::ShowJoins)) {
-			status = TSTRING(JOIN_SHOWING_ON);
+			status_ = TSTRING(JOIN_SHOWING_ON);
 		} else {
-			status = TSTRING(JOIN_SHOWING_OFF);
+			status_ = TSTRING(JOIN_SHOWING_OFF);
 		}
-	} else if( stricmp(cmd.c_str(), _T("favshowjoins")) == 0 ) {
+	} else if( stricmp(aCmd.c_str(), _T("favshowjoins")) == 0 ) {
 		if(client->toggleHubBoolSetting(HubSettings::FavShowJoins)) {
-			status = TSTRING(FAV_JOIN_SHOWING_ON);
+			status_ = TSTRING(FAV_JOIN_SHOWING_ON);
 		} else {
-			status = TSTRING(FAV_JOIN_SHOWING_OFF);
+			status_ = TSTRING(FAV_JOIN_SHOWING_OFF);
 		}
-	} else if(stricmp(cmd.c_str(), _T("close")) == 0) {
+	} else if(stricmp(aCmd.c_str(), _T("close")) == 0) {
 		PostMessage(WM_CLOSE);
-	} else if(stricmp(cmd.c_str(), _T("userlist")) == 0) {
+	} else if(stricmp(aCmd.c_str(), _T("userlist")) == 0) {
 		ctrlShowUsers.SetCheck(showUsers ? BST_UNCHECKED : BST_CHECKED);
-	} else if((stricmp(cmd.c_str(), _T("favorite")) == 0) || (stricmp(cmd.c_str(), _T("fav")) == 0)) {
+	} else if((stricmp(aCmd.c_str(), _T("favorite")) == 0) || (stricmp(aCmd.c_str(), _T("fav")) == 0)) {
 		addAsFavorite();
-	} else if((stricmp(cmd.c_str(), _T("removefavorite")) == 0) || (stricmp(cmd.c_str(), _T("removefav")) == 0)) {
+	} else if((stricmp(aCmd.c_str(), _T("removefavorite")) == 0) || (stricmp(aCmd.c_str(), _T("removefav")) == 0)) {
 		removeFavoriteHub();
-	} else if(stricmp(cmd.c_str(), _T("getlist")) == 0){
-		if(!param.empty() ){
-			const auto ui = client->findUser(Text::fromT(param));
+	} else if(stricmp(aCmd.c_str(), _T("getlist")) == 0){
+		if (!aParam.empty() ){
+			const auto ui = client->findUser(Text::fromT(aParam));
 			if (ui) {
 				DirectoryListingFrame::openWindow(HintedUser(ui->getUser(), client->getHubUrl()), QueueItem::FLAG_CLIENT_VIEW);
 			}
 		}
-	} else if(stricmp(cmd.c_str(), _T("log")) == 0) {
-		ActionUtil::openFile(Text::toT(getLogPath(stricmp(param.c_str(), _T("status")) == 0)));
-	} else if(stricmp(cmd.c_str(), _T("help")) == 0) {
-		status = _T("*** ") + ChatFrameBase::commands + _T("Additional commands for the hub tab: /join <hub-ip>, /ts, /showjoins, /favshowjoins, /close, /userlist, /favorite, /pm <user> [message], /getlist <user>, /removefavorite");
-	} else if(stricmp(cmd.c_str(), _T("pm")) == 0) {
-		string::size_type j = param.find(_T(' '));
-		if(j != string::npos) {
-			const auto nick = param.substr(0, j);
+	} else if(stricmp(aCmd.c_str(), _T("log")) == 0) {
+		ActionUtil::openFile(Text::toT(getLogPath(stricmp(aParam.c_str(), _T("status")) == 0)));
+	} else if(stricmp(aCmd.c_str(), _T("help")) == 0) {
+		status_ = _T("*** ") + ChatFrameBase::commands + _T("Additional commands for the hub tab: /join <hub-ip>, /ts, /showjoins, /favshowjoins, /close, /userlist, /favorite, /pm <user> [message], /getlist <user>, /removefavorite");
+	} else if(stricmp(aCmd.c_str(), _T("pm")) == 0) {
+		auto j = aParam.find(_T(' '));
+		if (j != string::npos) {
+			const auto nick = aParam.substr(0, j);
 			const auto ui = client->findUser(Text::fromT(nick));
 			if (ui) {
 				PrivateFrame::openWindow(HintedUser(ui->getUser(), client->getHubUrl()));
 			}
-		} else if(!param.empty()) {
-			const auto ui = client->findUser(Text::fromT(param));
+		} else if (!aParam.empty()) {
+			const auto ui = client->findUser(Text::fromT(aParam));
 			if(ui) {
 				PrivateFrame::openWindow(HintedUser(ui->getUser(), client->getHubUrl()));
 			}
 		}
-	} else if(stricmp(cmd.c_str(), _T("topic")) == 0) {
+	} else if(stricmp(aCmd.c_str(), _T("topic")) == 0) {
 		addLine(_T("*** ") + Text::toT(client->getHubDescription()));
-	} else if(stricmp(cmd.c_str(), _T("ctopic")) == 0) {
+	} else if(stricmp(aCmd.c_str(), _T("ctopic")) == 0) {
 		openLinksInTopic();
-	} else if (stricmp(cmd.c_str(), _T("allow")) == 0) {
+	} else if (stricmp(aCmd.c_str(), _T("allow")) == 0) {
 		client->allowUntrustedConnect();
 	} else {
 		return false;
@@ -881,7 +881,7 @@ void HubFrame::addLine(const tstring& aLine, CHARFORMAT2& cf, bool bUseEmo/* = t
 void HubFrame::addLine(const Identity& i, const tstring& aLine, CHARFORMAT2& cf, bool bUseEmo/* = true*/) {
 	string extra;
 
-	if (SETTING(SHOW_USER_IP_COUNTRY)) {
+	if (SETTING(SHOW_IP_COUNTRY_CHAT)) {
 		extra = i.getIp4(); // todo: ipv6
 
 		if (extra.size())
@@ -1341,7 +1341,7 @@ void HubFrame::updateStatusBar() {
 
 	bool update = false;
 	for(int i = 0; i < 3; i++) {
-		int size = WinUtil::getTextWidth(text[i], ctrlStatus.m_hWnd);
+		int size = WinUtil::getStatusTextWidth(text[i], ctrlStatus.m_hWnd);
 		if(size != statusSizes[i + 1]) {
 			statusSizes[i + 1] = size;
 			update = true;
@@ -1466,7 +1466,7 @@ void HubFrame::onStatusMessage(const LogMessagePtr& aMessage, int aFlags) noexce
 }
 
 
-void HubFrame::on(MessagesRead) noexcept {
+void HubFrame::on(MessagesRead, const Client*) noexcept {
 
 }
 

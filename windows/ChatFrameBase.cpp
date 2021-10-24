@@ -520,9 +520,9 @@ void ChatFrameBase::setStatusText(const tstring& aLine, HICON aIcon) {
 
 
 LRESULT ChatFrameBase::onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	tstring cmd, param, message, status;
-	bool thirdPerson=false;
-	if(SETTING(MEDIA_PLAYER) == 0) {
+	tstring cmd, message, status;
+	bool thirdPerson = false;
+	if (SETTING(MEDIA_PLAYER) == 0) {
 		cmd = _T("/winamp");
 	} else if(SETTING(MEDIA_PLAYER) == 1) {
 		cmd = _T("/itunes");
@@ -536,11 +536,11 @@ LRESULT ChatFrameBase::onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 		addStatusLine(CTSTRING(NO_MEDIA_SPAM), LogMessage::SEV_INFO);
 		return 0;
 	}
-	if(checkCommand(cmd, param, message, status, thirdPerson)){
-		if(!message.empty()) {
+	if (checkCommand(cmd, message, status, thirdPerson)){
+		if (!message.empty()) {
 			sendFrameMessage(message, thirdPerson);
 		}
-		if(!status.empty()) {
+		if (!status.empty()) {
 			addStatusLine(status, LogMessage::SEV_INFO);
 		}
 	}
@@ -647,7 +647,7 @@ void ChatFrameBase::handleSendMessage() {
 	tstring status;
 	tstring cmd;
 	bool thirdPerson = false;
-	bool isCommand = false;
+	bool isGuiCommand = false;
 
 	if(ctrlMessage.GetWindowTextLength() > 0) {
 		tstring s;
@@ -662,18 +662,15 @@ void ChatFrameBase::handleSendMessage() {
 		currentCommand = Util::emptyStringT;
 
 		// Special command
-		if(s[0] == _T('/')) {
+		if (s[0] == _T('/')) {
 			cmd = s;
-			tstring param;
-			if(SETTING(CLIENT_COMMANDS)) {
+			if (SETTING(CLIENT_COMMANDS)) {
 				addStatusLine(_T("Client command: ") + s, LogMessage::SEV_INFO);
 			}
-			isCommand = checkCommand(cmd, param, message, status, thirdPerson);
-			//if(message.empty()) {
-				//message = s;
-			//} 
+
+			isGuiCommand = checkCommand(cmd, message, status, thirdPerson);
 		} else {
-			if(SETTING(SERVER_COMMANDS)) {
+			if (SETTING(SERVER_COMMANDS)) {
 				if(s[0] == '!' || s[0] == '+' || s[0] == '-')
 					status = _T("Server command: ") + s;
 			}
@@ -687,17 +684,18 @@ void ChatFrameBase::handleSendMessage() {
 
 	//If status in chat is disabled the command result as status message wont display, so add it as private line.
 	if (!status.empty()) {
-		if (isCommand)
+		if (isGuiCommand) {
 			addPrivateLine(status, WinUtil::m_ChatTextPrivate);
-		else
+		} else {
 			addStatusLine(status, LogMessage::SEV_INFO);
+		}
 	}
 
 	if (!message.empty()) {
 		sendFrameMessage(message, thirdPerson);
 	}
 	
-	if (!cmd.empty()) {
+	if (!cmd.empty() && (!isGuiCommand || Util::stricmp(cmd, _T("/help")) == 0)) {
 		// Let the extensions handle it too
 		sendFrameMessage(cmd, false);
 	}
@@ -794,15 +792,18 @@ size_t crashWithRecursion(int aCurCount, int aMaxCount, Dummy1 d1, Dummy2 d2) {
 	return crashWithRecursion<T, AllocT, Dummy1, Dummy2>(aCurCount + 1, aMaxCount, d1, d2);
 }
 
-bool ChatFrameBase::checkCommand(const tstring& aCmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson) {
+bool ChatFrameBase::checkCommand(const tstring& aCmd, tstring& message_, tstring& status_, bool& thirdPerson_) {
 	auto cmd = aCmd;
+	tstring param;
 
-	string::size_type i = cmd.find(' ');
-	if (i != string::npos) {
-		param = cmd.substr(i + 1);
-		cmd = cmd.substr(1, i - 1);
-	} else {
-		cmd = cmd.substr(1);
+	{
+		auto i = cmd.find(' ');
+		if (i != string::npos) {
+			param = cmd.substr(i + 1);
+			cmd = cmd.substr(1, i - 1);
+		} else {
+			cmd = cmd.substr(1);
+		}
 	}
 
 	if (stricmp(cmd.c_str(), _T("log")) == 0) {
@@ -816,16 +817,18 @@ bool ChatFrameBase::checkCommand(const tstring& aCmd, tstring& param, tstring& m
 			return false;
 		}
 	} else if (stricmp(cmd.c_str(), _T("me")) == 0) {
-		message = param;
-		thirdPerson = true;
+		message_ = param;
+		thirdPerson_ = true;
+		return true;
 	} else if ((stricmp(cmd.c_str(), _T("ratio")) == 0) || (stricmp(cmd.c_str(), _T("r")) == 0)) {
 		char ratio[512];
 		//thirdPerson = true;
 		snprintf(ratio, sizeof(ratio), "Ratio: %s (Uploaded: %s | Downloaded: %s)",
 			(SETTING(TOTAL_DOWNLOAD) > 0) ? Util::toString(((double)SETTING(TOTAL_UPLOAD)) / ((double)SETTING(TOTAL_DOWNLOAD))).c_str() : "inf.",
 			Util::formatBytes(SETTING(TOTAL_UPLOAD)).c_str(), Util::formatBytes(SETTING(TOTAL_DOWNLOAD)).c_str());
-		message = Text::toT(ratio);
+		message_ = Text::toT(ratio);
 
+		return true;
 	} else if (stricmp(cmd.c_str(), _T("refresh")) == 0) {
 		//refresh path
 		try {
@@ -835,32 +838,34 @@ bool ChatFrameBase::checkCommand(const tstring& aCmd, tstring& param, tstring& m
 				} else {
 					auto refreshQueueInfo = ShareManager::getInstance()->refreshVirtualName(Text::fromT(param), ShareRefreshPriority::MANUAL);
 					if (!refreshQueueInfo) {
-						status = TSTRING(DIRECTORY_NOT_FOUND);
+						status_ = TSTRING(DIRECTORY_NOT_FOUND);
 					}
 				}
 			} else {
 				ShareManager::getInstance()->refresh(ShareRefreshType::REFRESH_ALL, ShareRefreshPriority::MANUAL);
 			}
 		} catch (const ShareException& e) {
-			status = Text::toT(e.getError());
+			status_ = Text::toT(e.getError());
 		}
+
+		return true;
 	} else if (stricmp(cmd.c_str(), _T("slots")) == 0) {
 		int j = Util::toInt(Text::fromT(param));
 		if (j > 0) {
 			SettingsManager::getInstance()->set(SettingsManager::UPLOAD_SLOTS, j);
-			status = TSTRING(SLOTS_SET);
+			status_ = TSTRING(SLOTS_SET);
 			ClientManager::getInstance()->infoUpdated();
 		} else {
-			status = TSTRING(INVALID_NUMBER_OF_SLOTS);
+			status_ = TSTRING(INVALID_NUMBER_OF_SLOTS);
 		}
 	} else if (stricmp(cmd.c_str(), _T("search")) == 0) {
 		if (!param.empty()) {
 			SearchFrame::openWindow(param);
 		} else {
-			status = TSTRING(SPECIFY_SEARCH_STRING);
+			status_ = TSTRING(SPECIFY_SEARCH_STRING);
 		}
 	} else if ((stricmp(cmd.c_str(), _T("airdc++")) == 0) || (stricmp(cmd.c_str(), _T("++")) == 0)) {
-		message = msgs[GET_TICK() % MSGS] + Text::toT("-- " + Text::fromT(HttpLinks::homepage) + "  <" + shortVersionString + ">");
+		message_ = msgs[GET_TICK() % MSGS] + Text::toT("-- " + Text::fromT(HttpLinks::homepage) + "  <" + shortVersionString + ">");
 	} else if (stricmp(cmd.c_str(), _T("calcprio")) == 0) {
 		QueueManager::getInstance()->calculateBundlePriorities(true);
 	} else if (stricmp(cmd.c_str(), _T("generatelist")) == 0) {
@@ -868,7 +873,7 @@ bool ChatFrameBase::checkCommand(const tstring& aCmd, tstring& param, tstring& m
 	} else if (stricmp(cmd.c_str(), _T("as")) == 0) {
 		//AutoSearchManager::getInstance()->runSearches();
 	} else if (stricmp(cmd.c_str(), _T("clientstats")) == 0) {
-		status = Text::toT(ClientManager::getInstance()->printClientStats());
+		status_ = Text::toT(ClientManager::getInstance()->printClientStats());
 	} else if (stricmp(cmd.c_str(), _T("compact")) == 0) {
 		MainFrame::getMainFrame()->addThreadedTask([this] { HashManager::getInstance()->compact(); });
 	} else if (stricmp(cmd.c_str(), _T("setlistdirty")) == 0) {
@@ -883,11 +888,11 @@ bool ChatFrameBase::checkCommand(const tstring& aCmd, tstring& param, tstring& m
 
 		if (am->isAway()) {
 			am->setAway(AWAY_OFF);
-			status = TSTRING(AWAY_MODE_OFF);
+			status_ = TSTRING(AWAY_MODE_OFF);
 		} else {
 			am->setAway(AWAY_MANUAL);
 			ParamMap sm;
-			status = TSTRING(AWAY_MODE_ON) + _T(" ") + Text::toT(am->getAwayMessage(getAwayMessage(), sm));
+			status_ = TSTRING(AWAY_MODE_ON) + _T(" ") + Text::toT(am->getAwayMessage(getAwayMessage(), sm));
 		}
 	} else if (WebShortcuts::getInstance()->getShortcutByKey(Text::fromT(cmd))) {
 		ActionUtil::searchSite(WebShortcuts::getInstance()->getShortcutByKey(Text::fromT(cmd)), Text::fromT(param), false);
@@ -902,37 +907,37 @@ bool ChatFrameBase::checkCommand(const tstring& aCmd, tstring& param, tstring& m
 	} else if (stricmp(cmd.c_str(), _T("shutdown")) == 0) {
 		MainFrame::setShutDown(!(MainFrame::getShutDown()));
 		if (MainFrame::getShutDown()) {
-			status = TSTRING(SHUTDOWN_ON);
+			status_ = TSTRING(SHUTDOWN_ON);
 		} else {
-			status = TSTRING(SHUTDOWN_OFF);
+			status_ = TSTRING(SHUTDOWN_OFF);
 		}
 	} else if ((stricmp(cmd.c_str(), _T("disks")) == 0) || (stricmp(cmd.c_str(), _T("di")) == 0)) {
-		status = ChatCommands::diskInfo();
+		status_ = ChatCommands::diskInfo();
 	} else if (stricmp(cmd.c_str(), _T("stats")) == 0) {
-		message = Text::toT(ChatCommands::generateStats());
+		message_ = Text::toT(ChatCommands::generateStats());
 	} else if (stricmp(cmd.c_str(), _T("prvstats")) == 0) {
-		status = Text::toT(ChatCommands::generateStats());
+		status_ = Text::toT(ChatCommands::generateStats());
 	} else if (stricmp(cmd.c_str(), _T("dbstats")) == 0) {
-		status = _T("Collecing statistics, please wait... (this may take a few minutes with large databases)");
+		status_ = _T("Collecing statistics, please wait... (this may take a few minutes with large databases)");
 		tasks.run([this] {
 			auto text = Text::toT(HashManager::getInstance()->getDbStats());
 			callAsync([=] { addStatusLine(text, LogMessage::SEV_INFO); });
 		});
 	} else if (stricmp(cmd.c_str(), _T("sharestats")) == 0) {
-		status = Text::toT(ShareManager::getInstance()->printStats());
+		status_ = Text::toT(ShareManager::getInstance()->printStats());
 	} else if (stricmp(cmd.c_str(), _T("speed")) == 0) {
-		status = ChatCommands::Speedinfo();
+		status_ = ChatCommands::Speedinfo();
 	} else if (stricmp(cmd.c_str(), _T("info")) == 0) {
-		status = ChatCommands::UselessInfo();
+		status_ = ChatCommands::UselessInfo();
 	} else if (stricmp(cmd.c_str(), _T("df")) == 0) {
-		status = ChatCommands::DiskSpaceInfo();
+		status_ = ChatCommands::DiskSpaceInfo();
 
 	} else if (stricmp(cmd.c_str(), _T("version")) == 0) {
-		status = Text::toT(ChatCommands::ClientVersionInfo());
+		status_ = Text::toT(ChatCommands::ClientVersionInfo());
 	} else if (stricmp(cmd.c_str(), _T("dfs")) == 0) {
-		message = ChatCommands::DiskSpaceInfo();
+		message_ = ChatCommands::DiskSpaceInfo();
 	} else if (stricmp(cmd.c_str(), _T("uptime")) == 0) {
-		message = Text::toT(ChatCommands::uptimeInfo());
+		message_ = Text::toT(ChatCommands::uptimeInfo());
 	} else if (stricmp(cmd.c_str(), _T("f")) == 0) {
 		ctrlClient.findText();
 	} else if (stricmp(cmd.c_str(), _T("whois")) == 0) {
@@ -940,101 +945,99 @@ bool ChatFrameBase::checkCommand(const tstring& aCmd, tstring& param, tstring& m
 	} else if ((stricmp(cmd.c_str(), _T("clear")) == 0) || (stricmp(cmd.c_str(), _T("cls")) == 0)) {
 		ctrlClient.handleEditClearAll();
 	} else if (Util::stricmp(cmd.c_str(), _T("conn")) == 0 || Util::stricmp(cmd.c_str(), _T("connection")) == 0) {
-		status = Text::toT(ConnectivityManager::getInstance()->getInformation());
+		status_ = Text::toT(ConnectivityManager::getInstance()->getInformation());
 	} else if (stricmp(cmd.c_str(), _T("extraslots")) == 0) {
 		int j = Util::toInt(Text::fromT(param));
 		if (j > 0) {
 			SettingsManager::getInstance()->set(SettingsManager::EXTRA_SLOTS, j);
-			status = TSTRING(EXTRA_SLOTS_SET);
+			status_ = TSTRING(EXTRA_SLOTS_SET);
 		} else {
-			status = TSTRING(INVALID_NUMBER_OF_SLOTS);
+			status_ = TSTRING(INVALID_NUMBER_OF_SLOTS);
 		}
 	} else if (stricmp(cmd.c_str(), _T("smallfilesize")) == 0) {
 		int j = Util::toInt(Text::fromT(param));
 		if (j >= 64) {
 			SettingsManager::getInstance()->set(SettingsManager::SET_MINISLOT_SIZE, j);
-			status = TSTRING(SMALL_FILE_SIZE_SET);
+			status_ = TSTRING(SMALL_FILE_SIZE_SET);
 		} else {
-			status = TSTRING(INVALID_SIZE);
+			status_ = TSTRING(INVALID_SIZE);
 		}
 	} else if (Util::stricmp(cmd.c_str(), _T("upload")) == 0) {
 		auto value = Util::toInt(Text::fromT(param));
 		ThrottleManager::setSetting(ThrottleManager::getCurSetting(SettingsManager::MAX_UPLOAD_SPEED_MAIN), value);
-		status = value ? CTSTRING_F(UPLOAD_LIMIT_SET_TO, value) : CTSTRING(UPLOAD_LIMIT_DISABLED);
+		status_ = value ? CTSTRING_F(UPLOAD_LIMIT_SET_TO, value) : CTSTRING(UPLOAD_LIMIT_DISABLED);
 	} else if (Util::stricmp(cmd.c_str(), _T("download")) == 0) {
 		auto value = Util::toInt(Text::fromT(param));
 		ThrottleManager::setSetting(ThrottleManager::getCurSetting(SettingsManager::MAX_DOWNLOAD_SPEED_MAIN), value);
-		status = value ? CTSTRING_F(DOWNLOAD_LIMIT_SET_TO, value) : CTSTRING(DOWNLOAD_LIMIT_DISABLED);
+		status_ = value ? CTSTRING_F(DOWNLOAD_LIMIT_SET_TO, value) : CTSTRING(DOWNLOAD_LIMIT_DISABLED);
 	} else if (stricmp(cmd.c_str(), _T("wmp")) == 0) { // Mediaplayer Support
 		string spam = Players::getWMPSpam(FindWindow(_T("WMPlayerApp"), NULL));
 		if (!spam.empty()) {
 			if (spam != "no_media") {
-				message = Text::toT(spam);
+				message_ = Text::toT(spam);
 			} else {
-				status = _T("You have no media playing in Windows Media Player");
+				status_ = _T("You have no media playing in Windows Media Player");
 			}
 		} else {
-			status = _T("Supported version of Windows Media Player is not running");
+			status_ = _T("Supported version of Windows Media Player is not running");
 		}
 
 	} else if ((stricmp(cmd.c_str(), _T("spotify")) == 0) || (stricmp(cmd.c_str(), _T("s")) == 0)) {
 		string spam = Players::getSpotifySpam(FindWindow(_T("SpotifyMainWindow"), NULL));
 		if (!spam.empty()) {
 			if (spam != "no_media") {
-				message = Text::toT(spam);
+				message_ = Text::toT(spam);
 			} else {
-				status = _T("You have no media playing in Spotify");
+				status_ = _T("You have no media playing in Spotify");
 			}
 		} else {
-			status = _T("Supported version of Spotify is not running");
+			status_ = _T("Supported version of Spotify is not running");
 		}
 
 	} else if (stricmp(cmd.c_str(), _T("itunes")) == 0) {
 		string spam = Players::getItunesSpam(FindWindow(_T("iTunes"), _T("iTunes")));
 		if (!spam.empty()) {
 			if (spam != "no_media") {
-				message = Text::toT(spam);
+				message_ = Text::toT(spam);
 			} else {
-				status = _T("You have no media playing in iTunes");
+				status_ = _T("You have no media playing in iTunes");
 			}
 		} else {
-			status = _T("Supported version of iTunes is not running");
+			status_ = _T("Supported version of iTunes is not running");
 		}
 	} else if (stricmp(cmd.c_str(), _T("mpc")) == 0) {
 		string spam = Players::getMPCSpam();
 		if (!spam.empty()) {
-			message = Text::toT(spam);
+			message_ = Text::toT(spam);
 		} else {
-			status = _T("Supported version of Media Player Classic is not running");
+			status_ = _T("Supported version of Media Player Classic is not running");
 		}
 	} else if ((stricmp(cmd.c_str(), _T("winamp")) == 0) || (stricmp(cmd.c_str(), _T("w")) == 0)) {
 		string spam = Players::getWinAmpSpam();
 		if (!spam.empty()) {
-			message = Text::toT(spam);
+			message_ = Text::toT(spam);
 		} else {
-			status = _T("Supported version of Winamp is not running");
+			status_ = _T("Supported version of Winamp is not running");
 		}
-	}
-	else if (stricmp(cmd.c_str(), _T("crashtest")) == 0) {
+	} else if (stricmp(cmd.c_str(), _T("crashtest")) == 0) {
 		if (param == _T("terminate")) {
 			terminate();
 		}
 
 		int recursionCount = Util::toInt(Text::fromT(param));
 		crashWithRecursion<string, string::allocator_type, string, string>(0, recursionCount > 0 ? recursionCount : 30, "1", "2");
-	}
-	else if (stricmp(cmd.c_str(), _T("aspopnext")) == 0) {
+	} else if (stricmp(cmd.c_str(), _T("aspopnext")) == 0) {
 		AutoSearchManager::getInstance()->maybePopSearchItem(GET_TICK(), true);
-	}
-	else {
-		return checkFrameCommand(cmd, param, message, status, thirdPerson);
+	} else {
+		return checkFrameCommand(cmd, param, message_, status_, thirdPerson_);
 	}
 
 	//check if /me was added by the command
-	i = message.find(' ');
-	if(i != string::npos && message.substr(1, i - 1) == _T("me")) {
-		message = message.substr(i+1);
-		thirdPerson = true;
+	auto i = message_.find(' ');
+	if (i != string::npos && message_.substr(1, i - 1) == _T("me")) {
+		message_ = message_.substr(i+1);
+		thirdPerson_ = true;
 	}
+
 	return true;
 }

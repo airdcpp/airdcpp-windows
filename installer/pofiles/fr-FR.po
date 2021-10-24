@@ -1,13 +1,13 @@
 # 
 # Translators:
 # Kcchouette, 2017-2018
-# Kcchouette, 2019
+# Kcchouette, 2019,2021
 msgid ""
 msgstr ""
 "Project-Id-Version: AirDC++\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-03-24 21:02\n"
-"PO-Revision-Date: 2019-02-18 22:34+0000\n"
+"POT-Creation-Date: 2020-11-12 19:38\n"
+"PO-Revision-Date: 2021-10-07 12:24+0000\n"
 "Last-Translator: Kcchouette\n"
 "Language-Team: French (France) (http://www.transifex.com/airdcpp/airdcpp/language/fr_FR/)\n"
 "MIME-Version: 1.0\n"
@@ -104,33 +104,38 @@ msgstr "(seulement pour supprimer)"
 msgid "Default emoticon pack"
 msgstr "Pack par défaut d'émoticones"
 
-#. SecThemes
+#. SecNode
 #: AirDC_installscript.nsi:107
+msgid "Default extension engine (node.js)"
+msgstr "Moteur d’extension par défaut (node.js)"
+
+#. SecThemes
+#: AirDC_installscript.nsi:108
 msgid "Themes"
 msgstr "Thèmes"
 
 #. SecWebResources
-#: AirDC_installscript.nsi:108
+#: AirDC_installscript.nsi:109
 msgid "Web user interface"
 msgstr "Interface utilisateur web"
 
 #. SecStore
-#: AirDC_installscript.nsi:109
+#: AirDC_installscript.nsi:110
 msgid "Store settings in the user profile directory"
 msgstr "Enregistrer les paramètres dans le répertoire du profil utilisateur"
 
 #. DeskShort
-#: AirDC_installscript.nsi:110
+#: AirDC_installscript.nsi:111
 msgid "Desktop shortcut"
 msgstr "Raccourcis bureau"
 
 #. SecInstall32
-#: AirDC_installscript.nsi:111
+#: AirDC_installscript.nsi:112
 msgid "Install the 32-bit version"
 msgstr "Installer la version 32-bit"
 
 #. XPOrOlder
-#: AirDC_installscript.nsi:112
+#: AirDC_installscript.nsi:113
 msgid ""
 "If you want to keep your settings in the program directory, make sure that "
 "you DO NOT install AirDC++ to the 'Program files' folder!!! This can lead to"
@@ -138,56 +143,61 @@ msgid ""
 msgstr "Si vous souhaitez conserver vos paramètres dans le répertoire du programme, assurez-vous de NE PAS installer AirDC++ dans le dossier 'Program files' ! Cela peut conduire à un comportement anormal comme la perte de paramètres ou de téléchargements !"
 
 #. OsUnsupported
-#: AirDC_installscript.nsi:113
+#: AirDC_installscript.nsi:114
 msgid ""
 "This application is compatible with Windows 7 SP1 or newer operating systems"
 " only. The installer will now exit."
 msgstr "Cette application n'est compatible qu'avec Windows 7 SP1 ou ultérieur. Le programme d'installation va maintenant s'arrêter."
 
 #. ^UninstallText
-#: AirDC_installscript.nsi:114
+#: AirDC_installscript.nsi:115
 msgid "This will uninstall AirDC++. Hit the Uninstall button to continue."
 msgstr "Cela désinstallera AirDC++. Appuyez sur le bouton Désinstaller pour continuer."
 
 #. RemoveQueue
-#: AirDC_installscript.nsi:115
+#: AirDC_installscript.nsi:116
 msgid "Do you also want to remove queue, themes and all settings?"
 msgstr "Voulez-vous également supprimer la file d'attente, les thèmes et tous les paramètres ?"
 
 #. NotEmpty
-#: AirDC_installscript.nsi:116
+#: AirDC_installscript.nsi:117
 msgid "Installation directory is NOT empty. Do you still want to remove it?"
 msgstr "Le répertoire d'installation n'est PAS vide. Souhaitez-vous quand même le supprimer ?"
 
 #. DESC_dcpp
-#: AirDC_installscript.nsi:117
+#: AirDC_installscript.nsi:118
 msgid "AirDC++ main program."
 msgstr "Programme principal AirDC++."
 
 #. DESC_StartMenu
-#: AirDC_installscript.nsi:118
+#: AirDC_installscript.nsi:119
 msgid "A shortcut of AirDC++ will be placed in your start menu."
 msgstr "Un raccourci d'AirDC++ sera placé dans votre menu de démarrage."
 
 #. DESC_Emopack
-#: AirDC_installscript.nsi:119
+#: AirDC_installscript.nsi:120
 msgid "Display emoticons as images in chat windows."
 msgstr "Affiche les émoticônes sous forme d'images dans les fenêtres de discussion."
 
+#. DESC_Node
+#: AirDC_installscript.nsi:121
+msgid "Allows installing and running third-party extensions."
+msgstr "Autoriser l’installation et l’exécution d’extensions tierces"
+
 #. DESC_Themes
-#: AirDC_installscript.nsi:120
+#: AirDC_installscript.nsi:122
 msgid ""
 "If you don't like the default theme you can try these two extra themes, Dark"
 " Skull and Zoolution."
 msgstr "Si vous n'aimez pas le thème par défaut, vous pouvez essayer ces deux thèmes supplémentaires, Dark Skull et Zoolution."
 
 #. DESC_WebResorces
-#: AirDC_installscript.nsi:121
+#: AirDC_installscript.nsi:123
 msgid "Allows accessing the client from other devices via a web browser."
 msgstr "Permet d'accéder au client à partir d'autres appareils via un navigateur Web."
 
 #. DESC_loc
-#: AirDC_installscript.nsi:122
+#: AirDC_installscript.nsi:124
 msgid ""
 "Normally you should not change this because it can lead to abnormal "
 "behaviour like loss of settings or downloads. If you unselect it, read the "
@@ -195,12 +205,12 @@ msgid ""
 msgstr "Vous ne devriez normalement pas changer ça, ça entraînerait un comportement anormal comme la perte de paramètres ou de téléchargements. Si vous le désélectionnez, lisez attentivement le message d'avertissement."
 
 #. DESC_desk
-#: AirDC_installscript.nsi:123
+#: AirDC_installscript.nsi:125
 msgid "Do you often run AirDC++? Then this is definitely something for you!"
 msgstr "Démarrez-vous souvent AirDC++ ? Alors c'est pour vous !"
 
 #. DESC_arch
-#: AirDC_installscript.nsi:124
+#: AirDC_installscript.nsi:126
 msgid ""
 "If you want to use the 32-bits version of AirDC++ on your 64-bits operating "
 "system you need to select this. If this is selected and grayed out you can "

@@ -32,6 +32,9 @@
 
 namespace dcpp {
 	class Segment;
+
+	struct BundleAddHookResult;
+	struct BundleFileAddHookResult;
 }
 
 namespace webserver {
@@ -42,10 +45,20 @@ namespace webserver {
 	private:
 		ActionHookResult<> bundleCompletionHook(const BundlePtr& aBundle, const ActionHookResultGetter<>& aResultGetter) noexcept;
 		ActionHookResult<> fileCompletionHook(const QueueItemPtr& aFile, const ActionHookResultGetter<>& aResultGetter) noexcept;
+		ActionHookResult<BundleFileAddHookResult> bundleFileAddHook(const string& aTarget, BundleFileAddData& aInfo, const ActionHookResultGetter<BundleFileAddHookResult>& aResultGetter) noexcept;
+		ActionHookResult<BundleAddHookResult> bundleAddHook(const string& aTarget, BundleAddData& aData, const HintedUser& aUser, const bool aIsFile, const ActionHookResultGetter<BundleAddHookResult>& aResultGetter) noexcept;
+		ActionHookResult<> sourceAddHook(const HintedUser& aUser, const ActionHookResultGetter<>& aResultGetter) noexcept;
+
+		typedef std::function<BundleAddHookResult(const json&, const ActionHookResultGetter<BundleAddHookResult>&)> BundleAddHookResultDeserializer;
+		static BundleAddHookResultDeserializer getBundleAddHookDeserializer(const Session* aSession);
 
 		// COMMON
+		api_return handleIsPathQueued(ApiRequest& aRequest);
 		api_return handleFindDupePaths(ApiRequest& aRequest);
 		api_return handleRemoveSource(ApiRequest& aRequest);
+
+		static BundleFileAddData deserializeBundleFileInfo(const json& aJson);
+		static json serializeBundleFileInfo(const BundleFileAddData& aInfo) noexcept;
 
 		// BUNDLES
 

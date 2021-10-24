@@ -69,10 +69,6 @@ private:
 template<typename T1>
 inline int compare(const T1& v1, const T1& v2) noexcept { return (v1 < v2) ? -1 : ((v1 == v2) ? 0 : 1); }
 
-typedef std::function<void (const string&)> StepFunction;
-typedef std::function<bool (const string& /*Message*/, bool /*isQuestion*/, bool /*isError*/)> MessageFunction;
-typedef std::function<void (float)> ProgressFunction;
-
 // Recursively collected information about directory content
 struct DirectoryContentInfo {
 	DirectoryContentInfo() : directories(-1), files(-1) {  }
@@ -149,6 +145,8 @@ public:
 		PATH_BUNDLES,
 		/** XML files for cached share structure */
 		PATH_SHARECACHE,
+		/** Temp files (viewed files, temp shared items...) */
+		PATH_TEMP,
 
 		PATH_LAST
 	};
@@ -182,7 +180,6 @@ public:
 #endif
 
 	/** Path of temporary storage */
-	static string getTempPath() noexcept;
 	static string getOpenPath() noexcept;
 
 	/** Path of configuration files */
@@ -224,6 +221,8 @@ public:
 	static wstring getFileName(const wstring& aPath) noexcept;
 	static wstring getFileExt(const wstring& aPath) noexcept;
 	static wstring getLastDir(const wstring& aPath) noexcept;
+
+	static string truncate(const string& aStr, int aMaxLength) noexcept;
 
 	template<typename string_t>
 	static void replace(const string_t& search, const string_t& replacement, string_t& str) noexcept {

@@ -24,6 +24,7 @@
 #include "QueueManagerListener.h"
 #include "DirectoryListingManagerListener.h"
 
+#include "QueueAddInfo.h"
 #include "CriticalSection.h"
 #include "DirectoryDownload.h"
 #include "Message.h"
@@ -36,25 +37,25 @@ namespace dcpp {
 		typedef unordered_map<UserPtr, DirectoryListingPtr, User::Hash> DirectoryListingMap;
 
 		// Browse own share, will always success
-		DirectoryListingPtr openOwnList(ProfileToken aProfile, bool useADL=false, const string& aDir = ADC_ROOT_STR) noexcept;
+		DirectoryListingPtr openOwnList(ProfileToken aProfile, const string& aDir = ADC_ROOT_STR) noexcept;
 
 		// Open local file, returns nullptr on duplicates
 		DirectoryListingPtr openLocalFileList(const HintedUser& aUser, const string& aFile, const string& aDir = ADC_ROOT_STR, bool aPartial = false) noexcept;
 		
 		// Add a managed filelist session from remove user, throws queueing errors
 		// Returns nullptr on duplicates
-		DirectoryListingPtr openRemoteFileList(const HintedUser& HintedUser, Flags::MaskType aFlags, const string& aInitialDir = ADC_ROOT_STR);
+		DirectoryListingPtr openRemoteFileListHookedThrow(const FilelistAddData& aListData, Flags::MaskType aFlags);
 		bool removeList(const UserPtr& aUser) noexcept;
 
 		DirectoryListingManager() noexcept;
 		~DirectoryListingManager() noexcept;
 
-		void processList(const string& aFileName, const string& aXml, const HintedUser& user, const string& aRemotePath, int flags) noexcept;
-		void processListAction(DirectoryListingPtr aList, const string& path, int flags) noexcept;
+		void processListHooked(const string& aFileName, const string& aXml, const HintedUser& user, const string& aRemotePath, int flags) noexcept;
+		void processListActionHooked(DirectoryListingPtr aList, const string& path, int flags) noexcept;
 
 		// Throws on queueing errors (such as invalid source)
 		// If owner is specified, no errors are logged if queueing of the directory fails
-		DirectoryDownloadPtr addDirectoryDownload(const HintedUser& aUser, const string& aBundleName, const string& aListPath, const string& aTarget, Priority p, const void* aOwner = nullptr);
+		DirectoryDownloadPtr addDirectoryDownloadHookedThrow(const FilelistAddData& aListData, const string& aBundleName, const string& aTarget, Priority p, DirectoryDownload::ErrorMethod aErrorMethod);
 		DirectoryDownloadList getDirectoryDownloads() const noexcept;
 		DirectoryDownloadPtr getDirectoryDownload(DirectoryDownloadId aId) const noexcept;
 
@@ -69,12 +70,14 @@ namespace dcpp {
 		void removeDirectoryDownload(const DirectoryDownloadPtr& aDownloadInfo) noexcept;
 		DirectoryDownloadList getPendingDirectoryDownloadsUnsafe(const UserPtr& aUser) const noexcept;
 		DirectoryDownloadPtr getPendingDirectoryDownloadUnsafe(const UserPtr& aUser, const string& aPath) const noexcept;
+
+		void maybeReportDownloadError(const DirectoryDownloadPtr& aDownloadInfo, const string& aError, LogMessage::Severity aSeverity = LogMessage::SEV_ERROR) noexcept;
 		void failDirectoryDownload(const DirectoryDownloadPtr& aDownloadInfo, const string& aError) noexcept;
 
 		// Throws on errors
-		void queueList(const DirectoryDownloadPtr& aDownloadInfo);
+		void queueListHookedThrow(const DirectoryDownloadPtr& aDownloadInfo);
 
-		void handleDownload(const DirectoryDownloadPtr& aDownloadInfo, const DirectoryListingPtr& aList, bool aListDownloaded = true) noexcept;
+		void handleDownloadHooked(const DirectoryDownloadPtr& aDownloadInfo, const DirectoryListingPtr& aList, bool aListDownloaded = true) noexcept;
 
 		DirectoryListingPtr createList(const HintedUser& aUser, bool aPartial, const string& aFileName, bool aIsOwnList) noexcept;
 

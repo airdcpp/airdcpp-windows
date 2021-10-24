@@ -29,6 +29,7 @@
 
 #include "ListViewArrows.h"
 #include "OMenu.h"
+#include "WinUtil.h"
 
 
 #define NO_GROUP_UNIQUE_CHILDREN 0x01

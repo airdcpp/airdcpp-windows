@@ -60,6 +60,7 @@ public:
 		MESSAGE_HANDLER(WM_CREATE, onCreate)
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
+		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		COMMAND_HANDLER(IDC_REMOVE, BN_CLICKED, onRemove)
 		NOTIFY_HANDLER(IDC_UPLOAD_QUEUE, LVN_GETDISPINFO, ctrlList.onGetDispInfo)
@@ -91,6 +92,11 @@ public:
 		UpdateLayout(FALSE);
 		DeleteAll();
 		LoadAll();
+		return 0;
+	}
+
+	LRESULT onCloseWindow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		PostMessage(WM_CLOSE);
 		return 0;
 	}
 	

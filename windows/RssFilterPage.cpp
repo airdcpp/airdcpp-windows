@@ -20,7 +20,6 @@
 #include "Resource.h"
 #include "WinUtil.h"
 #include "RssFilterPage.h"
-#include "BrowseDlg.h"
 
 #include <airdcpp/modules/AutoSearchManager.h>
 #include <airdcpp/StringTokenizer.h>

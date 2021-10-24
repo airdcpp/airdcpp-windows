@@ -33,6 +33,8 @@
 #include <limits>
 #include <cmath>
 
+#include <boost/range/numeric.hpp>
+
 
 // some strange mac definition
 #ifdef ff
@@ -222,7 +224,7 @@ void DownloadManager::addConnection(UserConnection* conn) {
 	checkDownloads(conn);
 }
 
-void DownloadManager::getRunningBundles(QueueTokenSet& bundles_) const {
+void DownloadManager::getRunningBundles(QueueTokenSet& bundles_) const noexcept {
 	RLock l(cs);
 	for (const auto& b : bundles | map_values) {
 		// we need to check this to ignore previous bundles for running connections 
@@ -238,6 +240,19 @@ void DownloadManager::getRunningBundles(QueueTokenSet& bundles_) const {
 
 		bundles_.insert(b->getToken());
 	}
+}
+
+size_t DownloadManager::getRunningBundleCount() const noexcept {
+	RLock l(cs);
+	auto ret = accumulate(bundles | map_values, (size_t)0, [&](size_t old, const BundlePtr& b) {
+		if (b->getSpeed() == 0) {
+			return old;
+		}
+
+		return old + 1;
+	});
+
+	return ret;
 }
 
 void DownloadManager::checkDownloads(UserConnection* aConn) {
@@ -474,7 +489,7 @@ void DownloadManager::endData(UserConnection* aSource) {
 			fire(DownloadManagerListener::Failed(), d, STRING(INVALID_TREE));
 
 			QueueManager::getInstance()->removeFileSource(d->getPath(), aSource->getUser(), QueueItem::Source::FLAG_BAD_TREE, false);
-			QueueManager::getInstance()->putDownload(d, false);
+			QueueManager::getInstance()->putDownloadHooked(d, false);
 
 			checkDownloads(aSource);
 			return;
@@ -491,7 +506,7 @@ void DownloadManager::endData(UserConnection* aSource) {
 
 	fire(DownloadManagerListener::Complete(), d, d->getType() == Transfer::TYPE_TREE);
 	try {
-		QueueManager::getInstance()->putDownload(d, true);
+		QueueManager::getInstance()->putDownloadHooked(d, true);
 	} catch (const HashException& e) {
 		removeRunningUser(aSource);
 		removeConnection(aSource);
@@ -556,7 +571,7 @@ void DownloadManager::failDownload(UserConnection* aSource, const string& reason
 	if(d) {
 		removeDownload(d);
 		fire(DownloadManagerListener::Failed(), d, reason);
-		QueueManager::getInstance()->putDownload(d, false, false, rotateQueue);
+		QueueManager::getInstance()->putDownloadHooked(d, false, false, rotateQueue);
 	}
 
 	removeRunningUser(aSource);
@@ -692,7 +707,7 @@ void DownloadManager::on(AdcCommand::STA, UserConnection* aSource, const AdcComm
 					fileNotAvailable(aSource, true);
 					return;
 				case AdcCommand::ERROR_UNKNOWN_USER:
-					failDownload(aSource, STRING(UNKNOWN_USER), !aSource->getDownload()->isFileList());
+					failDownload(aSource, STRING(UNKNOWN_USER), !aSource->getDownload()->isFilelist());
 					return;
 			}
 		case AdcCommand::SEV_SUCCESS:
@@ -734,7 +749,7 @@ void DownloadManager::fileNotAvailable(UserConnection* aSource, bool aNoAccess, 
 		QueueManager::getInstance()->removeFileSource(d->getPath(), aSource->getUser(), (Flags::MaskType)(d->getType() == Transfer::TYPE_TREE ? QueueItem::Source::FLAG_NO_TREE : QueueItem::Source::FLAG_FILE_NOT_AVAILABLE), false);
 	}
 
-	QueueManager::getInstance()->putDownload(d, false, aNoAccess);
+	QueueManager::getInstance()->putDownloadHooked(d, false, aNoAccess);
 	checkDownloads(aSource);
 }
 

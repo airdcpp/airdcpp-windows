@@ -19,9 +19,9 @@
 #if !defined(LIST_VIEW_ARROWS_H)
 #define LIST_VIEW_ARROWS_H
 
-#include "WinUtil.h"
-
 #include <uxtheme.h>
+
+#include <airdcpp/SettingsManager.h>
 
 template<class T>
 class ListViewArrows {

@@ -24,7 +24,6 @@
 #include "StringTokenizer.h"
 
 #include "ActivityManager.h"
-#include "ADLSearch.h"
 #include "AirUtil.h"
 #include "ClientManager.h"
 #include "ConnectionManager.h"
@@ -55,7 +54,7 @@ namespace dcpp {
 
 #define RUNNING_FLAG Util::getPath(Util::PATH_USER_LOCAL) + "RUNNING"
 
-void startup(StepF aStepF, MessageF aMessageF, Callback aRunWizardF, ProgressF aProgressF, Callback aModuleInitF /*nullptr*/, StartupLoadCallback aModuleLoadF /*nullptr*/) {
+void startup(StepFunction aStepF, MessageFunction aMessageF, Callback aRunWizardF, ProgressFunction aProgressF, Callback aModuleInitF /*nullptr*/, StartupLoadCallback aModuleLoadF /*nullptr*/) {
 	// "Dedicated to the near-memory of Nev. Let's start remembering people while they're still alive."
 	// Nev's great contribution to dc++
 	while(1) break;
@@ -91,7 +90,6 @@ void startup(StepF aStepF, MessageF aMessageF, Callback aRunWizardF, ProgressF a
 	ThrottleManager::newInstance();
 	QueueManager::newInstance();
 	FavoriteManager::newInstance();
-	ADLSearchManager::newInstance();
 	ConnectivityManager::newInstance();
 	DirectoryListingManager::newInstance();
 	DebugManager::newInstance();
@@ -171,7 +169,7 @@ void startup(StepF aStepF, MessageF aMessageF, Callback aRunWizardF, ProgressF a
 	}
 }
 
-void shutdown(StepF stepF, ProgressF progressF, ShutdownUnloadCallback aModuleUnloadF, Callback aModuleDestroyF) {
+void shutdown(StepFunction stepF, ProgressFunction progressF, ShutdownUnloadCallback aModuleUnloadF, Callback aModuleDestroyF) {
 	TimerManager::getInstance()->shutdown();
 	auto announce = [&stepF](const string& str) {
 		if(stepF) {
@@ -220,7 +218,6 @@ void shutdown(StepF stepF, ProgressF progressF, ShutdownUnloadCallback aModuleUn
 	GeoManager::deleteInstance();
 	ConnectivityManager::deleteInstance();
 	DebugManager::deleteInstance();
-	ADLSearchManager::deleteInstance();
 	CryptoManager::deleteInstance();
 	ThrottleManager::deleteInstance();
 	DirectoryListingManager::deleteInstance();

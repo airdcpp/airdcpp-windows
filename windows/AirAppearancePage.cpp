@@ -21,7 +21,6 @@
 #include "AirAppearancePage.h"
 
 #include "BrowseDlg.h"
-#include "WinUtil.h"
 #include "PropertiesDlg.h"
 
 PropPage::TextItem AirAppearancePage::texts[] = {

@@ -568,7 +568,6 @@ void ResourceLoader::loadCmdBarImageList(CImageList& images){
 	images.AddIcon(CIcon(loadIcon(IDI_SEARCHSPY, 16)));
 	images.AddIcon(CIcon(loadIcon(IDI_OPEN_LIST, 16)));
 	images.AddIcon(CIcon(loadIcon(IDI_OWNLIST, 16)));
-	images.AddIcon(CIcon(loadIcon(IDI_ADLSEARCH, 16)));
 	images.AddIcon(CIcon(loadIcon(IDI_MATCHLIST, 16)));
 	images.AddIcon(CIcon(loadIcon(IDI_REFRESH, 16)));
 	images.AddIcon(CIcon(loadIcon(IDI_OPEN_DOWNLOADS, 16)));

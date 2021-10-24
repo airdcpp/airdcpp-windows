@@ -11,11 +11,8 @@
 
 #include <boost/config/warning_disable.hpp>
 
-#include <boost/detail/lightweight_test.hpp>
 #include <boost/system/error_code.hpp>
-#include <boost/system/cygwin_error.hpp>
-#include <boost/system/linux_error.hpp>
-#include <boost/system/windows_error.hpp>
+#include <boost/core/lightweight_test.hpp>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -294,29 +291,7 @@ int main( int, char ** )
   BOOST_TEST( ec.default_error_condition().value() == errc::permission_denied );
   BOOST_TEST( ec.default_error_condition().category() == generic_category() );
 
-# ifdef __CYGWIN__
-
-  std::cout << "Cygwin tests...\n";
-  ec = cygwin_error::no_package;
-  BOOST_TEST( ec == cygwin_error::no_package );
-  BOOST_TEST( ec == error_code( ENOPKG, system_category() ) );
-  BOOST_TEST( ec == error_code( cygwin_error::no_package, system_category() ) );
-  BOOST_TEST( ec.default_error_condition().category() == system_category() );
-
-# elif defined(linux) || defined(__linux) || defined(__linux__)
-
-  std::cout << "Linux tests...\n";
-  ec = linux_error::dot_dot_error;
-  BOOST_TEST( ec == linux_error::dot_dot_error );
-  BOOST_TEST( ec == error_code( EDOTDOT, system_category() ) );
-  BOOST_TEST( ec == error_code( linux_error::dot_dot_error, system_category() ) );
-  BOOST_TEST( ec.default_error_condition().category() == system_category() );
-
-# endif
-
 #endif
   
   return ::boost::report_errors();
 }
-
-

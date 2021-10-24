@@ -40,7 +40,7 @@ static const tButton TBButtons[] = {
 template<class ParentT>
 class BrowserBar : boost::noncopyable {
 	typedef std::function<void(const string&, bool)> HandleHistoryFunction;
-	typedef std::function<void()> HandleUPFuntion;
+	typedef Callback HandleUPFuntion;
 
 public:
 	BrowserBar(ParentT* aParent, HandleHistoryFunction aHistoryF, HandleUPFuntion aHandleUP) : 

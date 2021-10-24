@@ -32,6 +32,10 @@ Upload::Upload(UserConnection& conn, const string& path, const TTHValue& tth, un
 	conn.setUpload(this);
 }
 
+bool Upload::operator==(const Upload* u) const noexcept {
+	return compare(getToken(), u->getToken()) == 0;
+}
+
 InputStream* Upload::getStream() { 
 	return stream.get(); 
 }
@@ -44,7 +48,6 @@ void Upload::setFiltered() {
 Upload::~Upload() {
 	if (bundle) {
 		bundle->removeUpload(this);
-		bundle = nullptr;
 	}
 
 	getUserConnection().setUpload(nullptr);

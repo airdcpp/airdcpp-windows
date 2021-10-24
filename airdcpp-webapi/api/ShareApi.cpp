@@ -36,6 +36,7 @@
 #include <airdcpp/SearchResult.h>
 #include <airdcpp/ShareManager.h>
 #include <airdcpp/SharePathValidator.h>
+#include <airdcpp/StringTokenizer.h>
 
 namespace webserver {
 	ShareApi::ShareApi(Session* aSession) : 
@@ -112,7 +113,7 @@ namespace webserver {
 
 	ActionHookResult<> ShareApi::fileValidationHook(const string& aPath, int64_t aSize, const ActionHookResultGetter<>& aResultGetter) noexcept {
 		return HookCompletionData::toResult(
-			fireHook("share_file_validation_hook", 30, [&]() {
+			fireHook("share_file_validation_hook", WEBCFG(SHARE_FILE_VALIDATION_HOOK_TIMEOUT).num(), [&]() {
 				return json({
 					{ "path", aPath },
 					{ "size", aSize },
@@ -124,9 +125,22 @@ namespace webserver {
 
 	ActionHookResult<> ShareApi::directoryValidationHook(const string& aPath, const ActionHookResultGetter<>& aResultGetter) noexcept {
 		return HookCompletionData::toResult(
-			fireHook("share_directory_validation_hook", 30, [&]() {
+			fireHook("share_directory_validation_hook", WEBCFG(SHARE_DIRECTORY_VALIDATION_HOOK_TIMEOUT).num(), [&]() {
 				return json({
 					{ "path", aPath },
+				});
+			}),
+			aResultGetter
+		);
+	}
+
+	ActionHookResult<> ShareApi::newFileValidationHook(const string& aPath, int64_t aSize, bool aNewParent, const ActionHookResultGetter<>& aResultGetter) noexcept {
+		return HookCompletionData::toResult(
+			fireHook("new_share_file_validation_hook", WEBCFG(NEW_SHARE_FILE_VALIDATION_HOOK_TIMEOUT).num(), [&]() {
+				return json({
+					{ "path", aPath },
+					{ "size", aSize },
+					{ "new_parent", aNewParent },
 				});
 			}),
 			aResultGetter
@@ -135,26 +149,12 @@ namespace webserver {
 
 	ActionHookResult<> ShareApi::newDirectoryValidationHook(const string& aPath, bool aNewParent, const ActionHookResultGetter<>& aResultGetter) noexcept {
 		return HookCompletionData::toResult(
-			fireHook("new_share_directory_validation_hook", 60, [&]() {
+			fireHook("new_share_directory_validation_hook", WEBCFG(NEW_SHARE_DIRECTORY_VALIDATION_HOOK_TIMEOUT).num(), [&]() {
 				return json({
 					{ "path", aPath },
 					{ "new_parent", aNewParent },
-				});
-			}),
-			aResultGetter
-		);
-	}
-
-
-	ActionHookResult<> ShareApi::newFileValidationHook(const string& aPath, int64_t aSize, bool aNewParent, const ActionHookResultGetter<>& aResultGetter) noexcept {
-		return HookCompletionData::toResult(
-			fireHook("new_share_file_validation_hook", 60, [&]() {
-				return json({
-					{ "path", aPath },
-					{ "size", aSize },
-					{ "new_parent", aNewParent },
-				});
-			}),
+					});
+				}),
 			aResultGetter
 		);
 	}
@@ -251,13 +251,12 @@ namespace webserver {
 	api_return ShareApi::handleAddTempShare(ApiRequest& aRequest) {
 		const auto fileId = JsonUtil::getField<string>("file_id", aRequest.getRequestBody(), false);
 		const auto name = JsonUtil::getField<string>("name", aRequest.getRequestBody(), false);
-		const auto user = Deserializer::deserializeUser(aRequest.getRequestBody(), false, true);
-		const auto client = Deserializer::deserializeClient(aRequest.getRequestBody());
+		const auto user = Deserializer::deserializeUser(aRequest.getRequestBody(), true, true);
+		const auto optionalClient = Deserializer::deserializeClient(aRequest.getRequestBody(), true);
 
 		const auto filePath = aRequest.getSession()->getServer()->getFileServer().getTempFilePath(fileId);
 		if (filePath.empty() || !Util::fileExists(filePath)) {
-			aRequest.setResponseErrorStr("File with an ID " + fileId + " was not found");
-			return websocketpp::http::status_code::bad_request;
+			JsonUtil::throwError("file_id", JsonUtil::ERROR_INVALID, "Source file was not found");
 		}
 
 		const auto size = File::getSize(filePath);
@@ -276,7 +275,8 @@ namespace webserver {
 			}
 		}
 
-		auto item = ShareManager::getInstance()->addTempShare(tth, name, filePath, size, client->get(HubSettings::ShareProfile), user);
+		auto shareProfileToken = optionalClient ? optionalClient->get(HubSettings::ShareProfile) : SETTING(DEFAULT_SP);
+		auto item = ShareManager::getInstance()->addTempShare(tth, name, filePath, size, shareProfileToken, user);
 
 		aRequest.setResponseBody({
 			{ "magnet", Magnet::makeMagnet(tth, name, size) },
@@ -289,7 +289,7 @@ namespace webserver {
 	api_return ShareApi::handleRemoveTempShare(ApiRequest& aRequest) {
 		auto token = aRequest.getTokenParam();
 		if (!ShareManager::getInstance()->removeTempShare(token)) {
-			aRequest.setResponseErrorStr("Temp share was not found");
+			aRequest.setResponseErrorStr("Temp share item " + Util::toString(token) + " was not found");
 			return websocketpp::http::status_code::bad_request;
 		}
 
@@ -337,8 +337,7 @@ namespace webserver {
 	api_return ShareApi::handleRemoveExclude(ApiRequest& aRequest) {
 		auto path = JsonUtil::getField<string>("path", aRequest.getRequestBody(), false);
 		if (!ShareManager::getInstance()->removeExcludedPath(path)) {
-			aRequest.setResponseErrorStr("Excluded path was not found");
-			return websocketpp::http::status_code::bad_request;
+			JsonUtil::throwError("path", JsonUtil::ERROR_INVALID, "Excluded path was not found");
 		}
 
 		return websocketpp::http::status_code::no_content;
@@ -383,7 +382,7 @@ namespace webserver {
 	api_return ShareApi::handleAbortRefreshTask(ApiRequest& aRequest) {
 		const auto token = aRequest.getTokenParam();
 		if (!ShareManager::getInstance()->abortRefresh(token)) {
-			aRequest.setResponseErrorStr("Refresh task was not found");
+			aRequest.setResponseErrorStr("Refresh task " + Util::toString(token) + " was not found");
 			return websocketpp::http::status_code::bad_request;
 		}
 
@@ -512,7 +511,7 @@ namespace webserver {
 		return websocketpp::http::status_code::ok;
 	}
 
-	bool ShareApi::runPathValidatorF(const std::function<void()>& aValidationF, const ApiCompletionF& aErrorF) noexcept {
+	bool ShareApi::runPathValidatorF(const Callback& aValidationF, const ApiCompletionF& aErrorF) noexcept {
 		try {
 			aValidationF();
 		} catch (const QueueException& e) {

@@ -16,15 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#if !defined(DIRECTORY_LISTING_FRM_H)
+#ifndef DIRECTORY_LISTING_FRM_H
 #define DIRECTORY_LISTING_FRM_H
-
-#if _MSC_VER >= 1000
-#pragma once
-#endif // _MSC_VER >= 1000
-
-#include <airdcpp/User.h>
-#include <airdcpp/FastAlloc.h>
 
 #include "FlatTabCtrl.h"
 #include "FilteredListViewCtrl.h"
@@ -39,6 +32,9 @@
 #include <airdcpp/concurrency.h>
 #include <airdcpp/DirectoryListing.h>
 #include <airdcpp/DirectoryListingListener.h>
+
+#include <airdcpp/User.h>
+#include <airdcpp/FastAlloc.h>
 
 #define CONTROL_MESSAGE_MAP 10
 #define COMBO_SEL_MAP 11
@@ -67,7 +63,7 @@ public:
 	static void openWindow(const DirectoryListingPtr& aList, const string& aDir, const string& aXML);
 
 	// Open own filelist
-	static void openWindow(ProfileToken aProfile, bool aUseADL = false, const string& aDir = ADC_ROOT_STR) noexcept;
+	static void openWindow(ProfileToken aProfile, const string& aDir = ADC_ROOT_STR) noexcept;
 
 	// Open local file
 	static void openWindow(const HintedUser& aUser, const string& aFile, const string& aDir = ADC_ROOT_STR) noexcept;
@@ -200,7 +196,7 @@ public:
 
 	void refreshTree(const string& root, bool aSelectDir);
 
-	void selectItem(const string& aPath);
+	HTREEITEM selectItem(const string& aPath);
 	
 	LRESULT onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 
@@ -252,14 +248,17 @@ private:
 	void openDupe(const DirectoryListing::Directory::Ptr& d);
 	void openDupe(const DirectoryListing::File::Ptr& f, bool openDir) noexcept;
 
+	// Current list path in the core (may not match the current view path during directory changes)
+	const string getCurrentListPath() const noexcept;
+
 	// safe to be called from any thread
 	void updateStatus(const tstring& aMsg);
 	void updateStatusText(int aTotalCount, int64_t totalSize, int selectedCount, int displayCount, time_t aUpdateDate);
 
-	string curPath = ADC_ROOT_STR;
+	// string curPath = ADC_ROOT_STR;
 	
 	void updateItems(const DirectoryListing::Directory::Ptr& d);
-	void insertItems(const optional<string>& selectedName);
+	void insertItems(const string& aPath, const optional<string>& aSelectedName);
 
 	void findSearchHit(bool newDir = false);
 	int searchPos;
@@ -275,7 +274,7 @@ private:
 		CHANGE_LAST
 	};
 
-	ChangeType changeType;
+	ChangeType changeType = CHANGE_LIST;
 
 	void updateStatus() noexcept;
 	void updateStatus(const DirectoryListing::Directory::Ptr& aCurrentDir) noexcept;
@@ -303,8 +302,8 @@ private:
 			return hash<string>()(type == DIRECTORY ? dir->getName() : file->getName());
 		}
 
-		const tstring getText(uint8_t col) const;
-		const string getTextNormal(uint8_t col) const;
+		const tstring getText(uint8_t col) const noexcept;
+		const string getTextNormal(uint8_t col) const noexcept;
 		
 		/*struct TotalSize {
 			TotalSize() : total(0) { }
@@ -312,19 +311,19 @@ private:
 			int64_t total;
 		};*/
 
-		static int compareItems(const ItemInfo* a, const ItemInfo* b, uint8_t col);
+		static int compareItems(const ItemInfo* a, const ItemInfo* b, uint8_t col) noexcept;
 
-		int getImageIndex() const;
-		DupeType getDupe() const { return type == DIRECTORY ? dir->getDupe() : file->getDupe(); }
-		const string& getName() const { return type == DIRECTORY ? dir->getName() : file->getName(); }
-		string getAdcPath() const { return type == DIRECTORY ? dir->getAdcPath() : file->getAdcPath(); }
-		bool isAdl() const { return type == DIRECTORY ? dir->getAdls() : file->getAdls(); }
+		int getImageIndex() const noexcept;
+		DupeType getDupe() const noexcept { return type == DIRECTORY ? dir->getDupe() : file->getDupe(); }
+		const string& getName() const noexcept { return type == DIRECTORY ? dir->getName() : file->getName(); }
+		string getAdcPath() const noexcept { return type == DIRECTORY ? dir->getAdcPath() : file->getAdcPath(); }
+		bool isAdl() const noexcept;
 
 		struct NameSort {
-			bool operator()(const ItemInfo& a, const ItemInfo& b) const;
+			bool operator()(const ItemInfo& a, const ItemInfo& b) const noexcept;
 		};
 
-		const tstring& getNameW() const { return name; }
+		const tstring& getNameW() const noexcept { return name; }
 	private:
 		//int64_t aTotalSize
 		const tstring name;
@@ -334,7 +333,7 @@ private:
 
 	void handleItemAction(bool usingTree, std::function<void (const ItemInfo* ii)> aF, bool firstOnly = false);
 	void onListItemAction();
-	void changeDir(const ItemInfo* d, bool aReloadDir = false);
+	void loadPath(const ItemInfo* d, DirectoryListing::DirectoryLoadType aChangeType);
 
 	static tstring handleCopyMagnet(const ItemInfo* ii);
 	static tstring handleCopyPath(const ItemInfo* ii);
@@ -366,21 +365,21 @@ private:
 	ListType ctrlFiles;
 
 	CStatusBarCtrl ctrlStatus;
-	HTREEITEM treeRoot;
+	HTREEITEM treeRoot = nullptr;
 	
 	CToolBarCtrl ctrlToolbar;
 	void addCmdBarButtons();
 
 	BrowserBar<DirectoryListingFrame> browserBar;
 
-	int skipHits;
+	int skipHits = 0;
 
-	bool updating;
-	bool statusDirty;
+	bool updating = false;
+	bool statusDirty = false;
 
 	int statusSizes[STATUS_LAST];
 	
-	DirectoryListingPtr dl;
+	const DirectoryListingPtr dl;
 
 	ParamMap ucLineParams;
 
@@ -392,26 +391,26 @@ private:
 	typedef map<HWND, DirectoryListingFrame*> FrameMap;
 	static FrameMap frames;
 
-	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
+	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept override;
 
-	void on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool aBackgroundTask) noexcept;
-	void on(DirectoryListingListener::LoadingFailed, const string& aReason) noexcept;
-	void on(DirectoryListingListener::LoadingStarted, bool changeDir) noexcept;
-	void on(DirectoryListingListener::QueueMatched, const string& aMessage) noexcept;
-	void on(DirectoryListingListener::Close) noexcept;
-	void on(DirectoryListingListener::SearchStarted) noexcept;
-	void on(DirectoryListingListener::SearchFailed, bool timedOut) noexcept;
-	void on(DirectoryListingListener::ChangeDirectory, const string& aDir, bool isSearchChange) noexcept;
-	void on(DirectoryListingListener::UpdateStatusMessage, const string& aMessage) noexcept;
-	void on(DirectoryListingListener::RemovedQueue, const string& aDir) noexcept;
-	void on(DirectoryListingListener::UserUpdated) noexcept;
-	void on(DirectoryListingListener::ShareProfileChanged) noexcept;
-	void on(DirectoryListingListener::Read) noexcept;
+	void on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, uint8_t aType) noexcept override;
+	void on(DirectoryListingListener::LoadingFailed, const string& aReason) noexcept override;
+	void on(DirectoryListingListener::LoadingStarted, bool changeDir) noexcept override;
+	void on(DirectoryListingListener::QueueMatched, const string& aMessage) noexcept override;
+	void on(DirectoryListingListener::Close) noexcept override;
+	void on(DirectoryListingListener::SearchStarted) noexcept override;
+	void on(DirectoryListingListener::SearchFailed, bool aTimedOut) noexcept override;
+	void on(DirectoryListingListener::ChangeDirectory, const string& aDir, uint8_t aChangeType) noexcept override;
+	void on(DirectoryListingListener::UpdateStatusMessage, const string& aMessage) noexcept override;
+	void on(DirectoryListingListener::RemovedQueue, const string& aDir) noexcept override;
+	void on(DirectoryListingListener::UserUpdated) noexcept override;
+	void on(DirectoryListingListener::ShareProfileChanged) noexcept override;
+	void on(DirectoryListingListener::Read) noexcept override;
 
 	void filterList();
 	void createRoot();
 	void convertToFull();
-	void onLoadingFinished(int64_t aStart, const string& aDir, bool aBackgroundTask);
+	void onLoadingFinished(int64_t aStart, const string& aDir, uint8_t aType);
 
 
 	CComboBox selCombo;
@@ -440,14 +439,14 @@ private:
 	void updateItemCache(const string& aPath);
 protected:
 	/* TypedTreeViewCtrl */
-	TreeType::ChildrenState getChildrenState(const ItemInfo* d) const;
-	int getIconIndex(const ItemInfo* d) const;
-	void expandDir(ItemInfo* d, bool /*collapsing*/);
-	void insertTreeItems(const string& aPath, HTREEITEM aParent);
+	TreeType::ChildrenState getChildrenState(const ItemInfo* d) const noexcept;
+	int getIconIndex(const ItemInfo* d) const noexcept;
+	void expandDir(ItemInfo* d, bool /*collapsing*/) noexcept;
+	void insertTreeItems(const string& aPath, HTREEITEM aParent) noexcept;
 
 	/* FilteredListViewCtrl */
-	void createColumns();
-	size_t getTotalListItemCount() const;
+	void createColumns() noexcept;
+	size_t getTotalListItemCount() const noexcept;
 
 private:
 	enum WindowState {
@@ -462,6 +461,8 @@ private:
 	void enableBrowserLayout(bool redraw = true);
 
 	typedef std::set<string, Util::PathSortOrderBool> PathSet;
+
+	bool matchADL = false;
 };
 
 #endif // !defined(DIRECTORY_LISTING_FRM_H)

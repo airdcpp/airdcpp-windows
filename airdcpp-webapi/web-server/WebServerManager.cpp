@@ -34,7 +34,7 @@
 #include <airdcpp/SimpleXML.h>
 #include <airdcpp/TimerManager.h>
 
-#define CONFIG_NAME "WebServer.xml"
+#define LEGACY_CONFIG_NAME_XML "WebServer.xml"
 #define CONFIG_DIR Util::PATH_USER_CONFIG
 
 #define AUTHENTICATION_TIMEOUT 60 // seconds
@@ -44,18 +44,20 @@
 namespace webserver {
 	using namespace dcpp;
 	WebServerManager::WebServerManager() : 
-		ios(settings.getSettingItem(WebServerSettings::SERVER_THREADS).getDefaultValue()),
-		tasks(settings.getSettingItem(WebServerSettings::SERVER_THREADS).getDefaultValue()),
-		work(tasks),
-		plainServerConfig(settings.getSettingItem(WebServerSettings::PLAIN_PORT), settings.getSettingItem(WebServerSettings::PLAIN_BIND)),
-		tlsServerConfig(settings.getSettingItem(WebServerSettings::TLS_PORT), settings.getSettingItem(WebServerSettings::TLS_BIND))
+		ios(4),
+		tasks(4),
+		work(tasks)
 	{
 
 		fileServer.setResourcePath(Util::getPath(Util::PATH_RESOURCES) + "web-resources" + PATH_SEPARATOR);
 
+		settingsManager = make_unique<WebServerSettings>(this);
 		extManager = make_unique<ExtensionManager>(this);
 		userManager = make_unique<WebUserManager>(this);
 		contextMenuManager = make_unique<ContextMenuManager>();
+
+		plainServerConfig = make_unique<ServerConfig>(settingsManager->getSettingItem(WebServerSettings::PLAIN_PORT), settingsManager->getSettingItem(WebServerSettings::PLAIN_BIND));
+		tlsServerConfig = make_unique<ServerConfig>(settingsManager->getSettingItem(WebServerSettings::TLS_PORT), settingsManager->getSettingItem(WebServerSettings::TLS_BIND));
 
 		// Prevent io service from running until we load
 		ios.stop();
@@ -66,10 +68,6 @@ namespace webserver {
 		// Let them remove the listeners
 		extManager.reset();
 		userManager.reset();
-	}
-
-	string WebServerManager::getConfigFilePath() const noexcept {
-		return Util::getPath(CONFIG_DIR) + CONFIG_NAME;
 	}
 
 	bool WebServerManager::isRunning() const noexcept {
@@ -126,7 +124,7 @@ namespace webserver {
 		aEndpoint.set_listen_backlog(boost::asio::socket_base::max_connections);
 	}
 
-	bool WebServerManager::startup(const ErrorF& errorF, const string& aWebResourcePath, const CallBack& aShutdownF) {
+	bool WebServerManager::startup(const MessageCallback& errorF, const string& aWebResourcePath, const Callback& aShutdownF) {
 		if (!aWebResourcePath.empty()) {
 			fileServer.setResourcePath(aWebResourcePath);
 		}
@@ -135,7 +133,7 @@ namespace webserver {
 		return start(errorF);
 	}
 
-	bool WebServerManager::start(const ErrorF& errorF) {
+	bool WebServerManager::start(const MessageCallback& errorF) {
 		if (!hasValidServerConfig()) {
 			return false;
 		}
@@ -155,7 +153,7 @@ namespace webserver {
 		return true;
 	}
 
-	bool WebServerManager::initialize(const ErrorF& errorF) {
+	bool WebServerManager::initialize(const MessageCallback& errorF) {
 		SettingsManager::getInstance()->setDefault(SettingsManager::PM_MESSAGE_CACHE, 100);
 		SettingsManager::getInstance()->setDefault(SettingsManager::HUB_MESSAGE_CACHE, 100);
 
@@ -205,7 +203,7 @@ namespace webserver {
 	}
 
 	template <typename EndpointType>
-	bool listenEndpoint(EndpointType& aEndpoint, const ServerConfig& aConfig, const string& aProtocol, const WebServerManager::ErrorF& errorF) noexcept {
+	bool listenEndpoint(EndpointType& aEndpoint, const ServerConfig& aConfig, const string& aProtocol, const MessageCallback& errorF) noexcept {
 		if (!aConfig.hasValidConfig()) {
 			return false;
 		}
@@ -236,14 +234,14 @@ namespace webserver {
 		return false;
 	}
 
-	bool WebServerManager::listen(const ErrorF& errorF) {
+	bool WebServerManager::listen(const MessageCallback& errorF) {
 		bool hasServer = false;
 
-		if (listenEndpoint(endpoint_plain, plainServerConfig, "HTTP", errorF)) {
+		if (listenEndpoint(endpoint_plain, *plainServerConfig, "HTTP", errorF)) {
 			hasServer = true;
 		}
 
-		if (listenEndpoint(endpoint_tls, tlsServerConfig, "HTTPS", errorF)) {
+		if (listenEndpoint(endpoint_tls, *tlsServerConfig, "HTTPS", errorF)) {
 			hasServer = true;
 		}
 
@@ -441,16 +439,12 @@ namespace webserver {
 		return i.base() == sockets.end() ? nullptr : *i;
 	}
 
-	TimerPtr WebServerManager::addTimer(CallBack&& aCallBack, time_t aIntervalMillis, const Timer::CallbackWrapper& aCallbackWrapper) noexcept {
-		return make_shared<Timer>(move(aCallBack), tasks, aIntervalMillis, aCallbackWrapper);
+	TimerPtr WebServerManager::addTimer(Callback&& aCallback, time_t aIntervalMillis, const Timer::CallbackWrapper& aCallbackWrapper) noexcept {
+		return make_shared<Timer>(move(aCallback), tasks, aIntervalMillis, aCallbackWrapper);
 	}
 
-	void WebServerManager::addAsyncTask(CallBack&& aCallBack) noexcept {
-		tasks.post(aCallBack);
-	}
-
-	void WebServerManager::setDirty() noexcept {
-		isDirty = true;
+	void WebServerManager::addAsyncTask(Callback&& aCallback) noexcept {
+		tasks.post(aCallback);
 	}
 
 	void WebServerManager::addSocket(websocketpp::connection_hdl hdl, const WebSocketPtr& aSocket) noexcept {
@@ -496,7 +490,7 @@ namespace webserver {
 		LogManager::getInstance()->message(aMsg, aSeverity, STRING(WEB_SERVER));
 	}
 
-	WebServerManager::ErrorF WebServerManager::getDefaultErrorLogger() const noexcept {
+	MessageCallback WebServerManager::getDefaultErrorLogger() const noexcept {
 		return [this](const string& aMessage) {
 			log(aMessage, LogMessage::SEV_ERROR);
 		};
@@ -505,7 +499,7 @@ namespace webserver {
 	string WebServerManager::getLocalServerHttpUrl() noexcept {
 		bool isPlain = isListeningPlain();
 		decltype(auto) config = isPlain ? plainServerConfig : tlsServerConfig;
-		return (isPlain ? "http://" : "https://") + getLocalServerAddress(config);
+		return (isPlain ? "http://" : "https://") + getLocalServerAddress(*config);
 	}
 
 	bool WebServerManager::isAnyAddress(const string& aAddress) noexcept {
@@ -567,7 +561,7 @@ namespace webserver {
 	}
 
 	bool WebServerManager::hasValidServerConfig() const noexcept {
-		return plainServerConfig.hasValidConfig() || tlsServerConfig.hasValidConfig();
+		return plainServerConfig->hasValidConfig() || tlsServerConfig->hasValidConfig();
 	}
 
 	bool WebServerManager::hasUsers() const noexcept {
@@ -578,135 +572,37 @@ namespace webserver {
 		return extManager->waitLoaded();
 	}
 
-	bool WebServerManager::load(const ErrorF& aErrorF) noexcept {
-		SettingsManager::loadSettingFile(CONFIG_DIR, CONFIG_NAME, [this](SimpleXML& xml) {
-			if (xml.findChild("WebServer")) {
-				xml.stepIn();
-
-				if (xml.findChild("Config")) {
+	bool WebServerManager::load(const MessageCallback& aErrorF) noexcept {
+		const auto legacyXmlPath = Util::getPath(CONFIG_DIR) + LEGACY_CONFIG_NAME_XML;
+		if (Util::fileExists(legacyXmlPath)) {
+			SettingsManager::loadSettingFile(CONFIG_DIR, LEGACY_CONFIG_NAME_XML, [this](SimpleXML& xml) {
+				if (xml.findChild("WebServer")) {
 					xml.stepIn();
-					loadServer(xml, "Server", plainServerConfig, false);
-					loadServer(xml, "TLSServer", tlsServerConfig, true);
 
-					if (xml.findChild("Threads")) {
-						xml.stepIn();
-						WEBCFG(SERVER_THREADS).setValue(max(Util::toInt(xml.getData()), 1));
-						xml.stepOut();
-					}
-					xml.resetCurrentChild();
-
-					if (xml.findChild("ExtensionsDebugMode")) {
-						xml.stepIn();
-						WEBCFG(EXTENSIONS_DEBUG_MODE).setValue(Util::toInt(xml.getData()) > 0 ? true : false);
-						xml.stepOut();
-					}
-					xml.resetCurrentChild();
-
+					fire(WebServerManagerListener::LoadLegacySettings(), xml);
 					xml.stepOut();
 				}
+			}, aErrorF);
 
-				fire(WebServerManagerListener::LoadSettings(), xml);
+			File::deleteFile(legacyXmlPath);
+		}
 
-				xml.stepOut();
-			}
-		}, aErrorF);
-
+		fire(WebServerManagerListener::LoadSettings(), aErrorF);
 		return hasValidServerConfig();
 	}
 
-	void WebServerManager::loadServer(SimpleXML& aXml, const string& aTagName, ServerConfig& config_, bool aTls) noexcept {
-		if (aXml.findChild(aTagName)) {
-			// getChildIntAttrib returns 0 also for non-existing attributes, get as string instead...
-			const auto port = aXml.getChildAttrib("Port");
-			if (!port.empty()) {
-				config_.port.setValue(Util::toInt(port));
-			}
-
-			config_.bindAddress.setValue(aXml.getChildAttrib("BindAddress"));
-
-			if (aTls) {
-				WEBCFG(TLS_CERT_PATH).setValue(aXml.getChildAttrib("Certificate"));
-				WEBCFG(TLS_CERT_KEY_PATH).setValue(aXml.getChildAttrib("CertificateKey"));
-			}
-		}
-
-		aXml.resetCurrentChild();
-	}
-
-	bool WebServerManager::save(const ErrorF& aCustomErrorF) noexcept {
-		{
-			if (!isDirty) {
-				return false;
-			}
-
-			isDirty = false;
-		}
-
-		SimpleXML xml;
-
-		xml.addTag("WebServer");
-		xml.stepIn();
-
-		{
-			xml.addTag("Config");
-			xml.stepIn();
-
-			plainServerConfig.save(xml, "Server");
-
-			tlsServerConfig.save(xml, "TLSServer");
-			if (!WEBCFG(TLS_CERT_PATH).isDefault()) {
-				xml.addChildAttrib("Certificate", WEBCFG(TLS_CERT_PATH).str());
-			}
-
-			if (!WEBCFG(TLS_CERT_KEY_PATH).isDefault()) {
-				xml.addChildAttrib("CertificateKey", WEBCFG(TLS_CERT_KEY_PATH).str());
-			}
-
-			if (!WEBCFG(SERVER_THREADS).isDefault()) {
-				xml.addTag("Threads");
-				xml.stepIn();
-
-				xml.setData(Util::toString(WEBCFG(SERVER_THREADS).num()));
-
-				xml.stepOut();
-			}
-
-			if (!WEBCFG(EXTENSIONS_DEBUG_MODE).isDefault()) {
-				xml.addTag("ExtensionsDebugMode");
-				xml.stepIn();
-				xml.setData(Util::toString(WEBCFG(EXTENSIONS_DEBUG_MODE).boolean()));
-				xml.stepOut();
-			}
-
-			xml.stepOut();
-		}
-
-		fire(WebServerManagerListener::SaveSettings(), xml);
-
-		xml.stepOut();
-
+	bool WebServerManager::save(const MessageCallback& aCustomErrorF) noexcept {
 		auto errorF = aCustomErrorF;
 		if (!errorF) {
 			// Avoid crashes if the file is saved when core is not loaded
 			errorF = [](const string&) {};
 		}
 
-		return SettingsManager::saveSettingFile(xml, CONFIG_DIR, CONFIG_NAME, errorF);
+		fire(WebServerManagerListener::SaveSettings(), errorF);
+		return true;
 	}
 
 	bool ServerConfig::hasValidConfig() const noexcept {
 		return port.num() > 0;
-	}
-
-	void ServerConfig::save(SimpleXML& xml_, const string& aTagName) noexcept {
-		xml_.addTag(aTagName);
-
-		if (!port.isDefault()) {
-			xml_.addChildAttrib("Port", port.num());
-		}
-
-		if (!bindAddress.isDefault()) {
-			xml_.addChildAttrib("BindAddress", bindAddress.str());
-		}
 	}
 }

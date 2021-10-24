@@ -37,6 +37,8 @@ namespace webserver {
 		METHOD_HANDLER(Access::ANY,				METHOD_POST, (EXACT_PARAM("get")),			SettingApi::handleGetValues);
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST, (EXACT_PARAM("set")),			SettingApi::handleSetValues);
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST, (EXACT_PARAM("reset")),		SettingApi::handleResetValues);
+		METHOD_HANDLER(Access::ANY,				METHOD_POST, (EXACT_PARAM("get_defaults")), SettingApi::handleGetDefaultValues);
+		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST, (EXACT_PARAM("set_defaults")), SettingApi::handleSetDefaultValues);
 	}
 
 	SettingApi::~SettingApi() {
@@ -54,6 +56,33 @@ namespace webserver {
 		return websocketpp::http::status_code::ok;
 	}
 
+	api_return SettingApi::handleGetDefaultValues(ApiRequest& aRequest) {
+		const auto& requestJson = aRequest.getRequestBody();
+
+		auto retJson = json::object();
+		parseSettingKeys(requestJson, [&](const ApiSettingItem& aItem) {
+			retJson[aItem.name] = aItem.getDefaultValue();
+		}, aRequest.getSession()->getServer());
+
+		aRequest.setResponseBody(retJson);
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return SettingApi::handleSetDefaultValues(ApiRequest& aRequest) {
+		const auto& requestJson = aRequest.getRequestBody();
+
+		auto hasSet = false;
+		parseSettingValues(aRequest.getRequestBody(), [&](ApiSettingItem& aItem, const json& aValue) {
+			auto settings = aRequest.getSession()->getServer()->getSettingsManager();
+			settings.setDefaultValue(aItem, aValue);
+
+			hasSet = true;
+		}, aRequest.getSession()->getServer());
+
+		dcassert(hasSet);
+		return websocketpp::http::status_code::no_content;
+	}
+
 	api_return SettingApi::handleGetValues(ApiRequest& aRequest) {
 		const auto& requestJson = aRequest.getRequestBody();
 
@@ -63,7 +92,7 @@ namespace webserver {
 		}
 
 		auto retJson = json::object();
-		parseSettingKeys(requestJson, [&](ApiSettingItem& aItem) {
+		parseSettingKeys(requestJson, [&](const ApiSettingItem& aItem) {
 			if (valueMode != "force_manual" && aItem.usingAutoValue(valueMode == "force_auto")) {
 				retJson[aItem.name] = aItem.getAutoValue();
 			} else {
@@ -75,7 +104,7 @@ namespace webserver {
 		return websocketpp::http::status_code::ok;
 	}
 
-	void SettingApi::parseSettingKeys(const json& aJson, ParserF aHandler, WebServerManager* aWsm) {
+	void SettingApi::parseSettingKeys(const json& aJson, KeyParserF aHandler, WebServerManager* aWsm) {
 		auto keys = JsonUtil::getField<StringList>("keys", aJson, true);
 		for (const auto& key : keys) {
 			auto setting = getSettingItem(key, aWsm);
@@ -87,11 +116,24 @@ namespace webserver {
 		}
 	}
 
+	void SettingApi::parseSettingValues(const json& aJson, ValueParserF aHandler, WebServerManager* aWsm) {
+		for (const auto& elem: aJson.items()) {
+			auto setting = getSettingItem(elem.key(), aWsm);
+			if (!setting) {
+				JsonUtil::throwError(elem.key(), JsonUtil::ERROR_INVALID, "Setting not found");
+			}
+
+			auto value = SettingUtils::validateValue(elem.value(), *setting, nullptr);
+			aHandler(*setting, value);
+		}
+	}
+
 	api_return SettingApi::handleResetValues(ApiRequest& aRequest) {
 		const auto& requestJson = aRequest.getRequestBody();
+		auto settings = aRequest.getSession()->getServer()->getSettingsManager();
 
 		parseSettingKeys(requestJson, [&](ApiSettingItem& aItem) {
-			aItem.unset();
+			settings.unset(aItem);
 		}, aRequest.getSession()->getServer());
 
 		return websocketpp::http::status_code::no_content;
@@ -99,6 +141,7 @@ namespace webserver {
 
 	api_return SettingApi::handleSetValues(ApiRequest& aRequest) {
 		auto server = aRequest.getSession()->getServer();
+		auto settings = aRequest.getSession()->getServer()->getSettingsManager();
 		auto holder = make_shared<SettingHolder>(
 			[=](const string& aError) {
 				server->log(aError, LogMessage::SEV_ERROR);
@@ -106,20 +149,15 @@ namespace webserver {
 		);
 
 		bool hasSet = false;
-		for (const auto& elem : aRequest.getRequestBody().items()) {
-			auto setting = getSettingItem(elem.key(), aRequest.getSession()->getServer());
-			if (!setting) {
-				JsonUtil::throwError(elem.key(), JsonUtil::ERROR_INVALID, "Setting not found");
-			}
 
-			setting->setValue(SettingUtils::validateValue(elem.value(), *setting, nullptr));
+		parseSettingValues(aRequest.getRequestBody(), [&](ApiSettingItem& aItem, const json& aValue) {
+			server->getSettingsManager().setValue(aItem, aValue);
 			hasSet = true;
-		}
+		}, aRequest.getSession()->getServer());
 
 		dcassert(hasSet);
 
 		SettingsManager::getInstance()->save();
-		server->setDirty();
 
 		// This may take a while, don't wait
 		addAsyncTask([=] {
@@ -135,6 +173,6 @@ namespace webserver {
 			return p;
 		}
 
-		return aWsm->getSettings().getSettingItem(aKey);
+		return aWsm->getSettingsManager().getSettingItem(aKey);
 	}
 }

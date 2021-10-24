@@ -149,7 +149,7 @@ void OMenu::CheckOwnerDrawn(UINT uItem, BOOL byPosition) {
 }
 
 BOOL OMenu::InsertMenuItem(UINT uItem, BOOL bByPosition, LPMENUITEMINFO lpmii) {
-	if (lpmii->fMask & MIIM_TYPE && !(lpmii->fType & MFT_OWNERDRAW))
+	if (lpmii->fMask & MIIM_TYPE && !(lpmii->fType & MFT_OWNERDRAW)) {
 		if (lpmii->fMask & MIIM_DATA) {
 			// If we add this MENUITEMINFO to several items we might destroy the original data, so we copy it to be sure
 			MENUITEMINFO mii;
@@ -163,12 +163,19 @@ BOOL OMenu::InsertMenuItem(UINT uItem, BOOL bByPosition, LPMENUITEMINFO lpmii) {
 			// Do this later on? Then we're out of scope -> mii dead -> lpmii dead pointer
 			return CMenu::InsertMenuItem(uItem, bByPosition, lpmii);
 		}
+	}
+
 	return CMenu::InsertMenuItem(uItem, bByPosition, lpmii);
 }
 
 void OMenu::open(HWND aHWND, unsigned flags /*= TPM_LEFTALIGN | TPM_RIGHTBUTTON*/, CPoint pt /*= GetMessagePos()*/) {
-	//check empty submenus
+	// Check empty submenus
 	disableEmptyMenus();
+
+	// No end separators
+	while (GetMenuItemCount() > 0 && isSeparator(GetMenuItemCount() - 1)) {
+		RemoveMenu(GetMenuItemCount() - 1, MF_BYPOSITION);
+	}
 
 	flags |= TPM_RETURNCMD;
 	unsigned ret = ::TrackPopupMenu(m_hMenu, flags, pt.x, pt.y, 0, aHWND, 0);

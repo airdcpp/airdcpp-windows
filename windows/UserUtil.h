@@ -21,12 +21,6 @@
 
 
 #include <airdcpp/typedefs.h>
-//#include <airdcpp/forward.h>
-//#include <airdcpp/OnlineUser.h>
-
-
-//class OnlineUser;
-//class Identity;
 
 class UserUtil
 {

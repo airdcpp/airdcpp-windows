@@ -21,7 +21,6 @@
 #include "WizardLanguage.h"
 #include "ActionUtil.h"
 
-#include <airdcpp/AirUtil.h>
 #include <airdcpp/Localization.h>
 
 

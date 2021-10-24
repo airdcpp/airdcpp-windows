@@ -1,6 +1,6 @@
 // Boost.Geometry (aka GGL, Generic Geometry Library)
 
-// Copyright (c) 2014-2019, Oracle and/or its affiliates.
+// Copyright (c) 2014-2020, Oracle and/or its affiliates.
 
 // Contributed and/or modified by Menelaos Karavelas, on behalf of Oracle
 // Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
@@ -14,7 +14,7 @@
 #include <vector>
 
 #include <boost/core/ignore_unused.hpp>
-#include <boost/range.hpp>
+#include <boost/range/empty.hpp>
 
 #include <boost/geometry/algorithms/detail/is_valid/is_acceptable_turn.hpp>
 #include <boost/geometry/algorithms/detail/overlay/get_turn_info.hpp>
@@ -41,7 +41,7 @@ namespace detail { namespace is_valid
 template
 <
     typename Geometry,
-    typename CSTag
+    typename CSTag // TODO: remove
 >
 class has_valid_self_turns
 {

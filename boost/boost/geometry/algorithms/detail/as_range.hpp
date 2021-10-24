@@ -4,6 +4,10 @@
 // Copyright (c) 2008-2012 Bruno Lalande, Paris, France.
 // Copyright (c) 2009-2012 Mateusz Loskot, London, UK.
 
+// This file was modified by Oracle on 2020-2021.
+// Modifications copyright (c) 2020-2021 Oracle and/or its affiliates.
+// Contributed and/or modified by Adam Wulkiewicz, on behalf of Oracle
+
 // Parts of Boost.Geometry are redesigned from Geodan's Geographic Library
 // (geolib/GGL), copyright (c) 1995-2010 Geodan, Amsterdam, the Netherlands.
 
@@ -15,11 +19,12 @@
 #define BOOST_GEOMETRY_ALGORITHMS_DETAIL_AS_RANGE_HPP
 
 
+#include <boost/geometry/algorithms/not_implemented.hpp>
+
 #include <boost/geometry/core/exterior_ring.hpp>
+#include <boost/geometry/core/ring_type.hpp>
 #include <boost/geometry/core/tag.hpp>
 #include <boost/geometry/core/tags.hpp>
-
-#include <boost/geometry/util/add_const_if_c.hpp>
 
 
 namespace boost { namespace geometry
@@ -31,24 +36,30 @@ namespace dispatch
 {
 
 
-template <typename GeometryTag, typename Geometry, typename Range, bool IsConst>
-struct as_range
+template <typename Geometry, typename Tag = typename tag<Geometry>::type>
+struct as_range : not_implemented<Geometry, Tag>
+{};
+
+template <typename Geometry>
+struct as_range<Geometry, linestring_tag>
 {
-    static inline typename add_const_if_c<IsConst, Range>::type& get(
-            typename add_const_if_c<IsConst, Geometry>::type& input)
+    static inline typename ring_return_type<Geometry>::type get(Geometry& geometry)
     {
-        return input;
+        return geometry;
     }
 };
 
+template <typename Geometry>
+struct as_range<Geometry, ring_tag>
+    : as_range<Geometry, linestring_tag>
+{};
 
-template <typename Geometry, typename Range, bool IsConst>
-struct as_range<polygon_tag, Geometry, Range, IsConst>
+template <typename Geometry>
+struct as_range<Geometry, polygon_tag>
 {
-    static inline typename add_const_if_c<IsConst, Range>::type& get(
-            typename add_const_if_c<IsConst, Geometry>::type& input)
+    static inline typename ring_return_type<Geometry>::type get(Geometry& geometry)
     {
-        return exterior_ring(input);
+        return exterior_ring(geometry);
     }
 };
 
@@ -66,35 +77,10 @@ or the outer ring (polygon)
 \details Utility to handle polygon's outer ring as a range
 \ingroup utility
 */
-template <typename Range, typename Geometry>
-inline Range& as_range(Geometry& input)
+template <typename Geometry>
+inline typename ring_return_type<Geometry>::type as_range(Geometry& geometry)
 {
-    return dispatch::as_range
-        <
-            typename tag<Geometry>::type,
-            Geometry,
-            Range,
-            false
-        >::get(input);
-}
-
-
-/*!
-\brief Function getting either the range (ring, linestring) itself
-or the outer ring (polygon), const version
-\details Utility to handle polygon's outer ring as a range
-\ingroup utility
-*/
-template <typename Range, typename Geometry>
-inline Range const& as_range(Geometry const& input)
-{
-    return dispatch::as_range
-        <
-            typename tag<Geometry>::type,
-            Geometry,
-            Range,
-            true
-        >::get(input);
+    return dispatch::as_range<Geometry>::get(geometry);
 }
 
 }

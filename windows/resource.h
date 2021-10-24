@@ -1866,7 +1866,6 @@
 #define IDC_SEND_MESSAGE                42786
 #define IDC_FILTER_FOCUS                42788
 #define IDC_AUTOSEARCH                  42789
-#define IDC_OWN_LIST_ADL                42790
 #define IDC_BROWSE_OWN_LIST             42791
 #define ID_WINDOW_MINIMIZE_ALL          57654
 #define ID_WINDOW_RESTORE_ALL           57655

@@ -53,10 +53,8 @@ struct treap_node_extra_checker
                      const return_type& check_return_left, const return_type& check_return_right,
                      return_type& check_return)
    {
-      if (node_traits::get_left(p))
-         BOOST_INTRUSIVE_INVARIANT_ASSERT(!prio_comp_(node_traits::get_left(p), p));
-      if (node_traits::get_right(p))
-         BOOST_INTRUSIVE_INVARIANT_ASSERT(!prio_comp_(node_traits::get_right(p), p));
+      BOOST_INTRUSIVE_INVARIANT_ASSERT(!node_traits::get_left(p) || !prio_comp_(node_traits::get_left(p), p));
+      BOOST_INTRUSIVE_INVARIANT_ASSERT(!node_traits::get_right(p) || !prio_comp_(node_traits::get_right(p), p));
       base_checker_t::operator()(p, check_return_left, check_return_right, check_return);
    }
 
@@ -181,28 +179,28 @@ class treap_algorithms
    #ifdef BOOST_INTRUSIVE_DOXYGEN_INVOKED
 
    //! @copydoc ::boost::intrusive::bstree_algorithms::get_header(const const_node_ptr&)
-   static node_ptr get_header(const_node_ptr n);
+   static node_ptr get_header(const_node_ptr n) BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree_algorithms::begin_node
-   static node_ptr begin_node(const_node_ptr header);
+   static node_ptr begin_node(const_node_ptr header) BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree_algorithms::end_node
-   static node_ptr end_node(const_node_ptr header);
+   static node_ptr end_node(const_node_ptr header) BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree_algorithms::swap_tree
-   static void swap_tree(node_ptr header1, node_ptr header2);
+   static void swap_tree(node_ptr header1, node_ptr header2) BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree_algorithms::swap_nodes(node_ptr,node_ptr)
-   static void swap_nodes(node_ptr node1, node_ptr node2);
+   static void swap_nodes(node_ptr node1, node_ptr node2) BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree_algorithms::swap_nodes(node_ptr,node_ptr,node_ptr,node_ptr)
-   static void swap_nodes(node_ptr node1, node_ptr header1, node_ptr node2, node_ptr header2);
+   static void swap_nodes(node_ptr node1, node_ptr header1, node_ptr node2, node_ptr header2) BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree_algorithms::replace_node(node_ptr,node_ptr)
-   static void replace_node(node_ptr node_to_be_replaced, node_ptr new_node);
+   static void replace_node(node_ptr node_to_be_replaced, node_ptr new_node) BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree_algorithms::replace_node(node_ptr,node_ptr,node_ptr)
-   static void replace_node(node_ptr node_to_be_replaced, node_ptr header, node_ptr new_node);
+   static void replace_node(node_ptr node_to_be_replaced, node_ptr header, node_ptr new_node) BOOST_NOEXCEPT;
    #endif   //#ifdef BOOST_INTRUSIVE_DOXYGEN_INVOKED
 
    //! @copydoc ::boost::intrusive::bstree_algorithms::unlink(node_ptr)
@@ -219,25 +217,25 @@ class treap_algorithms
 
    #ifdef BOOST_INTRUSIVE_DOXYGEN_INVOKED
    //! @copydoc ::boost::intrusive::bstree_algorithms::unlink_leftmost_without_rebalance
-   static node_ptr unlink_leftmost_without_rebalance(node_ptr header);
+   static node_ptr unlink_leftmost_without_rebalance(node_ptr header) BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree_algorithms::unique(const const_node_ptr&)
-   static bool unique(const_node_ptr node);
+   static bool unique(const_node_ptr node) BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree_algorithms::size(const const_node_ptr&)
-   static std::size_t size(const_node_ptr header);
+   static std::size_t size(const_node_ptr header) BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree_algorithms::next_node(const node_ptr&)
-   static node_ptr next_node(node_ptr node);
+   static node_ptr next_node(node_ptr node) BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree_algorithms::prev_node(const node_ptr&)
-   static node_ptr prev_node(node_ptr node);
+   static node_ptr prev_node(node_ptr node) BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree_algorithms::init(node_ptr)
-   static void init(node_ptr node);
+   static void init(node_ptr node) BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree_algorithms::init_header(node_ptr)
-   static void init_header(node_ptr header);
+   static void init_header(node_ptr header) BOOST_NOEXCEPT;
    #endif   //#ifdef BOOST_INTRUSIVE_DOXYGEN_INVOKED
 
    //! @copydoc ::boost::intrusive::bstree_algorithms::erase(node_ptr,node_ptr)
@@ -257,7 +255,7 @@ class treap_algorithms
 
    //! @copydoc ::boost::intrusive::bstree_algorithms::clear_and_dispose(const node_ptr&,Disposer)
    template<class Disposer>
-   static void clear_and_dispose(node_ptr header, Disposer disposer);
+   static void clear_and_dispose(node_ptr header, Disposer disposer) BOOST_NOEXCEPT;
 
    //! @copydoc ::boost::intrusive::bstree_algorithms::lower_bound(const const_node_ptr&,const KeyType&,KeyNodePtrCompare)
    template<class KeyType, class KeyNodePtrCompare>
@@ -566,7 +564,7 @@ class treap_algorithms
    //!   previously executed to fill "commit_data". No value should be inserted or
    //!   erased between the "insert_check" and "insert_commit" calls.
    static void insert_unique_commit
-      (node_ptr header, node_ptr new_node, const insert_commit_data &commit_data)
+      (node_ptr header, node_ptr new_node, const insert_commit_data &commit_data) BOOST_NOEXCEPT
    {
       bstree_algo::insert_unique_commit(header, new_node, commit_data);
       rotate_up_n(header, new_node, commit_data.rotations);
@@ -603,7 +601,7 @@ class treap_algorithms
    #ifdef BOOST_INTRUSIVE_DOXYGEN_INVOKED
 
    //! @copydoc ::boost::intrusive::bstree_algorithms::is_header
-   static bool is_header(const_node_ptr p);
+   static bool is_header(const_node_ptr p) BOOST_NOEXCEPT;
    #endif   //#ifdef BOOST_INTRUSIVE_DOXYGEN_INVOKED
 
    /// @cond

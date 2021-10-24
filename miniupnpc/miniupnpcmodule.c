@@ -1,8 +1,9 @@
-/* $Id: miniupnpcmodule.c,v 1.32 2018/05/03 08:17:48 nanard Exp $*/
-/* Project : miniupnp
+/* $Id: miniupnpcmodule.c,v 1.36 2021/03/02 23:34:33 nanard Exp $*/
+/* vim: tabstop=4 shiftwidth=4 noexpandtab
+ * Project : miniupnp
  * Author : Thomas BERNARD
  * website : https://miniupnp.tuxfamily.org/
- * copyright (c) 2007-2018 Thomas Bernard
+ * copyright (c) 2007-2021 Thomas Bernard
  * This software is subjet to the conditions detailed in the
  * provided LICENCE file. */
 #include <Python.h>
@@ -121,9 +122,9 @@ UPnPObject_dealloc(UPnPObject *self)
 static PyObject *
 UPnP_discover(UPnPObject *self)
 {
-	struct UPNPDev * dev;
-	int i;
+	int error = 0;
 	PyObject *res = NULL;
+
 	if(self->devlist)
 	{
 		freeUPNPDevlist(self->devlist);
@@ -136,13 +137,21 @@ UPnP_discover(UPnPObject *self)
 	                             (int)self->localport,
 	                             0/*ip v6*/,
 	                             2/* TTL */,
-	                             0/*error */);
+	                             &error);
 	Py_END_ALLOW_THREADS
 	/* Py_RETURN_NONE ??? */
-	for(dev = self->devlist, i = 0; dev; dev = dev->pNext)
-		i++;
-	res = Py_BuildValue("i", i);
-	return res;
+	if (self->devlist != NULL) {
+		struct UPNPDev * dev;
+		int i = 0;
+
+		for(dev = self->devlist; dev; dev = dev->pNext)
+			i++;
+		res = Py_BuildValue("i", i);
+		return res;
+	} else {
+		PyErr_SetString(PyExc_Exception, strupnperror(error));
+		return NULL;
+	}
 }
 
 static PyObject *
@@ -292,7 +301,7 @@ Py_END_ALLOW_THREADS
 }
 
 /* AddPortMapping(externalPort, protocol, internalHost, internalPort, desc,
- *                remoteHost)
+ *                remoteHost, leaseDuration)
  * protocol is 'UDP' or 'TCP' */
 static PyObject *
 UPnP_addportmapping(UPnPObject *self, PyObject *args)
@@ -305,17 +314,24 @@ UPnP_addportmapping(UPnPObject *self, PyObject *args)
 	const char * host;
 	const char * desc;
 	const char * remoteHost;
-	const char * leaseDuration = "0";
+	unsigned int intLeaseDuration = 0;
+	char strLeaseDuration[12];
 	int r;
-	if (!PyArg_ParseTuple(args, "HssHzz", &ePort, &proto,
-	                                     &host, &iPort, &desc, &remoteHost))
+#if (PY_MAJOR_VERSION >= 3) || (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION > 3)
+	if (!PyArg_ParseTuple(args, "HssHzz|I", &ePort, &proto,
+	                                     &host, &iPort, &desc, &remoteHost, &intLeaseDuration))
+#else
+	if (!PyArg_ParseTuple(args, "HssHzz|i", &ePort, &proto,
+	                                     &host, &iPort, &desc, &remoteHost, (int *)&intLeaseDuration))
+#endif
         return NULL;
 Py_BEGIN_ALLOW_THREADS
 	sprintf(extPort, "%hu", ePort);
 	sprintf(inPort, "%hu", iPort);
+	sprintf(strLeaseDuration, "%u", intLeaseDuration);
 	r = UPNP_AddPortMapping(self->urls.controlURL, self->data.first.servicetype,
 	                        extPort, inPort, host, desc, proto,
-	                        remoteHost, leaseDuration);
+	                        remoteHost, strLeaseDuration);
 Py_END_ALLOW_THREADS
 	if(r==UPNPCOMMAND_SUCCESS)
 	{
@@ -636,8 +652,9 @@ static PyTypeObject UPnPType = {
 #ifndef _WIN32
     PyType_GenericNew,/*UPnP_new,*/      /* tp_new */
 #else
-    0,
+    0,                         /* tp_new */
 #endif
+    0,                         /* tp_free */
 };
 
 /* module methods */
@@ -676,6 +693,16 @@ initminiupnpc(void)
     /* initialize Winsock. */
     WSADATA wsaData;
     int nResult = WSAStartup(MAKEWORD(2,2), &wsaData);
+	if (nResult != 0)
+	{
+		/* error code could be WSASYSNOTREADY WSASYSNOTREADY
+		 * WSASYSNOTREADY WSASYSNOTREADY WSASYSNOTREADY */
+#if PY_MAJOR_VERSION >= 3
+        return 0;
+#else
+        return;
+#endif
+	}
 
     UPnPType.tp_new = PyType_GenericNew;
 #endif

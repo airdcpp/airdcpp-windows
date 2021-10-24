@@ -1,15 +1,10 @@
-
-// Copyright 2017 Peter Dimov.
-//
+// Copyright 2017, 2021 Peter Dimov.
 // Distributed under the Boost Software License, Version 1.0.
-//
-// See accompanying file LICENSE_1_0.txt or copy at
-// http://www.boost.org/LICENSE_1_0.txt
+// https://www.boost.org/LICENSE_1_0.txt
 
 // See library home page at http://www.boost.org/libs/system
 
-#include <boost/system/system_error.hpp>
-#include <boost/system/error_code.hpp>
+#include <boost/system.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <cerrno>
 
@@ -32,6 +27,12 @@ int main()
     BOOST_TEST( bt.equivalent( ev, bn ) );
 
     BOOST_TEST( bc == bn );
+
+    boost::system::error_code bc2 = make_error_code( boost::system::errc::no_such_file_or_directory );
+
+    BOOST_TEST_EQ( bc2, bc );
+    BOOST_TEST_EQ( bc2.value(), ev );
+    BOOST_TEST_EQ( &bc.category(), &bt );
 
     boost::system::system_error x( bc, "prefix" );
 
