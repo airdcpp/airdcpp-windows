@@ -735,9 +735,7 @@ tstring ChatFrameBase::commands = Text::toT("\n\t\t\t\t\tHELP\n\
 /verifydb\t\t\t\t\tOptimize and verify the integrity of the hash databases\n\
 /stop\t\t\t\t\tStop SFV check\n\
 /sharestats\t\t\t\tShow general share statistics (only visible to yourself)\n\
-/monitorstats\t\t\t\tShow share monitoring statistics (only visible to yourself)\n\
 /dbstats\t\t\t\t\tShow techical statistics about the hash database backend (only visible to yourself)\n\
-/monitordebug\t\t\t\tShow each change notification for monitored directories (only visible to yourself)\n\
 ------------------------------------------------------------------------------------------------------------------------------------------------------------\n\
 /search <string>\t\t\t\tSearch for...\n\
 /whois [IP]\t\t\t\tFind info about user from the IP address\n\
