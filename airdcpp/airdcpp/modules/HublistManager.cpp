@@ -56,6 +56,7 @@ namespace dcpp {
 		void startTag(const string& aName, StringPairList& attribs, bool) {
 			if (aName == "Hub") {
 				const string& name = getAttrib(attribs, "Name", 0);
+				const string& secure = getAttrib(attribs, "Secure", 1); // try to get secure address first
 				const string& server = getAttrib(attribs, "Address", 1);
 				const string& description = getAttrib(attribs, "Description", 2);
 				const string& users = getAttrib(attribs, "Users", 3);
@@ -67,7 +68,7 @@ namespace dcpp {
 				const string& maxUsers = getAttrib(attribs, "Maxusers", 5);
 				const string& reliability = getAttrib(attribs, "Reliability", 5);
 				const string& rating = getAttrib(attribs, "Rating", 5);
-				publicHubs.push_back(HublistEntry(name, server, description, users, country, shared, minShare, minSlots, maxHubs, maxUsers, reliability, rating));
+				publicHubs.push_back(HublistEntry(name, (secure.size() ? secure : server), description, users, country, shared, minShare, minSlots, maxHubs, maxUsers, reliability, rating));
 			}
 		}
 	private:
