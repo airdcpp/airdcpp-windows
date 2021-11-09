@@ -1315,7 +1315,7 @@ void SearchFrame::onTab() {
 void SearchFrame::addSearchResult(SearchInfo* si) {
 	if (running) {
 		resultsCount++;
-		if(si->getTTH().data > 0 && (!si->getUser()->isNMDC() || !si->isDirectory())) {
+		if (si->getTTH() && (!si->getUser()->isNMDC() || !si->isDirectory())) {
 			ctrlResults.list.insertGroupedItem(si, expandSR);
 		} else {
 			SearchInfoList::ParentPair pp = { si, SearchInfoList::emptyVector };

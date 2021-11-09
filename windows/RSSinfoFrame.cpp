@@ -399,7 +399,6 @@ void RssInfoFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
 		ctrlStatus.GetRect(0, &rc);
 
 		const int button_width = 80;
-		const int textbox_width = 30;
 
 		rc.left += 2;
 		rc.right = rc.left + button_width;

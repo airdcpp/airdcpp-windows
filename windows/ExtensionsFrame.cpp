@@ -693,7 +693,6 @@ void ExtensionsFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	}
 
 	const long bottom = rect.bottom - 2;
-	const long top = rect.bottom - 28;
 
 	{
 		// Extension-specific actions

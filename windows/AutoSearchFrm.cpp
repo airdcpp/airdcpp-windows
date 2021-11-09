@@ -156,10 +156,8 @@ void AutoSearchFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	rc = rect;
 
 	const int button_width = 80;
-	const int textbox_width = 30;
 
 	const long bottom = rc.bottom - 2;
-	const long top =  rc.bottom - 28;
 
 	//buttons
 	rc.bottom = bottom;
