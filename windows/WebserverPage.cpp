@@ -141,7 +141,7 @@ LRESULT WebServerPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 
 bool WebServerPage::applySettings() noexcept {
 	bool needsRestart = false;
-	auto webSettings = webMgr->getSettingsManager();
+	decltype(auto) webSettings = webMgr->getSettingsManager();
 
 	{
 		auto plainserverPort = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlPort)));
