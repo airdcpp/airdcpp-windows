@@ -2,7 +2,7 @@
 
 # AirDC++ for Windows
 
-**Required compiler**: Visual Studio 2019
+**Required compiler**: Visual Studio 2022
 
 ## Cloning
 
