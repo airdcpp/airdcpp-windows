@@ -52,7 +52,7 @@ int map_test ()
    const char *const shMemName = test::get_process_id_name();
    const int max = 100;
 
-   try{
+   BOOST_TRY{
       //Create shared memory
       shared_memory_object::remove(shMemName);
       ManagedSharedMemory segment(create_only, shMemName, memsize);
@@ -172,13 +172,13 @@ int map_test ()
       }
       {
          //This is really nasty, but we have no other simple choice
-         IntPairType aux_vect[max];
+         IntPairType aux_vect[std::size_t(max)];
          for(int i = 0; i < max; ++i){
             IntType i1(i);
             IntType i2(i);
             new(&aux_vect[i])IntPairType(boost::move(i1), boost::move(i2));
          }
-         IntPairType aux_vect3[max];
+         IntPairType aux_vect3[std::size_t(max)];
          for(int i = 0; i < max; ++i){
             IntType i1(i);
             IntType i2(i);
@@ -320,13 +320,13 @@ int map_test ()
 
       {
          //This is really nasty, but we have no other simple choice
-         IntPairType aux_vect[max];
+         IntPairType aux_vect[std::size_t(max)];
          for(int i = 0; i < max; ++i){
             IntType i1(i);
             IntType i2(i);
             new(&aux_vect[i])IntPairType(boost::move(i1), boost::move(i2));
          }
-         IntPairType aux_vect3[max];
+         IntPairType aux_vect3[std::size_t(max)];
          for(int i = 0; i < max; ++i){
             IntType i1(i);
             IntType i2(i);
@@ -482,10 +482,10 @@ int map_test ()
       if(!segment.all_memory_deallocated())
          return 1;
    }
-   catch(...){
+   BOOST_CATCH(...){
       shared_memory_object::remove(shMemName);
-      throw;
-   }
+      BOOST_RETHROW
+   } BOOST_CATCH_END
    shared_memory_object::remove(shMemName);
    return 0;
 }
@@ -505,7 +505,7 @@ int map_test_copyable ()
    const char *const shMemName = test::get_process_id_name();
    const int max = 100;
 
-   try{
+   BOOST_TRY{
    //Create shared memory
    shared_memory_object::remove(shMemName);
    ManagedSharedMemory segment(create_only, shMemName, memsize);
@@ -576,10 +576,10 @@ int map_test_copyable ()
       if(!segment.all_memory_deallocated())
          return 1;
    }
-   catch(...){
+   BOOST_CATCH(...){
       shared_memory_object::remove(shMemName);
-      throw;
-   }
+      BOOST_RETHROW
+   } BOOST_CATCH_END
    shared_memory_object::remove(shMemName);
    return 0;
 }

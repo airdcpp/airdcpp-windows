@@ -33,6 +33,12 @@ BOOST_STATIC_ASSERT( !ec3.failed() );
 BOOST_STATIC_ASSERT( ec3? false: true );
 BOOST_STATIC_ASSERT( !ec3 );
 
+#if defined(__GNUC__) && __GNUC__ == 7 && __cplusplus == 201703L
+
+// 'cat_' is not a constant expression
+
+#else
+
 constexpr error_condition en1( 1, system_category() );
 
 BOOST_STATIC_ASSERT( en1.failed() );
@@ -50,6 +56,8 @@ constexpr error_condition en3;
 BOOST_STATIC_ASSERT( !en3.failed() );
 BOOST_STATIC_ASSERT( en3? false: true );
 BOOST_STATIC_ASSERT( !en3 );
+
+#endif
 
 int main()
 {

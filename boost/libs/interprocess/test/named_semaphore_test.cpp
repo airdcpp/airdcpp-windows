@@ -11,7 +11,6 @@
 #include <boost/interprocess/sync/named_semaphore.hpp>
 #include <boost/interprocess/detail/interprocess_tester.hpp>
 #include <boost/interprocess/exceptions.hpp>
-#include <boost/date_time/posix_time/posix_time_types.hpp>
 #include "named_creation_template.hpp"
 #include "mutex_test_template.hpp"
 #include "get_process_id_name.hpp"
@@ -20,6 +19,8 @@
 #if defined(BOOST_INTERPROCESS_WINDOWS)
 #include <boost/interprocess/sync/windows/named_semaphore.hpp>
 #endif
+
+#include <boost/interprocess/detail/timed_utils.hpp>
 
 using namespace boost::interprocess;
 
@@ -60,6 +61,12 @@ class lock_test_wrapper
    template<class TimePoint>
    bool timed_lock(const TimePoint &pt)
    {  return this->timed_wait(pt);  }
+
+   template<class TimePoint> bool try_lock_until(const TimePoint &abs_time)
+   {  return this->timed_lock(abs_time);  }
+
+   template<class Duration>  bool try_lock_for(const Duration &dur)
+   {  return this->timed_lock(boost::interprocess::ipcdetail::duration_to_ustime(dur)); }
 
    void unlock()
    {  this->post();  }
@@ -115,7 +122,7 @@ template<class NamedSemaphore>
 int test_named_semaphore()
 {
    int ret = 0;
-   try{
+   BOOST_TRY{
       test::test_named_creation< test::named_sync_creation_test_wrapper<lock_test_wrapper<NamedSemaphore> > >();
       #if defined(BOOST_INTERPROCESS_WCHAR_NAMED_RESOURCES)
       test::test_named_creation< test::named_sync_creation_test_wrapper_w<lock_test_wrapper<NamedSemaphore> > >();
@@ -126,10 +133,10 @@ int test_named_semaphore()
       test::test_all_recursive_lock<test::named_sync_wrapper<recursive_test_wrapper<NamedSemaphore> > >();
       test_named_semaphore_specific<NamedSemaphore>();
    }
-   catch(std::exception &ex){
+   BOOST_CATCH(std::exception &ex){
       std::cout << ex.what() << std::endl;
       ret = 1;
-   }
+   } BOOST_CATCH_END
    NamedSemaphore::remove(test::get_process_id_name());
    return ret;
 }

@@ -4,7 +4,7 @@
 <title>Perl Regular Expression Syntax</title>
 <link rel="stylesheet" href="../../../../../../doc/src/boostbook.css" type="text/css">
 <meta name="generator" content="DocBook XSL Stylesheets V1.79.1">
-<link rel="home" href="../../index.html" title="Boost.Regex 5.1.4">
+<link rel="home" href="../../index.html" title="Boost.Regex 7.0.0">
 <link rel="up" href="../syntax.html" title="Regular Expression Syntax">
 <link rel="prev" href="../syntax.html" title="Regular Expression Syntax">
 <link rel="next" href="basic_extended.html" title="POSIX Extended Regular Expression Syntax">
@@ -365,8 +365,13 @@
 </tbody>
 </table></div>
 <p>
+        Note that a back reference can also be a forward-reference to a sub-expression
+        that has not yet been seen - this only really makes sense within a repeat,
+        so for example <code class="computeroutput"><span class="special">(\</span><span class="number">2</span><span class="identifier">two</span><span class="special">|(</span><span class="identifier">one</span><span class="special">))+</span></code> will match "oneonetwo".
+      </p>
+<p>
         Finally the \k escape can be used to refer to named subexpressions, for example
-        <code class="literal">\k&lt;two&gt;</code> will match whatever matched the subexpression
+        <code class="literal">\k&lt;two&gt;</code> will whatever matched the subexpression
         named "two".
       </p>
 <h5>

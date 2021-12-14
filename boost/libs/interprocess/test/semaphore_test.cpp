@@ -10,7 +10,6 @@
 
 #include <boost/interprocess/sync/interprocess_semaphore.hpp>
 #include <boost/interprocess/exceptions.hpp>
-#include <boost/date_time/posix_time/posix_time_types.hpp>
 #include "named_creation_template.hpp"
 #include "mutex_test_template.hpp"
 
@@ -37,12 +36,18 @@ class semaphore_test_wrapper
    bool timed_lock(const TimePoint &pt)
    {  return this->timed_wait(pt);  }
 
+   template<class TimePoint> bool try_lock_until(const TimePoint &abs_time)
+   {  return this->timed_lock(abs_time);  }
+
+   template<class Duration>  bool try_lock_for(const Duration &dur)
+   {  return this->timed_lock(boost::interprocess::ipcdetail::duration_to_ustime(dur)); }
+
    void unlock()
    {  this->post();  }
 
    protected:
-   semaphore_test_wrapper(int initial_count)
-      :  boost::interprocess::interprocess_semaphore(initial_count)
+   semaphore_test_wrapper(std::size_t initial_count)
+      :  boost::interprocess::interprocess_semaphore(unsigned(initial_count))
    {}
 };
 

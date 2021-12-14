@@ -62,19 +62,19 @@ int test_managed_shared_memory()
       shared_memory_object::remove(ShmemName);
 
       const int max              = 100;
-      void *array[max];
+      void *array[std::size_t(max)];
       //Named allocate capable shared memory allocator
       managed_shared_memory shmem(create_only, ShmemName, ShmemSize);
 
-      int i;
+      std::size_t i;
       //Let's allocate some memory
       for(i = 0; i < max; ++i){
-         array[i] = shmem.allocate(i+1);
+         array[std::ptrdiff_t(i)] = shmem.allocate(i+1u);
       }
 
       //Deallocate allocated memory
       for(i = 0; i < max; ++i){
-         shmem.deallocate(array[i]);
+         shmem.deallocate(array[std::ptrdiff_t(i)]);
       }
    }
 
@@ -83,7 +83,14 @@ int test_managed_shared_memory()
       shared_memory_object::remove(ShmemName);
 
       //Named allocate capable memory mapped shmem managed memory class
-      managed_shared_memory shmem(create_only, ShmemName, ShmemSize);
+      managed_shared_memory tmp(create_only, ShmemName, ShmemSize);
+   }
+   {
+      //Remove the shmem it is already created
+      shared_memory_object::remove(ShmemName);
+
+      //Now re-create it with create or open
+      managed_shared_memory shmem(open_or_create, ShmemName, ShmemSize);
 
       //Construct the STL-like allocator with the segment manager
       const allocator_int_t myallocator (shmem.get_segment_manager());
@@ -140,9 +147,18 @@ int test_managed_shared_memory()
          if(!shmem_vect)
             return -1;
       }
+      {
+         //Map preexisting shmem again in memory
+         managed_shared_memory shmem(open_or_create, ShmemName, ShmemSize);
+
+         //Check vector is still there
+         MyVect *shmem_vect = shmem.find<MyVect>("MyVector").first;
+         if(!shmem_vect)
+            return -1;
+      }
    }
    {
-      //Map preexisting shmem again in copy-on-write
+      //Map preexisting shmem again in read-only
       managed_shared_memory shmem(open_read_only, ShmemName);
 
       //Check vector is still there

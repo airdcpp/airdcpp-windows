@@ -100,6 +100,20 @@ class named_condition_test_wrapper
       return NamedCondition::timed_wait(internal_lock, abs_time, pred);
    }
 
+   template <typename L, class TimePoint>
+   cv_status wait_until(L& lock, const TimePoint &abs_time)
+   {
+      ipcdetail::internal_mutex_lock<L> internal_lock(lock);
+      return NamedCondition::wait_until(internal_lock, abs_time);
+   }
+
+   template <typename L, class TimePoint, typename Pr>
+   bool wait_until(L& lock, const TimePoint &abs_time, Pr pred)
+   {
+      ipcdetail::internal_mutex_lock<L> internal_lock(lock);
+      return NamedCondition::wait_until(internal_lock, abs_time, pred);
+   }
+
    static int count;
 };
 
@@ -220,7 +234,7 @@ template<class NamedCondition, class NamedMutex>
 int test_named_condition()
 {
    int ret = 0;
-   try{
+   BOOST_TRY{
       //Remove previous mutexes and conditions
       NamedMutex::remove(test::add_to_process_id_name("test_mutex0"));
       NamedCondition::remove(test::add_to_process_id_name("test_cond0"));
@@ -241,10 +255,10 @@ int test_named_condition()
       test::do_test_condition<test::named_condition_test_wrapper<NamedCondition>
                              ,test::named_mutex_test_wrapper<NamedMutex> >();
    }
-   catch(std::exception &ex){
+   BOOST_CATCH(std::exception &ex){
       std::cout << ex.what() << std::endl;
       ret = 1;
-   }
+   } BOOST_CATCH_END
    NamedMutex::remove(test::add_to_process_id_name("test_mutex0"));
    NamedCondition::remove(test::add_to_process_id_name("test_cond0"));
    NamedCondition::remove(test::add_to_process_id_name("test_cond1"));

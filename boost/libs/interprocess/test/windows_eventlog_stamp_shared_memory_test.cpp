@@ -38,7 +38,7 @@ inline void get_shared_dir(std::string &shared_dir)
    shared_dir += "/boostipctesteventlog_";
    shared_dir += boost::interprocess::test::get_process_id_name();
    if(!dir_created)
-      ipcdetail::create_directory(shared_dir.c_str());
+      ipcdetail::open_or_create_shared_directory(shared_dir.c_str());
    dir_created = true;
 }
 
@@ -48,7 +48,7 @@ inline void get_shared_dir(std::wstring &shared_dir)
    shared_dir += L"/boostipctesteventlog_";
    shared_dir += boost::interprocess::test::get_process_id_wname();
    if(!dir_created)
-      ipcdetail::create_directory(shared_dir.c_str());
+      ipcdetail::open_or_create_shared_directory(shared_dir.c_str());
    dir_created = true;
 }
 
@@ -125,7 +125,7 @@ class shared_memory_creation_test_wrapper_w
 int main ()
 {
    int ret = 0;
-   try{
+   BOOST_TRY{
       shared_memory_object::remove(ShmName);
       test::test_named_creation<shared_memory_creation_test_wrapper>();
       #ifdef BOOST_INTERPROCESS_WCHAR_NAMED_RESOURCES
@@ -146,10 +146,10 @@ int main ()
          move_assign = boost::move(move_ctor);
       }
    }
-   catch(std::exception &ex){
+   BOOST_CATCH(std::exception &ex){
       std::cout << ex.what() << std::endl;
       ret = 1;
-   }
+   } BOOST_CATCH_END
    shared_memory_object::remove(ShmName);
    return ret;
 }

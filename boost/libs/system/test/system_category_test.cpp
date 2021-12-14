@@ -59,6 +59,7 @@ std::string sys_strerror( int ev )
     };
 
     local_free lf_ = { lpMsgBuf };
+    (void)lf_;
 
     if( retval == 0 )
     {

@@ -51,6 +51,7 @@ namespace
           << ex.what() << "\"\n";
     }
 # endif
+    (void)str;
   }
 
   const boost::uint_least32_t uvalue = 2u;
@@ -80,27 +81,25 @@ int main( int, char *[] )
   system_error c6_0( 0, system_category(), "c6_0" ); 
   system_error c6_1( 1, system_category(), "c6_1" );
 
-  TEST( c1_0, 0, "The operation completed successfully" );
-  TEST( c1_1, 1, "Incorrect function" );
-  TEST( c1_2u, 2, "The system cannot find the file specified" );
+  TEST( c1_0, 0, "The operation completed successfully [system:0]" );
+  TEST( c1_1, 1, "Incorrect function [system:1]" );
+  TEST( c1_2u, 2, "The system cannot find the file specified [system:2]" );
 
-  TEST( c2_0, 0, "c2_0: The operation completed successfully" );
-  TEST( c2_1, 1, "c2_1: Incorrect function" );
+  TEST( c2_0, 0, "c2_0: The operation completed successfully [system:0]" );
+  TEST( c2_1, 1, "c2_1: Incorrect function [system:1]" );
 
-  TEST( c3_0, 0, "c3_0: The operation completed successfully" );
-  TEST( c3_1, 1, "c3_1: Incorrect function" );
+  TEST( c3_0, 0, "c3_0: The operation completed successfully [system:0]" );
+  TEST( c3_1, 1, "c3_1: Incorrect function [system:1]" );
 
-  TEST( c4_0, 0, "The operation completed successfully" );
-  TEST( c4_1, 1, "Incorrect function" );
-  TEST( c4_2u, 2, "The system cannot find the file specified" );
+  TEST( c4_0, 0, "The operation completed successfully [system:0]" );
+  TEST( c4_1, 1, "Incorrect function [system:1]" );
+  TEST( c4_2u, 2, "The system cannot find the file specified [system:2]" );
 
-  TEST( c5_0, 0, "c5_0: The operation completed successfully" );
-  TEST( c5_1, 1, "c5_1: Incorrect function" );
+  TEST( c5_0, 0, "c5_0: The operation completed successfully [system:0]" );
+  TEST( c5_1, 1, "c5_1: Incorrect function [system:1]" );
 
-  TEST( c6_0, 0, "c6_0: The operation completed successfully" );
-  TEST( c6_1, 1, "c6_1: Incorrect function" );
+  TEST( c6_0, 0, "c6_0: The operation completed successfully [system:0]" );
+  TEST( c6_1, 1, "c6_1: Incorrect function [system:1]" );
 
   return ::boost::report_errors();
 }
-
-

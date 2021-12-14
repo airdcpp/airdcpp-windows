@@ -7,7 +7,7 @@
 // See http://www.boost.org/libs/interprocess for documentation.
 //
 //////////////////////////////////////////////////////////////////////////////
-#include <boost/interprocess/detail/config_begin.hpp>
+
 //[doc_anonymous_mutexA
 #include <boost/interprocess/shared_memory_object.hpp>
 #include <boost/interprocess/mapped_region.hpp>
@@ -20,7 +20,7 @@ using namespace boost::interprocess;
 
 int main ()
 {
-   try{
+   BOOST_TRY{
       //Remove shared memory on construction and destruction
       struct shm_remove
       {
@@ -71,11 +71,11 @@ int main ()
             break;
       }
    }
-   catch(interprocess_exception &ex){
+   BOOST_CATCH(interprocess_exception &ex){
       std::cout << ex.what() << std::endl;
       return 1;
-   }
+   } BOOST_CATCH_END
    return 0;
 }
 //]
-#include <boost/interprocess/detail/config_end.hpp>
+

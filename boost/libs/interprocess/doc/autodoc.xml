@@ -117,6 +117,7 @@
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -193,6 +194,7 @@
           <template-type-parameter name="T"/>
           <template-type-parameter name="SegmentManager"/>
         </template><parameter name="alloc1"><paramtype>const <classname>allocator</classname>&lt; T, SegmentManager &gt; &amp;</paramtype></parameter><parameter name="alloc2"><paramtype>const <classname>allocator</classname>&lt; T, SegmentManager &gt; &amp;</paramtype></parameter><description><para>Inequality test for same type of allocator </para></description></function>
+
 
 
 
@@ -348,6 +350,7 @@
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -466,6 +469,7 @@
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -546,6 +550,7 @@
           <template-type-parameter name="S"/>
           <template-nontype-parameter name="NPC"><type>std::size_t</type></template-nontype-parameter>
         </template><parameter name="alloc1"><paramtype>const <classname>node_allocator</classname>&lt; T, S, NPC &gt; &amp;</paramtype></parameter><parameter name="alloc2"><paramtype>const <classname>node_allocator</classname>&lt; T, S, NPC &gt; &amp;</paramtype></parameter><description><para>Inequality test for same type of <classname alt="boost::interprocess::node_allocator">node_allocator</classname> </para></description></function>
+
 
 
 
@@ -705,6 +710,7 @@
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -825,6 +831,7 @@
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -879,6 +886,7 @@
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -892,6 +900,7 @@
 <data-member name="try_shrink_in_place" specifiers="static"><type>const allocation_type</type></data-member>
 <data-member name="nothrow_allocation" specifiers="static"><type>const allocation_type</type></data-member>
 <data-member name="zero_memory" specifiers="static"><type>const allocation_type</type></data-member>
+
 
 
 
@@ -996,12 +1005,14 @@
 
 
 
+
 </namespace>
 </namespace>
 </header>
 <header name="boost/interprocess/containers/flat_map.hpp">
 <namespace name="boost">
 <namespace name="interprocess">
+
 
 
 
@@ -1104,12 +1115,14 @@
 
 
 
+
 </namespace>
 </namespace>
 </header>
 <header name="boost/interprocess/containers/list.hpp">
 <namespace name="boost">
 <namespace name="interprocess">
+
 
 
 
@@ -1212,12 +1225,14 @@
 
 
 
+
 </namespace>
 </namespace>
 </header>
 <header name="boost/interprocess/containers/pair.hpp">
 <namespace name="boost">
 <namespace name="interprocess">
+
 
 
 
@@ -1320,12 +1335,14 @@
 
 
 
+
 </namespace>
 </namespace>
 </header>
 <header name="boost/interprocess/containers/slist.hpp">
 <namespace name="boost">
 <namespace name="interprocess">
+
 
 
 
@@ -1428,12 +1445,14 @@
 
 
 
+
 </namespace>
 </namespace>
 </header>
 <header name="boost/interprocess/containers/string.hpp">
 <namespace name="boost">
 <namespace name="interprocess">
+
 
 
 
@@ -1536,12 +1555,14 @@
 
 
 
+
 </namespace>
 </namespace>
 </header>
 <header name="boost/interprocess/containers/version_type.hpp">
 <namespace name="boost">
 <namespace name="interprocess">
+
 
 
 
@@ -1649,14 +1670,16 @@
 
 
 
+
 </namespace>
 </namespace>
 </header>
 <header name="boost/interprocess/errors.hpp">
 <para>Describes the error numbering of interprocess classes </para><namespace name="boost">
 <namespace name="interprocess">
-<enum name="error_code_t"><enumvalue name="no_error"><default>= 0</default></enumvalue><enumvalue name="system_error"/><enumvalue name="other_error"/><enumvalue name="security_error"/><enumvalue name="read_only_error"/><enumvalue name="io_error"/><enumvalue name="path_error"/><enumvalue name="not_found_error"/><enumvalue name="busy_error"/><enumvalue name="already_exists_error"/><enumvalue name="not_empty_error"/><enumvalue name="is_directory_error"/><enumvalue name="out_of_space_error"/><enumvalue name="out_of_memory_error"/><enumvalue name="out_of_resource_error"/><enumvalue name="lock_error"/><enumvalue name="sem_error"/><enumvalue name="mode_error"/><enumvalue name="size_error"/><enumvalue name="corrupted_error"/><enumvalue name="not_such_file_or_directory"/><enumvalue name="invalid_argument"/><enumvalue name="timeout_when_locking_error"/><enumvalue name="timeout_when_waiting_error"/><enumvalue name="owner_dead_error"/></enum>
+<enum name="error_code_t"><enumvalue name="no_error"><default>= 0</default></enumvalue><enumvalue name="system_error"/><enumvalue name="other_error"/><enumvalue name="security_error"/><enumvalue name="read_only_error"/><enumvalue name="io_error"/><enumvalue name="path_error"/><enumvalue name="not_found_error"/><enumvalue name="busy_error"/><enumvalue name="already_exists_error"/><enumvalue name="not_empty_error"/><enumvalue name="is_directory_error"/><enumvalue name="out_of_space_error"/><enumvalue name="out_of_memory_error"/><enumvalue name="out_of_resource_error"/><enumvalue name="lock_error"/><enumvalue name="sem_error"/><enumvalue name="mode_error"/><enumvalue name="size_error"/><enumvalue name="corrupted_error"/><enumvalue name="not_such_file_or_directory"/><enumvalue name="invalid_argument"/><enumvalue name="timeout_when_locking_error"/><enumvalue name="timeout_when_waiting_error"/><enumvalue name="owner_dead_error"/><enumvalue name="not_recoverable"/></enum>
 <typedef name="native_error_t"><type>int</type></typedef>
+
 
 
 
@@ -1726,8 +1749,9 @@
 </class><class name="lock_exception"><inherit access="public">boost::interprocess::interprocess_exception</inherit><description><para>This is the exception thrown by shared <classname alt="boost::interprocess::interprocess_mutex">interprocess_mutex</classname> family when a deadlock situation is detected or when using a <classname alt="boost::interprocess::interprocess_condition">interprocess_condition</classname> the <classname alt="boost::interprocess::interprocess_mutex">interprocess_mutex</classname> is not locked </para></description><method-group name="public member functions">
 <method name="what" cv="const noexcept"><type>const char *</type></method>
 </method-group>
-<constructor cv="noexcept"/>
+<constructor cv="noexcept"><parameter name="err"><paramtype>error_code_t</paramtype><default>lock_error</default></parameter></constructor>
 </class>
+
 
 
 
@@ -1845,6 +1869,7 @@
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -1859,6 +1884,7 @@
 </method-group>
 <constructor><parameter name="segment_mngr"><paramtype><classname>segment_manager_base</classname> *</paramtype></parameter><purpose>Constructor. Takes a pointer to the segment manager. Can throw. </purpose></constructor>
 </class>
+
 
 
 
@@ -1974,6 +2000,7 @@
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -1990,6 +2017,7 @@
 <typedef name="bucket_type"><type>index_type::bucket_type</type></typedef>
 <typedef name="bucket_traits"><type>index_type::bucket_traits</type></typedef>
 <typedef name="size_type"><type>index_type::size_type</type></typedef>
+<typedef name="difference_type"><type>index_type::difference_type</type></typedef>
 <method-group name="public member functions">
 <method name="reserve"><type>void</type><parameter name="new_n"><paramtype>size_type</paramtype></parameter><description><para>This reserves memory to optimize the insertion of n elements in the index </para></description></method>
 <method name="shrink_to_fit"><type>void</type><description><para>This tries to free unused memory previously allocated. </para></description></method>
@@ -2001,6 +2029,7 @@
 <constructor><parameter name="mngr"><paramtype><classname>segment_manager_base</classname> *</paramtype></parameter><description><para>Constructor. Takes a pointer to the segment manager. Can throw </para></description></constructor>
 <destructor/>
 </class>
+
 
 
 
@@ -2062,6 +2091,7 @@
 </method-group>
 <constructor><parameter name="segment_mngr"><paramtype><classname>segment_manager_base</classname> *</paramtype></parameter><description><para>Constructor. Takes a pointer to the segment manager. Can throw </para></description></constructor>
 </class>
+
 
 
 
@@ -2174,6 +2204,7 @@
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -2188,6 +2219,7 @@
 </method-group>
 <constructor><parameter name="segment_mngr"><paramtype><classname>segment_manager_base</classname> *</paramtype></parameter><description><para>Constructor. Takes a pointer to the segment manager. Can throw </para></description></constructor>
 </class>
+
 
 
 
@@ -2421,6 +2453,7 @@
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -2491,6 +2524,7 @@
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -2513,6 +2547,7 @@
 <copy-assignment cv="noexcept"><type><classname>basic_managed_heap_memory</classname> &amp;</type><parameter name="moved"><paramtype><classname>basic_managed_heap_memory</classname> &amp;&amp;</paramtype></parameter><purpose>Moves the ownership of "moved"'s managed memory to *this. Does not throw. </purpose></copy-assignment>
 </class><typedef name="managed_heap_memory"><description><para>Typedef for a default <classname alt="boost::interprocess::basic_managed_heap_memory">basic_managed_heap_memory</classname> of narrow characters </para></description><type><classname>basic_managed_heap_memory</classname>&lt; char,<classname>rbtree_best_fit</classname>&lt; <classname>null_mutex_family</classname> &gt;,<classname>iset_index</classname> &gt;</type></typedef>
 <typedef name="wmanaged_heap_memory"><description><para>Typedef for a default <classname alt="boost::interprocess::basic_managed_heap_memory">basic_managed_heap_memory</classname> of wide characters </para></description><type><classname>basic_managed_heap_memory</classname>&lt; wchar_t,<classname>rbtree_best_fit</classname>&lt; <classname>null_mutex_family</classname> &gt;,<classname>iset_index</classname> &gt;</type></typedef>
+
 
 
 
@@ -2646,6 +2681,7 @@
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -2683,6 +2719,7 @@
 <typedef name="wmanaged_shared_memory"><description><para>Typedef for a default <classname alt="boost::interprocess::basic_managed_shared_memory">basic_managed_shared_memory</classname> of wide characters </para></description><type><classname>basic_managed_shared_memory</classname>&lt; wchar_t,<classname>rbtree_best_fit</classname>&lt; <classname>mutex_family</classname> &gt;,<classname>iset_index</classname> &gt;</type></typedef>
 <typedef name="fixed_managed_shared_memory"><description><para>Typedef for a default <classname alt="boost::interprocess::basic_managed_shared_memory">basic_managed_shared_memory</classname> of narrow characters to be placed in a fixed address </para></description><type><classname>basic_managed_shared_memory</classname>&lt; char,<classname>rbtree_best_fit</classname>&lt; <classname>mutex_family</classname>, void * &gt;,<classname>iset_index</classname> &gt;</type></typedef>
 <typedef name="wfixed_managed_shared_memory"><description><para>Typedef for a default <classname alt="boost::interprocess::basic_managed_shared_memory">basic_managed_shared_memory</classname> of narrow characters to be placed in a fixed address </para></description><type><classname>basic_managed_shared_memory</classname>&lt; wchar_t,<classname>rbtree_best_fit</classname>&lt; <classname>mutex_family</classname>, void * &gt;,<classname>iset_index</classname> &gt;</type></typedef>
+
 
 
 
@@ -2808,6 +2845,7 @@
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -2884,6 +2922,7 @@
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -2911,6 +2950,7 @@
 <method name="get_page_size" cv="noexcept" specifiers="static"><type>std::size_t</type><description><para>Returns the size of the page. This size is the minimum memory that will be used by the system when mapping a memory mappable source and will restrict the address and the offset to map. </para></description></method>
 </method-group>
 </class>
+
 
 
 
@@ -3044,6 +3084,7 @@
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -3058,6 +3099,7 @@
 </method-group>
 <constructor><parameter name="segment_size"><paramtype>size_type</paramtype></parameter><parameter name="extra_hdr_bytes"><paramtype>size_type</paramtype></parameter><description><para>Constructor. "size" is the total size of the managed memory segment, "extra_hdr_bytes" indicates the extra bytes beginning in the sizeof(simple_seq_fit) offset that the allocator should not use at all. </para></description></constructor>
 </class>
+
 
 
 
@@ -3301,6 +3343,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -3316,6 +3359,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <constructor cv="noexcept"><parameter name="type"><paramtype>os_permissions_type</paramtype></parameter><description><para>Constructs a permissions object from a user provided os-dependent permissions. </para></description></constructor>
 <constructor cv="noexcept"><description><para>Constructs a default permissions object: A null security attributes pointer for windows or 0644 for UNIX. </para></description></constructor>
 </class>
+
 
 
 
@@ -3537,6 +3581,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -3566,6 +3611,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <method name="remove" specifiers="static"><type>bool</type><parameter name="name"><paramtype>const wchar_t *</paramtype></parameter><description><para>Erases a shared memory object from the system. Returns false on error. Never throws</para><para>Note: This function is only available on operating systems with native wchar_t APIs (e.g. Windows). </para></description></method>
 </method-group>
 </class>
+
 
 
 
@@ -3675,12 +3721,14 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 
 
 
+
 </namespace>
 </namespace>
 </header>
 <header name="boost/interprocess/smart_ptr/enable_shared_from_this.hpp">
 <para>Describes an utility to form a shared pointer from this </para><namespace name="boost">
 <namespace name="interprocess">
+
 
 
 
@@ -3847,6 +3895,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
           <template-type-parameter name="T"/>
           <template-type-parameter name="VP"/>
         </template><parameter name="p"><paramtype><classname>intrusive_ptr</classname>&lt; T, VP &gt;</paramtype></parameter><description><para>Returns p.get(). Does not throw </para></description></function>
+
 </namespace>
 </namespace>
 </header>
@@ -3929,6 +3978,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -3955,11 +4005,12 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
       <template-type-parameter name="Deleter"/>
     </template><description><para><classname alt="boost::interprocess::shared_ptr">shared_ptr</classname> stores a pointer to a dynamically allocated object. The object pointed to is guaranteed to be deleted when the last <classname alt="boost::interprocess::shared_ptr">shared_ptr</classname> pointing to it is destroyed or reset.</para><para><classname alt="boost::interprocess::shared_ptr">shared_ptr</classname> is parameterized on T (the type of the object pointed to), VoidAllocator (the void allocator to be used to allocate the auxiliary data) and Deleter (the deleter whose operator() will be used to delete the object.</para><para>The internal pointer will be of the same pointer type as typename VoidAllocator::pointer type (that is, if typename VoidAllocator::pointer is offset_ptr&lt;void&gt;, the internal pointer will be offset_ptr&lt;T&gt;).</para><para>Because the implementation uses reference counting, cycles of <classname alt="boost::interprocess::shared_ptr">shared_ptr</classname> instances will not be reclaimed. For example, if main() holds a <classname alt="boost::interprocess::shared_ptr">shared_ptr</classname> to A, which directly or indirectly holds a <classname alt="boost::interprocess::shared_ptr">shared_ptr</classname> back to A, A's use count will be 2. Destruction of the original <classname alt="boost::interprocess::shared_ptr">shared_ptr</classname> will leave A dangling with a use count of 1. Use <classname alt="boost::interprocess::weak_ptr">weak_ptr</classname> to "break cycles." </para></description><typedef name="element_type"><type>T</type></typedef>
 <typedef name="value_type"><type>T</type></typedef>
-<typedef name="pointer"><type>boost::intrusive::pointer_traits&lt; typename VoidAllocator::pointer &gt;::template rebind_pointer&lt; T &gt;::type</type></typedef>
+<typedef name="void_ptr"><type>boost::container::allocator_traits&lt; VoidAllocator &gt;::pointer</type></typedef>
+<typedef name="pointer"><type>boost::intrusive::pointer_traits&lt; void_ptr &gt;::template rebind_pointer&lt; T &gt;::type</type></typedef>
 <typedef name="reference"><type><emphasis>unspecified</emphasis></type></typedef>
 <typedef name="const_reference"><type><emphasis>unspecified</emphasis></type></typedef>
-<typedef name="const_deleter_pointer"><type>boost::intrusive::pointer_traits&lt; typename VoidAllocator::pointer &gt;::template rebind_pointer&lt; const Deleter &gt;::type</type></typedef>
-<typedef name="const_allocator_pointer"><type>boost::intrusive::pointer_traits&lt; typename VoidAllocator::pointer &gt;::template rebind_pointer&lt; const VoidAllocator &gt;::type</type></typedef>
+<typedef name="const_deleter_pointer"><type>boost::intrusive::pointer_traits&lt; void_ptr &gt;::template rebind_pointer&lt; const Deleter &gt;::type</type></typedef>
+<typedef name="const_allocator_pointer"><type>boost::intrusive::pointer_traits&lt; void_ptr &gt;::template rebind_pointer&lt; const VoidAllocator &gt;::type</type></typedef>
 <method-group name="public member functions">
 <method name="reset"><type>void</type><description><para>This is equivalent to: this_type().swap(*this); </para></description></method>
 <method name="reset"><type>void</type><template>
@@ -4096,6 +4147,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -4134,6 +4186,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
           <template-type-parameter name="T"/>
           <template-type-parameter name="ManagedMemory"/>
         </template><parameter name="constructed_object"><paramtype>T *</paramtype></parameter><parameter name="managed_memory"><paramtype>ManagedMemory &amp;</paramtype></parameter><description><para>Returns an instance of a unique pointer constructed with boost::interproces::deleter from a pointer of type T that has been allocated in the passed managed segment </para></description></function>
+
 
 
 
@@ -4255,6 +4308,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -4333,6 +4387,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <typedef name="wbufferstream"><type><classname>basic_bufferstream</classname>&lt; wchar_t &gt;</type></typedef>
 <typedef name="wibufferstream"><type><classname>basic_ibufferstream</classname>&lt; wchar_t &gt;</type></typedef>
 <typedef name="wobufferstream"><type><classname>basic_obufferstream</classname>&lt; wchar_t &gt;</type></typedef>
+
 
 
 
@@ -4513,6 +4568,62 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 
 
 
+
+</namespace>
+</namespace>
+</header>
+<header name="boost/interprocess/sync/cv_status.hpp">
+<namespace name="boost">
+<namespace name="interprocess">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<function name="BOOST_SCOPED_ENUM_DECLARE_BEGIN"><type/><parameter name=""><paramtype>cv_status</paramtype></parameter></function>
 </namespace>
 </namespace>
 </header>
@@ -4526,13 +4637,28 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <method name="timed_lock"><type>bool</type><template>
           <template-type-parameter name="TimePoint"/>
         </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Requires: The calling thread does not own the mutex.</para><para>Effects: The calling thread tries to acquire exclusive ownership of the mutex waiting if necessary until no other thread has exclusive, or sharable ownership of the mutex or abs_time is reached. Returns: If acquires exclusive ownership, returns true. Otherwise returns false. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error.</para><para>Note: A program may deadlock if the thread that has ownership calls this function. If the implementation can detect the deadlock, an exception could be thrown. </para></description></method>
+<method name="try_lock_until"><type>bool</type><template>
+          <template-type-parameter name="TimePoint"/>
+        </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
+<method name="try_lock_for"><type>bool</type><template>
+          <template-type-parameter name="Duration"/>
+        </template><parameter name="dur"><paramtype>const Duration &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
 <method name="unlock"><type>void</type><description><para>Precondition: The thread must have exclusive ownership of the mutex. Effects: The calling thread releases the exclusive ownership of the mutex. Throws: An exception derived from <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error. </para></description></method>
 <method name="lock_sharable"><type>void</type><description><para>Requires: The calling thread does not own the mutex.</para><para>Effects: The calling thread tries to obtain sharable ownership of the mutex, and if another thread has exclusive ownership of the mutex, waits until it can obtain the ownership. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error.</para><para>Note: A program may deadlock if the thread that owns a mutex object calls this function. If the implementation can detect the deadlock, an exception could be thrown. </para></description></method>
+<method name="lock_shared"><type>void</type><description><para>Same as <computeroutput>lock_sharable</computeroutput> but with a std-compatible interface </para></description></method>
 <method name="try_lock_sharable"><type>bool</type><description><para>Effects: The calling thread tries to acquire sharable ownership of the mutex without waiting. If no other thread has exclusive ownership of the mutex this succeeds. Returns: If it can acquire sharable ownership immediately returns true. If it has to wait, returns false. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error. </para></description></method>
+<method name="try_lock_shared"><type>bool</type><description><para>Same as <computeroutput>try_lock_sharable</computeroutput> but with a std-compatible interface </para></description></method>
 <method name="timed_lock_sharable"><type>bool</type><template>
           <template-type-parameter name="TimePoint"/>
         </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Effects: The calling thread tries to acquire sharable ownership of the mutex waiting if necessary until no other thread has exclusive ownership of the mutex or abs_time is reached. Returns: If acquires sharable ownership, returns true. Otherwise returns false. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error. </para></description></method>
+<method name="try_lock_shared_until"><type>bool</type><template>
+          <template-type-parameter name="TimePoint"/>
+        </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock_sharable</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
+<method name="try_lock_shared_for"><type>bool</type><template>
+          <template-type-parameter name="Duration"/>
+        </template><parameter name="dur"><paramtype>const Duration &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock_sharable</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
 <method name="unlock_sharable"><type>void</type><description><para>Precondition: The thread must have sharable ownership of the mutex. Effects: The calling thread releases the sharable ownership of the mutex. Throws: An exception derived from <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error. </para></description></method>
+<method name="unlock_shared"><type>void</type><description><para>Same as <computeroutput>unlock_sharable</computeroutput> but with a std-compatible interface </para></description></method>
 </method-group>
 <constructor cv="noexcept"><description><para>Constructs an empty file mapping. Does not throw </para></description></constructor>
 <constructor><parameter name="name"><paramtype>const char *</paramtype></parameter><description><para>Opens a file lock. Throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> if the file does not exist or there are no operating system resources. </para></description></constructor>
@@ -4541,6 +4667,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <copy-assignment cv="noexcept"><type><classname>file_lock</classname> &amp;</type><parameter name="moved"><paramtype><classname>file_lock</classname> &amp;&amp;</paramtype></parameter><description><para>Moves the ownership of "moved"'s file mapping to *this. After the call, "moved" does not represent any file mapping. Does not throw </para></description></copy-assignment>
 <destructor><purpose>Closes a file lock. Does not throw. </purpose></destructor>
 </class>
+
 
 
 
@@ -4613,10 +4740,29 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
           <template-type-parameter name="TimePoint"/>
           <template-type-parameter name="Pr"/>
         </template><parameter name="lock"><paramtype>L &amp;</paramtype></parameter><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><parameter name="pred"><paramtype>Pr</paramtype></parameter><description><para>The same as: while (!pred()) { if (!timed_wait(lock, abs_time)) return pred(); } return true; </para></description></method>
+<method name="wait_until"><type>cv_status</type><template>
+          <template-type-parameter name="L"/>
+          <template-type-parameter name="TimePoint"/>
+        </template><parameter name="lock"><paramtype>L &amp;</paramtype></parameter><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_wait</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
+<method name="wait_until"><type>bool</type><template>
+          <template-type-parameter name="L"/>
+          <template-type-parameter name="TimePoint"/>
+          <template-type-parameter name="Pr"/>
+        </template><parameter name="lock"><paramtype>L &amp;</paramtype></parameter><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><parameter name="pred"><paramtype>Pr</paramtype></parameter><description><para>Same as <computeroutput>timed_wait</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
+<method name="wait_for"><type>cv_status</type><template>
+          <template-type-parameter name="L"/>
+          <template-type-parameter name="Duration"/>
+        </template><parameter name="lock"><paramtype>L &amp;</paramtype></parameter><parameter name="dur"><paramtype>const Duration &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_wait</computeroutput>, but this function is modeled after the standard library interface and uses relative timeouts. </para></description></method>
+<method name="wait_for"><type>bool</type><template>
+          <template-type-parameter name="L"/>
+          <template-type-parameter name="Duration"/>
+          <template-type-parameter name="Pr"/>
+        </template><parameter name="lock"><paramtype>L &amp;</paramtype></parameter><parameter name="dur"><paramtype>const Duration &amp;</paramtype></parameter><parameter name="pred"><paramtype>Pr</paramtype></parameter><description><para>Same as <computeroutput>timed_wait</computeroutput>, but this function is modeled after the standard library interface and uses relative timeouts </para></description></method>
 </method-group>
 <constructor><purpose>Constructs a <classname alt="boost::interprocess::interprocess_condition">interprocess_condition</classname>. On error throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname>. </purpose></constructor>
 <destructor><description><para>Destroys *this liberating system resources. </para></description></destructor>
 </class>
+
 
 
 
@@ -4689,10 +4835,29 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
           <template-type-parameter name="TimePoint"/>
           <template-type-parameter name="Pr"/>
         </template><parameter name="lock"><paramtype>L &amp;</paramtype></parameter><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><parameter name="pred"><paramtype>Pr</paramtype></parameter><description><para>The same as: while (!pred()) { if (!timed_wait(lock, abs_time)) return pred(); } return true; </para></description></method>
+<method name="wait_until"><type>cv_status</type><template>
+          <template-type-parameter name="L"/>
+          <template-type-parameter name="TimePoint"/>
+        </template><parameter name="lock"><paramtype>L &amp;</paramtype></parameter><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_wait</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
+<method name="wait_until"><type>bool</type><template>
+          <template-type-parameter name="L"/>
+          <template-type-parameter name="TimePoint"/>
+          <template-type-parameter name="Pr"/>
+        </template><parameter name="lock"><paramtype>L &amp;</paramtype></parameter><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><parameter name="pred"><paramtype>Pr</paramtype></parameter><description><para>Same as <computeroutput>timed_wait</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
+<method name="wait_for"><type>cv_status</type><template>
+          <template-type-parameter name="L"/>
+          <template-type-parameter name="Duration"/>
+        </template><parameter name="lock"><paramtype>L &amp;</paramtype></parameter><parameter name="dur"><paramtype>const Duration &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_wait</computeroutput>, but this function is modeled after the standard library interface and uses relative timeouts. </para></description></method>
+<method name="wait_for"><type>bool</type><template>
+          <template-type-parameter name="L"/>
+          <template-type-parameter name="Duration"/>
+          <template-type-parameter name="Pr"/>
+        </template><parameter name="lock"><paramtype>L &amp;</paramtype></parameter><parameter name="dur"><paramtype>const Duration &amp;</paramtype></parameter><parameter name="pred"><paramtype>Pr</paramtype></parameter><description><para>Same as <computeroutput>timed_wait</computeroutput>, but this function is modeled after the standard library interface and uses relative timeouts </para></description></method>
 </method-group>
 <constructor><purpose>Constructs a <classname alt="boost::interprocess::interprocess_condition_any">interprocess_condition_any</classname>. On error throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname>. </purpose></constructor>
 <destructor><description><para>Destroys *this liberating system resources. </para></description></destructor>
 </class>
+
 
 
 
@@ -4752,11 +4917,18 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <method name="timed_lock"><type>bool</type><template>
           <template-type-parameter name="TimePoint"/>
         </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Requires: The calling thread does not own the mutex.</para><para>Effects: The calling thread will try to obtain exclusive ownership of the mutex if it can do so in until the specified time is reached. If the mutex supports recursive locking, the mutex must be unlocked the same number of times it is locked. Returns: If the thread acquires ownership of the mutex, returns true, if the timeout expires returns false. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error.</para><para>Note: A program may deadlock if the thread that has ownership calls this function. If the implementation can detect the deadlock, an exception could be thrown. </para></description></method>
+<method name="try_lock_until"><type>bool</type><template>
+          <template-type-parameter name="TimePoint"/>
+        </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
+<method name="try_lock_for"><type>bool</type><template>
+          <template-type-parameter name="Duration"/>
+        </template><parameter name="dur"><paramtype>const Duration &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
 <method name="unlock"><type>void</type><description><para>Effects: The calling thread releases the exclusive ownership of the mutex. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error. </para></description></method>
 </method-group>
 <constructor><description><para>Constructor. Throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error. </para></description></constructor>
 <destructor><description><para>Destructor. If any process uses the mutex after the destructor is called the result is undefined. Does not throw. </para></description></destructor>
 </class>
+
 
 
 
@@ -4816,11 +4988,18 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <method name="timed_lock"><type>bool</type><template>
           <template-type-parameter name="TimePoint"/>
         </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Tries to lock the <classname alt="boost::interprocess::interprocess_mutex">interprocess_mutex</classname>, if <classname alt="boost::interprocess::interprocess_mutex">interprocess_mutex</classname> can't be locked before abs_time time, returns false. The mutex must be unlocked the same number of times it is locked. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> if a severe error is found</para><para>Note: A program shall not deadlock if the thread that has ownership calls this function. </para></description></method>
+<method name="try_lock_until"><type>bool</type><template>
+          <template-type-parameter name="TimePoint"/>
+        </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
+<method name="try_lock_for"><type>bool</type><template>
+          <template-type-parameter name="Duration"/>
+        </template><parameter name="dur"><paramtype>const Duration &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
 <method name="unlock"><type>void</type><description><para>Effects: The calling thread releases the exclusive ownership of the mutex. If the mutex supports recursive locking, the mutex must be unlocked the same number of times it is locked. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error. </para></description></method>
 </method-group>
 <constructor><description><para>Constructor. Throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error. </para></description></constructor>
 <destructor><description><para>Destructor. If any process uses the mutex after the destructor is called the result is undefined. Does not throw. </para></description></destructor>
 </class>
+
 
 
 
@@ -4932,6 +5111,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -4948,17 +5128,33 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <method name="timed_lock"><type>bool</type><template>
           <template-type-parameter name="TimePoint"/>
         </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Requires: The calling thread does not own the mutex.</para><para>Effects: The calling thread tries to acquire exclusive ownership of the mutex waiting if necessary until no other thread has exclusive or sharable ownership of the mutex or abs_time is reached. Returns: If acquires exclusive ownership, returns true. Otherwise returns false. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error.</para><para>Note: A program may deadlock if the thread that has ownership calls this function. If the implementation can detect the deadlock, an exception could be thrown. </para></description></method>
+<method name="try_lock_until"><type>bool</type><template>
+          <template-type-parameter name="TimePoint"/>
+        </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
+<method name="try_lock_for"><type>bool</type><template>
+          <template-type-parameter name="Duration"/>
+        </template><parameter name="dur"><paramtype>const Duration &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
 <method name="unlock"><type>void</type><description><para>Precondition: The thread must have exclusive ownership of the mutex. Effects: The calling thread releases the exclusive ownership of the mutex. Throws: An exception derived from <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error. </para></description></method>
 <method name="lock_sharable"><type>void</type><description><para>Requires: The calling thread does not own the mutex.</para><para>Effects: The calling thread tries to obtain sharable ownership of the mutex, and if another thread has exclusive ownership of the mutex, waits until it can obtain the ownership. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error.</para><para>Note: A program may deadlock if the thread that has ownership calls this function. If the implementation can detect the deadlock, an exception could be thrown. </para></description></method>
+<method name="lock_shared"><type>void</type><description><para>Same as <computeroutput>lock_sharable</computeroutput> but with a std-compatible interface </para></description></method>
 <method name="try_lock_sharable"><type>bool</type><description><para>Requires: The calling thread does not own the mutex.</para><para>Effects: The calling thread tries to acquire sharable ownership of the mutex without waiting. If no other thread has exclusive ownership of the mutex this succeeds. Returns: If it can acquire sharable ownership immediately returns true. If it has to wait, returns false. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error.</para><para>Note: A program may deadlock if the thread that has ownership calls this function. If the implementation can detect the deadlock, an exception could be thrown. </para></description></method>
+<method name="try_lock_shared"><type>bool</type><description><para>Same as <computeroutput>try_lock_sharable</computeroutput> but with a std-compatible interface </para></description></method>
 <method name="timed_lock_sharable"><type>bool</type><template>
           <template-type-parameter name="TimePoint"/>
         </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Requires: The calling thread does not own the mutex.</para><para>Effects: The calling thread tries to acquire sharable ownership of the mutex waiting if necessary until no other thread has exclusive ownership of the mutex or abs_time is reached. Returns: If acquires sharable ownership, returns true. Otherwise returns false. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error.</para><para>Note: A program may deadlock if the thread that has ownership calls this function. If the implementation can detect the deadlock, an exception could be thrown. </para></description></method>
+<method name="try_lock_shared_until"><type>bool</type><template>
+          <template-type-parameter name="TimePoint"/>
+        </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock_sharable</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
+<method name="try_lock_shared_for"><type>bool</type><template>
+          <template-type-parameter name="Duration"/>
+        </template><parameter name="dur"><paramtype>const Duration &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock_sharable</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
 <method name="unlock_sharable"><type>void</type><description><para>Precondition: The thread must have sharable ownership of the mutex. Effects: The calling thread releases the sharable ownership of the mutex. Throws: An exception derived from <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error. </para></description></method>
+<method name="unlock_shared"><type>void</type><description><para>Same as <computeroutput>unlock_sharable</computeroutput> but with a std-compatible interface </para></description></method>
 </method-group>
 <constructor><description><para>Constructs the sharable lock. Throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error. </para></description></constructor>
 <destructor><description><para>Destroys the sharable lock. Does not throw. </para></description></destructor>
 </class>
+
 
 
 
@@ -5022,13 +5218,28 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <method name="timed_lock"><type>bool</type><template>
           <template-type-parameter name="TimePoint"/>
         </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Requires: The calling thread does not own the mutex.</para><para>Effects: The calling thread tries to acquire exclusive ownership of the mutex waiting if necessary until no other thread has exclusive, sharable or upgradable ownership of the mutex or abs_time is reached. Returns: If acquires exclusive ownership, returns true. Otherwise returns false. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error.</para><para>Note: A program may deadlock if the thread that has ownership calls this function. If the implementation can detect the deadlock, an exception could be thrown. </para></description></method>
+<method name="try_lock_until"><type>bool</type><template>
+          <template-type-parameter name="TimePoint"/>
+        </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
+<method name="try_lock_for"><type>bool</type><template>
+          <template-type-parameter name="Duration"/>
+        </template><parameter name="dur"><paramtype>const Duration &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
 <method name="unlock"><type>void</type><description><para>Precondition: The thread must have exclusive ownership of the mutex. Effects: The calling thread releases the exclusive ownership of the mutex. Throws: An exception derived from <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error. </para></description></method>
 <method name="lock_sharable"><type>void</type><description><para>Requires: The calling thread does not own the mutex.</para><para>Effects: The calling thread tries to obtain sharable ownership of the mutex, and if another thread has exclusive ownership of the mutex, waits until it can obtain the ownership. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error.</para><para>Note: A program may deadlock if the thread that has ownership calls this function. If the implementation can detect the deadlock, an exception could be thrown. </para></description></method>
+<method name="lock_shared"><type>void</type><description><para>Same as <computeroutput>lock_sharable</computeroutput> but with a std-compatible interface </para></description></method>
 <method name="try_lock_sharable"><type>bool</type><description><para>Requires: The calling thread does not own the mutex.</para><para>Effects: The calling thread tries to acquire sharable ownership of the mutex without waiting. If no other thread has exclusive ownership of the mutex this succeeds. Returns: If it can acquire sharable ownership immediately returns true. If it has to wait, returns false. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error.</para><para>Note: A program may deadlock if the thread that has ownership calls this function. If the implementation can detect the deadlock, an exception could be thrown. </para></description></method>
+<method name="try_lock_shared"><type>bool</type><description><para>Same as <computeroutput>try_lock_sharable</computeroutput> but with a std-compatible interface </para></description></method>
 <method name="timed_lock_sharable"><type>bool</type><template>
           <template-type-parameter name="TimePoint"/>
         </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Requires: The calling thread does not own the mutex.</para><para>Effects: The calling thread tries to acquire sharable ownership of the mutex waiting if necessary until no other thread has exclusive ownership of the mutex or abs_time is reached. Returns: If acquires sharable ownership, returns true. Otherwise returns false. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error.</para><para>Note: A program may deadlock if the thread that has ownership calls this function. If the implementation can detect the deadlock, an exception could be thrown. </para></description></method>
+<method name="try_lock_shared_until"><type>bool</type><template>
+          <template-type-parameter name="TimePoint"/>
+        </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock_sharable</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
+<method name="try_lock_shared_for"><type>bool</type><template>
+          <template-type-parameter name="Duration"/>
+        </template><parameter name="dur"><paramtype>const Duration &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock_sharable</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
 <method name="unlock_sharable"><type>void</type><description><para>Precondition: The thread must have sharable ownership of the mutex. Effects: The calling thread releases the sharable ownership of the mutex. Throws: An exception derived from <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error. </para></description></method>
+<method name="unlock_shared"><type>void</type><description><para>Same as <computeroutput>unlock_sharable</computeroutput> but with a std-compatible interface </para></description></method>
 <method name="lock_upgradable"><type>void</type><description><para>Requires: The calling thread does not own the mutex.</para><para>Effects: The calling thread tries to obtain upgradable ownership of the mutex, and if another thread has exclusive or upgradable ownership of the mutex, waits until it can obtain the ownership. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error.</para><para>Note: A program may deadlock if the thread that has ownership calls this function. If the implementation can detect the deadlock, an exception could be thrown. </para></description></method>
 <method name="try_lock_upgradable"><type>bool</type><description><para>Requires: The calling thread does not own the mutex.</para><para>Effects: The calling thread tries to acquire upgradable ownership of the mutex without waiting. If no other thread has exclusive or upgradable ownership of the mutex this succeeds. Returns: If it can acquire upgradable ownership immediately returns true. If it has to wait, returns false. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error.</para><para>Note: A program may deadlock if the thread that has ownership calls this function. If the implementation can detect the deadlock, an exception could be thrown. </para></description></method>
 <method name="timed_lock_upgradable"><type>bool</type><template>
@@ -5096,6 +5307,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -5105,6 +5317,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <struct name="accept_ownership_type"><purpose>Type to indicate to a mutex lock constructor that the mutex is already locked. </purpose></struct><struct name="defer_lock_type"><purpose>Type to indicate to a mutex lock constructor that must not lock the mutex. </purpose></struct><struct name="try_to_lock_type"><purpose>Type to indicate to a mutex lock constructor that must try to lock the mutex. </purpose></struct><data-member name="defer_lock" specifiers="static"><type>const <classname>defer_lock_type</classname></type><description><para>An object indicating that the locking must be deferred. </para></description></data-member>
 <data-member name="try_to_lock" specifiers="static"><type>const <classname>try_to_lock_type</classname></type><description><para>An object indicating that a try_lock() operation must be executed. </para></description></data-member>
 <data-member name="accept_ownership" specifiers="static"><type>const <classname>accept_ownership_type</classname></type><description><para>An object indicating that the ownership of lockable object must be accepted by the new owner. </para></description></data-member>
+
 
 
 
@@ -5211,6 +5424,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -5236,6 +5450,24 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
           <template-type-parameter name="TimePoint"/>
           <template-type-parameter name="Pr"/>
         </template><parameter name="lock"><paramtype>L &amp;</paramtype></parameter><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><parameter name="pred"><paramtype>Pr</paramtype></parameter><description><para>The same as: while (!pred()) { if (!timed_wait(lock, abs_time)) return pred(); } return true; </para></description></method>
+<method name="wait_until"><type>cv_status</type><template>
+          <template-type-parameter name="L"/>
+          <template-type-parameter name="TimePoint"/>
+        </template><parameter name="lock"><paramtype>L &amp;</paramtype></parameter><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_wait</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
+<method name="wait_until"><type>bool</type><template>
+          <template-type-parameter name="L"/>
+          <template-type-parameter name="TimePoint"/>
+          <template-type-parameter name="Pr"/>
+        </template><parameter name="lock"><paramtype>L &amp;</paramtype></parameter><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><parameter name="pred"><paramtype>Pr</paramtype></parameter><description><para>Same as <computeroutput>timed_wait</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
+<method name="wait_for"><type>cv_status</type><template>
+          <template-type-parameter name="L"/>
+          <template-type-parameter name="Duration"/>
+        </template><parameter name="lock"><paramtype>L &amp;</paramtype></parameter><parameter name="dur"><paramtype>const Duration &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_wait</computeroutput>, but this function is modeled after the standard library interface and uses relative timeouts. </para></description></method>
+<method name="wait_for"><type>bool</type><template>
+          <template-type-parameter name="L"/>
+          <template-type-parameter name="Duration"/>
+          <template-type-parameter name="Pr"/>
+        </template><parameter name="lock"><paramtype>L &amp;</paramtype></parameter><parameter name="dur"><paramtype>const Duration &amp;</paramtype></parameter><parameter name="pred"><paramtype>Pr</paramtype></parameter><description><para>Same as <computeroutput>timed_wait</computeroutput>, but this function is modeled after the standard library interface and uses relative timeouts </para></description></method>
 </method-group>
 <constructor><parameter name="create_only"><paramtype><classname>create_only_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Creates a global condition with a name. If the condition can't be created throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> </para></description></constructor>
 <constructor><parameter name="open_or_create"><paramtype><classname>open_or_create_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Opens or creates a global condition with a name. If the condition is created, this call is equivalent to named_condition(create_only_t, ... ) If the condition is already created, this call is equivalent named_condition(open_only_t, ... ) Does not throw </para></description></constructor>
@@ -5249,6 +5481,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <method name="remove" specifiers="static"><type>bool</type><parameter name="name"><paramtype>const wchar_t *</paramtype></parameter><description><para>Erases a named condition from the system. Returns false on error. Never throws.</para><para>Note: This function is only available on operating systems with native wchar_t APIs (e.g. Windows). </para></description></method>
 </method-group>
 </class>
+
 
 
 
@@ -5321,6 +5554,24 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
           <template-type-parameter name="TimePoint"/>
           <template-type-parameter name="Pr"/>
         </template><parameter name="lock"><paramtype>L &amp;</paramtype></parameter><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><parameter name="pred"><paramtype>Pr</paramtype></parameter><description><para>The same as: while (!pred()) { if (!timed_wait(lock, abs_time)) return pred(); } return true; </para></description></method>
+<method name="wait_until"><type>cv_status</type><template>
+          <template-type-parameter name="L"/>
+          <template-type-parameter name="TimePoint"/>
+        </template><parameter name="lock"><paramtype>L &amp;</paramtype></parameter><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_wait</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
+<method name="wait_until"><type>bool</type><template>
+          <template-type-parameter name="L"/>
+          <template-type-parameter name="TimePoint"/>
+          <template-type-parameter name="Pr"/>
+        </template><parameter name="lock"><paramtype>L &amp;</paramtype></parameter><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><parameter name="pred"><paramtype>Pr</paramtype></parameter><description><para>Same as <computeroutput>timed_wait</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
+<method name="wait_for"><type>cv_status</type><template>
+          <template-type-parameter name="L"/>
+          <template-type-parameter name="Duration"/>
+        </template><parameter name="lock"><paramtype>L &amp;</paramtype></parameter><parameter name="dur"><paramtype>const Duration &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_wait</computeroutput>, but this function is modeled after the standard library interface and uses relative timeouts. </para></description></method>
+<method name="wait_for"><type>bool</type><template>
+          <template-type-parameter name="L"/>
+          <template-type-parameter name="Duration"/>
+          <template-type-parameter name="Pr"/>
+        </template><parameter name="lock"><paramtype>L &amp;</paramtype></parameter><parameter name="dur"><paramtype>const Duration &amp;</paramtype></parameter><parameter name="pred"><paramtype>Pr</paramtype></parameter><description><para>Same as <computeroutput>timed_wait</computeroutput>, but this function is modeled after the standard library interface and uses relative timeouts </para></description></method>
 </method-group>
 <constructor><parameter name=""><paramtype><classname>create_only_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Creates a global condition with a name. If the condition can't be created throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> </para></description></constructor>
 <constructor><parameter name=""><paramtype><classname>open_or_create_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Opens or creates a global condition with a name. If the condition is created, this call is equivalent to named_condition_any(create_only_t, ... ) If the condition is already created, this call is equivalent named_condition_any(open_only_t, ... ) Does not throw </para></description></constructor>
@@ -5381,6 +5632,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -5394,6 +5646,12 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <method name="timed_lock"><type>bool</type><template>
           <template-type-parameter name="TimePoint"/>
         </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Requires: The calling thread does not own the mutex.</para><para>Tries to lock the the mutex until time abs_time, Returns false when timeout expires, returns true when locks. Throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> if a severe error is found</para><para>Note: A program may deadlock if the thread that has ownership calls this function. If the implementation can detect the deadlock, an exception could be thrown. </para></description></method>
+<method name="try_lock_until"><type>bool</type><template>
+          <template-type-parameter name="TimePoint"/>
+        </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
+<method name="try_lock_for"><type>bool</type><template>
+          <template-type-parameter name="Duration"/>
+        </template><parameter name="dur"><paramtype>const Duration &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
 </method-group>
 <constructor><parameter name="create_only"><paramtype><classname>create_only_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Creates a global mutex with a name. Throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error. </para></description></constructor>
 <constructor><parameter name="open_or_create"><paramtype><classname>open_or_create_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Opens or creates a global mutex with a name. If the mutex is created, this call is equivalent to named_mutex(create_only_t, ... ) If the mutex is already created, this call is equivalent named_mutex(open_only_t, ... ) Does not throw </para></description></constructor>
@@ -5454,6 +5712,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -5467,6 +5726,12 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <method name="timed_lock"><type>bool</type><template>
           <template-type-parameter name="TimePoint"/>
         </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Tries to lock the <classname alt="boost::interprocess::named_recursive_mutex">named_recursive_mutex</classname> until time abs_time, Returns false when timeout expires, returns true when locks. Throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> if a severe error is found</para><para>Note: A program shall not deadlock if the thread that has ownership calls this function. </para></description></method>
+<method name="try_lock_until"><type>bool</type><template>
+          <template-type-parameter name="TimePoint"/>
+        </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
+<method name="try_lock_for"><type>bool</type><template>
+          <template-type-parameter name="Duration"/>
+        </template><parameter name="dur"><paramtype>const Duration &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
 </method-group>
 <constructor><parameter name="create_only"><paramtype><classname>create_only_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Creates a global recursive_mutex with a name. If the recursive_mutex can't be created throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> </para></description></constructor>
 <constructor><parameter name="open_or_create"><paramtype><classname>open_or_create_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Opens or creates a global recursive_mutex with a name. If the recursive_mutex is created, this call is equivalent to named_recursive_mutex(create_only_t, ... ) If the recursive_mutex is already created, this call is equivalent named_recursive_mutex(open_only_t, ... ) Does not throw </para></description></constructor>
@@ -5480,6 +5745,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <method name="remove" specifiers="static"><type>bool</type><parameter name="name"><paramtype>const wchar_t *</paramtype></parameter><description><para>Erases a named recursive mutex from the system</para><para>Note: This function is only available on operating systems with native wchar_t APIs (e.g. Windows). </para></description></method>
 </method-group>
 </class>
+
 
 
 
@@ -5600,6 +5866,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -5612,13 +5879,28 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <method name="timed_lock"><type>bool</type><template>
           <template-type-parameter name="TimePoint"/>
         </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Requires: The calling thread does not own the mutex.</para><para>Effects: The calling thread tries to acquire exclusive ownership of the mutex waiting if necessary until no other thread has exclusive, or sharable ownership of the mutex or abs_time is reached. Returns: If acquires exclusive ownership, returns true. Otherwise returns false. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error.</para><para>Note: A program may deadlock if the thread that has ownership calls this function. If the implementation can detect the deadlock, an exception could be thrown. </para></description></method>
+<method name="try_lock_until"><type>bool</type><template>
+          <template-type-parameter name="TimePoint"/>
+        </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
+<method name="try_lock_for"><type>bool</type><template>
+          <template-type-parameter name="Duration"/>
+        </template><parameter name="dur"><paramtype>const Duration &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
 <method name="unlock"><type>void</type><description><para>Precondition: The thread must have exclusive ownership of the mutex. Effects: The calling thread releases the exclusive ownership of the mutex. Throws: An exception derived from <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error. </para></description></method>
 <method name="lock_sharable"><type>void</type><description><para>Requires: The calling thread does not own the mutex.</para><para>Effects: The calling thread tries to obtain sharable ownership of the mutex, and if another thread has exclusive ownership of the mutex, waits until it can obtain the ownership. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error.</para><para>Note: A program may deadlock if the thread that has ownership calls this function. If the implementation can detect the deadlock, an exception could be thrown </para></description></method>
+<method name="lock_shared"><type>void</type><description><para>Same as <computeroutput>lock_sharable</computeroutput> but with a std-compatible interface </para></description></method>
 <method name="try_lock_sharable"><type>bool</type><description><para>Requires: The calling thread does not own the mutex.</para><para>Effects: The calling thread tries to acquire sharable ownership of the mutex without waiting. If no other thread has exclusive ownership of the mutex this succeeds. Returns: If it can acquire sharable ownership immediately returns true. If it has to wait, returns false. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error.</para><para>Note: A program may deadlock if the thread that has ownership calls this function. If the implementation can detect the deadlock, an exception could be thrown </para></description></method>
+<method name="try_lock_shared"><type>bool</type><description><para>Same as <computeroutput>try_lock_sharable</computeroutput> but with a std-compatible interface </para></description></method>
 <method name="timed_lock_sharable"><type>bool</type><template>
           <template-type-parameter name="TimePoint"/>
         </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Requires: The calling thread does not own the mutex.</para><para>Effects: The calling thread tries to acquire sharable ownership of the mutex waiting if necessary until no other thread has exclusive ownership of the mutex or abs_time is reached. Returns: If acquires sharable ownership, returns true. Otherwise returns false. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error.</para><para>Note: A program may deadlock if the thread that has ownership calls this function. If the implementation can detect the deadlock, an exception could be thrown </para></description></method>
+<method name="try_lock_shared_until"><type>bool</type><template>
+          <template-type-parameter name="TimePoint"/>
+        </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock_sharable</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
+<method name="try_lock_shared_for"><type>bool</type><template>
+          <template-type-parameter name="Duration"/>
+        </template><parameter name="dur"><paramtype>const Duration &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock_sharable</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
 <method name="unlock_sharable"><type>void</type><description><para>Precondition: The thread must have sharable ownership of the mutex. Effects: The calling thread releases the sharable ownership of the mutex. Throws: An exception derived from <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error. </para></description></method>
+<method name="unlock_shared"><type>void</type><description><para>Same as <computeroutput>unlock_sharable</computeroutput> but with a std-compatible interface </para></description></method>
 </method-group>
 <constructor><parameter name="create_only"><paramtype><classname>create_only_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Creates a global sharable mutex with a name. If the sharable mutex can't be created throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> </para></description></constructor>
 <constructor><parameter name="open_or_create"><paramtype><classname>open_or_create_t</classname></paramtype></parameter><parameter name="name"><paramtype>const char *</paramtype></parameter><parameter name="perm"><paramtype>const <classname>permissions</classname> &amp;</paramtype><default><classname alt="boost::interprocess::permissions">permissions</classname>()</default></parameter><description><para>Opens or creates a global sharable mutex with a name. If the sharable mutex is created, this call is equivalent to named_sharable_mutex(create_only_t, ...) If the sharable mutex is already created, this call is equivalent to named_sharable_mutex(open_only_t, ... ). </para></description></constructor>
@@ -5679,6 +5961,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -5691,13 +5974,28 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <method name="timed_lock"><type>bool</type><template>
           <template-type-parameter name="TimePoint"/>
         </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Requires: The calling thread does not own the mutex.</para><para>Effects: The calling thread tries to acquire exclusive ownership of the mutex waiting if necessary until no other thread has exclusive, sharable or upgradable ownership of the mutex or abs_time is reached. Returns: If acquires exclusive ownership, returns true. Otherwise returns false. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error.</para><para>Note: A program may deadlock if the thread that has ownership calls this function. If the implementation can detect the deadlock, an exception could be thrown </para></description></method>
+<method name="try_lock_until"><type>bool</type><template>
+          <template-type-parameter name="TimePoint"/>
+        </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
+<method name="try_lock_for"><type>bool</type><template>
+          <template-type-parameter name="Duration"/>
+        </template><parameter name="dur"><paramtype>const Duration &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
 <method name="unlock"><type>void</type><description><para>Precondition: The thread must have exclusive ownership of the mutex. Effects: The calling thread releases the exclusive ownership of the mutex. Throws: An exception derived from <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error. </para></description></method>
 <method name="lock_sharable"><type>void</type><description><para>Requires: The calling thread does not own the mutex.</para><para>Effects: The calling thread tries to obtain sharable ownership of the mutex, and if another thread has exclusive ownership of the mutex, waits until it can obtain the ownership. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error.</para><para>Note: A program may deadlock if the thread that has ownership calls this function. If the implementation can detect the deadlock, an exception could be thrown </para></description></method>
+<method name="lock_shared"><type>void</type><description><para>Same as <computeroutput>lock_sharable</computeroutput> but with a std-compatible interface </para></description></method>
 <method name="try_lock_sharable"><type>bool</type><description><para>Requires: The calling thread does not own the mutex.</para><para>Effects: The calling thread tries to acquire sharable ownership of the mutex without waiting. If no other thread has exclusive ownership of the mutex this succeeds. Returns: If it can acquire sharable ownership immediately returns true. If it has to wait, returns false. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error.</para><para>Note: A program may deadlock if the thread that has ownership calls this function. If the implementation can detect the deadlock, an exception could be thrown </para></description></method>
+<method name="try_lock_shared"><type>bool</type><description><para>Same as <computeroutput>try_lock_sharable</computeroutput> but with a std-compatible interface </para></description></method>
 <method name="timed_lock_sharable"><type>bool</type><template>
           <template-type-parameter name="TimePoint"/>
         </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Requires: The calling thread does not own the mutex.</para><para>Effects: The calling thread tries to acquire sharable ownership of the mutex waiting if necessary until no other thread has exclusive ownership of the mutex or abs_time is reached. Returns: If acquires sharable ownership, returns true. Otherwise returns false. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error.</para><para>Note: A program may deadlock if the thread that has ownership calls this function. If the implementation can detect the deadlock, an exception could be thrown </para></description></method>
+<method name="try_lock_shared_until"><type>bool</type><template>
+          <template-type-parameter name="TimePoint"/>
+        </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock_sharable</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
+<method name="try_lock_shared_for"><type>bool</type><template>
+          <template-type-parameter name="Duration"/>
+        </template><parameter name="dur"><paramtype>const Duration &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock_sharable</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
 <method name="unlock_sharable"><type>void</type><description><para>Precondition: The thread must have sharable ownership of the mutex. Effects: The calling thread releases the sharable ownership of the mutex. Throws: An exception derived from <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error. </para></description></method>
+<method name="unlock_shared"><type>void</type><description><para>Same as <computeroutput>unlock_sharable</computeroutput> but with a std-compatible interface </para></description></method>
 <method name="lock_upgradable"><type>void</type><description><para>Requires: The calling thread does not own the mutex.</para><para>Effects: The calling thread tries to obtain upgradable ownership of the mutex, and if another thread has exclusive or upgradable ownership of the mutex, waits until it can obtain the ownership. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error.</para><para>Note: A program may deadlock if the thread that has ownership calls this function. If the implementation can detect the deadlock, an exception could be thrown </para></description></method>
 <method name="try_lock_upgradable"><type>bool</type><description><para>Requires: The calling thread does not own the mutex.</para><para>Effects: The calling thread tries to acquire upgradable ownership of the mutex without waiting. If no other thread has exclusive or upgradable ownership of the mutex this succeeds. Returns: If it can acquire upgradable ownership immediately returns true. If it has to wait, returns false. Throws: <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error.</para><para>Note: A program may deadlock if the thread that has ownership calls this function. If the implementation can detect the deadlock, an exception could be thrown </para></description></method>
 <method name="timed_lock_upgradable"><type>bool</type><template>
@@ -5774,6 +6072,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -5786,13 +6085,22 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <method name="timed_lock"><type>bool</type><template>
           <template-type-parameter name="TimePoint"/>
         </template><parameter name=""><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Simulates a mutex timed_lock() operation. Equivalent to "return true;" </para></description></method>
+<method name="try_lock_until"><type>bool</type><template>
+          <template-type-parameter name="TimePoint"/>
+        </template><parameter name=""><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
+<method name="try_lock_for"><type>bool</type><template>
+          <template-type-parameter name="Duration"/>
+        </template><parameter name=""><paramtype>const Duration &amp;</paramtype></parameter><description><para>Same as <computeroutput>timed_lock</computeroutput>, but this function is modeled after the standard library interface. </para></description></method>
 <method name="unlock"><type>void</type><description><para>Simulates a mutex unlock() operation. Empty function. </para></description></method>
 <method name="lock_sharable"><type>void</type><description><para>Simulates a mutex lock_sharable() operation. Empty function. </para></description></method>
+<method name="lock_shared"><type>void</type><description><para>Same as <computeroutput>lock_sharable</computeroutput> but with a std-compatible interface </para></description></method>
 <method name="try_lock_sharable"><type>bool</type><description><para>Simulates a mutex try_lock_sharable() operation. Equivalent to "return true;" </para></description></method>
+<method name="try_lock_shared"><type>bool</type><description><para>Same as <computeroutput>try_lock_sharable</computeroutput> but with a std-compatible interface </para></description></method>
 <method name="timed_lock_sharable"><type>bool</type><template>
           <template-type-parameter name="TimePoint"/>
         </template><parameter name=""><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Simulates a mutex timed_lock_sharable() operation. Equivalent to "return true;" </para></description></method>
 <method name="unlock_sharable"><type>void</type><description><para>Simulates a mutex unlock_sharable() operation. Empty function. </para></description></method>
+<method name="unlock_shared"><type>void</type><description><para>Same as <computeroutput>unlock_sharable</computeroutput> but with a std-compatible interface </para></description></method>
 <method name="lock_upgradable"><type>void</type><description><para>Simulates a mutex lock_upgradable() operation. Empty function. </para></description></method>
 <method name="try_lock_upgradable"><type>bool</type><description><para>Simulates a mutex try_lock_upgradable() operation. Equivalent to "return true;" </para></description></method>
 <method name="timed_lock_upgradable"><type>bool</type><template>
@@ -5860,6 +6168,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -5875,6 +6184,12 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <method name="timed_lock"><type>*bool</type><template>
           <template-type-parameter name="TimePoint"/>
         </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Effects: If mutex() == 0 or if already locked, throws a lock_exception() exception. Calls timed_lock(abs_time) on the referenced mutex. Postconditions: owns() == the value returned from mutex()-&gt; timed_lock(abs_time). Notes: The <classname alt="boost::interprocess::scoped_lock">scoped_lock</classname> changes from a state of not owning the mutex, to owning the mutex, but only if it can obtain ownership by the specified time. If the mutex_type does not support timed_lock (), this function will fail at compile time if instantiated, but otherwise have no effect. </para></description></method>
+<method name="try_lock_until"><type>*bool</type><template>
+          <template-type-parameter name="TimePoint"/>
+        </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Effects: If mutex() == 0 or if already locked, throws a lock_exception() exception. Calls try_lock_until(abs_time) on the referenced mutex. Postconditions: owns() == the value returned from mutex()-&gt; timed_lock(abs_time). Notes: The <classname alt="boost::interprocess::scoped_lock">scoped_lock</classname> changes from a state of not owning the mutex, to owning the mutex, but only if it can obtain ownership by the specified time. If the mutex_type does not support timed_lock (), this function will fail at compile time if instantiated, but otherwise have no effect. </para></description></method>
+<method name="try_lock_for"><type>*bool</type><template>
+          <template-type-parameter name="Duration"/>
+        </template><parameter name="dur"><paramtype>const Duration &amp;</paramtype></parameter><description><para>Effects: If mutex() == 0 or if already locked, throws a lock_exception() exception. Calls try_lock_until(abs_time) on the referenced mutex. Postconditions: owns() == the value returned from mutex()-&gt; timed_lock(abs_time). Notes: The <classname alt="boost::interprocess::scoped_lock">scoped_lock</classname> changes from a state of not owning the mutex, to owning the mutex, but only if it can obtain ownership by the specified time. If the mutex_type does not support timed_lock (), this function will fail at compile time if instantiated, but otherwise have no effect. </para></description></method>
 <method name="unlock"><type>*void</type><description><para>Effects: If mutex() == 0 or if not locked, throws a lock_exception() exception. Calls unlock() on the referenced mutex. Postconditions: owns() == false. Notes: The <classname alt="boost::interprocess::scoped_lock">scoped_lock</classname> changes from a state of owning the mutex, to not owning the mutex. </para></description></method>
 <method name="owns" cv="const noexcept"><type>bool</type><description><para>Effects: Returns true if this <classname alt="boost::interprocess::scoped_lock">scoped_lock</classname> has acquired the referenced mutex. </para></description></method>
 <method name="conversion-operator" cv="const noexcept"><type>unspecified_bool_type</type><description><para>Conversion to bool. Returns owns(). </para></description></method>
@@ -5954,6 +6269,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -5969,6 +6285,12 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <method name="timed_lock"><type>bool</type><template>
           <template-type-parameter name="TimePoint"/>
         </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Effects: If mutex() == 0 or already locked, throws a lock_exception() exception. Calls timed_lock_sharable(abs_time) on the referenced mutex. Postconditions: owns() == the value returned from mutex()-&gt;timed_lock_sharable(elps_time). Notes: The <classname alt="boost::interprocess::sharable_lock">sharable_lock</classname> changes from a state of not owning the mutex, to owning the mutex, but only if it can obtain ownership within the specified time interval. If the mutex_type does not support timed_lock_sharable(), this function will fail at compile time if instantiated, but otherwise have no effect. </para></description></method>
+<method name="try_lock_until"><type>bool</type><template>
+          <template-type-parameter name="TimePoint"/>
+        </template><parameter name="abs_time"><paramtype>const TimePoint &amp;</paramtype></parameter><description><para>Effects: If mutex() == 0 or already locked, throws a lock_exception() exception. Calls try_lock_shared_until(abs_time) on the referenced mutex. Postconditions: owns() == the value returned from mutex()-&gt;timed_lock_sharable(elps_time). Notes: The <classname alt="boost::interprocess::sharable_lock">sharable_lock</classname> changes from a state of not owning the mutex, to owning the mutex, but only if it can obtain ownership within the specified time interval. If the mutex_type does not support timed_lock_sharable(), this function will fail at compile time if instantiated, but otherwise have no effect.</para><para>Note: Similar to timed_lock, but with a std-like interface </para></description></method>
+<method name="try_lock_for"><type>bool</type><template>
+          <template-type-parameter name="Duration"/>
+        </template><parameter name="dur"><paramtype>const Duration &amp;</paramtype></parameter><description><para>Effects: If mutex() == 0 or already locked, throws a lock_exception() exception. Calls try_lock_shared_until(abs_time) on the referenced mutex. Postconditions: owns() == the value returned from mutex()-&gt;timed_lock_sharable(elps_time). Notes: The <classname alt="boost::interprocess::sharable_lock">sharable_lock</classname> changes from a state of not owning the mutex, to owning the mutex, but only if it can obtain ownership within the specified time interval. If the mutex_type does not support timed_lock_sharable(), this function will fail at compile time if instantiated, but otherwise have no effect.</para><para>Note: Similar to timed_lock, but with a std-like interface </para></description></method>
 <method name="unlock"><type>void</type><description><para>Effects: If mutex() == 0 or not locked, throws a lock_exception() exception. Calls unlock_sharable() on the referenced mutex. Postconditions: owns() == false. Notes: The <classname alt="boost::interprocess::sharable_lock">sharable_lock</classname> changes from a state of owning the mutex, to not owning the mutex. </para></description></method>
 <method name="owns" cv="const noexcept"><type>bool</type><description><para>Effects: Returns true if this <classname alt="boost::interprocess::scoped_lock">scoped_lock</classname> has acquired the referenced mutex. </para></description></method>
 <method name="conversion-operator" cv="const noexcept"><type>unspecified_bool_type</type><description><para>Conversion to bool. Returns owns(). </para></description></method>
@@ -5994,6 +6316,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <destructor><description><para>Effects: if (owns()) mp_mutex-&gt;unlock_sharable(). Notes: The destructor behavior ensures that the mutex lock is not leaked. </para></description></destructor>
 <copy-assignment><type><classname>sharable_lock</classname> &amp;</type><parameter name="upgr"><paramtype><classname>sharable_lock</classname>&lt; mutex_type &gt; &amp;&amp;</paramtype></parameter><description><para>Effects: If owns() before the call, then unlock_sharable() is called on mutex(). *this gets the state of upgr and upgr gets set to a default constructed state. Notes: With a recursive mutex it is possible that both this and upgr own the mutex before the assignment. In this case, this will own the mutex after the assignment (and upgr will not), but the mutex's lock count will be decremented by one. </para></description></copy-assignment>
 </class>
+
 
 
 
@@ -6128,6 +6451,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -6152,6 +6476,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <copy-assignment cv="noexcept"><type><classname>windows_shared_memory</classname> &amp;</type><parameter name="moved"><paramtype><classname>windows_shared_memory</classname> &amp;&amp;</paramtype></parameter><description><para>Moves the ownership of "moved"'s shared memory to *this. After the call, "moved" does not represent any shared memory. Does not throw </para></description></copy-assignment>
 <destructor><description><para>Destroys *this. All mapped regions are still valid after destruction. When all mapped regions and <classname alt="boost::interprocess::windows_shared_memory">windows_shared_memory</classname> objects referring the shared memory are destroyed, the operating system will destroy the shared memory. </para></description></destructor>
 </class>
+
 
 
 
@@ -6259,6 +6584,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 
 
 
+
 </namespace>
 </namespace>
 </header>
@@ -6282,6 +6608,7 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <method name="remove" specifiers="static"><type>bool</type><parameter name="shmid"><paramtype>int</paramtype></parameter><description><para>Erases the XSI shared memory object identified by shmid from the system. Returns false on error. Never throws </para></description></method>
 </method-group>
 </class>
+
 
 
 

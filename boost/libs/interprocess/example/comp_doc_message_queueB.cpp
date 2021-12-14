@@ -7,7 +7,7 @@
 // See http://www.boost.org/libs/interprocess for documentation.
 //
 //////////////////////////////////////////////////////////////////////////////
-#include <boost/interprocess/detail/config_begin.hpp>
+
 //[doc_message_queueB
 #include <boost/interprocess/ipc/message_queue.hpp>
 #include <iostream>
@@ -17,7 +17,7 @@ using namespace boost::interprocess;
 
 int main ()
 {
-   try{
+   BOOST_TRY{
       //Open a message queue.
       message_queue mq
          (open_only        //only open
@@ -35,13 +35,13 @@ int main ()
             return 1;
       }
    }
-   catch(interprocess_exception &ex){
+   BOOST_CATCH(interprocess_exception &ex){
       message_queue::remove("message_queue");
       std::cout << ex.what() << std::endl;
       return 1;
-   }
+   } BOOST_CATCH_END
    message_queue::remove("message_queue");
    return 0;
 }
 //]
-#include <boost/interprocess/detail/config_end.hpp>
+

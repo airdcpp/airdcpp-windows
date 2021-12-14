@@ -40,5 +40,5 @@ int main()
     boost::system::system_error x( bc, "prefix" );
 
     BOOST_TEST_EQ( x.code(), bc );
-    BOOST_TEST_EQ( std::string( x.what() ), "prefix: " + bc.message() );
+    BOOST_TEST_EQ( std::string( x.what() ), "prefix: " + bc.what() );
 }

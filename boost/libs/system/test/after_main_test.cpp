@@ -5,7 +5,12 @@
 #include <boost/system/error_code.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/quick_exit.hpp>
+#include <boost/config.hpp>
 #include <cerrno>
+
+#if defined(BOOST_MSVC)
+# pragma warning(disable: 4722) // Z::~Z never returns
+#endif
 
 using namespace boost::system;
 
@@ -27,4 +32,6 @@ static error_code e2( ENOENT, generic_category() );
 
 int main()
 {
+    (void)e1;
+    (void)e2;
 }

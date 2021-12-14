@@ -1,7 +1,7 @@
 # Boost System Library test Jamfile
 
 # Copyright Beman Dawes 2003, 2006
-# Copyright 2017-2019 Peter Dimov
+# Copyright 2017-2021 Peter Dimov
 
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt
@@ -9,6 +9,18 @@
 # See library home page at http://www.boost.org/libs/system
 
 import testing ;
+
+project
+  : default-build
+
+    <warnings>extra
+
+  : requirements
+
+    <toolset>msvc:<warnings-as-errors>on
+    <toolset>gcc:<warnings-as-errors>on
+    <toolset>clang:<warnings-as-errors>on
+  ;
 
 rule system-run ( sources + )
 {
@@ -61,8 +73,8 @@ system-run failed_constexpr_test.cpp ;
 # Quick (CI) test
 run quick.cpp ;
 
-compile warnings_test.cpp
-  : <warnings>pedantic
+run warnings_test.cpp
+  : : : <warnings>pedantic
     <toolset>msvc:<warnings-as-errors>on
     <toolset>gcc:<warnings-as-errors>on
     <toolset>clang:<warnings-as-errors>on ;
@@ -108,3 +120,37 @@ run std_interop_test6.cpp ;
 run std_interop_test7.cpp ;
 run std_interop_test8.cpp ;
 run std_interop_test9.cpp ;
+
+run ec_location_test.cpp ;
+
+run error_condition_test3.cpp ;
+run error_code_test2.cpp ;
+run system_error_test2.cpp ;
+run std_interop_test10.cpp ;
+
+run ec_location_test2.cpp ;
+run ec_what_test.cpp ;
+run system_error_test3.cpp ;
+
+run std_interop_test11.cpp ;
+
+# result
+
+import ../../config/checks/config : requires ;
+
+CPP11 = [ requires cxx11_variadic_templates cxx11_template_aliases cxx11_decltype cxx11_constexpr cxx11_noexcept ] ;
+
+run result_default_construct.cpp : : : $(CPP11) ;
+run result_value_construct.cpp : : : $(CPP11) ;
+run result_error_construct.cpp : : : $(CPP11) ;
+run result_copy_construct.cpp : : : $(CPP11) ;
+run result_move_construct.cpp : : : $(CPP11) ;
+run result_copy_assign.cpp : : : $(CPP11) ;
+run result_move_assign.cpp : : : $(CPP11) ;
+run result_value_access.cpp : : : $(CPP11) ;
+run result_error_access.cpp : : : $(CPP11) ;
+run result_swap.cpp : : : $(CPP11) <toolset>gcc-10:<cxxflags>"-Wno-maybe-uninitialized" ;
+run result_eq.cpp : : : $(CPP11) ;
+run result_range_for.cpp : : : $(CPP11) ;
+run result_value_construct2.cpp : : : $(CPP11) ;
+run result_error_construct2.cpp : : : $(CPP11) ;

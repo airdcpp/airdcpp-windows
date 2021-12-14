@@ -70,28 +70,34 @@ int test_managed_mapped_file()
       file_mapping::remove(FileName);
 
       const int max              = 100;
-      void *array[max];
+      void *array[std::size_t(max)];
       //Named allocate capable shared memory allocator
       managed_mapped_file mfile(create_only, FileName, FileSize);
 
-      int i;
+      std::size_t i;
       //Let's allocate some memory
       for(i = 0; i < max; ++i){
-         array[i] = mfile.allocate(i+1);
+         array[std::ptrdiff_t(i)] = mfile.allocate(i+1u);
       }
 
       //Deallocate allocated memory
       for(i = 0; i < max; ++i){
-         mfile.deallocate(array[i]);
+         mfile.deallocate(array[std::ptrdiff_t(i)]);
       }
    }
 
    {
       //Remove the file it is already created
       file_mapping::remove(FileName);
-
       //Named allocate capable memory mapped file managed memory class
-      managed_mapped_file mfile(create_only, FileName, FileSize);
+      managed_mapped_file tmp(create_only, FileName, FileSize);
+   }
+   {
+      //Remove the file it is already created
+      file_mapping::remove(FileName);
+
+      //Now re-create it with create or open
+      managed_mapped_file mfile(open_or_create, FileName, FileSize);
 
       //Construct the STL-like allocator with the segment manager
       const allocator_int_t myallocator (mfile.get_segment_manager());
@@ -123,7 +129,15 @@ int test_managed_mapped_file()
       if(!mfile_vect)
          return -1;
    }
+   {
+      //Map preexisting file again in memory
+      managed_mapped_file mfile(open_or_create, FileName, FileSize);
 
+      //Check vector is still there
+      MyVect *mfile_vect = mfile.find<MyVect>("MyVector").first;
+      if(!mfile_vect)
+         return -1;
+   }
    {
       {
          //Map preexisting file again in copy-on-write
@@ -154,7 +168,7 @@ int test_managed_mapped_file()
       }
    }
    {
-      //Map preexisting file again in copy-on-write
+      //Map preexisting file again in read-only
       managed_mapped_file mfile(open_read_only, FileName);
 
       //Check vector is still there

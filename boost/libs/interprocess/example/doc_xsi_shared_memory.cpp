@@ -7,7 +7,7 @@
 // See http://www.boost.org/libs/interprocess for documentation.
 //
 //////////////////////////////////////////////////////////////////////////////
-#include <boost/interprocess/detail/config_begin.hpp>
+
 #include <boost/interprocess/detail/workaround.hpp>
 
 #if defined(BOOST_INTERPROCESS_XSI_SHARED_MEMORY_OBJECTS) || defined(BOOST_INTERPROCESS_DOXYGEN_INVOKED)
@@ -23,14 +23,14 @@ using namespace boost::interprocess;
 
 void remove_old_shared_memory(const xsi_key &key)
 {
-   try{
+   BOOST_TRY{
       xsi_shared_memory xsi(open_only, key);
       xsi_shared_memory::remove(xsi.get_shmid());
    }
-   catch(interprocess_exception &e){
+   BOOST_CATCH(interprocess_exception &e){
       if(e.get_error_code() != not_found_error)
-         throw;
-   }
+         BOOST_RETHROW
+   } BOOST_CATCH_END
 }
 
 int main(int argc, char *argv[])
@@ -92,4 +92,4 @@ int main()
 
 #endif //BOOST_INTERPROCESS_XSI_SHARED_MEMORY_OBJECTS
 
-#include <boost/interprocess/detail/config_end.hpp>
+

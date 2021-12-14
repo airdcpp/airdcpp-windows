@@ -7,7 +7,7 @@
 // See http://www.boost.org/libs/interprocess for documentation.
 //
 //////////////////////////////////////////////////////////////////////////////
-#include <boost/interprocess/detail/config_begin.hpp>
+
 #include <boost/interprocess/detail/workaround.hpp>
 //[doc_scoped_ptr
 #include <boost/interprocess/managed_shared_memory.hpp>
@@ -92,7 +92,7 @@ int main ()
       //we destroy the object automatically
       my_deleter<my_class> d(shmem.get_segment_manager());
 
-      try{
+      BOOST_TRY{
          scoped_ptr<my_class, my_deleter<my_class> > s_ptr(my_object, d);
          //Let's emulate a exception capable operation
          //In the second try, throw an exception
@@ -104,7 +104,7 @@ int main ()
          //to avoid destruction
          s_ptr.release();
       }
-      catch(const my_exception &){}
+      BOOST_CATCH(const my_exception &){} BOOST_CATCH_END
       //Here, scoped_ptr is destroyed
       //so it we haven't thrown an exception
       //the object should be there, otherwise, destroyed
@@ -126,4 +126,4 @@ int main ()
    return 0;
 }
 //]
-#include <boost/interprocess/detail/config_end.hpp>
+

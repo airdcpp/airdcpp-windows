@@ -46,14 +46,14 @@ bool copyable_only(V1 *shmvector, V2 *stdvector, boost::interprocess::ipcdetail:
 {
    typedef typename V1::value_type IntType;
    std::size_t size = shmvector->size();
-   stdvector->insert(stdvector->end(), 50, 1);
-   shmvector->insert(shmvector->end(), 50, IntType(1));
+   stdvector->insert(stdvector->end(), 50u, 1);
+   shmvector->insert(shmvector->end(), 50u, IntType(1));
    if(!test::CheckEqualContainers(shmvector, stdvector)) return false;
 
    {
       IntType move_me(1);
-      stdvector->insert(stdvector->begin()+size/2, 50, 1);
-      shmvector->insert(shmvector->begin()+size/2, 50, boost::move(move_me));
+      stdvector->insert(stdvector->begin()+std::ptrdiff_t(size/2u), 50u, 1);
+      shmvector->insert(shmvector->begin()+std::ptrdiff_t(size/2u), 50u, boost::move(move_me));
       if(!test::CheckEqualContainers(shmvector, stdvector)) return false;
    }
    {
@@ -89,7 +89,7 @@ int vector_test()
       //Compare several shared memory vector operations with std::vector
       //Create shared memory
       shared_memory_object::remove(shMemName);
-      try{
+      BOOST_TRY{
          ManagedSharedMemory segment(create_only, shMemName, Memsize);
 
          segment.reserve_named_objects(100);
@@ -234,11 +234,11 @@ int vector_test()
          if(!segment.all_memory_deallocated())
             return 1;
       }
-      catch(std::exception &ex){
+      BOOST_CATCH(std::exception &ex){
          shared_memory_object::remove(shMemName);
          std::cout << ex.what() << std::endl;
          return 1;
-      }
+      } BOOST_CATCH_END
    }
    shared_memory_object::remove(shMemName);
    std::cout << std::endl << "Test OK!" << std::endl;

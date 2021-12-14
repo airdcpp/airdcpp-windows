@@ -44,7 +44,8 @@ static void test_generic_category()
 
     int ev = ENOENT;
 
-    BOOST_TEST_EQ( bt.message( ev ), st.message( ev ) );
+    // Under MSVC, it's "no such file or directory" instead of "No such file or directory"
+    BOOST_TEST_EQ( bt.message( ev ).substr( 1 ), st.message( ev ).substr( 1 ) );
 
     {
         boost::system::error_code bc( ev, bt );
@@ -82,34 +83,13 @@ static void test_system_category()
 
     BOOST_TEST_CSTR_EQ( bt.name(), st.name() );
 
+    for( int ev = 1; ev < 6; ++ev )
     {
-        int ev = 5;
-        BOOST_TEST_EQ( bt.message( ev ), st.message( ev ) );
+        std::string bm = bt.message( ev );
+        std::string sm = st.message( ev );
 
-        {
-            boost::system::error_code bc( ev, bt );
-
-            BOOST_TEST_EQ( bc.value(), ev );
-            BOOST_TEST_EQ( &bc.category(), &bt );
-
-            std::error_code sc( bc );
-
-            BOOST_TEST_EQ( sc.value(), ev );
-            BOOST_TEST_EQ( &sc.category(), &st );
-        }
-
-        {
-            boost::system::error_condition bn = bt.default_error_condition( ev );
-            BOOST_TEST( bt.equivalent( ev, bn ) );
-
-            std::error_condition sn( bn );
-            BOOST_TEST( st.equivalent( ev, sn ) );
-        }
-    }
-
-    {
-        int ev = 4;
-        BOOST_TEST_EQ( bt.message( ev ), st.message( ev ) );
+        // We strip whitespace and the trailing dot, MSVC not so much
+        BOOST_TEST_EQ( bm, sm.substr( 0, bm.size() ) );
 
         {
             boost::system::error_code bc( ev, bt );

@@ -7,7 +7,7 @@
 // See http://www.boost.org/libs/interprocess for documentation.
 //
 //////////////////////////////////////////////////////////////////////////////
-#include <boost/interprocess/detail/config_begin.hpp>
+
 //[doc_named_mutex
 #include <boost/interprocess/sync/scoped_lock.hpp>
 #include <boost/interprocess/sync/named_mutex.hpp>
@@ -22,7 +22,7 @@
 int main ()
 {
    using namespace boost::interprocess;
-   try{
+   BOOST_TRY{
       struct file_remove
       {
       //<-
@@ -87,11 +87,11 @@ int main ()
          file << std::endl;
       }
    }
-   catch(interprocess_exception &ex){
+   BOOST_CATCH(interprocess_exception &ex){
       std::cout << ex.what() << std::endl;
       return 1;
-   }
+   } BOOST_CATCH_END
    return 0;
 }
 //]
-#include <boost/interprocess/detail/config_end.hpp>
+

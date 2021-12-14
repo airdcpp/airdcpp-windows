@@ -108,6 +108,7 @@ int main( int, char ** )
 
   std::cout << "Conversion use cases...\n";
   error_condition x1( errc::file_exists );
+  (void)x1;
   //error_code x2( errc::file_exists ); // should fail to compile
   make_error_code(errc::file_exists);
   make_error_condition(errc::file_exists);

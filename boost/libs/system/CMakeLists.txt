@@ -1,4 +1,4 @@
-# Copyright 2018-2020 Peter Dimov
+# Copyright 2018-2021 Peter Dimov
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt
 
@@ -13,7 +13,10 @@ target_include_directories(boost_system INTERFACE include)
 
 target_link_libraries(boost_system
   INTERFACE
+    Boost::assert
     Boost::config
+    Boost::throw_exception
+    Boost::variant2
     Boost::winapi
 )
 

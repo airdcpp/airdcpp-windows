@@ -4,9 +4,14 @@
     "authors": [
         "Beman Dawes"
     ],
-    "description": "Operating system support, including the diagnostics support that will be part of the C++0x standard library.",
+    "maintainers": [
+        "Peter Dimov <pdimov -at- gmail.com>"
+    ],
+    "description": "Extensible error reporting.",
     "category": [
-        "System"
+        "System",
+        "Error-handling",
+        "Programming"
     ],
     "cxxstd": "03"
 }

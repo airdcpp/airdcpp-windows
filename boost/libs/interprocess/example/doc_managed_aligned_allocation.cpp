@@ -7,7 +7,6 @@
 // See http://www.boost.org/libs/interprocess for documentation.
 //
 //////////////////////////////////////////////////////////////////////////////
-#include <boost/interprocess/detail/config_begin.hpp>
 //[doc_managed_aligned_allocation
 #include <boost/interprocess/managed_shared_memory.hpp>
 #include <cassert>
@@ -56,7 +55,7 @@ int main()
    void *ptr = managed_shm.allocate_aligned(100, Alignment);
 
    //Check alignment
-   assert((static_cast<char*>(ptr)-static_cast<char*>(0)) % Alignment == 0);
+   assert(std::size_t(static_cast<char*>(ptr)-static_cast<char*>(0)) % Alignment == 0);
 
    //Deallocate it
    managed_shm.deallocate(ptr);
@@ -65,7 +64,7 @@ int main()
    ptr = managed_shm.allocate_aligned(100, Alignment, std::nothrow);
 
    //Check alignment
-   assert((static_cast<char*>(ptr)-static_cast<char*>(0)) % Alignment == 0);
+   assert(std::size_t(static_cast<char*>(ptr)-static_cast<char*>(0)) % Alignment == 0);
 
    //Deallocate it
    managed_shm.deallocate(ptr);
@@ -77,10 +76,10 @@ int main()
    //This allocation will maximize the size of the aligned memory
    //and will increase the possibility of finding more aligned memory
    ptr = managed_shm.allocate_aligned
-      (3*Alignment - managed_shared_memory::PayloadPerAllocation, Alignment);
+      (3u*Alignment - managed_shared_memory::PayloadPerAllocation, Alignment);
 
    //Check alignment
-   assert((static_cast<char*>(ptr)-static_cast<char*>(0)) % Alignment == 0);
+   assert(std::size_t(static_cast<char*>(ptr)-static_cast<char*>(0)) % Alignment == 0);
 
    //Deallocate it
    managed_shm.deallocate(ptr);
@@ -88,31 +87,4 @@ int main()
    return 0;
 }
 //]
-/*
 
-#include <vector>
-#include <boost/interprocess/managed_windows_shared_memory.hpp>
-
-int main()
-{
-   using namespace boost::interprocess;
-   typedef boost::interprocess::
-      managed_windows_shared_memory  shared_segment;
-
-   std::vector<void *> ptrs;
-   shared_segment m_segment(create_only, "shmem", 4096*16);
-   try{
-      while(1){
-         //Now I have several allocate_aligned operations:
-         ptrs.push_back(m_segment.allocate_aligned(128, 128));
-      }
-   }
-   catch(...){
-      m_segment.deallocate(ptrs.back());
-      ptrs.pop_back();
-      ptrs.push_back(m_segment.allocate_aligned(128, 128));
-   }
-   return 0;
-}
-*/
-#include <boost/interprocess/detail/config_end.hpp>
