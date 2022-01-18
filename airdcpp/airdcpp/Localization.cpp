@@ -145,7 +145,7 @@ void Localization::init() noexcept {
 	languageList.emplace_back("Spanish (Spain)", "ES", "es-ES");
 	languageList.emplace_back("Swedish (Sweden)", "SE", "sv-SE");
 	//languageList.emplace_back("Turkish (Turkey)", "TR", "tr-TR");
-	//languageList.emplace_back("Ukrainian (Ukraine)", "UA", "uk-UA");
+	languageList.emplace_back("Ukrainian (Ukraine)", "UA", "uk-UA");
 
 	languageList.shrink_to_fit();
 }
