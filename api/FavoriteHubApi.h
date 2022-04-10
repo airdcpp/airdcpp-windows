@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -51,6 +51,9 @@ namespace webserver {
 		HubView view;
 
 		static FavoriteHubEntryList getEntryList() noexcept;
+
+		static tribool deserializeTribool(const string& aFieldName, const json& aJson);
+		FavoriteHubEntryPtr parseFavoriteHubParam(ApiRequest& aRequest);
 	};
 }
 

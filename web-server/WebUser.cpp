@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,9 @@
 #include "stdinc.h"
 #include <web-server/WebUser.h>
 
+#include <airdcpp/Encoder.h>
 #include <airdcpp/StringTokenizer.h>
+#include <airdcpp/MerkleTree.h>
 #include <airdcpp/Util.h>
 
 #include <boost/range/numeric.hpp>
@@ -75,10 +77,27 @@ namespace webserver {
 		return accessStrings[static_cast<AccessType>(aAccess)];
 	}
 
-	WebUser::WebUser(const std::string& aUserName, const std::string& aPassword, bool aIsAdmin) : userName(aUserName), password(aPassword) {
+	string WebUser::hashPassword(const string& aPasswordPlain) noexcept {
+		TigerHash tmp;
+		tmp.update(aPasswordPlain.c_str(), aPasswordPlain.length());
+		return TTHValue(tmp.finalize());
+	}
+
+	WebUser::WebUser(const std::string& aUserName, const std::string& aPasswordHashOrPlain, bool aIsAdmin) : userName(aUserName) {
+		setPassword(aPasswordHashOrPlain);
 		clearPermissions();
 		if (aIsAdmin) {
 			permissions[Access::ADMIN] = true;
+		}
+	}
+
+	void WebUser::setPassword(const std::string& aPasswordHashOrPlain) noexcept {
+		if (aPasswordHashOrPlain.length() == 39 && Encoder::isBase32(aPasswordHashOrPlain.c_str())) {
+			// Hashed already
+			passwordHash = aPasswordHashOrPlain;
+		} else {
+			// Convert to hash
+			passwordHash = hashPassword(aPasswordHashOrPlain);
 		}
 	}
 
@@ -107,16 +126,26 @@ namespace webserver {
 		}
 	}
 
-	StringList WebUser::getPermissions() const noexcept {
-		StringList tmp;
+	StringList WebUser::permissionsToStringList(const AccessList& aPermissions) noexcept {
+		StringList ret;
+		for (const auto& access: aPermissions) {
+			ret.push_back(accessToString(access));
+		}
+
+		return ret;
+	}
+
+	AccessList WebUser::getPermissions() const noexcept {
+		AccessList ret;
 		for (const auto& v : permissions) {
 			if (v.second) {
-				tmp.push_back(accessToString(v.first));
+				ret.push_back(v.first);
 			}
 		}
 
-		return tmp;
+		return ret;
 	}
+
 
 	int WebUser::countPermissions() const noexcept {
 		return boost::accumulate(permissions | map_values, 0);
@@ -127,8 +156,12 @@ namespace webserver {
 		return boost::regex_match(aUsername, reg);
 	}
 
+	bool WebUser::matchPassword(const string& aPasswordPlain) noexcept {
+		return hashPassword(aPasswordPlain) == passwordHash;
+	}
+
 	string WebUser::getPermissionsStr() const noexcept {
-		return Util::toString(",", getPermissions());
+		return Util::toString(",", permissionsToStringList(getPermissions()));
 	}
 
 	bool WebUser::hasPermission(Access aAccess) const noexcept {

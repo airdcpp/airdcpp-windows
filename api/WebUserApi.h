@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ namespace webserver {
 		api_return handleUpdateUser(ApiRequest& aRequest);
 		api_return handleRemoveUser(ApiRequest& aRequest);
 
-		bool parseUser(WebUserPtr& aUser, const json& j, bool aIsNew);
+		bool updateUserProperties(WebUserPtr& aUser, const json& j, bool aIsNew);
 
 		void on(WebUserManagerListener::UserAdded, const WebUserPtr& aUser) noexcept override;
 		void on(WebUserManagerListener::UserUpdated, const WebUserPtr& aUser) noexcept override;
@@ -48,6 +48,8 @@ namespace webserver {
 
 		WebUserManager& um;
 		WebUserList getUsers() const noexcept;
+
+		WebUserPtr parseUserNameParam(ApiRequest& aRequest);
 	};
 }
 

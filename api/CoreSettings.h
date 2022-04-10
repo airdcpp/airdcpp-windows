@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,8 @@
 #ifndef DCPLUSPLUS_DCPP_CORESETTINGS_H
 #define DCPLUSPLUS_DCPP_CORESETTINGS_H
 
-#include <api/ApiSettingItem.h>
+#include <web-server/ApiSettingItem.h>
+
 #include <airdcpp/SettingsManager.h>
 
 namespace webserver {
@@ -29,7 +30,7 @@ namespace webserver {
 		{ "nick", SettingsManager::NICK, ResourceManager::NICK },
 		{ "description", SettingsManager::DESCRIPTION, ResourceManager::DESCRIPTION },
 		{ "email", SettingsManager::EMAIL, ResourceManager::EMAIL },
-		{ "language_file", SettingsManager::LANGUAGE_FILE, ResourceManager::SETTINGS_LANGUAGE },
+		{ "language_file", SettingsManager::LANGUAGE_FILE, ResourceManager::SETTINGS_LANGUAGE }, // NOTE: not file path
 
 		{ "upload_speed", SettingsManager::UPLOAD_SPEED, ResourceManager::SETCZDC_UPLOAD_SPEED, ApiSettingItem::TYPE_LAST, ResourceManager::Strings::MBITS },
 		{ "download_speed", SettingsManager::DOWNLOAD_SPEED, ResourceManager::SETCZDC_DOWNLOAD_SPEED, ApiSettingItem::TYPE_LAST, ResourceManager::Strings::MBITS },
@@ -37,6 +38,16 @@ namespace webserver {
 		{ "away_message", SettingsManager::DEFAULT_AWAY_MESSAGE, ResourceManager::SETTINGS_DEFAULT_AWAY_MSG, ApiSettingItem::TYPE_TEXT },
 		{ "away_idle_time", SettingsManager::AWAY_IDLE_TIME, ResourceManager::AWAY_IDLE_TIME_BEGIN, ApiSettingItem::TYPE_LAST, ResourceManager::Strings::MINUTES_LOWER },
 		{ "away_no_bots", SettingsManager::NO_AWAYMSG_TO_BOTS, ResourceManager::SETTINGS_NO_AWAYMSG_TO_BOTS },
+
+		// Appearance
+		{ "format_release_names", SettingsManager::FORMAT_RELEASE, ResourceManager::FORMAT_RELEASE },
+		{ "format_dupes_chat", SettingsManager::DUPES_IN_CHAT, ResourceManager::SETTINGS_DUPE_CHAT },
+		{ "format_dupes_filelist", SettingsManager::DUPES_IN_FILELIST, ResourceManager::SETTINGS_DUPE_FILELIST },
+		{ "format_dupes_search", SettingsManager::DUPE_SEARCH, ResourceManager::SETTINGS_DUPE_SEARCH },
+
+		{ "use_main_chat_notify", SettingsManager::SHOW_CHAT_NOTIFY, ResourceManager::CHAT_NOTIFY },
+		{ "show_joins", SettingsManager::SHOW_JOINS, ResourceManager::SETTINGS_SHOW_JOINS },
+		{ "fav_show_joins", SettingsManager::FAV_SHOW_JOINS, ResourceManager::FAV_SHOW_JOIN },
 
 		//{ ResourceManager::SETTINGS_DOWNLOADS },
 		{ "download_directory", SettingsManager::DOWNLOAD_DIRECTORY, ResourceManager::SETTINGS_DOWNLOAD_DIRECTORY, ApiSettingItem::TYPE_DIRECTORY_PATH },
@@ -181,7 +192,6 @@ namespace webserver {
 		{ "report_scheduled_refreshes", SettingsManager::LOG_SCHEDULED_REFRESHES, ResourceManager::SETTINGS_LOG_SCHEDULED_REFRESHES },
 		{ "report_filelist_dupes", SettingsManager::FL_REPORT_FILE_DUPES, ResourceManager::REPORT_DUPLICATE_FILES },
 		{ "report_ignored_messages", SettingsManager::LOG_IGNORED, ResourceManager::REPORT_IGNORED },
-		{ "report_crc_ok", SettingsManager::LOG_CRC_OK, ResourceManager::LOG_CRC_OK },
 
 		//{ ResourceManager::HISTORIES },
 		{ "history_search_max", SettingsManager::HISTORY_SEARCH_MAX, ResourceManager::SEARCH_STRINGS },
@@ -201,7 +211,7 @@ namespace webserver {
 		//{ ResourceManager::SETTINGS_ADVANCED },
 		{ "socket_read_buffer", SettingsManager::SOCKET_IN_BUFFER, ResourceManager::SETTINGS_SOCKET_IN_BUFFER, ApiSettingItem::TYPE_LAST, ResourceManager::Strings::B },
 		{ "socket_write_buffer", SettingsManager::SOCKET_OUT_BUFFER, ResourceManager::SETTINGS_SOCKET_OUT_BUFFER, ApiSettingItem::TYPE_LAST, ResourceManager::Strings::B },
-		{ "buffer_size", SettingsManager::BUFFER_SIZE, ResourceManager::SETTINGS_WRITE_BUFFER, ApiSettingItem::TYPE_LAST, ResourceManager::Strings::KiBS },
+		{ "buffer_size", SettingsManager::BUFFER_SIZE, ResourceManager::SETTINGS_WRITE_BUFFER, ApiSettingItem::TYPE_LAST, ResourceManager::Strings::KiB },
 		{ "compress_transfers", SettingsManager::COMPRESS_TRANSFERS, ResourceManager::SETTINGS_COMPRESS_TRANSFERS },
 		{ "max_compression", SettingsManager::MAX_COMPRESSION, ResourceManager::SETTINGS_MAX_COMPRESS },
 		{ "bloom_mode", SettingsManager::BLOOM_MODE, ResourceManager::BLOOM_MODE },
@@ -215,8 +225,8 @@ namespace webserver {
 		{ "wizard_pending", SettingsManager::WIZARD_PENDING, ResourceManager::WIZARD_FINISHED_TITLE },
 
 		{ "use_default_cert_paths", SettingsManager::USE_DEFAULT_CERT_PATHS, ResourceManager::USE_DEFAULT_CERT_PATHS },
-		{ "tls_certificate_file", SettingsManager::TLS_CERTIFICATE_FILE, ResourceManager::OWN_CERTIFICATE, ApiSettingItem::TYPE_FILE_PATH },
-		{ "tls_private_key_file", SettingsManager::TLS_PRIVATE_KEY_FILE, ResourceManager::PRIVATE_KEY_FILE, ApiSettingItem::TYPE_FILE_PATH },
+		{ "tls_certificate_file", SettingsManager::TLS_CERTIFICATE_FILE, ResourceManager::OWN_CERTIFICATE, ApiSettingItem::TYPE_EXISTING_FILE_PATH },
+		{ "tls_private_key_file", SettingsManager::TLS_PRIVATE_KEY_FILE, ResourceManager::PRIVATE_KEY_FILE, ApiSettingItem::TYPE_EXISTING_FILE_PATH },
 		{ "always_ccpm", SettingsManager::ALWAYS_CCPM, ResourceManager::ALWAYS_CCPM },
 		{ "tls_allow_untrusted_clients", SettingsManager::ALLOW_UNTRUSTED_CLIENTS, ResourceManager::SETTINGS_ALLOW_UNTRUSTED_CLIENTS },
 		{ "tls_allow_untrusted_hubs", SettingsManager::ALLOW_UNTRUSTED_HUBS, ResourceManager::SETTINGS_ALLOW_UNTRUSTED_HUBS },

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2012-2019 AirDC++ Project
+* Copyright (C) 2012-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -17,10 +17,12 @@
 */
 
 
-#ifndef DCPLUSPLUS_DCPP_WEBSERVER_LISTENER_H
-#define DCPLUSPLUS_DCPP_WEBSERVER_LISTENER_H
+#ifndef DCPLUSPLUS_WEBSERVER_WEBSERVERMANAGER_LISTENER_H
+#define DCPLUSPLUS_WEBSERVER_WEBSERVERMANAGER_LISTENER_H
 
-#include "stdinc.h"
+#include "forward.h"
+
+#include <airdcpp/forward.h>
 
 namespace webserver {
 	enum class TransportType {
@@ -41,20 +43,22 @@ namespace webserver {
 		typedef X<2> Stopped;
 
 		typedef X<3> LoadSettings;
-		typedef X<4> SaveSettings;
+		typedef X<4> LoadLegacySettings;
+		typedef X<5> SaveSettings;
 
-		typedef X<5> SocketConnected;
-		typedef X<6> SocketDisconnected;
+		typedef X<7> SocketConnected;
+		typedef X<8> SocketDisconnected;
 
-		typedef X<7> Data;
+		typedef X<9> Data;
 
 
 		virtual void on(Started) noexcept { }
 		virtual void on(Stopping) noexcept { }
 		virtual void on(Stopped) noexcept { }
 
-		virtual void on(LoadSettings, SimpleXML&) noexcept { }
-		virtual void on(SaveSettings, SimpleXML&) noexcept { }
+		virtual void on(LoadLegacySettings, SimpleXML&) noexcept { }
+		virtual void on(LoadSettings, const MessageCallback&) noexcept { }
+		virtual void on(SaveSettings, const MessageCallback&) noexcept { }
 
 		virtual void on(SocketConnected, const WebSocketPtr&) noexcept { }
 		virtual void on(SocketDisconnected, const WebSocketPtr&) noexcept { }

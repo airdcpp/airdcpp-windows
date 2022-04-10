@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,10 +16,10 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef DCPLUSPLUS_DCPP_WEBUSERMANAGER_H
-#define DCPLUSPLUS_DCPP_WEBUSERMANAGER_H
+#ifndef DCPLUSPLUS_WEBSERVER_WEBUSERMANAGER_H
+#define DCPLUSPLUS_WEBSERVER_WEBUSERMANAGER_H
 
-#include "stdinc.h"
+#include "forward.h"
 
 #include <airdcpp/CriticalSection.h>
 #include <airdcpp/Speaker.h>
@@ -67,6 +67,9 @@ namespace webserver {
 
 		size_t getUserSessionCount() const noexcept;
 		string createRefreshToken(const WebUserPtr& aUser) noexcept;
+
+		WebUserManager(WebUserManager&) = delete;
+		WebUserManager& operator=(WebUserManager&) = delete;
 	private:
 		enum AuthType {
 			AUTH_UNKNOWN,
@@ -110,11 +113,14 @@ namespace webserver {
 		void on(WebServerManagerListener::Stopped) noexcept override;
 		void on(WebServerManagerListener::SocketDisconnected, const WebSocketPtr& aSocket) noexcept override;
 
-		void on(WebServerManagerListener::LoadSettings, SimpleXML& aXml) noexcept override;
-		void on(WebServerManagerListener::SaveSettings, SimpleXML& aXml) noexcept override;
+		void on(WebServerManagerListener::LoadLegacySettings, SimpleXML& aXml) noexcept override;
+		void on(WebServerManagerListener::LoadSettings, const MessageCallback& aErrorF) noexcept override;
+		void on(WebServerManagerListener::SaveSettings, const MessageCallback& aErrorF) noexcept override;
 
-		WebServerManager* server;
+		WebServerManager* wsm;
 		void setDirty() noexcept;
+
+		bool isDirty = false;
 	};
 }
 

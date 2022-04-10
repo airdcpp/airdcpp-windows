@@ -5,8 +5,6 @@
 #include <cstdint> // uint8_t
 #include <string> // string
 
-#include <nlohmann/detail/boolean_operators.hpp>
-
 namespace nlohmann
 {
 namespace detail
@@ -34,7 +32,7 @@ number_float), because the library distinguishes these three types for numbers:
 @ref basic_json::number_float_t is used for floating-point numbers or to
 approximate integers which do not fit in the limits of their respective type.
 
-@sa @ref basic_json::basic_json(const value_t value_type) -- create a JSON
+@sa see @ref basic_json::basic_json(const value_t value_type) -- create a JSON
 value with the default value for a given type
 
 @since version 1.0.0
@@ -77,7 +75,7 @@ inline bool operator<(const value_t lhs, const value_t rhs) noexcept
 
     const auto l_index = static_cast<std::size_t>(lhs);
     const auto r_index = static_cast<std::size_t>(rhs);
-    return l_index < order.size() and r_index < order.size() and order[l_index] < order[r_index];
+    return l_index < order.size() && r_index < order.size() && order[l_index] < order[r_index];
 }
 }  // namespace detail
 }  // namespace nlohmann

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,29 +16,30 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef DCPLUSPLUS_DCPP_TIMER_H
-#define DCPLUSPLUS_DCPP_TIMER_H
+#ifndef DCPLUSPLUS_WEBSERVER_TIMER_H
+#define DCPLUSPLUS_WEBSERVER_TIMER_H
 
-#include "stdinc.h"
+#include "forward.h"
 
 namespace webserver {
 	class Timer : boost::noncopyable {
 	public:
-		typedef std::function<void(const CallBack&)> CallbackWrapper;
+		typedef std::function<void(const Callback&)> CallbackWrapper;
 
 		// CallbackWrapper is meant to ensure the lifetime of the timer
 		// (which necessary only if the timer is called from a class that can be deleted, such as sessions)
-		Timer(CallBack&& aCallBack, boost::asio::io_service& aIO, time_t aIntervalMillis, const CallbackWrapper& aWrapper) : 
-			cb(move(aCallBack)),
+		Timer(Callback&& aCallback, boost::asio::io_service& aIO, time_t aIntervalMillis, const CallbackWrapper& aWrapper) :
+			cb(move(aCallback)),
 			interval(aIntervalMillis),
 			timer(aIO),
 			cbWrapper(aWrapper)
 		{
-
+			dcdebug("Timer %p was created\n", this);
 		}
 
 		~Timer() {
 			stop(true);
+			dcdebug("Timer %p was destroyed\n", this);
 		}
 
 		bool start(bool aInstantTick) {
@@ -91,7 +92,7 @@ namespace webserver {
 			scheduleNext(interval);
 		}
 
-		CallBack cb;
+		Callback cb;
 		CallbackWrapper cbWrapper;
 
 		boost::asio::deadline_timer timer;

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -42,11 +42,13 @@ namespace webserver {
 		api_return handleGetDefaultProfile(ApiRequest& aRequest);
 		api_return handleSetDefaultProfile(ApiRequest& aRequest);
 
-		void parseProfile(ShareProfilePtr& aProfile, const json& j);
+		void updateProfileProperties(ShareProfilePtr& aProfile, const json& j);
 
 		void on(ShareManagerListener::ProfileAdded, ProfileToken aProfile) noexcept override;
 		void on(ShareManagerListener::ProfileUpdated, ProfileToken aProfile, bool aIsMajorChange) noexcept override;
 		void on(ShareManagerListener::ProfileRemoved, ProfileToken aProfile) noexcept override;
+
+		ShareProfilePtr parseProfileToken(ApiRequest& aRequest, bool aAllowHidden);
 	};
 }
 

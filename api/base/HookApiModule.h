@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -31,14 +31,14 @@
 namespace webserver {
 	class HookApiModule : public SubscribableApiModule {
 	public:
-		typedef std::function<bool(const string& aSubscriberId, const string& aSubscriberName)> HookAddF;
+		typedef std::function<bool(ActionHookSubscriber&& aSubscriber)> HookAddF;
 		typedef std::function<void(const string& aSubscriberId)> HookRemoveF;
 
 		class HookSubscriber {
 		public:
 			HookSubscriber(HookAddF&& aAddHandler, HookRemoveF&& aRemoveF) : addHandler(std::move(aAddHandler)), removeHandler(aRemoveF) {}
 
-			bool enable(const json& aJson);
+			bool enable(const void* aOwner, const json& aJson);
 			void disable();
 
 			bool isActive() const noexcept {
@@ -80,8 +80,8 @@ namespace webserver {
 							const auto data = aResultGetter.getData(aDataGetter(aData->resolveJson, aResultGetter));
 							return data;
 						} catch (const std::exception& e) {
-							dcdebug("Failed to deserialize hook data for subscriber %s: %s\n", aResultGetter.getId().c_str(), e.what());
-							return aResultGetter.getRejection("invalid_hook_data", e.what());
+							dcdebug("Failed to deserialize hook data for subscriber %s: %s\n", aResultGetter.getSubscriber().getId().c_str(), e.what());
+							return aResultGetter.getDataRejection(e);
 						}
 					}
 				}

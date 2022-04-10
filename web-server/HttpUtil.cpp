@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -20,11 +20,11 @@
 
 #include <web-server/HttpUtil.h>
 
+#include <airdcpp/StringTokenizer.h>
 #include <airdcpp/Util.h>
 
 #include "boost/algorithm/string/replace.hpp"
 
-//#include <sstream>
 
 namespace webserver {
 	using namespace dcpp;
@@ -227,6 +227,13 @@ namespace webserver {
 	}
 
 	string HttpUtil::parseAuthToken(const websocketpp::http::parser::request& aRequest) noexcept {
+		// Support custom header name as reverse proxy with basic auth would replace the regular Authorization header
+		// https://github.com/airdcpp-web/airdcpp-webclient/issues/330
+		auto ret = aRequest.get_header("X-Authorization");
+		if (!ret.empty()) {
+			return ret;
+		}
+
 		return aRequest.get_header("Authorization");
 	}
 }

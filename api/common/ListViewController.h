@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,8 +16,8 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef DCPLUSPLUS_DCPP_LISTVIEW_H
-#define DCPLUSPLUS_DCPP_LISTVIEW_H
+#ifndef DCPLUSPLUS_WEBSERVER_LISTVIEW_H
+#define DCPLUSPLUS_WEBSERVER_LISTVIEW_H
 
 #include <web-server/JsonUtil.h>
 #include <web-server/SessionListener.h>
@@ -235,7 +235,7 @@ namespace webserver {
 
 		api_return handleDeleteFilter(ApiRequest& aRequest) {
 			if (!removeFilter(aRequest.getTokenParam())) {
-				aRequest.setResponseErrorStr("Filter not found");
+				aRequest.setResponseErrorStr("Filter " + Util::toString(aRequest.getTokenParam()) + " was not found");
 				return websocketpp::http::status_code::bad_request;
 			}
 
@@ -308,7 +308,7 @@ namespace webserver {
 				if (propName) {
 					auto propId = findPropertyByName(*propName, itemHandler.properties);
 					if (propId == -1) {
-						throw std::invalid_argument("Invalid sort property");
+						JsonUtil::throwError("sort_property", JsonUtil::ERROR_INVALID, "Invalid sort property");
 					}
 
 					updatedValues[IntCollector::TYPE_SORT_PROPERTY] = propId;

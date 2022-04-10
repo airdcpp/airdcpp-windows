@@ -4,6 +4,7 @@
 #include <iterator> // input_iterator_tag
 #include <string> // string, to_string
 #include <tuple> // tuple_size, get, tuple_element
+#include <utility> // move
 
 #include <nlohmann/detail/meta/type_traits.hpp>
 #include <nlohmann/detail/value_t.hpp>
@@ -19,7 +20,7 @@ void int_to_string( string_type& target, std::size_t value )
     using std::to_string;
     target = to_string(value);
 }
-template <typename IteratorType> class iteration_proxy_value
+template<typename IteratorType> class iteration_proxy_value
 {
   public:
     using difference_type = std::ptrdiff_t;
@@ -39,10 +40,12 @@ template <typename IteratorType> class iteration_proxy_value
     /// a string representation of the array index
     mutable string_type array_index_str = "0";
     /// an empty string (to return a reference for primitive values)
-    const string_type empty_str = "";
+    const string_type empty_str{};
 
   public:
-    explicit iteration_proxy_value(IteratorType it) noexcept : anchor(it) {}
+    explicit iteration_proxy_value(IteratorType it) noexcept
+        : anchor(std::move(it))
+    {}
 
     /// dereference operator (needed for range-based for)
     iteration_proxy_value& operator*()
@@ -74,7 +77,7 @@ template <typename IteratorType> class iteration_proxy_value
     /// return key of the iterator
     const string_type& key() const
     {
-        assert(anchor.m_object != nullptr);
+        JSON_ASSERT(anchor.m_object != nullptr);
 
         switch (anchor.m_object->type())
         {
@@ -94,6 +97,14 @@ template <typename IteratorType> class iteration_proxy_value
                 return anchor.key();
 
             // use an empty key for all primitive types
+            case value_t::null:
+            case value_t::string:
+            case value_t::boolean:
+            case value_t::number_integer:
+            case value_t::number_unsigned:
+            case value_t::number_float:
+            case value_t::binary:
+            case value_t::discarded:
             default:
                 return empty_str;
         }
@@ -133,7 +144,7 @@ template<typename IteratorType> class iteration_proxy
 // Structured Bindings Support
 // For further reference see https://blog.tartanllama.xyz/structured-bindings/
 // And see https://github.com/nlohmann/json/pull/1391
-template <std::size_t N, typename IteratorType, enable_if_t<N == 0, int> = 0>
+template<std::size_t N, typename IteratorType, enable_if_t<N == 0, int> = 0>
 auto get(const nlohmann::detail::iteration_proxy_value<IteratorType>& i) -> decltype(i.key())
 {
     return i.key();
@@ -141,7 +152,7 @@ auto get(const nlohmann::detail::iteration_proxy_value<IteratorType>& i) -> decl
 // Structured Bindings Support
 // For further reference see https://blog.tartanllama.xyz/structured-bindings/
 // And see https://github.com/nlohmann/json/pull/1391
-template <std::size_t N, typename IteratorType, enable_if_t<N == 1, int> = 0>
+template<std::size_t N, typename IteratorType, enable_if_t<N == 1, int> = 0>
 auto get(const nlohmann::detail::iteration_proxy_value<IteratorType>& i) -> decltype(i.value())
 {
     return i.value();
@@ -160,11 +171,11 @@ namespace std
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wmismatched-tags"
 #endif
-template <typename IteratorType>
+template<typename IteratorType>
 class tuple_size<::nlohmann::detail::iteration_proxy_value<IteratorType>>
             : public std::integral_constant<std::size_t, 2> {};
 
-template <std::size_t N, typename IteratorType>
+template<std::size_t N, typename IteratorType>
 class tuple_element<N, ::nlohmann::detail::iteration_proxy_value<IteratorType >>
 {
   public:

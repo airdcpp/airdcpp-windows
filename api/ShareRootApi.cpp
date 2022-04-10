@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -162,11 +162,6 @@ namespace webserver {
 	}
 
 	void ShareRootApi::on(ShareManagerListener::RootRemoved, const string& aPath) noexcept {
-		ShareDirectoryInfoPtr info = nullptr;
-		if (!rootView.isActive() && !subscriptionActive("share_root_removed")) {
-			return;
-		}
-
 		auto root = findRoot(aPath);
 		if (!root) {
 			dcassert(0);
@@ -181,15 +176,17 @@ namespace webserver {
 		}
 
 		maybeSend("share_root_removed", [&] {
-			return Serializer::serializeItem(info, ShareUtils::propertyHandler);
+			return Serializer::serializeItem(root, ShareUtils::propertyHandler);
 		});
 	}
 
 	ShareDirectoryInfoPtr ShareRootApi::getRoot(const ApiRequest& aRequest) {
+		auto rootId = aRequest.getTTHParam();
+
 		RLock l(cs);
-		auto i = boost::find_if(roots, ShareDirectoryInfo::IdCompare(aRequest.getTTHParam()));
+		auto i = boost::find_if(roots, ShareDirectoryInfo::IdCompare(rootId));
 		if (i == roots.end()) {
-			throw RequestException(websocketpp::http::status_code::not_found, "Root not found");
+			throw RequestException(websocketpp::http::status_code::not_found, "Root " + rootId.toBase32() + " not found");
 		}
 
 		return *i;

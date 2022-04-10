@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -70,15 +70,15 @@ namespace webserver {
 	}
 
 	json ViewFileApi::serializeFile(const ViewFilePtr& aFile) noexcept {
-		auto mimeType = HttpUtil::getMimeType(aFile->getPath());
+		auto mimeType = HttpUtil::getMimeType(aFile->getFileName());
 		return{
 			{ "id", aFile->getTTH().toBase32() },
 			{ "tth", aFile->getTTH().toBase32() },
 			{ "text", aFile->isText() },
 			{ "read", aFile->getRead() },
-			{ "name", aFile->getDisplayName() },
+			{ "name", aFile->getFileName() },
 			{ "download_state", serializeDownloadState(aFile) },
-			{ "type", Serializer::serializeFileType(aFile->getPath()) },
+			{ "type", Serializer::serializeFileType(aFile->getFileName()) },
 			{ "time_opened", aFile->getTimeCreated() },
 			{ "content_ready", aFile->isLocalFile() || aFile->isDownloaded() },
 			{ "mime_type", mimeType ? mimeType : Util::emptyString },
@@ -93,38 +93,49 @@ namespace webserver {
 
 	api_return ViewFileApi::handleAddFile(ApiRequest& aRequest) {
 		const auto& j = aRequest.getRequestBody();
-		auto tth = Deserializer::deserializeTTH(j);
+		addAsyncTask([
+			tth = Deserializer::deserializeTTH(j),
+			name = JsonUtil::getField<string>("name", j, false),
+			size = JsonUtil::getField<int64_t>("size", j),
+			user = Deserializer::deserializeHintedUser(j),
+			isText = JsonUtil::getOptionalFieldDefault<bool>("text", j, false),
+			complete = aRequest.defer(),
+			caller = aRequest.getOwnerPtr()
+		] {
+			ViewFilePtr file = nullptr;
+			try {
+				auto fileData = ViewedFileAddData(name, tth, size, caller, user, isText);
+				file = ViewFileManager::getInstance()->addUserFileHookedThrow(fileData);
+			} catch (const Exception& e) {
+				complete(websocketpp::http::status_code::bad_request, nullptr, ApiRequest::toResponseErrorStr(e.getError()));
+				return;
+			}
 
-		auto name = JsonUtil::getField<string>("name", j, false);
-		auto size = JsonUtil::getField<int64_t>("size", j);
-		auto user = Deserializer::deserializeHintedUser(j, true);
-		auto isText = JsonUtil::getOptionalFieldDefault<bool>("text", j, false);
+			if (!file) {
+				complete(websocketpp::http::status_code::bad_request, nullptr, ApiRequest::toResponseErrorStr("File with the same TTH is open already"));
+				return;
+			}
 
-		ViewFilePtr file = nullptr;
-		try {
-			file = ViewFileManager::getInstance()->addUserFileThrow(name, size, tth, user, isText);
-		} catch (const Exception& e) {
-			aRequest.setResponseErrorStr(e.getError());
-			return websocketpp::http::status_code::internal_server_error;
-		}
 
-		if (!file) {
-			aRequest.setResponseErrorStr("File with the same TTH is open already");
-			return websocketpp::http::status_code::bad_request;
-		}
+			complete(websocketpp::http::status_code::ok, serializeFile(file), nullptr);
+			return;
+		});
 
-		aRequest.setResponseBody(serializeFile(file));
-		return websocketpp::http::status_code::ok;
+		return CODE_DEFERRED;
 	}
 
 	api_return ViewFileApi::handleAddLocalFile(ApiRequest& aRequest) {
 		auto tth = aRequest.getTTHParam();
-		if (!ShareManager::getInstance()->isFileShared(tth)) {
-			aRequest.setResponseErrorStr("TTH not shared");
+		auto isText = JsonUtil::getOptionalFieldDefault<bool>("text", aRequest.getRequestBody(), false);
+
+		ViewFilePtr file = nullptr;
+		try {
+			file = ViewFileManager::getInstance()->addLocalFileThrow(tth, isText);
+		} catch (const Exception& e) {
+			aRequest.setResponseErrorStr(e.getError());
 			return websocketpp::http::status_code::bad_request;
 		}
 
-		auto file = ViewFileManager::getInstance()->addLocalFile(tth, JsonUtil::getOptionalFieldDefault<bool>("text", aRequest.getRequestBody(), false));
 		if (!file) {
 			aRequest.setResponseErrorStr("File with the same TTH is open already");
 			return websocketpp::http::status_code::bad_request;
@@ -134,34 +145,31 @@ namespace webserver {
 		return websocketpp::http::status_code::ok;
 	}
 
-	api_return ViewFileApi::handleGetFile(ApiRequest& aRequest) {
-		auto file = ViewFileManager::getInstance()->getFile(aRequest.getTTHParam());
+	ViewFilePtr ViewFileApi::parseViewFileParam(ApiRequest& aRequest) {
+		auto fileId = aRequest.getTTHParam();
+		auto file = ViewFileManager::getInstance()->getFile(fileId);
 		if (!file) {
-			aRequest.setResponseErrorStr("File not found");
-			return websocketpp::http::status_code::not_found;
+			throw RequestException(websocketpp::http::status_code::not_found, "File " + fileId.toBase32() + " was not found");
 		}
 
+		return file;
+	}
+
+	api_return ViewFileApi::handleGetFile(ApiRequest& aRequest) {
+		auto file = parseViewFileParam(aRequest);
 		aRequest.setResponseBody(serializeFile(file));
 		return websocketpp::http::status_code::ok;
 	}
 
 	api_return ViewFileApi::handleRemoveFile(ApiRequest& aRequest) {
-		auto success = ViewFileManager::getInstance()->removeFile(aRequest.getTTHParam());
-		if (!success) {
-			aRequest.setResponseErrorStr("File not found");
-			return websocketpp::http::status_code::not_found;
-		}
-
+		auto file = parseViewFileParam(aRequest);
+		ViewFileManager::getInstance()->removeFile(file->getTTH());
 		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return ViewFileApi::handleSetRead(ApiRequest& aRequest) {
-		auto success = ViewFileManager::getInstance()->setRead(aRequest.getTTHParam());
-		if (!success) {
-			aRequest.setResponseErrorStr("File not found");
-			return websocketpp::http::status_code::not_found;
-		}
-
+		auto file = parseViewFileParam(aRequest);
+		ViewFileManager::getInstance()->setRead(file->getTTH());
 		return websocketpp::http::status_code::no_content;
 	}
 

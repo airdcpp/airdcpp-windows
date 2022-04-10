@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -33,6 +33,8 @@ namespace webserver {
 		json previousStats;
 		void onTimer() noexcept;
 
+		json serializeHashStatistics(const HashManager::HashStats& aStats) noexcept;
+
 		static json formatDbStatus(bool aMaintenanceRunning) noexcept;
 		void updateDbStatus(bool aMaintenanceRunning) noexcept;
 
@@ -42,6 +44,9 @@ namespace webserver {
 
 		api_return handleOptimize(ApiRequest& aRequest);
 		api_return handleGetDbStatus(ApiRequest& aRequest);
+		api_return handleGetStats(ApiRequest& aRequest);
+
+		api_return handleRenamePath(ApiRequest& aRequest);
 
 		void on(HashManagerListener::DirectoryHashed, const string& aPath, int aFilesHashed, int64_t aSizeHashed, time_t aHashDuration, int aHasherId) noexcept override;
 		void on(HashManagerListener::HasherFinished, int aDirshashed, int aFilesHashed, int64_t aSizeHashed, time_t aHashDuration, int aHasherId) noexcept override;

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,14 +16,16 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef DCPLUSPLUS_DCPP_JSONUTIL_H
-#define DCPLUSPLUS_DCPP_JSONUTIL_H
+#ifndef DCPLUSPLUS_WEBSERVER_JSONUTIL_H
+#define DCPLUSPLUS_WEBSERVER_JSONUTIL_H
 
-#include "stdinc.h"
+#include "forward.h"
 
 namespace webserver {
 	class JsonUtil {
 	public:
+		static const json emptyJson;
+
 		enum ErrorType {
 			ERROR_MISSING,
 			ERROR_INVALID,
@@ -122,13 +124,13 @@ namespace webserver {
 
 		// Returns raw JSON value and throws if the field is missing
 		template <typename JsonT>
-		static json getRawField(const string& aFieldName, const JsonT& aJson) {
+		static const json& getRawField(const string& aFieldName, const JsonT& aJson) {
 			return getRawValue<JsonT>(aFieldName, aJson, true);
 		}
 
 		// Returns raw JSON value and returns null JSON if the field is missing
 		template <typename JsonT>
-		static json getOptionalRawField(const string& aFieldName, const JsonT& aJson, bool aThrowIfMissing = false) {
+		static const json& getOptionalRawField(const string& aFieldName, const JsonT& aJson, bool aThrowIfMissing = false) {
 			return getRawValue<JsonT>(aFieldName, aJson, aThrowIfMissing);
 		}
 
@@ -139,14 +141,24 @@ namespace webserver {
 		}
 
 		template <typename JsonT>
-		static json getArrayField(const string& aFieldName, const JsonT& aJson, bool aAllowEmpty) {
-			auto ret = getRawValue<JsonT>(aFieldName, aJson, true);
+		static const json& getArrayField(const string& aFieldName, const JsonT& aJson, bool aAllowEmpty) {
+			const auto& ret = getRawValue<JsonT>(aFieldName, aJson, true);
 			if (!ret.is_array()) {
 				throwError(aFieldName, ERROR_INVALID, "Field must be an array");
 			}
 
 			if (!aAllowEmpty && ret.empty()) {
 				throwError(aFieldName, ERROR_INVALID, "Array can't be empty");
+			}
+
+			return ret;
+		}
+
+		template <typename JsonT>
+		static const json& getOptionalArrayField(const string& aFieldName, const JsonT& aJson) {
+			const auto& ret = getRawValue<JsonT>(aFieldName, aJson, false);
+			if (!ret.is_null() && !ret.is_array()) {
+				throwError(aFieldName, ERROR_INVALID, "Field must be an array");
 			}
 
 			return ret;
@@ -215,16 +227,13 @@ namespace webserver {
 		}
 
 		static json getError(const string& aFieldName, ErrorType aType, const string& aMessage) noexcept;
-
-		// Return a new JSON object with exact key-value pairs removed
-		static json filterExactValues(const json& aNew, const json& aCompareTo) noexcept;
 	private:
 		// Returns raw JSON value and optionally throws
 		template <typename JsonT>
-		static json getRawValue(const string& aFieldName, const JsonT& aJson, bool aThrowIfMissing) {
+		static const json& getRawValue(const string& aFieldName, const JsonT& aJson, bool aThrowIfMissing) {
 			if (aJson.is_null()) {
 				if (!aThrowIfMissing) {
-					return json();
+					return emptyJson;
 				}
 
 				throwError(aFieldName, ERROR_MISSING, "JSON null");
@@ -233,7 +242,7 @@ namespace webserver {
 			auto p = aJson.find(aFieldName);
 			if (p == aJson.end()) {
 				if (!aThrowIfMissing) {
-					return json();
+					return emptyJson;
 				}
 
 				throwError(aFieldName, ERROR_MISSING, "Field missing");
@@ -272,7 +281,7 @@ namespace webserver {
 		}
 
 		template <class T>
-		static void validateValue(typename std::enable_if<!std::is_same<std::string, T>::value, T>::type& value_) {
+		static void validateValue(typename std::enable_if<!std::is_same<std::string, T>::value, T>::type&) {
 
 		}
 

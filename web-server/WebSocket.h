@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,8 +16,8 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef DCPLUSPLUS_DCPP_WEBSOCKET_H
-#define DCPLUSPLUS_DCPP_WEBSOCKET_H
+#ifndef DCPLUSPLUS_WEBSERVER_WEBSOCKET_H
+#define DCPLUSPLUS_WEBSERVER_WEBSOCKET_H
 
 #include "stdinc.h"
 
@@ -51,7 +51,10 @@ namespace webserver {
 		WebSocket(WebSocket&) = delete;
 		WebSocket& operator=(WebSocket&) = delete;
 
-		string getIp() const noexcept;
+		const string& getIp() const noexcept {
+			return ip;
+		}
+
 		void ping() noexcept;
 
 		void logError(const string& aMessage, websocketpp::log::level aErrorLevel) const noexcept;
@@ -80,6 +83,7 @@ namespace webserver {
 		const bool secure;
 		const time_t timeCreated;
 		string url;
+		string ip;
 	};
 }
 

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -93,7 +93,6 @@ namespace webserver {
 	api_return FavoriteDirectoryApi::handleUpdateDirectory(ApiRequest& aRequest) {
 		auto path = getPath(aRequest);
 
-
 		auto info = updatePath(path, aRequest.getRequestBody());
 		aRequest.setResponseBody(serializeDirectory(info));
 		return websocketpp::http::status_code::ok;
@@ -113,7 +112,7 @@ namespace webserver {
 		});
 
 		if (p.base() == dirs.end()) {
-			throw RequestException(websocketpp::http::status_code::not_found, "Directory not found");
+			throw RequestException(websocketpp::http::status_code::not_found, "Favorite directory " + tth.toBase32() + " was not found");
 		}
 
 		return *p;

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -47,7 +47,6 @@ namespace webserver {
 		DupeType getDupe() const noexcept { return type == DIRECTORY ? dir->getDupe() : file->getDupe(); }
 		const string& getName() const noexcept { return type == DIRECTORY ? dir->getName() : file->getName(); }
 		string getAdcPath() const noexcept { return type == DIRECTORY ? dir->getAdcPath() : file->getAdcPath(); }
-		bool isAdl() const noexcept { return type == DIRECTORY ? dir->getAdls() : file->getAdls(); }
 		bool isComplete() const noexcept { return type == DIRECTORY ? dir->isComplete() : true; }
 
 		time_t getDate() const noexcept { return type == DIRECTORY ? dir->getRemoteDate() : file->getRemoteDate(); }

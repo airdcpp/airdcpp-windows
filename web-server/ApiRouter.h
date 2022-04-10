@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,10 +16,10 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef DCPLUSPLUS_DCPP_APIROUTER_H
-#define DCPLUSPLUS_DCPP_APIROUTER_H
+#ifndef DCPLUSPLUS_WEBSERVER_APIROUTER_H
+#define DCPLUSPLUS_WEBSERVER_APIROUTER_H
 
-#include "stdinc.h"
+#include "forward.h"
 
 #include <airdcpp/typedefs.h>
 
@@ -29,7 +29,7 @@ namespace webserver {
 		ApiRouter();
 		~ApiRouter();
 
-		void handleSocketRequest(const std::string& aMessage, WebSocketPtr& aSocket, bool aIsSecure) noexcept;
+		void handleSocketRequest(const std::string& aMessage, const WebSocketPtr& aSocket, bool aIsSecure) noexcept;
 		api_return handleHttpRequest(const std::string& aRequestPath, const websocketpp::http::parser::request& aRequest,
 			json& output_, json& error_, bool aIsSecure, const string& aIp, const SessionPtr& aSession, const ApiDeferredHandler& aDeferredHandler) noexcept;
 	private:

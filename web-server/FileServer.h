@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,10 +16,10 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef DCPLUSPLUS_DCPP_FILESERVER_H
-#define DCPLUSPLUS_DCPP_FILESERVER_H
+#ifndef DCPLUSPLUS_WEBSERVER_FILESERVER_H
+#define DCPLUSPLUS_WEBSERVER_FILESERVER_H
 
-#include "stdinc.h"
+#include "forward.h"
 
 #include <airdcpp/typedefs.h>
 #include <airdcpp/CriticalSection.h>
@@ -39,6 +39,9 @@ namespace webserver {
 
 		string getTempFilePath(const string& fileId) const noexcept;
 		void stop() noexcept;
+
+		FileServer(FileServer&) = delete;
+		FileServer& operator=(FileServer&) = delete;
 	private:
 		websocketpp::http::status_code::value handleGetRequest(const websocketpp::http::parser::request& aRequest,
 			std::string& output_, StringPairList& headers_, const SessionPtr& aSession, const FileDeferredHandler& aDeferF);

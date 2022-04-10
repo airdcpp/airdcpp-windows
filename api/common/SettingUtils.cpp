@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,9 @@
 #include <web-server/JsonUtil.h>
 
 #include <api/common/SettingUtils.h>
+#include <api/common/Deserializer.h>
 
+#include <airdcpp/HintedUser.h>
 #include <airdcpp/Util.h>
 
 
@@ -54,9 +56,7 @@ namespace webserver {
 		if (aItem.type == ApiSettingItem::TYPE_NUMBER) {
 			const auto& minMax = aItem.getMinMax();
 
-			if (minMax.min != 0) {
-				ret["min"] = minMax.min;
-			}
+			ret["min"] = minMax.min;
 
 			if (minMax.max != MAX_INT_VALUE) {
 				ret["max"] = minMax.max;
@@ -66,8 +66,8 @@ namespace webserver {
 		if (aItem.type == ApiSettingItem::TYPE_LIST) {
 			ret["item_type"] = typeToStr(aItem.itemType);
 			if (aItem.itemType == ApiSettingItem::TYPE_STRUCT) {
-				dcassert(!aItem.getValueTypes().empty());
-				for (const auto& valueType: aItem.getValueTypes()) {
+				dcassert(!aItem.getListObjectFields().empty());
+				for (const auto& valueType: aItem.getListObjectFields()) {
 					ret["definitions"].push_back(serializeDefinition(*valueType));
 				}
 			}
@@ -82,10 +82,13 @@ namespace webserver {
 			case ApiSettingItem::TYPE_NUMBER: return "number";
 			case ApiSettingItem::TYPE_STRING: return "string";
 			case ApiSettingItem::TYPE_FILE_PATH: return "file_path";
+			case ApiSettingItem::TYPE_EXISTING_FILE_PATH: return "existing_file_path";
 			case ApiSettingItem::TYPE_DIRECTORY_PATH: return "directory_path";
 			case ApiSettingItem::TYPE_TEXT: return "text";
 			case ApiSettingItem::TYPE_LIST: return "list";
 			case ApiSettingItem::TYPE_STRUCT: return "struct";
+			case ApiSettingItem::TYPE_HUB_URL: return "hub_url";
+			case ApiSettingItem::TYPE_HINTER_USER: return "hinted_user";
 			case ApiSettingItem::TYPE_LAST: dcassert(0);
 		}
 
@@ -93,23 +96,23 @@ namespace webserver {
 		return Util::emptyString;
 	}
 
-	json SettingUtils::validateObjectListValue(const ApiSettingItem::PtrList& aPropertyDefinitions, const json& aValue) {
+	json SettingUtils::validateObjectListValue(const ApiSettingItem::PtrList& aPropertyDefinitions, const json& aValue, UserList* userReferences_) {
 		// Unknown properties will be ignored...
 		auto ret = json::object();
 		for (const auto& def: aPropertyDefinitions) {
 			auto i = aValue.find(def->name);
 			if (i == aValue.end()) {
-				ret[def->name] = validateValue(def->getDefaultValue(), *def);
+				ret[def->name] = validateValue(def->getDefaultValue(), *def, userReferences_);
 			} else {
-				ret[def->name] = validateValue(i.value(), *def);
+				ret[def->name] = validateValue(i.value(), *def, userReferences_);
 			}
 		}
 
 		return ret;
 	}
 
-	json SettingUtils::validateValue(const json& aValue, const ApiSettingItem& aItem) {
-		auto convertedValue = convertValue(aValue, aItem.name, aItem.type, aItem.itemType, aItem.isOptional(), aItem.getMinMax(), aItem.getValueTypes());
+	json SettingUtils::validateValue(const json& aValue, const ApiSettingItem& aItem, UserList* userReferences_) {
+		auto convertedValue = convertValue(aValue, aItem.name, aItem.type, aItem.itemType, aItem.isOptional(), aItem.getMinMax(), aItem.getListObjectFields(), userReferences_);
 		if (!aItem.getEnumOptions().empty()) {
 			validateEnumValue(convertedValue, aItem.name, aItem.type, aItem.itemType, aItem.getEnumOptions());
 		}
@@ -118,7 +121,7 @@ namespace webserver {
 	}
 
 	void SettingUtils::validateEnumValue(const json& aValue, const string& aKey, ApiSettingItem::Type aType, ApiSettingItem::Type aItemType, const ApiSettingItem::EnumOption::List& aEnumOptions) {
-		if (!ApiSettingItem::optionsAllowed(aType, aItemType)) {
+		if (!ApiSettingItem::enumOptionsAllowed(aType, aItemType)) {
 			JsonUtil::throwError(aKey, JsonUtil::ERROR_INVALID, "options not supported for type " + typeToStr(aType));
 		}
 				
@@ -139,32 +142,23 @@ namespace webserver {
 		}
 	}
 
-	json SettingUtils::convertValue(const json& aValue, const string& aKey, ApiSettingItem::Type aType, ApiSettingItem::Type aItemType, bool aOptional, const ApiSettingItem::MinMax& aMinMax, const ApiSettingItem::PtrList& aObjectValues) {
-		if (aType == ApiSettingItem::TYPE_NUMBER) {
-			return parseIntSetting(aKey, aValue, aOptional, aMinMax);
-		} else if (ApiSettingItem::isString(aType)) {
-			return parseStringSetting(aKey, aValue, aOptional, aType);
+	json SettingUtils::convertValue(const json& aValue, const string& aKey, ApiSettingItem::Type aType, ApiSettingItem::Type aItemType, bool aOptional, const ApiSettingItem::MinMax& aMinMax, const ApiSettingItem::PtrList& aObjectValues, UserList* userReferences_) {
+		if (isListCompatibleValue(aType)) {
+			return convertListCompatibleValue(aValue, aKey, aType, aOptional, aMinMax, userReferences_);
 		} else if (aType == ApiSettingItem::TYPE_BOOLEAN) {
 			return JsonUtil::parseValue<bool>(aKey, aValue, aOptional);
 		} else if (aType == ApiSettingItem::TYPE_LIST) {
 			if (aItemType == ApiSettingItem::TYPE_STRUCT) {
 				auto ret = json::array();
-				for (const auto& listValueObj : JsonUtil::parseValue<json::array_t>(aKey, aValue, aOptional)) {
-					ret.push_back(validateObjectListValue(aObjectValues, JsonUtil::parseValue<json::object_t>(aKey, listValueObj, false)));
+				for (const auto& listValueObj: JsonUtil::parseValue<json::array_t>(aKey, aValue, aOptional)) {
+					ret.push_back(validateObjectListValue(aObjectValues, JsonUtil::parseValue<json::object_t>(aKey, listValueObj, false), userReferences_));
 				}
 
 				return ret;
-			} else if (aItemType == ApiSettingItem::TYPE_NUMBER) {
+			} else if (isListCompatibleValue(aItemType)) {
 				auto ret = json::array();
-				for (const int item : JsonUtil::parseValue<ApiSettingItem::ListNumber>(aKey, aValue, aOptional)) {
-					ret.push_back(parseIntSetting(aKey, item, false, aMinMax));
-				}
-
-				return ret;
-			} else if (ApiSettingItem::isString(aItemType)) {
-				auto ret = json::array();
-				for (const string& item : JsonUtil::parseValue<ApiSettingItem::ListString>(aKey, aValue, aOptional)) {
-					ret.push_back(parseStringSetting(aKey, item, false, aItemType));
+				for (const auto& item: JsonUtil::parseValue<json::array_t>(aKey, aValue, aOptional)) {
+					ret.push_back(convertListCompatibleValue(item, aKey, aItemType, false, aMinMax, userReferences_));
 				}
 
 				return ret;
@@ -179,11 +173,42 @@ namespace webserver {
 		return nullptr;
 	}
 
+	json SettingUtils::convertListCompatibleValue(const json& aValue, const string& aKey, ApiSettingItem::Type aType, bool aOptional, const ApiSettingItem::MinMax& aMinMax, UserList* userReferences_) {
+		if (aType == ApiSettingItem::TYPE_NUMBER) {
+			return parseIntSetting(aKey, aValue, aOptional, aMinMax);
+		} else if (ApiSettingItem::isString(aType)) {
+			return parseStringSetting(aKey, aValue, aOptional, aType);
+		} else if (aType == ApiSettingItem::TYPE_HINTER_USER) {
+			if (aValue.is_null()) {
+				return nullptr;
+			}
+
+			auto user = Deserializer::parseOfflineHintedUser(aValue, aKey, false);
+			if (userReferences_) {
+				(*userReferences_).push_back(user.user);
+			}
+
+			return {
+				{ "nicks", user.nicks },
+				{ "cid", user.user->getCID().toBase32() },
+				{ "hub_url", user.hint },
+			};
+		}
+
+		dcassert(0);
+		return json();
+	}
+
 	ExtensionSettingItem::List SettingUtils::deserializeDefinitions(const json& aJson) {
 		ExtensionSettingItem::List ret;
 
-		for (const auto& def: aJson) {
-			ret.push_back(deserializeDefinition(def));
+		for (const auto& defJson: aJson) {
+			auto def = deserializeDefinition(defJson);
+			if (ApiSettingItem::findSettingItem<ExtensionSettingItem>(ret, def.name)) {
+				JsonUtil::throwError("type", JsonUtil::ERROR_INVALID, "Duplicate setting definition key " + def.name + " detected");
+			}
+
+			ret.push_back(def);
 		}
 
 		return ret;
@@ -205,6 +230,11 @@ namespace webserver {
 			value = Util::validatePath(value, true);
 		} else if (aType == ApiSettingItem::TYPE_FILE_PATH) {
 			value = Util::validatePath(value, false);
+		} else if (aType == ApiSettingItem::TYPE_EXISTING_FILE_PATH) {
+			value = Util::validatePath(value, false);
+			// if (!Util::fileExists()) {
+
+			//}
 		}
 
 		return value;
@@ -251,18 +281,19 @@ namespace webserver {
 
 		auto defaultValue = convertValue(
 			JsonUtil::getOptionalRawField("default_value", aJson, !isOptional), 
-			key, type, itemType, true, minMax, ApiSettingItem::valueTypesToPtrList(objectValues)
+			key, type, itemType, true, minMax, ApiSettingItem::valueTypesToPtrList(objectValues),
+			nullptr
 		);
 
 		ApiSettingItem::EnumOption::List enumOptions;
-		if (ApiSettingItem::optionsAllowed(type, itemType)) {
+		if (ApiSettingItem::enumOptionsAllowed(type, itemType)) {
 			auto optionsJson = JsonUtil::getOptionalRawField("options", aJson, false);
 			if (!optionsJson.is_null()) {
 				for (const auto& opt : optionsJson) {
 					enumOptions.push_back({
 						parseEnumOptionId(opt, type),
 						JsonUtil::getField<string>("name", opt, false)
-						});
+					});
 				}
 			}
 		}
@@ -287,15 +318,20 @@ namespace webserver {
 				return ApiSettingItem::TYPE_TEXT;
 			} else if (*itemTypeStr == "file_path") {
 				return ApiSettingItem::TYPE_FILE_PATH;
+			} else if (*itemTypeStr == "existing_file_path") {
+				return ApiSettingItem::TYPE_EXISTING_FILE_PATH;
 			} else if (*itemTypeStr == "directory_path") {
 				return ApiSettingItem::TYPE_DIRECTORY_PATH;
+			} else if (*itemTypeStr == "hub_url") {
+				return ApiSettingItem::TYPE_HUB_URL;
+			} else if (*itemTypeStr == "hinted_user") {
+				return ApiSettingItem::TYPE_HINTER_USER;
 			} else if (*itemTypeStr == "list") {
 				return ApiSettingItem::TYPE_LIST;
 			} else if (*itemTypeStr == "struct") {
 				return ApiSettingItem::TYPE_STRUCT;
 			}
 
-			dcassert(0);
 			JsonUtil::throwError(aFieldName, JsonUtil::ERROR_INVALID, "Invalid item type " + *itemTypeStr);
 		}
 

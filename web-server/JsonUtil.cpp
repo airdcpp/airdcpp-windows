@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,9 @@
 #include <web-server/JsonUtil.h>
 
 namespace webserver {
+
+	const json JsonUtil::emptyJson;
+
 	string JsonUtil::errorTypeToString(ErrorType aType) noexcept {
 		switch (aType) {
 			case ERROR_MISSING: return "missing_field";
@@ -36,18 +39,5 @@ namespace webserver {
 			{ "field", aFieldName },
 			{ "code", errorTypeToString(aType) }
 		};
-	}
-
-	json JsonUtil::filterExactValues(const json& aNew, const json& aCompareTo) noexcept {
-		json ret = aNew;
-		for (const auto& v: aCompareTo.items()) {
-			auto key = v.key();
-			auto i = aNew.find(key);
-			if (i != aNew.end() && aNew.at(key) == aCompareTo.at(key)) {
-				ret.erase(key);
-			}
-		}
-
-		return ret;
 	}
 }

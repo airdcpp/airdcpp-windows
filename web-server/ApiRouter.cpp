@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -42,9 +42,9 @@ namespace webserver {
 
 	}
 
-	void ApiRouter::handleSocketRequest(const string& aMessage, WebSocketPtr& aSocket, bool aIsSecure) noexcept {
+	void ApiRouter::handleSocketRequest(const string& aMessage, const WebSocketPtr& aSocket, bool aIsSecure) noexcept {
 
-		dcdebug("Received socket request: %s\n", aMessage.size() > 500 ? (aMessage.substr(0, 500) + "...").c_str() : aMessage.c_str());
+		dcdebug("Received socket request: %s\n", Util::truncate(aMessage, 500).c_str());
 
 		// Parse request
 		websocketpp::http::status_code::value code;
@@ -123,7 +123,7 @@ namespace webserver {
 			}
 
 			// Require using the same protocol that was used for logging in
-			if ((aRequest.getSession()->getSessionType() == Session::TYPE_SECURE) != aIsSecure) {
+			if (aRequest.getSession()->getSessionType() != Session::TYPE_BASIC_AUTH && (aRequest.getSession()->getSessionType() == Session::TYPE_SECURE) != aIsSecure) {
 				aRequest.setResponseErrorStr("Protocol mismatch");
 				return websocketpp::http::status_code::not_acceptable;
 			}
@@ -142,6 +142,7 @@ namespace webserver {
 			code = websocketpp::http::status_code::bad_request;
 		}
 
+		dcassert(HttpUtil::isStatusOk(code) || code == CODE_DEFERRED || aRequest.hasErrorMessage());
 		return static_cast<api_return>(code);
 	}
 

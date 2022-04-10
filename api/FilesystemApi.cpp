@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -23,10 +23,14 @@
 
 #include <web-server/JsonUtil.h>
 
+#include <airdcpp/Exception.h>
 #include <airdcpp/File.h>
 
 #ifdef WIN32
 #include <api/platform/windows/Filesystem.h>
+#define ALLOW_LIST_EMPTY_PATH true
+#else
+#define ALLOW_LIST_EMPTY_PATH false
 #endif
 
 namespace webserver {
@@ -42,37 +46,40 @@ namespace webserver {
 	api_return FilesystemApi::handleListItems(ApiRequest& aRequest) {
 		const auto& reqJson = aRequest.getRequestBody();
 
-		auto path = JsonUtil::getField<string>("path", reqJson, 
+		// Iterating over the directory content may take a while...
+		addAsyncTask([
+			this,
+			path = JsonUtil::getField<string>("path", reqJson, ALLOW_LIST_EMPTY_PATH),
+			dirsOnly = JsonUtil::getOptionalFieldDefault<bool>("directories_only", reqJson, false),
+			complete = aRequest.defer()
+		]{
+			auto retJson = json::array();
+			if (path.empty()) {
 #ifdef WIN32
-			true
-#else
-			false
+				auto content = Filesystem::getDriveListing(false);
+				complete(websocketpp::http::status_code::ok, content, nullptr);
+				return;
 #endif
-		);
+			} else {
+				// Validate path
+				if (!File::isDirectory(path)) {
+					complete(websocketpp::http::status_code::bad_request, nullptr, ApiRequest::toResponseErrorStr("Directory " + path + " doesn't exist"));
+					return;
+				}
 
-		auto dirsOnly = JsonUtil::getOptionalFieldDefault<bool>("directories_only", reqJson, false);
-
-		auto retJson = json::array();
-		if (path.empty()) {
-#ifdef WIN32
-			retJson = Filesystem::getDriveListing(false);
-#endif
-		} else {
-			if (!Util::fileExists(path)) {
-				aRequest.setResponseErrorStr("The path doesn't exist on disk");
-				return websocketpp::http::status_code::bad_request;
+				// Return listing
+				try {
+					auto content = serializeDirectoryContent(path, dirsOnly);
+					complete(websocketpp::http::status_code::ok, content, nullptr);
+					return;
+				} catch (const FileException& e) {
+					complete(websocketpp::http::status_code::internal_server_error, nullptr, ApiRequest::toResponseErrorStr("Failed to get directory content: " + e.getError()));
+					return;
+				}
 			}
+		});
 
-			try {
-				retJson = serializeDirectoryContent(path, dirsOnly);
-			} catch (const FileException& e) {
-				aRequest.setResponseErrorStr("Failed to get directory content: " + e.getError());
-				return websocketpp::http::status_code::internal_server_error;
-			}
-		}
-
-		aRequest.setResponseBody(retJson);
-		return websocketpp::http::status_code::ok;
+		return CODE_DEFERRED;
 	}
 
 	json FilesystemApi::serializeDirectoryContent(const string& aPath, bool aDirectoriesOnly) {

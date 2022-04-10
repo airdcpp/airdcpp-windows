@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -38,10 +38,24 @@ namespace webserver {
 	}
 
 	WebSocket::WebSocket(bool aIsSecure, websocketpp::connection_hdl aHdl, const websocketpp::http::parser::request& aRequest, WebServerManager* aWsm) :
-		secure(aIsSecure), hdl(aHdl), timeCreated(GET_TICK()), wsm(aWsm) {
-
+		secure(aIsSecure), hdl(aHdl), timeCreated(GET_TICK()), wsm(aWsm) 
+	{
 		debugMessage("Websocket created");
 
+		// Parse remote IP
+		try {
+			if (secure) {
+				auto conn = tlsServer->get_con_from_hdl(hdl);
+				ip = conn->get_raw_socket().remote_endpoint().address().to_string();
+			} else {
+				auto conn = plainServer->get_con_from_hdl(hdl);
+				ip = conn->get_raw_socket().remote_endpoint().address().to_string();
+			}
+		} catch (const std::exception& e) {
+			dcdebug("WebSocket::getIp failed: %s\n", e.what());
+		}
+
+		// Parse URL
 		url = aRequest.get_uri();
 		if (!url.empty() && url.back() != '/') {
 			url += '/';
@@ -50,22 +64,6 @@ namespace webserver {
 
 	WebSocket::~WebSocket() {
 		dcdebug("Websocket was deleted\n");
-	}
-
-	string WebSocket::getIp() const noexcept {
-		try {
-			if (secure) {
-				auto conn = tlsServer->get_con_from_hdl(hdl);
-				return conn->get_raw_socket().remote_endpoint().address().to_string();
-			} else {
-				auto conn = plainServer->get_con_from_hdl(hdl);
-				return conn->get_raw_socket().remote_endpoint().address().to_string();
-			}
-		} catch (const std::exception& e) {
-			dcdebug("WebSocket::getIp failed: %s\n", e.what());
-		}
-
-		return Util::emptyString;
 	}
 
 	void WebSocket::sendApiResponse(const json& aResponseJson, const json& aErrorJson, websocketpp::http::status_code::value aCode, int aCallbackId) noexcept {

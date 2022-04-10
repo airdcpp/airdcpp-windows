@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
 
 namespace webserver {
 	CID Deserializer::parseCID(const string& aCID) {
-		if (!Encoder::isBase32(aCID.c_str())) {
+		if (aCID.length() != 39 || !Encoder::isBase32(aCID.c_str())) {
 			throw std::invalid_argument("Invalid CID");
 		}
 
@@ -52,6 +52,15 @@ namespace webserver {
 		return u;
 	}
 
+	UserPtr Deserializer::getOfflineUser(const string& aCID, const string& aNicks, const string& aHubUrl, bool aAllowMe) {
+		auto u = ClientManager::getInstance()->loadUser(aCID, aHubUrl, aNicks);
+		if (!aAllowMe && u->getCID() == ClientManager::getInstance()->getMyCID()) {
+			throw std::invalid_argument("Own CID isn't allowed for this command");
+		}
+
+		return u;
+	}
+
 	TTHValue Deserializer::parseTTH(const string& aTTH) {
 		if (!Encoder::isBase32(aTTH.c_str())) {
 			throw std::invalid_argument("Invalid TTH");
@@ -69,26 +78,39 @@ namespace webserver {
 		return getUser(*cid, aAllowMe);
 	}
 
-	HintedUser Deserializer::deserializeHintedUser(const json& aJson, bool aAllowMe, const string& aFieldName) {
-		auto userJson = JsonUtil::getRawField(aFieldName, aJson);
+	HintedUser Deserializer::deserializeHintedUser(const json& aJson, bool aAllowMe, bool aOptional, const string& aFieldName) {
+		auto userJson = JsonUtil::getOptionalRawField(aFieldName, aJson, !aOptional);
+		if (userJson.is_null()) {
+			return HintedUser();
+		}
+
 		return parseHintedUser(userJson, aFieldName, aAllowMe);
 	}
 
 	HintedUser Deserializer::parseHintedUser(const json& aJson, const string& aFieldName, bool aAllowMe) {
 		auto user = deserializeUser(aJson, aAllowMe, false);
-		auto hubUrl = JsonUtil::getField<string>("hub_url", aJson, aAllowMe && user == ClientManager::getInstance()->getMe());
+		auto hubUrl = JsonUtil::getField<string>("hub_url", aJson, false);
 		return HintedUser(user, hubUrl);
 	}
 
-	OnlineUserPtr Deserializer::deserializeOnlineUser(const json& aJson, bool aAllowMe, const string& aFieldName) {
-		auto hintedUser = deserializeHintedUser(aJson, aAllowMe, aFieldName);
+	UserPtr Deserializer::parseOfflineUser(const json& aJson, const string& aFieldName, bool aAllowMe, const string& aHubUrl) {
+		const auto cid = JsonUtil::getField<string>("cid", aJson, false);
+		const auto nicks = JsonUtil::getField<string>("nicks", aJson, false);
+		auto user = getOfflineUser(cid, nicks, aHubUrl, aAllowMe);
+		return user;
+	}
 
-		auto onlineUser = ClientManager::getInstance()->findOnlineUser(hintedUser, false);
-		if (!onlineUser) {
-			throw std::invalid_argument("User is offline");
+	Deserializer::OfflineHintedUser Deserializer::parseOfflineHintedUser(const json& aJson, const string& aFieldName, bool aAllowMe) {
+		const auto cid = JsonUtil::getField<string>("cid", aJson, false);
+		const auto hubUrl = JsonUtil::getField<string>("hub_url", aJson, false);
+		const auto nicks = JsonUtil::getField<string>("nicks", aJson, false);
+
+		auto user = getOfflineUser(cid, nicks, hubUrl, aAllowMe);
+		if (hubUrl.empty() && user != ClientManager::getInstance()->getMe()) {
+			throw std::invalid_argument("hub_url missing");
 		}
 
-		return onlineUser;
+		return OfflineHintedUser(user, hubUrl, nicks);
 	}
 
 	TTHValue Deserializer::deserializeTTH(const json& aJson) {
@@ -106,13 +128,17 @@ namespace webserver {
 		return static_cast<Priority>(*priority);
 	}
 
-	void Deserializer::deserializeDownloadParams(const json& aJson, const SessionPtr& aSession, string& targetDirectory_, string& targetName_, Priority& priority_) {
-		// Target path
-		targetDirectory_ = JsonUtil::getOptionalFieldDefault<string>("target_directory", aJson, SETTING(DOWNLOAD_DIRECTORY));
+	string Deserializer::deserializeTargetDirectory(const json& aJson, const Session* aSession, const string& aDefaultValue) {
+		auto targetDirectory = JsonUtil::getOptionalFieldDefault<string>("target_directory", aJson, aDefaultValue);
 
 		ParamMap params;
 		params["username"] = aSession->getUser()->getUserName();
-		targetDirectory_ = Util::formatParams(targetDirectory_, params, nullptr, 0);
+		return Util::formatParams(targetDirectory, params, nullptr, 0);
+	}
+
+	void Deserializer::deserializeDownloadParams(const json& aJson, const Session* aSession, string& targetDirectory_, string& targetName_, Priority& priority_) {
+		// Target path
+		targetDirectory_ = deserializeTargetDirectory(aJson, aSession, SETTING(DOWNLOAD_DIRECTORY));
 
 		// A default target name can be provided
 		auto name = JsonUtil::getOptionalField<string>("target_name", aJson, targetName_.empty());
@@ -120,6 +146,7 @@ namespace webserver {
 			targetName_ = *name;
 		}
 
+		// Priority
 		priority_ = deserializePriority(aJson, true);
 	}
 

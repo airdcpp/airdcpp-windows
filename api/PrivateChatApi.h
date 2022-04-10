@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -34,8 +34,8 @@ namespace webserver {
 		PrivateChatApi(Session* aSession);
 		~PrivateChatApi();
 	private:
-		ActionHookResult<> incomingMessageHook(const ChatMessagePtr& aMessage, const ActionHookResultGetter<>& aResultGetter);
-		ActionHookResult<> outgoingMessageHook(const string& aMessage, bool aThirdPerson, const HintedUser& aUser, bool aEcho, const ActionHookResultGetter<>& aResultGetter);
+		ActionHookResult<MessageHighlightList> incomingMessageHook(const ChatMessagePtr& aMessage, const ActionHookResultGetter<MessageHighlightList>& aResultGetter);
+		ActionHookResult<> outgoingMessageHook(const OutgoingChatMessage& aMessage, const HintedUser& aUser, bool aEcho, const ActionHookResultGetter<>& aResultGetter);
 
 		void addChat(const PrivateChatPtr& aChat) noexcept;
 

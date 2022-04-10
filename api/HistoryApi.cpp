@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -73,7 +73,7 @@ namespace webserver {
 		}
 
 		dcassert(0);
-		throw RequestException(websocketpp::http::status_code::bad_request, "Invalid entry history type");
+		throw RequestException(websocketpp::http::status_code::bad_request, "Invalid entry history type " + name);
 	}
 
 	SettingsManager::HistoryType HistoryApi::toHistoryType(ApiRequest& aRequest) {
@@ -87,7 +87,7 @@ namespace webserver {
 		}
 
 		dcassert(0);
-		throw RequestException(websocketpp::http::status_code::bad_request, "Invalid string history type");
+		throw RequestException(websocketpp::http::status_code::bad_request, "Invalid string history type " + name);
 	}
 
 	json HistoryApi::serializeRecentEntry(const RecentEntryPtr& aEntry) noexcept {

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2012-2019 AirDC++ Project
+* Copyright (C) 2012-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -17,10 +17,10 @@
 */
 
 
-#ifndef DCPLUSPLUS_DCPP_SESSIONLISTENER_H
-#define DCPLUSPLUS_DCPP_SESSIONLISTENER_H
+#ifndef DCPLUSPLUS_WEBSERVER_SESSIONLISTENER_H
+#define DCPLUSPLUS_WEBSERVER_SESSIONLISTENER_H
 
-#include "stdinc.h"
+#include "forward.h"
 
 namespace webserver {
 

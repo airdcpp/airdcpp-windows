@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 #include <api/common/Deserializer.h>
 #include <api/common/FileSearchParser.h>
 
-#include <airdcpp/BundleInfo.h>
+#include <airdcpp/QueueAddInfo.h>
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/SearchManager.h>
 #include <airdcpp/SearchInstance.h>
@@ -76,22 +76,14 @@ namespace webserver {
 	}
 
 	api_return SearchEntity::handleGetChildren(ApiRequest& aRequest) {
-		auto result = search->getResult(aRequest.getTTHParam());
-		if (!result) {
-			aRequest.setResponseErrorStr("Result not found");
-			return websocketpp::http::status_code::not_found;
-		}
+		auto result = parseResultParam(aRequest);
 
 		aRequest.setResponseBody(Serializer::serializeList(result->getChildren(), serializeSearchResult));
 		return websocketpp::http::status_code::ok;
 	}
 
 	api_return SearchEntity::handleGetResult(ApiRequest& aRequest) {
-		auto result = search->getResult(aRequest.getTTHParam());
-		if (!result) {
-			aRequest.setResponseErrorStr("Result not found");
-			return websocketpp::http::status_code::not_found;
-		}
+		auto result = parseResultParam(aRequest);
 
 		auto j = Serializer::serializeItem(result, SearchUtils::propertyHandler);
 		aRequest.setResponseBody(j);
@@ -125,35 +117,53 @@ namespace webserver {
 		};
 	}
 
-	api_return SearchEntity::handleDownload(ApiRequest& aRequest) {
-		auto result = search->getResult(aRequest.getTTHParam());
+	GroupedSearchResultPtr SearchEntity::parseResultParam(ApiRequest& aRequest) {
+		auto resultId = aRequest.getTTHParam();
+		auto result = search->getResult(resultId);
 		if (!result) {
-			aRequest.setResponseErrorStr("Result not found");
-			return websocketpp::http::status_code::not_found;
+			throw RequestException(websocketpp::http::status_code::not_found, "Result " + resultId.toBase32() + " was not found");
 		}
+
+		return result;
+	}
+
+	api_return SearchEntity::handleDownload(ApiRequest& aRequest) {
+		auto result = parseResultParam(aRequest);
 
 		string targetDirectory, targetName = result->getFileName();
 		Priority prio;
-		Deserializer::deserializeDownloadParams(aRequest.getRequestBody(), aRequest.getSession(), targetDirectory, targetName, prio);
+		Deserializer::deserializeDownloadParams(aRequest.getRequestBody(), aRequest.getSession().get(), targetDirectory, targetName, prio);
+		addAsyncTask([
+			result,
+			targetName,
+			targetDirectory,
+			prio,
+			complete = aRequest.defer(),
+			caller = aRequest.getOwnerPtr()
+		] {
+			try {
+				json responseData;
+				if (result->isDirectory()) {
+					auto directoryDownloads = result->downloadDirectoryHooked(targetDirectory, targetName, prio, caller);
+					responseData = {
+						{ "directory_download_ids", Serializer::serializeList(directoryDownloads, Serializer::serializeDirectoryDownload) }
+					};
+				} else {
+					auto bundleAddInfo = result->downloadFileHooked(targetDirectory, targetName, prio, caller);
+					responseData = {
+						{ "bundle_info", Serializer::serializeBundleAddInfo(bundleAddInfo) },
+					};
+				}
 
-		try {
-			if (result->isDirectory()) {
-				auto directoryDownloads = result->downloadDirectory(targetDirectory, targetName, prio);
-				aRequest.setResponseBody({
-					{ "directory_download_ids", Serializer::serializeList(directoryDownloads, Serializer::serializeDirectoryDownload) }
-				});
-			} else {
-				auto bundleAddInfo = result->downloadFile(targetDirectory, targetName, prio);
-				aRequest.setResponseBody({
-					{ "bundle_info", Serializer::serializeBundleAddInfo(bundleAddInfo) }
-				});
+				complete(websocketpp::http::status_code::ok, responseData, nullptr);
+				return;
+			} catch (const Exception& e) {
+				complete(websocketpp::http::status_code::bad_request, nullptr, ApiRequest::toResponseErrorStr(e.getError()));
+				return;
 			}
-		} catch (const Exception& e) {
-			aRequest.setResponseErrorStr(e.what());
-			return websocketpp::http::status_code::bad_request;
-		}
+		});
 
-		return websocketpp::http::status_code::ok;
+		return CODE_DEFERRED;
 	}
 
 	api_return SearchEntity::handlePostHubSearch(ApiRequest& aRequest) {
@@ -191,7 +201,7 @@ namespace webserver {
 		const auto& reqJson = aRequest.getRequestBody();
 
 		// Parse user and query
-		auto user = Deserializer::deserializeHintedUser(reqJson, false);
+		auto user = Deserializer::deserializeHintedUser(reqJson);
 		auto s = FileSearchParser::parseSearch(reqJson, true, Util::toString(Util::rand()));
 
 		string error;
@@ -218,7 +228,7 @@ namespace webserver {
 		searchView.onItemUpdated(aResult, {
 			SearchUtils::PROP_RELEVANCE, SearchUtils::PROP_CONNECTION,
 			SearchUtils::PROP_HITS, SearchUtils::PROP_SLOTS,
-			SearchUtils::PROP_USERS
+			SearchUtils::PROP_USERS, SearchUtils::PROP_DATE
 		});
 		
 		if (subscriptionActive("search_result_updated")) {

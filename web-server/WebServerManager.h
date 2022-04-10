@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,8 +16,8 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef DCPLUSPLUS_DCPP_WEBSERVER_H
-#define DCPLUSPLUS_DCPP_WEBSERVER_H
+#ifndef DCPLUSPLUS_WEBSERVER_WEBSERVERMANAGER_H
+#define DCPLUSPLUS_WEBSERVER_WEBSERVERMANAGER_H
 
 #include "stdinc.h"
 
@@ -46,6 +46,7 @@
 namespace webserver {
 	class ServerSettingItem;
 
+	class ContextMenuManager;
 	class ExtensionManager;
 	class WebUserManager;
 
@@ -58,7 +59,6 @@ namespace webserver {
 		ServerSettingItem& bindAddress;
 
 		bool hasValidConfig() const noexcept;
-		void save(SimpleXML& aXml, const string& aTagName) noexcept;
 	};
 
 	// alias some of the bind related functions as they are a bit long
@@ -71,28 +71,35 @@ namespace webserver {
 
 	class WebServerManager : public dcpp::Singleton<WebServerManager>, public Speaker<WebServerManagerListener> {
 	public:
-		TimerPtr addTimer(CallBack&& aCallBack, time_t aIntervalMillis, const Timer::CallbackWrapper& aCallbackWrapper = nullptr) noexcept;
-		void addAsyncTask(CallBack&& aCallBack) noexcept;
-		void setDirty() noexcept;
+		// Add a scheduled task
+		// Note: the returned timer pointer must be kept alive by the caller while the timer is active
+		TimerPtr addTimer(Callback&& aCallback, time_t aIntervalMillis, const Timer::CallbackWrapper& aCallbackWrapper = nullptr) noexcept;
+
+		// Run a task in the task thread pool
+		void addAsyncTask(Callback&& aCallback) noexcept;
 
 		WebServerManager();
 		~WebServerManager();
 
-		typedef std::function<void(const string&)> ErrorF;
-
 		// Leave the path empty to use the default resource path
-		bool startup(const ErrorF& errorF, const string& aWebResourcePath, const CallBack& aShutdownF);
+		bool startup(const MessageCallback& errorF, const string& aWebResourcePath, const Callback& aShutdownF);
 
-		bool start(const ErrorF& errorF);
-		void stop();
+		// Start the server 
+		// Throws Exception on errors
+		bool start(const MessageCallback& errorF);
+		void stop() noexcept;
 
+		// Disconnect all sockets
 		void disconnectSockets(const std::string& aMessage) noexcept;
 
 		// Reset sessions for associated sockets
 		WebSocketPtr getSocket(LocalSessionId aSessionToken) noexcept;
 
-		bool load(const ErrorF& aErrorF) noexcept;
-		bool save(const ErrorF& aErrorF) noexcept;
+		bool load(const MessageCallback& aErrorF) noexcept;
+		bool save(const MessageCallback& aErrorF) noexcept;
+		WebServerSettings& getSettingsManager() noexcept {
+			return *settingsManager.get();
+		}
 
 		WebUserManager& getUserManager() noexcept {
 			return *userManager.get();
@@ -102,19 +109,29 @@ namespace webserver {
 			return *extManager.get();
 		}
 
-		bool hasValidConfig() const noexcept;
-
-		ServerConfig& getPlainServerConfig() noexcept {
-			return plainServerConfig;
+		ContextMenuManager& getContextMenuManager() noexcept {
+			return *contextMenuManager.get();
 		}
 
-		ServerConfig& getTlsServerConfig() noexcept {
-			return tlsServerConfig;
+		bool hasValidServerConfig() const noexcept;
+		bool hasUsers() const noexcept;
+		bool waitExtensionsLoaded() const noexcept;
+
+		const ServerConfig& getPlainServerConfig() noexcept {
+			return *plainServerConfig;
 		}
 
-		string getConfigPath() const noexcept;
+		const ServerConfig& getTlsServerConfig() noexcept {
+			return *tlsServerConfig;
+		}
+
+		// Get location of the file server root directory (Web UI files)
 		string getResourcePath() const noexcept {
 			return fileServer.getResourcePath();
+		}
+
+		const FileServer& getFileServer() const noexcept {
+			return fileServer;
 		}
 
 		bool isRunning() const noexcept;
@@ -124,13 +141,32 @@ namespace webserver {
 
 		static boost::asio::ip::tcp getDefaultListenProtocol() noexcept;
 
-		const CallBack getShutdownF() const noexcept {
+		// Get the function for shutting down the application
+		const Callback getShutdownF() const noexcept {
 			return shutdownF;
 		}
+
+		// Logging
+		void log(const string& aMsg, LogMessage::Severity aSeverity) const noexcept;
+		MessageCallback getDefaultErrorLogger() const noexcept;
+
+		// Address utils
+		string resolveAddress(const string& aHostname, const string& aPort) noexcept;
+		string getLocalServerHttpUrl() noexcept;
+		string getLocalServerAddress(const ServerConfig& aConfig) noexcept;
+		static bool isAnyAddress(const string& aAddress) noexcept;
 
 		// For command debugging
 		void onData(const string& aData, TransportType aType, Direction aDirection, const string& aIP) noexcept;
 
+		template <typename EndpointType>
+		void logDebugError(EndpointType* s, const string& aMessage, websocketpp::log::level aErrorLevel) {
+			s->get_elog().write(aErrorLevel, aMessage);
+		}
+
+		WebServerManager(WebServerManager&) = delete;
+		WebServerManager& operator=(WebServerManager&) = delete;
+	private:
 		// Websocketpp event handlers
 		template <typename EndpointType>
 		void handleSocketConnected(EndpointType* aServer, websocketpp::connection_hdl hdl, bool aIsSecure) {
@@ -159,12 +195,6 @@ namespace webserver {
 
 			onData(msg->get_payload(), TransportType::TYPE_SOCKET, Direction::INCOMING, socket->getIp());
 			api.handleSocketRequest(msg->get_payload(), socket, aIsSecure);
-		}
-
-
-		template <typename EndpointType>
-		void logDebugError(EndpointType* s, const string& aMessage, websocketpp::log::level aErrorLevel) {
-			s->get_elog().write(aErrorLevel, aMessage);
 		}
 
 		template <typename EndpointType>
@@ -196,7 +226,7 @@ namespace webserver {
 					if (!responseJson.is_null()) {
 						try {
 							data = responseJson.dump();
-						} catch (const std::exception & e) {
+						} catch (const std::exception& e) {
 							logDebugError(s, "Failed to convert data to JSON: " + string(e.what()), websocketpp::log::elevel::fatal);
 
 							con->set_body("Failed to convert data to JSON: " + string(e.what()));
@@ -289,33 +319,30 @@ namespace webserver {
 			}
 		}
 
-		void log(const string& aMsg, LogMessage::Severity aSeverity) const noexcept;
-		ErrorF getDefaultErrorLogger() const noexcept;
+		template<class T>
+		void setEndpointHandlers(T& aEndpoint, bool aIsSecure, WebServerManager* aServer) {
+			aEndpoint.set_http_handler(
+				std::bind(&WebServerManager::handleHttpRequest<T>, aServer, &aEndpoint, _1, aIsSecure));
+			aEndpoint.set_message_handler(
+				std::bind(&WebServerManager::handleSocketMessage<T>, aServer, &aEndpoint, _1, _2, aIsSecure));
 
-		string resolveAddress(const string& aHostname, const string& aPort) noexcept;
+			aEndpoint.set_close_handler(std::bind(&WebServerManager::handleSocketDisconnected, aServer, _1));
+			aEndpoint.set_open_handler(std::bind(&WebServerManager::handleSocketConnected<T>, aServer, &aEndpoint, _1, aIsSecure));
 
-		WebServerSettings& getSettings() noexcept {
-			return settings;
+			aEndpoint.set_pong_timeout_handler(std::bind(&WebServerManager::handlePongTimeout, aServer, _1, _2));
 		}
-
-		const FileServer& getFileServer() const noexcept {
-			return fileServer;
-		}
-	private:
-		WebServerSettings settings;
 
 		context_ptr handleInitTls(websocketpp::connection_hdl hdl);
 
 		void addSocket(websocketpp::connection_hdl hdl, const WebSocketPtr& aSocket) noexcept;
 		WebSocketPtr getSocket(websocketpp::connection_hdl hdl) const noexcept;
-		bool listen(const ErrorF& errorF);
+		bool listen(const MessageCallback& errorF);
 
-		bool initialize(const ErrorF& errorF);
+		bool initialize(const MessageCallback& errorF);
 
-		ServerConfig plainServerConfig;
-		ServerConfig tlsServerConfig;
+		unique_ptr<ServerConfig> plainServerConfig;
+		unique_ptr<ServerConfig> tlsServerConfig;
 
-		void loadServer(SimpleXML& xml_, const string& aTagName, ServerConfig& config_, bool aTls) noexcept;
 		void pingTimer() noexcept;
 
 		mutable SharedMutex cs;
@@ -335,6 +362,8 @@ namespace webserver {
 
 		unique_ptr<WebUserManager> userManager;
 		unique_ptr<ExtensionManager> extManager;
+		unique_ptr<ContextMenuManager> contextMenuManager;
+		unique_ptr<WebServerSettings> settingsManager;
 
 		TimerPtr minuteTimer;
 		TimerPtr socketPingTimer;
@@ -342,11 +371,17 @@ namespace webserver {
 		server_plain endpoint_plain;
 		server_tls endpoint_tls;
 
+		// Web server threads
 		unique_ptr<boost::thread_group> ios_threads;
+
+		// Task threads (running of hooks, timers or other long running task, or just to avoid deadlocks)
+		// 
+		// IMPORTANT:
+		// Calling hooks and handling the hook return data must be handled by separate thread pools to avoid the case when 
+		// all task threads are waiting for a hook response (and there are no threads left to handle those)
 		unique_ptr<boost::thread_group> task_threads;
 
-		CallBack shutdownF;
-		bool isDirty = false;
+		Callback shutdownF;
 	};
 }
 

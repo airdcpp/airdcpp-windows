@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,10 +16,11 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef DCPLUSPLUS_DCPP_APIREQUEST_H
-#define DCPLUSPLUS_DCPP_APIREQUEST_H
+#ifndef DCPLUSPLUS_WEBSERVER_APIREQUEST_H
+#define DCPLUSPLUS_WEBSERVER_APIREQUEST_H
 
-#include "stdinc.h"
+#include "forward.h"
+#include "json.h"
 
 #include <airdcpp/typedefs.h>
 #include <airdcpp/GetSet.h>
@@ -27,6 +28,8 @@
 #define TOKEN_PARAM_ID "id_param"
 #define TTH_PARAM_ID "tth_param"
 #define CID_PARAM_ID "cid_param"
+
+#define CODE_DEFERRED websocketpp::http::status_code::see_other
 
 namespace webserver {
 	enum RequestMethod {
@@ -45,7 +48,7 @@ namespace webserver {
 		typedef std::map<std::string, std::string> NamedParamMap;
 
 		// Throws on errors
-		ApiRequest(const std::string& aUrl, const std::string& aMethod, const json& aBody, const SessionPtr& aSession, const ApiDeferredHandler& aDeferredHandler, json& output_, json& error_);
+		ApiRequest(const std::string& aUrl, const std::string& aMethod, json&& aBody, const SessionPtr& aSession, const ApiDeferredHandler& aDeferredHandler, json& output_, json& error_);
 
 		int getApiVersion() const noexcept {
 			return apiVersion;
@@ -87,6 +90,10 @@ namespace webserver {
 			return !requestJson.is_null();
 		}
 
+		bool hasErrorMessage() const noexcept {
+			return !responseJsonError.is_null();
+		}
+
 		const json& getRequestBody() const noexcept {
 			return requestJson;
 		}
@@ -111,6 +118,10 @@ namespace webserver {
 
 		const SessionPtr& getSession() const noexcept {
 			return session;
+		}
+
+		const void* getOwnerPtr() const noexcept {
+			return session.get();
 		}
 
 		const string& getRequestPath() const noexcept {

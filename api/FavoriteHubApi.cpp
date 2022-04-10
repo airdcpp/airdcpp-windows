@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -115,8 +115,27 @@ namespace webserver {
 				aEntry->get(HubSettings::UserIp) = JsonUtil::parseValue<string>("connection_ip_v4", i.value());
 			} else if (key == "connection_ip_v6") {
 				aEntry->get(HubSettings::UserIp6) = JsonUtil::parseValue<string>("connection_ip_v6", i.value());
+			} else if (key == "show_joins") {
+				aEntry->get(HubSettings::ShowJoins) = deserializeTribool("show_joins", i.value());
+			} else if (key == "fav_show_joins") {
+				aEntry->get(HubSettings::FavShowJoins) = deserializeTribool("fav_show_joins", i.value());
+			} else if (key == "use_main_chat_notify") {
+				aEntry->get(HubSettings::ChatNotify) = deserializeTribool("use_main_chat_notify", i.value());
+			} else if (key == "log_main") {
+				aEntry->get(HubSettings::LogMainChat) = deserializeTribool("log_main", i.value());
+			} else if (key == "away_message") {
+				aEntry->get(HubSettings::AwayMsg) = JsonUtil::parseValue<string>("away_message", i.value());
 			}
 		}
+	}
+
+	tribool FavoriteHubApi::deserializeTribool(const string& aFieldName, const json& aJson) {
+		auto value = JsonUtil::parseOptionalValue<bool>(aFieldName, aJson);
+		if (!value) {
+			return tribool(indeterminate);
+		}
+
+		return *value;
 	}
 
 	api_return FavoriteHubApi::handleAddHub(ApiRequest& aRequest) {
@@ -131,38 +150,35 @@ namespace webserver {
 		return websocketpp::http::status_code::ok;
 	}
 
-	api_return FavoriteHubApi::handleRemoveHub(ApiRequest& aRequest) {
+	FavoriteHubEntryPtr FavoriteHubApi::parseFavoriteHubParam(ApiRequest& aRequest) {
 		auto token = aRequest.getTokenParam();
-		if (!FavoriteManager::getInstance()->removeFavoriteHub(token)) {
-			aRequest.setResponseErrorStr("Favorite hub " + Util::toString(aRequest.getTokenParam()) + " was not found");
-			return websocketpp::http::status_code::not_found;
+		auto entry = FavoriteManager::getInstance()->getFavoriteHubEntry(token);
+		if (!entry) {
+			throw RequestException(websocketpp::http::status_code::not_found, "Favorite hub " + Util::toString(token) + " was not found");
 		}
 
+		return entry;
+	}
+
+	api_return FavoriteHubApi::handleRemoveHub(ApiRequest& aRequest) {
+		auto entry = parseFavoriteHubParam(aRequest);
+		FavoriteManager::getInstance()->removeFavoriteHub(entry->getToken());
 		return websocketpp::http::status_code::no_content;
 	}
 
 	api_return FavoriteHubApi::handleGetHub(ApiRequest& aRequest) {
-		auto entry = FavoriteManager::getInstance()->getFavoriteHubEntry(aRequest.getTokenParam());
-		if (!entry) {
-			aRequest.setResponseErrorStr("Favorite hub " + Util::toString(aRequest.getTokenParam()) + " was not found");
-			return websocketpp::http::status_code::not_found;
-		}
-
+		auto entry = parseFavoriteHubParam(aRequest);
 		aRequest.setResponseBody(Serializer::serializeItem(entry, FavoriteHubUtils::propertyHandler));
 		return websocketpp::http::status_code::ok;
 	}
 
 	api_return FavoriteHubApi::handleUpdateHub(ApiRequest& aRequest) {
-		auto e = FavoriteManager::getInstance()->getFavoriteHubEntry(aRequest.getTokenParam());
-		if (!e) {
-			aRequest.setResponseErrorStr("Favorite hub " + Util::toString(aRequest.getTokenParam()) + " was not found");
-			return websocketpp::http::status_code::not_found;
-		}
+		auto entry = parseFavoriteHubParam(aRequest);
 
-		updateProperties(e, aRequest.getRequestBody(), false);
-		FavoriteManager::getInstance()->onFavoriteHubUpdated(e);
+		updateProperties(entry, aRequest.getRequestBody(), false);
+		FavoriteManager::getInstance()->onFavoriteHubUpdated(entry);
 
-		aRequest.setResponseBody(Serializer::serializeItem(e, FavoriteHubUtils::propertyHandler));
+		aRequest.setResponseBody(Serializer::serializeItem(entry, FavoriteHubUtils::propertyHandler));
 		return websocketpp::http::status_code::ok;
 	}
 

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -79,9 +79,13 @@ namespace webserver {
 			chatHandler.onMessagesUpdated();
 		}
 
+		void on(PrivateChatListener::ChatCommand, PrivateChat*, const OutgoingChatMessage& aMessage) noexcept override {
+			chatHandler.onChatCommand(aMessage);
+		}
+
 		void onSessionUpdated(const json& aData) noexcept;
 
-		ChatController<PrivateChatPtr> chatHandler;
+		ChatController chatHandler;
 		PrivateChatPtr chat;
 	};
 

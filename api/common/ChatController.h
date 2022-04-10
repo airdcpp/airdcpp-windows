@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2011-2019 AirDC++ Project
+* Copyright (C) 2011-2021 AirDC++ Project
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -24,14 +24,15 @@
 #include <api/base/ApiModule.h>
 #include <api/common/Deserializer.h>
 #include <api/common/Serializer.h>
+#include <api/common/MessageUtils.h>
+
+#include <airdcpp/StringTokenizer.h>
 
 namespace webserver {
-	template<class T>
 	class ChatController {
 	public:
-		typedef typename std::function<const T&()> ChatGetterF;
-		ChatController(SubscribableApiModule* aModule, const ChatGetterF& aChatF, const string& aSubscriptionId, Access aViewPermission, Access aEditPermission, Access aSendPermission) :
-			module(aModule), subscriptionId(aSubscriptionId), chatF(aChatF)
+		ChatController(SubscribableApiModule* aModule, ChatHandlerBase* aChat, const string& aSubscriptionId, Access aViewPermission, Access aEditPermission, Access aSendPermission) :
+			module(aModule), subscriptionId(aSubscriptionId), chat(aChat)
 		{
 			MODULE_METHOD_HANDLER(aModule, aSendPermission, METHOD_POST, (EXACT_PARAM("chat_message")), ChatController::handlePostChatMessage);
 			MODULE_METHOD_HANDLER(aModule, aEditPermission, METHOD_POST, (EXACT_PARAM("status_message")), ChatController::handlePostStatusMessage);
@@ -39,6 +40,8 @@ namespace webserver {
 			MODULE_METHOD_HANDLER(aModule, aViewPermission, METHOD_GET, (EXACT_PARAM("messages"), RANGE_MAX_PARAM), ChatController::handleGetMessages);
 			MODULE_METHOD_HANDLER(aModule, aViewPermission, METHOD_POST, (EXACT_PARAM("messages"), EXACT_PARAM("read")), ChatController::handleSetRead);
 			MODULE_METHOD_HANDLER(aModule, aEditPermission, METHOD_DELETE, (EXACT_PARAM("messages")), ChatController::handleClear);
+
+			MODULE_METHOD_HANDLER(aModule, aEditPermission, METHOD_GET, (EXACT_PARAM("messages"), EXACT_PARAM("highlights"), TOKEN_PARAM), ChatController::handleGetMessageHighlight);
 		}
 
 		void onChatMessage(const ChatMessagePtr& aMessage) noexcept {
@@ -49,7 +52,7 @@ namespace webserver {
 				return;
 			}
 
-			module->send(s, Serializer::serializeChatMessage(aMessage));
+			module->send(s, MessageUtils::serializeChatMessage(aMessage));
 		}
 
 		void onStatusMessage(const LogMessagePtr& aMessage) noexcept {
@@ -60,11 +63,40 @@ namespace webserver {
 				return;
 			}
 
-			module->send(s, Serializer::serializeLogMessage(aMessage));
+			module->send(s, MessageUtils::serializeLogMessage(aMessage));
 		}
 
 		void onMessagesUpdated() {
 			sendUnread();
+		}
+
+		void onChatCommand(const OutgoingChatMessage& aMessage) {
+			auto s = toListenerName("text_command");
+			if (!module->subscriptionActive(s)) {
+				return;
+			}
+
+			auto tokens = CommandTokenizer<std::string, std::deque>(aMessage.text).getTokens();
+			if (tokens.empty()) {
+				return;
+			}
+
+			auto command = tokens.front();
+			if (command.length() == 1) {
+				return;
+			}
+
+			tokens.pop_front();
+
+			module->send(s, {
+				{ "command", command.substr(1) },
+				{ "args", tokens },
+				{ "permissions",  Serializer::serializePermissions(parseMessageAuthorAccess(aMessage)) },
+			});
+		}
+
+		void setChat(ChatHandlerBase* aChat) noexcept {
+			chat = aChat;
 		}
 	private:
 		void sendUnread() noexcept {
@@ -74,50 +106,83 @@ namespace webserver {
 			}
 
 			module->send(s, {
-				{ "message_counts",  Serializer::serializeCacheInfo(chatF()->getCache(), Serializer::serializeUnreadChat) },
+				{ "message_counts",  MessageUtils::serializeCacheInfo(chat->getCache(), MessageUtils::serializeUnreadChat) },
 			});
+		}
+
+		AccessList parseMessageAuthorAccess(const OutgoingChatMessage& aMessage) {
+			const auto sessions = module->getSession()->getServer()->getUserManager().getSessions();
+			const auto ownerSessionIter = std::find_if(sessions.begin(), sessions.end(), [&aMessage](const SessionPtr& aSession) {
+				return aSession.get() == aMessage.owner;
+			});
+
+			AccessList permissions;
+			if (ownerSessionIter != sessions.end()) {
+				permissions = (*ownerSessionIter)->getUser()->getPermissions();
+			} else {
+				// GUI/extension etc
+				permissions.push_back(Access::ADMIN);
+			}
+
+			return permissions;
 		}
 
 		api_return handlePostChatMessage(ApiRequest& aRequest) {
 			const auto& reqJson = aRequest.getRequestBody();
-			auto message = Deserializer::deserializeChatMessage(reqJson);
 
-			const auto complete = aRequest.defer();
-			module->addAsyncTask([=] {
+			module->addAsyncTask([
+				this,
+				message = Deserializer::deserializeChatMessage(reqJson),
+				complete = aRequest.defer(),
+				callerPtr = aRequest.getOwnerPtr()
+			] {
 				string error;
-				if (!chatF()->sendMessageHooked(message.first, error, message.second) && !error.empty()) {
+				if (!chat->sendMessageHooked(OutgoingChatMessage(message.first, callerPtr, message.second), error) && !error.empty()) {
 					complete(websocketpp::http::status_code::internal_server_error, nullptr, ApiRequest::toResponseErrorStr(error));
 				} else {
 					complete(websocketpp::http::status_code::no_content, nullptr, nullptr);
 				}
 			});
 
-			return websocketpp::http::status_code::see_other;
+			return CODE_DEFERRED;
 		}
 
 		api_return handlePostStatusMessage(ApiRequest& aRequest) {
 			const auto& reqJson = aRequest.getRequestBody();
 
 			auto message = Deserializer::deserializeStatusMessage(reqJson);
-			chatF()->statusMessage(message.first, message.second);
+			chat->statusMessage(message.first, message.second, MessageUtils::parseStatusMessageLabel(aRequest.getSession()));
 			return websocketpp::http::status_code::no_content;
 		}
 
 		api_return handleClear(ApiRequest&) {
-			chatF()->clearCache();
+			chat->clearCache();
 			return websocketpp::http::status_code::no_content;
 		}
 
 		api_return handleSetRead(ApiRequest&) {
-			chatF()->setRead();
+			chat->setRead();
 			return websocketpp::http::status_code::no_content;
+		}
+
+		api_return handleGetMessageHighlight(ApiRequest& aRequest) {
+			const auto id = aRequest.getTokenParam();
+			auto highlight = chat->getCache().findMessageHighlight(id);
+			if (!highlight) {
+				aRequest.setResponseErrorStr("Message highlight " + Util::toString(id) + " was not found");
+				return websocketpp::http::status_code::not_found;
+			}
+
+			aRequest.setResponseBody(MessageUtils::serializeMessageHighlight(highlight));
+			return websocketpp::http::status_code::ok;
 		}
 
 		api_return handleGetMessages(ApiRequest& aRequest) {
 			auto j = Serializer::serializeFromEnd(
 				aRequest.getRangeParam(MAX_COUNT),
-				chatF()->getCache().getMessages(),
-				Serializer::serializeMessage);
+				chat->getCache().getMessages(),
+				MessageUtils::serializeMessage
+			);
 
 			aRequest.setResponseBody(j);
 			return websocketpp::http::status_code::ok;
@@ -127,7 +192,7 @@ namespace webserver {
 			return subscriptionId + "_" + aSubscription;
 		}
 
-		ChatGetterF chatF;
+		ChatHandlerBase* chat;
 		string subscriptionId;
 		SubscribableApiModule* module;
 	};
