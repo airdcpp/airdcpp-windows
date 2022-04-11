@@ -40,7 +40,6 @@
 #include <airdcpp/modules/HublistManager.h>
 #include <airdcpp/modules/PreviewAppManager.h>
 #include <airdcpp/modules/RSSManager.h>
-#include <airdcpp/modules/WebShortcuts.h>
 #include <airdcpp/ZipFile.h>
 
 #include <web-server/ExtensionManager.h>
@@ -67,7 +66,6 @@ void WinClient::webErrorF(const string& aError) {
 
 void WinClient::initModules() {
 	ADLSearchManager::newInstance();
-	WebShortcuts::newInstance();
 	HighlightManager::newInstance();
 	FinishedManager::newInstance();
 	AutoSearchManager::newInstance();
@@ -88,7 +86,6 @@ void WinClient::destroyModules() {
 	AutoSearchManager::deleteInstance();
 	RSSManager::deleteInstance();
 	FinishedManager::deleteInstance();
-	WebShortcuts::deleteInstance();
 }
 
 void WinClient::unloadModules(StepFunction& aStepF, ProgressFunction&) {

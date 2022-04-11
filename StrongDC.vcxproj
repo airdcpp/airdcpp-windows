@@ -543,8 +543,6 @@
     <ClCompile Include="windows\UsersFrame.cpp" />
     <ClCompile Include="windows\UserUtil.cpp" />
     <ClCompile Include="windows\WebserverPage.cpp" />
-    <ClCompile Include="windows\WebShortcutsPage.cpp" />
-    <ClCompile Include="windows\WebShortcutsProperties.cpp" />
     <ClCompile Include="windows\Wildcards.cpp" />
     <ClCompile Include="windows\WinClient.cpp" />
     <ClCompile Include="windows\WindowsPage.cpp" />
@@ -703,8 +701,6 @@
     <ClInclude Include="windows\UsersFrame.h" />
     <ClInclude Include="windows\UserUtil.h" />
     <ClInclude Include="windows\WebserverPage.h" />
-    <ClInclude Include="windows\WebShortcutsPage.h" />
-    <ClInclude Include="windows\WebShortcutsProperties.h" />
     <ClInclude Include="windows\WebUserDlg.h" />
     <ClInclude Include="windows\Wildcards.h" />
     <ClInclude Include="windows\Winamp.h" />

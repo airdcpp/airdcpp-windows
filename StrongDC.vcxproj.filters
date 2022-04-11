@@ -225,9 +225,6 @@
     <ClCompile Include="windows\SearchPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\WebShortcutsProperties.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="windows\AboutDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -361,9 +358,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="windows\AutosearchSearchTimesPage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="windows\WebShortcutsPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="windows\WebserverPage.cpp">
@@ -671,9 +665,6 @@
     <ClInclude Include="windows\SearchPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="windows\WebShortcutsProperties.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="windows\LocationsPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -831,9 +822,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\AutosearchSearchTimesPage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\WebShortcutsPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\WebserverPage.h">

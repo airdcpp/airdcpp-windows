@@ -32,7 +32,6 @@
 #include "WinUtil.h"
 
 #include <airdcpp/modules/AutoSearchManager.h>
-#include <airdcpp/modules/WebShortcuts.h>
 
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/ConnectivityManager.h>
@@ -892,8 +891,6 @@ bool ChatFrameBase::checkCommand(const tstring& aCmd, tstring& message_, tstring
 			ParamMap sm;
 			status_ = TSTRING(AWAY_MODE_ON) + _T(" ") + Text::toT(am->getAwayMessage(getAwayMessage(), sm));
 		}
-	} else if (WebShortcuts::getInstance()->getShortcutByKey(Text::fromT(cmd))) {
-		ActionUtil::searchSite(WebShortcuts::getInstance()->getShortcutByKey(Text::fromT(cmd)), Text::fromT(param), false);
 	} else if (stricmp(cmd.c_str(), _T("u")) == 0) {
 		if (!param.empty()) {
 			ActionUtil::openLink(Text::toT(Util::encodeURI(Text::fromT(param))));

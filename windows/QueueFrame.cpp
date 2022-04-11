@@ -522,8 +522,6 @@ void QueueFrame::AppendDirectoryMenu(QueueItemInfoList& dirs, QueueItemList& ql,
 	dirMenu.AppendMenu(MF_SEPARATOR);
 
 	dirMenu.appendItem(TSTRING(SEARCH), [this] { handleSearchDirectory(); });
-	if (dirs.size() == 1)
-		ActionUtil::appendSearchMenu(dirMenu, Text::fromT(dirs.front()->name));
 
 	dirMenu.AppendMenu(MF_SEPARATOR);
 	dirMenu.appendItem(TSTRING(REMOVE_OFFLINE), [=] { handleRemoveOffline(ql); });
@@ -691,7 +689,6 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 		}
 		bundleMenu.appendSeparator();
 
-		ActionUtil::appendSearchMenu(bundleMenu, b->getName());
 		bundleMenu.appendItem(TSTRING(SEARCH_DIRECTORY), [=] { handleSearchDirectory(); });
 
 		if (!b->isDownloaded()) {
@@ -809,10 +806,6 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 			fileMenu.appendItem(CTSTRING(SEARCH), [=] { handleSearchQI(qi, true); });
 			fileMenu.appendItem(CTSTRING(SEARCH_FOR_ALTERNATES), [=] { handleSearchQI(qi, false); });
 			ActionUtil::appendPreviewMenu(fileMenu, qi->getTarget());
-		}
-
-		if (hasBundleItems) {
-			ActionUtil::appendSearchMenu(fileMenu, Util::toAdcFile(Util::getFilePath(qi->getTarget())));
 		}
 
 		if (!qi->isDownloaded()) {

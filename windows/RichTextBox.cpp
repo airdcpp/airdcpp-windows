@@ -1008,8 +1008,6 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 				}
 			}
 		}
-
-		ActionUtil::appendSearchMenu(menu, Text::fromT(selectedWord), false);
 	} else {
 		bool isMe = (selectedUser == Text::toT(client->getMyNick()));
 

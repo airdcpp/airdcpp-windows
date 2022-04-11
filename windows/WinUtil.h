@@ -42,10 +42,6 @@ COLORREF HLS_TRANSFORM (COLORREF rgb, int percent_L, int percent_S);
 class FlatTabCtrl;
 class SplashWindow;
 
-namespace dcpp {
-	class WebShortcut;
-}
-
 struct toolbarButton {
 	const ToolbarIconEnum id;
 	const int commandId;

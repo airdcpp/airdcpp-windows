@@ -29,21 +29,12 @@
 #include <airdcpp/User.h>
 
 
-namespace dcpp {
-	class WebShortcut;
-}
-
 class OMenu;
 class RichTextBox;
-
 
 class ActionUtil {
 public:
 	static void search(const tstring& aSearch, bool aSearchDirectory = false);
-	static void searchSite(const WebShortcut* ws, const string& aAdcSearchPath, bool aGetReleaseDir = true);
-
-	static void appendSearchMenu(OMenu& aParent, function<void(const WebShortcut* ws)> f, bool aAppendTitle = true);
-	static void appendSearchMenu(OMenu& aParent, const string& aAdcPath, bool aGetReleaseDir = true, bool aAppendTitle = true);
 
 	struct ConnectFav {
 		void operator()(UserPtr aUser, const string& aUrl) const;

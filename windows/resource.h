@@ -106,7 +106,6 @@
 #define IDD_SOUNDS                      241
 #define IDR_PRIVATE_OFF                 242
 #define IDR_HUB_OFF                     243
-#define IDD_WEB_SHORTCUTS               244
 #define IDR_QUEUE2                      245
 #define IDD_OPERACOLORS                 249
 #define IDD_AVIPREVIEW                  250
@@ -200,7 +199,6 @@
 #define IDD_TABBED_DIALOG               363
 #define IDI_USERS                       364
 #define IDD_DIALOG6                     364
-#define IDD_WEB_SHORTCUTS_PAGE          364
 #define IDI_OPEN_LIST                   365
 #define IDI_NOTEPAD                     366
 #define IDD_AS_GENERAL                  366
@@ -350,7 +348,6 @@
 #define IDI_HASHING                     520
 #define IDI_LOGDIR                      521
 #define IDI_SEND_FILE                   522
-#define IDI_WEB_SHORTCUTS               523
 #define IDI_RSS                         524
 #define IDC_BACK                        997
 #define IDC_FORWARD                     998
@@ -1475,21 +1472,7 @@
 #define IDC_PSWD_CHNG_CONFIRM_NEW       8676
 #define IDC_LINE2                       8677
 #define IDC_LINE3                       8678
-#define IDC_SB_WEB_SHORTCUTS            8679
-#define IDC_WEB_SHORTCUTS_ADD           8680
-#define IDC_WEB_SHORTCUTS_REMOVE        8681
-#define IDC_WEB_SHORTCUTS_PROPERTIES    8682
-#define IDC_WEB_SHORTCUTS_CLEAN         8683
 #define IDC_SEACHING_OPTIONS            8683
-#define IDC_WEB_SHORTCUT_NAME           8684
-#define IDC_WEB_SHORTCUT_KEY            8685
-#define IDC_WEB_SHORTCUT_URL            8686
-#define IDC_WEB_SHORTCUTS_DESC          8687
-#define IDC_WEB_SHORTCUT_URL_DESC       8688
-#define IDC_WEB_SHORTCUTS_HOWTO         8689
-#define IDC_WEB_SHORTCUTS_NAME_DESC     8690
-#define IDC_WEB_SHORTCUT_KEY_DESC       8691
-#define IDC_WEB_SHORTCUTS_LIST          8692
 #define IDC_NORMAL_DESC                 8693
 #define IDC_REMOVE_OTHER                8694
 #define IDC_USE_OWN                     8694

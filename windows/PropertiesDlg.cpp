@@ -55,7 +55,6 @@
 #include "Popups.h"
 #include "FulHighlightPage.h"
 #include "SearchPage.h"
-#include "WebShortcutsPage.h"
 #include "AirAppearancePage.h"
 #include "SearchTypesPage.h"
 #include "HashingPage.h"
@@ -95,7 +94,6 @@ PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPa
 	pages[n++] = make_unique<SDCPage>(s);
 	pages[n++] = make_unique<LogPage>(s);
 	pages[n++] = make_unique<UCPage>(s);
-	pages[n++] = make_unique<WebShortCutsPage>(s);
 	pages[n++] = make_unique<EncryptionPage>(s);
 	pages[n++] = make_unique<MiscPage>(s);
 	pages[n++] = make_unique<ChatFilterPage>(s);

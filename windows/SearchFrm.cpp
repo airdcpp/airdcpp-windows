@@ -1472,12 +1472,6 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 
 			resultsMenu.appendItem(TSTRING(SEARCH_DIRECTORY), [&] { handleSearchDir(); });
 
-			ActionUtil::appendSearchMenu(resultsMenu, [=](const WebShortcut* ws) {
-				performAction([=](const SearchInfo* ii) { 
-					ActionUtil::searchSite(ws, ii->getAdcPath());
-				}, true);
-			});
-
 			SearchInfoList::MenuItemList customItems {
 				{ TSTRING(MAGNET_LINK), &handleCopyMagnet },
 				{ TSTRING(DIRECTORY), &handleCopyDirectory }

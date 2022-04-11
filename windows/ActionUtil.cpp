@@ -49,7 +49,6 @@
 #include <airdcpp/ViewFileManager.h>
 
 #include <airdcpp/modules/PreviewAppManager.h>
-#include <airdcpp/modules/WebShortcuts.h>
 
 
 void ActionUtil::PM::operator()(UserPtr aUser, const string& aUrl) const {
@@ -556,46 +555,12 @@ void ActionUtil::appendFilePrioMenu(OMenu& aParent, const QueueItemList& aFiles)
 	appendPrioMenu<QueueItemPtr>(aParent, aFiles, false, prioF, autoPrioF);
 }
 
-void ActionUtil::appendSearchMenu(OMenu& aParent, function<void(const WebShortcut* ws)> f, bool appendTitle /*true*/) {
-	OMenu* searchMenu = aParent.createSubMenu(TSTRING(SEARCH_SITES), appendTitle);
-	for (auto ws : WebShortcuts::getInstance()->list) {
-		searchMenu->appendItem(Text::toT(ws->name), [=] { f(ws); });
-	}
-}
-
-void ActionUtil::appendSearchMenu(OMenu& aParent, const string& aAdcPath, bool aGetReleaseDir /*true*/, bool aAppendTitle /*true*/) {
-	appendSearchMenu(aParent, [=](const WebShortcut* ws) { searchSite(ws, aAdcPath, aGetReleaseDir); }, aAppendTitle);
-}
-
-
-
 void ActionUtil::search(const tstring& aSearch, bool aSearchDirectory) {
 	tstring searchTerm = aSearch;
 	searchTerm.erase(std::remove(searchTerm.begin(), searchTerm.end(), '\r'), searchTerm.end());
 	searchTerm.erase(std::remove(searchTerm.begin(), searchTerm.end(), '\n'), searchTerm.end());
 	if (!searchTerm.empty()) {
 		SearchFrame::openWindow(searchTerm, 0, Search::SIZE_DONTCARE, aSearchDirectory ? SEARCH_TYPE_DIRECTORY : SEARCH_TYPE_ANY);
-	}
-}
-
-void ActionUtil::searchSite(const WebShortcut* ws, const string& aAdcSearchPath, bool aGetReleaseDir) {
-	if (!ws)
-		return;
-
-	auto searchTerm = aGetReleaseDir ? AirUtil::getAdcReleaseDir(aAdcSearchPath, true) : Util::getAdcLastDir(aAdcSearchPath);
-
-	if (ws->clean && !aAdcSearchPath.empty()) {
-		searchTerm = AirUtil::getTitle(searchTerm);
-	}
-
-	if (!searchTerm.empty()) {
-		if (ws->url.find("%s") != string::npos) {
-			openLink(Text::toT(str(boost::format(ws->url) % Util::encodeURI(searchTerm))));
-		} else {
-			openLink(Text::toT(ws->url + Util::encodeURI(searchTerm)));
-		}
-	} else {
-		openLink(Text::toT(ws->url));
 	}
 }
 

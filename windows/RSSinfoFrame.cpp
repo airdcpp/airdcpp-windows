@@ -225,7 +225,6 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 
 			if (items.size() == 1) {
 				menu.appendItem(TSTRING(SEARCH), [=] { ActionUtil::search(Text::toT(items.front()->item->getTitle())); });
-				ActionUtil::appendSearchMenu(menu, items.front()->item->getTitle());
 				if (AirUtil::allowOpenDupe(items.front()->getDupe())) {
 					menu.appendSeparator();
 					menu.appendItem(TSTRING(OPEN_FOLDER), [=] {

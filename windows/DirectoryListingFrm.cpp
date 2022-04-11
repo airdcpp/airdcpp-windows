@@ -1509,15 +1509,6 @@ void DirectoryListingFrame::appendListContextMenu(CPoint& pt) {
 
 	fileMenu.appendSeparator();
 
-	// web shortcuts
-	ActionUtil::appendSearchMenu(fileMenu, [=](const WebShortcut* ws) {
-		ctrlFiles.list.forEachSelectedT([=](const ItemInfo* ii) {
-			ActionUtil::searchSite(ws, ii->getAdcPath());
-		});
-	});
-
-	fileMenu.appendSeparator();
-
 	{
 		vector<DirectoryListingToken> tokens;
 		ctrlFiles.list.forEachSelectedT([&tokens](const ItemInfo* ii) {
@@ -1578,7 +1569,6 @@ void DirectoryListingFrame::appendTreeContextMenu(CPoint& pt, const HTREEITEM& a
 		directoryMenu.appendSeparator();
 	}
 
-	ActionUtil::appendSearchMenu(directoryMenu, getCurrentListPath());
 	directoryMenu.appendSeparator();
 
 	{
