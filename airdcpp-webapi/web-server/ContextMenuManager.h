@@ -116,15 +116,15 @@ namespace webserver {
 
 	class ContextMenuItem {
 	public:
-		ContextMenuItem(const string& aId, const string& aTitle, const StringMap& aIconInfo, const string& aHookId, const StringList& aUrls, const ExtensionSettingItem::List& aFormFieldDefinitions) :
-			id(aId), title(aTitle), iconInfo(aIconInfo), hookId(aHookId), urls(aUrls), formFieldDefinitions(aFormFieldDefinitions) {
+		ContextMenuItem(const string& aId, const string& aTitle, const StringMap& aIconInfo, const ActionHookSubscriber& aHook, const StringList& aUrls, const ExtensionSettingItem::List& aFormFieldDefinitions) :
+			id(aId), title(aTitle), iconInfo(aIconInfo), hook(aHook), urls(aUrls), formFieldDefinitions(aFormFieldDefinitions) {
 
 		}
 
 		GETSET(string, id, Id);
 		GETSET(string, title, Title);
 		GETSET(StringMap, iconInfo, IconInfo);
-		GETSET(string, hookId, HookId);
+		GETSET(ActionHookSubscriber, hook, Hook);
 		GETSET(StringList, urls, Urls);
 		GETSET(ExtensionSettingItem::List, formFieldDefinitions, FormFieldDefinitions);
 	private:

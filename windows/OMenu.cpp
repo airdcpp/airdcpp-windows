@@ -24,6 +24,8 @@
 #include "BarShader.h"
 #include "MainFrm.h"
 
+#define EXTENSION_GROUP_LIMIT 2
+
 
 OMenu::~OMenu() {
 	if (::IsMenu(m_hMenu)) {
@@ -109,6 +111,50 @@ void OMenu::appendSeparator() {
 	// Avoid double separators...
 	if (GetMenuItemCount() > 0 && !isSeparator(GetMenuItemCount() - 1))
 		AppendMenu(MF_SEPARATOR);
+}
+
+
+void OMenu::appendExtensionMenuItems(OMenu& menu_, const webserver::ContextMenuItemList& aItems, const ExtensionMenuItemClickHandler& aClickHandler) noexcept {
+	if (aItems.empty()) {
+		return;
+	}
+
+	map<string, webserver::ContextMenuItemList> groupedItems;
+	for (const auto& item: aItems) {
+		groupedItems[item->getHook().getName()].push_back(item);
+	}
+
+
+	for (const auto& group : groupedItems) {
+		auto& menu = group.second.size() > EXTENSION_GROUP_LIMIT ? *menu_.createSubMenu(Text::toT(group.first)) : menu_;
+		for (const auto& extItem: group.second) {
+			menu.appendItem(
+				Text::toT(extItem->getTitle()),
+				[=]() {
+					if (!extItem->getUrls().empty()) {
+						for (const auto& url : extItem->getUrls()) {
+							ActionUtil::openLink(Text::toT(url));
+						}
+
+						return;
+					}
+
+					auto clickData = webserver::ContextMenuItemClickData(
+						extItem->getHook().getId(),
+						extItem->getId(),
+						{ webserver::ContextMenuManager::URLS_SUPPORT },
+						{ webserver::Access::ADMIN },
+						webserver::SettingValueMap()
+					);
+
+					aClickHandler(clickData);
+				},
+				OMenu::FLAG_THREADED
+			);
+		}
+	}
+
+	menu_.appendSeparator();
 }
 
 void OMenu::InsertSeparator(UINT uItem, BOOL byPosition, const tstring& caption, bool accels /*= false*/) {

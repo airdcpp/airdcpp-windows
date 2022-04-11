@@ -26,6 +26,7 @@
 #endif // _MSC_VER > 1000
 
 #include <airdcpp/typedefs.h>
+#include <forward.h>
 
 #include "Dispatchers.h"
 
@@ -35,25 +36,9 @@ if (!tokens.empty()) { \
 	auto cmm = &webserver::WebServerManager::getInstance()->getContextMenuManager(); \
 	auto listData = webserver::ContextMenuItemListData({ webserver::ContextMenuManager::URLS_SUPPORT }, { webserver::Access::ADMIN }, this); \
 	auto extMenuItems = cmm->get##menuId##Menu(tokens, listData); \
-	if (!extMenuItems.empty()) { \
-		for (const auto& extItem : extMenuItems) { \
-			menu.appendItem( \
-				Text::toT(extItem->getTitle()), \
-				[=]() { \
-					if (!extItem->getUrls().empty()) { \
-						for (const auto& url: extItem->getUrls()) { \
-							ActionUtil::openLink(Text::toT(url)); \
-						} \
-						return; \
-					} \
-					auto clickData = webserver::ContextMenuItemClickData(extItem->getHookId(), extItem->getId(), { webserver::ContextMenuManager::URLS_SUPPORT }, { webserver::Access::ADMIN }, webserver::SettingValueMap()); \
-					cmm->onClick##menuId##Item(tokens, clickData); \
-				}, \
-				OMenu::FLAG_THREADED \
-			); \
-		} \
-		menu.appendSeparator(); \
-	} \
+	OMenu::appendExtensionMenuItems(menu, extMenuItems, [&](const auto& aClickData) {  \
+		cmm->onClick##menuId##Item(tokens, aClickData); \
+	}); \
 }
 
 #define EXT_CONTEXT_MENU_ENTITY(menu, menuId, tokens, entity) \
@@ -61,27 +46,10 @@ if (!tokens.empty()) { \
 	auto cmm = &webserver::WebServerManager::getInstance()->getContextMenuManager(); \
 	auto listData = webserver::ContextMenuItemListData({ webserver::ContextMenuManager::URLS_SUPPORT }, { webserver::Access::ADMIN }, this); \
 	auto extMenuItems = cmm->get##menuId##Menu(tokens, listData, entity); \
-	if (!extMenuItems.empty()) { \
-		for (const auto& extItem : extMenuItems) { \
-			menu.appendItem( \
-				Text::toT(extItem->getTitle()), \
-				[=]() { \
-					if (!extItem->getUrls().empty()) { \
-						for (const auto& url: extItem->getUrls()) { \
-							ActionUtil::openLink(Text::toT(url)); \
-						} \
-						return; \
-					} \
-					auto clickData = webserver::ContextMenuItemClickData(extItem->getHookId(), extItem->getId(), { webserver::ContextMenuManager::URLS_SUPPORT }, { webserver::Access::ADMIN }, webserver::SettingValueMap()); \
-					cmm->onClick##menuId##Item(tokens, clickData, entity); \
-				}, \
-				OMenu::FLAG_THREADED \
-			); \
-		} \
-		menu.appendSeparator(); \
-	} \
+	OMenu::appendExtensionMenuItems(menu, extMenuItems, [&](const auto& aClickData) {  \
+		cmm->onClick##menuId##Item(tokens, aClickData, entity); \
+	}); \
 }
-
 
 /*
  * Wouldn't it be Wonderful if WTL made their functions virtual? Yes it would...
@@ -119,6 +87,9 @@ public:
 	inline void InsertSeparatorLast(const tstring& caption/*, bool accels = false*/) {
 		InsertSeparator(GetMenuItemCount(), TRUE, caption);
 	}
+
+	typedef std::function<void(const webserver::ContextMenuItemClickData&)> ExtensionMenuItemClickHandler;
+	static void appendExtensionMenuItems(OMenu& menu_, const webserver::ContextMenuItemList& aItems, const ExtensionMenuItemClickHandler& aClickHandler) noexcept;
 
 	void appendSeparator();
 

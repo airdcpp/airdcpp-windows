@@ -233,7 +233,7 @@ namespace webserver {
 			{ "id", aMenuItem->getId() },
 			{ "title", aMenuItem->getTitle() },
 			{ "icon", aMenuItem->getIconInfo() },
-			{ "hook_id", aMenuItem->getHookId() },
+			{ "hook_id", aMenuItem->getHook().getId() },
 			{ "urls", aMenuItem->getUrls() },
 			{ "form_definitions", aMenuItem->getFormFieldDefinitions().empty() ? json() : Serializer::serializeList(aMenuItem->getFormFieldDefinitions(), SettingUtils::serializeDefinition) },
 		};
@@ -271,7 +271,7 @@ namespace webserver {
 		const auto iconInfo = deserializeIconInfo(JsonUtil::getOptionalRawField("icon", aData, false));
 		const auto urls = JsonUtil::getOptionalFieldDefault<StringList>("urls", aData, StringList());
 
-		return make_shared<ContextMenuItem>(id, title, iconInfo, aResultGetter.getSubscriber().getId(), urls, deserializeFormFieldDefinitions(aData));
+		return make_shared<ContextMenuItem>(id, title, iconInfo, aResultGetter.getSubscriber(), urls, deserializeFormFieldDefinitions(aData));
 	}
 
 
