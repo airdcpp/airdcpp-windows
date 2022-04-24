@@ -5251,7 +5251,7 @@ Here is an example that shows how to put a multi index container in shared memor
 
 [endsect]
 
-Programmers can place [*Boost.CircularBuffer] containers in sharecd memory provided
+Programmers can place [*Boost.CircularBuffer] containers in shared memory provided
 they disable debugging facilities with defines `BOOST_CB_DISABLE_DEBUG` or the more
 general `NDEBUG`. The reason is that those debugging facilities are only compatible
 with raw pointers.
@@ -6804,6 +6804,17 @@ thank them:
 [endsect]
 
 [section:release_notes Release Notes]
+
+[section:release_notes_boost_1_79_00 Boost 1.79 Release]
+
+*  The library now compiles without warnings with GCC's -Wcast-align=strict
+*  Fixed bugs:
+   * [@https://github.com/boostorg/interprocess/issues/160   GitHub #160 (['"More GCC suggest-override warnings"])].
+   * [@https://github.com/boostorg/interprocess/pull/162     GitHub #162 (['"Fix missing sys/stat.h include on musl-based systems"])].
+   * [@https://github.com/boostorg/interprocess/issues/166   GitHub #166 (['"Bad error handling in shared_memory_object::truncate"])].
+   * [@https://github.com/boostorg/interprocess/pull/171     GitHub #171 (['"Fixing windows_shared_memory::get_name()"])].
+
+[endsect]
 
 [section:release_notes_boost_1_78_00 Boost 1.78 Release]
 

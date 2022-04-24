@@ -1,6 +1,6 @@
 ////
 Copyright 2003-2017 Beman Dawes
-Copyright 2018-2021 Peter Dimov
+Copyright 2018-2022 Peter Dimov
 
 Distributed under the Boost Software License, Version 1.0.
 
@@ -185,8 +185,12 @@ namespace errc {
 template<> struct is_error_condition_enum<errc::errc_t>
   { static const bool value = true; };
 
-constexpr error_code make_error_code( errc::errc_t e ) noexcept;
 constexpr error_condition make_error_condition( errc::errc_t e ) noexcept;
+
+constexpr error_code make_error_code( errc::errc_t e ) noexcept;
+
+error_code make_error_code( errc::errc_t e,
+  boost::source_location const * loc ) noexcept;
 
 } // namespace system
 } // namespace boost
@@ -249,6 +253,38 @@ void my_api_function( boost::system::error_code& ec )
     {
         // return ENOMEM
         ec = make_error_code( boost::system::errc::out_of_memory );
+        return;
+    }
+
+    // use p
+}
+```
+
+```
+constexpr error_code make_error_code( errc::errc_t e,
+  boost::source_location const * loc ) noexcept;
+```
+[none]
+* {blank}
++
+Returns: :: `error_code( e, generic_category(), loc )`.
+
+Same as the above overload, but takes a source location.
+* {blank}
++
+```
+void my_api_function( boost::system::error_code& ec )
+{
+    void* p = std::malloc( 16 );
+
+    if( p == 0 )
+    {
+        // return ENOMEM
+
+        BOOST_STATIC_CONSTEXPR boost::source_location loc =
+          BOOST_CURRENT_LOCATION;
+
+        ec = make_error_code( boost::system::errc::out_of_memory, &loc );
         return;
     }
 
@@ -1454,7 +1490,20 @@ namespace system {
 
 // throw_exception_from_error
 
-BOOST_NORETURN inline void throw_exception_from_error( error_code const & e );
+BOOST_NORETURN inline void throw_exception_from_error( error_code const & e,
+  boost::source_location const & loc );
+
+BOOST_NORETURN inline void throw_exception_from_error( std::error_code const & e,
+  boost::source_location const & loc );
+
+BOOST_NORETURN inline void throw_exception_from_error( errc::errc_t const & e,
+  boost::source_location const & loc );
+
+BOOST_NORETURN inline void throw_exception_from_error( std::errc const & e,
+  boost::source_location const & loc );
+
+BOOST_NORETURN inline void throw_exception_from_error( std::exception_ptr & e,
+  boost::source_location const & loc );
 
 // in_place_*
 
@@ -1486,13 +1535,57 @@ If `result<T, E>` is used with other error types, the user is expected to provid
 an appropriate overload of `throw_exception_from_error` in the namespace of `E`.
 
 ```
-BOOST_NORETURN inline void throw_exception_from_error( error_code const & e );
+BOOST_NORETURN inline void throw_exception_from_error( error_code const & e,
+  boost::source_location const & loc );
 ```
 [none]
 * {blank}
 +
 Effects: ::
-  `boost::throw_exception( system_error( e ) )`.
+  `boost::throw_with_location( system_error( e ), loc )`.
+
+```
+BOOST_NORETURN inline void throw_exception_from_error( std::error_code const & e,
+  boost::source_location const & loc );
+```
+[none]
+* {blank}
++
+Effects: ::
+  `boost::throw_with_location( std::system_error( e ), loc )`.
+
+```
+BOOST_NORETURN inline void throw_exception_from_error( errc::errc_t const & e,
+  boost::source_location const & loc );
+```
+[none]
+* {blank}
++
+Effects: ::
+  `boost::throw_with_location( system_error( make_error_code( e ) ), loc )`.
+
+```
+BOOST_NORETURN inline void throw_exception_from_error( std::errc const & e,
+  boost::source_location const & loc );
+```
+[none]
+* {blank}
++
+Effects: ::
+  `boost::throw_with_location( std::system_error( make_error_code( e ) ), loc )`.
+
+```
+BOOST_NORETURN inline void throw_exception_from_error( std::exception_ptr & e,
+  boost::source_location const & loc );
+```
+[none]
+* {blank}
++
+Effects: ::
++
+[disc]
+** If `e` isn't null, `std::rethrow_exception( e )`.
+** Otherwise, `boost::throw_with_location( std::bad_exception(), loc )`.
 
 ### result<T, E>
 
@@ -1528,10 +1621,17 @@ public:
 
     // checked value access
 
-    constexpr T& value() & ;
-    constexpr T const& value() const& ;
-    constexpr T&& value() && ;
-    constexpr T const&& value() const&& ;
+    constexpr T& value( boost::source_location const & loc =
+      BOOST_CURRENT_LOCATION ) & ;
+
+    constexpr T const& value( boost::source_location const & loc =
+      BOOST_CURRENT_LOCATION ) const& ;
+
+    constexpr T&& value( boost::source_location const & loc =
+      BOOST_CURRENT_LOCATION ) && ;
+
+    constexpr T const&& value( boost::source_location const & loc =
+      BOOST_CURRENT_LOCATION ) const&& ;
 
     // unchecked value access
 
@@ -1653,10 +1753,17 @@ Returns: ::
 #### Checked Value Access
 
 ```
-constexpr T& value() & ;
-constexpr T const& value() const& ;
-constexpr T&& value() && ;
-constexpr T const&& value() const&& ;
+constexpr T& value(
+  boost::source_location const & loc = BOOST_CURRENT_LOCATION ) & ;
+
+constexpr T const& value(
+  boost::source_location const & loc = BOOST_CURRENT_LOCATION ) const& ;
+
+constexpr T&& value(
+  boost::source_location const & loc = BOOST_CURRENT_LOCATION ) && ;
+
+constexpr T const&& value(
+  boost::source_location const & loc = BOOST_CURRENT_LOCATION ) const&& ;
 ```
 [none]
 * {blank}
@@ -1664,7 +1771,7 @@ constexpr T const&& value() const&& ;
 Effects: ::
   If `*this` holds a value, returns a reference to it. Otherwise,
   calls `throw_exception_from_error`, passing it a reference to
-  the held error.
+  the held error, and `loc`.
 
 #### Unchecked Value Access
 
@@ -1799,7 +1906,8 @@ public:
 
     // checked value access
 
-    constexpr void value() const;
+    constexpr void value( boost::source_location const & loc =
+      BOOST_CURRENT_LOCATION ) const;
 
     // unchecked value access
 
@@ -1912,14 +2020,15 @@ Returns: ::
 #### Checked Value Access
 
 ```
-constexpr void value() const;
+constexpr void value(
+  boost::source_location const & loc = BOOST_CURRENT_LOCATION ) const;
 ```
 [none]
 * {blank}
 +
 Effects: ::
   If `*this` doesn't hold a value, calls `throw_exception_from_error`,
-  passing it a reference to the held error.
+  passing it a reference to the held error, and `loc`.
 
 #### Unchecked Value Access
 

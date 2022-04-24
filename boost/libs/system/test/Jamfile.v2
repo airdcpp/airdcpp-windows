@@ -20,6 +20,8 @@ project
     <toolset>msvc:<warnings-as-errors>on
     <toolset>gcc:<warnings-as-errors>on
     <toolset>clang:<warnings-as-errors>on
+
+    <toolset>gcc-4.4:<cxxflags>-Wno-sign-compare
   ;
 
 rule system-run ( sources + )
@@ -134,11 +136,17 @@ run system_error_test3.cpp ;
 
 run std_interop_test11.cpp ;
 
+run ec_wstream_test.cpp ;
+
+run std_interop_test12.cpp ;
+
+run errc_test4.cpp ;
+
 # result
 
 import ../../config/checks/config : requires ;
 
-CPP11 = [ requires cxx11_variadic_templates cxx11_template_aliases cxx11_decltype cxx11_constexpr cxx11_noexcept ] ;
+CPP11 = [ requires cxx11_variadic_templates cxx11_template_aliases cxx11_decltype cxx11_constexpr cxx11_noexcept ] <toolset>gcc-4.7:<build>no ;
 
 run result_default_construct.cpp : : : $(CPP11) ;
 run result_value_construct.cpp : : : $(CPP11) ;
@@ -154,3 +162,4 @@ run result_eq.cpp : : : $(CPP11) ;
 run result_range_for.cpp : : : $(CPP11) ;
 run result_value_construct2.cpp : : : $(CPP11) ;
 run result_error_construct2.cpp : : : $(CPP11) ;
+run result_errc_construct.cpp : : : $(CPP11) ;

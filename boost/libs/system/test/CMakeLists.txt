@@ -112,6 +112,12 @@ boost_test(TYPE run SOURCES system_error_test3.cpp)
 
 boost_test(TYPE run SOURCES std_interop_test11.cpp)
 
+boost_test(TYPE run SOURCES ec_wstream_test.cpp)
+
+boost_test(TYPE run SOURCES std_interop_test12.cpp)
+
+boost_test(TYPE run SOURCES errc_test4.cpp)
+
 # result
 
 set(BOOST_TEST_COMPILE_FEATURES cxx_std_11)

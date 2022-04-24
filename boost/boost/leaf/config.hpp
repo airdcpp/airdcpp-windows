@@ -1,26 +1,118 @@
 #ifndef BOOST_LEAF_CONFIG_HPP_INCLUDED
 #define BOOST_LEAF_CONFIG_HPP_INCLUDED
 
-/// Copyright (c) 2018-2021 Emil Dotchevski and Reverge Studios, Inc.
+// Copyright 2018-2022 Emil Dotchevski and Reverge Studios, Inc.
 
-/// Distributed under the Boost Software License, Version 1.0. (See accompanying
-/// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-// The following is based on Boost Config.
+// The following is based in part on Boost Config.
 
 // (C) Copyright John Maddock 2001 - 2003.
 // (C) Copyright Martin Wille 2003.
 // (C) Copyright Guillaume Melquiond 2003.
 
-#ifndef BOOST_LEAF_ENABLE_WARNINGS ///
-#   if defined(_MSC_VER) ///
-#       pragma warning(push,1) ///
-#   elif defined(__clang__) ///
-#       pragma clang system_header ///
-#   elif (__GNUC__*100+__GNUC_MINOR__>301) ///
-#       pragma GCC system_header ///
-#   endif ///
-#endif ///
+#ifndef BOOST_LEAF_ASSERT
+#   include <cassert>
+#   define BOOST_LEAF_ASSERT assert
+#endif
+
+////////////////////////////////////////
+
+#ifdef BOOST_LEAF_DIAGNOSTICS
+#   warning BOOST_LEAF_DIAGNOSTICS has been renamed to BOOST_LEAF_CFG_DIAGNOSTICS.
+#   define BOOST_LEAF_CFG_DIAGNOSTICS BOOST_LEAF_DIAGNOSTICS
+#endif
+
+////////////////////////////////////////
+
+#ifdef BOOST_LEAF_TLS_FREERTOS
+
+#   ifndef BOOST_LEAF_EMBEDDED
+#       define BOOST_LEAF_EMBEDDED
+#   endif
+
+#endif
+
+////////////////////////////////////////
+
+#ifdef BOOST_LEAF_EMBEDDED
+
+#   ifndef BOOST_LEAF_CFG_DIAGNOSTICS
+#       define BOOST_LEAF_CFG_DIAGNOSTICS 0
+#   endif
+
+#   ifndef BOOST_LEAF_CFG_STD_SYSTEM_ERROR
+#       define BOOST_LEAF_CFG_STD_SYSTEM_ERROR 0
+#   endif
+
+#   ifndef BOOST_LEAF_CFG_STD_STRING
+#       define BOOST_LEAF_CFG_STD_STRING 0
+#   endif
+
+#   ifndef BOOST_LEAF_CFG_CAPTURE
+#       define BOOST_LEAF_CFG_CAPTURE 0
+#   endif
+
+#endif
+
+////////////////////////////////////////
+
+#ifndef BOOST_LEAF_CFG_DIAGNOSTICS
+#   define BOOST_LEAF_CFG_DIAGNOSTICS 1
+#endif
+
+#ifndef BOOST_LEAF_CFG_STD_SYSTEM_ERROR
+#   define BOOST_LEAF_CFG_STD_SYSTEM_ERROR 1
+#endif
+
+#ifndef BOOST_LEAF_CFG_STD_STRING
+#   define BOOST_LEAF_CFG_STD_STRING 1
+#endif
+
+#ifndef BOOST_LEAF_CFG_CAPTURE
+#   define BOOST_LEAF_CFG_CAPTURE 1
+#endif
+
+#ifndef BOOST_LEAF_CFG_WIN32
+#   define BOOST_LEAF_CFG_WIN32 0
+#endif
+
+#ifndef BOOST_LEAF_CFG_GNUC_STMTEXPR
+#   ifdef __GNUC__
+#   	define BOOST_LEAF_CFG_GNUC_STMTEXPR 1
+#   else
+#   	define BOOST_LEAF_CFG_GNUC_STMTEXPR 0
+#   endif
+#endif
+
+#if BOOST_LEAF_CFG_DIAGNOSTICS!=0 && BOOST_LEAF_CFG_DIAGNOSTICS!=1
+#   error BOOST_LEAF_CFG_DIAGNOSTICS must be 0 or 1.
+#endif
+
+#if BOOST_LEAF_CFG_STD_SYSTEM_ERROR!=0 && BOOST_LEAF_CFG_STD_SYSTEM_ERROR!=1
+#   error BOOST_LEAF_CFG_STD_SYSTEM_ERROR must be 0 or 1.
+#endif
+
+#if BOOST_LEAF_CFG_STD_STRING!=0 && BOOST_LEAF_CFG_STD_STRING!=1
+#   error BOOST_LEAF_CFG_STD_STRING must be 0 or 1.
+#endif
+
+#if BOOST_LEAF_CFG_CAPTURE!=0 && BOOST_LEAF_CFG_CAPTURE!=1
+#   error BOOST_LEAF_CFG_CAPTURE must be 0 or 1.
+#endif
+
+#if BOOST_LEAF_CFG_DIAGNOSTICS && !BOOST_LEAF_CFG_STD_STRING
+#   error BOOST_LEAF_CFG_DIAGNOSTICS requires the use of std::string
+#endif
+
+#if BOOST_LEAF_CFG_WIN32!=0 && BOOST_LEAF_CFG_WIN32!=1
+#   error BOOST_LEAF_CFG_WIN32 must be 0 or 1.
+#endif
+
+#if BOOST_LEAF_CFG_GNUC_STMTEXPR!=0 && BOOST_LEAF_CFG_GNUC_STMTEXPR!=1
+#   error BOOST_LEAF_CFG_GNUC_STMTEXPR must be 0 or 1.
+#endif
 
 ////////////////////////////////////////
 
@@ -96,7 +188,7 @@
 //  Must remain the last #elif since some other vendors (Metrowerks, for
 //  example) also #define _MSC_VER
 
-#       if !defined(_CPPUNWIND)
+#       if !_CPPUNWIND
 #           define BOOST_LEAF_NO_EXCEPTIONS
 #       endif
 #   endif
@@ -122,16 +214,6 @@
 #endif
 #if !defined(BOOST_LEAF_NORETURN)
 #  define BOOST_LEAF_NORETURN
-#endif
-
-////////////////////////////////////////
-
-#ifndef BOOST_LEAF_DIAGNOSTICS
-#   define BOOST_LEAF_DIAGNOSTICS 1
-#endif
-
-#if BOOST_LEAF_DIAGNOSTICS!=0 && BOOST_LEAF_DIAGNOSTICS!=1
-#   error BOOST_LEAF_DIAGNOSTICS must be 0 or 1.
 #endif
 
 ////////////////////////////////////////
@@ -164,17 +246,6 @@
 
 ////////////////////////////////////////
 
-#ifndef BOOST_LEAF_ASSERT
-#   ifdef BOOST_ASSERT
-#       define BOOST_LEAF_ASSERT BOOST_ASSERT
-#   else
-#       include <cassert>
-#       define BOOST_LEAF_ASSERT assert
-#   endif
-#endif
-
-////////////////////////////////////////
-
 #ifndef BOOST_LEAF_NO_EXCEPTIONS
 #   include <exception>
 #   if (defined(__cpp_lib_uncaught_exceptions) && __cpp_lib_uncaught_exceptions >= 201411L) || (defined(_MSC_VER) && _MSC_VER >= 1900)
@@ -187,15 +258,24 @@
 ////////////////////////////////////////
 
 #ifdef __GNUC__
-#	define BOOST_LEAF_SYMBOL_VISIBLE __attribute__((__visibility__("default")))
+#   define BOOST_LEAF_SYMBOL_VISIBLE __attribute__((__visibility__("default")))
 #else
-#	define BOOST_LEAF_SYMBOL_VISIBLE
+#   define BOOST_LEAF_SYMBOL_VISIBLE
 #endif
 
 ////////////////////////////////////////
 
-#if defined(_MSC_VER) && !defined(BOOST_LEAF_ENABLE_WARNINGS) ///
-#pragma warning(pop) ///
-#endif ///
+#if defined(__GNUC__) && !(defined(__clang__) || defined(__INTEL_COMPILER) || defined(__ICL) || defined(__ICC) || defined(__ECC)) && (__GNUC__ * 100 + __GNUC_MINOR__) < 409
+#   ifndef BOOST_LEAF_NO_CXX11_REF_QUALIFIERS
+#       define BOOST_LEAF_NO_CXX11_REF_QUALIFIERS
+#   endif
+#endif
+
+////////////////////////////////////////
+
+// Configure TLS access
+#include <boost/leaf/config/tls.hpp>
+
+////////////////////////////////////////
 
 #endif

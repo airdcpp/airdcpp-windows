@@ -688,6 +688,7 @@ pre.rouge {
 </li>
 <li><a href="#changes">Revision History</a>
 <ul class="sectlevel2">
+<li><a href="#changes_in_boost_1_79">Changes in Boost 1.79</a></li>
 <li><a href="#changes_in_boost_1_78">Changes in Boost 1.78</a></li>
 <li><a href="#changes_in_boost_1_77">Changes in Boost 1.77</a></li>
 <li><a href="#changes_in_boost_1_76">Changes in Boost 1.76</a></li>
@@ -2537,6 +2538,27 @@ image format" condition.</p>
 <h2 id="changes">Revision History</h2>
 <div class="sectionbody">
 <div class="sect2">
+<h3 id="changes_in_boost_1_79">Changes in Boost 1.79</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Added a <code>boost::source_location</code> parameter to <code>throw_exception_from_error</code>.</p>
+</li>
+<li>
+<p>Added <code>throw_exception_from_error</code> overloads for <code>errc::errc_t</code>,
+<code>std::error_code</code>, <code>std::errc</code>, <code>std::exception_ptr</code>.</p>
+</li>
+<li>
+<p><code>result&lt;T&gt;::value</code> now automatically supplies <code>BOOST_CURRENT_LOCATION</code> to
+<code>throw_exception_from_error</code> via a default argument.</p>
+</li>
+<li>
+<p>Added an <code>errc::make_error_code</code> overload taking a source location.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
 <h3 id="changes_in_boost_1_78">Changes in Boost 1.78</h3>
 <div class="ulist">
 <ul>
@@ -2981,8 +3003,12 @@ should be provided in the same namespace as the enumeration type.</p>
 <span class="k">template</span><span class="o">&lt;</span><span class="p">&gt;</span> <span class="k">struct</span> <span class="nc">is_error_condition_enum</span><span class="o">&lt;</span><span class="n">errc</span><span class="o">::</span><span class="n">errc_t</span><span class="o">&gt;</span>
   <span class="p">{</span> <span class="k">static</span> <span class="k">const</span> <span class="kt">bool</span> <span class="n">value</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span> <span class="p">};</span>
 
-<span class="k">constexpr</span> <span class="n">error_code</span> <span class="n">make_error_code</span><span class="p">(</span> <span class="n">errc</span><span class="o">::</span><span class="n">errc_t</span> <span class="n">e</span> <span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
 <span class="k">constexpr</span> <span class="n">error_condition</span> <span class="n">make_error_condition</span><span class="p">(</span> <span class="n">errc</span><span class="o">::</span><span class="n">errc_t</span> <span class="n">e</span> <span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
+
+<span class="k">constexpr</span> <span class="n">error_code</span> <span class="n">make_error_code</span><span class="p">(</span> <span class="n">errc</span><span class="o">::</span><span class="n">errc_t</span> <span class="n">e</span> <span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
+
+<span class="n">error_code</span> <span class="n">make_error_code</span><span class="p">(</span> <span class="n">errc</span><span class="o">::</span><span class="n">errc_t</span> <span class="n">e</span><span class="p">,</span>
+  <span class="n">boost</span><span class="o">::</span><span class="n">source_location</span> <span class="k">const</span> <span class="o">*</span> <span class="n">loc</span> <span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
 
 <span class="p">}</span> <span class="c1">// namespace system</span>
 <span class="p">}</span> <span class="c1">// namespace boost</span></code></pre>
@@ -3075,6 +3101,54 @@ memory condition:</p>
     <span class="p">{</span>
         <span class="c1">// return ENOMEM</span>
         <span class="n">ec</span> <span class="o">=</span> <span class="n">make_error_code</span><span class="p">(</span> <span class="n">boost</span><span class="o">::</span><span class="n">system</span><span class="o">::</span><span class="n">errc</span><span class="o">::</span><span class="n">out_of_memory</span> <span class="p">);</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// use p</span>
+<span class="p">}</span></code></pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="k">constexpr</span> <span class="n">error_code</span> <span class="n">make_error_code</span><span class="p">(</span> <span class="n">errc</span><span class="o">::</span><span class="n">errc_t</span> <span class="n">e</span><span class="p">,</span>
+  <span class="n">boost</span><span class="o">::</span><span class="n">source_location</span> <span class="k">const</span> <span class="o">*</span> <span class="n">loc</span> <span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span></code></pre>
+</div>
+</div>
+<div class="ulist none">
+<ul class="none">
+<li>
+<p></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Returns: </dt>
+<dd>
+<p><code>error_code( e, generic_category(), loc )</code>.</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>Same as the above overload, but takes a source location.</p>
+</div>
+</li>
+<li>
+<p></p>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="kt">void</span> <span class="nf">my_api_function</span><span class="p">(</span> <span class="n">boost</span><span class="o">::</span><span class="n">system</span><span class="o">::</span><span class="n">error_code</span><span class="o">&amp;</span> <span class="n">ec</span> <span class="p">)</span>
+<span class="p">{</span>
+    <span class="kt">void</span><span class="o">*</span> <span class="n">p</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">malloc</span><span class="p">(</span> <span class="mi">16</span> <span class="p">);</span>
+
+    <span class="k">if</span><span class="p">(</span> <span class="n">p</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">)</span>
+    <span class="p">{</span>
+        <span class="c1">// return ENOMEM</span>
+
+        <span class="n">BOOST_STATIC_CONSTEXPR</span> <span class="n">boost</span><span class="o">::</span><span class="n">source_location</span> <span class="n">loc</span> <span class="o">=</span>
+          <span class="n">BOOST_CURRENT_LOCATION</span><span class="p">;</span>
+
+        <span class="n">ec</span> <span class="o">=</span> <span class="n">make_error_code</span><span class="p">(</span> <span class="n">boost</span><span class="o">::</span><span class="n">system</span><span class="o">::</span><span class="n">errc</span><span class="o">::</span><span class="n">out_of_memory</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">loc</span> <span class="p">);</span>
         <span class="k">return</span><span class="p">;</span>
     <span class="p">}</span>
 
@@ -5367,7 +5441,20 @@ it requires C&#43;&#43;11.</p>
 
 <span class="c1">// throw_exception_from_error</span>
 
-<span class="n">BOOST_NORETURN</span> <span class="kr">inline</span> <span class="kt">void</span> <span class="n">throw_exception_from_error</span><span class="p">(</span> <span class="n">error_code</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">e</span> <span class="p">);</span>
+<span class="n">BOOST_NORETURN</span> <span class="kr">inline</span> <span class="kt">void</span> <span class="n">throw_exception_from_error</span><span class="p">(</span> <span class="n">error_code</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">e</span><span class="p">,</span>
+  <span class="n">boost</span><span class="o">::</span><span class="n">source_location</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">loc</span> <span class="p">);</span>
+
+<span class="n">BOOST_NORETURN</span> <span class="kr">inline</span> <span class="kt">void</span> <span class="n">throw_exception_from_error</span><span class="p">(</span> <span class="n">std</span><span class="o">::</span><span class="n">error_code</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">e</span><span class="p">,</span>
+  <span class="n">boost</span><span class="o">::</span><span class="n">source_location</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">loc</span> <span class="p">);</span>
+
+<span class="n">BOOST_NORETURN</span> <span class="kr">inline</span> <span class="kt">void</span> <span class="n">throw_exception_from_error</span><span class="p">(</span> <span class="n">errc</span><span class="o">::</span><span class="n">errc_t</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">e</span><span class="p">,</span>
+  <span class="n">boost</span><span class="o">::</span><span class="n">source_location</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">loc</span> <span class="p">);</span>
+
+<span class="n">BOOST_NORETURN</span> <span class="kr">inline</span> <span class="kt">void</span> <span class="n">throw_exception_from_error</span><span class="p">(</span> <span class="n">std</span><span class="o">::</span><span class="n">errc</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">e</span><span class="p">,</span>
+  <span class="n">boost</span><span class="o">::</span><span class="n">source_location</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">loc</span> <span class="p">);</span>
+
+<span class="n">BOOST_NORETURN</span> <span class="kr">inline</span> <span class="kt">void</span> <span class="n">throw_exception_from_error</span><span class="p">(</span> <span class="n">std</span><span class="o">::</span><span class="n">exception_ptr</span> <span class="o">&amp;</span> <span class="n">e</span><span class="p">,</span>
+  <span class="n">boost</span><span class="o">::</span><span class="n">source_location</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">loc</span> <span class="p">);</span>
 
 <span class="c1">// in_place_*</span>
 
@@ -5404,7 +5491,8 @@ an appropriate overload of <code>throw_exception_from_error</code> in the namesp
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="c++"><span class="n">BOOST_NORETURN</span> <span class="kr">inline</span> <span class="kt">void</span> <span class="nf">throw_exception_from_error</span><span class="p">(</span> <span class="n">error_code</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">e</span> <span class="p">);</span></code></pre>
+<pre class="rouge highlight"><code data-lang="c++"><span class="n">BOOST_NORETURN</span> <span class="kr">inline</span> <span class="kt">void</span> <span class="nf">throw_exception_from_error</span><span class="p">(</span> <span class="n">error_code</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">e</span><span class="p">,</span>
+  <span class="n">boost</span><span class="o">::</span><span class="n">source_location</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">loc</span> <span class="p">);</span></code></pre>
 </div>
 </div>
 <div class="ulist none">
@@ -5415,7 +5503,100 @@ an appropriate overload of <code>throw_exception_from_error</code> in the namesp
 <dl>
 <dt class="hdlist1">Effects: </dt>
 <dd>
-<p><code>boost::throw_exception( system_error( e ) )</code>.</p>
+<p><code>boost::throw_with_location( system_error( e ), loc )</code>.</p>
+</dd>
+</dl>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="n">BOOST_NORETURN</span> <span class="kr">inline</span> <span class="kt">void</span> <span class="nf">throw_exception_from_error</span><span class="p">(</span> <span class="n">std</span><span class="o">::</span><span class="n">error_code</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">e</span><span class="p">,</span>
+  <span class="n">boost</span><span class="o">::</span><span class="n">source_location</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">loc</span> <span class="p">);</span></code></pre>
+</div>
+</div>
+<div class="ulist none">
+<ul class="none">
+<li>
+<p></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Effects: </dt>
+<dd>
+<p><code>boost::throw_with_location( std::system_error( e ), loc )</code>.</p>
+</dd>
+</dl>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="n">BOOST_NORETURN</span> <span class="kr">inline</span> <span class="kt">void</span> <span class="nf">throw_exception_from_error</span><span class="p">(</span> <span class="n">errc</span><span class="o">::</span><span class="n">errc_t</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">e</span><span class="p">,</span>
+  <span class="n">boost</span><span class="o">::</span><span class="n">source_location</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">loc</span> <span class="p">);</span></code></pre>
+</div>
+</div>
+<div class="ulist none">
+<ul class="none">
+<li>
+<p></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Effects: </dt>
+<dd>
+<p><code>boost::throw_with_location( system_error( make_error_code( e ) ), loc )</code>.</p>
+</dd>
+</dl>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="n">BOOST_NORETURN</span> <span class="kr">inline</span> <span class="kt">void</span> <span class="nf">throw_exception_from_error</span><span class="p">(</span> <span class="n">std</span><span class="o">::</span><span class="n">errc</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">e</span><span class="p">,</span>
+  <span class="n">boost</span><span class="o">::</span><span class="n">source_location</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">loc</span> <span class="p">);</span></code></pre>
+</div>
+</div>
+<div class="ulist none">
+<ul class="none">
+<li>
+<p></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Effects: </dt>
+<dd>
+<p><code>boost::throw_with_location( std::system_error( make_error_code( e ) ), loc )</code>.</p>
+</dd>
+</dl>
+</div>
+</li>
+</ul>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="rouge highlight"><code data-lang="c++"><span class="n">BOOST_NORETURN</span> <span class="kr">inline</span> <span class="kt">void</span> <span class="nf">throw_exception_from_error</span><span class="p">(</span> <span class="n">std</span><span class="o">::</span><span class="n">exception_ptr</span> <span class="o">&amp;</span> <span class="n">e</span><span class="p">,</span>
+  <span class="n">boost</span><span class="o">::</span><span class="n">source_location</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">loc</span> <span class="p">);</span></code></pre>
+</div>
+</div>
+<div class="ulist none">
+<ul class="none">
+<li>
+<p></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Effects: </dt>
+<dd>
+<div class="ulist disc">
+<ul class="disc">
+<li>
+<p>If <code>e</code> isn&#8217;t null, <code>std::rethrow_exception( e )</code>.</p>
+</li>
+<li>
+<p>Otherwise, <code>boost::throw_with_location( std::bad_exception(), loc )</code>.</p>
+</li>
+</ul>
+</div>
 </dd>
 </dl>
 </div>
@@ -5459,10 +5640,17 @@ to <code>error_code</code>. In a typical use, functions that can fail return <co
 
     <span class="c1">// checked value access</span>
 
-    <span class="k">constexpr</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">value</span><span class="p">()</span> <span class="o">&amp;</span> <span class="p">;</span>
-    <span class="k">constexpr</span> <span class="n">T</span> <span class="k">const</span><span class="o">&amp;</span> <span class="n">value</span><span class="p">()</span> <span class="k">const</span><span class="o">&amp;</span> <span class="p">;</span>
-    <span class="k">constexpr</span> <span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">value</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="p">;</span>
-    <span class="k">constexpr</span> <span class="n">T</span> <span class="k">const</span><span class="o">&amp;&amp;</span> <span class="n">value</span><span class="p">()</span> <span class="k">const</span><span class="o">&amp;&amp;</span> <span class="p">;</span>
+    <span class="k">constexpr</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">value</span><span class="p">(</span> <span class="n">boost</span><span class="o">::</span><span class="n">source_location</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">loc</span> <span class="o">=</span>
+      <span class="n">BOOST_CURRENT_LOCATION</span> <span class="p">)</span> <span class="o">&amp;</span> <span class="p">;</span>
+
+    <span class="k">constexpr</span> <span class="n">T</span> <span class="k">const</span><span class="o">&amp;</span> <span class="n">value</span><span class="p">(</span> <span class="n">boost</span><span class="o">::</span><span class="n">source_location</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">loc</span> <span class="o">=</span>
+      <span class="n">BOOST_CURRENT_LOCATION</span> <span class="p">)</span> <span class="k">const</span><span class="o">&amp;</span> <span class="p">;</span>
+
+    <span class="k">constexpr</span> <span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">value</span><span class="p">(</span> <span class="n">boost</span><span class="o">::</span><span class="n">source_location</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">loc</span> <span class="o">=</span>
+      <span class="n">BOOST_CURRENT_LOCATION</span> <span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">;</span>
+
+    <span class="k">constexpr</span> <span class="n">T</span> <span class="k">const</span><span class="o">&amp;&amp;</span> <span class="n">value</span><span class="p">(</span> <span class="n">boost</span><span class="o">::</span><span class="n">source_location</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">loc</span> <span class="o">=</span>
+      <span class="n">BOOST_CURRENT_LOCATION</span> <span class="p">)</span> <span class="k">const</span><span class="o">&amp;&amp;</span> <span class="p">;</span>
 
     <span class="c1">// unchecked value access</span>
 
@@ -5682,10 +5870,17 @@ ensures that <code>*this</code> holds the error <code>E( std::forward&lt;A&gt;(a
 <h5 id="ref_checked_value_access">Checked Value Access</h5>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="c++"><span class="k">constexpr</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">value</span><span class="p">()</span> <span class="o">&amp;</span> <span class="p">;</span>
-<span class="k">constexpr</span> <span class="n">T</span> <span class="k">const</span><span class="o">&amp;</span> <span class="n">value</span><span class="p">()</span> <span class="k">const</span><span class="o">&amp;</span> <span class="p">;</span>
-<span class="k">constexpr</span> <span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">value</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="p">;</span>
-<span class="k">constexpr</span> <span class="n">T</span> <span class="k">const</span><span class="o">&amp;&amp;</span> <span class="n">value</span><span class="p">()</span> <span class="k">const</span><span class="o">&amp;&amp;</span> <span class="p">;</span></code></pre>
+<pre class="rouge highlight"><code data-lang="c++"><span class="k">constexpr</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">value</span><span class="p">(</span>
+  <span class="n">boost</span><span class="o">::</span><span class="n">source_location</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">loc</span> <span class="o">=</span> <span class="n">BOOST_CURRENT_LOCATION</span> <span class="p">)</span> <span class="o">&amp;</span> <span class="p">;</span>
+
+<span class="k">constexpr</span> <span class="n">T</span> <span class="k">const</span><span class="o">&amp;</span> <span class="n">value</span><span class="p">(</span>
+  <span class="n">boost</span><span class="o">::</span><span class="n">source_location</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">loc</span> <span class="o">=</span> <span class="n">BOOST_CURRENT_LOCATION</span> <span class="p">)</span> <span class="k">const</span><span class="o">&amp;</span> <span class="p">;</span>
+
+<span class="k">constexpr</span> <span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">value</span><span class="p">(</span>
+  <span class="n">boost</span><span class="o">::</span><span class="n">source_location</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">loc</span> <span class="o">=</span> <span class="n">BOOST_CURRENT_LOCATION</span> <span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">;</span>
+
+<span class="k">constexpr</span> <span class="n">T</span> <span class="k">const</span><span class="o">&amp;&amp;</span> <span class="n">value</span><span class="p">(</span>
+  <span class="n">boost</span><span class="o">::</span><span class="n">source_location</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">loc</span> <span class="o">=</span> <span class="n">BOOST_CURRENT_LOCATION</span> <span class="p">)</span> <span class="k">const</span><span class="o">&amp;&amp;</span> <span class="p">;</span></code></pre>
 </div>
 </div>
 <div class="ulist none">
@@ -5698,7 +5893,7 @@ ensures that <code>*this</code> holds the error <code>E( std::forward&lt;A&gt;(a
 <dd>
 <p>If <code>*this</code> holds a value, returns a reference to it. Otherwise,
 calls <code>throw_exception_from_error</code>, passing it a reference to
-the held error.</p>
+the held error, and <code>loc</code>.</p>
 </dd>
 </dl>
 </div>
@@ -5971,7 +6166,8 @@ the held error.</p>
 
     <span class="c1">// checked value access</span>
 
-    <span class="k">constexpr</span> <span class="kt">void</span> <span class="n">value</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+    <span class="k">constexpr</span> <span class="kt">void</span> <span class="n">value</span><span class="p">(</span> <span class="n">boost</span><span class="o">::</span><span class="n">source_location</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">loc</span> <span class="o">=</span>
+      <span class="n">BOOST_CURRENT_LOCATION</span> <span class="p">)</span> <span class="k">const</span><span class="p">;</span>
 
     <span class="c1">// unchecked value access</span>
 
@@ -6176,7 +6372,8 @@ ensures that <code>*this</code> holds the error <code>E( std::forward&lt;A&gt;(a
 <h5 id="ref_checked_value_access_2">Checked Value Access</h5>
 <div class="listingblock">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="c++"><span class="k">constexpr</span> <span class="kt">void</span> <span class="n">value</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span></code></pre>
+<pre class="rouge highlight"><code data-lang="c++"><span class="k">constexpr</span> <span class="kt">void</span> <span class="n">value</span><span class="p">(</span>
+  <span class="n">boost</span><span class="o">::</span><span class="n">source_location</span> <span class="k">const</span> <span class="o">&amp;</span> <span class="n">loc</span> <span class="o">=</span> <span class="n">BOOST_CURRENT_LOCATION</span> <span class="p">)</span> <span class="k">const</span><span class="p">;</span></code></pre>
 </div>
 </div>
 <div class="ulist none">
@@ -6188,7 +6385,7 @@ ensures that <code>*this</code> holds the error <code>E( std::forward&lt;A&gt;(a
 <dt class="hdlist1">Effects: </dt>
 <dd>
 <p>If <code>*this</code> doesn&#8217;t hold a value, calls <code>throw_exception_from_error</code>,
-passing it a reference to the held error.</p>
+passing it a reference to the held error, and <code>loc</code>.</p>
 </dd>
 </dl>
 </div>
@@ -6463,7 +6660,7 @@ paper. Johan Nilsson&#8217;s comments led to several of the refinements in N2066
 <p>Copyright 2003-2017 Beman Dawes</p>
 </li>
 <li>
-<p>Copyright 2018-2021 Peter Dimov</p>
+<p>Copyright 2018-2022 Peter Dimov</p>
 </li>
 </ul>
 </div>
@@ -6475,7 +6672,7 @@ paper. Johan Nilsson&#8217;s comments led to several of the refinements in N2066
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-12-02 06:48:01 UTC
+Last updated 2022-04-06 21:02:43 UTC
 </div>
 </div>
 <style>

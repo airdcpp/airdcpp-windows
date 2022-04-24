@@ -1,10 +1,11 @@
-// Copyright 2017, 2021 Peter Dimov.
+// Copyright 2017, 2021, 2022 Peter Dimov.
 // Distributed under the Boost Software License, Version 1.0.
 // https://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/system/result.hpp>
 #include <boost/core/lightweight_test.hpp>
 #include <boost/core/lightweight_test_trait.hpp>
+#include <system_error>
 
 using namespace boost::system;
 
@@ -26,10 +27,14 @@ struct E
 {
 };
 
-BOOST_NORETURN void throw_exception_from_error( Y const & )
+BOOST_NORETURN void throw_exception_from_error( Y const &, boost::source_location const& )
 {
     throw E();
 }
+
+struct E2
+{
+};
 
 int main()
 {
@@ -163,6 +168,78 @@ int main()
         BOOST_TEST_THROWS( result<int>( ec ).value(), system_error );
 
         BOOST_TEST_EQ( result<int>( ec ).operator->(), static_cast<int*>(0) );
+    }
+
+    {
+        auto ec = make_error_code( std::errc::invalid_argument );
+
+        result<int, std::error_code> const r( ec );
+
+        BOOST_TEST( !r.has_value() );
+        BOOST_TEST( r.has_error() );
+
+        BOOST_TEST_NOT( r );
+        BOOST_TEST( !r );
+
+        BOOST_TEST_THROWS( r.value(), std::system_error );
+
+        BOOST_TEST_EQ( r.operator->(), static_cast<int*>(0) );
+    }
+
+    {
+        result<int, errc::errc_t> const r( in_place_error, errc::invalid_argument );
+
+        BOOST_TEST( !r.has_value() );
+        BOOST_TEST( r.has_error() );
+
+        BOOST_TEST_NOT( r );
+        BOOST_TEST( !r );
+
+        BOOST_TEST_THROWS( r.value(), system_error );
+
+        BOOST_TEST_EQ( r.operator->(), static_cast<int*>(0) );
+    }
+
+    {
+        result<int, std::errc> const r( std::errc::invalid_argument );
+
+        BOOST_TEST( !r.has_value() );
+        BOOST_TEST( r.has_error() );
+
+        BOOST_TEST_NOT( r );
+        BOOST_TEST( !r );
+
+        BOOST_TEST_THROWS( r.value(), std::system_error );
+
+        BOOST_TEST_EQ( r.operator->(), static_cast<int*>(0) );
+    }
+
+    {
+        result<int, std::exception_ptr> const r( std::make_exception_ptr( E2() ) );
+
+        BOOST_TEST( !r.has_value() );
+        BOOST_TEST( r.has_error() );
+
+        BOOST_TEST_NOT( r );
+        BOOST_TEST( !r );
+
+        BOOST_TEST_THROWS( r.value(), E2 );
+
+        BOOST_TEST_EQ( r.operator->(), static_cast<int*>(0) );
+    }
+
+    {
+        result<int, std::exception_ptr> const r( in_place_error );
+
+        BOOST_TEST( !r.has_value() );
+        BOOST_TEST( r.has_error() );
+
+        BOOST_TEST_NOT( r );
+        BOOST_TEST( !r );
+
+        BOOST_TEST_THROWS( r.value(), std::bad_exception );
+
+        BOOST_TEST_EQ( r.operator->(), static_cast<int*>(0) );
     }
 
     {
@@ -339,6 +416,78 @@ int main()
         BOOST_TEST_THROWS( result<void>( ec ).value(), system_error );
 
         BOOST_TEST_EQ( result<void>( ec ).operator->(), static_cast<void*>(0) );
+    }
+
+    {
+        auto ec = make_error_code( std::errc::invalid_argument );
+
+        result<void, std::error_code> const r( ec );
+
+        BOOST_TEST( !r.has_value() );
+        BOOST_TEST( r.has_error() );
+
+        BOOST_TEST_NOT( r );
+        BOOST_TEST( !r );
+
+        BOOST_TEST_THROWS( r.value(), std::system_error );
+
+        BOOST_TEST_EQ( r.operator->(), static_cast<void*>(0) );
+    }
+
+    {
+        result<void, errc::errc_t> const r( in_place_error, errc::invalid_argument );
+
+        BOOST_TEST( !r.has_value() );
+        BOOST_TEST( r.has_error() );
+
+        BOOST_TEST_NOT( r );
+        BOOST_TEST( !r );
+
+        BOOST_TEST_THROWS( r.value(), system_error );
+
+        BOOST_TEST_EQ( r.operator->(), static_cast<void*>(0) );
+    }
+
+    {
+        result<void, std::errc> const r( std::errc::invalid_argument );
+
+        BOOST_TEST( !r.has_value() );
+        BOOST_TEST( r.has_error() );
+
+        BOOST_TEST_NOT( r );
+        BOOST_TEST( !r );
+
+        BOOST_TEST_THROWS( r.value(), std::system_error );
+
+        BOOST_TEST_EQ( r.operator->(), static_cast<void*>(0) );
+    }
+
+    {
+        result<void, std::exception_ptr> const r( std::make_exception_ptr( E2() ) );
+
+        BOOST_TEST( !r.has_value() );
+        BOOST_TEST( r.has_error() );
+
+        BOOST_TEST_NOT( r );
+        BOOST_TEST( !r );
+
+        BOOST_TEST_THROWS( r.value(), E2 );
+
+        BOOST_TEST_EQ( r.operator->(), static_cast<void*>(0) );
+    }
+
+    {
+        result<void, std::exception_ptr> const r( in_place_error );
+
+        BOOST_TEST( !r.has_value() );
+        BOOST_TEST( r.has_error() );
+
+        BOOST_TEST_NOT( r );
+        BOOST_TEST( !r );
+
+        BOOST_TEST_THROWS( r.value(), std::bad_exception );
+
+        BOOST_TEST_EQ( r.operator->(), static_cast<void*>(0) );
     }
 
     return boost::report_errors();
