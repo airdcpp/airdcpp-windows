@@ -156,7 +156,7 @@ namespace webserver {
 		case PROP_STATUS:
 		{
 			return {
-				{ "id", aFile->isDownloaded() },
+				{ "id", formatStatusId(aFile) },
 				{ "downloaded", aFile->isDownloaded() },
 				{ "completed", aFile->isCompleted() },
 				{ "failed", QueueItem::isFailedStatus(aFile->getStatus()) },
