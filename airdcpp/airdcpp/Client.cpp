@@ -68,7 +68,10 @@ void Client::setActive() noexcept {
 }
 
 void Client::shutdown(ClientPtr& aClient, bool aRedirect) {
-	FavoriteManager::getInstance()->removeUserCommand(getHubUrl());
+	if (aClient->isConnected()) {
+		FavoriteManager::getInstance()->removeUserCommand(getHubUrl());
+	}
+
 	TimerManager::getInstance()->removeListener(this);
 	ShareManager::getInstance()->removeListener(this);
 
