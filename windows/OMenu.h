@@ -21,10 +21,6 @@
 #ifndef __OMENU_H
 #define __OMENU_H
 
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
-
 #include <airdcpp/typedefs.h>
 #include <forward.h>
 
@@ -36,7 +32,7 @@ if (!tokens.empty()) { \
 	auto cmm = &webserver::WebServerManager::getInstance()->getContextMenuManager(); \
 	auto listData = webserver::ContextMenuItemListData({ webserver::ContextMenuManager::URLS_SUPPORT }, { webserver::Access::ADMIN }, this); \
 	auto extMenuItems = cmm->get##menuId##Menu(tokens, listData); \
-	OMenu::appendExtensionMenuItems(menu, extMenuItems, [&](const auto& aClickData) {  \
+	OMenu::appendExtensionMenuItems(menu, extMenuItems, [=](const auto& aClickData) {  \
 		cmm->onClick##menuId##Item(tokens, aClickData); \
 	}); \
 }
@@ -46,7 +42,7 @@ if (!tokens.empty()) { \
 	auto cmm = &webserver::WebServerManager::getInstance()->getContextMenuManager(); \
 	auto listData = webserver::ContextMenuItemListData({ webserver::ContextMenuManager::URLS_SUPPORT }, { webserver::Access::ADMIN }, this); \
 	auto extMenuItems = cmm->get##menuId##Menu(tokens, listData, entity); \
-	OMenu::appendExtensionMenuItems(menu, extMenuItems, [&](const auto& aClickData) {  \
+	OMenu::appendExtensionMenuItems(menu, extMenuItems, [=](const auto& aClickData) {  \
 		cmm->onClick##menuId##Item(tokens, aClickData, entity); \
 	}); \
 }
