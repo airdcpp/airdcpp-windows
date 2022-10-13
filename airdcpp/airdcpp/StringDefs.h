@@ -728,7 +728,7 @@ enum Strings { // @DontAdd
 	MANUAL_UPDATE_MSG, // "You will be forwarded to the downloading page as automatic updating can't be performed"
 	MAPPER_CREATING_FAILED, // "Failed to create port mappings"
 	MAPPER_CREATING_SUCCESS, // "Successfully created port mappings on the %1% device with the %2% interface"
-	MAPPER_CREATING_SUCCESS_LONG, // "Successfully created port mappings (Transfers: %1%, Encrypted transfers: %2%, Search: %3%) on the %4% device with the %5% interface"
+	MAPPER_CREATING_SUCCESS_LONG, // "Successfully created port mappings (Transfers: %1%, Search: %3%, Encrypted transfers: %2%) on the %4% device with the %5% interface"
 	MAPPER_INIT_FAILED, // "Failed to initialize the %1% interface"
 	MAPPER_INTERFACE_FAILED, // "Failed to map the %1% port (%2% %3%) with the %4% interface"
 	MAPPER_IN_PROGRESS, // "Another port mapping attempt is in progress..."
