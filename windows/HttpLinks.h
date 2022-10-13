@@ -32,10 +32,12 @@ class SimpleXML;
 class HttpLinks {
 public:
 	static tstring homepage;
+	static tstring github;
 	static tstring downloads;
 	static tstring guides;
 	static tstring customize;
 	static tstring discuss;
+	static tstring bugs;
 
 	static tstring extensionHomepageBase;
 	static tstring extensionCatalog;

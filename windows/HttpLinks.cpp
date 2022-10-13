@@ -25,20 +25,23 @@
 namespace dcpp {
 
 tstring HttpLinks::homepage = _T("https://www.airdcpp.net/");
+tstring HttpLinks::github = _T("https://github.com/airdcpp/airdcpp-windows/");
 tstring HttpLinks::downloads = HttpLinks::homepage + _T("download/");
 tstring HttpLinks::guides = HttpLinks::homepage + _T("guides/");
 tstring HttpLinks::customize = HttpLinks::homepage + _T("customizations/");
-tstring HttpLinks::discuss = HttpLinks::homepage + _T("forum/");
+tstring HttpLinks::discuss = HttpLinks::github + _T("discussions/");
+tstring HttpLinks::bugs = HttpLinks::github + _T("issues/");
 
 tstring HttpLinks::extensionHomepageBase = _T("https://www.npmjs.com/package/");
 tstring HttpLinks::extensionCatalog = _T("https://registry.npmjs.org/-/v1/search?text=keywords:airdcpp-extensions-public&size=100");
 tstring HttpLinks::extensionPackageBase = _T("https://registry.npmjs.org/");
-tstring HttpLinks::webServerHelp = _T("http://www.airdcpp.net/component/k2/24-web-server");
-tstring HttpLinks::extensionsDevHelp = _T("https://airdcpp-web.github.io/docs/advanced/scripting.html");
 
 tstring HttpLinks::ipSearchBase = _T("https://apps.db.ripe.net/db-web-ui/query?form_type=simple&full_query_string=&searchtext=");
 tstring HttpLinks::speedTest = _T("https://www.speedtest.net");
 tstring HttpLinks::appCrash = _T("http://crash.airdcpp.net");
+
+tstring HttpLinks::webServerHelp = HttpLinks::github + _T("wiki/Web-server/");
+tstring HttpLinks::extensionsDevHelp = _T("https://airdcpp-web.github.io/docs/advanced/scripting.html");
 tstring HttpLinks::userCommandsHelp = _T("https://dcplusplus.sourceforge.net/webhelp/dialog_user_command.html");
 tstring HttpLinks::timeVariablesHelp = _T("http://www.cplusplus.com/reference/clibrary/ctime/strftime/");
 
@@ -59,6 +62,7 @@ void HttpLinks::updateLinks(SimpleXML& xml) {
 		LINK(downloads, Downloads);
 		LINK(customize, Customize);
 		LINK(discuss, Forum);
+		LINK(bugs, Bugs);
 		LINK(guides, Guides);
 
 		// Extensions/web server

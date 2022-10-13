@@ -1169,6 +1169,7 @@ LRESULT MainFrame::onLink(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL
 		case IDC_HELP_HOMEPAGE: site = HttpLinks::homepage; break;
 		case IDC_HELP_GUIDES: site = HttpLinks::guides; break;
 		case IDC_HELP_DISCUSS: site = HttpLinks::discuss; break;
+		case IDC_HELP_BUG_TRACKER: site = HttpLinks::bugs; break;
 		case IDC_HELP_CUSTOMIZE: site = HttpLinks::customize; break;
 		default: dcassert(0);
 	}

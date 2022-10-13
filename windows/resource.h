@@ -445,6 +445,7 @@
 #define IDC_LOG_DIRECTORY               1065
 #define IDC_BROWSE_LOG                  1066
 #define IDC_HELP_DISCUSS                1067
+#define IDC_HELP_BUG_TRACKER            1068
 #define IDC_HELP_CUSTOMIZE              1069
 #define IDC_SEARCH_SPY                  1070
 #define IDC_LATEST                      1071
