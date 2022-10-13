@@ -1,3 +1,34 @@
+4.12
+
+Added:
+
+- Report certain incorrectly forwarded ADC protocol messages
+- Add a new hublist server (hublist.pwiam.com)
+- New language: Ukrainian
+
+Changed:
+
+- Discussion forum and issue tracker links now point to Github
+- Put extension context menu items under an extension-specific submenu in if there are more than two menu items
+- Disable maximum size for shared files when using the RAR profile
+
+Fixed:
+
+- Fix a filelist-related crash (https://bugs.launchpad.net/airdcpp/+bug/1944724)
+- Fix saving of web server settings (https://bugs.launchpad.net/airdcpp/+bug/1950519)
+- Remove additional waiting time when using "Find and view NFO" and no results are found
+- Don't clear user commands when attempting to connect to a hub that is open already (https://bugs.launchpad.net/airdcpp/+bug/1981763)
+- SOCKS5: don't fail if the proxy server doesn't send any port for regular connect attempts
+- Remove non-existing commands from /help
+- Don't ignore filenames containing semicolons in SFV files
+
+Removed:
+
+- The "Search sites" feature has been replaced with an extension (must be installed manually)
+- Remove warnings for old LuaDCH hubsoft version
+- Removed an inaccessible hublist server address
+
+
 4.11
 
 API and Web UI changes:
