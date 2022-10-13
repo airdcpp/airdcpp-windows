@@ -43,7 +43,7 @@ tstring HttpLinks::appCrash = _T("http://crash.airdcpp.net");
 tstring HttpLinks::webServerHelp = HttpLinks::github + _T("wiki/Web-server/");
 tstring HttpLinks::extensionsDevHelp = _T("https://airdcpp-web.github.io/docs/advanced/scripting.html");
 tstring HttpLinks::userCommandsHelp = _T("https://dcplusplus.sourceforge.net/webhelp/dialog_user_command.html");
-tstring HttpLinks::timeVariablesHelp = _T("http://www.cplusplus.com/reference/clibrary/ctime/strftime/");
+tstring HttpLinks::timeVariablesHelp = _T("https://cplusplus.com/reference/ctime/strftime");
 
 
 #define LINK(name, name2) \
