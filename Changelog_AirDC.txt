@@ -5,6 +5,7 @@ Added:
 - Report certain incorrectly forwarded ADC protocol messages
 - Add a new hublist server (hublist.pwiam.com)
 - New language: Ukrainian
+- Add extension support in chat views (highlights and context menu items)
 
 Changed:
 
