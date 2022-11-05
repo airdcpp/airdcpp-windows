@@ -151,12 +151,11 @@ public:
 
 	void UpdateLayout(BOOL bResizeBars = TRUE) override;
 	bool sendMessageHooked(const OutgoingChatMessage& aMessage, string& error_) override;
-	void addLine(const tstring& aLine);
-	void addLine(const tstring& aLine, CHARFORMAT2& cf, bool bUseEmo = true);
-	void addLine(const Identity& i, const tstring& aLine, CHARFORMAT2& cf, bool bUseEmo = true);
+	void addLine(const tstring& aLine, CHARFORMAT2& cf = WinUtil::m_ChatTextGeneral, bool bUseEmo = true);
+	void addMessage(const Message& aMessage, CHARFORMAT2& cf, bool bUseEmo = true);
 	void addPrivateLine(const tstring& aLine, CHARFORMAT2& cf) override { addLine(aLine, cf, false); }
-	void addStatusLine(const tstring& aLine, uint8_t sev) override { addStatus(aLine, sev); }
-	void addStatus(const tstring& aLine, uint8_t sev, CHARFORMAT2& cf = WinUtil::m_ChatTextSystem, bool inChat = true);
+	void addStatusMessage(const LogMessagePtr& aMessage, int aFlags) override;
+	void addStatus(const LogMessagePtr& aMessage, CHARFORMAT2& cf = WinUtil::m_ChatTextSystem, bool aInChat = true);
 	bool checkFrameCommand(const tstring& aCmd, const tstring& aParam, tstring& message_, tstring& status_, bool& thirdPerson_) override;
 	void onTab() override;
 	void handleTab(bool reverse);
@@ -249,7 +248,6 @@ private:
 	typedef FrameMap::const_iterator FrameIter;
 	static FrameMap frames;
 
-	bool timeStamps;
 	static bool shutdown;
 
 	bool waitingForPW;
@@ -353,7 +351,6 @@ private:
 	void on(ClientListener::NickTaken, const Client*) noexcept override;
 	void on(ClientListener::SearchFlood, const Client*, const string&) noexcept override;
 	void on(ClientListener::HubTopic, const Client*, const string&) noexcept override;
-	void on(ClientListener::AddLine, const Client*, const string&) noexcept override;
 	void on(ClientListener::SetActive, const Client*) noexcept override;
 	void on(ClientListener::Close, const Client*) noexcept override;
 	void on(ClientListener::Redirected, const string&, const ClientPtr& aNewClient) noexcept override;
@@ -362,8 +359,6 @@ private:
 
 	void speak(Tasks s, const OnlineUserPtr& u) { tasks.add(static_cast<uint8_t>(s), unique_ptr<Task>(new UserTask(u))); updateUsers = true; }
 	void openLinksInTopic();
-
-	void onStatusMessage(const LogMessagePtr& aMessage, int aFlags) noexcept;
 };
 
 #endif // !defined(HUB_FRAME_H)

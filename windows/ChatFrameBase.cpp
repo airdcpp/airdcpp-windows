@@ -76,8 +76,6 @@ void ChatFrameBase::init(HWND /*m_hWnd*/, RECT aRcDefault) {
 	ctrlClient.LimitText(1024 * 64 * 2);
 	ctrlClient.SetFont(WinUtil::font);
 
-	ctrlClient.setFormatLinks(true);
-	ctrlClient.setFormatReleases(true);
 	ctrlClient.setAllowClear(true);
 	
 	ctrlClient.SetBackgroundColor(WinUtil::bgColor);
@@ -389,6 +387,11 @@ LRESULT ChatFrameBase::onSendMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	return 0;
 }
 
+void ChatFrameBase::addStatusLine(const tstring& aStatus, LogMessage::Severity aSeverity, int aFlags) {
+	auto logMessage = std::make_shared<LogMessage>(Text::fromT(aStatus), aSeverity, Util::emptyString);
+	addStatusMessage(logMessage, aFlags);
+}
+
 LRESULT ChatFrameBase::onResize(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled) {
 	resizePressed = !resizePressed;
 	ctrlResize.SetIcon(resizePressed ? GET_ICON(IDI_EXPAND_DOWN, 16) : GET_ICON(IDI_EXPAND_UP, 16));
@@ -508,12 +511,12 @@ void ChatFrameBase::addMagnet(const StringList& aPaths) {
 }
 
 void ChatFrameBase::setStatusText(const tstring& aLine, uint8_t sev) {
-	ctrlStatus.SetText(0, (_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + aLine).c_str(), SBT_NOTABPARSING);
+	ctrlStatus.SetText(0, WinUtil::formatMessageWithTimestamp(aLine).c_str(), SBT_NOTABPARSING);
 	ctrlStatus.SetIcon(0, ResourceLoader::getSeverityIcon(sev));
 }
 
 void ChatFrameBase::setStatusText(const tstring& aLine, HICON aIcon) {
-	ctrlStatus.SetText(0, (_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + aLine).c_str(), SBT_NOTABPARSING);
+	ctrlStatus.SetText(0, WinUtil::formatMessageWithTimestamp(aLine).c_str(), SBT_NOTABPARSING);
 	ctrlStatus.SetIcon(0, aIcon);
 }
 

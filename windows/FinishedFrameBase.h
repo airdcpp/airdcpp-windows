@@ -348,7 +348,7 @@ protected:
 	static int columnIndexes[FinishedItem::COLUMN_LAST];
 
 	void addStatusLine(const tstring& aLine) {
-		ctrlStatus.SetText(0, (Text::toT(Util::getShortTimeString()) + _T(" ") + aLine).c_str());
+		ctrlStatus.SetText(0, WinUtil::formatMessageWithTimestamp(aLine).c_str());
 	}
 
 	void updateStatus() {

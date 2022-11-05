@@ -140,11 +140,14 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	}
 
 	if (useTextFormatting()) {
-		ctrlPad.setFormatPaths(true);
-		ctrlPad.setFormatLinks(true);
-		ctrlPad.setFormatReleases(true);
-		tstring aText = Text::toT(text);
-		ctrlPad.AppendText(aText, useEmoticons());
+		text = Message::unifyLineEndings(text);
+
+		MessageHighlight::SortedList highlights;
+		MessageHighlight::parseLinkHighlights(text, highlights, nullptr);
+		MessageHighlight::parseReleaseHighlights(text, highlights);
+		RichTextBox::parsePathHighlights(text, highlights);
+
+		ctrlPad.SetText(text, highlights, useEmoticons());
 	} else {
 		ctrlPad.SetWindowText(Text::toT(text).c_str());
 	}

@@ -223,7 +223,7 @@ void WinUtil::init(HWND hWnd) {
 
 	File::ensureDirectory(paths[PATH_THEMES]);
 
-	pathReg.assign(_T("((?<=\\s)(([A-Za-z0-9]:)|(\\\\))(\\\\[^\\\\:]+)(\\\\([^\\s:])([^\\\\:])*)*((\\.[a-z0-9]{2,10})|(\\\\))(?=(\\s|$|:|,)))"));
+	pathReg.assign(Text::toT(AirUtil::getPathReg()));
 	chatReleaseReg.assign(Text::toT(AirUtil::getReleaseRegLong(true)));
 	chatLinkReg.assign(Text::toT(AirUtil::getUrlReg()), boost::regex_constants::icase);
 
@@ -1449,6 +1449,31 @@ tstring WinUtil::formatFileType(const string& aFileName) {
 	if (type.size() > 0 && type[0] == '.')
 		type.erase(0, 1);
 	return Text::toT(type);
+}
+
+
+tstring WinUtil::formatTimestamp(time_t aTime) noexcept {
+	return _T("[") + Text::toT(Util::getShortTimeString(aTime)) + _T("]");
+}
+
+tstring WinUtil::formatMessageTimestamp(const Identity& aIdentity, time_t aTime) noexcept {
+	if (!SETTING(TIME_STAMPS)) {
+		return Util::emptyStringT;
+	}
+
+	string extra;
+	if (SETTING(SHOW_IP_COUNTRY_CHAT)) {
+		extra = aIdentity.getIp4(); // todo: ipv6
+
+		if (extra.size())
+			extra = " | " + extra + " | " + aIdentity.getCountry();
+	}
+
+	return Text::toT("[" + Util::getShortTimeString(aTime) + extra + "] ");
+}
+
+tstring WinUtil::formatMessageWithTimestamp(const tstring& aMessage, time_t aTime) noexcept {
+	return formatTimestamp(aTime) + _T(" ") + aMessage;
 }
 
 void WinUtil::insertBindAddresses(const AdapterInfoList& aBindAdapters, CComboBox& combo_, const string& aCurValue) noexcept {

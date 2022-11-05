@@ -148,6 +148,13 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 			MoveWindow(rc, TRUE);
 	}
 	
+	ctrlClient.setContextMenuHandler([this](auto& menu_, const auto& aHighlight) {
+		// Older highlights may not be in the message cache so extensions wouldn't be able to access them...
+		if (aHighlight && client->getCache().findMessageHighlight(aHighlight->getToken())) {
+			vector<MessageHighlightToken> tokens = { aHighlight->getToken() };
+			EXT_CONTEXT_MENU_ENTITY(menu_, HubMessageHighlight, tokens, client);
+		}
+	});
 
 	client->addListener(this);
 	client->connect();
@@ -197,7 +204,6 @@ HubFrame::~HubFrame() {
 HubFrame::HubFrame(const tstring& aServer) : 
 		waitingForPW(false), extraSort(false), server(aServer), closed(false), forceClose(false),
 		showUsers(SETTING(GET_USER_INFO)), updateUsers(false), resort(false), countType(Client::COUNT_NORMAL),
-		timeStamps(SETTING(TIME_STAMPS)),
 		hubchatusersplit(0),
 		ctrlShowUsersContainer(WC_BUTTON, this, SHOW_USERS),
 		ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
@@ -230,13 +236,6 @@ bool HubFrame::checkFrameCommand(const tstring& aCmd, const tstring& aParam, tst
 			ActionUtil::connectHub(Text::fromT(aParam));
 		} else {
 			status_ = TSTRING(SPECIFY_SERVER);
-		}
-	} else if (stricmp(aCmd.c_str(), _T("ts")) == 0) {
-		timeStamps = !timeStamps;
-		if(timeStamps) {
-			status_ = TSTRING(TIMESTAMPS_ENABLED);
-		} else {
-			status_ = TSTRING(TIMESTAMPS_DISABLED);
 		}
 	} else if ((stricmp(aCmd.c_str(), _T("password")) == 0) && waitingForPW) {
 		client->password(Text::fromT(aParam));
@@ -271,7 +270,7 @@ bool HubFrame::checkFrameCommand(const tstring& aCmd, const tstring& aParam, tst
 	} else if(stricmp(aCmd.c_str(), _T("log")) == 0) {
 		ActionUtil::openFile(Text::toT(getLogPath(stricmp(aParam.c_str(), _T("status")) == 0)));
 	} else if(stricmp(aCmd.c_str(), _T("help")) == 0) {
-		status_ = _T("*** ") + ChatFrameBase::commands + _T("Additional commands for the hub tab: /join <hub-ip>, /ts, /showjoins, /favshowjoins, /close, /userlist, /favorite, /pm <user> [message], /getlist <user>, /removefavorite");
+		status_ = ChatFrameBase::commands + _T("Additional commands for the hub tab: /join <hub-ip>, /ts, /showjoins, /favshowjoins, /close, /userlist, /favorite, /pm <user> [message], /getlist <user>, /removefavorite");
 	} else if(stricmp(aCmd.c_str(), _T("pm")) == 0) {
 		auto j = aParam.find(_T(' '));
 		if (j != string::npos) {
@@ -287,7 +286,7 @@ bool HubFrame::checkFrameCommand(const tstring& aCmd, const tstring& aParam, tst
 			}
 		}
 	} else if(stricmp(aCmd.c_str(), _T("topic")) == 0) {
-		addLine(_T("*** ") + Text::toT(client->getHubDescription()));
+		addLine(Text::toT(client->getHubDescription()));
 	} else if(stricmp(aCmd.c_str(), _T("ctopic")) == 0) {
 		openLinksInTopic();
 	} else if (stricmp(aCmd.c_str(), _T("allow")) == 0) {
@@ -301,19 +300,19 @@ bool HubFrame::checkFrameCommand(const tstring& aCmd, const tstring& aParam, tst
 
 void HubFrame::addAsFavorite() {
 	if (client->saveFavorite()) {
-		addStatus(TSTRING(FAVORITE_HUB_ADDED), LogMessage::SEV_INFO, WinUtil::m_ChatTextSystem);
+		addStatusLine(TSTRING(FAVORITE_HUB_ADDED), LogMessage::SEV_INFO);
 	} else {
-		addStatus(TSTRING(FAVORITE_HUB_ALREADY_EXISTS), LogMessage::SEV_ERROR, WinUtil::m_ChatTextSystem);
+		addStatusLine(TSTRING(FAVORITE_HUB_ALREADY_EXISTS), LogMessage::SEV_ERROR);
 	}
 }
 
 void HubFrame::removeFavoriteHub() {
 	auto removeHub = FavoriteManager::getInstance()->getFavoriteHubEntry(client->getHubUrl());
-	if(removeHub) {
+	if (removeHub) {
 		FavoriteManager::getInstance()->removeFavoriteHub(removeHub->getToken());
-		addStatus(TSTRING(FAVORITE_HUB_REMOVED), LogMessage::SEV_INFO, WinUtil::m_ChatTextSystem);
+		addStatusLine(TSTRING(FAVORITE_HUB_REMOVED), LogMessage::SEV_INFO);
 	} else {
-		addStatus(TSTRING(FAVORITE_HUB_DOES_NOT_EXIST), LogMessage::SEV_ERROR, WinUtil::m_ChatTextSystem);
+		addStatusLine(TSTRING(FAVORITE_HUB_DOES_NOT_EXIST), LogMessage::SEV_ERROR);
 	}
 }
 
@@ -425,7 +424,7 @@ void HubFrame::removeUser(const OnlineUserPtr& aUser) {
 }
 
 void HubFrame::onChatMessage(const ChatMessagePtr& msg) {
-	addLine(msg->getFrom()->getIdentity(), Text::toT(msg->format()), WinUtil::m_ChatTextGeneral);
+	addMessage(msg, WinUtil::m_ChatTextGeneral);
 	if (client->get(HubSettings::ChatNotify)) {
 		MainFrame::getMainFrame()->onChatMessage(false);
 	}
@@ -809,7 +808,7 @@ LRESULT HubFrame::onLButton(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& b
 					try {
 						DirectoryListingFrame::openWindow(HintedUser(ui->onlineUser->getUser(), client->getHubUrl()), QueueItem::FLAG_CLIENT_VIEW);
 					} catch(const Exception& e) {
-						addStatus(Text::toT(e.getError()), LogMessage::SEV_ERROR, WinUtil::m_ChatTextSystem);
+						addStatusLine(Text::toT(e.getError()), LogMessage::SEV_ERROR);
 					}
 				} else if (ui->onlineUser->getUser() != ClientManager::getInstance()->getMe()) {
 					switch(SETTING(CHAT_DBLCLICK)) {
@@ -870,27 +869,15 @@ LRESULT HubFrame::onLButton(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& b
 	return 0;
 }
 
-void HubFrame::addLine(const tstring& aLine) {
-	addLine(Identity(NULL, 0), aLine, WinUtil::m_ChatTextGeneral );
+void HubFrame::addLine(const tstring& aLine, CHARFORMAT2& cf/*WinUtil::m_ChatTextGeneral*/, bool bUseEmo/* = true*/) {
+	addMessage(Message::fromText(Text::fromT(aLine)), cf, bUseEmo);
 }
 
-void HubFrame::addLine(const tstring& aLine, CHARFORMAT2& cf, bool bUseEmo/* = true*/) {
-    addLine(Identity(NULL, 0), aLine, cf, bUseEmo);
-}
-
-void HubFrame::addLine(const Identity& i, const tstring& aLine, CHARFORMAT2& cf, bool bUseEmo/* = true*/) {
-	string extra;
-
-	if (SETTING(SHOW_IP_COUNTRY_CHAT)) {
-		extra = i.getIp4(); // todo: ipv6
-
-		if (extra.size())
-			extra = " | " + extra + " | " + i.getCountry();
-	}
-
-	bool notify = ctrlClient.AppendChat(i, Text::toT(client->get(HubSettings::Nick)), timeStamps ? Text::toT("[" + Util::getShortTimeString() + extra + "] ") : Util::emptyStringT, aLine + _T('\n'), cf, bUseEmo);
-	if(notify)
+void HubFrame::addMessage(const Message& aMessage, CHARFORMAT2& cf, bool bUseEmo/* = true*/) {
+	auto notify = ctrlClient.AppendMessage(aMessage, cf, bUseEmo);
+	if (notify) {
 		setNotify();
+	}
 
 	if (SETTING(BOLD_HUB)) {
 		setDirty();
@@ -1229,30 +1216,31 @@ LRESULT HubFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 	return 0;
 }
 
-void HubFrame::addStatus(const tstring& aLine, uint8_t sev, CHARFORMAT2& cf, bool inChat /* = true */) {
-	tstring line = _T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + aLine;
-	TCHAR* sLine = (TCHAR*)line.c_str();
+void HubFrame::addStatus(const LogMessagePtr& aMessage, CHARFORMAT2& cf, bool aInChat /* = true */) {
+	{
+		auto line = WinUtil::formatMessageWithTimestamp(Text::toT(aMessage->getText()));
+		TCHAR* sLine = (TCHAR*)line.c_str();
 
-   	if(line.size() > 512) {
-		sLine[512] = NULL;
+		if (line.size() > 512) {
+			sLine[512] = NULL;
+		}
+
+		if (SETTING(HUB_BOLD_TABS))
+			setDirty();
+
+		ctrlStatus.SetText(0, sLine, SBT_NOTABPARSING);
+		ctrlStatus.SetIcon(0, ResourceLoader::getSeverityIcon(aMessage->getSeverity()));
+		while (lastLinesList.size() + 1 > MAX_CLIENT_LINES)
+			lastLinesList.pop_front();
+		lastLinesList.push_back(sLine);
 	}
-
-	if(SETTING(HUB_BOLD_TABS))
-		setDirty();
-
-
-	ctrlStatus.SetText(0, sLine, SBT_NOTABPARSING);
-	ctrlStatus.SetIcon(0, ResourceLoader::getSeverityIcon(sev));
-	while(lastLinesList.size() + 1 > MAX_CLIENT_LINES)
-		lastLinesList.pop_front();
-	lastLinesList.push_back(sLine);
 
 	if (SETTING(BOLD_HUB)) {
 		setDirty();
 	}
 	
-	if(SETTING(STATUS_IN_CHAT) && inChat) {
-		addLine(_T("*** ") + aLine, cf, SETTING(HUB_BOLD_TABS));
+	if(SETTING(STATUS_IN_CHAT) && aInChat) {
+		addMessage(aMessage, cf);
 	}
 }
 
@@ -1355,8 +1343,8 @@ void HubFrame::updateStatusBar() {
 
 void HubFrame::on(Connecting, const Client*) noexcept { 
 	callAsync([=] {
-		if(SETTING(SEARCH_PASSIVE) && client->isActive()) {
-			addLine(TSTRING(ANTI_PASSIVE_SEARCH), WinUtil::m_ChatTextSystem);
+		if (SETTING(SEARCH_PASSIVE) && client->isActive()) {
+			addStatusLine(TSTRING(ANTI_PASSIVE_SEARCH), LogMessage::SEV_WARNING, StatusFlags::FLAG_IS_SYSTEM);
 		}
 
 		setWindowTitle(client->getHubUrl());
@@ -1401,7 +1389,7 @@ void HubFrame::on(ClientListener::UserRemoved, const Client*, const OnlineUserPt
 
 void HubFrame::on(ClientListener::Redirect, const Client*, const string& line) noexcept {
 	callAsync([=] { 
-		addStatus(Text::toT(STRING(PRESS_FOLLOW) + " " + line), LogMessage::SEV_INFO, WinUtil::m_ChatTextServer); 
+		addStatusLine(Text::toT(STRING(PRESS_FOLLOW) + " " + line), LogMessage::SEV_INFO, ClientListener::FLAG_IS_SYSTEM);
 	});
 }
 
@@ -1443,45 +1431,51 @@ void HubFrame::on(ClientListener::HubUpdated, const Client*) noexcept {
 		setWindowTitle(hubName);
 	});
 }
-void HubFrame::on(ChatMessage, const Client*, const ChatMessagePtr& message) noexcept {
+void HubFrame::on(ClientListener::ChatMessage, const Client*, const ChatMessagePtr& message) noexcept {
 	callAsync([=] { onChatMessage(message); });
 }	
 
-void HubFrame::on(StatusMessage, const Client*, const LogMessagePtr& aMessage, int statusFlags) noexcept {
+void HubFrame::on(ClientListener::StatusMessage, const Client*, const LogMessagePtr& aMessage, int statusFlags) noexcept {
 	callAsync([=] { 
 		if(SETTING(BOLD_HUB_TABS_ON_KICK) && (statusFlags & ClientListener::FLAG_IS_SPAM)){
 			setDirty();
 		}
 
-		onStatusMessage(aMessage, statusFlags);
+		addStatusMessage(aMessage, statusFlags);
 	});
 
 }
-void HubFrame::onStatusMessage(const LogMessagePtr& aMessage, int aFlags) noexcept {
-	if (aFlags & ClientListener::FLAG_IS_SYSTEM)
-		addLine(Text::toT(aMessage->getText()), WinUtil::m_ChatTextSystem);
-	else
-		addStatus(Text::toT(Text::toDOS(aMessage->getText())), aMessage->getSeverity(), WinUtil::m_ChatTextServer, !SETTING(FILTER_MESSAGES) || !aFlags & ClientListener::FLAG_IS_SPAM);
 
+void HubFrame::addStatusMessage(const LogMessagePtr& aMessage, int aFlags) {
+	if (aFlags & ClientListener::FLAG_IS_SYSTEM) {
+		// System message
+		addMessage(Message(aMessage), WinUtil::m_ChatTextSystem, false);
+	} else {
+		// Hub status
+		auto inChat = !SETTING(FILTER_MESSAGES) || ~aFlags & ClientListener::FLAG_IS_SPAM;
+		addStatus(aMessage, WinUtil::m_ChatTextServer, inChat);
+	}
 }
-
 
 void HubFrame::on(MessagesRead, const Client*) noexcept {
 
 }
 
 void HubFrame::on(NickTaken, const Client*) noexcept {
-	callAsync([=] { addStatus(TSTRING(NICK_TAKEN), LogMessage::SEV_ERROR, WinUtil::m_ChatTextServer); });
+	callAsync([=] { 
+		addStatusLine(TSTRING(NICK_TAKEN), LogMessage::SEV_ERROR, ClientListener::FLAG_IS_SYSTEM);
+	});
 }
 void HubFrame::on(SearchFlood, const Client*, const string& line) noexcept {
-	callAsync([=] { addStatus(TSTRING(SEARCH_SPAM_FROM) + _T(" ") + Text::toT(line), LogMessage::SEV_INFO, WinUtil::m_ChatTextServer); });
+	callAsync([=] { 
+		addStatusLine(TSTRING(SEARCH_SPAM_FROM) + _T(" ") + Text::toT(line), LogMessage::SEV_INFO, ClientListener::FLAG_IS_SYSTEM); 
+	});
 }
 
 void HubFrame::on(HubTopic, const Client*, const string& line) noexcept {
-	callAsync([=] { addStatus(TSTRING(HUB_TOPIC) + _T("\t") + Text::toT(line), LogMessage::SEV_INFO, WinUtil::m_ChatTextServer); });
-}
-void HubFrame::on(AddLine, const Client*, const string& line) noexcept {
-	callAsync([=] { addStatus(Text::toT(line), LogMessage::SEV_INFO, WinUtil::m_ChatTextServer); });
+	callAsync([=] { 
+		addStatusLine(TSTRING(HUB_TOPIC) + _T("\t") + Text::toT(line), LogMessage::SEV_INFO, ClientListener::FLAG_IS_SYSTEM);
+	});
 }
 
 void HubFrame::on(SetActive, const Client*) noexcept {
@@ -1496,7 +1490,9 @@ void HubFrame::on(KeyprintMismatch, const Client*) noexcept {
 	if (!SETTING(ALLOW_UNTRUSTED_HUBS))
 		return;
 
-	callAsync([=] { addStatus(_T("The keyprint in the address doesn't match the server certificate, use /allow to proceed with untrusted connection"), LogMessage::SEV_WARNING, WinUtil::m_ChatTextServer); });
+	callAsync([=] { 
+		addStatusLine(_T("The keyprint in the address doesn't match the server certificate, use /allow to proceed with untrusted connection"), LogMessage::SEV_WARNING, ClientListener::FLAG_IS_SYSTEM);
+	});
 }
 
 void HubFrame::openLinksInTopic() {
@@ -1877,7 +1873,7 @@ void HubFrame::setFonts() {
 	ctrlClient.SetSelNone();
 	ctrlClient.SetRedraw(TRUE);
 
-	addStatus(TSTRING(NEW_TEXT_STYLE_APPLIED), LogMessage::SEV_INFO, WinUtil::m_ChatTextSystem);
+	addStatusLine(TSTRING(NEW_TEXT_STYLE_APPLIED), LogMessage::SEV_INFO);
 }
 
 LRESULT HubFrame::onIgnore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/) {

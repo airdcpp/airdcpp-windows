@@ -156,7 +156,7 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 				if (message.type == Message::TYPE_CHAT) {
 					onChatMessage(message.chatMessage);
 				} else if (message.logMessage->isHistory()) {
-					ctrlClient.AppendChat(Identity(NULL, 0), _T("- "), _T(""), Text::toT(message.logMessage->getText()), WinUtil::m_ChatTextLog, true);
+					addMessage(message, WinUtil::m_ChatTextLog);
 				} else {
 					onStatusMessage(message.logMessage);
 				}
@@ -165,6 +165,14 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 
 		updateOnlineStatus();  
 		windowLoaded = true;
+	});
+
+	ctrlClient.setContextMenuHandler([this](auto& menu_, const auto& aHighlight) {
+		// Older highlights may not be in the message cache so extensions wouldn't be able to access them...
+		if (aHighlight && chat->getCache().findMessageHighlight(aHighlight->getToken())) {
+			vector<MessageHighlightToken> tokens = { aHighlight->getToken() };
+			EXT_CONTEXT_MENU_ENTITY(menu_, PrivateChatMessageHighlight, tokens, chat);
+		}
 	});
 
 	WinUtil::SetIcon(m_hWnd, (getUser() && getUser()->isSet(User::BOT)) ? IDI_BOT : IDR_PRIVATE);
@@ -198,29 +206,6 @@ LRESULT PrivateFrame::onFocusMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	if(windowLoaded)
 		chat->setRead();
 	return 0;
-}
-	
-void PrivateFrame::addClientLine(const tstring& aLine, uint8_t severity) {
-	if(!created) {
-		CreateEx(WinUtil::mdiClient);
-	}
-	addStatus(_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + aLine, ResourceLoader::getSeverityIcon(severity));
-	if (SETTING(BOLD_PM)) {
-		setDirty();
-	}
-}
-
-void PrivateFrame::addStatus(const tstring& aLine, HICON aIcon) {
-	if (lastLinesList.empty() || (lastLinesList.back() != aLine)) {
-		while (lastLinesList.size() + 1 > 5)
-			lastLinesList.pop_front();
-		lastLinesList.push_back(aLine);
-	}
-
-	lastStatus = { aLine, aIcon };
-	ctrlStatus.SetText(STATUS_TEXT, aLine.c_str(), SBT_NOTABPARSING);
-	ctrlStatus.SetIcon(STATUS_TEXT, aIcon);
-
 }
 
 void PrivateFrame::updatePMInfo(uint8_t aType) {
@@ -296,11 +281,9 @@ LRESULT PrivateFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/)
 		lastCCPMError = Text::toT(chat->getLastCCPMError());
 		pDispInfo->lpszText = !chat->allowCCPM() ? const_cast<TCHAR*>(lastCCPMError.c_str()) :
 			ccReady() ? (LPWSTR)CTSTRING(DISCONNECT_CCPM) : (LPWSTR)CTSTRING(START_CCPM);
-	}
-	else if (idCtrl == STATUS_AWAY + POPUP_UID) {
+	} else if (idCtrl == STATUS_AWAY + POPUP_UID) {
 		pDispInfo->lpszText = !chat->isOnline() ? (LPWSTR)CTSTRING(USER_OFFLINE) : userAway ? (LPWSTR)CTSTRING(AWAY) : (LPWSTR)CTSTRING(ONLINE);
-	}
-	else if (idCtrl == STATUS_COUNTRY + POPUP_UID) {
+	} else if (idCtrl == STATUS_COUNTRY + POPUP_UID) {
 		pDispInfo->lpszText = const_cast<TCHAR*>(countryPopup.c_str());
 	}
 
@@ -349,20 +332,10 @@ LRESULT PrivateFrame::onHubChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 		return 0;
 
 	chat->setHubUrl(selUrl);
-	addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)), LogMessage::SEV_INFO);
+	chat->statusMessage(STRING_F(MESSAGES_SENT_THROUGH, hubs[ctrlHubSel.GetCurSel()].second), LogMessage::SEV_INFO);
 	bHandled = FALSE;
 	return 0;
 }
-
-void PrivateFrame::addStatusLine(const tstring& aLine, uint8_t severity) {
-	tstring status = _T(" *** ") + aLine + _T(" ***");
-	if (SETTING(STATUS_IN_CHAT)) {
-		addLine(status, WinUtil::m_ChatTextServer);
-	}
-	addClientLine(status, severity);
-	
-}
-
 
 const UserPtr& PrivateFrame::getUser() const {
 	return chat->getUser(); 
@@ -497,13 +470,6 @@ bool PrivateFrame::sendMessageHooked(const OutgoingChatMessage& aMessage, string
 	return chat->sendMessageHooked(aMessage, error_);
 }
 
-void PrivateFrame::on(PrivateChatListener::Close, PrivateChat*) noexcept {
-	callAsync([&]{
-		closed = true;
-		PostMessage(WM_CLOSE);
-	});
-}
-
 LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closed) {
 		PrivateChatManager::getInstance()->removeChat(getUser());
@@ -521,7 +487,10 @@ LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 void PrivateFrame::closeCC(bool silent) {
 	if (ccReady()) {
-		if (!silent) { addStatusLine(TSTRING(CCPM_DISCONNECTING),LogMessage::SEV_INFO); }
+		if (!silent) { 
+			chat->statusMessage(STRING(CCPM_DISCONNECTING),LogMessage::SEV_INFO); 
+		}
+
 		chat->closeCC(false, true);
 	}
 }
@@ -530,33 +499,63 @@ bool PrivateFrame::ccReady() const {
 	return chat->ccReady();
 }
 
-void PrivateFrame::addLine(const tstring& aLine, CHARFORMAT2& cf) {
-	Identity i = Identity(NULL, 0);
-    addLine(i, aLine, cf);
+// Messages
+void PrivateFrame::addClientLine(const tstring& aLine, uint8_t aSeverity) {
+	if (!created) {
+		CreateEx(WinUtil::mdiClient);
+	}
+	addStatus(WinUtil::formatMessageWithTimestamp(aLine), ResourceLoader::getSeverityIcon(aSeverity));
+	if (SETTING(BOLD_PM)) {
+		setDirty();
+	}
 }
 
-void PrivateFrame::addLine(const Identity& from, const tstring& aLine) {
-	addLine(from, aLine, WinUtil::m_ChatTextGeneral );
+void PrivateFrame::onChatMessage(const ChatMessagePtr& aMessage) noexcept {
+	auto myPM = aMessage->getReplyTo()->getUser() == ClientManager::getInstance()->getMe();
+	addMessage(aMessage);
+
+	if (!myPM) {
+		addStatus(WinUtil::formatMessageWithTimestamp(TSTRING(LAST_MESSAGE_RECEIVED)), ResourceLoader::getSeverityIcon(LogMessage::SEV_INFO));
+		handleNotifications(false, Text::toT(aMessage->format()));
+	} else if (!userTyping) {
+		addStatus(WinUtil::formatMessageWithTimestamp(TSTRING(LAST_MESSAGE_SENT)), ResourceLoader::getSeverityIcon(LogMessage::SEV_INFO));
+	}
 }
 
-void PrivateFrame::addLine(const Identity& from, const tstring& aLine, CHARFORMAT2& cf) {
-	CRect r;
-	ctrlClient.GetClientRect(r);
-	string extra;
+void PrivateFrame::onStatusMessage(const LogMessagePtr& aMessage) noexcept {
+	addStatusLine(Text::toT(aMessage->getText()), aMessage->getSeverity());
+}
 
-	if (SETTING(SHOW_IP_COUNTRY_CHAT)) {
-		extra = from.getIp4(); // todo: ipv6
-
-		if (extra.size())
-			extra = " | " + extra + " | " + from.getCountry();
+void PrivateFrame::addStatusMessage(const LogMessagePtr& aMessage, int) {
+	if (SETTING(STATUS_IN_CHAT)) {
+		addMessage(Message(aMessage), WinUtil::m_ChatTextServer);
 	}
 
-	auto myNick = Text::toT(ctrlClient.getClient() ? ctrlClient.getClient()->get(HubSettings::Nick) : SETTING(NICK));
-	bool notify = ctrlClient.AppendChat(from, myNick, SETTING(TIME_STAMPS) ? Text::toT("[" + Util::getShortTimeString() + extra + "] ") : _T(""), aLine + _T('\n'), cf);
-	//addClientLine(TSTRING(LAST_CHANGE) + _T(" ") + Text::toT(Util::getTimeString()), LogMessage::SEV_INFO);
+	auto status = Text::toT(aMessage->getText()) + _T(" ***");
+	addClientLine(status, aMessage->getSeverity());
+}
 
-	if(notify)
+void PrivateFrame::addStatus(const tstring& aLine, HICON aIcon) {
+	if (lastLinesList.empty() || (lastLinesList.back() != aLine)) {
+		while (lastLinesList.size() + 1 > 5)
+			lastLinesList.pop_front();
+		lastLinesList.push_back(aLine);
+	}
+
+	lastStatus = { aLine, aIcon };
+	ctrlStatus.SetText(STATUS_TEXT, aLine.c_str(), SBT_NOTABPARSING);
+	ctrlStatus.SetIcon(STATUS_TEXT, aIcon);
+}
+
+void PrivateFrame::addPrivateLine(const tstring& aLine, CHARFORMAT2& cf) {
+	addMessage(Message::fromText(Text::fromT(aLine)), cf);
+}
+
+void PrivateFrame::addMessage(const Message& aMessage, CHARFORMAT2& cf) {
+	auto notify = ctrlClient.AppendMessage(aMessage, cf);
+	if (notify) {
 		setNotify();
+	}
 
 	if (SETTING(BOLD_PM)) {
 		setDirty();
@@ -865,33 +864,11 @@ void PrivateFrame::on(PrivateChatListener::PrivateMessage, PrivateChat*, const C
 	});
 }
 
-void PrivateFrame::onChatMessage(const ChatMessagePtr& aMessage) noexcept {
-	bool myPM = aMessage->getReplyTo()->getUser() == ClientManager::getInstance()->getMe();
-
-	auto text = Text::toT(aMessage->format());
-	addLine(aMessage->getFrom()->getIdentity(), text);
-
-	if (!myPM) {
-		addStatus(_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + TSTRING(LAST_MESSAGE_RECEIVED), ResourceLoader::getSeverityIcon(LogMessage::SEV_INFO));
-
-		handleNotifications(false, text);
-
-	}
-	else if (!userTyping) {
-		addStatus(_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + TSTRING(LAST_MESSAGE_SENT), ResourceLoader::getSeverityIcon(LogMessage::SEV_INFO));
-	}
-}
-
-void PrivateFrame::onStatusMessage(const LogMessagePtr& aMessage) noexcept {
-	addStatusLine(Text::toT(aMessage->getText()), aMessage->getSeverity());
-}
-
 void PrivateFrame::activate() noexcept {
 	callAsync([this] {
 		if (::IsIconic(m_hWnd))
 			::ShowWindow(m_hWnd, SW_RESTORE);
 		MDIActivate(m_hWnd);
-		//chat->setRead();
 	});
 }
 
@@ -899,4 +876,11 @@ void PrivateFrame::on(PrivateChatListener::StatusMessage, PrivateChat*, const Lo
 	callAsync([=] {
 		onStatusMessage(aMessage);
 	});
+}
+
+void PrivateFrame::on(PrivateChatListener::Close, PrivateChat*) noexcept {
+	callAsync([&] {
+		closed = true;
+		PostMessage(WM_CLOSE);
+		});
 }

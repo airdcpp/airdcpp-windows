@@ -320,6 +320,9 @@ public:
 
 	static tstring formatFolderContent(const DirectoryContentInfo& aContentInfo);
 	static tstring formatFileType(const string& aFileName);
+	static tstring formatTimestamp(time_t aTime = time(nullptr)) noexcept;
+	static tstring formatMessageTimestamp(const Identity& aIdentity, time_t aTime) noexcept;
+	static tstring formatMessageWithTimestamp(const tstring& aMessage, time_t aTime = time(nullptr)) noexcept;
 
 	static void insertBindAddresses(const AdapterInfoList& aBindAdapters, CComboBox& combo_, const string& aCurValue) noexcept;
 private:

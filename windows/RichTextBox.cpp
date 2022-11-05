@@ -50,63 +50,8 @@ EmoticonsManager* emoticonsManager = NULL;
 #define MAX_EMOTICONS 48
 UINT RichTextBox::WM_FINDREPLACE = RegisterWindowMessage(FINDMSGSTRING);
 
-RichTextBox::ChatLink::ChatLink(const string& aUrl, LinkType aLinkType, const UserPtr& aUser) : url(aUrl), type(aLinkType), dupe(DUPE_NONE) {
-	updateDupeType(aUser);
-}
 
-DupeType RichTextBox::ChatLink::updateDupeType(const UserPtr& aUser) {
-	if (type == TYPE_RELEASE) {
-		dupe = AirUtil::checkAdcDirectoryDupe(url, 0);
-	} else if (type == TYPE_MAGNET) {
-		Magnet m = Magnet(url);
-		dupe = m.getDupeType();
-		if (dupe == DUPE_NONE && ShareManager::getInstance()->isTempShared(aUser, m.getTTH())) {
-			dupe = DUPE_SHARE_FULL;
-		}
-	}
-	return dupe;
-}
-
-string RichTextBox::ChatLink::getDisplayText() {
-	if (type == TYPE_SPOTIFY) {
-		boost::regex regSpotify;
-		regSpotify.assign("(spotify:(artist|track|album):[A-Z0-9]{22})", boost::regex_constants::icase);
-
-		if (boost::regex_match(url, regSpotify)) {
-			string sType, displayText;
-			size_t found = url.find_first_of(":");
-			string tmp = url.substr(found + 1, url.length());
-			found = tmp.find_first_of(":");
-			if (found != string::npos) {
-				sType = tmp.substr(0, found);
-			}
-
-			if (Util::stricmp(sType.c_str(), "track") == 0) {
-				displayText = STRING(SPOTIFY_TRACK);
-			}
-			else if (Util::stricmp(sType.c_str(), "artist") == 0) {
-				displayText = STRING(SPOTIFY_ARTIST);
-			}
-			else if (Util::stricmp(sType.c_str(), "album") == 0) {
-				displayText = STRING(SPOTIFY_ALBUM);
-			}
-			return displayText;
-		}
-		//some other spotify link, just show the original url
-	}
-	else if (type == TYPE_MAGNET) {
-		Magnet m = Magnet(url);
-		if (!m.fname.empty()) {
-			return m.fname + " (" + Util::formatBytes(m.fsize) + ")";
-		}
-	}
-
-	return url;
-}
-
-
-RichTextBox::RichTextBox() : UserInfoBaseHandler(true, true), ccw(const_cast<LPTSTR>(GetWndClassName()), this), client(NULL), m_bPopupMenu(false), autoScrollToEnd(true), findBufferSize(100), pmUser(nullptr), formatLinks(false),
-	formatPaths(false), formatReleases(false), allowClear(false) {
+RichTextBox::RichTextBox() : UserInfoBaseHandler(true, true), ccw(const_cast<LPTSTR>(GetWndClassName()), this) {
 	if(emoticonsManager == NULL) {
 		emoticonsManager = new EmoticonsManager();
 	}
@@ -130,9 +75,6 @@ RichTextBox::~RichTextBox() {
 	} else {
 		emoticonsManager->dec();
 	}
-
-	for (auto& cl: links)
-		delete cl.second;
 
 	delete[] findBuffer;
 }
@@ -173,47 +115,143 @@ void RichTextBox::unifyLineEndings(tstring& aText) {
 		aText.erase(j, 1);
 }
 
-void RichTextBox::AppendText(tstring& sMsg, bool bUseEmo/* = false*/) {
+void RichTextBox::SetText(const string& aText, const MessageHighlight::SortedList& aHighlights, bool bUseEmo /* = false*/) {
 	SetRedraw(FALSE);
-	unifyLineEndings(sMsg);
-	SetWindowText(sMsg.c_str());
-	FormatEmoticonsAndLinks(sMsg, 0, bUseEmo);
+	
+	auto text = Text::toT(aText);
+	SetWindowText(text.c_str());
+	FormatHighlights(text, aText, aHighlights, 0);
+	if (bUseEmo) {
+		FormatEmoticons(text, 0, bUseEmo);
+	}
+
 	SetRedraw(TRUE);
 }
 
-bool RichTextBox::AppendChat(const Identity& identity, const tstring& sMyNick, const tstring& sTime, tstring sMsg, CHARFORMAT2& cf, bool bUseEmo/* = true*/) {
-	SetRedraw(FALSE);
-	matchedTab = false;
+void RichTextBox::FormatHighlights(tstring& text_, const string& aText, const MessageHighlight::SortedList& aHighlights, LONG lSelBegin) {
+	auto messagePos = 0;
+	auto messagePosT = 0;
 
-	SCROLLINFO si = { 0 };
-	POINT pt = { 0 };
+	for (const auto& highlight: aHighlights) {
+		auto textBetween = aText.substr(messagePos, highlight->getStart() - messagePos);
 
-	si.cbSize = sizeof(si);
-	si.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;
-	GetScrollInfo(SB_VERT, &si);
-	GetScrollPos(&pt);
+		auto startT = messagePosT + Text::toT(textBetween).length();
+		auto endT = startT + Text::toT(highlight->getText()).length();
+		SetSel(lSelBegin + startT, lSelBegin + endT);
 
+		/*auto tmp = text_.substr(startT, endT - startT);
+		TCHAR* buf = new TCHAR[tmp.length() + 1];
+		GetSelText(buf);*/
+
+		// Style
+		formatSelectedHighlight(highlight);
+
+		// Replace text
+		auto displayText = Text::toT(getHighlightDisplayText(highlight));
+		text_.replace(startT, endT - startT, displayText.c_str());
+		setText(displayText);
+
+		// Store highlight with positions
+		CHARRANGE cr;
+		cr.cpMin = lSelBegin + startT;
+		cr.cpMax = lSelBegin + startT + displayText.length();
+		links.insert_sorted(ChatLinkPair(cr, highlight));
+
+		messagePosT = startT + displayText.length();
+		messagePos = highlight->getEnd();
+	}
+}
+
+void RichTextBox::CheckMessageNotifications(const Message& aMessage) {
+	// Notifications
+	if (aMessage.chatMessage && aMessage.chatMessage->getFrom()->getUser() != ClientManager::getInstance()->getMe()) {
+		auto myNick = find_if(aMessage.getHighlights().begin(), aMessage.getHighlights().end(), [](const auto& highlight) {
+			return highlight->getTag() == MessageHighlight::TAG_ME;
+			});
+
+		if (myNick != aMessage.getHighlights().end()) {
+			if (!SETTING(CHATNAMEFILE).empty() && !SETTING(SOUNDS_DISABLED)) {
+				WinUtil::playSound(Text::toT(SETTING(CHATNAMEFILE)));
+			}
+
+			if (SETTING(FLASH_WINDOW_ON_MYNICK)) {
+				WinUtil::FlashWindow();
+			}
+		}
+	}
+}
+
+LONG RichTextBox::FormatTimestampAuthor(bool aIsThirdPerson, const Identity& aIdentity, const tstring& sTime, CHARFORMAT2& cf, LONG lSelBegin) {
+	auto lSelEnd = lSelBegin;
+	bool isFavorite = false, isOp = false;
+	if (aIdentity.getUser()) {
+		isFavorite = aIdentity.getUser()->isFavorite();
+		isOp = aIdentity.isOp();
+	}
+
+	// Format TimeStamp
+	if (!sTime.empty()) {
+		lSelEnd += sTime.size();
+		SetSel(lSelBegin, lSelEnd - 1);
+		SetSelectionCharFormat(WinUtil::m_TextStyleTimestamp);
+
+		PARAFORMAT2 pf;
+		memzero(&pf, sizeof(PARAFORMAT2));
+		pf.dwMask = PFM_STARTINDENT;
+		pf.dxStartIndent = 0;
+		SetParaFormat(pf);
+	}
+
+	// Authors nick
+	tstring sAuthor = Text::toT(aIdentity.getNick());
+	if (!sAuthor.empty()) {
+		LONG iLen = aIsThirdPerson ? 1 : 0;
+		LONG iAuthorLen = sAuthor.size() + 1;
+
+		lSelBegin = lSelEnd;
+		lSelEnd += iAuthorLen + iLen;
+
+		bool isMyMessage = aIdentity.getUser() == ClientManager::getInstance()->getMe();
+		if (isMyMessage) {
+			SetSel(lSelBegin, lSelBegin + iLen + 1);
+			SetSelectionCharFormat(WinUtil::m_ChatTextMyOwn);
+			SetSel(lSelBegin + iLen + 1, lSelBegin + iLen + iAuthorLen);
+			SetSelectionCharFormat(WinUtil::m_TextStyleMyNick);
+		} else {
+			SetSel(lSelBegin, lSelBegin + iLen + 1);
+			SetSelectionCharFormat(cf);
+			SetSel(lSelBegin + iLen + 1, lSelEnd);
+			if (isFavorite) {
+				SetSelectionCharFormat(WinUtil::m_TextStyleFavUsers);
+			} else if (aIdentity.isOp()) {
+				SetSelectionCharFormat(WinUtil::m_TextStyleOPs);
+			} else {
+				SetSelectionCharFormat(WinUtil::m_TextStyleNormUsers);
+			}
+		}
+
+		lSelEnd += aIsThirdPerson ? 1 : 2;
+	} else if (!sTime.empty())  {
+		lSelEnd += 4;
+	}
+
+	return lSelEnd;
+}
+
+
+LONG RichTextBox::AppendText(tstring& sLine, POINT& pt, LONG& lSelBeginSaved, LONG& lSelEndSaved) {
 	LONG lSelBegin = 0, lSelEnd = 0, lTextLimit = 0, lNewTextLen = 0;
-	LONG lSelBeginSaved, lSelEndSaved;
-
-	// Unify line endings
-	unifyLineEndings(sMsg);
-
-	GetSel(lSelBeginSaved, lSelEndSaved);
 	lSelEnd = lSelBegin = GetTextLengthEx(GTL_NUMCHARS);
-
-	bool isMyMessage = identity.getUser() == ClientManager::getInstance()->getMe();
-	tstring sLine = sTime + sMsg;
 
 	// Remove old chat if size exceeds
 	lNewTextLen = sLine.size();
 	lTextLimit = GetLimitText();
 
-	if(lSelEnd + lNewTextLen > lTextLimit) {
+	if (lSelEnd + lNewTextLen > lTextLimit) {
 		LONG lRemoveChars = 0;
 		int multiplier = 1;
 
-		if(lNewTextLen >= lTextLimit) {
+		if (lNewTextLen >= lTextLimit) {
 			lRemoveChars = lSelEnd;
 		} else {
 			int lastRemoved = -1;
@@ -225,14 +263,13 @@ bool RichTextBox::AppendChat(const Identity& identity, const tstring& sMyNick, c
 			}
 		}
 
-		//remove old links (the list must be in the same order than in text)
-		for(auto i = links.begin(); i != links.end();) {
+		// Remove old links (the list must be in the same order than in text)
+		for (auto i = links.begin(); i != links.end();) {
 			if ((*i).first.cpMin < lRemoveChars) {
-				delete i->second;
 				links.erase(i);
 				i = links.begin();
 			} else {
-				//update the position
+				// Update link position
 				(*i).first.cpMin -= lRemoveChars;
 				(*i).first.cpMax -= lRemoveChars;
 				++i;
@@ -261,101 +298,62 @@ bool RichTextBox::AppendChat(const Identity& identity, const tstring& sMyNick, c
 
 	SetSel(0, sLine.length());
 	SetSelectionCharFormat(enc);
+	return lSelEnd;
+}
 
-	bool isFavorite = false, isOp = false;
-	if (identity.getUser()) {
-		isFavorite = identity.getUser()->isFavorite();
-		isOp = identity.isOp();
-	}
+bool RichTextBox::AppendMessage(const Message& aMessage, CHARFORMAT2& cf, bool bUseEmo) {
+	SetRedraw(FALSE);
+	matchedTab = false;
 
-	// Format TimeStamp
-	if(!sTime.empty()) {
-		lSelEnd += sTime.size();
-		SetSel(lSelBegin, lSelEnd - 1);
-		SetSelectionCharFormat(WinUtil::m_TextStyleTimestamp);
+	// Get previous scroll position and selected text
+	SCROLLINFO si = { 0 };
+	POINT pt = { 0 };
 
-		PARAFORMAT2 pf;
-		memzero(&pf, sizeof(PARAFORMAT2));
-		pf.dwMask = PFM_STARTINDENT; 
-		pf.dxStartIndent = 0;
-		SetParaFormat(pf);
-	}
+	si.cbSize = sizeof(si);
+	si.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;
+	GetScrollInfo(SB_VERT, &si);
+	GetScrollPos(&pt);
 
-	// Authors nick
-	tstring sAuthor = Text::toT(identity.getNick());
-	if(!sAuthor.empty()) {
-		LONG iLen = (sMsg[0] == _T('*')) ? 1 : 0;
-		LONG iAuthorLen = sAuthor.size() + 1;
-		sMsg.erase(0, iAuthorLen + iLen);
-   		
-		lSelBegin = lSelEnd;
-		lSelEnd += iAuthorLen + iLen;
-		
-		if(isMyMessage) {
-			SetSel(lSelBegin, lSelBegin + iLen + 1);
-			SetSelectionCharFormat(WinUtil::m_ChatTextMyOwn);
-			SetSel(lSelBegin + iLen + 1, lSelBegin + iLen + iAuthorLen);
-			SetSelectionCharFormat(WinUtil::m_TextStyleMyNick);
-		} else {
+	LONG lSelBeginSaved, lSelEndSaved;
+	GetSel(lSelBeginSaved, lSelEndSaved);
 
-			//if(isFavorite || i.isOp()) {
-				SetSel(lSelBegin, lSelBegin + iLen + 1);
-				SetSelectionCharFormat(cf);
-				SetSel(lSelBegin + iLen + 1, lSelEnd);
-				if(isFavorite){
-					SetSelectionCharFormat(WinUtil::m_TextStyleFavUsers);
-				} else if(identity.isOp()) {
-					SetSelectionCharFormat(WinUtil::m_TextStyleOPs);
-				} else {
-					SetSelectionCharFormat(WinUtil::m_TextStyleNormUsers);
-				}
-			//} else {
-			//	SetSel(lSelBegin, lSelEnd);
-			//	SetSelectionCharFormat(cf);
-            //}
-		}
-	} else {
-		bool thirdPerson = false;
-        switch(sMsg[0]) {
-			case _T('*'):
-				if(sMsg[1] != _T(' ')) break;
-				thirdPerson = true;
-            case _T('<'):
-				tstring::size_type iAuthorLen = sMsg.find(thirdPerson ? _T(' ') : _T('>'), thirdPerson ? 2 : 1);
-				if(iAuthorLen != tstring::npos) {
-					tstring nick(sMsg.c_str() + 1);
-					nick.erase(iAuthorLen - 1);
-                    
-					lSelBegin = lSelEnd;
-					lSelEnd += iAuthorLen;
-					sMsg.erase(0, iAuthorLen);
+	auto from = aMessage.type == Message::TYPE_CHAT ? aMessage.chatMessage->getFrom() : nullptr;
+	auto isThirdPerson = aMessage.type == Message::TYPE_CHAT ? aMessage.chatMessage->getThirdPerson() : false;
+	auto identity = from ? from->getIdentity() : Identity();
 
-        			//if(isFavorite || isOp) {
-        				SetSel(lSelBegin, lSelBegin + 1);
-        				SetSelectionCharFormat(cf);
-						SetSel(lSelBegin + 1, lSelEnd);
-						if(isFavorite){
-							SetSelectionCharFormat(WinUtil::m_TextStyleFavUsers);
-						} else if(isOp) {
-							SetSelectionCharFormat(WinUtil::m_TextStyleOPs);
-						} else {
-							SetSelectionCharFormat(WinUtil::m_TextStyleNormUsers);
-						}
-        			//} else {
-        			//	SetSel(lSelBegin, lSelEnd);
-        			//	SetSelectionCharFormat(cf);
-                    //}
-				}
-        }
-	}
+	// Construct line
+	auto timestamp = aMessage.getTime() == 0 ? Util::emptyStringT : WinUtil::formatMessageTimestamp(identity, aMessage.getTime());
+	auto text = Text::toT(aMessage.getText());
+	auto formattedLine = timestamp + Text::toT(aMessage.format()) + _T("\n");
+	auto isMyMessage = identity.getUser() == ClientManager::getInstance()->getMe();
+
+	// Append
+	auto lSelBegin = AppendText(formattedLine, pt, lSelBeginSaved, lSelEndSaved);
+
+	// Style
+	SetSel(lSelBegin, -1);
+	SetSelectionCharFormat(isMyMessage ? WinUtil::m_ChatTextMyOwn : cf);
+
+	// Format timestamp and author
+	lSelBegin = FormatTimestampAuthor(isThirdPerson, identity, timestamp, cf, lSelBegin);
 
 	// Format the message part
-	FormatChatLine(sMyNick, sMsg, cf, isMyMessage, sAuthor, lSelEnd, bUseEmo);
 
+	// Highlights
+	FormatHighlights(text, aMessage.getText(), aMessage.getHighlights(), lSelBegin);
+	FormatLegacyHighlights(text, lSelBegin);
+
+	// Links and smilies
+	FormatEmoticons(text, lSelBegin, bUseEmo);
+
+	CheckMessageNotifications(aMessage);
+
+	// Scroll position and previous selection
 	SetSel(lSelBeginSaved, lSelEndSaved);
-	if(	isMyMessage || ((si.nPage == 0 || (size_t)si.nPos >= (size_t)si.nMax - si.nPage - 5) &&
-		(lSelBeginSaved == lSelEndSaved || !selectedUser.empty() || !selectedIP.empty())))
-	{
+	auto scrollToBottom = isMyMessage || ((si.nPage == 0 || (size_t)si.nPos >= (size_t)si.nMax - si.nPage - 5) &&
+		(lSelBeginSaved == lSelEndSaved || !selectedUser.empty() || !selectedIP.empty()));
+
+	if (scrollToBottom) {
 		PostMessage(EM_SCROLL, SB_BOTTOM, 0);
 	} else {
 		SetScrollPos(&pt);
@@ -367,61 +365,8 @@ bool RichTextBox::AppendChat(const Identity& identity, const tstring& sMyNick, c
 	return matchedTab;
 }
 
-void RichTextBox::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFORMAT2& cf, bool isMyMessage, const tstring& sAuthor, LONG lSelBegin, bool bUseEmo) {
+void RichTextBox::FormatLegacyHighlights(tstring& sText, LONG lSelBegin) {
 	// Set text format
-	tstring sMsgLower(sText.length(), NULL);
-	std::transform(sText.begin(), sText.end(), sMsgLower.begin(), _totlower);
-
-	LONG lSelEnd = lSelBegin + sText.size();
-	SetSel(lSelBegin, lSelEnd);
-	SetSelectionCharFormat(isMyMessage ? WinUtil::m_ChatTextMyOwn : cf);
-	
-	// highlight all occurences of my nick
-	size_t lMyNickStart = string::npos;
-	size_t lSearchFrom = 0;	
-	tstring sNick(sMyNick.length(), NULL);
-	std::transform(sMyNick.begin(), sMyNick.end(), sNick.begin(), _totlower);
-
-	if (!sNick.empty()) {
-		bool found = false;
-		while ((lMyNickStart = sMsgLower.find(sNick, lSearchFrom)) != tstring::npos) {
-			auto lMyNickEnd = lMyNickStart + (long) sNick.size();
-			SetSel(lSelBegin + lMyNickStart, lSelBegin + lMyNickEnd);
-			SetSelectionCharFormat(WinUtil::m_TextStyleMyNick);
-			lSearchFrom = lMyNickEnd;
-			found = true;
-		}
-
-		if (found) {
-			if (!SETTING(CHATNAMEFILE).empty() && !SETTING(SOUNDS_DISABLED) &&
-				!sAuthor.empty() && (stricmp(sAuthor.c_str(), sNick) != 0)) {
-					WinUtil::playSound(Text::toT(SETTING(CHATNAMEFILE)));
-			}
-			if (SETTING(FLASH_WINDOW_ON_MYNICK)
-				&& !sAuthor.empty() && (stricmp(sAuthor.c_str(), sNick) != 0))
-				WinUtil::FlashWindow();
-		}
-	}
-
-	// highlight all occurences of favourite users' nicks
-	{
-		RLock l(FavoriteManager::getInstance()->cs);
-		auto& ul = FavoriteManager::getInstance()->getFavoriteUsers();
-		for (const auto& pUser : ul | map_values) {
-			lSearchFrom = 0;
-			sNick = Text::toT(pUser.getNick());
-			if (sNick.empty()) continue;
-			std::transform(sNick.begin(), sNick.end(), sNick.begin(), _totlower);
-
-			while ((lMyNickStart = (long) sMsgLower.find(sNick, lSearchFrom)) != tstring::npos) {
-				auto lMyNickEnd = lMyNickStart + (long) sNick.size();
-				SetSel(lSelBegin + lMyNickStart, lSelBegin + lMyNickEnd);
-				SetSelectionCharFormat(WinUtil::m_TextStyleFavUsers);
-				lSearchFrom = lMyNickEnd;
-			}
-		}
-	}
-	
 
 	if(SETTING(USE_HIGHLIGHT)) {
 
@@ -471,111 +416,27 @@ void RichTextBox::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFOR
 			matchedSound = false;
 		}//end for
 	}
-
-
-	// Links and smilies
-	FormatEmoticonsAndLinks(sText, /*sMsgLower,*/ lSelBegin, bUseEmo);
 }
 
-void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LONG lSelBegin, bool bUseEmo) {
-	if (formatLinks) {
-		try {
-			auto start = sMsg.cbegin();
-			auto end = sMsg.cend();
-			boost::match_results<tstring::const_iterator> result;
-			int pos=0;
+void RichTextBox::parsePathHighlights(const string& aText, MessageHighlight::SortedList& highlights_) noexcept {
+	auto start = aText.cbegin();
+	auto end = aText.cend();
+	boost::match_results<string::const_iterator> result;
+	int pos = 0;
+	boost::regex reg(AirUtil::getPathReg());
 
-			while(boost::regex_search(start, end, result, WinUtil::chatLinkReg, boost::match_default)) {
-				size_t linkStart = pos + lSelBegin + result.position();
-				size_t linkEnd = pos + lSelBegin + result.position() + result.length();
-				SetSel(linkStart, linkEnd);
-				tstring link( result[0].first, result[0].second );
+	while (boost::regex_search(start, end, result, reg, boost::match_default)) {
+		std::string path(result[0].first, result[0].second);
+		highlights_.insert_sorted(make_shared<MessageHighlight>(pos + result.position(), path, MessageHighlight::HighlightType::TYPE_LINK_TEXT, "path"));
 
-				//create the link
-				ChatLink::LinkType type = ChatLink::TYPE_URL;
-				if (link.find(_T("magnet:?")) != tstring::npos) {
-					type = ChatLink::TYPE_MAGNET;
-				} else if (link.find(_T("spotify:")) != tstring::npos) {
-					type = ChatLink::TYPE_SPOTIFY;
-				}
-
-				ChatLink* cl = new ChatLink(Text::fromT(link), type, pmUser);
-				formatLink(cl->getDupe(), false);
-
-				//replace the text displayed in chat
-				tstring displayText = Text::toT(cl->getDisplayText());
-				sMsg.replace(result[0].first, result[0].second, displayText.c_str());
-				setText(displayText);
-
-				//store the link and the range
-				CHARRANGE cr;
-				cr.cpMin = linkStart;
-				cr.cpMax = linkStart + displayText.length();
-				//links.emplace_back(cr, cl);
-				links.insert_sorted(ChatLinkPair(cr, cl));
-
-				pos=pos+result.position() + displayText.length();
-				start = result[0].first + displayText.length();
-				end = sMsg.end();
-			}
-	
-		} catch(...) { 
-			//...
-		}
+		start = result[0].second;
+		pos = pos + result.position() + result.length();
 	}
+}
 
-	//Format release names
-	if(formatReleases && (SETTING(FORMAT_RELEASE) || SETTING(DUPES_IN_CHAT))) {
-		auto start = sMsg.cbegin();
-		auto end = sMsg.cend();
-		boost::match_results<tstring::const_iterator> result;
-		int pos=0;
-
-		while(boost::regex_search(start, end, result, WinUtil::chatReleaseReg, boost::match_default)) {
-			CHARRANGE cr;
-			cr.cpMin = pos + lSelBegin + result.position();
-			cr.cpMax = pos + lSelBegin + result.position() + result.length();
-
-			SetSel(cr.cpMin, cr.cpMax);
-
-			std::string link (result[0].first, result[0].second);
-			ChatLink* cl = new ChatLink(link, ChatLink::TYPE_RELEASE, pmUser);
-
-			formatLink(cl->getDupe(), true);
-
-			links.insert_sorted(ChatLinkPair(cr, cl));
-			start = result[0].second;
-			pos=pos+result.position() + result.length();
-		}
-	}
-
-	//Format local paths
-	if (formatPaths) {
-		auto start = sMsg.cbegin();
-		auto end = sMsg.cend();
-		boost::match_results<tstring::const_iterator> result;
-		int pos=0;
-
-		while(boost::regex_search(start, end, result, WinUtil::pathReg, boost::match_default)) {
-			CHARRANGE cr;
-			cr.cpMin = pos + lSelBegin + result.position();
-			cr.cpMax = pos + lSelBegin + result.position() + result.length();
-
-			SetSel(cr.cpMin, cr.cpMax);
-			SetSelectionCharFormat(WinUtil::m_ChatTextServer);
-
-			std::string path (result[0].first, result[0].second);
-			ChatLink* cl = new ChatLink(path, ChatLink::TYPE_PATH, nullptr);
-			//links.emplace_back(cr, cl);
-			links.insert_sorted(ChatLinkPair(cr, cl));
-
-			start = result[0].second;
-			pos=pos+result.position() + result.length();
-		}
-	}
-
+void RichTextBox::FormatEmoticons(tstring& sMsg, /*tstring& sMsgLower,*/ LONG lSelBegin, bool bUseEmo) {
 	// insert emoticons
-	if(bUseEmo && emoticonsManager->getUseEmoticons()) {
+	if (bUseEmo && emoticonsManager->getUseEmoticons()) {
 		const Emoticon::List& emoticonsList = emoticonsManager->getEmoticonsList();
 		tstring::size_type lastReplace = 0;
 		uint8_t smiles = 0;
@@ -626,7 +487,6 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 			} else break;
 		}
 	}
-
 }
 
 bool RichTextBox::HitNick(const POINT& p, tstring& sNick, int& iBegin, int& iEnd) {
@@ -772,54 +632,84 @@ tstring RichTextBox::LineFromPos(const POINT& p) const {
 	return tmp;
 }
 
-void RichTextBox::formatLink(DupeType aDupeType, bool aIsRelease) {
-	if (SETTING(DUPES_IN_CHAT) && AirUtil::isShareDupe(aDupeType)) {
-		SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
-	} else if (SETTING(DUPES_IN_CHAT) && AirUtil::isQueueDupe(aDupeType)) {
-		SetSelectionCharFormat(WinUtil::m_TextStyleQueue);
-	} else if (SETTING(DUPES_IN_CHAT) && AirUtil::isFinishedDupe(aDupeType)) {
-		CHARFORMAT2 newFormat = WinUtil::m_TextStyleQueue;
-		newFormat.crTextColor = WinUtil::getDupeColors(aDupeType).first;
-		SetSelectionCharFormat(newFormat);
-	} else if (!aIsRelease || (SETTING(FORMAT_RELEASE)) && aDupeType == DUPE_NONE) {
-		SetSelectionCharFormat(WinUtil::m_TextStyleURL);
+void RichTextBox::formatHighlight(const MessageHighlightPtr& aHighlight, CHARRANGE& cr) {
+	CHARRANGE oldCr;
+	GetSel(oldCr);
+
+	SetSel(cr);
+	formatSelectedHighlight(aHighlight);
+	SetSel(oldCr);
+}
+
+void RichTextBox::formatSelectedHighlight(const MessageHighlightPtr& aHighlight) {
+	auto dupe = aHighlight->getDupe();
+	if (SETTING(DUPES_IN_CHAT) && dupe != DUPE_NONE) {
+		if (AirUtil::isShareDupe(dupe)) {
+			SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
+		} else if (AirUtil::isQueueDupe(dupe)) {
+			SetSelectionCharFormat(WinUtil::m_TextStyleQueue);
+		} else if (AirUtil::isFinishedDupe(dupe)) {
+			CHARFORMAT2 newFormat = WinUtil::m_TextStyleQueue;
+			newFormat.crTextColor = WinUtil::getDupeColors(dupe).first;
+			SetSelectionCharFormat(newFormat);
+		}
+	} else {
+		switch (aHighlight->getType()) {
+			case MessageHighlight::HighlightType::TYPE_BOLD: {
+				SetSelectionCharFormat(WinUtil::m_TextStyleBold);
+				break;
+			}
+			case MessageHighlight::HighlightType::TYPE_USER: {
+				if (aHighlight->getTag() == MessageHighlight::TAG_ME) {
+					SetSelectionCharFormat(WinUtil::m_TextStyleMyNick);
+				} else if (aHighlight->getTag() == MessageHighlight::TAG_FAVORITE) {
+					SetSelectionCharFormat(WinUtil::m_TextStyleFavUsers);
+				} else {
+					SetSelectionCharFormat(WinUtil::m_TextStyleNormUsers);
+				}
+				
+				break;
+			}
+			case MessageHighlight::HighlightType::TYPE_LINK_TEXT:
+			case MessageHighlight::HighlightType::TYPE_LINK_URL:
+			default: {
+				SetSelectionCharFormat(WinUtil::m_TextStyleURL);
+			}
+		}
 	}
 }
 
-DupeType RichTextBox::updateDupeType(ChatLink* aChatLink) {
-	auto oldDT = aChatLink->getDupe();
-	if (oldDT != aChatLink->updateDupeType(pmUser)) {
-		formatLink(aChatLink->getDupe(), isRelease);
+string RichTextBox::getHighlightDisplayText(const MessageHighlightPtr& aHighlight) const noexcept {
+	if (aHighlight->getMagnet()) {
+		auto m = *aHighlight->getMagnet();
+		return m.fname + " (" + Util::formatBytes(m.fsize) + ")";
 	}
-	return aChatLink->getDupe();
+
+	return aHighlight->getText();
 }
 
 void RichTextBox::clearSelInfo() {
 	selectedLine.clear();
 	selectedUser.clear();
 	selectedIP.clear();
-	dupeType = DUPE_NONE, isMagnet = false, isTTH = false, isRelease = false, isPath = false;
+	selectedHighlight = nullptr, isTTH = false, isPath = false;
 	selectedWord.clear();
 }
 
-void RichTextBox::updateSelectedText(POINT pt, bool selectLink) {
+void RichTextBox::updateSelectedText(POINT pt, bool aSelectLink) {
 	selectedLine = LineFromPos(pt);
 
 	auto p = getLink(pt);
 	if (p != links.crend()) {
-		auto cl = p->second;
+		selectedHighlight = p->second;
+		selectedWord = Text::toT(selectedHighlight->getText());
 
-		selectedWord = Text::toT(cl->url);
-		if (selectLink)
+		// Check if the dupe status has changed
+		CHARRANGE cr = p->first;
+		formatHighlight(selectedHighlight, cr);
+
+		if (aSelectLink) {
 			SetSel(p->first.cpMin, p->first.cpMax);
-
-		isMagnet = cl->getType() == ChatLink::TYPE_MAGNET;
-		isRelease = cl->getType() == ChatLink::TYPE_RELEASE;
-		isPath = cl->getType() == ChatLink::TYPE_PATH;
-
-		if (isMagnet || isRelease) {
-			//check if the dupe status has changed
-			dupeType = updateDupeType(cl);
 		}
 	} else {
 		CHARRANGE cr;
@@ -831,17 +721,16 @@ void RichTextBox::updateSelectedText(POINT pt, bool selectLink) {
 			selectedWord = buf;
 			delete [] buf;
 
-			//Replace shortened links in the range.
+			// Replace shortened links in the range.
 			for (const auto& l : links | reversed) {
 				if (l.first.cpMin >= cr.cpMin && l.first.cpMax <= cr.cpMax) {
-					selectedWord.replace(l.first.cpMin - cr.cpMin, l.second->getDisplayText().length(), Text::toT(l.second->url));
+					selectedWord.replace(l.first.cpMin - cr.cpMin, getHighlightDisplayText(l.second).length(), Text::toT(l.second->getText()));
 				}
 			}
 
 			//Change line breaks
 			selectedWord = Util::replaceT(selectedWord, _T("\r"), _T("\r\n"));
-		}
-		else {
+		} else {
 			selectedWord = WordFromPos(pt);
 			if (selectedWord.length() == 39) {
 				isTTH = true;
@@ -949,7 +838,13 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 		copyMenu.m_hMenu = NULL;
 	}
 
-	if(selectedUser.empty()) {
+	if (selectedUser.empty()) {
+		auto isMagnet = false;
+		auto dupeType = DupeType::DUPE_NONE;
+		if (selectedHighlight) {
+			isMagnet = !!selectedHighlight->getMagnet();
+			dupeType = selectedHighlight->getDupe();
+		}
 
 		if(!selectedIP.empty()) {
 			menu.InsertSeparatorFirst(selectedIP);
@@ -964,9 +859,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 				menu.AppendMenu(MF_STRING, IDC_UNBAN_IP, (_T("!unban ") + selectedIP).c_str());
 				menu.AppendMenu(MF_SEPARATOR);
 			}
-		} else if (isRelease) {
-			menu.InsertSeparatorFirst(CTSTRING(RELEASE));
-		}  else if (!selectedWord.empty() && AirUtil::isHubLink(Text::fromT(selectedWord))) {
+		} else if (!selectedWord.empty() && AirUtil::isHubLink(Text::fromT(selectedWord))) {
 			menu.InsertSeparatorFirst(CTSTRING(LINK));
 			menu.appendItem(TSTRING(CONNECT), [this] { handleOpenLink(); });
 			menu.appendSeparator();
@@ -983,30 +876,29 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 				menu.appendItem(TSTRING(SEARCH_TTH), [this] { handleSearchTTH(); });
 			}
 
-			if (isMagnet || isRelease) {
-				if (dupeType > 0) {
-					menu.appendSeparator();
-					menu.appendItem(TSTRING(OPEN_FOLDER), [this] { handleOpenFolder(); });
-				}
-
+			if (dupeType != DUPE_NONE) {
 				menu.appendSeparator();
-				if (isMagnet) {
-					auto isMyLink = client && Text::toT(client->getMyNick()) == author;
-					Magnet m = Magnet(Text::fromT(selectedWord));
-					if (ShareManager::getInstance()->isTempShared(getTempShareUser(), m.getTTH())) {
-						/* show an option to remove the item */
-						menu.appendItem(TSTRING(STOP_SHARING), [this] { handleRemoveTemp(); });
-					} else if (!isMyLink) {
-						appendDownloadMenu(menu, DownloadBaseHandler::TYPE_PRIMARY, false, m.getTTH(), nullopt);
-					}
-
-					if ((!author.empty() && !isMyLink) || AirUtil::allowOpenDupe(dupeType))
-						menu.appendItem(TSTRING(OPEN), [this] { handleOpenFile(); });
-				} else if (isRelease) {
-					//autosearch menus
-					appendDownloadMenu(menu, DownloadBaseHandler::TYPE_SECONDARY, true, nullopt, Text::fromT(selectedWord) + PATH_SEPARATOR, false);
-				}
+				menu.appendItem(TSTRING(OPEN_FOLDER), [this] { handleOpenFolder(); });
 			}
+
+			menu.appendSeparator();
+			if (isMagnet) {
+				auto isMyLink = client && Text::toT(client->getMyNick()) == author;
+				Magnet m = Magnet(Text::fromT(selectedWord));
+				if (ShareManager::getInstance()->isTempShared(getTempShareUser(), m.getTTH())) {
+					/* show an option to remove the item */
+					menu.appendItem(TSTRING(STOP_SHARING), [this] { handleRemoveTemp(); });
+				} else if (!isMyLink) {
+					appendDownloadMenu(menu, DownloadBaseHandler::TYPE_PRIMARY, false, m.getTTH(), nullopt);
+				}
+
+				if ((!author.empty() && !isMyLink) || AirUtil::allowOpenDupe(dupeType))
+					menu.appendItem(TSTRING(OPEN), [this] { handleOpenFile(); });
+			}
+		}
+
+		if (contextMenuHandler) {
+			contextMenuHandler(menu, selectedHighlight);
 		}
 	} else {
 		bool isMe = (selectedUser == Text::toT(client->getMyNick()));
@@ -1226,16 +1118,17 @@ LRESULT RichTextBox::onChar(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOO
 }
 
 void RichTextBox::handleOpenFile() {
-	Magnet m = Magnet(Text::fromT(selectedWord));
-	if (m.hash.empty())
+	if (!selectedHighlight || !selectedHighlight->getMagnet()) {
 		return;
+	}
 
+	auto m = *selectedHighlight->getMagnet();
 	auto u = getMagnetSource();
 	MainFrame::getMainFrame()->addThreadedTask([=] {
-		if (dupeType > 0) {
-			auto p = AirUtil::getFileDupePaths(dupeType, m.getTTH());
-			if (!p.empty())
-				ActionUtil::openFile(Text::toT(p.front()));
+		if (selectedHighlight->getDupe() != DUPE_NONE) {
+			auto paths = AirUtil::getFileDupePaths(selectedHighlight->getDupe(), m.getTTH());
+			if (!paths.empty())
+				ActionUtil::openFile(Text::toT(paths.front()));
 		} else {
 			ActionUtil::openTextFile(m.fname, m.fsize, m.getTTH(), u, false);
 		}
@@ -1264,12 +1157,17 @@ UserPtr RichTextBox::getTempShareUser() const noexcept {
 }
 
 void RichTextBox::handleRemoveTemp() {
-	string link = Text::fromT(selectedWord);
-	Magnet m = Magnet(link);
-	ShareManager::getInstance()->removeTempShare(getTempShareUser(), m.getTTH());
-	for (auto& cl: links | map_values) {
-		if (cl->getType() == ChatLink::TYPE_MAGNET && cl->url == link) {
-			updateDupeType(cl);
+	if (!selectedHighlight || !selectedHighlight->getMagnet()) {
+		return;
+	}
+
+	auto magnet = *selectedHighlight->getMagnet();
+	ShareManager::getInstance()->removeTempShare(getTempShareUser(), magnet.getTTH());
+	for (auto& p: links) {
+		decltype(auto) highlight = p.second;
+		if (highlight->getMagnet() && highlight->getMagnet()->getTTH() == magnet.getTTH()) {
+			CHARRANGE cr = p.first;
+			formatHighlight(highlight, cr);
 		}
 	}
 }
@@ -1277,17 +1175,18 @@ void RichTextBox::handleRemoveTemp() {
 void RichTextBox::handleOpenFolder() {
 	StringList paths;
 	try{
-		if (isRelease) {
-			paths = AirUtil::getAdcDirectoryDupePaths(dupeType, Text::fromT(selectedWord));
-		} else if (isPath) {
+		if (isPath) {
 			paths.push_back(Text::fromT(Util::getFilePath(selectedWord)));
-		} else {
-			Magnet m = Magnet(Text::fromT(selectedWord));
-			if (m.hash.empty())
-				return;
+		} else if (selectedHighlight && selectedHighlight->getDupe() != DUPE_NONE) {
+			if (selectedHighlight->getMagnet()) {
+				auto m = *selectedHighlight->getMagnet();
+				if (m.hash.empty())
+					return;
 
-			paths = AirUtil::getFileDupePaths(dupeType, m.getTTH());
-
+				paths = AirUtil::getFileDupePaths(selectedHighlight->getDupe(), m.getTTH());
+			} else {
+				paths = AirUtil::getAdcDirectoryDupePaths(selectedHighlight->getDupe(), Text::fromT(selectedWord));
+			}
 		}
 	} catch(...) {}
 
@@ -1311,18 +1210,17 @@ void RichTextBox::handleDownload(const string& aTarget, Priority p, bool aIsRele
 }
 
 bool RichTextBox::showDirDialog(string& fileName) {
-	if (isMagnet) {
-		Magnet m = Magnet(Text::fromT(selectedWord));
-		fileName = m.fname;
+	if (selectedHighlight && selectedHighlight->getMagnet()) {
+		fileName = (*selectedHighlight->getMagnet()).fname;
 		return false;
 	}
 	return true;
 }
 
 int64_t RichTextBox::getDownloadSize(bool /*isWhole*/) {
-	if (isMagnet) {
+	if (selectedHighlight && selectedHighlight->getMagnet()) {
 		Magnet m = Magnet(Text::fromT(selectedWord));
-		return m.fsize;
+		return (*selectedHighlight->getMagnet()).fsize;
 	} else {
 		return 0;
 	}
@@ -1410,12 +1308,8 @@ LRESULT RichTextBox::onLeftButtonUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 }
 
 void RichTextBox::handleOpenLink() {
-	string link = Text::fromT(selectedWord);
-	for(const auto& l: links | reversed) {
-		if(compare(l.second->url, link) == 0) {
-			openLink(l.second);
-			return;
-		}
+	if (selectedHighlight) {
+		openLink(selectedHighlight);
 	}
 }
 
@@ -1426,24 +1320,24 @@ bool RichTextBox::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 	if (p == links.crend())
 		return false;
 
-	auto cl = p->second;
-	selectedWord = Text::toT(cl->url); // for magnets
+	auto highlight = p->second;
+	selectedWord = Text::toT(highlight->getText()); // for magnets
 	updateSelectedText(pt, false);
 	updateAuthor();
 
-	openLink(cl);
+	openLink(highlight);
 
 	return 1;
 }
 
-void RichTextBox::openLink(const ChatLink* cl) {
-	if (cl->getType() == ChatLink::TYPE_MAGNET) {
+void RichTextBox::openLink(const MessageHighlightPtr& aHighlight) {
+	if (aHighlight->getMagnet()) {
 		auto u = getMagnetSource();
-		ActionUtil::parseMagnetUri(Text::toT(cl->url), u, this);
+		ActionUtil::parseMagnetUri(Text::toT(aHighlight->getText()), u, this);
 	} else {
-		//the url regex also detects web links without any protocol part
-		auto link = cl->url;
-		if (cl->getType() == ChatLink::TYPE_URL && link.find(':') == string::npos)
+		// The url regex also detects web links without any protocol part
+		auto link = aHighlight->getText();
+		if (aHighlight->getType() == MessageHighlight::HighlightType::TYPE_LINK_URL && link.find(':') == string::npos)
 			link = "http://" + link;
 
 		ActionUtil::openLink(Text::toT(link));
@@ -1893,9 +1787,8 @@ LRESULT RichTextBox::handleLink(ENLINK& link) {
 }
 
 void RichTextBox::handleSearch() {
-	if (isMagnet) {
-		Magnet m = Magnet(Text::fromT(selectedWord));
-		ActionUtil::search(Text::toT(m.fname));
+	if (selectedHighlight && selectedHighlight->getMagnet()) {
+		ActionUtil::search(Text::toT((*selectedHighlight->getMagnet()).fname));
 	} else if (isPath) {
 		ActionUtil::search(Util::getFileName(selectedWord));
 	} else {
@@ -1905,8 +1798,8 @@ void RichTextBox::handleSearch() {
 }
 
 void RichTextBox::handleSearchTTH() {
-	if (isMagnet) {
-		Magnet m = Magnet(Text::fromT(selectedWord));
+	if (selectedHighlight && selectedHighlight->getMagnet()) {
+		auto m = *selectedHighlight->getMagnet();
 		ActionUtil::searchHash(m.getTTH(), m.fname, m.fsize);
 	} else {
 		ActionUtil::searchHash(TTHValue(Text::fromT(selectedWord)), Util::emptyString, 0);

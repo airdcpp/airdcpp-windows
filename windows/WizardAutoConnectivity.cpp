@@ -19,6 +19,7 @@
 #include "stdafx.h"
 
 #include "WizardAutoConnectivity.h"
+#include <airdcpp/Message.h>
 
 PropPage::TextItem WizardAutoConnectivity::texts[] = {
 	{ IDC_IPV4_AUTODETECT, ResourceManager::ALLOW_AUTO_DETECT_V4 },
@@ -130,13 +131,13 @@ void WizardAutoConnectivity::detectConnection() {
 	ConnectivityManager::getInstance()->detectConnection();
 }
 
-void WizardAutoConnectivity::addLogLine(tstring& msg, CHARFORMAT2W& cf /*WinUtil::m_ChatTextGeneral*/) {
-	log.AppendChat(Identity(NULL, 0), _T(" -"), Util::emptyStringT, msg, cf, false);
+void WizardAutoConnectivity::addLogLine(const tstring& aMessage, CHARFORMAT2W& cf /*WinUtil::m_ChatTextGeneral*/) {
+	log.AppendMessage(dcpp::Message::fromText(Text::fromT(aMessage), LogMessage::Flags::FLAG_DISABLE_TIMESTAMP), cf);
 }
 
-void WizardAutoConnectivity::on(ConnectivityManagerListener::Message, const string& message) noexcept {
-	wizard->callAsync([this, message] { 
-		auto msg = Text::toT(message) + _T("\n");
+void WizardAutoConnectivity::on(ConnectivityManagerListener::Message, const string& aMessage) noexcept {
+	wizard->callAsync([this, aMessage] {
+		auto msg = Text::toT(aMessage) /* + _T("\n")*/;
 		addLogLine(msg); 
 	});
 }
@@ -173,11 +174,6 @@ void WizardAutoConnectivity::on(ConnectivityManagerListener::Finished, bool v6, 
 			tstring msg = TSTRING(CONN_DETECT_FINISHED);
 			addLogLine(msg, cf);
 
-			/*if (v6State == STATE_FAILED || v4State == STATE_FAILED) {
-				cManualDetect.SetCheck(TRUE);
-			} else {
-
-			}*/
 			changeControlState(true);
 			EnableWizardButtons(PSWIZB_NEXT, PSWIZB_NEXT);
 		}

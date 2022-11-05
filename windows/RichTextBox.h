@@ -19,9 +19,7 @@
 #ifndef CHAT_CTRL_H
 #define CHAT_CTRL_H
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
 #include <airdcpp/Client.h>
 #include <airdcpp/DupeType.h>
@@ -141,9 +139,10 @@ public:
 	/// escape Rich Edit control chars: {, }, and \, as well as \n which becomes \line.
 	static tstring rtfEscape(const tstring& str);
 
-	//void AdjustTextSize();
-	void AppendText(tstring& sMsg, bool bUseEmo = false);
-	bool AppendChat(const Identity& i, const tstring& sMyNick, const tstring& sTime, tstring sMsg, CHARFORMAT2& cf, bool bUseEmo = true);
+	LONG AppendText(tstring& sMsg, POINT& pt, LONG& lSelBeginSaved, LONG& lSelEndSaved);
+	void SetText(const string& aText, const MessageHighlight::SortedList& aHighlights, bool bUseEmo = false);
+	bool AppendMessage(const Message& aMessage, CHARFORMAT2& cf, bool bUseEmo = true);
+	// bool AppendChat(const Identity& i, const tstring& sMyNick, const tstring& sTime, tstring sMsg, CHARFORMAT2& cf, bool bUseEmo = true);
 	void AppendHTML(const string& aTxt);
 	tstring getLinkText(const ENLINK& link);
 	LRESULT handleLink(ENLINK& link);
@@ -161,15 +160,14 @@ public:
 
 	UserPtr getTempShareUser() const noexcept;
 
-	void FormatEmoticonsAndLinks(tstring& sText, /*tstring& sTextLower,*/ LONG lSelBegin, bool bUseEmo);
-	GETSET(ClientPtr, client, Client);
-	GETSET(UserPtr, pmUser, PmUser);
+	IGETSET(ClientPtr, client, Client, nullptr);
+	IGETSET(UserPtr, pmUser, PmUser, nullptr);
 
-	GETSET(bool, autoScrollToEnd, AutoScrollToEnd);
-	GETSET(bool, formatLinks, FormatLinks);
-	GETSET(bool, formatPaths, FormatPaths);
-	GETSET(bool, formatReleases, FormatReleases);
-	GETSET(bool, allowClear, AllowClear);
+	typedef std::function<void(OMenu&, const MessageHighlightPtr&)> ContextMenuF;
+
+	IGETSET(bool, autoScrollToEnd, AutoScrollToEnd, true);
+	IGETSET(bool, allowClear, AllowClear, false);
+	IGETSET(ContextMenuF, contextMenuHandler, ContextMenuHandler, nullptr);
 
 	/* DownloadBaseHandler functions */
 	void handleDownload(const string& aTarget, Priority p, bool isRelease);
@@ -178,38 +176,18 @@ public:
 	HintedUser getMagnetSource();
 
 	UserListHandler<RichTextBox> getUserList() { return UserListHandler<RichTextBox>(*this); }
+
+	static void parsePathHighlights(const string& aText, MessageHighlight::SortedList& highlights_) noexcept;
 protected:
 	// UserInfoBase
 	const UserPtr& getUser() const;
 	const string& getHubUrl() const;
 private:
-	class ChatLink {
-
-	public:
-		enum LinkType {
-			TYPE_URL,
-			TYPE_MAGNET,
-			TYPE_RELEASE,
-			TYPE_SPOTIFY,
-			TYPE_PATH,
-		};
-
-		explicit ChatLink(const string& aLink, LinkType aLinkType, const UserPtr& aUser);
-		explicit ChatLink() { }
-
-		string url;
-		string getDisplayText();
-		DupeType updateDupeType(const UserPtr& aUser);
-
-		GETSET(LinkType, type, Type);
-		GETSET(DupeType, dupe, Dupe);
-	};
-
 	void clearSelInfo();
 	void updateSelectedText(POINT pt, bool selectLink);
 	static UINT	WM_FINDREPLACE;
 	TCHAR*		findBuffer;
-	const WORD	findBufferSize;
+	const WORD	findBufferSize = 100;
 
 	bool HitNick(const POINT& p, tstring& sNick, int& iBegin , int& iEnd);
 	bool HitIP(const POINT& p, tstring& sIP, int& iBegin, int& iEnd);
@@ -218,7 +196,11 @@ private:
 
 	tstring WordFromPos(const POINT& p);
 	tstring LineFromPos(const POINT& p) const;
-	void FormatChatLine(const tstring& sMyNick, tstring& sMsg, CHARFORMAT2& cf, bool isMyMessage, const tstring& sAuthor, LONG lSelBegin, bool bUseEmo);
+	void FormatLegacyHighlights(tstring& sMsg, LONG lSelBegin);
+	void FormatEmoticons(tstring& sText, LONG lSelBegin, bool bUseEmo);
+	void FormatHighlights(tstring& aTextT, const string& aText, const MessageHighlight::SortedList& aHighlights, LONG lSelBegin);
+	LONG FormatTimestampAuthor(bool aIsThirdPerson, const Identity& aIdentity, const tstring& sTime, CHARFORMAT2& cf, LONG lSelBegin);
+	void CheckMessageNotifications(const Message& aMessage);
 
 	void setText(const tstring& text) {
 		string tmp = "{\\urtf " + escapeUnicode(rtfEscape(text)) + "}";
@@ -235,14 +217,12 @@ private:
 	bool		timeStamps;
 
 	bool		isPath;
-	bool		isRelease;
-	DupeType	dupeType;
-	bool		isMagnet;
+	MessageHighlightPtr selectedHighlight = nullptr;
 	bool		isTTH;
 	tstring		author;
 	int t_height; //text height
 	
-	bool m_bPopupMenu;
+	bool m_bPopupMenu = false;
 	
 	OMenu copyMenu;
 	CContainedWindow ccw;
@@ -255,7 +235,7 @@ private:
 	bool isLink(POINT& pt);
 	bool showHandCursor;
 
-	typedef pair<CHARRANGE, ChatLink*> ChatLinkPair;
+	typedef pair<CHARRANGE, MessageHighlightPtr> ChatLinkPair;
 
 	struct LinkSortOrder {
 		int operator()(long left, long right) const {
@@ -269,15 +249,15 @@ private:
 
 	typedef SortedVector<ChatLinkPair, deque, long, LinkSortOrder, LinkStartPos> LinkList;
 	LinkList links;
-	//vector<pair<CHARRANGE, ChatLink*>> links;
 
 	CCursor		handCursor;
 	CCursor		arrowCursor;
 
-	void formatLink(DupeType aDupeType, bool aIsRelease);
-	DupeType updateDupeType(ChatLink* aChatLink);
+	void formatSelectedHighlight(const MessageHighlightPtr& aHighlight);
+	void formatHighlight(const MessageHighlightPtr& aHighlight, CHARRANGE& ch);
 	LinkList::const_reverse_iterator getLink(POINT& pt);
-	void openLink(const ChatLink* link);
+	void openLink(const MessageHighlightPtr& aHighlight);
+	string getHighlightDisplayText(const MessageHighlightPtr& aHighlight) const noexcept;
 };
 
 

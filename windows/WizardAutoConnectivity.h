@@ -82,14 +82,14 @@ private:
 
 	CButton cManualDetect;
 
-	void addLogLine(tstring& msg, CHARFORMAT2W& cf = WinUtil::m_ChatTextGeneral);
+	void addLogLine(const tstring& aMessage, CHARFORMAT2W& cf = WinUtil::m_ChatTextGeneral);
 	void detectConnection();
 
 	void updateAuto();
 	void changeControlState(bool enable);
 
 	// ConnectivityManagerListener
-	void on(ConnectivityManagerListener::Message, const string& message) noexcept override;
+	void on(ConnectivityManagerListener::Message, const string& aMessage) noexcept override;
 	void on(ConnectivityManagerListener::Started, bool /*v6*/) noexcept override;
 	void on(ConnectivityManagerListener::Finished, bool /*v6*/, bool /*failed*/) noexcept override;
 	void on(ConnectivityManagerListener::SettingChanged) noexcept override;

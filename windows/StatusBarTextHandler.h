@@ -21,13 +21,9 @@
 #ifndef STATUSBAR_HANDLER_H
 #define STATUSBAR_HANDLER_H
 
-// #include <atlcrack.h>
 #include "stdafx.h"
 
 #include "ResourceLoader.h"
-
-// #include "DynamicTabPage.h"
-// #include <airdcpp/Util.h>
 
 
 #define POPUP_UID 19000
@@ -78,7 +74,7 @@ public:
 	}
 
 	void addStatusText(const tstring& aText, uint8_t aSeverity) {
-		tstring line = _T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + aText;
+		tstring line = WinUtil::formatMessageWithTimestamp(aText);
 		TCHAR* sLine = (TCHAR*)line.c_str();
 
 		if (line.size() > 512) {

@@ -19,9 +19,7 @@
 #ifndef CHATFRAME_BASE_H
 #define CHATFRAME_BASE_H
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
 #include <airdcpp/concurrency.h>
 
@@ -69,8 +67,16 @@ public:
 
 	virtual bool checkFrameCommand(const tstring& aCmd, const tstring& aParam, tstring& message_, tstring& status_, bool& thirdPerson_) = 0;
 	virtual bool sendMessageHooked(const OutgoingChatMessage& aMessage, string& error_) = 0;
-	virtual void addStatusLine(const tstring& aStatus, uint8_t sev) = 0;
+	virtual void addStatusMessage(const LogMessagePtr& aMessage, int aFlags) = 0;
 	virtual void addPrivateLine(const tstring& aLine, CHARFORMAT2& cf) = 0;
+
+	enum StatusFlags {
+		FLAG_NORMAL = 0x00,
+		FLAG_SHOW_CHAT = 0x01,
+		FLAG_SHOW_HISTORY = 0x02
+	};
+
+	virtual void addStatusLine(const tstring& aStatus, LogMessage::Severity aSeverity, int aFlags = StatusFlags::FLAG_SHOW_CHAT & StatusFlags::FLAG_SHOW_HISTORY);
 	virtual void onTab() { };
 	virtual void UpdateLayout(BOOL bResizeBars = TRUE) = 0;
 protected:

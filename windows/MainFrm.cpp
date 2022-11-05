@@ -764,7 +764,7 @@ void MainFrame::addStatus(const LogMessagePtr& aMessage) {
 		return;
 	}
 
-	tstring line = Text::toT("[" + Util::getTimeStamp(aMessage->getTime()) + "] " + aMessage->getText());
+	tstring line = WinUtil::formatMessageWithTimestamp(Text::toT(aMessage->getText()), aMessage->getTime());
 
 	ctrlStatus.SetText(STATUS_LASTLINES, line.c_str(), SBT_NOTABPARSING);
 	while(lastLinesList.size() + 1 > MAX_CLIENT_LINES)
