@@ -378,11 +378,8 @@ void RichTextBox::FormatLegacyHighlights(tstring& sText, LONG lSelBegin) {
 			ColorSettings* cs = &(*i);
 			if(cs->getContext() != HighlightManager::CONTEXT_CHAT) 
 				continue;
-			size_t pos;
+			size_t pos = 0;
 			tstring msg = sText;
-
-			//set start position for find
-			pos = msg.find(_T(">"));
 
 			//prepare the charformat
 			memset(&hlcf, 0, sizeof(CHARFORMAT2));
@@ -839,11 +836,12 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 	}
 
 	if (selectedUser.empty()) {
-		auto isMagnet = false;
+		auto isMagnet = false, isRelease = false;
 		auto dupeType = DupeType::DUPE_NONE;
 		if (selectedHighlight) {
 			isMagnet = !!selectedHighlight->getMagnet();
 			dupeType = selectedHighlight->getDupe();
+			isRelease = selectedHighlight->getTag() == MessageHighlight::TAG_RELEASE;
 		}
 
 		if(!selectedIP.empty()) {
@@ -894,6 +892,9 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 
 				if ((!author.empty() && !isMyLink) || AirUtil::allowOpenDupe(dupeType))
 					menu.appendItem(TSTRING(OPEN), [this] { handleOpenFile(); });
+			} else if (isRelease) {
+				//autosearch menus
+				appendDownloadMenu(menu, DownloadBaseHandler::TYPE_SECONDARY, true, nullopt, Text::fromT(selectedWord) + PATH_SEPARATOR, false);
 			}
 		}
 

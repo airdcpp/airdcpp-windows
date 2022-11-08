@@ -77,70 +77,83 @@ LRESULT PropPageTextStyles::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 	fg = SETTING(TEXT_COLOR);
 	bg = SETTING(BACKGROUND_COLOR);
 
-	TextStyles[ TS_GENERAL ].Init( 
-	this, settings, STRING(PROPPAGE_GENERAL_TEXT).c_str(), STRING(PROPPAGE_GENERAL_CHAT_TEXT).c_str(),
-	SettingsManager::TEXT_GENERAL_BACK_COLOR, SettingsManager::TEXT_GENERAL_FORE_COLOR, 
-	SettingsManager::TEXT_GENERAL_BOLD, SettingsManager::TEXT_GENERAL_ITALIC );
+	TextStyles[ TS_GENERAL ].Init(this, settings, 
+		STRING(PROPPAGE_GENERAL_TEXT).c_str(), STRING(PROPPAGE_GENERAL_CHAT_TEXT).c_str(),
+		SettingsManager::TEXT_GENERAL_BACK_COLOR, SettingsManager::TEXT_GENERAL_FORE_COLOR, 
+		SettingsManager::TEXT_GENERAL_BOLD, SettingsManager::TEXT_GENERAL_ITALIC
+	);
 
-	TextStyles[ TS_MYNICK ].Init( 
-	this, settings, STRING(PROPPAGE_MY_NICK).c_str(), STRING(PROPPAGE_MY_NICK).c_str(),
-	SettingsManager::TEXT_MYNICK_BACK_COLOR, SettingsManager::TEXT_MYNICK_FORE_COLOR, 
-	SettingsManager::TEXT_MYNICK_BOLD, SettingsManager::TEXT_MYNICK_ITALIC );
+	TextStyles[ TS_MYNICK ].Init(this, settings, 
+		STRING(PROPPAGE_MY_NICK).c_str(), STRING(PROPPAGE_MY_NICK).c_str(),
+		SettingsManager::TEXT_MYNICK_BACK_COLOR, SettingsManager::TEXT_MYNICK_FORE_COLOR,
+		SettingsManager::TEXT_MYNICK_BOLD, SettingsManager::TEXT_MYNICK_ITALIC
+	);
 
-	TextStyles[ TS_MYMSG ].Init( 
-	this, settings, STRING(PROPPAGE_MY_OWN_MSG).c_str(), STRING(PROPPAGE_MY_OWN_MSG).c_str(),
-	SettingsManager::TEXT_MYOWN_BACK_COLOR, SettingsManager::TEXT_MYOWN_FORE_COLOR, 
-	SettingsManager::TEXT_MYOWN_BOLD, SettingsManager::TEXT_MYOWN_ITALIC );
+	TextStyles[ TS_MYMSG ].Init(this, settings, 
+		STRING(PROPPAGE_MY_OWN_MSG).c_str(), STRING(PROPPAGE_MY_OWN_MSG).c_str(),
+		SettingsManager::TEXT_MYOWN_BACK_COLOR, SettingsManager::TEXT_MYOWN_FORE_COLOR,
+		SettingsManager::TEXT_MYOWN_BOLD, SettingsManager::TEXT_MYOWN_ITALIC
+	);
 
-	TextStyles[ TS_PRIVATE ].Init( 
-	this, settings, STRING(PROPPAGE_PRIVATE_MSG).c_str(), STRING(PROPPAGE_PRIVATE_MSG).c_str(),
-	SettingsManager::TEXT_PRIVATE_BACK_COLOR, SettingsManager::TEXT_PRIVATE_FORE_COLOR, 
-	SettingsManager::TEXT_PRIVATE_BOLD, SettingsManager::TEXT_PRIVATE_ITALIC );
+	TextStyles[ TS_PRIVATE ].Init(this, settings, 
+		STRING(PROPPAGE_PRIVATE_MSG).c_str(), STRING(PROPPAGE_PRIVATE_MSG).c_str(),
+		SettingsManager::TEXT_PRIVATE_BACK_COLOR, SettingsManager::TEXT_PRIVATE_FORE_COLOR,
+		SettingsManager::TEXT_PRIVATE_BOLD, SettingsManager::TEXT_PRIVATE_ITALIC
+	);
 
-	TextStyles[ TS_SYSTEM ].Init( 
-	this, settings, STRING(PROPPAGE_SYSTEM_MSG).c_str(), STRING(PROPPAGE_SYSTEM_MSG).c_str(),
-	SettingsManager::TEXT_SYSTEM_BACK_COLOR, SettingsManager::TEXT_SYSTEM_FORE_COLOR, 
-	SettingsManager::TEXT_SYSTEM_BOLD, SettingsManager::TEXT_SYSTEM_ITALIC );
+	TextStyles[ TS_SYSTEM ].Init(this, settings, 
+		STRING(PROPPAGE_SYSTEM_MSG).c_str(), STRING(PROPPAGE_SYSTEM_MSG).c_str(),
+		SettingsManager::TEXT_SYSTEM_BACK_COLOR, SettingsManager::TEXT_SYSTEM_FORE_COLOR,
+		SettingsManager::TEXT_SYSTEM_BOLD, SettingsManager::TEXT_SYSTEM_ITALIC
+	);
 
-	TextStyles[ TS_SERVER ].Init( 
-	this, settings, STRING(PROPPAGE_SERVER_MSG).c_str(), STRING(PROPPAGE_SERVER_MSG).c_str(),
-	SettingsManager::TEXT_SERVER_BACK_COLOR, SettingsManager::TEXT_SERVER_FORE_COLOR, 
-	SettingsManager::TEXT_SERVER_BOLD, SettingsManager::TEXT_SERVER_ITALIC );
+	TextStyles[ TS_SERVER ].Init(this, settings, 
+		STRING(PROPPAGE_SERVER_MSG).c_str(), STRING(PROPPAGE_SERVER_MSG).c_str(),
+		SettingsManager::TEXT_SERVER_BACK_COLOR, SettingsManager::TEXT_SERVER_FORE_COLOR, 
+		SettingsManager::TEXT_SERVER_BOLD, SettingsManager::TEXT_SERVER_ITALIC
+	);
 
-	TextStyles[ TS_TIMESTAMP ].Init( 
-	this, settings, STRING(PROPPAGE_TIMESTAMP).c_str(), STRING(PROPPAGE_STYLE_TIMESTAMP).c_str(),
-	SettingsManager::TEXT_TIMESTAMP_BACK_COLOR, SettingsManager::TEXT_TIMESTAMP_FORE_COLOR, 
-	SettingsManager::TEXT_TIMESTAMP_BOLD, SettingsManager::TEXT_TIMESTAMP_ITALIC );
+	TextStyles[ TS_TIMESTAMP ].Init(this, settings, 
+		STRING(PROPPAGE_TIMESTAMP).c_str(), Text::fromT(WinUtil::formatTimestamp()).c_str(),
+		SettingsManager::TEXT_TIMESTAMP_BACK_COLOR, SettingsManager::TEXT_TIMESTAMP_FORE_COLOR,
+		SettingsManager::TEXT_TIMESTAMP_BOLD, SettingsManager::TEXT_TIMESTAMP_ITALIC
+	);
 
-	TextStyles[ TS_URL ].Init( 
-	this, settings, (STRING(PROPPAGE_URL) + " (http, mailto, ...)").c_str(), STRING(PROPPAGE_URL).c_str(),
-	SettingsManager::TEXT_URL_BACK_COLOR, SettingsManager::TEXT_URL_FORE_COLOR, 
-	SettingsManager::TEXT_URL_BOLD, SettingsManager::TEXT_URL_ITALIC );
+	TextStyles[ TS_URL ].Init(this, settings, 
+		(STRING(PROPPAGE_URL) + " (http, mailto, ...)").c_str(), STRING(PROPPAGE_URL).c_str(),
+		SettingsManager::TEXT_URL_BACK_COLOR, SettingsManager::TEXT_URL_FORE_COLOR,
+		SettingsManager::TEXT_URL_BOLD, SettingsManager::TEXT_URL_ITALIC
+	);
 
-	TextStyles[ TS_DUPE_SHARE ].Init(
-	this, settings, STRING(PROPPAGE_DUPE_SHARE_TEXT).c_str(), STRING(PROPPAGE_DUPE_MSG).c_str(),
-	SettingsManager::TEXT_DUPE_BACK_COLOR, SettingsManager::DUPE_COLOR, 
-	SettingsManager::TEXT_DUPE_BOLD, SettingsManager::TEXT_DUPE_ITALIC );
+	TextStyles[ TS_DUPE_SHARE ].Init(this, settings, 
+		STRING(PROPPAGE_DUPE_SHARE_TEXT).c_str(), STRING(PROPPAGE_DUPE_MSG).c_str(),
+		SettingsManager::TEXT_DUPE_BACK_COLOR, SettingsManager::DUPE_COLOR,
+		SettingsManager::TEXT_DUPE_BOLD, SettingsManager::TEXT_DUPE_ITALIC
+	);
 
-	TextStyles[ TS_DUPE_QUEUE ].Init(
-	this, settings, STRING(PROPPAGE_DUPE_QUEUE_TEXT).c_str(), STRING(PROPPAGE_DUPE_MSG).c_str(),
-	SettingsManager::TEXT_QUEUE_BACK_COLOR, SettingsManager::QUEUE_COLOR, 
-	SettingsManager::TEXT_QUEUE_BOLD, SettingsManager::TEXT_QUEUE_ITALIC );
+	TextStyles[ TS_DUPE_QUEUE ].Init(this, settings, 
+		STRING(PROPPAGE_DUPE_QUEUE_TEXT).c_str(), STRING(PROPPAGE_DUPE_MSG).c_str(),
+		SettingsManager::TEXT_QUEUE_BACK_COLOR, SettingsManager::QUEUE_COLOR,
+		SettingsManager::TEXT_QUEUE_BOLD, SettingsManager::TEXT_QUEUE_ITALIC
+	);
 
-	TextStyles[ TS_FAVORITE ].Init( 
-	this, settings, STRING(PROPPAGE_FAV_USER).c_str(), STRING(PROPPAGE_FAV_USER).c_str(),
-	SettingsManager::TEXT_FAV_BACK_COLOR, SettingsManager::TEXT_FAV_FORE_COLOR, 
-	SettingsManager::TEXT_FAV_BOLD, SettingsManager::TEXT_FAV_ITALIC );
+	TextStyles[ TS_FAVORITE ].Init(this, settings, 
+		STRING(PROPPAGE_FAV_USER).c_str(), STRING(PROPPAGE_FAV_USER).c_str(),
+		SettingsManager::TEXT_FAV_BACK_COLOR, SettingsManager::TEXT_FAV_FORE_COLOR, 
+		SettingsManager::TEXT_FAV_BOLD, SettingsManager::TEXT_FAV_ITALIC
+	);
 
-	TextStyles[ TS_OP ].Init( 
-	this, settings, STRING(PROPPAGE_OPERATOR).c_str(), STRING(PROPPAGE_OPERATOR).c_str(),
-	SettingsManager::TEXT_OP_BACK_COLOR, SettingsManager::TEXT_OP_FORE_COLOR, 
-	SettingsManager::TEXT_OP_BOLD, SettingsManager::TEXT_OP_ITALIC );
+	TextStyles[ TS_OP ].Init(this, settings,
+		STRING(PROPPAGE_OPERATOR).c_str(), STRING(PROPPAGE_OPERATOR).c_str(),
+		SettingsManager::TEXT_OP_BACK_COLOR, SettingsManager::TEXT_OP_FORE_COLOR,
+		SettingsManager::TEXT_OP_BOLD, SettingsManager::TEXT_OP_ITALIC
+	);
 
-	TextStyles[ TS_NORM ].Init( 
-	this, settings, STRING(PROPPAGE_NORM).c_str(), STRING(PROPPAGE_NORM).c_str(),
-	SettingsManager::TEXT_NORM_BACK_COLOR, SettingsManager::TEXT_NORM_FORE_COLOR, 
-	SettingsManager::TEXT_NORM_BOLD, SettingsManager::TEXT_NORM_ITALIC );
+	TextStyles[ TS_NORM ].Init(this, settings, 
+		STRING(PROPPAGE_NORM).c_str(), STRING(PROPPAGE_NORM).c_str(),
+		SettingsManager::TEXT_NORM_BACK_COLOR, SettingsManager::TEXT_NORM_FORE_COLOR,
+		SettingsManager::TEXT_NORM_BOLD, SettingsManager::TEXT_NORM_ITALIC
+	);
 
 
 	for ( int i = 0; i < TS_LAST; i++ ) {
@@ -295,7 +308,7 @@ void PropPageTextStyles::RefreshPreview() {
 	string sText;
 	Identity id = Identity(NULL, 0);
 	for (int i = 0; i < TS_LAST; i++ ) {
-		m_Preview.AppendMessage(Message::fromText(TextStyles[i].m_sPreviewText, LogMessage::Flags::FLAG_DISABLE_HIGHLIGHTS), TextStyles[i], false);
+		m_Preview.AppendMessage(Message::fromText(TextStyles[i].m_sPreviewText, LogMessage::Flags::FLAG_DISABLE_HIGHLIGHTS | LogMessage::Flags::FLAG_DISABLE_TIMESTAMP), TextStyles[i], false);
 	}
 
 	m_Preview.InvalidateRect( NULL );
