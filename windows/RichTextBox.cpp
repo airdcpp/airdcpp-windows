@@ -350,8 +350,9 @@ bool RichTextBox::AppendMessage(const Message& aMessage, CHARFORMAT2& cf, bool b
 
 	// Scroll position and previous selection
 	SetSel(lSelBeginSaved, lSelEndSaved);
-	auto scrollToBottom = isMyMessage || ((si.nPage == 0 || (size_t)si.nPos >= (size_t)si.nMax - si.nPage - 5) &&
-		(lSelBeginSaved == lSelEndSaved || !selectedUser.empty() || !selectedIP.empty()));
+	auto isBottom = (si.nPage == 0 || (size_t)si.nPos >= (size_t)si.nMax - si.nPage - 5);
+	auto scrollToBottom = isMyMessage || (isBottom &&
+		(lSelBeginSaved == lSelEndSaved || !selectedUser.empty() || !selectedIP.empty() || selectedHighlight));
 
 	if (scrollToBottom) {
 		PostMessage(EM_SCROLL, SB_BOTTOM, 0);
@@ -1237,10 +1238,7 @@ LRESULT RichTextBox::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& b
 }
 
 LRESULT RichTextBox::onLButtonDown(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
-	selectedLine.clear();
-	selectedIP.clear();
-	selectedUser.clear();
-	selectedWord.clear();
+	clearSelInfo();
 
 	bHandled = FALSE;
 	return 0;
