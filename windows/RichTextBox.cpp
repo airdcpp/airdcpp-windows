@@ -122,7 +122,7 @@ void RichTextBox::SetText(const string& aText, const MessageHighlight::SortedLis
 	SetWindowText(text.c_str());
 	FormatHighlights(text, aText, aHighlights, 0);
 	if (bUseEmo) {
-		FormatEmoticons(text, 0, bUseEmo);
+		FormatEmoticons(text, 0);
 	}
 
 	SetRedraw(TRUE);
@@ -301,7 +301,7 @@ LONG RichTextBox::AppendText(tstring& sLine, POINT& pt, LONG& lSelBeginSaved, LO
 	return lSelEnd;
 }
 
-bool RichTextBox::AppendMessage(const Message& aMessage, CHARFORMAT2& cf, bool bUseEmo) {
+bool RichTextBox::AppendMessage(const Message& aMessage, CHARFORMAT2& cf, bool bUseEmoAndHighligts) {
 	SetRedraw(FALSE);
 	matchedTab = false;
 
@@ -340,11 +340,16 @@ bool RichTextBox::AppendMessage(const Message& aMessage, CHARFORMAT2& cf, bool b
 	// Format the message part
 
 	// Highlights
+	if (bUseEmoAndHighligts) {
+		// Handle legacy highlights first so that they won't override link formatting
+		FormatLegacyHighlights(text, lSelBegin);
+	}
 	FormatHighlights(text, aMessage.getText(), aMessage.getHighlights(), lSelBegin);
-	FormatLegacyHighlights(text, lSelBegin);
 
-	// Links and smilies
-	FormatEmoticons(text, lSelBegin, bUseEmo);
+	// Emoticons
+	if (bUseEmoAndHighligts) {
+		FormatEmoticons(text, lSelBegin);
+	}
 
 	CheckMessageNotifications(aMessage);
 
@@ -432,9 +437,9 @@ void RichTextBox::parsePathHighlights(const string& aText, MessageHighlight::Sor
 	}
 }
 
-void RichTextBox::FormatEmoticons(tstring& sMsg, /*tstring& sMsgLower,*/ LONG lSelBegin, bool bUseEmo) {
+void RichTextBox::FormatEmoticons(tstring& sMsg, LONG lSelBegin) {
 	// insert emoticons
-	if (bUseEmo && emoticonsManager->getUseEmoticons()) {
+	if (emoticonsManager->getUseEmoticons()) {
 		const Emoticon::List& emoticonsList = emoticonsManager->getEmoticonsList();
 		tstring::size_type lastReplace = 0;
 		uint8_t smiles = 0;

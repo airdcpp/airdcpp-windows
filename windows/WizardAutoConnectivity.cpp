@@ -132,7 +132,7 @@ void WizardAutoConnectivity::detectConnection() {
 }
 
 void WizardAutoConnectivity::addLogLine(const tstring& aMessage, CHARFORMAT2W& cf /*WinUtil::m_ChatTextGeneral*/) {
-	log.AppendMessage(dcpp::Message::fromText(Text::fromT(aMessage), LogMessage::Flags::FLAG_DISABLE_TIMESTAMP), cf);
+	log.AppendMessage(dcpp::Message::fromText(Text::fromT(aMessage), LogMessage::Flags::FLAG_DISABLE_TIMESTAMP), cf, false);
 }
 
 void WizardAutoConnectivity::on(ConnectivityManagerListener::Message, const string& aMessage) noexcept {

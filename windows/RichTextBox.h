@@ -140,7 +140,7 @@ public:
 	static tstring rtfEscape(const tstring& str);
 
 	LONG AppendText(tstring& sMsg, POINT& pt, LONG& lSelBeginSaved, LONG& lSelEndSaved);
-	void SetText(const string& aText, const MessageHighlight::SortedList& aHighlights, bool bUseEmo = false);
+	void SetText(const string& aText, const MessageHighlight::SortedList& aHighlights, bool bUseEmoAndHighligts = false);
 	bool AppendMessage(const Message& aMessage, CHARFORMAT2& cf, bool bUseEmo = true);
 	// bool AppendChat(const Identity& i, const tstring& sMyNick, const tstring& sTime, tstring sMsg, CHARFORMAT2& cf, bool bUseEmo = true);
 	void AppendHTML(const string& aTxt);
@@ -197,7 +197,7 @@ private:
 	tstring WordFromPos(const POINT& p);
 	tstring LineFromPos(const POINT& p) const;
 	void FormatLegacyHighlights(tstring& sMsg, LONG lSelBegin);
-	void FormatEmoticons(tstring& sText, LONG lSelBegin, bool bUseEmo);
+	void FormatEmoticons(tstring& sText, LONG lSelBegin);
 	void FormatHighlights(tstring& aTextT, const string& aText, const MessageHighlight::SortedList& aHighlights, LONG lSelBegin);
 	LONG FormatTimestampAuthor(bool aIsThirdPerson, const Identity& aIdentity, const tstring& sTime, CHARFORMAT2& cf, LONG lSelBegin);
 	void CheckMessageNotifications(const Message& aMessage);
