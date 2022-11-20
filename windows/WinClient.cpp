@@ -137,6 +137,8 @@ StartupLoadCallback WinClient::moduleLoadFGetter(unique_ptr<MainFrame>& wndMain)
 
 		// Web server
 		auto wsm = webserver::WebServerManager::getInstance();
+		WEBCFG(PLAIN_BIND).setDefaultValue("127.0.0.1");
+		WEBCFG(TLS_BIND).setDefaultValue("127.0.0.1");
 		if (wsm->load(webErrorF)) {
 			aLoader.stepF(STRING(WEB_SERVER));
 
@@ -147,8 +149,6 @@ StartupLoadCallback WinClient::moduleLoadFGetter(unique_ptr<MainFrame>& wndMain)
 				webResourcePath = Util::getParentDir(Util::getParentDir(Util::getAppFilePath())) + "installer\\Web-resources\\";
 			}
 #endif
-			WEBCFG(PLAIN_BIND).setDefaultValue("127.0.0.1");
-			WEBCFG(TLS_BIND).setDefaultValue("127.0.0.1");
 
 			// Run
 			auto started = wsm->startup(
