@@ -858,6 +858,8 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 				menu.AppendMenu(MF_STRING, IDC_UNBAN_IP, (_T("!unban ") + selectedIP).c_str());
 				menu.AppendMenu(MF_SEPARATOR);
 			}
+		} else if (isRelease) {
+			menu.InsertSeparatorFirst(CTSTRING(RELEASE));
 		} else if (!selectedWord.empty() && AirUtil::isHubLink(Text::fromT(selectedWord))) {
 			menu.InsertSeparatorFirst(CTSTRING(LINK));
 			menu.appendItem(TSTRING(CONNECT), [this] { handleOpenLink(); });
