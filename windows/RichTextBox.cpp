@@ -890,12 +890,12 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 			menu.appendSeparator();
 			if (isMagnet) {
 				auto isMyLink = client && Text::toT(client->getMyNick()) == author;
-				Magnet m = Magnet(Text::fromT(selectedWord));
-				if (ShareManager::getInstance()->isTempShared(getTempShareUser(), m.getTTH())) {
+				auto magnet = *selectedHighlight->getMagnet();
+				if (ShareManager::getInstance()->isTempShared(getTempShareUser(), magnet.getTTH())) {
 					/* show an option to remove the item */
 					menu.appendItem(TSTRING(STOP_SHARING), [this] { handleRemoveTemp(); });
 				} else if (!isMyLink) {
-					appendDownloadMenu(menu, DownloadBaseHandler::TYPE_PRIMARY, false, m.getTTH(), nullopt);
+					appendDownloadMenu(menu, DownloadBaseHandler::TYPE_PRIMARY, false, magnet.getTTH(), nullopt);
 				}
 
 				if ((!author.empty() && !isMyLink) || AirUtil::allowOpenDupe(dupeType))
@@ -1204,15 +1204,15 @@ void RichTextBox::handleOpenFolder() {
 }
 
 void RichTextBox::handleDownload(const string& aTarget, Priority p, bool aIsRelease) {
-	if (!aIsRelease) {
+	if (!aIsRelease && selectedHighlight && selectedHighlight->getMagnet()) {
 		auto u = move(getMagnetSource());
-		Magnet m = Magnet(Text::fromT(selectedWord));
-		if (pmUser && ShareManager::getInstance()->isAdcDirectoryShared(aTarget, m.fsize) > 0 &&
+		auto magnet = *selectedHighlight->getMagnet();
+		if (pmUser && ShareManager::getInstance()->isAdcDirectoryShared(aTarget, magnet.fsize) > 0 &&
 			!WinUtil::showQuestionBox(TSTRING_F(PM_MAGNET_SHARED_WARNING, Text::toT(Util::getFilePath(aTarget))), MB_ICONQUESTION)) {
 				return;
 		}
 
-		ActionUtil::addFileDownload(aTarget + (!Util::isDirectoryPath(aTarget) ? Util::emptyString : m.fname), m.fsize, m.getTTH(), u, 0, pmUser ? QueueItem::FLAG_PRIVATE : 0, p);
+		ActionUtil::addFileDownload(aTarget + (!Util::isDirectoryPath(aTarget) ? Util::emptyString : magnet.fname), magnet.fsize, magnet.getTTH(), u, 0, pmUser ? QueueItem::FLAG_PRIVATE : 0, p);
 	} else {
 		AutoSearchManager::getInstance()->addAutoSearch(Text::fromT(selectedWord), aTarget, true, AutoSearch::CHAT_DOWNLOAD);
 	}
@@ -1228,7 +1228,6 @@ bool RichTextBox::showDirDialog(string& fileName) {
 
 int64_t RichTextBox::getDownloadSize(bool /*isWhole*/) {
 	if (selectedHighlight && selectedHighlight->getMagnet()) {
-		Magnet m = Magnet(Text::fromT(selectedWord));
 		return (*selectedHighlight->getMagnet()).fsize;
 	} else {
 		return 0;
