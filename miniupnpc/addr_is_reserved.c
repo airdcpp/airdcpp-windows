@@ -1,4 +1,4 @@
-/* $Id: addr_is_reserved.c,v 1.4 2021/03/02 23:40:32 nanard Exp $ */
+/* $Id: addr_is_reserved.c,v 1.5 2021/05/10 20:53:02 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * Project : miniupnp
  * Web : http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
@@ -56,7 +56,7 @@ int addr_is_reserved(const char * addr_str)
 	uint32_t addr_n, address;
 	size_t i;
 
-#if defined(_WIN32) && (!defined(_WIN32_WINNT_VISTA) || (_WIN32_WINNT < _WIN32_WINNT_VISTA))
+#if defined(_WIN32) && _WIN32_WINNT < 0x0600 // _WIN32_WINNT_VISTA
 	addr_n = inet_addr(addr_str);
 	if (addr_n == INADDR_NONE)
 		return 1;
