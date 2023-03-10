@@ -256,7 +256,7 @@ void ListFilter::textUpdated(bool alwaysUpdate) {
 	}
 
 	if (start != string::npos) {
-		methodCombo.SetCurSel(StringMatch::METHOD_LAST + mode);
+		methodCombo.SetCurSel(static_cast<int>(StringMatch::METHOD_LAST) + static_cast<int>(mode));
 		filter = filter.substr(start, filter.length()-start);
 		usingTypedMethod = true;
 	} else if (usingTypedMethod) {

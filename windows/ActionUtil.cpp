@@ -617,7 +617,7 @@ void ActionUtil::appendLanguageMenu(CComboBoxEx& ctrlLanguage_) noexcept {
 
 void ActionUtil::setLanguage(int aLanguageIndex) noexcept {
 	auto languages = Localization::getLanguages();
-	if (aLanguageIndex < languages.size()) {
+	if (static_cast<size_t>(aLanguageIndex) < languages.size()) {
 		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, languages[aLanguageIndex].getLanguageSettingValue());
 	}
 }

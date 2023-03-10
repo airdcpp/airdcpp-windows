@@ -83,7 +83,7 @@ public:
 
 		ctrlStatus.SetText(statusTextSectionIndex, sLine, SBT_NOTABPARSING);
 		ctrlStatus.SetIcon(statusTextSectionIndex, ResourceLoader::getSeverityIcon(aSeverity));
-		while (lastLinesList.size() + 1 > maxHistoryLines) {
+		while (lastLinesList.size() + 1 > static_cast<size_t>(maxHistoryLines)) {
 			lastLinesList.pop_front();
 		}
 
