@@ -1,4 +1,9 @@
-4.12
+4.20
+
+API and Web UI changes:
+
+- http://airdcpp-web.github.io/2023/03/11/version-2.11.4.html
+- http://airdcpp-web.github.io/2022/12/02/version-2.11.3.html
 
 Added:
 
@@ -11,7 +16,9 @@ Changed:
 
 - Discussion forum and issue tracker links now point to Github
 - Put extension context menu items under an extension-specific submenu in if there are more than two menu items
+- Improve logging of partial filelist transfers
 - Disable maximum size for shared files when using the RAR profile
+- Update Node.js to version 18.15.0
 
 Fixed:
 
