@@ -6,7 +6,7 @@ REM You can use the switch '/force' to force an update.
 
 setlocal
 
-set appver=web-resources-update v0.3
+set appver=web-resources-update v0.4
 
 set force=false
 
@@ -44,7 +44,7 @@ set "version-old=%version-old:.=%"
 
 echo %version-new-full% | findstr /irc:"beta\.[0-9]" >NUL
 if not %errorlevel% == 0 (
-    set version-new-beta=0
+    set version-new-beta=999
   ) else (
     set "version-new-beta=%version-new-beta:beta.=%"
 )
