@@ -6,4 +6,4 @@
 
 ## Cloning
 
-``git clone https://github.com/airdcpp/airgit.git``
+``git clone https://github.com/airdcpp/airdcpp-windows.git``
