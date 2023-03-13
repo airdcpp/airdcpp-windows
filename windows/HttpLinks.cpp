@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2022 AirDC++ Project
+ * Copyright (C) 2012-2023 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,8 +27,7 @@ namespace dcpp {
 tstring HttpLinks::homepage = _T("https://www.airdcpp.net/");
 tstring HttpLinks::github = _T("https://github.com/airdcpp/airdcpp-windows/");
 tstring HttpLinks::downloads = HttpLinks::homepage + _T("download/");
-tstring HttpLinks::guides = HttpLinks::homepage + _T("guides/");
-tstring HttpLinks::customize = HttpLinks::homepage + _T("customizations/");
+tstring HttpLinks::guides = HttpLinks::github + _T("wiki/");
 tstring HttpLinks::discuss = HttpLinks::github + _T("discussions/");
 tstring HttpLinks::bugs = HttpLinks::github + _T("issues/");
 
@@ -60,7 +59,6 @@ void HttpLinks::updateLinks(SimpleXML& xml) {
 		// General
 		LINK(homepage, Homepage);
 		LINK(downloads, Downloads);
-		LINK(customize, Customize);
 		LINK(discuss, Forum);
 		LINK(bugs, Bugs);
 		LINK(guides, Guides);

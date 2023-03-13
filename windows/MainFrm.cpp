@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2022 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2023 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1170,7 +1170,6 @@ LRESULT MainFrame::onLink(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL
 		case IDC_HELP_GUIDES: site = HttpLinks::guides; break;
 		case IDC_HELP_DISCUSS: site = HttpLinks::discuss; break;
 		case IDC_HELP_BUG_TRACKER: site = HttpLinks::bugs; break;
-		case IDC_HELP_CUSTOMIZE: site = HttpLinks::customize; break;
 		default: dcassert(0);
 	}
 
