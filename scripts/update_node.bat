@@ -1,5 +1,5 @@
 :: Config
-set NVM_VERSION=18.14.2
+set NVM_VERSION=18.15.0
 
 :: Architecture argument (Win32/x64)
 IF [%1]==[] goto :invalidParameters
