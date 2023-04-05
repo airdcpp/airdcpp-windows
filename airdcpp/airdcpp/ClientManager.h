@@ -116,9 +116,14 @@ public:
 			}
 		}
 
-		string ret = aHintedUser ? NameOperator()(aHintedUser) + " " : Util::emptyString;
-		if (!ouList.empty())
+		string ret = aHintedUser ? NameOperator()(aHintedUser) : Util::emptyString;
+		if (!ouList.empty()) {
+			if (!ret.empty()) {
+				ret += " ";
+			}
+
 			ret += Util::listToStringT<OnlineUserList, NameOperator>(ouList, aHintedUser ? true : false, aHintedUser ? false : true);
+		}
 		return ret;
 	}
 
