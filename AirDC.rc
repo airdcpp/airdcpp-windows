@@ -906,18 +906,18 @@ BEGIN
     EDITTEXT        IDC_USERDESC,94,51,164,14,ES_AUTOHSCROLL
     GROUPBOX        "Settings Profiles",IDC_SETTINGS_PROFILE,7,79,294,60,WS_GROUP
     CONTROL         "",IDC_LANGUAGE,"ComboBoxEx32",CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP,15,160,246,117
-    GROUPBOX        "Language",IDC_LANGUAGE_CAPTION,7,148,294,53
-    LTEXT           "Note: you need to restart the client for the new language to take effect",IDC_LANGUAGE_NOTE,15,180,248,15
-    GROUPBOX        "Away message",IDC_SETTINGS_DEFAULT_AWAY_MSG,12,222,255,40
-    EDITTEXT        IDC_DEFAULT_AWAY_MESSAGE,18,233,244,22,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN
-    GROUPBOX        "Away Mode",IDC_AWAY_MODE,7,211,294,92
-    EDITTEXT        IDC_AWAY_IDLE_TIME,133,280,28,14,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_AWAY_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,154,280,10,14
-    LTEXT           "Automatically set away mode after",IDC_AWAY_IDLE_TEXT_BEGIN,11,282,120,8,0,WS_EX_RIGHT
-    LTEXT           "minutes of inactivity (0 = disabled)",IDC_AWAY_IDLE_TEXT_END,169,282,122,8
-    CONTROL         "Normal",IDC_NORMAL,"Button",BS_AUTORADIOBUTTON,15,92,119,10
-    CONTROL         "RAR Hubs",IDC_RAR,"Button",BS_AUTORADIOBUTTON,15,106,101,10
-    CONTROL         "LAN/WAN Hubs",IDC_LAN,"Button",BS_AUTORADIOBUTTON,15,120,92,10
+    GROUPBOX        "Language",IDC_LANGUAGE_CAPTION,7,148,294,58
+    LTEXT           "Note: You need to restart the client for the new language to take effect.\nIt is only the latest version of AirDC that has full multilingual support.",IDC_LANGUAGE_NOTE,15,180,271,20
+    GROUPBOX        "Away message",IDC_SETTINGS_DEFAULT_AWAY_MSG,12,227,255,40
+    EDITTEXT        IDC_DEFAULT_AWAY_MESSAGE,18,238,244,22,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN
+    GROUPBOX        "Away Mode",IDC_AWAY_MODE,7,216,294,92
+    EDITTEXT        IDC_AWAY_IDLE_TIME,133,285,28,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_AWAY_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,154,285,10,14
+    LTEXT           "Automatically set away mode after",IDC_AWAY_IDLE_TEXT_BEGIN,11,287,120,8,0,WS_EX_RIGHT
+    LTEXT           "minutes of inactivity (0 = disabled)",IDC_AWAY_IDLE_TEXT_END,169,287,122,8
+    CONTROL         "Normal",IDC_NORMAL,"Button",BS_AUTORADIOBUTTON,15,92,279,10
+    CONTROL         "RAR Hubs",IDC_RAR,"Button",BS_AUTORADIOBUTTON,15,106,279,10
+    CONTROL         "LAN/WAN Hubs",IDC_LAN,"Button",BS_AUTORADIOBUTTON,15,120,277,10
 END
 
 IDD_ADVANCEDPAGE DIALOGEX 0, 0, 312, 316
@@ -1610,6 +1610,11 @@ BEGIN
     0
 END
 
+IDD_GENERALPAGE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -2126,7 +2131,7 @@ BEGIN
     LTEXT           "Maximum number of hashers per volume",IDC_MAX_VOL_HASHERS_LBL,19,58,219,8,0,WS_EX_RIGHT
     EDITTEXT        IDC_MAX_VOL_HASHERS,247,57,31,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_VOL_HASHERS_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,269,57,11,14
-    CONTROL         "Verify and repair the hash database on next startup (use in case of fatal errors only)",IDC_REPAIR_HASHDB,
+    CONTROL         "Verify and repair the hash database on next startup\n(use in case of fatal errors only)",IDC_REPAIR_HASHDB,
                     "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | BS_MULTILINE | WS_TABSTOP,16,243,273,23,WS_EX_RIGHT
     GROUPBOX        "Maintenance",IDC_MAINTENANCE,7,89,296,190
     PUSHBUTTON      "Optimize databases",IDC_OPTIMIZE_DB_FAST,48,145,209,14
@@ -3061,6 +3066,11 @@ BEGIN
     0,
     0, 10, 0, 0,
     0, 0, 0, 0
+END
+
+IDD_HASHINGPAGE AFX_DIALOG_LAYOUT
+BEGIN
+    0
 END
 
 #endif    // Finnish (Finland) resources
