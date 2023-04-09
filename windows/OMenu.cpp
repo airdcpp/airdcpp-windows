@@ -114,20 +114,15 @@ void OMenu::appendSeparator() {
 }
 
 
-void OMenu::appendExtensionMenuItems(OMenu& menu_, const webserver::ContextMenuItemList& aItems, const ExtensionMenuItemClickHandler& aClickHandler) noexcept {
+void OMenu::appendExtensionMenuItems(OMenu& menu_, const webserver::GroupedContextMenuItemList& aItems, const ExtensionMenuItemClickHandler& aClickHandler) noexcept {
 	if (aItems.empty()) {
 		return;
 	}
 
-	map<string, webserver::ContextMenuItemList> groupedItems;
-	for (const auto& item: aItems) {
-		groupedItems[item->getHook().getName()].push_back(item);
-	}
 
-
-	for (const auto& group : groupedItems) {
-		auto& menu = group.second.size() > EXTENSION_GROUP_LIMIT ? *menu_.createSubMenu(Text::toT(group.first)) : menu_;
-		for (const auto& extItem: group.second) {
+	for (const auto& group: aItems) {
+		auto& menu = group->getItems().size() > EXTENSION_GROUP_LIMIT ? *menu_.createSubMenu(Text::toT(group->getTitle())) : menu_;
+		for (const auto& extItem: group->getItems()) {
 			menu.appendItem(
 				Text::toT(extItem->getTitle()),
 				[=]() {

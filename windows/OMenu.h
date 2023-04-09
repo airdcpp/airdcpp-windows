@@ -85,7 +85,7 @@ public:
 	}
 
 	typedef std::function<void(const webserver::ContextMenuItemClickData&)> ExtensionMenuItemClickHandler;
-	static void appendExtensionMenuItems(OMenu& menu_, const webserver::ContextMenuItemList& aItems, const ExtensionMenuItemClickHandler& aClickHandler) noexcept;
+	static void appendExtensionMenuItems(OMenu& menu_, const webserver::GroupedContextMenuItemList& aItems, const ExtensionMenuItemClickHandler& aClickHandler) noexcept;
 
 	void appendSeparator();
 

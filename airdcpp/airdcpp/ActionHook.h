@@ -250,6 +250,15 @@ namespace dcpp {
 
 			return ret;
 		}
+
+		static vector<DataT> normalizeData(const ActionHookDataList<DataT>& aResult) noexcept {
+			vector<DataT> ret;
+			for (const auto& i : aResult) {
+				ret.push_back(i->data);
+			}
+
+			return ret;
+		}
 	private:
 		typedef std::vector<ActionHookHandler> SubscriberList;
 
