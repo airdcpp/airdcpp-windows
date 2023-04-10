@@ -52,6 +52,8 @@
 			); \
 		}, [this](const string& aId) { \
 			cmm.hook##MenuHook.removeSubscriber(aId); \
+		}, [this] { \
+			return cmm.hook##MenuHook.getSubscribers(); \
 		} \
 	); \
 	INLINE_MODULE_METHOD_HANDLER(access, METHOD_POST, (EXACT_PARAM(menuId), EXACT_PARAM("select")), [=](ApiRequest& aRequest) { \
@@ -87,6 +89,8 @@
 		); \
 	}, [this](const string& aId) { \
 		cmm.hook##MenuHook.removeSubscriber(aId); \
+	}, [this] { \
+		return cmm.hook##MenuHook.getSubscribers(); \
 	}); \
 	INLINE_MODULE_METHOD_HANDLER(access, METHOD_POST, (EXACT_PARAM(menuId), EXACT_PARAM("select")), [=](ApiRequest& aRequest) { \
 		const auto entityId = JsonUtil::getRawField("entity_id", aRequest.getRequestBody()); \
