@@ -73,8 +73,8 @@ namespace webserver {
 			currentValues.reset();
 		}
 
-		void resetItems(bool aClearFilters = false) {
-			clear(aClearFilters);
+		void resetItems() {
+			clear();
 
 			currentValues.set(IntCollector::TYPE_RANGE_START, 0);
 
@@ -390,7 +390,7 @@ namespace webserver {
 			return static_cast<int>(matchingItems.size());
 		}
 
-		void clear(bool aClearFilters = true) {
+		void clear() {
 			WLock l(cs);
 			tasks.clear();
 			currentViewportItems.clear();
@@ -398,10 +398,6 @@ namespace webserver {
 			sourceItems.clear();
 			prevTotalItemCount = -1;
 			prevMatchingItemCount = -1;
-
-			if (aClearFilters) {
-				filters.clear();
-			}
 		}
 
 		static bool itemSort(const T& t1, const T& t2, const PropertyItemHandler<T>& aItemHandler, int aSortProperty, int aSortAscending) {
