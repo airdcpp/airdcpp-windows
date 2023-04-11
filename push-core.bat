@@ -1,1 +1,1 @@
-git subtree push --prefix=airdcpp airdcpp master --squash
+git subtree push --prefix=airdcpp airdcpp master
