@@ -98,7 +98,7 @@ private:
 			return;
 		}
 
-		tasks.emplace(aItem, move(aData));
+		tasks.emplace(aItem, std::move(aData));
 	}
 
 	PropertyIdSet updatedProperties;

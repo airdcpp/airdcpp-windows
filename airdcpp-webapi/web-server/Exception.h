@@ -32,7 +32,7 @@ namespace webserver {
 	{
 	public:
 		JsonException(const json& aError, const std::string& aMessage) : error(aError), std::runtime_error(aMessage.c_str()) { }
-		JsonException(json&& aError, const std::string& aMessage) : error(move(aError)), std::runtime_error(aMessage.c_str()) { }
+		JsonException(json&& aError, const std::string& aMessage) : error(std::move(aError)), std::runtime_error(aMessage.c_str()) { }
 
 		virtual ~JsonException() noexcept { }
 		const json& getErrorJson() const { return error; }

@@ -130,7 +130,7 @@ namespace dcpp {
 
 	void MessageCache::add(Message&& aMessage) noexcept {
 		WLock l(cs);
-		messages.push_back(move(aMessage));
+		messages.push_back(std::move(aMessage));
 		for (const auto& hl : aMessage.getHighlights()) {
 			highlights.emplace(hl->getToken(), hl);
 		}

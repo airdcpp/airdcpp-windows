@@ -172,7 +172,7 @@ bool AutoSearch::isExcluded(const string& aString) noexcept {
 void AutoSearch::updateExcluded() noexcept {
 	excluded.clear();
 	if (!excludedString.empty()) {
-		auto ex = move(SearchQuery::parseSearchString(excludedString));
+		auto ex = std::move(SearchQuery::parseSearchString(excludedString));
 		for (const auto& i : ex)
 			excluded.addString(i);
 	}

@@ -440,7 +440,7 @@ namespace webserver {
 	}
 
 	TimerPtr WebServerManager::addTimer(Callback&& aCallback, time_t aIntervalMillis, const Timer::CallbackWrapper& aCallbackWrapper) noexcept {
-		return make_shared<Timer>(move(aCallback), tasks, aIntervalMillis, aCallbackWrapper);
+		return make_shared<Timer>(std::move(aCallback), tasks, aIntervalMillis, aCallbackWrapper);
 	}
 
 	void WebServerManager::addAsyncTask(Callback&& aCallback) noexcept {

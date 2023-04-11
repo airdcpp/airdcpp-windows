@@ -936,7 +936,7 @@ void DirectoryListing::addSearchTask(const SearchPtr& aSearch) noexcept {
 
 void DirectoryListing::addAsyncTask(Callback&& f) noexcept {
 	if (isClientView) {
-		tasks.addTask(move(f));
+		tasks.addTask(std::move(f));
 	} else {
 		dispatch(f);
 	}

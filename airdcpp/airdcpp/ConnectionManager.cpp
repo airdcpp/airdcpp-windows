@@ -580,7 +580,7 @@ void ConnectionManager::adcConnect(const OnlineUser& aUser, const string& aPort,
 			uc->connect(AddressInfo(aUser.getIdentity().getIp4(), aUser.getIdentity().getIp6()), aPort, localPort, natRole, aUser);
 		} else {
 			auto ai = AddressInfo(aUser.getIdentity().getTcpConnectIp(), Identity::allowV6Connections(aUser.getIdentity().getTcpConnectMode()) ? AddressInfo::TYPE_V6 : AddressInfo::TYPE_V4);
-			uc->connect(move(ai), aPort, localPort, natRole, aUser);
+			uc->connect(std::move(ai), aPort, localPort, natRole, aUser);
 		}
 	} catch(const Exception&) {
 		putConnection(uc);

@@ -60,7 +60,7 @@ public:
 	}
 
 	void addTask(Callback&& aTask) {
-		queue.push(new Callback(move(aTask)));
+		queue.push(new Callback(std::move(aTask)));
 		if (started)
 			s.signal();
 	}

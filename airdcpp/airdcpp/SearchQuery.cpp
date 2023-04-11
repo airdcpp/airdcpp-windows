@@ -205,7 +205,7 @@ SearchQuery::SearchQuery(const TTHValue& aRoot) noexcept : root(aRoot) {
 SearchQuery::SearchQuery(const string& aSearch, const StringList& aExcluded, const StringList& aExt, Search::MatchType aMatchType) noexcept : matchType(aMatchType) {
 
 	//add included
-	auto inc = move(parseSearchString(aSearch));
+	auto inc = std::move(parseSearchString(aSearch));
 	for(auto& i: inc)
 		include.addString(i);
 

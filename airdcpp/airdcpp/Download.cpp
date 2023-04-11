@@ -235,7 +235,7 @@ void Download::open(int64_t bytes, bool z, bool hasDownloadedBytes) {
 		}
 
 		f->setPos(getSegment().getStart());
-		output = move(f);
+		output = std::move(f);
 		tempTarget = target;
 	} else if(getType() == Transfer::TYPE_FULL_LIST) {
 		auto target = getPath();

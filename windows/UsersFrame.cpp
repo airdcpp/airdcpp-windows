@@ -830,7 +830,7 @@ void UsersFrame::UserInfo::update(const UserPtr& u) {
 
 	//gets nicks and hubnames and updates the hint url
 	string url = getHubUrl();
-	auto ui = move(getUserInfo(u, url));
+	auto ui = std::move(getUserInfo(u, url));
 	setHubUrl(url);
 
 	if (fu) {

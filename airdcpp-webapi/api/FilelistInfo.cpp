@@ -69,7 +69,7 @@ namespace webserver {
 	}
 
 	void FilelistInfo::addListTask(Callback&& aTask) noexcept {
-		dl->addAsyncTask(getAsyncWrapper(move(aTask)));
+		dl->addAsyncTask(getAsyncWrapper(std::move(aTask)));
 	}
 
 	api_return FilelistInfo::handleUpdateList(ApiRequest& aRequest) {

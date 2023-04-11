@@ -28,7 +28,7 @@ namespace webserver {
 	class LazyInitWrapper {
 	public:
 		typedef std::function < unique_ptr<T>() > InitF;
-		LazyInitWrapper(InitF&& aInitF) : initF(move(aInitF)) {}
+		LazyInitWrapper(InitF&& aInitF) : initF(std::move(aInitF)) {}
 
 		T* operator->() {
 			ensureInit();

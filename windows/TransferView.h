@@ -218,7 +218,7 @@ private:
 		}
 
 		UpdateInfo(string aToken, bool isDownload, bool isTransferFailed = false) : 
-			updateMask(0), user(HintedUser()), download(isDownload), token(move(aToken)), transferFailed(isTransferFailed), flagIndex(0), type(Transfer::TYPE_LAST)
+			updateMask(0), user(HintedUser()), download(isDownload), token(std::move(aToken)), transferFailed(isTransferFailed), flagIndex(0), type(Transfer::TYPE_LAST)
 		{ }
 
 		void setUpdateFlags(const TransferInfoPtr& aInfo, int aUpdateFlags) noexcept;

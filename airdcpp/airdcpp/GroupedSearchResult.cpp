@@ -31,7 +31,7 @@ namespace dcpp {
 	FastCriticalSection GroupedSearchResult::cs;
 
 	GroupedSearchResult::GroupedSearchResult(const SearchResultPtr& aSR, SearchResult::RelevanceInfo&& aRelevance) :
-		/*token(Util::rand()),*/ baseResult(aSR), relevanceInfo(move(aRelevance)) {
+		/*token(Util::rand()),*/ baseResult(aSR), relevanceInfo(std::move(aRelevance)) {
 
 		// check the dupe
 		if (SETTING(DUPE_SEARCH)) {

@@ -241,7 +241,7 @@ tstring Parser::Context::getEnd() const {
 
 size_t Parser::addFont(string&& font) {
 	auto retLocal = fonts.size();
-	fonts.push_back("{\\f" + Util::toString(retLocal) + move(font) + ";}");
+	fonts.push_back("{\\f" + Util::toString(retLocal) + std::move(font) + ";}");
 	return retLocal;
 }
 

@@ -47,7 +47,7 @@ static string parseLanguage() noexcept {
 	return i != localeGeoMappings.end() ? i->second : "en";
 }
 
-GeoIP::GeoIP(string&& aPath) : geo(nullptr), path(move(aPath)), language(parseLanguage()) {
+GeoIP::GeoIP(string&& aPath) : geo(nullptr), path(std::move(aPath)), language(parseLanguage()) {
 	if(File::getSize(path) > 0 || decompress()) {
 		open();
 	}

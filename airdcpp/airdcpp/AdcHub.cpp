@@ -1219,7 +1219,7 @@ void AdcHub::constructSearch(AdcCommand& c, const SearchPtr& aSearch, bool isDir
 			c.addParam("LE", Util::toString(aSearch->size));
 		}
 
-		auto searchTokens = move(SearchQuery::parseSearchString(aSearch->query));
+		auto searchTokens = std::move(SearchQuery::parseSearchString(aSearch->query));
 		for(const auto& t: searchTokens)
 			c.addParam("AN", t);
 

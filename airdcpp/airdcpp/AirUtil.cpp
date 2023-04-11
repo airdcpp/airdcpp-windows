@@ -62,7 +62,7 @@ boost::regex AirUtil::crcReg;
 boost::regex AirUtil::lineBreakRegex;
 boost::regex AirUtil::urlReg;
 
-AirUtil::TimeCounter::TimeCounter(string aMsg) : start(GET_TICK()), msg(move(aMsg)) {
+AirUtil::TimeCounter::TimeCounter(string aMsg) : start(GET_TICK()), msg(std::move(aMsg)) {
 
 }
 

@@ -182,7 +182,7 @@ int MappingManager::run() {
 
 		log(STRING_F(MAPPER_CREATING_SUCCESS_LONG, conn_port % secure_port % search_port % deviceString(mapper) % mapper.getName()), LogMessage::SEV_INFO);
 
-		working = move(pMapper);
+		working = std::move(pMapper);
 
 		if ((!v6 && !CONNSETTING(NO_IP_OVERRIDE)) || (v6 && !CONNSETTING(NO_IP_OVERRIDE6))) {
 			setting = v6 ? SettingsManager::EXTERNAL_IP6 : SettingsManager::EXTERNAL_IP;

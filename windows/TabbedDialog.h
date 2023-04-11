@@ -70,7 +70,7 @@ public:
 	
 	template<class T>
 	void addPage(shared_ptr<T>&& t) {
-		pages.push_back(move(t));
+		pages.push_back(std::move(t));
 	}
 
 private:

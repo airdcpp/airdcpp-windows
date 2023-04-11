@@ -323,7 +323,7 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_
 	/*vector<unique_ptr<ItemInfoCache>> removedInfos;
 	for (auto i = itemInfos.begin(); i != itemInfos.end();) {
 		if (AirUtil::isParentOrExactAdc(aDir, i->first)) {
-			removedInfos.push_back(move(i->second));
+			removedInfos.push_back(std::move(i->second));
 			i = itemInfos.erase(i);
 		} else {
 			i++;
@@ -347,7 +347,7 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aPat
 	vector<unique_ptr<ItemInfoCache>> removedInfos;
 	for (auto i = itemInfos.begin(); i != itemInfos.end();) {
 		if (AirUtil::isParentOrExactAdc(aPath, i->first)) {
-			removedInfos.push_back(move(i->second));
+			removedInfos.push_back(std::move(i->second));
 			i = itemInfos.erase(i);
 		} else {
 			i++;
@@ -2357,7 +2357,7 @@ void DirectoryListingFrame::updateSelCombo(bool init) {
 		dcassert(!hint.empty() || !dl->getPartialList());
 
 		//get the hub and online status
-		auto hubsInfoNew = move(FormatUtil::getHubNames(cid));
+		auto hubsInfoNew = std::move(FormatUtil::getHubNames(cid));
 		if (!hubsInfoNew.second && !online) {
 			//nothing to update... probably a delayed event
 			return;

@@ -222,11 +222,11 @@ namespace webserver {
 		}
 
 		void addAsyncTask(Callback&& aTask) override {
-			SubscribableApiModule::addAsyncTask(getAsyncWrapper(move(aTask)));
+			SubscribableApiModule::addAsyncTask(getAsyncWrapper(std::move(aTask)));
 		}
 
 		TimerPtr getTimer(Callback&& aTask, time_t aIntervalMillis) override {
-			return session->getServer()->addTimer(move(aTask), aIntervalMillis, 
+			return session->getServer()->addTimer(std::move(aTask), aIntervalMillis, 
 				std::bind(&SubApiModule::moduleAsyncRunWrapper<ParentType>, std::placeholders::_1, parentModule, getId(), session->getId())
 			);
 		}

@@ -64,7 +64,7 @@ public:
 	};
 
 	ColumnInfo(const tstring &aName, int aPos, int aFormat, int aWidth, ColumnType aColType, ClickHandler aClickHandler = ClickHandler()) : name(aName), pos(aPos), width(aWidth),
-		format(aFormat), visible(true), colType(aColType), clickHandler(move(aClickHandler)) {
+		format(aFormat), visible(true), colType(aColType), clickHandler(std::move(aClickHandler)) {
 	}
 	~ColumnInfo() {}
 
@@ -1249,10 +1249,10 @@ public:
 	}
 
 	typedef function < void(T*) > InsertFunction;
-	void setInsertFunction(InsertFunction&& aF) { insertF = move(aF); }
+	void setInsertFunction(InsertFunction&& aF) { insertF = std::move(aF); }
 
 	typedef function < bool(const T*) > FilterFunction;
-	void setFilterFunction(FilterFunction&& aF) { filterF = move(aF); }
+	void setFilterFunction(FilterFunction&& aF) { filterF = std::move(aF); }
 private:
 
    	/** map of all parent items with their associated children */

@@ -1205,7 +1205,7 @@ void RichTextBox::handleOpenFolder() {
 
 void RichTextBox::handleDownload(const string& aTarget, Priority p, bool aIsRelease) {
 	if (!aIsRelease && selectedHighlight && selectedHighlight->getMagnet()) {
-		auto u = move(getMagnetSource());
+		auto u = std::move(getMagnetSource());
 		auto magnet = *selectedHighlight->getMagnet();
 		if (pmUser && ShareManager::getInstance()->isAdcDirectoryShared(aTarget, magnet.fsize) > 0 &&
 			!WinUtil::showQuestionBox(TSTRING_F(PM_MAGNET_SHARED_WARNING, Text::toT(Util::getFilePath(aTarget))), MB_ICONQUESTION)) {

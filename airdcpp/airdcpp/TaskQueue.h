@@ -56,19 +56,19 @@ public:
 
 	void add(UniqueTaskPair& t) { 
 		Lock l(cs); 
-		tasks.push_back(move(t)); 
+		tasks.push_back(std::move(t)); 
 	}
 
 	void add(uint8_t type, std::unique_ptr<Task> && data) { 
 		Lock l(cs); 
-		tasks.emplace_back(type, move(data)); 
+		tasks.emplace_back(type, std::move(data)); 
 	}
 
 	bool addUnique(uint8_t type, std::unique_ptr<Task> && data) { 
 		Lock l(cs);
 		auto p = boost::find_if(tasks, [type, this](const UniqueTaskPair& tp) { return tp.first == type; });
 		if (p == tasks.end()) {
-			tasks.emplace_back(type, move(data));
+			tasks.emplace_back(type, std::move(data));
 			return true;
 		}
 		return false;

@@ -101,7 +101,7 @@ public:
 		if(i == expectedConnections.end()) 
 			return make_pair(Util::emptyString, Util::emptyString);
 
-		StringPair tmp = move(i->second);
+		StringPair tmp = std::move(i->second);
 		expectedConnections.erase(i);
 		
 		return tmp;
