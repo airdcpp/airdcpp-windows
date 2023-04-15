@@ -1436,15 +1436,18 @@ void HubFrame::on(ClientListener::ChatMessage, const Client*, const ChatMessageP
 	callAsync([=] { onChatMessage(message); });
 }	
 
-void HubFrame::on(ClientListener::StatusMessage, const Client*, const LogMessagePtr& aMessage) noexcept {
-	callAsync([=] { 
-		if(SETTING(BOLD_HUB_TABS_ON_KICK) && aMessage->getSeverity() != LogMessage::SEV_VERBOSE) {
+void HubFrame::on(ClientListener::StatusMessage, const Client*, const LogMessagePtr& aMessage, const string& aOwner) noexcept {
+	if (!aOwner.empty() && aOwner != WinUtil::ownerId) {
+		return;
+	}
+
+	callAsync([=] {
+		if (SETTING(BOLD_HUB_TABS_ON_KICK) && aMessage->getSeverity() != LogMessage::SEV_VERBOSE) {
 			setDirty();
 		}
 
 		addStatusMessage(aMessage);
 	});
-
 }
 
 void HubFrame::addStatusMessage(const LogMessagePtr& aMessage) {

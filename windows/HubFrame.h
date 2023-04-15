@@ -347,7 +347,7 @@ private:
 	void on(ClientListener::GetPassword, const Client*) noexcept override;
 	void on(ClientListener::HubUpdated, const Client*) noexcept override;
 	void on(ClientListener::ChatMessage, const Client*, const ChatMessagePtr&) noexcept override;
-	void on(ClientListener::StatusMessage, const Client*, const LogMessagePtr&) noexcept override;
+	void on(ClientListener::StatusMessage, const Client*, const LogMessagePtr&, const string&) noexcept override;
 	void on(ClientListener::SearchFlood, const Client*, const string&) noexcept override;
 	void on(ClientListener::SetActive, const Client*) noexcept override;
 	void on(ClientListener::Close, const Client*) noexcept override;

@@ -68,7 +68,7 @@ public:
 	virtual void on(GetPassword, const Client*) noexcept { }
 	virtual void on(HubUpdated, const Client*) noexcept { }
 	virtual void on(ChatMessage, const Client*, const ChatMessagePtr&) noexcept { }
-	virtual void on(StatusMessage, const Client*, const LogMessagePtr&) noexcept { }
+	virtual void on(StatusMessage, const Client*, const LogMessagePtr&, const string&) noexcept { }
 	virtual void on(HubUserCommand, const Client*, int, int, const string&, const string&) noexcept { }
 	virtual void on(HubFull, const Client*) noexcept { }
 	virtual void on(SearchFlood, const Client*, const string&) noexcept { }

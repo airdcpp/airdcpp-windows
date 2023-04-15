@@ -219,13 +219,13 @@ int PrivateChat::clearCache() noexcept {
 	return ret;
 }
 
-void PrivateChat::statusMessage(const string& aMessage, LogMessage::Severity aSeverity, LogMessage::Type aType, const string& aLabel) noexcept {
+void PrivateChat::statusMessage(const string& aMessage, LogMessage::Severity aSeverity, LogMessage::Type aType, const string& aLabel, const string& aOwner) noexcept {
 	auto message = std::make_shared<LogMessage>(aMessage, aSeverity, aType, aLabel);
 
-	if (aType != LogMessage::Type::SPAM && aType != LogMessage::Type::PRIVATE) {
+	if (aOwner.empty() && aType != LogMessage::Type::SPAM && aType != LogMessage::Type::PRIVATE) {
 		cache.addMessage(message);
 	}
-	fire(PrivateChatListener::StatusMessage(), this, message);
+	fire(PrivateChatListener::StatusMessage(), this, message, aOwner);
 }
 
 void PrivateChat::close() {

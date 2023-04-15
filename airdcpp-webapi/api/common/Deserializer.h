@@ -78,10 +78,17 @@ namespace webserver {
 		struct StatusMessageInput {
 			string message;
 			LogMessage::Severity severity;
+		};
+
+		struct ChatStatusMessageInput {
+			string message;
+			LogMessage::Severity severity;
 			LogMessage::Type type;
+			string ownerId;
 		};
 
 		static StatusMessageInput deserializeStatusMessage(const json& aJson);
+		static ChatStatusMessageInput deserializeChatStatusMessage(const json& aJson);
 
 		// Returns the default profile in case no profile was specified
 		static ProfileToken deserializeShareProfile(const json& aJson);

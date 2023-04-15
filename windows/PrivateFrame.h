@@ -209,7 +209,7 @@ private:
 
 	void activate() noexcept;
 	
-	void on(PrivateChatListener::StatusMessage, PrivateChat*, const LogMessagePtr& aMessage) noexcept override;
+	void on(PrivateChatListener::StatusMessage, PrivateChat*, const LogMessagePtr& aMessage, const string& aOwner) noexcept override;
 	void on(PrivateChatListener::PrivateMessage, PrivateChat*, const ChatMessagePtr& aMessage) noexcept override;
 	void on(PrivateChatListener::UserUpdated, PrivateChat*) noexcept override;
 	void on(PrivateChatListener::PMStatus, PrivateChat*, uint8_t aType) noexcept override;

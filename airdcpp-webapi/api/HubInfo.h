@@ -86,8 +86,8 @@ namespace webserver {
 		void on(ClientListener::ChatMessage, const Client*, const ChatMessagePtr& m) noexcept override {
 			chatHandler.onChatMessage(m);
 		}
-		void on(ClientListener::StatusMessage, const Client*, const LogMessagePtr& m) noexcept override {
-			chatHandler.onStatusMessage(m);
+		void on(ClientListener::StatusMessage, const Client*, const LogMessagePtr& m, const string& aOwner) noexcept override {
+			chatHandler.onStatusMessage(m, aOwner);
 		}
 		void on(ClientListener::MessagesRead, const Client*) noexcept override {
 			chatHandler.onMessagesUpdated();

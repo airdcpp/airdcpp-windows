@@ -282,10 +282,10 @@ void Client::setConnectState(State aState) noexcept {
 	fire(ClientListener::ConnectStateChanged(), this, aState);
 }
 
-void Client::statusMessage(const string& aMessage, LogMessage::Severity aSeverity, LogMessage::Type aType, const string& aLabel) noexcept {
+void Client::statusMessage(const string& aMessage, LogMessage::Severity aSeverity, LogMessage::Type aType, const string& aLabel, const string& aOwner) noexcept {
 	auto message = std::make_shared<LogMessage>(aMessage, aSeverity, aType, aLabel);
 
-	if (aType != LogMessage::Type::SPAM && aType != LogMessage::Type::PRIVATE) {
+	if (aOwner.empty() && aType != LogMessage::Type::SPAM && aType != LogMessage::Type::PRIVATE) {
 		cache.addMessage(message);
 
 		if (SETTING(LOG_STATUS_MESSAGES)) {
@@ -298,7 +298,7 @@ void Client::statusMessage(const string& aMessage, LogMessage::Severity aSeverit
 		}
 	}
 
-	fire(ClientListener::StatusMessage(), this, message);
+	fire(ClientListener::StatusMessage(), this, message, aOwner);
 }
 
 void Client::setRead() noexcept {

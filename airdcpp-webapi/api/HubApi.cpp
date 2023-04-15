@@ -120,7 +120,7 @@ namespace webserver {
 			string lastError;
 			for (const auto& url: hubs) {
 				auto c = ClientManager::getInstance()->getClient(url);
-				if (c && c->isConnected() && c->sendMessageHooked(OutgoingChatMessage(message.message, callerPtr, message.thirdPerson), lastError)) {
+				if (c && c->isConnected() && c->sendMessageHooked(OutgoingChatMessage(message.message, callerPtr, Util::emptyString, message.thirdPerson), lastError)) {
 					succeed++;
 				}
 			}
@@ -140,7 +140,8 @@ namespace webserver {
 	api_return HubApi::handlePostStatus(ApiRequest& aRequest) {
 		const auto& reqJson = aRequest.getRequestBody();
 
-		auto message = Deserializer::deserializeStatusMessage(reqJson);
+		auto message = Deserializer::deserializeChatStatusMessage(reqJson);
+		auto label = MessageUtils::parseStatusMessageLabel(aRequest.getSession());
 		auto hubs = Deserializer::deserializeHubUrls(reqJson);
 
 		int succeed = 0;
@@ -151,7 +152,8 @@ namespace webserver {
 					message.message, 
 					message.severity, 
 					message.type,
-					MessageUtils::parseStatusMessageLabel(aRequest.getSession())
+					label,
+					message.ownerId
 				);
 				succeed++;
 			}

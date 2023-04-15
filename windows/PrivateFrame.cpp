@@ -874,7 +874,11 @@ void PrivateFrame::activate() noexcept {
 	});
 }
 
-void PrivateFrame::on(PrivateChatListener::StatusMessage, PrivateChat*, const LogMessagePtr& aMessage) noexcept{
+void PrivateFrame::on(PrivateChatListener::StatusMessage, PrivateChat*, const LogMessagePtr& aMessage, const string& aOwner) noexcept {
+	if (!aOwner.empty() && aOwner != WinUtil::ownerId) {
+		return;
+	}
+
 	callAsync([=] {
 		onStatusMessage(aMessage);
 	});

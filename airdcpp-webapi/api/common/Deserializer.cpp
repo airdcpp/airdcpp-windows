@@ -224,7 +224,16 @@ namespace webserver {
 		return {
 			JsonUtil::getField<string>("text", aJson, false),
 			parseSeverity(JsonUtil::getField<string>("severity", aJson, false)),
+		};
+	}
+
+	Deserializer::ChatStatusMessageInput Deserializer::deserializeChatStatusMessage(const json& aJson) {
+		const auto base = deserializeStatusMessage(aJson);
+		return {
+			base.message,
+			base.severity,
 			parseLogMessageType(JsonUtil::getOptionalFieldDefault<string>("type", aJson, "system")),
+			JsonUtil::getOptionalFieldDefault<string>("owner", aJson, Util::emptyString)
 		};
 	}
 

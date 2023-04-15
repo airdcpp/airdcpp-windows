@@ -26,10 +26,11 @@
 namespace dcpp {
 
 struct OutgoingChatMessage {
-	OutgoingChatMessage(const string& aMessage, const void* aOwner, bool aThirdPerson) noexcept : text(aMessage), owner(aOwner), thirdPerson(aThirdPerson) {}
+	OutgoingChatMessage(const string& aMessage, const void* aOwner, const string& aOwnerId, bool aThirdPerson) noexcept : text(aMessage), owner(aOwner), ownerId(aOwnerId), thirdPerson(aThirdPerson) {}
 
 	const string text;
 	const void* owner;
+	const string ownerId;
 	const bool thirdPerson;
 };
 

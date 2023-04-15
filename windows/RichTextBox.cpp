@@ -1375,7 +1375,7 @@ LRESULT RichTextBox::onBanIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 		tstring s = _T("!banip ") + selectedIP;
 
 		string error;
-		client->sendMessageHooked(OutgoingChatMessage(Text::fromT(s), this, false), error);
+		client->sendMessageHooked(OutgoingChatMessage(Text::fromT(s), this, WinUtil::ownerId, false), error);
 	}
 	SetSelNone();
 	return 0;
@@ -1386,7 +1386,7 @@ LRESULT RichTextBox::onUnBanIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 		tstring s = _T("!unban ") + selectedIP;
 
 		string error;
-		client->sendMessageHooked(OutgoingChatMessage(Text::fromT(s), this, false), error);
+		client->sendMessageHooked(OutgoingChatMessage(Text::fromT(s), this, WinUtil::ownerId, false), error);
 	}
 	SetSelNone();
 	return 0;
