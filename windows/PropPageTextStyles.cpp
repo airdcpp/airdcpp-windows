@@ -308,7 +308,11 @@ void PropPageTextStyles::RefreshPreview() {
 	string sText;
 	Identity id = Identity(NULL, 0);
 	for (int i = 0; i < TS_LAST; i++ ) {
-		m_Preview.AppendMessage(Message::fromText(TextStyles[i].m_sPreviewText, LogMessage::Flags::FLAG_DISABLE_HIGHLIGHTS | LogMessage::Flags::FLAG_DISABLE_TIMESTAMP), TextStyles[i], false);
+		m_Preview.AppendMessage(
+			Message::fromText(TextStyles[i].m_sPreviewText, LogMessage::InitFlags::INIT_DISABLE_HIGHLIGHTS | LogMessage::InitFlags::INIT_DISABLE_TIMESTAMP), 
+			TextStyles[i], 
+			false
+		);
 	}
 
 	m_Preview.InvalidateRect( NULL );

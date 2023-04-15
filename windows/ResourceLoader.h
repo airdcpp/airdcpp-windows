@@ -136,6 +136,7 @@ private:
 	
 	static tstring m_IconPath;
 
+	static CIcon verboseIcon;
 	static CIcon infoIcon;
 	static CIcon warningIcon;
 	static CIcon errorIcon;

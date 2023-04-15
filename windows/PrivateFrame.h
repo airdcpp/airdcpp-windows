@@ -108,8 +108,8 @@ public:
 	LRESULT onFocusMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 
 	void addMessage(const Message& aMessage, CHARFORMAT2& cf = WinUtil::m_ChatTextGeneral);
-	void addPrivateLine(const tstring& aLine, CHARFORMAT2& cf) override;
-	void addStatusMessage(const LogMessagePtr& aMessage, int) override;
+	void addPrivateLine(const tstring& aLine) override;
+	void addStatusMessage(const LogMessagePtr& aMessage) override;
 
 	bool checkFrameCommand(const tstring& aCmd, const tstring& aParam, tstring& message_, tstring& status_, bool& thirdPerson_) override;
 	void UpdateLayout(BOOL bResizeBars = TRUE) override;

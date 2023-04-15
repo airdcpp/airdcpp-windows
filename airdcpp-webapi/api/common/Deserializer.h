@@ -68,8 +68,20 @@ namespace webserver {
 		static StringList deserializeHubUrls(const json& aJson);
 		static ClientPtr deserializeClient(const json& aJson, bool aOptional = false);
 
-		static pair<string, bool> deserializeChatMessage(const json& aJson);
-		static pair<string, LogMessage::Severity> deserializeStatusMessage(const json& aJson);
+		struct ChatMessageInput {
+			string message;
+			bool thirdPerson;
+		};
+
+		static ChatMessageInput deserializeChatMessage(const json& aJson);
+
+		struct StatusMessageInput {
+			string message;
+			LogMessage::Severity severity;
+			LogMessage::Type type;
+		};
+
+		static StatusMessageInput deserializeStatusMessage(const json& aJson);
 
 		// Returns the default profile in case no profile was specified
 		static ProfileToken deserializeShareProfile(const json& aJson);
@@ -101,6 +113,7 @@ namespace webserver {
 		}
 	private:
 		static LogMessage::Severity parseSeverity(const string& aText);
+		static LogMessage::Type parseLogMessageType(const string& aText);
 	};
 }
 

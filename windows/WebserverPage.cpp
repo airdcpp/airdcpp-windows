@@ -352,7 +352,7 @@ void WebServerPage::updateState(ServerState aNewState) noexcept {
 	}
 
 	ctrlStatus.handleEditClearAll();
-	ctrlStatus.AppendMessage(Message::fromText(Text::fromT(statusText), LogMessage::Flags::FLAG_DISABLE_TIMESTAMP), WinUtil::m_ChatTextGeneral, false);
+	ctrlStatus.AppendMessage(Message::fromText(Text::fromT(statusText), LogMessage::InitFlags::INIT_DISABLE_TIMESTAMP), WinUtil::m_ChatTextGeneral, false);
 	ctrlStatus.RedrawWindow();
 
 

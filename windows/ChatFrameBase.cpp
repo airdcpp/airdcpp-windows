@@ -387,9 +387,9 @@ LRESULT ChatFrameBase::onSendMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	return 0;
 }
 
-void ChatFrameBase::addStatusLine(const tstring& aStatus, LogMessage::Severity aSeverity, int aFlags) {
-	auto logMessage = std::make_shared<LogMessage>(Text::fromT(aStatus), aSeverity, Util::emptyString);
-	addStatusMessage(logMessage, aFlags);
+void ChatFrameBase::addStatusLine(const tstring& aStatus, LogMessage::Severity aSeverity, LogMessage::Type aType) {
+	auto logMessage = std::make_shared<LogMessage>(Text::fromT(aStatus), aSeverity, aType, Util::emptyString);
+	addStatusMessage(logMessage);
 }
 
 LRESULT ChatFrameBase::onResize(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled) {
@@ -535,7 +535,7 @@ LRESULT ChatFrameBase::onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	} else if(SETTING(MEDIA_PLAYER) == 4) {
 		cmd = _T("/spotify");
 	} else {
-		addStatusLine(CTSTRING(NO_MEDIA_SPAM), LogMessage::SEV_INFO);
+		addStatusLine(CTSTRING(NO_MEDIA_SPAM), LogMessage::SEV_INFO, LogMessage::Type::SYSTEM);
 		return 0;
 	}
 	if (checkCommand(cmd, message, status, thirdPerson)){
@@ -543,7 +543,7 @@ LRESULT ChatFrameBase::onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 			sendFrameMessage(message, thirdPerson);
 		}
 		if (!status.empty()) {
-			addStatusLine(status, LogMessage::SEV_INFO);
+			addStatusLine(status, LogMessage::SEV_INFO, LogMessage::Type::PRIVATE);
 		}
 	}
 	return 0;
@@ -555,7 +555,7 @@ void ChatFrameBase::sendFrameMessage(const tstring& aMsg, bool aThirdPerson /*fa
 			string error;
 			if (!sendMessageHooked(OutgoingChatMessage(Text::fromT(aMsg), this, aThirdPerson), error) && !error.empty()) {
 				callAsync([=] { 
-					addStatusLine(Text::toT(error), LogMessage::SEV_ERROR); 
+					addStatusLine(Text::toT(error), LogMessage::SEV_ERROR, LogMessage::Type::SERVER); 
 				});
 			}
 		});
@@ -667,7 +667,7 @@ void ChatFrameBase::handleSendMessage() {
 		if (s[0] == _T('/')) {
 			cmd = s;
 			if (SETTING(CLIENT_COMMANDS)) {
-				addStatusLine(_T("Client command: ") + s, LogMessage::SEV_INFO);
+				addStatusLine(_T("Client command: ") + s, LogMessage::SEV_INFO, LogMessage::Type::SYSTEM);
 			}
 
 			isGuiCommand = checkCommand(cmd, message, status, thirdPerson);
@@ -687,9 +687,9 @@ void ChatFrameBase::handleSendMessage() {
 	//If status in chat is disabled the command result as status message wont display, so add it as private line.
 	if (!status.empty()) {
 		if (isGuiCommand) {
-			addPrivateLine(status, WinUtil::m_ChatTextPrivate);
+			addPrivateLine(status);
 		} else {
-			addStatusLine(status, LogMessage::SEV_INFO);
+			addStatusLine(status, LogMessage::SEV_INFO, LogMessage::Type::SYSTEM);
 		}
 	}
 
@@ -778,6 +778,21 @@ tstring ChatFrameBase::commands = Text::toT("\n\t\t\t\t\tHELP\n\
 
 string ChatFrameBase::getAwayMessage() {
 	return ctrlClient.getClient() ? ctrlClient.getClient()->get(HubSettings::AwayMsg) : SETTING(DEFAULT_AWAY_MESSAGE);
+}
+
+CHARFORMAT2& ChatFrameBase::getStatusMessageStyle(const LogMessagePtr& aMessage) noexcept {
+	switch (aMessage->getType()) {
+	case dcpp::LogMessage::Type::SPAM:
+	case dcpp::LogMessage::Type::SYSTEM:
+		return WinUtil::m_ChatTextSystem;
+	case dcpp::LogMessage::Type::PRIVATE:
+		return WinUtil::m_ChatTextPrivate;
+	case dcpp::LogMessage::Type::HISTORY:
+		return WinUtil::m_ChatTextLog;
+	case dcpp::LogMessage::Type::SERVER:
+	default:
+		return WinUtil::m_ChatTextServer;
+	}
 }
 
 // An advanced function that will crash the client with the wanted recursion number for testing crash handling
@@ -919,7 +934,7 @@ bool ChatFrameBase::checkCommand(const tstring& aCmd, tstring& message_, tstring
 		status_ = _T("Collecing statistics, please wait... (this may take a few minutes with large databases)");
 		tasks.run([this] {
 			auto text = Text::toT(HashManager::getInstance()->getDbStats());
-			callAsync([=] { addStatusLine(text, LogMessage::SEV_INFO); });
+			callAsync([=] { addStatusLine(text, LogMessage::SEV_INFO, LogMessage::Type::SYSTEM); });
 		});
 	} else if (stricmp(cmd.c_str(), _T("sharestats")) == 0) {
 		status_ = Text::toT(ShareManager::getInstance()->printStats());

@@ -2740,6 +2740,8 @@ IDI_IWARNING            ICON                    "res\\warning.ico"
 
 IDI_INFO                ICON                    "res\\info.ico"
 
+IDI_VERBOSE             ICON                    "res\\verbose.ico"
+
 IDI_CDM                 ICON                    "res\\Cdm.ico"
 
 IDI_OWNLIST             ICON                    "res\\ownlist.ico"

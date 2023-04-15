@@ -37,6 +37,7 @@ CImageList ResourceLoader::hubImages;
 CImageList ResourceLoader::queueTreeImages;
 CImageList ResourceLoader::thumbBarImages;
 COLORREF ResourceLoader::GrayPalette[256];
+CIcon ResourceLoader::verboseIcon = NULL;
 CIcon ResourceLoader::infoIcon = NULL;
 CIcon ResourceLoader::warningIcon = NULL;
 CIcon ResourceLoader::errorIcon = NULL;
@@ -231,6 +232,7 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_IERROR:		return _T("error.ico");
 		case IDI_IWARNING:		return _T("warning.ico");
 		case IDI_INFO:			return _T("info.ico");
+		case IDI_VERBOSE:		return _T("verbose.ico");
 		case IDI_CDM:			return _T("Cdm.ico");
 		case IDI_OWNLIST:		return _T("ownlist.ico");
 		case IDI_MATCHLIST:		return _T("matchlists.ico");
@@ -609,6 +611,10 @@ void ResourceLoader::loadFlagImages() {
 
 const CIcon& ResourceLoader::getSeverityIcon(uint8_t sev) {
 	switch (sev) {
+		case LogMessage::SEV_VERBOSE:
+			if (!verboseIcon)
+				verboseIcon = loadIcon(IDI_VERBOSE, 16);
+			return verboseIcon;
 		case LogMessage::SEV_INFO : 
 			if (!infoIcon)
 				infoIcon = loadIcon(IDI_INFO, 16);

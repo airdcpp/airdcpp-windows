@@ -49,6 +49,8 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlClientContainer.SubclassWindow(ctrlPad.m_hWnd);
 	textHeight = WinUtil::getTextHeight(ctrlPad.m_hWnd, WinUtil::font);
 	
+	if (!hbVerbose)
+		hbVerbose = ResourceLoader::getBitmapFromIcon(IDI_VERBOSE, WinUtil::bgColor, ICON_SIZE, ICON_SIZE);
 	if(!hbInfo)
 		hbInfo = ResourceLoader::getBitmapFromIcon(IDI_INFO, WinUtil::bgColor,  ICON_SIZE, ICON_SIZE);
 	if(!hbWarning)
@@ -230,8 +232,11 @@ void SystemFrame::addLine(const LogMessagePtr& aMessageData) {
 
 	switch(aMessageData->getSeverity()) {
 
+	case LogMessage::SEV_VERBOSE:
+		CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(), hbVerbose, false);
+		break;
 	case LogMessage::SEV_INFO:
-		CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(),hbInfo, false);
+		CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(), hbInfo, false);
 		break;
 	case LogMessage::SEV_WARNING:
 		CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(), hbWarning, false);

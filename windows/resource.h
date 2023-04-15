@@ -151,6 +151,7 @@
 #define IDD_FULHIGHLIGHTPROPERTIES      313
 #define IDD_HIGHLIGHTDIALOG             313
 #define IDD_DIALOG1                     314
+#define IDI_VERBOSE                     315
 #define IDD_DIRLIST_DLG                 316
 #define IDD_TEMPSHARE_DLG               321
 #define IDI_PUBLICHUBS                  324

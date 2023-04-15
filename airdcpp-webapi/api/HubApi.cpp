@@ -120,7 +120,7 @@ namespace webserver {
 			string lastError;
 			for (const auto& url: hubs) {
 				auto c = ClientManager::getInstance()->getClient(url);
-				if (c && c->isConnected() && c->sendMessageHooked(OutgoingChatMessage(message.first, callerPtr, message.second), lastError)) {
+				if (c && c->isConnected() && c->sendMessageHooked(OutgoingChatMessage(message.message, callerPtr, message.thirdPerson), lastError)) {
 					succeed++;
 				}
 			}
@@ -147,7 +147,12 @@ namespace webserver {
 		for (const auto& url : hubs) {
 			auto c = ClientManager::getInstance()->getClient(url);
 			if (c) {
-				c->statusMessage(message.first, message.second);
+				c->statusMessage(
+					message.message, 
+					message.severity, 
+					message.type,
+					MessageUtils::parseStatusMessageLabel(aRequest.getSession())
+				);
 				succeed++;
 			}
 		}

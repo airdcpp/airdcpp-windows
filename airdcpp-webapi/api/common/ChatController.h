@@ -137,7 +137,7 @@ namespace webserver {
 				callerPtr = aRequest.getOwnerPtr()
 			] {
 				string error;
-				if (!chat->sendMessageHooked(OutgoingChatMessage(message.first, callerPtr, message.second), error) && !error.empty()) {
+				if (!chat->sendMessageHooked(OutgoingChatMessage(message.message, callerPtr, message.thirdPerson), error) && !error.empty()) {
 					complete(websocketpp::http::status_code::internal_server_error, nullptr, ApiRequest::toResponseErrorStr(error));
 				} else {
 					complete(websocketpp::http::status_code::no_content, nullptr, nullptr);
@@ -151,7 +151,7 @@ namespace webserver {
 			const auto& reqJson = aRequest.getRequestBody();
 
 			auto message = Deserializer::deserializeStatusMessage(reqJson);
-			chat->statusMessage(message.first, message.second, MessageUtils::parseStatusMessageLabel(aRequest.getSession()));
+			chat->statusMessage(message.message, message.severity, message.type, MessageUtils::parseStatusMessageLabel(aRequest.getSession()));
 			return websocketpp::http::status_code::no_content;
 		}
 

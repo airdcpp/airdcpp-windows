@@ -155,7 +155,7 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 			for (const auto& message : chat->getCache().getMessagesUnsafe()) {
 				if (message.type == Message::TYPE_CHAT) {
 					onChatMessage(message.chatMessage);
-				} else if (message.logMessage->isHistory()) {
+				} else if (message.logMessage->getType() == LogMessage::Type::HISTORY) {
 					addMessage(message, WinUtil::m_ChatTextLog);
 				} else {
 					onStatusMessage(message.logMessage);
@@ -332,7 +332,7 @@ LRESULT PrivateFrame::onHubChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 		return 0;
 
 	chat->setHubUrl(selUrl);
-	chat->statusMessage(STRING_F(MESSAGES_SENT_THROUGH, hubs[ctrlHubSel.GetCurSel()].second), LogMessage::SEV_INFO);
+	chat->statusMessage(STRING_F(MESSAGES_SENT_THROUGH, hubs[ctrlHubSel.GetCurSel()].second), LogMessage::SEV_INFO, LogMessage::Type::SERVER);
 	bHandled = FALSE;
 	return 0;
 }
@@ -488,7 +488,7 @@ LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 void PrivateFrame::closeCC(bool silent) {
 	if (ccReady()) {
 		if (!silent) { 
-			chat->statusMessage(STRING(CCPM_DISCONNECTING),LogMessage::SEV_INFO); 
+			chat->statusMessage(STRING(CCPM_DISCONNECTING),LogMessage::SEV_INFO, LogMessage::Type::SERVER);
 		}
 
 		chat->closeCC(false, true);
@@ -523,12 +523,13 @@ void PrivateFrame::onChatMessage(const ChatMessagePtr& aMessage) noexcept {
 }
 
 void PrivateFrame::onStatusMessage(const LogMessagePtr& aMessage) noexcept {
-	addStatusLine(Text::toT(aMessage->getText()), aMessage->getSeverity());
+	addStatusMessage(aMessage);
+	// addStatusLine(Text::toT(aMessage->getText()), aMessage->getSeverity());
 }
 
-void PrivateFrame::addStatusMessage(const LogMessagePtr& aMessage, int) {
+void PrivateFrame::addStatusMessage(const LogMessagePtr& aMessage) {
 	if (SETTING(STATUS_IN_CHAT)) {
-		addMessage(Message(aMessage), WinUtil::m_ChatTextServer);
+		addMessage(Message(aMessage), getStatusMessageStyle(aMessage));
 	}
 
 	auto status = Text::toT(aMessage->getText()) + _T(" ***");
@@ -547,8 +548,9 @@ void PrivateFrame::addStatus(const tstring& aLine, HICON aIcon) {
 	ctrlStatus.SetIcon(STATUS_TEXT, aIcon);
 }
 
-void PrivateFrame::addPrivateLine(const tstring& aLine, CHARFORMAT2& cf) {
-	addMessage(Message::fromText(Text::fromT(aLine)), cf);
+void PrivateFrame::addPrivateLine(const tstring& aLine) {
+	auto message = std::make_shared<LogMessage>(Text::fromT(aLine), LogMessage::SEV_INFO, LogMessage::Type::PRIVATE, Util::emptyString);
+	addMessage(message, WinUtil::m_ChatTextPrivate);
 }
 
 void PrivateFrame::addMessage(const Message& aMessage, CHARFORMAT2& cf) {

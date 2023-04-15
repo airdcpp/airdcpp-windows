@@ -39,6 +39,7 @@ public:
 		hbError = NULL;
 		hbInfo = NULL;
 		hbWarning = NULL;
+		hbVerbose = NULL;
 	}
 	~SystemFrame() { }
 	
@@ -185,6 +186,7 @@ private:
 	void Colorize(const tstring& line, LONG Begin);
 	boost::wregex reg;
 
+	CBitmap  hbVerbose;
 	CBitmap  hbInfo;
 	CBitmap  hbWarning;
 	CBitmap  hbError;
