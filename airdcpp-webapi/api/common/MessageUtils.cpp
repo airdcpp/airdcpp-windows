@@ -130,7 +130,7 @@ namespace webserver {
 			{ "label", aMessage->getLabel() },
 			{ "is_read", aMessage->getRead() },
 			{ "highlights", Serializer::serializeList(aMessage->getHighlights(), serializeMessageHighlight) },
-			{ "tag", getMessageType(aMessage->getType()) }
+			{ "type", getMessageType(aMessage->getType()) }
 		};
 	}
 
