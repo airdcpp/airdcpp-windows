@@ -70,7 +70,7 @@ void DirectoryListingFrame::openWindow(ProfileToken aProfile, const string& aDir
 	auto list = DirectoryListingManager::getInstance()->findList(me);
 	if (list) {
 		activate(list);
-		if (list->getShareProfile() != aProfile) {
+		if (*list->getShareProfile() != aProfile) {
 			list->addShareProfileChangeTask(aProfile);
 		}
 
@@ -164,7 +164,7 @@ bool DirectoryListingFrame::getWindowParams(HWND hWnd, StringMap &params) {
 		params["dir"] = f->second->getCurrentListPath();
 		params["file"] = dl->getFileName();
 		params["partial"] = Util::toString(dl->getPartialList());
-		params["profileToken"] = Util::toString(dl->getIsOwnList() ? dl->getShareProfile() : 0);
+		params["profileToken"] = Util::toString(dl->getShareProfile() || 0);
 		if (!dl->getPartialList())
 			QueueManager::getInstance()->noDeleteFileList(dl->getFileName());
 
