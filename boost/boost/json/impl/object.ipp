@@ -10,10 +10,10 @@
 #ifndef BOOST_JSON_IMPL_OBJECT_IPP
 #define BOOST_JSON_IMPL_OBJECT_IPP
 
+#include <boost/container_hash/hash.hpp>
 #include <boost/json/object.hpp>
 #include <boost/json/detail/digest.hpp>
 #include <boost/json/detail/except.hpp>
-#include <boost/json/detail/hash_combine.hpp>
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -22,7 +22,8 @@
 #include <stdexcept>
 #include <type_traits>
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 namespace detail {
 
 template<class CharRange>
@@ -447,9 +448,7 @@ insert(
 {
     auto const n0 = size();
     if(init.size() > max_size() - n0)
-        detail::throw_length_error(
-            "object too large",
-            BOOST_JSON_SOURCE_POS);
+        detail::throw_length_error( "object too large" );
     reserve(n0 + init.size());
     revert_insert r(*this);
     if(t_->is_small())
@@ -508,40 +507,17 @@ object::
 erase(const_iterator pos) noexcept ->
     iterator
 {
-    auto p = begin() + (pos - begin());
-    if(t_->is_small())
-    {
-        p->~value_type();
-        --t_->size;
-        auto const pb = end();
-        if(p != end())
-        {
+    return do_erase(pos,
+        [this](iterator p) {
             // the casts silence warnings
             std::memcpy(
                 static_cast<void*>(p),
-                static_cast<void const*>(pb),
+                static_cast<void const*>(end()),
                 sizeof(*p));
-        }
-        return p;
-    }
-    remove(t_->bucket(p->key()), *p);
-    p->~value_type();
-    --t_->size;
-    auto const pb = end();
-    if(p != end())
-    {
-        auto& head = t_->bucket(pb->key());
-        remove(head, *pb);
-        // the casts silence warnings
-        std::memcpy(
-            static_cast<void*>(p),
-            static_cast<void const*>(pb),
-            sizeof(*p));
-        access::next(*p) = head;
-        head = static_cast<
-            index_t>(p - begin());
-    }
-    return p;
+        },
+        [this](iterator p) {
+            reindex_relocate(end(), p);
+        });
 }
 
 auto
@@ -553,6 +529,39 @@ erase(string_view key) noexcept ->
     if(it == end())
         return 0;
     erase(it);
+    return 1;
+}
+
+auto
+object::
+stable_erase(const_iterator pos) noexcept ->
+    iterator
+{
+    return do_erase(pos,
+        [this](iterator p) {
+            // the casts silence warnings
+            std::memmove(
+                static_cast<void*>(p),
+                static_cast<void const*>(p + 1),
+                sizeof(*p) * (end() - p));
+        },
+        [this](iterator p) {
+            for (; p != end(); ++p)
+            {
+                reindex_relocate(p + 1, p);
+            }
+        });
+}
+
+auto
+object::
+stable_erase(string_view key) noexcept ->
+    std::size_t
+{
+    auto it = find(key);
+    if(it == end())
+        return 0;
+    stable_erase(it);
     return 1;
 }
 
@@ -775,9 +784,7 @@ growth(
     std::size_t new_size) const
 {
     if(new_size > max_size())
-        detail::throw_length_error(
-            "object too large",
-            BOOST_JSON_SOURCE_POS);
+        detail::throw_length_error( "object too large" );
     std::size_t const old = capacity();
     if(old > max_size() - old / 2)
         return new_size;
@@ -830,7 +837,57 @@ destroy(
         (--last)->~key_value_pair();
 }
 
-BOOST_JSON_NS_END
+template<class FS, class FB>
+auto
+object::
+do_erase(
+    const_iterator pos,
+    FS small_reloc,
+    FB big_reloc) noexcept
+    -> iterator
+{
+    auto p = begin() + (pos - begin());
+    if(t_->is_small())
+    {
+        p->~value_type();
+        --t_->size;
+        if(p != end())
+        {
+            small_reloc(p);
+        }
+        return p;
+    }
+    remove(t_->bucket(p->key()), *p);
+    p->~value_type();
+    --t_->size;
+    if(p != end())
+    {
+        big_reloc(p);
+    }
+    return p;
+}
+
+void
+object::
+reindex_relocate(
+    key_value_pair* src,
+    key_value_pair* dst) noexcept
+{
+    BOOST_ASSERT(! t_->is_small());
+    auto& head = t_->bucket(src->key());
+    remove(head, *src);
+    // the casts silence warnings
+    std::memcpy(
+        static_cast<void*>(dst),
+        static_cast<void const*>(src),
+        sizeof(*dst));
+    access::next(*dst) = head;
+    head = static_cast<
+        index_t>(dst - begin());
+}
+
+} // namespace json
+} // namespace boost
 
 //----------------------------------------------------------
 //
@@ -842,16 +899,7 @@ std::size_t
 std::hash<::boost::json::object>::operator()(
     ::boost::json::object const& jo) const noexcept
 {
-    std::size_t seed = jo.size();
-    for (const auto& kv_pair : jo) {
-        auto const hk = ::boost::json::detail::digest(
-            kv_pair.key().begin(), kv_pair.key().end(), 0);
-        auto const hkv = ::boost::json::detail::hash_combine(
-            hk,
-            std::hash<::boost::json::value>{}(kv_pair.value()));
-        seed = ::boost::json::detail::hash_combine_commutative(seed, hkv);
-    }
-    return seed;
+    return ::boost::hash< ::boost::json::object >()( jo );
 }
 
 //----------------------------------------------------------

@@ -29,6 +29,7 @@
 #include <boost/assert/source_location.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/config.hpp>
+#include <boost/config/workaround.hpp>
 #include <ostream>
 #include <new>
 #include <cstdio>
@@ -57,12 +58,14 @@ namespace system
 //  and error_code containing a pointer to an object of a type derived
 //  from error_category.
 
+bool operator==( const error_code & code, const error_condition & condition ) BOOST_NOEXCEPT;
 std::size_t hash_value( error_code const & ec );
 
 class error_code
 {
 private:
 
+    friend bool operator==( const error_code & code, const error_condition & condition ) BOOST_NOEXCEPT;
     friend std::size_t hash_value( error_code const & ec );
 
 private:
@@ -114,7 +117,10 @@ public:
 
     // constructors:
 
-    BOOST_SYSTEM_CONSTEXPR error_code() BOOST_NOEXCEPT:
+#if !BOOST_WORKAROUND(BOOST_GCC, < 40800)
+    BOOST_CONSTEXPR
+#endif
+    error_code() BOOST_NOEXCEPT:
         d1_(), lc_flags_( 0 )
     {
     }
@@ -397,7 +403,12 @@ public:
     {
 #if defined(BOOST_SYSTEM_HAS_SYSTEM_ERROR)
 
-        if( lhs.lc_flags_ == 1 && rhs.lc_flags_ == 1 )
+        bool s1 = lhs.lc_flags_ == 1;
+        bool s2 = rhs.lc_flags_ == 1;
+
+        if( s1 != s2 ) return false;
+
+        if( s1 && s2 )
         {
             std::error_code const& e1 = *reinterpret_cast<std::error_code const*>( lhs.d2_ );
             std::error_code const& e2 = *reinterpret_cast<std::error_code const*>( rhs.d2_ );
@@ -415,7 +426,13 @@ public:
     {
 #if defined(BOOST_SYSTEM_HAS_SYSTEM_ERROR)
 
-        if( lhs.lc_flags_ == 1 && rhs.lc_flags_ == 1 )
+        bool s1 = lhs.lc_flags_ == 1;
+        bool s2 = rhs.lc_flags_ == 1;
+
+        if( s1 < s2 ) return true;
+        if( s2 < s1 ) return false;
+
+        if( s1 && s2 )
         {
             std::error_code const& e1 = *reinterpret_cast<std::error_code const*>( lhs.d2_ );
             std::error_code const& e2 = *reinterpret_cast<std::error_code const*>( rhs.d2_ );
@@ -430,48 +447,6 @@ public:
     }
 
     BOOST_SYSTEM_CONSTEXPR inline friend bool operator!=( const error_code & lhs, const error_code & rhs ) BOOST_NOEXCEPT
-    {
-        return !( lhs == rhs );
-    }
-
-    inline friend bool operator==( const error_code & code, const error_condition & condition ) BOOST_NOEXCEPT
-    {
-#if defined(BOOST_SYSTEM_HAS_SYSTEM_ERROR)
-
-        if( code.lc_flags_ == 1 )
-        {
-            return static_cast<std::error_code>( code ) == static_cast<std::error_condition>( condition );
-        }
-        else
-
-#endif
-        {
-            return code.category().equivalent( code.value(), condition ) || condition.category().equivalent( code, condition.value() );
-        }
-    }
-
-    inline friend bool operator==( const error_condition & condition, const error_code & code ) BOOST_NOEXCEPT
-    {
-#if defined(BOOST_SYSTEM_HAS_SYSTEM_ERROR)
-
-        if( code.lc_flags_ == 1 )
-        {
-            return static_cast<std::error_code>( code ) == static_cast<std::error_condition>( condition );
-        }
-        else
-
-#endif
-        {
-            return code.category().equivalent( code.value(), condition ) || condition.category().equivalent( code, condition.value() );
-        }
-    }
-
-    inline friend bool operator!=( const error_code & lhs, const error_condition & rhs ) BOOST_NOEXCEPT
-    {
-        return !( lhs == rhs );
-    }
-
-    inline friend bool operator!=( const error_condition & lhs, const error_code & rhs ) BOOST_NOEXCEPT
     {
         return !( lhs == rhs );
     }
@@ -677,6 +652,37 @@ public:
         return r;
     }
 };
+
+inline bool operator==( const error_code & code, const error_condition & condition ) BOOST_NOEXCEPT
+{
+#if defined(BOOST_SYSTEM_HAS_SYSTEM_ERROR)
+
+    if( code.lc_flags_ == 1 )
+    {
+        return static_cast<std::error_code>( code ) == static_cast<std::error_condition>( condition );
+    }
+    else
+
+#endif
+    {
+        return code.category().equivalent( code.value(), condition ) || condition.category().equivalent( code, condition.value() );
+    }
+}
+
+inline bool operator==( const error_condition & condition, const error_code & code ) BOOST_NOEXCEPT
+{
+    return code == condition;
+}
+
+inline bool operator!=( const error_code & lhs, const error_condition & rhs ) BOOST_NOEXCEPT
+{
+    return !( lhs == rhs );
+}
+
+inline bool operator!=( const error_condition & lhs, const error_code & rhs ) BOOST_NOEXCEPT
+{
+    return !( lhs == rhs );
+}
 
 inline std::size_t hash_value( error_code const & ec )
 {

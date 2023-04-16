@@ -13,6 +13,7 @@
 #include <boost/system/detail/config.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/config.hpp>
+#include <boost/config/workaround.hpp>
 #include <string>
 #include <functional>
 #include <cstddef>
@@ -48,7 +49,7 @@ class std_category;
 #pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 #endif
 
-#if defined(BOOST_MSVC)
+#if defined(BOOST_MSVC) && BOOST_MSVC < 1900
 #pragma warning(push)
 #pragma warning(disable: 4351) //  new behavior: elements of array will be default initialized
 #endif
@@ -116,11 +117,18 @@ protected:
 
 #endif
 
-    BOOST_SYSTEM_CONSTEXPR error_category() BOOST_NOEXCEPT: id_( 0 ), stdcat_(), sc_init_()
+#if !BOOST_WORKAROUND(BOOST_GCC, < 40800)
+    BOOST_CONSTEXPR
+#endif
+    error_category() BOOST_NOEXCEPT: id_( 0 ), stdcat_(), sc_init_()
     {
     }
 
-    explicit BOOST_SYSTEM_CONSTEXPR error_category( boost::ulong_long_type id ) BOOST_NOEXCEPT: id_( id ), stdcat_(), sc_init_()
+    explicit
+#if !BOOST_WORKAROUND(BOOST_GCC, < 40800)
+    BOOST_CONSTEXPR
+#endif
+    error_category( boost::ulong_long_type id ) BOOST_NOEXCEPT: id_( id ), stdcat_(), sc_init_()
     {
     }
 
@@ -183,7 +191,7 @@ public:
 #endif
 };
 
-#if defined(BOOST_MSVC)
+#if defined(BOOST_MSVC) && BOOST_MSVC < 1900
 #pragma warning(pop)
 #endif
 

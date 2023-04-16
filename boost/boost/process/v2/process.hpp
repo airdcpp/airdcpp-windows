@@ -15,13 +15,16 @@
 #include <boost/process/v2/default_launcher.hpp>
 #include <boost/process/v2/exit_code.hpp>
 #include <boost/process/v2/pid.hpp>
+#include <boost/process/v2/ext/exe.hpp>
 #include <boost/process/v2/process_handle.hpp>
 
 #if defined(BOOST_PROCESS_V2_STANDALONE)
 #include <asio/any_io_executor.hpp>
+#include <asio/post.hpp>
 #include <utility>
 #else
 #include <boost/asio/any_io_executor.hpp>
+#include <boost/asio/post.hpp>
 #include <boost/core/exchange.hpp>
 #endif
 
@@ -164,7 +167,7 @@ struct basic_process
                          typename std::enable_if<
                             std::is_convertible<ExecutionContext&, 
                                 BOOST_PROCESS_V2_ASIO_NAMESPACE::execution_context&>::value, void *>::type = nullptr)
-      : process_handle_(context, pid, native_handle) {}
+      : process_handle_(context.get_executor(), pid, native_handle) {}
 
   /// Create an invalid handle
   template <typename ExecutionContext>
@@ -172,7 +175,7 @@ struct basic_process
                          typename std::enable_if<
                              is_convertible<ExecutionContext&, 
                                 BOOST_PROCESS_V2_ASIO_NAMESPACE::execution_context&>::value, void *>::type = nullptr)
-     : process_handle_(context) {}
+     : process_handle_(context.get_executor()) {}
 
 
 
@@ -212,6 +215,37 @@ struct basic_process
     process_handle_.request_exit(ec);
   }
 
+  /// Send the process a signal requesting it to stop. This may rely on undocumented functions.
+  void suspend(error_code &ec)
+  {
+    process_handle_.suspend(ec);
+  }
+
+  /// Send the process a signal requesting it to stop. This may rely on undocumented functions.
+  void suspend()
+  {
+    error_code ec;
+    suspend(ec);
+    if (ec)
+        detail::throw_error(ec, "suspend");
+  }
+
+
+  /// Send the process a signal requesting it to resume. This may rely on undocumented functions.
+  void resume(error_code &ec)
+  {
+    process_handle_.resume(ec);  
+  }
+
+  /// Send the process a signal requesting it to resume. This may rely on undocumented functions.
+  void resume()
+  {
+      error_code ec;
+      suspend(ec);
+      if (ec)
+          detail::throw_error(ec, "resume");
+  }
+
   /// Throwing @overload void terminate(native_exit_code_type &exit_code, error_code & ec)
   void terminate()
   {
@@ -236,7 +270,7 @@ struct basic_process
       detail::throw_error(ec, "wait failed");
     return exit_code();
   }
-  /// Waits for the process to exit, store the exit code internall and return it.
+  /// Waits for the process to exit, store the exit code internally and return it.
   int wait(error_code & ec)
   {
     if (running(ec))
@@ -339,7 +373,7 @@ private:
         };
 
         BOOST_PROCESS_V2_ASIO_NAMESPACE::post(handle.get_executor(),
-                                              completer{res, std::move(self)});
+                                              completer{static_cast<int>(res), std::move(self)});
       }
       else
         handle.async_wait(std::move(self));

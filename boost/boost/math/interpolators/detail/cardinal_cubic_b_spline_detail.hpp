@@ -159,8 +159,8 @@ cardinal_cubic_b_spline_imp<Real>::cardinal_cubic_b_spline_imp(BidiIterator f, B
     if (boost::math::isnan(b1))
     {
         size_t n = length - 1;
-        Real t0 = 4*(f[n-3] + third<Real>()*f[n - 1]);
-        Real t1 = -(25*third<Real>()*f[n - 4] + f[n])/4  - 3*f[n - 2];
+        Real t0 = -4*(f[n - 1] + third<Real>()*f[n - 3]);
+        Real t1 = (25*third<Real>()*f[n] + f[n - 4])/4  + 3*f[n - 2];
 
         b1 = m_h_inv*(t0 + t1);
     }
@@ -192,7 +192,7 @@ cardinal_cubic_b_spline_imp<Real>::cardinal_cubic_b_spline_imp(BidiIterator f, B
     // There are, in fact 5 diagonals, but they only differ from zero on the first and last row,
     // so we can patch up the tridiagonal row reduction algorithm to deal with two special rows.
     // See Kress, equations 8.41
-    // The the "tridiagonal" matrix is:
+    // The "tridiagonal" matrix is:
     // 1  0 -1
     // 1  4  1
     //    1  4  1

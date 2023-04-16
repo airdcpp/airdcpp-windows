@@ -683,7 +683,7 @@ z * (2.154990206091088289321708745358647e6L // z^20 distance -5 without term 20
 // N[InverseSeries[Series[z Exp[z],{z,0,34}]],50],
 // and are suffixed by L as they are assumed of type long double.
 // (This is NOT used for 128-bit quad boost::multiprecision::float128 type which required a suffix Q
-// nor multiprecision type cpp_bin_float_quad that can only be initialised at full precision of the type
+// nor multiprecision type cpp_bin_float_quad that can only be initialized at full precision of the type
 // constructed with a decimal digit string like "2.6666666666666666666666666666666666666666666666667".)
 
 template <typename T, typename Policy>
@@ -728,7 +728,7 @@ T lambert_w0_small_z(const T z, const Policy&, std::integral_constant<int, 3> co
 // This could be used for 128-bit quad (which requires a suffix Q for full precision).
 // But experiments with GCC 7.2.0 show that while this gives full 128-bit precision
 // when the -f-ext-numeric-literals option is in force and the libquadmath library available,
-// over the range -0.049 to +0.049, 
+// over the range -0.049 to +0.049,
 // it is slightly slower than getting a double approximation followed by a single Halley step.
 
 #ifdef BOOST_HAS_FLOAT128
@@ -1685,7 +1685,7 @@ inline T lambert_w0_imp(T z, const Policy& pol, const std::integral_constant<int
    {
       if ((boost::math::isinf)(z))
       {
-         return policies::raise_overflow_error<T>(function, 0, pol);
+         return policies::raise_overflow_error<T>(function, nullptr, pol);
          // Or might return infinity if available else max_value,
          // but other Boost.Math special functions raise overflow.
       }
@@ -1974,7 +1974,7 @@ T lambert_wm1_imp(const T z, const Policy&  pol)
       }
     }
   bisect:
-    --n;  
+    --n;
     // g[n] now holds lambert W of floor integer n and g[n+1] the ceil part;
     // these are used as initial values for bisection.
 #ifdef BOOST_MATH_INSTRUMENT_LAMBERT_WM1_LOOKUP
@@ -2064,7 +2064,7 @@ T lambert_wm1_imp(const T z, const Policy&  pol)
       : 2  // 64-bit (probably double) precision.
       >;
 
-    return lambert_w_detail::lambert_w0_imp(result_type(z), pol, tag_type()); // 
+    return lambert_w_detail::lambert_w0_imp(result_type(z), pol, tag_type()); //
   } // lambert_w0(T z, const Policy& pol)
 
   //! Lambert W0 using default policy.
@@ -2149,7 +2149,7 @@ T lambert_wm1_imp(const T z, const Policy&  pol)
   {
      return lambert_w0_prime(z, policies::policy<>());
   }
-  
+
   template <typename T, typename Policy>
   inline typename tools::promote_args<T>::type
   lambert_wm1_prime(T z, const Policy& pol)

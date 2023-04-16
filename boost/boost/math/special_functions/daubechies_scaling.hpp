@@ -19,6 +19,14 @@
 #include <boost/math/interpolators/detail/quintic_hermite_detail.hpp>
 #include <boost/math/interpolators/detail/septic_hermite_detail.hpp>
 
+#include <boost/math/tools/is_standalone.hpp>
+#ifndef BOOST_MATH_STANDALONE
+#include <boost/config.hpp>
+#ifdef BOOST_NO_CXX17_IF_CONSTEXPR
+#error "The header <boost/math/norms.hpp> can only be used in C++17 and later."
+#endif
+#endif
+
 namespace boost::math {
 
 template<class Real, int p, int order>
@@ -122,7 +130,7 @@ public:
 
     int64_t bytes() const
     {
-        return 2*y_.size()*sizeof(Real) + sizeof(this);
+        return 2*y_.size()*sizeof(Real) + sizeof(*this);
     }
 
 private:
@@ -165,7 +173,7 @@ public:
 
     int64_t bytes() const
     {
-        return data_.size()*data_[0].size()*sizeof(Real) + sizeof(this);
+        return data_.size()*data_[0].size()*sizeof(Real) + sizeof(*this);
     }
 
 private:
@@ -253,7 +261,7 @@ public:
 
     int64_t bytes() const
     {
-        return sizeof(this) + data_.size()*data_[0].size()*sizeof(Real);
+        return sizeof(*this) + data_.size()*data_[0].size()*sizeof(Real);
     }
 
 private:

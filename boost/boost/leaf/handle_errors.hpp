@@ -197,7 +197,7 @@ namespace leaf_detail
     struct handler_argument_traits<diagnostic_info const &>: handler_argument_always_available<void>
     {
         template <class Tup>
-        BOOST_LEAF_CONSTEXPR static diagnostic_info_ get( Tup const & tup, error_info const & ei ) noexcept
+        BOOST_LEAF_CONSTEXPR static diagnostic_info_ get( Tup const &, error_info const & ei ) noexcept
         {
             return diagnostic_info_(ei);
         }
@@ -307,7 +307,7 @@ namespace leaf_detail
     struct handler_argument_traits<verbose_diagnostic_info const &>: handler_argument_always_available<void>
     {
         template <class Tup>
-        BOOST_LEAF_CONSTEXPR static verbose_diagnostic_info_ get( Tup const & tup, error_info const & ei ) noexcept
+        BOOST_LEAF_CONSTEXPR static verbose_diagnostic_info_ get( Tup const &, error_info const & ei ) noexcept
         {
             return verbose_diagnostic_info_(ei);
         }
@@ -733,7 +733,7 @@ try_handle_some( TryBlock && try_block, H && ... h ) noexcept
         using R = typename std::decay<decltype(std::declval<TryBlock>()())>::type;
         auto rr = ctx.template handle_error<R>(id, std::forward<H>(h)..., [&r]()->R { return std::move(r); });
         if( !rr )
-            ctx.propagate(id);
+            ctx.propagate(rr.error());
         return rr;
     }
 }
@@ -869,7 +869,7 @@ try_handle_some( TryBlock && try_block, H && ... h )
         using R = typename std::decay<decltype(std::declval<TryBlock>()())>::type;
         auto rr = ctx.template handle_error<R>(id, std::forward<H>(h)..., [&r]()->R { return std::move(r); });
         if( !rr )
-            ctx.propagate(id);
+            ctx.propagate(rr.error());
         return rr;
     }
 }
@@ -932,7 +932,7 @@ namespace leaf_detail
         constexpr static bool always_available = false;
 
         template <class Tup>
-        BOOST_LEAF_CONSTEXPR static T * check( Tup & tup, error_info const & ei ) noexcept
+        BOOST_LEAF_CONSTEXPR static T * check( Tup &, error_info const & ei ) noexcept
         {
             using boost_exception = dependent_type_t<T, boost::exception>;
             if( auto * be = get_exception<boost_exception>(ei) )

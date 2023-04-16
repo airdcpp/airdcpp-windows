@@ -17,7 +17,7 @@
 #include <boost/json/detail/buffer.hpp>
 #include <boost/json/detail/sse2.hpp>
 #include <cmath>
-#include <climits>
+#include <limits>
 #include <cstring>
 
 #ifdef _MSC_VER
@@ -42,7 +42,8 @@
 
 #ifndef BOOST_JSON_DOCS
 
-BOOST_JSON_NS_BEGIN
+namespace boost {
+namespace json {
 namespace detail {
 
 inline
@@ -122,7 +123,7 @@ pow10(int exp) noexcept
 
     if( exp > 308 )
     {
-        return INFINITY;
+        return std::numeric_limits<double>::infinity();
     }
     else if( exp < -308 )
     {
@@ -217,8 +218,11 @@ const char*
 basic_parser<Handler>::
 sentinel()
 {
+    // the "+1" ensures that the returned pointer is unique even if
+    // the given input buffer borders on this object
     return reinterpret_cast<
-        const char*>(this);
+        const char*>(this) + 1;
+    return nullptr;
 }
 
 template<class Handler>
@@ -289,7 +293,7 @@ fail(
     source_location const* loc) noexcept
 {
     end_ = p;
-    BOOST_JSON_ASSIGN_ERROR_CODE(ec_, ev, loc);
+    ec_.assign(ev, loc);
     return sentinel();
 }
 
@@ -413,7 +417,8 @@ do_com1:
     {
     default:
         {
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::syntax, &loc);
         }
     case '/':
@@ -610,7 +615,7 @@ loop:
             if(! allow_comments)
             {
                 BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_JSON_SOURCE_POS;
+                    = BOOST_CURRENT_LOCATION;
                 return fail(p, error::syntax, &loc);
             }
             p = parse_comment(p, stack_empty, std::false_type());
@@ -631,7 +636,7 @@ loop:
         default:
             {
                 BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_JSON_SOURCE_POS;
+                    = BOOST_CURRENT_LOCATION;
                 return fail(p, error::syntax, &loc);
             }
         }
@@ -746,7 +751,7 @@ parse_null(const char* p,
                 std::memcmp(cs.begin(), "null", 4) != 0))
             {
                 BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_JSON_SOURCE_POS;
+                    = BOOST_CURRENT_LOCATION;
                 return fail(cs.begin(), error::syntax, &loc);
             }
             if(BOOST_JSON_UNLIKELY(
@@ -774,7 +779,7 @@ do_nul1:
         return maybe_suspend(cs.begin(), state::nul1);
     if(BOOST_JSON_UNLIKELY(*cs != 'u'))
     {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         return fail(cs.begin(), error::syntax, &loc);
     }
     ++cs;
@@ -783,7 +788,7 @@ do_nul2:
         return maybe_suspend(cs.begin(), state::nul2);
     if(BOOST_JSON_UNLIKELY(*cs != 'l'))
     {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         return fail(cs.begin(), error::syntax, &loc);
     }
     ++cs;
@@ -792,7 +797,7 @@ do_nul3:
         return maybe_suspend(cs.begin(), state::nul3);
     if(BOOST_JSON_UNLIKELY(*cs != 'l'))
     {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         return fail(cs.begin(), error::syntax, &loc);
     }
     if(BOOST_JSON_UNLIKELY(
@@ -818,7 +823,7 @@ parse_true(const char* p,
                 std::memcmp(cs.begin(), "true", 4) != 0))
             {
                 BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_JSON_SOURCE_POS;
+                    = BOOST_CURRENT_LOCATION;
                 return fail(cs.begin(), error::syntax, &loc);
             }
             if(BOOST_JSON_UNLIKELY(
@@ -846,7 +851,7 @@ do_tru1:
         return maybe_suspend(cs.begin(), state::tru1);
     if(BOOST_JSON_UNLIKELY(*cs != 'r'))
     {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         return fail(cs.begin(), error::syntax, &loc);
     }
     ++cs;
@@ -855,7 +860,7 @@ do_tru2:
         return maybe_suspend(cs.begin(), state::tru2);
     if(BOOST_JSON_UNLIKELY(*cs != 'u'))
     {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         return fail(cs.begin(), error::syntax, &loc);
     }
     ++cs;
@@ -864,7 +869,7 @@ do_tru3:
         return maybe_suspend(cs.begin(), state::tru3);
     if(BOOST_JSON_UNLIKELY(*cs != 'e'))
     {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         return fail(cs.begin(), error::syntax, &loc);
     }
     if(BOOST_JSON_UNLIKELY(
@@ -890,7 +895,7 @@ parse_false(const char* p,
                 std::memcmp(cs.begin() + 1, "alse", 4) != 0))
             {
                 BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_JSON_SOURCE_POS;
+                    = BOOST_CURRENT_LOCATION;
                 return fail(cs.begin(), error::syntax, &loc);
             }
             if(BOOST_JSON_UNLIKELY(
@@ -919,7 +924,7 @@ do_fal1:
         return maybe_suspend(cs.begin(), state::fal1);
     if(BOOST_JSON_UNLIKELY(*cs != 'a'))
     {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         return fail(cs.begin(), error::syntax, &loc);
     }
     ++cs;
@@ -928,7 +933,7 @@ do_fal2:
         return maybe_suspend(cs.begin(), state::fal2);
     if(BOOST_JSON_UNLIKELY(*cs != 'l'))
     {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         return fail(cs.begin(), error::syntax, &loc);
     }
     ++cs;
@@ -937,7 +942,7 @@ do_fal3:
         return maybe_suspend(cs.begin(), state::fal3);
     if(BOOST_JSON_UNLIKELY(*cs != 's'))
     {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         return fail(cs.begin(), error::syntax, &loc);
     }
     ++cs;
@@ -946,7 +951,7 @@ do_fal4:
         return maybe_suspend(cs.begin(), state::fal4);
     if(BOOST_JSON_UNLIKELY(*cs != 'e'))
     {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         return fail(cs.begin(), error::syntax, &loc);
     }
     if(BOOST_JSON_UNLIKELY(
@@ -1031,7 +1036,8 @@ parse_unescaped(const char* p,
         if(BOOST_JSON_UNLIKELY(size >
             Handler::max_key_size - total))
         {
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::key_too_large, &loc);
         }
     }
@@ -1041,7 +1047,8 @@ parse_unescaped(const char* p,
         if(BOOST_JSON_UNLIKELY(size >
             Handler::max_string_size - total))
         {
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::string_too_large, &loc);
         }
     }
@@ -1076,7 +1083,7 @@ parse_unescaped(const char* p,
             if(BOOST_JSON_UNLIKELY(seq_.complete()))
             {
                 BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_JSON_SOURCE_POS;
+                    = BOOST_CURRENT_LOCATION;
                 return fail(cs.begin(), error::syntax, &loc);
             }
             if(BOOST_JSON_LIKELY(size))
@@ -1113,7 +1120,7 @@ parse_unescaped(const char* p,
             return parse_escaped(cs.begin(), total, stack_empty, is_key, allow_bad_utf8);
         }
         // illegal control
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         return fail(cs.begin(), error::syntax, &loc);
     }
 
@@ -1208,7 +1215,7 @@ do_str3:
                 temp.size() > max_size - total))
             {
                 BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_JSON_SOURCE_POS;
+                    = BOOST_CURRENT_LOCATION;
                 return fail(cs.begin(), ev_too_large, &loc);
             }
             total += temp.size();
@@ -1232,7 +1239,8 @@ do_str3:
     {
     default:
         {
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::syntax, &loc);
         }
     case '\x22': // '"'
@@ -1296,7 +1304,7 @@ do_str3:
                 if(d3 != -1)
                     ++cs;
                 BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_JSON_SOURCE_POS;
+                    = BOOST_CURRENT_LOCATION;
                 return fail(cs.begin(), error::expected_hex_digit, &loc);
             }
             // 32 bit unicode scalar value
@@ -1317,7 +1325,7 @@ do_str3:
             if(BOOST_JSON_UNLIKELY(u1 > 0xdbff))
             {
                 BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_JSON_SOURCE_POS;
+                    = BOOST_CURRENT_LOCATION;
                 return fail(cs.begin(), error::illegal_leading_surrogate,
                     &loc);
             }
@@ -1328,14 +1336,14 @@ do_str3:
             if(BOOST_JSON_UNLIKELY(*cs != '\\'))
             {
                 BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_JSON_SOURCE_POS;
+                    = BOOST_CURRENT_LOCATION;
                 return fail(cs.begin(), error::syntax, &loc);
             }
             ++cs;
             if(BOOST_JSON_UNLIKELY(*cs != 'u'))
             {
                 BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_JSON_SOURCE_POS;
+                    = BOOST_CURRENT_LOCATION;
                 return fail(cs.begin(), error::syntax, &loc);
             }
             ++cs;
@@ -1358,7 +1366,7 @@ do_str3:
                 if(d3 != -1)
                     ++cs;
                 BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_JSON_SOURCE_POS;
+                    = BOOST_CURRENT_LOCATION;
                 return fail(cs.begin(), error::expected_hex_digit, &loc);
             }
             unsigned const u2 =
@@ -1369,7 +1377,7 @@ do_str3:
                 u2 < 0xdc00 || u2 > 0xdfff))
             {
                 BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_JSON_SOURCE_POS;
+                    = BOOST_CURRENT_LOCATION;
                 return fail(cs.begin(), error::illegal_trailing_surrogate,
                     &loc);
             }
@@ -1390,7 +1398,7 @@ do_str3:
                 temp.size() > max_size - total))
             {
                 BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_JSON_SOURCE_POS;
+                    = BOOST_CURRENT_LOCATION;
                 return fail(cs.begin(), ev_too_large, &loc);
             }
             total += temp.size();
@@ -1415,7 +1423,8 @@ do_str4:
         digit = detail::hex_digit(*cs);
         if(BOOST_JSON_UNLIKELY(digit == -1))
         {
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::expected_hex_digit, &loc);
         }
         ++cs;
@@ -1426,7 +1435,8 @@ do_str5:
         digit = detail::hex_digit(*cs);
         if(BOOST_JSON_UNLIKELY(digit == -1))
         {
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::expected_hex_digit, &loc);
         }
         ++cs;
@@ -1437,7 +1447,8 @@ do_str6:
         digit = detail::hex_digit(*cs);
         if(BOOST_JSON_UNLIKELY(digit == -1))
         {
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::expected_hex_digit, &loc);
         }
         ++cs;
@@ -1448,7 +1459,8 @@ do_str7:
         digit = detail::hex_digit(*cs);
         if(BOOST_JSON_UNLIKELY(digit == -1))
         {
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::expected_hex_digit, &loc);
         }
         ++cs;
@@ -1463,7 +1475,8 @@ do_str7:
         }
         if(BOOST_JSON_UNLIKELY(u1_ > 0xdbff))
         {
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::illegal_trailing_surrogate, &loc);
         }
 do_sur1:
@@ -1471,7 +1484,8 @@ do_sur1:
             return maybe_suspend(cs.begin(), state::sur1, total);
         if(BOOST_JSON_UNLIKELY(*cs != '\\'))
         {
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::syntax, &loc);
         }
         ++cs;
@@ -1480,7 +1494,8 @@ do_sur2:
             return maybe_suspend(cs.begin(), state::sur2, total);
         if(BOOST_JSON_UNLIKELY(*cs != 'u'))
         {
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::syntax, &loc);
         }
         ++cs;
@@ -1490,7 +1505,8 @@ do_sur3:
         digit = detail::hex_digit(*cs);
         if(BOOST_JSON_UNLIKELY(digit == -1))
         {
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::expected_hex_digit, &loc);
         }
         ++cs;
@@ -1501,7 +1517,8 @@ do_sur4:
         digit = detail::hex_digit(*cs);
         if(BOOST_JSON_UNLIKELY(digit == -1))
         {
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::expected_hex_digit, &loc);
         }
         ++cs;
@@ -1512,7 +1529,8 @@ do_sur5:
         digit = detail::hex_digit(*cs);
         if(BOOST_JSON_UNLIKELY(digit == -1))
         {
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::expected_hex_digit, &loc);
         }
         ++cs;
@@ -1523,7 +1541,8 @@ do_sur6:
         digit = detail::hex_digit(*cs);
         if(BOOST_JSON_UNLIKELY(digit == -1))
         {
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::expected_hex_digit, &loc);
         }
         ++cs;
@@ -1531,7 +1550,8 @@ do_sur6:
         if(BOOST_JSON_UNLIKELY(
             u2_ < 0xdc00 || u2_ > 0xdfff))
         {
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::expected_hex_digit, &loc);
         }
         unsigned cp =
@@ -1547,7 +1567,7 @@ do_str2:
     // all at once instead of one at a time
     for(;;)
     {
-        if(BOOST_JSON_UNLIKELY(! cs))
+        if(BOOST_JSON_UNLIKELY(! cs || temp.capacity() == 0 ))
         {
             // flush
             if(BOOST_JSON_LIKELY(! temp.empty()))
@@ -1557,7 +1577,7 @@ do_str2:
                     temp.size() > max_size - total))
                 {
                     BOOST_STATIC_CONSTEXPR source_location loc
-                        = BOOST_JSON_SOURCE_POS;
+                        = BOOST_CURRENT_LOCATION;
                     return fail(cs.begin(), ev_too_large, &loc);
                 }
                 total += temp.size();
@@ -1585,7 +1605,7 @@ do_str2:
                 temp.size() > max_size - total))
             {
                 BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_JSON_SOURCE_POS;
+                    = BOOST_CURRENT_LOCATION;
                 return fail(cs.begin(), ev_too_large, &loc);
             }
             total += temp.size();
@@ -1614,7 +1634,7 @@ do_str2:
                         temp.size() > max_size - total))
                     {
                         BOOST_STATIC_CONSTEXPR source_location loc
-                            = BOOST_JSON_SOURCE_POS;
+                            = BOOST_CURRENT_LOCATION;
                         return fail(cs.begin(), ev_too_large, &loc);
                     }
                     total += temp.size();
@@ -1638,7 +1658,7 @@ do_str2:
             if(BOOST_JSON_UNLIKELY(! seq_.valid()))
             {
                 BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_JSON_SOURCE_POS;
+                    = BOOST_CURRENT_LOCATION;
                 return fail(cs.begin(), error::syntax, &loc);
             }
             temp.append(seq_.data(), seq_.length());
@@ -1653,7 +1673,8 @@ do_str2:
         else if(BOOST_JSON_UNLIKELY(
             detail::is_control(c)))
         {
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::syntax, &loc);
         }
         temp.push_back(c);
@@ -1666,7 +1687,7 @@ do_str8:
         return maybe_suspend(cs.end(), state::str8, total);
     if(BOOST_JSON_UNLIKELY(! seq_.valid()))
     {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         return fail(cs.begin(), error::syntax, &loc);
     }
     temp.append(seq_.data(), seq_.length());
@@ -1718,7 +1739,7 @@ parse_object(const char* p,
     size = 0;
     if(BOOST_JSON_UNLIKELY(! depth_))
     {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         return fail(cs.begin(), error::too_deep, &loc);
     }
     --depth_;
@@ -1745,14 +1766,16 @@ do_obj2:
                     return suspend_or_fail(state::obj2, size);
                 goto do_obj1;
             }
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::syntax, &loc);
         }
 loop:
         if(BOOST_JSON_UNLIKELY(++size >
             Handler::max_object_size))
         {
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::object_too_large, &loc);
         }
 do_obj3:
@@ -1773,7 +1796,8 @@ do_obj5:
                     return suspend_or_fail(state::obj5, size);
                 goto do_obj4;
             }
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::syntax, &loc);
         }
         ++cs;
@@ -1811,7 +1835,7 @@ do_obj10:
                     goto do_obj9;
                 }
                 BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_JSON_SOURCE_POS;
+                    = BOOST_CURRENT_LOCATION;
                 return fail(cs.begin(), error::syntax, &loc);
             }
         }
@@ -1825,7 +1849,8 @@ do_obj11:
                     return suspend_or_fail(state::obj11, size);
                 goto do_obj8;
             }
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::syntax, &loc);
         }
         // got closing brace, fall through
@@ -1877,7 +1902,7 @@ parse_array(const char* p,
     size = 0;
     if(BOOST_JSON_UNLIKELY(! depth_))
     {
-        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+        BOOST_STATIC_CONSTEXPR source_location loc = BOOST_CURRENT_LOCATION;
         return fail(cs.begin(), error::too_deep, &loc);
     }
     --depth_;
@@ -1906,7 +1931,8 @@ do_arr2:
         if(BOOST_JSON_UNLIKELY(++size >
             Handler::max_array_size))
         {
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::array_too_large, &loc);
         }
 do_arr3:
@@ -1939,7 +1965,8 @@ do_arr6:
                     return suspend_or_fail(state::arr6, size);
                 goto do_arr4;
             }
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::syntax, &loc);
         }
         // got closing bracket; fall through
@@ -2007,7 +2034,7 @@ parse_number(const char* p,
                 {
                     // digit required
                     BOOST_STATIC_CONSTEXPR source_location loc
-                        = BOOST_JSON_SOURCE_POS;
+                        = BOOST_CURRENT_LOCATION;
                     return fail(cs.begin(), error::syntax, &loc);
                 }
 
@@ -2056,7 +2083,7 @@ parse_number(const char* p,
             {
                 // digit required
                 BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_JSON_SOURCE_POS;
+                    = BOOST_CURRENT_LOCATION;
                 return fail(cs.begin(), error::syntax, &loc);
             }
 
@@ -2142,7 +2169,8 @@ do_num1:
         }
         else
         {
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::syntax, &loc);
         }
     }
@@ -2300,7 +2328,8 @@ do_num4:
         else
         {
             // digit required
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::syntax, &loc);
         }
     }
@@ -2397,7 +2426,8 @@ do_num7:
                 return suspend(cs.begin(), state::num7, num);
             }
             // digit required
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::syntax, &loc);
         }
         char const c = *cs;
@@ -2405,7 +2435,8 @@ do_num7:
             c < '0' || c > '9'))
         {
             // digit required
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::syntax, &loc);
         }
     }
@@ -2500,7 +2531,8 @@ do_exp2:
                 return suspend(cs.begin(), state::exp2, num);
             }
             // digit required
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::syntax, &loc);
         }
         char const c = *cs;
@@ -2508,7 +2540,8 @@ do_exp2:
             c < '0' || c > '9'))
         {
             // digit required
-            BOOST_STATIC_CONSTEXPR source_location loc = BOOST_JSON_SOURCE_POS;
+            BOOST_STATIC_CONSTEXPR source_location loc
+                = BOOST_CURRENT_LOCATION;
             return fail(cs.begin(), error::syntax, &loc);
         }
         ++cs;
@@ -2546,7 +2579,7 @@ do_exp3:
                         num.exp == 214748364 && c > '7')))
                 {
                     BOOST_STATIC_CONSTEXPR source_location loc
-                        = BOOST_JSON_SOURCE_POS;
+                        = BOOST_CURRENT_LOCATION;
                     return fail(cs.begin(), error::exponent_overflow, &loc);
                 }
                 ++cs;
@@ -2560,7 +2593,7 @@ do_exp3:
             if (BOOST_JSON_UNLIKELY( num.bias  < (INT_MIN + num.exp) ))
             {
                 BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_JSON_SOURCE_POS;
+                    = BOOST_CURRENT_LOCATION;
                 return fail(cs.begin(), error::exponent_overflow, &loc);
             }
         }
@@ -2569,7 +2602,7 @@ do_exp3:
             if (BOOST_JSON_UNLIKELY( num.bias > (INT_MAX - num.exp) ))
             {
                 BOOST_STATIC_CONSTEXPR source_location loc
-                    = BOOST_JSON_SOURCE_POS;
+                    = BOOST_CURRENT_LOCATION;
                 return fail(cs.begin(), error::exponent_overflow, &loc);
             }
         }
@@ -2759,7 +2792,8 @@ write_some(
 
 #endif
 
-BOOST_JSON_NS_END
+} // namespace json
+} // namespace boost
 
 #ifdef _MSC_VER
 #pragma warning(pop)

@@ -11,8 +11,9 @@
 #define BOOST_PROCESS_V2_STDIO_HPP
 
 #include <boost/process/v2/detail/config.hpp>
+#include <boost/process/v2/detail/last_error.hpp>
 #include <boost/process/v2/default_launcher.hpp>
-
+#include <cstddef>
 #if defined(BOOST_PROCESS_V2_STANDALONE)
 #include <asio/connect_pipe.hpp>
 #else
@@ -52,7 +53,7 @@ struct handle_closer
   DWORD flags{0xFFFFFFFFu};
 };
 
-template<DWORD Io>
+template<DWORD Target>
 struct process_io_binding
 {
   HANDLE prepare()
@@ -62,13 +63,17 @@ struct process_io_binding
     return hh;
   }
 
-  std::unique_ptr<void, handle_closer> h{::GetStdHandle(Io), false};
+  std::unique_ptr<void, handle_closer> h{::GetStdHandle(Target), false};
 
   static DWORD get_flags(HANDLE h)
   {
     DWORD res;
     if (!::GetHandleInformation(h, &res))
-      detail::throw_last_error("get_flags");
+    {
+      error_code ec;
+      BOOST_PROCESS_V2_ASSIGN_LAST_ERROR(ec);
+      throw system_error(ec, "get_flags");
+    }
     return res;
   }
 
@@ -82,10 +87,11 @@ struct process_io_binding
   process_io_binding(FILE * f) : process_io_binding(_get_osfhandle(_fileno(f))) {}
   process_io_binding(HANDLE h) : h{h, get_flags(h)} {}
   process_io_binding(std::nullptr_t) : process_io_binding(filesystem::path("NUL")) {}
-  process_io_binding(const filesystem::path & pth)
+  template<typename T, typename = typename std::enable_if<std::is_same<T, filesystem::path>::value>::type>
+  process_io_binding(const T & pth)
     : h(::CreateFileW(
         pth.c_str(),
-        Io == STD_INPUT_HANDLE ? GENERIC_READ : GENERIC_WRITE,
+        Target == STD_INPUT_HANDLE ? GENERIC_READ : GENERIC_WRITE,
         FILE_SHARE_READ | FILE_SHARE_WRITE,
         nullptr,
         OPEN_ALWAYS,
@@ -101,11 +107,13 @@ struct process_io_binding
                      typename std::enable_if<Target != STD_INPUT_HANDLE, Executor*>::type = 0)
   {
     BOOST_PROCESS_V2_ASIO_NAMESPACE::detail::native_pipe_handle p[2];
+    error_code ec;
     BOOST_PROCESS_V2_ASIO_NAMESPACE::detail::create_pipe(p, ec);
     if (ec)
-      return ;
+      detail::throw_error(ec, "create_pipe");
+      
     h = std::unique_ptr<void, handle_closer>{p[1], true};
-    readable_pipe.assign(p[0], ec);
+    readable_pipe.assign(p[0]);
   }
 
 
@@ -114,11 +122,13 @@ struct process_io_binding
                      typename std::enable_if<Target == STD_INPUT_HANDLE, Executor*>::type = 0)
   {
     BOOST_PROCESS_V2_ASIO_NAMESPACE::detail::native_pipe_handle p[2];
+    error_code ec;
     BOOST_PROCESS_V2_ASIO_NAMESPACE::detail::create_pipe(p, ec);
     if (ec)
-      return ;
+      detail::throw_error(ec, "create_pipe");
+
     h = std::unique_ptr<void, handle_closer>{p[0], true};
-    writable_pipe.assign(p[1], ec);
+    writable_pipe.assign(p[1]);
   }
 };
 
@@ -170,7 +180,7 @@ struct process_io_binding
     fd = p[1];
     if (::fcntl(p[0], F_SETFD, FD_CLOEXEC) == -1)
     {
-      ec = detail::get_last_error();
+      BOOST_PROCESS_V2_ASSIGN_LAST_ERROR(ec)
       return ;
     }
     fd_needs_closing = true;
@@ -189,7 +199,7 @@ struct process_io_binding
     fd = p[0];
     if (::fcntl(p[1], F_SETFD, FD_CLOEXEC) == -1)
     {
-      ec = detail::get_last_error();
+      BOOST_PROCESS_V2_ASSIGN_LAST_ERROR(ec)
       return ;
     }
     fd_needs_closing = true;
@@ -255,7 +265,7 @@ typedef process_io_binding<STDERR_FILENO> process_error_binding;
  *  - `FILE*` any open file, including `stdin`, `stdout` and `stderr`
  *  - a filesystem::path, which will open a readable or writable depending on the direction of the stream
  *  - `native_handle` any native file handle (`HANDLE` on windows) or file descriptor (`int` on posix)
- *  - any io-object with a .native_handle() function that is comptaiblie with the above. E.g. a asio::ip::tcp::socket
+ *  - any io-object with a .native_handle() function that is compatible with the above. E.g. a asio::ip::tcp::socket
  *  - an asio::basic_writeable_pipe for stdin or asio::basic_readable_pipe for stderr/stdout. 
  * 
  * 
@@ -288,11 +298,6 @@ struct process_stdio
 
     if (::dup2(err.fd, err.target) == -1)
       return error_code(errno, system_category());
-
-        
-    launcher.fd_whitelist.push_back(STDIN_FILENO);
-    launcher.fd_whitelist.push_back(STDOUT_FILENO);
-    launcher.fd_whitelist.push_back(STDERR_FILENO);
 
     return error_code {};
   };
