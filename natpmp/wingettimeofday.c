@@ -1,4 +1,4 @@
-/* $Id: wingettimeofday.c,v 1.6 2013/09/10 20:13:26 nanard Exp $ */
+/* $Id: wingettimeofday.c,v 1.7 2023/04/23 10:46:42 nanard Exp $ */
 /* libnatpmp
 Copyright (c) 2007-2013, Thomas BERNARD
 All rights reserved.
@@ -26,7 +26,7 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
-#ifdef WIN32
+#ifdef _WIN32
 #if defined(_MSC_VER)
 struct timeval {
 	long    tv_sec;

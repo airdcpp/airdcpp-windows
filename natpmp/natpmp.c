@@ -1,6 +1,6 @@
-/* $Id: natpmp.c,v 1.17 2013/09/11 07:22:25 nanard Exp $ */
+/* $Id: natpmp.c,v 1.21 2023/04/23 10:50:11 nanard Exp $ */
 /* libnatpmp
-Copyright (c) 2007-2013, Thomas BERNARD
+Copyright (c) 2007-2018, Thomas BERNARD
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -27,18 +27,24 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 */
 #ifdef __linux__
-#define _BSD_SOURCE 1
+#define _DEFAULT_SOURCE 1
 #endif
 #include <string.h>
 #include <time.h>
 #if !defined(_MSC_VER)
 #include <sys/time.h>
 #endif
-#ifdef WIN32
+#ifdef _WIN32
 #include <errno.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <io.h>
+#ifdef EWOULDBLOCK
+#undef EWOULDBLOCK
+#endif
+#ifdef ECONNREFUSED
+#undef ECONNREFUSED
+#endif
 #define EWOULDBLOCK WSAEWOULDBLOCK
 #define ECONNREFUSED WSAECONNREFUSED
 #include "wingettimeofday.h"
@@ -55,9 +61,9 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "getgateway.h"
 #include <stdio.h>
 
-LIBSPEC int initnatpmp(natpmp_t * p, int forcegw, in_addr_t forcedgw)
+NATPMP_LIBSPEC int initnatpmp(natpmp_t * p, int forcegw, in_addr_t forcedgw)
 {
-#ifdef WIN32
+#ifdef _WIN32
 	u_long ioctlArg = 1;
 #else
 	int flags;
@@ -69,7 +75,7 @@ LIBSPEC int initnatpmp(natpmp_t * p, int forcegw, in_addr_t forcedgw)
 	p->s = socket(PF_INET, SOCK_DGRAM, 0);
 	if(p->s < 0)
 		return NATPMP_ERR_SOCKETERROR;
-#ifdef WIN32
+#ifdef _WIN32
 	if(ioctlsocket(p->s, FIONBIO, &ioctlArg) == SOCKET_ERROR)
 		return NATPMP_ERR_FCNTLERROR;
 #else
@@ -95,7 +101,7 @@ LIBSPEC int initnatpmp(natpmp_t * p, int forcegw, in_addr_t forcedgw)
 	return 0;
 }
 
-LIBSPEC int closenatpmp(natpmp_t * p)
+NATPMP_LIBSPEC int closenatpmp(natpmp_t * p)
 {
 	if(!p)
 		return NATPMP_ERR_INVALIDARGS;
@@ -125,7 +131,7 @@ int sendnatpmprequest(natpmp_t * p)
 	int n;
 	if(!p)
 		return NATPMP_ERR_INVALIDARGS;
-	/* TODO : check if no request is allready pending */
+	/* TODO : check if no request is already pending */
 	p->has_pending_request = 1;
 	p->try_number = 1;
 	n = sendpendingrequest(p);
@@ -138,7 +144,7 @@ int sendnatpmprequest(natpmp_t * p)
 	return n;
 }
 
-LIBSPEC int getnatpmprequesttimeout(natpmp_t * p, struct timeval * timeout)
+NATPMP_LIBSPEC int getnatpmprequesttimeout(natpmp_t * p, struct timeval * timeout)
 {
 	struct timeval now;
 	if(!p || !timeout)
@@ -156,7 +162,7 @@ LIBSPEC int getnatpmprequesttimeout(natpmp_t * p, struct timeval * timeout)
 	return 0;
 }
 
-LIBSPEC int sendpublicaddressrequest(natpmp_t * p)
+NATPMP_LIBSPEC int sendpublicaddressrequest(natpmp_t * p)
 {
 	if(!p)
 		return NATPMP_ERR_INVALIDARGS;
@@ -168,7 +174,7 @@ LIBSPEC int sendpublicaddressrequest(natpmp_t * p)
 	return sendnatpmprequest(p);
 }
 
-LIBSPEC int sendnewportmappingrequest(natpmp_t * p, int protocol,
+NATPMP_LIBSPEC int sendnewportmappingrequest(natpmp_t * p, int protocol,
                               uint16_t privateport, uint16_t publicport,
 							  uint32_t lifetime)
 {
@@ -178,25 +184,40 @@ LIBSPEC int sendnewportmappingrequest(natpmp_t * p, int protocol,
 	p->pending_request[1] = protocol;
 	p->pending_request[2] = 0;
 	p->pending_request[3] = 0;
-	*((uint16_t *)(p->pending_request + 4)) = htons(privateport);
-	*((uint16_t *)(p->pending_request + 6)) = htons(publicport);
-	*((uint32_t *)(p->pending_request + 8)) = htonl(lifetime);
+	/* break strict-aliasing rules :
+	*((uint16_t *)(p->pending_request + 4)) = htons(privateport); */
+	p->pending_request[4] = (privateport >> 8) & 0xff;
+	p->pending_request[5] = privateport & 0xff;
+	/* break stric-aliasing rules :
+	*((uint16_t *)(p->pending_request + 6)) = htons(publicport); */
+	p->pending_request[6] = (publicport >> 8) & 0xff;
+	p->pending_request[7] = publicport & 0xff;
+	/* break stric-aliasing rules :
+	*((uint32_t *)(p->pending_request + 8)) = htonl(lifetime); */
+	p->pending_request[8] = (lifetime >> 24) & 0xff;
+	p->pending_request[9] = (lifetime >> 16) & 0xff;
+	p->pending_request[10] = (lifetime >> 8) & 0xff;
+	p->pending_request[11] = lifetime & 0xff;
 	p->pending_request_len = 12;
 	return sendnatpmprequest(p);
 }
 
-LIBSPEC int readnatpmpresponse(natpmp_t * p, natpmpresp_t * response)
+NATPMP_LIBSPEC int readnatpmpresponse(natpmp_t * p, natpmpresp_t * response)
 {
 	unsigned char buf[16];
 	struct sockaddr_in addr;
 	socklen_t addrlen = sizeof(addr);
+#ifdef _WIN32
 	int n;
+#else
+	ssize_t n;
+#endif
 	if(!p)
 		return NATPMP_ERR_INVALIDARGS;
 	n = recvfrom(p->s, buf, sizeof(buf), 0,
 	             (struct sockaddr *)&addr, &addrlen);
 	if(n<0)
-#ifdef WIN32
+#ifdef _WIN32
 		switch(WSAGetLastError()) {
 #else
 		switch(errno) {
@@ -243,21 +264,28 @@ LIBSPEC int readnatpmpresponse(natpmp_t * p, natpmpresp_t * response)
 			}
 		} else {
 			response->type = buf[1] & 0x7f;
-			if(buf[1] == 128)
+			if(buf[1] == 128) {
 				//response->publicaddress.addr = *((uint32_t *)(buf + 8));
 				response->pnu.publicaddress.addr.s_addr = *((uint32_t *)(buf + 8));
-			else {
-				response->pnu.newportmapping.privateport = ntohs(*((uint16_t *)(buf + 8)));
-				response->pnu.newportmapping.mappedpublicport = ntohs(*((uint16_t *)(buf + 10)));
-				response->pnu.newportmapping.lifetime = ntohl(*((uint32_t *)(buf + 12)));
+				n = 0;
+			} else {
+				/* check that the private port matches our current request */
+				if(*(uint16_t*)(p->pending_request + 4) == *((uint16_t*)(buf + 8))) {
+					response->pnu.newportmapping.privateport = ntohs(*((uint16_t*)(buf + 8)));
+					response->pnu.newportmapping.mappedpublicport = ntohs(*((uint16_t*)(buf + 10)));
+					response->pnu.newportmapping.lifetime = ntohl(*((uint32_t*)(buf + 12)));
+					n = 0;
+				} else {
+					/* ignore the old response and continue waiting */
+					n = NATPMP_TRYAGAIN;
+				}
 			}
-			n = 0;
 		}
 	}
 	return n;
 }
 
-int readnatpmpresponseorretry(natpmp_t * p, natpmpresp_t * response)
+NATPMP_LIBSPEC int readnatpmpresponseorretry(natpmp_t * p, natpmpresp_t * response)
 {
 	int n;
 	if(!p || !response)
@@ -271,7 +299,7 @@ int readnatpmpresponseorretry(natpmp_t * p, natpmpresp_t * response)
 			gettimeofday(&now, NULL);	// check errors !
 			if(timercmp(&now, &p->retry_time, >=)) {
 				int delay, r;
-				if(p->try_number >= 9) {
+				if(p->try_number >= NATPMP_MAX_RETRIES) {
 					return NATPMP_ERR_NOGATEWAYSUPPORT;
 				}
 				/*printf("retry! %d\n", p->try_number);*/
@@ -297,7 +325,7 @@ int readnatpmpresponseorretry(natpmp_t * p, natpmpresp_t * response)
 }
 
 #ifdef ENABLE_STRNATPMPERR
-LIBSPEC const char * strnatpmperr(int r)
+NATPMP_LIBSPEC const char * strnatpmperr(int r)
 {
 	const char * s;
 	switch(r) {
@@ -311,7 +339,7 @@ LIBSPEC const char * strnatpmperr(int r)
 		s = "cannot get default gateway ip address";
 		break;
 	case NATPMP_ERR_CLOSEERR:
-#ifdef WIN32
+#ifdef _WIN32
 		s = "closesocket() failed";
 #else
 		s = "close() failed";
