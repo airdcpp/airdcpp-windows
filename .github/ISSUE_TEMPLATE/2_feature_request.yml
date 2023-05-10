@@ -1,0 +1,54 @@
+name: 💡 Feature request                                                                                                                                  
+description: Suggest an idea for improving AirDC++                                                                                                        
+title: "💡 [Feature request]: <title>"                                                                                                                    
+labels: ["enhancement,triage"]                                                                                                                            
+body:                                                                                                                                                     
+  - type: checkboxes                                                                                                                                      
+    attributes:                                                                                                                                           
+      label: Prerequisites                                                                                                                                
+      description: To rule out invalid issues, confirm and check each one of the checkboxes.                                                              
+      options:                                                                                                                                            
+        - label: This is not a [support issue or a question](https://github.com/airdcpp/airdcpp-windows/discussions)                                      
+          required: true                                                                                                                                  
+        - label: I performed a [cursory search of the issue tracker](https://github.com/airdcpp/airdcpp-windows/issues) to avoid opening a duplicate issue
+          required: true                                                                                                                                  
+                                                                                                                                                          
+  - type: textarea                                                                                                                                        
+    attributes:                                                                                                                                           
+      label: Is your proposal related to a problem?                                                                                                       
+      description: |                                                                                                                                      
+        If not, simple write No.                                                                                                                          
+    validations:                                                                                                                                          
+      required: true                                                                                                                                      
+                                                                                                                                                          
+  - type: textarea                                                                                                                                        
+    attributes:                                                                                                                                           
+      label: Describe the solution you would like                                                                                                         
+      description: |                                                                                                                                      
+        .                                                                                                                                                 
+    validations:                                                                                                                                          
+      required: true                                                                                                                                      
+                                                                                                                                                          
+  - type: textarea                                                                                                                                        
+    attributes:                                                                                                                                           
+      label: Describe alternatives you have considered                                                                                                    
+      description: |                                                                                                                                      
+        .                                                                                                                                                 
+    validations:                                                                                                                                          
+      required: false                                                                                                                                     
+                                                                                                                                                          
+  - type: textarea                                                                                                                                        
+    attributes:                                                                                                                                           
+      label: Screenshot(s)                                                                                                                                
+      description: |                                                                                                                                      
+        Add screenshot(s) to describe visual issues.                                                                                                      
+    validations:                                                                                                                                          
+      required: false                                                                                                                                     
+                                                                                                                                                          
+  - type: textarea                                                                                                                                        
+    attributes:                                                                                                                                           
+      label: Additional information                                                                                                                       
+      description: |                                                                                                                                      
+        You can provide additional information here to make it easier to understand your issue.                                                           
+    validations:                                                                                                                                          
+      required: false                                                                                                                                     
