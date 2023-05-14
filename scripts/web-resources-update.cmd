@@ -4,6 +4,8 @@ REM This will download and update Web-resources from https://www.npmjs.com/packa
 REM For it to work you need to manually create 'Web-resources' in the 'installer' directory.
 REM You can use the switch '/force' to force an update. 
 
+cd ..
+
 setlocal
 
 set appver=web-resources-update v0.5
