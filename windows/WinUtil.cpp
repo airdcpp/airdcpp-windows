@@ -1087,7 +1087,7 @@ void WinUtil::translate(HWND page, TextItem* textItems) {
 	if (textItems != NULL) {
 		for (int i = 0; textItems[i].itemID != 0; i++) {
 			::SetDlgItemText(page, textItems[i].itemID,
-				Text::toT(ResourceManager::getInstance()->getString(textItems[i].translatedString)).c_str());
+				CWSTRING_I(textItems[i].translatedString));
 		}
 	}
 }
