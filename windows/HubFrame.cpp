@@ -1465,12 +1465,6 @@ void HubFrame::on(MessagesRead, const Client*) noexcept {
 
 }
 
-void HubFrame::on(SearchFlood, const Client*, const string& aLine) noexcept {
-	callAsync([=] { 
-		addStatusLine(TSTRING(SEARCH_SPAM_FROM) + _T(" ") + Text::toT(aLine), LogMessage::SEV_VERBOSE, LogMessage::Type::SPAM);
-	});
-}
-
 void HubFrame::on(SetActive, const Client*) noexcept {
 	callAsync([=] { 
 		if (::IsIconic(m_hWnd))

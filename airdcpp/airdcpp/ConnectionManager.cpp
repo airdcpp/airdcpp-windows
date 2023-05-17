@@ -72,7 +72,11 @@ void TokenManager::removeToken(const string& aToken) noexcept {
 #endif
 }
 
-ConnectionManager::ConnectionManager() : downloads(cqis[CONNECTION_TYPE_DOWNLOAD]) {
+#define CONNECT_FLOOD_COUNT_NORMAL 15
+#define CONNECT_FLOOD_COUNT_MCN 100
+#define CONNECT_FLOOD_PERIOD 30
+
+ConnectionManager::ConnectionManager() : downloads(cqis[CONNECTION_TYPE_DOWNLOAD]), floodCounter(CONNECT_FLOOD_PERIOD) {
 	TimerManager::getInstance()->addListener(this);
 	ClientManager::getInstance()->addListener(this);
 
@@ -212,15 +216,28 @@ void ConnectionManager::putCQI(ConnectionQueueItem* cqi) noexcept {
 }
 
 UserConnection* ConnectionManager::getConnection(bool aNmdc, bool aSecure) noexcept {
-	UserConnection* uc = new UserConnection(aSecure);
+	auto uc = new UserConnection(aSecure);
 	uc->addListener(this);
 	{
 		WLock l(cs);
 		userConnections.push_back(uc);
 	}
-	if(aNmdc)
+
+	if (aNmdc) {
 		uc->setFlag(UserConnection::FLAG_NMDC);
+	}
+
 	return uc;
+}
+
+bool ConnectionManager::isMCNUser(const UserPtr& aUser) const noexcept {
+	RLock l(cs);
+
+	auto s = find_if(userConnections.begin(), userConnections.end(), [&](const UserConnection* uc) {
+		return uc->getUser() == aUser && uc->isSet(UserConnection::FLAG_MCN1);
+	});
+
+	return s != userConnections.end();
 }
 
 void ConnectionManager::putConnection(UserConnection* aConn) noexcept {
@@ -439,9 +456,6 @@ const string& ConnectionManager::getSecurePort() const noexcept {
 	return secureServer.get() ? secureServer->getPort() : Util::emptyString;
 }
 
-static const uint64_t FLOOD_TRIGGER = 20000;
-static const uint64_t FLOOD_ADD = 2000;
-
 ConnectionManager::Server::Server(bool aSecure, const string& aPort, const string& ipv4, const string& ipv6) :
 sock(Socket::TYPE_TCP), secure(aSecure) {
 	sock.setLocalIp4(ipv4);
@@ -497,35 +511,49 @@ int ConnectionManager::Server::run() noexcept {
 	return 0;
 }
 
+FloodCounter::FloodLimits ConnectionManager::getIncomingConnectionLimits(const string& aIP) const noexcept {
+	RLock l(cs);
+	auto s = find_if(userConnections.begin(), userConnections.end(), [&](const UserConnection* uc) {
+		return uc->getRemoteIp() == aIP && uc->isSet(UserConnection::FLAG_MCN1);
+	});
+
+	if (s != userConnections.end()) {
+		// Use higher limit for confirmed MCN users
+		return {
+			CONNECT_FLOOD_COUNT_MCN,
+			CONNECT_FLOOD_COUNT_MCN,
+		};
+	}
+
+	return {
+		CONNECT_FLOOD_COUNT_NORMAL,
+		CONNECT_FLOOD_COUNT_NORMAL,
+	};
+}
+
 /**
  * Someone's connecting, accept the connection and wait for identification...
  * It's always the other fellow that starts sending if he made the connection.
  */
 void ConnectionManager::accept(const Socket& sock, bool aSecure) noexcept {
-	uint64_t now = GET_TICK();
-
-	if(now > floodCounter) {
-		floodCounter = now + FLOOD_ADD;
-	} else {
-		/*if(now + FLOOD_TRIGGER < floodCounter) {
-			Socket s(Socket::TYPE_TCP);
-			try {
-				s.accept(sock);
-			} catch(const SocketException&) {
-				// ...
-			}
-			dcdebug("Connection flood detected!\n");
-			return;
-		} else {*/
-			floodCounter += FLOOD_ADD;
-		//}
-	}
-	UserConnection* uc = getConnection(false, aSecure);
+	auto uc = getConnection(false, aSecure);
 	uc->setFlag(UserConnection::FLAG_INCOMING);
 	uc->setState(UserConnection::STATE_SUPNICK);
 	uc->setLastActivity(GET_TICK());
+
 	try {
-		uc->accept(sock);
+		uc->accept(sock, [&](const string& aIP) {
+			auto floodResult = floodCounter.handleRequest(aIP, getIncomingConnectionLimits(aIP));
+			if (floodResult.type == FloodCounter::FloodType::OK) {
+				return true;
+			}
+
+			if (floodResult.hitLimit) {
+				LogManager::getInstance()->message(STRING_F(INCOMING_CONNECT_FLOOD_FROM, aIP), LogMessage::SEV_WARNING, STRING(CONNECTIVITY));
+			}
+
+			return false;
+		});
 	} catch(const Exception&) {
 		putConnection(uc);
 		delete uc;
@@ -540,7 +568,7 @@ void ConnectionManager::nmdcConnect(const string& aServer, const string& aPort, 
 	if(shuttingDown)
 		return;
 
-	UserConnection* uc = getConnection(true, aSecure);
+	auto uc = getConnection(true, aSecure);
 	uc->setToken(aNick);
 	uc->setHubUrl(aHubUrl);
 	uc->setEncoding(aEncoding);
@@ -562,7 +590,7 @@ void ConnectionManager::adcConnect(const OnlineUser& aUser, const string& aPort,
 	if(shuttingDown)
 		return;
 
-	UserConnection* uc = getConnection(false, aSecure);
+	auto uc = getConnection(false, aSecure);
 	uc->setEncoding(Text::utf8);
 	uc->setState(UserConnection::STATE_CONNECT);
 	uc->setHubUrl(aUser.getClient()->getHubUrl());

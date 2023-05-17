@@ -16,37 +16,55 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#ifndef DCPLUSPLUS_WEBSERVER_FLOODCOUNTER_H
-#define DCPLUSPLUS_WEBSERVER_FLOODCOUNTER_H
+#ifndef DCPLUSPLUS_FLOODCOUNTER_H
+#define DCPLUSPLUS_FLOODCOUNTER_H
 
-#include "forward.h"
+#include "typedefs.h"
 
-#include <airdcpp/CriticalSection.h>
+#include "CriticalSection.h"
 
-namespace webserver {
+namespace dcpp {
 
 	// Class to control IP flood 
 	class FloodCounter {
 	public:
-		FloodCounter(int aCount, int aPeriod);
+		enum class FloodType {
+			OK,
+			FLOOD_MINOR,
+			FLOOD_SEVERE,
+		};
 
-		bool checkFlood(const string& aIp) const noexcept;
-		void addAttempt(const string& aIp) noexcept;
+		struct FloodResult {
+			FloodType type;
+			bool hitLimit;
+		};
 
-		// Remove expired flood entries
-		// Must be called externally, optimally with an interval equal to floodPeriod
-		void prune() noexcept;
+		struct FloodLimits {
+			int minorCount;
+			int severeCount;
+		};
+
+		FloodCounter(int aPeriod);
+
+		// Check and count a request
+		FloodResult handleRequest(const string& aRequester, const FloodLimits& aLimits) noexcept;
+
+		// Check the current flood status for a requester (call addAttempt separately if flood control needs to be applied)
+		FloodResult getFloodStatus(const string& aRequester, const FloodLimits& aLimits) noexcept;
+
+		void addRequst(const string& aRequester) noexcept;
 	protected:
-		//typedef deque<string> IpList;
 		typedef multimap<string, time_t> IpMap;
 
 		IpMap floodIps;
 
-		mutable SharedMutex cs;
+		mutable CriticalSection cs;
 
 		const int floodPeriod;
-		const int floodCount;
+
+		// Remove expired flood entries
+		void prune() noexcept;
 	};
 }
 
-#endif // !defined(DCPLUSPLUS_WEBSERVER_FLOODCOUNTER_H)
+#endif // !defined(DCPLUSPLUS_FLOODCOUNTER_H)

@@ -25,6 +25,7 @@
 
 #include "ConnectionType.h"
 #include "CriticalSection.h"
+#include "FloodCounter.h"
 #include "HintedUser.h"
 #include "Singleton.h"
 #include "UserConnection.h"
@@ -169,7 +170,11 @@ public:
 	const ConnectionQueueItem::List& getTransferConnections(bool aDownloads) const {
 		return aDownloads ? cqis[CONNECTION_TYPE_DOWNLOAD] : cqis[CONNECTION_TYPE_UPLOAD];
 	}
+
+	bool isMCNUser(const UserPtr& aUser) const noexcept;
 private:
+	FloodCounter floodCounter;
+
 	bool allowNewMCN(const ConnectionQueueItem* aCQI) noexcept;
 	void createNewMCN(const HintedUser& aUser) noexcept;
 
@@ -208,8 +213,6 @@ private:
 	typedef delayMap::iterator delayIter;
 	delayMap delayedTokens;
 
-	uint64_t floodCounter = 0;
-
 	unique_ptr<Server> server;
 	unique_ptr<Server> secureServer;
 
@@ -231,6 +234,8 @@ private:
 	void putCQI(ConnectionQueueItem* cqi) noexcept;
 
 	void accept(const Socket& sock, bool aSecure) noexcept;
+
+	FloodCounter::FloodLimits getIncomingConnectionLimits(const string& aIP) const noexcept;
 
 	bool checkKeyprint(UserConnection *aSource) noexcept;
 
