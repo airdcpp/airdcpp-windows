@@ -4,8 +4,8 @@
 
 set dryrun=false
 set disabled=false
-set ftpaddress=ftp.airdcpp.net
-set ftpdir=nightly
+set ftpaddress=airdcpp-www@builds.airdcpp.net
+set ftpdir=windows/builds
 set updaterdir=updater
 set versiondir=version
 set startupdir=%CD%
@@ -39,15 +39,12 @@ set fileName=updater_%archString%_%~1.zip
 
 cd compiled
 
-echo open %ftpaddress%> checkftp.txt
-echo %ftpuser%>> checkftp.txt
-echo %ftppass%>> checkftp.txt
 echo cd %ftpdir%>> checkftp.txt
 echo cd %updaterdir%>> checkftp.txt
-echo dir>> checkftp.txt
+echo ls>> checkftp.txt
 echo quit>> checkftp.txt
 
-for /f "usebackq delims=" %%i in (`FTP -v -i -s:checkftp.txt`) do (
+for /f "usebackq delims=" %%i in (`sftp -b checkftp.txt %ftpaddress%`) do (
 echo %%i | find "%fileName%" > nul
 if not errorlevel 1 goto :ExistsFTP
 )
@@ -58,21 +55,13 @@ ECHO Y | DEL checkftp.txt
 
 echo Not found from the FTP, fetching the latest version file...
 
-echo open %ftpaddress%> fetchversionxml.txt
-echo %ftpuser%>> fetchversionxml.txt
-echo %ftppass%>> fetchversionxml.txt
 echo cd %ftpdir%>> fetchversionxml.txt
 echo cd %versiondir%>> fetchversionxml.txt
-echo binary>> fetchversionxml.txt
 echo get version.xml>> fetchversionxml.txt
 echo quit>> fetchversionxml.txt
 
-FTP -v -i -s:fetchversionxml.txt
+sftp -b fetchversionxml.txt %ftpaddress%
 ECHO Y | DEL fetchversionxml.txt
-ECHO Y | DEL cd
-ECHO Y | DEL dir
-ECHO Y | DEL open
-ECHO Y | DEL quit
 
 :: Install Node.js
 echo Installing Node.js...
@@ -90,21 +79,17 @@ call :SendFTP %fileName%
 goto :end
 
 :SendFTP
-echo open %ftpaddress%> sendftp.txt
-echo %ftpuser%>> sendftp.txt
-echo %ftppass%>> sendftp.txt
 echo cd %ftpdir%>> sendftp.txt
 echo cd %updaterdir%>> sendftp.txt
-echo binary>> sendftp.txt
-echo mput "%~1">> sendftp.txt
+echo put "%~1">> sendftp.txt
 echo cd ..>> sendftp.txt
 echo cd %versiondir%>> sendftp.txt
-echo mput version.xml.sign>> sendftp.txt
-echo mput version.xml>> sendftp.txt
+echo put version.xml.sign>> sendftp.txt
+echo put version.xml>> sendftp.txt
 echo quit>> sendftp.txt
 
 echo Starting FTP upload
-FTP -v -i -s:sendftp.txt
+sftp -b sendftp.txt %ftpaddress%
 ECHO Y | DEL sendftp.txt
 ECHO Y | DEL %~1
 echo Sending finished
