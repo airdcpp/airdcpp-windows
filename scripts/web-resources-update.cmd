@@ -4,20 +4,19 @@ REM This will download and update Web-resources from https://www.npmjs.com/packa
 REM For it to work you need to manually create 'Web-resources' in the 'installer' directory.
 REM You can use the switch '/force' to force an update. 
 
-cd ..
-
 setlocal
 
-set appver=web-resources-update v0.5
+set appver=web-resources-update v0.6
 
 set force=false
 
 set scriptpath=%~dp0
 
+cd ..
+
 if /i [%1]==[/force] set force=true
 
-if not exist "%ProgramFiles%\7-Zip" goto NO-7-ZIP
-set 7path="%ProgramFiles%\7-Zip"
+if not exist "%windir%\System32\tar.exe" goto NO-TAR
 
 for /F "tokens=* USEBACKQ" %%F IN (`npm view airdcpp-webui version`) DO set version-new-full=%%F
 
@@ -80,9 +79,9 @@ if %errorlevel% == 0 goto DOWNLOAD
 goto NO-WEB-RESOURCES
 
 :DOWNLOAD
-"%windir%\System32\bitsadmin.exe" /transfer "airdcpp-webui" http://registry.npmjs.org/airdcpp-webui/-/airdcpp-webui-%version-new-full%.tgz "%scriptpath%installer\$Web-resources\latest.tgz"
-"%ProgramFiles%\7-Zip\7z.exe" x "installer\$Web-resources\latest.tgz" -o"installer\$Web-resources"
-"%ProgramFiles%\7-Zip\7z.exe" x "installer\$Web-resources\latest.tar" -o"installer\$Web-resources"
+set dpath=%CD%
+"%windir%\System32\bitsadmin.exe" /transfer "airdcpp-webui" http://registry.npmjs.org/airdcpp-webui/-/airdcpp-webui-%version-new-full%.tgz "%dpath%\installer\$Web-resources\latest.tgz"
+"%windir%\System32\tar.exe" -xf "%dpath%\installer\$Web-resources\latest.tgz" -C ""%dpath%\installer\$Web-resources"
 
 timeout /t 1 /nobreak > nul
 move installer\$Web-resources\package\dist installer
@@ -92,29 +91,29 @@ rename installer\dist Web-resources
 if not %errorlevel% == 0 goto NO-RENAME
 goto DONE
 
-:NO-7-ZIP
+:NO-TAR
 echo.
-echo.Cannot find the directory %ProgramFiles%\7-Zip. Install 7-Zip and try again https://www.7-zip.org
+echo.[ ERROR ] Cannot find the file 'tar.exe' in your system!
 echo.
 goto END
 
 :NO-VERSION
 echo.
-echo.Aborting, no version found. Possible cause, no NPM installed (https://nodejs.org) or no Internet connection.
+echo.[ ERROR ] Version not found! Possible cause, no NPM installed (https://nodejs.org) or no Internet connection.
 echo.
 goto END
 
 :NO-WEB-RESOURCES
 echo.
-echo.Web-resources directory not found or in use!
+echo.[ ERROR ] Web-resources directory not found or in use!
 echo.
-echo.Note: If this is the first time you run this script, then you need to manually create the directory 'Web-resources' in the 'installer' directory.
+echo.Note: If this is the first time you run this script, you need to manually create the directory 'Web-resources' in the 'installer' directory.
 echo.
 goto END
 
 :NO-RENAME
 echo.
-echo.Something went wrong. Unable to rename dist directory to Web-resources.
+echo.[ ERROR ] Unable to rename 'dist' directory to 'Web-resources'.
 echo.
 goto END
 
@@ -133,6 +132,8 @@ echo.      Old version: %version-old-full%
 echo.
 echo.Installed version: %version-new-full%
 echo.
+if %force%==true echo.FORCED has been used!
+cd /D %scriptpath%
 goto END
 
 :END
