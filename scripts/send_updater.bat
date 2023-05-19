@@ -1,7 +1,5 @@
 @echo off
 
-:: for /f "delims=" %%x in (ftp_credentials.txt) do (set "%%x")
-
 set dryrun=false
 set disabled=false
 set ftpaddress=airdcpp-www@builds.airdcpp.net
@@ -13,8 +11,6 @@ set startupdir=%CD%
 SET SOLUTION_DIR=%~dp0\..\
 
 cd %SOLUTION_DIR%
-
-for /f "delims=" %%x in (%SOLUTION_DIR%\scripts\ftp_credentials.txt) do (set "%%x")
 
 ::Pre checks
 IF %disabled%==true goto :SendDisabled 
