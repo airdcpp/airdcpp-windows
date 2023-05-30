@@ -1,3 +1,23 @@
+4.21
+
+API and Web UI changes: http://airdcpp.net/2023/05/22/version-2.12.0.html
+
+Added:
+
+- Add flood limits for incoming and outgoing connect requests to avoid crashes in case of severe flood (https://github.com/airdcpp/airdcpp-windows/issues/63)
+- Add "verbose" status message severity
+
+Changed:
+
+- Update Node.js to version 18.16.0
+
+Fixed:
+
+- Fix transfer connections not being created in some cases when download sources are added
+- Fix sources column in download queue not being updated in some cases when download sources are added
+- Fix an additional whitespace being added after user nicks in some cases
+
+
 4.20
 
 API and Web UI changes:
