@@ -105,9 +105,7 @@ const ProfileSettingItem::List SettingsManager::profileSettings[SettingsManager:
 { 
 	// profile normal
 	{ SettingsManager::MULTI_CHUNK, true, ResourceManager::SEGMENTS },
-	{ SettingsManager::MAX_FILE_SIZE_SHARED, 0, ResourceManager::DONT_SHARE_BIGGER_THAN },
-	{ SettingsManager::MINIMUM_SEARCH_INTERVAL, 15, ResourceManager::MINIMUM_SEARCH_INTERVAL },
-	//{ SettingsManager::AUTO_SEARCH_LIMIT, 5 },
+	{ SettingsManager::MINIMUM_SEARCH_INTERVAL, 10, ResourceManager::MINIMUM_SEARCH_INTERVAL },
 	{ SettingsManager::AUTO_FOLLOW, true, ResourceManager::SETTINGS_AUTO_FOLLOW },
 #ifdef HAVE_GUI
 	{ SettingsManager::TOOLBAR_ORDER, SettingsManager::buildToolbarOrder(SettingsManager::getDefaultToolbarOrder()), ResourceManager::TOOLBAR_ORDER },
@@ -115,8 +113,6 @@ const ProfileSettingItem::List SettingsManager::profileSettings[SettingsManager:
 }, {
 	// profile RAR
 	{ SettingsManager::MULTI_CHUNK, false, ResourceManager::SEGMENTS },
-	{ SettingsManager::MINIMUM_SEARCH_INTERVAL, 10, ResourceManager::MINIMUM_SEARCH_INTERVAL },
-	//{ SettingsManager::AUTO_SEARCH_LIMIT, 5 },
 	{ SettingsManager::AUTO_FOLLOW, false, ResourceManager::SETTINGS_AUTO_FOLLOW },
 #ifdef HAVE_GUI
 	{ SettingsManager::TOOLBAR_ORDER, SettingsManager::buildToolbarOrder({
@@ -155,9 +151,6 @@ const ProfileSettingItem::List SettingsManager::profileSettings[SettingsManager:
 }, {
 	// profile LAN
 	{ SettingsManager::MULTI_CHUNK, true, ResourceManager::SEGMENTS },
-	{ SettingsManager::MAX_FILE_SIZE_SHARED, 0, ResourceManager::DONT_SHARE_BIGGER_THAN },
-	{ SettingsManager::MINIMUM_SEARCH_INTERVAL, 10, ResourceManager::MINIMUM_SEARCH_INTERVAL },
-	//{ SettingsManager::AUTO_SEARCH_LIMIT, 5 },
 	{ SettingsManager::AUTO_FOLLOW, true, ResourceManager::SETTINGS_AUTO_FOLLOW },
 #ifdef HAVE_GUI
 	{ SettingsManager::TOOLBAR_ORDER, SettingsManager::buildToolbarOrder(SettingsManager::getDefaultToolbarOrder()), ResourceManager::TOOLBAR_ORDER },
