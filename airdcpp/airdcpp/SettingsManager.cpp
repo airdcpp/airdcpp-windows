@@ -100,6 +100,7 @@ SettingsManager::EnumStringMap SettingsManager::getEnumStrings(int aKey, bool aV
 	return ret;
 }
 
+// Every profile should contain the same setting keys
 const ProfileSettingItem::List SettingsManager::profileSettings[SettingsManager::PROFILE_LAST] = {
 
 { 
@@ -113,6 +114,7 @@ const ProfileSettingItem::List SettingsManager::profileSettings[SettingsManager:
 }, {
 	// profile RAR
 	{ SettingsManager::MULTI_CHUNK, false, ResourceManager::SEGMENTS },
+	{ SettingsManager::MINIMUM_SEARCH_INTERVAL, 5, ResourceManager::MINIMUM_SEARCH_INTERVAL },
 	{ SettingsManager::AUTO_FOLLOW, false, ResourceManager::SETTINGS_AUTO_FOLLOW },
 #ifdef HAVE_GUI
 	{ SettingsManager::TOOLBAR_ORDER, SettingsManager::buildToolbarOrder({
@@ -151,6 +153,7 @@ const ProfileSettingItem::List SettingsManager::profileSettings[SettingsManager:
 }, {
 	// profile LAN
 	{ SettingsManager::MULTI_CHUNK, true, ResourceManager::SEGMENTS },
+	{ SettingsManager::MINIMUM_SEARCH_INTERVAL, 5, ResourceManager::MINIMUM_SEARCH_INTERVAL },
 	{ SettingsManager::AUTO_FOLLOW, true, ResourceManager::SETTINGS_AUTO_FOLLOW },
 #ifdef HAVE_GUI
 	{ SettingsManager::TOOLBAR_ORDER, SettingsManager::buildToolbarOrder(SettingsManager::getDefaultToolbarOrder()), ResourceManager::TOOLBAR_ORDER },
