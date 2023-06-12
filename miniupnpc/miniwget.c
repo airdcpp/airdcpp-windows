@@ -1,4 +1,4 @@
-/* $Id: miniwget.c,v 1.84 2020/11/09 19:41:18 nanard Exp $ */
+/* $Id: miniwget.c,v 1.82 2020/05/29 21:14:22 nanard Exp $ */
 /* Project : miniupnp
  * Website : http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * Author : Thomas Bernard

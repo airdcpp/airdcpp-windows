@@ -1,4 +1,4 @@
-/* $Id: connecthostport.h,v 1.4 2018/04/06 10:53:13 nanard Exp $ */
+/* $Id: connecthostport.h,v 1.2 2012/06/23 22:32:33 nanard Exp $ */
 /* Project: miniupnp
  * http://miniupnp.free.fr/
  * Author: Thomas Bernard

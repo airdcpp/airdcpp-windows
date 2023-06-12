@@ -1,4 +1,4 @@
-/* $Id: minisoap.h,v 1.6 2018/04/06 10:53:13 nanard Exp $ */
+/* $Id: minisoap.h,v 1.4 2010/04/12 20:39:41 nanard Exp $ */
 /* Project : miniupnp
  * Author : Thomas Bernard
  * Copyright (c) 2005-2018 Thomas Bernard

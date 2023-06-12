@@ -1,4 +1,4 @@
-/* $Id: miniupnpc_socketdef.h,v 1.4 2021/03/02 23:35:29 nanard Exp $ */
+/* $Id: miniupnpc_socketdef.h,v 1.1 2018/03/13 23:44:10 nanard Exp $ */
 /* Miniupnp project : http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * Author : Thomas Bernard
  * Copyright (c) 2018 Thomas Bernard

@@ -1,4 +1,4 @@
-/* $Id: minixml.h,v 1.8 2019/02/10 12:29:25 nanard Exp $ */
+/* $Id: minixml.h,v 1.6 2006/11/30 11:47:21 nanard Exp $ */
 /* minimal xml parser
  *
  * Project : miniupnp

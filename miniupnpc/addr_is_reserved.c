@@ -1,4 +1,4 @@
-/* $Id: addr_is_reserved.c,v 1.5 2021/05/10 20:53:02 nanard Exp $ */
+/* $Id: addr_is_reserved.c,v 1.4 2021/03/02 23:40:32 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * Project : miniupnp
  * Web : http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
