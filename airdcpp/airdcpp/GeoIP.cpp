@@ -99,7 +99,7 @@ string GeoIP::getCountry(const string& ip) const {
 			ParamMap params;
 			params["2code"] = [&] { return parseData(res, "country", "iso_code", NULL); };
 			params["continent"] = [&] { return parseData(res, "continent", "code", NULL); };
-			params["engname"] = [&] { return parseData(res, "country", "names", language.c_str(), NULL); };
+			params["engname"] = [&] { return parseData(res, "country", "names", "en", NULL); };
 			params["name"] = [&] { return parseData(res, "country", "names", language.c_str(), NULL); };
 			params["officialname"] = [&] { return parseData(res, "country", "names", language.c_str(), NULL); };
 

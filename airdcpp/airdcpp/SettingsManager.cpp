@@ -103,7 +103,7 @@ SettingsManager::EnumStringMap SettingsManager::getEnumStrings(int aKey, bool aV
 // Every profile should contain the same setting keys
 const ProfileSettingItem::List SettingsManager::profileSettings[SettingsManager::PROFILE_LAST] = {
 
-{ 
+{
 	// profile normal
 	{ SettingsManager::MULTI_CHUNK, true, ResourceManager::SEGMENTS },
 	{ SettingsManager::MINIMUM_SEARCH_INTERVAL, 10, ResourceManager::MINIMUM_SEARCH_INTERVAL },
