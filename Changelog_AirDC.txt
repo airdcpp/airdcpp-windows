@@ -9,13 +9,15 @@ Added:
 
 Changed:
 
-- Update Node.js to version 18.16.0
+- Update Node.js to version 18.17.1
+- Lower the default minimum search interval to 5/10 seconds
 
 Fixed:
 
 - Fix transfer connections not being created in some cases when download sources are added
 - Fix sources column in download queue not being updated in some cases when download sources are added
 - Fix an additional whitespace being added after user nicks in some cases
+- Fix "engname" country format param (https://github.com/airdcpp/airdcpp-windows/issues/88)
 
 
 4.20
