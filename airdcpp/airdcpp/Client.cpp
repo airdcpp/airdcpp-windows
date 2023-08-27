@@ -692,7 +692,7 @@ void Client::handleFlood(const FloodCounter::FloodResult& aResult, const string&
 		auto message = aMessage + " (" + Text::toLower(STRING(SEVERE)) + ")";
 
 		statusMessage(STRING_F(HUB_DDOS_DISCONNECT, message), LogMessage::SEV_ERROR);
-		setReconnDelay(60 * 60); // 1 hour
+		setReconnDelay(10 * 60); // 10 minutes
 		disconnect(true);
 	}
 }
