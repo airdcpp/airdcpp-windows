@@ -6,7 +6,7 @@ REM You can use the switch '/force' to force an update.
 
 setlocal
 
-set appver=web-resources-update v0.6
+set appver=web-resources-update v0.7
 
 set force=false
 
@@ -81,7 +81,7 @@ goto NO-WEB-RESOURCES
 :DOWNLOAD
 set dpath=%CD%
 "%windir%\System32\bitsadmin.exe" /transfer "airdcpp-webui" http://registry.npmjs.org/airdcpp-webui/-/airdcpp-webui-%version-new-full%.tgz "%dpath%\installer\$Web-resources\latest.tgz"
-"%windir%\System32\tar.exe" -xf "%dpath%\installer\$Web-resources\latest.tgz" -C ""%dpath%\installer\$Web-resources"
+"%windir%\System32\tar.exe" -xf "%dpath%\installer\$Web-resources\latest.tgz" -C "%dpath%\installer\$Web-resources"
 
 timeout /t 1 /nobreak > nul
 move installer\$Web-resources\package\dist installer
