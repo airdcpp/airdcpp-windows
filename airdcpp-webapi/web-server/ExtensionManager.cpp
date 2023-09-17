@@ -699,7 +699,7 @@ namespace webserver {
 #ifdef _WIN32
 				string testCommand = "where";
 #else
-				string testCommand = "which";
+				string testCommand = "command -v";
 #endif
 				testCommand += " " + token;
 
