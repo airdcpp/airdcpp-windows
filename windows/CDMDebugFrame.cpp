@@ -235,7 +235,7 @@ void CDMDebugFrame::addCmd(const string& cmd) {
 }
 
 string CDMDebugFrame::formatMessage(const string& aType, bool aIncoming, const string& aData, const string& aIP) noexcept {
-	string cmd(aType + ":\t\t");
+	string cmd("[" + Util::getShortTimeString() + "] " + aType + ":\t\t");
 
 	if (aIncoming) {
 		cmd += "[Incoming]";
