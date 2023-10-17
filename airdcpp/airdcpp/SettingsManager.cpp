@@ -399,9 +399,9 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(BIND_ADDRESS, "0.0.0.0");
 	setDefault(BIND_ADDRESS6, "::");
 
-	setDefault(TCP_PORT, Util::rand(10000, 32000));
-	setDefault(UDP_PORT, Util::rand(10000, 32000));
-	setDefault(TLS_PORT, Util::rand(10000, 32000));
+	setDefault(TCP_PORT, 0);
+	setDefault(UDP_PORT, 0);
+	setDefault(TLS_PORT, 0);
 
 	setDefault(MAPPER, Mapper_MiniUPnPc::name);
 	setDefault(INCOMING_CONNECTIONS, INCOMING_ACTIVE);

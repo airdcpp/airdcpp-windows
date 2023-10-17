@@ -190,9 +190,9 @@ namespace webserver {
 	}
 
 	map<int, CoreSettingItem::MinMax> minMaxMappings = {
-		{ SettingsManager::TCP_PORT, { 1, 65535 } },
-		{ SettingsManager::UDP_PORT, { 1, 65535 } },
-		{ SettingsManager::TLS_PORT, { 1, 65535 } },
+		{ SettingsManager::TCP_PORT, { 0, 65535 } },
+		{ SettingsManager::UDP_PORT, { 0, 65535 } },
+		{ SettingsManager::TLS_PORT, { 0, 65535 } },
 		{ SettingsManager::SOCKS_PORT, { 1, 65535 } },
 
 		{ SettingsManager::MAX_HASHING_THREADS, { 1, 100 } },

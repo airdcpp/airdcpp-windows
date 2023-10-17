@@ -110,7 +110,7 @@ void ConnectionManager::listen() {
 		return;
 	}
 
-	if (CONNSETTING(TCP_PORT) == CONNSETTING(TLS_PORT)) {
+	if (CONNSETTING(TCP_PORT) != 0 && CONNSETTING(TCP_PORT) == CONNSETTING(TLS_PORT)) {
 		LogManager::getInstance()->message(STRING(ERROR_TLS_PORT), LogMessage::SEV_ERROR, STRING(CONNECTIVITY));
 	}
 
