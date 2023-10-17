@@ -166,6 +166,8 @@ namespace webserver {
 
 		WebServerManager(WebServerManager&) = delete;
 		WebServerManager& operator=(WebServerManager&) = delete;
+
+		IGETSET(bool, enableSocketLogging, EnableSocketLogging, false);
 	private:
 		// Websocketpp event handlers
 		template <typename EndpointType>

@@ -114,6 +114,12 @@ namespace webserver {
 		aEndpoint.get_elog().set_ostream(&aStream);
 	}
 
+	template<class T>
+	void disableEndpointLogging(T& aEndpoint) {
+		aEndpoint.clear_access_channels(websocketpp::log::alevel::all);
+		aEndpoint.clear_error_channels(websocketpp::log::elevel::all);
+	}
+
 
 	template<class T>
 	void setEndpointOptions(T& aEndpoint) {
@@ -183,8 +189,13 @@ namespace webserver {
 		endpoint_tls.set_tls_init_handler(std::bind(&WebServerManager::handleInitTls, this, _1));
 
 		// Logging
-		setEndpointLogSettings(endpoint_plain, debugStreamPlain);
-		setEndpointLogSettings(endpoint_tls, debugStreamTls);
+		if (enableSocketLogging) {
+			setEndpointLogSettings(endpoint_plain, debugStreamPlain);
+			setEndpointLogSettings(endpoint_tls, debugStreamTls);
+		} else {
+			disableEndpointLogging(endpoint_plain);
+			disableEndpointLogging(endpoint_tls);
+		}
 
 		return true;
 	}

@@ -148,6 +148,8 @@ StartupLoadCallback WinClient::moduleLoadFGetter(unique_ptr<MainFrame>& wndMain)
 			if (!webResourcePath) {
 				webResourcePath = Util::getParentDir(Util::getParentDir(Util::getAppFilePath())) + "installer\\Web-resources\\";
 			}
+
+			wsm->setEnableSocketLogging(true);
 #endif
 
 			// Run
