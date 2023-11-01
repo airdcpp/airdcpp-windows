@@ -416,7 +416,7 @@ void ActionUtil::openFolder(const tstring& aFileName) {
 
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		if (Util::fileExists(Text::fromT(aFileName))) {
-			::ShellExecute(NULL, Text::toT("explore").c_str(), Util::formatPathW(Util::getFilePath(aFileName)).c_str(), NULL, NULL, SW_SHOWNORMAL);
+			::ShellExecute(NULL, Text::toT("open").c_str(), Util::formatPathW(Util::getFilePath(aFileName)).c_str(), NULL, NULL, SW_SHOWNORMAL);
 		}
 	});
 }
