@@ -1652,7 +1652,9 @@
 #define IDC_PLACEHOLDER                 10236
 #define IDC_SETTINGS_BIND_ADDRESS_HTTP_LABEL 10237
 #define IDC_BIND_ADDRESS_HTTP           10238
-#define IDC_CONFIGURE					10239
+#define IDC_CONFIGURE                   10239
+#define IDC_PORT_HELP                   10239
+#define IDC_SETTINGS_PORT_HELP          10239
 #define IDC_REFRESH_WINAMP              11011
 #define IDC_WINAMP_LIST                 11012
 #define IDC_POSITION                    11013
@@ -1863,9 +1865,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        479
+#define _APS_NEXT_RESOURCE_VALUE        481
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         10239
+#define _APS_NEXT_CONTROL_VALUE         10240
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

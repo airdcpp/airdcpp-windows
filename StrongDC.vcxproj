@@ -819,6 +819,7 @@
     <Image Include="res\UsersFrame\grantOff.ico" />
     <Image Include="res\UsersFrame\offline.ico" />
     <Image Include="res\UsersFrame\online.ico" />
+    <Image Include="res\verbose.ico" />
     <Image Include="res\webserver.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

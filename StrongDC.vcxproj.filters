@@ -1133,6 +1133,9 @@
     <Image Include="res\ToolbarImages\Extensions.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\verbose.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\AirDCPlusPlus.ico">
