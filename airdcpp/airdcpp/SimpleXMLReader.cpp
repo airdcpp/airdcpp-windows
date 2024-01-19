@@ -659,6 +659,7 @@ bool SimpleXMLReader::process() {
 		case STATE_DECL_ENCODING_NAME_QUOT:
 			declEncodingValue()
 			|| spaceOrError("Expecting encoding value");
+			break;
 		case STATE_DECL_STANDALONE:
 			literal(LITN("standalone"), false, STATE_DECL_STANDALONE_EQ)
 			|| literal(LITN("?>"), false, STATE_CONTENT)
