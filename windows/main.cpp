@@ -197,7 +197,7 @@ LONG handleCrash(unsigned long aCode, const string& aError, PCONTEXT aContext)
 		::MessageBox(WinUtil::mainWnd, Text::toT(msg).c_str(), _T("AirDC++ has crashed"), MB_OK);
 	}
 
-	auto msg = "AirDC++ just encountered a fatal bug and details have been written to " + exceptionFilePath + "\n\nYou can upload this file at http://www.airdcpp.net to help us find out what happened. Go there now?";
+	auto msg = "AirDC++ just encountered a fatal bug and details have been written to " + exceptionFilePath + "\n\nYou can upload this file at https://www.airdcpp.net to help us find out what happened. Go there now?";
 	if (::MessageBox(WinUtil::mainWnd, Text::toT(msg).c_str(), _T("AirDC++ has crashed"), MB_YESNO | MB_ICONERROR) == IDYES) {
 		ActionUtil::openLink(HttpLinks::appCrash);
 	}

@@ -37,7 +37,7 @@ tstring HttpLinks::extensionPackageBase = _T("https://registry.npmjs.org/");
 
 tstring HttpLinks::ipSearchBase = _T("https://apps.db.ripe.net/db-web-ui/query?form_type=simple&full_query_string=&searchtext=");
 tstring HttpLinks::speedTest = _T("https://www.speedtest.net");
-tstring HttpLinks::appCrash = _T("http://crash.airdcpp.net");
+tstring HttpLinks::appCrash = _T("https://github.com/airdcpp/airdcpp-windows/issues");
 
 tstring HttpLinks::webServerHelp = HttpLinks::github + _T("wiki/Web-server/");
 tstring HttpLinks::extensionsDevHelp = _T("https://airdcpp-web.github.io/docs/advanced/scripting.html");

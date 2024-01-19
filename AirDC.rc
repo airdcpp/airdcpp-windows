@@ -873,7 +873,7 @@ BEGIN
     EDITTEXT        IDC_TTH,50,89,188,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
     LTEXT           "TTH:",IDC_STATIC,16,89,18,12
     EDITTEXT        IDC_AIRTHANKS,12,119,225,66,ES_MULTILINE | ES_READONLY | WS_VSCROLL
-    LTEXT           "http://www.airdcpp.net",IDC_LINK,76,56,91,12
+    LTEXT           "https://www.airdcpp.net",IDC_LINK,76,56,91,12
     LTEXT           "Based on:  StrongDC++  (c) Copyright 2004-2011 Big Muscle",IDC_STRONGDC,16,76,220,11
 END
 
@@ -1676,7 +1676,7 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "Comments", "http://www.airdcpp.net"
+            VALUE "Comments", "https://www.airdcpp.net"
             VALUE "CompanyName", "AirDC++ Team"
             VALUE "FileDescription", "AirDC++"
             VALUE "FileVersion", "4.21.0.0"
