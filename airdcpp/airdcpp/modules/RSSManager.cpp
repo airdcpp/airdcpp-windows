@@ -257,7 +257,7 @@ bool RSSManager::addAutoSearchItem(const RSSFilter& aFilter, const RSSDataPtr& a
 	time_t expireTime = aFilter.getExpireDays() > 0 ? GET_TIME() + aFilter.getExpireDays() * 24 * 60 * 60 : 0;
 
 	AutoSearchPtr as = new AutoSearch(aFilter.getFilterAction() == RSSFilter::DOWNLOAD, aData->getTitle(), SEARCH_TYPE_DIRECTORY, AutoSearch::ACTION_DOWNLOAD, true, aFilter.getDownloadTarget(),
-		StringMatch::PARTIAL, Util::emptyString, Util::emptyString, expireTime, true, true, false, Util::emptyString, AutoSearch::RSS_DOWNLOAD, false);
+		StringMatch::EXACT, Util::emptyString, Util::emptyString, expireTime, true, true, false, Util::emptyString, AutoSearch::RSS_DOWNLOAD, false);
 
 	//format time params, befora adding to autosearch, so we can use RSS date for folder
 	if(aFilter.getFormatTimeParams())
