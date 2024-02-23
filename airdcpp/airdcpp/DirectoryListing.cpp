@@ -1,9 +1,9 @@
 /* 
- * Copyright (C) 2001-2023 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -353,7 +353,7 @@ void ListLoader::startTag(const string& name, StringPairList& attribs, bool aSim
 
 			TTHValue tth(h); /// @todo verify validity?
 
-			auto f = make_shared<DirectoryListing::File>(cur, n, size, tth, checkDupe, Util::toTimeT(getAttrib(attribs, sDate, 3)));
+			auto f = make_shared<DirectoryListing::File>(cur, n, size, tth, checkDupe, Util::parseRemoteFileItemDate(getAttrib(attribs, sDate, 3)));
 			cur->files.push_back(f);
 		} else if (name == sDirectory) {
 			const string& n = getAttrib(attribs, sName, 0);
@@ -385,12 +385,12 @@ void ListLoader::startTag(const string& name, StringPairList& attribs, bool aSim
 				auto type = incomp ? (contentInfo.directories > 0 ? DirectoryListing::Directory::TYPE_INCOMPLETE_CHILD : DirectoryListing::Directory::TYPE_INCOMPLETE_NOCHILD) :
 					DirectoryListing::Directory::TYPE_NORMAL;
 
-				d = DirectoryListing::Directory::create(cur, n, type, listDownloadDate, (partialList && checkDupe), contentInfo, size, Util::toTimeT(date));
+				d = DirectoryListing::Directory::create(cur, n, type, listDownloadDate, (partialList && checkDupe), contentInfo, size, Util::parseRemoteFileItemDate(date));
 			} else {
 				if (!incomp) {
 					d->setComplete();
 				}
-				d->setRemoteDate(Util::toTimeT(date));
+				d->setRemoteDate(Util::parseRemoteFileItemDate(date));
 			}
 			cur = d.get();
 
@@ -416,7 +416,7 @@ void ListLoader::startTag(const string& name, StringPairList& attribs, bool aSim
 			dcassert(list->findDirectory(base));
 
 			const string& baseDate = getAttrib(attribs, sBaseDate, 3);
-			cur->setRemoteDate(Util::toTimeT(baseDate));
+			cur->setRemoteDate(Util::parseRemoteFileItemDate(baseDate));
 		}
 
 		// Set the root complete only after we have finished loading 

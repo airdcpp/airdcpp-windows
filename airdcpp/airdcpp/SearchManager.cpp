@@ -1,9 +1,9 @@
 /* 
- * Copyright (C) 2001-2023 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -417,7 +417,7 @@ void SearchManager::onRES(const AdcCommand& cmd, const UserPtr& from, const stri
 		} else if(str.compare(0, 2, "TO") == 0) {
 			token = str.substr(2);
 		} else if(str.compare(0, 2, "DM") == 0) {
-			date = Util::toTimeT(str.substr(2));
+			date = Util::parseRemoteFileItemDate(str.substr(2));
 		} else if(str.compare(0, 2, "FI") == 0) {
 			files = Util::toInt(str.substr(2));
 		} else if(str.compare(0, 2, "FO") == 0) {
