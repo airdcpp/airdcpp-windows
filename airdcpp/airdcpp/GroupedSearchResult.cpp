@@ -112,6 +112,23 @@ namespace dcpp {
 		return (*min)->getDate();
 	}
 
+	string GroupedSearchResult::getFileName() const noexcept {
+		map<string, int> nameCounts;
+
+		{
+			FastLock l(cs);
+			for (const auto& child : children)
+				++nameCounts[child->getFileName()];
+		}
+
+		decltype(auto) max = *ranges::max_element(nameCounts, [](const auto& p1, const auto& p2) {
+			return p1.second < p2.second;
+		});
+
+		auto matches = ranges::count(nameCounts | views::values, max.second);
+		return matches == 1 ? max.first : baseResult->getFileName();
+	}
+
 	double GroupedSearchResult::getTotalRelevance() const noexcept {
 		return (getHits() * relevanceInfo.sourceScoreFactor) + relevanceInfo.matchRelevance;
 	}

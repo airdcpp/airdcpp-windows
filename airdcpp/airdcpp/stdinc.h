@@ -68,6 +68,7 @@
 #include <optional>
 #include <map>
 #include <memory>
+#include <ranges>
 #include <set>
 #include <string>
 #include <numeric>

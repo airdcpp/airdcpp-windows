@@ -62,6 +62,7 @@ namespace dcpp {
 
 		double getTotalRelevance() const noexcept;
 		double getMatchRelevance() const noexcept;
+		string getFileName() const noexcept;
 
 		string getToken() const noexcept {
 			return baseResult->getTTH().toBase32();
@@ -81,10 +82,6 @@ namespace dcpp {
 
 		const string& getAdcPath() const noexcept {
 			return baseResult->getAdcPath();
-		}
-
-		string getFileName() const noexcept {
-			return baseResult->getFileName();
 		}
 
 		const HintedUser& getBaseUser() const noexcept {
