@@ -118,10 +118,10 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		auto qm = QueueManager::getInstance();
 
 		RLock l(qm->getCS());
-		for (const auto& b : qm->getBundlesUnsafe() | map_values)
+		for (const auto& b : qm->getBundlesUnsafe() | views::values)
 			onBundleAdded(b);
 
-		for (const auto& q : qm->getFileQueueUnsafe() | map_values) {
+		for (const auto& q : qm->getFileQueueUnsafe() | views::values) {
 			if (!q->getBundle())
 				onQueueItemAdded(q);
 		}
@@ -511,8 +511,8 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 }
 
 void QueueFrame::AppendDirectoryMenu(QueueItemInfoList& dirs, QueueItemList& ql, ShellMenu& dirMenu) {
-	bool hasFinished = any_of(dirs.begin(), dirs.end(), [](const QueueItemInfoPtr& d) { return d->getFinishedBytes() > 0; });
-	bool hasBundleItems = any_of(ql.begin(), ql.end(), [](const QueueItemPtr& q) { return q->getBundle(); });
+	bool hasFinished = ranges::any_of(dirs, [](const QueueItemInfoPtr& d) { return d->getFinishedBytes() > 0; });
+	bool hasBundleItems = ranges::any_of(ql, [](const QueueItemPtr& q) { return !!q->getBundle(); });
 	
 	if (hasBundleItems)
 		ActionUtil::appendFilePrioMenu(dirMenu, ql);
@@ -532,7 +532,7 @@ void QueueFrame::AppendDirectoryMenu(QueueItemInfoList& dirs, QueueItemList& ql,
 
 	//remove created files and directories (only the ones associated with the current bundle in queue, not sure if we should just delete the existing directory and all files recursively regardless if its items from current bundle?)
 	if (hasFinished) 
-		dirMenu.appendItem(TSTRING(REMOVE_WITH_FILES), [=] { handleRemoveFiles(ql, true); for_each(dirs, [&](QueueItemInfoPtr dir) { dir->deleteSubdirs(); }); });
+		dirMenu.appendItem(TSTRING(REMOVE_WITH_FILES), [=] { handleRemoveFiles(ql, true); ranges::for_each(dirs, [&](QueueItemInfoPtr dir) { dir->deleteSubdirs(); }); });
 
 	if (dirs.size() == 1) {
 		dirMenu.appendShellMenu({ dirs.front()->target });
@@ -568,9 +568,9 @@ tstring formatSourceFlags(const SourceType& s) {
 }
 void QueueFrame::AppendTreeMenu(BundleList& bl, QueueItemList& ql, OMenu& aMenu) {
 	if (!bl.empty()) {
-		bool filesOnly = all_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isFileBundle(); });
-		bool hasFinished = any_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isDownloaded(); });
-		bool allFinished = all_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isDownloaded(); });
+		bool filesOnly = ranges::all_of(bl, [](const BundlePtr& b) { return b->isFileBundle(); });
+		bool hasFinished = ranges::any_of(bl, [](const BundlePtr& b) { return b->isDownloaded(); });
+		bool allFinished = ranges::all_of(bl, [](const BundlePtr& b) { return b->isDownloaded(); });
 
 		aMenu.InsertSeparatorFirst(CTSTRING_F(X_BUNDLES, bl.size()));
 
@@ -582,10 +582,10 @@ void QueueFrame::AppendTreeMenu(BundleList& bl, QueueItemList& ql, OMenu& aMenu)
 
 		if (curSel == TREE_FAILED) {
 			aMenu.appendItem(TSTRING(RESCAN_BUNDLE), [=] {
-				boost::for_each(bl, [&](const BundlePtr& b) { QueueManager::getInstance()->shareBundle(b, false); });
+				ranges::for_each(bl, [&](const BundlePtr& b) { QueueManager::getInstance()->shareBundle(b, false); });
 			}, OMenu::FLAG_THREADED);
 			aMenu.appendItem(TSTRING(FORCE_SHARING), [=] { 
-				boost::for_each(bl, [&](const BundlePtr& b) { QueueManager::getInstance()->shareBundle(b, true); });
+				ranges::for_each(bl, [&](const BundlePtr& b) { QueueManager::getInstance()->shareBundle(b, true); });
 			}, OMenu::FLAG_THREADED);
 			aMenu.appendSeparator();
 		}
@@ -599,7 +599,7 @@ void QueueFrame::AppendTreeMenu(BundleList& bl, QueueItemList& ql, OMenu& aMenu)
 		}
 	} else if (!ql.empty()) {
 		aMenu.InsertSeparatorFirst(CTSTRING_F(X_FILES, ql.size()));
-		bool hasFinished = any_of(ql.begin(), ql.end(), [](const QueueItemPtr& q) { return q->isDownloaded(); });
+		bool hasFinished = ranges::any_of(ql, [](const QueueItemPtr& q) { return q->isDownloaded(); });
 		aMenu.appendItem(TSTRING(REMOVE), [=] { handleRemoveFiles(ql, false); });
 		if (hasFinished)
 			aMenu.appendItem(TSTRING(REMOVE_WITH_FILES), [=] { handleRemoveFiles(ql, true); });
@@ -617,10 +617,10 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 		bundleMenu.InsertSeparatorFirst(CTSTRING_F(X_BUNDLES, bl.size()));
 	}
 
-	bool hasFinished = any_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isDownloaded(); });
-	bool filesOnly = all_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isFileBundle(); });
-	bool allFinished = all_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isDownloaded(); });
-	bool hasFailed = any_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->getHookError(); });
+	bool hasFinished = ranges::any_of(bl, [](const BundlePtr& b) { return b->isDownloaded(); });
+	bool filesOnly = ranges::all_of(bl, [](const BundlePtr& b) { return b->isFileBundle(); });
+	bool allFinished = ranges::all_of(bl, [](const BundlePtr& b) { return b->isDownloaded(); });
+	bool hasFailed = ranges::any_of(bl, [](const BundlePtr& b) { return !!b->getHookError(); });
 
 	/* Insert sub menus */
 	BundlePtr b = nullptr;
@@ -738,8 +738,8 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 /*QueueItem Menu*/
 void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 
-	bool hasFinished = any_of(ql.begin(), ql.end(), [](const QueueItemPtr& q) { return q->isDownloaded(); });
-	bool hasBundleItems = any_of(ql.begin(), ql.end(), [](const QueueItemPtr& q) { return q->getBundle(); });
+	bool hasFinished = ranges::any_of(ql, [](const QueueItemPtr& q) { return q->isDownloaded(); });
+	bool hasBundleItems = ranges::any_of(ql, [](const QueueItemPtr& q) { return !!q->getBundle(); });
 
 	if (hasBundleItems)
 		ActionUtil::appendFilePrioMenu(fileMenu, ql);
@@ -918,7 +918,7 @@ void QueueFrame::reloadList(bool byHistory/*false*/) {
 	curDirectory = nullptr;
 	ctrlQueue.list.SetRedraw(FALSE);
 	ctrlQueue.list.DeleteAllItems();
-	for (auto& p : parents | map_values) {
+	for (auto& p : parents | views::values) {
 		if (!show(p))
 			continue;
 
@@ -934,14 +934,14 @@ void QueueFrame::filterList() {
 	ctrlQueue.list.DeleteAllItems();
 	
 	if (!curDirectory) {
-		for (auto& p : parents | map_values) {
+		for (auto& p : parents | views::values) {
 			if (!show(p))
 				continue;
 			ctrlQueue.list.insertItem(ctrlQueue.list.getSortPos(p.get()), p.get(), p->getImageIndex());
 		}
 	} else {
 		ctrlQueue.list.insertItem(0, iBack.get(), iBack->getImageIndex());
-		for (auto& p : curDirectory->children | map_values) {
+		for (auto& p : curDirectory->children | views::values) {
 			if (!show(p))
 				continue;
 			ctrlQueue.list.insertItem(ctrlQueue.list.getSortPos(p.get()), p.get(), p->getImageIndex());
@@ -1039,7 +1039,7 @@ void QueueFrame::handleRemoveBundles(BundleList bundles, bool removeFinished, bo
 	if (bundles.empty())
 		return;
 
-	bool allFinished = all_of(bundles.begin(), bundles.end(), [](const BundlePtr& b) { return b->isDownloaded(); });
+	bool allFinished = ranges::all_of(bundles, [](const BundlePtr& b) { return b->isDownloaded(); });
 	if (bundles.size() == 1 && !aCompletedOnly) {
 		if (removeFinished) {
 			if (!WinUtil::showQuestionBox(TSTRING_F(CONFIRM_REMOVE_DIR_FINISHED, Text::toT(bundles.front()->getName())), MB_ICONQUESTION)) {
@@ -1106,13 +1106,13 @@ void QueueFrame::insertItems(QueueItemInfoPtr Qii) {
 		Qii->childrenCreated = true;
 		{
 			RLock l(QueueManager::getInstance()->getCS());
-			boost::for_each(aBundle->getQueueItems(), [&](const QueueItemPtr& qi) { Qii->addChild(qi); });
-			boost::for_each(aBundle->getFinishedFiles(), [&](const QueueItemPtr& qi) { Qii->addChild(qi); });
+			ranges::for_each(aBundle->getQueueItems(), [&](const QueueItemPtr& qi) { Qii->addChild(qi); });
+			ranges::for_each(aBundle->getFinishedFiles(), [&](const QueueItemPtr& qi) { Qii->addChild(qi); });
 		}
 	}
 
 	if (Qii->isDirectory || (aBundle && !aBundle->isFileBundle())) {
-		for (auto item : Qii->children | map_values) {
+		for (auto item : Qii->children | views::values) {
 			if (item->isDirectory)
 				item->updateSubDirectories();
 			if (show(item))
@@ -1127,7 +1127,7 @@ QueueFrame::QueueItemInfoPtr QueueFrame::findParent(QueueToken aToken) {
 }
 
 const QueueFrame::QueueItemInfoPtr QueueFrame::findItemByPath(const string& aPath) {
-	for (auto b : parents | map_values){
+	for (auto b : parents | views::values){
 		if (b->bundle && !b->bundle->isFileBundle()) {
 			if (aPath == b->bundle->getTarget())
 				return b;
@@ -1272,7 +1272,7 @@ void QueueFrame::updateStatus() {
 		int pausedItems = 0;
 		int autosearchAdded = 0;
 
-		for (auto ii : parents | map_values) {
+		for (auto ii : parents | views::values) {
 			if (ii->bundle) {
 				BundlePtr b = ii->bundle;
 				b->isDownloaded() ? finishedBundles++ : queuedBundles++;
@@ -1504,7 +1504,7 @@ int QueueFrame::QueueItemInfo::getImageIndex() const {
 }
 
 void QueueFrame::QueueItemInfo::getChildQueueItems(QueueItemList& ret) {
-	for (auto i : children | map_values) {
+	for (auto i : children | views::values) {
 		if (i->isDirectory)
 			i->getChildQueueItems(ret);
 		else if (i->qi)
@@ -1566,7 +1566,7 @@ QueueFrame::QueueItemInfoPtr QueueFrame::QueueItemInfo::addChild(const QueueItem
 void QueueFrame::QueueItemInfo::updateSubDirectories() {
 	int64_t newSize = 0;
 	int64_t newDownloadedBytes = 0;
-	for (auto ii : children | map_values) {
+	for (auto ii : children | views::values) {
 		if (ii->isDirectory)
 			ii->updateSubDirectories();
 
@@ -1587,7 +1587,7 @@ void QueueFrame::updateParentDirectories(QueueItemInfoPtr Qii) {
 		while ((cur = cur->getParent()) && !cur->bundle && cur != curDirectory) {
 			int64_t newSize = 0;
 			int64_t newDownloadedBytes = 0;
-			for (auto ii : cur->children | map_values) {
+			for (auto ii : cur->children | views::values) {
 				newSize += ii->getSize();
 				newDownloadedBytes += ii->getDownloadedBytes();
 			}
@@ -1770,7 +1770,7 @@ int64_t QueueFrame::QueueItemInfo::getDownloadedBytes() const {
 }
 
 void QueueFrame::QueueItemInfo::deleteSubdirs() {
-	for_each(children | map_values, [&](QueueItemInfoPtr d) { if (d->isDirectory) { d->deleteSubdirs(); } });
+	ranges::for_each(children | views::values, [&](QueueItemInfoPtr d) { if (d->isDirectory) { d->deleteSubdirs(); } });
 	File::removeDirectory(target);
 }
 

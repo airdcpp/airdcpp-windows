@@ -42,6 +42,7 @@
 #include <web-server/WebServerManager.h>
 
 #include <boost/range/numeric.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 string SearchFrame::id = "Search";
 int SearchFrame::columnIndexes[] = { COLUMN_FILENAME, COLUMN_RELEVANCE, COLUMN_HITS, COLUMN_USERS, COLUMN_TYPE, COLUMN_SIZE,
@@ -76,7 +77,7 @@ void SearchFrame::openWindow(const tstring& str /* = Util::emptyString */, LONGL
 }
 
 void SearchFrame::closeAll() {
-	for(auto f: frames | map_keys)
+	for(auto f: frames | views::keys)
 		::PostMessage(f, WM_CLOSE, 0, 0);
 }
 
@@ -811,7 +812,7 @@ void SearchFrame::handleDownload(const string& aTarget, Priority p, bool useWhol
 
 		if (!aSI->getSR()) {
 			auto results = aSI->getGroupedResult()->pickDownloadResults();
-			boost::for_each(results, download);
+			ranges::for_each(results, download);
 		} else {
 			download(aSI->getSR());
 		}
@@ -928,7 +929,7 @@ int64_t SearchFrame::getDownloadSize(bool /*isWhole*/) {
 		}
 	}
 
-	return boost::accumulate(countedDirs | map_values, (int64_t)0);
+	return boost::accumulate(countedDirs | boost::adaptors::map_values, (int64_t)0);
 }
 
 LRESULT SearchFrame::onDoubleClickResults(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
@@ -1522,7 +1523,7 @@ void SearchFrame::initHubs() {
 		cm->addListener(this);
 
 		const auto& clients = cm->getClientsUnsafe();
-		for (auto& c : clients | map_values) {
+		for (auto& c : clients | views::values) {
 			if (!c->isConnected())
 				continue;
 
@@ -1554,7 +1555,7 @@ void SearchFrame::onHubAdded(HubInfo* info) {
 	if(ctrlHubs.GetCheckState(0))
 		enable = info->op;
 	else
-		enable = lastDisabledHubs.empty() ? TRUE : find(lastDisabledHubs, Text::fromT(info->url)) == lastDisabledHubs.end() ? TRUE : FALSE;
+		enable = lastDisabledHubs.empty() ? TRUE : ranges::find(lastDisabledHubs, Text::fromT(info->url)) == lastDisabledHubs.end() ? TRUE : FALSE;
 	ctrlHubs.SetCheckState(nItem, enable);
 
 	updateHubInfoString();
@@ -1764,7 +1765,7 @@ void SearchFrame::updateSearchList(SearchInfo* si) {
 		ctrlResults.list.SetRedraw(FALSE);
 		ctrlResults.list.DeleteAllItems();
 
-		for(auto aSI: ctrlResults.list.getParents() | map_values) {
+		for(auto aSI: ctrlResults.list.getParents() | views::values) {
 			si = aSI.parent;
 			si->collapsed = true;
 			if (ctrlResults.checkDupe(si->getDupe()) && (ctrlResults.filter.empty() || ctrlResults.filter.match(filterPrep))) {

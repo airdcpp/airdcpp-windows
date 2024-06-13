@@ -109,7 +109,7 @@ LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 		//Create itemInfos
 		RLock l(AutoSearchManager::getInstance()->getCS());
 		auto& lst = AutoSearchManager::getInstance()->getSearchItems();
-		for (auto as : lst | map_values) {
+		for (auto as : lst | views::values) {
 			itemInfos.emplace(as->getToken(), ItemInfo(as, false));
 		}
 	}

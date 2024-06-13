@@ -184,7 +184,7 @@ namespace webserver {
 		auto rootId = aRequest.getTTHParam();
 
 		RLock l(cs);
-		auto i = boost::find_if(roots, ShareDirectoryInfo::IdCompare(rootId));
+		auto i = ranges::find_if(roots, ShareDirectoryInfo::IdCompare(rootId));
 		if (i == roots.end()) {
 			throw RequestException(websocketpp::http::status_code::not_found, "Root " + rootId.toBase32() + " not found");
 		}
@@ -194,7 +194,7 @@ namespace webserver {
 
 	ShareDirectoryInfoPtr ShareRootApi::findRoot(const string& aPath) noexcept {
 		RLock l(cs);
-		auto i = boost::find_if(roots, ShareDirectoryInfo::PathCompare(aPath));
+		auto i = ranges::find_if(roots, ShareDirectoryInfo::PathCompare(aPath));
 		if (i == roots.end()) {
 			return nullptr;
 		}
@@ -238,7 +238,7 @@ namespace webserver {
 			}
 
 			for (const auto& p : hashedPaths) {
-				auto i = boost::find_if(roots, [&](const ShareDirectoryInfoPtr& aInfo) {
+				auto i = ranges::find_if(roots, [&](const ShareDirectoryInfoPtr& aInfo) {
 					return AirUtil::isParentOrExactLocal(aInfo->path, p);
 				});
 

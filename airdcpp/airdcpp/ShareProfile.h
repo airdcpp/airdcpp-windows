@@ -125,7 +125,7 @@ private:
 	FileList fileList;
 };
 
-inline bool operator==(const ShareProfilePtr& ptr, ProfileToken aToken) { return ptr->getToken() == aToken; }
+inline bool operator==(const ShareProfilePtr& ptr, ProfileToken aToken) noexcept { return ptr->getToken() == aToken; }
 
 }
 

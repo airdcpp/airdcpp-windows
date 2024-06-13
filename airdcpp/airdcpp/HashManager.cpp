@@ -31,7 +31,7 @@
 
 namespace dcpp {
 
-using boost::range::find_if;
+using ranges::find_if;
 
 HashManager::HashManager() {
 	store = make_unique<HashStore>();
@@ -409,7 +409,7 @@ void HashManager::logHasher(const string& aMessage, int hasherID, bool isError, 
 
 bool HashManager::isHashingPaused(bool lock /*true*/) const noexcept {
 	ConditionalRLock l(Hasher::hcs, lock);
-	return all_of(hashers.begin(), hashers.end(), [](const Hasher* h) { return h->isPaused(); });
+	return ranges::all_of(hashers, [](const Hasher* h) { return h->isPaused(); });
 }
 
 HashManager::HashPauser::HashPauser() {

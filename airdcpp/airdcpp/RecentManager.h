@@ -54,7 +54,7 @@ namespace dcpp {
 		template<typename CompareT>
 		RecentEntryPtr getRecent(RecentEntry::Type aType, const CompareT& aCompare) const noexcept {
 			RLock l(cs);
-			auto i = find_if(recents[aType], aCompare);
+			auto i = ranges::find_if(recents[aType], aCompare);
 			return i != recents[aType].end() ? *i : nullptr;
 		}
 

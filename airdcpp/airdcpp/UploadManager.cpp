@@ -37,11 +37,12 @@
 #include "UserConnection.h"
 
 #include <boost/range/numeric.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 
 namespace dcpp {
 
-using boost::range::find_if;
+using ranges::find_if;
 
 UploadManager::UploadManager() noexcept {	
 	ClientManager::getInstance()->addListener(this);
@@ -266,7 +267,7 @@ checkslots:
 		{
 			//are we resuming an existing upload?
 			WLock l(cs);
-			auto i = find_if(delayUploads, [&aSource](const Upload* up) { return &aSource == &up->getUserConnection(); });
+			auto i = ranges::find_if(delayUploads, [&aSource](const Upload* up) { return &aSource == &up->getUserConnection(); });
 			if (i != delayUploads.end()) {
 				auto up = *i;
 				delayUploads.erase(i);
@@ -1074,7 +1075,7 @@ size_t UploadManager::addFailedUpload(const UserConnection& aSource, const strin
 void UploadManager::clearUserFiles(const UserPtr& aUser, bool aLock) noexcept {
 	
 	ConditionalWLock l (cs, aLock);
-	auto it = find_if(uploadQueue, [&](const UserPtr& u) { return u == aUser; });
+	auto it = ranges::find_if(uploadQueue, [&](const UserPtr& u) { return u == aUser; });
 	if (it != uploadQueue.end()) {
 		for (const auto f: it->files) {
 			fire(UploadManagerListener::QueueItemRemove(), f);
@@ -1201,7 +1202,7 @@ size_t UploadManager::getUploadCount() const noexcept {
 
 size_t UploadManager::getRunningBundleCount() const noexcept {
 	RLock l(cs);
-	auto ret = accumulate(bundles | map_values, (size_t)0, [&](size_t old, const UploadBundlePtr& b) {
+	auto ret = accumulate(bundles | boost::adaptors::map_values, (size_t)0, [&](size_t old, const UploadBundlePtr& b) {
 		if (b->getSpeed() == 0) {
 			return old;
 		}

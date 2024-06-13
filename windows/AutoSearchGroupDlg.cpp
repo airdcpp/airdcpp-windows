@@ -182,7 +182,7 @@ LRESULT AsGroupsDlg::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 		auto lst = AutoSearchManager::getInstance()->getSearchItems();
 		bool remove = MessageBox(CTSTRING(GROUP_REMOVE_ITEMS), CTSTRING(REMOVE_GROUP), MB_ICONQUESTION | MB_YESNO) == IDYES;
 
-		for (auto as : lst | map_values) {
+		for (auto as : lst | views::values) {
 			if (as->getGroup() != Text::fromT(name))
 				continue;
 			if (remove)
@@ -194,7 +194,7 @@ LRESULT AsGroupsDlg::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 		updateSelectedGroup(true);
 	}
 
-	for_each(removeLst, [&](AutoSearchPtr a) { AutoSearchManager::getInstance()->removeAutoSearch(a); });
+	ranges::for_each(removeLst, [&](AutoSearchPtr a) { AutoSearchManager::getInstance()->removeAutoSearch(a); });
 	return 0;
 }
 
@@ -232,7 +232,7 @@ LRESULT AsGroupsDlg::onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 				WLock l(AutoSearchManager::getInstance()->getCS());
 				auto lst = AutoSearchManager::getInstance()->getSearchItems();
 
-				for (auto as : lst | map_values) {
+				for (auto as : lst | views::values) {
 					if (as->getGroup() == Text::fromT(oldName))
 						as->setGroup(Text::fromT(name));
 				}

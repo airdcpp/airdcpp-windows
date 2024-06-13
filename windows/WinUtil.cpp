@@ -1487,6 +1487,6 @@ void WinUtil::insertBindAddresses(const AdapterInfoList& aBindAdapters, CComboBo
 	}
 
 	// Select the current address
-	auto curItem = boost::find_if(aBindAdapters, [&aCurValue](const AdapterInfo& aInfo) { return aInfo.ip == aCurValue; });
+	auto curItem = ranges::find_if(aBindAdapters, [&aCurValue](const AdapterInfo& aInfo) { return aInfo.ip == aCurValue; });
 	combo_.SetCurSel(distance(aBindAdapters.begin(), curItem));
 }

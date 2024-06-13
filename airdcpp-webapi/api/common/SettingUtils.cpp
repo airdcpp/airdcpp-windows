@@ -128,14 +128,14 @@ namespace webserver {
 		if (aType == ApiSettingItem::TYPE_LIST) {
 			// Array, validate all values
 			for (const auto& itemId: aValue) {
-				auto i = boost::find_if(aEnumOptions, [&](const ApiSettingItem::EnumOption& opt) { return opt.id == itemId; });
+				auto i = ranges::find_if(aEnumOptions, [&](const ApiSettingItem::EnumOption& opt) { return opt.id == itemId; });
 				if (i == aEnumOptions.end()) {
 					JsonUtil::throwError(aKey, JsonUtil::ERROR_INVALID, "All values can't be found from enum options");
 				}
 			}
 		} else if (aType == ApiSettingItem::TYPE_NUMBER || aType == ApiSettingItem::TYPE_STRING) {
 			// Single value
-			auto i = boost::find_if(aEnumOptions, [&](const ApiSettingItem::EnumOption& opt) { return opt.id == aValue; });
+			auto i = ranges::find_if(aEnumOptions, [&](const ApiSettingItem::EnumOption& opt) { return opt.id == aValue; });
 			if (i == aEnumOptions.end()) {
 				JsonUtil::throwError(aKey, JsonUtil::ERROR_INVALID, "Value is not one of the enum options");
 			}

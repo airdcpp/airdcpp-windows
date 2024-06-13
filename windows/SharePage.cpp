@@ -31,10 +31,6 @@
 #include "SharePageDlg.h"
 #include "MainFrm.h"
 
-#include <boost/range/algorithm/for_each.hpp>
-#include <boost/range/algorithm/remove_if.hpp>
-#include <boost/range/algorithm/find_if.hpp>
-
 PropPage::TextItem SharePage::texts[] = {
 	{ IDC_SETTINGS_SHARED_DIRECTORIES, ResourceManager::SETTINGS_SHARED_DIRECTORIES },
 	{ IDC_ADD_PROFILE, ResourceManager::ADD_PROFILE_DOTS },
@@ -110,13 +106,13 @@ LRESULT SharePage::onEditTempShares(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 }
 
 LRESULT SharePage::onClickedDefault(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	auto old = find(profiles, defaultProfile);
+	auto old = ranges::find(profiles, defaultProfile, &ShareProfileInfo::token);
 	(*old)->isDefault = false;
 
 	defaultProfile = curProfile;
 
 	//rebuild the list
-	auto p = find(profiles, curProfile);
+	auto p = ranges::find(profiles, curProfile, &ShareProfileInfo::token);
 	(*p)->isDefault = true;
 	rotate(profiles.begin(), p, profiles.end());
 	setProfileList();

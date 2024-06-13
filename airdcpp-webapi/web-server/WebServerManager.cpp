@@ -345,7 +345,7 @@ namespace webserver {
 
 		{
 			RLock l(cs);
-			for (const auto& socket : sockets | map_values) {
+			for (const auto& socket : sockets | views::values) {
 				//socket->debugMessage("PING");
 				socket->ping();
 
@@ -393,7 +393,7 @@ namespace webserver {
 
 	void WebServerManager::disconnectSockets(const string& aMessage) noexcept {
 		RLock l(cs);
-		for (const auto& socket : sockets | map_values) {
+		for (const auto& socket : sockets | views::values) {
 			socket->close(websocketpp::close::status::going_away, aMessage);
 		}
 	}
@@ -443,7 +443,7 @@ namespace webserver {
 
 	WebSocketPtr WebServerManager::getSocket(LocalSessionId aSessionToken) noexcept {
 		RLock l(cs);
-		auto i = find_if(sockets | map_values, [&](const WebSocketPtr& s) {
+		auto i = ranges::find_if(sockets | views::values, [&](const WebSocketPtr& s) {
 			return s->getSession() && s->getSession()->getId() == aSessionToken;
 		});
 

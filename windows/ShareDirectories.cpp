@@ -36,13 +36,10 @@
 #include "MainFrm.h"
 #include "ActionUtil.h"
 
-#include <boost/range/adaptor/filtered.hpp>
-using boost::adaptors::filtered;
-
 #define curProfile parent->getCurProfile()
 #define defaultProfile parent->getDefaultProfile()
 
-using boost::find_if;
+using ranges::find_if;
 
 PropPage::TextItem ShareDirectories::texts[] = {
 	{ IDC_SETTINGS_SHARED_DIRECTORIES, ResourceManager::SETTINGS_SHARED_DIRECTORIES },
@@ -66,7 +63,7 @@ SharePageBase::SharePageBase() {
 }
 
 ShareProfileInfoPtr SharePageBase::getProfile(ProfileToken aProfile) {
-	auto p = find(profiles, aProfile);
+	auto p = ranges::find(profiles, aProfile, &ShareProfileInfo::token);
 	return p != profiles.end() ? *p : nullptr;
 }
 
@@ -180,7 +177,7 @@ void ShareDirectories::showProfile() {
 
 	if(SETTING(USE_OLD_SHARING_UI)) {
 		// Prepare shared dir list
-		for (auto& sdi : shareDirs | filtered(ProfileDirectoryInfo::HasProfile(curProfile))) {
+		for (auto& sdi : shareDirs | views::filter(ProfileDirectoryInfo::HasProfile(curProfile))) {
 			if (sdi->state == ProfileDirectoryInfo::STATE_REMOVED)
 				continue;
 
@@ -307,7 +304,7 @@ ProfileDirectoryInfoPtr ShareDirectories::getItemByPath(const string& aPath, boo
 	ProfileDirectoryInfo::List dirItems;
 
 	//add shared dirs
-	auto p = find_if(shareDirs, ProfileDirectoryInfo::PathCompare(aPath));
+	auto p = ranges::find_if(shareDirs, ProfileDirectoryInfo::PathCompare(aPath));
 	if (p != shareDirs.end() /*&& (*p)->diffState == ProfileDirectoryInfo::DIFF_NORMAL*/) {
 		if (!listRemoved && (*p)->state == ProfileDirectoryInfo::STATE_REMOVED)
 			return nullptr;
@@ -358,7 +355,7 @@ LRESULT ShareDirectories::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bH
 }
 
 void ShareDirectories::onCopyProfile(ProfileToken aNewProfile) {
-	for (const auto& sourceDir : shareDirs | filtered(ProfileDirectoryInfo::HasProfile(curProfile))) {
+	for (const auto& sourceDir : shareDirs | views::filter(ProfileDirectoryInfo::HasProfile(curProfile))) {
 		sourceDir->dir->profiles.insert(aNewProfile);
 	}
 }
@@ -416,7 +413,7 @@ LRESULT ShareDirectories::onClickedRemoveDir(WORD /*wNotifyCode*/, WORD /*wID*/,
 		selectedDirs--;
 
 		//make sure that we increase the reference count or the dir may get deleted...
-		auto sdi = *find_if(shareDirs, ProfileDirectoryInfo::PathCompare(sdiPlain->dir->path));
+		auto sdi = *ranges::find_if(shareDirs, ProfileDirectoryInfo::PathCompare(sdiPlain->dir->path));
 
 		removeDir(sdi->dir->path, curProfile, confirmOption, true, selectedDirs);
 		ctrlDirectories.DeleteItem(i);
@@ -503,7 +500,7 @@ void ShareDirectories::removeDir(const string& rPath, ProfileToken aToken, Confi
 
 	// erase/mark as removed
 	auto& list = shareDirs;
-	auto p = find_if(list, ProfileDirectoryInfo::PathCompare(rPath));
+	auto p = ranges::find_if(list, ProfileDirectoryInfo::PathCompare(rPath));
 	dcassert(p != list.end());
 	if (p != list.end()) {
 		if ((*p)->state == ProfileDirectoryInfo::STATE_ADDED) {
@@ -699,11 +696,11 @@ void ShareDirectories::applyChanges(bool /*isQuit*/) {
 
 bool ShareDirectories::addExcludeFolder(const string& path) {
 	// make sure this is a sub folder of a shared folder
-	if (find_if(shareDirs, [&path](const ProfileDirectoryInfoPtr& aDir) { return aDir->isCurItem() && AirUtil::isSubLocal(path, aDir->dir->path); } ) == shareDirs.end())
+	if (ranges::find_if(shareDirs, [&path](const ProfileDirectoryInfoPtr& aDir) { return aDir->isCurItem() && AirUtil::isSubLocal(path, aDir->dir->path); } ) == shareDirs.end())
 		return false;
 
 	// Make sure this not a subfolder of an already excluded folder
-	if (find_if(excludedPaths, [&path](const string& aDir) { return AirUtil::isParentOrExactLocal(aDir, path); } ) != excludedPaths.end())
+	if (ranges::find_if(excludedPaths, [&path](const string& aDir) { return AirUtil::isParentOrExactLocal(aDir, path); } ) != excludedPaths.end())
 		return false;
 
 	// remove all sub folder excludes
@@ -727,7 +724,7 @@ bool ShareDirectories::shareFolder(const string& path) {
 	//bool result = false;
 
 	ProfileDirectoryInfoPtr foundInfo = nullptr;
-	for (const auto& sdi : shareDirs | filtered(ProfileDirectoryInfo::HasProfile(curProfile))) {
+	for (const auto& sdi : shareDirs | views::filter(ProfileDirectoryInfo::HasProfile(curProfile))) {
 		if (!sdi->isCurItem())
 			continue;
 
@@ -749,7 +746,7 @@ bool ShareDirectories::shareFolder(const string& path) {
 		return false;
 
 	// check if it's an excluded folder or a sub folder of an excluded folder
-	if (find_if(excludedPaths, [&path](const string& aDir) { return AirUtil::isParentOrExactLocal(aDir, path); } ) != excludedPaths.end())
+	if (ranges::find_if(excludedPaths, [&path](const string& aDir) { return AirUtil::isParentOrExactLocal(aDir, path); } ) != excludedPaths.end())
 		return false;
 
 	foundInfo->found = true;

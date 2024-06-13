@@ -1811,7 +1811,7 @@ void MainFrame::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle
 
 	// ask for auto search items with an exact match only (added via main chat/system log/scanning)
 	auto searches = AutoSearchManager::getInstance()->getSearchesByString(aBundle->getName());
-	//searches.erase(boost::remove_if(searches, [](const AutoSearchPtr& as) { return as->getMethod() != StringMatch::EXACT; }), searches.end());
+	//searches.erase(ranges::remove_if(searches, [](const AutoSearchPtr& as) { return as->getMethod() != StringMatch::EXACT; }), searches.end());
 
 	if (!searches.empty()) {
 		callAsync([=] {

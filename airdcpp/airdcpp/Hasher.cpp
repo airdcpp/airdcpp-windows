@@ -32,9 +32,6 @@
 #include "ZUtils.h"
 
 namespace dcpp {
-
-	// using boost::range::find_if;
-
 	SharedMutex Hasher::hcs;
 	const int64_t Hasher::MIN_BLOCK_SIZE = 64 * 1024;
 

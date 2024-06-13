@@ -66,7 +66,7 @@ public:
 
 	bool addUnique(uint8_t type, std::unique_ptr<Task> && data) { 
 		Lock l(cs);
-		auto p = boost::find_if(tasks, [type, this](const UniqueTaskPair& tp) { return tp.first == type; });
+		auto p = ranges::find_if(tasks, [type, this](const UniqueTaskPair& tp) { return tp.first == type; });
 		if (p == tasks.end()) {
 			tasks.emplace_back(type, std::move(data));
 			return true;

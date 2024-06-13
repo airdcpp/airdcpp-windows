@@ -74,7 +74,7 @@ namespace webserver {
 	}
 
 	static inline int findPropertyByName(const string& aPropertyName, const PropertyList& aProperties) {
-		auto p = boost::find_if(aProperties, [&](const Property& aProperty) { return aProperty.name == aPropertyName; });
+		auto p = ranges::find_if(aProperties, [&](const Property& aProperty) { return aProperty.name == aPropertyName; });
 		if (p == aProperties.end()) {
 			return -1;
 		}

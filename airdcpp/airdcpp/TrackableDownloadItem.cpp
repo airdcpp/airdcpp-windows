@@ -52,7 +52,7 @@ namespace dcpp {
 			if (downloads.empty()) {
 				state = hasCompletedDownloads() ? STATE_DOWNLOADED : STATE_DOWNLOAD_PENDING;
 			} else {
-				auto hasRunning = boost::find_if(downloads | map_values, PathInfo::IsRunning()).base() != downloads.end();
+				auto hasRunning = ranges::find_if(downloads | views::values, PathInfo::IsRunning()).base() != downloads.end();
 				state = hasRunning ? STATE_DOWNLOADING : STATE_DOWNLOAD_PENDING;
 			}
 		}
@@ -113,7 +113,7 @@ namespace dcpp {
 		StringList ret;
 
 		RLock l(cs);
-		for (const auto& p : downloads | map_keys) {
+		for (const auto& p : downloads | views::keys) {
 			ret.push_back(p);
 		}
 
@@ -141,14 +141,14 @@ namespace dcpp {
 
 	string TrackableDownloadItem::formatRunningStatus() const noexcept {
 		RLock l(cs);
-		auto p = find_if(downloads | map_values, PathInfo::IsRunning());
+		auto p = ranges::find_if(downloads | views::values, PathInfo::IsRunning());
 
-		if (p.base() != downloads.end() && p->trackProgress()) {
-			if (p->downloaded == -1) {
+		if (p.base() != downloads.end() && (*p).trackProgress()) {
+			if ((*p).downloaded == -1) {
 				return STRING(DOWNLOAD_STARTING);
 			}
 
-			return STRING_F(RUNNING_PCT, p->getDownloadedPercentage());
+			return STRING_F(RUNNING_PCT, (*p).getDownloadedPercentage());
 		}
 
 		return "Downloading";

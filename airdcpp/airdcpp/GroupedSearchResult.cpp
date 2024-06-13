@@ -63,7 +63,7 @@ namespace dcpp {
 
 	bool GroupedSearchResult::hasUser(const UserPtr& aUser) const noexcept {
 		FastLock l(cs);
-		return boost::find_if(children, [&](const SearchResultPtr& aResult) { return aResult->getUser() == aUser; }) != children.end();
+		return ranges::find_if(children, [&](const SearchResultPtr& aResult) { return aResult->getUser() == aUser; }) != children.end();
 	}
 
 	double GroupedSearchResult::getConnectionSpeed() const noexcept {
@@ -96,7 +96,7 @@ namespace dcpp {
 			FastLock l(cs);
 
 			// Attempt to find a user that provides this information
-			auto i = boost::find_if(children, [&](const SearchResultPtr& aResult) { return Util::hasContentInfo(aResult->getContentInfo()); });
+			auto i = ranges::find_if(children, [&](const SearchResultPtr& aResult) { return Util::hasContentInfo(aResult->getContentInfo()); });
 			if (i != children.end()) {
 				return (*i)->getContentInfo();
 			}
@@ -152,7 +152,7 @@ namespace dcpp {
 		string lastError;
 		optional<BundleAddInfo> bundleAddInfo;
 
-		boost::for_each(pickDownloadResults(), [&](const SearchResultPtr& aSR) {
+		ranges::for_each(pickDownloadResults(), [&](const SearchResultPtr& aSR) {
 			try {
 				auto fileInfo = BundleFileAddData(aTargetName, aSR->getTTH(), aSR->getSize(), aPrio, aSR->getDate());
 				auto options = BundleAddOptions(aTargetDirectory, aSR->getUser(), aCaller);
@@ -176,7 +176,7 @@ namespace dcpp {
 		string lastError;
 		DirectoryDownloadList directoryDownloads;
 
-		boost::for_each(pickDownloadResults(), [&](const SearchResultPtr& aSR) {
+		ranges::for_each(pickDownloadResults(), [&](const SearchResultPtr& aSR) {
 			try {
 				auto listData = FilelistAddData(aSR->getUser(), aCaller, aSR->getAdcFilePath());
 				auto directoryDownload = DirectoryListingManager::getInstance()->addDirectoryDownloadHookedThrow(listData, aTargetName, aTargetDirectory, aPrio, DirectoryDownload::ErrorMethod::LOG);

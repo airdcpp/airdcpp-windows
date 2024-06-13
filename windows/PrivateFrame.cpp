@@ -69,7 +69,7 @@ void PrivateFrame::openWindow(const HintedUser& aReplyTo, bool aMessageReceived)
 }
 
 bool PrivateFrame::getWindowParams(HWND hWnd, StringMap& params) {
-	auto f = find_if(frames | map_values, [hWnd](PrivateFrame* h) { return hWnd == h->m_hWnd; }).base();
+	auto f = ranges::find_if(frames | views::values, [hWnd](PrivateFrame* h) { return hWnd == h->m_hWnd; }).base();
 	if (f != frames.end()) {
 		params["id"] = PrivateFrame::id;
 		params["CID"] = f->first->getCID().toBase32();

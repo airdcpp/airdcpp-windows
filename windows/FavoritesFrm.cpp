@@ -455,7 +455,7 @@ void FavoriteHubsFrame::handleMove(bool up) {
 TStringList FavoriteHubsFrame::getSortedGroups() const {
 	set<tstring, noCaseStringLess> sorted_groups;
 	const FavHubGroups& favHubGroups = FavoriteManager::getInstance()->getFavHubGroups();
-	for(const auto& fhg: favHubGroups | map_keys)
+	for(const auto& fhg: favHubGroups | views::keys)
 		sorted_groups.insert(Text::toT(fhg));
 
 	TStringList groups(sorted_groups.begin(), sorted_groups.end());

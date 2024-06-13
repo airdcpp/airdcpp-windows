@@ -218,7 +218,7 @@ void RSSManager::addData(const string& aTitle, const string& aLink, const string
 void RSSManager::matchFilters(const RSSPtr& aFeed) {
 	if (aFeed) {
 		Lock l(cs);
-		for_each(aFeed->getFeedData() | map_values, [&](const RSSDataPtr& data) { matchFilters(aFeed, data); });
+		ranges::for_each(aFeed->getFeedData() | views::values, [&](const RSSDataPtr& data) { matchFilters(aFeed, data); });
 	}
 }
 
@@ -312,7 +312,8 @@ void RSSManager::enableFeedUpdate(const RSSPtr& aFeed, bool enable) noexcept {
 void RSSManager::removeFeedItem(const RSSPtr& aFeed) noexcept {
 	Lock l(cs);
 	//Delete database file?
-	rssList.erase(boost::remove_if(rssList, [aFeed](const RSSPtr& a) { return aFeed->getToken() == a->getToken(); }), rssList.end());
+	auto [first, last] = ranges::remove_if(rssList, [aFeed](const RSSPtr& a) { return aFeed->getToken() == a->getToken(); });
+	rssList.erase(first, last);
 	fire(RSSManagerListener::RSSFeedRemoved(), aFeed);
 }
 
@@ -535,7 +536,7 @@ void RSSManager::savedatabase(const RSSPtr& aFeed) {
 			indent += '\t';
 
 			Lock l(cs);
-			for (auto r : aFeed->getFeedData() | map_values) {
+			for (auto r : aFeed->getFeedData() | views::values) {
 				//Don't save more than 3 days old entries... Todo: setting?
 				if ((r->getDateAdded() + 3 * 24 * 60 * 60) > GET_TIME()) {
 					xmlFile.write(indent);

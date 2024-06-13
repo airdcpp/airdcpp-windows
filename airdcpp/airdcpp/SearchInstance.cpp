@@ -24,8 +24,6 @@
 
 #include "SearchQuery.h"
 
-#include <boost/range/algorithm/copy.hpp>
-
 
 namespace dcpp {
 	atomic<SearchInstanceToken> searchInstanceIdCounter { 1 };
@@ -51,7 +49,7 @@ namespace dcpp {
 
 	GroupedSearchResult::Ptr SearchInstance::getResult(GroupedResultToken aToken) const noexcept {
 		RLock l(cs);
-		auto i = find_if(results | map_values, [&](const GroupedSearchResultPtr& aSI) { return aSI->getTTH() == aToken; });
+		auto i = ranges::find_if(results | views::values, [&](const GroupedSearchResultPtr& aSI) { return aSI->getTTH() == aToken; });
 		if (i.base() == results.end()) {
 			return nullptr;
 		}
@@ -63,7 +61,7 @@ namespace dcpp {
 		GroupedSearchResultList ret;
 
 		RLock l(cs);
-		boost::range::copy(results | map_values, back_inserter(ret));
+		ranges::copy(results | views::values, back_inserter(ret));
 		return ret;
 	}
 
@@ -72,7 +70,7 @@ namespace dcpp {
 
 		{
 			RLock l(cs);
-			boost::range::copy(results | map_values, inserter(resultSet, resultSet.begin()));
+			ranges::copy(results | views::values, inserter(resultSet, resultSet.begin()));
 		}
 
 		return resultSet;

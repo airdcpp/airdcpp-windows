@@ -23,8 +23,6 @@
 #include "ResourceManager.h"
 #include "Util.h"
 
-#include <boost/range/algorithm/remove_if.hpp>
-
 namespace dcpp {
 
 ErrorCollector::ErrorCollector(int aTotalFileCount) : totalFileCount(aTotalFileCount) { }
@@ -35,7 +33,8 @@ void ErrorCollector::add(const string& aError, const string& aFile, bool aIsMino
 }
 
 void ErrorCollector::clearMinor() noexcept {
-	errors.erase(boost::remove_if(errors | map_values, [](const Error& e) { return e.isMinor; }).base(), errors.end());
+	auto [first, last] = ranges::remove_if(errors | views::values, [](const Error& e) { return e.isMinor; });
+	errors.erase(first.base(), last.base());
 }
 
 string ErrorCollector::getMessage() const noexcept {
@@ -47,7 +46,7 @@ string ErrorCollector::getMessage() const noexcept {
 
 	//get individual errors
 	StringSet errorNames;
-	for (const auto& p : errors | map_keys) {
+	for (const auto& p : errors | views::keys) {
 		errorNames.insert(p);
 	}
 

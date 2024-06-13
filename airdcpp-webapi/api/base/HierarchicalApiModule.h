@@ -71,7 +71,7 @@ namespace webserver {
 
 			{
 				WLock l(cs);
-				dcassert(boost::find_if(subModules | map_values, [](const typename ItemType::Ptr& subModule) {
+				dcassert(ranges::find_if(subModules | views::values, [](const auto& subModule) {
 					return subModule.use_count() != 1;
 				}).base() == subModules.end());
 
@@ -122,7 +122,7 @@ namespace webserver {
 
 		void forEachSubModule(std::function<void(const ItemType&)> aAction) {
 			RLock l(cs);
-			for (const auto& m : subModules | map_values) {
+			for (const auto& m : subModules | views::values) {
 				aAction(*m.get());
 			}
 		}

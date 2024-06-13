@@ -18,8 +18,6 @@
 
 #include "stdafx.h"
 
-#include <boost/range/algorithm.hpp>
-
 #include <airdcpp/Util.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/FavoriteManager.h>

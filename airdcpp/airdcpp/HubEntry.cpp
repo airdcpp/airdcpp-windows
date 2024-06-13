@@ -24,7 +24,6 @@
 #include "StringTokenizer.h"
 
 #include <boost/algorithm/string/trim.hpp>
-#include <boost/range/algorithm/for_each.hpp>
 
 namespace dcpp {
 

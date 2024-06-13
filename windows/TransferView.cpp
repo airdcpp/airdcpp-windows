@@ -33,8 +33,6 @@
 #include <web-server/ContextMenuManager.h>
 #include <web-server/WebServerManager.h>
 
-#include <boost/range/algorithm/for_each.hpp>
-
 #include "WinUtil.h"
 #include "TransferView.h"
 #include "MainFrm.h"
@@ -238,7 +236,7 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 		if (!bundles.empty()) {
 			transferMenu.appendSeparator();
 
-			auto usingDisconnect = all_of(bundles.begin(), bundles.end(), Flags::IsSet(Bundle::FLAG_AUTODROP));
+			auto usingDisconnect = ranges::all_of(bundles, Flags::IsSet(Bundle::FLAG_AUTODROP));
 			transferMenu.appendItem(TSTRING(SETCZDC_DISCONNECTING_ENABLE), [=] { handleSlowDisconnect(); }, usingDisconnect ? OMenu::FLAG_CHECKED : 0);
 
 			transferMenu.appendItem(TSTRING(REMOVE_BUNDLE), [=] { handleRemoveBundle(); });
@@ -1099,7 +1097,7 @@ void TransferView::performActionFiles(std::function<void (const ItemInfo* aInfo)
 			if (oncePerParent && !children.empty()) {
 				f(children.front());
 			} else {
-				boost::for_each(children, f);
+				ranges::for_each(children, f);
 			}
 		} else {
 			//perform for the parent

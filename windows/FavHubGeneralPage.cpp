@@ -74,7 +74,7 @@ LRESULT FavHubGeneralPage::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	tmpCombo.SetCurSel(0);
 
 	const FavHubGroups& favHubGroups = FavoriteManager::getInstance()->getFavHubGroups();
-	for (const auto& n : favHubGroups | map_keys) {
+	for (const auto& n : favHubGroups | views::keys) {
 		int pos = tmpCombo.AddString(Text::toT(n).c_str());
 
 		if (n == entry->getGroup())

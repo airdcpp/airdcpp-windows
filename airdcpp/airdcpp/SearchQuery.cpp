@@ -41,7 +41,7 @@ double SearchQuery::getRelevanceScore(const SearchQuery& aSearch, int aLevel, bo
 		return scores / maxPoints;
 	}
 
-	dcassert(boost::find_if(positions, CompareFirst<size_t, int>(string::npos)) == positions.end());
+	dcassert(ranges::find_if(positions, CompareFirst<size_t, int>(string::npos)) == positions.end());
 
 	// check the recursion level (ignore recursions if the last item was fully matched)
 	int recursionLevel = 0;
@@ -107,7 +107,7 @@ double SearchQuery::getRelevanceScore(const SearchQuery& aSearch, int aLevel, bo
 	scores = scores / maxPoints;
 
 	// drop results with no direct matches 
-	if (recursionLevel > 0 && all_of(aSearch.getLastPositions().begin(), aSearch.getLastPositions().end(), [](size_t pos) { return pos == string::npos; })) {
+	if (recursionLevel > 0 && ranges::all_of(aSearch.getLastPositions(), [](size_t pos) { return pos == string::npos; })) {
 		scores = scores / (recursionLevel + 1);
 	}
 
@@ -366,7 +366,7 @@ bool SearchQuery::matchesAdcPath(const string& aPath, Recursion& recursion_) noe
 SearchQuery::ResultPointsList SearchQuery::getResultPositions(const string& aName) const noexcept {
 	// Do we need to use matches from a lower level?
 	auto ret = toPointList(aName);
-	if (recursion && find(lastIncludePositions, string::npos) != lastIncludePositions.end()) {
+	if (recursion && ranges::find(lastIncludePositions, string::npos) != lastIncludePositions.end()) {
 		Recursion::merge(ret, recursion);
 		return ret;
 	}

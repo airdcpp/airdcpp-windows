@@ -138,7 +138,7 @@ namespace dcpp {
 		{
 			RLock l(FavoriteManager::getInstance()->cs);
 			auto& ul = FavoriteManager::getInstance()->getFavoriteUsers();
-			for (const auto& favUser : ul | map_values) {
+			for (const auto& favUser : ul | views::values) {
 				decltype(auto) nick = favUser.getNick();
 				if (nick.empty()) continue;
 

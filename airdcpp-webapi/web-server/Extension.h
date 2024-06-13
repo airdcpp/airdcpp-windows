@@ -177,7 +177,7 @@ namespace webserver {
 		static int getAppPid() noexcept;
 	};
 
-	inline bool operator==(const ExtensionPtr& a, const string& b) { return Util::stricmp(a->getName(), b) == 0; }
+	inline bool operator==(const ExtensionPtr& a, const string& b) noexcept { return Util::stricmp(a->getName(), b) == 0; }
 }
 
 #endif

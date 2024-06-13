@@ -27,15 +27,13 @@
 
 namespace dcpp {
 
-using boost::range::for_each;
-
 PreviewAppManager::PreviewAppManager() {
 	SettingsManager::getInstance()->addListener(this);
 }
 
 PreviewAppManager::~PreviewAppManager() {
 	SettingsManager::getInstance()->removeListener(this);
-	for_each(previewApplications, DeleteFunction());
+	ranges::for_each(previewApplications, DeleteFunction());
 }
 
 void PreviewAppManager::loadPreview(SimpleXML& aXml) {

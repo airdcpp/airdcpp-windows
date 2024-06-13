@@ -47,9 +47,6 @@
 #include <web-server/ContextMenuManager.h>
 #include <web-server/WebServerManager.h>
 
-#include <boost/move/algorithm.hpp>
-#include <boost/range/algorithm/copy.hpp>
-
 
 DirectoryListingFrame::FrameMap DirectoryListingFrame::frames;
 int DirectoryListingFrame::columnIndexes[] = { COLUMN_FILENAME, COLUMN_TYPE, COLUMN_EXACTSIZE, COLUMN_SIZE, COLUMN_TTH, COLUMN_DATE };
@@ -118,7 +115,7 @@ void DirectoryListingFrame::openWindow(const HintedUser& aUser, Flags::MaskType 
 }
 
 DirectoryListingFrame* DirectoryListingFrame::findFrame(const UserPtr& aUser) noexcept {
-	auto f = find_if(frames | map_values, [&](const DirectoryListingFrame* h) { return aUser == h->dl->getUser(); }).base();
+	auto f = ranges::find_if(frames | views::values, [&](const DirectoryListingFrame* h) { return aUser == h->dl->getUser(); }).base();
 	if (f == frames.end()) {
 		return nullptr;
 	}
@@ -287,7 +284,7 @@ void DirectoryListingFrame::updateItemCache(const string& aPath) {
 		iic = make_unique<ItemInfoCache>();
 	}
 
-	for (auto& d : curDir->directories | map_values) {
+	for (auto& d : curDir->directories | views::values) {
 		iic->directories.emplace(d);
 	}
 
@@ -2093,7 +2090,7 @@ int DirectoryListingFrame::getIconIndex(const ItemInfo* ii) const noexcept {
 }
 
 void DirectoryListingFrame::closeAll(){
-	for (auto f : frames | map_values)
+	for (auto f : frames | views::values)
 		f->PostMessage(WM_CLOSE, 0, 0);
 }
 
@@ -2305,7 +2302,7 @@ void DirectoryListingFrame::onComboSelChanged(bool aUserChange) {
 	} else {
 		auto& newHub = hubs[selCombo.GetCurSel()];
 		if (aUserChange) {
-			auto p = boost::find_if(hubs, [this](const User::UserHubInfo& uhi) { return uhi.hubUrl == dl->getHubUrl(); });
+			auto p = ranges::find_if(hubs, [this](const User::UserHubInfo& uhi) { return uhi.hubUrl == dl->getHubUrl(); });
 			if (p != hubs.end()) {
 				auto& oldHub = *p;
 				auto diff = newHub.shared > 0 ? abs(static_cast<double>(oldHub.shared) / static_cast<double>(newHub.shared)) : oldHub.shared;

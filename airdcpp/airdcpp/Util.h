@@ -62,6 +62,15 @@ private:
 	const T2& a;
 };
 
+struct pair_to_range_t {
+	template <typename I>
+	friend constexpr auto operator|(std::pair<I, I> const& pr, pair_to_range_t) {
+		return std::ranges::subrange(pr.first, pr.second);
+	}
+};
+
+inline constexpr pair_to_range_t pair_to_range{};
+
 /** 
  * Compares two values
  * @return -1 if v1 < v2, 0 if v1 == v2 and 1 if v1 > v2

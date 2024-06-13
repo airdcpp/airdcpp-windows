@@ -107,7 +107,7 @@ namespace webserver {
 	string FavoriteDirectoryApi::getPath(const ApiRequest& aRequest) {
 		auto tth = aRequest.getTTHParam();
 		auto dirs = FavoriteManager::getInstance()->getFavoriteDirs();
-		auto p = boost::find_if(dirs | map_keys, [&](const string& aPath) {
+		auto p = ranges::find_if(dirs | views::keys, [&](const string& aPath) {
 			return AirUtil::getPathId(aPath) == tth;
 		});
 

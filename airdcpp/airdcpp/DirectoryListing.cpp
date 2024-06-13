@@ -36,9 +36,8 @@
 
 namespace dcpp {
 
-//using boost::algorithm::all_of;
-using boost::range::for_each;
-using boost::range::find_if;
+using ranges::for_each;
+using ranges::find_if;
 
 DirectoryListing::DirectoryListing(const HintedUser& aUser, bool aPartial, const string& aFileName, bool aIsClientView, bool aIsOwnList) : 
 	TrackableDownloadItem(aIsOwnList || (!aPartial && Util::fileExists(aFileName))), // API requires the download state to be set correctly
@@ -524,7 +523,7 @@ void DirectoryListing::Directory::search(OrderedStringSet& aResults, SearchQuery
 
 	if (aStrings.matchesDirectory(name)) {
 		auto path = parent ? parent->getAdcPath() : ADC_ROOT_STR;
-		auto res = find(aResults, path);
+		auto res = ranges::find(aResults, path);
 		if (res == aResults.end() && aStrings.matchesSize(getTotalSize(false))) {
 			aResults.insert(path);
 		}
@@ -537,7 +536,7 @@ void DirectoryListing::Directory::search(OrderedStringSet& aResults, SearchQuery
 		}
 	}
 
-	for (const auto& d: directories | map_values) {
+	for (const auto& d: directories | views::values) {
 		d->search(aResults, aStrings);
 		if (aResults.size() >= aStrings.maxResults) return;
 	}
@@ -549,7 +548,7 @@ bool DirectoryListing::Directory::findIncomplete() const noexcept {
 		return true;
 	}
 
-	return find_if(directories | map_values, [](const Directory::Ptr& dir) { 
+	return find_if(directories | views::values, [](const Directory::Ptr& dir) { 
 		return dir->findIncomplete(); 
 	}).base() != directories.end();
 }
@@ -573,7 +572,7 @@ void DirectoryListing::Directory::getContentInfo(size_t& directories_, size_t& f
 		directories_ += directories.size();
 		files_ += files.size();
 
-		for (const auto& d : directories | map_values) {
+		for (const auto& d : directories | views::values) {
 			d->getContentInfo(directories_, files_, aCountVirtual);
 		}
 	} else if (Util::hasContentInfo(contentInfo)) {
@@ -590,7 +589,7 @@ BundleFileAddData::List DirectoryListing::Directory::toBundleInfoList() const no
 
 void DirectoryListing::Directory::toBundleInfoList(const string& aTarget, BundleFileAddData::List& aFiles) const noexcept {
 	// First, recurse over the directories
-	for (const auto& d: directories | map_values) {
+	for (const auto& d: directories | views::values) {
 		d->toBundleInfoList(aTarget + d->getName() + PATH_SEPARATOR, aFiles);
 	}
 
@@ -663,7 +662,7 @@ DirectoryListing::Directory::Ptr DirectoryListing::findDirectory(const string& a
 void DirectoryListing::Directory::findFiles(const boost::regex& aReg, File::List& aResults) const noexcept {
 	copy_if(files.begin(), files.end(), back_inserter(aResults), [&aReg](const File::Ptr& df) { return boost::regex_match(df->getName(), aReg); });
 
-	for (const auto& d : directories | map_values) {
+	for (const auto& d : directories | views::values) {
 		d->findFiles(aReg, aResults);
 	}
 }
@@ -726,7 +725,7 @@ void DirectoryListing::Directory::filterList(DirectoryListing::Directory::TTHSet
 }
 
 void DirectoryListing::Directory::getHashList(DirectoryListing::Directory::TTHSet& l) const noexcept {
-	for(const auto& d: directories | map_values)  
+	for(const auto& d: directories | views::values)  
 		d->getHashList(l);
 
 	for(const auto& f: files) 
@@ -788,7 +787,7 @@ int64_t DirectoryListing::Directory::getTotalSize(bool aCountVirtual) const noex
 		return partialSize;
 	
 	auto x = getFilesSize();
-	for (const auto& d: directories | map_values) {
+	for (const auto& d: directories | views::values) {
 		if (!aCountVirtual && d->isVirtual()) {
 			continue;
 		}
@@ -845,7 +844,7 @@ bool DirectoryListing::File::isInQueue() const noexcept {
 uint8_t DirectoryListing::Directory::checkDupesRecursive() noexcept {
 	uint8_t result = DUPE_NONE;
 	bool first = true;
-	for(auto& d: directories | map_values) {
+	for(auto& d: directories | views::values) {
 		result = d->checkDupesRecursive();
 		if(dupe == DUPE_NONE && first)
 			setDupe((DupeType)result);

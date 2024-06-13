@@ -64,7 +64,7 @@ namespace webserver {
 			typedef Matcher<FilterT> MatcherT;
 			typedef vector<MatcherT> List;
 			static inline bool match(const List& prep, const NumericFunction& aNumericF, const InfoFunction& aStringF, const CustomFilterFunction& aCustomF) {
-				return std::all_of(prep.begin(), prep.end(), [&](const Matcher& aMatcher) { 
+				return ranges::all_of(prep, [&](const Matcher& aMatcher) { 
 					return aMatcher.filter->match(aNumericF, aStringF, aCustomF); 
 				});
 			}

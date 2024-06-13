@@ -148,7 +148,7 @@ namespace webserver {
 			RLock l(cs);
 
 			// Check view items
-			auto i = boost::find_if(currentViewItems, [itemId](const FilelistItemInfoPtr& aInfo) {
+			auto i = ranges::find_if(currentViewItems, [itemId](const FilelistItemInfoPtr& aInfo) {
 				return aInfo->getToken() == itemId;
 			});
 
@@ -242,7 +242,7 @@ namespace webserver {
 
 		{
 			WLock l(cs);
-			for (auto& d : curDir->directories | map_values) {
+			for (auto& d : curDir->directories | views::values) {
 				currentViewItems.emplace_back(std::make_shared<FilelistItemInfo>(d, dl->getShareProfile()));
 			}
 

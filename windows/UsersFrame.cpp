@@ -195,7 +195,7 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	auto cm = ClientManager::getInstance();
 	{
 		RLock l(cm->getCS());
-		for (auto& u : cm->getUsersUnsafe() | map_values) {
+		for (auto& u : cm->getUsersUnsafe() | views::values) {
 			if (u->getCID() == CID()) // hub
 				continue;
 			userInfos.emplace(u, UserInfo(u, Util::emptyString, false));
@@ -203,7 +203,7 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	}
 
 	// outside the lock
-	for (auto& ui: userInfos | map_values)
+	for (auto& ui: userInfos | views::values)
 		ui.update(ui.getUser());
 
 	updateList();

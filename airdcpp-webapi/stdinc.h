@@ -29,9 +29,6 @@
 #include <websocketpp/config/asio.hpp>
 #include <websocketpp/server.hpp>
 
-#include <boost/range/algorithm/copy.hpp>
-#include <boost/algorithm/cxx11/copy_if.hpp>
-
 #include "json.h"
 
 

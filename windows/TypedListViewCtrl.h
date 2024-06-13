@@ -1129,7 +1129,7 @@ public:
 
 	void deleteAllItems() {
 		// HACK: ugly hack but at least it doesn't crash and there's no memory leak
-		for(auto p: parents | map_values) {
+		for(auto p: parents | views::values) {
 			for(auto c: p.children) {
 				this->deleteItem(c);
 				delete c;

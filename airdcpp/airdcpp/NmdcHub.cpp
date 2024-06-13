@@ -125,7 +125,7 @@ void NmdcHub::refreshUserList(bool refreshOnly) noexcept {
 		Lock l(cs);
 
 		OnlineUserList v;
-		for(auto n: users | map_values)
+		for(auto n: users | views::values)
 			v.push_back(n);
 
 		fire(ClientListener::UsersUpdated(), this, v);
@@ -184,7 +184,7 @@ OnlineUserPtr NmdcHub::findUser(const string& aNick) const noexcept {
 
 
 OnlineUser* NmdcHub::findUser(const uint32_t aSID) const noexcept {
-	auto i = find_if(users | map_values, [=](const OnlineUser* u) {
+	auto i = ranges::find_if(users | views::values, [=](const OnlineUser* u) {
 		return u->getIdentity().getSID() == aSID;
 	});
 
@@ -217,7 +217,7 @@ void NmdcHub::clearUsers() noexcept {
 		availableBytes = 0;
 	}
 
-	for(auto ou: u2 | map_values) {
+	for(auto ou: u2 | views::values) {
 		ClientManager::getInstance()->putOffline(ou);
 		ou->dec();
 	}
@@ -1173,7 +1173,7 @@ void NmdcHub::on(Minute, uint64_t /*aTick*/) noexcept {
 
 void NmdcHub::getUserList(OnlineUserList& list, bool aListHidden) const noexcept {
 	Lock l(cs);
-	for(auto& u: users | map_values) {
+	for(auto& u: users | views::values) {
 		if (!aListHidden && u->isHidden()) {
 			continue;
 		}

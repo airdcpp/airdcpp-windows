@@ -36,7 +36,7 @@
 
 namespace dcpp {
 
-using boost::range::find_if;
+using ranges::find_if;
 
 DirSFVReader::DirSFVReader() : loaded(false) { }
 
@@ -155,7 +155,7 @@ void DirSFVReader::load() noexcept {
 }
 
 void DirSFVReader::read(std::function<void (const string&)> aReadF) const {
-	for (const auto& p: content | map_keys) {
+	for (const auto& p: content | views::keys) {
 		aReadF(p);
 	}
 }

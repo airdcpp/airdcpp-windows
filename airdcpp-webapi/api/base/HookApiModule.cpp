@@ -35,13 +35,13 @@ namespace webserver {
 	}
 
 	void HookApiModule::on(SessionListener::SocketDisconnected) noexcept {
-		for (auto& h : hooks | map_values) {
+		for (auto& h : hooks | views::values) {
 			h.disable();
 		}
 
 		{
 			RLock l(cs);
-			for (auto& action : pendingHookActions | map_values) {
+			for (auto& action : pendingHookActions | views::values) {
 				action.semaphore.signal();
 			}
 		}

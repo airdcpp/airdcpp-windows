@@ -52,7 +52,7 @@ namespace dcpp {
 		}
 
 		AutoSearchPtr getItem(const void* aSearch) const {
-			auto i = find_if(searches | map_values, [&](const AutoSearchPtr& s) {
+			auto i = ranges::find_if(searches | views::values, [&](const AutoSearchPtr& s) {
 				return s.get() == aSearch;
 			});
 			return i.base() != searches.end() ? *i : nullptr;

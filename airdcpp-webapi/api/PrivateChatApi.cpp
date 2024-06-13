@@ -88,7 +88,7 @@ namespace webserver {
 		METHOD_HANDLER(Access::PRIVATE_CHAT_SEND,	METHOD_POST,	(EXACT_PARAM("chat_message")),	PrivateChatApi::handlePostMessage);
 
 		auto rawChats = PrivateChatManager::getInstance()->getChats();
-		for (const auto& c : rawChats | map_values) {
+		for (const auto& c : rawChats | views::values) {
 			addChat(c);
 		}
 	}

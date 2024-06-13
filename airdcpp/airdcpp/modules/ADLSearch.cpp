@@ -600,7 +600,7 @@ void ADLSearchManager::matchRecurse(DestDirList &aDestList, const DirectoryListi
 		throw AbortException();
 	}
 
-	for (const auto& dir: aDir->directories | map_values) {
+	for (const auto& dir: aDir->directories | views::values) {
 		auto subAdcPath = aAdcPath + dir->getName() + ADC_SEPARATOR_STR;
 		MatchesDirectory(aDestList, dir, subAdcPath);
 		matchRecurse(aDestList, dir, subAdcPath, aDirList);

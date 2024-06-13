@@ -121,7 +121,7 @@ void SharePathValidator::addExcludedPath(const string& aPath) {
 		StringList rootPaths;
 		ShareManager::getInstance()->getRootPaths(rootPaths);
 
-		if (boost::find_if(rootPaths, [&aPath](const string& aRootPath) { return AirUtil::isSubLocal(aPath, aRootPath); }) == rootPaths.end()) {
+		if (ranges::find_if(rootPaths, [&aPath](const string& aRootPath) { return AirUtil::isSubLocal(aPath, aRootPath); }) == rootPaths.end()) {
 			throw ShareException(STRING(PATH_NOT_SHARED));
 		}
 	}
@@ -132,7 +132,7 @@ void SharePathValidator::addExcludedPath(const string& aPath) {
 		WLock l(cs);
 
 		// Subfolder of an already excluded folder?
-		if (boost::find_if(excludedPaths, [&aPath](const string& aExcludedPath) { return AirUtil::isParentOrExactLocal(aExcludedPath, aPath); }) != excludedPaths.end()) {
+		if (ranges::find_if(excludedPaths, [&aPath](const string& aExcludedPath) { return AirUtil::isParentOrExactLocal(aExcludedPath, aPath); }) != excludedPaths.end()) {
 			throw ShareException(STRING(PATH_ALREADY_EXCLUDED));
 		}
 

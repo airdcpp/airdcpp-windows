@@ -31,8 +31,6 @@
 #include <airdcpp/ShareManager.h>
 #include <airdcpp/ViewFileManager.h>
 
-#include <boost/range/algorithm/copy.hpp>
-
 namespace webserver {
 	ViewFileApi::ViewFileApi(Session* aSession) : 
 		SubscribableApiModule(

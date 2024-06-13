@@ -57,7 +57,7 @@ namespace webserver {
 		METHOD_HANDLER(Access::QUEUE_EDIT,		METHOD_POST,	(EXACT_PARAM("match_queue")),						FilelistApi::handleMatchQueue);
 
 		auto rawLists = DirectoryListingManager::getInstance()->getLists();
-		for (const auto& list : rawLists | map_values) {
+		for (const auto& list : rawLists | views::values) {
 			addList(list);
 		}
 	}

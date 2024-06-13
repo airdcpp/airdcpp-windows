@@ -19,7 +19,6 @@
 #ifndef DCPLUSPLUS_DCPP_SPEAKER_H
 #define DCPLUSPLUS_DCPP_SPEAKER_H
 
-#include <boost/range/algorithm/find.hpp>
 #include <utility>
 #include <vector>
 
@@ -29,7 +28,6 @@
 namespace dcpp {
 
 using std::vector;
-using boost::range::find;
 
 template<typename Listener>
 class Speaker {
@@ -52,20 +50,20 @@ public:
 
 	void addListener(Listener* aListener) noexcept {
 		Lock l(listenerCS);
-		if(find(listeners, aListener) == listeners.end())
+		if(ranges::find(listeners, aListener) == listeners.end())
 			listeners.push_back(aListener);
 	}
 
 	void removeListener(Listener* aListener) noexcept {
 		Lock l(listenerCS);
-		auto it = find(listeners, aListener);
+		auto it = ranges::find(listeners, aListener);
 		if(it != listeners.end())
 			listeners.erase(it);
 	}
 
 	bool hasListener(Listener* aListener) const noexcept {
 		Lock l(listenerCS);
-		return find(listeners, aListener) != listeners.end();
+		return ranges::find(listeners, aListener) != listeners.end();
 	}
 
 	void removeListeners() noexcept {

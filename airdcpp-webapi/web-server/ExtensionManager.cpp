@@ -105,7 +105,7 @@ namespace webserver {
 		}
 
 		WLock l(cs);
-		dcassert(all_of(extensions.begin(), extensions.end(), [](const ExtensionPtr& aExtension) { return !aExtension->getSession(); }));
+		dcassert(ranges::all_of(extensions, [](const ExtensionPtr& aExtension) { return !aExtension->getSession(); }));
 		extensions.clear();
 	}
 
@@ -242,7 +242,7 @@ namespace webserver {
 		while (GET_TICK() < timeout) {
 			{
 				RLock l(cs);
-				if (all_of(extensions.begin(), extensions.end(), isReady)) {
+				if (ranges::all_of(extensions, isReady)) {
 					return true;
 				}
 			}

@@ -134,7 +134,7 @@ namespace webserver {
 	}
 
 	string FileSearchParser::serializeSearchType(const string& aType) {
-		auto i = boost::find(fileTypeMappings | map_values, aType);
+		auto i = ranges::find(fileTypeMappings | views::values, aType);
 		return i.base() != fileTypeMappings.end() ? i.base()->first : aType;
 	}
 }

@@ -34,7 +34,7 @@ namespace dcpp {
 #define CONFIG_RECENTS_NAME "Recents.xml"
 #define CONFIG_DIR Util::PATH_USER_CONFIG
 
-using boost::range::find_if;
+using ranges::find_if;
 
 string RecentManager::rootTags[RecentEntry::TYPE_LAST] = {
 	"Hubs",

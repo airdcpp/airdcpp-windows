@@ -31,7 +31,7 @@ namespace dcpp {
 #define CONFIG_FAV_NAME "Favorites.xml"
 #define CONFIG_DIR Util::PATH_USER_CONFIG
 
-using boost::range::find_if;
+using ranges::find_if;
 
 FavoriteManager::FavoriteManager() {
 	SettingsManager::getInstance()->addListener(this);
@@ -410,7 +410,7 @@ bool FavoriteManager::removeFavoriteHub(ProfileToken aToken) noexcept {
 
 	{
 		WLock l(cs);
-		auto i = find_if(favoriteHubs, [aToken](const FavoriteHubEntryPtr& f) { return f->getToken() == aToken; });
+		auto i = ranges::find_if(favoriteHubs, [aToken](const FavoriteHubEntryPtr& f) { return f->getToken() == aToken; });
 		if (i == favoriteHubs.end()) {
 			return false;
 		}
@@ -907,11 +907,11 @@ void FavoriteManager::mergeHubSettings(const FavoriteHubEntryPtr& entry, HubSett
 
 FavoriteHubEntryList::const_iterator FavoriteManager::getFavoriteHub(const string& aServer) const noexcept {
 	//find by the primary address
-	return find_if(favoriteHubs, [&aServer](const FavoriteHubEntryPtr& f) { return Util::stricmp(f->getServer(), aServer) == 0; });
+	return ranges::find_if(favoriteHubs, [&aServer](const FavoriteHubEntryPtr& f) { return Util::stricmp(f->getServer(), aServer) == 0; });
 }
 
 FavoriteHubEntryList::const_iterator FavoriteManager::getFavoriteHub(ProfileToken aToken) const noexcept {
-	return find_if(favoriteHubs, [aToken](const FavoriteHubEntryPtr& f) { return f->getToken() == aToken; });
+	return ranges::find_if(favoriteHubs, [aToken](const FavoriteHubEntryPtr& f) { return f->getToken() == aToken; });
 }
 
 UserCommand::List FavoriteManager::getUserCommands(int ctx, const StringList& hubs, bool& op) noexcept {

@@ -30,8 +30,6 @@
 
 #include <boost/algorithm/cxx11/all_of.hpp>
 
-using boost::algorithm::all_of;
-
 string RssInfoFrame::id = "RSS";
 
 int RssInfoFrame::columnIndexes[] = { COLUMN_FILE, COLUMN_LINK, COLUMN_DATE, COLUMN_NAME };
@@ -107,7 +105,7 @@ LRESULT RssInfoFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 		auto lst = RSSManager::getInstance()->getRss();
 		for (auto feed : lst) {
 			addFeed(feed);
-			for (auto data : feed->getFeedData() | map_values) {
+			for (auto data : feed->getFeedData() | views::values) {
 				itemInfos.emplace_back(make_unique<ItemInfo>(data));
 			}
 		}
@@ -209,14 +207,14 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 
 			menu.InsertSeparatorFirst(Text::toT(title));
 
-			menu.appendItem(TSTRING(OPEN_LINK), [=] { for_each(items.begin(), items.end(), [=](const ItemInfo* a) { ActionUtil::openLink(Text::toT(a->item->getLink())); }); }, OMenu::FLAG_DEFAULT);
+			menu.appendItem(TSTRING(OPEN_LINK), [=] { ranges::for_each(items, [=](const ItemInfo* a) { ActionUtil::openLink(Text::toT(a->item->getLink())); }); }, OMenu::FLAG_DEFAULT);
 			menu.appendSeparator();
 
 			ListBaseType::MenuItemList customItems;
 			ctrlRss.list.appendCopyMenu(menu, customItems);
 			menu.appendSeparator();
 
-			bool allRelease = all_of(items, [=](const ItemInfo* a) { return a->isRelease; });
+			bool allRelease = ranges::all_of(items, [=](const ItemInfo* a) { return a->isRelease; });
 			if (allRelease) {
 				//auto search menus
 				appendDownloadMenu(menu, DownloadBaseHandler::TYPE_SECONDARY, true, nullopt, nullopt, false);
@@ -263,16 +261,16 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 			return TRUE;
 		}
 		else if (hitTreeitem && treeParent == ctrlTree.GetSelectedItem()) {
-			bool allEnabled = all_of(feeds | map_keys, [&](const RSSPtr& r) { return r->getEnable(); });
-			bool allDisabled = all_of(feeds | map_keys, [&](const RSSPtr& r) { return !r->getEnable(); });
+			bool allEnabled = ranges::all_of(feeds | views::keys, [&](const RSSPtr& r) { return r->getEnable(); });
+			bool allDisabled = ranges::all_of(feeds | views::keys, [&](const RSSPtr& r) { return !r->getEnable(); });
 			menu.InsertSeparatorFirst(Util::toStringW(feeds.size()) + _T(" ") + TSTRING(FEEDS));
-			//menu.appendItem(TSTRING(UPDATE), [=] { for_each(feeds | map_keys, [&](const RSSPtr& feed) { RSSManager::getInstance()->downloadFeed(feed, true); }); }, OMenu::FLAG_THREADED);
+			//menu.appendItem(TSTRING(UPDATE), [=] { for_each(feeds | views::keys, [&](const RSSPtr& feed) { RSSManager::getInstance()->downloadFeed(feed, true); }); }, OMenu::FLAG_THREADED);
 			if(!allEnabled)
-				menu.appendItem(TSTRING(ENABLE_RSS), [=] { for_each(feeds | map_keys, [&](const RSSPtr& feed) { RSSManager::getInstance()->enableFeedUpdate(feed, true); }); }, OMenu::FLAG_THREADED);
+				menu.appendItem(TSTRING(ENABLE_RSS), [=] { ranges::for_each(feeds | views::keys, [&](const RSSPtr& feed) { RSSManager::getInstance()->enableFeedUpdate(feed, true); }); }, OMenu::FLAG_THREADED);
 			if(!allDisabled)
-				menu.appendItem(TSTRING(DISABLE_RSS), [=] { for_each(feeds | map_keys, [&](const RSSPtr& feed) { RSSManager::getInstance()->enableFeedUpdate(feed, false); }); }, OMenu::FLAG_THREADED);
-			menu.appendItem(TSTRING(MATCH_FILTERS), [=] { for_each(feeds | map_keys, [&](const RSSPtr& feed) { RSSManager::getInstance()->matchFilters(feed); }); }, OMenu::FLAG_THREADED);
-			menu.appendItem(TSTRING(CLEAR), [=] { for_each(feeds | map_keys, [&](const RSSPtr& feed) { RSSManager::getInstance()->clearRSSData(feed); }); }, OMenu::FLAG_THREADED);
+				menu.appendItem(TSTRING(DISABLE_RSS), [=] { ranges::for_each(feeds | views::keys, [&](const RSSPtr& feed) { RSSManager::getInstance()->enableFeedUpdate(feed, false); }); }, OMenu::FLAG_THREADED);
+			menu.appendItem(TSTRING(MATCH_FILTERS), [=] { ranges::for_each(feeds | views::keys, [&](const RSSPtr& feed) { RSSManager::getInstance()->matchFilters(feed); }); }, OMenu::FLAG_THREADED);
+			menu.appendItem(TSTRING(CLEAR), [=] { ranges::for_each(feeds | views::keys, [&](const RSSPtr& feed) { RSSManager::getInstance()->clearRSSData(feed); }); }, OMenu::FLAG_THREADED);
 			menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 			return TRUE;
 		} else {
@@ -537,7 +535,7 @@ void RssInfoFrame::openDialog(RSSPtr& aFeed) {
 
 void RssInfoFrame::clearData(const RSSPtr& aFeed) {
 	ctrlRss.list.SetRedraw(FALSE);
-	itemInfos.erase(boost::remove_if(itemInfos, [&](const unique_ptr<ItemInfo>& a) {
+	itemInfos.erase(ranges::remove_if(itemInfos, [&](const unique_ptr<ItemInfo>& a) {
 
 		if (aFeed == a->item->getFeed()) {
 			ctrlRss.list.deleteItem(a.get());
@@ -545,22 +543,24 @@ void RssInfoFrame::clearData(const RSSPtr& aFeed) {
 		}
 		return false;
 
-	}), itemInfos.end());
+	}).begin(), itemInfos.end());
 
 	ctrlRss.list.SetRedraw(TRUE);
 }
 
 void RssInfoFrame::onItemRemoved(const RSSDataPtr& aData) {
 	ctrlRss.list.SetRedraw(FALSE);
-	itemInfos.erase(boost::remove_if(itemInfos, [&](const unique_ptr<ItemInfo>& a) {
+	auto [first, last] = ranges::remove_if(itemInfos, [&](const unique_ptr<ItemInfo>& a) {
 
-		if (aData== a->item) {
+		if (aData == a->item) {
 			ctrlRss.list.deleteItem(a.get());
 			return true;
 		}
 		return false;
 
-	}), itemInfos.end());
+	});
+
+	itemInfos.erase(first, last);
 
 	ctrlRss.list.SetRedraw(TRUE);
 }

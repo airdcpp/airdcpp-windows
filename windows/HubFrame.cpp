@@ -178,7 +178,7 @@ void HubFrame::openWindow(const tstring& aServer) {
 }
 
 bool HubFrame::getWindowParams(HWND hWnd, StringMap& params) {
-	auto f = find_if(frames | map_values, [hWnd](const HubFrame* h) { return hWnd == h->m_hWnd; }).base();
+	auto f = ranges::find_if(frames | views::values, [hWnd](const HubFrame* h) { return hWnd == h->m_hWnd; }).base();
 	if (f != frames.end()) {
 		params["id"] = HubFrame::id;
 		params["url"] = Text::fromT(f->first);
@@ -1246,12 +1246,12 @@ void HubFrame::addStatus(const LogMessagePtr& aMessage, bool aInChat /* = true *
 }
 
 void HubFrame::resortUsers() {
-	for(auto f: frames | map_values)
+	for(auto f: frames | views::values)
 		f->resortForFavsFirst(true);
 }
 
 void HubFrame::closeDisconnected() {
-	for(auto f: frames | map_values) {
+	for(auto f: frames | views::values) {
 		if (!f->client->isConnected()) {
 			f->forceClose = true;
 			f->PostMessage(WM_CLOSE);
@@ -1260,14 +1260,14 @@ void HubFrame::closeDisconnected() {
 }
 
 void HubFrame::updateFonts() {
-	for(auto f: frames | map_values) {
+	for(auto f: frames | views::values) {
 		f->setFonts();
 		f->UpdateLayout();
 	}
 }
 
 void HubFrame::reconnectDisconnected() {
-	for(auto f: frames | map_values) {
+	for(auto f: frames | views::values) {
 		if (!f->client->isConnected()) {
 			f->client->disconnect(false); 
 			f->clearUserList();

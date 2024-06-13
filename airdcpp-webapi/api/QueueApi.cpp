@@ -28,8 +28,6 @@
 #include <airdcpp/DownloadManager.h>
 #include <airdcpp/SearchManager.h>
 
-#include <boost/range/algorithm/copy.hpp>
-
 
 
 namespace webserver {
@@ -247,7 +245,7 @@ namespace webserver {
 		auto qm = QueueManager::getInstance();
 
 		RLock l(qm->getCS());
-		boost::range::copy(qm->getBundlesUnsafe() | map_values, back_inserter(bundles));
+		ranges::copy(qm->getBundlesUnsafe() | views::values, back_inserter(bundles));
 		return bundles;
 	}
 
@@ -256,7 +254,7 @@ namespace webserver {
 		auto qm = QueueManager::getInstance();
 
 		RLock l(qm->getCS());
-		boost::range::copy(qm->getFileQueueUnsafe() | map_values, back_inserter(items));
+		ranges::copy(qm->getFileQueueUnsafe() | views::values, back_inserter(items));
 		return items;
 	}
 

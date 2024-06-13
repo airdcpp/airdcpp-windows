@@ -23,7 +23,7 @@
 
 namespace dcpp {
 
-using boost::range::for_each;
+using ranges::for_each;
 	
 SearchQueue::SearchQueue() : lastSearchTick(GET_TICK()) {
 

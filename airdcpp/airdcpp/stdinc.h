@@ -78,26 +78,14 @@
 #include <utility>
 #include <vector>
 
-#include <boost/range/algorithm/for_each.hpp>
-#include <boost/range/algorithm_ext/for_each.hpp>
-#include <boost/range/algorithm/find_if.hpp>
-#include <boost/range/algorithm/remove_if.hpp>
-#include <boost/algorithm/cxx11/copy_if.hpp>
-
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/regex.hpp>
 
-#include <boost/range/adaptor/map.hpp>
-#include <boost/range/adaptor/reversed.hpp>
-
 namespace dcpp {
 	using namespace std;
-	using boost::adaptors::map_values;
-	using boost::adaptors::map_keys;
-	using boost::adaptors::reversed;
 	
 #ifdef _WIN32
 	inline int stricmp(const string& a, const string& b) { return _stricmp(a.c_str(), b.c_str()); }

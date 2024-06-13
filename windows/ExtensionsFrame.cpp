@@ -266,9 +266,9 @@ void ExtensionsFrame::appendRemoteMenuItems(const ItemInfoList& aItems, OMenu& m
 }
 
 void ExtensionsFrame::appendLocalExtensionActions(const ItemInfoList& aItems, OMenu& menu_) noexcept {
-	bool hasManagedExtensions = any_of(aItems.begin(), aItems.end(), [](const ItemInfo* ii) { return ii->ext->isManaged(); });
-	bool hasRunningExtensions = any_of(aItems.begin(), aItems.end(), [](const ItemInfo* ii) { return ii->ext->isManaged() && ii->ext->isRunning(); });
-	bool hasStoppedExtensions = any_of(aItems.begin(), aItems.end(), [](const ItemInfo* ii) { return ii->ext->isManaged() && !ii->ext->isRunning(); });
+	bool hasManagedExtensions = ranges::any_of(aItems, [](const ItemInfo* ii) { return ii->ext->isManaged(); });
+	bool hasRunningExtensions = ranges::any_of(aItems, [](const ItemInfo* ii) { return ii->ext->isManaged() && ii->ext->isRunning(); });
+	bool hasStoppedExtensions = ranges::any_of(aItems, [](const ItemInfo* ii) { return ii->ext->isManaged() && !ii->ext->isRunning(); });
 
 	if (hasManagedExtensions && menu_.hasItems()) {
 		menu_.appendSeparator();

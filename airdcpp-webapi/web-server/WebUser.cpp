@@ -25,6 +25,7 @@
 #include <airdcpp/Util.h>
 
 #include <boost/range/numeric.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 namespace webserver {
 	const vector<string> WebUser::accessStrings = {
@@ -148,7 +149,7 @@ namespace webserver {
 
 
 	int WebUser::countPermissions() const noexcept {
-		return boost::accumulate(permissions | map_values, 0);
+		return boost::accumulate(permissions | boost::adaptors::map_values, 0);
 	}
 
 	bool WebUser::validateUsername(const string& aUsername) noexcept {

@@ -269,7 +269,7 @@ void RecentsFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcep
 void RecentsFrame::on(RecentManagerListener::RecentUpdated, const RecentEntryPtr& entry, RecentEntry::Type) noexcept {
 
 	callAsync([=] {
-		auto i = boost::find_if(itemInfos, [=](unique_ptr<ItemInfo>& ii) { return  ii->item == entry; });
+		auto i = ranges::find_if(itemInfos, [=](unique_ptr<ItemInfo>& ii) { return  ii->item == entry; });
 		if (i != itemInfos.end()) {
 			ctrlList.list.updateItem((*i).get());
 		}
@@ -278,7 +278,7 @@ void RecentsFrame::on(RecentManagerListener::RecentUpdated, const RecentEntryPtr
 
 void RecentsFrame::on(RecentManagerListener::RecentAdded, const RecentEntryPtr& entry, RecentEntry::Type aType) noexcept {
 	callAsync([=] {
-		auto i = boost::find_if(itemInfos, [=](unique_ptr<ItemInfo>& ii) { return ii->item == entry; });
+		auto i = ranges::find_if(itemInfos, [=](unique_ptr<ItemInfo>& ii) { return ii->item == entry; });
 		if (i == itemInfos.end()) {
 			itemInfos.emplace_back(make_unique<ItemInfo>(entry, aType));
 			addEntry(itemInfos.back().get());
@@ -287,7 +287,7 @@ void RecentsFrame::on(RecentManagerListener::RecentAdded, const RecentEntryPtr& 
 }
 void RecentsFrame::on(RecentManagerListener::RecentRemoved, const RecentEntryPtr& entry, RecentEntry::Type) noexcept  {
 	callAsync([=] {
-		auto i = boost::find_if(itemInfos, [=](unique_ptr<ItemInfo>& ii) { return ii->item == entry; });
+		auto i = ranges::find_if(itemInfos, [=](unique_ptr<ItemInfo>& ii) { return ii->item == entry; });
 		if (i != itemInfos.end()) {
 			ctrlList.list.deleteItem((*i).get());
 			itemInfos.erase(i);

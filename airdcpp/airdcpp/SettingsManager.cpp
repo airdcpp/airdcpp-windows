@@ -1110,7 +1110,7 @@ void SettingsManager::load(StartupLoader& aLoader) noexcept {
 	auto checkBind = [&] (SettingsManager::StrSetting aSetting, bool v6) {
 		if (!isDefault(aSetting)) {
 			auto adapters = AirUtil::getNetworkAdapters(v6);
-			auto p = boost::find_if(adapters, [this, aSetting](const AdapterInfo& aInfo) { return aInfo.ip == get(aSetting); });
+			auto p = ranges::find_if(adapters, [this, aSetting](const AdapterInfo& aInfo) { return aInfo.ip == get(aSetting); });
 			if (p == adapters.end() && aLoader.messageF(STRING_F(BIND_ADDRESS_MISSING, (v6 ? "IPv6" : "IPv4") % get(aSetting)), true, false)) {
 				unsetKey(aSetting);
 			}
@@ -1151,7 +1151,7 @@ bool SettingsManager::addToHistory(const string& aString, HistoryType aType) noe
 	StringList& hist = history[aType];
 
 	// Remove existing matching item
-	auto s = boost::find(hist, aString);
+	auto s = ranges::find(hist, aString);
 	if(s != hist.end()) {
 		hist.erase(s);
 	}

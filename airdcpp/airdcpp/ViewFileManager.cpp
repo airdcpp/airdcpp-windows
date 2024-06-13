@@ -25,8 +25,6 @@
 #include "QueueManager.h"
 #include "ShareManager.h"
 
-#include <boost/range/algorithm/copy.hpp>
-
 
 namespace dcpp {
 	ViewFileManager::ViewFileManager() noexcept {
@@ -46,7 +44,7 @@ namespace dcpp {
 
 		{
 			RLock l(cs);
-			boost::range::copy(viewFiles | map_values, back_inserter(ret));
+			ranges::copy(viewFiles | views::values, back_inserter(ret));
 		}
 
 		return ret;

@@ -35,7 +35,6 @@
 
 #include <openssl/evp.h>
 #include <openssl/rand.h>
-#include <boost/range/algorithm/copy.hpp>
 
 const auto DEBUG_SEARCH = false;
 
@@ -189,7 +188,7 @@ SearchInstanceList SearchManager::getSearchInstances() const noexcept {
 
 	{
 		RLock l(cs);
-		for (auto& i : searchInstances | map_values) {
+		for (auto& i : searchInstances | views::values) {
 			ret.push_back(i);
 		}
 	}
@@ -284,7 +283,7 @@ bool SearchManager::decryptSUDP(const uint8_t* aKey, const ByteVector& aData, si
 
 bool SearchManager::decryptPacket(string& x, size_t aLen, const ByteVector& aBuf) {
 	RLock l (cs);
-	for (const auto& i: searchKeys | reversed) {
+	for (const auto& i: searchKeys | views::reverse) {
 		if (decryptSUDP(i.first, aBuf, aLen, x)) {
 			return true;
 		}
@@ -460,7 +459,7 @@ void SearchManager::on(TimerManagerListener::Minute, uint64_t aTick) noexcept {
 
 	{
 		RLock l(cs);
-		for (const auto& i: searchInstances | map_values) {
+		for (const auto& i: searchInstances | views::values) {
 			auto expiration = i->getTimeToExpiration();
 			if (expiration && *expiration <= 0) {
 				expiredIds.push_back(i->getToken());
@@ -821,7 +820,7 @@ SearchTypeList SearchManager::getSearchTypes() const noexcept {
 
 	{
 		RLock l(cs);
-		boost::copy(searchTypes | map_values, back_inserter(ret));
+		ranges::copy(searchTypes | views::values, back_inserter(ret));
 	}
 
 	return ret;
@@ -948,12 +947,12 @@ string SearchManager::getTypeIdByExtension(const string& aExtension, bool aDefau
 	auto extensionLower = Text::toLower(aExtension);
 
 	RLock l(cs);
-	for (const auto& type : searchTypes | map_values) {
+	for (const auto& type : searchTypes | views::values) {
 		if (aDefaultsOnly && !type->isDefault()) {
 			continue;
 		}
 
-		auto i = boost::find(type->getExtensions(), extensionLower);
+		auto i = ranges::find(type->getExtensions(), extensionLower);
 		if (i != type->getExtensions().end()) {
 			return type->getId();
 		}
@@ -968,7 +967,7 @@ void SearchManager::on(SettingsManagerListener::Save, SimpleXML& xml) noexcept {
 	xml.stepIn();
 	{
 		RLock l(cs);
-		for(auto& t: searchTypes | map_values) {
+		for(auto& t: searchTypes | views::values) {
 			xml.addTag("SearchType", Util::toString(";", t->getExtensions()));
 			xml.addChildAttrib("Id", t->getName());
 			if (!t->isDefault()) {

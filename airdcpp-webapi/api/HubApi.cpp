@@ -97,7 +97,7 @@ namespace webserver {
 
 			RLock l(cm->getCS());
 			auto rawHubs = cm->getClientsUnsafe();
-			for (const auto& c : rawHubs | map_values) {
+			for (const auto& c : rawHubs | views::values) {
 				addHub(c);
 			}
 		}

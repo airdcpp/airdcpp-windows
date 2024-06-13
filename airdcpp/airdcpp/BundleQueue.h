@@ -42,7 +42,7 @@ public:
 
 		typedef SortedVector<PathInfo*, std::vector, string, Compare, Path> List;
 
-		bool operator==(const PathInfo* aInfo) const noexcept { return this == aInfo; }
+		bool operator==(const PathInfo& aInfo) const noexcept { return *this == aInfo; }
 
 		size_t queuedFiles = 0;
 		size_t finishedFiles = 0;

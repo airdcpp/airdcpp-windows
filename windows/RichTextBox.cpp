@@ -476,7 +476,7 @@ void RichTextBox::FormatEmoticons(tstring& sMsg, LONG lSelBegin) {
 					++lSelBegin;
 
 					//fix the positions for links after this emoticon....
-					for (auto& l : links | reversed) {
+					for (auto& l : links | views::reverse) {
 						if (l.first.cpMin > lSelBegin) {
 							l.first.cpMin -= foundEmoticon->getEmoticonText().size() - 1;
 							l.first.cpMax -= foundEmoticon->getEmoticonText().size() - 1;
@@ -725,7 +725,7 @@ void RichTextBox::updateSelectedText(POINT pt, bool aSelectLink) {
 			delete [] buf;
 
 			// Replace shortened links in the range.
-			for (const auto& l : links | reversed) {
+			for (const auto& l : links | views::reverse) {
 				if (l.first.cpMin >= cr.cpMin && l.first.cpMax <= cr.cpMax) {
 					selectedWord.replace(l.first.cpMin - cr.cpMin, getHighlightDisplayText(l.second).length(), Text::toT(l.second->getText()));
 				}

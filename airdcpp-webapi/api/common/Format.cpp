@@ -24,8 +24,6 @@
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/GeoManager.h>
 
-#include <boost/range/algorithm/copy.hpp>
-
 namespace webserver {
 	std::string Format::formatNicks(const HintedUser& aUser) noexcept {
 		return Util::listToString(ClientManager::getInstance()->getNicks(aUser));
