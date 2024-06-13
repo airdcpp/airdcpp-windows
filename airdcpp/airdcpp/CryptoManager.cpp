@@ -47,6 +47,8 @@
 # endif
 #endif
 
+#include <openssl/applink.c>
+
 namespace dcpp {
 
 int CryptoManager::idxVerifyData = 0;
