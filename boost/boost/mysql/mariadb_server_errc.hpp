@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2019-2023 Ruben Perez Hidalgo (rubenperez038 at gmail dot com)
+// Copyright (c) 2019-2024 Ruben Perez Hidalgo (rubenperez038 at gmail dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -1047,6 +1047,12 @@ constexpr int er_cm_option_missing_requirement = 4191;
 
 /// Server error specific to mariadb. Error number: 4192, symbol: ER_SLAVE_STATEMENT_TIMEOUT.
 constexpr int er_slave_statement_timeout = 4192;
+
+/// Server error specific to mariadb. Error number: 4193, symbol: ER_JSON_INVALID_VALUE_FOR_KEYWORD.
+constexpr int er_json_invalid_value_for_keyword = 4193;
+
+/// Server error specific to mariadb. Error number: 4194, symbol: ER_JSON_SCHEMA_KEYWORD_UNSUPPORTED.
+constexpr int er_json_schema_keyword_unsupported = 4194;
 
 }  // namespace mariadb_server_errc
 

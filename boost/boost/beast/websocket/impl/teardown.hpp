@@ -11,12 +11,12 @@
 #define BOOST_BEAST_WEBSOCKET_IMPL_TEARDOWN_HPP
 
 #include <boost/beast/core/async_base.hpp>
-#include <boost/beast/core/bind_handler.hpp>
 #include <boost/beast/core/stream_traits.hpp>
 #include <boost/beast/core/detail/bind_continuation.hpp>
 #include <boost/beast/core/detail/is_invocable.hpp>
 #include <boost/asio/coroutine.hpp>
-#include <boost/asio/post.hpp>
+#include <boost/asio/dispatch.hpp>
+#include <boost/asio/prepend.hpp>
 #include <memory>
 
 namespace boost {
@@ -128,8 +128,8 @@ public:
                         "websocket::tcp::async_teardown"
                         ));
 
-                    net::post(s_.get_executor(), bind_front_handler(
-                        std::move(*this), ec));
+                    const auto ex = this->get_immediate_executor();
+                    net::dispatch(ex, net::prepend(std::move(*this), ec));
                 }
             }
             {

@@ -76,6 +76,9 @@
 
 
 
+
+
+
 <function name="operator=="><type>bool</type><template>
           <template-type-parameter name="T"/>
           <template-type-parameter name="S"/>
@@ -170,6 +173,9 @@
 <method name="swap"><type>void</type><parameter name="alloc1"><paramtype>self_t &amp;</paramtype></parameter><parameter name="alloc2"><paramtype>self_t &amp;</paramtype></parameter><description><para>Swap segment manager. Does not throw. If each allocator is placed in different memory segments, the result is undefined. </para></description></method>
 </method-group>
 </class>
+
+
+
 
 
 
@@ -305,6 +311,9 @@
 
 
 
+
+
+
 <function name="operator=="><type>bool</type><template>
           <template-type-parameter name="T"/>
           <template-type-parameter name="S"/>
@@ -426,6 +435,9 @@
 
 
 
+
+
+
 <function name="operator=="><type>bool</type><template>
           <template-type-parameter name="T"/>
           <template-type-parameter name="S"/>
@@ -530,6 +542,9 @@
 <method name="swap"><type>void</type><parameter name="alloc1"><paramtype>self_t &amp;</paramtype></parameter><parameter name="alloc2"><paramtype>self_t &amp;</paramtype></parameter><description><para>Swaps allocators. Does not throw. If each allocator is placed in a different memory segment, the result is undefined. </para></description></method>
 </method-group>
 </class>
+
+
+
 
 
 
@@ -659,6 +674,9 @@
 
 
 
+
+
+
 <function name="operator=="><type>bool</type><template>
           <template-type-parameter name="T"/>
           <template-type-parameter name="S"/>
@@ -778,6 +796,9 @@
 
 
 
+
+
+
 <function name="operator=="><type>bool</type><template>
           <template-type-parameter name="T"/>
           <template-type-parameter name="S"/>
@@ -838,6 +859,9 @@
 <header name="boost/interprocess/anonymous_shared_memory.hpp">
 <para>Describes a function that creates anonymous shared memory that can be shared between forked processes </para><namespace name="boost">
 <namespace name="interprocess">
+
+
+
 
 
 
@@ -949,6 +973,9 @@
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
@@ -957,6 +984,9 @@
 <header name="boost/interprocess/containers/deque.hpp">
 <namespace name="boost">
 <namespace name="interprocess">
+
+
+
 
 
 
@@ -1061,12 +1091,18 @@
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
 <header name="boost/interprocess/containers/flat_set.hpp">
 <namespace name="boost">
 <namespace name="interprocess">
+
+
+
 
 
 
@@ -1171,12 +1207,18 @@
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
 <header name="boost/interprocess/containers/map.hpp">
 <namespace name="boost">
 <namespace name="interprocess">
+
+
+
 
 
 
@@ -1281,12 +1323,18 @@
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
 <header name="boost/interprocess/containers/set.hpp">
 <namespace name="boost">
 <namespace name="interprocess">
+
+
+
 
 
 
@@ -1391,12 +1439,18 @@
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
 <header name="boost/interprocess/containers/stable_vector.hpp">
 <namespace name="boost">
 <namespace name="interprocess">
+
+
+
 
 
 
@@ -1501,6 +1555,9 @@
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
@@ -1556,12 +1613,18 @@
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
 <header name="boost/interprocess/containers/version_type.hpp">
 <namespace name="boost">
 <namespace name="interprocess">
+
+
+
 
 
 
@@ -1671,6 +1734,9 @@
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
@@ -1679,6 +1745,9 @@
 <namespace name="interprocess">
 <enum name="error_code_t"><enumvalue name="no_error"><default>= 0</default></enumvalue><enumvalue name="system_error"/><enumvalue name="other_error"/><enumvalue name="security_error"/><enumvalue name="read_only_error"/><enumvalue name="io_error"/><enumvalue name="path_error"/><enumvalue name="not_found_error"/><enumvalue name="busy_error"/><enumvalue name="already_exists_error"/><enumvalue name="not_empty_error"/><enumvalue name="is_directory_error"/><enumvalue name="out_of_space_error"/><enumvalue name="out_of_memory_error"/><enumvalue name="out_of_resource_error"/><enumvalue name="lock_error"/><enumvalue name="sem_error"/><enumvalue name="mode_error"/><enumvalue name="size_error"/><enumvalue name="corrupted_error"/><enumvalue name="not_such_file_or_directory"/><enumvalue name="invalid_argument"/><enumvalue name="timeout_when_locking_error"/><enumvalue name="timeout_when_waiting_error"/><enumvalue name="owner_dead_error"/><enumvalue name="not_recoverable"/></enum>
 <typedef name="native_error_t"><type>int</type></typedef>
+
+
+
 
 
 
@@ -1745,12 +1814,15 @@
 </method-group>
 <constructor cv="noexcept"><parameter name="err"><paramtype>const char *</paramtype></parameter></constructor>
 <constructor><parameter name="err_info"><paramtype>const error_info &amp;</paramtype></parameter><parameter name="str"><paramtype>const char *</paramtype><default>0</default></parameter></constructor>
-<destructor/>
+<destructor cv="noexcept"/>
 </class><class name="lock_exception"><inherit access="public">boost::interprocess::interprocess_exception</inherit><description><para>This is the exception thrown by shared <classname alt="boost::interprocess::interprocess_mutex">interprocess_mutex</classname> family when a deadlock situation is detected or when using a <classname alt="boost::interprocess::interprocess_condition">interprocess_condition</classname> the <classname alt="boost::interprocess::interprocess_mutex">interprocess_mutex</classname> is not locked </para></description><method-group name="public member functions">
 <method name="what" cv="const noexcept"><type>const char *</type></method>
 </method-group>
 <constructor cv="noexcept"><parameter name="err"><paramtype>error_code_t</paramtype><default>lock_error</default></parameter></constructor>
 </class>
+
+
+
 
 
 
@@ -1870,6 +1942,9 @@
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
@@ -1884,6 +1959,9 @@
 </method-group>
 <constructor><parameter name="segment_mngr"><paramtype><classname>segment_manager_base</classname> *</paramtype></parameter><purpose>Constructor. Takes a pointer to the segment manager. Can throw. </purpose></constructor>
 </class>
+
+
+
 
 
 
@@ -1953,6 +2031,9 @@
 </method-group>
 <constructor><parameter name=""><paramtype>typename MapConfig::segment_manager_base *</paramtype></parameter><description><para>Constructor. Takes a pointer to the segment manager. Can throw </para></description></constructor>
 </class>
+
+
+
 
 
 
@@ -2077,6 +2158,9 @@
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
@@ -2091,6 +2175,9 @@
 </method-group>
 <constructor><parameter name="segment_mngr"><paramtype><classname>segment_manager_base</classname> *</paramtype></parameter><description><para>Constructor. Takes a pointer to the segment manager. Can throw </para></description></constructor>
 </class>
+
+
+
 
 
 
@@ -2205,65 +2292,6 @@
 
 
 
-</namespace>
-</namespace>
-</header>
-<header name="boost/interprocess/indexes/unordered_map_index.hpp">
-<para>Describes index adaptor of boost::unordered_map container, to use it as name/shared memory index </para><namespace name="boost">
-<namespace name="interprocess">
-<class name="unordered_map_index"><template>
-      <template-type-parameter name="MapConfig"/>
-    </template><inherit access="public">unordered_map_index_aux::index_t</inherit><description><para>Index type based in unordered_map. Just derives from unordered_map and defines the interface needed by managed memory segments </para></description><method-group name="public member functions">
-<method name="reserve"><type>void</type><parameter name="n"><paramtype>typename segment_manager_base::size_type</paramtype></parameter><description><para>This reserves memory to optimize the insertion of n elements in the index </para></description></method>
-<method name="shrink_to_fit"><type>void</type><description><para>This tries to free previously allocate unused memory. </para></description></method>
-</method-group>
-<constructor><parameter name="segment_mngr"><paramtype><classname>segment_manager_base</classname> *</paramtype></parameter><description><para>Constructor. Takes a pointer to the segment manager. Can throw </para></description></constructor>
-</class>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2317,7 +2345,7 @@
 </listitem><listitem><para><classname alt="boost::interprocess::iunordered_set_index">boost::interprocess::iunordered_set_index</classname>;</para>
 </listitem><listitem><para><classname alt="boost::interprocess::map_index">boost::interprocess::map_index</classname>;</para>
 </listitem><listitem><para><classname alt="boost::interprocess::null_index">boost::interprocess::null_index</classname>;</para>
-</listitem><listitem><para><classname alt="boost::interprocess::unordered_map_index">boost::interprocess::unordered_map_index</classname>;</para>
+</listitem><listitem><para>boost::interprocess::unordered_map_index;</para>
 </listitem></itemizedlist>
 </para><para>The following managed memory types:<itemizedlist>
 <listitem><para><classname alt="boost::interprocess::segment_manager">boost::interprocess::segment_manager</classname>;</para>
@@ -2454,6 +2482,9 @@
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
@@ -2525,6 +2556,9 @@
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
@@ -2547,6 +2581,9 @@
 <copy-assignment cv="noexcept"><type><classname>basic_managed_heap_memory</classname> &amp;</type><parameter name="moved"><paramtype><classname>basic_managed_heap_memory</classname> &amp;&amp;</paramtype></parameter><purpose>Moves the ownership of "moved"'s managed memory to *this. Does not throw. </purpose></copy-assignment>
 </class><typedef name="managed_heap_memory"><description><para>Typedef for a default <classname alt="boost::interprocess::basic_managed_heap_memory">basic_managed_heap_memory</classname> of narrow characters </para></description><type><classname>basic_managed_heap_memory</classname>&lt; char,<classname>rbtree_best_fit</classname>&lt; <classname>null_mutex_family</classname> &gt;,<classname>iset_index</classname> &gt;</type></typedef>
 <typedef name="wmanaged_heap_memory"><description><para>Typedef for a default <classname alt="boost::interprocess::basic_managed_heap_memory">basic_managed_heap_memory</classname> of wide characters </para></description><type><classname>basic_managed_heap_memory</classname>&lt; wchar_t,<classname>rbtree_best_fit</classname>&lt; <classname>null_mutex_family</classname> &gt;,<classname>iset_index</classname> &gt;</type></typedef>
+
+
+
 
 
 
@@ -2682,6 +2719,9 @@
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
@@ -2719,6 +2759,9 @@
 <typedef name="wmanaged_shared_memory"><description><para>Typedef for a default <classname alt="boost::interprocess::basic_managed_shared_memory">basic_managed_shared_memory</classname> of wide characters </para></description><type><classname>basic_managed_shared_memory</classname>&lt; wchar_t,<classname>rbtree_best_fit</classname>&lt; <classname>mutex_family</classname> &gt;,<classname>iset_index</classname> &gt;</type></typedef>
 <typedef name="fixed_managed_shared_memory"><description><para>Typedef for a default <classname alt="boost::interprocess::basic_managed_shared_memory">basic_managed_shared_memory</classname> of narrow characters to be placed in a fixed address </para></description><type><classname>basic_managed_shared_memory</classname>&lt; char,<classname>rbtree_best_fit</classname>&lt; <classname>mutex_family</classname>, void * &gt;,<classname>iset_index</classname> &gt;</type></typedef>
 <typedef name="wfixed_managed_shared_memory"><description><para>Typedef for a default <classname alt="boost::interprocess::basic_managed_shared_memory">basic_managed_shared_memory</classname> of narrow characters to be placed in a fixed address </para></description><type><classname>basic_managed_shared_memory</classname>&lt; wchar_t,<classname>rbtree_best_fit</classname>&lt; <classname>mutex_family</classname>, void * &gt;,<classname>iset_index</classname> &gt;</type></typedef>
+
+
+
 
 
 
@@ -2846,6 +2889,9 @@
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
@@ -2923,6 +2969,9 @@
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
@@ -2950,6 +2999,9 @@
 <method name="get_page_size" cv="noexcept" specifiers="static"><type>std::size_t</type><description><para>Returns the size of the page. This size is the minimum memory that will be used by the system when mapping a memory mappable source and will restrict the address and the offset to map. </para></description></method>
 </method-group>
 </class>
+
+
+
 
 
 
@@ -3085,6 +3137,9 @@
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
@@ -3099,6 +3154,9 @@
 </method-group>
 <constructor><parameter name="segment_size"><paramtype>size_type</paramtype></parameter><parameter name="extra_hdr_bytes"><paramtype>size_type</paramtype></parameter><description><para>Constructor. "size" is the total size of the managed memory segment, "extra_hdr_bytes" indicates the extra bytes beginning in the sizeof(simple_seq_fit) offset that the allocator should not use at all.*<zwj/>/ </para></description></constructor>
 </class>
+
+
+
 
 
 
@@ -3245,7 +3303,10 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
           <template-type-parameter name="T2"/>
         </template><parameter name="ptr"><paramtype>const <classname>offset_ptr</classname>&lt; T2, DifferenceType, OffsetType, OffsetAlignment &gt; &amp;</paramtype></parameter><parameter name=""><paramtype><emphasis>unspecified</emphasis></paramtype></parameter></method>
 </method-group>
-</class><function name="operator&lt;&lt;"><type>std::basic_ostream&lt; E, T &gt; &amp;</type><template>
+</class>
+
+
+<function name="operator&lt;&lt;"><type>std::basic_ostream&lt; E, T &gt; &amp;</type><template>
           <template-type-parameter name="E"/>
           <template-type-parameter name="T"/>
           <template-type-parameter name="W"/>
@@ -3359,6 +3420,9 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <constructor cv="noexcept"><parameter name="type"><paramtype>os_permissions_type</paramtype></parameter><description><para>Constructs a permissions object from a user provided os-dependent permissions. </para></description></constructor>
 <constructor cv="noexcept"><description><para>Constructs a default permissions object: A null security attributes pointer for windows or 0644 for UNIX. </para></description></constructor>
 </class>
+
+
+
 
 
 
@@ -3582,6 +3646,9 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
@@ -3611,6 +3678,9 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <method name="remove" specifiers="static"><type>bool</type><parameter name="name"><paramtype>const wchar_t *</paramtype></parameter><description><para>Erases a shared memory object from the system. Returns false on error. Never throws</para><para>Note: This function is only available on operating systems with native wchar_t APIs (e.g. Windows). </para></description></method>
 </method-group>
 </class>
+
+
+
 
 
 
@@ -3722,6 +3792,9 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
@@ -3737,6 +3810,9 @@ b&gt;Note: <classname alt="boost::interprocess::offset_ptr">offset_ptr</classnam
 <method name="shared_from_this" cv="const"><type><classname>shared_ptr</classname>&lt; T const, A, D &gt;</type></method>
 </method-group>
 </class>
+
+
+
 
 
 
@@ -3823,6 +3899,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
         </template><parameter name="rhs"><paramtype><classname>intrusive_ptr</classname>&lt; U, VP &gt; const &amp;</paramtype></parameter><description><para>Assignment from related. Equivalent to intrusive_ptr(r).swap(*this). Does not throw </para></description></copy-assignment>
 <copy-assignment cv="noexcept"><type><classname>intrusive_ptr</classname> &amp;</type><parameter name="rhs"><paramtype>pointer</paramtype></parameter><description><para>Assignment from pointer. Equivalent to intrusive_ptr(r).swap(*this). Does not throw </para></description></copy-assignment>
 </class>
+
+
+
 
 
 
@@ -3969,6 +4048,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 
 
 
+
+
+
 <function name="swap"><type>void</type><template>
           <template-type-parameter name="T"/>
           <template-type-parameter name="D"/>
@@ -4045,6 +4127,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 <copy-assignment><type><classname>shared_ptr</classname> &amp;</type><parameter name="r"><paramtype>BOOST_COPY_ASSIGN_REF(<classname>shared_ptr</classname>)</paramtype></parameter><description><para>Equivalent to shared_ptr(r).swap(*this). Never throws </para></description></copy-assignment>
 <copy-assignment><type><classname>shared_ptr</classname> &amp;</type><parameter name="other"><paramtype><classname>shared_ptr</classname> &amp;&amp;</paramtype></parameter><description><para>Move-assignment. Equivalent to shared_ptr(other).swap(*this). Never throws </para></description></copy-assignment>
 </class>
+
+
+
 
 
 
@@ -4183,6 +4268,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 
 
 
+
+
+
 <function name="make_managed_unique_ptr"><type><classname>managed_unique_ptr</classname>&lt; T, ManagedMemory &gt;::type</type><template>
           <template-type-parameter name="T"/>
           <template-type-parameter name="ManagedMemory"/>
@@ -4268,6 +4356,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 
 
 
+
+
+
 <function name="operator&lt;"><type>bool</type><template>
           <template-type-parameter name="T"/>
           <template-type-parameter name="A"/>
@@ -4331,7 +4422,7 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 </method-group>
 <constructor specifiers="explicit"><parameter name="mode"><paramtype>std::ios_base::openmode</paramtype><default>std::ios_base::in|std::ios_base::out</default></parameter><description><para>Constructor. Does not throw. </para></description></constructor>
 <constructor specifiers="explicit"><parameter name="buf"><paramtype>CharT *</paramtype></parameter><parameter name="length"><paramtype>std::size_t</paramtype></parameter><parameter name="mode"><paramtype>std::ios_base::openmode</paramtype><default>std::ios_base::in|std::ios_base::out</default></parameter><description><para>Constructor. Assigns formatting buffer. Does not throw. </para></description></constructor>
-<destructor/>
+<destructor specifiers="virtual"/>
 </class><class name="basic_bufferstream"><template>
       <template-type-parameter name="CharT"/>
       <template-type-parameter name="CharTraits"/>
@@ -4388,6 +4479,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 <typedef name="wbufferstream"><type><classname>basic_bufferstream</classname>&lt; wchar_t &gt;</type></typedef>
 <typedef name="wibufferstream"><type><classname>basic_ibufferstream</classname>&lt; wchar_t &gt;</type></typedef>
 <typedef name="wobufferstream"><type><classname>basic_obufferstream</classname>&lt; wchar_t &gt;</type></typedef>
+
+
+
 
 
 
@@ -4570,12 +4664,18 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
 <header name="boost/interprocess/sync/cv_status.hpp">
 <namespace name="boost">
 <namespace name="interprocess">
+
+
+
 
 
 
@@ -4668,6 +4768,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 <copy-assignment cv="noexcept"><type><classname>file_lock</classname> &amp;</type><parameter name="moved"><paramtype><classname>file_lock</classname> &amp;&amp;</paramtype></parameter><description><para>Moves the ownership of "moved"'s file mapping to *this. After the call, "moved" does not represent any file mapping. Does not throw </para></description></copy-assignment>
 <destructor><purpose>Closes a file lock. Does not throw. </purpose></destructor>
 </class>
+
+
+
 
 
 
@@ -4811,6 +4914,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
@@ -4906,6 +5012,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
@@ -4929,6 +5038,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 <constructor><description><para>Constructor. Throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error. </para></description></constructor>
 <destructor><description><para>Destructor. If any process uses the mutex after the destructor is called the result is undefined. Does not throw. </para></description></destructor>
 </class>
+
+
+
 
 
 
@@ -5050,6 +5162,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
@@ -5067,6 +5182,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 <constructor><parameter name="initialCount"><paramtype>unsigned int</paramtype></parameter><description><para>Creates a <classname alt="boost::interprocess::interprocess_semaphore">interprocess_semaphore</classname> with the given initial count. <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> if there is an error.*<zwj/>/ </para></description></constructor>
 <destructor><description><para>Destroys the <classname alt="boost::interprocess::interprocess_semaphore">interprocess_semaphore</classname>. Does not throw </para></description></destructor>
 </class>
+
+
+
 
 
 
@@ -5157,6 +5275,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 <constructor><description><para>Constructs the sharable lock. Throws <classname alt="boost::interprocess::interprocess_exception">interprocess_exception</classname> on error. </para></description></constructor>
 <destructor><description><para>Destroys the sharable lock. Does not throw. </para></description></destructor>
 </class>
+
+
+
 
 
 
@@ -5311,6 +5432,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
@@ -5320,6 +5444,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 <struct name="accept_ownership_type"><purpose>Type to indicate to a mutex lock constructor that the mutex is already locked. </purpose></struct><struct name="defer_lock_type"><purpose>Type to indicate to a mutex lock constructor that must not lock the mutex. </purpose></struct><struct name="try_to_lock_type"><purpose>Type to indicate to a mutex lock constructor that must try to lock the mutex. </purpose></struct><data-member name="defer_lock" specifiers="static"><type>const <classname>defer_lock_type</classname></type><description><para>An object indicating that the locking must be deferred. </para></description></data-member>
 <data-member name="try_to_lock" specifiers="static"><type>const <classname>try_to_lock_type</classname></type><description><para>An object indicating that a try_lock() operation must be executed. </para></description></data-member>
 <data-member name="accept_ownership" specifiers="static"><type>const <classname>accept_ownership_type</classname></type><description><para>An object indicating that the ownership of lockable object must be accepted by the new owner. </para></description></data-member>
+
+
+
 
 
 
@@ -5380,6 +5507,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 </struct><struct name="null_mutex_family"><description><para>Describes <classname alt="boost::interprocess::interprocess_mutex">interprocess_mutex</classname> family to use with Interprocess frameworks based on null operation synchronization objects. </para></description><typedef name="mutex_type"><type><classname>boost::interprocess::null_mutex</classname></type></typedef>
 <typedef name="recursive_mutex_type"><type><classname>boost::interprocess::null_mutex</classname></type></typedef>
 </struct>
+
+
+
 
 
 
@@ -5532,6 +5662,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
@@ -5636,6 +5769,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
@@ -5668,6 +5804,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 <method name="remove" specifiers="static"><type>bool</type><parameter name="name"><paramtype>const wchar_t *</paramtype></parameter><description><para>Erases a named mutex from the system. Returns false on error. Never throws.</para><para>Note: This function is only available on operating systems with native wchar_t APIs (e.g. Windows). </para></description></method>
 </method-group>
 </class>
+
+
+
 
 
 
@@ -5799,6 +5938,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
@@ -5825,6 +5967,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 <method name="remove" specifiers="static"><type>bool</type><parameter name="name"><paramtype>const wchar_t *</paramtype></parameter><description><para>Erases a named semaphore from the system. Returns false on error. Never throws.</para><para>Note: This function is only available on operating systems with native wchar_t APIs (e.g. Windows). </para></description></method>
 </method-group>
 </class>
+
+
+
 
 
 
@@ -5920,6 +6065,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 <method name="remove" specifiers="static"><type>bool</type><parameter name="name"><paramtype>const wchar_t *</paramtype></parameter><description><para>Erases a named sharable mutex from the system. Returns false on error. Never throws. </para></description></method>
 </method-group>
 </class>
+
+
+
 
 
 
@@ -6079,6 +6227,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
@@ -6127,6 +6278,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 <constructor cv="noexcept"><description><para>Constructor. Empty. </para></description></constructor>
 <destructor><description><para>Destructor. Empty. </para></description></destructor>
 </class>
+
+
+
 
 
 
@@ -6276,6 +6430,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
@@ -6322,6 +6479,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 <destructor><description><para>Effects: if (owns()) mp_mutex-&gt;unlock_sharable(). Notes: The destructor behavior ensures that the mutex lock is not leaked. </para></description></destructor>
 <copy-assignment><type><classname>sharable_lock</classname> &amp;</type><parameter name="upgr"><paramtype><classname>sharable_lock</classname>&lt; mutex_type &gt; &amp;&amp;</paramtype></parameter><description><para>Effects: If owns() before the call, then unlock_sharable() is called on mutex(). *this gets the state of upgr and upgr gets set to a default constructed state. Notes: With a recursive mutex it is possible that both this and upgr own the mutex before the assignment. In this case, this will own the mutex after the assignment (and upgr will not), but the mutex's lock count will be decremented by one. </para></description></copy-assignment>
 </class>
+
+
+
 
 
 
@@ -6458,6 +6618,87 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 
 
 
+
+
+
+</namespace>
+</namespace>
+</header>
+<header name="boost/interprocess/timed_utils.hpp">
+<para>Describes some simple time-related utilities that can be used to call synchronization primitive and ipc methods that required waiting until the resource is signalled or a timeout expires.</para><para>These utilities are provided for those users that want to avoid dependence on std::chrono or boost::chrono or boost::date_time and just want to implement simple portable waits. </para><namespace name="boost">
+<namespace name="interprocess">
+<class name="usduration"><description><para>Describes a simple duration type with microsecond resolution that can be used with the ustime time-point utility to call timed functions of Boost.Interprocess' synchronization classes that expect a duration type (wait_for, lock_for...) </para></description><method-group name="public member functions">
+<method name="get_microsecs" cv="const"><type>boost::uint64_t</type><description><para>Returns the stored microsecond count </para></description></method>
+<method name="operator&lt;" cv="const"><type>bool</type><parameter name="other"><paramtype>const <classname>usduration</classname> &amp;</paramtype></parameter></method>
+<method name="operator&gt;" cv="const"><type>bool</type><parameter name="other"><paramtype>const <classname>usduration</classname> &amp;</paramtype></parameter></method>
+<method name="operator&lt;=" cv="const"><type>bool</type><parameter name="other"><paramtype>const <classname>usduration</classname> &amp;</paramtype></parameter></method>
+<method name="operator&gt;=" cv="const"><type>bool</type><parameter name="other"><paramtype>const <classname>usduration</classname> &amp;</paramtype></parameter></method>
+</method-group>
+<constructor specifiers="explicit"><parameter name="microsecs"><paramtype>boost::uint64_t</paramtype><default>0u</default></parameter><description><para>Constructs a duration type that stores microseconds from the passed count </para></description></constructor>
+</class><class name="ustime"><method-group name="public member functions">
+<method name="operator+="><type><classname>ustime</classname> &amp;</type><parameter name="other"><paramtype>const <classname>usduration</classname> &amp;</paramtype></parameter></method>
+<method name="operator+"><type><classname>ustime</classname></type><parameter name="other"><paramtype>const <classname>usduration</classname> &amp;</paramtype></parameter></method>
+<method name="operator-="><type><classname>ustime</classname> &amp;</type><parameter name="other"><paramtype>const <classname>usduration</classname> &amp;</paramtype></parameter></method>
+<method name="operator-"><type><classname>ustime</classname></type><parameter name="other"><paramtype>const <classname>usduration</classname> &amp;</paramtype></parameter></method>
+<method name="operator&lt;" cv="const"><type>bool</type><parameter name="other"><paramtype>const <classname>ustime</classname> &amp;</paramtype></parameter></method>
+<method name="operator&gt;" cv="const"><type>bool</type><parameter name="other"><paramtype>const <classname>ustime</classname> &amp;</paramtype></parameter></method>
+<method name="operator&lt;=" cv="const"><type>bool</type><parameter name="other"><paramtype>const <classname>ustime</classname> &amp;</paramtype></parameter></method>
+<method name="operator&gt;=" cv="const"><type>bool</type><parameter name="other"><paramtype>const <classname>ustime</classname> &amp;</paramtype></parameter></method>
+<method name="get_microsecs" cv="const"><type>boost::uint64_t</type><description><para>Returns the stored count that represents microseconds from epoch </para></description></method>
+</method-group>
+<constructor specifiers="explicit"><parameter name="microsecs"><paramtype>boost::uint64_t</paramtype><default>0u</default></parameter><description><para>Constructs a time point that is "microsecs" duration away from the epoch of the system </para></description></constructor>
+</class><function name="usduration_from_seconds"><type><classname>usduration</classname></type><parameter name="sec"><paramtype>boost::uint64_t</paramtype></parameter><description><para>Utility that returns a duration from a seconds count </para></description></function>
+<function name="usduration_from_milliseconds"><type><classname>usduration</classname></type><parameter name="millisec"><paramtype>boost::uint64_t</paramtype></parameter><description><para>Utility that returns a duration from a milliseconds count </para></description></function>
+<function name="ustime_delay_milliseconds"><type><classname>ustime</classname></type><parameter name="msecs"><paramtype>unsigned</paramtype></parameter><description><para>Utility that returns a time_point in the future that is "msecs" milliseconds in the future from now. </para></description></function>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </namespace>
 </namespace>
 </header>
@@ -6482,6 +6723,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 <copy-assignment cv="noexcept"><type><classname>windows_shared_memory</classname> &amp;</type><parameter name="moved"><paramtype><classname>windows_shared_memory</classname> &amp;&amp;</paramtype></parameter><description><para>Moves the ownership of "moved"'s shared memory to *this. After the call, "moved" does not represent any shared memory. Does not throw </para></description></copy-assignment>
 <destructor><description><para>Destroys *this. All mapped regions are still valid after destruction. When all mapped regions and <classname alt="boost::interprocess::windows_shared_memory">windows_shared_memory</classname> objects referring the shared memory are destroyed, the operating system will destroy the shared memory. </para></description></destructor>
 </class>
+
+
+
 
 
 
@@ -6591,6 +6835,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 
 
 
+
+
+
 </namespace>
 </namespace>
 </header>
@@ -6614,6 +6861,9 @@ that defines the type of pointer that intrusive_ptr will store). intrusive_ptr&l
 <method name="remove" specifiers="static"><type>bool</type><parameter name="shmid"><paramtype>int</paramtype></parameter><description><para>Erases the XSI shared memory object identified by shmid from the system. Returns false on error. Never throws </para></description></method>
 </method-group>
 </class>
+
+
+
 
 
 

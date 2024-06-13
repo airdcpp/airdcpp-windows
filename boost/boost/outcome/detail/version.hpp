@@ -1,5 +1,5 @@
 /* Sets Outcome version
-(C) 2017-2023 Niall Douglas <http://www.nedproductions.biz/> (4 commits)
+(C) 2017-2024 Niall Douglas <http://www.nedproductions.biz/> (4 commits)
 
 
 Boost Software License - Version 1.0 - August 17th, 2003
@@ -28,11 +28,11 @@ DEALINGS IN THE SOFTWARE.
 */
 
 /*! AWAITING HUGO JSON CONVERSION TOOL */
-#define BOOST_OUTCOME_VERSION_MAJOR    2
+#define BOOST_OUTCOME_VERSION_MAJOR 2
 /*! AWAITING HUGO JSON CONVERSION TOOL */
-#define BOOST_OUTCOME_VERSION_MINOR    2
+#define BOOST_OUTCOME_VERSION_MINOR 2
 /*! AWAITING HUGO JSON CONVERSION TOOL */
-#define BOOST_OUTCOME_VERSION_PATCH    3
+#define BOOST_OUTCOME_VERSION_PATCH 9
 /*! AWAITING HUGO JSON CONVERSION TOOL */
 #define BOOST_OUTCOME_VERSION_REVISION 0  // Revision version for cmake and DLL version stamping
 

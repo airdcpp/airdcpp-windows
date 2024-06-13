@@ -114,7 +114,7 @@ inline void discard_duplicate_start_turns(Turns& turns,
     {
         if (turn.method == method_start)
         {
-            for (const auto& op : turn.operations)
+            for (auto const& op : turn.operations)
             {
                 start_turns_per_segment[adapt_id(op.seg_id)].push_back(index);
             }
@@ -130,13 +130,20 @@ inline void discard_duplicate_start_turns(Turns& turns,
         // Also avoid comparing "start" with itself.
         if (turn.method != method_crosses && turn.method != method_start)
         {
-            for (const auto& op : turn.operations)
+            for (auto const& op : turn.operations)
             {
                 auto it = start_turns_per_segment.find(adapt_id(op.seg_id));
                 if (it != start_turns_per_segment.end())
                 {
                     for (std::size_t const& i : it->second)
                     {
+                        if (turns[i].cluster_id != turn.cluster_id)
+                        {
+                            // The turns are not part of the same cluster,
+                            // or one is clustered and the other is not.
+                            // This is not corresponding.
+                            continue;
+                        }
                         if (corresponding_turn(turn, turns[i],
                                                geometry0, geometry1))
                         {

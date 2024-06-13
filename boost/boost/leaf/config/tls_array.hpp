@@ -1,7 +1,7 @@
 #ifndef BOOST_LEAF_CONFIG_TLS_ARRAY_HPP_INCLUDED
 #define BOOST_LEAF_CONFIG_TLS_ARRAY_HPP_INCLUDED
 
-// Copyright 2018-2022 Emil Dotchevski and Reverge Studios, Inc.
+// Copyright 2018-2023 Emil Dotchevski and Reverge Studios, Inc.
 // Copyright (c) 2022 Khalil Estell
 
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -65,14 +65,20 @@ namespace tls
     {
         static int c_;
 
-    public:
-
-        static BOOST_LEAF_CFG_TLS_INDEX_TYPE next()
+        static BOOST_LEAF_CFG_TLS_INDEX_TYPE next_() noexcept
         {
             int idx = ++c_;
             BOOST_LEAF_ASSERT(idx > (BOOST_LEAF_CFG_TLS_ARRAY_START_INDEX));
             BOOST_LEAF_ASSERT(idx < (BOOST_LEAF_CFG_TLS_ARRAY_SIZE));
             return idx;
+        }
+
+    public:
+
+        template <class T>
+        static BOOST_LEAF_CFG_TLS_INDEX_TYPE next() noexcept
+        {
+            return next_(); // Set breakpoint here to monitor TLS index allocation for T.
         }
     };
 
@@ -95,7 +101,7 @@ namespace tls
     BOOST_LEAF_CFG_TLS_INDEX_TYPE tls_index<T>::idx = BOOST_LEAF_CFG_TLS_ARRAY_START_INDEX;
 
     template <class T>
-    BOOST_LEAF_CFG_TLS_INDEX_TYPE const alloc_tls_index<T>::idx = tls_index<T>::idx = index_counter<>::next();
+    BOOST_LEAF_CFG_TLS_INDEX_TYPE const alloc_tls_index<T>::idx = tls_index<T>::idx = index_counter<>::next<T>();
 
     ////////////////////////////////////////
 

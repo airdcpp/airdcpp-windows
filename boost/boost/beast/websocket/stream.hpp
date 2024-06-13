@@ -398,6 +398,11 @@ public:
 
         @throws invalid_argument if `deflateSupported == false`, and either
         `client_enable` or `server_enable` is `true`.
+
+        @note
+
+        These settings should be configured before performing the WebSocket
+        handshake.
     */
     void
     set_option(permessage_deflate const& o);
@@ -931,11 +936,13 @@ public:
             error_code const& ec    // Result of operation
         );
         @endcode
-        Regardless of whether the asynchronous operation completes
-        immediately or not, the handler will not be invoked from within
-        this function. Invocation of the handler will be performed in a
-        manner equivalent to using `net::post`.
-
+        If the handler has an associated immediate executor,
+        an immediate completion will be dispatched to it.
+        Otherwise, the handler will not be invoked from within
+        this function. Invocation of the handler will be performed
+        by dispatching to the immediate executor. If no
+        immediate executor is specified, this is equivalent
+        to using `net::post`.
         @par Example
         @code
         ws.async_handshake("localhost", "/",
@@ -1013,11 +1020,13 @@ public:
             error_code const& ec    // Result of operation
         );
         @endcode
-        Regardless of whether the asynchronous operation completes
-        immediately or not, the handler will not be invoked from within
-        this function. Invocation of the handler will be performed in a
-        manner equivalent to using `net::post`.
-
+        If the handler has an associated immediate executor,
+        an immediate completion will be dispatched to it.
+        Otherwise, the handler will not be invoked from within
+        this function. Invocation of the handler will be performed
+        by dispatching to the immediate executor. If no
+        immediate executor is specified, this is equivalent
+        to using `net::post`.
         @par Example
         @code
         response_type res;
@@ -1354,11 +1363,13 @@ public:
             error_code const& ec    // Result of operation
         );
         @endcode
-        Regardless of whether the asynchronous operation completes
-        immediately or not, the handler will not be invoked from within
-        this function. Invocation of the handler will be performed in a
-        manner equivalent to using `net::post`.
-
+        If the handler has an associated immediate executor,
+        an immediate completion will be dispatched to it.
+        Otherwise, the handler will not be invoked from within
+        this function. Invocation of the handler will be performed
+        by dispatching to the immediate executor. If no
+        immediate executor is specified, this is equivalent
+        to using `net::post`.
         @see
         @li <a href="https://tools.ietf.org/html/rfc6455#section-4.2">Websocket Opening Handshake Server Requirements (RFC6455)</a>
     */
@@ -1421,11 +1432,13 @@ public:
             error_code const& ec    // Result of operation
         );
         @endcode
-        Regardless of whether the asynchronous operation completes
-        immediately or not, the handler will not be invoked from within
-        this function. Invocation of the handler will be performed in a
-        manner equivalent to using `net::post`.
-
+        If the handler has an associated immediate executor,
+        an immediate completion will be dispatched to it.
+        Otherwise, the handler will not be invoked from within
+        this function. Invocation of the handler will be performed
+        by dispatching to the immediate executor. If no
+        immediate executor is specified, this is equivalent
+        to using `net::post`.
         @see
         @li <a href="https://tools.ietf.org/html/rfc6455#section-4.2">Websocket Opening Handshake Server Requirements (RFC6455)</a>
     */
@@ -1486,11 +1499,13 @@ public:
             error_code const& ec    // Result of operation
         );
         @endcode
-        Regardless of whether the asynchronous operation completes
-        immediately or not, the handler will not be invoked from within
-        this function. Invocation of the handler will be performed in a
-        manner equivalent to using `net::post`.
-
+        If the handler has an associated immediate executor,
+        an immediate completion will be dispatched to it.
+        Otherwise, the handler will not be invoked from within
+        this function. Invocation of the handler will be performed
+        by dispatching to the immediate executor. If no
+        immediate executor is specified, this is equivalent
+        to using `net::post`.
         @see
         @li <a href="https://tools.ietf.org/html/rfc6455#section-4.2">Websocket Opening Handshake Server Requirements (RFC6455)</a>
     */
@@ -1622,12 +1637,15 @@ public:
             error_code const& ec     // Result of operation
         );
         @endcode
-        Regardless of whether the asynchronous operation completes
-        immediately or not, the handler will not be invoked from within
-        this function. Invocation of the handler will be performed in a
-        manner equivalent to using `net::post`.
+        If the handler has an associated immediate executor,
+        an immediate completion will be dispatched to it.
+        Otherwise, the handler will not be invoked from within
+        this function. Invocation of the handler will be performed
+        by dispatching to the immediate executor. If no
+        immediate executor is specified, this is equivalent
+        to using `net::post`.
 
-         @par Per-Operation Cancellation
+        @par Per-Operation Cancellation
 
         This asynchronous operation supports cancellation for the following
         net::cancellation_type values:
@@ -1637,6 +1655,7 @@ public:
 
         `total` cancellation succeeds if the operation is suspended due to ongoing
         control operations such as a ping/pong.
+
         `terminal` cancellation succeeds when supported by the underlying stream.
 
         @note `terminal` cancellation will may close the underlying socket.
@@ -1741,10 +1760,13 @@ public:
             error_code const& ec     // Result of operation
         );
         @endcode
-        Regardless of whether the asynchronous operation completes
-        immediately or not, the handler will not be invoked from within
-        this function. Invocation of the handler will be performed in a
-        manner equivalent to using `net::post`.
+        If the handler has an associated immediate executor,
+        an immediate completion will be dispatched to it.
+        Otherwise, the handler will not be invoked from within
+        this function. Invocation of the handler will be performed
+        by dispatching to the immediate executor. If no
+        immediate executor is specified, this is equivalent
+        to using `net::post`.
 
         @par Per-Operation Cancellation
 
@@ -1756,19 +1778,20 @@ public:
 
         `total` cancellation succeeds if the operation is suspended due to ongoing
         control operations such as a ping/pong.
+
         `terminal` cancellation succeeds when supported by the underlying stream.
 
         `terminal` cancellation leaves the stream in an undefined state,
         so that only closing it is guaranteed to succeed.
     */
     template<
-        BOOST_BEAST_ASYNC_TPARAM1 WriteHandler =
+        BOOST_BEAST_ASYNC_TPARAM1 PingHandler =
             net::default_completion_token_t<executor_type>
     >
-    BOOST_BEAST_ASYNC_RESULT1(WriteHandler)
+    BOOST_BEAST_ASYNC_RESULT1(PingHandler)
     async_ping(
         ping_data const& payload,
-        WriteHandler&& handler =
+        PingHandler&& handler =
             net::default_completion_token_t<
                 executor_type>{});
 
@@ -1864,10 +1887,13 @@ public:
             error_code const& ec     // Result of operation
         );
         @endcode
-        Regardless of whether the asynchronous operation completes
-        immediately or not, the handler will not be invoked from within
-        this function. Invocation of the handler will be performed in a
-        manner equivalent to using `net::post`.
+        If the handler has an associated immediate executor,
+        an immediate completion will be dispatched to it.
+        Otherwise, the handler will not be invoked from within
+        this function. Invocation of the handler will be performed
+        by dispatching to the immediate executor. If no
+        immediate executor is specified, this is equivalent
+        to using `net::post`.
 
         @par Per-Operation Cancellation
 
@@ -1879,19 +1905,20 @@ public:
 
         `total` cancellation succeeds if the operation is suspended due to ongoing
         control operations such as a ping/pong.
+
         `terminal` cancellation succeeds when supported by the underlying stream.
 
         `terminal` cancellation leaves the stream in an undefined state,
         so that only closing it is guaranteed to succeed.
     */
     template<
-        BOOST_BEAST_ASYNC_TPARAM1 WriteHandler =
+        BOOST_BEAST_ASYNC_TPARAM1 PongHandler =
             net::default_completion_token_t<executor_type>
     >
-    BOOST_BEAST_ASYNC_RESULT1(WriteHandler)
+    BOOST_BEAST_ASYNC_RESULT1(PongHandler)
     async_pong(
         ping_data const& payload,
-        WriteHandler&& handler =
+        PongHandler&& handler =
             net::default_completion_token_t<
                 executor_type>{});
 
@@ -2040,10 +2067,13 @@ public:
             std::size_t bytes_written   // Number of bytes appended to buffer
         );
         @endcode
-        Regardless of whether the asynchronous operation completes
-        immediately or not, the handler will not be invoked from within
-        this function. Invocation of the handler will be performed in a
-        manner equivalent to using `net::post`.
+        If the handler has an associated immediate executor,
+        an immediate completion will be dispatched to it.
+        Otherwise, the handler will not be invoked from within
+        this function. Invocation of the handler will be performed
+        by dispatching to the immediate executor. If no
+        immediate executor is specified, this is equivalent
+        to using `net::post`.
 
         @par Per-Operation Cancellation
 
@@ -2055,6 +2085,7 @@ public:
 
         `total` cancellation succeeds if the operation is suspended due to ongoing
         control operations such as a ping/pong.
+
         `terminal` cancellation succeeds when supported by the underlying stream.
 
         `terminal` cancellation leaves the stream in an undefined state,
@@ -2234,10 +2265,13 @@ public:
             std::size_t bytes_written   // Number of bytes appended to buffer
         );
         @endcode
-        Regardless of whether the asynchronous operation completes
-        immediately or not, the handler will not be invoked from within
-        this function. Invocation of the handler will be performed in a
-        manner equivalent to using `net::post`.
+        If the handler has an associated immediate executor,
+        an immediate completion will be dispatched to it.
+        Otherwise, the handler will not be invoked from within
+        this function. Invocation of the handler will be performed
+        by dispatching to the immediate executor. If no
+        immediate executor is specified, this is equivalent
+        to using `net::post`.
 
         @par Per-Operation Cancellation
 
@@ -2249,6 +2283,7 @@ public:
 
         `total` cancellation succeeds if the operation is suspended due to ongoing
         control operations such as a ping/pong.
+
         `terminal` cancellation succeeds when supported by the underlying stream.
 
         `terminal` cancellation leaves the stream in an undefined state,
@@ -2368,6 +2403,7 @@ public:
 
         `total` cancellation succeeds if the operation is suspended due to ongoing
         control operations such as a ping/pong.
+
         `terminal` cancellation succeeds when supported by the underlying stream.
 
         `terminal` cancellation leaves the stream in an undefined state,
@@ -2439,11 +2475,13 @@ public:
             std::size_t bytes_written   // Number of bytes written to the buffers
         );
         @endcode
-        Regardless of whether the asynchronous operation completes
-        immediately or not, the handler will not be invoked from within
-        this function. Invocation of the handler will be performed in a
-        manner equivalent to using `net::post`.
-
+        If the handler has an associated immediate executor,
+        an immediate completion will be dispatched to it.
+        Otherwise, the handler will not be invoked from within
+        this function. Invocation of the handler will be performed
+        by dispatching to the immediate executor. If no
+        immediate executor is specified, this is equivalent
+        to using `net::post`.
 
         @par Per-Operation Cancellation
 
@@ -2455,6 +2493,7 @@ public:
 
         `total` cancellation succeeds if the operation is suspended due to ongoing
         control operations such as a ping/pong.
+
         `terminal` cancellation succeeds when supported by the underlying stream.
 
         `terminal` cancellation leaves the stream in an undefined state,
@@ -2578,10 +2617,13 @@ public:
                                             // this will be less than the buffer_size.
         );
         @endcode
-        Regardless of whether the asynchronous operation completes
-        immediately or not, the handler will not be invoked from within
-        this function. Invocation of the handler will be performed in a
-        manner equivalent to using `net::post`.
+        If the handler has an associated immediate executor,
+        an immediate completion will be dispatched to it.
+        Otherwise, the handler will not be invoked from within
+        this function. Invocation of the handler will be performed
+        by dispatching to the immediate executor. If no
+        immediate executor is specified, this is equivalent
+        to using `net::post`.
 
         @par Per-Operation Cancellation
 
@@ -2593,6 +2635,7 @@ public:
 
         `total` cancellation succeeds if the operation is suspended due to ongoing
         control operations such as a ping/pong.
+
         `terminal` cancellation succeeds when supported by the underlying stream.
 
         `terminal` cancellation leaves the stream in an undefined state,
@@ -2659,6 +2702,10 @@ public:
         the @ref binary (or @ref text) option. The actual payload sent
         may be transformed as per the WebSocket protocol settings.
 
+        This function always writes a complete WebSocket frame (not WebSocket
+        message) upon successful completion, so it is well defined to perform
+        ping, pong, and close operations after this operation completes.
+
         @param fin `true` if this is the last part of the message.
 
         @param buffers The buffers containing the message part to send.
@@ -2696,6 +2743,10 @@ public:
         the @ref binary (or @ref text) option. The actual payload sent
         may be transformed as per the WebSocket protocol settings.
 
+        This function always writes a complete WebSocket frame (not WebSocket
+        message) upon successful completion, so it is well defined to perform
+        ping, pong, and close operations in parallel to this operation.
+
         @param fin `true` if this is the last part of the message.
 
         @param buffers The buffers containing the message part to send.
@@ -2717,10 +2768,13 @@ public:
                                             // this will be less than the buffer_size.
         );
         @endcode
-        Regardless of whether the asynchronous operation completes
-        immediately or not, the handler will not be invoked from within
-        this function. Invocation of the handler will be performed in a
-        manner equivalent to using `net::post`.
+        If the handler has an associated immediate executor,
+        an immediate completion will be dispatched to it.
+        Otherwise, the handler will not be invoked from within
+        this function. Invocation of the handler will be performed
+        by dispatching to the immediate executor. If no
+        immediate executor is specified, this is equivalent
+        to using `net::post`.
 
         @par Per-Operation Cancellation
 
@@ -2732,6 +2786,7 @@ public:
 
         `total` cancellation succeeds if the operation is suspended due to ongoing
         control operations such as a ping/pong.
+
         `terminal` cancellation succeeds when supported by the underlying stream.
 
         `terminal` cancellation leaves the stream in an undefined state,

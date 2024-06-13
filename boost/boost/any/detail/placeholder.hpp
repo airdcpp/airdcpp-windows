@@ -1,4 +1,4 @@
-// Copyright Antony Polukhin, 2021-2023.
+// Copyright Antony Polukhin, 2021-2024.
 //
 // Distributed under the Boost Software License, Version 1.0. (See
 // accompanying file LICENSE_1_0.txt or copy at
@@ -22,7 +22,7 @@ namespace detail {
 class BOOST_SYMBOL_VISIBLE placeholder {
 public:
     virtual ~placeholder() {}
-    virtual const boost::typeindex::type_info& type() const BOOST_NOEXCEPT = 0;
+    virtual const boost::typeindex::type_info& type() const noexcept = 0;
 };
 
 } // namespace detail

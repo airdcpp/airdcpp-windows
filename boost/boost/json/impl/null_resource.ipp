@@ -24,7 +24,7 @@ namespace detail {
     `std::bad_alloc` in calls to `allocate`.
 */
 class null_resource final
-    : public memory_resource
+    : public container::pmr::memory_resource
 {
 public:
     /// Copy constructor (deleted)
@@ -34,18 +34,6 @@ public:
     /// Copy assignment (deleted)
     null_resource& operator=(
         null_resource const&) = delete;
-
-    /** Destructor
-
-        This destroys the resource.
-
-        @par Complexity
-        Constant.
-
-        @part Exception Safety
-        No-throw guarantee.
-    */
-    ~null_resource() noexcept = default;
 
     /** Constructor
 
@@ -89,7 +77,7 @@ protected:
 
 } // detail
 
-memory_resource*
+container::pmr::memory_resource*
 get_null_resource() noexcept
 {
     static detail::null_resource mr;

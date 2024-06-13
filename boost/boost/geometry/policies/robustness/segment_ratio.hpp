@@ -21,6 +21,8 @@
 #include <boost/geometry/core/assert.hpp>
 #include <boost/geometry/core/coordinate_promotion.hpp>
 #include <boost/geometry/util/math.hpp>
+#include <boost/geometry/util/numeric_cast.hpp>
+
 
 namespace boost { namespace geometry
 {
@@ -153,7 +155,7 @@ public:
         , m_approximation(0)
     {}
 
-    inline segment_ratio(const Type& numerator, const Type& denominator)
+    inline segment_ratio(Type const& numerator, Type const& denominator)
         : m_numerator(numerator)
         , m_denominator(denominator)
     {
@@ -207,7 +209,7 @@ public:
     inline Type const& numerator() const { return m_numerator; }
     inline Type const& denominator() const { return m_denominator; }
 
-    inline void assign(const Type& numerator, const Type& denominator)
+    inline void assign(Type const& numerator, Type const& denominator)
     {
         m_numerator = numerator;
         m_denominator = denominator;
@@ -227,8 +229,8 @@ public:
         m_approximation =
             m_denominator == zero_instance() ? floating_point_type{0}
             : (
-                boost::numeric_cast<floating_point_type>(m_numerator) * scale()
-                / boost::numeric_cast<floating_point_type>(m_denominator)
+                util::numeric_cast<floating_point_type>(m_numerator) * scale()
+                / util::numeric_cast<floating_point_type>(m_denominator)
             );
     }
 

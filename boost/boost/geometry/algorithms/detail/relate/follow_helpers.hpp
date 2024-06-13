@@ -18,6 +18,7 @@
 #include <vector>
 
 #include <boost/core/ignore_unused.hpp>
+#include <boost/range/size.hpp>
 
 #include <boost/geometry/algorithms/detail/overlay/get_turn_info_helpers.hpp>
 #include <boost/geometry/algorithms/detail/overlay/overlay_type.hpp>
@@ -29,6 +30,7 @@
 
 #include <boost/geometry/util/condition.hpp>
 #include <boost/geometry/util/range.hpp>
+#include <boost/geometry/util/type_traits.hpp>
 
 #include <type_traits>
 
@@ -41,10 +43,12 @@ namespace detail { namespace relate {
 // NOTE: This iterates through single geometries for which turns were not generated.
 //       It doesn't mean that the geometry is disjoint, only that no turns were detected.
 
-template <std::size_t OpId,
-          typename Geometry,
-          typename Tag = typename geometry::tag<Geometry>::type,
-          bool IsMulti = std::is_base_of<multi_tag, Tag>::value
+template
+<
+    std::size_t OpId,
+    typename Geometry,
+    typename Tag = typename geometry::tag<Geometry>::type,
+    bool IsMulti = util::is_multi<Geometry>::value
 >
 struct for_each_disjoint_geometry_if
     : public not_implemented<Tag>
@@ -98,7 +102,7 @@ struct for_each_disjoint_geometry_if<OpId, Geometry, Tag, true>
     {
         BOOST_GEOMETRY_ASSERT(first != last);
 
-        const std::size_t count = boost::size(geometry);
+        std::size_t const count = boost::size(geometry);
 
         // O(I)
         // gather info about turns generated for contained geometries
@@ -229,8 +233,8 @@ private:
 template <typename TurnInfo, std::size_t OpId>
 class exit_watcher
 {
-    static const std::size_t op_id = OpId;
-    static const std::size_t other_op_id = (OpId + 1) % 2;
+    static std::size_t const op_id = OpId;
+    static std::size_t const other_op_id = (OpId + 1) % 2;
 
     typedef typename TurnInfo::point_type point_type;
     typedef detail::relate::point_info<point_type> point_info;

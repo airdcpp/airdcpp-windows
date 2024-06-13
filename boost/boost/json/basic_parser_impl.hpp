@@ -17,6 +17,8 @@
 #include <boost/json/detail/buffer.hpp>
 #include <boost/json/detail/charconv/from_chars.hpp>
 #include <boost/json/detail/sse2.hpp>
+#include <boost/mp11/algorithm.hpp>
+#include <boost/mp11/integral.hpp>
 #include <cmath>
 #include <limits>
 #include <cstring>
@@ -785,7 +787,15 @@ resume_value(const char* p,
         p = parse_comment(p, std::false_type(), std::false_type());
         if(BOOST_JSON_UNLIKELY(p == sentinel()))
             return maybe_suspend(p, state::val2);
+        if(BOOST_JSON_UNLIKELY( p == end_ ))
+            return maybe_suspend(p, state::val3);
         BOOST_ASSERT(st_.empty());
+        return parse_value(p, std::true_type(), std::true_type(), allow_trailing, allow_bad_utf8);
+    }
+
+    case state::val3:
+    {
+        st_.pop(st);
         return parse_value(p, std::true_type(), std::true_type(), allow_trailing, allow_bad_utf8);
     }
     }
@@ -2810,7 +2820,7 @@ reset() noexcept
 template<class Handler>
 void
 basic_parser<Handler>::
-fail(error_code ec) noexcept
+fail(system::error_code ec) noexcept
 {
     if(! ec)
     {
@@ -2834,7 +2844,7 @@ write_some(
     bool more,
     char const* data,
     std::size_t size,
-    error_code& ec)
+    system::error_code& ec)
 {
     // see if we exited via exception
     // on the last call to write_some
@@ -2921,7 +2931,7 @@ write_some(
     std::size_t size,
     std::error_code& ec)
 {
-    error_code jec;
+    system::error_code jec;
     std::size_t const result = write_some(more, data, size, jec);
     ec = jec;
     return result;

@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2023 Antony Polukhin
+// Copyright (c) 2016-2024 Antony Polukhin
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -127,6 +127,9 @@ struct tuple: tuple_base<
         detail::index_sequence_for<Values...>,
         Values...
     >::tuple_base;
+
+    constexpr static std::size_t size() noexcept { return sizeof...(Values); }
+    constexpr static bool empty() noexcept { return size() == 0; }
 };
 
 
@@ -165,6 +168,10 @@ using tuple_element = std::remove_reference< decltype(
         ::boost::pfr::detail::sequence_tuple::get<I>( std::declval<T>() )
     ) >;
 
+template <class... Args>
+constexpr auto make_sequence_tuple(Args... args) noexcept {
+    return ::boost::pfr::detail::sequence_tuple::tuple<Args...>{ args... };
+}
 
 }}}} // namespace boost::pfr::detail::sequence_tuple
 

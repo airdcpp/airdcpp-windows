@@ -22,6 +22,7 @@
 #include <boost/asio/error.hpp>
 #include <boost/asio/compose.hpp>
 #include <boost/asio/coroutine.hpp>
+#include <boost/asio/prepend.hpp>
 
 namespace boost {
 namespace beast {
@@ -244,9 +245,12 @@ public:
                         __FILE__, __LINE__,
                         "http::async_read_some"));
 
-                    net::post(
-                        s_.get_executor(),
-                        beast::bind_front_handler(std::move(self), ec));
+
+                    const auto ex =
+                        asio::get_associated_immediate_executor(
+                            self, s_.get_executor());
+
+                    net::dispatch(ex, net::prepend(std::move(self), ec));
                 }
             }
             self.complete(ec, bytes_transferred_);
@@ -285,7 +289,11 @@ public:
                         __FILE__, __LINE__,
                         "http::async_read"));
 
-                    net::post(s_.get_executor(), std::move(self));
+                    const auto ex =
+                        asio::get_associated_immediate_executor(
+                            self, s_.get_executor());
+
+                    net::dispatch(ex, std::move(self));
                 }
             }
             else

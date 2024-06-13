@@ -111,15 +111,15 @@ class value
     }
 
 public:
-    /** The type of _Allocator_ returned by @ref get_allocator
+    /** Associated [Allocator](https://en.cppreference.com/w/cpp/named_req/Allocator)
 
-        This type is a @ref polymorphic_allocator.
+        This type is a `boost::container::pmr::polymorphic_allocator<value>`.
     */
 #ifdef BOOST_JSON_DOCS
-    // VFALCO doc toolchain renders this incorrectly
     using allocator_type = __see_below__;
 #else
-    using allocator_type = polymorphic_allocator<value>;
+    // VFALCO doc toolchain renders this incorrectly
+    using allocator_type = container::pmr::polymorphic_allocator<value>;
 #endif
 
     /** Destructor.
@@ -157,8 +157,8 @@ public:
 
     /** Constructor.
 
-        The constructed value is null,
-        using the specified @ref memory_resource.
+        The constructed value is null, using the
+        specified `boost::container::pmr::memory_resource`.
 
         @par Complexity
         Constant.
@@ -166,9 +166,9 @@ public:
         @par Exception Safety
         No-throw guarantee.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     explicit
     value(storage_ptr sp) noexcept
@@ -239,9 +239,9 @@ public:
 
         @param other The value to copy.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     BOOST_JSON_DECL
     value(
@@ -297,9 +297,9 @@ public:
 
         @param other The value to move.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     BOOST_JSON_DECL
     value(
@@ -322,9 +322,9 @@ public:
         @par Exception Safety
         No-throw guarantee.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     value(
         std::nullptr_t,
@@ -346,9 +346,9 @@ public:
 
         @param b The initial value.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
 #ifdef BOOST_JSON_DOCS
     value(
@@ -377,9 +377,9 @@ public:
 
         @param i The initial value.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     value(
         signed char i,
@@ -399,9 +399,9 @@ public:
 
         @param i The initial value.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     value(
         short i,
@@ -421,9 +421,9 @@ public:
 
         @param i The initial value.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     value(
         int i,
@@ -443,9 +443,9 @@ public:
 
         @param i The initial value.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     value(
         long i,
@@ -465,9 +465,9 @@ public:
 
         @param i The initial value.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     value(
         long long i,
@@ -487,9 +487,9 @@ public:
 
         @param u The initial value.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     value(
         unsigned char u,
@@ -509,9 +509,9 @@ public:
 
         @param u The initial value.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     value(
         unsigned short u,
@@ -531,9 +531,9 @@ public:
 
         @param u The initial value.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     value(
         unsigned int u,
@@ -553,9 +553,9 @@ public:
 
         @param u The initial value.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     value(
         unsigned long u,
@@ -575,9 +575,9 @@ public:
 
         @param u The initial value.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     value(
         unsigned long long u,
@@ -597,9 +597,9 @@ public:
 
         @param d The initial value.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     value(
         double d,
@@ -622,9 +622,9 @@ public:
 
         @param s The string view to construct with.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     value(
         string_view s,
@@ -649,9 +649,9 @@ public:
         @param s The null-terminated string to construct
         with.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     value(
         char const* s,
@@ -704,9 +704,9 @@ public:
 
         @param other The string to construct with.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     value(
         string const& other,
@@ -731,9 +731,9 @@ public:
 
         @param other The string to construct with.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     value(
         string&& other,
@@ -765,9 +765,9 @@ public:
         @par Exception Safety
         No-throw guarantee.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
 
         @see @ref string_kind
     */
@@ -821,9 +821,9 @@ public:
 
         @param other The array to construct with.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     value(
         array const& other,
@@ -848,9 +848,9 @@ public:
 
         @param other The array to construct with.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     value(
         array&& other,
@@ -882,9 +882,9 @@ public:
         @par Exception Safety
         No-throw guarantee.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
 
         @see @ref array_kind
     */
@@ -938,9 +938,9 @@ public:
 
         @param other The object to construct with.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     value(
         object const& other,
@@ -965,9 +965,9 @@ public:
 
         @param other The object to construct with.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
     */
     value(
         object&& other,
@@ -999,9 +999,9 @@ public:
         @par Exception Safety
         No-throw guarantee.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
 
         @see @ref object_kind
     */
@@ -1014,11 +1014,16 @@ public:
 
     /** Construct from an initializer-list
 
-        If the initializer list consists of key/value
-        pairs, an @ref object is created. Otherwise
-        an @ref array is created. The contents of the
-        initializer list are copied to the newly constructed
-        value using the specified memory resource.
+        @li If the initializer list consists of key/value
+        pairs, an @ref object is created; otherwise,
+
+        @li if the size of the initializer list is exactly 1, the object is
+        constructed directly from that sole element; otherwise,
+
+        @li an @ref array is created.
+
+        The contents of the initializer list are copied to the newly
+        constructed value using the specified memory resource.
 
         @par Complexity
         Linear in `init.size()`.
@@ -1029,9 +1034,23 @@ public:
 
         @param init The initializer list to construct from.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The container will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The container will acquire shared ownership of the memory
+        resource.
+
+        @par Note
+        The previous behavior of this constructor was to always
+        construct either an @ref object or an @ref array. In practice though,
+        several C++ implementations did not treat `value{x}` as a constructor
+        from initializer list. This effectively resulted in different behavior
+        on different implementations. <br>
+
+        If you need the legacy behavior define macro
+        `BOOST_JSON_LEGACY_INIT_LIST_BEHAVIOR` when you are building the
+        library. The macro and the functionality will be deprecated in the
+        future and then removed, so we urge you to change your code for the new
+        behavior as soon as possible. The simplest way to create an @ref array
+        with 1 element using an initializer list is via `array{x}`.
     */
     BOOST_JSON_DECL
     value(
@@ -1573,10 +1592,9 @@ public:
 
     /** Return a reference to an @ref object, changing the kind and replacing the contents.
 
-        The contents are replaced with an empty @ref object
-        using the current @ref memory_resource. All
-        previously obtained iterators and references
-        obtained beforehand are invalidated.
+        The contents are replaced with an empty @ref object using the current
+        `boost::container::pmr::memory_resource`. All previously obtained
+        iterators and references obtained beforehand are invalidated.
 
         @par Complexity
         Linear in the size of `*this`.
@@ -1590,9 +1608,9 @@ public:
 
     /** Swap the given values.
 
-        Exchanges the contents of this value with another
-        value. Ownership of the respective @ref memory_resource
-        objects is not transferred:
+        Exchanges the contents of this value with another value. Ownership of
+        the respective `boost::container::pmr::memory_resource` objects is not
+        transferred:
 
         @li If `*other.storage() == *this->storage()`,
         ownership of the underlying memory is swapped in
@@ -1621,9 +1639,9 @@ public:
 
     /** Swap the given values.
 
-        Exchanges the contents of value `lhs` with
-        another value `rhs`. Ownership of the respective
-        @ref memory_resource objects is not transferred.
+        Exchanges the contents of value `lhs` with another value `rhs`.
+        Ownership of the respective `boost::container::pmr::memory_resource`
+        objects is not transferred.
 
         @li If `*lhs.storage() == *rhs.storage()`,
         ownership of the underlying memory is swapped in
@@ -2367,7 +2385,7 @@ public:
         ! std::is_same<T, bool>::value,
             T>::type
 #endif
-    to_number(error_code& ec) const noexcept
+    to_number(system::error_code& ec) const noexcept
     {
         error e;
         auto result = to_number<T>(e);
@@ -2386,7 +2404,7 @@ public:
 #endif
     to_number(std::error_code& ec) const noexcept
     {
-        error_code jec;
+        system::error_code jec;
         auto result = to_number<T>(jec);
         ec = jec;
         return result;
@@ -2427,7 +2445,7 @@ public:
 
         @return The converted number.
 
-        @throw system_error on error.
+        @throw `boost::system::system_error` Thrown on error.
     */
     template<class T>
 #ifdef BOOST_JSON_DOCS
@@ -2456,10 +2474,10 @@ public:
     //
     //------------------------------------------------------
 
-    /** Return the memory resource associated with the value.
+    /** Return the associated memory resource.
 
-        This returns a pointer to the memory resource
-        that was used to construct the value.
+        This function returns the `boost::container::pmr::memory_resource` used
+        by the container.
 
         @par Complexity
         Constant.
@@ -2473,11 +2491,10 @@ public:
         return sp_;
     }
 
-    /** Return the associated @ref memory_resource
+    /** Return the associated allocator.
 
-        This function returns an instance of
-        @ref polymorphic_allocator constructed from the
-        associated @ref memory_resource.
+        This function returns an instance of @ref allocator_type constructed
+        from the associated `boost::container::pmr::memory_resource`.
 
         @par Complexity
         Constant.
@@ -2505,7 +2522,7 @@ public:
         @par Exception Safety
         Strong guarantee.
 
-        @throw system_error `! this->is_object()`
+        @throw `boost::system::system_error` `! this->is_object()`.
     */
     /* @{ */
     object&
@@ -2543,7 +2560,7 @@ public:
         @par Exception Safety
         Strong guarantee.
 
-        @throw system_error `! this->is_array()`
+        @throw `boost::system::system_error` `! this->is_array()`.
     */
     /* @{ */
     array&
@@ -2581,7 +2598,7 @@ public:
         @par Exception Safety
         Strong guarantee.
 
-        @throw system_error `! this->is_string()`
+        @throw `boost::system::system_error` `! this->is_string()`.
     */
     /* @{ */
     string&
@@ -2619,7 +2636,15 @@ public:
         @par Exception Safety
         Strong guarantee.
 
-        @throw system_error `! this->is_int64()`
+        @throw `boost::system::system_error` `! this->is_int64()`.
+
+        @par Note
+        This function is intended for direct access to the underlying object,
+        __if__ it has the type `std::int64_t`. It does not convert the
+        underlying object to type `std::int64_t` even if a lossless conversion
+        is possible. If you are not sure which kind your `value` has, and you
+        only care about getting a `std::int64_t` number, consider using
+        @ref to_number instead.
     */
     std::int64_t&
     as_int64()
@@ -2642,7 +2667,15 @@ public:
         @par Exception Safety
         Strong guarantee.
 
-        @throw system_error `! this->is_int64()`
+        @throw `boost::system::system_error` `! this->is_int64()`.
+
+        @par Note
+        This function is the const-qualified overload of @ref as_int64, which
+        is intended for direct access to the underlying object, __if__ it has
+        the type `std::int64_t`. It does not convert the underlying object to
+        type `std::int64_t` even if a lossless conversion is possible. If you
+        are not sure which kind your `value` has, and you only care about
+        getting a `std::int64_t` number, consider using @ref to_number instead.
     */
     std::int64_t
     as_int64() const
@@ -2665,7 +2698,15 @@ public:
         @par Exception Safety
         Strong guarantee.
 
-        @throw system_error `! this->is_uint64()`
+        @throw `boost::system::system_error` `! this->is_uint64()`.
+
+        @par Note
+        This function is intended for direct access to the underlying object,
+        __if__ it has the type `std::uint64_t`. It does not convert the
+        underlying object to type `std::uint64_t` even if a lossless conversion
+        is possible. If you are not sure which kind your `value` has, and you
+        only care about getting a `std::uint64_t` number, consider using
+        @ref to_number instead.
     */
     std::uint64_t&
     as_uint64()
@@ -2688,7 +2729,16 @@ public:
         @par Exception Safety
         Strong guarantee.
 
-        @throw system_error `! this->is_uint64()`
+        @throw `boost::system::system_error` `! this->is_uint64()`.
+
+        @par Note
+        This function is the const-qualified overload of @ref as_uint64, which
+        is intended for direct access to the underlying object, __if__ it has
+        the type `std::uint64_t`. It does not convert the underlying object to
+        type `std::uint64_t` even if a lossless conversion is possible. If you
+        are not sure which kind your `value` has, and you only care about
+        getting a `std::uint64_t` number, consider using
+        @ref to_number instead.
     */
     std::uint64_t
     as_uint64() const
@@ -2711,7 +2761,14 @@ public:
         @par Exception Safety
         Strong guarantee.
 
-        @throw system_error `! this->is_double()`
+        @throw `boost::system::system_error` `! this->is_double()`.
+
+        @par Note
+        This function is intended for direct access to the underlying object,
+        __if__ it has the type `double`. It does not convert the underlying
+        object to type `double` even if a lossless conversion is possible. If
+        you are not sure which kind your `value` has, and you only care about
+        getting a `double` number, consider using @ref to_number instead.
     */
     double&
     as_double()
@@ -2734,7 +2791,15 @@ public:
         @par Exception Safety
         Strong guarantee.
 
-        @throw system_error `! this->is_double()`
+        @throw `boost::system::system_error` `! this->is_double()`.
+
+        @par Note
+        This function is the const-qualified overload of @ref as_double, which
+        is intended for direct access to the underlying object, __if__ it has
+        the type `double`. It does not convert the underlying object to type
+        `double` even if a lossless conversion is possible. If you are not sure
+        which kind your `value` has, and you only care about getting a `double`
+        number, consider using @ref to_number instead.
     */
     double
     as_double() const
@@ -2757,7 +2822,7 @@ public:
         @par Exception Safety
         Strong guarantee.
 
-        @throw system_error `! this->is_bool()`
+        @throw `boost::system::system_error` `! this->is_bool()`.
     */
     bool&
     as_bool()
@@ -2780,7 +2845,7 @@ public:
         @par Exception Safety
         Strong guarantee.
 
-        @throw system_error `! this->is_bool()`
+        @throw `boost::system::system_error` `! this->is_bool()`.
     */
     bool
     as_bool() const
@@ -3194,7 +3259,7 @@ public:
 
         @return reference to the element identified by `ptr`.
 
-        @throw system_error if an error occurs.
+        @throw `boost::system::system_error` if an error occurs.
 
         @see
         <a href="https://datatracker.ietf.org/doc/html/rfc6901">
@@ -3238,11 +3303,11 @@ public:
 /** @{ */
     BOOST_JSON_DECL
     value const*
-    find_pointer(string_view ptr, error_code& ec) const noexcept;
+    find_pointer(string_view ptr, system::error_code& ec) const noexcept;
 
     BOOST_JSON_DECL
     value*
-    find_pointer(string_view ptr, error_code& ec) noexcept;
+    find_pointer(string_view ptr, system::error_code& ec) noexcept;
 
     BOOST_JSON_DECL
     value const*
@@ -3385,7 +3450,7 @@ public:
     set_at_pointer(
         string_view sv,
         value_ref ref,
-        error_code& ec,
+        system::error_code& ec,
         set_pointer_options const& opts = {} );
 
     BOOST_JSON_DECL
@@ -3773,9 +3838,8 @@ public:
 
         @param other The key/value pair to copy.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The element will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The element will acquire shared ownership of the memory resource.
     */
     BOOST_JSON_DECL
     key_value_pair(
@@ -3892,9 +3956,8 @@ public:
         @param p A `std::pair` with the key
             string and @ref value to construct with.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The element will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The element will acquire shared ownership of the memory resource.
     */
     explicit
     key_value_pair(
@@ -3922,9 +3985,8 @@ public:
         @param p A `std::pair` with the key
             string and @ref value to construct with.
 
-        @param sp A pointer to the @ref memory_resource
-        to use. The element will acquire shared
-        ownership of the memory resource.
+        @param sp A pointer to the `boost::container::pmr::memory_resource` to
+        use. The element will acquire shared ownership of the memory resource.
     */
     explicit
     key_value_pair(

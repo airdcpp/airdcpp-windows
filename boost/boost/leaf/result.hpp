@@ -1,18 +1,24 @@
 #ifndef BOOST_LEAF_RESULT_HPP_INCLUDED
 #define BOOST_LEAF_RESULT_HPP_INCLUDED
 
-// Copyright 2018-2022 Emil Dotchevski and Reverge Studios, Inc.
+// Copyright 2018-2023 Emil Dotchevski and Reverge Studios, Inc.
 
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include <boost/leaf/config.hpp>
+#include <boost/leaf/detail/print.hpp>
+#include <boost/leaf/detail/capture_list.hpp>
 #include <boost/leaf/exception.hpp>
 
 #include <climits>
 #include <functional>
 
 namespace boost { namespace leaf {
+
+namespace leaf_detail { class dynamic_allocator; }
+
+////////////////////////////////////////
 
 class bad_result:
     public std::exception,
@@ -36,23 +42,57 @@ public:
 
 namespace leaf_detail
 {
+    template <class T, bool Printable = is_printable<T>::value>
+    struct result_value_printer;
+
+    template <class T>
+    struct result_value_printer<T, true>
+    {
+        template <class CharT, class Traits>
+        static void print( std::basic_ostream<CharT, Traits> & s, T const & x )
+        {
+            (void) (s << x);
+        }
+    };
+
+    template <class T>
+    struct result_value_printer<T, false>
+    {
+        template <class CharT, class Traits>
+        static void print( std::basic_ostream<CharT, Traits> & s, T const & )
+        {
+            (void) (s << "{not printable}");
+        }
+    };
+
+    template <class CharT, class Traits, class T>
+    void print_result_value( std::basic_ostream<CharT, Traits> & s, T const & x )
+    {
+        result_value_printer<T>::print(s, x);
+    }
+}
+
+////////////////////////////////////////
+
+namespace leaf_detail
+{
     template <class T>
     struct stored
     {
         using type = T;
-        using value_type = T;
-        using value_type_const = T const;
+        using value_no_ref = T;
+        using value_no_ref_const = T const;
         using value_cref = T const &;
         using value_ref = T &;
         using value_rv_cref = T const &&;
         using value_rv_ref = T &&;
 
-        static value_type_const * cptr( type const & v ) noexcept
+        static value_no_ref_const * cptr( type const & v ) noexcept
         {
             return &v;
         }
 
-        static value_type * ptr( type & v ) noexcept
+        static value_no_ref * ptr( type & v ) noexcept
         {
             return &v;
         }
@@ -62,19 +102,19 @@ namespace leaf_detail
     struct stored<T &>
     {
         using type = std::reference_wrapper<T>;
-        using value_type_const = T;
-        using value_type = T;
+        using value_no_ref = T;
+        using value_no_ref_const = T;
         using value_ref = T &;
         using value_cref = T &;
         using value_rv_ref = T &;
         using value_rv_cref = T &;
 
-        static value_type_const * cptr( type const & v ) noexcept
+        static value_no_ref_const * cptr( type const & v ) noexcept
         {
             return &v.get();
         }
 
-        static value_type * ptr( type const & v ) noexcept
+        static value_no_ref * ptr( type const & v ) noexcept
         {
             return &v.get();
         }
@@ -82,37 +122,41 @@ namespace leaf_detail
 
     class result_discriminant
     {
-        unsigned state_;
+        int state_;
 
     public:
 
         enum kind_t
         {
-            no_error = 0,
+            err_id_zero = 0,
             err_id = 1,
-            ctx_ptr = 2,
+            err_id_capture_list = 2,
             val = 3
         };
 
         explicit result_discriminant( error_id id ) noexcept:
-            state_(unsigned(id.value()))
+            state_(id.value())
         {
-            BOOST_LEAF_ASSERT(state_==0 || (state_&3)==1);
+            BOOST_LEAF_ASSERT(state_ == 0 || (state_&3) == 1);
+            BOOST_LEAF_ASSERT(kind()==err_id_zero || kind()==err_id);
         }
+
+#if BOOST_LEAF_CFG_CAPTURE
+        explicit result_discriminant( int err_id, leaf_detail::capture_list const & ) noexcept:
+            state_((err_id&~3) | 2)
+        {
+            BOOST_LEAF_ASSERT((err_id&3) == 1);
+            BOOST_LEAF_ASSERT(kind() == err_id_capture_list);
+        }
+#endif
 
         struct kind_val { };
         explicit result_discriminant( kind_val ) noexcept:
             state_(val)
         {
+            BOOST_LEAF_ASSERT((state_&3) == 3);
+            BOOST_LEAF_ASSERT(kind()==val);
         }
-
-#if BOOST_LEAF_CFG_CAPTURE
-        struct kind_ctx_ptr { };
-        explicit result_discriminant( kind_ctx_ptr ) noexcept:
-            state_(ctx_ptr)
-        {
-        }
-#endif
 
         kind_t kind() const noexcept
         {
@@ -121,8 +165,8 @@ namespace leaf_detail
 
         error_id get_error_id() const noexcept
         {
-            BOOST_LEAF_ASSERT(kind()==no_error || kind()==err_id);
-            return make_error_id(int(state_));
+            BOOST_LEAF_ASSERT(kind()==err_id_zero || kind()==err_id || kind()==err_id_capture_list);
+            return make_error_id(int((state_&~3)|1));
         }
     };
 }
@@ -130,12 +174,35 @@ namespace leaf_detail
 ////////////////////////////////////////
 
 template <class T>
-class result
+class BOOST_LEAF_SYMBOL_VISIBLE result
 {
     template <class U>
     friend class result;
 
+    friend class leaf_detail::dynamic_allocator;
+
+#if BOOST_LEAF_CFG_CAPTURE
+    using capture_list = leaf_detail::capture_list;
+#endif
+
     using result_discriminant = leaf_detail::result_discriminant;
+    using stored_type = typename leaf_detail::stored<T>::type;
+    using value_no_ref = typename leaf_detail::stored<T>::value_no_ref;
+    using value_no_ref_const = typename leaf_detail::stored<T>::value_no_ref_const;
+    using value_ref = typename leaf_detail::stored<T>::value_ref;
+    using value_cref = typename leaf_detail::stored<T>::value_cref;
+    using value_rv_ref = typename leaf_detail::stored<T>::value_rv_ref;
+    using value_rv_cref = typename leaf_detail::stored<T>::value_rv_cref;
+
+    union
+    {
+        stored_type stored_;
+#if BOOST_LEAF_CFG_CAPTURE
+        mutable capture_list cap_;
+#endif
+    };
+
+    result_discriminant what_;
 
     struct error_result
     {
@@ -153,77 +220,46 @@ class result
         template <class U>
         operator result<U>() noexcept
         {
-            switch(r_.what_.kind())
+            result_discriminant const what = r_.what_;
+            switch( what.kind() )
             {
-            case result_discriminant::val:
-                return result<U>(error_id());
-            case result_discriminant::ctx_ptr:
+                case result_discriminant::val:
+                    return result<U>(error_id());
+                case result_discriminant::err_id_capture_list:
 #if BOOST_LEAF_CFG_CAPTURE
-                return result<U>(std::move(r_.ctx_));
+                    return result<U>(what.get_error_id().value(), std::move(r_.cap_));
 #else
-                BOOST_LEAF_ASSERT(0); // Possible ODR violation.
+                    BOOST_LEAF_ASSERT(0); // Possible ODR violation.
 #endif
-            default:
-                return result<U>(std::move(r_.what_));
+                case result_discriminant::err_id_zero:
+                case result_discriminant::err_id:
+                    return result<U>(what.get_error_id());
             }
         }
 
         operator error_id() noexcept
         {
-            switch(r_.what_.kind())
-            {
-            case result_discriminant::val:
-                return error_id();
-            case result_discriminant::ctx_ptr:
-#if BOOST_LEAF_CFG_CAPTURE
-                {
-                    error_id captured_id = r_.ctx_->propagate_captured_errors();
-                    tls::write_uint<leaf_detail::tls_tag_id_factory_current_id>(unsigned(captured_id.value()));
-                    return captured_id;
-                }
-#else
-                BOOST_LEAF_ASSERT(0); // Possible ODR violation.
-#endif
-            default:
-                return r_.what_.get_error_id();
-            }
+            result_discriminant const what = r_.what_;
+            return what.kind() == result_discriminant::val? error_id() : what.get_error_id();
         }
     };
-
-    using stored_type = typename leaf_detail::stored<T>::type;
-    using value_type = typename leaf_detail::stored<T>::value_type;
-    using value_type_const = typename leaf_detail::stored<T>::value_type_const;
-    using value_ref = typename leaf_detail::stored<T>::value_ref;
-    using value_cref = typename leaf_detail::stored<T>::value_cref;
-    using value_rv_ref = typename leaf_detail::stored<T>::value_rv_ref;
-    using value_rv_cref = typename leaf_detail::stored<T>::value_rv_cref;
-
-    union
-    {
-        stored_type stored_;
-#if BOOST_LEAF_CFG_CAPTURE
-        context_ptr ctx_;
-#endif
-    };
-
-    result_discriminant what_;
 
     void destroy() const noexcept
     {
         switch(this->what_.kind())
         {
-        case result_discriminant::val:
-            stored_.~stored_type();
+        case result_discriminant::err_id_zero:
+        case result_discriminant::err_id:
             break;
-        case result_discriminant::ctx_ptr:
+        case result_discriminant::err_id_capture_list:
 #if BOOST_LEAF_CFG_CAPTURE
-            BOOST_LEAF_ASSERT(!ctx_ || ctx_->captured_id_);
-            ctx_.~context_ptr();
+            cap_.~capture_list();
 #else
             BOOST_LEAF_ASSERT(0); // Possible ODR violation.
 #endif
-        default:
             break;
+        case result_discriminant::val:
+            stored_.~stored_type();
         }
     }
 
@@ -233,37 +269,26 @@ class result
         auto x_what = x.what_;
         switch(x_what.kind())
         {
-        case result_discriminant::val:
-            (void) new(&stored_) stored_type(std::move(x.stored_));
+        case result_discriminant::err_id_zero:
+        case result_discriminant::err_id:
             break;
-        case result_discriminant::ctx_ptr:
+        case result_discriminant::err_id_capture_list:
 #if BOOST_LEAF_CFG_CAPTURE
-            BOOST_LEAF_ASSERT(!x.ctx_ || x.ctx_->captured_id_);
-            (void) new(&ctx_) context_ptr(std::move(x.ctx_));
+            (void) new(&cap_) capture_list(std::move(x.cap_));
 #else
             BOOST_LEAF_ASSERT(0); // Possible ODR violation.
 #endif
-        default:
             break;
+        case result_discriminant::val:
+            (void) new(&stored_) stored_type(std::move(x.stored_));
         }
         return x_what;
     }
 
-    result( result_discriminant && what ) noexcept:
-        what_(std::move(what))
-    {
-        BOOST_LEAF_ASSERT(what_.kind()==result_discriminant::err_id || what_.kind()==result_discriminant::no_error);
-    }
-
     error_id get_error_id() const noexcept
     {
-        BOOST_LEAF_ASSERT(what_.kind()!=result_discriminant::val);
-#if BOOST_LEAF_CFG_CAPTURE
-        return what_.kind()==result_discriminant::ctx_ptr ? ctx_->captured_id_ : what_.get_error_id();
-#else
-        BOOST_LEAF_ASSERT(what_.kind()!=result_discriminant::ctx_ptr); // Possible ODR violation.
+        BOOST_LEAF_ASSERT(what_.kind() != result_discriminant::val);
         return what_.get_error_id();
-#endif
     }
 
     stored_type const * get() const noexcept
@@ -278,13 +303,44 @@ class result
 
 protected:
 
+#if BOOST_LEAF_CFG_CAPTURE
+    result( int err_id, leaf_detail::capture_list && cap ) noexcept:
+        cap_(std::move(cap)),
+        what_(err_id, cap)
+    {
+    }
+#endif
+
     void enforce_value_state() const
     {
-        if( !has_value() )
+        switch( what_.kind() )
+        {
+        case result_discriminant::err_id_capture_list:
+#if BOOST_LEAF_CFG_CAPTURE
+            cap_.unload(what_.get_error_id().value());
+#else
+            BOOST_LEAF_ASSERT(0); // Possible ODR violation.
+#endif
+        case result_discriminant::err_id_zero:
+        case result_discriminant::err_id:
             ::boost::leaf::leaf_detail::throw_exception_impl(bad_result(get_error_id()));
+        case result_discriminant::val:
+            break;
+        }
+    }
+
+    template <class U>
+    void move_assign( result<U> && x ) noexcept
+    {
+        destroy();
+        what_ = move_from(std::move(x));
     }
 
 public:
+
+    using value_type = T;
+
+    // NOTE: Copy constructor implicitly deleted.
 
     result( result && x ) noexcept:
         what_(move_from(std::move(x)))
@@ -303,14 +359,21 @@ public:
     {
     }
 
-    result( value_type && v ) noexcept:
-        stored_(std::forward<value_type>(v)),
+    result( value_no_ref && v ) noexcept:
+        stored_(std::forward<value_no_ref>(v)),
         what_(result_discriminant::kind_val{})
     {
     }
 
-    result( value_type const & v ):
+    result( value_no_ref const & v ):
         stored_(v),
+        what_(result_discriminant::kind_val{})
+    {
+    }
+
+    template<class... A, class = typename std::enable_if<std::is_constructible<T, A...>::value && sizeof...(A) >= 2>::type>
+    result( A && ... a ) noexcept:
+        stored_(std::forward<A>(a)...),
         what_(result_discriminant::kind_val{})
     {
     }
@@ -327,10 +390,10 @@ public:
     // On the other hand, the workaround exposes a rather severe bug in
     //__GNUC__ under 11: https://github.com/boostorg/leaf/issues/25.
 
-    // SFINAE: T can be initialized with a U, e.g. result<std::string>("literal").
-    template <class U, class = typename std::enable_if<std::is_convertible<U, T>::value>::type>
-    result( U && u ):
-        stored_(std::forward<U>(u)),
+    // SFINAE: T can be initialized with an A, e.g. result<std::string>("literal").
+    template<class A, class = typename std::enable_if<std::is_constructible<T, A>::value && std::is_convertible<A, T>::value>::type>
+    result( A && a ) noexcept:
+        stored_(std::forward<A>(a)),
         what_(result_discriminant::kind_val{})
     {
     }
@@ -338,13 +401,13 @@ public:
 #else
 
 private:
-    static int init_T_with_U( T && );
+    static int init_T_with_A( T && );
 public:
 
-    // SFINAE: T can be initialized with a U, e.g. result<std::string>("literal").
-    template <class U>
-    result( U && u, decltype(init_T_with_U(std::forward<U>(u))) * = nullptr ):
-        stored_(std::forward<U>(u)),
+    // SFINAE: T can be initialized with an A, e.g. result<std::string>("literal").
+    template <class A>
+    result( A && a, decltype(init_T_with_A(std::forward<A>(a))) * = nullptr ):
+        stored_(std::forward<A>(a)),
         what_(result_discriminant::kind_val{})
     {
     }
@@ -357,17 +420,9 @@ public:
     {
     }
 
-    template <class Enum>
-    result( Enum e, typename std::enable_if<std::is_error_code_enum<Enum>::value, int>::type * = nullptr ) noexcept:
+    template <class Enum, class = typename std::enable_if<std::is_error_code_enum<Enum>::value, int>::type>
+    result( Enum e ) noexcept:
         what_(error_id(e))
-    {
-    }
-#endif
-
-#if BOOST_LEAF_CFG_CAPTURE
-    result( context_ptr && ctx ) noexcept:
-        ctx_(std::move(ctx)),
-        what_(result_discriminant::kind_ctx_ptr{})
     {
     }
 #endif
@@ -377,18 +432,18 @@ public:
         destroy();
     }
 
+    // NOTE: Assignment operator implicitly deleted.
+
     result & operator=( result && x ) noexcept
     {
-        destroy();
-        what_ = move_from(std::move(x));
+        move_assign(std::move(x));
         return *this;
     }
 
-    template <class U>
+    template <class U, class = typename std::enable_if<std::is_convertible<U, T>::value>::type>
     result & operator=( result<U> && x ) noexcept
     {
-        destroy();
-        what_ = move_from(std::move(x));
+        move_assign(std::move(x));
         return *this;
     }
 
@@ -449,12 +504,12 @@ public:
 
 #endif
 
-    value_type_const * operator->() const noexcept
+    value_no_ref_const * operator->() const noexcept
     {
         return has_value() ? leaf_detail::stored<T>::cptr(stored_) : nullptr;
     }
 
-    value_type * operator->() noexcept
+    value_no_ref * operator->() noexcept
     {
         return has_value() ? leaf_detail::stored<T>::ptr(stored_) : nullptr;
     }
@@ -517,6 +572,44 @@ public:
     {
         return error_id(error()).load(std::forward<Item>(item)...);
     }
+
+    void unload()
+    {
+#if BOOST_LEAF_CFG_CAPTURE
+        if( what_.kind() == result_discriminant::err_id_capture_list )
+            cap_.unload(what_.get_error_id().value());
+#endif
+    }
+
+    template <class CharT, class Traits>
+    void print( std::basic_ostream<CharT, Traits> & os ) const
+    {
+        result_discriminant const what = what_;
+        if( what.kind() == result_discriminant::val )
+            leaf_detail::print_result_value(os, value());
+        else
+        {
+            error_id const err_id = what.get_error_id();
+            os << "Error ID " << err_id;
+            if( what.kind() == result_discriminant::err_id_capture_list )
+            {
+#if BOOST_LEAF_CFG_CAPTURE
+#   if BOOST_LEAF_CFG_DIAGNOSTICS
+                cap_.print(os, ". Captured error objects:\n", err_id.value());
+#   endif
+#else
+                BOOST_LEAF_ASSERT(0); // Possible ODR violation.
+#endif
+            }
+        }
+    }
+
+    template <class CharT, class Traits>
+    friend std::ostream & operator<<( std::basic_ostream<CharT, Traits> & os, result const & r )
+    {
+        r.print(os);
+        return os;
+    }
 };
 
 ////////////////////////////////////////
@@ -527,25 +620,30 @@ namespace leaf_detail
 }
 
 template <>
-class result<void>:
+class BOOST_LEAF_SYMBOL_VISIBLE result<void>:
     result<leaf_detail::void_>
 {
+    template <class U>
+    friend class result;
+
+    friend class leaf_detail::dynamic_allocator;
+
     using result_discriminant = leaf_detail::result_discriminant;
     using void_ = leaf_detail::void_;
     using base = result<void_>;
 
-    template <class U>
-    friend class result;
-
-    result( result_discriminant && what ) noexcept:
-        base(std::move(what))
+#if BOOST_LEAF_CFG_CAPTURE
+    result( int err_id, leaf_detail::capture_list && cap ) noexcept:
+        base(err_id, std::move(cap))
     {
     }
+#endif
 
 public:
 
     using value_type = void;
 
+    // NOTE: Copy constructor implicitly deleted.
     result( result && x ) noexcept:
         base(std::move(x))
     {
@@ -566,22 +664,22 @@ public:
     {
     }
 
-    template <class Enum>
-    result( Enum e, typename std::enable_if<std::is_error_code_enum<Enum>::value, Enum>::type * = nullptr ) noexcept:
+    template <class Enum, class = typename std::enable_if<std::is_error_code_enum<Enum>::value, int>::type>
+    result( Enum e ) noexcept:
         base(e)
-    {
-    }
-#endif
-
-#if BOOST_LEAF_CFG_CAPTURE
-    result( context_ptr && ctx ) noexcept:
-        base(std::move(ctx))
     {
     }
 #endif
 
     ~result() noexcept
     {
+    }
+
+    // NOTE: Assignment operator implicitly deleted.
+    result & operator=( result && x ) noexcept
+    {
+        base::move_assign(std::move(x));
+        return *this;
     }
 
     void value() const
@@ -604,11 +702,28 @@ public:
         BOOST_LEAF_ASSERT(has_value());
     }
 
+    template <class CharT, class Traits>
+    void print( std::basic_ostream<CharT, Traits> & os ) const
+    {
+        if( what_.kind() == result_discriminant::val )
+            os << "No error";
+        else
+            os << *static_cast<base const *>(this);
+    }
+
+    template <class CharT, class Traits>
+    friend std::ostream & operator<<( std::basic_ostream<CharT, Traits> & os, result const & r )
+    {
+        r.print(os);
+        return os;
+    }
+
     using base::operator=;
     using base::operator bool;
     using base::get_error_id;
     using base::error;
     using base::load;
+    using base::unload;
 };
 
 ////////////////////////////////////////

@@ -12,14 +12,14 @@
 
 #include <boost/beast/http/type_traits.hpp>
 #include <boost/beast/core/async_base.hpp>
-#include <boost/beast/core/bind_handler.hpp>
 #include <boost/beast/core/buffers_range.hpp>
 #include <boost/beast/core/make_printable.hpp>
 #include <boost/beast/core/stream_traits.hpp>
 #include <boost/beast/core/detail/is_invocable.hpp>
 #include <boost/asio/coroutine.hpp>
-#include <boost/asio/post.hpp>
+#include <boost/asio/dispatch.hpp>
 #include <boost/asio/write.hpp>
+#include <boost/asio/prepend.hpp>
 #include <boost/optional.hpp>
 #include <boost/throw_exception.hpp>
 #include <ostream>
@@ -102,10 +102,8 @@ public:
                     __FILE__, __LINE__,
                     "http::async_write_some"));
 
-                return net::post(
-                    s_.get_executor(),
-                    beast::bind_front_handler(
-                        std::move(*this), ec, 0));
+                const auto ex = asio::get_associated_immediate_executor(*this, s_.get_executor());
+                return net::dispatch(ex, net::prepend(std::move(*this), ec, 0));
             }
             if(f.invoked)
             {
@@ -120,10 +118,8 @@ public:
             __FILE__, __LINE__,
             "http::async_write_some"));
 
-        return net::post(
-            s_.get_executor(),
-            beast::bind_front_handler(
-                std::move(*this), ec, 0));
+        const auto ex = this->get_immediate_executor();
+        return net::dispatch(ex, net::prepend(std::move(*this), ec, 0));
     }
 
     void
@@ -219,8 +215,9 @@ public:
                         __FILE__, __LINE__,
                         "http::async_write"));
 
-                    net::post(
-                        s_.get_executor(),
+                    const auto ex = this->get_immediate_executor();
+                    net::dispatch(
+                        ex,
                         std::move(*this));
                 }
                 goto upcall;

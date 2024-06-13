@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2019-2023 Ruben Perez Hidalgo (rubenperez038 at gmail dot com)
+// Copyright (c) 2019-2024 Ruben Perez Hidalgo (rubenperez038 at gmail dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -12,6 +12,10 @@
 
 #include <boost/mysql/detail/config.hpp>
 #include <boost/mysql/impl/internal/error/server_error_to_string.hpp>
+
+namespace boost {
+namespace mysql {
+namespace detail {
 
 BOOST_MYSQL_STATIC_IF_COMPILED
 constexpr const char* common_error_messages[] = {
@@ -898,6 +902,10 @@ constexpr const char* common_error_messages[] = {
 
 };
 
+} // namespace detail
+} // namespace mysql
+} // namespace boost
+
 const char* boost::mysql::detail::common_error_to_string(int v) noexcept
 {
     constexpr int first = 1000;
@@ -930,11 +938,9 @@ const char* boost::mysql::detail::mysql_error_to_string(int v) noexcept
     case 1725: return "er_table_in_fk_check";
     case 1726: return "er_unsupported_engine";
     case 1742: return "er_rpl_info_data_too_long";
-    case 1749: return "er_no_such_partition__unused";
     case 1768: return "er_cant_change_gtid_next_in_transaction";
     case 1777: return "er_auto_position_requires_gtid_mode_not_off";
     case 1779: return "er_gtid_mode_on_requires_enforce_gtid_consistency_on";
-    case 1784: return "er_found_gtid_event_when_gtid_mode_is_off__unused";
     case 1807: return "er_discard_fk_checks_running";
     case 1826: return "er_fk_dup_name";
     case 1837: return "er_gtid_next_type_undefined_gtid";
@@ -1841,6 +1847,9 @@ const char* boost::mysql::detail::mysql_error_to_string(int v) noexcept
     case 4160: return "er_install_component_set_null_value";
     case 4161: return "er_install_component_set_unused_value";
     case 4162: return "er_warn_deprecated_user_defined_collations";
+    case 4163: return "er_user_lock_overlong_name";
+    case 4164: return "er_warn_no_space_version_comment";
+    case 4165: return "er_validate_password_insufficient_changed_characters";
 
     default: return "<unknown MySQL-specific server error>";
     }
@@ -2195,6 +2204,8 @@ const char* boost::mysql::detail::mariadb_error_to_string(int v) noexcept
     case 4190: return "warn_option_changing";
     case 4191: return "er_cm_option_missing_requirement";
     case 4192: return "er_slave_statement_timeout";
+    case 4193: return "er_json_invalid_value_for_keyword";
+    case 4194: return "er_json_schema_keyword_unsupported";
 
     default: return "<unknown MariaDB-specific server error>";
     }
