@@ -108,7 +108,12 @@ bool Mapper_MiniUPnPc::init() {
 	UPNPUrls urls;
 	IGDdatas data;
 
+#if (MINIUPNPC_API_VERSION >= 18)
+	auto ret = UPNP_GetValidIGD(devices, &urls, &data, 0, 0, nullptr, 0);
+#else
 	auto ret = UPNP_GetValidIGD(devices, &urls, &data, 0, 0);
+#endif
+
 
 	bool ok = ret == 1;
 	if(ok) {
@@ -127,7 +132,7 @@ bool Mapper_MiniUPnPc::init() {
 				auto adapters = AirUtil::getNetworkAdapters(v6);
 
 				// Find a local IP that is within the same subnet
-				auto p = boost::find_if(adapters, [&routerIp, this](const AdapterInfo& aInfo) { return isIPInRange(aInfo.ip, routerIp, aInfo.prefix, v6); });
+				auto p = ranges::find_if(adapters, [&routerIp, this](const AdapterInfo& aInfo) { return isIPInRange(aInfo.ip, routerIp, aInfo.prefix, v6); });
 				if (p != adapters.end()) {
 					localIp = p->ip;
 				}
