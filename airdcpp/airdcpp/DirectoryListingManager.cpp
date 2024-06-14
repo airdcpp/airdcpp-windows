@@ -181,7 +181,7 @@ DirectoryDownloadPtr DirectoryListingManager::addDirectoryDownloadHookedThrow(co
 	if (!dl && needList) {
 		queueListHookedThrow(downloadInfo);
 	} else if (dl) {
-		dl->addAsyncTask([=] { handleDownloadHooked(downloadInfo, dl, false); });
+		dl->addAsyncTask([=, this] { handleDownloadHooked(downloadInfo, dl, false); });
 	}
 
 	return downloadInfo;
