@@ -99,7 +99,7 @@
 		return handleClickItem<idType>( \
 			aRequest,  \
 			menuId, \
-			[=](const vector<idType>& aSelectedIds, const ContextMenuItemClickData& aClickData) { \
+			[MYMACRO(=, this)](const vector<idType>& aSelectedIds, const ContextMenuItemClickData& aClickData) { \
 				return cmm.onClick##hook2##Item(aSelectedIds, aClickData, entity); \
 			}, \
 			idDeserializerFunc \
@@ -110,7 +110,7 @@
 		auto entity = entityDeserializerFunc(entityId, "entity_id"); \
 		return handleListItems<idType>( \
 			aRequest, \
-			[=](const vector<idType>& aSelectedIds, const ContextMenuItemListData& aListData) { \
+			[MYMACRO(=, this)](const vector<idType>& aSelectedIds, const ContextMenuItemListData& aListData) { \
 				return cmm.get##hook2##Menu(aSelectedIds, aListData, entity); \
 			}, \
 			idDeserializerFunc \
@@ -121,7 +121,7 @@
 		auto entity = entityDeserializerFunc(entityId, "entity_id"); \
 		return handleListItemsGrouped<idType>( \
 			aRequest, \
-			[=](const vector<idType>& aSelectedIds, const ContextMenuItemListData& aListData) { \
+			[MYMACRO(=, this)](const vector<idType>& aSelectedIds, const ContextMenuItemListData& aListData) { \
 				return cmm.get##hook2##Menu(aSelectedIds, aListData, entity); \
 			}, \
 			idDeserializerFunc \
