@@ -72,7 +72,7 @@
 			idDeserializerFunc \
 		); \
 	}); \
-	INLINE_MODULE_METHOD_HANDLER(access, METHOD_POST, (EXACT_PARAM(menuId), EXACT_PARAM("list_grouped")), [=](ApiRequest& aRequest) { \
+	INLINE_MODULE_METHOD_HANDLER(access, METHOD_POST, (EXACT_PARAM(menuId), EXACT_PARAM("list_grouped")), [this](ApiRequest& aRequest) { \
 		return handleListItemsGrouped<idType>( \
 			aRequest, \
 			std::bind(&ContextMenuManager::get##hook2##Menu, &cmm, placeholders::_1, placeholders::_2), \
