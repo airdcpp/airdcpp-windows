@@ -221,7 +221,7 @@ void DirectoryListingManager::processListHooked(const string& aFileName, const s
 		if (p != viewedLists.end()) {
 			if (p->second->getPartialList() && isPartialList) {
 				//we don't want multiple threads to load those simultaneously. load in the list thread and return here after that
-				p->second->addPartialListLoadTask(aXml, aRemotePath, true, [=] { processListActionHooked(p->second, aRemotePath, aFlags); });
+				p->second->addPartialListLoadTask(aXml, aRemotePath, true, [=, this] { processListActionHooked(p->second, aRemotePath, aFlags); });
 				return;
 			}
 		}

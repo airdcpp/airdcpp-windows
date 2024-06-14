@@ -941,7 +941,7 @@ void DirectoryListing::addQueueMatchTask() noexcept {
 
 void DirectoryListing::close() noexcept {
 	closing = true;
-	tasks.stop([=] {
+	tasks.stop([=, this] {
 		fire(DirectoryListingListener::Close());
 	});
 }
