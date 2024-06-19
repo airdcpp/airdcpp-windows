@@ -1,9 +1,9 @@
 /* 
- * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2023 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
+ * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -44,7 +44,6 @@ PropPage::TextItem ProtocolBase::texts[] = {
 	{ IDC_SETTINGS_PORT_TCP, ResourceManager::SETTINGS_TCP_PORT },
 	{ IDC_SETTINGS_PORT_UDP, ResourceManager::SETTINGS_UDP_PORT },
 	{ IDC_SETTINGS_PORT_TLS, ResourceManager::SETTINGS_TLS_PORT },
-	{ IDC_SETTINGS_PORT_HELP, ResourceManager::SETTINGS_PORT_HELP },
 	{ IDC_PROTOCOL_OPTIONS, ResourceManager::PROTOCOL_OPTIONS },
 
 	//mapper
@@ -90,7 +89,7 @@ LRESULT ProtocolBase::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	created = true;
 
 	return TRUE;
-}
+}	
 
 LRESULT ProtocolBase::onProtocolChanged(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHandled*/) {
 
