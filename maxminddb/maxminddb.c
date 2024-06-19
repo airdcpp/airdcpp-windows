@@ -1,10 +1,13 @@
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#endif
+
 #if HAVE_CONFIG_H
 #include <config.h>
 #endif
 #include "data-pool.h"
 #include "maxminddb-compat-util.h"
 #include "maxminddb.h"
-#include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <inttypes.h>
@@ -20,6 +23,10 @@
 #endif
 #include <windows.h>
 #include <ws2ipdef.h>
+#ifndef SSIZE_MAX
+#define SSIZE_MAX INTPTR_MAX
+#endif
+typedef ADDRESS_FAMILY sa_family_t;
 #else
 #include <arpa/inet.h>
 #include <sys/mman.h>
@@ -285,18 +292,29 @@ int MMDB_open(const char *const filename, uint32_t flags, MMDB_s *const mmdb) {
         goto cleanup;
     }
 
-    uint32_t search_tree_size =
-        mmdb->metadata.node_count * mmdb->full_record_byte_size;
-
-    mmdb->data_section =
-        mmdb->file_content + search_tree_size + MMDB_DATA_SECTION_SEPARATOR;
-    if (search_tree_size + MMDB_DATA_SECTION_SEPARATOR >
-        (uint32_t)mmdb->file_size) {
+    if (!can_multiply(SSIZE_MAX,
+                      mmdb->metadata.node_count,
+                      mmdb->full_record_byte_size)) {
         status = MMDB_INVALID_METADATA_ERROR;
         goto cleanup;
     }
-    mmdb->data_section_size = (uint32_t)mmdb->file_size - search_tree_size -
-                              MMDB_DATA_SECTION_SEPARATOR;
+    ssize_t search_tree_size = (ssize_t)mmdb->metadata.node_count *
+                               (ssize_t)mmdb->full_record_byte_size;
+
+    mmdb->data_section =
+        mmdb->file_content + search_tree_size + MMDB_DATA_SECTION_SEPARATOR;
+    if (mmdb->file_size < MMDB_DATA_SECTION_SEPARATOR ||
+        search_tree_size > mmdb->file_size - MMDB_DATA_SECTION_SEPARATOR) {
+        status = MMDB_INVALID_METADATA_ERROR;
+        goto cleanup;
+    }
+    ssize_t data_section_size =
+        mmdb->file_size - search_tree_size - MMDB_DATA_SECTION_SEPARATOR;
+    if (data_section_size > UINT32_MAX || data_section_size <= 0) {
+        status = MMDB_INVALID_METADATA_ERROR;
+        goto cleanup;
+    }
+    mmdb->data_section_size = (uint32_t)data_section_size;
 
     // Although it is likely not possible to construct a database with valid
     // valid metadata, as parsed above, and a data_section_size less than 3,
@@ -925,11 +943,11 @@ static int find_address_in_search_tree(const MMDB_s *const mmdb,
                                        sa_family_t address_family,
                                        MMDB_lookup_result_s *result) {
     record_info_s record_info = record_info_for_database(mmdb);
-    if (0 == record_info.right_record_offset) {
+    if (record_info.right_record_offset == 0) {
         return MMDB_UNKNOWN_DATABASE_FORMAT_ERROR;
     }
 
-    uint32_t value = 0;
+    uint64_t value = 0;
     uint16_t current_bit = 0;
     if (mmdb->metadata.ip_version == 6 && address_family == AF_INET) {
         value = mmdb->ipv4_start_node.node_value;
@@ -943,6 +961,7 @@ static int find_address_in_search_tree(const MMDB_s *const mmdb,
         uint8_t bit =
             1U & (address[current_bit >> 3] >> (7 - (current_bit % 8)));
 
+        // Note that value*record_info.record_length can be larger than 2**32
         record_pointer = &search_tree[value * record_info.record_length];
         if (record_pointer + record_info.record_length > mmdb->data_section) {
             return MMDB_CORRUPT_SEARCH_TREE_ERROR;
@@ -989,9 +1008,10 @@ static record_info_s record_info_for_database(const MMDB_s *const mmdb) {
         record_info.left_record_getter = &get_uint32;
         record_info.right_record_getter = &get_uint32;
         record_info.right_record_offset = 4;
-    } else {
-        assert(false);
     }
+
+    // Callers must check that right_record_offset is non-zero in case none of
+    // the above conditions matched.
 
     return record_info;
 }
@@ -1005,6 +1025,9 @@ static int find_ipv4_start_node(MMDB_s *const mmdb) {
     }
 
     record_info_s record_info = record_info_for_database(mmdb);
+    if (record_info.right_record_offset == 0) {
+        return MMDB_UNKNOWN_DATABASE_FORMAT_ERROR;
+    }
 
     const uint8_t *search_tree = mmdb->file_content;
     uint32_t node_value = 0;
@@ -1067,7 +1090,7 @@ int MMDB_read_node(const MMDB_s *const mmdb,
                    uint32_t node_number,
                    MMDB_search_node_s *const node) {
     record_info_s record_info = record_info_for_database(mmdb);
-    if (0 == record_info.right_record_offset) {
+    if (record_info.right_record_offset == 0) {
         return MMDB_UNKNOWN_DATABASE_FORMAT_ERROR;
     }
 
@@ -1808,12 +1831,16 @@ static void free_mmdb_struct(MMDB_s *const mmdb) {
     }
 
     if (NULL != mmdb->filename) {
+#if defined(__clang__)
 // This is a const char * that we need to free, which isn't valid. However it
 // would mean changing the public API to fix this.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wcast-qual"
+#endif
         FREE_AND_SET_NULL(mmdb->filename);
+#if defined(__clang__)
 #pragma clang diagnostic pop
+#endif
     }
     if (NULL != mmdb->file_content) {
 #ifdef _WIN32
@@ -1822,22 +1849,30 @@ static void free_mmdb_struct(MMDB_s *const mmdb) {
          * to cleanup then. */
         WSACleanup();
 #else
+#if defined(__clang__)
 // This is a const char * that we need to free, which isn't valid. However it
 // would mean changing the public API to fix this.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wcast-qual"
+#endif
         munmap((void *)mmdb->file_content, (size_t)mmdb->file_size);
+#if defined(__clang__)
 #pragma clang diagnostic pop
+#endif
 #endif
     }
 
     if (NULL != mmdb->metadata.database_type) {
+#if defined(__clang__)
 // This is a const char * that we need to free, which isn't valid. However it
 // would mean changing the public API to fix this.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wcast-qual"
+#endif
         FREE_AND_SET_NULL(mmdb->metadata.database_type);
+#if defined(__clang__)
 #pragma clang diagnostic pop
+#endif
     }
 
     free_languages_metadata(mmdb);
@@ -1850,12 +1885,16 @@ static void free_languages_metadata(MMDB_s *mmdb) {
     }
 
     for (size_t i = 0; i < mmdb->metadata.languages.count; i++) {
+#if defined(__clang__)
 // This is a const char * that we need to free, which isn't valid. However it
 // would mean changing the public API to fix this.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wcast-qual"
+#endif
         FREE_AND_SET_NULL(mmdb->metadata.languages.names[i]);
+#if defined(__clang__)
 #pragma clang diagnostic pop
+#endif
     }
     FREE_AND_SET_NULL(mmdb->metadata.languages.names);
 }
@@ -1868,24 +1907,32 @@ static void free_descriptions_metadata(MMDB_s *mmdb) {
     for (size_t i = 0; i < mmdb->metadata.description.count; i++) {
         if (NULL != mmdb->metadata.description.descriptions[i]) {
             if (NULL != mmdb->metadata.description.descriptions[i]->language) {
+#if defined(__clang__)
 // This is a const char * that we need to free, which isn't valid. However it
 // would mean changing the public API to fix this.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wcast-qual"
+#endif
                 FREE_AND_SET_NULL(
                     mmdb->metadata.description.descriptions[i]->language);
+#if defined(__clang__)
 #pragma clang diagnostic pop
+#endif
             }
 
             if (NULL !=
                 mmdb->metadata.description.descriptions[i]->description) {
+#if defined(__clang__)
 // This is a const char * that we need to free, which isn't valid. However it
 // would mean changing the public API to fix this.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wcast-qual"
+#endif
                 FREE_AND_SET_NULL(
                     mmdb->metadata.description.descriptions[i]->description);
+#if defined(__clang__)
 #pragma clang diagnostic pop
+#endif
             }
             FREE_AND_SET_NULL(mmdb->metadata.description.descriptions[i]);
         }
