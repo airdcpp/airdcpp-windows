@@ -53,7 +53,7 @@ void HashManager::log(const string& aMsg, LogMessage::Severity aSeverity) noexce
 // Hasher functions
 void HashManager::onFileHashed(const string& aPath, HashedFile& aFile, const TigerTree& aTree, int aHasherId) noexcept {
 
-	HashManager::getInstance()->fire(HashManagerListener::FileHashed(), aPath, aFile);
+	HashManager::getInstance()->fire(HashManagerListener::FileHashed(), aPath, aFile, aHasherId);
 	try {
 		store->addHashedFile(Text::toLower(aPath), aTree, aFile);
 	} catch (const Exception& e) {
@@ -61,8 +61,8 @@ void HashManager::onFileHashed(const string& aPath, HashedFile& aFile, const Tig
 	}
 }
 
-void HashManager::onFileFailed(const string& aPath, const string& aErrorId, const string& aMessage, int /*aHasherId*/) noexcept {
-	fire(HashManagerListener::FileFailed(), aPath, aErrorId, aMessage);
+void HashManager::onFileFailed(const string& aPath, const string& aErrorId, const string& aMessage, int aHasherId) noexcept {
+	fire(HashManagerListener::FileFailed(), aPath, aErrorId, aMessage, aHasherId);
 }
 
 void HashManager::onDirectoryHashed(const string& aPath, const HasherStats& aStats, int aHasherId) noexcept {

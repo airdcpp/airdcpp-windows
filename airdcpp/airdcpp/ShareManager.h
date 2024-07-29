@@ -313,7 +313,7 @@ private:
 	void setRefreshState(const string& aPath, ShareRootRefreshState aState, bool aUpdateRefreshTime, const optional<ShareRefreshTaskToken>& aRefreshTaskToken) noexcept;
 
 	// HashManagerListener
-	void on(HashManagerListener::FileHashed, const string& aPath, HashedFile& fi) noexcept override { onFileHashed(aPath, fi); }
+	void on(HashManagerListener::FileHashed, const string& aPath, HashedFile& fi, int) noexcept override { onFileHashed(aPath, fi); }
 
 	// SettingsManagerListener
 	void on(SettingsManagerListener::Save, SimpleXML& xml) noexcept override {
