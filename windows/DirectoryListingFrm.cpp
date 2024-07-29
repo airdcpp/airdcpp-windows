@@ -37,6 +37,7 @@
 #include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/File.h>
 #include <airdcpp/QueueManager.h>
+#include <airdcpp/SearchQuery.h>
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/User.h>
 #include <airdcpp/ViewFileManager.h>
@@ -555,6 +556,7 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	ctrlTree.SetBkColor(WinUtil::bgColor);
 	ctrlTree.SetTextColor(WinUtil::textColor);
 	ctrlTree.SetImageList(ResourceLoader::getFileImages(), TVSIL_NORMAL);
+	ctrlTree.SetFont(WinUtil::listViewFont);
 
 	selCombo.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 		WS_HSCROLL | WS_VSCROLL | CBS_DROPDOWNLIST, WS_EX_CLIENTEDGE, IDC_HUB);
@@ -1277,7 +1279,7 @@ LRESULT DirectoryListingFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHa
 
 LRESULT DirectoryListingFrame::onKeyDownDirs(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 	NMTVKEYDOWN* kd = (NMTVKEYDOWN*) pnmh;
-	if(kd->wVKey == VK_DOWN || kd->wVKey == VK_DOWN) {
+	if(kd->wVKey == VK_DOWN || kd->wVKey == VK_UP) {
 		changeType = CHANGE_TREE_SINGLE;
 	} else if (checkCommonKey(kd->wVKey)) {
 		bHandled = TRUE;

@@ -17,18 +17,16 @@
  */
 
 #include "stdinc.h"
+#include "Bundle.h"
 
 #include "ActionHook.h"
 #include "AirUtil.h"
-#include "Bundle.h"
 #include "ClientManager.h"
 #include "ConnectionManager.h"
 #include "Download.h"
 #include "File.h"
-#include "HashManager.h"
 #include "LogManager.h"
 #include "QueueItem.h"
-#include "SearchResult.h"
 #include "SimpleXML.h"
 #include "Streams.h"
 #include "TimerManager.h"

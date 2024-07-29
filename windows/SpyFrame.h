@@ -23,7 +23,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include <airdcpp/ClientManager.h>
+#include <airdcpp/SearchManagerListener.h>
 #include <airdcpp/TimerManagerListener.h>
 
 #include "StaticFrame.h"
@@ -32,10 +32,10 @@
 #define IGNORETTH_MESSAGE_MAP 7
 
 class SpyFrame : public MDITabChildWindowImpl<SpyFrame>, public StaticFrame<SpyFrame, ResourceManager::SEARCH_SPY, IDC_SEARCH_SPY>,
-	private ClientManagerListener, private TimerManagerListener, private SettingsManagerListener
+	private SearchManagerListener, private TimerManagerListener, private SettingsManagerListener
 {
 public:
-	SpyFrame() : total(0), cur(0), closed(false), ignoreTth(SETTING(SPY_FRAME_IGNORE_TTH_SEARCHES)), ignoreTthContainer(WC_BUTTON, this, IGNORETTH_MESSAGE_MAP) {
+	SpyFrame() : ignoreTth(SETTING(SPY_FRAME_IGNORE_TTH_SEARCHES)), ignoreTthContainer(WC_BUTTON, this, IGNORETTH_MESSAGE_MAP) {
 		memzero(perSecond, sizeof(perSecond));
 	}
 
@@ -89,10 +89,18 @@ public:
 	static string id;
 	
 private:
+	struct IncomingSearchInfo {
+		tstring str;
+		bool hasResults;
+	};
+
+	void updateStatus() noexcept;
+	void addList(const tstring& aText) noexcept;
 
 	enum { AVG_TIME = 60 };
 	enum {
-		SEARCH,
+		INCOMING_SEARCH,
+		OUTGOING_RESPONSES,
 		TICK_AVG
 	};
 
@@ -100,21 +108,26 @@ private:
 	CStatusBarCtrl ctrlStatus;
 	CContainedWindow ignoreTthContainer;
 	CButton ctrlIgnoreTth;
-	int total;
+	int total = 0;
+	int hits = 0;
 	int perSecond[AVG_TIME];
-	int cur;
+	int cur = 0;
 	tstring searchString;
 
-	bool closed;
+	bool closed = false;
 	bool ignoreTth;
 	
-  	// ClientManagerListener
-	void on(ClientManagerListener::IncomingSearch, const string& s) noexcept;
-	void on(ClientManagerListener::IncomingADCSearch, const AdcCommand& s) noexcept;
+	// void on(ClientManagerListener::IncomingNMDCSearch, const string& s) noexcept override;
+	// void on(ClientManagerListener::IncomingADCSearch, const AdcCommand& s) noexcept override;
+
+	// void on(ClientManagerListener::OutgoingSearchResponses, const SearchResultList& aResults) noexcept override;
+
+	// SearchManagerListener
+	void on(SearchManagerListener::IncomingSearch, const SearchQuery& aQuery, const SearchResultList& aResults) noexcept override;
 	
 	// TimerManagerListener
-	void on(TimerManagerListener::Second, uint64_t) noexcept;
-	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
+	void on(TimerManagerListener::Second, uint64_t) noexcept override;
+	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept override;
 };
 
 #endif // !defined(SPY_FRAME_H)

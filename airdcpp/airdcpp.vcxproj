@@ -293,9 +293,12 @@
     <ClCompile Include="airdcpp\SettingsManager.cpp" />
     <ClCompile Include="airdcpp\SFVReader.cpp" />
     <ClCompile Include="airdcpp\SharedFileStream.cpp" />
+    <ClCompile Include="airdcpp\ShareDirectory.cpp" />
     <ClCompile Include="airdcpp\ShareManager.cpp" />
     <ClCompile Include="airdcpp\SharePathValidator.cpp" />
     <ClCompile Include="airdcpp\ShareProfile.cpp" />
+    <ClCompile Include="airdcpp\ShareTasks.cpp" />
+    <ClCompile Include="airdcpp\ShareTree.cpp" />
     <ClCompile Include="airdcpp\SimpleXML.cpp" />
     <ClCompile Include="airdcpp\SimpleXMLReader.cpp" />
     <ClCompile Include="airdcpp\Socket.cpp" />
@@ -310,6 +313,7 @@
     <ClCompile Include="airdcpp\StringDefs.cpp" />
     <ClCompile Include="airdcpp\StringMatch.cpp" />
     <ClCompile Include="airdcpp\StringSearch.cpp" />
+    <ClCompile Include="airdcpp\TempShareManager.cpp" />
     <ClCompile Include="airdcpp\Text.cpp" />
     <ClCompile Include="airdcpp\Thread.cpp" />
     <ClCompile Include="airdcpp\ThrottleManager.cpp" />
@@ -342,6 +346,8 @@
     <ClInclude Include="airdcpp\AdcHub.h" />
     <ClInclude Include="airdcpp\AddressInfo.h" />
     <ClInclude Include="airdcpp\FloodCounter.h" />
+    <ClInclude Include="airdcpp\HasherManager.h" />
+    <ClInclude Include="airdcpp\HasherStats.h" />
     <ClInclude Include="airdcpp\HashStore.h" />
     <ClInclude Include="airdcpp\modules\ADLSearch.h" />
     <ClInclude Include="airdcpp\QueueAddInfo.h" />
@@ -354,7 +360,16 @@
     <ClInclude Include="airdcpp\Hasher.h" />
     <ClInclude Include="airdcpp\HashManagerListener.h" />
     <ClInclude Include="airdcpp\MessageHighlight.h" />
+    <ClInclude Include="airdcpp\ShareDirectory.h" />
+    <ClInclude Include="airdcpp\ShareRefreshInfo.h" />
+    <ClInclude Include="airdcpp\ShareRefreshTask.h" />
+    <ClInclude Include="airdcpp\ShareStats.h" />
+    <ClInclude Include="airdcpp\ShareTasks.h" />
+    <ClInclude Include="airdcpp\ShareTree.h" />
     <ClInclude Include="airdcpp\StreamBase.h" />
+    <ClInclude Include="airdcpp\Task.h" />
+    <ClInclude Include="airdcpp\TempShareItem.h" />
+    <ClInclude Include="airdcpp\TempShareManager.h" />
     <ClInclude Include="airdcpp\TransferInfo.h" />
     <ClInclude Include="airdcpp\IgnoreManager.h" />
     <ClInclude Include="airdcpp\IgnoreManagerListener.h" />

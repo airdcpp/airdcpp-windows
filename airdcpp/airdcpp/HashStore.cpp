@@ -21,7 +21,7 @@
 #include "HashStore.h"
 #include "DCPlusPlus.h"
 #include "File.h"
-#include "FileReader.h"
+#include "HashedFile.h"
 #include "LevelDB.h"
 #include "LogManager.h"
 #include "QueueManager.h"
@@ -361,6 +361,7 @@ void HashStore::optimize(bool doVerify) noexcept {
 	int64_t failedSize = 0;
 
 	log(STRING(HASHDB_MAINTENANCE_STARTED), LogMessage::SEV_INFO);
+
 	{
 		unordered_set<TTHValue> usedRoots;
 
@@ -418,7 +419,7 @@ void HashStore::optimize(bool doVerify) noexcept {
 				//failed to load it
 				failedTrees++;
 				return true;
-				}, hashSnapshot.get());
+			}, hashSnapshot.get());
 		} catch (const DbException& e) {
 			log(STRING_F(READ_FAILED_X, hashDb->getNameLower() % e.getError()), LogMessage::SEV_ERROR);
 			log(STRING(HASHDB_MAINTENANCE_FAILED), LogMessage::SEV_ERROR);
@@ -439,7 +440,7 @@ void HashStore::optimize(bool doVerify) noexcept {
 					}
 
 					return false;
-					}, fileSnapshot.get());
+				}, fileSnapshot.get());
 			} catch (const DbException& e) {
 				log(STRING_F(READ_FAILED_X, fileDb->getNameLower() % e.getError()), LogMessage::SEV_ERROR);
 				log(STRING(HASHDB_MAINTENANCE_FAILED), LogMessage::SEV_ERROR);

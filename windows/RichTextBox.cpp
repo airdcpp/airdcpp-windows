@@ -1171,7 +1171,12 @@ void RichTextBox::handleRemoveTemp() {
 	}
 
 	auto magnet = *selectedHighlight->getMagnet();
-	ShareManager::getInstance()->removeTempShare(getTempShareUser(), magnet.getTTH());
+	auto tempShareToken = ShareManager::getInstance()->isTempShared(getTempShareUser(), magnet.getTTH());
+	if (!tempShareToken) {
+		return;
+	}
+
+	ShareManager::getInstance()->removeTempShare(*tempShareToken);
 	for (auto& p: links) {
 		decltype(auto) highlight = p.second;
 		if (highlight->getMagnet() && highlight->getMagnet()->getTTH() == magnet.getTTH()) {

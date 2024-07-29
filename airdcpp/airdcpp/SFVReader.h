@@ -52,7 +52,7 @@ public:
 	/* Loops through the file names */
 	void read(std::function<void (const string&)> aReadF) const;
 
-	void loadPath(const string& aPath);
+	void loadPath(const string& aPath) noexcept;
 	string getPath() const noexcept { return path; }
 	void unload() noexcept;
 

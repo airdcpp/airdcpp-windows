@@ -48,10 +48,16 @@ DirSFVReader::DirSFVReader(const string& /*aPath*/, const StringList& aSfvFiles)
 	load();
 }
 
-void DirSFVReader::loadPath(const string& aPath) {
+void DirSFVReader::loadPath(const string& aPath) noexcept {
 	content.clear();
 	path = aPath;
-	sfvFiles = File::findFiles(path, "*.sfv", File::TYPE_FILE);
+
+	try {
+		sfvFiles = File::findFiles(path, "*.sfv", File::TYPE_FILE);
+	} catch (const FileException& e) {
+		dcdebug("SFV reader: failed to load path %s (%s)", aPath.c_str(), e.getError().c_str());
+		return;
+	}
 
 	load();
 }

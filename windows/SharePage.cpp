@@ -248,10 +248,11 @@ Dispatcher::F SharePage::getThreadedTask() {
 }
 
 void SharePage::fixControls() {
-	//::EnableWindow(GetDlgItem(IDC_APPLY_CHANGES), hasChanged());
+	auto hasTempShares = !ShareManager::getInstance()->getTempShares().empty();
+
 	::EnableWindow(GetDlgItem(IDC_REMOVE_PROFILE), curProfile != defaultProfile);
 	::EnableWindow(GetDlgItem(IDC_SET_DEFAULT), curProfile != defaultProfile);
-	::EnableWindow(GetDlgItem(IDC_EDIT_TEMPSHARES), ShareManager::getInstance()->hasTempShares() ? TRUE : FALSE);
+	::EnableWindow(GetDlgItem(IDC_EDIT_TEMPSHARES), hasTempShares ? TRUE : FALSE);
 }
 
 void SharePage::applyChanges(bool isQuit) {

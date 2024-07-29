@@ -36,6 +36,7 @@
 #include "ResourceManager.h"
 #include "ScopedFunctor.h"
 #include "SearchManager.h"
+#include "SearchQuery.h"
 #include "ShareManager.h"
 #include "SSLSocket.h"
 #include "StringTokenizer.h"
@@ -682,7 +683,6 @@ void AdcHub::handle(AdcCommand::SCH, AdcCommand& c) noexcept {
 	ASSERT_DIRECT_TO_ME(c)
 
 	// Filter own searches
-	ClientManager::getInstance()->fire(ClientManagerListener::IncomingADCSearch(), c);
 	if(ou->getUser() == ClientManager::getInstance()->getMe())
 		return;
 

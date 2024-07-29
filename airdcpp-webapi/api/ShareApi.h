@@ -38,11 +38,14 @@ namespace webserver {
 
 		api_return handleRefreshShare(ApiRequest& aRequest);
 		api_return handleRefreshPaths(ApiRequest& aRequest);
-		api_return handleRefreshVirtualName(ApiRequest& aRequest);
 		api_return handleRefreshVirtualPath(ApiRequest& aRequest);
 		api_return handleAbortRefreshShare(ApiRequest& aRequest);
 		api_return handleAbortRefreshTask(ApiRequest& aRequest);
 		api_return handleGetRefreshTasks(ApiRequest& aRequest);
+
+		api_return handleGetFilesByVirtual(ApiRequest& aRequest);
+		api_return handleGetFilesByReal(ApiRequest& aRequest);
+
 
 		api_return handleAddExclude(ApiRequest& aRequest);
 		api_return handleRemoveExclude(ApiRequest& aRequest);
@@ -77,10 +80,10 @@ namespace webserver {
 		static string refreshTypeToString(ShareRefreshType aType) noexcept;
 
 		static json serializeShareItem(const SearchResultPtr& aSR) noexcept;
-		static json serializeRefreshQueueInfo(const ShareManager::RefreshTaskQueueInfo& aRefreshQueueInfo) noexcept;
+		static json serializeRefreshQueueInfo(const RefreshTaskQueueInfo& aRefreshQueueInfo) noexcept;
 		static json serializeRefreshTask(const ShareRefreshTask& aRefreshTask) noexcept;
 
-		static string refreshResultToString(ShareManager::RefreshTaskQueueResult aRefreshQueueResult) noexcept;
+		static string refreshResultToString(RefreshTaskQueueResult aRefreshQueueResult) noexcept;
 		static string refreshPriorityToString(ShareRefreshPriority aPriority) noexcept;
 
 		static ShareRefreshPriority parseRefreshPriority(const json& aJson);

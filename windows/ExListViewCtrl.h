@@ -24,15 +24,14 @@
 #endif // _MSC_VER > 1000
 
 #include "ListViewArrows.h"
-#include "WinUtil.h"
 
 class ExListViewCtrl : public CWindowImpl<ExListViewCtrl, CListViewCtrl, CControlWinTraits>,
 	public ListViewArrows<ExListViewCtrl>
 {
-	int sortColumn;
-	int sortType;
-	bool ascending;
-	int (*fun)(LPARAM, LPARAM, int);
+	int sortColumn = -1;
+	int sortType = SORT_STRING;
+	bool ascending = true;
+	int (*fun)(LPARAM, LPARAM, int) = nullptr;
 
 public:
 	enum {	
@@ -113,42 +112,7 @@ public:
 	int moveItem(int oldPos, int newPos);
 	void setSortDirection(bool aAscending) { setSort(sortColumn, sortType, aAscending, fun); }
 
-	static int CALLBACK CompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort) {
-		ExListViewCtrl* p = (ExListViewCtrl*) lParamSort;
-		TCHAR buf[128];
-		TCHAR buf2[128];
-
-		int na = (int)lParam1;
-		int nb = (int)lParam2;
-		// This is a trick, so that if fun() returns something bigger than one, use the
-		// internal default sort functions
-		int result = p->sortType;
-		if(result == SORT_FUNC) {
-			result = p->fun(p->GetItemData(na), p->GetItemData(nb), p->sortColumn);
-		}
-
-		 if(result == SORT_STRING) {
-			p->GetItemText(na, p->sortColumn, buf, 128);
-			p->GetItemText(nb, p->sortColumn, buf2, 128);
-			result = Util::DefaultSort(buf, buf2);			
-		} else if(result == SORT_INT) {
-			p->GetItemText(na, p->sortColumn, buf, 128);
-			p->GetItemText(nb, p->sortColumn, buf2, 128);
-			result = compare(_tstoi(buf), _tstoi(buf2));
-		} else if(result == SORT_FLOAT) {
-			p->GetItemText(na, p->sortColumn, buf, 128);
-			p->GetItemText(nb, p->sortColumn, buf2, 128);
-			result = compare(_tstof(buf), _tstof(buf2));
-		} else if(result == SORT_BYTES) {
-			p->GetItemText(na, p->sortColumn, buf, 128);
-			p->GetItemText(nb, p->sortColumn, buf2, 128);
-			result = compare(WinUtil::toBytes(buf), WinUtil::toBytes(buf2));
-		}
-		if(!p->ascending)
-			result = -result;
-
-		return result;
-	}
+	static int CALLBACK CompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
 	
 	LRESULT onChar(UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 		if((GetKeyState(VkKeyScan('A') & 0xFF) & 0xFF00) > 0 && (GetKeyState(VK_CONTROL) & 0xFF00) > 0){
@@ -167,7 +131,7 @@ public:
 		return (a < b) ? -1 : ( (a == b) ? 0 : 1);
 	}
 
-	ExListViewCtrl() : sortType(SORT_STRING), ascending(true), sortColumn(-1) { }
+	ExListViewCtrl() { }
 
 	~ExListViewCtrl() { }
 };

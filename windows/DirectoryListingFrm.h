@@ -261,8 +261,8 @@ private:
 	void insertItems(const string& aPath, const optional<string>& aSelectedName);
 
 	void findSearchHit(bool newDir = false);
-	int searchPos;
-	bool gotoPrev;
+	int searchPos = 0;
+	bool gotoPrev = false;
 
 	enum ChangeType {
 		CHANGE_LIST,

@@ -22,7 +22,6 @@
 #include "AirUtil.h"
 #include "LogManager.h"
 #include "QueueManager.h"
-#include "ShareManager.h"
 #include "SimpleXML.h"
 
 #ifdef _WIN32
@@ -113,15 +112,11 @@ void SharePathValidator::setExcludedPaths(const StringSet& aPaths) noexcept {
 	excludedPaths = aPaths;
 }
 
-void SharePathValidator::addExcludedPath(const string& aPath) {
+void SharePathValidator::addExcludedPath(const string& aPath, const StringList& aRootPaths) {
 
 	{
 		// Make sure this is a sub folder of a shared folder
-
-		StringList rootPaths;
-		ShareManager::getInstance()->getRootPaths(rootPaths);
-
-		if (ranges::find_if(rootPaths, [&aPath](const string& aRootPath) { return AirUtil::isSubLocal(aPath, aRootPath); }) == rootPaths.end()) {
+		if (ranges::none_of(aRootPaths, [&aPath](const string& aRootPath) { return AirUtil::isSubLocal(aPath, aRootPath); })) {
 			throw ShareException(STRING(PATH_NOT_SHARED));
 		}
 	}

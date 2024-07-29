@@ -28,6 +28,7 @@
 #include "QueueManager.h"
 #include "ResourceManager.h"
 #include "ShareManager.h"
+#include "SearchQuery.h"
 #include "SimpleXML.h"
 #include "SimpleXMLReader.h"
 #include "StringTokenizer.h"
@@ -1069,7 +1070,7 @@ void DirectoryListing::searchImpl(const SearchPtr& aSearch) noexcept {
 	if (isOwnList && partialList) {
 		SearchResultList results;
 		try {
-			ShareManager::getInstance()->adcSearch(results, *curSearch, getShareProfile(), CID(), aSearch->path);
+			ShareManager::getInstance()->search(results, *curSearch, getShareProfile(), nullptr, aSearch->path);
 		} catch (...) {}
 
 		for (const auto& sr : results)

@@ -17,13 +17,12 @@
  */
 
 #include "stdinc.h"
+#include "DownloadManager.h"
 
 #include "ClientManager.h"
 #include "ConnectionManager.h"
 #include "Download.h"
-#include "DownloadManager.h"
 #include "FavoriteManager.h"
-#include "HashManager.h"
 #include "LogManager.h"
 #include "QueueManager.h"
 #include "ResourceManager.h"

@@ -25,14 +25,10 @@
 
 #include <airdcpp/concurrency.h>
 
-#include <airdcpp/modules/AutoSearchManagerListener.h>
-
 #include <airdcpp/ClientManagerListener.h>
 #include <airdcpp/TimerManagerListener.h>
-#include <airdcpp/FavoriteManagerListener.h>
 #include <airdcpp/QueueManagerListener.h>
 #include <airdcpp/LogManagerListener.h>
-#include <airdcpp/SettingsManager.h>
 #include <airdcpp/DirectoryListingManagerListener.h>
 #include <airdcpp/UpdateManagerListener.h>
 #include <airdcpp/PrivateChatManagerListener.h>
@@ -57,7 +53,7 @@ class MainFrame : public CMDIFrameWindowImpl<MainFrame>, public CUpdateUI<MainFr
 		public CMessageFilter, public CIdleHandler, public CSplitterImpl<MainFrame>,
 		private TimerManagerListener, private QueueManagerListener, public Async<MainFrame>,
 		private LogManagerListener, private DirectoryListingManagerListener, private UpdateManagerListener, private ClientManagerListener,
-		private AutoSearchManagerListener, private PrivateChatManagerListener, private ActivityManagerListener, private ViewFileManagerListener
+		private PrivateChatManagerListener, private ActivityManagerListener, private ViewFileManagerListener
 {
 public:
 	MainFrame();

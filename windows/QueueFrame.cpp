@@ -94,6 +94,7 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlTree.SetImageList(ResourceLoader::getQueueTreeImages(), TVSIL_NORMAL);
 	ctrlTree.SetBkColor(WinUtil::bgColor);
 	ctrlTree.SetTextColor(WinUtil::textColor);
+	ctrlTree.SetFont(WinUtil::listViewFont);
 
 	browserBar.Init();
 	//maximize the path field.

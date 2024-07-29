@@ -34,6 +34,7 @@
 #include <airdcpp/HashManager.h>
 #include <airdcpp/HubEntry.h>
 #include <airdcpp/Magnet.h>
+#include <airdcpp/SearchQuery.h>
 #include <airdcpp/SearchResult.h>
 #include <airdcpp/ShareManager.h>
 #include <airdcpp/SharePathValidator.h>
@@ -64,6 +65,10 @@ namespace webserver {
 		METHOD_HANDLER(Access::SETTINGS_VIEW,	METHOD_POST,	(EXACT_PARAM("search")),							ShareApi::handleSearch);
 		METHOD_HANDLER(Access::ANY,				METHOD_POST,	(EXACT_PARAM("validate_path")),						ShareApi::handleValidatePath);
 		METHOD_HANDLER(Access::ANY,				METHOD_POST,	(EXACT_PARAM("check_path_shared")),					ShareApi::handleIsPathShared);
+
+		METHOD_HANDLER(Access::SETTINGS_VIEW,	METHOD_GET,		(EXACT_PARAM("files"), EXACT_PARAM("by_real")),		ShareApi::handleGetExcludes);
+		METHOD_HANDLER(Access::SETTINGS_VIEW,	METHOD_GET,		(EXACT_PARAM("files"), EXACT_PARAM("by_virtual")),	ShareApi::handleGetExcludes);
+
 
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_POST,	(EXACT_PARAM("refresh")),							ShareApi::handleRefreshShare);
 		METHOD_HANDLER(Access::SETTINGS_EDIT,	METHOD_DELETE,	(EXACT_PARAM("refresh")),							ShareApi::handleAbortRefreshShare);
@@ -191,7 +196,7 @@ namespace webserver {
 		};
 	}
 
-	json ShareApi::serializeRefreshQueueInfo(const ShareManager::RefreshTaskQueueInfo& aRefreshQueueInfo) noexcept {
+	json ShareApi::serializeRefreshQueueInfo(const RefreshTaskQueueInfo& aRefreshQueueInfo) noexcept {
 		return {
 			{ "task", !aRefreshQueueInfo.token ? JsonUtil::emptyJson : json({
 				{ "id", json(*aRefreshQueueInfo.token) },
@@ -212,11 +217,11 @@ namespace webserver {
 		};
 	}
 
-	string ShareApi::refreshResultToString(ShareManager::RefreshTaskQueueResult aRefreshQueueResult) noexcept {
+	string ShareApi::refreshResultToString(RefreshTaskQueueResult aRefreshQueueResult) noexcept {
 		switch (aRefreshQueueResult) {
-			case ShareManager::RefreshTaskQueueResult::EXISTS: return "exists";
-			case ShareManager::RefreshTaskQueueResult::QUEUED: return "queued";
-			case ShareManager::RefreshTaskQueueResult::STARTED: return "started";
+			case RefreshTaskQueueResult::EXISTS: return "exists";
+			case RefreshTaskQueueResult::QUEUED: return "queued";
+			case RefreshTaskQueueResult::STARTED: return "started";
 		}
 
 		dcassert(0);
@@ -248,12 +253,20 @@ namespace webserver {
 		{
 			unique_ptr<SearchQuery> matcher(SearchQuery::getSearch(s));
 			try {
-				ShareManager::getInstance()->adcSearch(results, *matcher, profile, CID(), s->path);
+				ShareManager::getInstance()->search(results, *matcher, profile, nullptr, s->path);
 			} catch (...) {}
 		}
 
 		// Serialize results
 		aRequest.setResponseBody(Serializer::serializeList(results, serializeShareItem));
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return ShareApi::handleGetFilesByVirtual(ApiRequest& aRequest) {
+		return websocketpp::http::status_code::ok;
+	}
+
+	api_return ShareApi::handleGetFilesByReal(ApiRequest& aRequest) {
 		return websocketpp::http::status_code::ok;
 	}
 
@@ -416,7 +429,7 @@ namespace webserver {
 			complete = aRequest.defer(),
 			callerPtr = aRequest.getOwnerPtr()
 		] {
-			ShareManager::RefreshTaskQueueInfo refreshInfo;
+			RefreshTaskQueueInfo refreshInfo;
 			const auto refreshF = [&] {
 				refreshInfo = ShareManager::getInstance()->refreshPathsHookedThrow(priority, paths, callerPtr);
 			};

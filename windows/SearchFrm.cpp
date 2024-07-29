@@ -33,6 +33,7 @@
 #include <airdcpp/Search.h>
 #include <airdcpp/SearchInstance.h>
 #include <airdcpp/SearchManager.h>
+#include <airdcpp/SearchQuery.h>
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/TimerManager.h>
 

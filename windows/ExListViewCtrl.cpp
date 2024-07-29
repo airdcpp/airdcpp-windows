@@ -20,6 +20,7 @@
 #include "Resource.h"
 
 #include "ExListViewCtrl.h"
+#include "WinUtil.h"
 
 // TODO: make sure that moved items maintain their selection state
 int ExListViewCtrl::moveItem(int oldPos, int newPos) {
@@ -169,6 +170,44 @@ int ExListViewCtrl::insert(int nItem, TStringList& aList, int iImage, LPARAM lPa
 	for(TStringIter j = aList.begin(); j != aList.end(); ++j, k++) {
 		SetItemText(i, k, j->c_str());
 	}
-	return i;
-	
+	return i;	
 }
+
+
+int CALLBACK ExListViewCtrl::CompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort) {
+	ExListViewCtrl* p = (ExListViewCtrl*)lParamSort;
+	TCHAR buf[128];
+	TCHAR buf2[128];
+
+	int na = (int)lParam1;
+	int nb = (int)lParam2;
+	// This is a trick, so that if fun() returns something bigger than one, use the
+	// internal default sort functions
+	int result = p->sortType;
+	if (result == SORT_FUNC) {
+		result = p->fun(p->GetItemData(na), p->GetItemData(nb), p->sortColumn);
+	}
+
+	if (result == SORT_STRING) {
+		p->GetItemText(na, p->sortColumn, buf, 128);
+		p->GetItemText(nb, p->sortColumn, buf2, 128);
+		result = Util::DefaultSort(buf, buf2);
+	} else if (result == SORT_INT) {
+		p->GetItemText(na, p->sortColumn, buf, 128);
+		p->GetItemText(nb, p->sortColumn, buf2, 128);
+		result = compare(_tstoi(buf), _tstoi(buf2));
+	} else if (result == SORT_FLOAT) {
+		p->GetItemText(na, p->sortColumn, buf, 128);
+		p->GetItemText(nb, p->sortColumn, buf2, 128);
+		result = compare(_tstof(buf), _tstof(buf2));
+	} else if (result == SORT_BYTES) {
+		p->GetItemText(na, p->sortColumn, buf, 128);
+		p->GetItemText(nb, p->sortColumn, buf2, 128);
+		result = compare(WinUtil::toBytes(buf), WinUtil::toBytes(buf2));
+	}
+	if (!p->ascending)
+		result = -result;
+
+	return result;
+}
+

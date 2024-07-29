@@ -48,8 +48,8 @@ namespace webserver {
 
 		api_return handleRenamePath(ApiRequest& aRequest);
 
-		void on(HashManagerListener::DirectoryHashed, const string& aPath, int aFilesHashed, int64_t aSizeHashed, time_t aHashDuration, int aHasherId) noexcept override;
-		void on(HashManagerListener::HasherFinished, int aDirshashed, int aFilesHashed, int64_t aSizeHashed, time_t aHashDuration, int aHasherId) noexcept override;
+		void on(HashManagerListener::DirectoryHashed, const string& aPath, const HasherStats& aStats, int aHasherId) noexcept override;
+		void on(HashManagerListener::HasherFinished, int aDirsHashed, const HasherStats& aStats, int aHasherId) noexcept override;
 
 		void on(HashManagerListener::MaintananceStarted) noexcept override;
 		void on(HashManagerListener::MaintananceFinished) noexcept override;

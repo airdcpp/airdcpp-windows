@@ -85,7 +85,7 @@ class TypedListViewCtrl : public CWindowImpl<TypedListViewCtrl<T, ctrlId, style>
 	public ListViewArrows<TypedListViewCtrl<T, ctrlId, style> >
 {
 public:
-	TypedListViewCtrl() : sortColumn(-1), sortAscending(true), hBrBg(WinUtil::bgBrush), leftMargin(0), noDefaultItemImages(false) { }
+	TypedListViewCtrl() { }
 	~TypedListViewCtrl() { for_each(columnList.begin(), columnList.end(), DeleteFunction()); }
 
 	typedef TypedListViewCtrl<T, ctrlId, style> thisClass;
@@ -125,7 +125,7 @@ public:
 
 	class iterator : public ::iterator<random_access_iterator_tag, T*> {
 	public:
-		iterator() : typedList(NULL), cur(0), cnt(0) { }
+		iterator() { }
 		iterator(const iterator& rhs) : typedList(rhs.typedList), cur(rhs.cur), cnt(rhs.cnt) { }
 		iterator& operator=(const iterator& rhs) { typedList = rhs.typedList; cur = rhs.cur; cnt = rhs.cnt; return *this; }
 
@@ -164,9 +164,9 @@ public:
 				cur = cnt;
 		}
 		friend class thisClass;
-		thisClass* typedList;
-		int cur;
-		int cnt;
+		thisClass* typedList = nullptr;
+		int cur = 0;
+		int cnt = 0;
 	};
 
 	LRESULT onChar(UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
@@ -737,12 +737,12 @@ public:
 
 	typedef vector<ColumnInfo*> ColumnList;
 	ColumnList& getColumnList() { return columnList; }
-	bool noDefaultItemImages;
+	bool noDefaultItemImages = false;
 private:
-	int sortColumn;
-	bool sortAscending;
-	int leftMargin;
-	HBRUSH hBrBg;
+	int sortColumn = -1;
+	bool sortAscending = true;
+	int leftMargin = 0;
+	HBRUSH hBrBg = WinUtil::bgBrush;
 	CMenu headerMenu;	
 
 	static int CALLBACK compareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort) {

@@ -18,6 +18,7 @@
 
 #include "stdinc.h"
 
+#include <airdcpp/HashedFile.h>
 #include <airdcpp/SettingsManager.h>
 
 #include <web-server/JsonUtil.h>
@@ -118,25 +119,25 @@ namespace webserver {
 		updateDbStatus(false);
 	}
 
-	void HashApi::on(HashManagerListener::DirectoryHashed, const string& aPath, int aFilesHashed, int64_t aSizeHashed, time_t aHashDuration, int aHasherId) noexcept {
+	void HashApi::on(HashManagerListener::DirectoryHashed, const string& aPath, const HasherStats& aStats, int aHasherId) noexcept {
 		maybeSend("hasher_directory_finished", [&] { 
 			return json({
 				{ "path", aPath },
-				{ "size", aSizeHashed },
-				{ "files", aFilesHashed },
-				{ "duration", aHashDuration },
+				{ "size", aStats.sizeHashed },
+				{ "files", aStats.filesHashed },
+				{ "duration", aStats.hashTime },
 				{ "hasher_id", aHasherId },
 			});
 		});
 	}
 
-	void HashApi::on(HashManagerListener::HasherFinished, int aDirshashed, int aFilesHashed, int64_t aSizeHashed, time_t aHashDuration, int aHasherId) noexcept {
+	void HashApi::on(HashManagerListener::HasherFinished, int aDirsHashed, const HasherStats& aStats, int aHasherId) noexcept {
 		maybeSend("hasher_finished", [&] {
 			return json({
-				{ "size", aSizeHashed },
-				{ "files", aFilesHashed },
-				{ "directories", aDirshashed },
-				{ "duration", aHashDuration },
+				{ "size", aStats.sizeHashed },
+				{ "files", aStats.filesHashed },
+				{ "directories", aDirsHashed },
+				{ "duration", aStats.hashTime },
 				{ "hasher_id", aHasherId },
 			});
 		});

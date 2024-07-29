@@ -23,7 +23,8 @@
 #include "SearchFrm.h"
 #include "WinUtil.h"
 
-#include <airdcpp/ShareManager.h>
+#include <airdcpp/SearchQuery.h>
+// #include <airdcpp/ShareManager.h>
 #include <airdcpp/ResourceManager.h>
 
 string SpyFrame::id = "SpyFrame";
@@ -58,12 +59,10 @@ LRESULT SpyFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 
 	ctrlSearches.setSort(COLUMN_COUNT, ExListViewCtrl::SORT_INT, false);
 
-	ShareManager::getInstance()->setHits(0);
-
 	WinUtil::SetIcon(m_hWnd, IDI_SEARCHSPY);
 
 
-	ClientManager::getInstance()->addListener(this);
+	SearchManager::getInstance()->addListener(this);
 	TimerManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
 
@@ -73,7 +72,7 @@ LRESULT SpyFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 
 LRESULT SpyFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closed){
-		ClientManager::getInstance()->removeListener(this);
+		SearchManager::getInstance()->removeListener(this);
 		TimerManager::getInstance()->removeListener(this);
 		SettingsManager::getInstance()->removeListener(this);
 		bHandled = TRUE;
@@ -137,46 +136,60 @@ void SpyFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	ctrlSearches.MoveWindow(&rect);
 }
 
+void SpyFrame::updateStatus() noexcept {
+	ctrlStatus.SetText(2, (TSTRING(TOTAL) + _T(" ") + Util::toStringW(total)).c_str());
+	ctrlStatus.SetText(4, (TSTRING(HIT_COUNT) + _T(": ") + Util::toStringW(hits)).c_str());
+	double ratio = total > 0 ? ((double)hits) / (double)total : 0.0;
+	ctrlStatus.SetText(5, (TSTRING(HIT_RATIO) + _T(" ") + Util::toStringW(ratio)).c_str());
+}
+
+void SpyFrame::addList(const tstring& aString) noexcept {
+	int j = ctrlSearches.find(aString);
+	if (j == -1) {
+		TStringList a;
+		a.push_back(aString);
+		a.push_back(Util::toStringW(1));
+		a.push_back(Text::toT(Util::getTimeString()));
+		ctrlSearches.insert(a);
+		if (ctrlSearches.GetItemCount() > 500) {
+			ctrlSearches.DeleteItem(ctrlSearches.GetItemCount() - 1);
+		}
+	} else {
+		TCHAR tmp[32];
+		ctrlSearches.GetItemText(j, COLUMN_COUNT, tmp, 32);
+		ctrlSearches.SetItemText(j, COLUMN_COUNT, Util::toStringW(Util::toInt(Text::fromT(tmp)) + 1).c_str());
+		ctrlSearches.GetItemText(j, COLUMN_TIME, tmp, 32);
+		ctrlSearches.SetItemText(j, COLUMN_TIME, Text::toT(Util::getTimeString()).c_str());
+		if (ctrlSearches.getSortColumn() == COLUMN_COUNT)
+			ctrlSearches.resort();
+		if (ctrlSearches.getSortColumn() == COLUMN_TIME)
+			ctrlSearches.resort();
+	}
+}
+
 LRESULT SpyFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-	if(wParam == SEARCH) {
-		tstring* x = (tstring*)lParam;
+	if (wParam == INCOMING_SEARCH) {
+		auto searchInfo = (IncomingSearchInfo*)lParam;
 
 		total++;
+		if (searchInfo->hasResults) {
+			hits++;
+		}
 
 		// Not thread safe, but who cares really...
 		perSecond[cur]++;
 
-		int j = ctrlSearches.find(*x);
-		if(j == -1) {
-			TStringList a;
-			a.push_back(*x);
-			a.push_back(Util::toStringW(1));
-			a.push_back(Text::toT(Util::getTimeString()));			
-			ctrlSearches.insert(a);
-			if(ctrlSearches.GetItemCount() > 500) {
-				ctrlSearches.DeleteItem(ctrlSearches.GetItemCount() - 1);
-			}
-		} else {
-			TCHAR tmp[32];
-			ctrlSearches.GetItemText(j, COLUMN_COUNT, tmp, 32);
-			ctrlSearches.SetItemText(j, COLUMN_COUNT, Util::toStringW(Util::toInt(Text::fromT(tmp))+1).c_str());
-			ctrlSearches.GetItemText(j, COLUMN_TIME, tmp, 32);
-			ctrlSearches.SetItemText(j, COLUMN_TIME, Text::toT(Util::getTimeString()).c_str());
-			if(ctrlSearches.getSortColumn() == COLUMN_COUNT )
-				ctrlSearches.resort();
-			if(ctrlSearches.getSortColumn() == COLUMN_TIME )
-				ctrlSearches.resort();
-		}
-		delete x;
+		addList(searchInfo->str);
+		delete searchInfo;
 
-		ctrlStatus.SetText(2, (TSTRING(TOTAL) + _T(" ") + Util::toStringW(total)).c_str());
-		ctrlStatus.SetText(4, (TSTRING(HIT_COUNT) + _T(": ") + Util::toStringW(ShareManager::getInstance()->getHits())).c_str());
-		double ratio = total > 0 ? ((double)ShareManager::getInstance()->getHits()) / (double)total : 0.0;
-		ctrlStatus.SetText(5, (TSTRING(HIT_RATIO) + _T(" ") + Util::toStringW(ratio)).c_str());
+		updateStatus();
 	} else if(wParam == TICK_AVG) {
 		float* x = (float*)lParam;
 		ctrlStatus.SetText(3, (TSTRING(AVERAGE) + _T(" ") + Util::toStringW(*x)).c_str());
 		delete x;
+	} else if (wParam == OUTGOING_RESPONSES) {
+		hits++;
+		updateStatus();
 	}
 
 	return 0;
@@ -216,36 +229,25 @@ LRESULT SpyFrame::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/,
 	return 0;
 }
 
-void SpyFrame::on(ClientManagerListener::IncomingSearch, const string& s) noexcept {
-	if(ignoreTth && s.compare(0, 4, "TTH:") == 0)
-		return;
-	tstring* x = new tstring(Text::toT(s));
-	tstring::size_type i = 0;
-	while( (i=x->find(_T('$'))) != string::npos) {
-		(*x)[i] = _T(' ');
-	}
-	PostMessage(WM_SPEAKER, SEARCH, (LPARAM)x);
-}
-
-void SpyFrame::on(ClientManagerListener::IncomingADCSearch, const AdcCommand& adc) noexcept {
+void SpyFrame::on(SearchManagerListener::IncomingSearch, const SearchQuery& aQuery, const SearchResultList& aResults) noexcept {
 	string searchStr;
-	if (adc.getParam("TR", 0, searchStr)) {
+	if (aQuery.root) {
 		if (ignoreTth)
 			return;
 
-		//make it consistent with the nmdc format...
-		searchStr = "TTH:" + searchStr;
+		searchStr = "TTH:" + (*aQuery.root).toBase32();
 	} else {
-		StringList tmp;
-		if (adc.getParam("AN", 0, tmp)) {
-			searchStr = Util::toString(" ", tmp);
-		} else {
-			return;
+		for (const auto& p : aQuery.include.getPatterns()) {
+			if (!searchStr.empty()) {
+				searchStr += " ";
+			}
+
+			searchStr += p.str();
 		}
 	}
 
-	tstring* x = new tstring(Text::toT(searchStr));
-	PostMessage(WM_SPEAKER, SEARCH, (LPARAM)x);
+	auto info = new IncomingSearchInfo({ Text::toT(searchStr), !aResults.empty() });
+	PostMessage(WM_SPEAKER, INCOMING_SEARCH, (LPARAM)info);
 }
 
 void SpyFrame::on(TimerManagerListener::Second, uint64_t) noexcept {
@@ -253,7 +255,7 @@ void SpyFrame::on(TimerManagerListener::Second, uint64_t) noexcept {
 	for(int i = 0; i < AVG_TIME; ++i) {
 		(*f) += (float)perSecond[i];
 	}
-	(*f) /= AVG_TIME;
+	(*f) /= static_cast<float>(AVG_TIME);
 		
 	cur = (cur + 1) % AVG_TIME;
 	perSecond[cur] = 0;
@@ -261,17 +263,19 @@ void SpyFrame::on(TimerManagerListener::Second, uint64_t) noexcept {
 }
 
 void SpyFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
-	bool refresh = false;
-	if(ctrlSearches.GetBkColor() != WinUtil::bgColor) {
+	auto refresh = false;
+	if (ctrlSearches.GetBkColor() != WinUtil::bgColor) {
 		ctrlSearches.SetBkColor(WinUtil::bgColor);
 		ctrlSearches.SetTextBkColor(WinUtil::bgColor);
 		refresh = true;
 	}
-	if(ctrlSearches.GetTextColor() != WinUtil::textColor) {
+
+	if (ctrlSearches.GetTextColor() != WinUtil::textColor) {
 		ctrlSearches.SetTextColor(WinUtil::textColor);
 		refresh = true;
 	}
-	if(refresh == true) {
+
+	if (refresh) {
 		RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	}
 }

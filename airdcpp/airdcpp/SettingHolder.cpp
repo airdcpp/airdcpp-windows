@@ -24,6 +24,7 @@
 #include "QueueManager.h"
 #include "SettingHolder.h"
 #include "ShareManager.h"
+#include "Socket.h"
 #include "UpdateManager.h"
 #include "UploadManager.h"
 

@@ -24,6 +24,7 @@
 #include <airdcpp/LogManager.h>
 #include <airdcpp/QueueManager.h>
 #include <airdcpp/SearchManager.h>
+#include <airdcpp/SearchQuery.h>
 #include <airdcpp/SearchResult.h>
 #include <airdcpp/ShareManager.h>
 #include <airdcpp/SimpleXML.h>

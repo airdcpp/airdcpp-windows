@@ -27,6 +27,7 @@
 #include "ResourceManager.h"
 #include "ScopedFunctor.h"
 #include "SearchInstance.h"
+#include "SearchQuery.h"
 #include "SearchResult.h"
 #include "ShareManager.h"
 #include "SimpleXML.h"
@@ -667,10 +668,9 @@ void SearchManager::onPSR(const AdcCommand& aCmd, UserPtr from, const string& aR
 
 }
 
-void SearchManager::respond(const AdcCommand& adc, const OnlineUser& aUser, bool aIsUdpActive, const string& aHubIpPort, ProfileToken aProfile) {
+void SearchManager::respond(const AdcCommand& adc, const OnlineUser& aUser, bool aIsUdpActive, const string& aHubIpPort, ProfileToken aProfile) noexcept {
 	auto isDirect = adc.getType() == 'D';
 
-	string sudpKey;
 	string path = ADC_ROOT_STR;
 	int maxResults = aIsUdpActive ? 10 : 5;
 	bool replyDirect = false;
@@ -687,11 +687,15 @@ void SearchManager::respond(const AdcCommand& adc, const OnlineUser& aUser, bool
 	SearchResultList results;
 	SearchQuery srch(adc.getParameters(), maxResults);
 
+	ScopedFunctor([&] {
+		fire(SearchManagerListener::IncomingSearch(), srch, results);
+	});
+
 	string token;
 	adc.getParam("TO", 0, token);
 
 	try {
-		ShareManager::getInstance()->adcSearch(results, srch, aProfile, aUser.getUser()->getCID(), path, token.find("/as") != string::npos);
+		ShareManager::getInstance()->search(results, srch, aProfile, aUser.getUser(), path, token.find("/as") != string::npos);
 	} catch(const ShareException& e) {
 		if (replyDirect) {
 			//path not found (direct search)
@@ -736,12 +740,15 @@ void SearchManager::respond(const AdcCommand& adc, const OnlineUser& aUser, bool
 		goto end;
 	}
 
-	adc.getParam("KY", 0, sudpKey);
-	for (const auto& sr: results) {
-		AdcCommand cmd = sr->toRES(AdcCommand::TYPE_UDP);
-		if(!token.empty())
-			cmd.addParam("TO", token);
-		ClientManager::getInstance()->sendUDP(cmd, aUser.getUser()->getCID(), false, false, sudpKey, aUser.getHubUrl());
+	if (!results.empty()) {
+		string sudpKey;
+		adc.getParam("KY", 0, sudpKey);
+		for (const auto& sr: results) {
+			AdcCommand cmd = sr->toRES(AdcCommand::TYPE_UDP);
+			if(!token.empty())
+				cmd.addParam("TO", token);
+			ClientManager::getInstance()->sendUDP(cmd, aUser.getUser()->getCID(), false, false, sudpKey, aUser.getHubUrl());
+		}
 	}
 
 end:
@@ -753,6 +760,77 @@ end:
 		c.addParam("RC", Util::toString(results.size()));
 
 		aUser.getClient()->send(c);
+	}
+}
+
+void SearchManager::respond(Client* aClient, const string& aSeeker, int aSearchType, int64_t aSize, int aFileType, const string& aString, bool aIsPassive) noexcept {
+	SearchResultList results;
+
+	auto maxResults = aIsPassive ? 5 : 10;
+	auto srch = SearchQuery(aString, static_cast<Search::SizeModes>(aSearchType), aSize, static_cast<Search::TypeModes>(aFileType), maxResults);
+	auto shareProfile = aClient->get(HubSettings::ShareProfile);
+	ShareManager::getInstance()->search(results, srch, shareProfile, nullptr, ADC_ROOT_STR, false);
+
+	fire(SearchManagerListener::IncomingSearch(), srch, results);
+
+	if (results.size() > 0) {
+		if (aIsPassive) {
+			string name = aSeeker.substr(4);
+			// Good, we have a passive seeker, those are easier...
+			string str;
+			for (const auto& sr: results) {
+				str += sr->toSR(*aClient);
+				str[str.length() - 1] = 5;
+				str += Text::fromUtf8(name, aClient->get(HubSettings::NmdcEncoding));
+				str += '|';
+			}
+
+			if (str.size() > 0)
+				aClient->send(str);
+
+		} else {
+			try {
+				string ip, port;
+
+				Util::parseIpPort(aSeeker, ip, port);
+
+				if (port.empty())
+					port = "412";
+
+				for (const auto& sr : results) {
+					auto data = sr->toSR(*aClient);
+					ClientManager::getInstance()->sendUDP(data, ip, port);
+				}
+			} catch (...) {
+				dcdebug("Search caught error\n");
+			}
+		}
+	} else if (!aIsPassive && (aFileType == Search::TYPE_TTH) && (aString.compare(0, 4, "TTH:") == 0)) {
+		if (SETTING(EXTRA_PARTIAL_SLOTS) == 0) //disable partial uploads by setting 0
+			return;
+
+		PartsInfo partialInfo;
+		string bundle;
+		bool add = false, reply = false;
+		TTHValue aTTH(aString.substr(4));
+		if (!QueueManager::getInstance()->handlePartialSearch(NULL, aTTH, partialInfo, bundle, reply, add)) {
+			return;
+		}
+
+		string ip, port;
+		Util::parseIpPort(aSeeker, ip, port);
+
+		if (port.empty())
+			return;
+
+		try {
+			AdcCommand cmd = SearchManager::getInstance()->toPSR(true, aClient->getMyNick(), aClient->getIpPort(), aTTH.toBase32(), partialInfo);
+			auto data = cmd.toString(ClientManager::getInstance()->getMe()->getCID());
+
+			ClientManager::getInstance()->sendUDP(data, ip, port);
+		} catch (...) {
+			dcdebug("Partial search caught error\n");
+		}
 	}
 }
 

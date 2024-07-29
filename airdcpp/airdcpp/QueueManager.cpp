@@ -32,6 +32,7 @@
 #include "ErrorCollector.h"
 #include "FileReader.h"
 #include "HashManager.h"
+#include "HashedFile.h"
 #include "LogManager.h"
 #include "ResourceManager.h"
 #include "ScopedFunctor.h"

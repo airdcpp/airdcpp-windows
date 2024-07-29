@@ -415,7 +415,7 @@ void NmdcHub::onLine(const string& aLine) noexcept {
 					return;
 			}
 
-			fire(ClientListener::NmdcSearch(), this, seeker, a, Util::toInt64(size), type, terms, isPassive);
+			SearchManager::getInstance()->respond(this, seeker, a, Util::toInt64(size), type, terms, isPassive);
 		}
 	} else if(cmd == "MyINFO") {
 		string::size_type i, j;

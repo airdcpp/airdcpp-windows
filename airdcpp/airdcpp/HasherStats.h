@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2024 AirDC++ Project
+ * Copyright (C) 2001-2024 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,30 +16,32 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef DCPLUSPLUS_DCPP_HASHEDFILEINFO_H
-#define DCPLUSPLUS_DCPP_HASHEDFILEINFO_H
+#ifndef DCPLUSPLUS_DCPP_HASHERSTATS_H
+#define DCPLUSPLUS_DCPP_HASHERSTATS_H
 
 #include "typedefs.h"
-#include "GetSet.h"
-#include "MerkleTree.h"
 
 namespace dcpp {
 
-class HashedFile {
-public:
-	HashedFile(uint64_t aTimeStamp = 0, int64_t aSize = -1) : timeStamp(aTimeStamp), size(aSize) {}
-	HashedFile(const TTHValue& aRoot, uint64_t aTimeStamp, int64_t aSize) :
-		root(aRoot), timeStamp(aTimeStamp), size(aSize) { }
+	class HasherStats {
+	public:
+		HasherStats(HasherStats* aParent = nullptr) : parent(aParent) {}
 
-	~HashedFile() { }
+		int64_t sizeHashed = 0;
+		uint64_t hashTime = 0;
+		int filesHashed = 0;
 
-	GETSET(TTHValue, root, Root);
-	GETSET(uint64_t, timeStamp, TimeStamp);
-	GETSET(int64_t, size, Size);
-};
+		string formatTime() const noexcept;
+		string formatSpeed() const noexcept;
+		string formatSize() const noexcept;
 
-typedef std::vector<pair<std::string, HashedFile>> RenameList;
+		void addFile(int64_t aSize, uint64_t aHashTime) noexcept;
 
-}
+		HasherStats(const HasherStats&) = delete;
+	private:
+		HasherStats* parent;
+	};
 
-#endif // !defined(DCPLUSPLUS_DCPP_HASHEDFILEINFO_H)
+} // namespace dcpp
+
+#endif // !defined(DCPLUSPLUS_DCPP_HASHERSTATS_H)

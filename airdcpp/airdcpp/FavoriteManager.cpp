@@ -20,6 +20,7 @@
 #include "FavoriteManager.h"
 
 #include "ClientManager.h"
+#include "HintedUser.h"
 #include "RelevanceSearch.h"
 #include "ResourceManager.h"
 #include "ShareManager.h"
