@@ -344,7 +344,7 @@ namespace webserver {
 	}
 
 	api_return ShareApi::handleAddExclude(ApiRequest& aRequest) {
-		auto path = JsonUtil::getField<string>("path", aRequest.getRequestBody(), false);
+		auto path = Util::validatePath(JsonUtil::getField<string>("path", aRequest.getRequestBody(), false), true);
 
 		try {
 			ShareManager::getInstance()->addExcludedPath(path);
