@@ -75,6 +75,11 @@ namespace webserver {
 			QUEUE_FILE_FINISHED_HOOK_TIMEOUT,
 			QUEUE_BUNDLE_FINISHED_HOOK_TIMEOUT,
 
+			FILELIST_LOAD_DIRECTORY_HOOK_TIMEOUT,
+			FILELIST_LOAD_FILE_HOOK_TIMEOUT,
+
+			SEARCH_INCOMING_USER_RESULT_HOOK_TIMEOUT,
+
 			LIST_MENUITEMS_HOOK_TIMEOUT,
 		};
 
@@ -117,7 +122,6 @@ namespace webserver {
 		void on(WebServerManagerListener::LoadSettings, const MessageCallback& aErrorF) noexcept override;
 		void on(WebServerManagerListener::SaveSettings, const MessageCallback& aErrorF) noexcept override;
 
-		bool loadLegacySettings(const MessageCallback& aErrorF) noexcept;
 		void loadLegacyServer(SimpleXML& aXml, const string& aTagName, ServerSettingItem& aPort, ServerSettingItem& aBindAddress, bool aTls) noexcept;
 	};
 

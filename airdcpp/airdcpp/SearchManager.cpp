@@ -396,7 +396,7 @@ void SearchManager::onSR(const string& x, const string& aRemoteIP /*Util::emptyS
 	fire(SearchManagerListener::SR(), sr);
 }
 
-void SearchManager::onRES(const AdcCommand& cmd, const UserPtr& from, const string& remoteIp) {
+void SearchManager::onRES(const AdcCommand& cmd, const UserPtr& aFrom, const string& aRemoteIp) {
 	int freeSlots = -1;
 	int64_t size = -1;
 	string adcPath;
@@ -425,34 +425,43 @@ void SearchManager::onRES(const AdcCommand& cmd, const UserPtr& from, const stri
 		}
 	}
 
-	if(freeSlots != -1 && size != -1) {
-		//connect to a correct hub
-		string hubUrl, connection;
-		uint8_t slots = 0;
-		if (!ClientManager::getInstance()->connectADCSearchResult(from->getCID(), token, hubUrl, connection, slots)) {
-			return;
-		}
-
-		if (adcPath.empty()) {
-			return;
-		}
-
-		auto type = adcPath.back() == ADC_SEPARATOR ? SearchResult::TYPE_DIRECTORY : SearchResult::TYPE_FILE;
-		if (type == SearchResult::TYPE_FILE && tth.empty())
-			return;
-
-		TTHValue th;
-		if (type == SearchResult::TYPE_DIRECTORY) {
-			//calculate a TTH from the directory name and size
-			th = AirUtil::getTTH(type == SearchResult::TYPE_FILE ? Util::getAdcFileName(adcPath) : Util::getAdcLastDir(adcPath), size);
-		} else {
-			th = TTHValue(tth);
-		}
-		
-		auto sr = make_shared<SearchResult>(HintedUser(from, hubUrl), type, slots, (uint8_t)freeSlots, size,
-			adcPath, remoteIp, th, token, date, connection, DirectoryContentInfo(folders, files));
-		fire(SearchManagerListener::SR(), sr);
+	// Validate result
+	if (freeSlots == -1 || size == -1 || adcPath.empty()) {
+		return;
 	}
+
+	auto type = adcPath.back() == ADC_SEPARATOR ? SearchResult::TYPE_DIRECTORY : SearchResult::TYPE_FILE;
+	if (type == SearchResult::TYPE_FILE && tth.empty()) {
+		return;
+	}
+
+	// Connect the result to a correct hub
+	string hubUrl, connection;
+	uint8_t slots = 0;
+	if (!ClientManager::getInstance()->connectADCSearchResult(aFrom->getCID(), token, hubUrl, connection, slots)) {
+		return;
+	}
+
+	// Parse TTH
+	TTHValue th;
+	if (type == SearchResult::TYPE_DIRECTORY) {
+		// Generate TTH from the directory name and size
+		th = AirUtil::getTTH(type == SearchResult::TYPE_FILE ? Util::getAdcFileName(adcPath) : Util::getAdcLastDir(adcPath), size);
+	} else {
+		th = TTHValue(tth);
+	}
+
+	auto sr = make_shared<SearchResult>(HintedUser(aFrom, hubUrl), type, slots, (uint8_t)freeSlots, size,
+		adcPath, aRemoteIp, th, token, date, connection, DirectoryContentInfo(folders, files));
+
+	// Hooks
+	auto error = incomingSearchResultHook.runHooksError(this, sr);
+	if (error) {
+		dcdebug("Hook rejection for search result %s from user %s (%s)\n", sr->getAdcPath().c_str(), ClientManager::getInstance()->getFormatedNicks(sr->getUser()).c_str(), ActionHookRejection::formatError(error).c_str());
+		return;
+	}
+
+	fire(SearchManagerListener::SR(), sr);
 }
 
 void SearchManager::on(TimerManagerListener::Minute, uint64_t aTick) noexcept {

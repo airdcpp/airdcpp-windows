@@ -21,6 +21,7 @@
 #include "FileQueue.h"
 #include "SettingsManager.h"
 #include "Text.h"
+#include "TimerManager.h"
 
 namespace dcpp {
 

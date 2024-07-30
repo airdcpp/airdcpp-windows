@@ -188,7 +188,7 @@ public:
 				continue;
 				
 			HintedUser user(u, Util::emptyString);
-			unique_ptr<DirectoryListing> dl(new DirectoryListing(user, false, i, false, false));
+			unique_ptr<DirectoryListing> dl(new DirectoryListing(user, false, i, false, nullptr, false));
 			try {
 				dl->loadFile();
 				int matches=0, newFiles=0;

@@ -24,6 +24,7 @@
 #include "SettingsManagerListener.h"
 #include "TimerManagerListener.h"
 
+#include "ActionHook.h"
 #include "AdcCommand.h"
 #include "CriticalSection.h"
 #include "GetSet.h"
@@ -75,7 +76,9 @@ private:
 public:
 	static const string& getTypeStr(int aType) noexcept;
 	static bool isDefaultTypeStr(const string& aType) noexcept;
-	
+
+	ActionHook<nullptr_t, const SearchResultPtr&> incomingSearchResultHook;
+
 	SearchQueueInfo search(const SearchPtr& aSearch) noexcept;
 	SearchQueueInfo search(StringList& aHubUrls, const SearchPtr& aSearch, void* aOwner = nullptr) noexcept;
 	

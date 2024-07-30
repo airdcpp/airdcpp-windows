@@ -264,7 +264,7 @@ namespace webserver {
 		}
 	}
 
-	void ShareRootApi::on(HashManagerListener::FileHashed, const string& aFilePath, HashedFile&) noexcept {
+	void ShareRootApi::on(HashManagerListener::FileHashed, const string& aFilePath, HashedFile&, int) noexcept {
 		WLock l(cs);
 		hashedPaths.insert(Util::getFilePath(aFilePath));
 	}

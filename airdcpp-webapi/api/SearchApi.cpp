@@ -34,6 +34,9 @@
 #define DEFAULT_INSTANCE_EXPIRATION_MINUTES 30
 #define SEARCH_TYPE_ID "search_type"
 
+
+#define HOOK_INCOMING_USER_RESULT "search_incoming_user_result"
+
 namespace webserver {
 	StringList SearchApi::subscriptionList = {
 		"search_instance_created",
@@ -44,9 +47,17 @@ namespace webserver {
 	SearchApi::SearchApi(Session* aSession) : 
 		ParentApiModule(TOKEN_PARAM, Access::SEARCH, aSession, subscriptionList, SearchEntity::subscriptionList,
 			[](const string& aId) { return Util::toUInt32(aId); },
-			[](const SearchEntity& aInfo) { return serializeSearchInstance(aInfo.getSearch()); }
+			[](const SearchEntity& aInfo) { return serializeSearchInstance(aInfo.getSearch()); },
+			Access::SEARCH
 		)
 	{
+		createHook(HOOK_INCOMING_USER_RESULT, [this](ActionHookSubscriber&& aSubscriber) {
+			return SearchManager::getInstance()->incomingSearchResultHook.addSubscriber(std::move(aSubscriber), HOOK_HANDLER(SearchApi::incomingUserResultHook));
+		}, [this](const string& aId) {
+			SearchManager::getInstance()->incomingSearchResultHook.removeSubscriber(aId);
+		}, [this] {
+			return SearchManager::getInstance()->incomingSearchResultHook.getSubscribers();
+		});
 
 		METHOD_HANDLER(Access::SEARCH,	METHOD_POST,	(),						SearchApi::handleCreateInstance);
 
@@ -78,6 +89,15 @@ namespace webserver {
 				}
 			}
 		}
+	}
+
+	ActionHookResult<> SearchApi::incomingUserResultHook(const SearchResultPtr& aResult, const ActionHookResultGetter<>& aResultGetter) noexcept {
+		return HookCompletionData::toResult(
+			fireHook(HOOK_INCOMING_USER_RESULT, WEBCFG(SEARCH_INCOMING_USER_RESULT_HOOK_TIMEOUT).num(), [&]() {
+				return SearchEntity::serializeSearchResult(aResult);
+			}),
+			aResultGetter
+		);
 	}
 
 	void SearchApi::on(SearchManagerListener::SearchInstanceCreated, const SearchInstancePtr& aInstance) noexcept {

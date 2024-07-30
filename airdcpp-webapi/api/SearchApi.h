@@ -21,13 +21,14 @@
 
 #include <api/SearchEntity.h>
 
+#include <api/base/HookApiModule.h>
 #include <api/base/HierarchicalApiModule.h>
 
 #include <airdcpp/typedefs.h>
 #include <airdcpp/SearchManagerListener.h>
 
 namespace webserver {
-	class SearchApi: public ParentApiModule<SearchInstanceToken, SearchEntity>, public SearchManagerListener {
+	class SearchApi: public ParentApiModule<SearchInstanceToken, SearchEntity, HookApiModule>, public SearchManagerListener {
 	public:
 		static StringList subscriptionList;
 
@@ -52,6 +53,8 @@ namespace webserver {
 		static json serializeSearchType(const SearchTypePtr& aType) noexcept;
 		static string parseSearchTypeId(ApiRequest& aRequest) noexcept;
 		string createCurrentSessionOwnerId(const string& aSuffix) noexcept;
+
+		ActionHookResult<> incomingUserResultHook(const SearchResultPtr& aResult, const ActionHookResultGetter<>& aResultGetter) noexcept;
 	};
 }
 

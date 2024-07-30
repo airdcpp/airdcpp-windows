@@ -36,6 +36,7 @@
 #include <airdcpp/QueueItem.h>
 #include <airdcpp/QueueManager.h>
 #include <airdcpp/SearchManager.h>
+#include <airdcpp/SearchResult.h>
 #include <airdcpp/ShareManager.h>
 
 namespace webserver {

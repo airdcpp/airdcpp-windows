@@ -19,7 +19,6 @@
 #include "stdinc.h"
 #include "GroupedSearchResult.h"
 
-#include <airdcpp/AirUtil.h>
 #include <airdcpp/GeoManager.h>
 #include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/QueueManager.h>
@@ -35,11 +34,7 @@ namespace dcpp {
 
 		// check the dupe
 		if (SETTING(DUPE_SEARCH)) {
-			if (baseResult->getType() == SearchResult::TYPE_DIRECTORY) {
-				dupe = AirUtil::checkAdcDirectoryDupe(baseResult->getAdcPath(), baseResult->getSize());
-			} else {
-				dupe = AirUtil::checkFileDupe(baseResult->getTTH());
-			}
+			dupe = baseResult->getDupe();
 		}
 
 		children.push_back(aSR);

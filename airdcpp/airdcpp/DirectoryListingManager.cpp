@@ -227,7 +227,8 @@ void DirectoryListingManager::processListHooked(const string& aFileName, const s
 		}
 	}
 
-	auto dl = make_shared<DirectoryListing>(aUser, isPartialList, aFileName, false, false);
+	auto hooks = aFlags & QueueItem::FLAG_MATCH_QUEUE ? nullptr : &loadHooks;
+	auto dl = make_shared<DirectoryListing>(aUser, isPartialList, aFileName, false, hooks, false);
 	try {
 		if (isPartialList) {
 			dl->loadPartialXml(aXml, aRemotePath);
@@ -299,7 +300,7 @@ void DirectoryListingManager::handleDownloadHooked(const DirectoryDownloadPtr& a
 }
 
 void DirectoryListingManager::processListActionHooked(DirectoryListingPtr aList, const string& aPath, int aFlags) noexcept {
-	if(aFlags & QueueItem::FLAG_DIRECTORY_DOWNLOAD) {
+	if (aFlags & QueueItem::FLAG_DIRECTORY_DOWNLOAD) {
 		DirectoryDownloadList downloadItems;
 
 		{
@@ -476,7 +477,7 @@ DirectoryListingPtr DirectoryListingManager::openLocalFileList(const HintedUser&
 }
 
 DirectoryListingPtr DirectoryListingManager::createList(const HintedUser& aUser, bool aPartial, const string& aFileName, bool aIsOwnList) noexcept {
-	auto dl = make_shared<DirectoryListing>(aUser, aPartial, aFileName, true, aIsOwnList);
+	auto dl = make_shared<DirectoryListing>(aUser, aPartial, aFileName, true, &loadHooks, aIsOwnList);
 
 	{
 		WLock l(cs);

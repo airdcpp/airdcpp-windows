@@ -91,6 +91,11 @@ namespace webserver {
 			{ "queue_file_finished_hook_timeout",			ResourceManager::WEB_CFG_QUEUE_FILE_FINISHED_HOOK_TIMEOUT,				60, ApiSettingItem::TYPE_NUMBER, false, { 1, 3600,	ResourceManager::SECONDS_LOWER } },
 			{ "queue_bundle_finished_hook_timeout",			ResourceManager::WEB_CFG_QUEUE_BUNDLE_FINISHED_HOOK_TIMEOUT,			120,ApiSettingItem::TYPE_NUMBER, false, { 1, 3600,	ResourceManager::SECONDS_LOWER } },
 
+			{ "filelist_load_directory_hook_timeout",		ResourceManager::WEB_CFG_FILELIST_LOAD_DIRECTORY_HOOK_TIMEOUT,			5,	ApiSettingItem::TYPE_NUMBER, false, { 1, 3600,	ResourceManager::SECONDS_LOWER } },
+			{ "filelist_load_file_hook_timeout",			ResourceManager::WEB_CFG_FILELIST_LOAD_FILE_HOOK_TIMEOUT,				5,	ApiSettingItem::TYPE_NUMBER, false, { 1, 3600,	ResourceManager::SECONDS_LOWER } },
+
+			{ "search_incoming_user_result_hook_timeout",	ResourceManager::WEB_CFG_SEARCH_INCOMING_USER_RESULT_HOOK_TIMEOUT,		5,	ApiSettingItem::TYPE_NUMBER, false, { 1, 3600,	ResourceManager::SECONDS_LOWER } },
+
 			{ "list_menuitems_hook_timeout",				ResourceManager::WEB_CFG_LIST_MENUITEMS_HOOK_TIMEOUT,					1,	ApiSettingItem::TYPE_NUMBER, false, { 1, 60,	ResourceManager::SECONDS_LOWER } },
 		}),
 		extensionEngines({

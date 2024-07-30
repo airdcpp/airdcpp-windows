@@ -19,6 +19,7 @@
 #include "stdinc.h"
 #include "SearchResult.h"
 
+#include "AirUtil.h"
 #include "Client.h"
 #include "ClientManager.h"
 #include "ScopedFunctor.h"
@@ -226,6 +227,14 @@ bool SearchResult::getRelevance(SearchQuery& aQuery, RelevanceInfo& relevance_, 
 	relevance_.matchRelevance = matchRelevance;
 	relevance_.sourceScoreFactor = sourceScoreFactor;
 	return true;
+}
+
+DupeType SearchResult::getDupe() const noexcept {
+	if (type == SearchResult::TYPE_DIRECTORY) {
+		return AirUtil::checkAdcDirectoryDupe(path, size);
+	} else {
+		return AirUtil::checkFileDupe(tth);
+	}
 }
 
 }

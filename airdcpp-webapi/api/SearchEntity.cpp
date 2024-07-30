@@ -106,9 +106,15 @@ namespace webserver {
 	}
 
 	json SearchEntity::serializeSearchResult(const SearchResultPtr& aSR) noexcept {
-		return {
+		auto isDirectory = aSR->getType() == SearchResult::TYPE_DIRECTORY;
+		return { 
 			{ "id", aSR->getId() },
+			{ "name", aSR->getFileName() },
+			{ "dupe", isDirectory ? Serializer::serializeDirectoryDupe(aSR->getDupe(), aSR->getAdcPath()) : Serializer::serializeFileDupe(aSR->getDupe(), aSR->getTTH()) },
+			{ "type", isDirectory ? Serializer::serializeFolderType(aSR->getContentInfo()) : Serializer::serializeFileType(aSR->getAdcPath()) },
 			{ "path", aSR->getAdcPath() },
+			{ "tth", isDirectory ? Util::emptyString : aSR->getTTH().toBase32() },
+			{ "size", aSR->getSize() },
 			{ "ip", Serializer::serializeIp(aSR->getIP()) },
 			{ "user", Serializer::serializeHintedUser(aSR->getUser()) },
 			{ "connection", aSR->getConnectionInt() },
