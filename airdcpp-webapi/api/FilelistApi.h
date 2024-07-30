@@ -24,7 +24,7 @@
 #include <api/FilelistInfo.h>
 
 #include <airdcpp/typedefs.h>
-#include <airdcpp/DirectoryListingManager.h>
+#include <airdcpp/DirectoryListingManagerListener.h>
 #include <airdcpp/QueueItem.h>
 
 namespace webserver {

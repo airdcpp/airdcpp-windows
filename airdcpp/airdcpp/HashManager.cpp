@@ -19,6 +19,7 @@
 #include "stdinc.h"
 #include "HashManager.h"
 
+#include "Exception.h"
 #include "File.h"
 #include "FileReader.h"
 #include "LogManager.h"

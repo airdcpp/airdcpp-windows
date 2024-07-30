@@ -29,7 +29,6 @@
 #include "PropPage.h"
 
 #include <airdcpp/SettingsManager.h>
-#include <airdcpp/ShareManager.h>
 
 class SharePage : public CPropertyPage<IDD_SHAREPAGE>, public PropPage, public SharePageBase
 {

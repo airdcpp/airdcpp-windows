@@ -191,9 +191,6 @@ public:
 	optional<TempShareToken> isTempShared(const UserPtr& aUser, const TTHValue& aTTH) const noexcept;
 	//tempShares end
 
-	// Get a printable version of various share-related statistics
-	string printStats() const noexcept;
-
 	optional<ShareItemStats> getShareItemStats() const noexcept;
 	ShareSearchStats getSearchMatchingStats() const noexcept;
 
@@ -235,8 +232,6 @@ public:
 	// aIsMajor will regenerate the file list on next time when someone requests it
 	void setProfilesDirty(const ProfileTokenSet& aProfiles, bool aIsMajor) noexcept;
 
-	void removeCachedFilelists() noexcept;
-
 	void shareBundle(const BundlePtr& aBundle) noexcept;
 	void onFileHashed(const string& aRealPath, const HashedFile& aFileInfo) noexcept;
 
@@ -273,6 +268,8 @@ private:
 	uint64_t lastSave = 0;
 	
 	bool shareCacheSaving = false;
+
+	void removeCachedFilelists() noexcept;
 
 	struct RefreshTaskHandler : public ShareTasksManager::RefreshTaskHandler {
 		typedef function<bool(const string& aRefreshPath, const ShareRefreshTask& aTask, ShareRefreshStats& totalStats, ShareBloom* bloom_, ProfileTokenSet& dirtyProfiles_)> PathRefreshF;

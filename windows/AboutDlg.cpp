@@ -25,6 +25,7 @@
 #include "WinUtil.h"
 
 #include <airdcpp/format.h>
+#include <airdcpp/Exception.h>
 #include <airdcpp/HttpDownload.h>
 #include <airdcpp/SimpleXML.h>
 #include <airdcpp/version.h>

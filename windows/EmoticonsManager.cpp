@@ -18,6 +18,7 @@
 
 #include "stdafx.h"
 
+#include <airdcpp/Exception.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/SimpleXML.h>
 #include <airdcpp/Pointer.h>

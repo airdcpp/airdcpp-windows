@@ -19,6 +19,7 @@
 #include "stdinc.h"
 #include "LevelDB.h"
 
+#include "Exception.h"
 #include "File.h"
 #include "LogManager.h"
 #include "ResourceManager.h"

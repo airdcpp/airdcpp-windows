@@ -19,6 +19,7 @@
 #include "stdinc.h"
 #include "ShareTasks.h"
 
+#include "Exception.h"
 #include "LogManager.h"
 #include "HashManager.h"
 #include "ResourceManager.h"

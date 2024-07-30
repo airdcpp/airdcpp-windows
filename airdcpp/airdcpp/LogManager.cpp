@@ -19,6 +19,7 @@
 #include "stdinc.h"
 #include "LogManager.h"
 
+#include "Exception.h"
 #include "File.h"
 #include "StringTokenizer.h"
 #include "TimerManager.h"

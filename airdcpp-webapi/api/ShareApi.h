@@ -22,8 +22,8 @@
 #include <api/base/HookApiModule.h>
 
 #include <airdcpp/typedefs.h>
-#include <airdcpp/ShareManager.h>
 #include <airdcpp/ShareManagerListener.h>
+#include <airdcpp/ShareRefreshTask.h>
 
 namespace webserver {
 	class ShareApi : public HookApiModule, private ShareManagerListener {

@@ -26,6 +26,7 @@
 #include <api/common/Deserializer.h>
 
 #include <airdcpp/AirUtil.h>
+#include <airdcpp/Exception.h>
 #include <airdcpp/File.h>
 #include <airdcpp/Thread.h>
 #include <airdcpp/Util.h>

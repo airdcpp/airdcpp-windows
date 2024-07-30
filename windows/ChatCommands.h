@@ -40,6 +40,7 @@ public:
 	static string ClientVersionInfo();
 
 	static TStringList FindVolumes();
+	static string shareStats() noexcept;
 };
 
 #endif // !defined(CHATCOMMANDS_H)

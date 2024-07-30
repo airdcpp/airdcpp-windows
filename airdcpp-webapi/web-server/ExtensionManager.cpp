@@ -27,6 +27,7 @@
 
 #include <airdcpp/CryptoManager.h>
 #include <airdcpp/Encoder.h>
+#include <airdcpp/Exception.h>
 #include <airdcpp/File.h>
 #include <airdcpp/HttpDownload.h>
 #include <airdcpp/LogManager.h>

@@ -356,6 +356,7 @@ void Hasher::processQueue() noexcept {
 		auto fi = hashFile(wi, dirStats, sfv);
 
 		auto onDirHashed = [&]() -> void {
+			manager->onDirectoryHashed(initialDir, dirStats, hasherID);
 			logHashedDirectory(initialDir, wi.filePath, dirStats);
 
 			totalDirsHashed++;

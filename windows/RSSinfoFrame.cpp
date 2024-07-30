@@ -25,6 +25,7 @@
 #include "ActionUtil.h"
 #include "ResourceLoader.h"
 
+#include <airdcpp/modules/AutoSearchManager.h>
 #include <airdcpp/File.h>
 #include <airdcpp/LogManager.h>
 
@@ -654,6 +655,11 @@ RSSPtr RssInfoFrame::getSelectedFeed() {
 	return nullptr;
 }
 
+RssInfoFrame::ItemInfo::ItemInfo(const RSSDataPtr& aFeedData) : item(aFeedData) {
+	isRelease = AirUtil::isRelease(aFeedData->getTitle());
+	setDupe(isRelease ? AirUtil::checkAdcDirectoryDupe(aFeedData->getTitle(), 0) : DUPE_NONE);
+	isAutosearchDupe = isRelease && AutoSearchManager::getInstance()->getSearchesByString(aFeedData->getTitle()) != AutoSearchList();
+}
 
 const tstring RssInfoFrame::ItemInfo::getText(int col) const {
 

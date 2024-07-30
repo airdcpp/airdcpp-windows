@@ -19,6 +19,7 @@
 #include "stdafx.h"
 
 #include <airdcpp/CryptoManager.h>
+#include <airdcpp/Exception.h>
 
 #include "Resource.h"
 #include "EncryptionPage.h"

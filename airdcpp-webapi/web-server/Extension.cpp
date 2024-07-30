@@ -26,6 +26,7 @@
 #include <web-server/WebServerSettings.h>
 #include <web-server/version.h>
 
+#include <airdcpp/Exception.h>
 #include <airdcpp/File.h>
 
 

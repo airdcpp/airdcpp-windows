@@ -30,6 +30,7 @@
 
 #endif
 
+#include "Exception.h"
 #include "FastAlloc.h"
 #include "File.h"
 #include "LogManager.h"

@@ -18,6 +18,7 @@
 
 #include "stdinc.h"
 
+#include <airdcpp/Exception.h>
 #include <airdcpp/HashedFile.h>
 #include <airdcpp/SettingsManager.h>
 

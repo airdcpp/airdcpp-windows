@@ -21,7 +21,6 @@
 
 #include "compiler.h"
 #include "typedefs.h"
-#include "Exception.h"
 
 namespace dcpp {
 

@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 
+#include <airdcpp/Exception.h>
 #include <airdcpp/SimpleXML.h>
 #include <airdcpp/File.h>
 #include <airdcpp/StringTokenizer.h>

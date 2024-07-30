@@ -23,6 +23,7 @@
 
 #include "AirUtil.h"
 #include "BundleQueue.h"
+#include "Exception.h"
 #include "LogManager.h"
 #include "QueueItem.h"
 #include "SettingsManager.h"

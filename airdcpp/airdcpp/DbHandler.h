@@ -21,7 +21,6 @@
 #define DCPLUSPLUS_DCPP_DBHANDLER_H_
 
 #include "stdinc.h"
-#include "Exception.h"
 #include "Text.h"
 #include "Util.h"
 

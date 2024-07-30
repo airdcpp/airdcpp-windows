@@ -19,8 +19,6 @@
 #ifndef DCPLUSPLUS_DCPP_SETTINGS_MANAGER_H
 #define DCPLUSPLUS_DCPP_SETTINGS_MANAGER_H
 
-#include "Exception.h"
-#include "HubSettings.h"
 #include "SettingItem.h"
 #include "SettingsManagerListener.h"
 #include "Singleton.h"
@@ -29,6 +27,8 @@
 #include "version.h"
 
 namespace dcpp {
+
+struct HubSettings;
 
 // Shouldn't really be in core...
 enum class ToolbarIconEnum {

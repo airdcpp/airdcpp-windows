@@ -21,8 +21,8 @@
 
 #include "ClientManager.h"
 #include "SearchManager.h"
-
 #include "SearchQuery.h"
+#include "TimerManager.h"
 
 
 namespace dcpp {

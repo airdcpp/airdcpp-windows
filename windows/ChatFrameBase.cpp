@@ -937,7 +937,7 @@ bool ChatFrameBase::checkCommand(const tstring& aCmd, tstring& message_, tstring
 			callAsync([=] { addStatusLine(text, LogMessage::SEV_INFO, LogMessage::Type::SYSTEM); });
 		});
 	} else if (stricmp(cmd.c_str(), _T("sharestats")) == 0) {
-		status_ = Text::toT(ShareManager::getInstance()->printStats());
+		status_ = Text::toT(ChatCommands::shareStats());
 	} else if (stricmp(cmd.c_str(), _T("speed")) == 0) {
 		status_ = ChatCommands::Speedinfo();
 	} else if (stricmp(cmd.c_str(), _T("info")) == 0) {

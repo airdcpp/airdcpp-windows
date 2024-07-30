@@ -24,6 +24,7 @@
 #include <api/common/Validation.h>
 #include <web-server/JsonUtil.h>
 
+#include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/QueueManager.h>
 
 namespace webserver {

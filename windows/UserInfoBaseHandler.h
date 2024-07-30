@@ -23,7 +23,6 @@
 #include "OMenu.h"
 
 #include <airdcpp/ClientManager.h>
-#include <airdcpp/FavoriteManager.h>
 #include <airdcpp/HintedUser.h>
 #include <airdcpp/UserInfoBase.h>
 #include <airdcpp/Util.h>

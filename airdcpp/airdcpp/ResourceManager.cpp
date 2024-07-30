@@ -18,6 +18,8 @@
 
 #include "stdinc.h"
 #include "ResourceManager.h"
+
+#include "Exception.h"
 #include "LogManager.h"
 
 #include "SimpleXML.h"

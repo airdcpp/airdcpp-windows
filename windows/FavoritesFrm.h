@@ -26,7 +26,7 @@
 #include "StaticFrame.h"
 #include "ExListViewCtrl.h"
 
-#include <airdcpp/FavoriteManager.h>
+#include <airdcpp/FavoriteManagerListener.h>
 #include <airdcpp/ClientManagerListener.h>
 #include <airdcpp/Client.h>
 

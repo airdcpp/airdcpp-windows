@@ -645,60 +645,6 @@ ShareSearchStats ShareManager::getSearchMatchingStats() const noexcept {
 	return tree->getSearchMatchingStats();
 }
 
-string ShareManager::printStats() const noexcept {
-	auto optionalItemStats = getShareItemStats();
-	if (!optionalItemStats) {
-		return "No files shared";
-	}
-
-	auto itemStats = *optionalItemStats;
-
-	string ret = boost::str(boost::format(
-"\r\n\r\n-=[ Share statistics ]=-\r\n\r\n\
-Share profiles: %d\r\n\
-Shared paths: %d\r\n\
-Total share size: %s\r\n\
-Total shared files: %d (of which %d%% are lowercase)\r\n\
-Unique TTHs: %d (%d%%)\r\n\
-Total shared directories: %d (%d files per directory)\r\n\
-Average age of a file: %s\r\n\
-Average name length of a shared item: %d bytes (total size %s)")
-
-		% itemStats.profileCount
-		% itemStats.rootDirectoryCount
-		% Util::formatBytes(itemStats.totalSize)
-		% itemStats.totalFileCount % Util::countPercentage(itemStats.lowerCaseFiles, itemStats.totalFileCount)
-		% itemStats.uniqueFileCount % Util::countPercentage(itemStats.uniqueFileCount, itemStats.totalFileCount)
-		% itemStats.totalDirectoryCount % Util::countAverage(itemStats.totalFileCount, itemStats.totalDirectoryCount)
-		% Util::formatTime(itemStats.averageFileAge, false, true)
-		% itemStats.averageNameLength
-		% Util::formatBytes(itemStats.totalNameSize)
-	);
-
-	auto searchStats = getSearchMatchingStats();
-	ret += boost::str(boost::format(
-"\r\n\r\n-=[ Search statistics ]=-\r\n\r\n\
-Total incoming searches: %d (%d per second)\r\n\
-Incoming text searches: %d (of which %d were matched per second)\r\n\
-Filtered text searches: %d%% (%d%% of the matched ones returned results)\r\n\
-Average search tokens (non-filtered only): %d (%d bytes per token)\r\n\
-Auto searches (text, ADC only): %d%%\r\n\
-Average time for matching a recursive search: %d ms\r\n\
-TTH searches: %d%% (hash bloom mode: %s)")
-
-		% searchStats.totalSearches % searchStats.totalSearchesPerSecond
-		% searchStats.recursiveSearches % searchStats.unfilteredRecursiveSearchesPerSecond
-		% Util::countPercentage(searchStats.filteredSearches, searchStats.recursiveSearches) % Util::countPercentage(searchStats.recursiveSearchesResponded, searchStats.recursiveSearches - searchStats.filteredSearches)
-		% searchStats.averageSearchTokenCount  % searchStats.averageSearchTokenLength
-		% Util::countAverage(searchStats.autoSearches, searchStats.recursiveSearches)
-		% searchStats.averageSearchMatchMs
-		% Util::countPercentage(searchStats.tthSearches, searchStats.totalSearches)
-		% (SETTING(BLOOM_MODE) != SettingsManager::BLOOM_DISABLED ? "Enabled" : "Disabled") // bloom mode
-	);
-
-	return ret;
-}
-
 void ShareManager::validateRootPath(const string& aRealPath, bool aMatchCurrentRoots) const {
 	validator->validateRootPath(aRealPath);
 

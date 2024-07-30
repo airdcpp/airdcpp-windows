@@ -32,7 +32,7 @@
 #include "DownloadBaseHandler.h"
 
 #include <airdcpp/modules/RSSManager.h>
-#include <airdcpp/modules/AutoSearchManager.h>
+#include <airdcpp/modules/AutoSearchManagerListener.h>
 #include <airdcpp/QueueManagerListener.h>
 #include <airdcpp/AirUtil.h>
 #include <airdcpp/TaskQueue.h>
@@ -130,11 +130,7 @@ private:
 
 	class ItemInfo: boost::noncopyable {
 	public:
-		ItemInfo(const RSSDataPtr& aFeedData) : item(aFeedData) {
-			isRelease = AirUtil::isRelease(aFeedData->getTitle());
-			setDupe(isRelease ? AirUtil::checkAdcDirectoryDupe(aFeedData->getTitle(), 0) : DUPE_NONE);
-			isAutosearchDupe = isRelease && AutoSearchManager::getInstance()->getSearchesByString(aFeedData->getTitle()) != AutoSearchList();
-		}
+		ItemInfo(const RSSDataPtr& aFeedData);
 		~ItemInfo() { }
 
 		const tstring getText(int col) const;
