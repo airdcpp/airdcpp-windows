@@ -74,9 +74,9 @@ AirUtil::TimeCounter::~TimeCounter() {
 StringList AirUtil::getAdcDirectoryDupePaths(DupeType aType, const string& aAdcPath) {
 	StringList ret;
 	if (isShareDupe(aType)) {
-		ret = ShareManager::getInstance()->getAdcDirectoryPaths(aAdcPath);
+		ret = ShareManager::getInstance()->getAdcDirectoryDupePaths(aAdcPath);
 	} else {
-		ret = QueueManager::getInstance()->getAdcDirectoryPaths(aAdcPath);
+		ret = QueueManager::getInstance()->getAdcDirectoryDupePaths(aAdcPath);
 	}
 
 	return ret;
@@ -106,12 +106,12 @@ bool AirUtil::isFinishedDupe(DupeType aType) noexcept {
 }
 
 DupeType AirUtil::checkAdcDirectoryDupe(const string& aAdcPath, int64_t aSize) {
-	auto dupe = ShareManager::getInstance()->isAdcDirectoryShared(aAdcPath, aSize);
+	auto dupe = ShareManager::getInstance()->getAdcDirectoryDupe(aAdcPath, aSize);
 	if (dupe != DUPE_NONE) {
 		return dupe;
 	}
 
-	return QueueManager::getInstance()->isAdcDirectoryQueued(aAdcPath, aSize);
+	return QueueManager::getInstance()->getAdcDirectoryDupe(aAdcPath, aSize);
 }
 
 string AirUtil::toOpenFileName(const string& aFileName, const TTHValue& aTTH) noexcept {

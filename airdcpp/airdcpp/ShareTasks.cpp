@@ -55,7 +55,7 @@ ShareRefreshInfo::ShareRefreshInfo(const string& aPath, const ShareDirectory::Pt
 	path(aPath), oldShareDirectory(aOldShareDirectory), bloom(bloom_) {
 
 	// Use a different directory for building the tree
-	if (aOldShareDirectory && aOldShareDirectory->getRoot()) {
+	if (aOldShareDirectory && aOldShareDirectory->isRoot()) {
 		newShareDirectory = ShareDirectory::createRoot(
 			aPath, aOldShareDirectory->getVirtualName(), aOldShareDirectory->getRoot()->getRootProfiles(), aOldShareDirectory->getRoot()->getIncoming(),
 			aLastWrite, rootPathsNew, lowerDirNameMapNew, bloom_, aOldShareDirectory->getRoot()->getLastRefreshTime()
@@ -68,7 +68,7 @@ ShareRefreshInfo::ShareRefreshInfo(const string& aPath, const ShareDirectory::Pt
 
 
 bool ShareRefreshInfo::checkContent(const ShareDirectory::Ptr& aDirectory) noexcept {
-	if (SETTING(SKIP_EMPTY_DIRS_SHARE) && aDirectory->getDirectories().empty() && aDirectory->files.empty()) {
+	if (SETTING(SKIP_EMPTY_DIRS_SHARE) && aDirectory->getDirectories().empty() && aDirectory->getFiles().empty()) {
 		// Remove from parent
 		ShareDirectory::cleanIndices(*aDirectory.get(), stats.addedSize, tthIndexNew, lowerDirNameMapNew);
 		return false;

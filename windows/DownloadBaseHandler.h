@@ -231,10 +231,10 @@ private:
 				}
 			};
 
-			targets = QueueManager::getInstance()->getAdcDirectoryPaths(isDir ? *aVirtualPath : Util::getAdcFilePath(*aVirtualPath));
+			targets = QueueManager::getInstance()->getAdcDirectoryDupePaths(isDir ? *aVirtualPath : Util::getAdcFilePath(*aVirtualPath));
 			doAppend(TSTRING(QUEUED_DUPE_PATHS));
 
-			targets = ShareManager::getInstance()->getAdcDirectoryPaths(isDir ? *aVirtualPath : Util::getAdcFilePath(*aVirtualPath));
+			targets = ShareManager::getInstance()->getAdcDirectoryDupePaths(isDir ? *aVirtualPath : Util::getAdcFilePath(*aVirtualPath));
 			doAppend(TSTRING(SHARED_DUPE_PATHS));
 		}
 	}

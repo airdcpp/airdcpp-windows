@@ -1212,12 +1212,13 @@ void RichTextBox::handleDownload(const string& aTarget, Priority p, bool aIsRele
 	if (!aIsRelease && selectedHighlight && selectedHighlight->getMagnet()) {
 		auto u = std::move(getMagnetSource());
 		auto magnet = *selectedHighlight->getMagnet();
-		if (pmUser && ShareManager::getInstance()->isAdcDirectoryShared(aTarget, magnet.fsize) > 0 &&
+		if (pmUser && ShareManager::getInstance()->isRealPathShared(Util::getFilePath(aTarget)) &&
 			!WinUtil::showQuestionBox(TSTRING_F(PM_MAGNET_SHARED_WARNING, Text::toT(Util::getFilePath(aTarget))), MB_ICONQUESTION)) {
 				return;
 		}
 
-		ActionUtil::addFileDownload(aTarget + (!Util::isDirectoryPath(aTarget) ? Util::emptyString : magnet.fname), magnet.fsize, magnet.getTTH(), u, 0, pmUser ? QueueItem::FLAG_PRIVATE : 0, p);
+		auto target = aTarget + (!Util::isDirectoryPath(aTarget) ? Util::emptyString : magnet.fname);
+		ActionUtil::addFileDownload(target, magnet.fsize, magnet.getTTH(), u, 0, pmUser ? QueueItem::FLAG_PRIVATE : 0, p);
 	} else {
 		AutoSearchManager::getInstance()->addAutoSearch(Text::fromT(selectedWord), aTarget, true, AutoSearch::CHAT_DOWNLOAD);
 	}

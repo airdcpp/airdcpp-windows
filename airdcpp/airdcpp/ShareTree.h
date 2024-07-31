@@ -50,20 +50,17 @@ public:
 	// Throws ShareException in case an invalid path is provided
 	void search(SearchResultList& l, SearchQuery& aSearch, const OptionalProfileToken& aProfile, const UserPtr& aUser, const string& aDir, bool aIsAutoSearch = false);
 
-	// Check if a directory is shared
+	// Mostly for dupe check with size comparison (partial/exact dupe)
 	// You may also give a path in NMDC format and the relevant 
 	// directory (+ possible subdirectories) are detected automatically
-	bool isAdcDirectoryShared(const string& aAdcPath) const noexcept;
+	DupeType getAdcDirectoryDupe(const string& aAdcPath, int64_t aSize) const noexcept;
 
-	// Mostly for dupe check with size comparison (partial/exact dupe)
-	DupeType isAdcDirectoryShared(const string& aAdcPath, int64_t aSize) const noexcept;
+	// Returns the dupe paths by directory name/NMDC path
+	StringList getAdcDirectoryDupePaths(const string& aAdcPath) const noexcept;
 
 	bool isFileShared(const TTHValue& aTTH) const noexcept;
 	bool isFileShared(const TTHValue& aTTH, ProfileToken aProfile) const noexcept;
-	bool isRealPathShared(const string& aPath) const noexcept;
 
-	// Returns the dupe paths by directory name/NMDC path
-	StringList getAdcDirectoryPaths(const string& aAdcPath) const noexcept;
 
 	GroupedDirectoryMap getGroupedDirectories() const noexcept;
 	MemoryInputStream* generatePartialList(const string& aVirtualPath, bool aRecursive, const OptionalProfileToken& aProfile, const FilelistDirectory::DuplicateFileHandler& aDuplicateFileHandler) const noexcept;
@@ -146,7 +143,7 @@ public:
 
 			auto d = root;
 			while ((i = aVirtualPath.find(ADC_SEPARATOR, j)) != string::npos) {
-				d = d->findDirectoryByName(Text::toLower(aVirtualPath.substr(j, i - j)));
+				d = d->findDirectoryLower(Text::toLower(aVirtualPath.substr(j, i - j)));
 				if (!d) {
 					break;
 				}
@@ -211,6 +208,10 @@ public:
 	}
 
 	bool applyRefreshChanges(ShareRefreshInfo& ri, ProfileTokenSet* aDirtyProfiles);
+
+	// ShareDirectory::Ptr getDirectoryByRealPath(const string& aPath) const noexcept;
+	ShareDirectory::File* findFile(const string& aPath) const noexcept;
+	ShareDirectory::File::ConstSet findFiles(const TTHValue& aTTH) const noexcept;
 private:
 	TempShareManager tempShare;
 

@@ -287,8 +287,7 @@ void ShareManager::getRealPaths(const string& aVirtualPath, StringList& realPath
 }
 
 bool ShareManager::isRealPathShared(const string& aPath) const noexcept {
-	RLock l (cs);
-	return tree->isRealPathShared(aPath);
+	return Util::isDirectoryPath(aPath) ? findDirectoryByRealPath(aPath) : findFileByRealPath(aPath);
 }
 
 string ShareManager::realToVirtualAdc(const string& aPath, const OptionalProfileToken& aToken) const noexcept {
@@ -448,7 +447,7 @@ struct ShareManager::ShareLoader : public SimpleXMLReader::ThreadedCallBack, pub
 					throw Exception("Duplicate directory name");
 				}
 
-				curDirPathLower += cur->realName.getLower() + PATH_SEPARATOR;
+				curDirPathLower += cur->getRealName().getLower() + PATH_SEPARATOR;
 			}
 
 			if (aSimple) {
@@ -697,19 +696,14 @@ int64_t ShareManager::getTotalShareSize(ProfileToken aProfile) const noexcept {
 	return tree->getTotalShareSize(aProfile);
 }
 
-bool ShareManager::isAdcDirectoryShared(const string& aAdcPath) const noexcept{
+DupeType ShareManager::getAdcDirectoryDupe(const string& aAdcPath, int64_t aSize) const noexcept{
 	RLock l(cs);
-	return tree->isAdcDirectoryShared(aAdcPath);
+	return tree->getAdcDirectoryDupe(aAdcPath, aSize);
 }
 
-DupeType ShareManager::isAdcDirectoryShared(const string& aAdcPath, int64_t aSize) const noexcept{
+StringList ShareManager::getAdcDirectoryDupePaths(const string& aAdcPath) const noexcept {
 	RLock l(cs);
-	return tree->isAdcDirectoryShared(aAdcPath, aSize);
-}
-
-StringList ShareManager::getAdcDirectoryPaths(const string& aAdcPath) const noexcept {
-	RLock l(cs);
-	return tree->getAdcDirectoryPaths(aAdcPath);
+	return tree->getAdcDirectoryDupePaths(aAdcPath);
 }
 
 bool ShareManager::isFileShared(const TTHValue& aTTH) const noexcept{
@@ -720,6 +714,39 @@ bool ShareManager::isFileShared(const TTHValue& aTTH) const noexcept{
 bool ShareManager::isFileShared(const TTHValue& aTTH, ProfileToken aProfile) const noexcept{
 	RLock l (cs);
 	return tree->isFileShared(aTTH, aProfile);
+}
+
+bool ShareManager::findDirectoryByRealPath(const string& aPath, const DirectoryCallback& aCallback) const noexcept {
+	RLock l(cs);
+	auto directory = tree->findDirectory(aPath);
+	if (!directory) {
+		return false;
+	}
+
+	if (aCallback) {
+		aCallback(directory);
+	}
+
+	return true;
+}
+
+bool ShareManager::findFileByRealPath(const string& aPath, const FileCallback& aCallback) const noexcept {
+	RLock l(cs);
+	auto file = tree->findFile(aPath);
+	if (!file) {
+		return false;
+	}
+
+	if (aCallback) {
+		aCallback(*file);
+	}
+
+	return true;
+}
+
+ShareDirectory::File::ConstSet ShareManager::findFiles(const TTHValue& aTTH) const noexcept {
+	RLock l(cs);
+	return tree->findFiles(aTTH);
 }
 
 ShareManager::RefreshTaskHandler::ShareBuilder::ShareBuilder(const string& aPath, const ShareDirectory::Ptr& aOldRoot, time_t aLastWrite, ShareBloom& bloom_, ShareManager* aSm) :
@@ -785,10 +812,7 @@ void ShareManager::RefreshTaskHandler::ShareBuilder::buildTree(const string& aPa
 			ShareDirectory::Ptr oldDir = nullptr;
 			if (aOldParent) {
 				RLock l(sm.cs);
-				auto dirIter = aOldParent->getDirectories().find(dualName.getLower());
-				if (dirIter != aOldParent->getDirectories().end()) {
-					oldDir = *dirIter;
-				}
+				oldDir = aOldParent->findDirectoryLower(dualName.getLower());
 			}
 
 			auto isNew = !oldDir;
@@ -823,8 +847,7 @@ void ShareManager::RefreshTaskHandler::ShareBuilder::buildTree(const string& aPa
 				auto isNew = !aOldParent;
 				if (aOldParent) {
 					RLock l(sm.cs);
-					auto fileIter = aOldParent->files.find(dualName.getLower());
-					isNew = fileIter == aOldParent->files.end();
+					isNew = !aOldParent->findFileLower(dualName.getLower());
 				}
 
 
@@ -1544,8 +1567,8 @@ void ShareManager::validatePathHooked(const string& aRealPath, bool aSkipQueueCh
 		}
 
 		if (!isDirectoryPath && tokens.empty()) {
-			auto i = baseDirectory->files.find(Text::toLower(Util::getFileName(aRealPath)));
-			isFileShared = i != baseDirectory->files.end();
+			auto fileNameLower = Text::toLower(Util::getFileName(aRealPath));
+			isFileShared = baseDirectory->findFileLower(fileNameLower);
 		}
 	}
 

@@ -162,6 +162,11 @@ void ShareDirectory::addFile(DualString&& aName, const HashedFile& aFileInfo, Sh
 	}
 }
 
+const ShareRoot::Ptr& ShareDirectory::getRoot() const noexcept {
+	dcassert(isRoot());
+	return root; 
+}
+
 void ShareDirectory::increaseSize(int64_t aSize, int64_t& totalSize_) noexcept {
 	size += aSize;
 	totalSize_ += aSize;
@@ -200,8 +205,8 @@ void ShareDirectory::countStats(time_t& totalAge_, size_t& totalDirs_, int64_t& 
 	for (const auto& f : files) {
 		totalSize_ += f->getSize();
 		totalAge_ += f->getLastWrite();
-		totalStrLen_ += f->name.getLower().length();
-		if (f->name.lowerCaseOnly()) {
+		totalStrLen_ += f->getName().getLower().length();
+		if (f->getName().lowerCaseOnly()) {
 			lowerCaseFiles_++;
 		}
 	}
@@ -227,19 +232,26 @@ ShareDirectory::Ptr ShareDirectory::findDirectoryByPath(const string& aPath, cha
 	return nullptr;
 }
 
-ShareDirectory::Ptr ShareDirectory::findDirectoryByName(const string& aName) const noexcept {
-	auto p = directories.find(Text::toLower(aName));
+ShareDirectory::Ptr ShareDirectory::findDirectoryLower(const string& aNameLower) const noexcept {
+	dcassert(Text::isLower(aNameLower));
+	auto p = directories.find(aNameLower);
 	return p != directories.end() ? *p : nullptr;
 }
 
-void ShareDirectory::getContentInfo(int64_t& size_, size_t& files_, size_t& folders_) const noexcept {
+ShareDirectory::File* ShareDirectory::findFileLower(const string& aNameLower) const noexcept {
+	dcassert(Text::isLower(aNameLower));
+	auto fileIter = files.find(aNameLower);
+	return fileIter != files.end() ? *fileIter : nullptr;
+}
+
+void ShareDirectory::getContentInfo(int64_t& size_, DirectoryContentInfo& contentInfo_) const noexcept {
 	for (const auto& d : directories) {
-		d->getContentInfo(size_, files_, folders_);
+		d->getContentInfo(size_, contentInfo_);
 	}
 
-	folders_ += directories.size();
+	contentInfo_.directories += static_cast<int>(directories.size());
 	size_ += size;
-	files_ += files.size();
+	contentInfo_.files += static_cast<int>(files.size());
 }
 
 
@@ -276,6 +288,12 @@ void ShareDirectory::copyRootProfiles(ProfileTokenSet& profiles_, bool aSetCache
 
 	if (parent)
 		parent->copyRootProfiles(profiles_, aSetCacheDirty);
+}
+
+ProfileTokenSet ShareDirectory::getRootProfiles() const noexcept {
+	ProfileTokenSet profiles;
+	copyRootProfiles(profiles, false);
+	return profiles;
 }
 
 bool ShareRoot::hasRootProfile(const ProfileTokenSet& aProfiles) const noexcept {
@@ -389,7 +407,7 @@ void ShareDirectory::File::checkAddedTTHDebug(const ShareDirectory::File* aFile,
 // SEARCH
 
 ShareDirectory::SearchResultInfo::SearchResultInfo(const File* f, const SearchQuery& aSearch, int aLevel) :
-	file(f), type(FILE), scores(SearchQuery::getRelevanceScore(aSearch, aLevel, false, f->name.getLower())) {
+	file(f), type(FILE), scores(SearchQuery::getRelevanceScore(aSearch, aLevel, false, f->getName().getLower())) {
 
 }
 
@@ -455,7 +473,7 @@ void ShareDirectory::search(SearchResultInfo::Set& results_, SearchQuery& aStrin
 	// Match files
 	if (aStrings.itemType != SearchQuery::TYPE_DIRECTORY) {
 		for (const auto& f : files) {
-			if (!aStrings.matchesFileLower(f->name.getLower(), f->getSize(), f->getLastWrite())) {
+			if (!aStrings.matchesFileLower(f->getName().getLower(), f->getSize(), f->getLastWrite())) {
 				continue;
 			}
 
@@ -518,7 +536,7 @@ void ShareDirectory::filesToCacheXmlList(OutputStream& xmlFile, string& indent, 
 	for (const auto& f : files) {
 		xmlFile.write(indent);
 		xmlFile.write(LITERAL("<File Name=\""));
-		xmlFile.write(SimpleXML::escape(f->name.lowerCaseOnly() ? f->name.getLower() : f->name.getNormal(), tmp2, true));
+		xmlFile.write(SimpleXML::escape(f->getName().lowerCaseOnly() ? f->getName().getLower() : f->getName().getNormal(), tmp2, true));
 		xmlFile.write(LITERAL("\"/>\r\n"));
 	}
 }
@@ -604,28 +622,28 @@ void FilelistDirectory::toXml(OutputStream& xmlFile, string& indent, string& tmp
 		xmlFile.write(LITERAL("</Directory>\r\n"));
 	}
 	else {
-		size_t fileCount = 0, directoryCount = 0;
+		DirectoryContentInfo contentInfo;
 		int64_t totalSize = 0;
 		for (const auto& d : shareDirs) {
-			d->getContentInfo(totalSize, fileCount, directoryCount);
+			d->getContentInfo(totalSize, contentInfo);
 		}
 
 		xmlFile.write(LITERAL("\" Size=\""));
 		xmlFile.write(Util::toString(totalSize));
 
-		if (fileCount == 0 && directoryCount == 0) {
+		if (contentInfo.files == 0 && contentInfo.directories == 0) {
 			xmlFile.write(LITERAL("\" />\r\n"));
 		} else {
 			xmlFile.write(LITERAL("\" Incomplete=\"1"));
 
-			if (directoryCount > 0) {
+			if (contentInfo.directories > 0) {
 				xmlFile.write(LITERAL("\" Directories=\""));
-				xmlFile.write(Util::toString(directoryCount));
+				xmlFile.write(Util::toString(contentInfo.directories));
 			}
 
-			if (fileCount > 0) {
+			if (contentInfo.files > 0) {
 				xmlFile.write(LITERAL("\" Files=\""));
-				xmlFile.write(Util::toString(fileCount));
+				xmlFile.write(Util::toString(contentInfo.files));
 			}
 
 			xmlFile.write(LITERAL("\"/>\r\n"));
@@ -638,17 +656,17 @@ void FilelistDirectory::filesToXml(OutputStream& xmlFile, string& indent, string
 	int dupeFileCount = 0;
 	for (auto di = shareDirs.begin(); di != shareDirs.end(); ++di) {
 		if (filesAdded) {
-			for (const auto& fi : (*di)->files) {
+			for (const auto& fi : (*di)->getFiles()) {
 				//go through the dirs that we have added already
-				if (none_of(shareDirs.begin(), di, [&fi](const ShareDirectory::Ptr& d) { return d->files.find(fi->name.getLower()) != d->files.end(); })) {
+				if (none_of(shareDirs.begin(), di, [&fi](const ShareDirectory::Ptr& d) { return d->findFileLower(fi->getName().getLower()); })) {
 					fi->toXml(xmlFile, indent, tmp2, aAddDate);
 				} else {
 					dupeFileCount++;
 				}
 			}
-		} else if (!(*di)->files.empty()) {
+		} else if (!(*di)->getFiles().empty()) {
 			filesAdded = true;
-			for (const auto& f : (*di)->files)
+			for (const auto& f : (*di)->getFiles())
 				f->toXml(xmlFile, indent, tmp2, aAddDate);
 		}
 	}
@@ -678,7 +696,6 @@ ShareRoot::ShareRoot(const string& aRootPath, const string& aVname, const Profil
 }
 
 ShareRoot::Ptr ShareRoot::create(const string& aRootPath, const string& aVname, const ProfileTokenSet& aProfiles, bool aIncoming, time_t aLastRefreshTime) noexcept {
-	// return make_shared<ShareRoot>(aRootPath, aVname, aProfiles, aIncoming, aLastRefreshTime);
 	return shared_ptr<ShareRoot>(new ShareRoot(aRootPath, aVname, aProfiles, aIncoming, aLastRefreshTime));
 }
 

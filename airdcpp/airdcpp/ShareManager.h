@@ -125,13 +125,13 @@ public:
 	// Throws ShareException in case an invalid path is provided
 	void search(SearchResultList& l, SearchQuery& aSearch, const OptionalProfileToken& aProfile, const UserPtr& aUser, const string& aDir, bool aIsAutoSearch = false);
 
-	// Check if a directory is shared
+	// Mostly for dupe check with size comparison (partial/exact dupe)
 	// You may also give a path in NMDC format and the relevant 
 	// directory (+ possible subdirectories) are detected automatically
-	bool isAdcDirectoryShared(const string& aAdcPath) const noexcept;
+	DupeType getAdcDirectoryDupe(const string& aAdcPath, int64_t aSize) const noexcept;
 
-	// Mostly for dupe check with size comparison (partial/exact dupe)
-	DupeType isAdcDirectoryShared(const string& aAdcPath, int64_t aSize) const noexcept;
+	// Returns the dupe paths by directory name/NMDC path
+	StringList getAdcDirectoryDupePaths(const string& aAdcPath) const noexcept;
 
 	bool isFileShared(const TTHValue& aTTH) const noexcept;
 	bool isFileShared(const TTHValue& aTTH, ProfileToken aProfile) const noexcept;
@@ -143,9 +143,6 @@ public:
 	// Validate a file/directory path
 	// Throws on errors
 	void validatePathHooked(const string& aPath, bool aSkipQueueCheck, const void* aCaller) const;
-
-	// Returns the dupe paths by directory name/NMDC path
-	StringList getAdcDirectoryPaths(const string& aAdcPath) const noexcept;
 
 	GroupedDirectoryMap getGroupedDirectories() const noexcept;
 	MemoryInputStream* generatePartialList(const string& aVirtualPath, bool aRecursive, const OptionalProfileToken& aProfile) const noexcept;
@@ -241,6 +238,12 @@ public:
 
 	void reloadSkiplist();
 	void setExcludedPaths(const StringSet& aPaths) noexcept;
+
+	typedef function<void(const ShareDirectory::Ptr&)> DirectoryCallback;
+	typedef function<void(const ShareDirectory::File&)> FileCallback;
+	bool findDirectoryByRealPath(const string& aPath, const DirectoryCallback& aCallback = nullptr) const noexcept;
+	bool findFileByRealPath(const string& aPath, const FileCallback& aCallback = nullptr) const noexcept;
+	ShareDirectory::File::ConstSet findFiles(const TTHValue& aTTH) const noexcept;
 
 	struct ShareLoader;
 private:

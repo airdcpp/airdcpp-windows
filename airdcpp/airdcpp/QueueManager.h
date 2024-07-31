@@ -366,18 +366,18 @@ public:
 	string getBundlePath(QueueToken aBundleToken) const noexcept;
 
 	// Return dupe information about the directory
-	DupeType isAdcDirectoryQueued(const string& aDir, int64_t aSize) const noexcept;
+	DupeType getAdcDirectoryDupe(const string& aDir, int64_t aSize) const noexcept;
+
+	// Get all real paths of the directory name
+	// You may also give a path in ADC format and the relevant 
+	// directory (+ possible subdirectories) are detected automatically
+	StringList getAdcDirectoryDupePaths(const string& aDir) const noexcept;
 
 	// Return bundle with a file/directory matching the supplied path (directory/file must exist in the bundle)
 	BundlePtr isRealPathQueued(const string& aPath) const noexcept;
 
 	// Get bundle by (exact) real path
 	BundlePtr findDirectoryBundle(const string& aPath) const noexcept;
-
-	// Get all real paths of the directory name
-	// You may also give a path in ADC format and the relevant 
-	// directory (+ possible subdirectories) are detected automatically
-	StringList getAdcDirectoryPaths(const string& aDir) const noexcept;
 
 	// Get the paths of all bundles
 	void getBundlePaths(OrderedStringSet& bundles_) const noexcept;

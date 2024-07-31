@@ -827,7 +827,7 @@ void DirectoryListing::Directory::getLocalPaths(StringList& ret, const OptionalP
 	if (aShareProfileToken) {
 		ShareManager::getInstance()->getRealPaths(path, ret, aShareProfileToken);
 	} else {
-		ret = ShareManager::getInstance()->getAdcDirectoryPaths(path);
+		ret = ShareManager::getInstance()->getAdcDirectoryDupePaths(path);
 	}
 }
 

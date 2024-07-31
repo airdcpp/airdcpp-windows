@@ -236,9 +236,9 @@ void RSSManager::matchFilters(const RSSPtr& aFeed, const RSSDataPtr& aData) {
 	for (auto& aF : aFeed->getRssFilterList()) {
 		if (aF.match(aData->getTitle())) {
 			if (aF.skipDupes) {
-				if(ShareManager::getInstance()->isAdcDirectoryShared(aData->getTitle()))
+				if (ShareManager::getInstance()->getAdcDirectoryDupe(aData->getTitle(), 0) != DUPE_NONE)
 					break; //Need to match other filters?
-				if (QueueManager::getInstance()->isAdcDirectoryQueued(aData->getTitle(), 0) != DUPE_NONE)
+				if (QueueManager::getInstance()->getAdcDirectoryDupe(aData->getTitle(), 0) != DUPE_NONE)
 					break; //Need to match other filters?
 			}
 			if (aF.getFilterAction() == RSSFilter::DOWNLOAD || aF.getFilterAction() == RSSFilter::ADD_AUTOSEARCH) {

@@ -3379,9 +3379,14 @@ bool QueueManager::handlePartialSearch(const UserPtr& aUser, const TTHValue& tth
 	return !_outPartsInfo.empty();
 }
 
-StringList QueueManager::getAdcDirectoryPaths(const string& aDirName) const noexcept {
+DupeType QueueManager::getAdcDirectoryDupe(const string& aDir, int64_t aSize) const noexcept {
 	RLock l(cs);
-	return bundleQueue.getAdcDirectoryPaths(aDirName);
+	return bundleQueue.getAdcDirectoryDupe(aDir, aSize);
+}
+
+StringList QueueManager::getAdcDirectoryDupePaths(const string& aDirName) const noexcept {
+	RLock l(cs);
+	return bundleQueue.getAdcDirectoryDupePaths(aDirName);
 }
 
 void QueueManager::getBundlePaths(OrderedStringSet& retBundles) const noexcept {
@@ -3573,11 +3578,6 @@ void QueueManager::readdBundle(const BundlePtr& aBundle) noexcept {
 
 	aBundle->setDirty();
 	log(STRING_F(BUNDLE_READDED, aBundle->getName().c_str()), LogMessage::SEV_INFO);
-}
-
-DupeType QueueManager::isAdcDirectoryQueued(const string& aDir, int64_t aSize) const noexcept{
-	RLock l(cs);
-	return bundleQueue.isAdcDirectoryQueued(aDir, aSize);
 }
 
 BundlePtr QueueManager::isRealPathQueued(const string& aPath) const noexcept {

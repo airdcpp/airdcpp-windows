@@ -100,7 +100,7 @@ void ShareTree::toRealWithSize(const string& aVirtualFile, const ProfileTokenSet
 		TTHValue tth(aVirtualFile.substr(4));
 
 		// RLock l(cs);
-		if(any_of(aProfiles.begin(), aProfiles.end(), [](ProfileToken s) { return s != SP_HIDDEN; })) {
+		if (ranges::any_of(aProfiles, [](ProfileToken s) { return s != SP_HIDDEN; })) {
 			const auto flst = tthIndex.equal_range(const_cast<TTHValue*>(&tth));
 			for(auto f = flst.first; f != flst.second; ++f) {
 				noAccess_ = false; //we may throw if the file doesn't exist on the disk so always reset this to prevent invalid access denied messages
@@ -131,12 +131,12 @@ void ShareTree::toRealWithSize(const string& aVirtualFile, const ProfileTokenSet
 		// RLock l (cs);
 		findVirtuals<ProfileTokenSet>(aVirtualFile, aProfiles, dirs);
 
-		auto fileName = Text::toLower(Util::getAdcFileName(aVirtualFile));
+		auto fileNameLower = Text::toLower(Util::getAdcFileName(aVirtualFile));
 		for(const auto& d: dirs) {
-			auto it = d->files.find(fileName);
-			if(it != d->files.end()) {
-				path_ = (*it)->getRealPath();
-				size_ = (*it)->getSize();
+			auto file = d->findFileLower(fileNameLower);
+			if (file) {
+				path_ = file->getRealPath();
+				size_ = file->getSize();
 				return;
 			}
 		}
@@ -182,34 +182,15 @@ void ShareTree::getRealPaths(const string& aVirtualPath, StringList& realPaths_,
 		}
 	} else {
 		// File
-		auto fileName = Text::toLower(Util::getAdcFileName(aVirtualPath));
-		for(const auto& d: dirs) {
-			auto it = d->files.find(fileName);
-			if(it != d->files.end()) {
-				realPaths_.push_back((*it)->getRealPath());
+		auto fileNameLower = Text::toLower(Util::getAdcFileName(aVirtualPath));
+		for (const auto& d: dirs) {
+			auto file = d->findFileLower(fileNameLower);
+			if (file) {
+				realPaths_.push_back(file->getRealPath());
 				return;
 			}
 		}
 	}
-}
-
-bool ShareTree::isRealPathShared(const string& aPath) const noexcept {
-	// RLock l (cs);
-	auto d = findDirectory(Util::getFilePath(aPath));
-	if (d) {
-		if (Util::isDirectoryPath(aPath)) {
-			// It's a directory
-			return true;
-		}
-
-		// It's a file
-		auto it = d->files.find(Text::toLower(Util::getFileName(aPath)));
-		if(it != d->files.end()) {
-			return true;
-		}
-	}
-
-	return false;
 }
 
 string ShareTree::realToVirtualAdc(const string& aPath, const OptionalProfileToken& aToken) const noexcept{
@@ -320,18 +301,7 @@ int64_t ShareTree::getTotalShareSize(ProfileToken aProfile) const noexcept {
 	return ret;
 }
 
-bool ShareTree::isAdcDirectoryShared(const string& aAdcPath) const noexcept{
-	ShareDirectory::List dirs;
-
-	{
-		// RLock l(cs);
-		getDirectoriesByAdcName(aAdcPath, dirs);
-	}
-
-	return !dirs.empty();
-}
-
-DupeType ShareTree::isAdcDirectoryShared(const string& aAdcPath, int64_t aSize) const noexcept{
+DupeType ShareTree::getAdcDirectoryDupe(const string& aAdcPath, int64_t aSize) const noexcept{
 	ShareDirectory::List dirs;
 
 	// RLock l(cs);
@@ -343,7 +313,7 @@ DupeType ShareTree::isAdcDirectoryShared(const string& aAdcPath, int64_t aSize) 
 	return dirs.front()->getTotalSize() == aSize ? DUPE_SHARE_FULL : DUPE_SHARE_PARTIAL;
 }
 
-StringList ShareTree::getAdcDirectoryPaths(const string& aAdcPath) const noexcept{
+StringList ShareTree::getAdcDirectoryDupePaths(const string& aAdcPath) const noexcept{
 	StringList ret;
 	ShareDirectory::List dirs;
 
@@ -401,6 +371,30 @@ bool ShareTree::isFileShared(const TTHValue& aTTH, ProfileToken aProfile) const 
 	return false;
 }
 
+ShareDirectory::File* ShareTree::findFile(const string& aPath) const noexcept {
+	auto d = findDirectory(Util::getFilePath(aPath));
+	if (d) {
+		auto fileNameLower = Text::toLower(Util::getFileName(aPath));
+		auto file = d->findFileLower(fileNameLower);
+		if (file) {
+			return file;
+		}
+	}
+
+	return nullptr;
+}
+
+ShareDirectory::File::ConstSet ShareTree::findFiles(const TTHValue& aTTH) const noexcept {
+	auto files = tthIndex.equal_range(const_cast<TTHValue*>(&aTTH));
+
+	ShareDirectory::File::ConstSet ret;
+	for (auto& f: files | pair_to_range | views::values) {
+		ret.insert_sorted(f);
+	}
+
+	return ret;
+}
+
 #ifdef _DEBUG
 
 void ShareTree::validateDirectoryTreeDebug() const noexcept {
@@ -448,7 +442,7 @@ void ShareTree::validateDirectoryRecursiveDebug(const ShareDirectory::Ptr& aDir,
 		ShareDirectory::List dirs;
 		getDirectoriesByAdcName(aDir->getAdcPath(), dirs);
 
-		dcassert(count_if(dirs.begin(), dirs.end(), [&](const ShareDirectory::Ptr& d) {
+		dcassert(ranges::count_if(dirs, [&](const ShareDirectory::Ptr& d) {
 			return d->getRealPath() == aDir->getRealPath();
 		}) == 1);
 
@@ -456,13 +450,13 @@ void ShareTree::validateDirectoryRecursiveDebug(const ShareDirectory::Ptr& aDir,
 	}
 
 	int64_t realDirectorySize = 0;
-	for (const auto& f : aDir->files) {
+	for (const auto& f : aDir->getFiles()) {
 		auto flst = tthIndex.equal_range(const_cast<TTHValue*>(&f->getTTH()));
 		dcassert(ranges::count_if(flst | pair_to_range | views::values, [&](const ShareDirectory::File* aFile) {
 			return aFile->getRealPath() == f->getRealPath();
 		}) == 1);
 
-		dcassert(bloom->match(f->name.getLower()));
+		dcassert(bloom->match(f->getName().getLower()));
 		auto res = filePaths_.insert(f->getRealPath());
 		dcassert(res.second);
 		realDirectorySize += f->getSize();
@@ -624,15 +618,15 @@ bool ShareTree::applyRefreshChanges(ShareRefreshInfo& ri, ProfileTokenSet* aDirt
 ShareDirectoryInfoPtr ShareTree::getRootInfo(const ShareDirectory::Ptr& aDir) const noexcept {
 	auto& rootDir = aDir->getRoot();
 
-	size_t fileCount = 0, folderCount = 0;
+	DirectoryContentInfo contentInfo;
 	int64_t size = 0;
-	aDir->getContentInfo(size, fileCount, folderCount);
+	aDir->getContentInfo(size, contentInfo);
 
 	auto info = std::make_shared<ShareDirectoryInfo>(aDir->getRealPath());
 	info->profiles = rootDir->getRootProfiles();
 	info->incoming = rootDir->getIncoming();
 	info->size = size;
-	info->contentInfo = DirectoryContentInfo(folderCount, fileCount);
+	info->contentInfo = contentInfo;
 	info->virtualName = rootDir->getName();
 	info->refreshState = static_cast<uint8_t>(rootDir->getRefreshState());
 	info->lastRefreshTime = rootDir->getLastRefreshTime();
@@ -787,14 +781,14 @@ bool ShareTree::addDirectoryResult(const ShareDirectory* aDir, SearchResultList&
 	// Count date and content information
 	time_t date = 0;
 	int64_t size = 0;
-	size_t files = 0, folders = 0;
+	DirectoryContentInfo contentInfo;
 	for(const auto& d: result) {
-		d->getContentInfo(size, files, folders);
+		d->getContentInfo(size, contentInfo);
 		date = max(date, d->getLastWrite());
 	}
 
 	if (srch.matchesDate(date)) {
-		auto sr = make_shared<SearchResult>(SearchResult::TYPE_DIRECTORY, size, path, TTHValue(), date, DirectoryContentInfo(folders, files));
+		auto sr = make_shared<SearchResult>(SearchResult::TYPE_DIRECTORY, size, path, TTHValue(), date, contentInfo);
 		aResults.push_back(sr);
 		return true;
 	}
@@ -894,7 +888,7 @@ ShareDirectory::Ptr ShareTree::findDirectory(const string& aRealPath, StringList
 	bool hasMissingToken = false;
 	remainingTokens_.erase(std::remove_if(remainingTokens_.begin(), remainingTokens_.end(), [&](const string& currentName) {
 		if (!hasMissingToken) {
-			auto d = curDir->findDirectoryByName(currentName);
+			auto d = curDir->findDirectoryLower(Text::toLower(currentName));
 			if (d) {
 				curDir = d;
 				return true;

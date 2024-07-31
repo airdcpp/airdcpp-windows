@@ -74,19 +74,6 @@ BundlePtr BundleQueue::findBundle(QueueToken aBundleToken) const noexcept {
 	return i != bundles.end() ? i->second : nullptr;
 }
 
-DupeType BundleQueue::isAdcDirectoryQueued(const string& aPath, int64_t aSize) const noexcept {
-	PathInfoPtrList infos;
-	findAdcDirectoryPathInfos(aPath, infos);
-
-	if (infos.empty()) {
-		return DUPE_NONE;
-	}
-
-	const auto& pathInfo = *infos.front();
-
-	return pathInfo.toDupeType(aSize);
-}
-
 BundlePtr BundleQueue::isLocalDirectoryQueued(const string& aPath) const noexcept {
 	auto pathInfo = findLocalDirectoryPathInfo(aPath);
 	if (!pathInfo) {
@@ -132,7 +119,20 @@ size_t BundleQueue::getDirectoryCount(const BundlePtr& aBundle) const noexcept {
 	return (*pathInfos).size();
 }
 
-StringList BundleQueue::getAdcDirectoryPaths(const string& aAdcPath) const noexcept {
+DupeType BundleQueue::getAdcDirectoryDupe(const string& aPath, int64_t aSize) const noexcept {
+	PathInfoPtrList infos;
+	findAdcDirectoryPathInfos(aPath, infos);
+
+	if (infos.empty()) {
+		return DUPE_NONE;
+	}
+
+	const auto& pathInfo = *infos.front();
+
+	return pathInfo.toDupeType(aSize);
+}
+
+StringList BundleQueue::getAdcDirectoryDupePaths(const string& aAdcPath) const noexcept {
 	PathInfoPtrList infos;
 	findAdcDirectoryPathInfos(aAdcPath, infos);
 

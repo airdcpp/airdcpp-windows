@@ -109,6 +109,7 @@ public:
 		};
 
 		typedef SortedVector<File*, std::vector, string, Compare, NameLower> Set;
+		typedef SortedVector<const File*, std::vector, string, Compare, NameLower> ConstSet;
 		typedef unordered_multimap<TTHValue*, const ShareDirectory::File*> TTHMap;
 
 		File(DualString&& aName, ShareDirectory* aParent, const HashedFile& aFileInfo);
@@ -126,8 +127,6 @@ public:
 		GETSET(time_t, lastWrite, LastWrite);
 		GETSET(TTHValue, tth, TTH);
 
-		DualString name;
-
 		void updateIndices(ShareBloom& aBloom_, int64_t& sharedSize_, File::TTHMap& tthIndex_) noexcept;
 		void cleanIndices(int64_t& sharedSize_, TTHMap& tthIndex_) noexcept;
 
@@ -136,6 +135,11 @@ public:
 		// Called before the file has been added in the index
 		static void checkAddedTTHDebug(const ShareDirectory::File* f, TTHMap& aTTHIndex) noexcept;
 #endif
+		const DualString& getName() const noexcept {
+			return name;
+		}
+	private:
+		DualString name;
 	};
 
 	class SearchResultInfo {
@@ -165,7 +169,6 @@ public:
 	};
 
 	typedef SortedVector<Ptr, std::vector, string, Compare, NameLower> Set;
-	File::Set files;
 
 	static Ptr createNormal(DualString&& aRealName, const Ptr& aParent, time_t aLastWrite, ShareDirectory::MultiMap& dirNameMap_, ShareBloom& bloom) noexcept;
 	static Ptr createRoot(const string& aRootPath, const string& aVname, const ProfileTokenSet& aProfiles, bool aIncoming, time_t aLastWrite, Map& rootPaths_, ShareDirectory::MultiMap& dirNameMap_, ShareBloom& bloom_, time_t aLastRefreshTime) noexcept;
@@ -196,7 +199,7 @@ public:
 	bool hasProfile(const ProfileTokenSet& aProfiles) const noexcept;
 	bool hasProfile(const OptionalProfileToken& aProfile) const noexcept;
 
-	void getContentInfo(int64_t& size_, size_t& files_, size_t& folders_) const noexcept;
+	void getContentInfo(int64_t& size_, DirectoryContentInfo& contentInfo_) const noexcept;
 
 	// Return cached size for files directly inside this directory
 	int64_t getLevelSize() const noexcept;
@@ -219,11 +222,11 @@ public:
 
 	~ShareDirectory();
 
+	ProfileTokenSet getRootProfiles() const noexcept;
 	void copyRootProfiles(ProfileTokenSet& profiles_, bool aSetCacheDirty) const noexcept;
 	bool isRoot() const noexcept;
 
 	void countStats(time_t& totalAge_, size_t& totalDirs_, int64_t& totalSize_, size_t& totalFiles_, size_t& lowerCaseFiles_, size_t& totalStrLen_) const noexcept;
-	DualString realName;
 
 	// check for an updated modify date from filesystem
 	void updateModifyDate();
@@ -231,7 +234,7 @@ public:
 	ShareDirectory(ShareDirectory&) = delete;
 	ShareDirectory& operator=(ShareDirectory&) = delete;
 
-	const ShareRoot::Ptr& getRoot() const noexcept { return root; }
+	const ShareRoot::Ptr& getRoot() const noexcept;
 	void increaseSize(int64_t aSize, int64_t& totalSize_) noexcept;
 	void decreaseSize(int64_t aSize, int64_t& totalSize_) noexcept;
 
@@ -247,7 +250,8 @@ public:
 	// Returning of the initial directory (aPath empty) is not supported
 	ShareDirectory::Ptr findDirectoryByPath(const string& aPath, char aSeparator) const noexcept;
 
-	ShareDirectory::Ptr findDirectoryByName(const string& aName) const noexcept;
+	ShareDirectory::Ptr findDirectoryLower(const string& aName) const noexcept;
+	File* findFileLower(const string& aNameLower) const noexcept;
 
 
 	class RootIsParentOrExact {
@@ -272,7 +276,16 @@ public:
 #endif
 
 	void addFile(DualString&& aName, const HashedFile& fi, File::TTHMap& tthIndex_, ShareBloom& aBloom_, int64_t& sharedSize_, ProfileTokenSet* dirtyProfiles_ = nullptr) noexcept;
+
+	File::Set getFiles() const noexcept {
+		return files;
+	}
+
+	const DualString& getRealName() const noexcept {
+		return realName;
+	}
 private:
+	File::Set files;
 	void cleanIndices(int64_t& sharedSize_, File::TTHMap& tthIndex_, ShareDirectory::MultiMap& dirNames_) noexcept;
 
 	ShareDirectory* parent;
@@ -286,6 +299,7 @@ private:
 	friend void intrusive_ptr_release(intrusive_ptr_base<ShareDirectory>*);
 
 	string getRealPath(const string& path) const noexcept;
+	DualString realName;
 };
 
 
