@@ -419,6 +419,15 @@
     <ClCompile Include="airdcpp\TrackableDownloadItem.cpp">
       <Filter>Source Files\transfer</Filter>
     </ClCompile>
+    <ClCompile Include="airdcpp\PartialBundleSharingManager.cpp">
+      <Filter>Source Files\queue</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\PartialFileSharingManager.cpp">
+      <Filter>Source Files\queue</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\SearchTypes.cpp">
+      <Filter>Source Files\search</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="airdcpp\AdcCommand.h">
@@ -1056,6 +1065,18 @@
     </ClInclude>
     <ClInclude Include="airdcpp\HasherStats.h">
       <Filter>Header Files\hash</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\PartialBundleSharingManager.h">
+      <Filter>Header Files\queue</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\PartialFileSharingManager.h">
+      <Filter>Header Files\queue</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\PartialSharingManager.h">
+      <Filter>Header Files\queue</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\SearchTypes.h">
+      <Filter>Header Files\search</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

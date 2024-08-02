@@ -23,6 +23,7 @@
 #include "DirectoryListingDlg.h"
 
 #include <airdcpp/SearchManager.h>
+#include <airdcpp/SearchTypes.h>
 #include <airdcpp/ResourceManager.h>
 
 #define GET_TEXT(id, var) \
@@ -34,18 +35,13 @@
 DirectoryListingDlg::DirectoryListingDlg(const DirectoryListingPtr& aDl) : fileTypeId(SEARCH_TYPE_ANY), dl(aDl) { }
 
 DirectoryListingDlg::~DirectoryListingDlg() {
-	//ctrlSearch.Detach();
-	//ctrlFileType.Detach();
 }
 
 LRESULT DirectoryListingDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 
 	ATTACH(IDC_SEARCH_STRING, ctrlSearch);
 	ctrlSearch.SetFocus();
-	//ctrlSearch.SetWindowText(Text::toT(searchStr).c_str());
 	ActionUtil::appendHistory(ctrlSearch, SettingsManager::HISTORY_SEARCH);
-
-	//ctrlSearch.SetSelAll(TRUE);
 
 	ATTACH(IDC_FILETYPES, ctrlFileType);
 	ATTACH(IDC_SEARCH_SIZE, ctrlSize);
@@ -92,7 +88,8 @@ LRESULT DirectoryListingDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*h
 		size = WinUtil::parseSize(ctrlSize, ctrlSizeUnit);
 		useCurDir = IsDlgButtonChecked(IDC_USE_CUR_DIR) == BST_CHECKED;
 
-		SearchManager::getInstance()->getSearchType(ctrlFileType.GetCurSel(), fileType, extList, fileTypeId);
+		auto& typeManager = SearchManager::getInstance()->getSearchTypes();
+		typeManager.getSearchType(ctrlFileType.GetCurSel(), fileType, extList, fileTypeId);
 		SettingsManager::getInstance()->set(SettingsManager::LAST_FL_FILETYPE, fileTypeId);
 	}
 	EndDialog(wID);

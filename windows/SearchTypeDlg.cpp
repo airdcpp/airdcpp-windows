@@ -23,6 +23,7 @@
 
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/SearchManager.h>
+#include <airdcpp/SearchTypes.h>
 #include <airdcpp/ResourceManager.h>
 
 #define GET_TEXT(id, var) \
@@ -92,7 +93,8 @@ LRESULT SearchTypeDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 			name = Text::fromT(WinUtil::getEditText(ctrlTypeName));
 
 			try {
-				SearchManager::getInstance()->validateSearchTypeName(name);
+				auto& typeManager = SearchManager::getInstance()->getSearchTypes();
+				typeManager.validateSearchTypeName(name);
 			} catch(const SearchTypeException& e) {
 				MessageBox(Text::toT(e.getError()).c_str());
 				return 0;

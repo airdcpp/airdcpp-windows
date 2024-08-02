@@ -38,6 +38,7 @@
 #include "IgnoreManager.h"
 #include "Localization.h"
 #include "LogManager.h"
+#include "PartialSharingManager.h"
 #include "PrivateChatManager.h"
 #include "QueueManager.h"
 #include "RecentManager.h"
@@ -100,6 +101,7 @@ void startup(StepFunction aStepF, MessageFunction aMessageF, Callback aRunWizard
 	RecentManager::newInstance();
 	IgnoreManager::newInstance();
 	TransferInfoManager::newInstance();
+	PartialSharingManager::newInstance();
 
 	if (aModuleInitF) {
 		aModuleInitF();
@@ -209,6 +211,7 @@ void shutdown(StepFunction stepF, ProgressFunction progressF, ShutdownUnloadCall
 		aModuleDestroyF();
 	}
 
+	PartialSharingManager::deleteInstance();
 	TransferInfoManager::deleteInstance();
 	IgnoreManager::deleteInstance();
 	RecentManager::deleteInstance();

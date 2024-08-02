@@ -522,7 +522,8 @@ void SearchFrame::onEnter() {
 	// Get ADC search type extensions if any is selected
 	string typeId;
 	try {
-		SearchManager::getInstance()->getSearchType(ctrlFileType.GetCurSel(), s->fileType, s->exts, typeId);
+		auto& typeManager = SearchManager::getInstance()->getSearchTypes();
+		typeManager.getSearchType(ctrlFileType.GetCurSel(), s->fileType, s->exts, typeId);
 	} catch(const SearchTypeException&) {
 		dcassert(0);
 	}

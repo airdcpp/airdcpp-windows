@@ -32,7 +32,7 @@ namespace dcpp {
 
 /* Stores the queue bundle lists and the bundle search queue */
 
-class BundleQueue : public PrioritySearchQueue<BundlePtr> {
+class BundleQueue {
 public:
 	struct PathInfo {
 		PathInfo(const string& aPath, const BundlePtr& aBundle) noexcept : path(aPath), bundle(aBundle) {  }
@@ -91,6 +91,8 @@ public:
 	const Bundle::TokenMap& getBundles() const { return bundles; }
 
 	int64_t getTotalQueueSize() const noexcept { return queueSize; }
+
+	PrioritySearchQueue<BundlePtr> searchQueue;
 private:
 	void findAdcDirectoryPathInfos(const string& aAdcPath, PathInfoPtrList& pathInfos_) const noexcept;
 	const PathInfo* findLocalDirectoryPathInfo(const string& aRealPath) const noexcept;

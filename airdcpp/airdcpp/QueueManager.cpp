@@ -431,64 +431,6 @@ bool QueueManager::getSearchInfo(const string& aTarget, TTHValue& tth_, int64_t&
 	return false;
 }
 
-struct PartsInfoReqParam{
-	PartsInfo	parts;
-	string		tth;
-	string		myNick;
-	string		hubIpPort;
-	string		ip;
-	string		udpPort;
-};
-
-void QueueManager::requestPartialSourceInfo(uint64_t aTick) noexcept {
-	BundlePtr bundle;
-	vector<const PartsInfoReqParam*> params;
-
-	{
-		RLock l(cs);
-
-		//find max 10 pfs sources to exchange parts
-		//the source basis interval is 5 minutes
-		FileQueue::PFSSourceList sl;
-		fileQueue.findPFSSources(sl);
-
-		for (auto& i : sl) {
-			auto source = i.first->getPartialSource();
-			const QueueItemPtr qi = i.second;
-
-			PartsInfoReqParam* param = new PartsInfoReqParam;
-
-			qi->getPartialInfo(param->parts, qi->getBlockSize());
-
-			param->tth = qi->getTTH().toBase32();
-			param->ip = source->getIp();
-			param->udpPort = source->getUdpPort();
-			param->myNick = source->getMyNick();
-			param->hubIpPort = source->getHubIpPort();
-
-			params.push_back(param);
-
-			source->setPendingQueryCount((uint8_t)(source->getPendingQueryCount() + 1));
-			source->setNextQueryTime(aTick + 300000);		// 5 minutes
-		}
-	}
-
-	// Request parts info from partial file sharing sources
-	for (auto& param : params) {
-		//dcassert(param->udpPort > 0);
-
-		try {
-			AdcCommand cmd = SearchManager::getInstance()->toPSR(true, param->myNick, param->hubIpPort, param->tth, param->parts);
-			COMMAND_DEBUG(cmd.toString(), DebugManager::TYPE_CLIENT_UDP, DebugManager::OUTGOING, param->ip);
-			udp->writeTo(param->ip, param->udpPort, cmd.toString(ClientManager::getInstance()->getMyCID()));
-		} catch (...) {
-			dcdebug("Partial search caught error\n");
-		}
-
-		delete param;
-	}
-}
-
 DirectoryContentInfo QueueManager::getBundleContent(const BundlePtr& aBundle) const noexcept {
 	RLock l(cs);
 	auto files = aBundle->getQueueItems().size() + aBundle->getFinishedFiles().size();
@@ -1163,7 +1105,7 @@ bool QueueManager::addValidatedSource(const QueueItemPtr& qi, const HintedUser& 
 	bool wantConnection = !qi->isPausedPrio();
 	dcassert(qi->getBundle() || qi->getPriority() == Priority::HIGHEST);
 
-	if(qi->isSource(aUser)) {
+	if (qi->isSource(aUser)) {
 		if(qi->isSet(QueueItem::FLAG_USER_LIST)) {
 			return wantConnection;
 		}
@@ -1171,7 +1113,7 @@ bool QueueManager::addValidatedSource(const QueueItemPtr& qi, const HintedUser& 
 	}
 
 	bool isBad = false;
-	if(qi->isBadSourceExcept(aUser, aAddBad, isBad)) {
+	if (qi->isBadSourceExcept(aUser, aAddBad, isBad)) {
 		throw QueueException(STRING(DUPLICATE_SOURCE) + ": " + Util::getFileName(qi->getTarget()));
 	}
 
@@ -1216,7 +1158,7 @@ Download* QueueManager::getDownload(UserConnection& aSource, const QueueTokenSet
 
 		//check partial sources
 		if (source->isSet(QueueItem::Source::FLAG_PARTIAL)) {
-			Segment segment = q->getNextSegment(q->getBlockSize(), aSource.getChunkSize(), aSource.getSpeed(), source->getPartialSource(), false);
+			Segment segment = q->getNextSegment(q->getBlockSize(), aSource.getChunkSize(), aSource.getSpeed(), source->getPartsInfo(), false);
 			if (segment.getStart() != -1 && segment.getSize() == 0) {
 				// no other partial chunk from this user, remove him from queue
 				userQueue.removeQI(q, u);
@@ -1364,6 +1306,15 @@ pair<QueueItem::DownloadType, bool> QueueManager::startDownload(const UserPtr& a
 	return { QueueItem::TYPE_NONE, false };
 }
 
+QueueItemList QueueManager::findFiles(const TTHValue& tth) const noexcept {
+	QueueItemList ql;
+
+	RLock l(cs);
+	fileQueue.findFiles(tth, ql);
+
+	return ql;
+}
+
 void QueueManager::matchListing(const DirectoryListing& dl, int& matchingFiles_, int& newFiles_, BundleList& bundles_) noexcept {
 	if (dl.getUser() == ClientManager::getInstance()->getMe())
 		return;
@@ -1499,7 +1450,7 @@ void QueueManager::renameDownloadedFile(const string& source, const string& targ
 
 		auto bundle = aQI->getBundle();
 		if (bundle) {
-			sendFileCompletionNotifications(aQI);
+			// sendFileCompletionNotifications(aQI);
 
 			{
 				RLock l(cs);
@@ -1514,35 +1465,8 @@ void QueueManager::renameDownloadedFile(const string& source, const string& targ
 	});
 }
 
-void QueueManager::sendFileCompletionNotifications(const QueueItemPtr& qi) noexcept {
-	dcassert(qi->getBundle());
-	HintedUserList notified;
-
-	{
-		RLock l (cs);
-
-		//collect the users that don't have this file yet
-		for (auto& fn: qi->getBundle()->getFinishedNotifications()) {
-			if (!qi->isSource(fn.first.user)) {
-				notified.push_back(fn.first);
-			}
-		}
-	}
-
-	//send the notifications
-	for(auto& u: notified) {
-		AdcCommand cmd(AdcCommand::CMD_PBD, AdcCommand::TYPE_UDP);
-
-		cmd.addParam("UP1");
-		//cmd.addParam("HI", u.hint); update adds sources, so ip port needed here...
-		cmd.addParam("TH", qi->getTTH().toBase32());
-		ClientManager::getInstance()->sendUDP(cmd, u.user->getCID(), false, true);
-	}
-}
-
-
 bool QueueManager::checkBundleFinishedHooked(const BundlePtr& aBundle) noexcept {
-	bool hasNotifications = false, isPrivate = false;
+	bool isPrivate = false;
 
 	if (aBundle->getStatus() == Bundle::STATUS_SHARED)
 		return true;
@@ -1567,23 +1491,9 @@ bool QueueManager::checkBundleFinishedHooked(const BundlePtr& aBundle) noexcept 
 		if (aBundle->isFileBundle() && !aBundle->getFinishedFiles().empty()) {
 			isPrivate = aBundle->getFinishedFiles().front()->isSet(QueueItem::FLAG_PRIVATE);
 		}
-
-		hasNotifications = !aBundle->getFinishedNotifications().empty();
 	}
 
-	if (hasNotifications) {
-		//the bundle has finished downloading so we don't need any partial bundle sharing notifications
-
-		Bundle::FinishedNotifyList fnl;
-		{
-			WLock l(cs);
-			aBundle->clearFinishedNotifications(fnl);
-		}
-
-		for (const auto& ubp: fnl) {
-			sendRemovePBD(ubp.first, ubp.second);
-		}
-	}
+	// handleFinishedPBD(aBundle);
 
 	log(STRING_F(DL_BUNDLE_FINISHED, aBundle->getName().c_str()), LogMessage::SEV_INFO);
 	shareBundle(aBundle, false);
@@ -2130,9 +2040,9 @@ void QueueManager::setBundlePriority(const BundlePtr& aBundle, Priority p, bool 
 		if (aBundle->isDownloaded())
 			return;
 
-		bundleQueue.removeSearchPrio(aBundle);
+		bundleQueue.searchQueue.removeSearchPrio(aBundle);
 		userQueue.setBundlePriority(aBundle, p);
-		bundleQueue.addSearchPrio(aBundle);
+		bundleQueue.searchQueue.addSearchPrio(aBundle);
 		if (!aKeepAutoPrio) {
 			aBundle->setAutoPriority(false);
 		}
@@ -2355,26 +2265,18 @@ size_t QueueManager::removeBundleSource(BundlePtr aBundle, const UserPtr& aUser,
 		aBundle->getItems(aUser, ql);
 
 		//we don't want notifications from this user anymore
-		auto p = ranges::find_if(aBundle->getFinishedNotifications(), [&aUser](const Bundle::UserBundlePair& ubp) { return ubp.first.user == aUser; });
+		/*auto p = ranges::find_if(aBundle->getFinishedNotifications(), [&aUser](const Bundle::UserBundlePair& ubp) { return ubp.first.user == aUser; });
 		if (p != aBundle->getFinishedNotifications().end()) {
 			sendRemovePBD(p->first, p->second);
-		}
+		}*/
 	}
 
-	for(auto& qi: ql) {
+	for (auto& qi: ql) {
 		removeFileSource(qi, aUser, aReason);
 	}
 
 	fire(QueueManagerListener::SourceFilesUpdated(), aUser);
 	return ql.size();
-}
-
-void QueueManager::sendRemovePBD(const HintedUser& aUser, const string& aRemoteToken) noexcept {
-	AdcCommand cmd(AdcCommand::CMD_PBD, AdcCommand::TYPE_UDP);
-
-	cmd.addParam("BU", aRemoteToken);
-	cmd.addParam("RM1");
-	ClientManager::getInstance()->sendUDP(cmd, aUser.user->getCID(), false, true);
 }
 
 void QueueManager::saveQueue(bool aForce) noexcept {
@@ -3068,7 +2970,7 @@ void QueueManager::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 
 void QueueManager::on(TimerManagerListener::Minute, uint64_t aTick) noexcept {
 	tasks.addTask([=, this] {
-		requestPartialSourceInfo(aTick);
+		// requestPartialSourceInfo(aTick);
 		searchAlternates(aTick);
 		checkResumeBundles();
 	});
@@ -3223,37 +3125,15 @@ bool QueueManager::checkDropSlowSource(Download* d) noexcept {
 	return false;
 }
 
-bool QueueManager::handlePartialResultHooked(const HintedUser& aUser, const TTHValue& aTTH, const QueueItem::PartialSource& aPartialSource, PartsInfo& outPartialInfo_) noexcept {
+void QueueManager::getPartialInfo(const QueueItemPtr& aQI, PartsInfo& partialInfo_) const noexcept {
+	auto blockSize = aQI->getBlockSize();
+
+	RLock l(cs);
+	aQI->getPartialInfo(partialInfo_, blockSize);
+}
+
+bool QueueManager::addPartialSourceHooked(const HintedUser& aUser, const QueueItemPtr& aQI, const PartsInfo& aInPartialInfo) noexcept {
 	bool wantConnection = false;
-	dcassert(outPartialInfo_.empty());
-	QueueItemPtr qi = nullptr;
-
-	// Locate target QueueItem in download queue
-	{
-		QueueItemList ql;
-
-		RLock l(cs);
-		fileQueue.findFiles(aTTH, ql);
-		
-		if(ql.empty()){
-			dcdebug("Not found in download queue\n");
-			return false;
-		}
-		
-		qi = ql.front();
-
-		// don't add sources to finished files
-		// this could happen when "Keep finished files in queue" is enabled
-		if (qi->isDownloaded()) {
-			return false;
-		}
-	}
-
-	// Check min size
-	if (qi->getSize() < PARTIAL_SHARE_MIN_SIZE){
-		dcassert(0);
-		return false;
-	}
 
 	// Check source
 	try {
@@ -3264,52 +3144,45 @@ bool QueueManager::handlePartialResultHooked(const HintedUser& aUser, const TTHV
 	}
 
 	// Get my parts info
-	int64_t blockSize = qi->getBlockSize();
+	int64_t blockSize = aQI->getBlockSize();
 
 	{
 		WLock l(cs);
-		qi->getPartialInfo(outPartialInfo_, blockSize);
 		
 		// Any parts for me?
-		wantConnection = qi->isNeededPart(aPartialSource.getPartialInfo(), blockSize);
+		wantConnection = aQI->isNeededPart(aInPartialInfo, blockSize);
 
 		// If this user isn't a source and has no parts needed, ignore it
-		auto si = qi->getSource(aUser);
-		if(si == qi->getSources().end()) {
-			si = qi->getBadSource(aUser);
+		auto si = aQI->getSource(aUser);
+		if(si == aQI->getSources().end()) {
+			si = aQI->getBadSource(aUser);
 
-			if (si != qi->getBadSources().end() && si->isSet(QueueItem::Source::FLAG_TTH_INCONSISTENCY)) {
+			if (si != aQI->getBadSources().end() && si->isSet(QueueItem::Source::FLAG_TTH_INCONSISTENCY)) {
 				return false;
 			}
 
 			if (!wantConnection) {
-				if (si == qi->getBadSources().end()) {
+				if (si == aQI->getBadSources().end()) {
 					return false;
 				}
 			} else {
 				// add this user as partial file sharing source
-				qi->addSource(aUser);
-				si = qi->getSource(aUser);
+				aQI->addSource(aUser);
+				si = aQI->getSource(aUser);
 				si->setFlag(QueueItem::Source::FLAG_PARTIAL);
 
-				auto ps = make_shared<QueueItem::PartialSource>(aPartialSource.getMyNick(),
-					aPartialSource.getHubIpPort(), aPartialSource.getIp(), aPartialSource.getUdpPort());
-				si->setPartialSource(ps);
-
-				userQueue.addQI(qi, aUser);
-				dcassert(si != qi->getSources().end());
+				userQueue.addQI(aQI, aUser);
+				dcassert(si != aQI->getSources().end());
 			}
 		}
 
 		// Update source's parts info
-		if (si->getPartialSource()) {
-			si->getPartialSource()->setPartialInfo(aPartialSource.getPartialInfo());
-		}
+		si->setPartsInfo(aInPartialInfo);
 	}
 	
 	// Connect to this user
 	if (wantConnection) {
-		fire(QueueManagerListener::ItemSources(), qi);
+		fire(QueueManagerListener::ItemSources(), aQI);
 
 		if (aUser.user->isOnline()) {
 			ConnectionManager::getInstance()->getDownloadConnection(aUser);
@@ -3330,53 +3203,6 @@ BundlePtr QueueManager::findBundle(const TTHValue& tth) const noexcept {
 		return ql.front()->getBundle();
 	}
 	return nullptr;
-}
-
-bool QueueManager::handlePartialSearch(const UserPtr& aUser, const TTHValue& tth, PartsInfo& _outPartsInfo, string& _bundle, bool& _reply, bool& _add) noexcept {
-	QueueItemPtr qi = nullptr;
-	{
-		QueueItemList ql;
-
-		RLock l(cs);
-		// Locate target QueueItem in download queue
-		fileQueue.findFiles(tth, ql);
-		if (ql.empty()) {
-			return false;
-		}
-
-		qi = ql.front();
-
-		//don't share files download from private chat
-		if (qi->isSet(QueueItem::FLAG_PRIVATE))
-			return false;
-
-		BundlePtr b = qi->getBundle();
-		if (b) {
-			_bundle = b->getStringToken();
-
-			//should we notify the other user about finished item?
-			_reply = !b->isDownloaded() && !b->isFinishedNotified(aUser);
-
-			//do we have finished files that the other guy could download?
-			_add = !b->getFinishedFiles().empty();
-		}
-
-		// do we have a file to send?
-		if (!qi->hasPartialSharingTarget())
-			return false;
-	}
-
-	if(qi->getSize() < PARTIAL_SHARE_MIN_SIZE){
-		return false;  
-	}
-
-
-	int64_t blockSize = qi->getBlockSize();
-
-	RLock l(cs);
-	qi->getPartialInfo(_outPartsInfo, blockSize);
-
-	return !_outPartsInfo.empty();
 }
 
 DupeType QueueManager::getAdcDirectoryDupe(const string& aDir, int64_t aSize) const noexcept {
@@ -3574,7 +3400,7 @@ void QueueManager::readdBundle(const BundlePtr& aBundle) noexcept {
 	}
 
 	aBundle->setTimeFinished(0);
-	bundleQueue.addSearchPrio(aBundle);
+	bundleQueue.searchQueue.addSearchPrio(aBundle);
 
 	aBundle->setDirty();
 	log(STRING_F(BUNDLE_READDED, aBundle->getName().c_str()), LogMessage::SEV_INFO);
@@ -3656,7 +3482,7 @@ void QueueManager::removeBundleItem(const QueueItemPtr& qi, bool aFinished) noex
 		bundleQueue.removeBundleItem(qi, aFinished);
 		if (aFinished) {
 			if (bundle->getQueueItems().empty()) {
-				bundleQueue.removeSearchPrio(bundle);
+				bundleQueue.searchQueue.removeSearchPrio(bundle);
 				emptyBundle = true;
 			}
 		} else {
@@ -3825,54 +3651,12 @@ MemoryInputStream* QueueManager::generateTTHList(QueueToken aBundleToken, bool i
 	}
 }
 
-void QueueManager::addBundleTTHListHooked(const HintedUser& aUser, const string& aRemoteBundleToken, const TTHValue& aTTH) {
-	//log("ADD TTHLIST");
-	auto b = findBundle(aTTH);
-	if (b) {
-		auto info = FilelistAddData(aUser, this, aRemoteBundleToken);
-		addListHooked(info, (QueueItem::FLAG_TTHLIST_BUNDLE | QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_MATCH_QUEUE), b);
-	}
+void QueueManager::addBundleTTHListHooked(const HintedUser& aUser, const BundlePtr& aBundle, const string& aRemoteBundleToken) {
+	auto info = FilelistAddData(aUser, this, aRemoteBundleToken);
+	addListHooked(info, (QueueItem::FLAG_TTHLIST_BUNDLE | QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_MATCH_QUEUE), aBundle);
 }
 
-bool QueueManager::checkPBDReply(HintedUser& aUser, const TTHValue& aTTH, string& _bundleToken, bool& _notify, bool& _add, const string& remoteBundle) noexcept {
-	BundlePtr bundle = findBundle(aTTH);
-	if (bundle) {
-		WLock l(cs);
-		//log("checkPBDReply: BUNDLE FOUND");
-		_bundleToken = bundle->getStringToken();
-		_add = !bundle->getFinishedFiles().empty();
-
-		if (!bundle->isDownloaded()) {
-			bundle->addFinishedNotify(aUser, remoteBundle);
-			_notify = true;
-		}
-		return true;
-	}
-	//log("checkPBDReply: CHECKNOTIFY FAIL");
-	return false;
-}
-
-void QueueManager::addFinishedNotify(HintedUser& aUser, const TTHValue& aTTH, const string& remoteBundle) noexcept {
-	BundlePtr bundle = findBundle(aTTH);
-	if (bundle) {
-		WLock l(cs);
-		//log("addFinishedNotify: BUNDLE FOUND");
-		if (!bundle->isDownloaded()) {
-			bundle->addFinishedNotify(aUser, remoteBundle);
-		}
-	}
-	//log("addFinishedNotify: BUNDLE NOT FOUND");
-}
-
-void QueueManager::removeBundleNotify(const UserPtr& aUser, QueueToken aBundleToken) noexcept {
-	WLock l(cs);
-	BundlePtr bundle = bundleQueue.findBundle(aBundleToken);
-	if (bundle) {
-		bundle->removeFinishedNotify(aUser);
-	}
-}
-
-void QueueManager::updatePBDHooked(const HintedUser& aUser, const TTHValue& aTTH) noexcept {
+void QueueManager::addSourceHooked(const HintedUser& aUser, const TTHValue& aTTH) noexcept {
 	QueueItemList qiList;
 
 	{
@@ -3897,7 +3681,7 @@ void QueueManager::searchAlternates(uint64_t aTick) noexcept {
 	// Get the item to search for
 	{
 		WLock l(cs);
-		bundle = bundleQueue.maybePopSearchItem(aTick);
+		bundle = bundleQueue.searchQueue.maybePopSearchItem(aTick);
 	}
 
 	if (!bundle) {
@@ -3945,9 +3729,9 @@ int QueueManager::searchBundleAlternates(const BundlePtr& aBundle, uint64_t aTic
 			RLock l(cs);
 			
 			if (isScheduled)
-				bundleQueue.recalculateSearchTimes(aBundle->isRecent(), true, aTick);
+				bundleQueue.searchQueue.recalculateSearchTimes(aBundle->isRecent(), true, aTick);
 
-			nextSearchTick = aBundle->isRecent() ? bundleQueue.getNextSearchRecent() : bundleQueue.getNextSearchNormal();
+			nextSearchTick = aBundle->isRecent() ? bundleQueue.searchQueue.getNextSearchRecent() : bundleQueue.searchQueue.getNextSearchNormal();
 		}
 
 		if (SETTING(REPORT_ALTERNATES)) {

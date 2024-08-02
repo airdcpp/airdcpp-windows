@@ -374,23 +374,6 @@ QueueItemPtr Bundle::getNextQI(const UserPtr& aUser, const OrderedStringSet& aOn
 	return nullptr;
 }
 
-bool Bundle::isFinishedNotified(const UserPtr& aUser) const noexcept {
-	return ranges::find_if(finishedNotifications, [&aUser](const UserBundlePair& ubp) { return ubp.first.user == aUser; }) != finishedNotifications.end();
-}
-
-void Bundle::addFinishedNotify(HintedUser& aUser, const string& remoteBundle) noexcept {
-	if (!isFinishedNotified(aUser.user) && !isBadSource(aUser)) {
-		finishedNotifications.emplace_back(aUser, remoteBundle);
-	}
-}
-
-void Bundle::removeFinishedNotify(const UserPtr& aUser) noexcept {
-	auto p = ranges::find_if(finishedNotifications, [&aUser](const UserBundlePair& ubp) { return ubp.first.user == aUser; });
-	if (p != finishedNotifications.end()) {
-		finishedNotifications.erase(p);
-	}
-}
-
 void Bundle::getSourceUsers(HintedUserList& l) const noexcept {
 	for (const auto& st : sources) {
 		l.push_back(st.getUser());
@@ -557,10 +540,6 @@ int Bundle::countOnlineUsers() const noexcept {
 		}
 	}
 	return (queueItems.size() == 0 ? 0 : (files / queueItems.size()));
-}
-
-void Bundle::clearFinishedNotifications(FinishedNotifyList& fnl) noexcept {
-	finishedNotifications.swap(fnl);
 }
 
 bool Bundle::allowAutoSearch() const noexcept {

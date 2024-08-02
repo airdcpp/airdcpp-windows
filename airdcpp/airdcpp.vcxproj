@@ -226,6 +226,8 @@
     <ClCompile Include="airdcpp\MessageCache.cpp" />
     <ClCompile Include="airdcpp\MessageHighlight.cpp" />
     <ClCompile Include="airdcpp\modules\ADLSearch.cpp" />
+    <ClCompile Include="airdcpp\PartialFileSharingManager.cpp" />
+    <ClCompile Include="airdcpp\PartialBundleSharingManager.cpp" />
     <ClCompile Include="airdcpp\PrivateChatManager.cpp" />
     <ClCompile Include="airdcpp\modules\AutoSearch.cpp" />
     <ClCompile Include="airdcpp\modules\AutoSearchManager.cpp" />
@@ -288,6 +290,7 @@
     <ClCompile Include="airdcpp\SearchManager.cpp" />
     <ClCompile Include="airdcpp\SearchQueue.cpp" />
     <ClCompile Include="airdcpp\SearchResult.cpp" />
+    <ClCompile Include="airdcpp\SearchTypes.cpp" />
     <ClCompile Include="airdcpp\SettingHolder.cpp" />
     <ClCompile Include="airdcpp\SettingItem.cpp" />
     <ClCompile Include="airdcpp\SettingsManager.cpp" />
@@ -350,6 +353,9 @@
     <ClInclude Include="airdcpp\HasherStats.h" />
     <ClInclude Include="airdcpp\HashStore.h" />
     <ClInclude Include="airdcpp\modules\ADLSearch.h" />
+    <ClInclude Include="airdcpp\PartialFileSharingManager.h" />
+    <ClInclude Include="airdcpp\PartialBundleSharingManager.h" />
+    <ClInclude Include="airdcpp\PartialSharingManager.h" />
     <ClInclude Include="airdcpp\QueueAddInfo.h" />
     <ClInclude Include="airdcpp\constants.h" />
     <ClInclude Include="airdcpp\DirectoryDownload.h" />
@@ -360,6 +366,7 @@
     <ClInclude Include="airdcpp\Hasher.h" />
     <ClInclude Include="airdcpp\HashManagerListener.h" />
     <ClInclude Include="airdcpp\MessageHighlight.h" />
+    <ClInclude Include="airdcpp\SearchTypes.h" />
     <ClInclude Include="airdcpp\ShareDirectory.h" />
     <ClInclude Include="airdcpp\ShareRefreshInfo.h" />
     <ClInclude Include="airdcpp\ShareRefreshTask.h" />

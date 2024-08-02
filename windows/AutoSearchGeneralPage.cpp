@@ -24,6 +24,7 @@
 
 #include "SystemUtil.h"
 #include <airdcpp/SearchManager.h>
+#include <airdcpp/SearchTypes.h>
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
@@ -60,7 +61,8 @@ LRESULT AutoSearchGeneralPage::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LP
 	try {
 		StringList ext;
 		string typeName;
-		SearchManager::getInstance()->getSearchType(options.fileTypeId, options.searchType, ext, typeName);
+		auto& typeManager = SearchManager::getInstance()->getSearchTypes();
+		typeManager.getSearchType(options.fileTypeId, options.searchType, ext, typeName);
 	} catch (...) {
 		// switch back to default
 		options.searchType = Search::TYPE_ANY;
@@ -249,7 +251,8 @@ LRESULT AutoSearchGeneralPage::onCheckParams(WORD /*wNotifyCode*/, WORD /*wID*/,
 LRESULT AutoSearchGeneralPage::onTypeChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	StringList extensions;
 	try {
-		SearchManager::getInstance()->getSearchType(ctrlFileType.GetCurSel(), options.searchType, extensions, options.fileTypeId);
+		auto& typeManager = SearchManager::getInstance()->getSearchTypes();
+		typeManager.getSearchType(ctrlFileType.GetCurSel(), options.searchType, extensions, options.fileTypeId);
 	} catch (...) {}
 	fixControls();
 	return 0;

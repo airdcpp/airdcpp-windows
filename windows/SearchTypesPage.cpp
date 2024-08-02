@@ -19,6 +19,7 @@
 #include "stdafx.h"
 
 #include <airdcpp/SearchManager.h>
+#include <airdcpp/SearchTypes.h>
 
 #include "Resource.h"
 #include "SearchTypesPage.h"
@@ -60,7 +61,8 @@ LRESULT SearchTypesPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 void SearchTypesPage::fillList() {
 	ctrlTypes.DeleteAllItems();
 
-	auto typeList = SearchManager::getInstance()->getSearchTypes();
+	auto& typeManager = SearchManager::getInstance()->getSearchTypes();
+	auto typeList = typeManager.getSearchTypes();
 
 	int pos = 0;
 	for(const auto& t: typeList) {
@@ -77,7 +79,8 @@ LRESULT SearchTypesPage::onAddMenu(WORD , WORD , HWND , BOOL& ) {
 
 	if(dlg.DoModal() == IDOK) {
 		try {
-			SearchManager::getInstance()->addSearchType(dlg.name, dlg.extList);
+			auto& typeManager = SearchManager::getInstance()->getSearchTypes();
+			typeManager.addSearchType(dlg.name, dlg.extList);
 			fillList();
 		} catch(const SearchTypeException& e) {
 			showError(e.getError());
@@ -89,7 +92,8 @@ LRESULT SearchTypesPage::onAddMenu(WORD , WORD , HWND , BOOL& ) {
 LRESULT SearchTypesPage::onChangeMenu(WORD , WORD , HWND , BOOL& ) {
 	if(ctrlTypes.GetSelectedCount() == 1) {
 		int sel = ctrlTypes.GetSelectedIndex();
-		auto lst = SearchManager::getInstance()->getSearchTypes();
+		auto& typeManager = SearchManager::getInstance()->getSearchTypes();
+		auto lst = typeManager.getSearchTypes();
 
 		auto pos = lst.begin();
 		advance(pos, sel);
@@ -103,7 +107,7 @@ LRESULT SearchTypesPage::onChangeMenu(WORD , WORD , HWND , BOOL& ) {
 
 		if(dlg.DoModal() == IDOK) {
 			try {
-				SearchManager::getInstance()->modSearchType(
+				typeManager.modSearchType(
 					type->getId(), 
 					!dlg.isDefault && type->getId() != dlg.name ? optional(dlg.name) : nullopt,
 					dlg.extList
@@ -121,7 +125,8 @@ LRESULT SearchTypesPage::onChangeMenu(WORD , WORD , HWND , BOOL& ) {
 LRESULT SearchTypesPage::onRemoveMenu(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(ctrlTypes.GetSelectedCount() == 1) {
 		int sel = ctrlTypes.GetNextItem(-1, LVNI_SELECTED);
-		auto lst = SearchManager::getInstance()->getSearchTypes();
+		auto& typeManager = SearchManager::getInstance()->getSearchTypes();
+		auto lst = typeManager.getSearchTypes();
 
 		auto pos = lst.begin();
 		advance(pos, sel);
@@ -132,7 +137,7 @@ LRESULT SearchTypesPage::onRemoveMenu(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 		}
 
 		try {
-			SearchManager::getInstance()->delSearchType(type->getId());
+			typeManager.delSearchType(type->getId());
 			ctrlTypes.DeleteItem(sel);
 		} catch(const SearchTypeException& e) {
 			showError(e.getError());
@@ -147,7 +152,8 @@ LRESULT SearchTypesPage::onSelectionChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& 
 	if (lv->uNewState & LVIS_FOCUSED) {
 		int sel = ctrlTypes.GetNextItem(-1, LVNI_SELECTED);
 		if (sel != -1) {
-			auto lst = SearchManager::getInstance()->getSearchTypes();
+			auto& typeManager = SearchManager::getInstance()->getSearchTypes();
+			auto lst = typeManager.getSearchTypes();
 
 			auto pos = lst.begin();
 			advance(pos, sel);
@@ -195,7 +201,8 @@ void SearchTypesPage::write() {
 
 LRESULT SearchTypesPage::onResetDefaults(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(WinUtil::showQuestionBox(TSTRING(RESET_EXTENSIONS_CONFIRM), MB_ICONQUESTION)) {
-		SearchManager::getInstance()->setSearchTypeDefaults();
+		auto& typeManager = SearchManager::getInstance()->getSearchTypes();
+		typeManager.setSearchTypeDefaults();
 		fillList();
 	}
 	return 0;

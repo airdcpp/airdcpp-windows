@@ -33,7 +33,7 @@ namespace dcpp {
 
 using ranges::find_if;
 
-BundleQueue::BundleQueue() : PrioritySearchQueue(SettingsManager::BUNDLE_SEARCH_TIME) { }
+BundleQueue::BundleQueue() : searchQueue(SettingsManager::BUNDLE_SEARCH_TIME) { }
 
 BundleQueue::~BundleQueue() { }
 
@@ -52,7 +52,7 @@ void BundleQueue::addBundle(const BundlePtr& aBundle) noexcept {
 	aBundle->setStatus(Bundle::STATUS_QUEUED);
 	aBundle->setDownloadedBytes(0); //sets to downloaded segments
 
-	addSearchPrio(aBundle);
+	searchQueue.addSearchPrio(aBundle);
 }
 
 void BundleQueue::getSourceInfo(const UserPtr& aUser, Bundle::SourceBundleList& aSources, Bundle::SourceBundleList& aBad) const noexcept {
@@ -439,7 +439,7 @@ void BundleQueue::removeBundle(const BundlePtr& aBundle) noexcept{
 	dcassert(aBundle->getFinishedFiles().empty());
 	dcassert(aBundle->getQueueItems().empty());
 
-	removeSearchPrio(aBundle);
+	searchQueue.removeSearchPrio(aBundle);
 	bundles.erase(aBundle->getToken());
 
 	dcassert(bundlePaths.size() == static_cast<size_t>(ranges::count_if(bundles | views::values, [](const BundlePtr& b) { return !b->isFileBundle(); })));

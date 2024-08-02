@@ -32,6 +32,7 @@
 #include "HashBloom.h"
 #include "Localization.h"
 #include "LogManager.h"
+#include "PartialSharingManager.h"
 #include "QueueManager.h"
 #include "ResourceManager.h"
 #include "ScopedFunctor.h"
@@ -693,7 +694,7 @@ void AdcHub::handle(AdcCommand::SCH, AdcCommand& c) noexcept {
 	}
 
 	auto isUdpActive = Identity::isActiveMode(mode);
-	SearchManager::getInstance()->respond(c, *ou, isUdpActive, getIpPort(), get(HubSettings::ShareProfile));
+	SearchManager::getInstance()->respond(c, this, ou, isUdpActive, get(HubSettings::ShareProfile));
 }
 
 void AdcHub::handle(AdcCommand::RES, AdcCommand& c) noexcept {
@@ -713,7 +714,7 @@ void AdcHub::handle(AdcCommand::PSR, AdcCommand& c) noexcept {
 		return;
 	}
 	ASSERT_DIRECT_TO_ME(c)
-	SearchManager::getInstance()->onPSR(c, ou->getUser(), ou->getIdentity().getUdpIp());
+	PartialSharingManager::getInstance()->files.onPSR(c, ou->getUser(), ou->getIdentity().getUdpIp());
 }
 
 void AdcHub::handle(AdcCommand::PBD, AdcCommand& c) noexcept {
@@ -724,7 +725,7 @@ void AdcHub::handle(AdcCommand::PBD, AdcCommand& c) noexcept {
 		return;
 	}
 	ASSERT_DIRECT_TO_ME(c)
-	SearchManager::getInstance()->onPBD(c, ou->getUser());
+	PartialSharingManager::getInstance()->bundles.onPBD(c, ou->getUser());
 }
 
 

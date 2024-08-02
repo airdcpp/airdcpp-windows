@@ -26,6 +26,7 @@
 #include <airdcpp/SearchManager.h>
 #include <airdcpp/SearchQuery.h>
 #include <airdcpp/SearchResult.h>
+#include <airdcpp/SearchTypes.h>
 #include <airdcpp/ShareManager.h>
 #include <airdcpp/SimpleXML.h>
 #include <airdcpp/User.h>
@@ -425,7 +426,8 @@ void AutoSearchManager::performSearch(AutoSearchPtr& as, StringList& aHubs, Sear
 	auto ftype = Search::TYPE_ANY;
 	try {
 		string name;
-		SearchManager::getInstance()->getSearchType(as->getFileType(), ftype, extList, name);
+		auto& typeManager = SearchManager::getInstance()->getSearchTypes();
+		typeManager.getSearchType(as->getFileType(), ftype, extList, name);
 	} catch(const SearchTypeException&) {
 		//reset to default
 		as->setFileType(SEARCH_TYPE_ANY);
@@ -709,7 +711,7 @@ void AutoSearchManager::on(SearchManagerListener::SR, const SearchResultPtr& sr)
 
 	//extra checks outside the lock
 	for (auto& as: matches) {
-		if (!SearchManager::isDefaultTypeStr(as->getFileType())) {
+		if (!SearchTypes::isDefaultTypeStr(as->getFileType())) {
 			if (sr->getType() == SearchResult::TYPE_DIRECTORY)
 				continue;
 
@@ -720,7 +722,8 @@ void AutoSearchManager::on(SearchManagerListener::SR, const SearchResultPtr& sr)
 				{
 					string typeName;
 					Search::TypeModes tmp;
-					SearchManager::getInstance()->getSearchType(as->getFileType(), tmp, exts, typeName);
+					auto& typeManager = SearchManager::getInstance()->getSearchTypes();
+					typeManager.getSearchType(as->getFileType(), tmp, exts, typeName);
 				}
 
 				auto fileName = sr->getFileName();

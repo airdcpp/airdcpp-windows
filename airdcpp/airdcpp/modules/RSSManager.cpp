@@ -26,7 +26,7 @@
 #include <airdcpp/LogManager.h>
 #include <airdcpp/ShareManager.h>
 #include <airdcpp/QueueManager.h>
-#include <airdcpp/SearchManager.h>
+#include <airdcpp/SearchTypes.h>
 #include <airdcpp/ClientManager.h>
 
 #include <airdcpp/ScopedFunctor.h>

@@ -31,7 +31,7 @@
 
 #include <airdcpp/CriticalSection.h>
 #include <airdcpp/GroupedSearchResult.h>
-#include <airdcpp/SearchManager.h>
+#include <airdcpp/SearchTypes.h>
 #include <airdcpp/SearchResult.h>
 
 #include <airdcpp/ClientManagerListener.h>

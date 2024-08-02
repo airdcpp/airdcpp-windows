@@ -38,7 +38,7 @@ public:
     typedef X<7> SearchInstanceRemoved;
 
 	virtual void on(SR, const SearchResultPtr&) noexcept { }
-	virtual void on(IncomingSearch, const SearchQuery&, const SearchResultList&) noexcept {}
+	virtual void on(IncomingSearch, Client*, const OnlineUserPtr& /*aAdcUser*/, const SearchQuery&, const SearchResultList&, bool /*isActive*/) noexcept {}
 
 	virtual void on(SearchTypesChanged) noexcept { }
     virtual void on(SearchInstanceCreated, const SearchInstancePtr&) noexcept { }

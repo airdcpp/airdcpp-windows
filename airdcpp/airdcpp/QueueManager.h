@@ -116,6 +116,7 @@ public:
 	/** Add a directory to the queue (downloads filelist and matches the directory). */
 	void matchListing(const DirectoryListing& dl, int& matchingFiles_, int& newFiles_, BundleList& bundles_) noexcept;
 
+	QueueItemList findFiles(const TTHValue& tth) const noexcept;
 	QueueItemPtr findFile(QueueToken aToken) const noexcept { RLock l(cs); return fileQueue.findFile(aToken); }
 
 	// Removes the file from queue (and alternatively the target if the file is finished)
@@ -272,21 +273,22 @@ public:
 
 
 	/* Partial bundle sharing */
-	bool checkPBDReply(HintedUser& aUser, const TTHValue& aTTH, string& _bundleToken, bool& _notify, bool& _add, const string& remoteBundle) noexcept;
-	void addFinishedNotify(HintedUser& aUser, const TTHValue& aTTH, const string& remoteBundle) noexcept;
-	void updatePBDHooked(const HintedUser& aUser, const TTHValue& aTTH) noexcept;
+	// bool checkPBDReply(HintedUser& aUser, const TTHValue& aTTH, string& _bundleToken, bool& _notify, bool& _add, const string& remoteBundle) noexcept;
+	// void addFinishedNotify(HintedUser& aUser, const TTHValue& aTTH, const string& remoteBundle) noexcept;
+	void addSourceHooked(const HintedUser& aUser, const TTHValue& aTTH) noexcept;
 
 	// Remove user from a notify list of the local bundle
-	void removeBundleNotify(const UserPtr& aUser, QueueToken aBundleToken) noexcept;
+	// void removeBundleNotify(const UserPtr& aUser, QueueToken aBundleToken) noexcept;
 
-	void sendRemovePBD(const HintedUser& aUser, const string& aRemoteToken) noexcept;
+	// void sendRemovePBD(const HintedUser& aUser, const string& aRemoteToken) noexcept;
 	bool getSearchInfo(const string& aTarget, TTHValue& tth_, int64_t& size_) noexcept;
-	bool handlePartialSearch(const UserPtr& aUser, const TTHValue& tth, PartsInfo& _outPartsInfo, string& _bundle, bool& _reply, bool& _add) noexcept;
-	bool handlePartialResultHooked(const HintedUser& aUser, const TTHValue& aTTH, const QueueItem::PartialSource& aPartialSource, PartsInfo& outPartialInfo) noexcept;
+	// bool handlePartialSearch(const UserPtr& aUser, const TTHValue& tth, PartsInfo& _outPartsInfo, string& _bundle, bool& _reply, bool& _add) noexcept;
+	bool addPartialSourceHooked(const HintedUser& aUser, const QueueItemPtr& aQI, const PartsInfo& aInPartialInfo) noexcept;
+	void getPartialInfo(const QueueItemPtr& aQI, PartsInfo& partialInfo_) const noexcept;
 
 	// Queue a TTH list from the user containing the supplied TTH
 	// Throws on errors
-	void addBundleTTHListHooked(const HintedUser& aUser, const string& aRemoteBundleToken, const TTHValue& tth);
+	void addBundleTTHListHooked(const HintedUser& aUser, const BundlePtr& aBundle, const string& aRemoteBundleToken);
 
 	// Throws QueueException
 	MemoryInputStream* generateTTHList(QueueToken aBundleToken, bool isInSharingHub, BundlePtr& bundle_);
@@ -504,11 +506,13 @@ private:
 
 	void renameDownloadedFile(const string& aSource, const string& aTarget, const QueueItemPtr& q) noexcept;
 
-	void sendFileCompletionNotifications(const QueueItemPtr& q) noexcept;
+	// void sendFileCompletionNotifications(const QueueItemPtr& q) noexcept;
 
 	// Returns whether the bundle has completed download
 	// Will also attempt to validate and share completed bundles 
 	bool checkBundleFinishedHooked(const BundlePtr& aBundle) noexcept;
+
+	// void handleFinishedPBD(const BundlePtr& aBundle) noexcept;
 
 	// Returns true if any of the bundle files has failed validation
 	// Optionally also rechecks failed files
@@ -548,7 +552,7 @@ private:
 	void on(TimerManagerListener::Minute, uint64_t aTick) noexcept override;
 
 	// Request information about finished segments from all partial sources
-	void requestPartialSourceInfo(uint64_t aTick) noexcept;
+	// void requestPartialSourceInfo(uint64_t aTick) noexcept;
 
 	// Perform automatic search for alternate sources
 	void searchAlternates(uint64_t aTick) noexcept;

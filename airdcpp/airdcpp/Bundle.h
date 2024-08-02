@@ -103,9 +103,6 @@ public:
 	typedef vector<BundleSource> SourceList;
 	typedef vector<pair<BundlePtr, BundleSource>> SourceBundleList;
 
-	typedef pair<HintedUser, string> UserBundlePair;
-	typedef vector<UserBundlePair> FinishedNotifyList;
-
 	typedef multimap<double, BundlePtr> SourceSpeedMapB;
 	typedef multimap<double, QueueItemPtr> SourceSpeedMapQI;
 
@@ -139,8 +136,6 @@ public:
 	const ActionHookRejectionPtr& getHookError() const noexcept {
 		return hookError;
 	}
-
-	const FinishedNotifyList& getFinishedNotifications() const noexcept  { return finishedNotifications; }
 
 	/* Misc */
 	bool isFileBundle() const noexcept { return fileBundle; }
@@ -186,11 +181,6 @@ public:
 	// All bundles files have finished downloading and all validation hooks have completed
 	// Safe
 	bool isCompleted() const noexcept;
-
-	void clearFinishedNotifications(FinishedNotifyList& fnl) noexcept;
-	bool isFinishedNotified(const UserPtr& aUser) const noexcept;
-	void addFinishedNotify(HintedUser& aUser, const string& remoteBundle) noexcept;
-	void removeFinishedNotify(const UserPtr& aUser) noexcept;
 
 	QueueItemPtr findQI(const string& aTarget) const noexcept;
 	int countOnlineUsers() const noexcept;
@@ -264,7 +254,6 @@ private:
 
 	UserIntMap runningUsers;					// running users and their connections cached
 	HintedUserList uploadReports;				// sources receiving UBN notifications (running only)
-	FinishedNotifyList finishedNotifications;	// partial bundle sharing sources (mapped to their local tokens)
 };
 
 }

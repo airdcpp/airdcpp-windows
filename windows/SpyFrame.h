@@ -116,14 +116,9 @@ private:
 
 	bool closed = false;
 	bool ignoreTth;
-	
-	// void on(ClientManagerListener::IncomingNMDCSearch, const string& s) noexcept override;
-	// void on(ClientManagerListener::IncomingADCSearch, const AdcCommand& s) noexcept override;
-
-	// void on(ClientManagerListener::OutgoingSearchResponses, const SearchResultList& aResults) noexcept override;
 
 	// SearchManagerListener
-	void on(SearchManagerListener::IncomingSearch, const SearchQuery& aQuery, const SearchResultList& aResults) noexcept override;
+	void on(SearchManagerListener::IncomingSearch, Client* aClient, const OnlineUserPtr& aAdcUser, const SearchQuery& aQuery, const SearchResultList& aResults, bool) noexcept override;
 	
 	// TimerManagerListener
 	void on(TimerManagerListener::Second, uint64_t) noexcept override;

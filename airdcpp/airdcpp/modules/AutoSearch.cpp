@@ -25,6 +25,7 @@
 #include <airdcpp/ResourceManager.h>
 #include <airdcpp/SearchQuery.h>
 #include <airdcpp/SearchManager.h>
+#include <airdcpp/SearchTypes.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/SimpleXML.h>
 #include <airdcpp/TimerManager.h>
@@ -220,7 +221,8 @@ string AutoSearch::getDisplayType() const noexcept {
 	Search::TypeModes mode;
 	string name;
 	try {
-		SearchManager::getInstance()->getSearchType(fileType, mode, ext, name);
+		auto& typeManager = SearchManager::getInstance()->getSearchTypes();
+		typeManager.getSearchType(fileType, mode, ext, name);
 	} catch (...) {
 		return STRING(ANY);
 	}

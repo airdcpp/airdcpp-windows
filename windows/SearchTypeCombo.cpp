@@ -22,6 +22,7 @@
 #include "ResourceLoader.h"
 
 #include <airdcpp/SearchManager.h>
+#include <airdcpp/SearchTypes.h>
 
 
 namespace dcpp {
@@ -87,7 +88,8 @@ LRESULT SearchTypeCombo::onDrawItem(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPa
 }
 
 void SearchTypeCombo::fillList(const string& aSelection, COLORREF aTextColor, COLORREF aBgColor) {
-	auto types = SearchManager::getInstance()->getSearchTypes();
+	auto& typeManager = SearchManager::getInstance()->getSearchTypes();
+	auto types = typeManager.getSearchTypes();
 
 	int selectionIndex = 0;
 	auto addListItem = [&] (int aImagePos, const tstring& aTitle, const string& aId) -> void {

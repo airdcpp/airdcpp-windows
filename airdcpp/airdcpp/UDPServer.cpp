@@ -23,6 +23,7 @@
 #include "ClientManager.h"
 #include "DebugManager.h"
 #include "LogManager.h"
+#include "PartialSharingManager.h"
 #include "ResourceManager.h"
 #include "SearchManager.h"
 #include "SettingsManager.h"
@@ -189,7 +190,7 @@ void UDPServer::handle(AdcCommand::PSR, AdcCommand& c, const string& aRemoteIp) 
 	// Remove the CID
 	c.getParameters().erase(c.getParameters().begin());
 
-	SearchManager::getInstance()->onPSR(c, user, aRemoteIp);
+	PartialSharingManager::getInstance()->files.onPSR(c, user, aRemoteIp);
 }
 
 void UDPServer::handle(AdcCommand::PBD, AdcCommand& c, const string&) noexcept {
@@ -213,7 +214,7 @@ void UDPServer::handle(AdcCommand::PBD, AdcCommand& c, const string&) noexcept {
 	// Remove the CID
 	c.getParameters().erase(c.getParameters().begin());
 
-	SearchManager::getInstance()->onPBD(c, user);
+	PartialSharingManager::getInstance()->bundles.onPBD(c, user);
 }
 
 void UDPServer::handle(AdcCommand::UBD, AdcCommand& c, const string&) noexcept {

@@ -23,8 +23,8 @@
 #include "SearchFrm.h"
 #include "WinUtil.h"
 
+#include <airdcpp/SearchManager.h>
 #include <airdcpp/SearchQuery.h>
-// #include <airdcpp/ShareManager.h>
 #include <airdcpp/ResourceManager.h>
 
 string SpyFrame::id = "SpyFrame";
@@ -229,7 +229,7 @@ LRESULT SpyFrame::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/,
 	return 0;
 }
 
-void SpyFrame::on(SearchManagerListener::IncomingSearch, const SearchQuery& aQuery, const SearchResultList& aResults) noexcept {
+void SpyFrame::on(SearchManagerListener::IncomingSearch, Client*, const OnlineUserPtr&, const SearchQuery& aQuery, const SearchResultList& aResults, bool) noexcept {
 	string searchStr;
 	if (aQuery.root) {
 		if (ignoreTth)
@@ -237,13 +237,7 @@ void SpyFrame::on(SearchManagerListener::IncomingSearch, const SearchQuery& aQue
 
 		searchStr = "TTH:" + (*aQuery.root).toBase32();
 	} else {
-		for (const auto& p : aQuery.include.getPatterns()) {
-			if (!searchStr.empty()) {
-				searchStr += " ";
-			}
-
-			searchStr += p.str();
-		}
+		searchStr = aQuery.include.toString();
 	}
 
 	auto info = new IncomingSearchInfo({ Text::toT(searchStr), !aResults.empty() });
