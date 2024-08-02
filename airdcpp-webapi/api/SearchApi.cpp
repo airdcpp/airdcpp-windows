@@ -28,6 +28,8 @@
 #include <airdcpp/DirectSearch.h>
 #include <airdcpp/SearchInstance.h>
 #include <airdcpp/SearchManager.h>
+#include <airdcpp/SearchQuery.h>
+#include <airdcpp/SearchTypes.h>
 #include <airdcpp/ShareManager.h>
 
 
@@ -41,7 +43,9 @@ namespace webserver {
 	StringList SearchApi::subscriptionList = {
 		"search_instance_created",
 		"search_instance_removed",
-		"search_types_updated"
+		"search_types_updated",
+
+		"search_incoming_search",
 	};
 
 	SearchApi::SearchApi(Session* aSession) : 
@@ -111,6 +115,41 @@ namespace webserver {
 		maybeSend("search_instance_removed", [=] { return serializeSearchInstance(aInstance); });
 	}
 
+	string SearchApi::serializeSearchQueryItemType(const SearchQuery& aQuery) noexcept {
+		if (aQuery.root) {
+			return "tth";
+		}
+
+		switch (aQuery.itemType) {
+			case SearchQuery::ItemType::TYPE_DIRECTORY: return "directory";
+			case SearchQuery::ItemType::TYPE_FILE: return "file";
+			case SearchQuery::ItemType::TYPE_ANY: 
+			default: return "any";
+		};
+	}
+
+	json SearchApi::serializeSearchQuery(const SearchQuery& aQuery) noexcept {
+		return {
+			{ "pattern", aQuery.root ? (*aQuery.root).toBase32() : aQuery.include.toString() },
+			{ "min_size", aQuery.gt },
+			{ "max_size", aQuery.lt },
+			{ "file_type", serializeSearchQueryItemType(aQuery) },
+			{ "extensions", aQuery.ext },
+			{ "excluded", aQuery.exclude.toStringList() },
+		};
+	}
+
+	void SearchApi::on(SearchManagerListener::IncomingSearch, Client* aClient, const OnlineUserPtr& aAdcUser, const SearchQuery& aQuery, const SearchResultList& aResults, bool) noexcept {
+		maybeSend("search_incoming_search", [&] {
+			return json({
+				{ "hub", Serializer::serializeClient(aClient) },
+				{ "user", aAdcUser ? Serializer::serializeOnlineUser(aAdcUser) : nullptr },
+				{ "results", Serializer::serializeList(aResults, SearchEntity::serializeSearchResult) },
+				{ "query", serializeSearchQuery(aQuery) },
+			});
+		});
+	}
+
 	json SearchApi::serializeSearchInstance(const SearchInstancePtr& aSearch) noexcept {
 		auto expiration = aSearch->getTimeToExpiration();
 		return {
@@ -172,7 +211,8 @@ namespace webserver {
 	}
 
 	api_return SearchApi::handleGetTypes(ApiRequest& aRequest) {
-		auto types = SearchManager::getInstance()->getSearchTypes();
+		auto& typeManager = SearchManager::getInstance()->getSearchTypes();
+		auto types = typeManager.getSearchTypes();
 		aRequest.setResponseBody(Serializer::serializeList(types, serializeSearchType));
 		return websocketpp::http::status_code::ok;
 	}
@@ -180,7 +220,8 @@ namespace webserver {
 	api_return SearchApi::handleGetType(ApiRequest& aRequest) {
 		auto id = parseSearchTypeId(aRequest);
 
-		auto type = SearchManager::getInstance()->getSearchType(id);
+		auto& typeManager = SearchManager::getInstance()->getSearchTypes();
+		auto type = typeManager.getSearchType(id);
 		aRequest.setResponseBody(serializeSearchType(type));
 		return websocketpp::http::status_code::ok;
 	}
@@ -191,7 +232,8 @@ namespace webserver {
 		auto name = JsonUtil::getField<string>("name", reqJson, false);
 		auto extensions = JsonUtil::getField<StringList>("extensions", reqJson, false);
 
-		auto type = SearchManager::getInstance()->addSearchType(name, extensions);
+		auto& typeManager = SearchManager::getInstance()->getSearchTypes();
+		auto type = typeManager.addSearchType(name, extensions);
 		aRequest.setResponseBody(serializeSearchType(type));
 
 		return websocketpp::http::status_code::ok;
@@ -205,14 +247,16 @@ namespace webserver {
 		auto name = JsonUtil::getOptionalField<string>("name", reqJson);
 		auto extensions = JsonUtil::getOptionalField<StringList>("extensions", reqJson);
 
-		auto type = SearchManager::getInstance()->modSearchType(id, name, extensions);
+		auto& typeManager = SearchManager::getInstance()->getSearchTypes();
+		auto type = typeManager.modSearchType(id, name, extensions);
 		aRequest.setResponseBody(serializeSearchType(type));
 		return websocketpp::http::status_code::ok;
 	}
 
 	api_return SearchApi::handleRemoveType(ApiRequest& aRequest) {
 		auto id = parseSearchTypeId(aRequest);
-		SearchManager::getInstance()->delSearchType(id);
+		auto& typeManager = SearchManager::getInstance()->getSearchTypes();
+		typeManager.delSearchType(id);
 		return websocketpp::http::status_code::no_content;
 	}
 

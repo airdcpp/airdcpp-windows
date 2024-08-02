@@ -45,6 +45,7 @@ namespace webserver {
 		static json serializeUser(const UserPtr& aUser) noexcept;
 		static json serializeHintedUser(const HintedUser& aUser) noexcept;
 		static json serializeOnlineUser(const OnlineUserPtr& aUser) noexcept;
+		static json serializeClient(const Client* aClient) noexcept;
 
 		static string toFileContentType(const string& aExt) noexcept;
 		static string getFileTypeId(const string& aName) noexcept;

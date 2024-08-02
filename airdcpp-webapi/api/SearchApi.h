@@ -49,7 +49,10 @@ namespace webserver {
 		void on(SearchManagerListener::SearchTypesChanged) noexcept override;
 		void on(SearchManagerListener::SearchInstanceCreated, const SearchInstancePtr& aInstance) noexcept override;
 		void on(SearchManagerListener::SearchInstanceRemoved, const SearchInstancePtr& aInstance) noexcept override;
+		void on(SearchManagerListener::IncomingSearch, Client* aClient, const OnlineUserPtr& aAdcUser, const SearchQuery& aQuery, const SearchResultList& aResults, bool) noexcept override;
 
+		static string serializeSearchQueryItemType(const SearchQuery& aQuery) noexcept;
+		static json serializeSearchQuery(const SearchQuery& aQuery) noexcept;
 		static json serializeSearchType(const SearchTypePtr& aType) noexcept;
 		static string parseSearchTypeId(ApiRequest& aRequest) noexcept;
 		string createCurrentSessionOwnerId(const string& aSuffix) noexcept;
