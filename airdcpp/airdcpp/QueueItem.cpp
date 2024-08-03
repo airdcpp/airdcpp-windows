@@ -730,7 +730,7 @@ QueueItemPtr QueueItem::pickSearchItem(const QueueItemList& aItems) noexcept {
 	QueueItemPtr searchItem = nullptr;
 
 	for (size_t s = 0; s < aItems.size(); s++) {
-		searchItem = aItems[Util::rand(aItems.size() - 1)];
+		searchItem = aItems[Util::rand(0, aItems.size() - 1)];
 
 		if (!searchItem->isRunning() && !searchItem->isPausedPrio()) {
 			break;

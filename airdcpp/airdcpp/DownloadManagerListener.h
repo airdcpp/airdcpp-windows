@@ -70,7 +70,7 @@ public:
 	 * This is the last message sent before a download is deleted.
 	 * No more messages will be sent after it.
 	 */
-	virtual void on(Complete, const Download*, bool) noexcept { }
+	virtual void on(Complete, const Download*, bool /*aIsTree*/) noexcept { }
 
 	virtual void on(BundleWaiting, const BundlePtr&) noexcept { }
 	virtual void on(BundleTick, const BundleList&, uint64_t) noexcept { }

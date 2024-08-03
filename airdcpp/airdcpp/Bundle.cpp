@@ -323,7 +323,7 @@ bool Bundle::addUserQueue(const QueueItemPtr& qi, const HintedUser& aUser, bool 
 		if (!seqOrder) {
 			/* Randomize the downloading order for each user if the bundle dir date is newer than 7 days to boost partial bundle sharing */
 			l.push_back(qi);
-			swap(l[Util::rand((uint32_t)l.size())], l[l.size()-1]);
+			swap(l[Util::rand(0, (uint32_t)l.size())], l[l.size()-1]);
 		} else {
 			/* Sequential order */
 			l.insert(upper_bound(l.begin(), l.end(), qi, QueueItem::AlphaSortOrder()), qi);

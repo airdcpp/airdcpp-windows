@@ -1450,8 +1450,6 @@ void QueueManager::renameDownloadedFile(const string& source, const string& targ
 
 		auto bundle = aQI->getBundle();
 		if (bundle) {
-			// sendFileCompletionNotifications(aQI);
-
 			{
 				RLock l(cs);
 				if (bundle->getFinishedFiles().empty() && bundle->getQueueItems().empty()) {
@@ -1492,8 +1490,6 @@ bool QueueManager::checkBundleFinishedHooked(const BundlePtr& aBundle) noexcept 
 			isPrivate = aBundle->getFinishedFiles().front()->isSet(QueueItem::FLAG_PRIVATE);
 		}
 	}
-
-	// handleFinishedPBD(aBundle);
 
 	log(STRING_F(DL_BUNDLE_FINISHED, aBundle->getName().c_str()), LogMessage::SEV_INFO);
 	shareBundle(aBundle, false);
