@@ -358,27 +358,27 @@ private:
 	HTREEITEM locationParent;
 	HTREEITEM curItem;
 
-	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
+	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept override;
 
 	//bundle update listeners
-	void on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle) noexcept;
-	void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept;
-	void on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) noexcept;
-	void on(QueueManagerListener::BundlePriority, const BundlePtr& aBundle) noexcept;
-	void on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept;
-	void on(QueueManagerListener::BundleSources, const BundlePtr& aBundle) noexcept;
-	void on(FileRecheckFailed, const QueueItemPtr&, const string&) noexcept;
+	void on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle) noexcept override;
+	void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept override;
+	void on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) noexcept override;
+	void on(QueueManagerListener::BundlePriority, const BundlePtr& aBundle) noexcept override;
+	void on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept override;
+	void on(QueueManagerListener::BundleSources, const BundlePtr& aBundle) noexcept override;
+	void on(FileRecheckFailed, const QueueItemPtr&, const string&) noexcept override;
 
-	void on(DownloadManagerListener::BundleTick, const BundleList& tickBundles, uint64_t aTick) noexcept;
-	void on(DownloadManagerListener::BundleWaiting, const BundlePtr& aBundle) noexcept;
+	void on(DownloadManagerListener::BundleTick, const BundleList& tickBundles, uint64_t aTick) noexcept override;
 
 	//QueueItem update listeners
-	void on(QueueManagerListener::ItemRemoved, const QueueItemPtr& aQI, bool /*finished*/) noexcept;
-	void on(QueueManagerListener::ItemAdded, const QueueItemPtr& aQI) noexcept;
-	void on(QueueManagerListener::ItemSources, const QueueItemPtr& aQI) noexcept;
-	void on(QueueManagerListener::ItemStatus, const QueueItemPtr& aQI) noexcept;
-	void on(QueueManagerListener::ItemPriority, const QueueItemPtr& aQI) noexcept;
-	void on(QueueManagerListener::ItemTick, const QueueItemPtr& aQI) noexcept;
+	void on(QueueManagerListener::BundleDownloadStatus, const BundlePtr& aBundle) noexcept override;
+	void on(QueueManagerListener::ItemRemoved, const QueueItemPtr& aQI, bool /*finished*/) noexcept override;
+	void on(QueueManagerListener::ItemAdded, const QueueItemPtr& aQI) noexcept override;
+	void on(QueueManagerListener::ItemSources, const QueueItemPtr& aQI) noexcept override;
+	void on(QueueManagerListener::ItemStatus, const QueueItemPtr& aQI) noexcept override;
+	void on(QueueManagerListener::ItemPriority, const QueueItemPtr& aQI) noexcept override;
+	void on(QueueManagerListener::ItemTick, const QueueItemPtr& aQI) noexcept override;
 
 	template<typename SourceType>
 	void appendUserMenu(OMenu& aMenu, const vector<SourceType>& aSources) {

@@ -29,7 +29,7 @@
 
 
 namespace dcpp {
-	typedef uint32_t TransferToken;
+	typedef uint32_t TransferInfoToken;
 	class TransferInfo {
 	public:
 
@@ -86,7 +86,7 @@ namespace dcpp {
 
 		IGETSET(QueueToken, queueToken, QueueToken, 0);
 
-		const TransferToken getToken() const noexcept {
+		const TransferInfoToken getToken() const noexcept {
 			return token;
 		}
 
@@ -126,7 +126,7 @@ namespace dcpp {
 		HintedUser user;
 		const bool download;
 
-		const TransferToken token = Util::rand();
+		const TransferInfoToken token = Util::rand();
 		const std::string stringToken;
 
 		bool transferFailed = false;

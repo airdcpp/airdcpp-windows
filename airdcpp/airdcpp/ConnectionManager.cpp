@@ -410,8 +410,7 @@ bool ConnectionManager::allowNewMCN(const ConnectionQueueItem* aCQI) noexcept {
 }
 
 void ConnectionManager::createNewMCN(const HintedUser& aUser) noexcept {
-	QueueTokenSet runningBundles;
-	DownloadManager::getInstance()->getRunningBundles(runningBundles);
+	auto runningBundles = DownloadManager::getInstance()->getRunningBundles();
 
 	string lastError;
 	auto start = QueueManager::getInstance()->startDownload(aUser, runningBundles, 

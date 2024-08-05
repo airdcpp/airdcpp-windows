@@ -864,7 +864,8 @@ void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bun
 			}
 		}
 
-		auto connections = b->countConnections();
+		auto connections = b->getDownloads().size();
+		// auto connections = DownloadManager::getInstance()->getBundleDownloadConnectionCount(b);
 		if(connections > 0) {
 			ratio = ratio / connections;
 
@@ -874,7 +875,7 @@ void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bun
 			ui->setActual((int64_t)((double)ui->pos * (ratio == 0 ? 1.00 : ratio)));
 			ui->setTimeLeft(b->getSecondsLeft());
 			ui->setSpeed(totalSpeed);
-			ui->setUsers(b->getRunningUsers().size());
+			ui->setUsers(b->countOnlineUsers());
 			ui->setRunning(connections);
 
 			uint64_t timeSinceStarted = GET_TICK() - b->getStart();
@@ -961,20 +962,20 @@ tstring TransferView::getRunningStatus(const OrderedStringSet& aFlags) noexcept 
 }
 
 
-void TransferView::onBundleComplete(const string& bundleToken, const string& bundleName, bool isUpload) {
-	auto ui = new UpdateInfo(bundleToken, !isUpload);
+void TransferView::onBundleComplete(const string& aBundleToken, const string& aBundleName, bool aIsUpload) {
+	auto ui = new UpdateInfo(aBundleToken, !aIsUpload);
 
 	ui->setStatus(ItemInfo::STATUS_WAITING);	
 
 	ui->setPos(0);
-	ui->setStatusString(isUpload ? TSTRING(UPLOAD_FINISHED_IDLE) : TSTRING(DOWNLOAD_FINISHED_IDLE));
+	ui->setStatusString(aIsUpload ? TSTRING(UPLOAD_FINISHED_IDLE) : TSTRING(DOWNLOAD_FINISHED_IDLE));
 	ui->setRunning(0);
 	ui->setUsers(0);
 
-	if(SETTING(POPUP_BUNDLE_DLS) && !isUpload) {
-		WinUtil::showPopup(_T("The following bundle has finished downloading: ") + Text::toT(bundleName), TSTRING(DOWNLOAD_FINISHED_IDLE));
-	} else if(SETTING(POPUP_BUNDLE_ULS) && isUpload) {
-		WinUtil::showPopup(_T("The following bundle has finished uploading: ") + Text::toT(bundleName), TSTRING(UPLOAD_FINISHED_IDLE));
+	if (SETTING(POPUP_BUNDLE_DLS) && !aIsUpload) {
+		WinUtil::showPopup(_T("The following bundle has finished downloading: ") + Text::toT(aBundleName), TSTRING(DOWNLOAD_FINISHED_IDLE));
+	} else if (SETTING(POPUP_BUNDLE_ULS) && aIsUpload) {
+		WinUtil::showPopup(_T("The following bundle has finished uploading: ") + Text::toT(aBundleName), TSTRING(UPLOAD_FINISHED_IDLE));
 	}
 	
 	speak(UPDATE_BUNDLE, ui);
@@ -1012,9 +1013,14 @@ void TransferView::on(UploadManagerListener::BundleSizeName, const string& bundl
 	speak(UPDATE_BUNDLE, ui);
 }
 
+void TransferView::on(QueueManagerListener::BundleDownloadStatus, const BundlePtr& aBundle) noexcept {
+	onBundleStatus(aBundle, false); 
+}
+
 void TransferView::on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept {
-	if (aBundle->getStatus() == Bundle::STATUS_DOWNLOADED)
+	if (aBundle->getStatus() == Bundle::STATUS_DOWNLOADED) {
 		onBundleComplete(aBundle->getStringToken(), aBundle->getName(), false);
+	}
 }
 
 void TransferView::onBundleName(const BundlePtr& aBundle) {

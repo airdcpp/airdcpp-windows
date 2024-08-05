@@ -47,7 +47,9 @@ public:
 	typedef X<3> Tick;
 	typedef X<4> Requesting;
 	typedef X<5> Status;
-	typedef X<8> BundleWaiting;
+	typedef X<6> Idle;
+	typedef X<7> Remove;
+
 	typedef X<9> BundleTick;
 
 	/**
@@ -72,7 +74,6 @@ public:
 	 */
 	virtual void on(Complete, const Download*, bool /*aIsTree*/) noexcept { }
 
-	virtual void on(BundleWaiting, const BundlePtr&) noexcept { }
 	virtual void on(BundleTick, const BundleList&, uint64_t) noexcept { }
 
 	/**
@@ -84,6 +85,8 @@ public:
 	 */
 	virtual void on(Failed, const Download*, const string&) noexcept { }
 	virtual void on(Status, const UserConnection*, const string&) noexcept { }
+	virtual void on(Idle, const UserConnection*) noexcept { }
+	virtual void on(Remove, const UserConnection*) noexcept { }
 };
 
 } // namespace dcpp

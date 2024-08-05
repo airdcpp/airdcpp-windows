@@ -67,6 +67,11 @@ void UDPServer::disconnect() {
 UDPServer::UDPServer() : stop(false), pp(true) { }
 UDPServer::~UDPServer() { }
 
+
+void UDPServer::addTask(Callback&& aTask) noexcept {
+	pp.addTask(std::move(aTask));
+}
+
 #define BUFSIZE 8192
 int UDPServer::run() {
 	int len;

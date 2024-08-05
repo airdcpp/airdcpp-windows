@@ -45,7 +45,7 @@ void PartialFileSharingManager::dbgMsg(const string& aMsg, LogMessage::Severity 
 		LogManager::getInstance()->message(aMsg, aSeverity, "PSR");
 	} else if (aSeverity == LogMessage::SEV_WARNING || aSeverity == LogMessage::SEV_ERROR) {
 #ifdef _DEBUG
-		LogManager::getInstance()->message(aMsg, aSeverity, STRING(SEARCH));
+		LogManager::getInstance()->message(aMsg, aSeverity, "PSR");
 		dcdebug("PSR: %s\n", aMsg.c_str());
 #endif
 	}

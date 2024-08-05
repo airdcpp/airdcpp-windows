@@ -296,25 +296,25 @@ private:
 	void handleDisconnect();
 
 	/* Listeners */
-	void on(DownloadManagerListener::BundleTick, const BundleList& bundles, uint64_t aTick) noexcept;
-	void on(DownloadManagerListener::BundleWaiting, const BundlePtr& aBundle) noexcept { onBundleStatus(aBundle, false); }
+	void on(DownloadManagerListener::BundleTick, const BundleList& bundles, uint64_t aTick) noexcept override;
 
 	void on(UploadManagerListener::BundleTick, const UploadBundleList& bundles) noexcept;
-	void on(UploadManagerListener::BundleComplete, const string& bundleToken, const string& bundleName) noexcept { onBundleComplete(bundleToken, bundleName, true); }
-	void on(UploadManagerListener::BundleSizeName, const string& bundleToken, const string& newTarget, int64_t aSize) noexcept;
+	void on(UploadManagerListener::BundleComplete, const string& bundleToken, const string& bundleName) noexcept override { onBundleComplete(bundleToken, bundleName, true); }
+	void on(UploadManagerListener::BundleSizeName, const string& bundleToken, const string& newTarget, int64_t aSize) noexcept override;
 
-	void on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept;
-	void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept;
-	void on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) noexcept;
+	void on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept override;
+	void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept override;
+	void on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) noexcept override;
+	void on(QueueManagerListener::BundleDownloadStatus, const BundlePtr& aBundle) noexcept override;
 
-	void on(TransferInfoManagerListener::Added, const TransferInfoPtr& aInfo) noexcept;
-	void on(TransferInfoManagerListener::Updated, const TransferInfoPtr& aInfo, int aUpdatedProperties, bool aTick) noexcept;
-	void on(TransferInfoManagerListener::Removed, const TransferInfoPtr& aInfo) noexcept;
-	void on(TransferInfoManagerListener::Failed, const TransferInfoPtr& aInfo) noexcept;
-	void on(TransferInfoManagerListener::Tick, const TransferInfo::List& aTransfers, int aUpdatedProperties) noexcept;
-	void on(TransferInfoManagerListener::Completed, const TransferInfoPtr& aInfo) noexcept;
+	void on(TransferInfoManagerListener::Added, const TransferInfoPtr& aInfo) noexcept override;
+	void on(TransferInfoManagerListener::Updated, const TransferInfoPtr& aInfo, int aUpdatedProperties, bool aTick) noexcept override;
+	void on(TransferInfoManagerListener::Removed, const TransferInfoPtr& aInfo) noexcept override;
+	void on(TransferInfoManagerListener::Failed, const TransferInfoPtr& aInfo) noexcept override;
+	void on(TransferInfoManagerListener::Tick, const TransferInfo::List& aTransfers, int aUpdatedProperties) noexcept override;
+	void on(TransferInfoManagerListener::Completed, const TransferInfoPtr& aInfo) noexcept override;
 
-	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
+	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept override;
 
 	void onBundleName(const BundlePtr& aBundle);
 	void onBundleComplete(const string& bundleToken, const string& bundleName, bool isUpload);

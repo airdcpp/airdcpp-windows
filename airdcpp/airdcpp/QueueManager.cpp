@@ -1270,15 +1270,13 @@ bool QueueManager::startDownload(const UserPtr& aUser, const QueueTokenSet& runn
 pair<QueueItem::DownloadType, bool> QueueManager::startDownload(const UserPtr& aUser, string& hubHint, QueueItemBase::DownloadType aType, 
 	QueueToken& bundleToken, bool& allowUrlChange, bool& hasDownload, string& lastError_) noexcept{
 
-	QueueTokenSet runningBundles;
-	DownloadManager::getInstance()->getRunningBundles(runningBundles);
-
+	auto runningBundleTokens = DownloadManager::getInstance()->getRunningBundles();
 	auto hubs = ClientManager::getInstance()->getHubSet(aUser->getCID());
 	if (!hubs.empty()) {
 		QueueItemPtr qi = nullptr;
 		{
 			RLock l(cs);
-			qi = userQueue.getNext(aUser, runningBundles, hubs, lastError_, hasDownload, Priority::LOWEST, 0, 0, aType);
+			qi = userQueue.getNext(aUser, runningBundleTokens, hubs, lastError_, hasDownload, Priority::LOWEST, 0, 0, aType);
 
 			if (qi) {
 				if (qi->getBundle()) {
@@ -1296,7 +1294,7 @@ pair<QueueItem::DownloadType, bool> QueueManager::startDownload(const UserPtr& a
 		}
 
 		if (qi) {
-			bool start = allowStartQI(qi, runningBundles, lastError_);
+			bool start = allowStartQI(qi, runningBundleTokens, lastError_);
 			return { qi->usesSmallSlot() ? QueueItem::TYPE_SMALL : QueueItem::TYPE_ANY, start };
 		}
 	} else {
@@ -1335,8 +1333,7 @@ QueueItemPtr QueueManager::getQueueInfo(const HintedUser& aUser) noexcept {
 	OrderedStringSet hubs;
 	hubs.insert(aUser.hint);
 
-	QueueTokenSet runningBundles;
-	DownloadManager::getInstance()->getRunningBundles(runningBundles);
+	auto runningBundles = DownloadManager::getInstance()->getRunningBundles();
 
 	QueueItemPtr qi = nullptr;
 	string lastError_;
@@ -1706,6 +1703,10 @@ void QueueManager::onDownloadFailed(const QueueItemPtr& aQI, Download* aDownload
 	}
 
 	fire(QueueManagerListener::ItemStatus(), aQI);
+	if (aQI->getBundle()) {
+		fire(QueueManagerListener::BundleDownloadStatus(), aQI->getBundle());
+	}
+
 	return;
 }
 
@@ -1814,6 +1815,9 @@ void QueueManager::onFileDownloadCompleted(const QueueItemPtr& aQI, Download* aD
 		fire(QueueManagerListener::ItemRemoved(), aQI, true);
 	} else {
 		fire(QueueManagerListener::ItemStatus(), aQI);
+		if (aQI->getBundle()) {
+			fire(QueueManagerListener::BundleDownloadStatus(), aQI->getBundle());
+		}
 	}
 }
 
@@ -3456,7 +3460,7 @@ void QueueManager::handleBundleUpdate(QueueToken aBundleToken) noexcept {
 	if (b) {
 		if (b->isSet(Bundle::FLAG_UPDATE_SIZE)) {
 			fire(QueueManagerListener::BundleSize(), b);
-			DownloadManager::getInstance()->sendSizeUpdate(b);
+			// DownloadManager::getInstance()->sendSizeUpdate(b);
 		}
 		
 		if (b->isSet(Bundle::FLAG_SCHEDULE_SEARCH)) {

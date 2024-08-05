@@ -352,7 +352,7 @@ namespace dcpp {
 		return i != transfers.end() ? i->second : nullptr;
 	}
 
-	TransferInfoPtr TransferInfoManager::findTransfer(TransferToken aToken) const noexcept {
+	TransferInfoPtr TransferInfoManager::findTransfer(TransferInfoToken aToken) const noexcept {
 		RLock l(cs);
 		auto ret = ranges::find_if(transfers | views::values, [&](const TransferInfoPtr& aInfo) {
 			return aInfo->getToken() == aToken;

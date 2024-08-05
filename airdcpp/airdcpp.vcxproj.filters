@@ -428,6 +428,9 @@
     <ClCompile Include="airdcpp\SearchTypes.cpp">
       <Filter>Source Files\search</Filter>
     </ClCompile>
+    <ClCompile Include="airdcpp\UBNManager.cpp">
+      <Filter>Source Files\queue</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="airdcpp\AdcCommand.h">
@@ -1077,6 +1080,9 @@
     </ClInclude>
     <ClInclude Include="airdcpp\SearchTypes.h">
       <Filter>Header Files\search</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\UBNManager.h">
+      <Filter>Header Files\queue</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

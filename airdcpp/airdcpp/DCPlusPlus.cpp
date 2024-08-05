@@ -47,6 +47,7 @@
 #include "SettingsManager.h"
 #include "ThrottleManager.h"
 #include "TransferInfoManager.h"
+#include "UBNManager.h"
 #include "UpdateManager.h"
 #include "UploadManager.h"
 #include "ViewFileManager.h"
@@ -102,6 +103,7 @@ void startup(StepFunction aStepF, MessageFunction aMessageF, Callback aRunWizard
 	IgnoreManager::newInstance();
 	TransferInfoManager::newInstance();
 	PartialSharingManager::newInstance();
+	UBNManager::newInstance();
 
 	if (aModuleInitF) {
 		aModuleInitF();
@@ -211,6 +213,7 @@ void shutdown(StepFunction stepF, ProgressFunction progressF, ShutdownUnloadCall
 		aModuleDestroyF();
 	}
 
+	UBNManager::deleteInstance();
 	PartialSharingManager::deleteInstance();
 	TransferInfoManager::deleteInstance();
 	IgnoreManager::deleteInstance();

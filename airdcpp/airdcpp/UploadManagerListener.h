@@ -38,9 +38,11 @@ public:
 	typedef X<5> QueueRemove;
 	typedef X<6> QueueItemRemove;
 	typedef X<7> QueueUpdate;
+
 	typedef X<8> BundleComplete;
 	typedef X<9> BundleSizeName;
 	typedef X<10> BundleTick;
+
 	typedef X<11> SlotsUpdated; //Added / removed reserved slot
 
 	virtual void on(Starting, const Upload*) noexcept { }

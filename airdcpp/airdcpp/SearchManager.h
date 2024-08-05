@@ -76,6 +76,10 @@ public:
 	SearchTypes& getSearchTypes() noexcept {
 		return *searchTypes.get();
 	}
+
+	UDPServer& getUdpServer() noexcept {
+		return *udpServer.get();
+	}
 private:
 	static void testSUDP();
 	vector<pair<uint8_t*, uint64_t>> searchKeys;

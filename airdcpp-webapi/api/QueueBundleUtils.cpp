@@ -77,10 +77,10 @@ namespace webserver {
 		dcassert(b->getSize() != 0);
 		switch (aPropertyName) {
 		case PROP_SIZE: return (double)b->getSize();
-		case PROP_BYTES_DOWNLOADED: return (double)b->getDownloadedBytes();
 		case PROP_PRIORITY: return (double)b->getPriority();
 		case PROP_TIME_ADDED: return (double)b->getTimeAdded();
 		case PROP_TIME_FINISHED: return (double)b->getTimeFinished();
+		case PROP_BYTES_DOWNLOADED: return (double)b->getDownloadedBytes();
 		case PROP_SPEED: return (double)b->getSpeed();
 		case PROP_SECONDS_LEFT: return (double)b->getSecondsLeft();
 		default: dcassert(0); return 0;

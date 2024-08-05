@@ -800,7 +800,7 @@ namespace webserver {
 		}
 	}
 
-	void QueueApi::on(DownloadManagerListener::BundleWaiting, const BundlePtr& aBundle) noexcept {
+	void QueueApi::on(QueueManagerListener::BundleDownloadStatus, const BundlePtr& aBundle) noexcept {
 		// "Waiting" isn't really a status (it's just meant to clear the props for running bundles...)
 		onBundleUpdated(aBundle, TICK_PROPS, "queue_bundle_tick");
 	}

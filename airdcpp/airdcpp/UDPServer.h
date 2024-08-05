@@ -34,6 +34,7 @@ public:
 	void listen();
 
 
+	void addTask(Callback&& aTask) noexcept;
 private:
 	friend class CommandHandler<UDPServer>;
 

@@ -45,7 +45,7 @@ void PartialBundleSharingManager::dbgMsg(const string& aMsg, LogMessage::Severit
 		LogManager::getInstance()->message(aMsg, aSeverity, "PBD");
 	} else if (aSeverity == LogMessage::SEV_WARNING || aSeverity == LogMessage::SEV_ERROR) {
 #ifdef _DEBUG
-		LogManager::getInstance()->message(aMsg, aSeverity, STRING(SEARCH));
+		LogManager::getInstance()->message(aMsg, aSeverity, "PBD");
 		dcdebug("PBD: %s\n", aMsg.c_str());
 #endif
 	}
