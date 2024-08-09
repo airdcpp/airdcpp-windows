@@ -22,6 +22,8 @@
 #include "NotepadFrame.h"
 #include "ActionUtil.h"
 #include "WinUtil.h"
+
+#include <airdcpp/Exception.h>
 #include <airdcpp/File.h>
 
 string NotepadFrame::id = "Notepad";
@@ -38,7 +40,7 @@ LRESULT NotepadFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 		auto path = WinUtil::getPath(WinUtil::PATH_NOTEPAD);
 		Util::migrate(path);
 		tmp = File(path, File::READ, File::OPEN).read();
-	} catch(const FileException&) {
+	} catch (const FileException&) {
 		// ...
 	}
 	

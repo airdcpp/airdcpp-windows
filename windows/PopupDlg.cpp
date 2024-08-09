@@ -19,6 +19,8 @@
 #include "stdafx.h"
 
 #include "PopupDlg.h"
+
+#include "PopupManager.h"
 #include "Resource.h"
 #include "WinUtil.h"
 #include "MainFrm.h"

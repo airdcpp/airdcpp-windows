@@ -39,9 +39,8 @@ public:
 	typedef X<6> QueueItemRemove;
 	typedef X<7> QueueUpdate;
 
-	typedef X<8> BundleComplete;
-	typedef X<9> BundleSizeName;
-	typedef X<10> BundleTick;
+	typedef X<8> Created;
+	typedef X<9> Removed;
 
 	typedef X<11> SlotsUpdated; //Added / removed reserved slot
 
@@ -55,9 +54,9 @@ public:
 	virtual void on(QueueItemRemove, UploadQueueItem*) noexcept { }
 	virtual void on(QueueUpdate) noexcept { }
 
-	virtual void on(BundleComplete, const string&, const string&) noexcept { }
-	virtual void on(BundleSizeName, const string&, const string&, int64_t) noexcept { }
-	virtual void on(BundleTick, const UploadBundleList&) noexcept { }
+	virtual void on(Created, Upload*) noexcept { }
+	virtual void on(Removed, const Upload*) noexcept { }
+
 	virtual void on(SlotsUpdated, const UserPtr&) noexcept { }
 };
 

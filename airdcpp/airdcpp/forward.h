@@ -209,10 +209,6 @@ class Upload;
 typedef Upload* UploadPtr;
 typedef std::vector<UploadPtr> UploadList;
 
-class UploadBundle;
-typedef boost::intrusive_ptr<UploadBundle> UploadBundlePtr;
-typedef std::vector<UploadBundlePtr> UploadBundleList;
-
 class UploadQueueItem;
 
 class User;

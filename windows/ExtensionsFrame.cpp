@@ -19,8 +19,10 @@
 #include "stdafx.h"
 #include "Resource.h"
 
-#include "DynamicDialogBase.h"
 #include "ExtensionsFrame.h"
+
+#include "ActionUtil.h"
+#include "DynamicDialogBase.h"
 #include "HttpLinks.h"
 #include "LineDlg.h"
 #include "ResourceLoader.h"
@@ -29,6 +31,7 @@
 
 #include <airdcpp/ScopedFunctor.h>
 
+#include <web-server/ContextMenuManager.h>
 #include <api/common/SettingUtils.h>
 
 #define MAX_STATUS_LINES 10

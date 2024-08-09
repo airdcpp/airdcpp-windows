@@ -325,12 +325,13 @@
     <ClCompile Include="airdcpp\TrackableDownloadItem.cpp" />
     <ClCompile Include="airdcpp\Transfer.cpp" />
     <ClCompile Include="airdcpp\TransferInfoManager.cpp" />
-    <ClCompile Include="airdcpp\UBNManager.cpp" />
+    <ClCompile Include="airdcpp\UploadBundleInfoSender.cpp" />
     <ClCompile Include="airdcpp\UDPServer.cpp" />
     <ClCompile Include="airdcpp\UpdateManager.cpp" />
     <ClCompile Include="airdcpp\Updater.cpp" />
     <ClCompile Include="airdcpp\Upload.cpp" />
     <ClCompile Include="airdcpp\UploadBundle.cpp" />
+    <ClCompile Include="airdcpp\UploadBundleInfoReceiver.cpp" />
     <ClCompile Include="airdcpp\UploadManager.cpp" />
     <ClCompile Include="airdcpp\User.cpp" />
     <ClCompile Include="airdcpp\UserCommand.cpp" />
@@ -404,7 +405,10 @@
     <ClInclude Include="airdcpp\SharePathValidator.h" />
     <ClInclude Include="airdcpp\TimerManagerListener.h" />
     <ClInclude Include="airdcpp\TransferInfoManager.h" />
-    <ClInclude Include="airdcpp\UBNManager.h" />
+    <ClInclude Include="airdcpp\UploadBundleInfoSender.h" />
+    <ClInclude Include="airdcpp\UploadBundleInfoReceiver.h" />
+    <ClInclude Include="airdcpp\UploadBundleInfoReceiverListener.h" />
+    <ClInclude Include="airdcpp\UploadBundleManager.h" />
     <ClInclude Include="airdcpp\ViewFileManagerListener.h" />
     <ClInclude Include="airdcpp\MessageCache.h" />
     <ClInclude Include="airdcpp\ConnectionType.h" />

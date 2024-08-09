@@ -16,13 +16,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef DCPLUSPLUS_DCPP_UBN_MANAGER_H_
-#define DCPLUSPLUS_DCPP_UBN_MANAGER_H_
+#ifndef DCPLUSPLUS_DCPP_UPLOAD_BUNDLE_SENDER_H_
+#define DCPLUSPLUS_DCPP_UPLOAD_BUNDLE_SENDER_H_
 
 #include "CriticalSection.h"
 #include "Message.h"
 #include "QueueItemBase.h"
-#include "Singleton.h"
 #include "User.h"
 
 #include "DownloadManagerListener.h"
@@ -32,7 +31,7 @@
 
 namespace dcpp {
 
-class UBNManager: public Singleton<UBNManager>, public DownloadManagerListener, public QueueManagerListener {
+class UploadBundleInfoSender: public DownloadManagerListener, public QueueManagerListener {
 public:
 	void dbgMsg(const string& aMsg, LogMessage::Severity aSeverity) noexcept;
 
@@ -78,8 +77,8 @@ public:
 		unordered_map<UserPtr, StringSet, User::Hash> uploadReports;
 	};
 
-	UBNManager() noexcept;
-	~UBNManager() noexcept;
+	UploadBundleInfoSender() noexcept;
+	~UploadBundleInfoSender() noexcept;
 private:
 	mutable SharedMutex cs;
 

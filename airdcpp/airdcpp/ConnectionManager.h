@@ -147,7 +147,6 @@ public:
 	void disconnect(const UserPtr& aUser) noexcept; // disconnect all connections to the user
 	void disconnect(const UserPtr& aUser, ConnectionType aConnType) noexcept;
 	void disconnect(const string& aToken) noexcept;
-	bool setBundle(const string& aToken, const string& aBundleToken) noexcept;
 
 	void shutdown(function<void (float)> progressF) noexcept;
 	bool isShuttingDown() const noexcept { return shuttingDown; }

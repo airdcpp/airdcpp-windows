@@ -29,7 +29,7 @@
 #include "SettingsManager.h"
 #include "Socket.h"
 #include "UDPServer.h"
-#include "UploadManager.h"
+#include "UploadBundleManager.h"
 
 
 namespace dcpp {
@@ -226,14 +226,14 @@ void UDPServer::handle(AdcCommand::UBD, AdcCommand& c, const string&) noexcept {
 	if (c.getParameters().empty())
 		return;
 
-	UploadManager::getInstance()->onUBD(c);
+	UploadBundleManager::getInstance()->receiver.onUBD(c);
 }
 
 void UDPServer::handle(AdcCommand::UBN, AdcCommand& c, const string&) noexcept {
 	if (c.getParameters().empty())
 		return;
 
-	UploadManager::getInstance()->onUBN(c);
+	UploadBundleManager::getInstance()->receiver.onUBN(c);
 }
 
 }

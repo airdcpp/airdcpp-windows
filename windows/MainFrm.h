@@ -25,29 +25,29 @@
 
 #include <airdcpp/concurrency.h>
 
-#include <airdcpp/ClientManagerListener.h>
-#include <airdcpp/TimerManagerListener.h>
-#include <airdcpp/QueueManagerListener.h>
-#include <airdcpp/LogManagerListener.h>
-#include <airdcpp/DirectoryListingManagerListener.h>
-#include <airdcpp/UpdateManagerListener.h>
-#include <airdcpp/PrivateChatManagerListener.h>
 #include <airdcpp/ActivityManager.h>
+#include <airdcpp/ClientManagerListener.h>
+#include <airdcpp/DirectoryListingManagerListener.h>
+#include <airdcpp/LogManagerListener.h>
+#include <airdcpp/PrivateChatManagerListener.h>
+#include <airdcpp/QueueManagerListener.h>
+#include <airdcpp/TimerManagerListener.h>
+#include <airdcpp/UpdateManagerListener.h>
 #include <airdcpp/ViewFileManagerListener.h>
 
-#include "PopupManager.h"
+#include "Async.h"
 #include "Dispatchers.h"
 #include "FlatTabCtrl.h"
 #include "SingleInstance.h"
-#include "TransferView.h"
-#include "HashProgressDlg.h"
 #include "OMenu.h"
 #include "picturewindow.h"
 #include "CProgressCtrlEx.h"
-#include "Async.h"
 
 #define STATUS_MESSAGE_MAP 9
 #define POPUP_UID 19000
+
+class HashProgressDlg;
+class TransferView;
 
 class MainFrame : public CMDIFrameWindowImpl<MainFrame>, public CUpdateUI<MainFrame>,
 		public CMessageFilter, public CIdleHandler, public CSplitterImpl<MainFrame>,
@@ -357,7 +357,7 @@ private:
 	NOTIFYICONDATA hubicon;
 	NOTIFYICONDATA hubPmicon;
 	
-	TransferView transferView;
+	unique_ptr<TransferView> transferView;
 	static MainFrame* anyMF;
 	
 	enum { MAX_CLIENT_LINES = 10 };
@@ -378,23 +378,23 @@ private:
 
 	void updateTBStatusHashing(const string& aFile, int64_t aSize, size_t aFiles, int64_t aSpeed, int aHashers, bool aPaused);
 	void updateTBStatusRefreshing();
-	bool refreshing;
-	int64_t startBytes;
-	size_t startFiles;
+
+	bool refreshing = false;
+	int64_t startBytes = 0;
+	size_t startFiles = 0;
 
 	CPictureWindow m_PictureWindow;
 	string currentPic;
 
-	bool tbarcreated;
-	bool tbarwinampcreated;
-	bool awaybyminimize;
-	bool bTrayIcon;
-	bool bAppMinimized;
-	bool bHasPM;
-	bool bHasMC;
-	bool fMenuShutdown;
+	bool tbarcreated = false;
+	bool tbarwinampcreated = false;
+	bool bTrayIcon = false;
+	bool bAppMinimized = false;
+	bool bHasPM = false;
+	bool bHasMC = false;
+	bool fMenuShutdown = false;
 	
-	HashProgressDlg hashProgress;
+	unique_ptr<HashProgressDlg> hashProgress;
 
 	static bool bShutdown;
 	static uint64_t iCurrentShutdownTime;
@@ -406,9 +406,9 @@ private:
 
 	static bool isShutdownStatus;
 
-	UINT trayMessage;
-	UINT tbButtonMessage;
-	UINT trayUID;
+	UINT trayMessage = 0;
+	UINT tbButtonMessage = 0;
+	UINT trayUID = 0;
 
 	void onTrayMenu();
 	void fillLimiterMenu(OMenu* menu, bool upload);
@@ -420,22 +420,20 @@ private:
 	CComPtr<ITaskbarList3> taskbarList;
 
 	/** Was the window maximized when minimizing it? */
-	bool maximized;
-	uint64_t lastMove;
-	uint64_t lastUpdate;
+	bool maximized = false;
+	uint64_t lastMove = 0;
+	uint64_t lastUpdate = 0;
 
 	bool forcedShutdown = false;
 
-	bool tabsontop;
-	bool closing;
-
-	int lastUpload;
+	bool tabsontop = false;
+	bool closing = false;
 
 	int statusSizes[10];
 
-	HANDLE stopperThread;
+	HANDLE stopperThread = NULL;
 
-	bool settingsWindowOpen;
+	bool settingsWindowOpen = false;
 	HWND createToolbar();
 	HWND createWinampToolbar();
 	void updateTray(bool add = true);

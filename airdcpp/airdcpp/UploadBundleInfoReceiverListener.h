@@ -16,44 +16,30 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef DCPLUSPLUS_DCPP_UPLOAD_H_
-#define DCPLUSPLUS_DCPP_UPLOAD_H_
+#ifndef DCPLUSPLUS_DCPP_UPLOAD_BUNDLE_MANAGER_LISTENER_H_
+#define DCPLUSPLUS_DCPP_UPLOAD_BUNDLE_MANAGER_LISTENER_H_
 
 #include "forward.h"
-#include "Transfer.h"
-#include "Flags.h"
-#include "GetSet.h"
+#include "typedefs.h"
+
+#include "UploadBundle.h"
 
 namespace dcpp {
 
-class Upload : public Transfer, public Flags {
+class UploadBundleInfoReceiverListener {
 public:
-	enum Flags {
-		FLAG_ZUPLOAD = 0x01,
-		FLAG_PENDING_KICK = 0x02,
-		FLAG_RESUMED = 0x04,
-		FLAG_CHUNKED = 0x08,
-		FLAG_PARTIAL = 0x10
-	};
+	virtual ~UploadBundleInfoReceiverListener() { }
+	template<int I>	struct X { enum { TYPE = I }; };
 
-	bool operator==(const Upload* u) const noexcept;
+	typedef X<1> BundleComplete;
+	typedef X<2> BundleSizeName;
+	typedef X<3> BundleTick;
 
-	Upload(UserConnection& aSource, const string& aPath, const TTHValue& aTTH, unique_ptr<InputStream> aIS);
-	~Upload();
-
-	void getParams(const UserConnection& aSource, ParamMap& params) const;
-
-	IGETSET(int64_t, fileSize, FileSize, -1);
-
-	uint8_t delayTime = 0;
-	InputStream* getStream();
-	void setFiltered();
-
-	void appendFlags(OrderedStringSet& flags_) const noexcept;
-private:
-	unique_ptr<InputStream> stream;
+	virtual void on(BundleComplete, const string&, const string&) noexcept { }
+	virtual void on(BundleSizeName, const string&, const string&, int64_t) noexcept { }
+	virtual void on(BundleTick, const TickUploadBundleList&) noexcept { }
 };
 
 } // namespace dcpp
 
-#endif /*UPLOAD_H_*/
+#endif /*DCPLUSPLUS_DCPP_UPLOAD_BUNDLE_MANAGER_LISTENER_H_*/

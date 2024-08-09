@@ -87,7 +87,6 @@ namespace dcpp {
 
 			auto t = onTick(ul, false);
 			if (t) {
-				t->setBundle(ul->getBundle() ? ul->getBundle()->getToken() : Util::emptyString);
 				tickTransfers.push_back(t);
 			}
 		}
@@ -342,7 +341,6 @@ namespace dcpp {
 			return;
 		}
 
-		t->setBundle(aUpload->getBundle() ? aUpload->getBundle()->getToken() : Util::emptyString);
 		starting(t, aUpload);
 	}
 

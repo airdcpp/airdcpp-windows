@@ -1196,16 +1196,6 @@ void ConnectionManager::disconnect(const UserPtr& aUser, ConnectionType aConnTyp
 	}
 }
 
-bool ConnectionManager::setBundle(const string& aToken, const string& aBundleToken) noexcept {
-	RLock l (cs);
-	auto s = find(userConnections.begin(), userConnections.end(), aToken);
-	if (s != userConnections.end()) {
-		(*s)->setLastBundle(aBundleToken);
-		return true;
-	}
-	return false;
-}
-
 void ConnectionManager::shutdown(function<void (float)> progressF) noexcept {
 	TimerManager::getInstance()->removeListener(this);
 	ClientManager::getInstance()->removeListener(this);

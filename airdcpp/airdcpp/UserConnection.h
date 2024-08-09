@@ -197,7 +197,6 @@ public:
 	
 	GETSET(string, hubUrl, HubUrl);
 	GETSET(string, token, Token);
-	GETSET(string, lastBundle, LastBundle);
 	IGETSET(int64_t, speed, Speed, 0);
 	IGETSET(uint64_t, lastActivity, LastActivity, 0);
 	GETSET(string, encoding, Encoding);

@@ -20,9 +20,12 @@
 
 #include "stdafx.h"
 
+#include "ActionUtil.h"
 #include "WinUtil.h"
 #include "BarShader.h"
 #include "MainFrm.h"
+
+#include <web-server/ContextMenuManager.h>
 
 #define EXTENSION_GROUP_LIMIT 2
 

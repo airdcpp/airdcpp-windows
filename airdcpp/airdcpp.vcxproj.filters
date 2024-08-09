@@ -428,8 +428,11 @@
     <ClCompile Include="airdcpp\SearchTypes.cpp">
       <Filter>Source Files\search</Filter>
     </ClCompile>
-    <ClCompile Include="airdcpp\UBNManager.cpp">
-      <Filter>Source Files\queue</Filter>
+    <ClCompile Include="airdcpp\UploadBundleInfoReceiver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\UploadBundleInfoSender.cpp">
+      <Filter>Source Files\transfer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1081,8 +1084,17 @@
     <ClInclude Include="airdcpp\SearchTypes.h">
       <Filter>Header Files\search</Filter>
     </ClInclude>
-    <ClInclude Include="airdcpp\UBNManager.h">
-      <Filter>Header Files\queue</Filter>
+    <ClInclude Include="airdcpp\UploadBundleInfoReceiver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\UploadBundleInfoReceiverListener.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\UploadBundleInfoSender.h">
+      <Filter>Header Files\transfer</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\UploadBundleManager.h">
+      <Filter>Header Files\transfer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

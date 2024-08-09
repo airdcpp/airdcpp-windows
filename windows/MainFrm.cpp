@@ -50,6 +50,8 @@
 #include "SplashWindow.h"
 #include "ActionUtil.h"
 #include "SystemUtil.h"
+#include "TransferView.h"
+#include "HashProgressDlg.h"
 
 #include "HttpLinks.h"
 #include "Winamp.h"
@@ -93,13 +95,11 @@ bool MainFrame::isShutdownStatus = false;
 #define CONFIG_FRAMES_NAME "Frames.xml"
 #define CONFIG_DIR Util::PATH_USER_CONFIG
 
-MainFrame::MainFrame() : CSplitterImpl(false), trayMessage(0), maximized(false), lastUpload(-1), lastUpdate(0), 
-stopperThread(NULL), closing(false), tabsontop(false),
-bTrayIcon(false), bAppMinimized(false), bHasPM(false), bHasMC(false), hashProgress(false), trayUID(0), fMenuShutdown(false),
-statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP), settingsWindowOpen(false)
+MainFrame::MainFrame() : CSplitterImpl(false),
+	transferView(make_unique<TransferView>()), hashProgress(make_unique<HashProgressDlg>()),
+	statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP)
 
-{ 
-
+{
 	user32lib = LoadLibrary(_T("user32"));
 	_d_ChangeWindowMessageFilter = (LPFUNC)GetProcAddress(user32lib, "ChangeWindowMessageFilter");
 
@@ -281,10 +281,10 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	WinUtil::tabCtrl = &ctrlTab;
 	tabsontop = SETTING(TABS_ON_TOP);
 
-	transferView.Create(m_hWnd);
+	transferView->Create(m_hWnd);
 
 	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
-	SetSplitterPanes(m_hWndMDIClient, transferView.m_hWnd);
+	SetSplitterPanes(m_hWndMDIClient, transferView->m_hWnd);
 	SetSplitterPosPct(SETTING(TRANSFER_SPLIT_SIZE) / 100);
 
 	UIAddToolBar(hWndToolBar);
@@ -842,17 +842,17 @@ LRESULT MainFrame::onHashProgress(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 	//HashProgressDlg(false).DoModal(m_hWnd);
 	switch(wID) {
 		case IDC_HASH_PROGRESS:
-			if( !hashProgress.IsWindow() ){
-				hashProgress.setAutoClose(false);
-				hashProgress.Create( m_hWnd );
-				hashProgress.ShowWindow( SW_SHOW );
+			if (!hashProgress->IsWindow() ){
+				hashProgress->setAutoClose(false);
+				hashProgress->Create( m_hWnd );
+				hashProgress->ShowWindow( SW_SHOW );
 			}
 			break;
 		case IDC_HASH_PROGRESS_AUTO_CLOSE:
-			if( !hashProgress.IsWindow() ){
-				hashProgress.setAutoClose(true);
-				hashProgress.Create( m_hWnd );
-				hashProgress.ShowWindow( SW_SHOW );
+			if (!hashProgress->IsWindow() ){
+				hashProgress->setAutoClose(true);
+				hashProgress->Create( m_hWnd );
+				hashProgress->ShowWindow( SW_SHOW );
 			}
 			break;
 		default: break;
@@ -1110,8 +1110,8 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 
 			WinUtil::saveReBarSettings(m_hWndToolBar);
 
-			if( hashProgress.IsWindow() )
-				hashProgress.DestroyWindow();
+			if( hashProgress->IsWindow() )
+				hashProgress->DestroyWindow();
 
 			WINDOWPLACEMENT wp;
 			wp.length = sizeof(wp);
@@ -1132,7 +1132,7 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 				SettingsManager::getInstance()->set(SettingsManager::MAIN_WINDOW_STATE, (int)wp.showCmd);
 
 			ShowWindow(SW_HIDE);
-			transferView.prepareClose();
+			transferView->prepareClose();
 			
 			ConnectivityManager::getInstance()->disconnect();
 
@@ -1679,7 +1679,7 @@ LRESULT MainFrame::OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 
 LRESULT MainFrame::OnViewTransferView(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	BOOL bVisible = !transferView.IsWindowVisible();
+	BOOL bVisible = !transferView->IsWindowVisible();
 	if(!bVisible) {	
 		if(GetSinglePaneMode() == SPLIT_PANE_NONE)
 			SetSinglePaneMode(SPLIT_PANE_TOP);

@@ -42,6 +42,7 @@
 #include "SSLSocket.h"
 #include "StringTokenizer.h"
 #include "ThrottleManager.h"
+#include "UploadBundleInfoReceiver.h"
 #include "UploadManager.h"
 #include "UserCommand.h"
 #include "Util.h"
@@ -726,11 +727,6 @@ void AdcHub::handle(AdcCommand::PBD, AdcCommand& c) noexcept {
 	}
 	ASSERT_DIRECT_TO_ME(c)
 	PartialSharingManager::getInstance()->bundles.onPBD(c, ou->getUser());
-}
-
-
-void AdcHub::handle(AdcCommand::UBD, AdcCommand& c) noexcept {
-	UploadManager::getInstance()->onUBD(c);
 }
 
 void AdcHub::handle(AdcCommand::GET, AdcCommand& c) noexcept {

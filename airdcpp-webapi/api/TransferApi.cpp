@@ -154,7 +154,7 @@ namespace webserver {
 			{ "speed_up", upSpeed },
 			{ "limit_down", ThrottleManager::getDownLimit() },
 			{ "limit_up", ThrottleManager::getUpLimit() },
-			{ "upload_bundles", UploadManager::getInstance()->getRunningBundleCount() },
+			{ "upload_bundles", 0 }, // API doesn't use upload bundles at the moment
 			{ "download_bundles", DownloadManager::getInstance()->getRunningBundleCount() },
 			{ "uploads", uploads },
 			{ "downloads", downloads },

@@ -23,7 +23,7 @@
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/ConnectionManager.h>
 #include <airdcpp/DownloadManager.h>
-#include <airdcpp/UploadManager.h>
+#include <airdcpp/UploadBundleManager.h>
 #include <airdcpp/QueueManager.h>
 
 #include <airdcpp/Download.h>
@@ -90,7 +90,7 @@ LRESULT TransferView::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 
 	ConnectionManager::getInstance()->addListener(this);
 	DownloadManager::getInstance()->addListener(this);
-	UploadManager::getInstance()->addListener(this);
+	UploadBundleManager::getInstance()->receiver.addListener(this);
 	QueueManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
 	TransferInfoManager::getInstance()->addListener(this);
@@ -103,7 +103,7 @@ void TransferView::prepareClose() {
 
 	ConnectionManager::getInstance()->removeListener(this);
 	DownloadManager::getInstance()->removeListener(this);
-	UploadManager::getInstance()->removeListener(this);
+	UploadBundleManager::getInstance()->receiver.removeListener(this);
 	QueueManager::getInstance()->removeListener(this);
 	SettingsManager::getInstance()->removeListener(this);
 	TransferInfoManager::getInstance()->removeListener(this);
@@ -510,6 +510,13 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			}
 		} else if(i.first == UPDATE_ITEM) {
 			auto &ui = static_cast<UpdateInfo&>(*i.second);
+			/*if (!ui.download) {
+				auto uploadBundle = UploadBundleInfoReceiver::getInstance()->findByUploadToken(ui.token);
+				if (uploadBundle) {
+					ui.bundle = uploadBundle->getToken();
+				}
+			}*/
+
 			//dcassert(!ui.target.empty());
 			int pos = -1;
 			auto ii = findItem(ui, pos);
@@ -781,7 +788,7 @@ TransferView::ItemInfo* TransferView::ItemInfo::createParent() {
 			ii->size = b->getSize();
 		}
 	} else {
-		auto b = UploadManager::getInstance()->findBundle(bundle);
+		auto b = UploadBundleManager::getInstance()->receiver.findByBundleToken(bundle);
 		if (b) {
 			ii->target = Text::toT(b->getTarget());
 			ii->size = b->getSize();
@@ -896,33 +903,23 @@ void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bun
 	}
 }
 
-void TransferView::on(UploadManagerListener::BundleTick, const UploadBundleList& bundles) noexcept {
-	for (const auto& b : bundles) {
+void TransferView::on(UploadBundleInfoReceiverListener::BundleComplete, const string& aBundleToken, const string& aBundleName) noexcept {
+	onBundleComplete(aBundleToken, aBundleName, true);
+}
+
+void TransferView::on(UploadBundleInfoReceiverListener::BundleTick, const TickUploadBundleList& aBundles) noexcept {
+	for (const auto& bp: aBundles) {
+		const auto& b = bp.first;
 		auto ui = new UpdateInfo(b->getToken(), false);
 
-
-		double ratio = 0;
-		int64_t totalSpeed = 0;
-
-		OrderedStringSet flags;
-		for (const auto& u : b->getUploads()) {
-			if (u->getStart() > 0) {
-				u->appendFlags(flags);
-
-				totalSpeed += static_cast<int64_t>(u->getAverageSpeed());
-				ratio += u->getPos() > 0 ? (double)u->getActual() / (double)u->getPos() : 1.00;
-			}
-		}
-
 		if (b->getRunning() > 0) {
-			ratio = ratio / b->getRunning();
-
 			ui->setStatus(ItemInfo::STATUS_RUNNING);
 			ui->setSize(b->getSize());
 			ui->setPos(b->getUploaded());
-			ui->setActual((int64_t)((double)ui->pos * (ratio == 0 ? 1.00 : ratio)));
+			ui->setActual(b->getActual());
 			ui->setTimeLeft(b->getSecondsLeft());
-			ui->setSpeed(totalSpeed);
+			ui->setTotalSpeed(b->getTotalSpeed());
+			ui->setSpeed(b->getSpeed());
 			ui->setUsers(1);
 			if (b->getSingleUser()) {
 				ui->setTotalSpeed(0);
@@ -940,7 +937,7 @@ void TransferView::on(UploadManagerListener::BundleTick, const UploadBundleList&
 				dcassert(percent <= 100.00);
 				tstring elapsed = Util::formatSecondsW(timeSinceStarted / 1000);
 
-				ui->setStatusString(getRunningStatus(flags) + TSTRING_F(UPLOADED_BYTES, pos.c_str() % percent % elapsed.c_str()));
+				ui->setStatusString(getRunningStatus(bp.second) + TSTRING_F(UPLOADED_BYTES, pos.c_str() % percent % elapsed.c_str()));
 			}
 		}
 
@@ -1006,10 +1003,10 @@ void TransferView::on(QueueManagerListener::BundleSize, const BundlePtr& aBundle
 	speak(UPDATE_BUNDLE, ui);
 }
 
-void TransferView::on(UploadManagerListener::BundleSizeName, const string& bundleToken, const string& newTarget, int64_t aSize) noexcept {
-	auto ui = new UpdateInfo(bundleToken, false);
+void TransferView::on(UploadBundleInfoReceiverListener::BundleSizeName, const string& aBundleToken, const string& aNewTarget, int64_t aSize) noexcept {
+	auto ui = new UpdateInfo(aBundleToken, false);
 	ui->setSize(aSize);
-	ui->setTarget(Text::toT(newTarget));
+	ui->setTarget(Text::toT(aNewTarget));
 	speak(UPDATE_BUNDLE, ui);
 }
 
@@ -1044,7 +1041,8 @@ void TransferView::on(TransferInfoManagerListener::Updated, const TransferInfoPt
 
 	UpdateInfo* ui = new UpdateInfo(aInfo->getStringToken(), aInfo->isDownload());
 	ui->setUpdateFlags(aInfo, aUpdatedProperties);
-	ui->setBundle(aInfo->getBundle());
+	// ui->setBundle(aInfo->getBundle());
+	ui->setBundle(getBundle(aInfo));
 
 	speak(UPDATE_ITEM, ui);
 }
@@ -1074,10 +1072,33 @@ void TransferView::on(TransferInfoManagerListener::Completed, const TransferInfo
 	}
 }
 
+const string& TransferView::getBundle(const TransferInfoPtr& aInfo) noexcept {
+	if (aInfo->isDownload()) {
+		return aInfo->getBundle();
+	} else {
+		auto bundle = UploadBundleManager::getInstance()->receiver.findByUploadToken(aInfo->getStringToken());
+		if (bundle) {
+			return bundle->getToken();
+		}
+	}
+
+	return Util::emptyString;
+}
+
 void TransferView::on(TransferInfoManagerListener::Tick, const TransferInfo::List& aTransfers, int aUpdatedProperties) noexcept {
 	for (const auto& t : aTransfers) {
 		auto ui = new UpdateInfo(t->getStringToken(), t->isDownload());
-		ui->setBundle(t->getBundle());
+		ui->setBundle(getBundle(t));
+		/*if (t->isDownload()) {
+			ui->setBundle(t->getBundle());
+		} else {
+			auto bundle = UploadBundleInfoReceiver::getInstance()->findByUploadToken(t->getStringToken());
+			if (bundle) {
+				ui->setBundle(bundle->getToken());
+			}
+		}*/
+		
+
 		ui->setUpdateFlags(t, aUpdatedProperties);
 		tasks.add(UPDATE_ITEM, unique_ptr<Task>(ui));
 	}

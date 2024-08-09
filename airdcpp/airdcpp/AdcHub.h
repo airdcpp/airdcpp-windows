@@ -147,7 +147,6 @@ private:
 	void handle(AdcCommand::RNT, AdcCommand& c) noexcept;
 	void handle(AdcCommand::PSR, AdcCommand& c) noexcept;
 	void handle(AdcCommand::PBD, AdcCommand& c) noexcept;
-	void handle(AdcCommand::UBD, AdcCommand& c) noexcept;
 	void handle(AdcCommand::ZON, AdcCommand& c) noexcept;
 	void handle(AdcCommand::ZOF, AdcCommand& c) noexcept;
 	void handle(AdcCommand::TCP, AdcCommand& c) noexcept;

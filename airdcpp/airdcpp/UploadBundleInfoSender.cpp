@@ -17,7 +17,7 @@
  */
 
 #include "stdinc.h"
-#include "UBNManager.h"
+#include "UploadBundleInfoSender.h"
 
 #include "Bundle.h"
 #include "ClientManager.h"
@@ -32,29 +32,29 @@ namespace dcpp {
 
 const auto ENABLE_DEBUG = true;
 	
-UBNManager::UBNManager() noexcept {
+UploadBundleInfoSender::UploadBundleInfoSender() noexcept {
 	DownloadManager::getInstance()->addListener(this);
 	QueueManager::getInstance()->addListener(this);
 }
 
-UBNManager::~UBNManager() noexcept {
+UploadBundleInfoSender::~UploadBundleInfoSender() noexcept {
 	DownloadManager::getInstance()->removeListener(this);
 	QueueManager::getInstance()->removeListener(this);
 }
 
-void UBNManager::dbgMsg(const string& aMsg, LogMessage::Severity aSeverity) noexcept {
+void UploadBundleInfoSender::dbgMsg(const string& aMsg, LogMessage::Severity aSeverity) noexcept {
 	if (ENABLE_DEBUG) {
-		LogManager::getInstance()->message(aMsg, aSeverity, "UBN");
+		LogManager::getInstance()->message(aMsg, aSeverity, "UBN (sender)");
 	} else if (aSeverity == LogMessage::SEV_WARNING || aSeverity == LogMessage::SEV_ERROR) {
 #ifdef _DEBUG
-		LogManager::getInstance()->message(aMsg, aSeverity, "UBN");
-		dcdebug("UBN: %s\n", aMsg.c_str());
+		LogManager::getInstance()->message(aMsg, aSeverity, "UBN (sender)");
+		dcdebug("UBN (sender): %s\n", aMsg.c_str());
 #endif
 	}
 }
 
 
-void UBNManager::on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) noexcept {
+void UploadBundleInfoSender::on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) noexcept {
 	auto ubnBundle = findInfoByBundleToken(aBundle->getToken());
 	if (!ubnBundle) {
 		return;
@@ -64,7 +64,7 @@ void UBNManager::on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) 
 	ubnBundle->sendSizeUpdate();
 }
 
-void UBNManager::on(DownloadManagerListener::Starting, const Download* aDownload) noexcept {
+void UploadBundleInfoSender::on(DownloadManagerListener::Starting, const Download* aDownload) noexcept {
 	if (!aDownload->getUserConnection().isSet(UserConnection::FLAG_UBN1)) {
 		return;
 	}
@@ -119,21 +119,21 @@ void UBNManager::on(DownloadManagerListener::Starting, const Download* aDownload
 	}
 }
 
-/*void UBNManager::on(DownloadManagerListener::Complete, const Download* aDownload, bool) noexcept {
+/*void UploadBundleInfoSender::on(DownloadManagerListener::Complete, const Download* aDownload, bool) noexcept {
 	if (aDownload->getBundle()) {
 		removeRunningUser(aDownload->getBundle(), &aDownload->getUserConnection(), false);
 	}
 }*/
 
-void UBNManager::on(DownloadManagerListener::Idle, const UserConnection* aSource) noexcept {
+void UploadBundleInfoSender::on(DownloadManagerListener::Idle, const UserConnection* aSource) noexcept {
 	removeRunningUser(aSource, false);
 }
 
-void UBNManager::on(DownloadManagerListener::Remove, const UserConnection* aSource) noexcept {
+void UploadBundleInfoSender::on(DownloadManagerListener::Remove, const UserConnection* aSource) noexcept {
 	removeRunningUser(aSource, false);
 }
 
-void UBNManager::on(DownloadManagerListener::Failed, const Download* aDownload, const string&) noexcept {
+void UploadBundleInfoSender::on(DownloadManagerListener::Failed, const Download* aDownload, const string&) noexcept {
 	if (!aDownload->getBundle()) {
 		return;
 	}
@@ -141,12 +141,12 @@ void UBNManager::on(DownloadManagerListener::Failed, const Download* aDownload, 
 	removeRunningUser(&aDownload->getUserConnection(), false);
 }
 
-void UBNManager::addRunningUserUnsafe(const UBNBundle::Ptr& aBundle, const UserConnection* aSource) noexcept {
+void UploadBundleInfoSender::addRunningUserUnsafe(const UBNBundle::Ptr& aBundle, const UserConnection* aSource) noexcept {
 	aBundle->addRunningUser(aSource);
 	connectionTokenMap[aSource->getToken()] = aBundle;
 }
 
-void UBNManager::removeRunningUserUnsafe(const UBNBundle::Ptr& aBundle, const UserConnection* aSource, bool aSendRemove) noexcept {
+void UploadBundleInfoSender::removeRunningUserUnsafe(const UBNBundle::Ptr& aBundle, const UserConnection* aSource, bool aSendRemove) noexcept {
 	if (aBundle->removeRunningUser(aSource, aSendRemove)) {
 		dbgMsg("removed connection " + aSource->getToken() + " from an info " + aBundle->getBundle()->getName() + " (no bundle connections remaining)", LogMessage::SEV_VERBOSE);
 		bundleTokenMap.erase(aBundle->getBundle()->getToken());
@@ -155,7 +155,7 @@ void UBNManager::removeRunningUserUnsafe(const UBNBundle::Ptr& aBundle, const Us
 	}
 }
 
-void UBNManager::removeRunningUser(const UserConnection* aSource, bool aSendRemove) noexcept {
+void UploadBundleInfoSender::removeRunningUser(const UserConnection* aSource, bool aSendRemove) noexcept {
 	if (!aSource->isSet(UserConnection::FLAG_UBN1)) {
 		return;
 	}
@@ -174,7 +174,7 @@ void UBNManager::removeRunningUser(const UserConnection* aSource, bool aSendRemo
 }
 
 
-void UBNManager::on(DownloadManagerListener::BundleTick, const BundleList& aBundles, uint64_t) noexcept {
+void UploadBundleInfoSender::on(DownloadManagerListener::BundleTick, const BundleList& aBundles, uint64_t) noexcept {
 	for (const auto& b: aBundles) {
 		auto ubnBundle = findInfoByBundleToken(b->getToken());
 		if (!ubnBundle) {
@@ -185,19 +185,19 @@ void UBNManager::on(DownloadManagerListener::BundleTick, const BundleList& aBund
 	}
 }
 
-UBNManager::UBNBundle::Ptr UBNManager::findInfoByBundleToken(QueueToken aBundleToken) const noexcept {
+UploadBundleInfoSender::UBNBundle::Ptr UploadBundleInfoSender::findInfoByBundleToken(QueueToken aBundleToken) const noexcept {
 	RLock l(cs);
 	auto i = bundleTokenMap.find(aBundleToken);
 	return i != bundleTokenMap.end() ? i->second : nullptr;
 }
 
-UBNManager::UBNBundle::Ptr UBNManager::findInfoByTransferToken(const string& aDownloadToken) const noexcept {
+UploadBundleInfoSender::UBNBundle::Ptr UploadBundleInfoSender::findInfoByTransferToken(const string& aDownloadToken) const noexcept {
 	RLock l(cs);
 	auto i = connectionTokenMap.find(aDownloadToken);
 	return i != connectionTokenMap.end() ? i->second : nullptr;
 }
 
-void UBNManager::UBNBundle::getTickParams(string& percent_, string& speedStr_) noexcept {
+void UploadBundleInfoSender::UBNBundle::getTickParams(string& percent_, string& speedStr_) noexcept {
 	auto speed = bundle->getSpeed();
 	if (abs(speed - lastSpeed) > (lastSpeed / 10)) {
 		//LogManager::getInstance()->message("SEND SPEED: " + Util::toString(abs(speed-lastSpeed)) + " is more than " + Util::toString(lastSpeed / 10));
@@ -231,7 +231,7 @@ void UBNManager::UBNBundle::getTickParams(string& percent_, string& speedStr_) n
 	}
 }
 
-void UBNManager::UBNBundle::onDownloadTick() noexcept {
+void UploadBundleInfoSender::UBNBundle::onDownloadTick() noexcept {
 	if (singleUser || uploadReports.empty()) {
 		return;
 	}
@@ -247,7 +247,7 @@ void UBNManager::UBNBundle::onDownloadTick() noexcept {
 	}
 }
 
-bool UBNManager::UBNBundle::addRunningUser(const UserConnection* aSource) noexcept {
+bool UploadBundleInfoSender::UBNBundle::addRunningUser(const UserConnection* aSource) noexcept {
 	bool newBundle = true;
 	auto y = uploadReports.find(aSource->getUser());
 	if (y == uploadReports.end()) {
@@ -278,7 +278,7 @@ bool UBNManager::UBNBundle::addRunningUser(const UserConnection* aSource) noexce
 	return false;
 }
 
-bool UBNManager::UBNBundle::removeRunningUser(const UserConnection* aSource, bool aSendRemove) noexcept {
+bool UploadBundleInfoSender::UBNBundle::removeRunningUser(const UserConnection* aSource, bool aSendRemove) noexcept {
 	bool finished = false;
 	auto y = uploadReports.find(aSource->getUser());
 	dcassert(y != uploadReports.end());
@@ -304,21 +304,21 @@ bool UBNManager::UBNBundle::removeRunningUser(const UserConnection* aSource, boo
 	return uploadReports.empty();
 }
 
-AdcCommand UBNManager::UBNBundle::getBundleFinishedCommand() const noexcept {
+AdcCommand UploadBundleInfoSender::UBNBundle::getBundleFinishedCommand() const noexcept {
 	AdcCommand cmd(AdcCommand::CMD_UBD, AdcCommand::TYPE_UDP);
 	cmd.addParam("BU", bundle->getStringToken());
 	cmd.addParam("FI1");
 	return cmd;
 }
 
-AdcCommand UBNManager::UBNBundle::getRemoveCommand(const string& aConnectionToken) const noexcept {
+AdcCommand UploadBundleInfoSender::UBNBundle::getRemoveCommand(const string& aConnectionToken) const noexcept {
 	AdcCommand cmd(AdcCommand::CMD_UBD, AdcCommand::TYPE_UDP);
 	cmd.addParam("TO", aConnectionToken);
 	cmd.addParam("RM1");
 	return cmd;
 }
 
-AdcCommand UBNManager::UBNBundle::getUserModeCommand() const noexcept {
+AdcCommand UploadBundleInfoSender::UBNBundle::getUserModeCommand() const noexcept {
 	AdcCommand cmd(AdcCommand::CMD_UBD, AdcCommand::TYPE_UDP);
 
 	cmd.addParam("BU", bundle->getStringToken());
@@ -333,7 +333,7 @@ AdcCommand UBNManager::UBNBundle::getUserModeCommand() const noexcept {
 	return cmd;
 }
 
-AdcCommand UBNManager::UBNBundle::getBundleSizeUpdateCommand() const noexcept {
+AdcCommand UploadBundleInfoSender::UBNBundle::getBundleSizeUpdateCommand() const noexcept {
 	AdcCommand cmd(AdcCommand::CMD_UBD, AdcCommand::TYPE_UDP);
 
 	cmd.addParam("BU", bundle->getStringToken());
@@ -342,7 +342,7 @@ AdcCommand UBNManager::UBNBundle::getBundleSizeUpdateCommand() const noexcept {
 	return cmd;
 }
 
-AdcCommand UBNManager::UBNBundle::getAddCommand(const string& aConnectionToken, bool aNewBundle) const noexcept {
+AdcCommand UploadBundleInfoSender::UBNBundle::getAddCommand(const string& aConnectionToken, bool aNewBundle) const noexcept {
 	AdcCommand cmd(AdcCommand::CMD_UBD, AdcCommand::TYPE_UDP);
 
 	cmd.addParam("TO", aConnectionToken);
@@ -360,7 +360,7 @@ AdcCommand UBNManager::UBNBundle::getAddCommand(const string& aConnectionToken, 
 	return cmd;
 }
 
-AdcCommand UBNManager::UBNBundle::getTickCommand(const string& aPercent, const string& aSpeed) const noexcept {
+AdcCommand UploadBundleInfoSender::UBNBundle::getTickCommand(const string& aPercent, const string& aSpeed) const noexcept {
 	AdcCommand cmd(AdcCommand::CMD_UBN, AdcCommand::TYPE_UDP);
 
 	cmd.addParam("BU", bundle->getStringToken());
@@ -373,7 +373,7 @@ AdcCommand UBNManager::UBNBundle::getTickCommand(const string& aPercent, const s
 	return cmd;
 }
 
-void UBNManager::UBNBundle::setUserMode(bool aSetSingleUser) noexcept {
+void UploadBundleInfoSender::UBNBundle::setUserMode(bool aSetSingleUser) noexcept {
 	if (aSetSingleUser) {
 		lastSpeed = 0;
 		lastDownloaded = 0;
@@ -392,7 +392,7 @@ void UBNManager::UBNBundle::setUserMode(bool aSetSingleUser) noexcept {
 	}
 }
 
-void UBNManager::sendUpdate(AdcCommand& aCmd, const UserPtr& aUser) noexcept {
+void UploadBundleInfoSender::sendUpdate(AdcCommand& aCmd, const UserPtr& aUser) noexcept {
 	// Send in a different thread as most calls are fired from inside a (locked) listener
 	SearchManager::getInstance()->getUdpServer().addTask([=] {
 		auto cmd = aCmd;
@@ -400,7 +400,7 @@ void UBNManager::sendUpdate(AdcCommand& aCmd, const UserPtr& aUser) noexcept {
 	});
 }
 
-void UBNManager::UBNBundle::sendSizeUpdate() noexcept {
+void UploadBundleInfoSender::UBNBundle::sendSizeUpdate() noexcept {
 	for (const auto& u : uploadReports) {
 		auto cmd = getBundleSizeUpdateCommand();
 		sendUpdate(cmd, u.first);

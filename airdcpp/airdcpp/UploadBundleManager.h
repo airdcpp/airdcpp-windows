@@ -16,44 +16,26 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef DCPLUSPLUS_DCPP_UPLOAD_H_
-#define DCPLUSPLUS_DCPP_UPLOAD_H_
+#ifndef DCPLUSPLUS_DCPP_UPLOAD_BUNDLE_MANAGER_H
+#define DCPLUSPLUS_DCPP_UPLOAD_BUNDLE_MANAGER_H
 
-#include "forward.h"
-#include "Transfer.h"
-#include "Flags.h"
-#include "GetSet.h"
+#include "Singleton.h"
+
+#include "UploadBundleInfoReceiver.h"
+#include "UploadBundleInfoSender.h"
+
 
 namespace dcpp {
 
-class Upload : public Transfer, public Flags {
+class UploadBundleManager : public Singleton<UploadBundleManager>
+{
 public:
-	enum Flags {
-		FLAG_ZUPLOAD = 0x01,
-		FLAG_PENDING_KICK = 0x02,
-		FLAG_RESUMED = 0x04,
-		FLAG_CHUNKED = 0x08,
-		FLAG_PARTIAL = 0x10
-	};
-
-	bool operator==(const Upload* u) const noexcept;
-
-	Upload(UserConnection& aSource, const string& aPath, const TTHValue& aTTH, unique_ptr<InputStream> aIS);
-	~Upload();
-
-	void getParams(const UserConnection& aSource, ParamMap& params) const;
-
-	IGETSET(int64_t, fileSize, FileSize, -1);
-
-	uint8_t delayTime = 0;
-	InputStream* getStream();
-	void setFiltered();
-
-	void appendFlags(OrderedStringSet& flags_) const noexcept;
+	UploadBundleInfoReceiver receiver;
+	UploadBundleInfoSender sender;
 private:
-	unique_ptr<InputStream> stream;
+
 };
 
 } // namespace dcpp
 
-#endif /*UPLOAD_H_*/
+#endif // !defined(DCPLUSPLUS_DCPP_UPLOAD_BUNDLE_MANAGER_H)

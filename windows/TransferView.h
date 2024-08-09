@@ -24,7 +24,7 @@
 #endif // _MSC_VER > 1000
 
 #include <airdcpp/DownloadManagerListener.h>
-#include <airdcpp/UploadManagerListener.h>
+#include <airdcpp/UploadBundleInfoReceiverListener.h>
 #include <airdcpp/ConnectionManagerListener.h>
 #include <airdcpp/QueueManagerListener.h>
 #include <airdcpp/TransferInfoManager.h>
@@ -41,7 +41,7 @@
 #include "FormatUtil.h"
 
 class TransferView : public CWindowImpl<TransferView>, private DownloadManagerListener, 
-	private UploadManagerListener, private ConnectionManagerListener, private QueueManagerListener,
+	private UploadBundleInfoReceiverListener, private ConnectionManagerListener, private QueueManagerListener,
 	public UserInfoBaseHandler<TransferView>, public UCHandler<TransferView>,
 	private SettingsManagerListener, private TransferInfoManagerListener
 {
@@ -217,35 +217,36 @@ private:
 			return download == ii.download && token == ii.token; 
 		}
 
-		UpdateInfo(string aToken, bool isDownload, bool isTransferFailed = false) : 
-			updateMask(0), user(HintedUser()), download(isDownload), token(std::move(aToken)), transferFailed(isTransferFailed), flagIndex(0), type(Transfer::TYPE_LAST)
+		UpdateInfo(string aToken, bool isDownload, bool aIsTransferFailed = false) : 
+			user(HintedUser()), download(isDownload), token(std::move(aToken)), transferFailed(aIsTransferFailed)
 		{ }
 
 		void setUpdateFlags(const TransferInfoPtr& aInfo, int aUpdateFlags) noexcept;
 
-		uint32_t updateMask;
+		uint32_t updateMask = 0;
 
 		string token;
 
-		bool download;
-		bool transferFailed;
-		uint8_t flagIndex;		
+		const bool download;
+		const bool transferFailed;
+		uint8_t flagIndex = 0;	
+
 		void setRunning(int16_t aRunning) { running = aRunning; updateMask |= MASK_SEGMENT; }
-		int16_t running;
+		int16_t running = 0;
 		void setStatus(ItemInfo::Status aStatus) { status = aStatus; updateMask |= MASK_STATUS; }
 		ItemInfo::Status status;
 		void setPos(int64_t aPos) { pos = aPos; updateMask |= MASK_POS; }
-		int64_t pos;
+		int64_t pos = 0;
 		void setSize(int64_t aSize) { size = aSize; updateMask |= MASK_SIZE; }
-		int64_t size;
+		int64_t size = 0;
 		void setActual(int64_t aActual) { actual = aActual; updateMask |= MASK_ACTUAL; }
-		int64_t actual;
+		int64_t actual = 0;
 		void setSpeed(int64_t aSpeed) { speed = aSpeed; updateMask |= MASK_SPEED; }
-		int64_t speed;
+		int64_t speed = 0;
 		void setTimeLeft(int64_t aTimeLeft) { timeLeft = aTimeLeft; updateMask |= MASK_TIMELEFT; }
-		int64_t timeLeft;
+		int64_t timeLeft = 0;
 		void setTotalSpeed(int64_t aTotalSpeed) { totalSpeed = aTotalSpeed; updateMask |= MASK_TOTALSPEED; }
-		int64_t totalSpeed;
+		int64_t totalSpeed = 0;
 		void setStatusString(const tstring& aStatusString) { statusString = aStatusString; updateMask |= MASK_STATUS_STRING; }
 		tstring statusString;
 		void setTarget(const tstring& aTarget) { target = aTarget; updateMask |= MASK_FILE; }
@@ -255,12 +256,12 @@ private:
 		void setEncryptionInfo(const tstring& aInfo) { Encryption = aInfo; updateMask |= MASK_ENCRYPTION; }
 		tstring Encryption;
 		void setType(const Transfer::Type& aType) { type = aType; }
-		Transfer::Type type;
+		Transfer::Type type = Transfer::TYPE_LAST;
 		void setBundle(const string& aBundle) { bundle = aBundle; updateMask |= MASK_BUNDLE; }
 		void setBundle(QueueToken aBundle) { if (aBundle == 0) return; bundle = Util::toString(aBundle); updateMask |= MASK_BUNDLE; }
 		string bundle;
 		void setUsers(const int16_t aUsers) { users = aUsers; updateMask |= MASK_USERS; }
-		int16_t users;
+		int16_t users = 0;
 		void setUser(const HintedUser& aUser) { user = aUser; updateMask |= MASK_USER; }
 		HintedUser user;
 	};
@@ -298,9 +299,9 @@ private:
 	/* Listeners */
 	void on(DownloadManagerListener::BundleTick, const BundleList& bundles, uint64_t aTick) noexcept override;
 
-	void on(UploadManagerListener::BundleTick, const UploadBundleList& bundles) noexcept;
-	void on(UploadManagerListener::BundleComplete, const string& bundleToken, const string& bundleName) noexcept override { onBundleComplete(bundleToken, bundleName, true); }
-	void on(UploadManagerListener::BundleSizeName, const string& bundleToken, const string& newTarget, int64_t aSize) noexcept override;
+	void on(UploadBundleInfoReceiverListener::BundleTick, const TickUploadBundleList& bundles) noexcept;
+	void on(UploadBundleInfoReceiverListener::BundleComplete, const string& bundleToken, const string& bundleName) noexcept override;
+	void on(UploadBundleInfoReceiverListener::BundleSizeName, const string& bundleToken, const string& newTarget, int64_t aSize) noexcept override;
 
 	void on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept override;
 	void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept override;
@@ -315,6 +316,8 @@ private:
 	void on(TransferInfoManagerListener::Completed, const TransferInfoPtr& aInfo) noexcept override;
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept override;
+
+	static const string& getBundle(const TransferInfoPtr& aInfo) noexcept;
 
 	void onBundleName(const BundlePtr& aBundle);
 	void onBundleComplete(const string& bundleToken, const string& bundleName, bool isUpload);
