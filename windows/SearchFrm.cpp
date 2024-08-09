@@ -29,6 +29,8 @@
 
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/DirectoryListingManager.h>
+#include <airdcpp/DupeUtil.h>
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/QueueManager.h>
 #include <airdcpp/Search.h>
 #include <airdcpp/SearchInstance.h>
@@ -36,6 +38,7 @@
 #include <airdcpp/SearchQuery.h>
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/TimerManager.h>
+#include <airdcpp/ValueGenerator.h>
 
 #include <airdcpp/modules/HighlightManager.h>
 
@@ -489,7 +492,7 @@ void SearchFrame::onEnter() {
 	if(clients.empty())
 		return;
 
-	auto token = Util::toString(Util::rand());
+	auto token = Util::toString(ValueGenerator::rand());
 	auto s = make_shared<Search>(Priority::HIGH, token);
 
 	s->query = ActionUtil::addHistory(ctrlSearchBox, SettingsManager::HISTORY_SEARCH);
@@ -660,9 +663,9 @@ const string& SearchFrame::SearchInfo::getHubUrl() const noexcept {
 
 StringList SearchFrame::SearchInfo::getDupePaths() const {
 	if (isDirectory()) {
-		return AirUtil::getAdcDirectoryDupePaths(getDupe(), getAdcPath());
+		return DupeUtil::getAdcDirectoryDupePaths(getDupe(), getAdcPath());
 	} else {
-		return AirUtil::getFileDupePaths(getDupe(), getTTH());
+		return DupeUtil::getFileDupePaths(getDupe(), getTTH());
 	}
 }
 
@@ -687,7 +690,7 @@ int SearchFrame::SearchInfo::compareItems(const SearchInfo* a, const SearchInfo*
 			}
 
 			if (a->groupedResult->isDirectory()) {
-				return Util::directoryContentSort(a->getContentInfo(), b->getContentInfo());
+				return DirectoryContentInfo::Sort(a->getContentInfo(), b->getContentInfo());
 			}
 
 			return lstrcmpi(a->getText(COLUMN_TYPE).c_str(), b->getText(COLUMN_TYPE).c_str());
@@ -790,13 +793,13 @@ void SearchFrame::handleDownload(const string& aTarget, Priority p, bool useWhol
 		auto download = [&](const SearchResultPtr& aSR) {
 			if (fileDownload) {
 				if (!targetName) {
-					targetName = Util::isDirectoryPath(aTarget) ? aTarget + aSI->getFileName() : aTarget;
+					targetName = PathUtil::isDirectoryPath(aTarget) ? aTarget + aSI->getFileName() : aTarget;
 				}
 				ActionUtil::addFileDownload(*targetName, aSR->getSize(), aSR->getTTH(), aSR->getUser(), aSR->getDate(), 0, p);
 			} else {
 				if (!targetName) {
 					// Only pick the directory name, different paths are always needed
-					targetName = aSR->getType() == SearchResult::TYPE_DIRECTORY ? aSR->getFileName() : Util::getAdcLastDir(aSR->getAdcFilePath());
+					targetName = aSR->getType() == SearchResult::TYPE_DIRECTORY ? aSR->getFileName() : PathUtil::getAdcLastDir(aSR->getAdcFilePath());
 				}
 
 				MainFrame::getMainFrame()->addThreadedTask([=] {
@@ -839,7 +842,7 @@ void SearchFrame::handleMatchPartial() {
 		MainFrame::getMainFrame()->addThreadedTask([
 			user = si->getHintedUser(),
 			flags = QueueItem::FLAG_MATCH_QUEUE | (si->getHintedUser().user->isNMDC() ? 0 : QueueItem::FLAG_RECURSIVE_LIST) | QueueItem::FLAG_PARTIAL_LIST,
-			path = AirUtil::getAdcReleaseDir(si->getAdcFilePath(), false),
+			path = DupeUtil::getAdcReleaseDir(si->getAdcFilePath(), false),
 			caller = this
 		] {
 			try {
@@ -857,7 +860,7 @@ void SearchFrame::handleMatchPartial() {
 void SearchFrame::handleSearchDir() {
 	if(ctrlResults.list.GetSelectedCount() == 1) {
 		const SearchInfo* si = ctrlResults.list.getSelectedItem();
-		ActionUtil::search(Text::toT(AirUtil::getAdcReleaseDir(si->getAdcPath(), true)), true);
+		ActionUtil::search(Text::toT(DupeUtil::getAdcReleaseDir(si->getAdcPath(), true)), true);
 	}
 }
 
@@ -884,7 +887,7 @@ void SearchFrame::SearchInfo::CheckTTH::operator()(SearchInfo* si) {
 		path = si->getAdcPath();
 		firstPath = false;
 	} else if (path) {
-		if (AirUtil::getAdcDirectoryName(*path).first != AirUtil::getAdcDirectoryName(si->getAdcFilePath()).first) {
+		if (DupeUtil::getAdcDirectoryName(*path).first != DupeUtil::getAdcDirectoryName(si->getAdcFilePath()).first) {
 			path.reset();
 		}
 	}
@@ -1242,7 +1245,7 @@ void SearchFrame::runUserCommand(UserCommand& uc) {
 		}
 
 
-		ucParams["fileFN"] = [si] { return Util::toNmdcFile(si->getAdcPath()); };
+		ucParams["fileFN"] = [si] { return PathUtil::toNmdcFile(si->getAdcPath()); };
 		ucParams["fileSI"] = [si] { return Util::toString(si->getSize()); };
 		ucParams["fileSIshort"] = [si] { return Util::formatBytes(si->getSize()); };
 		if (!si->isDirectory()) {
@@ -1651,7 +1654,7 @@ tstring SearchFrame::handleCopyMagnet(const SearchInfo* si) {
 }
 
 tstring SearchFrame::handleCopyDirectory(const SearchInfo* si) {
-	return Text::toT(AirUtil::getAdcReleaseDir(si->getAdcPath(), true));
+	return Text::toT(DupeUtil::getAdcReleaseDir(si->getAdcPath(), true));
 }
 
 LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {

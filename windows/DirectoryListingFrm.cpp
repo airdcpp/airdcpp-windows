@@ -35,11 +35,14 @@
 
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/DirectoryListingManager.h>
+#include <airdcpp/DupeUtil.h>
 #include <airdcpp/File.h>
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/QueueManager.h>
 #include <airdcpp/SearchQuery.h>
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/User.h>
+#include <airdcpp/ValueGenerator.h>
 #include <airdcpp/ViewFileManager.h>
 
 #include <airdcpp/modules/ADLSearch.h>
@@ -185,7 +188,7 @@ bool DirectoryListingFrame::parseWindowParams(StringMap& params) {
 		string dir = params["dir"];
 		if (dir.empty() || dir.front() != ADC_SEPARATOR) {
 			// Migrate NMDC paths from older versions
-			dir = Util::toAdcFile(dir);
+			dir = PathUtil::toAdcFile(dir);
 		}
 
 		string file = params["file"];
@@ -295,7 +298,7 @@ void DirectoryListingFrame::updateItemCache(const string& aPath) {
 
 	// Check that this directory exists in all parents
 	if (aPath != ADC_ROOT_STR) {
-		auto parent = Util::getAdcParentDir(aPath);
+		auto parent = PathUtil::getAdcParentDir(aPath);
 		auto p = itemInfos.find(parent);
 		if (p != itemInfos.end()) {
 			auto p2 = p->second->directories.find(ItemInfo(curDir));
@@ -320,7 +323,7 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_
 	// Get ownership of all item infos so that they won't be deleted before we finish loading
 	/*vector<unique_ptr<ItemInfoCache>> removedInfos;
 	for (auto i = itemInfos.begin(); i != itemInfos.end();) {
-		if (AirUtil::isParentOrExactAdc(aDir, i->first)) {
+		if (PathUtil::isParentOrExactAdc(aDir, i->first)) {
 			removedInfos.push_back(std::move(i->second));
 			i = itemInfos.erase(i);
 		} else {
@@ -344,7 +347,7 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aPat
 	// Get ownership of all item infos so that they won't be deleted before we finish loading
 	vector<unique_ptr<ItemInfoCache>> removedInfos;
 	for (auto i = itemInfos.begin(); i != itemInfos.end();) {
-		if (AirUtil::isParentOrExactAdc(aPath, i->first)) {
+		if (PathUtil::isParentOrExactAdc(aPath, i->first)) {
 			removedInfos.push_back(std::move(i->second));
 			i = itemInfos.erase(i);
 		} else {
@@ -748,7 +751,7 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedPath, bool aSelectD
 	if (initialChange || isExpanded || changeType == CHANGE_TREE_EXPAND || changeType == CHANGE_TREE_DOUBLE)
 		ctrlTree.Expand(loadedTreeItem);
 
-	if (!aSelectDir && getCurrentListPath() == Util::getAdcParentDir(aLoadedPath)) {
+	if (!aSelectDir && getCurrentListPath() == PathUtil::getAdcParentDir(aLoadedPath)) {
 		// Find the loaded directory and set it as complete
 		int j = ctrlFiles.list.GetItemCount();        
 		for(int i = 0; i < j; i++) {
@@ -760,7 +763,7 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedPath, bool aSelectD
 				break;
 			}
 		}
-	} else if (aSelectDir || AirUtil::isParentOrExactAdc(aLoadedPath, getCurrentListPath())) {
+	} else if (aSelectDir || PathUtil::isParentOrExactAdc(aLoadedPath, getCurrentListPath())) {
 		// insert the new items
 		ctrlTree.SelectItem(nullptr);
 
@@ -865,7 +868,7 @@ void DirectoryListingFrame::onFind() {
 
 	gotoPrev = false;
 
-	auto s = make_shared<Search>(Priority::HIGH, Util::toString(Util::rand()));
+	auto s = make_shared<Search>(Priority::HIGH, Util::toString(ValueGenerator::rand()));
 
 	s->query = dlg.searchStr;
 	s->size = dlg.size;
@@ -1153,8 +1156,8 @@ void DirectoryListingFrame::updateItems(const DirectoryListing::Directory::Ptr& 
 	optional<string> selectedName;
 	if (changeType == CHANGE_HISTORY) {
 		auto historyPath = browserBar.getCurSel();
-		if (!historyPath.empty() && (!d->getParent() || Util::getAdcParentDir(historyPath) == d->getAdcPath())) {
-			selectedName = Util::getLastDir(historyPath);
+		if (!historyPath.empty() && (!d->getParent() || PathUtil::getAdcParentDir(historyPath) == d->getAdcPath())) {
+			selectedName = PathUtil::getLastDir(historyPath);
 		}
 
 		changeType = CHANGE_LIST; //reset
@@ -1210,8 +1213,8 @@ void DirectoryListingFrame::handleHistoryClick(const string& aPath, bool aByHist
 }
 
 void DirectoryListingFrame::listViewSelectSubDir(const string& aSubPath, const string& aParentPath) {
-	if (!aSubPath.empty() && AirUtil::isSubAdc(aSubPath, aParentPath)) {
-		auto i = ctrlFiles.list.findItem(Text::toT(Util::getAdcLastDir(aSubPath)));
+	if (!aSubPath.empty() && PathUtil::isSubAdc(aSubPath, aParentPath)) {
+		auto i = ctrlFiles.list.findItem(Text::toT(PathUtil::getAdcLastDir(aSubPath)));
 		if (i != -1)
 			ctrlFiles.list.SelectItem(i);
 	}
@@ -1239,7 +1242,7 @@ void DirectoryListingFrame::onListItemAction() {
 		const ItemInfo* ii = ctrlFiles.list.getItemData(ctrlFiles.list.GetNextItem(-1, LVNI_SELECTED));
 		if(ii->type == ItemInfo::FILE) {
 			// if we already have it there's no reason to download, try to open instead.
-			if (dl->getIsOwnList() || AirUtil::isFinishedDupe(ii->file->getDupe()) || AirUtil::isShareDupe(ii->file->getDupe())) {
+			if (dl->getIsOwnList() || DupeUtil::isFinishedDupe(ii->file->getDupe()) || DupeUtil::isShareDupe(ii->file->getDupe())) {
 				openDupe(ii->file, false);
 			} else
 				onDownload(SETTING(DOWNLOAD_DIRECTORY), false, false, WinUtil::isShift() ? Priority::HIGHEST : Priority::DEFAULT);
@@ -1465,7 +1468,7 @@ void DirectoryListingFrame::appendListContextMenu(CPoint& pt) {
 		}
 	}
 
-	bool isDupeOrOwnlist = ctrlFiles.list.GetSelectedCount() == 1 && (dl->getIsOwnList() || AirUtil::allowOpenDupe(ii->getDupe()));
+	bool isDupeOrOwnlist = ctrlFiles.list.GetSelectedCount() == 1 && (dl->getIsOwnList() || DupeUtil::allowOpenDupe(ii->getDupe()));
 
 	if (!dl->getIsOwnList()) {
 		// download menu
@@ -1527,7 +1530,7 @@ void DirectoryListingFrame::appendListContextMenu(CPoint& pt) {
 
 
 	if (ctrlFiles.list.GetSelectedCount() == 1 && ii->type == ItemInfo::FILE) {
-		fileMenu.InsertSeparatorFirst(Text::toT(Util::getFileName(ii->file->getName())));
+		fileMenu.InsertSeparatorFirst(Text::toT(PathUtil::getFileName(ii->file->getName())));
 		if (ii->file->getOwner()) {
 			fileMenu.appendItem(TSTRING(GO_TO_DIRECTORY), [this] { handleGoToDirectory(false); });
 		}
@@ -1591,11 +1594,11 @@ void DirectoryListingFrame::appendTreeContextMenu(CPoint& pt, const HTREEITEM& a
 		directoryMenu.appendItem(TSTRING(RELOAD), [=] { handleReloadPartial(); });
 	}
 
-	if (dl->getIsOwnList() || (dir && dl->getPartialList() && AirUtil::allowOpenDupe(dir->getDupe()))) {
+	if (dl->getIsOwnList() || (dir && dl->getPartialList() && DupeUtil::allowOpenDupe(dir->getDupe()))) {
 		StringList paths;
 		if (getLocalPaths(paths, true, true)) {
 			directoryMenu.appendShellMenu(paths);
-			if (!AirUtil::isFinishedDupe(dir->getDupe())) {
+			if (!DupeUtil::isFinishedDupe(dir->getDupe())) {
 				// shared
 				directoryMenu.appendSeparator();
 				directoryMenu.appendItem(TSTRING(REFRESH_IN_SHARE), [this] { handleRefreshShare(true); });
@@ -1625,7 +1628,7 @@ void DirectoryListingFrame::handleItemAction(bool aUsingTree, std::function<void
 void DirectoryListingFrame::handleDownload(const string& aTarget, Priority aPriority, bool aUsingTree) {
 	handleItemAction(aUsingTree, [&](const ItemInfo* ii) {
 		if (ii->type == ItemInfo::FILE) {
-			auto target = aTarget + (!Util::isDirectoryPath(aTarget) ? Util::emptyString : ii->getName());
+			auto target = aTarget + (!PathUtil::isDirectoryPath(aTarget) ? Util::emptyString : ii->getName());
 			decltype(auto) f = ii->file;
 			ActionUtil::addFileDownload(target, f->getSize(), f->getTTH(), dl->getDownloadSourceUser(), f->getRemoteDate(), 0, aPriority);
 		} else {
@@ -1672,7 +1675,7 @@ void DirectoryListingFrame::handleGoToDirectory(bool usingTree) {
 			if (!ii->file->getOwner())
 				return;
 
-			path = Util::getAdcFilePath(ii->getAdcPath());
+			path = PathUtil::getAdcFilePath(ii->getAdcPath());
 		} else if (ii->type == ItemInfo::DIRECTORY)	{
 			if (!(ii->dir->isVirtual() && ii->dir->getParent() != dl->getRoot().get()))
 				return;
@@ -1699,7 +1702,7 @@ void DirectoryListingFrame::handleOpenFile() {
 			return;
 		}
 
-		if (dl->getIsOwnList() || AirUtil::allowOpenDupe(ii->file->getDupe())) {
+		if (dl->getIsOwnList() || DupeUtil::allowOpenDupe(ii->file->getDupe())) {
 			openDupe(ii->file, false);
 		} else {
 			ActionUtil::openTextFile(ii->file->getName(), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), false);
@@ -1756,7 +1759,7 @@ void DirectoryListingFrame::handleSearchByName(bool usingTree, bool dirsOnly) {
 				if (thisSearched)
 					return;
 
-				name = AirUtil::getAdcReleaseDir(ii->getAdcPath(), true);
+				name = DupeUtil::getAdcReleaseDir(ii->getAdcPath(), true);
 				thisSearched = true;
 			} else {
 				name = ii->getName();
@@ -1835,14 +1838,14 @@ void DirectoryListingFrame::runUserCommand(UserCommand& uc) {
 		//ucParams["fileTR"] = "NONE";
 		if (ii->type == ItemInfo::FILE) {
 			ucParams["type"] = [] { return "File"; };
-			ucParams["fileFN"] = [this, ii] { return Util::toNmdcFile(ii->getAdcPath()); };
+			ucParams["fileFN"] = [this, ii] { return PathUtil::toNmdcFile(ii->getAdcPath()); };
 			ucParams["fileSI"] = [ii] { return Util::toString(ii->file->getSize()); };
 			ucParams["fileSIshort"] = [ii] { return Util::formatBytes(ii->file->getSize()); };
 			ucParams["fileTR"] = [ii] { return ii->file->getTTH().toBase32(); };
 			ucParams["fileMN"] = [ii] { return ActionUtil::makeMagnet(ii->file->getTTH(), ii->file->getName(), ii->file->getSize()); };
 		} else {
 			ucParams["type"] = [] { return "Directory"; };
-			ucParams["fileFN"] = [this, ii] { return Util::toNmdcFile(ii->getAdcPath()); };
+			ucParams["fileFN"] = [this, ii] { return PathUtil::toNmdcFile(ii->getAdcPath()); };
 			ucParams["fileSI"] = [this, ii] { return Util::toString(ii->dir->getTotalSize(ii->dir != dl->getRoot())); };
 			ucParams["fileSIshort"] = [ii] { return Util::formatBytes(ii->dir->getTotalSize(true)); };
 		}
@@ -1882,7 +1885,7 @@ tstring DirectoryListingFrame::handleCopyPath(const ItemInfo* ii) {
 
 tstring DirectoryListingFrame::handleCopyDirectory(const ItemInfo* ii) {
 	if (ii->type == ItemInfo::FILE) {
-		return Text::toT(AirUtil::getAdcReleaseDir(ii->getAdcPath(), true));
+		return Text::toT(DupeUtil::getAdcReleaseDir(ii->getAdcPath(), true));
 	} else {
 		return ii->getText(COLUMN_FILENAME);
 	}
@@ -1996,7 +1999,7 @@ int DirectoryListingFrame::ItemInfo::compareItems(const ItemInfo* a, const ItemI
 					return Util::DefaultSort(a->getNameW().c_str(), b->getNameW().c_str());
 				}
 				case COLUMN_TYPE: {
-					return Util::directoryContentSort(a->dir->getContentInfo(), b->dir->getContentInfo());
+					return DirectoryContentInfo::Sort(a->dir->getContentInfo(), b->dir->getContentInfo());
 				}
 				default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str());
 			}

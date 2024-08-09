@@ -30,6 +30,7 @@
 #include "ScopedFunctor.h"
 #include "UploadManager.h"
 #include "UserConnection.h"
+#include "ValueGenerator.h"
 
 namespace dcpp {
 FastCriticalSection TokenManager::cs;
@@ -39,7 +40,7 @@ string TokenManager::createToken(ConnectionType aConnType) noexcept {
 
 	{
 		FastLock l(cs);
-		do { token = Util::toString(Util::rand()); } while (tokens.find(token) != tokens.end());
+		do { token = Util::toString(ValueGenerator::rand()); } while (tokens.find(token) != tokens.end());
 
 		tokens.emplace(token, aConnType);
 	}
@@ -937,7 +938,7 @@ void ConnectionManager::on(UserConnectionListener::Key, UserConnection* aSource,
 		// this will be synced to use CQI's random token
 		addDownloadConnection(aSource);
 	} else {
-		aSource->setToken(Util::toString(Util::rand())); // set a random token instead of using the nick
+		aSource->setToken(Util::toString(ValueGenerator::rand())); // set a random token instead of using the nick
 		addUploadConnection(aSource);
 	}
 }

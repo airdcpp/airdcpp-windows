@@ -18,21 +18,26 @@
 #include "Resource.h"
 #include "atlstr.h"
 
-#include <airdcpp/modules/AutoSearchManager.h>
+#include "RichTextBox.h"
+
+#include <airdcpp/DupeUtil.h>
 #include <airdcpp/FavoriteManager.h>
-#include <airdcpp/modules/HighlightManager.h>
 #include <airdcpp/IgnoreManager.h>
+#include <airdcpp/LinkUtil.h>
 #include <airdcpp/Magnet.h>
-#include <airdcpp/UploadManager.h>
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/QueueManager.h>
+#include <airdcpp/RegexUtil.h>
+#include <airdcpp/UploadManager.h>
 #include <airdcpp/Util.h>
 #include <airdcpp/version.h>
+
+#include <airdcpp/modules/AutoSearchManager.h>
+#include <airdcpp/modules/HighlightManager.h>
 
 #include <boost/lambda/lambda.hpp>
 #include <boost/format.hpp>
 #include <boost/scoped_array.hpp>
-
-#include "RichTextBox.h"
 
 #include "ActionUtil.h"
 #include "EmoticonsManager.h"
@@ -426,7 +431,7 @@ void RichTextBox::parsePathHighlights(const string& aText, MessageHighlight::Sor
 	auto end = aText.cend();
 	boost::match_results<string::const_iterator> result;
 	int pos = 0;
-	boost::regex reg(AirUtil::getPathReg());
+	boost::regex reg(RegexUtil::getPathReg());
 
 	while (boost::regex_search(start, end, result, reg, boost::match_default)) {
 		std::string path(result[0].first, result[0].second);
@@ -647,11 +652,11 @@ void RichTextBox::formatHighlight(const MessageHighlightPtr& aHighlight, CHARRAN
 void RichTextBox::formatSelectedHighlight(const MessageHighlightPtr& aHighlight) {
 	auto dupe = aHighlight->getDupe();
 	if (SETTING(DUPES_IN_CHAT) && dupe != DUPE_NONE) {
-		if (AirUtil::isShareDupe(dupe)) {
+		if (DupeUtil::isShareDupe(dupe)) {
 			SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
-		} else if (AirUtil::isQueueDupe(dupe)) {
+		} else if (DupeUtil::isQueueDupe(dupe)) {
 			SetSelectionCharFormat(WinUtil::m_TextStyleQueue);
-		} else if (AirUtil::isFinishedDupe(dupe)) {
+		} else if (DupeUtil::isFinishedDupe(dupe)) {
 			CHARFORMAT2 newFormat = WinUtil::m_TextStyleQueue;
 			newFormat.crTextColor = WinUtil::getDupeColors(dupe).first;
 			SetSelectionCharFormat(newFormat);
@@ -865,7 +870,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 			}
 		} else if (isRelease) {
 			menu.InsertSeparatorFirst(CTSTRING(RELEASE));
-		} else if (!selectedWord.empty() && AirUtil::isHubLink(Text::fromT(selectedWord))) {
+		} else if (!selectedWord.empty() && LinkUtil::isHubLink(Text::fromT(selectedWord))) {
 			menu.InsertSeparatorFirst(CTSTRING(LINK));
 			menu.appendItem(TSTRING(CONNECT), [this] { handleOpenLink(); });
 			menu.appendSeparator();
@@ -898,7 +903,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 					appendDownloadMenu(menu, DownloadBaseHandler::TYPE_PRIMARY, false, magnet.getTTH(), nullopt);
 				}
 
-				if ((!author.empty() && !isMyLink) || AirUtil::allowOpenDupe(dupeType))
+				if ((!author.empty() && !isMyLink) || DupeUtil::allowOpenDupe(dupeType))
 					menu.appendItem(TSTRING(OPEN), [this] { handleOpenFile(); });
 			} else if (isRelease) {
 				//autosearch menus
@@ -980,7 +985,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 			break;
 		} */ 
 			//Bold the Best solution for getting user users list instead.
-			if(AirUtil::isAdcHub(getHubUrl())) {
+			if(LinkUtil::isAdcHub(getHubUrl())) {
 				menu.SetMenuDefaultItem(IDC_BROWSELIST);
 			} else {
 				menu.SetMenuDefaultItem(IDC_GETLIST);
@@ -999,10 +1004,10 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 		menu.appendItem(TSTRING(ADD_AUTO_SEARCH_DIR), [this] { handleAddAutoSearchDir(); });
 
 		auto path = Text::fromT(selectedWord);
-		if (!Util::isDirectoryPath(path)) {
+		if (!PathUtil::isDirectoryPath(path)) {
 			menu.appendSeparator();
 			menu.appendItem(TSTRING(SEARCH_FILENAME), [this] { handleSearch(); });
-			if (Util::fileExists(path)) {
+			if (PathUtil::fileExists(path)) {
 				menu.appendItem(TSTRING(DELETE_FILE), [this] { handleDeleteFile(); });
 			} else {
 				menu.appendItem(TSTRING(ADD_AUTO_SEARCH_FILE), [this] { handleAddAutoSearchFile(); });
@@ -1020,7 +1025,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 }
 
 void RichTextBox::handleSearchDir() {
-	ActionUtil::search(Text::toT(AirUtil::getReleaseDirLocal(Text::fromT(selectedWord), true)), true);
+	ActionUtil::search(Text::toT(DupeUtil::getReleaseDirLocal(Text::fromT(selectedWord), true)), true);
 }
 
 void RichTextBox::handleDeleteFile() {
@@ -1036,8 +1041,8 @@ void RichTextBox::handleDeleteFile() {
 void RichTextBox::handleAddAutoSearchFile() {
 	string targetPath;
 	if (selectedWord.find(PATH_SEPARATOR) != tstring::npos)
-		targetPath = Util::getFilePath(Text::fromT(selectedWord));
-	auto fileName = Util::getFileName(Text::fromT(selectedWord));
+		targetPath = PathUtil::getFilePath(Text::fromT(selectedWord));
+	auto fileName = PathUtil::getFileName(Text::fromT(selectedWord));
 
 	AutoSearchManager::getInstance()->addAutoSearch(fileName, targetPath, false, AutoSearch::CHAT_DOWNLOAD, true);
 
@@ -1045,8 +1050,8 @@ void RichTextBox::handleAddAutoSearchFile() {
 }
 
 void RichTextBox::handleAddAutoSearchDir() {
-	string targetPath = Util::getParentDir(Text::fromT(selectedWord), PATH_SEPARATOR, true);
-	string dirName = Util::getLastDir(!Util::isDirectoryPath(selectedWord) ? Util::getFilePath(Text::fromT(selectedWord)) : Text::fromT(selectedWord));
+	string targetPath = PathUtil::getParentDir(Text::fromT(selectedWord), PATH_SEPARATOR, true);
+	string dirName = PathUtil::getLastDir(!PathUtil::isDirectoryPath(selectedWord) ? PathUtil::getFilePath(Text::fromT(selectedWord)) : Text::fromT(selectedWord));
 
 	AutoSearchManager::getInstance()->addAutoSearch(dirName, targetPath, true, AutoSearch::CHAT_DOWNLOAD, true);
 
@@ -1135,7 +1140,7 @@ void RichTextBox::handleOpenFile() {
 	auto u = getMagnetSource();
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		if (selectedHighlight->getDupe() != DUPE_NONE) {
-			auto paths = AirUtil::getFileDupePaths(selectedHighlight->getDupe(), m.getTTH());
+			auto paths = DupeUtil::getFileDupePaths(selectedHighlight->getDupe(), m.getTTH());
 			if (!paths.empty())
 				ActionUtil::openFile(Text::toT(paths.front()));
 		} else {
@@ -1190,16 +1195,16 @@ void RichTextBox::handleOpenFolder() {
 	StringList paths;
 	try{
 		if (isPath) {
-			paths.push_back(Text::fromT(Util::getFilePath(selectedWord)));
+			paths.push_back(Text::fromT(PathUtil::getFilePath(selectedWord)));
 		} else if (selectedHighlight && selectedHighlight->getDupe() != DUPE_NONE) {
 			if (selectedHighlight->getMagnet()) {
 				auto m = *selectedHighlight->getMagnet();
 				if (m.hash.empty())
 					return;
 
-				paths = AirUtil::getFileDupePaths(selectedHighlight->getDupe(), m.getTTH());
+				paths = DupeUtil::getFileDupePaths(selectedHighlight->getDupe(), m.getTTH());
 			} else {
-				paths = AirUtil::getAdcDirectoryDupePaths(selectedHighlight->getDupe(), Text::fromT(selectedWord));
+				paths = DupeUtil::getAdcDirectoryDupePaths(selectedHighlight->getDupe(), Text::fromT(selectedWord));
 			}
 		}
 	} catch(...) {}
@@ -1212,12 +1217,12 @@ void RichTextBox::handleDownload(const string& aTarget, Priority p, bool aIsRele
 	if (!aIsRelease && selectedHighlight && selectedHighlight->getMagnet()) {
 		auto u = std::move(getMagnetSource());
 		auto magnet = *selectedHighlight->getMagnet();
-		if (pmUser && ShareManager::getInstance()->isRealPathShared(Util::getFilePath(aTarget)) &&
-			!WinUtil::showQuestionBox(TSTRING_F(PM_MAGNET_SHARED_WARNING, Text::toT(Util::getFilePath(aTarget))), MB_ICONQUESTION)) {
+		if (pmUser && ShareManager::getInstance()->isRealPathShared(PathUtil::getFilePath(aTarget)) &&
+			!WinUtil::showQuestionBox(TSTRING_F(PM_MAGNET_SHARED_WARNING, Text::toT(PathUtil::getFilePath(aTarget))), MB_ICONQUESTION)) {
 				return;
 		}
 
-		auto target = aTarget + (!Util::isDirectoryPath(aTarget) ? Util::emptyString : magnet.fname);
+		auto target = aTarget + (!PathUtil::isDirectoryPath(aTarget) ? Util::emptyString : magnet.fname);
 		ActionUtil::addFileDownload(target, magnet.fsize, magnet.getTTH(), u, 0, pmUser ? QueueItem::FLAG_PRIVATE : 0, p);
 	} else {
 		AutoSearchManager::getInstance()->addAutoSearch(Text::fromT(selectedWord), aTarget, true, AutoSearch::CHAT_DOWNLOAD);
@@ -1415,7 +1420,7 @@ LRESULT RichTextBox::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCt
 	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou) {
 		auto file = ou->getLogPath();
-		if(Util::fileExists(file)) {
+		if(PathUtil::fileExists(file)) {
 			ActionUtil::viewLog(file, wID == IDC_USER_HISTORY);
 		} else {
 			MessageBox(CTSTRING(NO_LOG_FOR_USER),CTSTRING(NO_LOG_FOR_USER), MB_OK );	  
@@ -1801,7 +1806,7 @@ void RichTextBox::handleSearch() {
 	if (selectedHighlight && selectedHighlight->getMagnet()) {
 		ActionUtil::search(Text::toT((*selectedHighlight->getMagnet()).fname));
 	} else if (isPath) {
-		ActionUtil::search(Util::getFileName(selectedWord));
+		ActionUtil::search(PathUtil::getFileName(selectedWord));
 	} else {
 		ActionUtil::search(selectedWord);
 	}

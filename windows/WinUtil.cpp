@@ -25,18 +25,23 @@
 #include "MainFrm.h"
 #include "OMenu.h"
 #include "ResourceLoader.h"
-#include "SystemUtil.h"
+#include "OSUtil.h"
 
 #include "BarShader.h"
 #include "ExMessageBox.h"
 #include "SplashWindow.h"
 
-#include <airdcpp/AirUtil.h>
+#include <airdcpp/DupeUtil.h>
 #include <airdcpp/File.h>
+#include <airdcpp/LinkUtil.h>
 #include <airdcpp/LogManager.h>
+#include <airdcpp/NetworkUtil.h>
+#include <airdcpp/PathUtil.h>
+#include <airdcpp/RegexUtil.h>
 #include <airdcpp/ResourceManager.h>
 #include <airdcpp/ScopedFunctor.h>
 #include <airdcpp/StringTokenizer.h>
+#include <airdcpp/SystemUtil.h>
 #include <airdcpp/Util.h>
 
 #include <airdcpp/version.h>
@@ -217,15 +222,15 @@ void WinUtil::preInit() {
 }
 
 void WinUtil::init(HWND hWnd) {
-	paths[PATH_NOTEPAD] = Util::getPath(Util::PATH_USER_CONFIG) + "Notepad.txt";
-	paths[PATH_EMOPACKS] = Util::getPath(Util::PATH_RESOURCES) + "EmoPacks" PATH_SEPARATOR_STR;
-	paths[PATH_THEMES] = Util::getPath(Util::PATH_RESOURCES) + "Themes" PATH_SEPARATOR_STR;
+	paths[PATH_NOTEPAD] = AppUtil::getPath(AppUtil::PATH_USER_CONFIG) + "Notepad.txt";
+	paths[PATH_EMOPACKS] = AppUtil::getPath(AppUtil::PATH_RESOURCES) + "EmoPacks" PATH_SEPARATOR_STR;
+	paths[PATH_THEMES] = AppUtil::getPath(AppUtil::PATH_RESOURCES) + "Themes" PATH_SEPARATOR_STR;
 
 	File::ensureDirectory(paths[PATH_THEMES]);
 
-	pathReg.assign(Text::toT(AirUtil::getPathReg()));
-	chatReleaseReg.assign(Text::toT(AirUtil::getReleaseRegLong(true)));
-	chatLinkReg.assign(Text::toT(AirUtil::getUrlReg()), boost::regex_constants::icase);
+	pathReg.assign(Text::toT(RegexUtil::getPathReg()));
+	chatReleaseReg.assign(Text::toT(DupeUtil::getReleaseRegLong(true)));
+	chatLinkReg.assign(Text::toT(LinkUtil::getUrlReg()), boost::regex_constants::icase);
 
 	mainWnd = hWnd;
 
@@ -552,7 +557,7 @@ void WinUtil::uninit() {
 	::DeleteObject(listViewFont);
 
 	UnhookWindowsHookEx(hook);	
-	auto files = File::findFiles(Util::getOpenPath(), "*");
+	auto files = File::findFiles(AppUtil::getOpenPath(), "*");
 	for_each(files.begin(), files.end(), &File::deleteFile);
 }
 
@@ -685,7 +690,7 @@ void WinUtil::splitTokens(int* array, const string& tokens, int maxItems /* = -1
  void WinUtil::registerDchubHandler() {
 	HKEY hk;
 	TCHAR Buf[512];
-	tstring app = _T("\"") + Text::toT(Util::getAppPath()) + _T("\" \"%1\"");
+	tstring app = _T("\"") + Text::toT(AppUtil::getAppPath()) + _T("\" \"%1\"");
 	Buf[0] = 0;
 
 	if(::RegOpenKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\dchub\\Shell\\Open\\Command"), 0, KEY_WRITE | KEY_READ, &hk) == ERROR_SUCCESS) {
@@ -711,7 +716,7 @@ void WinUtil::splitTokens(int* array, const string& tokens, int maxItems /* = -1
 		::RegCloseKey(hk);
 
 		::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\dchub\\DefaultIcon"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL);
-		app = Text::toT(Util::getAppPath());
+		app = Text::toT(AppUtil::getAppPath());
 		::RegSetValueEx(hk, _T(""), 0, REG_SZ, (LPBYTE)app.c_str(), sizeof(TCHAR) * (app.length() + 1));
 		::RegCloseKey(hk);
 	}
@@ -724,7 +729,7 @@ void WinUtil::splitTokens(int* array, const string& tokens, int maxItems /* = -1
  void WinUtil::registerADChubHandler() {
 	 HKEY hk;
 	 TCHAR Buf[512];
-	 tstring app = _T("\"") + Text::toT(Util::getAppPath()) + _T("\" %1");
+	 tstring app = _T("\"") + Text::toT(AppUtil::getAppPath()) + _T("\" %1");
 	 Buf[0] = 0;
 
 	 if(::RegOpenKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\adc\\Shell\\Open\\Command"), 0, KEY_WRITE | KEY_READ, &hk) == ERROR_SUCCESS) {
@@ -750,7 +755,7 @@ void WinUtil::splitTokens(int* array, const string& tokens, int maxItems /* = -1
 		 ::RegCloseKey(hk);
 
 		 ::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\adc\\DefaultIcon"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL);
-		 app = Text::toT(Util::getAppPath());
+		 app = Text::toT(AppUtil::getAppPath());
 		 ::RegSetValueEx(hk, _T(""), 0, REG_SZ, (LPBYTE)app.c_str(), sizeof(TCHAR) * (app.length() + 1));
 		 ::RegCloseKey(hk);
 	 }
@@ -762,7 +767,7 @@ void WinUtil::splitTokens(int* array, const string& tokens, int maxItems /* = -1
 void WinUtil::registerADCShubHandler() {
 	HKEY hk;
 	TCHAR Buf[512];
-	tstring app = _T("\"") + Text::toT(Util::getAppPath()) + _T("\" %1");
+	tstring app = _T("\"") + Text::toT(AppUtil::getAppPath()) + _T("\" %1");
 	Buf[0] = 0;
  
 	
@@ -793,7 +798,7 @@ void WinUtil::registerADCShubHandler() {
 		 ::RegCloseKey(hk);
 
 		 ::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\adcs\\DefaultIcon"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL);
-		 app = Text::toT(Util::getAppPath());
+		 app = Text::toT(AppUtil::getAppPath());
 		 ::RegSetValueEx(hk, _T(""), 0, REG_SZ, (LPBYTE)app.c_str(), sizeof(TCHAR) * (app.length() + 1));
 		 ::RegCloseKey(hk);
 	    }
@@ -808,7 +813,7 @@ void WinUtil::registerMagnetHandler() {
 	HKEY hk;
 	TCHAR buf[512];
 	tstring openCmd;
-	tstring appName = Text::toT(Util::getAppPath());
+	tstring appName = Text::toT(AppUtil::getAppPath());
 	buf[0] = 0;
 
 	// what command is set up to handle magnets right now?
@@ -1290,10 +1295,10 @@ void WinUtil::addCue(HWND hwnd, LPCWSTR text, BOOL drawFocus) {
 
 void WinUtil::addUpdate(const string& aUpdater, bool aTesting) noexcept {
 	updated = true;
-	auto appPath = Util::getAppFilePath();
+	auto appPath = AppUtil::getAppFilePath();
 
 	auto updateCmd = Text::toT("/update \"" + appPath + "\\\""); // The extra end slash is required!
-	if (SystemUtil::isElevated()) {
+	if (OSUtil::isElevated()) {
 		updateCmd += _T(" /elevation");
 	}
 
@@ -1306,7 +1311,7 @@ void WinUtil::addUpdate(const string& aUpdater, bool aTesting) noexcept {
 
 bool WinUtil::runPendingUpdate() noexcept {
 	if(updated && !updateCommand.first.empty()) {
-		auto cmd = updateCommand.second + Text::toT(Util::getStartupParams(false));
+		auto cmd = updateCommand.second + Text::toT(AppUtil::getStartupParams(false));
 		ShellExecute(NULL, _T("runas"), updateCommand.first.c_str(), cmd.c_str(), NULL, SW_SHOWNORMAL);
 		return true;
 	}
@@ -1445,7 +1450,7 @@ tstring WinUtil::formatFolderContent(const DirectoryContentInfo& aContentInfo) {
 }
 
 tstring WinUtil::formatFileType(const string& aFileName) {
-	auto type = Util::getFileExt(aFileName);
+	auto type = PathUtil::getFileExt(aFileName);
 	if (type.size() > 0 && type[0] == '.')
 		type.erase(0, 1);
 	return Text::toT(type);

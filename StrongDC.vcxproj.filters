@@ -387,7 +387,7 @@
     <ClCompile Include="windows\UserUtil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\SystemUtil.cpp">
+    <ClCompile Include="windows\OSUtil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="windows\FormatUtil.cpp">
@@ -854,7 +854,7 @@
     <ClInclude Include="windows\StaticFrame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="windows\SystemUtil.h">
+    <ClInclude Include="windows\OSUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\FormatUtil.h">

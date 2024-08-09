@@ -21,6 +21,7 @@
 #include "WinUtil.h"
 #include "SearchTypeDlg.h"
 
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/SearchManager.h>
 #include <airdcpp/SearchTypes.h>
@@ -117,7 +118,7 @@ LRESULT SearchTypeDlg::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 	StringTokenizer<tstring> t(buf, ';');
 	for (auto i = t.getTokens().begin(); i != t.getTokens().end(); ++i) {
 		if(!i->empty()) {
-			if(Util::checkExtension(Text::fromT(*i))) {
+			if (PathUtil::checkExtension(Text::fromT(*i))) {
 				extList.push_back(Text::fromT(buf));
 			} else {
 				MessageBox(CTSTRING_F(INVALID_EXTENSION, *i));

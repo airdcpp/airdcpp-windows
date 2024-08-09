@@ -19,11 +19,11 @@
 #ifndef DCPLUSPLUS_DCPP_SETTINGS_MANAGER_H
 #define DCPLUSPLUS_DCPP_SETTINGS_MANAGER_H
 
+#include "AppUtil.h"
 #include "SettingItem.h"
 #include "SettingsManagerListener.h"
 #include "Singleton.h"
 #include "Speaker.h"
-#include "Util.h"
 #include "version.h"
 
 namespace dcpp {
@@ -421,15 +421,15 @@ public:
 	string getProfileName(int profile) const noexcept;
 
 	// Reports errors to system log if no custom error function is supplied
-	static bool saveSettingFile(SimpleXML& aXML, Util::Paths aPath, const string& aFileName, const MessageCallback& aCustomErrorF = nullptr) noexcept;
-	static bool saveSettingFile(const string& aContent, Util::Paths aPath, const string& aFileName, const MessageCallback& aCustomErrorF = nullptr) noexcept;
+	static bool saveSettingFile(SimpleXML& aXML, AppUtil::Paths aPath, const string& aFileName, const MessageCallback& aCustomErrorF = nullptr) noexcept;
+	static bool saveSettingFile(const string& aContent, AppUtil::Paths aPath, const string& aFileName, const MessageCallback& aCustomErrorF = nullptr) noexcept;
 
 	// Attempts to load the setting file and creates a backup after completion
 	// Settings are recovered automatically from the backup file in case the main setting file is malformed/corrupted
 	typedef std::function<void(SimpleXML&)> XMLParseCallback;
 	typedef std::function<bool(const string&)> PathParseCallback;
-	static bool loadSettingFile(Util::Paths aPath, const string& aFileName, XMLParseCallback&& aParseCallback, const MessageCallback& aCustomErrorF = nullptr) noexcept;
-	static bool loadSettingFile(Util::Paths aPath, const string& aFileName, PathParseCallback&& aParseCallback, const MessageCallback& aCustomErrorF = nullptr) noexcept;
+	static bool loadSettingFile(AppUtil::Paths aPath, const string& aFileName, XMLParseCallback&& aParseCallback, const MessageCallback& aCustomErrorF = nullptr) noexcept;
+	static bool loadSettingFile(AppUtil::Paths aPath, const string& aFileName, PathParseCallback&& aParseCallback, const MessageCallback& aCustomErrorF = nullptr) noexcept;
 private:
 	boost::regex connectionRegex;
 

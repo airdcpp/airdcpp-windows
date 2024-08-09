@@ -23,6 +23,7 @@
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/GeoManager.h>
 #include <airdcpp/Localization.h>
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/Util.h>
 
 
@@ -40,7 +41,7 @@ tstring FormatUtil::formatFolderContent(const DirectoryContentInfo& aContentInfo
 }
 
 tstring FormatUtil::formatFileType(const string& aFileName) {
-	auto type = Util::getFileExt(aFileName);
+	auto type = PathUtil::getFileExt(aFileName);
 	if (type.size() > 0 && type[0] == '.')
 		type.erase(0, 1);
 

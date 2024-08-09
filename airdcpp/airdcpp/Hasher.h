@@ -23,6 +23,7 @@
 
 #include "CriticalSection.h"
 #include "HasherManager.h"
+#include "PathUtil.h"
 #include "Semaphore.h"
 #include "SortedVector.h"
 #include "Thread.h"
@@ -97,7 +98,7 @@ namespace dcpp {
 		void processQueue() noexcept;
 		optional<HashedFile> hashFile(const WorkItem& aItem, HasherStats& stats_, const DirSFVReader& aSFV) noexcept;
 
-		SortedVector<WorkItem, std::deque, string, Util::PathSortOrderInt, WorkItem::NameLower> w;
+		SortedVector<WorkItem, std::deque, string, PathUtil::PathSortOrderInt, WorkItem::NameLower> w;
 
 		Semaphore s;
 		void removeDevice(devid aDevice) noexcept;

@@ -433,7 +433,7 @@
     <ClCompile Include="windows\HttpLinks.cpp" />
     <ClCompile Include="windows\RssFilterPage.cpp" />
     <ClCompile Include="windows\ActionUtil.cpp" />
-    <ClCompile Include="windows\SystemUtil.cpp" />
+    <ClCompile Include="windows\OSUtil.cpp" />
     <ClCompile Include="windows\TabbedDialog.cpp" />
     <ClCompile Include="windows\AutosearchSearchTimesPage.cpp" />
     <ClCompile Include="windows\BrowseDlg.cpp" />
@@ -582,7 +582,7 @@
     <ClInclude Include="windows\StaticFrame.h" />
     <ClInclude Include="windows\ActionUtil.h" />
     <ClInclude Include="windows\StatusBarTextHandler.h" />
-    <ClInclude Include="windows\SystemUtil.h" />
+    <ClInclude Include="windows\OSUtil.h" />
     <ClInclude Include="windows\TabbedDialog.h" />
     <ClInclude Include="windows\AutosearchParams.h" />
     <ClInclude Include="windows\AutosearchSearchTimesPage.h" />

@@ -29,7 +29,7 @@
 namespace webserver {
 
 #define CONFIG_NAME "web-server.json"
-#define CONFIG_DIR Util::PATH_USER_CONFIG
+#define CONFIG_DIR AppUtil::PATH_USER_CONFIG
 #define CONFIG_VERSION 1
 
 #ifdef _WIN32
@@ -111,7 +111,7 @@ namespace webserver {
 		wsm->removeListener(this);
 	}
 
-	bool WebServerSettings::loadSettingFile(Util::Paths aPath, const string& aFileName, JsonParseCallback&& aParseCallback, const MessageCallback& aCustomErrorF, int aMaxConfigVersion) noexcept {
+	bool WebServerSettings::loadSettingFile(AppUtil::Paths aPath, const string& aFileName, JsonParseCallback&& aParseCallback, const MessageCallback& aCustomErrorF, int aMaxConfigVersion) noexcept {
 		const auto parseJsonFile = [&](const string& aPath) {
 			try {
 				// Parse
@@ -182,7 +182,7 @@ namespace webserver {
 
 
 	string WebServerSettings::getConfigFilePath() const noexcept {
-		return Util::getPath(CONFIG_DIR) + CONFIG_NAME;
+		return AppUtil::getPath(CONFIG_DIR) + CONFIG_NAME;
 	}
 
 	void WebServerSettings::on(WebServerManagerListener::LoadSettings, const MessageCallback& aErrorF) noexcept {
@@ -198,7 +198,7 @@ namespace webserver {
 		isDirty = false;
 	}
 
-	bool WebServerSettings::saveSettingFile(const json& aJson, Util::Paths aPath, const string& aFileName, const MessageCallback& aCustomErrorF, int aConfigVersion) noexcept {
+	bool WebServerSettings::saveSettingFile(const json& aJson, AppUtil::Paths aPath, const string& aFileName, const MessageCallback& aCustomErrorF, int aConfigVersion) noexcept {
 		auto data = json({
 			{ "version", aConfigVersion },
 			{ "settings", aJson },

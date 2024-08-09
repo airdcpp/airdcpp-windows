@@ -30,6 +30,7 @@
 #include <web-server/WebUserManager.h>
 
 #include <airdcpp/LogManager.h>
+#include <airdcpp/NetworkUtil.h>
 
 
 PropPage::TextItem WebServerPage::texts[] = {
@@ -58,14 +59,14 @@ WebServerPage::WebServerPage(SettingsManager *s) : PropPage(s), webMgr(webserver
 void WebServerPage::initBindAddresses() noexcept {
 	// Network interfaces
 	const auto insertProtocolAdapters = [this](bool v6) {
-		auto protocolAdapters = AirUtil::getNetworkAdapters(v6);
+		auto protocolAdapters = NetworkUtil::getNetworkAdapters(v6);
 
 		copy(protocolAdapters.begin(), protocolAdapters.end(), back_inserter(bindAdapters));
 	};
 
 	insertProtocolAdapters(false);
 	insertProtocolAdapters(true);
-	sort(bindAdapters.begin(), bindAdapters.end(), AirUtil::adapterSort);
+	sort(bindAdapters.begin(), bindAdapters.end(), NetworkUtil::adapterSort);
 
 	// Any/localhost (reverse order)
 	bindAdapters.emplace(bindAdapters.begin(), "Localhost", "::1", static_cast<uint8_t>(0));
@@ -73,8 +74,8 @@ void WebServerPage::initBindAddresses() noexcept {
 	bindAdapters.emplace(bindAdapters.begin(), STRING(ANY), Util::emptyString, static_cast<uint8_t>(0));
 
 	// Ensure that we have the current values
-	AirUtil::ensureBindAddress(bindAdapters, WEBCFG(PLAIN_BIND).str());
-	AirUtil::ensureBindAddress(bindAdapters, WEBCFG(TLS_BIND).str());
+	NetworkUtil::ensureBindAddress(bindAdapters, WEBCFG(PLAIN_BIND).str());
+	NetworkUtil::ensureBindAddress(bindAdapters, WEBCFG(TLS_BIND).str());
 
 	// Combo
 	WinUtil::insertBindAddresses(bindAdapters, ctrlBindHttp, WEBCFG(PLAIN_BIND).str());

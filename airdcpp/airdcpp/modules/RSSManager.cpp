@@ -24,6 +24,7 @@
 
 #include <airdcpp/HttpConnection.h>
 #include <airdcpp/LogManager.h>
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/ShareManager.h>
 #include <airdcpp/QueueManager.h>
 #include <airdcpp/SearchTypes.h>
@@ -38,8 +39,8 @@
 namespace dcpp {
 
 #define CONFIG_NAME "RSS.xml"
-#define CONFIG_DIR Util::PATH_USER_CONFIG
-#define DATABASE_DIR Util::getPath(CONFIG_DIR) + "RSS" PATH_SEPARATOR_STR
+#define CONFIG_DIR AppUtil::PATH_USER_CONFIG
+#define DATABASE_DIR AppUtil::getPath(CONFIG_DIR) + "RSS" PATH_SEPARATOR_STR
 #define DATABASE_VERSION "1"
 
 RSSManager::RSSManager() : tasks(true) {
@@ -430,7 +431,7 @@ void RSSManager::load() {
 	try {
 		StringList fileList = File::findFiles(DATABASE_DIR, "RSSDataBase*", File::TYPE_FILE);
 		parallel_for_each(fileList.begin(), fileList.end(), [&](const string& path) {
-			if (Util::getFileExt(path) == ".xml") {
+			if (PathUtil::getFileExt(path) == ".xml") {
 				try {
 					RSSLoader loader;
 

@@ -26,6 +26,7 @@
 #include <airdcpp/Pointer.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/StringTokenizer.h>
+#include <airdcpp/Util.h>
 
 #include "ListViewArrows.h"
 #include "OMenu.h"

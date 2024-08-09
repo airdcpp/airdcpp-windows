@@ -19,7 +19,6 @@
 #include "stdinc.h"
 #include "ShareManager.h"
 
-#include "AirUtil.h"
 #include "Bundle.h"
 #include "BZUtils.h"
 #include "DCPlusPlus.h"
@@ -28,6 +27,7 @@
 #include "FilteredFile.h"
 #include "LogManager.h"
 #include "HashManager.h"
+#include "PathUtil.h"
 #include "ResourceManager.h"
 #include "ScopedFunctor.h"
 #include "SearchQuery.h"
@@ -54,7 +54,7 @@ ShareManager::ShareManager() : validator(make_unique<SharePathValidator>()), tre
 	SettingsManager::getInstance()->addListener(this);
 	HashManager::getInstance()->addListener(this);
 
-	File::ensureDirectory(Util::getPath(Util::PATH_SHARECACHE));
+	File::ensureDirectory(AppUtil::getPath(AppUtil::PATH_SHARECACHE));
 }
 
 ShareManager::~ShareManager() {
@@ -107,7 +107,7 @@ void ShareManager::removeCachedFilelists() noexcept {
 	try {
 		RLock l(cs);
 		//clear refs so we can delete filelists.
-		auto lists = File::findFiles(Util::getPath(Util::PATH_USER_CONFIG), "files?*.xml.bz2", File::TYPE_FILE);
+		auto lists = File::findFiles(AppUtil::getPath(AppUtil::PATH_USER_CONFIG), "files?*.xml.bz2", File::TYPE_FILE);
 		for (auto& profile: shareProfiles) {
 			if (profile->getProfileList() && profile->getProfileList()->bzXmlRef.get()) {
 				profile->getProfileList()->bzXmlRef.reset();
@@ -287,7 +287,7 @@ void ShareManager::getRealPaths(const string& aVirtualPath, StringList& realPath
 }
 
 bool ShareManager::isRealPathShared(const string& aPath) const noexcept {
-	return Util::isDirectoryPath(aPath) ? findDirectoryByRealPath(aPath) : findFileByRealPath(aPath);
+	return PathUtil::isDirectoryPath(aPath) ? findDirectoryByRealPath(aPath) : findFileByRealPath(aPath);
 }
 
 string ShareManager::realToVirtualAdc(const string& aPath, const OptionalProfileToken& aToken) const noexcept {
@@ -311,7 +311,7 @@ void ShareManager::loadProfile(SimpleXML& aXml, const string& aName, ProfileToke
 
 	aXml.stepIn();
 	while(aXml.findChild("Directory")) {
-		auto realPath = Util::validatePath(aXml.getChildData(), true);
+		auto realPath = PathUtil::validatePath(aXml.getChildData(), true);
 		if(realPath.empty()) {
 			continue;
 		}
@@ -327,7 +327,7 @@ void ShareManager::loadProfile(SimpleXML& aXml, const string& aName, ProfileToke
 			auto lastRefreshTime = aXml.getLongLongChildAttrib("LastRefreshTime");
 
 			// Validate in case we have changed the rules
-			auto vName = validateVirtualName(loadedVirtualName.empty() ? Util::getLastDir(realPath) : loadedVirtualName);
+			auto vName = validateVirtualName(loadedVirtualName.empty() ? PathUtil::getLastDir(realPath) : loadedVirtualName);
 			tree->addShareRoot(realPath, vName, { aToken }, incoming, 0, lastRefreshTime);
 		}
 	}
@@ -381,7 +381,7 @@ void ShareManager::on(SettingsManagerListener::LoadCompleted, bool) noexcept {
 		auto rootPathsCopy = tree->getRoots();
 		for (const auto& dp : rootPathsCopy) {
 			if (find_if(rootPathsCopy | views::keys, [&dp](const string& aPath) {
-				return AirUtil::isSubLocal(dp.first, aPath);
+				return PathUtil::isSubLocal(dp.first, aPath);
 			}).base() != rootPathsCopy.end()) {
 				tree->removeShareRoot(dp.first);
 
@@ -482,8 +482,8 @@ struct ShareManager::ShareLoader : public SimpleXMLReader::ThreadedCallBack, pub
 	void endTag(const string& name) {
 		if (compare(name, SDIRECTORY) == 0) {
 			if (cur) {
-				curDirPath = Util::getParentDir(curDirPath);
-				curDirPathLower = Util::getParentDir(curDirPathLower);
+				curDirPath = PathUtil::getParentDir(curDirPath);
+				curDirPathLower = PathUtil::getParentDir(curDirPathLower);
 				cur = cur->getParent();
 			}
 		}
@@ -504,7 +504,7 @@ typedef vector<ShareLoaderPtr> LoaderList;
 bool ShareManager::loadCache(function<void(float)> progressF) noexcept {
 	HashManager::HashPauser pauser;
 
-	Util::migrate(Util::getPath(Util::PATH_SHARECACHE), "ShareCache_*");
+	AppUtil::migrate(AppUtil::getPath(AppUtil::PATH_SHARECACHE), "ShareCache_*");
 
 	LoaderList cacheLoaders;
 
@@ -521,7 +521,7 @@ bool ShareManager::loadCache(function<void(float)> progressF) noexcept {
 
 	{
 		// Remove obsolete cache files
-		auto fileList = File::findFiles(Util::getPath(Util::PATH_SHARECACHE), "ShareCache_*", File::TYPE_FILE);
+		auto fileList = File::findFiles(AppUtil::getPath(AppUtil::PATH_SHARECACHE), "ShareCache_*", File::TYPE_FILE);
 		for (const auto& p: fileList) {
 			auto rp = find_if(cacheLoaders, [&p](const ShareLoaderPtr& aLoader) {
 				return p == aLoader->xmlPath;
@@ -651,7 +651,7 @@ void ShareManager::validateRootPath(const string& aRealPath, bool aMatchCurrentR
 		RLock l(cs);
 		for (const auto& p: tree->getRoots()) {
 			auto rootProfileNames = ShareProfile::getProfileNames(p.second->getRoot()->getRootProfiles(), shareProfiles);
-			if (AirUtil::isParentOrExactLocal(p.first, aRealPath)) {
+			if (PathUtil::isParentOrExactLocal(p.first, aRealPath)) {
 				if (Util::stricmp(p.first, aRealPath) != 0) {
 					// Subdirectory of an existing directory is not allowed
 					throw ShareException(STRING_F(DIRECTORY_PARENT_SHARED, Util::listToString(rootProfileNames)));
@@ -660,7 +660,7 @@ void ShareManager::validateRootPath(const string& aRealPath, bool aMatchCurrentR
 				throw ShareException(STRING(DIRECTORY_SHARED));
 			}
 
-			if (AirUtil::isSubLocal(p.first, aRealPath)) {
+			if (PathUtil::isSubLocal(p.first, aRealPath)) {
 				throw ShareException(STRING_F(DIRECTORY_SUBDIRS_SHARED, Util::listToString(rootProfileNames)));
 			}
 		}
@@ -776,7 +776,7 @@ bool ShareManager::RefreshTaskHandler::ShareBuilder::validateFileItem(const File
 			if (aFileItem.isDirectory()) {
 				log(STRING_F(SHARE_DIRECTORY_BLOCKED, aPath % e.getError()), LogMessage::SEV_INFO);
 			} else {
-				aErrorCollector.add(e.getError(), Util::getFileName(aPath), false);
+				aErrorCollector.add(e.getError(), PathUtil::getFileName(aPath), false);
 			}
 		}
 
@@ -1556,18 +1556,18 @@ void ShareManager::validatePathHooked(const string& aRealPath, bool aSkipQueueCh
 	StringList tokens;
 	ShareDirectory::Ptr baseDirectory = nullptr;
 
-	auto isDirectoryPath = Util::isDirectoryPath(aRealPath);
+	auto isDirectoryPath = PathUtil::isDirectoryPath(aRealPath);
 	auto isFileShared = false;
 
 	{
 		RLock l(cs);
-		baseDirectory = tree->findDirectory(!isDirectoryPath ? Util::getFilePath(aRealPath) : aRealPath, tokens);
+		baseDirectory = tree->findDirectory(!isDirectoryPath ? PathUtil::getFilePath(aRealPath) : aRealPath, tokens);
 		if (!baseDirectory) {
 			throw ShareException(STRING(DIRECTORY_NOT_FOUND));
 		}
 
 		if (!isDirectoryPath && tokens.empty()) {
-			auto fileNameLower = Text::toLower(Util::getFileName(aRealPath));
+			auto fileNameLower = Text::toLower(PathUtil::getFileName(aRealPath));
 			isFileShared = baseDirectory->findFileLower(fileNameLower);
 		}
 	}

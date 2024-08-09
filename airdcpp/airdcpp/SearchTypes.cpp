@@ -26,6 +26,7 @@
 #include "ScopedFunctor.h"
 #include "SimpleXML.h"
 #include "StringTokenizer.h"
+#include "ValueGenerator.h"
 
 namespace dcpp {
 
@@ -117,7 +118,7 @@ void SearchTypes::setSearchTypeDefaults() {
 SearchTypePtr SearchTypes::addSearchType(const string& aName, const StringList& aExtensions) {
 	validateSearchTypeName(aName);
 
-	auto searchType = make_shared<SearchType>(Util::toString(Util::rand()), aName, aExtensions);
+	auto searchType = make_shared<SearchType>(Util::toString(ValueGenerator::rand()), aName, aExtensions);
 
 	{
 		WLock l(cs);

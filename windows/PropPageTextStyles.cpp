@@ -16,6 +16,7 @@
 
 #include "stdafx.h"
 #include <airdcpp/modules/HighlightManager.h>
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/SimpleXML.h>
 #include <airdcpp/version.h>
@@ -58,6 +59,21 @@ PropPage::Item PropPageTextStyles::items[] = {
 		 { IDC_UNDERLINE_DUPES, SettingsManager::UNDERLINE_DUPES, PropPage::T_BOOL },
          { 0, 0, PropPage::T_END }	 
  };
+
+PropPageTextStyles::PropPageTextStyles(SettingsManager* s) : PropPage(s) {
+	fg = 0;
+	bg = 0;
+	title = _tcsdup((TSTRING(SETTINGS_APPEARANCE) + _T('\\') + TSTRING(SETTINGS_TEXT_STYLES)).c_str());
+	SetTitle(title);
+	m_psp.dwFlags |= PSP_RTLREADING;
+	initial = true;
+};
+
+PropPageTextStyles::~PropPageTextStyles() {
+	free(title);
+	if (PathUtil::fileExists(WinUtil::getPath(WinUtil::PATH_THEMES) + "backup.dctheme"))
+		File::deleteFile(WinUtil::getPath(WinUtil::PATH_THEMES) + "backup.dctheme");
+};
 
 LRESULT PropPageTextStyles::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {

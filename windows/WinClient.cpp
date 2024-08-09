@@ -30,7 +30,9 @@
 #include "Wizard.h"
 
 #include <airdcpp/LogManager.h>
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/Updater.h>
+#include <airdcpp/ValueGenerator.h>
 #include <airdcpp/version.h>
 
 #include <airdcpp/modules/ADLSearch.h>
@@ -143,10 +145,10 @@ StartupLoadCallback WinClient::moduleLoadFGetter(unique_ptr<MainFrame>& wndMain)
 			aLoader.stepF(STRING(WEB_SERVER));
 
 			// Determine config
-			auto webResourcePath = Util::getStartupParam("--web-resources");
+			auto webResourcePath = AppUtil::getStartupParam("--web-resources");
 #ifdef _DEBUG
 			if (!webResourcePath) {
-				webResourcePath = Util::getParentDir(Util::getParentDir(Util::getAppFilePath())) + "installer\\Web-resources\\";
+				webResourcePath = PathUtil::getParentDir(PathUtil::getParentDir(AppUtil::getAppFilePath())) + "installer\\Web-resources\\";
 			}
 
 			wsm->setEnableSocketLogging(true);
@@ -209,13 +211,13 @@ void WinClient::listUpdaterFiles(StringPairList& files_, const string& aUpdateFi
 
 	// Node
 	// Note: secondary executables must be added before the application because of an extraction issue in version before 4.00
-	assertFiles("Node.js", 1, ZipFile::CreateZipFileList(files_, Util::getFilePath(Util::getAppFilePath()), Util::emptyString, "^(" + webserver::WebServerSettings::localNodeDirectoryName + ")$"));
+	assertFiles("Node.js", 1, ZipFile::CreateZipFileList(files_, PathUtil::getFilePath(AppUtil::getAppFilePath()), Util::emptyString, "^(" + webserver::WebServerSettings::localNodeDirectoryName + ")$"));
 
 	// Application
-	assertFiles("Exe", 2, ZipFile::CreateZipFileList(files_, Util::getAppFilePath(), Util::emptyString, "^(AirDC.exe|AirDC.pdb)$"));
+	assertFiles("Exe", 2, ZipFile::CreateZipFileList(files_, AppUtil::getAppFilePath(), Util::emptyString, "^(AirDC.exe|AirDC.pdb)$"));
 
 	// Additional resources
-	auto installerDirectory = Util::getParentDir(aUpdateFilePath) + "installer" + PATH_SEPARATOR;
+	auto installerDirectory = PathUtil::getParentDir(aUpdateFilePath) + "installer" + PATH_SEPARATOR;
 	assertFiles("Themes", 1, ZipFile::CreateZipFileList(files_, installerDirectory, Util::emptyString, "^(Themes)$"));
 	assertFiles("Web resources", 10, ZipFile::CreateZipFileList(files_, installerDirectory, Util::emptyString, "^(Web-resources)$"));
 	assertFiles("Emopacks", 10, ZipFile::CreateZipFileList(files_, installerDirectory, Util::emptyString, "^(EmoPacks)$"));
@@ -227,7 +229,7 @@ bool WinClient::checkStartupParams() noexcept {
 
 	auto addStartupParams = [&argc, &argv]() -> void {
 		while (argc > 0) {
-			Util::addStartupParam(Text::fromT(*argv));
+			AppUtil::addStartupParam(Text::fromT(*argv));
 			argc--;
 			argv++;
 		}
@@ -244,14 +246,14 @@ bool WinClient::checkStartupParams() noexcept {
 			auto updaterFilePath = Updater::createUpdate(listUpdaterFiles);
 
 			addStartupParams();
-			if (Util::hasStartupParam("/test")) {
+			if (AppUtil::hasStartupParam("/test")) {
 				WinUtil::splash->update("Extracting updater");
-				auto updaterExeFile = Updater::extractUpdater(updaterFilePath, BUILD_NUMBER + 1, Util::toString(Util::rand()));
+				auto updaterExeFile = Updater::extractUpdater(updaterFilePath, BUILD_NUMBER + 1, Util::toString(ValueGenerator::rand()));
 
 				WinUtil::addUpdate(updaterExeFile, true);
 				WinUtil::runPendingUpdate();
 
-				if (Util::hasStartupParam("/fail")) {
+				if (AppUtil::hasStartupParam("/fail")) {
 					WinUtil::splash->update("Testing failure");
 					Sleep(15000); // Prevent overwriting the exe
 				}
@@ -264,7 +266,7 @@ bool WinClient::checkStartupParams() noexcept {
 			string xmlPath = Text::fromT(*++argv);
 			string keyPath = Text::fromT(*++argv);
 			bool genHeader = (argc > 2 && (_tcscmp(*++argv, _T("-pubout")) == 0));
-			if (Util::fileExists(xmlPath) && Util::fileExists(keyPath)) {
+			if (PathUtil::fileExists(xmlPath) && PathUtil::fileExists(keyPath)) {
 				Updater::signVersionFile(xmlPath, keyPath, genHeader);
 			}
 
@@ -274,7 +276,7 @@ bool WinClient::checkStartupParams() noexcept {
 			if (--argc >= 1) {
 				SplashWindow::create();
 				WinUtil::splash->update("Updating");
-				string sourcePath = Util::getAppFilePath();
+				string sourcePath = AppUtil::getAppFilePath();
 				string installPath = Text::fromT(*++argv); argc--;
 
 				SetPriorityClass(GetCurrentProcess(), IDLE_PRIORITY_CLASS);
@@ -298,18 +300,18 @@ bool WinClient::checkStartupParams() noexcept {
 				SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
 
 				//add new startup params
-				Util::addStartupParam(success ? "/updated" : "/updatefailed");
-				Util::addStartupParam("/silent");
+				AppUtil::addStartupParam(success ? "/updated" : "/updatefailed");
+				AppUtil::addStartupParam("/silent");
 
 				//append the passed params (but leave out the update commands...)
 				argv++;
 				addStartupParams();
 
 				//start the updated instance
-				auto path = Text::toT(installPath + Util::getAppFileName());
-				auto startupParams = Text::toT(Util::getStartupParams(true));
+				auto path = Text::toT(installPath + AppUtil::getAppFileName());
+				auto startupParams = Text::toT(AppUtil::getStartupParams(true));
 
-				if (!Util::hasStartupParam("/elevation")) {
+				if (!AppUtil::hasStartupParam("/elevation")) {
 					ShellExecAsUser(NULL, path.c_str(), startupParams.c_str(), NULL);
 				} else {
 					ShellExecute(NULL, NULL, path.c_str(), startupParams.c_str(), NULL, SW_SHOWNORMAL);
@@ -326,8 +328,8 @@ bool WinClient::checkStartupParams() noexcept {
 	}
 
 	string updaterFile;
-	auto updated = Util::hasStartupParam("/updated") || Util::hasStartupParam("/updatefailed");
-	if (Updater::checkPendingUpdates(Util::getAppFilePath(), updaterFile, updated)) {
+	auto updated = AppUtil::hasStartupParam("/updated") || AppUtil::hasStartupParam("/updatefailed");
+	if (Updater::checkPendingUpdates(AppUtil::getAppFilePath(), updaterFile, updated)) {
 		WinUtil::addUpdate(updaterFile);
 		WinUtil::runPendingUpdate();
 		return false;
@@ -373,9 +375,9 @@ int WinClient::run(LPTSTR /*lpstrCmdLine*/, int nCmdShow) {
 
 			WinUtil::splash->update(STRING(LOADING_GUI));
 
-			if (Util::hasStartupParam("/updated")) {
+			if (AppUtil::hasStartupParam("/updated")) {
 				Updater::log(STRING(UPDATE_SUCCEEDED), LogMessage::SEV_INFO);
-			} else if (Util::hasStartupParam("/updatefailed")) {
+			} else if (AppUtil::hasStartupParam("/updatefailed")) {
 				Updater::log(STRING_F(UPDATE_FAILED, string(UPDATE_FINAL_LOG)), LogMessage::SEV_ERROR);
 			}
 		} catch (const AbortException&) {

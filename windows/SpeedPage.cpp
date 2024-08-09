@@ -20,6 +20,7 @@
 
 #include <airdcpp/AirUtil.h>
 #include <airdcpp/SettingsManager.h>
+#include <airdcpp/Util.h>
 
 #include "Resource.h"
 #include "SpeedPage.h"

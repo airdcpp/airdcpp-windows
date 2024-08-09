@@ -31,6 +31,7 @@
 
 #include <airdcpp/AirUtil.h>
 #include <airdcpp/DownloadManager.h>
+#include <airdcpp/PathUtil.h>
 
 #include <web-server/ContextMenuManager.h>
 #include <web-server/WebServerManager.h>
@@ -871,7 +872,7 @@ void QueueFrame::handleOpenFolder() {
 void QueueFrame::handleSearchDirectory() {
 	ctrlQueue.list.forEachSelectedT([&](const QueueItemInfoPtr qii) {
 		if (qii->bundle)
-			ActionUtil::search(qii->bundle->isFileBundle() ? Util::getLastDir(Text::toT(qii->bundle->getTarget())) : Text::toT(qii->bundle->getName()), true);
+			ActionUtil::search(qii->bundle->isFileBundle() ? PathUtil::getLastDir(Text::toT(qii->bundle->getTarget())) : Text::toT(qii->bundle->getName()), true);
 		else if ( qii->isDirectory && qii != iBack)
 			ActionUtil::search(qii->name, true);
 	});
@@ -985,7 +986,7 @@ bool QueueFrame::show(QueueItemInfoPtr& Qii) {
 		case TREE_LOCATION: {
 			if (Qii->bundle && curItem != locationParent){
 				//do it this way so we can have counts after the name
-				auto i = locations.find(Qii->bundle->isFileBundle() ? Util::getFilePath(Qii->bundle->getTarget()) : Util::getParentDir(Qii->bundle->getTarget()));
+				auto i = locations.find(Qii->bundle->isFileBundle() ? PathUtil::getFilePath(Qii->bundle->getTarget()) : PathUtil::getParentDir(Qii->bundle->getTarget()));
 				if (i != locations.end())
 					return curItem == i->second.item;
 			}
@@ -1012,7 +1013,7 @@ bool QueueFrame::show(QueueItemInfoPtr& Qii) {
 
 tstring QueueFrame::handleCopyMagnet(const QueueItemInfo* aII) {
 	if (aII->qi && !aII->isFilelist())
-		return Text::toT(ActionUtil::makeMagnet(aII->qi->getTTH(), Util::getFileName(aII->qi->getTarget()), aII->qi->getSize()));
+		return Text::toT(ActionUtil::makeMagnet(aII->qi->getTTH(), PathUtil::getFileName(aII->qi->getTarget()), aII->qi->getSize()));
 
 	return Util::emptyStringT;
 }
@@ -1080,9 +1081,9 @@ void QueueFrame::handleRemoveFiles(QueueItemList queueitems, bool removeFinished
 void QueueFrame::handleSearchQI(const QueueItemPtr& aQI, bool byName) {
 	if (aQI) {
 		if (byName)
-			ActionUtil::search(Text::toT(Util::getFileName(aQI->getTarget())));
+			ActionUtil::search(Text::toT(PathUtil::getFileName(aQI->getTarget())));
 		else
-			ActionUtil::searchHash(aQI->getTTH(), Util::getFileName(aQI->getTarget()), aQI->getSize());
+			ActionUtil::searchHash(aQI->getTTH(), PathUtil::getFileName(aQI->getTarget()), aQI->getSize());
 	}
 }
 
@@ -1132,7 +1133,7 @@ const QueueFrame::QueueItemInfoPtr QueueFrame::findItemByPath(const string& aPat
 		if (b->bundle && !b->bundle->isFileBundle()) {
 			if (aPath == b->bundle->getTarget())
 				return b;
-			else if (AirUtil::isSubLocal(aPath, b->bundle->getTarget())) {
+			else if (PathUtil::isSubLocal(aPath, b->bundle->getTarget())) {
 				return b->findChild(aPath);
 			}
 		}
@@ -1152,7 +1153,7 @@ void QueueFrame::onBundleRemoved(const BundlePtr& aBundle, const string& aPath) 
 	auto i = parents.find(aBundle->getToken());;
 	if (i != parents.end()) {
 		removeLocationItem(aPath);
-		if (curDirectory && AirUtil::isParentOrExactLocal(aBundle->getTarget(), curDirectory->getTarget()))
+		if (curDirectory && PathUtil::isParentOrExactLocal(aBundle->getTarget(), curDirectory->getTarget()))
 			ctrlQueue.list.DeleteAllItems();
 		else
 			ctrlQueue.list.deleteItem(i->second.get());
@@ -1407,7 +1408,7 @@ void QueueFrame::removeLocationItem(const string& aPath) {
 }
 
 string QueueFrame::getBundleParent(const BundlePtr aBundle) {
-	return aBundle->isFileBundle() ? Util::getFilePath(aBundle->getTarget()) : Util::getParentDir(aBundle->getTarget());
+	return aBundle->isFileBundle() ? PathUtil::getFilePath(aBundle->getTarget()) : PathUtil::getParentDir(aBundle->getTarget());
 }
 
 void QueueFrame::on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle) noexcept {
@@ -1516,7 +1517,7 @@ void QueueFrame::QueueItemInfo::getChildQueueItems(QueueItemList& ret) {
 QueueFrame::QueueItemInfoPtr QueueFrame::QueueItemInfo::findChild(const string& aKey) {
 	string::size_type i = 0, j = 0;
 
-	string itemTarget = Util::ensureTrailingSlash(getTarget());
+	string itemTarget = PathUtil::ensureTrailingSlash(getTarget());
 
 	string tmp = aKey.substr(itemTarget.size());
 
@@ -1528,7 +1529,7 @@ QueueFrame::QueueItemInfoPtr QueueFrame::QueueItemInfo::findChild(const string& 
 		j = i + 1;
 	}
 
-	if (Util::isDirectoryPath(aKey))
+	if (PathUtil::isDirectoryPath(aKey))
 		return dir;
 
 	auto ret = dir->children.find(aKey);
@@ -1539,7 +1540,7 @@ QueueFrame::QueueItemInfoPtr QueueFrame::QueueItemInfo::findChild(const string& 
 }
 
 QueueFrame::QueueItemInfoPtr QueueFrame::QueueItemInfo::addChild(const QueueItemPtr& aQI) {
-	string itemTarget = Util::ensureTrailingSlash(getTarget());
+	string itemTarget = PathUtil::ensureTrailingSlash(getTarget());
 	
 	string tmp = aQI->getTarget().substr(itemTarget.size());
 
@@ -1549,7 +1550,7 @@ QueueFrame::QueueItemInfoPtr QueueFrame::QueueItemInfo::addChild(const QueueItem
 		string curPath = itemTarget + tmp.substr(0, i + 1);
 		auto d = dir->children.find(curPath);
 		if (d == dir->children.end()) {
-			dir = new QueueItemInfo(Text::toT(Util::getLastDir(curPath)), dir.get(), curPath);
+			dir = new QueueItemInfo(Text::toT(PathUtil::getLastDir(curPath)), dir.get(), curPath);
 			dir->getParent()->children.emplace(curPath, dir);
 		} else {
 			dir = d->second;
@@ -1583,7 +1584,7 @@ void QueueFrame::updateParentDirectories(QueueItemInfoPtr Qii) {
 	if (!Qii->getParent() || !curDirectory)
 		return;
 	
-	if (AirUtil::isSubLocal(Qii->getParent()->getTarget(), curDirectory->getTarget())) {
+	if (PathUtil::isSubLocal(Qii->getParent()->getTarget(), curDirectory->getTarget())) {
 		auto cur = Qii;
 		while ((cur = cur->getParent()) && !cur->bundle && cur != curDirectory) {
 			int64_t newSize = 0;

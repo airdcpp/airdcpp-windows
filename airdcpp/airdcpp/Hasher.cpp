@@ -20,14 +20,15 @@
 
 #include "Hasher.h"
 
-#include "AirUtil.h"
 #include "Exception.h"
 #include "File.h"
 #include "FileReader.h"
 #include "HasherStats.h"
 #include "HashedFile.h"
 #include "MerkleTree.h"
+#include "PathUtil.h"
 #include "ResourceManager.h"
+#include "SettingsManager.h"
 #include "SFVReader.h"
 #include "TimerManager.h"
 #include "ZUtils.h"
@@ -147,7 +148,7 @@ bool Hasher::hashFile(const string& fileName, const string& filePathLower, int64
 
 void Hasher::stopHashing(const string& aBaseDir) noexcept {
 	for (auto i = w.begin(); i != w.end();) {
-		if (AirUtil::isParentOrExact(aBaseDir, i->filePath, PATH_SEPARATOR)) {
+		if (PathUtil::isParentOrExact(aBaseDir, i->filePath, PATH_SEPARATOR)) {
 			totalBytesLeft -= i->fileSize;
 			removeDevice(i->deviceId);
 			i = w.erase(i);
@@ -246,7 +247,7 @@ optional<HashedFile> Hasher::hashFile(const WorkItem& aItem, HasherStats& stats_
 
 		CRC32Filter crc32;
 
-		auto fileCRC = aSFV.hasFile(Text::toLower(Util::getFileName(aItem.filePath)));
+		auto fileCRC = aSFV.hasFile(Text::toLower(PathUtil::getFileName(aItem.filePath)));
 
 		uint64_t lastRead = GET_TICK();
 
@@ -341,16 +342,16 @@ void Hasher::processQueue() noexcept {
 			}
 		}
 
-		auto dirChanged = initialDir.empty() || compare(Util::getFilePath(wi.filePath), Util::getFilePath(fname)) != 0;
+		auto dirChanged = initialDir.empty() || compare(PathUtil::getFilePath(wi.filePath), PathUtil::getFilePath(fname)) != 0;
 		if (dirChanged) {
-			sfv.loadPath(Util::getFilePath(wi.filePath));
+			sfv.loadPath(PathUtil::getFilePath(wi.filePath));
 		}
 
 		fname = wi.filePath;
 		running = true;
 
 		if (initialDir.empty()) {
-			initialDir = Util::getFilePath(wi.filePath);
+			initialDir = PathUtil::getFilePath(wi.filePath);
 		}
 
 		auto fi = hashFile(wi, dirStats, sfv);
@@ -395,7 +396,7 @@ void Hasher::processQueue() noexcept {
 
 				clearStats();
 				manager->onHasherFinished(totalDirsHashed, totalStats, hasherID);
-			} else if (!AirUtil::isParentOrExactLocal(initialDir, w.front().filePath)) {
+			} else if (!PathUtil::isParentOrExactLocal(initialDir, w.front().filePath)) {
 				onDirHashed();
 			}
 

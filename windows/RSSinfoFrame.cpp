@@ -26,6 +26,8 @@
 #include "ResourceLoader.h"
 
 #include <airdcpp/modules/AutoSearchManager.h>
+
+#include <airdcpp/DupeUtil.h>
 #include <airdcpp/File.h>
 #include <airdcpp/LogManager.h>
 
@@ -225,10 +227,10 @@ LRESULT RssInfoFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 
 			if (items.size() == 1) {
 				menu.appendItem(TSTRING(SEARCH), [=] { ActionUtil::search(Text::toT(items.front()->item->getTitle())); });
-				if (AirUtil::allowOpenDupe(items.front()->getDupe())) {
+				if (DupeUtil::allowOpenDupe(items.front()->getDupe())) {
 					menu.appendSeparator();
 					menu.appendItem(TSTRING(OPEN_FOLDER), [=] {
-						auto paths = AirUtil::getAdcDirectoryDupePaths(items.front()->getDupe(), items.front()->item->getTitle());
+						auto paths = DupeUtil::getAdcDirectoryDupePaths(items.front()->getDupe(), items.front()->item->getTitle());
 						if (!paths.empty())
 							ActionUtil::openFolder(Text::toT(paths.front()));
 					});
@@ -489,7 +491,7 @@ void RssInfoFrame::on(AutoSearchManagerListener::ItemRemoved, const AutoSearchPt
 void RssInfoFrame::updateDupeType(const string& aName) {
 	for (auto& i : itemInfos) {
 		if (i->isRelease && i->item->getTitle() == aName) {
-			i->setDupe(AirUtil::checkAdcDirectoryDupe(i->item->getTitle(), 0));
+			i->setDupe(DupeUtil::checkAdcDirectoryDupe(i->item->getTitle(), 0));
 
 			if (i->getDupe() == DupeType::DUPE_NONE)
 				i->isAutosearchDupe = AutoSearchManager::getInstance()->getSearchesByString(i->item->getTitle()) != AutoSearchList();
@@ -656,8 +658,8 @@ RSSPtr RssInfoFrame::getSelectedFeed() {
 }
 
 RssInfoFrame::ItemInfo::ItemInfo(const RSSDataPtr& aFeedData) : item(aFeedData) {
-	isRelease = AirUtil::isRelease(aFeedData->getTitle());
-	setDupe(isRelease ? AirUtil::checkAdcDirectoryDupe(aFeedData->getTitle(), 0) : DUPE_NONE);
+	isRelease = DupeUtil::isRelease(aFeedData->getTitle());
+	setDupe(isRelease ? DupeUtil::checkAdcDirectoryDupe(aFeedData->getTitle(), 0) : DUPE_NONE);
 	isAutosearchDupe = isRelease && AutoSearchManager::getInstance()->getSearchesByString(aFeedData->getTitle()) != AutoSearchList();
 }
 

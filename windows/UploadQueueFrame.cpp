@@ -25,6 +25,8 @@
 #include "BarShader.h"
 #include "FormatUtil.h"
 
+#include <airdcpp/PathUtil.h>
+
 string UploadQueueFrame::id = "UploadQueue";
 
 int UploadQueueFrame::columnSizes[] = { 250, 100, 75, 75, 75, 75, 100, 100 };
@@ -404,8 +406,8 @@ int UploadQueueItem::compareItems(const UploadQueueItem* a, const UploadQueueIte
 
 const tstring UploadQueueItem::getText(uint8_t col) const noexcept {
 	switch(col) {
-		case COLUMN_FILE: return Text::toT(Util::getFileName(file));
-		case COLUMN_PATH: return Text::toT(Util::getFilePath(file));
+		case COLUMN_FILE: return Text::toT(PathUtil::getFileName(file));
+		case COLUMN_PATH: return Text::toT(PathUtil::getFilePath(file));
 		case COLUMN_NICK: return FormatUtil::getNicks(user);
 		case COLUMN_HUB: return FormatUtil::getHubNames(user);
 		case COLUMN_SIZE: return Util::formatBytesW(size);

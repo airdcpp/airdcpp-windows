@@ -320,7 +320,7 @@ private:
 		}
 
 		string getAdcFilePath() const noexcept {
-			return Util::getAdcFilePath(getAdcPath());
+			return PathUtil::getAdcFilePath(getAdcPath());
 		}
 
 		DupeType getDupe() const noexcept {

@@ -23,6 +23,7 @@
 #include "WinUtil.h"
 
 #include <airdcpp/File.h>
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/LogManager.h>
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/ViewFileManager.h>
@@ -55,7 +56,7 @@ string TextFrame::readFile(const string& aFilePath) noexcept {
 }
 
 TextFrame::FileType TextFrame::parseFileType(const string& aName) noexcept {
-	auto ext = Util::getFileExt(aName);
+	auto ext = PathUtil::getFileExt(aName);
 	if (ext == ".nfo") {
 		return FileType::NFO;
 	} else if (ext == ".log") {
@@ -67,7 +68,7 @@ TextFrame::FileType TextFrame::parseFileType(const string& aName) noexcept {
 
 void TextFrame::openFile(const string& aFilePath) {
 	auto text = TextFrame::readFile(aFilePath);
-	viewText(Util::getFileName(aFilePath), text, parseFileType(aFilePath), nullptr);
+	viewText(PathUtil::getFileName(aFilePath), text, parseFileType(aFilePath), nullptr);
 }
 
 void TextFrame::openFile(const ViewFilePtr& aFile) {

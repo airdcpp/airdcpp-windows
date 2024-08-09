@@ -24,6 +24,7 @@
 #include "HashedFile.h"
 #include "LevelDB.h"
 #include "LogManager.h"
+#include "PathUtil.h"
 #include "QueueManager.h"
 #include "ShareManager.h"
 #include "ResourceManager.h"
@@ -49,17 +50,17 @@ void HashStore::load(StartupLoader& aLoader) {
 }
 
 void HashStore::openDb(StartupLoader& aLoader) {
-	auto hashDataPath = Util::getPath(Util::PATH_USER_CONFIG) + "HashData" + PATH_SEPARATOR;
-	auto fileIndexPath = Util::getPath(Util::PATH_USER_CONFIG) + "FileIndex" + PATH_SEPARATOR;
+	auto hashDataPath = AppUtil::getPath(AppUtil::PATH_USER_CONFIG) + "HashData" + PATH_SEPARATOR;
+	auto fileIndexPath = AppUtil::getPath(AppUtil::PATH_USER_CONFIG) + "FileIndex" + PATH_SEPARATOR;
 
 	File::ensureDirectory(hashDataPath);
 	File::ensureDirectory(fileIndexPath);
 
-	Util::migrate(fileIndexPath, "*");
-	Util::migrate(hashDataPath, "*");
+	AppUtil::migrate(fileIndexPath, "*");
+	AppUtil::migrate(hashDataPath, "*");
 
 	uint32_t cacheSize = static_cast<uint32_t>(Util::convertSize(max(SETTING(DB_CACHE_SIZE), 1), Util::MB));
-	auto blockSize = File::getBlockSize(Util::getPath(Util::PATH_USER_CONFIG));
+	auto blockSize = File::getBlockSize(AppUtil::getPath(AppUtil::PATH_USER_CONFIG));
 
 	try {
 		// Use the file system block size in here. Using a block size smaller than that reduces the performance significantly especially when writing a lot of data (e.g. when migrating the data)
@@ -517,7 +518,7 @@ void HashStore::onScheduleRepair(bool aSchedule) {
 }
 
 bool HashStore::isRepairScheduled() const noexcept {
-	return Util::fileExists(hashDb->getRepairFlag()) && Util::fileExists(fileDb->getRepairFlag());
+	return PathUtil::fileExists(hashDb->getRepairFlag()) && PathUtil::fileExists(fileDb->getRepairFlag());
 }
 
 void HashStore::getDbSizes(int64_t& fileDbSize_, int64_t& hashDbSize_) const noexcept {

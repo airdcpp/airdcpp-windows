@@ -19,9 +19,9 @@
 #include "stdinc.h"
 #include "SearchManager.h"
 
-#include "AirUtil.h"
 #include "ClientManager.h"
 #include "LogManager.h"
+#include "PathUtil.h"
 #include "ScopedFunctor.h"
 #include "SearchInstance.h"
 #include "SearchQuery.h"
@@ -30,6 +30,7 @@
 #include "ShareManager.h"
 #include "TimerManager.h"
 #include "UDPServer.h"
+#include "ValueGenerator.h"
 
 #include <openssl/evp.h>
 #include <openssl/rand.h>
@@ -343,7 +344,7 @@ void SearchManager::onSR(const string& x, const string& aRemoteIP /*Util::emptyS
 		return;
 	}
 
-	auto adcPath = Util::toAdcFile(Text::toUtf8(file, hubEncoding));
+	auto adcPath = PathUtil::toAdcFile(Text::toUtf8(file, hubEncoding));
 	auto sr = make_shared<SearchResult>(
 		user, type, slots, freeSlots, size,
 		adcPath, aRemoteIP, TTHValue(tth), Util::emptyString, 0, connection, DirectoryContentInfo()
@@ -402,7 +403,7 @@ void SearchManager::onRES(const AdcCommand& cmd, const UserPtr& aFrom, const str
 	TTHValue th;
 	if (type == SearchResult::TYPE_DIRECTORY) {
 		// Generate TTH from the directory name and size
-		th = AirUtil::getTTH(type == SearchResult::TYPE_FILE ? Util::getAdcFileName(adcPath) : Util::getAdcLastDir(adcPath), size);
+		th = ValueGenerator::generateDirectoryTTH(type == SearchResult::TYPE_FILE ? PathUtil::getAdcFileName(adcPath) : PathUtil::getAdcLastDir(adcPath), size);
 	} else {
 		th = TTHValue(tth);
 	}

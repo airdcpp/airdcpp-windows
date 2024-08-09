@@ -33,6 +33,7 @@
 #include "Localization.h"
 #include "LogManager.h"
 #include "PartialSharingManager.h"
+#include "PathUtil.h"
 #include "QueueManager.h"
 #include "ResourceManager.h"
 #include "ScopedFunctor.h"
@@ -72,7 +73,7 @@ const string AdcHub::CCPM_FEATURE("CCPM");
 const vector<StringList> AdcHub::searchExtensions;
 
 AdcHub::AdcHub(const string& aHubURL, const ClientPtr& aOldClient) :
-	Client(aHubURL, '\n', aOldClient), udp(make_unique<Socket>(Socket::TYPE_UDP)) {
+	Client(aHubURL, '\n', aOldClient) {
 
 	TimerManager::getInstance()->addListener(this);
 }
@@ -545,7 +546,7 @@ void AdcHub::handle(AdcCommand::CMD, AdcCommand& c) noexcept {
 	fire(ClientListener::HubUserCommand(), this, (int)(once ? UserCommand::TYPE_RAW_ONCE : UserCommand::TYPE_RAW), ctx, name, txt);
 }
 
-void AdcHub::sendUDP(const AdcCommand& cmd) noexcept {
+/*void AdcHub::sendUDP(const AdcCommand& cmd) noexcept {
 	string command;
 	string remoteIp;
 	string remotePort;
@@ -572,7 +573,7 @@ void AdcHub::sendUDP(const AdcCommand& cmd) noexcept {
 		dcdebug("AdcHub::sendUDP: write failed: %s\n", e.getError().c_str());
 		udp->close();
 	}
-}
+}*/
 
 void AdcHub::handle(AdcCommand::STA, AdcCommand& c) noexcept {
 	if(c.getParameters().size() < 2)
@@ -1196,8 +1197,8 @@ bool AdcHub::directSearch(const OnlineUser& user, const SearchPtr& aSearch, stri
 	constructSearch(c, aSearch, true);
 
 	if (user.getUser()->isSet(User::ASCH)) {
-		if (!Util::isAdcRoot(aSearch->path)) {
-			dcassert(Util::isAdcDirectoryPath(aSearch->path));
+		if (!PathUtil::isAdcRoot(aSearch->path)) {
+			dcassert(PathUtil::isAdcDirectoryPath(aSearch->path));
 			c.addParam("PA", aSearch->path);
 		}
 
@@ -1575,8 +1576,10 @@ string AdcHub::checkNick(const string& aNick) noexcept {
 
 bool AdcHub::send(const AdcCommand& cmd) {
 	if(forbiddenCommands.find(AdcCommand::toFourCC(cmd.getFourCC().c_str())) == forbiddenCommands.end()) {
-		if(cmd.getType() == AdcCommand::TYPE_UDP)
-			sendUDP(cmd);
+		// if (cmd.getType() == AdcCommand::TYPE_UDP) {
+		// 	sendUDP(cmd);
+		//}
+
 		send(cmd.toString(sid));
 		return true;
 	}

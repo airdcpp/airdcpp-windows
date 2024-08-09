@@ -34,6 +34,9 @@ public:
 	DirSFVReader(const string& aPath);
 	DirSFVReader(const string& aPath, const StringList& aSfvFiles);
 
+	static boost::regex crcReg;
+	static boost::regex lineBreakRegex;
+
 	/**
 	 * Search for a CRC32 file in all .sfv files in the directory of fileName.
 	 * Each SFV file has a number of lines containing a filename and its CRC32 value

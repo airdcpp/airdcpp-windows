@@ -22,8 +22,10 @@
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/SimpleXML.h>
 #include <airdcpp/Pointer.h>
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/File.h>
 #include <airdcpp/LogManager.h>
+#include <airdcpp/SystemUtil.h>
 
 #include "boost/algorithm/string/replace.hpp"
 
@@ -39,7 +41,7 @@ Emoticon::Emoticon(const tstring& _emoticonText, const string& _imagePath) :
 		emoticonBitmap.Destroy();
 	
 	if(emoticonBitmap.Load(Text::toT(_imagePath).c_str()) != S_OK) {
-		dcdebug("Emoticon load Error: %s \n", Util::translateError(GetLastError()).c_str());
+		dcdebug("Emoticon load Error: %s \n", SystemUtil::translateError(GetLastError()).c_str());
 		return;
 	}
 		
@@ -142,7 +144,7 @@ void EmoticonsManager::Load() {
 	setUseEmoticons(false);
 	const auto emojiPath = WinUtil::getPath(WinUtil::PATH_EMOPACKS);
 
-	if((SETTING(EMOTICONS_FILE) == "Disabled") || !Util::fileExists(emojiPath + SETTING(EMOTICONS_FILE) + ".xml" )) {
+	if((SETTING(EMOTICONS_FILE) == "Disabled") || !PathUtil::fileExists(emojiPath + SETTING(EMOTICONS_FILE) + ".xml" )) {
 		return;
 	}
 

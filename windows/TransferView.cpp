@@ -23,6 +23,7 @@
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/ConnectionManager.h>
 #include <airdcpp/DownloadManager.h>
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/UploadBundleManager.h>
 #include <airdcpp/QueueManager.h>
 
@@ -840,15 +841,15 @@ const tstring TransferView::ItemInfo::getText(uint8_t col) const {
 			return (status == STATUS_RUNNING) ? (Util::formatBytesW(speed) + _T("/s")) : Util::emptyStringT;
 		case COLUMN_FILE:
 			if (isBundle) {
-				if (Util::isDirectoryPath(target)) {
-					return Util::getLastDir(target); //directory bundle
+				if (PathUtil::isDirectoryPath(target)) {
+					return PathUtil::getLastDir(target); //directory bundle
 				}
 
-				return Util::getFileName(target); //file bundle
+				return PathUtil::getFileName(target); //file bundle
 			}
-			return getFile(type, Util::getFileName(target));
+			return getFile(type, PathUtil::getFileName(target));
 		case COLUMN_SIZE: return Util::formatBytesW(size); 
-		case COLUMN_PATH: return Util::getFilePath(target);
+		case COLUMN_PATH: return PathUtil::getFilePath(target);
 		case COLUMN_IP: return ip;
 		//case COLUMN_ENCRYPTION: return Encryption;
 		default: return Util::emptyStringT;
@@ -1054,7 +1055,7 @@ void TransferView::on(TransferInfoManagerListener::Removed, const TransferInfoPt
 void TransferView::on(TransferInfoManagerListener::Failed, const TransferInfoPtr& aInfo) noexcept {
 	if (SETTING(POPUP_DOWNLOAD_FAILED)) {
 		WinUtil::showPopup(
-			TSTRING(FILE) + _T(": ") + Text::toT(Util::getFileName(aInfo->getTarget())) + _T("\n") +
+			TSTRING(FILE) + _T(": ") + Text::toT(PathUtil::getFileName(aInfo->getTarget())) + _T("\n") +
 			TSTRING(USER) + _T(": ") + FormatUtil::getNicks(aInfo->getHintedUser()) + _T("\n") +
 			TSTRING(REASON) + _T(": ") + Text::toT(aInfo->getStatusString()), TSTRING(DOWNLOAD_FAILED), NIIF_WARNING);
 	}
@@ -1181,7 +1182,7 @@ void TransferView::handleRemoveFile() {
 
 void TransferView::handleSearchDir() {
 	auto search = [=](const ItemInfo* ii) {
-		ActionUtil::search(Util::getLastDir(ii->target), true);
+		ActionUtil::search(PathUtil::getLastDir(ii->target), true);
 	};
 
 	performActionBundles(search);
@@ -1193,7 +1194,7 @@ void TransferView::handleSearchAlternates() {
 		TTHValue tth;
 		int64_t size = 0;
 		if(QueueManager::getInstance()->getSearchInfo(Text::fromT(ii->target), tth, size)) {
-			ActionUtil::searchHash(tth, Util::getFileName(Text::fromT(ii->target)), size);
+			ActionUtil::searchHash(tth, PathUtil::getFileName(Text::fromT(ii->target)), size);
 		}
 	};
 

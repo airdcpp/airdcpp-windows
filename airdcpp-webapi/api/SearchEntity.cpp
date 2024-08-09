@@ -27,6 +27,7 @@
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/SearchManager.h>
 #include <airdcpp/SearchInstance.h>
+#include <airdcpp/ValueGenerator.h>
 
 
 namespace webserver {
@@ -176,7 +177,7 @@ namespace webserver {
 		const auto& reqJson = aRequest.getRequestBody();
 
 		// Parse request
-		auto s = FileSearchParser::parseSearch(reqJson, false, Util::toString(Util::rand()));
+		auto s = FileSearchParser::parseSearch(reqJson, false, Util::toString(ValueGenerator::rand()));
 		auto hubs = Deserializer::deserializeHubUrls(reqJson);
 
 		if (s->priority <= Priority::NORMAL && ClientManager::getInstance()->hasSearchQueueOverflow()) {
@@ -208,7 +209,7 @@ namespace webserver {
 
 		// Parse user and query
 		auto user = Deserializer::deserializeHintedUser(reqJson);
-		auto s = FileSearchParser::parseSearch(reqJson, true, Util::toString(Util::rand()));
+		auto s = FileSearchParser::parseSearch(reqJson, true, Util::toString(ValueGenerator::rand()));
 
 		string error;
 		if (!search->userSearch(user, s, error)) {

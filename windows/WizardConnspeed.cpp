@@ -25,6 +25,7 @@
 #include "HttpLinks.h"
 
 #include <airdcpp/AirUtil.h>
+#include <airdcpp/Util.h>
 
 
 PropPage::TextItem WizardConnspeed::texts[] = {

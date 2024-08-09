@@ -21,6 +21,8 @@
 #include <airdcpp/Util.h>
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/FavoriteManager.h>
+#include <airdcpp/PathUtil.h>
+#include <airdcpp/ValueGenerator.h>
 
 #include <web-server/ContextMenuManager.h>
 #include <web-server/WebServerManager.h>
@@ -123,7 +125,7 @@ LRESULT ShareDirectories::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPa
 				vector<TTHValue> tokens;
 				while ((i = ctrlDirectories.GetNextItem(i, LVNI_SELECTED)) != -1) {
 					auto sdi = (ProfileDirectoryInfo*)ctrlDirectories.GetItemData(i);
-					tokens.push_back(AirUtil::getPathId(sdi->dir->path));
+					tokens.push_back(ValueGenerator::generatePathId(sdi->dir->path));
 				}
 				EXT_CONTEXT_MENU(menu, ShareRoot, tokens);
 			}
@@ -584,7 +586,7 @@ LRESULT ShareDirectories::onClickedRenameDir(WORD /*wNotifyCode*/, WORD /*wID*/,
 }
 
 bool ShareDirectories::addDirectory(const tstring& aPath){
-	auto path = Util::validatePath(Text::fromT(aPath), true);
+	auto path = PathUtil::validatePath(Text::fromT(aPath), true);
 
 	/* Check if we are trying to share a directory which exists already in this profile */
 	for(const auto& sdi: shareDirs) {
@@ -593,7 +595,7 @@ bool ShareDirectories::addDirectory(const tstring& aPath){
 			profileNames.insert(parent->getProfile(t)->name);
 		}
 
-		if (AirUtil::isParentOrExactLocal(sdi->dir->path, path)) {
+		if (PathUtil::isParentOrExactLocal(sdi->dir->path, path)) {
 			if (Util::stricmp(sdi->dir->path, path) == 0) {
 				if (!sdi->hasProfile(curProfile)) {
 					continue;
@@ -605,7 +607,7 @@ bool ShareDirectories::addDirectory(const tstring& aPath){
 			}
 
 			return false;
-		} else if (AirUtil::isSubLocal(sdi->dir->path, path)) {
+		} else if (PathUtil::isSubLocal(sdi->dir->path, path)) {
 			WinUtil::showMessageBox(TSTRING_F(DIRECTORY_SUBDIRS_SHARED, Text::toT(Util::listToString(profileNames))));
 			return false;
 		}
@@ -623,7 +625,7 @@ bool ShareDirectories::addDirectory(const tstring& aPath){
 	ProfileTokenSet profileTokens = { curProfile };
 	tstring newName;
 
-	if (!showShareDlg(parent->getProfiles(), curProfile, Text::toT(ShareManager::getInstance()->validateVirtualName(Util::getLastDir(path))), profileTokens, newName, false)) {
+	if (!showShareDlg(parent->getProfiles(), curProfile, Text::toT(ShareManager::getInstance()->validateVirtualName(PathUtil::getLastDir(path))), profileTokens, newName, false)) {
 		return false;
 	}
 
@@ -696,16 +698,16 @@ void ShareDirectories::applyChanges(bool /*isQuit*/) {
 
 bool ShareDirectories::addExcludeFolder(const string& path) {
 	// make sure this is a sub folder of a shared folder
-	if (ranges::find_if(shareDirs, [&path](const ProfileDirectoryInfoPtr& aDir) { return aDir->isCurItem() && AirUtil::isSubLocal(path, aDir->dir->path); } ) == shareDirs.end())
+	if (ranges::find_if(shareDirs, [&path](const ProfileDirectoryInfoPtr& aDir) { return aDir->isCurItem() && PathUtil::isSubLocal(path, aDir->dir->path); } ) == shareDirs.end())
 		return false;
 
 	// Make sure this not a subfolder of an already excluded folder
-	if (ranges::find_if(excludedPaths, [&path](const string& aDir) { return AirUtil::isParentOrExactLocal(aDir, path); } ) != excludedPaths.end())
+	if (ranges::find_if(excludedPaths, [&path](const string& aDir) { return PathUtil::isParentOrExactLocal(aDir, path); } ) != excludedPaths.end())
 		return false;
 
 	// remove all sub folder excludes
 	for(auto& j: excludedPaths) {
-		if (AirUtil::isSubLocal(j, path))
+		if (PathUtil::isSubLocal(j, path))
 			removeExcludeFolder(j);
 	}
 
@@ -746,7 +748,7 @@ bool ShareDirectories::shareFolder(const string& path) {
 		return false;
 
 	// check if it's an excluded folder or a sub folder of an excluded folder
-	if (ranges::find_if(excludedPaths, [&path](const string& aDir) { return AirUtil::isParentOrExactLocal(aDir, path); } ) != excludedPaths.end())
+	if (ranges::find_if(excludedPaths, [&path](const string& aDir) { return PathUtil::isParentOrExactLocal(aDir, path); } ) != excludedPaths.end())
 		return false;
 
 	foundInfo->found = true;

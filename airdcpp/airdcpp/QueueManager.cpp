@@ -34,6 +34,7 @@
 #include "HashManager.h"
 #include "HashedFile.h"
 #include "LogManager.h"
+#include "PathUtil.h"
 #include "ResourceManager.h"
 #include "ScopedFunctor.h"
 #include "SearchManager.h"
@@ -41,9 +42,11 @@
 #include "SFVReader.h"
 #include "ShareManager.h"
 #include "SimpleXMLReader.h"
+#include "SystemUtil.h"
 #include "Transfer.h"
 #include "UploadManager.h"
 #include "UserConnection.h"
+#include "ValueGenerator.h"
 #include "ZUtils.h"
 #include "version.h"
 
@@ -69,8 +72,8 @@ QueueManager::QueueManager() :
 	tasks(true)
 { 
 	//add listeners in loadQueue
-	File::ensureDirectory(Util::getListPath());
-	File::ensureDirectory(Util::getBundlePath());
+	File::ensureDirectory(AppUtil::getListPath());
+	File::ensureDirectory(AppUtil::getBundlePath());
 }
 
 QueueManager::~QueueManager() { 
@@ -97,7 +100,7 @@ void QueueManager::shutdown() noexcept {
 	saveQueue(false);
 
 	if (!SETTING(KEEP_LISTS)) {
-		string path = Util::getListPath();
+		string path = AppUtil::getListPath();
 
 		std::sort(protectedFileLists.begin(), protectedFileLists.end());
 
@@ -248,7 +251,7 @@ bool QueueManager::recheckFileImpl(const string& aPath, bool isBundleCheck, int6
 		dcdebug("Rechecking %s\n", aPath.c_str());
 
 		// always check the final target in case of files added from other sources
-		checkTarget = Util::fileExists(q->getTarget()) ? q->getTarget() : q->getTempTarget();
+		checkTarget = PathUtil::fileExists(q->getTarget()) ? q->getTarget() : q->getTempTarget();
 		tempSize = File::getSize(checkTarget);
 
 		if (tempSize == -1) {
@@ -449,7 +452,7 @@ bool QueueManager::hasDownloadedBytes(const string& aTarget) {
 }
 
 QueueItemPtr QueueManager::addListHooked(const FilelistAddData& aListData, Flags::MaskType aFlags, const BundlePtr& aBundle /*nullptr*/) {
-	if (!(aFlags & QueueItem::FLAG_TTHLIST_BUNDLE) && !Util::isAdcDirectoryPath(aListData.listPath)) {
+	if (!(aFlags & QueueItem::FLAG_TTHLIST_BUNDLE) && !PathUtil::isAdcDirectoryPath(aListData.listPath)) {
 		throw QueueException(STRING_F(INVALID_PATH, aListData.listPath));
 	}
 
@@ -459,7 +462,7 @@ QueueItemPtr QueueManager::addListHooked(const FilelistAddData& aListData, Flags
 	// Format the target
 	auto target = getListPath(aListData.user);
 	if((aFlags & QueueItem::FLAG_PARTIAL_LIST)) {
-		target += ".partial[" + Util::validateFileName(aListData.listPath) + "]";
+		target += ".partial[" + PathUtil::validateFileName(aListData.listPath) + "]";
 	}
 
 
@@ -493,15 +496,15 @@ QueueItemPtr QueueManager::addListHooked(const FilelistAddData& aListData, Flags
 
 string QueueManager::getListPath(const HintedUser& user) const noexcept {
 	StringList nicks = ClientManager::getInstance()->getNicks(user);
-	string nick = nicks.empty() ? Util::emptyString : Util::validateFileName(nicks[0]) + ".";
-	return Util::getListPath() + nick + user.user->getCID().toBase32();
+	string nick = nicks.empty() ? Util::emptyString : PathUtil::validateFileName(nicks[0]) + ".";
+	return AppUtil::getListPath() + nick + user.user->getCID().toBase32();
 }
 
 bool QueueManager::checkRemovedTarget(const QueueItemPtr& q, int64_t aSize, const TTHValue& aTTH) {
 	if (q->isDownloaded()) {
 		/* The target file doesn't exist, add our item. Also recheck the existance in case of finished files being moved on the same time. */
 		dcassert(q->getBundle());
-		if (!Util::fileExists(q->getTarget()) && q->getBundle() && q->isCompleted()) {
+		if (!PathUtil::fileExists(q->getTarget()) && q->getBundle() && q->isCompleted()) {
 			bundleQueue.removeBundleItem(q, false);
 			fileQueue.remove(q);
 			return true;
@@ -576,7 +579,7 @@ void QueueManager::validateBundleFileHooked(const string& aBundleDir, BundleFile
 	// No skiplist for private (magnet) downloads
 	if (!(aFlags & QueueItem::FLAG_PRIVATE)) {
 		// Match the file name
-		matchSkipList(Util::getFileName(fileInfo_.name));
+		matchSkipList(PathUtil::getFileName(fileInfo_.name));
 
 		// Match all subdirectories (if any)
 		string::size_type i = 0, j = 0;
@@ -593,7 +596,7 @@ void QueueManager::validateBundleFileHooked(const string& aBundleDir, BundleFile
 	if (SETTING(DONT_DL_ALREADY_SHARED) && ShareManager::getInstance()->isFileShared(fileInfo_.tth)) {
 		auto paths = ShareManager::getInstance()->getRealPaths(fileInfo_.tth);
 		if (!paths.empty()) {
-			auto path = AirUtil::subtractCommonDirectories(aBundleDir, Util::getFilePath(paths.front()));
+			auto path = PathUtil::subtractCommonDirectories(aBundleDir, PathUtil::getFilePath(paths.front()));
 			throw DupeException(STRING_F(TTH_ALREADY_SHARED, path));
 		}
 	}
@@ -603,7 +606,7 @@ void QueueManager::validateBundleFileHooked(const string& aBundleDir, BundleFile
 		RLock l(cs);
 		auto q = fileQueue.getQueuedFile(fileInfo_.tth);
 		if (q && q->getTarget() != aBundleDir + fileInfo_.name) {
-			auto path = AirUtil::subtractCommonDirectories(aBundleDir, q->getFilePath());
+			auto path = PathUtil::subtractCommonDirectories(aBundleDir, q->getFilePath());
 			throw DupeException(STRING_F(FILE_ALREADY_QUEUED, path));
 		}
 	}
@@ -622,7 +625,7 @@ void QueueManager::validateBundleFileHooked(const string& aBundleDir, BundleFile
 	// Valid file
 
 	// Priority
-	if (fileInfo_.prio == Priority::DEFAULT && highPrioFiles.match(Util::getFileName(fileInfo_.name))) {
+	if (fileInfo_.prio == Priority::DEFAULT && highPrioFiles.match(PathUtil::getFileName(fileInfo_.name))) {
 		fileInfo_.prio = SETTING(PRIO_LIST_HIGHEST) ? Priority::HIGHEST : Priority::HIGH;
 	}
 }
@@ -644,7 +647,7 @@ QueueItemPtr QueueManager::addOpenedItemHooked(const ViewedFileAddData& aFileInf
 	}
 
 	// Check target
-	auto target = Util::getOpenPath() + AirUtil::toOpenFileName(aFileInfo.file, aFileInfo.tth);
+	auto target = AppUtil::getOpenPath() + ValueGenerator::toOpenFileName(aFileInfo.file, aFileInfo.tth);
 
 	// Add in queue
 	QueueItemPtr qi = nullptr;
@@ -686,7 +689,7 @@ BundlePtr QueueManager::getBundle(const string& aTarget, Priority aPrio, time_t 
 		b = BundlePtr(new Bundle(aTarget, GET_TIME(), aPrio, aDate, 0, true, isFileBundle));
 	} else {
 		// use an existing one
-		dcassert(!AirUtil::isSubLocal(b->getTarget(), aTarget));
+		dcassert(!PathUtil::isSubLocal(b->getTarget(), aTarget));
 	}
 
 	return b;
@@ -708,7 +711,7 @@ optional<DirectoryBundleAddResult> QueueManager::createDirectoryBundleHooked(con
 	}
 
 	// Generic validations
-	target = Util::joinDirectory(formatBundleTarget(target, aDirectory.date), Util::validatePath(aDirectory.name));
+	target = PathUtil::joinDirectory(formatBundleTarget(target, aDirectory.date), PathUtil::validatePath(aDirectory.name));
 
 	{
 		// There can't be existing bundles inside this directory
@@ -720,7 +723,7 @@ optional<DirectoryBundleAddResult> QueueManager::createDirectoryBundleHooked(con
 				subPaths.push_back(b->getTarget());
 			}
 
-			errorMsg_ = STRING_F(BUNDLE_ERROR_SUBBUNDLES, subBundles.size() % target % AirUtil::subtractCommonParents(target, subPaths));
+			errorMsg_ = STRING_F(BUNDLE_ERROR_SUBBUNDLES, subBundles.size() % target % PathUtil::subtractCommonParents(target, subPaths));
 			return nullopt;
 		}
 	}
@@ -842,7 +845,7 @@ optional<DirectoryBundleAddResult> QueueManager::createDirectoryBundleHooked(con
 		} else if (b->getTarget() == target) {
 			log(STRING_F(X_BUNDLE_ITEMS_ADDED, info.filesAdded % b->getName().c_str()), LogMessage::SEV_INFO);
 		} else {
-			log(STRING_F(BUNDLE_MERGED, Util::getLastDir(target) % b->getName() % info.filesAdded), LogMessage::SEV_INFO);
+			log(STRING_F(BUNDLE_MERGED, PathUtil::getLastDir(target) % b->getName() % info.filesAdded), LogMessage::SEV_INFO);
 		}
 	}
 
@@ -933,11 +936,11 @@ void QueueManager::runAddBundleHooksThrow(string& target_, BundleAddData& aDirec
 
 string QueueManager::formatBundleTarget(const string& aPath, time_t aRemoteDate) noexcept {
 	ParamMap params;
-	params["username"] = [] { return Util::getSystemUsername(); };
+	params["username"] = [] { return SystemUtil::getSystemUsername(); };
 	
 	auto time = (SETTING(FORMAT_DIR_REMOTE_TIME) && aRemoteDate > 0) ? aRemoteDate : GET_TIME();
 	auto formatedPath = Util::formatParams(aPath, params, nullptr, time);
-	return Util::validatePath(formatedPath);
+	return PathUtil::validatePath(formatedPath);
 }
 
 BundleAddInfo QueueManager::createFileBundleHooked(const BundleAddOptions& aOptions, BundleFileAddData& aFileInfo, Flags::MaskType aFlags) {
@@ -983,7 +986,7 @@ BundleAddInfo QueueManager::createFileBundleHooked(const BundleAddOptions& aOpti
 		if (oldStatus == Bundle::STATUS_NEW) {
 			log(STRING_F(FILE_X_QUEUED, b->getName() % Util::formatBytes(b->getSize())), LogMessage::SEV_INFO);
 		} else {
-			log(STRING_F(BUNDLE_ITEM_ADDED, Util::getFileName(target) % b->getName()), LogMessage::SEV_INFO);
+			log(STRING_F(BUNDLE_ITEM_ADDED, PathUtil::getFileName(target) % b->getName()), LogMessage::SEV_INFO);
 		}
 	}
 
@@ -1087,10 +1090,10 @@ string QueueManager::checkTarget(const string& toValidate, const string& aParent
 	}
 #endif
 
-	string target = Util::validatePath(toValidate);
+	string target = PathUtil::validatePath(toValidate);
 
 	// Check that the file doesn't already exist...
-	if (Util::fileExists(aParentDir + target)) {
+	if (PathUtil::fileExists(aParentDir + target)) {
 		/* TODO: add for recheck */
 		throw FileException(STRING(TARGET_FILE_EXISTS));
 	}
@@ -1100,7 +1103,7 @@ string QueueManager::checkTarget(const string& toValidate, const string& aParent
 /** Add a source to an existing queue item */
 bool QueueManager::addValidatedSource(const QueueItemPtr& qi, const HintedUser& aUser, Flags::MaskType aAddBad) {
 	if (qi->isDownloaded()) //no need to add source to finished item.
-		throw QueueException(STRING(FILE_ALREADY_FINISHED) + ": " + Util::getFileName(qi->getTarget()));
+		throw QueueException(STRING(FILE_ALREADY_FINISHED) + ": " + PathUtil::getFileName(qi->getTarget()));
 	
 	bool wantConnection = !qi->isPausedPrio();
 	dcassert(qi->getBundle() || qi->getPriority() == Priority::HIGHEST);
@@ -1109,12 +1112,12 @@ bool QueueManager::addValidatedSource(const QueueItemPtr& qi, const HintedUser& 
 		if(qi->isSet(QueueItem::FLAG_USER_LIST)) {
 			return wantConnection;
 		}
-		throw QueueException(STRING(DUPLICATE_SOURCE) + ": " + Util::getFileName(qi->getTarget()));
+		throw QueueException(STRING(DUPLICATE_SOURCE) + ": " + PathUtil::getFileName(qi->getTarget()));
 	}
 
 	bool isBad = false;
 	if (qi->isBadSourceExcept(aUser, aAddBad, isBad)) {
-		throw QueueException(STRING(DUPLICATE_SOURCE) + ": " + Util::getFileName(qi->getTarget()));
+		throw QueueException(STRING(DUPLICATE_SOURCE) + ": " + PathUtil::getFileName(qi->getTarget()));
 	}
 
 	qi->addSource(aUser);
@@ -1170,7 +1173,7 @@ Download* QueueManager::getDownload(UserConnection& aSource, const QueueTokenSet
 
 		// Check that the file we will be downloading to exists
 		if (q->getDownloadedBytes() > 0) {
-			if (!Util::fileExists(q->getTempTarget())) {
+			if (!PathUtil::fileExists(q->getTempTarget())) {
 				// Temp target gone?
 				q->resetDownloaded();
 			}
@@ -1432,10 +1435,10 @@ void QueueManager::renameDownloadedFile(const string& source, const string& targ
 		File::renameFile(source, target);
 	} catch(const FileException& e1) {
 		// Try to just rename it to the correct name at least
-		string newTarget = Util::getFilePath(source) + Util::getFileName(target);
+		string newTarget = PathUtil::getFilePath(source) + PathUtil::getFileName(target);
 		try {
 			File::renameFile(source, newTarget);
-			log(STRING_F(MOVE_FILE_FAILED, newTarget % Util::getFilePath(target) % e1.getError()), LogMessage::SEV_ERROR);
+			log(STRING_F(MOVE_FILE_FAILED, newTarget % PathUtil::getFilePath(target) % e1.getError()), LogMessage::SEV_ERROR);
 		} catch(const FileException& e2) {
 			log(STRING_F(UNABLE_TO_RENAME, source % e2.getError()), LogMessage::SEV_ERROR);
 		}
@@ -2321,14 +2324,14 @@ void QueueManager::loadQueue(StartupLoader& aLoader) noexcept {
 	setMatchers();
 
 	// migrate old bundles
-	Util::migrate(Util::getPath(Util::PATH_BUNDLES), "Bundle*");
+	AppUtil::migrate(AppUtil::getPath(AppUtil::PATH_BUNDLES), "Bundle*");
 
 	// multithreaded loading
-	StringList fileList = File::findFiles(Util::getPath(Util::PATH_BUNDLES), "Bundle*", File::TYPE_FILE);
+	StringList fileList = File::findFiles(AppUtil::getPath(AppUtil::PATH_BUNDLES), "Bundle*", File::TYPE_FILE);
 	atomic<long> loaded(0);
 	try {
 		parallel_for_each(fileList.begin(), fileList.end(), [&](const string& path) {
-			if (Util::getFileExt(path) == ".xml") {
+			if (PathUtil::getFileExt(path) == ".xml") {
 				QueueLoader loader;
 				try {
 					File f(path, File::READ, File::OPEN, File::BUFFER_SEQUENTIAL, false);
@@ -2347,8 +2350,8 @@ void QueueManager::loadQueue(StartupLoader& aLoader) noexcept {
 
 	try {
 		//load the old queue file and delete it
-		auto path = Util::getPath(Util::PATH_USER_CONFIG) + "Queue.xml";
-		Util::migrate(path);
+		auto path = AppUtil::getPath(AppUtil::PATH_USER_CONFIG) + "Queue.xml";
+		AppUtil::migrate(path);
 
 		{
 			File f(path, File::READ, File::OPEN, File::BUFFER_SEQUENTIAL);
@@ -2356,8 +2359,8 @@ void QueueManager::loadQueue(StartupLoader& aLoader) noexcept {
 			SimpleXMLReader(&loader).parse(f);
 		}
 
-		File::copyFile(Util::getPath(Util::PATH_USER_CONFIG) + "Queue.xml", Util::getPath(Util::PATH_USER_CONFIG) + "Queue.xml.bak");
-		File::deleteFile(Util::getPath(Util::PATH_USER_CONFIG) + "Queue.xml");
+		File::copyFile(AppUtil::getPath(AppUtil::PATH_USER_CONFIG) + "Queue.xml", AppUtil::getPath(AppUtil::PATH_USER_CONFIG) + "Queue.xml.bak");
+		File::deleteFile(AppUtil::getPath(AppUtil::PATH_USER_CONFIG) + "Queue.xml");
 	} catch(const Exception&) {
 		// ...
 	}
@@ -2507,7 +2510,7 @@ void QueueLoader::loadQueueFile(StringPairList& attribs, bool simple) {
 		return;
 	}
 
-	if (curBundle && inDirBundle && !AirUtil::isParentOrExactLocal(curBundle->getTarget(), currentFileTarget)) {
+	if (curBundle && inDirBundle && !PathUtil::isParentOrExactLocal(curBundle->getTarget(), currentFileTarget)) {
 		//the file isn't inside the main bundle dir, can't add this
 		return;
 	}
@@ -2539,7 +2542,7 @@ void QueueLoader::loadQueueFile(StringPairList& attribs, bool simple) {
 		if (curBundle && inDirBundle) {
 			qm->bundleQueue.addBundleItem(qi, curBundle);
 		} else if (inLegacyQueue) {
-			createFileBundle(qi, Util::rand());
+			createFileBundle(qi, ValueGenerator::rand());
 		} else if (inFileBundle) {
 			createFileBundle(qi, curFileBundleInfo.token);
 		}
@@ -2560,7 +2563,7 @@ void QueueLoader::loadFinishedFile(StringPairList& attribs, bool) {
 
 	if (size == 0 || tth.empty() || target.empty() || added == 0)
 		return;
-	if (!Util::fileExists(target))
+	if (!PathUtil::fileExists(target))
 		return;
 
 	WLock l(qm->cs);
@@ -2760,7 +2763,7 @@ void QueueManager::matchBundleHooked(const QueueItemPtr& aQI, const SearchResult
 
 	auto isNmdc = aResult->getUser().user->isNMDC();
 
-	auto path = AirUtil::getAdcMatchPath(aResult->getAdcPath(), aQI->getTarget(), aQI->getBundle()->getTarget(), isNmdc);
+	auto path = PathUtil::getAdcMatchPath(aResult->getAdcPath(), aQI->getTarget(), aQI->getBundle()->getTarget(), isNmdc);
 	if (!path.empty()) {
 		if (isNmdc) {
 			// A NMDC directory bundle, just add the sources without matching
@@ -3242,7 +3245,7 @@ void QueueManager::checkCompletedBundles(const string& aPath, bool aValidateComp
 	{
 		RLock l(cs);
 		for (auto& b : bundleQueue.getBundles() | views::values) {
-			if (b->isCompleted() && AirUtil::isParentOrExactLocal(aPath, b->getTarget())) {
+			if (b->isCompleted() && PathUtil::isParentOrExactLocal(aPath, b->getTarget())) {
 				bundles.push_back(b);
 			}
 		}
@@ -3393,7 +3396,7 @@ void QueueManager::readdBundle(const BundlePtr& aBundle) noexcept {
 	//check that the finished files still exist
 	auto files = aBundle->getFinishedFiles();
 	for(auto& qi: files) {
-		if (!Util::fileExists(qi->getTarget())) {
+		if (!PathUtil::fileExists(qi->getTarget())) {
 			bundleQueue.removeBundleItem(qi, false);
 			fileQueue.remove(qi);
 		}
@@ -3591,7 +3594,7 @@ void QueueManager::removeBundle(const BundlePtr& aBundle, bool aRemoveFinishedFi
 
 	// An empty directory should be deleted even if finished files are not being deleted (directories are created even for temp files)
 	if (!aBundle->isFileBundle() && (aRemoveFinishedFiles || !isCompleted)) { // IMPORTANT: avoid disk access when cleaning up finished bundles so don't remove the finished check
-		if (!AirUtil::removeDirectoryIfEmpty(aBundle->getTarget(), 10) && !aRemoveFinishedFiles) {
+		if (!PathUtil::removeDirectoryIfEmpty(aBundle->getTarget(), 10) && !aRemoveFinishedFiles) {
 			log(STRING_F(DIRECTORY_NOT_REMOVED, aBundle->getTarget()), LogMessage::SEV_INFO);
 		}
 	}

@@ -82,6 +82,8 @@ class ClientManager;
 
 class ConnectionQueueItem;
 
+struct DirectoryContentInfo;
+
 class DirectoryListing;
 typedef std::shared_ptr<DirectoryListing> DirectoryListingPtr;
 typedef std::vector<DirectoryListingPtr> DirectoryListingList;

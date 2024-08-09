@@ -27,6 +27,7 @@
 #include "TimerManagerListener.h"
 
 #include "ActionHook.h"
+#include "DirectoryContentInfo.h"
 #include "DispatcherQueue.h"
 #include "DupeType.h"
 #include "GetSet.h"

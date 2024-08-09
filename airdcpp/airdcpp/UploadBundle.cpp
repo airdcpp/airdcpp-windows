@@ -20,6 +20,7 @@
 #include "UploadBundle.h"
 
 #include "ConnectionManager.h"
+#include "PathUtil.h"
 #include "Util.h"
 
 namespace dcpp {
@@ -68,9 +69,9 @@ uint64_t UploadBundle::getSecondsLeft() const noexcept {
 
 string UploadBundle::getName() const noexcept {
 	if (target.back() == PATH_SEPARATOR) {
-		return Util::getLastDir(target);
+		return PathUtil::getLastDir(target);
 	} else {
-		return Util::getFilePath(target);
+		return PathUtil::getFilePath(target);
 	}
 }
 

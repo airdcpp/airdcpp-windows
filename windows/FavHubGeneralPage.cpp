@@ -24,7 +24,7 @@
 #include "FavHubGeneralPage.h"
 #include "PropertiesDlg.h"
 
-#include <airdcpp/AirUtil.h>
+#include <airdcpp/LinkUtil.h>
 #include <airdcpp/FavoriteManager.h>
 #include <airdcpp/ResourceManager.h>
 #include <airdcpp/tribool.h>
@@ -142,7 +142,7 @@ LRESULT FavHubGeneralPage::onClickedHideShare(WORD /*wNotifyCode*/, WORD /*wID*/
 		hideShare = false;
 		TCHAR buf[512];
 		GetDlgItemText(IDC_HUBADDR, buf, 256);
-		if (AirUtil::isAdcHub(Text::fromT(buf)))
+		if (LinkUtil::isAdcHub(Text::fromT(buf)))
 			ctrlProfile.EnableWindow(true);
 	}
 	return FALSE;
@@ -183,7 +183,7 @@ LRESULT FavHubGeneralPage::OnTextChanged(WORD /*wNotifyCode*/, WORD wID, HWND /*
 		address.resize(1024);
 		address.resize(GetDlgItemText(IDC_HUBADDR, &address[0], 1024));
 
-		if (AirUtil::isAdcHub(Text::fromT(address))) {
+		if (LinkUtil::isAdcHub(Text::fromT(address))) {
 			if (!hideShare)
 				ctrlProfile.EnableWindow(true);
 			combo.SetCurSel(4); // select UTF-8 for ADC hubs

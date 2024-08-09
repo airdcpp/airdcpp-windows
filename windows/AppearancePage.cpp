@@ -108,7 +108,7 @@ LRESULT AppearancePage::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	};
 
 	GetDlgItemText(IDC_LANGUAGE, buf, MAX_PATH);
-	tstring x = Text::toT(Util::getPath(Util::PATH_RESOURCES));
+	tstring x = Text::toT(AppUtil::getPath(AppUtil::PATH_RESOURCES));
 
 	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, BrowseDlg::DIALOG_SELECT_FILE);
 	dlg.setPath(x, true);

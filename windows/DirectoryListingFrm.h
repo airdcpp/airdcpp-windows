@@ -460,7 +460,7 @@ private:
 	void disableBrowserLayout(bool redraw = true);
 	void enableBrowserLayout(bool redraw = true);
 
-	typedef std::set<string, Util::PathSortOrderBool> PathSet;
+	typedef std::set<string, PathUtil::PathSortOrderBool> PathSet;
 
 	bool matchADL = false;
 };

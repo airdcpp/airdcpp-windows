@@ -116,10 +116,10 @@ LONG handleCrash(unsigned long aCode, const string& aError, PCONTEXT aContext)
 
 #ifndef _DEBUG
 	// The release version loads the dll and pdb:s here...
-	EXTENDEDTRACEINITIALIZE(Util::getAppFilePath().c_str());
+	EXTENDEDTRACEINITIALIZE(AppUtil::getAppFilePath().c_str());
 #endif
 
-	if(File::getSize(Util::getAppFilePath() + "AirDC.pdb") == -1) {
+	if(File::getSize(AppUtil::getAppFilePath() + "AirDC.pdb") == -1) {
 		// No debug symbols, we're not interested...
 		::MessageBox(WinUtil::mainWnd, _T("AirDC++ has crashed and you don't have AirDC.pdb file installed. Hence, I can't find out why it crashed, so don't report this as a bug unless you find a solution..."), _T("AirDC++ has crashed"), MB_OK);
 #ifndef _DEBUG
@@ -145,7 +145,7 @@ LONG handleCrash(unsigned long aCode, const string& aError, PCONTEXT aContext)
 		Shell_NotifyIcon(NIM_MODIFY, &m_nid);
 	}
 
-	auto exceptionFilePath = Util::getPath(Util::PATH_USER_CONFIG) + "exceptioninfo.txt";
+	auto exceptionFilePath = AppUtil::getPath(AppUtil::PATH_USER_CONFIG) + "exceptioninfo.txt";
 
 	if (firstException) {
 		File::deleteFile(exceptionFilePath);
@@ -264,7 +264,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 		handleCrash(0, "std::terminate was called", nullptr);
 	});
 #endif
-	Util::initialize();
+	initializeUtil();
 
 	// Startup args
 	if (!WinClient::checkStartupParams()) {
@@ -272,7 +272,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	}
 
 	// Other instances
-	bool multiple = Util::hasStartupParam("/silent");
+	bool multiple = AppUtil::hasStartupParam("/silent");
 	if (dcapp.IsAnotherInstanceRunning()) {
 		// Allow for more than one instance...
 		if (_tcslen(lpstrCmdLine) == 0) {
@@ -305,7 +305,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	// For SHBrowseForFolder, UPnP_COM
 	HRESULT hRes = ::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED); 
 #ifdef _DEBUG
-	EXTENDEDTRACEINITIALIZE(Util::getAppFilePath().c_str());
+	EXTENDEDTRACEINITIALIZE(AppUtil::getAppFilePath().c_str());
 #endif
 	LPTOP_LEVEL_EXCEPTION_FILTER pOldSEHFilter = NULL;
 	pOldSEHFilter = SetUnhandledExceptionFilter(&DCUnhandledExceptionFilter);
@@ -317,7 +317,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	ATLASSERT(SUCCEEDED(hRes));
 	
 	try {		
-		File f(Util::getAppPath(), File::READ, File::OPEN);
+		File f(AppUtil::getAppPath(), File::READ, File::OPEN);
 		TigerTree tth(TigerTree::calcBlockSize(f.getSize(), 1));
 		size_t n = 0;
 		size_t n2 = DEBUG_BUFSIZE;

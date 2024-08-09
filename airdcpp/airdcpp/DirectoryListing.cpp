@@ -24,6 +24,7 @@
 #include "BZUtils.h"
 #include "ClientManager.h"
 #include "DirectSearch.h"
+#include "DupeUtil.h"
 #include "FilteredFile.h"
 #include "LogManager.h"
 #include "QueueManager.h"
@@ -42,7 +43,7 @@ using ranges::for_each;
 using ranges::find_if;
 
 DirectoryListing::DirectoryListing(const HintedUser& aUser, bool aPartial, const string& aFileName, bool aIsClientView, Directory::ValidationHooks* aLoadHooks, bool aIsOwnList) :
-	TrackableDownloadItem(aIsOwnList || (!aPartial && Util::fileExists(aFileName))), // API requires the download state to be set correctly
+	TrackableDownloadItem(aIsOwnList || (!aPartial && PathUtil::fileExists(aFileName))), // API requires the download state to be set correctly
 	hintedUser(aUser), root(Directory::create(nullptr, ADC_ROOT_STR, Directory::TYPE_INCOMPLETE_NOCHILD, 0)), partialList(aPartial), isOwnList(aIsOwnList), fileName(aFileName),
 	isClientView(aIsClientView), loadHooks(aLoadHooks),
 	tasks(isClientView, Thread::NORMAL, std::bind(&DirectoryListing::dispatch, this, std::placeholders::_1))
@@ -169,7 +170,7 @@ void DirectoryListing::getPartialListInfo(int64_t& totalSize_, size_t& totalFile
 string DirectoryListing::getNickFromFilename(const string& fileName) noexcept {
 	// General file list name format: [username].[CID].[xml|xml.bz2]
 
-	string name = Util::getFileName(fileName);
+	string name = PathUtil::getFileName(fileName);
 
 	// Strip off any extensions
 	stripExtensions(name);
@@ -186,7 +187,7 @@ string DirectoryListing::getNickFromFilename(const string& fileName) noexcept {
 UserPtr DirectoryListing::getUserFromFilename(const string& fileName) noexcept {
 	// General file list name format: [username].[CID].[xml|xml.bz2]
 
-	string name = Util::getFileName(fileName);
+	string name = PathUtil::getFileName(fileName);
 
 	// Strip off any extensions
 	stripExtensions(name);
@@ -223,7 +224,7 @@ void DirectoryListing::onStateChanged() noexcept {
 }
 
 DirectoryListing::Directory::Ptr DirectoryListing::createBaseDirectory(const string& aBasePath, time_t aDownloadDate) noexcept {
-	dcassert(Util::isAdcDirectoryPath(aBasePath));
+	dcassert(PathUtil::isAdcDirectoryPath(aBasePath));
 	auto cur = root;
 
 	const auto sl = StringTokenizer<string>(aBasePath, ADC_SEPARATOR).getTokens();
@@ -246,7 +247,7 @@ void DirectoryListing::loadFile() {
 	} else {
 
 		// For now, we detect type by ending...
-		string ext = Util::getFileExt(fileName);
+		string ext = PathUtil::getFileExt(fileName);
 
 		dcpp::File ff(fileName, dcpp::File::READ, dcpp::File::OPEN, dcpp::File::BUFFER_AUTO);
 		root->setLastUpdateDate(ff.getLastModified());
@@ -404,7 +405,7 @@ void ListLoader::startTag(const string& aName, StringPairList& attribs, bool aSi
 	} else if (aName == sFileListing) {
 		if (updating) {
 			const string& b = getAttrib(attribs, sBase, 2);
-			dcassert(Util::isAdcDirectoryPath(base));
+			dcassert(PathUtil::isAdcDirectoryPath(base));
 
 			// Validate the parsed base path
 			{
@@ -459,7 +460,7 @@ DirectoryListing::File::File(Directory* aDir, const string& aName, int64_t aSize
 	name(aName), size(aSize), parent(aDir), tthRoot(aTTH), remoteDate(aRemoteDate) {
 
 	if (aCheckDupe && size > 0) {
-		dupe = AirUtil::checkFileDupe(tthRoot);
+		dupe = DupeUtil::checkFileDupe(tthRoot);
 	}
 
 	//dcdebug("DirectoryListing::File (copy) %s was created\n", aName.c_str());
@@ -519,7 +520,7 @@ DirectoryListing::Directory::Directory(Directory* aParent, const string& aName, 
 	}
 
 	if (aCheckDupe) {
-		dupe = AirUtil::checkAdcDirectoryDupe(getAdcPath(), partialSize);
+		dupe = DupeUtil::checkAdcDirectoryDupe(getAdcPath(), partialSize);
 	}
 
 	//dcdebug("DirectoryListing::Directory %s was created\n", aName.c_str());
@@ -589,7 +590,7 @@ void DirectoryListing::Directory::getContentInfo(size_t& directories_, size_t& f
 		for (const auto& d : directories | views::values) {
 			d->getContentInfo(directories_, files_, aCountVirtual);
 		}
-	} else if (Util::hasContentInfo(contentInfo)) {
+	} else if (contentInfo.isInitialized()) {
 		directories_ += contentInfo.directories;
 		files_ += contentInfo.files;
 	}
@@ -656,7 +657,7 @@ DirectoryListing::Directory::Ptr DirectoryListing::findDirectory(const string& a
 	if (aName == ADC_ROOT_STR)
 		return root;
 
-	dcassert(Util::isAdcDirectoryPath(aName));
+	dcassert(PathUtil::isAdcDirectoryPath(aName));
 	auto end = aName.find(ADC_SEPARATOR, 1);
 	dcassert(end != string::npos);
 	string name = aName.substr(1, end - 1);
@@ -691,7 +692,7 @@ struct HashContained {
 
 struct DirectoryEmpty {
 	bool operator()(const DirectoryListing::Directory::Ptr& aDir) const {
-		return Util::directoryEmpty(aDir->getContentInfo());
+		return aDir->getContentInfo().isEmpty();
 	}
 };
 
@@ -802,7 +803,7 @@ void DirectoryListing::File::getLocalPaths(StringList& ret, const OptionalProfil
 
 		ShareManager::getInstance()->getRealPaths(path + name, ret, aShareProfileToken);
 	} else {
-		ret = AirUtil::getFileDupePaths(dupe, tthRoot);
+		ret = DupeUtil::getFileDupePaths(dupe, tthRoot);
 	}
 }
 
@@ -851,7 +852,7 @@ size_t DirectoryListing::Directory::getTotalFileCount(bool aCountVirtual) const 
 		return 0;
 
 	const auto childContentInfo = getContentInfoRecursive(aCountVirtual);
-	if (Util::hasContentInfo(childContentInfo)) {
+	if (childContentInfo.isInitialized()) {
 		return childContentInfo.files;
 	}
 
@@ -887,7 +888,7 @@ int64_t DirectoryListing::Directory::getFilesSize() const noexcept {
 }
 
 bool DirectoryListing::File::isInQueue() const noexcept {
-	return AirUtil::isQueueDupe(dupe) || AirUtil::isFinishedDupe(dupe);
+	return DupeUtil::isQueueDupe(dupe) || DupeUtil::isFinishedDupe(dupe);
 }
 
 uint8_t DirectoryListing::Directory::checkDupesRecursive() noexcept {
@@ -950,9 +951,9 @@ uint8_t DirectoryListing::Directory::checkDupesRecursive() noexcept {
 				setDupe(DUPE_QUEUE_PARTIAL);
 
 			//if we find different type of dupe, change to mixed
-			else if (AirUtil::isShareDupe(dupe) && f->isInQueue())
+			else if (DupeUtil::isShareDupe(dupe) && f->isInQueue())
 				setDupe(DUPE_SHARE_QUEUE);
-			else if (AirUtil::isQueueDupe(dupe) && f->getDupe() == DUPE_SHARE_FULL)
+			else if (DupeUtil::isQueueDupe(dupe) && f->getDupe() == DUPE_SHARE_FULL)
 				setDupe(DUPE_SHARE_QUEUE);
 
 			first = false;
@@ -996,7 +997,7 @@ void DirectoryListing::close() noexcept {
 }
 
 void DirectoryListing::addSearchTask(const SearchPtr& aSearch) noexcept {
-	dcassert(Util::isAdcDirectoryPath(aSearch->path));
+	dcassert(PathUtil::isAdcDirectoryPath(aSearch->path));
 	addAsyncTask([=, this] { searchImpl(aSearch); });
 }
 
@@ -1084,7 +1085,7 @@ void DirectoryListing::onLoadingFinished(int64_t aStartTime, const string& aLoad
 
 	auto newCurrentDir = findDirectory(aCurrentPath.empty() ? aLoadedPath : aCurrentPath);
 	if (aLoadedPath == aCurrentPath || newCurrentDir != currentLocation.directory) {
-		if (!newCurrentDir || (!newCurrentDir->isComplete() && AirUtil::isParentOrExactAdc(aLoadedPath, aCurrentPath))) {
+		if (!newCurrentDir || (!newCurrentDir->isComplete() && PathUtil::isParentOrExactAdc(aLoadedPath, aCurrentPath))) {
 			// Non-recursive partial list was loaded for an upper level directory (e.g. own filelist after refreshing roots) and content of the current directory is not known
 			// Move back to the newly loaded parent directory
 			updateCurrentLocation(loadedDir);

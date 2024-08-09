@@ -19,6 +19,7 @@
 #ifndef DCPLUSPLUS_DCPP_SEARCHRESULT_H
 #define DCPLUSPLUS_DCPP_SEARCHRESULT_H
 
+#include "DirectoryContentInfo.h"
 #include "DupeType.h"
 #include "GetSet.h"
 #include "forward.h"

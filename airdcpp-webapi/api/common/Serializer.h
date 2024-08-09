@@ -26,6 +26,7 @@
 #include <airdcpp/typedefs.h>
 #include <airdcpp/tribool.h>
 
+#include <airdcpp/DirectoryContentInfo.h>
 #include <airdcpp/DirectoryDownload.h>
 #include <airdcpp/DupeType.h>
 #include <airdcpp/QueueItemBase.h>

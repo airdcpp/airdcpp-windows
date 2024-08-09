@@ -30,6 +30,7 @@
 #include <airdcpp/ConnectivityManager.h>
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/LogManager.h>
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/version.h>
 
 #include <web-server/ContextMenuManager.h>
@@ -603,7 +604,7 @@ LRESULT FavoriteHubsFrame::onOpenHubLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 		params["hubURL"] = entry->getServer();
 		params["myNI"] = entry->get(HubSettings::Nick); 
 		string file = LogManager::getInstance()->getPath(LogManager::CHAT, params);
-		if(Util::fileExists(file)){
+		if(PathUtil::fileExists(file)){
 			ActionUtil::viewLog(file);
 		} else {
 			WinUtil::showMessageBox(TSTRING(NO_LOG_FOR_HUB));	  

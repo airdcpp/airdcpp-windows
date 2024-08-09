@@ -34,6 +34,7 @@
 #include <airdcpp/FavoriteManager.h>
 #include <airdcpp/ResourceManager.h>
 #include <airdcpp/PrivateChatManager.h>
+#include <airdcpp/PathUtil.h>
 
 
 PrivateFrame::FrameMap PrivateFrame::frames;
@@ -808,7 +809,7 @@ void PrivateFrame::setAway() {
 
 LRESULT PrivateFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {	
 	string file = chat->getLogPath();
-	if(Util::fileExists(file)) {
+	if(PathUtil::fileExists(file)) {
 		ActionUtil::viewLog(file, wID == IDC_USER_HISTORY);
 	} else {
 		MessageBox(CTSTRING(NO_LOG_FOR_USER), CTSTRING(NO_LOG_FOR_USER), MB_OK );	  

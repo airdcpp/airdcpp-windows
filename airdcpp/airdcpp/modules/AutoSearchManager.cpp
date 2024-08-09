@@ -21,6 +21,7 @@
 #include "AutoSearchManager.h"
 
 #include <airdcpp/ClientManager.h>
+#include <airdcpp/DupeUtil.h>
 #include <airdcpp/LogManager.h>
 #include <airdcpp/QueueManager.h>
 #include <airdcpp/SearchManager.h>
@@ -39,7 +40,7 @@ using ranges::find_if;
 using ranges::max_element;
 using ranges::copy_if;
 
-#define CONFIG_DIR Util::PATH_USER_CONFIG
+#define CONFIG_DIR AppUtil::PATH_USER_CONFIG
 #define CONFIG_NAME "AutoSearch.xml"
 #define XML_GROUPING_VERSION 1
 
@@ -399,13 +400,14 @@ bool AutoSearchManager::addFailedBundle(const BundlePtr& aBundle) noexcept {
 	if (!lst.empty()) {
 		return false;
 	}
+
 	//allow adding only release dirs, avoid adding too common bundle names to auto search ( will result in bundle growing by pretty much anything that matches... )
-	if (!AirUtil::isRelease(aBundle->getName()))
+	if (!DupeUtil::isRelease(aBundle->getName()))
 		return false;
 
 
 	//7 days expiry
-	auto as = new AutoSearch(true, aBundle->getName(), SEARCH_TYPE_DIRECTORY, AutoSearch::ACTION_DOWNLOAD, true, Util::getParentDir(aBundle->getTarget()), 
+	auto as = new AutoSearch(true, aBundle->getName(), SEARCH_TYPE_DIRECTORY, AutoSearch::ACTION_DOWNLOAD, true, PathUtil::getParentDir(aBundle->getTarget()), 
 		StringMatch::EXACT, Util::emptyString, Util::emptyString, GET_TIME() + 7*24*60*60, false, false, false, Util::emptyString, AutoSearch::FAILED_BUNDLE, false);
 
 	as->setGroup(SETTING(AS_FAILED_DEFAULT_GROUP));

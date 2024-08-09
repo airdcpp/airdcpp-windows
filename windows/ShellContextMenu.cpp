@@ -24,6 +24,8 @@
 #include "resource.h"
 #include "ActionUtil.h"
 
+#include <airdcpp/PathUtil.h>
+
 ShellMenu* ShellMenu::curMenu = nullptr;
 unique_ptr<ShellMenu::Handler> ShellMenu::curHandler;
 unsigned ShellMenu::sel_id = 0; 
@@ -42,12 +44,12 @@ void ShellMenu::appendShellMenu(const StringList& aPaths) {
 	appendSeparator();
 
 	if (aPaths.size() == 1) {
-		appendItem(TSTRING(OPEN_FOLDER), [=] { ActionUtil::openFolder(Text::toT(Util::getFilePath(aPaths.front()))); }, OMenu::FLAG_THREADED);
+		appendItem(TSTRING(OPEN_FOLDER), [=] { ActionUtil::openFolder(Text::toT(PathUtil::getFilePath(aPaths.front()))); }, OMenu::FLAG_THREADED);
 		paths.emplace_back(createSubMenu(TSTRING(SHELL_MENU), true, true), aPaths.front());
 	} else {
 		auto fo = createSubMenu(TSTRING(OPEN_FOLDER));
 		for (auto& i : aPaths)
-			fo->appendItem(Text::toT(Util::getFilePath(i)), [=] { ActionUtil::openFolder(Text::toT(i)); }, OMenu::FLAG_THREADED);
+			fo->appendItem(Text::toT(PathUtil::getFilePath(i)), [=] { ActionUtil::openFolder(Text::toT(i)); }, OMenu::FLAG_THREADED);
 
 		auto sh = createSubMenu(TSTRING(SHELL_MENUS));
 		for (auto& i : aPaths)

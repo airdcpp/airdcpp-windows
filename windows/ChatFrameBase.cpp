@@ -36,7 +36,9 @@
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/ConnectivityManager.h>
 #include <airdcpp/HashManager.h>
+#include <airdcpp/LinkUtil.h>
 #include <airdcpp/LogManager.h>
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/QueueManager.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/ThrottleManager.h>
@@ -492,13 +494,13 @@ void ChatFrameBase::addMagnet(const StringList& aPaths) {
 
 			callAsync([=] {
 				if (getClient()) {
-					ShareManager::getInstance()->addTempShare(tth, Util::getFileName(path), path, size, getClient()->get(HubSettings::ShareProfile), ctrlClient.getTempShareUser());
+					ShareManager::getInstance()->addTempShare(tth, PathUtil::getFileName(path), path, size, getClient()->get(HubSettings::ShareProfile), ctrlClient.getTempShareUser());
 				}
 			});
 
 			if (!ret.empty())
 				ret += _T(" ");
-			ret += Text::toT(ActionUtil::makeMagnet(tth, Util::getFileName(path), size));
+			ret += Text::toT(ActionUtil::makeMagnet(tth, PathUtil::getFileName(path), size));
 			pos++;
 		}
 
@@ -911,7 +913,7 @@ bool ChatFrameBase::checkCommand(const tstring& aCmd, tstring& message_, tstring
 		}
 	} else if (stricmp(cmd.c_str(), _T("u")) == 0) {
 		if (!param.empty()) {
-			ActionUtil::openLink(Text::toT(Util::encodeURI(Text::fromT(param))));
+			ActionUtil::openLink(Text::toT(LinkUtil::encodeURI(Text::fromT(param))));
 		}
 	} else if (stricmp(cmd.c_str(), _T("optimizedb")) == 0) {
 		HashManager::getInstance()->startMaintenance(false);
@@ -954,7 +956,7 @@ bool ChatFrameBase::checkCommand(const tstring& aCmd, tstring& message_, tstring
 	} else if (stricmp(cmd.c_str(), _T("f")) == 0) {
 		ctrlClient.findText();
 	} else if (stricmp(cmd.c_str(), _T("whois")) == 0) {
-		ctrlClient.handleSearchIP(Text::toT(Util::encodeURI(Text::fromT(param))));
+		ctrlClient.handleSearchIP(Text::toT(LinkUtil::encodeURI(Text::fromT(param))));
 	} else if ((stricmp(cmd.c_str(), _T("clear")) == 0) || (stricmp(cmd.c_str(), _T("cls")) == 0)) {
 		ctrlClient.handleEditClearAll();
 	} else if (Util::stricmp(cmd.c_str(), _T("conn")) == 0 || Util::stricmp(cmd.c_str(), _T("connection")) == 0) {

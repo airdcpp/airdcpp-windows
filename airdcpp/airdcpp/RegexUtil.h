@@ -16,26 +16,28 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef SYSTEM_UTIL_H
-#define SYSTEM_UTIL_H
+#ifndef DCPLUSPLUS_DCPP_REGEX_UTIL_H
+#define DCPLUSPLUS_DCPP_REGEX_UTIL_H
 
 #include <airdcpp/typedefs.h>
 
+namespace dcpp {
 
-class SystemUtil {
+class RegexUtil {
 public:
-	static double getFontFactor();
+	static bool listRegexMatch(const StringList& l, const boost::regex& aReg);
+	static int listRegexCount(const StringList& l, const boost::regex& aReg);
+	static void listRegexSubtract(StringList& l, const boost::regex& aReg);
+	static bool stringRegexMatch(const string& aReg, const string& aString);
 
-	static bool isElevated();
-	static void playSound(const tstring& sound);
-	static bool getVersionInfo(OSVERSIONINFOEX& ver);
+	static void getRegexMatchesT(const tstring& aString, TStringList& l, const boost::wregex& aReg);
+	static void getRegexMatches(const string& aString, StringList& l, const boost::regex& aReg);
 
-	static bool shutdown(int action);
-	static string getCompileDate();
+	static string regexEscape(const string& aStr, bool isWildcard) noexcept;
 
-	static time_t fromSystemTime(const SYSTEMTIME* pTime);
-	static void toSystemTime(const time_t aTime, SYSTEMTIME* sysTime);
+	static const string getPathReg() noexcept;
 };
 
+}
 
-#endif // !defined(SYSTEM_UTIL_H)
+#endif // !defined(DCPLUSPLUS_DCPP_REGEX_UTIL_H)

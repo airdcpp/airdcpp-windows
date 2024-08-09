@@ -19,11 +19,11 @@
 #include "stdinc.h"
 #include "ClientManager.h"
 
-#include "AirUtil.h"
 #include "ConnectivityManager.h"
 #include "ConnectionManager.h"
 #include "DebugManager.h"
 #include "FavoriteManager.h"
+#include "LinkUtil.h"
 #include "LogManager.h"
 #include "QueueManager.h"
 #include "RelevanceSearch.h"
@@ -50,7 +50,7 @@ ClientManager::~ClientManager() {
 }
 
 ClientPtr ClientManager::makeClient(const string& aHubURL, const ClientPtr& aOldClient) noexcept {
-	if (AirUtil::isAdcHub(aHubURL)) {
+	if (LinkUtil::isAdcHub(aHubURL)) {
 		return std::make_shared<AdcHub>(aHubURL, aOldClient);
 	}
 
@@ -407,7 +407,7 @@ string ClientManager::findHub(const string& aIpPort, bool aNmdc) const noexcept 
 
 	RLock l(cs);
 	for (const auto& c: clients | views::values) {
-		if (c->getIp() == ip && AirUtil::isAdcHub(c->getHubUrl()) == !aNmdc) {
+		if (c->getIp() == ip && LinkUtil::isAdcHub(c->getHubUrl()) == !aNmdc) {
 			// If exact match is found, return it
 			if (c->getPort() == port) {
 				return c->getHubUrl();
@@ -437,7 +437,7 @@ HintedUser ClientManager::findLegacyUser(const string& aNick) const noexcept {
 
 	RLock l(cs);
 	for (const auto& i: clients | views::values) {
-		if (!AirUtil::isAdcHub(i->getHubUrl())) {
+		if (!LinkUtil::isAdcHub(i->getHubUrl())) {
 			auto nmdcHub = static_cast<NmdcHub*>(i.get());
 
 			/** @todo run the search directly on non-UTF-8 nicks when we store them. */

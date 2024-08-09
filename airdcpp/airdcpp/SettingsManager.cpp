@@ -19,7 +19,6 @@
 #include "stdinc.h"
 #include "SettingsManager.h"
 
-#include "AirUtil.h"
 #include "CID.h"
 #include "ConnectivityManager.h"
 #include "DCPlusPlus.h"
@@ -28,9 +27,12 @@
 #include "HubSettings.h"
 #include "LogManager.h"
 #include "Mapper_MiniUPnPc.h"
+#include "NetworkUtil.h"
+#include "PathUtil.h"
 #include "ResourceManager.h"
 #include "SimpleXML.h"
 #include "StringTokenizer.h"
+#include "SystemUtil.h"
 #include "Util.h"
 #include "version.h"
 
@@ -39,7 +41,7 @@
 namespace dcpp {
 
 #define CONFIG_NAME "DCPlusPlus.xml"
-#define CONFIG_DIR Util::PATH_USER_CONFIG
+#define CONFIG_DIR AppUtil::PATH_USER_CONFIG
 
 StringList SettingsManager::connectionSpeeds = { "0.1", "0.2", "0.5", "1", "2", "5", "8", "10", "20", "30", "40", "50", "60", "100", "200", "1000" };
 
@@ -383,7 +385,7 @@ const string SettingsManager::settingTags[] =
 
 SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 {
-	setDefault(NICK, Util::getSystemUsername());
+	setDefault(NICK, SystemUtil::getSystemUsername());
 
 	setDefault(MAX_UPLOAD_SPEED_MAIN, 0);
 	setDefault(MAX_DOWNLOAD_SPEED_MAIN, 0);
@@ -394,7 +396,7 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(BANDWIDTH_LIMIT_END, 1);
 	setDefault(SLOTS_ALTERNATE_LIMITING, 1);
 	
-	setDefault(DOWNLOAD_DIRECTORY, Util::getPath(Util::PATH_DOWNLOADS));
+	setDefault(DOWNLOAD_DIRECTORY, AppUtil::getPath(AppUtil::PATH_DOWNLOADS));
 	setDefault(UPLOAD_SLOTS, 2);
 	setDefault(MAX_COMMAND_LENGTH, 512*1024); // 512 KiB
 
@@ -424,7 +426,7 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(HUBLIST_SERVERS, "https://www.te-home.net/?do=hublist&get=hublist.xml.bz2;https://dchublist.org/hublist.xml.bz2;https://dchublist.ru/hublist.xml.bz2;https://dcnf.github.io/Hublist/hublist.xml.bz2;https://hublist.pwiam.com/hublist.xml.bz2;");
 	setDefault(DOWNLOAD_SLOTS, 50);
 	setDefault(MAX_DOWNLOAD_SPEED, 0);
-	setDefault(LOG_DIRECTORY, Util::getPath(Util::PATH_USER_CONFIG) + "Logs" PATH_SEPARATOR_STR);
+	setDefault(LOG_DIRECTORY, AppUtil::getPath(AppUtil::PATH_USER_CONFIG) + "Logs" PATH_SEPARATOR_STR);
 	setDefault(LOG_UPLOADS, false);
 	setDefault(LOG_DOWNLOADS, false);
 	setDefault(LOG_PRIVATE_CHAT, false);
@@ -476,9 +478,9 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(NO_IP_OVERRIDE6, false);
 	setDefault(SOCKET_IN_BUFFER, 0); // OS default
 	setDefault(SOCKET_OUT_BUFFER, 0); // OS default
-	setDefault(TLS_TRUSTED_CERTIFICATES_PATH, Util::getPath(Util::PATH_USER_CONFIG) + "Certificates" PATH_SEPARATOR_STR);
-	setDefault(TLS_PRIVATE_KEY_FILE, Util::getPath(Util::PATH_USER_CONFIG) + "Certificates" PATH_SEPARATOR_STR "client.key");
-	setDefault(TLS_CERTIFICATE_FILE, Util::getPath(Util::PATH_USER_CONFIG) + "Certificates" PATH_SEPARATOR_STR "client.crt");
+	setDefault(TLS_TRUSTED_CERTIFICATES_PATH, AppUtil::getPath(AppUtil::PATH_USER_CONFIG) + "Certificates" PATH_SEPARATOR_STR);
+	setDefault(TLS_PRIVATE_KEY_FILE, AppUtil::getPath(AppUtil::PATH_USER_CONFIG) + "Certificates" PATH_SEPARATOR_STR "client.key");
+	setDefault(TLS_CERTIFICATE_FILE, AppUtil::getPath(AppUtil::PATH_USER_CONFIG) + "Certificates" PATH_SEPARATOR_STR "client.crt");
 	setDefault(AUTO_REFRESH_TIME, 60);
 	setDefault(AUTO_SEARCH_LIMIT, 15);
 	setDefault(AUTO_KICK_NO_FAVS, false);
@@ -910,7 +912,7 @@ SettingsManager::SettingsManager() : connectionRegex("(\\d+(\\.\\d+)?)")
 	setDefault(CLIENT_COMMANDS, true);
 	setDefault(POPUP_FONT, "MS Shell Dlg,-11,400,0");
 	setDefault(POPUP_TITLE_FONT, "MS Shell Dlg,-11,400,0");
-	setDefault(POPUPFILE, Util::getPath(Util::PATH_RESOURCES) + "popup.bmp");
+	setDefault(POPUPFILE, AppUtil::getPath(AppUtil::PATH_RESOURCES) + "popup.bmp");
 	setDefault(PM_PREVIEW, true);
 	setDefault(POPUP_TIME, 5);
 	setDefault(MAX_MSG_LENGTH, 120);
@@ -1111,7 +1113,7 @@ void SettingsManager::load(StartupLoader& aLoader) noexcept {
 	//check the bind address
 	auto checkBind = [&] (SettingsManager::StrSetting aSetting, bool v6) {
 		if (!isDefault(aSetting)) {
-			auto adapters = AirUtil::getNetworkAdapters(v6);
+			auto adapters = NetworkUtil::getNetworkAdapters(v6);
 			auto p = ranges::find_if(adapters, [this, aSetting](const AdapterInfo& aInfo) { return aInfo.ip == get(aSetting); });
 			if (p == adapters.end() && aLoader.messageF(STRING_F(BIND_ADDRESS_MISSING, (v6 ? "IPv6" : "IPv4") % get(aSetting)), true, false)) {
 				unsetKey(aSetting);
@@ -1417,7 +1419,7 @@ vector<ToolbarIconEnum> SettingsManager::getDefaultToolbarOrder() noexcept {
 	});
 }
 
-bool SettingsManager::loadSettingFile(Util::Paths aPath, const string& aFileName, XMLParseCallback&& aParseCallback, const MessageCallback& aCustomReportF) noexcept {
+bool SettingsManager::loadSettingFile(AppUtil::Paths aPath, const string& aFileName, XMLParseCallback&& aParseCallback, const MessageCallback& aCustomReportF) noexcept {
 	const auto parseXmlFile = [&](const string& aPath) {
 		SimpleXML xml;
 		try {
@@ -1437,19 +1439,19 @@ bool SettingsManager::loadSettingFile(Util::Paths aPath, const string& aFileName
 	return loadSettingFile(aPath, aFileName, parseXmlFile, aCustomReportF);
 }
 
-bool SettingsManager::loadSettingFile(Util::Paths aPath, const string& aFileName, PathParseCallback&& aParseCallback, const MessageCallback& aCustomReportF) noexcept {
-	const auto fullPath = Util::getPath(aPath) + aFileName;
+bool SettingsManager::loadSettingFile(AppUtil::Paths aPath, const string& aFileName, PathParseCallback&& aParseCallback, const MessageCallback& aCustomReportF) noexcept {
+	const auto fullPath = AppUtil::getPath(aPath) + aFileName;
 
-	Util::migrate(fullPath);
+	AppUtil::migrate(fullPath);
 
-	if (!Util::fileExists(fullPath)) {
+	if (!PathUtil::fileExists(fullPath)) {
 		return false;
 	}
 
 	const auto backupPath = fullPath + ".bak";
 	if (!aParseCallback(fullPath)) {
 		// Try to load the file that was previously loaded succesfully
-		if (!Util::fileExists(backupPath) || !aParseCallback(backupPath)) {
+		if (!PathUtil::fileExists(backupPath) || !aParseCallback(backupPath)) {
 			return false;
 		}
 
@@ -1478,12 +1480,12 @@ bool SettingsManager::loadSettingFile(Util::Paths aPath, const string& aFileName
 	return true;
 }
 
-bool SettingsManager::saveSettingFile(SimpleXML& aXML, Util::Paths aPath, const string& aFileName, const MessageCallback& aCustomErrorF) noexcept {
+bool SettingsManager::saveSettingFile(SimpleXML& aXML, AppUtil::Paths aPath, const string& aFileName, const MessageCallback& aCustomErrorF) noexcept {
 	return saveSettingFile(SimpleXML::utf8Header + aXML.toXML(), aPath, aFileName, aCustomErrorF);
 }
 
-bool SettingsManager::saveSettingFile(const string& aContent, Util::Paths aPath, const string& aFileName, const MessageCallback& aCustomErrorF) noexcept {
-	auto fname = Util::getPath(aPath) + aFileName;
+bool SettingsManager::saveSettingFile(const string& aContent, AppUtil::Paths aPath, const string& aFileName, const MessageCallback& aCustomErrorF) noexcept {
+	auto fname = AppUtil::getPath(aPath) + aFileName;
 	try {
 		{
 			File f(fname + ".tmp", File::WRITE, File::CREATE | File::TRUNCATE, File::BUFFER_WRITE_THROUGH);

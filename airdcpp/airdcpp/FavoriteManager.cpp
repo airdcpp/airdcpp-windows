@@ -30,7 +30,7 @@
 namespace dcpp {
 
 #define CONFIG_FAV_NAME "Favorites.xml"
-#define CONFIG_DIR Util::PATH_USER_CONFIG
+#define CONFIG_DIR AppUtil::PATH_USER_CONFIG
 
 using ranges::find_if;
 

@@ -20,6 +20,7 @@
 #include "SplashWindow.h"
 
 #include <airdcpp/Text.h>
+#include <airdcpp/Util.h>
 #include <airdcpp/version.h>
 
 #include "resource.h"

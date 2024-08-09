@@ -22,10 +22,11 @@
 #include "typedefs.h"
 
 #include "HintedUser.h"
+#include "PathUtil.h"
 #include "QueueItemBase.h"
 #include "ResourceManager.h"
 #include "Transfer.h"
-#include "Util.h"
+#include "ValueGenerator.h"
 
 
 namespace dcpp {
@@ -116,17 +117,17 @@ namespace dcpp {
 
 		string getName() {
 			switch (type) {
-			case Transfer::TYPE_TREE: return "TTH: " + Util::getFileName(target);
+			case Transfer::TYPE_TREE: return "TTH: " + PathUtil::getFileName(target);
 			case Transfer::TYPE_FULL_LIST: return STRING(TYPE_FILE_LIST);
 			case Transfer::TYPE_PARTIAL_LIST: return STRING(TYPE_FILE_LIST_PARTIAL);
-			default: return Util::getFileName(target);
+			default: return PathUtil::getFileName(target);
 			}
 		}
 	private:
 		HintedUser user;
 		const bool download;
 
-		const TransferInfoToken token = Util::rand();
+		const TransferInfoToken token = ValueGenerator::rand();
 		const std::string stringToken;
 
 		bool transferFailed = false;

@@ -35,6 +35,7 @@
 #include <airdcpp/ShareManager.h>
 #include <airdcpp/UploadManager.h>
 #include <airdcpp/DownloadManager.h>
+#include <airdcpp/SystemUtil.h>
 #include <airdcpp/TimerManager.h>
 #include <airdcpp/version.h>
 #include <airdcpp/Socket.h>
@@ -87,7 +88,7 @@ tstring ChatCommands::UselessInfo() {
 	}
 
 	result += _T("OS\n");
-	result += Text::toT(Util::getOsVersion());
+	result += Text::toT(SystemUtil::getOsVersion());
 	result += _T("\n");
 
 	result += _T("\nDisk\n");
@@ -356,7 +357,7 @@ string ChatCommands::generateStats() {
 		% Util::formatBytes(Socket::getTotalUp())
 		% Util::formatBytes(SETTING(TOTAL_DOWNLOAD))
 		% Util::formatBytes(SETTING(TOTAL_UPLOAD))
-		% Util::getOsVersion()
+		% SystemUtil::getOsVersion()
 		% getSysUptime()
 		% CPUInfo());
 	return ret;

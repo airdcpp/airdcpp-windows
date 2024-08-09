@@ -17,6 +17,7 @@ Copyright (c) 1999 - 2003 by PJ Naughter.  (Web: www.naughter.com, Email: pjna@n
 #include "LineDlg.h"
 #include "ShareDirectories.h"
 
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/ResourceManager.h>
 #include <airdcpp/Util.h>
 #include <airdcpp/version.h>
@@ -416,7 +417,7 @@ HTREEITEM FolderTree::InsertFileItem(HTREEITEM hParent, FolderTreeItemInfo *pIte
 	
 	bool bChecked = false;
 	if (!pItem->m_sFQPath.empty()) {
-		string path = Util::ensureTrailingSlash(Text::fromT(pItem->m_sFQPath));
+		string path = PathUtil::ensureTrailingSlash(Text::fromT(pItem->m_sFQPath));
 
 		bChecked = sp->shareFolder(path);
 		SetChecked(hItem, bChecked);
@@ -558,12 +559,12 @@ void FolderTree::checkRemovedDirs(const tstring& aParentPath, HTREEITEM hParent)
 		if (sd->found || !sd->isCurItem())
 			continue;
 
-		auto dir = Util::getParentDir(sd->dir->path);
+		auto dir = PathUtil::getParentDir(sd->dir->path);
 		if (dir == parentPath) {
 			//this should have been inserted
 			FolderTreeItemInfo* pItem = new FolderTreeItemInfo;
 			pItem->m_sFQPath = Text::toT(sd->dir->path);
-			pItem->m_sRelativePath = Text::toT(Util::getLastDir(sd->dir->path));
+			pItem->m_sRelativePath = Text::toT(PathUtil::getLastDir(sd->dir->path));
 			pItem->m_removed = true;
 
 			tstring sLabel;
@@ -1405,7 +1406,7 @@ LRESULT FolderTree::OnUnChecked(HTREEITEM hItem, BOOL& /*bHandled*/)
 	HTREEITEM hSharedParent = HasSharedParent(hItem);
 	// if no parent is checked remove this root folder from share
 	if(hSharedParent == NULL) {
-		auto path = Util::ensureTrailingSlash(Text::fromT(pItem->m_sFQPath));
+		auto path = PathUtil::ensureTrailingSlash(Text::fromT(pItem->m_sFQPath));
 
 		sp->removeExcludeFolder(path);
 		auto confirmOption = ShareDirectories::CONFIRM_ASK;
@@ -1413,7 +1414,7 @@ LRESULT FolderTree::OnUnChecked(HTREEITEM hItem, BOOL& /*bHandled*/)
 		UpdateParentItems(hItem);
 	} else if(GetChecked(GetParentItem(hItem))) {
 		// if the parent is checked add this folder to excludes
-		auto path = Util::ensureTrailingSlash(Text::fromT(pItem->m_sFQPath));
+		auto path = PathUtil::ensureTrailingSlash(Text::fromT(pItem->m_sFQPath));
 		sp->addExcludeFolder(path);
 	}
 	
@@ -1518,7 +1519,7 @@ void FolderTree::ShareParentButNotSiblings(HTREEITEM hItem)
 	{
 		SetChecked(hParent, true);
 		pItem = (FolderTreeItemInfo*) GetItemData(hParent);
-		string path = Util::ensureTrailingSlash(Text::fromT(pItem->m_sFQPath));
+		string path = PathUtil::ensureTrailingSlash(Text::fromT(pItem->m_sFQPath));
 		//m_nShareSizeDiff += ShareManager::getInstance()->removeExcludeFolder(path);
 		sp->removeExcludeFolder(path);
 
@@ -1532,7 +1533,7 @@ void FolderTree::ShareParentButNotSiblings(HTREEITEM hItem)
 			{
 				pItem = (FolderTreeItemInfo*) GetItemData(hChild);
 				if(hChild != hItem) {
-					path = Util::ensureTrailingSlash(Text::fromT(pItem->m_sFQPath));
+					path = PathUtil::ensureTrailingSlash(Text::fromT(pItem->m_sFQPath));
 					//m_nShareSizeDiff -= ShareManager::getInstance()->addExcludeFolder(path);
 					sp->addExcludeFolder(path);
 				}
@@ -1543,7 +1544,7 @@ void FolderTree::ShareParentButNotSiblings(HTREEITEM hItem)
 	else
 	{
 		pItem = (FolderTreeItemInfo*) GetItemData(hItem);
-		auto path = Util::ensureTrailingSlash(Text::fromT(pItem->m_sFQPath));
+		auto path = PathUtil::ensureTrailingSlash(Text::fromT(pItem->m_sFQPath));
 		sp->removeExcludeFolder(path);
 	}
 }

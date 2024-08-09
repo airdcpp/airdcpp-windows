@@ -34,7 +34,6 @@
 #include <airdcpp/modules/RSSManager.h>
 #include <airdcpp/modules/AutoSearchManagerListener.h>
 #include <airdcpp/QueueManagerListener.h>
-#include <airdcpp/AirUtil.h>
 #include <airdcpp/TaskQueue.h>
 
 

@@ -29,6 +29,7 @@
 #include "CryptoManager.h"
 #include "FavoriteManager.h"
 #include "LogManager.h"
+#include "PathUtil.h"
 #include "QueueManager.h"
 #include "ResourceManager.h"
 #include "ShareManager.h"
@@ -142,7 +143,7 @@ bool UploadManager::prepareFile(UserConnection& aSource, const string& aType, co
 
 				ShareManager::getInstance()->toRealWithSize(aFile, profiles, aSource.getHintedUser(), sourceFile, fileSize, noAccess);
 
-				miniSlot = freeSlotMatcher.match(Util::getFileName(sourceFile));
+				miniSlot = freeSlotMatcher.match(PathUtil::getFileName(sourceFile));
 			}
 
 			miniSlot = miniSlot || (fileSize <= Util::convertSize(SETTING(SET_MINISLOT_SIZE), Util::KB));

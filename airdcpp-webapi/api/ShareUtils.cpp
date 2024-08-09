@@ -99,7 +99,7 @@ namespace webserver {
 	int ShareUtils::compareItems(const ShareDirectoryInfoPtr& a, const ShareDirectoryInfoPtr& b, int aPropertyName) noexcept {
 		switch (aPropertyName) {
 		case PROP_TYPE: {
-			return Util::directoryContentSort(a->contentInfo, b->contentInfo);
+			return DirectoryContentInfo::Sort(a->contentInfo, b->contentInfo);
 		}
 		case PROP_PROFILES: {
 			return compare(a->profiles.size(), b->profiles.size());

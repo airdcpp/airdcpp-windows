@@ -22,6 +22,7 @@
 #include "OMenu.h"
 
 #include <airdcpp/FavoriteManager.h>
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/ShareManager.h>
 #include <airdcpp/QueueManager.h>
 #include <airdcpp/Util.h>
@@ -76,7 +77,7 @@ public:
 			return;
 
 		auto target = Text::fromT(targetT);
-		SettingsManager::getInstance()->addToHistory(dirDlg ? target : Util::getFilePath(target), SettingsManager::HISTORY_DOWNLOAD_DIR);
+		SettingsManager::getInstance()->addToHistory(dirDlg ? target : PathUtil::getFilePath(target), SettingsManager::HISTORY_DOWNLOAD_DIR);
 		onDownload(target, aUseWhole, aIsSizeUnknown, Priority::DEFAULT);
 	}
 
@@ -109,7 +110,7 @@ public:
 			// If we have a dupe path, pick the directory path from it
 			optional<string> virtualFilePath;
 			if (aVirtualPath && !(*aVirtualPath).empty() && (*aVirtualPath).back() != ADC_SEPARATOR) {
-				virtualFilePath = Util::getAdcFilePath(*aVirtualPath);
+				virtualFilePath = PathUtil::getAdcFilePath(*aVirtualPath);
 			}
 
 			appendDownloadTo(*targetMenuWhole, true, true, nullopt, virtualFilePath, volumes);
@@ -213,7 +214,7 @@ private:
 			auto doAppend = [&](const tstring& aTitle) {
 				//don't list TTH paths again in here
 				for (auto i = targets.begin(); i != targets.end();) {
-					if (find_if(tthTargets.begin(), tthTargets.end(), [i](const string& aTarget) { return Util::getFilePath(aTarget) == *i; }) != tthTargets.end()) {
+					if (find_if(tthTargets.begin(), tthTargets.end(), [i](const string& aTarget) { return PathUtil::getFilePath(aTarget) == *i; }) != tthTargets.end()) {
 						i = targets.erase(i);
 					} else {
 						i++;
@@ -224,17 +225,17 @@ private:
 					targetMenu.InsertSeparatorLast(aTitle);
 					for (auto& target : targets) {
 						//use the parent if it's a dir
-						//string displayText = isDir ? Util::getParentDir(target) + " (" + Util::getLastDir(target) + ")" : target;
-						string location = isDir ? Util::getParentDir(target) : target;
+						//string displayText = isDir ? PathUtil::getParentDir(target) + " (" + PathUtil::getLastDir(target) + ")" : target;
+						string location = isDir ? PathUtil::getParentDir(target) : target;
 						targetMenu.appendItem(Text::toT(location), [=] { onDownload(location, wholeDir, isSizeUnknown, Priority::DEFAULT); });
 					}
 				}
 			};
 
-			targets = QueueManager::getInstance()->getAdcDirectoryDupePaths(isDir ? *aVirtualPath : Util::getAdcFilePath(*aVirtualPath));
+			targets = QueueManager::getInstance()->getAdcDirectoryDupePaths(isDir ? *aVirtualPath : PathUtil::getAdcFilePath(*aVirtualPath));
 			doAppend(TSTRING(QUEUED_DUPE_PATHS));
 
-			targets = ShareManager::getInstance()->getAdcDirectoryDupePaths(isDir ? *aVirtualPath : Util::getAdcFilePath(*aVirtualPath));
+			targets = ShareManager::getInstance()->getAdcDirectoryDupePaths(isDir ? *aVirtualPath : PathUtil::getAdcFilePath(*aVirtualPath));
 			doAppend(TSTRING(SHARED_DUPE_PATHS));
 		}
 	}

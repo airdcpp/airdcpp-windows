@@ -27,6 +27,7 @@
 #include "HttpDownload.h"
 #include "Localization.h"
 #include "LogManager.h"
+#include "PathUtil.h"
 #include "ResourceManager.h"
 #include "ScopedFunctor.h"
 #include "SettingsManager.h"
@@ -205,7 +206,7 @@ void UpdateManager::completeLanguageDownload() {
 	if(!conn->buf.empty()) {
 		try {
 			auto path = Localization::getCurLanguageFilePath();
-			File::ensureDirectory(Util::getFilePath(path));
+			File::ensureDirectory(PathUtil::getFilePath(path));
 			File(path, File::WRITE, File::CREATE | File::TRUNCATE).write(conn->buf);
 			log(STRING_F(LANGUAGE_UPDATED, Localization::getCurLanguageName()), LogMessage::SEV_INFO);
 			fire(UpdateManagerListener::LanguageFinished());
@@ -325,7 +326,7 @@ void UpdateManager::completeLanguageCheck() {
 		if (Util::toDouble(conn->buf) > Localization::getCurLanguageVersion()) {
 			fire(UpdateManagerListener::LanguageDownloading());
 			conns[CONN_LANGUAGE_FILE] = make_unique<HttpDownload>(
-				links.language + Util::getFileName(Localization::getCurLanguageFilePath()),
+				links.language + PathUtil::getFileName(Localization::getCurLanguageFilePath()),
 				[this] { completeLanguageDownload(); }
 			);
 		} else {

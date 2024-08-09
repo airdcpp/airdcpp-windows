@@ -18,7 +18,7 @@
 
 #include "stdafx.h"
 
-#include "SystemUtil.h"
+#include "OSUtil.h"
 
 #include <mmsystem.h>
 #include <powrprof.h>
@@ -30,26 +30,26 @@
 #undef byte
 
 
-string SystemUtil::getCompileDate() {
+string OSUtil::getCompileDate() {
 	COleDateTime tCompileDate;
 	tCompileDate.ParseDateTime(_T(__DATE__), LOCALE_NOUSEROVERRIDE, 1033);
 	return Text::fromT(tCompileDate.Format(_T("%d.%m.%Y")).GetString());
 }
 
-double SystemUtil::getFontFactor() {
+/*double OSUtil::getFontFactor() {
 	return static_cast<float>(::GetDeviceCaps(::GetDC(reinterpret_cast<HWND>(0)), LOGPIXELSX)) / 96.0;
 }
 
-void SystemUtil::playSound(const tstring& sound) {
+void OSUtil::playSound(const tstring& sound) {
 	if (sound == _T("beep")) {
 		::MessageBeep(MB_OK);
 	}
 	else {
 		::PlaySound(sound.c_str(), 0, SND_FILENAME | SND_ASYNC);
 	}
-}
+}*/
 
-bool SystemUtil::getVersionInfo(OSVERSIONINFOEX& ver) {
+bool OSUtil::getVersionInfo(OSVERSIONINFOEX& ver) {
 	memzero(&ver, sizeof(OSVERSIONINFOEX));
 	ver.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
 
@@ -62,7 +62,7 @@ bool SystemUtil::getVersionInfo(OSVERSIONINFOEX& ver) {
 	return true;
 }
 
-bool SystemUtil::shutdown(int action) {
+bool OSUtil::shutdown(int action) {
 	// Prepare for shutdown
 	UINT iForceIfHung = 0;
 	OSVERSIONINFO osvi;
@@ -106,7 +106,7 @@ bool SystemUtil::shutdown(int action) {
 	}
 }
 
-time_t SystemUtil::fromSystemTime(const SYSTEMTIME* pTime) {
+time_t OSUtil::fromSystemTime(const SYSTEMTIME* pTime) {
 	struct tm tm;
 	memset(&tm, 0, sizeof(tm));
 
@@ -122,7 +122,7 @@ time_t SystemUtil::fromSystemTime(const SYSTEMTIME* pTime) {
 	return mktime(&tm);
 }
 
-void SystemUtil::toSystemTime(const time_t aTime, SYSTEMTIME* sysTime) {
+void OSUtil::toSystemTime(const time_t aTime, SYSTEMTIME* sysTime) {
 	tm _tm;
 	localtime_s(&_tm, &aTime);
 
@@ -138,33 +138,7 @@ void SystemUtil::toSystemTime(const time_t aTime, SYSTEMTIME* sysTime) {
 	sysTime->wMilliseconds = 0;
 }
 
-/*void SystemUtil::addUpdate(const string& aUpdater, bool aTesting) noexcept {
-	updated = true;
-	auto appPath = Util::getAppFilePath();
-
-	auto updateCmd = Text::toT("/update \"" + appPath + "\\\""); // The extra end slash is required!
-	if (isElevated()) {
-		updateCmd += _T(" /elevation");
-	}
-
-	if (aTesting) {
-		updateCmd += _T(" /test");
-	}
-
-	updateCommand = make_pair(Text::toT(aUpdater), updateCmd);
-}
-
-bool SystemUtil::runPendingUpdate() noexcept {
-	if (updated && !updateCommand.first.empty()) {
-		auto cmd = updateCommand.second + Text::toT(Util::getStartupParams(false));
-		ShellExecute(NULL, _T("runas"), updateCommand.first.c_str(), cmd.c_str(), NULL, SW_SHOWNORMAL);
-		return true;
-	}
-
-	return false;
-}*/
-
-bool SystemUtil::isElevated() {
+bool OSUtil::isElevated() {
 	BOOL fRet = FALSE;
 	HANDLE hToken = NULL;
 	if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken)) {

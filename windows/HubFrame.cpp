@@ -31,15 +31,18 @@
 #include "ActionUtil.h"
 
 #include <airdcpp/CryptoManager.h>
-#include <airdcpp/Message.h>
+#include <airdcpp/FavoriteManager.h>
 #include <airdcpp/IgnoreManager.h>
+#include <airdcpp/LinkUtil.h>
+#include <airdcpp/LogManager.h>
+#include <airdcpp/Message.h>
 #include <airdcpp/QueueManager.h>
+#include <airdcpp/PathUtil.h>
+#include <airdcpp/RegexUtil.h>
+#include <airdcpp/SettingsManager.h>
 #include <airdcpp/ShareManager.h>
 #include <airdcpp/UploadManager.h>
 #include <airdcpp/Util.h>
-#include <airdcpp/FavoriteManager.h>
-#include <airdcpp/LogManager.h>
-#include <airdcpp/SettingsManager.h>
 
 #include <airdcpp/modules/HighlightManager.h>
 
@@ -1485,11 +1488,11 @@ void HubFrame::on(KeyprintMismatch, const Client*) noexcept {
 void HubFrame::openLinksInTopic() {
 	StringList urls;
 	
-	boost::regex linkReg(AirUtil::getUrlReg());
-	AirUtil::getRegexMatches(client->getHubDescription(), urls, linkReg);
+	boost::regex linkReg(LinkUtil::getUrlReg());
+	RegexUtil::getRegexMatches(client->getHubDescription(), urls, linkReg);
 
 	for(auto& url: urls) {
-		Util::sanitizeUrl(url);
+		LinkUtil::sanitizeUrl(url);
 		ActionUtil::openLink(Text::toT(url));
 	}
 }
@@ -1663,7 +1666,7 @@ LRESULT HubFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/
 		return 0;
 
 	string file = ui->onlineUser->getLogPath();
-	if(Util::fileExists(file)) {
+	if(PathUtil::fileExists(file)) {
 		ActionUtil::viewLog(file, wID == IDC_USER_HISTORY);
 	} else {
 		WinUtil::showMessageBox(TSTRING(NO_LOG_FOR_USER));
@@ -1681,7 +1684,7 @@ string HubFrame::getLogPath(bool status) const {
 
 LRESULT HubFrame::onOpenHubLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	string filename = getLogPath(false);
-	if(Util::fileExists(filename)){
+	if(PathUtil::fileExists(filename)){
 		ActionUtil::viewLog(filename, wID == IDC_HISTORY);
 	} else {
 		WinUtil::showMessageBox(TSTRING(NO_LOG_FOR_HUB));	  

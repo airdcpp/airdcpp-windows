@@ -38,7 +38,7 @@ LRESULT NotepadFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	string tmp;
 	try {
 		auto path = WinUtil::getPath(WinUtil::PATH_NOTEPAD);
-		Util::migrate(path);
+		AppUtil::migrate(path);
 		tmp = File(path, File::READ, File::OPEN).read();
 	} catch (const FileException&) {
 		// ...

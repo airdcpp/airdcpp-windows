@@ -34,11 +34,13 @@
 #include <airdcpp/HashManager.h>
 #include <airdcpp/HubEntry.h>
 #include <airdcpp/Magnet.h>
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/SearchQuery.h>
 #include <airdcpp/SearchResult.h>
 #include <airdcpp/ShareManager.h>
 #include <airdcpp/SharePathValidator.h>
 #include <airdcpp/StringTokenizer.h>
+#include <airdcpp/ValueGenerator.h>
 
 namespace webserver {
 	ShareApi::ShareApi(Session* aSession) : 
@@ -186,7 +188,7 @@ namespace webserver {
 	json ShareApi::serializeFile(const ShareDirectory::File* aFile) noexcept {
 		auto realPath = aFile->getRealPath();
 		return {
-			{ "id", AirUtil::getPathId(realPath) },
+			{ "id", ValueGenerator::generatePathId(realPath) },
 			{ "name", aFile->getName().getNormal() },
 			{ "path", realPath },
 			{ "virtual_path", aFile->getAdcPath() },
@@ -205,7 +207,7 @@ namespace webserver {
 
 		auto realPath = aDirectory->getRealPath();
 		return {
-			{ "id", AirUtil::getPathId(realPath) },
+			{ "id", ValueGenerator::generatePathId(realPath) },
 			{ "name", aDirectory->getRealName().getNormal() },
 			{ "path", realPath },
 			{ "virtual_path", aDirectory->getAdcPath() },
@@ -290,7 +292,7 @@ namespace webserver {
 
 		// Parse share profile and query
 		auto profile = Deserializer::deserializeOptionalShareProfile(reqJson);
-		auto s = FileSearchParser::parseSearch(reqJson, true, Util::toString(Util::rand()));
+		auto s = FileSearchParser::parseSearch(reqJson, true, Util::toString(ValueGenerator::rand()));
 
 		// Search
 		SearchResultList results;
@@ -366,7 +368,7 @@ namespace webserver {
 		const auto optionalClient = Deserializer::deserializeClient(aRequest.getRequestBody(), true);
 
 		const auto filePath = aRequest.getSession()->getServer()->getFileServer().getTempFilePath(fileId);
-		if (filePath.empty() || !Util::fileExists(filePath)) {
+		if (filePath.empty() || !PathUtil::fileExists(filePath)) {
 			JsonUtil::throwError("file_id", JsonUtil::ERROR_INVALID, "Source file was not found");
 		}
 
@@ -433,7 +435,7 @@ namespace webserver {
 	}
 
 	api_return ShareApi::handleAddExclude(ApiRequest& aRequest) {
-		auto path = Util::validatePath(JsonUtil::getField<string>("path", aRequest.getRequestBody(), false), true);
+		auto path = PathUtil::validatePath(JsonUtil::getField<string>("path", aRequest.getRequestBody(), false), true);
 
 		try {
 			ShareManager::getInstance()->addExcludedPath(path);

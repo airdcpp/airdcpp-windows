@@ -25,6 +25,7 @@
 #include <web-server/JsonUtil.h>
 
 #include <airdcpp/DirectoryListingManager.h>
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/QueueManager.h>
 
 namespace webserver {
@@ -302,7 +303,7 @@ namespace webserver {
 		const auto& reqJson = aRequest.getRequestBody();
 		auto listPath = Validation::validateAdcDirectoryPath(JsonUtil::getField<string>("list_path", aRequest.getRequestBody(), false));
 
-		string targetDirectory, targetBundleName = Util::getAdcLastDir(listPath);
+		string targetDirectory, targetBundleName = PathUtil::getAdcLastDir(listPath);
 		Priority prio;
 		Deserializer::deserializeDownloadParams(aRequest.getRequestBody(), aRequest.getSession().get(), targetDirectory, targetBundleName, prio);
 

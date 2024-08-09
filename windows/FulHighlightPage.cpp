@@ -19,7 +19,7 @@
 
 #include "stdafx.h"
 
-#include <airdcpp/AirUtil.h>
+#include <airdcpp/DupeUtil.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/StringTokenizer.h>
 
@@ -241,7 +241,7 @@ void FulHighlightPage::addPreset(int preset) {
 			break;
 		case 4:
 			cs.setContext(HighlightManager::CONTEXT_CHAT);
-			cs.setMatch(_T("$Re:") + Text::toT(AirUtil::getReleaseRegLong(true)));
+			cs.setMatch(_T("$Re:") + Text::toT(DupeUtil::getReleaseRegLong(true)));
 			cs.setHasFgColor(true);
 			cs.setFgColor(RGB(153, 51, 153));
 			break;

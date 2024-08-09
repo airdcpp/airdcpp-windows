@@ -19,10 +19,11 @@
 #include "stdinc.h"
 #include "ShareTree.h"
 
-#include "AirUtil.h"
 #include "ClientManager.h"
+#include "DupeUtil.h"
 #include "File.h"
 #include "FilteredFile.h"
+#include "PathUtil.h"
 #include "ResourceManager.h"
 #include "SearchResult.h"
 #include "SearchQuery.h"
@@ -131,7 +132,7 @@ void ShareTree::toRealWithSize(const string& aVirtualFile, const ProfileTokenSet
 		// RLock l (cs);
 		findVirtuals<ProfileTokenSet>(aVirtualFile, aProfiles, dirs);
 
-		auto fileNameLower = Text::toLower(Util::getAdcFileName(aVirtualFile));
+		auto fileNameLower = Text::toLower(PathUtil::getAdcFileName(aVirtualFile));
 		for(const auto& d: dirs) {
 			auto file = d->findFileLower(fileNameLower);
 			if (file) {
@@ -182,7 +183,7 @@ void ShareTree::getRealPaths(const string& aVirtualPath, StringList& realPaths_,
 		}
 	} else {
 		// File
-		auto fileNameLower = Text::toLower(Util::getAdcFileName(aVirtualPath));
+		auto fileNameLower = Text::toLower(PathUtil::getAdcFileName(aVirtualPath));
 		for (const auto& d: dirs) {
 			auto file = d->findFileLower(fileNameLower);
 			if (file) {
@@ -195,19 +196,19 @@ void ShareTree::getRealPaths(const string& aVirtualPath, StringList& realPaths_,
 
 string ShareTree::realToVirtualAdc(const string& aPath, const OptionalProfileToken& aToken) const noexcept{
 	// RLock l(cs);
-	auto d = findDirectory(Util::getFilePath(aPath));
+	auto d = findDirectory(PathUtil::getFilePath(aPath));
 	if (!d || !d->hasProfile(aToken)) {
 		return Util::emptyString;
 	}
 
 	auto vPathAdc = d->getAdcPath();
-	if (Util::isDirectoryPath(aPath)) {
+	if (PathUtil::isDirectoryPath(aPath)) {
 		// Directory
 		return vPathAdc;
 	}
 
 	// It's a file
-	return vPathAdc + ADC_SEPARATOR_STR + Util::getFileName(aPath);
+	return vPathAdc + ADC_SEPARATOR_STR + PathUtil::getFileName(aPath);
 }
 
 string ShareTree::validateVirtualName(const string& aVirt) const noexcept {
@@ -334,7 +335,7 @@ void ShareTree::getDirectoriesByAdcName(const string& aAdcPath, ShareDirectory::
 		return;
 
 	// get the last meaningful directory to look up
-	auto nameInfo = AirUtil::getAdcDirectoryName(aAdcPath);
+	auto nameInfo = DupeUtil::getAdcDirectoryName(aAdcPath);
 
 	auto nameLower = Text::toLower(nameInfo.first);
 	const auto directories = lowerDirNameMap.equal_range(&nameLower);
@@ -372,9 +373,9 @@ bool ShareTree::isFileShared(const TTHValue& aTTH, ProfileToken aProfile) const 
 }
 
 ShareDirectory::File* ShareTree::findFile(const string& aPath) const noexcept {
-	auto d = findDirectory(Util::getFilePath(aPath));
+	auto d = findDirectory(PathUtil::getFilePath(aPath));
 	if (d) {
-		auto fileNameLower = Text::toLower(Util::getFileName(aPath));
+		auto fileNameLower = Text::toLower(PathUtil::getFileName(aPath));
 		auto file = d->findFileLower(fileNameLower);
 		if (file) {
 			return file;
@@ -486,7 +487,7 @@ ShareRoot::Ptr ShareTree::setRefreshState(const string& aRefreshPath, ShareRootR
 	{
 		// RLock l(cs);
 		auto p = find_if(rootPaths | views::values, [&](const ShareDirectory::Ptr& aDir) {
-			return AirUtil::isParentOrExactLocal(aDir->getRoot()->getPath(), aRefreshPath);
+			return PathUtil::isParentOrExactLocal(aDir->getRoot()->getPath(), aRefreshPath);
 		});
 
 		if (p.base() == rootPaths.end()) {
@@ -598,7 +599,7 @@ bool ShareTree::applyRefreshChanges(ShareRefreshInfo& ri, ProfileTokenSet* aDirt
 
 		if (!parent) {
 			// Create new parent
-			parent = getDirectory(Util::getParentDir(ri.path));
+			parent = getDirectory(PathUtil::getParentDir(ri.path));
 			if (!parent) {
 				return false;
 			}
@@ -762,7 +763,7 @@ MemoryInputStream* ShareTree::generateTTHList(const string& aVirtualPath, bool r
 }
 
 bool ShareTree::addDirectoryResult(const ShareDirectory* aDir, SearchResultList& aResults, const OptionalProfileToken& aProfile, SearchQuery& srch) const noexcept {
-	const string path = srch.addParents ? Util::getAdcParentDir(aDir->getAdcPath()) : aDir->getAdcPath();
+	const string path = srch.addParents ? PathUtil::getAdcParentDir(aDir->getAdcPath()) : aDir->getAdcPath();
 
 	// Have we added it already?
 	auto p = find_if(aResults, [&path](const SearchResultPtr& sr) { return sr->getAdcPath() == path; });
@@ -809,7 +810,7 @@ void ShareTree::search(SearchResultList& results, SearchQuery& srch, const Optio
 		tthSearches++;
 		const auto i = tthIndex.equal_range(const_cast<TTHValue*>(&(*srch.root)));
 		for(auto& f: i | pair_to_range | views::values) {
-			if (f->hasProfile(aProfile) && AirUtil::isParentOrExactAdc(aDir, f->getAdcPath())) {
+			if (f->hasProfile(aProfile) && PathUtil::isParentOrExactAdc(aDir, f->getAdcPath())) {
 				f->addSR(results, srch.addParents);
 				return;
 			}
@@ -929,12 +930,12 @@ ShareDirectory::Ptr ShareTree::findDirectory(const string& aRealPath) const noex
 }
 
 void ShareTree::addHashedFile(const string& aRealPath, const HashedFile& aFileInfo, ProfileTokenSet* dirtyProfiles) noexcept {
-	auto d = getDirectory(Util::getFilePath(aRealPath));
+	auto d = getDirectory(PathUtil::getFilePath(aRealPath));
 	if (!d) {
 		return;
 	}
 
-	d->addFile(Util::getFileName(aRealPath), aFileInfo, tthIndex, *bloom.get(), sharedSize, dirtyProfiles);
+	d->addFile(PathUtil::getFileName(aRealPath), aFileInfo, tthIndex, *bloom.get(), sharedSize, dirtyProfiles);
 }
 
 GroupedDirectoryMap ShareTree::getGroupedDirectories() const noexcept {

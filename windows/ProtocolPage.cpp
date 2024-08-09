@@ -18,11 +18,11 @@
 
 #include "stdafx.h"
 
+#include <airdcpp/ConnectivityManager.h>
+#include <airdcpp/NetworkUtil.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/Socket.h>
-#include <airdcpp/AirUtil.h>
 #include <airdcpp/UpdateManager.h>
-#include <airdcpp/ConnectivityManager.h>
 #include <airdcpp/version.h>
 
 #include "Resource.h"
@@ -300,7 +300,7 @@ void ProtocolPage::fixControls() {
 
 void ProtocolPage::getAddresses() {
 	// fill the combo
-	bindAdapters = AirUtil::getCoreBindAdapters(v6);
+	bindAdapters = NetworkUtil::getCoreBindAdapters(v6);
 
 	const auto& curSetting = v6 ? SETTING(BIND_ADDRESS6) : SETTING(BIND_ADDRESS);
 	WinUtil::insertBindAddresses(bindAdapters, BindCombo, curSetting);

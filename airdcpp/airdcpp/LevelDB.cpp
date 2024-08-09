@@ -22,6 +22,7 @@
 #include "Exception.h"
 #include "File.h"
 #include "LogManager.h"
+#include "PathUtil.h"
 #include "ResourceManager.h"
 #include "Thread.h"
 #include "Util.h"
@@ -62,7 +63,7 @@ LevelDB::LevelDB(const string& aPath, const string& aFriendlyName, uint64_t cach
 string LevelDB::getRepairFlag() const { return dbPath + "REPAIR"; }
 
 void LevelDB::open(StepFunction stepF, MessageFunction messageF) {
-	bool forceRepair = Util::fileExists(getRepairFlag());
+	bool forceRepair = PathUtil::fileExists(getRepairFlag());
 	if (forceRepair) {
 		repair(stepF, messageF);
 		File::deleteFile(getRepairFlag());

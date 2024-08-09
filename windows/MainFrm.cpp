@@ -49,7 +49,7 @@
 #include "BrowseDlg.h"
 #include "SplashWindow.h"
 #include "ActionUtil.h"
-#include "SystemUtil.h"
+#include "OSUtil.h"
 #include "TransferView.h"
 #include "HashProgressDlg.h"
 
@@ -70,10 +70,12 @@
 #include <airdcpp/HashManager.h>
 #include <airdcpp/LogManager.h>
 #include <airdcpp/MappingManager.h>
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/PrivateChatManager.h>
 #include <airdcpp/SettingHolder.h>
 #include <airdcpp/ShareManager.h>
 #include <airdcpp/StringTokenizer.h>
+#include <airdcpp/SystemUtil.h>
 #include <airdcpp/ThrottleManager.h>
 #include <airdcpp/UpdateManager.h>
 #include <airdcpp/Updater.h>
@@ -93,7 +95,7 @@ bool MainFrame::isShutdownStatus = false;
 #define ICON_SPACE 24
 
 #define CONFIG_FRAMES_NAME "Frames.xml"
-#define CONFIG_DIR Util::PATH_USER_CONFIG
+#define CONFIG_DIR AppUtil::PATH_USER_CONFIG
 
 MainFrame::MainFrame() : CSplitterImpl(false),
 	transferView(make_unique<TransferView>()), hashProgress(make_unique<HashProgressDlg>()),
@@ -113,7 +115,7 @@ LRESULT MainFrame::onOpenDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, B
 		ActionUtil::openFolder(Text::toT(SETTING(LOG_DIRECTORY)));
 		break;
 	case IDC_OPEN_CONFIG_DIR:
-		ActionUtil::openFolder(Text::toT(Util::getPath(Util::PATH_USER_CONFIG)));
+		ActionUtil::openFolder(Text::toT(AppUtil::getPath(AppUtil::PATH_USER_CONFIG)));
 		break;
 	case IDC_OPEN_DOWNLOADS:
 		ActionUtil::openFile(Text::toT(SETTING(DOWNLOAD_DIRECTORY)));
@@ -206,7 +208,7 @@ public:
 };
 
 LRESULT MainFrame::onMatchAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	ListMatcher* matcher = new ListMatcher(File::findFiles(Util::getListPath(), "*.xml*"));
+	ListMatcher* matcher = new ListMatcher(File::findFiles(AppUtil::getListPath(), "*.xml*"));
 	try {
 		matcher->start();
 	} catch(const ThreadException&) {
@@ -345,12 +347,12 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	}
 
 	if(SETTING(TESTWRITE)) {
-		TestWrite(true, Util::usingLocalMode());
+		TestWrite(true, AppUtil::usingLocalMode());
 	}
 
 	WinUtil::splash->destroy();
 
-	if (Util::IsOSVersionOrGreater(6, 2) && !IsWindowsServer() && ::SystemUtil::isElevated()) {
+	if (dcpp::SystemUtil::isOSVersionOrGreater(6, 2) && !IsWindowsServer() && OSUtil::isElevated()) {
 		callAsync([=] { WinUtil::ShowMessageBox(SettingsManager::WARN_ELEVATED, TSTRING(ELEVATED_WARNING)); });
 	}
 
@@ -422,7 +424,7 @@ HWND MainFrame::createWinampToolbar() {
 		ctrlSmallToolbar.SetExtendedStyle(TBSTYLE_EX_MIXEDBUTTONS);
 
 		//we want to support old themes also so check if there is the old .bmp
-		if(Util::fileExists(Text::fromT(ResourceLoader::getIconPath(_T("mediatoolbar.bmp"))))){
+		if(PathUtil::fileExists(Text::fromT(ResourceLoader::getIconPath(_T("mediatoolbar.bmp"))))){
 			winampImages.CreateFromImage(ResourceLoader::getIconPath(_T("mediatoolbar.bmp")).c_str(), 20, 20, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
 		} else {
 			ResourceLoader::loadWinampToolbarIcons(winampImages);
@@ -726,7 +728,7 @@ void MainFrame::updateStatus(TStringList* aList) {
 				ctrlStatus.SetText(STATUS_SHUTDOWN, (_T(" ") + Util::formatSecondsW(timeLeft, timeLeft < 3600)).c_str(), SBT_POPOUT);
 				if (iCurrentShutdownTime + SETTING(SHUTDOWN_TIMEOUT) <= iSec) {
 					bool bDidShutDown = false;
-					bDidShutDown = ::SystemUtil::shutdown(SETTING(SHUTDOWN_ACTION));
+					bDidShutDown = ::OSUtil::shutdown(SETTING(SHUTDOWN_ACTION));
 					if (bDidShutDown) {
 						// Should we go faster here and force termination?
 						// We "could" do a manual shutdown of this app...
@@ -834,7 +836,7 @@ void MainFrame::parseCommandLine(const tstring& cmdLine)
 
 LRESULT MainFrame::onCopyData(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	tstring cmdLine = (LPCTSTR) (((COPYDATASTRUCT *)lParam)->lpData);
-	parseCommandLine(Text::toT(Util::getAppPath() + " ") + cmdLine);
+	parseCommandLine(Text::toT(AppUtil::getAppPath() + " ") + cmdLine);
 	return true;
 }
 
@@ -1234,7 +1236,7 @@ void MainFrame::saveOpenWindows() {
 }
 
 void MainFrame::loadOpenWindows() {
-	bool autoConnect = !Util::hasStartupParam("/noautoconnect");
+	bool autoConnect = !AppUtil::hasStartupParam("/noautoconnect");
 	bool hasSavedState = false;
 	if (SETTING(SAVE_LAST_STATE)) {
 
@@ -1318,7 +1320,7 @@ void MainFrame::getMagnetForFile() {
 				if (closing)
 					return;
 
-				string magnetlink = ActionUtil::makeMagnet(tth, Util::getFileName(path), size);
+				string magnetlink = ActionUtil::makeMagnet(tth, PathUtil::getFileName(path), size);
 
 				CInputBox ibox(m_hWnd);
 				ibox.DoModal(_T("Tiger Tree Hash"), file.c_str(), Text::toT(tth.toBase32()).c_str(), Text::toT(magnetlink).c_str());
@@ -1705,7 +1707,7 @@ LRESULT MainFrame::onCloseWindows(WORD , WORD wID, HWND , BOOL& ) {
 }
 LRESULT MainFrame::onOpenSysLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	string filename = LogManager::getInstance()->getPath(LogManager::SYSTEM);
-	if(Util::fileExists(filename)){
+	if(PathUtil::fileExists(filename)){
 		ActionUtil::viewLog(filename);
 	} else {
 		MessageBox(CTSTRING(NO_LOG_FOR_HUB),CTSTRING(NO_LOG_FOR_HUB), MB_OK );	  
@@ -1898,7 +1900,7 @@ LRESULT MainFrame::onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 void MainFrame::TestWrite(bool downloads, bool AppPath) {
 	
 	tstring error = Util::emptyStringT;
-	string filename = (Util::getPath(Util::PATH_USER_CONFIG) + "testwrite.tmp");
+	string filename = (AppUtil::getPath(AppUtil::PATH_USER_CONFIG) + "testwrite.tmp");
 	bool ready = false;
 	File* f = NULL;
 	//Create the test file first, we should allways be able to write Settings folder
@@ -1918,7 +1920,7 @@ void MainFrame::TestWrite(bool downloads, bool AppPath) {
 
 			File::ensureDirectory(SETTING(DOWNLOAD_DIRECTORY));
 			File::copyFile((filename), (SETTING(DOWNLOAD_DIRECTORY) + "testwrite.tmp"));
-			if (Util::fileExists(SETTING(DOWNLOAD_DIRECTORY) + "testwrite.tmp")) {
+			if (PathUtil::fileExists(SETTING(DOWNLOAD_DIRECTORY) + "testwrite.tmp")) {
 				File::deleteFile(SETTING(DOWNLOAD_DIRECTORY) + "testwrite.tmp");
 				ready = true;
 			}
@@ -1929,9 +1931,9 @@ void MainFrame::TestWrite(bool downloads, bool AppPath) {
 
 	if(AppPath) {
 		try {
-			File::copyFile((filename), (Util::getPath(Util::PATH_RESOURCES) + "testwrite.tmp"));
-			if (Util::fileExists(Util::getPath(Util::PATH_RESOURCES) + "testwrite.tmp")) {
-				File::deleteFile(Util::getPath(Util::PATH_RESOURCES) + "testwrite.tmp");
+			File::copyFile((filename), (AppUtil::getPath(AppUtil::PATH_RESOURCES) + "testwrite.tmp"));
+			if (PathUtil::fileExists(AppUtil::getPath(AppUtil::PATH_RESOURCES) + "testwrite.tmp")) {
+				File::deleteFile(AppUtil::getPath(AppUtil::PATH_RESOURCES) + "testwrite.tmp");
 				ready = true;
 			}
 		} catch (const Exception&) {
@@ -1951,7 +1953,7 @@ void MainFrame::TestWrite(bool downloads, bool AppPath) {
 	}
 
 
-	if (Util::fileExists(filename)) {
+	if (PathUtil::fileExists(filename)) {
 		File::deleteFile(filename);
 		ready = true;
 	}

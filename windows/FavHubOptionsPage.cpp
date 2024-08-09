@@ -21,9 +21,9 @@
 
 #include "FavHubOptionsPage.h"
 
-#include <airdcpp/AirUtil.h>
 #include <airdcpp/FavoriteManager.h>
 #include <airdcpp/ResourceManager.h>
+#include <airdcpp/SettingsManager.h>
 #include <airdcpp/tribool.h>
 
 

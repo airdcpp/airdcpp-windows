@@ -30,6 +30,7 @@
 #include "AutosearchSearchTimesPage.h"
 #include "AutoSearchItemSettings.h"
 
+#include <airdcpp/AirUtil.h>
 #include <airdcpp/SettingsManager.h>
 
 #define MAX_STATUS_LINES 10

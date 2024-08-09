@@ -24,6 +24,7 @@
 
 #include <airdcpp/AirUtil.h>
 #include <airdcpp/Bundle.h>
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/QueueItem.h>
 #include <airdcpp/QueueManager.h>
 
@@ -105,10 +106,10 @@ namespace webserver {
 				auto contentA = QueueManager::getInstance()->getBundleContent(a);
 				auto contentB = QueueManager::getInstance()->getBundleContent(b);
 
-				return Util::directoryContentSort(contentA, contentB);
+				return DirectoryContentInfo::Sort(contentA, contentB);
 			}
 
-			return Util::stricmp(Util::getFileExt(a->getTarget()), Util::getFileExt(b->getTarget()));
+			return Util::stricmp(PathUtil::getFileExt(a->getTarget()), PathUtil::getFileExt(b->getTarget()));
 		}
 		case PROP_PRIORITY: {
 			COMPARE_IS_DOWNLOADED(a, b);

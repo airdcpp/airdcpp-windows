@@ -20,6 +20,7 @@
 #include "Resource.h"
 
 #include <airdcpp/SettingsManager.h>
+#include <airdcpp/Util.h>
 
 #include "LimitPage.h"
 

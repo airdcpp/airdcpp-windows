@@ -19,7 +19,6 @@
 #include "stdinc.h"
 #include "NmdcHub.h"
 
-#include "AirUtil.h"
 #include "ConnectivityManager.h"
 #include "ResourceManager.h"
 #include "Message.h"
@@ -39,6 +38,8 @@
 #include "ThrottleManager.h"
 #include "UploadManager.h"
 #include "ActivityManager.h"
+#include "NetworkUtil.h"
+#include "ValueGenerator.h"
 
 namespace dcpp {
 
@@ -114,7 +115,7 @@ void NmdcHub::refreshLocalIp() noexcept {
 		if(localIp.empty()) {
 			localIp = sock->getLocalIp();
 			if(localIp.empty()) {
-				localIp = AirUtil::getLocalIp(false);
+				localIp = NetworkUtil::getLocalIp(false);
 			}
 		}
 	}
@@ -156,7 +157,7 @@ OnlineUser& NmdcHub::getUser(const string& aNick) noexcept {
 
 	{
 		Lock l(cs);
-		u = users.emplace(aNick, new OnlineUser(p, client, Util::rand())).first->second;
+		u = users.emplace(aNick, new OnlineUser(p, client, ValueGenerator::rand())).first->second;
 		u->inc();
 		u->getIdentity().setNick(aNick);
 		if(u->getUser() == getMyIdentity().getUser()) {

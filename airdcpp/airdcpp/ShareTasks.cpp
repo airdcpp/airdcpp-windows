@@ -22,6 +22,7 @@
 #include "Exception.h"
 #include "LogManager.h"
 #include "HashManager.h"
+#include "PathUtil.h"
 #include "ResourceManager.h"
 #include "ScopedFunctor.h"
 
@@ -62,7 +63,7 @@ ShareRefreshInfo::ShareRefreshInfo(const string& aPath, const ShareDirectory::Pt
 		);
 	} else {
 		// We'll set the parent later
-		newShareDirectory = ShareDirectory::createNormal(Util::getLastDir(aPath), nullptr, aLastWrite, lowerDirNameMapNew, bloom_);
+		newShareDirectory = ShareDirectory::createNormal(PathUtil::getLastDir(aPath), nullptr, aLastWrite, lowerDirNameMapNew, bloom_);
 	}
 }
 
@@ -190,7 +191,7 @@ RefreshTaskQueueInfo ShareTasks::addRefreshTask(ShareRefreshPriority aPriority, 
 		};
 	}
 
-	auto token = Util::rand();
+	auto token = ValueGenerator::rand();
 	RefreshPathList paths(dirs.begin(), dirs.end());
 
 	auto task = make_unique<ShareRefreshTask>(token, paths, aDisplayName, aRefreshType, aPriority);
@@ -246,7 +247,7 @@ void ShareTasks::reportTaskStatus(const ShareRefreshTask& aTask, bool aFinished,
 				if (aTask.dirs.size() < 30) {
 					StringList dirNames;
 					for (const auto& d : aTask.dirs) {
-						dirNames.push_back(Util::getLastDir(d));
+						dirNames.push_back(PathUtil::getLastDir(d));
 					}
 
 					msg += " (" + Util::listToString(dirNames) + ")";

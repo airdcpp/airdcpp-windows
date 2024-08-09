@@ -25,6 +25,7 @@
 #include "HashManager.h"
 #include "MerkleCheckOutputStream.h"
 #include "MerkleTreeOutputStream.h"
+#include "PathUtil.h"
 #include "QueueItem.h"
 #include "SharedFileStream.h"
 #include "UserConnection.h"
@@ -175,7 +176,7 @@ void Download::getParams(const UserConnection& aSource, ParamMap& params) const 
 }
 
 string Download::getTargetFileName() const noexcept {
-	return Util::getFileName(getPath());
+	return PathUtil::getFileName(getPath());
 }
 
 const string& Download::getDownloadTarget() const noexcept {

@@ -19,6 +19,7 @@
 #include "stdafx.h"
 #include <airdcpp/UserInfoBase.h>
 #include <airdcpp/LogManager.h>
+#include <airdcpp/PathUtil.h>
 
 #include "ResourceLoader.h"
 
@@ -534,13 +535,13 @@ CImageList& ResourceLoader::getThumbBarImages() {
 int ResourceLoader::getIconIndex(const tstring& aFileName) {
 	if(SETTING(USE_SYSTEM_ICONS)) {
 		SHFILEINFO fi;
-		tstring x = Text::toLower(Util::getFileExt(aFileName));
+		tstring x = Text::toLower(PathUtil::getFileExt(aFileName));
 		if(!x.empty()) {
 			ImageIter j = fileIndexes.find(x);
 			if(j != fileIndexes.end())
 				return j->second;
 		}
-		tstring fn = Text::toLower(Util::getFileName(aFileName));
+		tstring fn = Text::toLower(PathUtil::getFileName(aFileName));
 		::SHGetFileInfo(fn.c_str(), FILE_ATTRIBUTE_NORMAL, &fi, sizeof(fi), SHGFI_ICON | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES);
 		fileImages.AddIcon(fi.hIcon);
 		::DestroyIcon(fi.hIcon);

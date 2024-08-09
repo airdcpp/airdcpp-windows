@@ -20,6 +20,7 @@
 
 #include "BrowseDlg.h"
 
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/Text.h>
 #include <airdcpp/Util.h>
 
@@ -82,17 +83,17 @@ bool BrowseDlg::setPath(const tstring& aPath, bool forced) {
 
 	checkinit();
 
-	auto target = Text::toT(Util::validatePath(Text::fromT(aPath)));
+	auto target = Text::toT(PathUtil::validatePath(Text::fromT(aPath)));
 
 	// Prefill the filename
-	auto fileName = Util::getFileName(target);
+	auto fileName = PathUtil::getFileName(target);
 	if (!fileName.empty()) {
 		pfd->SetFileName(fileName.c_str());
 	}
 
 	// Set the given directory
 	CComPtr<IShellItem> psiFolder;
-	if (SUCCEEDED(SHCreateItemFromParsingName(Util::getFilePath(target).c_str(), NULL, IID_PPV_ARGS(&psiFolder)))) {
+	if (SUCCEEDED(SHCreateItemFromParsingName(PathUtil::getFilePath(target).c_str(), NULL, IID_PPV_ARGS(&psiFolder)))) {
 		if (forced) {
 			check(pfd->SetFolder(psiFolder));
 		} else {
@@ -145,7 +146,7 @@ bool BrowseDlg::show(tstring& target) {
 			PWSTR pszFilePath = NULL;
 			hr = psiResult->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
 			if (SUCCEEDED(hr)) {
-				target = Text::toT(Util::validatePath(Text::fromT(pszFilePath), type == DIALOG_SELECT_FOLDER));
+				target = Text::toT(PathUtil::validatePath(Text::fromT(pszFilePath), type == DIALOG_SELECT_FOLDER));
 			}
 			psiResult->Release();
 		}

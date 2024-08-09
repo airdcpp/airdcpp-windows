@@ -53,6 +53,8 @@ extern void startup(StepFunction stepF, MessageFunction messageF, Callback runWi
 
 extern void shutdown(StepFunction stepF, ProgressFunction progressF, ShutdownUnloadCallback moduleUnloadF = nullptr, Callback moduleDestroyF = nullptr);
 
+extern void initializeUtil() noexcept;
+
 } // namespace dcpp
 
 #endif // !defined(DC_PLUS_PLUS_H)

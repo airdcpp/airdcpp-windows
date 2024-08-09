@@ -23,6 +23,7 @@
 #include "ResourceLoader.h"
 #include "UpdateDlg.h"
 
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/Util.h>
 #include <airdcpp/UpdateManager.h>
 #include <airdcpp/Updater.h>
@@ -143,9 +144,9 @@ LRESULT UpdateDlg::OnDownload(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, 
 }
 
 bool UpdateDlg::canAutoUpdate(const string& url) {
-	if(Util::getFileExt(url) == ".zip") {
+	if(PathUtil::getFileExt(url) == ".zip") {
 		tstring buf(256, _T('\0'));
-		tstring sDrive = Text::toT(Util::getAppPath().substr(0, 3));
+		tstring sDrive = Text::toT(AppUtil::getAppPath().substr(0, 3));
 		GetVolumeInformation(sDrive.c_str(), NULL, 0, NULL, NULL, NULL, &buf[0], 256);
 		return (buf.find(_T("FAT")) == string::npos);
 	}

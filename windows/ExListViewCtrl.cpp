@@ -22,6 +22,8 @@
 #include "ExListViewCtrl.h"
 #include "WinUtil.h"
 
+#include <airdcpp/Util.h>
+
 // TODO: make sure that moved items maintain their selection state
 int ExListViewCtrl::moveItem(int oldPos, int newPos) {
 	TCHAR buf[512];

@@ -19,6 +19,7 @@
 #include "stdinc.h"
 #include "GeoManager.h"
 
+#include "AppUtil.h"
 #include "GeoIP.h"
 #include "Util.h"
 
@@ -48,7 +49,7 @@ string GeoManager::getCountry(const string& ip) const {
 }
 
 string GeoManager::getDbPath() {
-	return Util::getPath(Util::PATH_USER_LOCAL) + "country_ip_db.mmdb";
+	return AppUtil::getPath(AppUtil::PATH_USER_LOCAL) + "country_ip_db.mmdb";
 }
 
 } // namespace dcpp

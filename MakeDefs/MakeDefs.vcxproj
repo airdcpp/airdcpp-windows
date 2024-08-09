@@ -278,7 +278,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\airdcpp\airdcpp\AppUtil.cpp" />
     <ClCompile Include="..\airdcpp\airdcpp\File.cpp" />
+    <ClCompile Include="..\airdcpp\airdcpp\PathUtil.cpp" />
+    <ClCompile Include="..\airdcpp\airdcpp\SystemUtil.cpp" />
     <ClCompile Include="MakeDefs.cpp" />
     <ClCompile Include="..\airdcpp\airdcpp\SimpleXML.cpp" />
     <ClCompile Include="..\airdcpp\airdcpp\SimpleXMLReader.cpp" />

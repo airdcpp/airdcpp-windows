@@ -31,6 +31,7 @@
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/DirectoryListing.h>
 #include <airdcpp/DirectoryListingManager.h>
+#include <airdcpp/DupeUtil.h>
 #include <airdcpp/GeoManager.h>
 #include <airdcpp/OnlineUser.h>
 #include <airdcpp/QueueItem.h>
@@ -187,7 +188,7 @@ namespace webserver {
 			{ "str", Util::formatDirectoryContent(aContentInfo) }
 		};
 
-		if (Util::hasContentInfo(aContentInfo)) {
+		if (aContentInfo.isInitialized()) {
 			retJson["files"] = aContentInfo.files;
 			retJson["directories"] = aContentInfo.directories;
 		}
@@ -213,7 +214,7 @@ namespace webserver {
 			return nullptr;
 		}
 
-		return serializeDupe(aDupeType, AirUtil::getFileDupePaths(aDupeType, aTTH));
+		return serializeDupe(aDupeType, DupeUtil::getFileDupePaths(aDupeType, aTTH));
 	}
 
 	json Serializer::serializeDirectoryDupe(DupeType aDupeType, const string& aAdcPath) noexcept {
@@ -221,7 +222,7 @@ namespace webserver {
 			return nullptr;
 		}
 
-		return serializeDupe(aDupeType, AirUtil::getAdcDirectoryDupePaths(aDupeType, aAdcPath));
+		return serializeDupe(aDupeType, DupeUtil::getAdcDirectoryDupePaths(aDupeType, aAdcPath));
 	}
 
 	json Serializer::serializeDupe(DupeType aDupeType, StringList&& aPaths) noexcept {

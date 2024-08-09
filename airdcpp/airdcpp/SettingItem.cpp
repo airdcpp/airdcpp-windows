@@ -20,6 +20,7 @@
 
 #include "SettingItem.h"
 #include "SettingsManager.h"
+#include "Util.h"
 
 namespace dcpp {
 

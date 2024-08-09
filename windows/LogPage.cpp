@@ -20,6 +20,7 @@
 
 #include <airdcpp/LogManager.h>
 #include <airdcpp/File.h>
+#include <airdcpp/PathUtil.h>
 
 #include "BrowseDlg.h"
 #include "Resource.h"
@@ -156,7 +157,7 @@ void LogPage::write()
 
 	for(int i = 0; i < LogManager::LAST; ++i) {
 		string tmp = Text::fromT(options[i].first);
-		if(stricmp(Util::getFileExt(tmp), ".log") != 0)
+		if(stricmp(PathUtil::getFileExt(tmp), ".log") != 0)
 			tmp += ".log";
 
 		LogManager::getInstance()->saveSetting(i, LogManager::FILE, tmp);

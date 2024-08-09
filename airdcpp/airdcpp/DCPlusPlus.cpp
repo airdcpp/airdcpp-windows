@@ -20,11 +20,13 @@
 #include "DCPlusPlus.h"
 
 #include "format.h"
+#include "AppUtil.h"
 #include "File.h"
+#include "PathUtil.h"
 #include "StringTokenizer.h"
+#include "ValueGenerator.h"
 
 #include "ActivityManager.h"
-#include "AirUtil.h"
 #include "ClientManager.h"
 #include "ConnectionManager.h"
 #include "ConnectivityManager.h"
@@ -54,7 +56,13 @@
 
 namespace dcpp {
 
-#define RUNNING_FLAG Util::getPath(Util::PATH_USER_LOCAL) + "RUNNING"
+#define RUNNING_FLAG AppUtil::getPath(AppUtil::PATH_USER_LOCAL) + "RUNNING"
+
+void initializeUtil() noexcept {
+	AppUtil::initialize();
+	ValueGenerator::initialize();
+	Text::initialize();
+}
 
 void startup(StepFunction aStepF, MessageFunction aMessageF, Callback aRunWizardF, ProgressFunction aProgressF, Callback aModuleInitF /*nullptr*/, StartupLoadCallback aModuleLoadF /*nullptr*/) {
 	// "Dedicated to the near-memory of Nev. Let's start remembering people while they're still alive."
@@ -68,15 +76,14 @@ void startup(StepFunction aStepF, MessageFunction aMessageF, Callback aRunWizard
 #endif
 
 	//create the running flag
-	if (Util::fileExists(RUNNING_FLAG)) {
-		Util::wasUncleanShutdown = true;
+	if (PathUtil::fileExists(RUNNING_FLAG)) {
+		AppUtil::wasUncleanShutdown = true;
 	} else {
 		File::createFile(RUNNING_FLAG);
 	}
 
 	ResourceManager::newInstance();
 	SettingsManager::newInstance();
-	AirUtil::init();
 
 	LogManager::newInstance();
 	TimerManager::newInstance();

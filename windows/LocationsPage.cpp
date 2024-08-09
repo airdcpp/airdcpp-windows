@@ -18,6 +18,7 @@
 
 #include "stdafx.h"
 
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/Util.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/FavoriteManager.h>
@@ -131,7 +132,7 @@ LRESULT LocationsPage::onClickedAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	dlg.allowEmpty = false;
 	dlg.title = TSTRING(VIRTUAL_NAME);
 	dlg.description = path;
-	dlg.line = Util::getLastDir(path);
+	dlg.line = PathUtil::getLastDir(path);
 	if (dlg.DoModal() == IDOK) {
 		addDirectory(Text::fromT(path), Text::fromT(dlg.line));
 	}

@@ -34,18 +34,22 @@
 #include "ExMessageBox.h"
 
 #include <airdcpp/ClientManager.h>
+#include <airdcpp/DupeUtil.h>
 #include <airdcpp/FavoriteManager.h>
 #include <airdcpp/GeoManager.h>
+#include <airdcpp/LinkUtil.h>
 #include <airdcpp/Localization.h>
 #include <airdcpp/LogManager.h>
 #include <airdcpp/Magnet.h>
 #include <airdcpp/QueueManager.h>
+#include <airdcpp/RegexUtil.h>
 #include <airdcpp/ResourceManager.h>
 #include <airdcpp/ScopedFunctor.h>
 #include <airdcpp/SearchInstance.h>
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/UploadManager.h>
 #include <airdcpp/Util.h>
+#include <airdcpp/ValueGenerator.h>
 #include <airdcpp/ViewFileManager.h>
 
 #include <airdcpp/modules/PreviewAppManager.h>
@@ -192,7 +196,7 @@ bool ActionUtil::browseList(tstring& target_, HWND aOwner) {
 
 	BrowseDlg dlg(aOwner, BrowseDlg::TYPE_FILELIST, BrowseDlg::DIALOG_OPEN_FILE);
 	dlg.setTitle(TSTRING(OPEN_FILE_LIST));
-	dlg.setPath(Text::toT(Util::getListPath()));
+	dlg.setPath(Text::toT(AppUtil::getListPath()));
 	dlg.setTypes(2, types);
 	return dlg.show(target_);
 }
@@ -293,15 +297,15 @@ bool ActionUtil::parseDBLClick(const tstring& aStr) {
 
 	auto url = Text::fromT(aStr);
 
-	if (AirUtil::isHubLink(url)) {
+	if (LinkUtil::isHubLink(url)) {
 		connectHub(url);
 		return true;
 	}
 
-	if (AirUtil::isRelease(url)) {
+	if (DupeUtil::isRelease(url)) {
 		search(Text::toT(url));
 		return true;
-	} else if (AirUtil::stringRegexMatch(AirUtil::getUrlReg(), url)) {
+	} else if (RegexUtil::stringRegexMatch(LinkUtil::getUrlReg(), url)) {
 		if (aStr.find(_T("magnet:?")) != tstring::npos) {
 			parseMagnetUri(aStr, HintedUser());
 			return true;
@@ -386,7 +390,7 @@ void ActionUtil::openTextFile(const string& aFileName, int64_t aSize, const TTHV
 	}
 
 	MainFrame::getMainFrame()->addThreadedTask([=] {
-		if (aIsClientView && (!SETTING(NFO_EXTERNAL) || Util::getFileExt(aFileName) != ".nfo")) {
+		if (aIsClientView && (!SETTING(NFO_EXTERNAL) || PathUtil::getFileExt(aFileName) != ".nfo")) {
 			auto fileData = ViewedFileAddData(aFileName, aTTH, aSize, nullptr, aUser, true);
 			ViewFileManager::getInstance()->addUserFileHookedNotify(fileData);
 			return;
@@ -404,8 +408,8 @@ void ActionUtil::openTextFile(const string& aFileName, int64_t aSize, const TTHV
 
 void ActionUtil::openFile(const tstring& aFileName) {
 	MainFrame::getMainFrame()->addThreadedTask([=] {
-		if (Util::fileExists(Text::fromT(aFileName))) {
-			::ShellExecute(NULL, NULL, Util::formatPathW(aFileName).c_str(), NULL, NULL, SW_SHOWNORMAL);
+		if (PathUtil::fileExists(Text::fromT(aFileName))) {
+			::ShellExecute(NULL, NULL, PathUtil::formatPathW(aFileName).c_str(), NULL, NULL, SW_SHOWNORMAL);
 		}
 	});
 }
@@ -415,8 +419,8 @@ void ActionUtil::openFolder(const tstring& aFileName) {
 		return;
 
 	MainFrame::getMainFrame()->addThreadedTask([=] {
-		if (Util::fileExists(Text::fromT(aFileName))) {
-			::ShellExecute(NULL, Text::toT("open").c_str(), Util::formatPathW(Util::getFilePath(aFileName)).c_str(), NULL, NULL, SW_SHOWNORMAL);
+		if (PathUtil::fileExists(Text::fromT(aFileName))) {
+			::ShellExecute(NULL, Text::toT("open").c_str(), PathUtil::formatPathW(PathUtil::getFilePath(aFileName)).c_str(), NULL, NULL, SW_SHOWNORMAL);
 		}
 	});
 }
@@ -426,7 +430,7 @@ void ActionUtil::appendPreviewMenu(OMenu& parent_, const string& aTarget) {
 	auto previewMenu = parent_.createSubMenu(TSTRING(PREVIEW), true);
 
 	auto lst = PreviewAppManager::getInstance()->getPreviewApps();
-	auto ext = Util::getFileExt(aTarget);
+	auto ext = PathUtil::getFileExt(aTarget);
 	if (ext.empty()) return;
 
 	ext = ext.substr(1); //remove the dot
@@ -444,9 +448,9 @@ void ActionUtil::appendPreviewMenu(OMenu& parent_, const string& aTarget) {
 				ParamMap ucParams;
 
 				ucParams["file"] = "\"" + tempTarget + "\"";
-				ucParams["dir"] = "\"" + Util::getFilePath(tempTarget) + "\"";
+				ucParams["dir"] = "\"" + PathUtil::getFilePath(tempTarget) + "\"";
 
-				::ShellExecute(NULL, NULL, Text::toT(application).c_str(), Text::toT(Util::formatParams(arguments, ucParams)).c_str(), Text::toT(Util::getFilePath(tempTarget)).c_str(), SW_SHOWNORMAL);
+				::ShellExecute(NULL, NULL, Text::toT(application).c_str(), Text::toT(Util::formatParams(arguments, ucParams)).c_str(), Text::toT(PathUtil::getFilePath(tempTarget)).c_str(), SW_SHOWNORMAL);
 			});
 		}
 	}
@@ -568,7 +572,7 @@ void ActionUtil::viewLog(const string& aPath, bool aHistory /*false*/) {
 	if (aHistory) {
 		auto aText = LogManager::readFromEnd(aPath, SETTING(LOG_LINES), Util::convertSize(64, Util::KB));
 		if (!aText.empty()) {
-			TextFrame::viewText(Util::getFileName(aPath), aText, TextFrame::FileType::LOG, nullptr);
+			TextFrame::viewText(PathUtil::getFileName(aPath), aText, TextFrame::FileType::LOG, nullptr);
 		}
 	} else if (SETTING(OPEN_LOGS_INTERNAL)) {
 		TextFrame::openFile(aPath);
@@ -828,8 +832,8 @@ void ActionUtil::getProfileConflicts(HWND aParent, int aProfile, ProfileSettingI
 void ActionUtil::addFileDownload(const string& aTarget, int64_t aSize, const TTHValue& aTTH, const HintedUser& aOptionalUser, time_t aDate, Flags::MaskType aFlags /*0*/, Priority aPriority /*DEFAULT*/) {
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		try {
-			auto fileInfo = BundleFileAddData(Util::getFileName(aTarget), aTTH, aSize, aPriority, aDate);
-			auto options = BundleAddOptions(Util::getFilePath(aTarget), aOptionalUser, nullptr);
+			auto fileInfo = BundleFileAddData(PathUtil::getFileName(aTarget), aTTH, aSize, aPriority, aDate);
+			auto options = BundleAddOptions(PathUtil::getFilePath(aTarget), aOptionalUser, nullptr);
 			QueueManager::getInstance()->createFileBundleHooked(options, fileInfo, aFlags);
 		} catch (const Exception& e) {
 			auto nick = aOptionalUser ? Text::fromT(FormatUtil::getNicks(aOptionalUser)) : STRING(UNKNOWN);
@@ -868,7 +872,7 @@ void ActionUtil::findNfo(const string& aAdcPath, const HintedUser& aUser) noexce
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		SearchInstance searchInstance("windows_find_nfo");
 
-		auto search = make_shared<Search>(Priority::HIGH, Util::toString(Util::rand()));
+		auto search = make_shared<Search>(Priority::HIGH, Util::toString(ValueGenerator::rand()));
 		search->maxResults = 1;
 		search->path = aAdcPath;
 		search->exts = { ".nfo" };
@@ -878,7 +882,7 @@ void ActionUtil::findNfo(const string& aAdcPath, const HintedUser& aUser) noexce
 
 		string error;
 		if (!searchInstance.userSearch(aUser, search, error)) {
-			MainFrame::getMainFrame()->ShowPopup(Text::toT(error), Text::toT(Util::getAdcLastDir(aAdcPath)), NIIF_ERROR, true);
+			MainFrame::getMainFrame()->ShowPopup(Text::toT(error), Text::toT(PathUtil::getAdcLastDir(aAdcPath)), NIIF_ERROR, true);
 			return;
 		}
 
@@ -895,7 +899,7 @@ void ActionUtil::findNfo(const string& aAdcPath, const HintedUser& aUser) noexce
 			auto fileData = ViewedFileAddData(result->getFileName(), result->getTTH(), result->getSize(), nullptr, aUser, true);
 			ViewFileManager::getInstance()->addUserFileHookedNotify(fileData);
 		} else {
-			MainFrame::getMainFrame()->ShowPopup(TSTRING(NO_NFO_FOUND), Text::toT(Util::getAdcLastDir(aAdcPath)), NIIF_INFO, true);
+			MainFrame::getMainFrame()->ShowPopup(TSTRING(NO_NFO_FOUND), Text::toT(PathUtil::getAdcLastDir(aAdcPath)), NIIF_INFO, true);
 		}
 	});
 }
@@ -923,7 +927,7 @@ tstring ActionUtil::formatFolderContent(const DirectoryContentInfo& aContentInfo
 }
 
 tstring ActionUtil::formatFileType(const string& aFileName) {
-	auto type = Util::getFileExt(aFileName);
+	auto type = PathUtil::getFileExt(aFileName);
 	if (type.size() > 0 && type[0] == '.')
 		type.erase(0, 1);
 	return Text::toT(type);

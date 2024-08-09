@@ -19,13 +19,13 @@
 #include "stdinc.h"
 #include "ConnectivityManager.h"
 
-#include "AirUtil.h"
 #include "ClientManager.h"
 #include "ConnectionManager.h"
 #include "DCPlusPlus.h"
 #include "format.h"
 #include "LogManager.h"
 #include "MappingManager.h"
+#include "NetworkUtil.h"
 #include "ResourceManager.h"
 #include "SearchManager.h"
 #include "SettingsManager.h"
@@ -218,7 +218,7 @@ void ConnectivityManager::detectConnection() {
 	autoDetectedV6 = detectV6;
 
 	if (detectV4) {
-		if (Util::isPublicIp(AirUtil::getLocalIp(false), false)) {
+		if (NetworkUtil::isPublicIp(NetworkUtil::getLocalIp(false), false)) {
 			// Direct connection
 			{
 				WLock l(cs);
@@ -237,7 +237,7 @@ void ConnectivityManager::detectConnection() {
 	}
 
 	if (detectV6) {
-		if (Util::isPublicIp(AirUtil::getLocalIp(true), true)) {
+		if (NetworkUtil::isPublicIp(NetworkUtil::getLocalIp(true), true)) {
 			// Direct connection
 			{
 				WLock l(cs);

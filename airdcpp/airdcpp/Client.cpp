@@ -19,18 +19,19 @@
 #include "stdinc.h"
 #include "Client.h"
 
-#include "AirUtil.h"
 #include "BufferedSocket.h"
 #include "ClientManager.h"
 #include "ConnectionManager.h"
 #include "ConnectivityManager.h"
 #include "DebugManager.h"
 #include "FavoriteManager.h"
+#include "LinkUtil.h"
 #include "LogManager.h"
 #include "ResourceManager.h"
 #include "ShareManager.h"
 #include "ThrottleManager.h"
 #include "TimerManager.h"
+#include "ValueGenerator.h"
 
 namespace dcpp {
 
@@ -53,9 +54,9 @@ Client::Client(const string& aHubUrl, char aSeparator, const ClientPtr& aOldClie
 	ShareManager::getInstance()->addListener(this);
 
 	string file, proto, query, fragment;
-	Util::decodeUrl(hubUrl, proto, address, port, file, query, fragment);
+	LinkUtil::decodeUrl(hubUrl, proto, address, port, file, query, fragment);
 
-	keyprint = Util::decodeQuery(query)["kp"];
+	keyprint = LinkUtil::decodeQuery(query)["kp"];
 }
 
 Client::~Client() {
@@ -227,7 +228,7 @@ void Client::connect(bool withKeyprint) noexcept {
 
 	redirectUrl = Util::emptyString;
 	setAutoReconnect(true);
-	setReconnDelay(120 + Util::rand(0, 60));
+	setReconnDelay(120 + ValueGenerator::rand(0, 60));
 	reloadSettings(true);
 	setRegistered(false);
 	setMyIdentity(Identity(ClientManager::getInstance()->getMe(), 0));
@@ -241,7 +242,7 @@ void Client::connect(bool withKeyprint) noexcept {
 		sock->connect(
 			AddressInfo(address, AddressInfo::TYPE_URL), 
 			port, 
-			AirUtil::isSecure(hubUrl), 
+			LinkUtil::isSecure(hubUrl), 
 			SETTING(ALLOW_UNTRUSTED_HUBS), 
 			true, 
 			withKeyprint ? keyprint : Util::emptyString
@@ -376,7 +377,7 @@ void Client::onUserDisconnected(const OnlineUserPtr& aUser, bool aDisconnectTran
 }
 
 void Client::allowUntrustedConnect() noexcept {
-	if (state != STATE_DISCONNECTED || !SETTING(ALLOW_UNTRUSTED_HUBS) || !AirUtil::isSecure(hubUrl))
+	if (state != STATE_DISCONNECTED || !SETTING(ALLOW_UNTRUSTED_HUBS) || !LinkUtil::isSecure(hubUrl))
 		return;
 	//Connect without keyprint just this once...
 	connect(false);

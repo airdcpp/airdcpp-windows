@@ -104,7 +104,7 @@ private:
 	bool validateConnectUser(const OnlineUser* aUser, bool& secure_, const string& aRemoteProtocol, const string& aToken, const string& aRemotePort) noexcept;
 
 	bool oldPassword = false;
-	unique_ptr<Socket> udp;
+	// unique_ptr<Socket> udp;
 	SIDMap users;
 	StringMap lastInfoMap;
 	mutable SharedMutex cs;
@@ -155,7 +155,7 @@ private:
 
 	void constructSearch(AdcCommand& c, const SearchPtr& aSearch, bool isDirect) noexcept;
 	void sendSearch(AdcCommand& c);
-	void sendUDP(const AdcCommand& cmd) noexcept;
+	// void sendUDP(const AdcCommand& cmd) noexcept;
 
 	bool v4only() const noexcept override { return false; }
 	void on(BufferedSocketListener::Connected) noexcept override;

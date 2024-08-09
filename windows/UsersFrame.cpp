@@ -30,6 +30,7 @@
 #include <airdcpp/IgnoreManager.h>
 #include <airdcpp/Localization.h>
 #include <airdcpp/LogManager.h>
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/QueueManager.h>
 
 #include <web-server/ContextMenuManager.h>
@@ -966,7 +967,7 @@ LRESULT UsersFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		params["myCID"] = [=] { return ClientManager::getInstance()->getMe()->getCID().toBase32(); };
 
 		string file = LogManager::getInstance()->getPath(ui->getUser(), params);
-		if(Util::fileExists(file)) {
+		if(PathUtil::fileExists(file)) {
 			ActionUtil::viewLog(file);
 		} else {
 			WinUtil::showMessageBox(TSTRING(NO_LOG_FOR_USER));	  

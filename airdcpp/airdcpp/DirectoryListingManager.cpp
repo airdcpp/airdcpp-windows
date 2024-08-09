@@ -22,6 +22,7 @@
 #include "ClientManager.h"
 #include "DirectoryListingManager.h"
 #include "LogManager.h"
+#include "PathUtil.h"
 #include "QueueManager.h"
 
 namespace dcpp {
@@ -148,7 +149,7 @@ DirectoryDownloadPtr DirectoryListingManager::getDirectoryDownload(DirectoryDown
 
 DirectoryDownloadPtr DirectoryListingManager::addDirectoryDownloadHookedThrow(const FilelistAddData& aListData, const string& aBundleName, const string& aTarget, Priority p, DirectoryDownload::ErrorMethod aErrorMethod) {
 	dcassert(!aTarget.empty() && !aListData.listPath.empty() && !aBundleName.empty());
-	auto downloadInfo = make_shared<DirectoryDownload>(aListData, Util::cleanPathSeparators(aBundleName), aTarget, p, aErrorMethod);
+	auto downloadInfo = make_shared<DirectoryDownload>(aListData, PathUtil::cleanPathSeparators(aBundleName), aTarget, p, aErrorMethod);
 	
 	DirectoryListingPtr dl;
 	{
@@ -250,7 +251,7 @@ void DirectoryListingManager::log(const string& aMsg, LogMessage::Severity aSeve
 void DirectoryListingManager::maybeReportDownloadError(const DirectoryDownloadPtr& aDownloadInfo, const string& aError, LogMessage::Severity aSeverity) noexcept {
 	if (aDownloadInfo->getErrorMethod() == DirectoryDownload::ErrorMethod::LOG && !aError.empty()) {
 		auto nick = ClientManager::getInstance()->getFormatedNicks(aDownloadInfo->getUser());
-		auto fullTarget = Util::joinDirectory(aDownloadInfo->getTarget(), aDownloadInfo->getBundleName());
+		auto fullTarget = PathUtil::joinDirectory(aDownloadInfo->getTarget(), aDownloadInfo->getBundleName());
 		log(STRING_F(ADD_BUNDLE_ERRORS_OCC, fullTarget % nick % aError), aSeverity);
 	}
 }
@@ -469,7 +470,7 @@ DirectoryListingPtr DirectoryListingManager::openLocalFileList(const HintedUser&
 		}
 	}
 
-	dcassert(aPartial || Util::fileExists(aFile));
+	dcassert(aPartial || PathUtil::fileExists(aFile));
 
 	auto dl = createList(aUser, aPartial, aFile, false);
 	fire(DirectoryListingManagerListener::OpenListing(), dl, aDir, Util::emptyString);

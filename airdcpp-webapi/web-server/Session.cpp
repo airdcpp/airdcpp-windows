@@ -46,13 +46,14 @@
 #include <api/ViewFileApi.h>
 
 #include <airdcpp/TimerManager.h>
+#include <airdcpp/ValueGenerator.h>
 
 
 namespace webserver {
 #define ADD_MODULE(name, type) (apiHandlers.emplace(name, LazyModuleWrapper([this] { return make_unique<type>(this); })))
 
 	Session::Session(const WebUserPtr& aUser, const string& aToken, SessionType aSessionType, WebServerManager* aServer, uint64_t maxInactivityMinutes, const string& aIP) :
-		id(Util::rand()), user(aUser), token(aToken), started(GET_TICK()), 
+		id(ValueGenerator::rand()), user(aUser), token(aToken), started(GET_TICK()), 
 		lastActivity(GET_TICK()), sessionType(aSessionType), server(aServer),
 		maxInactivity(maxInactivityMinutes*1000*60),
 		ip(aIP) {

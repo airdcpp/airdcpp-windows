@@ -19,18 +19,20 @@
 #include "stdinc.h"
 #include "ShareDirectory.h"
 
-#include "AirUtil.h"
+#include "AppUtil.h"
 #include "File.h"
 #include "HashedFile.h"
 #include "Message.h"
+#include "PathUtil.h"
 #include "SearchQuery.h"
 #include "SearchResult.h"
+#include "SettingsManager.h"
 #include "SimpleXML.h"
 
 namespace dcpp {
 
 bool ShareDirectory::RootIsParentOrExact::operator()(const ShareDirectory::Ptr& aDirectory) const noexcept {
-	return AirUtil::isParentOrExactLower(aDirectory->getRoot()->getPathLower(), compareToLower, separator);
+	return PathUtil::isParentOrExactLower(aDirectory->getRoot()->getPathLower(), compareToLower, separator);
 }
 
 ShareDirectory::ShareDirectory(DualString&& aRealName, const ShareDirectory::Ptr& aParent, time_t aLastWrite, const ShareRoot::Ptr& aRoot) :
@@ -73,7 +75,7 @@ ShareDirectory::Ptr ShareDirectory::createNormal(DualString&& aRealName, const P
 ShareDirectory::Ptr ShareDirectory::createRoot(const string& aRootPath, const string& aVname, const ProfileTokenSet& aProfiles, bool aIncoming,
 	time_t aLastWrite, Map& rootPaths_, ShareDirectory::MultiMap& dirNameMap_, ShareBloom& bloom, time_t aLastRefreshTime) noexcept
 {
-	auto dir = Ptr(new ShareDirectory(Util::getLastDir(aRootPath), nullptr, aLastWrite, ShareRoot::create(aRootPath, aVname, aProfiles, aIncoming, aLastRefreshTime)));
+	auto dir = Ptr(new ShareDirectory(PathUtil::getLastDir(aRootPath), nullptr, aLastWrite, ShareRoot::create(aRootPath, aVname, aProfiles, aIncoming, aLastRefreshTime)));
 
 	dcassert(rootPaths_.find(dir->getRealPath()) == rootPaths_.end());
 	rootPaths_[dir->getRealPath()] = dir;
@@ -709,7 +711,7 @@ bool ShareRoot::removeRootProfile(ProfileToken aProfile) noexcept {
 }
 
 string ShareRoot::getCacheXmlPath() const noexcept {
-	return Util::getPath(Util::PATH_SHARECACHE) + "ShareCache_" + Util::validateFileName(path) + ".xml";
+	return AppUtil::getPath(AppUtil::PATH_SHARECACHE) + "ShareCache_" + PathUtil::validateFileName(path) + ".xml";
 }
 
 void ShareRoot::setName(const string& aName) noexcept {

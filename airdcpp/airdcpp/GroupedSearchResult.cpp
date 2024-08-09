@@ -30,7 +30,7 @@ namespace dcpp {
 	FastCriticalSection GroupedSearchResult::cs;
 
 	GroupedSearchResult::GroupedSearchResult(const SearchResultPtr& aSR, SearchResult::RelevanceInfo&& aRelevance) :
-		/*token(Util::rand()),*/ baseResult(aSR), relevanceInfo(std::move(aRelevance)) {
+		/*token(ValueGenerator::rand()),*/ baseResult(aSR), relevanceInfo(std::move(aRelevance)) {
 
 		// check the dupe
 		if (SETTING(DUPE_SEARCH)) {
@@ -91,7 +91,7 @@ namespace dcpp {
 			FastLock l(cs);
 
 			// Attempt to find a user that provides this information
-			auto i = ranges::find_if(children, [&](const SearchResultPtr& aResult) { return Util::hasContentInfo(aResult->getContentInfo()); });
+			auto i = ranges::find_if(children, [&](const SearchResultPtr& aResult) { return aResult->getContentInfo().isInitialized(); });
 			if (i != children.end()) {
 				return (*i)->getContentInfo();
 			}

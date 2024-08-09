@@ -18,7 +18,6 @@
 
 #include "stdafx.h"
 
-#include <airdcpp/AirUtil.h>
 #include <airdcpp/Localization.h>
 #include "Resource.h"
 

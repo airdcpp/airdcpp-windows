@@ -20,17 +20,18 @@
 #include "Bundle.h"
 
 #include "ActionHook.h"
-#include "AirUtil.h"
 #include "ClientManager.h"
 #include "ConnectionManager.h"
 #include "Download.h"
 #include "File.h"
 #include "LogManager.h"
+#include "PathUtil.h"
 #include "QueueItem.h"
 #include "SimpleXML.h"
 #include "Streams.h"
 #include "TimerManager.h"
 #include "UserConnection.h"
+#include "ValueGenerator.h"
 
 #include <boost/range/numeric.hpp>
 #include <boost/range/adaptor/map.hpp>
@@ -50,7 +51,7 @@ Bundle::Bundle(const QueueItemPtr& qi, time_t aFileDate, QueueToken aToken /*0*/
 }
 
 Bundle::Bundle(const string& aTarget, time_t aAdded, Priority aPriority, time_t aBundleDate /*0*/, QueueToken aToken /*0*/, bool aDirty /*true*/, bool aIsFileBundle /*false*/) noexcept :
-	QueueItemBase(Util::validatePath(aTarget, !aIsFileBundle), 0, aPriority, aAdded, aToken, 0), bundleDate(aBundleDate), fileBundle(aIsFileBundle), dirty(aDirty) {
+	QueueItemBase(PathUtil::validatePath(aTarget, !aIsFileBundle), 0, aPriority, aAdded, aToken, 0), bundleDate(aBundleDate), fileBundle(aIsFileBundle), dirty(aDirty) {
 
 	if (aToken == 0) {
 		token = Util::toUInt32(ConnectionManager::getInstance()->tokens.createToken(CONNECTION_TYPE_DOWNLOAD));
@@ -191,9 +192,9 @@ int64_t Bundle::getSecondsLeft() const noexcept {
 
 string Bundle::getName() const noexcept  {
 	if (!fileBundle) {
-		return Util::getLastDir(target);
+		return PathUtil::getLastDir(target);
 	} else {
-		return Util::getFileName(target);
+		return PathUtil::getFileName(target);
 	}
 }
 
@@ -215,7 +216,7 @@ QueueItemPtr Bundle::findQI(const string& aTarget) const noexcept {
 }
 
 string Bundle::getXmlFilePath() const noexcept {
-	return Util::getPath(Util::PATH_BUNDLES) + "Bundle" + getStringToken() + ".xml";
+	return AppUtil::getPath(AppUtil::PATH_BUNDLES) + "Bundle" + getStringToken() + ".xml";
 }
 
 void Bundle::deleteXmlFile() noexcept {
@@ -327,7 +328,7 @@ bool Bundle::addUserQueue(const QueueItemPtr& qi, const HintedUser& aUser, bool 
 		if (!seqOrder) {
 			/* Randomize the downloading order for each user if the bundle dir date is newer than 7 days to boost partial bundle sharing */
 			l.push_back(qi);
-			swap(l[Util::rand(0, (uint32_t)l.size())], l[l.size()-1]);
+			swap(l[ValueGenerator::rand(0, (uint32_t)l.size())], l[l.size()-1]);
 		} else {
 			/* Sequential order */
 			l.insert(upper_bound(l.begin(), l.end(), qi, QueueItem::AlphaSortOrder()), qi);
@@ -391,7 +392,7 @@ void Bundle::getDirQIs(const string& aDir, QueueItemList& ql) const noexcept {
 	}
 
 	for (const auto& q: queueItems) {
-		if (AirUtil::isSubLocal(q->getTarget(), aDir)) {
+		if (PathUtil::isSubLocal(q->getTarget(), aDir)) {
 			ql.push_back(q);
 		}
 	}

@@ -3,26 +3,14 @@
 
 #include <atlcrack.h>
 #include "PropPage.h"
-#include <airdcpp/ConnectionManager.h>
 #include "RichTextBox.h"
 #include <airdcpp/SettingsManager.h>
 
 class PropPageTextStyles: public CPropertyPage<IDD_TEXT_STYLES>, public PropPage, private SettingsManagerListener
 {
 public:
-	PropPageTextStyles(SettingsManager *s) : PropPage(s) { 
-		fg = 0;
-		bg = 0;
-		title = _tcsdup((TSTRING(SETTINGS_APPEARANCE) + _T('\\') + TSTRING(SETTINGS_TEXT_STYLES)).c_str());
-		SetTitle(title);
-		m_psp.dwFlags |= PSP_RTLREADING;
-		initial = true;
-	};
-	~PropPageTextStyles() {
-		free(title);
-		if(Util::fileExists(WinUtil::getPath(WinUtil::PATH_THEMES) + "backup.dctheme"))
-			File::deleteFile(WinUtil::getPath(WinUtil::PATH_THEMES) + "backup.dctheme");
-	};
+	PropPageTextStyles(SettingsManager* s);;
+	~PropPageTextStyles();
 
 	BEGIN_MSG_MAP_EX(PropPageTextStyles)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)

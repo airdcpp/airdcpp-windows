@@ -25,8 +25,10 @@
 #include "Download.h"
 #include "File.h"
 #include "HashManager.h"
-#include "Util.h"
+#include "PathUtil.h"
 #include "SimpleXML.h"
+#include "Util.h"
+#include "ValueGenerator.h"
 
 namespace dcpp {
 
@@ -35,7 +37,7 @@ namespace {
 
 	string getTempName(const string& aFileName, const TTHValue& aRoot) noexcept {
 		string tmp(aFileName);
-		tmp += "_" + Util::toString(Util::rand());
+		tmp += "_" + Util::toString(ValueGenerator::rand());
 		tmp += "." + aRoot.toBase32();
 		tmp += TEMP_EXTENSION;
 		return tmp;
@@ -44,7 +46,7 @@ namespace {
 
 QueueItem::QueueItem(const string& aTarget, int64_t aSize, Priority aPriority, Flags::MaskType aFlag,
 		time_t aAdded, const TTHValue& tth, const string& aTempTarget) :
-		QueueItemBase(aTarget, aSize, aPriority, aAdded, Util::rand(), aFlag),
+		QueueItemBase(aTarget, aSize, aPriority, aAdded, ValueGenerator::rand(), aFlag),
 		tthRoot(tth), tempTarget(aTempTarget)
 	{
 
@@ -157,7 +159,7 @@ Priority QueueItem::calculateAutoPriority() const noexcept {
 
 bool QueueItem::hasPartialSharingTarget() noexcept {
 	// don't share when the file does not exist
-	if(!Util::fileExists(isDownloaded() ? target : getTempTarget()))
+	if(!PathUtil::fileExists(isDownloaded() ? target : getTempTarget()))
 		return false;
 
 	return true;
@@ -495,7 +497,7 @@ Segment QueueItem::getNextSegment(int64_t aBlockSize, int64_t aWantedSize, int64
 		// select random chunk for download
 		dcdebug("Found chunks: " SIZET_FMT "\n", neededParts.size());
 		
-		Segment& selected = neededParts[Util::rand(0, neededParts.size())];
+		Segment& selected = neededParts[ValueGenerator::rand(0, neededParts.size())];
 		selected.setSize(std::min(selected.getSize(), targetSize));	// request only wanted size
 		
 		return selected;
@@ -719,18 +721,18 @@ bool QueueItem::usesSmallSlot() const noexcept {
 
 
 string QueueItem::getTargetFileName() const noexcept {
-	return Util::getFileName(target); 
+	return PathUtil::getFileName(target); 
 }
 
 string QueueItem::getFilePath() const noexcept {
-	return Util::getFilePath(target); 
+	return PathUtil::getFilePath(target); 
 }
 
 QueueItemPtr QueueItem::pickSearchItem(const QueueItemList& aItems) noexcept {
 	QueueItemPtr searchItem = nullptr;
 
 	for (size_t s = 0; s < aItems.size(); s++) {
-		searchItem = aItems[Util::rand(0, aItems.size() - 1)];
+		searchItem = aItems[ValueGenerator::rand(0, aItems.size() - 1)];
 
 		if (!searchItem->isRunning() && !searchItem->isPausedPrio()) {
 			break;

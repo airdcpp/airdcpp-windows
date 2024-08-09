@@ -23,11 +23,12 @@
 #include "HintedUser.h"
 #include "TimerManager.h"
 #include "Util.h"
+#include "ValueGenerator.h"
 
 namespace dcpp {
 
 TempShareInfo::TempShareInfo(const string& aName, const string& aPath, int64_t aSize, const TTHValue& aTTH, const UserPtr& aUser) noexcept :
-	id(Util::rand()), user(aUser), name(aName), path(aPath), size(aSize), tth(aTTH), timeAdded(GET_TIME()) { }
+	id(ValueGenerator::rand()), user(aUser), name(aName), path(aPath), size(aSize), tth(aTTH), timeAdded(GET_TIME()) { }
 
 bool TempShareInfo::hasAccess(const UserPtr& aUser) const noexcept {
 	return !user || user == aUser;

@@ -21,11 +21,12 @@
 #include "WinUtil.h"
 
 #include <airdcpp/typedefs.h>
+#include <airdcpp/DupeUtil.h>
 #include <airdcpp/Text.h>
 #include <airdcpp/Util.h>
+#include <airdcpp/PathUtil.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/File.h>
-#include <airdcpp/AirUtil.h>
 
 #include "iTunesCOMInterface.h"
 #include "WMPlayerRemoteApi.h"
@@ -230,8 +231,8 @@ string Players::getMPCSpam() {
 							if (test != NULL) {
 								WideCharToMultiByte(CP_ACP, 0, pFileName, -1, test, 1000, NULL, NULL);
 								string filename(test);
-								params["filename"] = Util::getFileName(filename); //otherwise fully qualified
-								params["title"] = Util::getFileName(filename).substr(0, Util::getFileName(filename).size() - 4);
+								params["filename"] = PathUtil::getFileName(filename); //otherwise fully qualified
+								params["title"] = PathUtil::getFileName(filename).substr(0, PathUtil::getFileName(filename).size() - 4);
 								params["size"] = Util::formatBytes(File::getSize(filename));
 							}
 							delete [] test;
@@ -679,11 +680,11 @@ string Players::getWinAmpSpam() {
 					ReadProcessMemory(w_hHandle, lpath, &buf, MAX_PATH, &buf_len);
 		
 				string fpath = buf;
-				string dir = AirUtil::getReleaseDirLocal(Util::getFilePath(fpath), true);
+				string dir = DupeUtil::getReleaseDirLocal(PathUtil::getFilePath(fpath), true);
 				params["path"] = fpath; //full filepath, probobly not even needed.
-				params["filename"] = Util::getFileName(fpath); //only filename
+				params["filename"] = PathUtil::getFileName(fpath); //only filename
 				params["directory"] = dir;
-				params["parentdir"] = Util::getLastDir(fpath.substr(0, fpath.find(dir)));
+				params["parentdir"] = PathUtil::getLastDir(fpath.substr(0, fpath.find(dir)));
 			}
 
 			CloseHandle(w_hHandle);
