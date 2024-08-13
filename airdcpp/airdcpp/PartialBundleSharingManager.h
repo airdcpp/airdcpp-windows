@@ -23,14 +23,16 @@
 #include "SearchManagerListener.h"
 #include "TimerManagerListener.h"
 
+#include "AdcCommand.h"
 #include "CriticalSection.h"
+#include "ProtocolCommandManager.h"
 #include "Message.h"
 #include "QueueItemBase.h"
 
 
 namespace dcpp {
 
-class PartialBundleSharingManager : /*private TimerManagerListener,*/ private QueueManagerListener, private SearchManagerListener
+class PartialBundleSharingManager : private QueueManagerListener, private SearchManagerListener, private ProtocolCommandManagerListener
 {
 public:
 	void onPBD(const AdcCommand& cmd, const UserPtr& from);
@@ -38,6 +40,8 @@ public:
 
 	PartialBundleSharingManager();
 	~PartialBundleSharingManager();
+
+	ADC_CMD(PBD, 'P','B','D');
 private:
 	typedef pair<HintedUser, string> UserBundlePair;
 	typedef vector<UserBundlePair> FinishedNotifyList;
@@ -58,7 +62,9 @@ private:
 	void on(QueueManagerListener::ItemStatus, const QueueItemPtr& aQI) noexcept override;
 
 	void on(SearchManagerListener::IncomingSearch, Client* aClient, const OnlineUserPtr& aAdcUser, const SearchQuery& aQuery, const SearchResultList&, bool aIsUdpActive) noexcept override;
-	// void on(TimerManagerListener::Minute, uint64_t aTick) noexcept override;
+
+	void on(ProtocolCommandManagerListener::IncomingUDPCommand, const AdcCommand&, const string&) noexcept override;
+	void on(ProtocolCommandManagerListener::IncomingHubCommand, const AdcCommand&, const Client&) noexcept override;
 
 	void onIncomingSearch(const OnlineUserPtr& aUser, const SearchQuery& aQuery, bool aIsUdpActive) noexcept;
 
@@ -72,6 +78,8 @@ private:
 	bool isRemoteNotified(const BundlePtr& aBundle, const UserPtr& aUser) const noexcept;
 	void addRemoteNotify(const BundlePtr& aBundle, const HintedUser& aUser, const string& remoteBundle) noexcept;
 	void removeRemoteBundleNotify(const UserPtr& aUser, const BundlePtr& aBundle) noexcept;
+
+	void sendUDP(AdcCommand& aCmd, const UserPtr& aUser, const string& aHubUrl);
 
 	std::unordered_map<BundlePtr, FinishedNotifyList> remoteBundleNotifications;
 };

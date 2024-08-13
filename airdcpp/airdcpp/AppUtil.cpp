@@ -20,12 +20,7 @@
 #include "AppUtil.h"
 
 #ifdef _WIN32
-
-#include "w.h"
 #include "shlobj.h"
-#include <shellapi.h>
-#include <VersionHelpers.h>
-
 #endif
 
 #include "Exception.h"
@@ -36,24 +31,10 @@
 #include "ResourceManager.h"
 #include "SettingsManager.h"
 #include "SimpleXML.h"
-// #include "ScopedFunctor.h"
-#include "User.h"
 #include "Util.h"
 #include "ValueGenerator.h"
-#include "version.h"
 
 #include <random>
-
-#ifndef _WIN32
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <sys/utsname.h>
-#include <ctype.h>
-
-#endif
-#include <locale.h>
 
 namespace dcpp {
 

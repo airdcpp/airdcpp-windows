@@ -56,6 +56,21 @@ const ResourceManager::Strings SettingsManager::outgoingStrings[OUTGOING_LAST] {
 const ResourceManager::Strings SettingsManager::dropStrings[QUEUE_LAST] { ResourceManager::FILE, ResourceManager::BUNDLE, ResourceManager::ALL };
 const ResourceManager::Strings SettingsManager::updateStrings[VERSION_LAST] { ResourceManager::CHANNEL_STABLE, ResourceManager::CHANNEL_BETA, ResourceManager::CHANNEL_NIGHTLY };
 
+
+SettingsManager::SettingValue SettingsManager::getSettingValue(int key, bool useDefault) const noexcept {
+	if (key >= SettingsManager::STR_FIRST && key < SettingsManager::STR_LAST) {
+		return SettingsManager::getInstance()->get(static_cast<SettingsManager::StrSetting>(key), useDefault);
+	} else if (key >= SettingsManager::INT_FIRST && key < SettingsManager::INT_LAST) {
+		return SettingsManager::getInstance()->get(static_cast<SettingsManager::IntSetting>(key), useDefault);
+	} else if (key >= SettingsManager::BOOL_FIRST && key < SettingsManager::BOOL_LAST) {
+		return SettingsManager::getInstance()->get(static_cast<SettingsManager::BoolSetting>(key), useDefault);
+	} else {
+		dcassert(0);
+	}
+
+	return 0;
+}
+
 SettingsManager::EnumStringMap SettingsManager::getEnumStrings(int aKey, bool aValidateCurrentValue) noexcept {
 	EnumStringMap ret;
 
@@ -1224,6 +1239,8 @@ void SettingsManager::set(IntSetting key, int value, bool aForceSet) noexcept {
 	} else if (key == MAX_RESIZE_LINES && value < 1) {
 		value = 1;
 #endif
+	} else if (key == DISCONNECT_SPEED && value < 1) {
+		value = 1;
 	}
 
 	intSettings[key - INT_FIRST] = value;

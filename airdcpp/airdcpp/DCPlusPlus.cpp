@@ -31,7 +31,7 @@
 #include "ConnectionManager.h"
 #include "ConnectivityManager.h"
 #include "CryptoManager.h"
-#include "DebugManager.h"
+#include "ProtocolCommandManager.h"
 #include "DirectoryListingManager.h"
 #include "DownloadManager.h"
 #include "FavoriteManager.h"
@@ -101,7 +101,7 @@ void startup(StepFunction aStepF, MessageFunction aMessageF, Callback aRunWizard
 	FavoriteManager::newInstance();
 	ConnectivityManager::newInstance();
 	DirectoryListingManager::newInstance();
-	DebugManager::newInstance();
+	ProtocolCommandManager::newInstance();
 	GeoManager::newInstance();
 	UpdateManager::newInstance();
 	ViewFileManager::newInstance();
@@ -230,7 +230,7 @@ void shutdown(StepFunction stepF, ProgressFunction progressF, ShutdownUnloadCall
 	UpdateManager::deleteInstance();
 	GeoManager::deleteInstance();
 	ConnectivityManager::deleteInstance();
-	DebugManager::deleteInstance();
+	ProtocolCommandManager::deleteInstance();
 	CryptoManager::deleteInstance();
 	ThrottleManager::deleteInstance();
 	DirectoryListingManager::deleteInstance();

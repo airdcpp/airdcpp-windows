@@ -49,7 +49,7 @@ namespace dcpp {
 			FLAGS = 0x1000,
 			ENCRYPTION = 0x2000,
 			QUEUE_ID = 0x4000,
-			// BUNDLE_ID = 0x8000,
+			SUPPORTS = 0x8000,
 		};
 
 		enum ItemState {
@@ -77,6 +77,7 @@ namespace dcpp {
 		GETSET(string, statusString, StatusString)
 		GETSET(string, bundle, Bundle);
 		GETSET(OrderedStringSet, flags, Flags);
+		GETSET(StringList, supports, Supports);
 
 		IGETSET(Transfer::Type, type, Type, Transfer::TYPE_LAST)
 

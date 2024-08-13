@@ -396,6 +396,18 @@ public:
 		return t1;
 	}
 
+	template<typename T>
+	static bool hasCommonElements(const T& a, const T& b) noexcept {
+		return ranges::find_if(a, [&b](auto value) {
+			return ranges::find(b, value) != b.end();
+		}) != a.end();
+	}
+
+	template<typename T>
+	static void concatenate(T& a, const T& toAdd) noexcept {
+		std::copy(toAdd.begin(), toAdd.end(), std::back_inserter(a));
+	}
+
 	/**
 	 * Case insensitive substring search.
 	 * @return First position found or string::npos

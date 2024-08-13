@@ -189,8 +189,8 @@ LRESULT CALLBACK CInputBox::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPAR
 			break;
 		case WM_CTLCOLORSTATIC:
 			if (((HWND)lParam == m_hWndPrompt1) || ((HWND)lParam == m_hWndPrompt2)) {
-			SetBkColor ((HDC) wParam, GetSysColor(COLOR_WINDOW));
-			return((DWORD)  CreateSolidBrush(GetSysColor(COLOR_WINDOW)));
+				SetBkColor ((HDC) wParam, GetSysColor(COLOR_WINDOW));
+				return (LRESULT)CreateSolidBrush(GetSysColor(COLOR_WINDOW));
 			}
 			return DefWindowProc(hWnd, message, wParam, lParam);
 			break;

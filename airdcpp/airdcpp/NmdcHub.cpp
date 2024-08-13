@@ -32,7 +32,7 @@
 #include "Socket.h"
 #include "UserCommand.h"
 #include "StringTokenizer.h"
-#include "DebugManager.h"
+#include "ProtocolCommandManager.h"
 #include "QueueManager.h"
 #include "ZUtils.h"
 #include "ThrottleManager.h"
@@ -123,7 +123,7 @@ void NmdcHub::refreshLocalIp() noexcept {
 
 void NmdcHub::refreshUserList(bool refreshOnly) noexcept {
 	if(refreshOnly) {
-		Lock l(cs);
+		RLock l(cs);
 
 		OnlineUserList v;
 		for(auto n: users | views::values)
@@ -139,7 +139,7 @@ void NmdcHub::refreshUserList(bool refreshOnly) noexcept {
 OnlineUser& NmdcHub::getUser(const string& aNick) noexcept {
 	OnlineUser* u = NULL;
 	{
-		Lock l(cs);
+		RLock l(cs);
 		
 		NickIter i = users.find(aNick);
 		if(i != users.end())
@@ -156,7 +156,7 @@ OnlineUser& NmdcHub::getUser(const string& aNick) noexcept {
 	auto client = ClientManager::getInstance()->getClient(getHubUrl());
 
 	{
-		Lock l(cs);
+		WLock l(cs);
 		u = users.emplace(aNick, new OnlineUser(p, client, ValueGenerator::rand())).first->second;
 		u->inc();
 		u->getIdentity().setNick(aNick);
@@ -178,7 +178,7 @@ void NmdcHub::supports(const StringList& feat) {
 }
 
 OnlineUserPtr NmdcHub::findUser(const string& aNick) const noexcept {
-	Lock l(cs);
+	RLock l(cs);
 	NickIter i = users.find(aNick);
 	return i == users.end() ? NULL : i->second;
 }
@@ -195,7 +195,7 @@ OnlineUser* NmdcHub::findUser(const uint32_t aSID) const noexcept {
 void NmdcHub::putUser(const string& aNick) noexcept {
 	OnlineUser* ou = NULL;
 	{
-		Lock l(cs);
+		WLock l(cs);
 		NickIter i = users.find(aNick);
 		if(i == users.end())
 		return;
@@ -213,7 +213,7 @@ void NmdcHub::clearUsers() noexcept {
 	NickMap u2;
 
 	{
-		Lock l(cs);
+		WLock l(cs);
 		u2.swap(users);
 		availableBytes = 0;
 	}
@@ -228,8 +228,8 @@ void NmdcHub::updateFromTag(Identity& id, const string& tag) {
 	StringTokenizer<string> tok(tag, ',');
 	string::size_type j;
 	id.set("US", Util::emptyString);
-	if(tag.find("AirDC++") != string::npos)
-		id.getUser()->setFlag(User::AIRDCPLUSPLUS);
+	//if(tag.find("AirDC++") != string::npos)
+	//	id.getUser()->setFlag(User::AIRDCPLUSPLUS);
 
 	for(auto& i: tok.getTokens()) {
 		if(i.length() < 2)
@@ -485,8 +485,8 @@ void NmdcHub::onLine(const string& aLine) noexcept {
 			u.getUser()->unsetFlag(User::TLS);
 		}
 
-		if((u.getIdentity().getStatus() & Identity::AIRDC) && !u.getUser()->isSet(User::AIRDCPLUSPLUS))
-			u.getUser()->setFlag(User::AIRDCPLUSPLUS); //if we have a tag its already set.
+		//if((u.getIdentity().getStatus() & Identity::AIRDC) && !u.getUser()->isSet(User::AIRDCPLUSPLUS))
+		//	u.getUser()->setFlag(User::AIRDCPLUSPLUS); //if we have a tag its already set.
 
 
 		if(u.getIdentity().getStatus() & Identity::NAT) {
@@ -747,7 +747,7 @@ void NmdcHub::onLine(const string& aLine) noexcept {
 			OnlineUser& u = getUser(param);
 
 			if(u.getUser() == getMyIdentity().getUser()) {
-				u.getUser()->setFlag(User::AIRDCPLUSPLUS);
+				// u.getUser()->setFlag(User::AIRDCPLUSPLUS);
 				if(isActive())
 					u.getUser()->unsetFlag(User::PASSIVE);
 				else
@@ -960,7 +960,7 @@ void NmdcHub::revConnectToMe(const OnlineUser& aUser) {
 	send("$RevConnectToMe " + fromUtf8(getMyNick()) + " " + fromUtf8(aUser.getIdentity().getNick()) + "|");
 }
 
-bool NmdcHub::hubMessage(const string& aMessage, string& /*error_*/, bool aThirdPerson) noexcept { 
+bool NmdcHub::hubMessage(const string& aMessage, bool aThirdPerson) noexcept { 
 	send(fromUtf8( "<" + getMyNick() + "> " + escape(aThirdPerson ? "/me " + aMessage : aMessage) + "|" ) );
 	return true;
 }
@@ -1130,9 +1130,8 @@ void NmdcHub::sendUserCmd(const UserCommand& command, const ParamMap& params) {
 	checkstate();
 	string cmd = Util::formatParams(command.getCommand(), params);
 	if(command.isChat()) {
-		string error;
 		if(command.getTo().empty()) {
-			hubMessage(cmd, error);
+			hubMessage(cmd);
 		} else {
 			privateMessage(command.getTo(), cmd, false);
 		}
@@ -1173,7 +1172,7 @@ void NmdcHub::on(Minute, uint64_t /*aTick*/) noexcept {
 }
 
 void NmdcHub::getUserList(OnlineUserList& list, bool aListHidden) const noexcept {
-	Lock l(cs);
+	RLock l(cs);
 	for(auto& u: users | views::values) {
 		if (!aListHidden && u->isHidden()) {
 			continue;
@@ -1184,7 +1183,7 @@ void NmdcHub::getUserList(OnlineUserList& list, bool aListHidden) const noexcept
 }
 
 size_t NmdcHub::getUserCount() const noexcept { 
-	Lock l(cs); 
+	RLock l(cs); 
 	size_t userCount = 0;
 	for(auto& i: users) {
 		if(!i.second->isHidden()) {

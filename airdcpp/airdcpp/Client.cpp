@@ -23,7 +23,7 @@
 #include "ClientManager.h"
 #include "ConnectionManager.h"
 #include "ConnectivityManager.h"
-#include "DebugManager.h"
+#include "ProtocolCommandManager.h"
 #include "FavoriteManager.h"
 #include "LinkUtil.h"
 #include "LogManager.h"
@@ -67,6 +67,7 @@ void Client::reconnect() noexcept {
 	disconnect(true);
 	setAutoReconnect(true);
 	setReconnDelay(0);
+	supports.clear();
 }
 
 void Client::setActive() noexcept {
@@ -265,7 +266,7 @@ void Client::send(const char* aMessage, size_t aLen) {
 	}
 	updateActivity();
 	sock->write(aMessage, aLen);
-	COMMAND_DEBUG(aMessage, DebugManager::TYPE_HUB, DebugManager::OUTGOING, getIpPort());
+	COMMAND_DEBUG(aMessage, ProtocolCommandManager::TYPE_HUB, ProtocolCommandManager::OUTGOING, getIpPort());
 }
 
 void Client::on(BufferedSocketListener::Connected) noexcept {
@@ -403,7 +404,7 @@ bool Client::sendMessageHooked(const OutgoingChatMessage& aMessage, string& erro
 		return false;
 	}
 
-	return hubMessage(aMessage.text, error_, aMessage.thirdPerson);
+	return hubMessageHooked(aMessage.text, error_, aMessage.thirdPerson);
 }
 
 bool Client::sendPrivateMessageHooked(const OnlineUserPtr& aUser, const OutgoingChatMessage& aMessage, string& error_, bool aEcho) noexcept {
@@ -422,7 +423,7 @@ bool Client::sendPrivateMessageHooked(const OnlineUserPtr& aUser, const Outgoing
 		return false;
 	}
 
-	return privateMessage(aUser, aMessage.text, error_, aMessage.thirdPerson, aEcho);
+	return privateMessageHooked(aUser, aMessage.text, error_, aMessage.thirdPerson, aEcho);
 }
 
 void Client::onPrivateMessage(const ChatMessagePtr& aMessage) noexcept {
@@ -605,7 +606,7 @@ long Client::getDisplayCount(CountType aCountType) const noexcept {
  
 void Client::on(BufferedSocketListener::Line, const string& aLine) noexcept {
 	updateActivity();
-	COMMAND_DEBUG(aLine, DebugManager::TYPE_HUB, DebugManager::INCOMING, getIpPort());
+	COMMAND_DEBUG(aLine, ProtocolCommandManager::TYPE_HUB, ProtocolCommandManager::INCOMING, getIpPort());
 }
 
 void Client::on(TimerManagerListener::Second, uint64_t aTick) noexcept{

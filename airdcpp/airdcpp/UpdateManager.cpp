@@ -56,6 +56,24 @@ UpdateManager::UpdateManager() : lastIPUpdate(GET_TICK()) {
 	links.ipcheck4 = "http://checkip.dyndns.org/";
 	links.ipcheck6 = "http://checkip.dyndns.org/";
 	links.language = "http://languages.airdcpp.net/tx/";
+
+	SettingsManager::getInstance()->registerChangeHandler({
+		SettingsManager::GET_USER_COUNTRY,
+		SettingsManager::UPDATE_CHANNEL,
+		SettingsManager::LANGUAGE_FILE
+	}, [this](auto, auto aChangedSettings) {
+		if (ranges::find(aChangedSettings, SettingsManager::UPDATE_CHANNEL) != aChangedSettings.end()) {
+			UpdateManager::getInstance()->checkVersion(false);
+		}
+		
+		if (ranges::find(aChangedSettings, SettingsManager::LANGUAGE_FILE) != aChangedSettings.end()) {
+			UpdateManager::getInstance()->checkLanguage();
+		}
+
+		if (ranges::find(aChangedSettings, SettingsManager::GET_USER_COUNTRY) != aChangedSettings.end() && SETTING(GET_USER_COUNTRY)) {
+			UpdateManager::getInstance()->checkGeoUpdate();
+		}
+	});
 }
 
 UpdateManager::~UpdateManager() { 

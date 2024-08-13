@@ -154,7 +154,7 @@ int ShellExecAsUser(const TCHAR *pcOperation, const TCHAR *pcFileName, const TCH
 	{
 		dcassert(0);
 		HINSTANCE hInst = ShellExecuteW(parentHwnd, pcOperation, pcFileName, pcParameters, NULL, SW_SHOWNORMAL);
-		if(((int) hInst) <= 32) bSuccess = -1;
+		if(((INT_PTR) hInst) <= 32) bSuccess = -1;
 	}
 
 	return bSuccess;

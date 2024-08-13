@@ -16,7 +16,7 @@
 
 #include "StaticFrame.h"
 
-#include <airdcpp/DebugManager.h>
+#include <airdcpp/ProtocolCommandManager.h>
 #include <airdcpp-webapi/web-server/WebServerManagerListener.h>
 
 #include <airdcpp/Semaphore.h>
@@ -25,7 +25,7 @@
 #include <boost/lockfree/queue.hpp>
 
 using namespace webserver;
-class CDMDebugFrame : private DebugManagerListener, private WebServerManagerListener, public Thread,
+class CDMDebugFrame : private ProtocolCommandManagerListener, private WebServerManagerListener, public Thread,
 	public MDITabChildWindowImpl<CDMDebugFrame>,
 	public StaticFrame<CDMDebugFrame, ResourceManager::MENU_CDMDEBUG_MESSAGES>
 {
@@ -107,7 +107,7 @@ private:
 	tstring sFilterIp;
 	bool closed = false;
 	
-	void on(DebugManagerListener::DebugCommand, const string& aLine, uint8_t aType, uint8_t aDirection, const string& ip) noexcept override;
+	void on(ProtocolCommandManagerListener::DebugCommand, const string& aLine, uint8_t aType, uint8_t aDirection, const string& ip) noexcept override;
 	void on(WebServerManagerListener::Data, const string& aData, TransportType aType, Direction aDirection, const string& aIP) noexcept override;
 
 	static string formatMessage(const string& aType, bool aIncoming, const string& aData, const string& aIP) noexcept;

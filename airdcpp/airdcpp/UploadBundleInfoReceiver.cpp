@@ -24,6 +24,7 @@
 #include "ResourceManager.h"
 #include "Upload.h"
 #include "UploadBundle.h"
+#include "UploadBundleInfo.h"
 #include "UploadManager.h"
 #include "UserConnection.h"
 
@@ -487,5 +488,14 @@ void UploadBundleInfoReceiver::on(UploadManagerListener::Removed, const Upload* 
 	WLock l(cs);
 	removeBundleConnectionUnsafe(aUpload, b);
 }
+
+void UploadBundleInfoReceiver::on(ProtocolCommandManagerListener::IncomingUDPCommand, const AdcCommand& aCmd, const string&) noexcept {
+	if (aCmd.getCommand() == UploadBundleInfo::CMD_UBN) {
+		onUBN(aCmd);
+	} else if (aCmd.getCommand() == UploadBundleInfo::CMD_UBD) {
+		onUBD(aCmd);
+	}
+}
+
 
 } // namespace dcpp

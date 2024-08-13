@@ -489,7 +489,7 @@ void SearchManager::respond(const AdcCommand& adc, Client* aClient, OnlineUser* 
 			c.setTo(aUser->getIdentity().getSID());
 			c.addParam("TO", token);
 
-			aUser->getClient()->send(c);
+			aUser->getClient()->sendHooked(c);
 		}
 		return;
 	}
@@ -501,7 +501,7 @@ void SearchManager::respond(const AdcCommand& adc, Client* aClient, OnlineUser* 
 			AdcCommand cmd = sr->toRES(AdcCommand::TYPE_UDP);
 			if(!token.empty())
 				cmd.addParam("TO", token);
-			ClientManager::getInstance()->sendUDP(cmd, aUser->getUser()->getCID(), false, false, sudpKey, aUser->getHubUrl());
+			ClientManager::getInstance()->sendUDPHooked(cmd, aUser->getUser()->getCID(), false, false, sudpKey, aUser->getHubUrl());
 		}
 	}
 
@@ -512,7 +512,7 @@ void SearchManager::respond(const AdcCommand& adc, Client* aClient, OnlineUser* 
 		c.addParam("TO", token);
 		c.addParam("RC", Util::toString(results.size()));
 
-		aUser->getClient()->send(c);
+		aUser->getClient()->sendHooked(c);
 	}
 }
 

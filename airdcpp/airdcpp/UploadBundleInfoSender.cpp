@@ -21,20 +21,39 @@
 
 #include "Bundle.h"
 #include "ClientManager.h"
+#include "ConnectionManager.h"
 #include "Download.h"
 #include "DownloadManager.h"
 #include "LogManager.h"
 #include "QueueManager.h"
 #include "SearchManager.h"
+#include "UploadBundleInfo.h"
 #include "UserConnection.h"
 
 namespace dcpp {
 
 const auto ENABLE_DEBUG = true;
+
+
+const string UploadBundleInfoSender::FEATURE_ADC_UBN1 = "UBN1";
 	
 UploadBundleInfoSender::UploadBundleInfoSender() noexcept {
 	DownloadManager::getInstance()->addListener(this);
 	QueueManager::getInstance()->addListener(this);
+
+	if (SETTING(USE_UPLOAD_BUNDLES)) {
+		ConnectionManager::getInstance()->userConnectionSupports.add(FEATURE_ADC_UBN1);
+	}
+
+	SettingsManager::getInstance()->registerChangeHandler({
+		SettingsManager::USE_UPLOAD_BUNDLES,
+	}, [this](auto ...) {
+		if (SETTING(USE_UPLOAD_BUNDLES)) {
+			ConnectionManager::getInstance()->userConnectionSupports.add(FEATURE_ADC_UBN1);
+		} else {
+			ConnectionManager::getInstance()->userConnectionSupports.remove(FEATURE_ADC_UBN1);
+		}
+	});
 }
 
 UploadBundleInfoSender::~UploadBundleInfoSender() noexcept {
@@ -65,7 +84,7 @@ void UploadBundleInfoSender::on(QueueManagerListener::BundleSize, const BundlePt
 }
 
 void UploadBundleInfoSender::on(DownloadManagerListener::Starting, const Download* aDownload) noexcept {
-	if (!aDownload->getUserConnection().isSet(UserConnection::FLAG_UBN1)) {
+	if (!aDownload->getUserConnection().getSupports().includes(FEATURE_ADC_UBN1)) {
 		return;
 	}
 
@@ -156,7 +175,7 @@ void UploadBundleInfoSender::removeRunningUserUnsafe(const UBNBundle::Ptr& aBund
 }
 
 void UploadBundleInfoSender::removeRunningUser(const UserConnection* aSource, bool aSendRemove) noexcept {
-	if (!aSource->isSet(UserConnection::FLAG_UBN1)) {
+	if (!aSource->getSupports().includes(FEATURE_ADC_UBN1)) {
 		return;
 	}
 
@@ -305,21 +324,21 @@ bool UploadBundleInfoSender::UBNBundle::removeRunningUser(const UserConnection* 
 }
 
 AdcCommand UploadBundleInfoSender::UBNBundle::getBundleFinishedCommand() const noexcept {
-	AdcCommand cmd(AdcCommand::CMD_UBD, AdcCommand::TYPE_UDP);
+	AdcCommand cmd(UploadBundleInfo::CMD_UBD, AdcCommand::TYPE_UDP);
 	cmd.addParam("BU", bundle->getStringToken());
 	cmd.addParam("FI1");
 	return cmd;
 }
 
 AdcCommand UploadBundleInfoSender::UBNBundle::getRemoveCommand(const string& aConnectionToken) const noexcept {
-	AdcCommand cmd(AdcCommand::CMD_UBD, AdcCommand::TYPE_UDP);
+	AdcCommand cmd(UploadBundleInfo::CMD_UBD, AdcCommand::TYPE_UDP);
 	cmd.addParam("TO", aConnectionToken);
 	cmd.addParam("RM1");
 	return cmd;
 }
 
 AdcCommand UploadBundleInfoSender::UBNBundle::getUserModeCommand() const noexcept {
-	AdcCommand cmd(AdcCommand::CMD_UBD, AdcCommand::TYPE_UDP);
+	AdcCommand cmd(UploadBundleInfo::CMD_UBD, AdcCommand::TYPE_UDP);
 
 	cmd.addParam("BU", bundle->getStringToken());
 	cmd.addParam("UD1");
@@ -334,7 +353,7 @@ AdcCommand UploadBundleInfoSender::UBNBundle::getUserModeCommand() const noexcep
 }
 
 AdcCommand UploadBundleInfoSender::UBNBundle::getBundleSizeUpdateCommand() const noexcept {
-	AdcCommand cmd(AdcCommand::CMD_UBD, AdcCommand::TYPE_UDP);
+	AdcCommand cmd(UploadBundleInfo::CMD_UBD, AdcCommand::TYPE_UDP);
 
 	cmd.addParam("BU", bundle->getStringToken());
 	cmd.addParam("SI", Util::toString(bundle->getSize()));
@@ -343,7 +362,7 @@ AdcCommand UploadBundleInfoSender::UBNBundle::getBundleSizeUpdateCommand() const
 }
 
 AdcCommand UploadBundleInfoSender::UBNBundle::getAddCommand(const string& aConnectionToken, bool aNewBundle) const noexcept {
-	AdcCommand cmd(AdcCommand::CMD_UBD, AdcCommand::TYPE_UDP);
+	AdcCommand cmd(UploadBundleInfo::CMD_UBD, AdcCommand::TYPE_UDP);
 
 	cmd.addParam("TO", aConnectionToken);
 	cmd.addParam("BU", bundle->getStringToken());
@@ -361,7 +380,7 @@ AdcCommand UploadBundleInfoSender::UBNBundle::getAddCommand(const string& aConne
 }
 
 AdcCommand UploadBundleInfoSender::UBNBundle::getTickCommand(const string& aPercent, const string& aSpeed) const noexcept {
-	AdcCommand cmd(AdcCommand::CMD_UBN, AdcCommand::TYPE_UDP);
+	AdcCommand cmd(UploadBundleInfo::CMD_UBN, AdcCommand::TYPE_UDP);
 
 	cmd.addParam("BU", bundle->getStringToken());
 	if (!aSpeed.empty())
@@ -396,7 +415,7 @@ void UploadBundleInfoSender::sendUpdate(AdcCommand& aCmd, const UserPtr& aUser) 
 	// Send in a different thread as most calls are fired from inside a (locked) listener
 	SearchManager::getInstance()->getUdpServer().addTask([=] {
 		auto cmd = aCmd;
-		ClientManager::getInstance()->sendUDP(cmd, aUser->getCID(), true, true);
+		ClientManager::getInstance()->sendUDPHooked(cmd, aUser->getCID(), true, true);
 	});
 }
 

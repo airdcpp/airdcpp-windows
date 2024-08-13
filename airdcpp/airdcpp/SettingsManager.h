@@ -316,6 +316,25 @@ public:
 	static const ResourceManager::Strings dropStrings[QUEUE_LAST];
 	static const ResourceManager::Strings updateStrings[VERSION_LAST];
 
+	typedef boost::variant<bool, int, string> SettingValue;
+	typedef vector<SettingValue> SettingValueList;
+
+	typedef vector<int> SettingKeyList;
+	struct SettingChangeHandler {
+
+		typedef vector<SettingChangeHandler> List;
+		typedef std::function<void(const MessageCallback& errorF, const SettingKeyList& aChangedSettings)> OnSettingChangedF;
+
+		OnSettingChangedF onChanged;
+		SettingKeyList settingKeys;
+	};
+
+	void registerChangeHandler(const SettingKeyList& aKeys, SettingChangeHandler::OnSettingChangedF&& changeF) noexcept {
+		settingChangeHandlers.push_back(SettingChangeHandler(changeF, aKeys));
+	}
+
+	SettingValue getSettingValue(int aSetting, bool useDefault = true) const noexcept;
+
 	typedef map<int, ResourceManager::Strings> EnumStringMap;
 	static EnumStringMap getEnumStrings(int aKey, bool aValidateCurrentValue) noexcept;
 
@@ -430,7 +449,12 @@ public:
 	typedef std::function<bool(const string&)> PathParseCallback;
 	static bool loadSettingFile(AppUtil::Paths aPath, const string& aFileName, XMLParseCallback&& aParseCallback, const MessageCallback& aCustomErrorF = nullptr) noexcept;
 	static bool loadSettingFile(AppUtil::Paths aPath, const string& aFileName, PathParseCallback&& aParseCallback, const MessageCallback& aCustomErrorF = nullptr) noexcept;
+
+	const SettingChangeHandler::List& getChangeCallbacks() const noexcept {
+		return settingChangeHandlers;
+	}
 private:
+	SettingChangeHandler::List settingChangeHandlers;
 	boost::regex connectionRegex;
 
 	friend class Singleton<SettingsManager>;

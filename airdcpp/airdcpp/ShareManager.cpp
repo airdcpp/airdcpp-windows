@@ -55,6 +55,12 @@ ShareManager::ShareManager() : validator(make_unique<SharePathValidator>()), tre
 	HashManager::getInstance()->addListener(this);
 
 	File::ensureDirectory(AppUtil::getPath(AppUtil::PATH_SHARECACHE));
+
+	SettingsManager::getInstance()->registerChangeHandler({ 
+		SettingsManager::SKIPLIST_SHARE, SettingsManager::SHARE_SKIPLIST_USE_REGEXP 
+	}, [this](auto ...) {
+		reloadSkiplist();
+	});
 }
 
 ShareManager::~ShareManager() {

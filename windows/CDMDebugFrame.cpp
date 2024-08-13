@@ -94,7 +94,7 @@ LRESULT CDMDebugFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 	WinUtil::SetIcon(m_hWnd, IDI_CDM);
 	start();
-	DebugManager::getInstance()->addListener(this);
+	ProtocolCommandManager::getInstance()->addListener(this);
 	WebServerManager::getInstance()->addListener(this);
 		
 	bHandled = FALSE;
@@ -103,7 +103,7 @@ LRESULT CDMDebugFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 LRESULT CDMDebugFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closed) {
-		DebugManager::getInstance()->removeListener(this);
+		ProtocolCommandManager::getInstance()->removeListener(this);
 		WebServerManager::getInstance()->removeListener(this);
 		
 		closed = true;
@@ -269,24 +269,24 @@ void CDMDebugFrame::on(WebServerManagerListener::Data, const string& aData, Tran
 	addCmd(formatMessage(type, aDirection == Direction::INCOMING, aData, aIP));
 }
 
-void CDMDebugFrame::on(DebugManagerListener::DebugCommand, const string& aLine, uint8_t aType, uint8_t aDirection, const string& aIP) noexcept {
+void CDMDebugFrame::on(ProtocolCommandManagerListener::DebugCommand, const string& aLine, uint8_t aType, uint8_t aDirection, const string& aIP) noexcept {
 	if(bFilterIp && Text::toT(aIP).find(sFilterIp) == tstring::npos) {
 		return;
 	}
 
 	string type;
 	switch(aType) {
-		case DebugManager::TYPE_HUB:
+		case ProtocolCommandManager::TYPE_HUB:
 			if(!showHubCommands)
 				return;
 			type = "Hub";
 			break;
-		case DebugManager::TYPE_CLIENT:
+		case ProtocolCommandManager::TYPE_CLIENT:
 			if(!showTCPCommands)
 				return;
 			type = "Client (TCP)";
 			break;
-		case DebugManager::TYPE_CLIENT_UDP:
+		case ProtocolCommandManager::TYPE_CLIENT_UDP:
 			if(!showUDPCommands)
 				return;
 			type = "Client (UDP)";
@@ -294,7 +294,7 @@ void CDMDebugFrame::on(DebugManagerListener::DebugCommand, const string& aLine, 
 		default: dcassert(0);
 	}
 
-	addCmd(formatMessage(type, aDirection == DebugManager::INCOMING, aLine, aIP));
+	addCmd(formatMessage(type, aDirection == ProtocolCommandManager::INCOMING, aLine, aIP));
 }
 
 LRESULT CDMDebugFrame::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {

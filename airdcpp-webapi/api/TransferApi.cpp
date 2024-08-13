@@ -208,6 +208,8 @@ namespace webserver {
 			updatedProps.insert(TransferUtils::PROP_IP);
 		if (aUpdatedProperties & TransferInfo::UpdateFlags::FLAGS)
 			updatedProps.insert(TransferUtils::PROP_FLAGS);
+		if (aUpdatedProperties & TransferInfo::UpdateFlags::SUPPORTS)
+			updatedProps.insert(TransferUtils::PROP_SUPPORTS);
 		if (aUpdatedProperties & TransferInfo::UpdateFlags::ENCRYPTION)
 			updatedProps.insert(TransferUtils::PROP_ENCRYPTION);
 		if (aUpdatedProperties & TransferInfo::UpdateFlags::QUEUE_ID)

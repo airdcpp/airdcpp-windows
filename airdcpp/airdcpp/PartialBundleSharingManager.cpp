@@ -134,11 +134,7 @@ void PartialBundleSharingManager::onPBD(const AdcCommand& aCmd, const UserPtr& f
 
 		// Send
 		AdcCommand cmd = toPBD(hubIpPort, localBundle, tth, false, sendAdd, sendNotify);
-		if (!ClientManager::getInstance()->sendUDP(cmd, from->getCID(), false, true)) {
-			dbgMsg("reply sent", LogMessage::SEV_VERBOSE);
-		} else {
-			dbgMsg("could not send reply (UDP error)", LogMessage::SEV_WARNING);
-		}
+		sendUDP(cmd, from, hubUrl);
 	}
 
 	if (add) {
@@ -153,7 +149,7 @@ void PartialBundleSharingManager::onPBD(const AdcCommand& aCmd, const UserPtr& f
 }
 
 AdcCommand PartialBundleSharingManager::toPBD(const string& hubIpPort, const string& bundle, const string& aTTH, bool reply, bool add, bool notify) const {
-	AdcCommand cmd(AdcCommand::CMD_PBD, AdcCommand::TYPE_UDP);
+	AdcCommand cmd(PartialBundleSharingManager::CMD_PBD, AdcCommand::TYPE_UDP);
 
 	cmd.addParam("HI", hubIpPort);
 	cmd.addParam("BU", bundle);
@@ -190,21 +186,21 @@ void PartialBundleSharingManager::sendFileCompletionNotifications(const QueueIte
 
 	//send the notifications
 	for(auto& u: notified) {
-		AdcCommand cmd(AdcCommand::CMD_PBD, AdcCommand::TYPE_UDP);
+		AdcCommand cmd(PartialBundleSharingManager::CMD_PBD, AdcCommand::TYPE_UDP);
 
 		cmd.addParam("UP1");
 		//cmd.addParam("HI", u.hint); update adds sources, so ip port needed here...
 		cmd.addParam("TH", qi->getTTH().toBase32());
-		ClientManager::getInstance()->sendUDP(cmd, u.user->getCID(), false, true);
+		sendUDP(cmd, u.user, u.hint);
 	}
 }
 
 void PartialBundleSharingManager::sendRemovePBD(const HintedUser& aUser, const string& aRemoteToken) noexcept {
-	AdcCommand cmd(AdcCommand::CMD_PBD, AdcCommand::TYPE_UDP);
+	AdcCommand cmd(PartialBundleSharingManager::CMD_PBD, AdcCommand::TYPE_UDP);
 
 	cmd.addParam("BU", aRemoteToken);
 	cmd.addParam("RM1");
-	ClientManager::getInstance()->sendUDP(cmd, aUser.user->getCID(), false, true);
+	sendUDP(cmd, aUser, aUser.hint);
 }
 
 void PartialBundleSharingManager::handleGetReplyParams(const BundlePtr& aBundle, string& _bundleToken, bool& _notify, bool& _add) noexcept {
@@ -297,12 +293,56 @@ void PartialBundleSharingManager::onIncomingSearch(const OnlineUserPtr& aUser, c
 	matchIncomingSearch(aUser->getUser(), *aQuery.root, bundle, reply, add);
 	if (!bundle.empty()) {
 		AdcCommand cmd = toPBD(aUser->getClient()->getIpPort(), bundle, *aQuery.root, reply, add);
-		if (!ClientManager::getInstance()->sendUDP(cmd, aUser->getUser()->getCID(), false, true, Util::emptyString, aUser->getHubUrl())) {
-			dbgMsg("matching bundle in queue for an incoming search, failed to send PBD response", LogMessage::SEV_WARNING);
-		} else {
-			dbgMsg("matching bundle in queue for an incoming search, PBD response sent", LogMessage::SEV_VERBOSE);
-		}
+		sendUDP(cmd, aUser->getUser(), aUser->getHubUrl());
+		dbgMsg("matching bundle in queue for an incoming search, PBD response sent", LogMessage::SEV_VERBOSE);
 	}
+}
+
+void PartialBundleSharingManager::sendUDP(AdcCommand& aCmd, const UserPtr& aUser, const string& aHubUrl) {
+	SearchManager::getInstance()->getUdpServer().addTask([=] {
+		auto cmd = aCmd;
+		auto success = ClientManager::getInstance()->sendUDPHooked(cmd, aUser->getCID(), false, true, Util::emptyString, aHubUrl);
+		if (!success) {
+			dbgMsg("failed to send UDP message to an user " + aUser->getCID().toBase32(), LogMessage::SEV_WARNING);
+		}
+	});
+}
+
+void PartialBundleSharingManager::on(ProtocolCommandManagerListener::IncomingUDPCommand, const AdcCommand& aCmd, const string&) noexcept {
+	if (aCmd.getCommand() != PartialBundleSharingManager::CMD_PBD) {
+		return;
+	}
+
+	//if (!SETTING(USE_PARTIAL_SHARING)) {
+	//	return;
+	//}
+
+	if (aCmd.getParameters().empty())
+		return;
+
+	const auto cid = aCmd.getParam(0);
+	if (cid.size() != 39)
+		return;
+
+	const auto user = ClientManager::getInstance()->findUser(CID(cid));
+	if (!user) {
+		return;
+	}
+
+	// Remove the CID
+	// c.getParameters().erase(c.getParameters().begin());
+
+	onPBD(aCmd, user);
+}
+
+void PartialBundleSharingManager::on(ProtocolCommandManagerListener::IncomingHubCommand, const AdcCommand& aCmd, const Client& aClient) noexcept {
+	OnlineUser* ou = aClient.findUser(aCmd.getFrom());
+	if (!ou) {
+		dcdebug("Invalid user in AdcHub::onPBD\n");
+		return;
+	}
+
+	onPBD(aCmd, ou->getUser());
 }
 
 const PartialBundleSharingManager::FinishedNotifyList* PartialBundleSharingManager::getRemoteBundleNotificationsUnsafe(const BundlePtr& aBundle) const noexcept {

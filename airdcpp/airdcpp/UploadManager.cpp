@@ -47,6 +47,13 @@ using ranges::find_if;
 UploadManager::UploadManager() noexcept {	
 	ClientManager::getInstance()->addListener(this);
 	TimerManager::getInstance()->addListener(this);
+
+
+	SettingsManager::getInstance()->registerChangeHandler({
+		SettingsManager::FREE_SLOTS_EXTENSIONS
+	}, [this](auto ...) {
+		setFreeSlotMatcher();
+	});
 }
 
 UploadManager::~UploadManager() {
@@ -210,7 +217,7 @@ checkslots:
 		
 			if ((type==Transfer::TYPE_PARTIAL_LIST || (type != Transfer::TYPE_FULL_LIST && fileSize <= 65792)) && smallSlots <= 8) {
 				slotType = UserConnection::SMALLSLOT;
-			} else if (aSource.isSet(UserConnection::FLAG_MCN1)) {
+			} else if (aSource.isMCN()) {
 				if (getMultiConnLocked(aSource) || ((hasReserved || isFavorite|| getAutoSlot()) && !isUploadingLocked(aSource.getUser()))) {
 					slotType = UserConnection::MCNSLOT;
 				} else {
@@ -234,7 +241,7 @@ checkslots:
 				slotType = UserConnection::PARTIALSLOT;
 			} else {
 				auto isUploadingF = [&] { RLock l(cs); return isUploadingLocked(aSource.getUser()); };
-				if (aSource.isSet(UserConnection::FLAG_MCN1) && isUploadingF()) {
+				if (aSource.isMCN() && isUploadingF()) {
 					//don't queue MCN requests for existing uploaders
 					aSource.maxedOut();
 				} else {

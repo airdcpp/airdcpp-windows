@@ -23,25 +23,29 @@
 #include "SearchManagerListener.h"
 #include "TimerManagerListener.h"
 
+#include "AdcCommand.h"
 #include "CriticalSection.h"
+#include "ProtocolCommandManager.h"
 #include "Message.h"
 #include "QueueItem.h"
 
 
 namespace dcpp {
 
-class PartialFileSharingManager : private TimerManagerListener, private SearchManagerListener
+class PartialFileSharingManager : private TimerManagerListener, private SearchManagerListener, private ProtocolCommandManagerListener
 {
 public:
 	void onPSR(const AdcCommand& cmd, UserPtr from, const string& remoteIp);
 
 	PartialFileSharingManager();
 	~PartialFileSharingManager();
+	
+	ADC_CMD(PSR, 'P', 'S', 'R');
 private:
 	class PartialFileSource : public FastAlloc<PartialFileSource> {
 	public:
-		PartialFileSource(const QueueItemPtr& aQI, const UserPtr& aUser, const string& aMyNick, const string& aHubIpPort, const string& aIp, const string& udp) :
-			myNick(aMyNick), hubIpPort(aHubIpPort), ip(aIp), udpPort(udp), queueItem(aQI), user(aUser) {}
+		PartialFileSource(const QueueItemPtr& aQI, const HintedUser& aUser, const string& aMyNick, const string& aHubIpPort, const string& aIp, const string& udp) :
+			myNick(aMyNick), hubIpPort(aHubIpPort), ip(aIp), udpPort(udp), queueItem(aQI), hintedUser(aUser) {}
 
 		~PartialFileSource() { }
 
@@ -57,7 +61,7 @@ private:
 		GETSET(string, udpPort, UdpPort);
 		IGETSET(uint64_t, nextQueryTime, NextQueryTime, 0);
 		IGETSET(uint8_t, pendingQueryCount, PendingQueryCount, 0);
-		GETSET(UserPtr, user, User);
+		GETSET(HintedUser, hintedUser, HintedUser);
 		GETSET(QueueItemPtr, queueItem, QueueItem);
 
 		struct Sort {
@@ -76,9 +80,12 @@ private:
 
 	void on(SearchManagerListener::IncomingSearch, Client* aClient, const OnlineUserPtr& aUser, const SearchQuery& aQuery, const SearchResultList&, bool aIsUdpActive) noexcept override;
 
+	void on(ProtocolCommandManagerListener::IncomingUDPCommand, const AdcCommand&, const string&) noexcept override;
+	void on(ProtocolCommandManagerListener::IncomingHubCommand, const AdcCommand&, const Client&) noexcept override;
+
 	void onIncomingSearch(const Client* aClient, const OnlineUserPtr& aUser, const SearchQuery& aQuery, bool aIsUdpActive) noexcept;
 
-	bool handlePartialResultHooked(const HintedUser& aUser, const QueueItemPtr& aQI, const PartialFileSource::Ptr& aPartialSource, const PartsInfo& aInPartialInfo) noexcept;
+	bool handlePartialResultHooked(const QueueItemPtr& aQI, const PartialFileSource::Ptr& aPartialSource, const PartsInfo& aInPartialInfo) noexcept;
 	void requestPartialSourceInfo(uint64_t aTick, uint64_t aNextQueryTime) noexcept;
 
 	bool handlePartialSearch(const QueueItemPtr& aQI, PartsInfo& _outPartsInfo) noexcept;
@@ -87,6 +94,8 @@ private:
 
 	void dbgMsg(const string& aMsg, LogMessage::Severity aSeverity) const noexcept;
 	QueueItemPtr getQueueFile(const TTHValue& tth) const noexcept;
+
+	void sendUDP(AdcCommand& aCmd, const UserPtr& aUser, const string& aHubUrl);
 
 	mutable SharedMutex cs;
 

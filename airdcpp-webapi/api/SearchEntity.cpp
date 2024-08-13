@@ -211,13 +211,22 @@ namespace webserver {
 		auto user = Deserializer::deserializeHintedUser(reqJson);
 		auto s = FileSearchParser::parseSearch(reqJson, true, Util::toString(ValueGenerator::rand()));
 
-		string error;
-		if (!search->userSearch(user, s, error)) {
-			aRequest.setResponseErrorStr(error);
-			return websocketpp::http::status_code::bad_request;
-		}
+		addAsyncTask([
+			this,
+			user,
+			s,
+			complete = aRequest.defer(),
+			callerPtr = aRequest.getOwnerPtr()
+		] {
+			string error;
+			if (!search->userSearchHooked(user, s, error)) {
+				complete(websocketpp::http::status_code::bad_request, nullptr, ApiRequest::toResponseErrorStr(error));
+			} else {
+				complete(websocketpp::http::status_code::no_content, nullptr, nullptr);
+			}
+		});
 
-		return websocketpp::http::status_code::no_content;
+		return CODE_DEFERRED;
 	}
 
 	void SearchEntity::on(SearchInstanceListener::GroupedResultAdded, const GroupedSearchResultPtr& aResult) noexcept {

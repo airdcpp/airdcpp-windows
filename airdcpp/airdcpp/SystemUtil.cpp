@@ -30,9 +30,6 @@
 #include <shellapi.h>
 #include <VersionHelpers.h>
 
-// #include <IPHlpApi.h>
-// #pragma comment(lib, "iphlpapi.lib")
-
 #endif
 
 #include "PathUtil.h"
@@ -54,10 +51,6 @@
 // #endif
 
 #endif
-
-
-
-// #include <locale.h>
 
 namespace dcpp {
 

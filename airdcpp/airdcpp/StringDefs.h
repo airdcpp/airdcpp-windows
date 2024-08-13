@@ -1886,6 +1886,9 @@ enum Strings { // @DontAdd
 	WEB_CFG_OUTGOING_CHAT_MESSAGE_HOOK_TIMEOUT, // "Outgoing chat message"
 	WEB_CFG_INCOMING_CHAT_MESSAGE_HOOK_TIMEOUT, // "Incoming chat message"
 
+	WEB_CFG_OUTGOING_HUB_COMMAND_HOOK_TIMEOUT, // "Outgoing hub command"
+	WEB_CFG_OUTGOING_UDP_COMMAND_HOOK_TIMEOUT, // "Outgoing UDP command"
+
 	WEB_CFG_QUEUE_ADD_BUNDLE_FILE_HOOK_TIMEOUT, // "Add bundle file"
 	WEB_CFG_QUEUE_ADD_BUNDLE_HOOK_TIMEOUT, // "Add bundle"
 	WEB_CFG_QUEUE_ADD_SOURCE_HOOK_TIMEOUT, // "Add queue source"

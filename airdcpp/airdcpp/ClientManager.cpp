@@ -21,7 +21,7 @@
 
 #include "ConnectivityManager.h"
 #include "ConnectionManager.h"
-#include "DebugManager.h"
+#include "ProtocolCommandManager.h"
 #include "FavoriteManager.h"
 #include "LinkUtil.h"
 #include "LogManager.h"
@@ -849,7 +849,7 @@ void ClientManager::userCommand(const HintedUser& user, const UserCommand& uc, P
 bool ClientManager::sendUDP(const string& aData, const string& aIP, const string& aPort) noexcept {
 	try {
 		auto ip = Socket::resolve(aIP);
-		COMMAND_DEBUG(aData, DebugManager::TYPE_CLIENT_UDP, DebugManager::OUTGOING, ip + ":" + aPort);
+		COMMAND_DEBUG(aData, ProtocolCommandManager::TYPE_CLIENT_UDP, ProtocolCommandManager::OUTGOING, ip + ":" + aPort);
 		udp->writeTo(ip, aPort, aData);
 	} catch (const SocketException&) {
 		dcdebug("Socket exception sending NMDC UDP command\n");
@@ -859,7 +859,7 @@ bool ClientManager::sendUDP(const string& aData, const string& aIP, const string
 	return true;
 }
 
-bool ClientManager::sendUDP(AdcCommand& cmd, const CID& aCID, bool aNoCID /*false*/, bool aNoPassive /*false*/, const string& aKey /*Util::emptyString*/, const string& aHubUrl /*Util::emptyString*/) noexcept {
+bool ClientManager::sendUDPHooked(AdcCommand& cmd, const CID& aCID, bool aNoCID /*false*/, bool aNoPassive /*false*/, const string& aKey /*Util::emptyString*/, const string& aHubUrl /*Util::emptyString*/) noexcept {
 	auto u = findOnlineUser(aCID, aHubUrl);
 	if (!u) {
 		return false;
@@ -872,10 +872,28 @@ bool ClientManager::sendUDP(AdcCommand& cmd, const CID& aCID, bool aNoCID /*fals
 
 		cmd.setType(AdcCommand::TYPE_DIRECT);
 		cmd.setTo(u->getIdentity().getSID());
-		u->getClient()->send(cmd);
+		u->getClient()->sendHooked(cmd);
 	} else {
+		// Hooks
+		{
+			AdcCommand::ParamMap params;
+			try {
+				auto results = outgoingUdpCommandHook.runHooksDataThrow(this, cmd, u);
+				params = ActionHook<AdcCommand::ParamMap>::normalizeMap(results);
+			} catch (const HookRejectException&) {
+				return false;
+			}
+
+			cmd.addParams(params);
+		}
+
+		// Listeners
+		auto ipPort = u->getIdentity().getUdpIp() + ":" + u->getIdentity().getUdpPort();
+		ProtocolCommandManager::getInstance()->fire(ProtocolCommandManagerListener::OutgoingUDPCommand(), cmd, ipPort, u);
+		COMMAND_DEBUG(cmd.toString(), ProtocolCommandManager::TYPE_CLIENT_UDP, ProtocolCommandManager::OUTGOING, ipPort);
+
+		// Send
 		try {
-			COMMAND_DEBUG(cmd.toString(), DebugManager::TYPE_CLIENT_UDP, DebugManager::OUTGOING, u->getIdentity().getUdpIp() + ":" + u->getIdentity().getUdpPort());
 			auto cmdStr = aNoCID ? cmd.toString() : cmd.toString(getMe()->getCID());
 			if (!aKey.empty() && Encoder::isBase32(aKey.c_str())) {
 				uint8_t keyChar[16];
@@ -1007,7 +1025,7 @@ int ClientManager::getMaxSearchQueueSize() const noexcept {
 
 }
 
-bool ClientManager::directSearch(const HintedUser& aUser, const SearchPtr& aSearch, string& error_) noexcept {
+bool ClientManager::directSearchHooked(const HintedUser& aUser, const SearchPtr& aSearch, string& error_) noexcept {
 	if (aUser.user->isNMDC()) {
 		error_ = "Direct search is not supported with NMDC users";
 		return false;
@@ -1019,7 +1037,7 @@ bool ClientManager::directSearch(const HintedUser& aUser, const SearchPtr& aSear
 		return false;
 	}
 
-	return ou->getClient()->directSearch(*ou, aSearch, error_);
+	return ou->getClient()->directSearchHooked(*ou, aSearch, error_);
 }
 
 OnlineUserList ClientManager::searchNicks(const string& aPattern, size_t aMaxResults, bool aIgnorePrefix, const StringList& aHubUrls) const noexcept {

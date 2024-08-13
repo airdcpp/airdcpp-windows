@@ -99,7 +99,7 @@ void PartialFileSharingManager::onPSR(const AdcCommand& aCmd, UserPtr from, cons
 	}
 
 	string hubUrl;
-	if (!from || from == ClientManager::getInstance()->getMe()) {
+	/*if (!from || from == ClientManager::getInstance()->getMe()) {
 		// for NMDC support
 		if (nick.empty() || hubIpPort.empty()) {
 			dbgMsg("NMDC nick/hub ip:port empty", LogMessage::SEV_WARNING);
@@ -115,14 +115,14 @@ void PartialFileSharingManager::onPSR(const AdcCommand& aCmd, UserPtr from, cons
 		dcassert(!u.hint.empty());
 		from = u.user;
 		hubUrl = u.hint;
-	} else {
+	} else {*/
 		// ADC
 		hubUrl = ClientManager::getInstance()->getADCSearchHubUrl(from->getCID(), hubIpPort);
 		if (hubUrl.empty()) {
 			dbgMsg("result from an unknown ADC hub", LogMessage::SEV_WARNING);
 			return;
 		}
-	}
+	// }
 
 	if (partialInfo.size() != partialCount) {
 		dbgMsg("invalid size", LogMessage::SEV_WARNING);
@@ -130,16 +130,17 @@ void PartialFileSharingManager::onPSR(const AdcCommand& aCmd, UserPtr from, cons
 		return;
 	}
 
+	auto hintedUser = HintedUser(from, hubUrl);
 	auto myNick = from->isNMDC() ? ClientManager::getInstance()->getMyNick(hubUrl) : Util::emptyString;
-	auto partialSource = make_shared<PartialFileSource>(qi, from, myNick, hubIpPort, aRemoteIp, udpPort);
+	auto partialSource = make_shared<PartialFileSource>(qi, hintedUser, myNick, hubIpPort, aRemoteIp, udpPort);
 
-	handlePartialResultHooked(HintedUser(from, hubUrl), qi, partialSource, partialInfo);
+	handlePartialResultHooked(qi, partialSource, partialInfo);
 
 	PartsInfo outPartialInfo;
 	if (handlePartialSearch(qi, outPartialInfo) && Util::toInt(udpPort) > 0) {
 		try {
 			AdcCommand cmd = toPSR(false, partialSource->getMyNick(), hubIpPort, tth, outPartialInfo);
-			ClientManager::getInstance()->sendUDP(cmd, from->getCID(), false, true, Util::emptyString, hubUrl);
+			sendUDP(cmd, from, hubUrl);
 			dbgMsg("reply sent", LogMessage::SEV_WARNING);
 		} catch (const Exception& e) {
 			dbgMsg("failed to send reply (" + string(e.what()) + ")", LogMessage::SEV_WARNING);
@@ -148,7 +149,7 @@ void PartialFileSharingManager::onPSR(const AdcCommand& aCmd, UserPtr from, cons
 
 }
 
-bool PartialFileSharingManager::handlePartialResultHooked(const HintedUser& aUser, const QueueItemPtr& aQI, const PartialFileSource::Ptr& aPartialSource, const PartsInfo& aInPartialInfo) noexcept {
+bool PartialFileSharingManager::handlePartialResultHooked(const QueueItemPtr& aQI, const PartialFileSource::Ptr& aPartialSource, const PartsInfo& aInPartialInfo) noexcept {
 	// Don't add sources to finished files
 	// This could happen when "Keep finished files in queue" is enabled
 	if (aQI->isDownloaded()) {
@@ -163,7 +164,7 @@ bool PartialFileSharingManager::handlePartialResultHooked(const HintedUser& aUse
 
 
 	// Add our source
-	if (QueueManager::getInstance()->addPartialSourceHooked(aUser, aQI, aInPartialInfo)) {
+	if (QueueManager::getInstance()->addPartialSourceHooked(aPartialSource->getHintedUser(), aQI, aInPartialInfo)) {
 		{
 			WLock l(cs);
 			sources.insert(aPartialSource);
@@ -189,7 +190,7 @@ string PartialFileSharingManager::getPartsString(const PartsInfo& partsInfo) con
 }
 
 AdcCommand PartialFileSharingManager::toPSR(bool aWantResponse, const string& aMyNick, const string& aHubIpPort, const string& aTTH, const vector<uint16_t>& aPartialInfo) const {
-	AdcCommand cmd(AdcCommand::CMD_PSR, AdcCommand::TYPE_UDP);
+	AdcCommand cmd(PartialFileSharingManager::CMD_PSR, AdcCommand::TYPE_UDP);
 		
 	if (!aMyNick.empty()) {
 		// NMDC
@@ -205,6 +206,45 @@ AdcCommand PartialFileSharingManager::toPSR(bool aWantResponse, const string& aM
 	
 	return cmd;
 }
+
+void PartialFileSharingManager::on(ProtocolCommandManagerListener::IncomingUDPCommand, const AdcCommand& aCmd, const string& aRemoteIp) noexcept {
+	if (aCmd.getCommand() != PartialFileSharingManager::CMD_PSR) {
+		return;
+	}
+
+	if (!SETTING(USE_PARTIAL_SHARING)) {
+		return;
+	}
+
+	if (aCmd.getParameters().empty())
+		return;
+
+	const auto cid = aCmd.getParam(0);
+	if (cid.size() != 39)
+		return;
+
+	auto user = ClientManager::getInstance()->findUser(CID(cid));
+	if (!user) {
+		return;
+	}
+
+	// when user == NULL then it is probably NMDC user, check it later
+
+	// Remove the CID
+	// c.getParameters().erase(c.getParameters().begin());
+	onPSR(aCmd, user, aRemoteIp);
+}
+
+void PartialFileSharingManager::on(ProtocolCommandManagerListener::IncomingHubCommand, const AdcCommand& aCmd, const Client& aClient) noexcept {
+	OnlineUser* ou = aClient.findUser(aCmd.getFrom());
+	if (!ou) {
+		dcdebug("Invalid user in AdcHub::onPBD\n");
+		return;
+	}
+
+	onPSR(aCmd, ou->getUser(), ou->getIdentity().getUdpIp());
+}
+
 
 void PartialFileSharingManager::onIncomingSearch(const Client* aClient, const OnlineUserPtr& aUser, const SearchQuery& aQuery, bool aIsUdpActive) noexcept {
 	if (!aUser) {
@@ -250,12 +290,8 @@ void PartialFileSharingManager::onIncomingSearch(const Client* aClient, const On
 	PartsInfo partialInfo;
 	if (handlePartialSearch(qi, partialInfo)) {
 		AdcCommand cmd = toPSR(aIsUdpActive, Util::emptyString, aClient->getIpPort(), *aQuery.root, partialInfo);
-		if (!ClientManager::getInstance()->sendUDP(cmd, aUser->getUser()->getCID(), false, true, Util::emptyString, aUser->getHubUrl())) {
-			dbgMsg("partial file info not empty, failed to send response", LogMessage::SEV_WARNING);
-		} else {
-			dbgMsg("partial file info not empty, response sent", LogMessage::SEV_VERBOSE);
-		}
-
+		sendUDP(cmd, aUser->getUser(), aUser->getHubUrl());
+		dbgMsg("partial file info not empty, response sent", LogMessage::SEV_VERBOSE);
 
 		/*try {
 			AdcCommand cmd = toPSR(false, ps->getMyNick(), hubIpPort, tth, outPartialInfo);
@@ -308,7 +344,7 @@ bool PartialFileSharingManager::PartialFileSource::requestPartialSourceInfo(uint
 };
 
 bool PartialFileSharingManager::PartialFileSource::Sort::operator()(const Ptr& a, const Ptr& b) const noexcept {
-	return compare(a->getUser()->getCID(), b->getUser()->getCID()) < 0 && compare(a->getQueueItem()->getToken(), b->getQueueItem()->getToken()) < 0;
+	return compare(a->getHintedUser().user->getCID(), b->getHintedUser().user->getCID()) < 0 && compare(a->getQueueItem()->getToken(), b->getQueueItem()->getToken()) < 0;
 }
 
 bool PartialFileSharingManager::PartialFileSource::isCurrentSource() const noexcept {
@@ -319,7 +355,7 @@ bool PartialFileSharingManager::PartialFileSource::isCurrentSource() const noexc
 
 	// Source removed?
 	auto fileSources = QueueManager::getInstance()->getSources(queueItem);
-	if (find(fileSources.begin(), fileSources.end(), user) == fileSources.end()) {
+	if (find(fileSources.begin(), fileSources.end(), hintedUser.user) == fileSources.end()) {
 		return false;
 	}
 
@@ -353,7 +389,7 @@ PartialFileSharingManager::PFSSourceList PartialFileSharingManager::findPFSSourc
 				sources.erase(partialSource);
 			}
 
-			dbgMsg("removing obsolete partial source " + partialSource->getUser()->getCID().toBase32() + " for file " + partialSource->getQueueItem()->getTarget(), LogMessage::SEV_VERBOSE);
+			dbgMsg("removing obsolete partial source " + partialSource->getHintedUser().user->getCID().toBase32() + " for file " + partialSource->getQueueItem()->getTarget(), LogMessage::SEV_VERBOSE);
 			i = buffer.erase(i);
 			continue;
 		} else {
@@ -378,6 +414,7 @@ struct PartsInfoReqParam{
 	string		hubIpPort;
 	string		ip;
 	string		udpPort;
+	HintedUser  user;
 };
 
 void PartialFileSharingManager::requestPartialSourceInfo(uint64_t aTick, uint64_t aNextQueryTime) noexcept {
@@ -400,13 +437,15 @@ void PartialFileSharingManager::requestPartialSourceInfo(uint64_t aTick, uint64_
 			param->udpPort = source->getUdpPort();
 			param->myNick = source->getMyNick();
 			param->hubIpPort = source->getHubIpPort();
+			param->user = source->getHintedUser();
+
 
 			params.push_back(param);
 
 			source->setPendingQueryCount((uint8_t)(source->getPendingQueryCount() + 1));
 			source->setNextQueryTime(aTick + aNextQueryTime);
 
-			dbgMsg("requesting partial information for file " + qi->getTarget() + " from user " + source->getUser()->getCID().toBase32(), LogMessage::SEV_VERBOSE);
+			dbgMsg("requesting partial information for file " + qi->getTarget() + " from user " + source->getHintedUser().user->getCID().toBase32(), LogMessage::SEV_VERBOSE);
 		}
 	}
 
@@ -415,7 +454,8 @@ void PartialFileSharingManager::requestPartialSourceInfo(uint64_t aTick, uint64_
 		dcassert(!param->udpPort.empty());
 		try {
 			AdcCommand cmd = toPSR(true, param->myNick, param->hubIpPort, param->tth, param->parts);
-			ClientManager::getInstance()->sendUDP(cmd.toString(), param->ip, param->udpPort);
+			// ClientManager::getInstance()->sendUDP(cmd.toString(), param->ip, param->udpPort);
+			sendUDP(cmd, param->user.user, param->user.hint);
 		} catch (const Exception& e) {
 			dbgMsg("failed to send info request: " + e.getError(), LogMessage::SEV_WARNING);
 			dcdebug("Partial search caught error\n");
@@ -428,5 +468,16 @@ void PartialFileSharingManager::requestPartialSourceInfo(uint64_t aTick, uint64_
 void PartialFileSharingManager::on(TimerManagerListener::Minute, uint64_t aTick) noexcept {
 	requestPartialSourceInfo(aTick, 300000); // 5 minutes
 }
+
+void PartialFileSharingManager::sendUDP(AdcCommand& aCmd, const UserPtr& aUser, const string& aHubUrl) {
+	SearchManager::getInstance()->getUdpServer().addTask([=] {
+		auto cmd = aCmd;
+		auto success = ClientManager::getInstance()->sendUDPHooked(cmd, aUser->getCID(), false, true, Util::emptyString, aHubUrl);
+		if (!success) {
+			dbgMsg("failed to send UDP message", LogMessage::SEV_WARNING);
+		}
+	});
+}
+
 
 } // namespace dcpp

@@ -72,7 +72,7 @@ private:
 	void on(UpdateManagerListener::SettingUpdated, size_t key, const string& value) noexcept;
 
 	// ConnectivityManagerListener
-	void on(SettingChanged) noexcept;
+	void on(ConnectivityManagerListener::SettingChanged) noexcept;
 
 };
 

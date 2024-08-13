@@ -881,7 +881,7 @@ void ActionUtil::findNfo(const string& aAdcPath, const HintedUser& aUser) noexce
 		search->requireReply = true;
 
 		string error;
-		if (!searchInstance.userSearch(aUser, search, error)) {
+		if (!searchInstance.userSearchHooked(aUser, search, error)) {
 			MainFrame::getMainFrame()->ShowPopup(Text::toT(error), Text::toT(PathUtil::getAdcLastDir(aAdcPath)), NIIF_ERROR, true);
 			return;
 		}

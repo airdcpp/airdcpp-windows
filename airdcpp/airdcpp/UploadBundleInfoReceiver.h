@@ -21,7 +21,9 @@
 
 #include "forward.h"
 
+#include "AdcCommand.h"
 #include "CriticalSection.h"
+#include "ProtocolCommandManager.h"
 #include "HintedUser.h"
 #include "Message.h"
 #include "Speaker.h"
@@ -32,7 +34,7 @@
 
 namespace dcpp {
 
-class UploadBundleInfoReceiver : public Speaker<UploadBundleInfoReceiverListener>, private TimerManagerListener, private UploadManagerListener
+class UploadBundleInfoReceiver : public Speaker<UploadBundleInfoReceiverListener>, private TimerManagerListener, private UploadManagerListener, private ProtocolCommandManagerListener
 {
 public:
 	void onUBD(const AdcCommand& cmd);
@@ -70,6 +72,8 @@ private:
 
 	void on(UploadManagerListener::Created, Upload*) noexcept override;
 	void on(UploadManagerListener::Removed, const Upload*) noexcept override;
+
+	void on(ProtocolCommandManagerListener::IncomingUDPCommand, const AdcCommand&, const string&) noexcept override;
 
 	unordered_map<string, UploadBundlePtr> uploadMap;
 

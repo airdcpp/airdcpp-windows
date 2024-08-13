@@ -50,14 +50,6 @@ private:
 	// Search results
 	void handle(AdcCommand::RES, AdcCommand& c, const string& aRemoteIp) noexcept;
 
-	// Partial sharing
-	void handle(AdcCommand::PSR, AdcCommand& c, const string& aRemoteIp) noexcept;
-	void handle(AdcCommand::PBD, AdcCommand& c, const string& aRemoteIp) noexcept;
-
-	// Upload bundles
-	void handle(AdcCommand::UBD, AdcCommand& c, const string& aRemoteIp) noexcept;
-	void handle(AdcCommand::UBN, AdcCommand& c, const string& aRemoteIp) noexcept;
-
 	// Ignore any other ADC commands for now
 	template<typename T> void handle(T, AdcCommand&, const string&) { }
 };

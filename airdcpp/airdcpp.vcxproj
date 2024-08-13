@@ -357,6 +357,7 @@
     <ClInclude Include="airdcpp\ActivityManager.h" />
     <ClInclude Include="airdcpp\AdcCommand.h" />
     <ClInclude Include="airdcpp\AdcHub.h" />
+    <ClInclude Include="airdcpp\AdcSupports.h" />
     <ClInclude Include="airdcpp\AddressInfo.h" />
     <ClInclude Include="airdcpp\AppUtil.h" />
     <ClInclude Include="airdcpp\DirectoryContentInfo.h" />
@@ -421,6 +422,7 @@
     <ClInclude Include="airdcpp\SharePathValidator.h" />
     <ClInclude Include="airdcpp\TimerManagerListener.h" />
     <ClInclude Include="airdcpp\TransferInfoManager.h" />
+    <ClInclude Include="airdcpp\UploadBundleInfo.h" />
     <ClInclude Include="airdcpp\UploadBundleInfoSender.h" />
     <ClInclude Include="airdcpp\UploadBundleInfoReceiver.h" />
     <ClInclude Include="airdcpp\UploadBundleInfoReceiverListener.h" />
@@ -459,7 +461,7 @@
     <ClInclude Include="airdcpp\DbHandler.h" />
     <ClInclude Include="airdcpp\DCPlusPlus.h" />
     <ClInclude Include="airdcpp\debug.h" />
-    <ClInclude Include="airdcpp\DebugManager.h" />
+    <ClInclude Include="airdcpp\ProtocolCommandManager.h" />
     <ClInclude Include="airdcpp\DelayedEvents.h" />
     <ClInclude Include="airdcpp\DirectoryListing.h" />
     <ClInclude Include="airdcpp\DirectoryListingListener.h" />

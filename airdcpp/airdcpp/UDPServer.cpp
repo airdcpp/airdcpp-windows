@@ -21,7 +21,7 @@
 
 #include "ConnectivityManager.h"
 #include "ClientManager.h"
-#include "DebugManager.h"
+#include "ProtocolCommandManager.h"
 #include "LogManager.h"
 #include "PartialSharingManager.h"
 #include "ResourceManager.h"
@@ -132,7 +132,7 @@ void UDPServer::handlePacket(const ByteVector& aBuf, size_t aLen, const string& 
 	if (x.empty())
 		return;
 
-	COMMAND_DEBUG(x, DebugManager::TYPE_CLIENT_UDP, DebugManager::INCOMING, aRemoteIp);
+	COMMAND_DEBUG(x, ProtocolCommandManager::TYPE_CLIENT_UDP, ProtocolCommandManager::INCOMING, aRemoteIp);
 
 	if (x.compare(0, 1, "$") == 0) {
 		// NMDC commands
@@ -159,7 +159,9 @@ void UDPServer::handlePacket(const ByteVector& aBuf, size_t aLen, const string& 
 	}
 
 	// Dispatch without newline
-	dispatch(x.substr(0, x.length() - 1), false, aRemoteIp);
+	dispatch(x.substr(0, x.length() - 1), false, [&](const AdcCommand& aCmd) {
+		ProtocolCommandManager::getInstance()->fire(ProtocolCommandManagerListener::IncomingUDPCommand(), aCmd, aRemoteIp);
+	}, aRemoteIp);
 }
 
 void UDPServer::handle(AdcCommand::RES, AdcCommand& c, const string& aRemoteIp) noexcept {
@@ -179,61 +181,6 @@ void UDPServer::handle(AdcCommand::RES, AdcCommand& c, const string& aRemoteIp) 
 	c.getParameters().erase(c.getParameters().begin());
 
 	SearchManager::getInstance()->onRES(c, user, aRemoteIp);
-}
-
-void UDPServer::handle(AdcCommand::PSR, AdcCommand& c, const string& aRemoteIp) noexcept {
-	if (c.getParameters().empty())
-		return;
-
-	const auto cid = c.getParam(0);
-	if (cid.size() != 39)
-		return;
-
-	UserPtr user = ClientManager::getInstance()->findUser(CID(cid));
-	// when user == NULL then it is probably NMDC user, check it later
-
-	// Remove the CID
-	c.getParameters().erase(c.getParameters().begin());
-
-	PartialSharingManager::getInstance()->files.onPSR(c, user, aRemoteIp);
-}
-
-void UDPServer::handle(AdcCommand::PBD, AdcCommand& c, const string&) noexcept {
-	if (!SETTING(USE_PARTIAL_SHARING)) {
-		return;
-	}
-
-	//LogManager::getInstance()->message("GOT PBD UDP: " + x);
-	if (c.getParameters().empty())
-		return;
-
-	const auto cid = c.getParam(0);
-	if (cid.size() != 39)
-		return;
-
-	const auto user = ClientManager::getInstance()->findUser(CID(cid));
-	if (!user) {
-		return;
-	}
-
-	// Remove the CID
-	c.getParameters().erase(c.getParameters().begin());
-
-	PartialSharingManager::getInstance()->bundles.onPBD(c, user);
-}
-
-void UDPServer::handle(AdcCommand::UBD, AdcCommand& c, const string&) noexcept {
-	if (c.getParameters().empty())
-		return;
-
-	UploadBundleManager::getInstance()->receiver.onUBD(c);
-}
-
-void UDPServer::handle(AdcCommand::UBN, AdcCommand& c, const string&) noexcept {
-	if (c.getParameters().empty())
-		return;
-
-	UploadBundleManager::getInstance()->receiver.onUBN(c);
 }
 
 }

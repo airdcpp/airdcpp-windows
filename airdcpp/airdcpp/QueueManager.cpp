@@ -24,7 +24,7 @@
 #include "ClientManager.h"
 #include "ConnectionManager.h"
 #include "DCPlusPlus.h"
-#include "DebugManager.h"
+#include "ProtocolCommandManager.h"
 #include "DirectoryListing.h"
 #include "DirectoryListingManager.h"
 #include "Download.h"
@@ -74,6 +74,13 @@ QueueManager::QueueManager() :
 	//add listeners in loadQueue
 	File::ensureDirectory(AppUtil::getListPath());
 	File::ensureDirectory(AppUtil::getBundlePath());
+
+	SettingsManager::getInstance()->registerChangeHandler({ 
+		SettingsManager::HIGH_PRIO_FILES, SettingsManager::HIGHEST_PRIORITY_USE_REGEXP, 
+		SettingsManager::SKIPLIST_DOWNLOAD, SettingsManager::DOWNLOAD_SKIPLIST_USE_REGEXP 
+	}, [this](auto ...) {
+		setMatchers();
+	});
 }
 
 QueueManager::~QueueManager() { 

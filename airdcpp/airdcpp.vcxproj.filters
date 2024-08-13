@@ -496,7 +496,7 @@
     <ClInclude Include="airdcpp\DCPlusPlus.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="airdcpp\DebugManager.h">
+    <ClInclude Include="airdcpp\ProtocolCommandManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="airdcpp\Encoder.h">
@@ -1105,12 +1105,6 @@
     <ClInclude Include="airdcpp\SearchTypes.h">
       <Filter>Header Files\search</Filter>
     </ClInclude>
-    <ClInclude Include="airdcpp\UploadBundleInfoReceiver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\UploadBundleInfoReceiverListener.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="airdcpp\UploadBundleInfoSender.h">
       <Filter>Header Files\transfer</Filter>
     </ClInclude>
@@ -1152,6 +1146,18 @@
     </ClInclude>
     <ClInclude Include="airdcpp\RegexUtil.h">
       <Filter>Header Files\util</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\AdcSupports.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\UploadBundleInfoReceiverListener.h">
+      <Filter>Header Files\transfer</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\UploadBundleInfoReceiver.h">
+      <Filter>Header Files\transfer</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\UploadBundleInfo.h">
+      <Filter>Header Files\transfer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

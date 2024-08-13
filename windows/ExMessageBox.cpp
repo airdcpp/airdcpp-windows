@@ -183,7 +183,7 @@ int WINAPI MessageBox(HWND hWnd, LPCTSTR lpText, LPCTSTR lpCaption, LPCTSTR lpQu
 	pair<LPCTSTR, UINT> data = make_pair(lpQuestion, uCheck);
 	ExMessageBox::SetUserData(&data);
 	int nRet = ExMessageBox::Show(hWnd, lpText, lpCaption, uType, CheckMessageBoxProc);
-	uCheck = (UINT)ExMessageBox::GetUserData();
+	uCheck = ExMessageBox::GetUserData() ? 1 : 0;
 	ExMessageBox::SetUserData(NULL);
 	return nRet;
 }

@@ -34,7 +34,7 @@ namespace dcpp {
 		maxResultCount = aSearch->maxResults;
 
 		string error;
-		ClientManager::getInstance()->directSearch(aUser, aSearch, error);
+		ClientManager::getInstance()->directSearchHooked(aUser, aSearch, error);
 	}
 
 	DirectSearch::~DirectSearch() {

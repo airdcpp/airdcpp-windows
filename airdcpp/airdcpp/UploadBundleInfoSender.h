@@ -33,6 +33,8 @@ namespace dcpp {
 
 class UploadBundleInfoSender: public DownloadManagerListener, public QueueManagerListener {
 public:
+	static const string FEATURE_ADC_UBN1;
+
 	void dbgMsg(const string& aMsg, LogMessage::Severity aSeverity) noexcept;
 
 	class UBNBundle {

@@ -159,7 +159,7 @@ bool DownloadManager::checkIdle(const UserPtr& user, bool smallSlot, bool report
 	RLock l(cs);
 	for (auto uc: idlers) {
 		if (uc->getUser() == user) {
-			if (smallSlot != uc->isSet(UserConnection::FLAG_SMALL_SLOT) && uc->isSet(UserConnection::FLAG_MCN1))
+			if (smallSlot != uc->isSet(UserConnection::FLAG_SMALL_SLOT) && uc->isMCN())
 				continue;
 			if (!reportOnly)
 				uc->callAsync([this, uc] { revive(uc); });
@@ -232,7 +232,7 @@ void DownloadManager::checkDownloads(UserConnection* aConn) {
 	QueueItemBase::DownloadType dlType = QueueItemBase::TYPE_ANY;
 	if (aConn->isSet(UserConnection::FLAG_SMALL_SLOT)) {
 		dlType = QueueItemBase::TYPE_SMALL;
-	} else if (aConn->isSet(UserConnection::FLAG_MCN1)) {
+	} else if (aConn->isMCN()) {
 		dlType = QueueItemBase::TYPE_MCN_NORMAL;
 	}
 
@@ -383,7 +383,7 @@ void DownloadManager::startData(UserConnection* aSource, int64_t start, int64_t 
 
 	d->setStart(GET_TICK());
 	d->tick();
-	if (!aSource->isSet(UserConnection::FLAG_RUNNING) && aSource->isSet(UserConnection::FLAG_MCN1) && (d->getType() == Download::TYPE_FILE || d->getType() == Download::TYPE_PARTIAL_LIST)) {
+	if (!aSource->isSet(UserConnection::FLAG_RUNNING) && aSource->isMCN() && (d->getType() == Download::TYPE_FILE || d->getType() == Download::TYPE_PARTIAL_LIST)) {
 		ConnectionManager::getInstance()->addRunningMCN(aSource);
 		aSource->setFlag(UserConnection::FLAG_RUNNING);
 	}
