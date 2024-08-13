@@ -34,7 +34,7 @@
 
 namespace dcpp {
 
-const auto ENABLE_DEBUG = true;
+const auto ENABLE_DEBUG = false;
 
 void UploadBundleInfoReceiver::dbgMsg(const string& aMsg, LogMessage::Severity aSeverity) noexcept {
 	if (ENABLE_DEBUG) {

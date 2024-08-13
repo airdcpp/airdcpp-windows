@@ -32,7 +32,7 @@
 
 namespace dcpp {
 
-const auto ENABLE_DEBUG = true;
+const auto ENABLE_DEBUG = false;
 
 
 const string UploadBundleInfoSender::FEATURE_ADC_UBN1 = "UBN1";

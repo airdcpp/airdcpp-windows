@@ -26,7 +26,7 @@
 #include "SearchQuery.h"
 #include "StringTokenizer.h"
 
-const auto ENABLE_DEBUG = true;
+const auto ENABLE_DEBUG = false;
 
 namespace dcpp {
 
