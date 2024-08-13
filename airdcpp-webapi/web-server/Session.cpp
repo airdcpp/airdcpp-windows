@@ -20,6 +20,7 @@
 #include <web-server/Session.h>
 #include <web-server/ApiRequest.h>
 
+#include <api/AdcCommandApi.h>
 #include <api/ConnectivityApi.h>
 #include <api/ExtensionApi.h>
 #include <api/EventApi.h>
@@ -58,6 +59,7 @@ namespace webserver {
 		maxInactivity(maxInactivityMinutes*1000*60),
 		ip(aIP) {
 
+		ADD_MODULE("adc_commands", AdcCommandApi);
 		ADD_MODULE("connectivity", ConnectivityApi);
 		ADD_MODULE("extensions", ExtensionApi);
 		ADD_MODULE("events", EventApi);
