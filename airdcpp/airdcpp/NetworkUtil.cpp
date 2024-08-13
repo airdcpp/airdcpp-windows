@@ -33,12 +33,8 @@
 
 
 #ifndef _WIN32
-/*#include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <netdb.h>
-#include <sys/utsname.h>
-#include <ctype.h>*/
 
 #ifdef HAVE_IFADDRS_H
 #include <ifaddrs.h>

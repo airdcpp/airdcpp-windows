@@ -624,7 +624,7 @@ string Util::getDateTime(time_t t) noexcept {
 	char buf[64];
 	tm _tm;
 	if (!localtime_r(&t, &_tm)) {
-		dcdebug("Failed to parse date " I64_FMT ": %s\n", static_cast<int64_t>(t), translateError(errno).c_str());
+		dcdebug("Failed to parse date " I64_FMT ": %s\n", static_cast<int64_t>(t), SystemUtil::translateError(errno).c_str());
 		return Util::emptyString;
 	}
 

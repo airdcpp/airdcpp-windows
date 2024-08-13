@@ -470,7 +470,7 @@ void PartialFileSharingManager::on(TimerManagerListener::Minute, uint64_t aTick)
 }
 
 void PartialFileSharingManager::sendUDP(AdcCommand& aCmd, const UserPtr& aUser, const string& aHubUrl) {
-	SearchManager::getInstance()->getUdpServer().addTask([=] {
+	SearchManager::getInstance()->getUdpServer().addTask([=, this] {
 		auto cmd = aCmd;
 		auto success = ClientManager::getInstance()->sendUDPHooked(cmd, aUser->getCID(), false, true, Util::emptyString, aHubUrl);
 		if (!success) {

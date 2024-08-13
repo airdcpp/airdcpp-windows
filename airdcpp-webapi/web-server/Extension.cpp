@@ -627,7 +627,7 @@ namespace webserver {
 		// Create fork
 		pid = fork();
 		if (pid == -1) {
-			throw Exception("Failed to fork the process process: " + SystemUtil::translateError(errno));
+			throw Exception("Failed to fork the process process: " + dcpp::SystemUtil::translateError(errno));
 		}
 
 		if (pid == 0) {
@@ -639,7 +639,7 @@ namespace webserver {
 
 			// Run, checkRunningState will handle errors...
 			if (execvp(aEngine.c_str(), &argv[0]) == -1) {
-				fprintf(stderr, "Failed to start the extension %s: %s\n", name.c_str(), SystemUtil::translateError(errno).c_str());
+				fprintf(stderr, "Failed to start the extension %s: %s\n", name.c_str(), dcpp::SystemUtil::translateError(errno).c_str());
 			}
 
 			exit(0);
@@ -649,12 +649,12 @@ namespace webserver {
 	void Extension::terminateProcessThrow() {
 		auto res = kill(pid, SIGTERM);
 		if (res == -1) {
-			throw Exception(SystemUtil::translateError(errno));
+			throw Exception(dcpp::SystemUtil::translateError(errno));
 		}
 
 		int exitStatus = 0;
 		if (waitpid(pid, &exitStatus, 0) == -1) {
-			throw Exception(SystemUtil::translateError(errno));
+			throw Exception(dcpp::SystemUtil::translateError(errno));
 		}
 	}
 

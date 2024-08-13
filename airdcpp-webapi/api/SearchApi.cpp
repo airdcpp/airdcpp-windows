@@ -143,7 +143,7 @@ namespace webserver {
 		maybeSend("search_incoming_search", [&] {
 			return json({
 				{ "hub", Serializer::serializeClient(aClient) },
-				{ "user", aAdcUser ? Serializer::serializeOnlineUser(aAdcUser) : nullptr },
+				{ "user", aAdcUser ? Serializer::serializeOnlineUser(aAdcUser) : json() },
 				{ "results", Serializer::serializeList(aResults, SearchEntity::serializeSearchResult) },
 				{ "query", serializeSearchQuery(aQuery) },
 			});
