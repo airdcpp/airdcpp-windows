@@ -327,7 +327,7 @@ bool Bundle::addUserQueue(const QueueItemPtr& qi, const HintedUser& aUser, bool 
 	if (l.size() >= 1) {
 		if (!seqOrder) {
 			// Randomize the downloading order for each user if the bundle dir date is newer than 7 days to boost partial bundle sharing
-			auto position = ValueGenerator::rand(0, (uint32_t)l.size() - 1);
+			auto position = ValueGenerator::rand(0, (uint32_t)l.size());
 			l.insert(l.begin() + position, qi);
 		} else {
 			// Sequential order
