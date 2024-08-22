@@ -338,6 +338,10 @@ void PartialBundleSharingManager::on(ProtocolCommandManagerListener::IncomingUDP
 }
 
 void PartialBundleSharingManager::on(ProtocolCommandManagerListener::IncomingHubCommand, const AdcCommand& aCmd, const Client& aClient) noexcept {
+	if (aCmd.getCommand() != PartialBundleSharingManager::CMD_PBD) {
+		return;
+	}
+
 	OnlineUser* ou = aClient.findUser(aCmd.getFrom());
 	if (!ou) {
 		dcdebug("Invalid user in AdcHub::onPBD\n");

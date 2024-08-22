@@ -238,6 +238,10 @@ void PartialFileSharingManager::on(ProtocolCommandManagerListener::IncomingUDPCo
 }
 
 void PartialFileSharingManager::on(ProtocolCommandManagerListener::IncomingHubCommand, const AdcCommand& aCmd, const Client& aClient) noexcept {
+	if (aCmd.getCommand() != PartialFileSharingManager::CMD_PSR) {
+		return;
+	}
+
 	OnlineUser* ou = aClient.findUser(aCmd.getFrom());
 	if (!ou) {
 		dcdebug("Invalid user in AdcHub::onPBD\n");
