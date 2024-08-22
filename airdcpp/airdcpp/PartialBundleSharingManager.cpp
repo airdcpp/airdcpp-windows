@@ -33,11 +33,13 @@ namespace dcpp {
 PartialBundleSharingManager::PartialBundleSharingManager() {
 	SearchManager::getInstance()->addListener(this);
 	QueueManager::getInstance()->addListener(this);
+	ProtocolCommandManager::getInstance()->addListener(this);
 }
 
 PartialBundleSharingManager::~PartialBundleSharingManager() {
 	SearchManager::getInstance()->removeListener(this);
 	QueueManager::getInstance()->removeListener(this);
+	ProtocolCommandManager::getInstance()->removeListener(this);
 }
 
 void PartialBundleSharingManager::dbgMsg(const string& aMsg, LogMessage::Severity aSeverity) noexcept {

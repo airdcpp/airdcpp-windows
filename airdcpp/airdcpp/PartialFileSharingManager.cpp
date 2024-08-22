@@ -33,11 +33,13 @@ namespace dcpp {
 PartialFileSharingManager::PartialFileSharingManager() {
 	TimerManager::getInstance()->addListener(this);
 	SearchManager::getInstance()->addListener(this);
+	ProtocolCommandManager::getInstance()->addListener(this);
 }
 
 PartialFileSharingManager::~PartialFileSharingManager() {
 	TimerManager::getInstance()->removeListener(this);
 	SearchManager::getInstance()->removeListener(this);
+	ProtocolCommandManager::getInstance()->removeListener(this);
 }
 
 void PartialFileSharingManager::dbgMsg(const string& aMsg, LogMessage::Severity aSeverity) const noexcept {
