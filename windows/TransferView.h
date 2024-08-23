@@ -114,7 +114,7 @@ private:
 		COLUMN_FIRST,
 		COLUMN_USER = COLUMN_FIRST,
 		COLUMN_FILE,
-		COLUMN_HUB,
+		COLUMN_HUB_CONNECTIONS,
 		COLUMN_STATUS,
 		COLUMN_TIMELEFT,
 		COLUMN_SPEED,
@@ -150,9 +150,9 @@ private:
 		bool collapsed = true;
 		
 		uint8_t flagIndex = 0;
-		int16_t running = 0;
+		int16_t connections = 0;
 		int16_t hits = -1;
-		int16_t users = 0;
+		int16_t onlineUsers = 0;
 
 		ItemInfo* parent = nullptr;
 		HintedUser user;
@@ -171,7 +171,7 @@ private:
 		tstring ip;
 		tstring statusString;
 		tstring target;
-		tstring Encryption;
+		tstring encryption;
 
 		QueueToken getLocalBundleToken() const noexcept { return Util::toUInt32(bundle); }
 		bool hasBundle() const noexcept { return !bundle.empty(); }
@@ -205,7 +205,7 @@ private:
 			MASK_TIMELEFT		= 0x40,
 			MASK_IP				= 0x80,
 			MASK_STATUS_STRING	= 0x100,
-			MASK_SEGMENT		= 0x200,
+			MASK_CONNECTIONS	= 0x200,
 			MASK_ENCRYPTION		= 0x400,
 			MASK_TOTALSPEED		= 0x800,
 			MASK_BUNDLE         = 0x1000,
@@ -231,8 +231,8 @@ private:
 		const bool transferFailed;
 		uint8_t flagIndex = 0;	
 
-		void setRunning(int16_t aRunning) { running = aRunning; updateMask |= MASK_SEGMENT; }
-		int16_t running = 0;
+		void setConnections(int16_t aRunning) { connections = aRunning; updateMask |= MASK_CONNECTIONS; }
+		int16_t connections = 0;
 		void setStatus(ItemInfo::Status aStatus) { status = aStatus; updateMask |= MASK_STATUS; }
 		ItemInfo::Status status;
 		void setPos(int64_t aPos) { pos = aPos; updateMask |= MASK_POS; }
@@ -260,8 +260,8 @@ private:
 		void setBundle(const string& aBundle) { bundle = aBundle; updateMask |= MASK_BUNDLE; }
 		void setBundle(QueueToken aBundle) { if (aBundle == 0) return; bundle = Util::toString(aBundle); updateMask |= MASK_BUNDLE; }
 		string bundle;
-		void setUsers(const int16_t aUsers) { users = aUsers; updateMask |= MASK_USERS; }
-		int16_t users = 0;
+		void setOnlineUsers(const int16_t aUsers) { onlineUsers = aUsers; updateMask |= MASK_USERS; }
+		int16_t onlineUsers = 0;
 		void setUser(const HintedUser& aUser) { user = aUser; updateMask |= MASK_USER; }
 		HintedUser user;
 	};
@@ -307,6 +307,7 @@ private:
 	void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept override;
 	void on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) noexcept override;
 	void on(QueueManagerListener::BundleDownloadStatus, const BundlePtr& aBundle) noexcept override;
+	void on(QueueManagerListener::BundleSources, const BundlePtr& aBundle) noexcept override;
 
 	void on(TransferInfoManagerListener::Added, const TransferInfoPtr& aInfo) noexcept override;
 	void on(TransferInfoManagerListener::Updated, const TransferInfoPtr& aInfo, int aUpdatedProperties, bool aTick) noexcept override;
@@ -321,7 +322,7 @@ private:
 
 	void onBundleName(const BundlePtr& aBundle);
 	void onBundleComplete(const string& bundleToken, const string& bundleName, bool isUpload);
-	void onBundleStatus(const BundlePtr& aBundle, bool removed);
+	void onBundleWaiting(const BundlePtr& aBundle, bool removed);
 
 	ItemInfo* findItem(const UpdateInfo& ui, int& pos) const;
 	void updateItem(const ItemInfo* aII, uint32_t updateMask);

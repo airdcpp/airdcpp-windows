@@ -42,7 +42,7 @@
 
 #include "BarShader.h"
 
-int TransferView::columnIndexes[] = { COLUMN_USER, COLUMN_FILE, COLUMN_HUB, COLUMN_STATUS, COLUMN_TIMELEFT, COLUMN_SPEED, COLUMN_SIZE, COLUMN_PATH, COLUMN_IP/*, COLUMN_ENCRYPTION*/ };
+int TransferView::columnIndexes[] = { COLUMN_USER, COLUMN_FILE, COLUMN_HUB_CONNECTIONS, COLUMN_STATUS, COLUMN_TIMELEFT, COLUMN_SPEED, COLUMN_SIZE, COLUMN_PATH, COLUMN_IP/*, COLUMN_ENCRYPTION*/ };
 int TransferView::columnSizes[] = { 150, 250, 150, 275, 75, 75, 75, 200, 175/*, 50*/ };
 
 static ResourceManager::Strings columnNames[] = { ResourceManager::USER, ResourceManager::BUNDLE_FILENAME, ResourceManager::HUB_SEGMENTS, ResourceManager::STATUS,
@@ -203,7 +203,7 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 			transferMenu.appendItem(TSTRING(CLOSE_CONNECTION), [=] { handleDisconnect(); });
 		} else {
 			transferMenu.InsertSeparatorFirst(TSTRING(BUNDLE));
-			if (ii->users == 1) {
+			if (ii->onlineUsers == 1) {
 				appendUserItems(transferMenu);
 				setDefaultItem(transferMenu);
 				if(ii->download)
@@ -362,7 +362,7 @@ LRESULT TransferView::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled)
 				::ExtTextOut(cd->nmcd.hdc, rc.left + 30, top + 1, ETO_CLIPPED, rc, buf, _tcslen(buf), NULL);
 				return CDRF_SKIPDEFAULT;
 			}
-		} else if((colIndex != COLUMN_USER) && (colIndex != COLUMN_HUB) && (colIndex != COLUMN_STATUS) && (colIndex != COLUMN_IP) &&
+		} else if((colIndex != COLUMN_USER) && (colIndex != COLUMN_HUB_CONNECTIONS) && (colIndex != COLUMN_STATUS) && (colIndex != COLUMN_IP) &&
 			(ii->status != ItemInfo::STATUS_RUNNING)) {
 			cd->clrText = OperaColors::blendColors(WinUtil::bgColor, WinUtil::textColor, 0.4);
 			return CDRF_NEWFONT;
@@ -381,8 +381,8 @@ LRESULT TransferView::onInfoTip(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/
 	NMLVGETINFOTIP* pInfoTip = (NMLVGETINFOTIP*)pnmh;
 	tstring InfoTip = ctrlTransfers.GetColumnTexts(pInfoTip->iItem);
 	auto aItem = ctrlTransfers.getItemData(pInfoTip->iItem);
-	if (aItem && !aItem->Encryption.empty())
-		InfoTip += _T("\r\n") + TSTRING(ENCRYPTION) + _T(": ") + aItem->Encryption;
+	if (aItem && !aItem->encryption.empty())
+		InfoTip += _T("\r\n") + TSTRING(ENCRYPTION) + _T(": ") + aItem->encryption;
 
 	pInfoTip->cchTextMax = InfoTip.size();
 	_tcsncpy(pInfoTip->pszText, InfoTip.c_str(), INFOTIPSIZE);
@@ -443,10 +443,10 @@ int TransferView::ItemInfo::compareItems(const ItemInfo* a, const ItemInfo* b, u
 				return Util::DefaultSort(a->getText(COLUMN_USER).c_str(), b->getText(COLUMN_USER).c_str());
 			return compare(a->hits, b->hits);						
 		}
-		case COLUMN_HUB: {
-			if(a->running == b->running)
-				return Util::DefaultSort(a->getText(COLUMN_HUB).c_str(), b->getText(COLUMN_HUB).c_str());
-			return compare(a->running, b->running);						
+		case COLUMN_HUB_CONNECTIONS: {
+			if(a->connections == b->connections)
+				return Util::DefaultSort(a->getText(COLUMN_HUB_CONNECTIONS).c_str(), b->getText(COLUMN_HUB_CONNECTIONS).c_str());
+			return compare(a->connections, b->connections);
 		}
 		case COLUMN_STATUS: return 0;
 		case COLUMN_TIMELEFT: return compare(a->timeLeft, b->timeLeft);
@@ -528,13 +528,13 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 					/* if bundle has changed, regroup the item */
 					bool changeParent = (ui.bundle != ii->bundle);
 					if (parent->isBundle) {
-						if (!ui.IP.empty() && parent->users == 1) {
-							parent->Encryption = ui.Encryption;
+						if (!ui.IP.empty() && parent->onlineUsers == 1) {
+							parent->encryption = ui.Encryption;
 							parent->ip = ui.IP;
 							parent->flagIndex = ui.flagIndex;
 							updateItem(parent, UpdateInfo::MASK_ENCRYPTION | UpdateInfo::MASK_IP);
-						} else if (parent->users > 1 && !parent->ip.empty()) {
-							parent->Encryption = Util::emptyStringT;
+						} else if (parent->onlineUsers > 1 && !parent->ip.empty()) {
+							parent->encryption = Util::emptyStringT;
 							parent->ip = Util::emptyStringT;
 							parent->flagIndex = 0;
 							updateItem(parent, UpdateInfo::MASK_ENCRYPTION | UpdateInfo::MASK_IP);
@@ -657,16 +657,16 @@ void TransferView::ItemInfo::update(const UpdateInfo& ui) {
 		ip = ui.IP;
 	}
 	if(ui.updateMask & UpdateInfo::MASK_ENCRYPTION) {
-		Encryption = ui.Encryption;
+		encryption = ui.Encryption;
 	}	
-	if(ui.updateMask & UpdateInfo::MASK_SEGMENT) {
-		running = ui.running;
+	if(ui.updateMask & UpdateInfo::MASK_CONNECTIONS) {
+		connections = ui.connections;
 	}
 	if(ui.updateMask & UpdateInfo::MASK_BUNDLE) {
 		bundle = ui.bundle;
 	}
 	if(ui.updateMask & UpdateInfo::MASK_USERS) {
-		users = ui.users;
+		onlineUsers = ui.onlineUsers;
 	}
 	if(ui.updateMask & UpdateInfo::MASK_USER) {
 		user = ui.user;
@@ -703,10 +703,10 @@ void TransferView::updateItem(const ItemInfo* aII, uint32_t updateMask) {
 	if(updateMask & UpdateInfo::MASK_IP) {
 		ctrlTransfers.updateItem(ii, COLUMN_IP);
 	}
-	if(updateMask & UpdateInfo::MASK_SEGMENT) {
-		ctrlTransfers.updateItem(ii, COLUMN_HUB);
+	if(updateMask & UpdateInfo::MASK_CONNECTIONS) {
+		ctrlTransfers.updateItem(ii, COLUMN_HUB_CONNECTIONS);
 	}
-	if(updateMask & UpdateInfo::MASK_USERS) {
+	if(updateMask & UpdateInfo::MASK_USERS || updateMask & UpdateInfo::MASK_CONNECTIONS) {
 		ctrlTransfers.updateItem(ii, COLUMN_USER);
 	}
 	if(updateMask & UpdateInfo::MASK_USER) {
@@ -776,7 +776,7 @@ static tstring getFile(const Transfer::Type& type, const tstring& fileName) {
 
 TransferView::ItemInfo* TransferView::ItemInfo::createParent() {
 	auto ii = new ItemInfo(user, bundle, download);
-	ii->running = 0;
+	ii->connections = 0;
 	ii->hits = 0;
 	dcassert(!bundle.empty());
 	ii->isBundle = true;
@@ -787,13 +787,16 @@ TransferView::ItemInfo* TransferView::ItemInfo::createParent() {
 		if (b) {
 			ii->target = Text::toT(b->getTarget());
 			ii->size = b->getSize();
+
+			auto sources = QueueManager::getInstance()->getSourceCount(b);
+			ii->onlineUsers = sources.online;
 		}
 	} else {
 		auto b = UploadBundleManager::getInstance()->receiver.findByBundleToken(bundle);
 		if (b) {
 			ii->target = Text::toT(b->getTarget());
 			ii->size = b->getSize();
-			ii->Encryption = Encryption;
+			ii->encryption = encryption;
 			ii->ip = ip;
 			ii->flagIndex = flagIndex;
 		}
@@ -816,19 +819,19 @@ const tstring TransferView::ItemInfo::getText(uint8_t col) const {
 	switch(col) {
 		case COLUMN_USER:
 			if (isBundle && download) {
-				if ((users == 1 || hits == 2) && user.user) {
+				if ((onlineUsers == 1 || hits == 2) && user.user) {
 					return FormatUtil::getNicks(user);
 				} else {
-					return TSTRING_F(X_USERS_WAITING, users % ((hits-running-1) > 0 ? hits-running-1 : 0));
+					return TSTRING_F(X_USERS_WAITING, onlineUsers % ((hits - connections - 1) > 0 ? hits - connections - 1 : 0));
 				}
 			} else if (hits == -1 || isBundle) {
 				return FormatUtil::getNicks(user);
 			} else {
 				return TSTRING_F(X_USERS, hits);
 			}
-		case COLUMN_HUB: 
+		case COLUMN_HUB_CONNECTIONS:
 			if (isBundle) {
-				return TSTRING_F(X_CONNECTIONS, running);
+				return TSTRING_F(X_CONNECTIONS, connections);
 			} else {
 				return FormatUtil::getHubNames(user);
 			}
@@ -873,7 +876,6 @@ void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bun
 		}
 
 		auto connections = b->getDownloads().size();
-		// auto connections = DownloadManager::getInstance()->getBundleDownloadConnectionCount(b);
 		if(connections > 0) {
 			ratio = ratio / connections;
 
@@ -883,8 +885,7 @@ void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bun
 			ui->setActual((int64_t)((double)ui->pos * (ratio == 0 ? 1.00 : ratio)));
 			ui->setTimeLeft(b->getSecondsLeft());
 			ui->setSpeed(totalSpeed);
-			ui->setUsers(b->countOnlineUsers());
-			ui->setRunning(connections);
+			ui->setConnections(connections);
 
 			uint64_t timeSinceStarted = GET_TICK() - b->getStart();
 			if (timeSinceStarted < 1000) {
@@ -913,7 +914,7 @@ void TransferView::on(UploadBundleInfoReceiverListener::BundleTick, const TickUp
 		const auto& b = bp.first;
 		auto ui = new UpdateInfo(b->getToken(), false);
 
-		if (b->getRunning() > 0) {
+		if (b->getConnectionCount() > 0) {
 			ui->setStatus(ItemInfo::STATUS_RUNNING);
 			ui->setSize(b->getSize());
 			ui->setPos(b->getUploaded());
@@ -921,13 +922,13 @@ void TransferView::on(UploadBundleInfoReceiverListener::BundleTick, const TickUp
 			ui->setTimeLeft(b->getSecondsLeft());
 			ui->setTotalSpeed(b->getTotalSpeed());
 			ui->setSpeed(b->getSpeed());
-			ui->setUsers(1);
+			ui->setOnlineUsers(1);
 			if (b->getSingleUser()) {
 				ui->setTotalSpeed(0);
 			} else {
 				ui->setTotalSpeed(b->getTotalSpeed());
 			}
-			ui->setRunning(b->getRunning());
+			ui->setConnections(b->getConnectionCount());
 
 			uint64_t timeSinceStarted = GET_TICK() - b->getStart();
 			if (timeSinceStarted < 1000) {
@@ -967,8 +968,8 @@ void TransferView::onBundleComplete(const string& aBundleToken, const string& aB
 
 	ui->setPos(0);
 	ui->setStatusString(aIsUpload ? TSTRING(UPLOAD_FINISHED_IDLE) : TSTRING(DOWNLOAD_FINISHED_IDLE));
-	ui->setRunning(0);
-	ui->setUsers(0);
+	ui->setConnections(0);
+	ui->setOnlineUsers(0);
 
 	if (SETTING(POPUP_BUNDLE_DLS) && !aIsUpload) {
 		WinUtil::showPopup(_T("The following bundle has finished downloading: ") + Text::toT(aBundleName), TSTRING(DOWNLOAD_FINISHED_IDLE));
@@ -979,23 +980,22 @@ void TransferView::onBundleComplete(const string& aBundleToken, const string& aB
 	speak(UPDATE_BUNDLE, ui);
 }
 
-void TransferView::onBundleStatus(const BundlePtr& aBundle, bool removed) {
+void TransferView::onBundleWaiting(const BundlePtr& aBundle, bool aRemoved) {
 	auto ui = new UpdateInfo(aBundle->getStringToken(), true);
 	ui->setStatus(ItemInfo::STATUS_WAITING);
-	if (removed) {
+	if (aRemoved) {
 		ui->setStatusString(TSTRING(BUNDLE_REMOVED));
 	} else {
 		ui->setStatusString(TSTRING(WAITING));
 	}
 
-	ui->setUsers(0);
-	ui->setRunning(0);
+	ui->setConnections(0);
 	speak(UPDATE_BUNDLE, ui);
 }
 
 void TransferView::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept {
 	if (aBundle->getStatus() < Bundle::STATUS_DOWNLOADED)
-		onBundleStatus(aBundle, true); 
+		onBundleWaiting(aBundle, true);
 }
 
 void TransferView::on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) noexcept {
@@ -1011,8 +1011,16 @@ void TransferView::on(UploadBundleInfoReceiverListener::BundleSizeName, const st
 	speak(UPDATE_BUNDLE, ui);
 }
 
+void TransferView::on(QueueManagerListener::BundleSources, const BundlePtr& aBundle) noexcept {
+	auto ui = new UpdateInfo(aBundle->getStringToken(), true);
+
+	auto sources = QueueManager::getInstance()->getSourceCount(aBundle);
+	ui->setOnlineUsers(sources.online);
+	speak(UPDATE_BUNDLE, ui);
+}
+
 void TransferView::on(QueueManagerListener::BundleDownloadStatus, const BundlePtr& aBundle) noexcept {
-	onBundleStatus(aBundle, false); 
+	onBundleWaiting(aBundle, false);
 }
 
 void TransferView::on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept {
