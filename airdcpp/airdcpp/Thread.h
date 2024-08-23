@@ -47,7 +47,7 @@ public:
 		::Sleep(static_cast<DWORD>(millis));
 	}
 
-	typedef HANDLE HandleType;
+	typedef HANDLE ThreadHandleType;
 
 #ifdef _DEBUG
 	bool isCurrentThread() const noexcept;
@@ -67,7 +67,7 @@ public:
 		::usleep(millis * 1000);
 	}
 
-	typedef pthread_t HandleType;
+	typedef pthread_t ThreadHandleType;
 #endif
 	Thread();
 	virtual ~Thread();
@@ -90,7 +90,7 @@ public:
 protected:
 	virtual int run() = 0;
 
-	HandleType threadHandle;
+	ThreadHandleType threadHandle;
 #ifdef _WIN32
 
 	DWORD threadId;
