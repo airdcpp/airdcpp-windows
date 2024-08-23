@@ -88,13 +88,12 @@ public:
 
 	static void yield();
 protected:
-	DWORD threadId;
-
 	virtual int run() = 0;
 
 	HandleType threadHandle;
 #ifdef _WIN32
 
+	DWORD threadId;
 	static unsigned int WINAPI starter(void* p);
 #else
 	pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
