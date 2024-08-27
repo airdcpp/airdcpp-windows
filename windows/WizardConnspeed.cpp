@@ -97,10 +97,10 @@ LRESULT WizardConnspeed::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARA
 
 
 	//Set current values
-	SetDlgItemText(IDC_MAX_DOWNLOAD_SP, Text::toT(Util::toString(AirUtil::getSpeedLimit(true))).c_str());
+	SetDlgItemText(IDC_MAX_DOWNLOAD_SP, Text::toT(Util::toString(AirUtil::getSpeedLimitKbps(true))).c_str());
 	SetDlgItemText(IDC_DOWNLOAD_SLOTS, Text::toT(Util::toString(AirUtil::getSlots(true))).c_str());
 	SetDlgItemText(IDC_UPLOAD_SLOTS, Text::toT(Util::toString(AirUtil::getSlots(false))).c_str());
-	SetDlgItemText(IDC_MAX_UPLOAD_SP, Text::toT(Util::toString(AirUtil::getSpeedLimit(false))).c_str());
+	SetDlgItemText(IDC_MAX_UPLOAD_SP, Text::toT(Util::toString(AirUtil::getSpeedLimitKbps(false))).c_str());
 	SetDlgItemText(IDC_MAX_AUTO_OPENED, Text::toT(Util::toString(AirUtil::getMaxAutoOpened())).c_str());
 
 	cAutoDL.Attach(GetDlgItem(IDC_DL_AUTODETECT));
@@ -234,7 +234,7 @@ void WizardConnspeed::setDownloadLimits(double value) {
 		int dlSlots=AirUtil::getSlots(true, value, static_cast<SettingsManager::SettingProfile>(page ? page->getCurProfile() : SETTING(SETTINGS_PROFILE)));
 		SetDlgItemText(IDC_DOWNLOAD_SLOTS, Util::toStringW(dlSlots).c_str());
 	
-		int dlLimit=AirUtil::getSpeedLimit(true, value);
+		int dlLimit=AirUtil::getSpeedLimitKbps(true, value);
 		SetDlgItemText(IDC_MAX_DOWNLOAD_SP, Util::toStringW(dlLimit).c_str());
 	}
 }
@@ -245,7 +245,7 @@ void WizardConnspeed::setUploadLimits(double value) {
 		int ulSlots=AirUtil::getSlots(false, value, static_cast<SettingsManager::SettingProfile>(page ? page->getCurProfile() : SETTING(SETTINGS_PROFILE)));
 		SetDlgItemText(IDC_UPLOAD_SLOTS, Util::toStringW(ulSlots).c_str());
 	
-		int ulLimit=AirUtil::getSpeedLimit(false, value);
+		int ulLimit=AirUtil::getSpeedLimitKbps(false, value);
 		SetDlgItemText(IDC_MAX_UPLOAD_SP, Util::toStringW(ulLimit).c_str());
 
 		int autoOpened=AirUtil::getMaxAutoOpened(value);

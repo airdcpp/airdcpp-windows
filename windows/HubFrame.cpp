@@ -32,6 +32,7 @@
 
 #include <airdcpp/CryptoManager.h>
 #include <airdcpp/FavoriteManager.h>
+#include <airdcpp/FavoriteUserManager.h>
 #include <airdcpp/IgnoreManager.h>
 #include <airdcpp/LinkUtil.h>
 #include <airdcpp/LogManager.h>
@@ -41,7 +42,7 @@
 #include <airdcpp/RegexUtil.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/ShareManager.h>
-#include <airdcpp/UploadManager.h>
+#include <airdcpp/ReservedSlotManager.h>
 #include <airdcpp/Util.h>
 
 #include <airdcpp/modules/HighlightManager.h>
@@ -162,7 +163,7 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	client->addListener(this);
 	client->connect();
 
-	FavoriteManager::getInstance()->addListener(this);
+	FavoriteUserManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
 
 	::SetTimer(m_hWnd, 0, 500, 0);
@@ -689,7 +690,7 @@ void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 
 void HubFrame::on(ClientListener::Close, const Client*) noexcept {
 	SettingsManager::getInstance()->removeListener(this);
-	FavoriteManager::getInstance()->removeListener(this);
+	FavoriteUserManager::getInstance()->removeListener(this);
 
 	client->removeListener(this);
 	callAsync([this] {
@@ -1279,12 +1280,12 @@ void HubFrame::reconnectDisconnected() {
 	}
 }
 
-void HubFrame::on(FavoriteManagerListener::FavoriteUserAdded, const FavoriteUser& /*aUser*/) noexcept{
+void HubFrame::on(FavoriteUserManagerListener::FavoriteUserAdded, const FavoriteUser& /*aUser*/) noexcept{
 	callAsync([=] { updateUsers = true; });
 	resortForFavsFirst();
 }
 
-void HubFrame::on(FavoriteManagerListener::FavoriteUserRemoved, const FavoriteUser& /*aUser*/) noexcept {
+void HubFrame::on(FavoriteUserManagerListener::FavoriteUserRemoved, const FavoriteUser& /*aUser*/) noexcept {
 	callAsync([=] { updateUsers = true; });
 	resortForFavsFirst();
 }
@@ -1742,7 +1743,7 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 			// tstring user = ui->getText(OnlineUser::COLUMN_NICK); 
 			if (ui->getUser()->isFavorite()) {
 				cd->clrText = SETTING(FAVORITE_COLOR);
-			} else if (UploadManager::getInstance()->hasReservedSlot(ui->getUser())) {
+			} else if (FavoriteUserManager::getInstance()->getReservedSlots().hasReservedSlot(ui->getUser())) {
 				cd->clrText = SETTING(RESERVED_SLOT_COLOR);
 			} else if (ui->getUser()->isIgnored()) {
 				cd->clrText = SETTING(IGNORED_COLOR);

@@ -36,6 +36,7 @@
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/DupeUtil.h>
+#include <airdcpp/FavoriteUserManager.h>
 #include <airdcpp/File.h>
 #include <airdcpp/PathUtil.h>
 #include <airdcpp/QueueManager.h>
@@ -169,7 +170,7 @@ bool DirectoryListingFrame::getWindowParams(HWND hWnd, StringMap &params) {
 		if (!dl->getPartialList())
 			QueueManager::getInstance()->noDeleteFileList(dl->getFileName());
 
-		FavoriteManager::getInstance()->addSavedUser(dl->getUser());
+		FavoriteUserManager::getInstance()->addSavedUser(dl->getUser());
 		return true;
 	}
 	return false;

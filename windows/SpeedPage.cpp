@@ -234,7 +234,7 @@ void SpeedPage::setDownloadLimits(double value) {
 		dlSlots=AirUtil::getSlots(true, value);
 		SetDlgItemText(IDC_DOWNLOADS, Util::toStringW(dlSlots).c_str());
 	
-		int dlLimit=AirUtil::getSpeedLimit(true, value);
+		int dlLimit=AirUtil::getSpeedLimitKbps(true, value);
 		SetDlgItemText(IDC_MAXSPEED, Util::toStringW(dlLimit).c_str());
 	} else {
 		tstring slots;
@@ -256,7 +256,7 @@ void SpeedPage::setUploadLimits(double value) {
 		ulSlots=AirUtil::getSlots(false, value);
 		SetDlgItemText(IDC_SLOTS, Util::toStringW(ulSlots).c_str());
 	
-		int ulLimit=AirUtil::getSpeedLimit(false, value);
+		int ulLimit=AirUtil::getSpeedLimitKbps(false, value);
 		SetDlgItemText(IDC_MIN_UPLOAD_SPEED, Util::toStringW(ulLimit).c_str());
 
 		int autoOpened=AirUtil::getMaxAutoOpened(value);

@@ -31,6 +31,7 @@
 
 #include <airdcpp/Client.h>
 #include <airdcpp/FastAlloc.h>
+#include <airdcpp/FavoriteUserManagerListener.h>
 #include <airdcpp/TaskQueue.h>
 
 #include "atlstr.h"
@@ -42,7 +43,7 @@
 #define STATUS_MSG 52
 class ChatFrameBase;
 
-class HubFrame : private ClientListener, public CSplitterImpl<HubFrame>, private FavoriteManagerListener,
+class HubFrame : private ClientListener, public CSplitterImpl<HubFrame>, private FavoriteUserManagerListener,
 	public UCHandler<HubFrame>, public UserInfoBaseHandler<HubFrame>, private SettingsManagerListener, public ChatFrameBase
 {
 public:
@@ -329,8 +330,8 @@ private:
 	void execTasks();
 
 	// FavoriteManagerListener
-	void on(FavoriteManagerListener::FavoriteUserAdded, const FavoriteUser& /*aUser*/) noexcept override;
-	void on(FavoriteManagerListener::FavoriteUserRemoved, const FavoriteUser& /*aUser*/) noexcept override;
+	void on(FavoriteUserManagerListener::FavoriteUserAdded, const FavoriteUser& /*aUser*/) noexcept override;
+	void on(FavoriteUserManagerListener::FavoriteUserRemoved, const FavoriteUser& /*aUser*/) noexcept override;
 	void resortForFavsFirst(bool justDoIt = false);
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept override;

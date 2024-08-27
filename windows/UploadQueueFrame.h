@@ -29,18 +29,17 @@
 #include "TypedListViewCtrl.h"
 #include "UserInfoBaseHandler.h"
 
-#include <airdcpp/UploadManager.h>
+#include <airdcpp/UploadQueueManager.h>
 
 #define SHOWTREE_MESSAGE_MAP 12
 
 class UploadQueueFrame : public MDITabChildWindowImpl<UploadQueueFrame>, public StaticFrame<UploadQueueFrame, ResourceManager::UPLOAD_QUEUE, IDC_UPLOAD_QUEUE>,
-	private UploadManagerListener, public CSplitterImpl<UploadQueueFrame>, private SettingsManagerListener, public UserInfoBaseHandler<UploadQueueFrame>
+	private UploadQueueManagerListener, public CSplitterImpl<UploadQueueFrame>, private SettingsManagerListener, public UserInfoBaseHandler<UploadQueueFrame>
 {
 public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("UploadQueueFrame"), IDR_UPLOAD_QUEUE, 0, COLOR_3DFACE);
 
-	UploadQueueFrame() : showTree(true), closed(false), usingUserMenu(false), 
-		showTreeContainer(_T("BUTTON"), this, SHOWTREE_MESSAGE_MAP) { }
+	UploadQueueFrame();
 	
 	~UploadQueueFrame() { }
 
@@ -140,6 +139,7 @@ public:
 
 	static string id;
 private:
+	UploadQueueManager& manager;
 
 	static int columnSizes[UploadQueueItem::COLUMN_LAST];
 	static int columnIndexes[UploadQueueItem::COLUMN_LAST];
@@ -187,9 +187,9 @@ private:
 	CButton ctrlShowTree;
 	CContainedWindow showTreeContainer;
 	
-	bool showTree;
-	bool closed;
-	bool usingUserMenu;
+	bool showTree = true;
+	bool closed = false;
+	bool usingUserMenu = true;
 	
 	TypedListViewCtrl<UploadQueueItem, IDC_UPLOAD_QUEUE> ctrlList;
 	CTreeViewCtrl ctrlQueued;
@@ -204,10 +204,10 @@ private:
 	void updateStatus();
 
 	// UploadManagerListener
-	void on(UploadManagerListener::QueueAdd, UploadQueueItem* aUQI) noexcept { PostMessage(WM_SPEAKER, ADD_ITEM, (LPARAM)aUQI); }
-	void on(UploadManagerListener::QueueRemove, const UserPtr& aUser) noexcept { PostMessage(WM_SPEAKER, REMOVE, (LPARAM)new UserItem(HintedUser(aUser, Util::emptyString)));	}
-	void on(UploadManagerListener::QueueItemRemove, UploadQueueItem* aUQI) noexcept { aUQI->inc(); PostMessage(WM_SPEAKER, REMOVE_ITEM, (LPARAM)aUQI); }
-	void on(UploadManagerListener::QueueUpdate) noexcept { PostMessage(WM_SPEAKER, UPDATE_ITEMS, NULL); }
+	void on(UploadQueueManagerListener::QueueAdd, UploadQueueItem* aUQI) noexcept { PostMessage(WM_SPEAKER, ADD_ITEM, (LPARAM)aUQI); }
+	void on(UploadQueueManagerListener::QueueRemove, const UserPtr& aUser) noexcept { PostMessage(WM_SPEAKER, REMOVE, (LPARAM)new UserItem(HintedUser(aUser, Util::emptyString)));	}
+	void on(UploadQueueManagerListener::QueueItemRemove, UploadQueueItem* aUQI) noexcept { aUQI->inc(); PostMessage(WM_SPEAKER, REMOVE_ITEM, (LPARAM)aUQI); }
+	void on(UploadQueueManagerListener::QueueUpdate) noexcept { PostMessage(WM_SPEAKER, UPDATE_ITEMS, NULL); }
 
 	// SettingsManagerListener
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;

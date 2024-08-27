@@ -28,13 +28,13 @@
 
 #include <airdcpp/Client.h>
 #include <airdcpp/ClientManager.h>
-#include <airdcpp/Util.h>
+#include <airdcpp/FavoriteUserManager.h>
 #include <airdcpp/LogManager.h>
-#include <airdcpp/UploadManager.h>
-#include <airdcpp/FavoriteManager.h>
-#include <airdcpp/ResourceManager.h>
-#include <airdcpp/PrivateChatManager.h>
 #include <airdcpp/PathUtil.h>
+#include <airdcpp/PrivateChatManager.h>
+#include <airdcpp/ResourceManager.h>
+#include <airdcpp/ReservedSlotManager.h>
+#include <airdcpp/Util.h>
 
 
 PrivateFrame::FrameMap PrivateFrame::frames;
@@ -75,7 +75,7 @@ bool PrivateFrame::getWindowParams(HWND hWnd, StringMap& params) {
 		params["id"] = PrivateFrame::id;
 		params["CID"] = f->first->getCID().toBase32();
 		params["url"] = f->second->getHubUrl();
-		FavoriteManager::getInstance()->addSavedUser(f->first);
+		FavoriteUserManager::getInstance()->addSavedUser(f->first);
 		return true;
 	}
 	return false;
@@ -443,12 +443,12 @@ void PrivateFrame::handleNotifications(bool windowOpened, const tstring& aMessag
 
 bool PrivateFrame::checkFrameCommand(const tstring& aCmd, const tstring& /*aParam*/, tstring& /*message_*/, tstring& status_, bool& /*thirdPerson*/) {
 	if (stricmp(aCmd.c_str(), _T("grant")) == 0) {
-		UploadManager::getInstance()->reserveSlot(HintedUser(chat->getHintedUser()), 600);
+		FavoriteUserManager::getInstance()->getReservedSlots().reserveSlot(HintedUser(chat->getHintedUser()), 600);
 		addClientLine(TSTRING(SLOT_GRANTED), LogMessage::SEV_INFO);
 	} else if (stricmp(aCmd.c_str(), _T("close")) == 0) {
 		PostMessage(WM_CLOSE);
 	} else if ((stricmp(aCmd.c_str(), _T("favorite")) == 0) || (stricmp(aCmd.c_str(), _T("fav")) == 0)) {
-		FavoriteManager::getInstance()->addFavoriteUser(chat->getHintedUser());
+		FavoriteUserManager::getInstance()->addFavoriteUser(chat->getHintedUser());
 		addClientLine(TSTRING(FAVORITE_USER_ADDED), LogMessage::SEV_INFO);
 	} else if (stricmp(aCmd.c_str(), _T("getlist")) == 0) {
 		handleGetList();

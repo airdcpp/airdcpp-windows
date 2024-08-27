@@ -26,7 +26,7 @@
 #include "OMenu.h"
 #include "resource.h"
 
-#include <airdcpp/FavoriteManager.h>
+#include <airdcpp/UserCommandManager.h>
 
 template<class T>
 class UCHandler {
@@ -40,7 +40,7 @@ public:
 
 	void prepareMenu(OMenu& menu, int ctx, const StringList& hubs) {
 		bool isOp = false;
-		userCommands = FavoriteManager::getInstance()->getUserCommands(ctx, hubs, isOp);
+		userCommands = UserCommandManager::getInstance()->getUserCommands(ctx, hubs, isOp);
 		isOp = isOp && (ctx != UserCommand::CONTEXT_HUB);
 		
 		if(!userCommands.empty()) {

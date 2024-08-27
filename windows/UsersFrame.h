@@ -30,16 +30,15 @@
 #include "RichTextBox.h"
 #include "ListFilter.h"
 
-#include <airdcpp/FavoriteManager.h>
-#include <airdcpp/UploadManager.h>
+#include <airdcpp/FavoriteUserManagerListener.h>
 #include <airdcpp/QueueManagerListener.h>
 #include <airdcpp/IgnoreManagerListener.h>
 
 #define STATUS_MAP 10
 
 class UsersFrame : public MDITabChildWindowImpl<UsersFrame>, public StaticFrame<UsersFrame, ResourceManager::USERS, IDC_FAVUSERS>,
-	public CSplitterImpl<UsersFrame>, private FavoriteManagerListener, private ClientManagerListener, public UserInfoBaseHandler<UsersFrame>, 
-	private SettingsManagerListener, private UploadManagerListener, private QueueManagerListener, private IgnoreManagerListener, private Async<UsersFrame> {
+	public CSplitterImpl<UsersFrame>, private FavoriteUserManagerListener, private ClientManagerListener, public UserInfoBaseHandler<UsersFrame>, 
+	private SettingsManagerListener, private QueueManagerListener, private IgnoreManagerListener, private Async<UsersFrame> {
 public:
 	
 	UsersFrame();
@@ -161,7 +160,7 @@ private:
 
 		int getImage(int col) const;
 
-		void remove() { FavoriteManager::getInstance()->removeFavoriteUser(getUser()); }
+		void remove();
 
 		void update(const UserPtr& u);
 
@@ -238,20 +237,20 @@ private:
 	static int columnIndexes[];
 
 	// FavoriteManagerListener
-	void on(FavoriteManagerListener::FavoriteUserAdded, const FavoriteUser& aUser) noexcept;
-	void on(FavoriteManagerListener::FavoriteUserRemoved, const FavoriteUser& aUser) noexcept;
-	void on(FavoriteManagerListener::FavoriteUserUpdated, const UserPtr& aUser) noexcept;
+	void on(FavoriteUserManagerListener::FavoriteUserAdded, const FavoriteUser& aUser) noexcept override;
+	void on(FavoriteUserManagerListener::FavoriteUserRemoved, const FavoriteUser& aUser) noexcept override;
+	void on(FavoriteUserManagerListener::FavoriteUserUpdated, const UserPtr& aUser) noexcept override;
+
+	void on(FavoriteUserManagerListener::SlotsUpdated, const UserPtr& aUser) noexcept override;
 
 	// ClientManagerListner
-	void on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool) noexcept;
-	void on(ClientManagerListener::UserUpdated, const OnlineUser& aUser) noexcept;
-	void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool) noexcept;
+	void on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool) noexcept override;
+	void on(ClientManagerListener::UserUpdated, const OnlineUser& aUser) noexcept override;
+	void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool) noexcept override;
 
-	void on(SettingsManagerListener::Save, SimpleXML&s /*xml*/) noexcept;
+	void on(SettingsManagerListener::Save, SimpleXML&s /*xml*/) noexcept override;
 
-	void on(UploadManagerListener::SlotsUpdated, const UserPtr& aUser) noexcept;
-
-	void on(QueueManagerListener::SourceFilesUpdated, const UserPtr& aUser) noexcept;
+	void on(QueueManagerListener::SourceFilesUpdated, const UserPtr& aUser) noexcept override;
 };
 
 #endif // !defined(USERS_FRAME_H)

@@ -33,6 +33,9 @@
 #include "ResourceLoader.h"
 #include "TextFrame.h"
 
+#include <airdcpp/FavoriteUserManager.h>
+#include <airdcpp/ReservedSlotManager.h>
+
 #include <airdcpp/modules/FinishedManager.h>
 
 template<class T, int title, int Idc>
@@ -285,7 +288,7 @@ LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHand
 		if((i = ctrlList.GetNextItem(-1, LVNI_SELECTED)) != -1) {
 			FinishedItem *ii = ctrlList.getItemData(i);
 			if(ii->getUser().user->isOnline()) {
-				UploadManager::getInstance()->reserveSlot(ii->getUser(), 600);
+				FavoriteUserManager::getInstance()->getReservedSlots().reserveSlot(ii->getUser(), 600);
 			} else {
 				addStatusLine(TSTRING(USER_OFFLINE));
 			}

@@ -1249,4 +1249,8 @@ void ConnectionManager::on(UserConnectionListener::Supports, UserConnection* con
 	}
 }
 
+void ConnectionManager::on(UserConnectionListener::UserSet, UserConnection* aUserConnection) noexcept {
+	fire(ConnectionManagerListener::UserSet(), aUserConnection);
+}
+
 } // namespace dcpp

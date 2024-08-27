@@ -35,7 +35,7 @@
 
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/DupeUtil.h>
-#include <airdcpp/FavoriteManager.h>
+#include <airdcpp/FavoriteUserManager.h>
 #include <airdcpp/GeoManager.h>
 #include <airdcpp/LinkUtil.h>
 #include <airdcpp/Localization.h>
@@ -47,7 +47,8 @@
 #include <airdcpp/ScopedFunctor.h>
 #include <airdcpp/SearchInstance.h>
 #include <airdcpp/StringTokenizer.h>
-#include <airdcpp/UploadManager.h>
+#include <airdcpp/ReservedSlotManager.h>
+#include <airdcpp/UserCommand.h>
 #include <airdcpp/Util.h>
 #include <airdcpp/ValueGenerator.h>
 #include <airdcpp/ViewFileManager.h>
@@ -137,23 +138,24 @@ void UserInfoBase::connectFav() {
 
 void UserInfoBase::handleFav() {
 	if (getUser() && !getUser()->isFavorite()) {
-		FavoriteManager::getInstance()->addFavoriteUser(HintedUser(getUser(), getHubUrl()));
-	}
-	else if (getUser()) {
-		FavoriteManager::getInstance()->removeFavoriteUser(getUser());
+		FavoriteUserManager::getInstance()->addFavoriteUser(HintedUser(getUser(), getHubUrl()));
+	} else if (getUser()) {
+		FavoriteUserManager::getInstance()->removeFavoriteUser(getUser());
 	}
 }
+
 void UserInfoBase::grant() {
 	if (getUser()) {
-		UploadManager::getInstance()->reserveSlot(HintedUser(getUser(), getHubUrl()), 600);
+		FavoriteUserManager::getInstance()->getReservedSlots().reserveSlot(HintedUser(getUser(), getHubUrl()), 600);
 	}
 }
 
 void UserInfoBase::grantTimeless() {
 	if (getUser()) {
-		UploadManager::getInstance()->reserveSlot(HintedUser(getUser(), getHubUrl()), 0);
+		FavoriteUserManager::getInstance()->getReservedSlots().reserveSlot(HintedUser(getUser(), getHubUrl()), 0);
 	}
 }
+
 void UserInfoBase::removeAll() {
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		if (getUser()) {
@@ -161,29 +163,34 @@ void UserInfoBase::removeAll() {
 		}
 		});
 }
+
 void UserInfoBase::grantHour() {
 	if (getUser()) {
-		UploadManager::getInstance()->reserveSlot(HintedUser(getUser(), getHubUrl()), 3600);
+		FavoriteUserManager::getInstance()->getReservedSlots().reserveSlot(HintedUser(getUser(), getHubUrl()), 3600);
 	}
 }
+
 void UserInfoBase::grantDay() {
 	if (getUser()) {
-		UploadManager::getInstance()->reserveSlot(HintedUser(getUser(), getHubUrl()), 24 * 3600);
+		FavoriteUserManager::getInstance()->getReservedSlots().reserveSlot(HintedUser(getUser(), getHubUrl()), 24 * 3600);
 	}
 }
+
 void UserInfoBase::grantWeek() {
 	if (getUser()) {
-		UploadManager::getInstance()->reserveSlot(HintedUser(getUser(), getHubUrl()), 7 * 24 * 3600);
+		FavoriteUserManager::getInstance()->getReservedSlots().reserveSlot(HintedUser(getUser(), getHubUrl()), 7 * 24 * 3600);
 	}
 }
+
 void UserInfoBase::ungrant() {
 	if (getUser()) {
-		UploadManager::getInstance()->unreserveSlot(getUser());
+		FavoriteUserManager::getInstance()->getReservedSlots().unreserveSlot(getUser());
 	}
 }
+
 bool UserInfoBase::hasReservedSlot() {
 	if (getUser()) {
-		return UploadManager::getInstance()->hasReservedSlot(getUser());
+		return FavoriteUserManager::getInstance()->getReservedSlots().hasReservedSlot(getUser());
 	}
 	return false;
 }

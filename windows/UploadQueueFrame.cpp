@@ -26,6 +26,7 @@
 #include "FormatUtil.h"
 
 #include <airdcpp/PathUtil.h>
+#include <airdcpp/UploadManager.h>
 
 string UploadQueueFrame::id = "UploadQueue";
 
@@ -35,6 +36,9 @@ int UploadQueueFrame::columnIndexes[] = { UploadQueueItem::COLUMN_FILE, UploadQu
 	UploadQueueItem::COLUMN_WAITING };
 static ResourceManager::Strings columnNames[] = { ResourceManager::FILENAME, ResourceManager::PATH, ResourceManager::NICK, 
 	ResourceManager::HUB, ResourceManager::TRANSFERRED, ResourceManager::SIZE, ResourceManager::ADDED, ResourceManager::WAITING_TIME };
+
+
+UploadQueueFrame::UploadQueueFrame() : showTreeContainer(_T("BUTTON"), this, SHOWTREE_MESSAGE_MAP), manager(UploadManager::getInstance()->getQueue()) { }
 
 LRESULT UploadQueueFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	showTree = SETTING(UPLOADQUEUEFRAME_SHOW_TREE);
@@ -93,7 +97,7 @@ LRESULT UploadQueueFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	ctrlStatus.SetParts(4, statusSizes);
 	UpdateLayout();
 
-	UploadManager::getInstance()->addListener(this);
+	UploadManager::getInstance()->getQueue().addListener(this);
 	SettingsManager::getInstance()->addListener(this);
 
 	rootItem = ctrlQueued.InsertItem(CTSTRING(ALL), TVI_ROOT, TVI_LAST);
@@ -107,7 +111,7 @@ LRESULT UploadQueueFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 
 LRESULT UploadQueueFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closed) {
-		UploadManager::getInstance()->removeListener(this);
+		UploadManager::getInstance()->getQueue().removeListener(this);
 		SettingsManager::getInstance()->removeListener(this);
 		WinUtil::setButtonPressed(IDC_UPLOAD_QUEUE, false);
 		closed = true;
@@ -162,8 +166,8 @@ void UploadQueueFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 LRESULT UploadQueueFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(usingUserMenu) {
 		UserPtr User = getSelectedUser();
-		if(User) {
-			UploadManager::getInstance()->clearUserFiles(User, true);
+		if (User) {
+			manager.clearUserFiles(User);
 		}
 	} else {
 		int i = -1;
@@ -171,8 +175,8 @@ LRESULT UploadQueueFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 		while((i = ctrlList.GetNextItem(i, LVNI_SELECTED)) != -1) {
 			RemoveUsers.push_back(((UploadQueueItem*)ctrlList.getItemData(i))->getUser());
 		}
-		for(UserList::const_iterator u = RemoveUsers.begin(); u != RemoveUsers.end(); ++u) {
-			UploadManager::getInstance()->clearUserFiles(*u, true);
+		for (UserList::const_iterator u = RemoveUsers.begin(); u != RemoveUsers.end(); ++u) {
+			manager.clearUserFiles(*u);
 		}
 	}
 	updateStatus();
@@ -187,7 +191,7 @@ void UploadQueueFrame::removeSelected() {
 		RemoveUsers.push_back(((UploadQueueItem*)ctrlList.getItemData(i))->getUser());
 	}
 	for(auto u = RemoveUsers.begin(); u != RemoveUsers.end(); ++u) {
-		UploadManager::getInstance()->clearUserFiles(*u, true);
+		manager.clearUserFiles(*u);
 	}
 	updateStatus();
 }
@@ -195,7 +199,7 @@ void UploadQueueFrame::removeSelected() {
 void UploadQueueFrame::removeSelectedUser() {
 	UserPtr User = getSelectedUser();
 	if(User) {
-		UploadManager::getInstance()->clearUserFiles(User, true);
+		manager.clearUserFiles(User);
 	}
 	updateStatus();
 }
@@ -256,11 +260,11 @@ void UploadQueueFrame::LoadAll() {
 	ctrlQueued.SetRedraw(FALSE);	
 	
 	// Load queue
-	UploadManager::SlotQueue users = UploadManager::getInstance()->getUploadQueue();
-	for(UploadManager::SlotQueue::const_iterator uit = users.begin(); uit != users.end(); ++uit) {
+	auto users = manager.getUploadQueue();
+	for (auto uit = users.begin(); uit != users.end(); ++uit) {
 		//ctrlQueued.InsertItem(TVIF_PARAM | TVIF_TEXT, (Text::toT(uit->first->getFirstNick()) + _T(" - ") + WinUtil::getHubNames(uit->first).first).c_str(), 
 		//	0, 0, 0, 0, (LPARAM)(new UserItem(uit->first)), rootItem, TVI_LAST);
-		for(auto i = uit->files.cbegin(); i != uit->files.cend(); ++i) {
+		for (auto i = uit->files.cbegin(); i != uit->files.cend(); ++i) {
 			AddFile(*i);
 		}
 	}
@@ -304,7 +308,7 @@ LRESULT UploadQueueFrame::onItemChanged(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL
 		ctrlList.DeleteAllItems();
 		UserItem* ui = reinterpret_cast<UserItem *>(ctrlQueued.GetItemData(userNode));
 		if(ui) {
-			auto users = UploadManager::getInstance()->getUploadQueue();
+			auto users = manager.getUploadQueue();
 			auto it = find_if(users.begin(), users.end(), [&](const UserPtr& u) { return u == ui->u.user; });
 			if(it != users.end()) {
 				ctrlList.SetRedraw(FALSE);

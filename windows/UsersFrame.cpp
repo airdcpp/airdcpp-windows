@@ -27,6 +27,7 @@
 #include "ActionUtil.h"
 
 #include <airdcpp/ClientManager.h>
+#include <airdcpp/FavoriteUserManager.h>
 #include <airdcpp/IgnoreManager.h>
 #include <airdcpp/Localization.h>
 #include <airdcpp/LogManager.h>
@@ -209,10 +210,9 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	updateList();
 
-	FavoriteManager::getInstance()->addListener(this);
+	FavoriteUserManager::getInstance()->addListener(this);
 	ClientManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
-	UploadManager::getInstance()->addListener(this);
 	QueueManager::getInstance()->addListener(this);
 	IgnoreManager::getInstance()->addListener(this);
 
@@ -567,7 +567,7 @@ bool UsersFrame::handleClickDesc(int row) {
 	dlg.title = ui->columns[COLUMN_NICK];
 	dlg.line = ui->columns[COLUMN_DESCRIPTION];
 	if (dlg.DoModal(m_hWnd)) {
-		FavoriteManager::getInstance()->setUserDescription(ui->user, Text::fromT(dlg.line));
+		FavoriteUserManager::getInstance()->setUserDescription(ui->user, Text::fromT(dlg.line));
 		ui->columns[COLUMN_DESCRIPTION] = dlg.line;
 		ctrlUsers.updateItem(row);
 	}
@@ -578,7 +578,7 @@ bool UsersFrame::handleClickSlot(int row) {
 	auto ui = ctrlUsers.getItemData(row);
 	ui->grantSlot = !ui->grantSlot;
 	if (ui->isFavorite) {
-		FavoriteManager::getInstance()->setAutoGrant(ui->getUser(), ui->grantSlot);
+		FavoriteUserManager::getInstance()->setAutoGrant(ui->getUser(), ui->grantSlot);
 		setImages(ui, row);
 	} else {
 		ui->grantSlot ? ui->grantTimeless() : ui->ungrant(); // timeless grant
@@ -589,16 +589,16 @@ bool UsersFrame::handleClickSlot(int row) {
 bool UsersFrame::handleClickFavorite(int row) {
 	auto ui = ctrlUsers.getItemData(row);
 	if (ui->isFavorite)
-		FavoriteManager::getInstance()->removeFavoriteUser(ui->getUser());
+		FavoriteUserManager::getInstance()->removeFavoriteUser(ui->getUser());
 	else
-		FavoriteManager::getInstance()->addFavoriteUser(HintedUser(ui->getUser(), ui->getHubUrl()));
+		FavoriteUserManager::getInstance()->addFavoriteUser(HintedUser(ui->getUser(), ui->getHubUrl()));
 	return true;
 }
 
 bool UsersFrame::handleClickLimiter(int row) {
 	auto ui = ctrlUsers.getItemData(row);
 	if (ui->isFavorite) {
-		FavoriteManager::getInstance()->changeLimiterOverride(ui->getUser());
+		FavoriteUserManager::getInstance()->changeLimiterOverride(ui->getUser());
 		updateUser(ui->getUser());
 		//return true;
 	}
@@ -815,7 +815,7 @@ UsersFrame::UserInfo::UserInfo(const UserPtr& u, const string& aUrl, bool update
 }
 
 void UsersFrame::UserInfo::update(const UserPtr& u) {
-	auto fu = !u->isSet(User::FAVORITE) ? nullopt : FavoriteManager::getInstance()->getFavoriteUser(u);
+	auto fu = !u->isSet(User::FAVORITE) ? nullopt : FavoriteUserManager::getInstance()->getFavoriteUser(u);
 	if (fu) {
 		isFavorite = true;
 		noLimiter = fu->isSet(FavoriteUser::FLAG_SUPERUSER);
@@ -952,6 +952,9 @@ int UsersFrame::UserInfo::getImage(int col) const {
 	}
 }
 
+void UsersFrame::UserInfo::remove() { 
+	FavoriteUserManager::getInstance()->removeFavoriteUser(getUser()); 
+}
 			
 LRESULT UsersFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(ctrlUsers.GetSelectedCount() == 1) {
@@ -978,10 +981,9 @@ LRESULT UsersFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 
 LRESULT UsersFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closed) {
-		FavoriteManager::getInstance()->removeListener(this);
+		FavoriteUserManager::getInstance()->removeListener(this);
 		ClientManager::getInstance()->removeListener(this);
 		SettingsManager::getInstance()->removeListener(this);
-		UploadManager::getInstance()->removeListener(this);
 		QueueManager::getInstance()->removeListener(this);
 		IgnoreManager::getInstance()->removeListener(this);
 
@@ -1037,17 +1039,20 @@ void UsersFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept 
 		RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	}
 }
-void UsersFrame::on(FavoriteManagerListener::FavoriteUserAdded, const FavoriteUser& aUser) noexcept {
+void UsersFrame::on(FavoriteUserManagerListener::FavoriteUserAdded, const FavoriteUser& aUser) noexcept {
 	callAsync([=] { addUser(aUser.getUser(), aUser.getUrl()); } ); 
 }
-void UsersFrame::on(FavoriteManagerListener::FavoriteUserRemoved, const FavoriteUser& aUser) noexcept {
+void UsersFrame::on(FavoriteUserManagerListener::FavoriteUserRemoved, const FavoriteUser& aUser) noexcept {
 	callAsync([=] { updateUser(aUser.getUser()); } ); 
 }
-void UsersFrame::on(FavoriteManagerListener::FavoriteUserUpdated, const UserPtr& aUser) noexcept {
+void UsersFrame::on(FavoriteUserManagerListener::FavoriteUserUpdated, const UserPtr& aUser) noexcept {
 	callAsync([=] { updateUser(aUser); } ); 
 }
+void UsersFrame::on(FavoriteUserManagerListener::SlotsUpdated, const UserPtr& aUser) noexcept {
+	callAsync([=] { updateUser(aUser); });
+}
 
-void UsersFrame::on(UserConnected, const OnlineUser& aUser, bool) noexcept {
+void UsersFrame::on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool) noexcept {
 	if(aUser.getUser()->getCID() == CID())
 		return;
 
@@ -1066,10 +1071,6 @@ void UsersFrame::on(ClientManagerListener::UserUpdated, const OnlineUser& aUser)
 void UsersFrame::on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool) noexcept {
 	if(aUser->getCID() == CID())
 		return;
-	callAsync([=] { updateUser(aUser); });
-}
-
-void UsersFrame::on(UploadManagerListener::SlotsUpdated, const UserPtr& aUser) noexcept {
 	callAsync([=] { updateUser(aUser); });
 }
 
