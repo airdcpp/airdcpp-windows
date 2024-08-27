@@ -217,7 +217,7 @@ Upload* UploadManager::UploadParser::toUpload(UserConnection& aSource, const Upl
 	}
 	case Transfer::TYPE_TREE:
 	{
-		// sourceFile = aRequest.file;
+		sourceFile = aRequest.file; // sourceFile was changed to the path
 		unique_ptr<MemoryInputStream> mis(ShareManager::getInstance()->getTree(sourceFile, aProfile));
 		if (!mis.get()) {
 			return nullptr;

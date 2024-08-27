@@ -217,6 +217,7 @@ void UserConnection::maxedOut(size_t qPos /*0*/) {
 void UserConnection::accept(const Socket& aServer, const BufferedSocket::SocketAcceptFloodF& aFloodCheckF) {
 	dcassert(!socket);
 	socket = BufferedSocket::getSocket(0);
+	socket->setUseLimiter(true);
 	socket->addListener(this);
 
 	/*
