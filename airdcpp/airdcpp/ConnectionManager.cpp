@@ -138,58 +138,63 @@ bool ConnectionQueueItem::allowNewConnections(int aRunning) const noexcept {
  */
 void ConnectionManager::getDownloadConnection(const HintedUser& aUser, bool aSmallSlot) noexcept {
 	dcassert(aUser.user);
+
+	if (DownloadManager::getInstance()->checkIdle(aUser.user, aSmallSlot)) {
+		return;
+	}
+
 	bool supportMcn = false;
 
-	if (!DownloadManager::getInstance()->checkIdle(aUser.user, aSmallSlot)) {
-		ConnectionQueueItem* cqi = nullptr;
-		int running = 0;
+	ConnectionQueueItem* cqi = nullptr;
+	int running = 0;
 
-		{
-			WLock l(cs);
-			for(const auto& i: downloads) {
-				cqi = i;
-				if (cqi->getUser() == aUser.user && !cqi->isSet(ConnectionQueueItem::FLAG_REMOVE)) {
-					if (cqi->getDownloadType() == ConnectionQueueItem::DownloadType::MCN_NORMAL) {
-						supportMcn = true;
-						if (cqi->getState() != ConnectionQueueItem::RUNNING) {
-							//already has a waiting item? small slot doesn't count
-							if (!aSmallSlot) {
-								// force in case we joined a new hub and there was a protocol error
-								if (cqi->getLastAttempt() == -1) {
-									cqi->setLastAttempt(0);
-								}
-								return;
-							}
-						} else {
-							running++;
+	{
+		WLock l(cs);
+		for(const auto& i: downloads) {
+			cqi = i;
+			if (cqi->getUser() != aUser.user || cqi->isSet(ConnectionQueueItem::FLAG_REMOVE)) {
+				continue;
+			}
+
+			if (cqi->getDownloadType() == ConnectionQueueItem::DownloadType::MCN_NORMAL) {
+				supportMcn = true;
+				if (cqi->getState() != ConnectionQueueItem::RUNNING) {
+					//already has a waiting item? small slot doesn't count
+					if (!aSmallSlot) {
+						// force in case we joined a new hub and there was a protocol error
+						if (cqi->getLastAttempt() == -1) {
+							cqi->setLastAttempt(0);
 						}
-					} else if (cqi->getDownloadType() == ConnectionQueueItem::DownloadType::SMALL_CONF) {
-						supportMcn = true;
-						//no need to continue with small slot if an item with the same type exists already (no mather whether it's running or not)
-						if (aSmallSlot) {
-							// force in case we joined a new hub and there was a protocol error
-							if (cqi->getLastAttempt() == -1) {
-								cqi->setLastAttempt(0);
-							}
-							return;
-						}
-					} else {
-						//no need to continue with non-MCN users
 						return;
 					}
+				} else {
+					running++;
 				}
-			}
-
-			if (supportMcn && !aSmallSlot && !cqi->allowNewConnections(running)) {
+			} else if (cqi->getDownloadType() == ConnectionQueueItem::DownloadType::SMALL_CONF) {
+				supportMcn = true;
+				//no need to continue with small slot if an item with the same type exists already (no mather whether it's running or not)
+				if (aSmallSlot) {
+					// force in case we joined a new hub and there was a protocol error
+					if (cqi->getLastAttempt() == -1) {
+						cqi->setLastAttempt(0);
+					}
+					return;
+				}
+			} else {
+				//no need to continue with non-MCN users
 				return;
 			}
+		}
 
-			//WLock l (cs);
-			dcdebug("Get cqi");
-			cqi = getCQI(aUser, CONNECTION_TYPE_DOWNLOAD);
-			if (aSmallSlot) {
-				cqi->setDownloadType(supportMcn ? ConnectionQueueItem::DownloadType::SMALL_CONF : ConnectionQueueItem::DownloadType::SMALL);
-			}
+		if (supportMcn && !aSmallSlot && !cqi->allowNewConnections(running)) {
+			return;
+		}
+
+		//WLock l (cs);
+		dcdebug("Get cqi");
+		cqi = getCQI(aUser, CONNECTION_TYPE_DOWNLOAD);
+		if (aSmallSlot) {
+			cqi->setDownloadType(supportMcn ? ConnectionQueueItem::DownloadType::SMALL_CONF : ConnectionQueueItem::DownloadType::SMALL);
 		}
 	}
 }
