@@ -37,10 +37,12 @@ class SocketException;
 
 class TokenManager {
 public:
+	~TokenManager();
+
 	string createToken(ConnectionType aConnType) noexcept;
 	bool addToken(const string& aToken, ConnectionType aConnType) noexcept;
 	void removeToken(const string& aToken) noexcept;
-	bool hasToken(const string& aToken, ConnectionType aConnType) const noexcept;
+	bool hasToken(const string& aToken, ConnectionType aConnType = CONNECTION_TYPE_LAST) const noexcept;
 private:
 	unordered_map<string, ConnectionType> tokens;
 	static FastCriticalSection cs;

@@ -239,13 +239,13 @@ void shutdown(StepFunction stepF, ProgressFunction progressF, ShutdownUnloadCall
 	CryptoManager::deleteInstance();
 	ThrottleManager::deleteInstance();
 	DirectoryListingManager::deleteInstance();
+	FavoriteUserManager::deleteInstance();
 	QueueManager::deleteInstance();
 	DownloadManager::deleteInstance();
 	UploadManager::deleteInstance();
 	PrivateChatManager::deleteInstance();
 	ConnectionManager::deleteInstance();
 	SearchManager::deleteInstance();
-	FavoriteUserManager::deleteInstance();
 	FavoriteManager::deleteInstance();
 	ClientManager::deleteInstance();
 	ShareManager::deleteInstance();
