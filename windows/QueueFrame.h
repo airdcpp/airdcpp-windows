@@ -184,32 +184,29 @@ private:
 	public:
 
 		QueueItemInfo(const BundlePtr& aBundle) : 
-			bundle(aBundle), qi(nullptr), parent(NULL), isDirectory(false), childrenCreated(aBundle->isFileBundle()), target(Util::emptyString) {}
+			bundle(aBundle), childrenCreated(aBundle->isFileBundle()) {}
 		QueueItemInfo(const QueueItemPtr& aQi, QueueItemInfo* aParent) :
-			bundle(nullptr), qi(aQi), parent(aParent), isDirectory(false), childrenCreated(true), target(Util::emptyString) {}
+			qi(aQi), parent(aParent), childrenCreated(true) {}
 		QueueItemInfo(const tstring& aName, QueueItemInfo* aParent, const string& aTarget = Util::emptyString) : 
-			bundle(nullptr), qi(nullptr), parent(aParent), name(aName), isDirectory(true), childrenCreated(false), target(aTarget) {}
+			parent(aParent), name(aName), isDirectory(true), target(aTarget) {}
 		
-		~QueueItemInfo() {
-			children.clear();
-			dcdebug("itemInfo destructed %s \r\n", bundle ? bundle->getName().c_str() : qi ? qi->getTargetFileName().c_str() : Text::fromT(name).c_str());
-		}
+		~QueueItemInfo();
 
-		BundlePtr bundle;
-		QueueItemPtr qi;
+		BundlePtr bundle = nullptr;
+		QueueItemPtr qi = nullptr;
 
 		//for subdirectory items
 		tstring name;
 		string target;
 
-		GETSET(QueueItemInfo*, parent, Parent);
+		IGETSET(QueueItemInfo*, parent, Parent, nullptr);
 		IGETSET(int64_t, finshedbytes, FinishedBytes, 0);
 		IGETSET(int64_t, totalsize, TotalSize, -1);
 
 		unordered_map<string, QueueItemInfoPtr, noCaseStringHash, noCaseStringEq> children;
 		
-		bool isDirectory;
-		bool childrenCreated;
+		bool isDirectory = false;
+		bool childrenCreated = false;
 
 		tstring getName() const;
 		tstring getType() const;
@@ -238,10 +235,7 @@ private:
 		QueueItemInfoPtr findChild(const string& aKey);
 		void getChildQueueItems(QueueItemList& ret);
 		void deleteSubdirs();
-
-
 	};
-
 
 	static int columnIndexes[COLUMN_LAST];
 	static int columnSizes[COLUMN_LAST];

@@ -23,7 +23,7 @@
 
 #include <airdcpp/DupeType.h>
 #include <airdcpp/MerkleTree.h>
-#include <airdcpp/QueueItemBase.h>
+#include <airdcpp/Priority.h>
 #include <airdcpp/SettingItem.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/User.h>

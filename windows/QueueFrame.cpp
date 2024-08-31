@@ -1492,6 +1492,11 @@ void QueueFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept{
 
 /*QueueItemInfo functions*/
 
+QueueFrame::QueueItemInfo::~QueueItemInfo() {
+	children.clear();
+	// dcdebug("QueueItemInfo: destructed %s \r\n", bundle ? bundle->getName().c_str() : qi ? qi->getTargetFileName().c_str() : Text::fromT(name).c_str());
+}
+
 int QueueFrame::QueueItemInfo::getImageIndex() const {
 	if (bundle)
 		return bundle->isFileBundle() ? ResourceLoader::getIconIndex(Text::toT(bundle->getTarget())) : ResourceLoader::DIR_NORMAL;
