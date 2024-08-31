@@ -209,7 +209,7 @@ bool ConnectionManager::allowNewMCNUnsafe(const UserPtr& aUser, bool aSmallSlot,
 
 	for(const auto& i: downloads) {
 		cqi = i;
-		if (cqi->getUser() != aUser || cqi->isSet(ConnectionQueueItem::FLAG_REMOVE)) {
+		if (cqi->getUser() != aUser) {
 			continue;
 		}
 
@@ -351,15 +351,11 @@ void ConnectionManager::attemptDownloads(uint64_t aTick, StringList& removedToke
 	for (auto cqi : downloads) {
 		// Already active?
 		if (cqi->isActive()) {
-			if (cqi->isSet(ConnectionQueueItem::FLAG_REMOVE)) {
-				cqi->unsetFlag(ConnectionQueueItem::FLAG_REMOVE);
-			}
-
 			continue;
 		}
 
 		// Removing?
-		if (!cqi->getUser().user->isOnline() || cqi->isSet(ConnectionQueueItem::FLAG_REMOVE)) {
+		if (!cqi->getUser().user->isOnline()) {
 			removedTokens_.push_back(cqi->getToken());
 			continue;
 		}
@@ -1217,14 +1213,14 @@ void ConnectionManager::removeExtraMCNUnsafe(const ConnectionQueueItem* aFailedC
 		return;
 	}
 
-	if (aFailedCQI->getDownloadType() != QueueDownloadType::MCN_NORMAL || aFailedCQI->isSet(ConnectionQueueItem::FLAG_REMOVE)) {
+	if (aFailedCQI->getDownloadType() != QueueDownloadType::MCN_NORMAL) {
 		return;
 	}
 
 	// Remove an existing waiting item (if exists)
 	auto s = find_if(downloads.begin(), downloads.end(), [&](const ConnectionQueueItem* c) {
 		return c->getUser() == aFailedCQI->getUser() && !c->isSmallSlot() &&
-			!c->isActive() && c != aFailedCQI && !c->isSet(ConnectionQueueItem::FLAG_REMOVE);
+			!c->isActive() && c != aFailedCQI;
 	});
 
 	if (s != downloads.end()) {

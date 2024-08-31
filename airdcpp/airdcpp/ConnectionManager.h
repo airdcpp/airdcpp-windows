@@ -62,7 +62,6 @@ public:
 	};
 
 	enum Flags {
-		FLAG_REMOVE				= 0x01,
 		FLAG_MCN				= 0x02,
 		FLAG_RUNNING			= 0x04,
 	};
