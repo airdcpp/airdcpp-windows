@@ -22,7 +22,7 @@
 #include <cmath>
 
 #include "AdcCommand.h"
-#include "AirUtil.h"
+#include "AutoLimitUtil.h"
 #include "BZUtils.h"
 #include "ClientManager.h"
 #include "ConnectionManager.h"
@@ -31,6 +31,7 @@
 #include "QueueManager.h"
 #include "ResourceManager.h"
 #include "ShareManager.h"
+#include "Streams.h"
 #include "Upload.h"
 #include "UploadQueueManager.h"
 #include "UserConnection.h"
@@ -71,7 +72,7 @@ void UploadManager::setFreeSlotMatcher() {
 }
 
 uint8_t UploadManager::getSlots() const noexcept {
-	return static_cast<uint8_t>(AirUtil::getSlots(false)); 
+	return static_cast<uint8_t>(AutoLimitUtil::getSlots(false)); 
 }
 
 uint8_t UploadManager::getFreeSlots() const noexcept {
@@ -173,115 +174,6 @@ bool UploadManager::prepareFile(UserConnection& aSource, const UploadRequest& aR
 	return true;
 }
 
-Upload* UploadManager::UploadParser::toUpload(UserConnection& aSource, const UploadRequest& aRequest, unique_ptr<InputStream>& is, ProfileToken aProfile) {
-	bool resumed = is.get();
-	auto startPos = aRequest.segment.getStart();
-	auto bytes = aRequest.segment.getSize();
-
-	switch (type) {
-	case Transfer::TYPE_FULL_LIST:
-		// handle below...
-	case Transfer::TYPE_FILE:
-	{
-		if (aRequest.file == Transfer::USER_LIST_NAME_EXTRACTED) {
-			// Unpack before sending...
-			string bz2 = File(sourceFile, File::READ, File::OPEN).read();
-			string xml;
-			BZUtil::decodeBZ2(reinterpret_cast<const uint8_t*>(bz2.data()), bz2.size(), xml);
-			// Clear to save some memory...
-			string().swap(bz2);
-			is.reset(new MemoryInputStream(xml));
-			startPos = 0;
-			fileSize = bytes = is->getSize();
-		} else {
-			if (bytes == -1) {
-				bytes = fileSize - startPos;
-			}
-
-			if ((startPos + bytes) > fileSize) {
-				throw Exception("Bytes were requested beyond the end of the file");
-			}
-
-			if (!is) {
-				auto f = make_unique<File>(sourceFile, File::READ, File::OPEN | File::SHARED_WRITE); // write for partial sharing
-				is = std::move(f);
-			}
-
-			is->setPos(startPos);
-
-			if ((startPos + bytes) < fileSize) {
-				is.reset(new LimitedInputStream<true>(is.release(), bytes));
-			}
-		}
-		break;
-	}
-	case Transfer::TYPE_TREE:
-	{
-		sourceFile = aRequest.file; // sourceFile was changed to the path
-		unique_ptr<MemoryInputStream> mis(ShareManager::getInstance()->getTree(sourceFile, aProfile));
-		if (!mis.get()) {
-			return nullptr;
-		}
-
-		startPos = 0;
-		fileSize = bytes = mis->getSize();
-		is = std::move(mis);
-		break;
-	}
-	case Transfer::TYPE_PARTIAL_LIST: {
-		unique_ptr<MemoryInputStream> mis = nullptr;
-		// Partial file list
-		if (aRequest.isTTHList) {
-			if (!PathUtil::isAdcDirectoryPath(aRequest.file)) {
-				BundlePtr bundle = nullptr;
-				mis.reset(QueueManager::getInstance()->generateTTHList(Util::toUInt32(aRequest.file), aProfile != SP_HIDDEN, bundle));
-
-				// We don't want to show the token in transfer view
-				if (bundle) {
-					sourceFile = bundle->getName();
-				} else {
-					dcassert(0);
-				}
-			} else {
-				mis.reset(ShareManager::getInstance()->generateTTHList(aRequest.file, aRequest.listRecursive, aProfile));
-			}
-		} else {
-			mis.reset(ShareManager::getInstance()->generatePartialList(aRequest.file, aRequest.listRecursive, aProfile));
-		}
-
-		if (!mis.get()) {
-			return nullptr;
-		}
-
-		startPos = 0;
-		fileSize = bytes = mis->getSize();
-		is = std::move(mis);
-		break;
-	}
-	default:
-		dcassert(0);
-	}
-
-	// Upload
-	// auto size = is->getSize();
-	auto u = new Upload(aSource, sourceFile, TTHValue(), std::move(is));
-	u->setSegment(Segment(startPos, bytes));
-	if (u->getSegment().getEnd() != fileSize) {
-		u->setFlag(Upload::FLAG_CHUNKED);
-	}
-	if (partialFileSharing) {
-		u->setFlag(Upload::FLAG_PARTIAL);
-	}
-	if (resumed) {
-		u->setFlag(Upload::FLAG_RESUMED);
-	}
-
-	u->setFileSize(fileSize);
-	u->setType(type);
-	dcdebug("Created upload for file %s (conn %s, resuming: %s)\n", u->getPath().c_str(), u->getToken().c_str(), resumed ? "true" : "false");
-	return u;
-}
-
 void UploadManager::UploadParser::toRealWithSize(const UploadRequest& aRequest, ProfileToken aProfile, const HintedUser& aUser) {
 	auto noAccess = false;
 	try {
@@ -330,9 +222,127 @@ void UploadManager::UploadParser::parseFileInfo(const UploadRequest& aRequest, P
 	} else if (aRequest.type == Transfer::names[Transfer::TYPE_PARTIAL_LIST]) {
 		type = Transfer::TYPE_PARTIAL_LIST;
 		miniSlot = true;
+	} else if (aRequest.type == Transfer::names[Transfer::TYPE_TTH_LIST]) {
+		type = Transfer::TYPE_TTH_LIST;
+		miniSlot = true;
 	} else {
 		throw UploadParserException("Unknown file type", false);
 	}
+}
+
+Upload* UploadManager::UploadParser::toUpload(UserConnection& aSource, const UploadRequest& aRequest, unique_ptr<InputStream>& is, ProfileToken aProfile) {
+	bool resumed = is.get();
+	auto startPos = aRequest.segment.getStart();
+	auto bytes = aRequest.segment.getSize();
+
+	switch (type) {
+	case Transfer::TYPE_FULL_LIST:
+		// handle below...
+		[[fallthrough]];
+	case Transfer::TYPE_FILE:
+	{
+		if (aRequest.file == Transfer::USER_LIST_NAME_EXTRACTED) {
+			// Unpack before sending...
+			string bz2 = File(sourceFile, File::READ, File::OPEN).read();
+			string xml;
+			BZUtil::decodeBZ2(reinterpret_cast<const uint8_t*>(bz2.data()), bz2.size(), xml);
+			// Clear to save some memory...
+			string().swap(bz2);
+			is.reset(new MemoryInputStream(xml));
+			startPos = 0;
+			fileSize = bytes = is->getSize();
+		} else {
+			if (bytes == -1) {
+				bytes = fileSize - startPos;
+			}
+
+			if ((startPos + bytes) > fileSize) {
+				throw Exception("Bytes were requested beyond the end of the file");
+			}
+
+			if (!is) {
+				auto f = make_unique<File>(sourceFile, File::READ, File::OPEN | File::SHARED_WRITE); // write for partial sharing
+				is = std::move(f);
+			}
+
+			is->setPos(startPos);
+
+			if ((startPos + bytes) < fileSize) {
+				is.reset(new LimitedInputStream<true>(is.release(), bytes));
+			}
+		}
+		break;
+	}
+	case Transfer::TYPE_TREE:
+	{
+		sourceFile = aRequest.file; // sourceFile was changed to the path
+		unique_ptr<MemoryInputStream> mis(ShareManager::getInstance()->getTree(sourceFile, aProfile));
+		if (!mis.get()) {
+			return nullptr;
+		}
+
+		startPos = 0;
+		fileSize = bytes = mis->getSize();
+		is = std::move(mis);
+		break;
+	}
+	case Transfer::TYPE_TTH_LIST:
+	{
+		unique_ptr<MemoryInputStream> mis = nullptr;
+		if (!PathUtil::isAdcDirectoryPath(aRequest.file)) {
+			BundlePtr bundle = nullptr;
+			mis.reset(QueueManager::getInstance()->generateTTHList(Util::toUInt32(aRequest.file), aProfile != SP_HIDDEN, bundle));
+
+			// We don't want to show the token in transfer view
+			if (bundle) {
+				sourceFile = bundle->getName();
+			} else {
+				dcassert(0);
+			}
+		} else {
+			mis.reset(ShareManager::getInstance()->generateTTHList(aRequest.file, aRequest.listRecursive, aProfile));
+		}
+		if (!mis.get()) {
+			return nullptr;
+		}
+		break;
+	}
+	case Transfer::TYPE_PARTIAL_LIST: {
+		unique_ptr<MemoryInputStream> mis = nullptr;
+		// Partial file list
+		mis.reset(ShareManager::getInstance()->generatePartialList(aRequest.file, aRequest.listRecursive, aProfile));
+		if (!mis.get()) {
+			return nullptr;
+		}
+
+		startPos = 0;
+		fileSize = bytes = mis->getSize();
+		is = std::move(mis);
+		break;
+	}
+	default:
+		dcassert(0);
+		break;
+	}
+
+	// Upload
+	// auto size = is->getSize();
+	auto u = new Upload(aSource, sourceFile, TTHValue(), std::move(is));
+	u->setSegment(Segment(startPos, bytes));
+	if (u->getSegment().getEnd() != fileSize) {
+		u->setFlag(Upload::FLAG_CHUNKED);
+	}
+	if (partialFileSharing) {
+		u->setFlag(Upload::FLAG_PARTIAL);
+	}
+	if (resumed) {
+		u->setFlag(Upload::FLAG_RESUMED);
+	}
+
+	u->setFileSize(fileSize);
+	u->setType(type);
+	dcdebug("Created upload for file %s (conn %s, resuming: %s)\n", u->getPath().c_str(), u->getToken().c_str(), resumed ? "true" : "false");
+	return u;
 }
 
 bool UploadManager::standardSlotsRemaining(const UserPtr& aUser) const noexcept {
@@ -367,6 +377,10 @@ bool UploadManager::isUploadingMCN(const UserPtr& aUser) const noexcept {
 	return multiUploads.find(aUser) != multiUploads.end(); 
 }
 
+bool UploadManager::UploadParser::usesSmallSlot() const noexcept {
+	return type == Transfer::TYPE_PARTIAL_LIST || type == Transfer::TYPE_TTH_LIST || (type != Transfer::TYPE_FULL_LIST && fileSize <= 65792);
+}
+
 SlotType UploadManager::parseSlotTypeHookedThrow(const UserConnection& aSource, const UploadParser& aParser) const {
 	auto currentSlotType = aSource.getSlotType();
 
@@ -385,18 +399,15 @@ SlotType UploadManager::parseSlotTypeHookedThrow(const UserConnection& aSource, 
 	// Hooks
 	auto newSlotType = parseAutoGrantHookedThrow(aSource, aParser);
 
-	if (aSource.isMCN()) {
-		// Small file slots? Don't let the hooks override this
-		auto isSmallFile = aParser.type == Transfer::TYPE_PARTIAL_LIST || (aParser.type != Transfer::TYPE_FULL_LIST && aParser.fileSize <= 65792);
-		if (isSmallFile) {
-			// All small files will get this slot type regardless of the connection count
-			// as the actual small file connection isn't known but it's not really causing problems
-			// Could be solved with https://forum.dcbase.org/viewtopic.php?f=55&t=856 (or adding a type flag for all MCN connections)
-			auto smallFree = currentSlotType == UserConnection::SMALLSLOT || smallFileConnections <= 8;
-			if (smallFree) {
-				dcdebug("UploadManager::parseSlotType: assign small slot for %s\n", aSource.getToken().c_str());
-				return UserConnection::SMALLSLOT;
-			}
+	// Small file slots? Don't let the hooks override this
+	if (aSource.isMCN() && aParser.usesSmallSlot()) {
+		// All small files will get this slot type regardless of the connection count
+		// as the actual small file connection isn't known but it's not really causing problems
+		// Could be solved with https://forum.dcbase.org/viewtopic.php?f=55&t=856 (or adding a type flag for all MCN connections)
+		auto smallFree = currentSlotType == UserConnection::SMALLSLOT || smallFileConnections <= 8;
+		if (smallFree) {
+			dcdebug("UploadManager::parseSlotType: assign small slot for %s\n", aSource.getToken().c_str());
+			return UserConnection::SMALLSLOT;
 		}
 	}
 
@@ -577,7 +588,7 @@ bool UploadManager::allowNewMultiConn(const UserConnection& aSource) const noexc
 				}
 
 				// Check per user limits
-				auto totalMcnSlots = AirUtil::getSlotsPerUser(false);
+				auto totalMcnSlots = AutoLimitUtil::getSlotsPerUser(false);
 				if (totalMcnSlots > 0 && newUserConnCount >= totalMcnSlots) {
 					return false;
 				}
@@ -665,14 +676,14 @@ int64_t UploadManager::getRunningAverageUnsafe() const noexcept {
 }
 
 bool UploadManager::lowSpeedSlotsRemaining() const noexcept {
-	auto speedLimit = Util::convertSize(AirUtil::getSpeedLimitKbps(false), Util::KB);
+	auto speedLimit = Util::convertSize(AutoLimitUtil::getSpeedLimitKbps(false), Util::KB);
 
 	// A 0 in settings means disable
 	if (speedLimit == 0)
 		return false;
 
 	// Max slots
-	if (getSlots() + AirUtil::getMaxAutoOpened() <= runningUsers)
+	if (getSlots() + AutoLimitUtil::getMaxAutoOpened() <= runningUsers)
 		return false;
 
 	// Only grant one slot per 30 sec
@@ -763,7 +774,7 @@ void UploadManager::on(AdcCommand::GET, UserConnection* aSource, const AdcComman
 
 	auto recursive = c.hasFlag("RE", 4);
 	auto tthList = c.hasFlag("TL", 4);
-	auto request = UploadRequest(type, fname, Segment(aStartPos, aBytes), userSID, recursive, tthList);
+	auto request = UploadRequest(tthList ? Transfer::names[Transfer::TYPE_TTH_LIST] : type, fname, Segment(aStartPos, aBytes), userSID, recursive);
 	if (prepareFile(*aSource, request)) {
 		auto u = aSource->getUpload();
 		dcassert(u);
@@ -777,7 +788,7 @@ void UploadManager::on(AdcCommand::GET, UserConnection* aSource, const AdcComman
 			u->setFiltered();
 			cmd.addParam("ZL1");
 		}
-		if(c.hasFlag("TL", 4) && type == Transfer::names[Transfer::TYPE_PARTIAL_LIST]) {
+		if(tthList && type == Transfer::names[Transfer::TYPE_PARTIAL_LIST]) {
 			cmd.addParam("TL1");	 
 		}
 

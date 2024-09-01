@@ -44,9 +44,9 @@ typedef uint8_t SlotType;
 
 struct UploadRequest {
 	UploadRequest(const string& aType, const string& aFile, const Segment& aSegment) : type(aType), file(aFile), segment(aSegment) {}
-	UploadRequest(const string& aType, const string& aFile, const Segment& aSegment, const string& aUserSID, bool aListRecursive, bool aIsTTHList) : UploadRequest(aType, aFile, aSegment) {
+	UploadRequest(const string& aType, const string& aFile, const Segment& aSegment, const string& aUserSID, bool aListRecursive) : UploadRequest(aType, aFile, aSegment) {
 		userSID = aUserSID;
-		isTTHList = aIsTTHList;
+		// isTTHList = aIsTTHList;
 		listRecursive = aListRecursive;
 	}
 
@@ -64,7 +64,7 @@ struct UploadRequest {
 	Segment segment;
 	string userSID;
 	bool listRecursive = false;
-	bool isTTHList = false;
+	// bool isTTHList = false;
 };
 
 struct ParsedUpload {
@@ -198,6 +198,8 @@ private:
 
 		void parseFileInfo(const UploadRequest& aRequest, ProfileToken aProfile, const HintedUser& aUser);
 		Upload* toUpload(UserConnection& aSource, const UploadRequest& aRequest, unique_ptr<InputStream>& is, ProfileToken aProfile);
+
+		bool usesSmallSlot() const noexcept;
 	private:
 
 		void toRealWithSize(const UploadRequest& aRequest, ProfileToken aProfile, const HintedUser& aUser);

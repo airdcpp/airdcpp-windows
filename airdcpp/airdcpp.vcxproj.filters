@@ -425,7 +425,7 @@
     <ClCompile Include="airdcpp\AppUtil.cpp">
       <Filter>Source Files\util</Filter>
     </ClCompile>
-    <ClCompile Include="airdcpp\AirUtil.cpp">
+    <ClCompile Include="airdcpp\AutoLimitUtil.cpp">
       <Filter>Source Files\util</Filter>
     </ClCompile>
     <ClCompile Include="airdcpp\DupeUtil.cpp">
@@ -444,9 +444,6 @@
       <Filter>Source Files\util</Filter>
     </ClCompile>
     <ClCompile Include="airdcpp\ValueGenerator.cpp">
-      <Filter>Source Files\util</Filter>
-    </ClCompile>
-    <ClCompile Include="airdcpp\ZUtils.cpp">
       <Filter>Source Files\util</Filter>
     </ClCompile>
     <ClCompile Include="airdcpp\Util.cpp">
@@ -670,6 +667,9 @@
     </ClCompile>
     <ClCompile Include="airdcpp\ActivityManager.cpp">
       <Filter>Source Files\hub\activity</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\ZUtils.cpp">
+      <Filter>Source Files\core\io\compress</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -946,7 +946,7 @@
     <ClInclude Include="airdcpp\UploadBundleManager.h">
       <Filter>Header Files\transfer</Filter>
     </ClInclude>
-    <ClInclude Include="airdcpp\AirUtil.h">
+    <ClInclude Include="airdcpp\AutoLimitUtil.h">
       <Filter>Header Files\util</Filter>
     </ClInclude>
     <ClInclude Include="airdcpp\AppUtil.h">
@@ -971,9 +971,6 @@
       <Filter>Header Files\util</Filter>
     </ClInclude>
     <ClInclude Include="airdcpp\PathUtil.h">
-      <Filter>Header Files\util</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\ZUtils.h">
       <Filter>Header Files\util</Filter>
     </ClInclude>
     <ClInclude Include="airdcpp\RegexUtil.h">
@@ -1386,6 +1383,9 @@
     </ClInclude>
     <ClInclude Include="airdcpp\ActivityManager.h">
       <Filter>Header Files\hub\activity</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\ZUtils.h">
+      <Filter>Header Files\core\io\compress</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

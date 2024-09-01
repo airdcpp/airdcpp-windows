@@ -30,7 +30,6 @@
 #include "AutosearchSearchTimesPage.h"
 #include "AutoSearchItemSettings.h"
 
-#include <airdcpp/AirUtil.h>
 #include <airdcpp/SettingsManager.h>
 
 #define MAX_STATUS_LINES 10
@@ -201,7 +200,7 @@ void AutoSearchFrame::updateStatus() {
 		if (time_left == 0 && ClientManager::getInstance()->hasSearchQueueOverflow())
 			tmp = TSTRING(SEARCH_QUEUE_OVERFLOW);
 		else
-			tmp = TSTRING(AS_NEXT_SEARCH_IN) + _T(" ") + Text::toT(Util::formatTime(time_left, false, false));
+			tmp = TSTRING(AS_NEXT_SEARCH_IN) + _T(" ") + Text::toT(Util::formatDuration(time_left, false, false));
 	}
 
 	bool u = false;
@@ -656,7 +655,7 @@ void AutoSearchFrame::ItemInfo::update(const AutoSearchPtr& as) {
 	columns[COLUMN_REMOVE] = as->getRemove() ? TSTRING(YES) : TSTRING(NO);
 	columns[COLUMN_PATH] = Text::toT(target);
 	columns[COLUMN_USERMATCH] = Text::toT(as->getNickPattern());
-	columns[COLUMN_PRIORITY] = Text::toT(AirUtil::getPrioText(as->getPriority()) + (as->isRecent() ? " ( " + STRING(RECENT) + " )" : ""));
+	columns[COLUMN_PRIORITY] = Text::toT(Util::formatPriority(as->getPriority()) + (as->isRecent() ? " ( " + STRING(RECENT) + " )" : ""));
 
 	setGroupId(AutoSearchManager::getInstance()->getGroupIndex(as));
 

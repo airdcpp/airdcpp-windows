@@ -31,6 +31,7 @@
 #include "ShareProfile.h"
 #include "ShareRefreshInfo.h"
 #include "SimpleXML.h"
+#include "Streams.h"
 #include "StringTokenizer.h"
 #include "UserConnection.h"
 

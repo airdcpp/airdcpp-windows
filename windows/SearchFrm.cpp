@@ -739,7 +739,7 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 		case COLUMN_EXACT_SIZE: return getSize() > 0 ? Util::formatExactSizeW(getSize()) : Util::emptyStringT;
 		case COLUMN_IP: return countryInfo.text;
 		case COLUMN_TTH: return !isDirectory() ? Text::toT(getTTH().toBase32()) : Util::emptyStringT;
-		case COLUMN_DATE: return Util::getDateTimeW(getDate());
+		case COLUMN_DATE: return Util::formatDateTimeW(getDate());
 		default: return Util::emptyStringT;
 	}
 }

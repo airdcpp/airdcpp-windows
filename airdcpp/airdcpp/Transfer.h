@@ -35,6 +35,7 @@ public:
 		TYPE_FULL_LIST,
 		TYPE_PARTIAL_LIST,
 		TYPE_TREE,
+		TYPE_TTH_LIST,
 		TYPE_LAST
 	};
 	

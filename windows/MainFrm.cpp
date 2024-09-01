@@ -61,7 +61,6 @@
 #include "RSSinfoFrame.h"
 #include "ExtensionsFrame.h"
 
-#include <airdcpp/AirUtil.h>
 #include <airdcpp/ConnectivityManager.h>
 #include <airdcpp/DirectoryListingManager.h>
 #include <airdcpp/DownloadManager.h>
@@ -193,10 +192,8 @@ public:
 			unique_ptr<DirectoryListing> dl(new DirectoryListing(user, false, i, false, nullptr, false));
 			try {
 				dl->loadFile();
-				int matches=0, newFiles=0;
-				BundleList bundles;
-				QueueManager::getInstance()->matchListing(*dl, matches, newFiles, bundles);
-				LogManager::getInstance()->message(dl->getNick(false) + ": " + AirUtil::formatMatchResults(matches, newFiles, bundles), LogMessage::SEV_INFO, STRING(SETTINGS_QUEUE));
+				auto results = QueueManager::getInstance()->matchListing(*dl);
+				LogManager::getInstance()->message(dl->getNick(false) + ": " + results.format(), LogMessage::SEV_INFO, STRING(SETTINGS_QUEUE));
 			} catch(const Exception&) {
 
 			}

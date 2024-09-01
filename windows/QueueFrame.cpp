@@ -29,7 +29,6 @@
 #include "FormatUtil.h"
 #include "ActionUtil.h"
 
-#include <airdcpp/AirUtil.h>
 #include <airdcpp/DownloadManager.h>
 #include <airdcpp/PathUtil.h>
 
@@ -1637,7 +1636,7 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 			if (getPriority() == Priority::PAUSED_FORCE && bundle && bundle->getResumeTime() > 0)
 				return TSTRING_F(PAUSED_UNTIL_X, Text::toT(Util::formatTime("[%H:%M]", bundle->getResumeTime()))); //Show time left instead? needs bundle updates to be implemented for these...
 
-			return Text::toT(AirUtil::getPrioText(getPriority())) + (autoPrio ? _T(" (") + TSTRING(AUTO) + _T(")") : Util::emptyStringT);
+			return Text::toT(Util::formatPriority(getPriority())) + (autoPrio ? _T(" (") + TSTRING(AUTO) + _T(")") : Util::emptyStringT);
 		}
 		case COLUMN_STATUS: return getStatusString();
 		case COLUMN_TIMELEFT: {

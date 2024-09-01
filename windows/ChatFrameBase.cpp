@@ -477,7 +477,7 @@ void ChatFrameBase::addMagnet(const StringList& aPaths) {
 						return;
 
 					callAsync([=] {
-						tstring status = TSTRING_F(HASHING_X_LEFT, Text::toT(aFileName) % Text::toT(Util::formatTime(aTimeLeft, true)));
+						tstring status = TSTRING_F(HASHING_X_LEFT, Text::toT(aFileName) % Text::toT(Util::formatDuration(aTimeLeft, true)));
 						if (aPaths.size() > 1) 
 							status += _T(" (") + Text::toLower(TSTRING(FILE)) + _T(" ") + Util::toStringW(pos) + _T("/") + Util::toStringW(aPaths.size()) + _T(")");
 						setStatusText(status, LogMessage::SEV_INFO);

@@ -213,7 +213,7 @@ void PrivateFrame::updatePMInfo(uint8_t aType) {
 
 	switch (aType) {
 	case PrivateChat::MSG_SEEN: {
-		tstring msg = _T("[") + Text::toT(Util::getShortTimeString()) + _T("] *** ") + TSTRING(MESSAGE_SEEN) + _T(" ***");
+		tstring msg = WinUtil::formatTimestamp() + _T("*** ") + TSTRING(MESSAGE_SEEN) + _T(" ***");
 		if (!userTyping)
 			addStatus(msg, GET_ICON(IDI_SEEN, 16));
 		else

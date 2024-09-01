@@ -19,7 +19,7 @@
 #include "stdinc.h"
 #include "QueueManager.h"
 
-#include "AirUtil.h"
+#include "AutoLimitUtil.h"
 #include "Bundle.h"
 #include "ClientManager.h"
 #include "ConnectionManager.h"
@@ -42,6 +42,7 @@
 #include "SFVReader.h"
 #include "ShareManager.h"
 #include "SimpleXMLReader.h"
+#include "Streams.h"
 #include "SystemUtil.h"
 #include "Transfer.h"
 #include "UploadManager.h"
@@ -1240,11 +1241,11 @@ bool QueueManager::checkLowestPrioRules(const QueueItemPtr& aQI, const QueueToke
 }
 
 bool QueueManager::checkDownloadLimits(const QueueItemPtr& aQI, string& lastError_) const noexcept {
-	auto downloadSlots = AirUtil::getSlots(true);
+	auto downloadSlots = AutoLimitUtil::getSlots(true);
 	auto downloadCount = static_cast<int>(DownloadManager::getInstance()->getFileDownloadConnectionCount());
 	bool slotsFull = downloadSlots != 0 && downloadCount >= downloadSlots;
 
-	auto speedLimit = Util::convertSize(AirUtil::getSpeedLimitKbps(true), Util::KB);
+	auto speedLimit = Util::convertSize(AutoLimitUtil::getSpeedLimitKbps(true), Util::KB);
 	auto downloadSpeed = DownloadManager::getInstance()->getRunningAverage();
 	bool speedFull = speedLimit != 0 && downloadSpeed >= speedLimit;
 	//log("Speedlimit: " + Util::toString(Util::getSpeedLimit(true)*1024) + " slots: " + Util::toString(Util::getSlots(true)) + " (avg: " + Util::toString(getRunningAverage()) + ")");
@@ -1369,9 +1370,22 @@ QueueItemList QueueManager::findFiles(const TTHValue& tth) const noexcept {
 	return ql;
 }
 
-void QueueManager::matchListing(const DirectoryListing& dl, int& matchingFiles_, int& newFiles_, BundleList& bundles_) noexcept {
+string QueueManager::QueueMatchResults::format() const noexcept {
+	if (matchingFiles > 0) {
+		if (bundles.size() == 1) {
+			return STRING_F(MATCHED_FILES_BUNDLE, matchingFiles % bundles.front()->getName().c_str() % newFiles);
+		} else {
+			return STRING_F(MATCHED_FILES_X_BUNDLES, matchingFiles % (int)bundles.size() % newFiles);
+		}
+	}
+
+	return STRING(NO_MATCHED_FILES);
+}
+
+QueueManager::QueueMatchResults QueueManager::matchListing(const DirectoryListing& dl) noexcept {
+	QueueMatchResults results;
 	if (dl.getUser() == ClientManager::getInstance()->getMe())
-		return;
+		return results;
 
 	QueueItemList matchingItems;
 
@@ -1380,9 +1394,10 @@ void QueueManager::matchListing(const DirectoryListing& dl, int& matchingFiles_,
 		fileQueue.matchListing(dl, matchingItems);
 	}
 
-	matchingFiles_ = static_cast<int>(matchingItems.size());
+	results.matchingFiles = static_cast<int>(matchingItems.size());
 
-	newFiles_ = addValidatedSources(dl.getHintedUser(), matchingItems, QueueItem::Source::FLAG_FILE_NOT_AVAILABLE, bundles_);
+	results.newFiles = addValidatedSources(dl.getHintedUser(), matchingItems, QueueItem::Source::FLAG_FILE_NOT_AVAILABLE, results.bundles);
+	return results;
 }
 
 void QueueManager::toggleSlowDisconnectBundle(QueueToken aBundleToken) noexcept {
@@ -3100,7 +3115,7 @@ static void calculateBalancedPriorities(vector<pair<T, Priority>>& priorities, m
 		}
 
 		if (verbose) {
-			LogManager::getInstance()->message(i.second->getTarget() + " points: " + Util::toString(i.first) + " using prio " + AirUtil::getPrioText(newItemPrio), LogMessage::SEV_INFO, "Debug");
+			LogManager::getInstance()->message(i.second->getTarget() + " points: " + Util::toString(i.first) + " using prio " + Util::formatPriority(newItemPrio), LogMessage::SEV_INFO, "Debug");
 		}
 
 		if (i.second->getPriority() != newItemPrio) {

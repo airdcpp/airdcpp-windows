@@ -1458,7 +1458,7 @@ tstring WinUtil::formatFileType(const string& aFileName) {
 
 
 tstring WinUtil::formatTimestamp(time_t aTime) noexcept {
-	return _T("[") + Text::toT(Util::getShortTimeString(aTime)) + _T("]");
+	return _T("[") + Text::toT(Util::getTimeStamp(aTime)) + _T("]");
 }
 
 tstring WinUtil::formatMessageTimestamp(const Identity& aIdentity, time_t aTime) noexcept {
@@ -1474,7 +1474,7 @@ tstring WinUtil::formatMessageTimestamp(const Identity& aIdentity, time_t aTime)
 			extra = " | " + extra + " | " + aIdentity.getCountry();
 	}
 
-	return Text::toT("[" + Util::getShortTimeString(aTime) + extra + "] ");
+	return Text::toT("[" + Util::getTimeStamp(aTime) + extra + "] ");
 }
 
 tstring WinUtil::formatMessageWithTimestamp(const tstring& aMessage, time_t aTime) noexcept {

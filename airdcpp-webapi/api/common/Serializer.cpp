@@ -25,7 +25,6 @@
 
 #include <web-server/WebUser.h>
 
-#include <airdcpp/AirUtil.h>
 #include <airdcpp/Bundle.h>
 #include <airdcpp/Client.h>
 #include <airdcpp/ClientManager.h>
@@ -365,7 +364,7 @@ namespace webserver {
 	json Serializer::serializePriority(const QueueItemBase& aItem) noexcept {
 		return {
 			{ "id", serializePriorityId(aItem.getPriority()) },
-			{ "str", AirUtil::getPrioText(aItem.getPriority()) },
+			{ "str", Util::formatPriority(aItem.getPriority()) },
 			{ "auto", aItem.getAutoPriority() }
 		};
 	}

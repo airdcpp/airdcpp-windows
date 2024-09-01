@@ -36,6 +36,7 @@
 #include "ShareTasks.h"
 #include "ShareTree.h"
 #include "SimpleXML.h"
+#include "Streams.h"
 #include "Transfer.h"
 #include "UserConnection.h"
 

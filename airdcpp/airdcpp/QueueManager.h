@@ -58,6 +58,7 @@ namespace dcpp {
 
 namespace bimaps = boost::bimaps;
 
+class MemoryInputStream;
 class UserConnection;
 class QueueLoader;
 struct SearchQueueInfo;
@@ -114,8 +115,16 @@ public:
 	// Change bundle to use sequential order (instead of random order)
 	void onUseSeqOrder(const BundlePtr& aBundle) noexcept;
 
+	struct QueueMatchResults {
+		int matchingFiles = 0;
+		int newFiles = 0;
+		BundleList bundles;
+
+		string format() const noexcept;
+	};
+
 	/** Add a directory to the queue (downloads filelist and matches the directory). */
-	void matchListing(const DirectoryListing& dl, int& matchingFiles_, int& newFiles_, BundleList& bundles_) noexcept;
+	QueueMatchResults matchListing(const DirectoryListing& dl) noexcept;
 
 	QueueItemList findFiles(const TTHValue& tth) const noexcept;
 	QueueItemPtr findFile(QueueToken aToken) const noexcept { RLock l(cs); return fileQueue.findFile(aToken); }

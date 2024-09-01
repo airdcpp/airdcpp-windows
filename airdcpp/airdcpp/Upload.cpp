@@ -19,9 +19,10 @@
 #include "stdinc.h"
 #include "Upload.h"
 
-#include "UserConnection.h"
-#include "Streams.h"
 #include "FilteredFile.h"
+#include "ResourceManager.h"
+#include "StreamBase.h"
+#include "UserConnection.h"
 #include "ZUtils.h"
 
 namespace dcpp {

@@ -18,7 +18,7 @@
 
 #include "stdafx.h"
 
-#include <airdcpp/AirUtil.h>
+#include <airdcpp/AutoLimitUtil.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/Util.h>
 
@@ -170,8 +170,8 @@ void SpeedPage::validateMCNLimits(WORD wNotifyCode) {
 
 	double downloadvalue = Util::toDouble(Text::fromT(WinUtil::getComboText(ctrlDownload, wNotifyCode)));
 
-	int downloadAutoSlots = AirUtil::getSlotsPerUser(true, downloadvalue);
-	int uploadAutoSlots = AirUtil::getSlotsPerUser(false, uploadvalue);
+	int downloadAutoSlots = AutoLimitUtil::getSlotsPerUser(true, downloadvalue);
+	int uploadAutoSlots = AutoLimitUtil::getSlotsPerUser(false, uploadvalue);
 
 	int mcnExtrasDL = maxMCNExtras(downloadvalue);
 	int mcnExtrasUL = maxMCNExtras(uploadvalue);
@@ -231,10 +231,10 @@ int SpeedPage::maxMCNExtras(double speed) {
 void SpeedPage::setDownloadLimits(double value) {
 	int dlSlots=0;
 	if (cAutoDL.GetCheck() > 0) {
-		dlSlots=AirUtil::getSlots(true, value);
+		dlSlots=AutoLimitUtil::getSlots(true, value);
 		SetDlgItemText(IDC_DOWNLOADS, Util::toStringW(dlSlots).c_str());
 	
-		int dlLimit=AirUtil::getSpeedLimitKbps(true, value);
+		int dlLimit=AutoLimitUtil::getSpeedLimitKbps(true, value);
 		SetDlgItemText(IDC_MAXSPEED, Util::toStringW(dlLimit).c_str());
 	} else {
 		tstring slots;
@@ -244,7 +244,7 @@ void SpeedPage::setDownloadLimits(double value) {
 	}
 
 	if (IsDlgButtonChecked(IDC_MCN_AUTODETECT)) {
-		int mcnDls=AirUtil::getSlotsPerUser(true, value, dlSlots);
+		int mcnDls=AutoLimitUtil::getSlotsPerUser(true, value, dlSlots);
 		SetDlgItemText(IDC_MCNDLSLOTS, Util::toStringW(mcnDls).c_str());
 	}
 }
@@ -253,13 +253,13 @@ void SpeedPage::setUploadLimits(double value) {
 	int ulSlots=0;
 	if (cAutoUL.GetCheck() > 0) {
 
-		ulSlots=AirUtil::getSlots(false, value);
+		ulSlots=AutoLimitUtil::getSlots(false, value);
 		SetDlgItemText(IDC_SLOTS, Util::toStringW(ulSlots).c_str());
 	
-		int ulLimit=AirUtil::getSpeedLimitKbps(false, value);
+		int ulLimit=AutoLimitUtil::getSpeedLimitKbps(false, value);
 		SetDlgItemText(IDC_MIN_UPLOAD_SPEED, Util::toStringW(ulLimit).c_str());
 
-		int autoOpened=AirUtil::getMaxAutoOpened(value);
+		int autoOpened=AutoLimitUtil::getMaxAutoOpened(value);
 		SetDlgItemText(IDC_AUTO_SLOTS, Util::toStringW(autoOpened).c_str());
 	} else {
 		tstring slots;
@@ -269,7 +269,7 @@ void SpeedPage::setUploadLimits(double value) {
 	}
 
 	if (IsDlgButtonChecked(IDC_MCN_AUTODETECT)) {
-		int mcnUls=AirUtil::getSlotsPerUser(false, value, ulSlots);
+		int mcnUls=AutoLimitUtil::getSlotsPerUser(false, value, ulSlots);
 		SetDlgItemText(IDC_MCNULSLOTS, Util::toStringW(mcnUls).c_str());
 	}
 }

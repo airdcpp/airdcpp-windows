@@ -149,7 +149,7 @@ void SpyFrame::addList(const tstring& aString) noexcept {
 		TStringList a;
 		a.push_back(aString);
 		a.push_back(Util::toStringW(1));
-		a.push_back(Text::toT(Util::getTimeString()));
+		a.push_back(Text::toT(Util::formatCurrentTime()));
 		ctrlSearches.insert(a);
 		if (ctrlSearches.GetItemCount() > 500) {
 			ctrlSearches.DeleteItem(ctrlSearches.GetItemCount() - 1);
@@ -159,7 +159,7 @@ void SpyFrame::addList(const tstring& aString) noexcept {
 		ctrlSearches.GetItemText(j, COLUMN_COUNT, tmp, 32);
 		ctrlSearches.SetItemText(j, COLUMN_COUNT, Util::toStringW(Util::toInt(Text::fromT(tmp)) + 1).c_str());
 		ctrlSearches.GetItemText(j, COLUMN_TIME, tmp, 32);
-		ctrlSearches.SetItemText(j, COLUMN_TIME, Text::toT(Util::getTimeString()).c_str());
+		ctrlSearches.SetItemText(j, COLUMN_TIME, Text::toT(Util::formatCurrentTime()).c_str());
 		if (ctrlSearches.getSortColumn() == COLUMN_COUNT)
 			ctrlSearches.resort();
 		if (ctrlSearches.getSortColumn() == COLUMN_TIME)

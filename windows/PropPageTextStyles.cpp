@@ -19,6 +19,7 @@
 #include <airdcpp/PathUtil.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/SimpleXML.h>
+#include <airdcpp/Streams.h>
 #include <airdcpp/version.h>
 
 #include "BrowseDlg.h"

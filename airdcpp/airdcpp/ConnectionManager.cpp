@@ -19,7 +19,7 @@
 #include "stdinc.h"
 #include "ConnectionManager.h"
 
-#include "AirUtil.h"
+#include "AutoLimitUtil.h"
 #include "ClientManager.h"
 #include "ConnectivityManager.h"
 #include "CryptoManager.h"
@@ -129,7 +129,7 @@ bool ConnectionQueueItem::allowNewConnections(int aRunning) const noexcept {
 		return false;
 	}
 
-	auto maxOwnConns = AirUtil::getSlotsPerUser(true);
+	auto maxOwnConns = AutoLimitUtil::getSlotsPerUser(true);
 	if (maxOwnConns != 0 && aRunning >= maxOwnConns) {
 		return false;
 	}
@@ -736,7 +736,7 @@ void ConnectionManager::on(AdcCommand::SUP, UserConnection* aSource, const AdcCo
 	if (aSource->isSet(UserConnection::FLAG_INCOMING)) {
 		aSource->sup(getAdcFeatures());
 	} else {
-		aSource->inf(true, aSource->isMCN() ? AirUtil::getSlotsPerUser(false) : 0);
+		aSource->inf(true, aSource->isMCN() ? AutoLimitUtil::getSlotsPerUser(false) : 0);
 	}
 
 	aSource->setState(UserConnection::STATE_INF);
@@ -1068,7 +1068,7 @@ void ConnectionManager::on(AdcCommand::INF, UserConnection* aSource, const AdcCo
 
 		}
 
-		aSource->inf(false, aSource->isMCN() ? AirUtil::getSlotsPerUser(false) : 0);
+		aSource->inf(false, aSource->isMCN() ? AutoLimitUtil::getSlotsPerUser(false) : 0);
 
 	} else {
 		dcassert(aSource->getUser());

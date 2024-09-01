@@ -248,7 +248,7 @@
     <ClCompile Include="airdcpp\RegexUtil.cpp" />
     <ClCompile Include="airdcpp\SearchInstance.cpp" />
     <ClCompile Include="airdcpp\SearchQuery.cpp" />
-    <ClCompile Include="airdcpp\AirUtil.cpp" />
+    <ClCompile Include="airdcpp\AutoLimitUtil.cpp" />
     <ClCompile Include="airdcpp\BufferedSocket.cpp" />
     <ClCompile Include="airdcpp\Bundle.cpp" />
     <ClCompile Include="airdcpp\BundleQueue.cpp" />
@@ -449,7 +449,7 @@
     <ClInclude Include="airdcpp\PrivateChatListener.h" />
     <ClInclude Include="airdcpp\RelevanceSearch.h" />
     <ClInclude Include="airdcpp\SearchQuery.h" />
-    <ClInclude Include="airdcpp\AirUtil.h" />
+    <ClInclude Include="airdcpp\AutoLimitUtil.h" />
     <ClInclude Include="airdcpp\BloomFilter.h" />
     <ClInclude Include="airdcpp\BufferedSocket.h" />
     <ClInclude Include="airdcpp\BufferedSocketListener.h" />

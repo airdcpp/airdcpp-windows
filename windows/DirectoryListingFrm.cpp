@@ -2050,7 +2050,7 @@ const tstring DirectoryListingFrame::ItemInfo::getText(uint8_t col) const noexce
 			}
 		case COLUMN_EXACTSIZE: return type == DIRECTORY ? Util::formatExactSizeW(dir->getTotalSize(true)) : Util::formatExactSizeW(file->getSize());
 		case COLUMN_SIZE: return type == DIRECTORY ? Util::formatBytesW(dir->getTotalSize(true)) : Util::formatBytesW(file->getSize());
-		case COLUMN_DATE: return Util::getDateTimeW(type == DIRECTORY ? dir->getRemoteDate() : file->getRemoteDate());
+		case COLUMN_DATE: return Util::formatDateTimeW(type == DIRECTORY ? dir->getRemoteDate() : file->getRemoteDate());
 		default: return Text::toT(getTextNormal(col));
 	}
 }
@@ -2067,7 +2067,7 @@ const string DirectoryListingFrame::ItemInfo::getTextNormal(uint8_t col) const n
 	case COLUMN_TTH: return type == FILE ? file->getTTH().toBase32() : Util::emptyString;
 	case COLUMN_EXACTSIZE: return type == DIRECTORY ? Util::formatExactSize(dir->getTotalSize(true)) : Util::formatExactSize(file->getSize());
 	case COLUMN_SIZE: return  type == DIRECTORY ? Util::formatBytes(dir->getTotalSize(true)) : Util::formatBytes(file->getSize());
-	case COLUMN_DATE: return Util::getDateTime(type == DIRECTORY ? dir->getRemoteDate() : file->getRemoteDate());
+	case COLUMN_DATE: return Util::formatDateTime(type == DIRECTORY ? dir->getRemoteDate() : file->getRemoteDate());
 	default: return Util::emptyString;
 	}
 }

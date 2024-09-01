@@ -27,7 +27,7 @@
 namespace dcpp {
 
 const string Transfer::names[] = {
-	"file", "file", "list", "tthl"
+	"file", "file", "list", "tthl", "tthlist"
 };
 
 const string Transfer::USER_LIST_NAME_EXTRACTED = "files.xml";

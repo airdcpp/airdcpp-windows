@@ -304,7 +304,7 @@ return result;
 
 string ChatCommands::ClientVersionInfo() {
 	//TODO: add something cleaner / better?
-	return shortVersionString + " / Build: " + BUILD_NUMBER_STR + " / Version Date: " + Util::getDateTime(getVersionDate());
+	return shortVersionString + " / Build: " + BUILD_NUMBER_STR + " / Version Date: " + Util::formatDateTime(getVersionDate());
 }
 
 string ChatCommands::getSysUptime(){
@@ -318,7 +318,7 @@ string ChatCommands::getSysUptime(){
 	LPFUNC2 _GetTickCount64 = (LPFUNC2)GetProcAddress(kernel32lib, "GetTickCount64");
 	time_t sysUptime = (_GetTickCount64 ? _GetTickCount64() : GetTickCount()) / 1000;
 
-	return Util::formatTime(sysUptime, false);
+	return Util::formatDuration(sysUptime, false);
 
 }
 
@@ -347,7 +347,7 @@ string ChatCommands::generateStats() {
 
 		% fullVersionString
 		% Text::fromT(HttpLinks::homepage)
-		% Util::formatTime(TimerManager::getUptime(), false)
+		% Util::formatDuration(TimerManager::getUptime(), false)
 		% Util::formatSeconds((kernelTime + userTime) / (10I64 * 1000I64 * 1000I64))
 		% Util::formatBytes(pmc.WorkingSetSize)
 		% Util::formatBytes(pmc.PeakWorkingSetSize)
@@ -389,7 +389,7 @@ string ChatCommands::CPUInfo() {
 string ChatCommands::uptimeInfo() {
 	char buf[512]; 
 	snprintf(buf, sizeof(buf), "\n-=[ Uptime: %s]=-\r\n-=[ System Uptime: %s]=-\r\n", 
-	Util::formatTime(TimerManager::getUptime(), false).c_str(), 
+	Util::formatDuration(TimerManager::getUptime(), false).c_str(),
 	getSysUptime().c_str());
 	return buf;
 }
@@ -420,7 +420,7 @@ Average name length of a shared item: %d bytes (total size %s)")
 % itemStats.totalFileCount % Util::countPercentage(itemStats.lowerCaseFiles, itemStats.totalFileCount)
 % itemStats.uniqueFileCount % Util::countPercentage(itemStats.uniqueFileCount, itemStats.totalFileCount)
 % itemStats.totalDirectoryCount % Util::countAverage(itemStats.totalFileCount, itemStats.totalDirectoryCount)
-% Util::formatTime(itemStats.averageFileAge, false, true)
+% Util::formatDuration(itemStats.averageFileAge, false, true)
 % itemStats.averageNameLength
 % Util::formatBytes(itemStats.totalNameSize)
 );

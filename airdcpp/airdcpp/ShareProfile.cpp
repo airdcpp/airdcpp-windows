@@ -21,9 +21,10 @@
 #include "AppUtil.h"
 #include "BZUtils.h"
 #include "FilteredFile.h"
+#include "ResourceManager.h"
+#include "SettingsManager.h"
 #include "ShareProfile.h"
 #include "TimerManager.h"
-#include "Streams.h"
 
 namespace dcpp {
 
