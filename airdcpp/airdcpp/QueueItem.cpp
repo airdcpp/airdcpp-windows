@@ -175,15 +175,18 @@ bool QueueItem::isBadSourceExcept(const UserPtr& aUser, Flags::MaskType aExcepti
 	return false;
 }
 
-bool QueueItem::isChunkDownloaded(int64_t aStartPos, int64_t& len_) const noexcept {
-	if (len_ <= 0) return false;
+bool QueueItem::isChunkDownloaded(const Segment& aSegment) const noexcept {
+	auto requestStart = aSegment.getStart();
+	auto requestLen = aSegment.getSize();
+
+	if (requestLen <= 0) return false;
 
 	for (auto& i: done) {
-		int64_t start  = i.getStart();
-		int64_t end = i.getEnd();
+		auto start  = i.getStart();
+		auto end = i.getEnd();
 
-		if (start <= aStartPos && aStartPos < end){
-			len_ = min(len_, end - aStartPos);
+		if (start <= requestStart && requestStart < end && aSegment.getEnd() <= end){
+			// len_ = min(len_, end - requestStart);
 			return true;
 		}
 	}

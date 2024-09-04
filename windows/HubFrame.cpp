@@ -42,6 +42,7 @@
 #include <airdcpp/RegexUtil.h>
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/ShareManager.h>
+#include <airdcpp/ShareProfile.h>
 #include <airdcpp/ReservedSlotManager.h>
 #include <airdcpp/Util.h>
 

@@ -90,9 +90,6 @@ private:
 	void fileNotAvailable(UserConnection* aSource, bool aNoAccess, const string& aMessage = Util::emptyString);
 	void noSlots(UserConnection* aSource, const string& param = Util::emptyString);
 
-
-	void putDownloadHooked(Download* aDownload, bool aFinished, bool aNoAccess = false, bool aRotateQueue = false);
-
 	void failDownload(UserConnection* aSource, const string& reason, bool rotateQueue);
 
 	friend class Singleton<DownloadManager>;

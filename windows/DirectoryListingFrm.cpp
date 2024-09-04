@@ -41,6 +41,7 @@
 #include <airdcpp/PathUtil.h>
 #include <airdcpp/QueueManager.h>
 #include <airdcpp/SearchQuery.h>
+#include <airdcpp/ShareProfile.h>
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/User.h>
 #include <airdcpp/ValueGenerator.h>

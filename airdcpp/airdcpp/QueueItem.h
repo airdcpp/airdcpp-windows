@@ -199,7 +199,7 @@ public:
 	
 	void getChunksVisualisation(vector<Segment>& running, vector<Segment>& downloaded, vector<Segment>& done) const noexcept;
 
-	bool isChunkDownloaded(int64_t startPos, int64_t& len) const noexcept;
+	bool isChunkDownloaded(const Segment& aSegment) const noexcept;
 
 	/**
 	 * Is specified parts needed by this download?

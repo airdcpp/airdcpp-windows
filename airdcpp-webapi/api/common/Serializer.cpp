@@ -39,6 +39,7 @@
 #include <airdcpp/SearchResult.h>
 #include <airdcpp/SearchTypes.h>
 #include <airdcpp/ShareManager.h>
+#include <airdcpp/ShareProfile.h>
 
 namespace webserver {
 	// USERS

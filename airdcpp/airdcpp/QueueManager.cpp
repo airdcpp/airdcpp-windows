@@ -421,10 +421,10 @@ bool QueueManager::recheckFileImpl(const string& aPath, bool isBundleCheck, int6
 	return false;
 }
 
-void QueueManager::getBloom(HashBloom& bloom) const noexcept {
+/*void QueueManager::getBloom(HashBloom& bloom) const noexcept {
 	RLock l(cs);
 	fileQueue.getBloom(bloom);
-}
+}*/
 
 size_t QueueManager::getQueuedBundleFiles() const noexcept {
 	RLock l(cs);
@@ -1666,15 +1666,15 @@ void QueueManager::onDownloadError(const BundlePtr& aBundle, const string& aErro
 	setBundleStatus(aBundle, Bundle::STATUS_DOWNLOAD_ERROR);
 }
 
-void QueueManager::putDownloadHooked(Download* d, bool aFinished, bool aNoAccess /*false*/, bool aRotateQueue /*false*/) {
-	QueueItemPtr q = nullptr;
+void QueueManager::putDownloadHooked(Download* aDownload, bool aFinished, bool aNoAccess /*false*/, bool aRotateQueue /*false*/) {
 
 	// Make sure the download gets killed
-	// unique_ptr<Download> d(aDownload);
-	// aDownload = nullptr;
+	unique_ptr<Download> d(aDownload);
+	aDownload = nullptr;
 
 	d->close();
 
+	QueueItemPtr q = nullptr;
 	{
 		RLock l(cs);
 		q = fileQueue.findFile(d->getPath());
@@ -1699,13 +1699,13 @@ void QueueManager::putDownloadHooked(Download* d, bool aFinished, bool aNoAccess
 	}
 
 	if (!aFinished) {
-		onDownloadFailed(q, d, aNoAccess, aRotateQueue);
+		onDownloadFailed(q, d.get(), aNoAccess, aRotateQueue);
 	} else if (q->isSet(QueueItem::FLAG_USER_LIST)) {
-		onFilelistDownloadCompletedHooked(q, d);
+		onFilelistDownloadCompletedHooked(q, d.get());
 	} else if (d->getType() == Transfer::TYPE_TREE) {
-		onTreeDownloadCompleted(q, d);
+		onTreeDownloadCompleted(q, d.get());
 	} else {
-		onFileDownloadCompleted(q, d);
+		onFileDownloadCompleted(q, d.get());
 	}
 }
 
@@ -1827,7 +1827,13 @@ void QueueManager::onTreeDownloadCompleted(const QueueItemPtr& aQI, Download* aD
 	}
 
 	dcassert(aDownload->getTreeValid());
-	HashManager::getInstance()->addTree(aDownload->getTigerTree());
+	try {
+		HashManager::getInstance()->addTree(aDownload->getTigerTree());
+	} catch (const HashException& e) {
+		ConnectionManager::getInstance()->failDownload(aDownload->getToken(), e.getError(), true);
+		throw e;
+	}
+
 	fire(QueueManagerListener::ItemStatus(), aQI);
 }
 
@@ -3191,7 +3197,7 @@ bool QueueManager::checkDropSlowSource(Download* d) noexcept {
 	return false;
 }
 
-void QueueManager::toRealWithSize(const string& aFile, string& path_, int64_t& size_, const Segment& segment_) {
+/*void QueueManager::toRealWithSize(const string& aFile, string& path_, int64_t& size_, const Segment& segment_) {
 	if (aFile.compare(0, 4, "TTH/") == 0 && SETTING(USE_PARTIAL_SHARING)) {
 		TTHValue fileHash(aFile.substr(4));
 
@@ -3207,7 +3213,7 @@ void QueueManager::toRealWithSize(const string& aFile, string& path_, int64_t& s
 	}
 
 	throw QueueException(UserConnection::FILE_NOT_AVAILABLE);
-}
+}*/
 
 void QueueManager::getPartialInfo(const QueueItemPtr& aQI, PartsInfo& partialInfo_) const noexcept {
 	auto blockSize = aQI->getBlockSize();
@@ -3364,7 +3370,7 @@ void QueueManager::setFileStatus(const QueueItemPtr& aFile, QueueItem::Status aN
 	}
 }
 
-bool QueueManager::isChunkDownloaded(const TTHValue& tth, int64_t aStartPos, int64_t& bytes_, int64_t& fileSize_, string& target_) noexcept {
+bool QueueManager::isChunkDownloaded(const TTHValue& tth, const Segment* aSegment, int64_t& fileSize_, string& target_) noexcept {
 	QueueItemList ql;
 
 	RLock l(cs);
@@ -3380,7 +3386,11 @@ bool QueueManager::isChunkDownloaded(const TTHValue& tth, int64_t aStartPos, int
 	fileSize_ = qi->getSize();
 	target_ = qi->isDownloaded() ? qi->getTarget() : qi->getTempTarget();
 
-	return qi->isChunkDownloaded(aStartPos, bytes_);
+	if (!aSegment) {
+		return qi->isDownloaded();
+	}
+
+	return qi->isChunkDownloaded(*aSegment);
 }
 
 void QueueManager::getSourceInfo(const UserPtr& aUser, Bundle::SourceBundleList& aSources, Bundle::SourceBundleList& aBad) const noexcept {

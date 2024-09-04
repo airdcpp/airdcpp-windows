@@ -28,6 +28,7 @@
 #include <airdcpp/PathUtil.h>
 #include <airdcpp/QueueManager.h>
 #include <airdcpp/RegexUtil.h>
+#include <airdcpp/TempShareManager.h>
 #include <airdcpp/UploadManager.h>
 #include <airdcpp/Util.h>
 #include <airdcpp/version.h>
@@ -896,7 +897,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 			if (isMagnet) {
 				auto isMyLink = client && Text::toT(client->getMyNick()) == author;
 				auto magnet = *selectedHighlight->getMagnet();
-				if (ShareManager::getInstance()->isTempShared(getTempShareUser(), magnet.getTTH())) {
+				if (TempShareManager::getInstance()->isTempShared(getTempShareUser(), magnet.getTTH())) {
 					/* show an option to remove the item */
 					menu.appendItem(TSTRING(STOP_SHARING), [this] { handleRemoveTemp(); });
 				} else if (!isMyLink) {
@@ -1176,12 +1177,12 @@ void RichTextBox::handleRemoveTemp() {
 	}
 
 	auto magnet = *selectedHighlight->getMagnet();
-	auto tempShareToken = ShareManager::getInstance()->isTempShared(getTempShareUser(), magnet.getTTH());
+	auto tempShareToken = TempShareManager::getInstance()->isTempShared(getTempShareUser(), magnet.getTTH());
 	if (!tempShareToken) {
 		return;
 	}
 
-	ShareManager::getInstance()->removeTempShare(*tempShareToken);
+	TempShareManager::getInstance()->removeTempShare(*tempShareToken);
 	for (auto& p: links) {
 		decltype(auto) highlight = p.second;
 		if (highlight->getMagnet() && highlight->getMagnet()->getTTH() == magnet.getTTH()) {

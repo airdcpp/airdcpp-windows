@@ -442,7 +442,9 @@ void DownloadManager::endData(UserConnection* aSource) {
 			QueueManager::getInstance()->removeFileSource(d->getPath(), aSource->getUser(), QueueItem::Source::FLAG_BAD_TREE, false);
 
 			dcdebug("DownloadManager::endData: invalid tree received from user %s (received %s while %s was excpected)\n", ClientManager::getInstance()->getFormatedNicks(d->getHintedUser()).c_str(), d->getTTH().toBase32().c_str(), d->getTigerTree().getRoot().toBase32().c_str());
-			putDownloadHooked(d, false);
+
+			removeDownload(d);
+			QueueManager::getInstance()->putDownloadHooked(d, false);
 			checkDownloads(aSource);
 			return;
 		}
@@ -455,20 +457,17 @@ void DownloadManager::endData(UserConnection* aSource) {
 	}
 
 	fire(DownloadManagerListener::Complete(), d, d->getType() == Transfer::TYPE_TREE);
-	putDownloadHooked(d, true);
-	checkDownloads(aSource);
-}
+	removeDownload(d);
 
-void DownloadManager::putDownloadHooked(Download* aDownload, bool aFinished, bool aNoAccess, bool aRotateQueue) {
-	unique_ptr<Download> d(aDownload);
-
-	removeDownload(d.get());
 	try {
-		QueueManager::getInstance()->putDownloadHooked(d.get(), aFinished, aNoAccess, aRotateQueue);
+		QueueManager::getInstance()->putDownloadHooked(d, true);
 	} catch (const HashException& e) {
-		failDownload(&aDownload->getUserConnection(), e.getError(), false);
+		dcdebug("DownloadManager::endData: could not save tree into hash database, removing connection (%s)\n", e.getError().c_str());
+		removeConnection(aSource);
 		return;
 	}
+
+	checkDownloads(aSource);
 }
 
 int64_t DownloadManager::getRunningAverage() const {
@@ -525,7 +524,8 @@ void DownloadManager::failDownload(UserConnection* aSource, const string& aReaso
 	if (d) {
 		dcdebug("DownloadManager::failDownload: %s failed (%s)\n", aSource->getToken().c_str(), aReason.c_str());
 		fire(DownloadManagerListener::Failed(), d, aReason);
-		putDownloadHooked(d, false, false, aRotateQueue);
+		removeDownload(d);
+		QueueManager::getInstance()->putDownloadHooked(d, false, false, aRotateQueue);
 	} else {
 		fire(DownloadManagerListener::Remove(), aSource);
 	}
@@ -673,8 +673,8 @@ void DownloadManager::fileNotAvailable(UserConnection* aSource, bool aNoAccess, 
 		QueueManager::getInstance()->removeFileSource(d->getPath(), aSource->getUser(), (Flags::MaskType)(d->getType() == Transfer::TYPE_TREE ? QueueItem::Source::FLAG_NO_TREE : QueueItem::Source::FLAG_FILE_NOT_AVAILABLE), false);
 	}
 
-	putDownloadHooked(d, false, aNoAccess);
-	checkDownloads(aSource);
+	removeDownload(d);
+	QueueManager::getInstance()->putDownloadHooked(d, false, aNoAccess);
 }
 
 } // namespace dcpp

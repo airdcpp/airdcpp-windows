@@ -28,6 +28,7 @@
 #include <airdcpp/SettingsManager.h>
 #include <airdcpp/ShareManager.h>
 #include <airdcpp/ShareDirectoryInfo.h>
+#include <airdcpp/ShareProfile.h>
 
 class SharePageBase {
 public:

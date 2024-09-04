@@ -23,16 +23,14 @@
 
 #include "AdcCommand.h"
 #include "AutoLimitUtil.h"
-#include "BZUtils.h"
 #include "ClientManager.h"
 #include "ConnectionManager.h"
 #include "LogManager.h"
-#include "PathUtil.h"
-#include "QueueManager.h"
 #include "ResourceManager.h"
 #include "ShareManager.h"
-#include "Streams.h"
+#include "StreamBase.h"
 #include "Upload.h"
+#include "UploadFileParser.h"
 #include "UploadQueueManager.h"
 #include "UserConnection.h"
 
@@ -112,14 +110,14 @@ bool UploadManager::prepareFile(UserConnection& aSource, const UploadRequest& aR
 
 	{
 		// Don't allow multiple connections to be here simultaneously while the slot is being assigned
-		Lock l(slotCS);
+		Lock slotLock(slotCS);
 
-		SlotType slotType = UserConnection::NOSLOT;
+		OptionalUploadSlot slot;
 
 		// Check slots
 		try {
-			slotType = parseSlotTypeHookedThrow(aSource, creator);
-			if (slotType == UserConnection::NOSLOT) {
+			slot = parseSlotHookedThrow(aSource, creator);
+			if (!slot) {
 				if (isUploadingMCN(aSource.getUser())) {
 					// Don't queue MCN requests for existing uploaders
 					aSource.maxedOut();
@@ -160,189 +158,18 @@ bool UploadManager::prepareFile(UserConnection& aSource, const UploadRequest& aR
 			return false;
 		}
 
-		updateSlotCounts(aSource, slotType);
+		{
+			WLock l(cs);
+			uploads.push_back(u);
+		}
+
+		dcassert(slot);
+		fire(UploadManagerListener::Created(), u, *slot);
+		updateSlotCounts(aSource, *slot);
 	}
 
 	queue->removeQueue(aSource.getUser());
-
-	{
-		WLock l(cs);
-		uploads.push_back(u);
-	}
-
-	fire(UploadManagerListener::Created(), u);
 	return true;
-}
-
-void UploadManager::UploadParser::toRealWithSize(const UploadRequest& aRequest, ProfileToken aProfile, const HintedUser& aUser) {
-	auto noAccess = false;
-	try {
-		// Get all hubs with file transfers
-		ProfileTokenSet profiles;
-		ClientManager::getInstance()->listProfiles(aUser, profiles);
-		if (profiles.empty()) {
-			//the user managed to go offline already?
-			profiles.insert(aProfile);
-		}
-
-		ShareManager::getInstance()->toRealWithSize(aRequest.file, profiles, aUser, sourceFile, fileSize, noAccess);
-	} catch (const ShareException&) {
-		try {
-			QueueManager::getInstance()->toRealWithSize(aRequest.file, sourceFile, fileSize, aRequest.segment);
-		} catch (const QueueException&) {
-			throw UploadParserException(UserConnection::FILE_NOT_AVAILABLE, noAccess);
-		}
-	}
-}
-
-void UploadManager::UploadParser::parseFileInfo(const UploadRequest& aRequest, ProfileToken aProfile, const HintedUser& aUser) {
-	auto userlist = aRequest.isUserlist();
-
-	if (aRequest.type == Transfer::names[Transfer::TYPE_FILE]) {
-		type = userlist ? Transfer::TYPE_FULL_LIST : Transfer::TYPE_FILE;
-
-
-		//check that we have a file
-		if (userlist) {
-			auto info = std::move(ShareManager::getInstance()->getFileListInfo(aRequest.file, aProfile));
-			sourceFile = std::move(info.second);
-			fileSize = info.first;
-			miniSlot = true;
-		} else {
-			toRealWithSize(aRequest, aProfile, aUser);
-			miniSlot = freeSlotMatcher.match(PathUtil::getFileName(sourceFile));
-		}
-
-		miniSlot = miniSlot || (fileSize <= Util::convertSize(SETTING(SET_MINISLOT_SIZE), Util::KB));
-	} else if (aRequest.type == Transfer::names[Transfer::TYPE_TREE]) {
-		toRealWithSize(aRequest, aProfile, aUser);
-		type = Transfer::TYPE_TREE;
-		miniSlot = true;
-
-	} else if (aRequest.type == Transfer::names[Transfer::TYPE_PARTIAL_LIST]) {
-		type = Transfer::TYPE_PARTIAL_LIST;
-		miniSlot = true;
-	} else if (aRequest.type == Transfer::names[Transfer::TYPE_TTH_LIST]) {
-		type = Transfer::TYPE_TTH_LIST;
-		miniSlot = true;
-	} else {
-		throw UploadParserException("Unknown file type", false);
-	}
-}
-
-Upload* UploadManager::UploadParser::toUpload(UserConnection& aSource, const UploadRequest& aRequest, unique_ptr<InputStream>& is, ProfileToken aProfile) {
-	bool resumed = is.get();
-	auto startPos = aRequest.segment.getStart();
-	auto bytes = aRequest.segment.getSize();
-
-	switch (type) {
-	case Transfer::TYPE_FULL_LIST:
-		// handle below...
-		[[fallthrough]];
-	case Transfer::TYPE_FILE:
-	{
-		if (aRequest.file == Transfer::USER_LIST_NAME_EXTRACTED) {
-			// Unpack before sending...
-			string bz2 = File(sourceFile, File::READ, File::OPEN).read();
-			string xml;
-			BZUtil::decodeBZ2(reinterpret_cast<const uint8_t*>(bz2.data()), bz2.size(), xml);
-			// Clear to save some memory...
-			string().swap(bz2);
-			is.reset(new MemoryInputStream(xml));
-			startPos = 0;
-			fileSize = bytes = is->getSize();
-		} else {
-			if (bytes == -1) {
-				bytes = fileSize - startPos;
-			}
-
-			if ((startPos + bytes) > fileSize) {
-				throw Exception("Bytes were requested beyond the end of the file");
-			}
-
-			if (!is) {
-				auto f = make_unique<File>(sourceFile, File::READ, File::OPEN | File::SHARED_WRITE); // write for partial sharing
-				is = std::move(f);
-			}
-
-			is->setPos(startPos);
-
-			if ((startPos + bytes) < fileSize) {
-				is.reset(new LimitedInputStream<true>(is.release(), bytes));
-			}
-		}
-		break;
-	}
-	case Transfer::TYPE_TREE:
-	{
-		sourceFile = aRequest.file; // sourceFile was changed to the path
-		unique_ptr<MemoryInputStream> mis(ShareManager::getInstance()->getTree(sourceFile, aProfile));
-		if (!mis.get()) {
-			return nullptr;
-		}
-
-		startPos = 0;
-		fileSize = bytes = mis->getSize();
-		is = std::move(mis);
-		break;
-	}
-	case Transfer::TYPE_TTH_LIST:
-	{
-		unique_ptr<MemoryInputStream> mis = nullptr;
-		if (!PathUtil::isAdcDirectoryPath(aRequest.file)) {
-			BundlePtr bundle = nullptr;
-			mis.reset(QueueManager::getInstance()->generateTTHList(Util::toUInt32(aRequest.file), aProfile != SP_HIDDEN, bundle));
-
-			// We don't want to show the token in transfer view
-			if (bundle) {
-				sourceFile = bundle->getName();
-			} else {
-				dcassert(0);
-			}
-		} else {
-			mis.reset(ShareManager::getInstance()->generateTTHList(aRequest.file, aRequest.listRecursive, aProfile));
-		}
-		if (!mis.get()) {
-			return nullptr;
-		}
-		break;
-	}
-	case Transfer::TYPE_PARTIAL_LIST: {
-		unique_ptr<MemoryInputStream> mis = nullptr;
-		// Partial file list
-		mis.reset(ShareManager::getInstance()->generatePartialList(aRequest.file, aRequest.listRecursive, aProfile));
-		if (!mis.get()) {
-			return nullptr;
-		}
-
-		startPos = 0;
-		fileSize = bytes = mis->getSize();
-		is = std::move(mis);
-		break;
-	}
-	default:
-		dcassert(0);
-		break;
-	}
-
-	// Upload
-	// auto size = is->getSize();
-	auto u = new Upload(aSource, sourceFile, TTHValue(), std::move(is));
-	u->setSegment(Segment(startPos, bytes));
-	if (u->getSegment().getEnd() != fileSize) {
-		u->setFlag(Upload::FLAG_CHUNKED);
-	}
-	if (partialFileSharing) {
-		u->setFlag(Upload::FLAG_PARTIAL);
-	}
-	if (resumed) {
-		u->setFlag(Upload::FLAG_RESUMED);
-	}
-
-	u->setFileSize(fileSize);
-	u->setType(type);
-	dcdebug("Created upload for file %s (conn %s, resuming: %s)\n", u->getPath().c_str(), u->getToken().c_str(), resumed ? "true" : "false");
-	return u;
 }
 
 bool UploadManager::standardSlotsRemaining(const UserPtr& aUser) const noexcept {
@@ -360,16 +187,21 @@ bool UploadManager::standardSlotsRemaining(const UserPtr& aUser) const noexcept 
 	return true;
 }
 
-SlotType UploadManager::parseAutoGrantHookedThrow(const UserConnection& aSource, const UploadParser& aParser) const {
-	auto data = slotTypeHook.runHooksData(this, aSource.getHintedUser(), aParser);
+OptionalUploadSlot UploadManager::parseAutoGrantHookedThrow(const UserConnection& aSource, const UploadParser& aParser) const {
+	auto data = slotTypeHook.runHooksData(this, aSource, aParser);
 	if (data.empty()) {
-		return UserConnection::NOSLOT;
+		return nullopt;
 	}
 
-	auto normalizedData = ActionHook<SlotType>::normalizeData(data);
+	auto normalizedData = ActionHook<OptionalUploadSlot>::normalizeData(data);
 
-	auto max = ranges::max_element(normalizedData);
-	return static_cast<UserConnection::SlotTypes>(*max);
+	auto max = ranges::max_element(
+		normalizedData,
+		[](const auto& a, const auto& b) {
+			return compare(UploadSlot::toType(a), UploadSlot::toType(b));
+		}
+	);
+	return *max;
 }
 
 bool UploadManager::isUploadingMCN(const UserPtr& aUser) const noexcept {
@@ -377,70 +209,64 @@ bool UploadManager::isUploadingMCN(const UserPtr& aUser) const noexcept {
 	return multiUploads.find(aUser) != multiUploads.end(); 
 }
 
-bool UploadManager::UploadParser::usesSmallSlot() const noexcept {
-	return type == Transfer::TYPE_PARTIAL_LIST || type == Transfer::TYPE_TTH_LIST || (type != Transfer::TYPE_FULL_LIST && fileSize <= 65792);
-}
+#define SLOT_SOURCE_STANDARD "standard"
+#define SLOT_SOURCE_MCN "mcn_small"
+#define SLOT_SOURCE_MINISLOT "minislot"
 
-SlotType UploadManager::parseSlotTypeHookedThrow(const UserConnection& aSource, const UploadParser& aParser) const {
+OptionalUploadSlot UploadManager::parseSlotHookedThrow(const UserConnection& aSource, const UploadParser& aParser) const {
 	auto currentSlotType = aSource.getSlotType();
 
 	// Existing permanent slot?
-	auto hasPermanentSlot = currentSlotType == UserConnection::STDSLOT || currentSlotType == UserConnection::MCNSLOT;
+	auto hasPermanentSlot = currentSlotType == UploadSlot::USERSLOT;
 	if (hasPermanentSlot) {
-		return currentSlotType;
+		return aSource.getSlot();
 	}
 
 	// Existing uploader and no new connections allowed?
 	if (isUploadingMCN(aSource.getUser()) && !allowNewMultiConn(aSource)) {
 		dcdebug("UploadManager::parseSlotType: new MCN connections not allowed for %s\n", aSource.getToken().c_str());
-		return UserConnection::NOSLOT;
+		return nullopt;
 	}
 
 	// Hooks
-	auto newSlotType = parseAutoGrantHookedThrow(aSource, aParser);
+	auto newSlot = parseAutoGrantHookedThrow(aSource, aParser);
 
 	// Small file slots? Don't let the hooks override this
 	if (aSource.isMCN() && aParser.usesSmallSlot()) {
 		// All small files will get this slot type regardless of the connection count
 		// as the actual small file connection isn't known but it's not really causing problems
 		// Could be solved with https://forum.dcbase.org/viewtopic.php?f=55&t=856 (or adding a type flag for all MCN connections)
-		auto smallFree = currentSlotType == UserConnection::SMALLSLOT || smallFileConnections <= 8;
+		auto smallFree = aSource.hasSlot(UploadSlot::FILESLOT, SLOT_SOURCE_MCN) || smallFileConnections <= 8;
 		if (smallFree) {
 			dcdebug("UploadManager::parseSlotType: assign small slot for %s\n", aSource.getToken().c_str());
-			return UserConnection::SMALLSLOT;
+			return UploadSlot(UploadSlot::FILESLOT, SLOT_SOURCE_MCN);
 		}
 	}
 
 	// Permanent slot?
-	if (newSlotType == UserConnection::STDSLOT || standardSlotsRemaining(aSource.getUser())) {
-		dcdebug("UploadManager::parseSlotType: assign permanent slot for %s\n", aSource.getToken().c_str());
-		return aSource.isMCN() ? UserConnection::MCNSLOT : UserConnection::STDSLOT;
+	if (UploadSlot::toType(newSlot) == UploadSlot::USERSLOT) {
+		dcdebug("UploadManager::parseSlotType: assign permanent slot for %s (%s)\n", aSource.getToken().c_str(), newSlot->source.c_str());
+		return newSlot;
+	} else if (standardSlotsRemaining(aSource.getUser())) {
+		dcdebug("UploadManager::parseSlotType: assign permanent slot for %s (standard)\n", aSource.getToken().c_str());
+		return UploadSlot(UploadSlot::USERSLOT, SLOT_SOURCE_STANDARD);
 	}
 
 	// Per-file slots
-	if (newSlotType == UserConnection::NOSLOT) {
-		// Extra slots?
+	if (!newSlot) {
+		// Mini slots?
 		if (aParser.miniSlot) {
 			auto supportsFree = aSource.isSet(UserConnection::FLAG_SUPPORTS_MINISLOTS);
-			auto allowedFree = currentSlotType == UserConnection::EXTRASLOT || aSource.isSet(UserConnection::FLAG_OP) || getFreeExtraSlots() > 0;
+			auto allowedFree = aSource.hasSlot(UploadSlot::FILESLOT, SLOT_SOURCE_MINISLOT) || aSource.isSet(UserConnection::FLAG_OP) || getFreeExtraSlots() > 0;
 			if (supportsFree && allowedFree) {
 				dcdebug("UploadManager::parseSlotType: assign minislot for %s\n", aSource.getToken().c_str());
-				return UserConnection::EXTRASLOT;
-			}
-		}
-
-		// Partial slots?
-		if (aParser.partialFileSharing) {
-			auto partialFree = currentSlotType == UserConnection::PARTIALSLOT || (extraPartial < SETTING(EXTRA_PARTIAL_SLOTS));
-			if (partialFree) {
-				dcdebug("UploadManager::parseSlotType: assign partial slot for %s\n", aSource.getToken().c_str());
-				return UserConnection::PARTIALSLOT;
+				return UploadSlot(UploadSlot::FILESLOT, SLOT_SOURCE_MINISLOT);
 			}
 		}
 	}
 
-	dcdebug("UploadManager::parseSlotType: assign slot type %d for %s\n", newSlotType, aSource.getToken().c_str());
-	return newSlotType;
+	dcdebug("UploadManager::parseSlotType: assign slot type %d for %s\n", UploadSlot::toType(newSlot), aSource.getToken().c_str());
+	return newSlot;
 }
 
 unique_ptr<InputStream> UploadManager::resumeStream(const UserConnection& aSource, const UploadParser& aParser) {
@@ -467,6 +293,8 @@ unique_ptr<InputStream> UploadManager::resumeStream(const UserConnection& aSourc
 
 	if (delayUploadToDelete) {
 		deleteDelayUpload(delayUploadToDelete, !!stream.get());
+	} else {
+		dcassert(!aSource.getUpload());
 	}
 
 	return std::move(stream);
@@ -474,26 +302,26 @@ unique_ptr<InputStream> UploadManager::resumeStream(const UserConnection& aSourc
 
 void UploadManager::removeSlot(UserConnection& aSource) noexcept {
 	switch (aSource.getSlotType()) {
-	case UserConnection::STDSLOT:
-		runningUsers--;
+	case UploadSlot::USERSLOT:
+		if (aSource.isMCN()) {
+			changeMultiConnSlot(aSource.getUser(), true);
+		} else {
+			runningUsers--;
+		}
 		break;
-	case UserConnection::EXTRASLOT:
-		extra--;
-		break;
-	case UserConnection::PARTIALSLOT:
-		extraPartial--;
-		break;
-	case UserConnection::MCNSLOT:
-		changeMultiConnSlot(aSource.getUser(), true);
-		break;
-	case UserConnection::SMALLSLOT:
-		smallFileConnections--;
+	case UploadSlot::FILESLOT:
+		if (aSource.hasSlotSource(SLOT_SOURCE_MINISLOT)) {
+			extra--;
+		} else if (aSource.hasSlotSource(SLOT_SOURCE_MCN)) {
+			smallFileConnections--;
+		}
 		break;
 	}
 }
 
-void UploadManager::updateSlotCounts(UserConnection& aSource, SlotType aNewSlotType) noexcept {
-	if (aSource.getSlotType() == aNewSlotType) {
+void UploadManager::updateSlotCounts(UserConnection& aSource, const UploadSlot& aNewSlot) noexcept {
+	auto newSlotType = aNewSlot.type;
+	if (aSource.getSlotType() == newSlotType) {
 		return;
 	}
 
@@ -501,26 +329,25 @@ void UploadManager::updateSlotCounts(UserConnection& aSource, SlotType aNewSlotT
 	removeSlot(aSource);
 		
 	// user got a slot
-	aSource.setSlotType(aNewSlotType);
+	aSource.setSlot(aNewSlot);
 
 	// set new slot count
-	switch(aNewSlotType) {
-		case UserConnection::STDSLOT:
-			runningUsers++;
+	switch (newSlotType) {
+		case UploadSlot::USERSLOT:
+			if (aSource.isMCN()) {
+				changeMultiConnSlot(aSource.getUser(), false);
+			} else {
+				runningUsers++;
+			}
 			disconnectExtraMultiConn();
 			break;
-		case UserConnection::EXTRASLOT:
-			extra++;
-			break;
-		case UserConnection::PARTIALSLOT:
-			extraPartial++;
-			break;
-		case UserConnection::MCNSLOT:
-			changeMultiConnSlot(aSource.getUser(), false);
-			disconnectExtraMultiConn();
-			break;
-		case UserConnection::SMALLSLOT:
-			smallFileConnections++;
+		case UploadSlot::FILESLOT:
+			if (aSource.hasSlotSource(SLOT_SOURCE_MINISLOT)) {
+				extra++;
+			} else if (aSource.hasSlotSource(SLOT_SOURCE_MCN)) {
+				smallFileConnections++;
+			}
+
 			break;
 	}
 
@@ -619,7 +446,7 @@ void UploadManager::disconnectExtraMultiConn() noexcept {
 
 	// Find the correct upload to kill
 	auto toDisconnect = ranges::find_if(uploads, [&](Upload* up) { 
-		return up->getUser() == highestConnCount.base()->first && up->getUserConnection().getSlotType() == UserConnection::MCNSLOT;
+		return up->getUser() == highestConnCount.base()->first && up->getUserConnection().getSlotType() == UploadSlot::USERSLOT;
 	});
 
 	if (toDisconnect != uploads.end()) {
@@ -867,7 +694,7 @@ void UploadManager::removeConnection(UserConnection* aSource) noexcept {
 	// slot lost
 	removeSlot(*aSource);
 
-	aSource->setSlotType(UserConnection::NOSLOT);
+	aSource->setSlot(nullopt);
 }
 
 void UploadManager::disconnectOfflineUsers() noexcept {

@@ -23,6 +23,7 @@
 #include "ResourceManager.h"
 #include "SettingsManager.h"
 #include "ThrottleManager.h"
+#include "Util.h"
 
 
 #ifdef _DEBUG

@@ -21,6 +21,8 @@
 #include <airdcpp/Util.h>
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/FavoriteManager.h>
+#include <airdcpp/ShareProfileManager.h>
+#include <airdcpp/TempShareManager.h>
 
 #include "Resource.h"
 #include "SharePage.h"
@@ -248,7 +250,7 @@ Dispatcher::F SharePage::getThreadedTask() {
 }
 
 void SharePage::fixControls() {
-	auto hasTempShares = !ShareManager::getInstance()->getTempShares().empty();
+	auto hasTempShares = !TempShareManager::getInstance()->getTempShares().empty();
 
 	::EnableWindow(GetDlgItem(IDC_REMOVE_PROFILE), curProfile != defaultProfile);
 	::EnableWindow(GetDlgItem(IDC_SET_DEFAULT), curProfile != defaultProfile);
@@ -262,23 +264,25 @@ void SharePage::applyChanges(bool isQuit) {
 		copy_if(profiles.begin(), profiles.end(), back_inserter(handledProfiles), [aState](const ShareProfileInfoPtr& sp) { return sp->state == aState; });
 	};
 
+	auto& profileMgr = ShareManager::getInstance()->getProfileMgr();
+
 	getHandled(ShareProfileInfo::STATE_ADDED);
 	if (!handledProfiles.empty()) {
-		ShareManager::getInstance()->addProfiles(handledProfiles);
+		profileMgr.addProfiles(handledProfiles);
 	}
 
 	if (defaultProfile != SETTING(DEFAULT_SP)) {
-		ShareManager::getInstance()->setDefaultProfile(defaultProfile);
+		profileMgr.setDefaultProfile(defaultProfile);
 	}
 
 	getHandled(ShareProfileInfo::STATE_REMOVED);
 	if (!handledProfiles.empty()) {
-		ShareManager::getInstance()->removeProfiles(handledProfiles); //remove from profiles
+		profileMgr.removeProfiles(handledProfiles); //remove from profiles
 	}
 
 	getHandled(ShareProfileInfo::STATE_RENAMED);
 	if (!handledProfiles.empty()) {
-		ShareManager::getInstance()->renameProfiles(handledProfiles);
+		profileMgr.renameProfiles(handledProfiles);
 	}
 
 	dirPage->applyChanges(isQuit);

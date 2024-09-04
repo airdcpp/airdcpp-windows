@@ -25,62 +25,25 @@
 #include "CriticalSection.h"
 #include "MerkleTree.h"
 #include "Message.h"
-#include "Segment.h"
 #include "Singleton.h"
 #include "Speaker.h"
 #include "StringMatch.h"
 #include "TimerManagerListener.h"
-#include "Transfer.h"
 #include "UploadManagerListener.h"
+#include "UploadSlot.h"
 #include "UserConnectionListener.h"
-#include "UserInfoBase.h"
 
 namespace dcpp {
 
 class UploadQueueManager;
-
-// typedef UserConnection::SlotTypes SlotType;
-typedef uint8_t SlotType;
-
-struct UploadRequest {
-	UploadRequest(const string& aType, const string& aFile, const Segment& aSegment) : type(aType), file(aFile), segment(aSegment) {}
-	UploadRequest(const string& aType, const string& aFile, const Segment& aSegment, const string& aUserSID, bool aListRecursive) : UploadRequest(aType, aFile, aSegment) {
-		userSID = aUserSID;
-		// isTTHList = aIsTTHList;
-		listRecursive = aListRecursive;
-	}
-
-	bool validate() const noexcept {
-		auto failed = file.empty() || segment.getStart() < 0 || segment.getSize() < -1 || segment.getSize() == 0;
-		return !failed;
-	}
-
-	bool isUserlist() const noexcept {
-		return file == Transfer::USER_LIST_NAME_BZ || file == Transfer::USER_LIST_NAME_EXTRACTED;
-	}
-
-	const string& type;
-	const string& file;
-	Segment segment;
-	string userSID;
-	bool listRecursive = false;
-	// bool isTTHList = false;
-};
-
-struct ParsedUpload {
-	string sourceFile;
-	Transfer::Type type = Transfer::TYPE_LAST;
-	int64_t fileSize = 0;
-
-	bool partialFileSharing = false;
-	bool miniSlot = false;
-};
-
+class UploadParser;
+struct UploadRequest;
+struct ParsedUpload;
 
 class UploadManager : private UserConnectionListener, public Speaker<UploadManagerListener>, private TimerManagerListener, public Singleton<UploadManager>
 {
 public:
-	ActionHook<SlotType, const HintedUser&, const ParsedUpload&> slotTypeHook;
+	ActionHook<OptionalUploadSlot, const UserConnection&, const ParsedUpload&> slotTypeHook;
 
 	void setFreeSlotMatcher();
 
@@ -111,7 +74,7 @@ public:
 	void addConnection(UserConnectionPtr conn) noexcept;
 	void abortUpload(const string& aFile, bool aWaitDisconnected = true) noexcept;
 		
-	IGETSET(uint8_t, extraPartial, ExtraPartial, 0);
+	// IGETSET(uint8_t, extraPartial, ExtraPartial, 0);
 	IGETSET(uint8_t, extra, Extra, 0);
 	IGETSET(uint64_t, lastGrant, LastGrant, 0);
 
@@ -153,7 +116,7 @@ private:
 	void disconnectExtraMultiConn() noexcept;
 
 	void removeSlot(UserConnection& aSource) noexcept;
-	void updateSlotCounts(UserConnection& aSource, SlotType aNewSlotType) noexcept;
+	void updateSlotCounts(UserConnection& aSource, const UploadSlot& aNewSlot) noexcept;
 
 	friend class Singleton<UploadManager>;
 	UploadManager() noexcept;
@@ -183,38 +146,15 @@ private:
 	void on(AdcCommand::GET, UserConnection*, const AdcCommand&) noexcept override;
 	void on(AdcCommand::GFI, UserConnection*, const AdcCommand&) noexcept override;
 
-	class UploadParser : public ParsedUpload {
-	public:
-		class UploadParserException : public Exception {
-		public:
-			UploadParserException(const string& aError, bool aNoAccess) : Exception(aError), noAccess(aNoAccess) {
-
-			}
-
-			const bool noAccess;
-		};
-
-		UploadParser(const StringMatch& aFreeSlotMatcher) : freeSlotMatcher(aFreeSlotMatcher) {}
-
-		void parseFileInfo(const UploadRequest& aRequest, ProfileToken aProfile, const HintedUser& aUser);
-		Upload* toUpload(UserConnection& aSource, const UploadRequest& aRequest, unique_ptr<InputStream>& is, ProfileToken aProfile);
-
-		bool usesSmallSlot() const noexcept;
-	private:
-
-		void toRealWithSize(const UploadRequest& aRequest, ProfileToken aProfile, const HintedUser& aUser);
-		const StringMatch& freeSlotMatcher;
-	};
-
 	bool prepareFile(UserConnection& aSource, const UploadRequest& aRequest);
 
 	unique_ptr<InputStream> resumeStream(const UserConnection& aSource, const UploadParser& aParser);
 
 	// Parse slot type for the connection
 	// Throws in case of hook errors
-	SlotType parseSlotTypeHookedThrow(const UserConnection& aSource, const UploadParser& aParser) const;
+	OptionalUploadSlot parseSlotHookedThrow(const UserConnection& aSource, const UploadParser& aParser) const;
 
-	SlotType parseAutoGrantHookedThrow(const UserConnection& aSource, const UploadParser& aParser) const;
+	OptionalUploadSlot parseAutoGrantHookedThrow(const UserConnection& aSource, const UploadParser& aParser) const;
 
 	void deleteDelayUpload(Upload* aUpload, bool aResuming) noexcept;
 	void disconnectOfflineUsers() noexcept;

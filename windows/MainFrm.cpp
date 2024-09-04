@@ -73,6 +73,7 @@
 #include <airdcpp/PrivateChatManager.h>
 #include <airdcpp/SettingHolder.h>
 #include <airdcpp/ShareManager.h>
+#include <airdcpp/ShareProfile.h>
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/SystemUtil.h>
 #include <airdcpp/ThrottleManager.h>

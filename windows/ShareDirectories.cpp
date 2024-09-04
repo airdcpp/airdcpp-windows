@@ -22,6 +22,7 @@
 #include <airdcpp/ClientManager.h>
 #include <airdcpp/FavoriteManager.h>
 #include <airdcpp/PathUtil.h>
+#include <airdcpp/ShareProfileManager.h>
 #include <airdcpp/ValueGenerator.h>
 
 #include <web-server/ContextMenuManager.h>
@@ -60,7 +61,7 @@ ProfileDirectoryInfo::ProfileDirectoryInfo(ShareDirectoryInfoPtr& aInfo, State a
 }
 
 SharePageBase::SharePageBase() {
-	profiles = ShareManager::getInstance()->getProfileInfos();
+	profiles = ShareManager::getInstance()->getProfileMgr().getProfileInfos();
 	dcassert(!profiles.empty());
 }
 
@@ -675,22 +676,18 @@ void ShareDirectories::applyChanges(bool /*isQuit*/) {
 	};
 
 	getDirs(ProfileDirectoryInfo::STATE_ADDED);
-	if (!dirs.empty()) {
-		ShareManager::getInstance()->addRootDirectories(dirs);
-		//will be cleared later...
+	for (const auto& sdi: dirs) {
+		ShareManager::getInstance()->addRootDirectory(sdi);
 	}
 
 	getDirs(ProfileDirectoryInfo::STATE_REMOVED);
-	if (!dirs.empty()) {
-		for (const auto& sdi : dirs) {
-			ShareManager::getInstance()->removeRootDirectory(sdi->path);
-		}
-		//ShareManager::getInstance()->removeDirectories(dirs);
+	for (const auto& sdi: dirs) {
+		ShareManager::getInstance()->removeRootDirectory(sdi->path);
 	}
 
 	getDirs(ProfileDirectoryInfo::STATE_NORMAL);
-	if (!dirs.empty()) {
-		ShareManager::getInstance()->updateRootDirectories(dirs);
+	for (const auto& sdi: dirs) {
+		ShareManager::getInstance()->updateRootDirectory(sdi);
 	}
 
 	ShareManager::getInstance()->setExcludedPaths(excludedPaths);

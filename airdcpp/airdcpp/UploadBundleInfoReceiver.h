@@ -70,7 +70,7 @@ private:
 	// Listeners
 	void on(TimerManagerListener::Second, uint64_t aTick) noexcept override;
 
-	void on(UploadManagerListener::Created, Upload*) noexcept override;
+	void on(UploadManagerListener::Created, Upload*, const UploadSlot&) noexcept override;
 	void on(UploadManagerListener::Removed, const Upload*) noexcept override;
 
 	void on(ProtocolCommandManagerListener::IncomingUDPCommand, const AdcCommand&, const string&) noexcept override;

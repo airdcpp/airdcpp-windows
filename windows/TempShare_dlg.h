@@ -22,6 +22,8 @@
 
 #include <atlcrack.h>
 
+#include <airdcpp/TempShareItem.h>
+
 class TempShareDlg : public CDialogImpl<TempShareDlg>
 {
 public:

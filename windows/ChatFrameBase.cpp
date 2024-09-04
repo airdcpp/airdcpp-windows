@@ -41,6 +41,8 @@
 #include <airdcpp/PathUtil.h>
 #include <airdcpp/QueueManager.h>
 #include <airdcpp/SettingsManager.h>
+#include <airdcpp/ShareProfileManager.h>
+#include <airdcpp/TempShareManager.h>
 #include <airdcpp/ThrottleManager.h>
 #include <airdcpp/UpdateManager.h>
 #include <airdcpp/Util.h>
@@ -494,7 +496,7 @@ void ChatFrameBase::addMagnet(const StringList& aPaths) {
 
 			callAsync([=] {
 				if (getClient()) {
-					ShareManager::getInstance()->addTempShare(tth, PathUtil::getFileName(path), path, size, getClient()->get(HubSettings::ShareProfile), ctrlClient.getTempShareUser());
+					TempShareManager::getInstance()->addTempShare(tth, PathUtil::getFileName(path), path, size, getClient()->get(HubSettings::ShareProfile), ctrlClient.getTempShareUser());
 				}
 			});
 
@@ -899,7 +901,7 @@ bool ChatFrameBase::checkCommand(const tstring& aCmd, tstring& message_, tstring
 		for (auto& sp : profiles)
 			pts.insert(sp->getToken());
 
-		ShareManager::getInstance()->setProfilesDirty(pts, true);
+		ShareManager::getInstance()->getProfileMgr().setProfilesDirty(pts, true);
 	} else if (stricmp(cmd.c_str(), _T("away")) == 0) {
 		auto am = ActivityManager::getInstance();
 

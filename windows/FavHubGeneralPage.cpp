@@ -29,6 +29,7 @@
 #include <airdcpp/ResourceManager.h>
 #include <airdcpp/tribool.h>
 #include <airdcpp/ShareManager.h>
+#include <airdcpp/ShareProfileManager.h>
 
 
 FavHubGeneralPage::FavHubGeneralPage(FavoriteHubEntry *_entry, const string& aName) : entry(_entry), name(aName), loading(true) { }

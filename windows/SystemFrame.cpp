@@ -175,9 +175,9 @@ void SystemFrame::addLine(const LogMessagePtr& aMessageData) {
 	End = Begin = ctrlPad.GetTextLengthEx(GTL_NUMCHARS);
 
 
-	tstring Text = Text::toT(aMessageData->getText()) + _T(" \r\n");
+	tstring time = _T(" ") + WinUtil::formatTimestamp(aMessageData->getTime()) + _T(" ");
 	tstring label = Text::toT(aMessageData->getLabel()) + _T(": ");
-	tstring time = WinUtil::formatTimestamp(aMessageData->getTime());
+	tstring Text = Text::toT(aMessageData->getText()) + _T(" \r\n");
 	tstring line = time + label +  Text;
 
 	LONG limitText = ctrlPad.GetLimitText();

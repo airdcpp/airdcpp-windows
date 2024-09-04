@@ -22,6 +22,7 @@
 #include "OMenu.h"
 
 #include <airdcpp/FavoriteManager.h>
+#include <airdcpp/File.h>
 #include <airdcpp/PathUtil.h>
 #include <airdcpp/ShareManager.h>
 #include <airdcpp/QueueManager.h>

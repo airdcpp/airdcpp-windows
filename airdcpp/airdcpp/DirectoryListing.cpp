@@ -1123,8 +1123,10 @@ void DirectoryListing::searchImpl(const SearchPtr& aSearch) noexcept {
 	curSearch.reset(SearchQuery::getSearch(aSearch));
 	if (isOwnList && partialList) {
 		SearchResultList results;
+
+		ShareSearch shareSearch(*curSearch, getShareProfile(), nullptr, aSearch->path);
 		try {
-			ShareManager::getInstance()->search(results, *curSearch, getShareProfile(), nullptr, aSearch->path);
+			ShareManager::getInstance()->search(results, shareSearch);
 		} catch (...) {}
 
 		for (const auto& sr : results)

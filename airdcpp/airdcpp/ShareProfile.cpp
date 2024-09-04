@@ -122,4 +122,11 @@ bool ShareProfile::isHidden() const noexcept {
 	return token == SP_HIDDEN;
 }
 
+void ShareProfile::setDirty(bool aForceRefresh) noexcept {
+	setProfileContentInfoDirty(true);
+	if (aForceRefresh)
+		getProfileList()->setForceXmlRefresh(true);
+	getProfileList()->setXmlDirty(true);
+}
+
 } //dcpp

@@ -258,15 +258,54 @@
     <Filter Include="Source Files\hub\activity">
       <UniqueIdentifier>{801bbe2d-f796-4fd2-8750-3352e2cb8f46}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\transfer\upload">
+      <UniqueIdentifier>{49bfe988-b09b-4c52-93e5-f26909f3d2f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\transfer\download">
+      <UniqueIdentifier>{934469d6-d201-4e0c-8ad3-2fa5db525b05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\transfer\upload\upload_bundles">
+      <UniqueIdentifier>{3f6f1ab4-d3c0-4b39-bd99-d69308bf7f1d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\transfer\upload">
+      <UniqueIdentifier>{d564716a-ca06-4cb9-9458-ad09fb7eb421}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\transfer\download">
+      <UniqueIdentifier>{ad177e81-736f-46c0-9622-847f800aa3b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\transfer\upload\upload_bundles">
+      <UniqueIdentifier>{f935d56f-b4a4-48c2-812e-945684bd1e16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\share\temp_share">
+      <UniqueIdentifier>{56d6a4c7-b8bc-45de-bb40-adccb024a164}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\share\profiles">
+      <UniqueIdentifier>{ad6d8473-4170-46ae-8525-6e759b459158}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\share\profiles">
+      <UniqueIdentifier>{98c23526-b509-4418-8a59-c44c235ff883}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\share\temp_share">
+      <UniqueIdentifier>{977f9096-8989-4d93-bb65-f9be3eb54256}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\queue\partial_sharing">
+      <UniqueIdentifier>{0f3c913e-7b84-4441-8db9-c1d7d524a774}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\queue\partial_sharing">
+      <UniqueIdentifier>{4317a545-da88-4fe6-9229-01aa9828166c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\connectivity\mappers">
+      <UniqueIdentifier>{2ce9c6dd-2e98-4726-9d87-fff934c035e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\connectivity\mappers">
+      <UniqueIdentifier>{036fb50e-bfee-49e9-b349-20096db7d62c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\core\header">
+      <UniqueIdentifier>{a8cec994-514e-45f4-a45d-7bc5054d234f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="airdcpp\DCPlusPlus.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="airdcpp\stdinc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="airdcpp\version.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="airdcpp\modules\AutoSearch.cpp">
@@ -305,16 +344,10 @@
     <ClCompile Include="airdcpp\SharePathValidator.cpp">
       <Filter>Source Files\share</Filter>
     </ClCompile>
-    <ClCompile Include="airdcpp\ShareProfile.cpp">
-      <Filter>Source Files\share</Filter>
-    </ClCompile>
     <ClCompile Include="airdcpp\ShareTasks.cpp">
       <Filter>Source Files\share</Filter>
     </ClCompile>
     <ClCompile Include="airdcpp\ShareTree.cpp">
-      <Filter>Source Files\share</Filter>
-    </ClCompile>
-    <ClCompile Include="airdcpp\TempShareManager.cpp">
       <Filter>Source Files\share</Filter>
     </ClCompile>
     <ClCompile Include="airdcpp\BundleQueue.cpp">
@@ -386,41 +419,14 @@
     <ClCompile Include="airdcpp\UserQueue.cpp">
       <Filter>Source Files\queue</Filter>
     </ClCompile>
-    <ClCompile Include="airdcpp\Download.cpp">
-      <Filter>Source Files\transfer</Filter>
-    </ClCompile>
-    <ClCompile Include="airdcpp\DownloadManager.cpp">
-      <Filter>Source Files\transfer</Filter>
-    </ClCompile>
-    <ClCompile Include="airdcpp\UploadManager.cpp">
-      <Filter>Source Files\transfer</Filter>
-    </ClCompile>
-    <ClCompile Include="airdcpp\UploadBundle.cpp">
-      <Filter>Source Files\transfer</Filter>
-    </ClCompile>
-    <ClCompile Include="airdcpp\Upload.cpp">
-      <Filter>Source Files\transfer</Filter>
-    </ClCompile>
     <ClCompile Include="airdcpp\Transfer.cpp">
       <Filter>Source Files\transfer</Filter>
     </ClCompile>
     <ClCompile Include="airdcpp\TransferInfoManager.cpp">
       <Filter>Source Files\transfer</Filter>
     </ClCompile>
-    <ClCompile Include="airdcpp\TrackableDownloadItem.cpp">
-      <Filter>Source Files\transfer</Filter>
-    </ClCompile>
-    <ClCompile Include="airdcpp\PartialBundleSharingManager.cpp">
-      <Filter>Source Files\queue</Filter>
-    </ClCompile>
-    <ClCompile Include="airdcpp\PartialFileSharingManager.cpp">
-      <Filter>Source Files\queue</Filter>
-    </ClCompile>
     <ClCompile Include="airdcpp\SearchTypes.cpp">
       <Filter>Source Files\search</Filter>
-    </ClCompile>
-    <ClCompile Include="airdcpp\UploadBundleInfoSender.cpp">
-      <Filter>Source Files\transfer</Filter>
     </ClCompile>
     <ClCompile Include="airdcpp\AppUtil.cpp">
       <Filter>Source Files\util</Filter>
@@ -452,12 +458,6 @@
     <ClCompile Include="airdcpp\RegexUtil.cpp">
       <Filter>Source Files\util</Filter>
     </ClCompile>
-    <ClCompile Include="airdcpp\UploadBundleInfoReceiver.cpp">
-      <Filter>Source Files\transfer</Filter>
-    </ClCompile>
-    <ClCompile Include="airdcpp\UploadQueueManager.cpp">
-      <Filter>Source Files\transfer</Filter>
-    </ClCompile>
     <ClCompile Include="airdcpp\ReservedSlotManager.cpp">
       <Filter>Source Files\favorites</Filter>
     </ClCompile>
@@ -474,15 +474,6 @@
       <Filter>Source Files\connectivity</Filter>
     </ClCompile>
     <ClCompile Include="airdcpp\MappingManager.cpp">
-      <Filter>Source Files\connectivity</Filter>
-    </ClCompile>
-    <ClCompile Include="airdcpp\Mapper_MiniUPnPc.cpp">
-      <Filter>Source Files\connectivity</Filter>
-    </ClCompile>
-    <ClCompile Include="airdcpp\Mapper_NATPMP.cpp">
-      <Filter>Source Files\connectivity</Filter>
-    </ClCompile>
-    <ClCompile Include="airdcpp\Mapper_WinUPnP.cpp">
       <Filter>Source Files\connectivity</Filter>
     </ClCompile>
     <ClCompile Include="airdcpp\Mapper.cpp">
@@ -671,33 +662,75 @@
     <ClCompile Include="airdcpp\ZUtils.cpp">
       <Filter>Source Files\core\io\compress</Filter>
     </ClCompile>
+    <ClCompile Include="airdcpp\UploadBundleInfoSender.cpp">
+      <Filter>Source Files\transfer\upload\upload_bundles</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\UploadBundle.cpp">
+      <Filter>Source Files\transfer\upload\upload_bundles</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\UploadBundleInfoReceiver.cpp">
+      <Filter>Source Files\transfer\upload\upload_bundles</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\TrackableDownloadItem.cpp">
+      <Filter>Source Files\transfer\download</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\Download.cpp">
+      <Filter>Source Files\transfer\download</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\DownloadManager.cpp">
+      <Filter>Source Files\transfer\download</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\UploadQueueManager.cpp">
+      <Filter>Source Files\transfer\upload</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\Upload.cpp">
+      <Filter>Source Files\transfer\upload</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\UploadFileParser.cpp">
+      <Filter>Source Files\transfer\upload</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\UploadManager.cpp">
+      <Filter>Source Files\transfer\upload</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\ShareProfileManager.cpp">
+      <Filter>Source Files\share\profiles</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\ShareProfile.cpp">
+      <Filter>Source Files\share\profiles</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\TempShareManager.cpp">
+      <Filter>Source Files\share\temp_share</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\PartialSharingManager.cpp">
+      <Filter>Source Files\queue\partial_sharing</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\PartialBundleSharingManager.cpp">
+      <Filter>Source Files\queue\partial_sharing</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\PartialFileSharingManager.cpp">
+      <Filter>Source Files\queue\partial_sharing</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\Mapper_WinUPnP.cpp">
+      <Filter>Source Files\connectivity\mappers</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\Mapper_MiniUPnPc.cpp">
+      <Filter>Source Files\connectivity\mappers</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\Mapper_NATPMP.cpp">
+      <Filter>Source Files\connectivity\mappers</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\stdinc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="airdcpp\version.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="airdcpp\DCPlusPlus.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="airdcpp\forward.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\stdinc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\version.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\typedefs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\compiler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\debug.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\w.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\format.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="airdcpp\modules\AutoSearch.h">
@@ -739,9 +772,6 @@
     <ClInclude Include="airdcpp\modules\HublistEntry.h">
       <Filter>Header Files\modules</Filter>
     </ClInclude>
-    <ClInclude Include="airdcpp\constants.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="airdcpp\modules\ADLSearch.h">
       <Filter>Header Files\modules</Filter>
     </ClInclude>
@@ -760,9 +790,6 @@
     <ClInclude Include="airdcpp\SharePathValidator.h">
       <Filter>Header Files\share</Filter>
     </ClInclude>
-    <ClInclude Include="airdcpp\ShareProfile.h">
-      <Filter>Header Files\share</Filter>
-    </ClInclude>
     <ClInclude Include="airdcpp\ShareRefreshInfo.h">
       <Filter>Header Files\share</Filter>
     </ClInclude>
@@ -776,12 +803,6 @@
       <Filter>Header Files\share</Filter>
     </ClInclude>
     <ClInclude Include="airdcpp\ShareTree.h">
-      <Filter>Header Files\share</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\TempShareItem.h">
-      <Filter>Header Files\share</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\TempShareManager.h">
       <Filter>Header Files\share</Filter>
     </ClInclude>
     <ClInclude Include="airdcpp\Bundle.h">
@@ -886,18 +907,6 @@
     <ClInclude Include="airdcpp\DirectSearch.h">
       <Filter>Header Files\search</Filter>
     </ClInclude>
-    <ClInclude Include="airdcpp\UploadManagerListener.h">
-      <Filter>Header Files\transfer</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\Upload.h">
-      <Filter>Header Files\transfer</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\UploadBundle.h">
-      <Filter>Header Files\transfer</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\UploadManager.h">
-      <Filter>Header Files\transfer</Filter>
-    </ClInclude>
     <ClInclude Include="airdcpp\TransferInfoManager.h">
       <Filter>Header Files\transfer</Filter>
     </ClInclude>
@@ -905,18 +914,6 @@
       <Filter>Header Files\transfer</Filter>
     </ClInclude>
     <ClInclude Include="airdcpp\Transfer.h">
-      <Filter>Header Files\transfer</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\TrackableDownloadItem.h">
-      <Filter>Header Files\transfer</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\DownloadManagerListener.h">
-      <Filter>Header Files\transfer</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\DownloadManager.h">
-      <Filter>Header Files\transfer</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\Download.h">
       <Filter>Header Files\transfer</Filter>
     </ClInclude>
     <ClInclude Include="airdcpp\RelevanceSearch.h">
@@ -928,23 +925,8 @@
     <ClInclude Include="airdcpp\HasherStats.h">
       <Filter>Header Files\hash</Filter>
     </ClInclude>
-    <ClInclude Include="airdcpp\PartialBundleSharingManager.h">
-      <Filter>Header Files\queue</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\PartialFileSharingManager.h">
-      <Filter>Header Files\queue</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\PartialSharingManager.h">
-      <Filter>Header Files\queue</Filter>
-    </ClInclude>
     <ClInclude Include="airdcpp\SearchTypes.h">
       <Filter>Header Files\search</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\UploadBundleInfoSender.h">
-      <Filter>Header Files\transfer</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\UploadBundleManager.h">
-      <Filter>Header Files\transfer</Filter>
     </ClInclude>
     <ClInclude Include="airdcpp\AutoLimitUtil.h">
       <Filter>Header Files\util</Filter>
@@ -975,21 +957,6 @@
     </ClInclude>
     <ClInclude Include="airdcpp\RegexUtil.h">
       <Filter>Header Files\util</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\UploadBundleInfoReceiverListener.h">
-      <Filter>Header Files\transfer</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\UploadBundleInfoReceiver.h">
-      <Filter>Header Files\transfer</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\UploadBundleInfo.h">
-      <Filter>Header Files\transfer</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\UploadQueueManager.h">
-      <Filter>Header Files\transfer</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\UploadQueueManagerListener.h">
-      <Filter>Header Files\transfer</Filter>
     </ClInclude>
     <ClInclude Include="airdcpp\ReservedSlotManager.h">
       <Filter>Header Files\favorites</Filter>
@@ -1022,15 +989,6 @@
       <Filter>Header Files\connectivity</Filter>
     </ClInclude>
     <ClInclude Include="airdcpp\Mapper.h">
-      <Filter>Header Files\connectivity</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\Mapper_MiniUPnPc.h">
-      <Filter>Header Files\connectivity</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\Mapper_NATPMP.h">
-      <Filter>Header Files\connectivity</Filter>
-    </ClInclude>
-    <ClInclude Include="airdcpp\Mapper_WinUPnP.h">
       <Filter>Header Files\connectivity</Filter>
     </ClInclude>
     <ClInclude Include="airdcpp\MappingManager.h">
@@ -1386,6 +1344,126 @@
     </ClInclude>
     <ClInclude Include="airdcpp\ZUtils.h">
       <Filter>Header Files\core\io\compress</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\UploadFileProvider.h">
+      <Filter>Header Files\share</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\ShareSearchInfo.h">
+      <Filter>Header Files\share</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\UploadBundleManager.h">
+      <Filter>Header Files\transfer\upload\upload_bundles</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\UploadBundle.h">
+      <Filter>Header Files\transfer\upload\upload_bundles</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\UploadBundleInfo.h">
+      <Filter>Header Files\transfer\upload\upload_bundles</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\UploadBundleInfoReceiver.h">
+      <Filter>Header Files\transfer\upload\upload_bundles</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\UploadBundleInfoReceiverListener.h">
+      <Filter>Header Files\transfer\upload\upload_bundles</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\UploadBundleInfoSender.h">
+      <Filter>Header Files\transfer\upload\upload_bundles</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\TrackableDownloadItem.h">
+      <Filter>Header Files\transfer\download</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\Download.h">
+      <Filter>Header Files\transfer\download</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\DownloadManager.h">
+      <Filter>Header Files\transfer\download</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\DownloadManagerListener.h">
+      <Filter>Header Files\transfer\download</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\UploadSlot.h">
+      <Filter>Header Files\transfer\upload</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\Upload.h">
+      <Filter>Header Files\transfer\upload</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\UploadFileParser.h">
+      <Filter>Header Files\transfer\upload</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\UploadManager.h">
+      <Filter>Header Files\transfer\upload</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\UploadManagerListener.h">
+      <Filter>Header Files\transfer\upload</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\UploadQueueManager.h">
+      <Filter>Header Files\transfer\upload</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\UploadQueueManagerListener.h">
+      <Filter>Header Files\transfer\upload</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\UploadRequest.h">
+      <Filter>Header Files\transfer\upload</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\ShareProfileManagerListener.h">
+      <Filter>Header Files\share\profiles</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\ShareProfile.h">
+      <Filter>Header Files\share\profiles</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\ShareProfileManager.h">
+      <Filter>Header Files\share\profiles</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\TempShareManagerListener.h">
+      <Filter>Header Files\share\temp_share</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\TempShareItem.h">
+      <Filter>Header Files\share\temp_share</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\TempShareManager.h">
+      <Filter>Header Files\share\temp_share</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\PartialSharingManager.h">
+      <Filter>Header Files\queue\partial_sharing</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\PartialBundleSharingManager.h">
+      <Filter>Header Files\queue\partial_sharing</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\PartialFileSharingManager.h">
+      <Filter>Header Files\queue\partial_sharing</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\Mapper_WinUPnP.h">
+      <Filter>Header Files\connectivity\mappers</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\Mapper_MiniUPnPc.h">
+      <Filter>Header Files\connectivity\mappers</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\Mapper_NATPMP.h">
+      <Filter>Header Files\connectivity\mappers</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\version.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\stdinc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\compiler.h">
+      <Filter>Header Files\core\header</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\constants.h">
+      <Filter>Header Files\core\header</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\debug.h">
+      <Filter>Header Files\core\header</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\format.h">
+      <Filter>Header Files\core\header</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\typedefs.h">
+      <Filter>Header Files\core\header</Filter>
+    </ClInclude>
+    <ClInclude Include="airdcpp\w.h">
+      <Filter>Header Files\core\header</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
