@@ -35,6 +35,7 @@
 #ifndef _WIN32
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <sys/socket.h>
 
 #ifdef HAVE_IFADDRS_H
 #include <ifaddrs.h>
