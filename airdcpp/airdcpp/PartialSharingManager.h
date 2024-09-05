@@ -46,7 +46,7 @@ public:
 	void getBloomFileCount(ProfileToken aToken, size_t& fileCount_) const noexcept override;
 
 	// void search(SearchResultList& results, const TTHValue& aTTH, const ShareSearch& aSearchInfo) const noexcept override;
-	const string& getProviderName() const noexcept {
+	const string& getProviderName() const noexcept override {
 		return providerName;
 	}
 

@@ -33,7 +33,7 @@ struct UploadFileQuery {
 	UploadFileQuery(const TTHValue& aTTH, const UserPtr& aUser, const ProfileTokenSet* aProfiles, const Segment* aSegment) : tth(aTTH), user(aUser), profiles(aProfiles), segment(aSegment) {}
 
 	const TTHValue& tth;
-	const UserPtr& user = nullptr;
+	const UserPtr user = nullptr;
 
 	const ProfileTokenSet* profiles = nullptr;
 	const Segment* segment = nullptr;

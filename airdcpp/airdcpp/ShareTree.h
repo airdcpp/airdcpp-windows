@@ -76,7 +76,7 @@ public:
 
 	// UploadFileProvider
 	const string providerName = "share";
-	const string& getProviderName() const noexcept {
+	const string& getProviderName() const noexcept override {
 		return providerName;
 	}
 
