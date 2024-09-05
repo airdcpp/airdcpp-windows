@@ -73,8 +73,7 @@ public:
 	/** @internal */
 	void addConnection(UserConnectionPtr conn) noexcept;
 	void abortUpload(const string& aFile, bool aWaitDisconnected = true) noexcept;
-		
-	// IGETSET(uint8_t, extraPartial, ExtraPartial, 0);
+
 	IGETSET(uint8_t, extra, Extra, 0);
 	IGETSET(uint64_t, lastGrant, LastGrant, 0);
 
@@ -83,14 +82,16 @@ public:
 		return uploads;
 	}
 
-	bool callAsync(const string& aToken, std::function<void(const Upload*)>&& aHandler) const noexcept;
+	typedef std::function<void(Upload*)>&& UploadCallback;
+	Callback getAsyncWrapper(TransferToken aToken, UploadCallback&& aCallback) const noexcept;
 
-	Upload* findUploadUnsafe(const string& aToken) const noexcept;
+	Upload* findUploadUnsafe(TransferToken aToken) const noexcept;
 
 	UploadQueueManager& getQueue() noexcept {
 		return *queue.get();
 	}
 private:
+
 	unique_ptr<UploadQueueManager> queue;
 
 	static void log(const string& aMsg, LogMessage::Severity aSeverity) noexcept;
@@ -158,6 +159,8 @@ private:
 
 	void deleteDelayUpload(Upload* aUpload, bool aResuming) noexcept;
 	void disconnectOfflineUsers() noexcept;
+
+	void checkExpiredDelayUploads();
 };
 
 } // namespace dcpp

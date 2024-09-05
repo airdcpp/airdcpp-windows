@@ -82,7 +82,8 @@ public:
 
 	UserConnection& getUserConnection() noexcept { return userConnection; }
 	const UserConnection& getUserConnection() const noexcept { return userConnection; }
-	const string& getToken() const noexcept;
+	const string& getConnectionToken() const noexcept;
+	TransferToken getToken() const noexcept { return token; }
 
 	GETSET(string, path, Path);
 	GETSET(Segment, segment, Segment);
@@ -109,6 +110,7 @@ private:
 	int64_t pos = 0;
 
 	UserConnection& userConnection;
+	const TransferToken token;
 };
 
 } // namespace dcpp

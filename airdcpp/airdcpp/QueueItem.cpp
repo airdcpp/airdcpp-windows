@@ -271,7 +271,7 @@ uint8_t QueueItem::getMaxSegments(int64_t aFileSize) noexcept {
 }
 
 int QueueItem::countOnlineUsers() const noexcept {
-	return static_cast<int>(count_if(sources.begin(), sources.end(), [](const Source& s) { return s.getUser().user->isOnline(); } ));
+	return static_cast<int>(ranges::count_if(sources, [](const Source& s) { return s.getUser().user->isOnline(); } ));
 }
 
 QueueItem::~QueueItem() { }
@@ -786,8 +786,8 @@ void QueueItem::addDownload(Download* d) noexcept {
 	downloads.push_back(d);
 }
 
-void QueueItem::removeDownload(const string& aToken) noexcept {
-	auto m = find_if(downloads.begin(), downloads.end(), [&](const Download* d) { return compare(d->getToken(), aToken) == 0; });
+void QueueItem::removeDownload(const Download* d) noexcept {
+	auto m = ranges::find(downloads, d);
 	dcassert(m != downloads.end());
 	if (m != downloads.end()) {
 		downloads.erase(m);

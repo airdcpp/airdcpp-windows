@@ -218,7 +218,7 @@ public:
 	void addDownload(Download* d) noexcept;
 
 	// Erase a single download
-	void removeDownload(const string& aToken) noexcept;
+	void removeDownload(const Download* d) noexcept;
 
 	// Erase all downloads from this user
 	void removeDownloads(const UserPtr& aUser) noexcept;

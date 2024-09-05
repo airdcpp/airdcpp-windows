@@ -1085,7 +1085,7 @@ const string& TransferView::getBundle(const TransferInfoPtr& aInfo) noexcept {
 	if (aInfo->isDownload()) {
 		return aInfo->getBundle();
 	} else {
-		auto bundle = UploadBundleManager::getInstance()->receiver.findByUploadToken(aInfo->getStringToken());
+		auto bundle = UploadBundleManager::getInstance()->receiver.findByConnectionToken(aInfo->getStringToken());
 		if (bundle) {
 			return bundle->getToken();
 		}

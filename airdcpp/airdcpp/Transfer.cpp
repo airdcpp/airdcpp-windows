@@ -19,10 +19,11 @@
 #include "stdinc.h"
 #include "Transfer.h"
 
-#include "UserConnection.h"
-#include "ResourceManager.h"
 #include "ClientManager.h"
+#include "ResourceManager.h"
 #include "Upload.h"
+#include "UserConnection.h"
+#include "ValueGenerator.h"
 
 namespace dcpp {
 
@@ -34,7 +35,7 @@ const string Transfer::USER_LIST_NAME_EXTRACTED = "files.xml";
 const string Transfer::USER_LIST_NAME_BZ = "files.xml.bz2";
 
 Transfer::Transfer(UserConnection& conn, const string& path_, const TTHValue& tth_) : segment(0, -1),
-	path(path_), tth(tth_), userConnection(conn) { }
+	path(path_), tth(tth_), userConnection(conn), token(ValueGenerator::rand()) { }
 
 void Transfer::tick() noexcept {
 	WLock l(cs);
@@ -117,7 +118,7 @@ HintedUser Transfer::getHintedUser() const noexcept {
 	return getUserConnection().getHintedUser();
 }
 
-const string& Transfer::getToken() const noexcept {
+const string& Transfer::getConnectionToken() const noexcept {
 	return getUserConnection().getToken(); 
 }
 

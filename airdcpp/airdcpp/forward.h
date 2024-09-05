@@ -203,6 +203,7 @@ class StringSearch;
 class TigerHash;
 
 class Transfer;
+typedef uint32_t TransferToken;
 
 typedef HashValue<TigerHash> TTHValue;
 

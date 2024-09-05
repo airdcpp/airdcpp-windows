@@ -290,7 +290,7 @@ void DownloadManager::checkDownloads(UserConnection* aConn) {
 		}
 	}
 
-	dcdebug("DownloadManager::checkDownloads: requesting " I64_FMT "/" I64_FMT " (connection %s)\n", d->getStartPos(), d->getSegmentSize(), d->getToken().c_str());
+	dcdebug("DownloadManager::checkDownloads: requesting " I64_FMT "/" I64_FMT " (connection %s)\n", d->getStartPos(), d->getSegmentSize(), d->getConnectionToken().c_str());
 
 	//only update the hub if it has been changed
 	if (compare(result.hubHint, aConn->getHubUrl()) == 0) {
@@ -453,7 +453,7 @@ void DownloadManager::endData(UserConnection* aSource) {
 		aSource->setSpeed(static_cast<int64_t>(d->getAverageSpeed()));
 		aSource->updateChunkSize(d->getTigerTree().getBlockSize(), d->getSegmentSize(), GET_TICK() - d->getStart());
 		
-		dcdebug("DownloadManager::endData: %s (connection %s), size " I64_FMT ", downloaded " I64_FMT " in " U64_FMT " ms\n", d->getPath().c_str(), d->getToken().c_str(), d->getSegmentSize(), d->getPos(), GET_TICK() - d->getStart());
+		dcdebug("DownloadManager::endData: %s (connection %s), size " I64_FMT ", downloaded " I64_FMT " in " U64_FMT " ms\n", d->getPath().c_str(), d->getConnectionToken().c_str(), d->getSegmentSize(), d->getPos(), GET_TICK() - d->getStart());
 	}
 
 	fire(DownloadManagerListener::Complete(), d, d->getType() == Transfer::TYPE_TREE);
@@ -581,7 +581,7 @@ void DownloadManager::abortDownload(const string& aTarget, const UserPtr& aUser)
 					continue;
 				}
 			}
-			dcdebug("Trying to close connection for download %s\n", d->getToken().c_str());
+			dcdebug("DownloadManager::abortDownload: trying to disconnect %s\n", d->getConnectionToken().c_str());
 			d->getUserConnection().disconnect(true);
 		}
 	}

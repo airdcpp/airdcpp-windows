@@ -24,7 +24,6 @@
 #include "AdcCommand.h"
 #include "AutoLimitUtil.h"
 #include "ClientManager.h"
-#include "ConnectionManager.h"
 #include "LogManager.h"
 #include "ResourceManager.h"
 #include "ShareManager.h"
@@ -454,7 +453,7 @@ void UploadManager::disconnectExtraMultiConn() noexcept {
 	}
 }
 
-Upload* UploadManager::findUploadUnsafe(const string& aToken) const noexcept {
+Upload* UploadManager::findUploadUnsafe(TransferToken aToken) const noexcept {
 	auto u = ranges::find_if(uploads, [&](Upload* up) { return compare(up->getToken(), aToken) == 0; });
 	if (u != uploads.end()) {
 		return *u;
@@ -468,29 +467,20 @@ Upload* UploadManager::findUploadUnsafe(const string& aToken) const noexcept {
 	return nullptr;
 }
 
+Callback UploadManager::getAsyncWrapper(TransferToken aToken, UploadCallback&& aCallback) const noexcept {
+	return [aToken, this, hander = std::move(aCallback)] {
+		Upload* upload = nullptr;
 
-bool UploadManager::callAsync(const string& aToken, std::function<void(const Upload*)>&& aHandler) const noexcept {
-	RLock l(cs);
-	auto u = findUploadUnsafe(aToken);
-	if (u) {
-		u->getUserConnection().callAsync([aToken, this, hander = std::move(aHandler)] {
-			Upload* upload = nullptr;
+		{
+			// Make sure that the upload hasn't been deleted
+			RLock l(cs);
+			upload = findUploadUnsafe(aToken);
+		}
 
-			{
-				// Make sure that the upload hasn't been deleted
-				RLock l(cs);
-				upload = findUploadUnsafe(aToken);
-			}
-
-			if (upload) {
-				hander(upload);
-			}
-		});
-
-		return true;
-	}
-
-	return false;
+		if (upload) {
+			hander(upload);
+		}
+	};
 }
 
 int64_t UploadManager::getRunningAverageUnsafe() const noexcept {
@@ -545,7 +535,7 @@ void UploadManager::removeUpload(Upload* aUpload, bool aDelay) noexcept {
 	}
 
 	if (deleteUpload) {
-		dcdebug("Deleting upload %s (no delay, conn %s)\n", aUpload->getPath().c_str(), aUpload->getToken().c_str());
+		dcdebug("Deleting upload %s (no delay, conn %s)\n", aUpload->getPath().c_str(), aUpload->getConnectionToken().c_str());
 		fire(UploadManagerListener::Removed(), aUpload);
 		{
 			RLock l(cs);
@@ -553,7 +543,7 @@ void UploadManager::removeUpload(Upload* aUpload, bool aDelay) noexcept {
 		}
 		delete aUpload;
 	} else {
-		dcdebug("Adding delay upload %s (conn %s)\n", aUpload->getPath().c_str(), aUpload->getToken().c_str());
+		dcdebug("Adding delay upload %s (conn %s)\n", aUpload->getPath().c_str(), aUpload->getConnectionToken().c_str());
 	}
 }
 
@@ -702,31 +692,31 @@ void UploadManager::disconnectOfflineUsers() noexcept {
 		return;
 	}
 
-	UserList disconnects;
+	set<UserPtr> disconnects;
 	{
 		RLock l(cs);
-		for (auto u : uploads) {
-			if (u->getUser()->isOnline()) {
-				u->unsetFlag(Upload::FLAG_PENDING_KICK);
+		for (auto upload : uploads) {
+			auto user = upload->getUser();
+			if (user->isOnline()) {
+				upload->unsetFlag(Upload::FLAG_PENDING_KICK);
 				continue;
 			}
 
-			if (u->isSet(Upload::FLAG_PENDING_KICK)) {
-				disconnects.push_back(u->getUser());
+			if (upload->isSet(Upload::FLAG_PENDING_KICK)) {
+				if (disconnects.emplace(user).second) {
+					log(STRING(DISCONNECTED_USER) + " " + Util::listToString(ClientManager::getInstance()->getNicks(user->getCID())), LogMessage::SEV_INFO);
+				}
+
+				upload->getUserConnection().disconnect(true);
 				continue;
 			}
 
-			if (SETTING(AUTO_KICK_NO_FAVS) && u->getUser()->isFavorite()) {
+			if (SETTING(AUTO_KICK_NO_FAVS) && user->isFavorite()) {
 				continue;
 			}
 
-			u->setFlag(Upload::FLAG_PENDING_KICK);
+			upload->setFlag(Upload::FLAG_PENDING_KICK);
 		}
-	}
-
-	for (auto& u : disconnects) {
-		log(STRING(DISCONNECTED_USER) + " " + Util::listToString(ClientManager::getInstance()->getNicks(u->getCID())), LogMessage::SEV_INFO);
-		ConnectionManager::getInstance()->disconnect(u, CONNECTION_TYPE_UPLOAD);
 	}
 }
 
@@ -773,34 +763,48 @@ void UploadManager::deleteDelayUpload(Upload* aUpload, bool aResuming) noexcept 
 		logUpload(aUpload);
 	}
 
-	dcdebug("Deleting upload %s (delayed, conn %s, resuming: %s)\n", aUpload->getPath().c_str(), aUpload->getToken().c_str(), aResuming ? "true" : "false");
+	dcdebug("Deleting upload %s (delayed, conn %s, resuming: %s)\n", aUpload->getPath().c_str(), aUpload->getConnectionToken().c_str(), aResuming ? "true" : "false");
 	fire(UploadManagerListener::Removed(), aUpload);
+
+#ifdef _DEBUG
 	{
 		RLock l(cs);
 		dcassert(!findUploadUnsafe(aUpload->getToken()));
 	}
+#endif
 
 	delete aUpload;
 }
 
+void UploadManager::checkExpiredDelayUploads() {
+	RLock l(cs);
+	for (const auto& u : delayUploads) {
+		if (u->delayTime != -1 && ++u->delayTime > 10) {
+			dcdebug("UploadManager::checkExpiredDelayUploads: adding delay upload %s for removal (conn %s)\n", u->getPath().c_str(), u->getConnectionToken().c_str());
+
+			// Delete uploads in their own thread
+			// Makes uploads safe to access in the connection thread
+			u->getUserConnection().callAsync(getAsyncWrapper(u->getToken(), [this](auto aUpload) {
+				{
+					WLock l(cs);
+					delayUploads.erase(remove(delayUploads.begin(), delayUploads.end(), aUpload), delayUploads.end());
+				}
+
+				deleteDelayUpload(aUpload, false);
+			}));
+
+			u->delayTime = -1;
+		}
+	}
+}
+
 // TimerManagerListener
 void UploadManager::on(TimerManagerListener::Second, uint64_t /*aTick*/) noexcept {
+	checkExpiredDelayUploads();
+
 	UploadList ticks;
 	{
-		WLock l(cs);
-		for (auto i = delayUploads.begin(); i != delayUploads.end();) {
-			auto u = *i;
-			if (++u->delayTime > 10) {
-				u->getUserConnection().callAsync([u, this] {
-					deleteDelayUpload(u, false);
-				});
-				
-				i = delayUploads.erase(i);
-			} else {
-				i++;
-			}
-		}
-
+		RLock l(cs);
 		for (auto u: uploads) {
 			if (u->getPos() > 0) {
 				ticks.push_back(u);
@@ -808,8 +812,9 @@ void UploadManager::on(TimerManagerListener::Second, uint64_t /*aTick*/) noexcep
 			}
 		}
 		
-		if (ticks.size() > 0)
+		if (ticks.size() > 0) {
 			fire(UploadManagerListener::Tick(), ticks);
+		}
 	}
 }
 

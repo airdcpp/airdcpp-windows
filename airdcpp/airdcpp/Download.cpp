@@ -116,9 +116,9 @@ string Download::getBundleStringToken() const noexcept {
 	return bundle->getStringToken();
 }
 
-bool Download::operator==(const Download* d) const {
-	return compare(getToken(), d->getToken()) == 0;
-}
+//bool Download::operator==(const Download* d) const {
+//	return compare(getToken(), d->getToken()) == 0;
+//}
 
 void Download::flush() noexcept {
 	if (getOutput()) {

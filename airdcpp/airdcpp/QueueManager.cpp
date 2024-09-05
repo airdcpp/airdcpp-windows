@@ -1206,7 +1206,7 @@ QueueManager::DownloadResult QueueManager::getDownload(UserConnection& aSource, 
 	}
 
 	fire(QueueManagerListener::ItemSources(), q);
-	dcdebug("QueueManager::getDownload: found %s for %s (segment " I64_FMT ", " I64_FMT ")\n", q->getTarget().c_str(), result.download->getToken().c_str(), result.download->getSegment().getStart(), result.download->getSegment().getEnd());
+	dcdebug("QueueManager::getDownload: found %s for connection %s (segment " I64_FMT ", " I64_FMT ")\n", q->getTarget().c_str(), result.download->getConnectionToken().c_str(), result.download->getSegment().getStart(), result.download->getSegment().getEnd());
 	return result;
 }
 
@@ -1747,7 +1747,7 @@ void QueueManager::onDownloadFailed(const QueueItemPtr& aQI, Download* aDownload
 			aQI->getOnlineUsers(getConn);
 		}
 
-		userQueue.removeDownload(aQI, aDownload->getToken());
+		userQueue.removeDownload(aQI, aDownload);
 	}
 
 	for (const auto& u : getConn) {
@@ -1823,14 +1823,14 @@ void QueueManager::onFilelistDownloadCompletedHooked(const QueueItemPtr& aQI, Do
 void QueueManager::onTreeDownloadCompleted(const QueueItemPtr& aQI, Download* aDownload) {
 	{
 		WLock l(cs);
-		userQueue.removeDownload(aQI, aDownload->getToken());
+		userQueue.removeDownload(aQI, aDownload);
 	}
 
 	dcassert(aDownload->getTreeValid());
 	try {
 		HashManager::getInstance()->addTree(aDownload->getTigerTree());
 	} catch (const HashException& e) {
-		ConnectionManager::getInstance()->failDownload(aDownload->getToken(), e.getError(), true);
+		ConnectionManager::getInstance()->failDownload(aDownload->getConnectionToken(), e.getError(), true);
 		throw e;
 	}
 
@@ -1852,9 +1852,10 @@ void QueueManager::onFileDownloadCompleted(const QueueItemPtr& aQI, Download* aD
 
 		if (wholeFileCompleted) {
 			// Disconnect all possible overlapped downloads
-			for (auto aD : aQI->getDownloads()) {
-				if (compare(aD->getToken(), aDownload->getToken()) != 0)
-					aD->getUserConnection().disconnect();
+			for (auto qiDownload : aQI->getDownloads()) {
+				if (qiDownload != aDownload) {
+					qiDownload->getUserConnection().disconnect();
+				}
 			}
 
 			aQI->setTimeFinished(GET_TIME());
@@ -1865,7 +1866,7 @@ void QueueManager::onFileDownloadCompleted(const QueueItemPtr& aQI, Download* aD
 				fileQueue.remove(aQI);
 			}
 		} else {
-			userQueue.removeDownload(aQI, aDownload->getToken());
+			userQueue.removeDownload(aQI, aDownload);
 		}
 	}
 
@@ -1956,7 +1957,7 @@ void QueueManager::matchTTHList(const string& aName, const HintedUser& aUser, in
 }
 
 void QueueManager::removeQI(const QueueItemPtr& q, bool aDeleteData /*false*/) noexcept {
-	StringList x;
+	StringList disconnectTokens;
 	dcassert(q);
 
 	// For partial-share
@@ -1970,7 +1971,7 @@ void QueueManager::removeQI(const QueueItemPtr& q, bool aDeleteData /*false*/) n
 
 		if(q->isRunning()) {
 			for(const auto& d: q->getDownloads()) 
-				x.push_back(d->getToken());
+				disconnectTokens.push_back(d->getConnectionToken());
 		} else if(!q->getTempTarget().empty() && q->getTempTarget() != q->getTarget()) {
 			File::deleteFile(q->getTempTarget());
 		}
@@ -1989,7 +1990,7 @@ void QueueManager::removeQI(const QueueItemPtr& q, bool aDeleteData /*false*/) n
 	fire(QueueManagerListener::ItemRemoved(), q, false);
 
 	removeBundleItem(q, false);
-	for (auto& token : x)
+	for (auto& token: disconnectTokens)
 		ConnectionManager::getInstance()->disconnect(token);
 }
 
@@ -3694,7 +3695,7 @@ void QueueManager::removeBundle(const BundlePtr& aBundle, bool aRemoveFinishedFi
 		log(STRING_F(BUNDLE_X_REMOVED, aBundle->getName()), LogMessage::SEV_INFO);
 	}
 
-	for (const auto& aUser : sources)
+	for (const auto& aUser: sources)
 		fire(QueueManagerListener::SourceFilesUpdated(), aUser);
 
 	removeBundleLists(aBundle);
