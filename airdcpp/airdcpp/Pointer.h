@@ -57,7 +57,7 @@ private:
 #pragma GCC diagnostic ignored "-Wstringop-overflow"
 #endif
 	friend void intrusive_ptr_release(intrusive_ptr_base* p) { if(--p->ref == 0) { delete static_cast<T*>(p); } }
-#if defined (__GNUC__)
+#if defined (__GNUC__) && !defined(__llvm__) && !defined(__INTEL_COMPILER)
 #pragma GCC diagnostic pop
 #endif
 	atomic<long> ref;
