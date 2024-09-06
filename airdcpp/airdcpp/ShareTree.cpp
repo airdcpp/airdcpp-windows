@@ -547,13 +547,6 @@ void ShareTree::getBloom(ProfileToken aToken, HashBloom& bloom_) const noexcept 
 void ShareTree::getBloomFileCount(ProfileToken aToken, size_t& fileCount_) const noexcept {
 	int64_t totalSize = 0;
 	getProfileInfo(aToken, totalSize, fileCount_);
-
-	/*RLock l(cs);
-	for (const auto tfp : tthIndex) {
-		if (tfp.second->hasProfile(aToken)) {
-			fileCount_++;
-		}
-	}*/
 }
 
 void ShareTree::setBloom(ShareBloom* aBloom) noexcept {
@@ -696,13 +689,6 @@ void ShareTree::getProfileInfo(ProfileToken aProfile, int64_t& totalSize_, size_
 	ShareDirectory::List roots;
 
 	RLock l(cs);
-	/*for (const auto tfp : tthIndex) {
-		if (tfp.second->hasProfile(aProfile)) {
-			totalSize_ += tfp.second->getSize();
-			filesCount_++;
-		}
-	}*/
-
 	getRootsUnsafe(aProfile, roots);
 	for (const auto& d : roots) {
 		d->getProfileInfo(aProfile, totalSize_, filesCount_);
