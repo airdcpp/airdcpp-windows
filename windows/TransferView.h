@@ -23,15 +23,15 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include <airdcpp/forward.h>
+
 #include <airdcpp/DownloadManagerListener.h>
 #include <airdcpp/UploadBundleInfoReceiverListener.h>
 #include <airdcpp/ConnectionManagerListener.h>
 #include <airdcpp/QueueManagerListener.h>
-#include <airdcpp/TransferInfoManager.h>
 #include <airdcpp/TaskQueue.h>
-#include <airdcpp/forward.h>
+#include <airdcpp/TransferInfoManagerListener.h>
 #include <airdcpp/Util.h>
-#include <airdcpp/TransferInfo.h>
 
 #include "OMenu.h"
 #include "UCHandler.h"

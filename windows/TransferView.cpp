@@ -24,6 +24,7 @@
 #include <airdcpp/ConnectionManager.h>
 #include <airdcpp/DownloadManager.h>
 #include <airdcpp/PathUtil.h>
+#include <airdcpp/TransferInfoManager.h>
 #include <airdcpp/UploadBundleManager.h>
 #include <airdcpp/QueueManager.h>
 
@@ -703,7 +704,7 @@ void TransferView::updateItem(const ItemInfo* aII, uint32_t updateMask) {
 	if(updateMask & UpdateInfo::MASK_IP) {
 		ctrlTransfers.updateItem(ii, COLUMN_IP);
 	}
-	if(updateMask & UpdateInfo::MASK_CONNECTIONS) {
+	if(updateMask & UpdateInfo::MASK_CONNECTIONS || updateMask & UpdateInfo::MASK_USER) {
 		ctrlTransfers.updateItem(ii, COLUMN_HUB_CONNECTIONS);
 	}
 	if(updateMask & UpdateInfo::MASK_USERS || updateMask & UpdateInfo::MASK_CONNECTIONS) {
