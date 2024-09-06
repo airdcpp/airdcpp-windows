@@ -20,7 +20,7 @@
 #include "CDMDebugFrame.h"
 #include "WinUtil.h"
 
-#include <airdcpp-webapi/web-server/WebServerManager.h>
+#include <web-server/WebServerManager.h>
 
 #define MAX_TEXT_LEN 131072
 

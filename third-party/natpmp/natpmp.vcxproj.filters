@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{900c885a-1a84-4062-befe-fbec30ed6964}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{b173e1c8-4d46-4542-bc9c-86d429a01989}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="declspec.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="getgateway.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="natpmp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="wingettimeofday.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="getgateway.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="natpmp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="wingettimeofday.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

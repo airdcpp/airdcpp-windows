@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2020
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35222.181
 MinimumVisualStudioVersion = 12.0.31101.0
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AirDC", "StrongDC.vcxproj", "{E82610AA-B6FD-4813-B5B9-E717CBD0F23B}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -9,7 +9,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AirDC", "StrongDC.vcxproj",
 		{F8D0E5FE-BABD-4FC8-B3FE-B48978D23FEB} = {F8D0E5FE-BABD-4FC8-B3FE-B48978D23FEB}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bzip2", "bzip2\bzip2.vcxproj", "{8B162F1B-5D6C-41C1-8A80-858B379DE07D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bzip2", "third-party\bzip2\bzip2.vcxproj", "{8B162F1B-5D6C-41C1-8A80-858B379DE07D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "airdcpp-core", "airdcpp\airdcpp.vcxproj", "{F8D0E5FE-BABD-4FC8-B3FE-B48978D23FEB}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -24,33 +24,33 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "airdcpp-core", "airdcpp\air
 		{82953BDA-2960-4ADA-A6D5-92E65CCB4A3D} = {82953BDA-2960-4ADA-A6D5-92E65CCB4A3D}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "zlib\zlib.vcxproj", "{DFBBE42A-45F4-4188-89C2-17F5DFE50673}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "third-party\zlib\zlib.vcxproj", "{DFBBE42A-45F4-4188-89C2-17F5DFE50673}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MakeDefs", "MakeDefs\MakeDefs.vcxproj", "{AEF82786-9DA2-4CDF-8602-02643CAFC727}"
 	ProjectSection(ProjectDependencies) = postProject
 		{D1095E8A-63A5-4592-AE93-2D638F20F66A} = {D1095E8A-63A5-4592-AE93-2D638F20F66A}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "miniupnpc", "miniupnpc\miniupnpc.vcxproj", "{51015502-C27C-43CF-9FA4-12AB9DB5D36E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "miniupnpc", "third-party\miniupnpc\miniupnpc.vcxproj", "{51015502-C27C-43CF-9FA4-12AB9DB5D36E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "natpmp", "natpmp\natpmp.vcxproj", "{6BD1D0B7-EC0C-4473-533B-5EC961138415}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "natpmp", "third-party\natpmp\natpmp.vcxproj", "{6BD1D0B7-EC0C-4473-533B-5EC961138415}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "boost", "boost\boost.vcxproj", "{D1095E8A-63A5-4592-AE93-2D638F20F66A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "boost", "third-party\boost\boost.vcxproj", "{D1095E8A-63A5-4592-AE93-2D638F20F66A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "minizip", "minizip\minizip.vcxproj", "{CCE1D62B-CF3B-4705-A24E-75BE18963C99}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "minizip", "third-party\minizip\minizip.vcxproj", "{CCE1D62B-CF3B-4705-A24E-75BE18963C99}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Snappy", "snappy\Snappy.vcxproj", "{B60E6AD9-779D-4CB4-8DAB-F86D7DAE0752}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Snappy", "third-party\snappy\Snappy.vcxproj", "{B60E6AD9-779D-4CB4-8DAB-F86D7DAE0752}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LevelDB", "leveldb\LevelDB.vcxproj", "{A7FF59D3-EAFD-43A1-8AA7-5087229C75D1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LevelDB", "third-party\leveldb\LevelDB.vcxproj", "{A7FF59D3-EAFD-43A1-8AA7-5087229C75D1}"
 	ProjectSection(ProjectDependencies) = postProject
 		{B60E6AD9-779D-4CB4-8DAB-F86D7DAE0752} = {B60E6AD9-779D-4CB4-8DAB-F86D7DAE0752}
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0F61B2E2-092F-4EB2-AA11-D02C77164D9B}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "third-party", "third-party", "{0F61B2E2-092F-4EB2-AA11-D02C77164D9B}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "webapi", "airdcpp-webapi\webapi.vcxproj", "{DF45F1D3-1A07-4F40-99D2-BA59DAC925B1}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmaxminddb", "maxminddb\libmaxminddb.vcxproj", "{82953BDA-2960-4ADA-A6D5-92E65CCB4A3D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libmaxminddb", "third-party\maxminddb\libmaxminddb.vcxproj", "{82953BDA-2960-4ADA-A6D5-92E65CCB4A3D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -167,6 +167,17 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8B162F1B-5D6C-41C1-8A80-858B379DE07D} = {0F61B2E2-092F-4EB2-AA11-D02C77164D9B}
+		{DFBBE42A-45F4-4188-89C2-17F5DFE50673} = {0F61B2E2-092F-4EB2-AA11-D02C77164D9B}
+		{51015502-C27C-43CF-9FA4-12AB9DB5D36E} = {0F61B2E2-092F-4EB2-AA11-D02C77164D9B}
+		{6BD1D0B7-EC0C-4473-533B-5EC961138415} = {0F61B2E2-092F-4EB2-AA11-D02C77164D9B}
+		{D1095E8A-63A5-4592-AE93-2D638F20F66A} = {0F61B2E2-092F-4EB2-AA11-D02C77164D9B}
+		{CCE1D62B-CF3B-4705-A24E-75BE18963C99} = {0F61B2E2-092F-4EB2-AA11-D02C77164D9B}
+		{B60E6AD9-779D-4CB4-8DAB-F86D7DAE0752} = {0F61B2E2-092F-4EB2-AA11-D02C77164D9B}
+		{A7FF59D3-EAFD-43A1-8AA7-5087229C75D1} = {0F61B2E2-092F-4EB2-AA11-D02C77164D9B}
+		{82953BDA-2960-4ADA-A6D5-92E65CCB4A3D} = {0F61B2E2-092F-4EB2-AA11-D02C77164D9B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {257C02CA-3342-4E8C-A3A4-8450F3018F12}

@@ -17,7 +17,7 @@
 #include "StaticFrame.h"
 
 #include <airdcpp/ProtocolCommandManager.h>
-#include <airdcpp-webapi/web-server/WebServerManagerListener.h>
+#include <web-server/WebServerManagerListener.h>
 
 #include <airdcpp/Semaphore.h>
 #include <airdcpp/Thread.h>

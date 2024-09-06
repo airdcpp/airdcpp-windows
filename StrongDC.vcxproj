@@ -98,7 +98,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)\airdcpp;$(SolutionDir);$(SolutionDir)\leveldb\include;$(SolutionDir)\zlib;$(SolutionDir)\boost;$(SolutionDir)\airdcpp-webapi;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\airdcpp;$(SolutionDir)third-party;$(SolutionDir)\third-party\leveldb\include;$(SolutionDir)\third-party\zlib;$(SolutionDir)\third-party\boost;$(SolutionDir)\airdcpp-webapi;$(SolutionDir)\third-party\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -123,7 +123,7 @@
       <AdditionalOptions>/FIXED:NO /SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>bcrypt.lib;SHFolder.lib;ws2_32.lib;winmm.lib;powrprof.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(SolutionDir)compiled\$(Platform)\$(ProjectName).exe</OutputFile>
-      <AdditionalLibraryDirectories>$(SolutionDir)openssl/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)third-party\openssl/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>type=%27win32%27 name=%27Microsoft.Windows.Common-Controls%27 version=%276.0.0.0%27 processorArchitecture=%27*%27 publicKeyToken=%276595b64144ccf1df%27 language=%27*%27;%(AdditionalManifestDependencies)</AdditionalManifestDependencies>
       <IgnoreSpecificDefaultLibraries>libcmt.lib kernel32.lib advapi32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib version.lib mpr.lib rasapi32.lib winmm.lib winspool.lib vfw32.lib secur32.lib oleacc.lib oledlg.lib sensapi.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <DelayLoadDLLs>uxtheme.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
@@ -144,7 +144,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)\airdcpp;$(SolutionDir);$(SolutionDir)\leveldb\include;$(SolutionDir)\zlib;$(SolutionDir)\boost;$(SolutionDir)\airdcpp-webapi;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\airdcpp;$(SolutionDir)third-party;$(SolutionDir)\third-party\leveldb\include;$(SolutionDir)\third-party\zlib;$(SolutionDir)\third-party\boost;$(SolutionDir)\airdcpp-webapi;$(SolutionDir)\third-party\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -171,7 +171,7 @@
     <Link>
       <AdditionalOptions>/FIXED:NO /SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>bcrypt.lib;SHFolder.lib;ws2_32.lib;winmm.lib;powrprof.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)openssl/lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)third-party\openssl\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>type=%27win32%27 name=%27Microsoft.Windows.Common-Controls%27 version=%276.0.0.0%27 processorArchitecture=%27*%27 publicKeyToken=%276595b64144ccf1df%27 language=%27*%27;%(AdditionalManifestDependencies)</AdditionalManifestDependencies>
       <IgnoreSpecificDefaultLibraries>libcmt.lib kernel32.lib advapi32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib version.lib mpr.lib rasapi32.lib winmm.lib winspool.lib vfw32.lib secur32.lib oleacc.lib oledlg.lib sensapi.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -200,7 +200,7 @@
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <AdditionalIncludeDirectories>$(SolutionDir)\airdcpp;$(SolutionDir);$(SolutionDir)\leveldb\include;$(SolutionDir)\zlib;$(SolutionDir)\boost;$(SolutionDir)\airdcpp-webapi;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\airdcpp;$(SolutionDir)third-party;$(SolutionDir)\third-party\leveldb\include;$(SolutionDir)\third-party\zlib;$(SolutionDir)\third-party\boost;$(SolutionDir)\airdcpp-webapi;$(SolutionDir)\third-party\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -235,7 +235,7 @@
       <Version>
       </Version>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>$(SolutionDir)openssl/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)third-party\openssl/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>type=%27win32%27 name=%27Microsoft.Windows.Common-Controls%27 version=%276.0.0.0%27 processorArchitecture=%27*%27 publicKeyToken=%276595b64144ccf1df%27 language=%27*%27;%(AdditionalManifestDependencies)</AdditionalManifestDependencies>
       <IgnoreSpecificDefaultLibraries>kernel32.lib advapi32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib version.lib mpr.lib rasapi32.lib winmm.lib winspool.lib vfw32.lib secur32.lib oleacc.lib oledlg.lib sensapi.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <DelayLoadDLLs>dbghelp.dll;oleaut32.dll;powrprof.dll;uxtheme.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
@@ -267,7 +267,7 @@
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <AdditionalIncludeDirectories>$(SolutionDir)\airdcpp;$(SolutionDir);$(SolutionDir)\leveldb\include;$(SolutionDir)\zlib;$(SolutionDir)\boost;$(SolutionDir)\airdcpp-webapi;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\airdcpp;$(SolutionDir)third-party;$(SolutionDir)\third-party\leveldb\include;$(SolutionDir)\third-party\zlib;$(SolutionDir)\third-party\boost;$(SolutionDir)\airdcpp-webapi;$(SolutionDir)\third-party\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -302,7 +302,7 @@
       <Version>
       </Version>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>$(SolutionDir)openssl/lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)third-party\openssl/lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalManifestDependencies>type=%27win32%27 name=%27Microsoft.Windows.Common-Controls%27 version=%276.0.0.0%27 processorArchitecture=%27*%27 publicKeyToken=%276595b64144ccf1df%27 language=%27*%27;%(AdditionalManifestDependencies)</AdditionalManifestDependencies>
       <IgnoreSpecificDefaultLibraries>kernel32.lib advapi32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib version.lib mpr.lib rasapi32.lib winmm.lib winspool.lib vfw32.lib secur32.lib oleacc.lib oledlg.lib sensapi.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <DelayLoadDLLs>dbghelp.dll;oleaut32.dll;powrprof.dll;uxtheme.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
@@ -719,10 +719,10 @@
     <ClInclude Include="windows\WMPlayerRemoteApi.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="airdcpp-webapi\webapi.vcxproj">
+    <ProjectReference Include="$(SolutionDir)airdcpp-webapi\webapi.vcxproj">
       <Project>{df45f1d3-1a07-4f40-99d2-ba59dac925b1}</Project>
     </ProjectReference>
-    <ProjectReference Include="boost\boost.vcxproj">
+    <ProjectReference Include="$(SolutionDir)third-party\boost\boost.vcxproj">
       <Project>{d1095e8a-63a5-4592-ae93-2d638f20f66a}</Project>
       <Private>true</Private>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
@@ -730,12 +730,9 @@
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
-    <ProjectReference Include="airdcpp\airdcpp.vcxproj">
+    <ProjectReference Include="$(SolutionDir)airdcpp\airdcpp.vcxproj">
       <Project>{f8d0e5fe-babd-4fc8-b3fe-b48978d23feb}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="natpmp\natpmp.vcxproj">
-      <Project>{05f574be-57b1-3f27-280b-5debe2228086}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
