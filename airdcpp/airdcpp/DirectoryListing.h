@@ -297,6 +297,7 @@ public:
 	}
 
 	void onListRemovedQueue(const string& aTarget, const string& aDir, bool aFinished) noexcept;
+	void addDisableLoadingTask(const string& aTarget) noexcept;
 
 	bool isRead() const noexcept {
 		return read;

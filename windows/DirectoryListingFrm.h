@@ -463,6 +463,10 @@ private:
 	typedef std::set<string, PathUtil::PathSortOrderBool> PathSet;
 
 	bool matchADL = false;
+
+#ifdef _DEBUG
+	void validateTreeDebug();
+#endif
 };
 
 #endif // !defined(DIRECTORY_LISTING_FRM_H)

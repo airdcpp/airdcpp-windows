@@ -746,12 +746,11 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedPath, bool aSelectD
 
 	auto loadedDirectory = ((ItemInfo*)ctrlTree.GetItemData(loadedTreeItem))->dir;
 
-	bool isExpanded = ctrlTree.IsExpanded(loadedTreeItem);
-
-	// make sure that all tree subitems are removed and expand again if needed
-	ctrlTree.Expand(loadedTreeItem, TVE_COLLAPSE | TVE_COLLAPSERESET);
-	if (initialChange || isExpanded || changeType == CHANGE_TREE_EXPAND || changeType == CHANGE_TREE_DOUBLE)
-		ctrlTree.Expand(loadedTreeItem);
+	{
+		auto alwaysExpand = initialChange || changeType == CHANGE_TREE_EXPAND || changeType == CHANGE_TREE_DOUBLE;
+		auto refreshItemChildState = loadedTreeItem != treeRoot;
+		ctrlTree.refreshItem(loadedTreeItem, refreshItemChildState, alwaysExpand);
+	}
 
 	if (!aSelectDir && getCurrentListPath() == PathUtil::getAdcParentDir(aLoadedPath)) {
 		// Find the loaded directory and set it as complete
@@ -786,7 +785,29 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedPath, bool aSelectD
 	}
 
 	ctrlTree.SetRedraw(TRUE);
+
+#ifdef _DEBUG
+	validateTreeDebug();
+#endif
 }
+
+#ifdef _DEBUG
+void DirectoryListingFrame::validateTreeDebug() {
+	ctrlTree.getTreeItemPaths(treeRoot);
+
+	StringList paths;
+	for (const auto& cacheItem : itemInfos | views::values) {
+		for (const auto& d : cacheItem->directories) {
+			paths.push_back(d.dir->getAdcPath());
+		}
+
+		for (const auto& f : cacheItem->files) {
+			paths.push_back(f.file->getAdcPath());
+		}
+	}
+
+}
+#endif
 
 LRESULT DirectoryListingFrame::onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
 	changeType = CHANGE_LIST;

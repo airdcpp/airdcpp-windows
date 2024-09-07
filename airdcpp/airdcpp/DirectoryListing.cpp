@@ -1152,15 +1152,16 @@ void DirectoryListing::loadPartialImpl(const string& aXml, const string& aBasePa
 		return;
 
 	auto curDirectoryPath = !currentLocation.directory ? Util::emptyString : currentLocation.directory->getAdcPath();
+	Directory::Ptr optionalOldDirectory = nullptr;
 
 	// Preparations
 	{
 		bool reloading = false;
 
 		// Has this directory been loaded before? Existing content must be cleared in that case
-		auto d = findDirectory(aBasePath);
-		if (d) {
-			reloading = d->isComplete();
+		optionalOldDirectory = findDirectory(aBasePath);
+		if (optionalOldDirectory) {
+			reloading = optionalOldDirectory->isComplete();
 		}
 
 		// Let the window to be disabled before making any modifications
@@ -1168,16 +1169,24 @@ void DirectoryListing::loadPartialImpl(const string& aXml, const string& aBasePa
 
 		if (reloading) {
 			// Remove all existing directories inside this path
-			d->clearAll();
+			optionalOldDirectory->clearAll();
 		}
 	}
 
 	// Load content
-	int dirsLoaded = 0;
-	if (isOwnList) {
-		dirsLoaded = loadShareDirectory(aBasePath);
-	} else {
-		dirsLoaded = loadPartialXml(aXml, aBasePath);
+	try {
+		int dirsLoaded = 0;
+		if (isOwnList) {
+			dirsLoaded = loadShareDirectory(aBasePath);
+		} else {
+			dirsLoaded = loadPartialXml(aXml, aBasePath);
+		}
+	} catch (const Exception&) {
+		if (optionalOldDirectory) {
+			setDirectoryLoadingState(optionalOldDirectory, DirectoryLoadType::NONE);
+		}
+
+		throw;
 	}
 
 	// Done
@@ -1276,15 +1285,16 @@ void DirectoryListing::changeDirectoryImpl(const string& aAdcPath, DirectoryLoad
 		if (isOwnList || (getUser()->isOnline() || aForceQueue)) {
 			setDirectoryLoadingState(dir, aType);
 
-			try {
-				if (isOwnList) {
-					addOwnListLoadTask(aAdcPath, false);
-				} else {
+			if (isOwnList) {
+				addOwnListLoadTask(aAdcPath, false);
+			} else {
+				try {
 					auto listData = FilelistAddData(hintedUser, this, aAdcPath);
 					QueueManager::getInstance()->addListHooked(listData, QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_CLIENT_VIEW);
+				} catch (const QueueException& e) {
+					setDirectoryLoadingState(dir, DirectoryLoadType::NONE);
+					fire(DirectoryListingListener::LoadingFailed(), e.getError());
 				}
-			} catch (const Exception& e) {
-				fire(DirectoryListingListener::LoadingFailed(), e.getError());
 			}
 		} else {
 			updateStatus(STRING(USER_OFFLINE));
@@ -1335,31 +1345,45 @@ void DirectoryListing::setRead() noexcept {
 
 void DirectoryListing::onListRemovedQueue(const string& aTarget, const string& aDir, bool aFinished) noexcept {
 	if (!aFinished) {
-		addAsyncTask([=, this] {
-			auto dir = findDirectory(aDir);
-			if (dir) {
-				setDirectoryLoadingState(dir, DirectoryLoadType::NONE);
-				fire(DirectoryListingListener::RemovedQueue(), aDir);
-			}
-		});
+		addDisableLoadingTask(aDir);
 	}
 
 	TrackableDownloadItem::onRemovedQueue(aTarget, aFinished);
 }
 
+void DirectoryListing::addDisableLoadingTask(const string& aDirectory) noexcept {
+	addAsyncTask([aDirectory, this] {
+		auto dir = findDirectory(aDirectory);
+		if (dir) {
+			setDirectoryLoadingState(dir, DirectoryLoadType::NONE);
+			fire(DirectoryListingListener::RemovedQueue(), aDirectory);
+		}
+	});
+}
+
 void DirectoryListing::on(ShareManagerListener::RefreshCompleted, const ShareRefreshTask& aTask, bool aSucceed, const ShareRefreshStats&) noexcept{
-	if (!aSucceed || !partialList)
+	if (!partialList || !aSucceed)
 		return;
 
-	// Reload all locations by virtual path
-	string lastVirtual;
+	StringSet virtualPaths;
 	for (const auto& p : aTask.dirs) {
 		auto vPath = ShareManager::getInstance()->realToVirtualAdc(p, getShareProfile());
-		if (!vPath.empty() && lastVirtual != vPath && findDirectory(vPath)) {
-			addOwnListLoadTask(vPath, true);
-			lastVirtual = vPath;
+		if (!vPath.empty()) {
+			virtualPaths.insert(vPath);
 		}
 	}
+
+	addAsyncTask([=, this] {
+		for (const auto& virtualPath : virtualPaths) {
+			auto directory = findDirectory(virtualPath);
+			if (!directory) {
+				continue;
+			}
+
+			// Reload
+			addOwnListLoadTask(virtualPath, true);
+		}
+	});
 }
 
 } // namespace dcpp

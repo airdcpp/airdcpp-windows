@@ -63,7 +63,7 @@ public:
 		TVITEM* pItem = &(pDispInfo)->item;
     
 		if ( pItem->mask & TVIF_CHILDREN ) {
-			pItem->cChildren = parent->getChildrenState((T*)pItem->lParam) > 0 ? 1 : 0 ;
+			pItem->cChildren = getChildrenState(pItem) > 0 ? 1 : 0 ;
 		}
 
 		bHandled = FALSE; //Allow the message to be reflected again
@@ -97,7 +97,7 @@ public:
 		}
 
 		if ( pItem->mask & TVIF_CHILDREN) {
-    		pItem->cChildren = parent->getChildrenState(((T*)pItem->lParam)) > 0 ? 1 : 0 ;
+    		pItem->cChildren = getChildrenState(pItem) > 0 ? 1 : 0 ;
 		}
 
 		bHandled = FALSE; //Allow the message to be reflected again
@@ -108,17 +108,18 @@ public:
 		NMTREEVIEW *pNMTreeView = (NMTREEVIEW*)pNMHDR;
 		if(pNMTreeView->action == TVE_COLLAPSE || pNMTreeView->action == TVE_COLLAPSERESET) {
 			//Get the currently selected item
-			HTREEITEM sel = this->GetSelectedItem();
-			bool childSelected = false;
-			if (sel) {
-				childSelected = PathUtil::isSubAdc(((T*)this->GetItemData(sel))->getAdcPath(), ((T*)pNMTreeView->itemNew.lParam)->getAdcPath());
+			auto selectedItemData = getSelectedItemData();
+			auto childSelected = false;
+			if (selectedItemData) {
+				childSelected = PathUtil::isSubAdc(selectedItemData->getAdcPath(), ((T*)pNMTreeView->itemNew.lParam)->getAdcPath());
 				if (childSelected) {
 					//it would be selected anyway but without any notification message
 					this->SelectItem(pNMTreeView->itemNew.hItem);
 				}
 			}
 
-			this->Expand(pNMTreeView->itemNew.hItem, (childSelected && parent->getChildrenState((T*)pNMTreeView->itemNew.lParam) == CHILDREN_PART_PENDING) ? TVE_COLLAPSE | TVE_COLLAPSERESET : pNMTreeView->action);
+			auto collapse = childSelected && getChildrenState(&pNMTreeView->itemNew) == CHILDREN_PART_PENDING;
+			this->Expand(pNMTreeView->itemNew.hItem, collapse ? TVE_COLLAPSE | TVE_COLLAPSERESET : pNMTreeView->action);
 		} else if (pNMTreeView->action == TVE_EXPAND && !(pNMTreeView->itemNew.state & TVIS_EXPANDEDONCE)) {
 			T* curDir = (T*)pNMTreeView->itemNew.lParam;
 
@@ -145,6 +146,15 @@ public:
 		tvItem.cChildren = bHavePlus;
 		this->SetItem(&tvItem);
 	}
+
+	void updateChildren(HTREEITEM hItem) noexcept {
+		TV_ITEM tvItem;
+		tvItem.hItem = hItem;
+		tvItem.mask = TVIF_HANDLE | TVIF_CHILDREN;
+		tvItem.cChildren = I_CHILDRENCALLBACK;
+		this->SetItem(&tvItem);
+	}
+
 
 	bool hasChildren(HTREEITEM hItem) const noexcept {
 		TVITEM tvItem;
@@ -192,7 +202,56 @@ public:
 	HTREEITEM findItemByName(HTREEITEM ht, const tstring& aPath) noexcept {
 		return findItem(ht, _T(ADC_SEPARATOR) + aPath + _T(ADC_SEPARATOR), true);
 	}
+
+	StringList getTreeItemPaths(HTREEITEM ht) noexcept {
+		StringList paths;
+		getTreeItemPaths(ht, paths);
+		return paths;
+	}
+
+	// Reset the children
+	void refreshItem(HTREEITEM ht, bool aUpdateCurrentChildren, bool aForceExpand) {
+		bool shouldExpand = aForceExpand || this->IsExpanded(ht);
+
+		// An existing directory with children won't be collapsed if the new one doesn't have any (the children callback will be called)
+		// Make sure that it gets collapsed (we need to update the children data later anyway if the children were removed)
+		if (aUpdateCurrentChildren) {
+			this->setHasChildren(ht, true);
+		}
+
+		// make sure that all tree subitems are removed and expand again if needed
+		this->Expand(ht, TVE_COLLAPSE | TVE_COLLAPSERESET);
+		dcassert(!this->IsExpanded(ht));
+		// dcassert(!isExpanded || result != 0);
+
+		if (shouldExpand) {
+			this->Expand(ht);
+			dcassert(
+				this->IsExpanded(ht) || 
+				parent->getChildrenState((T*)this->GetItemData(ht)) == CHILDREN_ALL_PENDING ||
+				parent->getChildrenState((T*)this->GetItemData(ht)) == NO_CHILDREN
+			);
+		}
+
+		if (aUpdateCurrentChildren) {
+			this->updateChildren(ht);
+		}
+	}
 private:
+	ChildrenState getChildrenState(TVITEM* pItem) const noexcept {
+		return parent->getChildrenState(((T*)pItem->lParam));
+	}
+
+	void getTreeItemPaths(HTREEITEM ht, StringList& paths_) const noexcept {
+		for (HTREEITEM child = this->GetChildItem(ht); child != NULL; child = this->GetNextSiblingItem(child)) {
+			T* d = (T*)this->GetItemData(child);
+			auto path = d->getAdcPath();
+			paths_.push_back(path);
+
+			getTreeItemPaths(child, paths_);
+		}
+	}
+
 	HTREEITEM findItem(HTREEITEM ht, const tstring& aPath, bool aIsFirst) noexcept {
 		dcassert(!aPath.empty() && aPath.front() == ADC_SEPARATOR);
 		dcassert(aPath.back() == ADC_SEPARATOR);
