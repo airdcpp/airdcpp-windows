@@ -203,7 +203,7 @@ void DirectoryListingManager::queueListHookedThrow(const DirectoryDownloadPtr& a
 	} catch (const Exception& e) {
 		// Failed
 		failDirectoryDownload(aDownloadInfo, e.getError());
-		throw e;
+		throw;
 	}
 }
 
