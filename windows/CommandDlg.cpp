@@ -20,6 +20,7 @@
 #include "Resource.h"
 
 #include <airdcpp/ResourceManager.h>
+#include <airdcpp/Text.h>
 #include <airdcpp/UserCommand.h>
 
 #include "ActionUtil.h"

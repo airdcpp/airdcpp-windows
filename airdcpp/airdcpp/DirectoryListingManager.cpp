@@ -256,7 +256,7 @@ void DirectoryListingManager::maybeReportDownloadError(const DirectoryDownloadPt
 }
 
 void DirectoryListingManager::handleDownloadHooked(const DirectoryDownloadPtr& aDownloadInfo, const DirectoryListingPtr& aList, bool aListDownloaded/* = true*/) noexcept {
-	auto dir = aList->findDirectory(aDownloadInfo->getListPath());
+	auto dir = aList->findDirectoryUnsafe(aDownloadInfo->getListPath());
 
 	// Check the content
 	{

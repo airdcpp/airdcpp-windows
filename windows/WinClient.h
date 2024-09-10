@@ -22,31 +22,39 @@
 #include "stdafx.h"
 
 #include <airdcpp/DCPlusPlus.h>
+#include <airdcpp/StartupParams.h>
+
+#include "WinUpdater.h"
 
 class SetupWizard;
 class MainFrame;
 class WinClient {
 public:
-	static int run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT);
+	int run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT);
 
 	// Handle startup arguments
 	// Returns false if the application should exit
-	static bool checkStartupParams() noexcept;
+	bool checkStartupParams() noexcept;
+	const StartupParams& getStartupParams() noexcept {
+		return startupParams;
+	}
 private:
-	static void installExtensions();
-
-	static void listUpdaterFiles(StringPairList& files_, const string& aUpdateFilePath) noexcept;
-
-	static void webErrorF(const string& aError);
+	void installExtensions();
 
 	static void initModules();
 	static void destroyModules();
 	static void unloadModules(StepFunction& aStepF, ProgressFunction&);
+
+	static void webErrorF(const string& aError);
 	static bool questionF(const string& aStr, bool aIsQuestion, bool aIsError);
 	static void splashStrF(const string& str);
 	static void splashProgressF(float progress);
-	static Callback wizardFGetter(unique_ptr<SetupWizard>& wizard);
-	static StartupLoadCallback moduleLoadFGetter(unique_ptr<MainFrame>& wndMain);
+
+	Callback wizardFGetter(unique_ptr<SetupWizard>& wizard);
+	StartupLoadCallback moduleLoadFGetter(unique_ptr<MainFrame>& wndMain);
+
+	StartupParams startupParams;
+	WinUpdater updater;
 };
 
 

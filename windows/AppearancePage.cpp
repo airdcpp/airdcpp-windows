@@ -23,6 +23,8 @@
 #include "PropertiesDlg.h"
 #include "BrowseDlg.h"
 
+#include <airdcpp/Text.h>
+
 PropPage::TextItem AppearancePage::texts[] = {
 	{ IDC_SETTINGS_APPEARANCE_OPTIONS, ResourceManager::SETTINGS_OPTIONS },
 	{ IDC_SETTINGS_BOLD_CONTENTS, ResourceManager::SETTINGS_BOLD_OPTIONS },

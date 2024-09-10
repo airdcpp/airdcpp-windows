@@ -21,11 +21,11 @@
 
 #include "WinUtil.h"
 
+#include "flattabctrl.h"
 #include "LineDlg.h"
 #include "MainFrm.h"
 #include "OMenu.h"
 #include "ResourceLoader.h"
-#include "OSUtil.h"
 
 #include "BarShader.h"
 #include "ExMessageBox.h"
@@ -36,12 +36,14 @@
 #include <airdcpp/LinkUtil.h>
 #include <airdcpp/LogManager.h>
 #include <airdcpp/NetworkUtil.h>
+#include <airdcpp/OnlineUser.h>
 #include <airdcpp/PathUtil.h>
 #include <airdcpp/RegexUtil.h>
 #include <airdcpp/ResourceManager.h>
 #include <airdcpp/ScopedFunctor.h>
 #include <airdcpp/StringTokenizer.h>
 #include <airdcpp/SystemUtil.h>
+#include <airdcpp/TimerManager.h>
 #include <airdcpp/Util.h>
 
 #include <airdcpp/version.h>
@@ -97,8 +99,6 @@ CHARFORMAT2 WinUtil::m_ChatTextPrivate;
 CHARFORMAT2 WinUtil::m_ChatTextLog;
 HWND WinUtil::findDialog = nullptr;
 
-bool WinUtil::updated;
-TStringPair WinUtil::updateCommand;
 string WinUtil::paths[WinUtil::PATH_LAST];
 	
 HLSCOLOR RGB2HLS (COLORREF rgb) {
@@ -218,7 +218,6 @@ static LRESULT CALLBACK KeyboardProc(int code, WPARAM wParam, LPARAM lParam) {
 
 void WinUtil::preInit() {
 	ResourceLoader::loadFlagImages();
-	updated = false;
 }
 
 void WinUtil::init(HWND hWnd) {
@@ -1068,17 +1067,6 @@ int WinUtil::getFirstSelectedIndex(CListViewCtrl& list) {
 	return -1;
 }
 
-int WinUtil::setButtonPressed(int nID, bool bPressed /* = true */) {
-	if (nID == -1)
-		return -1;
-	if (!MainFrame::getMainFrame()->getToolBar().IsWindow())
-		return -1;
-
-	MainFrame::getMainFrame()->getToolBar().CheckButton(nID, bPressed);
-
-	return 0;
-}
-
 tstring WinUtil::escapeMenu(tstring str) {
 	string::size_type i = 0;
 	while ((i = str.find(_T('&'), i)) != string::npos) {
@@ -1293,30 +1281,15 @@ void WinUtil::addCue(HWND hwnd, LPCWSTR text, BOOL drawFocus) {
 	Edit_SetCueBannerTextFocused(hwnd, text, drawFocus);
 }
 
-void WinUtil::addUpdate(const string& aUpdater, bool aTesting) noexcept {
-	updated = true;
-	auto appPath = AppUtil::getAppFilePath();
+int WinUtil::setButtonPressed(int nID, bool bPressed /* = true */) {
+	if (nID == -1)
+		return -1;
+	if (!MainFrame::getMainFrame()->getToolBar().IsWindow())
+		return -1;
 
-	auto updateCmd = Text::toT("/update \"" + appPath + "\\\""); // The extra end slash is required!
-	if (OSUtil::isElevated()) {
-		updateCmd += _T(" /elevation");
-	}
+	MainFrame::getMainFrame()->getToolBar().CheckButton(nID, bPressed);
 
-	if (aTesting) {
-		updateCmd += _T(" /test");
-	}
-
-	updateCommand = make_pair(Text::toT(aUpdater), updateCmd);
-}
-
-bool WinUtil::runPendingUpdate() noexcept {
-	if(updated && !updateCommand.first.empty()) {
-		auto cmd = updateCommand.second + Text::toT(AppUtil::getStartupParams(false));
-		ShellExecute(NULL, _T("runas"), updateCommand.first.c_str(), cmd.c_str(), NULL, SW_SHOWNORMAL);
-		return true;
-	}
-
-	return false;
+	return 0;
 }
 
 void WinUtil::showPopup(tstring szMsg, tstring szTitle, HICON hIcon, bool force) {

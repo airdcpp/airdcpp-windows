@@ -254,6 +254,24 @@ BOOL CALLBACK searchOtherInstance(HWND hWnd, LPARAM lParam) {
 	std::exit(1);
 }*/
 
+void setAppTTH() {
+	try {
+		File f(AppUtil::getAppPath(), File::READ, File::OPEN);
+		TigerTree tth(TigerTree::calcBlockSize(f.getSize(), 1));
+		size_t n = 0;
+		size_t n2 = DEBUG_BUFSIZE;
+		while ((n = f.read(debugBuf, n2)) > 0) {
+			tth.update(debugBuf, n);
+			n2 = DEBUG_BUFSIZE;
+		}
+		tth.finalize();
+		strcpy(exeTTH, tth.getRoot().toBase32().c_str());
+		WinUtil::tth = Text::toT(exeTTH);
+	} catch (const FileException&) {
+		dcdebug("Failed reading exe\n");
+	}
+}
+
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpstrCmdLine, int nCmdShow) {
 	SingleInstance dcapp(_T(INST_NAME));
 
@@ -266,14 +284,17 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 #endif
 	initializeUtil();
 
+	WinClient client;
+
 	// Startup args
-	if (!WinClient::checkStartupParams()) {
+	if (!client.checkStartupParams()) {
 		return FALSE;
 	}
 
 	// Other instances
-	bool multiple = AppUtil::hasStartupParam("/silent");
 	if (dcapp.IsAnotherInstanceRunning()) {
+		auto multiple = client.getStartupParams().hasParam("/silent");
+
 		// Allow for more than one instance...
 		if (_tcslen(lpstrCmdLine) == 0) {
 			auto title = _T("There is already an instance of AirDC++ running.\nDo you want to launch another instance anyway?");
@@ -301,6 +322,8 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 		}
 	}
 	
+
+	// Init libraries
 	
 	// For SHBrowseForFolder, UPnP_COM
 	HRESULT hRes = ::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED); 
@@ -310,32 +333,21 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	LPTOP_LEVEL_EXCEPTION_FILTER pOldSEHFilter = NULL;
 	pOldSEHFilter = SetUnhandledExceptionFilter(&DCUnhandledExceptionFilter);
 	
-	AtlInitCommonControls(ICC_COOL_CLASSES | ICC_BAR_CLASSES | ICC_LISTVIEW_CLASSES | ICC_TREEVIEW_CLASSES | ICC_PROGRESS_CLASS | ICC_STANDARD_CLASSES |
+	WTL::AtlInitCommonControls(ICC_COOL_CLASSES | ICC_BAR_CLASSES | ICC_LISTVIEW_CLASSES | ICC_TREEVIEW_CLASSES | ICC_PROGRESS_CLASS | ICC_STANDARD_CLASSES |
 		ICC_TAB_CLASSES | ICC_UPDOWN_CLASS | ICC_USEREX_CLASSES);	// add flags to support other controls
 	
 	hRes = _Module.Init(NULL, hInstance);
 	ATLASSERT(SUCCEEDED(hRes));
-	
-	try {		
-		File f(AppUtil::getAppPath(), File::READ, File::OPEN);
-		TigerTree tth(TigerTree::calcBlockSize(f.getSize(), 1));
-		size_t n = 0;
-		size_t n2 = DEBUG_BUFSIZE;
-		while( (n = f.read(debugBuf, n2)) > 0) {
-			tth.update(debugBuf, n);
-			n2 = DEBUG_BUFSIZE;
-		}
-		tth.finalize();
-		strcpy(exeTTH, tth.getRoot().toBase32().c_str());
-		WinUtil::tth = Text::toT(exeTTH);
-	} catch(const FileException&) {
-		dcdebug("Failed reading exe\n");
-	}	
 
 	HINSTANCE hInstRich = ::LoadLibrary(RichTextBox::GetLibraryName());
 
-	int nRet = WinClient::run(lpstrCmdLine, nCmdShow);
+	setAppTTH();
+
+	// Run
+	int nRet = client.run(lpstrCmdLine, nCmdShow);
  
+
+	// Unload libraries
 	if ( hInstRich ) {
 		::FreeLibrary(hInstRich);
 	}

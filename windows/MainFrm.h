@@ -35,6 +35,8 @@
 #include <airdcpp/UpdateManagerListener.h>
 #include <airdcpp/ViewFileManagerListener.h>
 
+#include <airdcpp/StartupParams.h>
+
 #include "Async.h"
 #include "Dispatchers.h"
 #include "FlatTabCtrl.h"
@@ -56,7 +58,9 @@ class MainFrame : public CMDIFrameWindowImpl<MainFrame>, public CUpdateUI<MainFr
 		private PrivateChatManagerListener, private ActivityManagerListener, private ViewFileManagerListener
 {
 public:
-	MainFrame();
+	typedef std::function<void(const string&)> AddUpdateF;
+
+	MainFrame(const StartupParams& aStartupParams, AddUpdateF&& aAddUpdateF);
 	virtual ~MainFrame();
 	DECLARE_FRAME_WND_CLASS(_T("AirDC++"), IDR_MAINFRAME)
 
@@ -346,6 +350,8 @@ public:
 
 	
 private:
+	const AddUpdateF addUpdateF;
+
 	void updateStatus(TStringList* aItems);
 	void addStatus(const LogMessagePtr& aMessage);
 
@@ -494,6 +500,8 @@ private:
 	void on(UpdateManagerListener::VersionFileDownloaded, SimpleXML&) noexcept;
 
 	void on(ClientManagerListener::ClientCreated, const ClientPtr&) noexcept;
+
+	const StartupParams& startupParams;
 };
 
 #endif // !defined(MAIN_FRM_H)

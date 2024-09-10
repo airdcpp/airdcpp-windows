@@ -161,8 +161,6 @@ public:
 	static bool mutesounds;
 
 	static double getFontFactor();
-	static bool updated;
-	static TStringPair updateCommand;
 
 	enum Paths {
 		/** Where the notepad file is stored */
@@ -178,8 +176,6 @@ public:
 	/** Path of configuration files */
 	static const string& getPath(Paths path) noexcept { return paths[path]; }
 
-	static void addUpdate(const string& aUpdaterFile, bool aTesting = false) noexcept;
-	static bool runPendingUpdate() noexcept;
 	static void preInit(); // init required for the wizard
 	static void init(HWND hWnd);
 	static void initMenus();

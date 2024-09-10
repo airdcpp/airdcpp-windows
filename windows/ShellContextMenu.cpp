@@ -25,6 +25,7 @@
 #include "ActionUtil.h"
 
 #include <airdcpp/PathUtil.h>
+#include <airdcpp/Text.h>
 
 ShellMenu* ShellMenu::curMenu = nullptr;
 unique_ptr<ShellMenu::Handler> ShellMenu::curHandler;

@@ -279,7 +279,7 @@ void DirectoryListingFrame::changeWindowState(bool aEnabled, bool redraw) {
 }
 
 void DirectoryListingFrame::updateItemCache(const string& aPath) {
-	auto curDir = dl->findDirectory(aPath);
+	auto curDir = dl->findDirectoryUnsafe(aPath);
 	if (!curDir) {
 		dcassert(0);
 		return;
@@ -1045,8 +1045,8 @@ void DirectoryListingFrame::initStatus() {
 		if (dl->getPartialList() && !dl->getHintedUser().user->isNMDC()) {
 			dl->getPartialListInfo(totalSize, totalFiles);
 		} else {
-			totalSize = dl->getTotalListSize();
-			totalFiles = dl->getTotalFileCount();
+			totalSize = dl->getTotalListSizeUnsafe();
+			totalFiles = dl->getTotalFileCountUnsafe();
 		}
 
 		callAsync([=] {
@@ -1735,7 +1735,7 @@ void DirectoryListingFrame::handleOpenFile() {
 void DirectoryListingFrame::openDupe(const DirectoryListing::Directory::Ptr& d) {
 	try {
 		StringList paths;
-		dl->getLocalPaths(d, paths);
+		dl->getLocalPathsUnsafe(d, paths);
 		if (!paths.empty()) {
 			ActionUtil::openFolder(Text::toT(paths.front()));
 		}
@@ -1747,7 +1747,7 @@ void DirectoryListingFrame::openDupe(const DirectoryListing::Directory::Ptr& d) 
 void DirectoryListingFrame::openDupe(const DirectoryListing::File::Ptr& f, bool openDir) noexcept {
 	try {
 		StringList paths;
-		dl->getLocalPaths(f, paths);
+		dl->getLocalPathsUnsafe(f, paths);
 
 		if (!paths.empty()) {
 			auto path = Text::toT(paths.front());
@@ -1823,9 +1823,9 @@ bool DirectoryListingFrame::getLocalPaths(StringList& paths_, bool aUsingTree, b
 	handleItemAction(aUsingTree, [&](const ItemInfo* ii) {
 		try {
 			if (!aDirsOnly && ii->type == ItemInfo::FILE) {
-				dl->getLocalPaths(ii->file, paths_);
+				dl->getLocalPathsUnsafe(ii->file, paths_);
 			} else if (ii->type == ItemInfo::DIRECTORY)  {
-				dl->getLocalPaths(ii->dir, paths_);
+				dl->getLocalPathsUnsafe(ii->dir, paths_);
 			}
 		} catch (ShareException& e) {
 			error = e.getError();

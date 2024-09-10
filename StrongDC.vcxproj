@@ -546,6 +546,7 @@
     <ClCompile Include="windows\Wildcards.cpp" />
     <ClCompile Include="windows\WinClient.cpp" />
     <ClCompile Include="windows\WindowsPage.cpp" />
+    <ClCompile Include="windows\WinUpdater.cpp" />
     <ClCompile Include="windows\WinUtil.cpp" />
     <ClCompile Include="windows\Wizard.cpp" />
     <ClCompile Include="windows\WizardAutoConnectivity.cpp" />
@@ -706,6 +707,7 @@
     <ClInclude Include="windows\Winamp.h" />
     <ClInclude Include="windows\WinClient.h" />
     <ClInclude Include="windows\WindowsPage.h" />
+    <ClInclude Include="windows\WinUpdater.h" />
     <ClInclude Include="windows\WinUtil.h" />
     <ClInclude Include="windows\Wizard.h" />
     <ClInclude Include="windows\WizardAutoConnectivity.h" />

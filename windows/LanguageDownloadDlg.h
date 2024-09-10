@@ -27,6 +27,7 @@
 
 #include <airdcpp/UpdateManagerListener.h>
 #include <airdcpp/UpdateManager.h>
+#include <airdcpp/Text.h>
 #include <airdcpp/TimerManager.h>
 
 class LanguageDownloadDlg : private UpdateManagerListener, private TimerManagerListener { 

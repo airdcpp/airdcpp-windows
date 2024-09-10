@@ -20,6 +20,7 @@
 
 #include <airdcpp/CryptoManager.h>
 #include <airdcpp/Exception.h>
+#include <airdcpp/Text.h>
 
 #include "Resource.h"
 #include "EncryptionPage.h"

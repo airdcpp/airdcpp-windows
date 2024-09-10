@@ -24,6 +24,8 @@
 #include "Sounds.h"
 #include "WinUtil.h"
 
+#include <airdcpp/Text.h>
+
 PropPage::TextItem Sounds::texts[] = {
 	{ IDC_PRIVATE_MESSAGE_BEEP, ResourceManager::SETTINGS_PM_BEEP },
 	{ IDC_PRIVATE_MESSAGE_BEEP_OPEN, ResourceManager::SETTINGS_PM_BEEP_OPEN },

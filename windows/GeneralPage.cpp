@@ -19,6 +19,8 @@
 #include "stdafx.h"
 
 #include <airdcpp/Localization.h>
+#include <airdcpp/Text.h>
+
 #include "Resource.h"
 
 #include "GeneralPage.h"

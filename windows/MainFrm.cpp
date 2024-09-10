@@ -97,10 +97,10 @@ bool MainFrame::isShutdownStatus = false;
 #define CONFIG_FRAMES_NAME "Frames.xml"
 #define CONFIG_DIR AppUtil::PATH_USER_CONFIG
 
-MainFrame::MainFrame() : CSplitterImpl(false),
+MainFrame::MainFrame(const StartupParams& aStartupParams, AddUpdateF&& aAddUpdateF) : CSplitterImpl(false),
 	transferView(make_unique<TransferView>()), hashProgress(make_unique<HashProgressDlg>()),
-	statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP)
-
+	statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP),
+	addUpdateF(std::move(aAddUpdateF)), startupParams(aStartupParams)
 {
 	user32lib = LoadLibrary(_T("user32"));
 	_d_ChangeWindowMessageFilter = (LPFUNC)GetProcAddress(user32lib, "ChangeWindowMessageFilter");
@@ -1234,7 +1234,7 @@ void MainFrame::saveOpenWindows() {
 }
 
 void MainFrame::loadOpenWindows() {
-	bool autoConnect = !AppUtil::hasStartupParam("/noautoconnect");
+	bool autoConnect = !startupParams.hasParam("/noautoconnect");
 	bool hasSavedState = false;
 	if (SETTING(SAVE_LAST_STATE)) {
 
@@ -2087,7 +2087,7 @@ void MainFrame::onBadVersion(const string& message, const string& infoUrl, const
 
 void MainFrame::onUpdateComplete(const string& aUpdater) noexcept {
 	if(WinUtil::showQuestionBox(TSTRING(UPDATER_RESTART), MB_ICONQUESTION)) {
-		WinUtil::addUpdate(aUpdater);
+		addUpdateF(aUpdater);
 
 		shutdown();
 	}

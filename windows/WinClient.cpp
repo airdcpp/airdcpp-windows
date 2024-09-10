@@ -24,15 +24,12 @@
 #include "PopupManager.h"
 #include "Resource.h"
 #include "ResourceLoader.h"
-#include "ShellExecAsUser.h"
 #include "SplashWindow.h"
 #include "WinUtil.h"
 #include "Wizard.h"
 
 #include <airdcpp/LogManager.h>
 #include <airdcpp/PathUtil.h>
-#include <airdcpp/Updater.h>
-#include <airdcpp/ValueGenerator.h>
 #include <airdcpp/version.h>
 
 #include <airdcpp/modules/ADLSearch.h>
@@ -42,7 +39,6 @@
 #include <airdcpp/modules/HublistManager.h>
 #include <airdcpp/modules/PreviewAppManager.h>
 #include <airdcpp/modules/RSSManager.h>
-#include <airdcpp/ZipFile.h>
 
 #include <web-server/ExtensionManager.h>
 #include <web-server/NpmRepository.h>
@@ -145,7 +141,7 @@ StartupLoadCallback WinClient::moduleLoadFGetter(unique_ptr<MainFrame>& wndMain)
 			aLoader.stepF(STRING(WEB_SERVER));
 
 			// Determine config
-			auto webResourcePath = AppUtil::getStartupParam("--web-resources");
+			auto webResourcePath = startupParams.getValue("--web-resources");
 #ifdef _DEBUG
 			if (!webResourcePath) {
 				webResourcePath = PathUtil::getParentDir(PathUtil::getParentDir(AppUtil::getAppFilePath())) + "installer\\Web-resources\\";
@@ -201,147 +197,21 @@ void WinClient::installExtensions() {
 	}
 }
 
-void WinClient::listUpdaterFiles(StringPairList& files_, const string& aUpdateFilePath) noexcept {
-	auto assertFiles = [](string&& title, int minExpected, int added) {
-		if (added < minExpected) {
-			questionF(title + ": added " + Util::toString(added) + " files while at least " + Util::toString(minExpected) + " were expected", false, true);
-			ExitProcess(1);
-		}
-	};
-
-	// Node
-	// Note: secondary executables must be added before the application because of an extraction issue in version before 4.00
-	assertFiles("Node.js", 1, ZipFile::CreateZipFileList(files_, PathUtil::getFilePath(AppUtil::getAppFilePath()), Util::emptyString, "^(" + webserver::WebServerSettings::localNodeDirectoryName + ")$"));
-
-	// Application
-	assertFiles("Exe", 2, ZipFile::CreateZipFileList(files_, AppUtil::getAppFilePath(), Util::emptyString, "^(AirDC.exe|AirDC.pdb)$"));
-
-	// Additional resources
-	auto installerDirectory = PathUtil::getParentDir(aUpdateFilePath) + "installer" + PATH_SEPARATOR;
-	assertFiles("Themes", 1, ZipFile::CreateZipFileList(files_, installerDirectory, Util::emptyString, "^(Themes)$"));
-	assertFiles("Web resources", 10, ZipFile::CreateZipFileList(files_, installerDirectory, Util::emptyString, "^(Web-resources)$"));
-	assertFiles("Emopacks", 10, ZipFile::CreateZipFileList(files_, installerDirectory, Util::emptyString, "^(EmoPacks)$"));
-}
-
 bool WinClient::checkStartupParams() noexcept {
 	LPTSTR* argv = __targv;
 	int argc = --__argc;
 
-	auto addStartupParams = [&argc, &argv]() -> void {
-		while (argc > 0) {
-			AppUtil::addStartupParam(Text::fromT(*argv));
-			argc--;
-			argv++;
-		}
-	};
+	// Ignore the app path (first param)
+	argv++;
 
-	if (argc > 0) {
+	while (argc > 0) {
+		startupParams.addParam(Text::fromT(*argv));
+		argc--;
 		argv++;
-
-		if (_tcscmp(*argv, _T("/createupdate")) == 0) {
-			// AirDC++.exe /createupdate [/test]
-			SplashWindow::create();
-			WinUtil::splash->update("Creating updater");
-
-			auto updaterFilePath = Updater::createUpdate(listUpdaterFiles);
-
-			addStartupParams();
-			if (AppUtil::hasStartupParam("/test")) {
-				WinUtil::splash->update("Extracting updater");
-				auto updaterExeFile = Updater::extractUpdater(updaterFilePath, BUILD_NUMBER + 1, Util::toString(ValueGenerator::rand()));
-
-				WinUtil::addUpdate(updaterExeFile, true);
-				WinUtil::runPendingUpdate();
-
-				if (AppUtil::hasStartupParam("/fail")) {
-					WinUtil::splash->update("Testing failure");
-					Sleep(15000); // Prevent overwriting the exe
-				}
-			}
-
-			WinUtil::splash->destroy();
-			return false;
-		} else if (_tcscmp(*argv, _T("/sign")) == 0 && --argc >= 2) {
-			// AirDC++.exe /sign version_file_path private_key_file_path [-pubout]
-			string xmlPath = Text::fromT(*++argv);
-			string keyPath = Text::fromT(*++argv);
-			bool genHeader = (argc > 2 && (_tcscmp(*++argv, _T("-pubout")) == 0));
-			if (PathUtil::fileExists(xmlPath) && PathUtil::fileExists(keyPath)) {
-				Updater::signVersionFile(xmlPath, keyPath, genHeader);
-			}
-
-			return false;
-		} else if (_tcscmp(*argv, _T("/update")) == 0) {
-			// AirDC++.exe /update version_file_path private_key_file_path [-pubout]
-			if (--argc >= 1) {
-				SplashWindow::create();
-				WinUtil::splash->update("Updating");
-				string sourcePath = AppUtil::getAppFilePath();
-				string installPath = Text::fromT(*++argv); argc--;
-
-				SetPriorityClass(GetCurrentProcess(), IDLE_PRIORITY_CLASS);
-				SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_IDLE);
-
-				bool success = false;
-
-				for (;;) {
-					string error;
-					success = Updater::applyUpdate(sourcePath, installPath, error, 10);
-					if (!success) {
-						auto message = Text::toT("Updating failed:\n\n" + error + "\n\nDo you want to retry installing the update?").c_str();
-						if (::MessageBox(NULL, message, Text::toT(shortVersionString).c_str(), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2 | MB_TOPMOST) == IDYES) {
-							continue;
-						}
-					}
-					break;
-				}
-
-				SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
-				SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
-
-				//add new startup params
-				AppUtil::addStartupParam(success ? "/updated" : "/updatefailed");
-				AppUtil::addStartupParam("/silent");
-
-				//append the passed params (but leave out the update commands...)
-				argv++;
-				addStartupParams();
-
-				//start the updated instance
-				auto path = Text::toT(installPath + AppUtil::getAppFileName());
-				auto startupParams = Text::toT(AppUtil::getStartupParams(true));
-
-				if (!AppUtil::hasStartupParam("/elevation")) {
-					ShellExecAsUser(NULL, path.c_str(), startupParams.c_str(), NULL);
-				} else {
-					ShellExecute(NULL, NULL, path.c_str(), startupParams.c_str(), NULL, SW_SHOWNORMAL);
-				}
-
-				WinUtil::splash->destroy();
-				return false;
-			}
-
-			return false;
-		} else {
-			addStartupParams();
-		}
 	}
 
-	string updaterFile;
-	auto updated = AppUtil::hasStartupParam("/updated") || AppUtil::hasStartupParam("/updatefailed");
-	if (Updater::checkPendingUpdates(AppUtil::getAppFilePath(), updaterFile, updated)) {
-		WinUtil::addUpdate(updaterFile);
-		WinUtil::runPendingUpdate();
+	if (updater.isUpdaterAction(startupParams)) {
 		return false;
-	}
-
-	if (updated) {
-		// Updating finished, don't leave files in the temp directory
-		try {
-			File::renameFile(UPDATE_TEMP_LOG, UPDATE_FINAL_LOG);
-		} catch (...) {
-
-		}
 	}
 
 	return true;
@@ -375,11 +245,7 @@ int WinClient::run(LPTSTR /*lpstrCmdLine*/, int nCmdShow) {
 
 			WinUtil::splash->update(STRING(LOADING_GUI));
 
-			if (AppUtil::hasStartupParam("/updated")) {
-				Updater::log(STRING(UPDATE_SUCCEEDED), LogMessage::SEV_INFO);
-			} else if (AppUtil::hasStartupParam("/updatefailed")) {
-				Updater::log(STRING_F(UPDATE_FAILED, string(UPDATE_FINAL_LOG)), LogMessage::SEV_ERROR);
-			}
+			updater.reportPostInstall(startupParams);
 		} catch (const AbortException&) {
 			// Critical error, exit
 			ExitProcess(1);
@@ -412,7 +278,10 @@ int WinClient::run(LPTSTR /*lpstrCmdLine*/, int nCmdShow) {
 				SetProcessDefaultLayout(LAYOUT_RTL);
 			}
 
-			wndMain.reset(new MainFrame);
+			wndMain = make_unique<MainFrame>(
+				startupParams, 
+				[this](auto file) { updater.addUpdate(file); }
+			);
 
 			CRect rc = wndMain->rcDefault;
 			if ((SETTING(MAIN_WINDOW_POS_X) != CW_USEDEFAULT) &&
@@ -446,7 +315,7 @@ int WinClient::run(LPTSTR /*lpstrCmdLine*/, int nCmdShow) {
 			// Install replacement extensions for previously inbuilt functionality when migrating from a previous version
 			auto configVersion = Util::toDouble(SETTING(CONFIG_VERSION));
 			if (configVersion == 3.70 || configVersion == 3.71) {
-				wndMain->addThreadedTask([] {
+				wndMain->addThreadedTask([this] {
 					Thread::sleep(3000);
 					installExtensions();
 				});
@@ -476,6 +345,6 @@ int WinClient::run(LPTSTR /*lpstrCmdLine*/, int nCmdShow) {
 	wndMain.reset(nullptr);
 	WinUtil::splash->destroy();
 
-	WinUtil::runPendingUpdate();
+	updater.runPendingUpdate(startupParams);
 	return nRet;
 }

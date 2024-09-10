@@ -20,6 +20,7 @@
 #include "LineDlg.h"
 
 #include <airdcpp/SettingsManager.h>
+#include <airdcpp/Text.h>
 
 #include "Resource.h"
 #include "WinUtil.h"

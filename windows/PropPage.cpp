@@ -19,6 +19,7 @@
 #include "stdafx.h"
 
 #include <airdcpp/SettingsManager.h>
+#include <airdcpp/Text.h>
 
 #include "Resource.h"
 #include "PropPage.h"

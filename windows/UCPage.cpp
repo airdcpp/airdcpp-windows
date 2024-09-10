@@ -20,6 +20,7 @@
 
 #include <airdcpp/UserCommandManager.h>
 #include <airdcpp/UserCommand.h>
+#include <airdcpp/Text.h>
 
 #include "Resource.h"
 #include "UCPage.h"
