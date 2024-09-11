@@ -58,10 +58,6 @@ private:
 	};
 
 	optional<PendingUpdate> pendingUpdate;
-	//	bool updated = false;
-	// optional<TStringPair> updateCommand;
-
-	// const StartupParams& startupParams;
 };
 
 
